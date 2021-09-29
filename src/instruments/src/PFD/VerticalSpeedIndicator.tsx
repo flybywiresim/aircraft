@@ -1,5 +1,7 @@
 import { Arinc429Word } from '@instruments/common/arinc429';
 import React from 'react';
+import { BitPacking } from '@shared/bitpacking';
+import { getSimVar } from '../util.js';
 
 interface VerticalSpeedIndicatorProps {
     radioAlt: number,
@@ -27,23 +29,17 @@ export const VerticalSpeedIndicator = ({ radioAlt, verticalSpeed }: VerticalSpee
         isAmber = true;
     }
 
-    const sign = Math.sign(verticalSpeed.value);
+    const yOffset = getYoffset(verticalSpeed);
 
-    let yOffset = 0;
-
-    if (absVSpeed < 1000) {
-        yOffset = verticalSpeed.value / 1000 * -27.22;
-    } else if (absVSpeed < 2000) {
-        yOffset = (verticalSpeed.value - sign * 1000) / 1000 * -10.1 - sign * 27.22;
-    } else if (absVSpeed < 6000) {
-        yOffset = (verticalSpeed.value - sign * 2000) / 4000 * -10.1 - sign * 37.32;
-    } else {
-        yOffset = sign * -47.37;
-    }
+    const tcasState = getSimVar('L:A32NX_TCAS_STATE', 'Enum');
+    const tcasVSpeeds = getSimVar('L:A32NX_TCAS_VSPEEDS_PACKED', 'Number');
 
     return (
         <g>
             <path className="TapeBackground" d="m151.84 131.72 4.1301-15.623v-70.556l-4.1301-15.623h-5.5404v101.8z" />
+
+            <VSpeedTcas tcasState={tcasState} tcasVSpeeds={tcasVSpeeds} />
+
             <g id="VerticalSpeedGroup">
                 <g className="Fill White">
                     <path d="m149.92 54.339v-1.4615h1.9151v1.4615z" />
@@ -74,6 +70,121 @@ export const VerticalSpeedIndicator = ({ radioAlt, verticalSpeed }: VerticalSpee
                 <VSpeedText yOffset={yOffset} isAmber={isAmber} VSpeed={verticalSpeed.value} />
             </g>
         </g>
+    );
+};
+
+const getYoffset = (VSpeed) => {
+    const absVSpeed = Math.abs(VSpeed);
+    const sign = Math.sign(VSpeed);
+
+    if (absVSpeed < 1000) {
+        return VSpeed / 1000 * -27.22;
+    }
+    if (absVSpeed < 2000) {
+        return (VSpeed - sign * 1000) / 1000 * -10.1 - sign * 27.22;
+    }
+    if (absVSpeed < 6000) {
+        return (VSpeed - sign * 2000) / 4000 * -10.1 - sign * 37.32;
+    }
+    return sign * -47.37;
+};
+
+const VSpeedTcas = ({ tcasState, tcasVSpeeds }) => {
+    if (tcasState !== 3) {
+        return (
+            <g id="VerticalSpeedTCASGroup" />
+        );
+    }
+
+    const vSpeedsUnpacked = BitPacking.unpack8(tcasVSpeeds);
+
+    vSpeedsUnpacked.forEach((v, i, a) => {
+        a[i] = (v * 50);
+    });
+
+    let greenZone = null;
+    let redZone1 = null;
+    let redZone2 = null;
+    switch (vSpeedsUnpacked.length) {
+    case 2:
+        // Preventive RA, we only have 1 red zone
+        redZone1 = vSpeedsUnpacked;
+        break;
+    case 4:
+        // Corrective RA, with green zone, then 1 red zone
+        greenZone = vSpeedsUnpacked.slice(2);
+        redZone1 = vSpeedsUnpacked.slice(2, 4);
+        break;
+    case 6:
+        // Corrective RA, with green zone, then 2 red zones
+        greenZone = vSpeedsUnpacked.slice(2);
+        redZone1 = vSpeedsUnpacked.slice(2, 4);
+        redZone2 = vSpeedsUnpacked.slice(4, 6);
+        break;
+    default:
+        return (
+            <g id="VerticalSpeedTCASGroup" />
+        );
+    }
+
+    const greenZoneSVG = <VSpeedTcasZone zoneBounds={greenZone} zoneClass="Fill Green" extended />;
+    const redZone1SVG = <VSpeedTcasZone zoneBounds={redZone1} zoneClass="Fill Red" />;
+    const redZone2SVG = <VSpeedTcasZone zoneBounds={redZone2} zoneClass="Fill Red" />;
+
+    return (
+        <g id="VerticalSpeedTCASGroup">
+            {greenZoneSVG}
+            {redZone1SVG}
+            {redZone2SVG}
+        </g>
+    );
+};
+
+const VSpeedTcasZone = ({ zoneBounds, zoneClass, extended }) => {
+    if (zoneBounds === null) {
+        return (
+            <path />
+        );
+    }
+
+    let y1;
+    let y2;
+    let y3;
+    let y4;
+
+    if (zoneBounds[0] >= 6000) {
+        y1 = 29.92;
+    } else if (zoneBounds[0] <= -6000) {
+        y1 = 131.72;
+    } else {
+        y1 = 80.82 + getYoffset(zoneBounds[0]);
+    }
+
+    if (zoneBounds[1] >= 6000) {
+        y2 = 29.92;
+    } else if (zoneBounds[1] <= -6000) {
+        y2 = 131.72;
+    } else {
+        y2 = 80.82 + getYoffset(zoneBounds[1]);
+    }
+
+    if (Math.abs(zoneBounds[1]) > 1750 && Math.abs(zoneBounds[1]) > Math.abs(zoneBounds[0])) {
+        y3 = y2;
+    } else {
+        y3 = y2 / 2;
+    }
+
+    if (Math.abs(zoneBounds[0]) > 1750 && Math.abs(zoneBounds[0]) > Math.abs(zoneBounds[1])) {
+        y4 = y1;
+    } else {
+        y4 = y1 / 2;
+    }
+
+    const x1 = 151.84;
+    const x2 = extended ? 157.75 : 155.9701;
+
+    return (
+        <path className={zoneClass} d={`m${x1},${y1} L${x1},${y2} L${x2},${y3} L${x2},${y4} Z`} />
     );
 };
 
