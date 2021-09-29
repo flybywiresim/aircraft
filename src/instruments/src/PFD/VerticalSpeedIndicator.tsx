@@ -90,7 +90,7 @@ const getYoffset = (VSpeed) => {
 };
 
 const VSpeedTcas = ({ tcasState, tcasVSpeeds }) => {
-    if (tcasState !== 3) {
+    if (tcasState !== 2) {
         return (
             <g id="VerticalSpeedTCASGroup" />
         );

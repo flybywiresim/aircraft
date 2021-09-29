@@ -1,0 +1,406 @@
+@import url("/CSS/A32NX_Display_Common.css");
+
+:root {
+  --bodyHeightScale: 1;
+  --windLabelFontSize: 37px;
+  --speedLabelFontSize: 32px;
+}
+
+@keyframes TemporaryShow {
+  0%,
+  100% {
+    visibility: visible;
+  }
+}
+
+@keyframes TemporaryHide {
+  0%,
+  100% {
+    visibility: hidden;
+  }
+}
+
+#highlight {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  z-index: 10;
+}
+
+#Electricity {
+  width: 100%;
+  height: 100%;
+}
+#Electricity[state="off"] {
+  display: none;
+}
+
+@font-face {
+  font-family: "Liberation Mono";
+  src: url("/Fonts/LiberationMono.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+text {
+  font-family: "ECAMFontRegular" !important;
+}
+
+#Mainframe {
+  --refWidth: 1024;
+  --refHeight: 1024;
+}
+
+a320-neo-mfd-element {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+a320-neo-mfd-element #Electricity {
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(4, 4, 5, 1) 0%,
+    rgba(4, 4, 5, 1) 100%
+  );
+}
+a320-neo-mfd-element #Electricity[state="off"] {
+  display: none;
+}
+a320-neo-mfd-element #highlight {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  z-index: 10;
+}
+a320-neo-mfd-element #Mainframe {
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  position: relative;
+}
+a320-neo-mfd-element #Mainframe #Compass {
+  transform: rotateX(0);
+  position: absolute;
+  border: none;
+  left: 0%;
+  top: -2%;
+  width: 100%;
+  height: 100%;
+}
+a320-neo-mfd-element #Mainframe #Map {
+  position: absolute;
+  height: 150%;
+  width: 150%;
+  top: -25%;
+  left: -25%;
+  display: block;
+  /* Map position (left and top) is set in mapConfig.json file (see SvgMapConfig.ts) (makes it editable at runtime) */
+  /* Map position (left and top) is set in mapConfig.json file (see SvgMapConfig.ts) (makes it editable at runtime) */
+}
+a320-neo-mfd-element #Mainframe #Map #MapOrientation {
+  position: absolute;
+  top: 0%;
+  right: 0%;
+  width: 10%;
+  height: calc(3 * 1vh * var(--bodyHeightScale));
+  background-color: rgba(4, 4, 5, 1);
+  color: var(--displayWhite);
+}
+a320-neo-mfd-element #Mainframe #Map #WindData {
+  position: absolute;
+  top: 0%;
+  width: 7%;
+  right: 10%;
+}
+a320-neo-mfd-element #Mainframe #Map #MapRange {
+  position: absolute;
+  bottom: 0%;
+  right: 0%;
+  width: 7%;
+  height: calc(3 * 1vh * var(--bodyHeightScale));
+  background-color: rgba(4, 4, 5, 1);
+  color: var(--displayCyan);
+}
+a320-neo-mfd-element #Mainframe #Map #MapSVG,
+a320-neo-mfd-element #Mainframe #Map #road-network-canvas {
+  transform: rotateX(0);
+  position: absolute;
+}
+a320-neo-mfd-element #Mainframe #Map bing-map {
+  transform: rotateX(0);
+  position: absolute;
+  top: 0%;
+  left: 0%;
+  width: 100%;
+  height: 100%;
+}
+a320-neo-mfd-element #Mainframe #ModeChangeMask {
+  top: 0%;
+  left: 0%;
+  width: 100%;
+  height: 100%;
+  display: none;
+  position: absolute;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(4, 4, 5, 1) 0%,
+    rgba(4, 4, 5, 1) 100%
+  );
+}
+a320-neo-mfd-element #Mainframe #RangeChangeMask {
+  top: 0%;
+  left: 0%;
+  width: 100%;
+  height: 100%;
+  display: none;
+  position: absolute;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(4, 4, 5, 1) 0%,
+    rgba(4, 4, 5, 1) 100%
+  );
+}
+a320-neo-mfd-element #Mainframe #TcasChangeModeMask {
+  top: 0%;
+  left: 0%;
+  width: 100%;
+  height: 100%;
+  display: none;
+  position: absolute;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(4, 4, 5, 1) 0%,
+    rgba(4, 4, 5, 1) 100%
+  );
+}
+a320-neo-mfd-element #Mainframe #TcasReduceRangeMask {
+  top: 0%;
+  left: 0%;
+  width: 100%;
+  height: 100%;
+  display: none;
+  position: absolute;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(4, 4, 5, 1) 0%,
+    rgba(4, 4, 5, 1) 100%
+  );
+}
+a320-neo-mfd-element #Mainframe #TopBox {
+  top: 3%;
+  left: 4%;
+  width: 92%;
+  height: 25%;
+  position: absolute;
+}
+a320-neo-mfd-element #Mainframe #TopBox svg {
+  overflow: visible;
+}
+a320-neo-mfd-element #Mainframe #TopBox #Speed {
+  top: 0%;
+  height: 100%;
+  left: -4%;
+  width: 50%;
+  position: absolute;
+}
+a320-neo-mfd-element #Mainframe #TopBox #Speed svg {
+  overflow: visible;
+}
+a320-neo-mfd-element #Mainframe #TopBox #Speed svg #GS_Value {
+  white-space: pre;
+}
+a320-neo-mfd-element #Mainframe #TopBox #Title {
+  top: 11%;
+  height: 100%;
+  left: 40%;
+  width: 20%;
+  position: absolute;
+}
+a320-neo-mfd-element #Mainframe #TopBox #Approach {
+  top: 0%;
+  height: 100%;
+  left: 64%;
+  width: 40%;
+  position: absolute;
+}
+a320-neo-mfd-element #Mainframe #TopBox #Approach text {
+  text-anchor: end;
+}
+a320-neo-mfd-element #Mainframe #TopBox #Approach svg {
+  overflow: visible;
+}
+a320-neo-mfd-element #Mainframe #TopBox #Waypoint {
+  top: 0%;
+  height: 100%;
+  left: 64%;
+  width: 40%;
+  position: absolute;
+}
+a320-neo-mfd-element #Mainframe #TopBox #Waypoint text {
+  text-anchor: end;
+}
+a320-neo-mfd-element #Mainframe #TopBox #Waypoint svg {
+  overflow: visible;
+}
+a320-neo-mfd-element #Mainframe #TopBox svg {
+  width: 100%;
+  height: 100%;
+}
+a320-neo-mfd-element #Mainframe #TopBox text {
+  width: 100%;
+  height: 100%;
+  font-family: ECAMFontRegular;
+}
+a320-neo-mfd-element #Mainframe #TopBox text.Value {
+  font-size: 44px;
+  fill: var(--displayGreen);
+}
+a320-neo-mfd-element #Mainframe #TopBox text .small {
+  font-size: 36px;
+}
+a320-neo-mfd-element #Mainframe #TopBox text.ValueVor {
+  font-size: 44px;
+  fill: var(--displayCyan);
+}
+a320-neo-mfd-element #Mainframe #TopBox text.ValueIls {
+  font-size: 44px;
+  fill: var(--displayMagenta);
+}
+a320-neo-mfd-element #Mainframe #TopBox text.Small {
+  font-size: 38px;
+  fill: var(--displayWhite);
+}
+a320-neo-mfd-element #Mainframe #TopBox text.Large {
+  font-size: 44px;
+  fill: var(--displayWhite);
+}
+a320-neo-mfd-element #Mainframe #TopBox text.Units {
+  font-size: 32px;
+  fill: var(--displayCyan);
+}
+a320-neo-mfd-element #Mainframe #TopBox text.DegreeSymbol {
+  font-size: 50px;
+  fill: var(--displayCyan);
+}
+a320-neo-mfd-element #Mainframe #TopBox text.Title {
+  font-size: 44px;
+  fill: var(--displayGreen);
+}
+a320-neo-mfd-element #Mainframe #TopBox text.Title[state="ils"] {
+  fill: var(--displayGreen);
+}
+a320-neo-mfd-element #Mainframe #VORDMENavaids div {
+  top: 87%;
+  width: 25%;
+  height: 13%;
+  position: absolute;
+}
+a320-neo-mfd-element #Mainframe #VORDMENavaids svg {
+  width: 100%;
+  height: 100%;
+}
+a320-neo-mfd-element #Mainframe #VORDMENavaids #VORDMENavaid_Left {
+  left: 0%;
+}
+a320-neo-mfd-element #Mainframe #VORDMENavaids #VORDMENavaid_Right {
+  right: 0%;
+}
+a320-neo-mfd-element #Mainframe #VORDMENavaids #VORDMENavaid_Left text {
+  text-anchor: start;
+}
+a320-neo-mfd-element #Mainframe #VORDMENavaids #VORDMENavaid_Left #Distance,
+a320-neo-mfd-element #Mainframe #VORDMENavaids #VORDMENavaid_Right text {
+  text-anchor: end;
+}
+a320-neo-mfd-element #Mainframe #VORDMENavaids text {
+  font-family: ECAMFontRegular;
+  text-align: center;
+}
+a320-neo-mfd-element #Mainframe #VORDMENavaids text .small {
+  font-size: calc(2.25 * 1vh * var(--bodyHeightScale));
+}
+a320-neo-mfd-element #Mainframe #VORDMENavaids #State {
+  font-size: calc(3 * 1vh * var(--bodyHeightScale));
+  fill: var(--displayWhite);
+}
+a320-neo-mfd-element #Mainframe #VORDMENavaids #ID {
+  font-size: calc(3 * 1vh * var(--bodyHeightScale));
+  letter-spacing: -3px;
+  fill: var(--displayWhite);
+}
+a320-neo-mfd-element #Mainframe #VORDMENavaids #Mode {
+  font-size: calc(3 * 1vh * var(--bodyHeightScale));
+  fill: var(--displayWhite);
+  text-decoration: underline;
+}
+a320-neo-mfd-element #Mainframe #VORDMENavaids #Distance {
+  font-size: calc(2.85 * 1vh * var(--bodyHeightScale));
+  letter-spacing: -2.25px;
+  fill: var(--displayGreen);
+}
+a320-neo-mfd-element #Mainframe #VORDMENavaids #Unit {
+  font-size: calc(2.25 * 1vh * var(--bodyHeightScale));
+  fill: var(--displayCyan);
+}
+a320-neo-mfd-element #Mainframe #VORDMENavaids #Arrow-Left {
+  fill: none;
+  /* stroke: var(--displayWhite); */
+  stroke-width: 6px;
+}
+a320-neo-mfd-element #Mainframe #VORDMENavaids #Arrow-Right {
+  fill: none;
+  /* stroke: var(--displayWhite); */
+  stroke-width: 6px;
+}
+a320-neo-mfd-element #Mainframe #Symbols {
+  top: 79%;
+  left: 92%;
+  width: 100%;
+  height: 50%;
+  position: absolute;
+}
+a320-neo-mfd-element #Mainframe #Symbols svg {
+  width: 100%;
+  height: 100%;
+}
+a320-neo-mfd-element #Mainframe #Symbols text {
+  width: 100%;
+  height: 100%;
+  font-family: ECAMFontRegular;
+}
+a320-neo-mfd-element #Mainframe #Symbols text.Small {
+  font-size: 30px;
+  fill: var(--displayGreen);
+}
+a320-neo-mfd-element #Mainframe #Symbols text.Large {
+  font-size: 38px;
+  fill: var(--displayGreen);
+}
+
+a320-neo-mfd-element #Mainframe #Symbols #TERR {
+  fill: var(--displayCyan);
+}
+
+a320-neo-mfd-element #Mainframe #Electricity #TAS_Text {
+  font-size: var(--speedLabelFontSize);
+}
+
+a320-neo-mfd-element #Mainframe #Electricity #GS_Text {
+  font-size: var(--speedLabelFontSize);
+}
+
+a320-neo-mfd-element #Mainframe #Electricity #Wind_Direction {
+  font-size: var(--windLabelFontSize);
+}
+
+a320-neo-mfd-element #Mainframe #Electricity #Wind_Separator {
+  font-size: var(--windLabelFontSize);
+}
+
+a320-neo-mfd-element #Mainframe #Electricity #Wind_Strength {
+  font-size: var(--windLabelFontSize);
+}

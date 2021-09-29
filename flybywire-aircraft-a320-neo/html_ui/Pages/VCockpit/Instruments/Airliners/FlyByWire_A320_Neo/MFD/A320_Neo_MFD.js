@@ -76,6 +76,8 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
     init() {
         super.init();
         this.getDeltaTime = A32NX_Util.createDeltaTimeCalculator(this._lastTime);
+        this.tcasChangeModeMask = this.gps.getChildById("TcasChangeModeMask");
+        this.tcasReduceRangeMask = this.gps.getChildById("TcasReduceRangeMask");
         this.modeChangeMask = this.gps.getChildById("ModeChangeMask");
         this.rangeChangeMask = this.gps.getChildById("RangeChangeMask");
         this.map.instrument.showRoads = false;
@@ -104,6 +106,7 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         this.showILS = SimVar.GetSimVarValue(`L:BTN_LS_${this.screenIndex}_FILTER_ACTIVE`, "bool");
         this.compass.showILS(this.showILS);
         this.info.showILS(this.showILS);
+        this.tcasState = SimVar.GetSimVarValue("L:A32NX_TCAS_STATE", "Enum");
 
         //ENGINEERING TEST
         this.engTestDiv = document.querySelector("#MfdEngTest");
@@ -324,6 +327,31 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         const mapMode = SimVar.GetSimVarValue("L:A320_Neo_MFD_NAV_MODE_" + this.screenIndex, "number");
         const mapRange = SimVar.GetSimVarValue("L:A320_Neo_MFD_Range_" + this.screenIndex, "number");
         const shouldShowWeather = (this.map && !this.map.planMode) && wxRadarOn && wxRadarMode != 3;
+
+        if (this.tcasState < 1 || (this.tcasState >= 1 && mapMode !== 4)) {
+            this.tcasChangeModeMask.style.display = "none";
+        } else if (this.tcasState === 2 && mapMode === 4) {
+            this.tcasChangeModeMask.style.display = "block";
+            this.tcasChangeModeMask.classList.add("dangerText");
+            this.tcasChangeModeMask.classList.remove("warningText");
+        } else if (this.tcasState === 1 && mapMode === 4) {
+            this.tcasChangeModeMask.style.display = "block";
+            this.tcasChangeModeMask.classList.add("warningText");
+            this.tcasChangeModeMask.classList.remove("dangerText");
+        }
+
+        if (this.tcasState < 1 || (this.tcasState >= 1 && (mapRange <= 2 || mapMode === 4))) {
+            this.tcasReduceRangeMask.style.display = "none";
+        } else if (this.tcasState === 2 && mapRange > 2) {
+            this.tcasReduceRangeMask.style.display = "block";
+            this.tcasReduceRangeMask.classList.add("dangerText");
+            this.tcasReduceRangeMask.classList.remove("warningText");
+        } else if (this.tcasState === 1 && mapRange > 2) {
+            this.tcasReduceRangeMask.style.display = "block";
+            this.tcasReduceRangeMask.classList.add("warningText");
+            this.tcasReduceRangeMask.classList.remove("dangerText");
+        }
+
         if (this.wxRadarOn != wxRadarOn || this.terrainOn != terrainOn || this.wxRadarMode != wxRadarMode || this.mapMode != mapMode) {
             this.wxRadarOn = wxRadarOn;
             this.wxRadarMode = wxRadarMode;
@@ -355,7 +383,7 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
                 this.map.hideCompassMask();
             }
             // This animation should play only when MODE CHANGE nob is used
-            if (this.modeChangeMask && this._hasMapModeChanged()) {
+            if (this.modeChangeMask && this._hasMapModeChanged() && !(this.tcasState >= 1 && (mapRange > 2 || mapMode === 4))) {
                 this.modeChangeMask.style.display = "block";
                 this.modeChangeTimer = 0.5;
             }
@@ -396,7 +424,7 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
             this.map.instrument.setZoom(this.mapRange);
             this.compass.svg.mapRange = this.map.zoomRanges[this.mapRange];
 
-            if (this.rangeChangeMask) {
+            if (this.rangeChangeMask && !(this.tcasState >= 1 && (mapRange > 2 || mapMode === 4))) {
                 this.rangeChangeMask.style.display = "block";
                 this.rangeChangeTimer = 0.5;
             }
