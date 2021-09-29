@@ -26,8 +26,8 @@ use systems::{
         PneumaticContainerWithValve, TargetPressureSignal, VariableVolumeContainer,
     },
     shared::{
-        ControllerSignal, DelayedTrueLogicGate, ElectricalBusType, EngineCorrectedN1,
-        EngineCorrectedN2, EngineFirePushButtons, PneumaticValve,
+        ControllerSignal, DelayedTrueLogicGate, ElectricalBusType, ElectricalBuses,
+        EngineCorrectedN1, EngineCorrectedN2, EngineFirePushButtons, PneumaticValve,
     },
     simulation::{
         Read, SimulationElement, SimulationElementVisitor, SimulatorReader, SimulatorWriter, Write,
@@ -226,8 +226,8 @@ impl A320Pneumatic {
     pub fn new() -> Self {
         Self {
             bmcs: [
-                BleedMonitoringComputer::new(1, 2),
-                BleedMonitoringComputer::new(2, 1),
+                BleedMonitoringComputer::new(1, 2, ElectricalBusType::DirectCurrentEssentialShed),
+                BleedMonitoringComputer::new(2, 1, ElectricalBusType::DirectCurrent(2)),
             ],
             engine_systems: [
                 EngineBleedAirSystem::new(1, ElectricalBusType::DirectCurrentEssentialShed),
@@ -305,22 +305,32 @@ impl A320Pneumatic {
             );
         }
 
+        let (bmc_one, bmc_two) = self.bmcs.split_at_mut(1);
+
+        bmc_one[0].update_other_computer(&mut bmc_two[0]);
+        bmc_two[0].update_other_computer(&mut bmc_one[0]);
+
         for esv_controller in self.engine_starter_valve_controllers.iter_mut() {
             esv_controller.update(&self.fadec);
         }
 
         for engine_system in self.engine_systems.iter_mut() {
-            let index = engine_system.number - 1;
+            for bmc in self.bmcs.iter() {
+                let index = engine_system.number - 1;
 
-            engine_system.update(
-                context,
-                &self.bmcs[index].main_channel,
-                &self.bmcs[index].main_channel,
-                &self.bmcs[index].main_channel,
-                &self.engine_starter_valve_controllers[index],
-                &self.bmcs[index].main_channel,
-                engines[index],
-            );
+                // If we get an actual channel here, this means that the channel is not in slave mode
+                if let Some(channel) = bmc.channel_for_engine(engine_system.number) {
+                    engine_system.update(
+                        context,
+                        channel,
+                        channel,
+                        channel,
+                        &self.engine_starter_valve_controllers[index],
+                        channel,
+                        engines[index],
+                    );
+                }
+            }
         }
 
         // Update consumers:
@@ -407,6 +417,10 @@ impl SimulationElement for A320Pneumatic {
         self.apu_bleed_air_controller.accept(visitor);
 
         self.cross_bleed_valve.accept(visitor);
+
+        for bmc in self.bmcs.iter_mut() {
+            bmc.accept(visitor);
+        }
 
         for engine_system in self.engine_systems.iter_mut() {
             engine_system.accept(visitor);
@@ -516,15 +530,29 @@ struct BleedMonitoringComputer {
     backup_channel_engine_number: usize,
     main_channel: BleedMonitoringComputerChannel,
     backup_channel: BleedMonitoringComputerChannel,
+    powered_by: ElectricalBusType,
+    is_powered: bool,
 }
 impl BleedMonitoringComputer {
-    fn new(main_channel_engine_number: usize, backup_channel_engine_number: usize) -> Self {
+    fn new(
+        main_channel_engine_number: usize,
+        backup_channel_engine_number: usize,
+        powered_by: ElectricalBusType,
+    ) -> Self {
         Self {
             // This is the BMC number, not directly related to any engine number.
             main_channel_engine_number,
             backup_channel_engine_number,
-            main_channel: BleedMonitoringComputerChannel::new(main_channel_engine_number),
-            backup_channel: BleedMonitoringComputerChannel::new(backup_channel_engine_number),
+            main_channel: BleedMonitoringComputerChannel::new(
+                main_channel_engine_number,
+                BleedMonitoringComputerChannelOperationMode::Master,
+            ),
+            backup_channel: BleedMonitoringComputerChannel::new(
+                backup_channel_engine_number,
+                BleedMonitoringComputerChannelOperationMode::Slave,
+            ),
+            powered_by,
+            is_powered: true,
         }
     }
 
@@ -555,10 +583,86 @@ impl BleedMonitoringComputer {
             overhead_panel,
         );
     }
+
+    fn update_other_computer(&mut self, other: &mut BleedMonitoringComputer) {
+        match other.signal() {
+            None => {
+                self.change_backup_channel_operation_mode(
+                    BleedMonitoringComputerChannelOperationMode::Master,
+                );
+                other.change_main_channel_operation_mode(
+                    BleedMonitoringComputerChannelOperationMode::Slave,
+                );
+            }
+            Some(_) => {}
+        }
+    }
+
+    pub fn change_main_channel_operation_mode(
+        &mut self,
+        mode: BleedMonitoringComputerChannelOperationMode,
+    ) {
+        self.main_channel.set_operation_mode(mode);
+    }
+
+    pub fn change_backup_channel_operation_mode(
+        &mut self,
+        mode: BleedMonitoringComputerChannelOperationMode,
+    ) {
+        self.backup_channel.set_operation_mode(mode);
+    }
+
+    pub fn channel_for_engine(
+        &self,
+        engine_number: usize,
+    ) -> Option<&BleedMonitoringComputerChannel> {
+        // I cannot seem to be able to put this into a match clause
+        if engine_number == self.main_channel_engine_number {
+            self.main_channel.or_none_if_slave()
+        } else if engine_number == self.backup_channel_engine_number {
+            self.backup_channel.or_none_if_slave()
+        } else {
+            None
+        }
+    }
+
+    pub fn is_powered(&self) -> bool {
+        self.is_powered
+    }
+}
+impl SimulationElement for BleedMonitoringComputer {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T)
+    where
+        Self: Sized,
+    {
+        visitor.visit(self);
+    }
+
+    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
+        self.is_powered = buses.is_powered(self.powered_by)
+    }
+}
+impl ControllerSignal<BleedMonitoringComputerIsAliveSignal> for BleedMonitoringComputer {
+    fn signal(&self) -> Option<BleedMonitoringComputerIsAliveSignal> {
+        if self.is_powered {
+            Some(BleedMonitoringComputerIsAliveSignal)
+        } else {
+            None
+        }
+    }
+}
+
+struct BleedMonitoringComputerIsAliveSignal;
+
+#[derive(Clone, Copy, Debug, PartialEq)]
+enum BleedMonitoringComputerChannelOperationMode {
+    Master,
+    Slave,
 }
 
 struct BleedMonitoringComputerChannel {
     engine_number: usize,
+    operation_mode: BleedMonitoringComputerChannelOperationMode,
     ip_compressor_pressure: Pressure,
     hp_compressor_pressure: Pressure,
     // Pressure between IP/HP valves and the PRV
@@ -581,9 +685,13 @@ struct BleedMonitoringComputerChannel {
     engine_bleed_fault_light_monitor: EngineBleedFaultLightMonitor,
 }
 impl BleedMonitoringComputerChannel {
-    fn new(engine_number: usize) -> Self {
+    fn new(
+        engine_number: usize,
+        operation_mode: BleedMonitoringComputerChannelOperationMode,
+    ) -> Self {
         Self {
             engine_number,
+            operation_mode,
             ip_compressor_pressure: Pressure::new::<psi>(0.),
             hp_compressor_pressure: Pressure::new::<psi>(0.),
             transfer_pressure: Pressure::new::<psi>(0.),
@@ -660,6 +768,21 @@ impl BleedMonitoringComputerChannel {
     fn update_fault_lights(&self, overhead_panel: &mut A320PneumaticOverheadPanel) {
         if let Some(signal) = self.engine_bleed_fault_light_monitor.signal() {
             overhead_panel.set_engine_bleed_has_fault(self.engine_number, signal.fault_light_is_on);
+        }
+    }
+
+    pub fn operation_mode(&self) -> BleedMonitoringComputerChannelOperationMode {
+        self.operation_mode
+    }
+
+    pub fn set_operation_mode(&mut self, mode: BleedMonitoringComputerChannelOperationMode) {
+        self.operation_mode = mode;
+    }
+
+    pub fn or_none_if_slave(&self) -> Option<&BleedMonitoringComputerChannel> {
+        match self.operation_mode() {
+            BleedMonitoringComputerChannelOperationMode::Master => Some(&self),
+            BleedMonitoringComputerChannelOperationMode::Slave => None,
         }
     }
 }
@@ -1454,6 +1577,14 @@ mod tests {
                 is_dc_ess_shed_powered: true,
             }
         }
+
+        fn set_dc_2_bus_power(&mut self, is_powered: bool) {
+            self.is_dc_2_powered = is_powered;
+        }
+
+        fn set_dc_ess_shed_bus_power(&mut self, is_powered: bool) {
+            self.is_dc_ess_shed_powered = is_powered;
+        }
     }
     impl Aircraft for PneumaticTestAircraft {
         fn update_before_power_distribution(
@@ -1766,6 +1897,34 @@ mod tests {
         fn both_packs_auto(mut self) -> Self {
             self.set_pack_flow_pb_is_auto(1, true)
                 .set_pack_flow_pb_is_auto(2, true)
+        }
+
+        fn bmc_channel_for_engine(
+            &self,
+            bmc_number: usize,
+            engine_number: usize,
+        ) -> Option<BleedMonitoringComputerChannelOperationMode> {
+            self.query(|a| {
+                a.pneumatic.bmcs[bmc_number - 1]
+                    .channel_for_engine(engine_number)
+                    .map_or(None, |channel| Some(channel.operation_mode()))
+            })
+        }
+
+        fn set_dc_2_bus_power(mut self, is_powered: bool) -> Self {
+            self.command(|a| a.set_dc_2_bus_power(is_powered));
+
+            self
+        }
+
+        fn set_dc_ess_shed_bus_power(mut self, is_powered: bool) -> Self {
+            self.command(|a| a.set_dc_ess_shed_bus_power(is_powered));
+
+            self
+        }
+
+        fn bmc_is_powered(&self, bmc_number: usize) -> bool {
+            self.query(|a| a.pneumatic.bmcs[bmc_number - 1].is_powered())
         }
     }
 
@@ -2331,6 +2490,89 @@ mod tests {
 
         assert!(!test_bed.pack_flow_valve_is_open(1));
         assert!(!test_bed.pack_flow_valve_is_open(2));
+    }
+
+    #[test]
+    fn bleed_monitoring_computers_powered_by_correct_buses() {
+        let mut test_bed = test_bed()
+            .set_dc_ess_shed_bus_power(false)
+            .set_dc_2_bus_power(false)
+            .and_run();
+
+        test_bed.run();
+
+        assert!(!test_bed.bmc_is_powered(1));
+        assert!(!test_bed.bmc_is_powered(2));
+
+        test_bed = test_bed.set_dc_ess_shed_bus_power(true).and_run();
+
+        assert!(test_bed.bmc_is_powered(1));
+        assert!(!test_bed.bmc_is_powered(2));
+
+        test_bed = test_bed.set_dc_2_bus_power(true).and_run();
+
+        assert!(test_bed.bmc_is_powered(1));
+        assert!(test_bed.bmc_is_powered(2));
+    }
+
+    #[test]
+    fn bleed_monitoring_computers_initialize_in_correct_configuration() {
+        let test_bed = test_bed()
+            .set_dc_2_bus_power(true)
+            .set_dc_ess_shed_bus_power(true)
+            .and_run();
+
+        assert_eq!(
+            test_bed.bmc_channel_for_engine(1, 1).unwrap(),
+            BleedMonitoringComputerChannelOperationMode::Master
+        );
+        assert_eq!(
+            test_bed.bmc_channel_for_engine(2, 2).unwrap(),
+            BleedMonitoringComputerChannelOperationMode::Master
+        );
+
+        assert!(test_bed.bmc_channel_for_engine(1, 2).is_none());
+        assert!(test_bed.bmc_channel_for_engine(2, 1).is_none());
+    }
+
+    #[test]
+    fn bleed_monitoring_computer_one_takes_over_for_dc_2_failure() {
+        let test_bed = test_bed()
+            .set_dc_2_bus_power(false)
+            .set_dc_ess_shed_bus_power(true)
+            .and_run();
+
+        assert_eq!(
+            test_bed.bmc_channel_for_engine(1, 1).unwrap(),
+            BleedMonitoringComputerChannelOperationMode::Master
+        );
+        assert_eq!(
+            test_bed.bmc_channel_for_engine(1, 2).unwrap(),
+            BleedMonitoringComputerChannelOperationMode::Master
+        );
+
+        assert!(test_bed.bmc_channel_for_engine(2, 1).is_none());
+        assert!(test_bed.bmc_channel_for_engine(2, 2).is_none());
+    }
+
+    #[test]
+    fn bleed_monitoring_computer_two_takes_over_for_dc_ess_shed_failure() {
+        let test_bed = test_bed()
+            .set_dc_2_bus_power(true)
+            .set_dc_ess_shed_bus_power(false)
+            .and_run();
+
+        assert_eq!(
+            test_bed.bmc_channel_for_engine(2, 1).unwrap(),
+            BleedMonitoringComputerChannelOperationMode::Master
+        );
+        assert_eq!(
+            test_bed.bmc_channel_for_engine(2, 2).unwrap(),
+            BleedMonitoringComputerChannelOperationMode::Master
+        );
+
+        assert!(test_bed.bmc_channel_for_engine(1, 1).is_none());
+        assert!(test_bed.bmc_channel_for_engine(1, 2).is_none(),);
     }
 
     mod ovhd {
