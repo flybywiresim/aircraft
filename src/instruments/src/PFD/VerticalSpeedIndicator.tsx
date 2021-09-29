@@ -103,23 +103,16 @@ const VSpeedTcas = ({ tcasState, tcasVSpeeds }) => {
     });
 
     let greenZone = null;
-    let redZone1 = null;
-    let redZone2 = null;
+    let redZone = null;
     switch (vSpeedsUnpacked.length) {
     case 2:
-        // Preventive RA, we only have 1 red zone
-        redZone1 = vSpeedsUnpacked;
+        // Preventive RA, we only have a red zone
+        redZone = vSpeedsUnpacked;
         break;
     case 4:
-        // Corrective RA, with green zone, then 1 red zone
-        greenZone = vSpeedsUnpacked.slice(2);
-        redZone1 = vSpeedsUnpacked.slice(2, 4);
-        break;
-    case 6:
-        // Corrective RA, with green zone, then 2 red zones
-        greenZone = vSpeedsUnpacked.slice(2);
-        redZone1 = vSpeedsUnpacked.slice(2, 4);
-        redZone2 = vSpeedsUnpacked.slice(4, 6);
+        // Corrective RA, with green and red zone
+        redZone = vSpeedsUnpacked.slice(2);
+        greenZone = vSpeedsUnpacked.slice(2, 4);
         break;
     default:
         return (
@@ -128,14 +121,12 @@ const VSpeedTcas = ({ tcasState, tcasVSpeeds }) => {
     }
 
     const greenZoneSVG = <VSpeedTcasZone zoneBounds={greenZone} zoneClass="Fill Green" extended />;
-    const redZone1SVG = <VSpeedTcasZone zoneBounds={redZone1} zoneClass="Fill Red" />;
-    const redZone2SVG = <VSpeedTcasZone zoneBounds={redZone2} zoneClass="Fill Red" />;
+    const redZoneSVG = <VSpeedTcasZone zoneBounds={redZone} zoneClass="Fill Red" />;
 
     return (
         <g id="VerticalSpeedTCASGroup">
+            {redZoneSVG}
             {greenZoneSVG}
-            {redZone1SVG}
-            {redZone2SVG}
         </g>
     );
 };
