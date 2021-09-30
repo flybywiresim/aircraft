@@ -1,7 +1,11 @@
 #![cfg(any(target_arch = "wasm32", doc))]
 use a320_systems::A320;
 use msfs::sim_connect::{SimConnectRecv, SIMCONNECT_OBJECT_ID_USER};
-use msfs::{legacy::NamedVariable, sim_connect::SimConnect, sys};
+use msfs::{
+    legacy::{AircraftVariable, NamedVariable},
+    sim_connect::SimConnect,
+    sys,
+};
 use std::{
     pin::Pin,
     time::{Duration, Instant},
@@ -30,6 +34,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn std::error::Error
             )?),
             Box::new(Brakes::new(&mut sim_connect.as_mut())?),
             Box::new(Autobrakes::new(&mut sim_connect.as_mut())?),
+            Box::new(CargoDoors::new(&mut sim_connect.as_mut())?),
             Box::new(create_aircraft_variable_reader()?),
             Box::new(MsfsNamedVariableReaderWriter::new("A32NX_")),
         ],
@@ -83,13 +88,12 @@ fn create_aircraft_variable_reader(
     reader.add("SIM ON GROUND", "Bool", 0)?;
     reader.add("GENERAL ENG STARTER ACTIVE", "Bool", 1)?;
     reader.add("GENERAL ENG STARTER ACTIVE", "Bool", 2)?;
-    reader.add("EXIT OPEN", "Percent", 5)?;
-    // TODO It is the catering door for now.
-    reader.add("EXIT OPEN", "Percent", 3)?;
     reader.add("PUSHBACK ANGLE", "Radian", 0)?;
     reader.add("PUSHBACK STATE", "Enum", 0)?;
     reader.add("ANTISKID BRAKES ACTIVE", "Bool", 0)?;
     reader.add("ACCELERATION BODY Z", "feet per second squared", 0)?;
+    reader.add("ACCELERATION BODY X", "feet per second squared", 0)?;
+    reader.add("ACCELERATION BODY Y", "feet per second squared", 0)?;
 
     reader.add_with_additional_names(
         "APU GENERATOR SWITCH",
@@ -557,6 +561,73 @@ impl SimulatorAspect for Brakes {
         self.reset_keyboard_events();
         self.transmit_client_events(sim_connect)?;
         self.transmit_masked_inputs();
+
+        Ok(())
+    }
+}
+
+struct CargoDoors {
+    forward_cargo_door_position: NamedVariable,
+    forward_cargo_door_sim_position_request: AircraftVariable,
+    fwd_position: f64,
+    forward_cargo_door_open_req: f64,
+}
+impl CargoDoors {
+    fn set_forward_door_postition(&mut self, value: f64) {
+        self.fwd_position = value;
+    }
+
+    fn new(sim_connect: &mut Pin<&mut SimConnect>) -> Result<Self, Box<dyn std::error::Error>> {
+        Ok(Self {
+            forward_cargo_door_position: NamedVariable::from("A32NX_FWD_DOOR_CARGO_POSITION"),
+            forward_cargo_door_sim_position_request: AircraftVariable::from(
+                "INTERACTIVE POINT OPEN",
+                "Position",
+                5,
+            )?,
+            fwd_position: 0.,
+            forward_cargo_door_open_req: 0.,
+        })
+    }
+
+    fn set_in_sim_position_request(&mut self, position_requested: f64) {
+        if position_requested > 0. {
+            self.forward_cargo_door_open_req = 1.;
+        } else {
+            self.forward_cargo_door_open_req = 0.;
+        }
+    }
+}
+impl SimulatorAspect for CargoDoors {
+    fn write(&mut self, name: &str, value: f64) -> bool {
+        match name {
+            "FWD_DOOR_CARGO_POSITION" => {
+                self.set_forward_door_postition(value);
+                true
+            }
+            _ => false,
+        }
+    }
+
+    fn read(&mut self, name: &str) -> Option<f64> {
+        match name {
+            "FWD_DOOR_CARGO_OPEN_REQ" => Some(self.forward_cargo_door_open_req),
+            "FWD_DOOR_CARGO_POSITION" => Some(self.fwd_position),
+            _ => None,
+        }
+    }
+
+    fn pre_tick(&mut self, delta: Duration) {
+        let read_val = self.forward_cargo_door_sim_position_request.get();
+        self.set_in_sim_position_request(read_val);
+    }
+
+    fn post_tick(
+        &mut self,
+        sim_connect: &mut Pin<&mut SimConnect>,
+    ) -> Result<(), Box<dyn std::error::Error>> {
+        self.forward_cargo_door_position
+            .set_value(self.fwd_position);
 
         Ok(())
     }

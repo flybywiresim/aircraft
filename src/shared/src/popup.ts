@@ -62,21 +62,21 @@ export class PopUp {
 
     /**
      * Show popup with given or already initiated parameters
-     * @param {string} params.title Title for popup - will show in menu bar
-     * @param {string} params.message Popup message
-     * @param {string} params.style Style/Type of popup. Valid types are small|normal|big|big-help
+     * @param {string} title Title for popup - will show in menu bar
+     * @param {string} message Popup message
+     * @param {string} style Style/Type of popup. Valid types are small|normal|big|big-help
      * @param {function} callbackYes Callback function -> YES button is clicked.
      * @param {function} callbackNo Callback function -> NO button is clicked.
      */
-    showPopUp(params: any = {}, callbackYes: any, callbackNo: any): void {
-        if (params.title) {
-            this.params.title = params.title;
+    showPopUp(title: string, message: string, style: 'small'| 'normal'| 'big'| 'big-help', callbackYes: () => void, callbackNo: () => void): void {
+        if (title) {
+            this.params.title = title;
         }
-        if (params.message) {
-            this.params.contentData = params.message;
+        if (message) {
+            this.params.contentData = message;
         }
-        if (params.style) {
-            this.params.style = params.style;
+        if (style) {
+            this.params.style = style;
         }
         if (callbackYes) {
             const yes = (typeof callbackYes === 'function') ? callbackYes : () => callbackYes;
