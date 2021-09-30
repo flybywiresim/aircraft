@@ -34,6 +34,10 @@ impl ElectricalPumpPhysics {
     const DEFAULT_DYNAMIC_FRICTION_CONSTANT: f64 = 0.00004;
     const DEFAULT_RESISTANT_TORQUE_WHEN_OFF_NEWTON_METER: f64 = 2.8;
 
+    // Efficiency gives generated mechanical torque ratio vs electrical power used.
+    // 0.95 will convert 95% of electrical consumption in mechanical torque
+    const ELECTRICAL_EFFICIENCY: f64 = 0.95;
+
     const DEFAULT_P_GAIN: f64 = 0.05;
     const DEFAULT_I_GAIN: f64 = 0.9;
 
@@ -129,7 +133,8 @@ impl ElectricalPumpPhysics {
                     Torque::new::<newton_meter>(0.5 * self.output_current.get::<ampere>());
             } else {
                 self.generated_torque = Torque::new::<newton_meter>(
-                    0.95 * output_power / self.speed.get::<radian_per_second>(),
+                    Self::ELECTRICAL_EFFICIENCY * output_power
+                        / self.speed.get::<radian_per_second>(),
                 );
             }
         } else {
