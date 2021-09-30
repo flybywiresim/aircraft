@@ -16,22 +16,18 @@ export const PressPage: FC = () => {
     const [cabinVs] = useSimVar('L:A32NX_PRESS_CABIN_VS', 'feet per minute', 500);
     const [cabinAlt] = useSimVar('L:A32NX_PRESS_CABIN_ALTITUDE', 'feet', 500);
     const [deltaPsi] = useSimVar('L:A32NX_PRESS_CABIN_DELTA_PRESSURE', 'psi', 500);
-    // const [outflowValueOpenPercentage] = useSimVar('L:A32NX_PRESS_OUTFLOW_VALVE_OPEN_PERCENTAGE', 'percent', 500);
-    const outflowValueOpenPercentage = 35;
+    const [flightPhase] = useSimVar('L:A32NX_FWC_FLIGHT_PHASE', 'enum', 1000);
+
     const deltaPress = splitDecimals(deltaPsi, '');
     const vsx = 275;
     const cax = 455;
     const dpx = 110;
     const y = 165;
-    const ofx = 448;
-    const ofy = 425;
-    const ofradius = 72;
+
     const radius = 50;
     const [systemNumber, setSystemNumber] = useState(0);
 
-    const safetyValve = 1;
-    const inletValve = 1;
-    const outletValve = 1;
+    const safetyValve = 2;
 
     useEffect(() => {
         setSystemNumber(Math.random() < 0.5 ? 1 : 2);
@@ -182,101 +178,16 @@ export const PressPage: FC = () => {
 
             <text className="Large White" x={185} y={380}>VENT</text>
 
-            <text className="Large White" x={120} y={417}>INLET</text>
-            <GaugeMarkerComponent
-                value={inletValve}
-                x={175}
-                y={434}
-                min={0}
-                max={2}
-                radius={34}
-                startAngle={180}
-                endAngle={270}
-                className={inletValve > 1 ? 'GreenLine' : 'AmberLine'}
-                indicator
-            />
+            <OverboardInletComponent flightPhase={flightPhase} validSDAC />
             <circle className="WhiteCircle" cx={175} cy={434} r={3} />
 
-            <text className="Large White" x={240} y={417}>OUTLET</text>
-            <GaugeMarkerComponent
-                value={outletValve}
-                x={260}
-                y={434}
-                min={0}
-                max={2}
-                radius={34}
-                startAngle={90}
-                endAngle={180}
-                className={outletValve < 1 ? 'GreenLine' : 'AmberLine'}
-                indicator
-            />
+            {/* Overboard Outlet Valve */}
+            <OverboardOutletComponent flightPhase={flightPhase} validSDAC />
             <circle className="WhiteCircle" cx={260} cy={434} r={3} />
 
             {/* Outflow valve */}
             <g id="OutflowValve">
-                <GaugeComponent
-                    x={ofx}
-                    y={ofy}
-                    radius={ofradius}
-                    startAngle={270 + (outflowValueOpenPercentage / 100 * 90)}
-                    endAngle={360}
-                    manMode
-                    className="Gauge"
-                >
-                    <GaugeComponent x={ofx} y={ofy} radius={ofradius} startAngle={355.5} endAngle={360} manMode className="Gauge Amber" />
-                    <GaugeMarkerComponent
-                        value={outflowValueOpenPercentage}
-                        x={ofx}
-                        y={ofy}
-                        min={0}
-                        max={100}
-                        radius={ofradius}
-                        startAngle={270}
-                        endAngle={360}
-                        className="GreenLine"
-                        indicator
-                        multiplier={1}
-                    />
-                    <GaugeMarkerComponent
-                        value={25}
-                        x={ofx}
-                        y={ofy}
-                        min={0}
-                        max={100}
-                        radius={ofradius}
-                        startAngle={270}
-                        endAngle={360}
-                        className="Gauge"
-                        outer
-                        multiplier={1.1}
-                    />
-                    <GaugeMarkerComponent
-                        value={50}
-                        x={ofx}
-                        y={ofy}
-                        min={0}
-                        max={100}
-                        radius={ofradius}
-                        startAngle={270}
-                        endAngle={360}
-                        className="Gauge"
-                        outer
-                        multiplier={1.1}
-                    />
-                    <GaugeMarkerComponent
-                        value={75}
-                        x={ofx}
-                        y={ofy}
-                        min={0}
-                        max={100}
-                        radius={ofradius}
-                        startAngle={270}
-                        endAngle={360}
-                        className="Gauge"
-                        outer
-                        multiplier={1.1}
-                    />
-                </GaugeComponent>
+                <OutflowValveComponent flightPhase={flightPhase} />
                 <circle className="WhiteCircle" cx={448} cy={425} r={3} />
             </g>
 
@@ -374,6 +285,202 @@ const PackComponent = ({ id, x, y }: PackComponentType) => {
                 {' '}
                 {id}
             </text>
+        </>
+    );
+};
+
+type OutflowValveComponentType = {
+    flightPhase : number,
+
+}
+
+const OutflowValveComponent = ({ flightPhase }: OutflowValveComponentType) => {
+    const ofx = 448;
+    const ofy = 425;
+    const ofradius = 72;
+
+    const [outflowValueOpenPercentage] = useSimVar('L:A32NX_PRESS_OUTFLOW_VALVE_OPEN_PERCENTAGE', 'percent', 500);
+
+    return (
+        <>
+            <GaugeComponent
+                x={ofx}
+                y={ofy}
+                radius={ofradius}
+                startAngle={270 + (outflowValueOpenPercentage / 100 * 90)}
+                endAngle={360}
+                manMode
+                className="Gauge"
+            >
+                <GaugeComponent x={ofx} y={ofy} radius={ofradius} startAngle={355.5} endAngle={360} manMode className="Gauge Amber" />
+                <GaugeMarkerComponent
+                    value={outflowValueOpenPercentage}
+                    x={ofx}
+                    y={ofy}
+                    min={0}
+                    max={100}
+                    radius={ofradius}
+                    startAngle={270}
+                    endAngle={360}
+                    className={flightPhase >= 5 && flightPhase <= 7 && outflowValueOpenPercentage > 95 ? 'AmberLine' : 'GreenLine'}
+                    indicator
+                    multiplier={1}
+                />
+                <GaugeMarkerComponent
+                    value={25}
+                    x={ofx}
+                    y={ofy}
+                    min={0}
+                    max={100}
+                    radius={ofradius}
+                    startAngle={270}
+                    endAngle={360}
+                    className="Gauge"
+                    outer
+                    multiplier={1.1}
+                />
+                <GaugeMarkerComponent
+                    value={50}
+                    x={ofx}
+                    y={ofy}
+                    min={0}
+                    max={100}
+                    radius={ofradius}
+                    startAngle={270}
+                    endAngle={360}
+                    className="Gauge"
+                    outer
+                    multiplier={1.1}
+                />
+                <GaugeMarkerComponent
+                    value={75}
+                    x={ofx}
+                    y={ofy}
+                    min={0}
+                    max={100}
+                    radius={ofradius}
+                    startAngle={270}
+                    endAngle={360}
+                    className="Gauge"
+                    outer
+                    multiplier={1.1}
+                />
+            </GaugeComponent>
+        </>
+    );
+};
+
+type OverboardInletComponentType = {
+    validSDAC: boolean,
+    flightPhase: number,
+}
+
+const OverboardInletComponent = ({ validSDAC, flightPhase }: OverboardInletComponentType) => {
+    const realInletValvePosition = 0.01;
+    let indicator = true;
+    let classNameValue = 'GreenLine';
+    let classNameText = 'White';
+    let displayInletValvePosition = 2;
+
+    // Simplified set - modify once pressurisation properly modeled.
+    switch (true) {
+    case !validSDAC: // case 1
+        indicator = false;
+        classNameText = 'Amber';
+        break;
+    case (realInletValvePosition > 0.01 && realInletValvePosition < 99.9): // case 2
+        classNameValue = 'AmberLine';
+        displayInletValvePosition = 1;
+        break;
+    case realInletValvePosition > 99.9 && flightPhase >= 5 && flightPhase <= 7: // case 3
+        classNameValue = 'AmberLine';
+        classNameText = 'Amber';
+        displayInletValvePosition = 0;
+        break;
+    case realInletValvePosition > 99.9: // case 4
+        displayInletValvePosition = 0;
+        break;
+    default: // case 5
+        indicator = true;
+    }
+
+    return (
+        <>
+            <text className={`Large ${classNameText}`} x={120} y={417}>INLET</text>
+            {indicator ? (
+                <GaugeMarkerComponent
+                    value={displayInletValvePosition}
+                    x={175}
+                    y={434}
+                    min={0}
+                    max={2}
+                    radius={34}
+                    startAngle={180}
+                    endAngle={270}
+                    className={classNameValue}
+                    indicator
+                />
+            )
+                : <text className="Standard Amber" x={143} y={450}>XX</text>}
+        </>
+    );
+};
+
+type OverboardOutletComponentType = {
+    validSDAC: boolean,
+    flightPhase: number,
+}
+
+const OverboardOutletComponent = ({ validSDAC, flightPhase }: OverboardOutletComponentType) => {
+    const realOutletValvePosition = 0.01;
+    let indicator = true;
+    let classNameValue = 'GreenLine';
+    let classNameText = 'White';
+    let displayOutletValvePosition = 0;
+
+    // Simplified set - modify once pressurisation properly modeled.
+    switch (true) {
+    case !validSDAC: // case 1
+        indicator = false;
+        classNameText = 'Amber';
+        break;
+    case (realOutletValvePosition < 0.01 && flightPhase >= 5 && flightPhase <= 7): // case 2b
+        classNameValue = 'AmberLine';
+        classNameText = 'Amber';
+        displayOutletValvePosition = 1;
+        break;
+    case realOutletValvePosition > 0.01 && flightPhase < 5 && flightPhase > 7: // case 3
+        displayOutletValvePosition = 1;
+        break;
+    case realOutletValvePosition > 95 && flightPhase < 5 && flightPhase > 7: // case 4
+        classNameText = 'Amber';
+        displayOutletValvePosition = 2;
+        break;
+    case realOutletValvePosition > 95: // case 5
+        displayOutletValvePosition = 2;
+        break;
+    default: // case 7
+        indicator = true;
+    }
+
+    return (
+        <>
+            <text className={`Large ${classNameText}`} x={240} y={417}>OUTLET</text>
+            {indicator ? (
+                <GaugeMarkerComponent
+                    value={displayOutletValvePosition}
+                    x={260}
+                    y={434}
+                    min={0}
+                    max={2}
+                    radius={34}
+                    startAngle={90}
+                    endAngle={180}
+                    className={classNameValue}
+                    indicator
+                />
+            )
+                : <text className="Standard Amber" x={270} y={450}>XX</text>}
         </>
     );
 };
