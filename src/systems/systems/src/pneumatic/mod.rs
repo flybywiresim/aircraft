@@ -116,7 +116,7 @@ impl DefaultPipe {
 pub struct DefaultValve {
     open_amount: Ratio,
     // This is not needed for the physics simulation. It is only used for information and possibly regulation logic at a later stage.
-    fluid_flow: VolumeRate,
+    connector: PneumaticContainerConnector,
     operation_mode: Box<dyn ValveOperationMode>,
 }
 impl PneumaticValve for DefaultValve {
@@ -125,12 +125,10 @@ impl PneumaticValve for DefaultValve {
     }
 }
 impl DefaultValve {
-    const TRANSFER_SPEED: f64 = 3.;
-
     fn new(open_amount: Ratio, operation_mode: Box<dyn ValveOperationMode>) -> Self {
         Self {
             open_amount,
-            fluid_flow: VolumeRate::new::<cubic_meter_per_second>(0.),
+            connector: PneumaticContainerConnector::new(),
             operation_mode,
         }
     }
@@ -173,31 +171,12 @@ impl DefaultValve {
         from: &mut impl PneumaticContainer,
         to: &mut impl PneumaticContainer,
     ) {
-        let equalization_volume = (from.pressure() - to.pressure()) * from.volume() * to.volume()
-            / Pressure::new::<pascal>(142000.)
-            / (from.volume() + to.volume());
-
-        let fluid_to_move = self.open_amount()
-            * equalization_volume
-            * (1. - (-Self::TRANSFER_SPEED * context.delta_as_secs_f64()).exp());
-
-        self.move_volume(from, to, fluid_to_move);
-
-        self.fluid_flow = fluid_to_move / context.delta_as_time();
-    }
-
-    fn move_volume(
-        &self,
-        from: &mut impl PneumaticContainer,
-        to: &mut impl PneumaticContainer,
-        volume: Volume,
-    ) {
-        from.change_volume(-volume);
-        to.change_volume(volume);
+        self.connector
+            .update_move_fluid(context, from, to, self.open_amount);
     }
 
     pub fn fluid_flow(&self) -> VolumeRate {
-        self.fluid_flow
+        self.connector.fluid_flow
     }
 
     pub fn is_powered(&self) -> bool {
@@ -226,6 +205,49 @@ impl SimulationElement for DefaultValve {
 
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
         self.operation_mode.receive_power(buses);
+    }
+}
+
+struct PneumaticContainerConnector {
+    fluid_flow: VolumeRate,
+}
+impl PneumaticContainerConnector {
+    const TRANSFER_SPEED: f64 = 3.;
+
+    pub fn new() -> Self {
+        Self {
+            fluid_flow: VolumeRate::new::<cubic_meter_per_second>(0.),
+        }
+    }
+
+    pub fn update_move_fluid(
+        &mut self,
+        context: &UpdateContext,
+        from: &mut impl PneumaticContainer,
+        to: &mut impl PneumaticContainer,
+        transfer_speed_factor: Ratio,
+    ) {
+        let equalization_volume = (from.pressure() - to.pressure()) * from.volume() * to.volume()
+            / Pressure::new::<pascal>(142000.)
+            / (from.volume() + to.volume());
+
+        let fluid_to_move = transfer_speed_factor
+            * equalization_volume
+            * (1. - (-Self::TRANSFER_SPEED * context.delta_as_secs_f64()).exp());
+
+        self.move_volume(from, to, fluid_to_move);
+
+        self.fluid_flow = fluid_to_move / context.delta_as_time();
+    }
+
+    fn move_volume(
+        &self,
+        from: &mut impl PneumaticContainer,
+        to: &mut impl PneumaticContainer,
+        volume: Volume,
+    ) {
+        from.change_volume(-volume);
+        to.change_volume(volume);
     }
 }
 
