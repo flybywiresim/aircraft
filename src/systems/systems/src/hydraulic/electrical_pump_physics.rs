@@ -123,20 +123,37 @@ impl ElectricalPumpPhysics {
         self.resistant_torque = pumping_torque + dynamic_friction_torque;
     }
 
-    fn update_pump_generated_torque(&mut self, context: &UpdateContext) {
-        if self.is_active && self.is_powered {
+    fn update_current_control(&mut self, context: &UpdateContext) {
+        if self.pump_should_run() {
             self.output_current =
                 ElectricCurrent::new::<ampere>(self.current_controller.next_control_output(
                     self.speed.get::<revolution_per_minute>(),
                     Some(context.delta()),
                 ));
+        } else {
+            self.output_current = ElectricCurrent::new::<ampere>(0.);
+            self.current_controller.reset();
+        }
+    }
 
+    fn update_electrical_power_consumption(&mut self) {
+        if self.pump_should_run() {
             self.consumed_power = Power::new::<watt>(
                 self.available_potential.get::<volt>()
                     * self.output_current.get::<ampere>()
                     * (3_f64).sqrt(),
             );
+        } else {
+            self.consumed_power = Power::new::<watt>(0.);
+        }
+    }
 
+    fn update_pump_generated_torque(&mut self, context: &UpdateContext) {
+        self.update_current_control(context);
+
+        self.update_electrical_power_consumption();
+
+        if self.pump_should_run() {
             if self.speed.get::<revolution_per_minute>() < 5.
                 && self.output_current.get::<ampere>() > 0.
             {
@@ -150,10 +167,11 @@ impl ElectricalPumpPhysics {
             }
         } else {
             self.generated_torque = Torque::new::<newton_meter>(0.);
-            self.output_current = ElectricCurrent::new::<ampere>(0.);
-            self.current_controller.reset();
-            self.consumed_power = Power::new::<watt>(0.);
         }
+    }
+
+    fn pump_should_run(&self) -> bool {
+        self.is_active && self.is_powered
     }
 
     pub fn set_active(&mut self, is_active: bool) {
