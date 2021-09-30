@@ -679,6 +679,8 @@
                     } els{
                         0 (&gt;O:SYNC_BUS_SYNCED, bool)
                     }
+                }  els{
+                    0 (&gt;O:SYNC_BUS_SYNCED, bool)
                 }
             </UPDATE_CODE>
         </UseTemplate>
@@ -686,12 +688,12 @@
 
 
     <!--
-    Template for delaying LDG LT and sync them with their animation. Extension/extraction of LDG LT is about ~7.5 seconds.
+    Template for delaying LDG LT and sync them with their animation.
     Works by disabling the LDG LT bus until landing light is fully extended.
 
     Main Parameters:
             - DELAY_FREQUENCY       Default: 10         Speed of update loop, N per second.
-            - DELAY_TIME            <no default>        Delay of the bus, ~7.5 sec for LDG LT.
+            - DELAY_TIME            <no default>        Delay of the bus.
             - DELAY_LT_INDEX        <no default>        The LDG LT index.
             - DELAY_CIRCUIT         <no default>        The LDG LT circuit.
             - DELAY_BUS             <no default>        The LDG LT bus.

@@ -1411,6 +1411,8 @@
                 </UseTemplate>
 
                 <!-- LDG LT LEFT DELAY -->
+                <!-- DELAY_TIME is different than RIGHT to add a small "groove"
+                     to their activiation, if both are triggered at the same time -->
                 <UseTemplate Name="FBW_LDGLT_Delay">
                     <DELAY_TIME>7.7</DELAY_TIME>
                     <DELAY_LT_INDEX>2</DELAY_LT_INDEX>
@@ -1432,6 +1434,8 @@
                 </UseTemplate>
 
                 <!-- LDG LT RIGHT DELAY -->
+                <!-- DELAY_TIME is different than LEFT to add a small "groove"
+                     to their activiation, if both are triggered at the same time -->
                 <UseTemplate Name="FBW_LDGLT_Delay">
                     <DELAY_TIME>7.3</DELAY_TIME>
                     <DELAY_LT_INDEX>3</DELAY_LT_INDEX>
