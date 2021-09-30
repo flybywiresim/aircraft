@@ -30,7 +30,7 @@ export const VerticalSpeedIndicator = ({ radioAlt, verticalSpeed }: VerticalSpee
         isAmber = true;
     }
 
-    const yOffset = getYoffset(verticalSpeed);
+    const yOffset = getYoffset(verticalSpeed.value);
 
     const [tcasState] = useSimVar('L:A32NX_TCAS_STATE', 'Enum', 200);
     const [tcasCorrective] = useSimVar('L:A32NX_TCAS_RA_CORRECTIVE', 'Boolean', 200);

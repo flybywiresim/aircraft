@@ -44,7 +44,7 @@ const ecamPages = [
 
 export function getInputs() {
     const baseInstruments = fs.readdirSync(join(Directories.instruments, 'src'), { withFileTypes: true })
-        .filter((d) => d.isDirectory() && d.name === 'ND' && fs.existsSync(join(Directories.instruments, 'src', d.name, 'config.json')));
+        .filter((d) => d.isDirectory() && fs.existsSync(join(Directories.instruments, 'src', d.name, 'config.json')));
 
     return [
         ...baseInstruments.map(({ name }) => ({ path: name, name, isInstrument: true })),
