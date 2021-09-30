@@ -8,7 +8,7 @@ use uom::si::{
     volume::cubic_inch,
 };
 
-use crate::shared::{ElectricalBusType, ElectricalBuses};
+use crate::shared::{pid::PidController, ElectricalBusType, ElectricalBuses};
 use crate::simulation::{SimulationElement, SimulatorWriter, UpdateContext, Write};
 
 pub struct ElectricalPumpPhysics {
@@ -22,17 +22,12 @@ pub struct ElectricalPumpPhysics {
     inertia: f64,
     is_active: bool,
 
-    max_displacement: Volume,
-    max_current: ElectricCurrent,
     output_current: ElectricCurrent,
-
-    regulated_speed: AngularVelocity,
-    last_speed_error_rpm: f64,
 
     generated_torque: Torque,
     resistant_torque: Torque,
 
-    i_term: f64,
+    current_controller: PidController,
 }
 impl ElectricalPumpPhysics {
     const DEFAULT_INERTIA: f64 = 0.007;
@@ -40,14 +35,13 @@ impl ElectricalPumpPhysics {
     const DEFAULT_RESISTANT_TORQUE_WHEN_OFF_NEWTON_METER: f64 = 2.8;
 
     const DEFAULT_P_GAIN: f64 = 0.05;
-    const DEFAULT_I_GAIN: f64 = 0.05;
+    const DEFAULT_I_GAIN: f64 = 0.9;
 
     pub fn new(
         id: &str,
         bus_type: ElectricalBusType,
         max_current: ElectricCurrent,
         regulated_speed: AngularVelocity,
-        max_displacement: Volume,
     ) -> Self {
         Self {
             active_id: format!("HYD_{}_EPUMP_ACTIVE", id),
@@ -58,14 +52,17 @@ impl ElectricalPumpPhysics {
             speed: AngularVelocity::new::<radian_per_second>(0.),
             inertia: Self::DEFAULT_INERTIA,
             is_active: false,
-            max_displacement,
-            max_current,
             output_current: ElectricCurrent::new::<ampere>(0.),
-            regulated_speed,
-            last_speed_error_rpm: 0.,
             generated_torque: Torque::new::<newton_meter>(0.),
             resistant_torque: Torque::new::<newton_meter>(0.),
-            i_term: 0.,
+            current_controller: PidController::new(
+                Self::DEFAULT_P_GAIN,
+                Self::DEFAULT_I_GAIN,
+                0.,
+                0.,
+                max_current.get::<ampere>(),
+                regulated_speed.get::<revolution_per_minute>(),
+            ),
         }
     }
 
@@ -76,7 +73,7 @@ impl ElectricalPumpPhysics {
         context: &UpdateContext,
     ) {
         self.update_pump_resistant_torque(current_pressure, current_displacement);
-        self.update_pump_generated_torque(current_displacement, context);
+        self.update_pump_generated_torque(context);
         self.update_pump_speed(context);
     }
 
@@ -115,37 +112,13 @@ impl ElectricalPumpPhysics {
         self.resistant_torque = pumping_torque + dynamic_friction_torque;
     }
 
-    fn update_pump_generated_torque(
-        &mut self,
-        current_displacement: Volume,
-        context: &UpdateContext,
-    ) {
+    fn update_pump_generated_torque(&mut self, context: &UpdateContext) {
         if self.is_active && self.is_powered {
-            // Computing simple control feedforward with current being function of displacement ratio.
-            // Max displacement requires max current
-            let feedforward_current = self.max_current.get::<ampere>()
-                * current_displacement.get::<cubic_inch>()
-                / self.max_displacement.get::<cubic_inch>();
-
-            let speed_error_rpm =
-                (self.regulated_speed - self.speed).get::<revolution_per_minute>();
-
-            let p_term = Self::DEFAULT_P_GAIN * speed_error_rpm;
-            self.i_term += Self::DEFAULT_I_GAIN * speed_error_rpm * context.delta_as_secs_f64();
-
             self.output_current =
-                ElectricCurrent::new::<ampere>(feedforward_current + p_term + self.i_term);
-
-            if self.output_current >= self.max_current {
-                self.i_term = 0.;
-            }
-
-            self.output_current = self
-                .output_current
-                .max(ElectricCurrent::new::<ampere>(0.))
-                .min(self.max_current);
-
-            self.last_speed_error_rpm = speed_error_rpm;
+                ElectricCurrent::new::<ampere>(self.current_controller.next_control_output(
+                    self.speed.get::<revolution_per_minute>(),
+                    Some(context.delta()),
+                ));
 
             let output_power = 115. * self.output_current.get::<ampere>() * (3_f64).sqrt();
 
@@ -162,7 +135,7 @@ impl ElectricalPumpPhysics {
         } else {
             self.generated_torque = Torque::new::<newton_meter>(0.);
             self.output_current = ElectricCurrent::new::<ampere>(0.);
-            self.i_term = 0.;
+            self.current_controller.reset();
         }
     }
 
@@ -222,7 +195,7 @@ mod tests {
             ));
             pump.update(
                 Pressure::new::<psi>(3000.),
-                Volume::new::<cubic_inch>(0.263) / 2.,
+                Volume::new::<cubic_inch>(0.263 / 2.),
                 &context(delta_time),
             );
             time += delta_time;
@@ -230,6 +203,49 @@ mod tests {
             if time > Duration::from_secs_f64(0.5) {
                 assert!(pump.speed.get::<revolution_per_minute>() > 7000.);
             }
+
+            println!(
+                "t= {:.1} RPM {:.0}",
+                time.as_secs_f64(),
+                pump.speed.get::<revolution_per_minute>()
+            );
+        }
+    }
+
+    #[test]
+    fn pump_regulates_on_displacement_gradient() {
+        let mut pump = physical_pump();
+
+        let delta_time = Duration::from_secs_f64(0.05);
+        let mut time = Duration::from_secs(0);
+
+        let mut displacement = Volume::new::<cubic_inch>(0.263 / 4.);
+        pump.set_active(true);
+        for _ in 0..100 {
+            pump.receive_power(&test_electricity(
+                ElectricalBusType::AlternatingCurrentGndFltService,
+                true,
+            ));
+            pump.update(
+                Pressure::new::<psi>(3000.),
+                displacement,
+                &context(delta_time),
+            );
+            time += delta_time;
+
+            if time > Duration::from_secs_f64(3.) && time < Duration::from_secs_f64(3.5) {
+                displacement = Volume::new::<cubic_inch>(0.263);
+            } else {
+                displacement = Volume::new::<cubic_inch>(0.263 / 4.);
+            }
+
+            // .5s after displacement transient we want to be back at 7500 rpm
+            if time > Duration::from_secs_f64(4.) {
+                assert!(pump.speed.get::<revolution_per_minute>() > 7400.)
+            }
+
+            // Checking we don't overshoot too much
+            assert!(pump.speed.get::<revolution_per_minute>() < 8500.);
 
             println!(
                 "t= {:.1} RPM {:.0}",
@@ -283,7 +299,6 @@ mod tests {
             ElectricalBusType::AlternatingCurrentGndFltService,
             ElectricCurrent::new::<ampere>(45.),
             AngularVelocity::new::<revolution_per_minute>(7600.),
-            Volume::new::<cubic_inch>(0.263),
         )
     }
 

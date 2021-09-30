@@ -1280,12 +1280,6 @@ impl ElectricPump {
     const DISPLACEMENT_DYNAMICS: f64 = 0.8;
 
     pub fn new(id: &str, bus_type: ElectricalBusType, max_current: ElectricCurrent) -> Self {
-        // Look for the max displacement of the pump in its caracteristics array
-        let max_displacement = Self::DISPLACEMENT_MAP
-            .iter()
-            .copied()
-            .fold(f64::NAN, f64::max);
-
         Self {
             displacement_id: format!("HYD_{}_EPUMP_DISPLACEMENT", id),
             pump: Pump::new(
@@ -1298,7 +1292,6 @@ impl ElectricPump {
                 bus_type,
                 max_current,
                 AngularVelocity::new::<revolution_per_minute>(Self::NOMINAL_SPEED),
-                Volume::new::<cubic_inch>(max_displacement),
             ),
         }
     }
