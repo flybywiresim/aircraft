@@ -1,8 +1,40 @@
+- [Airbus Systems](#airbus-systems)
+- [How to build](#how-to-build)
+- [Code/style guidelines](#codestyle-guidelines)
+  - [Clippy](#clippy)
+    - [too_many_arguments](#too_many_arguments)
+- [Software design](#software-design)
+  - [Requirements](#requirements)
+    - [1. Runs outside the simulator](#1-runs-outside-the-simulator)
+    - [2. Simulator interactions outside the model](#2-simulator-interactions-outside-the-model)
+    - [3. Guarantee consistent state](#3-guarantee-consistent-state)
+    - [4. Observable state](#4-observable-state)
+    - [5. Reuse in multiple Airbus aircraft types](#5-reuse-in-multiple-airbus-aircraft-types)
+    - [6. Starting state for different phases of flight](#6-starting-state-for-different-phases-of-flight)
+    - [7. Unit tests are mandatory](#7-unit-tests-are-mandatory)
+    - [8. No confusion about units](#8-no-confusion-about-units)
+  - [Implementation](#implementation)
+    - [1. Runs outside the simulator](#1-runs-outside-the-simulator-1)
+    - [2. Simulator interactions outside the model](#2-simulator-interactions-outside-the-model-1)
+      - [Visitor](#visitor)
+      - [Reading information from the simulator](#reading-information-from-the-simulator)
+      - [Writing information to the simulator](#writing-information-to-the-simulator)
+      - [A32NX prefix](#a32nx-prefix)
+      - [Reading aircraft variables](#reading-aircraft-variables)
+    - [3. Guarantee consistent state](#3-guarantee-consistent-state-1)
+      - [Module dependencies](#module-dependencies)
+    - [4. Observable state](#4-observable-state-1)
+    - [5. Reuse in multiple Airbus aircraft types](#5-reuse-in-multiple-airbus-aircraft-types-1)
+    - [6. Starting state for different phases of flight](#6-starting-state-for-different-phases-of-flight-1)
+    - [7. Unit tests](#7-unit-tests)
+    - [8. No confusion about units](#8-no-confusion-about-units-1)
+
 # Airbus Systems
 
 This folder contains code for simulating Airbus aircraft systems. I highly recommend reading through this document to understand more about the system design.
 
 There's one very important thing to note: **unit tests are mandatory. Contributions without a complete unit test suite are not approved.**
+
 
 # How to build
 
@@ -12,6 +44,16 @@ Follow the steps below if you want to build the content of this folder without u
 2. Install LLVM 11 which can be found [here](https://releases.llvm.org/download.html), ensure to add it to your PATH.
 3. Run `cargo build --target wasm32-wasi` in the console at the top-level of the a32nx repository. You must have the SDK installed and have the 'Samples' folder of the SDK downloaded (this must be acquired seperately from the core) in order to build `msfs-rs`.
 4. The `lib.rs` file is built as `target/wasm32-wasi/debug/a320.wasm`.
+
+# Code/style guidelines
+
+## Clippy
+
+We enforce Clippy. We consider the vast majority of Clippy suggestions useful. Those that are disabled are described below:
+
+### too_many_arguments
+
+`too_many_arguments` attempts to reduce function dependencies by forcing you to consider creating additional structures to hold state you are passing into a function. In practice, aircraft systems have many dependencies, and restructuring these to reduce dependencies causes deviation from the real-world situation. Thus `#[allow(clippy::too_many_arguments)]` was used liberally in code, which is why we decided to disable this rule.
 
 # Software design
 
