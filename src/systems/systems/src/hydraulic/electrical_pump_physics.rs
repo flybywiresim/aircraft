@@ -137,15 +137,15 @@ impl ElectricalPumpPhysics {
     }
 
     fn update_electrical_power_consumption(&mut self) {
-        if self.pump_should_run() {
-            self.consumed_power = Power::new::<watt>(
+        self.consumed_power = if self.pump_should_run() {
+            Power::new::<watt>(
                 self.available_potential.get::<volt>()
                     * self.output_current.get::<ampere>()
                     * (3_f64).sqrt(),
-            );
+            )
         } else {
-            self.consumed_power = Power::new::<watt>(0.);
-        }
+            Power::new::<watt>(0.)
+        };
     }
 
     fn update_pump_generated_torque(&mut self, context: &UpdateContext) {
