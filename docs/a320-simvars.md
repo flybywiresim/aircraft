@@ -1856,3 +1856,59 @@ In the variables below, {number} should be replaced with one item in the set: { 
 - A32NX_PRESS_AUTO_LANDING_ELEVATION
     - Feet
     - Automatic landing elevation as calculated by the MCDU when a destination runway is entered
+
+## Traffic Collison Avoidance System
+
+- A32NX_SWITCH_TCAS_Position
+  - Enum
+  - Selected TCAS Mode
+      Description | Value
+      --- | ---
+      STBY | 0
+      TA | 1
+      TA/RA | 2
+
+- A32NX_SWITCH_ATC
+  - EnumTC
+  - Selected active transponder (XPDR1/2)
+      Description | Value
+      --- | ---
+      XPDR1 | 0
+      XPDR2 | 1
+
+- A32NX_SWITCH_TCAS_Traffic_Position
+  - Enum
+  - Selected TCAS Display Mode
+      Description | Value
+      --- | ---
+      THREAT | 0
+      ALL | 1
+      ABV | 2
+      BELOW | 3
+
+- A32NX_TCAS_STATE
+  - Enum
+  - Currently active traffic/resolution advisory
+      Description | Value
+      --- | ---
+      NONE | 0
+      TA | 1
+      RA | 2
+
+- A32NX_TCAS_RA_CORRECTIVE
+  - boolean
+  - Active RA is corrective?
+
+- A32NX_TCAS_VSPEED_RED:{number}
+    - Feet per minute
+	- Lower and upper red vertical speed range of current active RA
+    - {number}
+        - 0
+        - 1
+
+- A32NX_TCAS_VSPEED_GREEN:{number}
+    - Feet per minute
+	- Lower and upper green vertical speed range of current active RA
+    - {number}
+        - 0
+        - 1

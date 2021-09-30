@@ -185,6 +185,10 @@ export class TCasComputer implements TCasComponent {
 
     private soundManager: TCasSoundManager;
 
+    private taOnly: boolean;
+
+    private skipRa: boolean;
+
     private constructor() {}
 
     public static get instance(): TCasComputer {
@@ -210,6 +214,8 @@ export class TCasComputer implements TCasComponent {
         this.sendAirTraffic = [];
         this.activeRa = new ResAdvisory(null, false, 0, false);
         this.soundManager = new TCasSoundManager();
+        this.taOnly = false;
+        this.skipRa = false;
     }
 
     private updateVars(): void {
@@ -231,11 +237,35 @@ export class TCasComputer implements TCasComponent {
 
         // TODO: Add more TA only conditions here (i.e GPWS active, Windshear warning active, stall)
         this.tcasMode = this.tcasOn;
+
+        // Update "TA ONLY" message at the bottom of the ND
+        if ((this.radioAlt < 1000 || this.tcasMode === 1)) {
+            if (!this.taOnly) {
+                // Set TA ONLY true
+                this.taOnly = true;
+                SimVar.SetSimVarValue('L:A32NX_TCAS_TA_ONLY', 'bool', true);
+            }
+        } else if (this.taOnly) {
+            this.taOnly = false;
+            SimVar.SetSimVarValue('L:A32NX_TCAS_TA_ONLY', 'bool', false);
+        }
+
+        // Red TCAS warning on fault (and on PFD) - AMM 34-43-00:A24
+        if (!this.altitude || !this.altitudeStandby
+            || !this.altitude.isNormalOperation() || !this.altitudeStandby.isNormalOperation() || this.altitude.value - this.altitudeStandby.value > 300) {
+            if (!this.skipRa) {
+                this.skipRa = true;
+                SimVar.SetSimVarValue('L:A32NX_TCAS_FAULT', 'bool', true);
+            }
+        } else if (this.skipRa) {
+            this.skipRa = false;
+            SimVar.SetSimVarValue('L:A32NX_TCAS_FAULT', 'bool', false);
+        }
     }
 
     private updateSensitivity(): void {
         if (this.activeRa.info === null) {
-            if (this.radioAlt < 1000 || this.tcasMode === 1) {
+            if (this.taOnly) {
                 this.sensitivity = 2;
             } else if (this.radioAlt <= 2350 && this.radioAlt > 1000) {
                 this.sensitivity = 3;
@@ -350,7 +380,8 @@ export class TCasComputer implements TCasComponent {
             this._trafficPpos.long = traffic.lon;
 
             const horizontalDistance = Avionics.Utils.computeDistance(this._trafficPpos, this._pposLatLong);
-            if (horizontalDistance > 80 && Math.abs(traffic.relativeAlt) > 9900) {
+            // TODO: Detection Range: 60-100 Nm Forwards, 20Nm behind , 35 Nm Side to Side - AMM 34-43-00 6:2339
+            if (horizontalDistance > 35 && Math.abs(traffic.relativeAlt) > 9900) {
                 traffic.isDisplayed = false;
                 traffic.taTau = Infinity;
                 traffic.raTau = Infinity;
@@ -504,9 +535,9 @@ export class TCasComputer implements TCasComponent {
     private getRa(_deltaTime: number): void {
         // TODO: Store 10 most recent RA and 60 most recent TA - AMM 34-43-00:6
         // TODO: Red TCAS error messages on PFD and ND
-        if (!this.altitude || !this.altitudeStandby
-            || !this.altitude.isNormalOperation() || !this.altitudeStandby.isNormalOperation() || this.altitude.value - this.altitudeStandby.value > 300) {
+        if (this.skipRa) {
             this._newRa.info = null;
+            this.activeRa.info = null;
             return;
         }
 
@@ -827,15 +858,6 @@ export class TCasComputer implements TCasComponent {
         } else {
             this.inhibitions = Inhibit.NONE;
         }
-
-        // Update "TA ONLY" message at the bottom of the ND
-        /*
-        if (this.radioAlt < 1000 && !SimVar.GetSimVarValue('L:A32NX_TCAS_TA_ONLY', 'Bool')) {
-            SimVar.SetSimVarValue('L:A32NX_TCAS_TA_ONLY', 'bool', true);
-        } else if (this.radioAlt >= 1000 && SimVar.GetSimVarValue('L:A32NX_TCAS_TA_ONLY', 'Bool')) {
-            SimVar.SetSimVarValue('L:A32NX_TCAS_TA_ONLY', 'bool', false);
-        }
-        */
     }
 
     private updateAdvisoryState(_deltaTime) {
@@ -927,13 +949,12 @@ export class TCasComputer implements TCasComponent {
 
     update(_deltaTime: number): void {
         this.soundManager.update(_deltaTime);
-        const deltaTime = this.updateThrottler.canUpdate(_deltaTime);
+        this.updateVars();
 
+        const deltaTime = this.updateThrottler.canUpdate(_deltaTime);
         if (deltaTime === -1) {
             return;
         }
-
-        this.updateVars();
 
         if (this.tcasOn === 0 || this.xpdrStatus === 1) {
             return;

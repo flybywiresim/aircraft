@@ -28,9 +28,6 @@ export type TcasProps = {
 }
 
 export const Traffic: FC<TcasProps> = ({ x, y, mapParams }) => {
-    // TODO: REDUCE RANGE and CHANGE MODE warnings - AMM 34-43-00:A21
-    // TODO: red TCAS warning on fault (and on PFD) - AMM 34-43-00:A24
-
     const [airTraffic, setAirTraffic] = useState<NDTraffic[]>([]);
     const [tcasMode] = useSimVar('L:A32NX_SWITCH_TCAS_Position', 'number', 200);
 

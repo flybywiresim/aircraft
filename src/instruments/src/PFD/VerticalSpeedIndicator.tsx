@@ -1,8 +1,6 @@
 import { Arinc429Word } from '@instruments/common/arinc429';
 import { useSimVar } from '@instruments/common/simVars';
 import React from 'react';
-import { BitPacking } from '@shared/bitpacking';
-import { getSimVar } from '../util.js';
 
 interface VerticalSpeedIndicatorProps {
     radioAlt: number,
