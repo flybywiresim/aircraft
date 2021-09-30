@@ -2,20 +2,24 @@ use uom::si::{
     angular_acceleration::radian_per_second_squared,
     angular_velocity::{radian_per_second, revolution_per_minute},
     electric_current::ampere,
+    electric_potential::volt,
     f64::*,
+    power::watt,
     pressure::psi,
     torque::{newton_meter, pound_force_inch},
     volume::cubic_inch,
 };
 
-use crate::shared::{pid::PidController, ElectricalBusType, ElectricalBuses};
+use crate::shared::{pid::PidController, ConsumePower, ElectricalBusType, ElectricalBuses};
 use crate::simulation::{SimulationElement, SimulatorWriter, UpdateContext, Write};
 
 pub struct ElectricalPumpPhysics {
     active_id: String,
     rpm_id: String,
-    bus_type: ElectricalBusType,
+    powered_by: ElectricalBusType,
     is_powered: bool,
+    available_potential: ElectricPotential,
+    consumed_power: Power,
 
     acceleration: AngularAcceleration,
     speed: AngularVelocity,
@@ -38,7 +42,7 @@ impl ElectricalPumpPhysics {
     // 0.95 will convert 95% of electrical consumption in mechanical torque
     const ELECTRICAL_EFFICIENCY: f64 = 0.95;
 
-    const DEFAULT_P_GAIN: f64 = 0.05;
+    const DEFAULT_P_GAIN: f64 = 0.03;
     const DEFAULT_I_GAIN: f64 = 0.9;
 
     pub fn new(
@@ -50,8 +54,11 @@ impl ElectricalPumpPhysics {
         Self {
             active_id: format!("HYD_{}_EPUMP_ACTIVE", id),
             rpm_id: format!("HYD_{}_EPUMP_RPM", id),
-            bus_type,
+            powered_by: bus_type,
             is_powered: false,
+            available_potential: ElectricPotential::new::<volt>(0.),
+            consumed_power: Power::new::<watt>(0.),
+
             acceleration: AngularAcceleration::new::<radian_per_second_squared>(0.),
             speed: AngularVelocity::new::<radian_per_second>(0.),
             inertia: Self::DEFAULT_INERTIA,
@@ -124,7 +131,11 @@ impl ElectricalPumpPhysics {
                     Some(context.delta()),
                 ));
 
-            let output_power = 115. * self.output_current.get::<ampere>() * (3_f64).sqrt();
+            self.consumed_power = Power::new::<watt>(
+                self.available_potential.get::<volt>()
+                    * self.output_current.get::<ampere>()
+                    * (3_f64).sqrt(),
+            );
 
             if self.speed.get::<revolution_per_minute>() < 5.
                 && self.output_current.get::<ampere>() > 0.
@@ -133,7 +144,7 @@ impl ElectricalPumpPhysics {
                     Torque::new::<newton_meter>(0.5 * self.output_current.get::<ampere>());
             } else {
                 self.generated_torque = Torque::new::<newton_meter>(
-                    Self::ELECTRICAL_EFFICIENCY * output_power
+                    Self::ELECTRICAL_EFFICIENCY * self.consumed_power.get::<watt>()
                         / self.speed.get::<radian_per_second>(),
                 );
             }
@@ -141,6 +152,7 @@ impl ElectricalPumpPhysics {
             self.generated_torque = Torque::new::<newton_meter>(0.);
             self.output_current = ElectricCurrent::new::<ampere>(0.);
             self.current_controller.reset();
+            self.consumed_power = Power::new::<watt>(0.);
         }
     }
 
@@ -159,7 +171,12 @@ impl SimulationElement for ElectricalPumpPhysics {
     }
 
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
-        self.is_powered = buses.is_powered(self.bus_type);
+        self.is_powered = buses.is_powered(self.powered_by);
+        self.available_potential = buses.potential_of(self.powered_by).raw();
+    }
+
+    fn consume_power<T: ConsumePower>(&mut self, _: &UpdateContext, consumption: &mut T) {
+        consumption.consume_from_bus(self.powered_by, self.consumed_power);
     }
 }
 
@@ -291,9 +308,11 @@ mod tests {
             }
 
             println!(
-                "t= {:.1} RPM {:.0}",
+                "t= {:.1} RPM {:.0} Power:{:.0} Voltage: {:.1}",
                 time.as_secs_f64(),
-                pump.speed.get::<revolution_per_minute>()
+                pump.speed.get::<revolution_per_minute>(),
+                pump.consumed_power.get::<watt>(),
+                pump.available_potential.get::<volt>()
             );
         }
     }
@@ -328,7 +347,7 @@ mod tests {
             TestElectricitySource::unpowered(PotentialOrigin::EngineGenerator(1), &mut electricity);
 
         if is_powered {
-            source.power();
+            source.power_with_potential(ElectricPotential::new::<volt>(115.));
         }
 
         let bus = ElectricalBus::new(bus_id, &mut electricity);

@@ -38,6 +38,10 @@ impl TestElectricitySource {
         self.potential = ElectricPotential::new::<volt>(28.);
     }
 
+    pub fn power_with_potential(&mut self, potential: ElectricPotential) {
+        self.potential = potential;
+    }
+
     pub fn unpower(&mut self) {
         self.potential = ElectricPotential::new::<volt>(0.);
     }
