@@ -43,9 +43,9 @@ impl LocalAcceleration {
     const ACCEL_Z_AXIS: usize = 2;
 
     fn new(
-        longitudinal_acceleration: Acceleration,
         lateral_acceleration: Acceleration,
         vertical_acceleration: Acceleration,
+        longitudinal_acceleration: Acceleration,
     ) -> Self {
         Self {
             acceleration: [
