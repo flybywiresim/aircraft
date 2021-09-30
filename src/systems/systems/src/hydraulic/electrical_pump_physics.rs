@@ -30,13 +30,15 @@ pub struct ElectricalPumpPhysics {
     last_speed_error_rpm: f64,
 
     generated_torque: Torque,
-    pumping_torque: Torque,
+    resistant_torque: Torque,
 
     i_term: f64,
 }
 impl ElectricalPumpPhysics {
     const DEFAULT_INERTIA: f64 = 0.007;
     const DEFAULT_DYNAMIC_FRICTION_CONSTANT: f64 = 0.00004;
+    const DEFAULT_RESISTANT_TORQUE_WHEN_OFF_NEWTON_METER: f64 = 2.8;
+
     const DEFAULT_P_GAIN: f64 = 0.05;
     const DEFAULT_I_GAIN: f64 = 0.05;
 
@@ -62,7 +64,7 @@ impl ElectricalPumpPhysics {
             regulated_speed,
             last_speed_error_rpm: 0.,
             generated_torque: Torque::new::<newton_meter>(0.),
-            pumping_torque: Torque::new::<newton_meter>(0.),
+            resistant_torque: Torque::new::<newton_meter>(0.),
             i_term: 0.,
         }
     }
@@ -79,7 +81,7 @@ impl ElectricalPumpPhysics {
     }
 
     fn update_pump_speed(&mut self, context: &UpdateContext) {
-        let final_torque = self.generated_torque - self.pumping_torque;
+        let final_torque = self.generated_torque - self.resistant_torque;
 
         self.acceleration = AngularAcceleration::new::<radian_per_second_squared>(
             final_torque.get::<newton_meter>() / self.inertia,
@@ -97,16 +99,20 @@ impl ElectricalPumpPhysics {
         current_pressure: Pressure,
         current_displacement: Volume,
     ) {
-        let friction_torque = Torque::new::<newton_meter>(
+        let dynamic_friction_torque = Torque::new::<newton_meter>(
             Self::DEFAULT_DYNAMIC_FRICTION_CONSTANT * self.speed.get::<revolution_per_minute>(),
         );
 
-        let torque = Torque::new::<pound_force_inch>(
-            current_pressure.get::<psi>() * current_displacement.get::<cubic_inch>()
-                / (2. * std::f64::consts::PI),
-        );
+        let pumping_torque = if self.is_active && self.is_powered {
+            Torque::new::<pound_force_inch>(
+                current_pressure.get::<psi>() * current_displacement.get::<cubic_inch>()
+                    / (2. * std::f64::consts::PI),
+            )
+        } else {
+            Torque::new::<newton_meter>(Self::DEFAULT_RESISTANT_TORQUE_WHEN_OFF_NEWTON_METER)
+        };
 
-        self.pumping_torque = torque + friction_torque;
+        self.resistant_torque = pumping_torque + dynamic_friction_torque;
     }
 
     fn update_pump_generated_torque(
@@ -234,7 +240,7 @@ mod tests {
     }
 
     #[test]
-    fn pump_spools_down_less_than_two_second_when_unpowered() {
+    fn pump_spools_down_less_than_two_second_when_unpowered_with_no_displacement() {
         let mut pump = physical_pump();
 
         let delta_time = Duration::from_secs_f64(0.05);
@@ -250,7 +256,7 @@ mod tests {
 
             pump.update(
                 Pressure::new::<psi>(3000.),
-                Volume::new::<cubic_inch>(0.263) / 2.,
+                Volume::new::<cubic_inch>(0.),
                 &context(delta_time),
             );
             time += delta_time;
