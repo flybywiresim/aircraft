@@ -226,7 +226,7 @@ const PressureComponent = () => {
 
     return (
         <>
-            <g id="LandingElevation" className={!manMode ? 'Show' : 'Hide'}>
+            <g id="LandingElevation">
                 <text className="Large Center" x="280" y="25">LDG ELEV</text>
                 <text id="LandingElevationMode" className="Large Green" x="350" y="25">{ldgElevMode}</text>
 
