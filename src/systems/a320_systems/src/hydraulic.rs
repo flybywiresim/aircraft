@@ -2113,6 +2113,7 @@ mod tests {
         use systems::simulation::test::TestBed;
         use systems::simulation::{test::SimulationTestBed, Aircraft};
         use uom::si::{
+            electric_potential::volt,
             length::foot,
             ratio::{percent, ratio},
             volume::liter,
@@ -2183,7 +2184,7 @@ mod tests {
             electrical: A320TestElectrical,
             ext_pwr: ExternalPowerSource,
 
-            powered_source: TestElectricitySource,
+            powered_source_ac: TestElectricitySource,
             ac_ground_service_bus: ElectricalBus,
             dc_ground_service_bus: ElectricalBus,
             ac_1_bus: ElectricalBus,
@@ -2224,7 +2225,7 @@ mod tests {
                     )),
                     electrical: A320TestElectrical::new(),
                     ext_pwr: ExternalPowerSource::new(electricity),
-                    powered_source: TestElectricitySource::powered(
+                    powered_source_ac: TestElectricitySource::powered(
                         PotentialOrigin::EngineGenerator(1),
                         electricity,
                     ),
@@ -2382,42 +2383,44 @@ mod tests {
                 _context: &UpdateContext,
                 electricity: &mut Electricity,
             ) {
-                electricity.supplied_by(&self.powered_source);
+                self.powered_source_ac
+                    .power_with_potential(ElectricPotential::new::<volt>(115.));
+                electricity.supplied_by(&self.powered_source_ac);
 
                 if self.is_ac_1_powered {
-                    electricity.flow(&self.powered_source, &self.ac_1_bus);
+                    electricity.flow(&self.powered_source_ac, &self.ac_1_bus);
                 }
 
                 if self.is_ac_2_powered {
-                    electricity.flow(&self.powered_source, &self.ac_2_bus);
+                    electricity.flow(&self.powered_source_ac, &self.ac_2_bus);
                 }
 
                 if self.is_ac_ground_service_powered {
-                    electricity.flow(&self.powered_source, &self.ac_ground_service_bus);
+                    electricity.flow(&self.powered_source_ac, &self.ac_ground_service_bus);
                 }
 
                 if self.is_dc_ground_service_powered {
-                    electricity.flow(&self.powered_source, &self.dc_ground_service_bus);
+                    electricity.flow(&self.powered_source_ac, &self.dc_ground_service_bus);
                 }
 
                 if self.is_dc_1_powered {
-                    electricity.flow(&self.powered_source, &self.dc_1_bus);
+                    electricity.flow(&self.powered_source_ac, &self.dc_1_bus);
                 }
 
                 if self.is_dc_2_powered {
-                    electricity.flow(&self.powered_source, &self.dc_2_bus);
+                    electricity.flow(&self.powered_source_ac, &self.dc_2_bus);
                 }
 
                 if self.is_dc_ess_powered {
-                    electricity.flow(&self.powered_source, &self.dc_ess_bus);
+                    electricity.flow(&self.powered_source_ac, &self.dc_ess_bus);
                 }
 
                 if self.is_dc_hot_1_powered {
-                    electricity.flow(&self.powered_source, &self.dc_hot_1_bus);
+                    electricity.flow(&self.powered_source_ac, &self.dc_hot_1_bus);
                 }
 
                 if self.is_dc_hot_2_powered {
-                    electricity.flow(&self.powered_source, &self.dc_hot_2_bus);
+                    electricity.flow(&self.powered_source_ac, &self.dc_hot_2_bus);
                 }
             }
 
