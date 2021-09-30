@@ -1,5 +1,7 @@
 //! As we've not yet modelled pneumatic systems and some pneumatic things are needed for the APU, for now this implementation will be very simple.
 
+use std::f64::consts::PI;
+
 use crate::{
     hydraulic::Fluid,
     shared::{
@@ -113,11 +115,145 @@ impl DefaultPipe {
     }
 }
 
+/// This is only controlled by physical forces
+pub struct PurelyPneumaticValve {
+    open_amount: Ratio,
+    connector: PneumaticContainerConnector,
+    spring_characteristic: f64,
+}
+impl PurelyPneumaticValve {
+    pub fn new(spring_characteristic: f64) -> Self {
+        Self {
+            open_amount: Ratio::new::<ratio>(0.),
+            connector: PneumaticContainerConnector::new(),
+            spring_characteristic,
+        }
+    }
+
+    pub fn update_move_fluid(
+        &mut self,
+        context: &UpdateContext,
+        from: &mut impl PneumaticContainer,
+        to: &mut impl PneumaticContainer,
+    ) {
+        self.set_open_amount_from_pressure_difference(from.pressure() - to.pressure());
+
+        self.connector
+            .with_transfer_speed_factor(self.open_amount)
+            .update_move_fluid(context, from, to);
+    }
+
+    fn set_open_amount_from_pressure_difference(&mut self, pressure_difference: Pressure) {
+        self.open_amount = Ratio::new::<ratio>(
+            2. / PI
+                * (pressure_difference.get::<psi>() * self.spring_characteristic)
+                    .atan()
+                    .max(0.),
+        );
+    }
+
+    pub fn fluid_flow(&self) -> VolumeRate {
+        self.connector.fluid_flow()
+    }
+
+    pub fn open_amount(&self) -> Ratio {
+        self.open_amount
+    }
+}
+impl PneumaticValve for PurelyPneumaticValve {
+    fn is_open(&self) -> bool {
+        self.open_amount.get::<percent>() > 0.
+    }
+}
+
+pub struct ElectroPneumaticValve {
+    open_amount: Ratio,
+    connector: PneumaticContainerConnector,
+    spring_characteristic: f64,
+    is_powered: bool,
+    powered_by: ElectricalBusType,
+}
+impl ElectroPneumaticValve {
+    pub fn new(spring_characteristic: f64, powered_by: ElectricalBusType) -> Self {
+        Self {
+            open_amount: Ratio::new::<ratio>(0.),
+            connector: PneumaticContainerConnector::new(),
+            spring_characteristic,
+            is_powered: false,
+            powered_by,
+        }
+    }
+
+    pub fn update_move_fluid(
+        &mut self,
+        context: &UpdateContext,
+        from: &mut impl PneumaticContainer,
+        to: &mut impl PneumaticContainer,
+    ) {
+        if !self.is_powered {
+            self.set_open_amount_from_pressure_difference(from.pressure() - to.pressure())
+        }
+
+        self.connector
+            .with_transfer_speed_factor(self.open_amount)
+            .update_move_fluid(context, from, to);
+    }
+
+    fn set_open_amount_from_pressure_difference(&mut self, pressure_difference: Pressure) {
+        self.open_amount = Ratio::new::<ratio>(
+            2. / PI
+                * (pressure_difference.get::<psi>() * self.spring_characteristic)
+                    .atan()
+                    .max(0.),
+        );
+    }
+
+    pub fn fluid_flow(&self) -> VolumeRate {
+        self.connector.fluid_flow()
+    }
+
+    pub fn is_powered(&self) -> bool {
+        self.is_powered
+    }
+
+    pub fn open_amount(&self) -> Ratio {
+        self.open_amount
+    }
+}
+impl PneumaticValve for ElectroPneumaticValve {
+    fn is_open(&self) -> bool {
+        self.open_amount.get::<percent>() > 0.
+    }
+}
+impl ControllablePneumaticValve for ElectroPneumaticValve {
+    fn update_open_amount<T: ControlledPneumaticValveSignal>(
+        &mut self,
+        controller: &dyn ControllerSignal<T>,
+    ) {
+        if self.is_powered {
+            if let Some(signal) = controller.signal() {
+                self.open_amount = signal.target_open_amount();
+            }
+        }
+    }
+}
+impl SimulationElement for ElectroPneumaticValve {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T)
+    where
+        Self: Sized,
+    {
+        visitor.visit(self);
+    }
+
+    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
+        self.is_powered = buses.is_powered(self.powered_by)
+    }
+}
+
+/// This valve will stay in whatever position it is commanded to, regardless of physical forcel
 pub struct DefaultValve {
     open_amount: Ratio,
-    // This is not needed for the physics simulation. It is only used for information and possibly regulation logic at a later stage.
     connector: PneumaticContainerConnector,
-    operation_mode: Box<dyn ValveOperationMode>,
 }
 impl PneumaticValve for DefaultValve {
     fn is_open(&self) -> bool {
@@ -125,40 +261,19 @@ impl PneumaticValve for DefaultValve {
     }
 }
 impl DefaultValve {
-    fn new(open_amount: Ratio, operation_mode: Box<dyn ValveOperationMode>) -> Self {
+    fn new(open_amount: Ratio) -> Self {
         Self {
             open_amount,
             connector: PneumaticContainerConnector::new(),
-            operation_mode,
         }
     }
 
     pub fn new_closed() -> Self {
-        DefaultValve::new(
-            Ratio::new::<ratio>(0.),
-            Box::new(ClassicValveOperationMode::new()),
-        )
-    }
-
-    pub fn new_closed_with_motor(powered_by: Vec<ElectricalBusType>) -> Self {
-        DefaultValve::new(
-            Ratio::new::<ratio>(0.),
-            Box::new(ElectricPneumaticValveOperationMode::new(powered_by)),
-        )
+        DefaultValve::new(Ratio::new::<ratio>(0.))
     }
 
     pub fn new_open() -> Self {
-        DefaultValve::new(
-            Ratio::new::<ratio>(1.),
-            Box::new(ClassicValveOperationMode::new()),
-        )
-    }
-
-    pub fn new_open_with_motor(powered_by: Vec<ElectricalBusType>) -> Self {
-        DefaultValve::new(
-            Ratio::new::<ratio>(1.),
-            Box::new(ElectricPneumaticValveOperationMode::new(powered_by)),
-        )
+        DefaultValve::new(Ratio::new::<ratio>(1.))
     }
 
     pub fn open_amount(&self) -> Ratio {
@@ -172,15 +287,12 @@ impl DefaultValve {
         to: &mut impl PneumaticContainer,
     ) {
         self.connector
-            .update_move_fluid(context, from, to, self.open_amount);
+            .with_transfer_speed_factor(self.open_amount)
+            .update_move_fluid(context, from, to);
     }
 
     pub fn fluid_flow(&self) -> VolumeRate {
-        self.connector.fluid_flow
-    }
-
-    pub fn is_powered(&self) -> bool {
-        self.operation_mode.is_powered()
+        self.connector.fluid_flow()
     }
 }
 impl ControllablePneumaticValve for DefaultValve {
@@ -188,10 +300,8 @@ impl ControllablePneumaticValve for DefaultValve {
         &mut self,
         controller: &dyn ControllerSignal<T>,
     ) {
-        if self.operation_mode.is_powered() {
-            if let Some(signal) = controller.signal() {
-                self.open_amount = signal.target_open_amount();
-            }
+        if let Some(signal) = controller.signal() {
+            self.open_amount = signal.target_open_amount();
         }
     }
 }
@@ -202,14 +312,11 @@ impl SimulationElement for DefaultValve {
     {
         visitor.visit(self);
     }
-
-    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
-        self.operation_mode.receive_power(buses);
-    }
 }
 
 struct PneumaticContainerConnector {
     fluid_flow: VolumeRate,
+    transfer_speed_factor: Ratio,
 }
 impl PneumaticContainerConnector {
     const TRANSFER_SPEED: f64 = 3.;
@@ -217,6 +324,7 @@ impl PneumaticContainerConnector {
     pub fn new() -> Self {
         Self {
             fluid_flow: VolumeRate::new::<cubic_meter_per_second>(0.),
+            transfer_speed_factor: Ratio::new::<ratio>(1.),
         }
     }
 
@@ -225,13 +333,12 @@ impl PneumaticContainerConnector {
         context: &UpdateContext,
         from: &mut impl PneumaticContainer,
         to: &mut impl PneumaticContainer,
-        transfer_speed_factor: Ratio,
     ) {
         let equalization_volume = (from.pressure() - to.pressure()) * from.volume() * to.volume()
             / Pressure::new::<pascal>(142000.)
             / (from.volume() + to.volume());
 
-        let fluid_to_move = transfer_speed_factor
+        let fluid_to_move = self.transfer_speed_factor
             * equalization_volume
             * (1. - (-Self::TRANSFER_SPEED * context.delta_as_secs_f64()).exp());
 
@@ -249,45 +356,15 @@ impl PneumaticContainerConnector {
         from.change_volume(-volume);
         to.change_volume(volume);
     }
-}
 
-trait ValveOperationMode {
-    fn is_powered(&self) -> bool;
-    // TODO: This is a bit of a hack, since I don't know how I can pass along the visitor to a generic ValveOperationMode
-    fn receive_power(&mut self, _buses: &dyn ElectricalBuses) {}
-}
+    fn with_transfer_speed_factor(&mut self, new_transfer_speed_factor: Ratio) -> &mut Self {
+        self.transfer_speed_factor = new_transfer_speed_factor;
 
-pub struct ClassicValveOperationMode {}
-impl ClassicValveOperationMode {
-    fn new() -> Self {
-        Self {}
-    }
-}
-impl ValveOperationMode for ClassicValveOperationMode {
-    fn is_powered(&self) -> bool {
-        true
-    }
-}
-
-pub struct ElectricPneumaticValveOperationMode {
-    is_powered: bool,
-    powered_by: Vec<ElectricalBusType>,
-}
-impl ElectricPneumaticValveOperationMode {
-    pub fn new(powered_by: Vec<ElectricalBusType>) -> Self {
-        Self {
-            is_powered: false,
-            powered_by,
-        }
-    }
-}
-impl ValveOperationMode for ElectricPneumaticValveOperationMode {
-    fn is_powered(&self) -> bool {
-        self.is_powered
+        self
     }
 
-    fn receive_power(&mut self, buses: &dyn ElectricalBuses) {
-        self.is_powered = buses.any_is_powered(&self.powered_by);
+    pub fn fluid_flow(&self) -> VolumeRate {
+        self.fluid_flow
     }
 }
 
@@ -591,13 +668,13 @@ impl ControllerSignal<TargetPressureSignal> for ApuCompressionChamberController 
 
 pub struct HeatExchanger {
     coefficient: f64,
-    internal_valve: DefaultValve,
+    internal_connector: PneumaticContainerConnector,
 }
 impl HeatExchanger {
     pub fn new(coefficient: f64) -> Self {
         Self {
             coefficient,
-            internal_valve: DefaultValve::new_open(),
+            internal_connector: PneumaticContainerConnector::new(),
         }
     }
 
@@ -620,7 +697,7 @@ impl HeatExchanger {
             self.coefficient * temperature_gradient * context.delta_as_secs_f64(),
         );
 
-        self.internal_valve.update_move_fluid(context, from, to);
+        self.internal_connector.update_move_fluid(context, from, to);
     }
 }
 
@@ -666,15 +743,15 @@ impl PneumaticContainer for VariableVolumeContainer {
     }
 }
 
-pub struct PneumaticContainerWithValve<T: PneumaticContainer> {
+pub struct PneumaticContainerWithConnector<T: PneumaticContainer> {
     container: T,
-    valve: DefaultValve,
+    connector: PneumaticContainerConnector,
 }
-impl<T: PneumaticContainer> PneumaticContainerWithValve<T> {
+impl<T: PneumaticContainer> PneumaticContainerWithConnector<T> {
     pub fn new(container: T) -> Self {
         Self {
             container,
-            valve: DefaultValve::new_open(),
+            connector: PneumaticContainerConnector::new(),
         }
     }
 
@@ -683,7 +760,7 @@ impl<T: PneumaticContainer> PneumaticContainerWithValve<T> {
         context: &UpdateContext,
         connected_container: &mut impl PneumaticContainer,
     ) {
-        self.valve
+        self.connector
             .update_move_fluid(context, connected_container, &mut self.container);
     }
 
@@ -730,10 +807,10 @@ mod tests {
         }
     }
 
-    struct ValveTestController {
+    struct TestValveController {
         command_open_amount: Ratio,
     }
-    impl ValveTestController {
+    impl TestValveController {
         fn new(command_open_amount: Ratio) -> Self {
             Self {
                 command_open_amount,
@@ -744,7 +821,7 @@ mod tests {
             self.command_open_amount = command_open_amount;
         }
     }
-    impl ControllerSignal<TestPneumaticValveSignal> for ValveTestController {
+    impl ControllerSignal<TestPneumaticValveSignal> for TestValveController {
         fn signal(&self) -> Option<TestPneumaticValveSignal> {
             Some(TestPneumaticValveSignal::new(self.command_open_amount))
         }
@@ -785,24 +862,6 @@ mod tests {
     impl EngineCorrectedN2 for TestEngine {
         fn corrected_n2(&self) -> Ratio {
             self.n2
-        }
-    }
-
-    struct TestValveOperationMode {
-        is_powered: bool,
-    }
-    impl TestValveOperationMode {
-        fn new(is_powered: bool) -> Self {
-            Self { is_powered }
-        }
-
-        fn set_is_powered(&mut self, is_powered: bool) {
-            self.is_powered = is_powered;
-        }
-    }
-    impl ValveOperationMode for TestValveOperationMode {
-        fn is_powered(&self) -> bool {
-            self.is_powered
         }
     }
 
@@ -848,7 +907,7 @@ mod tests {
     }
 
     #[test]
-    fn valve_open_command() {
+    fn default_valve_open_command() {
         let mut valve = DefaultValve::new_closed();
 
         let context = UpdateContext::new(
@@ -866,7 +925,7 @@ mod tests {
 
         assert_eq!(valve.open_amount, Ratio::new::<percent>(0.));
 
-        let mut controller = ValveTestController::new(Ratio::new::<percent>(50.));
+        let mut controller = TestValveController::new(Ratio::new::<percent>(50.));
         valve.update_open_amount(&controller);
         assert_eq!(valve.open_amount, Ratio::new::<percent>(50.));
 
@@ -876,8 +935,8 @@ mod tests {
     }
 
     #[test]
-    fn valve_equal_pressure() {
-        let mut valve = DefaultValve::new_open();
+    fn connector_equal_pressure() {
+        let mut connector = PneumaticContainerConnector::new();
 
         let mut from = DefaultPipe::new(
             Volume::new::<cubic_meter>(1.),
@@ -893,7 +952,7 @@ mod tests {
         );
 
         let context = context(Duration::from_millis(1000), Length::new::<foot>(0.));
-        valve.update_move_fluid(&context, &mut from, &mut to);
+        connector.update_move_fluid(&context, &mut from, &mut to);
 
         assert_eq!(from.pressure(), Pressure::new::<psi>(14.));
         assert_eq!(
@@ -908,14 +967,14 @@ mod tests {
         );
 
         assert_eq!(
-            valve.fluid_flow(),
+            connector.fluid_flow(),
             VolumeRate::new::<cubic_meter_per_second>(0.)
         );
     }
 
     #[test]
-    fn valve_unequal_pressure() {
-        let mut valve = DefaultValve::new_open();
+    fn connector_unequal_pressure() {
+        let mut connector = PneumaticContainerConnector::new();
 
         let mut from = DefaultPipe::new(
             Volume::new::<cubic_meter>(1.),
@@ -931,7 +990,7 @@ mod tests {
         );
 
         let context = context(Duration::from_millis(1000), Length::new::<foot>(0.));
-        valve.update_move_fluid(&context, &mut from, &mut to);
+        connector.update_move_fluid(&context, &mut from, &mut to);
 
         assert!(from.pressure() < Pressure::new::<psi>(28.));
         assert!(from.temperature() < ThermodynamicTemperature::new::<degree_celsius>(15.));
@@ -939,7 +998,7 @@ mod tests {
         assert!(to.pressure() > Pressure::new::<psi>(14.));
         assert!(to.temperature() > ThermodynamicTemperature::new::<degree_celsius>(15.));
 
-        assert!(valve.fluid_flow() > VolumeRate::new::<cubic_meter_per_second>(0.));
+        assert!(connector.fluid_flow() > VolumeRate::new::<cubic_meter_per_second>(0.));
     }
 
     #[test]
@@ -975,8 +1034,8 @@ mod tests {
     }
 
     #[test]
-    fn valve_two_small_updates_equal_one_big_update() {
-        let mut valve = DefaultValve::new_open();
+    fn connector_two_small_updates_equal_one_big_update() {
+        let mut connector = PneumaticContainerConnector::new();
 
         let mut from = DefaultPipe::new(
             Volume::new::<cubic_meter>(1.),
@@ -992,8 +1051,8 @@ mod tests {
         );
 
         let context1 = context(Duration::from_millis(200), Length::new::<foot>(0.));
-        valve.update_move_fluid(&context1, &mut from, &mut to);
-        valve.update_move_fluid(&context1, &mut from, &mut to);
+        connector.update_move_fluid(&context1, &mut from, &mut to);
+        connector.update_move_fluid(&context1, &mut from, &mut to);
 
         let mut from2 = DefaultPipe::new(
             Volume::new::<cubic_meter>(1.),
@@ -1009,7 +1068,7 @@ mod tests {
         );
 
         let context2 = context(Duration::from_millis(400), Length::new::<foot>(0.));
-        valve.update_move_fluid(&context2, &mut from2, &mut to2);
+        connector.update_move_fluid(&context2, &mut from2, &mut to2);
 
         println!("{:?}", from.pressure());
 
@@ -1018,8 +1077,8 @@ mod tests {
     }
 
     #[test]
-    fn valve_equalizes_pressure_between_containers() {
-        let mut valve = DefaultValve::new_open();
+    fn connector_equalizes_pressure_between_containers() {
+        let mut connector = DefaultValve::new_open();
 
         let mut from = DefaultPipe::new(
             Volume::new::<cubic_meter>(1.),
@@ -1035,7 +1094,7 @@ mod tests {
         );
 
         let context = context(Duration::from_secs(5), Length::new::<foot>(0.));
-        valve.update_move_fluid(&context, &mut from, &mut to);
+        connector.update_move_fluid(&context, &mut from, &mut to);
 
         assert!((from.pressure() - to.pressure()).abs() < pressure_tolerance());
     }
@@ -1501,7 +1560,7 @@ mod tests {
         // System 2
         let mut source_two = quick_container(1., 20., 15.);
         let mut container_with_valve =
-            PneumaticContainerWithValve::new(quick_container(1., 10., 15.));
+            PneumaticContainerWithConnector::new(quick_container(1., 10., 15.));
 
         let context = context(Duration::from_secs(1), Length::new::<foot>(0.));
 
@@ -1516,16 +1575,63 @@ mod tests {
     }
 
     #[test]
-    fn valve_does_not_accept_signal_when_unpowered() {
-        let controller = ValveTestController::new(Ratio::new::<percent>(0.));
+    fn electropneumatic_valve_does_not_accept_signal_when_unpowered() {
+        let controller = TestValveController::new(Ratio::new::<percent>(0.));
 
-        let mut valve = DefaultValve::new(
-            Ratio::new::<percent>(100.),
-            Box::new(TestValveOperationMode::new(false)),
-        );
+        let mut valve = ElectroPneumaticValve::new(1., ElectricalBusType::DirectCurrent(2));
 
         valve.update_open_amount(&controller);
+
+        assert!(!valve.is_powered());
         assert_eq!(valve.open_amount(), Ratio::new::<percent>(100.));
+    }
+
+    #[test]
+    fn pneumatic_valve_falls_closed_without_pressure() {
+        let mut container_one = quick_container(1., 14., 15.);
+        let mut container_two = quick_container(1., 14., 15.);
+
+        let mut valve = PurelyPneumaticValve::new(1.);
+
+        // We fake it being open for due to it having moved fluid previously
+        valve.open_amount = Ratio::new::<ratio>(0.5);
+
+        let context = context(Duration::from_secs(1), Length::new::<foot>(0.));
+        valve.update_move_fluid(&context, &mut container_one, &mut container_two);
+
+        // Sanity check
+        assert_eq!(
+            valve.fluid_flow(),
+            VolumeRate::new::<cubic_meter_per_second>(0.)
+        );
+        assert_eq!(valve.open_amount(), Ratio::new::<ratio>(0.));
+    }
+
+    #[test]
+    fn electropneumatic_valve_falls_closed_without_pressure() {
+        let mut container_one = quick_container(1., 14., 15.);
+        let mut container_two = quick_container(1., 14., 15.);
+
+        let controller = TestValveController::new(Ratio::new::<percent>(1.));
+
+        // The electrical bus doesn't really matter here
+        let mut valve = ElectroPneumaticValve::new(1., ElectricalBusType::DirectCurrent(2));
+
+        // We fake it being open for due to it having moved fluid previously
+        valve.open_amount = Ratio::new::<ratio>(0.5);
+
+        valve.update_open_amount(&controller);
+
+        let context = context(Duration::from_secs(1), Length::new::<foot>(0.));
+        valve.update_move_fluid(&context, &mut container_one, &mut container_two);
+
+        // Sanity check
+        assert_eq!(
+            valve.fluid_flow(),
+            VolumeRate::new::<cubic_meter_per_second>(0.)
+        );
+        assert!(valve.is_powered());
+        assert_eq!(valve.open_amount(), Ratio::new::<ratio>(0.));
     }
 
     mod cross_bleed_selector_knob {

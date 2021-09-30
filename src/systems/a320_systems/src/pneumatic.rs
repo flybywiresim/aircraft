@@ -22,8 +22,9 @@ use systems::{
         ApuCompressionChamberController, CompressionChamber, ConstantConsumerController,
         ControllablePneumaticValve, ControlledPneumaticValveSignal, CrossBleedValveSelectorKnob,
         CrossBleedValveSelectorMode, DefaultConsumer, DefaultPipe, DefaultValve,
-        EngineCompressionChamberController, EngineState, HeatExchanger, PneumaticContainer,
-        PneumaticContainerWithValve, TargetPressureSignal, VariableVolumeContainer,
+        ElectroPneumaticValve, EngineCompressionChamberController, EngineState, HeatExchanger,
+        PneumaticContainer, PneumaticContainerWithConnector, PurelyPneumaticValve,
+        TargetPressureSignal, VariableVolumeContainer,
     },
     shared::{
         pid::PidController, ControllerSignal, DelayedTrueLogicGate, ElectricalBusType,
@@ -34,30 +35,6 @@ use systems::{
         Read, SimulationElement, SimulationElementVisitor, SimulatorReader, SimulatorWriter, Write,
     },
 };
-
-struct IntermediatePressureValveSignal {
-    target_open_amount: Ratio,
-}
-
-impl IntermediatePressureValveSignal {
-    fn new(target_open_amount: Ratio) -> Self {
-        Self { target_open_amount }
-    }
-
-    fn new_open() -> Self {
-        Self::new(Ratio::new::<percent>(100.))
-    }
-
-    fn new_closed() -> Self {
-        Self::new(Ratio::new::<percent>(0.))
-    }
-}
-
-impl ControlledPneumaticValveSignal for IntermediatePressureValveSignal {
-    fn target_open_amount(&self) -> Ratio {
-        self.target_open_amount
-    }
-}
 
 struct HighPressureValveSignal {
     target_open_amount: Ratio,
@@ -215,9 +192,9 @@ pub struct A320Pneumatic {
     apu_bleed_air_valve: DefaultValve,
     apu_bleed_air_controller: ApuCompressionChamberController,
 
-    green_hydraulic_reservoir_with_valve: PneumaticContainerWithValve<VariableVolumeContainer>,
-    blue_hydraulic_reservoir_with_valve: PneumaticContainerWithValve<VariableVolumeContainer>,
-    yellow_hydraulic_reservoir_with_valve: PneumaticContainerWithValve<VariableVolumeContainer>,
+    green_hydraulic_reservoir_with_valve: PneumaticContainerWithConnector<VariableVolumeContainer>,
+    blue_hydraulic_reservoir_with_valve: PneumaticContainerWithConnector<VariableVolumeContainer>,
+    yellow_hydraulic_reservoir_with_valve: PneumaticContainerWithConnector<VariableVolumeContainer>,
 
     packs: [PackComplex; 2],
 }
@@ -233,10 +210,7 @@ impl A320Pneumatic {
                 EngineBleedAirSystem::new(2, ElectricalBusType::DirectCurrent(2)),
             ],
             cross_bleed_valve_controller: CrossBleedValveController::new(),
-            cross_bleed_valve: DefaultValve::new_closed_with_motor(vec![
-                ElectricalBusType::DirectCurrent(2),
-                ElectricalBusType::DirectCurrentEssentialShed,
-            ]),
+            cross_bleed_valve: DefaultValve::new_closed(),
             fadec: FullAuthorityDigitalEngineControl::new(),
             engine_starter_valve_controllers: [
                 EngineStarterValveController::new(1),
@@ -247,7 +221,7 @@ impl A320Pneumatic {
             apu_bleed_air_controller: ApuCompressionChamberController::new(),
             // TODO: I don't like how I have to initialize these containers independently of the actual reservoirs.
             // If the volumes of the reservoirs were to be changed in the hydraulics code, we would have to manually change them here as well
-            green_hydraulic_reservoir_with_valve: PneumaticContainerWithValve::new(
+            green_hydraulic_reservoir_with_valve: PneumaticContainerWithConnector::new(
                 VariableVolumeContainer::new(
                     Volume::new::<gallon>(10.),
                     Fluid::new(Pressure::new::<pascal>(142000.)),
@@ -255,7 +229,7 @@ impl A320Pneumatic {
                     ThermodynamicTemperature::new::<degree_celsius>(15.),
                 ),
             ),
-            blue_hydraulic_reservoir_with_valve: PneumaticContainerWithValve::new(
+            blue_hydraulic_reservoir_with_valve: PneumaticContainerWithConnector::new(
                 VariableVolumeContainer::new(
                     Volume::new::<gallon>(8.),
                     Fluid::new(Pressure::new::<pascal>(142000.)),
@@ -263,7 +237,7 @@ impl A320Pneumatic {
                     ThermodynamicTemperature::new::<degree_celsius>(15.),
                 ),
             ),
-            yellow_hydraulic_reservoir_with_valve: PneumaticContainerWithValve::new(
+            yellow_hydraulic_reservoir_with_valve: PneumaticContainerWithConnector::new(
                 VariableVolumeContainer::new(
                     Volume::new::<gallon>(10.),
                     Fluid::new(Pressure::new::<pascal>(142000.)),
@@ -321,7 +295,6 @@ impl A320Pneumatic {
                 if let Some(channel) = bmc.channel_for_engine(engine_system.number) {
                     engine_system.update(
                         context,
-                        channel,
                         channel,
                         channel,
                         &self.engine_starter_valve_controllers[index],
@@ -779,15 +752,6 @@ impl BleedMonitoringComputerChannel {
         }
     }
 }
-impl ControllerSignal<IntermediatePressureValveSignal> for BleedMonitoringComputerChannel {
-    fn signal(&self) -> Option<IntermediatePressureValveSignal> {
-        if self.transfer_pressure - self.ip_compressor_pressure > Pressure::new::<pascal>(100.) {
-            Some(IntermediatePressureValveSignal::new_closed())
-        } else {
-            Some(IntermediatePressureValveSignal::new_open())
-        }
-    }
-}
 impl ControllerSignal<HighPressureValveSignal> for BleedMonitoringComputerChannel {
     fn signal(&self) -> Option<HighPressureValveSignal> {
         if self.transfer_pressure < Pressure::new::<psi>(18.) {
@@ -921,7 +885,9 @@ impl ControllerSignal<FaultLightSignal> for EngineBleedFaultLightMonitor {
     fn signal(&self) -> Option<FaultLightSignal> {
         Some(FaultLightSignal::new(
             self.prv_not_in_commanded_position_for_eight_seconds
-                .output(),
+                .output()
+                || self.overpressure_for_15_seconds.output()
+                || self.overtemperature_for_55_seconds.output(),
         ))
     }
 }
@@ -934,9 +900,9 @@ struct EngineBleedAirSystem {
     fan_compression_chamber: CompressionChamber,
     ip_compression_chamber: CompressionChamber,
     hp_compression_chamber: CompressionChamber,
-    ip_valve: DefaultValve,
-    hp_valve: DefaultValve,
-    pr_valve: DefaultValve,
+    ip_valve: PurelyPneumaticValve,
+    hp_valve: ElectroPneumaticValve,
+    pr_valve: ElectroPneumaticValve,
     transfer_pressure_pipe: DefaultPipe,
     precooler_inlet_pipe: DefaultPipe,
     precooler_outlet_pipe: DefaultPipe,
@@ -944,7 +910,7 @@ struct EngineBleedAirSystem {
     engine_starter_consumer: DefaultConsumer,
     engine_starter_consumer_controller: ConstantConsumerController,
     es_valve: DefaultValve,
-    fan_air_valve: DefaultValve,
+    fan_air_valve: ElectroPneumaticValve,
     precooler: HeatExchanger,
 }
 impl EngineBleedAirSystem {
@@ -959,10 +925,10 @@ impl EngineBleedAirSystem {
             fan_compression_chamber: CompressionChamber::new(Volume::new::<cubic_meter>(1.)),
             ip_compression_chamber: CompressionChamber::new(Volume::new::<cubic_meter>(1.)),
             hp_compression_chamber: CompressionChamber::new(Volume::new::<cubic_meter>(1.)),
-            ip_valve: DefaultValve::new_open(),
-            hp_valve: DefaultValve::new_closed_with_motor(vec![powered_by]),
-            pr_valve: DefaultValve::new_closed_with_motor(vec![powered_by]),
-            fan_air_valve: DefaultValve::new_open_with_motor(vec![powered_by]),
+            ip_valve: PurelyPneumaticValve::new(1.),
+            hp_valve: ElectroPneumaticValve::new(1e-2, powered_by),
+            pr_valve: ElectroPneumaticValve::new(1., powered_by),
+            fan_air_valve: ElectroPneumaticValve::new(1., powered_by),
             transfer_pressure_pipe: DefaultPipe::new(
                 Volume::new::<cubic_meter>(1.), // TODO: Figure out volume to use
                 Fluid::new(Pressure::new::<pascal>(142000.)), // https://en.wikipedia.org/wiki/Bulk_modulus#Selected_values
@@ -999,7 +965,6 @@ impl EngineBleedAirSystem {
     fn update<T: EngineCorrectedN1 + EngineCorrectedN2>(
         &mut self,
         context: &UpdateContext,
-        ipv_controller: &impl ControllerSignal<IntermediatePressureValveSignal>,
         hpv_controller: &impl ControllerSignal<HighPressureValveSignal>,
         prv_controller: &impl ControllerSignal<PressureRegulatingValveSignal>,
         esv_controller: &impl ControllerSignal<EngineStarterValveSignal>,
@@ -1029,7 +994,6 @@ impl EngineBleedAirSystem {
             .update(&self.engine_starter_consumer_controller);
 
         // Update valves (open amount)
-        self.ip_valve.update_open_amount(ipv_controller);
         self.hp_valve.update_open_amount(hpv_controller);
         self.pr_valve.update_open_amount(prv_controller);
         self.es_valve.update_open_amount(esv_controller);
@@ -1805,6 +1769,14 @@ mod tests {
             self.query(|a| a.pneumatic.apu_bleed_air_valve.is_open())
         }
 
+        fn hp_valve_is_powered(&self, number: usize) -> bool {
+            self.query(|a| a.pneumatic.engine_systems[number - 1].hp_valve.is_powered())
+        }
+
+        fn pr_valve_is_powered(&self, number: usize) -> bool {
+            self.query(|a| a.pneumatic.engine_systems[number - 1].pr_valve.is_powered())
+        }
+
         fn set_engine_bleed_push_button_off(mut self, number: usize) -> Self {
             self.write(&format!("OVHD_PNEU_ENG_{}_BLEED_PB_IS_AUTO", number), false);
 
@@ -1942,7 +1914,7 @@ mod tests {
             .in_isa_atmosphere(alt)
             .idle_eng1()
             .idle_eng1()
-            .both_packs_auto()
+            // .both_packs_auto()
             .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Auto);
         // .set_bleed_air_running()
 
@@ -1965,12 +1937,12 @@ mod tests {
         let mut esv_open = Vec::new();
         let mut abv_open = Vec::new();
 
-        for i in 1..100 {
+        for i in 1..1000 {
             ts.push(i as f64 * 200.);
 
-            // if i == 100 {
-            //     test_bed = test_bed.start_eng1();
-            // }
+            if i == 50 {
+                test_bed = test_bed.set_dc_ess_shed_bus_power(false);
+            }
 
             hps.push(test_bed.hp_pressure(1).get::<psi>());
             ips.push(test_bed.ip_pressure(1).get::<psi>());
@@ -2038,6 +2010,8 @@ mod tests {
 
             test_bed.run_with_delta(Duration::from_millis(200));
         }
+
+        println!("{}", test_bed.engine_bleed_push_button_has_fault(1));
 
         // If anyone is wondering, I am using python to plot pressure curves. This will be removed once the model is complete.
         let data = vec![
@@ -2566,6 +2540,36 @@ mod tests {
 
         assert!(test_bed.bmc_channel_for_engine(1, 1).is_none());
         assert!(test_bed.bmc_channel_for_engine(1, 2).is_none(),);
+    }
+
+    #[test]
+    fn valves_powered_by_correct_busses() {
+        let mut test_bed = test_bed()
+            .set_dc_ess_shed_bus_power(true)
+            .set_dc_2_bus_power(true)
+            .and_run();
+
+        assert!(test_bed.hp_valve_is_powered(1));
+        assert!(test_bed.hp_valve_is_powered(2));
+
+        assert!(test_bed.pr_valve_is_powered(1));
+        assert!(test_bed.pr_valve_is_powered(2));
+
+        test_bed = test_bed.set_dc_ess_shed_bus_power(false).and_run();
+
+        assert!(!test_bed.hp_valve_is_powered(1));
+        assert!(test_bed.hp_valve_is_powered(2));
+
+        assert!(!test_bed.pr_valve_is_powered(1));
+        assert!(test_bed.pr_valve_is_powered(2));
+
+        test_bed = test_bed.set_dc_2_bus_power(false).and_run();
+
+        assert!(!test_bed.hp_valve_is_powered(1));
+        assert!(!test_bed.hp_valve_is_powered(2));
+
+        assert!(!test_bed.pr_valve_is_powered(1));
+        assert!(!test_bed.pr_valve_is_powered(2));
     }
 
     mod ovhd {
