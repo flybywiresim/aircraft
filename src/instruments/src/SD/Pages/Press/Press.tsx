@@ -260,7 +260,6 @@ const SystemComponent = ({ id, visible, x, y }: SystemComponentType) => {
                     {id}
                 </text>
             </g>
-
         </>
     );
 };
