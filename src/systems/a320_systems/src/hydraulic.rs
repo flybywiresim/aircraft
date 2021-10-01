@@ -534,6 +534,9 @@ impl A320Hydraulic {
             &self.aft_cargo_door,
             self.yellow_loop.pressure(),
         );
+
+        self.slats_flaps_complex
+            .update(context, self.green_loop.pressure());
     }
 
     // For each hydraulic loop retrieves volumes from and to each actuator and pass it to the loops
@@ -696,9 +699,6 @@ impl A320Hydraulic {
 
         self.braking_circuit_norm.update(context, &self.green_loop);
         self.braking_circuit_altn.update(context, &self.yellow_loop);
-
-        self.slats_flaps_complex
-            .update(context, self.green_loop.pressure());
     }
 }
 impl RamAirTurbineHydraulicLoopPressurised for A320Hydraulic {

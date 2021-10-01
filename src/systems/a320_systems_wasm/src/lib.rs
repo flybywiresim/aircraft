@@ -306,9 +306,9 @@ impl Flaps {
         } else {
             return false;
         }
-        self.flaps_handle_index_simvar
+        self.flaps_handle_index_sim_var
             .set_value(self.flaps_handle_position_f64());
-        self.flaps_handle_percent_simvar
+        self.flaps_handle_percent_sim_var
             .set_value(self.flaps_handle_position_f64() / 4.);
         true
 }
