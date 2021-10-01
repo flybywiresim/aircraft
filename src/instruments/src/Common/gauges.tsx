@@ -174,7 +174,7 @@ export const VerticalSegment: FC<VerticalSegmentProps> = ({ x, y, height, rangeS
     );
 };
 
-export const splitDecimals = (value, type) => {
+export function splitDecimals(value, type) {
     if (type === 'oil') {
         value = value * 0.01 * 25;
     } else if (type === 'vib') {
