@@ -1545,9 +1545,9 @@ impl SimulationElement for A320BrakingForce {
         writer.write("BRAKE RIGHT FORCE FACTOR", self.right_braking_force);
     }
 
-    fn read(&mut self, state: &mut SimulatorReader) {
-        let left_flap: f64 = state.read("LEFT_FLAPS_POSITION_PERCENT");
-        let right_flap: f64 = state.read("RIGHT_FLAPS_POSITION_PERCENT");
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        let left_flap: f64 = reader.read("LEFT_FLAPS_POSITION_PERCENT");
+        let right_flap: f64 = reader.read("RIGHT_FLAPS_POSITION_PERCENT");
         self.flap_position = (left_flap + right_flap) / 2.;
     }
 }
