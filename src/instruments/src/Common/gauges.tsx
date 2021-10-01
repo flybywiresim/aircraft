@@ -186,11 +186,9 @@ export function splitDecimals(value, type) {
 
 export function valueRadianAngleConverter(value, min, max, endAngle, startAngle) {
     const valuePercentage = (value - min) / (max - min);
-    // const start = startAngle > 180 ? 360 - startAngle : startAngle;
     let angleInRadians = startAngle > endAngle
         ? startAngle + (valuePercentage * (360 - startAngle + endAngle)) - 90
         : startAngle + (valuePercentage * (endAngle - startAngle)) - 90;
-    // let angleInRadians = angleInRadiansOne > 359 ? 360 - angleInRadiansOne : angleInRadiansOne;
     console.log(`Angle is ${angleInRadians}`);
     angleInRadians *= (Math.PI / 180.0);
     console.log(`Angle is radians is ${angleInRadians}`);
