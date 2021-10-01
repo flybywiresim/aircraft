@@ -600,6 +600,7 @@ read_write_uom!(Acceleration, foot_per_second_squared);
 read_write_uom!(ThermodynamicTemperature, degree_celsius);
 read_write_uom!(Ratio, percent);
 read_write_as!(usize);
+read_write_as!(u8);
 read_write_uom!(ElectricPotential, volt);
 read_write_uom!(ElectricCurrent, ampere);
 read_write_uom!(Frequency, hertz);

@@ -47,6 +47,9 @@ use systems::{
     },
 };
 
+mod flaps_computer;
+use flaps_computer::SlatFlapComplex;
+
 struct A320CargoDoorFactory {}
 impl A320CargoDoorFactory {
     fn a320_cargo_door_actuator(
@@ -142,6 +145,8 @@ pub(super) struct A320Hydraulic {
     forward_cargo_door_controller: A320DoorController,
     aft_cargo_door: CargoDoor,
     aft_cargo_door_controller: A320DoorController,
+
+    slats_flaps_complex: SlatFlapComplex,
 }
 impl A320Hydraulic {
     const FORWARD_CARGO_DOOR_ID: &'static str = "FWD";
@@ -305,6 +310,8 @@ impl A320Hydraulic {
 
             aft_cargo_door: A320CargoDoorFactory::new_a320_cargo_door(Self::AFT_CARGO_DOOR_ID),
             aft_cargo_door_controller: A320DoorController::new(Self::AFT_CARGO_DOOR_ID),
+
+            slats_flaps_complex: SlatFlapComplex::new(),
         }
     }
 
@@ -689,6 +696,9 @@ impl A320Hydraulic {
 
         self.braking_circuit_norm.update(context, &self.green_loop);
         self.braking_circuit_altn.update(context, &self.yellow_loop);
+
+        self.slats_flaps_complex
+            .update(context, self.green_loop.pressure());
     }
 }
 impl RamAirTurbineHydraulicLoopPressurised for A320Hydraulic {
@@ -733,6 +743,8 @@ impl SimulationElement for A320Hydraulic {
         self.braking_circuit_norm.accept(visitor);
         self.braking_circuit_altn.accept(visitor);
         self.braking_force.accept(visitor);
+
+        self.slats_flaps_complex.accept(visitor);
 
         visitor.visit(self);
     }
