@@ -8,11 +8,11 @@ Priority=0
 
 [Emitter.0]
 Lifetime=0.0, 0.0
-Delay=0.45, 0.45
+Delay=0.0, 0.0
 Bounce=0.0
 Light=1
 No Interpolate=1
-Rate=0.9, 0.9
+Rate=1.0, 1.0
 X Emitter Velocity=0.0, 0.0
 Y Emitter Velocity=0.0, 0.0
 Z Emitter Velocity=0.0, 0.0
@@ -28,7 +28,7 @@ Y Offset=0.0, 0.0
 Z Offset=0.0, 0.0
 
 [Particle.0]
-Lifetime=0.1, 0.1
+Lifetime=0.0, 0.0
 Type=19
 X Scale=0.15, 0.15
 Y Scale=0.15, 0.15
@@ -51,23 +51,23 @@ Face=1, 1, 1
 Blend Mode=2
 Texture=fx_0.png
 Bounce=0.0
-Color Start=255, 1, 0, 10
-Color End=255, 1, 0, 10
+Color Start=255, 255, 255, 1
+Color End=255, 255, 255, 1
 Jitter Distance=0.0
 Jitter Time=0.0
 uv1=0.0, 0.0
 uv2=1.0, 1.0
-NearEndFade= 1.0
-NearFade= 12.0
-MinProjSize=0.4
+NearEndFade=10.0
+NearFade=20.0
+MinProjSize=0.25
 
 [LightAttributes.0]
-Type=spot
-Size=0.06
-Range=40.0
-Intensity=400
-Softness=0.0
-SpotInner=15
-SpotOuter=30
-Volumetric=0.005
+Type=omni
+Size=0.055
+Range=3,5
+Intensity=0.001
+Softness=0
+SpotInner=25
+SpotOuter=75
+Volumetric=0
 ScatDir=0.0
