@@ -280,7 +280,7 @@ type GaugeComponentProps = {
     children?: React.ReactNode,
 }
 
-export const GaugeComponentNoMemo: React.FunctionComponent<GaugeComponentProps> = ({ x, y, radius, startAngle, endAngle, className, children, manMode }) => {
+export const GaugeComponentNoMemo: FC<GaugeComponentProps> = ({ x, y, radius, startAngle, endAngle, className, children, manMode }) => {
     const d = describeArc(x, y, radius, startAngle, endAngle);
 
     return (
