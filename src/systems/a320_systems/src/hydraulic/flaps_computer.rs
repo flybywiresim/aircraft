@@ -497,47 +497,29 @@ mod tests {
             .set_indicated_airspeed(50.)
             .run_one_tick();
 
-        assert_eq!(test_bed.read_flaps_handle_position(),  0);
-        assert_eq!(test_bed.get_flaps_demanded_angle(),  0.);
-        assert_eq!(test_bed.get_slats_demanded_angle(),  0.);
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::Conf0);
+
+        test_bed.test_flap_conf(0,0.,0.,FlapsConf::Conf0,angle_delta);
 
         test_bed = test_bed
-            .set_flaps_handle_position(1)
-            .run_waiting_for(Duration::from_millis(500));
+            .set_flaps_handle_position(1).run_one_tick();
 
         test_bed.test_flap_conf(1,10.,18.,FlapsConf::Conf1F,angle_delta);
-        // assert_eq!(test_bed.read_flaps_handle_position(),  1);
-        // assert!((test_bed.get_flaps_demanded_angle() - 10.).abs() < angle_delta);
-        // assert!((test_bed.get_slats_demanded_angle() - 18.).abs() < angle_delta);
-        // assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::Conf1F);
 
         test_bed = test_bed
-            .set_flaps_handle_position(2)
-            .run_waiting_for(Duration::from_millis(500));
+            .set_flaps_handle_position(2).run_one_tick();
 
-        assert_eq!(test_bed.read_flaps_handle_position(),  2);
-        assert!((test_bed.get_flaps_demanded_angle() - 15.).abs() < angle_delta);
-        assert!((test_bed.get_slats_demanded_angle() - 22.).abs() < angle_delta);
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::Conf2);
+
+        test_bed.test_flap_conf(2,15.,22.,FlapsConf::Conf2,angle_delta);
 
         test_bed = test_bed
-            .set_flaps_handle_position(3)
-            .run_waiting_for(Duration::from_millis(500));
+            .set_flaps_handle_position(3).run_one_tick();
 
-        assert_eq!(test_bed.read_flaps_handle_position(),  3);
-        assert!((test_bed.get_flaps_demanded_angle() - 20.).abs() < angle_delta);
-        assert!((test_bed.get_slats_demanded_angle() - 22.).abs() < angle_delta);
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::Conf3);
+        test_bed.test_flap_conf(3,20.,22.,FlapsConf::Conf3,angle_delta);
 
         test_bed = test_bed
-            .set_flaps_handle_position(4)
-            .run_waiting_for(Duration::from_millis(500));
+            .set_flaps_handle_position(4).run_one_tick();
 
-        assert_eq!(test_bed.read_flaps_handle_position(),  4);
-        assert!((test_bed.get_flaps_demanded_angle() - 40.).abs() < angle_delta);
-        assert!((test_bed.get_slats_demanded_angle() - 27.).abs() < angle_delta);
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::ConfFull);
+        test_bed.test_flap_conf(4,40.,27.,FlapsConf::ConfFull,angle_delta);
     }
 
     // Tests flaps configuration and angles for regular
@@ -551,46 +533,28 @@ mod tests {
             .set_indicated_airspeed(150.)
             .run_one_tick();
 
-        assert_eq!(test_bed.read_flaps_handle_position(),  0);
-        assert_eq!(test_bed.get_flaps_demanded_angle(),  0.);
-        assert_eq!(test_bed.get_slats_demanded_angle(),  0.);
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::Conf0);
+        test_bed.test_flap_conf(0,0.,0.,FlapsConf::Conf0,angle_delta);
 
         test_bed = test_bed
-            .set_flaps_handle_position(1)
-            .run_waiting_for(Duration::from_millis(500));
+            .set_flaps_handle_position(1).run_one_tick();
 
-        assert_eq!(test_bed.read_flaps_handle_position(),  1);
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::Conf1);
-        assert_eq!(test_bed.get_flaps_demanded_angle(),  0.);
-        assert!((test_bed.get_slats_demanded_angle() - 18.).abs() < angle_delta);
+        test_bed.test_flap_conf(1,0.,18.,FlapsConf::Conf1,angle_delta);
 
         test_bed = test_bed
-            .set_flaps_handle_position(2)
-            .run_waiting_for(Duration::from_millis(500));
+            .set_flaps_handle_position(2).run_one_tick();
 
-        assert_eq!(test_bed.read_flaps_handle_position(),  2);
-        assert!((test_bed.get_flaps_demanded_angle() - 15.).abs() < angle_delta);
-        assert!((test_bed.get_slats_demanded_angle() - 22.).abs() < angle_delta);
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::Conf2);
+
+        test_bed.test_flap_conf(2,15.,22.,FlapsConf::Conf2,angle_delta);
 
         test_bed = test_bed
-            .set_flaps_handle_position(3)
-            .run_waiting_for(Duration::from_millis(500));
+            .set_flaps_handle_position(3).run_one_tick();
 
-        assert_eq!(test_bed.read_flaps_handle_position(),  3);
-        assert!((test_bed.get_flaps_demanded_angle() - 20.).abs() < angle_delta);
-        assert!((test_bed.get_slats_demanded_angle() - 22.).abs() < angle_delta);
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::Conf3);
+        test_bed.test_flap_conf(3,20.,22.,FlapsConf::Conf3,angle_delta);
 
         test_bed = test_bed
-            .set_flaps_handle_position(4)
-            .run_waiting_for(Duration::from_millis(500));
+            .set_flaps_handle_position(4).run_one_tick();
 
-        assert_eq!(test_bed.read_flaps_handle_position(),  4);
-        assert!((test_bed.get_flaps_demanded_angle() - 40.).abs() < angle_delta);
-        assert!((test_bed.get_slats_demanded_angle() - 27.).abs() < angle_delta);
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::ConfFull);
+        test_bed.test_flap_conf(4,40.,27.,FlapsConf::ConfFull,angle_delta);
     }
 
     //Tests regular transition 2->1 below and above 210 knots
@@ -652,38 +616,23 @@ mod tests {
 
         test_bed = test_bed.set_flaps_handle_position(4).run_one_tick();
 
-        assert_eq!(test_bed.read_flaps_handle_position(),  4);
-        assert!((test_bed.get_flaps_demanded_angle() - 40.).abs() < angle_delta);
-        assert!((test_bed.get_slats_demanded_angle() - 27.).abs() < angle_delta);
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::ConfFull);
+        test_bed.test_flap_conf(4,40.,27.,FlapsConf::ConfFull,angle_delta);
 
         test_bed = test_bed.set_flaps_handle_position(3).run_one_tick();
 
-        assert_eq!(test_bed.read_flaps_handle_position(),  3);
-        assert!((test_bed.get_flaps_demanded_angle() - 20.).abs() < angle_delta);
-        assert!((test_bed.get_slats_demanded_angle() - 22.).abs() < angle_delta);
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::Conf3);
+        test_bed.test_flap_conf(3,20.,22.,FlapsConf::Conf3,angle_delta);
 
         test_bed = test_bed.set_flaps_handle_position(2).run_one_tick();
 
-        assert_eq!(test_bed.read_flaps_handle_position(),  2);
-        assert!((test_bed.get_flaps_demanded_angle() - 15.).abs() < angle_delta);
-        assert!((test_bed.get_slats_demanded_angle() - 22.).abs() < angle_delta);
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::Conf2);
+        test_bed.test_flap_conf(2,15.,22.,FlapsConf::Conf2,angle_delta);
 
         test_bed = test_bed.set_flaps_handle_position(1).run_one_tick();
 
-        assert_eq!(test_bed.read_flaps_handle_position(),  1);
-        assert!((test_bed.get_flaps_demanded_angle() - 10.).abs() < angle_delta);
-        assert!((test_bed.get_slats_demanded_angle() - 18.).abs() < angle_delta);
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::Conf1F);
+        test_bed.test_flap_conf(1,10.,18.,FlapsConf::Conf1F,angle_delta);
 
         test_bed = test_bed.set_flaps_handle_position(0).run_one_tick();
 
-        assert_eq!(test_bed.read_flaps_handle_position(),  0);
-        assert!((test_bed.get_flaps_demanded_angle() - 0.).abs() < angle_delta);
-        assert!((test_bed.get_slats_demanded_angle() - 0.).abs() < angle_delta);
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::Conf0);
+        test_bed.test_flap_conf(0,0.,0.,FlapsConf::Conf0,angle_delta);
     }
 
     // Tests flaps configuration and angles for regular
@@ -699,38 +648,23 @@ mod tests {
 
         test_bed = test_bed.set_flaps_handle_position(4).run_one_tick();
 
-        assert_eq!(test_bed.read_flaps_handle_position(),  4);
-        assert!((test_bed.get_flaps_demanded_angle() - 40.).abs() < angle_delta);
-        assert!((test_bed.get_slats_demanded_angle() - 27.).abs() < angle_delta);
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::ConfFull);
+        test_bed.test_flap_conf(4,40.,27.,FlapsConf::ConfFull,angle_delta);
 
         test_bed = test_bed.set_flaps_handle_position(3).run_one_tick();
 
-        assert_eq!(test_bed.read_flaps_handle_position(),  3);
-        assert!((test_bed.get_flaps_demanded_angle() - 20.).abs() < angle_delta);
-        assert!((test_bed.get_slats_demanded_angle() - 22.).abs() < angle_delta);
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::Conf3);
+        test_bed.test_flap_conf(3,20.,22.,FlapsConf::Conf3,angle_delta);
 
         test_bed = test_bed.set_flaps_handle_position(2).run_one_tick();
 
-        assert_eq!(test_bed.read_flaps_handle_position(),  2);
-        assert!((test_bed.get_flaps_demanded_angle() - 15.).abs() < angle_delta);
-        assert!((test_bed.get_slats_demanded_angle() - 22.).abs() < angle_delta);
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::Conf2);
+        test_bed.test_flap_conf(2,15.,22.,FlapsConf::Conf2,angle_delta);
 
         test_bed = test_bed.set_flaps_handle_position(1).run_one_tick();
 
-        assert_eq!(test_bed.read_flaps_handle_position(),  1);
-        assert!((test_bed.get_flaps_demanded_angle() - 0.).abs() < angle_delta);
-        assert!((test_bed.get_slats_demanded_angle() - 18.).abs() < angle_delta);
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::Conf1);
+        test_bed.test_flap_conf(1,0.,18.,FlapsConf::Conf1,angle_delta);
 
         test_bed = test_bed.set_flaps_handle_position(0).run_one_tick();
 
-        assert_eq!(test_bed.read_flaps_handle_position(),  0);
-        assert!((test_bed.get_flaps_demanded_angle() - 0.).abs() < angle_delta);
-        assert!((test_bed.get_slats_demanded_angle() - 0.).abs() < angle_delta);
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::Conf0);
+        test_bed.test_flap_conf(0,0.,0.,FlapsConf::Conf0,angle_delta);
     }
 
     //The few tests that follow test irregular transitions
