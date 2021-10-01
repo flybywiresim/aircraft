@@ -181,7 +181,6 @@ impl SlatFlapControlComputer {
         flaps_feedback: &T,
         slats_feedback: &T,
     ) {
-
         self.flaps_conf = self.generate_configuration(flaps_handle, context);
 
         self.flaps_demanded_angle = Self::demanded_flaps_angle_from_conf(self.flaps_conf);
@@ -438,11 +437,18 @@ mod tests {
             self.query(|a| a.slat_flap_complex.slat_gear.current_angle.get::<degree>())
         }
 
-        fn test_flap_conf(&mut self, handle_pos: u8, flaps_demanded_angle: f64, slats_demanded_angle: f64, conf: FlapsConf, angle_delta: f64) {
-            assert_eq!(self.read_flaps_handle_position(),  handle_pos);
+        fn test_flap_conf(
+            &mut self,
+            handle_pos: u8,
+            flaps_demanded_angle: f64,
+            slats_demanded_angle: f64,
+            conf: FlapsConf,
+            angle_delta: f64,
+        ) {
+            assert_eq!(self.read_flaps_handle_position(), handle_pos);
             assert!((self.get_flaps_demanded_angle() - flaps_demanded_angle).abs() < angle_delta);
             assert!((self.get_slats_demanded_angle() - slats_demanded_angle).abs() < angle_delta);
-            assert_eq!(self.get_flaps_conf(),  conf);
+            assert_eq!(self.get_flaps_conf(), conf);
         }
     }
     impl TestBed for A320FlapsTestBed {
@@ -497,29 +503,23 @@ mod tests {
             .set_indicated_airspeed(50.)
             .run_one_tick();
 
+        test_bed.test_flap_conf(0, 0., 0., FlapsConf::Conf0, angle_delta);
 
-        test_bed.test_flap_conf(0,0.,0.,FlapsConf::Conf0,angle_delta);
+        test_bed = test_bed.set_flaps_handle_position(1).run_one_tick();
 
-        test_bed = test_bed
-            .set_flaps_handle_position(1).run_one_tick();
+        test_bed.test_flap_conf(1, 10., 18., FlapsConf::Conf1F, angle_delta);
 
-        test_bed.test_flap_conf(1,10.,18.,FlapsConf::Conf1F,angle_delta);
+        test_bed = test_bed.set_flaps_handle_position(2).run_one_tick();
 
-        test_bed = test_bed
-            .set_flaps_handle_position(2).run_one_tick();
+        test_bed.test_flap_conf(2, 15., 22., FlapsConf::Conf2, angle_delta);
 
+        test_bed = test_bed.set_flaps_handle_position(3).run_one_tick();
 
-        test_bed.test_flap_conf(2,15.,22.,FlapsConf::Conf2,angle_delta);
+        test_bed.test_flap_conf(3, 20., 22., FlapsConf::Conf3, angle_delta);
 
-        test_bed = test_bed
-            .set_flaps_handle_position(3).run_one_tick();
+        test_bed = test_bed.set_flaps_handle_position(4).run_one_tick();
 
-        test_bed.test_flap_conf(3,20.,22.,FlapsConf::Conf3,angle_delta);
-
-        test_bed = test_bed
-            .set_flaps_handle_position(4).run_one_tick();
-
-        test_bed.test_flap_conf(4,40.,27.,FlapsConf::ConfFull,angle_delta);
+        test_bed.test_flap_conf(4, 40., 27., FlapsConf::ConfFull, angle_delta);
     }
 
     // Tests flaps configuration and angles for regular
@@ -533,28 +533,23 @@ mod tests {
             .set_indicated_airspeed(150.)
             .run_one_tick();
 
-        test_bed.test_flap_conf(0,0.,0.,FlapsConf::Conf0,angle_delta);
+        test_bed.test_flap_conf(0, 0., 0., FlapsConf::Conf0, angle_delta);
 
-        test_bed = test_bed
-            .set_flaps_handle_position(1).run_one_tick();
+        test_bed = test_bed.set_flaps_handle_position(1).run_one_tick();
 
-        test_bed.test_flap_conf(1,0.,18.,FlapsConf::Conf1,angle_delta);
+        test_bed.test_flap_conf(1, 0., 18., FlapsConf::Conf1, angle_delta);
 
-        test_bed = test_bed
-            .set_flaps_handle_position(2).run_one_tick();
+        test_bed = test_bed.set_flaps_handle_position(2).run_one_tick();
 
+        test_bed.test_flap_conf(2, 15., 22., FlapsConf::Conf2, angle_delta);
 
-        test_bed.test_flap_conf(2,15.,22.,FlapsConf::Conf2,angle_delta);
+        test_bed = test_bed.set_flaps_handle_position(3).run_one_tick();
 
-        test_bed = test_bed
-            .set_flaps_handle_position(3).run_one_tick();
+        test_bed.test_flap_conf(3, 20., 22., FlapsConf::Conf3, angle_delta);
 
-        test_bed.test_flap_conf(3,20.,22.,FlapsConf::Conf3,angle_delta);
+        test_bed = test_bed.set_flaps_handle_position(4).run_one_tick();
 
-        test_bed = test_bed
-            .set_flaps_handle_position(4).run_one_tick();
-
-        test_bed.test_flap_conf(4,40.,27.,FlapsConf::ConfFull,angle_delta);
+        test_bed.test_flap_conf(4, 40., 27., FlapsConf::ConfFull, angle_delta);
     }
 
     //Tests regular transition 2->1 below and above 210 knots
@@ -566,21 +561,21 @@ mod tests {
             .set_flaps_handle_position(2)
             .run_one_tick();
 
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::Conf2);
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf2);
 
         test_bed = test_bed.set_flaps_handle_position(1).run_one_tick();
 
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::Conf1F);
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1F);
 
         test_bed = test_bed
             .set_indicated_airspeed(220.)
             .set_flaps_handle_position(2)
             .run_one_tick();
 
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::Conf2);
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf2);
 
         test_bed = test_bed.set_flaps_handle_position(1).run_one_tick();
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::Conf1);
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1);
     }
 
     //Tests transition between Conf1F to Conf1 above 210 knots
@@ -592,15 +587,15 @@ mod tests {
             .set_flaps_handle_position(1)
             .run_one_tick();
 
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::Conf1F);
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1F);
 
         test_bed = test_bed.set_indicated_airspeed(150.).run_one_tick();
 
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::Conf1F);
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1F);
 
         test_bed = test_bed.set_indicated_airspeed(220.).run_one_tick();
 
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::Conf1);
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1);
     }
 
     // Tests flaps configuration and angles for regular
@@ -616,23 +611,23 @@ mod tests {
 
         test_bed = test_bed.set_flaps_handle_position(4).run_one_tick();
 
-        test_bed.test_flap_conf(4,40.,27.,FlapsConf::ConfFull,angle_delta);
+        test_bed.test_flap_conf(4, 40., 27., FlapsConf::ConfFull, angle_delta);
 
         test_bed = test_bed.set_flaps_handle_position(3).run_one_tick();
 
-        test_bed.test_flap_conf(3,20.,22.,FlapsConf::Conf3,angle_delta);
+        test_bed.test_flap_conf(3, 20., 22., FlapsConf::Conf3, angle_delta);
 
         test_bed = test_bed.set_flaps_handle_position(2).run_one_tick();
 
-        test_bed.test_flap_conf(2,15.,22.,FlapsConf::Conf2,angle_delta);
+        test_bed.test_flap_conf(2, 15., 22., FlapsConf::Conf2, angle_delta);
 
         test_bed = test_bed.set_flaps_handle_position(1).run_one_tick();
 
-        test_bed.test_flap_conf(1,10.,18.,FlapsConf::Conf1F,angle_delta);
+        test_bed.test_flap_conf(1, 10., 18., FlapsConf::Conf1F, angle_delta);
 
         test_bed = test_bed.set_flaps_handle_position(0).run_one_tick();
 
-        test_bed.test_flap_conf(0,0.,0.,FlapsConf::Conf0,angle_delta);
+        test_bed.test_flap_conf(0, 0., 0., FlapsConf::Conf0, angle_delta);
     }
 
     // Tests flaps configuration and angles for regular
@@ -648,23 +643,23 @@ mod tests {
 
         test_bed = test_bed.set_flaps_handle_position(4).run_one_tick();
 
-        test_bed.test_flap_conf(4,40.,27.,FlapsConf::ConfFull,angle_delta);
+        test_bed.test_flap_conf(4, 40., 27., FlapsConf::ConfFull, angle_delta);
 
         test_bed = test_bed.set_flaps_handle_position(3).run_one_tick();
 
-        test_bed.test_flap_conf(3,20.,22.,FlapsConf::Conf3,angle_delta);
+        test_bed.test_flap_conf(3, 20., 22., FlapsConf::Conf3, angle_delta);
 
         test_bed = test_bed.set_flaps_handle_position(2).run_one_tick();
 
-        test_bed.test_flap_conf(2,15.,22.,FlapsConf::Conf2,angle_delta);
+        test_bed.test_flap_conf(2, 15., 22., FlapsConf::Conf2, angle_delta);
 
         test_bed = test_bed.set_flaps_handle_position(1).run_one_tick();
 
-        test_bed.test_flap_conf(1,0.,18.,FlapsConf::Conf1,angle_delta);
+        test_bed.test_flap_conf(1, 0., 18., FlapsConf::Conf1, angle_delta);
 
         test_bed = test_bed.set_flaps_handle_position(0).run_one_tick();
 
-        test_bed.test_flap_conf(0,0.,0.,FlapsConf::Conf0,angle_delta);
+        test_bed.test_flap_conf(0, 0., 0., FlapsConf::Conf0, angle_delta);
     }
 
     //The few tests that follow test irregular transitions
@@ -681,19 +676,19 @@ mod tests {
             .run_one_tick();
 
         test_bed = test_bed.set_flaps_handle_position(2).run_one_tick();
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::Conf2);
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf2);
 
         test_bed = test_bed.set_flaps_handle_position(0).run_one_tick();
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::Conf0);
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf0);
 
         test_bed = test_bed.set_flaps_handle_position(3).run_one_tick();
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::Conf3);
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf3);
 
         test_bed = test_bed.set_flaps_handle_position(0).run_one_tick();
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::Conf0);
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf0);
 
         test_bed = test_bed.set_flaps_handle_position(4).run_one_tick();
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::ConfFull);
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::ConfFull);
 
         test_bed = test_bed
             .set_indicated_airspeed(110.)
@@ -701,19 +696,19 @@ mod tests {
             .run_one_tick();
 
         test_bed = test_bed.set_flaps_handle_position(2).run_one_tick();
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::Conf2);
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf2);
 
         test_bed = test_bed.set_flaps_handle_position(0).run_one_tick();
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::Conf0);
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf0);
 
         test_bed = test_bed.set_flaps_handle_position(3).run_one_tick();
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::Conf3);
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf3);
 
         test_bed = test_bed.set_flaps_handle_position(0).run_one_tick();
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::Conf0);
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf0);
 
         test_bed = test_bed.set_flaps_handle_position(4).run_one_tick();
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::ConfFull);
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::ConfFull);
 
         test_bed = test_bed
             .set_indicated_airspeed(220.)
@@ -721,19 +716,19 @@ mod tests {
             .run_one_tick();
 
         test_bed = test_bed.set_flaps_handle_position(2).run_one_tick();
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::Conf2);
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf2);
 
         test_bed = test_bed.set_flaps_handle_position(0).run_one_tick();
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::Conf0);
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf0);
 
         test_bed = test_bed.set_flaps_handle_position(3).run_one_tick();
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::Conf3);
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf3);
 
         test_bed = test_bed.set_flaps_handle_position(0).run_one_tick();
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::Conf0);
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf0);
 
         test_bed = test_bed.set_flaps_handle_position(4).run_one_tick();
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::ConfFull);
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::ConfFull);
     }
 
     #[test]
@@ -744,16 +739,16 @@ mod tests {
             .set_flaps_handle_position(1)
             .run_one_tick();
 
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::Conf1F);
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1F);
 
         test_bed = test_bed.set_flaps_handle_position(3).run_one_tick();
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::Conf3);
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf3);
 
         test_bed = test_bed.set_flaps_handle_position(1).run_one_tick();
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::Conf1F);
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1F);
 
         test_bed = test_bed.set_flaps_handle_position(4).run_one_tick();
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::ConfFull);
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::ConfFull);
 
         test_bed = test_bed_with()
             .set_hyd_pressure()
@@ -761,13 +756,13 @@ mod tests {
             .set_flaps_handle_position(1)
             .run_one_tick();
 
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::Conf1);
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1);
 
         test_bed = test_bed.set_flaps_handle_position(3).run_one_tick();
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::Conf3);
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf3);
 
         test_bed = test_bed.set_flaps_handle_position(1).run_one_tick();
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::Conf1F);
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1F);
 
         test_bed = test_bed_with()
             .set_hyd_pressure()
@@ -775,12 +770,12 @@ mod tests {
             .set_flaps_handle_position(1)
             .run_one_tick();
 
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::Conf1);
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1);
         test_bed = test_bed.set_flaps_handle_position(4).run_one_tick();
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::ConfFull);
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::ConfFull);
 
         test_bed = test_bed.set_flaps_handle_position(1).run_one_tick();
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::Conf1F);
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1F);
 
         test_bed = test_bed_with()
             .set_hyd_pressure()
@@ -788,13 +783,13 @@ mod tests {
             .set_flaps_handle_position(1)
             .run_one_tick();
 
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::Conf1);
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1);
 
         test_bed = test_bed.set_flaps_handle_position(3).run_one_tick();
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::Conf3);
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf3);
 
         test_bed = test_bed.set_flaps_handle_position(1).run_one_tick();
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::Conf1);
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1);
 
         test_bed = test_bed_with()
             .set_hyd_pressure()
@@ -802,13 +797,13 @@ mod tests {
             .set_flaps_handle_position(1)
             .run_one_tick();
 
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::Conf1);
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1);
 
         test_bed = test_bed.set_flaps_handle_position(4).run_one_tick();
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::ConfFull);
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::ConfFull);
 
         test_bed = test_bed.set_flaps_handle_position(1).run_one_tick();
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::Conf1);
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1);
     }
 
     #[test]
@@ -819,13 +814,13 @@ mod tests {
             .set_flaps_handle_position(2)
             .run_one_tick();
 
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::Conf2);
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf2);
 
         test_bed = test_bed.set_flaps_handle_position(4).run_one_tick();
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::ConfFull);
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::ConfFull);
 
         test_bed = test_bed.set_flaps_handle_position(2).run_one_tick();
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::Conf2);
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf2);
 
         test_bed = test_bed_with()
             .set_hyd_pressure()
@@ -833,13 +828,13 @@ mod tests {
             .set_flaps_handle_position(2)
             .run_one_tick();
 
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::Conf2);
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf2);
 
         test_bed = test_bed.set_flaps_handle_position(0).run_one_tick();
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::Conf0);
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf0);
 
         test_bed = test_bed.set_flaps_handle_position(2).run_one_tick();
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::Conf2);
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf2);
     }
 
     #[test]
@@ -850,13 +845,13 @@ mod tests {
             .set_flaps_handle_position(3)
             .run_one_tick();
 
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::Conf3);
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf3);
 
         test_bed = test_bed.set_flaps_handle_position(1).run_one_tick();
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::Conf1F);
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1F);
 
         test_bed = test_bed.set_flaps_handle_position(3).run_one_tick();
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::Conf3);
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf3);
 
         test_bed = test_bed_with()
             .set_hyd_pressure()
@@ -864,13 +859,13 @@ mod tests {
             .set_flaps_handle_position(3)
             .run_one_tick();
 
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::Conf3);
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf3);
 
         test_bed = test_bed.set_flaps_handle_position(1).run_one_tick();
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::Conf1);
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1);
 
         test_bed = test_bed.set_flaps_handle_position(3).run_one_tick();
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::Conf3);
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf3);
 
         test_bed = test_bed_with()
             .set_hyd_pressure()
@@ -878,13 +873,13 @@ mod tests {
             .set_flaps_handle_position(3)
             .run_one_tick();
 
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::Conf3);
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf3);
 
         test_bed = test_bed.set_flaps_handle_position(0).run_one_tick();
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::Conf0);
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf0);
 
         test_bed = test_bed.set_flaps_handle_position(3).run_one_tick();
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::Conf3);
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf3);
     }
 
     #[test]
@@ -895,13 +890,13 @@ mod tests {
             .set_flaps_handle_position(4)
             .run_one_tick();
 
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::ConfFull);
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::ConfFull);
 
         test_bed = test_bed.set_flaps_handle_position(1).run_one_tick();
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::Conf1F);
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1F);
 
         test_bed = test_bed.set_flaps_handle_position(4).run_one_tick();
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::ConfFull);
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::ConfFull);
 
         test_bed = test_bed_with()
             .set_hyd_pressure()
@@ -909,13 +904,13 @@ mod tests {
             .set_flaps_handle_position(4)
             .run_one_tick();
 
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::ConfFull);
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::ConfFull);
 
         test_bed = test_bed.set_flaps_handle_position(1).run_one_tick();
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::Conf1);
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1);
 
         test_bed = test_bed.set_flaps_handle_position(4).run_one_tick();
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::ConfFull);
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::ConfFull);
 
         test_bed = test_bed_with()
             .set_hyd_pressure()
@@ -923,19 +918,19 @@ mod tests {
             .set_flaps_handle_position(4)
             .run_one_tick();
 
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::ConfFull);
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::ConfFull);
 
         test_bed = test_bed.set_flaps_handle_position(0).run_one_tick();
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::Conf0);
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf0);
 
         test_bed = test_bed.set_flaps_handle_position(4).run_one_tick();
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::ConfFull);
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::ConfFull);
 
         test_bed = test_bed.set_flaps_handle_position(2).run_one_tick();
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::Conf2);
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf2);
 
         test_bed = test_bed.set_flaps_handle_position(4).run_one_tick();
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::ConfFull);
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::ConfFull);
     }
 
     //The tests below test the movement of the
@@ -949,7 +944,7 @@ mod tests {
             .set_flaps_handle_position(0)
             .run_one_tick();
 
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::Conf0);
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf0);
 
         test_bed = test_bed.set_flaps_handle_position(1);
 
@@ -991,7 +986,7 @@ mod tests {
             .set_flaps_handle_position(1)
             .run_one_tick();
 
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::Conf1F);
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1F);
 
         test_bed = test_bed.set_flaps_handle_position(2);
 
@@ -1027,7 +1022,7 @@ mod tests {
             .set_flaps_handle_position(2)
             .run_one_tick();
 
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::Conf2);
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf2);
 
         test_bed = test_bed.set_flaps_handle_position(3);
 
@@ -1063,7 +1058,7 @@ mod tests {
             .set_flaps_handle_position(3)
             .run_one_tick();
 
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::Conf3);
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf3);
 
         test_bed = test_bed.set_flaps_handle_position(4);
 
@@ -1099,7 +1094,7 @@ mod tests {
             .set_flaps_handle_position(0)
             .run_one_tick();
 
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::Conf0);
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf0);
 
         test_bed = test_bed.set_flaps_handle_position(1);
 
@@ -1135,7 +1130,7 @@ mod tests {
             .set_flaps_handle_position(0)
             .run_one_tick();
 
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::Conf0);
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf0);
 
         test_bed = test_bed.set_flaps_handle_position(1);
 
@@ -1160,7 +1155,7 @@ mod tests {
         assert!(
             (test_bed.get_slats_angle() - test_bed.get_slats_demanded_angle()).abs() <= angle_delta
         );
-        assert_eq!(test_bed.get_flaps_angle(),  0.);
+        assert!((test_bed.get_flaps_angle() - 0.).abs() < f64::EPSILON);
     }
 
     #[test]
@@ -1172,7 +1167,7 @@ mod tests {
             .set_flaps_handle_position(1)
             .run_one_tick();
 
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::Conf1F);
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1F);
 
         test_bed = test_bed.set_flaps_handle_position(2);
 
@@ -1208,7 +1203,7 @@ mod tests {
             .set_flaps_handle_position(2)
             .run_one_tick();
 
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::Conf2);
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf2);
 
         test_bed = test_bed.set_flaps_handle_position(3);
 
@@ -1244,7 +1239,7 @@ mod tests {
             .set_flaps_handle_position(3)
             .run_one_tick();
 
-        assert_eq!(test_bed.get_flaps_conf(),  FlapsConf::Conf3);
+        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf3);
 
         test_bed = test_bed.set_flaps_handle_position(4);
 

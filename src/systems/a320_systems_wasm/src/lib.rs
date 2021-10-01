@@ -311,7 +311,7 @@ impl Flaps {
         self.flaps_handle_percent_sim_var
             .set_value(self.flaps_handle_position_f64() / 4.);
         true
-}
+    }
 
     fn write_sim_vars(&mut self) {
         self.left_flaps_position_sim_var
