@@ -110,6 +110,8 @@ export class TcasTraffic {
 }
 
 export class ResAdvisory {
+    active: boolean;
+
     info: RaParams | null;
 
     isReversal: boolean;
@@ -118,7 +120,7 @@ export class ResAdvisory {
 
     hasBeenAnnounced: boolean;
 
-    constructor(_inf: RaParams | null, _isRev: boolean, _sinceStart: number, _announced: boolean) {
+    constructor(_active: boolean, _inf: RaParams | null, _isRev: boolean, _sinceStart: number, _announced: boolean) {
         this.info = _inf;
         this.isReversal = _isRev;
         this.secondsSinceStart = _sinceStart;
@@ -189,7 +191,7 @@ export class TCasComputer implements TCasComponent {
 
     private skipRa: boolean;
 
-    private constructor() {}
+    constructor() {}
 
     public static get instance(): TCasComputer {
         if (!this._instance) {
@@ -209,10 +211,10 @@ export class TCasComputer implements TCasComponent {
         this.ppos = { lat: NaN, long: NaN };
         this._pposLatLong = new LatLong(NaN, NaN);
         this._trafficPpos = new LatLong(NaN, NaN);
-        this._newRa = new ResAdvisory(null, false, 0, false);
+        this._newRa = new ResAdvisory(false, null, false, 0, false);
         this.advisoryState = TcasState.NONE;
         this.sendAirTraffic = [];
-        this.activeRa = new ResAdvisory(null, false, 0, false);
+        this.activeRa = new ResAdvisory(false, null, false, 0, false);
         this.soundManager = new TCasSoundManager();
         this.taOnly = false;
         this.skipRa = false;
@@ -264,7 +266,7 @@ export class TCasComputer implements TCasComponent {
     }
 
     private updateSensitivity(): void {
-        if (this.activeRa.info === null) {
+        if (!this.activeRa.active) {
             if (this.taOnly) {
                 this.sensitivity = 2;
             } else if (this.radioAlt <= 2350 && this.radioAlt > 1000) {
@@ -423,12 +425,12 @@ export class TCasComputer implements TCasComponent {
                     && traffic.secondsSinceLastTa < TcasConst.TA_EXPIRATION_DELAY) {
                 traffic.taExpiring = true;
                 traffic.intrusionLevel = TaRaIntrusion.TA;
-            } else if (this.activeRa !== null
+            } else if (this.activeRa.active
                     && traffic.intrusionLevel === TaRaIntrusion.RA
                     && desiredIntrusionLevel < TaRaIntrusion.RA
                     && this.activeRa.secondsSinceStart < 5) {
                 traffic.intrusionLevel = TaRaIntrusion.RA;
-            } else if (this.activeRa !== null
+            } else if (this.activeRa.active
                     && traffic.intrusionLevel === TaRaIntrusion.RA
                     && desiredIntrusionLevel < TaRaIntrusion.RA
                     && (traffic.taTau < TcasConst.TAU[this.sensitivity][TaRaIndex.TA] * TcasConst.VOL_BOOST
@@ -536,14 +538,15 @@ export class TCasComputer implements TCasComponent {
         // TODO: Store 10 most recent RA and 60 most recent TA - AMM 34-43-00:6
         // TODO: Red TCAS error messages on PFD and ND
         if (this.skipRa) {
-            this._newRa.info = null;
-            this.activeRa.info = null;
+            this._newRa.active = false;
+            this.activeRa.active = false;
             return;
         }
 
         this.raTraffic = this.airTraffic
             .filter((traffic) => traffic.intrusionLevel === TaRaIntrusion.RA && traffic.raTau !== Infinity)
             .sort((a, b) => a.raTau - b.raTau);
+        this._newRa.active = false;
         this._newRa.info = null;
         this._newRa.isReversal = false;
         this._newRa.secondsSinceStart = 0;
@@ -551,10 +554,10 @@ export class TCasComputer implements TCasComponent {
         const previousRa = this.activeRa;
         const ALIM = TcasConst.ALIM[this.sensitivity];
 
-        if (this.activeRa.info === null) {
+        if (!this.activeRa.active) {
             // First RA
             if (this.raTraffic.length === 0) {
-                this._newRa.info = null;
+                this._newRa.active = false;
                 return;
             }
 
@@ -686,7 +689,7 @@ export class TCasComputer implements TCasComponent {
             // There is a previous RA, so revise it if necessary
             // If no RA threats, then just return null
             if (this.raTraffic.length === 0) {
-                this._newRa.info = null;
+                this._newRa.active = false;
                 return;
             }
 
@@ -906,7 +909,9 @@ export class TCasComputer implements TCasComponent {
             break;
         }
 
-        if (this._newRa.info !== null && this.advisoryState === TcasState.RA) {
+        if (!this._newRa.active && this.advisoryState === TcasState.RA) {
+            // Replace old RA with new RA
+            this.activeRa.active = this._newRa.active;
             this.activeRa.info = this._newRa.info;
             this.activeRa.isReversal = this._newRa.isReversal;
             this.activeRa.secondsSinceStart = this._newRa.secondsSinceStart;

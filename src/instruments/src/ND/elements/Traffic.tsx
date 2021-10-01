@@ -4,10 +4,11 @@ import { useSimVar } from '@instruments/common/simVars';
 import React, { useEffect, FC, useState } from 'react';
 import { Layer } from '@instruments/common/utils';
 import { TaRaIntrusion } from '@tcas/lib/TCasConstants';
+import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { MapParameters } from '../utils/MapParameters';
-// import { Layer } from '@instruments/common/utils';
 
 interface NDTraffic {
+    alive?: boolean;
     ID: string;
     name: string;
     lat: number;
@@ -30,15 +31,24 @@ export type TcasProps = {
 export const Traffic: FC<TcasProps> = ({ x, y, mapParams }) => {
     const [airTraffic, setAirTraffic] = useState<NDTraffic[]>([]);
     const [tcasMode] = useSimVar('L:A32NX_SWITCH_TCAS_Position', 'number', 200);
+    const [latLong] = useState<Coordinates>({ lat: NaN, long: NaN });
 
     useCoherentEvent('A32NX_TCAS_TRAFFIC', (aT: NDTraffic[]) => {
-        // TODO FIXME: Try to optimise for GC
+        airTraffic.forEach((traffic) => traffic.alive = false);
         aT.forEach((tf: NDTraffic) => {
-            const [x, y] = mapParams.coordinatesToXYy({ lat: tf.lat, long: tf.lon });
-            tf.posX = x;
-            tf.posY = y;
+            latLong.lat = tf.lat;
+            latLong.long = tf.lon;
+            [tf.posX, tf.posY] = mapParams.coordinatesToXYy(latLong);
+            let traffic: NDTraffic | undefined = airTraffic.find((p) => p && p.ID === tf.ID);
+            if (traffic) {
+                traffic.alive = true;
+                traffic = tf;
+            } else {
+                tf.alive = true;
+                airTraffic.push(tf);
+            }
         });
-        setAirTraffic(aT);
+        setAirTraffic([...airTraffic.filter((tf) => tf.alive)]);
     });
 
     useEffect(() => {
