@@ -293,4 +293,4 @@ export const GaugeComponentNoMemo: FC<GaugeComponentProps> = ({ x, y, radius, st
     );
 };
 
-export const GaugeComponent = React.memo(GaugeComponentNoMemo);
+export const GaugeComponent = memo(GaugeComponentNoMemo);
