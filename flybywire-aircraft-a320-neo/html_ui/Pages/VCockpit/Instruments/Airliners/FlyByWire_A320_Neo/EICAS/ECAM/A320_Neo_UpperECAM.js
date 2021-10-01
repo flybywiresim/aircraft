@@ -2620,7 +2620,7 @@ var A320_Neo_UpperECAM;
             super.update(_deltaTime);
             const slatsAngle = (SimVar.GetSimVarValue("L:A32NX_LEFT_SLATS_ANGLE", "degrees") + SimVar.GetSimVarValue("L:A32NX_LEFT_SLATS_ANGLE", "degrees")) * 0.5;
             const flapsAngle = Math.max(0, (SimVar.GetSimVarValue("L:A32NX_LEFT_FLAPS_ANGLE", "degrees") + SimVar.GetSimVarValue("L:A32NX_LEFT_FLAPS_ANGLE", "degrees")) * 0.5);
-            const handleIndex = SimVar.GetSimVarValue("L:A32NX_FLAPS_CONF_HANDLE_INDEX_HELPER", "Number");
+            const handleIndex = SimVar.GetSimVarValue("L:A32NX_FLAPS_CONF_INDEX", "Number");
             let slatsTargetIndex = 0;
             let flapsTargetIndex = 0;
             switch (handleIndex) {

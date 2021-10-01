@@ -321,7 +321,7 @@ void FlyByWireInterface::setupLocalVariables() {
   engineEngine1Timer = make_unique<LocalVariable>("A32NX_ENGINE_TIMER:1");
   engineEngine2Timer = make_unique<LocalVariable>("A32NX_ENGINE_TIMER:2");
 
-  flapsHandleIndexFlapConf = make_unique<LocalVariable>("A32NX_FLAPS_CONF_HANDLE_INDEX_HELPER");
+  flapsHandleIndexFlapConf = make_unique<LocalVariable>("A32NX_FLAPS_CONF_INDEX");
   flapsPosition = make_unique<LocalVariable>("A32NX_LEFT_FLAPS_ANGLE");
 
   idSpoilersArmed = make_unique<LocalVariable>("A32NX_SPOILERS_ARMED");

@@ -993,9 +993,9 @@
     - Degrees
     - The actual angle of the right slats
     
-- A32NX_FLAPS_CONF_HANDLE_INDEX_HELPER
+- A32NX_FLAPS_CONF_INDEX
     - Number
-    - A helper variable that indicates the flaps configuration
+    - Indicates the flap configuration index according to the table
     - Value | Meaning
       --- | ---
       0 | Conf0

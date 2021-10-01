@@ -198,7 +198,7 @@ impl SimulationElement for SlatFlapControlComputer {
         writer.write("LEFT_SLATS_TARGET_ANGLE", self.slats_demanded_angle);
         writer.write("RIGHT_SLATS_TARGET_ANGLE", self.slats_demanded_angle);
 
-        writer.write("FLAPS_CONF_HANDLE_INDEX_HELPER", self.flaps_conf as u8);
+        writer.write("FLAPS_CONF_INDEX", self.flaps_conf as u8);
     }
 }
 
@@ -489,7 +489,7 @@ mod tests {
         assert!(test_bed.contains_key("LEFT_SLATS_TARGET_ANGLE"));
         assert!(test_bed.contains_key("RIGHT_SLATS_TARGET_ANGLE"));
 
-        assert!(test_bed.contains_key("FLAPS_CONF_HANDLE_INDEX_HELPER"));
+        assert!(test_bed.contains_key("FLAPS_CONF_INDEX"));
     }
 
     // Tests flaps configuration and angles for regular
