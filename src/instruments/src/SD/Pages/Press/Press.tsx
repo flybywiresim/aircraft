@@ -291,7 +291,6 @@ const PackComponent = ({ id, x, y }: PackComponentType) => {
 
 type OutflowValveComponentType = {
     flightPhase : number,
-
 }
 
 const OutflowValveComponent = ({ flightPhase }: OutflowValveComponentType) => {
