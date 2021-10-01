@@ -277,7 +277,6 @@ type GaugeComponentProps = {
     endAngle: number,
     className: string,
     manMode: boolean,
-    children?: React.ReactNode,
 }
 
 export const GaugeComponentNoMemo: FC<GaugeComponentProps> = ({ x, y, radius, startAngle, endAngle, className, children, manMode }) => {
@@ -293,4 +292,4 @@ export const GaugeComponentNoMemo: FC<GaugeComponentProps> = ({ x, y, radius, st
     );
 };
 
-export const GaugeComponent = memo(GaugeComponentNoMemo);
+export const GaugeComponent: FC<GaugeComponentProps> = memo(GaugeComponentNoMemo);
