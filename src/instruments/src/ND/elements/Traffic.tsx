@@ -39,16 +39,24 @@ export const Traffic: FC<TcasProps> = ({ x, y, mapParams }) => {
             latLong.lat = tf.lat;
             latLong.long = tf.lon;
             [tf.posX, tf.posY] = mapParams.coordinatesToXYy(latLong);
-            let traffic: NDTraffic | undefined = airTraffic.find((p) => p && p.ID === tf.ID);
+            const traffic: NDTraffic | undefined = airTraffic.find((p) => p && p.ID === tf.ID);
             if (traffic) {
                 traffic.alive = true;
-                traffic = tf;
+                traffic.alt = tf.alt;
+                traffic.heading = tf.heading;
+                traffic.intrusionLevel = tf.intrusionLevel;
+                traffic.lat = tf.lat;
+                traffic.lon = tf.lon;
+                traffic.relativeAlt = tf.relativeAlt;
+                traffic.vertSpeed = tf.vertSpeed;
+                traffic.posX = tf.posX;
+                traffic.posY = tf.posY;
             } else {
                 tf.alive = true;
                 airTraffic.push(tf);
             }
         });
-        setAirTraffic([...airTraffic.filter((tf) => tf.alive)]);
+        setAirTraffic(airTraffic.filter((tf) => tf.alive));
     });
 
     useEffect(() => {
@@ -57,7 +65,7 @@ export const Traffic: FC<TcasProps> = ({ x, y, mapParams }) => {
 
     return (
         <Layer x={x} y={y}>
-            {airTraffic.map((tf) => (
+            {airTraffic.map((tf) => Math.abs(tf.posX) <= 250 && Math.abs(tf.posY) <= 250 && (
                 <TrafficIndicator
                     key={tf.ID}
                     x={tf.posX}
