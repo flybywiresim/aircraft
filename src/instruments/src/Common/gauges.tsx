@@ -184,7 +184,7 @@ export function splitDecimals(value, type) {
     return (decimalSplit);
 };
 
-export const valueRadianAngleConverter = (value, min, max, endAngle, startAngle) => {
+export function valueRadianAngleConverter(value, min, max, endAngle, startAngle) {
     const valuePercentage = (value - min) / (max - min);
     // const start = startAngle > 180 ? 360 - startAngle : startAngle;
     let angleInRadians = startAngle > endAngle
