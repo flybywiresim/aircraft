@@ -182,7 +182,7 @@ export function splitDecimals(value, type) {
     }
     const decimalSplit = value.toFixed(1).split('.', 2);
     return (decimalSplit);
-};
+}
 
 export function valueRadianAngleConverter(value, min, max, endAngle, startAngle) {
     const valuePercentage = (value - min) / (max - min);
@@ -198,7 +198,7 @@ export function valueRadianAngleConverter(value, min, max, endAngle, startAngle)
         x: Math.cos(angleInRadians),
         y: Math.sin(angleInRadians),
     });
-};
+}
 
 type GaugeMarkerComponentType = {
     value: number,
