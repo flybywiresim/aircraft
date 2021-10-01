@@ -1,7 +1,7 @@
 /* eslint-disable camelcase */
 import { useCoherentEvent } from '@instruments/common/hooks';
 import { useSimVar } from '@instruments/common/simVars';
-import React, { useEffect, FC, useState } from 'react';
+import React, { useEffect, FC, useState, memo } from 'react';
 import { Layer } from '@instruments/common/utils';
 import { TaRaIntrusion } from '@tcas/lib/TCasConstants';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
@@ -59,6 +59,7 @@ export const Traffic: FC<TcasProps> = ({ x, y, mapParams }) => {
         <Layer x={x} y={y}>
             {airTraffic.map((tf) => (
                 <TrafficIndicator
+                    key={tf.ID}
                     x={tf.posX}
                     y={tf.posY}
                     relativeAlt={tf.relativeAlt}
@@ -106,7 +107,7 @@ const raStyles = {
     paintOrder: 'markers stroke fill',
 } as React.CSSProperties;
 
-const TrafficIndicator: FC<TrafficProp> = ({ x, y, relativeAlt, vertSpeed, intrusionLevel }) => {
+const TrafficIndicator: FC<TrafficProp> = memo(({ x, y, relativeAlt, vertSpeed, intrusionLevel }) => {
     let color = '#ffffff';
     switch (intrusionLevel) {
     case TaRaIntrusion.TA:
@@ -184,4 +185,4 @@ const TrafficIndicator: FC<TrafficProp> = ({ x, y, relativeAlt, vertSpeed, intru
             </Layer>
         </>
     );
-};
+});
