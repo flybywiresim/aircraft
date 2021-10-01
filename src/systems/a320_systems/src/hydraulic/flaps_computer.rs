@@ -62,40 +62,6 @@ impl SimulationElement for FlapsHandle {
     }
 }
 
-trait SlatFlapLane {
-    fn signal_demanded_angle(&self, surface_type: &'static str) -> Option<Angle>;
-}
-
-impl SlatFlapLane for SlatFlapControlComputer {
-    fn signal_demanded_angle(&self, surface_type: &'static str) -> Option<Angle> {
-        match surface_type {
-            "FLAPS" => {
-                if (self.flaps_demanded_angle - self.flaps_feedback_angle)
-                    .get::<degree>()
-                    .abs()
-                    > Self::EQUAL_ANGLE_DELTA_DEGREE
-                {
-                    Some(self.flaps_demanded_angle)
-                } else {
-                    None
-                }
-            }
-            "SLATS" => {
-                if (self.slats_demanded_angle - self.slats_feedback_angle)
-                    .get::<degree>()
-                    .abs()
-                    > Self::EQUAL_ANGLE_DELTA_DEGREE
-                {
-                    Some(self.slats_demanded_angle)
-                } else {
-                    None
-                }
-            }
-            &_ => panic!("Not a valid slat/flap surface"),
-        }
-    }
-}
-
 struct SlatFlapControlComputer {
     flaps_demanded_angle: Angle,
     slats_demanded_angle: Angle,
@@ -174,12 +140,16 @@ impl SlatFlapControlComputer {
         }
     }
 
-    pub fn update<T: FeedbackPositionPickoffUnit>(
+    fn surface_movement_required(demanded_angle: Angle, feedback_angle: Angle) -> bool {
+        (demanded_angle - feedback_angle).get::<degree>().abs() > Self::EQUAL_ANGLE_DELTA_DEGREE
+    }
+
+    pub fn update(
         &mut self,
         context: &UpdateContext,
         flaps_handle: &FlapsHandle,
-        flaps_feedback: &T,
-        slats_feedback: &T,
+        flaps_feedback: &impl FeedbackPositionPickoffUnit,
+        slats_feedback: &impl FeedbackPositionPickoffUnit,
     ) {
         self.flaps_conf = self.generate_configuration(flaps_handle, context);
 
@@ -187,6 +157,35 @@ impl SlatFlapControlComputer {
         self.slats_demanded_angle = Self::demanded_slats_angle_from_conf(self.flaps_conf);
         self.flaps_feedback_angle = flaps_feedback.angle();
         self.slats_feedback_angle = slats_feedback.angle();
+    }
+}
+
+trait SlatFlapLane {
+    fn signal_demanded_angle(&self, surface_type: &'static str) -> Option<Angle>;
+}
+
+impl SlatFlapLane for SlatFlapControlComputer {
+    fn signal_demanded_angle(&self, surface_type: &'static str) -> Option<Angle> {
+        match surface_type {
+            "FLAPS"
+                if Self::surface_movement_required(
+                    self.flaps_demanded_angle,
+                    self.flaps_feedback_angle,
+                ) =>
+            {
+                Some(self.flaps_demanded_angle)
+            }
+            "SLATS"
+                if Self::surface_movement_required(
+                    self.slats_demanded_angle,
+                    self.slats_feedback_angle,
+                ) =>
+            {
+                Some(self.slats_demanded_angle)
+            }
+            "FLAPS" | "SLATS" => None,
+            _ => panic!("Not a valid slat/flap surface"),
+        }
     }
 }
 
