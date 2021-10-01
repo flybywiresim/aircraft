@@ -269,7 +269,7 @@ const GaugeMarkerComponentNoMemo = ({ value, x, y, min, max, radius, startAngle,
 };
 export const GaugeMarkerComponent = React.memo(GaugeMarkerComponentNoMemo);
 
-interface GaugeComponentProps {
+type GaugeComponentProps = {
     x: number,
     y: number,
     radius: number,
