@@ -417,8 +417,7 @@ const OverboardInletComponent = ({ validSDAC, flightPhase }: OverboardInletCompo
                     className={classNameValue}
                     indicator
                 />
-            )
-                : <text className="Standard Amber" x={143} y={450}>XX</text>}
+            ) : <text className="Standard Amber" x={143} y={450}>XX</text>}
         </>
     );
 };
