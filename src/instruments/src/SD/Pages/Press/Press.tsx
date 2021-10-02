@@ -234,7 +234,6 @@ const PressureComponent = () => {
                 <text className="Medium Cyan" x="525" y="25">FT</text>
             </g>
             <text className={`Large Green ${manMode ? 'Show' : 'Hide'}`} x="420" y="340">MAN</text>
-
         </>
     );
 };
