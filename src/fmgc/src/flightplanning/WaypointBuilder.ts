@@ -46,6 +46,9 @@ export class WaypointBuilder {
         waypoint.ident = ident;
         waypoint.infos.ident = ident;
 
+        waypoint.icao = `W      ${ident}`;
+        waypoint.infos.icao = waypoint.icao;
+
         return waypoint;
     }
 

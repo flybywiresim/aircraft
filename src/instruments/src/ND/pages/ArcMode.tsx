@@ -4,23 +4,23 @@ import { getSmallestAngle } from '@instruments/common/utils';
 import { MathUtils } from '@shared/MathUtils';
 import { useFlightPlanManager } from '@instruments/common/flightplan';
 import { LatLongData } from '@typings/fs-base-ui/html_ui/JS/Types';
+import { RangeSetting, Mode, EfisSide } from '@shared/NavigationDisplay';
 import { FlightPlan } from '../elements/FlightPlan';
 import { MapParameters } from '../utils/MapParameters';
 import { RadioNeedle } from '../elements/RadioNeedles';
 import { ToWaypointIndicator } from '../elements/ToWaypointIndicator';
-import { EfisSide, EfisOption, Mode, RangeSetting } from '../index';
 import { ApproachMessage } from '../elements/ApproachMessage';
 
 export interface ArcModeProps {
+    symbols: NdSymbol[],
     adirsAlign: boolean,
     rangeSetting: RangeSetting,
     side: EfisSide,
     ppos: LatLongData,
-    efisOption: EfisOption,
     mapHidden: boolean,
 }
 
-export const ArcMode: React.FC<ArcModeProps> = ({ adirsAlign, rangeSetting, side, ppos, efisOption, mapHidden }) => {
+export const ArcMode: React.FC<ArcModeProps> = ({ symbols, adirsAlign, rangeSetting, side, ppos, mapHidden }) => {
     const flightPlanManager = useFlightPlanManager();
 
     const [magHeading] = useSimVar('PLANE HEADING DEGREES MAGNETIC', 'degrees');
@@ -52,8 +52,8 @@ export const ArcMode: React.FC<ArcModeProps> = ({ adirsAlign, rangeSetting, side
                     x={384}
                     y={620}
                     flightPlanManager={flightPlanManager}
+                    symbols={symbols}
                     mapParams={mapParams}
-                    constraints={efisOption === EfisOption.Constraints}
                     debug={false}
                     temp
                 />
@@ -62,13 +62,13 @@ export const ArcMode: React.FC<ArcModeProps> = ({ adirsAlign, rangeSetting, side
         return (
             <>
                 <g id="map" clipPath="url(#arc-mode-map-clip)">
-                    <g visibility={mapHidden ? "hidden" : "visible"}>
+                    <g visibility={mapHidden ? 'hidden' : 'visible'}>
                         <FlightPlan
                             x={384}
                             y={620}
                             flightPlanManager={flightPlanManager}
+                            symbols={symbols}
                             mapParams={mapParams}
-                            constraints={efisOption === EfisOption.Constraints}
                             debug={false}
                             temp={false}
                         />
@@ -107,14 +107,14 @@ interface OverlayProps {
     heading: number,
     track: number,
     rangeSetting: number,
-    side: EfisSide,
+    _side: EfisSide,
     tcasMode: number,
     selectedHeading: number,
     ilsCourse: number,
     lsDisplayed: boolean,
 }
 
-const Overlay: React.FC<OverlayProps> = memo(({ heading, track, rangeSetting, side, tcasMode, selectedHeading, ilsCourse, lsDisplayed }) => (
+const Overlay: React.FC<OverlayProps> = memo(({ heading, track, rangeSetting, _side, tcasMode, selectedHeading, ilsCourse, lsDisplayed }) => (
     <>
         <clipPath id="arc-mode-map-clip">
             <path d="M0,312 a492,492 0 0 1 768,0 L768,562 L648,562 L591,625 L591,768 L174,768 L174,683 L122,625 L0,625 L0,312" />
@@ -662,7 +662,7 @@ const SelectedHeadingBug: React.FC<{heading: number, selected: number}> = ({ hea
             className="Cyan"
             fontSize={22}
         >
-            {`${("" + Math.round(selected)).padStart(3, "0")}`}
+            {`${Math.round(selected).toString().padStart(3, '0')}`}
         </text>
     );
 };
