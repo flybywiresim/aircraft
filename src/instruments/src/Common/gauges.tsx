@@ -276,17 +276,17 @@ type GaugeComponentProps = {
     manMode: boolean,
 }
 
-export const GaugeComponentNoMemo: FC<GaugeComponentProps> = ({ x, y, radius, startAngle, endAngle, className, children, manMode }) => {
+export const GaugeComponent: FC<GaugeComponentProps> = memo(({ x, y, radius, startAngle, endAngle, className, children, manMode }) => {
     const d = describeArc(x, y, radius, startAngle, endAngle);
 
     return (
         <>
-            <g className={manMode ? 'Show' : 'Hide'}>
-                <path d={d} className={className} />
-                <>{children}</>
+            <g className="GaugeComponent">
+                <g className={manMode ? 'Show' : 'Hide'}>
+                    <path d={d} className={className} />
+                    <>{children}</>
+                </g>
             </g>
         </>
     );
-};
-
-export const GaugeComponent: FC<GaugeComponentProps> = memo(GaugeComponentNoMemo);
+});

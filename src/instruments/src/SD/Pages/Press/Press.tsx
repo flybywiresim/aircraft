@@ -434,7 +434,7 @@ const OverboardOutletComponent = ({ validSDAC, flightPhase }: OverboardOutletCom
     let classNameText = 'White';
     let displayOutletValvePosition = 0;
 
-    // Simplified set - modify once pressurisation properly modeled.
+    // Simplified set -  modify once pressurisation properly modeled.
     switch (true) {
     case !validSDAC: // case 1
         indicator = false;
