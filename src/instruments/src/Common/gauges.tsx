@@ -189,9 +189,7 @@ export function valueRadianAngleConverter(value, min, max, endAngle, startAngle)
     let angleInRadians = startAngle > endAngle
         ? startAngle + (valuePercentage * (360 - startAngle + endAngle)) - 90
         : startAngle + (valuePercentage * (endAngle - startAngle)) - 90;
-    console.log(`Angle is ${angleInRadians}`);
     angleInRadians *= (Math.PI / 180.0);
-    console.log(`Angle is radians is ${angleInRadians}`);
     return ({
         x: Math.cos(angleInRadians),
         y: Math.sin(angleInRadians),
