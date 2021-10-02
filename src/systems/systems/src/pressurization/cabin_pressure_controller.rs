@@ -79,6 +79,8 @@ impl CabinPressureController {
         destination_qnh: Pressure,
         lgciu_gears_compressed: bool,
         cabin_pressure: Pressure,
+        outflow_valve: &PressureValve,
+        safety_valve: &PressureValve,
     ) {
         self.exterior_pressure = exterior_pressure;
         self.exterior_vertical_speed = context.vertical_speed();
@@ -93,6 +95,9 @@ impl CabinPressureController {
 
         self.cabin_target_vs = self.calculate_cabin_target_vs(context);
         self.cabin_alt = self.calculate_cabin_altitude(sea_level_pressure, destination_qnh);
+
+        self.outflow_valve_open_amount = outflow_valve.open_amount();
+        self.safety_valve_open_amount = safety_valve.open_amount();
     }
 
     fn calculate_cabin_target_vs(&mut self, context: &UpdateContext) -> Velocity {
@@ -233,14 +238,6 @@ impl CabinPressureController {
 
     fn cabin_delta_p(&self) -> Pressure {
         self.cabin_pressure - self.exterior_pressure
-    }
-
-    pub(super) fn update_outflow_valve_state(&mut self, outflow_valve: &PressureValve) {
-        self.outflow_valve_open_amount = outflow_valve.open_amount();
-    }
-
-    pub(super) fn update_safety_valve_state(&mut self, safety_valve: &PressureValve) {
-        self.safety_valve_open_amount = safety_valve.open_amount();
     }
 
     pub(super) fn cabin_altitude(&self) -> Length {
@@ -732,6 +729,7 @@ mod pressure_schedule_manager_tests {
     struct TestAircraft {
         cpc: CabinPressureController,
         outflow_valve: PressureValve,
+        safety_valve: PressureValve,
         press_overhead: PressurizationOverheadPanel,
         engine_1: TestEngine,
         engine_2: TestEngine,
@@ -742,6 +740,7 @@ mod pressure_schedule_manager_tests {
             let mut test_aircraft = Self {
                 cpc: CabinPressureController::new(),
                 outflow_valve: PressureValve::new_outflow_valve(),
+                safety_valve: PressureValve::new_safety_valve(),
                 press_overhead: PressurizationOverheadPanel::new(),
                 engine_1: TestEngine::new(Ratio::new::<percent>(0.)),
                 engine_2: TestEngine::new(Ratio::new::<percent>(0.)),
@@ -814,9 +813,10 @@ mod pressure_schedule_manager_tests {
                 Pressure::new::<hectopascal>(1013.),
                 self.lgciu_gears_compressed,
                 Pressure::new::<hectopascal>(1013.),
+                &self.outflow_valve,
+                &self.safety_valve,
             );
             self.outflow_valve.update(context, &self.press_overhead);
-            self.cpc.update_outflow_valve_state(&self.outflow_valve);
         }
     }
     impl SimulationElement for TestAircraft {}

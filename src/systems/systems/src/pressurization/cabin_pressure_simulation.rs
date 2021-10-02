@@ -164,15 +164,7 @@ impl CabinPressure {
         let area_leakage = Self::AREA_LEAKAGE
             + Self::SAFETY_VALVE_SIZE * self.safety_valve_open_amount.get::<ratio>();
         VolumeRate::new::<cubic_meter_per_second>(
-            self.flow_coefficient
-                * area_leakage
-                * ((2.
-                    * (Self::GAMMA / (Self::GAMMA - 1.))
-                    * Self::RHO
-                    * self.cabin_pressure.get::<pascal>()
-                    * self.z_coefficient)
-                    .abs())
-                .sqrt(),
+            self.flow_coefficient * area_leakage * self.base_airflow_calculation(),
         )
     }
 
@@ -180,13 +172,7 @@ impl CabinPressure {
         let vertical_speed = (self.outflow_valve_open_amount.get::<ratio>()
             * Self::OFV_SIZE
             * self.flow_coefficient
-            * ((2.
-                * (Self::GAMMA / (Self::GAMMA - 1.))
-                * Self::RHO
-                * self.cabin_pressure.get::<pascal>()
-                * self.z_coefficient)
-                .abs())
-            .sqrt()
+            * self.base_airflow_calculation()
             - self.cabin_flow_in.get::<cubic_meter_per_second>()
             + self.cabin_flow_out.get::<cubic_meter_per_second>())
             / ((Self::RHO * Self::G * Self::CABIN_VOLUME) / (Self::R * Self::T_0));
@@ -214,6 +200,15 @@ impl CabinPressure {
                         * context.delta_as_secs_f64())
                 .powf(5.2559)
         }
+    }
+
+    fn base_airflow_calculation(&self) -> f64 {
+        ((2. * (Self::GAMMA / (Self::GAMMA - 1.))
+            * Self::RHO
+            * self.cabin_pressure.get::<pascal>()
+            * self.z_coefficient)
+            .abs())
+        .sqrt()
     }
 
     pub(super) fn cabin_vs(&self) -> Velocity {

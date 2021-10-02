@@ -97,7 +97,7 @@ impl Pressurization {
         );
 
         if !press_overhead.ldg_elev_is_auto() {
-            self.landing_elevation = Length::new::<foot>(press_overhead.ldg_elev_knob.value())
+            self.landing_elevation = Length::new::<foot>(press_overhead.ldg_elev_knob_value())
         }
         self.lgciu_gears_compressed = lgciu
             .iter()
@@ -114,9 +114,9 @@ impl Pressurization {
                 self.destination_qnh,
                 self.lgciu_gears_compressed,
                 self.cabin_pressure_simulation.cabin_pressure(),
+                &self.outflow_valve,
+                &self.safety_valve,
             );
-            controller.update_outflow_valve_state(&self.outflow_valve);
-            controller.update_safety_valve_state(&self.safety_valve);
         }
 
         self.residual_pressure_controller.update(
@@ -141,16 +141,16 @@ impl Pressurization {
         self.safety_valve
             .update(context, &self.cpc[self.active_system - 1]);
 
-        if self.is_in_man_mode && press_overhead.mode_sel.is_man() {
+        if self.is_in_man_mode && press_overhead.is_in_man_mode() {
             self.man_mode_duration += context.delta();
-        } else if self.is_in_man_mode && !press_overhead.mode_sel.is_man() {
+        } else if self.is_in_man_mode && !press_overhead.is_in_man_mode() {
             if self.man_mode_duration > Duration::from_secs(10) {
                 self.active_system = if self.active_system == 1 { 2 } else { 1 };
             }
             self.man_mode_duration = Duration::from_secs(0)
         }
 
-        self.is_in_man_mode = press_overhead.mode_sel.is_man();
+        self.is_in_man_mode = press_overhead.is_in_man_mode();
         self.switch_active_system();
     }
 
@@ -249,6 +249,10 @@ impl PressurizationOverheadPanel {
         (self.ldg_elev_knob.value() + 2000.).abs() < margin
     }
 
+    fn ldg_elev_knob_value(&self) -> f64 {
+        self.ldg_elev_knob.value()
+    }
+
     fn is_in_man_mode(&self) -> bool {
         !self.mode_sel.is_auto()
     }
@@ -281,22 +285,21 @@ impl ControllerSignal<PressureValveSignal> for PressurizationOverheadPanel {
         } else {
             match self.man_vs_switch_position() {
                 0 => Some(PressureValveSignal::Open),
+                1 => Some(PressureValveSignal::Neutral),
                 2 => Some(PressureValveSignal::Close),
-                _ => Some(PressureValveSignal::Neutral),
+                _ => panic!("Something went wrong in PressurizationOverheadPanel"),
             }
         }
     }
 }
 
 struct ResidualPressureController {
-    should_open_outflow_valve: bool,
     timer: Duration,
 }
 
 impl ResidualPressureController {
     fn new() -> Self {
         Self {
-            should_open_outflow_valve: false,
             timer: Duration::from_secs(0),
         }
     }
@@ -321,13 +324,12 @@ impl ResidualPressureController {
         } else {
             self.timer = Duration::from_secs(0);
         }
-        self.should_open_outflow_valve = self.timer > Duration::from_secs(60);
     }
 }
 
 impl ControllerSignal<PressureValveSignal> for ResidualPressureController {
     fn signal(&self) -> Option<PressureValveSignal> {
-        if self.should_open_outflow_valve {
+        if self.timer > Duration::from_secs(60) {
             Some(PressureValveSignal::Open)
         } else {
             None
