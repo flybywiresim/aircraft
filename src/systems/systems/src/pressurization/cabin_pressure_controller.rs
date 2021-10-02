@@ -19,7 +19,7 @@ use uom::si::{
 };
 
 pub(super) struct CabinPressureController {
-    pressure_schedule_manager: PressureScheduleManager,
+    pressure_schedule_manager: Option<PressureScheduleManager>,
     exterior_pressure: Pressure,
     exterior_vertical_speed: Velocity,
     cabin_pressure: Pressure,
@@ -54,7 +54,7 @@ impl CabinPressureController {
 
     pub(super) fn new() -> Self {
         Self {
-            pressure_schedule_manager: PressureScheduleManager::new(),
+            pressure_schedule_manager: Some(PressureScheduleManager::new()),
             exterior_pressure: Pressure::new::<hectopascal>(1013.25),
             exterior_vertical_speed: Velocity::new::<foot_per_minute>(0.),
             cabin_pressure: Pressure::new::<hectopascal>(1013.25),
@@ -86,9 +86,10 @@ impl CabinPressureController {
         self.landing_elev = landing_elevation;
         self.departure_elev = departure_elevation;
 
-        self.pressure_schedule_manager =
-            self.pressure_schedule_manager
-                .update(context, engines, lgciu_gears_compressed);
+        if let Some(manager) = self.pressure_schedule_manager.take() {
+            self.pressure_schedule_manager =
+                Some(manager.update(context, engines, lgciu_gears_compressed));
+        }
 
         self.cabin_target_vs = self.calculate_cabin_target_vs(context);
         self.cabin_alt = self.calculate_cabin_altitude(sea_level_pressure, destination_qnh);
@@ -98,7 +99,7 @@ impl CabinPressureController {
         let error_margin = Pressure::new::<hectopascal>(1.);
 
         match self.pressure_schedule_manager {
-            PressureScheduleManager::Ground(_) => {
+            Some(PressureScheduleManager::Ground(_)) => {
                 if self.cabin_delta_p() > error_margin {
                     Velocity::new::<foot_per_minute>(Self::DEPRESS_RATE)
                 } else if self.cabin_delta_p() < -error_margin {
@@ -107,14 +108,14 @@ impl CabinPressureController {
                     Velocity::new::<foot_per_minute>(0.)
                 }
             }
-            PressureScheduleManager::TakeOff(_) => {
+            Some(PressureScheduleManager::TakeOff(_)) => {
                 if self.cabin_delta_p() < Pressure::new::<psi>(0.1) {
                     Velocity::new::<foot_per_minute>(Self::TAKEOFF_RATE)
                 } else {
                     Velocity::new::<foot_per_minute>(0.)
                 }
             }
-            PressureScheduleManager::ClimbInternal(_) => {
+            Some(PressureScheduleManager::ClimbInternal(_)) => {
                 const DELTA_PRESSURE_LIMIT: f64 = 8.06; // PSI
                 const CABIN_ALTITUDE_LIMIT: f64 = 8050.; // Feet
 
@@ -133,8 +134,8 @@ impl CabinPressureController {
                     target_vs
                 }
             }
-            PressureScheduleManager::Cruise(_) => Velocity::new::<foot_per_minute>(0.),
-            PressureScheduleManager::DescentInternal(_) => {
+            Some(PressureScheduleManager::Cruise(_)) => Velocity::new::<foot_per_minute>(0.),
+            Some(PressureScheduleManager::DescentInternal(_)) => {
                 let target_vs = Velocity::new::<foot_per_minute>(
                     self.get_int_diff_with_ldg_elev().get::<foot>()
                         * self.exterior_vertical_speed.get::<foot_per_minute>()
@@ -150,7 +151,7 @@ impl CabinPressureController {
                     target_vs
                 }
             }
-            PressureScheduleManager::Abort(_) => {
+            Some(PressureScheduleManager::Abort(_)) => {
                 // Altitude in ft equivalent to 0.1 PSI delta P at sea level
                 const TARGET_LANDING_ALT_DIFF: f64 = 187.818;
 
@@ -166,6 +167,7 @@ impl CabinPressureController {
                     Velocity::new::<foot_per_minute>(0.)
                 }
             }
+            None => Velocity::new::<foot_per_minute>(0.),
         }
     }
 
@@ -192,7 +194,7 @@ impl CabinPressureController {
         // Based on local QNH when below 5000ft from departure or arrival airport, ISA when above
         let p_0 = if matches!(
             self.pressure_schedule_manager,
-            PressureScheduleManager::DescentInternal(_)
+            Some(PressureScheduleManager::DescentInternal(_))
         ) && (self.cabin_altitude() - self.landing_elev)
             .get::<foot>()
             .abs()
@@ -246,21 +248,31 @@ impl CabinPressureController {
     }
 
     pub(super) fn should_switch_cpc(&self) -> bool {
-        self.pressure_schedule_manager.should_switch_cpc()
+        if let Some(manager) = &self.pressure_schedule_manager {
+            manager.should_switch_cpc()
+        } else {
+            false
+        }
     }
 
     pub(super) fn should_open_outflow_valve(&self) -> bool {
-        self.pressure_schedule_manager.should_open_outflow_valve()
+        if let Some(manager) = &self.pressure_schedule_manager {
+            manager.should_open_outflow_valve()
+        } else {
+            false
+        }
     }
 
     pub(super) fn reset_cpc_switch(&mut self) {
-        self.pressure_schedule_manager.reset_cpc_switch();
+        if let Some(manager) = self.pressure_schedule_manager.as_mut() {
+            manager.reset_cpc_switch();
+        }
     }
 
     pub(super) fn is_ground(&self) -> bool {
         matches!(
             self.pressure_schedule_manager,
-            PressureScheduleManager::Ground(_)
+            Some(PressureScheduleManager::Ground(_))
         )
     }
 
@@ -319,7 +331,7 @@ impl OutflowValveActuator for CabinPressureController {
         } else if press_overhead.ditching.is_on() {
             Ratio::new::<percent>(0.)
         } else if ofv_open_ratio >= Ratio::new::<percent>(100.)
-            || (self.is_ground() && self.pressure_schedule_manager.should_open_outflow_valve())
+            || (self.is_ground() && self.should_open_outflow_valve())
         {
             Ratio::new::<percent>(100.)
         } else if ofv_open_ratio <= Ratio::new::<percent>(0.) {
@@ -353,7 +365,6 @@ impl ControllerSignal<PressureValveSignal> for CabinPressureController {
     }
 }
 
-#[derive(Copy, Clone)]
 enum PressureScheduleManager {
     Ground(PressureSchedule<Ground>),
     TakeOff(PressureSchedule<TakeOff>),
@@ -748,42 +759,42 @@ mod pressure_schedule_manager_tests {
         fn is_ground(&self) -> bool {
             matches!(
                 self.cpc.pressure_schedule_manager,
-                PressureScheduleManager::Ground(_)
+                Some(PressureScheduleManager::Ground(_))
             )
         }
 
         fn is_takeoff(&self) -> bool {
             matches!(
                 self.cpc.pressure_schedule_manager,
-                PressureScheduleManager::TakeOff(_)
+                Some(PressureScheduleManager::TakeOff(_))
             )
         }
 
         fn is_climb(&self) -> bool {
             matches!(
                 self.cpc.pressure_schedule_manager,
-                PressureScheduleManager::ClimbInternal(_)
+                Some(PressureScheduleManager::ClimbInternal(_))
             )
         }
 
         fn is_cruise(&self) -> bool {
             matches!(
                 self.cpc.pressure_schedule_manager,
-                PressureScheduleManager::Cruise(_)
+                Some(PressureScheduleManager::Cruise(_))
             )
         }
 
         fn is_descent(&self) -> bool {
             matches!(
                 self.cpc.pressure_schedule_manager,
-                PressureScheduleManager::DescentInternal(_)
+                Some(PressureScheduleManager::DescentInternal(_))
             )
         }
 
         fn is_abort(&self) -> bool {
             matches!(
                 self.cpc.pressure_schedule_manager,
-                PressureScheduleManager::Abort(_)
+                Some(PressureScheduleManager::Abort(_))
             )
         }
 
