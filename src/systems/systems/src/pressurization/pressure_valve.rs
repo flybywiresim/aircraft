@@ -60,7 +60,7 @@ impl PressureValve {
                 }
             }
             Some(PressureValveSignal::Neutral) => (),
-            _ => {
+            None => {
                 if self.open_amount < self.target_open {
                     self.open_amount +=
                         Ratio::new::<percent>(self.get_valve_change_for_delta(context).min(
