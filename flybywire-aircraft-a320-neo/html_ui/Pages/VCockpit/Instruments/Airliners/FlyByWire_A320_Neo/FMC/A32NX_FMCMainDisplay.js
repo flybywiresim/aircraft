@@ -38,8 +38,6 @@ class FMCMainDisplay extends BaseAirliners {
         this.perfApprTemp = undefined;
         this.perfApprWindHeading = undefined;
         this.perfApprWindSpeed = undefined;
-        this.perfApprTransAlt = undefined;
-        this.perfApprTransAltPilotEntered = undefined;
         this.v1Speed = undefined;
         this.vRSpeed = undefined;
         this.v2Speed = undefined;
@@ -174,6 +172,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.zeroFuelWeightMassCenter = undefined;
         this.gpsPrimaryLostMessageAcknowledged = false;
         this.gpsPrimaryMessageAcknowledged = false;
+        this.efisSymbols = undefined;
     }
 
     Init() {
@@ -189,10 +188,12 @@ class FMCMainDisplay extends BaseAirliners {
         this.guidanceManager = new Fmgc.GuidanceManager(this.flightPlanManager);
         this.guidanceController = new Fmgc.GuidanceController(this.flightPlanManager, this.guidanceManager);
         this.navRadioManager = new Fmgc.NavRadioManager(this);
+        this.efisSymbols = new Fmgc.EfisSymbols(this.flightPlanManager);
 
         Fmgc.initFmgcLoop();
 
         this.guidanceController.init();
+        this.efisSymbols.init();
 
         this.tempCurve = new Avionics.Curve();
         this.tempCurve.interpolationFunction = Avionics.CurveTool.NumberInterpolation;
@@ -296,7 +297,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.routeIndex = 0;
         this.coRoute = "";
         this.tmpOrigin = "";
-        this.transitionAltitude = 10000;
+        this.transitionAltitude = undefined;
         this.perfTOTemp = NaN;
         this._overridenFlapApproachSpeed = NaN;
         this._overridenSlatApproachSpeed = NaN;
@@ -312,8 +313,6 @@ class FMCMainDisplay extends BaseAirliners {
         this.perfApprTemp = NaN;
         this.perfApprWindHeading = NaN;
         this.perfApprWindSpeed = NaN;
-        this.perfApprTransAlt = 10000;
-        this.perfApprTransAltPilotEntered = false;
         this.v1Speed = undefined;
         this.vRSpeed = undefined;
         this.v2Speed = undefined;
@@ -560,6 +559,10 @@ class FMCMainDisplay extends BaseAirliners {
         if (this.ilsUpdateThrottler.canUpdate(_deltaTime) !== -1) {
             this.updateIls();
         }
+
+        if (this.efisSymbols) {
+            this.efisSymbols.update(_deltaTime);
+        }
     }
 
     /**
@@ -798,24 +801,25 @@ class FMCMainDisplay extends BaseAirliners {
                         speed = Math.min(speed, this.managedSpeedLimit);
                     }
 
+                    // TODO we really need VNAV to predict where along the leg we should slow to the constraint
+                    speed = Math.min(speed, this.getSpeedConstraint());
+
                     [this.managedSpeedTarget, isMach] = this.getManagedTargets(speed, this.managedSpeedDescendMach);
                     vPfd = this.managedSpeedTarget;
                     break;
                 }
                 case FmgcFlightPhases.APPROACH: {
-                    const ctn = this.getSpeedConstraint(false);
-                    let speed = this.getAppManagedSpeed();
-                    let vls = this.getVApp();
+                    // the displayed target is Vapp (with GSmini)
+                    // the guidance target is lower limited by FAC manouvering speeds (O, S, F) unless in landing config
+                    // constraints are not considered
+                    const speed = this.getAppManagedSpeed();
+                    let vAppTarget = this.getVApp();
                     if (isFinite(this.perfApprWindSpeed) && isFinite(this.perfApprWindHeading)) {
-                        vls = NXSpeedsUtils.getVtargetGSMini(vls, NXSpeedsUtils.getHeadWindDiff(this._towerHeadwind));
-                    }
-                    if (ctn !== Infinity) {
-                        vls = Math.max(vls, ctn);
-                        speed = Math.max(speed, ctn);
+                        vAppTarget = NXSpeedsUtils.getVtargetGSMini(vAppTarget, NXSpeedsUtils.getHeadWindDiff(this._towerHeadwind));
                     }
 
-                    vPfd = vls;
-                    this.managedSpeedTarget = Math.max(speed, vls);
+                    vPfd = vAppTarget;
+                    this.managedSpeedTarget = Math.max(speed, vAppTarget);
                     break;
                 }
                 case FmgcFlightPhases.GOAROUND: {
@@ -2228,6 +2232,7 @@ class FMCMainDisplay extends BaseAirliners {
             // TODO when possible fetch default from database
             this.transitionAltitude = this.transitionAltitudeIsPilotEntered ? 10000 : NaN;
             this.transitionAltitudeIsPilotEntered = false;
+            this.flightPlanManager.setOriginTransitionAltitude();
             SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", 0);
             return true;
         }
@@ -2246,6 +2251,7 @@ class FMCMainDisplay extends BaseAirliners {
 
         this.transitionAltitude = value;
         this.transitionAltitudeIsPilotEntered = true;
+        this.flightPlanManager.setOriginTransitionAltitude(value);
         SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", value);
         return true;
     }
@@ -3010,10 +3016,8 @@ class FMCMainDisplay extends BaseAirliners {
 
     setPerfApprTransAlt(s) {
         if (s === FMCMainDisplay.clrValue) {
-            // TODO when possible fetch default from database
-            this.perfApprTransAlt = this.perfApprTransAltPilotEntered ? 10000 : NaN;
-            this.perfApprTransAltPilotEntered = false;
-            SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", this.perfApprTransAlt);
+            this.flightPlanManager.setDestinationTransitionLevel();
+            SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", 0);
             return true;
         }
 
@@ -3027,8 +3031,7 @@ class FMCMainDisplay extends BaseAirliners {
             return false;
         }
 
-        this.perfApprTransAlt = value;
-        this.perfApprTransAltPilotEntered = true;
+        this.flightPlanManager.setDestinationTransitionLevel(Math.round(value / 100));
         SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", value);
         return true;
     }

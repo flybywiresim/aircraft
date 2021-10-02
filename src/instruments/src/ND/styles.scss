@@ -37,6 +37,7 @@
   stroke: $display-magenta;
 }
 
+.Magenta text,
 text.Magenta {
   fill: $display-magenta;
   stroke: none;
@@ -47,6 +48,7 @@ text.Magenta {
   stroke: $display-cyan;
 }
 
+.Cyan text,
 text.Cyan {
   fill: $display-cyan;
   stroke: none;
@@ -67,6 +69,7 @@ tspan.Cyan {
   stroke: none;
 }
 
+.White text,
 text.White {
   fill: $display-white;
   stroke: none;
@@ -82,6 +85,7 @@ text.White {
   stroke: none;
 }
 
+.Green text,
 text.Green {
   fill: $display-green;
   stroke: none;
@@ -92,6 +96,7 @@ text.Green {
   fill: none;
 }
 
+.Amber text,
 text.Amber {
   fill: $display-amber;
   stroke: none;
@@ -107,6 +112,7 @@ text.Amber {
   stroke: none;
 }
 
+.Yellow text,
 text.Yellow {
   fill: $display-yellow;
   stroke: none;
@@ -122,6 +128,7 @@ text.Yellow {
   stroke: none;
 }
 
+.Red text,
 text.Red {
   fill: $display-red;
   stroke: none;

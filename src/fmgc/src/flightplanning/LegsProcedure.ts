@@ -111,13 +111,6 @@ export class LegsProcedure {
           const currentLeg = this._legs[this._currentIndex];
           isLegMappable = true;
 
-          // Filter out DER legs at the start of procedures, as we create our own DER leg
-          // for the departure runway
-          if (this._currentIndex === 0 && currentLeg.fixIcao?.substring(7, 10) === 'DER') {
-              this._currentIndex++;
-              continue;
-          }
-
           // Some procedures don't start with 15 (initial fix) but instead start with a heading and distance from
           // a fix: the procedure then starts with the fix exactly
           if (this._currentIndex === 0 && currentLeg.type === 10 && !this._addedProcedureStart) {
@@ -431,11 +424,10 @@ export class LegsProcedure {
       const arcCenterCoordinates = new LatLongAlt(arcCentreFix.lat, arcCentreFix.lon, 0);
 
       const toFix = this._facilities.get(leg.fixIcao);
-      const toIdent = toFix.icao.substring(7, 12).trim();
       const toCoordinates = new LatLongAlt(toFix.lat, toFix.lon, 0);
 
       const radius = Avionics.Utils.computeGreatCircleDistance(arcCenterCoordinates, toCoordinates);
-      const waypoint = this.buildWaypoint(toIdent, toCoordinates);
+      const waypoint = RawDataMapper.toWaypoint(toFix, this._instrument);
 
       waypoint.additionalData.radius = radius;
       waypoint.additionalData.center = arcCenterCoordinates;

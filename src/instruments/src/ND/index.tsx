@@ -4,6 +4,8 @@ import { FlightPlanProvider } from '@instruments/common/flightplan';
 import { useSimVar } from '@instruments/common/simVars';
 import { useArinc429Var } from '@instruments/common/arinc429';
 import { getSupplier } from '@instruments/common/utils';
+import { useCoherentEvent } from '@instruments/common/hooks';
+import { Mode, NdSymbol, rangeSettings } from '@shared/NavigationDisplay';
 import { render } from '../Common';
 import { ArcMode } from './pages/ArcMode';
 import { WindIndicator } from './elements/WindIndicator';
@@ -18,29 +20,6 @@ import { RoseMode } from './pages/RoseMode';
 
 import './styles.scss';
 
-export type RangeSetting = 10 | 20 | 40 | 80 | 160 | 320;
-
-export const rangeSettings: RangeSetting[] = [10, 20, 40, 80, 160, 320];
-
-export enum Mode {
-    ROSE_ILS,
-    ROSE_VOR,
-    ROSE_NAV,
-    ARC,
-    PLAN,
-}
-
-export type EfisSide = 'L' | 'R'
-
-export enum EfisOption {
-    None = 0,
-    Constraints = 1,
-    VorDmes = 2,
-    Waypoints = 3,
-    Ndbs = 4,
-    Airports = 5,
-}
-
 const NavigationDisplay: React.FC = () => {
     const [displayIndex] = useState(() => {
         const url = document.getElementsByTagName('a32nx-nd')[0].getAttribute('url');
@@ -48,7 +27,6 @@ const NavigationDisplay: React.FC = () => {
         return parseInt(url?.substring(url.length - 1) ?? '1', 10);
     });
     const side = displayIndex === 1 ? 'L' : 'R';
-    const [efisOption] = useSimVar(`L:A32NX_EFIS_${side}_OPTION`, 'enum', 500);
     const [airDataSwitch] = useSimVar('L:A32NX_AIR_DATA_SWITCHING_KNOB', 'enum', 200);
     const [attHdgSwitch] = useSimVar('L:A32NX_ATT_HDG_SWITCHING_KNOB', 'enum', 200);
     const [airDataReferenceSource, setAirDataSource] = useState(displayIndex);
@@ -113,6 +91,12 @@ const NavigationDisplay: React.FC = () => {
         return () => clearTimeout(timeout);
     }, [rangeIndex]);
 
+    const [symbols, setSymbols] = useState<NdSymbol[]>([]);
+
+    useCoherentEvent(`A32NX_EFIS_${side}_SYMBOLS`, (symbols) => {
+        setSymbols(symbols);
+    });
+
     return (
         <DisplayUnit
             electricitySimvar={displayIndex === 1 ? 'L:A32NX_ELEC_AC_ESS_BUS_IS_POWERED' : 'L:A32NX_ELEC_AC_2_BUS_IS_POWERED'}
@@ -129,8 +113,8 @@ const NavigationDisplay: React.FC = () => {
                         <PlanMode
                             adirsAlign={adirsAlign}
                             rangeSetting={rangeSettings[rangeIndex]}
+                            symbols={symbols}
                             ppos={ppos}
-                            efisOption={efisOption}
                             mapHidden={modeChangeShown || rangeChangeShown}
                         />
                     )}
@@ -138,9 +122,9 @@ const NavigationDisplay: React.FC = () => {
                         <ArcMode
                             adirsAlign={adirsAlign}
                             rangeSetting={rangeSettings[rangeIndex]}
+                            symbols={symbols}
                             side={side}
                             ppos={ppos}
-                            efisOption={efisOption}
                             mapHidden={modeChangeShown || rangeChangeShown}
                         />
                     )}
@@ -149,10 +133,10 @@ const NavigationDisplay: React.FC = () => {
                         <RoseMode
                             adirsAlign={adirsAlign}
                             rangeSetting={rangeSettings[rangeIndex]}
+                            symbols={symbols}
                             side={side}
                             ppos={ppos}
                             mode={modeIndex}
-                            efisOption={efisOption}
                             mapHidden={modeChangeShown || rangeChangeShown}
                         />
                     )}
@@ -160,7 +144,7 @@ const NavigationDisplay: React.FC = () => {
                     <Chrono side={side} />
 
                     <NavigationDisplayMessages adirsAlign={adirsAlign} mode={modeIndex} modeChangeShown={modeChangeShown} rangeChangeShown={rangeChangeShown} />
-                    {(adirsAlign) && (
+                    {(adirsAlign && modeIndex !== Mode.PLAN) && (
                         <>
                             <RadioNavInfo index={1} side={side} />
                             <RadioNavInfo index={2} side={side} />

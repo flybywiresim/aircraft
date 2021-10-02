@@ -5,24 +5,24 @@ import { LatLongData } from '@typings/fs-base-ui/html_ui/JS/Types';
 import { useFlightPlanManager } from '@instruments/common/flightplan';
 import { MathUtils } from '@shared/MathUtils';
 import { TuningMode } from '@fmgc/radionav';
+import { Mode, EfisSide } from '@shared/NavigationDisplay';
 import { ToWaypointIndicator } from '../elements/ToWaypointIndicator';
 import { FlightPlan } from '../elements/FlightPlan';
 import { MapParameters } from '../utils/MapParameters';
-import { EfisOption, EfisSide, Mode } from '../index';
 import { RadioNeedle } from '../elements/RadioNeedles';
 import { ApproachMessage } from '../elements/ApproachMessage';
 
 export interface RoseModeProps {
+    symbols: NdSymbol[],
     adirsAlign: boolean,
     rangeSetting: number,
     mode: Mode.ROSE_ILS | Mode.ROSE_VOR | Mode.ROSE_NAV,
     side: EfisSide,
     ppos: LatLongData,
-    efisOption: EfisOption,
     mapHidden: boolean,
 }
 
-export const RoseMode: FC<RoseModeProps> = ({ adirsAlign, rangeSetting, mode, side, ppos, efisOption, mapHidden }) => {
+export const RoseMode: FC<RoseModeProps> = ({ symbols, adirsAlign, rangeSetting, mode, side, ppos, mapHidden }) => {
     const flightPlanManager = useFlightPlanManager();
 
     const [magHeading] = useSimVar('PLANE HEADING DEGREES MAGNETIC', 'degrees');
@@ -54,8 +54,8 @@ export const RoseMode: FC<RoseModeProps> = ({ adirsAlign, rangeSetting, mode, si
                     x={384}
                     y={384}
                     flightPlanManager={flightPlanManager}
+                    symbols={symbols}
                     mapParams={mapParams}
-                    constraints={efisOption === EfisOption.Constraints}
                     debug={false}
                     temp
                 />
@@ -70,8 +70,8 @@ export const RoseMode: FC<RoseModeProps> = ({ adirsAlign, rangeSetting, mode, si
                                 x={384}
                                 y={384}
                                 flightPlanManager={flightPlanManager}
+                                symbols={symbols}
                                 mapParams={mapParams}
-                                constraints={efisOption === EfisOption.Constraints}
                                 debug={false}
                                 temp={false}
                             />
@@ -604,8 +604,8 @@ const VorCaptureOverlay: React.FC<{
 
 const IlsCaptureOverlay: React.FC<{
     heading: number,
-    side: EfisSide,
-}> = memo(({ heading, side }) => {
+    _side: EfisSide,
+}> = memo(({ heading, _side }) => {
     const [course] = useSimVar('NAV LOCALIZER:3', 'degrees');
     const [courseDeviation] = useSimVar('NAV RADIAL ERROR:3', 'degrees', 20);
     const [available] = useSimVar('NAV HAS LOCALIZER:3', 'number');
@@ -715,6 +715,17 @@ const SelectedHeadingBug: React.FC<{heading: number, selected: number}> = ({ hea
     );
 };
 
+const formatTuningMode = (tuningMode: TuningMode): string => {
+    switch (tuningMode) {
+    case TuningMode.Manual:
+        return 'M';
+    case TuningMode.Remote:
+        return 'R';
+    default:
+        return '';
+    }
+};
+
 const VorInfo: FC<{side: EfisSide}> = memo(({ side }) => {
     const index = side === 'R' ? 2 : 1;
 
@@ -725,6 +736,11 @@ const VorInfo: FC<{side: EfisSide}> = memo(({ side }) => {
     const [vorAvailable] = useSimVar(`NAV HAS NAV:${index}`, 'boolean');
 
     const [freqInt, freqDecimal] = vorFrequency.toFixed(2).split('.', 2);
+
+    const [tuningModeLabel, setTuningModeLabel] = useState('');
+    useEffect(() => {
+        setTuningModeLabel(formatTuningMode(tuningMode));
+    }, [tuningMode]);
 
     return (
         <Layer x={748} y={28}>
@@ -743,10 +759,10 @@ const VorInfo: FC<{side: EfisSide}> = memo(({ side }) => {
             ) }
             <text x={-56} y={30} fontSize={25} className="White" textAnchor="end">CRS</text>
             <text x={20} y={30} fontSize={25} className="Cyan" textAnchor="end">
-                {vorCourse >= 0 ? (`${vorCourse}`).padStart(3, '0') : '---'}
+                {vorCourse >= 0 ? (`${Math.round(vorCourse)}`).padStart(3, '0') : '---'}
                 &deg;
             </text>
-            { vorFrequency > 0 && <text x={-80} y={58} fontSize={20} className="White" textAnchor="end" textDecoration="underline">{tuningMode === TuningMode.Manual ? 'M' : (tuningMode === TuningMode.Remote ? 'R' : '')}</text> }
+            { vorFrequency > 0 && <text x={-80} y={58} fontSize={20} className="White" textAnchor="end" textDecoration="underline">{tuningModeLabel}</text> }
             <text x={0} y={60} fontSize={25} className="White" textAnchor="end">{vorIdent}</text>
         </Layer>
     );
@@ -760,6 +776,11 @@ const IlsInfo: FC = memo(() => {
     const [locAvailable] = useSimVar('NAV HAS LOCALIZER:3', 'boolean');
 
     const [freqInt, freqDecimal] = ilsFrequency.toFixed(2).split('.', 2);
+
+    const [tuningModeLabel, setTuningModeLabel] = useState('');
+    useEffect(() => {
+        setTuningModeLabel(formatTuningMode(tuningMode));
+    }, [tuningMode]);
 
     return (
         <Layer x={748} y={28}>
@@ -775,10 +796,10 @@ const IlsInfo: FC = memo(() => {
             ) }
             <text x={-56} y={30} fontSize={25} className="White" textAnchor="end">CRS</text>
             <text x={20} y={30} fontSize={25} className="Magenta" textAnchor="end">
-                {locAvailable ? (`${ilsCourse}`).padStart(3, '0') : '---'}
+                {locAvailable ? (`${Math.round(ilsCourse)}`).padStart(3, '0') : '---'}
                 &deg;
             </text>
-            { ilsFrequency > 0 && <text x={-80} y={58} fontSize={20} className="White" textAnchor="end" textDecoration="underline">{tuningMode === TuningMode.Manual ? 'M' : (tuningMode === TuningMode.Remote ? 'R' : '')}</text> }
+            { ilsFrequency > 0 && <text x={-80} y={58} fontSize={20} className="White" textAnchor="end" textDecoration="underline">{tuningModeLabel}</text> }
             <text x={0} y={60} fontSize={25} className="Magenta" textAnchor="end">{ilsIdent}</text>
         </Layer>
     );

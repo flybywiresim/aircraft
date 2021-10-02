@@ -85,6 +85,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             ClimbWind: 47,
             CruiseWind: 48,
             DescentWind: 49,
+            FixInfoPage: 50,
         };
     }
 
