@@ -25,6 +25,7 @@ export const PressPage: FC = () => {
     const y = 165;
 
     const radius = 50;
+    // FIXME: Once systems implemented reference that simvar rather than random number generator.
     const [systemNumber, setSystemNumber] = useState(0);
 
     const safetyValve = 2;
