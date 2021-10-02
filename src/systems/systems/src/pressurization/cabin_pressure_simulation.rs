@@ -1,5 +1,7 @@
 use crate::{shared::AverageExt, simulation::UpdateContext};
 
+use super::CabinPressure;
+
 use uom::si::{
     f64::*,
     pressure::{hectopascal, pascal},
@@ -10,7 +12,7 @@ use uom::si::{
 
 use bounded_vec_deque::BoundedVecDeque;
 
-pub(crate) struct CabinPressure {
+pub(crate) struct CabinPressureSimulation {
     previous_exterior_pressure: BoundedVecDeque<Pressure>,
     exterior_pressure: Pressure,
     outflow_valve_open_amount: Ratio,
@@ -23,7 +25,7 @@ pub(crate) struct CabinPressure {
     cabin_pressure: Pressure,
 }
 
-impl CabinPressure {
+impl CabinPressureSimulation {
     // Atmospheric constants
     const R: f64 = 287.058; // Specific gas constant for air - m2/s2/K
     const GAMMA: f64 = 1.4; // Rate of specific heats for air
@@ -219,14 +221,6 @@ impl CabinPressure {
         self.cabin_pressure - self.exterior_pressure
     }
 
-    pub(super) fn cabin_pressure(&self) -> Pressure {
-        self.cabin_pressure
-    }
-
-    pub(super) fn exterior_pressure(&self) -> Pressure {
-        self.exterior_pressure
-    }
-
     pub(super) fn z_coefficient(&self) -> f64 {
         self.z_coefficient
     }
@@ -237,5 +231,15 @@ impl CabinPressure {
 
     pub(super) fn cabin_flow_properties(&self) -> [VolumeRate; 2] {
         [self.cabin_flow_in, self.cabin_flow_out]
+    }
+}
+
+impl CabinPressure for CabinPressureSimulation {
+    fn exterior_pressure(&self) -> Pressure {
+        self.exterior_pressure
+    }
+
+    fn cabin_pressure(&self) -> Pressure {
+        self.cabin_pressure
     }
 }

@@ -4,8 +4,8 @@ use crate::{
 };
 
 use super::{
-    CabinPressure, OutflowValveActuator, PressureValve, PressureValveSignal,
-    PressurizationOverheadPanel,
+    CabinPressure, CabinPressureSimulation, OutflowValveActuator, PressureValve,
+    PressureValveSignal, PressurizationOverheadPanel,
 };
 
 use std::time::Duration;
@@ -72,19 +72,18 @@ impl CabinPressureController {
         &mut self,
         context: &UpdateContext,
         engines: [&impl EngineCorrectedN1; 2],
-        exterior_pressure: Pressure,
         landing_elevation: Length,
         departure_elevation: Length,
         sea_level_pressure: Pressure,
         destination_qnh: Pressure,
         lgciu_gears_compressed: bool,
-        cabin_pressure: Pressure,
+        cabin_simulation: &impl CabinPressure,
         outflow_valve: &PressureValve,
         safety_valve: &PressureValve,
     ) {
-        self.exterior_pressure = exterior_pressure;
+        self.exterior_pressure = cabin_simulation.exterior_pressure();
         self.exterior_vertical_speed = context.vertical_speed();
-        self.cabin_pressure = cabin_pressure;
+        self.cabin_pressure = cabin_simulation.cabin_pressure();
         self.landing_elev = landing_elevation;
         self.departure_elev = departure_elevation;
 
@@ -295,7 +294,7 @@ impl OutflowValveActuator for CabinPressureController {
     fn target_valve_position(
         &self,
         press_overhead: &PressurizationOverheadPanel,
-        cabin_pressure_simulation: &CabinPressure,
+        cabin_pressure_simulation: &CabinPressureSimulation,
     ) -> Ratio {
         // Calculation extracted from:
         // F. Y. Kurokawa, C. Regina de Andrade and E. L. Zaparoli
@@ -728,6 +727,7 @@ mod pressure_schedule_manager_tests {
 
     struct TestAircraft {
         cpc: CabinPressureController,
+        cabin_simulation: CabinPressureSimulation,
         outflow_valve: PressureValve,
         safety_valve: PressureValve,
         press_overhead: PressurizationOverheadPanel,
@@ -739,6 +739,7 @@ mod pressure_schedule_manager_tests {
         fn new() -> Self {
             let mut test_aircraft = Self {
                 cpc: CabinPressureController::new(),
+                cabin_simulation: CabinPressureSimulation::new(),
                 outflow_valve: PressureValve::new_outflow_valve(),
                 safety_valve: PressureValve::new_safety_valve(),
                 press_overhead: PressurizationOverheadPanel::new(),
@@ -806,13 +807,12 @@ mod pressure_schedule_manager_tests {
             self.cpc.update(
                 context,
                 [&self.engine_1, &self.engine_2],
-                Pressure::new::<hectopascal>(1013.),
                 Length::new::<meter>(0.),
                 Length::new::<meter>(0.),
                 Pressure::new::<hectopascal>(1013.),
                 Pressure::new::<hectopascal>(1013.),
                 self.lgciu_gears_compressed,
-                Pressure::new::<hectopascal>(1013.),
+                &self.cabin_simulation,
                 &self.outflow_valve,
                 &self.safety_valve,
             );

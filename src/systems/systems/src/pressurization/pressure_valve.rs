@@ -1,6 +1,6 @@
 use crate::{shared::ControllerSignal, simulation::UpdateContext};
 
-use super::{CabinPressure, OutflowValveActuator, PressurizationOverheadPanel};
+use super::{CabinPressureSimulation, OutflowValveActuator, PressurizationOverheadPanel};
 
 use std::time::Duration;
 use uom::si::{f64::*, ratio::percent};
@@ -80,7 +80,7 @@ impl PressureValve {
         &mut self,
         actuator: &T,
         press_overhead: &PressurizationOverheadPanel,
-        cabin_pressure_simulation: &CabinPressure,
+        cabin_pressure_simulation: &CabinPressureSimulation,
     ) {
         self.target_open =
             actuator.target_valve_position(press_overhead, cabin_pressure_simulation);
@@ -172,7 +172,7 @@ mod pressure_valve_tests {
         fn target_valve_position(
             &self,
             _press_overhead: &PressurizationOverheadPanel,
-            _cabin_pressure_simulation: &CabinPressure,
+            _cabin_pressure_simulation: &CabinPressureSimulation,
         ) -> Ratio {
             self.target_valve_position
         }

@@ -1,6 +1,6 @@
 use self::{
     cabin_pressure_controller::CabinPressureController,
-    cabin_pressure_simulation::CabinPressure,
+    cabin_pressure_simulation::CabinPressureSimulation,
     pressure_valve::{PressureValve, PressureValveSignal},
 };
 use crate::{
@@ -28,12 +28,17 @@ trait OutflowValveActuator {
     fn target_valve_position(
         &self,
         press_overhead: &PressurizationOverheadPanel,
-        cabin_pressure_simulation: &CabinPressure,
+        cabin_pressure_simulation: &CabinPressureSimulation,
     ) -> Ratio;
 }
 
+trait CabinPressure {
+    fn exterior_pressure(&self) -> Pressure;
+    fn cabin_pressure(&self) -> Pressure;
+}
+
 pub struct Pressurization {
-    cabin_pressure_simulation: CabinPressure,
+    cabin_pressure_simulation: CabinPressureSimulation,
     cpc: [CabinPressureController; 2],
     outflow_valve: PressureValve,
     safety_valve: PressureValve,
@@ -58,7 +63,7 @@ impl Pressurization {
         }
 
         Self {
-            cabin_pressure_simulation: CabinPressure::new(),
+            cabin_pressure_simulation: CabinPressureSimulation::new(),
             cpc: [
                 CabinPressureController::new(),
                 CabinPressureController::new(),
@@ -107,13 +112,12 @@ impl Pressurization {
             controller.update(
                 context,
                 engines,
-                self.cabin_pressure_simulation.exterior_pressure(),
                 self.landing_elevation,
                 self.departure_elevation,
                 self.sea_level_pressure,
                 self.destination_qnh,
                 self.lgciu_gears_compressed,
-                self.cabin_pressure_simulation.cabin_pressure(),
+                &self.cabin_pressure_simulation,
                 &self.outflow_valve,
                 &self.safety_valve,
             );
