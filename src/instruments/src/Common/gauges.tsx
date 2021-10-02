@@ -175,17 +175,17 @@ export const VerticalSegment: FC<VerticalSegmentProps> = ({ x, y, height, rangeS
     );
 };
 
-export function splitDecimals(value, type) {
-    if (type === 'oil') {
-        value = value * 0.01 * 25;
-    } else if (type === 'vib') {
-        value = value < 0 ? 0.0 : value;
-    }
-    const decimalSplit = value.toFixed(1).split('.', 2);
-    return (decimalSplit);
+export const splitDecimals = (value: number) => (value.toFixed(1).split('.', 2));
+
+type valueRadianAngleConverterType = {
+    value: number,
+    min: number,
+    max: number,
+    endAngle: number,
+    startAngle: number,
 }
 
-export function valueRadianAngleConverter(value, min, max, endAngle, startAngle) {
+export const valueRadianAngleConverter = ({ value, min, max, endAngle, startAngle } : valueRadianAngleConverterType) => {
     const valuePercentage = (value - min) / (max - min);
     let angleInRadians = startAngle > endAngle
         ? startAngle + (valuePercentage * (360 - startAngle + endAngle)) - 90
@@ -195,7 +195,7 @@ export function valueRadianAngleConverter(value, min, max, endAngle, startAngle)
         x: Math.cos(angleInRadians),
         y: Math.sin(angleInRadians),
     });
-}
+};
 
 type GaugeMarkerComponentType = {
     value: number,
@@ -214,7 +214,7 @@ type GaugeMarkerComponentType = {
 };
 
 const GaugeMarkerComponentNoMemo = ({ value, x, y, min, max, radius, startAngle, endAngle, className, showValue, indicator, outer, multiplier } : GaugeMarkerComponentType) => {
-    const dir = valueRadianAngleConverter(value, min, max, endAngle, startAngle);
+    const dir = valueRadianAngleConverter({ value, min, max, endAngle, startAngle });
 
     if (typeof multiplier === 'undefined') multiplier = 1.15;
 
@@ -281,7 +281,7 @@ export const GaugeComponentNoMemo: FC<GaugeComponentProps> = ({ x, y, radius, st
 
     return (
         <>
-            <g id="HideOrShowGauge" className={manMode ? 'Show' : 'Hide'}>
+            <g className={manMode ? 'Show' : 'Hide'}>
                 <path d={d} className={className} />
                 <>{children}</>
             </g>

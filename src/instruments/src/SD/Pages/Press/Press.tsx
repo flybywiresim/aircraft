@@ -1,4 +1,4 @@
-import React, { FC, useState, useEffect } from 'react';
+import React, { FC, useState, useEffect, memo } from 'react';
 import { render } from '@instruments/common/index';
 import { GaugeComponent, GaugeMarkerComponent, splitDecimals } from '@instruments/common/gauges';
 import { setIsEcamPage } from '@instruments/common/defaults';
@@ -18,7 +18,7 @@ export const PressPage: FC = () => {
     const [deltaPsi] = useSimVar('L:A32NX_PRESS_CABIN_DELTA_PRESSURE', 'psi', 500);
     const [flightPhase] = useSimVar('L:A32NX_FWC_FLIGHT_PHASE', 'enum', 1000);
 
-    const deltaPress = splitDecimals(deltaPsi, '');
+    const deltaPress = splitDecimals(deltaPsi);
     const vsx = 275;
     const cax = 455;
     const dpx = 110;
@@ -245,7 +245,7 @@ type SystemComponentType = {
     y: number
 }
 
-const SystemComponent = ({ id, visible, x, y }: SystemComponentType) => {
+const SystemComponent: FC<SystemComponentType> = memo(({ id, visible, x, y }) => {
     // When failures are introduced can override visible variable
     const systemFault = false;
     const systemColour = systemFault ? 'Amber' : 'Green';
@@ -261,7 +261,7 @@ const SystemComponent = ({ id, visible, x, y }: SystemComponentType) => {
             </g>
         </>
     );
-};
+});
 
 type PackComponentType = {
     id: number,
@@ -291,7 +291,7 @@ type OutflowValveComponentType = {
     flightPhase : number,
 }
 
-const OutflowValveComponent = ({ flightPhase }: OutflowValveComponentType) => {
+const OutflowValveComponent: FC<OutflowValveComponentType> = memo(({ flightPhase }) => {
     const ofx = 448;
     const ofy = 425;
     const ofradius = 72;
@@ -365,7 +365,7 @@ const OutflowValveComponent = ({ flightPhase }: OutflowValveComponentType) => {
             </GaugeComponent>
         </>
     );
-};
+});
 
 type OverboardInletComponentType = {
     validSDAC: boolean,

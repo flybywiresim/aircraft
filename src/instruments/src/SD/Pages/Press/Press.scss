@@ -2,11 +2,6 @@
 @import "../../../Common/gauges";
 
 #main-press {
-    .pickMe {
-        stroke-width: 2;
-        fill: none;
-        stroke: red !important
-    }
 
     text {
         fill: $display-white;
