@@ -1,7 +1,7 @@
 import React from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import { TuningMode } from '@fmgc/radionav';
-import { EfisSide } from '../index';
+import { EfisSide } from '@shared/NavigationDisplay';
 
 export enum NavAidMode {
     Off = 0,
@@ -58,13 +58,15 @@ const VorInfo: React.FC<{index: 1 | 2}> = ({ index }) => {
 
     return (
         <g className="GtLayer">
-            <path
-                d={path}
-                strokeWidth={2.6}
-                className="White"
-                strokeLinejoin="round"
-                strokeLinecap="round"
-            />
+            {(vorAvailable && (
+                <path
+                    d={path}
+                    strokeWidth={2.6}
+                    className="White"
+                    strokeLinejoin="round"
+                    strokeLinecap="round"
+                />
+            ))}
             <text x={x} y={692} fontSize={24} className="White">
                 VOR
                 {index}

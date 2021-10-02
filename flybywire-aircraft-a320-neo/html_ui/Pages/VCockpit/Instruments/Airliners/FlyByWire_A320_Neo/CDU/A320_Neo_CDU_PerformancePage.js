@@ -173,10 +173,9 @@ class CDUPerformancePage {
         // transition altitude - remains editable during take off
         let transAltCell = "";
         if (hasOrigin) {
-            const transAltitude = mcdu.getTransitionAltitude();
-            if (isFinite(transAltitude)) {
-                transAltCell = `{cyan}${transAltitude}{end}`;
-                if (!mcdu.transitionAltitudeIsPilotEntered) {
+            if (mcdu.flightPlanManager.originTransitionAltitude !== undefined) {
+                transAltCell = `{cyan}${mcdu.flightPlanManager.originTransitionAltitude}{end}`;
+                if (mcdu.flightPlanManager.originTransitionAltitudeFromDb) {
                     transAltCell += "[s-text]";
                 }
             } else {
@@ -717,11 +716,16 @@ class CDUPerformancePage {
             }
         };
 
-        let transAltCell = "[\xa0]".padEnd(5, "\xa0");
-        if (isFinite(mcdu.perfApprTransAlt)) {
-            transAltCell = mcdu.perfApprTransAlt.toFixed(0).padEnd(5, "\xa0");
-            if (!mcdu.perfApprTransAltPilotEntered) {
-                transAltCell = `{small}${transAltCell}{end}`;
+        let transAltCell = "";
+        const hasDestination = !!mcdu.flightPlanManager.getDestination();
+        if (hasDestination) {
+            if (mcdu.flightPlanManager.destinationTransitionLevel !== undefined) {
+                transAltCell = (mcdu.flightPlanManager.destinationTransitionLevel * 100).toFixed(0).padEnd(5, "\xa0");
+                if (mcdu.flightPlanManager.destinationTransitionLevelFromDb) {
+                    transAltCell = `{small}${transAltCell}{end}`;
+                }
+            } else {
+                transAltCell = "[\xa0]".padEnd(5, "\xa0");
             }
         }
         mcdu.onLeftInput[3] = (value) => {

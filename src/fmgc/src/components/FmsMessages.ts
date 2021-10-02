@@ -20,19 +20,22 @@ export class FmsMessages implements FmgcComponent {
     private listener = RegisterViewListener('JS_LISTENER_SIMVARS');
 
     private ndMessageFlags: Record<'L' | 'R', number> = {
-        'L': 0,
-        'R': 0,
+        L: 0,
+        R: 0,
     };
 
     private messageSelectors: FMMessageSelector[] = [
         new GpsPrimary(),
         new GpsPrimaryLost(),
+        new MapPartlyDisplayedLeft(),
+        new MapPartlyDisplayedRight(),
     ]
 
     // singleton
+    /* eslint-disable no-useless-constructor,no-empty-function */
     private constructor() {
-
     }
+    /* eslint-enable no-useless-constructor,no-empty-function */
 
     public static get instance(): FmsMessages {
         if (!this._instance) {
@@ -53,21 +56,33 @@ export class FmsMessages implements FmgcComponent {
 
             switch (newState) {
             case FMMessageUpdate.SEND:
-                this.listener.triggerToAllSubscribers(FMMessageTriggers.SEND_TO_MCDU, message);
+                if (message.text) {
+                    this.listener.triggerToAllSubscribers(FMMessageTriggers.SEND_TO_MCDU, message);
+                }
 
                 if (message.ndFlag > 0) {
-                    for (const side in this.ndMessageFlags) {
-                        this.ndMessageFlags[side] |= message.ndFlag;
+                    if (selector.efisSide) {
+                        this.ndMessageFlags[selector.efisSide] |= message.ndFlag;
+                    } else {
+                        for (const side in this.ndMessageFlags) {
+                            this.ndMessageFlags[side] |= message.ndFlag;
+                        }
                     }
                     didMutateNd = true;
                 }
                 break;
             case FMMessageUpdate.RECALL:
-                this.listener.triggerToAllSubscribers(FMMessageTriggers.RECALL_FROM_MCDU_WITH_ID, message.text); // TODO id
+                if (message.text) {
+                    this.listener.triggerToAllSubscribers(FMMessageTriggers.RECALL_FROM_MCDU_WITH_ID, message.text); // TODO id
+                }
 
                 if (message.ndFlag > 0) {
-                    for (const side in this.ndMessageFlags) {
-                        this.ndMessageFlags[side] &= ~message.ndFlag;
+                    if (selector.efisSide) {
+                        this.ndMessageFlags[selector.efisSide] &= ~message.ndFlag;
+                    } else {
+                        for (const side in this.ndMessageFlags) {
+                            this.ndMessageFlags[side] &= ~message.ndFlag;
+                        }
                     }
                     didMutateNd = true;
                 }
@@ -156,6 +171,8 @@ enum FMMessageUpdate {
 abstract class FMMessageSelector {
     abstract message: FMMessage;
 
+    abstract efisSide?: 'L' | 'R';
+
     /**
      * This function allows per-tick processing of a message if implemented
      */
@@ -220,4 +237,38 @@ class GpsPrimaryLost implements FMMessageSelector {
 
         return FMMessageUpdate.NO_ACTION;
     }
+}
+
+// TODO right side
+abstract class MapPartlyDisplayed implements FMMessageSelector {
+    message: FMMessage = FMMessageTypes.MapPartlyDisplayed;
+
+    abstract efisSide: 'L' | 'R';
+
+    trigRising = new Trigger(true);
+
+    trigFalling = new Trigger(true);
+
+    process(deltaTime: number): FMMessageUpdate {
+        const partlyDisplayed = SimVar.GetSimVarValue(`L:A32NX_EFIS_${this.efisSide}_MAP_PARTLY_DISPLAYED`, 'boolean');
+        this.trigRising.input = partlyDisplayed === 1;
+        this.trigRising.update(deltaTime);
+        this.trigFalling.input = partlyDisplayed === 0;
+        this.trigFalling.update(deltaTime);
+        if (this.trigRising.output) {
+            return FMMessageUpdate.SEND;
+        }
+        if (this.trigFalling.output) {
+            return FMMessageUpdate.RECALL;
+        }
+        return FMMessageUpdate.NO_ACTION;
+    }
+}
+
+class MapPartlyDisplayedLeft extends MapPartlyDisplayed {
+    efisSide: 'L' | 'R' = 'L';
+}
+
+class MapPartlyDisplayedRight extends MapPartlyDisplayed {
+    efisSide: 'L' | 'R' = 'R';
 }

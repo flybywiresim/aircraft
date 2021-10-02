@@ -31,6 +31,7 @@ import { ProcedureDetails } from './ProcedureDetails';
 import { DirectTo } from './DirectTo';
 import { GeoMath } from './GeoMath';
 import { WaypointBuilder } from './WaypointBuilder';
+import { OneWayRunway } from '@fmgc/types/fstypes/FSTypes';
 
 /**
  * A flight plan managed by the FlightPlanManager.
@@ -42,8 +43,20 @@ export class ManagedFlightPlan {
     // This is the same as originAirfield, but is not cleared when a direct-to occurs
     public persistentOriginAirfield?: WayPoint;
 
+    /** Transition altitude for the originAirfield from the nav database */
+    public originTransitionAltitudeDb?: number;
+
+    /** Transition altitude for the originAirfield from the pilot */
+    public originTransitionAltitudePilot?: number;
+
     /** Whether or not the flight plan has a destination airfield. */
     public destinationAirfield?: WayPoint;
+
+    /** Transition level for the destinationAirfield from the nav database */
+    public destinationTransitionLevelDb?: number;
+
+    /** Transition level for the destinationAirfield from the pilot */
+    public destinationTransitionLevelPilot?: number;
 
     /** The cruise altitude for this flight plan. */
     public cruiseAltitude = 0;
@@ -287,8 +300,12 @@ export class ManagedFlightPlan {
      */
     public async clearPlan(): Promise<void> {
         this.originAirfield = undefined;
+        this.originTransitionAltitudeDb = undefined;
+        this.originTransitionAltitudePilot = undefined;
         this.persistentOriginAirfield = undefined;
         this.destinationAirfield = undefined;
+        this.destinationTransitionLevelDb = undefined;
+        this.destinationTransitionLevelPilot = undefined;
 
         this.cruiseAltitude = 0;
         this.activeWaypointIndex = 0;
@@ -799,15 +816,13 @@ export class ManagedFlightPlan {
                 // console.error('bruh');
                 // Reference : AMM - 22-71-00 PB001, Page 4
                 if (departureIndex === -1 && transitionIndex === -1) {
-                    const TEMPORARY_VERTICAL_SPEED = 500.0;
+                    const TEMPORARY_VERTICAL_SPEED = 2000.0; // ft/min
+                    const TEMPORARY_GROUND_SPEED = 160; // knots
 
                     const altitudeFeet = (runway.elevation * 3.2808399) + 1500;
-                    const distanceInNM = altitudeFeet / TEMPORARY_VERTICAL_SPEED;
+                    const distanceInNM = altitudeFeet / TEMPORARY_VERTICAL_SPEED * (TEMPORARY_GROUND_SPEED / 60);
 
-                    const magvar = SimVar.GetSimVarValue('GPS MAGVAR', 'Degrees');
-                    console.error(`magvar: ${magvar}`);
-                    const course = runway.direction - magvar;
-                    const coordinates = GeoMath.relativeBearingDistanceToCoords(course, distanceInNM, runway.endCoordinates);
+                    const coordinates = GeoMath.relativeBearingDistanceToCoords(runway.direction, distanceInNM, runway.endCoordinates);
 
                     const faLeg = procedure.buildWaypoint(`${Math.round(altitudeFeet)}`, coordinates);
                     // TODO should this check for unclr discont? (probs not)
@@ -1163,5 +1178,29 @@ export class ManagedFlightPlan {
             this.removeWaypoint(index);
         }
         this.addWaypoint(waypoint, waypointIndex, segment.type);
+    }
+
+    public getOriginRunway(): OneWayRunway {
+        if (!this.originAirfield) {
+            return;
+        }
+        const airportInfo = this.originAirfield.infos;
+        if (this.procedureDetails.originRunwayIndex !== -1) {
+            return airportInfo.oneWayRunways[this.procedureDetails.originRunwayIndex];
+        } else if (this.procedureDetails.departureRunwayIndex !== -1 && this.procedureDetails.departureIndex !== -1) {
+            return this.getRunway(airportInfo.oneWayRunways, airportInfo.departures[this.procedureDetails.departureIndex].runwayTransitions[this.procedureDetails.departureRunwayIndex].name);
+        }
+    }
+
+    public getDestinationRunway(): OneWayRunway {
+        if (!this.destinationAirfield) {
+            return;
+        }
+        const airportInfo = this.destinationAirfield.infos;
+        if (this.procedureDetails.approachIndex !== -1) {
+            return this.getRunway(airportInfo.oneWayRunways, airportInfo.approaches[this.procedureDetails.approachIndex].runway);
+        } else if (this.procedureDetails.destinationRunwayIndex !== -1) {
+            return airportInfo.oneWayRunways[this.procedureDetails.destinationRunwayIndex];
+        }
     }
 }

@@ -9,11 +9,13 @@ class CDULateralRevisionPage {
             const long = CDUInitPage.ConvertDDToDMS(waypoint.infos.coordinates['long'], true);
             coordinates = `${lat.deg}°${lat.min}.${Math.ceil(Number(lat.sec / 100))}${lat.dir}/${long.deg}°${long.min}.${Math.ceil(Number(long.sec / 100))}${long.dir}[color]green`;
         }
-        const isDeparture = waypoint === mcdu.flightPlanManager.getOrigin();
-        const isDestination = waypoint === mcdu.flightPlanManager.getDestination();
-        const isWaypoint = !isDeparture && !isDestination;
+        const isPpos = waypoint === undefined || waypointIndexFP === 0 && waypoint !== mcdu.flightPlanManager.getOrigin();
+        const isFrom = waypointIndexFP === mcdu.flightPlanManager.getActiveWaypointIndex() - 1;
+        const isDeparture = waypoint === mcdu.flightPlanManager.getOrigin() && !isPpos; // TODO this is bogus... compare icaos
+        const isDestination = waypoint === mcdu.flightPlanManager.getDestination() && !isPpos; // TODO this is bogus... compare icaos
+        const isWaypoint = !isDeparture && !isDestination && !isPpos;
 
-        let waypointIdent = "---";
+        let waypointIdent = isPpos ? "PPOS" : '---';
         if (waypoint) {
             waypointIdent = waypoint.ident;
             if (isDeparture) {
@@ -49,8 +51,11 @@ class CDULateralRevisionPage {
             mcdu.onRightInput[0] = () => {
                 CDUAvailableArrivalsPage.ShowPage(mcdu, waypoint);
             };
-        } else if (isDeparture) {
-            arrivalFixInfoCell = "FIX INFO>[color]inop";
+        } else if (isDeparture || isPpos || isFrom) {
+            arrivalFixInfoCell = "FIX INFO>";
+            mcdu.onRightInput[0] = () => {
+                CDUFixInfoPage.ShowPage(mcdu);
+            };
         }
 
         let crossingLabel = "";
@@ -107,7 +112,7 @@ class CDULateralRevisionPage {
 
         let newDestLabel = "";
         let newDestCell = "";
-        if (!isDestination) {
+        if (!isDestination && !isPpos) {
             newDestLabel = "NEW DEST{sp}";
             newDestCell = "[{sp}{sp}][color]cyan";
 

@@ -1,7 +1,7 @@
 import React from 'react';
 import { useSimVar } from '@instruments/common/simVars';
+import { Mode, EfisSide } from '@shared/NavigationDisplay';
 import { NavAidMode } from './RadioNavInfo';
-import { EfisSide, Mode } from '../index';
 
 type RadioNavPointerProps = { index: 1 | 2, side: EfisSide, displayMode: Mode, centreHeight: number };
 

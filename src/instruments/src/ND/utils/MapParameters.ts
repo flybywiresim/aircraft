@@ -6,6 +6,7 @@ export class MapParameters {
     public mapUpTrueDeg: number;
 
     public nmToPx: number;
+
     public mToPx: number;
 
     public nmRadius: number;

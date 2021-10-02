@@ -112,6 +112,7 @@ class CDUFlightPlanPage {
                 [`{left}{small}{sp}${showFrom ? "FROM" : "{sp}{sp}{sp}{sp}"}{end}{yellow}{sp}${showTMPY ? "TMPY" : ""}{end}{end}{right}{small}${SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC")}{sp}{sp}{sp}{end}{end}`],
                 ...emptyFplnPage()
             ]);
+            mcdu.onLeftInput[0] = () => CDULateralRevisionPage.ShowPage(mcdu);
             return;
         } else if (waypointsAndMarkers.length >= 5) {
             rowsCount = 5;
