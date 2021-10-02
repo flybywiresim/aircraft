@@ -30,8 +30,8 @@ Z Offset=0.0, 0.0
 [Particle.0]
 Lifetime=0.1, 0.1
 Type=19
-X Scale=0.01, 0.01
-Y Scale=0.01, 0.01
+X Scale=0.15, 0.15
+Y Scale=0.15, 0.15
 Z Scale=0.0, 0.0
 X Scale Rate=0.0, 0.0
 Y Scale Rate=0.0, 0.0
@@ -49,25 +49,24 @@ Face=1, 1, 1
 
 [ParticleAttributes.0]
 Blend Mode=2
-Texture=a32nx-flash.png
 Bounce=0.0
-Color Start=120, 100, 100, 1
+Color Start=255, 1, 0, 10
 Color End=255, 1, 0, 10
 Jitter Distance=0.0
 Jitter Time=0.0
 uv1=0.0, 0.0
 uv2=1.0, 1.0
-NearEndFade=3.0
-NearFade=6.0
-MinProjSize=1.75
+NearEndFade=1.0
+NearFade=12.0
+MinProjSize=0
 
 [LightAttributes.0]
-Type=omni
-Size=0.00
-Range=2.8
-Intensity=2.75
-Softness=1
-SpotInner=0.0
-SpotOuter=0.0
+Type=spot
+Size=0.06
+Range=3,5
+Intensity=1
+Softness=0.35
+SpotInner=25
+SpotOuter=75
 Volumetric=0
 ScatDir=0.0
