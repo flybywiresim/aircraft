@@ -4,21 +4,21 @@ import { useFlightPlanManager } from '@instruments/common/flightplan';
 import { MathUtils } from '@shared/MathUtils';
 import { useSimVar } from '@instruments/common/simVars';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
+import { NdSymbol } from '@shared/NavigationDisplay';
 import { ToWaypointIndicator } from '../elements/ToWaypointIndicator';
 import { FlightPlan } from '../elements/FlightPlan';
 import { MapParameters } from '../utils/MapParameters';
-import { EfisOption } from '../index';
 import { Degrees } from '../../../../../typings';
 
 export interface PlanModeProps {
+    symbols: NdSymbol[],
     adirsAlign: boolean,
     rangeSetting: number,
     ppos: LatLongData,
-    efisOption: EfisOption,
     mapHidden: boolean,
 }
 
-export const PlanMode: FC<PlanModeProps> = ({ adirsAlign, rangeSetting, ppos, efisOption, mapHidden }) => {
+export const PlanMode: FC<PlanModeProps> = ({ symbols, adirsAlign, rangeSetting, ppos, mapHidden }) => {
     const flightPlanManager = useFlightPlanManager();
 
     const [selectedWaypointIndex] = useSimVar('L:A32NX_SELECTED_WAYPOINT', 'number', 50);
@@ -51,7 +51,7 @@ export const PlanMode: FC<PlanModeProps> = ({ adirsAlign, rangeSetting, ppos, ef
                 y={384}
                 flightPlanManager={flightPlanManager}
                 mapParams={mapParams}
-                constraints={efisOption === EfisOption.Constraints}
+                symbols={symbols}
                 debug={false}
                 temp
             />
@@ -66,7 +66,7 @@ export const PlanMode: FC<PlanModeProps> = ({ adirsAlign, rangeSetting, ppos, ef
                     y={384}
                     flightPlanManager={flightPlanManager}
                     mapParams={mapParams}
-                    constraints={efisOption === EfisOption.Constraints}
+                    symbols={symbols}
                     debug={false}
                     temp={false}
                 />
@@ -75,7 +75,7 @@ export const PlanMode: FC<PlanModeProps> = ({ adirsAlign, rangeSetting, ppos, ef
 
             <Overlay rangeSetting={rangeSetting} />
 
-            {adirsAlign && (
+            {adirsAlign && !mapHidden && (
                 <Plane location={ppos} heading={trueHeading} mapParams={mapParams} />
             )}
 

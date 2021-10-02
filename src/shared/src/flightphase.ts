@@ -7,4 +7,4 @@ export enum FmgcFlightPhase {
     Approach,
     GoAround,
     Done,
-};
+}

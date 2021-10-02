@@ -9,7 +9,9 @@ export enum TuningMode {
  */
 export class NavRadioManager {
     tuningMode1: TuningMode = TuningMode.Auto;
+
     tuningMode2: TuningMode = TuningMode.Auto;
+
     tuningMode3: TuningMode = TuningMode.Auto;
 
     constructor(public _parentInstrument: BaseInstrument) {
@@ -18,6 +20,6 @@ export class NavRadioManager {
         SimVar.SetSimVarValue('L:A32NX_FMGC_RADIONAV_3_TUNING_MODE', 'enum', TuningMode.Manual);
     }
 
-    public update(deltaTime: number): void {
+    public update(_deltaTime: number): void {
     }
 }
