@@ -1,4 +1,5 @@
 import React, { FC, memo } from 'react';
+
 import './gauges.scss';
 
 /**
