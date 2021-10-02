@@ -10,6 +10,7 @@ rand = "0.8.0"
 ntest = "0.7.2"
 num-derive = "0.3.3"
 num-traits = "0.2.14"
+bounded-vec-deque = "0.1.1"
 
 [dev-dependencies]
 rstest = "0.10.0"

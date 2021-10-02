@@ -1,6 +1,5 @@
-use crate::simulation::UpdateContext;
+use crate::{shared::AverageExt, simulation::UpdateContext};
 
-use std::convert::TryInto;
 use uom::si::{
     f64::*,
     pressure::{hectopascal, pascal},
@@ -9,8 +8,10 @@ use uom::si::{
     volume_rate::cubic_meter_per_second,
 };
 
+use bounded_vec_deque::BoundedVecDeque;
+
 pub(crate) struct CabinPressure {
-    previous_exterior_pressure: [Pressure; 20],
+    previous_exterior_pressure: BoundedVecDeque<Pressure>,
     exterior_pressure: Pressure,
     outflow_valve_open_amount: Ratio,
     safety_valve_open_amount: Ratio,
@@ -38,7 +39,10 @@ impl CabinPressure {
 
     pub(super) fn new() -> Self {
         Self {
-            previous_exterior_pressure: [Pressure::new::<hectopascal>(1013.25); 20],
+            previous_exterior_pressure: BoundedVecDeque::from_iter(
+                vec![Pressure::new::<hectopascal>(1013.25); 20],
+                20,
+            ),
             exterior_pressure: Pressure::new::<hectopascal>(1013.25),
             outflow_valve_open_amount: Ratio::new::<percent>(100.),
             safety_valve_open_amount: Ratio::new::<percent>(0.),
@@ -75,21 +79,11 @@ impl CabinPressure {
     }
 
     fn exterior_pressure_low_pass_filter(&mut self, context: &UpdateContext) -> Pressure {
-        let mut previous_pressure_vector: Vec<Pressure> = self.previous_exterior_pressure.to_vec();
-        previous_pressure_vector.remove(0);
-        previous_pressure_vector.push(context.ambient_pressure());
+        self.previous_exterior_pressure.pop_front();
+        self.previous_exterior_pressure
+            .push_back(context.ambient_pressure());
 
-        self.previous_exterior_pressure = previous_pressure_vector
-            .try_into()
-            .unwrap_or_else(|_| [context.ambient_pressure(); 20]);
-
-        let pressure_sum: f64 = self
-            .previous_exterior_pressure
-            .iter()
-            .map(|x| x.get::<hectopascal>())
-            .sum();
-
-        Pressure::new::<hectopascal>(pressure_sum / 20.)
+        self.previous_exterior_pressure.iter().average()
     }
 
     fn calculate_z(&self) -> f64 {
