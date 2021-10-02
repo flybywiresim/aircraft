@@ -26,166 +26,11 @@ class CDUAocOfpData {
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.AOCOfpData;
-        mcdu.pageRedrawCallback = () => CDUAocOfpData.ShowPage(mcdu);
         mcdu.activeSystem = 'ATSU';
 
         function updateView() {
             if (mcdu.page.Current === mcdu.page.AOCOfpData) {
                 CDUAocOfpData.ShowPage(mcdu);
-            }
-        }
-
-        const maxAllowableFuel = 19046; // in kilograms
-
-        let blockFuel = "_____[color]amber";
-        let taxiFuel = "____[color]amber";
-        let tripFuel = "_____[color]amber";
-        let requestButton = "SEND*[color]cyan";
-        let loadButton = "*LOAD[color]cyan";
-
-        if (mcdu.simbrief.sendStatus !== "READY" && mcdu.simbrief.sendStatus !== "DONE") {
-            requestButton = "SEND [color]cyan";
-        }
-
-        if (mcdu.aocWeight.loading) {
-            loadButton = " LOAD[color]cyan";
-        }
-
-        const currentBlockFuel = mcdu.aocWeight.blockFuel || mcdu.simbrief.blockFuel;
-        if (currentBlockFuel) {
-            const size = mcdu.aocWeight.blockFuel ? 'big' : 'small';
-            blockFuel = `{${size}}${Math.round(NXUnits.kgToUser(currentBlockFuel))}{end}[color]cyan`;
-        }
-
-        const currentTaxiFuel = mcdu.aocWeight.taxiFuel || mcdu.simbrief.taxiFuel;
-        if (currentTaxiFuel) {
-            const size = mcdu.aocWeight.taxiFuel ? 'big' : 'small';
-            taxiFuel = `{${size}}${Math.round(NXUnits.kgToUser(currentTaxiFuel))}{end}[color]cyan`;
-        }
-
-        const currentTripFuel = mcdu.aocWeight.tripFuel || mcdu.simbrief.tripFuel;
-        if (currentTripFuel) {
-            const size = mcdu.aocWeight.tripFuel ? 'big' : 'small';
-            tripFuel = `{${size}}${Math.round(NXUnits.kgToUser(currentTripFuel))}{end}[color]cyan`;
-        }
-
-        const display = [
-            ["W/B", "1", "2", "AOC"],
-            ["BLOCK FUEL"],
-            [blockFuel],
-            ["TAXI FUEL"],
-            [taxiFuel],
-            ["TRIP FUEL"],
-            [tripFuel],
-            [""],
-            ["", "PRINT*[color]inop"],
-            ["REFUEL", "OFP REQUEST[color]cyan"],
-            [loadButton, requestButton],
-            [""],
-            ["<AOC MENU"]
-        ];
-        mcdu.setTemplate(display);
-
-        mcdu.leftInputDelay[0] = () => {
-            return mcdu.getDelayBasic();
-        };
-        mcdu.onLeftInput[0] = (value) => {
-            if (value === FMCMainDisplay.clrValue) {
-                mcdu.aocWeight.blockFuel = undefined;
-                updateView();
-                return true;
-            }
-            const enteredFuel = NXUnits.userToKg(Math.round(+value));
-            if (enteredFuel >= 0 && enteredFuel <= maxAllowableFuel) {
-                mcdu.aocWeight.blockFuel = enteredFuel;
-                updateView();
-                return true;
-            }
-            mcdu.addNewMessage(NXSystemMessages.notAllowed);
-            return false;
-        };
-
-        mcdu.leftInputDelay[1] = () => {
-            return mcdu.getDelayBasic();
-        };
-        mcdu.onLeftInput[1] = (value) => {
-            if (value === FMCMainDisplay.clrValue) {
-                mcdu.aocWeight.taxiFuel = undefined;
-                updateView();
-                return true;
-            }
-            const enteredFuel = NXUnits.userToKg(Math.round(+value));
-            if (enteredFuel >= 0 && enteredFuel <= maxAllowableFuel) {
-                mcdu.aocWeight.taxiFuel = enteredFuel;
-                updateView();
-                return true;
-            }
-            mcdu.addNewMessage(NXSystemMessages.notAllowed);
-            return false;
-        };
-
-        mcdu.leftInputDelay[2] = () => {
-            return mcdu.getDelayBasic();
-        };
-        mcdu.onLeftInput[2] = (value) => {
-            if (value === FMCMainDisplay.clrValue) {
-                mcdu.aocWeight.tripFuel = undefined;
-                updateView();
-                return true;
-            }
-            const enteredFuel = NXUnits.userToKg(Math.round(+value));
-            if (enteredFuel >= 0 && enteredFuel <= maxAllowableFuel) {
-                mcdu.aocWeight.tripFuel = enteredFuel;
-                updateView();
-                return true;
-            }
-            mcdu.addNewMessage(NXSystemMessages.notAllowed);
-            return false;
-        };
-
-        mcdu.leftInputDelay[4] = () => {
-            return mcdu.getDelayBasic();
-        };
-        mcdu.onLeftInput[4] = async () => {
-            const onGround = SimVar.GetSimVarValue("SIM ON GROUND", "Bool");
-            const gs = SimVar.GetSimVarValue("GPS GROUND SPEED", "knots");
-            const oneEngineRunning = SimVar.GetSimVarValue('GENERAL ENG COMBUSTION:1', 'bool') ||
-                SimVar.GetSimVarValue('GENERAL ENG COMBUSTION:2', 'bool');
-
-            if (gs < 1 && onGround && currentBlockFuel && !oneEngineRunning) {
-                loadFuel(mcdu, updateView);
-
-                updateView();
-            }
-        };
-
-        mcdu.rightInputDelay[4] = () => {
-            return mcdu.getDelayBasic();
-        };
-        mcdu.onRightInput[4] = () => {
-            getSimBriefOfp(mcdu, updateView);
-        };
-
-        mcdu.leftInputDelay[5] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
-        mcdu.onLeftInput[5] = () => {
-            CDUAocMenu.ShowPage(mcdu);
-        };
-
-        mcdu.onNextPage = () => {
-            CDUAocOfpData.ShowPage2(mcdu);
-        };
-    }
-
-    static ShowPage2(mcdu) {
-        mcdu.clearDisplay();
-        mcdu.page.Current = mcdu.page.AOCOfpData2;
-        mcdu.activeSystem = 'ATSU';
-
-        function updateView() {
-            if (mcdu.page.Current === mcdu.page.AOCOfpData2) {
-                CDUAocOfpData.ShowPage2(mcdu);
             }
         }
 
@@ -340,7 +185,7 @@ class CDUAocOfpData {
         }
 
         const display = [
-            ["W/B", "2", "2", "AOC"],
+            ["W/B"],
             ["TOTAL PAX", "PAYLOAD"],
             [buildTotalPaxValue(), `${Math.round(NXUnits.kgToUser(getTotalPayload()))}[color]green`],
             [paxStations.rows1_6.name, "ZFW"],
@@ -389,39 +234,6 @@ class CDUAocOfpData {
             CDUAocOfpData.ShowPage(mcdu);
         };
     }
-}
-
-async function loadFuel(mcdu, updateView) {
-    const currentBlockFuel = mcdu.aocWeight.blockFuel || mcdu.simbrief.blockFuel;
-
-    mcdu.aocWeight.loading = true;
-    updateView();
-
-    const outerTankCapacity = 228; // Left and Right // Value from flight_model.cfg (GALLONS)
-    const innerTankCapacity = 1816; // Left and Right // Value from flight_model.cfg (GALLONS)
-    const centerTankCapacity = 2179; // Center // Value from flight_model.cfg (GALLONS)
-
-    const fuelWeightPerGallon = SimVar.GetSimVarValue("FUEL WEIGHT PER GALLON", "kilograms");
-    let currentBlockFuelInGallons = +currentBlockFuel / +fuelWeightPerGallon;
-
-    const outerTankFill = Math.min(outerTankCapacity, currentBlockFuelInGallons / 2);
-    await SimVar.SetSimVarValue(`FUEL TANK LEFT AUX QUANTITY`, "Gallons", outerTankFill);
-    await SimVar.SetSimVarValue(`FUEL TANK RIGHT AUX QUANTITY`, "Gallons", outerTankFill);
-    currentBlockFuelInGallons -= outerTankFill * 2;
-
-    const innerTankFill = Math.min(innerTankCapacity, currentBlockFuelInGallons / 2);
-    await SimVar.SetSimVarValue(`FUEL TANK LEFT MAIN QUANTITY`, "Gallons", innerTankFill);
-    await SimVar.SetSimVarValue(`FUEL TANK RIGHT MAIN QUANTITY`, "Gallons", innerTankFill);
-    currentBlockFuelInGallons -= innerTankFill * 2;
-
-    const centerTankFill = Math.min(centerTankCapacity, currentBlockFuelInGallons);
-    await SimVar.SetSimVarValue(`FUEL TANK CENTER QUANTITY`, "Gallons", centerTankFill);
-    currentBlockFuelInGallons -= centerTankFill;
-
-    mcdu.updateFuelVars();
-
-    mcdu.aocWeight.loading = false;
-    updateView();
 }
 
 const payloadConstruct = new A32NX_PayloadConstructor();
