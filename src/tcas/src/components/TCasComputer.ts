@@ -310,8 +310,8 @@ export class TCasComputer implements TCasComponent {
                 traffic.heading = tf.heading;
                 traffic.relativeAlt = newAlt - this.pressureAlt;
 
-                let taTau = (traffic.slantDistance - TcasConst.DMOD[this.sensitivity][TaRaIndex.TA]) / traffic.closureRate * 3600;
-                let raTau = (traffic.slantDistance - TcasConst.DMOD[this.sensitivity][TaRaIndex.RA]) / traffic.closureRate * 3600;
+                let taTau = (traffic.slantDistance - TcasConst.DMOD[this.sensitivity][TaRaIndex.TA] ** 2 / traffic.slantDistance) / traffic.closureRate * 3600;
+                let raTau = (traffic.slantDistance - TcasConst.DMOD[this.sensitivity][TaRaIndex.RA] ** 2 / traffic.slantDistance) / traffic.closureRate * 3600;
                 let vTau = traffic.relativeAlt / (this.verticalSpeed - traffic.vertSpeed) * 60;
 
                 if (raTau < 0) {
@@ -950,12 +950,13 @@ export class TCasComputer implements TCasComponent {
 
     update(_deltaTime: number): void {
         this.soundManager.update(_deltaTime);
-        this.updateVars();
 
         const deltaTime = this.updateThrottler.canUpdate(_deltaTime);
         if (deltaTime === -1) {
             return;
         }
+
+        this.updateVars();
 
         if (this.tcasOn === 0 || this.xpdrStatus === 1) {
             return;
