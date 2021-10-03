@@ -39,21 +39,11 @@ use systems::{
 struct HighPressureValveSignal {
     target_open_amount: Ratio,
 }
-
-impl HighPressureValveSignal {
+impl ControlledPneumaticValveSignal for HighPressureValveSignal {
     fn new(target_open_amount: Ratio) -> Self {
         Self { target_open_amount }
     }
 
-    fn new_closed() -> Self {
-        Self::new(Ratio::new::<percent>(0.))
-    }
-
-    fn new_open() -> Self {
-        Self::new(Ratio::new::<percent>(100.))
-    }
-}
-impl ControlledPneumaticValveSignal for HighPressureValveSignal {
     fn target_open_amount(&self) -> Ratio {
         self.target_open_amount
     }
@@ -62,22 +52,11 @@ impl ControlledPneumaticValveSignal for HighPressureValveSignal {
 struct PressureRegulatingValveSignal {
     target_open_amount: Ratio,
 }
-
-impl PressureRegulatingValveSignal {
+impl ControlledPneumaticValveSignal for PressureRegulatingValveSignal {
     fn new(target_open_amount: Ratio) -> Self {
         Self { target_open_amount }
     }
 
-    fn new_closed() -> Self {
-        Self::new(Ratio::new::<percent>(0.))
-    }
-
-    fn new_open() -> Self {
-        Self::new(Ratio::new::<percent>(100.))
-    }
-}
-
-impl ControlledPneumaticValveSignal for PressureRegulatingValveSignal {
     fn target_open_amount(&self) -> Ratio {
         self.target_open_amount
     }
@@ -86,22 +65,11 @@ impl ControlledPneumaticValveSignal for PressureRegulatingValveSignal {
 struct EngineStarterValveSignal {
     target_open_amount: Ratio,
 }
-
-impl EngineStarterValveSignal {
+impl ControlledPneumaticValveSignal for EngineStarterValveSignal {
     fn new(target_open_amount: Ratio) -> Self {
         Self { target_open_amount }
     }
 
-    fn new_closed() -> Self {
-        Self::new(Ratio::new::<percent>(0.))
-    }
-
-    fn new_open() -> Self {
-        Self::new(Ratio::new::<percent>(100.))
-    }
-}
-
-impl ControlledPneumaticValveSignal for EngineStarterValveSignal {
     fn target_open_amount(&self) -> Ratio {
         self.target_open_amount
     }
@@ -110,22 +78,11 @@ impl ControlledPneumaticValveSignal for EngineStarterValveSignal {
 struct CrossBleedValveSignal {
     target_open_amount: Ratio,
 }
-
-impl CrossBleedValveSignal {
+impl ControlledPneumaticValveSignal for CrossBleedValveSignal {
     fn new(target_open_amount: Ratio) -> Self {
         Self { target_open_amount }
     }
 
-    fn new_closed() -> Self {
-        Self::new(Ratio::new::<percent>(0.))
-    }
-
-    fn new_open() -> Self {
-        Self::new(Ratio::new::<percent>(100.))
-    }
-}
-
-impl ControlledPneumaticValveSignal for CrossBleedValveSignal {
     fn target_open_amount(&self) -> Ratio {
         self.target_open_amount
     }
@@ -134,21 +91,11 @@ impl ControlledPneumaticValveSignal for CrossBleedValveSignal {
 struct FanAirValveSignal {
     target_open_amount: Ratio,
 }
-impl FanAirValveSignal {
+impl ControlledPneumaticValveSignal for FanAirValveSignal {
     fn new(target_open_amount: Ratio) -> Self {
         Self { target_open_amount }
     }
 
-    fn new_closed() -> Self {
-        Self::new(Ratio::new::<percent>(0.))
-    }
-
-    fn new_open() -> Self {
-        Self::new(Ratio::new::<percent>(100.))
-    }
-}
-
-impl ControlledPneumaticValveSignal for FanAirValveSignal {
     fn target_open_amount(&self) -> Ratio {
         self.target_open_amount
     }
@@ -157,21 +104,11 @@ impl ControlledPneumaticValveSignal for FanAirValveSignal {
 struct PackFlowValveSignal {
     target_open_amount: Ratio,
 }
-impl PackFlowValveSignal {
+impl ControlledPneumaticValveSignal for PackFlowValveSignal {
     fn new(target_open_amount: Ratio) -> Self {
         Self { target_open_amount }
     }
 
-    fn new_closed() -> Self {
-        Self::new(Ratio::new::<percent>(0.))
-    }
-
-    fn new_open() -> Self {
-        Self::new(Ratio::new::<percent>(100.))
-    }
-}
-
-impl ControlledPneumaticValveSignal for PackFlowValveSignal {
     fn target_open_amount(&self) -> Ratio {
         self.target_open_amount
     }
@@ -1422,7 +1359,7 @@ mod tests {
     impl TestApu {
         fn new() -> Self {
             Self {
-                bleed_air_valve_signal: ApuBleedAirValveSignal::Close,
+                bleed_air_valve_signal: ApuBleedAirValveSignal::new_closed(),
             }
         }
 
@@ -1797,7 +1734,7 @@ mod tests {
 
         fn set_bleed_air_running(mut self) -> Self {
             self.write("APU_BLEED_AIR_PRESSURE", Pressure::new::<psi>(35.));
-            self.set_apu_bleed_valve_signal(ApuBleedAirValveSignal::Open)
+            self.set_apu_bleed_valve_signal(ApuBleedAirValveSignal::new_open())
                 .set_bleed_air_pb(true)
         }
 
@@ -2151,7 +2088,7 @@ mod tests {
         assert!(!test_bed.cross_bleed_valve_is_open());
 
         test_bed = test_bed
-            .set_apu_bleed_valve_signal(ApuBleedAirValveSignal::Open)
+            .set_apu_bleed_valve_signal(ApuBleedAirValveSignal::new_open())
             .and_run();
 
         assert!(test_bed.cross_bleed_valve_is_open());
@@ -2161,13 +2098,13 @@ mod tests {
     fn cross_bleed_valve_closes_when_apu_bleed_valve_closes() {
         let mut test_bed = test_bed_with()
             .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Auto)
-            .set_apu_bleed_valve_signal(ApuBleedAirValveSignal::Open)
+            .set_apu_bleed_valve_signal(ApuBleedAirValveSignal::new_open())
             .and_run();
 
         assert!(test_bed.cross_bleed_valve_is_open());
 
         test_bed = test_bed
-            .set_apu_bleed_valve_signal(ApuBleedAirValveSignal::Close)
+            .set_apu_bleed_valve_signal(ApuBleedAirValveSignal::new_closed())
             .and_run();
 
         assert!(!test_bed.cross_bleed_valve_is_open());
@@ -2177,14 +2114,14 @@ mod tests {
     fn cross_bleed_valve_manual_overrides_everything() {
         let mut test_bed = test_bed_with()
             .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Shut)
-            .set_apu_bleed_valve_signal(ApuBleedAirValveSignal::Open)
+            .set_apu_bleed_valve_signal(ApuBleedAirValveSignal::new_open())
             .and_run();
 
         assert!(!test_bed.cross_bleed_valve_is_open());
 
         test_bed = test_bed
             .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Open)
-            .set_apu_bleed_valve_signal(ApuBleedAirValveSignal::Close)
+            .set_apu_bleed_valve_signal(ApuBleedAirValveSignal::new_closed())
             .and_run();
 
         assert!(test_bed.cross_bleed_valve_is_open());
@@ -2302,7 +2239,7 @@ mod tests {
 
         test_bed = test_bed
             .set_bleed_air_pb(true)
-            .set_apu_bleed_valve_signal(ApuBleedAirValveSignal::Open)
+            .set_apu_bleed_valve_signal(ApuBleedAirValveSignal::new_open())
             .and_run();
 
         assert!(!test_bed.pr_valve_is_open(1));
@@ -2318,7 +2255,7 @@ mod tests {
 
         test_bed = test_bed
             .set_bleed_air_pb(true)
-            .set_apu_bleed_valve_signal(ApuBleedAirValveSignal::Open)
+            .set_apu_bleed_valve_signal(ApuBleedAirValveSignal::new_open())
             .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Open)
             .and_run();
 

@@ -25,6 +25,22 @@ use uom::si::{
 };
 
 pub trait ControlledPneumaticValveSignal {
+    fn new(target_open_amount: Ratio) -> Self;
+
+    fn new_closed() -> Self
+    where
+        Self: Sized,
+    {
+        Self::new(Ratio::new::<percent>(0.))
+    }
+
+    fn new_open() -> Self
+    where
+        Self: Sized,
+    {
+        Self::new(Ratio::new::<percent>(100.))
+    }
+
     fn target_open_amount(&self) -> Ratio;
 }
 
@@ -801,11 +817,6 @@ mod tests {
     struct TestPneumaticValveSignal {
         target_open_amount: Ratio,
     }
-    impl TestPneumaticValveSignal {
-        fn new(target_open_amount: Ratio) -> Self {
-            Self { target_open_amount }
-        }
-    }
 
     struct TestValveController {
         command_open_amount: Ratio,
@@ -828,6 +839,10 @@ mod tests {
     }
 
     impl ControlledPneumaticValveSignal for TestPneumaticValveSignal {
+        fn new(target_open_amount: Ratio) -> Self {
+            Self { target_open_amount }
+        }
+
         fn target_open_amount(&self) -> Ratio {
             self.target_open_amount
         }

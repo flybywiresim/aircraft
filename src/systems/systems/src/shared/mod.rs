@@ -202,17 +202,17 @@ pub trait ControllerSignal<S> {
     fn signal(&self) -> Option<S>;
 }
 
-#[derive(Copy, Clone)]
-pub enum ApuBleedAirValveSignal {
-    Open,
-    Close,
+#[derive(Clone, Copy)]
+pub struct ApuBleedAirValveSignal {
+    target_open_amount: Ratio,
 }
 impl ControlledPneumaticValveSignal for ApuBleedAirValveSignal {
+    fn new(target_open_amount: Ratio) -> Self {
+        Self { target_open_amount }
+    }
+
     fn target_open_amount(&self) -> Ratio {
-        match &self {
-            Self::Close => Ratio::new::<percent>(0.),
-            Self::Open => Ratio::new::<percent>(100.),
-        }
+        self.target_open_amount
     }
 }
 

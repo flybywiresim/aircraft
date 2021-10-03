@@ -4,6 +4,7 @@ use super::{
     Turbine, TurbineSignal, TurbineState,
 };
 use crate::{
+    pneumatic::ControlledPneumaticValveSignal,
     shared::{
         arinc429::SignStatus, ApuBleedAirValveSignal, ApuMaster, ApuStart, ConsumePower,
         ContactorSignal, ControllerSignal, ElectricalBusType, ElectricalBuses, PneumaticValve,
@@ -311,9 +312,9 @@ impl ControllerSignal<ApuBleedAirValveSignal> for ElectronicControlBox {
             && self.n.get::<percent>() > 95.
             && self.bleed_is_on
         {
-            Some(ApuBleedAirValveSignal::Open)
+            Some(ApuBleedAirValveSignal::new_open())
         } else {
-            Some(ApuBleedAirValveSignal::Close)
+            Some(ApuBleedAirValveSignal::new_closed())
         }
     }
 }
