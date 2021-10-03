@@ -43,6 +43,7 @@ class FlyByWireInterface {
 
   double maxSimulationRate = 4;
   bool simulationRateReductionEnabled = true;
+  bool limitSimulationRateByPerformance = true;
 
   double targetSimulationRate = 1;
   bool targetSimulationRateModified = false;
