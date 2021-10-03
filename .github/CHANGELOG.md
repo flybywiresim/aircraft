@@ -24,6 +24,7 @@
 1. [ENGINE] Refactor FADEC and fuel consumption code (comments, variable nomenclature and overall clean-up) - @Taz5150 (TazX [Z+2]#0405)
 1. [UTILS] Fix lbs to kgs units conversion to match MSFS - @donstim (donbikes#4084)
 1. [MODEL] Landing lights retract fully and independently - @tracernz (Mike)
+1. [AP] Improved SPD/MACH law model - @IbrahimK42 (IbrahimK42)
 
 ## 0.7.0
 1. [HYD] First building block, more to come. Hydraulics do not impact the sim YET. - @crocket6 (crocket)
