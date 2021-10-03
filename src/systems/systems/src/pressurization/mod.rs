@@ -137,7 +137,7 @@ impl Pressurization {
             press_overhead,
             &self.cabin_pressure_simulation,
         );
-        if matches!(self.residual_pressure_controller.signal(), Some(_)) {
+        if self.residual_pressure_controller.signal().is_some() {
             self.outflow_valve
                 .update(context, &self.residual_pressure_controller);
         } else {
