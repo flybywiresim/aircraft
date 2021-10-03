@@ -130,6 +130,7 @@ impl Pressurization {
             self.outflow_valve.open_amount(),
             self.is_in_man_mode,
             self.lgciu_gears_compressed,
+            self.cabin_pressure_simulation.cabin_delta_p(),
         );
 
         self.outflow_valve.calculate_outflow_valve_position(
@@ -316,6 +317,7 @@ impl ResidualPressureController {
         outflow_valve_open_amount: Ratio,
         is_in_man_mode: bool,
         lgciu_gears_compressed: bool,
+        cabin_delta_p: Pressure,
     ) {
         if outflow_valve_open_amount < Ratio::new::<percent>(100.)
             && is_in_man_mode
@@ -324,6 +326,7 @@ impl ResidualPressureController {
                 .iter()
                 .any(|&x| x.corrected_n1() > Ratio::new::<percent>(15.)))
                 || context.indicated_airspeed() < Velocity::new::<knot>(70.))
+            && cabin_delta_p > Pressure::new::<hectopascal>(2.5)
         {
             self.timer += context.delta();
         } else {
@@ -334,7 +337,7 @@ impl ResidualPressureController {
 
 impl ControllerSignal<PressureValveSignal> for ResidualPressureController {
     fn signal(&self) -> Option<PressureValveSignal> {
-        if self.timer > Duration::from_secs(60) {
+        if self.timer > Duration::from_secs(15) {
             Some(PressureValveSignal::Open)
         } else {
             None
