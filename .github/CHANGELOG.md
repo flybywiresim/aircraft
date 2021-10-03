@@ -31,6 +31,7 @@
 1. [MODEL] Landing lights retract fully and independently - @tracernz (Mike)
 1. [LIGHTS] Sync Strobe/Beacon, EXT LT refactor + LDG LT behavior - @bouveng (Johan Bouveng)
 1. [AP] Improved SPD/MACH law model - @IbrahimK42 (IbrahimK42)
+1. [AP/FBW] Improved behavior in cruise when using high sim rate with roll performance - @aguther (Andreas Guther) and @IbrahimK42 (IbrahimK42)
 
 ## 0.7.0
 1. [HYD] First building block, more to come. Hydraulics do not impact the sim YET. - @crocket6 (crocket)
