@@ -1,8 +1,6 @@
 /* eslint-disable camelcase */
-/* eslint-disable no-undef */
-/// <reference path="../../../typings/fs-base-ui/html_ui/JS/common.d.ts" />
 
-let nxNotificationsListener;
+let nxNotificationsListener: ViewListener.ViewListener;
 
 /**
  * NotificationData container for notifications to package notification metadata

@@ -60,17 +60,17 @@ uv2=1.0, 1.0
 X Scale Goal=0.0
 Y Scale Goal=0.0
 Z Scale Goal=0.0
-NearEndFade= 5.0
-NearFade= 10.0
-MinProjSize= 0.4				
+NearEndFade=5.0
+NearFade=10.0
+MinProjSize=0.4
 
 [LightAttributes.0]
 Type=spot
 Size=0.1
-Range=100
-Intensity=1000
-Softness=0.0
-SpotInner=0
-SpotOuter=14
+Range=400
+Intensity=2000
+Softness=0
+SpotInner=2
+SpotOuter=9
 Volumetric=0
-ScatDir=0.0
+ScatDir=0

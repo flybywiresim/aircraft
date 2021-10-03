@@ -426,6 +426,10 @@ class FMCMainDisplay extends BaseAirliners {
         this._cruiseFlightLevel = undefined;
         this._activeCruiseFlightLevel = 0;
         this._activeCruiseFlightLevelDefaulToFcu = false;
+        const payloadConstruct = new A32NX_PayloadConstructor();
+        this.paxStations = payloadConstruct.paxStations;
+        this.payloadStations = payloadConstruct.payloadStations;
+        this.fmsUpdateThrottler = new UpdateThrottler(250);
         this._progBrgDist = undefined;
         this.preSelectedClbSpeed = undefined;
         this.preSelectedCrzSpeed = undefined;
@@ -3691,13 +3695,13 @@ class FMCMainDisplay extends BaseAirliners {
         const latitude = ADIRS.getLatitude();
         const longitude = ADIRS.getLongitude();
 
-        if (Number.isNaN(latitude) || Number.isNaN(longitude)) {
+        if (!latitude.isNormalOperation() || !longitude.isNormalOperation()) {
             this._progBrgDist.distance = -1;
             this._progBrgDist.bearing = -1;
             return;
         }
 
-        const planeLl = new LatLong(latitude, longitude);
+        const planeLl = new LatLong(latitude.value, longitude.value);
         this._progBrgDist.distance = Avionics.Utils.computeGreatCircleDistance(planeLl, this._progBrgDist.coordinates);
         this._progBrgDist.bearing = A32NX_Util.trueToMagnetic(Avionics.Utils.computeGreatCircleHeading(planeLl, this._progBrgDist.coordinates));
     }

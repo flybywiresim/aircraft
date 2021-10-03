@@ -5,13 +5,33 @@
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 
 ## 0.8.0
+1. [FBW] Improved speed dependent roll law model - @IbrahimK42 (IbrahimK42)
 1. [SOUND] Pack sounds use new APU model variables - @tracernz (Mike)
 1. [EFB] Added in-flight refueling capabilities - @Taz5150 (TazX [Z+2]#0405)
 1. [EFB] Moved setting for MCDU keyboard input into the EFB - @2hwk (2Cas#1022)
 1. [HYD] Placeholder simvar to trigger ptu high pitch sound - @crocket6 (crocket)
 1. [EFB] Neatened up failure buttons on failure page - @nathanmayall (AbsoluteNath#9406)
+1. [SOUND] Added PTU sounds in correct conditions - @hotshotp (Boris)
 1. [ADIRS] Use heading as track at low ground speeds - @beheh (Benedict Etzel)
 1. [PFD] Fix mach number flickering between mach 0.45 and 0.5 - @beheh (Benedict Etzel)
+1. [AP] Improved flight director guidance
+1. [FBW] Improved turn coodination in manual flight - @aguther (Andreas Guther)
+1. [FBW] Roll normal law is no longer using elasticity table - @IbrahimK42 (IbrahimK42)
+1. [AP] Improved LOC law and condition - @aguther (Andreas Guther)
+1. [AP] Improved LOC ALIGN law - @aguther (Andreas Guther)
+1. [AP] improved G/S law - @aguther (Andreas Guther)
+1. [AP] Allow V/S push and pull during ALT CPT - @aguther (Andreas Guther)
+1. [AP] Soft Altitude mode uses now FMGC flight phase to detect cruise situation
+1. [MCDU] Fix GPS ground speed monitor to show ground speed in knots rather than meters/second - @donstim (donbikes#4084)
+1. [AP] Improved LOC* law - @aguther (Andreas Guther)
+1. [AP] Improved ROLL OUT law - @aguther (Andreas Guther)
+1. [ENGINE] Refactor FADEC and fuel consumption code (comments, variable nomenclature and overall clean-up) - @Taz5150 (TazX [Z+2]#0405)
+1. [ARCH] Support ARINC 429 communication between aircraft components - @davidwalschots (David Walschots)
+1. [UTILS] Fix lbs to kgs units conversion to match MSFS - @donstim (donbikes#4084)
+1. [MODEL] Landing lights retract fully and independently - @tracernz (Mike)
+1. [LIGHTS] Sync Strobe/Beacon, EXT LT refactor + LDG LT behavior - @bouveng (Johan Bouveng)
+1. [AP] Improved SPD/MACH law model - @IbrahimK42 (IbrahimK42)
+1. [AP/FBW] Improved behavior in cruise when using high sim rate with roll performance - @aguther (Andreas Guther) and @IbrahimK42 (IbrahimK42)
 1. [PRESS] Introduce manual functionality of cabin pressurization system - @MJuhe (Miquel)
 
 ## 0.7.0
@@ -193,6 +213,8 @@
 1. [MISC] Sync settings across instruments - @tracernz (Mike)
 1. [MCDU] Remove some settings from MCDU the are now in the FlyPad - @tracernz (Mike)
 1. [EFB] Persist sound and EFB settings correctly - @tracernz (Mike)
+1. [FLIGHT MODEL] Fixed station locations and loads consistent with real A320 W&B manual - @ghosh9691
+1. [MCDU] Boarding and W/B AOC Pages update with Simbrief Integration - @viniciusfont
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)

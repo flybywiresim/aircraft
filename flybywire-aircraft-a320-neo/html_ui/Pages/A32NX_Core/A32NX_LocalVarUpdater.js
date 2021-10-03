@@ -209,7 +209,8 @@ class A32NX_LocalVarUpdater {
         const isEngineOneRunning = engineOneState === 1 || (engineOneState === 2 && SimVar.GetSimVarValue("L:A32NX_ENGINE_N1:1", "number") >= 18);
         const isEngineTwoRunning = engineTwoState === 1 || (engineTwoState === 2 && SimVar.GetSimVarValue("L:A32NX_ENGINE_N1:2", "number") >= 18);
 
-        const isApuDelivering = SimVar.GetSimVarValue("L:A32NX_APU_N", "Percent") >= 95 && SimVar.GetSimVarValue("L:A32NX_APU_BLEED_AIR_VALVE_OPEN", "Bool") && engineModeSelector === 1;
+        // As this function is used for sound effects, we use the raw APU N instead of the arinc 429 APU N.
+        const isApuDelivering = SimVar.GetSimVarValue("L:A32NX_APU_N_RAW", "Percent") >= 95 && SimVar.GetSimVarValue("L:A32NX_APU_BLEED_AIR_VALVE_OPEN", "Bool") && engineModeSelector === 1;
         const isEngineOneDelivering = isEngineOneRunning && SimVar.GetSimVarValue("BLEED AIR ENGINE:1", "Bool");
         const isEngineTwoDelivering = isEngineTwoRunning && SimVar.GetSimVarValue("BLEED AIR ENGINE:2", "Bool");
 
@@ -230,7 +231,7 @@ class A32NX_LocalVarUpdater {
         (SimVar.GetSimVarValue('LIGHT BEACON ON', 'bool') &&
             SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:0', 'percent') < 5 && // Pilot side front door for ramp/stairs
             SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:3', 'percent') < 5 && // Rear door, FO side for catering
-            SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:5', 'percent') < 5 // Cargo door FO side
+            SimVar.GetSimVarValue('L:A32NX_FWD_DOOR_CARGO_LOCKED', 'bool') // Cargo door FO side
         );
     }
 
