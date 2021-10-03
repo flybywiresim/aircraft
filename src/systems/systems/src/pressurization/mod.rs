@@ -90,6 +90,10 @@ impl Pressurization {
         engines: [&impl EngineCorrectedN1; 2],
         lgciu: [&impl LgciuWeightOnWheels; 2],
     ) {
+        self.lgciu_gears_compressed = lgciu
+            .iter()
+            .all(|&a| a.left_and_right_gear_compressed(true));
+
         self.cabin_pressure_simulation.update(
             context,
             self.outflow_valve.open_amount(),
@@ -104,9 +108,6 @@ impl Pressurization {
         if !press_overhead.ldg_elev_is_auto() {
             self.landing_elevation = Length::new::<foot>(press_overhead.ldg_elev_knob_value())
         }
-        self.lgciu_gears_compressed = lgciu
-            .iter()
-            .all(|&a| a.left_and_right_gear_compressed(true));
 
         for controller in self.cpc.iter_mut() {
             controller.update(
@@ -738,7 +739,7 @@ mod tests {
                 < Ratio::new::<percent>(99.)
         );
 
-        test_bed.run_with_delta(Duration::from_secs_f64(2.));
+        test_bed.run_with_delta(Duration::from_secs_f64(3.));
         test_bed.run();
         assert!(
             test_bed.query(|a| a.pressurization.outflow_valve.open_amount())

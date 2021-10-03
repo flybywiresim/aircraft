@@ -13,6 +13,7 @@ use uom::si::{
 use bounded_vec_deque::BoundedVecDeque;
 
 pub(crate) struct CabinPressureSimulation {
+    initialized: bool,
     previous_exterior_pressure: BoundedVecDeque<Pressure>,
     exterior_pressure: Pressure,
     outflow_valve_open_amount: Ratio,
@@ -41,6 +42,7 @@ impl CabinPressureSimulation {
 
     pub(super) fn new() -> Self {
         Self {
+            initialized: false,
             previous_exterior_pressure: BoundedVecDeque::from_iter(
                 vec![Pressure::new::<hectopascal>(1013.25); 20],
                 20,
@@ -68,6 +70,10 @@ impl CabinPressureSimulation {
         simulation_is_ground: bool,
         should_open_outflow_valve: bool,
     ) {
+        if !self.initialized {
+            self.cabin_pressure = self.initialize_cabin_pressure(context, lgciu_gear_compressed);
+            self.initialized = true;
+        }
         self.exterior_pressure = self.exterior_pressure_low_pass_filter(context);
         self.z_coefficient = self.calculate_z();
         self.flow_coefficient = self.calculate_flow_coefficient(should_open_outflow_valve);
@@ -78,6 +84,22 @@ impl CabinPressureSimulation {
         self.cabin_vs = self.calculate_cabin_vs();
         self.cabin_pressure =
             self.calculate_cabin_pressure(context, lgciu_gear_compressed, simulation_is_ground);
+    }
+
+    fn initialize_cabin_pressure(
+        &mut self,
+        context: &UpdateContext,
+        lgciu_gear_compressed: bool,
+    ) -> Pressure {
+        if lgciu_gear_compressed {
+            context.ambient_pressure()
+        } else {
+            // Formula to simulate pressure start state if starting in flight
+            let ambient_pressure: f64 = context.ambient_pressure().get::<hectopascal>();
+            Pressure::new::<hectopascal>(
+                -0.0002 * ambient_pressure.powf(2.) + 0.5463 * ambient_pressure + 658.85,
+            )
+        }
     }
 
     fn exterior_pressure_low_pass_filter(&mut self, context: &UpdateContext) -> Pressure {
