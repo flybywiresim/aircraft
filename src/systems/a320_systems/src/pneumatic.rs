@@ -2509,6 +2509,9 @@ mod tests {
             .set_dc_ess_shed_bus_power(true)
             .and_run();
 
+        assert!(test_bed.bmc_is_powered(1));
+        assert!(!test_bed.bmc_is_powered(2));
+
         assert_eq!(
             test_bed.bmc_channel_for_engine(1, 1).unwrap(),
             BleedMonitoringComputerChannelOperationMode::Master
@@ -2528,6 +2531,9 @@ mod tests {
             .set_dc_2_bus_power(true)
             .set_dc_ess_shed_bus_power(false)
             .and_run();
+
+        assert!(!test_bed.bmc_is_powered(1));
+        assert!(test_bed.bmc_is_powered(2));
 
         assert_eq!(
             test_bed.bmc_channel_for_engine(2, 1).unwrap(),
