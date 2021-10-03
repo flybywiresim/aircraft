@@ -330,7 +330,9 @@ impl OutflowValveActuator for CabinPressureController {
             || (self.is_ground() && self.should_open_outflow_valve())
         {
             Ratio::new::<percent>(100.)
-        } else if ofv_open_ratio <= Ratio::new::<percent>(0.) {
+        } else if ofv_open_ratio <= Ratio::new::<percent>(0.)
+            || self.cabin_altitude() > Length::new::<foot>(15000.)
+        {
             Ratio::new::<percent>(0.)
         } else {
             ofv_open_ratio
