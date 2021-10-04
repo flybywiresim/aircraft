@@ -1,16 +1,17 @@
 /* eslint-disable no-underscore-dangle */
 import { TCasComponent } from '@tcas/lib/TCasComponent';
+import { RaSound } from '@tcas/lib/TcasConstants';
 
 // TODO: Turn into abstract SoundManager class for all .ts components
 
 class PeriodicSound {
-    public sound: { name: string, length: number};
+    public sound: RaSound;
 
     public period: number;
 
     public timeSinceLastPlayed: number;
 
-    constructor(sound: { name: string, length: number}, period: number) {
+    constructor(sound: RaSound, period: number) {
         this.sound = sound;
         this.period = period;
         this.timeSinceLastPlayed = NaN;
@@ -29,9 +30,9 @@ export class TCasSoundManager implements TCasComponent {
 
     private periodicList: PeriodicSound[];
 
-    private soundQueue: { name: string, length: number}[];
+    private soundQueue: RaSound[];
 
-    private playingSound: { name: string, length: number} | null;
+    private playingSound: RaSound | null;
 
     private playingSoundRemaining: number;
 
@@ -56,7 +57,7 @@ export class TCasSoundManager implements TCasComponent {
         }
 
         if (this.playingSound === null && this.soundQueue.length > 0) {
-            const _sound: { name: string, length: number} = this.soundQueue.shift();
+            const _sound: RaSound = this.soundQueue.shift();
             this.tryPlaySound(_sound);
         }
 
@@ -71,7 +72,7 @@ export class TCasSoundManager implements TCasComponent {
         });
     }
 
-    addPeriodicSound(sound: { name: string, length: number}, period: number = NaN) {
+    addPeriodicSound(sound: RaSound, period: number = NaN) {
         if (!sound) {
             return;
         }
@@ -94,7 +95,7 @@ export class TCasSoundManager implements TCasComponent {
         }
     }
 
-    removePeriodicSound(sound) {
+    removePeriodicSound(sound: RaSound) {
         if (!sound) {
             return;
         }
@@ -106,7 +107,7 @@ export class TCasSoundManager implements TCasComponent {
         }
     }
 
-    tryPlaySound(sound, retry = false, repeatOnce = false): boolean | null {
+    tryPlaySound(sound: RaSound, retry: boolean = false, repeatOnce: boolean = false): boolean | null {
         if (this.playingSound === null) {
             this.playingSound = sound;
             this.playingSoundRemaining = sound.length;
