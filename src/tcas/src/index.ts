@@ -1,8 +1,8 @@
-import { TCasComputer } from './components/TCasComputer';
+import { TcasComputer } from './components/TcasComputer';
 import { initTcasLoop, updateTcasLoop } from './loop';
 
 export {
-    TCasComputer,
+    TcasComputer,
     initTcasLoop,
     updateTcasLoop,
 };

@@ -5,15 +5,15 @@
 import { UpdateThrottler } from '@shared/updateThrottler';
 import { MathUtils } from '@shared/MathUtils';
 import { Arinc429Word } from '@shared/arinc429';
+import { TcasComponent } from '@tcas/lib/TcasComponent';
 import { LatLongData } from '@typings/fs-base-ui/html_ui/JS/Types';
-import { TCasComponent } from '@tcas/lib/TCasComponent';
 import {
     TCAS_CONST as TCAS, JS_NPCPlane,
     TcasState, TcasMode, XpdrMode, TcasThreat,
     RaParams, RaSense, RaType, TaRaIndex, TaRaIntrusion, Intrude,
     Inhibit, Limits,
 } from '../lib/TcasConstants';
-import { TCasSoundManager } from './TCasSoundManager';
+import { TcasSoundManager } from './TcasSoundManager';
 
 export class NDTcasTraffic {
     ID: string;
@@ -132,8 +132,8 @@ export class ResAdvisory {
     }
 }
 
-export class TCasComputer implements TCasComponent {
-    private static _instance?: TCasComputer;
+export class TcasComputer implements TcasComponent {
+    private static _instance?: TcasComputer;
 
     private recListener: ViewListener.ViewListener = RegisterViewListener('JS_LISTENER_MAPS', () => {
         this.recListener.trigger('JS_BIND_BINGMAP', 'nxMap', false);
@@ -187,7 +187,7 @@ export class TCasComputer implements TCasComponent {
 
     private advisoryState: TcasState; // Overall TCAS state for callout latching (None, TA, or RA)
 
-    private soundManager: TCasSoundManager;
+    private soundManager: TcasSoundManager;
 
     private taOnly: boolean;
 
@@ -195,9 +195,9 @@ export class TCasComputer implements TCasComponent {
 
     constructor() {}
 
-    public static get instance(): TCasComputer {
+    public static get instance(): TcasComputer {
         if (!this._instance) {
-            this._instance = new TCasComputer();
+            this._instance = new TcasComputer();
         }
         return this._instance;
     }
@@ -216,7 +216,7 @@ export class TCasComputer implements TCasComponent {
         this.advisoryState = TcasState.NONE;
         this.sendAirTraffic = [];
         this.activeRa = new ResAdvisory(null, false, 0, false);
-        this.soundManager = new TCasSoundManager();
+        this.soundManager = new TcasSoundManager();
         this.taOnly = false;
         this.skipRa = false;
     }
@@ -947,13 +947,10 @@ export class TCasComputer implements TCasComponent {
         if (deltaTime === -1) {
             return;
         }
-
-        this.updateVars();
-
         if (this.tcasOn === TcasMode.STBY || this.xpdrStatus === XpdrMode.STBY) {
             return;
         }
-
+        this.updateVars();
         this.updateSensitivity();
         this.fetchRawTraffic(deltaTime);
         this.updateTraffic();

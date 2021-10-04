@@ -1,5 +1,5 @@
 /* eslint-disable no-underscore-dangle */
-import { TCasComponent } from '@tcas/lib/TCasComponent';
+import { TcasComponent } from '@tcas/lib/TcasComponent';
 import { RaSound } from '@tcas/lib/TcasConstants';
 
 // TODO: Turn into abstract SoundManager class for all .ts components
@@ -18,12 +18,12 @@ class PeriodicSound {
     }
 }
 
-export class TCasSoundManager implements TCasComponent {
-    private static _instance?: TCasSoundManager;
+export class TcasSoundManager implements TcasComponent {
+    private static _instance?: TcasSoundManager;
 
-    public static get instance(): TCasSoundManager {
+    public static get instance(): TcasSoundManager {
         if (!this._instance) {
-            this._instance = new TCasSoundManager();
+            this._instance = new TcasSoundManager();
         }
         return this._instance;
     }
@@ -79,7 +79,7 @@ export class TCasSoundManager implements TCasComponent {
 
         let useLengthForPeriod: boolean = false;
         if (period < sound.length) {
-            console.error("TCasSoundManager ERROR: Sound period can't be smaller than sound length. Using sound length instead.");
+            console.error("TcasSoundManager ERROR: Sound period can't be smaller than sound length. Using sound length instead.");
             useLengthForPeriod = true;
         }
 

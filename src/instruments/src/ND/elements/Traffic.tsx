@@ -3,7 +3,7 @@ import { useCoherentEvent } from '@instruments/common/hooks';
 import { useSimVar } from '@instruments/common/simVars';
 import React, { useEffect, FC, useState, memo } from 'react';
 import { Layer } from '@instruments/common/utils';
-import { TaRaIntrusion } from '@tcas/lib/TCasConstants';
+import { TaRaIntrusion } from '@tcas/lib/TcasConstants';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { MapParameters } from '../utils/MapParameters';
 

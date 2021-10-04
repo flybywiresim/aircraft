@@ -1,4 +1,4 @@
-export interface TCasComponent {
+export interface TcasComponent {
 
     init(): void;
 

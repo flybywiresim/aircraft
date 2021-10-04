@@ -4,7 +4,7 @@
     "moduleResolution": "node",
     "target": "ESNext",
     "noEmit": true,
-    "typeRoots": ["../../typings"]
+    "typeRoots": ["../../typings", "../node_modules/@types"],
   },
   "include": [
     "src/**/*",

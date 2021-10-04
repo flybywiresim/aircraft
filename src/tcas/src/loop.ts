@@ -1,8 +1,8 @@
-import { TCasComponent } from '@tcas/lib/TCasComponent';
-import { TCasComputer } from '@tcas/components/TCasComputer';
+import { TcasComponent } from '@tcas/lib/TcasComponent';
+import { TcasComputer } from '@tcas/components/TcasComputer';
 
-const components: TCasComponent[] = [
-    TCasComputer.instance,
+const components: TcasComponent[] = [
+    TcasComputer.instance,
 ];
 
 export function initTcasLoop(): void {

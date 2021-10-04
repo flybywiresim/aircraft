@@ -2,7 +2,7 @@ import './style.scss';
 import React, { useEffect, useState } from 'react';
 import { useSimVar, useSplitSimVar } from '@instruments/common/simVars';
 import { useInteractionEvent, useUpdate } from '@instruments/common/hooks';
-import { TCasComputer } from '@tcas/index';
+import { TcasComputer } from '@tcas/index';
 import { render } from '@instruments/common/index';
 
 const getDigitsFromBco16 = (code: number): number[] => {
@@ -28,7 +28,7 @@ const PoweredXpdrDisplay = () => {
     const [clrPressed, setClrPressed] = useState(false);
     const [displayResetTimer, setDisplayResetTimer] = useState(-1);
     const [ltsTest] = useSimVar('L:A32NX_OVHD_INTLT_ANN', 'Number', 250);
-    const [tcas] = useState(() => new TCasComputer());
+    const [tcas] = useState(() => new TcasComputer());
 
     const [transponderCode, setTransponderCode] = useSplitSimVar('TRANSPONDER CODE:1', 'Bco16', 'K:XPNDR_SET', 'Bco16', 500);
     const codeInDisplay = newDigits !== null ? newDigits : getDigitsFromBco16(transponderCode);
