@@ -244,11 +244,9 @@ impl CabinPressureController {
     }
 
     pub(super) fn should_switch_cpc(&self) -> bool {
-        if let Some(manager) = &self.pressure_schedule_manager {
-            manager.should_switch_cpc()
-        } else {
-            false
-        }
+        self.pressure_schedule_manager
+            .as_ref()
+            .map_or(false, |manager| manager.should_switch_cpc())
     }
 
     pub(super) fn should_open_outflow_valve(&self) -> bool {
