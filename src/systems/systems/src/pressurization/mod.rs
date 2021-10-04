@@ -51,7 +51,6 @@ pub struct Pressurization {
     is_in_man_mode: bool,
     man_mode_duration: Duration,
     packs_are_on: bool,
-    lgciu_gears_compressed: bool,
 }
 
 impl Pressurization {
@@ -79,7 +78,6 @@ impl Pressurization {
             is_in_man_mode: false,
             man_mode_duration: Duration::from_secs(0),
             packs_are_on: true,
-            lgciu_gears_compressed: true,
         }
     }
 
@@ -90,7 +88,7 @@ impl Pressurization {
         engines: [&impl EngineCorrectedN1; 2],
         lgciu: [&impl LgciuWeightOnWheels; 2],
     ) {
-        self.lgciu_gears_compressed = lgciu
+        let lgciu_gears_compressed = lgciu
             .iter()
             .all(|&a| a.left_and_right_gear_compressed(true));
 
@@ -99,7 +97,7 @@ impl Pressurization {
             self.outflow_valve.open_amount(),
             self.safety_valve.open_amount(),
             self.packs_are_on,
-            self.lgciu_gears_compressed,
+            lgciu_gears_compressed,
             self.cpc[self.active_system - 1].is_ground(),
             self.cpc[self.active_system - 1].should_open_outflow_valve()
                 && !press_overhead.is_in_man_mode(),
@@ -117,7 +115,7 @@ impl Pressurization {
                 self.departure_elevation,
                 self.sea_level_pressure,
                 self.destination_qnh,
-                self.lgciu_gears_compressed,
+                lgciu_gears_compressed,
                 &self.cabin_pressure_simulation,
                 &self.outflow_valve,
                 &self.safety_valve,
@@ -129,7 +127,7 @@ impl Pressurization {
             engines,
             self.outflow_valve.open_amount(),
             self.is_in_man_mode,
-            self.lgciu_gears_compressed,
+            lgciu_gears_compressed,
             self.cabin_pressure_simulation.cabin_delta_p(),
         );
 
