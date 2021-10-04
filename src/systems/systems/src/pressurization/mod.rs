@@ -291,7 +291,7 @@ impl ControllerSignal<PressureValveSignal> for PressurizationOverheadPanel {
                 0 => Some(PressureValveSignal::Open),
                 1 => Some(PressureValveSignal::Neutral),
                 2 => Some(PressureValveSignal::Close),
-                _ => panic!("Something went wrong in PressurizationOverheadPanel"),
+                _ => panic!("Could not convert manual vertical speed switch position '{}' to pressure valve signal.", self.man_vs_switch_position()),
             }
         }
     }
