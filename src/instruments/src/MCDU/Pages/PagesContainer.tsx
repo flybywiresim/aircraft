@@ -27,6 +27,7 @@ import IdentPage from './FMGC/Ident/Ident';
 import { PAGE_KEYS } from '../Components/Buttons';
 import FuelPred from './FMGC/Fuel/FuelPred';
 import FplanHolder from './FMGC/Fplan/Fplan';
+import ProgressPage from './FMGC/Prog/ProgressPage';
 
 const PagesContainer = () => {
     const [currentPage, setCurrentPage] = useState('MENU');
@@ -59,6 +60,7 @@ const PagesContainer = () => {
         IDENT: <IdentPage />,
         FUEL: <FuelPred />,
         FPLAN: <FplanHolder eraseTemporaryFlightPlan={eraseTemporaryFlightPlan} insertTemporaryFlightPlan={insertTemporaryFlightPlan} />,
+        PROG: <ProgressPage />,
     };
 
     useInteractionEvent(PAGE_KEYS.INIT, () => setCurrentPage('INIT'));
@@ -66,6 +68,7 @@ const PagesContainer = () => {
     useInteractionEvent(PAGE_KEYS.ATC, () => setCurrentPage('MENU'));
     useInteractionEvent(PAGE_KEYS.FUEL, () => setCurrentPage('FUEL'));
     useInteractionEvent(PAGE_KEYS.FPLN, () => setCurrentPage('FPLAN'));
+    useInteractionEvent(PAGE_KEYS.PROG, () => setCurrentPage('PROG'));
 
     return pages[currentPage];
 };
