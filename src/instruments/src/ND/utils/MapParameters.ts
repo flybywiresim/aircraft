@@ -36,6 +36,19 @@ export class MapParameters {
         ];
     }
 
+    coordinatesToXYyLimit(coordinates: Coordinates): Xy {
+        const bearing = Avionics.Utils.computeGreatCircleHeading(this.centerCoordinates, coordinates) - this.mapUpTrueDeg - 90;
+        const distance = Math.min(Avionics.Utils.computeGreatCircleDistance(this.centerCoordinates, coordinates), this.nmRadius);
+
+        const xNm = distance * Math.cos(bearing * Math.PI / 180);
+        const yNm = distance * Math.sin(bearing * Math.PI / 180);
+
+        return [
+            xNm * this.nmToPx,
+            yNm * this.nmToPx,
+        ];
+    }
+
     /**
      * Rotates a true bearing into the map orientation
      * @param trueBearing

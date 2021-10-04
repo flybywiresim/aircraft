@@ -38,7 +38,7 @@ export const Traffic: FC<TcasProps> = ({ x, y, mapParams }) => {
         aT.forEach((tf: NDTraffic) => {
             latLong.lat = tf.lat;
             latLong.long = tf.lon;
-            [tf.posX, tf.posY] = mapParams.coordinatesToXYy(latLong);
+            [tf.posX, tf.posY] = (tf.intrusionLevel >= TaRaIntrusion.TA) ? mapParams.coordinatesToXYyLimit(latLong) : mapParams.coordinatesToXYy(latLong);
             const traffic: NDTraffic | undefined = airTraffic.find((p) => p && p.ID === tf.ID);
             if (traffic) {
                 traffic.alive = true;
@@ -65,7 +65,7 @@ export const Traffic: FC<TcasProps> = ({ x, y, mapParams }) => {
 
     return (
         <Layer x={x} y={y}>
-            {airTraffic.map((tf) => Math.abs(tf.posX) <= 250 && Math.abs(tf.posY) <= 250 && (
+            {airTraffic.map((tf) => Math.abs(tf.posX) <= 500 && Math.abs(tf.posY) <= 500 && (
                 <TrafficIndicator
                     key={tf.ID}
                     x={tf.posX}
