@@ -72,6 +72,8 @@ export class TcasTraffic {
 
     closureRate: number;
 
+    // closureAccel: number;
+
     intrusionLevel: TaRaIntrusion;
 
     isDisplayed: boolean;
@@ -100,6 +102,7 @@ export class TcasTraffic {
         this.isDisplayed = false;
         this.vertSpeed = 0;
         this.closureRate = 0;
+        // this.closureAccel = 0;
         this.intrusionLevel = TaRaIntrusion.TRAFFIC;
         this.taTau = Infinity;
         this.raTau = Infinity;
@@ -135,9 +138,7 @@ export class TCasComputer implements TCasComponent {
 
     private sendListener = RegisterViewListener('JS_LISTENER_SIMVARS');
 
-    private updateThrottler: UpdateThrottler; // Utility to restrict updates (1 sec)
-
-    // private raThrottler: UpdateThrottler; // Utility to restrict updates for RAs (1 sec)
+    private updateThrottler: UpdateThrottler; // Utility to restrict updates (1 sec) //
 
     private airTraffic: TcasTraffic[]; // Air Traffic List
 
@@ -203,8 +204,7 @@ export class TCasComputer implements TCasComponent {
         this.airTraffic = [];
         this.raTraffic = [];
         this.sensitivity = 1;
-        this.updateThrottler = new UpdateThrottler(1000);
-        // this.raThrottler = new UpdateThrottler(1000);
+        this.updateThrottler = new UpdateThrottler(1000); // P5566074 pg 11:45
         this.inhibitions = Inhibit.NONE;
         this.ppos = { lat: NaN, long: NaN };
         this._pposLatLong = new LatLong(NaN, NaN);
@@ -302,7 +302,11 @@ export class TCasComputer implements TCasComponent {
                 const newAlt = tf.alt * 3.281;
                 traffic.vertSpeed = (newAlt - traffic.alt) / (_deltaTime / 1000) * 60; // feet per minute
                 const newSlantDist = MathUtils.computeDistance3D([traffic.lat, traffic.lon, traffic.alt], [this.ppos.lat, this.ppos.long, this.pressureAlt]);
+                // const newClosureRate = (traffic.slantDistance - newSlantDist) / (_deltaTime / 1000) * 3600;
+                // traffic.closureAccel = (newClosureRate - traffic.closureRate) / (_deltaTime / 1000);
+                // traffic.closureRate = newClosureRate;
                 traffic.closureRate = (traffic.slantDistance - newSlantDist) / (_deltaTime / 1000) * 3600;
+                traffic.slantDistance = newSlantDist;
                 traffic.slantDistance = newSlantDist;
                 traffic.lat = tf.lat;
                 traffic.lon = tf.lon;
@@ -379,9 +383,15 @@ export class TCasComputer implements TCasComponent {
             this._trafficPpos.lat = traffic.lat;
             this._trafficPpos.long = traffic.lon;
 
-            const horizontalDistance = Avionics.Utils.computeDistance(this._trafficPpos, this._pposLatLong);
-            // TODO: Detection Range: 60-100 Nm Forwards, 20Nm behind , 35 Nm Side to Side - AMM 34-43-00 6:2339
-            if (horizontalDistance > 35 && Math.abs(traffic.relativeAlt) > 9900) {
+            const horizontalDistance = Avionics.Utils.computeGreatCircleDistance(this._pposLatLong, this._trafficPpos);
+            const bearing = Avionics.Utils.computeGreatCircleHeading(this._pposLatLong, this._trafficPpos);
+            const x = horizontalDistance * Math.cos(bearing * Math.PI / 180);
+            const y = horizontalDistance * Math.sin(bearing * Math.PI / 180);
+
+            // TODO: Extend at higher altitudes
+            // x^2 / xLim ^2 + y^2 / yLim ^2 <= 1
+            // Detection Range: 60-100 Nm Forwards, 20Nm behind , 30 Nm Side to Side - AMM 34-43-00 6:2339
+            if ((x) ** 2 / ((x >= 0) ? 60 : 20) ** 2 + (y) ** 2 / 900 > 1 || Math.abs(traffic.relativeAlt) > 9900) {
                 traffic.isDisplayed = false;
                 traffic.taTau = Infinity;
                 traffic.raTau = Infinity;
@@ -439,25 +449,15 @@ export class TCasComputer implements TCasComponent {
                 traffic.intrusionLevel = TaRaIntrusion.RA;
             } else if (!this.isSlewActive) {
                 traffic.intrusionLevel = desiredIntrusionLevel;
+                if (traffic.intrusionLevel > TaRaIntrusion.PROXIMITY) {
+                    console.log(`NEW ${traffic.intrusionLevel === TaRaIntrusion.RA ? 'RA' : 'TA'}for ${traffic.ID}`);
+                    console.log(`TA TAU: ${traffic.taTau} RA TAU : ${traffic.raTau}`);
+                }
             }
         });
     }
 
     private updateRa(_deltaTime: number): void {
-        // Only update followup RA's once per second
-        /*
-        let raTime;
-        if (this.activeRa !== null) {
-            raTime = this.raThrottler.canUpdate(_deltaTime);
-            if (raTime === -1) {
-                this.updateInhibitions();
-                this.updateAdvisoryState(_deltaTime);
-                return;
-            }
-        } else {
-            raTime = _deltaTime;
-        }
-        */
         const raTime = _deltaTime;
         this.getRa(raTime);
         this.updateInhibitions();

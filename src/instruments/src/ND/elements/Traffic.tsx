@@ -87,34 +87,6 @@ type TrafficProp = {
     intrusionLevel: TaRaIntrusion,
 }
 
-const trafficStyles = {
-    fill: 'none',
-    paintOrder: 'markers stroke fill',
-    strokeLinecap: 'round',
-    strokeLinejoin: 'round',
-    stroke: '#ffffff',
-    strokeWidth: 2.01,
-} as React.CSSProperties;
-
-const proxStyles = {
-    fill: '#f6ffff',
-    paintOrder: 'markers stroke fill',
-    strokeLinecap: 'round',
-    strokeLinejoin: 'round',
-    stroke: '#ffffff',
-    strokeWidth: 2.01,
-} as React.CSSProperties;
-
-const taStyles = {
-    fill: '#e38c56',
-    paintOrder: 'markers stroke fill',
-} as React.CSSProperties;
-
-const raStyles = {
-    fill: '#ff0000',
-    paintOrder: 'markers stroke fill',
-} as React.CSSProperties;
-
 const TrafficIndicator: FC<TrafficProp> = memo(({ x, y, relativeAlt, vertSpeed, intrusionLevel }) => {
     let color = '#ffffff';
     switch (intrusionLevel) {
@@ -128,68 +100,44 @@ const TrafficIndicator: FC<TrafficProp> = memo(({ x, y, relativeAlt, vertSpeed, 
         break;
     }
 
-    const tSpanStyles = {
-        fill: color,
-        fontSize: '20px',
-        strokeWidth: 0.3,
-        textAlign: 'center',
-        textAnchor: 'middle',
-    } as React.CSSProperties;
-
-    const arrowStyles = {
-        fill: 'none',
-        stroke: color,
-        strokeWidth: 2,
-    } as React.CSSProperties;
-
-    const arrowHeadStyles = {
-        fill: color,
-        stroke: color,
-        fillRule: 'evenodd',
-        strokeWidth: '.2pt',
-    } as React.CSSProperties;
-
-    const altTextStyles = {
-        fill: color,
-        lineHeight: 1.25,
-        strokeWidth: 0.3,
-        textAlign: 'center',
-        textAnchor: 'end',
-    } as React.CSSProperties;
-
-    const relAltText: string = `${relativeAlt > 0 ? '+' : '-'}${Math.abs(relativeAlt) < 10 ? '0' : ''}${Math.abs(relativeAlt)}`;
+    // Place relative altitude above/below
     const relAltY: number = (relativeAlt > 0) ? 3.708355 : 43.708355;
 
     return (
         <>
             <Layer x={x} y={y}>
-                {(intrusionLevel === TaRaIntrusion.TRAFFIC)
-                    && (
-                        <>
-                            <path d="m22.4 5.71 7.9 10.6-7.9 10.6-7.9-10.6z" style={trafficStyles} />
-                        </>
+                {intrusionLevel === TaRaIntrusion.TRAFFIC && <image x={0} y={0} width={45} height={32} xlinkHref="/Images/ND/TRAFFIC_NORMAL.svg" />}
+                {intrusionLevel === TaRaIntrusion.PROXIMITY && <image x={0} y={0} width={45} height={32} xlinkHref="/Images/ND/TRAFFIC_PROXIMITY.svg" />}
+                {intrusionLevel === TaRaIntrusion.TA && <image x={0} y={0} width={45} height={32} xlinkHref="/Images/ND/TRAFFIC_TA.svg" />}
+                {intrusionLevel === TaRaIntrusion.RA && <image x={0} y={0} width={45} height={32} xlinkHref="/Images/ND/TRAFFIC_RA.svg" />}
+                <g>
+                    <text x="36.165964" y={relAltY} fill={color} height={1.25} strokeWidth={0.3} textAnchor="end" xmlSpace="preserve">
+                        <tspan x="19.165966" y={relAltY} fill={color} fontSize="20px" strokeWidth={0.3} textAnchor="middle">
+                            {`${relativeAlt > 0 ? '+' : '-'}${Math.abs(relativeAlt) < 10 ? '0' : ''}${Math.abs(relativeAlt)}`}
+                        </tspan>
+                    </text>
+                    {(vertSpeed >= 500 || vertSpeed <= -500) && (
+                        <path d="m38.3 23.2v-13.5" fill="none" stroke={color} strokeWidth={2} />
                     )}
-                {(intrusionLevel === TaRaIntrusion.PROXIMITY
-                        && <path d="m22.4 5.71 7.9 10.6-7.9 10.6-7.9-10.6z" style={proxStyles} />
-                )}
-                {(intrusionLevel === TaRaIntrusion.TA
-                    && <circle cx="22.4" cy="16.1" r="9.39" style={taStyles} />
-                )}
-                {(intrusionLevel === TaRaIntrusion.RA
-                    && <rect x="13.3" y="6.88" width="18.3" height="18.3" style={raStyles} />
-                )}
-                <text x="36.165964" y={relAltY} style={altTextStyles} xmlSpace="preserve">
-                    <tspan x="19.165966" y={relAltY} style={tSpanStyles}>{relAltText}</tspan>
-                </text>
-                {(vertSpeed >= 500 || vertSpeed <= -500) && (
-                    <path d="m38.3 23.2v-13.5" style={arrowStyles} />
-                )}
-                {(vertSpeed <= -500) && (
-                    <path d="m38.3 23.2-2.05-1.42 2.05 5.66 2.05-5.66z" style={arrowHeadStyles} />
-                )}
-                {(vertSpeed >= 500) && (
-                    <path d="m38.3 9.7 2.05 1.42-2.05-5.66-2.05 5.66z" style={arrowHeadStyles} />
-                )}
+                    {(vertSpeed <= -500) && (
+                        <path
+                            d="m38.3 23.2-2.05-1.42 2.05 5.66 2.05-5.66z"
+                            fill={color}
+                            stroke={color}
+                            fillRule="evenodd"
+                            strokeWidth=".2pt"
+                        />
+                    )}
+                    {(vertSpeed >= 500) && (
+                        <path
+                            d="m38.3 9.7 2.05 1.42-2.05-5.66-2.05 5.66z"
+                            fill={color}
+                            stroke={color}
+                            fillRule="evenodd"
+                            strokeWidth=".2pt"
+                        />
+                    )}
+                </g>
             </Layer>
         </>
     );
