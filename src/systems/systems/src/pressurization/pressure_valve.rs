@@ -171,8 +171,8 @@ mod pressure_valve_tests {
     impl OutflowValveActuator for TestValveActuator {
         fn target_valve_position(
             &self,
-            _press_overhead: &PressurizationOverheadPanel,
-            _cabin_pressure_simulation: &CabinPressureSimulation,
+            _: &PressurizationOverheadPanel,
+            _: &CabinPressureSimulation,
         ) -> Ratio {
             self.target_valve_position
         }
