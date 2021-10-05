@@ -464,10 +464,6 @@ export class TcasComputer implements TcasComponent {
                 traffic.intrusionLevel = TaRaIntrusion.RA;
             } else if (!this.isSlewActive) {
                 traffic.intrusionLevel = desiredIntrusionLevel;
-                if (traffic.intrusionLevel > TaRaIntrusion.PROXIMITY) {
-                    console.log(`NEW ${traffic.intrusionLevel === TaRaIntrusion.RA ? 'RA' : 'TA'} for ${traffic.ID}`);
-                    console.log(`TA TAU: ${traffic.taTau} RA TAU : ${traffic.raTau}`);
-                }
             }
         });
     }
@@ -475,7 +471,6 @@ export class TcasComputer implements TcasComponent {
     private updateRa(_deltaTime: number): void {
         const raTime = _deltaTime;
         this.getRa(raTime);
-        this.updateInhibitions();
         this.updateAdvisoryState(raTime);
     }
 
@@ -511,8 +506,8 @@ export class TcasComputer implements TcasComponent {
 
     /**
      * TODO: Documentation
-     * @param {*} sense
-     * @param {*} targetVS
+     * @param {*} sense Direction up/down
+     * @param {*} targetVS Target Vertical Speed
      * @param {*} delay
      * @param {*} accel
      * @returns
@@ -548,8 +543,8 @@ export class TcasComputer implements TcasComponent {
     }
 
     private getRa(_deltaTime: number): void {
-        // TODO: Store 10 most recent RA and 60 most recent TA - 34-43-00:6
-        // TODO: Red TCAS error messages on PFD and ND
+        // TODO: Store 10 most recent RA and 60 most recent TA - 34-43-00
+        // TODO: Refactor, remove unneeeded if else
         if (this.skipRa) {
             this._newRa.info = null;
             this.activeRa.info = null;
@@ -595,31 +590,38 @@ export class TcasComputer implements TcasComponent {
             console.log(`DOWN VERTICAL SEPARATION at -1500: ${downVerticalSep}; downIsCrossing: ${downIsCrossing}`);
             console.log('ALIM IS ', ALIM);
 
-            // If both achieve ALIM, prefer non-crossing
-            if (upVerticalSep >= ALIM && downVerticalSep >= ALIM) {
-                console.log('BOTH ACHIEVE ALIM');
-                if (upIsCrossing && !downIsCrossing) {
-                    sense = RaSense.DOWN;
-                } else if (!upIsCrossing && downIsCrossing) {
+            // Override if climb/desc RAs are inhibited.
+            if (this.inhibitions === Inhibit.ALL_DESC_RA) {
+                sense = RaSense.UP;
+            } else if (this.inhibitions === Inhibit.ALL_CLIMB_RA) {
+                sense = RaSense.DOWN;
+            } else {
+                // If both achieve ALIM, prefer non-crossing
+                if (upVerticalSep >= ALIM && downVerticalSep >= ALIM) {
+                    console.log('BOTH ACHIEVE ALIM');
+                    if (upIsCrossing && !downIsCrossing) {
+                        sense = RaSense.DOWN;
+                    } else if (!upIsCrossing && downIsCrossing) {
+                        sense = RaSense.UP;
+                    } else {
+                        sense = upVerticalSep > downVerticalSep ? RaSense.UP : RaSense.DOWN;
+                    }
+                }
+
+                // If neither achieve ALIM, choose sense with greatest separation
+                if (upVerticalSep < ALIM && downVerticalSep < ALIM) {
+                    sense = upVerticalSep > downVerticalSep ? RaSense.UP : RaSense.DOWN;
+                    console.log('NEITHER ACHIEVE ALIM, PICKING GREATEST SEPARATION');
+                }
+
+                // If only one achieves ALIM, pick it
+                if (upVerticalSep >= ALIM && downVerticalSep < ALIM) {
+                    console.log('UP ACHIEVES ALIM');
                     sense = RaSense.UP;
                 } else {
-                    sense = upVerticalSep > downVerticalSep ? RaSense.UP : RaSense.DOWN;
+                    console.log('DOWN ACHIEVES ALIM');
+                    sense = RaSense.DOWN;
                 }
-            }
-
-            // If neither achieve ALIM, choose sense with greatest separation
-            if (upVerticalSep < ALIM && downVerticalSep < ALIM) {
-                sense = upVerticalSep > downVerticalSep ? RaSense.UP : RaSense.DOWN;
-                console.log('NEITHER ACHIEVE ALIM, PICKING GREATEST SEPARATION');
-            }
-
-            // If only one achieves ALIM, pick it
-            if (upVerticalSep >= ALIM && downVerticalSep < ALIM) {
-                console.log('UP ACHIEVES ALIM');
-                sense = RaSense.UP;
-            } else {
-                console.log('DOWN ACHIEVES ALIM');
-                sense = RaSense.DOWN;
             }
 
             // Useful later
@@ -754,9 +756,9 @@ export class TcasComputer implements TcasComponent {
                     let increaseSep = null;
                     let increaseCross = null;
                     // let strength = 0;
-
-                    if (previousRa.info.callout.id === TCAS.CALLOUTS.level_off.id
-                        || previousRa.info.callout.id === TCAS.CALLOUTS.monitor_vs.id) {
+                    switch (previousRa.info.callout.id) {
+                    case TCAS.CALLOUTS.level_off.id:
+                    case TCAS.CALLOUTS.monitor_vs.id:
                         // strength = 1;
                         [increaseSep, increaseCross] = this.getVerticalSep(
                             sense,
@@ -770,26 +772,34 @@ export class TcasComputer implements TcasComponent {
                             strengthenRaInfo = (sense === RaSense.UP) ? TCAS.RA_VARIANTS.climb : TCAS.RA_VARIANTS.descend;
                         }
                         console.log('StrengthenRAInfo: level 0 to 1: ', strengthenRaInfo);
-                    } else if ((previousRa.info.callout.id === TCAS.CALLOUTS.climb.id
-                        || previousRa.info.callout.id === TCAS.CALLOUTS.climb_cross.id
-                        || previousRa.info.callout.id === TCAS.CALLOUTS.climb_now.id
-                        || previousRa.info.callout.id === TCAS.CALLOUTS.descend.id
-                        || previousRa.info.callout.id === TCAS.CALLOUTS.descend_cross.id
-                        || previousRa.info.callout.id === TCAS.CALLOUTS.descend_now.id
-                        || previousRa.info.callout.id === TCAS.CALLOUTS.maintain_vs.id
-                        || previousRa.info.callout.id === TCAS.CALLOUTS.maintain_vs_cross.id)
-                        && ((previousRa.info.sense === RaSense.UP && this.verticalSpeed >= 1500) || (previousRa.info.sense === RaSense.DOWN && this.verticalSpeed <= -1500))) {
-                        // strength = 2;
-                        [increaseSep, increaseCross] = this.getVerticalSep(
-                            sense,
-                            mul * 2500,
-                            TCAS.FOLLOWUP_DELAY,
-                            TCAS.FOLLOWUP_ACCEL,
-                        );
-                        strengthenRaInfo = (sense === RaSense.UP) ? TCAS.RA_VARIANTS.climb_increase : TCAS.RA_VARIANTS.descend_increase;
-                        console.log('StrengthenRAInfo: level 1 to 2 ', strengthenRaInfo);
-                    } else {
+                        break;
+                    case TCAS.CALLOUTS.climb.id:
+                    case TCAS.CALLOUTS.climb_cross.id:
+                    case TCAS.CALLOUTS.climb_now.id:
+                    case TCAS.CALLOUTS.descend.id:
+                    case TCAS.CALLOUTS.descend_now.id:
+                    case TCAS.CALLOUTS.maintain_vs.id:
+                    case TCAS.CALLOUTS.maintain_vs_cross.id:
+                        if ((previousRa.info.sense === RaSense.UP && this.verticalSpeed >= 1500) || (previousRa.info.sense === RaSense.DOWN && this.verticalSpeed <= -1500)) {
+                            // strength = 2;
+                            [increaseSep, increaseCross] = this.getVerticalSep(
+                                sense,
+                                mul * 2500,
+                                TCAS.FOLLOWUP_DELAY,
+                                TCAS.FOLLOWUP_ACCEL,
+                            );
+                            // Check for inhibiting increasing descent
+                            if (this.inhibitions !== Inhibit.ALL_INCR_DESC_RA) {
+                                strengthenRaInfo = (sense === RaSense.UP) ? TCAS.RA_VARIANTS.climb_increase : TCAS.RA_VARIANTS.descend_increase;
+                            }
+                            console.log('StrengthenRAInfo: level 1 to 2 ', strengthenRaInfo);
+                        } else {
+                            console.log('StrengthenRAInfo: condition not met. Callout: ', previousRa.info.callout);
+                        }
+                        break;
+                    default:
                         console.log('StrengthenRAInfo: condition not met. Callout: ', previousRa.info.callout);
+                        break;
                     }
 
                     if (previousRa.isReversal || previousRa.secondsSinceStart < 10 || minTimeToCPA < 4) {
@@ -802,7 +812,8 @@ export class TcasComputer implements TcasComponent {
                         } else {
                             this._newRa.info = strengthenRaInfo;
                         }
-                    } else {
+                    // Do not allow reversal if CLIMB/DESC is inhibited
+                    } else if (this.inhibitions !== Inhibit.ALL_CLIMB_RA && this.inhibitions !== Inhibit.ALL_DESC_RA) {
                         // Haven't reversed before, so it's still a possibility
                         const reversedSense = (sense === RaSense.UP) ? RaSense.DOWN : RaSense.UP;
                         const revMul = (reversedSense === RaSense.UP) ? 1 : -1;
@@ -846,6 +857,11 @@ export class TcasComputer implements TcasComponent {
                             this._newRa.info = (reversedSense === RaSense.UP) ? TCAS.RA_VARIANTS.climb_now : TCAS.RA_VARIANTS.descend_now;
                             this._newRa.isReversal = true;
                         }
+                    } else if (strengthenRaInfo !== null) {
+                        this._newRa.info = strengthenRaInfo;
+                    } else {
+                        this._newRa.info = previousRa.info;
+                        this._newRa.hasBeenAnnounced = true;
                     }
                 } else {
                     // Continue with same RA
@@ -876,8 +892,8 @@ export class TcasComputer implements TcasComponent {
     }
 
     private updateAdvisoryState(_deltaTime) {
-        const taThreatCount = this.airTraffic.reduce((acc, aircraft) => acc + (aircraft.intrusionLevel === TaRaIntrusion.TA ? 1 : 0), 0);
-        const raThreatCount = this.airTraffic.reduce((acc, aircraft) => acc + (aircraft.intrusionLevel === TaRaIntrusion.RA ? 1 : 0), 0);
+        const taThreatCount = this.airTraffic.reduce((acc, aircraft) => acc + (aircraft.alive && aircraft.intrusionLevel === TaRaIntrusion.TA ? 1 : 0), 0);
+        const raThreatCount = this.raTraffic.length;
 
         switch (this.advisoryState) {
         case TcasState.TA:
@@ -977,6 +993,7 @@ export class TcasComputer implements TcasComponent {
             return;
         }
         this.updateSensitivity();
+        this.updateInhibitions();
         this.fetchRawTraffic(deltaTime);
         this.updateTraffic();
         this.updateRa(deltaTime);
