@@ -2,7 +2,7 @@
 Lifetime=5
 Version=2.0
 Radius=-1
-Priority=0		  
+Priority=0
 
 [Properties]
 
@@ -21,7 +21,7 @@ X Particle Velocity=0.0, 0.0
 Y Particle Velocity=0.0, 0.0
 Z Particle Velocity=0.0, 0.0
 X Rotation=0.0, 0.0
-Y Rotation=0.0,0.0
+Y Rotation=0.0, 0.0
 Z Rotation=50.0, 50.0
 X Offset=0.0, 0.0
 Y Offset=0.0, 0.0
@@ -51,23 +51,23 @@ Face=1, 1, 1
 Blend Mode=2
 Texture=fx_0.png
 Bounce=0.0
-Color Start=255, 0, 0, 10
-Color End=255, 0, 0, 10
+Color Start=25, 0, 0, 10
+Color End=25, 0, 0, 10
 Jitter Distance=0.0
 Jitter Time=0.0
 uv1=0.0, 0.0
 uv2=1.0, 1.0
-NearEndFade= 1.0
-NearFade= 6.0
-MinProjSize= 0.3
+NearEndFade=1.0
+NearFade=6.0
+MinProjSize=0.4
 
 [LightAttributes.0]
 Type=spot
 Size=0.0
-Range=20
-Intensity=2
+Range=40
+Intensity=15
 Softness=0.0
-SpotInner=40.0
-SpotOuter=90.0
+SpotInner=27.5
+SpotOuter=55.0
 Volumetric=1
 ScatDir=0.0
