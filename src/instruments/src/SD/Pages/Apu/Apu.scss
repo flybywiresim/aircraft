@@ -1,0 +1,52 @@
+@import "../../../Common/definitions";
+
+#main-apu {
+    .Box {
+        stroke: #EEEEEE;
+        fill: none;
+        stroke-width: 2.5px;
+    }
+
+    text {
+        fill: #EEEEEE;
+        font-family: 'Roboto Mono', monospace;
+        font-size: 19px;
+
+        &.Middle {
+            text-anchor: middle;
+            text-align: middle;
+        }
+
+        &.Right {
+            text-anchor: end;
+            text-align: end;
+        }
+
+        &.Green {
+            fill: $display-green;
+        }
+
+        &.Amber {
+            fill: $display-amber;
+        }
+
+        &.Cyan {
+            fill: $display-cyan;
+        }
+    }
+
+    .Line {
+        stroke: #00FF00;
+        stroke-width: 2.5px;
+
+        &.White {
+            stroke: #EEEEEE;
+        }
+    }
+
+    .Circle {
+        stroke: #00FF00;
+        fill: none;
+        stroke-width: 2.5px;
+    }
+}

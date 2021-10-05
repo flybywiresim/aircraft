@@ -6,7 +6,7 @@ import { PressPage } from './Pages/Press.jsx';
 import { ElecPage } from './Pages/Elec/Elec.tsx';
 import { HydPage } from './Pages/Hyd/Hyd.tsx';
 import { FuelPage } from './Pages/Fuel/Fuel.tsx';
-import { ApuPage } from './Pages/Apu.jsx';
+import { ApuPage } from './Pages/Apu/Apu.tsx';
 import { CondPage } from './Pages/Cond/Cond.tsx';
 import { DoorPage } from './Pages/Door/Door.tsx';
 import { WheelPage } from './Pages/Wheel/Wheel.tsx';
