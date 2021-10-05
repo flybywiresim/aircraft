@@ -18,7 +18,8 @@ bool SimConnectInterface::connect(bool autopilotStateMachineEnabled,
                                   double keyChangeElevator,
                                   double keyChangeRudder,
                                   bool disableXboxCompatibilityRudderPlusMinus,
-                                  double maxSimulationRate) {
+                                  double maxSimulationRate,
+                                  bool limitSimulationRateByPerformance) {
   // info message
   cout << "WASM: Connecting..." << endl;
 
@@ -41,6 +42,7 @@ bool SimConnectInterface::connect(bool autopilotStateMachineEnabled,
     this->rudderTrimHandler = rudderTrimHandler;
     // store maximum allowed simulation rate
     this->maxSimulationRate = maxSimulationRate;
+    this->limitSimulationRateByPerformance = limitSimulationRateByPerformance;
     // store key change value for each axis
     flightControlsKeyChangeAileron = keyChangeAileron;
     flightControlsKeyChangeElevator = keyChangeElevator;
@@ -1831,7 +1833,8 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
       // calculate frame rate that will be seen by FBW / AP
       double theoreticalFrameRate = (1 / sampleTime) / (simData.simulation_rate * 2);
       // determine if an increase of simulation rate can be allowed
-      if ((simData.simulation_rate < maxSimulationRate && theoreticalFrameRate >= 8) || simData.simulation_rate < 1) {
+      if ((simData.simulation_rate < maxSimulationRate && theoreticalFrameRate >= 8) || simData.simulation_rate < 1 ||
+          !limitSimulationRateByPerformance) {
         sendEvent(Events::SIM_RATE_INCR, 0, SIMCONNECT_GROUP_PRIORITY_DEFAULT);
         cout << "WASM: Simulation rate " << simData.simulation_rate;
         cout << " -> " << simData.simulation_rate * 2;
