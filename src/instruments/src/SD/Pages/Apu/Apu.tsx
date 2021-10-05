@@ -82,9 +82,9 @@ export const ApuPage = () => {
 
             {/* Separation Bar */}
             <SvgGroup x={83} y={247}>
-                <line className="Line White" x1={0} y1={0} x2={0} y2={26} />
-                <line className="Line White" x1={-1} y1={0} x2={456} y2={0} />
-                <line className="Line White" x1={455} y1={0} x2={455} y2={26} />
+                <line className="Line Grey" x1={0} y1={0} x2={0} y2={26} />
+                <line className="Line Grey" x1={-1} y1={0} x2={456} y2={0} />
+                <line className="Line Grey" x1={455} y1={0} x2={455} y2={26} />
             </SvgGroup>
 
             {/* Memos */}

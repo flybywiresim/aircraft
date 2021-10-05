@@ -9,7 +9,6 @@
 
     text {
         fill: #EEEEEE;
-        font-family: 'Roboto Mono', monospace;
         font-size: 19px;
 
         &.Center {
@@ -44,7 +43,11 @@
         stroke-width: 2.5px;
 
         &.White {
-            stroke: #EEEEEE;
+            stroke: $display-white;
+        }
+
+        &.Grey {
+            stroke: $display-grey;
         }
     }
 
