@@ -161,6 +161,8 @@ export class TcasComputer implements TcasComponent {
 
     private isSlewActive: boolean; // Slew Mode on?
 
+    private fwcFlightPhase: number; // FWC flight phase
+
     private ppos: LatLongData; // Plane PPOS
 
     private _pposLatLong: LatLong; // avoiding GC
@@ -204,6 +206,8 @@ export class TcasComputer implements TcasComponent {
 
     init(): void {
         SimVar.SetSimVarValue('L:A32NX_TCAS_STATE', 'Enum', 0);
+        SimVar.SetSimVarValue('L:A32NX_TCAS_FAULT', 'bool', false);
+        SimVar.SetSimVarValue('L:A32NX_TCAS_TA_ONLY', 'bool', false);
         this.airTraffic = [];
         this.raTraffic = [];
         this.sensitivity = 1;
@@ -221,6 +225,49 @@ export class TcasComputer implements TcasComponent {
         this.skipRa = false;
     }
 
+    private updateStatus(): void {
+        this.radioAlt = SimVar.GetSimVarValue('PLANE ALT ABOVE GROUND', 'feet');
+        this.altitude = Arinc429Word.fromSimVarValue(`L:A32NX_ADIRS_ADR_${this.activeXpdr + 1}_ALTITUDE`);
+        this.altitudeStandby = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_3_ALTITUDE');
+        this.fwcFlightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', 'Enum');
+
+        if (this.fwcFlightPhase !== 1 && this.fwcFlightPhase !== 10) {
+            // Update "TA ONLY" message at the bottom of the ND
+            if (this.radioAlt < 1000 || this.tcasMode === TcasMode.TA) {
+                if (!this.taOnly) {
+                    // Set TA ONLY true
+                    this.taOnly = true;
+                    SimVar.SetSimVarValue('L:A32NX_TCAS_TA_ONLY', 'bool', true);
+                }
+            } else if (this.taOnly) {
+                this.taOnly = false;
+                SimVar.SetSimVarValue('L:A32NX_TCAS_TA_ONLY', 'bool', false);
+            }
+
+            // Red TCAS warning on fault (and on PFD) - 34-43-00:A24
+            if (!this.altitude || !this.altitudeStandby
+                || !this.altitude.isNormalOperation() || !this.altitudeStandby.isNormalOperation()
+                || this.altitude.value - this.altitudeStandby.value > 300) {
+                if (!this.skipRa) {
+                    this.skipRa = true;
+                    SimVar.SetSimVarValue('L:A32NX_TCAS_FAULT', 'bool', true);
+                }
+            } else if (this.skipRa) {
+                this.skipRa = false;
+                SimVar.SetSimVarValue('L:A32NX_TCAS_FAULT', 'bool', false);
+            }
+        } else {
+            if (this.taOnly) {
+                this.taOnly = false;
+                SimVar.SetSimVarValue('L:A32NX_TCAS_TA_ONLY', 'bool', false);
+            }
+            if (this.skipRa) {
+                this.skipRa = false;
+                SimVar.SetSimVarValue('L:A32NX_TCAS_FAULT', 'bool', false);
+            }
+        }
+    }
+
     private updateVars(): void {
         // Note: these values are calculated/not used in the real TCAS computer, here we just read SimVars
         this.verticalSpeed = SimVar.GetSimVarValue('VERTICAL SPEED', 'feet per minute');
@@ -233,37 +280,14 @@ export class TcasComputer implements TcasComponent {
         this.activeXpdr = SimVar.GetSimVarValue('L:A32NX_SWITCH_ATC', 'number'); // TODO: refactor When XPDR2 is implemented
         // TODO FIXME:  workaround for altitude issues due to MSFS bug, needs to be changed to PRESSURE ALTITUDE again when solved
         this.pressureAlt = SimVar.GetSimVarValue('INDICATED ALTITUDE:3', 'feet');
-        this.radioAlt = SimVar.GetSimVarValue('PLANE ALT ABOVE GROUND', 'feet');
-        this.altitude = Arinc429Word.fromSimVarValue(`L:A32NX_ADIRS_ADR_${this.activeXpdr + 1}_ALTITUDE`);
-        this.altitudeStandby = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_3_ALTITUDE');
+        // this.radioAlt = SimVar.GetSimVarValue('PLANE ALT ABOVE GROUND', 'feet');
+        // this.altitude = Arinc429Word.fromSimVarValue(`L:A32NX_ADIRS_ADR_${this.activeXpdr + 1}_ALTITUDE`);
+        // this.altitudeStandby = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_3_ALTITUDE');
         this.isSlewActive = !!SimVar.GetSimVarValue('IS SLEW ACTIVE', 'boolean');
+        // this.fwcFlightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', 'Enum');
 
         // TODO: Add more TA only conditions here (i.e GPWS active, Windshear warning active, stall)
         this.tcasMode = this.tcasOn;
-
-        // Update "TA ONLY" message at the bottom of the ND
-        if ((this.radioAlt < 1000 || this.tcasMode === TcasMode.TA)) {
-            if (!this.taOnly) {
-                // Set TA ONLY true
-                this.taOnly = true;
-                SimVar.SetSimVarValue('L:A32NX_TCAS_TA_ONLY', 'bool', true);
-            }
-        } else if (this.taOnly) {
-            this.taOnly = false;
-            SimVar.SetSimVarValue('L:A32NX_TCAS_TA_ONLY', 'bool', false);
-        }
-
-        // Red TCAS warning on fault (and on PFD) - AMM 34-43-00:A24
-        if (!this.altitude || !this.altitudeStandby
-            || !this.altitude.isNormalOperation() || !this.altitudeStandby.isNormalOperation() || this.altitude.value - this.altitudeStandby.value > 300) {
-            if (!this.skipRa) {
-                this.skipRa = true;
-                SimVar.SetSimVarValue('L:A32NX_TCAS_FAULT', 'bool', true);
-            }
-        } else if (this.skipRa) {
-            this.skipRa = false;
-            SimVar.SetSimVarValue('L:A32NX_TCAS_FAULT', 'bool', false);
-        }
     }
 
     private updateSensitivity(): void {
@@ -524,7 +548,7 @@ export class TcasComputer implements TcasComponent {
     }
 
     private getRa(_deltaTime: number): void {
-        // TODO: Store 10 most recent RA and 60 most recent TA - AMM 34-43-00:6
+        // TODO: Store 10 most recent RA and 60 most recent TA - 34-43-00:6
         // TODO: Red TCAS error messages on PFD and ND
         if (this.skipRa) {
             this._newRa.info = null;
@@ -947,10 +971,11 @@ export class TcasComputer implements TcasComponent {
         if (deltaTime === -1) {
             return;
         }
+        this.updateStatus();
+        this.updateVars();
         if (this.tcasOn === TcasMode.STBY || this.xpdrStatus === XpdrMode.STBY) {
             return;
         }
-        this.updateVars();
         this.updateSensitivity();
         this.fetchRawTraffic(deltaTime);
         this.updateTraffic();

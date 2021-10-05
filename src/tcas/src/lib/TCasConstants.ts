@@ -114,7 +114,7 @@ const SENSE: AltitudeMatrix = {
     7: [20000, 47000],
 } as const;
 
-const RANGE: RangeLimit = { // AMM 34-43-00 6:2339
+const RANGE: RangeLimit = { // 34-43-00 6:2339
     forward: [60, 100], // 60-100 Nm Forwards
     side: 30, // 30 Nm side
     back: 20, // 20Nm behind
