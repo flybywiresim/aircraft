@@ -1,10 +1,12 @@
 import React from 'react';
 import { render } from '@instruments/common/index';
-import { useSimVar } from '@instruments/common/simVars';
 import { setIsEcamPage } from '@instruments/common/defaults';
+import { useSimVar } from '@instruments/common/simVars';
 import { PageTitle } from '../../Common/PageTitle';
 
 import './Apu.scss';
+import { EcamPage } from '../../Common/EcamPage';
+import { SvgGroup } from '../../Common/SvgGroup';
 
 setIsEcamPage('apu_page');
 
@@ -25,66 +27,87 @@ export const ApuPage = () => {
     const [lowFuelPressure] = useSimVar('L:A32NX_APU_LOW_FUEL_PRESSURE_FAULT', 'Bool', 1000);
 
     return (
-        <svg id="main-apu" version="1.1" viewBox="0 0 600 600" style={{ marginTop: '-60px' }} xmlns="http://www.w3.org/2000/svg">
+        <EcamPage name="main-apu">
             <PageTitle x={283} y={33} text="APU" />
 
-            <g transform="translate(105,109)">
-                <rect className="Box" width={100} height={111} />
-                <text x={11} y={18}>APU GEN</text>
-                <text x={55} y={45} className="Cyan">%</text>
-                <text x={55} y={75} className="Cyan">V</text>
-                <text x={55} y={105} className="Cyan">HZ</text>
-
-                <text x={50} y={45} className={`Right ${apuGenLoad === 0 ? 'Amber' : 'Green'}`}>{apuGenLoad.toFixed()}</text>
-                <text x={50} y={75} className={`Right ${apuGenVoltage === 0 ? 'Amber' : 'Green'}`}>{apuGenVoltage.toFixed()}</text>
-                <text x={50} y={105} className={`Right ${apuGenFreq === 0 ? 'Amber' : 'Green'}`}>{apuGenFreq.toFixed()}</text>
-            </g>
-            <g transform="translate(283,115)">
+            {/* APU Avail */}
+            <SvgGroup x={305} y={85}>
                 {
                     apuAvail && (
                         <>
-                            <text x="0" y="0" className="Green">AVAIL</text>
+                            <text x={0} y={0} className="Green FontTitle Center">AVAIL</text>
                         </>
                     )
                 }
-            </g>
-            <g transform="translate(420,163)">
+            </SvgGroup>
+
+            {/* APU Gen */}
+            {/* TODO: Use Bigger font for values */}
+            <SvgGroup x={105} y={100}>
+                <rect className="Box" width={100} height={111} />
+                <text x={50} y={20} className="Center">APU GEN</text>
+                <SvgGroup x={70} y={55}>
+                    <text x={0} y={0} className="Cyan">%</text>
+                    <text x={0} y={25} className="Cyan">V</text>
+                    <text x={0} y={50} className="Cyan">HZ</text>
+                </SvgGroup>
+                <SvgGroup x={60} y={55}>
+                    <text x={0} y={0} className={`Right ${apuGenLoad === 0 ? 'Amber' : 'Green'}`}>{apuGenLoad.toFixed()}</text>
+                    <text x={0} y={25} className={`Right ${apuGenVoltage === 0 ? 'Amber' : 'Green'}`}>{apuGenVoltage.toFixed()}</text>
+                    <text x={0} y={50} className={`Right ${apuGenFreq === 0 ? 'Amber' : 'Green'}`}>{apuGenFreq.toFixed()}</text>
+                </SvgGroup>
+            </SvgGroup>
+
+            {/* Bleed */}
+            {/* TODO: Use Bigger font for values */}
+            <SvgGroup x={420} y={153}>
                 <rect className="Box" width={100} height={57} />
-                <text x={22} y={19}>BLEED</text>
-                <text x={53} y={44} className="Cyan">PSI</text>
 
-                <text x={51} y={44} className="Right Green">{apuBleedPressure.toFixed()}</text>
+                <text x={50} y={22} className="Center">BLEED</text>
+                <text x={10} y={48} className="Green">{apuBleedPressure.toFixed()}</text>
+                <text x={90} y={48} className="Cyan Right">PSI</text>
 
-                <line className="Line" x1="50" y1="-1" x2="50" y2="-22" />
-                <circle className="Circle" cx="50" r="18px" cy="-40" />
+                <line className="Line" x1={50} y1={-1} x2={50} y2={-22} />
+                <circle className="Circle" cx={50} r={18} cy={-40} />
                 <line className="Line" x1={apuBleedOn ? 50 : 32} y1={apuBleedOn ? -58 : -40} x2={apuBleedOn ? 50 : 68} y2={apuBleedOn ? -22 : -40} />
                 {
                     apuBleedOn && (
                         <>
-                            <line className="Line" x1="50" y1="-57" x2="50" y2="-72" />
+                            <line className="Line" x1={50} y1={-57} x2={50} y2={-72} />
                             <polygon className="Circle" points="40,-72 50,-92 60,-72" />
                         </>
                     )
                 }
-            </g>
-            <g transform="translate(83,227)">
-                <line className="Line White" x1="0" y1="0" x2="0" y2="26" />
-                <line className="Line White" x1="0" y1="0" x2="455" y2="0" />
-                <line className="Line White" x1="455" y1="0" x2="455" y2="26" />
-            </g>
-            <g transform="translate(400,375)">
-                { apuFlapOpenPercentage === 100 && <text className="Green" x="0" y="0">FLAP OPEN</text> }
-            </g>
-            <g transform="translate(409,315)">
-                { lowFuelPressure && <text x="0" y="0" className="Green">FUEL LO PR</text> }
-            </g>
-            <g transform="translate(125,260)">
+            </SvgGroup>
+
+            {/* Separation Bar */}
+            <SvgGroup x={83} y={247}>
+                <line className="Line White" x1={0} y1={0} x2={0} y2={26} />
+                <line className="Line White" x1={-1} y1={0} x2={456} y2={0} />
+                <line className="Line White" x1={455} y1={0} x2={455} y2={26} />
+            </SvgGroup>
+
+            {/* Memos */}
+            <SvgGroup x={370} y={335}>
+                { lowFuelPressure
+                && <text className="Green" x={0} y={0}>FUEL LO PR</text> }
+
+                { apuFlapOpenPercentage === 100
+                 && <text className="Green" x={0} y={60}>FLAP OPEN</text> }
+
+                {/* FIXME: REPLACE THIS CONDITION */}
+                { apuFlapOpenPercentage === 100
+                 && <text className="Green" x={0} y={120}>LOW OIL LEVEL</text> }
+            </SvgGroup>
+
+            {/* FIXME: Incorrect Gauges */}
+            <SvgGroup x={125} y={260}>
                 <path className="Line White" d="M74 170 C2 98 98 2 170 74" />
-            </g>
-            <g transform="translate(125,390)">
+            </SvgGroup>
+            <SvgGroup x={125} y={390}>
                 <path className="Line White" d="M74 170 C2 98 98 2 170 74" />
-            </g>
-        </svg>
+            </SvgGroup>
+        </EcamPage>
     );
 };
 

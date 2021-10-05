@@ -12,9 +12,9 @@
         font-family: 'Roboto Mono', monospace;
         font-size: 19px;
 
-        &.Middle {
+        &.Center {
             text-anchor: middle;
-            text-align: middle;
+            text-align: center;
         }
 
         &.Right {
@@ -32,6 +32,10 @@
 
         &.Cyan {
             fill: $display-cyan;
+        }
+
+        &.FontTitle {
+            font-size: $font-size-title;
         }
     }
 
