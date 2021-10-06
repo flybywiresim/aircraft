@@ -59,7 +59,7 @@ export const ApuPage = () => {
     }, [apuMasterPbOn, apuAvail]);
 
     useEffect(() => {
-        if (apuFlapOpenPercentage !== 100 && !apuMasterPbOn) {
+        if (apuFlapOpenPercentage !== 0 && !apuMasterPbOn) {
             setTimeout(() => {
                 setIsIntakeIndicationFlashing(true);
             }, 3000);
