@@ -7,6 +7,31 @@
         stroke-width: 2.5px;
     }
 
+    .FillPulse {
+        animation: fill-pulse 1s step-end infinite;
+
+        @keyframes fill-pulse {
+            0%, 100% {
+              fill: $display-green;
+            }
+            50% {
+                fill: hsl(120, 100%, 20%);
+            }
+        }
+    }
+    .LinePulse {
+        animation: line-pulse 1s step-end infinite;
+
+        @keyframes line-pulse {
+            0%, 100% {
+              stroke: $display-green;
+            }
+            50% {
+              stroke: hsl(120, 100%, 20%);
+            }
+        }
+    }
+
     text {
         fill: #EEEEEE;
         font-size: 19px;
@@ -33,21 +58,36 @@
             fill: $display-cyan;
         }
 
+        &.FontLarger {
+            font-size: $font-size-huge;
+        }
+
         &.FontTitle {
             font-size: $font-size-title;
         }
     }
 
     .Line {
-        stroke: #00FF00;
-        stroke-width: 2.5px;
+        stroke-width: 2px;
 
         &.White {
             stroke: $display-white;
         }
 
         &.Grey {
-            stroke: $display-grey;
+            stroke: $display-light-grey;
+        }
+
+        &.Amber {
+            stroke: $display-amber;
+        }
+
+        &.Red {
+            stroke: $display-red;
+        }
+
+        &.Green {
+            stroke: $display-green;
         }
     }
 
