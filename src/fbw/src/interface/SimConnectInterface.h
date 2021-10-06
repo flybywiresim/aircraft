@@ -174,7 +174,8 @@ class SimConnectInterface {
                double keyChangeElevator,
                double keyChangeRudder,
                bool disableXboxCompatibilityRudderPlusMinus,
-               double maxSimulationRate);
+               double maxSimulationRate,
+               bool limitSimulationRateByPerformance);
 
   void disconnect();
 
@@ -249,6 +250,7 @@ class SimConnectInterface {
   double sampleTime = 0;
 
   double maxSimulationRate = 0;
+  bool limitSimulationRateByPerformance = true;
 
   SimData simData = {};
   SimInput simInput = {};

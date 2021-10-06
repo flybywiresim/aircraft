@@ -36,7 +36,7 @@ bool FlyByWireInterface::connect() {
   return simConnectInterface.connect(autopilotStateMachineEnabled, autopilotLawsEnabled, flyByWireEnabled, throttleAxis,
                                      spoilersHandler, elevatorTrimHandler, rudderTrimHandler, flightControlsKeyChangeAileron,
                                      flightControlsKeyChangeElevator, flightControlsKeyChangeRudder,
-                                     disableXboxCompatibilityRudderAxisPlusMinus, maxSimulationRate);
+                                     disableXboxCompatibilityRudderAxisPlusMinus, maxSimulationRate, limitSimulationRateByPerformance);
 }
 
 void FlyByWireInterface::disconnect() {
@@ -132,6 +132,7 @@ void FlyByWireInterface::loadConfiguration() {
   flightDirectorSmoothingFactor = INITypeConversion::getDouble(iniStructure, "AUTOPILOT", "FLIGHT_DIRECTOR_SMOOTHING_FACTOR", 2.5);
   flightDirectorSmoothingLimit = INITypeConversion::getDouble(iniStructure, "AUTOPILOT", "FLIGHT_DIRECTOR_SMOOTHING_LIMIT", 20);
   maxSimulationRate = INITypeConversion::getDouble(iniStructure, "AUTOPILOT", "MAXIMUM_SIMULATION_RATE", 4);
+  limitSimulationRateByPerformance = INITypeConversion::getBoolean(iniStructure, "AUTOPILOT", "LIMIT_SIMULATION_RATE_BY_PERFORMANCE", true);
   simulationRateReductionEnabled = INITypeConversion::getBoolean(iniStructure, "AUTOPILOT", "SIMULATION_RATE_REDUCTION_ENABLED", true);
 
   flightControlsKeyChangeAileron = INITypeConversion::getDouble(iniStructure, "FLIGHT_CONTROLS", "KEY_CHANGE_AILERON", 0.02);
@@ -144,18 +145,19 @@ void FlyByWireInterface::loadConfiguration() {
       INITypeConversion::getBoolean(iniStructure, "FLIGHT_CONTROLS", "DISABLE_XBOX_COMPATIBILITY_RUDDER_AXIS_PLUS_MINUS", false);
 
   // print configuration into console
-  std::cout << "WASM: MODEL     : AUTOPILOT_STATE_MACHINE_ENABLED   = " << autopilotStateMachineEnabled << endl;
-  std::cout << "WASM: MODEL     : AUTOPILOT_LAWS_ENABLED            = " << autopilotLawsEnabled << endl;
-  std::cout << "WASM: MODEL     : AUTOTHRUST_ENABLED                = " << autoThrustEnabled << endl;
-  std::cout << "WASM: MODEL     : FLY_BY_WIRE_ENABLED               = " << flyByWireEnabled << endl;
-  std::cout << "WASM: MODEL     : TAILSTRIKE_PROTECTION_ENABLED     = " << tailstrikeProtectionEnabled << endl;
-  std::cout << "WASM: AUTOPILOT : CUSTOM_FLIGHT_GUIDANCE_ENABLED    = " << customFlightGuidanceEnabled << endl;
-  std::cout << "WASM: AUTOPILOT : GPS_COURSE_TO_STEER_ENABLED       = " << gpsCourseToSteerEnabled << endl;
-  std::cout << "WASM: AUTOPILOT : FLIGHT_DIRECTOR_SMOOTHING_ENABLED = " << flightDirectorSmoothingEnabled << endl;
-  std::cout << "WASM: AUTOPILOT : FLIGHT_DIRECTOR_SMOOTHING_FACTOR  = " << flightDirectorSmoothingFactor << endl;
-  std::cout << "WASM: AUTOPILOT : FLIGHT_DIRECTOR_SMOOTHING_LIMIT   = " << flightDirectorSmoothingLimit << endl;
-  std::cout << "WASM: AUTOPILOT : MAXIMUM_SIMULATION_RATE           = " << maxSimulationRate << endl;
-  std::cout << "WASM: AUTOPILOT : SIMULATION_RATE_REDUCTION_ENABLED = " << simulationRateReductionEnabled << endl;
+  std::cout << "WASM: MODEL     : AUTOPILOT_STATE_MACHINE_ENABLED      = " << autopilotStateMachineEnabled << endl;
+  std::cout << "WASM: MODEL     : AUTOPILOT_LAWS_ENABLED               = " << autopilotLawsEnabled << endl;
+  std::cout << "WASM: MODEL     : AUTOTHRUST_ENABLED                   = " << autoThrustEnabled << endl;
+  std::cout << "WASM: MODEL     : FLY_BY_WIRE_ENABLED                  = " << flyByWireEnabled << endl;
+  std::cout << "WASM: MODEL     : TAILSTRIKE_PROTECTION_ENABLED        = " << tailstrikeProtectionEnabled << endl;
+  std::cout << "WASM: AUTOPILOT : CUSTOM_FLIGHT_GUIDANCE_ENABLED       = " << customFlightGuidanceEnabled << endl;
+  std::cout << "WASM: AUTOPILOT : GPS_COURSE_TO_STEER_ENABLED          = " << gpsCourseToSteerEnabled << endl;
+  std::cout << "WASM: AUTOPILOT : FLIGHT_DIRECTOR_SMOOTHING_ENABLED    = " << flightDirectorSmoothingEnabled << endl;
+  std::cout << "WASM: AUTOPILOT : FLIGHT_DIRECTOR_SMOOTHING_FACTOR     = " << flightDirectorSmoothingFactor << endl;
+  std::cout << "WASM: AUTOPILOT : FLIGHT_DIRECTOR_SMOOTHING_LIMIT      = " << flightDirectorSmoothingLimit << endl;
+  std::cout << "WASM: AUTOPILOT : MAXIMUM_SIMULATION_RATE              = " << maxSimulationRate << endl;
+  std::cout << "WASM: AUTOPILOT : LIMIT_SIMULATION_RATE_BY_PERFORMANCE = " << limitSimulationRateByPerformance << endl;
+  std::cout << "WASM: AUTOPILOT : SIMULATION_RATE_REDUCTION_ENABLED    = " << simulationRateReductionEnabled << endl;
   std::cout << "WASM: FLIGHT_CONTROLS : KEY_CHANGE_AILERON = " << flightControlsKeyChangeAileron << endl;
   std::cout << "WASM: FLIGHT_CONTROLS : KEY_CHANGE_ELEVATOR = " << flightControlsKeyChangeElevator << endl;
   std::cout << "WASM: FLIGHT_CONTROLS : KEY_CHANGE_RUDDER = " << flightControlsKeyChangeRudder << endl;
