@@ -2,11 +2,12 @@
 /* eslint-disable no-empty-function */
 /* eslint-disable no-useless-constructor */
 /* eslint-disable no-underscore-dangle */
-import { UpdateThrottler } from '@shared/updateThrottler';
+import { UpdateThrottler } from '@shared/updatethrottler';
 import { MathUtils } from '@shared/MathUtils';
 import { Arinc429Word } from '@shared/arinc429';
 import { TcasComponent } from '@tcas/lib/TcasComponent';
 import { LatLongData } from '@typings/fs-base-ui/html_ui/JS/Types';
+import { LocalSimVar } from '@shared/simvar';
 import {
     TCAS_CONST as TCAS, JS_NPCPlane,
     TcasState, TcasMode, XpdrMode, TcasThreat,
@@ -116,19 +117,12 @@ export class TcasTraffic {
 }
 
 export class ResAdvisory {
-    info: RaParams | null;
-
-    isReversal: boolean;
-
-    secondsSinceStart: number;
-
-    hasBeenAnnounced: boolean;
-
-    constructor(_inf: RaParams | null, _isRev: boolean, _sinceStart: number, _announced: boolean) {
-        this.info = _inf;
-        this.isReversal = _isRev;
-        this.secondsSinceStart = _sinceStart;
-        this.hasBeenAnnounced = _announced;
+    constructor(
+        public info: RaParams | null,
+        public isReversal: boolean,
+        public secondsSinceStart: number,
+        public hasBeenAnnounced: boolean,
+    ) {
     }
 }
 
@@ -179,6 +173,8 @@ export class TcasComputer implements TcasComponent {
 
     private verticalSpeed: number | null; // Vertical Speed
 
+    private trueHeading: number;
+
     private sensitivity: number;
 
     private activeRa: ResAdvisory | null; // Currently Active RA
@@ -191,9 +187,15 @@ export class TcasComputer implements TcasComponent {
 
     private soundManager: TcasSoundManager;
 
-    private taOnly: boolean;
+    private tcasState: LocalSimVar;
 
-    private skipRa: boolean;
+    private taOnly: LocalSimVar;
+
+    private tcasFault: LocalSimVar;
+
+    private correctiveRa: LocalSimVar;
+
+    private gpwsWarning: boolean;
 
     constructor() {}
 
@@ -206,8 +208,10 @@ export class TcasComputer implements TcasComponent {
 
     init(): void {
         SimVar.SetSimVarValue('L:A32NX_TCAS_STATE', 'Enum', 0);
-        SimVar.SetSimVarValue('L:A32NX_TCAS_FAULT', 'bool', false);
-        SimVar.SetSimVarValue('L:A32NX_TCAS_TA_ONLY', 'bool', false);
+        this.tcasState = new LocalSimVar('L:A32NX_TCAS_STATE', 'Enum');
+        this.tcasFault = new LocalSimVar('L:A32NX_TCAS_FAULT', 'bool');
+        this.taOnly = new LocalSimVar('L:A32NX_TCAS_TA_ONLY', 'bool');
+        this.correctiveRa = new LocalSimVar('L:A32NX_TCAS_RA_CORRECTIVE', 'bool');
         this.airTraffic = [];
         this.raTraffic = [];
         this.sensitivity = 1;
@@ -221,51 +225,6 @@ export class TcasComputer implements TcasComponent {
         this.sendAirTraffic = [];
         this.activeRa = new ResAdvisory(null, false, 0, false);
         this.soundManager = new TcasSoundManager();
-        this.taOnly = false;
-        this.skipRa = false;
-    }
-
-    private updateStatus(): void {
-        this.radioAlt = SimVar.GetSimVarValue('PLANE ALT ABOVE GROUND', 'feet');
-        this.altitude = Arinc429Word.fromSimVarValue(`L:A32NX_ADIRS_ADR_${this.activeXpdr + 1}_ALTITUDE`);
-        this.altitudeStandby = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_3_ALTITUDE');
-        this.fwcFlightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', 'Enum');
-
-        if (this.fwcFlightPhase !== 1 && this.fwcFlightPhase !== 10) {
-            // Update "TA ONLY" message at the bottom of the ND
-            if (this.radioAlt < 1000 || this.tcasMode === TcasMode.TA) {
-                if (!this.taOnly) {
-                    // Set TA ONLY true
-                    this.taOnly = true;
-                    SimVar.SetSimVarValue('L:A32NX_TCAS_TA_ONLY', 'bool', true);
-                }
-            } else if (this.taOnly) {
-                this.taOnly = false;
-                SimVar.SetSimVarValue('L:A32NX_TCAS_TA_ONLY', 'bool', false);
-            }
-
-            // Red TCAS warning on fault (and on PFD) - 34-43-00:A24
-            if (!this.altitude || !this.altitudeStandby
-                || !this.altitude.isNormalOperation() || !this.altitudeStandby.isNormalOperation()
-                || this.altitude.value - this.altitudeStandby.value > 300) {
-                if (!this.skipRa) {
-                    this.skipRa = true;
-                    SimVar.SetSimVarValue('L:A32NX_TCAS_FAULT', 'bool', true);
-                }
-            } else if (this.skipRa) {
-                this.skipRa = false;
-                SimVar.SetSimVarValue('L:A32NX_TCAS_FAULT', 'bool', false);
-            }
-        } else {
-            if (this.taOnly) {
-                this.taOnly = false;
-                SimVar.SetSimVarValue('L:A32NX_TCAS_TA_ONLY', 'bool', false);
-            }
-            if (this.skipRa) {
-                this.skipRa = false;
-                SimVar.SetSimVarValue('L:A32NX_TCAS_FAULT', 'bool', false);
-            }
-        }
     }
 
     private updateVars(): void {
@@ -280,19 +239,63 @@ export class TcasComputer implements TcasComponent {
         this.activeXpdr = SimVar.GetSimVarValue('L:A32NX_SWITCH_ATC', 'number'); // TODO: refactor When XPDR2 is implemented
         // TODO FIXME:  workaround for altitude issues due to MSFS bug, needs to be changed to PRESSURE ALTITUDE again when solved
         this.pressureAlt = SimVar.GetSimVarValue('INDICATED ALTITUDE:3', 'feet');
-        // this.radioAlt = SimVar.GetSimVarValue('PLANE ALT ABOVE GROUND', 'feet');
-        // this.altitude = Arinc429Word.fromSimVarValue(`L:A32NX_ADIRS_ADR_${this.activeXpdr + 1}_ALTITUDE`);
-        // this.altitudeStandby = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_3_ALTITUDE');
+        this.radioAlt = SimVar.GetSimVarValue('PLANE ALT ABOVE GROUND', 'feet');
+        this.altitude = Arinc429Word.fromSimVarValue(`L:A32NX_ADIRS_ADR_${this.activeXpdr + 1}_ALTITUDE`);
+        this.altitudeStandby = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_3_ALTITUDE');
+        this.trueHeading = SimVar.GetSimVarValue('PLANE HEADING DEGREES TRUE', 'degrees');
         this.isSlewActive = !!SimVar.GetSimVarValue('IS SLEW ACTIVE', 'boolean');
-        // this.fwcFlightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', 'Enum');
+        this.fwcFlightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', 'Enum');
+        this.gpwsWarning = !!SimVar.GetSimVarValue('L:A32NX_GPWS_Warning_Active', 'bool');
 
-        // TODO: Add more TA only conditions here (i.e GPWS active, Windshear warning active, stall)
         this.tcasMode = this.tcasOn;
+    }
+
+    /**
+     * TODO: Documentation & complete missing inhibitions
+     */
+    private updateInhibitions(): void {
+        // TODO: Add more TA only conditions here (i.e GPWS active, Windshear warning active, stall)
+        if (this.radioAlt < 500 || this.gpwsWarning) {
+            this.inhibitions = Inhibit.ALL_RA_AURAL_TA;
+        } else if (this.radioAlt < 1000 || this.tcasMode === TcasMode.TA) {
+            this.inhibitions = Inhibit.ALL_RA;
+        } else if (this.radioAlt < 1100) {
+            this.inhibitions = Inhibit.ALL_DESC_RA;
+        } else if (this.radioAlt < 1550) {
+            this.inhibitions = Inhibit.ALL_INCR_DESC_RA;
+        } else if (this.pressureAlt > 39000) {
+            this.inhibitions = Inhibit.ALL_CLIMB_RA;
+        } else {
+            this.inhibitions = Inhibit.NONE;
+        }
+    }
+
+    private updateStatus(): void {
+        if (this.fwcFlightPhase !== 1 && this.fwcFlightPhase !== 10) {
+            // Update "TA ONLY" message at the bottom of the ND
+            if (this.inhibitions === Inhibit.ALL_RA || this.inhibitions === Inhibit.ALL_RA_AURAL_TA) {
+                this.taOnly.setVar(true);
+            } else {
+                this.taOnly.setVar(false);
+            }
+
+            // Amber TCAS warning on fault (and on PFD) - 34-43-00:A24/34-43-010
+            if (!this.altitude || !this.altitudeStandby
+                || !this.altitude.isNormalOperation() || !this.altitudeStandby.isNormalOperation()
+                || this.altitude.value - this.altitudeStandby.value > 300) {
+                this.tcasFault.setVar(true);
+            } else {
+                this.tcasFault.setVar(false);
+            }
+        } else {
+            this.taOnly.setVar(false);
+            this.tcasFault.setVar(false);
+        }
     }
 
     private updateSensitivity(): void {
         if (this.activeRa.info === null) {
-            if (this.taOnly) {
+            if (this.inhibitions === Inhibit.ALL_RA || this.inhibitions === Inhibit.ALL_RA_AURAL_TA) {
                 this.sensitivity = 2;
             } else if (this.radioAlt > TCAS.SENSE[3][Limits.MIN] && this.radioAlt <= TCAS.SENSE[3][Limits.MAX]) {
                 this.sensitivity = 3;
@@ -332,7 +335,7 @@ export class TcasComputer implements TcasComponent {
                 // const newClosureRate = (traffic.slantDistance - newSlantDist) / (_deltaTime / 1000) * 3600;
                 // traffic.closureAccel = (newClosureRate - traffic.closureRate) / (_deltaTime / 1000);
                 // traffic.closureRate = newClosureRate;
-                traffic.closureRate = (traffic.slantDistance - newSlantDist) / (_deltaTime / 1000) * 3600;
+                traffic.closureRate = (traffic.slantDistance - newSlantDist) / (_deltaTime / 1000) * 3600; // knots per hour
                 traffic.slantDistance = newSlantDist;
                 traffic.lat = tf.lat;
                 traffic.lon = tf.lon;
@@ -391,26 +394,28 @@ export class TcasComputer implements TcasComponent {
                     }
                 }
             }
-            traffic.isDisplayed = isDisplayed;
 
             this._pposLatLong.lat = this.ppos.lat;
             this._pposLatLong.long = this.ppos.long;
             this._trafficPpos.lat = traffic.lat;
             this._trafficPpos.long = traffic.lon;
-
             const horizontalDistance = Avionics.Utils.computeGreatCircleDistance(this._pposLatLong, this._trafficPpos);
-            const bearing = Avionics.Utils.computeGreatCircleHeading(this._pposLatLong, this._trafficPpos);
-            const x = horizontalDistance * Math.cos(bearing * Math.PI / 180);
-            const y = horizontalDistance * Math.sin(bearing * Math.PI / 180);
 
-            // TODO: Extend at higher altitudes
-            // x^2 / xLim ^2 + y^2 / yLim ^2 <= 1
-            if (x ** 2 / ((x >= 0) ? TCAS.RANGE.forward[Limits.MIN] : TCAS.RANGE.back) ** 2 + y ** 2 / (TCAS.RANGE.SIDE) ** 2 > 1
-                || Math.abs(traffic.relativeAlt) > TCAS.RANGE.alt) {
-                traffic.isDisplayed = false;
-                traffic.taTau = Infinity;
-                traffic.raTau = Infinity;
+            if (isDisplayed) {
+                const bearing = Avionics.Utils.computeGreatCircleHeading(this._pposLatLong, this._trafficPpos) - this.trueHeading + 90;
+                const x = horizontalDistance * Math.cos(bearing * Math.PI / 180);
+                const y = horizontalDistance * Math.sin(bearing * Math.PI / 180);
+
+                // TODO: Extend at higher altitudes
+                // x^2 / xLim ^2 + y^2 / yLim ^2 <= 1
+                if (!MathUtils.isInEllipse(x, y, TCAS.RANGE.side, TCAS.RANGE.forward[Limits.MIN], TCAS.RANGE.side, TCAS.RANGE.back)
+                    || Math.abs(traffic.relativeAlt) > TCAS.RANGE.alt) {
+                    isDisplayed = false;
+                    traffic.taTau = Infinity;
+                    traffic.raTau = Infinity;
+                }
             }
+            traffic.isDisplayed = isDisplayed;
 
             const intrusionLevel: TaRaIntrusion[] = [0, 0];
 
@@ -448,10 +453,11 @@ export class TcasComputer implements TcasComponent {
                     && traffic.secondsSinceLastTa < TCAS.TA_EXPIRATION_DELAY) {
                 traffic.taExpiring = true;
                 traffic.intrusionLevel = TaRaIntrusion.TA;
+            // Don't allow RA to resolve if duration is less than 5s
             } else if (this.activeRa.info !== null
                     && traffic.intrusionLevel === TaRaIntrusion.RA
                     && desiredIntrusionLevel < TaRaIntrusion.RA
-                    && this.activeRa.secondsSinceStart < 5) {
+                    && this.activeRa.secondsSinceStart < TCAS.MIN_RA_DURATION) {
                 traffic.intrusionLevel = TaRaIntrusion.RA;
             } else if (this.activeRa.info !== null
                     && traffic.intrusionLevel === TaRaIntrusion.RA
@@ -545,14 +551,14 @@ export class TcasComputer implements TcasComponent {
     private getRa(_deltaTime: number): void {
         // TODO: Store 10 most recent RA and 60 most recent TA - 34-43-00
         // TODO: Refactor, remove unneeeded if else
-        if (this.skipRa) {
+        if (this.tcasFault.getVar()) {
             this._newRa.info = null;
             this.activeRa.info = null;
             return;
         }
 
         this.raTraffic = this.airTraffic
-            .filter((traffic) => traffic.intrusionLevel === TaRaIntrusion.RA && traffic.raTau !== Infinity)
+            .filter((traffic) => traffic.intrusionLevel === TaRaIntrusion.RA)
             .sort((a, b) => a.raTau - b.raTau);
         this._newRa.info = null;
         this._newRa.isReversal = false;
@@ -561,13 +567,12 @@ export class TcasComputer implements TcasComponent {
         const previousRa = this.activeRa;
         const ALIM = TCAS.ALIM[this.sensitivity];
 
+        if (this.raTraffic.length === 0) {
+            return;
+        }
+
         if (this.activeRa.info === null) {
             // First RA
-            if (this.raTraffic.length === 0) {
-                this._newRa.info = null;
-                return;
-            }
-
             const [upVerticalSep, upIsCrossing]: [number, boolean] = this.getVerticalSep(
                 RaSense.UP,
                 1500,
@@ -701,11 +706,6 @@ export class TcasComputer implements TcasComponent {
             }
         } else {
             // There is a previous RA, so revise it if necessary
-            // If no RA threats, then just return null
-            if (this.raTraffic.length === 0) {
-                this._newRa.info = null;
-                return;
-            }
 
             // let alreadyAchievedALIM = true;
             let alreadyAchievedTaZTHR = true;
@@ -872,25 +872,6 @@ export class TcasComputer implements TcasComponent {
         }
     }
 
-    /**
-     * TODO: Documentation & complete missing inhibitions
-     */
-    private updateInhibitions(): void {
-        if (this.radioAlt < 500) {
-            this.inhibitions = Inhibit.ALL_RA_AURAL_TA;
-        } else if (this.radioAlt < 1000) {
-            this.inhibitions = Inhibit.ALL_RA;
-        } else if (this.radioAlt < 1100) {
-            this.inhibitions = Inhibit.ALL_DESC_RA;
-        } else if (this.radioAlt < 1550) {
-            this.inhibitions = Inhibit.ALL_INCR_DESC_RA;
-        } else if (this.pressureAlt > 39000) {
-            this.inhibitions = Inhibit.ALL_CLIMB_RA;
-        } else {
-            this.inhibitions = Inhibit.NONE;
-        }
-    }
-
     private updateAdvisoryState(_deltaTime) {
         const taThreatCount = this.airTraffic.reduce((acc, aircraft) => acc + (aircraft.alive && aircraft.intrusionLevel === TaRaIntrusion.TA ? 1 : 0), 0);
         const raThreatCount = this.raTraffic.length;
@@ -899,22 +880,22 @@ export class TcasComputer implements TcasComponent {
         case TcasState.TA:
             if (raThreatCount > 0 && (this.inhibitions !== Inhibit.ALL_RA && this.inhibitions !== Inhibit.ALL_RA_AURAL_TA)) {
                 this.advisoryState = TcasState.RA;
-                SimVar.SetSimVarValue('L:A32NX_TCAS_STATE', 'Enum', TcasState.RA);
+                this.tcasState.setVar(TcasState.RA);
                 console.log('TCAS: TA UPGRADED TO RA');
             } else if (taThreatCount === 0) {
                 this.advisoryState = TcasState.NONE;
-                SimVar.SetSimVarValue('L:A32NX_TCAS_STATE', 'Enum', TcasState.NONE);
-                console.log('TCAS: TA RESOLVED');
+                this.tcasState.setVar(TcasState.NONE);
+                // console.log('TCAS: TA RESOLVED');
             }
             break;
         case TcasState.RA:
             if (raThreatCount === 0) {
                 if (taThreatCount > 0) {
                     this.advisoryState = TcasState.TA;
-                    SimVar.SetSimVarValue('L:A32NX_TCAS_STATE', 'Enum', TcasState.TA);
+                    this.tcasState.setVar(TcasState.TA);
                 } else {
                     this.advisoryState = TcasState.NONE;
-                    SimVar.SetSimVarValue('L:A32NX_TCAS_STATE', 'Enum', TcasState.NONE);
+                    this.tcasState.setVar(TcasState.NONE);
                 }
                 console.log('TCAS: CLEAR OF CONFLICT');
                 this.soundManager.tryPlaySound(TCAS.SOUNDS.clear_of_conflict, true);
@@ -924,13 +905,13 @@ export class TcasComputer implements TcasComponent {
         default:
             if (raThreatCount > 0 && (this.inhibitions !== Inhibit.ALL_RA && this.inhibitions !== Inhibit.ALL_RA_AURAL_TA)) {
                 this.advisoryState = TcasState.RA;
-                SimVar.SetSimVarValue('L:A32NX_TCAS_STATE', 'Enum', TcasState.RA);
+                this.tcasState.setVar(TcasState.RA);
             } else if (taThreatCount > 0) {
                 this.advisoryState = TcasState.TA;
-                SimVar.SetSimVarValue('L:A32NX_TCAS_STATE', 'Enum', TcasState.TA);
-                console.log('TCAS: TA GENERATED');
+                this.tcasState.setVar(TcasState.TA);
+                // console.log('TCAS: TA GENERATED');
                 if (this.inhibitions !== Inhibit.ALL_RA_AURAL_TA) {
-                    console.log('TCAS: TA GENERATED SOUND');
+                    // console.log('TCAS: TA GENERATED SOUND');
                     this.soundManager.tryPlaySound(TCAS.SOUNDS.traffic_traffic, true);
                 }
             }
@@ -954,7 +935,7 @@ export class TcasComputer implements TcasComponent {
                 }
 
                 const isCorrective = this.activeRa.info.type === RaType.CORRECT;
-                SimVar.SetSimVarValue('L:A32NX_TCAS_RA_CORRECTIVE', 'bool', isCorrective);
+                this.correctiveRa.setVar(isCorrective);
                 SimVar.SetSimVarValue('L:A32NX_TCAS_VSPEED_RED:1', 'Number', this.activeRa.info.vs.red[Limits.MIN]);
                 SimVar.SetSimVarValue('L:A32NX_TCAS_VSPEED_RED:2', 'Number', this.activeRa.info.vs.red[Limits.MAX]);
                 if (isCorrective) {
@@ -987,13 +968,13 @@ export class TcasComputer implements TcasComponent {
         if (deltaTime === -1) {
             return;
         }
-        this.updateStatus();
         this.updateVars();
+        this.updateInhibitions();
+        this.updateStatus();
         if (this.tcasOn === TcasMode.STBY || this.xpdrStatus === XpdrMode.STBY) {
             return;
         }
         this.updateSensitivity();
-        this.updateInhibitions();
         this.fetchRawTraffic(deltaTime);
         this.updateTraffic();
         this.updateRa(deltaTime);

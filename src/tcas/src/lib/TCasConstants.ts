@@ -106,6 +106,7 @@ const THREAT: { [key in TcasThreat] : readonly [number, number]} = {
     [TcasThreat.BELOW]: [-9900, 2700],
 };
 
+// Altitude -> Sensitivity
 const SENSE: AltitudeMatrix = {
     3: [1000, 2350],
     4: [2350, 5000],
@@ -114,6 +115,7 @@ const SENSE: AltitudeMatrix = {
     7: [20000, 47000],
 } as const;
 
+// TCAS Range Limit
 const RANGE: RangeLimit = { // 34-43-00 6:2339
     forward: [60, 100], // 60-100 Nm Forwards
     side: 30, // 30 Nm side
@@ -121,6 +123,7 @@ const RANGE: RangeLimit = { // 34-43-00 6:2339
     alt: 9900,
 } as const;
 
+// Sensitivity to TAU limit
 const TAU: SensitivityMatrix = {
     1: [-1, -1],
     2: [20, -1],
@@ -132,6 +135,7 @@ const TAU: SensitivityMatrix = {
     8: [48, 35],
 } as const;
 
+// Incremental Range Protection Volume
 const DMOD: SensitivityMatrix = {
     1: [-1, -1],
     2: [0.3, -1],
@@ -143,6 +147,7 @@ const DMOD: SensitivityMatrix = {
     8: [1.3, 1.1],
 } as const;
 
+// Detection Alt Threshold
 const ZTHR: SensitivityMatrix = {
     1: [-1, -1],
     2: [850, -1],
@@ -154,6 +159,7 @@ const ZTHR: SensitivityMatrix = {
     8: [1200, 700],
 } as const;
 
+// Alt Tau Threshold
 const TVTHR: SensitivityList = {
     1: -1,
     2: -1,
@@ -165,6 +171,7 @@ const TVTHR: SensitivityList = {
     8: 25,
 } as const;
 
+// Positive Advisory Altitude Threshold
 const ALIM: SensitivityList = {
     1: -1,
     2: -1,

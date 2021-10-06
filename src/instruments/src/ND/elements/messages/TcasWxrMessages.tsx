@@ -5,7 +5,6 @@ import { Mode } from '@shared/NavigationDisplay';
 
 /*
 Messages in priority order, from 1-12 (full set with ATSAW and nice weather radar)
-[  TCAS (red)     |                       ]
 [  TCAS (amber)   | WEATHER AHEAD (amber) ]
 [  TCAS (amber)   |     ADS-B (amber)     ]
 [  TCAS (amber)   |   ADS-B ONLY (white)  ]
@@ -21,7 +20,7 @@ Messages in priority order, from 1-12 (full set with ATSAW and nice weather rada
 
 interface TcasWxrMessage {
     text: string;
-    color: 'White' | 'Amber' | 'Red';
+    color: 'White' | 'Amber';
 }
 
 export const TcasWxrMessages: FC<{ modeIndex: Mode }> = ({ modeIndex }) => {
@@ -31,10 +30,10 @@ export const TcasWxrMessages: FC<{ modeIndex: Mode }> = ({ modeIndex }) => {
     let rightMessage: TcasWxrMessage | undefined;
 
     const [tcasOnly] = useSimVar('L:A32NX_TCAS_TA_ONLY', 'boolean', 200);
-    const [tcasFail] = useSimVar('L:A32NX_TCAS_FAULT', 'boolean', 200);
+    const [tcasFault] = useSimVar('L:A32NX_TCAS_FAULT', 'boolean', 200);
 
-    if (tcasFail) {
-        leftMessage = { text: 'TCAS', color: 'Red' };
+    if (tcasFault) {
+        leftMessage = { text: 'TCAS', color: 'Amber' };
     } else if (tcasOnly) {
         leftMessage = { text: 'TA ONLY', color: 'White' };
     }

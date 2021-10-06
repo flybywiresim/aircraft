@@ -106,10 +106,10 @@ export const AltitudeIndicatorOfftape = ({ altitude, MDA, targetAlt, altIsManage
 
     const tcasFailBlock = (
         <>
-            <text className="Blink9Seconds FontLargest Red EndAlign" visibility={tcasFail ? 'visible' : 'hidden'} x="141.5" y="96">T</text>
-            <text className="Blink9Seconds FontLargest Red EndAlign" visibility={tcasFail ? 'visible' : 'hidden'} x="141.5" y="104">C</text>
-            <text className="Blink9Seconds FontLargest Red EndAlign" visibility={tcasFail ? 'visible' : 'hidden'} x="141.5" y="112">A</text>
-            <text className="Blink9Seconds FontLargest Red EndAlign" visibility={tcasFail ? 'visible' : 'hidden'} x="141.5" y="120">S</text>
+            <text className="Blink9Seconds FontLargest Amber EndAlign" visibility={tcasFail ? 'visible' : 'hidden'} x="141.5" y="96">T</text>
+            <text className="Blink9Seconds FontLargest Amber EndAlign" visibility={tcasFail ? 'visible' : 'hidden'} x="141.5" y="104">C</text>
+            <text className="Blink9Seconds FontLargest Amber EndAlign" visibility={tcasFail ? 'visible' : 'hidden'} x="141.5" y="112">A</text>
+            <text className="Blink9Seconds FontLargest Amber EndAlign" visibility={tcasFail ? 'visible' : 'hidden'} x="141.5" y="120">S</text>
         </>
     );
 

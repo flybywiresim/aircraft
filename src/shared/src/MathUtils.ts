@@ -126,4 +126,8 @@ export class MathUtils {
 
        return Math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2 + (z1 - z2) ** 2);
    }
+
+   public static isInEllipse(xPos: number, yPos: number, xLimPos: number, yLimPos: number, xLimNeg: number = xLimPos, yLimNeg: number = yLimPos): boolean {
+       return (xPos ** 2 / ((xPos >= 0) ? xLimPos : xLimNeg) ** 2 + yPos ** 2 / ((yPos >= 0) ? yLimPos : yLimNeg) ** 2) <= 1;
+   }
 }

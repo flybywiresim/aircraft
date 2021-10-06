@@ -2,18 +2,15 @@
 import { TcasComponent } from '@tcas/lib/TcasComponent';
 import { RaSound } from '@tcas/lib/TcasConstants';
 
-// TODO: Turn into abstract SoundManager class for all .ts components
+// TODO: Turn into abstract SoundManager singleton for all .ts components
 
 class PeriodicSound {
-    public sound: RaSound;
-
-    public period: number;
-
     public timeSinceLastPlayed: number;
 
-    constructor(sound: RaSound, period: number) {
-        this.sound = sound;
-        this.period = period;
+    constructor(
+        public sound: RaSound,
+        public period: number,
+    ) {
         this.timeSinceLastPlayed = NaN;
     }
 }
