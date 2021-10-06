@@ -431,11 +431,10 @@ export class TcasComputer implements TcasComponent {
             }
 
             // Perform altitude test
-            if (traffic.vTau < TCAS.TAU[this.sensitivity][TaRaIndex.RA]
-                    || Math.abs(traffic.relativeAlt) < TCAS.ZTHR[this.sensitivity][TaRaIndex.RA]) {
+            if (traffic.vTau < ((Math.abs(this.verticalSpeed) <= 600) ? TCAS.TVTHR[this.sensitivity] : TCAS.TAU[this.sensitivity][TaRaIndex.RA])
+            || Math.abs(traffic.relativeAlt) < TCAS.ZTHR[this.sensitivity][TaRaIndex.RA]) {
                 intrusionLevel[Intrude.ALT] = TaRaIntrusion.RA;
-            } else if (traffic.vTau < TCAS.TAU[this.sensitivity][TaRaIndex.TA]
-                    || Math.abs(traffic.relativeAlt) < TCAS.ZTHR[this.sensitivity][TaRaIndex.TA]) {
+            } else if (traffic.vTau < TCAS.TAU[this.sensitivity][TaRaIndex.TA] || Math.abs(traffic.relativeAlt) < TCAS.ZTHR[this.sensitivity][TaRaIndex.TA]) {
                 intrusionLevel[Intrude.ALT] = TaRaIntrusion.TA;
             } else if (Math.abs(traffic.relativeAlt) < 1200) {
                 intrusionLevel[Intrude.ALT] = TaRaIntrusion.PROXIMITY;

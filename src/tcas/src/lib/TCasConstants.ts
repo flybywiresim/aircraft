@@ -159,7 +159,7 @@ const ZTHR: SensitivityMatrix = {
     8: [1200, 700],
 } as const;
 
-// Alt Tau Threshold
+// Time Variable Alt Tau Threshold
 const TVTHR: SensitivityList = {
     1: -1,
     2: -1,
