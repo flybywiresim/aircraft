@@ -255,6 +255,7 @@ export class TcasComputer implements TcasComponent {
      */
     private updateInhibitions(): void {
         // TODO: Add more TA only conditions here (i.e GPWS active, Windshear warning active, stall)
+        // TODO FIXME: Less magic numbers, Use constants defined in TcasConstants
         if (this.radioAlt < 500 || this.gpwsWarning) {
             this.inhibitions = Inhibit.ALL_RA_AURAL_TA;
         } else if (this.radioAlt < 1000 || this.tcasMode === TcasMode.TA) {
