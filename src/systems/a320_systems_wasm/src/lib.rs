@@ -271,12 +271,12 @@ impl Flaps {
         }
     }
 
-    fn get_handle_pos_flaps_set(&self, input: u32) -> u8 {
+    fn get_handle_pos_flaps_set(&self, input: i32) -> u8 {
         let normalized_input: f64 = (input as f64) / 8192. - 1.;
         return self.get_handle_pos_from_0_1(normalized_input);
     }
 
-    fn get_handle_pos_axis_flaps_set(&self, input: u32) -> u8 {
+    fn get_handle_pos_axis_flaps_set(&self, input: i32) -> u8 {
         let normalized_input: f64 = (input as f64) / 16384.;
         return self.get_handle_pos_from_0_1(normalized_input);
     }
@@ -296,9 +296,9 @@ impl Flaps {
         } else if event_id == self.id_flaps_3 {
             self.flaps_handle_position = 3;
         } else if event_id == self.id_flaps_set {
-            self.flaps_handle_position = self.get_handle_pos_flaps_set(event_data);
+            self.flaps_handle_position = self.get_handle_pos_flaps_set(event_data as i32);
         } else if event_id == self.id_axis_flaps_set {
-            self.flaps_handle_position = self.get_handle_pos_axis_flaps_set(event_data);
+            self.flaps_handle_position = self.get_handle_pos_axis_flaps_set(event_data as i32);
         } else if event_id == self.id_flaps_down {
             self.flaps_handle_position = 4;
         } else if event_id == self.id_flaps_up {
