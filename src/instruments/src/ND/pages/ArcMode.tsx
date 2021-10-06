@@ -4,7 +4,7 @@ import { getSmallestAngle } from '@instruments/common/utils';
 import { MathUtils } from '@shared/MathUtils';
 import { useFlightPlanManager } from '@instruments/common/flightplan';
 import { LatLongData } from '@typings/fs-base-ui/html_ui/JS/Types';
-import { RangeSetting, Mode, EfisSide } from '@shared/NavigationDisplay';
+import { RangeSetting, Mode, EfisSide, NdSymbol } from '@shared/NavigationDisplay';
 import { FlightPlan } from '../elements/FlightPlan';
 import { MapParameters } from '../utils/MapParameters';
 import { RadioNeedle } from '../elements/RadioNeedles';
@@ -77,7 +77,7 @@ export const ArcMode: React.FC<ArcModeProps> = ({ symbols, adirsAlign, rangeSett
                     </g>
                     <RadioNeedle index={1} side={side} displayMode={Mode.ARC} centreHeight={620} />
                     <RadioNeedle index={2} side={side} displayMode={Mode.ARC} centreHeight={620} />
-                    <Traffic x={361.5} y={606.5} mapParams={mapParams} />
+                    <Traffic mode={Mode.ARC} mapParams={mapParams} />
                 </g>
                 <Overlay
                     heading={Number(MathUtils.fastToFixed(magHeading, 1))}

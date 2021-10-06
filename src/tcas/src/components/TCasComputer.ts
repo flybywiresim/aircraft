@@ -376,8 +376,10 @@ export class TcasComputer implements TcasComponent {
             // check if traffic is on ground. Mode-S transponders would transmit that information themselves, but since Asobo doesn't provide that
             // information, we need to rely on the fallback method
             // this also leads to problems above 1750 ft (the threshold for ground detection), since the aircraft on ground are then shown again.
+            // Currently just hide all above currently ground alt (of ppos) + 380, not ideal but works better than other solutions.
             const groundAlt = this.pressureAlt - this.radioAlt; // altitude of the terrain
-            const onGround = !!((this.pressureAlt < 1750 && traffic.alt < groundAlt + 380));
+            // const onGround = !!((this.pressureAlt < 1750 && traffic.alt < groundAlt + 380));
+            const onGround = !!(traffic.alt < groundAlt + 380);
             traffic.onGround = onGround;
             let isDisplayed = false;
             if (!onGround) {
@@ -952,9 +954,9 @@ export class TcasComputer implements TcasComponent {
         this.airTraffic
             .filter((traffic) => traffic.alive === true && traffic.isDisplayed === true)
             .sort((a, b) => a.raTau - b.raTau || a.taTau - b.taTau || a.slantDistance - b.slantDistance)
-            // Limit number of contacts displayed to 40
+            // Limit number of contacts displayed to 8
             .forEach((traffic: TcasTraffic, index) => {
-                if (index >= 40) return;
+                if (index >= 8) return;
                 this.sendAirTraffic.push(new NDTcasTraffic(traffic));
             });
         this.sendListener.triggerToAllSubscribers('A32NX_TCAS_TRAFFIC', this.sendAirTraffic);

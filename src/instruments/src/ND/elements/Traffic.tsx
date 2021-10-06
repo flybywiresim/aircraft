@@ -5,6 +5,8 @@ import React, { useEffect, FC, useState, memo } from 'react';
 import { Layer } from '@instruments/common/utils';
 import { TaRaIntrusion } from '@tcas/lib/TcasConstants';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
+import { MathUtils } from '@shared/MathUtils';
+import { Mode } from '@shared/NavigationDisplay';
 import { MapParameters } from '../utils/MapParameters';
 
 interface NDTraffic {
@@ -23,22 +25,49 @@ interface NDTraffic {
 }
 
 export type TcasProps = {
-    x: number,
-    y: number,
-    mapParams: MapParameters
+    mapParams: MapParameters,
+    mode: Mode.ARC | Mode.ROSE_NAV | Mode.ROSE_ILS | Mode.ROSE_VOR,
 }
 
-export const Traffic: FC<TcasProps> = ({ x, y, mapParams }) => {
+export const Traffic: FC<TcasProps> = ({ mode, mapParams }) => {
     const [airTraffic, setAirTraffic] = useState<NDTraffic[]>([]);
     const [tcasMode] = useSimVar('L:A32NX_SWITCH_TCAS_Position', 'number', 200);
     const [latLong] = useState<Coordinates>({ lat: NaN, long: NaN });
+
+    const mask: [number, number][] = (mode === Mode.ARC) ? [
+        // ARC
+        [-384, -310], [-384, 0], [-264, 0], [-210, 59], [-210, 185],
+        [210, 185], [210, 0], [267, -61], [384, -61],
+        [384, -310], [340, -355], [300, -390], [240, -431.5],
+        [180, -460], [100, -482], [0, -492], [-100, -482],
+        [-180, -460], [-240, -431.5], [-300, -390], [-340, -355],
+        [-384, -310],
+    ] : [
+        // ROSE NAV
+        [-340, -227], [-103, -227], [-50, -244],
+        [0, -250], [50, -244], [103, -227], [340, -227],
+        [340, 180], [267, 180], [210, 241], [210, 383],
+        [-210, 383], [-210, 300], [-264, 241], [-340, 241], [-340, 227],
+    ];
+    const x: number = 361.5;
+    const y: number = (mode === Mode.ARC) ? 606.5 : 368;
 
     useCoherentEvent('A32NX_TCAS_TRAFFIC', (aT: NDTraffic[]) => {
         airTraffic.forEach((traffic) => traffic.alive = false);
         aT.forEach((tf: NDTraffic) => {
             latLong.lat = tf.lat;
             latLong.long = tf.lon;
-            [tf.posX, tf.posY] = (tf.intrusionLevel >= TaRaIntrusion.TA) ? mapParams.coordinatesToXYyLimit(latLong) : mapParams.coordinatesToXYy(latLong);
+            let [x, y] = mapParams.coordinatesToXYy(latLong);
+
+            // TODO FIXME: Full time option installed: For all ranges except in ZOOM ranges, NDRange > 9NM
+            // TODO FIXME: Always show relative alt even in off-scale/half display
+            if (!MathUtils.pointInPolygon(x, y, mask)) {
+                const ret: [number, number] | null = MathUtils.intersectWithPolygon(x, y, 0, 0, mask);
+                if (ret) [x, y] = ret;
+            }
+            tf.posX = x;
+            tf.posY = y;
+
             const traffic: NDTraffic | undefined = airTraffic.find((p) => p && p.ID === tf.ID);
             if (traffic) {
                 traffic.alive = true;
@@ -65,7 +94,7 @@ export const Traffic: FC<TcasProps> = ({ x, y, mapParams }) => {
 
     return (
         <Layer x={x} y={y}>
-            {airTraffic.map((tf) => Math.abs(tf.posX) <= 500 && Math.abs(tf.posY) <= 500 && (
+            {airTraffic.map((tf) => (
                 <TrafficIndicator
                     key={tf.ID}
                     x={tf.posX}

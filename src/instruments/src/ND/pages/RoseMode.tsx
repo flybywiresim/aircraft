@@ -5,7 +5,7 @@ import { LatLongData } from '@typings/fs-base-ui/html_ui/JS/Types';
 import { useFlightPlanManager } from '@instruments/common/flightplan';
 import { MathUtils } from '@shared/MathUtils';
 import { TuningMode } from '@fmgc/radionav';
-import { Mode, EfisSide } from '@shared/NavigationDisplay';
+import { Mode, EfisSide, NdSymbol } from '@shared/NavigationDisplay';
 import { ToWaypointIndicator } from '../elements/ToWaypointIndicator';
 import { FlightPlan } from '../elements/FlightPlan';
 import { MapParameters } from '../utils/MapParameters';
@@ -79,7 +79,7 @@ export const RoseMode: FC<RoseModeProps> = ({ symbols, adirsAlign, rangeSetting,
                             {tmpFplan}
                         </g>
                     )}
-                    { mode === Mode.ROSE_NAV && <Traffic x={361.5} y={368} mapParams={mapParams} />}
+                    <Traffic mode={mode} mapParams={mapParams} />
                     <RadioNeedle index={1} side={side} displayMode={mode} centreHeight={384} />
                     <RadioNeedle index={2} side={side} displayMode={mode} centreHeight={384} />
                 </g>
