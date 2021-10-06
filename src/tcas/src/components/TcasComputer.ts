@@ -155,8 +155,6 @@ export class TcasComputer implements TcasComponent {
 
     private isSlewActive: boolean; // Slew Mode on?
 
-    private fwcFlightPhase: number; // FWC flight phase
-
     private ppos: LatLongData; // Plane PPOS
 
     private _pposLatLong: LatLong; // avoiding GC
@@ -244,7 +242,6 @@ export class TcasComputer implements TcasComponent {
         this.altitudeStandby = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_3_ALTITUDE');
         this.trueHeading = SimVar.GetSimVarValue('PLANE HEADING DEGREES TRUE', 'degrees');
         this.isSlewActive = !!SimVar.GetSimVarValue('IS SLEW ACTIVE', 'boolean');
-        this.fwcFlightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', 'Enum');
         this.gpwsWarning = !!SimVar.GetSimVarValue('L:A32NX_GPWS_Warning_Active', 'bool');
 
         this.tcasMode = this.tcasOn;
@@ -272,7 +269,10 @@ export class TcasComputer implements TcasComponent {
     }
 
     private updateStatus(): void {
-        if (this.fwcFlightPhase !== 1 && this.fwcFlightPhase !== 10) {
+        if (this.tcasMode === TcasMode.STBY || this.xpdrStatus === XpdrMode.STBY) {
+            this.taOnly.setVar(false);
+            this.tcasFault.setVar(false);
+        } else {
             // Update "TA ONLY" message at the bottom of the ND
             if (this.inhibitions === Inhibit.ALL_RA || this.inhibitions === Inhibit.ALL_RA_AURAL_TA) {
                 this.taOnly.setVar(true);
@@ -288,9 +288,6 @@ export class TcasComputer implements TcasComponent {
             } else {
                 this.tcasFault.setVar(false);
             }
-        } else {
-            this.taOnly.setVar(false);
-            this.tcasFault.setVar(false);
         }
     }
 
