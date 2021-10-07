@@ -563,12 +563,25 @@ macro_rules! read_write_into {
     };
 }
 
+read_write_as!(i8);
+read_write_as!(u8);
+read_write_as!(i16);
+read_write_as!(u16);
+read_write_as!(i32);
+read_write_as!(u32);
+read_write_as!(i64);
+read_write_as!(u64);
+read_write_as!(i128);
+read_write_as!(u128);
+read_write_as!(usize);
+read_write_as!(isize);
+read_write_as!(f32);
+
 read_write_uom!(Velocity, knot);
 read_write_uom!(Length, foot);
 read_write_uom!(Acceleration, foot_per_second_squared);
 read_write_uom!(ThermodynamicTemperature, degree_celsius);
 read_write_uom!(Ratio, percent);
-read_write_as!(usize);
 read_write_uom!(ElectricPotential, volt);
 read_write_uom!(ElectricCurrent, ampere);
 read_write_uom!(Frequency, hertz);
@@ -577,6 +590,7 @@ read_write_uom!(Volume, gallon);
 read_write_uom!(VolumeRate, gallon_per_second);
 read_write_uom!(Mass, pound);
 read_write_uom!(Angle, degree);
+
 read_write_into!(MachNumber);
 
 impl<T: Reader> Read<f64> for T {
