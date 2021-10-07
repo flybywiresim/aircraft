@@ -558,7 +558,7 @@ export class TcasComputer implements TcasComponent {
         }
 
         this.raTraffic = this.airTraffic
-            .filter((traffic) => traffic.intrusionLevel === TaRaIntrusion.RA)
+            .filter((traffic) => traffic.intrusionLevel === TaRaIntrusion.RA && traffic.alive)
             .sort((a, b) => a.raTau - b.raTau);
         this._newRa.info = null;
         this._newRa.isReversal = false;
