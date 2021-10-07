@@ -26,10 +26,10 @@ export const ApuPage = () => {
     const [apuBleedPressure] = useSimVar('L:APU_BLEED_PRESSURE', 'PSI', 1000);
     const displayedBleedPressure = Math.round(apuBleedPressure / 2) * 2; // APU bleed pressure is shown in steps of two.
 
-    const apuN = useArinc429Var('L:A32NX_APU_N', 500);
+    const apuN = useArinc429Var('L:A32NX_APU_N', 100);
     const [apuNIndicationColor, setApuIndicationColor] = useState('Green');
 
-    const apuEgt = useArinc429Var('L:A32NX_APU_EGT', 500);
+    const apuEgt = useArinc429Var('L:A32NX_APU_EGT', 100);
     const apuEgtCaution = useArinc429Var('L:A32NX_APU_EGT_CAUTION', 500);
     const apuEgtWarning = useArinc429Var('L:A32NX_APU_EGT_WARNING', 500);
     const displayedEgtValue = Math.round(apuEgt.value / 5) * 5; // APU Exhaust Gas Temperature is shown in steps of five.
