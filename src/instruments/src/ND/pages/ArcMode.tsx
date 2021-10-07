@@ -5,7 +5,7 @@ import { MathUtils } from '@shared/MathUtils';
 import { useFlightPlanManager } from '@instruments/common/flightplan';
 import { LatLongData } from '@typings/fs-base-ui/html_ui/JS/Types';
 import { RangeSetting, Mode, EfisSide } from '@shared/NavigationDisplay';
-import { FlightPlan } from '../elements/FlightPlan';
+import { FlightPlan, FlightPlanType } from '../elements/FlightPlan';
 import { MapParameters } from '../utils/MapParameters';
 import { RadioNeedle } from '../elements/RadioNeedles';
 import { ToWaypointIndicator } from '../elements/ToWaypointIndicator';
@@ -32,6 +32,8 @@ export const ArcMode: React.FC<ArcModeProps> = ({ symbols, adirsAlign, rangeSett
     const [ilsCourse] = useSimVar('NAV LOCALIZER:3', 'degrees');
     const [lsDisplayed] = useSimVar(`L:BTN_LS_${side === 'L' ? 1 : 2}_FILTER_ACTIVE`, 'bool'); // TODO rename simvar
     const [showTmpFplan] = useSimVar('L:MAP_SHOW_TEMPORARY_FLIGHT_PLAN', 'bool');
+    const [apActive] = useSimVar('L:A32NX_AUTOPILOT_ACTIVE', 'bool');
+    const [hdgSelect] = useSimVar('AUTOPILOT HEADING SLOT INDEX', 'enum');
 
     const [mapParams] = useState(() => {
         const params = new MapParameters();
@@ -55,7 +57,7 @@ export const ArcMode: React.FC<ArcModeProps> = ({ symbols, adirsAlign, rangeSett
                     symbols={symbols}
                     mapParams={mapParams}
                     debug={false}
-                    temp
+                    type={FlightPlanType.Temp}
                 />
             );
         }
@@ -70,9 +72,16 @@ export const ArcMode: React.FC<ArcModeProps> = ({ symbols, adirsAlign, rangeSett
                             symbols={symbols}
                             mapParams={mapParams}
                             debug={false}
-                            temp={false}
+                            type={(hdgSelect === 1) ? FlightPlanType.Dashed : FlightPlanType.Nav}
                         />
                         {tmpFplan}
+                        {(hdgSelect === 1) && apActive && (
+                            <g
+                                transform={`rotate(${MathUtils.diffAngle(Number(MathUtils.fastToFixed(magHeading, 1)), Number(MathUtils.fastToFixed(magTrack, 1)))} 384 620)`}
+                            >
+                                <line x1={384} y1={149} x2={384} y2={627} className="Green rounded" strokeWidth={2.5} />
+                            </g>
+                        )}
                     </g>
                     <RadioNeedle index={1} side={side} displayMode={Mode.ARC} centreHeight={620} />
                     <RadioNeedle index={2} side={side} displayMode={Mode.ARC} centreHeight={620} />

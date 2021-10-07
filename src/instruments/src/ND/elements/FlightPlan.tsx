@@ -17,6 +17,12 @@ import { NdSymbol, NdSymbolTypeFlags } from '@shared/NavigationDisplay';
 import { useCurrentFlightPlan } from '@instruments/common/flightplan';
 import { MapParameters } from '../utils/MapParameters';
 
+export enum FlightPlanType {
+    Nav,
+    Dashed,
+    Temp
+}
+
 export type FlightPathProps = {
     x?: number,
     y?: number,
@@ -24,20 +30,20 @@ export type FlightPathProps = {
     flightPlanManager: FlightPlanManager,
     mapParams: MapParameters,
     debug: boolean,
-    temp: boolean,
+    type: FlightPlanType,
 }
 
-export const FlightPlan: FC<FlightPathProps> = ({ x = 0, y = 0, symbols, flightPlanManager, mapParams, debug = false, temp = false }) => {
+export const FlightPlan: FC<FlightPathProps> = ({ x = 0, y = 0, symbols, flightPlanManager, mapParams, debug = false, type = FlightPlanType.Nav }) => {
     const [guidanceManager] = useState(() => new GuidanceManager(flightPlanManager));
     const [tempGeometry, setTempGeometry] = useState(() => guidanceManager.getMultipleLegGeometry(true));
     const [activeGeometry, setActiveGeometry] = useState(() => guidanceManager.getMultipleLegGeometry());
 
-    const [geometry, setGeometry] = temp
+    const [geometry, setGeometry] = type === FlightPlanType.Temp
         ? [tempGeometry, setTempGeometry]
         : [activeGeometry, setActiveGeometry];
 
     useInterval(() => {
-        if (temp) {
+        if (type === FlightPlanType.Temp) {
             setGeometry(guidanceManager.getMultipleLegGeometry(true));
         } else {
             setGeometry(guidanceManager.getMultipleLegGeometry());
@@ -46,10 +52,16 @@ export const FlightPlan: FC<FlightPathProps> = ({ x = 0, y = 0, symbols, flightP
 
     let flightPath: JSX.Element | null = null;
     if (geometry) {
-        if (temp) {
+        switch (type) {
+        case FlightPlanType.Temp:
             flightPath = <path d={makePathFromGeometry(geometry, mapParams)} className="Yellow" strokeWidth={3} fill="none" strokeDasharray="15 10" />;
-        } else {
+            break;
+        case FlightPlanType.Dashed:
+            flightPath = <path d={makePathFromGeometry(geometry, mapParams)} stroke="#00ff00" strokeWidth={3} fill="none" strokeDasharray="15 10" />;
+            break;
+        default:
             flightPath = <path d={makePathFromGeometry(geometry, mapParams)} stroke="#00ff00" strokeWidth={2} fill="none" />;
+            break;
         }
     }
 

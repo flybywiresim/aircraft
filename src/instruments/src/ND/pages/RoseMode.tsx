@@ -7,7 +7,7 @@ import { MathUtils } from '@shared/MathUtils';
 import { TuningMode } from '@fmgc/radionav';
 import { Mode, EfisSide } from '@shared/NavigationDisplay';
 import { ToWaypointIndicator } from '../elements/ToWaypointIndicator';
-import { FlightPlan } from '../elements/FlightPlan';
+import { FlightPlan, FlightPlanType } from '../elements/FlightPlan';
 import { MapParameters } from '../utils/MapParameters';
 import { RadioNeedle } from '../elements/RadioNeedles';
 import { ApproachMessage } from '../elements/ApproachMessage';
@@ -34,6 +34,8 @@ export const RoseMode: FC<RoseModeProps> = ({ symbols, adirsAlign, rangeSetting,
     const [ilsCourse] = useSimVar('NAV LOCALIZER:3', 'degrees');
     const [lsDisplayed] = useSimVar(`L:BTN_LS_${side === 'L' ? 1 : 2}_FILTER_ACTIVE`, 'bool'); // TODO rename simvar
     const [showTmpFplan] = useSimVar('L:MAP_SHOW_TEMPORARY_FLIGHT_PLAN', 'bool');
+    const [apActive] = useSimVar('L:A32NX_AUTOPILOT_ACTIVE', 'bool');
+    const [hdgSelect] = useSimVar('AUTOPILOT HEADING SLOT INDEX', 'enum');
 
     const [mapParams] = useState(() => {
         const params = new MapParameters();
@@ -57,7 +59,7 @@ export const RoseMode: FC<RoseModeProps> = ({ symbols, adirsAlign, rangeSetting,
                     symbols={symbols}
                     mapParams={mapParams}
                     debug={false}
-                    temp
+                    type={FlightPlanType.Temp}
                 />
             );
         }
@@ -73,9 +75,16 @@ export const RoseMode: FC<RoseModeProps> = ({ symbols, adirsAlign, rangeSetting,
                                 symbols={symbols}
                                 mapParams={mapParams}
                                 debug={false}
-                                temp={false}
+                                type={(hdgSelect === 1) ? FlightPlanType.Dashed : FlightPlanType.Nav}
                             />
                             {tmpFplan}
+                            {(hdgSelect === 1) && apActive && (
+                                <g
+                                    transform={`rotate(${MathUtils.diffAngle(Number(MathUtils.fastToFixed(magHeading, 1)), Number(MathUtils.fastToFixed(magTrack, 1)))} 384 384)`}
+                                >
+                                    <line x1={384} y1={149} x2={384} y2={384} className="Green rounded" strokeWidth={2.5} />
+                                </g>
+                            )}
                         </g>
                     )}
                     <RadioNeedle index={1} side={side} displayMode={mode} centreHeight={384} />
@@ -103,7 +112,7 @@ export const RoseMode: FC<RoseModeProps> = ({ symbols, adirsAlign, rangeSetting,
                 { mode === Mode.ROSE_ILS && <IlsInfo /> }
 
                 <ApproachMessage info={flightPlanManager.getAirportApproach()} flightPhase={fmgcFlightPhase} />
-                <Plane />
+                <Plane crossTrackEnable={mode === Mode.ROSE_NAV} />
             </>
         );
     }
@@ -644,7 +653,7 @@ const IlsCaptureOverlay: React.FC<{
     );
 });
 
-const Plane: React.FC = () => {
+const Plane: React.FC<{ crossTrackEnable: boolean }> = ({ crossTrackEnable = true }) => {
     const [crossTrackError] = useSimVar('L:A32NX_FG_CROSS_TRACK_ERROR', 'nautical miles');
 
     let crossTrackText = '';
@@ -669,7 +678,7 @@ const Plane: React.FC = () => {
         <g>
             <line id="lubber" x1={384} y1={116} x2={384} y2={152} className="Yellow" strokeWidth={5} strokeLinejoin="round" strokeLinecap="round" />
             <image x={342} y={357} width={84} height={71} xlinkHref="/Images/ND/AIRPLANE.svg" />
-            <text x={crossTrackX} y={407} textAnchor={crossTrackAnchor} fontSize={24} className="Green">{crossTrackText}</text>
+            {crossTrackEnable && <text x={crossTrackX} y={407} textAnchor={crossTrackAnchor} fontSize={24} className="Green">{crossTrackText}</text>}
         </g>
     );
 };

@@ -6,7 +6,7 @@ import { useSimVar } from '@instruments/common/simVars';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { NdSymbol } from '@shared/NavigationDisplay';
 import { ToWaypointIndicator } from '../elements/ToWaypointIndicator';
-import { FlightPlan } from '../elements/FlightPlan';
+import { FlightPlan, FlightPlanType } from '../elements/FlightPlan';
 import { MapParameters } from '../utils/MapParameters';
 import { Degrees } from '../../../../../typings';
 
@@ -53,7 +53,7 @@ export const PlanMode: FC<PlanModeProps> = ({ symbols, adirsAlign, rangeSetting,
                 mapParams={mapParams}
                 symbols={symbols}
                 debug={false}
-                temp
+                type={FlightPlanType.Temp}
             />
         );
     }
@@ -68,7 +68,7 @@ export const PlanMode: FC<PlanModeProps> = ({ symbols, adirsAlign, rangeSetting,
                     mapParams={mapParams}
                     symbols={symbols}
                     debug={false}
-                    temp={false}
+                    type={FlightPlanType.Nav}
                 />
                 {tmpFplan}
             </g>
