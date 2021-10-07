@@ -26,11 +26,14 @@ export const ApuPage = () => {
     const [apuBleedPressure] = useSimVar('L:APU_BLEED_PRESSURE', 'PSI', 1000);
     const displayedBleedPressure = Math.round(apuBleedPressure / 2) * 2; // APU bleed pressure is shown in steps of two.
 
-    const apuNValue = useArinc429Var('L:A32NX_APU_N', 500);
+    const apuN = useArinc429Var('L:A32NX_APU_N', 500);
     const [apuNIndicationColor, setApuIndicationColor] = useState('Green');
 
-    const apuEgtValue = useArinc429Var('L:A32NX_APU_EGT', 500);
-    const displayedEgtValue = Math.round(apuEgtValue.value / 5) * 5; // APU Exhaust Gas Temperature is shown in steps of five.
+    const apuEgt = useArinc429Var('L:A32NX_APU_EGT', 500);
+    const apuEgtCaution = useArinc429Var('L:A32NX_APU_EGT_CAUTION', 500);
+    const apuEgtWarning = useArinc429Var('L:A32NX_APU_EGT_WARNING', 500);
+    const displayedEgtValue = Math.round(apuEgt.value / 5) * 5; // APU Exhaust Gas Temperature is shown in steps of five.
+    const [apuEgtIndicationColor, setApuEgtIndicationColor] = useState('Green');
 
     const [apuGenPbOn] = useSimVar('A:APU GENERATOR SWITCH', 'Boolean', 1000);
 
@@ -80,16 +83,32 @@ export const ApuPage = () => {
     }, [apuBleedPbOn]);
 
     useEffect(() => {
-        if (apuNValue.value >= 0 && apuNValue.value < 102) {
+        if (apuN.value >= 0 && apuN.value < 102) {
             setApuIndicationColor('Green');
         }
-        if (apuNValue.value >= 102 && apuNValue.value < 107) {
+        if (apuN.value >= 102 && apuN.value < 107) {
             setApuIndicationColor('Amber');
         }
-        if (apuNValue.value >= 107) {
+        if (apuN.value >= 107) {
             setApuIndicationColor('Red');
         }
-    }, [apuNValue]);
+    }, [apuN]);
+
+    useEffect(() => {
+        if (apuEgt.value <= apuEgtCaution.value) {
+            setApuEgtIndicationColor('Green');
+        }
+        if (apuEgt.value > apuEgtCaution.value && apuEgt.value <= apuEgtWarning.value) {
+            setApuEgtIndicationColor('Amber');
+        }
+        if (apuEgt.value > apuEgtWarning.value) {
+            setApuEgtIndicationColor('Red');
+        }
+        // TODO FIXME: ecbAdvisoryDetected must be defined in a system later on.
+        // if (apuEgt.value <= apuEgtCaution.value && apuAvail && ecbAdvisoryDetected) {
+        //     setApuEgtIndicationColor('Pulse');
+        // }
+    }, [apuEgt, apuEgtCaution, apuEgtWarning]);
 
     return (
         <EcamPage name="main-apu">
@@ -211,8 +230,12 @@ export const ApuPage = () => {
                  && <text className="Green FillPulse" x={0} y={120}>LOW OIL LEVEL</text> } */}
             </SvgGroup>
 
-            {/* FIXME: Incorrect Gauges */}
+            {/* APU N Gauge */}
             <SvgGroup x={145} y={300}>
+                {/* Mark Annotations */}
+                <text x={-23} y={62} className="FontSmall White">0</text>
+                <text x={30} y={30} className="FontSmall White">10</text>
+
                 <SvgGroup x={0} y={0} rotation={-22.5}>
                     {/* 0 */}
                     <Needle
@@ -246,26 +269,26 @@ export const ApuPage = () => {
                     />
                     {/* 102 AMBER */}
                     <Needle
-                        x={13}
-                        y={0 + 50}
-                        length={50}
+                        x={-1}
+                        y={50}
+                        length={60}
                         scaleMax={120}
                         value={100}
                         className="NoFill AmberHeavy"
-                        dashOffset={-37}
+                        dashOffset={-50}
                     />
 
                     <Arc x={0} y={50} radius={50} toValue={120} scaleMax={120} className="Line Red NoFill" />
                     <Arc x={0} y={50} radius={50} toValue={107} scaleMax={120} className="Line White NoFill" />
 
-                    {!apuNValue.isNoComputedData()
+                    {!apuN.isNoComputedData()
                 && (
                     <Needle
                         x={0}
                         y={50}
                         length={55}
                         scaleMax={120}
-                        value={apuNValue.value}
+                        value={apuN.value}
                         className={`Line ${apuNIndicationColor}`}
                         dashOffset={-10}
                         strokeWidth={3}
@@ -273,22 +296,108 @@ export const ApuPage = () => {
                 )}
                 </SvgGroup>
 
-                <SvgGroup x={100} y={15}>
-                    <text x={0} y={0} className="White Center FontNormal">N</text>
-                    <text x={0} y={30} className="Cyan Center FontNormal">%</text>
+                <SvgGroup x={100} y={13}>
+                    <text x={0} y={0} className="White Center">N</text>
+                    <text x={0} y={30} className="Cyan Center FontSmall">%</text>
                 </SvgGroup>
 
                 <text
                     x={60}
                     y={65}
-                    className={`FontLarger Right ${apuNValue.isNoComputedData() ? 'Amber' : apuNIndicationColor}`}
+                    className={`FontLarger Right ${apuN.isNoComputedData() ? 'Amber' : apuNIndicationColor}`}
                 >
-                    {apuNValue.isNoComputedData() ? 'XX' : apuNValue.value.toFixed()}
+                    {apuN.isNoComputedData() ? 'XX' : apuN.value.toFixed()}
                 </text>
+            </SvgGroup>
 
+            {/* EGT Gauge */}
+            <SvgGroup x={145} y={410}>
                 {/* Mark Annotations */}
-                <text x={-23} y={62} className="FontSmall White">0</text>
-                <text x={30} y={30} className="FontSmall White">10</text>
+                <text x={-33} y={57} className="FontSmall White">3</text>
+                <text x={-4} y={22} className="FontSmall White">7</text>
+                <text x={24} y={30} className="FontSmall White">10</text>
+
+                <SvgGroup x={0} y={0} rotation={-15}>
+                    {/* 300 */}
+                    <Needle
+                        x={-1}
+                        y={50}
+                        length={50}
+                        scaleMin={300}
+                        scaleMax={1100}
+                        value={300}
+                        className="GaugeMarking"
+                        dashOffset={-44}
+                    />
+                    {/* 700 */}
+                    <Needle
+                        x={-1}
+                        y={50}
+                        length={50}
+                        scaleMin={300}
+                        scaleMax={1100}
+                        value={700}
+                        className="GaugeMarking"
+                        dashOffset={-44}
+                    />
+                    {/* 1000 */}
+                    <Needle
+                        x={-1}
+                        y={50}
+                        length={50}
+                        scaleMin={300}
+                        scaleMax={1100}
+                        value={1000}
+                        className="GaugeMarking"
+                        dashOffset={-44}
+                    />
+                    {/* AMBER BAR */}
+                    {!(apuEgtCaution.isNoComputedData() || apuEgtWarning.isNoComputedData())
+                    && (
+                        <Needle
+                            x={-1}
+                            y={50}
+                            length={60}
+                            scaleMin={300}
+                            scaleMax={1100}
+                            value={apuEgtWarning.value - 33}
+                            className="NoFill AmberHeavy"
+                            dashOffset={-50}
+                        />
+                    )}
+
+                    <Arc x={0} y={50} radius={50} toValue={1100} scaleMin={300} scaleMax={1100} className="Line Red NoFill" />
+                    <Arc x={0} y={50} radius={50} toValue={apuEgtWarning.value} scaleMin={300} scaleMax={1100} className="Line White NoFill" />
+
+                    {!apuEgt.isNoComputedData()
+                && (
+                    <Needle
+                        x={0}
+                        y={50}
+                        length={55}
+                        scaleMin={300}
+                        scaleMax={1100}
+                        value={apuEgt.value}
+                        className={`Line ${apuEgtIndicationColor === 'Pulse' ? 'LinePulse' : apuEgtIndicationColor}`}
+                        dashOffset={-10}
+                        strokeWidth={3}
+                    />
+                )}
+                </SvgGroup>
+
+                <SvgGroup x={100} y={13}>
+                    <text x={0} y={0} className="White Center">EGT</text>
+                    <text x={0} y={30} className="Cyan Center FontSmall">&deg;C</text>
+                </SvgGroup>
+
+                <text
+                    x={60}
+                    y={65}
+                    // eslint-disable-next-line no-nested-ternary
+                    className={`FontLarger Right ${apuEgt.isNoComputedData() ? 'Amber' : apuEgtIndicationColor === 'Pulse' ? 'FillPulse' : apuEgtIndicationColor}`}
+                >
+                    {apuEgt.isNoComputedData() ? 'XX' : displayedEgtValue}
+                </text>
             </SvgGroup>
         </EcamPage>
     );
