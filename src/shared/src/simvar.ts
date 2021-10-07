@@ -24,14 +24,14 @@ export class SimVarCache {
     }
 }
 
-export class LocalSimVar {
-    private localVar: number | boolean;
+export class LocalSimVar<T> {
+    private localVar: number | T | boolean;
 
     constructor(public simvar: string, public unit) {
         this.localVar = SimVar.GetSimVarValue(this.simvar, this.unit);
     }
 
-    setVar(value: number | boolean): void {
+    setVar(value: number | T | boolean): void {
         // Assume we are the only setter
         if (this.localVar !== value) {
             this.localVar = value;
@@ -39,7 +39,7 @@ export class LocalSimVar {
         }
     }
 
-    getVar(): number | boolean {
+    getVar(): number | T | boolean {
         return this.localVar;
     }
 }

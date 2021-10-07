@@ -147,11 +147,19 @@ export class TcasComputer implements TcasComponent {
 
     private xpdrStatus: number; // Active XPDR ON/OFF
 
-    private tcasOn: number; // TCAS ON/OFF
+    private tcasSwitchPos: number; // TCAS Switch position STBY/TA/TARA
 
-    private tcasMode: number; // TCAS S/MODE
+    private tcasMode: LocalSimVar<TcasMode>; // TCAS S/MODE TODO FIXME: ARINC429
 
     private tcasThreat: number; // TCAS Threat Setting
+
+    private tcasState: LocalSimVar<TcasState>; // TCAS Advisory State (None/TA/RA)
+
+    private taOnly: LocalSimVar<boolean>; // Issuing TA Only message (yes/no) TODO FIXME: ARINC429
+
+    private tcasFault: LocalSimVar<boolean>; // Issuing TCAS fault message (yes/no) TODO FIXME: ARINC429
+
+    private correctiveRa: LocalSimVar<boolean>; // Is currently issuing a corrective RA (yes/no) TODO FIXME: ARINC429
 
     private isSlewActive: boolean; // Slew Mode on?
 
@@ -185,14 +193,6 @@ export class TcasComputer implements TcasComponent {
 
     private soundManager: TcasSoundManager;
 
-    private tcasState: LocalSimVar;
-
-    private taOnly: LocalSimVar;
-
-    private tcasFault: LocalSimVar;
-
-    private correctiveRa: LocalSimVar;
-
     private gpwsWarning: boolean;
 
     constructor() {}
@@ -206,6 +206,7 @@ export class TcasComputer implements TcasComponent {
 
     init(): void {
         SimVar.SetSimVarValue('L:A32NX_TCAS_STATE', 'Enum', 0);
+        this.tcasMode = new LocalSimVar('L:A32NX_TCAS_MODE', 'Enum');
         this.tcasState = new LocalSimVar('L:A32NX_TCAS_STATE', 'Enum');
         this.tcasFault = new LocalSimVar('L:A32NX_TCAS_FAULT', 'bool');
         this.taOnly = new LocalSimVar('L:A32NX_TCAS_TA_ONLY', 'bool');
@@ -231,7 +232,7 @@ export class TcasComputer implements TcasComponent {
         this.ppos.lat = SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude');
         this.ppos.long = SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude');
 
-        this.tcasOn = SimVar.GetSimVarValue('L:A32NX_SWITCH_TCAS_Position', 'number');
+        this.tcasSwitchPos = SimVar.GetSimVarValue('L:A32NX_SWITCH_TCAS_Position', 'number');
         this.tcasThreat = SimVar.GetSimVarValue('L:A32NX_SWITCH_TCAS_Traffic_Position', 'number');
         this.xpdrStatus = SimVar.GetSimVarValue('TRANSPONDER STATE:1', 'number'); // TODO: refactor When XPDR2 is implemented
         this.activeXpdr = SimVar.GetSimVarValue('L:A32NX_SWITCH_ATC', 'number'); // TODO: refactor When XPDR2 is implemented
@@ -244,7 +245,7 @@ export class TcasComputer implements TcasComponent {
         this.isSlewActive = !!SimVar.GetSimVarValue('IS SLEW ACTIVE', 'boolean');
         this.gpwsWarning = !!SimVar.GetSimVarValue('L:A32NX_GPWS_Warning_Active', 'bool');
 
-        this.tcasMode = this.tcasOn;
+        this.tcasMode.setVar((this.xpdrStatus === XpdrMode.STBY) ? TcasMode.STBY : this.tcasSwitchPos);
     }
 
     /**
@@ -253,9 +254,9 @@ export class TcasComputer implements TcasComponent {
     private updateInhibitions(): void {
         // TODO: Add more TA only conditions here (i.e GPWS active, Windshear warning active, stall)
         // TODO FIXME: Less magic numbers, Use constants defined in TcasConstants
-        if (this.radioAlt < 500 || this.gpwsWarning) {
+        if (this.radioAlt < 500 || this.gpwsWarning || this.tcasMode.getVar() === TcasMode.STBY) {
             this.inhibitions = Inhibit.ALL_RA_AURAL_TA;
-        } else if (this.radioAlt < 1000 || this.tcasMode === TcasMode.TA) {
+        } else if (this.radioAlt < 1000 || this.tcasMode.getVar() === TcasMode.TA) {
             this.inhibitions = Inhibit.ALL_RA;
         } else if (this.radioAlt < 1100) {
             this.inhibitions = Inhibit.ALL_DESC_RA;
@@ -269,7 +270,7 @@ export class TcasComputer implements TcasComponent {
     }
 
     private updateStatus(): void {
-        if (this.tcasMode === TcasMode.STBY || this.xpdrStatus === XpdrMode.STBY) {
+        if (this.tcasMode.getVar() === TcasMode.STBY) {
             this.taOnly.setVar(false);
             this.tcasFault.setVar(false);
         } else {
@@ -377,7 +378,7 @@ export class TcasComputer implements TcasComponent {
             // Currently just hide all above currently ground alt (of ppos) + 380, not ideal but works better than other solutions.
             const groundAlt = this.pressureAlt - this.radioAlt; // altitude of the terrain
             // const onGround = !!((this.pressureAlt < 1750 && traffic.alt < groundAlt + 380));
-            const onGround = !!(traffic.alt < groundAlt + 380);
+            const onGround = !!(traffic.alt < groundAlt + 500); // Need to increase vs true-to-life logic due to badly reported altitude by MSFS live traffic
             traffic.onGround = onGround;
             let isDisplayed = false;
             if (!onGround) {
@@ -970,7 +971,7 @@ export class TcasComputer implements TcasComponent {
         this.updateVars();
         this.updateInhibitions();
         this.updateStatus();
-        if (this.tcasOn === TcasMode.STBY || this.xpdrStatus === XpdrMode.STBY) {
+        if (this.tcasMode.getVar() === TcasMode.STBY) {
             return;
         }
         this.updateSensitivity();

@@ -1886,9 +1886,18 @@ In the variables below, {number} should be replaced with one item in the set: { 
       ABV | 2
       BELOW | 3
 
+- A32NX_TCAS_MODE
+  - Enum
+  - Whether TCAS has been set to standby, TA Only or TA/RA Mode (see ATC panel)
+  Description | Value
+      --- | ---
+      STBY | 0
+      TA | 1
+      TA/RA | 2
+
 - A32NX_TCAS_STATE
   - Enum
-  - Currently active traffic/resolution advisory
+  - Currently active traffic/resolution advisory state
       Description | Value
       --- | ---
       NONE | 0
