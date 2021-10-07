@@ -8,19 +8,9 @@ use crate::{
     shared::{to_bool, ConsumePower, ElectricalBuses, MachNumber, PowerConsumptionReport},
 };
 use uom::si::{
-    acceleration::foot_per_second_squared,
-    angle::degree,
-    electric_current::ampere,
-    electric_potential::volt,
-    f64::*,
-    frequency::hertz,
-    length::foot,
-    mass::pound,
-    pressure::psi,
-    ratio::percent,
-    thermodynamic_temperature::{degree_celsius, kelvin},
-    velocity::knot,
-    volume::gallon,
+    acceleration::foot_per_second_squared, angle::degree, electric_current::ampere,
+    electric_potential::volt, f64::*, frequency::hertz, length::foot, mass::pound, pressure::psi,
+    ratio::percent, thermodynamic_temperature::degree_celsius, velocity::knot, volume::gallon,
     volume_rate::gallon_per_second,
 };
 pub use update_context::*;
@@ -525,27 +515,6 @@ pub trait Write<T> {
     fn convert(&mut self, value: T) -> f64;
 }
 
-pub trait WriteWhen<T> {
-    /// Write a value to the simulator when the given condition is true,
-    /// otherwise write a value which indicates the lack of a value.
-    /// # Examples
-    /// ```rust
-    /// # use systems::simulation::{SimulationElement, SimulationElementVisitor,
-    /// #    SimulatorReader, SimulatorWriter, WriteWhen};
-    /// # use uom::si::f64::*;
-    /// struct MySimulationElement {
-    ///     is_powered: bool,
-    ///     egt: ThermodynamicTemperature,
-    /// }
-    /// impl SimulationElement for MySimulationElement {
-    ///     fn write(&self, writer: &mut SimulatorWriter) {
-    ///        writer.write_when(self.is_powered, "MY_SIMULATOR_ELEMENT_EGT", self.egt);
-    ///     }
-    /// }
-    /// ```
-    fn write_when(&mut self, condition: bool, name: &str, value: T);
-}
-
 macro_rules! read_write_uom {
     ($t: ty, $t2: ty) => {
         impl<T: Reader> Read<$t> for T {
@@ -622,32 +591,6 @@ impl<T: Writer> Write<f64> for T {
     }
 }
 
-impl<T: Writer> WriteWhen<ThermodynamicTemperature> for T {
-    fn write_when(&mut self, condition: bool, name: &str, value: ThermodynamicTemperature) {
-        self.write_f64(
-            name,
-            if condition {
-                value.get::<degree_celsius>()
-            } else {
-                ThermodynamicTemperature::new::<kelvin>(0.).get::<degree_celsius>() - 1.
-            },
-        );
-    }
-}
-
-impl<T: Writer> WriteWhen<Ratio> for T {
-    fn write_when(&mut self, condition: bool, name: &str, value: Ratio) {
-        self.write_f64(
-            name,
-            if condition {
-                value.get::<percent>()
-            } else {
-                -1.
-            },
-        );
-    }
-}
-
 impl<T: Reader> Read<bool> for T {
     fn convert(&mut self, value: f64) -> bool {
         to_bool(value)
@@ -657,12 +600,6 @@ impl<T: Reader> Read<bool> for T {
 impl<T: Writer> Write<bool> for T {
     fn convert(&mut self, value: bool) -> f64 {
         from_bool(value)
-    }
-}
-
-impl<T: Writer> WriteWhen<bool> for T {
-    fn write_when(&mut self, condition: bool, name: &str, value: bool) {
-        self.write_f64(name, if condition { from_bool(value) } else { -1. });
     }
 }
 
