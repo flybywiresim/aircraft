@@ -41,6 +41,11 @@
         fill: none;
     }
 
+    .AmberHeavy  {
+        stroke: $display-amber;
+        stroke-width: 4;
+    }
+
     text {
         fill: #EEEEEE;
         font-size: 19px;

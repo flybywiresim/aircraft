@@ -217,7 +217,7 @@ export const ApuPage = () => {
                     {/* 0 */}
                     <Needle
                         x={-1}
-                        y={0 + 50}
+                        y={50}
                         length={50}
                         scaleMax={120}
                         value={0}
@@ -227,7 +227,7 @@ export const ApuPage = () => {
                     {/* 50 */}
                     <Needle
                         x={-1}
-                        y={0 + 50}
+                        y={50}
                         length={50}
                         scaleMax={120}
                         value={50}
@@ -237,22 +237,32 @@ export const ApuPage = () => {
                     {/* 100 */}
                     <Needle
                         x={-1}
-                        y={0 + 50}
+                        y={50}
                         length={50}
                         scaleMax={120}
                         value={100}
                         className="GaugeMarking"
                         dashOffset={-44}
                     />
+                    {/* 102 AMBER */}
+                    <Needle
+                        x={13}
+                        y={0 + 50}
+                        length={50}
+                        scaleMax={120}
+                        value={102}
+                        className="NoFill AmberHeavy"
+                        dashOffset={-37}
+                    />
 
-                    <Arc x={0} y={0 + 50} radius={50} toValue={120} scaleMax={120} className="Line Red NoFill" />
-                    <Arc x={0} y={0 + 50} radius={50} toValue={107} scaleMax={120} className="Line White NoFill" />
+                    <Arc x={0} y={50} radius={50} toValue={120} scaleMax={120} className="Line Red NoFill" />
+                    <Arc x={0} y={50} radius={50} toValue={107} scaleMax={120} className="Line White NoFill" />
 
                     {!apuNValue.isNoComputedData()
                 && (
                     <Needle
                         x={0}
-                        y={0 + 50}
+                        y={50}
                         length={55}
                         scaleMax={120}
                         value={apuNValue.value}
