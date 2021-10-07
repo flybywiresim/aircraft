@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
+import { useArinc429Var } from '@instruments/common/arinc429';
 import { render } from '@instruments/common/index';
 import { setIsEcamPage } from '@instruments/common/defaults';
 import { useSimVar } from '@instruments/common/simVars';
-import { Arc, Mark, Needle } from '@instruments/common/gauges';
+import { Arc, Needle } from '@instruments/common/gauges';
 import { PageTitle } from '../../Common/PageTitle';
 
 import './Apu.scss';
@@ -25,8 +26,11 @@ export const ApuPage = () => {
     const [apuBleedPressure] = useSimVar('L:APU_BLEED_PRESSURE', 'PSI', 1000);
     const displayedBleedPressure = Math.round(apuBleedPressure / 2) * 2; // APU bleed pressure is shown in steps of two.
 
-    const [apuNValue] = useSimVar('L:A32NX_APU_N', 'Percent', 1000);
-    const [apuEgtValue] = useSimVar('L:A32NX_APU_EGT', 'Celsius', 1000);
+    const apuNValue = useArinc429Var('L:A32NX_APU_N', 500);
+    const [apuNIndicationColor, setApuIndicationColor] = useState('Green');
+
+    const apuEgtValue = useArinc429Var('L:A32NX_APU_EGT', 500);
+    const displayedEgtValue = Math.round(apuEgtValue.value / 5) * 5; // APU Exhaust Gas Temperature is shown in steps of five.
 
     const [apuGenPbOn] = useSimVar('A:APU GENERATOR SWITCH', 'Boolean', 1000);
 
@@ -39,14 +43,6 @@ export const ApuPage = () => {
     enum apuGenState {STANDBY, OFF, ON}
 
     const [currentApuGenState, setCurrentApuGenState] = useState(apuGenState.STANDBY);
-
-    function getNeedleValue(value: any, max: number): number {
-        const numberValue = (Number)(value);
-        if (numberValue < max) {
-            return (numberValue / max) * 100;
-        }
-        return 100;
-    }
 
     useEffect(() => {
         if (!apuMasterPbOn && !apuAvail) {
@@ -82,6 +78,18 @@ export const ApuPage = () => {
 
         return () => clearTimeout();
     }, [apuBleedPbOn]);
+
+    useEffect(() => {
+        if (apuNValue.value >= 0 && apuNValue.value < 102) {
+            setApuIndicationColor('Green');
+        }
+        if (apuNValue.value >= 102 && apuNValue.value < 107) {
+            setApuIndicationColor('Amber');
+        }
+        if (apuNValue.value >= 107) {
+            setApuIndicationColor('Red');
+        }
+    }, [apuNValue]);
 
     return (
         <EcamPage name="main-apu">
@@ -160,7 +168,7 @@ export const ApuPage = () => {
 
                 <text x={50} y={22} className="Center">BLEED</text>
 
-                <text x={45} y={48} className="Green FontLarger Right">{displayedBleedPressure}</text>
+                <text x={44} y={48} className="Green FontLarger Right">{displayedBleedPressure}</text>
                 <text x={90} y={48} className="Cyan Right">PSI</text>
 
                 <line className="Line Green" x1={50} y1={-1} x2={50} y2={-22} />
@@ -204,21 +212,69 @@ export const ApuPage = () => {
             </SvgGroup>
 
             {/* FIXME: Incorrect Gauges */}
-            <SvgGroup x={125} y={260}>
-                <Arc x={0} y={0 + 50} radius={50} toValue={100} scaleMax={100} className="Line White NoFill" />
-                <Arc x={0} y={0 + 50} radius={50} toValue={10} scaleMax={100} className="Line Red NoFill" />
-                <Needle
-                    x={0}
-                    y={0 + 50}
-                    length={60}
-                    scaleMax={100}
-                    value={getNeedleValue(apuNValue, 120)}
-                    className="Line White"
-                    dashOffset={-40}
-                />
-            </SvgGroup>
-            <SvgGroup x={125} y={390}>
-                <path className="Line White" d="M74 170 C2 98 98 2 170 74" />
+            <SvgGroup x={145} y={300}>
+                <SvgGroup x={0} y={0} rotation={-22.5}>
+                    {/* 0 */}
+                    <Needle
+                        x={-1}
+                        y={0 + 50}
+                        length={50}
+                        scaleMax={120}
+                        value={0}
+                        className="GaugeMarking"
+                        dashOffset={-44}
+                    />
+                    {/* 50 */}
+                    <Needle
+                        x={-1}
+                        y={0 + 50}
+                        length={50}
+                        scaleMax={120}
+                        value={50}
+                        className="GaugeMarking"
+                        dashOffset={-44}
+                    />
+                    {/* 100 */}
+                    <Needle
+                        x={-1}
+                        y={0 + 50}
+                        length={50}
+                        scaleMax={120}
+                        value={100}
+                        className="GaugeMarking"
+                        dashOffset={-44}
+                    />
+
+                    <Arc x={0} y={0 + 50} radius={50} toValue={120} scaleMax={120} className="Line Red NoFill" />
+                    <Arc x={0} y={0 + 50} radius={50} toValue={107} scaleMax={120} className="Line White NoFill" />
+
+                    {!apuNValue.isNoComputedData()
+                && (
+                    <Needle
+                        x={0}
+                        y={0 + 50}
+                        length={55}
+                        scaleMax={120}
+                        value={apuNValue.value}
+                        className={`Line ${apuNIndicationColor}`}
+                        dashOffset={-10}
+                        strokeWidth={3}
+                    />
+                )}
+                </SvgGroup>
+
+                <SvgGroup x={100} y={10}>
+                    <text x={0} y={0} className="White Center">N</text>
+                    <text x={0} y={30} className="Cyan Center">%</text>
+                </SvgGroup>
+
+                <text
+                    x={60}
+                    y={65}
+                    className={`FontLarger Right ${apuNValue.isNoComputedData() ? 'Amber' : apuNIndicationColor}`}
+                >
+                    {apuNValue.isNoComputedData() ? 'XX' : apuNValue.value.toFixed()}
+                </text>
             </SvgGroup>
         </EcamPage>
     );

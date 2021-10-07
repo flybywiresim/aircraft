@@ -7,6 +7,11 @@
         stroke-width: 2.5px;
     }
 
+    .GaugeMarking {
+        stroke: $display-white;
+        stroke-width: 2;
+    }
+
     .FillPulse {
         animation: fill-pulse 1s step-end infinite;
 
@@ -30,6 +35,10 @@
               stroke: hsl(120, 100%, 20%);
             }
         }
+    }
+
+    .NoFill {
+        fill: none;
     }
 
     text {
