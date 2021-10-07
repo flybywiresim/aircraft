@@ -166,10 +166,10 @@ export const ApuPage = () => {
             <SvgGroup x={420} y={153}>
                 <rect className="Box" width={100} height={57} />
 
-                <text x={50} y={22} className="Center">BLEED</text>
+                <text x={50} y={22} className="Center FontNormal">BLEED</text>
 
                 <text x={44} y={48} className="Green FontLarger Right">{displayedBleedPressure}</text>
-                <text x={90} y={48} className="Cyan Right">PSI</text>
+                <text x={90} y={48} className="Cyan FontNormal Right">PSI</text>
 
                 <line className="Line Green" x1={50} y1={-1} x2={50} y2={-22} />
                 <circle className="Circle" cx={50} r={18} cy={-40} />
@@ -201,10 +201,10 @@ export const ApuPage = () => {
             {/* Memos */}
             <SvgGroup x={370} y={335}>
                 { lowFuelPressure
-                && <text className="Amber" x={0} y={0}>FUEL LO PR</text> }
+                && <text className="Amber FontNormal" x={0} y={0}>FUEL LO PR</text> }
 
                 { apuFlapOpenPercentage === 100
-                 && <text className={`Green ${isIntakeIndicationFlashing && 'FillPulse'}`} x={0} y={60}>FLAP OPEN</text> }
+                 && <text className={`Green FontNormal ${isIntakeIndicationFlashing && 'FillPulse'}`} x={0} y={60}>FLAP OPEN</text> }
 
                 {/* FIXME: APU LOW OIL IS CURRENTLY NOT A VALUE */}
                 {/* { apuLowOil
@@ -250,7 +250,7 @@ export const ApuPage = () => {
                         y={0 + 50}
                         length={50}
                         scaleMax={120}
-                        value={102}
+                        value={100}
                         className="NoFill AmberHeavy"
                         dashOffset={-37}
                     />
@@ -273,9 +273,9 @@ export const ApuPage = () => {
                 )}
                 </SvgGroup>
 
-                <SvgGroup x={100} y={10}>
-                    <text x={0} y={0} className="White Center">N</text>
-                    <text x={0} y={30} className="Cyan Center">%</text>
+                <SvgGroup x={100} y={15}>
+                    <text x={0} y={0} className="White Center FontNormal">N</text>
+                    <text x={0} y={30} className="Cyan Center FontNormal">%</text>
                 </SvgGroup>
 
                 <text
@@ -285,6 +285,10 @@ export const ApuPage = () => {
                 >
                     {apuNValue.isNoComputedData() ? 'XX' : apuNValue.value.toFixed()}
                 </text>
+
+                {/* Mark Annotations */}
+                <text x={-23} y={62} className="FontSmall White">0</text>
+                <text x={30} y={30} className="FontSmall White">10</text>
             </SvgGroup>
         </EcamPage>
     );

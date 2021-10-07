@@ -46,8 +46,13 @@
         stroke-width: 4;
     }
 
+    .FontSmall {
+        font-size: 16px;
+    }
+
     text {
         fill: #EEEEEE;
+
         font-size: 19px;
 
         &.Center {
