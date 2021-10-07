@@ -98,7 +98,6 @@ impl Pressurization {
             self.safety_valve.open_amount(),
             self.packs_are_on,
             lgciu_gears_compressed,
-            self.cpc[self.active_system - 1].is_ground(),
             self.cpc[self.active_system - 1].should_open_outflow_valve()
                 && !press_overhead.is_in_man_mode(),
         );

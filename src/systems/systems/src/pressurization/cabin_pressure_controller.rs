@@ -261,7 +261,7 @@ impl CabinPressureController {
         }
     }
 
-    pub(super) fn is_ground(&self) -> bool {
+    fn is_ground(&self) -> bool {
         matches!(
             self.pressure_schedule_manager,
             Some(PressureScheduleManager::Ground(_))
