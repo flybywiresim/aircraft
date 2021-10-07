@@ -1726,7 +1726,7 @@ mod tests {
             self
         }
 
-        fn set_bleed_air_pb(mut self, is_on: bool) -> Self {
+        fn set_apu_bleed_air_pb(mut self, is_on: bool) -> Self {
             self.write("OVHD_APU_BLEED_PB_IS_ON", is_on);
 
             self
@@ -1735,7 +1735,7 @@ mod tests {
         fn set_bleed_air_running(mut self) -> Self {
             self.write("APU_BLEED_AIR_PRESSURE", Pressure::new::<psi>(35.));
             self.set_apu_bleed_valve_signal(ApuBleedAirValveSignal::new_open())
-                .set_bleed_air_pb(true)
+                .set_apu_bleed_air_pb(true)
         }
 
         fn release_fire_pushbutton(mut self, number: usize) -> Self {
@@ -2238,7 +2238,7 @@ mod tests {
         assert!(test_bed.pr_valve_is_open(1));
 
         test_bed = test_bed
-            .set_bleed_air_pb(true)
+            .set_apu_bleed_air_pb(true)
             .set_apu_bleed_valve_signal(ApuBleedAirValveSignal::new_open())
             .and_run();
 
@@ -2254,7 +2254,7 @@ mod tests {
         assert!(test_bed.pr_valve_is_open(2));
 
         test_bed = test_bed
-            .set_bleed_air_pb(true)
+            .set_apu_bleed_air_pb(true)
             .set_apu_bleed_valve_signal(ApuBleedAirValveSignal::new_open())
             .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Open)
             .and_run();
@@ -2513,6 +2513,24 @@ mod tests {
 
         assert!(!test_bed.pr_valve_is_powered(1));
         assert!(!test_bed.pr_valve_is_powered(2));
+    }
+
+    #[test]
+    fn fault_light_if_bleed_valve_open_with_apu_bleed() {
+        let mut test_bed = test_bed_with()
+            .idle_eng1()
+            .set_dc_ess_shed_bus_power(false)
+            .set_bleed_air_running()
+            .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Auto)
+            .and_run();
+
+        assert!(!test_bed.pr_valve_is_powered(1));
+        assert!(!test_bed.engine_bleed_push_button_has_fault(1));
+
+        test_bed.run_with_delta(Duration::from_secs(8));
+
+        assert!(test_bed.pr_valve_is_open(1));
+        assert!(test_bed.engine_bleed_push_button_has_fault(1));
     }
 
     mod ovhd {
