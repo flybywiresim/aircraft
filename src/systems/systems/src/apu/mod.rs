@@ -352,7 +352,7 @@ pub mod tests {
         electrical::{
             consumption::PowerConsumer, test::TestElectricitySource, ElectricalBus, Electricity,
         },
-        pneumatic::DefaultValve,
+        pneumatic::valve::*,
         shared::{
             arinc429::Arinc429Word, ElectricalBusType, PotentialOrigin, PowerConsumptionReport,
         },

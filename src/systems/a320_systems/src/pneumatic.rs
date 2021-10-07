@@ -19,12 +19,11 @@ use systems::{
     hydraulic::Fluid,
     overhead::{AutoOffFaultPushButton, OnOffFaultPushButton},
     pneumatic::{
-        ApuCompressionChamberController, CompressionChamber, ConstantConsumerController,
+        valve::*, ApuCompressionChamberController, CompressionChamber, ConstantConsumerController,
         ControllablePneumaticValve, ControlledPneumaticValveSignal, CrossBleedValveSelectorKnob,
-        CrossBleedValveSelectorMode, DefaultConsumer, DefaultPipe, DefaultValve,
-        ElectroPneumaticValve, EngineCompressionChamberController, EngineState, HeatExchanger,
-        PneumaticContainer, PneumaticContainerWithConnector, PurelyPneumaticValve,
-        TargetPressureSignal, VariableVolumeContainer,
+        CrossBleedValveSelectorMode, DefaultConsumer, DefaultPipe,
+        EngineCompressionChamberController, EngineState, HeatExchanger, PneumaticContainer,
+        PneumaticContainerWithConnector, TargetPressureSignal, VariableVolumeContainer,
     },
     shared::{
         pid::PidController, ControllerSignal, DelayedTrueLogicGate, ElectricalBusType,
