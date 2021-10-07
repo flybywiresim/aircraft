@@ -1820,3 +1820,10 @@ In the variables below, {number} should be replaced with one item in the set: { 
 - A32NX_OVHD_PRESS_DITCHING_PB_IS_ON
     - Bool
     - True if DITCHING pushbutton is pressed
+
+- A32NX_PACKS_{number}_IS_SUPPLYING
+    - Bool
+    - True if the corresponding pack is on and supplying air to the cabin
+    - {number}
+        - 1
+        - 2

@@ -221,7 +221,10 @@ impl SimulationElement for Pressurization {
         self.departure_elevation = reader.read("DEPARTURE_ELEVATION");
         self.sea_level_pressure = Pressure::new::<hectopascal>(reader.read("SEA LEVEL PRESSURE"));
         self.destination_qnh = Pressure::new::<hectopascal>(reader.read("DESTINATION_QNH"));
-        self.packs_are_on = reader.read("PACKS_1_IS_SUPPLYING");
+        // The future implementation of the air cond system will take into account the effects of having only
+        // one pack supplying air, for now we assume either pack can supply the full volume
+        self.packs_are_on =
+            reader.read("PACKS_1_IS_SUPPLYING") || reader.read("PACKS_2_IS_SUPPLYING");
     }
 }
 
