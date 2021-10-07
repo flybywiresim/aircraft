@@ -59,15 +59,15 @@ uv1=0.0, 0.0
 uv2=1.0, 1.0
 NearEndFade=1.0
 NearFade=6.0
-MinProjSize= 0.4
+MinProjSize=0.45
 
 [LightAttributes.0]
 Type=spot
 Size=0.0
 Range=40
-Intensity=15
+Intensity=30
 Softness=0.0
-SpotInner=27.5
+SpotInner=37.5
 SpotOuter=55.0
 Volumetric=1
 ScatDir=0.0
