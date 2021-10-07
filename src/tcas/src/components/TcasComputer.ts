@@ -2,7 +2,7 @@
 /* eslint-disable no-empty-function */
 /* eslint-disable no-useless-constructor */
 /* eslint-disable no-underscore-dangle */
-import { UpdateThrottler } from '@shared/updatethrottler';
+import { UpdateThrottler } from '@shared/UpdateThrottler';
 import { MathUtils } from '@shared/MathUtils';
 import { Arinc429Word } from '@shared/arinc429';
 import { TcasComponent } from '@tcas/lib/TcasComponent';
