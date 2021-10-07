@@ -35,83 +35,50 @@ use systems::{
     },
 };
 
+macro_rules! valve_signal_implementation {
+    ($signal_type: ty) => {
+        impl ControlledPneumaticValveSignal for $signal_type {
+            fn new(target_open_amount: Ratio) -> Self {
+                Self { target_open_amount }
+            }
+
+            fn target_open_amount(&self) -> Ratio {
+                self.target_open_amount
+            }
+        }
+    };
+}
+
 struct HighPressureValveSignal {
     target_open_amount: Ratio,
-}
-impl ControlledPneumaticValveSignal for HighPressureValveSignal {
-    fn new(target_open_amount: Ratio) -> Self {
-        Self { target_open_amount }
-    }
-
-    fn target_open_amount(&self) -> Ratio {
-        self.target_open_amount
-    }
 }
 
 struct PressureRegulatingValveSignal {
     target_open_amount: Ratio,
 }
-impl ControlledPneumaticValveSignal for PressureRegulatingValveSignal {
-    fn new(target_open_amount: Ratio) -> Self {
-        Self { target_open_amount }
-    }
-
-    fn target_open_amount(&self) -> Ratio {
-        self.target_open_amount
-    }
-}
 
 struct EngineStarterValveSignal {
     target_open_amount: Ratio,
-}
-impl ControlledPneumaticValveSignal for EngineStarterValveSignal {
-    fn new(target_open_amount: Ratio) -> Self {
-        Self { target_open_amount }
-    }
-
-    fn target_open_amount(&self) -> Ratio {
-        self.target_open_amount
-    }
 }
 
 struct CrossBleedValveSignal {
     target_open_amount: Ratio,
 }
-impl ControlledPneumaticValveSignal for CrossBleedValveSignal {
-    fn new(target_open_amount: Ratio) -> Self {
-        Self { target_open_amount }
-    }
-
-    fn target_open_amount(&self) -> Ratio {
-        self.target_open_amount
-    }
-}
 
 struct FanAirValveSignal {
     target_open_amount: Ratio,
-}
-impl ControlledPneumaticValveSignal for FanAirValveSignal {
-    fn new(target_open_amount: Ratio) -> Self {
-        Self { target_open_amount }
-    }
-
-    fn target_open_amount(&self) -> Ratio {
-        self.target_open_amount
-    }
 }
 
 struct PackFlowValveSignal {
     target_open_amount: Ratio,
 }
-impl ControlledPneumaticValveSignal for PackFlowValveSignal {
-    fn new(target_open_amount: Ratio) -> Self {
-        Self { target_open_amount }
-    }
 
-    fn target_open_amount(&self) -> Ratio {
-        self.target_open_amount
-    }
-}
+valve_signal_implementation!(HighPressureValveSignal);
+valve_signal_implementation!(PressureRegulatingValveSignal);
+valve_signal_implementation!(EngineStarterValveSignal);
+valve_signal_implementation!(CrossBleedValveSignal);
+valve_signal_implementation!(FanAirValveSignal);
+valve_signal_implementation!(PackFlowValveSignal);
 
 pub struct A320Pneumatic {
     bmcs: [BleedMonitoringComputer; 2],
