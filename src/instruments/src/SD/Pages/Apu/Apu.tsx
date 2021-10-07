@@ -377,7 +377,7 @@ export const ApuPage = () => {
                         length={55}
                         scaleMin={300}
                         scaleMax={1100}
-                        value={apuEgt.value}
+                        value={apuEgt.value < 300 ? 300 : apuEgt.value}
                         className={`Line ${apuEgtIndicationColor === 'Pulse' ? 'LinePulse' : apuEgtIndicationColor}`}
                         dashOffset={-10}
                         strokeWidth={3}
