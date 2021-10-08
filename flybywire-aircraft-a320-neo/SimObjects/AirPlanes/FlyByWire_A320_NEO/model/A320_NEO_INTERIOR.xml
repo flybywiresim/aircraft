@@ -1478,6 +1478,7 @@
                     (A:CIRCUIT CONNECTION ON:30, Bool) l0 != if{ 30 3 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE) }
                 </Update>
 
+                <!-- NOSE TAXI/TO LT-->
                 <UseTemplate Name="ASOBO_LIGHTING_Switch_Light_Landing_Template">
                     <NODE_ID>SWITCH_OVHD_EXTLT_NOSE</NODE_ID>
                     <PART_ID>LIGHTING_Switch_Light_Double</PART_ID>
@@ -1490,6 +1491,8 @@
                     <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.NOSE_LIGHT_SET_TAXI</ANIMTIP_1>
                     <ANIMTIP_2>TT:COCKPIT.TOOLTIPS.NOSE_LIGHT_SET_OFF</ANIMTIP_2>
                     <TYPE>TwoSimvars</TYPE>
+                    <!-- Allow TAXI LT to be used with TO LT -->
+                    <SET_SIMVAR_2>(L:LIGHTING_LANDING_1, Number) 0 == if{ ! } 1 r (&gt;K:2:TAXI_LIGHTS_SET)</SET_SIMVAR_2>
 
                     <WWISE_EVENT>lswitch</WWISE_EVENT>
                 </UseTemplate>
