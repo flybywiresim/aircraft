@@ -12,31 +12,6 @@
         stroke-width: 2;
     }
 
-    .FillPulse {
-        animation: fill-pulse 1s step-end infinite;
-
-        @keyframes fill-pulse {
-            0%, 100% {
-              fill: $display-green;
-            }
-            50% {
-                fill: hsl(120, 100%, 20%);
-            }
-        }
-    }
-    .LinePulse {
-        animation: line-pulse 1s step-end infinite;
-
-        @keyframes line-pulse {
-            0%, 100% {
-              stroke: $display-green;
-            }
-            50% {
-              stroke: hsl(120, 100%, 20%);
-            }
-        }
-    }
-
     .NoFill {
         fill: none;
     }
@@ -46,14 +21,16 @@
         stroke-width: 4;
     }
 
-    .FontSmall {
-        font-size: 15px;
-    }
-
     text {
         fill: #EEEEEE;
 
-        font-size: 19px;
+        &.FontSmall {
+            font-size: 15px;
+        }
+
+        &.FontNormal {
+            font-size: 19px;
+        }
 
         &.Center {
             text-anchor: middle;
@@ -114,5 +91,30 @@
         stroke: #00FF00;
         fill: none;
         stroke-width: 2.5px;
+    }
+
+    .FillPulse {
+        animation: fill-pulse 1s step-end infinite;
+
+        @keyframes fill-pulse {
+            0%, 100% {
+              fill: $display-green;
+            }
+            50% {
+                fill: hsl(120, 100%, 20%);
+            }
+        }
+    }
+    .LinePulse {
+        animation: line-pulse 1s step-end infinite;
+
+        @keyframes line-pulse {
+            0%, 100% {
+              stroke: $display-green;
+            }
+            50% {
+              stroke: hsl(120, 100%, 20%);
+            }
+        }
     }
 }
