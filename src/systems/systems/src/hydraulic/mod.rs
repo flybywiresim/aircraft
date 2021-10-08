@@ -356,7 +356,6 @@ impl HydraulicLoop {
     const ACCUMULATOR_FLOW_CARAC: [f64; 10] =
         [0.0, 0.001, 0.005, 0.05, 0.08, 0.15, 0.25, 0.35, 0.5, 0.5];
 
-    #[allow(clippy::too_many_arguments)]
     pub fn new(
         id: &str,
         connected_to_ptu_left_side: bool, // Is connected to PTU "left" side: non variable displacement side
