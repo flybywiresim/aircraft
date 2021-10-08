@@ -429,6 +429,8 @@ pub struct HeatExchanger {
     internal_connector: PneumaticContainerConnector,
 }
 impl HeatExchanger {
+    const MASS_TRANSFER_SPEED: f64 = 0.1;
+
     pub fn new(coefficient: f64) -> Self {
         Self {
             coefficient,
@@ -455,7 +457,30 @@ impl HeatExchanger {
             self.coefficient * temperature_gradient * context.delta_as_secs_f64(),
         );
 
+        self.exhaust_fluid(context, supply);
         self.internal_connector.update_move_fluid(context, from, to);
+    }
+
+    pub fn exhaust_fluid(
+        &mut self,
+        context: &UpdateContext,
+        from: &mut impl PneumaticContainer,
+    ) -> Volume {
+        let equalization_volume = (from.pressure() - 2. * context.ambient_pressure())
+            * from.volume()
+            / Pressure::new::<pascal>(142000.);
+
+        let volume_to_move = equalization_volume.max(Volume::new::<cubic_meter>(0.))
+            * (1. - (-Self::MASS_TRANSFER_SPEED * context.delta_as_secs_f64()).exp());
+
+        println!(
+            "volume exhausted: {} m^3",
+            volume_to_move.get::<cubic_meter>()
+        );
+
+        from.change_volume(-volume_to_move);
+
+        volume_to_move
     }
 }
 

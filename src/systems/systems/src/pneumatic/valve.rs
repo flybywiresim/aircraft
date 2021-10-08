@@ -241,7 +241,7 @@ impl PneumaticContainerConnector {
             * equalization_volume
             * (1. - (-Self::TRANSFER_SPEED * context.delta_as_secs_f64()).exp());
 
-        self.move_volume(from, to, fluid_to_move);
+        self.move_volume(from, to, fluid_to_move.min(from.volume()));
 
         self.fluid_flow = fluid_to_move / context.delta_as_time();
     }

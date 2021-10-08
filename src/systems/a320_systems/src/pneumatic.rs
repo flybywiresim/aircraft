@@ -694,8 +694,8 @@ impl ControllerSignal<PressureRegulatingValveSignal> for BleedMonitoringComputer
 }
 impl ControllerSignal<FanAirValveSignal> for BleedMonitoringComputerChannel {
     fn signal(&self) -> Option<FanAirValveSignal> {
-        // Some(FanAirValveSignal::new_open())
-        Some(FanAirValveSignal::new_closed())
+        Some(FanAirValveSignal::new_open())
+        // Some(FanAirValveSignal::new_closed())
         // None
     }
 }
@@ -861,7 +861,7 @@ impl EngineBleedAirSystem {
                 cubic_meter_per_second,
             >(0.1)),
             es_valve: DefaultValve::new_closed(),
-            precooler: HeatExchanger::new(5.),
+            precooler: HeatExchanger::new(1.),
         }
     }
 
@@ -1564,6 +1564,24 @@ mod tests {
             self
         }
 
+        fn toga_eng1(mut self) -> Self {
+            self.write("GENERAL ENG STARTER ACTIVE:1", true);
+            self.write("TURB ENG CORRECTED N2:1", Ratio::new::<ratio>(0.65));
+            self.write("TURB ENG CORRECTED N1:1", Ratio::new::<ratio>(0.99));
+            self.write("ENGINE_STATE:1", EngineState::On);
+
+            self
+        }
+
+        fn toga_eng2(mut self) -> Self {
+            self.write("GENERAL ENG STARTER ACTIVE:2", true);
+            self.write("TURB ENG CORRECTED N2:2", Ratio::new::<ratio>(0.65));
+            self.write("TURB ENG CORRECTED N1:2", Ratio::new::<ratio>(0.99));
+            self.write("ENGINE_STATE:2", EngineState::On);
+
+            self
+        }
+
         fn stop_eng1(mut self) -> Self {
             self.write("GENERAL ENG STARTER ACTIVE:1", false);
             self.write("TURB ENG CORRECTED N2:1", Ratio::new::<ratio>(0.));
@@ -1815,9 +1833,9 @@ mod tests {
 
         let mut test_bed = test_bed_with()
             .in_isa_atmosphere(alt)
-            .idle_eng1()
-            .idle_eng1()
-            // .both_packs_auto()
+            .toga_eng1()
+            .idle_eng2()
+            .both_packs_auto()
             .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Auto);
         // .set_bleed_air_running()
 
@@ -1839,13 +1857,10 @@ mod tests {
         let mut ipv_open = Vec::new();
         let mut esv_open = Vec::new();
         let mut abv_open = Vec::new();
+        let mut fav_open = Vec::new();
 
         for i in 1..1000 {
-            ts.push(i as f64 * 200.);
-
-            if i == 50 {
-                test_bed = test_bed.set_dc_ess_shed_bus_power(false);
-            }
+            ts.push(i as f64 * 30.);
 
             hps.push(test_bed.hp_pressure(1).get::<psi>());
             ips.push(test_bed.ip_pressure(1).get::<psi>());
@@ -1911,15 +1926,31 @@ mod tests {
                 0.
             });
 
-            test_bed.run_with_delta(Duration::from_millis(200));
-        }
+            fav_open.push(test_bed.query(|aircraft| {
+                aircraft.pneumatic.engine_systems[0]
+                    .fan_air_valve
+                    .open_amount()
+                    .get::<ratio>()
+                    * 10.
+            }));
 
-        println!("{}", test_bed.engine_bleed_push_button_has_fault(1));
+            // println!(
+            //     "flow {} m^3/s",
+            //     test_bed.query(|aircraft| {
+            //         aircraft.pneumatic.engine_systems[0]
+            //             .fan_air_valve
+            //             .fluid_flow()
+            //             .get::<cubic_meter_per_second>()
+            //     })
+            // );
+
+            test_bed.run_with_delta(Duration::from_millis(32));
+        }
 
         // If anyone is wondering, I am using python to plot pressure curves. This will be removed once the model is complete.
         let data = vec![
             ts, hps, ips, c2s, c1s, c0s, pcss, hpts, ipts, c2ts, c1ts, c0ts, pcsts, hpv_open,
-            prv_open, ipv_open, esv_open, abv_open,
+            prv_open, ipv_open, esv_open, abv_open, fav_open,
         ];
         let mut file = File::create("DO NOT COMMIT.txt").expect("Could not create file");
 
