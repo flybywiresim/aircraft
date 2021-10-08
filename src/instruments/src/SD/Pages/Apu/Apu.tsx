@@ -104,6 +104,7 @@ const ApuGen = ({ x, y } : ComponentPositionProps) => {
                         <>
                             <SvgGroup x={60} y={55}>
                                 {/* FIXME - in amber when the generator is within overload; double check overload range, for now its > 100 */}
+                                {/* FIXME: replaced by amber crosses when information is not available */}
                                 <text
                                     x={0}
                                     y={0}
@@ -111,6 +112,7 @@ const ApuGen = ({ x, y } : ComponentPositionProps) => {
                                 >
                                     {apuGenLoad.toFixed()}
                                 </text>
+                                {/* FIXME: replaced by amber crosses when information is not available */}
                                 <text
                                     x={0}
                                     y={25}
@@ -118,6 +120,7 @@ const ApuGen = ({ x, y } : ComponentPositionProps) => {
                                 >
                                     {apuGenVoltage.toFixed()}
                                 </text>
+                                {/* FIXME: replaced by amber crosses when information is not available */}
                                 <text
                                     x={0}
                                     y={50}
