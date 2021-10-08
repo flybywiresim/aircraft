@@ -43,9 +43,9 @@ impl LocalAcceleration {
     const ACCEL_Z_AXIS: usize = 2;
 
     fn new(
-        longitudinal_acceleration: Acceleration,
         lateral_acceleration: Acceleration,
         vertical_acceleration: Acceleration,
+        longitudinal_acceleration: Acceleration,
     ) -> Self {
         Self {
             acceleration: [
@@ -103,7 +103,6 @@ impl UpdateContext {
     pub(crate) const PLANE_PITCH_KEY: &'static str = "PLANE PITCH DEGREES";
     pub(crate) const PLANE_BANK_KEY: &'static str = "PLANE BANK DEGREES";
 
-    #[allow(clippy::too_many_arguments)]
     pub fn new(
         delta: Duration,
         indicated_airspeed: Velocity,

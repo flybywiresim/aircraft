@@ -23,7 +23,6 @@ impl State {
         State::Open(Open::for_initial_bcl_state())
     }
 
-    #[allow(clippy::too_many_arguments)]
     fn update(
         self,
         context: &UpdateContext,
@@ -94,7 +93,6 @@ impl BatteryChargeLimiter {
         }
     }
 
-    #[allow(clippy::too_many_arguments)]
     pub fn update(
         &mut self,
         context: &UpdateContext,
@@ -235,7 +233,6 @@ impl Open {
         }
     }
 
-    #[allow(clippy::too_many_arguments)]
     fn should_close(
         &self,
         context: &UpdateContext,
@@ -306,7 +303,6 @@ impl Open {
         );
     }
 
-    #[allow(clippy::too_many_arguments)]
     fn update(
         mut self,
         context: &UpdateContext,
@@ -418,7 +414,6 @@ impl Closed {
         emergency_elec.is_active() && self.beyond_emergency_elec_closed_time_allowance()
     }
 
-    #[allow(clippy::too_many_arguments)]
     fn should_open(
         &self,
         context: &UpdateContext,
@@ -474,7 +469,6 @@ impl Closed {
                 )
     }
 
-    #[allow(clippy::too_many_arguments)]
     fn update(
         mut self,
         context: &UpdateContext,

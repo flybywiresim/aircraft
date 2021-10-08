@@ -80,7 +80,6 @@ impl A320AlternatingCurrentElectrical {
         }
     }
 
-    #[allow(clippy::too_many_arguments)]
     pub fn update_main_power_sources(
         &mut self,
         context: &UpdateContext,
@@ -374,7 +373,6 @@ impl A320MainPowerSources {
         }
     }
 
-    #[allow(clippy::too_many_arguments)]
     fn update(
         &mut self,
         context: &UpdateContext,
