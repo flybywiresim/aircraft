@@ -60,16 +60,16 @@ const ApuGen = ({ x, y } : ComponentPositionProps) => {
     const [apuGenFreq] = useSimVar('L:A32NX_ELEC_APU_GEN_1_FREQUENCY', 'Hertz', 1000);
 
     enum apuGenState {STANDBY, OFF, ON}
-    const [currentApuGenState, setCurrentApuGenState] = useState(apuGenState.STANDBY);
+    const [currentApuGenState, setCurrentApuGenState] = useState(apuGenState.OFF);
 
     const [apuMasterPbOn] = useSimVar('L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON', 'Bool', 1000);
     const [apuGenPbOn] = useSimVar('A:APU GENERATOR SWITCH', 'Boolean', 1000);
     const [apuAvail] = useSimVar('L:A32NX_OVHD_APU_START_PB_IS_AVAILABLE', 'Bool', 1000);
 
     useEffect(() => {
-        if (!apuMasterPbOn && !apuAvail) {
+        if (!apuMasterPbOn && !apuAvail /* FIXME: and apu master switch is valid and apu gen push buttion is valid */) {
             setCurrentApuGenState(apuGenState.STANDBY);
-        } else if (!(currentApuGenState === apuGenState.STANDBY) && !apuGenPbOn) {
+        } else if (!(currentApuGenState === apuGenState.STANDBY) && !apuGenPbOn /* FIXME: and apu master switch valid and apu gen pb valid */) {
             setCurrentApuGenState(apuGenState.OFF);
         } else {
             setCurrentApuGenState(apuGenState.ON);
