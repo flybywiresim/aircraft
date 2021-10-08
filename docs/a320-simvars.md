@@ -3,6 +3,7 @@
 ## Contents
 
 1. [Uncategorized](#uncategorized)
+1. [EIS Display System](#eis-display-system)
 1. [Fly-By-Wire System](#fly-by-wire-system)
 1. [ADIRS](#adirs)
 1. [Autopilot System](#autopilot-system)
@@ -267,47 +268,47 @@
     - Bool
     - True when the FWC decides that flight phase inhibits should be overridden (and ignored)
 
-- A32NX_VSPEEDS_VS
+- A32NX_SPEEDS_VS
     - Number
     - Current config stall speed
     - is mach corrected
 
-- A32NX_VSPEEDS_VLS
+- A32NX_SPEEDS_VLS
     - Number
     - Current config minimum selectable speed
     - is mach corrected
 
-- A32NX_VSPEEDS_F
+- A32NX_SPEEDS_F
     - Number
     - F-Speed (approach)
 
-- A32NX_VSPEEDS_S
+- A32NX_SPEEDS_S
     - Number
     - S-Speed (approach)
 
-- A32NX_VSPEEDS_GD
+- A32NX_SPEEDS_GD
     - Number
     - Green Dot speed (clean config or O)
     - is mach corrected
 
-- A32NX_VSPEEDS_LANDING_CONF3
+- A32NX_SPEEDS_LANDING_CONF3
     - Bool
     - True if FLAPS 3 is selected in perf page
 
-- A32NX_VSPEEDS_TO_CONF
+- A32NX_SPEEDS_TO_CONF
     - Number
     - Flaps config for TakeOff, 1, 2 or 3
 
-- A32NX_VSPEEDS_V2
+- A32NX_SPEEDS_V2
     - Number
     - TakeOff V2 Speed calculated based on A32NX_VSPEEDS_TO_CONF config
 
-- A32NX_VSPEEDS_VLS_APP
+- A32NX_SPEEDS_VLS_APP
     - Number
     - vls calculated for config full whether A32NX_VSPEEDS_LANDING_CONF3 or not
     - is mach corrected
 
-- A32NX_VSPEEDS_VAPP
+- A32NX_SPEEDS_VAPP
     - Number
     - vapp calculated for config full  whether A32NX_VSPEEDS_LANDING_CONF3 or not
     - is mach corrected
@@ -980,6 +981,60 @@
 - A32NX_MCDU_MASK_OPACITY
     - Number
     - Current LCD mask opacity for MCDU, used for driving MCDU display pixels effect
+## EIS Display System
+
+- A32NX_EFIS_{side}_ND_MODE
+    - Enum
+    - Provides the selected navigation display mode for the captain side EFIS
+      Value | Meaning
+      --- | ---
+      0 | ROSE ILS
+      1 | ROSE VOR
+      2 | ROSE NAV
+      3 | ARC
+      4 | PLAN
+    - {side}
+        - L
+        - R
+
+- A32NX_EFIS_{side}_ND_RANGE
+    - Enum
+    - Provides the selected navigation display range for the captain side EFIS
+      Value | Meaning
+      --- | ---
+      0 | 10
+      1 | 20
+      2 | 40
+      3 | 80
+      4 | 160
+      5 | 320
+    - {side}
+        - L
+        - R
+
+- A32NX_EFIS_{side}_ND_FM_MESSAGE_FLAGS
+    - Flag
+    - Provides a bitfield of the active FM messages to the NDs
+      Bit | Meaning
+      --- | ---
+      0  | SelectTrueRef
+      1  | CheckNorthRef
+      2  | NavAccuracyDowngrade
+      3  | NavAccuracyUpgradeNoGps
+      4  | SpecifiedVorDmeUnavailble
+      5  | NavAccuracyUpgradeGps
+      6  | GpsPrimary
+      7  | MapPartlyDisplayed
+      8  | SetOffsideRangeMode
+      9  | OffsideFmControl
+      10 | OffsideFmWxrControl
+      11 | OffsideWxrControl
+      12 | GpsPrimaryLost
+      13 | RtaMissed
+      14 | BackupNav
+    - {side}
+        - L
+        - R
 
 - A32NX_ISIS_LS_ACTIVE
 	- Bool
@@ -1801,3 +1856,68 @@ In the variables below, {number} should be replaced with one item in the set: { 
 - A32NX_PRESS_AUTO_LANDING_ELEVATION
     - Feet
     - Automatic landing elevation as calculated by the MCDU when a destination runway is entered
+
+## Traffic Collison Avoidance System
+
+- A32NX_SWITCH_TCAS_Position
+  - Enum
+  - Selected TCAS Mode
+      Description | Value
+      --- | ---
+      STBY | 0
+      TA | 1
+      TA/RA | 2
+
+- A32NX_SWITCH_ATC
+  - EnumTC
+  - Selected active transponder (XPDR1/2)
+      Description | Value
+      --- | ---
+      XPDR1 | 0
+      XPDR2 | 1
+
+- A32NX_SWITCH_TCAS_Traffic_Position
+  - Enum
+  - Selected TCAS Display Mode
+      Description | Value
+      --- | ---
+      THREAT | 0
+      ALL | 1
+      ABV | 2
+      BELOW | 3
+
+- A32NX_TCAS_MODE
+  - Enum
+  - Whether TCAS has been set to standby, TA Only or TA/RA Mode (see ATC panel)
+  Description | Value
+      --- | ---
+      STBY | 0
+      TA | 1
+      TA/RA | 2
+
+- A32NX_TCAS_STATE
+  - Enum
+  - Currently active traffic/resolution advisory state
+      Description | Value
+      --- | ---
+      NONE | 0
+      TA | 1
+      RA | 2
+
+- A32NX_TCAS_RA_CORRECTIVE
+  - boolean
+  - Active RA is corrective?
+
+- A32NX_TCAS_VSPEED_RED:{number}
+    - Feet per minute
+	- Lower and upper red vertical speed range of current active RA
+    - {number}
+        - 0
+        - 1
+
+- A32NX_TCAS_VSPEED_GREEN:{number}
+    - Feet per minute
+	- Lower and upper green vertical speed range of current active RA
+    - {number}
+        - 0
+        - 1

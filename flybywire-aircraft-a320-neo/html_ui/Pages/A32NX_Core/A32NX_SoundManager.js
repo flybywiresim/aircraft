@@ -9,6 +9,7 @@ class PeriodicSound {
 class A32NX_SoundManager {
     constructor() {
         this.periodicList = [];
+        this.soundQueue = [];
 
         this.playingSound = null;
         this.playingSoundRemaining = NaN;
@@ -27,7 +28,7 @@ class A32NX_SoundManager {
 
         let found = false;
         this.periodicList.forEach((element) => {
-            if (element.name === sound.name) {
+            if (element.sound.name === sound.name) {
                 found = true;
             }
         });
@@ -49,15 +50,23 @@ class A32NX_SoundManager {
         }
     }
 
-    tryPlaySound(sound) {
+    tryPlaySound(sound, retry = false, repeatOnce = false) {
         if (this.playingSound === null) {
             this.playingSound = sound;
             this.playingSoundRemaining = sound.length;
-
-            Coherent.call("PLAY_INSTRUMENT_SOUND", sound.name);
+            console.log("SOUND: playing ", sound);
+            Coherent.call("PLAY_INSTRUMENT_SOUND", sound.name).catch(console.error);
+            if (repeatOnce) {
+                this.soundQueue.push(sound);
+            }
             return true;
+        } else if (retry) {
+            this.soundQueue.push(sound);
+            if (repeatOnce) {
+                this.soundQueue.push(sound);
+            }
+            return false;
         }
-        return false;
     }
 
     update(deltaTime, _core) {
@@ -66,6 +75,11 @@ class A32NX_SoundManager {
             this.playingSoundRemaining = NaN;
         } else if (this.playingSoundRemaining > 0) {
             this.playingSoundRemaining -= deltaTime / 1000;
+        }
+
+        if (this.playingSound === null && this.soundQueue.length > 0) {
+            const _sound = this.soundQueue.shift();
+            this.tryPlaySound(_sound);
         }
 
         this.periodicList.forEach((element) => {
@@ -169,5 +183,61 @@ const soundList = {
     alt_5: {
         name: "new_5",
         length: 0.3
+    },
+    climb_climb: {
+        name: "climb_climb",
+        length: 1.6
+    },
+    climb_crossing_climb: {
+        name: "climb_crossing_climb",
+        length: 1.7
+    },
+    increase_climb: {
+        name: "increase_climb",
+        length: 1.2
+    },
+    climb_climb_now: {
+        name: "climb_climb_now",
+        length: 1.9
+    },
+    clear_of_conflict: {
+        name: "clear_of_conflict",
+        length: 1.5
+    },
+    descend_descend: {
+        name: "descend_descend",
+        length: 2.1
+    },
+    descend_crossing_descend: {
+        name: "descend_crossing_descend",
+        length: 1.9
+    },
+    increase_descent: {
+        name: "increase_descent",
+        length: 1.3
+    },
+    descend_descend_now: {
+        name: "descend_descend_now",
+        length: 2.2
+    },
+    monitor_vs: {
+        name: "monitor_vs",
+        length: 1.7
+    },
+    maint_vs_maint: {
+        name: "maint_vs_maint",
+        length: 3.2
+    },
+    maint_vs_crossing_maint: {
+        name: "maint_vs_crossing_maint",
+        length: 3.2
+    },
+    level_off_level_off: {
+        name: "level_off_level_off",
+        length: 2.3
+    },
+    traffic_traffic: {
+        name: "traffic_traffic",
+        length: 1.5
     }
 };

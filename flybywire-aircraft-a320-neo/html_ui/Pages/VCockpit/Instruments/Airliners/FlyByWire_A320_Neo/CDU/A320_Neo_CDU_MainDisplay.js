@@ -30,6 +30,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             Prog: 2000,
             Dyn: 1500
         };
+        this.fmgcMesssagesListener = RegisterViewListener('JS_LISTENER_SIMVARS');
+        this.setupFmgcTriggers();
         this.page = {
             SelfPtr: false,
             Current: 0,
@@ -83,8 +85,24 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             ClimbWind: 47,
             CruiseWind: 48,
             DescentWind: 49,
+            FixInfoPage: 50,
         };
     }
+
+    setupFmgcTriggers() {
+        Coherent.on('A32NX_FMGC_SEND_MESSAGE_TO_MCDU', (message) => {
+            this.addNewMessage(new TypeIIMessage(message.text, message.color === 'Amber', undefined, () => false , () => {
+                if (message.clearable) {
+                    Fmgc.FmsMessages.instance.recallId(message.id);
+                }
+            }));
+        });
+
+        Coherent.on('A32NX_FMGC_RECALL_MESSAGE_FROM_MCDU_WITH_ID', (text) => {
+            this.tryRemoveMessage(text);
+        });
+    }
+
     get templateID() {
         return "A320_Neo_CDU";
     }
@@ -109,7 +127,11 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
     Init() {
         super.Init();
-        Coherent.trigger('UNFOCUS_INPUT_FIELD');// note: without this, resetting mcdu kills camera
+        try {
+            Coherent.trigger('UNFOCUS_INPUT_FIELD');// note: without this, resetting mcdu kills camera
+        } catch (e) {
+            console.error(e);
+        }
 
         // LCD OVERLAY
         this.lcdOverlay = document.querySelector("#LcdOverlay");
@@ -170,6 +192,10 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             this.handlePreviousInputState();
             this.inOut += ".";
         };
+        this.onOvfy = () => {
+            this.handlePreviousInputState();
+            this.inOut = FMCMainDisplay.ovfyValue;
+        };
         this.onClr = () => {
             if (this.inOut === "") {
                 this.inOut = FMCMainDisplay.clrValue;
@@ -206,31 +232,39 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             }
         };
         this.onLeftFunction = (f) => {
-            if (isFinite(f)) {
-                if (this.onLeftInput[f]) {
-                    const value = this.clearUserInput();
-                    const cur = this.page.Current;
-                    setTimeout(() => {
-                        if (this.page.Current === cur) {
-                            this.onLeftInput[f](value);
-                            this.tryClearOldUserInput();
-                        }
-                    }, this.leftInputDelay[f] ? this.leftInputDelay[f](value) : this.getDelayBasic());
+            try {
+                if (isFinite(f)) {
+                    if (this.onLeftInput[f]) {
+                        const value = this.clearUserInput();
+                        const cur = this.page.Current;
+                        setTimeout(() => {
+                            if (this.page.Current === cur) {
+                                this.onLeftInput[f](value);
+                                this.tryClearOldUserInput();
+                            }
+                        }, this.leftInputDelay[f] ? this.leftInputDelay[f](value) : this.getDelayBasic());
+                    }
                 }
+            } catch (e) {
+                console.error(e);
             }
         };
         this.onRightFunction = (f) => {
-            if (isFinite(f)) {
-                if (this.onRightInput[f]) {
-                    const value = this.clearUserInput();
-                    const cur = this.page.Current;
-                    setTimeout(() => {
-                        if (this.page.Current === cur) {
-                            this.onRightInput[f](value);
-                            this.tryClearOldUserInput();
-                        }
-                    }, this.rightInputDelay[f] ? this.rightInputDelay[f]() : this.getDelayBasic());
+            try {
+                if (isFinite(f)) {
+                    if (this.onRightInput[f]) {
+                        const value = this.clearUserInput();
+                        const cur = this.page.Current;
+                        setTimeout(() => {
+                            if (this.page.Current === cur) {
+                                this.onRightInput[f](value);
+                                this.tryClearOldUserInput();
+                            }
+                        }, this.rightInputDelay[f] ? this.rightInputDelay[f]() : this.getDelayBasic());
+                    }
                 }
+            } catch (e) {
+                console.error(e);
             }
         };
 
@@ -915,7 +949,11 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     clearFocus() {
         this.inFocus = false;
         this.allSelected = false;
-        Coherent.trigger('UNFOCUS_INPUT_FIELD');
+        try {
+            Coherent.trigger('UNFOCUS_INPUT_FIELD');
+        } catch (e) {
+            console.error(e);
+        }
         this._inOutElement.style = null;
         this.getChildById("header").style = null;
         if (this.check_focus) {
@@ -937,7 +975,11 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 if (this.inFocus && (isPoweredL || isPoweredR)) {
                     this.getChildById("header").style = "background: linear-gradient(180deg, rgba(2,182,217,1.0) 65%, rgba(255,255,255,0.0) 65%);";
                     this._inOutElement.style = "display: inline-block; width:87%; background: rgba(255,255,255,0.2);";
-                    Coherent.trigger('FOCUS_INPUT_FIELD');
+                    try {
+                        Coherent.trigger('FOCUS_INPUT_FIELD');
+                    } catch (e) {
+                        console.error(e);
+                    }
                     this.lastInput = new Date();
                     if (mcduTimeout) {
                         this.check_focus = setInterval(() => {
@@ -1066,19 +1108,19 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
     /**
      * General message handler
-     * @param message {{text, isAmber, isTypeTwo}} Message Object
-     * @param isResolved {function} Function that determines if the error is resolved at this moment (type II only).
-     * @param onClear {function} Function that executes when the error is actively cleared by the pilot (type II only).
+     * @param _message {McduMessage} MessageObject
+     * @param _isResolvedOverride {function} Function that determines if the error is resolved at this moment (type II only).
+     * @param _onClearOverride {function} Function that executes when the error is actively cleared by the pilot (type II only).
      */
-    addNewMessage(message, isResolved = () => {
-        return false;
-    }, onClear = () => {}) {
-        if (message.isTypeTwo) {
-            if (!isResolved()) {
-                this._addTypeTwoMessage(message.text, message.isAmber, isResolved, onClear);
+    addNewMessage(_message, _isResolvedOverride = undefined, _onClearOverride = undefined) {
+        if (_message.isTypeTwo) {
+            const message = _isResolvedOverride === undefined && _onClearOverride === undefined ? _message : _message.modifyMessage("", _isResolvedOverride, _onClearOverride);
+
+            if (!message.isResolved(this)) {
+                this._addTypeTwoMessage(message);
             }
         } else {
-            this._showTypeOneMessage(message.text, message.isAmber);
+            this._showTypeOneMessage(_message.text, _message.isAmber);
         }
     }
 
@@ -1093,20 +1135,17 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
     /**
      * Add Type II Message
-     * @param message {string} Message to be displayed
-     * @param isAmber {boolean} Is color amber
-     * @param isResolved {function} Function that determines if the error is resolved at this moment (type II only).
-     * @param onClear {function} Function that executes when the error is actively cleared by the pilot (type II only).
+     * @param message {McduMessage} MessageObject
      */
-    _addTypeTwoMessage(message, isAmber, isResolved, onClear) {
-        if (this.checkForMessage(message)) {
+    _addTypeTwoMessage(message) {
+        if (this.checkForMessage(message.text)) {
             // Before adding message to queue, check other messages in queue for validity
             for (let i = 0; i < this.messageQueue.length; i++) {
-                if (this.messageQueue[i][2](this)) {
+                if (this.messageQueue[i].isResolved(this)) {
                     this.messageQueue.splice(i, 1);
                 }
             }
-            this.messageQueue.unshift([message, isAmber, isResolved, onClear]);
+            this.messageQueue.unshift(message);
             if (this.messageQueue.length > 5) {
                 this.messageQueue.splice(5, 1);
             }
@@ -1116,7 +1155,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
     tryShowMessage() {
         if (!this.isDisplayingErrorMessage && (!this.inOut || this.isDisplayingTypeTwoMessage) && this.messageQueue.length > 0) {
-            if (this.messageQueue[0][2](this)) {
+            if (this.messageQueue[0].isResolved(this)) {
                 this.messageQueue.splice(0, 1);
                 this._inOutElement.className = "white";
                 this.lastUserInputToScratchpad();
@@ -1127,20 +1166,20 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     this.isDisplayingTypeTwoMessage = true;
                     this.lastUserInput = this.inOut;
                 }
-                this.inOut = this.messageQueue[0][0];
-                this._inOutElement.className = this.messageQueue[0][1] ? "amber" : "white";
+                this.inOut = this.messageQueue[0].text;
+                this._inOutElement.className = this.messageQueue[0].color;
             }
         }
     }
 
     /**
      * Removes Type II Message
-     * @param message {string} Message to be removed
+     * @param message {string, number} Message to be removed via text or id
      */
     tryRemoveMessage(message = this.inOut) {
         for (let i = 0; i < this.messageQueue.length; i++) {
-            if (this.messageQueue[i][0] === message) {
-                this.messageQueue[i][3](this);
+            if (typeof message === "number" ? this.messageQueue[i].id === message : this.messageQueue[i].text === message) {
+                this.messageQueue[i].onClear(this);
                 this.messageQueue.splice(i, 1);
                 if (i === 0 && this.isDisplayingTypeTwoMessage) {
                     this._inOutElement.className = "white";
@@ -1157,7 +1196,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             return false;
         }
         for (let i = 0; i < this.messageQueue.length; i++) {
-            if (this.messageQueue[i][0] === message) {
+            if (this.messageQueue[i].text === message) {
                 if (i !== 0) {
                     this.messageQueue.unshift(this.messageQueue[i]);
                     this.messageQueue.splice(i + 1, 1);
