@@ -54,10 +54,17 @@ type ComponentPositionProps = {
 
 const ApuGen = ({ x, y } : ComponentPositionProps) => {
     const [apuContactorClosed] = useSimVar('L:A32NX_ELEC_CONTACTOR_3XS_IS_CLOSED', 'Bool', 1000);
+    const [busTieContactor1Closed] = useSimVar('L:A32NX_ELEC_CONTACTOR_11XU1_IS_CLOSED', 'Bool');
+    const [busTieContactor2Closed] = useSimVar('L:A32NX_ELEC_CONTACTOR_11XU2_IS_CLOSED', 'Bool');
 
     const [apuGenLoad] = useSimVar('L:A32NX_ELEC_APU_GEN_1_LOAD', 'Percent', 1000);
+    const [apuGenLoadNormalRange] = useSimVar('L:A32NX_ELEC_APU_GEN_1_LOAD_NORMAL', 'Bool', 1000);
+
     const [apuGenVoltage] = useSimVar('L:A32NX_ELEC_APU_GEN_1_POTENTIAL', 'Volts', 1000);
+    const [apuGenPotentialNormalRange] = useSimVar('L:A32NX_ELEC_APU_GEN_1_POTENTIAL_NORMAL', 'Bool', 1000);
+
     const [apuGenFreq] = useSimVar('L:A32NX_ELEC_APU_GEN_1_FREQUENCY', 'Hertz', 1000);
+    const [apuGenFreqNormalRange] = useSimVar('L:A32NX_ELEC_APU_GEN_1_FREQUENCY_NORMAL', 'Bool', 1000);
 
     enum apuGenState {STANDBY, OFF, ON}
     const [currentApuGenState, setCurrentApuGenState] = useState(apuGenState.OFF);
@@ -79,7 +86,7 @@ const ApuGen = ({ x, y } : ComponentPositionProps) => {
     return (
         <>
             <SvgGroup x={x} y={y}>
-                {apuContactorClosed
+                {(apuContactorClosed && (busTieContactor1Closed || busTieContactor2Closed))
                     && (
                         <SvgGroup x={42} y={-28}>
                             <polygon points="0,20 8,5 16,20" className="Circle" />
@@ -91,7 +98,8 @@ const ApuGen = ({ x, y } : ComponentPositionProps) => {
                     x={50}
                     y={20}
                     className={`Center FontNormal
-                    ${(currentApuGenState === apuGenState.OFF || (apuGenFreq <= 390 || apuGenFreq >= 410) || (apuGenVoltage <= 100 || apuGenVoltage >= 120) || apuGenLoad > 100) && ' Amber'}`}
+                    ${(currentApuGenState === apuGenState.OFF
+                         || !(apuGenPotentialNormalRange && apuGenLoadNormalRange && apuGenFreqNormalRange)) && ' Amber'}`}
                 >
                     APU GEN
                 </text>
@@ -108,7 +116,7 @@ const ApuGen = ({ x, y } : ComponentPositionProps) => {
                                 <text
                                     x={0}
                                     y={0}
-                                    className={`Right FontLarger ${apuGenLoad > 100 ? 'Amber' : 'Green'}`}
+                                    className={`Right FontLarger ${apuGenLoadNormalRange ? 'Green' : 'Amber'}`}
                                 >
                                     {apuGenLoad.toFixed()}
                                 </text>
@@ -116,7 +124,7 @@ const ApuGen = ({ x, y } : ComponentPositionProps) => {
                                 <text
                                     x={0}
                                     y={25}
-                                    className={`Right FontLarger ${(apuGenVoltage > 110 && apuGenVoltage < 120) ? 'Green' : 'Amber'}`}
+                                    className={`Right FontLarger ${apuGenPotentialNormalRange ? 'Green' : 'Amber'}`}
                                 >
                                     {apuGenVoltage.toFixed()}
                                 </text>
@@ -124,7 +132,7 @@ const ApuGen = ({ x, y } : ComponentPositionProps) => {
                                 <text
                                     x={0}
                                     y={50}
-                                    className={`Right FontLarger ${(apuGenFreq > 390 && apuGenFreq < 410) ? 'Green' : 'Amber'}`}
+                                    className={`Right FontLarger ${apuGenFreqNormalRange ? 'Green' : 'Amber'}`}
                                 >
                                     {apuGenFreq.toFixed()}
                                 </text>
@@ -149,6 +157,8 @@ const ApuBleed = ({ x, y } : ComponentPositionProps) => {
     const [apuBleedPressure] = useSimVar('L:APU_BLEED_PRESSURE', 'PSI', 1000);
     const displayedBleedPressure = Math.round(apuBleedPressure / 2) * 2; // APU bleed pressure is shown in steps of two.
 
+    const [adir1ModeSelectorKnob] = useSimVar('L:A32NX_OVHD_ADIRS_IR_1_MODE_SELECTOR_KNOB', 'Enum');
+
     useEffect(() => {
         if (apuBleedPbOn) {
             const timeout = setTimeout(() => {
@@ -170,7 +180,13 @@ const ApuBleed = ({ x, y } : ComponentPositionProps) => {
                 <text x={50} y={22} className="Center FontNormal">BLEED</text>
 
                 {/* FIXME: replaced by amber crosses in case of data unavailability. */}
-                <text x={44} y={48} className="Green FontLarger Right">{displayedBleedPressure}</text>
+                <text
+                    x={44}
+                    y={48}
+                    className={`FontLarger Right ${adir1ModeSelectorKnob === 1 ? 'Green' : 'Amber'}`}
+                >
+                    {adir1ModeSelectorKnob === 1 ? displayedBleedPressure : 'XX'}
+                </text>
                 <text x={90} y={48} className="Cyan FontNormal Right">PSI</text>
 
                 <line className="Line Green" x1={50} y1={-1} x2={50} y2={-22} />
