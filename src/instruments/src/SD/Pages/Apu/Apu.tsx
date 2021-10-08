@@ -38,7 +38,7 @@ export const ApuPage = () => {
                 <line className="Line Grey" x1={455} y1={0} x2={455} y2={26} />
             </SvgGroup>
 
-            <ApuNGauge x={145} y={300} />
+            <NGauge x={145} y={300} />
 
             <EgtGauge x={145} y={410} />
 
@@ -194,7 +194,7 @@ const ApuBleed = ({ x, y } : ComponentPositionProps) => {
     );
 };
 
-const ApuNGauge = ({ x, y } : ComponentPositionProps) => {
+const NGauge = ({ x, y } : ComponentPositionProps) => {
     const apuN = useArinc429Var('L:A32NX_APU_N', 100);
     const [apuNIndicationColor, setApuIndicationColor] = useState('Green');
 
@@ -254,7 +254,7 @@ const ApuNGauge = ({ x, y } : ComponentPositionProps) => {
                         y={50}
                         length={60}
                         scaleMax={120}
-                        value={100}
+                        value={102}
                         className="NoFill AmberHeavy"
                         dashOffset={-50}
                     />
