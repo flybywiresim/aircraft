@@ -426,7 +426,7 @@ const ApuMemos = ({ x, y } : ComponentPositionProps) => {
         if (intakeApuMismatch) {
             const timeout = setTimeout(() => {
                 setIsIntakeIndicationFlashing(true);
-            }, 3000);
+            }, 180000);
             return () => clearTimeout(timeout);
         }
         if (isIntakeIndicationFlashing) {
