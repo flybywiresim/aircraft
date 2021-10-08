@@ -44,7 +44,7 @@ class A32NX_Boarding {
 
         async function fillStation(station, percent, paxToFill) {
 
-            const pax = Math.min(Math.round(percent * paxToFill), station.seats);
+            const pax = Math.min(Math.trunc(percent * paxToFill), station.seats);
             station.pax = pax;
 
             await SimVar.SetSimVarValue(`L:${station.simVar}_DESIRED`, "Number", parseInt(pax));
@@ -52,9 +52,9 @@ class A32NX_Boarding {
             paxRemaining -= pax;
         }
 
-        await fillStation(paxStations['rows22_29'], .275 , numberOfPax);
-        await fillStation(paxStations['rows14_21'], .275, numberOfPax);
-        await fillStation(paxStations['rows7_13'], .240 , numberOfPax);
+        await fillStation(paxStations['rows22_29'], .28 , numberOfPax);
+        await fillStation(paxStations['rows14_21'], .28, numberOfPax);
+        await fillStation(paxStations['rows7_13'], .25 , numberOfPax);
         await fillStation(paxStations['rows1_6'], 1 , paxRemaining);
         return;
     }

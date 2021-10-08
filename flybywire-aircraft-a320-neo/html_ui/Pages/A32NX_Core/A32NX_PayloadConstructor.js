@@ -59,7 +59,7 @@ class A32NX_PayloadConstructor {
             },
             aftCont: {
                 name: 'AFT CONTAINER',
-                weight: 1770,
+                weight: 1815,
                 load: 0,
                 stationIndex: 5 + 1,
                 position: -15.96,
@@ -68,7 +68,7 @@ class A32NX_PayloadConstructor {
             },
             aftBag: {
                 name: 'AFT BAGGAGE',
-                weight: 1540,
+                weight: 1585,
                 load: 0,
                 stationIndex: 6 + 1,
                 position: -27.10,
@@ -77,7 +77,7 @@ class A32NX_PayloadConstructor {
             },
             aftBulk: {
                 name: 'AFT BULK/LOOSE',
-                weight: 1180,
+                weight: 1245,
                 load: 0,
                 stationIndex: 7 + 1,
                 position: -37.35,
