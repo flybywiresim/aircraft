@@ -91,7 +91,7 @@ const ApuGen = ({ x, y } : ComponentPositionProps) => {
                     x={50}
                     y={20}
                     className={`Center FontNormal
-                    ${(currentApuGenState === apuGenState.OFF || (apuGenFreq <= 390 || apuGenFreq >= 410) || (apuGenVoltage <= 100 || apuGenVoltage >= 120)) && ' Amber'}`}
+                    ${(currentApuGenState === apuGenState.OFF || (apuGenFreq <= 390 || apuGenFreq >= 410) || (apuGenVoltage <= 100 || apuGenVoltage >= 120) || apuGenLoad > 100) && ' Amber'}`}
                 >
                     APU GEN
                 </text>
