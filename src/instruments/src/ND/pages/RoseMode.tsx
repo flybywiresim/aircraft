@@ -36,8 +36,8 @@ export const RoseMode: FC<RoseModeProps> = ({ symbols, adirsAlign, rangeSetting,
     const [ilsCourse] = useSimVar('NAV LOCALIZER:3', 'degrees');
     const [lsDisplayed] = useSimVar(`L:BTN_LS_${side === 'L' ? 1 : 2}_FILTER_ACTIVE`, 'bool'); // TODO rename simvar
     const [showTmpFplan] = useSimVar('L:MAP_SHOW_TEMPORARY_FLIGHT_PLAN', 'bool');
-    const [hdgSelect] = useSimVar('AUTOPILOT HEADING SLOT INDEX', 'enum');
-    const [apActive] = useSimVar('L:A32NX_AUTOPILOT_ACTIVE', 'bool');
+    const [fmaLatMode] = useSimVar('L:A32NX_FMA_LATERAL_MODE', 'enum');
+    const [fmaLatArmed] = useSimVar('L:A32NX_FMA_LATERAL_ARMED', 'enum');
 
     const heading = Number(MathUtils.fastToFixed(magHeading, 1));
     const track = Number(MathUtils.fastToFixed(magTrack, 1));
@@ -80,10 +80,18 @@ export const RoseMode: FC<RoseModeProps> = ({ symbols, adirsAlign, rangeSetting,
                                 symbols={symbols}
                                 mapParams={mapParams}
                                 debug={false}
-                                type={(hdgSelect === 1) ? FlightPlanType.Dashed : FlightPlanType.Nav}
+                                type={
+                                    /* TODO FIXME: Check if intercepts active leg */
+                                    (fmaLatMode === 0
+                                        || fmaLatMode === 10
+                                        || fmaLatMode === 11)
+                                        && fmaLatArmed === 0
+                                        ? FlightPlanType.Dashed
+                                        : FlightPlanType.Nav
+                                }
                             />
                             {tmpFplan}
-                            {apActive && hdgSelect === 1 && (
+                            { (((fmaLatMode === 0 || fmaLatMode === 10 || fmaLatMode === 11) && fmaLatArmed === 0) || !flightPlanManager.getCurrentFlightPlan().length) && (
                                 <TrackLine x={384} y={384} heading={heading} track={track} />
                             )}
                         </g>

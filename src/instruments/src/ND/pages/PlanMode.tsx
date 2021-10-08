@@ -25,6 +25,8 @@ export const PlanMode: FC<PlanModeProps> = ({ symbols, adirsAlign, rangeSetting,
     const [showTmpFplan] = useSimVar('L:MAP_SHOW_TEMPORARY_FLIGHT_PLAN', 'bool');
     const [selectedWaypoint, setSelectedWaypoint] = useState<WayPoint>();
     const [trueHeading] = useSimVar('PLANE HEADING DEGREES TRUE', 'degrees');
+    const [fmaLatMode] = useSimVar('L:A32NX_FMA_LATERAL_MODE', 'enum');
+    const [fmaLatArmed] = useSimVar('L:A32NX_FMA_LATERAL_ARMED', 'enum');
 
     useEffect(() => {
         setSelectedWaypoint(flightPlanManager.getCurrentFlightPlan().waypoints[selectedWaypointIndex]);
@@ -68,7 +70,15 @@ export const PlanMode: FC<PlanModeProps> = ({ symbols, adirsAlign, rangeSetting,
                     mapParams={mapParams}
                     symbols={symbols}
                     debug={false}
-                    type={FlightPlanType.Nav}
+                    type={
+                        /* TODO FIXME: Check if intercepts active leg */
+                        (fmaLatMode === 0
+                            || fmaLatMode === 10
+                            || fmaLatMode === 11)
+                            && !fmaLatArmed
+                            ? FlightPlanType.Dashed
+                            : FlightPlanType.Nav
+                    }
                 />
                 {tmpFplan}
             </g>
