@@ -9,6 +9,9 @@ use uom::si::{
     f64::*,
     pressure::{pascal, psi},
     ratio::{percent, ratio},
+    temperature_interval,
+    thermodynamic_temperature::kelvin,
+    volume::cubic_meter,
     volume_rate::cubic_meter_per_second,
 };
 
@@ -233,6 +236,10 @@ impl PneumaticContainerConnector {
         from: &mut impl PneumaticContainer,
         to: &mut impl PneumaticContainer,
     ) {
+        if self.transfer_speed_factor.get::<ratio>() == 0. {
+            return;
+        }
+
         let equalization_volume = (from.pressure() - to.pressure()) * from.volume() * to.volume()
             / Pressure::new::<pascal>(142000.)
             / (from.volume() + to.volume());
@@ -241,7 +248,28 @@ impl PneumaticContainerConnector {
             * equalization_volume
             * (1. - (-Self::TRANSFER_SPEED * context.delta_as_secs_f64()).exp());
 
-        self.move_volume(from, to, fluid_to_move.min(from.volume()));
+        let fluid_moved = fluid_to_move.min(from.volume());
+        self.move_volume(from, to, fluid_moved);
+
+        if fluid_moved.get::<cubic_meter>() > 0. {
+            let new_temperature: f64 = (fluid_moved.get::<cubic_meter>()
+                * from.temperature().get::<kelvin>()
+                + to.volume().get::<cubic_meter>() * to.temperature().get::<kelvin>())
+                / (fluid_moved.get::<cubic_meter>() + to.volume().get::<cubic_meter>());
+
+            to.update_temperature(TemperatureInterval::new::<temperature_interval::kelvin>(
+                new_temperature - to.temperature().get::<kelvin>(),
+            ))
+        } else {
+            let new_temperature: f64 = (fluid_moved.get::<cubic_meter>()
+                * to.temperature().get::<kelvin>()
+                + from.volume().get::<cubic_meter>() * from.temperature().get::<kelvin>())
+                / (fluid_moved.get::<cubic_meter>() + from.volume().get::<cubic_meter>());
+
+            from.update_temperature(TemperatureInterval::new::<temperature_interval::kelvin>(
+                new_temperature - from.temperature().get::<kelvin>(),
+            ))
+        };
 
         self.fluid_flow = fluid_to_move / context.delta_as_time();
     }

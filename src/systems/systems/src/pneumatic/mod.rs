@@ -409,7 +409,7 @@ pub struct ApuCompressionChamberController {
 impl ApuCompressionChamberController {
     pub fn new() -> Self {
         Self {
-            current_pressure: Pressure::new::<psi>(0.),
+            current_pressure: Pressure::new::<psi>(14.7),
         }
     }
 }
@@ -429,7 +429,7 @@ pub struct HeatExchanger {
     internal_connector: PneumaticContainerConnector,
 }
 impl HeatExchanger {
-    const MASS_TRANSFER_SPEED: f64 = 0.1;
+    const MASS_TRANSFER_SPEED: f64 = 10.;
 
     pub fn new(coefficient: f64) -> Self {
         Self {
@@ -466,17 +466,11 @@ impl HeatExchanger {
         context: &UpdateContext,
         from: &mut impl PneumaticContainer,
     ) -> Volume {
-        let equalization_volume = (from.pressure() - 2. * context.ambient_pressure())
-            * from.volume()
+        let equalization_volume = (from.pressure() - context.ambient_pressure()) * from.volume()
             / Pressure::new::<pascal>(142000.);
 
         let volume_to_move = equalization_volume.max(Volume::new::<cubic_meter>(0.))
             * (1. - (-Self::MASS_TRANSFER_SPEED * context.delta_as_secs_f64()).exp());
-
-        println!(
-            "volume exhausted: {} m^3",
-            volume_to_move.get::<cubic_meter>()
-        );
 
         from.change_volume(-volume_to_move);
 

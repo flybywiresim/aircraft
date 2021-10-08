@@ -544,6 +544,7 @@ struct BleedMonitoringComputerChannel {
     transfer_pressure: Pressure,
     // Pressure after PRV
     precooler_inlet_pressure: Pressure,
+    precooler_inlet_temperature: ThermodynamicTemperature,
     prv_open_amount: Ratio,
     hpv_open_position: Ratio,
     esv_is_open: bool,
@@ -553,6 +554,7 @@ struct BleedMonitoringComputerChannel {
     is_apu_bleed_on: bool,
     hpv_pid: PidController,
     prv_pid: PidController,
+    fav_pid: PidController,
     cross_bleed_valve_selector: CrossBleedValveSelectorMode,
     cross_bleed_valve_is_open: bool,
     engine_bleed_fault_light_monitor: EngineBleedFaultLightMonitor,
@@ -569,6 +571,7 @@ impl BleedMonitoringComputerChannel {
             hp_compressor_pressure: Pressure::new::<psi>(0.),
             transfer_pressure: Pressure::new::<psi>(0.),
             precooler_inlet_pressure: Pressure::new::<psi>(0.),
+            precooler_inlet_temperature: ThermodynamicTemperature::new::<degree_celsius>(0.),
             hpv_open_position: Ratio::new::<percent>(0.),
             prv_open_amount: Ratio::new::<percent>(0.),
             esv_is_open: false,
@@ -578,6 +581,7 @@ impl BleedMonitoringComputerChannel {
             is_apu_bleed_on: false,
             hpv_pid: PidController::new(0.05, 0., 0., 0., 1., 65.),
             prv_pid: PidController::new(0., 0.01, 0., 0., 1., 46.),
+            fav_pid: PidController::new(0.1, 0., 0.1, 0., 1., 160.),
             cross_bleed_valve_selector: CrossBleedValveSelectorMode::Auto,
             cross_bleed_valve_is_open: false,
             engine_bleed_fault_light_monitor: EngineBleedFaultLightMonitor::new(engine_number),
@@ -598,10 +602,19 @@ impl BleedMonitoringComputerChannel {
         self.transfer_pressure = sensors.transfer_pressure();
         self.precooler_inlet_pressure = sensors.precooler_inlet_pressure();
 
+        // TODO: Note that the real aircraft regulates the precooler outlet temperature rather than inlet temperature.
+        // However, due to the way the precooler currently works, regulating inlet works much better for now.
+        // YES, I AM AWARE THAT I HAVE INLET AND THEN OUTLET
+        self.precooler_inlet_temperature = sensors.precooler_outlet_temperature();
+
         self.hpv_pid
             .next_control_output(self.transfer_pressure.get::<psi>(), Some(context.delta()));
         self.prv_pid.next_control_output(
             self.precooler_inlet_pressure.get::<psi>(),
+            Some(context.delta()),
+        );
+        self.fav_pid.next_control_output(
+            self.precooler_inlet_temperature.get::<degree_celsius>(),
             Some(context.delta()),
         );
 
@@ -694,9 +707,9 @@ impl ControllerSignal<PressureRegulatingValveSignal> for BleedMonitoringComputer
 }
 impl ControllerSignal<FanAirValveSignal> for BleedMonitoringComputerChannel {
     fn signal(&self) -> Option<FanAirValveSignal> {
-        Some(FanAirValveSignal::new_open())
-        // Some(FanAirValveSignal::new_closed())
-        // None
+        Some(FanAirValveSignal::new(Ratio::new::<ratio>(
+            self.fav_pid.output().max(0.).min(1.),
+        )))
     }
 }
 
@@ -820,7 +833,7 @@ impl EngineBleedAirSystem {
     fn new(number: usize, powered_by: ElectricalBusType) -> Self {
         Self {
             number,
-            fan_compression_chamber_controller: EngineCompressionChamberController::new(1., 0., 2.),
+            fan_compression_chamber_controller: EngineCompressionChamberController::new(1., 0., 1.),
             ip_compression_chamber_controller: EngineCompressionChamberController::new(3., 0., 2.),
             hp_compression_chamber_controller: EngineCompressionChamberController::new(
                 1.5, 2.5, 4.,
@@ -1209,7 +1222,7 @@ struct PackComplex {
 impl PackComplex {
     fn new(engine_number: usize) -> Self {
         Self {
-            consumer: DefaultConsumer::new(Volume::new::<cubic_meter>(5.)),
+            consumer: DefaultConsumer::new(Volume::new::<cubic_meter>(1.)),
             // TODO: This should be like 0.75 m^3/s which is a consumption rate of about 0.4 kg/s.
             // Due to the way consumers work right now, this has been set to 0.
             consumer_controller: ConstantConsumerController::new(VolumeRate::new::<
@@ -1833,11 +1846,11 @@ mod tests {
 
         let mut test_bed = test_bed_with()
             .in_isa_atmosphere(alt)
-            .toga_eng1()
+            .idle_eng1()
             .idle_eng2()
             .both_packs_auto()
+            // .set_bleed_air_running()
             .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Auto);
-        // .set_bleed_air_running()
 
         let mut ts = Vec::new();
         let mut hps = Vec::new();
@@ -1859,8 +1872,8 @@ mod tests {
         let mut abv_open = Vec::new();
         let mut fav_open = Vec::new();
 
-        for i in 1..1000 {
-            ts.push(i as f64 * 30.);
+        for i in 1..5000 {
+            ts.push(i as f64 * 16.);
 
             hps.push(test_bed.hp_pressure(1).get::<psi>());
             ips.push(test_bed.ip_pressure(1).get::<psi>());
@@ -1934,17 +1947,7 @@ mod tests {
                     * 10.
             }));
 
-            // println!(
-            //     "flow {} m^3/s",
-            //     test_bed.query(|aircraft| {
-            //         aircraft.pneumatic.engine_systems[0]
-            //             .fan_air_valve
-            //             .fluid_flow()
-            //             .get::<cubic_meter_per_second>()
-            //     })
-            // );
-
-            test_bed.run_with_delta(Duration::from_millis(32));
+            test_bed.run_with_delta(Duration::from_millis(16));
         }
 
         // If anyone is wondering, I am using python to plot pressure curves. This will be removed once the model is complete.
