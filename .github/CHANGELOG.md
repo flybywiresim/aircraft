@@ -32,6 +32,7 @@
 1. [LIGHTS] Sync Strobe/Beacon, EXT LT refactor + LDG LT behavior - @bouveng (Johan Bouveng)
 1. [AP] Improved SPD/MACH law model - @IbrahimK42 (IbrahimK42)
 1. [AP/FBW] Improved behavior in cruise when using high sim rate with roll performance - @aguther (Andreas Guther) and @IbrahimK42 (IbrahimK42)
+1. [LIGHTS] Add TO/TAXI LT logic, ambience to TAXI/TO/LDG LT + min. changes to strobe/beacon/nav - @bouveng (Johan Bouveng)
 1. [GENERAL] Workaround for lack of tiller input for nose wheel steering (NWS) - @Villason (Villason)
 
 ## 0.7.0
