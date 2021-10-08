@@ -169,6 +169,7 @@ const ApuBleed = ({ x, y } : ComponentPositionProps) => {
 
                 <text x={50} y={22} className="Center FontNormal">BLEED</text>
 
+                {/* FIXME: replaced by amber crosses in case of data unavailability. */}
                 <text x={44} y={48} className="Green FontLarger Right">{displayedBleedPressure}</text>
                 <text x={90} y={48} className="Cyan FontNormal Right">PSI</text>
 
