@@ -952,7 +952,7 @@ export class TcasComputer implements TcasComponent {
         this.sendAirTraffic.length = 0;
         this.airTraffic
             .filter((traffic) => traffic.alive === true && traffic.isDisplayed === true)
-            .sort((a, b) => a.intrusionLevel - b.intrusionLevel || a.raTau - b.raTau || a.taTau - b.taTau || a.slantDistance - b.slantDistance)
+            .sort((a, b) => b.intrusionLevel - a.intrusionLevel || a.raTau - b.raTau || a.taTau - b.taTau || a.slantDistance - b.slantDistance)
             // Limit number of contacts displayed to 8
             .forEach((traffic: TcasTraffic, index) => {
                 if (index >= 8) return;
