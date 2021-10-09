@@ -72,9 +72,9 @@ export const PlanMode: FC<PlanModeProps> = ({ symbols, adirsAlign, rangeSetting,
                     debug={false}
                     type={
                         /* TODO FIXME: Check if intercepts active leg */
-                        (fmaLatMode === 0
-                            || fmaLatMode === 10
-                            || fmaLatMode === 11)
+                        (fmaLatMode === LateralMode.NONE
+                            || fmaLatMode === LateralMode.HDG
+                            || fmaLatMode === LateralMode.TRACK)
                             && !fmaLatArmed
                             ? FlightPlanType.Dashed
                             : FlightPlanType.Nav
