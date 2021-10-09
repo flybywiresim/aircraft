@@ -29,6 +29,11 @@
 1. [ARCH] Support ARINC 429 communication between aircraft components - @davidwalschots (David Walschots)
 1. [UTILS] Fix lbs to kgs units conversion to match MSFS - @donstim (donbikes#4084)
 1. [MODEL] Landing lights retract fully and independently - @tracernz (Mike)
+1. [LIGHTS] Sync Strobe/Beacon, EXT LT refactor + LDG LT behavior - @bouveng (Johan Bouveng)
+1. [AP] Improved SPD/MACH law model - @IbrahimK42 (IbrahimK42)
+1. [AP/FBW] Improved behavior in cruise when using high sim rate with roll performance - @aguther (Andreas Guther) and @IbrahimK42 (IbrahimK42)
+1. [LIGHTS] Add TO/TAXI LT logic, ambience to TAXI/TO/LDG LT + min. changes to strobe/beacon/nav - @bouveng (Johan Bouveng)
+1. [FMGC] Fixed issue with TO flight phase transition when no V2 is entered and airport is near sea level - @aguther (Andreas Guther)
 
 ## 0.7.0
 1. [HYD] First building block, more to come. Hydraulics do not impact the sim YET. - @crocket6 (crocket)
