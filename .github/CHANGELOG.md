@@ -35,7 +35,6 @@
 1. [PRESS] Introduce manual functionality of cabin pressurization system - @MJuhe (Miquel)
 1. [LIGHTS] Add TO/TAXI LT logic, ambience to TAXI/TO/LDG LT + min. changes to strobe/beacon/nav - @bouveng (Johan Bouveng)
 1. [FMGC] Fixed issue with TO flight phase transition when no V2 is entered and airport is near sea level - @aguther (Andreas Guther)
-1. [MISC] Fix ISIS pressure incrementing issue
 
 ## 0.7.0
 1. [HYD] First building block, more to come. Hydraulics do not impact the sim YET. - @crocket6 (crocket)
