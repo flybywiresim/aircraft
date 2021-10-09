@@ -5,6 +5,7 @@ import { MathUtils } from '@shared/MathUtils';
 import { useFlightPlanManager } from '@instruments/common/flightplan';
 import { LatLongData } from '@typings/fs-base-ui/html_ui/JS/Types';
 import { RangeSetting, Mode, EfisSide, NdSymbol } from '@shared/NavigationDisplay';
+import { LateralMode } from '@shared/autopilot';
 import { FlightPlan, FlightPlanType } from '../elements/FlightPlan';
 import { MapParameters } from '../utils/MapParameters';
 import { RadioNeedle } from '../elements/RadioNeedles';
@@ -37,8 +38,8 @@ export const ArcMode: React.FC<ArcModeProps> = ({ symbols, adirsAlign, rangeSett
     const [fmaLatMode] = useSimVar('L:A32NX_FMA_LATERAL_MODE', 'enum');
     const [fmaLatArmed] = useSimVar('L:A32NX_FMA_LATERAL_ARMED', 'enum');
 
-    const heading = Number(MathUtils.fastToFixed(magHeading, 1));
-    const track = Number(MathUtils.fastToFixed(magTrack, 1));
+    const heading = Math.round(Number(MathUtils.fastToFixed(magHeading, 1)) * 1000) / 1000;
+    const track = Math.round(Number(MathUtils.fastToFixed(magTrack, 1)) * 1000) / 1000;
 
     const [mapParams] = useState(() => {
         const params = new MapParameters();
@@ -79,16 +80,18 @@ export const ArcMode: React.FC<ArcModeProps> = ({ symbols, adirsAlign, rangeSett
                             debug={false}
                             type={
                                 /* TODO FIXME: Check if intercepts active leg */
-                                (fmaLatMode === 0
-                                    || fmaLatMode === 10
-                                    || fmaLatMode === 11)
+                                (fmaLatMode === LateralMode.NONE
+                                    || fmaLatMode === LateralMode.HDG
+                                    || fmaLatMode === LateralMode.TRACK)
                                     && !fmaLatArmed
                                     ? FlightPlanType.Dashed
                                     : FlightPlanType.Nav
                             }
                         />
                         {tmpFplan}
-                        { (((fmaLatMode === 0 || fmaLatMode === 10 || fmaLatMode === 11) && fmaLatArmed === 0) || !flightPlanManager.getCurrentFlightPlan().length) && (
+                        { (((fmaLatMode === LateralMode.NONE
+                        || fmaLatMode === LateralMode.HDG
+                        || fmaLatMode === LateralMode.TRACK) && !fmaLatArmed) || !flightPlanManager.getCurrentFlightPlan().length) && (
                             <TrackLine x={384} y={620} heading={heading} track={track} />
                         )}
                     </g>
@@ -605,7 +608,7 @@ const Plane: React.FC = () => (
     </g>
 );
 
-const TrackBug: React.FC<{heading: number, track: number}> = ({ heading, track }) => {
+const TrackBug: React.FC<{heading: number, track: number}> = memo(({ heading, track }) => {
     const diff = getSmallestAngle(track, heading);
     if (diff > 48) {
         return null;
@@ -617,7 +620,7 @@ const TrackBug: React.FC<{heading: number, track: number}> = ({ heading, track }
             className="Green rounded"
         />
     );
-};
+});
 
 const IlsCourseBug: React.FC<{heading: number, ilsCourse: number}> = ({ heading, ilsCourse }) => {
     const diff = getSmallestAngle(ilsCourse, heading);

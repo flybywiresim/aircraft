@@ -1,8 +1,8 @@
 import { useSimVar } from '@instruments/common/simVars';
-import React from 'react';
+import React, { memo } from 'react';
 
-export const CrossTrack: React.FC<{ x: number, y: number}> = ({ x, y }) => {
-    const [crossTrackError] = useSimVar('L:A32NX_FG_CROSS_TRACK_ERROR', 'nautical miles');
+export const CrossTrack: React.FC<{ x: number, y: number}> = memo(({ x, y }) => {
+    const [crossTrackError] = useSimVar('L:A32NX_FG_CROSS_TRACK_ERROR', 'nautical miles', 250);
 
     let crossTrackText = '';
     let crossTrackAnchor = 'start';
@@ -22,5 +22,9 @@ export const CrossTrack: React.FC<{ x: number, y: number}> = ({ x, y }) => {
         }
     }
 
-    return <text x={crossTrackX} y={y} textAnchor={crossTrackAnchor} fontSize={24} className="Green">{crossTrackText}</text>;
-};
+    return (
+        <text x={crossTrackX} y={y} textAnchor={crossTrackAnchor} fontSize={24} className="Green">
+            {crossTrackText}
+        </text>
+    );
+});
