@@ -103,7 +103,6 @@ impl UpdateContext {
     pub(crate) const PLANE_PITCH_KEY: &'static str = "PLANE PITCH DEGREES";
     pub(crate) const PLANE_BANK_KEY: &'static str = "PLANE BANK DEGREES";
 
-    #[allow(clippy::too_many_arguments)]
     pub fn new(
         delta: Duration,
         indicated_airspeed: Velocity,
