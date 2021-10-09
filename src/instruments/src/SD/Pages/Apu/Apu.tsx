@@ -67,7 +67,7 @@ const ApuGen = ({ x, y } : ComponentPositionProps) => {
     const [apuGenFreqNormalRange] = useSimVar('L:A32NX_ELEC_APU_GEN_1_FREQUENCY_NORMAL', 'Bool', 1000);
 
     enum apuGenState {STANDBY, OFF, ON}
-    const [currentApuGenState, setCurrentApuGenState] = useState(apuGenState.OFF);
+    const [currentApuGenState, setCurrentApuGenState] = useState(apuGenState.STANDBY);
 
     const [apuMasterPbOn] = useSimVar('L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON', 'Bool', 1000);
     const [apuGenPbOn] = useSimVar('A:APU GENERATOR SWITCH', 'Boolean', 1000);
@@ -92,7 +92,8 @@ const ApuGen = ({ x, y } : ComponentPositionProps) => {
                             <polygon points="0,20 8,5 16,20" className="Circle" />
                         </SvgGroup>
                     )}
-                <rect className="Box" width={100} height={111} />
+                {currentApuGenState !== apuGenState.STANDBY
+                && <rect className="Box" width={100} height={111} />}
 
                 <text
                     x={50}
