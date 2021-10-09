@@ -1060,7 +1060,7 @@ impl RamAirTurbine {
     pub fn update_physics(
         &mut self,
         delta_time: &Duration,
-        indicated_airspeed: &Velocity,
+        indicated_airspeed: Velocity,
         pressure: Pressure,
     ) {
         self.wind_turbine.update(
@@ -1232,7 +1232,7 @@ mod tests {
                 assert!(rat.wind_turbine.rpm <= 2500.);
             }
 
-            rat.update_physics(&context.delta(), &indicated_airspeed, blue_loop.pressure());
+            rat.update_physics(&context.delta(), indicated_airspeed, blue_loop.pressure());
             rat.update(&context, &blue_loop, &rat_controller);
             blue_loop.update(
                 &context,

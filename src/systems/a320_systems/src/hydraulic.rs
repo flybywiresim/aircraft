@@ -6,9 +6,9 @@ use uom::si::{
     angle::degree,
     angular_velocity::revolution_per_minute,
     f64::*,
-    power::watt,
     length::meter,
     mass::kilogram,
+    power::watt,
     pressure::pascal,
     pressure::psi,
     ratio::{percent, ratio},
@@ -339,7 +339,7 @@ impl A320Hydraulic {
         self.physics_updater.update(context);
 
         for cur_time_step in &mut self.physics_updater {
-            self.update_fast_physics(&context.with_delta(cur_time_step));
+            self.update_fast_physics(&context.with_delta(cur_time_step), emergency_generator);
         }
 
         self.update_with_sim_rate(
@@ -477,7 +477,11 @@ impl A320Hydraulic {
     }
 
     // Updates at the same rate as the sim or at a fixed maximum time step if sim rate is too slow
-    fn update_fast_physics(&mut self, context: &UpdateContext) {
+    fn update_fast_physics(
+        &mut self,
+        context: &UpdateContext,
+        emergency_generator: &impl EmergencyGeneratorInterface,
+    ) {
         self.forward_cargo_door.update(
             &self.forward_cargo_door_controller,
             &context,
@@ -492,7 +496,7 @@ impl A320Hydraulic {
 
         self.ram_air_turbine.update_physics(
             &context.delta(),
-            &context.indicated_airspeed(),
+            context.indicated_airspeed(),
             self.blue_loop.pressure(),
         );
 
@@ -501,6 +505,7 @@ impl A320Hydraulic {
             &self.gcu,
             emergency_generator,
             context,
+        );
     }
 
     fn update_with_sim_rate(
@@ -561,6 +566,7 @@ impl A320Hydraulic {
             &self.braking_circuit_norm,
             &self.braking_circuit_altn,
         );
+    }
 
     // For each hydraulic loop retrieves volumes from and to each actuator and pass it to the loops
     fn update_actuators_volume(&mut self) {
@@ -586,8 +592,8 @@ impl A320Hydraulic {
     }
 
     fn update_blue_actuators_volume(&mut self) {
-        self.blue_loop.update_actuator_volumes(&self.emergency_gen);
-        self.emergency_gen.reset_accumulators();
+        self.blue_loop
+            .update_actuator_volumes(&mut self.emergency_gen);
     }
 
     // All the core hydraulics updates that needs to be done at the slowest fixed step rate
@@ -5590,6 +5596,9 @@ mod tests {
                 .run_waiting_for(Duration::from_secs(15));
 
             assert!(test_bed.is_emergency_gen_active());
+        }
+
+        #[test]
         fn cargo_door_stays_closed_at_init() {
             let mut test_bed = test_bed_with()
                 .engines_off()

@@ -17,7 +17,7 @@ use crate::shared::{
 
 use crate::simulation::{SimulationElement, SimulatorWriter, UpdateContext, Write};
 
-use super::brake_circuit::Actuator;
+use super::linear_actuator::Actuator;
 
 pub struct GeneratorControlUnit {
     is_active: bool,
@@ -326,11 +326,6 @@ impl ElectricalEmergencyGenerator {
         //     self.hyd_motor.current_flow.get::<gallon_per_second>() * 60.
         // );
     }
-
-    pub fn reset_accumulators(&mut self) {
-        self.hyd_motor.volume_to_res_accumulator = Volume::new::<gallon>(0.);
-        self.hyd_motor.volume_to_actuator_accumulator = Volume::new::<gallon>(0.);
-    }
 }
 impl Actuator for ElectricalEmergencyGenerator {
     fn used_volume(&self) -> Volume {
@@ -338,6 +333,11 @@ impl Actuator for ElectricalEmergencyGenerator {
     }
     fn reservoir_return(&self) -> Volume {
         self.hyd_motor.volume_to_res_accumulator
+    }
+
+    fn reset_accumulators(&mut self) {
+        self.hyd_motor.volume_to_res_accumulator = Volume::new::<gallon>(0.);
+        self.hyd_motor.volume_to_actuator_accumulator = Volume::new::<gallon>(0.);
     }
 }
 impl SimulationElement for ElectricalEmergencyGenerator {
@@ -462,7 +462,7 @@ mod tests {
 
     use uom::si::{
         acceleration::foot_per_second_squared, f64::*, length::foot,
-        thermodynamic_temperature::degree_celsius, velocity::knot,
+        thermodynamic_temperature::degree_celsius, velocity::knot,angle::radian
     };
 
     struct TestEmergencyState {
@@ -818,6 +818,10 @@ mod tests {
             ThermodynamicTemperature::new::<degree_celsius>(25.0),
             true,
             Acceleration::new::<foot_per_second_squared>(0.),
+            Acceleration::new::<foot_per_second_squared>(0.),
+            Acceleration::new::<foot_per_second_squared>(0.),
+            Angle::new::<radian>(0.),
+            Angle::new::<radian>(0.),
         )
     }
 
