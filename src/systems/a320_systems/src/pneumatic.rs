@@ -670,7 +670,7 @@ impl BleedMonitoringComputerChannel {
 }
 impl ControllerSignal<HighPressureValveSignal> for BleedMonitoringComputerChannel {
     fn signal(&self) -> Option<HighPressureValveSignal> {
-        if self.transfer_pressure < Pressure::new::<psi>(18.) {
+        if self.hp_compressor_pressure < Pressure::new::<psi>(18.) {
             return Some(HighPressureValveSignal::new_closed());
         }
 
@@ -1301,8 +1301,7 @@ impl ControllerSignal<PackFlowValveSignal> for PackFlowValveController {
 }
 impl SimulationElement for PackFlowValveController {
     fn read(&mut self, reader: &mut SimulatorReader) {
-        self.pack_pb_is_auto =
-            reader.read(&format!("A32NX_AIRCOND_PACK{}_TOGGLE", self.engine_number));
+        self.pack_pb_is_auto = reader.read(&format!("AIRCOND_PACK{}_TOGGLE", self.engine_number));
     }
 }
 
@@ -1711,6 +1710,14 @@ mod tests {
             self.query(|a| a.pneumatic.engine_systems[number - 1].pr_valve.is_powered())
         }
 
+        fn fan_air_valve_is_powered(&self, number: usize) -> bool {
+            self.query(|a| {
+                a.pneumatic.engine_systems[number - 1]
+                    .fan_air_valve
+                    .is_powered()
+            })
+        }
+
         fn set_engine_bleed_push_button_off(mut self, number: usize) -> Self {
             self.write(&format!("OVHD_PNEU_ENG_{}_BLEED_PB_IS_AUTO", number), false);
 
@@ -1784,7 +1791,7 @@ mod tests {
         }
 
         fn set_pack_flow_pb_is_auto(mut self, number: usize, is_auto: bool) -> Self {
-            self.write(&format!("A32NX_AIRCOND_PACK{}_TOGGLE", number), is_auto);
+            self.write(&format!("AIRCOND_PACK{}_TOGGLE", number), is_auto);
 
             self
         }
@@ -1846,7 +1853,7 @@ mod tests {
 
         let mut test_bed = test_bed_with()
             .in_isa_atmosphere(alt)
-            .idle_eng1()
+            .toga_eng1()
             .idle_eng2()
             .both_packs_auto()
             // .set_bleed_air_running()
@@ -1874,6 +1881,10 @@ mod tests {
 
         for i in 1..5000 {
             ts.push(i as f64 * 16.);
+
+            if i == 2500 {
+                test_bed = test_bed.idle_eng1();
+            }
 
             hps.push(test_bed.hp_pressure(1).get::<psi>());
             ips.push(test_bed.ip_pressure(1).get::<psi>());
@@ -1949,6 +1960,10 @@ mod tests {
 
             test_bed.run_with_delta(Duration::from_millis(16));
         }
+
+        assert!(test_bed.hp_valve_is_powered(1));
+        assert!(test_bed.pr_valve_is_powered(1));
+        assert!(test_bed.fan_air_valve_is_powered(1));
 
         // If anyone is wondering, I am using python to plot pressure curves. This will be removed once the model is complete.
         let data = vec![
