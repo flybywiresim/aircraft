@@ -579,7 +579,7 @@ impl BleedMonitoringComputerChannel {
             is_engine_fire_pushbutton_released: false,
             is_apu_bleed_valve_open: false,
             is_apu_bleed_on: false,
-            hpv_pid: PidController::new(0.05, 0., 0., 0., 1., 65.),
+            hpv_pid: PidController::new(0.05, 0.003, 0.001, 0., 1., 65.),
             prv_pid: PidController::new(0., 0.01, 0., 0., 1., 46.),
             fav_pid: PidController::new(0.1, 0., 0.1, 0., 1., 160.),
             cross_bleed_valve_selector: CrossBleedValveSelectorMode::Auto,
@@ -1227,7 +1227,7 @@ impl PackComplex {
             // Due to the way consumers work right now, this has been set to 0.
             consumer_controller: ConstantConsumerController::new(VolumeRate::new::<
                 cubic_meter_per_second,
-            >(0.)),
+            >(0.1)),
             pack_flow_valve: DefaultValve::new_closed(),
             pack_flow_valve_controller: PackFlowValveController::new(engine_number),
         }
@@ -1853,7 +1853,7 @@ mod tests {
 
         let mut test_bed = test_bed_with()
             .in_isa_atmosphere(alt)
-            .toga_eng1()
+            .idle_eng1()
             .idle_eng2()
             .both_packs_auto()
             // .set_bleed_air_running()
@@ -1882,8 +1882,8 @@ mod tests {
         for i in 1..5000 {
             ts.push(i as f64 * 16.);
 
-            if i == 2500 {
-                test_bed = test_bed.idle_eng1();
+            if i == 5000 {
+                // test_bed = test_bed.toga_eng1();
             }
 
             hps.push(test_bed.hp_pressure(1).get::<psi>());
