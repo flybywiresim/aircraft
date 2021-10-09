@@ -103,7 +103,6 @@ impl A320DirectCurrentElectrical {
         }
     }
 
-    #[allow(clippy::too_many_arguments)]
     pub fn update(
         &mut self,
         context: &UpdateContext,

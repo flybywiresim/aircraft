@@ -53,13 +53,15 @@
         <Component ID="LIGHTING">
             <UseTemplate Name="ASOBO_LIGHTING_Exterior_Retractable_Light_Template">
                 <LIGHT_TYPE>LANDING</LIGHT_TYPE>
-                <ID>1</ID>
-                <ANIM_NAME>opening_landing_light</ANIM_NAME>
+                <ID>2</ID>
+                <ANIM_NAME>l_opening_landing_light</ANIM_NAME>
+                <ANIM_LAG>12</ANIM_LAG>
             </UseTemplate>
             <UseTemplate Name="ASOBO_LIGHTING_Exterior_Retractable_Light_Template">
                 <LIGHT_TYPE>LANDING</LIGHT_TYPE>
-                <ID>2</ID>
-                <ANIM_NAME>opening_landing_light</ANIM_NAME>
+                <ID>3</ID>
+                <ANIM_NAME>r_opening_landing_light</ANIM_NAME>
+                <ANIM_LAG>12</ANIM_LAG>
             </UseTemplate>
         </Component>
         <Component ID="HANDLING">
@@ -185,9 +187,10 @@
             </UseTemplate>
         </Component>
         <Component ID="INTERACTIVE_POINTS">
-            <UseTemplate Name="ASOBO_DOOR_InteractivePoint_Template">
-                <ID>5</ID>
+            <UseTemplate Name="ASOBO_GT_Anim">
                 <ANIM_NAME>door_cargo</ANIM_NAME>
+                <ANIM_CODE>(L:A32NX_FWD_DOOR_CARGO_POSITION)</ANIM_CODE>
+                <ANIM_LENGTH>100</ANIM_LENGTH>
             </UseTemplate>
             <UseTemplate Name="ASOBO_DOOR_InteractivePoint_Template">
                 <ID>0</ID>

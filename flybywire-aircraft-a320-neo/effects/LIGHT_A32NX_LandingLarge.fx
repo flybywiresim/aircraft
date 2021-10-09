@@ -49,7 +49,6 @@ Face=1, 1, 1
 
 [ParticleAttributes.0]
 Blend Mode=2
-Texture=fx_0.png
 Bounce=0.0
 Color Start=179, 183, 255, 1
 Color End=179, 183, 255, 1
@@ -60,17 +59,17 @@ uv2=1.0, 1.0
 X Scale Goal=0.0
 Y Scale Goal=0.0
 Z Scale Goal=0.0
-NearEndFade= 5.0
-NearFade= 10.0
-MinProjSize= 0.4				
+NearEndFade=5.0
+NearFade=10.0
+MinProjSize=0
 
 [LightAttributes.0]
 Type=spot
 Size=0.1
-Range=100
-Intensity=1000
-Softness=0.0
-SpotInner=0
-SpotOuter=14
+Range=400
+Intensity=4000
+Softness=0
+SpotInner=2
+SpotOuter=9
 Volumetric=0
-ScatDir=0.0
+ScatDir=0

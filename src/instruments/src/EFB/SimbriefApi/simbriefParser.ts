@@ -3,14 +3,13 @@ import { ISimbriefData, EmptyISimbriefData } from './simbriefInterface';
 const simbriefApiUrl: URL = new URL('https://www.simbrief.com/api/xml.fetcher.php');
 const simbriefApiParams = simbriefApiUrl.searchParams;
 
-// eslint-disable-next-line no-undef
 const getRequestData: RequestInit = {
     headers: { Accept: 'application/json' },
     method: 'GET',
 };
 
-export function getSimbriefData(simbriefUsername: string): Promise<ISimbriefData> {
-    simbriefApiParams.append('username', simbriefUsername);
+export function getSimbriefData(simbriefUserId: string): Promise<ISimbriefData> {
+    simbriefApiParams.append('userid', simbriefUserId);
     simbriefApiParams.append('json', '1');
     simbriefApiUrl.search = simbriefApiParams.toString();
 

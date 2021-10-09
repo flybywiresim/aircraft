@@ -2,8 +2,7 @@
  * The following functions are used to determine whether a flight phase can be changed or not
  */
 function canInitiateTO(_fmc) {
-    const ra = Simplane.getAltitudeAboveGround();
-    return Math.round(ra / 100) !== Math.round(Simplane.getAltitude() / 100) && ra > 1.5 ||
+    return SimVar.GetSimVarValue("CAMERA STATE", "number") < 10 && Simplane.getAltitudeAboveGround() > 1.5 ||
     (
         Math.max(SimVar.GetSimVarValue("L:A32NX_AUTOTHRUST_TLA:1", "number"), SimVar.GetSimVarValue("L:A32NX_AUTOTHRUST_TLA:2", "number")) >= 35 &&
         !isNaN(_fmc.v2Speed) &&
@@ -334,7 +333,7 @@ class A32NX_FlightPhase_Approach {
     }
 
     check(_deltaTime, _fmc) {
-        if (Math.max(SimVar.GetSimVarValue("L:A32NX_AUTOTHRUST_TLA:1", "number"), SimVar.GetSimVarValue("L:A32NX_AUTOTHRUST_TLA:2", "number")) === 45) {
+        if (SimVar.GetSimVarValue("L:A32NX_FMA_VERTICAL_MODE", "number") === 41) {
             this.nextFmgcFlightPhase = FmgcFlightPhases.GOAROUND;
             return true;
         }

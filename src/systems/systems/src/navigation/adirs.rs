@@ -1,6 +1,9 @@
 use crate::{
     overhead::{IndicationLight, OnOffFaultPushButton},
-    shared::MachNumber,
+    shared::{
+        arinc429::{Arinc429Word, SignStatus},
+        MachNumber,
+    },
     simulation::{
         Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
         SimulatorWriter, UpdateContext, Write, Writer,
@@ -160,7 +163,7 @@ impl SimulationElement for InertialReferenceModeSelector {
     }
 }
 
-#[derive(PartialEq)]
+#[derive(Clone, Copy, PartialEq)]
 enum AlignState {
     Off = 0,
     Aligning = 1,
@@ -330,7 +333,6 @@ impl AirDataInertialReferenceUnit {
         }
     }
 
-    #[allow(clippy::too_many_arguments)]
     fn update(
         &mut self,
         context: &UpdateContext,
@@ -389,22 +391,22 @@ impl SimulationElement for AirDataInertialReferenceUnit {
 struct AdirsData<T> {
     id: String,
     value: T,
-    no_value: T,
+    ssm: SignStatus,
 }
 impl<T: Copy + Default> AdirsData<T> {
-    fn new_adr(number: usize, name: &str, uninitialised_value: T) -> Self {
-        Self::new(OutputDataType::ADR, number, name, uninitialised_value)
+    fn new_adr(number: usize, name: &str) -> Self {
+        Self::new(OutputDataType::ADR, number, name)
     }
 
-    fn new_ir(number: usize, name: &str, uninitialised_value: T) -> Self {
-        Self::new(OutputDataType::IR, number, name, uninitialised_value)
+    fn new_ir(number: usize, name: &str) -> Self {
+        Self::new(OutputDataType::IR, number, name)
     }
 
-    fn new(data_type: OutputDataType, number: usize, name: &str, no_value: T) -> Self {
+    fn new(data_type: OutputDataType, number: usize, name: &str) -> Self {
         Self {
             id: output_data_id(data_type, number, name),
-            value: no_value,
-            no_value,
+            value: Default::default(),
+            ssm: SignStatus::NoComputedData,
         }
     }
 
@@ -412,12 +414,17 @@ impl<T: Copy + Default> AdirsData<T> {
         self.value
     }
 
-    fn set_value(&mut self, value: T, should_set: bool) {
-        self.value = if should_set { value } else { self.no_value };
+    fn ssm(&self) -> SignStatus {
+        self.ssm
     }
 
-    fn write_to<U: Write<T>>(&self, writer: &mut U) {
-        writer.write(&self.id, self.value);
+    fn set_value(&mut self, value: T, ssm: SignStatus) {
+        self.value = value;
+        self.ssm = ssm;
+    }
+
+    fn write_to<U: Write<T> + Writer>(&self, writer: &mut U) {
+        writer.write_arinc429(&self.id, self.value, self.ssm);
     }
 }
 
@@ -440,7 +447,7 @@ fn output_data_id(data_type: OutputDataType, number: usize, name: &str) -> Strin
 }
 
 trait TrueAirspeedSource {
-    fn true_airspeed(&self) -> Velocity;
+    fn true_airspeed(&self) -> Arinc429Word<Velocity>;
 }
 
 struct AirDataReference {
@@ -461,8 +468,6 @@ struct AirDataReference {
 }
 impl AirDataReference {
     const INITIALISATION_DURATION: Duration = Duration::from_secs(18);
-    const UNINITIALISED_MACH: MachNumber = MachNumber(-1_000_000.);
-    const UNINITIALISED_VALUE: f64 = -1_000_000.;
     const ALTITUDE: &'static str = "ALTITUDE";
     const COMPUTED_AIRSPEED: &'static str = "COMPUTED_AIRSPEED";
     const MACH: &'static str = "MACH";
@@ -480,41 +485,16 @@ impl AirDataReference {
             is_on: true,
             outputs_temperatures,
 
-            altitude: AdirsData::new_adr(
-                number,
-                Self::ALTITUDE,
-                Length::new::<foot>(Self::UNINITIALISED_VALUE),
-            ),
-            computed_airspeed: AdirsData::new_adr(
-                number,
-                Self::COMPUTED_AIRSPEED,
-                Velocity::new::<knot>(Self::UNINITIALISED_VALUE),
-            ),
-            mach: AdirsData::new_adr(number, Self::MACH, Self::UNINITIALISED_MACH),
-            barometric_vertical_speed: AdirsData::new_adr(
-                number,
-                Self::BAROMETRIC_VERTICAL_SPEED,
-                Self::UNINITIALISED_VALUE,
-            ),
-            true_airspeed: AdirsData::new_adr(
-                number,
-                Self::TRUE_AIRSPEED,
-                Velocity::new::<knot>(Self::UNINITIALISED_VALUE),
-            ),
-            static_air_temperature: AdirsData::new_adr(
-                number,
-                Self::STATIC_AIR_TEMPERATURE,
-                ThermodynamicTemperature::new::<degree_celsius>(Self::UNINITIALISED_VALUE),
-            ),
-            total_air_temperature: AdirsData::new_adr(
-                number,
-                Self::TOTAL_AIR_TEMPERATURE,
-                ThermodynamicTemperature::new::<degree_celsius>(Self::UNINITIALISED_VALUE),
-            ),
+            altitude: AdirsData::new_adr(number, Self::ALTITUDE),
+            computed_airspeed: AdirsData::new_adr(number, Self::COMPUTED_AIRSPEED),
+            mach: AdirsData::new_adr(number, Self::MACH),
+            barometric_vertical_speed: AdirsData::new_adr(number, Self::BAROMETRIC_VERTICAL_SPEED),
+            true_airspeed: AdirsData::new_adr(number, Self::TRUE_AIRSPEED),
+            static_air_temperature: AdirsData::new_adr(number, Self::STATIC_AIR_TEMPERATURE),
+            total_air_temperature: AdirsData::new_adr(number, Self::TOTAL_AIR_TEMPERATURE),
             international_standard_atmosphere_delta: AdirsData::new_adr(
                 number,
                 Self::INTERNATIONAL_STANDARD_ATMOSPHERE_DELTA,
-                ThermodynamicTemperature::new::<degree_celsius>(Self::UNINITIALISED_VALUE),
             ),
 
             // Start fully initialised.
@@ -548,49 +528,55 @@ impl AirDataReference {
 
     fn update_values(&mut self, context: &UpdateContext, simulator_data: AdirsSimulatorData) {
         let should_set_values = self.is_on && self.is_initialised();
+        let ssm = if should_set_values {
+            SignStatus::NormalOperation
+        } else {
+            SignStatus::NoComputedData
+        };
 
         // For now some of the data will be read from the context. Later the context will no longer
         // contain this information (and instead all usages will be replaced by requests to the ADIRUs).
-        self.altitude
-            .set_value(context.indicated_altitude(), should_set_values);
-        self.barometric_vertical_speed.set_value(
-            simulator_data.vertical_speed.get::<foot_per_minute>(),
-            should_set_values,
-        );
+        self.altitude.set_value(context.indicated_altitude(), ssm);
+        self.barometric_vertical_speed
+            .set_value(simulator_data.vertical_speed.get::<foot_per_minute>(), ssm);
 
         let computed_airspeed = context.indicated_airspeed();
-        self.computed_airspeed
-            .set_value(computed_airspeed, should_set_values);
+        self.computed_airspeed.set_value(computed_airspeed, ssm);
 
         // If CAS is below 60 kts, label 210 indicates 0 kt with SSM = NCD.
-        self.true_airspeed.set_value(
-            if computed_airspeed
+        let has_true_airspeed = ssm == SignStatus::NormalOperation
+            && computed_airspeed
                 >= Velocity::new::<knot>(
                     Self::MINIMUM_COMPUTED_AIRSPEED_FOR_TRUE_AIRSPEED_DETERMINATION_KNOTS,
-                )
-            {
+                );
+        self.true_airspeed.set_value(
+            if has_true_airspeed {
                 simulator_data.true_airspeed
             } else {
                 Velocity::new::<knot>(0.)
             },
-            should_set_values,
+            if should_set_values && has_true_airspeed {
+                SignStatus::NormalOperation
+            } else {
+                SignStatus::NoComputedData
+            },
         );
 
-        self.mach.set_value(simulator_data.mach, should_set_values);
+        self.mach.set_value(simulator_data.mach, ssm);
 
         if self.outputs_temperatures {
             self.total_air_temperature
-                .set_value(simulator_data.total_air_temperature, should_set_values);
+                .set_value(simulator_data.total_air_temperature, ssm);
 
             self.static_air_temperature
-                .set_value(context.ambient_temperature(), should_set_values);
+                .set_value(context.ambient_temperature(), ssm);
 
             self.international_standard_atmosphere_delta.set_value(
                 self.international_standard_atmosphere_delta(
                     context.indicated_altitude(),
                     context.ambient_temperature(),
                 ),
-                should_set_values,
+                ssm,
             );
         }
     }
@@ -611,8 +597,8 @@ impl AirDataReference {
     }
 }
 impl TrueAirspeedSource for AirDataReference {
-    fn true_airspeed(&self) -> Velocity {
-        self.true_airspeed.value()
+    fn true_airspeed(&self) -> Arinc429Word<Velocity> {
+        Arinc429Word::new(self.true_airspeed.value(), self.true_airspeed.ssm())
     }
 }
 impl SimulationElement for AirDataReference {
@@ -675,7 +661,6 @@ impl InertialReference {
     const FAST_ALIGNMENT_TIME_IN_SECS: f64 = 90.;
     const IR_FAULT_FLASH_DURATION: Duration = Duration::from_millis(50);
     const ATTITUDE_INITIALISATION_DURATION: Duration = Duration::from_secs(28);
-    const UNINITIALISED_VALUE: f64 = -1_000_000.;
     const PITCH: &'static str = "PITCH";
     const ROLL: &'static str = "ROLL";
     const HEADING: &'static str = "HEADING";
@@ -699,60 +684,19 @@ impl InertialReference {
             ir_fault_flash_duration: None,
             // Start fully initialised.
             remaining_attitude_initialisation_duration: Some(Duration::from_secs(0)),
-            pitch: AdirsData::new_ir(
-                number,
-                Self::PITCH,
-                Angle::new::<degree>(Self::UNINITIALISED_VALUE),
-            ),
-            roll: AdirsData::new_ir(
-                number,
-                Self::ROLL,
-                Angle::new::<degree>(Self::UNINITIALISED_VALUE),
-            ),
-            heading: AdirsData::new_ir(
-                number,
-                Self::HEADING,
-                Angle::new::<degree>(Self::UNINITIALISED_VALUE),
-            ),
-            track: AdirsData::new_ir(
-                number,
-                Self::TRACK,
-                Angle::new::<degree>(Self::UNINITIALISED_VALUE),
-            ),
-            vertical_speed: AdirsData::new_ir(
-                number,
-                Self::VERTICAL_SPEED,
-                Self::UNINITIALISED_VALUE,
-            ),
-            ground_speed: AdirsData::new_ir(
-                number,
-                Self::GROUND_SPEED,
-                Velocity::new::<knot>(Self::UNINITIALISED_VALUE),
-            ),
-            wind_direction: AdirsData::new_ir(
-                number,
-                Self::WIND_DIRECTION,
-                Angle::new::<degree>(Self::UNINITIALISED_VALUE),
-            ),
-            wind_velocity: AdirsData::new_ir(
-                number,
-                Self::WIND_VELOCITY,
-                Velocity::new::<knot>(Self::UNINITIALISED_VALUE),
-            ),
-            latitude: AdirsData::new_ir(
-                number,
-                Self::LATITUDE,
-                Angle::new::<degree>(Self::UNINITIALISED_VALUE),
-            ),
-            longitude: AdirsData::new_ir(
-                number,
-                Self::LONGITUDE,
-                Angle::new::<degree>(Self::UNINITIALISED_VALUE),
-            ),
+            pitch: AdirsData::new_ir(number, Self::PITCH),
+            roll: AdirsData::new_ir(number, Self::ROLL),
+            heading: AdirsData::new_ir(number, Self::HEADING),
+            track: AdirsData::new_ir(number, Self::TRACK),
+            vertical_speed: AdirsData::new_ir(number, Self::VERTICAL_SPEED),
+            ground_speed: AdirsData::new_ir(number, Self::GROUND_SPEED),
+            wind_direction: AdirsData::new_ir(number, Self::WIND_DIRECTION),
+            wind_velocity: AdirsData::new_ir(number, Self::WIND_VELOCITY),
+            latitude: AdirsData::new_ir(number, Self::LATITUDE),
+            longitude: AdirsData::new_ir(number, Self::LONGITUDE),
         }
     }
 
-    #[allow(clippy::too_many_arguments)]
     fn update(
         &mut self,
         context: &UpdateContext,
@@ -827,10 +771,13 @@ impl InertialReference {
     }
 
     fn update_attitude_values(&mut self, simulator_data: AdirsSimulatorData) {
-        let should_set_values = self.is_on && self.is_attitude_aligned();
-        self.pitch
-            .set_value(simulator_data.pitch, should_set_values);
-        self.roll.set_value(simulator_data.roll, should_set_values);
+        let ssm = if self.is_on && self.is_attitude_aligned() {
+            SignStatus::NormalOperation
+        } else {
+            SignStatus::NoComputedData
+        };
+        self.pitch.set_value(simulator_data.pitch, ssm);
+        self.roll.set_value(simulator_data.roll, ssm);
     }
 
     fn update_heading_value(
@@ -838,13 +785,17 @@ impl InertialReference {
         overhead: &AirDataInertialReferenceSystemOverheadPanel,
         simulator_data: AdirsSimulatorData,
     ) {
-        let should_set_value = self.is_on
+        let ssm = if self.is_on
             && (self.is_fully_aligned()
                 || (overhead.mode_of(self.number) == InertialReferenceMode::Attitude
-                    && self.is_attitude_aligned()));
+                    && self.is_attitude_aligned()))
+        {
+            SignStatus::NormalOperation
+        } else {
+            SignStatus::NoComputedData
+        };
 
-        self.heading
-            .set_value(simulator_data.heading, should_set_value);
+        self.heading.set_value(simulator_data.heading, ssm);
     }
 
     fn update_non_attitude_values(
@@ -852,7 +803,11 @@ impl InertialReference {
         true_airspeed_source: &impl TrueAirspeedSource,
         simulator_data: AdirsSimulatorData,
     ) {
-        let should_set_values = self.is_on && self.is_fully_aligned();
+        let ssm = if self.is_on && self.is_fully_aligned() {
+            SignStatus::NormalOperation
+        } else {
+            SignStatus::NoComputedData
+        };
 
         let ground_speed_above_minimum_threshold = simulator_data.ground_speed
             >= Velocity::new::<knot>(Self::MINIMUM_GROUND_SPEED_FOR_TRACK_KNOTS);
@@ -863,26 +818,27 @@ impl InertialReference {
             } else {
                 simulator_data.heading
             },
-            should_set_values,
+            ssm,
         );
 
-        self.vertical_speed.set_value(
-            simulator_data.vertical_speed.get::<foot_per_minute>(),
-            should_set_values,
-        );
+        self.vertical_speed
+            .set_value(simulator_data.vertical_speed.get::<foot_per_minute>(), ssm);
         self.ground_speed
-            .set_value(simulator_data.ground_speed, should_set_values);
+            .set_value(simulator_data.ground_speed, ssm);
 
         // The IR does not compute the wind if the TAS is less than 100 knots or unavailable.
-        let true_airspeed_above_minimum_threshold = true_airspeed_source.true_airspeed()
-            >= Velocity::new::<knot>(Self::MINIMUM_TRUE_AIRSPEED_FOR_WIND_DETERMINATION_KNOTS);
+        let true_airspeed_above_minimum_threshold = true_airspeed_source
+            .true_airspeed()
+            .is_normal_operation()
+            && true_airspeed_source.true_airspeed().value()
+                >= Velocity::new::<knot>(Self::MINIMUM_TRUE_AIRSPEED_FOR_WIND_DETERMINATION_KNOTS);
         self.wind_direction.set_value(
             if true_airspeed_above_minimum_threshold {
                 simulator_data.wind_direction
             } else {
                 Angle::new::<degree>(0.)
             },
-            should_set_values,
+            ssm,
         );
         self.wind_velocity.set_value(
             if true_airspeed_above_minimum_threshold {
@@ -890,13 +846,11 @@ impl InertialReference {
             } else {
                 Velocity::new::<knot>(0.)
             },
-            should_set_values,
+            ssm,
         );
 
-        self.latitude
-            .set_value(simulator_data.latitude, should_set_values);
-        self.longitude
-            .set_value(simulator_data.longitude, should_set_values);
+        self.latitude.set_value(simulator_data.latitude, ssm);
+        self.longitude.set_value(simulator_data.longitude, ssm);
     }
 
     fn alignment_starting(&self, selected_mode: InertialReferenceMode) -> bool {
@@ -977,9 +931,12 @@ fn subtract_delta_from_duration(context: &UpdateContext, duration: Duration) -> 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::simulation::{
-        test::{SimulationTestBed, TestBed},
-        Aircraft, SimulationElementVisitor, SimulatorWriter, UpdateContext, Write,
+    use crate::{
+        shared::arinc429::Arinc429Word,
+        simulation::{
+            test::{SimulationTestBed, TestBed},
+            Aircraft, SimulationElementVisitor, SimulatorWriter, UpdateContext, Write,
+        },
     };
     use ntest::{assert_about_eq, timeout};
     use rstest::rstest;
@@ -1192,247 +1149,165 @@ mod tests {
             ))
         }
 
-        fn altitude(&mut self, adiru_number: usize) -> Length {
-            self.read(&output_data_id(
+        fn altitude(&mut self, adiru_number: usize) -> Arinc429Word<Length> {
+            self.read_arinc429(&output_data_id(
                 OutputDataType::ADR,
                 adiru_number,
                 AirDataReference::ALTITUDE,
             ))
         }
 
-        fn altitude_is_available(&mut self, adiru_number: usize) -> bool {
-            self.altitude(adiru_number) > Length::new::<foot>(AirDataReference::UNINITIALISED_VALUE)
-        }
-
-        fn computed_airspeed(&mut self, adiru_number: usize) -> Velocity {
-            self.read(&output_data_id(
+        fn computed_airspeed(&mut self, adiru_number: usize) -> Arinc429Word<Velocity> {
+            self.read_arinc429(&output_data_id(
                 OutputDataType::ADR,
                 adiru_number,
                 AirDataReference::COMPUTED_AIRSPEED,
             ))
         }
 
-        fn computed_airspeed_is_available(&mut self, adiru_number: usize) -> bool {
-            self.computed_airspeed(adiru_number)
-                > Velocity::new::<knot>(AirDataReference::UNINITIALISED_VALUE)
-        }
-
-        fn mach(&mut self, adiru_number: usize) -> MachNumber {
-            self.read(&output_data_id(
+        fn mach(&mut self, adiru_number: usize) -> Arinc429Word<MachNumber> {
+            self.read_arinc429(&output_data_id(
                 OutputDataType::ADR,
                 adiru_number,
                 AirDataReference::MACH,
             ))
         }
 
-        fn mach_is_available(&mut self, adiru_number: usize) -> bool {
-            self.mach(adiru_number) > AirDataReference::UNINITIALISED_MACH
-        }
-
-        fn barometric_vertical_speed(&mut self, adiru_number: usize) -> Velocity {
-            let vertical_speed: f64 = self.read(&output_data_id(
+        fn barometric_vertical_speed(&mut self, adiru_number: usize) -> Arinc429Word<Velocity> {
+            let vertical_speed: Arinc429Word<f64> = self.read_arinc429(&output_data_id(
                 OutputDataType::ADR,
                 adiru_number,
                 AirDataReference::BAROMETRIC_VERTICAL_SPEED,
             ));
-            Velocity::new::<foot_per_minute>(vertical_speed)
+            Arinc429Word::new(
+                Velocity::new::<foot_per_minute>(vertical_speed.value()),
+                vertical_speed.ssm(),
+            )
         }
 
-        fn barometric_vertical_speed_is_available(&mut self, adiru_number: usize) -> bool {
-            self.barometric_vertical_speed(adiru_number)
-                > Velocity::new::<foot_per_minute>(AirDataReference::UNINITIALISED_VALUE)
-        }
-
-        fn true_airspeed(&mut self, adiru_number: usize) -> Velocity {
-            self.read(&output_data_id(
+        fn true_airspeed(&mut self, adiru_number: usize) -> Arinc429Word<Velocity> {
+            self.read_arinc429(&output_data_id(
                 OutputDataType::ADR,
                 adiru_number,
                 AirDataReference::TRUE_AIRSPEED,
             ))
         }
 
-        fn true_airspeed_is_available(&mut self, adiru_number: usize) -> bool {
-            self.true_airspeed(adiru_number)
-                > Velocity::new::<knot>(AirDataReference::UNINITIALISED_VALUE)
-        }
-
-        fn static_air_temperature(&mut self, adiru_number: usize) -> ThermodynamicTemperature {
-            self.read(&output_data_id(
+        fn static_air_temperature(
+            &mut self,
+            adiru_number: usize,
+        ) -> Arinc429Word<ThermodynamicTemperature> {
+            self.read_arinc429(&output_data_id(
                 OutputDataType::ADR,
                 adiru_number,
                 AirDataReference::STATIC_AIR_TEMPERATURE,
             ))
         }
 
-        fn static_air_temperature_is_available(&mut self, adiru_number: usize) -> bool {
-            self.static_air_temperature(adiru_number)
-                > ThermodynamicTemperature::new::<degree_celsius>(
-                    AirDataReference::UNINITIALISED_VALUE,
-                )
-        }
-
-        fn total_air_temperature(&mut self, adiru_number: usize) -> ThermodynamicTemperature {
-            self.read(&output_data_id(
+        fn total_air_temperature(
+            &mut self,
+            adiru_number: usize,
+        ) -> Arinc429Word<ThermodynamicTemperature> {
+            self.read_arinc429(&output_data_id(
                 OutputDataType::ADR,
                 adiru_number,
                 AirDataReference::TOTAL_AIR_TEMPERATURE,
             ))
         }
 
-        fn total_air_temperature_is_available(&mut self, adiru_number: usize) -> bool {
-            self.total_air_temperature(adiru_number)
-                > ThermodynamicTemperature::new::<degree_celsius>(
-                    AirDataReference::UNINITIALISED_VALUE,
-                )
-        }
-
         fn international_standard_atmosphere_delta(
             &mut self,
             adiru_number: usize,
-        ) -> ThermodynamicTemperature {
-            self.read(&output_data_id(
+        ) -> Arinc429Word<ThermodynamicTemperature> {
+            self.read_arinc429(&output_data_id(
                 OutputDataType::ADR,
                 adiru_number,
                 AirDataReference::INTERNATIONAL_STANDARD_ATMOSPHERE_DELTA,
             ))
         }
 
-        fn international_standard_atmosphere_delta_is_available(
-            &mut self,
-            adiru_number: usize,
-        ) -> bool {
-            self.total_air_temperature(adiru_number)
-                > ThermodynamicTemperature::new::<degree_celsius>(
-                    AirDataReference::UNINITIALISED_VALUE,
-                )
-        }
-
-        fn pitch(&mut self, adiru_number: usize) -> Angle {
-            self.read(&output_data_id(
+        fn pitch(&mut self, adiru_number: usize) -> Arinc429Word<Angle> {
+            self.read_arinc429(&output_data_id(
                 OutputDataType::IR,
                 adiru_number,
                 InertialReference::PITCH,
             ))
         }
 
-        fn pitch_is_available(&mut self, adiru_number: usize) -> bool {
-            self.pitch(adiru_number) > Angle::new::<degree>(InertialReference::UNINITIALISED_VALUE)
-        }
-
-        fn roll(&mut self, adiru_number: usize) -> Angle {
-            self.read(&output_data_id(
+        fn roll(&mut self, adiru_number: usize) -> Arinc429Word<Angle> {
+            self.read_arinc429(&output_data_id(
                 OutputDataType::IR,
                 adiru_number,
                 InertialReference::ROLL,
             ))
         }
 
-        fn roll_is_available(&mut self, adiru_number: usize) -> bool {
-            self.roll(adiru_number) > Angle::new::<degree>(InertialReference::UNINITIALISED_VALUE)
-        }
-
-        fn heading(&mut self, adiru_number: usize) -> Angle {
-            self.read(&output_data_id(
+        fn heading(&mut self, adiru_number: usize) -> Arinc429Word<Angle> {
+            self.read_arinc429(&output_data_id(
                 OutputDataType::IR,
                 adiru_number,
                 InertialReference::HEADING,
             ))
         }
 
-        fn heading_is_available(&mut self, adiru_number: usize) -> bool {
-            self.heading(adiru_number)
-                > Angle::new::<degree>(InertialReference::UNINITIALISED_VALUE)
-        }
-
-        fn track(&mut self, adiru_number: usize) -> Angle {
-            self.read(&output_data_id(
+        fn track(&mut self, adiru_number: usize) -> Arinc429Word<Angle> {
+            self.read_arinc429(&output_data_id(
                 OutputDataType::IR,
                 adiru_number,
                 InertialReference::TRACK,
             ))
         }
 
-        fn track_is_available(&mut self, adiru_number: usize) -> bool {
-            self.track(adiru_number) > Angle::new::<degree>(InertialReference::UNINITIALISED_VALUE)
-        }
-
-        fn ground_speed(&mut self, adiru_number: usize) -> Velocity {
-            self.read(&output_data_id(
+        fn ground_speed(&mut self, adiru_number: usize) -> Arinc429Word<Velocity> {
+            self.read_arinc429(&output_data_id(
                 OutputDataType::IR,
                 adiru_number,
                 InertialReference::GROUND_SPEED,
             ))
         }
 
-        fn ground_speed_is_available(&mut self, adiru_number: usize) -> bool {
-            self.ground_speed(adiru_number)
-                > Velocity::new::<knot>(InertialReference::UNINITIALISED_VALUE)
-        }
-
-        fn wind_direction(&mut self, adiru_number: usize) -> Angle {
-            self.read(&output_data_id(
+        fn wind_direction(&mut self, adiru_number: usize) -> Arinc429Word<Angle> {
+            self.read_arinc429(&output_data_id(
                 OutputDataType::IR,
                 adiru_number,
                 InertialReference::WIND_DIRECTION,
             ))
         }
 
-        fn wind_direction_is_available(&mut self, adiru_number: usize) -> bool {
-            self.wind_direction(adiru_number)
-                > Angle::new::<degree>(InertialReference::UNINITIALISED_VALUE)
-        }
-
-        fn wind_velocity(&mut self, adiru_number: usize) -> Velocity {
-            self.read(&output_data_id(
+        fn wind_velocity(&mut self, adiru_number: usize) -> Arinc429Word<Velocity> {
+            self.read_arinc429(&output_data_id(
                 OutputDataType::IR,
                 adiru_number,
                 InertialReference::WIND_VELOCITY,
             ))
         }
 
-        fn wind_velocity_is_available(&mut self, adiru_number: usize) -> bool {
-            self.wind_velocity(adiru_number)
-                > Velocity::new::<knot>(InertialReference::UNINITIALISED_VALUE)
-        }
-
-        fn inertial_vertical_speed(&mut self, adiru_number: usize) -> Velocity {
-            let vertical_speed: f64 = self.read(&output_data_id(
+        fn inertial_vertical_speed(&mut self, adiru_number: usize) -> Arinc429Word<Velocity> {
+            let vertical_speed: Arinc429Word<f64> = self.read_arinc429(&output_data_id(
                 OutputDataType::IR,
                 adiru_number,
                 InertialReference::VERTICAL_SPEED,
             ));
-            Velocity::new::<foot_per_minute>(vertical_speed)
+            Arinc429Word::new(
+                Velocity::new::<foot_per_minute>(vertical_speed.value()),
+                vertical_speed.ssm(),
+            )
         }
 
-        fn inertial_vertical_speed_is_available(&mut self, adiru_number: usize) -> bool {
-            self.inertial_vertical_speed(adiru_number)
-                > Velocity::new::<foot_per_minute>(InertialReference::UNINITIALISED_VALUE)
-        }
-
-        fn longitude(&mut self, adiru_number: usize) -> Angle {
-            self.read(&output_data_id(
+        fn longitude(&mut self, adiru_number: usize) -> Arinc429Word<Angle> {
+            self.read_arinc429(&output_data_id(
                 OutputDataType::IR,
                 adiru_number,
                 InertialReference::LONGITUDE,
             ))
         }
 
-        fn longitude_is_available(&mut self, adiru_number: usize) -> bool {
-            self.longitude(adiru_number)
-                > Angle::new::<degree>(InertialReference::UNINITIALISED_VALUE)
-        }
-
-        fn latitude(&mut self, adiru_number: usize) -> Angle {
-            self.read(&output_data_id(
+        fn latitude(&mut self, adiru_number: usize) -> Arinc429Word<Angle> {
+            self.read_arinc429(&output_data_id(
                 OutputDataType::IR,
                 adiru_number,
                 InertialReference::LATITUDE,
             ))
-        }
-
-        fn latitude_is_available(&mut self, adiru_number: usize) -> bool {
-            self.latitude(adiru_number)
-                > Angle::new::<degree>(InertialReference::UNINITIALISED_VALUE)
         }
 
         fn uses_gps_as_primary(&mut self) -> bool {
@@ -1440,51 +1315,74 @@ mod tests {
         }
 
         fn assert_adr_data_available(&mut self, available: bool, adiru_number: usize) {
-            assert_eq!(self.altitude_is_available(adiru_number), available);
-            assert_eq!(self.computed_airspeed_is_available(adiru_number), available);
-            assert_eq!(self.mach_is_available(adiru_number), available);
+            assert_eq!(self.altitude(adiru_number).is_normal_operation(), available);
             assert_eq!(
-                self.barometric_vertical_speed_is_available(adiru_number),
+                self.computed_airspeed(adiru_number).is_normal_operation(),
                 available
             );
-            assert_eq!(self.true_airspeed_is_available(adiru_number), available);
+            assert_eq!(self.mach(adiru_number).is_normal_operation(), available);
+            assert_eq!(
+                self.barometric_vertical_speed(adiru_number)
+                    .is_normal_operation(),
+                available
+            );
+            assert_eq!(
+                self.true_airspeed(adiru_number).is_normal_operation(),
+                available
+            );
 
             if adiru_number == 1 || adiru_number == 3 {
                 assert_eq!(
-                    self.static_air_temperature_is_available(adiru_number),
+                    self.static_air_temperature(adiru_number)
+                        .is_normal_operation(),
                     available
                 );
                 assert_eq!(
-                    self.total_air_temperature_is_available(adiru_number),
+                    self.total_air_temperature(adiru_number)
+                        .is_normal_operation(),
                     available
                 );
                 assert_eq!(
-                    self.international_standard_atmosphere_delta_is_available(adiru_number),
+                    self.international_standard_atmosphere_delta(adiru_number)
+                        .is_normal_operation(),
                     available
                 );
             }
         }
 
         fn assert_ir_heading_data_available(&mut self, available: bool, adiru_number: usize) {
-            assert_eq!(self.heading_is_available(adiru_number), available);
+            assert_eq!(self.heading(adiru_number).is_normal_operation(), available);
         }
 
         fn assert_ir_non_attitude_data_available(&mut self, available: bool, adiru_number: usize) {
-            assert_eq!(self.track_is_available(adiru_number), available);
+            assert_eq!(self.track(adiru_number).is_normal_operation(), available);
             assert_eq!(
-                self.inertial_vertical_speed_is_available(adiru_number),
+                self.inertial_vertical_speed(adiru_number)
+                    .is_normal_operation(),
                 available
             );
-            assert_eq!(self.ground_speed_is_available(adiru_number), available);
-            assert_eq!(self.wind_direction_is_available(adiru_number), available);
-            assert_eq!(self.wind_velocity_is_available(adiru_number), available);
-            assert_eq!(self.latitude_is_available(adiru_number), available);
-            assert_eq!(self.longitude_is_available(adiru_number), available);
+            assert_eq!(
+                self.ground_speed(adiru_number).is_normal_operation(),
+                available
+            );
+            assert_eq!(
+                self.wind_direction(adiru_number).is_normal_operation(),
+                available
+            );
+            assert_eq!(
+                self.wind_velocity(adiru_number).is_normal_operation(),
+                available
+            );
+            assert_eq!(self.latitude(adiru_number).is_normal_operation(), available);
+            assert_eq!(
+                self.longitude(adiru_number).is_normal_operation(),
+                available
+            );
         }
 
         fn assert_ir_attitude_data_available(&mut self, available: bool, adiru_number: usize) {
-            assert_eq!(self.pitch_is_available(adiru_number), available);
-            assert_eq!(self.roll_is_available(adiru_number), available);
+            assert_eq!(self.pitch(adiru_number).is_normal_operation(), available);
+            assert_eq!(self.roll(adiru_number).is_normal_operation(), available);
         }
 
         fn assert_all_ir_data_available(&mut self, available: bool, adiru_number: usize) {
@@ -1494,8 +1392,20 @@ mod tests {
         }
 
         fn assert_wind_direction_and_velocity_zero(&mut self, adiru_number: usize) {
-            assert_about_eq!(self.wind_direction(adiru_number).get::<degree>(), 0.);
-            assert_about_eq!(self.wind_velocity(adiru_number).get::<knot>(), 0.);
+            assert_about_eq!(
+                self.wind_direction(adiru_number)
+                    .normal_value()
+                    .unwrap()
+                    .get::<degree>(),
+                0.
+            );
+            assert_about_eq!(
+                self.wind_velocity(adiru_number)
+                    .normal_value()
+                    .unwrap()
+                    .get::<knot>(),
+                0.
+            );
         }
     }
     impl TestBed for AdirsTestBed {
@@ -1859,7 +1769,10 @@ mod tests {
 
             test_bed.run();
 
-            assert_eq!(test_bed.altitude(adiru_number), Length::new::<foot>(10000.));
+            assert_eq!(
+                test_bed.altitude(adiru_number).normal_value().unwrap(),
+                Length::new::<foot>(10000.)
+            );
         }
 
         #[rstest]
@@ -1873,7 +1786,10 @@ mod tests {
             test_bed.run();
 
             assert_eq!(
-                test_bed.computed_airspeed(adiru_number),
+                test_bed
+                    .computed_airspeed(adiru_number)
+                    .normal_value()
+                    .unwrap(),
                 Velocity::new::<knot>(250.)
             );
         }
@@ -1887,7 +1803,10 @@ mod tests {
             let mut test_bed = all_adirus_aligned_test_bed_with().mach_of(mach);
             test_bed.run();
 
-            assert_eq!(test_bed.mach(adiru_number), mach);
+            assert_about_eq!(
+                test_bed.mach(adiru_number).normal_value().unwrap().0,
+                mach.0
+            );
         }
 
         #[rstest]
@@ -1900,7 +1819,10 @@ mod tests {
             test_bed.run();
 
             assert_eq!(
-                test_bed.barometric_vertical_speed(adiru_number),
+                test_bed
+                    .barometric_vertical_speed(adiru_number)
+                    .normal_value()
+                    .unwrap(),
                 vertical_speed
             );
         }
@@ -1919,7 +1841,10 @@ mod tests {
             test_bed.set_indicated_airspeed(velocity);
             test_bed.run();
 
-            assert_eq!(test_bed.true_airspeed(adiru_number), velocity);
+            assert_eq!(
+                test_bed.true_airspeed(adiru_number).normal_value().unwrap(),
+                velocity
+            );
         }
 
         #[rstest]
@@ -1937,7 +1862,10 @@ mod tests {
             test_bed.set_indicated_airspeed(velocity);
             test_bed.run();
 
-            assert_about_eq!(test_bed.true_airspeed(adiru_number).get::<knot>(), 0.);
+            assert_about_eq!(
+                test_bed.true_airspeed(adiru_number).value().get::<knot>(),
+                0.
+            );
         }
 
         #[rstest]
@@ -1949,7 +1877,13 @@ mod tests {
             test_bed.set_ambient_temperature(sat);
             test_bed.run();
 
-            assert_eq!(test_bed.static_air_temperature(adiru_number), sat);
+            assert_eq!(
+                test_bed
+                    .static_air_temperature(adiru_number)
+                    .normal_value()
+                    .unwrap(),
+                sat
+            );
         }
 
         #[rstest]
@@ -1961,7 +1895,7 @@ mod tests {
             test_bed.run();
 
             assert_eq!(
-                test_bed.static_air_temperature(adiru_number),
+                test_bed.static_air_temperature(adiru_number).value(),
                 ThermodynamicTemperature::new::<degree_celsius>(0.)
             );
         }
@@ -1974,7 +1908,13 @@ mod tests {
             let mut test_bed = all_adirus_aligned_test_bed_with().total_air_temperature_of(tat);
             test_bed.run();
 
-            assert_eq!(test_bed.total_air_temperature(adiru_number), tat);
+            assert_eq!(
+                test_bed
+                    .total_air_temperature(adiru_number)
+                    .normal_value()
+                    .unwrap(),
+                tat
+            );
         }
 
         #[rstest]
@@ -1985,7 +1925,7 @@ mod tests {
             test_bed.run();
 
             assert_eq!(
-                test_bed.total_air_temperature(adiru_number),
+                test_bed.total_air_temperature(adiru_number).value(),
                 ThermodynamicTemperature::new::<degree_celsius>(0.)
             );
         }
@@ -2004,7 +1944,10 @@ mod tests {
             test_bed.run();
 
             assert_eq!(
-                test_bed.international_standard_atmosphere_delta(adiru_number),
+                test_bed
+                    .international_standard_atmosphere_delta(adiru_number)
+                    .normal_value()
+                    .unwrap(),
                 ThermodynamicTemperature::new::<degree_celsius>(deviation)
             );
         }
@@ -2024,7 +1967,9 @@ mod tests {
             test_bed.run();
 
             assert_eq!(
-                test_bed.international_standard_atmosphere_delta(adiru_number),
+                test_bed
+                    .international_standard_atmosphere_delta(adiru_number)
+                    .value(),
                 ThermodynamicTemperature::new::<degree_celsius>(0.)
             );
         }
@@ -2149,7 +2094,7 @@ mod tests {
             let mut test_bed = all_adirus_aligned_test_bed_with().pitch_of(angle);
             test_bed.run();
 
-            assert_eq!(test_bed.pitch(adiru_number), angle);
+            assert_eq!(test_bed.pitch(adiru_number).normal_value().unwrap(), angle);
         }
 
         #[rstest]
@@ -2161,7 +2106,7 @@ mod tests {
             let mut test_bed = all_adirus_aligned_test_bed_with().roll_of(angle);
             test_bed.run();
 
-            assert_eq!(test_bed.roll(adiru_number), angle);
+            assert_eq!(test_bed.roll(adiru_number).normal_value().unwrap(), angle);
         }
 
         #[rstest]
@@ -2173,7 +2118,10 @@ mod tests {
             let mut test_bed = all_adirus_aligned_test_bed_with().heading_of(angle);
             test_bed.run();
 
-            assert_eq!(test_bed.heading(adiru_number), angle);
+            assert_eq!(
+                test_bed.heading(adiru_number).normal_value().unwrap(),
+                angle
+            );
         }
 
         #[rstest]
@@ -2192,7 +2140,7 @@ mod tests {
                 ));
             test_bed.run();
 
-            assert_eq!(test_bed.track(adiru_number), angle);
+            assert_eq!(test_bed.track(adiru_number).normal_value().unwrap(), angle);
         }
 
         #[rstest]
@@ -2209,7 +2157,7 @@ mod tests {
                 ));
             test_bed.run();
 
-            assert_eq!(test_bed.track(adiru_number), angle);
+            assert_eq!(test_bed.track(adiru_number).normal_value().unwrap(), angle);
         }
 
         #[rstest]
@@ -2222,7 +2170,10 @@ mod tests {
             test_bed.run();
 
             assert_eq!(
-                test_bed.inertial_vertical_speed(adiru_number),
+                test_bed
+                    .inertial_vertical_speed(adiru_number)
+                    .normal_value()
+                    .unwrap(),
                 vertical_speed
             );
         }
@@ -2236,7 +2187,10 @@ mod tests {
             let mut test_bed = all_adirus_aligned_test_bed_with().ground_speed_of(gs);
             test_bed.run();
 
-            assert_eq!(test_bed.ground_speed(adiru_number), gs);
+            assert_eq!(
+                test_bed.ground_speed(adiru_number).normal_value().unwrap(),
+                gs
+            );
         }
 
         #[rstest]
@@ -2256,8 +2210,17 @@ mod tests {
                 ));
             test_bed.run();
 
-            assert_eq!(test_bed.wind_direction(adiru_number), wind_angle);
-            assert_eq!(test_bed.wind_velocity(adiru_number), wind_velocity);
+            assert_eq!(
+                test_bed
+                    .wind_direction(adiru_number)
+                    .normal_value()
+                    .unwrap(),
+                wind_angle
+            );
+            assert_eq!(
+                test_bed.wind_velocity(adiru_number).normal_value().unwrap(),
+                wind_velocity
+            );
         }
 
         #[rstest]
@@ -2303,7 +2266,10 @@ mod tests {
             let mut test_bed = all_adirus_aligned_test_bed_with().latitude_of(latitude);
             test_bed.run();
 
-            assert_eq!(test_bed.latitude(adiru_number), latitude);
+            assert_eq!(
+                test_bed.latitude(adiru_number).normal_value().unwrap(),
+                latitude
+            );
         }
 
         #[rstest]
@@ -2315,7 +2281,10 @@ mod tests {
             let mut test_bed = all_adirus_aligned_test_bed_with().longitude_of(longitude);
             test_bed.run();
 
-            assert_eq!(test_bed.longitude(adiru_number), longitude);
+            assert_eq!(
+                test_bed.longitude(adiru_number).normal_value().unwrap(),
+                longitude
+            );
         }
     }
 

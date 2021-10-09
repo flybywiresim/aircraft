@@ -87,7 +87,7 @@ void AutothrustModelClass::Autothrust_TLAComputation1(const athr_out *rtu_in, re
     }
 
     TLA_begin = 6;
-    N1_begin = std::abs(rtu_in->input.thrust_limit_IDLE_percent);
+    N1_begin = std::abs(rtu_in->input.thrust_limit_IDLE_percent + 1.0);
     TLA_end = 20;
     N1_end = std::abs(rtu_in->input.thrust_limit_REV_percent);
   }
@@ -107,12 +107,12 @@ void AutothrustModelClass::Autothrust_RateLimiter(real_T rtu_u, real_T rtu_up, r
   }
 
   u0 = rtu_u - localDW->pY;
-  u1 = rtu_up * rtu_Ts;
+  u1 = std::abs(rtu_up) * rtu_Ts;
   if (u0 < u1) {
     u1 = u0;
   }
 
-  u0 = rtu_lo * rtu_Ts;
+  u0 = -std::abs(rtu_lo) * rtu_Ts;
   if (u1 > u0) {
     u0 = u1;
   }

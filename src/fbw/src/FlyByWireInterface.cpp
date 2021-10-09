@@ -37,7 +37,7 @@ bool FlyByWireInterface::connect() {
   return simConnectInterface.connect(autopilotStateMachineEnabled, autopilotLawsEnabled, flyByWireEnabled, throttleAxis, flapsHandler,
                                      spoilersHandler, elevatorTrimHandler, rudderTrimHandler, flightControlsKeyChangeAileron,
                                      flightControlsKeyChangeElevator, flightControlsKeyChangeRudder,
-                                     disableXboxCompatibilityRudderAxisPlusMinus);
+                                     disableXboxCompatibilityRudderAxisPlusMinus, maxSimulationRate, limitSimulationRateByPerformance);
 }
 
 void FlyByWireInterface::disconnect() {
@@ -62,25 +62,14 @@ void FlyByWireInterface::disconnect() {
 bool FlyByWireInterface::update(double sampleTime) {
   bool result = true;
 
-  // check delta time for performance issues
-  if (sampleTime > MAX_ACCEPTABLE_SAMPLE_TIME && lowPerformanceCycleCounter < LOW_PERFORMANCE_CYCLE_MAX) {
-    lowPerformanceCycleCounter++;
-  } else if (lowPerformanceCycleCounter > 0) {
-    lowPerformanceCycleCounter--;
-  }
-  if (lowPerformanceCycleCounter >= LOW_PERFORMANCE_CYCLE_THRESHOLD) {
-    if (idPerformanceWarningActive->get() <= 0) {
-      idPerformanceWarningActive->set(1);
-    }
-    cout << "WASM: WARNING Performance issues detected, at least stable 17 fps or more are needed!" << endl;
-  } else {
-    if (idPerformanceWarningActive > 0) {
-      idPerformanceWarningActive->set(0);
-    }
-  }
-
   // get data & inputs
   result &= readDataAndLocalVariables(sampleTime);
+
+  // update performance monitoring
+  result &= updatePerformanceMonitoring(sampleTime);
+
+  // handle simulation rate reduction
+  result &= handleSimulationRate(sampleTime);
 
   // do not process laws in pause or slew
   if (simConnectInterface.getSimData().slew_on) {
@@ -91,25 +80,25 @@ bool FlyByWireInterface::update(double sampleTime) {
   }
 
   // update altimeter setting
-  result &= updateAltimeterSetting(sampleTime);
+  result &= updateAltimeterSetting(calculatedSampleTime);
 
   // update autopilot state machine
-  result &= updateAutopilotStateMachine(sampleTime);
+  result &= updateAutopilotStateMachine(calculatedSampleTime);
 
   // update autopilot laws
-  result &= updateAutopilotLaws(sampleTime);
+  result &= updateAutopilotLaws(calculatedSampleTime);
 
   // update fly-by-wire
-  result &= updateFlyByWire(sampleTime);
+  result &= updateFlyByWire(calculatedSampleTime);
 
   // get throttle data and process it
-  result &= updateAutothrust(sampleTime);
+  result &= updateAutothrust(calculatedSampleTime);
 
   // update engine data
-  result &= updateEngineData(sampleTime);
+  result &= updateEngineData(calculatedSampleTime);
 
   // update flaps and spoilers
-  result &= updateFlapsSpoilers(sampleTime);
+  result &= updateFlapsSpoilers(calculatedSampleTime);
 
   // update flight data recorder
   flightDataRecorder.update(&autopilotStateMachine, &autopilotLaws, &autoThrust, &flyByWire, engineData);
@@ -143,6 +132,9 @@ void FlyByWireInterface::loadConfiguration() {
   flightDirectorSmoothingEnabled = INITypeConversion::getBoolean(iniStructure, "AUTOPILOT", "FLIGHT_DIRECTOR_SMOOTHING_ENABLED", true);
   flightDirectorSmoothingFactor = INITypeConversion::getDouble(iniStructure, "AUTOPILOT", "FLIGHT_DIRECTOR_SMOOTHING_FACTOR", 2.5);
   flightDirectorSmoothingLimit = INITypeConversion::getDouble(iniStructure, "AUTOPILOT", "FLIGHT_DIRECTOR_SMOOTHING_LIMIT", 20);
+  maxSimulationRate = INITypeConversion::getDouble(iniStructure, "AUTOPILOT", "MAXIMUM_SIMULATION_RATE", 4);
+  limitSimulationRateByPerformance = INITypeConversion::getBoolean(iniStructure, "AUTOPILOT", "LIMIT_SIMULATION_RATE_BY_PERFORMANCE", true);
+  simulationRateReductionEnabled = INITypeConversion::getBoolean(iniStructure, "AUTOPILOT", "SIMULATION_RATE_REDUCTION_ENABLED", true);
 
   flightControlsKeyChangeAileron = INITypeConversion::getDouble(iniStructure, "FLIGHT_CONTROLS", "KEY_CHANGE_AILERON", 0.02);
   flightControlsKeyChangeAileron = abs(flightControlsKeyChangeAileron);
@@ -154,16 +146,19 @@ void FlyByWireInterface::loadConfiguration() {
       INITypeConversion::getBoolean(iniStructure, "FLIGHT_CONTROLS", "DISABLE_XBOX_COMPATIBILITY_RUDDER_AXIS_PLUS_MINUS", false);
 
   // print configuration into console
-  std::cout << "WASM: MODEL     : AUTOPILOT_STATE_MACHINE_ENABLED   = " << autopilotStateMachineEnabled << endl;
-  std::cout << "WASM: MODEL     : AUTOPILOT_LAWS_ENABLED            = " << autopilotLawsEnabled << endl;
-  std::cout << "WASM: MODEL     : AUTOTHRUST_ENABLED                = " << autoThrustEnabled << endl;
-  std::cout << "WASM: MODEL     : FLY_BY_WIRE_ENABLED               = " << flyByWireEnabled << endl;
-  std::cout << "WASM: MODEL     : TAILSTRIKE_PROTECTION_ENABLED     = " << tailstrikeProtectionEnabled << endl;
-  std::cout << "WASM: AUTOPILOT : CUSTOM_FLIGHT_GUIDANCE_ENABLED    = " << customFlightGuidanceEnabled << endl;
-  std::cout << "WASM: AUTOPILOT : GPS_COURSE_TO_STEER_ENABLED       = " << gpsCourseToSteerEnabled << endl;
-  std::cout << "WASM: AUTOPILOT : FLIGHT_DIRECTOR_SMOOTHING_ENABLED = " << flightDirectorSmoothingEnabled << endl;
-  std::cout << "WASM: AUTOPILOT : FLIGHT_DIRECTOR_SMOOTHING_FACTOR  = " << flightDirectorSmoothingFactor << endl;
-  std::cout << "WASM: AUTOPILOT : FLIGHT_DIRECTOR_SMOOTHING_LIMIT   = " << flightDirectorSmoothingLimit << endl;
+  std::cout << "WASM: MODEL     : AUTOPILOT_STATE_MACHINE_ENABLED      = " << autopilotStateMachineEnabled << endl;
+  std::cout << "WASM: MODEL     : AUTOPILOT_LAWS_ENABLED               = " << autopilotLawsEnabled << endl;
+  std::cout << "WASM: MODEL     : AUTOTHRUST_ENABLED                   = " << autoThrustEnabled << endl;
+  std::cout << "WASM: MODEL     : FLY_BY_WIRE_ENABLED                  = " << flyByWireEnabled << endl;
+  std::cout << "WASM: MODEL     : TAILSTRIKE_PROTECTION_ENABLED        = " << tailstrikeProtectionEnabled << endl;
+  std::cout << "WASM: AUTOPILOT : CUSTOM_FLIGHT_GUIDANCE_ENABLED       = " << customFlightGuidanceEnabled << endl;
+  std::cout << "WASM: AUTOPILOT : GPS_COURSE_TO_STEER_ENABLED          = " << gpsCourseToSteerEnabled << endl;
+  std::cout << "WASM: AUTOPILOT : FLIGHT_DIRECTOR_SMOOTHING_ENABLED    = " << flightDirectorSmoothingEnabled << endl;
+  std::cout << "WASM: AUTOPILOT : FLIGHT_DIRECTOR_SMOOTHING_FACTOR     = " << flightDirectorSmoothingFactor << endl;
+  std::cout << "WASM: AUTOPILOT : FLIGHT_DIRECTOR_SMOOTHING_LIMIT      = " << flightDirectorSmoothingLimit << endl;
+  std::cout << "WASM: AUTOPILOT : MAXIMUM_SIMULATION_RATE              = " << maxSimulationRate << endl;
+  std::cout << "WASM: AUTOPILOT : LIMIT_SIMULATION_RATE_BY_PERFORMANCE = " << limitSimulationRateByPerformance << endl;
+  std::cout << "WASM: AUTOPILOT : SIMULATION_RATE_REDUCTION_ENABLED    = " << simulationRateReductionEnabled << endl;
   std::cout << "WASM: FLIGHT_CONTROLS : KEY_CHANGE_AILERON = " << flightControlsKeyChangeAileron << endl;
   std::cout << "WASM: FLIGHT_CONTROLS : KEY_CHANGE_ELEVATOR = " << flightControlsKeyChangeElevator << endl;
   std::cout << "WASM: FLIGHT_CONTROLS : KEY_CHANGE_RUDDER = " << flightControlsKeyChangeRudder << endl;
@@ -338,6 +333,12 @@ void FlyByWireInterface::setupLocalVariables() {
 
   idAileronPositionLeft = make_unique<LocalVariable>("A32NX_3D_AILERON_LEFT_DEFLECTION");
   idAileronPositionRight = make_unique<LocalVariable>("A32NX_3D_AILERON_RIGHT_DEFLECTION");
+
+  idRadioReceiverLocalizerValid = make_unique<LocalVariable>("A32NX_DEV_RADIO_RECEIVER_LOC_IS_VALID");
+  idRadioReceiverLocalizerDeviation = make_unique<LocalVariable>("A32NX_DEV_RADIO_RECEIVER_LOC_DEVIATION");
+  idRadioReceiverLocalizerDistance = make_unique<LocalVariable>("A32NX_DEV_RADIO_RECEIVER_LOC_DISTANCE");
+  idRadioReceiverGlideSlopeValid = make_unique<LocalVariable>("A32NX_DEV_RADIO_RECEIVER_GS_IS_VALID");
+  idRadioReceiverGlideSlopeDeviation = make_unique<LocalVariable>("A32NX_DEV_RADIO_RECEIVER_GS_DEVIATION");
 }
 
 bool FlyByWireInterface::readDataAndLocalVariables(double sampleTime) {
@@ -418,7 +419,97 @@ bool FlyByWireInterface::readDataAndLocalVariables(double sampleTime) {
   } else {
     pauseDetected = false;
   }
+
+  // calculate delta time (and ensure it does not get 0 -> max 500 fps)
+  calculatedSampleTime = max(0.002, simData.simulationTime - previousSimulationTime);
+
+  // store previous simulation time
   previousSimulationTime = simData.simulationTime;
+
+  // success
+  return true;
+}
+
+bool FlyByWireInterface::updatePerformanceMonitoring(double sampleTime) {
+  // check calculated delta time for performance issues (to also take sim rate into account)
+  if (calculatedSampleTime > MAX_ACCEPTABLE_SAMPLE_TIME && lowPerformanceTimer < LOW_PERFORMANCE_TIMER_THRESHOLD) {
+    // performance is low -> increase counter
+    lowPerformanceTimer++;
+  } else if (calculatedSampleTime < MAX_ACCEPTABLE_SAMPLE_TIME) {
+    // performance is ok -> reset counter
+    lowPerformanceTimer = 0;
+  }
+
+  // if threshold has been reached / exceeded set performance warning
+  if (lowPerformanceTimer >= LOW_PERFORMANCE_TIMER_THRESHOLD) {
+    if (idPerformanceWarningActive->get() <= 0) {
+      idPerformanceWarningActive->set(1);
+      cout << "WASM: WARNING Performance issues detected, at least stable ";
+      cout << round(simConnectInterface.getSimData().simulation_rate / MAX_ACCEPTABLE_SAMPLE_TIME);
+      cout << " fps or more are needed at this simrate!";
+      cout << endl;
+    }
+  } else if (idPerformanceWarningActive > 0) {
+    idPerformanceWarningActive->set(0);
+  }
+
+  // success
+  return true;
+}
+
+bool FlyByWireInterface::handleSimulationRate(double sampleTime) {
+  // get sim data
+  auto simData = simConnectInterface.getSimData();
+
+  // check if target simulation rate was modified and there is a mismatch
+  if (targetSimulationRateModified && simData.simulation_rate != targetSimulationRate) {
+    // wait until target simulation rate is reached
+    return true;
+  }
+
+  // set target to current simulation rate and reset modified flag
+  targetSimulationRate = simData.simulation_rate;
+  targetSimulationRateModified = false;
+
+  // nothing to do if simuation rate is '1x'
+  if (simData.simulation_rate == 1) {
+    return true;
+  }
+
+  // check if allowed simulation rate is exceeded
+  if (simData.simulation_rate > maxSimulationRate) {
+    // set target simulation rate
+    targetSimulationRateModified = true;
+    targetSimulationRate = max(1, simData.simulation_rate / 2);
+    // sed event to reduce simulation rate
+    simConnectInterface.sendEvent(SimConnectInterface::Events::SIM_RATE_DECR, 0, SIMCONNECT_GROUP_PRIORITY_DEFAULT);
+    // log event of reduction
+    cout << "WASM: WARNING Reducing simulation rate to " << simData.simulation_rate / 2;
+    cout << " (maximum allowed is " << maxSimulationRate << ")!" << endl;
+  }
+
+  // check if simulation rate reduction is enabled
+  if (!simulationRateReductionEnabled) {
+    return true;
+  }
+
+  // check if simulation rate should be reduced
+  if (idPerformanceWarningActive->get() == 1 || abs(simConnectInterface.getSimData().Phi_deg) > 33 ||
+      simConnectInterface.getSimData().Theta_deg < -20 || simConnectInterface.getSimData().Theta_deg > 10 ||
+      flyByWireOutput.sim.data_computed.high_aoa_prot_active == 1 || flyByWireOutput.sim.data_computed.high_speed_prot_active == 1 ||
+      autopilotStateMachineOutput.speed_protection_mode == 1) {
+    // set target simulation rate
+    targetSimulationRateModified = true;
+    targetSimulationRate = max(1, simData.simulation_rate / 2);
+    // send event to reduce simulation rate
+    simConnectInterface.sendEvent(SimConnectInterface::Events::SIM_RATE_DECR, 0, SIMCONNECT_GROUP_PRIORITY_DEFAULT);
+    // reset low performance timer
+    lowPerformanceTimer = 0;
+    // log event of reduction
+    cout << "WASM: WARNING Reducing simulation rate from " << simData.simulation_rate;
+    cout << " to " << simData.simulation_rate / 2;
+    cout << " due to performance issues or abnormal situation!" << endl;
+  }
 
   // success
   return true;
@@ -499,6 +590,9 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
     autopilotStateMachineInput.in.time.simulation_time = simData.simulationTime;
 
     // data -----------------------------------------------------------------------------------------------------------
+    autopilotStateMachineInput.in.data.aircraft_position.lat = simData.latitude_deg;
+    autopilotStateMachineInput.in.data.aircraft_position.lon = simData.longitude_deg;
+    autopilotStateMachineInput.in.data.aircraft_position.alt = simData.altitude_m;
     autopilotStateMachineInput.in.data.Theta_deg = simData.Theta_deg;
     autopilotStateMachineInput.in.data.Phi_deg = simData.Phi_deg;
     autopilotStateMachineInput.in.data.q_rad_s = simData.bodyRotationVelocity.x;
@@ -509,6 +603,7 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
     autopilotStateMachineInput.in.data.V_mach = simData.V_mach;
     autopilotStateMachineInput.in.data.V_gnd_kn = simData.V_gnd_kn;
     autopilotStateMachineInput.in.data.alpha_deg = simData.alpha_deg;
+    autopilotStateMachineInput.in.data.beta_deg = simData.beta_deg;
     autopilotStateMachineInput.in.data.H_ft = simData.H_ft;
     autopilotStateMachineInput.in.data.H_ind_ft = simData.H_ind_ft;
     autopilotStateMachineInput.in.data.H_radio_ft = simData.H_radio_ft;
@@ -525,9 +620,16 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
     autopilotStateMachineInput.in.data.nav_dme_valid = (simData.nav_dme_valid != 0);
     autopilotStateMachineInput.in.data.nav_dme_nmi = simData.nav_dme_nmi;
     autopilotStateMachineInput.in.data.nav_loc_valid = (simData.nav_loc_valid != 0);
+    autopilotStateMachineInput.in.data.nav_loc_magvar_deg = simData.nav_loc_magvar_deg;
     autopilotStateMachineInput.in.data.nav_loc_error_deg = simData.nav_loc_error_deg;
+    autopilotStateMachineInput.in.data.nav_loc_position.lat = simData.nav_loc_pos.Latitude;
+    autopilotStateMachineInput.in.data.nav_loc_position.lon = simData.nav_loc_pos.Longitude;
+    autopilotStateMachineInput.in.data.nav_loc_position.alt = simData.nav_loc_pos.Altitude;
     autopilotStateMachineInput.in.data.nav_gs_valid = (simData.nav_gs_valid != 0);
     autopilotStateMachineInput.in.data.nav_gs_error_deg = simData.nav_gs_error_deg;
+    autopilotStateMachineInput.in.data.nav_gs_position.lat = simData.nav_gs_pos.Latitude;
+    autopilotStateMachineInput.in.data.nav_gs_position.lon = simData.nav_gs_pos.Longitude;
+    autopilotStateMachineInput.in.data.nav_gs_position.alt = simData.nav_gs_pos.Altitude;
     autopilotStateMachineInput.in.data.flight_guidance_xtk_nmi = flightGuidanceCrossTrackError;
     autopilotStateMachineInput.in.data.flight_guidance_tae_deg = flightGuidanceTrackAngleError;
     autopilotStateMachineInput.in.data.flight_guidance_phi_deg = flightGuidancePhiPreCommand;
@@ -592,6 +694,13 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
 
     // result
     autopilotStateMachineOutput = autopilotStateMachine.getExternalOutputs().out.output;
+
+    // update radio
+    idRadioReceiverLocalizerValid->set(autopilotStateMachine.getExternalOutputs().out.data.nav_e_loc_valid);
+    idRadioReceiverLocalizerDeviation->set(autopilotStateMachine.getExternalOutputs().out.data.nav_e_loc_error_deg);
+    idRadioReceiverLocalizerDistance->set(autopilotStateMachine.getExternalOutputs().out.data.nav_dme_nmi);
+    idRadioReceiverGlideSlopeValid->set(autopilotStateMachine.getExternalOutputs().out.data.nav_e_gs_valid);
+    idRadioReceiverGlideSlopeDeviation->set(autopilotStateMachine.getExternalOutputs().out.data.nav_e_gs_error_deg);
   } else {
     // read client data written by simulink
     ClientDataAutopilotStateMachine clientData = simConnectInterface.getClientDataAutopilotStateMachine();
@@ -620,6 +729,13 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
     autopilotStateMachineOutput.EXPED_mode_active = clientData.EXPED_mode_active;
     autopilotStateMachineOutput.FD_disconnect = clientData.FD_disconnect;
     autopilotStateMachineOutput.FD_connect = clientData.FD_connect;
+
+    // update radio
+    idRadioReceiverLocalizerValid->set(clientData.nav_e_loc_valid);
+    idRadioReceiverLocalizerDeviation->set(clientData.nav_e_loc_error_deg);
+    idRadioReceiverLocalizerDistance->set(0);
+    idRadioReceiverGlideSlopeValid->set(clientData.nav_e_gs_valid);
+    idRadioReceiverGlideSlopeDeviation->set(clientData.nav_e_gs_error_deg);
   }
 
   // update autopilot state -------------------------------------------------------------------------------------------
@@ -797,6 +913,9 @@ bool FlyByWireInterface::updateAutopilotLaws(double sampleTime) {
     autopilotLawsInput.in.time.simulation_time = simData.simulationTime;
 
     // data -----------------------------------------------------------------------------------------------------------
+    autopilotLawsInput.in.data.aircraft_position.lat = simData.latitude_deg;
+    autopilotLawsInput.in.data.aircraft_position.lon = simData.longitude_deg;
+    autopilotLawsInput.in.data.aircraft_position.alt = simData.altitude_m;
     autopilotLawsInput.in.data.Theta_deg = simData.Theta_deg;
     autopilotLawsInput.in.data.Phi_deg = simData.Phi_deg;
     autopilotLawsInput.in.data.q_rad_s = simData.bodyRotationVelocity.x;
@@ -807,6 +926,7 @@ bool FlyByWireInterface::updateAutopilotLaws(double sampleTime) {
     autopilotLawsInput.in.data.V_mach = simData.V_mach;
     autopilotLawsInput.in.data.V_gnd_kn = simData.V_gnd_kn;
     autopilotLawsInput.in.data.alpha_deg = simData.alpha_deg;
+    autopilotLawsInput.in.data.beta_deg = simData.beta_deg;
     autopilotLawsInput.in.data.H_ft = simData.H_ft;
     autopilotLawsInput.in.data.H_ind_ft = simData.H_ind_ft;
     autopilotLawsInput.in.data.H_radio_ft = simData.H_radio_ft;
@@ -823,9 +943,16 @@ bool FlyByWireInterface::updateAutopilotLaws(double sampleTime) {
     autopilotLawsInput.in.data.nav_dme_valid = (simData.nav_dme_valid != 0);
     autopilotLawsInput.in.data.nav_dme_nmi = simData.nav_dme_nmi;
     autopilotLawsInput.in.data.nav_loc_valid = (simData.nav_loc_valid != 0);
+    autopilotLawsInput.in.data.nav_loc_magvar_deg = simData.nav_loc_magvar_deg;
     autopilotLawsInput.in.data.nav_loc_error_deg = simData.nav_loc_error_deg;
+    autopilotLawsInput.in.data.nav_loc_position.lat = simData.nav_loc_pos.Latitude;
+    autopilotLawsInput.in.data.nav_loc_position.lon = simData.nav_loc_pos.Longitude;
+    autopilotLawsInput.in.data.nav_loc_position.alt = simData.nav_loc_pos.Altitude;
     autopilotLawsInput.in.data.nav_gs_valid = (simData.nav_gs_valid != 0);
     autopilotLawsInput.in.data.nav_gs_error_deg = simData.nav_gs_error_deg;
+    autopilotLawsInput.in.data.nav_gs_position.lat = simData.nav_gs_pos.Latitude;
+    autopilotLawsInput.in.data.nav_gs_position.lon = simData.nav_gs_pos.Longitude;
+    autopilotLawsInput.in.data.nav_gs_position.alt = simData.nav_gs_pos.Altitude;
     autopilotLawsInput.in.data.flight_guidance_xtk_nmi = flightGuidanceCrossTrackError;
     autopilotLawsInput.in.data.flight_guidance_tae_deg = flightGuidanceTrackAngleError;
     autopilotLawsInput.in.data.flight_guidance_phi_deg = flightGuidancePhiPreCommand;
