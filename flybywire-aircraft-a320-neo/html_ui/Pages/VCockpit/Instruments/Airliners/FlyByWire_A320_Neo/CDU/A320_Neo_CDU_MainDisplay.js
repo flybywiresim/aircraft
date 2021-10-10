@@ -849,12 +849,21 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         return this._inOut;
     }
 
+    /**
+     * should be refactored as `setScratchpadThroughKeyboardEntry` function
+     * @param v {string}
+     */
     set inOut(v) {
         if (v.length < 23) {
             this.setInOut(v);
         }
     }
 
+    /**
+     * should only be accessed via functions like `setScratchpadThroughKeyboardEntry` or `setScratchpadThroughSystemMessage`
+     * and renamed `setScratchpad`
+     * @param content {string}
+     */
     setInOut(content) {
         this._inOut = content;
         this._inOutElement.textContent = this._inOut;
