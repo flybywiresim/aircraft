@@ -860,8 +860,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
 
     /**
-     * should only be accessed via functions like `setScratchpadThroughKeyboardEntry` or `setScratchpadThroughSystemMessage`
-     * and renamed `setScratchpad`
+     * should be renamed to `setScratchpadThroughSystem`
      * @param content {string}
      */
     setInOut(content) {
