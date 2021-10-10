@@ -236,6 +236,7 @@ impl PneumaticContainerConnector {
         from: &mut impl PneumaticContainer,
         to: &mut impl PneumaticContainer,
     ) {
+        // TODO: Remove this. This is needed because moving 0 volume leads to an issue
         if self.transfer_speed_factor.get::<ratio>() == 0. {
             return;
         }
@@ -244,34 +245,54 @@ impl PneumaticContainerConnector {
             / Pressure::new::<pascal>(142000.)
             / (from.volume() + to.volume());
 
-        let fluid_to_move = self.transfer_speed_factor
-            * equalization_volume
-            * (1. - (-Self::TRANSFER_SPEED * context.delta_as_secs_f64()).exp());
+        let fluid_to_move = from.volume().min(
+            self.transfer_speed_factor
+                * equalization_volume
+                * (1. - (-Self::TRANSFER_SPEED * context.delta_as_secs_f64()).exp()),
+        );
 
-        let fluid_moved = fluid_to_move.min(from.volume());
-        self.move_volume(from, to, fluid_moved);
+        self.move_volume(from, to, fluid_to_move);
 
-        if fluid_moved.get::<cubic_meter>() > 0. {
-            let new_temperature: f64 = (fluid_moved.get::<cubic_meter>()
-                * from.temperature().get::<kelvin>()
-                + to.volume().get::<cubic_meter>() * to.temperature().get::<kelvin>())
-                / (fluid_moved.get::<cubic_meter>() + to.volume().get::<cubic_meter>());
+        if fluid_to_move.get::<cubic_meter>() > 0. {
+            let new_temperature = self.compute_mixing_temperature(
+                fluid_to_move,
+                from.temperature(),
+                to.volume(),
+                to.temperature(),
+            );
 
             to.update_temperature(TemperatureInterval::new::<temperature_interval::kelvin>(
-                new_temperature - to.temperature().get::<kelvin>(),
+                new_temperature.get::<kelvin>() - to.temperature().get::<kelvin>(),
             ))
         } else {
-            let new_temperature: f64 = (fluid_moved.get::<cubic_meter>()
-                * to.temperature().get::<kelvin>()
-                + from.volume().get::<cubic_meter>() * from.temperature().get::<kelvin>())
-                / (fluid_moved.get::<cubic_meter>() + from.volume().get::<cubic_meter>());
+            let new_temperature = self.compute_mixing_temperature(
+                fluid_to_move,
+                to.temperature(),
+                from.volume(),
+                from.temperature(),
+            );
 
             from.update_temperature(TemperatureInterval::new::<temperature_interval::kelvin>(
-                new_temperature - from.temperature().get::<kelvin>(),
+                new_temperature.get::<kelvin>() - from.temperature().get::<kelvin>(),
             ))
         };
 
         self.fluid_flow = fluid_to_move / context.delta_as_time();
+    }
+
+    // TODO: This could probably be static?
+    fn compute_mixing_temperature(
+        &self,
+        volume_one: Volume,
+        temperature_one: ThermodynamicTemperature,
+        volume_two: Volume,
+        temperature_two: ThermodynamicTemperature,
+    ) -> ThermodynamicTemperature {
+        ThermodynamicTemperature::new::<kelvin>(
+            (volume_one.get::<cubic_meter>() * temperature_one.get::<kelvin>()
+                + volume_two.get::<cubic_meter>() * temperature_two.get::<kelvin>())
+                / (volume_one.get::<cubic_meter>() + volume_two.get::<cubic_meter>()),
+        )
     }
 
     fn move_volume(
