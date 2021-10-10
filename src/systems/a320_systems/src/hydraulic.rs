@@ -538,6 +538,15 @@ impl A320Hydraulic {
             emergency_elec_state,
         );
 
+        // Tug has its angle changing on each frame and we'd like to detect this
+        self.pushback_tug.update();
+
+        self.braking_force.update_forces(
+            &context,
+            &self.braking_circuit_norm,
+            &self.braking_circuit_altn,
+        );
+
         self.forward_cargo_door_controller.update(
             context,
             &self.forward_cargo_door,
@@ -556,15 +565,6 @@ impl A320Hydraulic {
             emergency_elec_state,
             rat_and_emer_gen_man_on,
             lgciu1,
-        );
-
-        // Tug has its angle changing on each frame and we'd like to detect this
-        self.pushback_tug.update();
-
-        self.braking_force.update_forces(
-            &context,
-            &self.braking_circuit_norm,
-            &self.braking_circuit_altn,
         );
     }
 
@@ -2241,8 +2241,8 @@ mod tests {
             }
         }
         impl EmergencyGeneratorInterface for A320TestElectrical {
-            fn power_generated(&self) -> Power {
-                self.emergency_generator.power_generated()
+            fn generated_power(&self) -> Power {
+                self.emergency_generator.generated_power()
             }
             fn resistant_torque(&self) -> Torque {
                 self.emergency_generator.resistant_torque()

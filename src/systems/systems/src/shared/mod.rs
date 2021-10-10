@@ -52,7 +52,7 @@ pub trait GeneratorControlUnitInterface {
 }
 
 pub trait EmergencyGeneratorInterface {
-    fn power_generated(&self) -> Power;
+    fn generated_power(&self) -> Power;
     fn resistant_torque(&self) -> Torque;
 }
 

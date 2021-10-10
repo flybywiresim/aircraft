@@ -202,8 +202,8 @@ impl EmergencyElectricalState for A320Electrical {
     }
 }
 impl EmergencyGeneratorInterface for A320Electrical {
-    fn power_generated(&self) -> Power {
-        self.emergency_gen.power_generated()
+    fn generated_power(&self) -> Power {
+        self.emergency_gen.generated_power()
     }
     fn resistant_torque(&self) -> Torque {
         self.emergency_gen.resistant_torque()

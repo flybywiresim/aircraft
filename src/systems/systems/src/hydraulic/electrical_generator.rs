@@ -316,7 +316,7 @@ impl ElectricalEmergencyGenerator {
         self.hyd_motor.update_speed(context);
         self.hyd_motor.update_flow(context);
 
-        self.produced_power = emergency_generator.power_generated();
+        self.produced_power = emergency_generator.generated_power();
 
         // println!(
         //     "Gen: speed:{:.0} power:{:.0} pressure:{:.0} flow GPM:{:.1}",
@@ -397,7 +397,7 @@ impl TestGenerator {
     }
 }
 impl EmergencyGeneratorInterface for TestGenerator {
-    fn power_generated(&self) -> Power {
+    fn generated_power(&self) -> Power {
         self.generated_power
     }
     fn resistant_torque(&self) -> Torque {

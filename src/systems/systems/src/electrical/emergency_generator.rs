@@ -113,7 +113,7 @@ impl ElectricitySource for EmergencyGenerator {
     }
 }
 impl EmergencyGeneratorInterface for EmergencyGenerator {
-    fn power_generated(&self) -> Power {
+    fn generated_power(&self) -> Power {
         self.generated_power
     }
     fn resistant_torque(&self) -> Torque {
