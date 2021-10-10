@@ -11,7 +11,7 @@ use uom::si::{
 };
 
 use crate::shared::{
-    interpolation, EmergencyElectricalRatPushButton, EmergencyElectricalState,
+    interpolation, ControlValveCommand, EmergencyElectricalRatPushButton, EmergencyElectricalState,
     EmergencyGeneratorInterface, GeneratorControlUnitInterface, LgciuWeightOnWheels,
 };
 
@@ -130,16 +130,17 @@ impl GeneratorControlUnit {
     }
 }
 impl GeneratorControlUnitInterface for GeneratorControlUnit {
-    fn valve_position_command(&self) -> Ratio {
-        self.valve_position_request
-    }
-
     fn power_demand(&self) -> Power {
         self.power_demand
     }
 
     fn hydraulic_motor_speed(&self) -> AngularVelocity {
         self.current_speed
+    }
+}
+impl ControlValveCommand for GeneratorControlUnit {
+    fn valve_position_command(&self) -> Ratio {
+        self.valve_position_request
     }
 }
 
@@ -186,7 +187,7 @@ impl HydraulicMotor {
 
     fn update_valve_position(
         &mut self,
-        gcu_interface: &impl GeneratorControlUnitInterface,
+        gcu_interface: &impl ControlValveCommand,
         context: &UpdateContext,
     ) {
         self.valve
@@ -306,7 +307,7 @@ impl ElectricalEmergencyGenerator {
     pub fn update(
         &mut self,
         pressure: Pressure,
-        gcu: &impl GeneratorControlUnitInterface,
+        gcu: &impl ControlValveCommand,
         emergency_generator: &impl EmergencyGeneratorInterface,
         context: &UpdateContext,
     ) {
@@ -441,16 +442,17 @@ impl TestGeneratorControlUnit {
 }
 
 impl GeneratorControlUnitInterface for TestGeneratorControlUnit {
-    fn valve_position_command(&self) -> Ratio {
-        self.valve_position_request
-    }
-
     fn power_demand(&self) -> Power {
         self.power_demand
     }
 
     fn hydraulic_motor_speed(&self) -> AngularVelocity {
         self.current_speed
+    }
+}
+impl ControlValveCommand for TestGeneratorControlUnit {
+    fn valve_position_command(&self) -> Ratio {
+        self.valve_position_request
     }
 }
 
@@ -461,8 +463,8 @@ mod tests {
     use std::time::Duration;
 
     use uom::si::{
-        acceleration::foot_per_second_squared, f64::*, length::foot,
-        thermodynamic_temperature::degree_celsius, velocity::knot,angle::radian
+        acceleration::foot_per_second_squared, angle::radian, f64::*, length::foot,
+        thermodynamic_temperature::degree_celsius, velocity::knot,
     };
 
     struct TestEmergencyState {

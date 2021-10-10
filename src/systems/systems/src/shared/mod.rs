@@ -42,13 +42,13 @@ pub trait ApuStart {
     fn start_is_on(&self) -> bool;
 }
 
-// pub trait RamAirTurbineHydraulicLoopPressurised {
-//     fn is_rat_hydraulic_loop_pressurised(&self) -> bool;
-// }
 pub trait GeneratorControlUnitInterface {
-    fn valve_position_command(&self) -> Ratio;
     fn power_demand(&self) -> Power;
     fn hydraulic_motor_speed(&self) -> AngularVelocity;
+}
+
+pub trait ControlValveCommand {
+    fn valve_position_command(&self) -> Ratio;
 }
 
 pub trait EmergencyGeneratorInterface {
