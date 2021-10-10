@@ -7,7 +7,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this._pageCount = undefined;
         this._labels = [];
         this._lines = [];
-        this._inOut = undefined;
+        this._scratchpad = undefined;
         this.onLeftInput = [];
         this.onRightInput = [];
         this.leftInputDelay = [];
@@ -136,9 +136,9 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 this.getChildById("line-" + i + "-center")
             ];
         }
-        this._inOutElement = this.getChildById("in-out");
-        this._inOutElement.style.removeProperty("color");
-        this._inOutElement.className = "white";
+        this._scratchpadElement = this.getChildById("in-out");
+        this._scratchpadElement.style.removeProperty("color");
+        this._scratchpadElement.className = "white";
 
         this.setTimeout = (func) => {
             setTimeout(() => {
@@ -180,7 +180,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             } else if (this.isDisplayingErrorMessage || this.isDisplayingTypeTwoMessage) {
                 this.tryRemoveMessage();
                 this.setScratchpadWithLastUserInput();
-                this._inOutElement.className = "white";
+                this._scratchpadElement.className = "white";
                 this.isDisplayingErrorMessage = false;
                 this.isDisplayingTypeTwoMessage = false;
             } else {
@@ -839,22 +839,13 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
     /* END OF MCDU INTERFACE/LAYOUT */
     /* MCDU SCRATCHPAD */
-    /*
-    * TODO: create a scratchpad status via integer system to better determine status of scratchpad
-    *
-    * Statuses:
-    *   0: empty
-    *   1: contains user content
-    *   2: contains clrValue content
-    *   3: contains typeI message
-    *   4: contains typeII message
-    * */
 
+    // TODO: find cases where this._scratchpad is undefined (maybe initially => put definition into init)
     getScratchpadTextContent() {
-        if (this._inOut === undefined) {
-            this._inOut = this._inOutElement.textContent;
+        if (this._scratchpad === undefined) {
+            this._scratchpad = this._scratchpadElement.textContent;
         }
-        return this._inOut;
+        return this._scratchpad;
     }
 
     setScratchpadThroughKeyboardEntry(value) {
@@ -865,8 +856,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
 
     setScratchpadThroughSystem(value) {
-        this._inOut = value;
-        this._inOutElement.textContent = this._inOut;
+        this._scratchpad = value;
+        this._scratchpadElement.textContent = this._scratchpad;
     }
 
     forceClearScratchpad() {
@@ -889,7 +880,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         }
         if (this.isDisplayingErrorMessage || this.isDisplayingTypeTwoMessage) {
             this.setScratchpadWithLastUserInput();
-            this._inOutElement.className = "white";
+            this._scratchpadElement.className = "white";
             this.isDisplayingErrorMessage = false;
             this.isDisplayingTypeTwoMessage = false;
         }
@@ -899,7 +890,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         if (!this.isDisplayingErrorMessage && !this.isDisplayingTypeTwoMessage) {
             this.lastUserInput = this.getScratchpadTextContent();
             this.setScratchpadThroughSystem("");
-            this._inOutElement.className = "white";
+            this._scratchpadElement.className = "white";
         }
         return this.lastUserInput;
     }
@@ -918,7 +909,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     resetScratchpadAndSetScratchpadThroughSystem(data) {
         this.isDisplayingErrorMessage = false;
         this.isDisplayingTypeTwoMessage = false;
-        this._inOutElement.className = "white";
+        this._scratchpadElement.className = "white";
         this.setScratchpadThroughSystem(data);
     }
 
@@ -926,7 +917,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.inFocus = false;
         this.allSelected = false;
         Coherent.trigger('UNFOCUS_INPUT_FIELD');
-        this._inOutElement.style = null;
+        this._scratchpadElement.style = null;
         this.getChildById("header").style = null;
         if (this.check_focus) {
             clearInterval(this.check_focus);
@@ -946,7 +937,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 this.inFocus = !this.inFocus;
                 if (this.inFocus && (isPoweredL || isPoweredR)) {
                     this.getChildById("header").style = "background: linear-gradient(180deg, rgba(2,182,217,1.0) 65%, rgba(255,255,255,0.0) 65%);";
-                    this._inOutElement.style = "display: inline-block; width:87%; background: rgba(255,255,255,0.2);";
+                    this._scratchpadElement.style = "display: inline-block; width:87%; background: rgba(255,255,255,0.2);";
                     Coherent.trigger('FOCUS_INPUT_FIELD');
                     this.lastInput = new Date();
                     if (mcduTimeout) {
@@ -978,7 +969,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     this.clearFocus();
                 } else if (e.ctrlKey && keycode === KeyCode.KEY_A) {
                     this.allSelected = !this.allSelected;
-                    this._inOutElement.style = `display: inline-block; width:87%; background: ${this.allSelected ? 'rgba(235,64,52,1.0)' : 'rgba(255,255,255,0.2)'};`;
+                    this._scratchpadElement.style = `display: inline-block; width:87%; background: ${this.allSelected ? 'rgba(235,64,52,1.0)' : 'rgba(255,255,255,0.2)'};`;
                 } else if (e.shiftKey && e.ctrlKey && keycode === KeyCode.KEY_BACK_SPACE) {
                     this.forceClearScratchpad();
                 } else if (e.ctrlKey && keycode === KeyCode.KEY_BACK_SPACE) {
@@ -1100,7 +1091,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         }
         this.isDisplayingErrorMessage = true;
         this.setScratchpadThroughSystem(message);
-        this._inOutElement.className = color ? "amber" : "white";
+        this._scratchpadElement.className = color ? "amber" : "white";
     }
 
     /**
@@ -1131,7 +1122,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         if (!this.isDisplayingErrorMessage && (!scratchpadTextContent || this.isDisplayingTypeTwoMessage) && this.messageQueue.length > 0) {
             if (this.messageQueue[0][2](this)) {
                 this.messageQueue.splice(0, 1);
-                this._inOutElement.className = "white";
+                this._scratchpadElement.className = "white";
                 this.setScratchpadWithLastUserInput();
                 return this.tryShowMessage();
             }
@@ -1141,7 +1132,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     this.lastUserInput = scratchpadTextContent;
                 }
                 this.setScratchpadThroughSystem(this.messageQueue[0][0]);
-                this._inOutElement.className = this.messageQueue[0][1] ? "amber" : "white";
+                this._scratchpadElement.className = this.messageQueue[0][1] ? "amber" : "white";
             }
         }
     }
@@ -1156,7 +1147,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 this.messageQueue[i][3](this);
                 this.messageQueue.splice(i, 1);
                 if (i === 0 && this.isDisplayingTypeTwoMessage) {
-                    this._inOutElement.className = "white";
+                    this._scratchpadElement.className = "white";
                     this.setScratchpadWithLastUserInput();
                 }
                 break;
