@@ -328,7 +328,7 @@ const Pump = ({ x, y, onBus = 'DC_ESS', pumpNumber }: PumpProps) => {
     const [busIsPowered] = useSimVar(`L:A32NX_ELEC_${onBus}_BUS_IS_POWERED`, 'bool', 1000);
 
     return (
-        <g className={(pumpNumber === 1 || pumpNumber === 4 ? pushButtonPressed && busIsPowered : active && busIsPowered) ? 'ThickShape PumpActive' : 'ThickShape PumpInactive'}>
+        <g className={active && busIsPowered ? 'ThickShape PumpActive' : 'ThickShape PumpInactive'}>
             <rect x={x} y={y} width="30" height="30" />
             {active
                 ? (busIsPowered
@@ -340,6 +340,14 @@ const Pump = ({ x, y, onBus = 'DC_ESS', pumpNumber }: PumpProps) => {
             {busIsPowered
                 ? null
                 : <text className="LoIndication" x={x + 15} y={y + 20}>LO</text>}
+            {(pumpNumber === 1 || pumpNumber === 4) && active && (
+                <g className="ThickShape PumpActive">
+                    <line x1={x + 15} y1={y + 30} x2={x + 15} y2={y + 60} />
+                    <line x1={pumpNumber === 1 ? x + 16 : x + 14} y1={y + 60} x2={pumpNumber === 1 ? x - 8 : x + 40} y2={y + 60} />
+                    {(pumpNumber === 1) && <Triangle x={x - 26} y={y + 60} colour="Green" fill={0} orientation={-90} />}
+                    {(pumpNumber === 4) && <Triangle x={x + 59} y={y + 60} colour="Green" fill={0} orientation={90} />}
+                </g>
+            )}
         </g>
     );
 };
