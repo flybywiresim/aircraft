@@ -91,28 +91,20 @@ export const FuelPage = () => {
                 {/* CrossFeed valve */}
                 <CrossFeedValve x={300} y={150} />
 
-                {/* Side lines */}
-                <line className="FlowShape" x1="160" y1="150" x2="275" y2="150" />
-                <line className="FlowShape" x1="325" y1="150" x2="440" y2="150" />
-
                 {(crossFeedPosition === 1) && (
                     <>
                         {/* Center valve lines */}
-                        <line className="FlowShape" x1="317" y1="150" x2="330" y2="150" />
-                        <line className="FlowShape" x1="270" y1="150" x2="283" y2="150" />
+                        <line className="FlowShape" x1="317" y1="150" x2="440" y2="150" />
+                        <line className="FlowShape" x1="160" y1="150" x2="283" y2="150" />
                     </>
                 )}
 
-                {/* Center pumps lines */}
-                <line className="FlowShape" x1="274" y1="150" x2="274" y2="205" />
-                <line className="FlowShape" x1="326" y1="150" x2="326" y2="205" />
-
                 {/* Pumps */}
-                <Pump x={259} y={205} pumpNumber={1} />
-                <Pump x={311} y={205} pumpNumber={4} />
+                <Pump x={267} y={223} pumpNumber={1} />
+                <Pump x={302} y={223} pumpNumber={4} />
 
                 {/* Quantities */}
-                <text className="TankQuantity" x={335} y={275}>{fuelInTanksForDisplay(tankCenter, unit, fuelWeightPerGallon)}</text>
+                <text className="TankQuantity" x={330} y={315}>{fuelInTanksForDisplay(tankCenter, unit, fuelWeightPerGallon)}</text>
             </>
 
             {/* Right */}
@@ -224,9 +216,7 @@ const Wings = () => (
         {/* Top line */}
         <path className="ThickShape" d="M 585, 255 l -124.2, -21.6" />
         <path className="ThickShape" d="M 15,  255 l 124.2, -21.6" />
-        <path className="ThickShape" d="M 245, 215 l 12, 0" />
-        <path className="ThickShape" d="M 292, 215 l 16, 0" />
-        <path className="ThickShape" d="M 343, 215 l 14, 0" />
+        <path className="ThickShape" d="M 245, 215 l 110, 0" />
         <path className="ThickShape" d="M 245, 215 l -29.9, 5.2" />
         <path className="ThickShape" d="M 355, 215 l 29.9, 5.2" />
 
