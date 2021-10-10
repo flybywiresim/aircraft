@@ -1214,20 +1214,22 @@ impl SimulationElement for FullAuthorityDigitalEngineControl {
 
 // Just sticking all of the pack related things into this.
 struct PackComplex {
-    consumer: DefaultConsumer,
-    consumer_controller: ConstantConsumerController,
+    actual_pack: DefaultPipe,
+    exhaust: PneumaticExhaust,
     pack_flow_valve: DefaultValve,
     pack_flow_valve_controller: PackFlowValveController,
 }
+// TODO: Consumption rate should be like 0.75 m^3/s which is a about 0.4 kg/s.
 impl PackComplex {
     fn new(engine_number: usize) -> Self {
         Self {
-            consumer: DefaultConsumer::new(Volume::new::<cubic_meter>(1.)),
-            // TODO: This should be like 0.75 m^3/s which is a consumption rate of about 0.4 kg/s.
-            // Due to the way consumers work right now, this has been set to 0.
-            consumer_controller: ConstantConsumerController::new(VolumeRate::new::<
-                cubic_meter_per_second,
-            >(0.1)),
+            actual_pack: DefaultPipe::new(
+                Volume::new::<cubic_meter>(1.),
+                Fluid::new(Pressure::new::<pascal>(142000.)),
+                Pressure::new::<psi>(14.7),
+                ThermodynamicTemperature::new::<degree_celsius>(15.),
+            ),
+            exhaust: PneumaticExhaust::new(0.1),
             pack_flow_valve: DefaultValve::new_closed(),
             pack_flow_valve_controller: PackFlowValveController::new(engine_number),
         }
@@ -1238,10 +1240,10 @@ impl PackComplex {
             .update_open_amount(&self.pack_flow_valve_controller);
 
         self.pack_flow_valve
-            .update_move_fluid(context, from, &mut self.consumer);
+            .update_move_fluid(context, from, &mut self.actual_pack);
 
-        self.consumer_controller.update(context);
-        self.consumer.update(&self.consumer_controller);
+        self.exhaust
+            .update_move_fluid(context, &mut self.actual_pack);
     }
 
     pub fn pack_flow_valve_is_open(&self) -> bool {
@@ -1250,23 +1252,23 @@ impl PackComplex {
 }
 impl PneumaticContainer for PackComplex {
     fn pressure(&self) -> Pressure {
-        self.consumer.pressure()
+        self.actual_pack.pressure()
     }
 
     fn volume(&self) -> Volume {
-        self.consumer.volume()
+        self.actual_pack.volume()
     }
 
     fn temperature(&self) -> ThermodynamicTemperature {
-        self.consumer.temperature()
+        self.actual_pack.temperature()
     }
 
     fn change_volume(&mut self, volume: Volume) {
-        self.consumer.change_volume(volume);
+        self.actual_pack.change_volume(volume);
     }
 
     fn update_temperature(&mut self, temperature_change: TemperatureInterval) {
-        self.consumer.update_temperature(temperature_change);
+        self.actual_pack.update_temperature(temperature_change);
     }
 }
 impl SimulationElement for PackComplex {

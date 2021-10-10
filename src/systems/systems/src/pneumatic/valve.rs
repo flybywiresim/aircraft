@@ -316,6 +316,45 @@ impl PneumaticContainerConnector {
     }
 }
 
+/// This is only controlled by physical forces
+pub struct PneumaticExhaust {
+    exhaust_speed: f64,
+    fluid_flow: VolumeRate,
+}
+impl PneumaticExhaust {
+    const TRANSFER_SPEED: f64 = 10.;
+
+    pub fn new(exhaust_speed: f64) -> Self {
+        Self {
+            exhaust_speed,
+            fluid_flow: VolumeRate::new::<cubic_meter_per_second>(0.),
+        }
+    }
+
+    pub fn update_move_fluid(
+        &mut self,
+        context: &UpdateContext,
+        from: &mut impl PneumaticContainer,
+    ) {
+        let equalization_volume = (from.pressure() - context.ambient_pressure()) * from.volume()
+            / Pressure::new::<pascal>(142000.);
+
+        let fluid_to_move = from.volume().min(
+            self.exhaust_speed
+                * equalization_volume
+                * (1. - (-Self::TRANSFER_SPEED * context.delta_as_secs_f64()).exp()),
+        );
+
+        from.change_volume(-fluid_to_move);
+
+        self.fluid_flow = fluid_to_move / context.delta_as_time();
+    }
+
+    pub fn fluid_flow(&self) -> VolumeRate {
+        self.fluid_flow
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -387,6 +426,10 @@ mod tests {
 
     fn temperature_tolerance() -> TemperatureInterval {
         TemperatureInterval::new::<temperature_interval::degree_celsius>(0.5)
+    }
+
+    fn volume_rate_tolerance() -> VolumeRate {
+        VolumeRate::new::<cubic_meter_per_second>(1e-4)
     }
 
     fn air() -> Fluid {
@@ -682,5 +725,22 @@ mod tests {
         );
         assert!(valve.is_powered());
         assert_eq!(valve.open_amount(), Ratio::new::<ratio>(0.));
+    }
+
+    #[test]
+    fn exhaust_makes_pressure_go_to_ambient_pressure() {
+        let mut container = quick_container(1., 20., 15.);
+        let mut exhaust = PneumaticExhaust::new(1.);
+
+        let context = context(Duration::from_millis(16), Length::new::<foot>(0.));
+
+        exhaust.update_move_fluid(&context, &mut container);
+        assert!(exhaust.fluid_flow() > volume_rate_tolerance());
+
+        for _ in 1..1000 {
+            exhaust.update_move_fluid(&context, &mut container);
+        }
+
+        assert!((container.pressure() - context.ambient_pressure()) < pressure_tolerance());
     }
 }
