@@ -178,6 +178,7 @@ impl A320Pneumatic {
                 overhead_panel,
                 engine_fire_push_buttons,
                 self.cross_bleed_valve.is_open(),
+                &self.fadec,
             );
         }
 
@@ -439,6 +440,7 @@ impl BleedMonitoringComputer {
         overhead_panel: &mut A320PneumaticOverheadPanel,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         cross_bleed_valve_is_open: bool,
+        fadec: &FullAuthorityDigitalEngineControl,
     ) {
         self.main_channel.update(
             context,
@@ -447,6 +449,7 @@ impl BleedMonitoringComputer {
             apu_bleed_valve_is_open,
             cross_bleed_valve_is_open,
             overhead_panel,
+            fadec,
         );
 
         self.backup_channel.update(
@@ -456,6 +459,7 @@ impl BleedMonitoringComputer {
             apu_bleed_valve_is_open,
             cross_bleed_valve_is_open,
             overhead_panel,
+            fadec,
         );
     }
 
@@ -596,6 +600,7 @@ impl BleedMonitoringComputerChannel {
         apu_bleed_valve_is_open: bool,
         cross_bleed_valve_is_open: bool,
         overhead_panel: &mut A320PneumaticOverheadPanel,
+        fadec: &FullAuthorityDigitalEngineControl,
     ) {
         self.ip_compressor_pressure = sensors.ip_pressure();
         self.hp_compressor_pressure = sensors.hp_pressure();
@@ -606,6 +611,13 @@ impl BleedMonitoringComputerChannel {
         // However, due to the way the precooler currently works, regulating inlet works much better for now.
         // YES, I AM AWARE THAT I HAVE INLET AND THEN OUTLET
         self.precooler_inlet_temperature = sensors.precooler_outlet_temperature();
+
+        self.prv_pid
+            .change_setpoint(if fadec.is_single_vs_dual_bleed_config() {
+                52.
+            } else {
+                46.
+            });
 
         self.hpv_pid
             .next_control_output(self.transfer_pressure.get::<psi>(), Some(context.delta()));
@@ -1204,6 +1216,10 @@ impl FullAuthorityDigitalEngineControl {
             _ => panic!("Invalid engine number"),
         }
     }
+
+    pub fn is_single_vs_dual_bleed_config(&self) -> bool {
+        (self.engine_1_state == EngineState::On) ^ (self.engine_2_state == EngineState::On)
+    }
 }
 impl SimulationElement for FullAuthorityDigitalEngineControl {
     fn read(&mut self, reader: &mut SimulatorReader) {
@@ -1600,6 +1616,7 @@ mod tests {
             self.write("GENERAL ENG STARTER ACTIVE:1", false);
             self.write("TURB ENG CORRECTED N2:1", Ratio::new::<ratio>(0.));
             self.write("TURB ENG CORRECTED N1:1", Ratio::new::<ratio>(0.));
+            self.write("ENGINE_STATE:1", EngineState::Off);
 
             self
         }
@@ -1608,6 +1625,7 @@ mod tests {
             self.write("GENERAL ENG STARTER ACTIVE:2", false);
             self.write("TURB ENG CORRECTED N2:2", Ratio::new::<ratio>(0.));
             self.write("TURB ENG CORRECTED N1:2", Ratio::new::<ratio>(0.));
+            self.write("ENGINE_STATE:2", EngineState::Off);
 
             self
         }
@@ -1834,6 +1852,10 @@ mod tests {
         fn bmc_is_powered(&self, bmc_number: usize) -> bool {
             self.query(|a| a.pneumatic.bmcs[bmc_number - 1].is_powered())
         }
+
+        fn fadec_single_vs_dual_bleed_config(&self) -> bool {
+            self.query(|a| a.pneumatic.fadec.is_single_vs_dual_bleed_config())
+        }
     }
 
     fn test_bed() -> PneumaticTestBed {
@@ -1856,7 +1878,7 @@ mod tests {
         let mut test_bed = test_bed_with()
             .in_isa_atmosphere(alt)
             .idle_eng1()
-            .idle_eng2()
+            .stop_eng2()
             .both_packs_auto()
             // .set_bleed_air_running()
             .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Auto);
@@ -1881,11 +1903,11 @@ mod tests {
         let mut abv_open = Vec::new();
         let mut fav_open = Vec::new();
 
-        for i in 1..5000 {
+        for i in 1..10000 {
             ts.push(i as f64 * 16.);
 
             if i == 5000 {
-                // test_bed = test_bed.toga_eng1();
+                test_bed = test_bed.idle_eng2();
             }
 
             hps.push(test_bed.hp_pressure(1).get::<psi>());
@@ -2548,6 +2570,22 @@ mod tests {
 
         assert!(test_bed.pr_valve_is_open(1));
         assert!(test_bed.engine_bleed_push_button_has_fault(1));
+    }
+
+    #[test]
+    fn fadec_detects_single_vs_dual_bleed_config() {
+        let mut test_bed = test_bed_with().stop_eng1().stop_eng2().and_run();
+
+        assert!(!test_bed.fadec_single_vs_dual_bleed_config());
+
+        test_bed = test_bed.idle_eng1().stop_eng2().and_run();
+        assert!(test_bed.fadec_single_vs_dual_bleed_config());
+
+        test_bed = test_bed.stop_eng1().idle_eng2().and_run();
+        assert!(test_bed.fadec_single_vs_dual_bleed_config());
+
+        test_bed = test_bed.idle_eng1().idle_eng2().and_run();
+        assert!(!test_bed.fadec_single_vs_dual_bleed_config());
     }
 
     mod ovhd {
