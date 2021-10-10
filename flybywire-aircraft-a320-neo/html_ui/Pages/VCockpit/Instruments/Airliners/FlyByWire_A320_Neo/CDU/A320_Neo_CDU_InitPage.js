@@ -289,7 +289,7 @@ class CDUInitPage {
         mcdu.onRightInput[0] = async (value) => {
             if (value === "") {
                 mcdu.updateZfwVars();
-                mcdu.sendDataToScratchpad(
+                mcdu.resetScratchpadAndSetScratchpadThroughSystem(
                     (isFinite(mcdu.zeroFuelWeight) ? (NXUnits.kgToUser(mcdu.zeroFuelWeight)).toFixed(1) : "") +
                     "/" +
                     (isFinite(mcdu.zeroFuelWeightMassCenter) ? mcdu.zeroFuelWeightMassCenter.toFixed(1) : ""));

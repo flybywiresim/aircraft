@@ -190,7 +190,7 @@ const getSimBriefUser = (value, mcdu, updateView) => {
     SimBriefApi.getSimBriefUser(value)
         .then(data => {
             if (data.fetch.status === "Error: Unknown UserID") {
-                mcdu.sendDataToScratchpad(value);
+                mcdu.resetScratchpadAndSetScratchpadThroughSystem(value);
                 mcdu.addNewMessage(NXFictionalMessages.noSimBriefUser);
             } else {
                 NXDataStore.set("CONFIG_SIMBRIEF_USERID", data.fetch.userid);
