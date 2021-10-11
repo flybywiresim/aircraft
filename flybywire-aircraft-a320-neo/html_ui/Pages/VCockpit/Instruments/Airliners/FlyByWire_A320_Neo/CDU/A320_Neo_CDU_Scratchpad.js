@@ -27,7 +27,6 @@ class ScratchpadDisplay {
                 this.dataLink.mcdu.tryShowMessage();
             } else if (this.dataLink.text === FMCMainDisplay.clrValue) {
                 this.dataLink.status = SpDisplayStatus.clrValue;
-                this.dataLink.mcdu.tryShowMessage();
             } else {
                 this.dataLink.status = SpDisplayStatus.userContent;
             }
@@ -36,7 +35,6 @@ class ScratchpadDisplay {
 }
 
 class ScratchpadDataLink {
-    // TODO: if scratchpad is empty -> send request event to e.g. fmgc if not deselected for new message
     constructor(_mcdu) {
         this.mcdu = _mcdu;
         this.display = new ScratchpadDisplay(this);
@@ -57,7 +55,6 @@ class ScratchpadDataLink {
         this.message = undefined;
         this.text = text;
         this.display.write(text);
-        // this.status = text ? SpDisplayStatus.userContent : SpDisplayStatus.empty;
     }
 
     setMessage(message) {
@@ -66,7 +63,6 @@ class ScratchpadDataLink {
         }
         this.message = message;
         this.display.write(message.text, message.isAmber ? "amber" : "white");
-        // this.status = message.isTypeTwo ? SpDisplayStatus.typeTwoMessage : SpDisplayStatus.typeOneMessage;
     }
 
     addChar(char) {
