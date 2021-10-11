@@ -3,9 +3,9 @@
 const reactComponentsClasses = require('../../../../node_modules/@flybywiresim/react-components/build/usedCSSClasses.json');
 
 module.exports = {
-    // mode: 'jit',
+    mode: 'jit',
     purge: {
-        enabled: process.env.A32NX_PRODUCTION_BUILD === '1',
+        enabled: true,
         content: [
             './**/*.{jsx,tsx}',
         ],
