@@ -333,7 +333,6 @@ impl AirDataInertialReferenceUnit {
         }
     }
 
-    #[allow(clippy::too_many_arguments)]
     fn update(
         &mut self,
         context: &UpdateContext,
@@ -698,7 +697,6 @@ impl InertialReference {
         }
     }
 
-    #[allow(clippy::too_many_arguments)]
     fn update(
         &mut self,
         context: &UpdateContext,

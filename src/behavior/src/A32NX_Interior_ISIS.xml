@@ -52,7 +52,7 @@
                         0 (&gt;H:A32NX_ISIS_KNOB_ANTI_CLOCKWISE)
                     } els{
                         (L:A32NX_ISIS_BARO_MODE, enum) #MODE_STD# != if{
-                            2 (A:KOHLSMAN SETTING MB:2, millibars) -- 16 * (&gt;K:2:KOHLSMAN_SET)
+                            2 (&gt;K:KOHLSMAN_DEC)
                         }
                     }
                 </ANTICLOCKWISE_CODE>
@@ -62,7 +62,7 @@
                         0 (&gt;H:A32NX_ISIS_KNOB_CLOCKWISE)
                     } els{
                         (L:A32NX_ISIS_BARO_MODE, enum) #MODE_STD# != if{
-                            2 (A:KOHLSMAN SETTING MB:2, millibars) ++ 16 * (&gt;K:2:KOHLSMAN_SET)
+                            2 (&gt;K:KOHLSMAN_INC)
                         }
                     }
                 </CLOCKWISE_CODE>
