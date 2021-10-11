@@ -1,3 +1,6 @@
+//  Copyright (c) 2021 FlyByWire Simulations
+//  SPDX-License-Identifier: GPL-3.0
+
 export type RangeSetting = 10 | 20 | 40 | 80 | 160 | 320;
 export const rangeSettings: RangeSetting[] = [10, 20, 40, 80, 160, 320];
 
@@ -44,8 +47,9 @@ export enum NdSymbolTypeFlags {
     FixInfo = 1 << 14,
     FlightPlan = 1 << 15,
     PwpDecel = 1 << 16,
-    PwpCdaFlap1White = 1 << 17,
-    PwpCdaFlap2White = 1 << 20,
+    PwpTopOfDescent = 1 << 17,
+    PwpCdaFlap1 = 1 << 18,
+    PwpCdaFlap2 = 1 << 19,
 }
 
 export interface NdSymbol {

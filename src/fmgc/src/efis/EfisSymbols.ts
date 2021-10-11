@@ -1,17 +1,25 @@
-// Copyright (c) 2021 FlyByWire Simulations
-// SPDX-License-Identifier: GPL-3.0
+//  Copyright (c) 2021 FlyByWire Simulations
+//  SPDX-License-Identifier: GPL-3.0
 
 import { FlightPlanManager } from '@fmgc/flightplanning/FlightPlanManager';
 import { RunwaySurface, VorType, WaypointConstraintType } from '@fmgc/types/fstypes/FSEnums';
 import { OneWayRunway, RawAirport, WayPoint } from '@fmgc/types/fstypes/FSTypes';
 import { EfisOption, Mode, NdSymbol, NdSymbolTypeFlags, RangeSetting, rangeSettings } from '@shared/NavigationDisplay';
-import { LatLongData } from '@typings/fs-base-ui';
+import { GuidanceManager } from '@fmgc/guidance/GuidanceManager';
+import { Coordinates } from '@fmgc/flightplanning/data/geo';
+import { Geometry } from '@fmgc/guidance/Geometry';
+import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { NearbyFacilities } from './NearbyFacilities';
+import { NauticalMiles } from '../../../../typings';
 
 export class EfisSymbols {
     private blockUpdate = false;
 
     private flightPlanManager: FlightPlanManager;
+
+    private guidanceController: GuidanceController;
+
+    private guidanceManager: GuidanceManager;
 
     private nearby: NearbyFacilities;
 
@@ -27,7 +35,7 @@ export class EfisSymbols {
 
     private lastPlanCentre = undefined;
 
-    private lastPpos: LatLongData = { lat: 0, long: 0 };
+    private lastPpos: Coordinates = { lat: 0, long: 0 };
 
     private lastTrueHeading: number = -1;
 
@@ -35,8 +43,10 @@ export class EfisSymbols {
 
     private lastFpVersion;
 
-    constructor(flightPlanManager) {
+    constructor(flightPlanManager: FlightPlanManager, guidanceController: GuidanceController) {
         this.flightPlanManager = flightPlanManager;
+        this.guidanceController = guidanceController;
+        this.guidanceManager = guidanceController.guidanceManager;
         this.nearby = new NearbyFacilities();
     }
 
@@ -100,7 +110,7 @@ export class EfisSymbols {
         EfisSymbols.sides.forEach(async (side) => {
             const range = rangeSettings[SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_ND_RANGE`, 'number')];
             const mode: Mode = SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_ND_MODE`, 'number');
-            const efisOption = SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_OPTION`, 'enum');
+            const efisOption = SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_OPTION`, 'Enum');
 
             const rangeChange = this.lastRange[side] !== range;
             this.lastRange[side] = range;
@@ -133,6 +143,9 @@ export class EfisSymbols {
             // symbols most recently inserted always end up at the end of the array
             // we reverse the array at the end to make sure symbols are drawn in the correct order
             const upsertSymbol = (symbol: NdSymbol): void => {
+                if (DEBUG) {
+                    console.time(`upsert symbol ${symbol.databaseId}`);
+                }
                 const symbolIdx = symbols.findIndex((s) => s.databaseId === symbol.databaseId);
                 if (symbolIdx !== -1) {
                     const oldSymbol = symbols.splice(symbolIdx, 1)[0];
@@ -214,7 +227,7 @@ export class EfisSymbols {
             }
 
             for (let i = 0; i < 4; i++) {
-                const fixInfo = this.flightPlanManager.getFixInfo(i);
+                const fixInfo = this.flightPlanManager.getFixInfo(i as 0 | 1 | 2 | 3);
                 const refFix = fixInfo?.getRefFix();
                 if (refFix !== undefined) {
                     upsertSymbol({
@@ -336,6 +349,17 @@ export class EfisSymbols {
                 }
             }
 
+            // Pseudo waypoints
+
+            for (const pwp of this.guidanceController.pseudoWaypoints) {
+                upsertSymbol({
+                    databaseId: pwp.ident,
+                    ident: pwp.ident,
+                    location: pwp.efisSymbolLla,
+                    type: pwp.efisSymbolFlag,
+                });
+            }
+
             const wordsPerSymbol = 6;
             const maxSymbols = 640 / wordsPerSymbol;
             if (symbols.length > maxSymbols) {
@@ -368,6 +392,25 @@ export class EfisSymbols {
         default:
             return 0;
         }
+    }
+
+    private findPointFromEndOfPath(path: Geometry, distanceFromEnd: NauticalMiles): Coordinates | undefined {
+        let accumulator = 0;
+
+        // FIXME take transitions into account on newer FMSs
+        for (const [, leg] of path.legs) {
+            accumulator += leg.distance;
+
+            if (accumulator > distanceFromEnd) {
+                const distanceFromEndOfLeg = distanceFromEnd - (accumulator - leg.distance);
+
+                return leg.getPseudoWaypointLocation(distanceFromEndOfLeg);
+            }
+        }
+
+        // console.error(`[VNAV/findPointFromEndOfPath] ${distanceFromEnd.toFixed(2)}nm is larger than the total lateral path.`);
+
+        return undefined;
     }
 
     private calculateEditArea(range: RangeSetting, mode: Mode): [number, number, number] {

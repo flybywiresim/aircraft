@@ -82,10 +82,19 @@ class CDUFlightPlanPage {
         // FPM is trying to advance to the next one.
         const first = (mcdu.currentFlightPhase <= FmgcFlightPhases.TAKEOFF) ? 0 : activeFirst;
 
+        // PWPs
+        const fmsPseudoWaypoints = mcdu.guidanceController.pseudoWaypoints;
+
         // Primary F-PLAN
         for (let i = first; i < fpm.getWaypointsCount(); i++) {
+            const pseudoWaypointsOnLeg = fmsPseudoWaypoints.filter((it) => it.displayedOnMcdu && it.alongLegIndex === i);
+
+            if (pseudoWaypointsOnLeg) {
+                waypointsAndMarkers.push(...pseudoWaypointsOnLeg.map((pwp) => ({ pwp, fpIndex: i })));
+            }
+
             const wp = fpm.getWaypoint(i);
-            waypointsAndMarkers.push({ wp: fpm.getWaypoint(i), fpIndex: i});
+            waypointsAndMarkers.push({ wp, fpIndex: i});
 
             if (wp.endsInDiscontinuity) {
                 waypointsAndMarkers.push({ marker: Markers.FPLN_DISCONTINUITY, fpIndex: i});
@@ -125,7 +134,7 @@ class CDUFlightPlanPage {
         for (let rowI = 0, winI = offset; rowI < rowsCount; rowI++, winI++) {
             winI = winI % (waypointsAndMarkers.length);
 
-            const {wp, marker, fpIndex} = waypointsAndMarkers[winI];
+            const {wp, pwp, marker, fpIndex} = waypointsAndMarkers[winI];
             const {fpIndex: prevFpIndex} = (winI > 0) ? waypointsAndMarkers[winI - 1] : { fpIndex: null};
 
             if (wp) {
@@ -489,6 +498,23 @@ class CDUFlightPlanPage {
                         CDUVerticalRevisionPage.ShowPage(mcdu, wp);
                     });
 
+            } else if (pwp) {
+                scrollWindow[rowI] = {
+                    fpIndex: fpIndex,
+                    active: false,
+                    ident: pwp.ident,
+                    color: "green",
+                    distance: Math.round(pwp.stats.distanceInFP).toString(),
+                    spdColor: "white",
+                    speedConstraint: "---",
+                    altColor: 'white',
+                    altitudeConstraint: { alt: "-----", altPrefix: "\xa0" },
+                    timeCell: "----[s-text]",
+                    timeColor: "white",
+                    fixAnnotation: "",
+                    bearingTrack: pwp.stats.bearingInFp,
+                    isOverfly: false,
+                };
             } else if (marker) {
 
                 // Marker
@@ -525,7 +551,7 @@ class CDUFlightPlanPage {
         let firstWp = scrollWindow.length;
         const scrollText = [];
         for (let rowI = 0; rowI < scrollWindow.length; rowI++) {
-            const { marker: cMarker, speedConstraint: cSpd, altitudeConstraint: cAlt } = scrollWindow[rowI];
+            const { marker: cMarker, pwp: cPwp, speedConstraint: cSpd, altitudeConstraint: cAlt } = scrollWindow[rowI];
             let spdRpt = false;
             let altRpt = false;
             let showFix = true;
@@ -533,10 +559,10 @@ class CDUFlightPlanPage {
             let showNm = false;
 
             // Waypoint
-            if (!cMarker) {
+            if (!cMarker && !cPwp) {
                 if (rowI > 0) {
-                    const { marker: pMarker, speedConstraint: pSpd, altitudeConstraint: pAlt} = scrollWindow[rowI - 1];
-                    if (!pMarker) {
+                    const { marker: pMarker, pwp: pPwp, speedConstraint: pSpd, altitudeConstraint: pAlt} = scrollWindow[rowI - 1];
+                    if (!pMarker && !pPwp) {
                         firstWp = Math.min(firstWp, rowI);
                         if (rowI === firstWp) {
                             showNm = true;

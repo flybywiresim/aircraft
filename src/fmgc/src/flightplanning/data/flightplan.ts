@@ -1,3 +1,6 @@
+//  Copyright (c) 2021 FlyByWire Simulations
+//  SPDX-License-Identifier: GPL-3.0
+
 export interface WaypointStats {
     /**
      * Waypoint ident
@@ -5,7 +8,7 @@ export interface WaypointStats {
     ident: string;
 
     /**
-     * Bearing from previous waypoint in seconds
+     * Bearing from previous waypoint in degrees
      */
     bearingInFp: number;
 

@@ -1,3 +1,6 @@
+//  Copyright (c) 2021 FlyByWire Simulations
+//  SPDX-License-Identifier: GPL-3.0
+
 import React, { FC, memo, useState } from 'react';
 import { Geometry } from '@fmgc/guidance/Geometry';
 import { Type1Transition } from '@fmgc/guidance/lnav/transitions/Type1';
@@ -338,34 +341,39 @@ const SymbolMarker: FC<SymbolMarkerProps> = memo(({ ident, x, y, type, constrain
     } else if (type & (NdSymbolTypeFlags.Waypoint | NdSymbolTypeFlags.FlightPlan | NdSymbolTypeFlags.FixInfo)) {
         showIdent = true;
         elements.push(<WaypointMarker colour={colour} />);
-    } else if (type & (NdSymbolTypeFlags.PwpCdaFlap1White)) {
+    } else if (type & (NdSymbolTypeFlags.PwpTopOfDescent)) {
+        showIdent = false;
+        elements.push(
+            <image xlinkHref="/Images/ND/PWP_TOD_WHITE.svg" x={0} y={-0.75} width={56} height={26} />,
+        );
+    } else if (type & (NdSymbolTypeFlags.PwpCdaFlap1)) {
         showIdent = false;
         elements.push(
             <>
-                <circle cx={0} cy={0} r={14} strokeWidth={2.5} className="shadow" />
-                <circle cx={0} cy={0} r={14} strokeWidth={2} className="White" />
+                <circle cx={0} cy={0} r={13} strokeWidth={1.6} className="shadow" />
+                <circle cx={0} cy={0} r={12} strokeWidth={1.5} className="White" />
 
-                <text x={0.5} y={-2.5} className="White shadow" textAnchor="middle" dominantBaseline="middle" fontSize={23}>1</text>
+                <text x={2.5} y={2} className="White shadow" textAnchor="middle" dominantBaseline="middle" fontSize={23}>1</text>
             </>,
         );
-    } else if (type & (NdSymbolTypeFlags.PwpCdaFlap2White)) {
+    } else if (type & (NdSymbolTypeFlags.PwpCdaFlap2)) {
         showIdent = false;
         elements.push(
             <>
-                <circle cx={0} cy={0} r={14} strokeWidth={2.5} className="shadow" />
-                <circle cx={0} cy={0} r={14} strokeWidth={2} className="White" />
+                <circle cx={0} cy={0} r={13} strokeWidth={1.6} className="shadow" />
+                <circle cx={0} cy={0} r={12} strokeWidth={1.5} className="White" />
 
-                <text x={0.5} y={-2.5} className="White shadow" textAnchor="middle" dominantBaseline="middle" fontSize={23}>2</text>
+                <text x={1} y={2} className="White shadow" textAnchor="middle" dominantBaseline="middle" fontSize={23}>2</text>
             </>,
         );
     } else if (type & (NdSymbolTypeFlags.PwpDecel)) {
         showIdent = false;
         elements.push(
             <>
-                <circle cx={0} cy={0} r={14} strokeWidth={2.5} className="shadow" />
-                <circle cx={0} cy={0} r={14} strokeWidth={2} className="Magenta" />
+                <circle cx={0} cy={0} r={13} strokeWidth={1.6} className="shadow" />
+                <circle cx={0} cy={0} r={12} strokeWidth={1.5} className="Magenta" />
 
-                <text x={0.5} y={-2.5} className="Magenta shadow" textAnchor="middle" dominantBaseline="middle" fontSize={23}>D</text>
+                <text x={1.5} y={2} className="Magenta shadow" strokeWidth={1} textAnchor="middle" dominantBaseline="middle" fontSize={22}>D</text>
             </>,
         );
     }

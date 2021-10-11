@@ -5,6 +5,7 @@ import { MathUtils } from '@shared/MathUtils';
 import { GuidanceComponent } from '../GuidanceComponent';
 import { ControlLaw } from '../ControlLaws';
 import { GuidanceController } from '../GuidanceController';
+import { Geometry } from '../Geometry';
 
 export class LnavDriver implements GuidanceComponent {
     private guidanceController: GuidanceController;
@@ -28,6 +29,10 @@ export class LnavDriver implements GuidanceComponent {
         this.lastXTE = null;
         this.lastTAE = null;
         this.lastPhi = null;
+    }
+
+    acceptNewMultipleLegGeometry(geometry: Geometry) {
+        // TODO We don'T really care about this for now
     }
 
     init(): void {
