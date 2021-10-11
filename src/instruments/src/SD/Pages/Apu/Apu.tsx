@@ -32,13 +32,13 @@ export const ApuPage = () => {
             <ApuBleed x={420} y={153} />
 
             {/* Separation Bar */}
-            <SvgGroup x={83} y={257}>
+            <SvgGroup x={83} y={252}>
                 <line className="Line Grey" x1={0} y1={0} x2={0} y2={26} />
                 <line className="Line Grey" x1={-1} y1={0} x2={456} y2={0} />
                 <line className="Line Grey" x1={455} y1={0} x2={455} y2={26} />
             </SvgGroup>
 
-            <NGauge x={145} y={300} />
+            <NGauge x={145} y={295} />
 
             <EgtGauge x={145} y={410} />
 
@@ -57,20 +57,20 @@ const ApuGen = ({ x, y } : ComponentPositionProps) => {
     const [busTieContactor1Closed] = useSimVar('L:A32NX_ELEC_CONTACTOR_11XU1_IS_CLOSED', 'Bool');
     const [busTieContactor2Closed] = useSimVar('L:A32NX_ELEC_CONTACTOR_11XU2_IS_CLOSED', 'Bool');
 
-    const [apuGenLoad] = useSimVar('L:A32NX_ELEC_APU_GEN_1_LOAD', 'Percent', 1000);
-    const [apuGenLoadNormalRange] = useSimVar('L:A32NX_ELEC_APU_GEN_1_LOAD_NORMAL', 'Bool', 1000);
+    const [apuGenLoad] = useSimVar('L:A32NX_ELEC_APU_GEN_1_LOAD', 'Percent', 500);
+    const [apuGenLoadNormalRange] = useSimVar('L:A32NX_ELEC_APU_GEN_1_LOAD_NORMAL', 'Bool', 750);
 
-    const [apuGenVoltage] = useSimVar('L:A32NX_ELEC_APU_GEN_1_POTENTIAL', 'Volts', 1000);
-    const [apuGenPotentialNormalRange] = useSimVar('L:A32NX_ELEC_APU_GEN_1_POTENTIAL_NORMAL', 'Bool', 1000);
+    const [apuGenVoltage] = useSimVar('L:A32NX_ELEC_APU_GEN_1_POTENTIAL', 'Volts', 500);
+    const [apuGenPotentialNormalRange] = useSimVar('L:A32NX_ELEC_APU_GEN_1_POTENTIAL_NORMAL', 'Bool', 750);
 
-    const [apuGenFreq] = useSimVar('L:A32NX_ELEC_APU_GEN_1_FREQUENCY', 'Hertz', 1000);
-    const [apuGenFreqNormalRange] = useSimVar('L:A32NX_ELEC_APU_GEN_1_FREQUENCY_NORMAL', 'Bool', 1000);
+    const [apuGenFreq] = useSimVar('L:A32NX_ELEC_APU_GEN_1_FREQUENCY', 'Hertz', 500);
+    const [apuGenFreqNormalRange] = useSimVar('L:A32NX_ELEC_APU_GEN_1_FREQUENCY_NORMAL', 'Bool', 750);
 
     enum apuGenState {STANDBY, OFF, ON}
     const [currentApuGenState, setCurrentApuGenState] = useState(apuGenState.STANDBY);
 
-    const [apuMasterPbOn] = useSimVar('L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON', 'Bool', 1000);
-    const [apuGenPbOn] = useSimVar('A:APU GENERATOR SWITCH', 'Boolean', 1000);
+    const [apuMasterPbOn] = useSimVar('L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON', 'Bool', 500);
+    const [apuGenPbOn] = useSimVar('A:APU GENERATOR SWITCH', 'Boolean', 750);
     const [apuAvail] = useSimVar('L:A32NX_OVHD_APU_START_PB_IS_AVAILABLE', 'Bool', 1000);
 
     useEffect(() => {
@@ -99,8 +99,8 @@ const ApuGen = ({ x, y } : ComponentPositionProps) => {
                     x={50}
                     y={20}
                     className={`Center FontNormal
-                    ${(currentApuGenState === apuGenState.OFF
-                         || !(apuGenPotentialNormalRange && apuGenLoadNormalRange && apuGenFreqNormalRange)) && ' Amber'}`}
+                    ${currentApuGenState === apuGenState.OFF
+                         || (!(apuGenPotentialNormalRange && apuGenLoadNormalRange && apuGenFreqNormalRange) && apuMasterPbOn) && ' Amber'}`}
                 >
                     APU GEN
                 </text>
@@ -430,7 +430,7 @@ const EgtGauge = ({ x, y } : ComponentPositionProps) => {
 };
 
 const ApuMemos = ({ x, y } : ComponentPositionProps) => {
-    const [lowFuelPressure] = useSimVar('L:A32NX_APU_LOW_FUEL_PRESSURE_FAULT', 'Bool', 1000);
+    const lowFuelPressure = useArinc429Var('L:A32NX_APU_LOW_FUEL_PRESSURE_FAULT', 1000);
 
     const [apuFlapOpenPercentage] = useSimVar('L:A32NX_APU_FLAP_OPEN_PERCENTAGE', 'Percent', 1000);
     const [isIntakeIndicationFlashing, setIsIntakeIndicationFlashing] = useState(false);
@@ -455,7 +455,7 @@ const ApuMemos = ({ x, y } : ComponentPositionProps) => {
         <>
             {/* Memos */}
             <SvgGroup x={x} y={y}>
-                {lowFuelPressure
+                {lowFuelPressure.value
                     && <text className="Amber FontNormal" x={0} y={0}>FUEL LO PR</text>}
 
                 {apuFlapOpenPercentage === 100
