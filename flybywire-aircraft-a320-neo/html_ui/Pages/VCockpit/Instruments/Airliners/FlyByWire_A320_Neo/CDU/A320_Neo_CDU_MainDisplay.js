@@ -180,7 +180,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             } else if (this.isDisplayingErrorMessage || this.isDisplayingTypeTwoMessage) {
                 this.tryRemoveMessage();
                 this.setScratchpadWithLastUserInput();
-                this._scratchpadElement.className = "white";
                 this.isDisplayingErrorMessage = false;
                 this.isDisplayingTypeTwoMessage = false;
             } else {
@@ -855,9 +854,14 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         }
     }
 
-    setScratchpadThroughSystem(value) {
+    setScratchpadThroughSystem(value, color = "white") {
         this._scratchpad = value;
         this._scratchpadElement.textContent = this._scratchpad;
+        this.setScratchpadTextColor(color);
+    }
+
+    setScratchpadTextColor(color) {
+        this._scratchpadElement.className = color;
     }
 
     forceClearScratchpad() {
@@ -880,7 +884,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         }
         if (this.isDisplayingErrorMessage || this.isDisplayingTypeTwoMessage) {
             this.setScratchpadWithLastUserInput();
-            this._scratchpadElement.className = "white";
             this.isDisplayingErrorMessage = false;
             this.isDisplayingTypeTwoMessage = false;
         }
@@ -890,7 +893,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         if (!this.isDisplayingErrorMessage && !this.isDisplayingTypeTwoMessage) {
             this.lastUserInput = this.getScratchpadTextContent();
             this.setScratchpadThroughSystem("");
-            this._scratchpadElement.className = "white";
         }
         return this.lastUserInput;
     }
@@ -909,7 +911,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     resetScratchpadAndSetScratchpadThroughSystem(data) {
         this.isDisplayingErrorMessage = false;
         this.isDisplayingTypeTwoMessage = false;
-        this._scratchpadElement.className = "white";
         this.setScratchpadThroughSystem(data);
     }
 
@@ -1090,8 +1091,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             this.lastUserInput = this.getScratchpadTextContent();
         }
         this.isDisplayingErrorMessage = true;
-        this.setScratchpadThroughSystem(message);
-        this._scratchpadElement.className = color ? "amber" : "white";
+        this.setScratchpadThroughSystem(message, color ? "amber" : "white");
     }
 
     /**
@@ -1122,7 +1122,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         if (!this.isDisplayingErrorMessage && (!scratchpadTextContent || this.isDisplayingTypeTwoMessage) && this.messageQueue.length > 0) {
             if (this.messageQueue[0][2](this)) {
                 this.messageQueue.splice(0, 1);
-                this._scratchpadElement.className = "white";
                 this.setScratchpadWithLastUserInput();
                 return this.tryShowMessage();
             }
@@ -1131,8 +1130,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     this.isDisplayingTypeTwoMessage = true;
                     this.lastUserInput = scratchpadTextContent;
                 }
-                this.setScratchpadThroughSystem(this.messageQueue[0][0]);
-                this._scratchpadElement.className = this.messageQueue[0][1] ? "amber" : "white";
+                this.setScratchpadThroughSystem(this.messageQueue[0][0], this.messageQueue[0][1] ? "amber" : "white");
             }
         }
     }
@@ -1147,7 +1145,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 this.messageQueue[i][3](this);
                 this.messageQueue.splice(i, 1);
                 if (i === 0 && this.isDisplayingTypeTwoMessage) {
-                    this._scratchpadElement.className = "white";
                     this.setScratchpadWithLastUserInput();
                 }
                 break;
