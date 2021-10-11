@@ -37,11 +37,17 @@ export const RoseMode: FC<RoseModeProps> = ({ symbols, adirsAlign, rangeSetting,
     const [ilsCourse] = useSimVar('NAV LOCALIZER:3', 'degrees');
     const [lsDisplayed] = useSimVar(`L:BTN_LS_${side === 'L' ? 1 : 2}_FILTER_ACTIVE`, 'bool'); // TODO rename simvar
     const [showTmpFplan] = useSimVar('L:MAP_SHOW_TEMPORARY_FLIGHT_PLAN', 'bool');
-    const [fmaLatMode] = useSimVar('L:A32NX_FMA_LATERAL_MODE', 'enum');
-    const [fmaLatArmed] = useSimVar('L:A32NX_FMA_LATERAL_ARMED', 'enum');
+    const [fmaLatMode] = useSimVar('L:A32NX_FMA_LATERAL_MODE', 'enum', 200);
+    const [fmaLatArmed] = useSimVar('L:A32NX_FMA_LATERAL_ARMED', 'enum', 200);
+    const [groundSpeed] = useSimVar('GPS GROUND SPEED', 'Meters per second', 200);
 
     const heading = Math.round(Number(MathUtils.fastToFixed(magHeading, 1)) * 1000) / 1000;
-    const track = Math.round(Number(MathUtils.fastToFixed(magTrack, 1)) * 1000) / 1000;
+    let track = Math.round(Number(MathUtils.fastToFixed(magTrack, 1)) * 1000) / 1000;
+
+    // Workaround for bug with gps ground track simvar
+    if (groundSpeed < 40) {
+        track = (0.025 * groundSpeed + 0.00005) * track + (1 - (0.025 * groundSpeed + 0.00005)) * heading;
+    }
 
     const [mapParams] = useState(() => {
         const params = new MapParameters();
