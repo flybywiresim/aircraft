@@ -8,13 +8,14 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this._labels = [];
         this._lines = [];
         this._scratchpad = undefined;
+        this.scratchpad = new ScratchpadDataLink(this);
+        this.isDisplayingErrorMessage = false;
+        this.isDisplayingTypeTwoMessage = false;
+        this.lastUserInput = "";
         this.onLeftInput = [];
         this.onRightInput = [];
         this.leftInputDelay = [];
         this.rightInputDelay = [];
-        this.lastUserInput = "";
-        this.isDisplayingErrorMessage = false;
-        this.isDisplayingTypeTwoMessage = false;
         this.messages = [];
         this.sentMessages = [];
         this.activeSystem = 'FMGC';
@@ -148,71 +149,22 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.onMenu = () => {
             FMCMainDisplayPages.MenuPage(this);
         };
-        this.onLetterInput = (l) => {
-            this.handlePreviousInputState();
-            this.setScratchpadThroughKeyboardEntry(l);
-        };
-        this.onSp = () => {
-            this.handlePreviousInputState();
-            this.setScratchpadThroughKeyboardEntry(" ");
-        };
-        this.onDel = () => {
-            this.handlePreviousInputState();
-            const scratchpadTextContent = this.getScratchpadTextContent();
-            if (scratchpadTextContent.length > 0) {
-                this.setScratchpadThroughSystem(scratchpadTextContent.slice(0, -1));
-            }
-        };
-        this.onDiv = () => {
-            this.handlePreviousInputState();
-            this.setScratchpadThroughKeyboardEntry("/");
-        };
-        this.onDot = () => {
-            this.handlePreviousInputState();
-            this.setScratchpadThroughKeyboardEntry(".");
-        };
-        this.onClr = () => {
-            const scratchpadTextContent = this.getScratchpadTextContent();
-            if (scratchpadTextContent === "") {
-                this.setScratchpadThroughSystem(FMCMainDisplay.clrValue);
-            } else if (scratchpadTextContent === FMCMainDisplay.clrValue) {
-                this.setScratchpadThroughSystem("");
-            } else if (this.isDisplayingErrorMessage || this.isDisplayingTypeTwoMessage) {
-                this.tryRemoveMessage();
-                this.setScratchpadWithLastUserInput();
-                this.isDisplayingErrorMessage = false;
-                this.isDisplayingTypeTwoMessage = false;
-            } else {
-                this.setScratchpadThroughSystem(scratchpadTextContent.slice(0, -1));
-            }
-            this.tryShowMessage();
-        };
-        this.onClrHeld = () => {
-            if (this.getScratchpadTextContent() === FMCMainDisplay.clrValue || (!this.isDisplayingErrorMessage && !this.isDisplayingTypeTwoMessage)) {
-                this.setScratchpadThroughSystem("");
-            }
-            this.tryShowMessage();
-        };
-        this.onPlusMinus = (defaultKey = "-") => {
-            this.handlePreviousInputState();
-            const scratchpadTextContent = this.getScratchpadTextContent();
-            if (scratchpadTextContent === "") {
-                this.setScratchpadThroughSystem(defaultKey);
-            } else if (scratchpadTextContent !== FMCMainDisplay.clrValue && (!this.isDisplayingErrorMessage || !this.isDisplayingTypeTwoMessage)) {
-                if (scratchpadTextContent.slice(-1) === "-") {
-                    this.setScratchpadThroughSystem(scratchpadTextContent.slice(0, -1) + "+");
-                } else {
-                    this.setScratchpadThroughKeyboardEntry(defaultKey);
-                }
-            }
-        };
+        this.onLetterInput = (l) => this.scratchpad.addChar(l);
+        this.onSp = () => this.scratchpad.addChar(" ");
+        this.onDel = () => this.scratchpad.delChar();
+        this.onDiv = () => this.scratchpad.addChar("/");
+        this.onDot = () => this.scratchpad.addChar(".");
+        this.onClr = () => this.scratchpad.clear();
+        this.onClrHeld = () => this.scratchpad.clearHeld();
+        this.onPlusMinus = (defaultKey = "-") => this.scratchpad.plusMinus(defaultKey);
         this.onLeftFunction = (f) => {
             if (isFinite(f)) {
                 if (this.onLeftInput[f]) {
-                    const value = this.clearScratchpadAndWriteToLastUserInputAndReturnLastUserInput();
+                    const value = this.removeUserContentFromScratchpadAndDisplayAndReturnTextContent();
                     const cur = this.page.Current;
                     setTimeout(() => {
                         if (this.page.Current === cur) {
+                            //TODO: add callback to input validation => if false => this.scratchpad.setUserData(oldInput)
                             this.onLeftInput[f](value);
                             this.clearLastUserInputIfPossibleAndShowMessageIfPossible();
                         }
@@ -223,12 +175,12 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.onRightFunction = (f) => {
             if (isFinite(f)) {
                 if (this.onRightInput[f]) {
-                    const value = this.clearScratchpadAndWriteToLastUserInputAndReturnLastUserInput();
+                    const value = this.removeUserContentFromScratchpadAndDisplayAndReturnTextContent();
                     const cur = this.page.Current;
                     setTimeout(() => {
                         if (this.page.Current === cur) {
-                            this.onRightInput[f](value);
-                            this.clearLastUserInputIfPossibleAndShowMessageIfPossible();
+                            //TODO: add callback to input validation => if false => this.scratchpad.setUserData(oldInput)
+                            const ret = this.onRightInput[f](value);
                         }
                     }, this.rightInputDelay[f] ? this.rightInputDelay[f]() : this.getDelayBasic());
                 }
@@ -1078,6 +1030,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 this._addTypeTwoMessage(message.text, message.isAmber, isResolved, onClear);
             }
         } else {
+            this.scratchpad.setMessage(message);
             this._showTypeOneMessage(message.text, message.isAmber);
         }
     }
