@@ -100,7 +100,7 @@ const ApuGen = ({ x, y } : ComponentPositionProps) => {
                     y={20}
                     className={`Center FontNormal
                     ${currentApuGenState === apuGenState.OFF
-                         || (!(apuGenPotentialNormalRange && apuGenLoadNormalRange && apuGenFreqNormalRange) && apuMasterPbOn) && ' Amber'}`}
+                         || (!(apuGenPotentialNormalRange && apuGenLoadNormalRange && apuGenFreqNormalRange) && currentApuGenState === apuGenState.ON) && ' Amber'}`}
                 >
                     APU GEN
                 </text>
@@ -319,6 +319,8 @@ const EgtGauge = ({ x, y } : ComponentPositionProps) => {
 
     const [apuEgtIndicationColor, setApuEgtIndicationColor] = useState('Green');
 
+    const redLineShown = apuEgtCaution.isNormalOperation() && apuEgtWarning.isNormalOperation();
+
     useEffect(() => {
         if (apuEgt.value <= apuEgtCaution.value) {
             setApuEgtIndicationColor('Green');
@@ -392,8 +394,10 @@ const EgtGauge = ({ x, y } : ComponentPositionProps) => {
                             />
                         )}
 
-                    <Arc x={0} y={50} radius={50} toValue={1100} scaleMin={300} scaleMax={1100} className="Line Red NoFill" />
-                    <Arc x={0} y={50} radius={50} toValue={apuEgtWarning.value} scaleMin={300} scaleMax={1100} className="Line White NoFill" />
+                    {redLineShown
+                    && <Arc x={0} y={50} radius={50} toValue={1100} scaleMin={300} scaleMax={1100} className="Line Red NoFill" />}
+
+                    <Arc x={0} y={50} radius={50} toValue={redLineShown ? apuEgtWarning.value : 1100} scaleMin={300} scaleMax={1100} className="Line White NoFill" />
 
                     {apuEgt.isNormalOperation()
                         && (
