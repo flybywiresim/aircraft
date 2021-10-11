@@ -133,9 +133,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 this.getChildById("line-" + i + "-center")
             ];
         }
-        this._scratchpadElement = this.getChildById("in-out");
-        this._scratchpadElement.style.removeProperty("color");
-        this._scratchpadElement.className = "white";
+
+        this.scratchpad.init();
 
         this.setTimeout = (func) => {
             setTimeout(() => {
@@ -790,7 +789,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.inFocus = false;
         this.allSelected = false;
         Coherent.trigger('UNFOCUS_INPUT_FIELD');
-        this._scratchpadElement.style = null;
+        this.scratchpad.display.scratchpadElement.style = null;
         this.getChildById("header").style = null;
         if (this.check_focus) {
             clearInterval(this.check_focus);
@@ -810,7 +809,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 this.inFocus = !this.inFocus;
                 if (this.inFocus && (isPoweredL || isPoweredR)) {
                     this.getChildById("header").style = "background: linear-gradient(180deg, rgba(2,182,217,1.0) 65%, rgba(255,255,255,0.0) 65%);";
-                    this._scratchpadElement.style = "display: inline-block; width:87%; background: rgba(255,255,255,0.2);";
+                    this.scratchpad.display.scratchpadElement.style = "display: inline-block; width:87%; background: rgba(255,255,255,0.2);";
                     Coherent.trigger('FOCUS_INPUT_FIELD');
                     this.lastInput = new Date();
                     if (mcduTimeout) {
@@ -842,7 +841,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     this.clearFocus();
                 } else if (e.ctrlKey && keycode === KeyCode.KEY_A) {
                     this.allSelected = !this.allSelected;
-                    this._scratchpadElement.style = `display: inline-block; width:87%; background: ${this.allSelected ? 'rgba(235,64,52,1.0)' : 'rgba(255,255,255,0.2)'};`;
+                    this.scratchpad.display.scratchpadElement.style = `display: inline-block; width:87%; background: ${this.allSelected ? 'rgba(235,64,52,1.0)' : 'rgba(255,255,255,0.2)'};`;
                 } else if (e.shiftKey && e.ctrlKey && keycode === KeyCode.KEY_BACK_SPACE) {
                     this.scratchpad.setText("");
                 } else if (e.ctrlKey && keycode === KeyCode.KEY_BACK_SPACE) {

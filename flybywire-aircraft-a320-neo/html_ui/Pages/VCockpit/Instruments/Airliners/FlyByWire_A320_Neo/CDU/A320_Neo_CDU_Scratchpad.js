@@ -1,7 +1,10 @@
 class ScratchpadDisplay {
     constructor(_dataLink) {
         this.dataLink = _dataLink;
-        this.scratchpadElement = this.getChildById("in-out");
+    }
+
+    init() {
+        this.scratchpadElement = this.dataLink.mcdu.getChildById("in-out");
         this.scratchpadElement.style.removeProperty("color");
         this.scratchpadElement.className = "white";
     }
@@ -39,6 +42,10 @@ class ScratchpadDataLink {
         this.text = "";
         this.message = undefined;
         this.status = 0;
+    }
+
+    init() {
+        this.display.init();
     }
 
     setUserData(data) {
