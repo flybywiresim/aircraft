@@ -35,6 +35,8 @@
 1. [LIGHTS] Add TO/TAXI LT logic, ambience to TAXI/TO/LDG LT + min. changes to strobe/beacon/nav - @bouveng (Johan Bouveng)
 1. [FMGC] Fixed issue with TO flight phase transition when no V2 is entered and airport is near sea level - @aguther (Andreas Guther)
 1. [MISC] Fix for incrementing ISIS pressure values - @RichardPilbery (tricky_dicky#3571)
+1. [MCDU] Fix GPS ground speed on IRS status page to show ground speed in knots rather than meters/second - @donstim (donbikes#4084)
+1. [MCDU] Fixed length limitation for system messages - @derl30n (Leon)
 1. [ENGINE] Correctly adapt fuel burn with sim rate - @aguther (Andreas Guther)
 
 ## 0.7.0
