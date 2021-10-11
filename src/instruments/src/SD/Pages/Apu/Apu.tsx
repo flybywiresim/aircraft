@@ -230,10 +230,10 @@ const NGauge = ({ x, y } : ComponentPositionProps) => {
         <>
             <SvgGroup x={x} y={y}>
                 {/* Mark Annotations */}
-                <text x={-23} y={62} className="FontSmall White">0</text>
-                <text x={30} y={30} className="FontSmall White">10</text>
+                <text x={-19} y={63} className="FontSmall White">0</text>
+                <text x={32} y={24} className="FontSmall White">10</text>
 
-                <SvgGroup x={0} y={0} rotation={-22.5}>
+                <SvgGroup x={0} y={0} rotation={-29}>
                     {/* 0 */}
                     <Needle
                         x={-1}
@@ -339,11 +339,11 @@ const EgtGauge = ({ x, y } : ComponentPositionProps) => {
         <>
             <SvgGroup x={x} y={y}>
                 {/* Mark Annotations */}
-                <text x={-33} y={57} className="FontSmall White">3</text>
+                <text x={-30} y={59} className="FontSmall White">3</text>
                 <text x={-4} y={22} className="FontSmall White">7</text>
-                <text x={24} y={30} className="FontSmall White">10</text>
+                <text x={24} y={27} className="FontSmall White">10</text>
 
-                <SvgGroup x={0} y={0} rotation={-15}>
+                <SvgGroup x={0} y={0} rotation={-18}>
                     {/* 300 */}
                     <Needle
                         x={-1}
@@ -413,7 +413,7 @@ const EgtGauge = ({ x, y } : ComponentPositionProps) => {
 
                 <SvgGroup x={100} y={13}>
                     <text x={0} y={0} className="White Center FontNormal">EGT</text>
-                    <text x={0} y={30} className="Cyan Center FontNormal">&deg;C</text>
+                    <text x={0} y={30} className="Cyan Center FontNormal" style={{ letterSpacing: -2 }}>&deg;C</text>
                 </SvgGroup>
 
                 <text
