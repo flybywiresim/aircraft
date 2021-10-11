@@ -357,7 +357,6 @@ impl HydraulicCircuit {
     const DEFAULT_FIRE_VALVE_POWERING_BUS: ElectricalBusType =
         ElectricalBusType::DirectCurrentEssential;
 
-    #[allow(clippy::too_many_arguments)]
     pub fn new(
         id: &str,
 
