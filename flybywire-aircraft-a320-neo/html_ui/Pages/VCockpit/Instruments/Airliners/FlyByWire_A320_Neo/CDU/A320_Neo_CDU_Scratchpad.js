@@ -24,6 +24,7 @@ class ScratchpadDisplay {
         } else {
             if (this.dataLink.text === "" || scratchpadText === "") {
                 this.dataLink.status = SpDisplayStatus.empty;
+                this.dataLink.mcdu.tryShowMessage();
             } else if (this.dataLink.text === FMCMainDisplay.clrValue) {
                 this.dataLink.status = SpDisplayStatus.clrValue;
                 this.dataLink.mcdu.tryShowMessage();
@@ -91,14 +92,12 @@ class ScratchpadDataLink {
             this.mcdu.tryRemoveMessage(this.message.text);
             this.setText(this.text);
         }
-        this.tryShowMessage();
     }
 
     clearHeld() {
         if (this.status === SpDisplayStatus.clrValue || (!this.status > SpDisplayStatus.userContent)) {
             this.setText("");
         }
-        this.tryShowMessage();
     }
 
     plusMinus(char) {

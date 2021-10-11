@@ -998,7 +998,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
      * Removes Type II Message
      * @param message {string} Message to be removed
      */
-    tryRemoveMessage(message = this.scratchpad.message.text) {
+    tryRemoveMessage(message) {
         for (let i = 0; i < this.messageQueue.length; i++) {
             if (this.messageQueue[i][0] === message) {
                 this.messageQueue[i][3](this);
