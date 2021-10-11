@@ -112,6 +112,12 @@ class ScratchpadDataLink {
         this.setText("");
         return userContent;
     }
+
+    removeMessage(messageText) {
+        if (this.message && this.message.text === messageText) {
+            this.setText("");
+        }
+    }
 }
 
 const SpDisplayStatus = {

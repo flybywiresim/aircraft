@@ -120,7 +120,7 @@ class CDUAocRequestsAtis {
 
             const lines = [];
             const newMessage = { "id": Date.now(), "type": "ATIS", "time": '00:00', "opened": null, "content": lines, };
-            mcdu.clearScratchpadAndWriteToLastUserInputAndReturnLastUserInput();
+            // mcdu.clearScratchpadAndWriteToLastUserInputAndReturnLastUserInput();
 
             getATIS(icao, lines, store.reqID, store, updateView).then(() => {
                 store["sendStatus"] = "SENT";

@@ -48,7 +48,7 @@ class CDUAocRequestsWeather {
             updateView();
             const lines = [];
             const newMessage = { "id": Date.now(), "type": reqTypes[reqID], "time": '00:00', "opened": null, "content": lines, };
-            mcdu.clearScratchpadAndWriteToLastUserInputAndReturnLastUserInput();
+            // mcdu.clearScratchpadAndWriteToLastUserInputAndReturnLastUserInput();
 
             const getInfo = async () => {
                 if (reqID === 0) {

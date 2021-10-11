@@ -68,7 +68,7 @@ class CDUPerformancePage {
                     if (mcdu._v1Checked) {
                         // not real: v-speed helper
                         if (mcdu.flaps) {
-                            mcdu.resetScratchpadAndSetScratchpadThroughSystem(mcdu._getV1Speed().toString());
+                            mcdu.scratchpad.setText(mcdu._getV1Speed().toString());
                         } else {
                             mcdu.addNewMessage(NXSystemMessages.formatError);
                         }
@@ -96,7 +96,7 @@ class CDUPerformancePage {
                 if (value === "") {
                     if (mcdu._vRChecked) {
                         if (mcdu.flaps) {
-                            mcdu.resetScratchpadAndSetScratchpadThroughSystem(mcdu._getVRSpeed().toString());
+                            mcdu.scratchpad.setText(mcdu._getVRSpeed().toString());
                         } else {
                             mcdu.addNewMessage(NXSystemMessages.formatError);
                         }
@@ -124,7 +124,7 @@ class CDUPerformancePage {
                 if (value === "") {
                     if (mcdu._v2Checked) {
                         if (mcdu.flaps) {
-                            mcdu.resetScratchpadAndSetScratchpadThroughSystem(mcdu._getV2Speed().toString());
+                            mcdu.scratchpad.setText(mcdu._getV2Speed().toString());
                         } else {
                             mcdu.addNewMessage(NXSystemMessages.formatError);
                         }
