@@ -287,7 +287,13 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         const onlineFeaturesStatus = NXDataStore.get("CONFIG_ONLINE_FEATURES_STATUS", "UNKNOWN");
 
         if (onlineFeaturesStatus === "UNKNOWN") {
-            CDU_OPTIONS_TELEX.ShowPage(this);
+            new NXPopUp().showPopUp(
+                'TELEX CONFIGURATION',
+                'You have not yet configured the telex option. Telex enables free text and live map. If enabled, aircraft position data is published for the duration of the flight. Messages are public and not moderated. USE AT YOUR OWN RISK. To learn more about telex and the features it enables, please go to https://docs.flybywiresim.com/telex. Would you like to enable telex?',
+                'small',
+                () => NXDataStore.set('CONFIG_ONLINE_FEATURES_STATUS', 'ENABLED'),
+                () => NXDataStore.set('CONFIG_ONLINE_FEATURES_STATUS', 'DISABLED'),
+            );
         }
 
         // Start the TELEX Ping. API functions check the connection status themself
@@ -843,12 +849,20 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         return this._inOut;
     }
 
+    /**
+     * should be refactored as `setScratchpadThroughKeyboardEntry` function
+     * @param v {string}
+     */
     set inOut(v) {
         if (v.length < 23) {
             this.setInOut(v);
         }
     }
 
+    /**
+     * should be renamed to `setScratchpadThroughSystem`
+     * @param content {string}
+     */
     setInOut(content) {
         this._inOut = content;
         this._inOutElement.textContent = this._inOut;
@@ -1081,7 +1095,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             this.lastUserInput = this.inOut;
         }
         this.isDisplayingErrorMessage = true;
-        this.inOut = message;
+        this.setInOut(message);
         this._inOutElement.className = color ? "amber" : "white";
     }
 
@@ -1121,7 +1135,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     this.isDisplayingTypeTwoMessage = true;
                     this.lastUserInput = this.inOut;
                 }
-                this.inOut = this.messageQueue[0][0];
+                this.setInOut(this.messageQueue[0][0]);
                 this._inOutElement.className = this.messageQueue[0][1] ? "amber" : "white";
             }
         }

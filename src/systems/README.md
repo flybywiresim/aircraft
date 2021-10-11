@@ -1,8 +1,4 @@
-# Airbus Systems
-
-This folder contains code for simulating Airbus aircraft systems. I highly recommend reading through this document to understand more about the system design.
-
-There's one very important thing to note: **unit tests are mandatory. Contributions without a complete unit test suite are not approved.**
+This folder contains code for simulating Airbus aircraft systems. Please read through the [guidelines](guidelines.md) and keep yourself up to date with those guidelines as they might change over time. We also highly recommend reading through this document to get an overview of the software design.
 
 # How to build
 

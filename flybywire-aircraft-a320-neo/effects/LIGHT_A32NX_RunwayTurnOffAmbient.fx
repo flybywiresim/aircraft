@@ -7,7 +7,7 @@ Priority=0
 [Properties]
 
 [Emitter.0]
-Lifetime=0.50, 0.50
+Lifetime=0.3, 0.3
 Delay=0.0, 0.0
 Bounce=0.0
 Light=1
@@ -20,7 +20,7 @@ Drag=0.0, 0.0
 X Particle Velocity=0.0, 0.0
 Y Particle Velocity=0.0, 0.0
 Z Particle Velocity=0.0, 0.0
-X Rotation=20.0, 20.0
+X Rotation=0.0, 0.0
 Y Rotation=0.0, 0.0
 Z Rotation=0.0, 0.0
 X Offset=0.0, 0.0
@@ -30,8 +30,8 @@ Z Offset=0.0, 0.0
 [Particle.0]
 Lifetime=0.0, 0.0
 Type=19
-X Scale=0.3, 0.3
-Y Scale=0.3, 0.3
+X Scale=0.4, 0.4
+Y Scale=0.4, 0.4
 Z Scale=0.0, 0.0
 X Scale Rate=0.0, 0.0
 Y Scale Rate=0.0, 0.0
@@ -41,15 +41,14 @@ Color Rate=0.0, 0.0
 X Offset=0.0, 0.0
 Y Offset=0.0, 0.0
 Z Offset=0.0, 0.0
-Fade In=0.0, 0.0
-Fade Out=0.0, 0.0
+Fade In=0.3, 0.3
+Fade Out=0.3, 0.3
 Rotation=0.0, 0.0
 Static=1
 Face=1, 1, 1
 
 [ParticleAttributes.0]
 Blend Mode=2
-Texture=fx_0.png
 Bounce=0.0
 Color Start=179, 183, 255, 1
 Color End=179, 183, 255, 1
@@ -60,17 +59,17 @@ uv2=1.0, 1.0
 X Scale Goal=0.0
 Y Scale Goal=0.0
 Z Scale Goal=0.0
-NearEndFade= 1.0
-NearFade= 3.0
-MinProjSize=0.2
+NearEndFade=5.0
+NearFade=10.0
+MinProjSize=0.4
 
 [LightAttributes.0]
-Type=spot
-Size=0.05
-Range=8
-Intensity=5
-Softness=0.0
-SpotInner=25
-SpotOuter=35
-Volumetric=1
-ScatDir=0.0
+Type=omni
+Size=0.06
+Range=0.85
+Intensity=1.2
+Softness=0
+SpotInner=0
+SpotOuter=30
+Volumetric=0
+ScatDir=0

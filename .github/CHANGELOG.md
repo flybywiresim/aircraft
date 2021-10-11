@@ -5,6 +5,7 @@
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 
 ## 0.8.0
+1. [FBW] Improved speed dependent roll law model - @IbrahimK42 (IbrahimK42)
 1. [SOUND] Pack sounds use new APU model variables - @tracernz (Mike)
 1. [EFB] Added in-flight refueling capabilities - @Taz5150 (TazX [Z+2]#0405)
 1. [EFB] Moved setting for MCDU keyboard input into the EFB - @2hwk (2Cas#1022)
@@ -28,6 +29,16 @@
 1. [ARCH] Support ARINC 429 communication between aircraft components - @davidwalschots (David Walschots)
 1. [UTILS] Fix lbs to kgs units conversion to match MSFS - @donstim (donbikes#4084)
 1. [EFB] OFP supports all formats - @tracernz (Mike)
+1. [MODEL] Landing lights retract fully and independently - @tracernz (Mike)
+1. [LIGHTS] Sync Strobe/Beacon, EXT LT refactor + LDG LT behavior - @bouveng (Johan Bouveng)
+1. [AP] Improved SPD/MACH law model - @IbrahimK42 (IbrahimK42)
+1. [AP/FBW] Improved behavior in cruise when using high sim rate with roll performance - @aguther (Andreas Guther) and @IbrahimK42 (IbrahimK42)
+1. [LIGHTS] Add TO/TAXI LT logic, ambience to TAXI/TO/LDG LT + min. changes to strobe/beacon/nav - @bouveng (Johan Bouveng)
+1. [FMGC] Fixed issue with TO flight phase transition when no V2 is entered and airport is near sea level - @aguther (Andreas Guther)
+1. [MISC] Fix for incrementing ISIS pressure values - @RichardPilbery (tricky_dicky#3571)
+1. [MCDU] Fix GPS ground speed on IRS status page to show ground speed in knots rather than meters/second - @donstim (donbikes#4084)
+1. [MCDU] Fixed length limitation for system messages - @derl30n (Leon)
+1. [ENGINE] Correctly adapt fuel burn with sim rate - @aguther (Andreas Guther)
 
 ## 0.7.0
 1. [HYD] First building block, more to come. Hydraulics do not impact the sim YET. - @crocket6 (crocket)

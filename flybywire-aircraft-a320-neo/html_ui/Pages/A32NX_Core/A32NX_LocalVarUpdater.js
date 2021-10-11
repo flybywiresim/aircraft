@@ -9,7 +9,7 @@ const FLAPS_IN_MOTION_MIN_DELTA = 0.1;
 class A32NX_LocalVarUpdater {
     constructor() {
         // Initial data for deltas
-        this.lastFlapsPosition = SimVar.GetSimVarValue("TRAILING EDGE FLAPS LEFT PERCENT", "percent");
+        this.lastFlapsPosition = SimVar.GetSimVarValue("L:A32NX_LEFT_FLAPS_POSITION_PERCENT", "Percent");
         // track which compartment has gotten temperature initialization
         this.initializedCabinTemp = {
             "CKPT":false,
@@ -191,7 +191,7 @@ class A32NX_LocalVarUpdater {
     }
 
     _flapsInMotionSelector() {
-        const currentFlapsPosition = SimVar.GetSimVarValue("TRAILING EDGE FLAPS LEFT PERCENT", "percent");
+        const currentFlapsPosition = SimVar.GetSimVarValue("L:A32NX_LEFT_FLAPS_POSITION_PERCENT", "Percent");
         const lastFlapsPosition = this.lastFlapsPosition;
 
         this.lastFlapsPosition = currentFlapsPosition;
@@ -231,7 +231,7 @@ class A32NX_LocalVarUpdater {
         (SimVar.GetSimVarValue('LIGHT BEACON ON', 'bool') &&
             SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:0', 'percent') < 5 && // Pilot side front door for ramp/stairs
             SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:3', 'percent') < 5 && // Rear door, FO side for catering
-            SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:5', 'percent') < 5 // Cargo door FO side
+            SimVar.GetSimVarValue('L:A32NX_FWD_DOOR_CARGO_LOCKED', 'bool') // Cargo door FO side
         );
     }
 

@@ -1,4 +1,5 @@
-use self::brake_circuit::Actuator;
+use self::linear_actuator::Actuator;
+
 use crate::shared::{interpolation, ElectricalBusType, ElectricalBuses};
 use crate::simulation::{
     SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext, Write,
@@ -6,6 +7,7 @@ use crate::simulation::{
 use std::string::String;
 use std::time::Duration;
 use uom::si::{
+    angular_velocity::revolution_per_minute,
     f64::*,
     pressure::psi,
     velocity::knot,
@@ -14,6 +16,8 @@ use uom::si::{
 };
 
 pub mod brake_circuit;
+pub mod linear_actuator;
+pub mod update_iterator;
 
 pub trait PressureSource {
     /// Gives the maximum available volume at that time as if it is a variable displacement
@@ -352,7 +356,6 @@ impl HydraulicLoop {
     const ACCUMULATOR_FLOW_CARAC: [f64; 10] =
         [0.0, 0.001, 0.005, 0.05, 0.08, 0.15, 0.25, 0.35, 0.5, 0.5];
 
-    #[allow(clippy::too_many_arguments)]
     pub fn new(
         id: &str,
         connected_to_ptu_left_side: bool, // Is connected to PTU "left" side: non variable displacement side
@@ -437,9 +440,10 @@ impl HydraulicLoop {
         self.accumulator.gas_volume
     }
 
-    pub fn update_actuator_volumes<T: Actuator>(&mut self, actuator: &T) {
+    pub fn update_actuator_volumes<T: Actuator>(&mut self, actuator: &mut T) {
         self.total_actuators_consumed_volume += actuator.used_volume();
         self.total_actuators_returned_volume += actuator.reservoir_return();
+        actuator.reset_accumulators();
     }
 
     /// Returns the max flow that can be output from reservoir in dt time
@@ -726,7 +730,7 @@ pub struct ElectricPump {
     is_active: bool,
     bus_type: ElectricalBusType,
     is_powered: bool,
-    rpm: f64,
+    speed: AngularVelocity,
     pump: Pump,
 }
 impl ElectricPump {
@@ -746,7 +750,7 @@ impl ElectricPump {
             is_active: false,
             bus_type,
             is_powered: false,
-            rpm: 0.,
+            speed: AngularVelocity::new::<revolution_per_minute>(0.),
             pump: Pump::new(
                 Self::DISPLACEMENT_BREAKPTS,
                 Self::DISPLACEMENT_MAP,
@@ -755,8 +759,8 @@ impl ElectricPump {
         }
     }
 
-    pub fn rpm(&self) -> f64 {
-        self.rpm
+    pub fn speed(&self) -> AngularVelocity {
+        self.speed
     }
 
     pub fn update<T: PumpController>(
@@ -768,16 +772,33 @@ impl ElectricPump {
         self.is_active = controller.should_pressurise() && self.is_powered;
 
         // Pump startup/shutdown process
-        if self.is_active && self.rpm < Self::NOMINAL_SPEED {
-            self.rpm += (Self::NOMINAL_SPEED / Self::SPOOLUP_TIME) * context.delta_as_secs_f64();
-        } else if !self.is_active && self.rpm > 0.0 {
-            self.rpm -= (Self::NOMINAL_SPEED / Self::SPOOLDOWN_TIME) * context.delta_as_secs_f64();
+        if self.is_active
+            && self.speed < AngularVelocity::new::<revolution_per_minute>(Self::NOMINAL_SPEED)
+        {
+            self.speed += AngularVelocity::new::<revolution_per_minute>(
+                (Self::NOMINAL_SPEED / Self::SPOOLUP_TIME) * context.delta_as_secs_f64(),
+            );
+        } else if !self.is_active && self.speed > AngularVelocity::new::<revolution_per_minute>(0.0)
+        {
+            self.speed -= AngularVelocity::new::<revolution_per_minute>(
+                (Self::NOMINAL_SPEED / Self::SPOOLDOWN_TIME) * context.delta_as_secs_f64(),
+            );
         }
 
         // Limiting min and max speed
-        self.rpm = self.rpm.min(Self::NOMINAL_SPEED).max(0.0);
+        self.speed = self
+            .speed
+            .min(AngularVelocity::new::<revolution_per_minute>(
+                Self::NOMINAL_SPEED,
+            ))
+            .max(AngularVelocity::new::<revolution_per_minute>(0.0));
 
-        self.pump.update(context, line, self.rpm, controller);
+        self.pump.update(
+            context,
+            line,
+            self.speed.get::<revolution_per_minute>(),
+            controller,
+        );
     }
 }
 impl PressureSource for ElectricPump {
@@ -802,7 +823,7 @@ pub struct EngineDrivenPump {
     active_id: String,
 
     is_active: bool,
-    rpm: f64,
+    speed: AngularVelocity,
     pump: Pump,
 }
 impl EngineDrivenPump {
@@ -818,7 +839,7 @@ impl EngineDrivenPump {
         Self {
             active_id: format!("HYD_{}_EDPUMP_ACTIVE", id),
             is_active: false,
-            rpm: 0.,
+            speed: AngularVelocity::new::<revolution_per_minute>(0.),
             pump: Pump::new(
                 Self::DISPLACEMENT_BREAKPTS,
                 Self::DISPLACEMENT_MAP,
@@ -831,16 +852,21 @@ impl EngineDrivenPump {
         &mut self,
         context: &UpdateContext,
         line: &HydraulicLoop,
-        pump_rpm: f64,
+        pump_speed: AngularVelocity,
         controller: &T,
     ) {
-        self.rpm = pump_rpm;
-        self.pump.update(context, line, pump_rpm, controller);
+        self.speed = pump_speed;
+        self.pump.update(
+            context,
+            line,
+            pump_speed.get::<revolution_per_minute>(),
+            controller,
+        );
         self.is_active = controller.should_pressurise();
     }
 
-    pub fn rpm(&self) -> f64 {
-        self.rpm
+    pub fn speed(&self) -> AngularVelocity {
+        self.speed
     }
 }
 impl PressureSource for EngineDrivenPump {
@@ -888,15 +914,15 @@ impl WindTurbine {
         self.rpm
     }
 
-    fn update_generated_torque(&mut self, indicated_speed: &Velocity, stow_pos: f64) {
-        let cur_aplha = interpolation(
+    fn update_generated_torque(&mut self, indicated_speed: Velocity, stow_pos: f64) {
+        let cur_alpha = interpolation(
             &Self::RPM_GOVERNOR_BREAKPTS,
             &Self::PROP_ALPHA_MAP,
             self.rpm,
         );
 
         // Simple model. stow pos sin simulates the angle of the blades vs wind while deploying
-        let air_speed_torque = cur_aplha.to_radians().sin()
+        let air_speed_torque = cur_alpha.to_radians().sin()
             * (indicated_speed.get::<knot>() * indicated_speed.get::<knot>() / 100.)
             * 0.5
             * (std::f64::consts::PI / 2. * stow_pos).sin();
@@ -931,7 +957,7 @@ impl WindTurbine {
     fn update(
         &mut self,
         delta_time: &Duration,
-        indicated_speed: &Velocity,
+        indicated_speed: Velocity,
         stow_pos: f64,
         displacement_ratio: f64,
     ) {
@@ -1038,12 +1064,12 @@ impl RamAirTurbine {
         self.pump.delta_vol_min = self.pump.delta_vol_max;
     }
 
-    pub fn update_physics(&mut self, delta_time: &Duration, indicated_airspeed: &Velocity) {
+    pub fn update_physics(&mut self, delta_time: &Duration, indicated_airspeed: Velocity) {
         // Calculate the ratio of current displacement vs max displacement as an image of the load of the pump
         let displacement_ratio = self.delta_vol_max().get::<gallon>() / self.max_displacement;
         self.wind_turbine.update(
             &delta_time,
-            &indicated_airspeed,
+            indicated_airspeed,
             self.position,
             displacement_ratio,
         );
@@ -1097,6 +1123,7 @@ mod tests {
     use crate::simulation::UpdateContext;
     use uom::si::{
         acceleration::foot_per_second_squared,
+        angle::radian,
         f64::*,
         length::foot,
         pressure::{pascal, psi},
@@ -1208,7 +1235,7 @@ mod tests {
                 assert!(rat.wind_turbine.rpm <= 2500.);
             }
 
-            rat.update_physics(&context.delta(), &indicated_airspeed);
+            rat.update_physics(&context.delta(), indicated_airspeed);
             rat.update(&context, &blue_loop, &rat_controller);
             blue_loop.update(
                 &context,
@@ -1294,6 +1321,10 @@ mod tests {
             ThermodynamicTemperature::new::<degree_celsius>(25.0),
             true,
             Acceleration::new::<foot_per_second_squared>(0.),
+            Acceleration::new::<foot_per_second_squared>(0.),
+            Acceleration::new::<foot_per_second_squared>(0.),
+            Angle::new::<radian>(0.),
+            Angle::new::<radian>(0.),
         )
     }
 
@@ -1346,11 +1377,16 @@ mod tests {
             edp.update(
                 &context.with_delta(Duration::from_secs(1)),
                 &line,
-                pump_rpm,
+                AngularVelocity::new::<revolution_per_minute>(pump_rpm),
                 &engine_driven_pump_controller,
             ); // Update 10 times to stabilize displacement
 
-            edp.update(context, &line, pump_rpm, &engine_driven_pump_controller);
+            edp.update(
+                context,
+                &line,
+                AngularVelocity::new::<revolution_per_minute>(pump_rpm),
+                &engine_driven_pump_controller,
+            );
             edp.delta_vol_max()
         }
 

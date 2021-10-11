@@ -1,6 +1,7 @@
 use crate::{
-    hydraulic::HydraulicLoop,
+    hydraulic::{linear_actuator::Actuator, HydraulicLoop},
     overhead::PressSingleSignalButton,
+    shared::pid::PidController,
     simulation::{
         SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext, Write,
     },
@@ -15,11 +16,6 @@ use uom::si::{
 };
 
 use super::Accumulator;
-
-pub trait Actuator {
-    fn used_volume(&self) -> Volume;
-    fn reservoir_return(&self) -> Volume;
-}
 
 struct BrakeActuator {
     total_displacement: Volume,
@@ -76,11 +72,6 @@ impl BrakeActuator {
         }
     }
 
-    fn reset_accumulators(&mut self) {
-        self.volume_to_actuator_accumulator = Volume::new::<gallon>(0.);
-        self.volume_to_res_accumulator = Volume::new::<gallon>(0.);
-    }
-
     fn update_position(&mut self, context: &UpdateContext, loop_pressure: Pressure) -> f64 {
         // Final required position for actuator is the required one unless we can't reach it due to pressure
         let final_required_position = self
@@ -107,8 +98,14 @@ impl Actuator for BrakeActuator {
     fn used_volume(&self) -> Volume {
         self.volume_to_actuator_accumulator
     }
+
     fn reservoir_return(&self) -> Volume {
         self.volume_to_res_accumulator
+    }
+
+    fn reset_accumulators(&mut self) {
+        self.volume_to_res_accumulator = Volume::new::<gallon>(0.);
+        self.volume_to_actuator_accumulator = Volume::new::<gallon>(0.);
     }
 }
 
@@ -297,18 +294,19 @@ impl BrakeCircuit {
     pub fn accumulator_fluid_volume(&self) -> Volume {
         self.accumulator.fluid_volume()
     }
-
-    pub fn reset_accumulators(&mut self) {
-        self.volume_to_res_accumulator = Volume::new::<gallon>(0.);
-        self.volume_to_actuator_accumulator = Volume::new::<gallon>(0.);
-    }
 }
 impl Actuator for BrakeCircuit {
     fn used_volume(&self) -> Volume {
         self.volume_to_actuator_accumulator
     }
+
     fn reservoir_return(&self) -> Volume {
         self.volume_to_res_accumulator
+    }
+
+    fn reset_accumulators(&mut self) {
+        self.volume_to_res_accumulator = Volume::new::<gallon>(0.);
+        self.volume_to_actuator_accumulator = Volume::new::<gallon>(0.);
     }
 }
 impl SimulationElement for BrakeCircuit {
@@ -402,10 +400,7 @@ impl Default for AutobrakePanel {
 /// Deceleration governor is the PI controller computing the expected brake force to reach the target
 /// it's been given by update caller
 pub struct AutobrakeDecelerationGovernor {
-    target: Acceleration,
-    i_gain: f64,
-    p_gain: f64,
-    last_error: f64,
+    pid_controller: PidController,
 
     current_output: f64,
     filtered_acceleration: Acceleration,
@@ -420,10 +415,7 @@ impl AutobrakeDecelerationGovernor {
 
     pub fn new() -> AutobrakeDecelerationGovernor {
         Self {
-            target: Acceleration::new::<meter_per_second_squared>(10.),
-            i_gain: 0.018,
-            p_gain: 0.18,
-            last_error: 0.,
+            pid_controller: PidController::new(0.3, 0.25, 0., -1., 0., 0.),
 
             current_output: 0.,
             filtered_acceleration: Acceleration::new::<meter_per_second_squared>(0.),
@@ -448,7 +440,7 @@ impl AutobrakeDecelerationGovernor {
     fn disengage(&mut self) {
         self.is_engaged = false;
         self.time_engaged = Duration::from_secs(0);
-        self.target = Acceleration::new::<meter_per_second_squared>(10.);
+        self.pid_controller.reset();
     }
 
     pub fn time_engaged(&self) -> Duration {
@@ -457,11 +449,14 @@ impl AutobrakeDecelerationGovernor {
 
     pub fn is_on_target(&self, percent_margin_to_target: Ratio) -> bool {
         self.is_engaged
-            && self.filtered_acceleration < self.target * percent_margin_to_target.get::<ratio>()
+            && self.filtered_acceleration
+                < Acceleration::new::<meter_per_second_squared>(self.pid_controller.setpoint())
+                    * percent_margin_to_target.get::<ratio>()
     }
 
     pub fn update(&mut self, context: &UpdateContext, target: Acceleration) {
-        self.target = target;
+        self.pid_controller
+            .change_setpoint(target.get::<meter_per_second_squared>());
 
         let accel = context.long_accel();
         self.filtered_acceleration = self.filtered_acceleration
@@ -471,19 +466,13 @@ impl AutobrakeDecelerationGovernor {
         if self.is_engaged {
             self.time_engaged += context.delta();
 
-            let target_error = self.filtered_acceleration.get::<meter_per_second_squared>()
-                - self.target.get::<meter_per_second_squared>();
-
-            let p_term = self.p_gain * (target_error - self.last_error);
-            let i_term = self.i_gain * target_error;
-            self.current_output += p_term + i_term;
-
-            self.last_error = target_error;
-
-            self.current_output = self.current_output.min(1.).max(0.);
+            self.current_output = -self.pid_controller.next_control_output(
+                self.filtered_acceleration.get::<meter_per_second_squared>(),
+                Some(context.delta()),
+            );
         } else {
-            self.last_error = 0.;
             self.current_output = 0.;
+            self.pid_controller.reset();
         }
     }
 
@@ -511,6 +500,7 @@ mod tests {
     use std::time::Duration;
     use uom::si::{
         acceleration::foot_per_second_squared,
+        angle::radian,
         length::foot,
         pressure::{pascal, psi},
         thermodynamic_temperature::degree_celsius,
@@ -832,6 +822,10 @@ mod tests {
             ThermodynamicTemperature::new::<degree_celsius>(25.0),
             true,
             Acceleration::new::<foot_per_second_squared>(0.),
+            Acceleration::new::<foot_per_second_squared>(0.),
+            Acceleration::new::<foot_per_second_squared>(0.),
+            Angle::new::<radian>(0.),
+            Angle::new::<radian>(0.),
         )
     }
 }

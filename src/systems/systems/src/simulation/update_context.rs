@@ -1,8 +1,81 @@
 use std::time::Duration;
-use uom::si::{f64::*, pressure::inch_of_mercury, time::second, velocity::foot_per_minute};
+use uom::si::{
+    acceleration::meter_per_second_squared, angle::radian, f64::*, pressure::inch_of_mercury,
+    time::second, velocity::foot_per_minute,
+};
 
 use super::{Read, SimulatorReader};
+use nalgebra::{Rotation3, Vector3};
 
+#[derive(Clone, Copy, Debug)]
+pub struct Attitude {
+    pitch: Angle,
+    bank: Angle,
+}
+impl Attitude {
+    fn new(pitch: Angle, bank: Angle) -> Self {
+        Self { pitch, bank }
+    }
+
+    pub fn pitch_rotation_transform(&self) -> Rotation3<f64> {
+        Rotation3::from_axis_angle(&Vector3::x_axis(), self.pitch.get::<radian>())
+    }
+
+    pub fn bank_rotation_transform(&self) -> Rotation3<f64> {
+        Rotation3::from_axis_angle(&Vector3::z_axis(), -self.bank.get::<radian>())
+    }
+
+    fn pitch(&self) -> Angle {
+        self.pitch
+    }
+
+    fn bank(&self) -> Angle {
+        self.bank
+    }
+}
+#[derive(Clone, Copy, Debug)]
+pub struct LocalAcceleration {
+    acceleration: [Acceleration; 3],
+}
+impl LocalAcceleration {
+    const ACCEL_X_AXIS: usize = 0;
+    const ACCEL_Y_AXIS: usize = 1;
+    const ACCEL_Z_AXIS: usize = 2;
+
+    fn new(
+        lateral_acceleration: Acceleration,
+        vertical_acceleration: Acceleration,
+        longitudinal_acceleration: Acceleration,
+    ) -> Self {
+        Self {
+            acceleration: [
+                lateral_acceleration,
+                vertical_acceleration,
+                longitudinal_acceleration,
+            ],
+        }
+    }
+
+    fn long_accel(&self) -> Acceleration {
+        self.acceleration[Self::ACCEL_Z_AXIS]
+    }
+
+    fn lat_accel(&self) -> Acceleration {
+        self.acceleration[Self::ACCEL_X_AXIS]
+    }
+
+    fn vert_accel(&self) -> Acceleration {
+        self.acceleration[Self::ACCEL_Y_AXIS]
+    }
+
+    pub fn to_ms2_vector(&self) -> Vector3<f64> {
+        Vector3::new(
+            self.lat_accel().get::<meter_per_second_squared>(),
+            self.vert_accel().get::<meter_per_second_squared>(),
+            self.long_accel().get::<meter_per_second_squared>(),
+        )
+    }
+}
 /// Provides data unowned by any system in the aircraft system simulation
 /// for the purpose of handling a simulation tick.
 #[derive(Clone, Copy, Debug)]
@@ -14,7 +87,8 @@ pub struct UpdateContext {
     ambient_pressure: Pressure,
     is_on_ground: bool,
     vertical_speed: Velocity,
-    longitudinal_acceleration: Acceleration,
+    local_acceleration: LocalAcceleration,
+    attitude: Attitude,
 }
 impl UpdateContext {
     pub(crate) const AMBIENT_TEMPERATURE_KEY: &'static str = "AMBIENT TEMPERATURE";
@@ -23,8 +97,11 @@ impl UpdateContext {
     pub(crate) const IS_ON_GROUND_KEY: &'static str = "SIM ON GROUND";
     pub(crate) const AMBIENT_PRESSURE_KEY: &'static str = "AMBIENT PRESSURE";
     pub(crate) const VERTICAL_SPEED_KEY: &'static str = "VELOCITY WORLD Y";
-
+    pub(crate) const ACCEL_BODY_X_KEY: &'static str = "ACCELERATION BODY X";
+    pub(crate) const ACCEL_BODY_Y_KEY: &'static str = "ACCELERATION BODY Y";
     pub(crate) const ACCEL_BODY_Z_KEY: &'static str = "ACCELERATION BODY Z";
+    pub(crate) const PLANE_PITCH_KEY: &'static str = "PLANE PITCH DEGREES";
+    pub(crate) const PLANE_BANK_KEY: &'static str = "PLANE BANK DEGREES";
 
     pub fn new(
         delta: Duration,
@@ -33,6 +110,10 @@ impl UpdateContext {
         ambient_temperature: ThermodynamicTemperature,
         is_on_ground: bool,
         longitudinal_acceleration: Acceleration,
+        lateral_acceleration: Acceleration,
+        vertical_acceleration: Acceleration,
+        pitch: Angle,
+        bank: Angle,
     ) -> UpdateContext {
         UpdateContext {
             delta,
@@ -42,7 +123,12 @@ impl UpdateContext {
             ambient_pressure: Pressure::new::<inch_of_mercury>(29.92),
             is_on_ground,
             vertical_speed: Velocity::new::<foot_per_minute>(0.),
-            longitudinal_acceleration,
+            local_acceleration: LocalAcceleration::new(
+                lateral_acceleration,
+                vertical_acceleration,
+                longitudinal_acceleration,
+            ),
+            attitude: Attitude::new(pitch, bank),
         }
     }
 
@@ -60,7 +146,16 @@ impl UpdateContext {
                 reader.read(UpdateContext::VERTICAL_SPEED_KEY),
             ),
             delta: delta_time,
-            longitudinal_acceleration: reader.read(UpdateContext::ACCEL_BODY_Z_KEY),
+            local_acceleration: LocalAcceleration::new(
+                reader.read(UpdateContext::ACCEL_BODY_X_KEY),
+                reader.read(UpdateContext::ACCEL_BODY_Y_KEY),
+                reader.read(UpdateContext::ACCEL_BODY_Z_KEY),
+            ),
+
+            attitude: Attitude::new(
+                reader.read(UpdateContext::PLANE_PITCH_KEY),
+                reader.read(UpdateContext::PLANE_BANK_KEY),
+            ),
         }
     }
 
@@ -105,7 +200,31 @@ impl UpdateContext {
     }
 
     pub fn long_accel(&self) -> Acceleration {
-        self.longitudinal_acceleration
+        self.local_acceleration.long_accel()
+    }
+
+    pub fn lat_accel(&self) -> Acceleration {
+        self.local_acceleration.lat_accel()
+    }
+
+    pub fn vert_accel(&self) -> Acceleration {
+        self.local_acceleration.vert_accel()
+    }
+
+    pub fn acceleration(&self) -> LocalAcceleration {
+        self.local_acceleration
+    }
+
+    pub fn pitch(&self) -> Angle {
+        self.attitude.pitch()
+    }
+
+    pub fn bank(&self) -> Angle {
+        self.attitude.bank()
+    }
+
+    pub fn attitude(&self) -> Attitude {
+        self.attitude
     }
 
     pub fn with_delta(&self, delta: Duration) -> Self {
