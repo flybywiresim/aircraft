@@ -857,10 +857,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     setScratchpadThroughSystem(value, color = "white") {
         this._scratchpad = value;
         this._scratchpadElement.textContent = this._scratchpad;
-        this.setScratchpadTextColor(color);
-    }
-
-    setScratchpadTextColor(color) {
         this._scratchpadElement.className = color;
     }
 
