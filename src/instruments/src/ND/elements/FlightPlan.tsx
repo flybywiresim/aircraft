@@ -1,4 +1,4 @@
-import React, { FC, useState } from 'react';
+import React, { FC, memo, useState } from 'react';
 import { Geometry } from '@fmgc/guidance/Geometry';
 import { Type1Transition } from '@fmgc/guidance/lnav/transitions/Type1';
 import { GuidanceManager } from '@fmgc/guidance/GuidanceManager';
@@ -12,7 +12,6 @@ import { TFLeg } from '@fmgc/guidance/lnav/legs/TF';
 import { VMLeg } from '@fmgc/guidance/lnav/legs/VM';
 import { Leg } from '@fmgc/guidance/lnav/legs';
 import { Transition } from '@fmgc/guidance/lnav/transitions';
-import { Xy } from '@fmgc/flightplanning/data/geo';
 import { NdSymbol, NdSymbolTypeFlags } from '@shared/NavigationDisplay';
 import { useCurrentFlightPlan } from '@instruments/common/flightplan';
 import { MapParameters } from '../utils/MapParameters';
@@ -33,7 +32,7 @@ export type FlightPathProps = {
     type: FlightPlanType,
 }
 
-export const FlightPlan: FC<FlightPathProps> = ({ x = 0, y = 0, symbols, flightPlanManager, mapParams, debug = false, type = FlightPlanType.Nav }) => {
+export const FlightPlan: FC<FlightPathProps> = memo(({ x = 0, y = 0, symbols, flightPlanManager, mapParams, debug = false, type = FlightPlanType.Nav }) => {
     const [guidanceManager] = useState(() => new GuidanceManager(flightPlanManager));
     const [tempGeometry, setTempGeometry] = useState(() => guidanceManager.getMultipleLegGeometry(true));
     const [activeGeometry, setActiveGeometry] = useState(() => guidanceManager.getMultipleLegGeometry());
@@ -70,19 +69,25 @@ export const FlightPlan: FC<FlightPathProps> = ({ x = 0, y = 0, symbols, flightP
     return (
         <Layer x={x} y={y}>
             {flightPath}
-            {symbols.map((symbol) => (
-                <SymbolMarker
-                    ident={symbol.ident}
-                    position={mapParams.coordinatesToXYy({ lat: symbol.location.lat, long: symbol.location.long })}
-                    type={symbol.type}
-                    length={symbol.length}
-                    direction={symbol.direction}
-                    constraints={symbol.constraints}
-                    radials={symbol.radials}
-                    radii={symbol.radii}
-                    mapParams={mapParams}
-                />
-            ))}
+            {symbols.map((symbol) => {
+                const position = mapParams.coordinatesToXYy(symbol.location);
+
+                return (
+                    <SymbolMarker
+                        key={symbol.ident}
+                        ident={symbol.ident}
+                        x={Math.round(position[0])}
+                        y={Math.round(position[1])}
+                        type={symbol.type}
+                        length={symbol.length}
+                        direction={symbol.direction}
+                        constraints={symbol.constraints}
+                        radials={symbol.radials}
+                        radii={symbol.radii}
+                        mapParams={mapParams}
+                    />
+                );
+            })}
             {debug && !!geometry && (
                 <>
                     {
@@ -100,7 +105,7 @@ export const FlightPlan: FC<FlightPathProps> = ({ x = 0, y = 0, symbols, flightP
             )}
         </Layer>
     );
-};
+});
 
 const VorMarker: FC<{ colour: string }> = ({ colour }) => (
     <>
@@ -179,7 +184,8 @@ const RunwayMarkerFar: FC<{ ident: string, rotation: number }> = ({ ident, rotat
 
 interface SymbolMarkerProps {
     ident: string,
-    position: Xy,
+    x: number,
+    y: number,
     type: NdSymbolTypeFlags,
     constraints?: string[],
     length?: number,
@@ -189,7 +195,7 @@ interface SymbolMarkerProps {
     mapParams: MapParameters,
 }
 
-const SymbolMarker: FC<SymbolMarkerProps> = ({ ident, position, type, constraints, length, direction, radials, radii, mapParams }) => {
+const SymbolMarker: FC<SymbolMarkerProps> = memo(({ ident, x, y, type, constraints, length, direction, radials, radii, mapParams }) => {
     let colour = 'White';
     // todo airport as well if in flightplan
     if (type & NdSymbolTypeFlags.Runway) {
@@ -271,6 +277,33 @@ const SymbolMarker: FC<SymbolMarkerProps> = ({ ident, position, type, constraint
     } else if (type & (NdSymbolTypeFlags.Waypoint | NdSymbolTypeFlags.FlightPlan | NdSymbolTypeFlags.FixInfo)) {
         showIdent = true;
         elements.push(<WaypointMarker colour={colour} />);
+    } else if (type & (NdSymbolTypeFlags.PwpCdaFlap1White)) {
+        showIdent = false;
+        elements.push(
+            <>
+                <circle cx={0} cy={0} r={14} strokeWidth={2} className="White" />
+
+                <text x={0.5} y={-2.5} className="White" textAnchor="middle" dominantBaseline="middle" fontSize={23}>1</text>
+            </>,
+        );
+    } else if (type & (NdSymbolTypeFlags.PwpCdaFlap2White)) {
+        showIdent = false;
+        elements.push(
+            <>
+                <circle cx={0} cy={0} r={14} strokeWidth={2} className="White" />
+
+                <text x={0.5} y={-2.5} className="White" textAnchor="middle" dominantBaseline="middle" fontSize={23}>2</text>
+            </>,
+        );
+    } else if (type & (NdSymbolTypeFlags.PwpDecel)) {
+        showIdent = false;
+        elements.push(
+            <>
+                <circle cx={0} cy={0} r={14} strokeWidth={2} className="Magenta" />
+
+                <text x={0.5} y={-2.5} className="Magenta" textAnchor="middle" dominantBaseline="middle" fontSize={23}>D</text>
+            </>,
+        );
     }
 
     if (showIdent) {
@@ -282,11 +315,11 @@ const SymbolMarker: FC<SymbolMarkerProps> = ({ ident, position, type, constraint
     }
 
     return (
-        <Layer x={position[0]} y={position[1]}>
+        <Layer x={x} y={y}>
             {elements}
         </Layer>
     );
-};
+});
 
 export type DebugLegProps<TLeg extends Leg> = {
     leg: TLeg,

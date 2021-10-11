@@ -43,6 +43,9 @@ export enum NdSymbolTypeFlags {
     SpeedChange = 1 << 13,
     FixInfo = 1 << 14,
     FlightPlan = 1 << 15,
+    PwpDecel = 1 << 16,
+    PwpCdaFlap1White = 1 << 17,
+    PwpCdaFlap2White = 1 << 20,
 }
 
 export interface NdSymbol {
