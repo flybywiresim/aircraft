@@ -23,14 +23,11 @@ const LoadSheetWidget = (props: LoadsheetPageProps) => {
         }
     }, [imageSize]);
 
-    useEffect(() => {
-        const pLoadsheet = ref.current?.firstChild as HTMLElement;
-
-        if (pLoadsheet) {
-            pLoadsheet.style.fontSize = `${fontSize}px`;
-            pLoadsheet.style.lineHeight = `${fontSize}px`;
-        }
-    }, [fontSize]);
+    const [loadSheetStyle, setLoadSheetStyle] = useState({});
+    useEffect(() => setLoadSheetStyle({
+        fontSize: `${fontSize}px`,
+        lineHeight: `${fontSize}px`,
+    }), [fontSize]);
 
     const handleMouseDown = (event) => {
         position.current.top = ref.current ? ref.current.scrollTop : 0;
@@ -104,6 +101,7 @@ const LoadSheetWidget = (props: LoadsheetPageProps) => {
                             <div
                                 ref={ref}
                                 className="loadsheet-container grabbable scrollbar overflow-y-scroll"
+                                style={loadSheetStyle}
                                 onMouseDown={handleMouseDown}
                                 // eslint-disable-next-line react/no-danger
                                 dangerouslySetInnerHTML={{ __html: props.loadsheet }}

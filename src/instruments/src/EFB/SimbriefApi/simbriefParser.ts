@@ -111,6 +111,6 @@ function simbriefDataParser(simbriefJson: any): ISimbriefData {
             avgWindDir: general.avg_wind_dir,
             avgWindSpeed: general.avg_wind_spd,
         },
-        text: text.plan_html,
+        text: text.plan_html.replace(/^<div [^>]+>/, '').replace(/<\/div>$/, ''),
     };
 }
