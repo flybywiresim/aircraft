@@ -111,7 +111,9 @@ class ScratchpadDataLink {
 
     removeUserContentFromScratchpadAndDisplayAndReturnTextContent() {
         const userContent = this.text;
-        this.setText("");
+        if (this.status < SpDisplayStatus.typeOneMessage) {
+            this.setText("");
+        }
         return userContent;
     }
 
