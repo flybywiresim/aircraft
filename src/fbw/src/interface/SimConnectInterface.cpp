@@ -10,7 +10,6 @@ bool SimConnectInterface::connect(bool autopilotStateMachineEnabled,
                                   bool autopilotLawsEnabled,
                                   bool flyByWireEnabled,
                                   const std::vector<std::shared_ptr<ThrottleAxisMapping>>& throttleAxis,
-                                  std::shared_ptr<FlapsHandler> flapsHandler,
                                   std::shared_ptr<SpoilersHandler> spoilersHandler,
                                   std::shared_ptr<ElevatorTrimHandler> elevatorTrimHandler,
                                   std::shared_ptr<RudderTrimHandler> rudderTrimHandler,
@@ -32,8 +31,6 @@ bool SimConnectInterface::connect(bool autopilotStateMachineEnabled,
     cout << "WASM: Connected" << endl;
     // store throttle axis handler
     this->throttleAxis = throttleAxis;
-    // store flaps handler
-    this->flapsHandler = flapsHandler;
     // store spoilers handler
     this->spoilersHandler = spoilersHandler;
     // store elevator trim handler
@@ -130,8 +127,6 @@ bool SimConnectInterface::prepareSimDataSimConnectDataDefinitions() {
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "GEAR ANIMATION POSITION:0", "NUMBER");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "GEAR ANIMATION POSITION:1", "NUMBER");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "GEAR ANIMATION POSITION:2", "NUMBER");
-  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "FLAPS HANDLE INDEX", "NUMBER");
-  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "TRAILING EDGE FLAPS LEFT ANGLE", "DEGREES");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "SPOILERS HANDLE POSITION", "POSITION");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "SPOILERS LEFT POSITION", "PERCENT OVER 100");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "SPOILERS RIGHT POSITION", "PERCENT OVER 100");
@@ -367,16 +362,6 @@ bool SimConnectInterface::prepareSimInputSimConnectDataDefinitions(bool autopilo
   result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE_REVERSE_THRUST_TOGGLE, "THROTTLE_REVERSE_THRUST_TOGGLE", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE_REVERSE_THRUST_HOLD, "THROTTLE_REVERSE_THRUST_HOLD", true);
 
-  result &= addInputDataDefinition(hSimConnect, 0, Events::FLAPS_UP, "FLAPS_UP", true);
-  result &= addInputDataDefinition(hSimConnect, 0, Events::FLAPS_1, "FLAPS_1", true);
-  result &= addInputDataDefinition(hSimConnect, 0, Events::FLAPS_2, "FLAPS_2", true);
-  result &= addInputDataDefinition(hSimConnect, 0, Events::FLAPS_3, "FLAPS_3", true);
-  result &= addInputDataDefinition(hSimConnect, 0, Events::FLAPS_DOWN, "FLAPS_DOWN", true);
-  result &= addInputDataDefinition(hSimConnect, 0, Events::FLAPS_INCR, "FLAPS_INCR", true);
-  result &= addInputDataDefinition(hSimConnect, 0, Events::FLAPS_DECR, "FLAPS_DECR", true);
-  result &= addInputDataDefinition(hSimConnect, 0, Events::FLAPS_SET, "FLAPS_SET", true);
-  result &= addInputDataDefinition(hSimConnect, 0, Events::AXIS_FLAPS_SET, "AXIS_FLAPS_SET", true);
-
   result &= addInputDataDefinition(hSimConnect, 0, Events::SPOILERS_ON, "SPOILERS_ON", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::SPOILERS_OFF, "SPOILERS_OFF", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::SPOILERS_TOGGLE, "SPOILERS_TOGGLE", true);
@@ -410,7 +395,6 @@ bool SimConnectInterface::prepareSimOutputSimConnectDataDefinitions() {
   result &= addDataDefinition(hSimConnect, 4, SIMCONNECT_DATATYPE_FLOAT64, "GENERAL ENG THROTTLE MANAGED MODE:1", "NUMBER");
   result &= addDataDefinition(hSimConnect, 4, SIMCONNECT_DATATYPE_FLOAT64, "GENERAL ENG THROTTLE MANAGED MODE:2", "NUMBER");
 
-  result &= addDataDefinition(hSimConnect, 5, SIMCONNECT_DATATYPE_FLOAT64, "FLAPS HANDLE INDEX", "NUMBER");
 
   result &= addDataDefinition(hSimConnect, 6, SIMCONNECT_DATATYPE_FLOAT64, "SPOILERS HANDLE POSITION", "POSITION");
 
@@ -778,11 +762,6 @@ bool SimConnectInterface::sendData(SimOutputZetaTrim output) {
 bool SimConnectInterface::sendData(SimOutputThrottles output) {
   // write data and return result
   return sendData(4, sizeof(output), &output);
-}
-
-bool SimConnectInterface::sendData(SimOutputFlaps output) {
-  // write data and return result
-  return sendData(5, sizeof(output), &output);
 }
 
 bool SimConnectInterface::sendData(SimOutputSpoilers output) {
@@ -1736,51 +1715,6 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
     case Events::THROTTLE_REVERSE_THRUST_HOLD: {
       throttleAxis[0]->onEventReverseHold(static_cast<bool>(event->dwData));
       throttleAxis[1]->onEventReverseHold(static_cast<bool>(event->dwData));
-      break;
-    }
-
-    case Events::FLAPS_UP: {
-      flapsHandler->onEventFlapsUp();
-      break;
-    }
-
-    case Events::FLAPS_1: {
-      flapsHandler->onEventFlapsSet_1();
-      break;
-    }
-
-    case Events::FLAPS_2: {
-      flapsHandler->onEventFlapsSet_2();
-      break;
-    }
-
-    case Events::FLAPS_3: {
-      flapsHandler->onEventFlapsSet_3();
-      break;
-    }
-
-    case Events::FLAPS_DOWN: {
-      flapsHandler->onEventFlapsDown();
-      break;
-    }
-
-    case Events::FLAPS_INCR: {
-      flapsHandler->onEventFlapsIncrease();
-      break;
-    }
-
-    case Events::FLAPS_DECR: {
-      flapsHandler->onEventFlapsDecrease();
-      break;
-    }
-
-    case Events::FLAPS_SET: {
-      flapsHandler->onEventFlapsSet(static_cast<long>(event->dwData));
-      break;
-    }
-
-    case Events::AXIS_FLAPS_SET: {
-      flapsHandler->onEventFlapsAxisSet(static_cast<long>(event->dwData));
       break;
     }
 
