@@ -51,3 +51,4 @@ node_modules
 /src/fbw/obj/
 /src/fdr2csv/build/
 .env
+src/instruments/buildSrc/custom/*

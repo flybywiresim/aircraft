@@ -4,12 +4,15 @@ import { getSmallestAngle } from '@instruments/common/utils';
 import { MathUtils } from '@shared/MathUtils';
 import { useFlightPlanManager } from '@instruments/common/flightplan';
 import { LatLongData } from '@typings/fs-base-ui/html_ui/JS/Types';
-import { RangeSetting, Mode, EfisSide } from '@shared/NavigationDisplay';
-import { FlightPlan } from '../elements/FlightPlan';
+import { RangeSetting, Mode, EfisSide, NdSymbol } from '@shared/NavigationDisplay';
+import { LateralMode } from '@shared/autopilot';
+import { FlightPlan, FlightPlanType } from '../elements/FlightPlan';
 import { MapParameters } from '../utils/MapParameters';
 import { RadioNeedle } from '../elements/RadioNeedles';
 import { ToWaypointIndicator } from '../elements/ToWaypointIndicator';
 import { ApproachMessage } from '../elements/ApproachMessage';
+import { CrossTrack } from '../elements/CrossTrack';
+import { TrackLine } from '../elements/TrackLine';
 
 export interface ArcModeProps {
     symbols: NdSymbol[],
@@ -32,6 +35,17 @@ export const ArcMode: React.FC<ArcModeProps> = ({ symbols, adirsAlign, rangeSett
     const [ilsCourse] = useSimVar('NAV LOCALIZER:3', 'degrees');
     const [lsDisplayed] = useSimVar(`L:BTN_LS_${side === 'L' ? 1 : 2}_FILTER_ACTIVE`, 'bool'); // TODO rename simvar
     const [showTmpFplan] = useSimVar('L:MAP_SHOW_TEMPORARY_FLIGHT_PLAN', 'bool');
+    const [fmaLatMode] = useSimVar('L:A32NX_FMA_LATERAL_MODE', 'enum', 200);
+    const [fmaLatArmed] = useSimVar('L:A32NX_FMA_LATERAL_ARMED', 'enum', 200);
+    const [groundSpeed] = useSimVar('GPS GROUND SPEED', 'Meters per second', 200);
+
+    const heading = Math.round(Number(MathUtils.fastToFixed(magHeading, 1)) * 1000) / 1000;
+    let track = Math.round(Number(MathUtils.fastToFixed(magTrack, 1)) * 1000) / 1000;
+
+    // Workaround for bug with gps ground track simvar
+    if (groundSpeed < 40) {
+        track = (0.025 * groundSpeed + 0.00005) * track + (1 - (0.025 * groundSpeed + 0.00005)) * heading;
+    }
 
     const [mapParams] = useState(() => {
         const params = new MapParameters();
@@ -55,7 +69,7 @@ export const ArcMode: React.FC<ArcModeProps> = ({ symbols, adirsAlign, rangeSett
                     symbols={symbols}
                     mapParams={mapParams}
                     debug={false}
-                    temp
+                    type={FlightPlanType.Temp}
                 />
             );
         }
@@ -70,16 +84,29 @@ export const ArcMode: React.FC<ArcModeProps> = ({ symbols, adirsAlign, rangeSett
                             symbols={symbols}
                             mapParams={mapParams}
                             debug={false}
-                            temp={false}
+                            type={
+                                /* TODO FIXME: Check if intercepts active leg */
+                                (fmaLatMode === LateralMode.NONE
+                                    || fmaLatMode === LateralMode.HDG
+                                    || fmaLatMode === LateralMode.TRACK)
+                                    && !fmaLatArmed
+                                    ? FlightPlanType.Dashed
+                                    : FlightPlanType.Nav
+                            }
                         />
                         {tmpFplan}
+                        { (((fmaLatMode === LateralMode.NONE
+                        || fmaLatMode === LateralMode.HDG
+                        || fmaLatMode === LateralMode.TRACK) && !fmaLatArmed) || !flightPlanManager.getCurrentFlightPlan().length) && (
+                            <TrackLine x={384} y={620} heading={heading} track={track} />
+                        )}
                     </g>
                     <RadioNeedle index={1} side={side} displayMode={Mode.ARC} centreHeight={620} />
                     <RadioNeedle index={2} side={side} displayMode={Mode.ARC} centreHeight={620} />
                 </g>
                 <Overlay
-                    heading={Number(MathUtils.fastToFixed(magHeading, 1))}
-                    track={Number(MathUtils.fastToFixed(magTrack, 1))}
+                    heading={heading}
+                    track={track}
                     rangeSetting={rangeSetting}
                     side={side}
                     tcasMode={tcasMode}
@@ -90,6 +117,7 @@ export const ArcMode: React.FC<ArcModeProps> = ({ symbols, adirsAlign, rangeSett
                 <ToWaypointIndicator info={flightPlanManager.getCurrentFlightPlan().computeActiveWaypointStatistics(ppos)} />
                 <ApproachMessage info={flightPlanManager.getAirportApproach()} flightPhase={fmgcFlightPhase} />
                 <Plane />
+                <CrossTrack x={390} y={646} />
             </>
         );
     }
@@ -579,37 +607,14 @@ const MapFailOverlay: React.FC<MapFailOverlayProps> = memo(({ rangeSetting }) =>
     </>
 ));
 
-const Plane: React.FC = () => {
-    const [crossTrackError] = useSimVar('L:A32NX_FG_CROSS_TRACK_ERROR', 'nautical miles');
+const Plane: React.FC = () => (
+    <g>
+        <line id="lubber" x1={384} y1={108} x2={384} y2={148} className="Yellow" strokeWidth={5} strokeLinejoin="round" strokeLinecap="round" />
+        <image x={342} y={596} width={84} height={71} xlinkHref="/Images/ND/AIRPLANE.svg" />
+    </g>
+);
 
-    let crossTrackText = '';
-    let crossTrackAnchor = 'start';
-    let crossTrackX = 390;
-    const crossTrackAbs = Math.abs(crossTrackError);
-
-    if (crossTrackAbs > 0.02) {
-        crossTrackText = crossTrackAbs.toFixed(crossTrackAbs < 0.3 ? 2 : 1);
-        if (crossTrackError < 0) {
-            crossTrackText += 'R';
-            crossTrackAnchor = 'start';
-            crossTrackX = 424;
-        } else {
-            crossTrackText += 'L';
-            crossTrackAnchor = 'end';
-            crossTrackX = 352;
-        }
-    }
-
-    return (
-        <g>
-            <line id="lubber" x1={384} y1={108} x2={384} y2={148} className="Yellow" strokeWidth={5} strokeLinejoin="round" strokeLinecap="round" />
-            <image x={342} y={596} width={84} height={71} xlinkHref="/Images/ND/AIRPLANE.svg" />
-            <text x={crossTrackX} y={646} textAnchor={crossTrackAnchor} fontSize={24} className="Green">{crossTrackText}</text>
-        </g>
-    );
-};
-
-const TrackBug: React.FC<{heading: number, track: number}> = ({ heading, track }) => {
+const TrackBug: React.FC<{heading: number, track: number}> = memo(({ heading, track }) => {
     const diff = getSmallestAngle(track, heading);
     if (diff > 48) {
         return null;
@@ -621,7 +626,7 @@ const TrackBug: React.FC<{heading: number, track: number}> = ({ heading, track }
             className="Green rounded"
         />
     );
-};
+});
 
 const IlsCourseBug: React.FC<{heading: number, ilsCourse: number}> = ({ heading, ilsCourse }) => {
     const diff = getSmallestAngle(ilsCourse, heading);

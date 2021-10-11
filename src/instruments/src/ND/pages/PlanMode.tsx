@@ -5,8 +5,9 @@ import { MathUtils } from '@shared/MathUtils';
 import { useSimVar } from '@instruments/common/simVars';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { NdSymbol } from '@shared/NavigationDisplay';
+import { LateralMode } from '@shared/autopilot';
 import { ToWaypointIndicator } from '../elements/ToWaypointIndicator';
-import { FlightPlan } from '../elements/FlightPlan';
+import { FlightPlan, FlightPlanType } from '../elements/FlightPlan';
 import { MapParameters } from '../utils/MapParameters';
 import { Degrees } from '../../../../../typings';
 
@@ -25,6 +26,8 @@ export const PlanMode: FC<PlanModeProps> = ({ symbols, adirsAlign, rangeSetting,
     const [showTmpFplan] = useSimVar('L:MAP_SHOW_TEMPORARY_FLIGHT_PLAN', 'bool');
     const [selectedWaypoint, setSelectedWaypoint] = useState<WayPoint>();
     const [trueHeading] = useSimVar('PLANE HEADING DEGREES TRUE', 'degrees');
+    const [fmaLatMode] = useSimVar('L:A32NX_FMA_LATERAL_MODE', 'enum', 200);
+    const [fmaLatArmed] = useSimVar('L:A32NX_FMA_LATERAL_ARMED', 'enum', 200);
 
     useEffect(() => {
         setSelectedWaypoint(flightPlanManager.getCurrentFlightPlan().waypoints[selectedWaypointIndex]);
@@ -53,7 +56,7 @@ export const PlanMode: FC<PlanModeProps> = ({ symbols, adirsAlign, rangeSetting,
                 mapParams={mapParams}
                 symbols={symbols}
                 debug={false}
-                temp
+                type={FlightPlanType.Temp}
             />
         );
     }
@@ -68,7 +71,15 @@ export const PlanMode: FC<PlanModeProps> = ({ symbols, adirsAlign, rangeSetting,
                     mapParams={mapParams}
                     symbols={symbols}
                     debug={false}
-                    temp={false}
+                    type={
+                        /* TODO FIXME: Check if intercepts active leg */
+                        (fmaLatMode === LateralMode.NONE
+                            || fmaLatMode === LateralMode.HDG
+                            || fmaLatMode === LateralMode.TRACK)
+                            && !fmaLatArmed
+                            ? FlightPlanType.Dashed
+                            : FlightPlanType.Nav
+                    }
                 />
                 {tmpFplan}
             </g>
