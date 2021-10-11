@@ -278,7 +278,7 @@ const NGauge = ({ x, y } : ComponentPositionProps) => {
                     <Arc x={0} y={50} radius={50} toValue={120} scaleMax={120} className="Line Red NoFill" />
                     <Arc x={0} y={50} radius={50} toValue={107} scaleMax={120} className="Line White NoFill" />
 
-                    {!apuN.isNoComputedData()
+                    {apuN.isNormalOperation()
                         && (
                             <Needle
                                 x={0}
@@ -295,15 +295,15 @@ const NGauge = ({ x, y } : ComponentPositionProps) => {
 
                 <SvgGroup x={100} y={13}>
                     <text x={0} y={0} className="White Center FontNormal">N</text>
-                    <text x={0} y={30} className="Cyan Center FontSmall">%</text>
+                    <text x={0} y={30} className="Cyan Center FontNormal">%</text>
                 </SvgGroup>
 
                 <text
                     x={60}
                     y={65}
-                    className={`FontLarger Right ${apuN.isNoComputedData() ? 'Amber' : apuNIndicationColor}`}
+                    className={`FontLarger Right ${apuN.isNormalOperation() ? apuNIndicationColor : 'Amber'}`}
                 >
-                    {apuN.isNoComputedData() ? 'XX' : apuN.value.toFixed()}
+                    {apuN.isNormalOperation() ? apuN.value.toFixed() : 'XX'}
                 </text>
             </SvgGroup>
         </>
@@ -378,7 +378,7 @@ const EgtGauge = ({ x, y } : ComponentPositionProps) => {
                         dashOffset={-44}
                     />
                     {/* AMBER BAR */}
-                    {!(apuEgtCaution.isNoComputedData() || apuEgtWarning.isNoComputedData())
+                    {apuEgtCaution.isNormalOperation() && apuEgtWarning.isNormalOperation()
                         && (
                             <Needle
                                 x={-1}
@@ -395,7 +395,7 @@ const EgtGauge = ({ x, y } : ComponentPositionProps) => {
                     <Arc x={0} y={50} radius={50} toValue={1100} scaleMin={300} scaleMax={1100} className="Line Red NoFill" />
                     <Arc x={0} y={50} radius={50} toValue={apuEgtWarning.value} scaleMin={300} scaleMax={1100} className="Line White NoFill" />
 
-                    {!apuEgt.isNoComputedData()
+                    {apuEgt.isNormalOperation()
                         && (
                             <Needle
                                 x={0}
@@ -413,16 +413,16 @@ const EgtGauge = ({ x, y } : ComponentPositionProps) => {
 
                 <SvgGroup x={100} y={13}>
                     <text x={0} y={0} className="White Center FontNormal">EGT</text>
-                    <text x={0} y={30} className="Cyan Center FontSmall">&deg;C</text>
+                    <text x={0} y={30} className="Cyan Center FontNormal">&deg;C</text>
                 </SvgGroup>
 
                 <text
                     x={60}
                     y={65}
                     // eslint-disable-next-line no-nested-ternary
-                    className={`FontLarger Right ${apuEgt.isNoComputedData() ? 'Amber' : apuEgtIndicationColor === 'Pulse' ? 'FillPulse' : apuEgtIndicationColor}`}
+                    className={`FontLarger Right ${!apuEgt.isNormalOperation() ? 'Amber' : apuEgtIndicationColor === 'Pulse' ? 'FillPulse' : apuEgtIndicationColor}`}
                 >
-                    {apuEgt.isNoComputedData() ? 'XX' : displayedEgtValue}
+                    {apuEgt.isNormalOperation() ? displayedEgtValue : 'XX' }
                 </text>
             </SvgGroup>
         </>
