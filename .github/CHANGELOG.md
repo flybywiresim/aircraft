@@ -37,6 +37,7 @@
 1. [MISC] Fix for incrementing ISIS pressure values - @RichardPilbery (tricky_dicky#3571)
 1. [MCDU] Fix GPS ground speed on IRS status page to show ground speed in knots rather than meters/second - @donstim (donbikes#4084)
 1. [MCDU] Fixed length limitation for system messages - @derl30n (Leon)
+1. [ENGINE] Correctly adapt fuel burn with sim rate - @aguther (Andreas Guther)
 
 ## 0.7.0
 1. [HYD] First building block, more to come. Hydraulics do not impact the sim YET. - @crocket6 (crocket)
