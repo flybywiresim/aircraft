@@ -230,10 +230,10 @@ const NGauge = ({ x, y } : ComponentPositionProps) => {
         <>
             <SvgGroup x={x} y={y}>
                 {/* Mark Annotations */}
-                <text x={-19} y={63} className="FontSmall White">0</text>
-                <text x={32} y={24} className="FontSmall White">10</text>
+                <text x={-29} y={63} className="FontSmall White">0</text>
+                <text x={22} y={24} className="FontSmall White">10</text>
 
-                <SvgGroup x={0} y={0} rotation={-29}>
+                <SvgGroup x={-10} y={0} rotation={-29}>
                     {/* 0 */}
                     <Needle
                         x={-1}
@@ -285,9 +285,8 @@ const NGauge = ({ x, y } : ComponentPositionProps) => {
                                 y={50}
                                 length={55}
                                 scaleMax={120}
-                                value={apuN.value}
+                                value={apuN.value.toFixed()}
                                 className={`Line ${apuNIndicationColor}`}
-                                dashOffset={-10}
                                 strokeWidth={3}
                             />
                         )}
@@ -299,8 +298,8 @@ const NGauge = ({ x, y } : ComponentPositionProps) => {
                 </SvgGroup>
 
                 <text
-                    x={60}
-                    y={65}
+                    x={51}
+                    y={70}
                     className={`FontLarger Right ${apuN.isNormalOperation() ? apuNIndicationColor : 'Amber'}`}
                 >
                     {apuN.isNormalOperation() ? apuN.value.toFixed() : 'XX'}
@@ -380,7 +379,7 @@ const EgtGauge = ({ x, y } : ComponentPositionProps) => {
                         dashOffset={-44}
                     />
                     {/* AMBER BAR */}
-                    {apuEgtCaution.isNormalOperation() && apuEgtWarning.isNormalOperation()
+                    {apuEgt.isNormalOperation() && apuEgtWarning.isNormalOperation()
                         && (
                             <Needle
                                 x={-1}
@@ -407,9 +406,8 @@ const EgtGauge = ({ x, y } : ComponentPositionProps) => {
                                 length={55}
                                 scaleMin={300}
                                 scaleMax={1100}
-                                value={apuEgt.value < 300 ? 300 : apuEgt.value}
+                                value={apuEgt.value < 300 ? 300 : displayedEgtValue}
                                 className={`Line ${apuEgtIndicationColor === 'Pulse' ? 'LinePulse' : apuEgtIndicationColor}`}
-                                dashOffset={-10}
                                 strokeWidth={3}
                             />
                         )}
@@ -421,8 +419,8 @@ const EgtGauge = ({ x, y } : ComponentPositionProps) => {
                 </SvgGroup>
 
                 <text
-                    x={60}
-                    y={65}
+                    x={apuEgt.isNormalOperation() ? 66 : 51}
+                    y={70}
                     // eslint-disable-next-line no-nested-ternary
                     className={`FontLarger Right ${!apuEgt.isNormalOperation() ? 'Amber' : apuEgtIndicationColor === 'Pulse' ? 'FillPulse' : apuEgtIndicationColor}`}
                 >
