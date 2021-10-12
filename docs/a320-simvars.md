@@ -983,9 +983,21 @@
     - Current LCD mask opacity for MCDU, used for driving MCDU display pixels effect
 ## EIS Display System
 
+- A32NX_EFIS_{side}_NAVAID_{1|2}_MODE
+    - Enum
+    - Provides the selected NAVAIDs for display on the EFIS
+      Value | Meaning
+      --- | ---
+      0 | Off
+      1 | ADF
+      2 | VOR
+    - {side}
+        - L
+        - R
+
 - A32NX_EFIS_{side}_ND_MODE
     - Enum
-    - Provides the selected navigation display mode for the captain side EFIS
+    - Provides the selected navigation display mode for the EFIS
       Value | Meaning
       --- | ---
       0 | ROSE ILS
@@ -999,7 +1011,7 @@
 
 - A32NX_EFIS_{side}_ND_RANGE
     - Enum
-    - Provides the selected navigation display range for the captain side EFIS
+    - Provides the selected navigation display range for the EFIS
       Value | Meaning
       --- | ---
       0 | 10
@@ -1008,6 +1020,21 @@
       3 | 80
       4 | 160
       5 | 320
+    - {side}
+        - L
+        - R
+
+- A32NX_EFIS_{side}_OPTION
+    - Enum
+    - Provides the selected EFIS option/overlay
+      Value | Meaning
+      --- | ---
+      0 | None
+      1 | Constraints
+      2 | VOR/DMEs
+      3 | Waypoints
+      4 | NDBs
+      5 | Airports
     - {side}
         - L
         - R
