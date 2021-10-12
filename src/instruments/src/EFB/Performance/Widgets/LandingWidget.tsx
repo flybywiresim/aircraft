@@ -19,6 +19,7 @@
 import React, { useContext } from 'react';
 import { Metar } from '@flybywiresim/api-client';
 import metarParser from 'aewx-metar-parser';
+import { Units } from '@shared/units';
 import LandingCalculator, { LandingFlapsConfig, LandingRunwayConditions } from '../Calculators/LandingCalculator';
 import RunwayVisualizationWidget, { LabelType } from './RunwayVisualizationWidget';
 import SimpleInput from '../../Components/Form/SimpleInput/SimpleInput';
@@ -27,7 +28,6 @@ import OutputDisplay from '../../Components/Form/OutputDisplay/OutputDisplay';
 import { useSimVar } from '../../../Common/simVars';
 import { MetarParserType } from '../../../Common/metarTypes';
 import { EPerformanceActions, PerformanceContext, performanceInitialState } from '../../Store/performance-context';
-import { Units } from '@shared/units';
 
 const poundsToKgs = 0.453592;
 
@@ -355,6 +355,7 @@ export const LandingWidget = () => {
                                     className="w-56 my-1.5"
                                     label="Wind Direction"
                                     value={windDirection}
+                                    placeholder="000"
                                     min={0}
                                     max={360}
                                     padding={3}
@@ -366,7 +367,7 @@ export const LandingWidget = () => {
                                     className="w-56 my-1.5"
                                     label="Wind Magnitude"
                                     value={windMagnitude}
-                                    placeholder="KTS"
+                                    placeholder="Kts"
                                     min={0}
                                     decimalPrecision={1}
                                     onChange={handleWindMagnitudeChange}
@@ -375,7 +376,7 @@ export const LandingWidget = () => {
                                 <SimpleInput
                                     className="w-56 my-1.5"
                                     label="Temperature"
-                                    value={Units.celsiusToUser(temperature)}
+                                    value={temperature && Units.celsiusToUser(temperature)}
                                     placeholder={Units.userTemperatureUnit}
                                     min={Units.metricUnits ? -50 : -58}
                                     max={Units.metricUnits ? 55 : 131}
@@ -385,8 +386,8 @@ export const LandingWidget = () => {
                                 />
                                 <SimpleInput
                                     className="w-56 my-1.5"
-                                    label="QNH"
-                                    value={Units.hectopascalToUserString(pressure)}
+                                    label={Units.metricUnits ? 'QNH' : 'Altimeter'}
+                                    value={pressure && Units.hectopascalToUserString(pressure)}
                                     placeholder={Units.userPressureUnit}
                                     min={Units.metricUnits ? 745 : 22.00}
                                     max={Units.metricUnits ? 1100 : 32.48}
@@ -398,7 +399,7 @@ export const LandingWidget = () => {
                                     className="w-56 my-1.5"
                                     label="Rwy Altitude"
                                     value={altitude}
-                                    placeholder='ft MSL'
+                                    placeholder="ft MSL"
                                     min={-2000}
                                     max={20000}
                                     decimalPrecision={0}
@@ -409,6 +410,7 @@ export const LandingWidget = () => {
                                     className="w-56 my-1.5"
                                     label="Rwy Heading"
                                     value={runwayHeading}
+                                    placeholder="000"
                                     min={0}
                                     max={360}
                                     padding={3}
@@ -437,7 +439,7 @@ export const LandingWidget = () => {
                                     className="w-56 my-1.5"
                                     label="Rwy Slope"
                                     value={slope}
-                                    placeholder="%"
+                                    placeholder="0.0%"
                                     min={-2}
                                     max={2}
                                     decimalPrecision={1}
@@ -448,7 +450,7 @@ export const LandingWidget = () => {
                                 <SimpleInput
                                     className="w-56 my-1.5"
                                     label="Rwy LDA"
-                                    value={Units.kilogramToUser(runwayLength)}
+                                    value={runwayLength && Units.kilogramToUser(runwayLength)}
                                     placeholder={Units.userLengthUnit}
                                     min={0}
                                     max={Units.metricUnits ? 6000 : 20000}
@@ -461,7 +463,7 @@ export const LandingWidget = () => {
                                     className="w-56 my-1.5"
                                     label="Approach Speed"
                                     value={approachSpeed}
-                                    placeholder="KTS"
+                                    placeholder="Kts"
                                     min={90}
                                     max={350}
                                     decimalPrecision={0}
@@ -472,7 +474,7 @@ export const LandingWidget = () => {
                                 <SimpleInput
                                     className="w-56 my-1.5"
                                     label="Weight"
-                                    value={Units.kilogramToUser(weight)}
+                                    value={weight && Units.kilogramToUser(weight)}
                                     placeholder={Units.userWeightUnit}
                                     min={Units.metricUnits ? 41000 : 90400}
                                     max={Units.metricUnits ? 100000 : 220000}
@@ -521,6 +523,7 @@ export const LandingWidget = () => {
                                 onClick={handleCalculateLanding}
                                 className={calculateButtonClass}
                                 type="button"
+                                disabled={!areInputsValid()}
                             >
                                 Calculate
                             </button>

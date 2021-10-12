@@ -11,7 +11,7 @@ export class Units {
 
     static get metricUnits(): boolean {
         if (Units._metricUnits === undefined) {
-            NXDataStore.getAndSubscribe<string>('CONFIG_USING_METRIC_UNIT', (key: string, value: string) => {
+            NXDataStore.getAndSubscribe('CONFIG_USING_METRIC_UNIT', (key: string, value: string) => {
                 Units._metricUnits = value === '1';
             });
         }
