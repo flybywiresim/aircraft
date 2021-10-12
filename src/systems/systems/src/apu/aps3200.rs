@@ -401,7 +401,7 @@ impl Turbine for Running {
     }
 
     fn bleed_air_pressure(&self) -> Pressure {
-        Pressure::new::<psi>(35.)
+        Pressure::new::<psi>(42.)
     }
 }
 

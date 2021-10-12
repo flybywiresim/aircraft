@@ -409,7 +409,7 @@ pub mod tests {
         }
 
         fn bleed_air_pressure(&self) -> Pressure {
-            Pressure::new::<psi>(35.)
+            Pressure::new::<psi>(42.)
         }
     }
 
@@ -2119,10 +2119,10 @@ pub mod tests {
         }
 
         #[test]
-        fn running_apu_has_35_psi_bleed_air_pressure() {
+        fn running_apu_has_42_psi_bleed_air_pressure() {
             let mut test_bed = test_bed_with().running_apu();
 
-            assert_eq!(test_bed.bleed_air_pressure(), Pressure::new::<psi>(35.));
+            assert_eq!(test_bed.bleed_air_pressure(), Pressure::new::<psi>(42.));
         }
 
         #[test]

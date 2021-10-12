@@ -119,7 +119,7 @@ impl A320Pneumatic {
                 EngineStarterValveController::new(1),
                 EngineStarterValveController::new(2),
             ],
-            apu: CompressionChamber::new(Volume::new::<cubic_meter>(1.)),
+            apu: CompressionChamber::new(Volume::new::<cubic_meter>(5.)),
             apu_bleed_air_valve: DefaultValve::new_closed(),
             apu_bleed_air_controller: ApuCompressionChamberController::new(),
             // TODO: I don't like how I have to initialize these containers independently of the actual reservoirs.
@@ -1779,7 +1779,7 @@ mod tests {
         }
 
         fn set_bleed_air_running(mut self) -> Self {
-            self.write("APU_BLEED_AIR_PRESSURE", Pressure::new::<psi>(35.));
+            self.write("APU_BLEED_AIR_PRESSURE", Pressure::new::<psi>(42.));
             self.set_apu_bleed_valve_signal(ApuBleedAirValveSignal::new_open())
                 .set_apu_bleed_air_pb(true)
         }
@@ -2397,7 +2397,7 @@ mod tests {
     }
 
     #[test]
-    fn apu_bleed_provides_35_psi_with_open_cross_bleed_valve() {
+    fn apu_bleed_provides_42_psi_with_open_cross_bleed_valve() {
         let test_bed = test_bed_with()
             .stop_eng1()
             .stop_eng2()
@@ -2410,13 +2410,13 @@ mod tests {
         assert!(!test_bed.pr_valve_is_open(1));
         assert!(!test_bed.pr_valve_is_open(2));
 
-        let diff = test_bed.precooler_outlet_pressure(2) - Pressure::new::<psi>(35.);
+        let diff = test_bed.precooler_outlet_pressure(2) - Pressure::new::<psi>(42.);
         println!("diff: {} psi", diff.get::<psi>());
 
         assert!(!test_bed.precooler_outlet_pressure(1).is_nan());
 
         assert!(
-            (test_bed.precooler_outlet_pressure(1) - Pressure::new::<psi>(35.)).abs()
+            (test_bed.precooler_outlet_pressure(1) - Pressure::new::<psi>(42.)).abs()
                 < pressure_tolerance()
         );
         assert!((diff).abs() < pressure_tolerance())
@@ -2432,21 +2432,21 @@ mod tests {
             .and_stabilize();
 
         assert!(
-            (test_bed.green_hydraulic_reservoir_pressure() - Pressure::new::<psi>(35.)).abs()
+            (test_bed.green_hydraulic_reservoir_pressure() - Pressure::new::<psi>(42.)).abs()
                 < pressure_tolerance()
         );
         assert!(
-            (test_bed.blue_hydraulic_reservoir_pressure() - Pressure::new::<psi>(35.)).abs()
+            (test_bed.blue_hydraulic_reservoir_pressure() - Pressure::new::<psi>(42.)).abs()
                 < pressure_tolerance()
         );
         assert!(
-            (test_bed.yellow_hydraulic_reservoir_pressure() - Pressure::new::<psi>(35.)).abs()
+            (test_bed.yellow_hydraulic_reservoir_pressure() - Pressure::new::<psi>(42.)).abs()
                 < pressure_tolerance()
         );
     }
 
     #[test]
-    fn apu_bleed_provides_35_psi_to_left_system_with_closed_cross_bleed_valve() {
+    fn apu_bleed_provides_42_psi_to_left_system_with_closed_cross_bleed_valve() {
         let test_bed = test_bed_with()
             .stop_eng1()
             .stop_eng2()
@@ -2457,7 +2457,7 @@ mod tests {
         assert!(!test_bed.pr_valve_is_open(1));
 
         assert!(
-            (test_bed.precooler_outlet_pressure(1) - Pressure::new::<psi>(35.)).abs()
+            (test_bed.precooler_outlet_pressure(1) - Pressure::new::<psi>(42.)).abs()
                 < pressure_tolerance()
         );
         assert!(
