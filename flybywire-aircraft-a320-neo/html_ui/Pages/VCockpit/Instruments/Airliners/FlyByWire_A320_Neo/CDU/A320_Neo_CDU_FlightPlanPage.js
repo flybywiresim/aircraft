@@ -347,7 +347,7 @@ class CDUFlightPlanPage {
                                 }
                                 return mcdu.getDelayBasic();
                             };
-                            mcdu.onLeftInput[i] = async (value) => {
+                            mcdu.onLeftInput[i] = async (value, scratchpadCallback) => {
                                 if (value === "") {
                                     if (waypoint) {
                                         CDULateralRevisionPage.ShowPage(mcdu, waypoint, fpIndex);
@@ -357,7 +357,10 @@ class CDUFlightPlanPage {
                                         CDUFlightPlanPage.ShowPage(mcdu, offset);
                                     });
                                 } else if (value.length > 0) {
-                                    mcdu.insertWaypoint(value, fpIndex, () => {
+                                    mcdu.insertWaypoint(value, fpIndex, (success) => {
+                                        if (!success) {
+                                            scratchpadCallback(value);
+                                        }
                                         CDUFlightPlanPage.ShowPage(mcdu, offset);
                                     });
                                 }

@@ -212,7 +212,7 @@ class CDUAirportsMonitor {
 
         // user-selected 5th airport (only possible to set on page 1)
         if (!this.page2) {
-            mcdu.onLeftInput[4] = (value) => {
+            mcdu.onLeftInput[4] = (value, scratchpadCallback) => {
                 if (this.user_ap) {
                     if (value === FMCMainDisplay.clrValue) {
                         this.user_ap = undefined;
@@ -232,6 +232,7 @@ class CDUAirportsMonitor {
                             this.ShowPage(mcdu);
                         } else {
                             mcdu.addNewMessage(NXSystemMessages.notInDatabase);
+                            scratchpadCallback(value);
                         }
                     });
                 }
