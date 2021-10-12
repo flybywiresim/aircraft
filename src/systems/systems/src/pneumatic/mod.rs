@@ -106,7 +106,11 @@ impl DefaultPipe {
     }
 
     fn calculate_pressure_change_for_volume_change(&self, volume: Volume) -> Pressure {
-        self.fluid.bulk_mod() * volume / self.volume()
+        self.pressure()
+            * (((self.volume().get::<cubic_meter>() + volume.get::<cubic_meter>())
+                / self.volume().get::<cubic_meter>())
+            .powf(Self::HEAT_CAPACITY_RATIO)
+                - 1.)
     }
 
     fn update_temperature_for_pressure_change(&mut self, pressure_change: Pressure) {
@@ -116,7 +120,10 @@ impl DefaultPipe {
     }
 
     fn vol_to_target(&self, target_press: Pressure) -> Volume {
-        (target_press - self.pressure()) * self.volume() / self.fluid.bulk_mod()
+        self.volume()
+            * ((target_press.get::<psi>() / self.pressure.get::<psi>())
+                .powf(1. / Self::HEAT_CAPACITY_RATIO)
+                - 1.)
     }
 
     fn update_pressure_for_temperature_change(&mut self, temperature_change: TemperatureInterval) {
@@ -459,6 +466,10 @@ impl HeatExchanger {
 
         self.exhaust.update_move_fluid(context, supply);
         self.internal_connector.update_move_fluid(context, from, to);
+    }
+
+    pub fn exhaust_flow(&self) -> VolumeRate {
+        self.exhaust.fluid_flow()
     }
 }
 

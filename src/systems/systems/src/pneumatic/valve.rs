@@ -221,6 +221,7 @@ pub(crate) struct PneumaticContainerConnector {
     transfer_speed_factor: Ratio,
 }
 impl PneumaticContainerConnector {
+    const HEAT_CAPACITY_RATIO: f64 = 1.4;
     const TRANSFER_SPEED: f64 = 3.;
 
     pub fn new() -> Self {
@@ -241,9 +242,25 @@ impl PneumaticContainerConnector {
             return;
         }
 
-        let equalization_volume = (from.pressure() - to.pressure()) * from.volume() * to.volume()
-            / Pressure::new::<pascal>(142000.)
-            / (from.volume() + to.volume());
+        let equalization_volume: Volume = (from
+            .pressure()
+            .get::<pascal>()
+            .powf(1. / Self::HEAT_CAPACITY_RATIO)
+            - to.pressure()
+                .get::<pascal>()
+                .powf(1. / Self::HEAT_CAPACITY_RATIO))
+            * from.volume()
+            * to.volume()
+            / (to
+                .pressure()
+                .get::<pascal>()
+                .powf(1. / Self::HEAT_CAPACITY_RATIO)
+                * from.volume()
+                + from
+                    .pressure()
+                    .get::<pascal>()
+                    .powf(1. / Self::HEAT_CAPACITY_RATIO)
+                    * to.volume());
 
         let fluid_to_move = from.volume().min(
             self.transfer_speed_factor
@@ -322,7 +339,7 @@ pub struct PneumaticExhaust {
     fluid_flow: VolumeRate,
 }
 impl PneumaticExhaust {
-    const TRANSFER_SPEED: f64 = 10.;
+    const TRANSFER_SPEED: f64 = 1.;
 
     pub fn new(exhaust_speed: f64) -> Self {
         Self {
@@ -336,8 +353,9 @@ impl PneumaticExhaust {
         context: &UpdateContext,
         from: &mut impl PneumaticContainer,
     ) {
-        let equalization_volume = (from.pressure() - context.ambient_pressure()) * from.volume()
-            / Pressure::new::<pascal>(142000.);
+        // let equalization_volume = (from.pressure() - context.ambient_pressure()) * from.volume()
+        //     / Pressure::new::<pascal>(142000.);
+        let equalization_volume = self.vol_to_target(from, context.ambient_pressure());
 
         let fluid_to_move = from.volume().min(
             self.exhaust_speed
@@ -345,9 +363,19 @@ impl PneumaticExhaust {
                 * (1. - (-Self::TRANSFER_SPEED * context.delta_as_secs_f64()).exp()),
         );
 
-        from.change_volume(-fluid_to_move);
+        from.change_volume(fluid_to_move);
 
         self.fluid_flow = fluid_to_move / context.delta_as_time();
+    }
+
+    fn vol_to_target(
+        &self,
+        from: &mut impl PneumaticContainer,
+        target_pressure: Pressure,
+    ) -> Volume {
+        from.volume()
+            * ((target_pressure.get::<psi>() / from.pressure().get::<psi>()).powf(1. / 1.4) - 1.)
+        // (target_press - self.pressure()) * self.volume() / self.fluid.bulk_mod()
     }
 
     pub fn fluid_flow(&self) -> VolumeRate {

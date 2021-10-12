@@ -389,12 +389,14 @@ trait EngineBleedDataProvider {
     fn precooler_inlet_pressure(&self) -> Pressure;
     fn precooler_outlet_pressure(&self) -> Pressure;
     fn precooler_supply_pressure(&self) -> Pressure;
+    fn engine_starter_container_pressure(&self) -> Pressure;
     fn ip_temperature(&self) -> ThermodynamicTemperature;
     fn hp_temperature(&self) -> ThermodynamicTemperature;
     fn transfer_temperature(&self) -> ThermodynamicTemperature;
     fn precooler_inlet_temperature(&self) -> ThermodynamicTemperature;
     fn precooler_outlet_temperature(&self) -> ThermodynamicTemperature;
     fn precooler_supply_temperature(&self) -> ThermodynamicTemperature;
+    fn engine_starter_container_temperature(&self) -> ThermodynamicTemperature;
     fn prv_open_amount(&self) -> Ratio;
     fn prv_is_open(&self) -> bool;
     fn hpv_open_amount(&self) -> Ratio;
@@ -835,8 +837,8 @@ struct EngineBleedAirSystem {
     precooler_inlet_pipe: DefaultPipe,
     precooler_outlet_pipe: DefaultPipe,
     precooler_cooling_pipe: DefaultPipe,
-    engine_starter_consumer: DefaultConsumer,
-    engine_starter_consumer_controller: ConstantConsumerController,
+    engine_starter_exhaust: PneumaticExhaust,
+    engine_starter_container: DefaultPipe,
     es_valve: DefaultValve,
     fan_air_valve: ElectroPneumaticValve,
     precooler: HeatExchanger,
@@ -881,10 +883,13 @@ impl EngineBleedAirSystem {
                 Pressure::new::<psi>(14.7),
                 ThermodynamicTemperature::new::<degree_celsius>(15.),
             ),
-            engine_starter_consumer: DefaultConsumer::new(Volume::new::<cubic_meter>(1.)),
-            engine_starter_consumer_controller: ConstantConsumerController::new(VolumeRate::new::<
-                cubic_meter_per_second,
-            >(0.1)),
+            engine_starter_container: DefaultPipe::new(
+                Volume::new::<cubic_meter>(0.5), // TODO: Figure out volume to use
+                Fluid::new(Pressure::new::<pascal>(142000.)),
+                Pressure::new::<psi>(14.7),
+                ThermodynamicTemperature::new::<degree_celsius>(15.),
+            ),
+            engine_starter_exhaust: PneumaticExhaust::new(1e-3),
             es_valve: DefaultValve::new_closed(),
             precooler: HeatExchanger::new(1.),
         }
@@ -915,11 +920,6 @@ impl EngineBleedAirSystem {
             .update(&self.hp_compression_chamber_controller);
 
         // Update controllers
-        self.engine_starter_consumer_controller.update(context);
-
-        // Update consumers
-        self.engine_starter_consumer
-            .update(&self.engine_starter_consumer_controller);
 
         // Update valves (open amount)
         self.hp_valve.update_open_amount(hpv_controller);
@@ -957,8 +957,10 @@ impl EngineBleedAirSystem {
         self.es_valve.update_move_fluid(
             context,
             &mut self.precooler_inlet_pipe,
-            &mut self.engine_starter_consumer,
+            &mut self.engine_starter_container,
         );
+        // self.engine_starter_exhaust
+        //     .update_move_fluid(context, &mut self.engine_starter_container)
     }
 }
 impl EngineBleedDataProvider for EngineBleedAirSystem {
@@ -986,6 +988,10 @@ impl EngineBleedDataProvider for EngineBleedAirSystem {
         self.precooler_cooling_pipe.pressure()
     }
 
+    fn engine_starter_container_pressure(&self) -> Pressure {
+        self.engine_starter_container.pressure()
+    }
+
     fn ip_temperature(&self) -> ThermodynamicTemperature {
         self.ip_compression_chamber.temperature()
     }
@@ -1008,6 +1014,10 @@ impl EngineBleedDataProvider for EngineBleedAirSystem {
 
     fn precooler_supply_temperature(&self) -> ThermodynamicTemperature {
         self.precooler_cooling_pipe.temperature()
+    }
+
+    fn engine_starter_container_temperature(&self) -> ThermodynamicTemperature {
+        self.engine_starter_container.temperature()
     }
 
     fn prv_open_amount(&self) -> Ratio {
@@ -1678,6 +1688,12 @@ mod tests {
             self.query(|a| a.pneumatic.engine_systems[number - 1].precooler_supply_pressure())
         }
 
+        fn engine_starter_container_pressure(&self, number: usize) -> Pressure {
+            self.query(|a| {
+                a.pneumatic.engine_systems[number - 1].engine_starter_container_pressure()
+            })
+        }
+
         fn ip_temperature(&self, number: usize) -> ThermodynamicTemperature {
             self.query(|a| a.pneumatic.engine_systems[number - 1].ip_temperature())
         }
@@ -1700,6 +1716,12 @@ mod tests {
 
         fn precooler_supply_temperature(&self, number: usize) -> ThermodynamicTemperature {
             self.query(|a| a.pneumatic.engine_systems[number - 1].precooler_supply_temperature())
+        }
+
+        fn engine_starter_container_temperature(&self, number: usize) -> ThermodynamicTemperature {
+            self.query(|a| {
+                a.pneumatic.engine_systems[number - 1].engine_starter_container_temperature()
+            })
         }
 
         fn ip_valve_is_open(&self, number: usize) -> bool {
@@ -1877,10 +1899,10 @@ mod tests {
 
         let mut test_bed = test_bed_with()
             .in_isa_atmosphere(alt)
-            .idle_eng1()
+            .stop_eng1()
             .stop_eng2()
-            .both_packs_auto()
-            // .set_bleed_air_running()
+            // .both_packs_auto()
+            .set_bleed_air_running()
             .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Auto);
 
         let mut ts = Vec::new();
@@ -1890,12 +1912,14 @@ mod tests {
         let mut c1s = Vec::new(); // Precooler inlet pressure
         let mut c0s = Vec::new(); // Precooler outlet pressure
         let mut pcss = Vec::new(); // Precooler cooling air pressure
+        let mut escs = Vec::new(); // Precooler cooling air pressure
         let mut ipts = Vec::new();
         let mut hpts = Vec::new(); // Transfer temperature (before PRV)
         let mut c2ts = Vec::new(); // Precooler inlet temperature
         let mut c1ts = Vec::new(); // Precooler outlet temperature
         let mut c0ts = Vec::new(); // Precooler cooling air temperature
         let mut pcsts = Vec::new();
+        let mut escts = Vec::new();
         let mut hpv_open = Vec::new();
         let mut prv_open = Vec::new();
         let mut ipv_open = Vec::new();
@@ -1903,11 +1927,28 @@ mod tests {
         let mut abv_open = Vec::new();
         let mut fav_open = Vec::new();
 
-        for i in 1..10000 {
+        for i in 1..1000 {
+            // println!(
+            //     "{}",
+            //     test_bed.query(|aircraft| {
+            //         aircraft.pneumatic.engine_systems[0]
+            //             .engine_starter_exhaust
+            //             .fluid_flow()
+            //             // .pressure()
+            //             .get::<cubic_meter_per_second>()
+            //     })
+            // );
+
+            if test_bed.precooler_outlet_pressure(1).get::<psi>().is_nan() {
+                println!("{}", i);
+                break;
+                // assert!(false);
+            }
+
             ts.push(i as f64 * 16.);
 
-            if i == 5000 {
-                test_bed = test_bed.idle_eng2();
+            if i == 500 {
+                test_bed = test_bed.start_eng1();
             }
 
             hps.push(test_bed.hp_pressure(1).get::<psi>());
@@ -1916,6 +1957,7 @@ mod tests {
             c1s.push(test_bed.precooler_inlet_pressure(1).get::<psi>());
             c0s.push(test_bed.precooler_outlet_pressure(1).get::<psi>());
             pcss.push(test_bed.precooler_supply_pressure(1).get::<psi>());
+            escs.push(test_bed.engine_starter_container_pressure(1).get::<psi>());
 
             ipts.push(test_bed.ip_temperature(1).get::<degree_celsius>());
             hpts.push(test_bed.hp_temperature(1).get::<degree_celsius>());
@@ -1933,6 +1975,11 @@ mod tests {
             pcsts.push(
                 test_bed
                     .precooler_supply_temperature(1)
+                    .get::<degree_celsius>(),
+            );
+            escts.push(
+                test_bed
+                    .engine_starter_container_temperature(1)
                     .get::<degree_celsius>(),
             );
 
@@ -1991,8 +2038,8 @@ mod tests {
 
         // If anyone is wondering, I am using python to plot pressure curves. This will be removed once the model is complete.
         let data = vec![
-            ts, hps, ips, c2s, c1s, c0s, pcss, hpts, ipts, c2ts, c1ts, c0ts, pcsts, hpv_open,
-            prv_open, ipv_open, esv_open, abv_open, fav_open,
+            ts, hps, ips, c2s, c1s, c0s, pcss, escs, hpts, ipts, c2ts, c1ts, c0ts, pcsts, escts,
+            hpv_open, prv_open, ipv_open, esv_open, abv_open, fav_open,
         ];
         let mut file = File::create("DO NOT COMMIT.txt").expect("Could not create file");
 
