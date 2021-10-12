@@ -181,7 +181,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                                 //TODO: add callback to input validation => if false => this.scratchpad.setUserData(oldInput)
                                 const ret = this.onRightInput[f](value);
                             }
-                        }, math.max(50, (this.leftInputDelay[f] ? this.leftInputDelay[f](value) : this.getDelayBasic())) - 50);
+                        }, math.max(50, (this.rightInputDelay[f] ? this.rightInputDelay[f](value) : this.getDelayBasic())) - 50);
                     }, 100);
                 }
             }
