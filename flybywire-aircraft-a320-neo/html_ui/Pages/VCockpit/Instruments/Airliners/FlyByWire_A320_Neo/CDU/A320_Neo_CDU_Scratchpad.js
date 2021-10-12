@@ -24,7 +24,7 @@ class ScratchpadDisplay {
         } else {
             if (this.dataLink.text === "" || scratchpadText === "") {
                 this.dataLink.status = SpDisplayStatus.empty;
-                this.dataLink.mcdu.tryShowMessage();
+                setTimeout(() => this.dataLink.mcdu.tryShowMessage(), 150);
             } else if (this.dataLink.text === FMCMainDisplay.clrValue) {
                 this.dataLink.status = SpDisplayStatus.clrValue;
             } else {

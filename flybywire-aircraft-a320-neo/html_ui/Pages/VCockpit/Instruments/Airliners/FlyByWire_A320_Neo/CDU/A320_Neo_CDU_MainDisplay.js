@@ -155,28 +155,34 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.onLeftFunction = (f) => {
             if (isFinite(f)) {
                 if (this.onLeftInput[f]) {
-                    const value = this.scratchpad.removeUserContentFromScratchpadAndDisplayAndReturnTextContent();
+                    // Double timeout to simulate real life delays between actions
                     const cur = this.page.Current;
                     setTimeout(() => {
-                        if (this.page.Current === cur) {
-                            //TODO: add callback to input validation => if false => this.scratchpad.setUserData(oldInput)
-                            const ret = this.onLeftInput[f](value);
-                        }
-                    }, this.leftInputDelay[f] ? this.leftInputDelay[f](value) : this.getDelayBasic());
+                        const value = this.scratchpad.removeUserContentFromScratchpadAndDisplayAndReturnTextContent();
+                        setTimeout(() => {
+                            if (this.page.Current === cur) {
+                                //TODO: add callback to input validation => if false => this.scratchpad.setUserData(oldInput)
+                                const ret = this.onLeftInput[f](value);
+                            }
+                        }, math.max(50, (this.leftInputDelay[f] ? this.leftInputDelay[f](value) : this.getDelayBasic())) - 50);
+                    }, 100);
                 }
             }
         };
         this.onRightFunction = (f) => {
             if (isFinite(f)) {
                 if (this.onRightInput[f]) {
-                    const value = this.scratchpad.removeUserContentFromScratchpadAndDisplayAndReturnTextContent();
+                    // Double timeout to simulate real life delays between actions
                     const cur = this.page.Current;
                     setTimeout(() => {
-                        if (this.page.Current === cur) {
-                            //TODO: add callback to input validation => if false => this.scratchpad.setUserData(oldInput)
-                            const ret = this.onRightInput[f](value);
-                        }
-                    }, this.rightInputDelay[f] ? this.rightInputDelay[f]() : this.getDelayBasic());
+                        const value = this.scratchpad.removeUserContentFromScratchpadAndDisplayAndReturnTextContent();
+                        setTimeout(() => {
+                            if (this.page.Current === cur) {
+                                //TODO: add callback to input validation => if false => this.scratchpad.setUserData(oldInput)
+                                const ret = this.onRightInput[f](value);
+                            }
+                        }, math.max(50, (this.leftInputDelay[f] ? this.leftInputDelay[f](value) : this.getDelayBasic())) - 50);
+                    }, 100);
                 }
             }
         };
