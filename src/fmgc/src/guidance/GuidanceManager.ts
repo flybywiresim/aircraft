@@ -12,8 +12,6 @@ import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { Geometry } from './Geometry';
 import { FlightPlanManager } from '../flightplanning/FlightPlanManager';
 
-const mod = (x: number, n: number) => x - Math.floor(x / n) * n;
-
 /**
  * This class will guide the aircraft by predicting a flight path and
  * calculating the autopilot inputs to follow the predicted flight path.

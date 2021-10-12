@@ -15,7 +15,7 @@ import { ConfirmationNode, Trigger } from '@shared/logic';
  * -Benjamin
  */
 export class FmsMessages implements FmgcComponent {
-    private static _instance?: FmsMessages;
+    private static mInstance?: FmsMessages;
 
     private listener = RegisterViewListener('JS_LISTENER_SIMVARS');
 
@@ -38,10 +38,10 @@ export class FmsMessages implements FmgcComponent {
     /* eslint-enable no-useless-constructor,no-empty-function */
 
     public static get instance(): FmsMessages {
-        if (!this._instance) {
-            this._instance = new FmsMessages();
+        if (!this.mInstance) {
+            this.mInstance = new FmsMessages();
         }
-        return this._instance;
+        return this.mInstance;
     }
 
     init(): void {
@@ -65,7 +65,9 @@ export class FmsMessages implements FmgcComponent {
                         this.ndMessageFlags[selector.efisSide] |= message.ndFlag;
                     } else {
                         for (const side in this.ndMessageFlags) {
-                            this.ndMessageFlags[side] |= message.ndFlag;
+                            if (Object.prototype.hasOwnProperty.call(this.ndMessageFlags, side)) {
+                                this.ndMessageFlags[side] |= message.ndFlag;
+                            }
                         }
                     }
                     didMutateNd = true;
@@ -81,7 +83,9 @@ export class FmsMessages implements FmgcComponent {
                         this.ndMessageFlags[selector.efisSide] &= ~message.ndFlag;
                     } else {
                         for (const side in this.ndMessageFlags) {
-                            this.ndMessageFlags[side] &= ~message.ndFlag;
+                            if (Object.prototype.hasOwnProperty.call(this.ndMessageFlags, side)) {
+                                this.ndMessageFlags[side] &= ~message.ndFlag;
+                            }
                         }
                     }
                     didMutateNd = true;
@@ -95,7 +99,9 @@ export class FmsMessages implements FmgcComponent {
         }
         if (didMutateNd) {
             for (const side in this.ndMessageFlags) {
-                SimVar.SetSimVarValue(`L:A32NX_EFIS_${side}_ND_FM_MESSAGE_FLAGS`, 'number', this.ndMessageFlags[side]);
+                if (Object.prototype.hasOwnProperty.call(this.ndMessageFlags, side)) {
+                    SimVar.SetSimVarValue(`L:A32NX_EFIS_${side}_ND_FM_MESSAGE_FLAGS`, 'number', this.ndMessageFlags[side]);
+                }
             }
         }
     }
@@ -107,8 +113,10 @@ export class FmsMessages implements FmgcComponent {
 
         if (message.ndFlag) {
             for (const side in this.ndMessageFlags) {
-                this.ndMessageFlags[side] |= message.ndFlag;
-                SimVar.SetSimVarValue(`L:A32NX_EFIS_${side}_ND_FM_MESSAGE_FLAGS`, 'number', this.ndMessageFlags[side]);
+                if (Object.prototype.hasOwnProperty.call(this.ndMessageFlags, side)) {
+                    this.ndMessageFlags[side] |= message.ndFlag;
+                    SimVar.SetSimVarValue(`L:A32NX_EFIS_${side}_ND_FM_MESSAGE_FLAGS`, 'number', this.ndMessageFlags[side]);
+                }
             }
         }
     }
@@ -120,8 +128,10 @@ export class FmsMessages implements FmgcComponent {
 
         if (message.ndFlag) {
             for (const side in this.ndMessageFlags) {
-                this.ndMessageFlags[side] &= ~message.ndFlag;
-                SimVar.SetSimVarValue(`L:A32NX_EFIS_${side}_ND_FM_MESSAGE_FLAGS`, 'number', this.ndMessageFlags[side]);
+                if (Object.prototype.hasOwnProperty.call(this.ndMessageFlags, side)) {
+                    this.ndMessageFlags[side] &= ~message.ndFlag;
+                    SimVar.SetSimVarValue(`L:A32NX_EFIS_${side}_ND_FM_MESSAGE_FLAGS`, 'number', this.ndMessageFlags[side]);
+                }
             }
         }
     }
@@ -133,8 +143,10 @@ export class FmsMessages implements FmgcComponent {
 
         if (message.ndFlag) {
             for (const side in this.ndMessageFlags) {
-                this.ndMessageFlags[side] &= ~message.ndFlag;
-                SimVar.SetSimVarValue(`L:A32NX_EFIS_${side}_ND_FM_MESSAGE_FLAGS`, 'number', this.ndMessageFlags[side]);
+                if (Object.prototype.hasOwnProperty.call(this.ndMessageFlags, side)) {
+                    this.ndMessageFlags[side] &= ~message.ndFlag;
+                    SimVar.SetSimVarValue(`L:A32NX_EFIS_${side}_ND_FM_MESSAGE_FLAGS`, 'number', this.ndMessageFlags[side]);
+                }
             }
         }
     }

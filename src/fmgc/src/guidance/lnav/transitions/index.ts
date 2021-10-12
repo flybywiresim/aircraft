@@ -1,5 +1,3 @@
-import { Type1Transition } from "./Type1";
+import { Type1Transition } from './Type1';
 
-export {
-    Type1Transition,
-}
+export { Type1Transition };

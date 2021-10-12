@@ -177,7 +177,7 @@ export class TFLeg implements Leg {
         };
     }
 
-    getNominalRollAngle(gs): Degrees {
+    getNominalRollAngle(_gs): Degrees {
         return 0;
     }
 

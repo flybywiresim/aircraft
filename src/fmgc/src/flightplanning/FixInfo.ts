@@ -41,7 +41,7 @@ export class FixInfo {
         this.radius = undefined;
         this.abeam = false;
         this.refFix = fix;
-        this.flightPlanManager._updateFlightPlanVersion();
+        this.flightPlanManager.updateFlightPlanVersion();
     }
 
     getRefFix(): WayPoint | undefined {
@@ -60,7 +60,7 @@ export class FixInfo {
             this.radials.splice(index, 1);
         }
         // TODO calculate flight plan intercepts
-        this.flightPlanManager._updateFlightPlanVersion();
+        this.flightPlanManager.updateFlightPlanVersion();
     }
 
     getRadial(index: 0 | 1): FixInfoRadial | undefined {
@@ -78,7 +78,7 @@ export class FixInfo {
             this.radius = undefined;
         }
         // TODO calculate flight plan intercepts
-        this.flightPlanManager._updateFlightPlanVersion();
+        this.flightPlanManager.updateFlightPlanVersion();
     }
 
     getRadius(): FixInfoRadius | undefined {

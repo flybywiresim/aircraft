@@ -61,7 +61,6 @@ module.exports = {
         'prefer-destructuring': 'off',
 
         // Avoid typescript-eslint conflicts
-        'import/no-unresolved': 'off',
         'no-unused-vars': 'off',
         'import/no-unresolved': 'off',
         '@typescript-eslint/no-unused-vars': ['error', {

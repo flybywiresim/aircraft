@@ -68,9 +68,9 @@ export const parseApproachName = (name: string): ApproachNameComponents | undefi
     // L(eft), C(entre), R(ight), T(true North) are the possible runway designators (ARINC424)
     // If there are multiple procedures for the same type of approach, an alphanumeric suffix is added to their names (last subpattern)
     // We are a little more lenient than ARINC424 in an effort to match non-perfect navdata, so we allow dashes, spaces, or nothing before the suffix
-    const match = name.trim().match(/^(ILS|LOC|RNAV|NDB|VOR|GPS) (RW)?([0-9]{1,2}[LCRT]?)([\s\-]*([A-Z0-9]))?$/);
+    const match = name.trim().match(/^(ILS|LOC|RNAV|NDB|VOR|GPS) (RW)?([0-9]{1,2}[LCRT]?)([\s-]*([A-Z0-9]))?$/);
     if (!match) {
-        return;
+        return undefined;
     }
     return {
         type: match[1],

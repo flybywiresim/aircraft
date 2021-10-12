@@ -5,10 +5,12 @@ export interface LogicNode {
 }
 
 export class ConfirmationNode implements LogicNode {
+    /* eslint-disable no-useless-constructor,no-empty-function */
     constructor(
         public triggerTime: number,
     ) {
     }
+    /* eslint-enable no-useless-constructor,no-empty-function */
 
     private lastInput = false;
 
@@ -42,10 +44,12 @@ export class ConfirmationNode implements LogicNode {
 }
 
 export class Trigger implements LogicNode {
+    /* eslint-disable no-useless-constructor,no-empty-function */
     constructor(
         public risingEdge: boolean,
     ) {
     }
+    /* eslint-enable no-useless-constructor,no-empty-function */
 
     private lastInput = false;
 
