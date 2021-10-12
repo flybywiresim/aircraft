@@ -152,40 +152,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.onClr = () => this.scratchpad.clear();
         this.onClrHeld = () => this.scratchpad.clearHeld();
         this.onPlusMinus = (defaultKey = "-") => this.scratchpad.plusMinus(defaultKey);
-        this.onLeftFunction = (f) => {
-            if (isFinite(f)) {
-                if (this.onLeftInput[f]) {
-                    // Double timeout to simulate real life delays between actions
-                    const cur = this.page.Current;
-                    setTimeout(() => {
-                        const value = this.scratchpad.removeUserContentFromScratchpadAndDisplayAndReturnTextContent();
-                        setTimeout(() => {
-                            if (this.page.Current === cur) {
-                                //TODO: add callback to input validation => if false => this.scratchpad.setUserData(oldInput)
-                                const ret = this.onLeftInput[f](value);
-                            }
-                        }, math.max(50, (this.leftInputDelay[f] ? this.leftInputDelay[f](value) : this.getDelayBasic())) - 50);
-                    }, 100);
-                }
-            }
-        };
-        this.onRightFunction = (f) => {
-            if (isFinite(f)) {
-                if (this.onRightInput[f]) {
-                    // Double timeout to simulate real life delays between actions
-                    const cur = this.page.Current;
-                    setTimeout(() => {
-                        const value = this.scratchpad.removeUserContentFromScratchpadAndDisplayAndReturnTextContent();
-                        setTimeout(() => {
-                            if (this.page.Current === cur) {
-                                //TODO: add callback to input validation => if false => this.scratchpad.setUserData(oldInput)
-                                const ret = this.onRightInput[f](value);
-                            }
-                        }, math.max(50, (this.rightInputDelay[f] ? this.rightInputDelay[f](value) : this.getDelayBasic())) - 50);
-                    }, 100);
-                }
-            }
-        };
+        this.onLeftFunction = (f) => this.onLsk(this.onLeftInput[f], this.leftInputDelay[f]);
+        this.onRightFunction = (f) => this.onLsk(this.onRightInput[f], this.rightInputDelay[f]);
 
         const flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string");
         NXApi.connectTelex(flightNo)
@@ -1110,11 +1078,15 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             } else if (input === "Localizer") {
                 this._apLocalizerOn = !this._apLocalizerOn;
             } else if (input.length === 2 && input[0] === "L") {
-                const v = parseInt(input[1]);
-                this.onLeftFunction(v - 1);
+                const v = parseInt(input[1]) - 1;
+                if (isFinite(v)) {
+                    this.onLeftFunction(v);
+                }
             } else if (input.length === 2 && input[0] === "R") {
-                const v = parseInt(input[1]);
-                this.onRightFunction(v - 1);
+                const v = parseInt(input[1]) - 1;
+                if (isFinite(v)) {
+                    this.onRightFunction(v);
+                }
             } else if (input.length === 1 && FMCMainDisplay._AvailableKeys.indexOf(input) !== -1) {
                 setTimeout(() => {
                     this.onLetterInput(input);
@@ -1223,6 +1195,26 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             return true;
         }
         return false;
+    }
+
+    onLsk(fncAction, fncActionDelay = this.getDelayBasic) {
+        if (!fncAction) {
+            return;
+        }
+
+        // First timeout simulates delay for key press
+        // Second delay simulates delay for input validation
+        const cur = this.page.Current;
+        setTimeout(() => {
+            const value = this.scratchpad.removeUserContentFromScratchpadAndDisplayAndReturnTextContent();
+            setTimeout(() => {
+                if (this.page.Current === cur) {
+                    // TODO: add callback to input validation => if false => this.scratchpad.setUserData(oldInput)
+                    const ret = fncAction(value);
+                }
+            // }, Math.max(50, fncActionDelay() - 50));
+            }, fncActionDelay());
+        }, 100);
     }
 
     /* END OF MCDU EVENTS */
