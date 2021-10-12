@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
+import { usePersistentProperty } from '@instruments/common/persistence';
 
 enum BaroMode {
     QNH = 0,
@@ -7,13 +8,30 @@ enum BaroMode {
 }
 
 export const PressureIndicator: React.FC = () => {
+    const [baroUnitInHg] = usePersistentProperty('ISIS_BARO_UNIT_INHG', '0');
     const [baroMode] = useSimVar('L:A32NX_ISIS_BARO_MODE', 'enum');
     const [hpaQnh] = useSimVar('A:KOHLSMAN SETTING MB:2', 'millibars');
     const [inHgQnh] = useSimVar('A:KOHLSMAN SETTING MB:2', 'inHg');
 
+    const [baroText, setBaroText] = useState('');
+
+    useEffect(() => {
+        if (baroMode === BaroMode.STD) {
+            setBaroText('STD');
+        } else {
+            let text = `${Math.round(hpaQnh)}`;
+            if (baroUnitInHg === '1') {
+                text += `/${inHgQnh.toFixed(2)}`;
+            } else {
+                text += '\xa0\xa0\xa0\xa0';
+            }
+            setBaroText(text);
+        }
+    }, [baroUnitInHg, baroMode, hpaQnh, inHgQnh]);
+
     return (
         <text x={256} y={466} className="TextCyan" textAnchor="middle" fontSize={36}>
-            {baroMode === BaroMode.STD ? 'STD' : `${Math.round(hpaQnh)}/${inHgQnh.toFixed(2)}`}
+            {baroText}
         </text>
     );
 };
