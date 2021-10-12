@@ -1,60 +1,32 @@
 class ScratchpadDisplay {
-    constructor(_dataLink) {
-        this.dataLink = _dataLink;
-    }
-
-    init() {
-        this.scratchpadElement = this.dataLink.mcdu.getChildById("in-out");
-        this.scratchpadElement.style.removeProperty("color");
+    constructor(scratchpadElement) {
+        this.scratchpadElement = scratchpadElement;
         this.scratchpadElement.className = "white";
     }
 
     write(value = "", color = "white") {
         this.scratchpadElement.textContent = value;
         this.scratchpadElement.className = color;
-        this.updateStatusForDataLink(value);
-    }
-
-    /**
-     * private
-     */
-    updateStatusForDataLink(scratchpadText) {
-        if (this.dataLink.message) {
-            this.dataLink.status = this.dataLink.message.isTypeTwo ? SpDisplayStatus.typeTwoMessage : SpDisplayStatus.typeOneMessage;
-        } else {
-            if (this.dataLink.text === "" || scratchpadText === "") {
-                this.dataLink.status = SpDisplayStatus.empty;
-                setTimeout(() => this.dataLink.mcdu.tryShowMessage(), 150);
-            } else if (this.dataLink.text === FMCMainDisplay.clrValue) {
-                this.dataLink.status = SpDisplayStatus.clrValue;
-            } else {
-                this.dataLink.status = SpDisplayStatus.userContent;
-            }
-        }
     }
 }
 
 class ScratchpadDataLink {
-    constructor(_mcdu) {
-        this.mcdu = _mcdu;
-        this.display = new ScratchpadDisplay(this);
+    constructor(mcdu) {
+        this.mcdu = mcdu;
         this.text = "";
-        this.message = undefined;
+        this.message = {};
         this.status = 0;
+        this.displayUnit = null;
     }
 
-    init() {
-        this.display.init();
-    }
-
-    setUserData(data) {
-        this.text = data;
+    init(display) {
+        this.displayUnit = display;
     }
 
     setText(text) {
         this.message = undefined;
         this.text = text;
-        this.display.write(text);
+        this.display(text);
     }
 
     setMessage(message) {
@@ -62,7 +34,13 @@ class ScratchpadDataLink {
             return;
         }
         this.message = message;
-        this.display.write(message.text, message.isAmber ? "amber" : "white");
+        this.display(message.text, message.isAmber ? "amber" : "white");
+    }
+
+    removeMessage(messageText) {
+        if (this.message && this.message.text === messageText) {
+            this.setText("");
+        }
     }
 
     addChar(char) {
@@ -109,6 +87,10 @@ class ScratchpadDataLink {
         }
     }
 
+    setUserData(data) {
+        this.text = data;
+    }
+
     removeUserContentFromScratchpadAndDisplayAndReturnTextContent() {
         const userContent = this.text;
         if (this.status < SpDisplayStatus.typeOneMessage) {
@@ -116,10 +98,24 @@ class ScratchpadDataLink {
         }
         return userContent;
     }
+    // private functions below
+    display(value, color = "white") {
+        this.displayUnit.write(value, color);
+        this.updateStatus(value);
+    }
 
-    removeMessage(messageText) {
-        if (this.message && this.message.text === messageText) {
-            this.setText("");
+    updateStatus(scratchpadText) {
+        if (this.message) {
+            this.status = this.message.isTypeTwo ? SpDisplayStatus.typeTwoMessage : SpDisplayStatus.typeOneMessage;
+        } else {
+            if (this.text === "" || scratchpadText === "") {
+                this.status = SpDisplayStatus.empty;
+                setTimeout(() => this.mcdu.tryShowMessage(), 150);
+            } else if (this.text === FMCMainDisplay.clrValue) {
+                this.status = SpDisplayStatus.clrValue;
+            } else {
+                this.status = SpDisplayStatus.userContent;
+            }
         }
     }
 }
