@@ -328,9 +328,10 @@ const Pump = ({ x, y, onBus = 'DC_ESS', pumpNumber, centreTank, tankQuantity }: 
     const [pushButton] = useSimVar(`FUELSYSTEM PUMP SWITCH:${pumpNumber}`, 'bool', 500);
     // FIXME centre tank logic once fuel system implemented
     if (centreTank) {
+        const [simOnGround] = useSimVar('SIM ON GROUND', 'bool', 500);
         useEffect(() => {
             console.log(`Pump switch is ${pumpNumber} and status is ${pushButton}`);
-            setCentreTankGreen(pushButton && tankQuantity === 0);
+            setCentreTankGreen((pushButton || simOnGround) && tankQuantity === 0);
         }, [pushButton]);
     }
 
