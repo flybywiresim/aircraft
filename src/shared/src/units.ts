@@ -19,11 +19,11 @@ export class Units {
     }
 
     static userToKilogram(value: number): KiloGram {
-        return Units.metricUnits ? value : value / 2.20462;
+        return Units.metricUnits ? value : value / 2.204625;
     }
 
     static kilogramToUser(value: KiloGram): number {
-        return Units.metricUnits ? value : value * 2.20462;
+        return Units.metricUnits ? value : value * 2.204625;
     }
 
     static get userWeightUnit(): 'kg' | 'lbs' {
