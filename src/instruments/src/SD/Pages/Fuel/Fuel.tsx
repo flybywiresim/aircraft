@@ -8,6 +8,8 @@ import { useArinc429Var } from '@instruments/common/arinc429';
 import { usePersistentProperty } from '../../../Common/persistence';
 import { fuelForDisplay, fuelInTanksForDisplay } from '../../Common/FuelFunctions';
 import { Triangle } from '../../Common/Shapes';
+import { PageTitle } from '../../Common/PageTitle';
+import { EcamPage } from '../../Common/EcamPage';
 
 setIsEcamPage('fuel_page');
 
@@ -34,8 +36,8 @@ export const FuelPage = () => {
 
     return (
         // This is already in an svg so we should remove the containing one - TODO remove style once we are not in the Asobo ECAM
-        <svg id="sd-fuel-page" viewBox="0 0 600 600" style={{ marginTop: '-60px' }} xmlns="http://www.w3.org/2000/svg">
-            <text className="PageTitle" x={14} y={16} alignmentBaseline="central">FUEL</text>
+        <EcamPage name="sd-fuel-page">
+            <PageTitle x={14} y={16} text="FUEL" />
 
             {/* Engines */}
             <>
@@ -138,7 +140,7 @@ export const FuelPage = () => {
             {/* FOB */}
             <FOB unit={unit} />
 
-        </svg>
+        </EcamPage>
     );
 };
 
@@ -319,12 +321,6 @@ type PumpProps = {
 
 const Pump = ({ x, y, onBus = 'DC_ESS', pumpNumber }: PumpProps) => {
     const [active] = useSimVar(`FUELSYSTEM PUMP ACTIVE:${pumpNumber}`, 'bool', 500);
-    const [pushButtonPressed] = pumpNumber === 1 || pumpNumber === 4
-        ? pumpNumber === 1
-            ? useSimVar('L:XMLVAR_Momentary_PUSH_OVHD_FUEL_PUMP1_Pressed', 'bool', 500)
-            : useSimVar('L:XMLVAR_Momentary_PUSH_OVHD_FUEL_PUMP2_Pressed', 'bool', 500)
-        : [null];
-
     const [busIsPowered] = useSimVar(`L:A32NX_ELEC_${onBus}_BUS_IS_POWERED`, 'bool', 1000);
 
     return (
