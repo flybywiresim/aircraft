@@ -33,8 +33,6 @@
 .DS_Store
 node_modules
 /src/sound/.cache
-/src/instruments/devServer/bundles
-/src/instruments/devServer/instruments.json
 /src/instruments/aceBundles
 /src/instruments/src/EFB/dist
 /src/autothrottle/target
