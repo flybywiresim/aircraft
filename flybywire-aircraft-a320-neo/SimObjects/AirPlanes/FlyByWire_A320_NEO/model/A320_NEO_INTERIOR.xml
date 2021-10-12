@@ -42,12 +42,16 @@
             <UseTemplate Name="FBW_MULTI_FUNCTION_CONTROL_DISPLAY_UNIT_Template">
                 <SIDE>L</SIDE>
                 <DISPLAY_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</DISPLAY_POWERED>
+                <!-- annunciators powered by transformer 37LP via C/B 26LP -->
+                <ANNUNC_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</ANNUNC_POWERED>
                 <!-- TODO: to be removed when MCDU is refactored. -->
                 <SIDE_NUMERIC>1</SIDE_NUMERIC>
             </UseTemplate>
             <UseTemplate Name="FBW_MULTI_FUNCTION_CONTROL_DISPLAY_UNIT_Template">
                 <SIDE>R</SIDE>
                 <DISPLAY_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</DISPLAY_POWERED>
+                <!-- annunciators powered by transformer 36LP via C/B 27LP -->
+                <ANNUNC_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</ANNUNC_POWERED>
                 <!-- TODO: to be removed when MCDU is refactored. -->
                 <SIDE_NUMERIC>2</SIDE_NUMERIC>
             </UseTemplate>
