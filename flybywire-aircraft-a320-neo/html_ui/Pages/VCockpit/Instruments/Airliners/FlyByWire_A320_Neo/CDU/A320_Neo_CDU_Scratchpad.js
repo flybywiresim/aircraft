@@ -91,7 +91,7 @@ class ScratchpadDataLink {
     }
 
     clearHeld() {
-        if (this.status === SpDisplayStatus.clrValue || (!this.status > SpDisplayStatus.userContent)) {
+        if (this.status === SpDisplayStatus.clrValue || this.status === SpDisplayStatus.userContent) {
             this.setText("");
         }
     }
