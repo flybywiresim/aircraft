@@ -303,7 +303,7 @@ class A32NX_FlightPhase_Descent {
             const long = SimVar.GetSimVarValue("PLANE LONGITUDE", "degree longitude");
             const planeLla = new LatLongAlt(lat, long);
             const dist = Avionics.Utils.computeGreatCircleDistance(_fmc.flightPlanManager.decelWaypoint.infos.coordinates, planeLla);
-            if (dist < 3) {
+            if (dist <= 1) {
                 _fmc.flightPlanManager._decelReached = true;
                 _fmc._waypointReachedAt = SimVar.GetGlobalVarValue("ZULU TIME", "seconds");
             }
@@ -311,14 +311,11 @@ class A32NX_FlightPhase_Descent {
 
         const autopilotLateralMode = SimVar.GetSimVarValue("L:A32NX_FMA_LATERAL_MODE", "Number");
 
-        return _fmc.flightPlanManager._decelReached &&
-            (
-                Simplane.getAltitudeAboveGround() < 9500 &&
-                (
-                    // NAV || LOC* || LOC
-                    autopilotLateralMode === 20 || autopilotLateralMode === 30 || autopilotLateralMode === 31
-                )
-            );
+        const conditionAltitude = Simplane.getAltitudeAboveGround() < 9500;
+        const conditionDecelOverflownInNav = _fmc.flightPlanManager._decelReached && autopilotLateralMode === 20;
+        const conditionLocalizer = autopilotLateralMode === 30 || autopilotLateralMode === 31;
+
+        return conditionAltitude && (conditionDecelOverflownInNav || conditionLocalizer);
     }
 }
 
