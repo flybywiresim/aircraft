@@ -106,7 +106,7 @@ class CDU_SingleValueField extends CDU_Field {
                 // Check max length
                 if (value.length > this.maxLength) {
                     this.mcdu.addNewMessage(NXSystemMessages.formatError);
-                    return;
+                    return false;
                 }
                 break;
             case "int":
@@ -114,11 +114,11 @@ class CDU_SingleValueField extends CDU_Field {
                 const valueAsInt = Number.parseInt(value, 10);
                 if (!isFinite(valueAsInt) || value.includes(".")) {
                     this.mcdu.addNewMessage(NXSystemMessages.formatError);
-                    return;
+                    return false;
                 }
                 if (valueAsInt > this.maxValue || valueAsInt < this.minValue) {
                     this.mcdu.addNewMessage(NXSystemMessages.entryOutOfRange);
-                    return;
+                    return false;
                 }
                 value = valueAsInt;
                 break;
@@ -127,17 +127,18 @@ class CDU_SingleValueField extends CDU_Field {
                 const valueAsFloat = Number.parseFloat(value);
                 if (!isFinite(valueAsFloat)) {
                     this.mcdu.addNewMessage(NXSystemMessages.formatError);
-                    return;
+                    return false;
                 }
                 if (valueAsFloat > this.maxValue || valueAsFloat < this.minValue) {
                     this.mcdu.addNewMessage(NXSystemMessages.entryOutOfRange);
-                    return;
+                    return false;
                 }
                 value = valueAsFloat;
                 break;
         }
         // Update the value
         this.currentValue = value;
+        return true;
     }
     clearValue() {
         if (this.clearable) {
@@ -154,7 +155,9 @@ class CDU_SingleValueField extends CDU_Field {
         if (value === FMCMainDisplay.clrValue) {
             this.clearValue();
         } else {
-            this.setValue(value);
+            if (!this.setValue(value)) {
+                this.mcdu.scratchpad.setUserData(value);
+            }
         }
         super.onSelect();
     }

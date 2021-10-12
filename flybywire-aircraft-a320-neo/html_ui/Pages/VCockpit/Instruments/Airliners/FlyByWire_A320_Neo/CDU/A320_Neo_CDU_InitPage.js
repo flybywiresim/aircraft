@@ -19,6 +19,8 @@ class CDUInitPage {
                 mcdu.updateFlightNo(value, (result) => {
                     if (result) {
                         CDUInitPage.ShowPage1(mcdu);
+                    } else {
+                        mcdu.scratchpad.setUserData(value);
                     }
                 });
             }
@@ -88,9 +90,11 @@ class CDUInitPage {
                 }
 
                 // CRZ FL / FLX TEMP
-                mcdu.onLeftInput[5] = (value) => {
+                mcdu.onLeftInput[5] = (value, scratchpadCallback) => {
                     if (mcdu.setCruiseFlightLevelAndTemperature(value)) {
                         CDUInitPage.ShowPage1(mcdu);
+                    } else {
+                        scratchpadCallback(value);
                     }
                 };
 
