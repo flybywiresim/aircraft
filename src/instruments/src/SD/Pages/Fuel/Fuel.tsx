@@ -1,7 +1,7 @@
 /* eslint-disable no-nested-ternary */
 import './Fuel.scss';
 import ReactDOM from 'react-dom';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { SimVarProvider, useSimVar } from '@instruments/common/simVars';
 import { getRenderTarget, setIsEcamPage } from '@instruments/common/defaults';
 import { useArinc429Var } from '@instruments/common/arinc429';
@@ -102,8 +102,8 @@ export const FuelPage = () => {
                 )}
 
                 {/* Pumps */}
-                <Pump x={267} y={223} pumpNumber={1} />
-                <Pump x={302} y={223} pumpNumber={4} />
+                <Pump x={267} y={223} pumpNumber={1} centreTank tankQuantity={tankCenter} />
+                <Pump x={302} y={223} pumpNumber={4} centreTank tankQuantity={tankCenter} />
 
                 {/* Quantities */}
                 <text className="TankQuantity" x={330} y={315}>{fuelInTanksForDisplay(tankCenter, unit, fuelWeightPerGallon)}</text>
@@ -316,15 +316,26 @@ type PumpProps = {
     x: number,
     y: number,
     onBus?: string,
-    pumpNumber: number
+    pumpNumber: number,
+    centreTank?: boolean,
+    tankQuantity?: number
 }
 
-const Pump = ({ x, y, onBus = 'DC_ESS', pumpNumber }: PumpProps) => {
+const Pump = ({ x, y, onBus = 'DC_ESS', pumpNumber, centreTank, tankQuantity }: PumpProps) => {
     const [active] = useSimVar(`FUELSYSTEM PUMP ACTIVE:${pumpNumber}`, 'bool', 500);
     const [busIsPowered] = useSimVar(`L:A32NX_ELEC_${onBus}_BUS_IS_POWERED`, 'bool', 1000);
+    const [centreTankGreen, setCentreTankGreen] = useState(false);
+    const [pushButton] = useSimVar(`FUELSYSTEM PUMP SWITCH:${pumpNumber}`, 'bool', 500);
+    // FIXME centre tank logic once fuel system implemented
+    if (centreTank) {
+        useEffect(() => {
+            console.log(`Pump switch is ${pumpNumber} and status is ${pushButton}`);
+            setCentreTankGreen(pushButton && tankQuantity === 0);
+        }, [pushButton]);
+    }
 
     return (
-        <g className={active && busIsPowered ? 'ThickShape PumpActive' : 'ThickShape PumpInactive'}>
+        <g className={(active && busIsPowered) || centreTankGreen ? 'ThickShape PumpActive' : 'ThickShape PumpInactive'}>
             <rect x={x} y={y} width="30" height="30" />
             {active
                 ? (busIsPowered
