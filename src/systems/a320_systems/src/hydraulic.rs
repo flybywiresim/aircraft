@@ -346,7 +346,7 @@ impl A320Hydraulic {
             slat_system: FlapSlatAssembly::new(
                 "SLATS",
                 Volume::new::<cubic_inch>(0.32),
-                AngularVelocity::new::<radian_per_second>(0.12),
+                AngularVelocity::new::<radian_per_second>(0.22),
                 Angle::new::<degree>(251.97),
                 Ratio::new::<ratio>(140.),
                 Ratio::new::<ratio>(16.632),
@@ -5667,7 +5667,7 @@ mod tests {
 
             test_bed = test_bed
                 .set_flaps_handle_position(4)
-                .run_waiting_for(Duration::from_secs(68));
+                .run_waiting_for(Duration::from_secs(90));
 
             assert!(test_bed.get_flaps_left_position_percent() > 99.);
             assert!(test_bed.get_flaps_right_position_percent() > 99.);
@@ -5692,6 +5692,32 @@ mod tests {
 
             assert!(test_bed.get_flaps_left_position_percent() <= 1.);
             assert!(test_bed.get_flaps_right_position_percent() <= 1.);
+            assert!(test_bed.get_slats_left_position_percent() > 99.);
+            assert!(test_bed.get_slats_right_position_percent() > 99.);
+        }
+
+        #[test]
+        fn yellow_plus_blue_epumps_can_deploy_flaps_and_slats() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_one_tick();
+
+            test_bed = test_bed
+                .set_yellow_e_pump(false)
+                .set_blue_e_pump_ovrd_pressed(true)
+                .run_waiting_for(Duration::from_secs(15));
+
+            assert!(test_bed.is_yellow_pressurised());
+            assert!(test_bed.is_blue_pressurised());
+
+            test_bed = test_bed
+                .set_flaps_handle_position(4)
+                .run_waiting_for(Duration::from_secs(45));
+
+            assert!(test_bed.get_flaps_left_position_percent() > 99.);
+            assert!(test_bed.get_flaps_right_position_percent() > 99.);
             assert!(test_bed.get_slats_left_position_percent() > 99.);
             assert!(test_bed.get_slats_right_position_percent() > 99.);
         }

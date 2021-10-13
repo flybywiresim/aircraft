@@ -271,11 +271,16 @@ impl FlapSlatAssembly {
         if final_left_pressure + final_right_pressure
             > Pressure::new::<psi>(Self::BRAKE_PRESSURE_MIN_TO_ALLOW_MOVEMENT_PSI)
         {
+            // actual_speed = max_speed * total_pressure² / 6000 * 0.00018
             new_theoretical_max_speed = AngularVelocity::new::<radian_per_second>(
                 self.full_pressure_max_speed.get::<radian_per_second>()
                     * (final_left_pressure.get::<psi>() + final_right_pressure.get::<psi>())
-                    / (Self::MAX_CIRCUIT_PRESSURE_PSI * 2.),
+                    * (final_left_pressure.get::<psi>() + final_right_pressure.get::<psi>())
+                    / (Self::MAX_CIRCUIT_PRESSURE_PSI * 2.)
+                    * 0.00018,
             );
+
+            new_theoretical_max_speed = new_theoretical_max_speed.min(self.full_pressure_max_speed);
 
             if self.is_approaching_requested_position(self.final_requested_synchro_gear_position) {
                 new_theoretical_max_speed = self.current_max_speed.min(AngularVelocity::new::<
