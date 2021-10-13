@@ -9,7 +9,7 @@ const FLAPS_IN_MOTION_MIN_DELTA = 0.1;
 class A32NX_LocalVarUpdater {
     constructor() {
         // Initial data for deltas
-        this.lastFlapsPosition = SimVar.GetSimVarValue("TRAILING EDGE FLAPS LEFT PERCENT", "percent");
+        this.lastFlapsPosition = SimVar.GetSimVarValue("L:A32NX_LEFT_FLAPS_POSITION_PERCENT", "Percent");
         // track which compartment has gotten temperature initialization
         this.initializedCabinTemp = {
             "CKPT":false,
@@ -197,7 +197,7 @@ class A32NX_LocalVarUpdater {
     }
 
     _flapsInMotionSelector() {
-        const currentFlapsPosition = SimVar.GetSimVarValue("TRAILING EDGE FLAPS LEFT PERCENT", "percent");
+        const currentFlapsPosition = SimVar.GetSimVarValue("L:A32NX_LEFT_FLAPS_POSITION_PERCENT", "Percent");
         const lastFlapsPosition = this.lastFlapsPosition;
 
         this.lastFlapsPosition = currentFlapsPosition;
