@@ -242,7 +242,7 @@ const SimOptionsPage = () => {
 
     const [defaultBaro, setDefaultBaro] = usePersistentProperty('CONFIG_INIT_BARO_UNIT', 'AUTO');
 
-    const [fpSync, setFpSync] = usePersistentProperty('FP_SYNC', 'SAVE');
+    const [fpSync, setFpSync] = usePersistentProperty('FP_SYNC', 'LOAD');
     const [mcduInput, setMcduInput] = usePersistentProperty('MCDU_KB_INPUT', 'DISABLED');
     const [mcduTimeout, setMcduTimeout] = usePersistentProperty('CONFIG_MCDU_KB_TIMEOUT', '60');
 

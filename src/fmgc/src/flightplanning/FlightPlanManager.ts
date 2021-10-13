@@ -76,7 +76,7 @@ export class FlightPlanManager {
                 plan.setParentInstrument(_parentInstrument);
                 this._flightPlans = [];
                 this._flightPlans.push(plan);
-                if (NXDataStore.get('FP_SYNC', 'SAVE') !== 'NONE') {
+                if (NXDataStore.get('FP_SYNC', 'LOAD') !== 'NONE') {
                     this.pauseSync();
                     await FlightPlanAsoboSync.LoadFromGame(this).catch(console.error);
                 }
@@ -1667,7 +1667,7 @@ export class FlightPlanManager {
         }
         window.localStorage.setItem(FlightPlanManager.FlightPlanKey, fpJson);
         SimVar.SetSimVarValue(FlightPlanManager.FlightPlanVersionKey, 'number', ++this._currentFlightPlanVersion);
-        if (NXDataStore.get('FP_SYNC', 'SAVE') === 'SAVE') {
+        if (NXDataStore.get('FP_SYNC', 'LOAD') === 'SAVE') {
             FlightPlanAsoboSync.SaveToGame(this).catch(console.error);
         }
     }
