@@ -147,7 +147,6 @@ impl SimulationElement for EmergencyGenerator {
 #[cfg(test)]
 mod emergency_generator_tests {
     use std::time::Duration;
-    use uom::si::{f64::*, ratio::ratio};
 
     use super::*;
     use crate::{
@@ -296,17 +295,6 @@ mod emergency_generator_tests {
         test_bed.run_with_delta(Duration::from_secs(100));
 
         assert!(test_bed.emer_gen_is_powered());
-    }
-
-    #[test]
-    fn when_started_without_hydraulic_pressure_is_unpowered() {
-        let mut test_bed = EmergencyGeneratorTestBed::new();
-
-        test_bed.command(|a| a.attempt_emer_gen_start());
-        //test_bed.command(|a| a.set_rat_hydraulic_loop_pressurised(false));
-        test_bed.run_with_delta(Duration::from_secs(100));
-
-        assert!(!test_bed.emer_gen_is_powered());
     }
 
     #[test]

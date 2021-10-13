@@ -576,7 +576,7 @@ mod tests {
     }
 
     #[test]
-    fn emergency_generator_with_opened_valve_should_spin() {
+    fn emergency_generator_with_opened_valve_should_spin_if_pressure_available() {
         let mut emergency_gen = ElectricalEmergencyGenerator::new(Volume::new::<cubic_inch>(0.19));
 
         let gcu = TestGeneratorControlUnit::commanding_full_open();
@@ -615,10 +615,44 @@ mod tests {
             );
         }
 
-        // Check it's not going at crazy speed
+        // Check it's not going at crazy speed even though we keep control valve fully opened
         assert!(
             emergency_gen.hyd_motor.speed <= AngularVelocity::new::<revolution_per_minute>(100000.)
         );
+    }
+
+    #[test]
+    fn emergency_generator_with_opened_valve_should_not_spin_without_pressure() {
+        let mut emergency_gen = ElectricalEmergencyGenerator::new(Volume::new::<cubic_inch>(0.19));
+
+        let gcu = TestGeneratorControlUnit::commanding_full_open();
+
+        let timestep = 0.05;
+        let context = context(Duration::from_secs_f64(timestep));
+
+        let mut time = 0.0;
+        for _ in 0..500 {
+            emergency_gen.update(
+                Pressure::new::<psi>(0.),
+                &gcu,
+                &TestGenerator::from_gcu(&gcu),
+                &context,
+            );
+
+            assert!(emergency_gen.hyd_motor.speed <= AngularVelocity::new::<revolution_per_minute>(5.));
+
+            time += timestep;
+
+
+            println!(
+                "Time:{:.2} Rpm:{:.0}",
+                time,
+                emergency_gen
+                    .hyd_motor
+                    .speed()
+                    .get::<revolution_per_minute>()
+            );
+        }
     }
 
     #[test]
