@@ -157,7 +157,7 @@ export const PressureComponent = () => {
                 <text className="Standard Cyan" x="530" y="335">FT</text>
             </g>
             <g id="ManualVSIndicator" className={!autoMode ? 'show' : 'hide'}>
-                <GaugeComponentMemo x={440} y={385} radius={50} startAngle={10} endAngle={-190} verticalSpeed={cabinVs * 60 / 1000} className="Gauge" />
+                <GaugeComponentMemo x={440} y={385} radius={50} startAngle={10} endAngle={-190} verticalSpeed={Math.abs((cabinVs / 50 * 50) / 1000) <= 2.25 ? (cabinVs / 50 * 50) / 1000 : 2.250} className="Gauge" />
             </g>
 
             <text className="Standard" x="218" y="370">@P</text>
