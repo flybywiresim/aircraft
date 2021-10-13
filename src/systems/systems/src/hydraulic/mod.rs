@@ -16,6 +16,7 @@ use uom::si::{
 };
 
 pub mod brake_circuit;
+pub mod flap_slat;
 pub mod linear_actuator;
 pub mod update_iterator;
 
@@ -440,10 +441,10 @@ impl HydraulicLoop {
         self.accumulator.gas_volume
     }
 
-    pub fn update_actuator_volumes<T: Actuator>(&mut self, actuator: &mut T) {
+    pub fn update_actuator_volumes(&mut self, actuator: &mut impl Actuator) {
         self.total_actuators_consumed_volume += actuator.used_volume();
         self.total_actuators_returned_volume += actuator.reservoir_return();
-        actuator.reset_accumulators();
+        actuator.reset_volumes();
     }
 
     /// Returns the max flow that can be output from reservoir in dt time

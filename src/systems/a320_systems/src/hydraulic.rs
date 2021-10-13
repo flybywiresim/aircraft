@@ -4,7 +4,7 @@ use std::time::Duration;
 use uom::si::{
     acceleration::meter_per_second_squared,
     angle::degree,
-    angular_velocity::revolution_per_minute,
+    angular_velocity::{radian_per_second, revolution_per_minute},
     f64::*,
     length::meter,
     mass::kilogram,
@@ -12,7 +12,7 @@ use uom::si::{
     pressure::psi,
     ratio::{percent, ratio},
     velocity::knot,
-    volume::gallon,
+    volume::{cubic_inch, gallon},
     volume_rate::gallon_per_second,
 };
 
@@ -22,6 +22,7 @@ use systems::{
         brake_circuit::{
             AutobrakeDecelerationGovernor, AutobrakeMode, AutobrakePanel, BrakeCircuit,
         },
+        flap_slat::FlapSlatAssembly,
         linear_actuator::{
             Actuator, BoundedLinearLength, HydraulicAssemblyController,
             HydraulicLinearActuatorAssembly, LinearActuatedRigidBodyOnHingeAxis, LinearActuator,
@@ -141,6 +142,9 @@ pub(super) struct A320Hydraulic {
     braking_circuit_altn: BrakeCircuit,
     braking_force: A320BrakingForce,
 
+    flap_system: FlapSlatAssembly,
+    flaps_position_request: Angle,
+
     forward_cargo_door: CargoDoor,
     forward_cargo_door_controller: A320DoorController,
     aft_cargo_door: CargoDoor,
@@ -149,6 +153,13 @@ pub(super) struct A320Hydraulic {
     slats_flaps_complex: SlatFlapComplex,
 }
 impl A320Hydraulic {
+    const FLAP_FFPU_TO_SURFACE_ANGLE_BREAKPTS: [f64; 12] = [
+        0., 65., 115., 120.53, 136., 145.5, 152., 165., 168.3, 179., 231.2, 251.97,
+    ];
+    const FLAP_FFPU_TO_SURFACE_ANGLE_DEGREES: [f64; 12] = [
+        0., 10.318, 18.2561, 19.134, 21.59, 23.098, 24.13, 26.196, 26.72, 28.42, 36.703, 40.,
+    ];
+
     const FORWARD_CARGO_DOOR_ID: &'static str = "FWD";
     const AFT_CARGO_DOOR_ID: &'static str = "AFT";
 
@@ -302,6 +313,19 @@ impl A320Hydraulic {
             ),
 
             braking_force: A320BrakingForce::new(),
+
+            flap_system: FlapSlatAssembly::new(
+                "FLAPS",
+                Volume::new::<cubic_inch>(0.32),
+                AngularVelocity::new::<radian_per_second>(0.11),
+                Angle::new::<degree>(251.97),
+                Ratio::new::<ratio>(140.),
+                Ratio::new::<ratio>(16.632),
+                Ratio::new::<ratio>(314.98),
+                Self::FLAP_FFPU_TO_SURFACE_ANGLE_BREAKPTS,
+                Self::FLAP_FFPU_TO_SURFACE_ANGLE_DEGREES,
+            ),
+            flaps_position_request: Angle::new::<degree>(0.),
 
             forward_cargo_door: A320CargoDoorFactory::new_a320_cargo_door(
                 Self::FORWARD_CARGO_DOOR_ID,
@@ -521,6 +545,23 @@ impl A320Hydraulic {
             &self.braking_circuit_altn,
         );
 
+        // TODO Here input the flap computer position request
+        // Degrees are in flap surface angle
+        self.flap_system.update(
+            Some(self.flaps_position_request),
+            Some(self.flaps_position_request),
+            self.green_loop.pressure(),
+            self.yellow_loop.pressure(),
+            context,
+        );
+        println!(
+            "FlapReq {:.1} Pos {:.1} Gpress {:.0} Ypress {:.0}",
+            self.flaps_position_request.get::<degree>(),
+            self.flap_system.position_feedback().get::<degree>(),
+            self.green_loop.pressure().get::<psi>(),
+            self.yellow_loop.pressure().get::<psi>(),
+        );
+
         self.forward_cargo_door_controller.update(
             context,
             &self.forward_cargo_door,
@@ -537,6 +578,11 @@ impl A320Hydraulic {
             .update(context, self.green_loop.pressure());
     }
 
+    #[cfg(test)]
+    fn set_flap_req(&mut self, angle_req: Angle) {
+        self.flaps_position_request = angle_req;
+    }
+
     // For each hydraulic loop retrieves volumes from and to each actuator and pass it to the loops
     fn update_actuators_volume(&mut self) {
         self.update_green_actuators_volume();
@@ -547,11 +593,17 @@ impl A320Hydraulic {
     fn update_green_actuators_volume(&mut self) {
         self.green_loop
             .update_actuator_volumes(&mut self.braking_circuit_norm);
+
+        self.green_loop
+            .update_actuator_volumes(self.flap_system.left_motor());
     }
 
     fn update_yellow_actuators_volume(&mut self) {
         self.yellow_loop
             .update_actuator_volumes(&mut self.braking_circuit_altn);
+
+        self.yellow_loop
+            .update_actuator_volumes(self.flap_system.right_motor());
 
         self.yellow_loop
             .update_actuator_volumes(self.forward_cargo_door.actuator());
@@ -742,6 +794,7 @@ impl SimulationElement for A320Hydraulic {
         self.braking_force.accept(visitor);
 
         self.slats_flaps_complex.accept(visitor);
+        self.flap_system.accept(visitor);
 
         visitor.visit(self);
     }
@@ -2414,6 +2467,10 @@ mod tests {
             fn set_dc_ess_is_powered(&mut self, bus_is_alive: bool) {
                 self.is_dc_ess_powered = bus_is_alive;
             }
+
+            fn set_flaps(&mut self, flaps_angle: Angle) {
+                self.hydraulics.set_flap_req(flaps_angle);
+            }
         }
 
         impl Aircraft for A320HydraulicsTestAircraft {
@@ -2852,6 +2909,11 @@ mod tests {
 
             fn set_ptu_state(mut self, is_auto: bool) -> Self {
                 self.write("OVHD_HYD_PTU_PB_IS_AUTO", is_auto);
+                self
+            }
+
+            fn set_flaps(mut self, flaps_angle: Angle) -> Self {
+                self.command(|a| a.set_flaps(flaps_angle));
                 self
             }
 
@@ -5512,6 +5574,27 @@ mod tests {
 
             // Yellow epump has stopped
             assert!(!test_bed.is_yellow_pressurised());
+        }
+
+        // TODO Dummy test to try flap system. To complete with correct getters in test bench and asserts
+        #[test]
+        fn yellow_epump_can_deploy_flaps() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_one_tick();
+
+            test_bed = test_bed
+                .set_yellow_e_pump(false)
+                .run_waiting_for(Duration::from_secs(10));
+
+            // Yellow epump working
+            assert!(test_bed.is_yellow_pressurised());
+
+            test_bed = test_bed
+                .set_flaps(Angle::new::<degree>(800.))
+                .run_waiting_for(Duration::from_secs(37));
         }
 
         #[test]
