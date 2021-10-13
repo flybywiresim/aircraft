@@ -4,6 +4,10 @@ class ScratchpadDisplay {
         this.scratchpadElement.className = "white";
     }
 
+    setStyle(style) {
+        this.scratchpadElement.style = style;
+    }
+
     write(value = "", color = "white") {
         this.scratchpadElement.textContent = value;
         this.scratchpadElement.className = color;
