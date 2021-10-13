@@ -169,8 +169,6 @@ class FMCMainDisplay extends BaseAirliners {
         this.blockFuel = undefined;
         this.zeroFuelWeight = undefined;
         this.zeroFuelWeightMassCenter = undefined;
-        this.gpsPrimaryLostMessageAcknowledged = false;
-        this.gpsPrimaryMessageAcknowledged = false;
         this.activeWpIdx = undefined;
         this.previousAdirsStatus = undefined;
     }
@@ -992,30 +990,24 @@ class FMCMainDisplay extends BaseAirliners {
         this.approachSpeeds.valid = this.currentFlightPhase >= FmgcFlightPhases.APPROACH || isFinite(weight);
     }
 
-    // updateGPSMessage is called every 250ms, but calling addNewMessage this frequent messes with the message queue since the valid message will always shift into pos 1 at every add try
+    // updateGPSMessage is called every 250ms, only call addNewMessage when the status changed, anything else confuses the message system
     updateGPSMessage() {
         const currentAdirsStatus = SimVar.GetSimVarValue("L:A32NX_ADIRS_USES_GPS_AS_PRIMARY", "Bool");
 
         if (currentAdirsStatus !== this.previousAdirsStatus) {
             this.previousAdirsStatus = currentAdirsStatus;
-            this.gpsPrimaryLostMessageAcknowledged = false;
-            this.gpsPrimaryMessageAcknowledged = false;
-            SimVar.SetSimVarValue("L:GPSPrimaryAcknowledged", "Bool", this.gpsPrimaryMessageAcknowledged);
+            SimVar.SetSimVarValue("L:GPSPrimaryAcknowledged", "Bool", 0);
 
-            this.addNewMessage(NXSystemMessages.gpsPrimary, () => {
-                return this.gpsPrimaryMessageAcknowledged ||
-                    !SimVar.GetSimVarValue("L:A32NX_ADIRS_USES_GPS_AS_PRIMARY", "Bool");
-            }, () => {
-                this.gpsPrimaryMessageAcknowledged = true;
-                SimVar.SetSimVarValue("L:GPSPrimaryAcknowledged", "Bool", this.gpsPrimaryMessageAcknowledged);
-            });
+            this.addNewMessage(
+                NXSystemMessages.gpsPrimary,
+                () => !SimVar.GetSimVarValue("L:A32NX_ADIRS_USES_GPS_AS_PRIMARY", "Bool"),
+                () => SimVar.SetSimVarValue("L:GPSPrimaryAcknowledged", "Bool", 1)
+            );
 
-            this.addNewMessage(NXSystemMessages.gpsPrimaryLost, () => {
-                return this.gpsPrimaryLostMessageAcknowledged ||
-                    SimVar.GetSimVarValue("L:A32NX_ADIRS_USES_GPS_AS_PRIMARY", "Bool");
-            }, () => {
-                this.gpsPrimaryLostMessageAcknowledged = true;
-            });
+            this.addNewMessage(
+                NXSystemMessages.gpsPrimaryLost,
+                () => SimVar.GetSimVarValue("L:A32NX_ADIRS_USES_GPS_AS_PRIMARY", "Bool")
+            );
         }
     }
 
