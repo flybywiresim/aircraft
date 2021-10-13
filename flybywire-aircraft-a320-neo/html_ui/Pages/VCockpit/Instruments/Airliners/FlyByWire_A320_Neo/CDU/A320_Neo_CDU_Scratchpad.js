@@ -4,13 +4,13 @@ class ScratchpadDisplay {
         this.scratchpadElement.className = "white";
     }
 
-    setStyle(style) {
-        this.scratchpadElement.style = style;
-    }
-
     write(value = "", color = "white") {
         this.scratchpadElement.textContent = value;
         this.scratchpadElement.className = color;
+    }
+
+    setStyle(style) {
+        this.scratchpadElement.style = style;
     }
 }
 
@@ -102,6 +102,11 @@ class ScratchpadDataLink {
         }
         return userContent;
     }
+
+    setDisplayStyle(style) {
+        this.displayUnit.setStyle(style);
+    }
+
     // private functions below
     display(value, color = "white") {
         this.displayUnit.write(value, color);
