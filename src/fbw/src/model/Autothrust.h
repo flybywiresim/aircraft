@@ -11,7 +11,7 @@ class AutothrustModelClass {
     boolean_T eventTime_not_empty;
   };
 
-  struct rtDW_RateLimiter_Autothrust_T {
+  struct rtDW_RateLimiterwithThreshold_Autothrust_T {
     real_T pY;
     boolean_T pY_not_empty;
   };
@@ -63,11 +63,11 @@ class AutothrustModelClass {
     boolean_T eventTime_not_empty_a;
     boolean_T latch;
     boolean_T eventTime_not_empty_g;
-    rtDW_RateLimiter_Autothrust_T sf_RateLimiter_p;
-    rtDW_RateLimiter_Autothrust_T sf_RateLimiter_f;
-    rtDW_RateLimiter_Autothrust_T sf_RateLimiter_b;
-    rtDW_RateLimiter_Autothrust_T sf_RateLimiter_k;
-    rtDW_RateLimiter_Autothrust_T sf_RateLimiter;
+    rtDW_RateLimiterwithThreshold_Autothrust_T sf_RateLimiterwithThreshold_j0;
+    rtDW_RateLimiterwithThreshold_Autothrust_T sf_RateLimiterwithThreshold_j;
+    rtDW_RateLimiterwithThreshold_Autothrust_T sf_RateLimiterwithThreshold_d;
+    rtDW_RateLimiterwithThreshold_Autothrust_T sf_RateLimiterwithThreshold_m;
+    rtDW_RateLimiterwithThreshold_Autothrust_T sf_RateLimiterwithThreshold;
     rtDW_TimeSinceCondition_Autothrust_T sf_TimeSinceCondition1;
     rtDW_TimeSinceCondition_Autothrust_T sf_TimeSinceCondition_o;
   };
@@ -82,9 +82,10 @@ class AutothrustModelClass {
 
   struct Parameters_Autothrust_T {
     athr_out athr_out_MATLABStruct;
+    real_T ScheduledGain_BreakpointsForDimension1[4];
     real_T ScheduledGain2_BreakpointsForDimension1[2];
     real_T ScheduledGain1_BreakpointsForDimension1[2];
-    real_T ScheduledGain_BreakpointsForDimension1[2];
+    real_T ScheduledGain_BreakpointsForDimension1_p[2];
     real_T ScheduledGain4_BreakpointsForDimension1[2];
     real_T LagFilter_C1;
     real_T DiscreteDerivativeVariableTs_Gain;
@@ -93,11 +94,11 @@ class AutothrustModelClass {
     real_T DiscreteTimeIntegratorVariableTs1_Gain;
     real_T DiscreteTimeIntegratorVariableTs_Gain_k;
     real_T DiscreteTimeIntegratorVariableTs1_Gain_l;
-    real_T RateLimiterVariableTs_InitialCondition;
-    real_T RateLimiterVariableTs_InitialCondition_e;
-    real_T RateLimiterVariableTs_InitialCondition_b;
-    real_T RateLimiterVariableTs_InitialCondition_bl;
-    real_T RateLimiterVariableTs_InitialCondition_j;
+    real_T RateLimiterThresholdVariableTs_InitialCondition;
+    real_T RateLimiterThresholdVariableTs_InitialCondition_m;
+    real_T RateLimiterThresholdVariableTs_InitialCondition_p;
+    real_T RateLimiterThresholdVariableTs_InitialCondition_d;
+    real_T RateLimiterThresholdVariableTs_InitialCondition_j;
     real_T DiscreteDerivativeVariableTs_InitialCondition;
     real_T DiscreteTimeIntegratorVariableTs_InitialCondition;
     real_T DiscreteTimeIntegratorVariableTs1_InitialCondition;
@@ -107,10 +108,16 @@ class AutothrustModelClass {
     real_T DiscreteTimeIntegratorVariableTs1_LowerLimit;
     real_T DiscreteTimeIntegratorVariableTs_LowerLimit_e;
     real_T DiscreteTimeIntegratorVariableTs1_LowerLimit_h;
+    real_T ScheduledGain_Table[4];
     real_T ScheduledGain2_Table[2];
     real_T ScheduledGain1_Table[2];
-    real_T ScheduledGain_Table[2];
+    real_T ScheduledGain_Table_b[2];
     real_T ScheduledGain4_Table[2];
+    real_T RateLimiterThresholdVariableTs_Threshold;
+    real_T RateLimiterThresholdVariableTs_Threshold_e;
+    real_T RateLimiterThresholdVariableTs_Threshold_b;
+    real_T RateLimiterThresholdVariableTs_Threshold_p;
+    real_T RateLimiterThresholdVariableTs_Threshold_bt;
     real_T DiscreteTimeIntegratorVariableTs_UpperLimit;
     real_T DiscreteTimeIntegratorVariableTs1_UpperLimit;
     real_T DiscreteTimeIntegratorVariableTs_UpperLimit_p;
@@ -118,16 +125,16 @@ class AutothrustModelClass {
     real_T CompareToConstant_const;
     real_T CompareToConstant_const_k;
     real_T CompareToConstant2_const;
-    real_T RateLimiterVariableTs_lo;
-    real_T RateLimiterVariableTs_lo_g;
-    real_T RateLimiterVariableTs_lo_n;
-    real_T RateLimiterVariableTs_lo_ns;
-    real_T RateLimiterVariableTs_lo_a;
-    real_T RateLimiterVariableTs_up;
-    real_T RateLimiterVariableTs_up_c;
-    real_T RateLimiterVariableTs_up_m;
-    real_T RateLimiterVariableTs_up_i;
-    real_T RateLimiterVariableTs_up_in;
+    real_T RateLimiterThresholdVariableTs_lo;
+    real_T RateLimiterThresholdVariableTs_lo_n;
+    real_T RateLimiterThresholdVariableTs_lo_k;
+    real_T RateLimiterThresholdVariableTs_lo_g;
+    real_T RateLimiterThresholdVariableTs_lo_b;
+    real_T RateLimiterThresholdVariableTs_up;
+    real_T RateLimiterThresholdVariableTs_up_a;
+    real_T RateLimiterThresholdVariableTs_up_d;
+    real_T RateLimiterThresholdVariableTs_up_c;
+    real_T RateLimiterThresholdVariableTs_up_m;
     athr_mode CompareToConstant2_const_h;
     athr_mode CompareToConstant3_const;
     athr_mode CompareToConstant2_const_c;
@@ -280,8 +287,8 @@ class AutothrustModelClass {
   static void Autothrust_ThrustMode1(real_T rtu_u, real_T *rty_y);
   static void Autothrust_TLAComputation1(const athr_out *rtu_in, real_T rtu_TLA, real_T *rty_N1c, boolean_T
     *rty_inReverse);
-  static void Autothrust_RateLimiter(real_T rtu_u, real_T rtu_up, real_T rtu_lo, real_T rtu_Ts, real_T rtu_init, real_T *
-    rty_Y, rtDW_RateLimiter_Autothrust_T *localDW);
+  static void Autothrust_RateLimiterwithThreshold(real_T rtu_U, real_T rtu_up, real_T rtu_lo, real_T rtu_Ts, real_T
+    rtu_init, real_T rtu_threshold, real_T *rty_Y, rtDW_RateLimiterwithThreshold_Autothrust_T *localDW);
 };
 
 #endif
