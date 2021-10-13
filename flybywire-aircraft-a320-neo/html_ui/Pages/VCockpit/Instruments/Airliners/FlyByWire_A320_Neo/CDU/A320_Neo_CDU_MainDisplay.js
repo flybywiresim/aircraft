@@ -921,7 +921,10 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
      */
     addNewMessage(message, isResolved = () => false, onClear = () => {}) {
         if (message.isTypeTwo) {
-            if (!isResolved()) {
+            if (isResolved()) {
+                // This will trigger an internal health check
+                this.tryShowMessage();
+            } else {
                 this._addTypeTwoMessage(message.text, message.isAmber, isResolved, onClear);
             }
         } else {
@@ -980,6 +983,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 this.messageQueue.splice(i, 1);
                 if (i === 0) {
                     this.scratchpad.removeMessage(message);
+                    this.tryShowMessage();
                 }
                 break;
             }
