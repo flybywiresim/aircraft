@@ -182,28 +182,6 @@ const getSimBriefOfp = (mcdu, updateView, callback) => {
         });
 };
 
-const getSimBriefUser = (value, mcdu, updateView) => {
-    if (!value) {
-        throw new Error("No SimBrief username/pilot ID provided");
-    }
-
-    SimBriefApi.getSimBriefUser(value)
-        .then(data => {
-            if (data.fetch.status === "Error: Unknown UserID") {
-                mcdu.addNewMessage(NXFictionalMessages.noSimBriefUser);
-                mcdu.scratchpad.setUserData(value);
-            } else {
-                NXDataStore.set("CONFIG_SIMBRIEF_USERID", data.fetch.userid);
-            }
-
-            updateView();
-        })
-        .catch(_err => {
-            console.log(_err.message);
-            updateView();
-        });
-};
-
 /**
  * There are two uplink requests that are made at the same time:
  * - AOC ACT F-PLN
