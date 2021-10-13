@@ -1,5 +1,5 @@
 use super::linear_actuator::Actuator;
-use crate::shared::interpolation;
+use crate::shared::{interpolation, FeedbackPositionPickoffUnit};
 use crate::simulation::{
     SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext, Write,
 };
@@ -104,7 +104,8 @@ impl SimulationElement for FlapSlatHydraulicMotor {
 }
 
 pub struct FlapSlatAssembly {
-    position_id: String,
+    position_left_percent_id: String,
+    position_right_percent_id: String,
     angle_left_id: String,
     angle_right_id: String,
 
@@ -129,7 +130,7 @@ pub struct FlapSlatAssembly {
 }
 impl FlapSlatAssembly {
     const LOW_PASS_FILTER_FLAP_POSITION_TRANSIENT_TIME_CONSTANT_S: f64 = 0.3;
-    const BRAKE_PRESSURE_MIN_TO_ALLOW_MOVEMENT_PSI: f64 = 800.;
+    const BRAKE_PRESSURE_MIN_TO_ALLOW_MOVEMENT_PSI: f64 = 500.;
     const MAX_CIRCUIT_PRESSURE_PSI: f64 = 3000.;
     const ANGLE_THRESHOLD_FOR_REDUCED_SPEED_DEGREES: f64 = 6.69;
     const ANGULAR_SPEED_LIMIT_WHEN_APROACHING_POSITION_RAD_S: f64 = 0.08;
@@ -146,7 +147,8 @@ impl FlapSlatAssembly {
         final_flap_angle_carac: [f64; 12],
     ) -> Self {
         Self {
-            position_id: format!("HYD_{}_POSITION", id),
+            position_left_percent_id: format!("LEFT_{}_POSITION_PERCENT", id),
+            position_right_percent_id: format!("RIGHT_{}_POSITION_PERCENT", id),
             angle_left_id: format!("LEFT_{}_ANGLE", id),
             angle_right_id: format!("RIGHT_{}_ANGLE", id),
             flap_control_arm_position: Angle::new::<radian>(0.),
@@ -306,13 +308,29 @@ impl FlapSlatAssembly {
             self.current_speed.get::<radian_per_second>() * self.flap_gear_ratio.get::<ratio>(),
         );
 
-        let left_torque = self.left_motor.torque(left_pressure);
-        let right_torque = self.right_motor.torque(right_pressure);
+        let left_torque =
+            if left_pressure.get::<psi>() < Self::BRAKE_PRESSURE_MIN_TO_ALLOW_MOVEMENT_PSI {
+                Torque::new::<pound_force_inch>(0.)
+            } else {
+                self.left_motor.torque(left_pressure)
+            };
+
+        let right_torque =
+            if right_pressure.get::<psi>() < Self::BRAKE_PRESSURE_MIN_TO_ALLOW_MOVEMENT_PSI {
+                Torque::new::<pound_force_inch>(0.)
+            } else {
+                self.right_motor.torque(right_pressure)
+            };
 
         let total_motor_torque = left_torque + right_torque;
 
-        let left_torque_ratio = left_torque / total_motor_torque;
-        let right_torque_ratio = right_torque / total_motor_torque;
+        let mut left_torque_ratio = Ratio::new::<ratio>(0.);
+        let mut right_torque_ratio = Ratio::new::<ratio>(0.);
+
+        if total_motor_torque.get::<pound_force_inch>() > 0.001 {
+            left_torque_ratio = left_torque / total_motor_torque;
+            right_torque_ratio = right_torque / total_motor_torque;
+        }
 
         self.left_motor.update_speed_and_flow(
             AngularVelocity::new::<radian_per_second>(
@@ -353,6 +371,14 @@ impl FlapSlatAssembly {
         &mut self.right_motor
     }
 
+    pub fn left_motor_rpm(&mut self) -> f64 {
+        self.left_motor.speed.get::<revolution_per_minute>()
+    }
+
+    pub fn right_motor_rpm(&mut self) -> f64 {
+        self.right_motor.speed.get::<revolution_per_minute>()
+    }
+
     /// Gets flap surface angle from current Feedback Position Pickup Unit (FPPU) position
     fn flap_surface_angle(&self) -> Angle {
         Angle::new::<degree>(interpolation(
@@ -390,14 +416,26 @@ impl SimulationElement for FlapSlatAssembly {
 
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(
-            &self.position_id,
+            &self.position_left_percent_id,
             self.position_feedback().get::<degree>()
-                / self.max_synchro_gear_position.get::<degree>(),
+                / self.max_synchro_gear_position.get::<degree>()
+                * 100.,
+        );
+        writer.write(
+            &self.position_right_percent_id,
+            self.position_feedback().get::<degree>()
+                / self.max_synchro_gear_position.get::<degree>()
+                * 100.,
         );
 
         let flaps_surface_angle = self.flap_surface_angle();
         writer.write(&self.angle_left_id, flaps_surface_angle.get::<degree>());
         writer.write(&self.angle_right_id, flaps_surface_angle.get::<degree>());
+    }
+}
+impl FeedbackPositionPickoffUnit for FlapSlatAssembly {
+    fn angle(&self) -> Angle {
+        self.position_feedback()
     }
 }
 

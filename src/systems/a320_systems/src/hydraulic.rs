@@ -143,7 +143,7 @@ pub(super) struct A320Hydraulic {
     braking_force: A320BrakingForce,
 
     flap_system: FlapSlatAssembly,
-    flaps_position_request: Angle,
+    slat_system: FlapSlatAssembly,
 
     forward_cargo_door: CargoDoor,
     forward_cargo_door_controller: A320DoorController,
@@ -158,6 +158,24 @@ impl A320Hydraulic {
     ];
     const FLAP_FFPU_TO_SURFACE_ANGLE_DEGREES: [f64; 12] = [
         0., 10.318, 18.2561, 19.134, 21.59, 23.098, 24.13, 26.196, 26.72, 28.42, 36.703, 40.,
+    ];
+
+    const SLAT_FFPU_TO_SURFACE_ANGLE_BREAKPTS: [f64; 12] = [
+        0., 65., 115., 120.53, 136., 145.5, 152., 165., 168.3, 179., 231.2, 251.97,
+    ];
+    const SLAT_FFPU_TO_SURFACE_ANGLE_DEGREES: [f64; 12] = [
+        0.,
+        6.965114895,
+        12.32289558,
+        12.91546613,
+        14.57316347,
+        15.5911418,
+        16.28765329,
+        17.68067627,
+        18.0342898,
+        19.18085486,
+        24.7743779,
+        27.,
     ];
 
     const FORWARD_CARGO_DOOR_ID: &'static str = "FWD";
@@ -325,7 +343,17 @@ impl A320Hydraulic {
                 Self::FLAP_FFPU_TO_SURFACE_ANGLE_BREAKPTS,
                 Self::FLAP_FFPU_TO_SURFACE_ANGLE_DEGREES,
             ),
-            flaps_position_request: Angle::new::<degree>(0.),
+            slat_system: FlapSlatAssembly::new(
+                "SLATS",
+                Volume::new::<cubic_inch>(0.32),
+                AngularVelocity::new::<radian_per_second>(0.12),
+                Angle::new::<degree>(251.97),
+                Ratio::new::<ratio>(140.),
+                Ratio::new::<ratio>(16.632),
+                Ratio::new::<ratio>(314.98),
+                Self::SLAT_FFPU_TO_SURFACE_ANGLE_BREAKPTS,
+                Self::SLAT_FFPU_TO_SURFACE_ANGLE_DEGREES,
+            ),
 
             forward_cargo_door: A320CargoDoorFactory::new_a320_cargo_door(
                 Self::FORWARD_CARGO_DOOR_ID,
@@ -548,18 +576,50 @@ impl A320Hydraulic {
         // TODO Here input the flap computer position request
         // Degrees are in flap surface angle
         self.flap_system.update(
-            Some(self.flaps_position_request),
-            Some(self.flaps_position_request),
+            self.slats_flaps_complex.flap_demand(),
+            self.slats_flaps_complex.flap_demand(),
             self.green_loop.pressure(),
             self.yellow_loop.pressure(),
             context,
         );
+        self.slat_system.update(
+            self.slats_flaps_complex.slat_demand(),
+            self.slats_flaps_complex.slat_demand(),
+            self.blue_loop.pressure(),
+            self.green_loop.pressure(),
+            context,
+        );
         println!(
-            "FlapReq {:.1} Pos {:.1} Gpress {:.0} Ypress {:.0}",
-            self.flaps_position_request.get::<degree>(),
+            "->FlapReq {:.1} PosFlap {:.1} Gpress {:.0} Ypress {:.0}",
+            self.slats_flaps_complex
+                .flap_demand()
+                .unwrap_or(Angle::new::<degree>(0.))
+                .get::<degree>(),
             self.flap_system.position_feedback().get::<degree>(),
             self.green_loop.pressure().get::<psi>(),
             self.yellow_loop.pressure().get::<psi>(),
+        );
+        println!(
+            "->FlapGreenRPM {:.1} FlapYellowRPM {:.1} ",
+            self.flap_system.left_motor_rpm(),
+            self.flap_system.right_motor_rpm(),
+        );
+
+        println!(
+            "--->SlatReq {:.1} PosSlat {:.1} Bpress {:.0} Gpress {:.0}",
+            self.slats_flaps_complex
+                .slat_demand()
+                .unwrap_or(Angle::new::<degree>(0.))
+                .get::<degree>(),
+            self.slat_system.position_feedback().get::<degree>(),
+            self.blue_loop.pressure().get::<psi>(),
+            self.green_loop.pressure().get::<psi>(),
+        );
+
+        println!(
+            "--->SlatBlueRPM {:.1} SlatGreenRPM {:.1} ",
+            self.slat_system.left_motor_rpm(),
+            self.slat_system.right_motor_rpm(),
         );
 
         self.forward_cargo_door_controller.update(
@@ -575,12 +635,7 @@ impl A320Hydraulic {
         );
 
         self.slats_flaps_complex
-            .update(context, self.green_loop.pressure());
-    }
-
-    #[cfg(test)]
-    fn set_flap_req(&mut self, angle_req: Angle) {
-        self.flaps_position_request = angle_req;
+            .update(context, &self.flap_system, &self.slat_system);
     }
 
     // For each hydraulic loop retrieves volumes from and to each actuator and pass it to the loops
@@ -596,6 +651,9 @@ impl A320Hydraulic {
 
         self.green_loop
             .update_actuator_volumes(self.flap_system.left_motor());
+
+        self.green_loop
+            .update_actuator_volumes(self.slat_system.right_motor());
     }
 
     fn update_yellow_actuators_volume(&mut self) {
@@ -612,7 +670,10 @@ impl A320Hydraulic {
             .update_actuator_volumes(self.aft_cargo_door.actuator());
     }
 
-    fn update_blue_actuators_volume(&mut self) {}
+    fn update_blue_actuators_volume(&mut self) {
+        self.blue_loop
+            .update_actuator_volumes(self.slat_system.left_motor());
+    }
 
     // All the core hydraulics updates that needs to be done at the slowest fixed step rate
     fn update_core_hydraulics<T: Engine, U: EngineFirePushButtons>(
@@ -795,6 +856,7 @@ impl SimulationElement for A320Hydraulic {
 
         self.slats_flaps_complex.accept(visitor);
         self.flap_system.accept(visitor);
+        self.slat_system.accept(visitor);
 
         visitor.visit(self);
     }
@@ -2467,10 +2529,6 @@ mod tests {
             fn set_dc_ess_is_powered(&mut self, bus_is_alive: bool) {
                 self.is_dc_ess_powered = bus_is_alive;
             }
-
-            fn set_flaps(&mut self, flaps_angle: Angle) {
-                self.hydraulics.set_flap_req(flaps_angle);
-            }
         }
 
         impl Aircraft for A320HydraulicsTestAircraft {
@@ -2912,9 +2970,25 @@ mod tests {
                 self
             }
 
-            fn set_flaps(mut self, flaps_angle: Angle) -> Self {
-                self.command(|a| a.set_flaps(flaps_angle));
+            fn set_flaps_handle_position(mut self, pos: u8) -> Self {
+                self.write("FLAPS_HANDLE_INDEX", pos as f64);
                 self
+            }
+
+            fn get_flaps_left_position_percent(&mut self) -> f64 {
+                self.read("LEFT_FLAPS_POSITION_PERCENT")
+            }
+
+            fn get_flaps_right_position_percent(&mut self) -> f64 {
+                self.read("RIGHT_FLAPS_POSITION_PERCENT")
+            }
+
+            fn get_slats_left_position_percent(&mut self) -> f64 {
+                self.read("LEFT_SLATS_POSITION_PERCENT")
+            }
+
+            fn get_slats_right_position_percent(&mut self) -> f64 {
+                self.read("RIGHT_SLATS_POSITION_PERCENT")
             }
 
             fn ac_bus_1_lost(mut self) -> Self {
@@ -5576,9 +5650,8 @@ mod tests {
             assert!(!test_bed.is_yellow_pressurised());
         }
 
-        // TODO Dummy test to try flap system. To complete with correct getters in test bench and asserts
         #[test]
-        fn yellow_epump_can_deploy_flaps() {
+        fn yellow_epump_can_deploy_flaps_and_slats() {
             let mut test_bed = test_bed_with()
                 .engines_off()
                 .on_the_ground()
@@ -5593,8 +5666,51 @@ mod tests {
             assert!(test_bed.is_yellow_pressurised());
 
             test_bed = test_bed
-                .set_flaps(Angle::new::<degree>(800.))
-                .run_waiting_for(Duration::from_secs(37));
+                .set_flaps_handle_position(4)
+                .run_waiting_for(Duration::from_secs(65));
+
+            assert!(test_bed.get_flaps_left_position_percent() > 99.);
+            assert!(test_bed.get_flaps_right_position_percent() > 99.);
+            assert!(test_bed.get_slats_left_position_percent() > 99.);
+            assert!(test_bed.get_slats_right_position_percent() > 99.);
+        }
+
+        #[test]
+        fn blue_epump_can_deploy_slats_in_less_35_s_and_no_flaps() {
+            let mut test_bed = test_bed_with()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .set_blue_e_pump_ovrd_pressed(true)
+                .run_waiting_for(Duration::from_secs(5));
+
+            // Blue epump is on
+            assert!(test_bed.is_blue_pressurised());
+
+            test_bed = test_bed
+                .set_flaps_handle_position(4)
+                .run_waiting_for(Duration::from_secs(35));
+
+            assert!(test_bed.get_flaps_left_position_percent() <= 1.);
+            assert!(test_bed.get_flaps_right_position_percent() <= 1.);
+            assert!(test_bed.get_slats_left_position_percent() > 99.);
+            assert!(test_bed.get_slats_right_position_percent() > 99.);
+        }
+
+        #[test]
+        fn no_pressure_no_flap_slats() {
+            let mut test_bed = test_bed_with()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_waiting_for(Duration::from_secs(5));
+
+            test_bed = test_bed
+                .set_flaps_handle_position(4)
+                .run_waiting_for(Duration::from_secs(10));
+
+            assert!(test_bed.get_flaps_left_position_percent() <= 1.);
+            assert!(test_bed.get_flaps_right_position_percent() <= 1.);
+            assert!(test_bed.get_slats_left_position_percent() <= 1.);
+            assert!(test_bed.get_slats_right_position_percent() <= 1.);
         }
 
         #[test]
