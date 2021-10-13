@@ -364,7 +364,7 @@ export class LegsProcedure {
    * @returns The mapped leg.
    */
   public mapHeadingUntilAltitude(leg: ProcedureLeg, prevLeg: WayPoint) {
-      const magVar = Facilities.getMagVar(prevLeg.infos.coordinates);
+      const magVar = Facilities.getMagVar(prevLeg.infos.coordinates.lat, prevLeg.infos.coordinates.long);
       const course = leg.trueDegrees ? leg.course : A32NX_Util.magneticToTrue(leg.course, magVar);
       const heading = leg.trueDegrees ? A32NX_Util.trueToMagnetic(leg.course, magVar) : leg.course;
       const altitudeFeet = (leg.altitude1 * 3.2808399);
@@ -385,7 +385,7 @@ export class LegsProcedure {
    * @returns The mapped leg.
    */
   public mapVectors(leg: ProcedureLeg, prevLeg: WayPoint) {
-      const magVar = Facilities.getMagVar(prevLeg.infos.coordinates);
+      const magVar = Facilities.getMagVar(prevLeg.infos.coordinates.lat, prevLeg.infos.coordinates.long);
       const course = leg.trueDegrees ? leg.course : A32NX_Util.magneticToTrue(leg.course, magVar);
       const heading = leg.trueDegrees ? A32NX_Util.trueToMagnetic(leg.course, magVar) : leg.course;
       const coordinates = GeoMath.relativeBearingDistanceToCoords(course, 1, prevLeg.infos.coordinates);

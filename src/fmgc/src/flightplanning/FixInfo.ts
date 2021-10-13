@@ -54,7 +54,7 @@ export class FixInfo {
 
     setRadial(index: 0 | 1, magneticBearing?: number): void {
         if (magneticBearing !== undefined) {
-            const trueBearing = Avionics.Utils.clampAngle(magneticBearing + Facilities.getMagVar(this.refFix.infos.coordinates));
+            const trueBearing = Avionics.Utils.clampAngle(magneticBearing + Facilities.getMagVar(this.refFix.infos.coordinates.lat, this.refFix.infos.coordinates.long));
             this.radials[index] = { magneticBearing, trueBearing };
         } else {
             this.radials.splice(index, 1);

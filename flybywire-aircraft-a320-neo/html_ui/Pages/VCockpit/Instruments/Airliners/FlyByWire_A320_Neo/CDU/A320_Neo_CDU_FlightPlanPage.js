@@ -231,7 +231,7 @@ class CDUFlightPlanPage {
                 }
                 // Approach Fix Headers
                 if (!fixAnnotation && wpPrev && fpIndex !== fpm.getDestinationIndex()) {
-                    const magVar = Facilities.getMagVar(wpPrev.infos.coordinates);
+                    const magVar = Facilities.getMagVar(wpPrev.infos.coordinates.lat, wpPrev.infos.coordinates.long);
                     const courseBetween = Avionics.Utils.computeGreatCircleHeading(wpPrev.infos.coordinates, wp.infos.coordinates);
                     const course = A32NX_Util.trueToMagnetic(courseBetween, magVar);
                     fixAnnotation = `C${course.toFixed(0).padStart(3,"0")}\u00b0`;
@@ -240,7 +240,7 @@ class CDUFlightPlanPage {
                 // Bearing/Track
                 let bearingTrack = "";
                 if (wpPrev) {
-                    const magVar = Facilities.getMagVar(wpPrev.infos.coordinates);
+                    const magVar = Facilities.getMagVar(wpPrev.infos.coordinates.lat, wpPrev.infos.coordinates.long);
                     switch (rowI) {
                         case 1:
                             if (fpm.getActiveWaypointIndex() === fpIndex) {
