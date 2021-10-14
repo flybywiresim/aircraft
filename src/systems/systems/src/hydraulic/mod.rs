@@ -490,7 +490,7 @@ impl HydraulicCircuit {
             section.update_pump_state(
                 &mut Some(main_section_pumps[pump_idx]),
                 &Vec::new(),
-                &self.pump_to_system_checkvalves,
+                Some(&self.pump_to_system_checkvalves[pump_idx]),
                 &mut self.reservoir,
                 &context,
                 &self.fluid,
@@ -500,7 +500,7 @@ impl HydraulicCircuit {
         self.system_section.update_pump_state(
             system_section_pump,
             &self.pump_to_system_checkvalves,
-            &Vec::new(),
+            None,
             &mut self.reservoir,
             &context,
             &self.fluid,
@@ -808,7 +808,7 @@ impl Section {
         &mut self,
         pump: &mut Option<&mut impl PressureSource>,
         upstream_valves: &[CheckValve],
-        downstream_valves: &[CheckValve],
+        downstream_valve: Option<&CheckValve>,
         reservoir: &mut Reservoir,
         context: &UpdateContext,
         fluid: &Fluid,
@@ -819,8 +819,8 @@ impl Section {
             delta_volume_from_valves += up.current_volume;
         }
 
-        for down in downstream_valves {
-            delta_volume_from_valves -= down.current_volume;
+        if downstream_valve.is_some() {
+            delta_volume_from_valves -= downstream_valve.unwrap().current_volume;
         }
 
         // Final volume target to reach target pressure is:
