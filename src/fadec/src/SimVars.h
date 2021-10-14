@@ -15,6 +15,12 @@ enum DataTypesID {
   OilPsiRight,
   StartCN2Left,
   StartCN2Right,
+  SimulationDataTypeId,
+};
+
+struct SimulationData {
+  double simulationTime;
+  double simulationRate;
 };
 
 enum EventTypesID {
