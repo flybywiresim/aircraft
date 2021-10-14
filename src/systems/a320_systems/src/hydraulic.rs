@@ -610,7 +610,7 @@ impl A320Hydraulic {
         self.green_loop_controller.update(engine_fire_push_buttons);
         self.green_loop.update(
             &mut vec![&mut self.engine_driven_pump_1],
-            &mut None::<&mut ElectricPump>,
+            None::<&mut ElectricPump>,
             &Some(&self.power_transfer_unit),
             &context,
             &self.green_loop_controller,
@@ -619,7 +619,7 @@ impl A320Hydraulic {
         self.yellow_loop_controller.update(engine_fire_push_buttons);
         self.yellow_loop.update(
             &mut vec![&mut self.engine_driven_pump_2],
-            &mut Some(&mut self.yellow_electric_pump),
+            Some(&mut self.yellow_electric_pump),
             &Some(&self.power_transfer_unit),
             context,
             &self.yellow_loop_controller,
@@ -628,7 +628,7 @@ impl A320Hydraulic {
         self.blue_loop_controller.update(engine_fire_push_buttons);
         self.blue_loop.update(
             &mut vec![&mut self.blue_electric_pump],
-            &mut Some(&mut self.ram_air_turbine),
+            Some(&mut self.ram_air_turbine),
             &None,
             context,
             &self.blue_loop_controller,

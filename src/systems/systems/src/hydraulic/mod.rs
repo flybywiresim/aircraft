@@ -452,7 +452,7 @@ impl HydraulicCircuit {
     pub fn update<T: HydraulicLoopController>(
         &mut self,
         main_section_pumps: &mut Vec<&mut impl PressureSource>,
-        system_section_pump: &mut Option<&mut impl PressureSource>,
+        system_section_pump: Option<&mut impl PressureSource>,
         ptu: &Option<&PowerTransferUnit>,
         context: &UpdateContext,
         controller: &T,
@@ -467,7 +467,7 @@ impl HydraulicCircuit {
 
         // Updating for each section its total maximum theoretical pumping capacity
         // "what max volume it could pump considering current reservoir state and pump rpm"
-        self.update_maximum_pumping_capacities(main_section_pumps, system_section_pump);
+        self.update_maximum_pumping_capacities(main_section_pumps, &system_section_pump);
 
         // What flow can come through each valve considering what is consumed downstream
         self.update_maximum_valve_flows();
@@ -475,36 +475,50 @@ impl HydraulicCircuit {
         // Update final flow that will go through each valve (spliting flow between multiple valves)
         self.update_final_valves_flows();
 
+        self.update_delta_vol_from_valves();
+
         // We have all flow information, now we set pump parameters (displacement) to where it
         // should be so we reach target pressure
-        self.update_pumps_states(main_section_pumps, system_section_pump, context);
+        self.update_pumps(main_section_pumps, system_section_pump, context);
+
+        self.update_final_delta_vol_and_pressure(context);
     }
 
-    fn update_pumps_states(
+    fn update_delta_vol_from_valves(&mut self) {
+        for (pump_idx, section) in self.pump_sections.iter_mut().enumerate() {
+            section.update_downstream_delta_vol(&self.pump_to_system_checkvalves[pump_idx]);
+        }
+
+        self.system_section
+            .update_upstream_delta_vol(&self.pump_to_system_checkvalves);
+    }
+
+    fn update_pumps(
         &mut self,
         main_section_pumps: &mut Vec<&mut impl PressureSource>,
-        system_section_pump: &mut Option<&mut impl PressureSource>,
+        system_section_pump: Option<&mut impl PressureSource>,
         context: &UpdateContext,
     ) {
         for (pump_idx, section) in self.pump_sections.iter_mut().enumerate() {
-            section.update_pump_state(
-                &mut Some(main_section_pumps[pump_idx]),
-                &Vec::new(),
-                Some(&self.pump_to_system_checkvalves[pump_idx]),
-                &mut self.reservoir,
-                &context,
-                &self.fluid,
-            );
+            section.update_pump_state(main_section_pumps[pump_idx], &mut self.reservoir, &context);
         }
 
-        self.system_section.update_pump_state(
-            system_section_pump,
-            &self.pump_to_system_checkvalves,
-            None,
-            &mut self.reservoir,
-            &context,
-            &self.fluid,
-        );
+        if system_section_pump.is_some() {
+            self.system_section.update_pump_state(
+                system_section_pump.unwrap(),
+                &mut self.reservoir,
+                &context,
+            );
+        }
+    }
+
+    fn update_final_delta_vol_and_pressure(&mut self, context: &UpdateContext) {
+        for (pump_idx, section) in self.pump_sections.iter_mut().enumerate() {
+            section.update_final_delta_vol_and_pressure(&context, &self.fluid);
+        }
+
+        self.system_section
+            .update_final_delta_vol_and_pressure(&context, &self.fluid);
     }
 
     fn update_maximum_valve_flows(&mut self) {
@@ -648,6 +662,8 @@ pub struct Section {
     delta_volume_flow_pass: Volume,
     max_pumpable_volume: Volume,
     volume_target: Volume,
+    delta_vol_from_valves: Volume,
+    total_volume_pumped: Volume,
 
     pressure_switch: PressureSwitch,
 
@@ -691,6 +707,8 @@ impl Section {
             delta_volume_flow_pass: Volume::new::<gallon>(0.),
             max_pumpable_volume: Volume::new::<gallon>(0.),
             volume_target: Volume::new::<gallon>(0.),
+            delta_vol_from_valves: Volume::new::<gallon>(0.),
+            total_volume_pumped: Volume::new::<gallon>(0.),
 
             pressure_switch: PressureSwitch::new(pressure_switch_hi_hyst, pressure_switch_lo_hyst),
 
@@ -804,53 +822,49 @@ impl Section {
         }
     }
 
+    fn update_upstream_delta_vol(&mut self, upstream_valves: &Vec<CheckValve>) {
+        for up in upstream_valves {
+            self.delta_vol_from_valves += up.current_volume;
+        }
+    }
+
+    fn update_downstream_delta_vol(&mut self, downstream_valve: &CheckValve) {
+        self.delta_vol_from_valves -= downstream_valve.current_volume;
+    }
+
     pub fn update_pump_state(
         &mut self,
-        pump: &mut Option<&mut impl PressureSource>,
-        upstream_valves: &[CheckValve],
-        downstream_valve: Option<&CheckValve>,
+        pump: &mut impl PressureSource,
         reservoir: &mut Reservoir,
         context: &UpdateContext,
-        fluid: &Fluid,
     ) {
-        let mut delta_volume_from_valves = Volume::new::<gallon>(0.);
-
-        for up in upstream_valves {
-            delta_volume_from_valves += up.current_volume;
-        }
-
-        if downstream_valve.is_some() {
-            delta_volume_from_valves -= downstream_valve.unwrap().current_volume;
-        }
-
         // Final volume target to reach target pressure is:
         // raw volume_target - (upstream volume - downstream volume)
         let final_volume_needed_to_reach_target_pressure =
-            self.volume_target - delta_volume_from_valves;
+            self.volume_target - self.delta_vol_from_valves;
 
-        let mut final_delta_volume = self.delta_volume_flow_pass + delta_volume_from_valves;
+        pump.update_actual_state_after_pressure_regulation(
+            final_volume_needed_to_reach_target_pressure,
+            reservoir,
+            self.fire_valve_is_opened(),
+            &context,
+        );
+        self.total_volume_pumped = pump.flow() * context.delta_as_time();
+    }
 
-        // If there is a pump we update its state, and get the volume it pumped this iteration
-        let mut total_volume_pumped = Volume::new::<gallon>(0.);
-        if pump.is_some() {
-            pump.as_deref_mut()
-                .unwrap()
-                .update_actual_state_after_pressure_regulation(
-                    final_volume_needed_to_reach_target_pressure,
-                    reservoir,
-                    self.fire_valve_is_opened(),
-                    &context,
-                );
-            total_volume_pumped = pump.as_ref().unwrap().flow() * context.delta_as_time();
-        }
+    pub fn update_final_delta_vol_and_pressure(&mut self, context: &UpdateContext, fluid: &Fluid) {
+        let mut final_delta_volume = self.delta_volume_flow_pass + self.delta_vol_from_valves;
 
-        final_delta_volume += total_volume_pumped;
+        final_delta_volume += self.total_volume_pumped;
 
         self.current_volume += final_delta_volume;
 
         self.update_pressure(fluid);
 
         self.current_flow = final_delta_volume / context.delta_as_time();
+
+        self.delta_vol_from_valves = Volume::new::<gallon>(0.);
+        self.total_volume_pumped = Volume::new::<gallon>(0.);
     }
 
     fn update_pressure(&mut self, fluid: &Fluid) {

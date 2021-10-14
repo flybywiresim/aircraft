@@ -308,7 +308,7 @@ fn hyd_circuit_basic(path: &str) {
 
         hydraulic_loop.update(
             &mut vec![&mut edp],
-            &mut Some(&mut epump),
+            Some(&mut epump),
             &None,
             &context,
             &TestHydraulicLoopController::commanding_open_fire_shutoff_valve(1),
