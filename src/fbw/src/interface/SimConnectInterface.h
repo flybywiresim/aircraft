@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "../ElevatorTrimHandler.h"
+#include "../FlapsHandler.h"
 #include "../LocalVariable.h"
 #include "../RudderTrimHandler.h"
 #include "../SpoilersHandler.h"
@@ -167,6 +168,7 @@ class SimConnectInterface {
                bool autopilotLawsEnabled,
                bool flyByWireEnabled,
                const std::vector<std::shared_ptr<ThrottleAxisMapping>>& throttleAxis,
+               std::shared_ptr<FlapsHandler> flapsHandler,
                std::shared_ptr<SpoilersHandler> spoilersHandler,
                std::shared_ptr<ElevatorTrimHandler> elevatorTrimHandler,
                std::shared_ptr<RudderTrimHandler> rudderTrimHandler,
@@ -259,6 +261,7 @@ class SimConnectInterface {
   SimInputThrottles simInputThrottles = {};
   std::vector<std::shared_ptr<ThrottleAxisMapping>> throttleAxis;
 
+  std::shared_ptr<FlapsHandler> flapsHandler;
   std::shared_ptr<SpoilersHandler> spoilersHandler;
   std::shared_ptr<ElevatorTrimHandler> elevatorTrimHandler;
   std::shared_ptr<RudderTrimHandler> rudderTrimHandler;
