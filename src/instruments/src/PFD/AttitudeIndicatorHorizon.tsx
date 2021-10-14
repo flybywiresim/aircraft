@@ -277,6 +277,7 @@ interface SideslipIndicatorProps {
 
 const SideslipIndicator = ({ isOnGround, roll }: SideslipIndicatorProps) => {
     const [SIIndexOffset, setSIIndexOffset] = useState(0);
+    const [BetaTargetActive, setBetaTargetActive] = useState(false);
     const [sideslipIndicatorFilter] = useState(() => new LagFilter(0.8));
 
     const verticalOffset = calculateVerticalOffsetFromRoll(roll.value);
@@ -288,8 +289,12 @@ const SideslipIndicator = ({ isOnGround, roll }: SideslipIndicatorProps) => {
             const latAcc = getSimVar('ACCELERATION BODY X', 'G Force');
             const accInG = Math.min(0.3, Math.max(-0.3, latAcc));
             offset = -accInG * 15 / 0.3;
+            setBetaTargetActive(false);
         } else {
-            offset = Math.max(Math.min(getSimVar('INCIDENCE BETA', 'degrees'), 15), -15);
+            const beta = getSimVar('INCIDENCE BETA', 'degrees');
+            const betaTarget = getSimVar('L:A32NX_FBW_BETA_TARGET', 'Number');
+            offset = Math.max(Math.min(beta - betaTarget, 15), -15);
+            setBetaTargetActive(Math.abs(betaTarget) > 0.1);
         }
 
         setSIIndexOffset(sideslipIndicatorFilter.step(offset, deltaTime / 1000));
@@ -298,7 +303,7 @@ const SideslipIndicator = ({ isOnGround, roll }: SideslipIndicatorProps) => {
     return (
         <g id="RollTriangleGroup" transform={`translate(0 ${verticalOffset})`} className="NormalStroke Yellow CornerRound">
             <path d="m66.074 43.983 2.8604-4.2333 2.8604 4.2333z" />
-            <path id="SideSlipIndicator" transform={`translate(${SIIndexOffset} 0)`} d="m73.974 47.208-1.4983-2.2175h-7.0828l-1.4983 2.2175z" />
+            <path id="SideSlipIndicator" transform={`translate(${SIIndexOffset} 0)`} d="m73.974 47.208-1.4983-2.2175h-7.0828l-1.4983 2.2175z" className={`${BetaTargetActive ? 'Cyan' : 'Yellow'}`} />
         </g>
     );
 };

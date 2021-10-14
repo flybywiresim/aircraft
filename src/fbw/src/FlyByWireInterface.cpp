@@ -217,6 +217,7 @@ void FlyByWireInterface::setupLocalVariables() {
   idFlightDirectorBank = make_unique<LocalVariable>("A32NX_FLIGHT_DIRECTOR_BANK");
   idFlightDirectorPitch = make_unique<LocalVariable>("A32NX_FLIGHT_DIRECTOR_PITCH");
   idFlightDirectorYaw = make_unique<LocalVariable>("A32NX_FLIGHT_DIRECTOR_YAW");
+  idBetaTarget = make_unique<LocalVariable>("A32NX_FBW_BETA_TARGET");
 
   // register L variables for autoland warning
   idAutopilotAutolandWarning = make_unique<LocalVariable>("A32NX_AUTOPILOT_AUTOLAND_WARNING");
@@ -1148,8 +1149,11 @@ bool FlyByWireInterface::updateFlyByWire(double sampleTime) {
     // write client data if necessary
     if (!autopilotStateMachineEnabled) {
       ClientDataFlyByWire clientDataFlyByWire = {
+          flyByWireOutput.output.eta_trim_deg_should_write,      flyByWireOutput.output.zeta_trim_pos_should_write,
           flyByWireOutput.sim.data_computed.alpha_floor_command, flyByWireOutput.sim.data_computed.protection_ap_disc,
-          flyByWireOutput.sim.data_speeds_aoa.v_alpha_prot_kn, flyByWireOutput.sim.data_speeds_aoa.v_alpha_max_kn};
+          flyByWireOutput.sim.data_speeds_aoa.v_alpha_prot_kn,   flyByWireOutput.sim.data_speeds_aoa.v_alpha_max_kn,
+          flyByWireOutput.roll.data_computed.beta_target_deg,
+      };
       simConnectInterface.setClientDataFlyByWire(clientDataFlyByWire);
     }
 
@@ -1181,6 +1185,7 @@ bool FlyByWireInterface::updateFlyByWire(double sampleTime) {
     flyByWireOutput.sim.data_computed.protection_ap_disc = clientDataFlyByWire.protection_ap_disc;
     flyByWireOutput.sim.data_speeds_aoa.v_alpha_prot_kn = clientDataFlyByWire.v_alpha_prot_kn;
     flyByWireOutput.sim.data_speeds_aoa.v_alpha_max_kn = clientDataFlyByWire.v_alpha_max_kn;
+    flyByWireOutput.roll.data_computed.beta_target_deg = clientDataFlyByWire.beta_target_deg;
   }
 
   // set trim values
@@ -1230,6 +1235,9 @@ bool FlyByWireInterface::updateFlyByWire(double sampleTime) {
                                   idExternalOverride->get() == 1 ? simData.xi_pos : flyByWireOutput.output.xi_pos, sampleTime);
   idAileronPositionLeft->set(animationAileronHandler->getPositionLeft());
   idAileronPositionRight->set(animationAileronHandler->getPositionRight());
+
+  // update beta target
+  idBetaTarget->set(flyByWireOutput.roll.data_computed.beta_target_deg);
 
   // success ----------------------------------------------------------------------------------------------------------
   return true;
