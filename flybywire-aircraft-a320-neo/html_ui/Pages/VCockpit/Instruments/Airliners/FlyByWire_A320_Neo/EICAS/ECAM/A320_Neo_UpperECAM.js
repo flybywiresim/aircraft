@@ -1811,10 +1811,10 @@ var A320_Neo_UpperECAM;
             }
         }
         updateTakeoffConfigWarnings(_test) {
-            const slatsLeft = SimVar.GetSimVarValue("L:A32NX_LEFT_SLATS_ANGLE", "degrees");
-            const slatsRight = SimVar.GetSimVarValue("L:A32NX_RIGHT_SLATS_ANGLE", "degrees");
-            const flapsLeft = SimVar.GetSimVarValue("L:A32NX_LEFT_FLAPS_ANGLE", "degrees");
-            const flapsRight = SimVar.GetSimVarValue("L:A32NX_RIGHT_FLAPS_ANGLE", "degrees");
+            const slatsLeft = SimVar.GetSimVarValue("LEADING EDGE FLAPS LEFT ANGLE", "degrees");
+            const slatsRight = SimVar.GetSimVarValue("LEADING EDGE FLAPS RIGHT ANGLE", "degrees");
+            const flapsLeft = SimVar.GetSimVarValue("TRAILING EDGE FLAPS LEFT ANGLE", "degrees");
+            const flapsRight = SimVar.GetSimVarValue("TRAILING EDGE FLAPS RIGHT ANGLE", "degrees");
             const flapsHandle = SimVar.GetSimVarValue("L:A32NX_FLAPS_HANDLE_INDEX", "Enum");
             const flapsMcdu = SimVar.GetSimVarValue("L:A32NX_TO_CONFIG_FLAPS", "number");
             const flapsMcduEntered = SimVar.GetSimVarValue("L:A32NX_TO_CONFIG_FLAPS_ENTERED", "bool");
@@ -2673,9 +2673,9 @@ var A320_Neo_UpperECAM;
         }
         update(_deltaTime) {
             super.update(_deltaTime);
-            const slatsAngle = (SimVar.GetSimVarValue("L:A32NX_LEFT_SLATS_ANGLE", "degrees") + SimVar.GetSimVarValue("L:A32NX_LEFT_SLATS_ANGLE", "degrees")) * 0.5;
-            const flapsAngle = Math.max(0, (SimVar.GetSimVarValue("L:A32NX_LEFT_FLAPS_ANGLE", "degrees") + SimVar.GetSimVarValue("L:A32NX_LEFT_FLAPS_ANGLE", "degrees")) * 0.5);
-            const handleIndex = SimVar.GetSimVarValue("L:A32NX_FLAPS_CONF_INDEX", "Number");
+            const slatsAngle = (SimVar.GetSimVarValue("LEADING EDGE FLAPS LEFT ANGLE", "degrees") + SimVar.GetSimVarValue("LEADING EDGE FLAPS RIGHT ANGLE", "degrees")) * 0.5;
+            const flapsAngle = Math.max(0, (SimVar.GetSimVarValue("TRAILING EDGE FLAPS LEFT ANGLE", "degrees") + SimVar.GetSimVarValue("TRAILING EDGE FLAPS RIGHT ANGLE", "degrees")) * 0.5);
+            const handleIndex = SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "Number");
             let slatsTargetIndex = 0;
             let flapsTargetIndex = 0;
             switch (handleIndex) {
