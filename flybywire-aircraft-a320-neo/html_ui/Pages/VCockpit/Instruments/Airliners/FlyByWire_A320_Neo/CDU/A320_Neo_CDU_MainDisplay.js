@@ -849,12 +849,20 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         return this._inOut;
     }
 
+    /**
+     * should be refactored as `setScratchpadThroughKeyboardEntry` function
+     * @param v {string}
+     */
     set inOut(v) {
         if (v.length < 23) {
             this.setInOut(v);
         }
     }
 
+    /**
+     * should be renamed to `setScratchpadThroughSystem`
+     * @param content {string}
+     */
     setInOut(content) {
         this._inOut = content;
         this._inOutElement.textContent = this._inOut;
@@ -1087,7 +1095,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             this.lastUserInput = this.inOut;
         }
         this.isDisplayingErrorMessage = true;
-        this.inOut = message;
+        this.setInOut(message);
         this._inOutElement.className = color ? "amber" : "white";
     }
 
@@ -1127,7 +1135,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     this.isDisplayingTypeTwoMessage = true;
                     this.lastUserInput = this.inOut;
                 }
-                this.inOut = this.messageQueue[0][0];
+                this.setInOut(this.messageQueue[0][0]);
                 this._inOutElement.className = this.messageQueue[0][1] ? "amber" : "white";
             }
         }
