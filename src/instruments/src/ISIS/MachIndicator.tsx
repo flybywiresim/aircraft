@@ -11,7 +11,7 @@ export const MachIndicator: React.FC = () => {
         } else if (mach < 0.45 && visible) {
             setVisible(false);
         }
-    }, [mach]);
+    }, [mach, visible]);
 
     return (
         <>

@@ -19,7 +19,7 @@ export const Chrono = () => {
             setElapsedTime(Math.max((elapsedTime || 0) + absTime - prevTime, 0));
         }
         setPrevTime(absTime);
-    }, [absTime]);
+    }, [absTime, elapsedTime, prevTime, running]);
 
     useInteractionEvent('A32NX_CHRONO_TOGGLE', () => {
         if (dcEssIsPowered) {

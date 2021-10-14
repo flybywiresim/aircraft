@@ -99,22 +99,22 @@ const offsetFrequencyChannel = (spacing: ChannelSpacing, channel: number, offset
  * Hooks to outer and inner rotary encoder knobs.
  * Renders standby frequency RadioPanelDisplay sub-component.
  */
-export const StandbyFrequency = (props: Props) => {
+export const StandbyFrequency:React.FC<Props> = ({ side, value, setValue }) => {
     const spacing = usePersistentProperty('RMP_VHF_SPACING_25KHZ', '0')[0] === '0' ? 8.33 : 25;
     // Handle outer knob turned.
     const outerKnobUpdateCallback: UpdateValueCallback = useCallback((offset) => {
-        const frequency = Math.round(props.value / 1000);
+        const frequency = Math.round(value / 1000);
         const integer = Math.floor(frequency / 1000);
         const decimal = frequency % 1000;
         // @todo determine min/max depending on mode.
         const maxInteger = decimal > 975 ? 135 : 136;
         const newInteger = Utils.Clamp(integer + offset, 118, maxInteger);
-        props.setValue((newInteger * 1000 + decimal) * 1000);
-    }, [props.value]);
+        setValue((newInteger * 1000 + decimal) * 1000);
+    }, [value, setValue]);
 
     // Handle inner knob turned.
     const innerKnobUpdateCallback: UpdateValueCallback = useCallback((offset) => {
-        const frequency = Math.round(props.value / 1000);
+        const frequency = Math.round(value / 1000);
         if (Math.sign(offset) === 1 && frequency === 136975) {
             return;
         }
@@ -125,8 +125,8 @@ export const StandbyFrequency = (props: Props) => {
         // @todo determine min/max depending on mode.
         const maxDecimal = integer === 136 ? 975 : 1000;
         const newDecimal = Utils.Clamp(decimal, 0, maxDecimal);
-        props.setValue((integer * 1000 + newDecimal) * 1000);
-    }, [props.value]);
+        setValue((integer * 1000 + newDecimal) * 1000);
+    }, [value, setValue]);
 
     // Used to change integer value of freq.
     const outerKnob = useRef(new RateMultiplierKnob());
@@ -137,10 +137,10 @@ export const StandbyFrequency = (props: Props) => {
     innerKnob.current.updateValue = innerKnobUpdateCallback;
 
     // Hook rotation events from simulator to custom knob class methods.
-    useInteractionEvent(`A32NX_RMP_${props.side}_OUTER_KNOB_TURNED_CLOCKWISE`, () => outerKnob.current.increase());
-    useInteractionEvent(`A32NX_RMP_${props.side}_OUTER_KNOB_TURNED_ANTICLOCKWISE`, () => outerKnob.current.decrease());
-    useInteractionEvent(`A32NX_RMP_${props.side}_INNER_KNOB_TURNED_CLOCKWISE`, () => innerKnob.current.increase());
-    useInteractionEvent(`A32NX_RMP_${props.side}_INNER_KNOB_TURNED_ANTICLOCKWISE`, () => innerKnob.current.decrease());
+    useInteractionEvent(`A32NX_RMP_${side}_OUTER_KNOB_TURNED_CLOCKWISE`, () => outerKnob.current.increase());
+    useInteractionEvent(`A32NX_RMP_${side}_OUTER_KNOB_TURNED_ANTICLOCKWISE`, () => outerKnob.current.decrease());
+    useInteractionEvent(`A32NX_RMP_${side}_INNER_KNOB_TURNED_CLOCKWISE`, () => innerKnob.current.increase());
+    useInteractionEvent(`A32NX_RMP_${side}_INNER_KNOB_TURNED_ANTICLOCKWISE`, () => innerKnob.current.decrease());
 
-    return (<RadioPanelDisplay value={props.value} />);
+    return (<RadioPanelDisplay value={value} />);
 };

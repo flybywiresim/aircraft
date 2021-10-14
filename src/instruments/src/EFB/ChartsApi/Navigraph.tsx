@@ -129,7 +129,8 @@ export default class NavigraphClient {
                 });
             }
         }).catch(() => {
-            console.log('Unable to Authorize Device. #NV101');
+            // eslint-disable-next-line no-console
+            console.warn('Unable to Authorize Device. #NV101');
         });
     }
 
@@ -159,6 +160,7 @@ export default class NavigraphClient {
                         if (error === 'slow_down') {
                             this.auth.interval += 5;
                         } else if (error === 'authorization_pending') {
+                            // eslint-disable-next-line no-console
                             console.log('Token Authorization Pending');
                         } else if (error === 'access_denied') {
                             this.auth.disabled = true;
@@ -168,7 +170,8 @@ export default class NavigraphClient {
                     });
                 }
             }).catch(() => {
-                console.log('Token Authentication Failed. #NV102');
+                // eslint-disable-next-line no-console
+                console.warn('Token Authentication Failed. #NV102');
             });
         }
     }
@@ -281,7 +284,8 @@ export default class NavigraphClient {
     public async userInfo() {
         if (this.hasToken()) {
             const userInfoResp = await fetch('https://identity.api.navigraph.com/connect/userinfo', { headers: { Authorization: `Bearer ${this.accessToken}` } }).catch(() => {
-                console.log('Unable to Fetch User Info. #NV103');
+                // eslint-disable-next-line no-console
+                console.warn('Unable to Fetch User Info. #NV103');
             });
 
             if (userInfoResp.ok) {
@@ -297,7 +301,8 @@ export default class NavigraphClient {
     public async subscriptionStatus() {
         if (this.hasToken()) {
             const subscriptionResp = await fetch('https://subscriptions.api.navigraph.com/2/subscriptions/valid', { headers: { Authorization: `Bearer ${this.accessToken}` } }).catch(() => {
-                console.log('Unable to Fetch Subscription Status. #NV104');
+                // eslint-disable-next-line no-console
+                console.warn('Unable to Fetch Subscription Status. #NV104');
             });
 
             if (subscriptionResp.ok) {

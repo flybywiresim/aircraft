@@ -5,12 +5,12 @@ describe('FailuresConsumer', () => {
     describe('registers an identifier', () => {
         test('with callback', () => {
             const c = consumer();
-            c.register(1, (_) => {});
+            expect(() => c.register(1, (_) => {})).not.toThrow();
         });
 
         test('without callback', () => {
             const c = consumer();
-            c.register(1);
+            expect(() => c.register(1)).not.toThrow();
         });
 
         test('unless registered multiple times', () => {

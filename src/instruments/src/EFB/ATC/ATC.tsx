@@ -11,6 +11,21 @@ export declare class ATCInfoExtended extends apiClient.ATCInfo {
     distance: number;
 }
 
+// FIXME use shared geo functions
+const deg2rad = (deg) => deg * (Math.PI / 180);
+
+const getDistanceFromLatLonInNm = (lat1, lon1, lat2, lon2) : number => {
+    const R = 6371; // Radius of the earth in km
+    const dLat = deg2rad(lat2 - lat1); // deg2rad below
+    const dLon = deg2rad(lon2 - lon1);
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+      + Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2))
+      * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const d = R * c * 0.5399568; // Distance in nm
+    return d;
+};
+
 export const ATC = () => {
     const [controllers, setControllers] = useState<ATCInfoExtended[]>();
     const [frequency, setFrequency] = useSplitSimVar('COM ACTIVE FREQUENCY:1', 'Hz', 'K:COM_RADIO_SET_HZ', 'Hz', 500);
@@ -37,26 +52,6 @@ export const ATC = () => {
         });
     }, [currentLatitude, currentLongitude, atisSource]);
 
-    const setAtc = () => {
-        const converted = fromFrequency(frequency);
-        setCurrentFrequency(converted);
-        setCurrentAtc(controllers?.find((c) => c.frequency === converted));
-    };
-
-    const getDistanceFromLatLonInNm = (lat1, lon1, lat2, lon2) : number => {
-        const R = 6371; // Radius of the earth in km
-        const dLat = deg2rad(lat2 - lat1); // deg2rad below
-        const dLon = deg2rad(lon2 - lon1);
-        const a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
-          + Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2))
-          * Math.sin(dLon / 2) * Math.sin(dLon / 2);
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        const d = R * c * 0.5399568; // Distance in nm
-        return d;
-    };
-
-    const deg2rad = (deg) => deg * (Math.PI / 180);
-
     const toFrequency = (frequency:string) : number => {
         if (frequency) {
             return parseFloat(`${frequency.replace('.', '').padEnd(9, '0')}.000`);
@@ -77,9 +72,13 @@ export const ATC = () => {
         loadAtc();
     }, [loadAtc]);
 
+    /* eslint-disable react-hooks/exhaustive-deps */
     useEffect(() => {
-        setAtc();
+        const converted = fromFrequency(frequency);
+        setCurrentFrequency(converted);
+        setCurrentAtc(controllers?.find((c) => c.frequency === converted));
     }, [frequency]);
+    /* eslint-enable react-hooks/exhaustive-deps */
 
     useEffect(() => {
         if (frequency) {

@@ -347,7 +347,7 @@ export const useGlobalVar = (
             // the SimVar provider, that we again access through the context.
             contextValue.unregister(name, unit, maxStaleness, 1);
         };
-    }, [name, unit, maxStaleness]);
+    }, [contextValue, name, unit, maxStaleness]);
 
     return contextValue.retrieve(name, unit, false, 1);
 };
@@ -396,7 +396,7 @@ export const useGameVar = (
             // the SimVar provider, that we again access through the context.
             contextValue.unregister(name, unit, maxStaleness, 2);
         };
-    }, [name, unit, maxStaleness]);
+    }, [contextValue, name, unit, maxStaleness]);
 
     return contextValue.retrieve(name, unit, false, 2);
 };
@@ -519,7 +519,7 @@ export const useSimVarValue = (name: string, unit: UnitName, maxStaleness: numbe
             // the SimVar provider, that we again access through the context.
             contextValue.unregister(name, unit, maxStaleness, 0);
         };
-    }, [name, unit, maxStaleness]);
+    }, [contextValue, name, unit, maxStaleness]);
 
     return contextValue.retrieve(name, unit);
 };

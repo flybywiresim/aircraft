@@ -264,7 +264,7 @@ const NavigraphChartSelector = (props: NavigraphChartSelectorProps) => {
         } else {
             setRunwaySet(new Set());
         }
-    }, [props.selectedTab.charts]);
+    }, [props.selectedTab.bundleRunways, props.selectedTab.charts]);
 
     useEffect(() => {
         if (props.selectedTab.bundleRunways) {
@@ -284,7 +284,7 @@ const NavigraphChartSelector = (props: NavigraphChartSelectorProps) => {
         } else {
             setOrganizedCharts([]);
         }
-    }, [runwaySet]);
+    }, [props.selectedTab.bundleRunways, props.selectedTab.charts, runwaySet]);
 
     return (
         <>
@@ -369,14 +369,15 @@ const ChartsUi = (props: ChartsUiProps) => {
         if (props.enableNavigraph) {
             navigraph.getAirportInfo(props.icao).then((r) => setAirportInfo(r));
         }
-    }, [props.icao]);
+    }, [navigraph, props.enableNavigraph, props.icao]);
 
+    const { icao, setCharts } = props;
     useEffect(() => {
-        if (props.icao.length <= 3) {
+        if (icao.length <= 3) {
             setAirportInfo({ name: '' });
-            props.setCharts(emptyNavigraphCharts);
+            setCharts(emptyNavigraphCharts);
         }
-    }, [props.icao]);
+    }, [icao, setCharts]);
 
     useEffect(() => {
         if (props.enableNavigraph) {
@@ -388,13 +389,13 @@ const ChartsUi = (props: ChartsUiProps) => {
                 { name: 'REF', charts: props.charts.reference },
             ]);
         }
-    }, [props.charts]);
+    }, [props.charts, props.enableNavigraph]);
 
     useEffect(() => {
         if (props.enableNavigraph) {
             setSelectedTab(organizedCharts[0]);
         }
-    }, [organizedCharts]);
+    }, [organizedCharts, props.enableNavigraph]);
 
     useEffect(() => {
         if (props.enableNavigraph) {
@@ -407,7 +408,7 @@ const ChartsUi = (props: ChartsUiProps) => {
 
             chartsGet();
         }
-    }, [selectedChartName]);
+    }, [navigraph, props.enableNavigraph, props.icao, selectedChartName]);
 
     const handleIcaoChange = (value: string) => {
         const newValue = value.toUpperCase();

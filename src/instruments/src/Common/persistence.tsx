@@ -15,7 +15,7 @@ export function usePersistentProperty(propertyName: string, defaultValue?: strin
         return () => {
             unsubscribe();
         };
-    }, []);
+    }, [propertyName]);
 
     const propertySetter = (value: string) => {
         NXDataStore.set(propertyName, value);

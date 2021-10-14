@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import classNames from 'classnames';
 import { isNumber, toNumber } from 'lodash';
 
@@ -42,23 +42,26 @@ const Input = ({
     const [value, setValue] = useState(propsValue);
     const previousValue = usePrevious(value);
 
-    const onChange = (value) => {
-        if (type === 'number' && value !== '') {
-            value = toNumber(value);
-        }
+    const onChange = useCallback(
+        (value) => {
+            if (type === 'number' && value !== '') {
+                value = toNumber(value);
+            }
 
-        if (onChangeProps) {
-            onChangeProps(value);
-        }
+            if (onChangeProps) {
+                onChangeProps(value);
+            }
 
-        setValue(value);
-    };
+            setValue(value);
+        },
+        [onChangeProps, type],
+    );
 
     useEffect(() => {
         if (previousValue !== propsValue) {
             onChange(propsValue);
         }
-    }, [propsValue]);
+    }, [propsValue, onChange, previousValue]);
 
     const emptyValue = value === '' || (isNumber(value) && Number.isNaN(value));
 

@@ -1,6 +1,6 @@
 import './Hyd.scss';
 import ReactDOM from 'react-dom';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { SimVarProvider, useSimVar } from '@instruments/common/simVars';
 import { getRenderTarget, setIsEcamPage } from '@instruments/common/defaults';
 import { ptuArray, levels } from './common';
@@ -39,7 +39,7 @@ export const HydPage = () => {
     useEffect(() => {
         setEngine1Running(Eng1N2 > 15 && greenFireValve);
         setEngine2Running(Eng2N2 > 15 && yellowFireValve);
-    }, [Eng1N2, Eng2N2]);
+    }, [Eng1N2, Eng2N2, greenFireValve, yellowFireValve]);
 
     // PTU variables
     const [ptuAvailable] = useSimVar('L:A32NX_HYD_PTU_VALVE_OPENED', 'boolean', 500);
@@ -60,34 +60,34 @@ export const HydPage = () => {
     const [elecTriangleFill, setElecTriangleFill] = useState(0);
     const [elecTriangleColour, setElecTriangleColour] = useState('white');
 
-    function setPressures(clearState = false) {
-        if (clearState) {
-            setPressureChart({ high: '', low: '', highValue: -1, lowValue: -1, ptuScenario: 'normal' });
-        } else if (yellowPressure > greenPressure) {
-            setPressureChart({
-                high: 'YELLOW',
-                low: 'GREEN',
-                highValue: yellowPressure,
-                lowValue: greenPressure,
-                ptuScenario: 'right-to-left',
-            });
-        } else {
-            setPressureChart({
-                high: 'GREEN',
-                low: 'YELLOW',
-                highValue: greenPressure,
-                lowValue: yellowPressure,
-                ptuScenario: 'left-to-right',
-            });
-        }
-    }
-
     useEffect(() => {
         setPtuScenario(pressureChart.ptuScenario);
     }, [pressureChart]);
 
     // PTU logic
     useEffect(() => {
+        const setPressures = (clearState = false) => {
+            if (clearState) {
+                setPressureChart({ high: '', low: '', highValue: -1, lowValue: -1, ptuScenario: 'normal' });
+            } else if (yellowPressure > greenPressure) {
+                setPressureChart({
+                    high: 'YELLOW',
+                    low: 'GREEN',
+                    highValue: yellowPressure,
+                    lowValue: greenPressure,
+                    ptuScenario: 'right-to-left',
+                });
+            } else {
+                setPressureChart({
+                    high: 'GREEN',
+                    low: 'YELLOW',
+                    highValue: greenPressure,
+                    lowValue: yellowPressure,
+                    ptuScenario: 'left-to-right',
+                });
+            }
+        };
+
         if (yellowElectricPumpStatus) {
             setElecTriangleFill(1);
             setElecTriangleColour(yellowPressure <= 1450 ? 'Amber' : 'Green');
@@ -120,7 +120,7 @@ export const HydPage = () => {
         } else {
             setPtuScenario(ptuAvailable ? 'normal' : 'PTU-off');
         }
-    }, [greenPressure, yellowPressure, yellowElectricPumpStatus, ptuAvailable]);
+    }, [greenPressure, yellowPressure, yellowElectricPumpStatus, ptuActive, ptuAvailable, pressureChart.low, pressureChart.lowValue]);
 
     const y = 45;
 
@@ -255,9 +255,10 @@ const HydSys = ({ title, pressure, hydLevel, x, y, fireValve, pumpPBStatus, yell
 
     const pumpDetectLowPressure = checkPumpLowPressure(title);
 
-    const hydLevelBoolean = (value: boolean) => {
-        setHydLevelLow(value);
-    };
+    const hydLevelBoolean = useCallback(
+        (value: boolean) => setHydLevelLow(value),
+        [],
+    );
 
     return (
         <>
@@ -373,8 +374,7 @@ type HydReservoirProps = {
     x: number,
     y: number,
     fluidLevel: number,
-    setHydLevel: React.RefCallback<
-    Boolean>
+    setHydLevel: React.RefCallback<Boolean>
 }
 
 const HydReservoir = ({ system, x, y, fluidLevel, setHydLevel } : HydReservoirProps) => {
@@ -394,7 +394,7 @@ const HydReservoir = ({ system, x, y, fluidLevel, setHydLevel } : HydReservoirPr
         } else {
             setHydLevel(false);
         }
-    }, [fluidLevelInLitres]);
+    }, [fluidLevelInLitres, values, setHydLevel]);
 
     return (
         <>

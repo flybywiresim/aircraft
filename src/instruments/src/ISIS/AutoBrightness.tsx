@@ -78,7 +78,7 @@ export const AutoBrightness: React.FC<AutoBrightnessProps> = ({ bugsActive, chil
             const newTargetBrightness = targetBrightness - (nightBrightness - dayBrightness) * (newIsDaytime ? 1 : -1);
             setTargetBrightness(Math.max(minBrightness, Math.min(maxBrightness, newTargetBrightness)));
         }
-    }, [timeOfDay]);
+    }, [targetBrightness, timeOfDay]);
 
     useInterval(
         () => setCurrentBrightness(targetBrightness > currentBrightness

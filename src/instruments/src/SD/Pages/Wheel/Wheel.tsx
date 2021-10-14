@@ -275,7 +275,7 @@ const Gear = ({ x, y, location }: GearProps) => {
             inTransit: !isDown && !isUp && ((landingGearPosition >= 0.1 && landingGearPosition <= 0.9) || status.inTransit),
             positionIndicatorVisible: !isUp && (landingGearPosition >= 0.1 || status.positionIndicatorVisible),
         });
-    }, [landingGearPosition]);
+    }, [landingGearPosition, status.inTransit, status.positionIndicatorVisible]);
 
     return (
         <g transform="scale(1.1)">

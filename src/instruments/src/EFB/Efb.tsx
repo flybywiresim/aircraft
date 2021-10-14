@@ -141,7 +141,7 @@ const Efb = () => {
         } else {
             setBrightness(brightnessSetting);
         }
-    }, [currentLocalTime, usingAutobrightness]);
+    }, [currentLocalTime, usingAutobrightness, brightnessSetting, setBrightness]);
 
     const [performanceState, performanceDispatch] = useReducer(PerformanceReducer, performanceInitialState);
     const [simbriefData, setSimbriefData] = useState<SimbriefData>(emptySimbriefData);
@@ -181,7 +181,7 @@ const Efb = () => {
             history.push('/dashboard');
             break;
         }
-    }, [currentPageIndex]);
+    }, [currentPageIndex]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
     const fetchSimbriefData = async () => {
         if (!simbriefUserId) {

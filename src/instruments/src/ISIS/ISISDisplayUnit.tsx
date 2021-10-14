@@ -53,7 +53,7 @@ export const ISISDisplayUnit: React.FC<ISISDisplayUnitProps> = ({ indicatedAirsp
             setState(DisplayUnitState.Off);
             setTimer(null);
         }
-    });
+    }, [state, hasElectricity]);
 
     if (state === DisplayUnitState.Selftest) {
         return (

@@ -24,7 +24,8 @@ export default class ChartFoxClient {
         if (ChartFoxClient.sufficientEnv()) {
             if (icao.length === 4) {
                 const chartJsonResp = await fetch(`https://chartfox.org/api/charts/grouped/${icao}?token=${ChartFoxClient.token}`, { method: 'POST' }).catch(() => {
-                    console.log('Token Authentication Failed. #CF101');
+                    // eslint-disable-next-line no-console
+                    console.warn('Token Authentication Failed. #CF101');
                 });
 
                 if (chartJsonResp.ok) {

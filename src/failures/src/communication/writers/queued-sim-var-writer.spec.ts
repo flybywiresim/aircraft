@@ -51,7 +51,7 @@ describe('QueuedSimVarWriter', () => {
         // Observes the value was consumed.
         w.update();
 
-        await promise;
+        await expect(promise).resolves.not.toThrow();
     });
 });
 

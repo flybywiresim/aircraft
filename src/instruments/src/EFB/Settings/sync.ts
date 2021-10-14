@@ -5,7 +5,8 @@ type SimVar = [name: string, type: string, defaultValue: string];
 
 function syncSetting(simVar: SimVar, propertyName: string) {
     NXDataStore.getAndSubscribe(propertyName, (prop, value) => {
-        setSimVar(simVar[0], parseInt(value), simVar[1]).catch((e) => console.log(propertyName, e));
+        // eslint-disable-next-line no-console
+        setSimVar(simVar[0], parseInt(value), simVar[1]).catch((e) => console.error(propertyName, e));
     }, simVar[2]);
 }
 

@@ -115,7 +115,7 @@ const PressureGauge = ({ x, y, engineNumber }: ComponentPositionProps) => {
         if (psiNeedleRed && displayedEngineOilPressure >= OIL_PSI_VLOW_LIMIT + 0.5) {
             setPsiNeedleRed(false);
         }
-    }, [engineOilPressure]);
+    }, [engineOilPressure, displayedEngineOilPressure, n2Percent, pressureAboveHigh, pressureBelowLow, psiNeedleRed]);
 
     return (
         <SvgGroup x={0} y={0}>
@@ -162,7 +162,7 @@ const QuantityGauge = ({ x, y, engineNumber }: ComponentPositionProps) => {
         }
 
         if (quantityAtOrBelowLow) setShouldQuantityPulse(true);
-    }, [engineOilQuantity]);
+    }, [engineOilQuantity, displayedEngineOilQuantity, quantityAtOrBelowLow]);
 
     return (
         <SvgGroup x={0} y={0}>
@@ -233,7 +233,7 @@ const ValveGroup = ({ x, y, engineNumber }: ComponentPositionProps) => {
         }
 
         return () => clearTimeout();
-    }, [isEngineStarting, engSelectorPosition]);
+    }, [isEngineStarting, engSelectorPosition, n2Percent]);
 
     useEffect(() => {
         if (n2Percent >= 50) {
@@ -301,7 +301,7 @@ const EngineColumn = ({ x, y, engineNumber }: ComponentPositionProps) => {
         }
 
         return () => clearTimeout();
-    }, [engineOilTemperature]);
+    }, [engineOilTemperature, displayedEngineOilTemperature, tempBeenAboveAdvisory]);
 
     useEffect(() => {
         if (tempBeenAboveAdvisory) {

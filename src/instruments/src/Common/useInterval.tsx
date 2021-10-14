@@ -35,6 +35,6 @@ function useInterval(callback: () => void, delay: number | null, options?: UseIn
             const id = setInterval(tick, delay);
             return () => clearInterval(id);
         }
-    }, deps);
+    }, deps); /* eslint-disable-line react-hooks/exhaustive-deps */
 }
 export default useInterval;

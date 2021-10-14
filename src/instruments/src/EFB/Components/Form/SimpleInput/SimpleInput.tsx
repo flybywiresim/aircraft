@@ -20,6 +20,37 @@ type SimpleInputProps = {
     disabled?: boolean,
 };
 
+const pad = (value: string, padding?: number): string => {
+    if (padding === undefined) return value;
+    const split = value.split('.');
+    while (split[0].length < padding) {
+        split[0] = `0${split[0]}`;
+    }
+    return split.join('.');
+};
+
+const getConstrainedValue = (value: string, min?: number, max?: number, decimalPrecision?: number, padding?: number): string => {
+    let constrainedValue = value;
+    let numericValue = parseFloat(value);
+
+    if (!Number.isNaN(numericValue)) {
+        if (min !== undefined && numericValue < min) {
+            numericValue = min;
+        } else if (max !== undefined && numericValue > max) {
+            numericValue = max;
+        }
+
+        if (decimalPrecision !== undefined) {
+            const fixed = numericValue.toFixed(decimalPrecision);
+            constrainedValue = parseFloat(fixed).toString(); // Have to re-parse to remove trailing 0s
+        } else {
+            constrainedValue = numericValue.toString();
+        }
+        constrainedValue = pad(constrainedValue, padding);
+    }
+    return constrainedValue;
+};
+
 const SimpleInput = (props: SimpleInputProps) => {
     const [displayValue, setDisplayValue] = useState<string>(props.value?.toString() ?? '');
     const [focused, setFocused] = useState(false);
@@ -30,8 +61,8 @@ const SimpleInput = (props: SimpleInputProps) => {
             return;
         }
         if (focused) return;
-        setDisplayValue(getConstrainedValue(props.value));
-    }, [props.value]);
+        setDisplayValue(getConstrainedValue(props.value, props.min, props.max, props.decimalPrecision, props.padding));
+    }, [props.value, props.min, props.max, props.decimalPrecision, props.padding, focused]);
 
     const onChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
         if (!props.disabled) {
@@ -55,7 +86,7 @@ const SimpleInput = (props: SimpleInputProps) => {
 
     const onFocusOut = (event: React.FocusEvent<HTMLInputElement>): void => {
         const { value } = event.currentTarget;
-        const constrainedValue = getConstrainedValue(value);
+        const constrainedValue = getConstrainedValue(value, props.min, props.max, props.decimalPrecision, props.padding);
 
         setDisplayValue(constrainedValue);
         setFocused(false);
@@ -63,37 +94,6 @@ const SimpleInput = (props: SimpleInputProps) => {
         if (!props.disabled) {
             props.onBlur?.(event.target.value);
         }
-    };
-
-    const getConstrainedValue = (value: string): string => {
-        let constrainedValue = value;
-        let numericValue = parseFloat(value);
-
-        if (!Number.isNaN(numericValue)) {
-            if (props.min !== undefined && numericValue < props.min) {
-                numericValue = props.min;
-            } else if (props.max !== undefined && numericValue > props.max) {
-                numericValue = props.max;
-            }
-
-            if (props.decimalPrecision !== undefined) {
-                const fixed = numericValue.toFixed(props.decimalPrecision);
-                constrainedValue = parseFloat(fixed).toString(); // Have to re-parse to remove trailing 0s
-            } else {
-                constrainedValue = numericValue.toString();
-            }
-            constrainedValue = pad(constrainedValue);
-        }
-        return constrainedValue;
-    };
-
-    const pad = (value: string): string => {
-        if (props.padding === undefined) return value;
-        const split = value.split('.');
-        while (split[0].length < props.padding) {
-            split[0] = `0${split[0]}`;
-        }
-        return split.join('.');
     };
 
     useEffect(() => {
