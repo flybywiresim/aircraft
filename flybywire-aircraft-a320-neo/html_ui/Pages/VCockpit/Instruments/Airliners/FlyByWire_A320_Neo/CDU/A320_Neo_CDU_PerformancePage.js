@@ -174,7 +174,6 @@ class CDUPerformancePage {
         let transAltCell = "";
         if (hasOrigin) {
             transAltCell = "[\xa0".padEnd(4, "\xa0") + "]";
-            console.log(transAltCell);
             if (isFinite(mcdu.transitionAltitude)) {
                 transAltCell = mcdu.transitionAltitude.toFixed(0).padEnd(5, "\xa0");
                 if (!mcdu.transitionAltitudeIsPilotEntered) {
