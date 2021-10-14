@@ -77,7 +77,6 @@ impl CoreHydraulicForce {
     const DEFAULT_P_GAIN: f64 = 0.05;
     const DEFAULT_FORCE_GAIN: f64 = 200000.;
 
-    #[allow(clippy::too_many_arguments)]
     fn new(
         init_position: Ratio,
         active_hydraulic_damping_constant: f64,
@@ -308,7 +307,6 @@ pub struct LinearActuator {
     core_hydraulics: CoreHydraulicForce,
 }
 impl LinearActuator {
-    #[allow(clippy::too_many_arguments)]
     pub fn new(
         bounded_linear_length: &impl BoundedLinearLength,
         number_of_actuators: u8,
@@ -598,7 +596,6 @@ impl LinearActuatedRigidBodyOnHingeAxis {
     // Rebound energy when hiting min or max position. 0.3 means the body rebounds at 30% of the speed it hit the min/max position
     const DEFAULT_MAX_MIN_POSITION_REBOUND_FACTOR: f64 = 0.3;
 
-    #[allow(clippy::too_many_arguments)]
     pub fn new(
         mass: Mass,
         size: Vector3<f64>,

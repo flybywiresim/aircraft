@@ -320,7 +320,6 @@ impl A320Hydraulic {
         }
     }
 
-    #[allow(clippy::too_many_arguments)]
     pub(super) fn update<T: Engine, U: EngineFirePushButtons>(
         &mut self,
         context: &UpdateContext,
@@ -427,7 +426,6 @@ impl A320Hydraulic {
             .update_physics(&context.delta(), context.indicated_airspeed());
     }
 
-    #[allow(clippy::too_many_arguments)]
     fn update_with_sim_rate(
         &mut self,
         context: &UpdateContext,
@@ -505,7 +503,6 @@ impl A320Hydraulic {
 
     fn update_blue_actuators_volume(&mut self) {}
 
-    #[allow(clippy::too_many_arguments)]
     // All the core hydraulics updates that needs to be done at the slowest fixed step rate
     fn update_core_hydraulics<T: Engine, U: EngineFirePushButtons>(
         &mut self,
@@ -870,7 +867,6 @@ impl A320BlueElectricPumpController {
         }
     }
 
-    #[allow(clippy::too_many_arguments)]
     fn update(
         &mut self,
         overhead_panel: &A320HydraulicOverheadPanel,
@@ -1951,7 +1947,6 @@ impl A320AutobrakeController {
         self.right_brake_pedal_input = pedal_input_right;
     }
 
-    #[allow(clippy::too_many_arguments)]
     fn update(
         &mut self,
         context: &UpdateContext,
