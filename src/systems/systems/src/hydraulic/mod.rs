@@ -513,7 +513,7 @@ impl HydraulicCircuit {
     }
 
     fn update_final_delta_vol_and_pressure(&mut self, context: &UpdateContext) {
-        for (pump_idx, section) in self.pump_sections.iter_mut().enumerate() {
+        for section in &mut self.pump_sections {
             section.update_final_delta_vol_and_pressure(&context, &self.fluid);
         }
 
