@@ -796,7 +796,7 @@ impl Section {
         self.total_actuator_consumed_volume = Volume::new::<gallon>(0.);
     }
 
-    pub fn update_maximum_pumping_capacity(&mut self, pump: &mut dyn PressureSource) {
+    pub fn update_maximum_pumping_capacity(&mut self, pump: &mut impl PressureSource) {
         if self.fire_valve_is_opened() {
             self.max_pumpable_volume = pump.delta_vol_max();
         } else {
