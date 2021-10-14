@@ -11,32 +11,43 @@ use std::{
     time::{Duration, Instant},
 };
 use systems::failures::FailureType;
-use systems::simulation::Simulation;
+use systems::simulation::{Simulation, VariableIdentifier, VariableRegistry};
 use systems_wasm::{
     electrical::{MsfsAuxiliaryPowerUnit, MsfsElectricalBuses},
     f64_to_sim_connect_32k_pos,
     failures::Failures,
-    sim_connect_32k_pos_to_f64, MsfsAircraftVariableReader, MsfsNamedVariableReaderWriter,
-    MsfsSimulationHandler, SimulatorAspect,
+    sim_connect_32k_pos_to_f64, MsfsSimulationHandler, MsfsVariableRegistry, SimulatorAspect,
 };
 
 #[msfs::gauge(name=systems)]
 async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn std::error::Error>> {
     let mut sim_connect = gauge.open_simconnect("systems")?;
 
-    let mut simulation = Simulation::new(|electricity| A320::new(electricity));
+    let mut variable_registry = MsfsVariableRegistry::new("A32NX_".to_owned());
+    add_aircraft_variables(&mut variable_registry)?;
+
+    let mut simulation = Simulation::new(A320::new, &mut variable_registry);
     let mut msfs_simulation_handler = MsfsSimulationHandler::new(
         vec![
-            Box::new(create_electrical_buses()),
+            Box::new(create_electrical_buses(&mut variable_registry)),
             Box::new(MsfsAuxiliaryPowerUnit::new(
-                "OVHD_APU_START_PB_IS_AVAILABLE",
+                &mut variable_registry,
+                "OVHD_APU_START_PB_IS_AVAILABLE".to_owned(),
                 8,
             )?),
-            Box::new(Brakes::new(&mut sim_connect.as_mut())?),
-            Box::new(Autobrakes::new(&mut sim_connect.as_mut())?),
-            Box::new(CargoDoors::new(&mut sim_connect.as_mut())?),
-            Box::new(create_aircraft_variable_reader()?),
-            Box::new(MsfsNamedVariableReaderWriter::new("A32NX_")),
+            Box::new(Brakes::new(
+                &mut variable_registry,
+                &mut sim_connect.as_mut(),
+            )?),
+            Box::new(Autobrakes::new(
+                &mut variable_registry,
+                &mut sim_connect.as_mut(),
+            )?),
+            Box::new(CargoDoors::new(
+                &mut variable_registry,
+                &mut sim_connect.as_mut(),
+            )?),
+            Box::new(variable_registry),
         ],
         create_failures(),
     );
@@ -48,102 +59,102 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn std::error::Error
     Ok(())
 }
 
-fn create_aircraft_variable_reader(
-) -> Result<MsfsAircraftVariableReader, Box<dyn std::error::Error>> {
-    let mut reader = MsfsAircraftVariableReader::new();
-    reader.add("AMBIENT TEMPERATURE", "celsius", 0)?;
-    reader.add("TOTAL AIR TEMPERATURE", "celsius", 0)?;
-    reader.add_with_additional_names(
+fn add_aircraft_variables(
+    registry: &mut MsfsVariableRegistry,
+) -> Result<(), Box<dyn std::error::Error>> {
+    registry.add_aircraft_variable("AMBIENT TEMPERATURE", "celsius", 0)?;
+    registry.add_aircraft_variable("TOTAL AIR TEMPERATURE", "celsius", 0)?;
+    registry.add_aircraft_variable_with_additional_names(
         "EXTERNAL POWER AVAILABLE",
         "Bool",
         1,
         &vec!["OVHD_ELEC_EXT_PWR_PB_IS_AVAILABLE"],
     )?;
-    reader.add("GEAR CENTER POSITION", "Percent", 0)?;
-    reader.add("GEAR ANIMATION POSITION", "Percent", 0)?;
-    reader.add("GEAR ANIMATION POSITION", "Percent", 1)?;
-    reader.add("GEAR ANIMATION POSITION", "Percent", 2)?;
-    reader.add("GEAR HANDLE POSITION", "Bool", 0)?;
-    reader.add("TURB ENG CORRECTED N1", "Percent", 1)?;
-    reader.add("TURB ENG CORRECTED N1", "Percent", 2)?;
-    reader.add("TURB ENG CORRECTED N2", "Percent", 1)?;
-    reader.add("TURB ENG CORRECTED N2", "Percent", 2)?;
-    reader.add("AIRSPEED INDICATED", "Knots", 0)?;
-    reader.add("INDICATED ALTITUDE", "Feet", 0)?;
-    reader.add("AIRSPEED MACH", "Mach", 0)?;
-    reader.add("AIRSPEED TRUE", "Knots", 0)?;
-    reader.add("VELOCITY WORLD Y", "feet per minute", 0)?;
-    reader.add("AMBIENT WIND DIRECTION", "Degrees", 0)?;
-    reader.add("AMBIENT WIND VELOCITY", "Knots", 0)?;
-    reader.add("GPS GROUND SPEED", "Knots", 0)?;
-    reader.add("GPS GROUND MAGNETIC TRACK", "Degrees", 0)?;
-    reader.add("PLANE PITCH DEGREES", "Degrees", 0)?;
-    reader.add("PLANE BANK DEGREES", "Degrees", 0)?;
-    reader.add("PLANE HEADING DEGREES MAGNETIC", "Degrees", 0)?;
-    reader.add("FUEL TANK LEFT MAIN QUANTITY", "Pounds", 0)?;
-    reader.add("UNLIMITED FUEL", "Bool", 0)?;
-    reader.add("INDICATED ALTITUDE", "Feet", 0)?;
-    reader.add("AMBIENT PRESSURE", "inHg", 0)?;
-    reader.add("SEA LEVEL PRESSURE", "Millibars", 0)?;
-    reader.add("SIM ON GROUND", "Bool", 0)?;
-    reader.add("GENERAL ENG STARTER ACTIVE", "Bool", 1)?;
-    reader.add("GENERAL ENG STARTER ACTIVE", "Bool", 2)?;
-    reader.add("PUSHBACK ANGLE", "Radian", 0)?;
-    reader.add("PUSHBACK STATE", "Enum", 0)?;
-    reader.add("ANTISKID BRAKES ACTIVE", "Bool", 0)?;
-    reader.add("ACCELERATION BODY Z", "feet per second squared", 0)?;
-    reader.add("ACCELERATION BODY X", "feet per second squared", 0)?;
-    reader.add("ACCELERATION BODY Y", "feet per second squared", 0)?;
+    registry.add_aircraft_variable("GEAR CENTER POSITION", "Percent", 0)?;
+    registry.add_aircraft_variable("GEAR ANIMATION POSITION", "Percent", 0)?;
+    registry.add_aircraft_variable("GEAR ANIMATION POSITION", "Percent", 1)?;
+    registry.add_aircraft_variable("GEAR ANIMATION POSITION", "Percent", 2)?;
+    registry.add_aircraft_variable("GEAR HANDLE POSITION", "Bool", 0)?;
+    registry.add_aircraft_variable("TURB ENG CORRECTED N1", "Percent", 1)?;
+    registry.add_aircraft_variable("TURB ENG CORRECTED N1", "Percent", 2)?;
+    registry.add_aircraft_variable("TURB ENG CORRECTED N2", "Percent", 1)?;
+    registry.add_aircraft_variable("TURB ENG CORRECTED N2", "Percent", 2)?;
+    registry.add_aircraft_variable("AIRSPEED INDICATED", "Knots", 0)?;
+    registry.add_aircraft_variable("INDICATED ALTITUDE", "Feet", 0)?;
+    registry.add_aircraft_variable("AIRSPEED MACH", "Mach", 0)?;
+    registry.add_aircraft_variable("AIRSPEED TRUE", "Knots", 0)?;
+    registry.add_aircraft_variable("VELOCITY WORLD Y", "feet per minute", 0)?;
+    registry.add_aircraft_variable("AMBIENT WIND DIRECTION", "Degrees", 0)?;
+    registry.add_aircraft_variable("AMBIENT WIND VELOCITY", "Knots", 0)?;
+    registry.add_aircraft_variable("GPS GROUND SPEED", "Knots", 0)?;
+    registry.add_aircraft_variable("GPS GROUND MAGNETIC TRACK", "Degrees", 0)?;
+    registry.add_aircraft_variable("PLANE PITCH DEGREES", "Degrees", 0)?;
+    registry.add_aircraft_variable("PLANE BANK DEGREES", "Degrees", 0)?;
+    registry.add_aircraft_variable("PLANE HEADING DEGREES MAGNETIC", "Degrees", 0)?;
+    registry.add_aircraft_variable("FUEL TANK LEFT MAIN QUANTITY", "Pounds", 0)?;
+    registry.add_aircraft_variable("UNLIMITED FUEL", "Bool", 0)?;
+    registry.add_aircraft_variable("INDICATED ALTITUDE", "Feet", 0)?;
+    registry.add_aircraft_variable("AMBIENT PRESSURE", "inHg", 0)?;
+    registry.add_aircraft_variable("SEA LEVEL PRESSURE", "Millibars", 0)?;
+    registry.add_aircraft_variable("SIM ON GROUND", "Bool", 0)?;
+    registry.add_aircraft_variable("GENERAL ENG STARTER ACTIVE", "Bool", 1)?;
+    registry.add_aircraft_variable("GENERAL ENG STARTER ACTIVE", "Bool", 2)?;
+    registry.add_aircraft_variable("PUSHBACK ANGLE", "Radian", 0)?;
+    registry.add_aircraft_variable("PUSHBACK STATE", "Enum", 0)?;
+    registry.add_aircraft_variable("ANTISKID BRAKES ACTIVE", "Bool", 0)?;
+    registry.add_aircraft_variable("ACCELERATION BODY Z", "feet per second squared", 0)?;
+    registry.add_aircraft_variable("ACCELERATION BODY X", "feet per second squared", 0)?;
+    registry.add_aircraft_variable("ACCELERATION BODY Y", "feet per second squared", 0)?;
 
-    reader.add_with_additional_names(
+    registry.add_aircraft_variable_with_additional_names(
         "APU GENERATOR SWITCH",
         "Bool",
         0,
         &vec!["OVHD_ELEC_APU_GEN_PB_IS_ON"],
     )?;
-    reader.add_with_additional_names(
+    registry.add_aircraft_variable_with_additional_names(
         "EXTERNAL POWER ON",
         "Bool",
         1,
         &vec!["OVHD_ELEC_EXT_PWR_PB_IS_ON"],
     )?;
-    reader.add_with_additional_names(
+    registry.add_aircraft_variable_with_additional_names(
         "GENERAL ENG MASTER ALTERNATOR",
         "Bool",
         1,
         &vec!["OVHD_ELEC_ENG_GEN_1_PB_IS_ON"],
-    );
-    reader.add_with_additional_names(
+    )?;
+    registry.add_aircraft_variable_with_additional_names(
         "GENERAL ENG MASTER ALTERNATOR",
         "Bool",
         2,
         &vec!["OVHD_ELEC_ENG_GEN_2_PB_IS_ON"],
-    );
-    reader.add("PLANE LATITUDE", "degree latitude", 0)?;
-    reader.add("PLANE LONGITUDE", "degree longitude", 0)?;
-    reader.add("TRAILING EDGE FLAPS LEFT PERCENT", "Percent", 0)?;
-    reader.add("TRAILING EDGE FLAPS RIGHT PERCENT", "Percent", 0)?;
+    )?;
+    registry.add_aircraft_variable("PLANE LATITUDE", "degree latitude", 0)?;
+    registry.add_aircraft_variable("PLANE LONGITUDE", "degree longitude", 0)?;
+    registry.add_aircraft_variable("TRAILING EDGE FLAPS LEFT PERCENT", "Percent", 0)?;
+    registry.add_aircraft_variable("TRAILING EDGE FLAPS RIGHT PERCENT", "Percent", 0)?;
 
-    Ok(reader)
+    Ok(())
 }
 
-fn create_electrical_buses() -> MsfsElectricalBuses {
+fn create_electrical_buses(registry: &mut impl VariableRegistry) -> MsfsElectricalBuses {
     let mut buses = MsfsElectricalBuses::new();
     // The numbers used here are those defined for buses in the systems.cfg [ELECTRICAL] section.
-    buses.add("AC_1", 1, 2);
-    buses.add("AC_2", 1, 3);
-    buses.add("AC_ESS", 1, 4);
-    buses.add("AC_ESS_SHED", 1, 5);
-    buses.add("AC_STAT_INV", 1, 6);
-    buses.add("AC_GND_FLT_SVC", 1, 14);
-    buses.add("DC_1", 1, 7);
-    buses.add("DC_2", 1, 8);
-    buses.add("DC_ESS", 1, 9);
-    buses.add("DC_ESS_SHED", 1, 10);
-    buses.add("DC_BAT", 1, 11);
-    buses.add("DC_HOT_1", 1, 12);
-    buses.add("DC_HOT_2", 1, 13);
-    buses.add("DC_GND_FLT_SVC", 1, 15);
+    buses.add(registry, "AC_1", 1, 2);
+    buses.add(registry, "AC_2", 1, 3);
+    buses.add(registry, "AC_ESS", 1, 4);
+    buses.add(registry, "AC_ESS_SHED", 1, 5);
+    buses.add(registry, "AC_STAT_INV", 1, 6);
+    buses.add(registry, "AC_GND_FLT_SVC", 1, 14);
+    buses.add(registry, "DC_1", 1, 7);
+    buses.add(registry, "DC_2", 1, 8);
+    buses.add(registry, "DC_ESS", 1, 9);
+    buses.add(registry, "DC_ESS_SHED", 1, 10);
+    buses.add(registry, "DC_BAT", 1, 11);
+    buses.add(registry, "DC_HOT_1", 1, 12);
+    buses.add(registry, "DC_HOT_2", 1, 13);
+    buses.add(registry, "DC_GND_FLT_SVC", 1, 15);
 
     buses
 }
@@ -162,6 +173,11 @@ fn create_failures() -> Failures {
 }
 
 struct Autobrakes {
+    autobrake_disarm_id: VariableIdentifier,
+    ovhd_autobrk_low_on_is_pressed_id: VariableIdentifier,
+    ovhd_autobrk_med_on_is_pressed_id: VariableIdentifier,
+    ovhd_autobrk_max_on_is_pressed_id: VariableIdentifier,
+
     id_mode_max: sys::DWORD,
     id_mode_med: sys::DWORD,
     id_mode_low: sys::DWORD,
@@ -183,8 +199,19 @@ impl Autobrakes {
     // but keyboard events wrongly goes to false then back to true for a short period of time due to poor key event handling
     const DEFAULT_REARMING_DURATION: Duration = Duration::from_millis(1500);
 
-    fn new(sim_connect: &mut Pin<&mut SimConnect>) -> Result<Self, Box<dyn std::error::Error>> {
+    fn new(
+        registry: &mut impl VariableRegistry,
+        sim_connect: &mut Pin<&mut SimConnect>,
+    ) -> Result<Self, Box<dyn std::error::Error>> {
         Ok(Self {
+            autobrake_disarm_id: registry.get("AUTOBRAKE_DISARM".to_owned()),
+            ovhd_autobrk_low_on_is_pressed_id: registry
+                .get("OVHD_AUTOBRK_LOW_ON_IS_PRESSED".to_owned()),
+            ovhd_autobrk_med_on_is_pressed_id: registry
+                .get("OVHD_AUTOBRK_MED_ON_IS_PRESSED".to_owned()),
+            ovhd_autobrk_max_on_is_pressed_id: registry
+                .get("OVHD_AUTOBRK_MAX_ON_IS_PRESSED".to_owned()),
+
             // SimConnect inputs masking
             id_mode_max: sim_connect.map_client_event_to_sim_event("AUTOBRAKE_HI_SET", false)?,
             id_mode_med: sim_connect.map_client_event_to_sim_event("AUTOBRAKE_MED_SET", false)?,
@@ -255,13 +282,17 @@ impl Autobrakes {
     }
 }
 impl SimulatorAspect for Autobrakes {
-    fn read(&mut self, name: &str) -> Option<f64> {
-        match name {
-            "AUTOBRAKE_DISARM" => Some(self.disarm_requested as u8 as f64),
-            "OVHD_AUTOBRK_LOW_ON_IS_PRESSED" => Some(self.low_mode_requested as u8 as f64),
-            "OVHD_AUTOBRK_MED_ON_IS_PRESSED" => Some(self.med_mode_requested as u8 as f64),
-            "OVHD_AUTOBRK_MAX_ON_IS_PRESSED" => Some(self.max_mode_requested as u8 as f64),
-            _ => None,
+    fn read(&mut self, identifier: &VariableIdentifier) -> Option<f64> {
+        if identifier == &self.autobrake_disarm_id {
+            Some(self.disarm_requested as u8 as f64)
+        } else if identifier == &self.ovhd_autobrk_low_on_is_pressed_id {
+            Some(self.low_mode_requested as u8 as f64)
+        } else if identifier == &self.ovhd_autobrk_med_on_is_pressed_id {
+            Some(self.med_mode_requested as u8 as f64)
+        } else if identifier == &self.ovhd_autobrk_max_on_is_pressed_id {
+            Some(self.max_mode_requested as u8 as f64)
+        } else {
+            None
         }
     }
 
@@ -303,6 +334,12 @@ impl SimulatorAspect for Autobrakes {
 }
 
 struct Brakes {
+    park_brak_lever_pos_id: VariableIdentifier,
+    left_brake_pedal_input_id: VariableIdentifier,
+    right_brake_pedal_input_id: VariableIdentifier,
+    brake_left_force_factor_id: VariableIdentifier,
+    brake_right_force_factor_id: VariableIdentifier,
+
     park_brake_lever_masked_input: NamedVariable,
     left_pedal_brake_masked_input: NamedVariable,
     right_pedal_brake_masked_input: NamedVariable,
@@ -332,8 +369,17 @@ impl Brakes {
     const KEYBOARD_PRESS_SPEED: f64 = 0.6;
     const KEYBOARD_RELEASE_SPEED: f64 = 0.3;
 
-    fn new(sim_connect: &mut Pin<&mut SimConnect>) -> Result<Self, Box<dyn std::error::Error>> {
+    fn new(
+        registry: &mut impl VariableRegistry,
+        sim_connect: &mut Pin<&mut SimConnect>,
+    ) -> Result<Self, Box<dyn std::error::Error>> {
         Ok(Self {
+            park_brak_lever_pos_id: registry.get("PARK_BRAKE_LEVER_POS".to_owned()),
+            left_brake_pedal_input_id: registry.get("LEFT_BRAKE_PEDAL_INPUT".to_owned()),
+            right_brake_pedal_input_id: registry.get("RIGHT_BRAKE_PEDAL_INPUT".to_owned()),
+            brake_left_force_factor_id: registry.get("BRAKE LEFT FORCE FACTOR".to_owned()),
+            brake_right_force_factor_id: registry.get("BRAKE RIGHT FORCE FACTOR".to_owned()),
+
             park_brake_lever_masked_input: NamedVariable::from("A32NX_PARK_BRAKE_LEVER_POS"),
             left_pedal_brake_masked_input: NamedVariable::from("A32NX_LEFT_BRAKE_PEDAL_INPUT"),
             right_pedal_brake_masked_input: NamedVariable::from("A32NX_RIGHT_BRAKE_PEDAL_INPUT"),
@@ -493,26 +539,27 @@ impl Brakes {
     }
 }
 impl SimulatorAspect for Brakes {
-    fn read(&mut self, name: &str) -> Option<f64> {
-        match name {
-            "PARK_BRAKE_LEVER_POS" => Some(self.is_park_brake_set()),
-            "LEFT_BRAKE_PEDAL_INPUT" => Some(self.brake_left()),
-            "RIGHT_BRAKE_PEDAL_INPUT" => Some(self.brake_right()),
-            _ => None,
+    fn read(&mut self, identifier: &VariableIdentifier) -> Option<f64> {
+        if identifier == &self.park_brak_lever_pos_id {
+            Some(self.is_park_brake_set())
+        } else if identifier == &self.left_brake_pedal_input_id {
+            Some(self.brake_left())
+        } else if identifier == &self.right_brake_pedal_input_id {
+            Some(self.brake_right())
+        } else {
+            None
         }
     }
 
-    fn write(&mut self, name: &str, value: f64) -> bool {
-        match name {
-            "BRAKE LEFT FORCE FACTOR" => {
-                self.set_brake_left_output(value);
-                true
-            }
-            "BRAKE RIGHT FORCE FACTOR" => {
-                self.set_brake_right_output(value);
-                true
-            }
-            _ => false,
+    fn write(&mut self, identifier: &VariableIdentifier, value: f64) -> bool {
+        if identifier == &self.brake_left_force_factor_id {
+            self.set_brake_left_output(value);
+            true
+        } else if identifier == &self.brake_right_force_factor_id {
+            self.set_brake_right_output(value);
+            true
+        } else {
+            false
         }
     }
 
@@ -567,6 +614,9 @@ impl SimulatorAspect for Brakes {
 }
 
 struct CargoDoors {
+    fwd_door_cargo_position_id: VariableIdentifier,
+    fwd_door_cargo_open_req_id: VariableIdentifier,
+
     forward_cargo_door_position: NamedVariable,
     forward_cargo_door_sim_position_request: AircraftVariable,
     fwd_position: f64,
@@ -577,8 +627,14 @@ impl CargoDoors {
         self.fwd_position = value;
     }
 
-    fn new(sim_connect: &mut Pin<&mut SimConnect>) -> Result<Self, Box<dyn std::error::Error>> {
+    fn new(
+        registry: &mut impl VariableRegistry,
+        _: &mut Pin<&mut SimConnect>,
+    ) -> Result<Self, Box<dyn std::error::Error>> {
         Ok(Self {
+            fwd_door_cargo_position_id: registry.get("FWD_DOOR_CARGO_POSITION".to_owned()),
+            fwd_door_cargo_open_req_id: registry.get("FWD_DOOR_CARGO_OPEN_REQ".to_owned()),
+
             forward_cargo_door_position: NamedVariable::from("A32NX_FWD_DOOR_CARGO_POSITION"),
             forward_cargo_door_sim_position_request: AircraftVariable::from(
                 "INTERACTIVE POINT OPEN",
@@ -599,32 +655,33 @@ impl CargoDoors {
     }
 }
 impl SimulatorAspect for CargoDoors {
-    fn write(&mut self, name: &str, value: f64) -> bool {
-        match name {
-            "FWD_DOOR_CARGO_POSITION" => {
-                self.set_forward_door_postition(value);
-                true
-            }
-            _ => false,
+    fn write(&mut self, identifier: &VariableIdentifier, value: f64) -> bool {
+        if identifier == &self.fwd_door_cargo_position_id {
+            self.set_forward_door_postition(value);
+            true
+        } else {
+            false
         }
     }
 
-    fn read(&mut self, name: &str) -> Option<f64> {
-        match name {
-            "FWD_DOOR_CARGO_OPEN_REQ" => Some(self.forward_cargo_door_open_req),
-            "FWD_DOOR_CARGO_POSITION" => Some(self.fwd_position),
-            _ => None,
+    fn read(&mut self, identifier: &VariableIdentifier) -> Option<f64> {
+        if identifier == &self.fwd_door_cargo_open_req_id {
+            Some(self.forward_cargo_door_open_req)
+        } else if identifier == &self.fwd_door_cargo_position_id {
+            Some(self.fwd_position)
+        } else {
+            None
         }
     }
 
-    fn pre_tick(&mut self, delta: Duration) {
+    fn pre_tick(&mut self, _: Duration) {
         let read_val = self.forward_cargo_door_sim_position_request.get();
         self.set_in_sim_position_request(read_val);
     }
 
     fn post_tick(
         &mut self,
-        sim_connect: &mut Pin<&mut SimConnect>,
+        _: &mut Pin<&mut SimConnect>,
     ) -> Result<(), Box<dyn std::error::Error>> {
         self.forward_cargo_door_position
             .set_value(self.fwd_position);

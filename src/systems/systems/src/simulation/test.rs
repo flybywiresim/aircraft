@@ -21,6 +21,8 @@ use super::{
     Writer,
 };
 use crate::landing_gear::LandingGear;
+use crate::shared::arinc429::{from_arinc429, to_arinc429, Arinc429Word, SignStatus};
+use crate::simulation::{InitContext, VariableIdentifier, VariableRegistry};
 
 pub trait TestBed {
     type Aircraft: Aircraft;
@@ -94,19 +96,91 @@ pub trait TestBed {
         self.test_bed_mut().set_vertical_speed(vertical_speed);
     }
 
-    fn contains_key(&self, name: &str) -> bool {
-        self.test_bed().contains_key(name)
+    fn contains_variable_with_name(&self, name: &str) -> bool {
+        self.test_bed().contains_variable_with_name(name)
+    }
+
+    fn get_variable_identifier(&mut self, name: &str) -> Option<&VariableIdentifier> {
+        self.test_bed_mut().get_variable_identifier(name)
     }
 }
 impl<T: TestBed> Writer for T {
-    fn write_f64(&mut self, name: &str, value: f64) {
-        self.test_bed_mut().write_f64(name, value);
+    fn write_f64(&mut self, identifier: &VariableIdentifier, value: f64) {
+        self.test_bed_mut().write_f64(identifier, value);
     }
 }
 impl<T: TestBed> Reader for T {
-    fn read_f64(&mut self, name: &str) -> f64 {
-        self.test_bed_mut().read_f64(name)
+    fn read_f64(&mut self, identifier: &VariableIdentifier) -> f64 {
+        self.test_bed_mut().read_f64(identifier)
     }
+}
+
+impl<T: TestBed, U> WriteByName<T, U> for T
+where
+    T: Write<U>,
+{
+    fn write_by_name(&mut self, name: &str, value: U) {
+        if let Some(identifier) = self.get_variable_identifier(name).copied() {
+            let value = self.convert(value);
+            self.write_f64(&identifier, value)
+        }
+    }
+
+    fn write_arinc429_by_name(&mut self, name: &str, value: U, ssm: SignStatus) {
+        if let Some(identifier) = self.get_variable_identifier(name).copied() {
+            let value = self.convert(value);
+            self.write_f64(&identifier, to_arinc429(value, ssm));
+        }
+    }
+}
+
+impl<T: TestBed, U: Copy> ReadByName<T, U> for T
+where
+    T: Read<U>,
+{
+    fn read_by_name(&mut self, name: &str) -> U {
+        let value = match self.get_variable_identifier(name).copied() {
+            Some(identifier) => self.read_f64(&identifier),
+            None => 0.,
+        };
+
+        self.convert(value)
+    }
+
+    fn read_arinc429_by_name(&mut self, name: &str) -> Arinc429Word<U> {
+        let value = from_arinc429(match self.get_variable_identifier(name).copied() {
+            Some(identifier) => self.read_f64(&identifier),
+            None => 0.,
+        });
+
+        Arinc429Word::new(self.convert(value.0), value.1)
+    }
+}
+
+pub trait WriteByName<T, U>
+where
+    T: Write<U>,
+{
+    fn write_by_name(&mut self, name: &str, value: U)
+    where
+        Self: Sized + Writer;
+
+    fn write_arinc429_by_name(&mut self, name: &str, value: U, ssm: SignStatus)
+    where
+        Self: Sized + Writer;
+}
+
+pub trait ReadByName<T, U: Copy>
+where
+    T: Read<U>,
+{
+    fn read_by_name(&mut self, name: &str) -> U
+    where
+        Self: Sized + Reader;
+
+    fn read_arinc429_by_name(&mut self, name: &str) -> Arinc429Word<U>
+    where
+        Self: Sized + Reader;
 }
 
 /// The simulation test bed handles the testing of [`Aircraft`] and [`SimulationElement`]
@@ -117,12 +191,15 @@ impl<T: TestBed> Reader for T {
 pub struct SimulationTestBed<T: Aircraft> {
     reader_writer: TestReaderWriter,
     simulation: Simulation<T>,
+    variable_registry: TestVariableRegistry,
 }
 impl<T: Aircraft> SimulationTestBed<T> {
-    pub fn new<U: FnOnce(&mut Electricity) -> T>(aircraft_ctor_fn: U) -> Self {
+    pub fn new<U: FnOnce(&mut InitContext) -> T>(aircraft_ctor_fn: U) -> Self {
+        let mut variable_registry = TestVariableRegistry::default();
         let mut test_bed = Self {
             reader_writer: TestReaderWriter::new(),
-            simulation: Simulation::new(aircraft_ctor_fn),
+            simulation: Simulation::new(aircraft_ctor_fn, &mut variable_registry),
+            variable_registry,
         };
 
         test_bed.set_indicated_airspeed(Velocity::new::<knot>(250.));
@@ -218,65 +295,72 @@ impl<T: Aircraft> SimulationTestBed<T> {
     }
 
     fn set_indicated_airspeed(&mut self, indicated_airspeed: Velocity) {
-        self.write(UpdateContext::INDICATED_AIRSPEED_KEY, indicated_airspeed);
+        self.write_by_name(UpdateContext::INDICATED_AIRSPEED_KEY, indicated_airspeed);
     }
 
     fn indicated_airspeed(&mut self) -> Velocity {
-        self.read(UpdateContext::INDICATED_AIRSPEED_KEY)
+        self.read_by_name(UpdateContext::INDICATED_AIRSPEED_KEY)
     }
 
     fn set_indicated_altitude(&mut self, indicated_altitude: Length) {
-        self.write(UpdateContext::INDICATED_ALTITUDE_KEY, indicated_altitude);
+        self.write_by_name(UpdateContext::INDICATED_ALTITUDE_KEY, indicated_altitude);
     }
 
     fn set_ambient_temperature(&mut self, ambient_temperature: ThermodynamicTemperature) {
-        self.write(UpdateContext::AMBIENT_TEMPERATURE_KEY, ambient_temperature);
+        self.write_by_name(UpdateContext::AMBIENT_TEMPERATURE_KEY, ambient_temperature);
     }
 
     fn set_on_ground(&mut self, on_ground: bool) {
-        self.write(UpdateContext::IS_ON_GROUND_KEY, on_ground);
+        self.write_by_name(UpdateContext::IS_ON_GROUND_KEY, on_ground);
 
         let mut gear_compression = Ratio::new::<ratio>(0.5);
         if on_ground {
             gear_compression = Ratio::new::<ratio>(0.8);
         }
 
-        self.write(LandingGear::GEAR_CENTER_COMPRESSION, gear_compression);
-        self.write(LandingGear::GEAR_LEFT_COMPRESSION, gear_compression);
-        self.write(LandingGear::GEAR_RIGHT_COMPRESSION, gear_compression);
+        self.write_by_name(LandingGear::GEAR_CENTER_COMPRESSION, gear_compression);
+        self.write_by_name(LandingGear::GEAR_LEFT_COMPRESSION, gear_compression);
+        self.write_by_name(LandingGear::GEAR_RIGHT_COMPRESSION, gear_compression);
     }
 
     fn set_ambient_pressure(&mut self, ambient_pressure: Pressure) {
-        self.write(
+        self.write_by_name(
             UpdateContext::AMBIENT_PRESSURE_KEY,
             ambient_pressure.get::<inch_of_mercury>(),
         );
     }
 
     fn set_vertical_speed(&mut self, vertical_speed: Velocity) {
-        self.write(
+        self.write_by_name(
             UpdateContext::VERTICAL_SPEED_KEY,
             vertical_speed.get::<foot_per_minute>(),
         );
     }
 
     pub fn set_long_acceleration(&mut self, accel: Acceleration) {
-        self.reader_writer.write_f64(
+        self.write_by_name(
             UpdateContext::ACCEL_BODY_Z_KEY,
             accel.get::<foot_per_second_squared>(),
         );
     }
 
-    fn write_f64(&mut self, name: &str, value: f64) {
-        self.reader_writer.write_f64(name, value);
+    fn write_f64(&mut self, identifier: &VariableIdentifier, value: f64) {
+        self.reader_writer.write_f64(identifier, value);
     }
 
-    fn read_f64(&mut self, name: &str) -> f64 {
-        self.reader_writer.read_f64(name)
+    fn read_f64(&mut self, identifier: &VariableIdentifier) -> f64 {
+        self.reader_writer.read_f64(identifier)
     }
 
-    fn contains_key(&self, name: &str) -> bool {
-        self.reader_writer.contains_key(name)
+    fn contains_variable_with_name(&self, name: &str) -> bool {
+        match self.variable_registry.find(name) {
+            Some(identifier) => self.reader_writer.contains(identifier),
+            None => false,
+        }
+    }
+
+    fn get_variable_identifier(&mut self, name: &str) -> Option<&VariableIdentifier> {
+        self.variable_registry.find(name)
     }
 }
 impl<T: Aircraft> TestBed for SimulationTestBed<T> {
@@ -346,12 +430,12 @@ impl<T: SimulationElement> SimulationTestBed<TestAircraft<T>> {
 
 /// Wrapper for converting the given constructor function to
 /// a [`SimulationTestBed<TestAircraft<T>>`] instance.
-pub struct ElementCtorFn<T: SimulationElement, U: Fn(&mut Electricity) -> T>(pub U);
-impl<T: SimulationElement, U: Fn(&mut Electricity) -> T> From<ElementCtorFn<T, U>>
+pub struct ElementCtorFn<T: SimulationElement, U: FnOnce(&mut InitContext) -> T>(pub U);
+impl<T: SimulationElement, U: FnOnce(&mut InitContext) -> T> From<ElementCtorFn<T, U>>
     for SimulationTestBed<TestAircraft<T>>
 {
     fn from(func: ElementCtorFn<T, U>) -> Self {
-        Self::new(|electricity| TestAircraft::new((func.0)(electricity)))
+        Self::new(|context| TestAircraft::new((func.0)(context)))
     }
 }
 impl<T: SimulationElement> From<T> for SimulationTestBed<TestAircraft<T>> {
@@ -421,7 +505,7 @@ impl<T: SimulationElement> SimulationElement for TestAircraft<T> {
 }
 
 struct TestReaderWriter {
-    variables: HashMap<String, f64>,
+    variables: HashMap<VariableIdentifier, f64>,
 }
 impl TestReaderWriter {
     fn new() -> Self {
@@ -430,31 +514,59 @@ impl TestReaderWriter {
         }
     }
 
-    fn contains_key(&self, name: &str) -> bool {
-        self.variables.contains_key(name)
+    fn contains(&self, identifier: &VariableIdentifier) -> bool {
+        self.variables.contains_key(identifier)
     }
 
-    fn write_f64(&mut self, name: &str, value: f64) {
-        self.write(name, value);
+    fn write_f64(&mut self, identifier: &VariableIdentifier, value: f64) {
+        self.write(identifier, value);
     }
 
-    fn read_f64(&mut self, name: &str) -> f64 {
-        self.read(name)
+    fn read_f64(&mut self, identifier: &VariableIdentifier) -> f64 {
+        self.read(identifier)
     }
 }
 impl SimulatorReaderWriter for TestReaderWriter {
-    fn read(&mut self, name: &str) -> f64 {
-        *self.variables.get(name).unwrap_or(&0.)
+    fn read(&mut self, identifier: &VariableIdentifier) -> f64 {
+        *self.variables.get(identifier).unwrap_or(&0.)
     }
 
-    fn write(&mut self, name: &str, value: f64) {
-        self.variables.insert(name.to_owned(), value);
+    fn write(&mut self, identifier: &VariableIdentifier, value: f64) {
+        self.variables.insert(*identifier, value);
     }
 }
 
 impl Default for TestReaderWriter {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+#[derive(Default)]
+// TODO Make private once HYD tests are modified to use SimulationTestBed.
+pub struct TestVariableRegistry {
+    name_to_identifier: HashMap<String, VariableIdentifier>,
+    next_identifier: VariableIdentifier,
+}
+
+impl TestVariableRegistry {
+    fn find(&self, name: &str) -> Option<&VariableIdentifier> {
+        self.name_to_identifier.get(name)
+    }
+}
+
+impl VariableRegistry for TestVariableRegistry {
+    fn get(&mut self, name: String) -> VariableIdentifier {
+        match self.name_to_identifier.get(&name).copied() {
+            Some(identifier) => identifier,
+            None => {
+                let identifier = self.next_identifier;
+                self.name_to_identifier.insert(name, identifier);
+                self.next_identifier = identifier.next();
+
+                identifier
+            }
+        }
     }
 }
 

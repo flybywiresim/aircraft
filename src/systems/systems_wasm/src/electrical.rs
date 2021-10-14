@@ -5,9 +5,10 @@ use crate::SimulatorAspect;
 use msfs::legacy::execute_calculator_code;
 use msfs::legacy::AircraftVariable;
 use systems::shared::to_bool;
+use systems::simulation::{VariableIdentifier, VariableRegistry};
 
 pub struct MsfsElectricalBuses {
-    connections: HashMap<String, ElectricalBusConnection>,
+    connections: HashMap<VariableIdentifier, ElectricalBusConnection>,
 }
 impl MsfsElectricalBuses {
     pub fn new() -> Self {
@@ -16,19 +17,23 @@ impl MsfsElectricalBuses {
         }
     }
 
-    pub fn add(&mut self, name: &str, from: usize, to: usize) {
-        self.connections.insert(
-            format!("ELEC_{}_BUS_IS_POWERED", name),
-            ElectricalBusConnection::new(from, to),
-        );
+    pub fn add(
+        &mut self,
+        registry: &mut impl VariableRegistry,
+        name: &str,
+        from: usize,
+        to: usize,
+    ) {
+        let identifier = registry.get(format!("ELEC_{}_BUS_IS_POWERED", name));
+        self.connections
+            .insert(identifier, ElectricalBusConnection::new(from, to));
     }
 }
 impl SimulatorAspect for MsfsElectricalBuses {
-    fn write(&mut self, name: &str, value: f64) -> bool {
-        if name.starts_with("ELEC_") && name.ends_with("_BUS_IS_POWERED") {
-            if let Some(connection) = self.connections.get_mut(name) {
-                connection.update(value);
-            }
+    fn write(&mut self, identifier: &VariableIdentifier, value: f64) -> bool {
+        match self.connections.get_mut(identifier) {
+            Some(connection) => connection.update(value),
+            None => {}
         }
 
         // The powered state of a bus isn't just updated here, but should also be set as a named
@@ -39,25 +44,23 @@ impl SimulatorAspect for MsfsElectricalBuses {
 
 struct ElectricalBusConnection {
     connected: bool,
-    from: usize,
-    to: usize,
+    toggle_code: String,
 }
 impl ElectricalBusConnection {
     fn new(from: usize, to: usize) -> Self {
         Self {
             connected: true,
-            from,
-            to,
+            toggle_code: format!(
+                "{} {} (>K:2:ELECTRICAL_BUS_TO_BUS_CONNECTION_TOGGLE)",
+                from, to
+            ),
         }
     }
 
     fn update(&mut self, value: f64) {
         let should_be_connected = (value - 1.).abs() < f64::EPSILON;
         if should_be_connected != self.connected {
-            execute_calculator_code::<()>(&format!(
-                "{} {} (>K:2:ELECTRICAL_BUS_TO_BUS_CONNECTION_TOGGLE)",
-                self.from, self.to
-            ));
+            execute_calculator_code::<()>(&self.toggle_code);
             self.connected = !self.connected;
         }
     }
@@ -68,17 +71,18 @@ impl ElectricalBusConnection {
 /// Once pneumatics and the engine model are completed, this
 /// type can probably be removed.
 pub struct MsfsAuxiliaryPowerUnit {
-    is_available_variable_name: String,
+    is_available_id: VariableIdentifier,
     msfs_apu_is_on: AircraftVariable,
     fuel_valve_number: u8,
 }
 impl MsfsAuxiliaryPowerUnit {
     pub fn new(
-        is_available_variable_name: &str,
+        registry: &mut impl VariableRegistry,
+        is_available_variable_name: String,
         fuel_valve_number: u8,
     ) -> Result<Self, Box<dyn Error>> {
         Ok(Self {
-            is_available_variable_name: is_available_variable_name.to_owned(),
+            is_available_id: registry.get(is_available_variable_name),
             msfs_apu_is_on: AircraftVariable::from("APU SWITCH", "Bool", 0)?,
             fuel_valve_number,
         })
@@ -102,8 +106,8 @@ impl MsfsAuxiliaryPowerUnit {
     }
 }
 impl SimulatorAspect for MsfsAuxiliaryPowerUnit {
-    fn write(&mut self, name: &str, value: f64) -> bool {
-        if name == self.is_available_variable_name {
+    fn write(&mut self, identifier: &VariableIdentifier, value: f64) -> bool {
+        if identifier == &self.is_available_id {
             let is_available = to_bool(value);
             let msfs_apu_is_on = to_bool(self.msfs_apu_is_on.get());
 

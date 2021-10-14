@@ -8,23 +8,25 @@ use msfs::{
     MSFSEvent,
 };
 use std::{collections::HashMap, error::Error, pin::Pin, time::Duration};
-use systems::simulation::{Aircraft, Simulation, SimulatorReaderWriter};
+use systems::simulation::{
+    Aircraft, Simulation, SimulatorReaderWriter, VariableIdentifier, VariableRegistry,
+};
 
 /// An aspect to inject into events in the simulation.
 pub trait SimulatorAspect {
-    /// Attempts to read data with the given name.
+    /// Attempts to read data with the given identifier.
     /// Returns `Some` when reading was successful, `None` otherwise.
-    fn read(&mut self, _name: &str) -> Option<f64> {
+    fn read(&mut self, _identifier: &VariableIdentifier) -> Option<f64> {
         None
     }
 
-    /// Attempts to write the value with the given name.
+    /// Attempts to write the value with the given identifier.
     /// Returns true when the writing was successful and deemed sufficient,
     /// false otherwise.
     ///
     /// Note that there may be cases where multiple types write the same data.
     /// For such situations, after a successful write the function can return false.
-    fn write(&mut self, _name: &str, _value: f64) -> bool {
+    fn write(&mut self, _identifier: &VariableIdentifier, _value: f64) -> bool {
         false
     }
 
@@ -114,99 +116,66 @@ impl MsfsSimulationHandler {
     }
 }
 impl SimulatorReaderWriter for MsfsSimulationHandler {
-    fn read(&mut self, name: &str) -> f64 {
+    fn read(&mut self, identifier: &VariableIdentifier) -> f64 {
         self.aspects
             .iter_mut()
-            .find_map(|aspect| aspect.read(name))
+            .find_map(|aspect| aspect.read(identifier))
             .unwrap_or(0.)
     }
 
-    fn write(&mut self, name: &str, value: f64) {
+    fn write(&mut self, identifier: &VariableIdentifier, value: f64) {
         for aspect in self.aspects.iter_mut() {
-            if aspect.write(name, value) {
+            if aspect.write(identifier, value) {
                 break;
             }
         }
     }
 }
 
-/// Reads and writes named variables (LVar).
-pub struct MsfsNamedVariableReaderWriter {
-    name_prefix: String,
-    variables: HashMap<String, NamedVariable>,
+pub struct MsfsVariableRegistry {
+    name_to_identifier: HashMap<String, VariableIdentifier>,
+    aircraft_variables: Vec<AircraftVariable>,
+    named_variables: Vec<NamedVariable>,
+    named_variable_prefix: String,
+    next_aircraft_variable_identifier: VariableIdentifier,
+    next_named_variable_identifier: VariableIdentifier,
 }
-impl MsfsNamedVariableReaderWriter {
-    pub fn new(key_prefix: &str) -> Self {
+
+impl MsfsVariableRegistry {
+    const AIRCRAFT_VARIABLE_IDENTIFIER_TYPE: u8 = 0;
+    const NAMED_VARIABLE_IDENTIFIER_TYPE: u8 = 1;
+
+    pub fn new(named_variable_prefix: String) -> Self {
         Self {
-            name_prefix: key_prefix.to_owned(),
-            variables: HashMap::<String, NamedVariable>::new(),
-        }
-    }
-
-    fn lookup_named_variable(&mut self, name: &str) -> &mut NamedVariable {
-        let name = format!("{}{}", self.name_prefix, name);
-
-        self.variables
-            .entry(name.clone())
-            .or_insert_with(|| NamedVariable::from(&name))
-    }
-}
-impl SimulatorAspect for MsfsNamedVariableReaderWriter {
-    fn read(&mut self, name: &str) -> Option<f64> {
-        Some(self.lookup_named_variable(name).get_value())
-    }
-
-    fn write(&mut self, name: &str, value: f64) -> bool {
-        self.lookup_named_variable(name).set_value(value);
-
-        true
-    }
-}
-
-/// Reads aircraft variables (AVar).
-pub struct MsfsAircraftVariableReader {
-    variables: HashMap<String, AircraftVariable>,
-    mapping: HashMap<String, String>,
-}
-impl MsfsAircraftVariableReader {
-    pub fn new() -> Self {
-        Self {
-            variables: HashMap::<String, AircraftVariable>::new(),
-            mapping: HashMap::<String, String>::new(),
+            name_to_identifier: Default::default(),
+            aircraft_variables: Default::default(),
+            named_variables: Default::default(),
+            named_variable_prefix,
+            next_aircraft_variable_identifier: VariableIdentifier::new(
+                Self::AIRCRAFT_VARIABLE_IDENTIFIER_TYPE,
+            ),
+            next_named_variable_identifier: VariableIdentifier::new(
+                Self::NAMED_VARIABLE_IDENTIFIER_TYPE,
+            ),
         }
     }
 
     /// Add an aircraft variable definition. Once added, the aircraft variable
-    /// can be read through the [`read`] function.
-    ///
-    /// Indexed variables are read by suffixing the index, for the example variable `"TURB ENG CORRECTED N2"`:
-    /// - When index `0` is passed, the variable can be read as: `"TURB ENG CORRECTED N2"`.
-    /// - When index `n` is passed, the variable can be read as: `"TURB ENG CORRECTED N2:n"`.
-    ///
-    /// [`read`]: trait.ReadWrite.html#method.read
-    pub fn add(
+    /// can be read through the `MsfsVariableRegistry.read` function.
+    pub fn add_aircraft_variable(
         &mut self,
         name: &str,
         units: &str,
         index: usize,
     ) -> Result<(), Box<dyn std::error::Error>> {
-        self.add_with_additional_names(name, units, index, &vec![])
+        self.add_aircraft_variable_with_additional_names(name, units, index, &vec![])
     }
 
     /// Add an aircraft variable definition. Once added, the aircraft variable
-    /// can be read through the [`read`] function.
+    /// can be read through the `MsfsVariableRegistry.read` function.
     ///
-    /// Indexed variables are read by suffixing the index, for the example variable `"TURB ENG CORRECTED N2"`:
-    /// - When index `0` is passed, the variable can be read as: `"TURB ENG CORRECTED N2"`.
-    /// - When index `n` is passed, the variable can be read as: `"TURB ENG CORRECTED N2:n"`.
-    ///
-    /// When reading a variable, the additional names are mapped to the underlying variable.
-    /// Thus, when `"EXTERNAL POWER AVAILABLE"` is the underlying variable and you pass
-    /// `"OVHD_ELEC_EXT_PWR_PB_IS_AVAILABLE"` as an additional name, the variable can be accessed
-    /// via `"EXTERNAL POWER AVAILABLE"` and `"OVHD_ELEC_EXT_PWR_PB_IS_AVAILABLE"`.
-    ///
-    /// [`read`]: trait.ReadWrite.html#method.read
-    pub fn add_with_additional_names(
+    /// The additional names map to the same variable.
+    pub fn add_aircraft_variable_with_additional_names(
         &mut self,
         name: &str,
         units: &str,
@@ -221,27 +190,67 @@ impl MsfsAircraftVariableReader {
                     name.to_owned()
                 };
 
+                let identifier = self.next_aircraft_variable_identifier;
+
+                self.aircraft_variables
+                    .insert(identifier.identifier_index(), var);
+                self.name_to_identifier.insert(name, identifier);
+
                 additional_names.iter().for_each(|&el| {
-                    self.mapping.insert(el.to_owned(), name.clone());
+                    self.name_to_identifier.insert(el.to_owned(), identifier);
                 });
 
-                self.variables.insert(name, var);
+                self.next_aircraft_variable_identifier = identifier.next();
+
                 Ok(())
             }
             Err(x) => Err(x),
         }
     }
-}
-impl SimulatorAspect for MsfsAircraftVariableReader {
-    fn read(&mut self, name: &str) -> Option<f64> {
-        let name = match self.mapping.get(name) {
-            Some(x) => x,
-            None => name,
-        };
 
-        match self.variables.get(name) {
-            Some(variable) => Some(variable.get()),
-            None => None,
+    fn add_named_variable(&mut self, name: String) -> VariableIdentifier {
+        let identifier = self.next_named_variable_identifier;
+        self.named_variables.insert(
+            identifier.identifier_index(),
+            NamedVariable::from(&format!("{}{}", self.named_variable_prefix, name)),
+        );
+        self.name_to_identifier.insert(name, identifier);
+
+        self.next_named_variable_identifier = identifier.next();
+
+        identifier
+    }
+}
+
+impl VariableRegistry for MsfsVariableRegistry {
+    fn get(&mut self, name: String) -> VariableIdentifier {
+        match self.name_to_identifier.get(&name) {
+            Some(identifier) => *identifier,
+            None => self.add_named_variable(name),
+        }
+    }
+}
+
+impl SimulatorAspect for MsfsVariableRegistry {
+    fn read(&mut self, identifier: &VariableIdentifier) -> Option<f64> {
+        match identifier.identifier_type() {
+            Self::AIRCRAFT_VARIABLE_IDENTIFIER_TYPE => {
+                Some(self.aircraft_variables[identifier.identifier_index()].get())
+            }
+            Self::NAMED_VARIABLE_IDENTIFIER_TYPE => {
+                Some(self.named_variables[identifier.identifier_index()].get_value())
+            }
+            _ => None,
+        }
+    }
+
+    fn write(&mut self, identifier: &VariableIdentifier, value: f64) -> bool {
+        match identifier.identifier_type() {
+            Self::NAMED_VARIABLE_IDENTIFIER_TYPE => {
+                self.named_variables[identifier.identifier_index()].set_value(value);
+                true
+            }
+            _ => false,
         }
     }
 }
