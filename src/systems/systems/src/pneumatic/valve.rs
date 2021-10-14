@@ -223,6 +223,7 @@ pub(crate) struct PneumaticContainerConnector {
 impl PneumaticContainerConnector {
     const HEAT_CAPACITY_RATIO: f64 = 1.4;
     const TRANSFER_SPEED: f64 = 3.;
+    const HEAT_TRANSFER_SPEED: f64 = 3.;
 
     pub fn new() -> Self {
         Self {
@@ -241,6 +242,8 @@ impl PneumaticContainerConnector {
         if self.transfer_speed_factor.get::<ratio>() == 0. {
             return;
         }
+
+        self.heat_conduction(context, from, to);
 
         let equalization_volume: Volume = (from
             .pressure()
@@ -278,9 +281,9 @@ impl PneumaticContainerConnector {
                 to.temperature(),
             );
 
-            to.update_temperature(TemperatureInterval::new::<temperature_interval::kelvin>(
-                new_temperature.get::<kelvin>() - to.temperature().get::<kelvin>(),
-            ))
+            // to.update_temperature(TemperatureInterval::new::<temperature_interval::kelvin>(
+            //     new_temperature.get::<kelvin>() - to.temperature().get::<kelvin>(),
+            // ))
         } else {
             let new_temperature = self.compute_mixing_temperature(
                 fluid_to_move,
@@ -289,12 +292,41 @@ impl PneumaticContainerConnector {
                 from.temperature(),
             );
 
-            from.update_temperature(TemperatureInterval::new::<temperature_interval::kelvin>(
-                new_temperature.get::<kelvin>() - from.temperature().get::<kelvin>(),
-            ))
+            // from.update_temperature(TemperatureInterval::new::<temperature_interval::kelvin>(
+            //     new_temperature.get::<kelvin>() - from.temperature().get::<kelvin>(),
+            // ))
         };
 
         self.fluid_flow = fluid_to_move / context.delta_as_time();
+    }
+
+    fn heat_conduction(
+        &self,
+        context: &UpdateContext,
+        from: &mut impl PneumaticContainer,
+        to: &mut impl PneumaticContainer,
+    ) {
+        let coefficient = 1.;
+
+        let temperature_gradient = TemperatureInterval::new::<temperature_interval::kelvin>(
+            from.temperature().get::<kelvin>() - to.temperature().get::<kelvin>(),
+        );
+
+        // println!(
+        //     "{} K",
+        //     temperature_gradient.get::<temperature_interval::kelvin>()
+        // );
+
+        from.update_temperature(
+            -coefficient
+                * temperature_gradient
+                * (1. - (-Self::HEAT_TRANSFER_SPEED * context.delta_as_secs_f64()).exp()),
+        );
+        to.update_temperature(
+            coefficient
+                * temperature_gradient
+                * (1. - (-Self::HEAT_TRANSFER_SPEED * context.delta_as_secs_f64()).exp()),
+        );
     }
 
     // TODO: This could probably be static?

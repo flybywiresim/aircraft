@@ -889,7 +889,7 @@ impl EngineBleedAirSystem {
                 Pressure::new::<psi>(14.7),
                 ThermodynamicTemperature::new::<degree_celsius>(15.),
             ),
-            engine_starter_exhaust: PneumaticExhaust::new(1e-3),
+            engine_starter_exhaust: PneumaticExhaust::new(1e-2),
             es_valve: DefaultValve::new_closed(),
             precooler: HeatExchanger::new(1.),
         }
@@ -959,8 +959,8 @@ impl EngineBleedAirSystem {
             &mut self.precooler_inlet_pipe,
             &mut self.engine_starter_container,
         );
-        // self.engine_starter_exhaust
-        //     .update_move_fluid(context, &mut self.engine_starter_container)
+        self.engine_starter_exhaust
+            .update_move_fluid(context, &mut self.engine_starter_container)
     }
 }
 impl EngineBleedDataProvider for EngineBleedAirSystem {
@@ -1927,7 +1927,7 @@ mod tests {
         let mut abv_open = Vec::new();
         let mut fav_open = Vec::new();
 
-        for i in 1..1000 {
+        for i in 1..10000 {
             // println!(
             //     "{}",
             //     test_bed.query(|aircraft| {
@@ -1949,6 +1949,9 @@ mod tests {
 
             if i == 500 {
                 test_bed = test_bed.start_eng1();
+            }
+            if i == 2000 {
+                // test_bed = test_bed.idle_eng1();
             }
 
             hps.push(test_bed.hp_pressure(1).get::<psi>());
