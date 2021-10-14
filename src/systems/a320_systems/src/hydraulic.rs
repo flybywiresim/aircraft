@@ -161,22 +161,11 @@ impl A320Hydraulic {
     ];
 
     const SLAT_FFPU_TO_SURFACE_ANGLE_BREAKPTS: [f64; 12] = [
-        0., 65., 115., 120.53, 136., 145.5, 152., 165., 168.3, 179., 231.2, 251.97,
+        0., 12.5985, 25.197, 37.7955, 50.394, 62.9925, 75.591, 88.1895, 100.788, 113.3865,
+        157.48125, 170.07975,
     ];
-    const SLAT_FFPU_TO_SURFACE_ANGLE_DEGREES: [f64; 12] = [
-        0.,
-        6.965114895,
-        12.32289558,
-        12.91546613,
-        14.57316347,
-        15.5911418,
-        16.28765329,
-        17.68067627,
-        18.0342898,
-        19.18085486,
-        24.7743779,
-        27.,
-    ];
+    const SLAT_FFPU_TO_SURFACE_ANGLE_DEGREES: [f64; 12] =
+        [0., 2., 4., 6., 8., 10., 12., 14., 16., 18., 25., 27.];
 
     const FORWARD_CARGO_DOOR_ID: &'static str = "FWD";
     const AFT_CARGO_DOOR_ID: &'static str = "AFT";
@@ -346,8 +335,8 @@ impl A320Hydraulic {
             slat_system: FlapSlatAssembly::new(
                 "SLATS",
                 Volume::new::<cubic_inch>(0.32),
-                AngularVelocity::new::<radian_per_second>(0.22),
-                Angle::new::<degree>(251.97),
+                AngularVelocity::new::<radian_per_second>(0.15),
+                Angle::new::<degree>(170.07975),
                 Ratio::new::<ratio>(140.),
                 Ratio::new::<ratio>(16.632),
                 Ratio::new::<ratio>(314.98),
