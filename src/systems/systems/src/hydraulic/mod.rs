@@ -520,7 +520,7 @@ impl HydraulicCircuit {
     fn update_maximum_pumping_capacities(
         &mut self,
         main_section_pumps: &mut Vec<&mut impl PressureSource>,
-        system_section_pump: &mut Option<&mut impl PressureSource>,
+        system_section_pump: &Option<&mut impl PressureSource>,
     ) {
         for (pump_idx, section) in self.pump_sections.iter_mut().enumerate() {
             section.update_maximum_pumping_capacity(main_section_pumps[pump_idx]);
@@ -796,7 +796,7 @@ impl Section {
         self.total_actuator_consumed_volume = Volume::new::<gallon>(0.);
     }
 
-    pub fn update_maximum_pumping_capacity(&mut self, pump: &mut impl PressureSource) {
+    pub fn update_maximum_pumping_capacity(&mut self, pump: &impl PressureSource) {
         if self.fire_valve_is_opened() {
             self.max_pumpable_volume = pump.delta_vol_max();
         } else {
@@ -1264,8 +1264,6 @@ impl PressureSource for Pump {
 }
 
 pub struct ElectricPump {
-    displacement_id: String,
-
     pump: Pump,
     pump_physics: ElectricalPumpPhysics,
 }
@@ -1280,7 +1278,6 @@ impl ElectricPump {
 
     pub fn new(id: &str, bus_type: ElectricalBusType, max_current: ElectricCurrent) -> Self {
         Self {
-            displacement_id: format!("HYD_{}_EPUMP_DISPLACEMENT", id),
             pump: Pump::new(
                 Self::DISPLACEMENT_BREAKPTS,
                 Self::DISPLACEMENT_MAP,
@@ -1349,18 +1346,10 @@ impl SimulationElement for ElectricPump {
 
         visitor.visit(self);
     }
-
-    fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write(
-            &self.displacement_id,
-            self.displacement().get::<cubic_inch>(),
-        );
-    }
 }
 
 pub struct EngineDrivenPump {
     active_id: String,
-    displacement_id: String,
 
     is_active: bool,
     speed: AngularVelocity,
@@ -1378,7 +1367,6 @@ impl EngineDrivenPump {
     pub fn new(id: &str) -> Self {
         Self {
             active_id: format!("HYD_{}_EDPUMP_ACTIVE", id),
-            displacement_id: format!("HYD_{}_EDPUMP_DISPLACEMENT", id),
             is_active: false,
             speed: AngularVelocity::new::<revolution_per_minute>(0.),
             pump: Pump::new(
@@ -1438,10 +1426,6 @@ impl PressureSource for EngineDrivenPump {
 impl SimulationElement for EngineDrivenPump {
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.active_id, self.is_active);
-        writer.write(
-            &self.displacement_id,
-            self.displacement().get::<cubic_inch>(),
-        );
     }
 }
 
