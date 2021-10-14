@@ -763,7 +763,7 @@
 
 - A32NX_HYD_{loop_name}_SYSTEM_SECTION_PRESSURE
     - Psi
-    - Current pressure in the {loop_name} hydraulic circuit
+    - Current pressure in the system section of the {loop_name} hydraulic circuit
     - {loop_name}
         - GREEN
         - BLUE
@@ -772,6 +772,22 @@
 - A32NX_HYD_{loop_name}_SYS_PRESSURE_SWITCH
     - Bool
     - Current pressure switch state in the {loop_name} system section
+    - {loop_name}
+        - GREEN
+        - BLUE
+        - YELLOW
+
+- A32NX_HYD_{loop_name}_PUMP_SECTION_PRESSURE_SWITCH
+    - Bool
+    - Current pressure switch state in the {loop_name} pump section
+    - {loop_name}
+        - GREEN
+        - BLUE
+        - YELLOW
+
+- A32NX_HYD_{loop_name}_PUMP_SECTION_PRESSURE
+    - Psi
+    - Current pressure in the pump section of the {loop_name} hydraulic circuit
     - {loop_name}
         - GREEN
         - BLUE
