@@ -7,7 +7,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this._pageCount = undefined;
         this._labels = [];
         this._lines = [];
-        this.scratchpad = new ScratchpadDataLink(this);
+        this.scratchpad = null;
         this.onLeftInput = [];
         this.onRightInput = [];
         this.leftInputDelay = [];
@@ -135,7 +135,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         }
 
         const display = new ScratchpadDisplay(this.getChildById("in-out"));
-        this.scratchpad.init(display);
+        this.scratchpad = new ScratchpadDataLink(this, display);
 
         this.setTimeout = (func) => {
             setTimeout(() => {
@@ -820,7 +820,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 } else if (e.shiftKey && e.ctrlKey && keycode === KeyCode.KEY_BACK_SPACE) {
                     this.scratchpad.setText("");
                 } else if (e.ctrlKey && keycode === KeyCode.KEY_BACK_SPACE) {
-                    const scratchpadTextContent = this.scratchpad.text;
+                    const scratchpadTextContent = this.scratchpad.getText();
                     let wordFlag = !scratchpadTextContent.includes(' ');
                     for (let i = scratchpadTextContent.length; i > 0; i--) {
                         if (scratchpadTextContent.slice(-1) === ' ') {
@@ -868,9 +868,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                         this.onClr();
                         SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_1_CLR", "Number", 1);
                         SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_2_CLR", "Number", 1);
-                        if (this.scratchpad.status !== SpDisplayStatus.userContent) {
-                            this.clrStop = true;
-                        }
+                        this.clrStop = this.scratchpad.isClearStop();
                     }
                 } else if (keycode === KeyCode.KEY_SPACE) {
                     this.onSp();
