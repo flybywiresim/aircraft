@@ -274,79 +274,6 @@ impl CompressionChamber {
     }
 }
 
-pub struct PneumaticConsumptionSignal {
-    consumed_volume: Volume,
-}
-
-pub struct ConstantConsumerController {
-    consumed_since_update: Volume,
-    consumption_rate: VolumeRate,
-}
-impl ControllerSignal<PneumaticConsumptionSignal> for ConstantConsumerController {
-    fn signal(&self) -> Option<PneumaticConsumptionSignal> {
-        Some(PneumaticConsumptionSignal {
-            consumed_volume: self.consumed_since_update,
-        })
-    }
-}
-impl ConstantConsumerController {
-    pub fn new(consumption_rate: VolumeRate) -> Self {
-        Self {
-            consumed_since_update: Volume::new::<cubic_meter>(0.),
-            consumption_rate,
-        }
-    }
-
-    pub fn update(&mut self, context: &UpdateContext) {
-        self.consumed_since_update = self.consumption_rate * context.delta_as_time();
-    }
-}
-
-pub struct DefaultConsumer {
-    pipe: DefaultPipe,
-}
-impl PneumaticContainer for DefaultConsumer {
-    fn pressure(&self) -> Pressure {
-        self.pipe.pressure()
-    }
-
-    fn volume(&self) -> Volume {
-        self.pipe.volume()
-    }
-
-    fn temperature(&self) -> ThermodynamicTemperature {
-        self.pipe.temperature()
-    }
-
-    fn change_volume(&mut self, volume: Volume) {
-        self.pipe.change_volume(volume);
-    }
-
-    fn update_temperature(&mut self, temperature: TemperatureInterval) {
-        self.pipe.update_temperature(temperature);
-    }
-}
-impl DefaultConsumer {
-    pub fn new(volume: Volume) -> Self {
-        Self {
-            pipe: DefaultPipe::new(
-                volume,
-                Fluid::new(Pressure::new::<pascal>(142000.)),
-                Pressure::new::<psi>(14.7),
-                ThermodynamicTemperature::new::<degree_celsius>(15.),
-            ),
-        }
-    }
-
-    pub fn update(&mut self, controller: &impl ControllerSignal<PneumaticConsumptionSignal>) {
-        if let Some(signal) = controller.signal() {
-            let max_consumption = -self.pipe.vol_to_target(Pressure::new::<psi>(0.));
-
-            self.change_volume(-signal.consumed_volume.min(max_consumption));
-        }
-    }
-}
-
 pub struct CrossBleedValveSelectorKnob {
     mode_id: String,
     mode: CrossBleedValveSelectorMode,
@@ -748,36 +675,6 @@ mod tests {
     }
 
     #[test]
-    fn compression_chamber_maintain_pressure_with_consumer() {
-        let target_pressure = Pressure::new::<psi>(30.);
-
-        let mut compression_chamber_controller =
-            ConstantPressureController::new(Pressure::new::<psi>(30.));
-        let mut compression_chamber = CompressionChamber::new(Volume::new::<cubic_meter>(5.));
-
-        let mut valve = DefaultValve::new_open();
-
-        let mut consumer_controller =
-            ConstantConsumerController::new(VolumeRate::new::<cubic_meter_per_second>(1.));
-        let mut consumer = DefaultConsumer::new(Volume::new::<cubic_meter>(1.));
-
-        let context = context(Duration::from_millis(100), Length::new::<foot>(0.));
-
-        compression_chamber.update(&compression_chamber_controller);
-
-        consumer_controller.update(&context);
-        consumer.update(&consumer_controller);
-
-        valve.update_move_fluid(&context, &mut compression_chamber, &mut consumer);
-
-        // Make sure pressure drops after consumer uses some
-        assert!((compression_chamber.pressure() - target_pressure).abs() > pressure_tolerance());
-
-        compression_chamber.update(&compression_chamber_controller);
-        assert!((compression_chamber.pressure() - target_pressure).abs() < pressure_tolerance());
-    }
-
-    #[test]
     fn engine_compression_chamber_pressure_cold_and_dark() {
         let engine = TestEngine::cold_dark();
         let mut compression_chamber = EngineCompressionChamberController::new(0.5, 0.5, 2.);
@@ -840,55 +737,6 @@ mod tests {
         } else {
             assert!(false)
         }
-    }
-
-    #[test]
-    fn constant_consumer_signal() {
-        let mut controller =
-            ConstantConsumerController::new(VolumeRate::new::<cubic_meter_per_second>(0.1));
-
-        let context = context(Duration::from_secs(1), Length::new::<foot>(0.));
-        controller.update(&context);
-
-        if let Some(signal) = controller.signal() {
-            assert_eq!(signal.consumed_volume, Volume::new::<cubic_meter>(0.1));
-        } else {
-            assert!(false);
-        }
-    }
-
-    #[test]
-    fn consumer_accepts_signal() {
-        let consumption_rate = VolumeRate::new::<cubic_meter_per_second>(0.1);
-
-        // This is what consumer should be initialized to automatically.
-        let initial_pressure = Pressure::new::<psi>(14.7);
-
-        let mut consumer_controller = ConstantConsumerController::new(consumption_rate);
-        let mut consumer = DefaultConsumer::new(Volume::new::<cubic_meter>(1.));
-
-        let context = context(Duration::from_secs(1), Length::new::<foot>(0.));
-
-        consumer_controller.update(&context);
-        consumer.update(&consumer_controller);
-
-        assert!(consumer.pressure() < initial_pressure);
-    }
-
-    #[test]
-    fn consumer_pressure_stays_above_zero() {
-        let consumption_rate = VolumeRate::new::<cubic_meter_per_second>(1.);
-
-        let mut consumer_controller = ConstantConsumerController::new(consumption_rate);
-        let mut consumer = DefaultConsumer::new(Volume::new::<cubic_meter>(1.));
-
-        let context = context(Duration::from_secs(100), Length::new::<foot>(0.));
-
-        consumer_controller.update(&context);
-        consumer.update(&consumer_controller);
-
-        assert!(consumer.pressure() >= Pressure::new::<psi>(0.));
-        assert!(consumer.pressure() < pressure_tolerance());
     }
 
     #[test]

@@ -19,11 +19,11 @@ use systems::{
     hydraulic::Fluid,
     overhead::{AutoOffFaultPushButton, OnOffFaultPushButton},
     pneumatic::{
-        valve::*, ApuCompressionChamberController, CompressionChamber, ConstantConsumerController,
-        ControllablePneumaticValve, ControlledPneumaticValveSignal, CrossBleedValveSelectorKnob,
-        CrossBleedValveSelectorMode, DefaultConsumer, DefaultPipe,
-        EngineCompressionChamberController, EngineState, HeatExchanger, PneumaticContainer,
-        PneumaticContainerWithConnector, TargetPressureSignal, VariableVolumeContainer,
+        valve::*, ApuCompressionChamberController, CompressionChamber, ControllablePneumaticValve,
+        ControlledPneumaticValveSignal, CrossBleedValveSelectorKnob, CrossBleedValveSelectorMode,
+        DefaultPipe, EngineCompressionChamberController, EngineState, HeatExchanger,
+        PneumaticContainer, PneumaticContainerWithConnector, TargetPressureSignal,
+        VariableVolumeContainer,
     },
     shared::{
         pid::PidController, ControllerSignal, DelayedTrueLogicGate, ElectricalBusType,
@@ -209,7 +209,6 @@ impl A320Pneumatic {
             }
         }
 
-        // Update consumers:
         self.update_hydraulic_reservoir_spatial_volumes(
             hydraulics.fake_green_reservoir(),
             hydraulics.fake_blue_reservoir(),
@@ -2405,7 +2404,7 @@ mod tests {
     }
 
     #[test]
-    fn apu_bleed_provides_42_psi_with_open_cross_bleed_valve() {
+    fn apu_bleed_provides_at_least_35_psi_with_open_cross_bleed_valve() {
         let test_bed = test_bed_with()
             .stop_eng1()
             .stop_eng2()
@@ -2418,16 +2417,8 @@ mod tests {
         assert!(!test_bed.pr_valve_is_open(1));
         assert!(!test_bed.pr_valve_is_open(2));
 
-        let diff = test_bed.precooler_outlet_pressure(2) - Pressure::new::<psi>(42.);
-        println!("diff: {} psi", diff.get::<psi>());
-
-        assert!(!test_bed.precooler_outlet_pressure(1).is_nan());
-
-        assert!(
-            (test_bed.precooler_outlet_pressure(1) - Pressure::new::<psi>(42.)).abs()
-                < pressure_tolerance()
-        );
-        assert!((diff).abs() < pressure_tolerance())
+        assert!(test_bed.precooler_outlet_pressure(1) > Pressure::new::<psi>(35.));
+        assert!(test_bed.precooler_outlet_pressure(2) > Pressure::new::<psi>(35.));
     }
 
     #[test]
