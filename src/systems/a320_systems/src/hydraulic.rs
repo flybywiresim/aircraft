@@ -47,9 +47,6 @@ use systems::{
     },
 };
 
-mod flaps_computer;
-use flaps_computer::SlatFlapComplex;
-
 struct A320CargoDoorFactory {}
 impl A320CargoDoorFactory {
     fn a320_cargo_door_actuator(
@@ -145,8 +142,6 @@ pub(super) struct A320Hydraulic {
     forward_cargo_door_controller: A320DoorController,
     aft_cargo_door: CargoDoor,
     aft_cargo_door_controller: A320DoorController,
-
-    slats_flaps_complex: SlatFlapComplex,
 }
 impl A320Hydraulic {
     const FORWARD_CARGO_DOOR_ID: &'static str = "FWD";
@@ -310,8 +305,6 @@ impl A320Hydraulic {
 
             aft_cargo_door: A320CargoDoorFactory::new_a320_cargo_door(Self::AFT_CARGO_DOOR_ID),
             aft_cargo_door_controller: A320DoorController::new(Self::AFT_CARGO_DOOR_ID),
-
-            slats_flaps_complex: SlatFlapComplex::new(),
         }
     }
 
@@ -532,9 +525,6 @@ impl A320Hydraulic {
             &self.aft_cargo_door,
             self.yellow_loop.pressure(),
         );
-
-        self.slats_flaps_complex
-            .update(context, self.green_loop.pressure());
     }
 
     // For each hydraulic loop retrieves volumes from and to each actuator and pass it to the loops
@@ -740,8 +730,6 @@ impl SimulationElement for A320Hydraulic {
         self.braking_circuit_norm.accept(visitor);
         self.braking_circuit_altn.accept(visitor);
         self.braking_force.accept(visitor);
-
-        self.slats_flaps_complex.accept(visitor);
 
         visitor.visit(self);
     }
@@ -1542,8 +1530,8 @@ impl SimulationElement for A320BrakingForce {
     }
 
     fn read(&mut self, reader: &mut SimulatorReader) {
-        let left_flap: f64 = reader.read("LEFT_FLAPS_POSITION_PERCENT");
-        let right_flap: f64 = reader.read("RIGHT_FLAPS_POSITION_PERCENT");
+        let left_flap: f64 = reader.read("TRAILING EDGE FLAPS LEFT PERCENT");
+        let right_flap: f64 = reader.read("TRAILING EDGE FLAPS RIGHT PERCENT");
         self.flap_position = (left_flap + right_flap) / 2.;
     }
 }
