@@ -217,7 +217,9 @@ void FlyByWireInterface::setupLocalVariables() {
   idFlightDirectorBank = make_unique<LocalVariable>("A32NX_FLIGHT_DIRECTOR_BANK");
   idFlightDirectorPitch = make_unique<LocalVariable>("A32NX_FLIGHT_DIRECTOR_PITCH");
   idFlightDirectorYaw = make_unique<LocalVariable>("A32NX_FLIGHT_DIRECTOR_YAW");
+
   idBetaTarget = make_unique<LocalVariable>("A32NX_BETA_TARGET");
+  idBetaTargetActive = make_unique<LocalVariable>("A32NX_BETA_TARGET_ACTIVE");
 
   // register L variables for autoland warning
   idAutopilotAutolandWarning = make_unique<LocalVariable>("A32NX_AUTOPILOT_AUTOLAND_WARNING");
@@ -1236,8 +1238,22 @@ bool FlyByWireInterface::updateFlyByWire(double sampleTime) {
   idAileronPositionLeft->set(animationAileronHandler->getPositionLeft());
   idAileronPositionRight->set(animationAileronHandler->getPositionRight());
 
-  // update beta target
-  idBetaTarget->set(flyByWireOutput.roll.data_computed.beta_target_deg);
+  // determine if beta target needs to be active (blue)
+  bool conditionDifferenceEngineN1Larger35 = (abs(simData.engine_N1_1_percent - simData.engine_N1_2_percent) > 35);
+  bool conditionConfigruation123 = (flapsHandler->getHandlePosition() > 0 && flapsHandler->getHandlePosition() < 4);
+  bool conditionAnyEngineN1Above80 = (simData.engine_N1_1_percent > 80 || simData.engine_N1_2_percent > 80);
+  bool conditionAnyThrustLeverAboveMct = (thrustLeverAngle_1->get() > 35 || thrustLeverAngle_2->get() > 35);
+  bool conditionAnyThrustLeverInFlex = ((thrustLeverAngle_1->get() >= 35 || thrustLeverAngle_2->get() >= 35) &&
+                                        autoThrustOutput.thrust_limit_type == athr_thrust_limit_type_FLEX);
+
+  if (conditionDifferenceEngineN1Larger35 && conditionConfigruation123 &&
+      (conditionAnyEngineN1Above80 || conditionAnyThrustLeverAboveMct || conditionAnyThrustLeverInFlex)) {
+    idBetaTargetActive->set(1);
+    idBetaTarget->set(flyByWireOutput.roll.data_computed.beta_target_deg);
+  } else {
+    idBetaTargetActive->set(0);
+    idBetaTarget->set(0);
+  }
 
   // success ----------------------------------------------------------------------------------------------------------
   return true;

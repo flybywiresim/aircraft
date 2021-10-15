@@ -132,7 +132,9 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idFlightDirectorBank;
   std::unique_ptr<LocalVariable> idFlightDirectorPitch;
   std::unique_ptr<LocalVariable> idFlightDirectorYaw;
+
   std::unique_ptr<LocalVariable> idBetaTarget;
+  std::unique_ptr<LocalVariable> idBetaTargetActive;
 
   std::unique_ptr<LocalVariable> idAutopilotAutolandWarning;
 

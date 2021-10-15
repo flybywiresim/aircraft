@@ -289,14 +289,13 @@ const SideslipIndicator = ({ isOnGround, roll }: SideslipIndicatorProps) => {
             const latAcc = getSimVar('ACCELERATION BODY X', 'G Force');
             const accInG = Math.min(0.3, Math.max(-0.3, latAcc));
             offset = -accInG * 15 / 0.3;
-            setBetaTargetActive(false);
         } else {
             const beta = getSimVar('INCIDENCE BETA', 'degrees');
             const betaTarget = getSimVar('L:A32NX_BETA_TARGET', 'Number');
             offset = Math.max(Math.min(beta - betaTarget, 15), -15);
-            setBetaTargetActive(Math.abs(betaTarget) > 0.1);
         }
 
+        setBetaTargetActive(getSimVar('L:A32NX_BETA_TARGET_ACTIVE', 'Number') === 1);
         setSIIndexOffset(sideslipIndicatorFilter.step(offset, deltaTime / 1000));
     });
 
