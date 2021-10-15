@@ -32,6 +32,9 @@ impl FlapSlatHydraulicMotor {
     // Simulates rpm transients.
     const LOW_PASS_RPM_TRANSIENT_TIME_CONSTANT_S: f64 = 0.3;
 
+    // Corrective factor to adjust final flow consumption to tune the model
+    const FLOW_CORRECTION_FACTOR: f64 = 0.9;
+
     fn new(id: &str, displacement: Volume) -> Self {
         Self {
             rpm_id: format!("HYD_{}_MOTOR_RPM", id),
@@ -60,7 +63,9 @@ impl FlapSlatHydraulicMotor {
         }
 
         self.current_flow = VolumeRate::new::<gallon_per_minute>(
-            self.speed.get::<revolution_per_minute>().abs() * self.displacement.get::<cubic_inch>()
+            Self::FLOW_CORRECTION_FACTOR
+                * self.speed.get::<revolution_per_minute>().abs()
+                * self.displacement.get::<cubic_inch>()
                 / 231.,
         );
 
@@ -133,7 +138,7 @@ impl FlapSlatAssembly {
     const BRAKE_PRESSURE_MIN_TO_ALLOW_MOVEMENT_PSI: f64 = 500.;
     const MAX_CIRCUIT_PRESSURE_PSI: f64 = 3000.;
     const ANGLE_THRESHOLD_FOR_REDUCED_SPEED_DEGREES: f64 = 6.69;
-    const ANGULAR_SPEED_LIMIT_WHEN_APROACHING_POSITION_RAD_S: f64 = 0.08;
+    const ANGULAR_SPEED_LIMIT_FACTOR_WHEN_APROACHING_POSITION: f64 = 0.5;
 
     pub fn new(
         id: &str,
@@ -267,30 +272,23 @@ impl FlapSlatAssembly {
             final_right_pressure = Pressure::new::<psi>(0.);
         }
 
-        let mut new_theoretical_max_speed;
-        if final_left_pressure + final_right_pressure
-            > Pressure::new::<psi>(Self::BRAKE_PRESSURE_MIN_TO_ALLOW_MOVEMENT_PSI)
-        {
-            // actual_speed = max_speed * total_pressure² / 6000 * 0.00018
-            new_theoretical_max_speed = AngularVelocity::new::<radian_per_second>(
-                self.full_pressure_max_speed.get::<radian_per_second>()
-                    * (final_left_pressure.get::<psi>() + final_right_pressure.get::<psi>())
-                    * (final_left_pressure.get::<psi>() + final_right_pressure.get::<psi>())
-                    / (Self::MAX_CIRCUIT_PRESSURE_PSI * 2.)
-                    * 0.00018,
-            );
+        let new_theoretical_max_speed_left_side = AngularVelocity::new::<radian_per_second>(
+            0.5 * self.full_pressure_max_speed.get::<radian_per_second>()
+                * Self::max_speed_factor_from_pressure(final_left_pressure),
+        );
 
-            new_theoretical_max_speed = new_theoretical_max_speed.min(self.full_pressure_max_speed);
+        let new_theoretical_max_speed_right_side = AngularVelocity::new::<radian_per_second>(
+            0.5 * self.full_pressure_max_speed.get::<radian_per_second>()
+                * Self::max_speed_factor_from_pressure(final_right_pressure),
+        );
 
-            if self.is_approaching_requested_position(self.final_requested_synchro_gear_position) {
-                new_theoretical_max_speed = self.current_max_speed.min(AngularVelocity::new::<
-                    radian_per_second,
-                >(
-                    Self::ANGULAR_SPEED_LIMIT_WHEN_APROACHING_POSITION_RAD_S,
-                ))
-            }
-        } else {
-            new_theoretical_max_speed = AngularVelocity::new::<radian_per_second>(0.);
+        let mut new_theoretical_max_speed =
+            new_theoretical_max_speed_left_side + new_theoretical_max_speed_right_side;
+
+        //new_theoretical_max_speed = new_theoretical_max_speed.min(self.full_pressure_max_speed);
+
+        if self.is_approaching_requested_position(self.final_requested_synchro_gear_position) {
+            new_theoretical_max_speed *= Self::ANGULAR_SPEED_LIMIT_FACTOR_WHEN_APROACHING_POSITION;
         }
 
         // Final max speed filtered to simulate smooth movements
@@ -301,6 +299,17 @@ impl FlapSlatAssembly {
                         -context.delta_as_secs_f64()
                             / Self::LOW_PASS_FILTER_FLAP_POSITION_TRANSIENT_TIME_CONSTANT_S,
                     ));
+    }
+
+    fn max_speed_factor_from_pressure(current_pressure: Pressure) -> f64 {
+        if current_pressure > Pressure::new::<psi>(Self::BRAKE_PRESSURE_MIN_TO_ALLOW_MOVEMENT_PSI) {
+            ((current_pressure.get::<psi>() - Self::BRAKE_PRESSURE_MIN_TO_ALLOW_MOVEMENT_PSI)
+                / (Self::MAX_CIRCUIT_PRESSURE_PSI - Self::BRAKE_PRESSURE_MIN_TO_ALLOW_MOVEMENT_PSI))
+                .min(1.)
+                .max(0.)
+        } else {
+            0.
+        }
     }
 
     fn update_motor_speed_and_flows(

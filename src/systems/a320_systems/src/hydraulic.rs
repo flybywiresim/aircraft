@@ -324,7 +324,7 @@ impl A320Hydraulic {
             flap_system: FlapSlatAssembly::new(
                 "FLAPS",
                 Volume::new::<cubic_inch>(0.32),
-                AngularVelocity::new::<radian_per_second>(0.11),
+                AngularVelocity::new::<radian_per_second>(0.13),
                 Angle::new::<degree>(251.97),
                 Ratio::new::<ratio>(140.),
                 Ratio::new::<ratio>(16.632),
@@ -335,7 +335,7 @@ impl A320Hydraulic {
             slat_system: FlapSlatAssembly::new(
                 "SLATS",
                 Volume::new::<cubic_inch>(0.32),
-                AngularVelocity::new::<radian_per_second>(0.15),
+                AngularVelocity::new::<radian_per_second>(0.08),
                 Angle::new::<degree>(170.07975),
                 Ratio::new::<ratio>(140.),
                 Ratio::new::<ratio>(16.632),
@@ -5656,12 +5656,37 @@ mod tests {
 
             test_bed = test_bed
                 .set_flaps_handle_position(4)
-                .run_waiting_for(Duration::from_secs(90));
+                .run_waiting_for(Duration::from_secs(80));
 
             assert!(test_bed.get_flaps_left_position_percent() > 99.);
             assert!(test_bed.get_flaps_right_position_percent() > 99.);
             assert!(test_bed.get_slats_left_position_percent() > 99.);
             assert!(test_bed.get_slats_right_position_percent() > 99.);
+        }
+
+        #[test]
+        fn yellow_epump_no_ptu_can_deploy_flaps_less_33s() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .set_ptu_state(false)
+                .run_one_tick();
+
+            test_bed = test_bed
+                .set_yellow_e_pump(false)
+                .run_waiting_for(Duration::from_secs(20));
+
+            assert!(test_bed.is_yellow_pressurised());
+
+            test_bed = test_bed
+                .set_flaps_handle_position(4)
+                .run_waiting_for(Duration::from_secs(32));
+
+            assert!(test_bed.get_flaps_left_position_percent() > 99.);
+            assert!(test_bed.get_flaps_right_position_percent() > 99.);
+            assert!(test_bed.get_slats_left_position_percent() < 1.);
+            assert!(test_bed.get_slats_right_position_percent() < 1.);
         }
 
         #[test]
@@ -5683,6 +5708,27 @@ mod tests {
             assert!(test_bed.get_flaps_right_position_percent() <= 1.);
             assert!(test_bed.get_slats_left_position_percent() > 99.);
             assert!(test_bed.get_slats_right_position_percent() > 99.);
+        }
+
+        #[test]
+        fn blue_epump_cannot_deploy_slats_in_less_28_s_and_no_flaps() {
+            let mut test_bed = test_bed_with()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .set_blue_e_pump_ovrd_pressed(true)
+                .run_waiting_for(Duration::from_secs(5));
+
+            // Blue epump is on
+            assert!(test_bed.is_blue_pressurised());
+
+            test_bed = test_bed
+                .set_flaps_handle_position(4)
+                .run_waiting_for(Duration::from_secs(28));
+
+            assert!(test_bed.get_flaps_left_position_percent() <= 1.);
+            assert!(test_bed.get_flaps_right_position_percent() <= 1.);
+            assert!(test_bed.get_slats_left_position_percent() < 99.);
+            assert!(test_bed.get_slats_right_position_percent() < 99.);
         }
 
         #[test]
