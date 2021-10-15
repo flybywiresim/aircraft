@@ -217,7 +217,7 @@ void FlyByWireInterface::setupLocalVariables() {
   idFlightDirectorBank = make_unique<LocalVariable>("A32NX_FLIGHT_DIRECTOR_BANK");
   idFlightDirectorPitch = make_unique<LocalVariable>("A32NX_FLIGHT_DIRECTOR_PITCH");
   idFlightDirectorYaw = make_unique<LocalVariable>("A32NX_FLIGHT_DIRECTOR_YAW");
-  idBetaTarget = make_unique<LocalVariable>("A32NX_FBW_BETA_TARGET");
+  idBetaTarget = make_unique<LocalVariable>("A32NX_BETA_TARGET");
 
   // register L variables for autoland warning
   idAutopilotAutolandWarning = make_unique<LocalVariable>("A32NX_AUTOPILOT_AUTOLAND_WARNING");
