@@ -302,8 +302,10 @@ impl FlapSlatAssembly {
     }
 
     fn max_speed_factor_from_pressure(current_pressure: Pressure) -> f64 {
+        let press_corrected =
+            current_pressure.get::<psi>() - Self::BRAKE_PRESSURE_MIN_TO_ALLOW_MOVEMENT_PSI;
         if current_pressure > Pressure::new::<psi>(Self::BRAKE_PRESSURE_MIN_TO_ALLOW_MOVEMENT_PSI) {
-            ((current_pressure.get::<psi>() - Self::BRAKE_PRESSURE_MIN_TO_ALLOW_MOVEMENT_PSI)
+            (0.00045 * (press_corrected * press_corrected)
                 / (Self::MAX_CIRCUIT_PRESSURE_PSI - Self::BRAKE_PRESSURE_MIN_TO_ALLOW_MOVEMENT_PSI))
                 .min(1.)
                 .max(0.)
