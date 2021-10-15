@@ -19,9 +19,9 @@ export const PressureIndicator: React.FC = () => {
         if (baroMode === BaroMode.STD) {
             setBaroText('STD');
         } else if (baroUnitInHg === '1') {
-            setBaroText(`\xa0\xa0${Math.round(hpaQnh)}/${inHgQnh.toFixed(2)}`);
+            setBaroText(`\xa0\xa0${Math.round(hpaQnh).toString().padStart(4, "\xa0")}/${inHgQnh.toFixed(2)}`);
         } else {
-            setBaroText(`${Math.round(hpaQnh)}\xa0\xa0\xa0\xa0`);
+            setBaroText(`${Math.round(hpaQnh).toString().padStart(4, "\xa0")}\xa0\xa0\xa0\xa0`);
         }
     }, [baroUnitInHg, baroMode, hpaQnh, inHgQnh]);
 

@@ -40,7 +40,7 @@
 1. [MCDU] Fixed length limitation for system messages - @derl30n (Leon)
 1. [FMGC] Use correct variable to determine lateral AP mode for APPROACH phase switch - @aguther (Andreas Guther)
 1. [ENGINE] Correctly adapt fuel burn with sim rate - @aguther (Andreas Guther)
-1. [ISIS] Added in.Hg and metric altitude pin programs - @tracernz (Mike)
+1. [ISIS] Added inHg and metric altitude pin programs - @tracernz (Mike)
 
 ## 0.7.0
 1. [HYD] First building block, more to come. Hydraulics do not impact the sim YET. - @crocket6 (crocket)

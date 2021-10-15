@@ -138,7 +138,7 @@ const AircraftConfigurationPage = () => {
 
     const isisBaroButtons: ButtonType[] = [
         { name: 'hPa', setting: '0' },
-        { name: 'hPa/in.Hg', setting: '1' },
+        { name: 'hPa/inHg', setting: '1' },
     ];
 
     const isisMetricAltitudeButtons: ButtonType[] = [
