@@ -16,20 +16,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import { Metar } from '@flybywiresim/api-client';
 import metarParser from 'aewx-metar-parser';
 import { Units } from '@shared/units';
 import LandingCalculator, { LandingFlapsConfig, LandingRunwayConditions } from '../Calculators/LandingCalculator';
 import RunwayVisualizationWidget, { LabelType } from './RunwayVisualizationWidget';
 import SimpleInput from '../../Components/Form/SimpleInput/SimpleInput';
+import { SelectGroup, SelectItem } from '../../Components/Form/Select';
 import SelectInput from '../../Components/Form/SelectInput/SelectInput';
 import OutputDisplay from '../../Components/Form/OutputDisplay/OutputDisplay';
 import { useSimVar } from '../../../Common/simVars';
 import { MetarParserType } from '../../../Common/metarTypes';
 import { EPerformanceActions, PerformanceContext, performanceInitialState } from '../../Store/performance-context';
-
-const poundsToKgs = 0.453592;
+import './Widgets.scss';
 
 export const LandingWidget = () => {
     const calculator: LandingCalculator = new LandingCalculator();
@@ -37,6 +37,10 @@ export const LandingWidget = () => {
     const { performanceState, performanceDispatch } = useContext(PerformanceContext);
 
     const [totalWeight] = useSimVar('TOTAL WEIGHT', 'Pounds', 1000);
+    const [temperatureUnit, setTemperatureUnit] = useState(Units.userTemperatureUnit);
+    const [pressureUnit, setPressureUnit] = useState(Units.userPressureUnit);
+    const [lengthUnit, setLengthUnit] = useState(Units.userLengthUnit);
+    const [weightUnit, setWeightUnit] = useState(Units.userWeightUnit);
 
     const {
         icao,
@@ -61,6 +65,8 @@ export const LandingWidget = () => {
         runwayNumber,
         displayedRunwayLength,
     } = performanceState.landing;
+
+    const toLengthUnitValue = (value: number): number => lengthUnit === 'm' ? value : Units.metreToFoot(value);
 
     const handleCalculateLanding = (): void => {
         if (!areInputsValid()) return;
@@ -109,17 +115,14 @@ export const LandingWidget = () => {
         });
     };
 
-    const handleSyncValues = async (): Promise<void> => {
+    const handleSyncWeatherValues = async (): Promise<void> => {
         if (!isValidIcao()) return;
         const metarResult = await Metar.get(icao);
         const parsedMetar: MetarParserType = metarParser(metarResult.metar);
 
-        const weightKgs = Math.round(totalWeight * poundsToKgs);
-
         performanceDispatch({
             type: EPerformanceActions.SET_LANDING,
             payload: {
-                weight: weightKgs,
                 windDirection: parsedMetar.wind.degrees,
                 windMagnitude: parsedMetar.wind.speed_kts,
                 temperature: parsedMetar.temperature.celsius,
@@ -169,8 +172,8 @@ export const LandingWidget = () => {
 
         if (Number.isNaN(weight)) {
             weight = undefined;
-        } else {
-            weight = Units.userToKilogram(weight);
+        } else if (weightUnit === 'lbs') {
+            weight = Units.poundToKilogram(weight);
         }
 
         performanceDispatch({
@@ -223,8 +226,8 @@ export const LandingWidget = () => {
 
         if (Number.isNaN(temperature)) {
             temperature = undefined;
-        } else {
-            temperature = Units.userToCelsius(temperature);
+        } else if (temperatureUnit === '°F') {
+            temperature = Units.fahrenheitToCelsius(temperature);
         }
 
         performanceDispatch({
@@ -286,8 +289,8 @@ export const LandingWidget = () => {
 
         if (Number.isNaN(runwayLength)) {
             runwayLength = undefined;
-        } else {
-            runwayLength = Units.userToMetre(runwayLength);
+        } else if (lengthUnit === 'ft') {
+            runwayLength = Units.footToMetre(runwayLength);
         }
 
         performanceDispatch({
@@ -310,8 +313,8 @@ export const LandingWidget = () => {
 
         if (Number.isNaN(pressure)) {
             pressure = undefined;
-        } else {
-            pressure = Units.userToHectopascal(pressure);
+        } else if (pressureUnit === 'in.Hg') {
+            pressure = Units.inchOfMercuryToHectopascal(pressure);
         }
 
         performanceDispatch({
@@ -339,6 +342,7 @@ export const LandingWidget = () => {
             && runwayLength !== undefined;
 
     const calculateButtonClass = `mx-2 w-2/4 text-white bg-green-500 p-2 flex items-center justify-center rounded-lg focus:outline-none text-lg ${areInputsValid() ? '' : 'opacity-50'}`;
+    const selectItemClass = 'h-11 inline-flex flex-1 text-xs tracking-tighter items-center justify-center landing-widget-select-item';
 
     return (
         <div className="flex flex-grow">
@@ -352,7 +356,7 @@ export const LandingWidget = () => {
                         <div className="flex">
                             <div className="flex-1 m-2.5 column-left">
                                 <SimpleInput
-                                    className="w-56 my-1.5"
+                                    className="w-64 my-1.5"
                                     label="Wind Direction"
                                     value={windDirection}
                                     placeholder="000"
@@ -364,7 +368,7 @@ export const LandingWidget = () => {
                                     number
                                 />
                                 <SimpleInput
-                                    className="w-56 my-1.5"
+                                    className="w-64 my-1.5"
                                     label="Wind Magnitude"
                                     value={windMagnitude}
                                     placeholder="Kts"
@@ -373,30 +377,46 @@ export const LandingWidget = () => {
                                     onChange={handleWindMagnitudeChange}
                                     number
                                 />
+                                <div className="h-11 my-1.5 flex flex-row justify-end">
+                                    <SimpleInput
+                                        className="w-36"
+                                        label="Temperature"
+                                        value={temperature && (temperatureUnit === '°C' ? temperature : Units.celsiusToFahrenheit(temperature))}
+                                        placeholder={temperatureUnit}
+                                        min={temperatureUnit === '°C' ? -50 : -58}
+                                        max={temperatureUnit === '°C' ? 55 : 131}
+                                        decimalPrecision={1}
+                                        onChange={handleTemperatureChange}
+                                        number
+                                    />
+                                    <div className="w-28 pl-1">
+                                        <SelectGroup>
+                                            <SelectItem classNames={selectItemClass} selected={temperatureUnit === '°C'} onSelect={() => setTemperatureUnit('°C')} enabled>°C</SelectItem>
+                                            <SelectItem classNames={selectItemClass} selected={temperatureUnit === '°F'} onSelect={() => setTemperatureUnit('°F')} enabled>°F</SelectItem>
+                                        </SelectGroup>
+                                    </div>
+                                </div>
+                                <div className="h-11 my-1.5 flex flex-row justify-end">
+                                    <SimpleInput
+                                        className="w-36"
+                                        label={pressureUnit === 'hPa' ? 'QNH' : 'Altimeter'}
+                                        value={pressure && (pressureUnit === 'hPa' ? pressure : Units.hectopascalToInchOfMercury(pressure))}
+                                        placeholder={pressureUnit}
+                                        min={pressureUnit === 'hPa' ? 745 : 22.00}
+                                        max={pressureUnit === 'hPa' ? 1100 : 32.48}
+                                        decimalPrecision={pressureUnit === 'hPa' ? 0 : 2}
+                                        onChange={handlePressureChange}
+                                        number
+                                    />
+                                    <div className="w-28 pl-1">
+                                        <SelectGroup>
+                                            <SelectItem classNames={selectItemClass} selected={pressureUnit === 'hPa'} onSelect={() => setPressureUnit('hPa')} enabled>hPa</SelectItem>
+                                            <SelectItem classNames={selectItemClass} selected={pressureUnit === 'in.Hg'} onSelect={() => setPressureUnit('in.Hg')} enabled>in.Hg</SelectItem>
+                                        </SelectGroup>
+                                    </div>
+                                </div>
                                 <SimpleInput
-                                    className="w-56 my-1.5"
-                                    label="Temperature"
-                                    value={temperature && Units.celsiusToUser(temperature)}
-                                    placeholder={Units.userTemperatureUnit}
-                                    min={Units.metricUnits ? -50 : -58}
-                                    max={Units.metricUnits ? 55 : 131}
-                                    decimalPrecision={1}
-                                    onChange={handleTemperatureChange}
-                                    number
-                                />
-                                <SimpleInput
-                                    className="w-56 my-1.5"
-                                    label={Units.metricUnits ? 'QNH' : 'Altimeter'}
-                                    value={pressure && Units.hectopascalToUserString(pressure)}
-                                    placeholder={Units.userPressureUnit}
-                                    min={Units.metricUnits ? 745 : 22.00}
-                                    max={Units.metricUnits ? 1100 : 32.48}
-                                    decimalPrecision={Units.metricUnits ? 0 : 2}
-                                    onChange={handlePressureChange}
-                                    number
-                                />
-                                <SimpleInput
-                                    className="w-56 my-1.5"
+                                    className="w-64 my-1.5"
                                     label="Rwy Altitude"
                                     value={altitude}
                                     placeholder="ft MSL"
@@ -407,7 +427,7 @@ export const LandingWidget = () => {
                                     number
                                 />
                                 <SimpleInput
-                                    className="w-56 my-1.5"
+                                    className="w-64 my-1.5"
                                     label="Rwy Heading"
                                     value={runwayHeading}
                                     placeholder="000"
@@ -419,7 +439,7 @@ export const LandingWidget = () => {
                                     number
                                 />
                                 <SelectInput
-                                    className="w-56 my-1.5"
+                                    className="w-64 my-1.5"
                                     label="Rwy Condition"
                                     defaultValue={runwayCondition}
                                     onChange={handleRunwayConditionChange}
@@ -436,7 +456,7 @@ export const LandingWidget = () => {
                             </div>
                             <div className="flex-1 m-2.5 column-right">
                                 <SimpleInput
-                                    className="w-56 my-1.5"
+                                    className="w-64 my-1.5"
                                     label="Rwy Slope"
                                     value={slope}
                                     placeholder="0.0%"
@@ -447,20 +467,28 @@ export const LandingWidget = () => {
                                     number
                                     reverse
                                 />
+                                <div className="h-11 my-1.5 flex flex-row justify-start">
+                                    <div className="w-24 pr-1">
+                                        <SelectGroup>
+                                            <SelectItem classNames={selectItemClass} selected={lengthUnit === 'ft'} onSelect={() => setLengthUnit('ft')} enabled>ft</SelectItem>
+                                            <SelectItem classNames={selectItemClass} selected={lengthUnit === 'm'} onSelect={() => setLengthUnit('m')} enabled>m</SelectItem>
+                                        </SelectGroup>
+                                    </div>
+                                    <SimpleInput
+                                        className="w-40"
+                                        label="Rwy LDA"
+                                        value={runwayLength && (lengthUnit === 'm' ? runwayLength : Units.metreToFoot(runwayLength))}
+                                        placeholder={lengthUnit}
+                                        min={0}
+                                        max={lengthUnit === 'm' ? 6000 : 20000}
+                                        decimalPrecision={0}
+                                        onChange={handleRunwayLengthChange}
+                                        number
+                                        reverse
+                                    />
+                                </div>
                                 <SimpleInput
-                                    className="w-56 my-1.5"
-                                    label="Rwy LDA"
-                                    value={runwayLength && Units.kilogramToUser(runwayLength)}
-                                    placeholder={Units.userLengthUnit}
-                                    min={0}
-                                    max={Units.metricUnits ? 6000 : 20000}
-                                    decimalPrecision={0}
-                                    onChange={handleRunwayLengthChange}
-                                    number
-                                    reverse
-                                />
-                                <SimpleInput
-                                    className="w-56 my-1.5"
+                                    className="w-64 my-1.5"
                                     label="Approach Speed"
                                     value={approachSpeed}
                                     placeholder="Kts"
@@ -471,20 +499,28 @@ export const LandingWidget = () => {
                                     number
                                     reverse
                                 />
-                                <SimpleInput
-                                    className="w-56 my-1.5"
-                                    label="Weight"
-                                    value={weight && Units.kilogramToUser(weight)}
-                                    placeholder={Units.userWeightUnit}
-                                    min={Units.metricUnits ? 41000 : 90400}
-                                    max={Units.metricUnits ? 100000 : 220000}
-                                    decimalPrecision={0}
-                                    onChange={handleWeightChange}
-                                    number
-                                    reverse
-                                />
+                                <div className="h-11 my-1.5 flex flex-row justify-start">
+                                    <div className="w-24 pr-1">
+                                        <SelectGroup>
+                                            <SelectItem classNames={selectItemClass} selected={weightUnit === 'lbs'} onSelect={() => setWeightUnit('lbs')} enabled>lbs</SelectItem>
+                                            <SelectItem classNames={selectItemClass} selected={weightUnit === 'kg'} onSelect={() => setWeightUnit('kg')} enabled>kg</SelectItem>
+                                        </SelectGroup>
+                                    </div>
+                                    <SimpleInput
+                                        className="w-40"
+                                        label="Weight"
+                                        value={weight && (weightUnit === 'kg' ? weight : Units.kilogramToPound(weight))}
+                                        placeholder={weightUnit}
+                                        min={weightUnit === 'kg' ? 41000 : 90400}
+                                        max={weightUnit === 'kg' ? 100000 : 220000}
+                                        decimalPrecision={0}
+                                        onChange={handleWeightChange}
+                                        number
+                                        reverse
+                                    />
+                                </div>
                                 <SelectInput
-                                    className="w-56 my-1.5"
+                                    className="w-64 my-1.5"
                                     label="Flaps"
                                     defaultValue={flaps}
                                     onChange={handleFlapsChange}
@@ -495,7 +531,7 @@ export const LandingWidget = () => {
                                     ]}
                                 />
                                 <SelectInput
-                                    className="w-56 my-1.5"
+                                    className="w-64 my-1.5"
                                     label="Overweight Proc"
                                     defaultValue={overweightProcedure}
                                     onChange={handleOverweightProcedureChange}
@@ -506,7 +542,7 @@ export const LandingWidget = () => {
                                     ]}
                                 />
                                 <SelectInput
-                                    className="w-56 my-1.5"
+                                    className="w-64 my-1.5"
                                     label="Reverse Thrust"
                                     defaultValue={reverseThrust}
                                     onChange={handleReverseThrustChange}
@@ -528,7 +564,7 @@ export const LandingWidget = () => {
                                 Calculate
                             </button>
                             <button
-                                onClick={handleSyncValues}
+                                onClick={handleSyncWeatherValues}
                                 className={`mx-2 w-1/4 text-white bg-teal-light p-2 flex items-center justify-center rounded-lg
                                 focus:outline-none text-lg ${isValidIcao() ? '' : 'opacity-50'}`}
                                 type="button"
@@ -548,16 +584,16 @@ export const LandingWidget = () => {
                     <div className="border-t border-white pt-3">
                         <div className="flex flex-col items-center m-3">
                             <div className="flex items-end">
-                                <OutputDisplay label="MAX MANUAL" value={`${Math.round(Units.metreToUser(maxAutobrakeLandingDist))}\xa0${Units.userLengthUnit}`} error={maxAutobrakeLandingDist > displayedRunwayLength} />
-                                <OutputDisplay label="MEDIUM" value={`${Math.round(Units.metreToUser(mediumAutobrakeLandingDist))}\xa0${Units.userLengthUnit}`} error={mediumAutobrakeLandingDist > displayedRunwayLength} />
-                                <OutputDisplay label="LOW" value={`${Math.round(Units.metreToUser(lowAutobrakeLandingDist))}\xa0${Units.userLengthUnit}`} error={lowAutobrakeLandingDist > displayedRunwayLength} />
+                                <OutputDisplay label="MAX MANUAL" value={`${Math.round(toLengthUnitValue(maxAutobrakeLandingDist))}\xa0${lengthUnit}`} error={maxAutobrakeLandingDist > displayedRunwayLength} />
+                                <OutputDisplay label="MEDIUM" value={`${Math.round(toLengthUnitValue(mediumAutobrakeLandingDist))}\xa0${lengthUnit}`} error={mediumAutobrakeLandingDist > displayedRunwayLength} />
+                                <OutputDisplay label="LOW" value={`${Math.round(toLengthUnitValue(lowAutobrakeLandingDist))}\xa0${lengthUnit}`} error={lowAutobrakeLandingDist > displayedRunwayLength} />
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
             <div className="text-white overflow-hidden bg-navy-lighter rounded-2xl shadow-lg p-6 h-efb-nav ml-3 w-3/12">
-                <RunwayVisualizationWidget mainLength={displayedRunwayLength} labels={runwayVisualizationLabels} runwayNumber={runwayNumber} />
+                <RunwayVisualizationWidget lengthUnit={lengthUnit} mainLength={displayedRunwayLength} labels={runwayVisualizationLabels} runwayNumber={runwayNumber} />
             </div>
         </div>
     );

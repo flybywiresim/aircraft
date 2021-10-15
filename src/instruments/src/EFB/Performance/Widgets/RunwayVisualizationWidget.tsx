@@ -34,6 +34,7 @@ export enum LabelType {
 }
 
 type RunwayVisualizationProps = {
+    lengthUnit?: 'm' | 'ft',
     mainLength?: number,
     asda?: number,
     toda?: number,
@@ -43,6 +44,10 @@ type RunwayVisualizationProps = {
 };
 
 const RunwayVisualizationWidget = (props: RunwayVisualizationProps) => {
+    function toLengthUnitValue(value: number): number {
+        return props.lengthUnit === 'm' ? value : Units.metreToFoot(value);
+    }
+
     function maxDist(): number {
         const distances = props.labels?.map((label) => label.distance) ?? [];
 
@@ -99,8 +104,8 @@ const RunwayVisualizationWidget = (props: RunwayVisualizationProps) => {
     function runwayLengthLabel(): JSX.Element {
         return (
             <div className="text-white absolute top-1/2 -right-3 transform -rotate-90 translate-x-1/2">
-                { Math.round(Units.metreToUser(props.mainLength ?? 0)) }&nbsp;
-                { Units.userLengthUnit }
+                { Math.round(toLengthUnitValue(props.mainLength ?? 0)) }&nbsp;
+                { props.lengthUnit }
             </div>
         );
     }
@@ -120,8 +125,8 @@ const RunwayVisualizationWidget = (props: RunwayVisualizationProps) => {
                         Stop Margin
                     </div>
                     <div>
-                        { Math.round(Units.metreToUser(props.stopMargin))}&nbsp;
-                        { Units.userLengthUnit }
+                        { Math.round(toLengthUnitValue(props.stopMargin))}&nbsp;
+                        { props.lengthUnit }
                     </div>
                     <div className={`border-l-4 h-full absolute top-0 left-0 ${props.stopMargin > 0 ? 'border-green-500' : 'border-red-500'}`} />
                 </div>
@@ -167,8 +172,8 @@ const RunwayVisualizationWidget = (props: RunwayVisualizationProps) => {
                             <div className="w-full text-center absolute -top-0.5 transform -translate-y-full">
                                 {label.label}
                                 {' '}
-                                { Math.round(Units.metreToUser(label.distance)) }&nbsp;
-                                { Units.userLengthUnit }
+                                { Math.round(toLengthUnitValue(label.distance)) }&nbsp;
+                                { props.lengthUnit }
                             </div>
                         )}
 
