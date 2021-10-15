@@ -1,7 +1,10 @@
 use crate::{
     hydraulic::Fluid,
     pneumatic::valve::*,
-    shared::{ControllerSignal, EngineCorrectedN1, EngineCorrectedN2, MachNumber, PneumaticValve},
+    shared::{
+        arinc429::{Arinc429Word, SignStatus},
+        ControllerSignal, EngineCorrectedN1, EngineCorrectedN2, MachNumber, PneumaticValve,
+    },
     simulation::{
         Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
         SimulatorWriter, UpdateContext, Write, Writer,
@@ -422,7 +425,10 @@ impl ApuCompressionChamberController {
 }
 impl SimulationElement for ApuCompressionChamberController {
     fn read(&mut self, reader: &mut SimulatorReader) {
-        self.current_pressure = reader.read("APU_BLEED_AIR_PRESSURE")
+        let read: Arinc429Word<Pressure> = reader.read_arinc429("APU_BLEED_AIR_PRESSURE");
+        if let Some(pressure) = read.normal_value() {
+            self.current_pressure = pressure;
+        }
     }
 }
 impl ControllerSignal<TargetPressureSignal> for ApuCompressionChamberController {

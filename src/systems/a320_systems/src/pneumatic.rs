@@ -1341,8 +1341,8 @@ mod tests {
         engine::leap_engine::LeapEngine,
         pneumatic::{EngineState, PneumaticContainer},
         shared::{
-            ApuBleedAirValveSignal, ElectricalBusType, ElectricalBuses, MachNumber,
-            PotentialOrigin, ISA,
+            arinc429::SignStatus, ApuBleedAirValveSignal, ElectricalBusType, ElectricalBuses,
+            MachNumber, PotentialOrigin, ISA,
         },
         simulation::{
             test::{SimulationTestBed, TestBed},
@@ -1779,7 +1779,11 @@ mod tests {
         }
 
         fn set_bleed_air_running(mut self) -> Self {
-            self.write("APU_BLEED_AIR_PRESSURE", Pressure::new::<psi>(42.));
+            self.write_arinc429(
+                "APU_BLEED_AIR_PRESSURE",
+                Pressure::new::<psi>(42.),
+                SignStatus::NormalOperation,
+            );
             self.set_apu_bleed_valve_signal(ApuBleedAirValveSignal::new_open())
                 .set_apu_bleed_air_pb(true)
         }
@@ -1902,7 +1906,7 @@ mod tests {
             .stop_eng1()
             .stop_eng2()
             // .both_packs_auto()
-            .set_bleed_air_running()
+            // .set_bleed_air_running()
             .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Auto);
 
         let mut ts = Vec::new();
@@ -1948,7 +1952,8 @@ mod tests {
             ts.push(i as f64 * 16.);
 
             if i == 500 {
-                test_bed = test_bed.start_eng1();
+                // test_bed = test_bed.toga_eng1();
+                test_bed = test_bed.set_bleed_air_running().and_run();
             }
             if i == 2000 {
                 // test_bed = test_bed.idle_eng1();

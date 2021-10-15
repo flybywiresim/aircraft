@@ -306,7 +306,7 @@ impl PneumaticContainerConnector {
         from: &mut impl PneumaticContainer,
         to: &mut impl PneumaticContainer,
     ) {
-        let coefficient = 1.;
+        let coefficient = 1e-1;
 
         let temperature_gradient = TemperatureInterval::new::<temperature_interval::kelvin>(
             from.temperature().get::<kelvin>() - to.temperature().get::<kelvin>(),
