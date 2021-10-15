@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use fxhash::FxHashMap;
 use std::error::Error;
 
 use crate::SimulatorAspect;
@@ -8,12 +8,12 @@ use systems::shared::to_bool;
 use systems::simulation::{VariableIdentifier, VariableRegistry};
 
 pub struct MsfsElectricalBuses {
-    connections: HashMap<VariableIdentifier, ElectricalBusConnection>,
+    connections: FxHashMap<VariableIdentifier, ElectricalBusConnection>,
 }
 impl MsfsElectricalBuses {
     pub fn new() -> Self {
         Self {
-            connections: HashMap::new(),
+            connections: FxHashMap::default(),
         }
     }
 

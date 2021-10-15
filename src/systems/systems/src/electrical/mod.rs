@@ -10,7 +10,6 @@ mod static_inverter;
 mod transformer_rectifier;
 use std::{
     cell::{Ref, RefCell},
-    collections::{HashMap, HashSet},
     rc::Rc,
     time::Duration,
 };
@@ -31,6 +30,7 @@ pub use engine_generator::{
     EngineGenerator, INTEGRATED_DRIVE_GENERATOR_STABILIZATION_TIME_IN_MILLISECONDS,
 };
 pub use external_power_source::ExternalPowerSource;
+use fxhash::{FxHashMap, FxHashSet};
 pub use static_inverter::StaticInverter;
 pub use transformer_rectifier::TransformerRectifier;
 use uom::si::{electric_potential::volt, f64::*, power::watt, velocity::knot};
@@ -340,7 +340,7 @@ pub trait ElectricalElementIdentifierProvider {
 #[derive(Debug)]
 pub struct Electricity {
     next_identifier: ElectricalElementIdentifier,
-    buses: HashMap<ElectricalBusType, ElectricalElementIdentifier>,
+    buses: FxHashMap<ElectricalBusType, ElectricalElementIdentifier>,
     potential: PotentialCollection,
     none_potential: RefCell<Potential>,
 }
@@ -348,7 +348,7 @@ impl Electricity {
     pub fn new() -> Self {
         Self {
             next_identifier: ElectricalElementIdentifier::first(),
-            buses: HashMap::new(),
+            buses: Default::default(),
             potential: PotentialCollection::new(),
             none_potential: RefCell::new(Potential::none()),
         }
@@ -668,26 +668,26 @@ impl<'a> SimulationElementVisitor for ProcessPowerConsumptionReportVisitor<'a> {
 /// when it is.
 #[derive(Debug)]
 pub struct Potential {
-    origins: HashSet<PotentialOrigin>,
-    elements: HashSet<ElectricalElementIdentifier>,
+    origins: FxHashSet<PotentialOrigin>,
+    elements: FxHashSet<ElectricalElementIdentifier>,
     raw: ElectricPotential,
 }
 impl Potential {
     pub fn new(origin: PotentialOrigin, raw: ElectricPotential) -> Self {
-        let mut origins = HashSet::new();
+        let mut origins = FxHashSet::default();
         origins.insert(origin);
 
         Self {
             origins,
-            elements: HashSet::new(),
+            elements: FxHashSet::default(),
             raw,
         }
     }
 
     pub fn none() -> Self {
         Self {
-            origins: HashSet::new(),
-            elements: HashSet::new(),
+            origins: FxHashSet::default(),
+            elements: FxHashSet::default(),
             raw: ElectricPotential::new::<volt>(0.),
         }
     }
@@ -775,7 +775,7 @@ impl Potential {
     }
 
     pub fn is_pair(&self, x: PotentialOrigin, y: PotentialOrigin) -> bool {
-        let mut set = HashSet::new();
+        let mut set = FxHashSet::default();
         set.insert(x);
         set.insert(y);
 
@@ -791,14 +791,14 @@ impl Default for Potential {
 /// Maintains the many to one relationship from electrical elements to their electric potential.
 #[derive(Debug)]
 struct PotentialCollection {
-    items: HashMap<ElectricalElementIdentifier, Rc<RefCell<Potential>>>,
-    consumption_per_origin: HashMap<PotentialOrigin, Power>,
+    items: FxHashMap<ElectricalElementIdentifier, Rc<RefCell<Potential>>>,
+    consumption_per_origin: FxHashMap<PotentialOrigin, Power>,
 }
 impl PotentialCollection {
     fn new() -> Self {
         Self {
-            items: HashMap::new(),
-            consumption_per_origin: HashMap::new(),
+            items: Default::default(),
+            consumption_per_origin: Default::default(),
         }
     }
 
@@ -1420,7 +1420,7 @@ mod tests {
                 ElectricPotential::new::<volt>(115.),
             ));
 
-            let mut set = HashSet::new();
+            let mut set = FxHashSet::default();
             set.insert(PotentialOrigin::ApuGenerator(1));
             set.insert(PotentialOrigin::EngineGenerator(1));
 
@@ -1454,7 +1454,7 @@ mod tests {
                 ElectricPotential::new::<volt>(115.002),
             ));
 
-            let mut set = HashSet::new();
+            let mut set = FxHashSet::default();
             set.insert(PotentialOrigin::ApuGenerator(1));
             set.insert(PotentialOrigin::EngineGenerator(1));
 

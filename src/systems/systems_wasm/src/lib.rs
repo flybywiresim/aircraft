@@ -2,12 +2,13 @@
 pub mod electrical;
 pub mod failures;
 use failures::Failures;
+use fxhash::FxHashMap;
 use msfs::{
     legacy::{AircraftVariable, NamedVariable},
     sim_connect::{SimConnect, SimConnectRecv},
     MSFSEvent,
 };
-use std::{collections::HashMap, error::Error, pin::Pin, time::Duration};
+use std::{error::Error, pin::Pin, time::Duration};
 use systems::simulation::{
     Aircraft, Simulation, SimulatorReaderWriter, VariableIdentifier, VariableRegistry,
 };
@@ -133,7 +134,7 @@ impl SimulatorReaderWriter for MsfsSimulationHandler {
 }
 
 pub struct MsfsVariableRegistry {
-    name_to_identifier: HashMap<String, VariableIdentifier>,
+    name_to_identifier: FxHashMap<String, VariableIdentifier>,
     aircraft_variables: Vec<AircraftVariable>,
     named_variables: Vec<NamedVariable>,
     named_variable_prefix: String,
@@ -147,7 +148,7 @@ impl MsfsVariableRegistry {
 
     pub fn new(named_variable_prefix: String) -> Self {
         Self {
-            name_to_identifier: Default::default(),
+            name_to_identifier: FxHashMap::default(),
             aircraft_variables: Default::default(),
             named_variables: Default::default(),
             named_variable_prefix,

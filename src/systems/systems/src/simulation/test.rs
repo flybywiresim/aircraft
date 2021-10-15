@@ -1,5 +1,6 @@
+use fxhash::FxHashMap;
 use rand::Rng;
-use std::{cell::Ref, collections::HashMap, time::Duration};
+use std::{cell::Ref, time::Duration};
 use uom::si::{
     acceleration::foot_per_second_squared,
     f64::*,
@@ -505,12 +506,12 @@ impl<T: SimulationElement> SimulationElement for TestAircraft<T> {
 }
 
 struct TestReaderWriter {
-    variables: HashMap<VariableIdentifier, f64>,
+    variables: FxHashMap<VariableIdentifier, f64>,
 }
 impl TestReaderWriter {
     fn new() -> Self {
         Self {
-            variables: HashMap::new(),
+            variables: FxHashMap::default(),
         }
     }
 
@@ -545,7 +546,7 @@ impl Default for TestReaderWriter {
 #[derive(Default)]
 // TODO Make private once HYD tests are modified to use SimulationTestBed.
 pub struct TestVariableRegistry {
-    name_to_identifier: HashMap<String, VariableIdentifier>,
+    name_to_identifier: FxHashMap<String, VariableIdentifier>,
     next_identifier: VariableIdentifier,
 }
 

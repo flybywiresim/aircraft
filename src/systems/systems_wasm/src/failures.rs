@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use fxhash::FxHashMap;
 
 use msfs::legacy::NamedVariable;
 use systems::failures::FailureType;
@@ -6,14 +6,14 @@ use systems::failures::FailureType;
 pub struct Failures {
     activate_sim_var: NamedVariable,
     deactivate_sim_var: NamedVariable,
-    sim_var_value_to_failure_type: HashMap<u64, FailureType>,
+    sim_var_value_to_failure_type: FxHashMap<u64, FailureType>,
 }
 impl Failures {
     pub fn new(activate_sim_var: NamedVariable, deactivate_sim_var: NamedVariable) -> Self {
         Self {
             activate_sim_var,
             deactivate_sim_var,
-            sim_var_value_to_failure_type: HashMap::new(),
+            sim_var_value_to_failure_type: FxHashMap::default(),
         }
     }
 
