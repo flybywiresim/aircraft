@@ -1950,9 +1950,9 @@ mod tests {
 
             ts.push(i as f64 * 16.);
 
-            if i == 500 {
+            if i == 1000 {
                 // test_bed = test_bed.toga_eng1();
-                test_bed = test_bed.set_bleed_air_running().and_run();
+                test_bed = test_bed.set_bleed_air_running();
             }
             if i == 2000 {
                 // test_bed = test_bed.idle_eng1();

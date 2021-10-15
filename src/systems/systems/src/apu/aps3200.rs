@@ -60,7 +60,7 @@ impl Turbine for ShutdownAps3200Turbine {
     }
 
     fn bleed_air_pressure(&self) -> Pressure {
-        Pressure::new::<psi>(0.)
+        Pressure::new::<psi>(14.7)
     }
 }
 
@@ -214,7 +214,7 @@ impl Turbine for Starting {
     }
 
     fn bleed_air_pressure(&self) -> Pressure {
-        Pressure::new::<psi>(0.)
+        Pressure::new::<psi>(14.7)
     }
 }
 
@@ -537,7 +537,7 @@ impl Turbine for Stopping {
     }
 
     fn bleed_air_pressure(&self) -> Pressure {
-        Pressure::new::<psi>(0.)
+        Pressure::new::<psi>(14.7)
     }
 }
 
