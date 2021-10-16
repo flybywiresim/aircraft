@@ -86,8 +86,6 @@ impl ElectricalPumpPhysics {
         self.update_pump_resistant_torque(current_pressure, current_displacement);
         self.update_pump_generated_torque(context);
         self.update_pump_speed(context);
-
-        println!("RPM: {:.0}", self.speed().get::<revolution_per_minute>());
     }
 
     fn update_pump_speed(&mut self, context: &UpdateContext) {
@@ -192,7 +190,6 @@ impl SimulationElement for ElectricalPumpPhysics {
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
         self.is_powered = buses.is_powered(self.powered_by);
         self.available_potential = buses.potential_of(self.powered_by).raw();
-        println!("Potential={:.1}V", self.available_potential.get::<volt>());
     }
 
     fn consume_power<T: ConsumePower>(&mut self, _: &UpdateContext, consumption: &mut T) {
