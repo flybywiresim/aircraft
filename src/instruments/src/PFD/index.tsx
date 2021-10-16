@@ -3,12 +3,22 @@ import { A320Failure, FailuresConsumer } from '@flybywiresim/failures';
 import { useArinc429Var } from '@instruments/common/arinc429';
 import { useInteractionEvent, useUpdate } from '@instruments/common/hooks';
 import { Horizon } from './AttitudeIndicatorHorizon';
-import { AttitudeIndicatorFixedUpper, AttitudeIndicatorFixedCenter } from './AttitudeIndicatorFixed';
+import {
+    AttitudeIndicatorFixedUpper,
+    AttitudeIndicatorFixedCenter,
+    AttitudeIndicatorFixedCenterFail,
+} from './AttitudeIndicatorFixed';
 import { LandingSystem } from './LandingSystemIndicator';
-import { VerticalSpeedIndicator } from './VerticalSpeedIndicator';
+import { VerticalSpeedIndicator, VerticalSpeedIndicatorFail } from './VerticalSpeedIndicator';
 import { HeadingOfftape, HeadingTape } from './HeadingIndicator';
-import { AltitudeIndicatorOfftape, AltitudeIndicator } from './AltitudeIndicator';
-import { AirspeedIndicatorOfftape, AirspeedIndicator, MachNumber } from './SpeedIndicator';
+import { AltitudeIndicatorOfftape, AltitudeIndicator, AltitudeIndicatorOfftapeFail } from './AltitudeIndicator';
+import {
+    AirspeedIndicatorOfftape,
+    AirspeedIndicator,
+    MachNumber,
+    AirspeedIndicatorFail,
+    AirspeedIndicatorOfftapeFail,
+} from './SpeedIndicator';
 import { FMA } from './FMA';
 import { getSimVar, setSimVar } from '../util.js';
 import { SmoothSin, LagFilter, RateLimiter } from './PFDUtils';
@@ -58,7 +68,7 @@ export const PFD: React.FC = () => {
         const clamped = computedAirspeed.isNormalOperation() ? Math.max(computedAirspeed.value, 30) : NaN;
         const airspeedAcc = (clamped - previousAirspeed) / deltaTime * 1000;
         setPreviousAirspeed(clamped);
-        setClampedAirspeed(clamped);
+        setClampedAirspeed(Number.isNaN(clamped) ? NaN : Number(clamped.toFixed(1)));
 
         const rateLimitedAirspeedAcc = airspeedAccRateLimiter.step(airspeedAcc, deltaTime / 1000);
         setfilteredAirspeedAcc(airspeedAccFilter.step(rateLimitedAirspeedAcc, deltaTime / 1000));
@@ -93,9 +103,9 @@ export const PFD: React.FC = () => {
     }
 
     const heading = useArinc429Var(`L:A32NX_ADIRS_IR_${inertialReferenceSource}_HEADING`);
-    const groundTrack = useArinc429Var(`L:A32NX_ADIRS_IR_${inertialReferenceSource}_TRACK`);
 
     const radioAlt = getSimVar('PLANE ALT ABOVE GROUND MINUS CG', 'feet');
+
     const decisionHeight = getSimVar('L:AIRLINER_DECISION_HEIGHT', 'feet');
 
     const altitude = useArinc429Var(`L:A32NX_ADIRS_ADR_${airDataReferenceSource}_ALTITUDE`);
@@ -113,7 +123,10 @@ export const PFD: React.FC = () => {
 
     const mach = useArinc429Var(`L:A32NX_ADIRS_ADR_${airDataReferenceSource}_MACH`);
 
+    const fixedMach = Number(mach.value.toFixed(3));
+
     const VMax = getSimVar('L:A32NX_SPEEDS_VMAX', 'number');
+    const fixedVMax = Number(VMax.toFixed(1));
 
     const armedVerticalBitmask = getSimVar('L:A32NX_FMA_VERTICAL_ARMED', 'number');
     const activeVerticalMode = getSimVar('L:A32NX_FMA_VERTICAL_MODE', 'enum');
@@ -147,11 +160,6 @@ export const PFD: React.FC = () => {
         selectedHeading = Simplane.getAutoPilotSelectedHeadingLockValue(false) || 0;
     }
 
-    let ILSCourse = NaN;
-    if (lsButtonPressed) {
-        ILSCourse = getSimVar('NAV LOCALIZER:3', 'degrees');
-    }
-
     return (
         <DisplayUnit
             electricitySimvar={isCaptainSide(displayIndex) ? 'L:A32NX_ELEC_AC_ESS_BUS_IS_POWERED' : 'L:A32NX_ELEC_AC_2_BUS_IS_POWERED'}
@@ -178,15 +186,21 @@ export const PFD: React.FC = () => {
                 />
                 <HeadingTape heading={heading} />
                 <AltitudeIndicator altitude={altitude} FWCFlightPhase={FlightPhase} />
-                <AirspeedIndicator
-                    airspeed={clampedAirspeed}
-                    airspeedAcc={filteredAirspeedAcc}
-                    FWCFlightPhase={FlightPhase}
-                    altitude={altitude}
-                    VLs={vls}
-                    VMax={VMax}
-                    showBars={showSpeedBars}
-                />
+
+                {!Number.isNaN(clampedAirspeed) ? (
+                    <AirspeedIndicator
+                        airspeed={clampedAirspeed}
+                        airspeedAcc={Number(filteredAirspeedAcc.toFixed(3))}
+                        FWCFlightPhase={FlightPhase}
+                        altitude={altitude}
+                        VLs={vls}
+                        VMax={fixedVMax}
+                        showBars={showSpeedBars}
+                    />
+                ) : (
+                    <AirspeedIndicatorFail />
+                )}
+
                 <path
                     id="Mask2"
                     className="BackgroundFill"
@@ -194,13 +208,54 @@ export const PFD: React.FC = () => {
                     d="m32.138 145.34h73.536v10.382h-73.536zm0-44.092c7.4164 13.363 21.492 21.652 36.768 21.652 15.277 0 29.352-8.2886 36.768-21.652v-40.859c-7.4164-13.363-21.492-21.652-36.768-21.652-15.277 0-29.352 8.2886-36.768 21.652zm-32.046 57.498h158.66v-158.75h-158.66zm115.14-35.191v-85.473h15.609v85.473zm-113.33 0v-85.473h27.548v85.473z"
                 />
                 <LandingSystem LSButtonPressed={lsButtonPressed} />
-                <AttitudeIndicatorFixedUpper pitch={pitch} roll={roll} />
-                <AttitudeIndicatorFixedCenter pitch={pitch} roll={roll} isOnGround={isOnGround} FDActive={FDActive} isAttExcessive={isAttExcessive} />
-                <VerticalSpeedIndicator radioAlt={radioAlt} verticalSpeed={verticalSpeed} />
-                <HeadingOfftape ILSCourse={ILSCourse} groundTrack={groundTrack} heading={heading} selectedHeading={selectedHeading} />
-                <AltitudeIndicatorOfftape altitude={altitude} radioAlt={radioAlt} MDA={mda} targetAlt={targetAlt} altIsManaged={isManaged} mode={pressureMode} />
-                <AirspeedIndicatorOfftape airspeed={clampedAirspeed} targetSpeed={targetSpeed} speedIsManaged={!isSelected} />
-                <MachNumber mach={mach} />
+
+                {pitch.isNormalOperation() && roll.isNormalOperation() && (
+                    <AttitudeIndicatorFixedUpper />
+                )}
+
+                {pitch.isNormalOperation() && roll.isNormalOperation() ? (
+                    <AttitudeIndicatorFixedCenter isOnGround={isOnGround} FDActive={FDActive} isAttExcessive={isAttExcessive} />
+                ) : (
+                    <AttitudeIndicatorFixedCenterFail />
+                )}
+
+                {verticalSpeed.isNormalOperation() ? (
+                    <VerticalSpeedIndicator radioAlt={Math.round(radioAlt)} verticalSpeed={Math.round(verticalSpeed.value)} />
+                ) : (
+                    <VerticalSpeedIndicatorFail />
+                )}
+
+                <HeadingOfftape selectedHeading={selectedHeading} inertialReferenceSource={inertialReferenceSource} />
+
+                {altitude.isNormalOperation() ? (
+                    <AltitudeIndicatorOfftape
+                        altitude={altitude.value}
+                        radioAlt={radioAlt}
+                        MDA={mda}
+                        targetAlt={targetAlt}
+                        altIsManaged={isManaged}
+                        mode={pressureMode}
+                    />
+                ) : (
+                    <AltitudeIndicatorOfftapeFail />
+                )}
+
+                {!Number.isNaN(clampedAirspeed) ? (
+                    <AirspeedIndicatorOfftape
+                        airspeed={clampedAirspeed}
+                        targetSpeed={targetSpeed}
+                        speedIsManaged={!isSelected}
+                    />
+                ) : (
+                    <AirspeedIndicatorOfftapeFail />
+                )}
+
+                {mach.isNormalOperation() ? (
+                    <MachNumber mach={fixedMach} />
+                ) : (
+                    <text id="MachFailText" className="Blink9Seconds FontLargest StartAlign Red" x="5.4257932" y="136.88908">MACH</text>
+                )}
+
                 <FMA isAttExcessive={isAttExcessive} />
             </svg>
         </DisplayUnit>

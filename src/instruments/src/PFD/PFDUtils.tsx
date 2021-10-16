@@ -1,6 +1,5 @@
 /* eslint-disable max-classes-per-file */
-import { Arinc429Word } from '@instruments/common/arinc429';
-import React from 'react';
+import React, { FC, memo, useMemo } from 'react';
 
 export const calculateHorizonOffsetFromPitch = (pitch: number) => {
     if (pitch > -5 && pitch <= 20) {
@@ -45,111 +44,125 @@ interface HorizontalTapeProps {
     valueSpacing: number;
     distanceSpacing: number;
     graduationElementFunction: (elementHeading: number, offset: number) => JSX.Element;
-    bugs: [(offset: number) => JSX.Element, number][];
-    heading: Arinc429Word;
+    bugs?: [(offset: number) => JSX.Element, number][];
+    heading: number;
     yOffset?: number;
 }
 
-export const HorizontalTape = ({ displayRange, valueSpacing, distanceSpacing, graduationElementFunction, bugs, heading, yOffset = 0 }: HorizontalTapeProps) => {
+export const HorizontalTape = memo(({ displayRange, valueSpacing, distanceSpacing, graduationElementFunction, bugs, heading, yOffset = 0 }: HorizontalTapeProps) => {
     const numTicks = Math.round(displayRange * 2 / valueSpacing);
 
-    let leftmostHeading = Math.round((heading.value - displayRange) / valueSpacing) * valueSpacing;
-    if (leftmostHeading < heading.value - displayRange) {
+    let leftmostHeading = Math.round((heading - displayRange) / valueSpacing) * valueSpacing;
+    if (leftmostHeading < heading - displayRange) {
         leftmostHeading += valueSpacing;
     }
 
-    const graduationElements: JSX.Element[] = [];
-    const bugElements: JSX.Element[] = [];
+    const graduationElements: JSX.Element[] = useMemo(() => {
+        const graduationElements: JSX.Element[] = [];
 
-    for (let i = 0; i < numTicks; i++) {
-        const elementHeading = leftmostHeading + i * valueSpacing;
-        const offset = elementHeading * distanceSpacing / valueSpacing;
-        graduationElements.push(graduationElementFunction(elementHeading, offset));
-    }
-
-    bugs.forEach((currentElement) => {
-        const angleToZero = getSmallestAngle(heading.value, 0);
-        const smallestAngle = getSmallestAngle(currentElement[1], 0);
-        let offset = currentElement[1];
-        if (Math.abs(angleToZero) < 90 && Math.abs(smallestAngle) < 90) {
-            if (angleToZero > 0 && smallestAngle < 0) {
-                offset = currentElement[1] - 360;
-            } else if (angleToZero < 0 && smallestAngle > 0) {
-                offset = currentElement[1] + 360;
-            }
+        for (let i = 0; i < numTicks; i++) {
+            const elementHeading = leftmostHeading + i * valueSpacing;
+            const offset = elementHeading * distanceSpacing / valueSpacing;
+            graduationElements.push(graduationElementFunction(elementHeading, offset));
         }
 
-        offset *= distanceSpacing / valueSpacing;
-        bugElements.push(currentElement[0](offset));
-    });
+        return graduationElements;
+    }, [distanceSpacing, graduationElementFunction, leftmostHeading, numTicks, valueSpacing]);
+
+    const bugElements: JSX.Element[] = useMemo(() => {
+        const bugElements: JSX.Element[] = [];
+
+        bugs?.forEach((currentElement) => {
+            const angleToZero = getSmallestAngle(heading, 0);
+            const smallestAngle = getSmallestAngle(currentElement[1], 0);
+            let offset = currentElement[1];
+            if (Math.abs(angleToZero) < 90 && Math.abs(smallestAngle) < 90) {
+                if (angleToZero > 0 && smallestAngle < 0) {
+                    offset = currentElement[1] - 360;
+                } else if (angleToZero < 0 && smallestAngle > 0) {
+                    offset = currentElement[1] + 360;
+                }
+            }
+
+            offset *= distanceSpacing / valueSpacing;
+            bugElements.push(currentElement[0](offset));
+        });
+
+        return bugElements;
+    }, [bugs, distanceSpacing, heading, valueSpacing]);
+
+    const xOffset = Math.round(-heading * distanceSpacing / valueSpacing);
 
     return (
-        <g transform={`translate(${-heading.value * distanceSpacing / valueSpacing} ${yOffset})`}>
+        <g transform={`translate(${xOffset} ${yOffset})`}>
             {graduationElements}
             {bugElements}
         </g>
     );
-};
+});
 
 interface VerticalTapeProps {
     displayRange: number;
     valueSpacing: number;
     distanceSpacing: number;
     graduationElementFunction: (elementHeading: number, offset: number) => JSX.Element | null;
-    bugs: [(offset: number) => JSX.Element, number][];
+    bugs?: [(offset: number) => JSX.Element, number][];
     tapeValue: number;
     lowerLimit?: number;
     upperLimit?: number;
 }
 
-export const VerticalTape = ({
+export const VerticalTape: FC<VerticalTapeProps> = ({
     displayRange, valueSpacing, distanceSpacing, graduationElementFunction, bugs, tapeValue,
-    lowerLimit = -Infinity, upperLimit = Infinity,
-}: VerticalTapeProps) => {
-    const numTicks = Math.round(displayRange * 2 / valueSpacing);
-
+    lowerLimit = -Infinity, upperLimit = Infinity, children,
+}) => {
     const clampedValue = Math.max(Math.min(tapeValue, upperLimit), lowerLimit);
 
-    let lowestValue = Math.max(Math.round((clampedValue - displayRange) / valueSpacing) * valueSpacing, lowerLimit);
-    if (lowestValue < tapeValue - displayRange) {
-        lowestValue += valueSpacing;
-    }
+    // FIXME replace this with a component based system? for key optimization
+    const graduationElements = useMemo(() => {
+        const numTicks = Math.round(displayRange * 2 / valueSpacing);
 
-    const graduationElements: JSX.Element[] = [];
-    const bugElements: JSX.Element[] = [];
+        let lowestValue = Math.max(Math.round((clampedValue - displayRange) / valueSpacing) * valueSpacing, lowerLimit);
+        if (lowestValue < tapeValue - displayRange) {
+            lowestValue += valueSpacing;
+        }
 
-    for (let i = 0; i < numTicks; i++) {
-        const elementValue = lowestValue + i * valueSpacing;
-        if (elementValue <= upperLimit) {
-            const offset = -elementValue * distanceSpacing / valueSpacing;
-            const element = graduationElementFunction(elementValue, offset);
-            if (element) {
-                graduationElements.push(element);
+        const graduationElements: JSX.Element[] = [];
+
+        for (let i = 0; i < numTicks; i++) {
+            const elementValue = lowestValue + i * valueSpacing;
+            if (elementValue <= upperLimit) {
+                const offset = -elementValue * distanceSpacing / valueSpacing;
+                const element = graduationElementFunction(elementValue, offset);
+                if (element) {
+                    graduationElements.push(element);
+                }
             }
         }
-    }
 
-    bugs.forEach((currentElement) => {
-        const value = currentElement[1];
-        const offset = -value * distanceSpacing / valueSpacing;
-        bugElements.push(currentElement[0](offset));
-    });
+        return graduationElements;
+    }, [clampedValue, displayRange, distanceSpacing, graduationElementFunction, lowerLimit, tapeValue, upperLimit, valueSpacing]);
 
-    return (
+    const ret = (
         <g transform={`translate(0 ${clampedValue * distanceSpacing / valueSpacing})`}>
             {graduationElements}
-            {bugElements}
+            {children}
         </g>
     );
+
+    return ret;
 };
 
 export const BarberpoleIndicator = (
     tapeValue: number, border: number, isLowerBorder: boolean, displayRange: number,
     element: (offset: number) => JSX.Element, elementSize: number,
 ) => {
-    const Elements: [(offset: number) => JSX.Element, number][] = [];
+    console.log(`BarberpoleIndicator: render (${tapeValue}, ${border}, ${isLowerBorder}, ${displayRange}, ${elementSize})`);
 
+    console.time('barber');
+    const Elements: [(offset: number) => JSX.Element, number][] = [];
     const sign = isLowerBorder ? 1 : -1;
+
     const isInRange = isLowerBorder ? border <= tapeValue + displayRange : border >= tapeValue - displayRange;
     if (!isInRange) {
         return Elements;
@@ -159,6 +172,7 @@ export const BarberpoleIndicator = (
         const elementValue = border + sign * elementSize * i;
         Elements.push([element, elementValue]);
     }
+    console.timeEnd('barber');
 
     return Elements;
 };

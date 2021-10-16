@@ -1,14 +1,21 @@
 import { useUpdate } from '@instruments/common/hooks.js';
+import React, { FC, memo, useState } from 'react';
 import { useSimVar } from '@instruments/common/simVars.js';
-import React, { useState } from 'react';
 import { getSimVar } from '../util.js';
 import { LagFilter } from './PFDUtils';
 
-export function LandingSystem({ LSButtonPressed }) {
+export interface LSButtonPressedProps {
+    LSButtonPressed: boolean;
+}
+
+export const LandingSystem: FC<LSButtonPressedProps> = memo(({ LSButtonPressed }) => {
+    const [approachLoaded] = useSimVar('GPS IS APPROACH LOADED', 'Bool', 150);
+    const [approachType] = useSimVar('GPS APPROACH APPROACH TYPE', 'Enum', 150);
+
     let showVDev = false;
 
     if (!LSButtonPressed) {
-        showVDev = !!Simplane.getAutoPilotApproachLoaded() && Simplane.getAutoPilotApproachType() === 10;
+        showVDev = approachLoaded && approachType === 10;
     }
 
     return (
@@ -29,7 +36,7 @@ export function LandingSystem({ LSButtonPressed }) {
             )}
         </g>
     );
-}
+});
 
 const LandingSystemInfo = ({ displayed }) => {
     if (!displayed || !getSimVar('NAV HAS LOCALIZER:3', 'Bool')) {

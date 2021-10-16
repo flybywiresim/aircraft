@@ -1,13 +1,17 @@
-import React, { Component } from 'react';
+import React, { Component, memo } from 'react';
+import { useSimVar } from '@instruments/common/simVars';
 import { createDeltaTimeCalculator, getSimVar, renderTarget } from '../util.js';
 
-export const FMA = ({ isAttExcessive }) => {
-    const activeLateralMode = getSimVar('L:A32NX_FMA_LATERAL_MODE', 'number');
+export const FMA = memo<RowProps>(({ isAttExcessive }) => {
+    const [activeLateralMode] = useSimVar('L:A32NX_FMA_LATERAL_MODE', 'number', 200);
     const sharedModeActive = activeLateralMode === 32 || activeLateralMode === 33 || activeLateralMode === 34;
-    const engineMessage = getSimVar('L:A32NX_AUTOTHRUST_MODE_MESSAGE', 'enum');
-    const BC3Message = getSimVar('L:A32NX_BC3Message', 'enum');
-    const AB3Message = (getSimVar('L:A32NX_MachPreselVal', 'mach') !== -1
-        || getSimVar('L:A32NX_SpeedPreselVal', 'knots') !== -1) && BC3Message === 0 && engineMessage === 0;
+    const [engineMessage] = useSimVar('L:A32NX_AUTOTHRUST_MODE_MESSAGE', 'enum', 200);
+    const [BC3Message] = useSimVar('L:A32NX_BC3Message', 'enum', 200);
+
+    const [machPresetVal] = useSimVar('L:A32NX_MachPreselVal', 'mach', 100);
+    const [speedPresetVal] = useSimVar('L:A32NX_SpeedPreselVal', 'knots', 100);
+
+    const AB3Message = (machPresetVal !== -1 || speedPresetVal !== -1) && BC3Message === 0 && engineMessage === 0;
 
     let secondBorder: string;
     if (sharedModeActive && !isAttExcessive) {
@@ -36,9 +40,13 @@ export const FMA = ({ isAttExcessive }) => {
             <Row3 isAttExcessive={isAttExcessive} />
         </g>
     );
-};
+});
 
-const Row1 = ({ isAttExcessive }) => (
+interface RowProps {
+    isAttExcessive: boolean,
+}
+
+const Row1 = memo<RowProps>(({ isAttExcessive }) => (
     <g>
         <A1A2Cell />
         {!isAttExcessive && (
@@ -51,9 +59,9 @@ const Row1 = ({ isAttExcessive }) => (
         )}
         <E1Cell />
     </g>
-);
+));
 
-const Row2 = ({ isAttExcessive }) => (
+const Row2 = memo<RowProps>(({ isAttExcessive }) => (
     <g>
         {!isAttExcessive && (
             <>
@@ -63,9 +71,9 @@ const Row2 = ({ isAttExcessive }) => (
         )}
         <E2Cell />
     </g>
-);
+));
 
-const Row3 = ({ isAttExcessive }) => (
+const Row3 = memo<RowProps>(({ isAttExcessive }) => (
     <g>
         <A3Cell />
         {!isAttExcessive && (
@@ -76,10 +84,10 @@ const Row3 = ({ isAttExcessive }) => (
         )}
         <E3Cell />
     </g>
-);
+));
 
-const A1A2Cell = () => {
-    const AThrMode = getSimVar('L:A32NX_AUTOTHRUST_MODE', 'enum');
+const A1A2Cell = memo(() => {
+    const [AThrMode] = useSimVar('L:A32NX_AUTOTHRUST_MODE', 'enum', 200);
 
     let text: string | undefined;
 
@@ -182,10 +190,10 @@ const A1A2Cell = () => {
             <text className="FontMedium MiddleAlign Green" x="16.158028" y="6.8888531">{text}</text>
         </g>
     );
-};
+});
 
-const A3Cell = () => {
-    const engineMessage = getSimVar('L:A32NX_AUTOTHRUST_MODE_MESSAGE', 'enum');
+const A3Cell = memo(() => {
+    const [engineMessage] = useSimVar('L:A32NX_AUTOTHRUST_MODE_MESSAGE', 'enum', 200);
 
     let text: string;
     let className: string;
@@ -217,20 +225,22 @@ const A3Cell = () => {
     return (
         <text className={`FontMedium MiddleAlign ${className}`} x="16.511532" y="21.481768">{text}</text>
     );
-};
+});
 
-const AB3Cell = () => {
-    if (getSimVar('L:A32NX_AUTOTHRUST_MODE_MESSAGE', 'enum') !== 0) {
+const AB3Cell = memo(() => {
+    const [autoThrustModeMessage] = useSimVar('L:A32NX_AUTOTHRUST_MODE_MESSAGE', 'enum', 200);
+    const [machPresel] = useSimVar('L:A32NX_MachPreselVal', 'mach', 200);
+    const [spdPresel] = useSimVar('L:A32NX_SpeedPreselVal', 'knots', 200);
+
+    if (autoThrustModeMessage !== 0) {
         return null;
     }
-    const machPresel = getSimVar('L:A32NX_MachPreselVal', 'mach');
     if (machPresel !== -1) {
         const text = machPresel.toFixed(2);
         return (
             <text className="FontMedium MiddleAlign Cyan" x="35.275196" y="21.616354">{`MACH SEL ${text}`}</text>
         );
     }
-    const spdPresel = getSimVar('L:A32NX_SpeedPreselVal', 'knots');
     if (spdPresel !== -1) {
         const text = Math.round(spdPresel);
         return (
@@ -238,13 +248,18 @@ const AB3Cell = () => {
         );
     }
     return null;
-};
+});
 
-const B1Cell = () => {
-    const activeVerticalMode = getSimVar('L:A32NX_FMA_VERTICAL_MODE', 'enum');
+const B1Cell = memo(() => {
+    const [activeVerticalMode] = useSimVar('L:A32NX_FMA_VERTICAL_MODE', 'enum', 200);
+    const [expediteMode] = useSimVar('L:A32NX_FMA_EXPEDITE_MODE', 'bool', 200);
+    const [cruiseAltMode] = useSimVar('L:A32NX_FMA_CRUISE_ALT_MODE', 'Bool', 200);
+    const [VS] = useSimVar('L:A32NX_AUTOPILOT_VS_SELECTED', 'feet per minute', 100);
+    const [FPA] = useSimVar('L:A32NX_AUTOPILOT_FPA_SELECTED', 'Degree', 100);
+    const [inProtection] = useSimVar('L:A32NX_FMA_SPEED_PROTECTION_MODE', 'bool', 200);
+    const [inModeReversion] = useSimVar('L:A32NX_FMA_MODE_REVERSION', 'bool', 200);
 
     let text: string | JSX.Element;
-    let inProtection = false;
 
     switch (activeVerticalMode) {
     case 31:
@@ -273,7 +288,7 @@ const B1Cell = () => {
         text = 'DES';
         break;
     case 13:
-        if (getSimVar('L:A32NX_FMA_EXPEDITE_MODE', 'bool')) {
+        if (expediteMode) {
             text = 'EXP DES';
         } else {
             text = 'OP DES';
@@ -283,14 +298,14 @@ const B1Cell = () => {
         text = 'CLB';
         break;
     case 12:
-        if (getSimVar('L:A32NX_FMA_EXPEDITE_MODE', 'bool')) {
+        if (expediteMode) {
             text = 'EXP CLB';
         } else {
             text = 'OP CLB';
         }
         break;
     case 10:
-        if (getSimVar('L:A32NX_FMA_CRUISE_ALT_MODE', 'Bool')) {
+        if (cruiseAltMode) {
             text = 'ALT CRZ';
         } else {
             text = 'ALT';
@@ -309,8 +324,6 @@ const B1Cell = () => {
     //     text = 'ALT CRZ';
     //     break;
     case 15: {
-        const FPA = getSimVar('L:A32NX_AUTOPILOT_FPA_SELECTED', 'Degree');
-        inProtection = getSimVar('L:A32NX_FMA_SPEED_PROTECTION_MODE', 'bool');
         const FPAText = `${(FPA >= 0 ? '+' : '')}${(Math.round(FPA * 10) / 10).toFixed(1)}°`;
 
         text = (
@@ -322,8 +335,6 @@ const B1Cell = () => {
         break;
     }
     case 14: {
-        const VS = getSimVar('L:A32NX_AUTOPILOT_VS_SELECTED', 'feet per minute');
-        inProtection = getSimVar('L:A32NX_FMA_SPEED_PROTECTION_MODE', 'bool');
         const VSText = `${(VS >= 0 ? '+' : '')}${Math.round(VS).toString()}`.padStart(5, ' ');
 
         text = (
@@ -339,7 +350,6 @@ const B1Cell = () => {
     }
 
     const inSpeedProtection = inProtection && (activeVerticalMode === 14 || activeVerticalMode === 15);
-    const inModeReversion = getSimVar('L:A32NX_FMA_MODE_REVERSION', 'bool');
 
     return (
         <g>
@@ -351,10 +361,10 @@ const B1Cell = () => {
             <text className="FontMedium MiddleAlign Green" x="49.498924" y="6.8785663" xmlSpace="preserve">{text}</text>
         </g>
     );
-};
+});
 
-const B2Cell = () => {
-    const armedVerticalBitmask = getSimVar('L:A32NX_FMA_VERTICAL_ARMED', 'number');
+const B2Cell = memo(() => {
+    const [armedVerticalBitmask] = useSimVar('L:A32NX_FMA_VERTICAL_ARMED', 'number', 200);
 
     const altArmed = (armedVerticalBitmask >> 0) & 1;
     const altCstArmed = (armedVerticalBitmask >> 1) & 1;
@@ -398,10 +408,10 @@ const B2Cell = () => {
                 && <text className="FontMedium MiddleAlign Cyan" x="55.275803" y="14.143736">{text2}</text>}
         </g>
     );
-};
+});
 
-const C1Cell = () => {
-    const activeLateralMode = getSimVar('L:A32NX_FMA_LATERAL_MODE', 'number');
+const C1Cell = memo(() => {
+    const [activeLateralMode] = useSimVar('L:A32NX_FMA_LATERAL_MODE', 'number', 200);
 
     let text: string;
     switch (activeLateralMode) {
@@ -456,10 +466,10 @@ const C1Cell = () => {
             <text className="FontMedium MiddleAlign Green" x="84.490074" y="6.9027362">{text}</text>
         </g>
     );
-};
+});
 
-const C2Cell = () => {
-    const armedLateralBitmask = getSimVar('L:A32NX_FMA_LATERAL_ARMED', 'number');
+const C2Cell = memo(() => {
+    const [armedLateralBitmask] = useSimVar('L:A32NX_FMA_LATERAL_ARMED', 'number', 200);
 
     const navArmed = (armedLateralBitmask >> 0) & 1;
     const locArmed = (armedLateralBitmask >> 1) & 1;
@@ -485,10 +495,10 @@ const C2Cell = () => {
     return (
         <text className="FontMedium MiddleAlign Cyan" x="84.536842" y="14.130308">{text}</text>
     );
-};
+});
 
-const BC1Cell = () => {
-    const SharedAPMode = getSimVar('L:A32NX_FMA_LATERAL_MODE', 'number');
+const BC1Cell = memo(() => {
+    const [SharedAPMode] = useSimVar('L:A32NX_FMA_LATERAL_MODE', 'number', 200);
 
     let text: string;
     switch (SharedAPMode) {
@@ -516,10 +526,10 @@ const BC1Cell = () => {
             <text className="FontMedium MiddleAlign Green" x="67.9795" y="6.8893085">{text}</text>
         </g>
     );
-};
+});
 
-const D1D2Cell = () => {
-    const approachCapability = getSimVar('L:A32NX_ApproachCapability', 'enum');
+const D1D2Cell = memo(() => {
+    const [approachCapability] = useSimVar('L:A32NX_ApproachCapability', 'enum', 200);
 
     let text1: string;
     let text2: string | undefined;
@@ -570,10 +580,11 @@ const D1D2Cell = () => {
             </ShowForSeconds>
         </g>
     );
-};
+});
 
-const D3Cell = () => {
-    const MDA = getSimVar('L:AIRLINER_MINIMUM_DESCENT_ALTITUDE', 'feet');
+const D3Cell = memo(() => {
+    const [MDA] = useSimVar('L:AIRLINER_MINIMUM_DESCENT_ALTITUDE', 'feet', 200);
+
     let text: JSX.Element | string | null = null;
     let fontSize = 'FontSmallest';
     if (MDA !== 0) {
@@ -603,11 +614,11 @@ const D3Cell = () => {
     return (
         <text className={`${fontSize} MiddleAlign White`} x="118.1583" y="21.188744">{text}</text>
     );
-};
+});
 
-const E1Cell = () => {
-    const AP1Engaged = getSimVar('L:A32NX_AUTOPILOT_1_ACTIVE', 'bool');
-    const AP2Engaged = getSimVar('L:A32NX_AUTOPILOT_2_ACTIVE', 'bool');
+const E1Cell = memo(() => {
+    const [AP1Engaged] = useSimVar('L:A32NX_AUTOPILOT_1_ACTIVE', 'bool', 200);
+    const [AP2Engaged] = useSimVar('L:A32NX_AUTOPILOT_2_ACTIVE', 'bool', 200);
 
     if (!AP1Engaged && !AP2Engaged) {
         return null;
@@ -634,13 +645,15 @@ const E1Cell = () => {
             <text className="FontMedium MiddleAlign White" x="145.61546" y="6.9559975">{text}</text>
         </g>
     );
-};
+});
 
-const E2Cell = () => {
-    const FD1Active = getSimVar('AUTOPILOT FLIGHT DIRECTOR ACTIVE:1', 'bool');
-    const FD2Active = getSimVar('AUTOPILOT FLIGHT DIRECTOR ACTIVE:2', 'bool');
+const E2Cell = memo(() => {
+    const [FD1Active] = useSimVar('AUTOPILOT FLIGHT DIRECTOR ACTIVE:1', 'bool', 200);
+    const [FD2Active] = useSimVar('AUTOPILOT FLIGHT DIRECTOR ACTIVE:2', 'bool', 200);
+    const [Ap1Active] = useSimVar('L:A32NX_AUTOPILOT_1_ACTIVE', 'bool', 200);
+    const [Ap2Active] = useSimVar('L:A32NX_AUTOPILOT_2_ACTIVE', 'bool', 200);
 
-    if (!FD1Active && !FD2Active && !getSimVar('L:A32NX_AUTOPILOT_1_ACTIVE', 'bool') && !getSimVar('L:A32NX_AUTOPILOT_2_ACTIVE', 'bool')) {
+    if (!FD1Active && !FD2Active && !Ap1Active && !Ap2Active) {
         return null;
     }
 
@@ -648,10 +661,10 @@ const E2Cell = () => {
     return (
         <text className="FontMedium MiddleAlign White" x="145.8961" y="14.218581">{text}</text>
     );
-};
+});
 
-const E3Cell = () => {
-    const status = getSimVar('L:A32NX_AUTOTHRUST_STATUS', 'enum');
+const E3Cell = memo(() => {
+    const [status] = useSimVar('L:A32NX_AUTOTHRUST_STATUS', 'enum', 200);
 
     let color: string;
     let id = 0;
@@ -676,7 +689,7 @@ const E3Cell = () => {
             <text className={`FontMedium MiddleAlign ${color}`} x="145.75578" y="21.434536">A/THR</text>
         </g>
     );
-};
+});
 
 interface ShowForSecondsProps {
     timer: number;

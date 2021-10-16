@@ -1,5 +1,5 @@
 import { Arinc429Word } from '@instruments/common/arinc429';
-import React from 'react';
+import React, { memo } from 'react';
 
 const TensDigits = (value: number, offset: number, color: string) => {
     let text: string;
@@ -54,16 +54,18 @@ const TenThousandsDigit = (value: number, offset: number, color: string) => {
 };
 
 interface DigitalAltitudeReadoutProps {
-    altitude: Arinc429Word;
+    altitude: number;
     MDA: number;
 }
 
-export const DigitalAltitudeReadout = ({ altitude, MDA }: DigitalAltitudeReadoutProps) => {
-    const isNegative = altitude.value < 0;
+export const DigitalAltitudeReadout = memo(({ altitude, MDA }: DigitalAltitudeReadoutProps) => {
+    console.log(`DigitalAltitudeReadout: render (${altitude}, ${MDA})`);
 
-    const color = (MDA !== 0 && altitude.value < MDA) ? 'Amber' : 'Green';
+    const isNegative = altitude < 0;
 
-    const absAlt = Math.abs(Math.max(Math.min(altitude.value, 50000), -1500));
+    const color = (MDA !== 0 && altitude < MDA) ? 'Amber' : 'Green';
+
+    const absAlt = Math.abs(Math.max(Math.min(altitude, 50000), -1500));
     const tensDigits = absAlt % 100;
 
     const HundredsValue = Math.floor((absAlt / 100) % 10);
@@ -112,7 +114,7 @@ export const DigitalAltitudeReadout = ({ altitude, MDA }: DigitalAltitudeReadout
                 )}
         </g>
     );
-};
+});
 
 const Drum = ({ displayRange, valueSpacing, distanceSpacing, position, value, color, elementFunction, showZero = true }) => {
     const numTicks = Math.round(displayRange * 2 / valueSpacing);
