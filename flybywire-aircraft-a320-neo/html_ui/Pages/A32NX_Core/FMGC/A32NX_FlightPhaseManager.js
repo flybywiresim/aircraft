@@ -2,8 +2,7 @@
  * The following functions are used to determine whether a flight phase can be changed or not
  */
 function canInitiateTO(_fmc) {
-    const ra = Simplane.getAltitudeAboveGround();
-    return Math.round(ra / 100) !== Math.round(Simplane.getAltitude() / 100) && ra > 1.5 ||
+    return SimVar.GetSimVarValue("CAMERA STATE", "number") < 10 && Simplane.getAltitudeAboveGround() > 1.5 ||
     (
         Math.max(SimVar.GetSimVarValue("L:A32NX_AUTOTHRUST_TLA:1", "number"), SimVar.GetSimVarValue("L:A32NX_AUTOTHRUST_TLA:2", "number")) >= 35 &&
         !isNaN(_fmc.v2Speed) &&
@@ -310,14 +309,14 @@ class A32NX_FlightPhase_Descent {
             }
         }
 
+        const autopilotLateralMode = SimVar.GetSimVarValue("L:A32NX_FMA_LATERAL_MODE", "Number");
+
         return _fmc.flightPlanManager._decelReached &&
             (
                 Simplane.getAltitudeAboveGround() < 9500 &&
                 (
-                    Simplane.getAutoPilotHeadingManaged() ||
-                    (
-                        Simplane.getAutoPilotApproachType() !== 10 && Simplane.getAutoPilotAPPRActive()
-                    )
+                    // NAV || LOC* || LOC
+                    autopilotLateralMode === 20 || autopilotLateralMode === 30 || autopilotLateralMode === 31
                 )
             );
     }
