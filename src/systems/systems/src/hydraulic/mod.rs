@@ -503,12 +503,9 @@ impl HydraulicCircuit {
             section.update_pump_state(main_section_pumps[pump_idx], &mut self.reservoir, &context);
         }
 
-        if let Some(pump)=system_section_pump {
-            self.system_section.update_pump_state(
-                pump,
-                &mut self.reservoir,
-                &context,
-            );
+        if let Some(pump) = system_section_pump {
+            self.system_section
+                .update_pump_state(pump, &mut self.reservoir, &context);
         }
     }
 
@@ -822,7 +819,7 @@ impl Section {
         }
     }
 
-    fn update_upstream_delta_vol(&mut self, upstream_valves: &Vec<CheckValve>) {
+    fn update_upstream_delta_vol(&mut self, upstream_valves: &[CheckValve]) {
         for up in upstream_valves {
             self.delta_vol_from_valves += up.current_volume;
         }
