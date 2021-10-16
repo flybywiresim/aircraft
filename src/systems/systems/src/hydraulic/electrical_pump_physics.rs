@@ -42,8 +42,8 @@ impl ElectricalPumpPhysics {
     // 0.95 will convert 95% of electrical consumption in mechanical torque
     const ELECTRICAL_EFFICIENCY: f64 = 0.95;
 
-    const DEFAULT_P_GAIN: f64 = 0.05;
-    const DEFAULT_I_GAIN: f64 = 0.5;
+    const DEFAULT_P_GAIN: f64 = 0.055;
+    const DEFAULT_I_GAIN: f64 = 0.8;
 
     pub fn new(
         id: &str,
