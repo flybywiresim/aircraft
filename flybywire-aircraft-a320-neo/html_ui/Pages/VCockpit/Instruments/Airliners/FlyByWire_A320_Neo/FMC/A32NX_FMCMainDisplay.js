@@ -23,7 +23,6 @@ class FMCMainDisplay extends BaseAirliners {
         this.routeIndex = undefined;
         this.coRoute = undefined;
         this.tmpOrigin = undefined;
-        this.transitionAltitude = undefined;
         this.perfTOTemp = undefined;
         this._overridenFlapApproachSpeed = undefined;
         this._overridenSlatApproachSpeed = undefined;
@@ -83,6 +82,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.engineOutAccelerationAltitude = undefined;
         this.engineOutAccelerationAltitudeGoaround = undefined;
         this.engineOutAccelerationAltitudeIsPilotEntered = undefined;
+        this.transitionAltitude = undefined;
         this.transitionAltitudeIsPilotEntered = undefined;
         this._windDirections = undefined;
         this._fuelPlanningPhases = undefined;
@@ -289,7 +289,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.perfApprTemp = NaN;
         this.perfApprWindHeading = NaN;
         this.perfApprWindSpeed = NaN;
-        this.perfApprTransAlt = NaN;
+        this.perfApprTransAlt = 10000;
         this.perfApprTransAltPilotEntered = false;
         this.v1Speed = undefined;
         this.vRSpeed = undefined;
@@ -471,7 +471,8 @@ class FMCMainDisplay extends BaseAirliners {
         SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", NaN);
         SimVar.SetSimVarValue("L:AIRLINER_V2_SPEED", "Knots", NaN);
         SimVar.SetSimVarValue("L:AIRLINER_VR_SPEED", "Knots", NaN);
-        SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", 0);
+        SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", this.transitionAltitude);
+        SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", this.perfApprTransAlt);
 
         CDUPerformancePage.UpdateThrRedAccFromOrigin(this, true, true);
         CDUPerformancePage.UpdateEngOutAccFromOrigin(this);
@@ -2008,7 +2009,8 @@ class FMCMainDisplay extends BaseAirliners {
 
     trySetTakeOffTransAltitude(s) {
         if (s === FMCMainDisplay.clrValue) {
-            this.transitionAltitude = NaN;
+            // TODO when possible fetch default from database
+            this.transitionAltitude = this.transitionAltitudeIsPilotEntered ? 10000 : NaN;
             this.transitionAltitudeIsPilotEntered = false;
             SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", 0);
             return true;
@@ -2030,15 +2032,6 @@ class FMCMainDisplay extends BaseAirliners {
         this.transitionAltitudeIsPilotEntered = true;
         SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", value);
         return true;
-    }
-
-    getTransitionAltitude() {
-        if (isFinite(this.transitionAltitude)) {
-            return this.transitionAltitude;
-        }
-
-        // TODO fetch this from the nav database once we have it in future
-        return 10000;
     }
 
     //Needs PR Merge #3082
@@ -2801,9 +2794,10 @@ class FMCMainDisplay extends BaseAirliners {
 
     setPerfApprTransAlt(s) {
         if (s === FMCMainDisplay.clrValue) {
-            this.perfApprTransAlt = NaN;
+            // TODO when possible fetch default from database
+            this.perfApprTransAlt = this.perfApprTransAltPilotEntered ? 10000 : NaN;
             this.perfApprTransAltPilotEntered = false;
-            SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", 0);
+            SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", this.perfApprTransAlt);
             return true;
         }
 
