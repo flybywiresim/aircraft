@@ -40,6 +40,7 @@
 1. [MCDU] Fixed length limitation for system messages - @derl30n (Leon)
 1. [FMGC] Use correct variable to determine lateral AP mode for APPROACH phase switch - @aguther (Andreas Guther)
 1. [ENGINE] Correctly adapt fuel burn with sim rate - @aguther (Andreas Guther)
+1. [ISIS] Added inHg and metric altitude pin programs - @tracernz (Mike)
 1. [FLIGHT MODEL] Fixed station locations and loads consistent with real A320 W&B manual - @ghosh9691
 1. [MCDU] Boarding and W/B AOC Pages update with Simbrief Integration - @viniciusfont
 1. [MCDU] Updated boarding logic, separate loading for pax and baggage - @sidnov (Sid)
