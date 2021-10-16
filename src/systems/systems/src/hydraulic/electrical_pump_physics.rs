@@ -86,6 +86,8 @@ impl ElectricalPumpPhysics {
         self.update_pump_resistant_torque(current_pressure, current_displacement);
         self.update_pump_generated_torque(context);
         self.update_pump_speed(context);
+
+        println!("RPM: {:.0}", self.speed().get::<revolution_per_minute>());
     }
 
     fn update_pump_speed(&mut self, context: &UpdateContext) {
@@ -190,6 +192,7 @@ impl SimulationElement for ElectricalPumpPhysics {
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
         self.is_powered = buses.is_powered(self.powered_by);
         self.available_potential = buses.potential_of(self.powered_by).raw();
+        println!("Potential={:.1}V", self.available_potential.get::<volt>());
     }
 
     fn consume_power<T: ConsumePower>(&mut self, _: &UpdateContext, consumption: &mut T) {
@@ -203,175 +206,189 @@ mod tests {
     use crate::electrical::test::TestElectricitySource;
     use crate::electrical::ElectricalBus;
     use crate::electrical::Electricity;
+
+    use crate::hydraulic::update_iterator::FixedStepLoop;
     use crate::shared::PotentialOrigin;
-    use crate::simulation::UpdateContext;
+    use crate::simulation::{Aircraft, SimulationElement, SimulationElementVisitor, UpdateContext};
+
+    use crate::simulation::test::{SimulationTestBed, TestBed};
     use std::time::Duration;
-    use uom::si::{
-        acceleration::foot_per_second_squared, angle::radian, length::foot, pressure::psi,
-        thermodynamic_temperature::degree_celsius, velocity::knot,
-    };
+    use uom::si::{pressure::psi, volume::gallon};
+
+    struct TestAircraft {
+        core_hydraulic_updater: FixedStepLoop,
+
+        pump: ElectricalPumpPhysics,
+        current_pressure: Pressure,
+        current_displacement: Volume,
+
+        powered_source_ac: TestElectricitySource,
+        ac_1_bus: ElectricalBus,
+        is_ac_1_powered: bool,
+    }
+    impl TestAircraft {
+        fn new(electricity: &mut Electricity) -> Self {
+            Self {
+                core_hydraulic_updater: FixedStepLoop::new(Duration::from_millis(50)),
+                pump: physical_pump(),
+                current_pressure: Pressure::new::<psi>(0.),
+                current_displacement: Volume::new::<gallon>(0.),
+                powered_source_ac: TestElectricitySource::powered(
+                    PotentialOrigin::EngineGenerator(1),
+                    electricity,
+                ),
+                ac_1_bus: ElectricalBus::new(ElectricalBusType::AlternatingCurrent(1), electricity),
+                is_ac_1_powered: false,
+            }
+        }
+
+        fn set_current_pressure(&mut self, current_pressure: Pressure) {
+            self.current_pressure = current_pressure;
+        }
+
+        fn set_current_displacement(&mut self, current_displacement: Volume) {
+            self.current_displacement = current_displacement;
+        }
+
+        fn set_ac_1_power(&mut self, is_powered: bool) {
+            self.is_ac_1_powered = is_powered;
+        }
+    }
+    impl Aircraft for TestAircraft {
+        fn update_before_power_distribution(
+            &mut self,
+            _context: &UpdateContext,
+            electricity: &mut Electricity,
+        ) {
+            self.powered_source_ac
+                .power_with_potential(ElectricPotential::new::<volt>(115.));
+            electricity.supplied_by(&self.powered_source_ac);
+
+            if self.is_ac_1_powered {
+                electricity.flow(&self.powered_source_ac, &self.ac_1_bus);
+            }
+        }
+
+        fn update_after_power_distribution(&mut self, context: &UpdateContext) {
+            self.core_hydraulic_updater.update(context);
+
+            for cur_time_step in &mut self.core_hydraulic_updater {
+                self.pump.update(
+                    self.current_pressure,
+                    self.current_displacement,
+                    &context.with_delta(cur_time_step),
+                );
+            }
+        }
+    }
+    impl SimulationElement for TestAircraft {
+        fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+            self.pump.accept(visitor);
+
+            visitor.visit(self);
+        }
+    }
 
     #[test]
     fn pump_inactive_at_init() {
-        let pump = physical_pump();
+        let test_bed = SimulationTestBed::new(|electricity| TestAircraft::new(electricity));
 
-        assert!(!pump.is_active);
-        assert!(pump.speed == AngularVelocity::new::<revolution_per_minute>(0.))
+        assert_eq!(
+            test_bed.query(|a| a.pump.speed()),
+            AngularVelocity::new::<revolution_per_minute>(0.)
+        );
+
+        assert!(!test_bed.query(|a| a.pump.is_active));
     }
 
     #[test]
     fn pump_spools_up_less_than_half_second_at_half_displacement() {
-        let mut pump = physical_pump();
+        let mut test_bed = SimulationTestBed::new(|electricity| TestAircraft::new(electricity));
 
-        let delta_time = Duration::from_secs_f64(0.05);
-        let mut time = Duration::from_secs(0);
+        test_bed.command(|a| a.set_ac_1_power(true));
+        test_bed.command(|a| a.pump.set_active(true));
+        test_bed.command(|a| a.set_current_displacement(Volume::new::<cubic_inch>(0.131)));
+        test_bed.command(|a| a.set_current_pressure(Pressure::new::<psi>(3000.)));
 
-        pump.set_active(true);
-        for _ in 0..100 {
-            pump.receive_power(&test_electricity(
-                ElectricalBusType::AlternatingCurrentGndFltService,
-                true,
-            ));
-            pump.update(
-                Pressure::new::<psi>(3000.),
-                Volume::new::<cubic_inch>(0.263 / 2.),
-                &context(delta_time),
-            );
-            time += delta_time;
+        test_bed.run_with_delta(Duration::from_secs_f64(0.5));
 
-            if time > Duration::from_secs_f64(0.5) {
-                assert!(pump.speed.get::<revolution_per_minute>() > 7000.);
-            }
-
-            println!(
-                "t= {:.1} RPM {:.0}",
-                time.as_secs_f64(),
-                pump.speed.get::<revolution_per_minute>()
-            );
-        }
+        assert!(
+            test_bed.query(|a| a.pump.speed())
+                >= AngularVelocity::new::<revolution_per_minute>(7300.)
+        );
     }
 
     #[test]
     fn pump_regulates_on_displacement_gradient() {
-        let mut pump = physical_pump();
+        let mut test_bed = SimulationTestBed::new(|electricity| TestAircraft::new(electricity));
 
-        let delta_time = Duration::from_secs_f64(0.05);
-        let mut time = Duration::from_secs(0);
+        test_bed.command(|a| a.set_ac_1_power(true));
+        test_bed.command(|a| a.pump.set_active(true));
+        test_bed.command(|a| a.set_current_displacement(Volume::new::<cubic_inch>(0.263 / 4.)));
+        test_bed.command(|a| a.set_current_pressure(Pressure::new::<psi>(3000.)));
 
-        let mut displacement = Volume::new::<cubic_inch>(0.263 / 4.);
-        pump.set_active(true);
-        for _ in 0..100 {
-            pump.receive_power(&test_electricity(
-                ElectricalBusType::AlternatingCurrentGndFltService,
-                true,
-            ));
-            pump.update(
-                Pressure::new::<psi>(3000.),
-                displacement,
-                &context(delta_time),
-            );
-            time += delta_time;
+        test_bed.run_with_delta(Duration::from_secs_f64(1.));
 
-            if time > Duration::from_secs_f64(3.) && time < Duration::from_secs_f64(3.5) {
-                displacement = Volume::new::<cubic_inch>(0.263);
-            } else {
-                displacement = Volume::new::<cubic_inch>(0.263 / 4.);
-            }
+        assert!(
+            test_bed.query(|a| a.pump.speed())
+                >= AngularVelocity::new::<revolution_per_minute>(7500.)
+        );
 
-            // .5s after displacement transient we want to be back at 7500 rpm
-            if time > Duration::from_secs_f64(4.) {
-                assert!(pump.speed.get::<revolution_per_minute>() > 7400.)
-            }
+        // Instant demand at full displacement
+        test_bed.command(|a| a.set_current_displacement(Volume::new::<cubic_inch>(0.263)));
 
-            // Checking we don't overshoot too much
-            assert!(pump.speed.get::<revolution_per_minute>() < 8500.);
+        test_bed.run_with_delta(Duration::from_secs_f64(0.5));
+        assert!(
+            test_bed.query(|a| a.pump.speed())
+                < AngularVelocity::new::<revolution_per_minute>(7000.)
+        );
 
-            println!(
-                "t= {:.1} RPM {:.0}",
-                time.as_secs_f64(),
-                pump.speed.get::<revolution_per_minute>()
-            );
-        }
+        // Back to 1/4 displacement
+        test_bed.command(|a| a.set_current_displacement(Volume::new::<cubic_inch>(0.263 / 4.)));
+
+        test_bed.run_with_delta(Duration::from_secs_f64(0.5));
+        assert!(
+            test_bed.query(|a| a.pump.speed())
+                >= AngularVelocity::new::<revolution_per_minute>(7500.)
+        );
+
+        // Checking we don't overshoot the 7600rpm target by more than 100rpm
+        assert!(
+            test_bed.query(|a| a.pump.speed())
+                < AngularVelocity::new::<revolution_per_minute>(7700.)
+        );
     }
 
     #[test]
     fn pump_spools_down_less_than_two_second_when_unpowered_with_no_displacement() {
-        let mut pump = physical_pump();
+        let mut test_bed = SimulationTestBed::new(|electricity| TestAircraft::new(electricity));
 
-        let delta_time = Duration::from_secs_f64(0.05);
-        let mut time = Duration::from_secs(0);
+        test_bed.command(|a| a.set_ac_1_power(true));
+        test_bed.command(|a| a.pump.set_active(true));
+        test_bed.command(|a| a.set_current_displacement(Volume::new::<cubic_inch>(0.)));
+        test_bed.command(|a| a.set_current_pressure(Pressure::new::<psi>(3000.)));
 
-        pump.set_active(true);
-        let mut pump_powered = true;
-        for _ in 0..100 {
-            pump.receive_power(&test_electricity(
-                ElectricalBusType::AlternatingCurrentGndFltService,
-                pump_powered,
-            ));
+        test_bed.run_with_delta(Duration::from_secs_f64(1.));
 
-            pump.update(
-                Pressure::new::<psi>(3000.),
-                Volume::new::<cubic_inch>(0.),
-                &context(delta_time),
-            );
-            time += delta_time;
+        assert!(
+            test_bed.query(|a| a.pump.speed())
+                >= AngularVelocity::new::<revolution_per_minute>(7550.)
+        );
 
-            if time > Duration::from_secs_f64(2.) {
-                pump_powered = false;
-            }
+        test_bed.command(|a| a.set_ac_1_power(false));
+        test_bed.run_with_delta(Duration::from_secs_f64(2.));
 
-            if time > Duration::from_secs_f64(4.) {
-                assert!(pump.speed.get::<revolution_per_minute>() < 1.);
-            }
-
-            println!(
-                "t= {:.1} RPM {:.0} Power:{:.0} Voltage: {:.1}",
-                time.as_secs_f64(),
-                pump.speed.get::<revolution_per_minute>(),
-                pump.consumed_power.get::<watt>(),
-                pump.available_potential.get::<volt>()
-            );
-        }
+        assert!(
+            test_bed.query(|a| a.pump.speed()) < AngularVelocity::new::<revolution_per_minute>(10.)
+        );
     }
 
     fn physical_pump() -> ElectricalPumpPhysics {
         ElectricalPumpPhysics::new(
             "YELLOW",
-            ElectricalBusType::AlternatingCurrentGndFltService,
+            ElectricalBusType::AlternatingCurrent(1),
             ElectricCurrent::new::<ampere>(45.),
             AngularVelocity::new::<revolution_per_minute>(7600.),
         )
-    }
-
-    fn context(delta_time: Duration) -> UpdateContext {
-        UpdateContext::new(
-            delta_time,
-            Velocity::new::<knot>(250.),
-            Length::new::<foot>(5000.),
-            ThermodynamicTemperature::new::<degree_celsius>(25.0),
-            true,
-            Acceleration::new::<foot_per_second_squared>(0.),
-            Acceleration::new::<foot_per_second_squared>(0.),
-            Acceleration::new::<foot_per_second_squared>(0.),
-            Angle::new::<radian>(0.),
-            Angle::new::<radian>(0.),
-        )
-    }
-
-    fn test_electricity(bus_id: ElectricalBusType, is_powered: bool) -> Electricity {
-        let mut electricity = Electricity::new();
-        let mut source =
-            TestElectricitySource::unpowered(PotentialOrigin::EngineGenerator(1), &mut electricity);
-
-        if is_powered {
-            source.power_with_potential(ElectricPotential::new::<volt>(115.));
-        }
-
-        let bus = ElectricalBus::new(bus_id, &mut electricity);
-
-        electricity.supplied_by(&source);
-        electricity.flow(&source, &bus);
-
-        electricity
     }
 }
