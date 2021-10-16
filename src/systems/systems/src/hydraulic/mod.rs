@@ -503,9 +503,9 @@ impl HydraulicCircuit {
             section.update_pump_state(main_section_pumps[pump_idx], &mut self.reservoir, &context);
         }
 
-        if system_section_pump.is_some() {
+        if let Some(pump)=system_section_pump {
             self.system_section.update_pump_state(
-                system_section_pump.unwrap(),
+                pump,
                 &mut self.reservoir,
                 &context,
             );
