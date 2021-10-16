@@ -41,6 +41,7 @@
 1. [FMGC] Use correct variable to determine lateral AP mode for APPROACH phase switch - @aguther (Andreas Guther)
 1. [ENGINE] Correctly adapt fuel burn with sim rate - @aguther (Andreas Guther)
 1. [ISIS] Added inHg and metric altitude pin programs - @tracernz (Mike)
+1. [MCDU] Fixed transition alt init and display - @derl30n (Leon)
 
 ## 0.7.0
 1. [HYD] First building block, more to come. Hydraulics do not impact the sim YET. - @crocket6 (crocket)
