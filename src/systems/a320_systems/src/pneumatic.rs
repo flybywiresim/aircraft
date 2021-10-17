@@ -16,7 +16,6 @@ use uom::si::{
 };
 
 use systems::{
-    hydraulic::Fluid,
     overhead::{AutoOffFaultPushButton, OnOffFaultPushButton},
     pneumatic::{
         valve::*, ApuCompressionChamberController, CompressionChamber, ControllablePneumaticValve,
@@ -127,7 +126,6 @@ impl A320Pneumatic {
             green_hydraulic_reservoir_with_valve: PneumaticContainerWithConnector::new(
                 VariableVolumeContainer::new(
                     Volume::new::<gallon>(10.),
-                    Fluid::new(Pressure::new::<pascal>(142000.)),
                     Pressure::new::<psi>(14.7),
                     ThermodynamicTemperature::new::<degree_celsius>(15.),
                 ),
@@ -135,7 +133,6 @@ impl A320Pneumatic {
             blue_hydraulic_reservoir_with_valve: PneumaticContainerWithConnector::new(
                 VariableVolumeContainer::new(
                     Volume::new::<gallon>(8.),
-                    Fluid::new(Pressure::new::<pascal>(142000.)),
                     Pressure::new::<psi>(14.7),
                     ThermodynamicTemperature::new::<degree_celsius>(15.),
                 ),
@@ -143,7 +140,6 @@ impl A320Pneumatic {
             yellow_hydraulic_reservoir_with_valve: PneumaticContainerWithConnector::new(
                 VariableVolumeContainer::new(
                     Volume::new::<gallon>(10.),
-                    Fluid::new(Pressure::new::<pascal>(142000.)),
                     Pressure::new::<psi>(14.7),
                     ThermodynamicTemperature::new::<degree_celsius>(15.),
                 ),
@@ -852,32 +848,27 @@ impl EngineBleedAirSystem {
             pressure_regulating_valve: ElectroPneumaticValve::new(1., powered_by),
             fan_air_valve: ElectroPneumaticValve::new(1., powered_by),
             transfer_pressure_pipe: DefaultPipe::new(
-                Volume::new::<cubic_meter>(1.), // TODO: Figure out volume to use
-                Fluid::new(Pressure::new::<pascal>(142000.)), // https://en.wikipedia.org/wiki/Bulk_modulus#Selected_values
+                Volume::new::<cubic_meter>(1.),
                 Pressure::new::<psi>(14.7),
                 ThermodynamicTemperature::new::<degree_celsius>(15.),
             ),
             precooler_inlet_pipe: DefaultPipe::new(
-                Volume::new::<cubic_meter>(0.5), // TODO: Figure out volume to use
-                Fluid::new(Pressure::new::<pascal>(142000.)), // https://en.wikipedia.org/wiki/Bulk_modulus#Selected_values
+                Volume::new::<cubic_meter>(0.5),
                 Pressure::new::<psi>(14.7),
                 ThermodynamicTemperature::new::<degree_celsius>(15.),
             ),
             precooler_outlet_pipe: DefaultPipe::new(
-                Volume::new::<cubic_meter>(0.5), // TODO: Figure out volume to use
-                Fluid::new(Pressure::new::<pascal>(142000.)), // https://en.wikipedia.org/wiki/Bulk_modulus#Selected_values
+                Volume::new::<cubic_meter>(0.5),
                 Pressure::new::<psi>(14.7),
                 ThermodynamicTemperature::new::<degree_celsius>(15.),
             ),
             precooler_cooling_pipe: DefaultPipe::new(
-                Volume::new::<cubic_meter>(1.), // TODO: Figure out volume to use
-                Fluid::new(Pressure::new::<pascal>(142000.)),
+                Volume::new::<cubic_meter>(1.),
                 Pressure::new::<psi>(14.7),
                 ThermodynamicTemperature::new::<degree_celsius>(15.),
             ),
             engine_starter_container: DefaultPipe::new(
-                Volume::new::<cubic_meter>(0.5), // TODO: Figure out volume to use
-                Fluid::new(Pressure::new::<pascal>(142000.)),
+                Volume::new::<cubic_meter>(0.5),
                 Pressure::new::<psi>(14.7),
                 ThermodynamicTemperature::new::<degree_celsius>(15.),
             ),
@@ -1248,7 +1239,6 @@ impl PackComplex {
         Self {
             actual_pack: DefaultPipe::new(
                 Volume::new::<cubic_meter>(1.),
-                Fluid::new(Pressure::new::<pascal>(142000.)),
                 Pressure::new::<psi>(14.7),
                 ThermodynamicTemperature::new::<degree_celsius>(15.),
             ),

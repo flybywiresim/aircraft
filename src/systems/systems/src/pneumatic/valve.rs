@@ -492,10 +492,6 @@ mod tests {
         VolumeRate::new::<cubic_meter_per_second>(1e-4)
     }
 
-    fn air() -> Fluid {
-        Fluid::new(Pressure::new::<pascal>(142000.))
-    }
-
     // It's a bit of a pain to initialize all the units manually
     fn quick_container(
         volume_in_cubic_meter: f64,
@@ -504,7 +500,6 @@ mod tests {
     ) -> DefaultPipe {
         DefaultPipe::new(
             Volume::new::<cubic_meter>(1.),
-            air(),
             Pressure::new::<psi>(pressure_in_psi),
             ThermodynamicTemperature::new::<degree_celsius>(temperature_in_celsius),
         )
@@ -544,13 +539,11 @@ mod tests {
 
         let mut from = DefaultPipe::new(
             Volume::new::<cubic_meter>(1.),
-            Fluid::new(Pressure::new::<pascal>(142000.)),
             Pressure::new::<psi>(14.),
             ThermodynamicTemperature::new::<degree_celsius>(15.),
         );
         let mut to = DefaultPipe::new(
             Volume::new::<cubic_meter>(1.),
-            Fluid::new(Pressure::new::<pascal>(142000.)),
             Pressure::new::<psi>(14.),
             ThermodynamicTemperature::new::<degree_celsius>(15.),
         );
@@ -582,13 +575,11 @@ mod tests {
 
         let mut from = DefaultPipe::new(
             Volume::new::<cubic_meter>(1.),
-            Fluid::new(Pressure::new::<pascal>(142000.)),
             Pressure::new::<psi>(28.),
             ThermodynamicTemperature::new::<degree_celsius>(15.),
         );
         let mut to = DefaultPipe::new(
             Volume::new::<cubic_meter>(1.),
-            Fluid::new(Pressure::new::<pascal>(142000.)),
             Pressure::new::<psi>(14.),
             ThermodynamicTemperature::new::<degree_celsius>(15.),
         );
@@ -611,13 +602,11 @@ mod tests {
 
         let mut from = DefaultPipe::new(
             Volume::new::<cubic_meter>(1.),
-            Fluid::new(Pressure::new::<pascal>(142000.)),
             Pressure::new::<psi>(28.),
             ThermodynamicTemperature::new::<degree_celsius>(15.),
         );
         let mut to = DefaultPipe::new(
             Volume::new::<cubic_meter>(1.),
-            Fluid::new(Pressure::new::<pascal>(142000.)),
             Pressure::new::<psi>(14.),
             ThermodynamicTemperature::new::<degree_celsius>(15.),
         );
@@ -643,13 +632,11 @@ mod tests {
 
         let mut from = DefaultPipe::new(
             Volume::new::<cubic_meter>(1.),
-            Fluid::new(Pressure::new::<pascal>(142000.)),
             Pressure::new::<psi>(28.),
             ThermodynamicTemperature::new::<degree_celsius>(15.),
         );
         let mut to = DefaultPipe::new(
             Volume::new::<cubic_meter>(1.),
-            Fluid::new(Pressure::new::<pascal>(142000.)),
             Pressure::new::<psi>(14.),
             ThermodynamicTemperature::new::<degree_celsius>(15.),
         );
@@ -660,13 +647,11 @@ mod tests {
 
         let mut from2 = DefaultPipe::new(
             Volume::new::<cubic_meter>(1.),
-            Fluid::new(Pressure::new::<pascal>(142000.)),
             Pressure::new::<psi>(28.),
             ThermodynamicTemperature::new::<degree_celsius>(15.),
         );
         let mut to2 = DefaultPipe::new(
             Volume::new::<cubic_meter>(1.),
-            Fluid::new(Pressure::new::<pascal>(142000.)),
             Pressure::new::<psi>(14.),
             ThermodynamicTemperature::new::<degree_celsius>(15.),
         );
@@ -686,13 +671,11 @@ mod tests {
 
         let mut from = DefaultPipe::new(
             Volume::new::<cubic_meter>(1.),
-            Fluid::new(Pressure::new::<pascal>(142000.)),
             Pressure::new::<psi>(28.),
             ThermodynamicTemperature::new::<degree_celsius>(15.),
         );
         let mut to = DefaultPipe::new(
             Volume::new::<cubic_meter>(1.),
-            Fluid::new(Pressure::new::<pascal>(142000.)),
             Pressure::new::<psi>(14.),
             ThermodynamicTemperature::new::<degree_celsius>(15.),
         );
@@ -709,13 +692,11 @@ mod tests {
 
         let mut from = DefaultPipe::new(
             Volume::new::<cubic_meter>(1.),
-            Fluid::new(Pressure::new::<pascal>(142000.)),
             Pressure::new::<psi>(100.), // really high pressure
             ThermodynamicTemperature::new::<degree_celsius>(15.),
         );
         let mut to = DefaultPipe::new(
             Volume::new::<cubic_meter>(1.),
-            Fluid::new(Pressure::new::<pascal>(142000.)),
             Pressure::new::<psi>(1.),
             ThermodynamicTemperature::new::<degree_celsius>(15.),
         );

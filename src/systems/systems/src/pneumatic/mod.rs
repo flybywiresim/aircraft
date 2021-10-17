@@ -1,5 +1,4 @@
 use crate::{
-    hydraulic::Fluid,
     pneumatic::valve::*,
     shared::{
         arinc429::{Arinc429Word, SignStatus},
@@ -62,7 +61,6 @@ pub struct DefaultPipe {
     volume: Volume,
     pressure: Pressure,
     temperature: ThermodynamicTemperature,
-    fluid: Fluid,
 }
 impl PneumaticContainer for DefaultPipe {
     fn pressure(&self) -> Pressure {
@@ -94,15 +92,9 @@ impl PneumaticContainer for DefaultPipe {
 impl DefaultPipe {
     const HEAT_CAPACITY_RATIO: f64 = 1.4;
 
-    pub fn new(
-        volume: Volume,
-        fluid: Fluid,
-        pressure: Pressure,
-        temperature: ThermodynamicTemperature,
-    ) -> Self {
+    pub fn new(volume: Volume, pressure: Pressure, temperature: ThermodynamicTemperature) -> Self {
         DefaultPipe {
             volume,
-            fluid,
             pressure,
             temperature,
         }
@@ -260,7 +252,6 @@ impl CompressionChamber {
         Self {
             pipe: DefaultPipe::new(
                 volume,
-                Fluid::new(Pressure::new::<pascal>(142000.)),
                 Pressure::new::<psi>(14.7),
                 ThermodynamicTemperature::new::<degree_celsius>(15.),
             ),
@@ -412,12 +403,11 @@ pub struct VariableVolumeContainer {
 impl VariableVolumeContainer {
     pub fn new(
         starting_volume: Volume,
-        fluid: Fluid,
         pressure: Pressure,
         temperature: ThermodynamicTemperature,
     ) -> Self {
         Self {
-            pipe: DefaultPipe::new(starting_volume, fluid, pressure, temperature),
+            pipe: DefaultPipe::new(starting_volume, pressure, temperature),
         }
     }
 
@@ -597,10 +587,6 @@ mod tests {
         TemperatureInterval::new::<temperature_interval::degree_celsius>(0.5)
     }
 
-    fn air() -> Fluid {
-        Fluid::new(Pressure::new::<pascal>(142000.))
-    }
-
     // It's a bit of a pain to initialize all the units manually
     fn quick_container(
         volume_in_cubic_meter: f64,
@@ -609,7 +595,6 @@ mod tests {
     ) -> DefaultPipe {
         DefaultPipe::new(
             Volume::new::<cubic_meter>(1.),
-            air(),
             Pressure::new::<psi>(pressure_in_psi),
             ThermodynamicTemperature::new::<degree_celsius>(temperature_in_celsius),
         )
@@ -745,19 +730,16 @@ mod tests {
 
         let mut from = DefaultPipe::new(
             Volume::new::<cubic_meter>(1.),
-            air(),
             Pressure::new::<psi>(14.7),
             ThermodynamicTemperature::new::<degree_celsius>(15.),
         );
         let mut supply = DefaultPipe::new(
             Volume::new::<cubic_meter>(1.),
-            air(),
             Pressure::new::<psi>(14.7),
             ThermodynamicTemperature::new::<degree_celsius>(150.),
         );
         let mut to = DefaultPipe::new(
             Volume::new::<cubic_meter>(1.),
-            air(),
             Pressure::new::<psi>(14.7),
             ThermodynamicTemperature::new::<degree_celsius>(15.),
         );
@@ -785,19 +767,16 @@ mod tests {
 
         let mut from = DefaultPipe::new(
             Volume::new::<cubic_meter>(1.),
-            air(),
             Pressure::new::<psi>(29.4),
             ThermodynamicTemperature::new::<degree_celsius>(15.),
         );
         let mut supply = DefaultPipe::new(
             Volume::new::<cubic_meter>(1.),
-            air(),
             Pressure::new::<psi>(14.7),
             ThermodynamicTemperature::new::<degree_celsius>(15.),
         );
         let mut to = DefaultPipe::new(
             Volume::new::<cubic_meter>(1.),
-            air(),
             Pressure::new::<psi>(14.7),
             ThermodynamicTemperature::new::<degree_celsius>(15.),
         );
@@ -818,19 +797,16 @@ mod tests {
 
         let mut from = DefaultPipe::new(
             Volume::new::<cubic_meter>(1.),
-            air(),
             Pressure::new::<psi>(29.4),
             ThermodynamicTemperature::new::<degree_celsius>(200.),
         );
         let mut supply = DefaultPipe::new(
             Volume::new::<cubic_meter>(1.),
-            air(),
             Pressure::new::<psi>(14.7),
             ThermodynamicTemperature::new::<degree_celsius>(15.),
         );
         let mut to = DefaultPipe::new(
             Volume::new::<cubic_meter>(1.),
-            air(),
             Pressure::new::<psi>(14.7),
             ThermodynamicTemperature::new::<degree_celsius>(200.),
         );
@@ -846,7 +822,6 @@ mod tests {
     fn pressure_increases_for_temperature_increase() {
         let mut pipe = DefaultPipe::new(
             Volume::new::<cubic_meter>(1.),
-            air(),
             Pressure::new::<psi>(29.4),
             ThermodynamicTemperature::new::<degree_celsius>(15.),
         );
@@ -879,26 +854,22 @@ mod tests {
 
         let mut fake_compression_chamber = DefaultPipe::new(
             Volume::new::<cubic_meter>(1.),
-            air(),
             Pressure::new::<psi>(2.),
             ThermodynamicTemperature::new::<degree_celsius>(15.),
         );
         let mut valve = DefaultValve::new_open();
         let mut from = DefaultPipe::new(
             Volume::new::<cubic_meter>(1.),
-            air(),
             Pressure::new::<psi>(1.),
             ThermodynamicTemperature::new::<degree_celsius>(15.),
         );
         let mut supply = DefaultPipe::new(
             Volume::new::<cubic_meter>(1.),
-            air(),
             Pressure::new::<psi>(1.),
             ThermodynamicTemperature::new::<degree_celsius>(15.),
         );
         let mut to = DefaultPipe::new(
             Volume::new::<cubic_meter>(1.),
-            air(),
             Pressure::new::<psi>(1.),
             ThermodynamicTemperature::new::<degree_celsius>(15.),
         );
@@ -949,7 +920,6 @@ mod tests {
     fn variable_volume_container_increases_pressure_for_volume_decrease() {
         let mut container = VariableVolumeContainer::new(
             Volume::new::<gallon>(10.),
-            Fluid::new(Pressure::new::<pascal>(142000.)),
             Pressure::new::<psi>(14.7),
             ThermodynamicTemperature::new::<degree_celsius>(15.),
         );
