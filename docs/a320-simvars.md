@@ -1112,6 +1112,10 @@
     - Percentage of current (filtered) alpha to alpha max
     - alpha max can be overshoot so values beyond 1.0 should be expected
 
+- A32NX_BETA_TARGET
+    - Degrees
+    - Target beta (sideslip) in case of asymmetric thrust
+
 - A32NX_3D_AILERON_LEFT_DEFLECTION
     - Number
     - Provides the left aileron position
