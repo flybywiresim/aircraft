@@ -265,11 +265,11 @@ impl PneumaticContainerConnector {
                     .powf(1. / Self::HEAT_CAPACITY_RATIO)
                     * to.volume());
 
-        let fluid_to_move = from.volume().min(
-            self.transfer_speed_factor
-                * equalization_volume
-                * (1. - (-Self::TRANSFER_SPEED * context.delta_as_secs_f64()).exp()),
-        );
+        let fluid_to_move = (self.transfer_speed_factor
+            * equalization_volume
+            * (1. - (-Self::TRANSFER_SPEED * context.delta_as_secs_f64()).exp()))
+        .min(from.volume())
+        .max(-to.volume());
 
         self.move_volume(from, to, fluid_to_move);
 
