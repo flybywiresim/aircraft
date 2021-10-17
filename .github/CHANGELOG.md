@@ -50,8 +50,8 @@
 1. [ECAM] Fixed misaligned items on ecam memos - @tyler58546 (tyler58546)
 1. [ECAM] Revised fuel page to match neo - @RichardPilbery (tricky_dicky#3571)
 1. [RMP] Added 25 kHz VHF spacing option - @tyler58546 (tyler58546)
-1. [EFB] Landing performance calculator uses aircraft unit settings - @tracernz (Mike)
 1. [EFB] Fixed landing performance calculator clear button and wind magnitude - @ghitier (Guillaume H.)
+1. [EFB] Some landing performance calculator units can be toggled - @tracernz (Mike) and @ghitier (Guillaume H.)
 
 ## 0.7.0
 
