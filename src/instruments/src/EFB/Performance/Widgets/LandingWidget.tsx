@@ -37,7 +37,7 @@ export const LandingWidget = () => {
     const { performanceState, performanceDispatch } = useContext(PerformanceContext);
 
     const [totalWeight] = useSimVar('TOTAL WEIGHT', 'Pounds', 1000);
-    const [temperatureUnit, setTemperatureUnit] = useState(Units.userTemperatureUnit);
+    const [temperatureUnit, setTemperatureUnit] = useState<'°C' | '°F'>('°C');
     const [pressureUnit, setPressureUnit] = useState(Units.userPressureUnit);
     const [lengthUnit, setLengthUnit] = useState(Units.userLengthUnit);
     const [weightUnit, setWeightUnit] = useState(Units.userWeightUnit);
