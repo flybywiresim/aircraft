@@ -86,7 +86,6 @@ pub struct A320Pneumatic {
     cross_bleed_valve_controller: CrossBleedValveController,
     cross_bleed_valve: DefaultValve,
 
-    // TODO: Not really sure this should be in the pneumatic system
     fadec: FullAuthorityDigitalEngineControl,
     engine_starter_valve_controllers: [EngineStarterValveController; 2],
 
@@ -289,10 +288,7 @@ impl A320Pneumatic {
     }
 }
 impl SimulationElement for A320Pneumatic {
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T)
-    where
-        Self: Sized,
-    {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.apu_bleed_air_controller.accept(visitor);
 
         self.cross_bleed_valve.accept(visitor);
@@ -494,10 +490,7 @@ impl BleedMonitoringComputer {
     }
 }
 impl SimulationElement for BleedMonitoringComputer {
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T)
-    where
-        Self: Sized,
-    {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         visitor.visit(self);
     }
 
@@ -532,7 +525,7 @@ struct BleedMonitoringComputerChannel {
     transfer_pressure: Pressure,
     // Pressure after PRV
     precooler_inlet_pressure: Pressure,
-    precooler_inlet_temperature: ThermodynamicTemperature,
+    precooler_outlet_temperature: ThermodynamicTemperature,
     pressure_regulating_valve_open_amount: Ratio,
     high_pressure_valve_open_position: Ratio,
     engine_starter_valve_is_open: bool,
@@ -559,7 +552,7 @@ impl BleedMonitoringComputerChannel {
             high_pressure_compressor_pressure: Pressure::new::<psi>(0.),
             transfer_pressure: Pressure::new::<psi>(0.),
             precooler_inlet_pressure: Pressure::new::<psi>(0.),
-            precooler_inlet_temperature: ThermodynamicTemperature::new::<degree_celsius>(0.),
+            precooler_outlet_temperature: ThermodynamicTemperature::new::<degree_celsius>(0.),
             high_pressure_valve_open_position: Ratio::new::<percent>(0.),
             pressure_regulating_valve_open_amount: Ratio::new::<percent>(0.),
             engine_starter_valve_is_open: false,
@@ -586,15 +579,12 @@ impl BleedMonitoringComputerChannel {
         overhead_panel: &mut A320PneumaticOverheadPanel,
         fadec: &FullAuthorityDigitalEngineControl,
     ) {
-        self.intermediate_pressure_compressor_pressure = sensors.ip_pressure();
-        self.high_pressure_compressor_pressure = sensors.hp_pressure();
+        self.intermediate_pressure_compressor_pressure = sensors.intermediate_pressure();
+        self.high_pressure_compressor_pressure = sensors.high_pressure();
         self.transfer_pressure = sensors.transfer_pressure();
         self.precooler_inlet_pressure = sensors.precooler_inlet_pressure();
 
-        // TODO: Note that the real aircraft regulates the precooler outlet temperature rather than inlet temperature.
-        // However, due to the way the precooler currently works, regulating inlet works much better for now.
-        // YES, I AM AWARE THAT I HAVE INLET AND THEN OUTLET
-        self.precooler_inlet_temperature = sensors.precooler_outlet_temperature();
+        self.precooler_outlet_temperature = sensors.precooler_outlet_temperature();
 
         self.pressure_regulating_valve_pid.change_setpoint(
             if fadec.is_single_vs_dual_bleed_config() {
@@ -611,13 +601,13 @@ impl BleedMonitoringComputerChannel {
             Some(context.delta()),
         );
         self.fan_air_valve_pid.next_control_output(
-            self.precooler_inlet_temperature.get::<degree_celsius>(),
+            self.precooler_outlet_temperature.get::<degree_celsius>(),
             Some(context.delta()),
         );
 
-        self.pressure_regulating_valve_open_amount = sensors.prv_open_amount();
-        self.high_pressure_valve_open_position = sensors.hpv_open_amount();
-        self.engine_starter_valve_is_open = sensors.esv_is_open();
+        self.pressure_regulating_valve_open_amount =
+            sensors.pressure_regulating_valve_open_amount();
+        self.engine_starter_valve_is_open = sensors.engine_starter_valve_is_open();
 
         self.is_engine_bleed_pushbutton_auto =
             overhead_panel.engine_bleed_pb_is_auto(self.engine_number);
@@ -631,8 +621,8 @@ impl BleedMonitoringComputerChannel {
 
         self.engine_bleed_fault_light_monitor.update(
             context,
-            !sensors.prv_is_open(),
-            !sensors.esv_is_open(),
+            !sensors.pressure_regulating_valve_is_open(),
+            !sensors.engine_starter_valve_is_open(),
             !apu_bleed_valve_is_open,
             overhead_panel.apu_bleed_is_on(),
             overhead_panel.cross_bleed_mode() == CrossBleedValveSelectorMode::Shut,
@@ -902,8 +892,6 @@ impl EngineBleedAirSystem {
         self.high_pressure_compression_chamber
             .update(&self.high_pressure_compression_chamber_controller);
 
-        // Update controllers
-
         // Update valves (open amount)
         self.high_pressure_valve
             .update_open_amount(high_pressure_valve_controller);
@@ -950,11 +938,11 @@ impl EngineBleedAirSystem {
             .update_move_fluid(context, &mut self.engine_starter_container)
     }
 
-    fn ip_pressure(&self) -> Pressure {
+    fn intermediate_pressure(&self) -> Pressure {
         self.intermediate_pressure_compression_chamber.pressure()
     }
 
-    fn hp_pressure(&self) -> Pressure {
+    fn high_pressure(&self) -> Pressure {
         self.high_pressure_compression_chamber.pressure()
     }
 
@@ -978,11 +966,11 @@ impl EngineBleedAirSystem {
         self.engine_starter_container.pressure()
     }
 
-    fn ip_temperature(&self) -> ThermodynamicTemperature {
+    fn intermediate_temperature(&self) -> ThermodynamicTemperature {
         self.intermediate_pressure_compression_chamber.temperature()
     }
 
-    fn hp_temperature(&self) -> ThermodynamicTemperature {
+    fn high_temperature(&self) -> ThermodynamicTemperature {
         self.high_pressure_compression_chamber.temperature()
     }
 
@@ -1006,27 +994,24 @@ impl EngineBleedAirSystem {
         self.engine_starter_container.temperature()
     }
 
-    fn prv_open_amount(&self) -> Ratio {
+    fn pressure_regulating_valve_open_amount(&self) -> Ratio {
         self.pressure_regulating_valve.open_amount()
     }
 
-    fn hpv_open_amount(&self) -> Ratio {
+    fn high_pressure_valve_open_amount(&self) -> Ratio {
         self.high_pressure_valve.open_amount()
     }
 
-    fn esv_is_open(&self) -> bool {
+    fn engine_starter_valve_is_open(&self) -> bool {
         self.engine_starter_valve.is_open()
     }
 
-    fn prv_is_open(&self) -> bool {
+    fn pressure_regulating_valve_is_open(&self) -> bool {
         self.pressure_regulating_valve.is_open()
     }
 }
 impl SimulationElement for EngineBleedAirSystem {
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T)
-    where
-        Self: Sized,
-    {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.intermediate_pressure_compression_chamber_controller
             .accept(visitor);
         self.high_pressure_compression_chamber_controller
@@ -1039,16 +1024,15 @@ impl SimulationElement for EngineBleedAirSystem {
         visitor.visit(self);
     }
 
-    // TODO: Possibly move these to their respective struct (e.g IP_PRESSURE to IPCompressionChamber or its controller)
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(
             &format!("PNEU_ENG_{}_IP_PRESSURE", self.number),
-            self.ip_pressure(),
+            self.intermediate_pressure(),
         );
 
         writer.write(
             &format!("PNEU_ENG_{}_HP_PRESSURE", self.number),
-            self.hp_pressure(),
+            self.high_pressure(),
         );
 
         writer.write(
@@ -1068,12 +1052,12 @@ impl SimulationElement for EngineBleedAirSystem {
 
         writer.write(
             &format!("PNEU_ENG_{}_IP_TEMPERATURE", self.number),
-            self.ip_temperature(),
+            self.intermediate_temperature(),
         );
 
         writer.write(
             &format!("PNEU_ENG_{}_HP_TEMPERATURE", self.number),
-            self.hp_temperature(),
+            self.high_temperature(),
         );
 
         writer.write(
@@ -1195,6 +1179,7 @@ impl SimulationElement for A320PneumaticOverheadPanel {
     }
 }
 
+/// We use this simply as an interface to engine parameter simvars. It should probably not be part of the pneumatic system.
 struct FullAuthorityDigitalEngineControl {
     engine_1_state: EngineState,
     engine_2_state: EngineState,
@@ -1285,10 +1270,7 @@ impl PneumaticContainer for PackComplex {
     }
 }
 impl SimulationElement for PackComplex {
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T)
-    where
-        Self: Sized,
-    {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.pack_flow_valve_controller.accept(visitor);
     }
 }
@@ -1512,10 +1494,7 @@ mod tests {
         }
     }
     impl SimulationElement for PneumaticTestAircraft {
-        fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T)
-        where
-            Self: Sized,
-        {
+        fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
             self.pneumatic.accept(visitor);
             self.engine_1.accept(visitor);
             self.engine_2.accept(visitor);
@@ -1652,11 +1631,11 @@ mod tests {
         }
 
         fn ip_pressure(&self, number: usize) -> Pressure {
-            self.query(|a| a.pneumatic.engine_systems[number - 1].ip_pressure())
+            self.query(|a| a.pneumatic.engine_systems[number - 1].intermediate_pressure())
         }
 
         fn hp_pressure(&self, number: usize) -> Pressure {
-            self.query(|a| a.pneumatic.engine_systems[number - 1].hp_pressure())
+            self.query(|a| a.pneumatic.engine_systems[number - 1].high_pressure())
         }
 
         fn transfer_pressure(&self, number: usize) -> Pressure {
@@ -1682,11 +1661,11 @@ mod tests {
         }
 
         fn ip_temperature(&self, number: usize) -> ThermodynamicTemperature {
-            self.query(|a| a.pneumatic.engine_systems[number - 1].ip_temperature())
+            self.query(|a| a.pneumatic.engine_systems[number - 1].intermediate_temperature())
         }
 
         fn hp_temperature(&self, number: usize) -> ThermodynamicTemperature {
-            self.query(|a| a.pneumatic.engine_systems[number - 1].hp_temperature())
+            self.query(|a| a.pneumatic.engine_systems[number - 1].high_temperature())
         }
 
         fn transfer_temperature(&self, number: usize) -> ThermodynamicTemperature {
@@ -1736,7 +1715,7 @@ mod tests {
         }
 
         fn es_valve_is_open(&self, number: usize) -> bool {
-            self.query(|a| a.pneumatic.engine_systems[number - 1].esv_is_open())
+            self.query(|a| a.pneumatic.engine_systems[number - 1].engine_starter_valve_is_open())
         }
 
         fn apu_bleed_valve_is_open(&self) -> bool {
@@ -2112,8 +2091,8 @@ mod tests {
             .and_run();
 
         test_bed.for_both_engine_systems(|sys| {
-            assert!((sys.ip_pressure() - ambient_pressure).abs() < pressure_tolerance());
-            assert!((sys.hp_pressure() - ambient_pressure).abs() < pressure_tolerance());
+            assert!((sys.intermediate_pressure() - ambient_pressure).abs() < pressure_tolerance());
+            assert!((sys.high_pressure() - ambient_pressure).abs() < pressure_tolerance());
             assert!((sys.transfer_pressure() - ambient_pressure).abs() < pressure_tolerance());
             assert!(
                 (sys.precooler_inlet_pressure() - ambient_pressure).abs() < pressure_tolerance()
@@ -2292,7 +2271,7 @@ mod tests {
     fn prv_closes_with_ovhd_engine_bleed_off() {
         let mut test_bed = test_bed().idle_eng1().idle_eng2().and_run();
 
-        // TODO: I shouldn't have to run this twice, but it just takes two updates for the pressure to propagate through the system.
+        // We have to run two update ticks for the pressure to propagate through the system.
         test_bed.run_with_delta(Duration::from_secs(5));
 
         assert!(test_bed.pr_valve_is_open(1));
@@ -2438,18 +2417,9 @@ mod tests {
             .set_bleed_air_running()
             .and_stabilize();
 
-        assert!(
-            (test_bed.green_hydraulic_reservoir_pressure() - Pressure::new::<psi>(42.)).abs()
-                < pressure_tolerance()
-        );
-        assert!(
-            (test_bed.blue_hydraulic_reservoir_pressure() - Pressure::new::<psi>(42.)).abs()
-                < pressure_tolerance()
-        );
-        assert!(
-            (test_bed.yellow_hydraulic_reservoir_pressure() - Pressure::new::<psi>(42.)).abs()
-                < pressure_tolerance()
-        );
+        assert!(test_bed.green_hydraulic_reservoir_pressure() > Pressure::new::<psi>(35.));
+        assert!(test_bed.blue_hydraulic_reservoir_pressure() > Pressure::new::<psi>(35.));
+        assert!(test_bed.yellow_hydraulic_reservoir_pressure() > Pressure::new::<psi>(35.));
     }
 
     #[test]

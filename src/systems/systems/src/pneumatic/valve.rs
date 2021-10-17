@@ -140,10 +140,7 @@ impl ControllablePneumaticValve for ElectroPneumaticValve {
     }
 }
 impl SimulationElement for ElectroPneumaticValve {
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T)
-    where
-        Self: Sized,
-    {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         visitor.visit(self);
     }
 
@@ -208,10 +205,7 @@ impl ControllablePneumaticValve for DefaultValve {
     }
 }
 impl SimulationElement for DefaultValve {
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T)
-    where
-        Self: Sized,
-    {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         visitor.visit(self);
     }
 }
@@ -240,7 +234,7 @@ impl PneumaticContainerConnector {
     ) {
         // TODO: Remove this. This is needed because moving 0 volume leads to an issue
         if self.transfer_speed_factor.get::<ratio>() == 0. {
-            return;
+            // return;
         }
 
         self.heat_conduction(context, from, to);
@@ -273,30 +267,6 @@ impl PneumaticContainerConnector {
 
         self.move_volume(from, to, fluid_to_move);
 
-        if fluid_to_move.get::<cubic_meter>() > 0. {
-            let new_temperature = self.compute_mixing_temperature(
-                fluid_to_move,
-                from.temperature(),
-                to.volume(),
-                to.temperature(),
-            );
-
-            // to.update_temperature(TemperatureInterval::new::<temperature_interval::kelvin>(
-            //     new_temperature.get::<kelvin>() - to.temperature().get::<kelvin>(),
-            // ))
-        } else {
-            let new_temperature = self.compute_mixing_temperature(
-                fluid_to_move,
-                to.temperature(),
-                from.volume(),
-                from.temperature(),
-            );
-
-            // from.update_temperature(TemperatureInterval::new::<temperature_interval::kelvin>(
-            //     new_temperature.get::<kelvin>() - from.temperature().get::<kelvin>(),
-            // ))
-        };
-
         self.fluid_flow = fluid_to_move / context.delta_as_time();
     }
 
@@ -312,11 +282,6 @@ impl PneumaticContainerConnector {
             from.temperature().get::<kelvin>() - to.temperature().get::<kelvin>(),
         );
 
-        // println!(
-        //     "{} K",
-        //     temperature_gradient.get::<temperature_interval::kelvin>()
-        // );
-
         from.update_temperature(
             -coefficient
                 * temperature_gradient
@@ -327,21 +292,6 @@ impl PneumaticContainerConnector {
                 * temperature_gradient
                 * (1. - (-Self::HEAT_TRANSFER_SPEED * context.delta_as_secs_f64()).exp()),
         );
-    }
-
-    // TODO: This could probably be static?
-    fn compute_mixing_temperature(
-        &self,
-        volume_one: Volume,
-        temperature_one: ThermodynamicTemperature,
-        volume_two: Volume,
-        temperature_two: ThermodynamicTemperature,
-    ) -> ThermodynamicTemperature {
-        ThermodynamicTemperature::new::<kelvin>(
-            (volume_one.get::<cubic_meter>() * temperature_one.get::<kelvin>()
-                + volume_two.get::<cubic_meter>() * temperature_two.get::<kelvin>())
-                / (volume_one.get::<cubic_meter>() + volume_two.get::<cubic_meter>()),
-        )
     }
 
     fn move_volume(
@@ -372,6 +322,7 @@ pub struct PneumaticExhaust {
 }
 impl PneumaticExhaust {
     const TRANSFER_SPEED: f64 = 1.;
+    const HEAT_CAPACITY_RATIO: f64 = 1.4;
 
     pub fn new(exhaust_speed: f64) -> Self {
         Self {
@@ -385,7 +336,6 @@ impl PneumaticExhaust {
         context: &UpdateContext,
         from: &mut impl PneumaticContainer,
     ) {
-        // let equalization_volume = (from.pressure() - context.ambient_pressure()) * from.volume()
         //     / Pressure::new::<pascal>(142000.);
         let equalization_volume = self.vol_to_target(from, context.ambient_pressure());
 
@@ -406,8 +356,9 @@ impl PneumaticExhaust {
         target_pressure: Pressure,
     ) -> Volume {
         from.volume()
-            * ((target_pressure.get::<psi>() / from.pressure().get::<psi>()).powf(1. / 1.4) - 1.)
-        // (target_press - self.pressure()) * self.volume() / self.fluid.bulk_mod()
+            * ((target_pressure.get::<psi>() / from.pressure().get::<psi>())
+                .powf(1. / Self::HEAT_CAPACITY_RATIO)
+                - 1.)
     }
 
     pub fn fluid_flow(&self) -> VolumeRate {
@@ -419,7 +370,6 @@ impl PneumaticExhaust {
 mod tests {
     use super::*;
     use crate::{
-        hydraulic::Fluid,
         pneumatic::{DefaultPipe, DefaultValve, PneumaticContainer},
         shared::{ControllerSignal, ISA},
     };
@@ -484,10 +434,6 @@ mod tests {
         Pressure::new::<psi>(0.5)
     }
 
-    fn temperature_tolerance() -> TemperatureInterval {
-        TemperatureInterval::new::<temperature_interval::degree_celsius>(0.5)
-    }
-
     fn volume_rate_tolerance() -> VolumeRate {
         VolumeRate::new::<cubic_meter_per_second>(1e-4)
     }
@@ -499,7 +445,7 @@ mod tests {
         temperature_in_celsius: f64,
     ) -> DefaultPipe {
         DefaultPipe::new(
-            Volume::new::<cubic_meter>(1.),
+            Volume::new::<cubic_meter>(volume_in_cubic_meter),
             Pressure::new::<psi>(pressure_in_psi),
             ThermodynamicTemperature::new::<degree_celsius>(temperature_in_celsius),
         )
@@ -508,19 +454,6 @@ mod tests {
     #[test]
     fn default_valve_open_command() {
         let mut valve = DefaultValve::new_closed();
-
-        let context = UpdateContext::new(
-            Duration::from_millis(100),
-            Velocity::new::<knot>(250.),
-            Length::new::<foot>(5000.),
-            ThermodynamicTemperature::new::<degree_celsius>(25.0),
-            true,
-            Acceleration::new::<foot_per_second_squared>(0.),
-            Acceleration::new::<foot_per_second_squared>(0.),
-            Acceleration::new::<foot_per_second_squared>(0.),
-            Angle::new::<radian>(0.),
-            Angle::new::<radian>(0.),
-        );
 
         assert_eq!(valve.open_amount(), Ratio::new::<percent>(0.));
 
