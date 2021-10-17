@@ -20,6 +20,7 @@ import React, { useContext, useState } from 'react';
 import { Metar } from '@flybywiresim/api-client';
 import metarParser from 'aewx-metar-parser';
 import { Units } from '@shared/units';
+import { IconArrowBarToDown } from '@tabler/icons';
 import LandingCalculator, { LandingFlapsConfig, LandingRunwayConditions } from '../Calculators/LandingCalculator';
 import RunwayVisualizationWidget, { LabelType } from './RunwayVisualizationWidget';
 import SimpleInput from '../../Components/Form/SimpleInput/SimpleInput';
@@ -130,6 +131,17 @@ export const LandingWidget = () => {
             },
         });
     };
+
+    const handleSyncWeightValue = () => {
+        const weightKgs = Math.round(Units.poundToKilogram(totalWeight));
+
+        performanceDispatch({
+            type: EPerformanceActions.SET_LANDING,
+            payload: {
+                weight: weightKgs,
+            },
+        });
+    }
 
     const isValidIcao = (): boolean => icao.length === 4;
 
@@ -518,6 +530,12 @@ export const LandingWidget = () => {
                                         number
                                         reverse
                                     />
+                                    <button
+                                        onClick={handleSyncWeightValue}
+                                        className="text-lg font-medium hover:bg-teal-light my-1.5 py-2 px-6 flex items-center justify-center rounded-lg focus:outline-none"
+                                        type="button">
+                                        <IconArrowBarToDown  className="text-white" size={20} />
+                                    </button>
                                 </div>
                                 <SelectInput
                                     className="w-64 my-1.5"
