@@ -37,6 +37,7 @@
 1. [MCDU] Fixed transition alt init and display - @derl30n (Leon)
 1. [AP] Fixed V/S, FPA or ALT* speed protection to engage too early on high altitudes - @aguther (Andreas Guther)
 1. [ECAM] Fixed misaligned items on ecam memos - @tyler58546 (tyler58546)
+1. [FBW] Fixed instability of roll law due to turbulence or low performance - @IbrahimK42 (IbrahimK42) and @aguther (Andreas Guther)
 
 ## 0.7.0
 
