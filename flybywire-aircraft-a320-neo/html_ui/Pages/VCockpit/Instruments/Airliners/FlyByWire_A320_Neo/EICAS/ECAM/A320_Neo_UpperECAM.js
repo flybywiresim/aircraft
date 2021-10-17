@@ -3183,7 +3183,7 @@ var A320_Neo_UpperECAM;
                 } else {
                     actionText = _item.action;
                 }
-                action.textContent = this.leftPad(actionText, ".", 19 - _item.name.length);
+                action.textContent = actionText.padStart(20 - _item.name.length, '.');
                 div.appendChild(action);
 
                 //Completed
@@ -3201,13 +3201,6 @@ var A320_Neo_UpperECAM;
             }
         }
 
-        leftPad(_text, _pad, _length) {
-            for (let i = 0; i < (_length - _text.length); i++) {
-                _text = _pad + _text;
-            }
-            return _text;
-        }
-
         /**
          * @param {MemoItem} _item
          * @param {boolean} _completed
@@ -3219,8 +3212,7 @@ var A320_Neo_UpperECAM;
                         if (child.className == "Action") {
                             child.style.display = _completed ? "none" : "inline";
                             if (typeof _item.action === 'function') {
-                                const actionText = _item.action();
-                                child.textContent = this.leftPad(actionText, ".", 19 - _item.name.length);
+                                child.textContent = _item.action().padStart(20 - _item.name.length, '.');
                             }
                         }
                         if (child.className == "Completed") {
