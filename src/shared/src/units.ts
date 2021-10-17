@@ -41,7 +41,7 @@ export class Units {
         return Units.metricUnits ? value : Units.kilogramToPound(value);
     }
 
-    static get userWeightUnit(): 'kg' | 'lbs' {
+    static get userWeightSuffixEis2(): 'kg' | 'lbs' {
         // EIS uses S suffix on LB
         return Units.metricUnits ? 'kg' : 'lbs';
     }
@@ -62,7 +62,7 @@ export class Units {
         return Units.metricUnits ? value : Units.metreToFoot(value);
     }
 
-    static get userLengthUnit(): 'm' | 'ft' {
+    static get userLengthSuffixEis2(): 'm' | 'ft' {
         return Units.metricUnits ? 'm' : 'ft';
     }
 
@@ -82,7 +82,7 @@ export class Units {
         return Units.metricUnits ? value : Units.celsiusToFahrenheit(value);
     }
 
-    static get userTemperatureUnit(): '°C' | '°F' {
+    static get userTemperatureSuffixEis2(): '°C' | '°F' {
         return Units.metricUnits ? '°C' : '°F';
     }
 
@@ -106,7 +106,7 @@ export class Units {
         return Units.metricUnits ? "" + Math.round(value) : (Math.round(Units.hectopascalToInchOfMercury(value)) / 100).toFixed(2);
     }
 
-    static get userPressureUnit(): 'hPa' | 'in.Hg' {
+    static get userPressureSuffixEis2(): 'hPa' | 'in.Hg' {
         return Units.metricUnits ? 'hPa' : 'in.Hg';
     }
 }
