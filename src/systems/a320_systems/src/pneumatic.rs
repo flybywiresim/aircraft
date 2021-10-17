@@ -81,7 +81,7 @@ valve_signal_implementation!(FanAirValveSignal);
 valve_signal_implementation!(PackFlowValveSignal);
 
 pub struct A320Pneumatic {
-    bmcs: [BleedMonitoringComputer; 2],
+    bleed_monitoring_computers: [BleedMonitoringComputer; 2],
     engine_systems: [EngineBleedAirSystem; 2],
 
     cross_bleed_valve_controller: CrossBleedValveController,
@@ -104,7 +104,7 @@ pub struct A320Pneumatic {
 impl A320Pneumatic {
     pub fn new() -> Self {
         Self {
-            bmcs: [
+            bleed_monitoring_computers: [
                 BleedMonitoringComputer::new(1, 2, ElectricalBusType::DirectCurrentEssentialShed),
                 BleedMonitoringComputer::new(2, 1, ElectricalBusType::DirectCurrent(2)),
             ],
@@ -170,8 +170,8 @@ impl A320Pneumatic {
 
         self.apu.update(&self.apu_bleed_air_controller);
 
-        for bmc in self.bmcs.iter_mut() {
-            bmc.update(
+        for bleed_monitoring_computer in self.bleed_monitoring_computers.iter_mut() {
+            bleed_monitoring_computer.update(
                 context,
                 &self.engine_systems,
                 self.apu_bleed_air_valve.is_open(),
@@ -182,21 +182,26 @@ impl A320Pneumatic {
             );
         }
 
-        let (bmc_one, bmc_two) = self.bmcs.split_at_mut(1);
+        let (bleed_monitoring_computer_one, bleed_monitoring_computer_two) =
+            self.bleed_monitoring_computers.split_at_mut(1);
 
-        bmc_one[0].update_other_computer(&mut bmc_two[0]);
-        bmc_two[0].update_other_computer(&mut bmc_one[0]);
+        bleed_monitoring_computer_one[0]
+            .update_other_computer(&mut bleed_monitoring_computer_two[0]);
+        bleed_monitoring_computer_two[0]
+            .update_other_computer(&mut bleed_monitoring_computer_one[0]);
 
-        for esv_controller in self.engine_starter_valve_controllers.iter_mut() {
-            esv_controller.update(&self.fadec);
+        for engine_starter_valve_controller in self.engine_starter_valve_controllers.iter_mut() {
+            engine_starter_valve_controller.update(&self.fadec);
         }
 
         for engine_system in self.engine_systems.iter_mut() {
-            for bmc in self.bmcs.iter() {
+            for bleed_monitoring_computer in self.bleed_monitoring_computers.iter() {
                 let index = engine_system.number - 1;
 
                 // If we get an actual channel here, this means that the channel is not in slave mode
-                if let Some(channel) = bmc.channel_for_engine(engine_system.number) {
+                if let Some(channel) =
+                    bleed_monitoring_computer.channel_for_engine(engine_system.number)
+                {
                     engine_system.update(
                         context,
                         channel,
@@ -215,22 +220,25 @@ impl A320Pneumatic {
             hydraulics.fake_yellow_reservoir(),
         );
 
-        let (left, right) = self.engine_systems.split_at_mut(1);
+        let (left_system, right_system) = self.engine_systems.split_at_mut(1);
         self.apu_bleed_air_valve
-            .update_move_fluid(context, &mut self.apu, &mut left[0]);
+            .update_move_fluid(context, &mut self.apu, &mut left_system[0]);
 
-        self.cross_bleed_valve
-            .update_move_fluid(context, &mut left[0], &mut right[0]);
+        self.cross_bleed_valve.update_move_fluid(
+            context,
+            &mut left_system[0],
+            &mut right_system[0],
+        );
 
         self.green_hydraulic_reservoir_with_valve
-            .update_flow_through_valve(context, &mut left[0]);
+            .update_flow_through_valve(context, &mut left_system[0]);
         self.blue_hydraulic_reservoir_with_valve
-            .update_flow_through_valve(context, &mut left[0]);
+            .update_flow_through_valve(context, &mut left_system[0]);
         self.yellow_hydraulic_reservoir_with_valve
-            .update_flow_through_valve(context, &mut left[0]);
+            .update_flow_through_valve(context, &mut left_system[0]);
 
-        self.packs[0].update(context, &mut left[0]);
-        self.packs[1].update(context, &mut right[0]);
+        self.packs[0].update(context, &mut left_system[0]);
+        self.packs[1].update(context, &mut right_system[0]);
     }
 
     // TODO: Returning a mutable reference here is not great. I was running into an issue with the update order:
@@ -293,7 +301,7 @@ impl SimulationElement for A320Pneumatic {
 
         self.cross_bleed_valve.accept(visitor);
 
-        for bmc in self.bmcs.iter_mut() {
+        for bmc in self.bleed_monitoring_computers.iter_mut() {
             bmc.accept(visitor);
         }
 
@@ -522,23 +530,23 @@ enum BleedMonitoringComputerChannelOperationMode {
 struct BleedMonitoringComputerChannel {
     engine_number: usize,
     operation_mode: BleedMonitoringComputerChannelOperationMode,
-    ip_compressor_pressure: Pressure,
-    hp_compressor_pressure: Pressure,
+    intermediate_pressure_compressor_pressure: Pressure,
+    high_pressure_compressor_pressure: Pressure,
     // Pressure between IP/HP valves and the PRV
     transfer_pressure: Pressure,
     // Pressure after PRV
     precooler_inlet_pressure: Pressure,
     precooler_inlet_temperature: ThermodynamicTemperature,
-    prv_open_amount: Ratio,
-    hpv_open_position: Ratio,
-    esv_is_open: bool,
+    pressure_regulating_valve_open_amount: Ratio,
+    high_pressure_valve_open_position: Ratio,
+    engine_starter_valve_is_open: bool,
     is_engine_bleed_pushbutton_auto: bool,
     is_engine_fire_pushbutton_released: bool,
     is_apu_bleed_valve_open: bool,
     is_apu_bleed_on: bool,
-    hpv_pid: PidController,
-    prv_pid: PidController,
-    fav_pid: PidController,
+    high_pressure_valve_pid: PidController,
+    pressure_regulating_valve_pid: PidController,
+    fan_air_valve_pid: PidController,
     cross_bleed_valve_selector: CrossBleedValveSelectorMode,
     cross_bleed_valve_is_open: bool,
     engine_bleed_fault_light_monitor: EngineBleedFaultLightMonitor,
@@ -551,21 +559,21 @@ impl BleedMonitoringComputerChannel {
         Self {
             engine_number,
             operation_mode,
-            ip_compressor_pressure: Pressure::new::<psi>(0.),
-            hp_compressor_pressure: Pressure::new::<psi>(0.),
+            intermediate_pressure_compressor_pressure: Pressure::new::<psi>(0.),
+            high_pressure_compressor_pressure: Pressure::new::<psi>(0.),
             transfer_pressure: Pressure::new::<psi>(0.),
             precooler_inlet_pressure: Pressure::new::<psi>(0.),
             precooler_inlet_temperature: ThermodynamicTemperature::new::<degree_celsius>(0.),
-            hpv_open_position: Ratio::new::<percent>(0.),
-            prv_open_amount: Ratio::new::<percent>(0.),
-            esv_is_open: false,
+            high_pressure_valve_open_position: Ratio::new::<percent>(0.),
+            pressure_regulating_valve_open_amount: Ratio::new::<percent>(0.),
+            engine_starter_valve_is_open: false,
             is_engine_bleed_pushbutton_auto: true,
             is_engine_fire_pushbutton_released: false,
             is_apu_bleed_valve_open: false,
             is_apu_bleed_on: false,
-            hpv_pid: PidController::new(0.05, 0.003, 0.001, 0., 1., 65.),
-            prv_pid: PidController::new(0., 0.01, 0., 0., 1., 46.),
-            fav_pid: PidController::new(0.1, 0., 0.1, 0., 1., 160.),
+            high_pressure_valve_pid: PidController::new(0.05, 0.003, 0.001, 0., 1., 65.),
+            pressure_regulating_valve_pid: PidController::new(0., 0.01, 0., 0., 1., 46.),
+            fan_air_valve_pid: PidController::new(0.1, 0., 0.1, 0., 1., 160.),
             cross_bleed_valve_selector: CrossBleedValveSelectorMode::Auto,
             cross_bleed_valve_is_open: false,
             engine_bleed_fault_light_monitor: EngineBleedFaultLightMonitor::new(engine_number),
@@ -582,8 +590,8 @@ impl BleedMonitoringComputerChannel {
         overhead_panel: &mut A320PneumaticOverheadPanel,
         fadec: &FullAuthorityDigitalEngineControl,
     ) {
-        self.ip_compressor_pressure = sensors.ip_pressure();
-        self.hp_compressor_pressure = sensors.hp_pressure();
+        self.intermediate_pressure_compressor_pressure = sensors.ip_pressure();
+        self.high_pressure_compressor_pressure = sensors.hp_pressure();
         self.transfer_pressure = sensors.transfer_pressure();
         self.precooler_inlet_pressure = sensors.precooler_inlet_pressure();
 
@@ -592,27 +600,28 @@ impl BleedMonitoringComputerChannel {
         // YES, I AM AWARE THAT I HAVE INLET AND THEN OUTLET
         self.precooler_inlet_temperature = sensors.precooler_outlet_temperature();
 
-        self.prv_pid
-            .change_setpoint(if fadec.is_single_vs_dual_bleed_config() {
+        self.pressure_regulating_valve_pid.change_setpoint(
+            if fadec.is_single_vs_dual_bleed_config() {
                 52.
             } else {
                 46.
-            });
+            },
+        );
 
-        self.hpv_pid
+        self.high_pressure_valve_pid
             .next_control_output(self.transfer_pressure.get::<psi>(), Some(context.delta()));
-        self.prv_pid.next_control_output(
+        self.pressure_regulating_valve_pid.next_control_output(
             self.precooler_inlet_pressure.get::<psi>(),
             Some(context.delta()),
         );
-        self.fav_pid.next_control_output(
+        self.fan_air_valve_pid.next_control_output(
             self.precooler_inlet_temperature.get::<degree_celsius>(),
             Some(context.delta()),
         );
 
-        self.prv_open_amount = sensors.prv_open_amount();
-        self.hpv_open_position = sensors.hpv_open_amount();
-        self.esv_is_open = sensors.esv_is_open();
+        self.pressure_regulating_valve_open_amount = sensors.prv_open_amount();
+        self.high_pressure_valve_open_position = sensors.hpv_open_amount();
+        self.engine_starter_valve_is_open = sensors.esv_is_open();
 
         self.is_engine_bleed_pushbutton_auto =
             overhead_panel.engine_bleed_pb_is_auto(self.engine_number);
@@ -662,12 +671,12 @@ impl BleedMonitoringComputerChannel {
 }
 impl ControllerSignal<HighPressureValveSignal> for BleedMonitoringComputerChannel {
     fn signal(&self) -> Option<HighPressureValveSignal> {
-        if self.hp_compressor_pressure < Pressure::new::<psi>(18.) {
+        if self.high_pressure_compressor_pressure < Pressure::new::<psi>(18.) {
             return Some(HighPressureValveSignal::new_closed());
         }
 
         Some(HighPressureValveSignal::new(Ratio::new::<ratio>(
-            self.hpv_pid.output().max(0.).min(1.),
+            self.high_pressure_valve_pid.output().max(0.).min(1.),
         )))
     }
 }
@@ -688,19 +697,19 @@ impl ControllerSignal<PressureRegulatingValveSignal> for BleedMonitoringComputer
             return Some(PressureRegulatingValveSignal::new_closed());
         }
 
-        if self.esv_is_open {
+        if self.engine_starter_valve_is_open {
             return Some(PressureRegulatingValveSignal::new_closed());
         }
 
         Some(PressureRegulatingValveSignal::new(Ratio::new::<ratio>(
-            self.prv_pid.output().max(0.).min(1.),
+            self.pressure_regulating_valve_pid.output().max(0.).min(1.),
         )))
     }
 }
 impl ControllerSignal<FanAirValveSignal> for BleedMonitoringComputerChannel {
     fn signal(&self) -> Option<FanAirValveSignal> {
         Some(FanAirValveSignal::new(Ratio::new::<ratio>(
-            self.fav_pid.output().max(0.).min(1.),
+            self.fan_air_valve_pid.output().max(0.).min(1.),
         )))
     }
 }
@@ -803,21 +812,21 @@ impl ControllerSignal<FaultLightSignal> for EngineBleedFaultLightMonitor {
 struct EngineBleedAirSystem {
     number: usize,
     fan_compression_chamber_controller: EngineCompressionChamberController, // Controls pressure just behind the main fan
-    ip_compression_chamber_controller: EngineCompressionChamberController,
-    hp_compression_chamber_controller: EngineCompressionChamberController,
+    intermediate_pressure_compression_chamber_controller: EngineCompressionChamberController,
+    high_pressure_compression_chamber_controller: EngineCompressionChamberController,
     fan_compression_chamber: CompressionChamber,
-    ip_compression_chamber: CompressionChamber,
-    hp_compression_chamber: CompressionChamber,
-    ip_valve: PurelyPneumaticValve,
-    hp_valve: ElectroPneumaticValve,
-    pr_valve: ElectroPneumaticValve,
+    intermediate_pressure_compression_chamber: CompressionChamber,
+    high_pressure_compression_chamber: CompressionChamber,
+    intermediate_pressure_valve: PurelyPneumaticValve,
+    high_pressure_valve: ElectroPneumaticValve,
+    pressure_regulating_valve: ElectroPneumaticValve,
     transfer_pressure_pipe: DefaultPipe,
     precooler_inlet_pipe: DefaultPipe,
     precooler_outlet_pipe: DefaultPipe,
     precooler_cooling_pipe: DefaultPipe,
     engine_starter_exhaust: PneumaticExhaust,
     engine_starter_container: DefaultPipe,
-    es_valve: DefaultValve,
+    engine_starter_valve: DefaultValve,
     fan_air_valve: ElectroPneumaticValve,
     precooler: HeatExchanger,
 }
@@ -826,16 +835,21 @@ impl EngineBleedAirSystem {
         Self {
             number,
             fan_compression_chamber_controller: EngineCompressionChamberController::new(1., 0., 1.),
-            ip_compression_chamber_controller: EngineCompressionChamberController::new(3., 0., 2.),
-            hp_compression_chamber_controller: EngineCompressionChamberController::new(
+            intermediate_pressure_compression_chamber_controller:
+                EngineCompressionChamberController::new(3., 0., 2.),
+            high_pressure_compression_chamber_controller: EngineCompressionChamberController::new(
                 1.5, 2.5, 4.,
             ),
             fan_compression_chamber: CompressionChamber::new(Volume::new::<cubic_meter>(1.)),
-            ip_compression_chamber: CompressionChamber::new(Volume::new::<cubic_meter>(1.)),
-            hp_compression_chamber: CompressionChamber::new(Volume::new::<cubic_meter>(1.)),
-            ip_valve: PurelyPneumaticValve::new(1.),
-            hp_valve: ElectroPneumaticValve::new(1e-2, powered_by),
-            pr_valve: ElectroPneumaticValve::new(1., powered_by),
+            intermediate_pressure_compression_chamber: CompressionChamber::new(Volume::new::<
+                cubic_meter,
+            >(1.)),
+            high_pressure_compression_chamber: CompressionChamber::new(Volume::new::<cubic_meter>(
+                1.,
+            )),
+            intermediate_pressure_valve: PurelyPneumaticValve::new(1.),
+            high_pressure_valve: ElectroPneumaticValve::new(1e-2, powered_by),
+            pressure_regulating_valve: ElectroPneumaticValve::new(1., powered_by),
             fan_air_valve: ElectroPneumaticValve::new(1., powered_by),
             transfer_pressure_pipe: DefaultPipe::new(
                 Volume::new::<cubic_meter>(1.), // TODO: Figure out volume to use
@@ -868,7 +882,7 @@ impl EngineBleedAirSystem {
                 ThermodynamicTemperature::new::<degree_celsius>(15.),
             ),
             engine_starter_exhaust: PneumaticExhaust::new(1e-2),
-            es_valve: DefaultValve::new_closed(),
+            engine_starter_valve: DefaultValve::new_closed(),
             precooler: HeatExchanger::new(1.),
         }
     }
@@ -876,44 +890,48 @@ impl EngineBleedAirSystem {
     fn update<T: EngineCorrectedN1 + EngineCorrectedN2>(
         &mut self,
         context: &UpdateContext,
-        hpv_controller: &impl ControllerSignal<HighPressureValveSignal>,
-        prv_controller: &impl ControllerSignal<PressureRegulatingValveSignal>,
-        esv_controller: &impl ControllerSignal<EngineStarterValveSignal>,
-        fav_controller: &impl ControllerSignal<FanAirValveSignal>,
+        high_pressure_valve_controller: &impl ControllerSignal<HighPressureValveSignal>,
+        pressure_regulating_valve_controller: &impl ControllerSignal<PressureRegulatingValveSignal>,
+        engine_starter_valve_controller: &impl ControllerSignal<EngineStarterValveSignal>,
+        fan_air_valve_controller: &impl ControllerSignal<FanAirValveSignal>,
         engine: &T,
     ) {
         // Update engines
         self.fan_compression_chamber_controller
             .update(context, engine);
-        self.ip_compression_chamber_controller
+        self.intermediate_pressure_compression_chamber_controller
             .update(context, engine);
-        self.hp_compression_chamber_controller
+        self.high_pressure_compression_chamber_controller
             .update(context, engine);
 
         self.fan_compression_chamber
             .update(&self.fan_compression_chamber_controller);
-        self.ip_compression_chamber
-            .update(&self.ip_compression_chamber_controller);
-        self.hp_compression_chamber
-            .update(&self.hp_compression_chamber_controller);
+        self.intermediate_pressure_compression_chamber
+            .update(&self.intermediate_pressure_compression_chamber_controller);
+        self.high_pressure_compression_chamber
+            .update(&self.high_pressure_compression_chamber_controller);
 
         // Update controllers
 
         // Update valves (open amount)
-        self.hp_valve.update_open_amount(hpv_controller);
-        self.pr_valve.update_open_amount(prv_controller);
-        self.es_valve.update_open_amount(esv_controller);
-        self.fan_air_valve.update_open_amount(fav_controller);
+        self.high_pressure_valve
+            .update_open_amount(high_pressure_valve_controller);
+        self.pressure_regulating_valve
+            .update_open_amount(pressure_regulating_valve_controller);
+        self.engine_starter_valve
+            .update_open_amount(engine_starter_valve_controller);
+        self.fan_air_valve
+            .update_open_amount(fan_air_valve_controller);
 
         // Update valves (fluid movement)
-        self.ip_valve.update_move_fluid(
+        self.intermediate_pressure_valve.update_move_fluid(
             context,
-            &mut self.ip_compression_chamber,
+            &mut self.intermediate_pressure_compression_chamber,
             &mut self.transfer_pressure_pipe,
         );
-        self.hp_valve.update_move_fluid(
+        self.high_pressure_valve.update_move_fluid(
             context,
-            &mut self.hp_compression_chamber,
+            &mut self.high_pressure_compression_chamber,
             &mut self.transfer_pressure_pipe,
         );
         self.fan_air_valve.update_move_fluid(
@@ -921,7 +939,7 @@ impl EngineBleedAirSystem {
             &mut self.fan_compression_chamber,
             &mut self.precooler_cooling_pipe,
         );
-        self.pr_valve.update_move_fluid(
+        self.pressure_regulating_valve.update_move_fluid(
             context,
             &mut self.transfer_pressure_pipe,
             &mut self.precooler_inlet_pipe,
@@ -932,7 +950,7 @@ impl EngineBleedAirSystem {
             &mut self.precooler_cooling_pipe,
             &mut self.precooler_outlet_pipe,
         );
-        self.es_valve.update_move_fluid(
+        self.engine_starter_valve.update_move_fluid(
             context,
             &mut self.precooler_inlet_pipe,
             &mut self.engine_starter_container,
@@ -942,11 +960,11 @@ impl EngineBleedAirSystem {
     }
 
     fn ip_pressure(&self) -> Pressure {
-        self.ip_compression_chamber.pressure()
+        self.intermediate_pressure_compression_chamber.pressure()
     }
 
     fn hp_pressure(&self) -> Pressure {
-        self.hp_compression_chamber.pressure()
+        self.high_pressure_compression_chamber.pressure()
     }
 
     fn transfer_pressure(&self) -> Pressure {
@@ -970,11 +988,11 @@ impl EngineBleedAirSystem {
     }
 
     fn ip_temperature(&self) -> ThermodynamicTemperature {
-        self.ip_compression_chamber.temperature()
+        self.intermediate_pressure_compression_chamber.temperature()
     }
 
     fn hp_temperature(&self) -> ThermodynamicTemperature {
-        self.hp_compression_chamber.temperature()
+        self.high_pressure_compression_chamber.temperature()
     }
 
     fn transfer_temperature(&self) -> ThermodynamicTemperature {
@@ -998,19 +1016,19 @@ impl EngineBleedAirSystem {
     }
 
     fn prv_open_amount(&self) -> Ratio {
-        self.pr_valve.open_amount()
+        self.pressure_regulating_valve.open_amount()
     }
 
     fn hpv_open_amount(&self) -> Ratio {
-        self.hp_valve.open_amount()
+        self.high_pressure_valve.open_amount()
     }
 
     fn esv_is_open(&self) -> bool {
-        self.es_valve.is_open()
+        self.engine_starter_valve.is_open()
     }
 
     fn prv_is_open(&self) -> bool {
-        self.pr_valve.is_open()
+        self.pressure_regulating_valve.is_open()
     }
 }
 impl SimulationElement for EngineBleedAirSystem {
@@ -1018,11 +1036,13 @@ impl SimulationElement for EngineBleedAirSystem {
     where
         Self: Sized,
     {
-        self.ip_compression_chamber_controller.accept(visitor);
-        self.hp_compression_chamber_controller.accept(visitor);
+        self.intermediate_pressure_compression_chamber_controller
+            .accept(visitor);
+        self.high_pressure_compression_chamber_controller
+            .accept(visitor);
 
-        self.hp_valve.accept(visitor);
-        self.pr_valve.accept(visitor);
+        self.high_pressure_valve.accept(visitor);
+        self.pressure_regulating_valve.accept(visitor);
         self.fan_air_valve.accept(visitor);
 
         visitor.visit(self);
@@ -1082,22 +1102,22 @@ impl SimulationElement for EngineBleedAirSystem {
 
         writer.write(
             &format!("PNEU_ENG_{}_IP_VALVE_OPEN", self.number),
-            self.ip_valve.is_open(),
+            self.intermediate_pressure_valve.is_open(),
         );
 
         writer.write(
             &format!("PNEU_ENG_{}_HP_VALVE_OPEN", self.number),
-            self.hp_valve.is_open(),
+            self.high_pressure_valve.is_open(),
         );
 
         writer.write(
             &format!("PNEU_ENG_{}_PR_VALVE_OPEN", self.number),
-            self.pr_valve.is_open(),
+            self.pressure_regulating_valve.is_open(),
         );
 
         writer.write(
             &format!("PNEU_ENG_{}_STARTER_VALVE_OPEN", self.number),
-            self.es_valve.is_open(),
+            self.engine_starter_valve.is_open(),
         );
     }
 }
@@ -1702,15 +1722,27 @@ mod tests {
         }
 
         fn ip_valve_is_open(&self, number: usize) -> bool {
-            self.query(|a| a.pneumatic.engine_systems[number - 1].ip_valve.is_open())
+            self.query(|a| {
+                a.pneumatic.engine_systems[number - 1]
+                    .intermediate_pressure_valve
+                    .is_open()
+            })
         }
 
         fn hp_valve_is_open(&self, number: usize) -> bool {
-            self.query(|a| a.pneumatic.engine_systems[number - 1].hp_valve.is_open())
+            self.query(|a| {
+                a.pneumatic.engine_systems[number - 1]
+                    .high_pressure_valve
+                    .is_open()
+            })
         }
 
         fn pr_valve_is_open(&self, number: usize) -> bool {
-            self.query(|a| a.pneumatic.engine_systems[number - 1].pr_valve.is_open())
+            self.query(|a| {
+                a.pneumatic.engine_systems[number - 1]
+                    .pressure_regulating_valve
+                    .is_open()
+            })
         }
 
         fn es_valve_is_open(&self, number: usize) -> bool {
@@ -1722,11 +1754,19 @@ mod tests {
         }
 
         fn hp_valve_is_powered(&self, number: usize) -> bool {
-            self.query(|a| a.pneumatic.engine_systems[number - 1].hp_valve.is_powered())
+            self.query(|a| {
+                a.pneumatic.engine_systems[number - 1]
+                    .high_pressure_valve
+                    .is_powered()
+            })
         }
 
         fn pr_valve_is_powered(&self, number: usize) -> bool {
-            self.query(|a| a.pneumatic.engine_systems[number - 1].pr_valve.is_powered())
+            self.query(|a| {
+                a.pneumatic.engine_systems[number - 1]
+                    .pressure_regulating_valve
+                    .is_powered()
+            })
         }
 
         fn fan_air_valve_is_powered(&self, number: usize) -> bool {
@@ -1834,7 +1874,7 @@ mod tests {
             engine_number: usize,
         ) -> Option<BleedMonitoringComputerChannelOperationMode> {
             self.query(|a| {
-                a.pneumatic.bmcs[bmc_number - 1]
+                a.pneumatic.bleed_monitoring_computers[bmc_number - 1]
                     .channel_for_engine(engine_number)
                     .map_or(None, |channel| Some(channel.operation_mode()))
             })
@@ -1853,7 +1893,7 @@ mod tests {
         }
 
         fn bmc_is_powered(&self, bmc_number: usize) -> bool {
-            self.query(|a| a.pneumatic.bmcs[bmc_number - 1].is_powered())
+            self.query(|a| a.pneumatic.bleed_monitoring_computers[bmc_number - 1].is_powered())
         }
 
         fn fadec_single_vs_dual_bleed_config(&self) -> bool {
@@ -1970,7 +2010,7 @@ mod tests {
 
             hpv_open.push(test_bed.query(|aircraft| {
                 aircraft.pneumatic.engine_systems[0]
-                    .hp_valve
+                    .high_pressure_valve
                     .open_amount()
                     .get::<ratio>()
                     * 10.
@@ -1978,7 +2018,7 @@ mod tests {
 
             prv_open.push(test_bed.query(|aircraft| {
                 aircraft.pneumatic.engine_systems[0]
-                    .pr_valve
+                    .pressure_regulating_valve
                     .open_amount()
                     .get::<ratio>()
                     * 10.
@@ -1986,7 +2026,7 @@ mod tests {
 
             ipv_open.push(test_bed.query(|aircraft| {
                 aircraft.pneumatic.engine_systems[0]
-                    .ip_valve
+                    .intermediate_pressure_valve
                     .open_amount()
                     .get::<ratio>()
                     * 10.
@@ -1994,7 +2034,7 @@ mod tests {
 
             esv_open.push(test_bed.query(|aircraft| {
                 aircraft.pneumatic.engine_systems[0]
-                    .es_valve
+                    .engine_starter_valve
                     .open_amount()
                     .get::<ratio>()
                     * 10.
@@ -2092,9 +2132,9 @@ mod tests {
                 (sys.precooler_outlet_pressure() - ambient_pressure).abs() < pressure_tolerance()
             );
 
-            assert!(sys.ip_valve.is_open());
-            assert!(!sys.hp_valve.is_open());
-            assert!(!sys.pr_valve.is_open());
+            assert!(sys.intermediate_pressure_valve.is_open());
+            assert!(!sys.high_pressure_valve.is_open());
+            assert!(!sys.pressure_regulating_valve.is_open());
         });
 
         assert!(!test_bed.cross_bleed_valve_is_open())
@@ -2133,7 +2173,7 @@ mod tests {
         assert!(test_bed.hp_valve_is_open(1));
         assert!(!test_bed.hp_valve_is_open(2));
 
-        test_bed.for_both_engine_systems(|sys| assert!(!sys.es_valve.is_open()));
+        test_bed.for_both_engine_systems(|sys| assert!(!sys.engine_starter_valve.is_open()));
         assert!(!test_bed.cross_bleed_valve_is_open());
     }
 
