@@ -43,6 +43,7 @@
 1. [PFD/FBW] Added beta target indication - @aguther (Andreas Guther)
 1. [ISIS] Added inHg and metric altitude pin programs - @tracernz (Mike)
 1. [MCDU] Fixed transition alt init and display - @derl30n (Leon)
+1. [RMP] Added 25 kHz VHF spacing option - @tyler58546 (tyler58546)
 
 ## 0.7.0
 1. [HYD] First building block, more to come. Hydraulics do not impact the sim YET. - @crocket6 (crocket)
