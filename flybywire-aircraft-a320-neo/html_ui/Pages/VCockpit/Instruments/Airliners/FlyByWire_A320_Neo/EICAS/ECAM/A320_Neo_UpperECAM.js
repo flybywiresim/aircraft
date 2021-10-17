@@ -3183,7 +3183,7 @@ var A320_Neo_UpperECAM;
                 } else {
                     actionText = _item.action;
                 }
-                action.textContent = actionText.padStart(20 - _item.name.length, '.');
+                action.textContent = actionText.padStart(16 - _item.name.length, '.');
                 div.appendChild(action);
 
                 //Completed
@@ -3212,7 +3212,7 @@ var A320_Neo_UpperECAM;
                         if (child.className == "Action") {
                             child.style.display = _completed ? "none" : "inline";
                             if (typeof _item.action === 'function') {
-                                child.textContent = _item.action().padStart(20 - _item.name.length, '.');
+                                child.textContent = _item.action().padStart(16 - _item.name.length, '.');
                             }
                         }
                         if (child.className == "Completed") {
