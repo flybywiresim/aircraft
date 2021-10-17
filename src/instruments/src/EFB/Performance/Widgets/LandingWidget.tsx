@@ -67,7 +67,7 @@ export const LandingWidget = () => {
         displayedRunwayLength,
     } = performanceState.landing;
 
-    const toLengthUnitValue = (value: number): number => lengthUnit === 'm' ? value : Units.metreToFoot(value);
+    const toLengthUnitValue = (value: number): number => (lengthUnit === 'm' ? value : Units.metreToFoot(value));
 
     const handleCalculateLanding = (): void => {
         if (!areInputsValid()) return;
@@ -137,11 +137,9 @@ export const LandingWidget = () => {
 
         performanceDispatch({
             type: EPerformanceActions.SET_LANDING,
-            payload: {
-                weight: weightKgs,
-            },
+            payload: { weight: weightKgs },
         });
-    }
+    };
 
     const isValidIcao = (): boolean => icao.length === 4;
 
@@ -533,8 +531,9 @@ export const LandingWidget = () => {
                                     <button
                                         onClick={handleSyncWeightValue}
                                         className="text-lg font-medium hover:bg-teal-light my-1.5 py-2 px-6 flex items-center justify-center rounded-lg focus:outline-none"
-                                        type="button">
-                                        <IconArrowBarToDown  className="text-white" size={20} />
+                                        type="button"
+                                    >
+                                        <IconArrowBarToDown className="text-white" size={20} />
                                     </button>
                                 </div>
                                 <SelectInput
@@ -602,9 +601,21 @@ export const LandingWidget = () => {
                     <div className="border-t border-white pt-3">
                         <div className="flex flex-col items-center m-3">
                             <div className="flex items-end">
-                                <OutputDisplay label="MAX MANUAL" value={`${Math.round(toLengthUnitValue(maxAutobrakeLandingDist))}\xa0${lengthUnit}`} error={maxAutobrakeLandingDist > displayedRunwayLength} />
-                                <OutputDisplay label="MEDIUM" value={`${Math.round(toLengthUnitValue(mediumAutobrakeLandingDist))}\xa0${lengthUnit}`} error={mediumAutobrakeLandingDist > displayedRunwayLength} />
-                                <OutputDisplay label="LOW" value={`${Math.round(toLengthUnitValue(lowAutobrakeLandingDist))}\xa0${lengthUnit}`} error={lowAutobrakeLandingDist > displayedRunwayLength} />
+                                <OutputDisplay
+                                    label="MAX MANUAL"
+                                    value={`${Math.round(toLengthUnitValue(maxAutobrakeLandingDist))}\xa0${lengthUnit}`}
+                                    error={maxAutobrakeLandingDist > displayedRunwayLength}
+                                />
+                                <OutputDisplay
+                                    label="MEDIUM"
+                                    value={`${Math.round(toLengthUnitValue(mediumAutobrakeLandingDist))}\xa0${lengthUnit}`}
+                                    error={mediumAutobrakeLandingDist > displayedRunwayLength}
+                                />
+                                <OutputDisplay
+                                    label="LOW"
+                                    value={`${Math.round(toLengthUnitValue(lowAutobrakeLandingDist))}\xa0${lengthUnit}`}
+                                    error={lowAutobrakeLandingDist > displayedRunwayLength}
+                                />
                             </div>
                         </div>
                     </div>

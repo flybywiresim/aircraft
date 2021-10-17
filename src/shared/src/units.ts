@@ -1,4 +1,4 @@
-import { NXDataStore } from "./persistence";
+import { NXDataStore } from './persistence';
 
 // SI base units
 export type Celsius = number; // derived unit
@@ -14,19 +14,19 @@ export type Pound = number;
 export type InchOfMercury = number;
 
 export class Units {
-    private static _metricUnits: boolean;
+    private static mMetricUnits: boolean;
 
     static get metricUnits(): boolean {
-        if (Units._metricUnits === undefined) {
+        if (Units.mMetricUnits === undefined) {
             NXDataStore.getAndSubscribe('CONFIG_USING_METRIC_UNIT', (key: string, value: string) => {
-                Units._metricUnits = value === '1';
+                Units.mMetricUnits = value === '1';
             });
         }
-        return Units._metricUnits;
+        return Units.mMetricUnits;
     }
 
     static poundToKilogram(value: Pound): KiloGram {
-        return value / 2.204625
+        return value / 2.204625;
     }
 
     static kilogramToPound(value: KiloGram): Pound {
@@ -103,7 +103,7 @@ export class Units {
     }
 
     static hectopascalToUserString(value: Celsius): string {
-        return Units.metricUnits ? "" + Math.round(value) : (Math.round(Units.hectopascalToInchOfMercury(value)) / 100).toFixed(2);
+        return Units.metricUnits ? `${Math.round(value)}` : (Math.round(Units.hectopascalToInchOfMercury(value)) / 100).toFixed(2);
     }
 
     static get userPressureSuffixEis2(): 'hPa' | 'in.Hg' {

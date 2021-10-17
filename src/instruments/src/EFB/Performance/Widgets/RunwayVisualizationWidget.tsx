@@ -104,7 +104,8 @@ const RunwayVisualizationWidget = (props: RunwayVisualizationProps) => {
     function runwayLengthLabel(): JSX.Element {
         return (
             <div className="text-white absolute top-1/2 -right-3 transform -rotate-90 translate-x-1/2">
-                { Math.round(toLengthUnitValue(props.mainLength ?? 0)) }&nbsp;
+                { Math.round(toLengthUnitValue(props.mainLength ?? 0)) }
+                &nbsp;
                 { props.lengthUnit }
             </div>
         );
@@ -125,7 +126,8 @@ const RunwayVisualizationWidget = (props: RunwayVisualizationProps) => {
                         Stop Margin
                     </div>
                     <div>
-                        { Math.round(toLengthUnitValue(props.stopMargin))}&nbsp;
+                        { Math.round(toLengthUnitValue(props.stopMargin))}
+                        &nbsp;
                         { props.lengthUnit }
                     </div>
                     <div className={`border-l-4 h-full absolute top-0 left-0 ${props.stopMargin > 0 ? 'border-green-500' : 'border-red-500'}`} />
@@ -172,8 +174,9 @@ const RunwayVisualizationWidget = (props: RunwayVisualizationProps) => {
                             <div className="w-full text-center absolute -top-0.5 transform -translate-y-full">
                                 {label.label}
                                 {' '}
-                                { Math.round(toLengthUnitValue(label.distance)) }&nbsp;
-                                { props.lengthUnit }
+                                { Math.round(toLengthUnitValue(label.distance)) }
+                                &nbsp;
+                                {props.lengthUnit}
                             </div>
                         )}
 
