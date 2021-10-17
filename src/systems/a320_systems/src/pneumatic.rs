@@ -381,27 +381,6 @@ impl ControllerSignal<CrossBleedValveSignal> for CrossBleedValveController {
     }
 }
 
-trait EngineBleedDataProvider {
-    fn ip_pressure(&self) -> Pressure;
-    fn hp_pressure(&self) -> Pressure;
-    fn transfer_pressure(&self) -> Pressure;
-    fn precooler_inlet_pressure(&self) -> Pressure;
-    fn precooler_outlet_pressure(&self) -> Pressure;
-    fn precooler_supply_pressure(&self) -> Pressure;
-    fn engine_starter_container_pressure(&self) -> Pressure;
-    fn ip_temperature(&self) -> ThermodynamicTemperature;
-    fn hp_temperature(&self) -> ThermodynamicTemperature;
-    fn transfer_temperature(&self) -> ThermodynamicTemperature;
-    fn precooler_inlet_temperature(&self) -> ThermodynamicTemperature;
-    fn precooler_outlet_temperature(&self) -> ThermodynamicTemperature;
-    fn precooler_supply_temperature(&self) -> ThermodynamicTemperature;
-    fn engine_starter_container_temperature(&self) -> ThermodynamicTemperature;
-    fn prv_open_amount(&self) -> Ratio;
-    fn prv_is_open(&self) -> bool;
-    fn hpv_open_amount(&self) -> Ratio;
-    fn esv_is_open(&self) -> bool;
-}
-
 struct BleedMonitoringComputer {
     main_channel_engine_number: usize,
     backup_channel_engine_number: usize,
@@ -596,7 +575,7 @@ impl BleedMonitoringComputerChannel {
     fn update(
         &mut self,
         context: &UpdateContext,
-        sensors: &impl EngineBleedDataProvider,
+        sensors: &EngineBleedAirSystem,
         is_engine_fire_pushbutton_released: bool,
         apu_bleed_valve_is_open: bool,
         cross_bleed_valve_is_open: bool,
@@ -961,8 +940,7 @@ impl EngineBleedAirSystem {
         self.engine_starter_exhaust
             .update_move_fluid(context, &mut self.engine_starter_container)
     }
-}
-impl EngineBleedDataProvider for EngineBleedAirSystem {
+
     fn ip_pressure(&self) -> Pressure {
         self.ip_compression_chamber.pressure()
     }
@@ -1902,9 +1880,9 @@ mod tests {
 
         let mut test_bed = test_bed_with()
             .in_isa_atmosphere(alt)
-            .stop_eng1()
-            .stop_eng2()
-            // .both_packs_auto()
+            .idle_eng1()
+            .idle_eng2()
+            .both_packs_auto()
             // .set_bleed_air_running()
             .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Auto);
 
@@ -1952,9 +1930,9 @@ mod tests {
 
             if i == 1000 {
                 // test_bed = test_bed.toga_eng1();
-                test_bed = test_bed.set_bleed_air_running();
+                // test_bed = test_bed.toga_eng1();
             }
-            if i == 2000 {
+            if i == 5000 {
                 // test_bed = test_bed.idle_eng1();
             }
 
