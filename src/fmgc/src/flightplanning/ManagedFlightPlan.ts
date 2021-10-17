@@ -805,12 +805,7 @@ export class ManagedFlightPlan {
             segment = this.addSegment(SegmentType.Departure);
             let procedure = new LegsProcedure(legs, origin, this._parentInstrument);
 
-            let runway;
-            if (selectedOriginRunwayIndex !== -1) {
-                runway = airportInfo.oneWayRunways[selectedOriginRunwayIndex];
-            } else if (runwayIndex !== -1) {
-                runway = this.getRunway(airportInfo.oneWayRunways, airportInfo.departures[departureIndex].runwayTransitions[runwayIndex].name);
-            }
+            let runway: OneWayRunway | null = this.getOriginRunway();
 
             if (runway) {
                 // console.error('bruh');
@@ -988,12 +983,7 @@ export class ManagedFlightPlan {
                 }
             }
 
-            let runway: OneWayRunway;
-            if (approachIndex !== -1) {
-                runway = this.getRunway(destinationInfo.oneWayRunways, destinationInfo.approaches[approachIndex].runway);
-            } else if (destinationRunwayIndex !== -1) {
-                runway = destinationInfo.oneWayRunways[destinationRunwayIndex];
-            }
+            let runway: OneWayRunway | null = this.getDestinationRunway();
 
             if (runway) {
                 const selectedRunwayMod = runway.designation.slice(-1);
@@ -1072,6 +1062,7 @@ export class ManagedFlightPlan {
 
     /**
      * Gets the runway information from a given runway name.
+     * To be deprecated.
      * @param runways The collection of runways to search.
      * @param runwayName The runway name.
      * @returns The found runway, if any.
@@ -1086,9 +1077,13 @@ export class ManagedFlightPlan {
             const runwayLetter = match[3] ?? ' ';
             if (runwayLetter === ' ' || runwayLetter === 'C') {
                 const runwayDirection = runwayName.trim();
-                runwayIndex = runways.findIndex((r) => r.designation === runwayDirection || r.designation === `${runwayDirection}C`);
+                runwayIndex = runways.findIndex((r) =>
+                r.designation === runwayDirection
+                || r.designation === `${runwayDirection}C`
+                || `RW${r.designation}` === runwayDirection
+                || `RW${r.designation}` === `${runwayDirection}C`);
             } else {
-                runwayIndex = runways.findIndex((r) => r.designation === runwayName);
+                runwayIndex = runways.findIndex((r) => r.designation === runwayName || `RW${r.designation}` === runwayName);
             }
 
             if (runwayIndex !== -1) {
@@ -1180,27 +1175,29 @@ export class ManagedFlightPlan {
         this.addWaypoint(waypoint, waypointIndex, segment.type);
     }
 
-    public getOriginRunway(): OneWayRunway {
-        if (!this.originAirfield) {
-            return;
+    // TODO: Deprecate
+    public getOriginRunway(): OneWayRunway | null {
+        if (this.originAirfield) {
+            if (this.procedureDetails.originRunwayIndex !== -1) {
+                return this.originAirfield.infos.oneWayRunways[this.procedureDetails.originRunwayIndex];
+            } /* else if (this.procedureDetails.departureRunwayIndex !== -1 && this.procedureDetails.departureIndex !== -1) {
+                // TODO: Remove
+                //return this.getRunway(this.originAirfield.infos.oneWayRunways, this.originAirfield.infos.departures[this.procedureDetails.departureIndex].runwayTransitions[this.procedureDetails.departureRunwayIndex].name);
+            } */
         }
-        const airportInfo = this.originAirfield.infos;
-        if (this.procedureDetails.originRunwayIndex !== -1) {
-            return airportInfo.oneWayRunways[this.procedureDetails.originRunwayIndex];
-        } else if (this.procedureDetails.departureRunwayIndex !== -1 && this.procedureDetails.departureIndex !== -1) {
-            return this.getRunway(airportInfo.oneWayRunways, airportInfo.departures[this.procedureDetails.departureIndex].runwayTransitions[this.procedureDetails.departureRunwayIndex].name);
-        }
+        return null;
     }
 
-    public getDestinationRunway(): OneWayRunway {
-        if (!this.destinationAirfield) {
-            return;
+    // TODO: Deprecate
+    public getDestinationRunway(): OneWayRunway | null{
+        if (this.destinationAirfield) {
+            if (this.procedureDetails.destinationRunwayIndex !== -1) {
+                return this.destinationAirfield.infos.oneWayRunways[this.procedureDetails.destinationRunwayIndex];
+            } /* else if (this.procedureDetails.approachIndex !== -1) {
+                // TODO: Remove
+                //return this.getRunway(this.destinationAirfield.infos.oneWayRunways, this.destinationAirfield.infos.approaches[this.procedureDetails.approachIndex].runway);
+            } */
         }
-        const airportInfo = this.destinationAirfield.infos;
-        if (this.procedureDetails.approachIndex !== -1) {
-            return this.getRunway(airportInfo.oneWayRunways, airportInfo.approaches[this.procedureDetails.approachIndex].runway);
-        } else if (this.procedureDetails.destinationRunwayIndex !== -1) {
-            return airportInfo.oneWayRunways[this.procedureDetails.destinationRunwayIndex];
-        }
+        return null;
     }
 }

@@ -144,6 +144,7 @@ class CDUAvailableArrivalsPage {
                                 });
                                 if (arrivalRunwayIndex !== -1) {
                                     mcdu.flightPlanManager.setArrivalRunwayIndex(arrivalRunwayIndex);
+                                    mcdu.flightPlanManager.setDestinationRunwayIndex(arrivalRunwayIndex);
                                 }
                                 mcdu.setArrivalProcIndex(starIndex, () => {
                                     if (mcdu.flightPlanManager.getApproachIndex() > -1) {
