@@ -1520,7 +1520,7 @@ export class FlightPlanManager {
     /**
      * Gets the approach runway index from the current flight plan.
      */
-    public getApproachRunwayIndex(flightPlanIndex = NaN): number {
+    public getApproachRunwayIndex(flightPlanIndex: number = NaN): number {
         if (isNaN(flightPlanIndex)) {
             flightPlanIndex = this._currentFlightPlanIndex;
         }
