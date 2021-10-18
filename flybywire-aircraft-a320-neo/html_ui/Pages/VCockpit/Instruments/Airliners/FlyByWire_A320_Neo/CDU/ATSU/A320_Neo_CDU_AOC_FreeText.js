@@ -77,7 +77,6 @@ class CDUAocFreeText {
                 updateView();
                 const recipient = store["msg_to"];
                 const msgLines = [store["msg_line1"], store["msg_line2"], store["msg_line3"], store["msg_line4"]].join(";");
-                // mcdu.clearScratchpadAndWriteToLastUserInputAndReturnLastUserInput();
                 let errors = 0;
 
                 const getData = async () => {

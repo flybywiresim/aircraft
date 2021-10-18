@@ -107,7 +107,7 @@ class CDUVerticalRevisionPage {
                     }
                 } else {
                     mcdu.addNewMessage(NXSystemMessages.notAllowed);
-                    scratchpadCallback(value);
+                    scratchpadCallback();
                 }
             }; // ALT CSTR
             mcdu.onLeftInput[4] = () => {

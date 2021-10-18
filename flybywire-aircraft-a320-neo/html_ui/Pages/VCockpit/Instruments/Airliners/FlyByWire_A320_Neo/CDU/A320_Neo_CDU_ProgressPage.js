@@ -64,7 +64,7 @@ class CDUProgressPage {
             if (mcdu.trySetCruiseFlCheckInput(value)) {
                 CDUProgressPage.ShowPage(mcdu);
             } else {
-                scratchpadCallback(value);
+                scratchpadCallback();
             }
         };
         mcdu.leftInputDelay[1] = () => {
@@ -130,7 +130,7 @@ class CDUProgressPage {
             if (mcdu.setCruiseFlightLevelAndTemperature(value)) {
                 CDUProgressPage.ShowReportPage(mcdu);
             } else {
-                scratchpadCallback(value);
+                scratchpadCallback();
             }
         };
         let toWaypoint;

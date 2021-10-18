@@ -36,7 +36,7 @@ class CDUFuelPredPage {
                 if (mcdu.trySetZeroFuelWeightZFWCG(value)) {
                     CDUFuelPredPage.ShowPage(mcdu);
                 } else {
-                    scratchpadCallback(value);
+                    scratchpadCallback();
                 }
             }
         };
@@ -120,7 +120,7 @@ class CDUFuelPredPage {
                     if (await mcdu.trySetRouteFinalFuel(value)) {
                         CDUFuelPredPage.ShowPage(mcdu);
                     } else {
-                        scratchpadCallback(value);
+                        scratchpadCallback();
                     }
                 };
 
@@ -151,7 +151,7 @@ class CDUFuelPredPage {
                     if (await mcdu.trySetRouteAlternateFuel(value)) {
                         CDUFuelPredPage.ShowPage(mcdu);
                     } else {
-                        scratchpadCallback(value);
+                        scratchpadCallback();
                     }
                 };
                 if (mcdu.altDestination) {
@@ -209,7 +209,7 @@ class CDUFuelPredPage {
                         if (await mcdu.trySetRouteReservedFuel(value)) {
                             CDUFuelPredPage.ShowPage(mcdu);
                         } else {
-                            scratchpadCallback(value);
+                            scratchpadCallback();
                         }
                     };
                 }
@@ -226,7 +226,7 @@ class CDUFuelPredPage {
                     if (await mcdu.trySetMinDestFob(value)) {
                         CDUFuelPredPage.ShowPage(mcdu);
                     } else {
-                        scratchpadCallback(value);
+                        scratchpadCallback();
                     }
                 };
                 mcdu.checkEFOBBelowMin();

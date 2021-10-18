@@ -73,7 +73,7 @@ class CDUHoldAtPage {
             mcdu.onLeftInput[0] = (value, scratchpadCallback) => {
                 if (isNaN(value) || 0 < value > 360) {
                     mcdu.addNewMessage(NXSystemMessages.entryOutOfRange);
-                    scratchpadCallback(value);
+                    scratchpadCallback();
                     return;
                 }
                 mcdu.manualHoldData = {
@@ -88,7 +88,7 @@ class CDUHoldAtPage {
             mcdu.onLeftInput[1] = (value, scratchpadCallback) => {
                 if (value != "L" && value != "R") {
                     mcdu.addNewMessage(NXSystemMessages.formatError);
-                    scratchpadCallback(value);
+                    scratchpadCallback();
                     return;
                 }
                 mcdu.manualHoldData = {
@@ -105,7 +105,7 @@ class CDUHoldAtPage {
                     const distComp = value.replace("/", "");
                     if (isNaN(distComp)) {
                         mcdu.addNewMessage(NXSystemMessages.formatError);
-                        scratchpadCallback(value);
+                        scratchpadCallback();
                         return;
                     }
                     mcdu.manualHoldData = {
@@ -121,7 +121,7 @@ class CDUHoldAtPage {
 
                 if (isNaN(value)) {
                     mcdu.addNewMessage(NXSystemMessages.formatError);
-                    scratchpadCallback(value);
+                    scratchpadCallback();
                     return;
                 }
 

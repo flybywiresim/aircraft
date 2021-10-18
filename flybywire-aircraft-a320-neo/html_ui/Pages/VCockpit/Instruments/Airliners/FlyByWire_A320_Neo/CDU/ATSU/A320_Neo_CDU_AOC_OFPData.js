@@ -102,7 +102,7 @@ class CDUAocOfpData {
                 return true;
             }
             mcdu.addNewMessage(NXSystemMessages.notAllowed);
-            scratchpadCallback(value);
+            scratchpadCallback();
             return false;
         };
 
@@ -122,7 +122,7 @@ class CDUAocOfpData {
                 return true;
             }
             mcdu.addNewMessage(NXSystemMessages.notAllowed);
-            scratchpadCallback(value);
+            scratchpadCallback();
             return false;
         };
 
@@ -142,7 +142,7 @@ class CDUAocOfpData {
                 return true;
             }
             mcdu.addNewMessage(NXSystemMessages.notAllowed);
-            scratchpadCallback(value);
+            scratchpadCallback();
             return false;
         };
 

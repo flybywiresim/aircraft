@@ -49,7 +49,7 @@ class CDUNavaidPage {
                     mcdu.inOut = Object.keys(res);
                 } else {
                     mcdu.addNewMessage(NXSystemMessages.notAllowed);
-                    scratchpadCallback(value);
+                    scratchpadCallback();
                 }
             });
         };

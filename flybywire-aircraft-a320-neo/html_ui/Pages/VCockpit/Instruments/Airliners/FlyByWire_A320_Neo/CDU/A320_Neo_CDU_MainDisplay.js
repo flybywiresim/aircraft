@@ -760,6 +760,10 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     /* END OF MCDU INTERFACE/LAYOUT */
     /* MCDU SCRATCHPAD */
 
+    setScratchpadUserData(value) {
+        this.mcdu.scratchpad.setUserData(value);
+    }
+
     clearFocus() {
         this.inFocus = false;
         this.allSelected = false;
@@ -1213,9 +1217,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             const value = this.scratchpad.removeUserContentFromScratchpadAndDisplayAndReturnTextContent();
             setTimeout(() => {
                 if (this.page.Current === cur) {
-                    fncAction(value, (cachedInput) => this.scratchpad.setUserData(cachedInput));
+                    fncAction(value, () => this.setScratchpadUserData(value));
                 }
-            // }, Math.max(50, fncActionDelay() - 50));
             }, fncActionDelay());
         }, 100);
     }

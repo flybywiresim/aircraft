@@ -71,7 +71,7 @@ class CDUPerformancePage {
                             mcdu.scratchpad.setText(mcdu._getV1Speed().toString());
                         } else {
                             mcdu.addNewMessage(NXSystemMessages.formatError);
-                            scratchpadCallback(value);
+                            scratchpadCallback();
                         }
                     } else {
                         mcdu._v1Checked = true;
@@ -83,7 +83,7 @@ class CDUPerformancePage {
                     if (mcdu.trySetV1Speed(value)) {
                         CDUPerformancePage.ShowTAKEOFFPage(mcdu);
                     } else {
-                        scratchpadCallback(value);
+                        scratchpadCallback();
                     }
                 }
             };
@@ -102,7 +102,7 @@ class CDUPerformancePage {
                             mcdu.scratchpad.setText(mcdu._getVRSpeed().toString());
                         } else {
                             mcdu.addNewMessage(NXSystemMessages.formatError);
-                            scratchpadCallback(value);
+                            scratchpadCallback();
                         }
                     } else {
                         mcdu._vRChecked = true;
@@ -114,7 +114,7 @@ class CDUPerformancePage {
                     if (mcdu.trySetVRSpeed(value)) {
                         CDUPerformancePage.ShowTAKEOFFPage(mcdu);
                     } else {
-                        scratchpadCallback(value);
+                        scratchpadCallback();
                     }
                 }
             };
@@ -133,7 +133,7 @@ class CDUPerformancePage {
                             mcdu.scratchpad.setText(mcdu._getV2Speed().toString());
                         } else {
                             mcdu.addNewMessage(NXSystemMessages.formatError);
-                            scratchpadCallback(value);
+                            scratchpadCallback();
                         }
                     } else {
                         mcdu._v2Checked = true;
@@ -145,7 +145,7 @@ class CDUPerformancePage {
                     if (mcdu.trySetV2Speed(value)) {
                         CDUPerformancePage.ShowTAKEOFFPage(mcdu);
                     } else {
-                        scratchpadCallback(value);
+                        scratchpadCallback();
                     }
                 }
             };
@@ -165,19 +165,19 @@ class CDUPerformancePage {
             mcdu.onLeftInput[0] = (value, scratchpadCallback) => {
                 if (value !== "") {
                     mcdu.addNewMessage(NXSystemMessages.notAllowed);
-                    scratchpadCallback(value);
+                    scratchpadCallback();
                 }
             };
             mcdu.onLeftInput[1] = (value, scratchpadCallback) => {
                 if (value !== "") {
                     mcdu.addNewMessage(NXSystemMessages.notAllowed);
-                    scratchpadCallback(value);
+                    scratchpadCallback();
                 }
             };
             mcdu.onLeftInput[2] = (value, scratchpadCallback) => {
                 if (value !== "") {
                     mcdu.addNewMessage(NXSystemMessages.notAllowed);
-                    scratchpadCallback(value);
+                    scratchpadCallback();
                 }
             };
         }
@@ -196,7 +196,7 @@ class CDUPerformancePage {
                 if (mcdu.trySetTakeOffTransAltitude(value)) {
                     CDUPerformancePage.ShowTAKEOFFPage(mcdu);
                 } else {
-                    scratchpadCallback(value);
+                    scratchpadCallback();
                 }
             };
         }
@@ -225,7 +225,7 @@ class CDUPerformancePage {
                     if (mcdu.trySetThrustReductionAccelerationAltitude(value)) {
                         CDUPerformancePage.ShowTAKEOFFPage(mcdu);
                     } else {
-                        scratchpadCallback(value);
+                        scratchpadCallback();
                     }
                 };
             } else {
@@ -295,7 +295,7 @@ class CDUPerformancePage {
                 if (mcdu.trySetFlapsTHS(value)) {
                     CDUPerformancePage.ShowTAKEOFFPage(mcdu);
                 } else {
-                    scratchpadCallback(value);
+                    scratchpadCallback();
                 }
             };
         } else {
@@ -319,14 +319,14 @@ class CDUPerformancePage {
                     if (mcdu.setPerfTOFlexTemp(value)) {
                         CDUPerformancePage.ShowTAKEOFFPage(mcdu);
                     } else {
-                        scratchpadCallback(value);
+                        scratchpadCallback();
                     }
                 } else {
                     if (value === "" || mcdu.setPerfTOFlexTemp(value)) {
                         mcdu._toFlexChecked = true;
                         CDUPerformancePage.ShowTAKEOFFPage(mcdu);
                     } else {
-                        scratchpadCallback(value);
+                        scratchpadCallback();
                     }
                 }
             };
@@ -356,7 +356,7 @@ class CDUPerformancePage {
                     if (mcdu.trySetEngineOutAcceleration(value)) {
                         CDUPerformancePage.ShowTAKEOFFPage(mcdu);
                     } else {
-                        scratchpadCallback(value);
+                        scratchpadCallback();
                     }
                 };
             } else if (isFinite(mcdu.engineOutAccelerationAltitude)) {
@@ -444,7 +444,7 @@ class CDUPerformancePage {
                 if (mcdu.trySetPreSelectedClimbSpeed(value)) {
                     CDUPerformancePage.ShowCLBPage(mcdu);
                 } else {
-                    scratchpadCallback(value);
+                    scratchpadCallback();
                 }
             };
         }
@@ -453,7 +453,7 @@ class CDUPerformancePage {
             if (mcdu.tryUpdateCostIndex(value)) {
                 CDUPerformancePage.ShowCLBPage(mcdu);
             } else {
-                scratchpadCallback(value);
+                scratchpadCallback();
             }
         };
         const timeLabel = mcdu.getIsFlying() ? "UTC" : "TIME";
@@ -536,7 +536,7 @@ class CDUPerformancePage {
             if (mcdu.tryUpdateCostIndex(value)) {
                 CDUPerformancePage.ShowCRZPage(mcdu);
             } else {
-                scratchpadCallback(value);
+                scratchpadCallback();
             }
         };
         let timeLabel = "TIME";
@@ -569,7 +569,7 @@ class CDUPerformancePage {
                 if (mcdu.trySetPreSelectedCruiseSpeed(value)) {
                     CDUPerformancePage.ShowCRZPage(mcdu);
                 } else {
-                    scratchpadCallback(value);
+                    scratchpadCallback();
                 }
             };
             mcdu.onLeftInput[5] = () => {
@@ -655,7 +655,7 @@ class CDUPerformancePage {
                 if (mcdu.trySetPreSelectedDescentSpeed(value)) {
                     CDUPerformancePage.ShowDESPage(mcdu);
                 } else {
-                    scratchpadCallback(value);
+                    scratchpadCallback();
                 }
             };
             mcdu.onLeftInput[5] = () => {
@@ -666,7 +666,7 @@ class CDUPerformancePage {
             if (mcdu.tryUpdateCostIndex(value)) {
                 CDUPerformancePage.ShowDESPage(mcdu);
             } else {
-                scratchpadCallback(value);
+                scratchpadCallback();
             }
         };
         mcdu.rightInputDelay[5] = () => {
@@ -722,7 +722,7 @@ class CDUPerformancePage {
             if (mcdu.setPerfApprQNH(value)) {
                 CDUPerformancePage.ShowAPPRPage(mcdu);
             } else {
-                scratchpadCallback(value);
+                scratchpadCallback();
             }
         };
 
@@ -736,7 +736,7 @@ class CDUPerformancePage {
             if (mcdu.setPerfApprTemp(value)) {
                 CDUPerformancePage.ShowAPPRPage(mcdu);
             } else {
-                scratchpadCallback(value);
+                scratchpadCallback();
             }
         };
         let magWindHeadingCell = "[\xa0]";
@@ -753,7 +753,7 @@ class CDUPerformancePage {
                 mcdu.updatePerfSpeeds();
                 CDUPerformancePage.ShowAPPRPage(mcdu);
             } else {
-                scratchpadCallback(value);
+                scratchpadCallback();
             }
         };
 
@@ -768,7 +768,7 @@ class CDUPerformancePage {
             if (mcdu.setPerfApprTransAlt(value)) {
                 CDUPerformancePage.ShowAPPRPage(mcdu);
             } else {
-                scratchpadCallback(value);
+                scratchpadCallback();
             }
         };
 
@@ -791,7 +791,7 @@ class CDUPerformancePage {
             if (mcdu.setPerfApprVApp(value)) {
                 CDUPerformancePage.ShowAPPRPage(mcdu);
             } else {
-                scratchpadCallback(value);
+                scratchpadCallback();
             }
         };
         mcdu.onRightInput[4] = () => {
@@ -808,7 +808,7 @@ class CDUPerformancePage {
             if (mcdu.setPerfApprMDA(value) && mcdu.setPerfApprDH(FMCMainDisplay.clrValue)) {
                 CDUPerformancePage.ShowAPPRPage(mcdu);
             } else {
-                scratchpadCallback(value);
+                scratchpadCallback();
             }
         };
 
@@ -829,7 +829,7 @@ class CDUPerformancePage {
                 if (mcdu.setPerfApprDH(value) && mcdu.setPerfApprMDA(FMCMainDisplay.clrValue)) {
                     CDUPerformancePage.ShowAPPRPage(mcdu);
                 } else {
-                    scratchpadCallback(value);
+                    scratchpadCallback();
                 }
             };
         }
@@ -933,7 +933,7 @@ class CDUPerformancePage {
             if (mcdu.trySetThrustReductionAccelerationAltitudeGoaround(value)) {
                 CDUPerformancePage.ShowGOAROUNDPage(mcdu);
             } else {
-                scratchpadCallback(value);
+                scratchpadCallback();
             }
         };
 
@@ -949,7 +949,7 @@ class CDUPerformancePage {
             if (mcdu.trySetengineOutAccelerationAltitudeGoaround(value)) {
                 CDUPerformancePage.ShowGOAROUNDPage(mcdu);
             } else {
-                scratchpadCallback(value);
+                scratchpadCallback();
             }
         };
         let flpRetrCell = "---";

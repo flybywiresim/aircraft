@@ -112,7 +112,7 @@ class CDUWindPage {
             const wind = CDUWindPage.ParseWind(value);
             if (wind == null) {
                 mcdu.addNewMessage(NXSystemMessages.formatError);
-                scratchpadCallback(value);
+                scratchpadCallback();
             } else {
                 mcdu.winds.alternate = wind;
                 CDUWindPage.ShowDESPage(mcdu, offset);

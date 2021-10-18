@@ -48,7 +48,7 @@ class CDUWaypointPage {
                     ]);
                 } else {
                     mcdu.addNewMessage(NXSystemMessages.notAllowed);
-                    scratchpadCallback(value);
+                    scratchpadCallback();
                 }
             });
         };

@@ -232,7 +232,7 @@ class CDUAirportsMonitor {
                             this.ShowPage(mcdu);
                         } else {
                             mcdu.addNewMessage(NXSystemMessages.notInDatabase);
-                            scratchpadCallback(value);
+                            scratchpadCallback();
                         }
                     });
                 }

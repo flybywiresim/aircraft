@@ -359,7 +359,7 @@ class CDUFlightPlanPage {
                                 } else if (value.length > 0) {
                                     mcdu.insertWaypoint(value, fpIndex, (success) => {
                                         if (!success) {
-                                            scratchpadCallback(value);
+                                            scratchpadCallback();
                                         }
                                         CDUFlightPlanPage.ShowPage(mcdu, offset);
                                     });

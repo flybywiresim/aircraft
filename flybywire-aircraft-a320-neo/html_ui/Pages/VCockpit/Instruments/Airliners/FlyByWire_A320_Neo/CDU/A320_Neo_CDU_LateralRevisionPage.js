@@ -83,7 +83,7 @@ class CDULateralRevisionPage {
                         if (result) {
                             CDUFlightPlanPage.ShowPage(mcdu);
                         } else {
-                            scratchpadCallback(value);
+                            scratchpadCallback();
                         }
                     });
                 };

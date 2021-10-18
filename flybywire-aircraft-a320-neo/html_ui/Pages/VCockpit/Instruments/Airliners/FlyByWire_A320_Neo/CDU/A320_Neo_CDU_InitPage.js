@@ -20,7 +20,7 @@ class CDUInitPage {
                     if (result) {
                         CDUInitPage.ShowPage1(mcdu);
                     } else {
-                        mcdu.scratchpad.setUserData(value);
+                        mcdu.setScratchpadUserData(value);
                     }
                 });
             }
@@ -94,7 +94,7 @@ class CDUInitPage {
                     if (mcdu.setCruiseFlightLevelAndTemperature(value)) {
                         CDUInitPage.ShowPage1(mcdu);
                     } else {
-                        scratchpadCallback(value);
+                        scratchpadCallback();
                     }
                 };
 
@@ -118,7 +118,7 @@ class CDUInitPage {
                                 if (await mcdu.tryUpdateAltDestination(value)) {
                                     CDUInitPage.ShowPage1(mcdu);
                                 } else {
-                                    scratchpadCallback(value);
+                                    scratchpadCallback();
                                 }
                             }
                             break;
@@ -129,7 +129,7 @@ class CDUInitPage {
                                 if (await mcdu.tryUpdateAltDestination(value)) {
                                     CDUInitPage.ShowPage1(mcdu);
                                 } else {
-                                    scratchpadCallback(value);
+                                    scratchpadCallback();
                                 }
                             }
                             break;
@@ -146,7 +146,7 @@ class CDUInitPage {
                 if (result) {
                     CDUInitPage.ShowPage1(mcdu);
                 } else {
-                    scratchpadCallback(value);
+                    scratchpadCallback();
                 }
             });
         };
@@ -158,7 +158,7 @@ class CDUInitPage {
             if (mcdu.tryUpdateTropo(value)) {
                 CDUInitPage.ShowPage1(mcdu);
             } else {
-                scratchpadCallback(value);
+                scratchpadCallback();
             }
         };
 
@@ -176,7 +176,7 @@ class CDUInitPage {
                         CDUPerformancePage.UpdateThrRedAccFromDestination(mcdu);
                         CDUAvailableFlightPlanPage.ShowPage(mcdu);
                     } else {
-                        scratchpadCallback(value);
+                        scratchpadCallback();
                     }
                 });
             } else if (mcdu.flightPlanManager.getOrigin() && mcdu.flightPlanManager.getOrigin().ident) {
@@ -313,7 +313,7 @@ class CDUInitPage {
                     CDUInitPage.ShowPage2(mcdu);
                     CDUInitPage.trySetFuelPred(mcdu);
                 } else {
-                    scratchpadCallback(value);
+                    scratchpadCallback();
                 }
             }
         };
@@ -333,14 +333,14 @@ class CDUInitPage {
                     CDUInitPage.ShowPage2(mcdu);
                     CDUInitPage.trySetFuelPred(mcdu);
                 } else {
-                    scratchpadCallback(value);
+                    scratchpadCallback();
                 }
             } else {
                 if (await mcdu.trySetBlockFuel(value)) {
                     CDUInitPage.updateTowIfNeeded(mcdu);
                     CDUInitPage.ShowPage2(mcdu);
                 } else {
-                    scratchpadCallback(value);
+                    scratchpadCallback();
                 }
             }
 
@@ -394,7 +394,7 @@ class CDUInitPage {
                             CDUInitPage.ShowPage2(mcdu);
                         }
                     } else {
-                        scratchpadCallback(value);
+                        scratchpadCallback();
                     }
                 }, mcdu.getDelayHigh());
             } else {
@@ -402,7 +402,7 @@ class CDUInitPage {
                     CDUInitPage.updateTowIfNeeded(mcdu);
                     CDUInitPage.ShowPage2(mcdu);
                 } else {
-                    scratchpadCallback(value);
+                    scratchpadCallback();
                 }
             }
         };
@@ -423,7 +423,7 @@ class CDUInitPage {
             if (await mcdu.trySetRouteReservedPercent(value)) {
                 CDUInitPage.ShowPage2(mcdu);
             } else {
-                scratchpadCallback(value);
+                scratchpadCallback();
             }
         };
 
@@ -442,7 +442,7 @@ class CDUInitPage {
             if (await mcdu.trySetRouteFinalTime(value)) {
                 CDUInitPage.ShowPage2(mcdu);
             } else {
-                scratchpadCallback(value);
+                scratchpadCallback();
             }
         };
 
@@ -460,7 +460,7 @@ class CDUInitPage {
             if (await mcdu.trySetAverageWind(value)) {
                 CDUInitPage.ShowPage2(mcdu);
             } else {
-                scratchpadCallback(value);
+                scratchpadCallback();
             }
         };
 
@@ -499,7 +499,7 @@ class CDUInitPage {
                                 CDUInitPage.ShowPage2(mcdu);
                             }
                         } else {
-                            scratchpadCallback(value);
+                            scratchpadCallback();
                         }
                     }, mcdu.getDelayHigh());
                 };
@@ -535,7 +535,7 @@ class CDUInitPage {
                                 CDUInitPage.ShowPage2(mcdu);
                             }
                         } else {
-                            scratchpadCallback(value);
+                            scratchpadCallback();
                         }
                     }, mcdu.getDelayHigh());
                 };
@@ -576,7 +576,7 @@ class CDUInitPage {
                                 CDUInitPage.ShowPage2(mcdu);
                             }
                         } else {
-                            scratchpadCallback(value);
+                            scratchpadCallback();
                         }
                     }, mcdu.getDelayMedium());
                 };
@@ -597,7 +597,7 @@ class CDUInitPage {
                                 CDUInitPage.ShowPage2(mcdu);
                             }
                         } else {
-                            scratchpadCallback(value);
+                            scratchpadCallback();
                         }
                     }, mcdu.getDelayWindLoad());
                 };
@@ -617,7 +617,7 @@ class CDUInitPage {
                                 CDUInitPage.ShowPage2(mcdu);
                             }
                         } else {
-                            scratchpadCallback(value);
+                            scratchpadCallback();
                         }
                     }, mcdu.getDelayHigh());
                 };

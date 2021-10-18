@@ -59,18 +59,18 @@ class CDUNavRadioPage {
                             });
                         } else {
                             mcdu.addNewMessage(NXSystemMessages.notInDatabase);
-                            scratchpadCallback(value);
+                            scratchpadCallback();
                         }
                     });
                 } else if (isFinite(numValue)) {
                     if (!/^\d{3}(\.\d{1,2})?$/.test(value) || !RadioNav.isHz50Compliant(numValue)) {
                         mcdu.addNewMessage(NXSystemMessages.formatError);
-                        scratchpadCallback(value);
+                        scratchpadCallback();
                         return false;
                     }
                     if (numValue < 108 || numValue > 117.95) {
                         mcdu.addNewMessage(NXSystemMessages.entryOutOfRange);
-                        scratchpadCallback(value);
+                        scratchpadCallback();
                         return false;
                     }
                     mcdu.vor1IdIsPilotEntered = false;
@@ -93,7 +93,7 @@ class CDUNavRadioPage {
                     }
                 } else {
                     mcdu.addNewMessage(NXSystemMessages.entryOutOfRange);
-                    scratchpadCallback(value);
+                    scratchpadCallback();
                 }
             };
             vor1CourseCell = "[\xa0]";
@@ -114,7 +114,7 @@ class CDUNavRadioPage {
                     CDUNavRadioPage.ShowPage(mcdu);
                 } else {
                     mcdu.addNewMessage(NXSystemMessages.entryOutOfRange);
-                    scratchpadCallback(value);
+                    scratchpadCallback();
                 }
             };
             ilsFrequencyCell = "[\xa0\xa0]/[\xa0\xa0.\xa0]";
@@ -133,7 +133,7 @@ class CDUNavRadioPage {
                 if (mcdu.setIlsFrequency(value)) {
                     CDUNavRadioPage.ShowPage(mcdu);
                 } else {
-                    scratchpadCallback(value);
+                    scratchpadCallback();
                 }
             };
             adf1FrequencyCell = "[\xa0]/[\xa0\xa0\xa0.]";
@@ -160,18 +160,18 @@ class CDUNavRadioPage {
                             });
                         } else {
                             mcdu.addNewMessage(NXSystemMessages.notInDatabase);
-                            scratchpadCallback(value);
+                            scratchpadCallback();
                         }
                     });
                 } else if (isFinite(numValue)) {
                     if (!/^\d{3,4}(\.\d{1})?$/.test(value)) {
                         mcdu.addNewMessage(NXSystemMessages.formatError);
-                        scratchpadCallback(value);
+                        scratchpadCallback();
                         return false;
                     }
                     if (numValue < 190 || numValue > 1750) {
                         mcdu.addNewMessage(NXSystemMessages.entryOutOfRange);
-                        scratchpadCallback(value);
+                        scratchpadCallback();
                         return false;
                     }
                     SimVar.SetSimVarValue("K:ADF_COMPLETE_SET", "Frequency ADF BCD32", Avionics.Utils.make_adf_bcd32(numValue * 1000)).then(() => {
@@ -190,7 +190,7 @@ class CDUNavRadioPage {
                     CDUNavRadioPage.ShowPage(mcdu);
                 } else {
                     mcdu.addNewMessage(NXSystemMessages.entryOutOfRange);
-                    scratchpadCallback(value);
+                    scratchpadCallback();
                 }
             };
         }
@@ -227,18 +227,18 @@ class CDUNavRadioPage {
                             });
                         } else {
                             mcdu.addNewMessage(NXSystemMessages.notInDatabase);
-                            scratchpadCallback(value);
+                            scratchpadCallback();
                         }
                     });
                 } else if (isFinite(numValue)) {
                     if (!/^\d{3}(\.\d{1,2})?$/.test(value) || !RadioNav.isHz50Compliant(numValue)) {
                         mcdu.addNewMessage(NXSystemMessages.formatError);
-                        scratchpadCallback(value);
+                        scratchpadCallback();
                         return false;
                     }
                     if (numValue < 108 || numValue > 117.95) {
                         mcdu.addNewMessage(NXSystemMessages.entryOutOfRange);
-                        scratchpadCallback(value);
+                        scratchpadCallback();
                         return false;
                     }
                     mcdu.vor2FreqIsPilotEntered = true;
@@ -261,7 +261,7 @@ class CDUNavRadioPage {
                     }
                 } else {
                     mcdu.addNewMessage(NXSystemMessages.entryOutOfRange);
-                    scratchpadCallback(value);
+                    scratchpadCallback();
                 }
             };
             vor2CourseCell = "[\xa0]";
@@ -282,7 +282,7 @@ class CDUNavRadioPage {
                     CDUNavRadioPage.ShowPage(mcdu);
                 } else {
                     mcdu.addNewMessage(NXSystemMessages.entryOutOfRange);
-                    scratchpadCallback(value);
+                    scratchpadCallback();
                 }
             };
             adf2FrequencyCell = "[\xa0\xa0\xa0.]/[\xa0]";
@@ -309,18 +309,18 @@ class CDUNavRadioPage {
                             });
                         } else {
                             mcdu.addNewMessage(NXSystemMessages.notInDatabase);
-                            scratchpadCallback(value);
+                            scratchpadCallback();
                         }
                     });
                 } else if (isFinite(numValue)) {
                     if (!/^\d{3,4}(\.\d{1})?$/.test(value)) {
                         mcdu.addNewMessage(NXSystemMessages.formatError);
-                        scratchpadCallback(value);
+                        scratchpadCallback();
                         return false;
                     }
                     if (numValue < 190 || numValue > 1750) {
                         mcdu.addNewMessage(NXSystemMessages.entryOutOfRange);
-                        scratchpadCallback(value);
+                        scratchpadCallback();
                         return false;
                     }
                     SimVar.SetSimVarValue("K:ADF2_COMPLETE_SET", "Frequency ADF BCD32", Avionics.Utils.make_adf_bcd32(numValue * 1000)).then(() => {
@@ -340,7 +340,7 @@ class CDUNavRadioPage {
                     CDUNavRadioPage.ShowPage(mcdu);
                 } else {
                     mcdu.addNewMessage(NXSystemMessages.entryOutOfRange);
-                    scratchpadCallback(value);
+                    scratchpadCallback();
                 }
             };
         }

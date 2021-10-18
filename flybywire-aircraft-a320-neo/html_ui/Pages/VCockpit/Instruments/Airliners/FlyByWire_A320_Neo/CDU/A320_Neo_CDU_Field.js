@@ -156,7 +156,7 @@ class CDU_SingleValueField extends CDU_Field {
             this.clearValue();
         } else {
             if (!this.setValue(value)) {
-                this.mcdu.scratchpad.setUserData(value);
+                this.mcdu.setScratchpadUserData(value);
             }
         }
         super.onSelect();

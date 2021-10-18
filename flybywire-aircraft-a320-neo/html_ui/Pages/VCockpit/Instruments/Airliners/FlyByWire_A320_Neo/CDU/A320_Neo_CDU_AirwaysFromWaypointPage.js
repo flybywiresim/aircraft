@@ -43,7 +43,7 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
                         if (value.length > 0) {
                             mcdu.insertWaypoint(value, mcdu.flightPlanManager.getEnRouteWaypointsLastIndex() + 1, (success) => {
                                 if (!success) {
-                                    scratchpadCallback(value);
+                                    scratchpadCallback();
                                 }
                                 A320_Neo_CDU_AirwaysFromWaypointPage.ShowPage(mcdu, waypoint, offset);
                             });
@@ -57,7 +57,7 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
                                     A320_Neo_CDU_AirwaysFromWaypointPage.ShowPage(mcdu, waypoint, offset, airway);
                                 } else {
                                     mcdu.addNewMessage(NXSystemMessages.awyWptMismatch);
-                                    scratchpadCallback(value);
+                                    scratchpadCallback();
                                 }
                             });
                         }
@@ -73,7 +73,7 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
                                         A320_Neo_CDU_AirwaysFromWaypointPage.ShowPage(mcdu, waypoint, offset);
                                     } else {
                                         mcdu.addNewMessage(NXSystemMessages.awyWptMismatch);
-                                        scratchpadCallback(value);
+                                        scratchpadCallback();
                                     }
                                 });
                             });
@@ -94,21 +94,21 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
                                                     A320_Neo_CDU_AirwaysFromWaypointPage.ShowPage(mcdu, waypoint, offset, airway);
                                                 } else {
                                                     mcdu.addNewMessage(NXSystemMessages.noIntersectionFound);
-                                                    scratchpadCallback(value);
+                                                    scratchpadCallback();
                                                 }
                                             } else {
                                                 mcdu.addNewMessage(NXSystemMessages.noIntersectionFound);
-                                                scratchpadCallback(value);
+                                                scratchpadCallback();
                                             }
                                         });
                                     });
                                 } else {
                                     mcdu.addNewMessage(NXSystemMessages.noIntersectionFound);
-                                    scratchpadCallback(value);
+                                    scratchpadCallback();
                                 }
                             } else {
                                 mcdu.addNewMessage(NXSystemMessages.noIntersectionFound);
-                                scratchpadCallback(value);
+                                scratchpadCallback();
                             }
                         };
                     }
