@@ -9,7 +9,6 @@ use uom::si::{
     f64::*,
     length::meter,
     pressure::pascal,
-    ratio::percent,
     thermodynamic_temperature::{degree_celsius, kelvin},
 };
 
@@ -399,10 +398,6 @@ impl ISA {
 
     fn ground_pressure() -> Pressure {
         Pressure::new::<pascal>(Self::GROUND_PRESSURE_PASCAL)
-    }
-
-    fn ground_temperature() -> ThermodynamicTemperature {
-        ThermodynamicTemperature::new::<kelvin>(Self::GROUND_TEMPERATURE_KELVIN)
     }
 
     pub fn pressure_at_altitude(altitude: Length) -> Pressure {

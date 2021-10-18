@@ -8,21 +8,20 @@ use crate::{
 
 use uom::si::{
     f64::*,
-    pressure::{pascal, psi},
-    ratio::{percent, ratio},
+    pressure::psi,
+    ratio::ratio,
     thermodynamic_temperature::degree_celsius,
     volume::{cubic_meter, gallon},
-    volume_rate::cubic_meter_per_second,
 };
 
 use systems::{
     overhead::{AutoOffFaultPushButton, OnOffFaultPushButton},
     pneumatic::{
-        valve::*, ApuCompressionChamberController, CompressionChamber, ControllablePneumaticValve,
+        valve::*, ApuCompressionChamberController, BleedMonitoringComputerChannelOperationMode,
+        BleedMonitoringComputerIsAliveSignal, CompressionChamber, ControllablePneumaticValve,
         ControlledPneumaticValveSignal, CrossBleedValveSelectorKnob, CrossBleedValveSelectorMode,
         DefaultPipe, EngineCompressionChamberController, EngineState, HeatExchanger,
-        PneumaticContainer, PneumaticContainerWithConnector, TargetPressureSignal,
-        VariableVolumeContainer,
+        PneumaticContainer, PneumaticContainerWithConnector, VariableVolumeContainer,
     },
     shared::{
         pid::PidController, ControllerSignal, DelayedTrueLogicGate, ElectricalBusType,
@@ -508,14 +507,6 @@ impl ControllerSignal<BleedMonitoringComputerIsAliveSignal> for BleedMonitoringC
     }
 }
 
-struct BleedMonitoringComputerIsAliveSignal;
-
-#[derive(Clone, Copy, Debug, PartialEq)]
-enum BleedMonitoringComputerChannelOperationMode {
-    Master,
-    Slave,
-}
-
 struct BleedMonitoringComputerChannel {
     engine_number: usize,
     operation_mode: BleedMonitoringComputerChannelOperationMode,
@@ -526,8 +517,6 @@ struct BleedMonitoringComputerChannel {
     // Pressure after PRV
     precooler_inlet_pressure: Pressure,
     precooler_outlet_temperature: ThermodynamicTemperature,
-    pressure_regulating_valve_open_amount: Ratio,
-    high_pressure_valve_open_position: Ratio,
     engine_starter_valve_is_open: bool,
     is_engine_bleed_pushbutton_auto: bool,
     is_engine_fire_pushbutton_released: bool,
@@ -553,8 +542,6 @@ impl BleedMonitoringComputerChannel {
             transfer_pressure: Pressure::new::<psi>(0.),
             precooler_inlet_pressure: Pressure::new::<psi>(0.),
             precooler_outlet_temperature: ThermodynamicTemperature::new::<degree_celsius>(0.),
-            high_pressure_valve_open_position: Ratio::new::<percent>(0.),
-            pressure_regulating_valve_open_amount: Ratio::new::<percent>(0.),
             engine_starter_valve_is_open: false,
             is_engine_bleed_pushbutton_auto: true,
             is_engine_fire_pushbutton_released: false,
@@ -583,7 +570,6 @@ impl BleedMonitoringComputerChannel {
         self.high_pressure_compressor_pressure = sensors.high_pressure();
         self.transfer_pressure = sensors.transfer_pressure();
         self.precooler_inlet_pressure = sensors.precooler_inlet_pressure();
-
         self.precooler_outlet_temperature = sensors.precooler_outlet_temperature();
 
         self.pressure_regulating_valve_pid.change_setpoint(
@@ -605,8 +591,6 @@ impl BleedMonitoringComputerChannel {
             Some(context.delta()),
         );
 
-        self.pressure_regulating_valve_open_amount =
-            sensors.pressure_regulating_valve_open_amount();
         self.engine_starter_valve_is_open = sensors.engine_starter_valve_is_open();
 
         self.is_engine_bleed_pushbutton_auto =
@@ -1097,8 +1081,6 @@ impl SimulationElement for EngineBleedAirSystem {
     }
 }
 impl PneumaticContainer for EngineBleedAirSystem {
-    // This implementation is to connect the two engine systems via the cross bleed valve
-
     fn pressure(&self) -> Pressure {
         self.precooler_outlet_pipe.pressure()
     }
@@ -1227,7 +1209,7 @@ impl PackComplex {
                 Pressure::new::<psi>(14.7),
                 ThermodynamicTemperature::new::<degree_celsius>(15.),
             ),
-            exhaust: PneumaticExhaust::new(0.1),
+            exhaust: PneumaticExhaust::new(10.),
             pack_flow_valve: DefaultValve::new_closed(),
             pack_flow_valve_controller: PackFlowValveController::new(engine_number),
         }
@@ -1308,7 +1290,7 @@ mod tests {
     use systems::{
         electrical::{test::TestElectricitySource, ElectricalBus, Electricity},
         engine::leap_engine::LeapEngine,
-        pneumatic::{EngineState, PneumaticContainer},
+        pneumatic::EngineState,
         shared::{
             arinc429::SignStatus, ApuBleedAirValveSignal, ElectricalBusType, ElectricalBuses,
             MachNumber, PotentialOrigin, ISA,
@@ -1322,10 +1304,7 @@ mod tests {
     use std::{fs::File, time::Duration};
 
     use uom::si::{
-        length::foot,
-        pressure::{pascal, psi},
-        thermodynamic_temperature::degree_celsius,
-        velocity::knot,
+        length::foot, pressure::psi, thermodynamic_temperature::degree_celsius, velocity::knot,
     };
 
     struct TestApu {
@@ -1832,7 +1811,7 @@ mod tests {
             self.query(|a| a.pneumatic.pack_flow_valve_is_open(number))
         }
 
-        fn both_packs_auto(mut self) -> Self {
+        fn both_packs_auto(self) -> Self {
             self.set_pack_flow_pb_is_auto(1, true)
                 .set_pack_flow_pb_is_auto(2, true)
         }
@@ -1982,7 +1961,6 @@ mod tests {
                     .high_pressure_valve
                     .open_amount()
                     .get::<ratio>()
-                    * 10.
             }));
 
             prv_open.push(test_bed.query(|aircraft| {
@@ -1990,7 +1968,6 @@ mod tests {
                     .pressure_regulating_valve
                     .open_amount()
                     .get::<ratio>()
-                    * 10.
             }));
 
             ipv_open.push(test_bed.query(|aircraft| {
@@ -1998,7 +1975,6 @@ mod tests {
                     .intermediate_pressure_valve
                     .open_amount()
                     .get::<ratio>()
-                    * 10.
             }));
 
             esv_open.push(test_bed.query(|aircraft| {
@@ -2006,11 +1982,10 @@ mod tests {
                     .engine_starter_valve
                     .open_amount()
                     .get::<ratio>()
-                    * 10.
             }));
 
             abv_open.push(if test_bed.apu_bleed_valve_is_open() {
-                10.
+                1.
             } else {
                 0.
             });
@@ -2020,7 +1995,6 @@ mod tests {
                     .fan_air_valve
                     .open_amount()
                     .get::<ratio>()
-                    * 10.
             }));
 
             test_bed.run_with_delta(Duration::from_millis(16));
@@ -2112,7 +2086,7 @@ mod tests {
     #[test]
     fn single_engine_idle() {
         let altitude = Length::new::<foot>(0.);
-        let mut test_bed = test_bed_with()
+        let test_bed = test_bed_with()
             .idle_eng1()
             .stop_eng2()
             .in_isa_atmosphere(altitude)
@@ -2612,7 +2586,7 @@ mod tests {
         assert!(!test_bed.fadec_single_vs_dual_bleed_config());
     }
 
-    mod ovhd {
+    mod overhead {
         use super::*;
 
         #[test]

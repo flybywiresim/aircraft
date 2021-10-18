@@ -1,8 +1,8 @@
 use crate::{
     pneumatic::valve::*,
     shared::{
-        arinc429::{Arinc429Word, SignStatus},
-        ControllerSignal, EngineCorrectedN1, EngineCorrectedN2, MachNumber, PneumaticValve,
+        arinc429::Arinc429Word, ControllerSignal, EngineCorrectedN1, EngineCorrectedN2, MachNumber,
+        PneumaticValve,
     },
     simulation::{
         Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -12,7 +12,7 @@ use crate::{
 
 use uom::si::{
     f64::*,
-    pressure::{pascal, psi},
+    pressure::psi,
     ratio::{percent, ratio},
     temperature_interval,
     thermodynamic_temperature::{degree_celsius, kelvin},
@@ -472,11 +472,18 @@ impl<T: PneumaticContainer> PneumaticContainerWithConnector<T> {
     }
 }
 
+pub struct BleedMonitoringComputerIsAliveSignal;
+
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum BleedMonitoringComputerChannelOperationMode {
+    Master,
+    Slave,
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::{
-        hydraulic::Fluid,
         pneumatic::{DefaultPipe, DefaultValve, PneumaticContainer},
         shared::{ControllerSignal, ISA},
         simulation::{
@@ -495,33 +502,11 @@ mod tests {
         thermodynamic_temperature::degree_celsius,
         velocity::knot,
         volume::{cubic_meter, gallon},
-        volume_rate::cubic_meter_per_second,
     };
 
     struct TestPneumaticValveSignal {
         target_open_amount: Ratio,
     }
-
-    struct TestValveController {
-        command_open_amount: Ratio,
-    }
-    impl TestValveController {
-        fn new(command_open_amount: Ratio) -> Self {
-            Self {
-                command_open_amount,
-            }
-        }
-
-        fn set_command_open_amount(&mut self, command_open_amount: Ratio) {
-            self.command_open_amount = command_open_amount;
-        }
-    }
-    impl ControllerSignal<TestPneumaticValveSignal> for TestValveController {
-        fn signal(&self) -> Option<TestPneumaticValveSignal> {
-            Some(TestPneumaticValveSignal::new(self.command_open_amount))
-        }
-    }
-
     impl ControlledPneumaticValveSignal for TestPneumaticValveSignal {
         fn new(target_open_amount: Ratio) -> Self {
             Self { target_open_amount }
@@ -594,7 +579,7 @@ mod tests {
         temperature_in_celsius: f64,
     ) -> DefaultPipe {
         DefaultPipe::new(
-            Volume::new::<cubic_meter>(1.),
+            Volume::new::<cubic_meter>(volume_in_cubic_meter),
             Pressure::new::<psi>(pressure_in_psi),
             ThermodynamicTemperature::new::<degree_celsius>(temperature_in_celsius),
         )

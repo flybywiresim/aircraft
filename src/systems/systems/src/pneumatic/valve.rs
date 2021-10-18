@@ -11,7 +11,6 @@ use uom::si::{
     ratio::{percent, ratio},
     temperature_interval,
     thermodynamic_temperature::kelvin,
-    volume::cubic_meter,
     volume_rate::cubic_meter_per_second,
 };
 
@@ -315,13 +314,12 @@ impl PneumaticContainerConnector {
     }
 }
 
-/// This is only controlled by physical forces
 pub struct PneumaticExhaust {
     exhaust_speed: f64,
     fluid_flow: VolumeRate,
 }
 impl PneumaticExhaust {
-    const TRANSFER_SPEED: f64 = 1.;
+    const TRANSFER_SPEED: f64 = 3.;
     const HEAT_CAPACITY_RATIO: f64 = 1.4;
 
     pub fn new(exhaust_speed: f64) -> Self {
@@ -336,7 +334,6 @@ impl PneumaticExhaust {
         context: &UpdateContext,
         from: &mut impl PneumaticContainer,
     ) {
-        //     / Pressure::new::<pascal>(142000.);
         let equalization_volume = self.vol_to_target(from, context.ambient_pressure());
 
         let fluid_to_move = from.volume().min(
@@ -347,7 +344,7 @@ impl PneumaticExhaust {
 
         from.change_volume(fluid_to_move);
 
-        self.fluid_flow = fluid_to_move / context.delta_as_time();
+        self.fluid_flow = -fluid_to_move / context.delta_as_time();
     }
 
     fn vol_to_target(
@@ -377,8 +374,8 @@ mod tests {
     use std::time::Duration;
     use uom::si::{
         acceleration::foot_per_second_squared, angle::radian, length::foot, pressure::pascal,
-        temperature_interval, thermodynamic_temperature::degree_celsius, velocity::knot,
-        volume::cubic_meter, volume_rate::cubic_meter_per_second,
+        thermodynamic_temperature::degree_celsius, velocity::knot, volume::cubic_meter,
+        volume_rate::cubic_meter_per_second,
     };
 
     struct TestPneumaticValveSignal {
