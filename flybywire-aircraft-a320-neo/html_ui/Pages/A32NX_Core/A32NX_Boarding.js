@@ -80,6 +80,8 @@ class A32NX_Boarding {
     async loadCargoZero() {
         for (const station of Object.values(this.cargoStations)) {
             await SimVar.SetSimVarValue(`PAYLOAD STATION WEIGHT:${station.stationIndex}`, "kilograms", 0);
+            await SimVar.SetSimVarValue(`L:${station.simVar}_DESIRED`, "Number", 0);
+            await SimVar.SetSimVarValue(`L:${station.simVar}`, "Number", 0);
         }
 
         return;
