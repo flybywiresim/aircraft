@@ -3,23 +3,23 @@ use std::collections::HashMap;
 use msfs::legacy::NamedVariable;
 use systems::failures::FailureType;
 
-pub struct Failures {
+pub(super) struct Failures {
     activate_sim_var: NamedVariable,
     deactivate_sim_var: NamedVariable,
-    sim_var_value_to_failure_type: HashMap<u64, FailureType>,
+    identifier_to_failure_type: HashMap<u64, FailureType>,
 }
 impl Failures {
-    pub fn new(activate_sim_var: NamedVariable, deactivate_sim_var: NamedVariable) -> Self {
+    pub(super) fn new(activate_sim_var: NamedVariable, deactivate_sim_var: NamedVariable) -> Self {
         Self {
             activate_sim_var,
             deactivate_sim_var,
-            sim_var_value_to_failure_type: HashMap::new(),
+            identifier_to_failure_type: HashMap::new(),
         }
     }
 
-    pub fn add(&mut self, sim_var_value: u64, failure_type: FailureType) {
-        self.sim_var_value_to_failure_type
-            .insert(sim_var_value, failure_type);
+    pub(super) fn add(&mut self, identifier: u64, failure_type: FailureType) {
+        self.identifier_to_failure_type
+            .insert(identifier, failure_type);
     }
 
     pub(super) fn read_failure_activate(&self) -> Option<FailureType> {
@@ -31,11 +31,8 @@ impl Failures {
     }
 
     fn read_failure(&self, from: &NamedVariable) -> Option<FailureType> {
-        let sim_var_value: f64 = from.get_value();
-        if let Some(failure_type) = self
-            .sim_var_value_to_failure_type
-            .get(&(sim_var_value as u64))
-        {
+        let identifier: f64 = from.get_value();
+        if let Some(failure_type) = self.identifier_to_failure_type.get(&(identifier as u64)) {
             from.set_value(0.);
             Some(*failure_type)
         } else {
