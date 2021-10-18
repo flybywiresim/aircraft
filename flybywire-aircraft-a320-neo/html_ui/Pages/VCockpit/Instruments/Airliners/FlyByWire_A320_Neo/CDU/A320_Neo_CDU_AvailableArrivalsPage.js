@@ -69,7 +69,7 @@ class CDUAvailableArrivalsPage {
                     const approach = sortedApproaches[index];
                     if (approach) {
                         const runways = airportInfo.oneWayRunways;
-                        const approachRunwayName = Avionics.Utils.formatRunway(approach.name);
+                        const approachRunwayName = Avionics.Utils.formatRunway(approach.name.split(" ")[1] || "0");
                         let runwayLength = 0;
                         let runwayCourse = 0;
                         for (const runway of runways) {
