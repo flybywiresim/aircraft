@@ -45,6 +45,8 @@
 1. [MCDU] Fixed transition alt init and display - @derl30n (Leon)
 1. [AP] Fixed V/S, FPA or ALT* speed protection to engage too early on high altitudes - @aguther (Andreas Guther)
 1. [MODEL] Add MCDU annunciator lights - @tracernz (Mike)
+1. [LIGHTS] Add ambient lt for all INTEG LT emssivies + C&D ambient fix - @bouveng (Johan Bouveng)
+1. [ECAM] Fixed misaligned items on ecam memos - @tyler58546 (tyler58546)
 
 ## 0.7.0
 1. [HYD] First building block, more to come. Hydraulics do not impact the sim YET. - @crocket6 (crocket)
