@@ -89,7 +89,7 @@ class CDUAocOfpData {
         mcdu.leftInputDelay[0] = () => {
             return mcdu.getDelayBasic();
         };
-        mcdu.onLeftInput[0] = (value, scratchpadCallback) => {
+        mcdu.onLeftInput[0] = (value, badInputCallback) => {
             if (value === FMCMainDisplay.clrValue) {
                 mcdu.aocWeight.blockFuel = undefined;
                 updateView();
@@ -101,15 +101,14 @@ class CDUAocOfpData {
                 updateView();
                 return true;
             }
-            mcdu.addNewMessage(NXSystemMessages.notAllowed);
-            scratchpadCallback();
+            badInputCallback(NXSystemMessages.notAllowed);
             return false;
         };
 
         mcdu.leftInputDelay[1] = () => {
             return mcdu.getDelayBasic();
         };
-        mcdu.onLeftInput[1] = (value, scratchpadCallback) => {
+        mcdu.onLeftInput[1] = (value, badInputCallback) => {
             if (value === FMCMainDisplay.clrValue) {
                 mcdu.aocWeight.taxiFuel = undefined;
                 updateView();
@@ -121,15 +120,14 @@ class CDUAocOfpData {
                 updateView();
                 return true;
             }
-            mcdu.addNewMessage(NXSystemMessages.notAllowed);
-            scratchpadCallback();
+            badInputCallback(NXSystemMessages.notAllowed);
             return false;
         };
 
         mcdu.leftInputDelay[2] = () => {
             return mcdu.getDelayBasic();
         };
-        mcdu.onLeftInput[2] = (value, scratchpadCallback) => {
+        mcdu.onLeftInput[2] = (value, badInputCallback) => {
             if (value === FMCMainDisplay.clrValue) {
                 mcdu.aocWeight.tripFuel = undefined;
                 updateView();
@@ -141,8 +139,7 @@ class CDUAocOfpData {
                 updateView();
                 return true;
             }
-            mcdu.addNewMessage(NXSystemMessages.notAllowed);
-            scratchpadCallback();
+            badInputCallback(NXSystemMessages.notAllowed);
             return false;
         };
 

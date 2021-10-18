@@ -7,7 +7,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this._pageCount = undefined;
         this._labels = [];
         this._lines = [];
-        this.scratchpad = null;
+        this._scratchpad = null;
         this.onLeftInput = [];
         this.onRightInput = [];
         this.leftInputDelay = [];
@@ -15,13 +15,11 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.messages = [];
         this.sentMessages = [];
         this.activeSystem = 'FMGC';
-        this.messageQueue = [];
         this.inFocus = false;
         this.lastInput = 0;
         this.clrStop = false;
         this.allSelected = false;
         this.updateRequest = false;
-        this.aocAirportList = new CDUAocAirportList;
         this.initB = false;
         this.PageTimeout = {
             Prog: 2000,
@@ -100,8 +98,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
 
     initMcduVariables() {
-        this.messageQueue = [];
-        this.aocAirportList.init();
+        this.setScratchpadText("");
     }
 
     Init() {
@@ -135,7 +132,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         }
 
         const display = new ScratchpadDisplay(this.getChildById("in-out"));
-        this.scratchpad = new ScratchpadDataLink(this, display);
+        this._scratchpad = new ScratchpadDataLink(this, display);
 
         this.setTimeout = (func) => {
             setTimeout(() => {
@@ -145,23 +142,20 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.onMenu = () => {
             FMCMainDisplayPages.MenuPage(this);
         };
-        this.onLetterInput = (l) => this.scratchpad.addChar(l);
-        this.onSp = () => this.scratchpad.addChar(" ");
-        this.onDel = () => this.scratchpad.delChar();
-        this.onDiv = () => this.scratchpad.addChar("/");
-        this.onDot = () => this.scratchpad.addChar(".");
-        this.onClr = () => this.scratchpad.clear();
-        this.onClrHeld = () => this.scratchpad.clearHeld();
-        this.onPlusMinus = (defaultKey = "-") => this.scratchpad.plusMinus(defaultKey);
-        this.onLeftFunction = (f) => this.onLsk(this.onLeftInput[f], this.leftInputDelay[f]);
-        this.onRightFunction = (f) => this.onLsk(this.onRightInput[f], this.rightInputDelay[f]);
+        this.onLetterInput = (l) => this._scratchpad.addChar(l);
+        this.onSp = () => this._scratchpad.addChar(" ");
+        this.onDel = () => this._scratchpad.delChar();
+        this.onDiv = () => this._scratchpad.addChar("/");
+        this.onDot = () => this._scratchpad.addChar(".");
+        this.onClr = () => this._scratchpad.clear();
+        this.onClrHeld = () => this._scratchpad.clearHeld();
+        this.onPlusMinus = (defaultKey = "-") => this._scratchpad.plusMinus(defaultKey);
+        this.onLeftFunction = (f) => this._onLsk(this.onLeftInput[f], this.leftInputDelay[f]);
+        this.onRightFunction = (f) => this._onLsk(this.onRightInput[f], this.rightInputDelay[f]);
 
         const flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string");
         NXApi.connectTelex(flightNo)
             .catch((err) => {
-                if (err !== NXApi.disabledError) {
-                    this.addNewMessage(NXFictionalMessages.fltNbrInUse);
-                }
             });
 
         this.onDir = () => {
@@ -589,7 +583,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             }
         }
         if (template[13]) {
-            this.scratchpad.setText(template[13][0]);
+            this.setScratchpadText(template[13][0]);
         }
         SimVar.SetSimVarValue("L:AIRLINER_MCDU_CURRENT_FPLN_WAYPOINT", "number", this.currentFlightPlanWaypointIndex).then();
         // Apply formatting helper to title page, lines and labels
@@ -658,7 +652,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.pageRedrawCallback = null;
         this.refreshPageCallback = undefined;
         if (this.page.Current === this.page.MenuPage) {
-            this.scratchpad.setText("");
+            this.setScratchpadText("");
         }
         this.page.Current = this.page.Clear;
         this.setArrows(false, false);
@@ -768,7 +762,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.inFocus = false;
         this.allSelected = false;
         Coherent.trigger('UNFOCUS_INPUT_FIELD');
-        this.scratchpad.setDisplayStyle(null);
+        this._scratchpad.setDisplayStyle(null);
         this.getChildById("header").style = null;
         if (this.check_focus) {
             clearInterval(this.check_focus);
@@ -788,7 +782,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 this.inFocus = !this.inFocus;
                 if (this.inFocus && (isPoweredL || isPoweredR)) {
                     this.getChildById("header").style = "background: linear-gradient(180deg, rgba(2,182,217,1.0) 65%, rgba(255,255,255,0.0) 65%);";
-                    this.scratchpad.setDisplayStyle("display: inline-block; width:87%; background: rgba(255,255,255,0.2);");
+                    this._scratchpad.setDisplayStyle("display: inline-block; width:87%; background: rgba(255,255,255,0.2);");
                     Coherent.trigger('FOCUS_INPUT_FIELD');
                     this.lastInput = new Date();
                     if (mcduTimeout) {
@@ -820,11 +814,11 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     this.clearFocus();
                 } else if (e.ctrlKey && keycode === KeyCode.KEY_A) {
                     this.allSelected = !this.allSelected;
-                    this.scratchpad.setDisplayStyle(`display: inline-block; width:87%; background: ${this.allSelected ? 'rgba(235,64,52,1.0)' : 'rgba(255,255,255,0.2)'};`);
+                    this._scratchpad.setDisplayStyle(`display: inline-block; width:87%; background: ${this.allSelected ? 'rgba(235,64,52,1.0)' : 'rgba(255,255,255,0.2)'};`);
                 } else if (e.shiftKey && e.ctrlKey && keycode === KeyCode.KEY_BACK_SPACE) {
-                    this.scratchpad.setText("");
+                    this.setScratchpadText("");
                 } else if (e.ctrlKey && keycode === KeyCode.KEY_BACK_SPACE) {
-                    const scratchpadTextContent = this.scratchpad.getText();
+                    const scratchpadTextContent = this._scratchpad.getText();
                     let wordFlag = !scratchpadTextContent.includes(' ');
                     for (let i = scratchpadTextContent.length; i > 0; i--) {
                         if (scratchpadTextContent.slice(-1) === ' ') {
@@ -867,12 +861,12 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_2_SLASH", "Number", 1);
                 } else if (keycode === KeyCode.KEY_BACK_SPACE || keycode === KeyCode.KEY_DELETE) {
                     if (this.allSelected) {
-                        this.scratchpad.setText("");
+                        this.setScratchpadText("");
                     } else if (!this.clrStop) {
                         this.onClr();
                         SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_1_CLR", "Number", 1);
                         SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_2_CLR", "Number", 1);
-                        this.clrStop = this.scratchpad.isClearStop();
+                        this.clrStop = this._scratchpad.isClearStop();
                     }
                 } else if (keycode === KeyCode.KEY_SPACE) {
                     this.onSp();
@@ -912,105 +906,28 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         });
     }
 
+    scratchpadCallback(value, message) {
+        this.setScratchpadMessage(message);
+        this._setScratchpadUserData(value);
+    }
+
+    setScratchpadMessage(message) {
+        this._scratchpad.setMessage(message);
+    }
+
+    removeScratchpadMessage(value) {
+        this._scratchpad.removeMessage(value);
+    }
+
+    setScratchpadText(value) {
+        this._scratchpad.setText(value);
+    }
+
+    _setScratchpadUserData(value) {
+        this._scratchpad.setUserData(value);
+    }
+
     /* END OF MCDU SCRATCHPAD */
-    /* MCDU MESSAGE SYSTEM */
-
-    /**
-     * General message handler
-     * @param message {{text, isAmber, isTypeTwo}} Message Object
-     * @param isResolved {function} Function that determines if the error is resolved at this moment (type II only).
-     * @param onClear {function} Function that executes when the error is actively cleared by the pilot (type II only).
-     */
-    addNewMessage(message, isResolved = () => false, onClear = () => {}) {
-        if (message.isTypeTwo) {
-            if (isResolved()) {
-                // This will trigger an internal health check
-                this.tryShowMessage();
-            } else {
-                this._addTypeTwoMessage(message.text, message.isAmber, isResolved, onClear);
-            }
-        } else {
-            this.scratchpad.setMessage(message);
-        }
-    }
-
-    /**
-     * Add Type II Message
-     * @param message {string} Message to be displayed
-     * @param isAmber {boolean} Is color amber
-     * @param isResolved {function} Function that determines if the error is resolved at this moment (type II only).
-     * @param onClear {function} Function that executes when the error is actively cleared by the pilot (type II only).
-     */
-    _addTypeTwoMessage(message, isAmber, isResolved, onClear) {
-        if (this.checkForMessage(message)) {
-            // Before adding message to queue, check other messages in queue for validity
-            for (let i = 0; i < this.messageQueue.length; i++) {
-                if (this.messageQueue[i][2](this)) {
-                    this.messageQueue.splice(i, 1);
-                }
-            }
-            this.messageQueue.unshift([message, isAmber, isResolved, onClear]);
-            if (this.messageQueue.length > 5) {
-                this.messageQueue.splice(5, 1);
-            }
-            this.tryShowMessage();
-        }
-    }
-
-    tryShowMessage() {
-        if (this.messageQueue.length > 0) {
-            const message = this.messageQueue[0];
-
-            if (message[2](this)) {
-                this.scratchpad.removeMessage(message[0]);
-                this.messageQueue.splice(0, 1);
-                return this.tryShowMessage();
-            }
-
-            this.scratchpad.setMessage({
-                text: message[0],
-                isAmber: message[1],
-                isTypeTwo: true
-            });
-        }
-    }
-
-    /**
-     * Removes Type II Message
-     * @param message {string} Message to be removed
-     */
-    tryRemoveMessage(message) {
-        for (let i = 0; i < this.messageQueue.length; i++) {
-            if (this.messageQueue[i][0] === message) {
-                this.messageQueue[i][3](this);
-                this.messageQueue.splice(i, 1);
-                if (i === 0) {
-                    this.scratchpad.removeMessage(message);
-                    this.tryShowMessage();
-                }
-                break;
-            }
-        }
-    }
-
-    checkForMessage(message) {
-        if (!message) {
-            return false;
-        }
-        for (let i = 0; i < this.messageQueue.length; i++) {
-            if (this.messageQueue[i][0] === message) {
-                if (i !== 0) {
-                    this.messageQueue.unshift(this.messageQueue[i]);
-                    this.messageQueue.splice(i + 1, 1);
-                    this.tryShowMessage();
-                }
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /* END OF MCDU MESSAGE SYSTEM */
     /* MCDU EVENTS */
 
     onPowerOn() {
@@ -1205,7 +1122,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         return false;
     }
 
-    onLsk(fncAction, fncActionDelay = this.getDelayBasic) {
+    _onLsk(fncAction, fncActionDelay = this.getDelayBasic) {
         if (!fncAction) {
             return;
         }
@@ -1214,13 +1131,20 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         // Second delay simulates delay for input validation
         const cur = this.page.Current;
         setTimeout(() => {
-            const value = this.scratchpad.removeUserContentFromScratchpadAndDisplayAndReturnTextContent();
+            const value = this._scratchpad.removeUserContentFromScratchpadAndDisplayAndReturnTextContent();
             setTimeout(() => {
                 if (this.page.Current === cur) {
-                    fncAction(value, () => this.setScratchpadUserData(value));
+                    this._inputValidation(value, fncAction);
                 }
             }, fncActionDelay());
         }, 100);
+    }
+
+    _inputValidation(value, inputProcessor) {
+        inputProcessor(
+            value,
+            (message) => this.scratchpadCallback(value, message)
+        );
     }
 
     /* END OF MCDU EVENTS */

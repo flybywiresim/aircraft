@@ -135,7 +135,7 @@ const getSimBriefOfp = (mcdu, updateView, callback) => {
     const simBriefUserId = NXDataStore.get("CONFIG_SIMBRIEF_USERID", "");
 
     if (!simBriefUserId) {
-        mcdu.addNewMessage(NXFictionalMessages.noSimBriefUser);
+        mcdu.setScratchpadMessage(NXFictionalMessages.noSimBriefUser);
         throw new Error("No SimBrief pilot ID provided");
     }
 
@@ -202,35 +202,36 @@ const insertUplink = (mcdu) => {
     const fromTo = `${originIcao}/${destinationIcao}`;
     const fltNbr = `${icao_airline}${flight_number}`;
 
-    mcdu.addNewMessage(NXSystemMessages.uplinkInsertInProg);
+    mcdu.addMessageToQueue(NXSystemMessages.uplinkInsertInProg);
 
     /**
      * AOC ACT F-PLN UPLINK
      */
-    mcdu.tryUpdateFromTo(fromTo, async (result) => {
-        if (result) {
-            CDUPerformancePage.UpdateThrRedAccFromOrigin(mcdu);
-            CDUPerformancePage.UpdateEngOutAccFromOrigin(mcdu);
+    mcdu.tryUpdateFromTo(fromTo, () => {}, async () => {
+        CDUPerformancePage.UpdateThrRedAccFromOrigin(mcdu);
+        CDUPerformancePage.UpdateEngOutAccFromOrigin(mcdu);
 
-            await mcdu.tryUpdateAltDestination(alternateIcao);
+        await mcdu.tryUpdateAltDestination(alternateIcao);
 
-            setTimeout(async () => {
-                await uplinkRoute(mcdu);
-                mcdu.addNewMessage(NXSystemMessages.aocActFplnUplink);
-            }, mcdu.getDelayRouteChange());
+        setTimeout(async () => {
+            await uplinkRoute(mcdu);
+            mcdu.removeMessage(NXSystemMessages.uplinkInsertInProg.text);
+            mcdu.addMessageToQueue(NXSystemMessages.aocActFplnUplink);
+        }, mcdu.getDelayRouteChange());
 
+        if (mcdu.page.Current === mcdu.page.InitPageA) {
+            CDUInitPage.ShowPage1(mcdu);
+        }
+    });
+    mcdu.updateFlightNo(
+        fltNbr,
+        () => {},
+        () => {
             if (mcdu.page.Current === mcdu.page.InitPageA) {
                 CDUInitPage.ShowPage1(mcdu);
             }
         }
-    });
-    mcdu.updateFlightNo(fltNbr, (result) => {
-        if (result) {
-            if (mcdu.page.Current === mcdu.page.InitPageA) {
-                CDUInitPage.ShowPage1(mcdu);
-            }
-        }
-    });
+    );
 
     /**
      * INIT PAGE DATA UPLINK
@@ -249,16 +250,20 @@ const addWaypointAsync = (fix, mcdu, routeIdent, via) => {
     const wpIndex = mcdu.flightPlanManager.getWaypointsCount() - 1;
     if (via) {
         return new Promise((res, rej) => {
-            mcdu.insertWaypointsAlongAirway(routeIdent, wpIndex, via, (result) => {
-                if (result) {
+            mcdu.insertWaypointsAlongAirway(
+                routeIdent,
+                wpIndex,
+                via,
+                () => {
                     console.log("Inserted waypoint: " + routeIdent + " via " + via);
                     res(true);
-                } else {
+                },
+                () => {
                     console.log('AWY/WPT MISMATCH ' + routeIdent + " via " + via);
-                    mcdu.addNewMessage(NXSystemMessages.awyWptMismatch);
+                    mcdu.setScratchpadMessage(NXSystemMessages.awyWptMismatch);
                     res(false);
                 }
-            });
+            );
         });
     } else {
         return new Promise((res, rej) => {
@@ -274,7 +279,7 @@ const addWaypointAsync = (fix, mcdu, routeIdent, via) => {
                     });
                 } else {
                     console.log('NOT IN DATABASE ' + routeIdent);
-                    mcdu.addNewMessage(NXSystemMessages.notInDatabase);
+                    mcdu.setScratchpadMessage(NXSystemMessages.notInDatabase);
                     res(false);
                 }
             });

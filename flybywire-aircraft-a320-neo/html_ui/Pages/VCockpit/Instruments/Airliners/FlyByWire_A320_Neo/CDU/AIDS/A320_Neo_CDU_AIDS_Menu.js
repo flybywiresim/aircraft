@@ -22,7 +22,7 @@ class CDU_AIDS_MainMenu {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onRightInput[5] = () => {
-            mcdu.addNewMessage(NXFictionalMessages.notYetImplemented);
+            mcdu.setScratchpadMessage(NXFictionalMessages.notYetImplemented);
         };
     }
 }

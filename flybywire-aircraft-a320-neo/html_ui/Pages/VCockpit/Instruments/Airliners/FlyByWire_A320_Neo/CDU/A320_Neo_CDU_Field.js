@@ -40,7 +40,7 @@ class CDU_InopField extends CDU_Field {
     }
 
     onSelect() {
-        this.mcdu.addNewMessage(NXFictionalMessages.notYetImplemented);
+        this.mcdu.setScratchpadMessage(NXFictionalMessages.notYetImplemented);
         super.onSelect();
     }
 
@@ -97,28 +97,24 @@ class CDU_SingleValueField extends CDU_Field {
     setValue(value) {
         // Custom isValid callback
         if (value.length === 0 || (this.isValid && !this.isValid(value))) {
-            this.mcdu.addNewMessage(NXSystemMessages.formatError);
-            return false;
+            return [false, NXSystemMessages.formatError];
         }
 
         switch (this.type) {
             case "string":
                 // Check max length
                 if (value.length > this.maxLength) {
-                    this.mcdu.addNewMessage(NXSystemMessages.formatError);
-                    return false;
+                    return [false, NXSystemMessages.formatError];
                 }
                 break;
             case "int":
                 // Make sure value is an integer and is within the min/max
                 const valueAsInt = Number.parseInt(value, 10);
                 if (!isFinite(valueAsInt) || value.includes(".")) {
-                    this.mcdu.addNewMessage(NXSystemMessages.formatError);
-                    return false;
+                    return [false, NXSystemMessages.formatError];
                 }
                 if (valueAsInt > this.maxValue || valueAsInt < this.minValue) {
-                    this.mcdu.addNewMessage(NXSystemMessages.entryOutOfRange);
-                    return false;
+                    return [false, NXSystemMessages.entryOutOfRange];
                 }
                 value = valueAsInt;
                 break;
@@ -126,19 +122,17 @@ class CDU_SingleValueField extends CDU_Field {
                 // Make sure value is a valid number and is within the min/max
                 const valueAsFloat = Number.parseFloat(value);
                 if (!isFinite(valueAsFloat)) {
-                    this.mcdu.addNewMessage(NXSystemMessages.formatError);
-                    return false;
+                    return [false, NXSystemMessages.formatError];
                 }
                 if (valueAsFloat > this.maxValue || valueAsFloat < this.minValue) {
-                    this.mcdu.addNewMessage(NXSystemMessages.entryOutOfRange);
-                    return false;
+                    return [false, NXSystemMessages.entryOutOfRange];
                 }
                 value = valueAsFloat;
                 break;
         }
         // Update the value
         this.currentValue = value;
-        return true;
+        return [true, null];
     }
     clearValue() {
         if (this.clearable) {
@@ -147,16 +141,22 @@ class CDU_SingleValueField extends CDU_Field {
             } else {
                 this.currentValue = null;
             }
+
+            return [true, null];
         } else {
-            this.mcdu.addNewMessage(NXSystemMessages.notAllowed);
+            return [false, NXSystemMessages.notAllowed];
         }
     }
     onSelect(value) {
         if (value === FMCMainDisplay.clrValue) {
-            this.clearValue();
+            const [success, badInputMessage] = this.clearValue();
+            if (!success) {
+                this.mcdu.scratchpadCallback(value, badInputMessage);
+            }
         } else {
-            if (!this.setValue(value)) {
-                this.mcdu.setScratchpadUserData(value);
+            const [success, badInputMessage] = this.setValue(value);
+            if (!success) {
+                this.mcdu.scratchpadCallback(value, badInputMessage);
             }
         }
         super.onSelect();

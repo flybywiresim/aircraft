@@ -60,25 +60,11 @@ class CDUProgressPage {
                 break;
         }
 
-        mcdu.onLeftInput[0] = (value, scratchpadCallback) => {
-            if (mcdu.trySetCruiseFlCheckInput(value)) {
-                CDUProgressPage.ShowPage(mcdu);
-            } else {
-                scratchpadCallback();
-            }
-        };
-        mcdu.leftInputDelay[1] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
-        mcdu.onLeftInput[1] = () => {
-            CDUProgressPage.ShowReportPage(mcdu);
-        };
-        mcdu.leftInputDelay[4] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
-        mcdu.onLeftInput[4] = () => {
-            CDUProgressPage.ShowPredictiveGPSPage(mcdu);
-        };
+        mcdu.onLeftInput[0] = (value, badInputCallback) => mcdu.trySetCruiseFlCheckInput(value, badInputCallback, () => CDUProgressPage.ShowPage(mcdu));
+        mcdu.leftInputDelay[1] = () => mcdu.getDelaySwitchPage();
+        mcdu.onLeftInput[1] = () => CDUProgressPage.ShowReportPage(mcdu);
+        mcdu.leftInputDelay[4] = () => mcdu.getDelaySwitchPage();
+        mcdu.onLeftInput[4] = () => CDUProgressPage.ShowPredictiveGPSPage(mcdu);
 
         let progBearingDist = "{small}\xa0---°\xa0/----.-{end}";
         let progWaypoint = "[\xa0\xa0\xa0\xa0\xa0]";
@@ -89,15 +75,7 @@ class CDUProgressPage {
                 progBearingDist = `{small}{green}\xa0${mcdu.progBearing.toFixed(0).padStart(3, "0")}°\xa0/${mcdu.progDistance.toFixed(distDigits).padStart(3)}{end}{end}`;
             }
         }
-        mcdu.onRightInput[3] = (input, scratchpadCallback) => {
-            mcdu.trySetProgWaypoint(input, (success) => {
-                if (success) {
-                    CDUProgressPage.ShowPage(mcdu);
-                } else {
-                    scratchpadCallback(input);
-                }
-            });
-        };
+        mcdu.onRightInput[3] = (input, badInputCallback) => mcdu.trySetProgWaypoint(input, badInputCallback, () => CDUProgressPage.ShowPage(mcdu));
         mcdu.setTemplate([
             ["{green}" + flightPhase.padStart(15, "\xa0") + "{end}\xa0" + flightNo.padEnd(11, "\xa0")],
             ["\xa0" + "CRZ\xa0", "OPT\xa0\xa0\xa0\xa0REC MAX"],
@@ -126,13 +104,8 @@ class CDUProgressPage {
         if (isFinite(mcdu.cruiseFlightLevel)) {
             altCell = mcdu.cruiseFlightLevel.toFixed(0);
         }
-        mcdu.onRightInput[0] = (value, scratchpadCallback) => {
-            if (mcdu.setCruiseFlightLevelAndTemperature(value)) {
-                CDUProgressPage.ShowReportPage(mcdu);
-            } else {
-                scratchpadCallback();
-            }
-        };
+        mcdu.onRightInput[0] = (value, badInputCallback) => mcdu.setCruiseFlightLevelAndTemperature(value, badInputCallback, () => CDUProgressPage.ShowReportPage(mcdu));
+
         let toWaypoint;
         if (mcdu.routeIndex === mcdu.flightPlanManager.getWaypointsCount() - 1) {
             toWaypoint = mcdu.flightPlanManager.getDestination();
@@ -203,9 +176,7 @@ class CDUProgressPage {
             } else {
                 destETACell = FMCMainDisplay.secondsTohhmm(mcdu.flightPlanManager.getDestination().infos.etaInFP);
             }
-            mcdu.onRightInput[0] = (value) => {
-                CDUProgressPage.ShowPredictiveGPSPage(mcdu, value);
-            };
+            mcdu.onRightInput[0] = (value) => CDUProgressPage.ShowPredictiveGPSPage(mcdu, value);
         }
         mcdu.setTemplate([
             ["PREDICTIVE GPS"],

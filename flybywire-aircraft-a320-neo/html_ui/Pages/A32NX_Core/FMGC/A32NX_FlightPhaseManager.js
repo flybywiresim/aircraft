@@ -263,7 +263,7 @@ class A32NX_FlightPhase_Cruise {
         // This checks against the pilot defined cruise altitude and the automatically populated cruise altitude
         if (_fmc.cruiseFlightLevel !== _fmc._cruiseFlightLevel) {
             _fmc._cruiseFlightLevel = _fmc.cruiseFlightLevel;
-            _fmc.addNewMessage(NXSystemMessages.newCrzAlt.getSetMessage(_fmc._cruiseFlightLevel * 100));
+            _fmc.addMessageToQueue(NXSystemMessages.newCrzAlt.modifyMessage(_fmc._cruiseFlightLevel * 100));
         }
         _fmc.updateManagedSpeed();
     }
@@ -367,7 +367,6 @@ class A32NX_FlightPhase_Done {
         _fmc.flightPlanManager.clearFlightPlan();
         _fmc.initVariables();
         _fmc.initMcduVariables();
-        _fmc.scratchpad.setText("");
         SimVar.SetSimVarValue("L:A32NX_COLD_AND_DARK_SPAWN", "Bool", true);
         CDUIdentPage.ShowPage(_fmc);
     }
