@@ -43,6 +43,9 @@
 1. [PFD/FBW] Added beta target indication - @aguther (Andreas Guther)
 1. [ISIS] Added inHg and metric altitude pin programs - @tracernz (Mike)
 1. [MCDU] Fixed transition alt init and display - @derl30n (Leon)
+1. [AP] Fixed V/S, FPA or ALT* speed protection to engage too early on high altitudes - @aguther (Andreas Guther)
+1. [LIGHTS] Add ambient lt for all INTEG LT emssivies + C&D ambient fix - @bouveng (Johan Bouveng)
+1. [ECAM] Fixed misaligned items on ecam memos - @tyler58546 (tyler58546)
 1. [RMP] Added 25 kHz VHF spacing option - @tyler58546 (tyler58546)
 
 ## 0.7.0

@@ -6,17 +6,12 @@ use msfs::legacy::execute_calculator_code;
 use msfs::legacy::AircraftVariable;
 use systems::shared::to_bool;
 
-pub struct MsfsElectricalBuses {
+#[derive(Default)]
+pub(super) struct MsfsElectricalBuses {
     connections: HashMap<String, ElectricalBusConnection>,
 }
 impl MsfsElectricalBuses {
-    pub fn new() -> Self {
-        Self {
-            connections: HashMap::new(),
-        }
-    }
-
-    pub fn add(&mut self, name: &str, from: usize, to: usize) {
+    pub(super) fn add(&mut self, name: &str, from: usize, to: usize) {
         self.connections.insert(
             format!("ELEC_{}_BUS_IS_POWERED", name),
             ElectricalBusConnection::new(from, to),
@@ -67,13 +62,13 @@ impl ElectricalBusConnection {
 /// At this moment, the engines cannot be started without it.
 /// Once pneumatics and the engine model are completed, this
 /// type can probably be removed.
-pub struct MsfsAuxiliaryPowerUnit {
+pub(super) struct MsfsAuxiliaryPowerUnit {
     is_available_variable_name: String,
     msfs_apu_is_on: AircraftVariable,
     fuel_valve_number: u8,
 }
 impl MsfsAuxiliaryPowerUnit {
-    pub fn new(
+    pub(super) fn new(
         is_available_variable_name: &str,
         fuel_valve_number: u8,
     ) -> Result<Self, Box<dyn Error>> {
