@@ -1,4 +1,4 @@
-//#![cfg(any(target_arch = "wasm32", doc))]
+#![cfg(any(target_arch = "wasm32", doc))]
 mod electrical;
 mod failures;
 

@@ -1,4 +1,4 @@
-//#![cfg(any(target_arch = "wasm32", doc))]
+#![cfg(any(target_arch = "wasm32", doc))]
 use std::time::{Duration, Instant};
 
 use msfs::{
