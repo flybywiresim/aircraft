@@ -761,7 +761,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     /* MCDU SCRATCHPAD */
 
     setScratchpadUserData(value) {
-        this.mcdu.scratchpad.setUserData(value);
+        this.scratchpad.setUserData(value);
     }
 
     clearFocus() {
