@@ -43,6 +43,7 @@
 1. [PFD/FBW] Added beta target indication - @aguther (Andreas Guther)
 1. [ISIS] Added inHg and metric altitude pin programs - @tracernz (Mike)
 1. [MCDU] Fixed transition alt init and display - @derl30n (Leon)
+1. [AP] Fixed V/S, FPA or ALT* speed protection to engage too early on high altitudes - @aguther (Andreas Guther)
 
 ## 0.7.0
 1. [HYD] First building block, more to come. Hydraulics do not impact the sim YET. - @crocket6 (crocket)
