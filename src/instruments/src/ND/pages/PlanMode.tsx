@@ -1,4 +1,4 @@
-import React, { FC, useEffect, useState } from 'react';
+import React, { FC, memo, useEffect, useState } from 'react';
 import { LatLongData } from '@typings/fs-base-ui/html_ui/JS/Types';
 import { useFlightPlanManager } from '@instruments/common/flightplan';
 import { MathUtils } from '@shared/MathUtils';
@@ -99,7 +99,7 @@ interface OverlayProps {
     rangeSetting: number,
 }
 
-const Overlay: FC<OverlayProps> = ({ rangeSetting }) => (
+const Overlay: FC<OverlayProps> = memo(({ rangeSetting }) => (
     <>
         <clipPath id="plan-mode-map-clip">
             <polygon points="45,112 140,112 280,56 488,56 628,112 723,112 723,720 114,720 114,633 45,633" />
@@ -125,7 +125,7 @@ const Overlay: FC<OverlayProps> = ({ rangeSetting }) => (
             <path d="M141.5,384 L151,390 L151,378 L141.5,384" fill="white" stroke="none" />
         </g>
     </>
-);
+));
 
 interface PlaneProps {
     location: Coordinates,

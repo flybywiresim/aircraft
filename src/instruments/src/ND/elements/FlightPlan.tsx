@@ -167,20 +167,39 @@ const RunwayIdent: FC<{ ident: string, rotation: number }> = ({ ident, rotation 
     );
 };
 
-const RunwayMarkerClose: FC<{ ident: string, rotation: number, lengthPx: number }> = ({ ident, rotation, lengthPx }) => (
-    <g transform={`rotate(${rotation})`} className="White">
-        <line x1={-5} x2={-5} y1={0} y2={-lengthPx} strokeWidth={2} />
-        <line x1={5} x2={5} y1={0} y2={-lengthPx} strokeWidth={2} />
-        <RunwayIdent ident={ident} rotation={rotation} />
-    </g>
-);
+interface RunwayMarkerProps {
+    ident: string,
+    mapParams: MapParameters,
+    direction: number,
+    lengthPx: number,
+}
 
-const RunwayMarkerFar: FC<{ ident: string, rotation: number }> = ({ ident, rotation }) => (
-    <g transform={`rotate(${rotation})`} className="White">
-        <rect x={-5} y={-25} width={10} height={25} strokeWidth={2} />
-        <RunwayIdent ident={ident} rotation={rotation} />
-    </g>
-);
+const RunwayMarkerClose: FC<RunwayMarkerProps> = memo(({ ident, mapParams, direction, lengthPx }) => {
+    useSimVar('PLANE HEADING DEGREES TRUE', 'number');
+
+    const rotation = mapParams.rotation(direction);
+
+    return (
+        <g transform={`rotate(${rotation})`} className="White">
+            <line x1={-5} x2={-5} y1={0} y2={-lengthPx} strokeWidth={2} />
+            <line x1={5} x2={5} y1={0} y2={-lengthPx} strokeWidth={2} />
+            <RunwayIdent ident={ident} rotation={rotation} />
+        </g>
+    );
+});
+
+const RunwayMarkerFar: FC<Omit<RunwayMarkerProps, 'lengthPx'>> = memo(({ ident, mapParams, direction }) => {
+    useSimVar('PLANE HEADING DEGREES TRUE', 'number');
+
+    const rotation = mapParams.rotation(direction);
+
+    return (
+        <g transform={`rotate(${rotation})`} className="White">
+            <rect x={-5} y={-25} width={10} height={25} strokeWidth={2} />
+            <RunwayIdent ident={ident} rotation={rotation} />
+        </g>
+    );
+});
 
 interface SymbolMarkerProps {
     ident: string,
@@ -269,7 +288,12 @@ const SymbolMarker: FC<SymbolMarkerProps> = memo(({ ident, x, y, type, constrain
         if (mapParams.nmRadius >= 40) {
             elements.push(<RunwayMarkerFar ident={ident} rotation={mapParams.rotation(direction!)} />);
         } else {
-            elements.push(<RunwayMarkerClose ident={ident} rotation={mapParams.rotation(direction!)} lengthPx={mapParams.nmToPx * length!} />);
+            elements.push(<RunwayMarkerClose
+                ident={ident}
+                mapParams={mapParams}
+                direction={direction!}
+                lengthPx={mapParams.nmToPx * length!}
+            />);
         }
     } else if (type & NdSymbolTypeFlags.Airport) {
         showIdent = true;

@@ -109,11 +109,9 @@ export const RoseMode: FC<RoseModeProps> = ({ symbols, adirsAlign, rangeSetting,
                     <RadioNeedle index={2} side={side} displayMode={mode} centreHeight={384} />
                 </g>
                 <Overlay
-                    adirsAlign={adirsAlign}
                     heading={heading}
                     track={track}
                     rangeSetting={rangeSetting}
-                    side={side}
                     tcasMode={tcasMode}
                     displayMode={mode}
                     selectedHeading={selectedHeading}
@@ -123,7 +121,7 @@ export const RoseMode: FC<RoseModeProps> = ({ symbols, adirsAlign, rangeSetting,
 
                 { mode === Mode.ROSE_VOR && <VorCaptureOverlay heading={magHeading} side={side} /> }
 
-                { mode === Mode.ROSE_ILS && <IlsCaptureOverlay heading={magHeading} side={side} /> }
+                { mode === Mode.ROSE_ILS && <IlsCaptureOverlay heading={magHeading} _side={side} /> }
 
                 { mode === Mode.ROSE_NAV && <ToWaypointIndicator info={flightPlanManager.getCurrentFlightPlan().computeActiveWaypointStatistics(ppos)} /> }
                 { mode === Mode.ROSE_VOR && <VorInfo side={side} /> }
@@ -138,6 +136,7 @@ export const RoseMode: FC<RoseModeProps> = ({ symbols, adirsAlign, rangeSetting,
     return (
         <>
             <MapFailOverlay rangeSetting={rangeSetting} />
+
             <text x={681} y={28} fontSize={25} className="White" textAnchor="end">PPOS</text>
         </>
     );
@@ -156,322 +155,13 @@ interface OverlayProps {
 
 const Overlay: FC<OverlayProps> = ({ heading, track, rangeSetting, tcasMode, displayMode, selectedHeading, ilsCourse, lsDisplayed }) => (
     <>
-        <clipPath id="rose-mode-map-clip">
-            <path d="M45,155 L282,155 a250,250 0 0 1 204,0 L723,155 L723,562 L648,562 L591,625 L591,768 L174,768 L174,683 L122,625 L45,625 L45,155" />
-        </clipPath>
-        <clipPath id="rose-mode-wx-terr-clip">
-            <path d="M45,155 L282,155 a250,250 0 0 1 204,0 L723,155 L723,384 L45,384 L45,155" />
-        </clipPath>
-        <clipPath id="rose-mode-tcas-clip">
-            <path d="M45,155 L282,155 a250,250 0 0 1 204,0 L723,155 L723,562 L648,562 L591,625 L591,768 L174,768 L174,683 L122,625 L45,625 L45,155" />
-        </clipPath>
+        <RoseModeOverlayDefs />
 
         {/* C = 384,384 */}
         <g transform="rotateX(0deg)" stroke="white" strokeWidth={3} fill="none">
             <g clipPath="url(#arc-mode-overlay-clip-4)">
                 <g transform={`rotate(${MathUtils.diffAngle(heading, 0)} 384 384)`}>
-                    {/* R = 250 */}
-                    <circle cx={384} cy={384} r={250} />
-
-                    <g transform="rotate(0 384 384)">
-                        <line x1={384} y1={134} x2={384} y2={122} strokeWidth={2.5} />
-                        <text x={384} y={112} textAnchor="middle" fontSize={22} fill="white" stroke="none">0</text>
-                    </g>
-
-                    <g transform="rotate(5 384 384)">
-                        <line x1={384} y1={134} x2={384} y2={128} strokeWidth={2.5} />
-                    </g>
-
-                    <g transform="rotate(10 384 384)">
-                        <line x1={384} y1={134} x2={384} y2={122} strokeWidth={2.5} />
-                    </g>
-
-                    <g transform="rotate(15 384 384)">
-                        <line x1={384} y1={134} x2={384} y2={128} strokeWidth={2.5} />
-                    </g>
-
-                    <g transform="rotate(20 384 384)">
-                        <line x1={384} y1={134} x2={384} y2={122} strokeWidth={2.5} />
-                    </g>
-
-                    <g transform="rotate(25 384 384)">
-                        <line x1={384} y1={134} x2={384} y2={128} strokeWidth={2.5} />
-                    </g>
-
-                    <g transform="rotate(30 384 384)">
-                        <line x1={384} y1={134} x2={384} y2={122} strokeWidth={2.5} />
-                        <text x={384} y={112} textAnchor="middle" fontSize={22} fill="white" stroke="none">3</text>
-                    </g>
-
-                    <g transform="rotate(35 384 384)">
-                        <line x1={384} y1={134} x2={384} y2={128} strokeWidth={2.5} />
-                    </g>
-
-                    <g transform="rotate(40 384 384)">
-                        <line x1={384} y1={134} x2={384} y2={122} strokeWidth={2.5} />
-                    </g>
-
-                    <g transform="rotate(45 384 384)">
-                        <line x1={384} y1={134} x2={384} y2={128} strokeWidth={2.5} />
-                    </g>
-
-                    <g transform="rotate(50 384 384)">
-                        <line x1={384} y1={134} x2={384} y2={122} strokeWidth={2.5} />
-                    </g>
-
-                    <g transform="rotate(55 384 384)">
-                        <line x1={384} y1={134} x2={384} y2={128} strokeWidth={2.5} />
-                    </g>
-
-                    <g transform="rotate(60 384 384)">
-                        <line x1={384} y1={134} x2={384} y2={122} strokeWidth={2.5} />
-                        <text x={384} y={112} textAnchor="middle" fontSize={22} fill="white" stroke="none">6</text>
-                    </g>
-
-                    <g transform="rotate(65 384 384)">
-                        <line x1={384} y1={134} x2={384} y2={128} strokeWidth={2.5} />
-                    </g>
-
-                    <g transform="rotate(70 384 384)">
-                        <line x1={384} y1={134} x2={384} y2={122} strokeWidth={2.5} />
-                    </g>
-
-                    <g transform="rotate(75 384 384)">
-                        <line x1={384} y1={134} x2={384} y2={128} strokeWidth={2.5} />
-                    </g>
-
-                    <g transform="rotate(80 384 384)">
-                        <line x1={384} y1={134} x2={384} y2={122} strokeWidth={2.5} />
-                    </g>
-
-                    <g transform="rotate(85 384 384)">
-                        <line x1={384} y1={134} x2={384} y2={128} strokeWidth={2.5} />
-                    </g>
-
-                    <g transform="rotate(90 384 384)">
-                        <line x1={384} y1={134} x2={384} y2={122} strokeWidth={2.5} />
-                        <text x={384} y={112} textAnchor="middle" fontSize={22} fill="white" stroke="none">9</text>
-                    </g>
-
-                    <g transform="rotate(95 384 384)">
-                        <line x1={384} y1={134} x2={384} y2={128} strokeWidth={2.5} />
-                    </g>
-
-                    <g transform="rotate(100 384 384)">
-                        <line x1={384} y1={134} x2={384} y2={122} strokeWidth={2.5} />
-                    </g>
-
-                    <g transform="rotate(105 384 384)">
-                        <line x1={384} y1={134} x2={384} y2={128} strokeWidth={2.5} />
-                    </g>
-
-                    <g transform="rotate(110 384 384)">
-                        <line x1={384} y1={134} x2={384} y2={122} strokeWidth={2.5} />
-                    </g>
-
-                    <g transform="rotate(115 384 384)">
-                        <line x1={384} y1={134} x2={384} y2={128} strokeWidth={2.5} />
-                    </g>
-
-                    <g transform="rotate(120 384 384)">
-                        <line x1={384} y1={134} x2={384} y2={122} strokeWidth={2.5} />
-                        <text x={384} y={112} textAnchor="middle" fontSize={22} fill="white" stroke="none">12</text>
-                    </g>
-
-                    <g transform="rotate(125 384 384)">
-                        <line x1={384} y1={134} x2={384} y2={128} strokeWidth={2.5} />
-                    </g>
-
-                    <g transform="rotate(130 384 384)">
-                        <line x1={384} y1={134} x2={384} y2={122} strokeWidth={2.5} />
-                    </g>
-
-                    <g transform="rotate(135 384 384)">
-                        <line x1={384} y1={134} x2={384} y2={128} strokeWidth={2.5} />
-                    </g>
-
-                    <g transform="rotate(140 384 384)">
-                        <line x1={384} y1={134} x2={384} y2={122} strokeWidth={2.5} />
-                    </g>
-
-                    <g transform="rotate(145 384 384)">
-                        <line x1={384} y1={134} x2={384} y2={128} strokeWidth={2.5} />
-                    </g>
-
-                    <g transform="rotate(150 384 384)">
-                        <line x1={384} y1={134} x2={384} y2={122} strokeWidth={2.5} />
-                        <text x={384} y={112} textAnchor="middle" fontSize={22} fill="white" stroke="none">15</text>
-                    </g>
-
-                    <g transform="rotate(155 384 384)">
-                        <line x1={384} y1={134} x2={384} y2={128} strokeWidth={2.5} />
-                    </g>
-
-                    <g transform="rotate(160 384 384)">
-                        <line x1={384} y1={134} x2={384} y2={122} strokeWidth={2.5} />
-                    </g>
-
-                    <g transform="rotate(165 384 384)">
-                        <line x1={384} y1={134} x2={384} y2={128} strokeWidth={2.5} />
-                    </g>
-
-                    <g transform="rotate(170 384 384)">
-                        <line x1={384} y1={134} x2={384} y2={122} strokeWidth={2.5} />
-                    </g>
-
-                    <g transform="rotate(175 384 384)">
-                        <line x1={384} y1={134} x2={384} y2={128} strokeWidth={2.5} />
-                    </g>
-
-                    <g transform="rotate(180 384 384)">
-                        <line x1={384} y1={134} x2={384} y2={122} strokeWidth={2.5} />
-                        <text x={384} y={112} textAnchor="middle" fontSize={22} fill="white" stroke="none">18</text>
-                    </g>
-
-                    <g transform="rotate(185 384 384)">
-                        <line x1={384} y1={134} x2={384} y2={128} strokeWidth={2.5} />
-                    </g>
-
-                    <g transform="rotate(190 384 384)">
-                        <line x1={384} y1={134} x2={384} y2={122} strokeWidth={2.5} />
-                    </g>
-
-                    <g transform="rotate(195 384 384)">
-                        <line x1={384} y1={134} x2={384} y2={128} strokeWidth={2.5} />
-                    </g>
-
-                    <g transform="rotate(200 384 384)">
-                        <line x1={384} y1={134} x2={384} y2={122} strokeWidth={2.5} />
-                    </g>
-
-                    <g transform="rotate(205 384 384)">
-                        <line x1={384} y1={134} x2={384} y2={128} strokeWidth={2.5} />
-                    </g>
-
-                    <g transform="rotate(210 384 384)">
-                        <line x1={384} y1={134} x2={384} y2={122} strokeWidth={2.5} />
-                        <text x={384} y={112} textAnchor="middle" fontSize={22} fill="white" stroke="none">21</text>
-                    </g>
-
-                    <g transform="rotate(215 384 384)">
-                        <line x1={384} y1={134} x2={384} y2={128} strokeWidth={2.5} />
-                    </g>
-
-                    <g transform="rotate(220 384 384)">
-                        <line x1={384} y1={134} x2={384} y2={122} strokeWidth={2.5} />
-                    </g>
-
-                    <g transform="rotate(225 384 384)">
-                        <line x1={384} y1={134} x2={384} y2={128} strokeWidth={2.5} />
-                    </g>
-
-                    <g transform="rotate(230 384 384)">
-                        <line x1={384} y1={134} x2={384} y2={122} strokeWidth={2.5} />
-                    </g>
-
-                    <g transform="rotate(235 384 384)">
-                        <line x1={384} y1={134} x2={384} y2={128} strokeWidth={2.5} />
-                    </g>
-
-                    <g transform="rotate(240 384 384)">
-                        <line x1={384} y1={134} x2={384} y2={122} strokeWidth={2.5} />
-                        <text x={384} y={112} textAnchor="middle" fontSize={22} fill="white" stroke="none">24</text>
-                    </g>
-
-                    <g transform="rotate(245 384 384)">
-                        <line x1={384} y1={134} x2={384} y2={128} strokeWidth={2.5} />
-                    </g>
-
-                    <g transform="rotate(250 384 384)">
-                        <line x1={384} y1={134} x2={384} y2={122} strokeWidth={2.5} />
-                    </g>
-
-                    <g transform="rotate(255 384 384)">
-                        <line x1={384} y1={134} x2={384} y2={128} strokeWidth={2.5} />
-                    </g>
-
-                    <g transform="rotate(260 384 384)">
-                        <line x1={384} y1={134} x2={384} y2={122} strokeWidth={2.5} />
-                    </g>
-
-                    <g transform="rotate(265 384 384)">
-                        <line x1={384} y1={134} x2={384} y2={128} strokeWidth={2.5} />
-                    </g>
-
-                    <g transform="rotate(270 384 384)">
-                        <line x1={384} y1={134} x2={384} y2={122} strokeWidth={2.5} />
-                        <text x={384} y={112} textAnchor="middle" fontSize={22} fill="white" stroke="none">27</text>
-                    </g>
-
-                    <g transform="rotate(275 384 384)">
-                        <line x1={384} y1={134} x2={384} y2={128} strokeWidth={2.5} />
-                    </g>
-
-                    <g transform="rotate(280 384 384)">
-                        <line x1={384} y1={134} x2={384} y2={122} strokeWidth={2.5} />
-                    </g>
-
-                    <g transform="rotate(285 384 384)">
-                        <line x1={384} y1={134} x2={384} y2={128} strokeWidth={2.5} />
-                    </g>
-
-                    <g transform="rotate(290 384 384)">
-                        <line x1={384} y1={134} x2={384} y2={122} strokeWidth={2.5} />
-                    </g>
-
-                    <g transform="rotate(295 384 384)">
-                        <line x1={384} y1={134} x2={384} y2={128} strokeWidth={2.5} />
-                    </g>
-
-                    <g transform="rotate(300 384 384)">
-                        <line x1={384} y1={134} x2={384} y2={122} strokeWidth={2.5} />
-                        <text x={384} y={112} textAnchor="middle" fontSize={22} fill="white" stroke="none">30</text>
-                    </g>
-
-                    <g transform="rotate(305 384 384)">
-                        <line x1={384} y1={134} x2={384} y2={128} strokeWidth={2.5} />
-                    </g>
-
-                    <g transform="rotate(310 384 384)">
-                        <line x1={384} y1={134} x2={384} y2={122} strokeWidth={2.5} />
-                    </g>
-
-                    <g transform="rotate(315 384 384)">
-                        <line x1={384} y1={134} x2={384} y2={128} strokeWidth={2.5} />
-                    </g>
-
-                    <g transform="rotate(320 384 384)">
-                        <line x1={384} y1={134} x2={384} y2={122} strokeWidth={2.5} />
-                    </g>
-
-                    <g transform="rotate(325 384 384)">
-                        <line x1={384} y1={134} x2={384} y2={128} strokeWidth={2.5} />
-                    </g>
-
-                    <g transform="rotate(330 384 384)">
-                        <line x1={384} y1={134} x2={384} y2={122} strokeWidth={2.5} />
-                        <text x={384} y={112} textAnchor="middle" fontSize={22} fill="white" stroke="none">33</text>
-                    </g>
-
-                    <g transform="rotate(335 384 384)">
-                        <line x1={384} y1={134} x2={384} y2={128} strokeWidth={2.5} />
-                    </g>
-
-                    <g transform="rotate(340 384 384)">
-                        <line x1={384} y1={134} x2={384} y2={122} strokeWidth={2.5} />
-                    </g>
-
-                    <g transform="rotate(345 384 384)">
-                        <line x1={384} y1={134} x2={384} y2={128} strokeWidth={2.5} />
-                    </g>
-
-                    <g transform="rotate(350 384 384)">
-                        <line x1={384} y1={134} x2={384} y2={122} strokeWidth={2.5} />
-                    </g>
-
-                    <g transform="rotate(355 384 384)">
-                        <line x1={384} y1={134} x2={384} y2={128} strokeWidth={2.5} />
-                    </g>
+                    <RoseModeOverlayHeadingRing />
                 </g>
             </g>
             {/* R = 125, middle range ring */}
@@ -543,10 +233,332 @@ const Overlay: FC<OverlayProps> = ({ heading, track, rangeSetting, tcasMode, dis
     </>
 );
 
-const MapFailOverlay: FC<OverlayProps> = ({ rangeSetting }) => (
+const RoseModeOverlayDefs = memo(() => (
+    <>
+        <clipPath id="rose-mode-map-clip">
+            <path d="M45,155 L282,155 a250,250 0 0 1 204,0 L723,155 L723,562 L648,562 L591,625 L591,768 L174,768 L174,683 L122,625 L45,625 L45,155" />
+        </clipPath>
+        <clipPath id="rose-mode-wx-terr-clip">
+            <path d="M45,155 L282,155 a250,250 0 0 1 204,0 L723,155 L723,384 L45,384 L45,155" />
+        </clipPath>
+        <clipPath id="rose-mode-tcas-clip">
+            <path d="M45,155 L282,155 a250,250 0 0 1 204,0 L723,155 L723,562 L648,562 L591,625 L591,768 L174,768 L174,683 L122,625 L45,625 L45,155" />
+        </clipPath>
+    </>
+));
+
+const RoseModeOverlayHeadingRing = memo(() => (
+    <>
+        {/* R = 250 */}
+        <circle cx={384} cy={384} r={250} />
+
+        <g transform="rotate(0 384 384)">
+            <line x1={384} y1={134} x2={384} y2={122} strokeWidth={2.5} />
+            <text x={384} y={112} textAnchor="middle" fontSize={22} fill="white" stroke="none">0</text>
+        </g>
+
+        <g transform="rotate(5 384 384)">
+            <line x1={384} y1={134} x2={384} y2={128} strokeWidth={2.5} />
+        </g>
+
+        <g transform="rotate(10 384 384)">
+            <line x1={384} y1={134} x2={384} y2={122} strokeWidth={2.5} />
+        </g>
+
+        <g transform="rotate(15 384 384)">
+            <line x1={384} y1={134} x2={384} y2={128} strokeWidth={2.5} />
+        </g>
+
+        <g transform="rotate(20 384 384)">
+            <line x1={384} y1={134} x2={384} y2={122} strokeWidth={2.5} />
+        </g>
+
+        <g transform="rotate(25 384 384)">
+            <line x1={384} y1={134} x2={384} y2={128} strokeWidth={2.5} />
+        </g>
+
+        <g transform="rotate(30 384 384)">
+            <line x1={384} y1={134} x2={384} y2={122} strokeWidth={2.5} />
+            <text x={384} y={112} textAnchor="middle" fontSize={22} fill="white" stroke="none">3</text>
+        </g>
+
+        <g transform="rotate(35 384 384)">
+            <line x1={384} y1={134} x2={384} y2={128} strokeWidth={2.5} />
+        </g>
+
+        <g transform="rotate(40 384 384)">
+            <line x1={384} y1={134} x2={384} y2={122} strokeWidth={2.5} />
+        </g>
+
+        <g transform="rotate(45 384 384)">
+            <line x1={384} y1={134} x2={384} y2={128} strokeWidth={2.5} />
+        </g>
+
+        <g transform="rotate(50 384 384)">
+            <line x1={384} y1={134} x2={384} y2={122} strokeWidth={2.5} />
+        </g>
+
+        <g transform="rotate(55 384 384)">
+            <line x1={384} y1={134} x2={384} y2={128} strokeWidth={2.5} />
+        </g>
+
+        <g transform="rotate(60 384 384)">
+            <line x1={384} y1={134} x2={384} y2={122} strokeWidth={2.5} />
+            <text x={384} y={112} textAnchor="middle" fontSize={22} fill="white" stroke="none">6</text>
+        </g>
+
+        <g transform="rotate(65 384 384)">
+            <line x1={384} y1={134} x2={384} y2={128} strokeWidth={2.5} />
+        </g>
+
+        <g transform="rotate(70 384 384)">
+            <line x1={384} y1={134} x2={384} y2={122} strokeWidth={2.5} />
+        </g>
+
+        <g transform="rotate(75 384 384)">
+            <line x1={384} y1={134} x2={384} y2={128} strokeWidth={2.5} />
+        </g>
+
+        <g transform="rotate(80 384 384)">
+            <line x1={384} y1={134} x2={384} y2={122} strokeWidth={2.5} />
+        </g>
+
+        <g transform="rotate(85 384 384)">
+            <line x1={384} y1={134} x2={384} y2={128} strokeWidth={2.5} />
+        </g>
+
+        <g transform="rotate(90 384 384)">
+            <line x1={384} y1={134} x2={384} y2={122} strokeWidth={2.5} />
+            <text x={384} y={112} textAnchor="middle" fontSize={22} fill="white" stroke="none">9</text>
+        </g>
+
+        <g transform="rotate(95 384 384)">
+            <line x1={384} y1={134} x2={384} y2={128} strokeWidth={2.5} />
+        </g>
+
+        <g transform="rotate(100 384 384)">
+            <line x1={384} y1={134} x2={384} y2={122} strokeWidth={2.5} />
+        </g>
+
+        <g transform="rotate(105 384 384)">
+            <line x1={384} y1={134} x2={384} y2={128} strokeWidth={2.5} />
+        </g>
+
+        <g transform="rotate(110 384 384)">
+            <line x1={384} y1={134} x2={384} y2={122} strokeWidth={2.5} />
+        </g>
+
+        <g transform="rotate(115 384 384)">
+            <line x1={384} y1={134} x2={384} y2={128} strokeWidth={2.5} />
+        </g>
+
+        <g transform="rotate(120 384 384)">
+            <line x1={384} y1={134} x2={384} y2={122} strokeWidth={2.5} />
+            <text x={384} y={112} textAnchor="middle" fontSize={22} fill="white" stroke="none">12</text>
+        </g>
+
+        <g transform="rotate(125 384 384)">
+            <line x1={384} y1={134} x2={384} y2={128} strokeWidth={2.5} />
+        </g>
+
+        <g transform="rotate(130 384 384)">
+            <line x1={384} y1={134} x2={384} y2={122} strokeWidth={2.5} />
+        </g>
+
+        <g transform="rotate(135 384 384)">
+            <line x1={384} y1={134} x2={384} y2={128} strokeWidth={2.5} />
+        </g>
+
+        <g transform="rotate(140 384 384)">
+            <line x1={384} y1={134} x2={384} y2={122} strokeWidth={2.5} />
+        </g>
+
+        <g transform="rotate(145 384 384)">
+            <line x1={384} y1={134} x2={384} y2={128} strokeWidth={2.5} />
+        </g>
+
+        <g transform="rotate(150 384 384)">
+            <line x1={384} y1={134} x2={384} y2={122} strokeWidth={2.5} />
+            <text x={384} y={112} textAnchor="middle" fontSize={22} fill="white" stroke="none">15</text>
+        </g>
+
+        <g transform="rotate(155 384 384)">
+            <line x1={384} y1={134} x2={384} y2={128} strokeWidth={2.5} />
+        </g>
+
+        <g transform="rotate(160 384 384)">
+            <line x1={384} y1={134} x2={384} y2={122} strokeWidth={2.5} />
+        </g>
+
+        <g transform="rotate(165 384 384)">
+            <line x1={384} y1={134} x2={384} y2={128} strokeWidth={2.5} />
+        </g>
+
+        <g transform="rotate(170 384 384)">
+            <line x1={384} y1={134} x2={384} y2={122} strokeWidth={2.5} />
+        </g>
+
+        <g transform="rotate(175 384 384)">
+            <line x1={384} y1={134} x2={384} y2={128} strokeWidth={2.5} />
+        </g>
+
+        <g transform="rotate(180 384 384)">
+            <line x1={384} y1={134} x2={384} y2={122} strokeWidth={2.5} />
+            <text x={384} y={112} textAnchor="middle" fontSize={22} fill="white" stroke="none">18</text>
+        </g>
+
+        <g transform="rotate(185 384 384)">
+            <line x1={384} y1={134} x2={384} y2={128} strokeWidth={2.5} />
+        </g>
+
+        <g transform="rotate(190 384 384)">
+            <line x1={384} y1={134} x2={384} y2={122} strokeWidth={2.5} />
+        </g>
+
+        <g transform="rotate(195 384 384)">
+            <line x1={384} y1={134} x2={384} y2={128} strokeWidth={2.5} />
+        </g>
+
+        <g transform="rotate(200 384 384)">
+            <line x1={384} y1={134} x2={384} y2={122} strokeWidth={2.5} />
+        </g>
+
+        <g transform="rotate(205 384 384)">
+            <line x1={384} y1={134} x2={384} y2={128} strokeWidth={2.5} />
+        </g>
+
+        <g transform="rotate(210 384 384)">
+            <line x1={384} y1={134} x2={384} y2={122} strokeWidth={2.5} />
+            <text x={384} y={112} textAnchor="middle" fontSize={22} fill="white" stroke="none">21</text>
+        </g>
+
+        <g transform="rotate(215 384 384)">
+            <line x1={384} y1={134} x2={384} y2={128} strokeWidth={2.5} />
+        </g>
+
+        <g transform="rotate(220 384 384)">
+            <line x1={384} y1={134} x2={384} y2={122} strokeWidth={2.5} />
+        </g>
+
+        <g transform="rotate(225 384 384)">
+            <line x1={384} y1={134} x2={384} y2={128} strokeWidth={2.5} />
+        </g>
+
+        <g transform="rotate(230 384 384)">
+            <line x1={384} y1={134} x2={384} y2={122} strokeWidth={2.5} />
+        </g>
+
+        <g transform="rotate(235 384 384)">
+            <line x1={384} y1={134} x2={384} y2={128} strokeWidth={2.5} />
+        </g>
+
+        <g transform="rotate(240 384 384)">
+            <line x1={384} y1={134} x2={384} y2={122} strokeWidth={2.5} />
+            <text x={384} y={112} textAnchor="middle" fontSize={22} fill="white" stroke="none">24</text>
+        </g>
+
+        <g transform="rotate(245 384 384)">
+            <line x1={384} y1={134} x2={384} y2={128} strokeWidth={2.5} />
+        </g>
+
+        <g transform="rotate(250 384 384)">
+            <line x1={384} y1={134} x2={384} y2={122} strokeWidth={2.5} />
+        </g>
+
+        <g transform="rotate(255 384 384)">
+            <line x1={384} y1={134} x2={384} y2={128} strokeWidth={2.5} />
+        </g>
+
+        <g transform="rotate(260 384 384)">
+            <line x1={384} y1={134} x2={384} y2={122} strokeWidth={2.5} />
+        </g>
+
+        <g transform="rotate(265 384 384)">
+            <line x1={384} y1={134} x2={384} y2={128} strokeWidth={2.5} />
+        </g>
+
+        <g transform="rotate(270 384 384)">
+            <line x1={384} y1={134} x2={384} y2={122} strokeWidth={2.5} />
+            <text x={384} y={112} textAnchor="middle" fontSize={22} fill="white" stroke="none">27</text>
+        </g>
+
+        <g transform="rotate(275 384 384)">
+            <line x1={384} y1={134} x2={384} y2={128} strokeWidth={2.5} />
+        </g>
+
+        <g transform="rotate(280 384 384)">
+            <line x1={384} y1={134} x2={384} y2={122} strokeWidth={2.5} />
+        </g>
+
+        <g transform="rotate(285 384 384)">
+            <line x1={384} y1={134} x2={384} y2={128} strokeWidth={2.5} />
+        </g>
+
+        <g transform="rotate(290 384 384)">
+            <line x1={384} y1={134} x2={384} y2={122} strokeWidth={2.5} />
+        </g>
+
+        <g transform="rotate(295 384 384)">
+            <line x1={384} y1={134} x2={384} y2={128} strokeWidth={2.5} />
+        </g>
+
+        <g transform="rotate(300 384 384)">
+            <line x1={384} y1={134} x2={384} y2={122} strokeWidth={2.5} />
+            <text x={384} y={112} textAnchor="middle" fontSize={22} fill="white" stroke="none">30</text>
+        </g>
+
+        <g transform="rotate(305 384 384)">
+            <line x1={384} y1={134} x2={384} y2={128} strokeWidth={2.5} />
+        </g>
+
+        <g transform="rotate(310 384 384)">
+            <line x1={384} y1={134} x2={384} y2={122} strokeWidth={2.5} />
+        </g>
+
+        <g transform="rotate(315 384 384)">
+            <line x1={384} y1={134} x2={384} y2={128} strokeWidth={2.5} />
+        </g>
+
+        <g transform="rotate(320 384 384)">
+            <line x1={384} y1={134} x2={384} y2={122} strokeWidth={2.5} />
+        </g>
+
+        <g transform="rotate(325 384 384)">
+            <line x1={384} y1={134} x2={384} y2={128} strokeWidth={2.5} />
+        </g>
+
+        <g transform="rotate(330 384 384)">
+            <line x1={384} y1={134} x2={384} y2={122} strokeWidth={2.5} />
+            <text x={384} y={112} textAnchor="middle" fontSize={22} fill="white" stroke="none">33</text>
+        </g>
+
+        <g transform="rotate(335 384 384)">
+            <line x1={384} y1={134} x2={384} y2={128} strokeWidth={2.5} />
+        </g>
+
+        <g transform="rotate(340 384 384)">
+            <line x1={384} y1={134} x2={384} y2={122} strokeWidth={2.5} />
+        </g>
+
+        <g transform="rotate(345 384 384)">
+            <line x1={384} y1={134} x2={384} y2={128} strokeWidth={2.5} />
+        </g>
+
+        <g transform="rotate(350 384 384)">
+            <line x1={384} y1={134} x2={384} y2={122} strokeWidth={2.5} />
+        </g>
+
+        <g transform="rotate(355 384 384)">
+            <line x1={384} y1={134} x2={384} y2={128} strokeWidth={2.5} />
+        </g>
+    </>
+));
+
+const MapFailOverlay: FC<Pick<OverlayProps, 'rangeSetting'>> = memo(({ rangeSetting }) => (
     <>
         <text className="Red" fontSize={30} textAnchor="middle" x={384} y={241}>HDG</text>
         <text className="Red" fontSize={30} textAnchor="middle" x={384} y={320.6}>MAP NOT AVAIL</text>
+
         <clipPath id="rose-mode-map-clip">
             <path d="M-339,-229 L-102,-229 a250,250 0 0 1 204,0 L339,-229 L339,178 L264,178 L207,241 L207,384 L-210,384 L-210,299 L-262,241 L-339,241 L-339,-229" />
         </clipPath>
@@ -568,7 +580,7 @@ const MapFailOverlay: FC<OverlayProps> = ({ rangeSetting }) => (
         <text x={212} y={556} className="Cyan" fontSize={22}>{rangeSetting / 2}</text>
         <text x={310} y={474} className="Cyan" fontSize={22}>{rangeSetting / 4}</text>
     </>
-);
+));
 
 const VorCaptureOverlay: React.FC<{
     heading: number,
