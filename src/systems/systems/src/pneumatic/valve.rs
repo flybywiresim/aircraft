@@ -209,7 +209,7 @@ impl SimulationElement for DefaultValve {
     }
 }
 
-pub(crate) struct PneumaticContainerConnector {
+pub struct PneumaticContainerConnector {
     fluid_flow: VolumeRate,
     transfer_speed_factor: Ratio,
 }
@@ -303,7 +303,7 @@ impl PneumaticContainerConnector {
         to.change_volume(volume);
     }
 
-    fn with_transfer_speed_factor(&mut self, new_transfer_speed_factor: Ratio) -> &mut Self {
+    pub fn with_transfer_speed_factor(&mut self, new_transfer_speed_factor: Ratio) -> &mut Self {
         self.transfer_speed_factor = new_transfer_speed_factor;
 
         self

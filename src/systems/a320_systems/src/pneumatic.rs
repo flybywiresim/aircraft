@@ -1,5 +1,5 @@
 use core::panic;
-use std::time::Duration;
+use std::{f64::consts::PI, time::Duration};
 
 use crate::{
     hydraulic::{A320Hydraulic, FakeHydraulicReservoir},
@@ -61,6 +61,27 @@ struct EngineStarterValveSignal {
 
 struct CrossBleedValveSignal {
     target_open_amount: Ratio,
+    is_manual_vs_automatic: bool,
+}
+impl CrossBleedValveSignal {
+    fn new(target_open_amount: Ratio, is_manual_vs_automatic: bool) -> Self {
+        Self {
+            target_open_amount,
+            is_manual_vs_automatic,
+        }
+    }
+
+    fn target_open_amount(&self) -> Ratio {
+        self.target_open_amount
+    }
+
+    fn new_open(is_manual_vs_automatic: bool) -> Self {
+        Self::new(Ratio::new::<ratio>(1.), is_manual_vs_automatic)
+    }
+
+    fn new_closed(is_manual_vs_automatic: bool) -> Self {
+        Self::new(Ratio::new::<ratio>(0.), is_manual_vs_automatic)
+    }
 }
 
 struct FanAirValveSignal {
@@ -74,7 +95,6 @@ struct PackFlowValveSignal {
 valve_signal_implementation!(HighPressureValveSignal);
 valve_signal_implementation!(PressureRegulatingValveSignal);
 valve_signal_implementation!(EngineStarterValveSignal);
-valve_signal_implementation!(CrossBleedValveSignal);
 valve_signal_implementation!(FanAirValveSignal);
 valve_signal_implementation!(PackFlowValveSignal);
 
@@ -83,7 +103,7 @@ pub struct A320Pneumatic {
     engine_systems: [EngineBleedAirSystem; 2],
 
     cross_bleed_valve_controller: CrossBleedValveController,
-    cross_bleed_valve: DefaultValve,
+    cross_bleed_valve: CrossBleedValve,
 
     fadec: FullAuthorityDigitalEngineControl,
     engine_starter_valve_controllers: [EngineStarterValveController; 2],
@@ -110,7 +130,7 @@ impl A320Pneumatic {
                 EngineBleedAirSystem::new(2, ElectricalBusType::DirectCurrent(2)),
             ],
             cross_bleed_valve_controller: CrossBleedValveController::new(),
-            cross_bleed_valve: DefaultValve::new_closed(),
+            cross_bleed_valve: CrossBleedValve::new(1.),
             fadec: FullAuthorityDigitalEngineControl::new(),
             engine_starter_valve_controllers: [
                 EngineStarterValveController::new(1),
@@ -367,13 +387,13 @@ impl CrossBleedValveController {
 impl ControllerSignal<CrossBleedValveSignal> for CrossBleedValveController {
     fn signal(&self) -> Option<CrossBleedValveSignal> {
         match self.cross_bleed_valve_selector {
-            CrossBleedValveSelectorMode::Shut => Some(CrossBleedValveSignal::new_closed()),
-            CrossBleedValveSelectorMode::Open => Some(CrossBleedValveSignal::new_open()),
+            CrossBleedValveSelectorMode::Shut => Some(CrossBleedValveSignal::new_closed(true)),
+            CrossBleedValveSelectorMode::Open => Some(CrossBleedValveSignal::new_open(true)),
             CrossBleedValveSelectorMode::Auto => {
                 if self.is_apu_bleed_valve_open {
-                    Some(CrossBleedValveSignal::new_open())
+                    Some(CrossBleedValveSignal::new_open(false))
                 } else {
-                    Some(CrossBleedValveSignal::new_closed())
+                    Some(CrossBleedValveSignal::new_closed(false))
                 }
             }
         }
@@ -1284,6 +1304,93 @@ impl SimulationElement for PackFlowValveController {
     }
 }
 
+/// This is a unique valve (and specific to the A320 probably) because it is controlled by two motors. One for manual control and one for automatic control
+pub struct CrossBleedValve {
+    open_amount: Ratio,
+    connector: PneumaticContainerConnector,
+    spring_characteristic: f64,
+    is_powered_for_manual_control: bool,
+    is_powered_for_automatic_control: bool,
+}
+impl CrossBleedValve {
+    pub fn new(spring_characteristic: f64) -> Self {
+        Self {
+            open_amount: Ratio::new::<ratio>(0.),
+            connector: PneumaticContainerConnector::new(),
+            spring_characteristic,
+            is_powered_for_manual_control: false,
+            is_powered_for_automatic_control: false,
+        }
+    }
+
+    pub fn update_move_fluid(
+        &mut self,
+        context: &UpdateContext,
+        from: &mut impl PneumaticContainer,
+        to: &mut impl PneumaticContainer,
+    ) {
+        if !self.is_powered_for_manual_control && !self.is_powered_for_automatic_control {
+            self.set_open_amount_from_pressure_difference(from.pressure() - to.pressure())
+        }
+
+        self.connector
+            .with_transfer_speed_factor(self.open_amount)
+            .update_move_fluid(context, from, to);
+    }
+
+    fn set_open_amount_from_pressure_difference(&mut self, pressure_difference: Pressure) {
+        self.open_amount = Ratio::new::<ratio>(
+            2. / PI
+                * (pressure_difference.get::<psi>() * self.spring_characteristic)
+                    .atan()
+                    .max(0.),
+        );
+    }
+
+    pub fn fluid_flow(&self) -> VolumeRate {
+        self.connector.fluid_flow()
+    }
+
+    pub fn is_powered_for_manual_control(&self) -> bool {
+        self.is_powered_for_manual_control
+    }
+
+    pub fn is_powered_for_automatic_control(&self) -> bool {
+        self.is_powered_for_manual_control
+    }
+
+    pub fn open_amount(&self) -> Ratio {
+        self.open_amount
+    }
+
+    fn update_open_amount(&mut self, controller: &impl ControllerSignal<CrossBleedValveSignal>) {
+        if let Some(signal) = controller.signal() {
+            if signal.is_manual_vs_automatic && self.is_powered_for_manual_control
+                || !signal.is_manual_vs_automatic && self.is_powered_for_automatic_control
+            {
+                self.open_amount = signal.target_open_amount()
+            }
+        }
+    }
+}
+impl PneumaticValve for CrossBleedValve {
+    fn is_open(&self) -> bool {
+        self.open_amount.get::<ratio>() > 0.
+    }
+}
+impl SimulationElement for CrossBleedValve {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        visitor.visit(self);
+    }
+
+    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
+        self.is_powered_for_manual_control =
+            buses.is_powered(ElectricalBusType::DirectCurrentEssentialShed);
+        self.is_powered_for_automatic_control =
+            buses.is_powered(ElectricalBusType::DirectCurrent(2));
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1868,11 +1975,10 @@ mod tests {
 
         let mut test_bed = test_bed_with()
             .in_isa_atmosphere(alt)
-            .idle_eng1()
-            .idle_eng2()
-            .both_packs_auto()
-            // .set_bleed_air_running()
-            .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Auto);
+            .stop_eng1()
+            .stop_eng2()
+            .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Shut)
+            .set_bleed_air_running();
 
         let mut ts = Vec::new();
         let mut hps = Vec::new();
@@ -1997,7 +2103,7 @@ mod tests {
                     .get::<ratio>()
             }));
 
-            test_bed.run_with_delta(Duration::from_millis(16));
+            test_bed.run_with_delta(Duration::from_millis(32));
         }
 
         assert!(test_bed.hp_valve_is_powered(1));
@@ -2397,7 +2503,7 @@ mod tests {
     }
 
     #[test]
-    fn apu_bleed_provides_42_psi_to_left_system_with_closed_cross_bleed_valve() {
+    fn apu_bleed_provides_at_least_35_psi_to_left_system_with_closed_cross_bleed_valve() {
         let test_bed = test_bed_with()
             .stop_eng1()
             .stop_eng2()
@@ -2406,11 +2512,9 @@ mod tests {
             .and_stabilize();
 
         assert!(!test_bed.pr_valve_is_open(1));
+        assert!(!test_bed.cross_bleed_valve_is_open());
 
-        assert!(
-            (test_bed.precooler_outlet_pressure(1) - Pressure::new::<psi>(42.)).abs()
-                < pressure_tolerance()
-        );
+        assert!(test_bed.precooler_outlet_pressure(1) > Pressure::new::<psi>(35.));
         assert!(
             (test_bed.precooler_outlet_pressure(2) - Pressure::new::<psi>(14.7)).abs()
                 < pressure_tolerance()
