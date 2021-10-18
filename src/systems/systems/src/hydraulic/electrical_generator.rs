@@ -207,10 +207,11 @@ impl HydraulicMotor {
                     / (2. * std::f64::consts::PI),
             );
 
-            // println!(
-            //     "GEN TORQ Nm:{:.2}",
-            //     self.generated_torque.get::<newton_meter>()
-            // );
+            println!(
+                "GEN TORQ Nm:{:.2} speed{:.0}",
+                self.generated_torque.get::<newton_meter>(),
+                self.speed().get::<revolution_per_minute>()
+            );
         } else {
             self.generated_torque =
                 Torque::new::<newton_meter>(-0.0005 * self.speed().get::<revolution_per_minute>())
@@ -319,13 +320,13 @@ impl ElectricalEmergencyGenerator {
 
         self.produced_power = emergency_generator.generated_power();
 
-        // println!(
-        //     "Gen: speed:{:.0} power:{:.0} pressure:{:.0} flow GPM:{:.1}",
-        //     self.hyd_motor.speed().get::<revolution_per_minute>(),
-        //     self.generator.elec_power_generated.get::<watt>(),
-        //     pressure.get::<psi>(),
-        //     self.hyd_motor.current_flow.get::<gallon_per_second>() * 60.
-        // );
+        println!(
+            "Gen: speed:{:.0} power:{:.0} pressure:{:.0} flow GPM:{:.1}",
+            self.hyd_motor.speed().get::<revolution_per_minute>(),
+            emergency_generator.generated_power().get::<watt>(),
+            pressure.get::<psi>(),
+            self.hyd_motor.current_flow.get::<gallon_per_second>() * 60.
+        );
     }
 }
 impl Actuator for ElectricalEmergencyGenerator {
@@ -458,14 +459,15 @@ impl ControlValveCommand for TestGeneratorControlUnit {
 
 #[cfg(test)]
 mod tests {
-    // use crate::shared::LgciuGearExtension;
-    //use crate::simulation::UpdateContext;
     use std::time::Duration;
 
     use uom::si::{
         acceleration::foot_per_second_squared, angle::radian, f64::*, length::foot,
         thermodynamic_temperature::degree_celsius, velocity::knot,
     };
+
+    use crate::simulation::test::{SimulationTestBed, TestBed};
+    use crate::simulation::{Aircraft, SimulationElement, SimulationElementVisitor};
 
     struct TestEmergencyState {
         is_emergency: bool,
@@ -555,24 +557,81 @@ mod tests {
         }
     }
 
+    struct TestAircraft {
+        gcu: GeneratorControlUnit,
+        lgciu: TestLgciuInterface,
+        rat_man_on: TestRatManOn,
+        emergency_state: TestEmergencyState,
+        current_pressure: Pressure,
+
+        emergency_gen: ElectricalEmergencyGenerator,
+    }
+
+    impl TestAircraft {
+        fn new() -> Self {
+            Self {
+                gcu: gen_control_unit(),
+                lgciu: TestLgciuInterface::_is_compressed(),
+                rat_man_on: TestRatManOn::not_pressed(),
+                emergency_state: TestEmergencyState::not_in_emergency(),
+
+                current_pressure: Pressure::new::<psi>(2500.),
+
+                emergency_gen: ElectricalEmergencyGenerator::new(Volume::new::<cubic_inch>(0.19)),
+            }
+        }
+    }
+
+    impl Aircraft for TestAircraft {
+        fn update_after_power_distribution(&mut self, context: &UpdateContext) {
+            self.gcu.update(
+                self.emergency_gen.speed(),
+                self.current_pressure,
+                &self.emergency_state,
+                &self.rat_man_on,
+                &self.lgciu,
+            );
+
+            self.emergency_gen.update(
+                self.current_pressure,
+                &self.gcu,
+                &TestGenerator::from_gcu(&self.gcu),
+                &context,
+            );
+        }
+    }
+    impl SimulationElement for TestAircraft {
+        fn accept<V: SimulationElementVisitor>(&mut self, visitor: &mut V) {
+            self.emergency_gen.accept(visitor);
+
+            visitor.visit(self);
+        }
+    }
+
     use super::*;
+
     #[test]
-    /// Runs electric pump, checks pressure OK, shut it down, check drop of pressure after 20s
     fn emergency_generator_init_state() {
-        let mut emergency_gen = ElectricalEmergencyGenerator::new(Volume::new::<cubic_inch>(0.19));
+        let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
 
-        let gcu = TestGeneratorControlUnit::commanding_full_closed();
+        test_bed.run();
 
-        assert!(emergency_gen.hyd_motor.speed == AngularVelocity::new::<radian_per_second>(0.));
+        test_bed.query(|a| {
+            a.emergency_gen.hyd_motor.speed() == AngularVelocity::new::<radian_per_second>(0.)
+        });
+        test_bed.query(|a| a.gcu.valve_position_command() == Ratio::new::<ratio>(0.));
+    }
 
-        emergency_gen.update(
-            Pressure::new::<psi>(2500.),
-            &gcu,
-            &TestGenerator::from_gcu(&gcu),
-            &context(Duration::from_millis(50)),
-        );
+    #[test]
+    fn new_emergency_generator_with_opened_valve_should_spin_if_pressure_available() {
+        let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
 
-        assert!(emergency_gen.hyd_motor.speed == AngularVelocity::new::<radian_per_second>(0.));
+        test_bed.run_with_delta(Duration::from_secs_f64(3.));
+
+        test_bed.query(|a| {
+            a.emergency_gen.hyd_motor.speed()
+                >= AngularVelocity::new::<revolution_per_minute>(1000.)
+        });
     }
 
     #[test]
@@ -639,10 +698,11 @@ mod tests {
                 &context,
             );
 
-            assert!(emergency_gen.hyd_motor.speed <= AngularVelocity::new::<revolution_per_minute>(5.));
+            assert!(
+                emergency_gen.hyd_motor.speed <= AngularVelocity::new::<revolution_per_minute>(5.)
+            );
 
             time += timestep;
-
 
             println!(
                 "Time:{:.2} Rpm:{:.0}",
