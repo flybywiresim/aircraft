@@ -1,175 +1,132 @@
-#![cfg(any(target_arch = "wasm32", doc))]
-use a320_systems::A320;
-use msfs::sim_connect::{SimConnectRecv, SIMCONNECT_OBJECT_ID_USER};
+//#![cfg(any(target_arch = "wasm32", doc))]
+use std::time::{Duration, Instant};
+
 use msfs::{
     legacy::{AircraftVariable, NamedVariable},
     sim_connect::SimConnect,
+    sim_connect::{SimConnectRecv, SIMCONNECT_OBJECT_ID_USER},
     sys,
 };
-use std::{
-    pin::Pin,
-    time::{Duration, Instant},
+
+use a320_systems::A320;
+use systems::{
+    failures::FailureType,
+    simulation::{VariableIdentifier, VariableRegistry},
 };
-use systems::failures::FailureType;
-use systems::simulation::{Simulation, VariableIdentifier, VariableRegistry};
 use systems_wasm::{
-    electrical::{MsfsAuxiliaryPowerUnit, MsfsElectricalBuses},
-    f64_to_sim_connect_32k_pos,
-    failures::Failures,
-    sim_connect_32k_pos_to_f64, MsfsSimulationHandler, MsfsVariableRegistry, SimulatorAspect,
+    f64_to_sim_connect_32k_pos, sim_connect_32k_pos_to_f64, MsfsAspectCtor, MsfsSimulationBuilder,
+    MsfsVariableRegistry, SimulatorAspect,
 };
 
 #[msfs::gauge(name=systems)]
 async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn std::error::Error>> {
     let mut sim_connect = gauge.open_simconnect("systems")?;
 
-    let mut variable_registry = MsfsVariableRegistry::new("A32NX_".to_owned());
-    add_aircraft_variables(&mut variable_registry)?;
-
-    let mut simulation = Simulation::new(A320::new, &mut variable_registry);
-    let mut msfs_simulation_handler = MsfsSimulationHandler::new(
-        vec![
-            Box::new(create_electrical_buses(&mut variable_registry)),
-            Box::new(MsfsAuxiliaryPowerUnit::new(
-                &mut variable_registry,
-                "OVHD_APU_START_PB_IS_AVAILABLE".to_owned(),
-                8,
-            )?),
-            Box::new(Brakes::new(
-                &mut variable_registry,
-                &mut sim_connect.as_mut(),
-            )?),
-            Box::new(Autobrakes::new(
-                &mut variable_registry,
-                &mut sim_connect.as_mut(),
-            )?),
-            Box::new(CargoDoors::new(
-                &mut variable_registry,
-                &mut sim_connect.as_mut(),
-            )?),
-            Box::new(variable_registry),
-        ],
-        create_failures(),
-    );
+    let (mut simulation, mut handler) =
+        MsfsSimulationBuilder::new("A32NX_".to_owned(), sim_connect.as_mut())
+            .with_electrical_buses(vec![
+                ("AC_1", 2),
+                ("AC_1", 2),
+                ("AC_2", 3),
+                ("AC_ESS", 4),
+                ("AC_ESS_SHED", 5),
+                ("AC_STAT_INV", 6),
+                ("AC_GND_FLT_SVC", 14),
+                ("DC_1", 7),
+                ("DC_2", 8),
+                ("DC_ESS", 9),
+                ("DC_ESS_SHED", 10),
+                ("DC_BAT", 11),
+                ("DC_HOT_1", 12),
+                ("DC_HOT_2", 13),
+                ("DC_GND_FLT_SVC", 15),
+            ])
+            .with_auxiliary_power_unit("OVHD_APU_START_PB_IS_AVAILABLE".to_owned(), 8)?
+            .with::<Brakes>()?
+            .with::<Autobrakes>()?
+            .with::<CargoDoors>()?
+            .with_failures(vec![
+                (24_000, FailureType::TransformerRectifier(1)),
+                (24_001, FailureType::TransformerRectifier(2)),
+                (24_002, FailureType::TransformerRectifier(3)),
+            ])
+            .provides_aircraft_variable("ACCELERATION BODY X", "feet per second squared", 0)?
+            .provides_aircraft_variable("ACCELERATION BODY Y", "feet per second squared", 0)?
+            .provides_aircraft_variable("ACCELERATION BODY Z", "feet per second squared", 0)?
+            .provides_aircraft_variable("AIRSPEED INDICATED", "Knots", 0)?
+            .provides_aircraft_variable("AIRSPEED MACH", "Mach", 0)?
+            .provides_aircraft_variable("AIRSPEED TRUE", "Knots", 0)?
+            .provides_aircraft_variable("AMBIENT PRESSURE", "inHg", 0)?
+            .provides_aircraft_variable("AMBIENT TEMPERATURE", "celsius", 0)?
+            .provides_aircraft_variable("AMBIENT WIND DIRECTION", "Degrees", 0)?
+            .provides_aircraft_variable("AMBIENT WIND VELOCITY", "Knots", 0)?
+            .provides_aircraft_variable("ANTISKID BRAKES ACTIVE", "Bool", 0)?
+            .provides_aircraft_variable_with_additional_names(
+                "APU GENERATOR SWITCH",
+                "Bool",
+                0,
+                vec!["OVHD_ELEC_APU_GEN_PB_IS_ON".to_owned()],
+            )?
+            .provides_aircraft_variable_with_additional_names(
+                "EXTERNAL POWER AVAILABLE",
+                "Bool",
+                1,
+                vec!["OVHD_ELEC_EXT_PWR_PB_IS_AVAILABLE".to_owned()],
+            )?
+            .provides_aircraft_variable_with_additional_names(
+                "EXTERNAL POWER ON",
+                "Bool",
+                1,
+                vec!["OVHD_ELEC_EXT_PWR_PB_IS_ON".to_owned()],
+            )?
+            .provides_aircraft_variable("FUEL TANK LEFT MAIN QUANTITY", "Pounds", 0)?
+            .provides_aircraft_variable("GEAR ANIMATION POSITION", "Percent", 0)?
+            .provides_aircraft_variable("GEAR ANIMATION POSITION", "Percent", 1)?
+            .provides_aircraft_variable("GEAR ANIMATION POSITION", "Percent", 2)?
+            .provides_aircraft_variable("GEAR CENTER POSITION", "Percent", 0)?
+            .provides_aircraft_variable("GEAR HANDLE POSITION", "Bool", 0)?
+            .provides_aircraft_variable_with_additional_names(
+                "GENERAL ENG MASTER ALTERNATOR",
+                "Bool",
+                1,
+                vec!["OVHD_ELEC_ENG_GEN_1_PB_IS_ON".to_owned()],
+            )?
+            .provides_aircraft_variable_with_additional_names(
+                "GENERAL ENG MASTER ALTERNATOR",
+                "Bool",
+                2,
+                vec!["OVHD_ELEC_ENG_GEN_2_PB_IS_ON".to_owned()],
+            )?
+            .provides_aircraft_variable("GENERAL ENG STARTER ACTIVE", "Bool", 1)?
+            .provides_aircraft_variable("GENERAL ENG STARTER ACTIVE", "Bool", 2)?
+            .provides_aircraft_variable("GPS GROUND SPEED", "Knots", 0)?
+            .provides_aircraft_variable("GPS GROUND MAGNETIC TRACK", "Degrees", 0)?
+            .provides_aircraft_variable("INDICATED ALTITUDE", "Feet", 0)?
+            .provides_aircraft_variable("PLANE PITCH DEGREES", "Degrees", 0)?
+            .provides_aircraft_variable("PLANE BANK DEGREES", "Degrees", 0)?
+            .provides_aircraft_variable("PLANE HEADING DEGREES MAGNETIC", "Degrees", 0)?
+            .provides_aircraft_variable("PLANE LATITUDE", "degree latitude", 0)?
+            .provides_aircraft_variable("PLANE LONGITUDE", "degree longitude", 0)?
+            .provides_aircraft_variable("PUSHBACK ANGLE", "Radian", 0)?
+            .provides_aircraft_variable("PUSHBACK STATE", "Enum", 0)?
+            .provides_aircraft_variable("SEA LEVEL PRESSURE", "Millibars", 0)?
+            .provides_aircraft_variable("SIM ON GROUND", "Bool", 0)?
+            .provides_aircraft_variable("TOTAL AIR TEMPERATURE", "celsius", 0)?
+            .provides_aircraft_variable("TRAILING EDGE FLAPS LEFT PERCENT", "Percent", 0)?
+            .provides_aircraft_variable("TRAILING EDGE FLAPS RIGHT PERCENT", "Percent", 0)?
+            .provides_aircraft_variable("TURB ENG CORRECTED N1", "Percent", 1)?
+            .provides_aircraft_variable("TURB ENG CORRECTED N1", "Percent", 2)?
+            .provides_aircraft_variable("TURB ENG CORRECTED N2", "Percent", 1)?
+            .provides_aircraft_variable("TURB ENG CORRECTED N2", "Percent", 2)?
+            .provides_aircraft_variable("UNLIMITED FUEL", "Bool", 0)?
+            .provides_aircraft_variable("VELOCITY WORLD Y", "feet per minute", 0)?
+            .build(A320::new);
 
     while let Some(event) = gauge.next_event().await {
-        msfs_simulation_handler.handle(event, &mut simulation, &mut sim_connect.as_mut())?;
+        handler.handle(event, &mut simulation, sim_connect.as_mut())?;
     }
 
     Ok(())
-}
-
-fn add_aircraft_variables(
-    registry: &mut MsfsVariableRegistry,
-) -> Result<(), Box<dyn std::error::Error>> {
-    registry.add_aircraft_variable("AMBIENT TEMPERATURE", "celsius", 0)?;
-    registry.add_aircraft_variable("TOTAL AIR TEMPERATURE", "celsius", 0)?;
-    registry.add_aircraft_variable_with_additional_names(
-        "EXTERNAL POWER AVAILABLE",
-        "Bool",
-        1,
-        &vec!["OVHD_ELEC_EXT_PWR_PB_IS_AVAILABLE"],
-    )?;
-    registry.add_aircraft_variable("GEAR CENTER POSITION", "Percent", 0)?;
-    registry.add_aircraft_variable("GEAR ANIMATION POSITION", "Percent", 0)?;
-    registry.add_aircraft_variable("GEAR ANIMATION POSITION", "Percent", 1)?;
-    registry.add_aircraft_variable("GEAR ANIMATION POSITION", "Percent", 2)?;
-    registry.add_aircraft_variable("GEAR HANDLE POSITION", "Bool", 0)?;
-    registry.add_aircraft_variable("TURB ENG CORRECTED N1", "Percent", 1)?;
-    registry.add_aircraft_variable("TURB ENG CORRECTED N1", "Percent", 2)?;
-    registry.add_aircraft_variable("TURB ENG CORRECTED N2", "Percent", 1)?;
-    registry.add_aircraft_variable("TURB ENG CORRECTED N2", "Percent", 2)?;
-    registry.add_aircraft_variable("AIRSPEED INDICATED", "Knots", 0)?;
-    registry.add_aircraft_variable("INDICATED ALTITUDE", "Feet", 0)?;
-    registry.add_aircraft_variable("AIRSPEED MACH", "Mach", 0)?;
-    registry.add_aircraft_variable("AIRSPEED TRUE", "Knots", 0)?;
-    registry.add_aircraft_variable("VELOCITY WORLD Y", "feet per minute", 0)?;
-    registry.add_aircraft_variable("AMBIENT WIND DIRECTION", "Degrees", 0)?;
-    registry.add_aircraft_variable("AMBIENT WIND VELOCITY", "Knots", 0)?;
-    registry.add_aircraft_variable("GPS GROUND SPEED", "Knots", 0)?;
-    registry.add_aircraft_variable("GPS GROUND MAGNETIC TRACK", "Degrees", 0)?;
-    registry.add_aircraft_variable("PLANE PITCH DEGREES", "Degrees", 0)?;
-    registry.add_aircraft_variable("PLANE BANK DEGREES", "Degrees", 0)?;
-    registry.add_aircraft_variable("PLANE HEADING DEGREES MAGNETIC", "Degrees", 0)?;
-    registry.add_aircraft_variable("FUEL TANK LEFT MAIN QUANTITY", "Pounds", 0)?;
-    registry.add_aircraft_variable("UNLIMITED FUEL", "Bool", 0)?;
-    registry.add_aircraft_variable("INDICATED ALTITUDE", "Feet", 0)?;
-    registry.add_aircraft_variable("AMBIENT PRESSURE", "inHg", 0)?;
-    registry.add_aircraft_variable("SEA LEVEL PRESSURE", "Millibars", 0)?;
-    registry.add_aircraft_variable("SIM ON GROUND", "Bool", 0)?;
-    registry.add_aircraft_variable("GENERAL ENG STARTER ACTIVE", "Bool", 1)?;
-    registry.add_aircraft_variable("GENERAL ENG STARTER ACTIVE", "Bool", 2)?;
-    registry.add_aircraft_variable("PUSHBACK ANGLE", "Radian", 0)?;
-    registry.add_aircraft_variable("PUSHBACK STATE", "Enum", 0)?;
-    registry.add_aircraft_variable("ANTISKID BRAKES ACTIVE", "Bool", 0)?;
-    registry.add_aircraft_variable("ACCELERATION BODY Z", "feet per second squared", 0)?;
-    registry.add_aircraft_variable("ACCELERATION BODY X", "feet per second squared", 0)?;
-    registry.add_aircraft_variable("ACCELERATION BODY Y", "feet per second squared", 0)?;
-
-    registry.add_aircraft_variable_with_additional_names(
-        "APU GENERATOR SWITCH",
-        "Bool",
-        0,
-        &vec!["OVHD_ELEC_APU_GEN_PB_IS_ON"],
-    )?;
-    registry.add_aircraft_variable_with_additional_names(
-        "EXTERNAL POWER ON",
-        "Bool",
-        1,
-        &vec!["OVHD_ELEC_EXT_PWR_PB_IS_ON"],
-    )?;
-    registry.add_aircraft_variable_with_additional_names(
-        "GENERAL ENG MASTER ALTERNATOR",
-        "Bool",
-        1,
-        &vec!["OVHD_ELEC_ENG_GEN_1_PB_IS_ON"],
-    )?;
-    registry.add_aircraft_variable_with_additional_names(
-        "GENERAL ENG MASTER ALTERNATOR",
-        "Bool",
-        2,
-        &vec!["OVHD_ELEC_ENG_GEN_2_PB_IS_ON"],
-    )?;
-    registry.add_aircraft_variable("PLANE LATITUDE", "degree latitude", 0)?;
-    registry.add_aircraft_variable("PLANE LONGITUDE", "degree longitude", 0)?;
-    registry.add_aircraft_variable("TRAILING EDGE FLAPS LEFT PERCENT", "Percent", 0)?;
-    registry.add_aircraft_variable("TRAILING EDGE FLAPS RIGHT PERCENT", "Percent", 0)?;
-
-    Ok(())
-}
-
-fn create_electrical_buses(registry: &mut impl VariableRegistry) -> MsfsElectricalBuses {
-    let mut buses = MsfsElectricalBuses::new();
-    // The numbers used here are those defined for buses in the systems.cfg [ELECTRICAL] section.
-    buses.add(registry, "AC_1", 1, 2);
-    buses.add(registry, "AC_2", 1, 3);
-    buses.add(registry, "AC_ESS", 1, 4);
-    buses.add(registry, "AC_ESS_SHED", 1, 5);
-    buses.add(registry, "AC_STAT_INV", 1, 6);
-    buses.add(registry, "AC_GND_FLT_SVC", 1, 14);
-    buses.add(registry, "DC_1", 1, 7);
-    buses.add(registry, "DC_2", 1, 8);
-    buses.add(registry, "DC_ESS", 1, 9);
-    buses.add(registry, "DC_ESS_SHED", 1, 10);
-    buses.add(registry, "DC_BAT", 1, 11);
-    buses.add(registry, "DC_HOT_1", 1, 12);
-    buses.add(registry, "DC_HOT_2", 1, 13);
-    buses.add(registry, "DC_GND_FLT_SVC", 1, 15);
-
-    buses
-}
-
-fn create_failures() -> Failures {
-    let mut failures = Failures::new(
-        NamedVariable::from("A32NX_FAILURE_ACTIVATE"),
-        NamedVariable::from("A32NX_FAILURE_DEACTIVATE"),
-    );
-
-    failures.add(24_000, FailureType::TransformerRectifier(1));
-    failures.add(24_001, FailureType::TransformerRectifier(2));
-    failures.add(24_002, FailureType::TransformerRectifier(3));
-
-    failures
 }
 
 struct Autobrakes {
@@ -194,14 +151,11 @@ struct Autobrakes {
 
     last_button_press: Instant,
 }
-impl Autobrakes {
-    // Time to freeze keyboard events once key is released. This will keep key_pressed to TRUE internally when key is actually staying pressed
-    // but keyboard events wrongly goes to false then back to true for a short period of time due to poor key event handling
-    const DEFAULT_REARMING_DURATION: Duration = Duration::from_millis(1500);
 
+impl MsfsAspectCtor for Autobrakes {
     fn new(
-        registry: &mut impl VariableRegistry,
-        sim_connect: &mut Pin<&mut SimConnect>,
+        registry: &mut MsfsVariableRegistry,
+        sim_connect: &mut SimConnect,
     ) -> Result<Self, Box<dyn std::error::Error>> {
         Ok(Self {
             autobrake_disarm_id: registry.get("AUTOBRAKE_DISARM".to_owned()),
@@ -230,6 +184,12 @@ impl Autobrakes {
             last_button_press: Instant::now(),
         })
     }
+}
+
+impl Autobrakes {
+    // Time to freeze keyboard events once key is released. This will keep key_pressed to TRUE internally when key is actually staying pressed
+    // but keyboard events wrongly goes to false then back to true for a short period of time due to poor key event handling
+    const DEFAULT_REARMING_DURATION: Duration = Duration::from_millis(1500);
 
     fn synchronise_with_sim(&mut self) {
         if self.low_mode_panel_pushbutton.get_value() {
@@ -323,10 +283,7 @@ impl SimulatorAspect for Autobrakes {
         self.synchronise_with_sim();
     }
 
-    fn post_tick(
-        &mut self,
-        _: &mut Pin<&mut SimConnect>,
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    fn post_tick(&mut self, _: &mut SimConnect) -> Result<(), Box<dyn std::error::Error>> {
         self.reset_events();
 
         Ok(())
@@ -365,13 +322,11 @@ struct Brakes {
     parking_brake_lever_is_set: bool,
     last_transmitted_park_brake_lever_position: f64,
 }
-impl Brakes {
-    const KEYBOARD_PRESS_SPEED: f64 = 0.6;
-    const KEYBOARD_RELEASE_SPEED: f64 = 0.3;
 
+impl MsfsAspectCtor for Brakes {
     fn new(
-        registry: &mut impl VariableRegistry,
-        sim_connect: &mut Pin<&mut SimConnect>,
+        registry: &mut MsfsVariableRegistry,
+        sim_connect: &mut SimConnect,
     ) -> Result<Self, Box<dyn std::error::Error>> {
         Ok(Self {
             park_brak_lever_pos_id: registry.get("PARK_BRAKE_LEVER_POS".to_owned()),
@@ -415,6 +370,11 @@ impl Brakes {
             last_transmitted_park_brake_lever_position: 1.,
         })
     }
+}
+
+impl Brakes {
+    const KEYBOARD_PRESS_SPEED: f64 = 0.6;
+    const KEYBOARD_RELEASE_SPEED: f64 = 0.3;
 
     fn set_brake_left(&mut self, simconnect_value: u32) {
         self.brake_left_sim_input = sim_connect_32k_pos_to_f64(simconnect_value);
@@ -474,7 +434,7 @@ impl Brakes {
 
     fn transmit_client_events(
         &mut self,
-        sim_connect: &mut Pin<&mut SimConnect>,
+        sim_connect: &mut SimConnect,
     ) -> Result<(), Box<dyn std::error::Error>> {
         // We want to send our brake commands once per refresh event, thus doing it after a draw event
         sim_connect.transmit_client_event(
@@ -603,7 +563,7 @@ impl SimulatorAspect for Brakes {
 
     fn post_tick(
         &mut self,
-        sim_connect: &mut Pin<&mut SimConnect>,
+        sim_connect: &mut SimConnect,
     ) -> Result<(), Box<dyn std::error::Error>> {
         self.reset_keyboard_events();
         self.transmit_client_events(sim_connect)?;
@@ -622,14 +582,10 @@ struct CargoDoors {
     fwd_position: f64,
     forward_cargo_door_open_req: f64,
 }
-impl CargoDoors {
-    fn set_forward_door_postition(&mut self, value: f64) {
-        self.fwd_position = value;
-    }
-
+impl MsfsAspectCtor for CargoDoors {
     fn new(
-        registry: &mut impl VariableRegistry,
-        _: &mut Pin<&mut SimConnect>,
+        registry: &mut MsfsVariableRegistry,
+        _: &mut SimConnect,
     ) -> Result<Self, Box<dyn std::error::Error>> {
         Ok(Self {
             fwd_door_cargo_position_id: registry.get("FWD_DOOR_CARGO_POSITION".to_owned()),
@@ -644,6 +600,12 @@ impl CargoDoors {
             fwd_position: 0.,
             forward_cargo_door_open_req: 0.,
         })
+    }
+}
+
+impl CargoDoors {
+    fn set_forward_door_postition(&mut self, value: f64) {
+        self.fwd_position = value;
     }
 
     fn set_in_sim_position_request(&mut self, position_requested: f64) {
@@ -679,10 +641,7 @@ impl SimulatorAspect for CargoDoors {
         self.set_in_sim_position_request(read_val);
     }
 
-    fn post_tick(
-        &mut self,
-        _: &mut Pin<&mut SimConnect>,
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    fn post_tick(&mut self, _: &mut SimConnect) -> Result<(), Box<dyn std::error::Error>> {
         self.forward_cargo_door_position
             .set_value(self.fwd_position);
 

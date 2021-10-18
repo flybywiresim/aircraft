@@ -7,17 +7,12 @@ use msfs::legacy::AircraftVariable;
 use systems::shared::to_bool;
 use systems::simulation::{VariableIdentifier, VariableRegistry};
 
-pub struct MsfsElectricalBuses {
+#[derive(Default)]
+pub(super) struct MsfsElectricalBuses {
     connections: FxHashMap<VariableIdentifier, ElectricalBusConnection>,
 }
 impl MsfsElectricalBuses {
-    pub fn new() -> Self {
-        Self {
-            connections: FxHashMap::default(),
-        }
-    }
-
-    pub fn add(
+    pub(super) fn add(
         &mut self,
         registry: &mut impl VariableRegistry,
         name: &str,
@@ -70,7 +65,7 @@ impl ElectricalBusConnection {
 /// At this moment, the engines cannot be started without it.
 /// Once pneumatics and the engine model are completed, this
 /// type can probably be removed.
-pub struct MsfsAuxiliaryPowerUnit {
+pub(super) struct MsfsAuxiliaryPowerUnit {
     is_available_id: VariableIdentifier,
     msfs_apu_is_on: AircraftVariable,
     fuel_valve_number: u8,

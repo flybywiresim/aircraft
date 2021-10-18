@@ -173,14 +173,12 @@ class CDUPerformancePage {
         // transition altitude - remains editable during take off
         let transAltCell = "";
         if (hasOrigin) {
-            const transAltitude = mcdu.getTransitionAltitude();
-            if (isFinite(transAltitude)) {
-                transAltCell = `{cyan}${transAltitude}{end}`;
+            transAltCell = "[\xa0".padEnd(4, "\xa0") + "]";
+            if (isFinite(mcdu.transitionAltitude)) {
+                transAltCell = mcdu.transitionAltitude.toFixed(0).padEnd(5, "\xa0");
                 if (!mcdu.transitionAltitudeIsPilotEntered) {
-                    transAltCell += "[s-text]";
+                    transAltCell = `{small}${transAltCell}{end}`;
                 }
-            } else {
-                transAltCell = "{cyan}[]{end}";
             }
             mcdu.onLeftInput[3] = (value) => {
                 if (mcdu.trySetTakeOffTransAltitude(value)) {
@@ -379,7 +377,7 @@ class CDUPerformancePage {
             ["\xa0V2\xa0\xa0\xa0\xa0\xa0CLEAN", "FLAPS/THS"],
             [v2 + v2Check + "\xa0O=" + cleanCell, flapsThs],
             ["TRANS ALT", "FLEX TO TEMP"],
-            [transAltCell, flexTakeOffTempCell],
+            [`{cyan}${transAltCell}{end}`, flexTakeOffTempCell],
             ["THR RED/ACC", "ENG OUT ACC"],
             [thrRedAcc, engOutAcc],
             ["\xa0UPLINK[color]inop", next],
@@ -717,7 +715,7 @@ class CDUPerformancePage {
             }
         };
 
-        let transAltCell = "[\xa0]".padEnd(5, "\xa0");
+        let transAltCell = "[\xa0".padEnd(4, "\xa0") + "]";
         if (isFinite(mcdu.perfApprTransAlt)) {
             transAltCell = mcdu.perfApprTransAlt.toFixed(0).padEnd(5, "\xa0");
             if (!mcdu.perfApprTransAltPilotEntered) {
