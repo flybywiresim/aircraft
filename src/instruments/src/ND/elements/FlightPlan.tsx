@@ -286,7 +286,11 @@ const SymbolMarker: FC<SymbolMarkerProps> = memo(({ ident, x, y, type, constrain
         showIdent = true;
     } else if (type & NdSymbolTypeFlags.Runway) {
         if (mapParams.nmRadius >= 40) {
-            elements.push(<RunwayMarkerFar ident={ident} rotation={mapParams.rotation(direction!)} />);
+            elements.push(<RunwayMarkerFar
+                ident={ident}
+                mapParams={mapParams}
+                direction={direction!}
+            />);
         } else {
             elements.push(<RunwayMarkerClose
                 ident={ident}
