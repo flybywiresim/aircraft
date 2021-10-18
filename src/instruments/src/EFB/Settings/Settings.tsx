@@ -123,6 +123,8 @@ const DefaultsPage = () => {
 const AircraftConfigurationPage = () => {
     const [weightUnit, setWeightUnit] = usePersistentProperty('CONFIG_USING_METRIC_UNIT', '1');
     const [paxSigns, setPaxSigns] = usePersistentProperty('CONFIG_USING_PORTABLE_DEVICES', '0');
+    const [isisBaro, setIsisBaro] = usePersistentProperty('ISIS_BARO_UNIT_INHG', '0');
+    const [isisMetricAltitude, setIsisMetricAltitude] = usePersistentProperty('ISIS_METRIC_ALTITUDE', '0');
 
     const paxSignsButtons: ButtonType[] = [
         { name: 'No Smoking', setting: '0' },
@@ -132,6 +134,16 @@ const AircraftConfigurationPage = () => {
     const weightUnitButtons: ButtonType[] = [
         { name: 'kg', setting: '1' },
         { name: 'lbs', setting: '0' },
+    ];
+
+    const isisBaroButtons: ButtonType[] = [
+        { name: 'hPa', setting: '0' },
+        { name: 'hPa/inHg', setting: '1' },
+    ];
+
+    const isisMetricAltitudeButtons: ButtonType[] = [
+        { name: 'Disabled', setting: '0' },
+        { name: 'Enabled', setting: '1' },
     ];
 
     return (
@@ -159,6 +171,36 @@ const AircraftConfigurationPage = () => {
                             enabled
                             onSelect={() => setPaxSigns(button.setting)}
                             selected={paxSigns === button.setting}
+                        >
+                            {button.name}
+                        </SelectItem>
+                    ))}
+                </SelectGroup>
+            </div>
+
+            <div className="py-4 flex flex-row justify-between items-center">
+                <span className="text-lg text-gray-300">ISIS Baro Unit</span>
+                <SelectGroup>
+                    {isisBaroButtons.map((button) => (
+                        <SelectItem
+                            enabled
+                            onSelect={() => setIsisBaro(button.setting)}
+                            selected={isisBaro === button.setting}
+                        >
+                            {button.name}
+                        </SelectItem>
+                    ))}
+                </SelectGroup>
+            </div>
+
+            <div className="py-4 flex flex-row justify-between items-center">
+                <span className="text-lg text-gray-300">ISIS Metric Altitude</span>
+                <SelectGroup>
+                    {isisMetricAltitudeButtons.map((button) => (
+                        <SelectItem
+                            enabled
+                            onSelect={() => setIsisMetricAltitude(button.setting)}
+                            selected={isisMetricAltitude === button.setting}
                         >
                             {button.name}
                         </SelectItem>
