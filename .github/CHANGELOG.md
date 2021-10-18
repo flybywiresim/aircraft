@@ -47,6 +47,7 @@
 1. [MODEL] Add MCDU annunciator lights - @tracernz (Mike)
 1. [LIGHTS] Add ambient lt for all INTEG LT emssivies + C&D ambient fix - @bouveng (Johan Bouveng)
 1. [ECAM] Fixed misaligned items on ecam memos - @tyler58546 (tyler58546)
+1. [RMP] Added 25 kHz VHF spacing option - @tyler58546 (tyler58546)
 
 ## 0.7.0
 1. [HYD] First building block, more to come. Hydraulics do not impact the sim YET. - @crocket6 (crocket)
