@@ -82,6 +82,10 @@ pub trait EngineUncorrectedN2 {
     fn uncorrected_n2(&self) -> Ratio;
 }
 
+pub trait CabinAltitude {
+    fn cabin_altitude(&self) -> Length;
+}
+
 /// The common types of electrical buses within Airbus aircraft.
 /// These include types such as AC, DC, AC ESS, etc.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]

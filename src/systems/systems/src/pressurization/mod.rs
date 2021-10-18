@@ -1,6 +1,6 @@
 use self::{cabin_pressure_controller::CabinPressureController, pressure_valve::PressureValve};
 use crate::{
-    shared::{random_number, EngineCorrectedN1},
+    shared::{random_number, CabinAltitude, EngineCorrectedN1},
     simulation::{Read, SimulationElement, SimulatorReader, SimulatorWriter, UpdateContext, Write},
 };
 use uom::si::{f64::*, length::foot, pressure::hectopascal, velocity::foot_per_minute};
@@ -67,6 +67,12 @@ impl Pressurization {
             .for_each(|controller| {
                 controller.reset_cpc_switch();
             });
+    }
+}
+
+impl CabinAltitude for Pressurization {
+    fn cabin_altitude(&self) -> Length {
+        self.cpc[self.active_system - 1].cabin_altitude()
     }
 }
 

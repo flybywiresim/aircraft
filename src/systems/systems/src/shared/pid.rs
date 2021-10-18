@@ -4,6 +4,7 @@ use std::time::Duration;
 /// Implementation in a recursive form
 /// u(k+1) = u(k) + (e(k) - e(k-1)) * Kp + e(k) * Ki * dt + (e(k) - 2 * e(k-1) + e(k-2)) * Kd / dt
 /// For variable dt add dt duration as argument, if fixed dt or scheduled synchronously with controlled system input None as dt
+#[derive(Clone)]
 pub struct PidController {
     kp: f64,
     ki: f64,
@@ -37,6 +38,14 @@ impl PidController {
 
     pub fn change_setpoint(&mut self, new_setpoint: f64) {
         self.setpoint = new_setpoint;
+    }
+
+    pub fn change_min_output(&mut self, new_min: f64) {
+        self.min_output = new_min;
+    }
+
+    pub fn change_max_output(&mut self, new_max: f64) {
+        self.max_output = new_max;
     }
 
     pub fn setpoint(&self) -> f64 {
