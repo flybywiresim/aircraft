@@ -49,6 +49,12 @@ export const FlightPlan: FC<FlightPathProps> = memo(({ x = 0, y = 0, symbols, fl
         }
     }, 2_000);
 
+    useCurrentFlightPlan();
+
+    if (!mapParams.valid) {
+        return null;
+    }
+
     let flightPath: JSX.Element | null = null;
     if (geometry) {
         switch (type) {
@@ -63,8 +69,6 @@ export const FlightPlan: FC<FlightPathProps> = memo(({ x = 0, y = 0, symbols, fl
             break;
         }
     }
-
-    useCurrentFlightPlan();
 
     return (
         <Layer x={x} y={y}>
