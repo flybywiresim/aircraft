@@ -56,14 +56,9 @@ Color Start=255, 120, 70, 0
 Color End=255, 120, 70, 0
 Jitter Distance=0.00
 Jitter Time=0.00
-uv1=0.00, 0.00
-uv2=1.0, 1.0
 X Scale Goal=0.00
 Y Scale Goal=0.00
 Z Scale Goal=0.00
-Extrude Length=0.00
-Extrude Pitch Max=0.00
-Extrude Heading Max=0.00
 
 [LightAttributes.0]
 Type=spot
@@ -72,6 +67,6 @@ Range=0.38
 Intensity=5
 Softness=0.3
 SpotInner=16.0
-SpotOuter=33.0
+SpotOuter=32.0
 Volumetric=0
 ScatDir=0.0

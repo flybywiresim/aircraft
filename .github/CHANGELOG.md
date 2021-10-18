@@ -44,6 +44,8 @@
 1. [ISIS] Added inHg and metric altitude pin programs - @tracernz (Mike)
 1. [MCDU] Fixed transition alt init and display - @derl30n (Leon)
 1. [AP] Fixed V/S, FPA or ALT* speed protection to engage too early on high altitudes - @aguther (Andreas Guther)
+1. [LIGHTS] Add ambient lt for all INTEG LT emssivies + C&D ambient fix - @bouveng (Johan Bouveng)
+1. [ECAM] Fixed misaligned items on ecam memos - @tyler58546 (tyler58546)
 1. [FLIGHT MODEL] Fixed station locations and loads consistent with real A320 W&B manual - @ghosh9691
 1. [MCDU] Boarding and W/B AOC Pages update with Simbrief Integration - @viniciusfont
 1. [MCDU] Updated boarding logic, separate loading for pax and baggage - @sidnov (Sid)
