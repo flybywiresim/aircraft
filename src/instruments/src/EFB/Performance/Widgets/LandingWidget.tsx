@@ -366,7 +366,7 @@ export const LandingWidget = () => {
                         <div className="flex">
                             <div className="flex-1 m-2.5 column-left">
                                 <SimpleInput
-                                    className="w-64 my-1.5"
+                                    className="w-56 my-1.5"
                                     label="Wind Direction"
                                     value={windDirection}
                                     placeholder="000"
@@ -378,7 +378,7 @@ export const LandingWidget = () => {
                                     number
                                 />
                                 <SimpleInput
-                                    className="w-64 my-1.5"
+                                    className="w-56 my-1.5"
                                     label="Wind Magnitude"
                                     value={windMagnitude}
                                     placeholder="Kts"
@@ -389,7 +389,7 @@ export const LandingWidget = () => {
                                 />
                                 <div className="flex flex-row justify-end">
                                     <SimpleInput
-                                        className="w-36 my-1.5"
+                                        className="w-28 my-1.5"
                                         label="Temperature"
                                         value={temperature && (temperatureUnit === '°C' ? temperature : Units.celsiusToFahrenheit(temperature))}
                                         placeholder={temperatureUnit}
@@ -399,7 +399,7 @@ export const LandingWidget = () => {
                                         onChange={handleTemperatureChange}
                                         number
                                     />
-                                    <div className="w-28 pl-1 my-1.5">
+                                    <div className="w-28 pl-1.5 my-1.5">
                                         <SelectGroup>
                                             <SelectItem classNames={selectItemClass} selected={temperatureUnit === '°C'} onSelect={() => setTemperatureUnit('°C')} enabled>°C</SelectItem>
                                             <SelectItem classNames={selectItemClass} selected={temperatureUnit === '°F'} onSelect={() => setTemperatureUnit('°F')} enabled>°F</SelectItem>
@@ -408,7 +408,7 @@ export const LandingWidget = () => {
                                 </div>
                                 <div className="flex flex-row justify-end">
                                     <SimpleInput
-                                        className="w-36 my-1.5"
+                                        className="w-28 my-1.5"
                                         label={pressureUnit === 'hPa' ? 'QNH' : 'Altimeter'}
                                         value={pressure && (pressureUnit === 'hPa' ? pressure : Units.hectopascalToInchOfMercury(pressure))}
                                         placeholder={pressureUnit}
@@ -418,7 +418,7 @@ export const LandingWidget = () => {
                                         onChange={handlePressureChange}
                                         number
                                     />
-                                    <div className="w-28 pl-1 my-1.5">
+                                    <div className="w-28 pl-1.5 my-1.5">
                                         <SelectGroup>
                                             <SelectItem classNames={selectItemClass} selected={pressureUnit === 'hPa'} onSelect={() => setPressureUnit('hPa')} enabled>hPa</SelectItem>
                                             <SelectItem classNames={selectItemClass} selected={pressureUnit === 'in.Hg'} onSelect={() => setPressureUnit('in.Hg')} enabled>in.Hg</SelectItem>
@@ -426,7 +426,7 @@ export const LandingWidget = () => {
                                     </div>
                                 </div>
                                 <SimpleInput
-                                    className="w-64 my-1.5"
+                                    className="w-56 my-1.5"
                                     label="Rwy Altitude"
                                     value={altitude}
                                     placeholder="ft MSL"
@@ -437,7 +437,7 @@ export const LandingWidget = () => {
                                     number
                                 />
                                 <SimpleInput
-                                    className="w-64 my-1.5"
+                                    className="w-56 my-1.5"
                                     label="Rwy Heading"
                                     value={runwayHeading}
                                     placeholder="000"
@@ -449,7 +449,7 @@ export const LandingWidget = () => {
                                     number
                                 />
                                 <SelectInput
-                                    className="w-64 my-1.5"
+                                    className="w-56 my-1.5"
                                     label="Rwy Condition"
                                     defaultValue={runwayCondition}
                                     onChange={handleRunwayConditionChange}
@@ -466,7 +466,7 @@ export const LandingWidget = () => {
                             </div>
                             <div className="flex-1 m-2.5 column-right">
                                 <SimpleInput
-                                    className="w-64 my-1.5"
+                                    className="w-56 my-1.5"
                                     label="Rwy Slope"
                                     value={slope}
                                     placeholder="0.0%"
@@ -478,15 +478,8 @@ export const LandingWidget = () => {
                                     reverse
                                 />
                                 <div className="flex flex-row justify-start">
-                                    <div className="w-24 pr-1 my-1.5">
-                                        <SelectGroup>
-                                            <SelectItem classNames={selectItemClass} selected={lengthUnit === 'ft'} onSelect={() => setLengthUnit('ft')} enabled>ft</SelectItem>
-                                            <SelectItem classNames={selectItemClass} selected={lengthUnit === 'm'} onSelect={() => setLengthUnit('m')} enabled>m</SelectItem>
-                                        </SelectGroup>
-                                    </div>
                                     <SimpleInput
-                                        className="w-40 my-1.5"
-                                        label="Rwy LDA"
+                                        className="w-28 my-1.5"
                                         value={runwayLength && (lengthUnit === 'm' ? runwayLength : Units.metreToFoot(runwayLength))}
                                         placeholder={lengthUnit}
                                         min={0}
@@ -495,10 +488,18 @@ export const LandingWidget = () => {
                                         onChange={handleRunwayLengthChange}
                                         number
                                         reverse
+                                        noLabel
                                     />
+                                    <div className="w-28 pl-1.5 my-1.5">
+                                        <SelectGroup>
+                                            <SelectItem classNames={selectItemClass} selected={lengthUnit === 'ft'} onSelect={() => setLengthUnit('ft')} enabled>ft</SelectItem>
+                                            <SelectItem classNames={selectItemClass} selected={lengthUnit === 'm'} onSelect={() => setLengthUnit('m')} enabled>m</SelectItem>
+                                        </SelectGroup>
+                                    </div>
+                                    <div className="text-lg flex items-center justify-start mx-2.5">Rwy LDA</div>
                                 </div>
                                 <SimpleInput
-                                    className="w-64 my-1.5"
+                                    className="w-56 my-1.5"
                                     label="Approach Speed"
                                     value={approachSpeed}
                                     placeholder="Kts"
@@ -510,15 +511,8 @@ export const LandingWidget = () => {
                                     reverse
                                 />
                                 <div className="flex flex-row justify-start">
-                                    <div className="w-24 pr-1 my-1.5">
-                                        <SelectGroup>
-                                            <SelectItem classNames={selectItemClass} selected={weightUnit === 'lbs'} onSelect={() => setWeightUnit('lbs')} enabled>lbs</SelectItem>
-                                            <SelectItem classNames={selectItemClass} selected={weightUnit === 'kg'} onSelect={() => setWeightUnit('kg')} enabled>kg</SelectItem>
-                                        </SelectGroup>
-                                    </div>
                                     <SimpleInput
-                                        className="w-40 my-1.5"
-                                        label="Weight"
+                                        className="w-28 my-1.5"
                                         value={weight && (weightUnit === 'kg' ? weight : Units.kilogramToPound(weight))}
                                         placeholder={weightUnit}
                                         min={weightUnit === 'kg' ? 41000 : 90400}
@@ -527,17 +521,25 @@ export const LandingWidget = () => {
                                         onChange={handleWeightChange}
                                         number
                                         reverse
+                                        noLabel
                                     />
+                                    <div className="w-28 pl-1.5 my-1.5">
+                                        <SelectGroup>
+                                            <SelectItem classNames={selectItemClass} selected={weightUnit === 'lbs'} onSelect={() => setWeightUnit('lbs')} enabled>lbs</SelectItem>
+                                            <SelectItem classNames={selectItemClass} selected={weightUnit === 'kg'} onSelect={() => setWeightUnit('kg')} enabled>kg</SelectItem>
+                                        </SelectGroup>
+                                    </div>
+                                    <div className="text-lg flex items-center justify-start mx-2.5">Weight</div>
                                     <button
                                         onClick={handleSyncWeightValue}
-                                        className="text-lg font-medium hover:bg-teal-light my-1.5 py-2 px-6 flex items-center justify-center rounded-lg focus:outline-none"
+                                        className="text-lg font-medium hover:bg-teal-light my-1.5 py-2 px-4 flex items-center justify-center rounded-lg focus:outline-none"
                                         type="button"
                                     >
                                         <IconArrowBarToDown className="text-white" size={20} />
                                     </button>
                                 </div>
                                 <SelectInput
-                                    className="w-64 my-1.5"
+                                    className="w-56 my-1.5"
                                     label="Flaps"
                                     defaultValue={flaps}
                                     onChange={handleFlapsChange}
@@ -548,7 +550,7 @@ export const LandingWidget = () => {
                                     ]}
                                 />
                                 <SelectInput
-                                    className="w-64 my-1.5"
+                                    className="w-56 my-1.5"
                                     label="Overweight Proc"
                                     defaultValue={overweightProcedure}
                                     onChange={handleOverweightProcedureChange}
@@ -559,7 +561,7 @@ export const LandingWidget = () => {
                                     ]}
                                 />
                                 <SelectInput
-                                    className="w-64 my-1.5"
+                                    className="w-56 my-1.5"
                                     label="Reverse Thrust"
                                     defaultValue={reverseThrust}
                                     onChange={handleReverseThrustChange}
