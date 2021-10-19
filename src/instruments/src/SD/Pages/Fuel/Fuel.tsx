@@ -179,9 +179,9 @@ const FuelFlow = ({ unit }: FuelFlowProps) => {
 
             <text id="FuelFlowColon" x={83} y={461}>:</text>
 
-            <text id="FuelFlowValue" x={200} y={452}>{fuelForDisplay(leftFuelFlow + rightFuelFlow, unit, 60)}</text>
+            <text id="FuelFlowValue" x={201} y={455}>{fuelForDisplay(leftFuelFlow + rightFuelFlow, unit, 60)}</text>
 
-            <text id="FuelFlowUnit" x={215} y={452}>
+            <text id="FuelFlowUnit" x={215} y={455}>
                 {unit === '1' ? 'KG' : 'LBS'}
                 /MIN
             </text>
@@ -203,9 +203,9 @@ const FOB = ({ unit }:FOBProps) => {
             <text id="FobLabel" x={18} y={491}>FOB</text>
             <text id="FobColon" x={83} y={490}>:</text>
 
-            <text id="FobValue" x={200} y={481}>{fuelForDisplay(fob, unit, 1, 2)}</text>
+            <text id="FobValue" x={204} y={485}>{fuelForDisplay(fob, unit, 1, 2)}</text>
 
-            <text id="FobUnit" x={215} y={483}>{unit === '1' ? 'KG' : 'LBS'}</text>
+            <text id="FobUnit" x={215} y={487}>{unit === '1' ? 'KG' : 'LBS'}</text>
         </>
     );
 };
