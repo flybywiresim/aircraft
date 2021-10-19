@@ -102,7 +102,7 @@ class EngineControl {
       } else {
         engine = 2;
       }
-      // Obtain EGT imbalance (Max 20�C)
+      // Obtain EGT imbalance (Max 20 degree C)
       egtImbalance = (rand() % 20) + 1;
 
       // Obtain FF imbalance (Max 36 Kg/h)
@@ -334,7 +334,7 @@ class EngineControl {
   }
 
   /// <summary>
-  /// FBW Exhaust Gas Temperature (in ยบ Celsius)
+  /// FBW Exhaust Gas Temperature (in degree Celsius)
   /// Updates EGT with realistic values visualized in the ECAM
   /// </summary>
   void updateEGT(int engine,
@@ -418,7 +418,7 @@ class EngineControl {
   }
 
   /// <summary>
-  /// FBW Oil Qty, Pressure and Temperature (in Quarts, PSI and ยบ Celsius)
+  /// FBW Oil Qty, Pressure and Temperature (in Quarts, PSI and degree Celsius)
   /// Updates Oil with realistic values visualized in the SD
   /// </summary>
   void updateOil(int engine, double imbalance, double thrust, double simN2, double deltaN2, double deltaTime, double ambientTemp) {
