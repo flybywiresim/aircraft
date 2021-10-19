@@ -672,7 +672,7 @@ impl ControllerSignal<HighPressureValveSignal> for BleedMonitoringComputerChanne
 }
 impl ControllerSignal<PressureRegulatingValveSignal> for BleedMonitoringComputerChannel {
     fn signal(&self) -> Option<PressureRegulatingValveSignal> {
-        if self.transfer_pressure < Pressure::new::<psi>(15.) {
+        if self.transfer_pressure < Pressure::new::<psi>(18.) {
             return Some(PressureRegulatingValveSignal::new_closed());
         }
 
@@ -1974,11 +1974,11 @@ mod tests {
         let alt = Length::new::<foot>(0.);
 
         let mut test_bed = test_bed_with()
-            .in_isa_atmosphere(alt)
+            .idle_eng2()
             .stop_eng1()
-            .stop_eng2()
-            .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Shut)
-            .set_bleed_air_running();
+            .in_isa_atmosphere(alt)
+            .mach_number(MachNumber(0.))
+            .both_packs_auto();
 
         let mut ts = Vec::new();
         let mut hps = Vec::new();
