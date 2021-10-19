@@ -787,11 +787,11 @@ class EngineControl {
     srand((int)time(0));
 
     double engTime;
-    double fuelCenterInit = 0;            // 200 USG
-    double fuelLeftInit = 200;            //(rand() % 100) + 240;  // USG
-    double fuelRightInit = fuelLeftInit;  // USG
-    double fuelLeftAuxInit = 0;           // 228;                // USG
-    double fuelRightAuxInit = 0;          // USG
+    double fuelCenterInit = 200;
+    double fuelLeftInit = (rand() % 100) + 240;
+    double fuelRightInit = fuelLeftInit;
+    double fuelLeftAuxInit = 228;
+    double fuelRightAuxInit = 228;
 
     std::cout << "FADEC: Initializing EngineControl" << std::endl;
 
