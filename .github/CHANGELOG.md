@@ -5,6 +5,7 @@
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 
 ## 0.8.0
+
 1. [FBW] Improved speed dependent roll law model - @IbrahimK42 (IbrahimK42)
 1. [SOUND] Pack sounds use new APU model variables - @tracernz (Mike)
 1. [EFB] Added in-flight refueling capabilities - @Taz5150 (TazX [Z+2]#0405)
@@ -44,8 +45,11 @@
 1. [ISIS] Added inHg and metric altitude pin programs - @tracernz (Mike)
 1. [MCDU] Fixed transition alt init and display - @derl30n (Leon)
 1. [AP] Fixed V/S, FPA or ALT* speed protection to engage too early on high altitudes - @aguther (Andreas Guther)
+1. [MODEL] Add MCDU annunciator lights - @tracernz (Mike)
 1. [LIGHTS] Add ambient lt for all INTEG LT emssivies + C&D ambient fix - @bouveng (Johan Bouveng)
 1. [ECAM] Fixed misaligned items on ecam memos - @tyler58546 (tyler58546)
+1. [ECAM] Revised fuel page to match neo - @RichardPilbery (tricky_dicky#3571)
+1. [RMP] Added 25 kHz VHF spacing option - @tyler58546 (tyler58546)
 1. [FLIGHT MODEL] Fixed station locations and loads consistent with real A320 W&B manual - @ghosh9691
 1. [MCDU] Boarding and W/B AOC Pages update with Simbrief Integration - @viniciusfont
 1. [MCDU] Updated boarding logic, separate loading for pax and baggage - @sidnov (Sid)
@@ -53,6 +57,7 @@
 1. [EFB/UI] Override in-game fuel UI and fuel initialization - @Taz5150 (TazX [Z+2]#0405)
 
 ## 0.7.0
+
 1. [HYD] First building block, more to come. Hydraulics do not impact the sim YET. - @crocket6 (crocket)
 1. [HYD] Connected hydraulics element to electrical buses. - @crocket6 (crocket)
 1. [ENGINE] Fixed fuel consumption model - @Taz5150 (TazX [Z+2]#0405)
@@ -233,6 +238,7 @@
 1. [EFB] Persist sound and EFB settings correctly - @tracernz (Mike)
 
 ## 0.6.0
+
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
 1. [SOUND] Improved engine startup and fly by sound - @hotshotp (Boris#9134)
 1. [SOUND] Added new vent test and ext pwr relay random sounds - @hotshotp (Boris#9134)
@@ -475,6 +481,7 @@
 1. [AP] Improved ALT* law that targets 0.05g capture - @aguther (Andreas Guther)
 
 ## 0.5.2
+
 1. [CDU] Changing CRZ/DES speed to acknowledge any speed restriction - @Watsi01 (RogePete)
 1. [CDU] Two tiny fixes for flightphase speeds - @Watsi01 (RogePete)
 1. [ND] Flight route now hidden in VOR ROSE and ILS ROSE modes - @2hwk (2Cas#1022)
@@ -495,6 +502,7 @@
 1. [SOUND] Made the altitude callouts louder - @hotshotp (Boris)
 
 ## 0.5.1
+
 1. [CDU] Allow SimBrief user IDs as well as usernames - @pareil6 (pareil6)
 1. [CDU] Fix incorrect block time display on INIT/REVIEW - @pareil6 (pareil6)
 1. [ECAM] Improved PACKS indication - @MisterChocker (Leon)
@@ -505,6 +513,7 @@
 1. [MODEL] Incorporate new Asobo model changes - @pepperoni505 (pepperoni505)
 
 ## 0.5.0
+
 1. [FLIGHTMODEL] Reworked AOA table - @donstim - (donbikes#4084)
 1. [FLIGHTMODEL] Reworked flaps - @donstim - (donbikes#4084)
 1. [FLIGHTMODEL] Reworked drag/thrust ratio - @donstim - (donbikes#4084)
@@ -668,6 +677,7 @@
 1. [CDU] Fix SIDs scrolling on departures page - @SergeySoprykin (SergeyS)
 
 ## 0.4.0
+
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
 1. [ECAM] Improved Upper ECAM Visuals - @wpine215 (Iceman)
 1. [TEXTURES] Changed roughness of glareshield - @Pleasure (Pleasure)

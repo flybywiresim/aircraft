@@ -1050,6 +1050,21 @@
         - 7 | AFT BAGGAGE
         - 8 | AFT BULK/LOOSE
 
+- A32NX_MCDU_{side}_ANNUNC_{annunciator}
+    - Boolean
+    - Indicates whether the annunciator light on the MCDU is lit
+    - {side}
+        - L
+        - R
+    - {annunciator}
+        - FAIL
+        - FMGC
+        - MCDU_MENU
+        - FM1
+        - IND
+        - RDY
+        - FM2
+
 ## Fly-By-Wire System
 
 - A32NX_SIDESTICK_POSITION_X

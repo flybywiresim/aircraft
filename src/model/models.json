@@ -78,6 +78,10 @@
       {
         "gltf": "./buttondecals/buttondecals.gltf",
         "bin": "./buttondecals/buttondecals.bin"
+      },
+      {
+        "gltf": "./mcdu-annunc/mcdu-annunc.gltf",
+        "bin": "./mcdu-annunc/mcdu-annunc.bin"
       }
     ],
     "modifications": [
