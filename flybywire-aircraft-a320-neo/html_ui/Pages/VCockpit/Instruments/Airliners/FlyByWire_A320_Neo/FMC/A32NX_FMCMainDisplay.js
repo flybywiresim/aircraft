@@ -3463,7 +3463,7 @@ class FMCMainDisplay extends BaseAirliners {
                                 runway.length / 2 / 1852, // TODO unit conversion lib
                                 runway.latitude, runway.longitude
                             );
-                            return onSuccess(adjustedCoordinates, Facilities.getMagVar(adjustedCoordinates));
+                            return onSuccess(adjustedCoordinates, Facilities.getMagVar(adjustedCoordinates.lat, adjustedCoordinates.long));
                         }
                     }
                     return onError(NXSystemMessages.notInDatabase);
@@ -3509,7 +3509,7 @@ class FMCMainDisplay extends BaseAirliners {
             const lat = (latD + latM / 60) * (latB === "S" ? -1 : 1);
             const lon = (lonD + lonM / 60) * (lonB === "W" ? -1 : 1);
             const ll = new LatLongAlt(lat, lon);
-            return onSuccess(ll, Facilities.getMagVar(ll));
+            return onSuccess(ll, Facilities.getMagVar(ll.lat, ll.long));
         }
         return onError(NXSystemMessages.formatError);
     }
@@ -3535,7 +3535,7 @@ class FMCMainDisplay extends BaseAirliners {
         } else {
             this.getOrSelectWaypointByIdent(place, (waypoint) => {
                 if (waypoint) {
-                    return onSuccess(waypoint.infos.coordinates, waypoint.infos.magneticVariation || Facilities.getMagVar(waypoint.infos.coordinates));
+                    return onSuccess(waypoint.infos.coordinates, waypoint.infos.magneticVariation || Facilities.getMagVar(waypoint.infos.coordinates.lat, waypoint.infos.coordinates.long));
                 } else {
                     return onError(NXSystemMessages.notInDatabase);
                 }
