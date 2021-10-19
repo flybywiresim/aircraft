@@ -1,4 +1,5 @@
 import React, { useCallback, useRef } from 'react';
+import { usePersistentProperty } from '@instruments/common/persistence';
 import { RadioPanelDisplay } from './RadioPanelDisplay';
 import { useInteractionEvent } from '../../Common/hooks';
 import { RateMultiplierKnob, UpdateValueCallback } from '../../Common/RateMultiplierKnob';
@@ -99,6 +100,7 @@ const offsetFrequencyChannel = (spacing: ChannelSpacing, channel: number, offset
  * Renders standby frequency RadioPanelDisplay sub-component.
  */
 export const StandbyFrequency = (props: Props) => {
+    const spacing = usePersistentProperty('RMP_VHF_SPACING_25KHZ', '0')[0] === '0' ? 8.33 : 25;
     // Handle outer knob turned.
     const outerKnobUpdateCallback: UpdateValueCallback = useCallback((offset) => {
         const frequency = Math.round(props.value / 1000);
@@ -119,7 +121,7 @@ export const StandbyFrequency = (props: Props) => {
 
         const integer = Math.floor(frequency / 1000);
         // @todo determine correct frequency spacing depending on mode.
-        const decimal = offsetFrequencyChannel(8.33, frequency % 1000, offset);
+        const decimal = offsetFrequencyChannel(spacing, frequency % 1000, offset);
         // @todo determine min/max depending on mode.
         const maxDecimal = integer === 136 ? 975 : 1000;
         const newDecimal = Utils.Clamp(decimal, 0, maxDecimal);
