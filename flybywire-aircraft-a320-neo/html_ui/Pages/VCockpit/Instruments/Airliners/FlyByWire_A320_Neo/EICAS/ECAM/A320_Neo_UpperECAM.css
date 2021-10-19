@@ -70,7 +70,7 @@ a320-neo-upper-ecam #EnginesPanel #GaugeInfo .SLOT2_UNIT {
   height: 26%;
   font-size: 38px;
   margin-left: -22px;
-  letter-spacing: -6px;
+  letter-spacing: -2px;
   color: var(--displayCyan);
 }
 
