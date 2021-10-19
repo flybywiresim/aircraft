@@ -299,7 +299,6 @@ impl A320Hydraulic {
 
             ram_air_turbine: RamAirTurbine::new(context),
             ram_air_turbine_controller: A320RamAirTurbineController::new(
-                context,
                 Self::RAT_CONTROL_SOLENOID1_POWER_BUS,
                 Self::RAT_CONTROL_SOLENOID2_POWER_BUS,
             ),
@@ -1231,9 +1230,6 @@ impl SimulationElement for A320PowerTransferUnitController {
 }
 
 struct A320RamAirTurbineController {
-    general_eng_1_starter_active_id: VariableIdentifier,
-    general_eng_2_starter_active_id: VariableIdentifier,
-
     is_solenoid_1_powered: bool,
     solenoid_1_bus: ElectricalBusType,
 
@@ -1241,21 +1237,10 @@ struct A320RamAirTurbineController {
     solenoid_2_bus: ElectricalBusType,
 
     should_deploy: bool,
-    eng_1_master_on: bool,
-    eng_2_master_on: bool,
 }
 impl A320RamAirTurbineController {
-    fn new(
-        context: &mut InitContext,
-        solenoid_1_bus: ElectricalBusType,
-        solenoid_2_bus: ElectricalBusType,
-    ) -> Self {
+    fn new(solenoid_1_bus: ElectricalBusType, solenoid_2_bus: ElectricalBusType) -> Self {
         Self {
-            general_eng_1_starter_active_id: context
-                .get_identifier("GENERAL ENG STARTER ACTIVE:1".to_owned()),
-            general_eng_2_starter_active_id: context
-                .get_identifier("GENERAL ENG STARTER ACTIVE:2".to_owned()),
-
             is_solenoid_1_powered: false,
             solenoid_1_bus,
 
@@ -1263,8 +1248,6 @@ impl A320RamAirTurbineController {
             solenoid_2_bus,
 
             should_deploy: false,
-            eng_1_master_on: false,
-            eng_2_master_on: false,
         }
     }
 
@@ -1291,11 +1274,6 @@ impl RamAirTurbineController for A320RamAirTurbineController {
     }
 }
 impl SimulationElement for A320RamAirTurbineController {
-    fn read(&mut self, reader: &mut SimulatorReader) {
-        self.eng_1_master_on = reader.read(&self.general_eng_1_starter_active_id);
-        self.eng_2_master_on = reader.read(&self.general_eng_2_starter_active_id);
-    }
-
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
         self.is_solenoid_1_powered = buses.is_powered(self.solenoid_1_bus);
         self.is_solenoid_2_powered = buses.is_powered(self.solenoid_2_bus);
