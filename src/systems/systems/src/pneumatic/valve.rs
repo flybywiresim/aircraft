@@ -336,11 +336,10 @@ impl PneumaticExhaust {
     ) {
         let equalization_volume = self.vol_to_target(from, context.ambient_pressure());
 
-        let fluid_to_move = from.volume().min(
-            self.exhaust_speed
-                * equalization_volume
-                * (1. - (-Self::TRANSFER_SPEED * context.delta_as_secs_f64()).exp()),
-        );
+        let fluid_to_move = (self.exhaust_speed
+            * equalization_volume
+            * (1. - (-Self::TRANSFER_SPEED * context.delta_as_secs_f64()).exp()))
+        .max(-from.volume());
 
         from.change_volume(fluid_to_move);
 
