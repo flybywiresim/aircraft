@@ -43,6 +43,16 @@ class FadecGauge {
     if (SUCCEEDED(SimConnect_Open(&hSimConnect, "FadecGauge", nullptr, 0, 0, 0))) {
       std::cout << "FADEC: SimConnect connected." << std::endl;
 
+      // SimConnect Payload Definitions
+      SimConnect_AddToDataDefinition(hSimConnect, DataTypesID::PayloadStation1, "PAYLOAD STATION WEIGHT:1", "Pounds");
+      SimConnect_AddToDataDefinition(hSimConnect, DataTypesID::PayloadStation2, "PAYLOAD STATION WEIGHT:2", "Pounds");
+      SimConnect_AddToDataDefinition(hSimConnect, DataTypesID::PayloadStation3, "PAYLOAD STATION WEIGHT:3", "Pounds");
+      SimConnect_AddToDataDefinition(hSimConnect, DataTypesID::PayloadStation4, "PAYLOAD STATION WEIGHT:4", "Pounds");
+      SimConnect_AddToDataDefinition(hSimConnect, DataTypesID::PayloadStation5, "PAYLOAD STATION WEIGHT:5", "Pounds");
+      SimConnect_AddToDataDefinition(hSimConnect, DataTypesID::PayloadStation6, "PAYLOAD STATION WEIGHT:6", "Pounds");
+      SimConnect_AddToDataDefinition(hSimConnect, DataTypesID::PayloadStation7, "PAYLOAD STATION WEIGHT:7", "Pounds");
+      SimConnect_AddToDataDefinition(hSimConnect, DataTypesID::PayloadStation8, "PAYLOAD STATION WEIGHT:8", "Pounds");
+
       // SimConnect Tanker Definitions
       SimConnect_AddToDataDefinition(hSimConnect, DataTypesID::FuelLeftMain, "FUEL TANK LEFT MAIN QUANTITY", "Gallons");
       SimConnect_AddToDataDefinition(hSimConnect, DataTypesID::FuelRightMain, "FUEL TANK RIGHT MAIN QUANTITY", "Gallons");
@@ -65,7 +75,6 @@ class FadecGauge {
       // Simulation Data
       SimConnect_AddToDataDefinition(hSimConnect, DataTypesID::SimulationDataTypeId, "SIMULATION TIME", "NUMBER");
       SimConnect_AddToDataDefinition(hSimConnect, DataTypesID::SimulationDataTypeId, "SIMULATION RATE", "NUMBER");
-
       std::cout << "FADEC: SimConnect registrations complete." << std::endl;
       return true;
     }

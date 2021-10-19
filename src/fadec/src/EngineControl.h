@@ -512,6 +512,57 @@ class EngineControl {
   }
 
   /// <summary>
+  /// FBW Payload checking and UI override function
+  /// </summary>
+  void checkPayload() {
+    double fuelWeightGallon = simVars->getFuelWeightGallon();
+    double aircraftEmptyWeight = simVars->getEmptyWeight();                                   // in LBS
+    double aircraftTotalWeight = simVars->getTotalWeight();                                   // in LBS
+    double fuelTotalWeight = simVars->getFuelTotalQuantity() * fuelWeightGallon;              // in LBS
+    double payloadTotalWeight = aircraftTotalWeight - aircraftEmptyWeight - fuelTotalWeight;  // in LBS
+
+    double paxRows1to6Actual = simVars->getPaxRows1to6Actual() * 185;                       // in LBS
+    double paxRows7to13Actual = simVars->getPaxRows7to13Actual() * 185;                     // in LBS
+    double paxRows14to21Actual = simVars->getPaxRows14to21Actual() * 185;                   // in LBS
+    double paxRows22to29Actual = simVars->getPaxRows22to29Actual() * 185;                   // in LBS
+    double paxRows1to6Desired = simVars->getPaxRows1to6Desired() * 185;                     // in LBS
+    double paxRows7to13Desired = simVars->getPaxRows7to13Desired() * 185;                   // in LBS
+    double paxRows14to21Desired = simVars->getPaxRows14to21Desired() * 185;                 // in LBS
+    double paxRows22to29Desired = simVars->getPaxRows22to29Desired() * 185;                 // in LBS
+    double cargoFwdContainerActual = simVars->getCargoFwdContainerActual() * KGS_TO_LBS;    // in LBS
+    double cargoAftContainerActual = simVars->getCargoAftContainerActual() * KGS_TO_LBS;    // in LBS
+    double cargoAftBaggageActual = simVars->getCargoAftBaggageActual() * KGS_TO_LBS;        // in LBS
+    double cargoAftBulkActual = simVars->getCargoAftBulkActual() * KGS_TO_LBS;              // in LBS
+    double cargoFwdContainerDesired = simVars->getCargoFwdContainerDesired() * KGS_TO_LBS;  // in LBS
+    double cargoAftContainerDesired = simVars->getCargoAftContainerDesired() * KGS_TO_LBS;  // in LBS
+    double cargoAftBaggageDesired = simVars->getCargoAftBaggageDesired() * KGS_TO_LBS;      // in LBS
+    double cargoAftBulkDesired = simVars->getCargoAftBulkDesired() * KGS_TO_LBS;            // in LBS
+    double paxTotalWeightActual = (paxRows1to6Actual + paxRows7to13Actual + paxRows14to21Actual + paxRows22to29Actual);
+    double paxTotalWeightDesired = (paxRows1to6Desired + paxRows7to13Desired + paxRows14to21Desired + paxRows22to29Desired);
+    double cargoTotalWeightActual = (cargoFwdContainerActual + cargoAftContainerActual + cargoAftBaggageActual + cargoAftBulkActual);
+    double cargoTotalWeightDesired = (cargoFwdContainerDesired + cargoAftContainerDesired + cargoAftBaggageDesired + cargoAftBulkDesired);
+
+    if (abs(payloadTotalWeight - paxTotalWeightActual + cargoTotalWeightActual) > 5) {
+      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::PayloadStation1, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
+                                    &paxRows1to6Actual);
+      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::PayloadStation2, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
+                                    &paxRows7to13Actual);
+      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::PayloadStation3, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
+                                    &paxRows14to21Actual);
+      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::PayloadStation4, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
+                                    &paxRows22to29Actual);
+      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::PayloadStation5, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
+                                    &cargoFwdContainerActual);
+      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::PayloadStation6, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
+                                    &cargoAftContainerActual);
+      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::PayloadStation7, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
+                                    &cargoAftBaggageActual);
+      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::PayloadStation8, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
+                                    &cargoAftBulkActual);
+    }
+  }
+
+  /// <summary>
   /// FBW Fuel Consumption and Tankering
   /// Updates Fuel Consumption with realistic values
   /// </summary>
@@ -559,10 +610,11 @@ class EngineControl {
     double deltaFuelRate = abs(fuelTotalActual - fuelTotalPre) / (fuelWeightGallon * deltaTime);                  // LBS/ sec
 
     deltaTime = deltaTime / 3600;
-
+    // std::cout << std::scientific << "FADEC: deltaT= " << deltaTime * 3600 << " pre=" << fuelLeftPre * LBS_TO_KGS
+    //          << " actual=" << leftQuantity * LBS_TO_KGS << " diff= " << (fuelLeftPre - leftQuantity) * LBS_TO_KGS
+    //          << " diff= " << (fuelLeftPre - leftQuantity) * LBS_TO_KGS / (deltaTime * 3600) << std::flush;
     // Pump State Logic for Left Wing
     if (pumpStateLeft == 0) {
-      /*std::cout << "FADEC: Pump is 0. Pre= " << fuelLeftPre << " Actual= " << leftQuantity << std::endl;*/
       if (fuelLeftPre > 0 && leftQuantity <= 0.01) {
         timerLeft->reset();
         simVars->setPumpStateLeft(1);
@@ -599,9 +651,11 @@ class EngineControl {
     if ((refuelStartedByUser == 0 && deltaFuelRate > FUEL_THRESHOLD) ||
         (refuelStartedByUser == 1 && deltaFuelRate > FUEL_THRESHOLD && refuelRate < 2)) {
       uiFuelTamper = true;
+      std::cout << "Fadec: Tamper TRUE" << std::flush;
     }
 
-    if (simPaused || uiFuelTamper) {                 // Detects whether the Sim is paused or the Fuel UI is being tampered with
+    if (simPaused || uiFuelTamper) {  // Detects whether the Sim is paused or the Fuel UI is being tampered with
+      std::cout << "Fadec: PAUSED" << std::flush;
       simVars->setFuelLeftPre(fuelLeftPre);          // in LBS
       simVars->setFuelRightPre(fuelRightPre);        // in LBS
       simVars->setFuelAuxLeftPre(fuelAuxLeftPre);    // in LBS
@@ -620,11 +674,12 @@ class EngineControl {
       SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelLeftAux, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double), &fuelLeftAux);
       SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelRightAux, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double), &fuelRightAux);
     } else if (!uiFuelTamper && refuelStartedByUser == 1) {  // Detects refueling from the EFB
-      simVars->setFuelLeftPre(leftQuantity);                 // in LBS
-      simVars->setFuelRightPre(rightQuantity);               // in LBS
-      simVars->setFuelAuxLeftPre(leftAuxQuantity);           // in LBS
-      simVars->setFuelAuxRightPre(rightAuxQuantity);         // in LBS
-      simVars->setFuelCenterPre(centerQuantity);             // in LBS
+      std::cout << "Fadec: EFB TRUE" << std::flush;
+      simVars->setFuelLeftPre(leftQuantity);          // in LBS
+      simVars->setFuelRightPre(rightQuantity);        // in LBS
+      simVars->setFuelAuxLeftPre(leftAuxQuantity);    // in LBS
+      simVars->setFuelAuxRightPre(rightAuxQuantity);  // in LBS
+      simVars->setFuelCenterPre(centerQuantity);      // in LBS
     } else {
       //--------------------------------------------
       // Left Engine and Wing routine
@@ -732,11 +787,11 @@ class EngineControl {
     srand((int)time(0));
 
     double engTime;
-    double fuelCenterInit = 0;                   // USG
-    double fuelLeftInit = (rand() % 100) + 240;  // USG
-    double fuelRightInit = fuelLeftInit;         // USG
-    double fuelLeftAuxInit = 228;                // USG
-    double fuelRightAuxInit = 228;               // USG
+    double fuelCenterInit = 0;            // 200 USG
+    double fuelLeftInit = 200;            //(rand() % 100) + 240;  // USG
+    double fuelRightInit = fuelLeftInit;  // USG
+    double fuelLeftAuxInit = 0;           // 228;                // USG
+    double fuelRightAuxInit = 0;          // USG
 
     std::cout << "FADEC: Initializing EngineControl" << std::endl;
 
@@ -878,6 +933,7 @@ class EngineControl {
       }
     }
 
+    checkPayload();
     updateFuel(deltaTime);
     // timer.elapsed();
   }
