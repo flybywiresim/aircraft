@@ -1,13 +1,15 @@
 /* eslint-disable no-nested-ternary */
 import './Fuel.scss';
 import ReactDOM from 'react-dom';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { SimVarProvider, useSimVar } from '@instruments/common/simVars';
 import { getRenderTarget, setIsEcamPage } from '@instruments/common/defaults';
 import { useArinc429Var } from '@instruments/common/arinc429';
 import { usePersistentProperty } from '../../../Common/persistence';
 import { fuelForDisplay, fuelInTanksForDisplay } from '../../Common/FuelFunctions';
 import { Triangle } from '../../Common/Shapes';
+import { PageTitle } from '../../Common/PageTitle';
+import { EcamPage } from '../../Common/EcamPage';
 
 setIsEcamPage('fuel_page');
 
@@ -34,8 +36,8 @@ export const FuelPage = () => {
 
     return (
         // This is already in an svg so we should remove the containing one - TODO remove style once we are not in the Asobo ECAM
-        <svg id="sd-fuel-page" viewBox="0 0 600 600" style={{ marginTop: '-60px' }} xmlns="http://www.w3.org/2000/svg">
-            <text className="PageTitle" x={14} y={16} alignmentBaseline="central">FUEL</text>
+        <EcamPage name="sd-fuel-page">
+            <PageTitle x={14} y={16} text="FUEL" />
 
             {/* Engines */}
             <>
@@ -91,28 +93,20 @@ export const FuelPage = () => {
                 {/* CrossFeed valve */}
                 <CrossFeedValve x={300} y={150} />
 
-                {/* Side lines */}
-                <line className="FlowShape" x1="160" y1="150" x2="275" y2="150" />
-                <line className="FlowShape" x1="325" y1="150" x2="440" y2="150" />
-
                 {(crossFeedPosition === 1) && (
                     <>
                         {/* Center valve lines */}
-                        <line className="FlowShape" x1="317" y1="150" x2="330" y2="150" />
-                        <line className="FlowShape" x1="270" y1="150" x2="283" y2="150" />
+                        <line className="FlowShape" x1="317" y1="150" x2="440" y2="150" />
+                        <line className="FlowShape" x1="160" y1="150" x2="283" y2="150" />
                     </>
                 )}
 
-                {/* Center pumps lines */}
-                <line className="FlowShape" x1="274" y1="150" x2="274" y2="205" />
-                <line className="FlowShape" x1="326" y1="150" x2="326" y2="205" />
-
                 {/* Pumps */}
-                <Pump x={259} y={205} pumpNumber={1} />
-                <Pump x={311} y={205} pumpNumber={4} />
+                <Pump x={267} y={223} pumpNumber={1} centreTank tankQuantity={tankCenter} />
+                <Pump x={302} y={223} pumpNumber={4} centreTank tankQuantity={tankCenter} />
 
                 {/* Quantities */}
-                <text className="TankQuantity" x={335} y={275}>{fuelInTanksForDisplay(tankCenter, unit, fuelWeightPerGallon)}</text>
+                <text className="TankQuantity" x={330} y={315}>{fuelInTanksForDisplay(tankCenter, unit, fuelWeightPerGallon)}</text>
             </>
 
             {/* Right */}
@@ -146,7 +140,7 @@ export const FuelPage = () => {
             {/* FOB */}
             <FOB unit={unit} />
 
-        </svg>
+        </EcamPage>
     );
 };
 
@@ -185,9 +179,9 @@ const FuelFlow = ({ unit }: FuelFlowProps) => {
 
             <text id="FuelFlowColon" x={83} y={461}>:</text>
 
-            <text id="FuelFlowValue" x={200} y={452}>{fuelForDisplay(leftFuelFlow + rightFuelFlow, unit, 60)}</text>
+            <text id="FuelFlowValue" x={201} y={455}>{fuelForDisplay(leftFuelFlow + rightFuelFlow, unit, 60)}</text>
 
-            <text id="FuelFlowUnit" x={215} y={452}>
+            <text id="FuelFlowUnit" x={215} y={455}>
                 {unit === '1' ? 'KG' : 'LBS'}
                 /MIN
             </text>
@@ -209,9 +203,9 @@ const FOB = ({ unit }:FOBProps) => {
             <text id="FobLabel" x={18} y={491}>FOB</text>
             <text id="FobColon" x={83} y={490}>:</text>
 
-            <text id="FobValue" x={200} y={481}>{fuelForDisplay(fob, unit, 1, 2)}</text>
+            <text id="FobValue" x={204} y={485}>{fuelForDisplay(fob, unit, 1, 2)}</text>
 
-            <text id="FobUnit" x={215} y={483}>{unit === '1' ? 'KG' : 'LBS'}</text>
+            <text id="FobUnit" x={215} y={487}>{unit === '1' ? 'KG' : 'LBS'}</text>
         </>
     );
 };
@@ -224,9 +218,7 @@ const Wings = () => (
         {/* Top line */}
         <path className="ThickShape" d="M 585, 255 l -124.2, -21.6" />
         <path className="ThickShape" d="M 15,  255 l 124.2, -21.6" />
-        <path className="ThickShape" d="M 245, 215 l 12, 0" />
-        <path className="ThickShape" d="M 292, 215 l 16, 0" />
-        <path className="ThickShape" d="M 343, 215 l 14, 0" />
+        <path className="ThickShape" d="M 245, 215 l 110, 0" />
         <path className="ThickShape" d="M 245, 215 l -29.9, 5.2" />
         <path className="ThickShape" d="M 355, 215 l 29.9, 5.2" />
 
@@ -324,21 +316,26 @@ type PumpProps = {
     x: number,
     y: number,
     onBus?: string,
-    pumpNumber: number
+    pumpNumber: number,
+    centreTank?: boolean,
+    tankQuantity?: number
 }
 
-const Pump = ({ x, y, onBus = 'DC_ESS', pumpNumber }: PumpProps) => {
+const Pump = ({ x, y, onBus = 'DC_ESS', pumpNumber, centreTank, tankQuantity }: PumpProps) => {
     const [active] = useSimVar(`FUELSYSTEM PUMP ACTIVE:${pumpNumber}`, 'bool', 500);
-    const [pushButtonPressed] = pumpNumber === 1 || pumpNumber === 4
-        ? pumpNumber === 1
-            ? useSimVar('L:XMLVAR_Momentary_PUSH_OVHD_FUEL_PUMP1_Pressed', 'bool', 500)
-            : useSimVar('L:XMLVAR_Momentary_PUSH_OVHD_FUEL_PUMP2_Pressed', 'bool', 500)
-        : [null];
-
     const [busIsPowered] = useSimVar(`L:A32NX_ELEC_${onBus}_BUS_IS_POWERED`, 'bool', 1000);
+    const [centreTankGreen, setCentreTankGreen] = useState(false);
+    const [pushButton] = useSimVar(`FUELSYSTEM PUMP SWITCH:${pumpNumber}`, 'bool', 500);
+    const [simOnGround] = useSimVar('SIM ON GROUND', 'bool', 1000);
+    // FIXME add centre tank logic once fuel system implemented
+    useEffect(() => {
+        if (centreTank) {
+            setCentreTankGreen(pushButton && (tankQuantity === 0 || simOnGround));
+        }
+    }, [pushButton]);
 
     return (
-        <g className={(pumpNumber === 1 || pumpNumber === 4 ? pushButtonPressed && busIsPowered : active && busIsPowered) ? 'ThickShape PumpActive' : 'ThickShape PumpInactive'}>
+        <g className={(active && busIsPowered) || centreTankGreen ? 'ThickShape PumpActive' : 'ThickShape PumpInactive'}>
             <rect x={x} y={y} width="30" height="30" />
             {active
                 ? (busIsPowered
@@ -350,6 +347,14 @@ const Pump = ({ x, y, onBus = 'DC_ESS', pumpNumber }: PumpProps) => {
             {busIsPowered
                 ? null
                 : <text className="LoIndication" x={x + 15} y={y + 20}>LO</text>}
+            {(pumpNumber === 1 || pumpNumber === 4) && active && (
+                <g className="ThickShape PumpActive">
+                    <line x1={x + 15} y1={y + 30} x2={x + 15} y2={y + 60} />
+                    <line x1={pumpNumber === 1 ? x + 16 : x + 14} y1={y + 60} x2={pumpNumber === 1 ? x - 8 : x + 40} y2={y + 60} />
+                    {(pumpNumber === 1) && <Triangle x={x - 26} y={y + 60} colour="Green" fill={0} orientation={-90} />}
+                    {(pumpNumber === 4) && <Triangle x={x + 59} y={y + 60} colour="Green" fill={0} orientation={90} />}
+                </g>
+            )}
         </g>
     );
 };
