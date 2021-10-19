@@ -9,6 +9,7 @@
 #include "Autothrust.h"
 #include "ElevatorTrimHandler.h"
 #include "EngineData.h"
+#include "FlapsHandler.h"
 #include "FlightDataRecorder.h"
 #include "FlyByWire.h"
 #include "InterpolatingLookupTable.h"
@@ -132,6 +133,9 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idFlightDirectorPitch;
   std::unique_ptr<LocalVariable> idFlightDirectorYaw;
 
+  std::unique_ptr<LocalVariable> idBetaTarget;
+  std::unique_ptr<LocalVariable> idBetaTargetActive;
+
   std::unique_ptr<LocalVariable> idAutopilotAutolandWarning;
 
   std::unique_ptr<LocalVariable> idAutopilotActiveAny;
@@ -233,9 +237,7 @@ class FlyByWireInterface {
 
   std::unique_ptr<LocalVariable> idFlapsHandleIndex;
   std::unique_ptr<LocalVariable> idFlapsHandlePercent;
-
-  std::unique_ptr<LocalVariable> flapsHandleIndexFlapConf;
-  std::unique_ptr<LocalVariable> flapsPosition;
+  std::shared_ptr<FlapsHandler> flapsHandler;
 
   std::unique_ptr<LocalVariable> idSpoilersArmed;
   std::unique_ptr<LocalVariable> idSpoilersHandlePosition;
@@ -270,7 +272,7 @@ class FlyByWireInterface {
   bool updateFlyByWire(double sampleTime);
   bool updateAutothrust(double sampleTime);
 
-  bool updateSpoilers(double sampleTime);
+  bool updateFlapsSpoilers(double sampleTime);
 
   bool updateAltimeterSetting(double sampleTime);
 

@@ -1,3 +1,4 @@
+import { usePersistentProperty } from '@instruments/common/persistence';
 import React from 'react';
 import { Bug } from './Bug';
 import { DigitalAltitudeIndicator } from './DigitalAltitudeIndicator';
@@ -41,25 +42,29 @@ type AltitudeIndicatorProps = {
     bugs: Bug[]
 }
 
-export const AltitudeIndicator: React.FC<AltitudeIndicatorProps> = ({ altitude, mda, bugs }) => (
-    <g id="AltitudeIndicator">
-        <svg x={404} y={112} width={108} height={296} viewBox="0 0 108 296">
-            <VerticalTape
-                displayRange={1000}
-                valueSpacing={100}
-                distanceSpacing={20}
-                graduationElementFunction={(altitude: number, offset: number) => <Tick altitude={altitude} offset={offset} />}
-                bugs={bugs}
-                bugElementFunction={(bug: Bug, offset: number) => <BugElement bug={bug} offset={offset} />}
-                tapeValue={altitude}
-                lowerLimit={-2000}
-                upperLimit={50000}
-            />
-        </svg>
-        <DigitalAltitudeIndicator altitude={altitude} mda={mda} bugs={bugs} />
-        <MetricAltitudeIndicator altitude={altitude} />
-    </g>
-);
+export const AltitudeIndicator: React.FC<AltitudeIndicatorProps> = ({ altitude, mda, bugs }) => {
+    const [metricAltitude] = usePersistentProperty('ISIS_METRIC_ALTITUDE', '0');
+
+    return (
+        <g id="AltitudeIndicator">
+            <svg x={404} y={112} width={108} height={296} viewBox="0 0 108 296">
+                <VerticalTape
+                    displayRange={1000}
+                    valueSpacing={100}
+                    distanceSpacing={20}
+                    graduationElementFunction={(altitude: number, offset: number) => <Tick altitude={altitude} offset={offset} />}
+                    bugs={bugs}
+                    bugElementFunction={(bug: Bug, offset: number) => <BugElement bug={bug} offset={offset} />}
+                    tapeValue={altitude}
+                    lowerLimit={-2000}
+                    upperLimit={50000}
+                />
+            </svg>
+            <DigitalAltitudeIndicator altitude={altitude} mda={mda} bugs={bugs} />
+            { metricAltitude === '1' && <MetricAltitudeIndicator altitude={altitude} /> }
+        </g>
+    );
+};
 
 type MetricAltitudeIndicatorProps = {
     altitude: number

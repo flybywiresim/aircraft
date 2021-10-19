@@ -941,70 +941,6 @@
       0 | Retracted
       1 | Full extension
 
-- A32NX_LEFT_FLAPS_POSITION_PERCENT
-    - Percent
-    - Indicates the angle of the left flaps out of 40 degrees
-
-- A32NX_RIGHT_FLAPS_POSITION_PERCENT
-    - Percent
-    - Indicates the angle of the right flaps out of 40 degrees
-
-- A32NX_LEFT_SLATS_POSITION_PERCENT
-    - Percent
-    - Indicates the angle of the left slats out of 27 degrees
-
-- A32NX_RIGHT_SLATS_POSITION_PERCENT
-    - Percent
-    - Indicates the angle of the right slats out of 27 degrees
-
-- A32NX_LEFT_FLAPS_TARGET_ANGLE
-    - Degrees
-    - Indicates the target angle of the left flaps
-      according to the configuration.
-    
-- A32NX_RIGHT_FLAPS_TARGET_ANGLE
-    - Degrees
-    - Indicates the target angle of the right flaps
-      according to the configuration.
-
-- A32NX_LEFT_SLATS_TARGET_ANGLE
-    - Degrees
-    - Indicates the target angle of the left slats
-      according to the configuration.
-    
-- A32NX_RIGHT_SLATS_TARGET_ANGLE
-    - Degrees
-    - Indicates the target angle of the right slats
-      according to the configuration.
-
-- A32NX_LEFT_FLAPS_ANGLE
-    - Degrees
-    - The actual angle of the left flaps
-
-- A32NX_RIGHT_FLAPS_ANGLE
-    - Degrees
-    - The actual angle of the right flaps
-
-- A32NX_LEFT_SLATS_ANGLE
-    - Degrees
-    - The actual angle of the left slats
-
-- A32NX_RIGHT_SLATS_ANGLE
-    - Degrees
-    - The actual angle of the right slats
-    
-- A32NX_FLAPS_CONF_INDEX
-    - Number
-    - Indicates the flap configuration index according to the table
-    - Value | Meaning
-      --- | ---
-      0 | Conf0
-      1 | Conf1
-      2 | Conf1F
-      3 | Conf2
-      4 | Conf3
-      5 | ConfFull
-
 - A32NX_SPOILERS_ARMED
     - Bool
     - Indicates if the ground spoilers are armed
@@ -1114,6 +1050,21 @@
         - 8 + 1 | AFT BAGGAGE
         - 9 + 1 | AFT BULK/LOOSE
 
+- A32NX_MCDU_{side}_ANNUNC_{annunciator}
+    - Boolean
+    - Indicates whether the annunciator light on the MCDU is lit
+    - {side}
+        - L
+        - R
+    - {annunciator}
+        - FAIL
+        - FMGC
+        - MCDU_MENU
+        - FM1
+        - IND
+        - RDY
+        - FM2
+
 ## Fly-By-Wire System
 
 - A32NX_SIDESTICK_POSITION_X
@@ -1147,6 +1098,10 @@
     - Number (0.0 -> 1.0)
     - Percentage of current (filtered) alpha to alpha max
     - alpha max can be overshoot so values beyond 1.0 should be expected
+
+- A32NX_BETA_TARGET
+    - Degrees
+    - Target beta (sideslip) in case of asymmetric thrust
 
 - A32NX_3D_AILERON_LEFT_DEFLECTION
     - Number
