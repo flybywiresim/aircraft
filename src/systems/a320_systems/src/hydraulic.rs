@@ -1252,7 +1252,7 @@ impl A320RamAirTurbineController {
     ) -> Self {
         Self {
             general_eng_1_starter_active_id: context
-                .get_identifier("GENERAL ENG STARTER ACTIVE:2".to_owned()),
+                .get_identifier("GENERAL ENG STARTER ACTIVE:1".to_owned()),
             general_eng_2_starter_active_id: context
                 .get_identifier("GENERAL ENG STARTER ACTIVE:2".to_owned()),
 
