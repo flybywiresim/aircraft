@@ -641,7 +641,7 @@ impl A320Hydraulic {
     }
 
     // Actual logic of HYD PTU memo computed here until done within FWS
-    fn hyd_ptu_ecam_logic(&self) -> bool {
+    fn should_show_hyd_ptu_message_on_ecam(&self) -> bool {
         let ptu_valve_ctrol_off = !self.power_transfer_unit_controller.should_enable();
         let green_eng_pump_lo_pr = !self.green_loop.pump_section_switch_pressurised(0);
         let yellow_sys_lo_pr = !self.yellow_loop.pump_section_switch_pressurised(0);
@@ -723,7 +723,10 @@ impl SimulationElement for A320Hydraulic {
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write("HYD_PTU_ON_ECAM_MEMO", self.hyd_ptu_ecam_logic());
+        writer.write(
+            "HYD_PTU_ON_ECAM_MEMO",
+            self.should_show_hyd_ptu_message_on_ecam(),
+        );
 
         writer.write(
             "HYD_PTU_HIGH_PITCH_SOUND",

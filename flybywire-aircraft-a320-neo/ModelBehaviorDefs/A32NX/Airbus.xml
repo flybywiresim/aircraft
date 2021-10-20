@@ -700,18 +700,6 @@
         </UseTemplate>
     </Template>
 
-    <Template Name="FBW_AIRBUS_Update_PTU_Template">
-        <DefaultTemplateParameters>
-            <MIN_N1>19</MIN_N1>
-        </DefaultTemplateParameters>
-        <UseTemplate Name="ASOBO_GT_Update">
-            <FREQUENCY>1</FREQUENCY>
-            <UPDATE_CODE>
-            (A:TURB ENG N1:1, Percent) #MIN_N1# &gt; (A:GENERAL ENG COMBUSTION:1, Bool) and
-            (A:TURB ENG N1:2, Percent) #MIN_N1# &gt; (A:GENERAL ENG COMBUSTION:2, Bool) and + 1 == (&gt;L:XMLVAR_PTU_ON)
-            </UPDATE_CODE>
-        </UseTemplate>
-    </Template>
 
     <Template Name="FBW_AIRBUS_WeatherRadar_Template">
         <DefaultTemplateParameters>
