@@ -114,7 +114,7 @@ fn make_figure(h: &History) -> Figure {
         let mut curr_axis = Axes2D::new()
             .add(
                 Line2D::new(h.name_vector[idx].as_str())
-                    .data(&h.time_vector, &cur_data)
+                    .data(&h.time_vector, cur_data)
                     .color("blue")
                     // .marker("x")
                     // .linestyle("--")
@@ -201,7 +201,7 @@ impl History {
 
     /// Builds a graph using matplotlib python backend. PYTHON REQUIRED AS WELL AS MATPLOTLIB PACKAGE
     fn show_matplotlib(&self, figure_title: &str, path: &str) {
-        let fig = make_figure(&self);
+        let fig = make_figure(self);
 
         use rustplotlib::backend::Matplotlib;
         use rustplotlib::Backend;
@@ -350,9 +350,9 @@ fn green_loop_edp_simulation(path: &str) {
         );
     }
 
-    green_loop_history.show_matplotlib("green_loop_edp_simulation_press", &path);
-    edp1_history.show_matplotlib("green_loop_edp_simulation_EDP1 data", &path);
-    accu_green_history.show_matplotlib("green_loop_edp_simulation_Green Accum data", &path);
+    green_loop_history.show_matplotlib("green_loop_edp_simulation_press", path);
+    edp1_history.show_matplotlib("green_loop_edp_simulation_EDP1 data", path);
+    accu_green_history.show_matplotlib("green_loop_edp_simulation_Green Accum data", path);
 }
 
 fn yellow_green_ptu_loop_simulation(path: &str) {
@@ -614,11 +614,11 @@ fn yellow_green_ptu_loop_simulation(path: &str) {
         }
     }
 
-    loop_history.show_matplotlib("yellow_green_ptu_loop_simulation()_Loop_press", &path);
-    ptu_history.show_matplotlib("yellow_green_ptu_loop_simulation()_PTU", &path);
+    loop_history.show_matplotlib("yellow_green_ptu_loop_simulation()_Loop_press", path);
+    ptu_history.show_matplotlib("yellow_green_ptu_loop_simulation()_PTU", path);
 
-    accu_green_history.show_matplotlib("yellow_green_ptu_loop_simulation()_Green_acc", &path);
-    accu_yellow_history.show_matplotlib("yellow_green_ptu_loop_simulation()_Yellow_acc", &path);
+    accu_green_history.show_matplotlib("yellow_green_ptu_loop_simulation()_Green_acc", path);
+    accu_yellow_history.show_matplotlib("yellow_green_ptu_loop_simulation()_Yellow_acc", path);
 }
 
 fn yellow_epump_plus_edp2_with_ptu(path: &str) {
@@ -798,11 +798,11 @@ fn yellow_epump_plus_edp2_with_ptu(path: &str) {
         );
     }
 
-    loop_history.show_matplotlib("yellow_epump_plus_edp2_with_ptu()_Loop_press", &path);
-    ptu_history.show_matplotlib("yellow_epump_plus_edp2_with_ptu()_PTU", &path);
+    loop_history.show_matplotlib("yellow_epump_plus_edp2_with_ptu()_Loop_press", path);
+    ptu_history.show_matplotlib("yellow_epump_plus_edp2_with_ptu()_PTU", path);
 
-    accu_green_history.show_matplotlib("yellow_epump_plus_edp2_with_ptu()_Green_acc", &path);
-    accu_yellow_history.show_matplotlib("yellow_epump_plus_edp2_with_ptu()_Yellow_acc", &path);
+    accu_green_history.show_matplotlib("yellow_epump_plus_edp2_with_ptu()_Green_acc", path);
+    accu_yellow_history.show_matplotlib("yellow_epump_plus_edp2_with_ptu()_Yellow_acc", path);
 }
 
 fn hydraulic_loop(context: &mut InitContext, loop_color: &str) -> HydraulicLoop {
