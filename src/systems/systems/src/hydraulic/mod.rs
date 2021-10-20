@@ -1125,7 +1125,7 @@ impl Reservoir {
 }
 impl SimulationElement for Reservoir {
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write(&self.level_id, self.level().get::<gallon>());
+        writer.write(&self.level_id, self.level());
     }
 }
 
