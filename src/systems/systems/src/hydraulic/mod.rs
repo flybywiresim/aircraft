@@ -641,7 +641,6 @@ impl SimulationElement for HydraulicCircuit {
 /// through a checkvalve
 pub struct Section {
     pressure_id: String,
-    pressure_switch_id: String,
 
     static_leak_at_max_press: VolumeRate,
     current_volume: Volume,
@@ -691,7 +690,6 @@ impl Section {
 
         Self {
             pressure_id: format!("{}_PRESSURE", section_name),
-            pressure_switch_id: format!("{}_PRESSURE_SWITCH", section_name),
             static_leak_at_max_press,
             current_volume,
             max_high_press_volume,
@@ -946,7 +944,6 @@ impl SimulationElement for Section {
 
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.pressure_id, self.pressure());
-        writer.write(&self.pressure_switch_id, self.pressure_switch());
     }
 }
 
@@ -1766,7 +1763,6 @@ mod tests {
         test_bed.run();
 
         assert!(test_bed.contains_key("HYD_BROWN_PUMP2_SECTION_PRESSURE"));
-        assert!(test_bed.contains_key("HYD_BROWN_PUMP2_SECTION_PRESSURE_SWITCH"));
         assert!(test_bed.contains_key("HYD_BROWN_PUMP2_FIRE_VALVE_OPENED"));
     }
 
@@ -1777,15 +1773,12 @@ mod tests {
         test_bed.run();
 
         assert!(test_bed.contains_key("HYD_BROWN_PUMP0_SECTION_PRESSURE"));
-        assert!(test_bed.contains_key("HYD_BROWN_PUMP0_SECTION_PRESSURE_SWITCH"));
         assert!(test_bed.contains_key("HYD_BROWN_PUMP0_FIRE_VALVE_OPENED"));
 
         assert!(test_bed.contains_key("HYD_BROWN_PUMP1_SECTION_PRESSURE"));
-        assert!(test_bed.contains_key("HYD_BROWN_PUMP1_SECTION_PRESSURE_SWITCH"));
         assert!(test_bed.contains_key("HYD_BROWN_PUMP1_FIRE_VALVE_OPENED"));
 
         assert!(!test_bed.contains_key("HYD_BROWN_PUMP2_SECTION_PRESSURE"));
-        assert!(!test_bed.contains_key("HYD_BROWN_PUMP2_SECTION_PRESSURE_SWITCH"));
         assert!(!test_bed.contains_key("HYD_BROWN_PUMP2_FIRE_VALVE_OPENED"));
     }
 
@@ -1796,7 +1789,6 @@ mod tests {
         test_bed.run();
 
         assert!(test_bed.contains_key("HYD_BROWN_SYSTEM_SECTION_PRESSURE"));
-        assert!(test_bed.contains_key("HYD_BROWN_SYSTEM_SECTION_PRESSURE_SWITCH"));
     }
 
     #[test]
@@ -1806,18 +1798,14 @@ mod tests {
         test_bed.run();
 
         assert!(test_bed.contains_key("HYD_BROWN_SYSTEM_SECTION_PRESSURE"));
-        assert!(test_bed.contains_key("HYD_BROWN_SYSTEM_SECTION_PRESSURE_SWITCH"));
 
         assert!(test_bed.contains_key("HYD_BROWN_PUMP_SECTION_PRESSURE"));
-        assert!(test_bed.contains_key("HYD_BROWN_PUMP_SECTION_PRESSURE_SWITCH"));
         assert!(test_bed.contains_key("HYD_BROWN_FIRE_VALVE_OPENED"));
 
         assert!(!test_bed.contains_key("HYD_BROWN_PUMP1_SECTION_PRESSURE"));
-        assert!(!test_bed.contains_key("HYD_BROWN_PUMP1_SECTION_PRESSURE_SWITCH"));
         assert!(!test_bed.contains_key("HYD_BROWN_PUMP1_FIRE_VALVE_OPENED"));
 
         assert!(!test_bed.contains_key("HYD_BROWN_PUMP2_SECTION_PRESSURE"));
-        assert!(!test_bed.contains_key("HYD_BROWN_PUMP2_SECTION_PRESSURE_SWITCH"));
         assert!(!test_bed.contains_key("HYD_BROWN_PUMP2_FIRE_VALVE_OPENED"));
     }
 
