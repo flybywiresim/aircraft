@@ -2122,7 +2122,8 @@ mod tests {
             ts, hps, ips, c2s, c1s, c0s, pcss, escs, hpts, ipts, c2ts, c1ts, c0ts, pcsts, escts,
             hpv_open, prv_open, ipv_open, esv_open, abv_open, fav_open,
         ];
-        let mut file = File::create("DO NOT COMMIT.txt").expect("Could not create file");
+        let mut file = File::create("../a320_pneumatic_simulation_graph_data/generic_data.txt")
+            .expect("Could not create file");
 
         use std::io::Write;
 
@@ -2157,8 +2158,10 @@ mod tests {
 
         // If anyone is wondering, I am using python to plot pressure curves. This will be removed once the model is complete.
         let data = vec![ts, green_pressures, blue_pressures, yellow_pressures];
-        let mut file =
-            File::create("hydraulic_reservoir_pressures_data.txt").expect("Could not create file");
+        let mut file = File::create(
+            "../a320_pneumatic_simulation_graph_data/hydraulic_reservoir_pressures_data.txt",
+        )
+        .expect("Could not create file");
 
         use std::io::Write;
 
