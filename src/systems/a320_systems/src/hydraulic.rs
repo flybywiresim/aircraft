@@ -2379,7 +2379,7 @@ mod tests {
         impl Aircraft for A320HydraulicsTestAircraft {
             fn update_before_power_distribution(
                 &mut self,
-                _context: &UpdateContext,
+                _: &UpdateContext,
                 electricity: &mut Electricity,
             ) {
                 self.powered_source_ac
