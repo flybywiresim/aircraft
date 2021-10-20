@@ -787,8 +787,8 @@ class EngineControl {
     srand((int)time(0));
 
     double engTime;
-    double fuelCenterInit = 200;
-    double fuelLeftInit = (rand() % 100) + 240;
+    double fuelCenterInit = 0;
+    double fuelLeftInit = (rand() % 100) + 340;
     double fuelRightInit = fuelLeftInit;
     double fuelLeftAuxInit = 228;
     double fuelRightAuxInit = 228;
