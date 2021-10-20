@@ -255,6 +255,7 @@ struct ClientDataFlyByWire {
   double protection_ap_disc;
   double v_alpha_prot_kn;
   double v_alpha_max_kn;
+  double beta_target_deg;
 };
 
 struct ClientDataLocalVariables {
