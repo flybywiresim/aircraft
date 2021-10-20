@@ -612,7 +612,7 @@ impl A320Hydraulic {
             context,
             &mut vec![&mut self.engine_driven_pump_1],
             None::<&mut ElectricPump>,
-            &Some(&self.power_transfer_unit),
+            Some(&self.power_transfer_unit),
             &self.green_circuit_controller,
         );
 
@@ -622,7 +622,7 @@ impl A320Hydraulic {
             context,
             &mut vec![&mut self.engine_driven_pump_2],
             Some(&mut self.yellow_electric_pump),
-            &Some(&self.power_transfer_unit),
+            Some(&self.power_transfer_unit),
             &self.yellow_circuit_controller,
         );
 
@@ -632,7 +632,7 @@ impl A320Hydraulic {
             context,
             &mut vec![&mut self.blue_electric_pump],
             Some(&mut self.ram_air_turbine),
-            &None,
+            None,
             &self.blue_circuit_controller,
         );
 

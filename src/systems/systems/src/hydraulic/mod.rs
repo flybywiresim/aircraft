@@ -454,7 +454,7 @@ impl HydraulicCircuit {
         context: &UpdateContext,
         main_section_pumps: &mut Vec<&mut impl PressureSource>,
         system_section_pump: Option<&mut impl PressureSource>,
-        ptu: &Option<&PowerTransferUnit>,
+        ptu: Option<&PowerTransferUnit>,
         controller: &T,
     ) {
         self.update_shutoff_valves_states(controller);
@@ -555,7 +555,7 @@ impl HydraulicCircuit {
         );
     }
 
-    fn update_flows(&mut self, ptu: &Option<&PowerTransferUnit>, context: &UpdateContext) {
+    fn update_flows(&mut self, ptu: Option<&PowerTransferUnit>, context: &UpdateContext) {
         for section in &mut self.pump_sections {
             section.update_flow(&mut self.reservoir, ptu, &context);
         }
@@ -764,7 +764,7 @@ impl Section {
     pub fn update_flow(
         &mut self,
         reservoir: &mut Reservoir,
-        ptu: &Option<&PowerTransferUnit>,
+        ptu: Option<&PowerTransferUnit>,
         context: &UpdateContext,
     ) {
         let static_leak = self.static_leak(&context);
