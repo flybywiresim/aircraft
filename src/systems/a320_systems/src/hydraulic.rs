@@ -226,9 +226,9 @@ impl A320Hydraulic {
         ElectricalBusType::DirectCurrentHot(2);
 
     // Refresh rate of core hydraulic simulation
-    const HYDRAULIC_SIM_TIME_STEP: Duration = Duration::from_millis(50);
+    const HYDRAULIC_SIM_TIME_STEP: Duration = Duration::from_millis(33);
     // Refresh rate of max fixed step loop for fast physics
-    const HYDRAULIC_SIM_MAX_TIME_STEP_MILLISECONDS: Duration = Duration::from_millis(50);
+    const HYDRAULIC_SIM_MAX_TIME_STEP_MILLISECONDS: Duration = Duration::from_millis(33);
 
     pub(super) fn new() -> A320Hydraulic {
         A320Hydraulic {

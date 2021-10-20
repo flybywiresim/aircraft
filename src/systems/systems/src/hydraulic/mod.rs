@@ -1281,11 +1281,11 @@ pub struct ElectricPump {
 impl ElectricPump {
     const NOMINAL_SPEED: f64 = 7600.0;
     const DISPLACEMENT_BREAKPTS: [f64; 9] = [
-        0.0, 500.0, 1000.0, 1500.0, 2800.0, 2900.0, 3000.0, 3050.0, 3500.0,
+        0.0, 500.0, 1000.0, 1500.0, 2175.0, 2850.0, 3080.0, 3100.0, 3500.0,
     ];
-    const DISPLACEMENT_MAP: [f64; 9] = [0.263, 0.263, 0.263, 0.263, 0.263, 0.263, 0.263, 0.1, 0.0];
+    const DISPLACEMENT_MAP: [f64; 9] = [0.263, 0.263, 0.263, 0.263, 0.263, 0.2, 0.0, 0.0, 0.0];
     // 1 == No filtering
-    const DISPLACEMENT_DYNAMICS: f64 = 0.8;
+    const DISPLACEMENT_DYNAMICS: f64 = 0.4;
 
     pub fn new(id: &str, bus_type: ElectricalBusType, max_current: ElectricCurrent) -> Self {
         Self {

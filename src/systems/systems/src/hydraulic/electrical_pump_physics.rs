@@ -34,16 +34,17 @@ pub struct ElectricalPumpPhysics {
     current_controller: PidController,
 }
 impl ElectricalPumpPhysics {
-    const DEFAULT_INERTIA: f64 = 0.007;
+    const DEFAULT_INERTIA: f64 = 0.011;
     const DEFAULT_DYNAMIC_FRICTION_CONSTANT: f64 = 0.00004;
     const DEFAULT_RESISTANT_TORQUE_WHEN_OFF_NEWTON_METER: f64 = 2.8;
+    const BACKPRESSURE_PRELOAD_PSI: f64 = 200.;
 
     // Efficiency gives generated mechanical torque ratio vs electrical power used.
     // 0.95 will convert 95% of electrical consumption in mechanical torque
     const ELECTRICAL_EFFICIENCY: f64 = 0.95;
 
-    const DEFAULT_P_GAIN: f64 = 0.055;
-    const DEFAULT_I_GAIN: f64 = 0.8;
+    const DEFAULT_P_GAIN: f64 = 0.1;
+    const DEFAULT_I_GAIN: f64 = 0.4;
 
     pub fn new(
         id: &str,
@@ -113,7 +114,10 @@ impl ElectricalPumpPhysics {
 
         let pumping_torque = if self.is_active && self.is_powered {
             Torque::new::<pound_force_inch>(
-                current_pressure.get::<psi>() * current_displacement.get::<cubic_inch>()
+                current_pressure
+                    .get::<psi>()
+                    .max(Self::BACKPRESSURE_PRELOAD_PSI)
+                    * current_displacement.get::<cubic_inch>()
                     / (2. * std::f64::consts::PI),
             )
         } else {
@@ -226,7 +230,7 @@ mod tests {
     impl TestAircraft {
         fn new(electricity: &mut Electricity) -> Self {
             Self {
-                core_hydraulic_updater: FixedStepLoop::new(Duration::from_millis(50)),
+                core_hydraulic_updater: FixedStepLoop::new(Duration::from_millis(33)),
                 pump: physical_pump(),
                 current_pressure: Pressure::new::<psi>(0.),
                 current_displacement: Volume::new::<gallon>(0.),
@@ -311,7 +315,7 @@ mod tests {
 
         assert!(
             test_bed.query(|a| a.pump.speed())
-                >= AngularVelocity::new::<revolution_per_minute>(7300.)
+                >= AngularVelocity::new::<revolution_per_minute>(7000.)
         );
     }
 
@@ -346,7 +350,7 @@ mod tests {
         test_bed.run_with_delta(Duration::from_secs_f64(0.5));
         assert!(
             test_bed.query(|a| a.pump.speed())
-                >= AngularVelocity::new::<revolution_per_minute>(7500.)
+                >= AngularVelocity::new::<revolution_per_minute>(7300.)
         );
 
         // Checking we don't overshoot the 7600rpm target by more than 100rpm
@@ -357,7 +361,7 @@ mod tests {
     }
 
     #[test]
-    fn pump_spools_down_less_than_two_second_when_unpowered_with_no_displacement() {
+    fn pump_spools_down_less_than_three_second_when_unpowered_with_no_displacement() {
         let mut test_bed = SimulationTestBed::new(|electricity| TestAircraft::new(electricity));
 
         test_bed.command(|a| a.set_ac_1_power(true));
@@ -369,11 +373,11 @@ mod tests {
 
         assert!(
             test_bed.query(|a| a.pump.speed())
-                >= AngularVelocity::new::<revolution_per_minute>(7550.)
+                >= AngularVelocity::new::<revolution_per_minute>(7000.)
         );
 
         test_bed.command(|a| a.set_ac_1_power(false));
-        test_bed.run_with_delta(Duration::from_secs_f64(2.));
+        test_bed.run_with_delta(Duration::from_secs_f64(3.));
 
         assert!(
             test_bed.query(|a| a.pump.speed()) < AngularVelocity::new::<revolution_per_minute>(10.)
