@@ -24,7 +24,7 @@ use systems::{
     shared::{
         ApuMaster, ApuStart, AuxiliaryPowerUnitElectrical, EmergencyElectricalRatPushButton,
         EmergencyElectricalState, EngineCorrectedN2, EngineFirePushButtons,
-        LandingGearRealPosition, RamAirTurbineHydraulicLoopPressurised,
+        LandingGearRealPosition, RamAirTurbineHydraulicCircuitPressurised,
     },
     simulation::{
         SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext, Write,
@@ -64,7 +64,7 @@ impl A320Electrical {
         apu_overhead: &(impl ApuMaster + ApuStart),
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         engines: [&impl EngineCorrectedN2; 2],
-        hydraulic: &impl RamAirTurbineHydraulicLoopPressurised,
+        hydraulic: &impl RamAirTurbineHydraulicCircuitPressurised,
         landing_gear: &impl LandingGearRealPosition,
     ) {
         self.alternating_current.update_main_power_sources(
@@ -2190,8 +2190,8 @@ mod a320_electrical_circuit_tests {
             }
         }
     }
-    impl RamAirTurbineHydraulicLoopPressurised for TestHydraulicSystem {
-        fn is_rat_hydraulic_loop_pressurised(&self) -> bool {
+    impl RamAirTurbineHydraulicCircuitPressurised for TestHydraulicSystem {
+        fn is_rat_hydraulic_circuit_pressurised(&self) -> bool {
             self.is_rat_hydraulic_loop_pressurised
         }
     }
