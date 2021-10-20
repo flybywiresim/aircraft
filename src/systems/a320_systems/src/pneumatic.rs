@@ -1981,9 +1981,10 @@ mod tests {
         let alt = Length::new::<foot>(0.);
 
         let mut test_bed = test_bed_with()
-            .idle_eng2()
-            .stop_eng1()
+            .toga_eng2()
+            .toga_eng1()
             .in_isa_atmosphere(alt)
+            .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Auto)
             .mach_number(MachNumber(0.))
             .both_packs_auto();
 
@@ -2009,40 +2010,29 @@ mod tests {
         let mut abv_open = Vec::new();
         let mut fav_open = Vec::new();
 
-        for i in 1..10000 {
-            // println!(
-            //     "{}",
-            //     test_bed.query(|aircraft| {
-            //         aircraft.pneumatic.engine_systems[0]
-            //             .engine_starter_exhaust
-            //             .fluid_flow()
-            //             // .pressure()
-            //             .get::<cubic_meter_per_second>()
-            //     })
-            // );
-
-            if test_bed.precooler_outlet_pressure(1).get::<psi>().is_nan() {
-                println!("{}", i);
-                break;
-                // assert!(false);
-            }
-
+        for i in 1..3000 {
             ts.push(i as f64 * 16.);
 
             if i == 1000 {
-                // test_bed = test_bed.toga_eng1();
-                // test_bed = test_bed.toga_eng1();
+                test_bed = test_bed.stop_eng1();
             }
-            if i == 5000 {
-                // test_bed = test_bed.idle_eng1();
+            if i == 2001 {
+                assert!(test_bed.fadec_single_vs_dual_bleed_config())
+            }
+            if i == 2000 {
+                test_bed =
+                    test_bed.cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Open)
             }
 
             hps.push(test_bed.hp_pressure(1).get::<psi>());
             ips.push(test_bed.ip_pressure(1).get::<psi>());
             c2s.push(test_bed.transfer_pressure(1).get::<psi>());
-            c1s.push(test_bed.precooler_inlet_pressure(1).get::<psi>());
-            c0s.push(test_bed.precooler_outlet_pressure(1).get::<psi>());
-            pcss.push(test_bed.precooler_supply_pressure(1).get::<psi>());
+            // c1s.push(test_bed.precooler_inlet_pressure(1).get::<psi>());
+            // c0s.push(test_bed.precooler_outlet_pressure(1).get::<psi>());
+            // pcss.push(test_bed.precooler_supply_pressure(1).get::<psi>());
+            c1s.push(test_bed.green_hydraulic_reservoir_pressure().get::<psi>());
+            c0s.push(test_bed.blue_hydraulic_reservoir_pressure().get::<psi>());
+            pcss.push(test_bed.yellow_hydraulic_reservoir_pressure().get::<psi>());
             escs.push(test_bed.engine_starter_container_pressure(1).get::<psi>());
 
             ipts.push(test_bed.ip_temperature(1).get::<degree_celsius>());
@@ -2718,6 +2708,27 @@ mod tests {
 
         test_bed = test_bed.idle_eng1().idle_eng2().and_run();
         assert!(!test_bed.fadec_single_vs_dual_bleed_config());
+    }
+
+    #[test]
+    fn hydraulic_reservoirs_maintain_pressure_after_bleed_pressure_loss() {
+        let mut test_bed = test_bed_with()
+            .toga_eng1()
+            .toga_eng2()
+            .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Shut)
+            .mach_number(MachNumber(0.))
+            .both_packs_auto()
+            .and_stabilize();
+
+        let pressure_before_green = test_bed.green_hydraulic_reservoir_pressure();
+        let pressure_before_blue = test_bed.blue_hydraulic_reservoir_pressure();
+        let pressure_before_yellow = test_bed.yellow_hydraulic_reservoir_pressure();
+
+        test_bed = test_bed.idle_eng1().and_stabilize();
+
+        assert!(test_bed.green_hydraulic_reservoir_pressure() >= pressure_before_green);
+        assert!(test_bed.blue_hydraulic_reservoir_pressure() >= pressure_before_blue);
+        assert!(test_bed.yellow_hydraulic_reservoir_pressure() >= pressure_before_yellow);
     }
 
     mod overhead {

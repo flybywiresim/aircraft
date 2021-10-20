@@ -426,13 +426,13 @@ impl PneumaticContainer for VariableVolumeContainer {
 
 pub struct PneumaticContainerWithConnector<T: PneumaticContainer> {
     container: T,
-    connector: PneumaticContainerConnector,
+    connector: PurelyPneumaticValve,
 }
 impl<T: PneumaticContainer> PneumaticContainerWithConnector<T> {
     pub fn new(container: T) -> Self {
         Self {
             container,
-            connector: PneumaticContainerConnector::new(),
+            connector: PurelyPneumaticValve::new(1.),
         }
     }
 
