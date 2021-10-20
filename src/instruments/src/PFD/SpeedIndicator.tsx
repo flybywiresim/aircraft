@@ -8,9 +8,12 @@ const ValueSpacing = 10;
 const DistanceSpacing = 10;
 const DisplayRange = 42;
 
-const GraduationElement = (speed: number, offset: number) => {
-    console.log('GraduationElement: render');
+interface GraduationElementProps {
+    speed: number;
+    offset: number;
+}
 
+const GraduationElement = memo<GraduationElementProps>(({ speed, offset }) => {
     if (speed < 30) {
         return null;
     }
@@ -26,7 +29,7 @@ const GraduationElement = (speed: number, offset: number) => {
             <text className="FontMedium MiddleAlign White" x="7.7348943" y="82.936722">{text}</text>
         </g>
     );
-};
+});
 
 interface BugProps {
     offset: number;
@@ -215,7 +218,7 @@ export const AirspeedIndicator = ({ airspeed, airspeedAcc, FWCFlightPhase, altit
             {/* eslint-disable-next-line max-len */}
             <VerticalTape
                 tapeValue={clampedSpeed}
-                graduationElementFunction={GraduationElement}
+                graduationElementFunction={SpeedTick}
                 lowerLimit={30}
                 upperLimit={660}
                 valueSpacing={ValueSpacing}
@@ -237,6 +240,10 @@ export const AirspeedIndicator = ({ airspeed, airspeedAcc, FWCFlightPhase, altit
         </g>
     );
 };
+
+const SpeedTick = (speed, offset) => (
+    <GraduationElement key={speed} speed={speed} offset={offset} />
+);
 
 export const AirspeedIndicatorFail = memo(() => (
     <>
