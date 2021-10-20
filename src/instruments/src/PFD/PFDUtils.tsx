@@ -91,7 +91,7 @@ export const HorizontalTape = memo(({ displayRange, valueSpacing, distanceSpacin
         return bugElements;
     }, [bugs, distanceSpacing, heading, valueSpacing]);
 
-    const xOffset = Math.round(-heading * distanceSpacing / valueSpacing);
+    const xOffset = Number((-heading * distanceSpacing / valueSpacing).toFixed(1));
 
     return (
         <g transform={`translate(${xOffset} ${yOffset})`}>
