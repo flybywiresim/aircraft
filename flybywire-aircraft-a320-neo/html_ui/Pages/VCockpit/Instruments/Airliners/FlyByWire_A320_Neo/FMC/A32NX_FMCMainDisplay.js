@@ -1910,6 +1910,9 @@ class FMCMainDisplay extends BaseAirliners {
         });
     }
 
+    getOrSelectILSsByIdent(ident, callback) {
+        this._getOrSelectWaypoints(this.dataManager.GetILSsByIdent.bind(this.dataManager), ident, callback);
+    }
     getOrSelectVORsByIdent(ident, callback) {
         this._getOrSelectWaypoints(this.dataManager.GetVORsByIdent.bind(this.dataManager), ident, callback);
     }

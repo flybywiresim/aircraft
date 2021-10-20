@@ -94,6 +94,12 @@ class FMCDataManager {
         navaids.push(...vors.filter((vor) => vor.infos.type !== 6 /* ILS */));
         return navaids;
     }
+    async GetILSsByIdent(ident) {
+        const navaids = [];
+        const vors = await this.GetWaypointsByIdentAndType(ident, "V");
+        navaids.push(...vors.filter((vor) => vor.infos.type === 6 /* ILS */));
+        return navaids;
+    }
     async GetNDBsByIdent(ident) {
         const navaids = [];
         const ndbs = await this.GetWaypointsByIdentAndType(ident, "N").catch(console.error);
