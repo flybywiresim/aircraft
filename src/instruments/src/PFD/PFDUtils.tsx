@@ -118,19 +118,20 @@ export const VerticalTape: FC<VerticalTapeProps> = ({
 }) => {
     const clampedValue = Math.max(Math.min(tapeValue, upperLimit), lowerLimit);
 
+    let lowestGraduation = Math.max(Math.round((clampedValue - displayRange) / valueSpacing) * valueSpacing, lowerLimit);
+
+    if (lowestGraduation < tapeValue - displayRange) {
+        lowestGraduation += valueSpacing;
+    }
+
     // FIXME replace this with a component based system? for key optimization
     const graduationElements = useMemo(() => {
         const numTicks = Math.round(displayRange * 2 / valueSpacing);
 
-        let lowestValue = Math.max(Math.round((clampedValue - displayRange) / valueSpacing) * valueSpacing, lowerLimit);
-        if (lowestValue < tapeValue - displayRange) {
-            lowestValue += valueSpacing;
-        }
-
         const graduationElements: JSX.Element[] = [];
 
         for (let i = 0; i < numTicks; i++) {
-            const elementValue = lowestValue + i * valueSpacing;
+            const elementValue = lowestGraduation + i * valueSpacing;
             if (elementValue <= upperLimit) {
                 const offset = -elementValue * distanceSpacing / valueSpacing;
                 const element = graduationElementFunction(elementValue, offset);
@@ -141,7 +142,7 @@ export const VerticalTape: FC<VerticalTapeProps> = ({
         }
 
         return graduationElements;
-    }, [clampedValue, displayRange, distanceSpacing, graduationElementFunction, lowerLimit, tapeValue, upperLimit, valueSpacing]);
+    }, [displayRange, distanceSpacing, graduationElementFunction, lowestGraduation, upperLimit, valueSpacing]);
 
     const ret = (
         <g transform={`translate(0 ${clampedValue * distanceSpacing / valueSpacing})`}>
