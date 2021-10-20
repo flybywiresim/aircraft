@@ -1859,6 +1859,13 @@ In the variables below, {number} should be replaced with one item in the set: { 
         - 1
         - 2
 
+- A32NX_PNEU_ENG_{number}_STARTER_CONTAINER_PRESSURE:
+    - Pressure behind the starter valve of the engine
+    - PSI
+    - {number}
+        - 1
+        - 2
+
 - A32NX_PNEU_ENG_{number}_IP_TEMPERATURE:
     - Temperature in intermediate pressure compression chamber
     - Degree celsius
@@ -1889,10 +1896,17 @@ In the variables below, {number} should be replaced with one item in the set: { 
 
 - A32NX_PNEU_ENG_{number}_PRECOOLER_OUTLET_TEMPERATURE:
     - Temperature at the precooler outlet for engine bleed system
-        - Degree celsius
-        - {number}
-            - 1
-            - 2
+    - Degree celsius
+    - {number}
+        - 1
+        - 2
+
+- A32NX_PNEU_ENG_{number}_STARTER_CONTAINER_TEMPERATURE:
+    - Temperature behind the starter valve of the engine
+    - Degree celsius
+    - {number}
+        - 1
+        - 2
 
 - A32NX_PNEU_ENG_{number}_IP_VALVE_OPEN:
     - Indicates whether the intermediate pressure bleed air valve is open

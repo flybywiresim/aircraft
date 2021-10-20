@@ -1055,6 +1055,11 @@ impl SimulationElement for EngineBleedAirSystem {
         );
 
         writer.write(
+            &format!("PNEU_ENG_{}_STARTER_CONTAINER_PRESSURE", self.number),
+            self.engine_starter_container.pressure(),
+        );
+
+        writer.write(
             &format!("PNEU_ENG_{}_IP_TEMPERATURE", self.number),
             self.intermediate_temperature(),
         );
@@ -1077,6 +1082,11 @@ impl SimulationElement for EngineBleedAirSystem {
         writer.write(
             &format!("PNEU_ENG_{}_PRECOOLER_OUTLET_TEMPERATURE", self.number),
             self.precooler_outlet_temperature(),
+        );
+
+        writer.write(
+            &format!("PNEU_ENG_{}_STARTER_CONTAINER_TEMPERATURE", self.number),
+            self.engine_starter_container.temperature(),
         );
 
         writer.write(
@@ -2308,6 +2318,9 @@ mod tests {
         assert!(test_bed.contains_key("PNEU_ENG_1_PRECOOLER_OUTLET_PRESSURE"));
         assert!(test_bed.contains_key("PNEU_ENG_2_PRECOOLER_OUTLET_PRESSURE"));
 
+        assert!(test_bed.contains_key("PNEU_ENG_1_STARTER_CONTAINER_PRESSURE"));
+        assert!(test_bed.contains_key("PNEU_ENG_2_STARTER_CONTAINER_PRESSURE"));
+
         assert!(test_bed.contains_key("PNEU_ENG_1_IP_TEMPERATURE"));
         assert!(test_bed.contains_key("PNEU_ENG_2_IP_TEMPERATURE"));
 
@@ -2322,6 +2335,9 @@ mod tests {
 
         assert!(test_bed.contains_key("PNEU_ENG_1_PRECOOLER_OUTLET_TEMPERATURE"));
         assert!(test_bed.contains_key("PNEU_ENG_2_PRECOOLER_OUTLET_TEMPERATURE"));
+
+        assert!(test_bed.contains_key("PNEU_ENG_1_STARTER_CONTAINER_TEMPERATURE"));
+        assert!(test_bed.contains_key("PNEU_ENG_2_STARTER_CONTAINER_TEMPERATURE"));
 
         assert!(test_bed.contains_key("PNEU_ENG_1_IP_PRESSURE"));
         assert!(test_bed.contains_key("PNEU_ENG_2_IP_PRESSURE"));
