@@ -1050,6 +1050,21 @@
         - 8 + 1 | AFT BAGGAGE
         - 9 + 1 | AFT BULK/LOOSE
 
+- A32NX_MCDU_{side}_ANNUNC_{annunciator}
+    - Boolean
+    - Indicates whether the annunciator light on the MCDU is lit
+    - {side}
+        - L
+        - R
+    - {annunciator}
+        - FAIL
+        - FMGC
+        - MCDU_MENU
+        - FM1
+        - IND
+        - RDY
+        - FM2
+
 ## Fly-By-Wire System
 
 - A32NX_SIDESTICK_POSITION_X
@@ -1083,6 +1098,10 @@
     - Number (0.0 -> 1.0)
     - Percentage of current (filtered) alpha to alpha max
     - alpha max can be overshoot so values beyond 1.0 should be expected
+
+- A32NX_BETA_TARGET
+    - Degrees
+    - Target beta (sideslip) in case of asymmetric thrust
 
 - A32NX_3D_AILERON_LEFT_DEFLECTION
     - Number
