@@ -451,10 +451,10 @@ impl HydraulicCircuit {
 
     pub fn update<T: HydraulicLoopController>(
         &mut self,
+        context: &UpdateContext,
         main_section_pumps: &mut Vec<&mut impl PressureSource>,
         system_section_pump: Option<&mut impl PressureSource>,
         ptu: &Option<&PowerTransferUnit>,
-        context: &UpdateContext,
         controller: &T,
     ) {
         self.update_shutoff_valves_states(controller);

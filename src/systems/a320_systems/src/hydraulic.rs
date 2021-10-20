@@ -573,10 +573,8 @@ impl A320Hydraulic {
         self.blue_electric_pump_controller.update(
             overhead_panel,
             self.blue_circuit.system_section_switch_pressurised(),
-            engine1.oil_pressure(),
-            engine2.oil_pressure(),
-            engine1.is_above_minimum_idle(),
-            engine2.is_above_minimum_idle(),
+            engine1,
+            engine2,
             lgciu1,
             lgciu2,
         );
@@ -621,20 +619,20 @@ impl A320Hydraulic {
         self.yellow_circuit_controller
             .update(engine_fire_push_buttons);
         self.yellow_circuit.update(
+            context,
             &mut vec![&mut self.engine_driven_pump_2],
             Some(&mut self.yellow_electric_pump),
             &Some(&self.power_transfer_unit),
-            context,
             &self.yellow_circuit_controller,
         );
 
         self.blue_circuit_controller
             .update(engine_fire_push_buttons);
         self.blue_circuit.update(
+            context,
             &mut vec![&mut self.blue_electric_pump],
             Some(&mut self.ram_air_turbine),
             &None,
-            context,
             &self.blue_circuit_controller,
         );
 
@@ -878,18 +876,16 @@ impl A320BlueElectricPumpController {
         &mut self,
         overhead_panel: &A320HydraulicOverheadPanel,
         pressure_switch_state: bool,
-        engine1_oil_pressure: Pressure,
-        engine2_oil_pressure: Pressure,
-        engine1_above_min_idle: bool,
-        engine2_above_min_idle: bool,
+        engine1: &impl Engine,
+        engine2: &impl Engine,
         lgciu1: &impl LgciuInterface,
         lgciu2: &impl LgciuInterface,
     ) {
         let mut should_pressurise_if_powered = false;
         if overhead_panel.blue_epump_push_button.is_auto() {
             if !lgciu1.nose_gear_compressed(false)
-                || engine1_above_min_idle
-                || engine2_above_min_idle
+                || engine1.is_above_minimum_idle()
+                || engine2.is_above_minimum_idle()
                 || overhead_panel.blue_epump_override_push_button_is_on()
             {
                 should_pressurise_if_powered = true;
@@ -905,8 +901,8 @@ impl A320BlueElectricPumpController {
         self.update_low_pressure_state(
             overhead_panel,
             pressure_switch_state,
-            engine1_oil_pressure,
-            engine2_oil_pressure,
+            engine1,
+            engine2,
             lgciu1,
             lgciu2,
         );
@@ -916,15 +912,15 @@ impl A320BlueElectricPumpController {
         &mut self,
         overhead_panel: &A320HydraulicOverheadPanel,
         pressure_switch_state: bool,
-        engine1_oil_pressure: Pressure,
-        engine2_oil_pressure: Pressure,
+        engine1: &impl Engine,
+        engine2: &impl Engine,
         lgciu1: &impl LgciuInterface,
         lgciu2: &impl LgciuInterface,
     ) {
         // Low engine oil pressure inhibits fault under 18psi level
-        let is_engine_low_oil_pressure = engine1_oil_pressure.get::<psi>()
+        let is_engine_low_oil_pressure = engine1.oil_pressure().get::<psi>()
             < Self::MIN_ENGINE_OIL_PRESS_THRESHOLD_TO_INHIBIT_FAULT
-            && engine2_oil_pressure.get::<psi>()
+            && engine2.oil_pressure().get::<psi>()
                 < Self::MIN_ENGINE_OIL_PRESS_THRESHOLD_TO_INHIBIT_FAULT;
 
         self.is_pressure_low = self.should_pressurise() && !pressure_switch_state;
