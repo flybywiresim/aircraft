@@ -35,6 +35,7 @@ const NXSystemMessages = {
     awyWptMismatch:         new McduMessage("AWY/WPT MISMATCH", false, false),
     checkMinDestFob:        new McduMessage("CHECK MIN DEST FOB", false, true),
     checkToData:            new McduMessage("CHECK TAKE OFF DATA", true, true),
+    databaseCodingError:    new McduMessage("DATABASE CODING ERROR", false, true),
     destEfobBelowMin:       new McduMessage("DEST EFOB BELOW MIN", true, true),
     enterDestData:          new McduMessage("ENTER DEST DATA", true, true),
     entryOutOfRange:        new McduMessage("ENTRY OUT OF RANGE", false, false),

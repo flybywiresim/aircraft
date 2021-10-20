@@ -61,7 +61,9 @@ class FMCMainDisplay extends BaseAirliners {
         this._vor2Frequency = undefined;
         this._vor2Course = undefined;
         this._ilsFrequency = undefined;
+        this._ilsIdent = undefined;
         this._ilsFrequencyPilotEntered = undefined;
+        this._ilsIdentPilotEntered = undefined;
         this._ilsCourse = undefined;
         this._adf1Frequency = undefined;
         this._adf2Frequency = undefined;
@@ -330,7 +332,9 @@ class FMCMainDisplay extends BaseAirliners {
         this._vor2Frequency = 0;
         this._vor2Course = 0;
         this._ilsFrequency = 0;
+        this._ilsIdent = '';
         this._ilsFrequencyPilotEntered = false;
+        this._ilsIdentPilotEntered = false;
         this._ilsCourse = 0;
         this._adf1Frequency = 0;
         this._adf2Frequency = 0;
@@ -1788,7 +1792,7 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     async updateIls() {
-        if (this._ilsFrequencyPilotEntered) {
+        if (this._ilsFrequencyPilotEntered || this._ilsIdentPilotEntered) {
             return;
         }
 
@@ -3195,26 +3199,51 @@ class FMCMainDisplay extends BaseAirliners {
         }
     }
 
-    setIlsFrequency(s) {
+    setIlsFrequency(s, callback) {
         if (s === FMCMainDisplay.clrValue) {
             this.ilsFrequency = 0;
             this.radioNav.setILSActiveFrequency(1, 0);
             this._ilsFrequencyPilotEntered = false;
-            return true;
+            this._ilsIdentPilotEntered = false;
+            return callback(true);
         }
-        const v = parseFloat(s);
-        if (isFinite(v)) {
+        if (s.match(/^[0-9]{3}(\.[0-9]{1,2})$/) !== null) {
+            const v = parseFloat(s);
             const freq = Math.round(v * 100) / 100;
+
             if (this.connectIlsFrequency(freq)) {
+                this._ilsIdent = undefined;
                 this._ilsFrequencyPilotEntered = true;
+                this._ilsIdentPilotEntered = false;
                 this.clearAutotunedIls();
-                return true;
+                return callback(true);
+            } else {
+                this.addNewMessage(NXSystemMessages.entryOutOfRange);
+                return callback(false);
             }
-            this.addNewMessage(NXSystemMessages.entryOutOfRange);
-            return false;
+        } else if (s.match(/^[A-Z0-9]{1,4}$/) !== null) {
+            this.getOrSelectILSsByIdent(s, (navaid) => {
+                if (navaid) {
+                    if (this.connectIlsFrequency(Math.round(navaid.infos.frequencyMHz * 100) / 100)) {
+                        this._ilsIdent = s;
+                        this._ilsFrequencyPilotEntered = false;
+                        this._ilsIdentPilotEntered = true;
+                        this.clearAutotunedIls();
+                        return callback(true);
+                    } else {
+                        this.addNewMessage(NXSystemMessages.databaseCodingError);
+                        return callback(false);
+                    }
+                } else {
+                    // TODO should show new navaid page
+                    this.addNewMessage(NXSystemMessages.notInDatabase);
+                    return callback(false);
+                }
+            });
+        } else {
+            this.addNewMessage(NXSystemMessages.formatError);
+            return callback(false);
         }
-        this.addNewMessage(NXSystemMessages.notAllowed);
-        return false;
     }
 
     initRadioNav(_boot) {

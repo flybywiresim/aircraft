@@ -124,17 +124,25 @@ class CDUNavRadioPage {
                     const ilsIdent = mcdu.radioNav.getILSBeacon(1);
                     ilsFrequencyCell = `{small}${ilsIdent.ident.trim().padStart(4, "\xa0")}{end}/${mcdu.ilsFrequency.toFixed(2)}`;
                     ilsCourseCell = "{small}F" + ilsIdent.course.toFixed(0).padStart(3, "0") + "{end}";
+                } else if (mcdu._ilsIdentPilotEntered) {
+                    const ilsIdent = mcdu.radioNav.getILSBeacon(1);
+                    ilsFrequencyCell = `${mcdu._ilsIdent.trim().padStart(4, "\xa0")}/{small}${mcdu.ilsFrequency.toFixed(2)}{end}`;
+                    ilsCourseCell = "{small}F" + ilsIdent.course.toFixed(0).padStart(3, "0") + "{end}";
                 } else if (mcdu.ilsAutoTuned) {
                     ilsFrequencyCell = `{small}${mcdu.ilsAutoIdent.padStart(4, "\xa0")}/${mcdu.ilsFrequency.toFixed(2)}{end}`;
                     ilsCourseCell = `{small}F${mcdu.ilsAutoCourse.toFixed(0).padStart(3, "0")}{end}`;
                 }
             }
             mcdu.onLeftInput[2] = (value, scratchpadCallback) => {
-                if (mcdu.setIlsFrequency(value)) {
-                    CDUNavRadioPage.ShowPage(mcdu);
-                } else {
-                    scratchpadCallback();
-                }
+                mcdu.setIlsFrequency(value, (result) => {
+                    if (result) {
+                        mcdu.requestCall(() => {
+                            CDUNavRadioPage.ShowPage(mcdu);
+                        });
+                    } else {
+                        scratchpadCallback();
+                    }
+                });
             };
             adf1FrequencyCell = "[\xa0]/[\xa0\xa0\xa0.]";
             const adf1Ident = SimVar.GetSimVarValue(`ADF IDENT:1`, "string");
