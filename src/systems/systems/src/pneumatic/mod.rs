@@ -477,9 +477,9 @@ mod tests {
             UpdateContext,
         },
     };
-    use std::fs::File;
+    use ntest::assert_about_eq;
+    use std::{fs::File, time::Duration};
 
-    use std::time::Duration;
     use uom::si::{
         acceleration::foot_per_second_squared,
         angle::radian,
@@ -710,73 +710,6 @@ mod tests {
     }
 
     #[test]
-    fn precooler_does_not_do_anything_when_no_air_is_moved() {
-        let context = context(Duration::from_secs(1), Length::new::<foot>(0.));
-
-        let mut from = PneumaticPipe::new(
-            Volume::new::<cubic_meter>(1.),
-            Pressure::new::<psi>(14.7),
-            ThermodynamicTemperature::new::<degree_celsius>(15.),
-        );
-        let mut supply = PneumaticPipe::new(
-            Volume::new::<cubic_meter>(1.),
-            Pressure::new::<psi>(14.7),
-            ThermodynamicTemperature::new::<degree_celsius>(150.),
-        );
-        let mut to = PneumaticPipe::new(
-            Volume::new::<cubic_meter>(1.),
-            Pressure::new::<psi>(14.7),
-            ThermodynamicTemperature::new::<degree_celsius>(15.),
-        );
-
-        let mut precooler = Precooler::new(1.);
-        precooler.update(&context, &mut from, &mut supply, &mut to);
-
-        assert_eq!(
-            from.temperature(),
-            ThermodynamicTemperature::new::<degree_celsius>(15.)
-        );
-        assert_eq!(
-            supply.temperature(),
-            ThermodynamicTemperature::new::<degree_celsius>(150.)
-        );
-        assert_eq!(
-            to.temperature(),
-            ThermodynamicTemperature::new::<degree_celsius>(15.)
-        );
-    }
-
-    #[test]
-    fn precooler_does_not_do_anything_when_temperatures_are_equal() {
-        let context = context(Duration::from_secs(1), Length::new::<foot>(0.));
-
-        let mut from = PneumaticPipe::new(
-            Volume::new::<cubic_meter>(1.),
-            Pressure::new::<psi>(29.4),
-            ThermodynamicTemperature::new::<degree_celsius>(15.),
-        );
-        let mut supply = PneumaticPipe::new(
-            Volume::new::<cubic_meter>(1.),
-            Pressure::new::<psi>(14.7),
-            ThermodynamicTemperature::new::<degree_celsius>(15.),
-        );
-        let mut to = PneumaticPipe::new(
-            Volume::new::<cubic_meter>(1.),
-            Pressure::new::<psi>(14.7),
-            ThermodynamicTemperature::new::<degree_celsius>(15.),
-        );
-
-        let mut precooler = Precooler::new(1.);
-        precooler.update(&context, &mut from, &mut supply, &mut to);
-
-        // We only check whether this temperature stayed the same because the other temperatures are expected to change due to compression
-        assert_eq!(
-            supply.temperature(),
-            ThermodynamicTemperature::new::<degree_celsius>(15.)
-        );
-    }
-
-    #[test]
     fn precooler_cools() {
         let context = context(Duration::from_secs(1), Length::new::<foot>(0.));
 
@@ -827,78 +760,53 @@ mod tests {
     fn precooler_no_temperature_escalates() {
         let context = context(Duration::from_millis(16), Length::new::<foot>(0.));
 
-        let mut ts = Vec::new();
-        let mut pa = Vec::new();
-        let mut pb = Vec::new();
-        let mut pc = Vec::new();
-        let mut pd = Vec::new();
-        let mut ta = Vec::new();
-        let mut tb = Vec::new();
-        let mut tc = Vec::new();
-        let mut td = Vec::new();
-
         let mut fake_compression_chamber = PneumaticPipe::new(
             Volume::new::<cubic_meter>(1.),
-            Pressure::new::<psi>(2.),
+            Pressure::new::<psi>(20.),
             ThermodynamicTemperature::new::<degree_celsius>(15.),
         );
         let mut valve = DefaultValve::new_open();
         let mut from = PneumaticPipe::new(
             Volume::new::<cubic_meter>(1.),
-            Pressure::new::<psi>(1.),
+            Pressure::new::<psi>(10.),
             ThermodynamicTemperature::new::<degree_celsius>(15.),
         );
         let mut supply = PneumaticPipe::new(
             Volume::new::<cubic_meter>(1.),
-            Pressure::new::<psi>(1.),
+            Pressure::new::<psi>(10.),
             ThermodynamicTemperature::new::<degree_celsius>(15.),
         );
         let mut to = PneumaticPipe::new(
             Volume::new::<cubic_meter>(1.),
-            Pressure::new::<psi>(1.),
+            Pressure::new::<psi>(10.),
             ThermodynamicTemperature::new::<degree_celsius>(15.),
         );
 
         let mut precooler = Precooler::new(5e-1);
 
-        for i in 1..1000 {
-            ts.push(i as f64 * 16.);
-            pa.push(fake_compression_chamber.pressure().get::<psi>());
-            pb.push(from.pressure().get::<psi>());
-            pc.push(to.pressure().get::<psi>());
-            pd.push(supply.pressure().get::<psi>());
-
-            ta.push(
-                fake_compression_chamber
-                    .temperature()
-                    .get::<degree_celsius>(),
-            );
-            tb.push(from.temperature().get::<degree_celsius>());
-            tc.push(to.temperature().get::<degree_celsius>());
-            td.push(supply.temperature().get::<degree_celsius>());
-
+        for _ in 1..1000 {
             precooler.update(&context, &mut from, &mut supply, &mut to);
             valve.update_move_fluid(&context, &mut fake_compression_chamber, &mut from);
         }
 
-        let data = vec![ts, pa, pb, pc, pd, ta, tb, tc, td];
-        let mut file = File::create("DO NOT COMMIT 2.txt").expect("Could not create file");
-
-        use std::io::Write;
-
-        writeln!(file, "{:?}", data).expect("Could not write file");
-
-        assert!(
-            (from.temperature().get::<kelvin>() - supply.temperature().get::<kelvin>()).abs()
-                < temperature_tolerance().get::<temperature_interval::kelvin>()
+        assert_about_eq!(
+            from.temperature().get::<kelvin>(),
+            supply.temperature().get::<kelvin>(),
+            5.
         );
 
-        assert!(
-            (fake_compression_chamber.pressure() - from.pressure()).abs() < pressure_tolerance()
+        assert_about_eq!(
+            fake_compression_chamber.pressure().get::<psi>(),
+            from.pressure().get::<psi>(),
+            pressure_tolerance().get::<psi>()
         );
-        assert!((from.pressure() - to.pressure()).abs() < pressure_tolerance());
+        assert_about_eq!(
+            from.pressure().get::<psi>(),
+            to.pressure().get::<psi>(),
+            pressure_tolerance().get::<psi>()
+        );
 
-        assert!(supply.pressure() < Pressure::new::<psi>(2.));
+        assert!(supply.pressure() < Pressure::new::<psi>(20.));
     }
 
     #[test]

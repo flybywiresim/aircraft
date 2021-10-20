@@ -1723,10 +1723,6 @@ mod tests {
             self
         }
 
-        fn for_both_engine_systems<T: Fn(&EngineBleedAirSystem) -> ()>(&self, func: T) {
-            self.query(|a| a.pneumatic.engine_systems.iter().for_each(|sys| func(sys)));
-        }
-
         fn ip_pressure(&self, number: usize) -> Pressure {
             self.query(|a| a.pneumatic.engine_systems[number - 1].intermediate_pressure())
         }
@@ -2170,7 +2166,7 @@ mod tests {
     }
 
     #[test]
-    fn cold_dark_valves_closed() {
+    fn cold_and_dark_full_state() {
         let altitude = Length::new::<foot>(0.);
         let ambient_pressure = ISA::pressure_at_altitude(altitude);
 
@@ -2179,36 +2175,52 @@ mod tests {
             .stop_eng2()
             .in_isa_atmosphere(altitude)
             .mach_number(MachNumber(0.))
-            .and_run();
+            .set_pack_flow_pb_is_auto(1, false)
+            .set_pack_flow_pb_is_auto(2, false)
+            .and_stabilize();
 
-        test_bed.for_both_engine_systems(|sys| {
-            assert!((sys.intermediate_pressure() - ambient_pressure).abs() < pressure_tolerance());
-            assert!((sys.high_pressure() - ambient_pressure).abs() < pressure_tolerance());
-            assert!((sys.transfer_pressure() - ambient_pressure).abs() < pressure_tolerance());
-            assert!(
-                (sys.precooler_inlet_pressure() - ambient_pressure).abs() < pressure_tolerance()
-            );
-            assert!(
-                (sys.precooler_outlet_pressure() - ambient_pressure).abs() < pressure_tolerance()
-            );
+        assert!((test_bed.ip_pressure(1) - ambient_pressure).abs() < pressure_tolerance());
+        assert!((test_bed.ip_pressure(2) - ambient_pressure).abs() < pressure_tolerance());
 
-            assert!(sys.intermediate_pressure_valve.is_open());
-            assert!(!sys.high_pressure_valve.is_open());
-            assert!(!sys.pressure_regulating_valve.is_open());
-        });
+        assert!((test_bed.hp_pressure(1) - ambient_pressure).abs() < pressure_tolerance());
+        assert!((test_bed.hp_pressure(2) - ambient_pressure).abs() < pressure_tolerance());
+
+        assert!((test_bed.transfer_pressure(1) - ambient_pressure).abs() < pressure_tolerance());
+        assert!((test_bed.transfer_pressure(2) - ambient_pressure).abs() < pressure_tolerance());
+
+        assert!(
+            (test_bed.precooler_inlet_pressure(1) - ambient_pressure).abs() < pressure_tolerance()
+        );
+        assert!(
+            (test_bed.precooler_inlet_pressure(2) - ambient_pressure).abs() < pressure_tolerance()
+        );
+
+        assert!(
+            (test_bed.precooler_outlet_pressure(1) - ambient_pressure).abs() < pressure_tolerance()
+        );
+        assert!(
+            (test_bed.precooler_outlet_pressure(2) - ambient_pressure).abs() < pressure_tolerance()
+        );
+
+        assert!(!test_bed.hp_valve_is_open(1));
+        assert!(!test_bed.hp_valve_is_open(2));
+
+        assert!(!test_bed.pr_valve_is_open(1));
+        assert!(!test_bed.pr_valve_is_open(2));
 
         assert!(!test_bed.cross_bleed_valve_is_open())
     }
 
     #[test]
-    fn single_engine_idle() {
+    fn single_engine_idle_full_state() {
         let altitude = Length::new::<foot>(0.);
         let test_bed = test_bed_with()
             .idle_eng1()
             .stop_eng2()
             .in_isa_atmosphere(altitude)
             .mach_number(MachNumber(0.))
-            .both_packs_auto()
+            .set_pack_flow_pb_is_auto(1, false)
+            .set_pack_flow_pb_is_auto(2, false)
             .and_stabilize();
 
         let ambient_pressure = ISA::pressure_at_altitude(altitude);
@@ -2222,18 +2234,18 @@ mod tests {
         assert!(test_bed.transfer_pressure(1) - ambient_pressure > pressure_tolerance());
         assert!((test_bed.transfer_pressure(2) - ambient_pressure).abs() < pressure_tolerance());
 
-        assert!((test_bed.precooler_outlet_pressure(1) - ambient_pressure) > pressure_tolerance());
-        assert!(
-            (test_bed.precooler_outlet_pressure(2) - ambient_pressure).abs() < pressure_tolerance()
-        );
+        assert!((test_bed.precooler_inlet_pressure(1) - ambient_pressure) > pressure_tolerance());
+        assert!(!test_bed.precooler_inlet_pressure(2).is_nan());
 
-        assert!(!test_bed.ip_valve_is_open(1));
-        assert!(test_bed.ip_valve_is_open(2));
+        assert!((test_bed.precooler_outlet_pressure(1) - ambient_pressure) > pressure_tolerance());
+        assert!(!test_bed.precooler_outlet_pressure(2).is_nan());
 
         assert!(test_bed.hp_valve_is_open(1));
         assert!(!test_bed.hp_valve_is_open(2));
 
-        test_bed.for_both_engine_systems(|sys| assert!(!sys.engine_starter_valve.is_open()));
+        assert!(!test_bed.es_valve_is_open(1));
+        assert!(!test_bed.es_valve_is_open(2));
+
         assert!(!test_bed.cross_bleed_valve_is_open());
     }
 

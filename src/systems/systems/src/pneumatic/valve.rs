@@ -373,6 +373,8 @@ mod tests {
         volume_rate::cubic_meter_per_second,
     };
 
+    use ntest::assert_about_eq;
+
     struct TestPneumaticValveSignal {
         target_open_amount: Ratio,
     }
@@ -552,45 +554,6 @@ mod tests {
     }
 
     #[test]
-    fn connector_two_small_updates_equal_one_big_update() {
-        let mut connector = PneumaticContainerConnector::new();
-
-        let mut from = PneumaticPipe::new(
-            Volume::new::<cubic_meter>(1.),
-            Pressure::new::<psi>(28.),
-            ThermodynamicTemperature::new::<degree_celsius>(15.),
-        );
-        let mut to = PneumaticPipe::new(
-            Volume::new::<cubic_meter>(1.),
-            Pressure::new::<psi>(14.),
-            ThermodynamicTemperature::new::<degree_celsius>(15.),
-        );
-
-        let context1 = context(Duration::from_millis(200), Length::new::<foot>(0.));
-        connector.update_move_fluid(&context1, &mut from, &mut to);
-        connector.update_move_fluid(&context1, &mut from, &mut to);
-
-        let mut from2 = PneumaticPipe::new(
-            Volume::new::<cubic_meter>(1.),
-            Pressure::new::<psi>(28.),
-            ThermodynamicTemperature::new::<degree_celsius>(15.),
-        );
-        let mut to2 = PneumaticPipe::new(
-            Volume::new::<cubic_meter>(1.),
-            Pressure::new::<psi>(14.),
-            ThermodynamicTemperature::new::<degree_celsius>(15.),
-        );
-
-        let context2 = context(Duration::from_millis(400), Length::new::<foot>(0.));
-        connector.update_move_fluid(&context2, &mut from2, &mut to2);
-
-        println!("{:?}", from.pressure());
-
-        assert!((from.pressure() - from2.pressure()).abs() < Pressure::new::<pascal>(100.));
-        assert!((to.pressure() - to2.pressure()).abs() < Pressure::new::<pascal>(100.));
-    }
-
-    #[test]
     fn connector_equalizes_pressure_between_containers() {
         let mut connector = DefaultValve::new_open();
 
@@ -635,14 +598,14 @@ mod tests {
 
     #[test]
     fn electropneumatic_valve_does_not_accept_signal_when_unpowered() {
-        let controller = TestValveController::new(Ratio::new::<percent>(0.));
+        let controller = TestValveController::new(Ratio::new::<percent>(100.));
 
         let mut valve = ElectroPneumaticValve::new(1., ElectricalBusType::DirectCurrent(2));
 
         valve.update_open_amount(&controller);
 
         assert!(!valve.is_powered());
-        assert_eq!(valve.open_amount(), Ratio::new::<percent>(100.));
+        assert_eq!(valve.open_amount(), Ratio::new::<percent>(0.));
     }
 
     #[test]
@@ -689,7 +652,7 @@ mod tests {
             valve.fluid_flow(),
             VolumeRate::new::<cubic_meter_per_second>(0.)
         );
-        assert!(valve.is_powered());
+        assert!(!valve.is_powered());
         assert_eq!(valve.open_amount(), Ratio::new::<ratio>(0.));
     }
 

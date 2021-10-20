@@ -946,8 +946,8 @@ pub mod tests {
             self.query(|a| a.power_consumption())
         }
 
-        fn bleed_air_pressure(&mut self) -> Pressure {
-            self.read("APU_BLEED_AIR_PRESSURE")
+        fn bleed_air_pressure(&mut self) -> Arinc429Word<Pressure> {
+            self.read_arinc429("APU_BLEED_AIR_PRESSURE")
         }
     }
     impl TestBed for AuxiliaryPowerUnitTestBed {
@@ -2115,14 +2115,28 @@ pub mod tests {
         fn starting_apu_has_no_bleed_air_pressure() {
             let mut test_bed = test_bed_with().starting_apu();
 
-            assert_eq!(test_bed.bleed_air_pressure(), Pressure::new::<psi>(0.));
+            assert_about_eq!(
+                test_bed
+                    .bleed_air_pressure()
+                    .normal_value()
+                    .unwrap()
+                    .get::<psi>(),
+                14.7
+            );
         }
 
         #[test]
         fn running_apu_has_42_psi_bleed_air_pressure() {
             let mut test_bed = test_bed_with().running_apu();
 
-            assert_eq!(test_bed.bleed_air_pressure(), Pressure::new::<psi>(42.));
+            assert_about_eq!(
+                test_bed
+                    .bleed_air_pressure()
+                    .normal_value()
+                    .unwrap()
+                    .get::<psi>(),
+                42.
+            );
         }
 
         #[test]
@@ -2132,7 +2146,14 @@ pub mod tests {
                 // Transition to Stopping state.
                 .run(Duration::from_millis(1));
 
-            assert_eq!(test_bed.bleed_air_pressure(), Pressure::new::<psi>(0.));
+            assert_about_eq!(
+                test_bed
+                    .bleed_air_pressure()
+                    .normal_value()
+                    .unwrap()
+                    .get::<psi>(),
+                14.7
+            );
         }
 
         #[test]
