@@ -90,8 +90,8 @@ class FMCDataManager {
     }
     async GetVORsByIdent(ident) {
         const navaids = [];
-        const vors = await this.GetWaypointsByIdentAndType(ident, "V").catch(console.error);
-        navaids.push(...vors);
+        const vors = await this.GetWaypointsByIdentAndType(ident, "V");
+        navaids.push(...vors.filter((vor) => vor.infos.type !== 6 /* ILS */));
         return navaids;
     }
     async GetNDBsByIdent(ident) {
@@ -100,32 +100,34 @@ class FMCDataManager {
         navaids.push(...ndbs);
         return navaids;
     }
-    async GetWaypointsByIdentAndType(ident, wpType = "W") {
-        return new Promise((resolve) => {
-            const waypoints = [];
-            SimVar.SetSimVarValue("C:fs9gps:IcaoSearchStartCursor", "string", wpType, "FMC").then(() => {
-                SimVar.SetSimVarValue("C:fs9gps:IcaoSearchEnterChar", "string", ident, "FMC").then(async () => {
-                    const waypointsCount = SimVar.GetSimVarValue("C:fs9gps:IcaoSearchMatchedIcaosNumber", "number", "FMC");
-                    const getWaypoint = async (index) => {
-                        return new Promise((resolve) => {
-                            SimVar.SetSimVarValue("C:fs9gps:IcaoSearchMatchedIcao", "number", index, "FMC").then(async () => {
-                                const icao = SimVar.GetSimVarValue("C:fs9gps:IcaoSearchCurrentIcao", "string", "FMC");
-                                const waypoint = await this.fmc.facilityLoader.getFacility(icao);
-                                resolve(waypoint);
-                            });
-                        });
-                    };
-                    for (let i = 0; i < waypointsCount; i++) {
-                        const waypoint = await getWaypoint(i);
-                        waypoints.push(waypoint);
-                    }
-                    if (wpType === 'W') {
-                        waypoints.push(...this.storedWaypoints.filter((wp) => wp && wp.ident === ident));
-                    }
-                    resolve(waypoints);
-                });
-            });
-        });
+    async GetWaypointsByIdentAndType(ident, wpType = "W", maxItems = 40) {
+        let filter = 0;
+        switch (wpType) {
+            case 'A':
+                filter = 1;
+                break;
+            case 'W':
+                filter = 2;
+                break;
+            case 'V':
+                filter = 3;
+                break;
+            case 'N':
+                filter = 4;
+                break;
+            default:
+        }
+
+        // fetch results from the nav database
+        const results = (await Coherent.call('SEARCH_BY_IDENT', ident, filter, maxItems)).filter((icao) => ident === icao.substr(7, 5).trim());
+        const waypoints = await Promise.all(results.map(async (icao) => await this.fmc.facilityLoader.getFacility(icao)));
+
+        // fetch pilot stored waypoints
+        if (wpType === 'W') {
+            waypoints.push(...this.storedWaypoints.filter((wp) => wp && wp.ident === ident));
+        }
+
+        return waypoints;
     }
     async _PushWaypointToFlightPlan(waypoint) {
         const lastWaypointIndex = SimVar.GetSimVarValue("C:fs9gps:FlightPlanWaypointsNumber", "number", "FMC");
