@@ -101,6 +101,7 @@ impl A320HydraulicCircuitFactory {
         )
     }
 }
+
 struct A320CargoDoorFactory {}
 impl A320CargoDoorFactory {
     fn a320_cargo_door_actuator(
