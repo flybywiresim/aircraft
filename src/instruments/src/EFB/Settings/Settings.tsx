@@ -125,6 +125,7 @@ const AircraftConfigurationPage = () => {
     const [paxSigns, setPaxSigns] = usePersistentProperty('CONFIG_USING_PORTABLE_DEVICES', '0');
     const [isisBaro, setIsisBaro] = usePersistentProperty('ISIS_BARO_UNIT_INHG', '0');
     const [isisMetricAltitude, setIsisMetricAltitude] = usePersistentProperty('ISIS_METRIC_ALTITUDE', '0');
+    const [vhfSpacing, setVhfSpacing] = usePersistentProperty('RMP_VHF_SPACING_25KHZ', '0');
 
     const paxSignsButtons: ButtonType[] = [
         { name: 'No Smoking', setting: '0' },
@@ -144,6 +145,11 @@ const AircraftConfigurationPage = () => {
     const isisMetricAltitudeButtons: ButtonType[] = [
         { name: 'Disabled', setting: '0' },
         { name: 'Enabled', setting: '1' },
+    ];
+
+    const vhfSpacingButtons: ButtonType[] = [
+        { name: '8.33 kHz', setting: '0' },
+        { name: '25 kHz', setting: '1' },
     ];
 
     return (
@@ -201,6 +207,21 @@ const AircraftConfigurationPage = () => {
                             enabled
                             onSelect={() => setIsisMetricAltitude(button.setting)}
                             selected={isisMetricAltitude === button.setting}
+                        >
+                            {button.name}
+                        </SelectItem>
+                    ))}
+                </SelectGroup>
+            </div>
+
+            <div className="py-4 flex flex-row justify-between items-center">
+                <span className="text-lg text-gray-300">RMP VHF Spacing</span>
+                <SelectGroup>
+                    {vhfSpacingButtons.map((button) => (
+                        <SelectItem
+                            enabled
+                            onSelect={() => setVhfSpacing(button.setting)}
+                            selected={vhfSpacing === button.setting}
                         >
                             {button.name}
                         </SelectItem>
