@@ -95,11 +95,11 @@ const FlightDirector = ({ FDActive }) => {
     let FDPitchOffset = 0;
 
     if (showLateralFD) {
-        FDRollOffset = Math.round(Math.min(Math.max(fdRollOrder, -45), 45) * 0.44);
+        FDRollOffset = Number((Math.min(Math.max(fdRollOrder, -45), 45) * 0.44).toFixed(1));
     }
 
     if (showVerticalFD) {
-        FDPitchOffset = Math.round(Math.min(Math.max(fdPitchOrder, -22.5), 22.5) * 0.89);
+        FDPitchOffset = Number((Math.min(Math.max(fdPitchOrder, -22.5), 22.5) * 0.89).toFixed(1));
     }
 
     return (
