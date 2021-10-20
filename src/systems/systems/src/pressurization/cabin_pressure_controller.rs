@@ -140,12 +140,15 @@ impl CabinPressureController {
             }
             Some(PressureScheduleManager::Cruise(_)) => Velocity::new::<foot_per_minute>(0.),
             Some(PressureScheduleManager::DescentInternal(_)) => {
+                let ext_diff_with_ldg_elev = self.get_ext_diff_with_ldg_elev(context).get::<foot>();
                 let target_vs = Velocity::new::<foot_per_minute>(
                     self.get_int_diff_with_ldg_elev().get::<foot>()
                         * self.exterior_vertical_speed.get::<foot_per_minute>()
-                        / self.get_ext_diff_with_ldg_elev(context).get::<foot>(),
+                        / ext_diff_with_ldg_elev,
                 );
-                if target_vs <= Velocity::new::<foot_per_minute>(Self::MAX_DESCENT_RATE) {
+                if ext_diff_with_ldg_elev <= 0. {
+                    Velocity::new::<foot_per_minute>(0.)
+                } else if target_vs <= Velocity::new::<foot_per_minute>(Self::MAX_DESCENT_RATE) {
                     Velocity::new::<foot_per_minute>(Self::MAX_DESCENT_RATE)
                 } else if target_vs
                     >= Velocity::new::<foot_per_minute>(Self::MAX_CLIMB_RATE_IN_DESCENT)
