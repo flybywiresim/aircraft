@@ -4,6 +4,14 @@ const StoredWaypointType = Object.freeze({
     LatLon: 3,
 });
 
+const IcaoSearchFilter = Object.freeze({
+    None: 0,
+    Airports: 1,
+    Intersections: 2,
+    Vors: 3,
+    Ndbs: 4,
+});
+
 class FMCDataManager {
     constructor(_fmc) {
         this.fmc = _fmc;
@@ -77,59 +85,35 @@ class FMCDataManager {
     }
 
     async GetWaypointsByIdent(ident) {
-        const waypoints = [];
-        const intersections = await this.GetWaypointsByIdentAndType(ident, "W").catch(console.error);
-        waypoints.push(...intersections);
-        const vors = await this.GetWaypointsByIdentAndType(ident, "V").catch(console.error);
-        waypoints.push(...vors);
-        const ndbs = await this.GetWaypointsByIdentAndType(ident, "N").catch(console.error);
-        waypoints.push(...ndbs);
-        const airports = await this.GetWaypointsByIdentAndType(ident, "A").catch(console.error);
-        waypoints.push(...airports);
+        const waypoints = [...await this.GetWaypointsByIdentAndType(ident, IcaoSearchFilter.None)];
         return this._filterDuplicateWaypoints(waypoints);
     }
     async GetVORsByIdent(ident) {
         const navaids = [];
-        const vors = await this.GetWaypointsByIdentAndType(ident, "V");
+        const vors = await this.GetWaypointsByIdentAndType(ident, IcaoSearchFilter.Vors);
         navaids.push(...vors.filter((vor) => vor.infos.type !== 6 /* ILS */));
         return navaids;
     }
     async GetILSsByIdent(ident) {
         const navaids = [];
-        const vors = await this.GetWaypointsByIdentAndType(ident, "V");
+        const vors = await this.GetWaypointsByIdentAndType(ident, IcaoSearchFilter.Vors);
         navaids.push(...vors.filter((vor) => vor.infos.type === 6 /* ILS */));
         return navaids;
     }
     async GetNDBsByIdent(ident) {
         const navaids = [];
-        const ndbs = await this.GetWaypointsByIdentAndType(ident, "N").catch(console.error);
+        const ndbs = await this.GetWaypointsByIdentAndType(ident, IcaoSearchFilter.Ndbs);
         navaids.push(...ndbs);
         return navaids;
     }
-    async GetWaypointsByIdentAndType(ident, wpType = "W", maxItems = 40) {
-        let filter = 0;
-        switch (wpType) {
-            case 'A':
-                filter = 1;
-                break;
-            case 'W':
-                filter = 2;
-                break;
-            case 'V':
-                filter = 3;
-                break;
-            case 'N':
-                filter = 4;
-                break;
-            default:
-        }
-
+    async GetWaypointsByIdentAndType(ident, filter = 0, maxItems = 40) {
         // fetch results from the nav database
+        // we filter for equal idents, because the search returns everything starting with the given string
         const results = (await Coherent.call('SEARCH_BY_IDENT', ident, filter, maxItems)).filter((icao) => ident === icao.substr(7, 5).trim());
         const waypoints = await Promise.all(results.map(async (icao) => await this.fmc.facilityLoader.getFacility(icao)));
 
         // fetch pilot stored waypoints
-        if (wpType === 'W') {
+        if (filter === IcaoSearchFilter.None || (filter & IcaoSearchFilter.Intersections) > 0) {
             waypoints.push(...this.storedWaypoints.filter((wp) => wp && wp.ident === ident));
         }
 
