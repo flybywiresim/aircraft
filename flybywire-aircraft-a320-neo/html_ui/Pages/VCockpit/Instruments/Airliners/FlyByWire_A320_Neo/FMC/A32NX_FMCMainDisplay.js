@@ -3171,16 +3171,7 @@ class FMCMainDisplay extends BaseAirliners {
 
     connectIlsFrequency(_freq) {
         if (_freq >= 108 && _freq <= 111.95 && RadioNav.isHz50Compliant(_freq)) {
-            switch (this.radioNav.mode) {
-                case NavMode.FOUR_SLOTS: {
-                    this.ilsFrequency = _freq;
-                    break;
-                }
-                case NavMode.TWO_SLOTS: {
-                    this.vor1Frequency = _freq;
-                    break;
-                }
-            }
+            this.ilsFrequency = _freq;
             this.connectIls();
             return true;
         }
@@ -3198,22 +3189,9 @@ class FMCMainDisplay extends BaseAirliners {
         setTimeout(() => {
             this._lockConnectIls = false;
         }, 1000);
-        switch (this.radioNav.mode) {
-            case NavMode.FOUR_SLOTS: {
-                if (Math.abs(this.radioNav.getILSActiveFrequency(1) - this.ilsFrequency) > 0.005) {
-                    this.radioNav.setILSActiveFrequency(1, this.ilsFrequency);
-                }
-                break;
-            }
-            case NavMode.TWO_SLOTS: {
-                if (Math.abs(this.radioNav.getVORActiveFrequency(1) - this.vor1Frequency) > 0.005) {
-                    this.radioNav.setVORActiveFrequency(1, this.vor1Frequency);
-                }
-                break;
-            }
-            default:
-                console.error("Unknown RadioNav operating mode");
-                break;
+
+        if (Math.abs(this.radioNav.getILSActiveFrequency(1) - this.ilsFrequency) > 0.005) {
+            this.radioNav.setILSActiveFrequency(1, this.ilsFrequency);
         }
     }
 
