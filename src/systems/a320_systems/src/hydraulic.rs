@@ -611,10 +611,10 @@ impl A320Hydraulic {
         self.green_circuit_controller
             .update(engine_fire_push_buttons);
         self.green_circuit.update(
+            context,
             &mut vec![&mut self.engine_driven_pump_1],
             None::<&mut ElectricPump>,
             &Some(&self.power_transfer_unit),
-            &context,
             &self.green_circuit_controller,
         );
 
