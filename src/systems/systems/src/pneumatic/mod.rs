@@ -21,7 +21,7 @@ use uom::si::{
 
 pub mod valve;
 
-pub trait ControlledPneumaticValveSignal {
+pub trait PneumaticValveSignal {
     fn new(target_open_amount: Ratio) -> Self;
 
     fn new_closed() -> Self
@@ -42,10 +42,7 @@ pub trait ControlledPneumaticValveSignal {
 }
 
 pub trait ControllablePneumaticValve: PneumaticValve {
-    fn update_open_amount<T: ControlledPneumaticValveSignal>(
-        &mut self,
-        controller: &dyn ControllerSignal<T>,
-    );
+    fn update_open_amount<T: PneumaticValveSignal>(&mut self, controller: &dyn ControllerSignal<T>);
 }
 
 pub trait PneumaticContainer {
@@ -56,13 +53,13 @@ pub trait PneumaticContainer {
     fn update_temperature(&mut self, temperature_change: TemperatureInterval);
 }
 
-// Default container
-pub struct DefaultPipe {
+/// The default container. Allows fluid to be added or removed and stored
+pub struct PneumaticPipe {
     volume: Volume,
     pressure: Pressure,
     temperature: ThermodynamicTemperature,
 }
-impl PneumaticContainer for DefaultPipe {
+impl PneumaticContainer for PneumaticPipe {
     fn pressure(&self) -> Pressure {
         self.pressure
     }
@@ -76,11 +73,11 @@ impl PneumaticContainer for DefaultPipe {
     }
 
     // Adds or removes a certain amount of air
-    fn change_volume(&mut self, volume: Volume) {
-        let dp = self.calculate_pressure_change_for_volume_change(volume);
+    fn change_volume(&mut self, volume_change: Volume) {
+        let pressure_change = self.calculate_pressure_change_for_volume_change(volume_change);
 
-        self.update_temperature_for_pressure_change(dp);
-        self.pressure += dp;
+        self.update_temperature_for_pressure_change(pressure_change);
+        self.pressure += pressure_change;
     }
 
     fn update_temperature(&mut self, temperature_change: TemperatureInterval) {
@@ -89,20 +86,20 @@ impl PneumaticContainer for DefaultPipe {
         self.temperature += temperature_change;
     }
 }
-impl DefaultPipe {
+impl PneumaticPipe {
     const HEAT_CAPACITY_RATIO: f64 = 1.4;
 
     pub fn new(volume: Volume, pressure: Pressure, temperature: ThermodynamicTemperature) -> Self {
-        DefaultPipe {
+        PneumaticPipe {
             volume,
             pressure,
             temperature,
         }
     }
 
-    fn calculate_pressure_change_for_volume_change(&self, volume: Volume) -> Pressure {
+    fn calculate_pressure_change_for_volume_change(&self, volume_change: Volume) -> Pressure {
         self.pressure()
-            * (((self.volume().get::<cubic_meter>() + volume.get::<cubic_meter>())
+            * (((self.volume().get::<cubic_meter>() + volume_change.get::<cubic_meter>())
                 / self.volume().get::<cubic_meter>())
             .powf(Self::HEAT_CAPACITY_RATIO)
                 - 1.)
@@ -114,9 +111,9 @@ impl DefaultPipe {
         .powf((1. - Self::HEAT_CAPACITY_RATIO) / Self::HEAT_CAPACITY_RATIO);
     }
 
-    fn vol_to_target(&self, target_press: Pressure) -> Volume {
+    fn calculate_required_volume_for_target_pressure(&self, target_pressure: Pressure) -> Volume {
         self.volume()
-            * ((target_press.get::<psi>() / self.pressure.get::<psi>())
+            * ((target_pressure.get::<psi>() / self.pressure.get::<psi>())
                 .powf(1. / Self::HEAT_CAPACITY_RATIO)
                 - 1.)
     }
@@ -132,20 +129,6 @@ pub struct TargetPressureSignal {
     target_pressure: Pressure,
 }
 impl TargetPressureSignal {
-    pub fn new(target_pressure: Pressure) -> Self {
-        Self { target_pressure }
-    }
-}
-
-pub struct ConstantPressureController {
-    target_pressure: Pressure,
-}
-impl ControllerSignal<TargetPressureSignal> for ConstantPressureController {
-    fn signal(&self) -> Option<TargetPressureSignal> {
-        Some(TargetPressureSignal::new(self.target_pressure))
-    }
-}
-impl ConstantPressureController {
     pub fn new(target_pressure: Pressure) -> Self {
         Self { target_pressure }
     }
@@ -224,7 +207,7 @@ impl EngineCompressionChamberController {
 }
 
 pub struct CompressionChamber {
-    pipe: DefaultPipe,
+    pipe: PneumaticPipe,
 }
 impl PneumaticContainer for CompressionChamber {
     fn pressure(&self) -> Pressure {
@@ -239,18 +222,18 @@ impl PneumaticContainer for CompressionChamber {
         self.pipe.temperature()
     }
 
-    fn change_volume(&mut self, volume: Volume) {
-        self.pipe.change_volume(volume);
+    fn change_volume(&mut self, volume_change: Volume) {
+        self.pipe.change_volume(volume_change);
     }
 
-    fn update_temperature(&mut self, temperature: TemperatureInterval) {
-        self.pipe.update_temperature(temperature);
+    fn update_temperature(&mut self, temperature_change: TemperatureInterval) {
+        self.pipe.update_temperature(temperature_change);
     }
 }
 impl CompressionChamber {
     pub fn new(volume: Volume) -> Self {
         Self {
-            pipe: DefaultPipe::new(
+            pipe: PneumaticPipe::new(
                 volume,
                 Pressure::new::<psi>(14.7),
                 ThermodynamicTemperature::new::<degree_celsius>(15.),
@@ -260,7 +243,10 @@ impl CompressionChamber {
 
     pub fn update(&mut self, controller: &impl ControllerSignal<TargetPressureSignal>) {
         if let Some(signal) = controller.signal() {
-            self.change_volume(self.pipe.vol_to_target(signal.target_pressure))
+            self.change_volume(
+                self.pipe
+                    .calculate_required_volume_for_target_pressure(signal.target_pressure),
+            )
         }
     }
 }
@@ -355,12 +341,12 @@ impl ControllerSignal<TargetPressureSignal> for ApuCompressionChamberController 
     }
 }
 
-pub struct HeatExchanger {
+pub struct Precooler {
     coefficient: f64,
     internal_connector: PneumaticContainerConnector,
     exhaust: PneumaticExhaust,
 }
-impl HeatExchanger {
+impl Precooler {
     pub fn new(coefficient: f64) -> Self {
         Self {
             coefficient,
@@ -398,7 +384,7 @@ impl HeatExchanger {
 }
 
 pub struct VariableVolumeContainer {
-    pipe: DefaultPipe,
+    pipe: PneumaticPipe,
 }
 impl VariableVolumeContainer {
     pub fn new(
@@ -407,7 +393,7 @@ impl VariableVolumeContainer {
         temperature: ThermodynamicTemperature,
     ) -> Self {
         Self {
-            pipe: DefaultPipe::new(starting_volume, pressure, temperature),
+            pipe: PneumaticPipe::new(starting_volume, pressure, temperature),
         }
     }
 
@@ -484,7 +470,7 @@ pub enum BleedMonitoringComputerChannelOperationMode {
 mod tests {
     use super::*;
     use crate::{
-        pneumatic::{DefaultPipe, DefaultValve, PneumaticContainer},
+        pneumatic::{DefaultValve, PneumaticContainer, PneumaticPipe},
         shared::{ControllerSignal, ISA},
         simulation::{
             test::{SimulationTestBed, TestBed},
@@ -507,13 +493,27 @@ mod tests {
     struct TestPneumaticValveSignal {
         target_open_amount: Ratio,
     }
-    impl ControlledPneumaticValveSignal for TestPneumaticValveSignal {
+    impl PneumaticValveSignal for TestPneumaticValveSignal {
         fn new(target_open_amount: Ratio) -> Self {
             Self { target_open_amount }
         }
 
         fn target_open_amount(&self) -> Ratio {
             self.target_open_amount
+        }
+    }
+
+    pub struct ConstantPressureController {
+        target_pressure: Pressure,
+    }
+    impl ControllerSignal<TargetPressureSignal> for ConstantPressureController {
+        fn signal(&self) -> Option<TargetPressureSignal> {
+            Some(TargetPressureSignal::new(self.target_pressure))
+        }
+    }
+    impl ConstantPressureController {
+        pub fn new(target_pressure: Pressure) -> Self {
+            Self { target_pressure }
         }
     }
 
@@ -577,8 +577,8 @@ mod tests {
         volume_in_cubic_meter: f64,
         pressure_in_psi: f64,
         temperature_in_celsius: f64,
-    ) -> DefaultPipe {
-        DefaultPipe::new(
+    ) -> PneumaticPipe {
+        PneumaticPipe::new(
             Volume::new::<cubic_meter>(volume_in_cubic_meter),
             Pressure::new::<psi>(pressure_in_psi),
             ThermodynamicTemperature::new::<degree_celsius>(temperature_in_celsius),
@@ -710,27 +710,27 @@ mod tests {
     }
 
     #[test]
-    fn heat_exchanger_does_not_do_anything_when_no_air_is_moved() {
+    fn precooler_does_not_do_anything_when_no_air_is_moved() {
         let context = context(Duration::from_secs(1), Length::new::<foot>(0.));
 
-        let mut from = DefaultPipe::new(
+        let mut from = PneumaticPipe::new(
             Volume::new::<cubic_meter>(1.),
             Pressure::new::<psi>(14.7),
             ThermodynamicTemperature::new::<degree_celsius>(15.),
         );
-        let mut supply = DefaultPipe::new(
+        let mut supply = PneumaticPipe::new(
             Volume::new::<cubic_meter>(1.),
             Pressure::new::<psi>(14.7),
             ThermodynamicTemperature::new::<degree_celsius>(150.),
         );
-        let mut to = DefaultPipe::new(
+        let mut to = PneumaticPipe::new(
             Volume::new::<cubic_meter>(1.),
             Pressure::new::<psi>(14.7),
             ThermodynamicTemperature::new::<degree_celsius>(15.),
         );
 
-        let mut heat_exchanger = HeatExchanger::new(1.);
-        heat_exchanger.update(&context, &mut from, &mut supply, &mut to);
+        let mut precooler = Precooler::new(1.);
+        precooler.update(&context, &mut from, &mut supply, &mut to);
 
         assert_eq!(
             from.temperature(),
@@ -747,27 +747,27 @@ mod tests {
     }
 
     #[test]
-    fn heat_exchanger_does_not_do_anything_when_temperatures_are_equal() {
+    fn precooler_does_not_do_anything_when_temperatures_are_equal() {
         let context = context(Duration::from_secs(1), Length::new::<foot>(0.));
 
-        let mut from = DefaultPipe::new(
+        let mut from = PneumaticPipe::new(
             Volume::new::<cubic_meter>(1.),
             Pressure::new::<psi>(29.4),
             ThermodynamicTemperature::new::<degree_celsius>(15.),
         );
-        let mut supply = DefaultPipe::new(
+        let mut supply = PneumaticPipe::new(
             Volume::new::<cubic_meter>(1.),
             Pressure::new::<psi>(14.7),
             ThermodynamicTemperature::new::<degree_celsius>(15.),
         );
-        let mut to = DefaultPipe::new(
+        let mut to = PneumaticPipe::new(
             Volume::new::<cubic_meter>(1.),
             Pressure::new::<psi>(14.7),
             ThermodynamicTemperature::new::<degree_celsius>(15.),
         );
 
-        let mut heat_exchanger = HeatExchanger::new(1.);
-        heat_exchanger.update(&context, &mut from, &mut supply, &mut to);
+        let mut precooler = Precooler::new(1.);
+        precooler.update(&context, &mut from, &mut supply, &mut to);
 
         // We only check whether this temperature stayed the same because the other temperatures are expected to change due to compression
         assert_eq!(
@@ -777,27 +777,27 @@ mod tests {
     }
 
     #[test]
-    fn heat_exchanger_cools() {
+    fn precooler_cools() {
         let context = context(Duration::from_secs(1), Length::new::<foot>(0.));
 
-        let mut from = DefaultPipe::new(
+        let mut from = PneumaticPipe::new(
             Volume::new::<cubic_meter>(1.),
             Pressure::new::<psi>(29.4),
             ThermodynamicTemperature::new::<degree_celsius>(200.),
         );
-        let mut supply = DefaultPipe::new(
+        let mut supply = PneumaticPipe::new(
             Volume::new::<cubic_meter>(1.),
             Pressure::new::<psi>(14.7),
             ThermodynamicTemperature::new::<degree_celsius>(15.),
         );
-        let mut to = DefaultPipe::new(
+        let mut to = PneumaticPipe::new(
             Volume::new::<cubic_meter>(1.),
             Pressure::new::<psi>(14.7),
             ThermodynamicTemperature::new::<degree_celsius>(200.),
         );
 
-        let mut heat_exchanger = HeatExchanger::new(1.);
-        heat_exchanger.update(&context, &mut from, &mut supply, &mut to);
+        let mut precooler = Precooler::new(1.);
+        precooler.update(&context, &mut from, &mut supply, &mut to);
 
         // We only check whether this temperature stayed the same because the other temperatures are expected to change due to compression
         assert!(supply.temperature() > ThermodynamicTemperature::new::<degree_celsius>(15.));
@@ -805,7 +805,7 @@ mod tests {
 
     #[test]
     fn pressure_increases_for_temperature_increase() {
-        let mut pipe = DefaultPipe::new(
+        let mut pipe = PneumaticPipe::new(
             Volume::new::<cubic_meter>(1.),
             Pressure::new::<psi>(29.4),
             ThermodynamicTemperature::new::<degree_celsius>(15.),
@@ -824,7 +824,7 @@ mod tests {
 
     // This is a test case to catch a very specific bug I was running into where the supply pressure rise ridiculously high at the cost of draining the pressure in the compression chamber.
     #[test]
-    fn heat_exchanger_no_temperature_escalates() {
+    fn precooler_no_temperature_escalates() {
         let context = context(Duration::from_millis(16), Length::new::<foot>(0.));
 
         let mut ts = Vec::new();
@@ -837,29 +837,29 @@ mod tests {
         let mut tc = Vec::new();
         let mut td = Vec::new();
 
-        let mut fake_compression_chamber = DefaultPipe::new(
+        let mut fake_compression_chamber = PneumaticPipe::new(
             Volume::new::<cubic_meter>(1.),
             Pressure::new::<psi>(2.),
             ThermodynamicTemperature::new::<degree_celsius>(15.),
         );
         let mut valve = DefaultValve::new_open();
-        let mut from = DefaultPipe::new(
+        let mut from = PneumaticPipe::new(
             Volume::new::<cubic_meter>(1.),
             Pressure::new::<psi>(1.),
             ThermodynamicTemperature::new::<degree_celsius>(15.),
         );
-        let mut supply = DefaultPipe::new(
+        let mut supply = PneumaticPipe::new(
             Volume::new::<cubic_meter>(1.),
             Pressure::new::<psi>(1.),
             ThermodynamicTemperature::new::<degree_celsius>(15.),
         );
-        let mut to = DefaultPipe::new(
+        let mut to = PneumaticPipe::new(
             Volume::new::<cubic_meter>(1.),
             Pressure::new::<psi>(1.),
             ThermodynamicTemperature::new::<degree_celsius>(15.),
         );
 
-        let mut precooler = HeatExchanger::new(5e-1);
+        let mut precooler = Precooler::new(5e-1);
 
         for i in 1..1000 {
             ts.push(i as f64 * 16.);

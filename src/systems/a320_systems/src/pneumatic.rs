@@ -19,9 +19,10 @@ use systems::{
     pneumatic::{
         valve::*, ApuCompressionChamberController, BleedMonitoringComputerChannelOperationMode,
         BleedMonitoringComputerIsAliveSignal, CompressionChamber, ControllablePneumaticValve,
-        ControlledPneumaticValveSignal, CrossBleedValveSelectorKnob, CrossBleedValveSelectorMode,
-        DefaultPipe, EngineCompressionChamberController, EngineState, HeatExchanger,
-        PneumaticContainer, PneumaticContainerWithConnector, VariableVolumeContainer,
+        CrossBleedValveSelectorKnob, CrossBleedValveSelectorMode,
+        EngineCompressionChamberController, EngineState, PneumaticContainer,
+        PneumaticContainerWithConnector, PneumaticPipe, PneumaticValveSignal, Precooler,
+        VariableVolumeContainer,
     },
     shared::{
         pid::PidController, ControllerSignal, DelayedTrueLogicGate, ElectricalBusType,
@@ -35,7 +36,7 @@ use systems::{
 
 macro_rules! valve_signal_implementation {
     ($signal_type: ty) => {
-        impl ControlledPneumaticValveSignal for $signal_type {
+        impl PneumaticValveSignal for $signal_type {
             fn new(target_open_amount: Ratio) -> Self {
                 Self { target_open_amount }
             }
@@ -810,15 +811,15 @@ struct EngineBleedAirSystem {
     intermediate_pressure_valve: PurelyPneumaticValve,
     high_pressure_valve: ElectroPneumaticValve,
     pressure_regulating_valve: ElectroPneumaticValve,
-    transfer_pressure_pipe: DefaultPipe,
-    precooler_inlet_pipe: DefaultPipe,
-    precooler_outlet_pipe: DefaultPipe,
-    precooler_cooling_pipe: DefaultPipe,
+    transfer_pressure_pipe: PneumaticPipe,
+    precooler_inlet_pipe: PneumaticPipe,
+    precooler_outlet_pipe: PneumaticPipe,
+    precooler_cooling_pipe: PneumaticPipe,
     engine_starter_exhaust: PneumaticExhaust,
-    engine_starter_container: DefaultPipe,
+    engine_starter_container: PneumaticPipe,
     engine_starter_valve: DefaultValve,
     fan_air_valve: ElectroPneumaticValve,
-    precooler: HeatExchanger,
+    precooler: Precooler,
 }
 impl EngineBleedAirSystem {
     fn new(number: usize, powered_by: ElectricalBusType) -> Self {
@@ -841,34 +842,34 @@ impl EngineBleedAirSystem {
             high_pressure_valve: ElectroPneumaticValve::new(1e-2, powered_by),
             pressure_regulating_valve: ElectroPneumaticValve::new(1., powered_by),
             fan_air_valve: ElectroPneumaticValve::new(1., powered_by),
-            transfer_pressure_pipe: DefaultPipe::new(
+            transfer_pressure_pipe: PneumaticPipe::new(
                 Volume::new::<cubic_meter>(1.),
                 Pressure::new::<psi>(14.7),
                 ThermodynamicTemperature::new::<degree_celsius>(15.),
             ),
-            precooler_inlet_pipe: DefaultPipe::new(
+            precooler_inlet_pipe: PneumaticPipe::new(
                 Volume::new::<cubic_meter>(0.5),
                 Pressure::new::<psi>(14.7),
                 ThermodynamicTemperature::new::<degree_celsius>(15.),
             ),
-            precooler_outlet_pipe: DefaultPipe::new(
+            precooler_outlet_pipe: PneumaticPipe::new(
                 Volume::new::<cubic_meter>(0.5),
                 Pressure::new::<psi>(14.7),
                 ThermodynamicTemperature::new::<degree_celsius>(15.),
             ),
-            precooler_cooling_pipe: DefaultPipe::new(
+            precooler_cooling_pipe: PneumaticPipe::new(
                 Volume::new::<cubic_meter>(1.),
                 Pressure::new::<psi>(14.7),
                 ThermodynamicTemperature::new::<degree_celsius>(15.),
             ),
-            engine_starter_container: DefaultPipe::new(
+            engine_starter_container: PneumaticPipe::new(
                 Volume::new::<cubic_meter>(0.5),
                 Pressure::new::<psi>(14.7),
                 ThermodynamicTemperature::new::<degree_celsius>(15.),
             ),
             engine_starter_exhaust: PneumaticExhaust::new(1e-2),
             engine_starter_valve: DefaultValve::new_closed(),
-            precooler: HeatExchanger::new(1.),
+            precooler: Precooler::new(1.),
         }
     }
 
@@ -1225,7 +1226,7 @@ impl SimulationElement for FullAuthorityDigitalEngineControl {
 
 // Just sticking all of the pack related things into this.
 struct PackComplex {
-    actual_pack: DefaultPipe,
+    pack_container: PneumaticPipe,
     exhaust: PneumaticExhaust,
     pack_flow_valve: DefaultValve,
     pack_flow_valve_controller: PackFlowValveController,
@@ -1234,7 +1235,7 @@ struct PackComplex {
 impl PackComplex {
     fn new(engine_number: usize) -> Self {
         Self {
-            actual_pack: DefaultPipe::new(
+            pack_container: PneumaticPipe::new(
                 Volume::new::<cubic_meter>(1.),
                 Pressure::new::<psi>(14.7),
                 ThermodynamicTemperature::new::<degree_celsius>(15.),
@@ -1250,10 +1251,10 @@ impl PackComplex {
             .update_open_amount(&self.pack_flow_valve_controller);
 
         self.pack_flow_valve
-            .update_move_fluid(context, from, &mut self.actual_pack);
+            .update_move_fluid(context, from, &mut self.pack_container);
 
         self.exhaust
-            .update_move_fluid(context, &mut self.actual_pack);
+            .update_move_fluid(context, &mut self.pack_container);
     }
 
     pub fn pack_flow_valve_is_open(&self) -> bool {
@@ -1262,23 +1263,23 @@ impl PackComplex {
 }
 impl PneumaticContainer for PackComplex {
     fn pressure(&self) -> Pressure {
-        self.actual_pack.pressure()
+        self.pack_container.pressure()
     }
 
     fn volume(&self) -> Volume {
-        self.actual_pack.volume()
+        self.pack_container.volume()
     }
 
     fn temperature(&self) -> ThermodynamicTemperature {
-        self.actual_pack.temperature()
+        self.pack_container.temperature()
     }
 
     fn change_volume(&mut self, volume: Volume) {
-        self.actual_pack.change_volume(volume);
+        self.pack_container.change_volume(volume);
     }
 
     fn update_temperature(&mut self, temperature_change: TemperatureInterval) {
-        self.actual_pack.update_temperature(temperature_change);
+        self.pack_container.update_temperature(temperature_change);
     }
 }
 impl SimulationElement for PackComplex {

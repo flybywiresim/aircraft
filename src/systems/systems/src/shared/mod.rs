@@ -1,6 +1,6 @@
 use crate::{
     electrical::{ElectricalElement, ElectricitySource, Potential},
-    pneumatic::ControlledPneumaticValveSignal,
+    pneumatic::PneumaticValveSignal,
     simulation::UpdateContext,
 };
 use num_derive::FromPrimitive;
@@ -205,7 +205,7 @@ pub trait ControllerSignal<S> {
 pub struct ApuBleedAirValveSignal {
     target_open_amount: Ratio,
 }
-impl ControlledPneumaticValveSignal for ApuBleedAirValveSignal {
+impl PneumaticValveSignal for ApuBleedAirValveSignal {
     fn new(target_open_amount: Ratio) -> Self {
         Self { target_open_amount }
     }

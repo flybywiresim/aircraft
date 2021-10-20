@@ -14,7 +14,7 @@ use uom::si::{
     volume_rate::cubic_meter_per_second,
 };
 
-use super::{ControllablePneumaticValve, ControlledPneumaticValveSignal, PneumaticContainer};
+use super::{ControllablePneumaticValve, PneumaticContainer, PneumaticValveSignal};
 
 /// This is only controlled by physical forces
 pub struct PurelyPneumaticValve {
@@ -127,7 +127,7 @@ impl PneumaticValve for ElectroPneumaticValve {
     }
 }
 impl ControllablePneumaticValve for ElectroPneumaticValve {
-    fn update_open_amount<T: ControlledPneumaticValveSignal>(
+    fn update_open_amount<T: PneumaticValveSignal>(
         &mut self,
         controller: &dyn ControllerSignal<T>,
     ) {
@@ -148,7 +148,7 @@ impl SimulationElement for ElectroPneumaticValve {
     }
 }
 
-/// This valve will stay in whatever position it is commanded to, regardless of physical forcel
+/// This valve will stay in whatever position it is commanded to, regardless of physical forces
 pub struct DefaultValve {
     open_amount: Ratio,
     connector: PneumaticContainerConnector,
@@ -194,7 +194,7 @@ impl DefaultValve {
     }
 }
 impl ControllablePneumaticValve for DefaultValve {
-    fn update_open_amount<T: ControlledPneumaticValveSignal>(
+    fn update_open_amount<T: PneumaticValveSignal>(
         &mut self,
         controller: &dyn ControllerSignal<T>,
     ) {
@@ -231,11 +231,6 @@ impl PneumaticContainerConnector {
         from: &mut impl PneumaticContainer,
         to: &mut impl PneumaticContainer,
     ) {
-        // TODO: Remove this. This is needed because moving 0 volume leads to an issue
-        if self.transfer_speed_factor.get::<ratio>() == 0. {
-            // return;
-        }
-
         self.heat_conduction(context, from, to);
 
         let equalization_volume: Volume = (from
@@ -334,7 +329,8 @@ impl PneumaticExhaust {
         context: &UpdateContext,
         from: &mut impl PneumaticContainer,
     ) {
-        let equalization_volume = self.vol_to_target(from, context.ambient_pressure());
+        let equalization_volume =
+            self.calculate_required_volume_for_target_pressure(from, context.ambient_pressure());
 
         let fluid_to_move = (self.exhaust_speed
             * equalization_volume
@@ -346,7 +342,7 @@ impl PneumaticExhaust {
         self.fluid_flow = -fluid_to_move / context.delta_as_time();
     }
 
-    fn vol_to_target(
+    fn calculate_required_volume_for_target_pressure(
         &self,
         from: &mut impl PneumaticContainer,
         target_pressure: Pressure,
@@ -366,7 +362,7 @@ impl PneumaticExhaust {
 mod tests {
     use super::*;
     use crate::{
-        pneumatic::{DefaultPipe, DefaultValve, PneumaticContainer},
+        pneumatic::{DefaultValve, PneumaticContainer, PneumaticPipe},
         shared::{ControllerSignal, ISA},
     };
 
@@ -401,7 +397,7 @@ mod tests {
         }
     }
 
-    impl ControlledPneumaticValveSignal for TestPneumaticValveSignal {
+    impl PneumaticValveSignal for TestPneumaticValveSignal {
         fn new(target_open_amount: Ratio) -> Self {
             Self { target_open_amount }
         }
@@ -439,8 +435,8 @@ mod tests {
         volume_in_cubic_meter: f64,
         pressure_in_psi: f64,
         temperature_in_celsius: f64,
-    ) -> DefaultPipe {
-        DefaultPipe::new(
+    ) -> PneumaticPipe {
+        PneumaticPipe::new(
             Volume::new::<cubic_meter>(volume_in_cubic_meter),
             Pressure::new::<psi>(pressure_in_psi),
             ThermodynamicTemperature::new::<degree_celsius>(temperature_in_celsius),
@@ -466,12 +462,12 @@ mod tests {
     fn connector_equal_pressure() {
         let mut connector = PneumaticContainerConnector::new();
 
-        let mut from = DefaultPipe::new(
+        let mut from = PneumaticPipe::new(
             Volume::new::<cubic_meter>(1.),
             Pressure::new::<psi>(14.),
             ThermodynamicTemperature::new::<degree_celsius>(15.),
         );
-        let mut to = DefaultPipe::new(
+        let mut to = PneumaticPipe::new(
             Volume::new::<cubic_meter>(1.),
             Pressure::new::<psi>(14.),
             ThermodynamicTemperature::new::<degree_celsius>(15.),
@@ -502,12 +498,12 @@ mod tests {
     fn connector_unequal_pressure() {
         let mut connector = PneumaticContainerConnector::new();
 
-        let mut from = DefaultPipe::new(
+        let mut from = PneumaticPipe::new(
             Volume::new::<cubic_meter>(1.),
             Pressure::new::<psi>(28.),
             ThermodynamicTemperature::new::<degree_celsius>(15.),
         );
-        let mut to = DefaultPipe::new(
+        let mut to = PneumaticPipe::new(
             Volume::new::<cubic_meter>(1.),
             Pressure::new::<psi>(14.),
             ThermodynamicTemperature::new::<degree_celsius>(15.),
@@ -529,12 +525,12 @@ mod tests {
     fn valve_moves_fluid_based_on_open_amount() {
         let mut valve = DefaultValve::new_closed();
 
-        let mut from = DefaultPipe::new(
+        let mut from = PneumaticPipe::new(
             Volume::new::<cubic_meter>(1.),
             Pressure::new::<psi>(28.),
             ThermodynamicTemperature::new::<degree_celsius>(15.),
         );
-        let mut to = DefaultPipe::new(
+        let mut to = PneumaticPipe::new(
             Volume::new::<cubic_meter>(1.),
             Pressure::new::<psi>(14.),
             ThermodynamicTemperature::new::<degree_celsius>(15.),
@@ -559,12 +555,12 @@ mod tests {
     fn connector_two_small_updates_equal_one_big_update() {
         let mut connector = PneumaticContainerConnector::new();
 
-        let mut from = DefaultPipe::new(
+        let mut from = PneumaticPipe::new(
             Volume::new::<cubic_meter>(1.),
             Pressure::new::<psi>(28.),
             ThermodynamicTemperature::new::<degree_celsius>(15.),
         );
-        let mut to = DefaultPipe::new(
+        let mut to = PneumaticPipe::new(
             Volume::new::<cubic_meter>(1.),
             Pressure::new::<psi>(14.),
             ThermodynamicTemperature::new::<degree_celsius>(15.),
@@ -574,12 +570,12 @@ mod tests {
         connector.update_move_fluid(&context1, &mut from, &mut to);
         connector.update_move_fluid(&context1, &mut from, &mut to);
 
-        let mut from2 = DefaultPipe::new(
+        let mut from2 = PneumaticPipe::new(
             Volume::new::<cubic_meter>(1.),
             Pressure::new::<psi>(28.),
             ThermodynamicTemperature::new::<degree_celsius>(15.),
         );
-        let mut to2 = DefaultPipe::new(
+        let mut to2 = PneumaticPipe::new(
             Volume::new::<cubic_meter>(1.),
             Pressure::new::<psi>(14.),
             ThermodynamicTemperature::new::<degree_celsius>(15.),
@@ -598,12 +594,12 @@ mod tests {
     fn connector_equalizes_pressure_between_containers() {
         let mut connector = DefaultValve::new_open();
 
-        let mut from = DefaultPipe::new(
+        let mut from = PneumaticPipe::new(
             Volume::new::<cubic_meter>(1.),
             Pressure::new::<psi>(28.),
             ThermodynamicTemperature::new::<degree_celsius>(15.),
         );
-        let mut to = DefaultPipe::new(
+        let mut to = PneumaticPipe::new(
             Volume::new::<cubic_meter>(1.),
             Pressure::new::<psi>(14.),
             ThermodynamicTemperature::new::<degree_celsius>(15.),
@@ -619,12 +615,12 @@ mod tests {
     fn valve_moving_more_volume_than_available_does_not_cause_issues() {
         let mut valve = DefaultValve::new_open();
 
-        let mut from = DefaultPipe::new(
+        let mut from = PneumaticPipe::new(
             Volume::new::<cubic_meter>(1.),
             Pressure::new::<psi>(100.), // really high pressure
             ThermodynamicTemperature::new::<degree_celsius>(15.),
         );
-        let mut to = DefaultPipe::new(
+        let mut to = PneumaticPipe::new(
             Volume::new::<cubic_meter>(1.),
             Pressure::new::<psi>(1.),
             ThermodynamicTemperature::new::<degree_celsius>(15.),

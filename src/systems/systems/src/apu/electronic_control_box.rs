@@ -4,7 +4,7 @@ use super::{
     Turbine, TurbineSignal, TurbineState,
 };
 use crate::{
-    pneumatic::ControlledPneumaticValveSignal,
+    pneumatic::PneumaticValveSignal,
     shared::{
         arinc429::SignStatus, ApuBleedAirValveSignal, ApuMaster, ApuStart, ConsumePower,
         ContactorSignal, ControllerSignal, ElectricalBusType, ElectricalBuses, PneumaticValve,
