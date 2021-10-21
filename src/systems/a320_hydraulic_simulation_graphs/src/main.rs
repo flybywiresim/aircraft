@@ -31,8 +31,8 @@ impl TestHydraulicLoopController {
     }
 }
 impl HydraulicLoopController for TestHydraulicLoopController {
-    fn should_open_fire_shutoff_valve(&self, pump_idx: usize) -> bool {
-        self.should_open_fire_shutoff_valve[pump_idx]
+    fn should_open_fire_shutoff_valve(&self, pump_index: usize) -> bool {
+        self.should_open_fire_shutoff_valve[pump_index]
     }
 }
 
@@ -289,7 +289,7 @@ fn hyd_circuit_basic(path: &str) {
 
         edp.update(
             &context,
-            hydraulic_loop.pump_pressure(0),
+            hydraulic_loop.pump_section(0),
             hydraulic_loop.reservoir(),
             AngularVelocity::new::<revolution_per_minute>(edp_rpm),
             &edp_controller,
@@ -301,7 +301,7 @@ fn hyd_circuit_basic(path: &str) {
         ));
         epump.update(
             &context,
-            hydraulic_loop.system_pressure(),
+            hydraulic_loop.system_section(),
             hydraulic_loop.reservoir(),
             &epump_controller,
         );

@@ -28,8 +28,8 @@ use systems::{
         },
         update_iterator::{FixedStepLoop, MaxFixedStepLoop},
         ElectricPump, EngineDrivenPump, HydraulicCircuit, HydraulicLoopController,
-        PowerTransferUnit, PowerTransferUnitController, PressureSwitchState, PumpController,
-        RamAirTurbine, RamAirTurbineController,
+        HydraulicSectionState, PowerTransferUnit, PowerTransferUnitController, PressureSwitchState,
+        PumpController, RamAirTurbine, RamAirTurbineController,
     },
     overhead::{
         AutoOffFaultPushButton, AutoOnFaultPushButton, MomentaryOnPushButton, MomentaryPushButton,
@@ -52,6 +52,10 @@ impl A320HydraulicCircuitFactory {
     const MIN_PRESS_EDP_SECTION_HI_HYST: f64 = 2200.0;
     const MIN_PRESS_PRESSURISED_LO_HYST: f64 = 1450.0;
     const MIN_PRESS_PRESSURISED_HI_HYST: f64 = 1750.0;
+
+    const GREEN_ENGINE_PUMP_INDEX: usize = 0;
+    const YELLOW_ENGINE_PUMP_INDEX: usize = 0;
+    const BLUE_ELECTRIC_PUMP_INDEX: usize = 0;
 
     fn new_green_circuit() -> HydraulicCircuit {
         HydraulicCircuit::new(
@@ -533,8 +537,8 @@ impl A320Hydraulic {
             lgciu2,
         );
         self.power_transfer_unit.update(
-            self.green_circuit.system_pressure(),
-            self.yellow_circuit.system_pressure(),
+            self.green_circuit.system_section(),
+            self.yellow_circuit.system_section(),
             &self.power_transfer_unit_controller,
         );
 
@@ -542,13 +546,15 @@ impl A320Hydraulic {
             overhead_panel,
             engine_fire_push_buttons,
             engine1,
-            self.green_circuit.pump_section_pressure_switch(0),
+            self.green_circuit
+                .pump_section(A320HydraulicCircuitFactory::GREEN_ENGINE_PUMP_INDEX),
             lgciu1,
         );
 
         self.engine_driven_pump_1.update(
             context,
-            self.green_circuit.pump_pressure(0),
+            self.green_circuit
+                .pump_section(A320HydraulicCircuitFactory::GREEN_ENGINE_PUMP_INDEX),
             self.green_circuit.reservoir(),
             engine1.hydraulic_pump_output_speed(),
             &self.engine_driven_pump_1_controller,
@@ -558,13 +564,15 @@ impl A320Hydraulic {
             overhead_panel,
             engine_fire_push_buttons,
             engine2,
-            self.yellow_circuit.pump_section_pressure_switch(0),
+            self.yellow_circuit
+                .pump_section(A320HydraulicCircuitFactory::YELLOW_ENGINE_PUMP_INDEX),
             lgciu2,
         );
 
         self.engine_driven_pump_2.update(
             context,
-            self.yellow_circuit.pump_pressure(0),
+            self.yellow_circuit
+                .pump_section(A320HydraulicCircuitFactory::YELLOW_ENGINE_PUMP_INDEX),
             self.yellow_circuit.reservoir(),
             engine2.hydraulic_pump_output_speed(),
             &self.engine_driven_pump_2_controller,
@@ -572,7 +580,8 @@ impl A320Hydraulic {
 
         self.blue_electric_pump_controller.update(
             overhead_panel,
-            self.blue_circuit.system_section_pressure_switch(),
+            self.blue_circuit
+                .pump_section(A320HydraulicCircuitFactory::BLUE_ELECTRIC_PUMP_INDEX),
             engine1,
             engine2,
             lgciu1,
@@ -580,7 +589,8 @@ impl A320Hydraulic {
         );
         self.blue_electric_pump.update(
             context,
-            self.blue_circuit.system_pressure(),
+            self.blue_circuit
+                .pump_section(A320HydraulicCircuitFactory::BLUE_ELECTRIC_PUMP_INDEX),
             self.blue_circuit.reservoir(),
             &self.blue_electric_pump_controller,
         );
@@ -590,18 +600,18 @@ impl A320Hydraulic {
             overhead_panel,
             &self.forward_cargo_door_controller,
             &self.aft_cargo_door_controller,
-            self.yellow_circuit.system_section_pressure_switch(),
+            self.yellow_circuit.system_section(),
         );
         self.yellow_electric_pump.update(
             context,
-            self.yellow_circuit.system_pressure(),
+            self.yellow_circuit.system_section(),
             self.yellow_circuit.reservoir(),
             &self.yellow_electric_pump_controller,
         );
 
         self.ram_air_turbine.update(
             context,
-            self.blue_circuit.system_pressure(),
+            self.blue_circuit.system_section(),
             self.blue_circuit.reservoir(),
             &self.ram_air_turbine_controller,
         );
@@ -637,27 +647,40 @@ impl A320Hydraulic {
         );
 
         self.braking_circuit_norm
-            .update(context, self.green_circuit.system_pressure());
+            .update(context, self.green_circuit.system_section());
         self.braking_circuit_altn
-            .update(context, self.yellow_circuit.system_pressure());
+            .update(context, self.yellow_circuit.system_section());
     }
 
     // Actual logic of HYD PTU memo computed here until done within FWS
     fn should_show_hyd_ptu_message_on_ecam(&self) -> bool {
         let ptu_valve_ctrol_off = !self.power_transfer_unit_controller.should_enable();
-        let green_eng_pump_lo_pr = self.green_circuit.pump_section_pressure_switch(0)
-            == PressureSwitchState::NotPressurised;
-        let yellow_sys_lo_pr = self.yellow_circuit.pump_section_pressure_switch(0)
-            == PressureSwitchState::NotPressurised;
+        let green_eng_pump_lo_pr = !self
+            .green_circuit
+            .pump_section(A320HydraulicCircuitFactory::GREEN_ENGINE_PUMP_INDEX)
+            .is_pressure_switch_pressurised();
+
+        let yellow_sys_lo_pr = !self
+            .yellow_circuit
+            .pump_section(A320HydraulicCircuitFactory::YELLOW_ENGINE_PUMP_INDEX)
+            .is_pressure_switch_pressurised();
+
         let yellow_sys_press_above_1450 =
             self.yellow_circuit.system_pressure() > Pressure::new::<psi>(1450.);
 
         let green_sys_press_above_1450 =
             self.green_circuit.system_pressure() > Pressure::new::<psi>(1450.);
-        let green_sys_lo_pr = self.green_circuit.pump_section_pressure_switch(0)
-            == PressureSwitchState::NotPressurised;
-        let yellow_eng_pump_lo_pr = self.yellow_circuit.pump_section_pressure_switch(0)
-            == PressureSwitchState::NotPressurised;
+
+        let green_sys_lo_pr = !self
+            .green_circuit
+            .pump_section(A320HydraulicCircuitFactory::GREEN_ENGINE_PUMP_INDEX)
+            .is_pressure_switch_pressurised();
+
+        let yellow_eng_pump_lo_pr = !self
+            .yellow_circuit
+            .pump_section(A320HydraulicCircuitFactory::YELLOW_ENGINE_PUMP_INDEX)
+            .is_pressure_switch_pressurised();
+
         let yellow_elec_pump_on = self.yellow_electric_pump_controller.should_pressurise();
 
         let yellow_pump_state = yellow_eng_pump_lo_pr && !yellow_elec_pump_on;
@@ -791,15 +814,15 @@ impl A320EngineDrivenPumpController {
     fn update_low_pressure_state(
         &mut self,
         engine: &impl Engine,
-        pump_section_pressure_switch_state: PressureSwitchState,
+        pressure_state: &impl HydraulicSectionState,
         lgciu: &impl LgciuInterface,
     ) {
         // Engine off state uses oil pressure threshold (treshold is 18psi)
         let is_engine_low_oil_pressure = engine.oil_pressure().get::<psi>()
             < Self::MIN_ENGINE_OIL_PRESS_THRESHOLD_TO_INHIBIT_FAULT;
 
-        self.is_pressure_low = self.should_pressurise()
-            && pump_section_pressure_switch_state == PressureSwitchState::NotPressurised;
+        self.is_pressure_low =
+            self.should_pressurise() && !pressure_state.is_pressure_switch_pressurised();
 
         // Fault inhibited if on ground AND engine oil pressure is low (11KS1 elec relay)
         self.has_pressure_low_fault = self.is_pressure_low
@@ -812,7 +835,7 @@ impl A320EngineDrivenPumpController {
         overhead_panel: &A320HydraulicOverheadPanel,
         engine_fire_push_buttons: &T,
         engine: &impl Engine,
-        pressure_switch_state: PressureSwitchState,
+        pressure_state: &impl HydraulicSectionState,
         lgciu: &impl LgciuInterface,
     ) {
         let mut should_pressurise_if_powered = false;
@@ -829,7 +852,7 @@ impl A320EngineDrivenPumpController {
         // Inverted logic, no power means solenoid valve always leave pump in pressurise mode
         self.should_pressurise = !self.is_powered || should_pressurise_if_powered;
 
-        self.update_low_pressure_state(engine, pressure_switch_state, lgciu);
+        self.update_low_pressure_state(engine, pressure_state, lgciu);
     }
 
     fn has_pressure_low_fault(&self) -> bool {
@@ -880,7 +903,7 @@ impl A320BlueElectricPumpController {
     fn update(
         &mut self,
         overhead_panel: &A320HydraulicOverheadPanel,
-        pressure_switch_state: PressureSwitchState,
+        pressure_state: &impl HydraulicSectionState,
         engine1: &impl Engine,
         engine2: &impl Engine,
         lgciu1: &impl LgciuInterface,
@@ -905,7 +928,7 @@ impl A320BlueElectricPumpController {
 
         self.update_low_pressure_state(
             overhead_panel,
-            pressure_switch_state,
+            pressure_state,
             engine1,
             engine2,
             lgciu1,
@@ -916,7 +939,7 @@ impl A320BlueElectricPumpController {
     fn update_low_pressure_state(
         &mut self,
         overhead_panel: &A320HydraulicOverheadPanel,
-        pressure_switch_state: PressureSwitchState,
+        pressure_state: &impl HydraulicSectionState,
         engine1: &impl Engine,
         engine2: &impl Engine,
         lgciu1: &impl LgciuInterface,
@@ -928,8 +951,8 @@ impl A320BlueElectricPumpController {
             && engine2.oil_pressure().get::<psi>()
                 < Self::MIN_ENGINE_OIL_PRESS_THRESHOLD_TO_INHIBIT_FAULT;
 
-        self.is_pressure_low = self.should_pressurise()
-            && pressure_switch_state == PressureSwitchState::NotPressurised;
+        self.is_pressure_low =
+            self.should_pressurise() && !pressure_state.is_pressure_switch_pressurised();
 
         self.has_pressure_low_fault = self.is_pressure_low
             && (!is_engine_low_oil_pressure
@@ -996,7 +1019,7 @@ impl A320YellowElectricPumpController {
         overhead_panel: &A320HydraulicOverheadPanel,
         forward_cargo_door_controller: &A320DoorController,
         aft_cargo_door_controller: &A320DoorController,
-        pressure_switch_state: PressureSwitchState,
+        pressure_state: &impl HydraulicSectionState,
     ) {
         self.should_activate_yellow_pump_for_cargo_door_operation
             .update(
@@ -1011,12 +1034,12 @@ impl A320YellowElectricPumpController {
                 .output())
             && self.is_powered;
 
-        self.update_low_pressure_state(pressure_switch_state);
+        self.update_low_pressure_state(pressure_state);
     }
 
-    fn update_low_pressure_state(&mut self, pressure_switch_state: PressureSwitchState) {
-        self.is_pressure_low = self.should_pressurise()
-            && pressure_switch_state == PressureSwitchState::NotPressurised;
+    fn update_low_pressure_state(&mut self, pressure_state: &impl HydraulicSectionState) {
+        self.is_pressure_low =
+            self.should_pressurise() && !pressure_state.is_pressure_switch_pressurised();
 
         self.has_pressure_low_fault = self.is_pressure_low;
     }

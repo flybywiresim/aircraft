@@ -10,6 +10,7 @@ use uom::si::{
     volume::cubic_inch,
 };
 
+use crate::hydraulic::HydraulicSectionState;
 use crate::shared::{pid::PidController, ConsumePower, ElectricalBusType, ElectricalBuses};
 use crate::simulation::{SimulationElement, SimulatorWriter, UpdateContext, Write};
 
@@ -80,11 +81,11 @@ impl ElectricalPumpPhysics {
 
     pub fn update(
         &mut self,
-        current_pressure: Pressure,
+        pressure_state: &impl HydraulicSectionState,
         current_displacement: Volume,
         context: &UpdateContext,
     ) {
-        self.update_pump_resistant_torque(current_pressure, current_displacement);
+        self.update_pump_resistant_torque(pressure_state, current_displacement);
         self.update_pump_generated_torque(context);
         self.update_pump_speed(context);
     }
@@ -105,7 +106,7 @@ impl ElectricalPumpPhysics {
 
     fn update_pump_resistant_torque(
         &mut self,
-        current_pressure: Pressure,
+        pressure_state: &impl HydraulicSectionState,
         current_displacement: Volume,
     ) {
         let dynamic_friction_torque = Torque::new::<newton_meter>(
@@ -114,7 +115,8 @@ impl ElectricalPumpPhysics {
 
         let pumping_torque = if self.is_active && self.is_powered {
             Torque::new::<pound_force_inch>(
-                current_pressure
+                pressure_state
+                    .pressure()
                     .get::<psi>()
                     .max(Self::BACKPRESSURE_PRELOAD_PSI)
                     * current_displacement.get::<cubic_inch>()
@@ -216,11 +218,34 @@ mod tests {
     use std::time::Duration;
     use uom::si::{pressure::psi, volume::gallon};
 
+    struct TestHydraulicSection {
+        current_pressure: Pressure,
+    }
+    impl TestHydraulicSection {
+        fn new() -> Self {
+            Self {
+                current_pressure: Pressure::new::<psi>(0.),
+            }
+        }
+
+        fn set_pressure(&mut self, pressure: Pressure) {
+            self.current_pressure = pressure;
+        }
+    }
+    impl HydraulicSectionState for TestHydraulicSection {
+        fn pressure(&self) -> Pressure {
+            self.current_pressure
+        }
+
+        fn is_pressure_switch_pressurised(&self) -> bool {
+            self.current_pressure.get::<psi>() > 2000.
+        }
+    }
     struct TestAircraft {
         core_hydraulic_updater: FixedStepLoop,
 
         pump: ElectricalPumpPhysics,
-        current_pressure: Pressure,
+        hydraulic_section: TestHydraulicSection,
         current_displacement: Volume,
 
         powered_source_ac: TestElectricitySource,
@@ -232,7 +257,7 @@ mod tests {
             Self {
                 core_hydraulic_updater: FixedStepLoop::new(Duration::from_millis(33)),
                 pump: physical_pump(),
-                current_pressure: Pressure::new::<psi>(0.),
+                hydraulic_section: TestHydraulicSection::new(),
                 current_displacement: Volume::new::<gallon>(0.),
                 powered_source_ac: TestElectricitySource::powered(
                     PotentialOrigin::EngineGenerator(1),
@@ -244,7 +269,7 @@ mod tests {
         }
 
         fn set_current_pressure(&mut self, current_pressure: Pressure) {
-            self.current_pressure = current_pressure;
+            self.hydraulic_section.set_pressure(current_pressure);
         }
 
         fn set_current_displacement(&mut self, current_displacement: Volume) {
@@ -275,7 +300,7 @@ mod tests {
 
             for cur_time_step in &mut self.core_hydraulic_updater {
                 self.pump.update(
-                    self.current_pressure,
+                    &self.hydraulic_section,
                     self.current_displacement,
                     &context.with_delta(cur_time_step),
                 );
