@@ -388,8 +388,8 @@ pub fn to_bool(value: f64) -> bool {
     (value - 1.).abs() < f64::EPSILON
 }
 
-pub struct ISA;
-impl ISA {
+pub struct InternationalStandardAtmosphere;
+impl InternationalStandardAtmosphere {
     const TEMPERATURE_LAPSE_RATE: f64 = 0.0065;
     const GAS_CONSTANT_DRY_AIR: f64 = 287.04;
     const GRAVITY_ACCELERATION: f64 = 9.807;

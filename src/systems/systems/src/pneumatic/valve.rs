@@ -363,7 +363,7 @@ mod tests {
     use super::*;
     use crate::{
         pneumatic::{DefaultValve, PneumaticContainer, PneumaticPipe},
-        shared::{ControllerSignal, ISA},
+        shared::{ControllerSignal, InternationalStandardAtmosphere},
     };
 
     use std::time::Duration;
@@ -414,7 +414,7 @@ mod tests {
             delta_time,
             Velocity::new::<knot>(0.),
             altitude,
-            ISA::temperature_at_altitude(altitude),
+            InternationalStandardAtmosphere::temperature_at_altitude(altitude),
             true,
             Acceleration::new::<foot_per_second_squared>(0.),
             Acceleration::new::<foot_per_second_squared>(0.),

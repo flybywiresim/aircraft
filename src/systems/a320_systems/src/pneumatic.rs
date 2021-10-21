@@ -1410,7 +1410,7 @@ mod tests {
         pneumatic::EngineState,
         shared::{
             arinc429::SignStatus, ApuBleedAirValveSignal, ElectricalBusType, ElectricalBuses,
-            MachNumber, PotentialOrigin, ISA,
+            InternationalStandardAtmosphere, MachNumber, PotentialOrigin,
         },
         simulation::{
             test::{SimulationTestBed, TestBed},
@@ -1642,8 +1642,12 @@ mod tests {
         }
 
         fn in_isa_atmosphere(mut self, altitude: Length) -> Self {
-            self.set_ambient_pressure(ISA::pressure_at_altitude(altitude));
-            self.set_ambient_temperature(ISA::temperature_at_altitude(altitude));
+            self.set_ambient_pressure(InternationalStandardAtmosphere::pressure_at_altitude(
+                altitude,
+            ));
+            self.set_ambient_temperature(InternationalStandardAtmosphere::temperature_at_altitude(
+                altitude,
+            ));
 
             self
         }
@@ -2149,7 +2153,7 @@ mod tests {
     #[test]
     fn cold_and_dark_full_state() {
         let altitude = Length::new::<foot>(0.);
-        let ambient_pressure = ISA::pressure_at_altitude(altitude);
+        let ambient_pressure = InternationalStandardAtmosphere::pressure_at_altitude(altitude);
 
         let test_bed = test_bed_with()
             .stop_eng1()
@@ -2204,7 +2208,7 @@ mod tests {
             .set_pack_flow_pb_is_auto(2, false)
             .and_stabilize();
 
-        let ambient_pressure = ISA::pressure_at_altitude(altitude);
+        let ambient_pressure = InternationalStandardAtmosphere::pressure_at_altitude(altitude);
 
         assert!(test_bed.ip_pressure(1) - ambient_pressure > pressure_tolerance());
         assert!((test_bed.ip_pressure(2) - ambient_pressure).abs() < pressure_tolerance());

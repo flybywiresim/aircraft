@@ -471,7 +471,7 @@ mod tests {
     use super::*;
     use crate::{
         pneumatic::{DefaultValve, PneumaticContainer, PneumaticPipe},
-        shared::{ControllerSignal, ISA},
+        shared::{ControllerSignal, InternationalStandardAtmosphere},
         simulation::{
             test::{SimulationTestBed, TestBed},
             UpdateContext,
@@ -554,7 +554,7 @@ mod tests {
             delta_time,
             Velocity::new::<knot>(0.),
             altitude,
-            ISA::temperature_at_altitude(altitude),
+            InternationalStandardAtmosphere::temperature_at_altitude(altitude),
             true,
             Acceleration::new::<foot_per_second_squared>(0.),
             Acceleration::new::<foot_per_second_squared>(0.),
@@ -615,7 +615,8 @@ mod tests {
         let engine = TestEngine::new(Ratio::new::<ratio>(0.2), Ratio::new::<ratio>(0.));
 
         let context = context(Duration::from_millis(1000), Length::new::<foot>(0.));
-        let ambient_pressure = ISA::pressure_at_altitude(Length::new::<foot>(0.));
+        let ambient_pressure =
+            InternationalStandardAtmosphere::pressure_at_altitude(Length::new::<foot>(0.));
 
         compression_chamber_controller.update(&context, &engine);
 
@@ -633,7 +634,8 @@ mod tests {
         let engine = TestEngine::new(Ratio::new::<ratio>(0.), Ratio::new::<ratio>(0.2));
 
         let context = context(Duration::from_millis(1000), Length::new::<foot>(0.));
-        let ambient_pressure = ISA::pressure_at_altitude(Length::new::<foot>(0.));
+        let ambient_pressure =
+            InternationalStandardAtmosphere::pressure_at_altitude(Length::new::<foot>(0.));
 
         compression_chamber_controller.update(&context, &engine);
 
