@@ -38,7 +38,7 @@ pub trait PressureSource {
 
     fn flow(&self) -> VolumeRate;
 
-    /// This is the actual physical displacement of the pump
+    /// This is the physical displacement of the pump
     fn displacement(&self) -> Volume;
 }
 
