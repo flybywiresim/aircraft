@@ -830,26 +830,19 @@ mod tests {
 
     #[test]
     fn container_with_valve_behaves_like_open_valve() {
-        // System 1
-        let mut source_one = quick_container(1., 20., 15.);
-        let mut valve_one = DefaultValve::new_open();
-        let mut target_one = quick_container(1., 10., 15.);
-
-        // System 2
-        let mut source_two = quick_container(1., 20., 15.);
+        let mut source = quick_container(1., 20., 15.);
         let mut container_with_valve =
             PneumaticContainerWithConnector::new(quick_container(1., 10., 15.));
 
         let context = context(Duration::from_secs(1), Length::new::<foot>(0.));
 
-        valve_one.update_move_fluid(&context, &mut source_one, &mut target_one);
-        container_with_valve.update_flow_through_valve(&context, &mut source_two);
+        container_with_valve.update_flow_through_valve(&context, &mut source);
 
-        assert_eq!(source_one.pressure(), source_two.pressure());
-        assert_eq!(source_one.temperature(), source_two.temperature());
+        assert!(source.pressure().get::<psi>() < 20.);
+        assert!(source.temperature().get::<degree_celsius>() < 15.);
 
-        assert_eq!(target_one.pressure(), container_with_valve.pressure());
-        assert_eq!(target_one.temperature(), container_with_valve.temperature());
+        assert!(container_with_valve.pressure().get::<psi>() > 10.);
+        assert!(container_with_valve.temperature().get::<degree_celsius>() > 15.);
     }
 
     mod cross_bleed_selector_knob {
