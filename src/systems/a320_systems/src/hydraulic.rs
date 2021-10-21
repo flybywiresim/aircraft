@@ -2563,15 +2563,15 @@ mod tests {
             }
 
             fn green_pressure(&mut self) -> Pressure {
-                self.read("HYD_GREEN_SYSTEM_SECTION_PRESSURE")
+                self.read("HYD_GREEN_SYSTEM0_SECTION_PRESSURE")
             }
 
             fn blue_pressure(&mut self) -> Pressure {
-                self.read("HYD_BLUE_SYSTEM_SECTION_PRESSURE")
+                self.read("HYD_BLUE_SYSTEM0_SECTION_PRESSURE")
             }
 
             fn yellow_pressure(&mut self) -> Pressure {
-                self.read("HYD_YELLOW_SYSTEM_SECTION_PRESSURE")
+                self.read("HYD_YELLOW_SYSTEM0_SECTION_PRESSURE")
             }
 
             fn get_yellow_reservoir_volume(&mut self) -> Volume {
@@ -2659,12 +2659,12 @@ mod tests {
             }
 
             fn is_fire_valve_eng1_closed(&mut self) -> bool {
-                !Read::<bool>::read(self, "HYD_GREEN_FIRE_VALVE_OPENED")
+                !Read::<bool>::read(self, "HYD_GREEN_PUMP0_FIRE_VALVE_OPENED")
                     && !self.query(|a| a.hydraulics.green_circuit.is_fire_shutoff_valve_opened(0))
             }
 
             fn is_fire_valve_eng2_closed(&mut self) -> bool {
-                !Read::<bool>::read(self, "HYD_YELLOW_FIRE_VALVE_OPENED")
+                !Read::<bool>::read(self, "HYD_YELLOW_PUMP0_FIRE_VALVE_OPENED")
                     && !self.query(|a| a.hydraulics.yellow_circuit.is_fire_shutoff_valve_opened(0))
             }
 

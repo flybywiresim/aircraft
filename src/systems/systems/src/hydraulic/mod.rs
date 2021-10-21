@@ -12,7 +12,7 @@ use uom::si::{
     angular_velocity::revolution_per_minute,
     f64::*,
     pressure::{pascal, psi},
-    ratio::percent,
+    ratio::{percent, ratio},
     velocity::knot,
     volume::{cubic_inch, gallon},
     volume_rate::{gallon_per_minute, gallon_per_second},
@@ -23,6 +23,10 @@ pub mod electrical_pump_physics;
 pub mod linear_actuator;
 pub mod update_iterator;
 
+pub trait HydraulicSectionState {
+    fn pressure(&self) -> Pressure;
+    fn is_pressure_switch_pressurised(&self) -> bool;
+}
 pub trait PressureSource {
     /// Gives the maximum available volume at current pump state if it was working at maximum available displacement
     fn delta_vol_max(&self) -> Volume;
@@ -85,7 +89,7 @@ impl PressureSwitch {
         }
     }
 
-    pub fn is_pressurised(&self) -> PressureSwitchState {
+    pub fn state(&self) -> PressureSwitchState {
         if self.state_is_pressurised {
             PressureSwitchState::Pressurised
         } else {
@@ -384,21 +388,14 @@ impl HydraulicCircuit {
         let mut pump_sections: Vec<Section> = Vec::new();
         let mut pump_to_system_check_valves: Vec<CheckValve> = Vec::new();
 
-        let mut pump_id: Option<usize> = None;
-
-        for pump_index in 0..number_of_pump_sections {
-            if number_of_pump_sections > 1 {
-                pump_id = Some(pump_index);
-            }
-
+        for pump_id in 0..number_of_pump_sections {
             pump_sections.push(Section::new(
                 id,
                 "PUMP",
                 pump_id,
                 VolumeRate::new::<gallon_per_second>(Self::PUMP_SECTION_STATIC_LEAK_GAL_P_S),
                 Volume::new::<gallon>(
-                    Self::PUMP_SECTION_MAX_VOLUME_GAL * priming_volume_percent.get::<percent>()
-                        / 100.,
+                    Self::PUMP_SECTION_MAX_VOLUME_GAL * priming_volume_percent.get::<ratio>(),
                 ),
                 Volume::new::<gallon>(Self::PUMP_SECTION_MAX_VOLUME_GAL),
                 None,
@@ -406,7 +403,7 @@ impl HydraulicCircuit {
                 pump_pressure_switch_hi_hyst,
                 Some(FireValve::new(
                     id,
-                    &pump_id,
+                    pump_id,
                     Self::DEFAULT_FIRE_VALVE_POWERING_BUS,
                 )),
                 false,
@@ -425,9 +422,9 @@ impl HydraulicCircuit {
             system_section: Section::new(
                 id,
                 "SYSTEM",
-                None,
+                0,
                 VolumeRate::new::<gallon_per_second>(Self::SYSTEM_SECTION_STATIC_LEAK_GAL_P_S),
-                system_section_volume * priming_volume_percent / 100.,
+                system_section_volume * priming_volume_percent,
                 system_section_volume,
                 Some(Accumulator::new(
                     Pressure::new::<psi>(Self::ACCUMULATOR_GAS_PRE_CHARGE_PSI),
@@ -622,11 +619,11 @@ impl HydraulicCircuit {
     }
 
     pub fn pump_section_pressure_switch(&self, idx: usize) -> PressureSwitchState {
-        self.pump_sections[idx].pressure_switch()
+        self.pump_sections[idx].pressure_switch_state()
     }
 
     pub fn system_section_pressure_switch(&self) -> PressureSwitchState {
-        self.system_section.pressure_switch()
+        self.system_section.pressure_switch_state()
     }
 
     pub fn reservoir_level(&self) -> Volume {
@@ -657,11 +654,6 @@ impl SimulationElement for HydraulicCircuit {
 
         visitor.visit(self);
     }
-}
-
-pub trait HydraulicSectionState {
-    fn pressure(&self) -> Pressure;
-    fn is_pressure_switch_pressurised(&self) -> bool;
 }
 
 /// This is an hydraulic section with its own volume of fluid and pressure. It can be connected to another section
@@ -698,7 +690,7 @@ impl Section {
     pub fn new(
         loop_id: &str,
         section_id: &str,
-        pump_id: Option<usize>,
+        pump_id: usize,
         static_leak_at_max_press: VolumeRate,
         current_volume: Volume,
         max_high_press_volume: Volume,
@@ -709,11 +701,7 @@ impl Section {
         connected_to_ptu_left_side: bool,
         connected_to_ptu_right_side: bool,
     ) -> Self {
-        let section_name: String = if pump_id.is_some() {
-            format!("HYD_{}_{}{}_SECTION", loop_id, section_id, pump_id.unwrap())
-        } else {
-            format!("HYD_{}_{}_SECTION", loop_id, section_id)
-        };
+        let section_name: String = format!("HYD_{}_{}{}_SECTION", loop_id, section_id, pump_id);
 
         Self {
             pressure_id: format!("{}_PRESSURE", section_name),
@@ -744,8 +732,8 @@ impl Section {
         (target_press - self.current_pressure) * (self.max_high_press_volume) / fluid.bulk_mod()
     }
 
-    fn pressure_switch(&self) -> PressureSwitchState {
-        self.pressure_switch.is_pressurised()
+    fn pressure_switch_state(&self) -> PressureSwitchState {
+        self.pressure_switch.state()
     }
 
     fn fire_valve_is_opened(&self) -> bool {
@@ -978,7 +966,7 @@ impl HydraulicSectionState for Section {
         self.pressure()
     }
     fn is_pressure_switch_pressurised(&self) -> bool {
-        self.pressure_switch() == PressureSwitchState::Pressurised
+        self.pressure_switch_state() == PressureSwitchState::Pressurised
     }
 }
 
@@ -989,19 +977,9 @@ pub struct FireValve {
     is_powered: bool,
 }
 impl FireValve {
-    fn new(hyd_loop_id: &str, pump_id: &Option<usize>, bus_type: ElectricalBusType) -> Self {
-        let opened_id: String;
-        if pump_id.is_some() {
-            opened_id = format!(
-                "HYD_{}_PUMP{}_FIRE_VALVE_OPENED",
-                hyd_loop_id,
-                pump_id.as_ref().unwrap()
-            );
-        } else {
-            opened_id = format!("HYD_{}_FIRE_VALVE_OPENED", hyd_loop_id);
-        }
+    fn new(hyd_loop_id: &str, pump_id: usize, bus_type: ElectricalBusType) -> Self {
         Self {
-            opened_id,
+            opened_id: format!("HYD_{}_PUMP{}_FIRE_VALVE_OPENED", hyd_loop_id, pump_id),
             is_opened: true,
             bus_type,
             is_powered: false,
@@ -1792,8 +1770,8 @@ mod tests {
     }
 
     #[test]
-    fn section_with_pump_number_writes_its_state() {
-        let mut test_bed = SimulationTestBed::from(section("BROWN", "PUMP", Some(2)));
+    fn section_writes_its_state() {
+        let mut test_bed = SimulationTestBed::from(section("BROWN", "PUMP", 2));
 
         test_bed.run();
 
@@ -1802,8 +1780,8 @@ mod tests {
     }
 
     #[test]
-    fn hyd_circuit_with_pump_number_writes_its_state() {
-        let mut test_bed = SimulationTestBed::from(hydraulic_loop("BROWN", 2));
+    fn hyd_circuit_writes_its_state() {
+        let mut test_bed = SimulationTestBed::from(hydraulic_circuit("BROWN", 2));
 
         test_bed.run();
 
@@ -1817,38 +1795,11 @@ mod tests {
         assert!(!test_bed.contains_key("HYD_BROWN_PUMP2_FIRE_VALVE_OPENED"));
     }
 
-    #[test]
-    fn section_without_pump_number_writes_its_state() {
-        let mut test_bed = SimulationTestBed::from(section("BROWN", "SYSTEM", None));
-
-        test_bed.run();
-
-        assert!(test_bed.contains_key("HYD_BROWN_SYSTEM_SECTION_PRESSURE"));
-    }
-
-    #[test]
-    fn hyd_circuit_without_pump_number_writes_its_state() {
-        let mut test_bed = SimulationTestBed::from(hydraulic_loop("BROWN", 1));
-
-        test_bed.run();
-
-        assert!(test_bed.contains_key("HYD_BROWN_SYSTEM_SECTION_PRESSURE"));
-
-        assert!(test_bed.contains_key("HYD_BROWN_PUMP_SECTION_PRESSURE"));
-        assert!(test_bed.contains_key("HYD_BROWN_FIRE_VALVE_OPENED"));
-
-        assert!(!test_bed.contains_key("HYD_BROWN_PUMP1_SECTION_PRESSURE"));
-        assert!(!test_bed.contains_key("HYD_BROWN_PUMP1_FIRE_VALVE_OPENED"));
-
-        assert!(!test_bed.contains_key("HYD_BROWN_PUMP2_SECTION_PRESSURE"));
-        assert!(!test_bed.contains_key("HYD_BROWN_PUMP2_FIRE_VALVE_OPENED"));
-    }
-
-    fn section(loop_id: &str, section_id: &str, pump_number: Option<usize>) -> Section {
+    fn section(loop_id: &str, section_id: &str, pump_id: usize) -> Section {
         Section::new(
             loop_id,
             section_id,
-            pump_number,
+            pump_id,
             VolumeRate::new::<gallon_per_second>(
                 HydraulicCircuit::PUMP_SECTION_STATIC_LEAK_GAL_P_S,
             ),
@@ -1859,7 +1810,7 @@ mod tests {
             Pressure::new::<psi>(2000.),
             Some(FireValve::new(
                 loop_id,
-                &pump_number,
+                pump_id,
                 HydraulicCircuit::DEFAULT_FIRE_VALVE_POWERING_BUS,
             )),
             false,
@@ -1867,7 +1818,7 @@ mod tests {
         )
     }
 
-    fn hydraulic_loop(loop_color: &str, main_pump_number: usize) -> HydraulicCircuit {
+    fn hydraulic_circuit(loop_color: &str, main_pump_number: usize) -> HydraulicCircuit {
         match loop_color {
             "GREEN" => HydraulicCircuit::new(
                 loop_color,
