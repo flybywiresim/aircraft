@@ -134,6 +134,9 @@ mod fixed_tests {
 
     use std::time::Duration;
 
+    use crate::electrical::Electricity;
+    use crate::simulation::test::TestVariableRegistry;
+    use crate::simulation::InitContext;
     use uom::si::{
         acceleration::foot_per_second_squared, angle::radian, f64::*, length::foot,
         thermodynamic_temperature::degree_celsius, velocity::knot,
@@ -148,24 +151,36 @@ mod fixed_tests {
 
     #[test]
     fn no_step_after_zero_time_update() {
+        let mut electricity = Electricity::new();
+        let mut registry: TestVariableRegistry = Default::default();
+        let mut init_context = InitContext::new(&mut electricity, &mut registry);
+
         let mut fixed_step = FixedStepLoop::new(Duration::from_millis(100));
 
-        fixed_step.update(&context(Duration::from_secs(0)));
+        fixed_step.update(&context(&mut init_context, Duration::from_secs(0)));
 
         assert!(fixed_step.into_iter().len() == 0);
     }
 
     #[test]
     fn one_step_after_exact_fixed_time_step_update() {
+        let mut electricity = Electricity::new();
+        let mut registry: TestVariableRegistry = Default::default();
+        let mut init_context = InitContext::new(&mut electricity, &mut registry);
+
         let mut fixed_step = FixedStepLoop::new(Duration::from_millis(100));
 
-        fixed_step.update(&context(Duration::from_millis(100)));
+        fixed_step.update(&context(&mut init_context, Duration::from_millis(100)));
 
         assert!(fixed_step.into_iter().len() == 1);
     }
 
     #[test]
     fn more_than_fixed_step_gives_correct_num_of_loops() {
+        let mut electricity = Electricity::new();
+        let mut registry: TestVariableRegistry = Default::default();
+        let mut init_context = InitContext::new(&mut electricity, &mut registry);
+
         let timestep = Duration::from_millis(100);
         let mut fixed_step = FixedStepLoop::new(timestep);
 
@@ -177,7 +192,7 @@ mod fixed_tests {
         let expected_remaining_time_at_end_of_loops =
             test_duration - expected_num_of_loops * timestep;
 
-        fixed_step.update(&context(test_duration));
+        fixed_step.update(&context(&mut init_context, test_duration));
 
         let mut actual_loop_num = 0;
         for cur_time_step in &mut fixed_step {
@@ -189,8 +204,9 @@ mod fixed_tests {
         assert!(actual_loop_num == expected_num_of_loops);
     }
 
-    fn context(delta_time: Duration) -> UpdateContext {
+    fn context(context: &mut InitContext, delta_time: Duration) -> UpdateContext {
         UpdateContext::new(
+            context,
             delta_time,
             Velocity::new::<knot>(250.),
             Length::new::<foot>(5000.),
@@ -211,6 +227,9 @@ mod max_step_tests {
 
     use std::time::Duration;
 
+    use crate::electrical::Electricity;
+    use crate::simulation::test::TestVariableRegistry;
+    use crate::simulation::InitContext;
     use uom::si::{
         acceleration::foot_per_second_squared, angle::radian, f64::*, length::foot,
         thermodynamic_temperature::degree_celsius, velocity::knot,
@@ -225,30 +244,42 @@ mod max_step_tests {
 
     #[test]
     fn no_step_after_zero_time_update() {
+        let mut electricity = Electricity::new();
+        let mut registry: TestVariableRegistry = Default::default();
+        let mut init_context = InitContext::new(&mut electricity, &mut registry);
+
         let mut max_step = MaxFixedStepLoop::new(Duration::from_millis(100));
 
-        max_step.update(&context(Duration::from_secs(0)));
+        max_step.update(&context(&mut init_context, Duration::from_secs(0)));
 
         assert!(max_step.into_iter().len() == 0);
     }
 
     #[test]
     fn one_step_after_exact_fixed_time_step_update() {
+        let mut electricity = Electricity::new();
+        let mut registry: TestVariableRegistry = Default::default();
+        let mut init_context = InitContext::new(&mut electricity, &mut registry);
+
         let mut max_step = MaxFixedStepLoop::new(Duration::from_millis(100));
 
-        max_step.update(&context(Duration::from_millis(100)));
+        max_step.update(&context(&mut init_context, Duration::from_millis(100)));
 
         assert!(max_step.into_iter().len() == 1);
     }
 
     #[test]
     fn more_than_max_step_gives_correct_num_of_loops() {
+        let mut electricity = Electricity::new();
+        let mut registry: TestVariableRegistry = Default::default();
+        let mut init_context = InitContext::new(&mut electricity, &mut registry);
+
         let timestep = Duration::from_millis(100);
         let mut max_step = MaxFixedStepLoop::new(timestep);
 
         let test_duration = Duration::from_secs_f64(0.320);
 
-        max_step.update(&context(test_duration));
+        max_step.update(&context(&mut init_context, test_duration));
 
         let mut actual_loop_num = 0;
         let mut time_simulated = Duration::from_secs(0);
@@ -265,8 +296,9 @@ mod max_step_tests {
         );
     }
 
-    fn context(delta_time: Duration) -> UpdateContext {
+    fn context(context: &mut InitContext, delta_time: Duration) -> UpdateContext {
         UpdateContext::new(
+            context,
             delta_time,
             Velocity::new::<knot>(250.),
             Length::new::<foot>(5000.),
