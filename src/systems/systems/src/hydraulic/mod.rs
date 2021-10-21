@@ -998,9 +998,9 @@ impl SimulationElement for FireValve {
 
 /// Handles the flow that goes between two sections
 /// Flow is handled in two ways:
-/// -An optional flow that can only pass through if downstream needs flow
+/// - An optional flow that can only pass through if downstream needs flow
 /// and if upstream has enough capacity to provide flow while maintaining its target pressure
-/// -A physical flow, that is mandatory to pass through the valve, caused by pressure difference between
+/// - A physical flow, that is mandatory to pass through the valve, caused by pressure difference between
 /// upstream and downstream.
 
 #[derive(Default)]
