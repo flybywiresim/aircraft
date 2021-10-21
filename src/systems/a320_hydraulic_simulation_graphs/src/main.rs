@@ -246,8 +246,8 @@ fn hyd_circuit_basic(path: &str) {
         vec![
             hydraulic_loop.pump_pressure(0).get::<psi>(),
             hydraulic_loop.system_pressure().get::<psi>(),
-            hydraulic_loop.pump_section_switch_pressurised(0) as u8 as f64,
-            hydraulic_loop.system_section_switch_pressurised() as u8 as f64,
+            hydraulic_loop.pump_section_pressure_switch(0) as u8 as f64,
+            hydraulic_loop.system_section_pressure_switch() as u8 as f64,
             hydraulic_loop
                 .system_accumulator_fluid_volume()
                 .get::<gallon>(),
@@ -319,8 +319,8 @@ fn hyd_circuit_basic(path: &str) {
             vec![
                 hydraulic_loop.pump_pressure(0).get::<psi>(),
                 hydraulic_loop.system_pressure().get::<psi>(),
-                hydraulic_loop.pump_section_switch_pressurised(0) as u8 as f64,
-                hydraulic_loop.system_section_switch_pressurised() as u8 as f64,
+                hydraulic_loop.pump_section_pressure_switch(0) as u8 as f64,
+                hydraulic_loop.system_section_pressure_switch() as u8 as f64,
                 hydraulic_loop
                     .system_accumulator_fluid_volume()
                     .get::<gallon>(),

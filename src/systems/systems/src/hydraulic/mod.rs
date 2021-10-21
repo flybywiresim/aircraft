@@ -55,9 +55,14 @@ impl Fluid {
     }
 }
 
+#[derive(PartialEq, Clone, Copy)]
+pub enum PressureSwitchState {
+    Pressurised,
+    NotPressurised,
+}
 /// Physical pressure switch.
 /// It's a physical switch reacting to pressure.
-pub struct PressureSwitch {
+struct PressureSwitch {
     state_is_pressurised: bool,
     high_hysteresis_threshold: Pressure,
     low_hysteresis_threshold: Pressure,
@@ -79,8 +84,12 @@ impl PressureSwitch {
         }
     }
 
-    pub fn is_pressurised(&self) -> bool {
-        self.state_is_pressurised
+    pub fn is_pressurised(&self) -> PressureSwitchState {
+        if self.state_is_pressurised {
+            PressureSwitchState::Pressurised
+        } else {
+            PressureSwitchState::NotPressurised
+        }
     }
 }
 
@@ -604,11 +613,11 @@ impl HydraulicCircuit {
         self.system_section.accumulator_volume()
     }
 
-    pub fn pump_section_switch_pressurised(&self, idx: usize) -> bool {
+    pub fn pump_section_pressure_switch(&self, idx: usize) -> PressureSwitchState {
         self.pump_sections[idx].pressure_switch()
     }
 
-    pub fn system_section_switch_pressurised(&self) -> bool {
+    pub fn system_section_pressure_switch(&self) -> PressureSwitchState {
         self.system_section.pressure_switch()
     }
 
@@ -714,7 +723,7 @@ impl Section {
         (target_press - self.current_pressure) * (self.max_high_press_volume) / fluid.bulk_mod()
     }
 
-    fn pressure_switch(&self) -> bool {
+    fn pressure_switch(&self) -> PressureSwitchState {
         self.pressure_switch.is_pressurised()
     }
 
