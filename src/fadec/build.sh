@@ -29,9 +29,9 @@ clang++ \
   -I "${MSFS_SDK}/SimConnect SDK/include" \
   -I "${DIR}/src" \
   "${DIR}/src/FadecGauge.cpp" \
-   -o fadec.o
+  -o fadec.o
 
- wasm-ld \
+wasm-ld \
   --no-entry \
   --allow-undefined \
   -L "${MSFS_SDK}/WASM/wasi-sysroot/lib/wasm32-wasi" \

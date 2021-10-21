@@ -44,10 +44,6 @@ clang \
   "${DIR}/src/zlib/trees.c" \
   "${DIR}/src/zlib/zutil.c"
 
-# restore directory
-#popd
-
-
 # compile c++ code
 clang++ \
   -c \
@@ -103,11 +99,13 @@ clang++ \
   "${DIR}/src/RudderTrimHandler.cpp" \
   "${DIR}/src/SpoilersHandler.cpp" \
   "${DIR}/src/ThrottleAxisMapping.cpp" \
-  "${DIR}/src/main.cpp"
+  "${DIR}/src/main.cpp" \
 
+# restore directory
 popd
 
- wasm-ld \
+# link modules
+wasm-ld \
   --no-entry \
   --allow-undefined \
   -L "${MSFS_SDK}/WASM/wasi-sysroot/lib/wasm32-wasi" \
