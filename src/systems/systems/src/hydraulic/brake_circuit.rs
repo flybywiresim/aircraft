@@ -102,6 +102,7 @@ impl Actuator for BrakeActuator {
     fn reservoir_return(&self) -> Volume {
         self.volume_to_res_accumulator
     }
+
     fn reset_volumes(&mut self) {
         self.volume_to_res_accumulator = Volume::new::<gallon>(0.);
         self.volume_to_actuator_accumulator = Volume::new::<gallon>(0.);
@@ -296,6 +297,7 @@ impl Actuator for BrakeCircuit {
     fn reservoir_return(&self) -> Volume {
         self.total_volume_to_reservoir
     }
+
     fn reset_volumes(&mut self) {
         self.total_volume_to_actuator = Volume::new::<gallon>(0.);
         self.total_volume_to_reservoir = Volume::new::<gallon>(0.);
