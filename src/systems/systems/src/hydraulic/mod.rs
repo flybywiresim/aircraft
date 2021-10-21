@@ -12,6 +12,7 @@ use uom::si::{
     angular_velocity::revolution_per_minute,
     f64::*,
     pressure::{pascal, psi},
+    ratio::percent,
     velocity::knot,
     volume::{cubic_inch, gallon},
     volume_rate::{gallon_per_minute, gallon_per_second},
@@ -229,7 +230,7 @@ pub struct Accumulator {
     has_control_valve: bool,
 }
 impl Accumulator {
-    const FLOW_DYNAMIC_LOW_PASS: f64 = 0.5;
+    const FLOW_DYNAMIC_LOW_PASS: f64 = 0.2;
 
     // Gain of the delta pressure to flow relation.
     // Higher gain enables faster flow transient but brings instability.
@@ -369,7 +370,7 @@ impl HydraulicCircuit {
         id: &str,
 
         number_of_pump_sections: usize,
-        priming_volume_percent: f64,
+        priming_volume_percent: Ratio,
         high_pressure_max_volume: Volume,
         reservoir_volume: Volume,
 
@@ -396,7 +397,8 @@ impl HydraulicCircuit {
                 pump_id,
                 VolumeRate::new::<gallon_per_second>(Self::PUMP_SECTION_STATIC_LEAK_GAL_P_S),
                 Volume::new::<gallon>(
-                    Self::PUMP_SECTION_MAX_VOLUME_GAL * priming_volume_percent / 100.,
+                    Self::PUMP_SECTION_MAX_VOLUME_GAL * priming_volume_percent.get::<percent>()
+                        / 100.,
                 ),
                 Volume::new::<gallon>(Self::PUMP_SECTION_MAX_VOLUME_GAL),
                 None,
@@ -1870,7 +1872,7 @@ mod tests {
             "GREEN" => HydraulicCircuit::new(
                 loop_color,
                 main_pump_number,
-                100.,
+                Ratio::new::<percent>(100.),
                 Volume::new::<gallon>(10.),
                 Volume::new::<gallon>(3.6),
                 Pressure::new::<psi>(1450.),
@@ -1883,7 +1885,7 @@ mod tests {
             "YELLOW" => HydraulicCircuit::new(
                 loop_color,
                 main_pump_number,
-                100.,
+                Ratio::new::<percent>(100.),
                 Volume::new::<gallon>(10.),
                 Volume::new::<gallon>(3.6),
                 Pressure::new::<psi>(1450.),
@@ -1896,7 +1898,7 @@ mod tests {
             _ => HydraulicCircuit::new(
                 loop_color,
                 main_pump_number,
-                100.,
+                Ratio::new::<percent>(100.),
                 Volume::new::<gallon>(10.),
                 Volume::new::<gallon>(3.6),
                 Pressure::new::<psi>(1450.),

@@ -13,7 +13,7 @@ use systems::simulation::SimulationElement;
 use systems::{shared::ElectricalBusType, simulation::UpdateContext};
 use uom::si::{
     acceleration::foot_per_second_squared, angle::radian, angular_velocity::revolution_per_minute,
-    electric_current::ampere, f64::*, length::foot, pressure::psi,
+    electric_current::ampere, f64::*, length::foot, pressure::psi, ratio::percent,
     thermodynamic_temperature::degree_celsius, velocity::knot, volume::gallon,
 };
 
@@ -362,7 +362,7 @@ fn hydraulic_loop(loop_color: &str, main_pump_number: usize) -> HydraulicCircuit
         "GREEN" => HydraulicCircuit::new(
             loop_color,
             main_pump_number,
-            100.,
+            Ratio::new::<percent>(100.),
             Volume::new::<gallon>(10.),
             Volume::new::<gallon>(3.6),
             Pressure::new::<psi>(1450.),
@@ -375,7 +375,7 @@ fn hydraulic_loop(loop_color: &str, main_pump_number: usize) -> HydraulicCircuit
         "YELLOW" => HydraulicCircuit::new(
             loop_color,
             main_pump_number,
-            100.,
+            Ratio::new::<percent>(100.),
             Volume::new::<gallon>(10.),
             Volume::new::<gallon>(3.6),
             Pressure::new::<psi>(1450.),
@@ -388,7 +388,7 @@ fn hydraulic_loop(loop_color: &str, main_pump_number: usize) -> HydraulicCircuit
         _ => HydraulicCircuit::new(
             loop_color,
             main_pump_number,
-            100.,
+            Ratio::new::<percent>(100.),
             Volume::new::<gallon>(10.),
             Volume::new::<gallon>(3.6),
             Pressure::new::<psi>(1450.),

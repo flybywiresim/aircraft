@@ -61,7 +61,7 @@ impl A320HydraulicCircuitFactory {
         HydraulicCircuit::new(
             "GREEN",
             1,
-            100.,
+            Ratio::new::<percent>(100.),
             Volume::new::<gallon>(10.),
             Volume::new::<gallon>(3.6),
             Pressure::new::<psi>(Self::MIN_PRESS_PRESSURISED_LO_HYST),
@@ -77,7 +77,7 @@ impl A320HydraulicCircuitFactory {
         HydraulicCircuit::new(
             "BLUE",
             1,
-            100.,
+            Ratio::new::<percent>(100.),
             Volume::new::<gallon>(8.),
             Volume::new::<gallon>(1.56),
             Pressure::new::<psi>(Self::MIN_PRESS_PRESSURISED_LO_HYST),
@@ -93,7 +93,7 @@ impl A320HydraulicCircuitFactory {
         HydraulicCircuit::new(
             "YELLOW",
             1,
-            100.,
+            Ratio::new::<percent>(100.),
             Volume::new::<gallon>(10.),
             Volume::new::<gallon>(3.6),
             Pressure::new::<psi>(Self::MIN_PRESS_PRESSURISED_LO_HYST),
