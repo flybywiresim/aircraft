@@ -1,9 +1,9 @@
 use crate::{
     shared::{pid::PidController, CabinAltitude, EngineCorrectedN1, LgciuWeightOnWheels},
-    simulation::{Read, SimulationElement, SimulatorReader, UpdateContext},
+    simulation::{Read, SimulationElement, SimulatorReader, SimulatorWriter, UpdateContext, Write},
 };
 
-use super::DuctTemperature;
+use super::{AirConditioningSystemOverhead, DuctTemperature};
 
 use std::{collections::HashMap, time::Duration};
 
@@ -37,13 +37,14 @@ impl ACSController {
     pub fn update(
         &mut self,
         context: &UpdateContext,
+        acs_overhead: &AirConditioningSystemOverhead,
         engines: [&impl EngineCorrectedN1; 2],
         pressurization: &impl CabinAltitude,
         lgciu: [&impl LgciuWeightOnWheels; 2],
     ) {
         self.aircraft_state = self.aircraft_state.update(context, engines, lgciu);
         for zone in self.zone_controller.iter_mut() {
-            zone.update(context, pressurization)
+            zone.update(context, acs_overhead, pressurization)
         }
     }
 }
@@ -62,10 +63,15 @@ impl SimulationElement for ACSController {
     fn read(&mut self, reader: &mut SimulatorReader) {
         for zone in self.zone_controller.iter_mut() {
             let zone_temp_id = format!("COND_{}_TEMP", zone.zone_id());
-            let zone_selected_temp_id = format!("OVHD_COND_SELECTED_{}_TEMP", zone.zone_id()); //TODO: Implement overhead
-
             zone.set_zone_measured_temperature(reader.read(&zone_temp_id));
-            zone.set_zone_selected_temperature(reader.read(&zone_selected_temp_id));
+        }
+    }
+
+    fn write(&self, writer: &mut SimulatorWriter) {
+        // TODO: Replace this with actual duct temperature, not duct demand temperature
+        for (zone, temp) in self.duct_demand_temperature() {
+            let zone_temp_id = format!("COND_{}_DUCT_TEMP", &zone);
+            writer.write(&zone_temp_id, temp.get::<degree_celsius>());
         }
     }
 }
@@ -353,8 +359,19 @@ impl ZoneController {
         }
     }
 
-    fn update(&mut self, context: &UpdateContext, pressurization: &impl CabinAltitude) {
-        // TODO: Change PID limits
+    fn update(
+        &mut self,
+        context: &UpdateContext,
+        acs_overhead: &AirConditioningSystemOverhead,
+        pressurization: &impl CabinAltitude,
+    ) {
+        if acs_overhead
+            .selected_cabin_temperatures()
+            .contains_key(&self.zone_id)
+        {
+            self.zone_selected_temperature =
+                acs_overhead.selected_cabin_temperatures()[&self.zone_id];
+        }
         self.cabin_altitude = pressurization.cabin_altitude();
         self.duct_demand_temperature = self.calculate_duct_temp_demand(context);
     }
@@ -412,10 +429,6 @@ impl ZoneController {
 
     fn zone_id(&self) -> &str {
         self.zone_id
-    }
-
-    fn set_zone_selected_temperature(&mut self, selected_temperature: ThermodynamicTemperature) {
-        self.zone_selected_temperature = selected_temperature;
     }
 
     fn set_zone_measured_temperature(&mut self, measured_temperature: ThermodynamicTemperature) {
@@ -542,8 +555,13 @@ mod acs_controller_tests {
         }
 
         fn update(&mut self, context: &UpdateContext, duct_temperature: &impl DuctTemperature) {
-            self.cockpit.update(context, 2, duct_temperature);
-            self.passenger_cabin.update(context, 0, duct_temperature);
+            self.cockpit.update(context, duct_temperature);
+            self.passenger_cabin.update(context, duct_temperature);
+        }
+
+        fn update_number_of_passengers(&mut self, number_of_passengers: usize) {
+            self.passenger_cabin
+                .update_number_of_passengers(number_of_passengers);
         }
     }
 
@@ -558,6 +576,7 @@ mod acs_controller_tests {
 
     struct TestAircraft {
         acsc: ACSController,
+        acs_overhead: AirConditioningSystemOverhead,
         engine_1: TestEngine,
         engine_2: TestEngine,
         pressurization: TestPressurization,
@@ -569,6 +588,7 @@ mod acs_controller_tests {
         fn new() -> Self {
             Self {
                 acsc: ACSController::new(vec!["CKPT", "FWD"]),
+                acs_overhead: AirConditioningSystemOverhead::new(&["CKPT", "FWD"]),
                 engine_1: TestEngine::new(Ratio::new::<percent>(0.)),
                 engine_2: TestEngine::new(Ratio::new::<percent>(0.)),
                 pressurization: TestPressurization::new(),
@@ -593,6 +613,7 @@ mod acs_controller_tests {
             self.test_cabin.update(context, &self.acsc);
             self.acsc.update(
                 context,
+                &self.acs_overhead,
                 [&self.engine_1, &self.engine_2],
                 &self.pressurization,
                 [&self.lgciu1, &self.lgciu2],
@@ -602,6 +623,7 @@ mod acs_controller_tests {
     impl SimulationElement for TestAircraft {
         fn accept<V: SimulationElementVisitor>(&mut self, visitor: &mut V) {
             self.acsc.accept(visitor);
+            self.acs_overhead.accept(visitor);
             self.test_cabin.accept(visitor);
 
             visitor.visit(self);
@@ -622,6 +644,7 @@ mod acs_controller_tests {
             test_bed.command_measured_temperature(
                 [ThermodynamicTemperature::new::<degree_celsius>(24.); 2],
             );
+            test_bed.command_pax_quantity(0);
 
             test_bed
         }
@@ -735,8 +758,11 @@ mod acs_controller_tests {
             temp_array: [ThermodynamicTemperature; 2],
         ) -> Self {
             for (temp, id) in temp_array.iter().zip(["CKPT", "FWD"].iter()) {
-                let zone_selected_temp_id = format!("OVHD_COND_SELECTED_{}_TEMP", &id);
-                self.write(&zone_selected_temp_id, temp.get::<degree_celsius>());
+                let zone_selected_temp_id = format!("OVHD_COND_{}_SELECTOR_KNOB", &id);
+                self.write(
+                    &zone_selected_temp_id,
+                    (temp.get::<degree_celsius>() - 18.) / 0.12,
+                );
             }
             self
         }
@@ -746,6 +772,10 @@ mod acs_controller_tests {
                 let zone_measured_temp_id = format!("COND_{}_TEMP", &id);
                 self.write(&zone_measured_temp_id, temp.get::<degree_celsius>());
             }
+        }
+
+        fn command_pax_quantity(&mut self, pax_quantity: usize) {
+            self.command(|a| a.test_cabin.update_number_of_passengers(pax_quantity));
         }
 
         fn command_cabin_altitude(&mut self, altitude: Length) {
@@ -1052,7 +1082,6 @@ mod acs_controller_tests {
             );
 
             test_bed = test_bed.iterate_with_delta(100, Duration::from_secs(10));
-
             assert!(
                 (test_bed.duct_demand_temperature()["FWD"].get::<degree_celsius>() - 24.).abs()
                     < 1.

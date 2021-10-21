@@ -32,48 +32,6 @@ class A32NX_LocalVarUpdater {
                 refreshInterval: 1000,
             },
             {
-                varName: "L:A32NX_CKPT_TRIM_TEMP",
-                type: "celsius",
-                selector: this._condTempSelector,
-                refreshInterval: 1000,
-                identifier: 1
-            },
-            {
-                varName: "L:A32NX_FWD_TRIM_TEMP",
-                type: "celsius",
-                selector: this._condTempSelector,
-                refreshInterval: 1000,
-                identifier : 2
-            },
-            {
-                varName: "L:A32NX_AFT_TRIM_TEMP",
-                type: "celsius",
-                selector: this._condTempSelector,
-                refreshInterval: 1000,
-                identifier: 3
-            },
-            {
-                varName: "L:A32NX_CKPT_TEMP",
-                type: "celsius",
-                selector: this._condTrimOutletSelector.bind(this),
-                refreshInterval: 2000,
-                identifier: "CKPT"
-            },
-            {
-                varName: "L:A32NX_FWD_TEMP",
-                type: "celsius",
-                selector: this._condTrimOutletSelector.bind(this),
-                refreshInterval: 2000,
-                identifier: "FWD"
-            },
-            {
-                varName: "L:A32NX_AFT_TEMP",
-                type: "celsius",
-                selector: this._condTrimOutletSelector.bind(this),
-                refreshInterval: 2000,
-                identifier: "AFT"
-            },
-            {
                 varName: "L:A32NX_FLAPS_IN_MOTION",
                 type: "Bool",
                 selector: this._flapsInMotionSelector.bind(this),
@@ -146,48 +104,6 @@ class A32NX_LocalVarUpdater {
         }
 
         return false;
-    }
-
-    _condTempSelector(_deltaTime, _identifier) {
-        // Temporary code until packs code is written and implemented
-        // Uses position of AIR COND knobs to generate the trim air temperature
-        let trimTemp = null;
-
-        if (SimVar.GetSimVarValue("L:A32NX_AIRCOND_HOTAIR_TOGGLE", "Bool")) {
-            const airconKnobValue = SimVar.GetSimVarValue("L:A320_Neo_AIRCOND_LVL_" + _identifier, "number");
-            trimTemp = (0.12 * airconKnobValue) + 18; // Map from knob range 0-100 to 18-30 degrees C
-        } else {
-            trimTemp = 18; // TODO replace placeholder with pack out temperature
-        }
-
-        return trimTemp;
-    }
-
-    _condTrimOutletSelector(_deltaTime, _compartment) {
-        // Cabin initially has outside temperature
-        if (!this.initializedCabinTemp[_compartment]) {
-            this.initializedCabinTemp[_compartment] = true;
-
-            return Simplane.getAmbientTemperature();
-        }
-
-        // Use outlet temperature of trim air valves to generate the cabin temperature
-        const currentCabinTemp = SimVar.GetSimVarValue("L:A32NX_" + _compartment + "_TEMP", "celsius");
-        const trimTemp = SimVar.GetSimVarValue("L:A32NX_" + _compartment + "_TRIM_TEMP", "celsius");
-
-        const deltaTemp = trimTemp - currentCabinTemp;
-
-        // temperature variation depends on packflow and compartment size
-        let compartmentSizeModifier = 0.000005;
-
-        if (_compartment == "CKPT") {
-            compartmentSizeModifier = 0.00001;
-        }
-
-        const cabinTempVariationSpeed = compartmentSizeModifier * (SimVar.GetSimVarValue("L:A32NX_KNOB_OVHD_AIRCOND_PACKFLOW_Position", "number") + 1);
-        const cabinTemp = currentCabinTemp + ((deltaTemp * cabinTempVariationSpeed) * _deltaTime);
-
-        return cabinTemp;
     }
 
     _flapsInMotionSelector() {

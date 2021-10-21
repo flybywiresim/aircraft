@@ -22,17 +22,11 @@ impl CabinZone {
         }
     }
 
-    pub fn update(
-        &mut self,
-        context: &UpdateContext,
-        passengers: usize,
-        duct_temperature: &impl DuctTemperature,
-    ) {
+    pub fn update(&mut self, context: &UpdateContext, duct_temperature: &impl DuctTemperature) {
         let mut flow_in = Air::new();
         flow_in.set_temperature(duct_temperature.duct_demand_temperature()[&self.zone_id as &str]);
         flow_in.set_flow_rate(MassRate::new::<kilogram_per_second>(1.)); // TODO Replace with selection
 
-        self.passengers = passengers;
         self.zone_air
             .update(context, &flow_in, self.zone_volume, self.passengers);
     }
@@ -154,7 +148,6 @@ mod cabin_air_tests {
     struct TestAircraft {
         cabin_zone: CabinZone,
         flow_in: Air,
-        passengers: usize,
         air_conditioning_system: TestAirConditioningSystem,
     }
 
@@ -167,7 +160,6 @@ mod cabin_air_tests {
                     174 / 2,
                 ),
                 flow_in: Air::new(),
-                passengers: 174 / 2,
                 air_conditioning_system: TestAirConditioningSystem::new(),
             }
         }
@@ -183,13 +175,13 @@ mod cabin_air_tests {
         }
 
         fn set_passengers(&mut self, passengers: usize) {
-            self.passengers = passengers;
+            self.cabin_zone.update_number_of_passengers(passengers);
         }
     }
     impl Aircraft for TestAircraft {
         fn update_after_power_distribution(&mut self, context: &UpdateContext) {
             self.cabin_zone
-                .update(context, self.passengers, &self.air_conditioning_system)
+                .update(context, &self.air_conditioning_system)
         }
     }
     impl SimulationElement for TestAircraft {}

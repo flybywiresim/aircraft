@@ -48,7 +48,6 @@ impl SimulationElement for A320AirConditioning {
 
 struct A320Cabin {
     cabin_zone: [CabinZone; 3],
-    cabin_passengers: usize,
 }
 
 impl A320Cabin {
@@ -67,25 +66,20 @@ impl A320Cabin {
                 CabinZone::new(
                     "FWD".to_string(),
                     Volume::new::<cubic_meter>(Self::A320_CABIN_VOLUME / 2.),
-                    174 / 2,
+                    0,
                 ),
                 CabinZone::new(
                     "AFT".to_string(),
                     Volume::new::<cubic_meter>(Self::A320_CABIN_VOLUME / 2.),
-                    174 / 2,
+                    0,
                 ),
             ],
-            cabin_passengers: 174, //TODO: Read simvar
         }
     }
 
     fn update(&mut self, context: &UpdateContext, duct_temperature: &impl DuctTemperature) {
         for zone in self.cabin_zone.iter_mut() {
-            zone.update(
-                context,
-                (self.cabin_passengers / 2) as usize,
-                duct_temperature,
-            ); // TODO Read simvar for pax numbers
+            zone.update(context, duct_temperature);
         }
     }
 }

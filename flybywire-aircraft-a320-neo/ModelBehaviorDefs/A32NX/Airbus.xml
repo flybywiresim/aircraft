@@ -774,7 +774,7 @@
     <Template Name="FBW_AIRLINER_Aircond_Knob_SubTemplate">
         <DefaultTemplateParameters>
             <NODE_ID>KNOB_OVHD_AIRCOND_#ID#</NODE_ID>
-            <ANIM_SIMVAR>L:A320_Neo_AIRCOND_LVL_#ID#</ANIM_SIMVAR>
+            <ANIM_SIMVAR>L:A32NX_OVHD_COND_#ID#_SELECTOR_KNOB</ANIM_SIMVAR>
             <ANIMCURSOR_MAX>1</ANIMCURSOR_MAX>
         </DefaultTemplateParameters>
 

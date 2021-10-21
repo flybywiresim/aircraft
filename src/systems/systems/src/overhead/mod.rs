@@ -560,6 +560,43 @@ impl SimulationElement for IndicationLight {
     }
 }
 
+pub struct ValueKnob {
+    value_id: String,
+    value: f64,
+}
+impl ValueKnob {
+    pub fn new(name: &str) -> Self {
+        Self {
+            value_id: format!("OVHD_{}_KNOB", name),
+            value: 0.,
+        }
+    }
+
+    pub fn new_with_value(name: &str, value: f64) -> Self {
+        Self {
+            value_id: format!("OVHD_{}_KNOB", name),
+            value,
+        }
+    }
+
+    pub fn set_value(&mut self, value: f64) {
+        self.value = value
+    }
+
+    pub fn value(&self) -> f64 {
+        self.value
+    }
+}
+impl SimulationElement for ValueKnob {
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(&self.value_id, self.value);
+    }
+
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        self.set_value(reader.read(&self.value_id));
+    }
+}
+
 #[cfg(test)]
 mod on_off_fault_push_button_tests {
     use crate::simulation::test::{SimulationTestBed, TestBed};
@@ -973,5 +1010,54 @@ mod indication_light_tests {
 
         let is_illuminated: bool = test_bed.read(&IndicationLight::is_illuminated_id("TEST"));
         assert_eq!(is_illuminated, expected);
+    }
+}
+
+#[cfg(test)]
+mod value_knob_tests {
+    use crate::simulation::test::{SimulationTestBed, TestBed};
+
+    use super::*;
+
+    #[test]
+    fn new_has_0_value() {
+        let knob = ValueKnob::new("TEST");
+
+        assert!(knob.value() < f64::EPSILON);
+    }
+
+    #[test]
+    fn new_with_value_has_value() {
+        let knob = ValueKnob::new_with_value("TEST", 10.);
+
+        assert!((knob.value() - 10.).abs() < f64::EPSILON);
+    }
+
+    #[test]
+    fn set_value_changes_value() {
+        let mut knob = ValueKnob::new_with_value("TEST", 10.);
+
+        knob.set_value(20.);
+
+        assert!((knob.value() - 20.).abs() < f64::EPSILON);
+    }
+
+    #[test]
+    fn reads_its_state() {
+        let mut test_bed = SimulationTestBed::from(ValueKnob::new("TEST"));
+        test_bed.write("OVHD_TEST_KNOB", 10.);
+
+        test_bed.run();
+
+        assert!((test_bed.query_element(|knob| knob.value()) - 10.).abs() < f64::EPSILON);
+    }
+
+    #[test]
+    fn writes_its_state() {
+        let mut test_bed = SimulationTestBed::from(ValueKnob::new("TEST"));
+
+        test_bed.run();
+
+        assert!(test_bed.contains_key("OVHD_TEST_KNOB"));
     }
 }

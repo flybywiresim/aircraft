@@ -1781,6 +1781,31 @@ In the variables below, {number} should be replaced with one item in the set: { 
 
 ## Air Conditioning / Pressurisation / Ventilation
 
+- A32NX_COND_{id}_TEMP
+    - Degree Celsius
+    - Temperature as measured in each of the cabin zones and cockpit
+    - {id}
+        - CKPT
+        - FWD
+        - AFT
+
+- A32NX_COND_{id}_DUCT_TEMP
+    - Degree Celsius
+    - Temperature of trim air coming out of the ducts in the cabin and cockpit
+    - {id}
+        - CKPT
+        - FWD
+        - AFT
+
+- A32NX_OVHD_COND_{id}_SELECTOR_KNOB
+    - Percentage
+    - Percent rotation of the overhead temperature selectors for each of the cabin zones
+    - To transform the value into degree celsius use this formula: this * 0.12 + 18
+     - {id}
+        - CKPT
+        - FWD
+        - AFT
+
 - A32NX_PRESS_CABIN_ALTITUDE
     - Feet
     - The equivalent altitude from sea level of the interior of the cabin based on the internal pressure

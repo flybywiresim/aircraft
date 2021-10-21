@@ -1,6 +1,7 @@
 use self::acs_controller::ACSController;
 
 use crate::{
+    overhead::ValueKnob,
     shared::{CabinAltitude, EngineCorrectedN1, LgciuWeightOnWheels},
     simulation::{SimulationElement, SimulationElementVisitor, UpdateContext},
 };
@@ -20,6 +21,7 @@ pub trait DuctTemperature {
 } // TODO: Initially taken from duct_demand_temperature, needs to be switched once Trim system implemented
 
 pub struct AirConditioningSystem {
+    acs_overhead: AirConditioningSystemOverhead,
     acsc: ACSController,
     // TODO: pack_flow_valve: PackFlowValve,
     // TODO: pack: [AirConditioningPack; 2],
@@ -30,6 +32,7 @@ pub struct AirConditioningSystem {
 impl AirConditioningSystem {
     pub fn new(cabin_zone_ids: Vec<&'static str>) -> Self {
         Self {
+            acs_overhead: AirConditioningSystemOverhead::new(&cabin_zone_ids),
             acsc: ACSController::new(cabin_zone_ids),
         }
     }
@@ -41,13 +44,55 @@ impl AirConditioningSystem {
         pressurization: &impl CabinAltitude,
         lgciu: [&impl LgciuWeightOnWheels; 2],
     ) {
-        self.acsc.update(context, engines, pressurization, lgciu);
+        self.acsc
+            .update(context, &self.acs_overhead, engines, pressurization, lgciu);
     }
 }
 
 impl SimulationElement for AirConditioningSystem {
     fn accept<V: SimulationElementVisitor>(&mut self, visitor: &mut V) {
+        self.acs_overhead.accept(visitor);
         self.acsc.accept(visitor);
+
+        visitor.visit(self);
+    }
+}
+
+pub struct AirConditioningSystemOverhead {
+    temperature_selectors: HashMap<&'static str, ValueKnob>,
+}
+
+impl AirConditioningSystemOverhead {
+    fn new(cabin_zone_ids: &[&'static str]) -> Self {
+        let mut temperature_selectors: HashMap<&'static str, ValueKnob> = HashMap::new();
+        for id in cabin_zone_ids.iter() {
+            let knob_id = format!("COND_{}_SELECTOR", id);
+            temperature_selectors.insert(id, ValueKnob::new_with_value(&knob_id, 24.));
+        }
+        Self {
+            temperature_selectors,
+        }
+    }
+
+    fn selected_cabin_temperatures(&self) -> HashMap<&'static str, ThermodynamicTemperature> {
+        let mut temperature_selectors_values: HashMap<&'static str, ThermodynamicTemperature> =
+            HashMap::new();
+        for (id, knob) in &self.temperature_selectors {
+            temperature_selectors_values.insert(
+                id,
+                // Map from knob range 0-100 to 18-30 degrees C
+                ThermodynamicTemperature::new::<degree_celsius>(knob.value() * 0.12 + 18.),
+            );
+        }
+        temperature_selectors_values
+    }
+}
+
+impl SimulationElement for AirConditioningSystemOverhead {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        for selector in self.temperature_selectors.values_mut() {
+            selector.accept(visitor);
+        }
 
         visitor.visit(self);
     }
