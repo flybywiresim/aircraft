@@ -1063,11 +1063,7 @@ impl CheckValve {
                 .max(physical_volume_transferred);
         }
 
-        self.max_virtual_volume = if available_volume_from_upstream.get::<gallon>() > 0. {
-            available_volume_from_upstream
-        } else {
-            Volume::new::<gallon>(0.)
-        };
+        self.max_virtual_volume = available_volume_from_upstream.max(Volume::new::<gallon>(0.));
     }
 }
 impl Default for CheckValve {
@@ -1125,7 +1121,7 @@ impl Reservoir {
         self.current_level = (self.current_level + volume).min(self.max_capacity);
     }
 
-    pub fn level(&self) -> Volume {
+    fn level(&self) -> Volume {
         self.current_level
     }
 }
