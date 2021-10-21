@@ -4,7 +4,11 @@ use plotlib::style::LineStyle;
 use plotlib::view::ContinuousView;
 use std::time::Duration;
 pub use systems::hydraulic::*;
-use systems::{shared::ElectricalBusType, simulation::UpdateContext};
+use systems::{
+    electrical::Electricity,
+    shared::ElectricalBusType,
+    simulation::{test::TestVariableRegistry, InitContext, UpdateContext},
+};
 use uom::si::{
     acceleration::foot_per_second_squared,
     angle::radian,
@@ -18,7 +22,6 @@ use uom::si::{
     volume_rate::gallon_per_second,
 };
 
-extern crate rustplotlib;
 use rustplotlib::Figure;
 
 struct TestHydraulicLoopController {
@@ -229,14 +232,18 @@ fn green_loop_edp_simulation(path: &str) {
     let edp1_var_names = vec!["Delta Vol Max".to_string(), "pump rpm".to_string()];
     let mut edp1_history = History::new(edp1_var_names);
 
-    let mut edp1 = engine_driven_pump();
+    let mut electricity = Electricity::new();
+    let mut registry: TestVariableRegistry = Default::default();
+    let mut init_context = InitContext::new(&mut electricity, &mut registry);
+
+    let mut edp1 = engine_driven_pump(&mut init_context);
     let mut edp1_controller = TestPumpController::commanding_pressurise();
 
-    let mut green_loop = hydraulic_loop("GREEN");
+    let mut green_loop = hydraulic_loop(&mut init_context, "GREEN");
     let green_loop_controller = TestHydraulicLoopController::commanding_open_fire_shutoff_valve();
 
     let edp_rpm = 3000.;
-    let context = context(Duration::from_millis(100));
+    let context = context(&mut init_context, Duration::from_millis(100));
 
     let green_acc_var_names = vec![
         "Loop Pressure".to_string(),
@@ -383,21 +390,25 @@ fn yellow_green_ptu_loop_simulation(path: &str) {
     ];
     let mut accu_yellow_history = History::new(yellow_acc_var_names);
 
-    let mut epump = electric_pump();
-    let mut epump_controller = TestPumpController::commanding_depressurise();
-    let mut yellow_loop = hydraulic_loop("YELLOW");
+    let mut electricity = Electricity::new();
+    let mut registry: TestVariableRegistry = Default::default();
+    let mut init_context = InitContext::new(&mut electricity, &mut registry);
 
-    let mut edp1 = engine_driven_pump();
+    let mut epump = electric_pump(&mut init_context);
+    let mut epump_controller = TestPumpController::commanding_depressurise();
+    let mut yellow_loop = hydraulic_loop(&mut init_context, "YELLOW");
+
+    let mut edp1 = engine_driven_pump(&mut init_context);
     let mut edp1_controller = TestPumpController::commanding_depressurise();
 
-    let mut green_loop = hydraulic_loop("GREEN");
+    let mut green_loop = hydraulic_loop(&mut init_context, "GREEN");
 
     let loop_controller = TestHydraulicLoopController::commanding_open_fire_shutoff_valve();
 
-    let mut ptu = PowerTransferUnit::new();
+    let mut ptu = PowerTransferUnit::new(&mut init_context);
     let mut ptu_controller = TestPowerTransferUnitController::commanding_disabled();
 
-    let context = context(Duration::from_millis(100));
+    let context = context(&mut init_context, Duration::from_millis(100));
 
     loop_history.init(
         0.0,
@@ -645,23 +656,27 @@ fn yellow_epump_plus_edp2_with_ptu(path: &str) {
     ];
     let mut accu_yellow_history = History::new(yellow_acc_var_names);
 
-    let mut epump = electric_pump();
-    let mut epump_controller = TestPumpController::commanding_depressurise();
-    let mut yellow_loop = hydraulic_loop("YELLOW");
+    let mut electricity = Electricity::new();
+    let mut registry: TestVariableRegistry = Default::default();
+    let mut init_context = InitContext::new(&mut electricity, &mut registry);
 
-    let mut edp2 = engine_driven_pump();
+    let mut epump = electric_pump(&mut init_context);
+    let mut epump_controller = TestPumpController::commanding_depressurise();
+    let mut yellow_loop = hydraulic_loop(&mut init_context, "YELLOW");
+
+    let mut edp2 = engine_driven_pump(&mut init_context);
     let mut edp2_controller = TestPumpController::commanding_depressurise();
 
     let edp_rpm = 3300.;
 
-    let mut green_loop = hydraulic_loop("GREEN");
+    let mut green_loop = hydraulic_loop(&mut init_context, "GREEN");
 
     let loop_controller = TestHydraulicLoopController::commanding_open_fire_shutoff_valve();
 
-    let mut ptu = PowerTransferUnit::new();
+    let mut ptu = PowerTransferUnit::new(&mut init_context);
     let ptu_controller = TestPowerTransferUnitController::commanding_enabled();
 
-    let context = context(Duration::from_millis(100));
+    let context = context(&mut init_context, Duration::from_millis(100));
 
     loop_history.init(
         0.0,
@@ -790,9 +805,10 @@ fn yellow_epump_plus_edp2_with_ptu(path: &str) {
     accu_yellow_history.show_matplotlib("yellow_epump_plus_edp2_with_ptu()_Yellow_acc", &path);
 }
 
-fn hydraulic_loop(loop_color: &str) -> HydraulicLoop {
+fn hydraulic_loop(context: &mut InitContext, loop_color: &str) -> HydraulicLoop {
     match loop_color {
         "GREEN" => HydraulicLoop::new(
+            context,
             loop_color,
             true,
             false,
@@ -806,6 +822,7 @@ fn hydraulic_loop(loop_color: &str) -> HydraulicLoop {
             Pressure::new::<psi>(1750.),
         ),
         "YELLOW" => HydraulicLoop::new(
+            context,
             loop_color,
             false,
             true,
@@ -819,6 +836,7 @@ fn hydraulic_loop(loop_color: &str) -> HydraulicLoop {
             Pressure::new::<psi>(1750.),
         ),
         _ => HydraulicLoop::new(
+            context,
             loop_color,
             false,
             false,
@@ -834,16 +852,21 @@ fn hydraulic_loop(loop_color: &str) -> HydraulicLoop {
     }
 }
 
-fn electric_pump() -> ElectricPump {
-    ElectricPump::new("DEFAULT", ElectricalBusType::AlternatingCurrentEssential)
+fn electric_pump(context: &mut InitContext) -> ElectricPump {
+    ElectricPump::new(
+        context,
+        "DEFAULT",
+        ElectricalBusType::AlternatingCurrentEssential,
+    )
 }
 
-fn engine_driven_pump() -> EngineDrivenPump {
-    EngineDrivenPump::new("DEFAULT")
+fn engine_driven_pump(context: &mut InitContext) -> EngineDrivenPump {
+    EngineDrivenPump::new(context, "DEFAULT")
 }
 
-fn context(delta_time: Duration) -> UpdateContext {
+fn context(context: &mut InitContext, delta_time: Duration) -> UpdateContext {
     UpdateContext::new(
+        context,
         delta_time,
         Velocity::new::<knot>(250.),
         Length::new::<foot>(5000.),

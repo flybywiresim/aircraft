@@ -1,4 +1,5 @@
 use self::{cabin_pressure_controller::CabinPressureController, pressure_valve::PressureValve};
+use crate::simulation::{InitContext, VariableIdentifier};
 use crate::{
     shared::{random_number, EngineCorrectedN1},
     simulation::{Read, SimulationElement, SimulatorReader, SimulatorWriter, UpdateContext, Write},
@@ -13,6 +14,15 @@ trait PressureValveActuator {
 }
 
 pub struct Pressurization {
+    active_cpc_sys_id: VariableIdentifier,
+    cabin_altitude_id: VariableIdentifier,
+    cabin_vs_id: VariableIdentifier,
+    cabin_delta_pressure_id: VariableIdentifier,
+    outflow_valve_open_percentage_id: VariableIdentifier,
+    auto_landing_elevation_id: VariableIdentifier,
+    sea_level_pressure_id: VariableIdentifier,
+    destination_qnh_id: VariableIdentifier,
+
     cpc: [CabinPressureController; 2],
     outflow_valve: PressureValve,
     active_system: usize,
@@ -22,7 +32,7 @@ pub struct Pressurization {
 }
 
 impl Pressurization {
-    pub fn new() -> Self {
+    pub fn new(context: &mut InitContext) -> Self {
         let random = random_number();
         let mut active: usize = 1;
         if random % 2 == 0 {
@@ -30,6 +40,18 @@ impl Pressurization {
         }
 
         Self {
+            active_cpc_sys_id: context.get_identifier("PRESS_ACTIVE_CPC_SYS".to_owned()),
+            cabin_altitude_id: context.get_identifier("PRESS_CABIN_ALTITUDE".to_owned()),
+            cabin_vs_id: context.get_identifier("PRESS_CABIN_VS".to_owned()),
+            cabin_delta_pressure_id: context
+                .get_identifier("PRESS_CABIN_DELTA_PRESSURE".to_owned()),
+            outflow_valve_open_percentage_id: context
+                .get_identifier("PRESS_OUTFLOW_VALVE_OPEN_PERCENTAGE".to_owned()),
+            auto_landing_elevation_id: context
+                .get_identifier("PRESS_AUTO_LANDING_ELEVATION".to_owned()),
+            sea_level_pressure_id: context.get_identifier("SEA LEVEL PRESSURE".to_owned()),
+            destination_qnh_id: context.get_identifier("DESTINATION_QNH".to_owned()),
+
             cpc: [CabinPressureController::new(); 2],
             outflow_valve: PressureValve::new(),
             active_system: active,
@@ -72,37 +94,32 @@ impl Pressurization {
 
 impl SimulationElement for Pressurization {
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write("PRESS_ACTIVE_CPC_SYS", self.active_system);
+        writer.write(&self.active_cpc_sys_id, self.active_system);
         writer.write(
-            "PRESS_CABIN_ALTITUDE",
+            &self.cabin_altitude_id,
             self.cpc[self.active_system - 1].cabin_altitude(),
         );
         writer.write(
-            "PRESS_CABIN_VS",
+            &self.cabin_vs_id,
             self.cpc[self.active_system - 1]
                 .cabin_vs()
                 .get::<foot_per_minute>(),
         );
         writer.write(
-            "PRESS_CABIN_DELTA_PRESSURE",
+            &self.cabin_delta_pressure_id,
             self.cpc[self.active_system - 1].cabin_delta_p(),
         );
         writer.write(
-            "PRESS_OUTFLOW_VALVE_OPEN_PERCENTAGE",
+            &self.outflow_valve_open_percentage_id,
             self.outflow_valve.open_amount(),
         );
     }
 
     fn read(&mut self, reader: &mut SimulatorReader) {
-        self.landing_elevation = reader.read("PRESS_AUTO_LANDING_ELEVATION");
-        self.sea_level_pressure = Pressure::new::<hectopascal>(reader.read("SEA LEVEL PRESSURE"));
-        self.destination_qnh = Pressure::new::<hectopascal>(reader.read("DESTINATION_QNH"));
-    }
-}
-
-impl Default for Pressurization {
-    fn default() -> Self {
-        Self::new()
+        self.landing_elevation = reader.read(&self.auto_landing_elevation_id);
+        self.sea_level_pressure =
+            Pressure::new::<hectopascal>(reader.read(&self.sea_level_pressure_id));
+        self.destination_qnh = Pressure::new::<hectopascal>(reader.read(&self.destination_qnh_id));
     }
 }
 
@@ -146,8 +163,8 @@ mod tests {
     }
 
     impl TestAircraft {
-        fn new() -> Self {
-            let mut press = Pressurization::new();
+        fn new(context: &mut InitContext) -> Self {
+            let mut press = Pressurization::new(context);
             press.active_system = 1;
 
             Self {
@@ -173,7 +190,7 @@ mod tests {
 
     #[test]
     fn conversion_from_pressure_to_altitude_works() {
-        let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
         //Equivalent to FL340 from tables
         test_bed.set_ambient_pressure(Pressure::new::<hectopascal>(250.));
@@ -191,7 +208,7 @@ mod tests {
 
     #[test]
     fn positive_cabin_vs_reduces_cabin_pressure() {
-        let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
         test_bed.set_indicated_airspeed(Velocity::new::<knot>(101.));
         test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(1000.));
@@ -204,7 +221,7 @@ mod tests {
 
     #[test]
     fn seventy_seconds_after_landing_cpc_switches() {
-        let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
         test_bed.run();
         test_bed.run_with_delta(Duration::from_secs_f64(31.));
@@ -238,7 +255,7 @@ mod tests {
 
     #[test]
     fn fifty_five_seconds_after_landing_outflow_valve_opens() {
-        let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
         test_bed.run();
         test_bed.run_with_delta(Duration::from_secs_f64(31.));
