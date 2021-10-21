@@ -12,7 +12,7 @@ use uom::si::{
     angular_velocity::revolution_per_minute,
     f64::*,
     pressure::{pascal, psi},
-    ratio::{percent, ratio},
+    ratio::ratio,
     velocity::knot,
     volume::{cubic_inch, gallon},
     volume_rate::{gallon_per_minute, gallon_per_second},
@@ -467,7 +467,7 @@ impl HydraulicCircuit {
         self.update_shutoff_valves_states(controller);
 
         // Taking care of leaks / consumers / actuators volumes
-        self.update_flows(ptu, context);
+        self.update_flows(context, ptu);
 
         // How many fluid needed to reach target pressure considering flow consumption
         self.update_target_volumes_after_flow();
@@ -486,7 +486,7 @@ impl HydraulicCircuit {
 
         // We have all flow information, now we set pump parameters (displacement) to where it
         // should be so we reach target pressure
-        self.update_pumps(main_section_pumps, system_section_pump, context);
+        self.update_pumps(context, main_section_pumps, system_section_pump);
 
         self.update_final_delta_vol_and_pressure(context);
     }
@@ -502,21 +502,17 @@ impl HydraulicCircuit {
 
     fn update_pumps(
         &mut self,
+        context: &UpdateContext,
         main_section_pumps: &mut Vec<&mut impl PressureSource>,
         system_section_pump: Option<&mut impl PressureSource>,
-        context: &UpdateContext,
     ) {
         for (pump_index, section) in self.pump_sections.iter_mut().enumerate() {
-            section.update_pump_state(
-                main_section_pumps[pump_index],
-                &mut self.reservoir,
-                &context,
-            );
+            section.update_pump_state(context, main_section_pumps[pump_index], &mut self.reservoir);
         }
 
         if let Some(pump) = system_section_pump {
             self.system_section
-                .update_pump_state(pump, &mut self.reservoir, &context);
+                .update_pump_state(context, pump, &mut self.reservoir);
         }
     }
 
@@ -566,12 +562,12 @@ impl HydraulicCircuit {
         );
     }
 
-    fn update_flows(&mut self, ptu: Option<&PowerTransferUnit>, context: &UpdateContext) {
+    fn update_flows(&mut self, context: &UpdateContext, ptu: Option<&PowerTransferUnit>) {
         for section in &mut self.pump_sections {
-            section.update_flow(&mut self.reservoir, ptu, &context);
+            section.update_flow(context, &mut self.reservoir, ptu);
         }
         self.system_section
-            .update_flow(&mut self.reservoir, ptu, &context);
+            .update_flow(context, &mut self.reservoir, ptu);
     }
 
     fn update_shutoff_valves_states<T: HydraulicLoopController>(&mut self, controller: &T) {
@@ -778,9 +774,9 @@ impl Section {
     /// Updates hydraulic flow from consumers like accumulator / ptu / any actuator
     pub fn update_flow(
         &mut self,
+        context: &UpdateContext,
         reservoir: &mut Reservoir,
         ptu: Option<&PowerTransferUnit>,
-        context: &UpdateContext,
     ) {
         let static_leak = self.static_leak(&context);
         let mut delta_volume_flow_pass = -static_leak;
@@ -844,9 +840,9 @@ impl Section {
 
     pub fn update_pump_state(
         &mut self,
+        context: &UpdateContext,
         pump: &mut impl PressureSource,
         reservoir: &mut Reservoir,
-        context: &UpdateContext,
     ) {
         // Final volume target to reach target pressure is:
         // raw volume_target - (upstream volume - downstream volume)
@@ -926,7 +922,7 @@ impl Section {
         if self.connected_to_ptu_left_side {
             if ptu.flow_to_left > VolumeRate::new::<gallon_per_second>(0.0) {
                 // We are left side of PTU and positive flow so we receive flow using own reservoir
-                actual_flow = reservoir.try_take_flow(ptu.flow_to_left, context);
+                actual_flow = reservoir.try_take_flow(context, ptu.flow_to_left);
             } else {
                 // We are using own flow to power right side so we send that back
                 // to our own reservoir
@@ -937,7 +933,7 @@ impl Section {
         } else if self.connected_to_ptu_right_side {
             if ptu.flow_to_right > VolumeRate::new::<gallon_per_second>(0.0) {
                 // We are right side of PTU and positive flow so we receive flow using own reservoir
-                actual_flow = reservoir.try_take_flow(ptu.flow_to_right, context);
+                actual_flow = reservoir.try_take_flow(context, ptu.flow_to_right);
             } else {
                 // We are using own flow to power left side so we send that back
                 // to our own reservoir
@@ -1112,14 +1108,14 @@ impl Reservoir {
     }
 
     // Try to take flow from reservoir. Will return only what's currently available
-    fn try_take_flow(&mut self, flow: VolumeRate, context: &UpdateContext) -> VolumeRate {
+    fn try_take_flow(&mut self, context: &UpdateContext, flow: VolumeRate) -> VolumeRate {
         let desired_volume = flow * context.delta_as_time();
         let volume_taken = self.try_take_volume(desired_volume);
         volume_taken / context.delta_as_time()
     }
 
     // What's current flow available
-    fn request_flow_availability(&self, flow: VolumeRate, context: &UpdateContext) -> VolumeRate {
+    fn request_flow_availability(&self, context: &UpdateContext, flow: VolumeRate) -> VolumeRate {
         let desired_volume = flow * context.delta_as_time();
         let max_volume_available = self.current_level - self.min_usable;
         max_volume_available.min(desired_volume) / context.delta_as_time()
@@ -1193,7 +1189,7 @@ impl Pump {
             .max(VolumeRate::new::<gallon_per_second>(0.));
 
         let max_flow_available_from_reservoir =
-            reservoir.request_flow_availability(max_flow, &context);
+            reservoir.request_flow_availability(context, max_flow);
 
         self.delta_vol_max = max_flow_available_from_reservoir * context.delta_as_time();
     }
@@ -1269,7 +1265,7 @@ impl PressureSource for Pump {
         let max_current_flow = self.get_max_flow();
 
         self.current_flow = if is_pump_connected_to_reservoir {
-            reservoir.try_take_flow(max_current_flow, &context)
+            reservoir.try_take_flow(context, max_current_flow)
         } else {
             VolumeRate::new::<gallon_per_second>(0.)
         }
@@ -1322,7 +1318,7 @@ impl ElectricPump {
     ) {
         self.pump_physics.set_active(controller.should_pressurise());
         self.pump_physics
-            .update(pressure_state, self.pump.displacement(), context);
+            .update(context, pressure_state, self.pump.displacement());
 
         self.pump.update(
             context,
@@ -1705,7 +1701,7 @@ mod tests {
     use crate::simulation::UpdateContext;
     use uom::si::{
         acceleration::foot_per_second_squared, angle::radian, f64::*, length::foot, pressure::psi,
-        thermodynamic_temperature::degree_celsius, volume::gallon,
+        ratio::percent, thermodynamic_temperature::degree_celsius, volume::gallon,
     };
 
     struct TestHydraulicLoopController {

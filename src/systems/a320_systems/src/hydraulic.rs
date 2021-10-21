@@ -416,14 +416,14 @@ impl A320Hydraulic {
     // Updates at the same rate as the sim or at a fixed maximum time step if sim rate is too slow
     fn update_fast_physics(&mut self, context: &UpdateContext) {
         self.forward_cargo_door.update(
+            context,
             &self.forward_cargo_door_controller,
-            &context,
             self.yellow_circuit.system_pressure(),
         );
 
         self.aft_cargo_door.update(
+            context,
             &self.aft_cargo_door_controller,
-            &context,
             self.yellow_circuit.system_pressure(),
         );
 
@@ -1729,12 +1729,12 @@ impl CargoDoor {
 
     fn update(
         &mut self,
-        cargo_door_controller: &impl HydraulicAssemblyController,
         context: &UpdateContext,
+        cargo_door_controller: &impl HydraulicAssemblyController,
         current_pressure: Pressure,
     ) {
         self.hydraulic_assembly
-            .update(cargo_door_controller, context, current_pressure);
+            .update(context, cargo_door_controller, current_pressure);
         self.is_locked = self.hydraulic_assembly.is_locked();
         self.position = self.hydraulic_assembly.position_normalized();
     }

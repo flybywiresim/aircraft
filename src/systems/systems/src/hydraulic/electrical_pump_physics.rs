@@ -81,9 +81,9 @@ impl ElectricalPumpPhysics {
 
     pub fn update(
         &mut self,
+        context: &UpdateContext,
         pressure_state: &impl HydraulicSectionState,
         current_displacement: Volume,
-        context: &UpdateContext,
     ) {
         self.update_pump_resistant_torque(pressure_state, current_displacement);
         self.update_pump_generated_torque(context);
@@ -300,9 +300,9 @@ mod tests {
 
             for cur_time_step in &mut self.core_hydraulic_updater {
                 self.pump.update(
+                    &context.with_delta(cur_time_step),
                     &self.hydraulic_section,
                     self.current_displacement,
-                    &context.with_delta(cur_time_step),
                 );
             }
         }

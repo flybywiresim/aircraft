@@ -409,18 +409,18 @@ impl LinearActuator {
 
     fn update_after_rigid_body(
         &mut self,
-        connected_body: &LinearActuatedRigidBodyOnHingeAxis,
         context: &UpdateContext,
+        connected_body: &LinearActuatedRigidBodyOnHingeAxis,
     ) {
-        self.update_speed_position(connected_body, context);
+        self.update_speed_position(context, connected_body);
 
         self.update_fluid_displacements(context);
     }
 
     fn update_speed_position(
         &mut self,
-        connected_body: &LinearActuatedRigidBodyOnHingeAxis,
         context: &UpdateContext,
+        connected_body: &LinearActuatedRigidBodyOnHingeAxis,
     ) {
         self.last_position = self.position;
         self.position = connected_body.linear_extension_to_anchor();
@@ -506,8 +506,8 @@ impl HydraulicLinearActuatorAssembly {
 
     pub fn update(
         &mut self,
-        assembly_controller: &impl HydraulicAssemblyController,
         context: &UpdateContext,
+        assembly_controller: &impl HydraulicAssemblyController,
         current_pressure: Pressure,
     ) {
         self.linear_actuator
@@ -523,7 +523,7 @@ impl HydraulicLinearActuatorAssembly {
             );
             self.rigid_body.update(context);
             self.linear_actuator
-                .update_after_rigid_body(&self.rigid_body, context);
+                .update_after_rigid_body(context, &self.rigid_body);
         }
     }
 
@@ -864,12 +864,12 @@ mod tests {
                 Angle::new::<degree>(0.),
             ));
             actuator.update_after_rigid_body(
-                &rigid_body,
                 &context(
                     Duration::from_secs_f64(dt),
                     Angle::new::<degree>(0.),
                     Angle::new::<degree>(0.),
                 ),
+                &rigid_body,
             );
 
             assert!(actuator.position_normalized == actuator_position_init);
@@ -906,12 +906,12 @@ mod tests {
                 Angle::new::<degree>(0.),
             ));
             actuator.update_after_rigid_body(
-                &rigid_body,
                 &context(
                     Duration::from_secs_f64(dt),
                     Angle::new::<degree>(0.),
                     Angle::new::<degree>(0.),
                 ),
+                &rigid_body,
             );
 
             if time <= 0.1 {
@@ -964,12 +964,12 @@ mod tests {
                 Angle::new::<degree>(0.),
             ));
             actuator.update_after_rigid_body(
-                &rigid_body,
                 &context(
                     Duration::from_secs_f64(dt),
                     Angle::new::<degree>(0.),
                     Angle::new::<degree>(0.),
                 ),
+                &rigid_body,
             );
 
             if time > 0.2 {
@@ -1020,12 +1020,12 @@ mod tests {
                 Angle::new::<degree>(0.),
             ));
             actuator.update_after_rigid_body(
-                &rigid_body,
                 &context(
                     Duration::from_secs_f64(dt),
                     Angle::new::<degree>(0.),
                     Angle::new::<degree>(0.),
                 ),
+                &rigid_body,
             );
 
             if time > 0.2 {
@@ -1078,12 +1078,12 @@ mod tests {
                 Angle::new::<degree>(0.),
             ));
             actuator.update_after_rigid_body(
-                &rigid_body,
                 &context(
                     Duration::from_secs_f64(dt),
                     Angle::new::<degree>(0.),
                     Angle::new::<degree>(0.),
                 ),
+                &rigid_body,
             );
 
             if time > 25. && time < 25. + dt {
@@ -1131,7 +1131,7 @@ mod tests {
         for _ in 0..500 {
             actuator.update_before_rigid_body(&mut rigid_body, requested_mode, current_pressure);
             rigid_body.update(context);
-            actuator.update_after_rigid_body(&rigid_body, context);
+            actuator.update_after_rigid_body(context, &rigid_body);
 
             assert!(actuator.position_normalized < Ratio::new::<ratio>(0.3));
 
@@ -1173,7 +1173,7 @@ mod tests {
         for _ in 0..500 {
             actuator.update_before_rigid_body(&mut rigid_body, requested_mode, current_pressure);
             rigid_body.update(context);
-            actuator.update_after_rigid_body(&rigid_body, context);
+            actuator.update_after_rigid_body(context, &rigid_body);
 
             if actuator.position_normalized > Ratio::new::<ratio>(0.95)
                 && time_when_pressure_off == 0.
