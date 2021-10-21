@@ -28,12 +28,12 @@ pub trait PressureSource {
 
     /// Updates the pump after hydraulic system regulation pass. It will adjust its displacement to the real
     /// physical value used for current pressure regulation
-    fn update_actual_state_after_pressure_regulation(
+    fn update_after_pressure_regulation(
         &mut self,
+        context: &UpdateContext,
         volume_required: Volume,
         reservoir: &mut Reservoir,
         is_pump_connected_to_reservoir: bool,
-        context: &UpdateContext,
     );
 
     fn flow(&self) -> VolumeRate;
@@ -838,11 +838,11 @@ impl Section {
         let final_volume_needed_to_reach_target_pressure =
             self.volume_target - self.delta_vol_from_valves;
 
-        pump.update_actual_state_after_pressure_regulation(
+        pump.update_after_pressure_regulation(
+            context,
             final_volume_needed_to_reach_target_pressure,
             reservoir,
             self.fire_valve_is_opened(),
-            &context,
         );
         self.total_volume_pumped = pump.flow() * context.delta_as_time();
     }
@@ -1244,12 +1244,12 @@ impl PressureSource for Pump {
         self.delta_vol_max
     }
 
-    fn update_actual_state_after_pressure_regulation(
+    fn update_after_pressure_regulation(
         &mut self,
+        context: &UpdateContext,
         volume_required: Volume,
         reservoir: &mut Reservoir,
         is_pump_connected_to_reservoir: bool,
-        context: &UpdateContext,
     ) {
         let required_flow = volume_required / context.delta_as_time();
         self.current_displacement = self.calculate_displacement_from_required_flow(required_flow);
@@ -1325,18 +1325,18 @@ impl PressureSource for ElectricPump {
         self.pump.delta_vol_max()
     }
 
-    fn update_actual_state_after_pressure_regulation(
+    fn update_after_pressure_regulation(
         &mut self,
+        context: &UpdateContext,
         volume_required: Volume,
         reservoir: &mut Reservoir,
         is_pump_connected_to_reservoir: bool,
-        context: &UpdateContext,
     ) {
-        self.pump.update_actual_state_after_pressure_regulation(
+        self.pump.update_after_pressure_regulation(
+            context,
             volume_required,
             reservoir,
             is_pump_connected_to_reservoir,
-            context,
         );
     }
 
@@ -1408,18 +1408,18 @@ impl PressureSource for EngineDrivenPump {
         self.pump.delta_vol_max()
     }
 
-    fn update_actual_state_after_pressure_regulation(
+    fn update_after_pressure_regulation(
         &mut self,
+        context: &UpdateContext,
         volume_required: Volume,
         reservoir: &mut Reservoir,
         is_pump_connected_to_reservoir: bool,
-        context: &UpdateContext,
     ) {
-        self.pump.update_actual_state_after_pressure_regulation(
+        self.pump.update_after_pressure_regulation(
+            context,
             volume_required,
             reservoir,
             is_pump_connected_to_reservoir,
-            context,
         );
     }
 
@@ -1646,18 +1646,18 @@ impl PressureSource for RamAirTurbine {
         self.pump.delta_vol_max()
     }
 
-    fn update_actual_state_after_pressure_regulation(
+    fn update_after_pressure_regulation(
         &mut self,
+        context: &UpdateContext,
         volume_required: Volume,
         reservoir: &mut Reservoir,
         is_pump_connected_to_reservoir: bool,
-        context: &UpdateContext,
     ) {
-        self.pump.update_actual_state_after_pressure_regulation(
+        self.pump.update_after_pressure_regulation(
+            context,
             volume_required,
             reservoir,
             is_pump_connected_to_reservoir,
-            context,
         );
     }
 
