@@ -590,7 +590,6 @@ impl BleedMonitoringComputerChannel {
         self.intermediate_pressure_compressor_pressure = sensors.intermediate_pressure();
         self.high_pressure_compressor_pressure = sensors.high_pressure();
         self.transfer_pressure = sensors.transfer_pressure();
-        self.precooler_inlet_pressure = sensors.precooler_inlet_pressure();
         self.precooler_outlet_temperature = sensors.precooler_outlet_temperature();
 
         self.pressure_regulating_valve_pid.change_setpoint(
@@ -604,7 +603,7 @@ impl BleedMonitoringComputerChannel {
         self.high_pressure_valve_pid
             .next_control_output(self.transfer_pressure.get::<psi>(), Some(context.delta()));
         self.pressure_regulating_valve_pid.next_control_output(
-            self.precooler_inlet_pressure.get::<psi>(),
+            sensors.precooler_outlet_pressure().get::<psi>(),
             Some(context.delta()),
         );
         self.fan_air_valve_pid.next_control_output(
@@ -1981,8 +1980,8 @@ mod tests {
         let alt = Length::new::<foot>(0.);
 
         let mut test_bed = test_bed_with()
-            .toga_eng2()
-            .toga_eng1()
+            .idle_eng1()
+            .idle_eng2()
             .in_isa_atmosphere(alt)
             .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Auto)
             .mach_number(MachNumber(0.))
@@ -2012,17 +2011,6 @@ mod tests {
 
         for i in 1..3000 {
             ts.push(i as f64 * 16.);
-
-            if i == 1000 {
-                test_bed = test_bed.stop_eng1();
-            }
-            if i == 2001 {
-                assert!(test_bed.fadec_single_vs_dual_bleed_config())
-            }
-            if i == 2000 {
-                test_bed =
-                    test_bed.cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Open)
-            }
 
             hps.push(test_bed.hp_pressure(1).get::<psi>());
             ips.push(test_bed.ip_pressure(1).get::<psi>());
