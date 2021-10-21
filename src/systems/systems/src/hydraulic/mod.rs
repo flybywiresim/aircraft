@@ -368,7 +368,7 @@ impl HydraulicCircuit {
     pub fn new(
         id: &str,
 
-        pump_sections_number: usize,
+        number_of_pump_sections: usize,
         priming_volume_percent: f64,
         high_pressure_max_volume: Volume,
         reservoir_volume: Volume,
@@ -385,8 +385,8 @@ impl HydraulicCircuit {
 
         let mut pump_id: Option<usize> = None;
 
-        for pump_index in 0..pump_sections_number {
-            if pump_sections_number > 1 {
+        for pump_index in 0..number_of_pump_sections {
+            if number_of_pump_sections > 1 {
                 pump_id = Some(pump_index);
             }
 
@@ -416,7 +416,7 @@ impl HydraulicCircuit {
 
         let system_section_volume = high_pressure_max_volume
             - Volume::new::<gallon>(Self::PUMP_SECTION_MAX_VOLUME_GAL)
-                * pump_sections_number as f64;
+                * number_of_pump_sections as f64;
 
         Self {
             pump_sections,
