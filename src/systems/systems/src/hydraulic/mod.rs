@@ -778,7 +778,7 @@ impl Section {
         reservoir: &mut Reservoir,
         ptu: Option<&PowerTransferUnit>,
     ) {
-        let static_leak = self.static_leak(&context);
+        let static_leak = self.static_leak(context);
         let mut delta_volume_flow_pass = -static_leak;
 
         reservoir.add_return_volume(static_leak);
@@ -1407,10 +1407,6 @@ impl EngineDrivenPump {
             .update(context, pressure_state, &reservoir, pump_speed, controller);
         self.is_active = controller.should_pressurise();
     }
-
-    pub fn rpm(&self) -> f64 {
-        self.speed.get::<revolution_per_minute>()
-    }
 }
 impl PressureSource for EngineDrivenPump {
     fn delta_vol_max(&self) -> Volume {
@@ -1471,10 +1467,6 @@ impl WindTurbine {
         }
     }
 
-    fn rpm(&self) -> f64 {
-        self.speed.get::<revolution_per_minute>()
-    }
-
     fn speed(&self) -> AngularVelocity {
         self.speed
     }
@@ -1483,7 +1475,7 @@ impl WindTurbine {
         let cur_alpha = interpolation(
             &Self::RPM_GOVERNOR_BREAKPTS,
             &Self::PROP_ALPHA_MAP,
-            self.rpm(),
+            self.speed().get::<revolution_per_minute>(),
         );
 
         // Simple model. stow pos sin simulates the angle of the blades vs wind while deploying
@@ -1496,7 +1488,7 @@ impl WindTurbine {
 
     fn update_friction_torque(&mut self, displacement_ratio: f64) {
         let mut pump_torque = 0.;
-        if self.rpm() < Self::LOW_SPEED_PHYSICS_ACTIVATION {
+        if self.speed().get::<revolution_per_minute>() < Self::LOW_SPEED_PHYSICS_ACTIVATION {
             pump_torque += (self.position * 4.).cos() * displacement_ratio.max(0.35) * 35.;
             pump_torque += -self.speed.get::<radian_per_second>() * 15.;
         } else {
@@ -1535,7 +1527,7 @@ impl WindTurbine {
 }
 impl SimulationElement for WindTurbine {
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write("HYD_RAT_RPM", self.rpm());
+        writer.write("HYD_RAT_RPM", self.speed().get::<revolution_per_minute>());
     }
 }
 impl Default for WindTurbine {
@@ -1698,43 +1690,8 @@ impl Default for RamAirTurbine {
 #[cfg(test)]
 mod tests {
     use crate::simulation::test::{SimulationTestBed, TestBed};
-    use crate::simulation::UpdateContext;
-    use uom::si::{
-        acceleration::foot_per_second_squared, angle::radian, f64::*, length::foot, pressure::psi,
-        ratio::percent, thermodynamic_temperature::degree_celsius, volume::gallon,
-    };
 
-    struct TestHydraulicLoopController {
-        should_open_fire_shutoff_valve: Vec<bool>,
-    }
-    impl TestHydraulicLoopController {
-        fn _commanding_open_fire_shutoff_valve(number_of_pumps: usize) -> Self {
-            Self {
-                should_open_fire_shutoff_valve: vec![true; number_of_pumps],
-            }
-        }
-    }
-    impl HydraulicLoopController for TestHydraulicLoopController {
-        fn should_open_fire_shutoff_valve(&self, pump_index: usize) -> bool {
-            self.should_open_fire_shutoff_valve[pump_index]
-        }
-    }
-
-    struct TestPumpController {
-        should_pressurise: bool,
-    }
-    impl TestPumpController {
-        fn _commanding_pressurise() -> Self {
-            Self {
-                should_pressurise: true,
-            }
-        }
-    }
-    impl PumpController for TestPumpController {
-        fn should_pressurise(&self) -> bool {
-            self.should_pressurise
-        }
-    }
+    use uom::si::{f64::*, pressure::psi, ratio::percent, volume::gallon};
 
     use super::*;
 
@@ -1860,21 +1817,6 @@ mod tests {
 
     fn engine_driven_pump() -> EngineDrivenPump {
         EngineDrivenPump::new("DEFAULT")
-    }
-
-    fn _context(delta_time: Duration) -> UpdateContext {
-        UpdateContext::new(
-            delta_time,
-            Velocity::new::<knot>(250.),
-            Length::new::<foot>(5000.),
-            ThermodynamicTemperature::new::<degree_celsius>(25.0),
-            true,
-            Acceleration::new::<foot_per_second_squared>(0.),
-            Acceleration::new::<foot_per_second_squared>(0.),
-            Acceleration::new::<foot_per_second_squared>(0.),
-            Angle::new::<radian>(0.),
-            Angle::new::<radian>(0.),
-        )
     }
 
     #[cfg(test)]
