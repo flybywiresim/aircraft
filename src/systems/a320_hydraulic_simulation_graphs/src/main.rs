@@ -20,17 +20,17 @@ use uom::si::{
 extern crate rustplotlib;
 use rustplotlib::Figure;
 
-struct TestHydraulicLoopController {
+struct TestHydraulicCircuitController {
     should_open_fire_shutoff_valve: Vec<bool>,
 }
-impl TestHydraulicLoopController {
+impl TestHydraulicCircuitController {
     fn commanding_open_fire_shutoff_valve(number_of_pumps: usize) -> Self {
         Self {
             should_open_fire_shutoff_valve: vec![true; number_of_pumps],
         }
     }
 }
-impl HydraulicLoopController for TestHydraulicLoopController {
+impl HydraulicCircuitController for TestHydraulicCircuitController {
     fn should_open_fire_shutoff_valve(&self, pump_index: usize) -> bool {
         self.should_open_fire_shutoff_valve[pump_index]
     }
@@ -311,7 +311,7 @@ fn hyd_circuit_basic(path: &str) {
             &mut vec![&mut edp],
             Some(&mut epump),
             None,
-            &TestHydraulicLoopController::commanding_open_fire_shutoff_valve(1),
+            &TestHydraulicCircuitController::commanding_open_fire_shutoff_valve(1),
         );
 
         hyd_circuit_history.update(

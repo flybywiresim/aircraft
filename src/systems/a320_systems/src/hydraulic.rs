@@ -27,7 +27,7 @@ use systems::{
             LinearActuatorMode,
         },
         update_iterator::{FixedStepLoop, MaxFixedStepLoop},
-        ElectricPump, EngineDrivenPump, HydraulicCircuit, HydraulicLoopController,
+        ElectricPump, EngineDrivenPump, HydraulicCircuit, HydraulicCircuitController,
         HydraulicSectionState, PowerTransferUnit, PowerTransferUnitController, PressureSwitchState,
         PumpController, RamAirTurbine, RamAirTurbineController,
     },
@@ -782,7 +782,7 @@ impl A320HydraulicCircuitController {
         }
     }
 }
-impl HydraulicLoopController for A320HydraulicCircuitController {
+impl HydraulicCircuitController for A320HydraulicCircuitController {
     fn should_open_fire_shutoff_valve(&self, _: usize) -> bool {
         // A320 only has one main pump per pump section thus index not useful
         self.should_open_fire_shutoff_valve
@@ -2660,12 +2660,20 @@ mod tests {
 
             fn is_fire_valve_eng1_closed(&mut self) -> bool {
                 !Read::<bool>::read(self, "HYD_GREEN_PUMP0_FIRE_VALVE_OPENED")
-                    && !self.query(|a| a.hydraulics.green_circuit.is_fire_shutoff_valve_opened(0))
+                    && !self.query(|a| {
+                        a.hydraulics.green_circuit.is_fire_shutoff_valve_open(
+                            A320HydraulicCircuitFactory::GREEN_ENGINE_PUMP_INDEX,
+                        )
+                    })
             }
 
             fn is_fire_valve_eng2_closed(&mut self) -> bool {
                 !Read::<bool>::read(self, "HYD_YELLOW_PUMP0_FIRE_VALVE_OPENED")
-                    && !self.query(|a| a.hydraulics.yellow_circuit.is_fire_shutoff_valve_opened(0))
+                    && !self.query(|a| {
+                        a.hydraulics.yellow_circuit.is_fire_shutoff_valve_open(
+                            A320HydraulicCircuitFactory::YELLOW_ENGINE_PUMP_INDEX,
+                        )
+                    })
             }
 
             fn engines_off(self) -> Self {

@@ -219,7 +219,7 @@ impl Default for PowerTransferUnit {
     }
 }
 
-pub trait HydraulicLoopController {
+pub trait HydraulicCircuitController {
     fn should_open_fire_shutoff_valve(&self, pump_index: usize) -> bool;
 }
 
@@ -410,7 +410,7 @@ impl HydraulicCircuit {
                 false,
             ));
 
-            pump_to_system_check_valves.push(CheckValve::new());
+            pump_to_system_check_valves.push(CheckValve::default());
         }
 
         let system_section_volume = high_pressure_max_volume
@@ -448,23 +448,23 @@ impl HydraulicCircuit {
         }
     }
 
-    pub fn is_fire_shutoff_valve_opened(&self, pump_id: usize) -> bool {
-        self.pump_sections[pump_id].fire_valve_is_opened()
+    pub fn is_fire_shutoff_valve_open(&self, pump_id: usize) -> bool {
+        self.pump_sections[pump_id].fire_valve_is_open()
     }
 
     pub fn update_actuator_volumes(&mut self, actuator: &mut impl Actuator) {
         self.system_section.update_actuator_volumes(actuator);
     }
 
-    pub fn update<T: HydraulicLoopController>(
+    pub fn update(
         &mut self,
         context: &UpdateContext,
         main_section_pumps: &mut Vec<&mut impl PressureSource>,
         system_section_pump: Option<&mut impl PressureSource>,
         ptu: Option<&PowerTransferUnit>,
-        controller: &T,
+        controller: &impl HydraulicCircuitController,
     ) {
-        self.update_shutoff_valves_states(controller);
+        self.update_shutoff_valves(controller);
 
         // Taking care of leaks / consumers / actuators volumes
         self.update_flows(context, ptu);
@@ -570,10 +570,10 @@ impl HydraulicCircuit {
             .update_flow(context, &mut self.reservoir, ptu);
     }
 
-    fn update_shutoff_valves_states<T: HydraulicLoopController>(&mut self, controller: &T) {
-        for (pump_index, section) in self.pump_sections.iter_mut().enumerate() {
-            section.set_fire_valve_command(controller.should_open_fire_shutoff_valve(pump_index));
-        }
+    fn update_shutoff_valves(&mut self, controller: &impl HydraulicCircuitController) {
+        self.pump_sections
+            .iter_mut()
+            .for_each(|section| section.update_shutoff_valve(controller));
     }
 
     fn update_final_valves_flows(&mut self) {
@@ -657,6 +657,8 @@ impl SimulationElement for HydraulicCircuit {
 pub struct Section {
     pressure_id: String,
 
+    section_id_number: usize,
+
     static_leak_at_max_press: VolumeRate,
     current_volume: Volume,
     max_high_press_volume: Volume,
@@ -701,6 +703,7 @@ impl Section {
 
         Self {
             pressure_id: format!("{}_PRESSURE", section_name),
+            section_id_number: pump_id,
             static_leak_at_max_press,
             current_volume,
             max_high_press_volume,
@@ -732,20 +735,16 @@ impl Section {
         self.pressure_switch.state()
     }
 
-    fn fire_valve_is_opened(&self) -> bool {
-        if self.fire_valve.is_some() {
-            self.fire_valve.as_ref().unwrap().is_opened()
-        } else {
-            true
+    fn fire_valve_is_open(&self) -> bool {
+        match &self.fire_valve {
+            Some(valve) => valve.is_open(),
+            None => true,
         }
     }
 
-    fn set_fire_valve_command(&mut self, open_request: bool) {
-        if self.fire_valve.is_some() {
-            self.fire_valve
-                .as_mut()
-                .unwrap()
-                .set_open_state(open_request);
+    fn update_shutoff_valve(&mut self, controller: &impl HydraulicCircuitController) {
+        if let Some(valve) = &mut self.fire_valve {
+            valve.update(controller.should_open_fire_shutoff_valve(self.section_id_number));
         }
     }
 
@@ -821,10 +820,10 @@ impl Section {
     }
 
     pub fn update_maximum_pumping_capacity(&mut self, pump: &impl PressureSource) {
-        if self.fire_valve_is_opened() {
-            self.max_pumpable_volume = pump.delta_vol_max();
+        self.max_pumpable_volume = if self.fire_valve_is_open() {
+            pump.delta_vol_max()
         } else {
-            self.max_pumpable_volume = Volume::new::<gallon>(0.);
+            Volume::new::<gallon>(0.)
         }
     }
 
@@ -853,7 +852,7 @@ impl Section {
             context,
             final_volume_needed_to_reach_target_pressure,
             reservoir,
-            self.fire_valve_is_opened(),
+            self.fire_valve_is_open(),
         );
         self.total_volume_pumped = pump.flow() * context.delta_as_time();
     }
@@ -893,14 +892,6 @@ impl Section {
 
     pub fn pressure(&self) -> Pressure {
         self.current_pressure
-    }
-
-    pub fn volume(&self) -> Volume {
-        self.current_volume
-    }
-
-    pub fn flow(&self) -> VolumeRate {
-        self.current_flow
     }
 
     pub fn accumulator_volume(&self) -> Volume {
@@ -968,7 +959,7 @@ impl HydraulicSectionState for Section {
 
 pub struct FireValve {
     opened_id: String,
-    is_opened: bool,
+    is_open: bool,
     bus_type: ElectricalBusType,
     is_powered: bool,
 }
@@ -976,7 +967,7 @@ impl FireValve {
     fn new(hyd_loop_id: &str, pump_id: usize, bus_type: ElectricalBusType) -> Self {
         Self {
             opened_id: format!("HYD_{}_PUMP{}_FIRE_VALVE_OPENED", hyd_loop_id, pump_id),
-            is_opened: true,
+            is_open: true,
             bus_type,
             is_powered: false,
         }
@@ -984,19 +975,19 @@ impl FireValve {
 
     /// Updates opening state:
     /// A firevalve will move if powered, stay at current position if unpowered
-    fn set_open_state(&mut self, valve_open_command: bool) {
+    fn update(&mut self, valve_open_command: bool) {
         if self.is_powered {
-            self.is_opened = valve_open_command;
+            self.is_open = valve_open_command;
         }
     }
 
-    fn is_opened(&self) -> bool {
-        self.is_opened
+    fn is_open(&self) -> bool {
+        self.is_open
     }
 }
 impl SimulationElement for FireValve {
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write(&self.opened_id, self.is_opened());
+        writer.write(&self.opened_id, self.is_open());
     }
 
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
@@ -1011,18 +1002,13 @@ impl SimulationElement for FireValve {
 /// and if upstream has enough capacity to provide flow while maintaining its target pressure
 /// -A physical flow, that is mandatory to pass through the valve, caused by pressure difference between
 /// upstream and downstream.
+
+#[derive(Default)]
 pub struct CheckValve {
     current_volume: Volume,
     max_virtual_volume: Volume,
 }
 impl CheckValve {
-    pub fn new() -> Self {
-        Self {
-            current_volume: Volume::new::<gallon>(0.),
-            max_virtual_volume: Volume::new::<gallon>(0.),
-        }
-    }
-
     fn volume_to_equalize_pressures(
         &self,
         upstream_section: &Section,
@@ -1064,11 +1050,6 @@ impl CheckValve {
         }
 
         self.max_virtual_volume = available_volume_from_upstream.max(Volume::new::<gallon>(0.));
-    }
-}
-impl Default for CheckValve {
-    fn default() -> Self {
-        Self::new()
     }
 }
 
