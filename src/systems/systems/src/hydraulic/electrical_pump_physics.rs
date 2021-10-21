@@ -13,7 +13,7 @@ use uom::si::{
 use crate::shared::{pid::PidController, ConsumePower, ElectricalBusType, ElectricalBuses};
 use crate::simulation::{SimulationElement, SimulatorWriter, UpdateContext, Write};
 
-pub struct ElectricalPumpPhysics {
+pub(super) struct ElectricalPumpPhysics {
     active_id: String,
     rpm_id: String,
     powered_by: ElectricalBusType,
