@@ -27,6 +27,7 @@
 !manifest-base.json
 !Cargo.lock
 !Cargo.toml
+!rust-toolchain.toml
 !/.cargo/config.toml
 !jest.config.js
 !/jest/**

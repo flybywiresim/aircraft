@@ -484,7 +484,7 @@ impl Electricity {
     }
 
     pub fn distribute_to(&self, element: &mut impl SimulationElement, _: &UpdateContext) {
-        let mut visitor = ReceivePowerVisitor::new(&self);
+        let mut visitor = ReceivePowerVisitor::new(self);
         element.accept(&mut visitor);
     }
 
@@ -501,7 +501,7 @@ impl Electricity {
         context: &UpdateContext,
         element: &mut impl SimulationElement,
     ) {
-        let mut visitor = ProcessPowerConsumptionReportVisitor::new(context, &self);
+        let mut visitor = ProcessPowerConsumptionReportVisitor::new(context, self);
         element.accept(&mut visitor);
     }
 
@@ -710,7 +710,7 @@ impl Potential {
     }
 
     fn origin_count(&self) -> usize {
-        self.origins.iter().count()
+        self.origins.len()
     }
 
     fn origins(&self) -> impl Iterator<Item = &PotentialOrigin> + '_ {
@@ -869,10 +869,9 @@ impl PotentialCollection {
     }
 
     fn get(&self, identifier: ElectricalElementIdentifier) -> Option<Ref<Potential>> {
-        match self.items.get(&identifier) {
-            Some(potential) => Some(potential.as_ref().borrow()),
-            None => None,
-        }
+        self.items
+            .get(&identifier)
+            .map(|potential| potential.as_ref().borrow())
     }
 
     fn consume_from(&mut self, identifier: ElectricalElementIdentifier, power: Power) {
@@ -1044,13 +1043,12 @@ mod tests {
             test_bed.command(|a| a.powered_by_battery_at(ElectricPotential::new::<volt>(25.)));
             test_bed.run();
 
-            assert_eq!(
-                ReadByName::<SimulationTestBed<ElectricalBusTestAircraft>, bool>::read_by_name(
-                    &mut test_bed,
-                    "ELEC_DC_BAT_BUS_POTENTIAL_NORMAL"
-                ),
-                false
-            );
+            assert!(!ReadByName::<
+                SimulationTestBed<ElectricalBusTestAircraft>,
+                bool,
+            >::read_by_name(
+                &mut test_bed, "ELEC_DC_BAT_BUS_POTENTIAL_NORMAL"
+            ));
         }
 
         #[test]
@@ -1062,13 +1060,12 @@ mod tests {
             test_bed.command(|a| a.powered_by_battery_at(ElectricPotential::new::<volt>(25.01)));
             test_bed.run();
 
-            assert_eq!(
-                ReadByName::<SimulationTestBed<ElectricalBusTestAircraft>, bool>::read_by_name(
-                    &mut test_bed,
-                    "ELEC_DC_BAT_BUS_POTENTIAL_NORMAL"
-                ),
-                true
-            );
+            assert!(ReadByName::<
+                SimulationTestBed<ElectricalBusTestAircraft>,
+                bool,
+            >::read_by_name(
+                &mut test_bed, "ELEC_DC_BAT_BUS_POTENTIAL_NORMAL"
+            ));
         }
 
         #[test]
@@ -1349,22 +1346,22 @@ mod tests {
 
         #[test]
         fn some_potential_is_powered() {
-            assert_eq!(some_potential().is_powered(), true);
+            assert!(some_potential().is_powered());
         }
 
         #[test]
         fn some_potential_is_not_unpowered() {
-            assert_eq!(some_potential().is_unpowered(), false);
+            assert!(!some_potential().is_unpowered());
         }
 
         #[test]
         fn none_potential_is_not_powered() {
-            assert_eq!(none_potential().is_powered(), false);
+            assert!(!none_potential().is_powered());
         }
 
         #[test]
         fn none_potential_is_unpowered() {
-            assert_eq!(none_potential().is_unpowered(), true);
+            assert!(none_potential().is_unpowered());
         }
 
         #[test]

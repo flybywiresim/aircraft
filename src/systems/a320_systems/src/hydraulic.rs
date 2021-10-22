@@ -365,9 +365,9 @@ impl A320Hydraulic {
         }
 
         self.update_with_sim_rate(
-            &context,
-            &overhead_panel,
-            &autobrake_panel,
+            context,
+            overhead_panel,
+            autobrake_panel,
             rat_and_emer_gen_man_on,
             emergency_elec_state,
             lgciu1,
@@ -497,13 +497,13 @@ impl A320Hydraulic {
     fn update_fast_physics(&mut self, context: &UpdateContext) {
         self.forward_cargo_door.update(
             &self.forward_cargo_door_controller,
-            &context,
+            context,
             self.yellow_loop.pressure(),
         );
 
         self.aft_cargo_door.update(
             &self.aft_cargo_door_controller,
-            &context,
+            context,
             self.yellow_loop.pressure(),
         );
 
@@ -528,7 +528,7 @@ impl A320Hydraulic {
             &self.braking_circuit_altn,
             lgciu1,
             lgciu2,
-            &autobrake_panel,
+            autobrake_panel,
         );
 
         // Updating rat stowed pos on all frames in case it's used for graphics
@@ -536,7 +536,7 @@ impl A320Hydraulic {
 
         // Uses external conditions and momentary button: better to check each frame
         self.ram_air_turbine_controller.update(
-            &overhead_panel,
+            overhead_panel,
             rat_and_emer_gen_man_on,
             emergency_elec_state,
         );
@@ -545,7 +545,7 @@ impl A320Hydraulic {
         self.pushback_tug.update();
 
         self.braking_force.update_forces(
-            &context,
+            context,
             &self.braking_circuit_norm,
             &self.braking_circuit_altn,
         );
@@ -1407,8 +1407,8 @@ impl A320HydraulicBrakeComputerUnit {
         self.update_brake_pressure_limitation();
 
         self.autobrake_controller.update(
-            &context,
-            &autobrake_panel,
+            context,
+            autobrake_panel,
             self.allow_autobrake_arming(),
             self.left_brake_pilot_input,
             self.right_brake_pilot_input,
@@ -2099,20 +2099,20 @@ impl A320AutobrakeController {
         lgciu2: &impl LgciuInterface,
     ) {
         self.update_input_conditions(
-            &context,
+            context,
             allow_arming,
             pedal_input_left,
             pedal_input_right,
             lgciu1,
             lgciu2,
         );
-        self.mode = self.determine_mode(&autobrake_panel);
+        self.mode = self.determine_mode(autobrake_panel);
 
         self.deceleration_governor
             .engage_when(self.should_engage_deceleration_governor());
 
         self.target = self.calculate_target();
-        self.deceleration_governor.update(&context, self.target);
+        self.deceleration_governor.update(context, self.target);
     }
 }
 impl SimulationElement for A320AutobrakeController {
