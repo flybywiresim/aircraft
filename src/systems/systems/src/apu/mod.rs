@@ -950,13 +950,10 @@ pub mod tests {
         fn when_apu_master_sw_turned_on_air_intake_flap_opens() {
             let mut test_bed = test_bed_with().master_on().run(Duration::from_secs(20));
 
-            assert_eq!(
-                test_bed
-                    .is_air_intake_flap_fully_open()
-                    .normal_value()
-                    .unwrap(),
-                true
-            )
+            assert!(test_bed
+                .is_air_intake_flap_fully_open()
+                .normal_value()
+                .unwrap())
         }
 
         #[test]
@@ -1536,13 +1533,13 @@ pub mod tests {
                 }
 
                 if n < 55. {
-                    assert_eq!(test_bed.should_close_start_contactors_commanded(), true);
+                    assert!(test_bed.should_close_start_contactors_commanded());
                 } else {
                     // The start contactor state is set before the turbine is updated,
                     // thus this needs another run to update the start contactor after the
                     // turbine reaches n >= 55.
                     test_bed = test_bed.run(Duration::from_millis(0));
-                    assert_eq!(test_bed.should_close_start_contactors_commanded(), false);
+                    assert!(!test_bed.should_close_start_contactors_commanded());
                 }
 
                 if (n - 100.).abs() < f64::EPSILON {
@@ -1554,7 +1551,7 @@ pub mod tests {
         #[test]
         fn should_close_start_contactors_not_commanded_when_shutdown() {
             let test_bed = test_bed().run(Duration::from_secs(1_000));
-            assert_eq!(test_bed.should_close_start_contactors_commanded(), false);
+            assert!(!test_bed.should_close_start_contactors_commanded());
         }
 
         #[test]
@@ -1563,7 +1560,7 @@ pub mod tests {
 
             loop {
                 test_bed = test_bed.run(Duration::from_millis(50));
-                assert_eq!(test_bed.should_close_start_contactors_commanded(), false);
+                assert!(!test_bed.should_close_start_contactors_commanded());
 
                 if test_bed.turbine_is_shutdown() {
                     break;
@@ -1576,7 +1573,7 @@ pub mod tests {
             let test_bed = test_bed_with()
                 .running_apu()
                 .run(Duration::from_secs(1_000));
-            assert_eq!(test_bed.should_close_start_contactors_commanded(), false);
+            assert!(!test_bed.should_close_start_contactors_commanded());
         }
 
         #[test]
@@ -1609,7 +1606,7 @@ pub mod tests {
             while n > 0. {
                 // Assert before running, because otherwise we capture the Starting state which begins when at n = 0
                 // with the master and start switches on.
-                assert_eq!(test_bed.should_close_start_contactors_commanded(), false);
+                assert!(!test_bed.should_close_start_contactors_commanded());
 
                 test_bed = test_bed.run(Duration::from_secs(1));
                 n = test_bed.n().value().get::<percent>();
@@ -1680,14 +1677,11 @@ pub mod tests {
                 .starting_apu()
                 .run_until_n_decreases(Duration::from_millis(50));
 
-            assert_eq!(test_bed.apu_is_available(), false);
-            assert_eq!(
-                test_bed
-                    .has_fuel_low_pressure_fault()
-                    .normal_value()
-                    .unwrap(),
-                true
-            );
+            assert!(!test_bed.apu_is_available());
+            assert!(test_bed
+                .has_fuel_low_pressure_fault()
+                .normal_value()
+                .unwrap());
             assert!(test_bed.master_has_fault());
             assert!(!test_bed.start_is_on());
         }
@@ -1701,14 +1695,11 @@ pub mod tests {
                 .no_fuel_available()
                 .run_until_n_decreases(Duration::from_millis(50));
 
-            assert_eq!(test_bed.apu_is_available(), false);
-            assert_eq!(
-                test_bed
-                    .has_fuel_low_pressure_fault()
-                    .normal_value()
-                    .unwrap(),
-                true
-            );
+            assert!(!test_bed.apu_is_available());
+            assert!(test_bed
+                .has_fuel_low_pressure_fault()
+                .normal_value()
+                .unwrap());
             assert!(test_bed.master_has_fault());
             assert!(!test_bed.start_is_on());
         }
@@ -1725,7 +1716,7 @@ pub mod tests {
                 test_bed = test_bed.run(Duration::from_secs(10));
             }
 
-            assert_eq!(test_bed.apu_is_available(), false);
+            assert!(!test_bed.apu_is_available());
             assert!(test_bed.master_has_fault());
             assert!(!test_bed.start_is_on());
         }
@@ -1819,14 +1810,11 @@ pub mod tests {
                 .no_fuel_available()
                 .run_until_n_decreases(Duration::from_millis(50));
 
-            assert_eq!(test_bed.apu_is_available(), false);
-            assert_eq!(
-                test_bed
-                    .has_fuel_low_pressure_fault()
-                    .normal_value()
-                    .unwrap(),
-                true
-            );
+            assert!(!test_bed.apu_is_available());
+            assert!(test_bed
+                .has_fuel_low_pressure_fault()
+                .normal_value()
+                .unwrap());
             assert!(test_bed.master_has_fault());
             assert!(!test_bed.start_is_on());
         }
@@ -1839,7 +1827,7 @@ pub mod tests {
                 .no_fuel_available()
                 .run_until_n_decreases(Duration::from_millis(50));
 
-            assert_eq!(test_bed.is_auto_shutdown(), true);
+            assert!(test_bed.is_auto_shutdown());
         }
 
         #[test]
@@ -1848,7 +1836,7 @@ pub mod tests {
                 .no_fuel_available()
                 .run(Duration::from_secs(10));
 
-            assert_eq!(test_bed.is_auto_shutdown(), false);
+            assert!(!test_bed.is_auto_shutdown());
         }
 
         #[test]
@@ -1859,7 +1847,7 @@ pub mod tests {
                 .no_fuel_available()
                 .run(Duration::from_secs(10));
 
-            assert_eq!(test_bed.is_inoperable(), true);
+            assert!(test_bed.is_inoperable());
         }
 
         #[test]
@@ -1868,14 +1856,14 @@ pub mod tests {
                 .no_fuel_available()
                 .run(Duration::from_secs(10));
 
-            assert_eq!(test_bed.is_inoperable(), false);
+            assert!(!test_bed.is_inoperable());
         }
 
         #[test]
         fn running_apu_is_inoperable_is_false() {
             let mut test_bed = test_bed_with().running_apu().run(Duration::from_secs(10));
 
-            assert_eq!(test_bed.is_inoperable(), false)
+            assert!(!test_bed.is_inoperable())
         }
 
         #[test]
@@ -1884,7 +1872,7 @@ pub mod tests {
                 .released_apu_fire_pb()
                 .run(Duration::from_secs(1));
 
-            assert_eq!(test_bed.is_inoperable(), true);
+            assert!(test_bed.is_inoperable());
         }
 
         #[test]

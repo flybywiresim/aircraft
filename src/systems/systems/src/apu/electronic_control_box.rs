@@ -118,7 +118,7 @@ impl ElectronicControlBox {
         self.start_motor_is_powered = start_motor.is_powered();
 
         if matches!(
-            <ElectronicControlBox as ControllerSignal<ContactorSignal>>::signal(&self),
+            <ElectronicControlBox as ControllerSignal<ContactorSignal>>::signal(self),
             Some(ContactorSignal::Close)
         ) && !self.start_motor_is_powered
         {

@@ -52,8 +52,8 @@ mod engine_fire_overhead_panel_tests {
     fn after_construction_fire_push_buttons_are_not_released() {
         let test_bed = SimulationTestBed::from(ElementCtorFn(EngineFireOverheadPanel::new));
 
-        assert_eq!(test_bed.query_element(|e| e.is_released(1)), false);
-        assert_eq!(test_bed.query_element(|e| e.is_released(2)), false);
+        assert!(!test_bed.query_element(|e| e.is_released(1)));
+        assert!(!test_bed.query_element(|e| e.is_released(2)));
     }
 
     #[test]
@@ -62,7 +62,7 @@ mod engine_fire_overhead_panel_tests {
         test_bed.write_by_name("FIRE_BUTTON_ENG1", false);
         test_bed.run();
 
-        assert_eq!(test_bed.query_element(|e| e.is_released(1)), false);
+        assert!(!test_bed.query_element(|e| e.is_released(1)));
     }
 
     #[test]
@@ -71,6 +71,6 @@ mod engine_fire_overhead_panel_tests {
         test_bed.write_by_name("FIRE_BUTTON_ENG1", true);
         test_bed.run();
 
-        assert_eq!(test_bed.query_element(|e| e.is_released(1)), true);
+        assert!(test_bed.query_element(|e| e.is_released(1)));
     }
 }
