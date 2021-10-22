@@ -119,7 +119,7 @@ interface AltitudeIndicatorOfftapeProps {
 }
 
 export const AltitudeIndicatorOfftape = memo(({ altitude, MDA, targetAlt, altIsManaged, mode, radioAlt }: AltitudeIndicatorOfftapeProps) => {
-    const roundedAltitude = Math.round(altitude);
+    const roundedAltitude = Number(altitude.toFixed(1));
     const roundedRadioAlt = Math.round(radioAlt);
 
     return (

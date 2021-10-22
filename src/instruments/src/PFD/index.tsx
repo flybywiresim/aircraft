@@ -1,4 +1,4 @@
-import React, { useReducer, useState } from 'react';
+import React, { memo, useReducer, useState } from 'react';
 import { A320Failure, FailuresConsumer } from '@flybywiresim/failures';
 import { useArinc429Var } from '@instruments/common/arinc429';
 import { useInteractionEvent, useUpdate } from '@instruments/common/hooks';
@@ -68,7 +68,7 @@ export const PFD: React.FC = () => {
         const clamped = computedAirspeed.isNormalOperation() ? Math.max(computedAirspeed.value, 30) : NaN;
         const airspeedAcc = (clamped - previousAirspeed) / deltaTime * 1000;
         setPreviousAirspeed(clamped);
-        setClampedAirspeed(Number.isNaN(clamped) ? NaN : Number(clamped.toFixed(1)));
+        setClampedAirspeed(Number.isNaN(clamped) ? NaN : Number(clamped.toFixed(2)));
 
         const rateLimitedAirspeedAcc = airspeedAccRateLimiter.step(airspeedAcc, deltaTime / 1000);
         setfilteredAirspeedAcc(airspeedAccFilter.step(rateLimitedAirspeedAcc, deltaTime / 1000));
@@ -178,12 +178,9 @@ export const PFD: React.FC = () => {
                     decisionHeight={decisionHeight}
                     isAttExcessive={isAttExcessive}
                 />
-                <path
-                    id="Mask1"
-                    className="BackgroundFill"
-                    // eslint-disable-next-line max-len
-                    d="m32.138 101.25c7.4164 13.363 21.492 21.652 36.768 21.652 15.277 0 29.352-8.2886 36.768-21.652v-40.859c-7.4164-13.363-21.492-21.652-36.768-21.652-15.277 0-29.352 8.2886-36.768 21.652zm-32.046 57.498h158.66v-158.75h-158.66z"
-                />
+
+                <Mask1 />
+
                 <HeadingTape heading={heading} />
                 <AltitudeIndicator altitude={altitude} FWCFlightPhase={FlightPhase} />
 
@@ -201,12 +198,8 @@ export const PFD: React.FC = () => {
                     <AirspeedIndicatorFail />
                 )}
 
-                <path
-                    id="Mask2"
-                    className="BackgroundFill"
-                    // eslint-disable-next-line max-len
-                    d="m32.138 145.34h73.536v10.382h-73.536zm0-44.092c7.4164 13.363 21.492 21.652 36.768 21.652 15.277 0 29.352-8.2886 36.768-21.652v-40.859c-7.4164-13.363-21.492-21.652-36.768-21.652-15.277 0-29.352 8.2886-36.768 21.652zm-32.046 57.498h158.66v-158.75h-158.66zm115.14-35.191v-85.473h15.609v85.473zm-113.33 0v-85.473h27.548v85.473z"
-                />
+                <Mask2 />
+
                 <LandingSystem LSButtonPressed={lsButtonPressed} />
 
                 {pitch.isNormalOperation() && roll.isNormalOperation() && (
@@ -261,6 +254,24 @@ export const PFD: React.FC = () => {
         </DisplayUnit>
     );
 };
+
+const Mask1 = memo(() => (
+    <path
+        id="Mask1"
+        className="BackgroundFill"
+        // eslint-disable-next-line max-len
+        d="m32.138 101.25c7.4164 13.363 21.492 21.652 36.768 21.652 15.277 0 29.352-8.2886 36.768-21.652v-40.859c-7.4164-13.363-21.492-21.652-36.768-21.652-15.277 0-29.352 8.2886-36.768 21.652zm-32.046 57.498h158.66v-158.75h-158.66z"
+    />
+));
+
+const Mask2 = memo(() => (
+    <path
+        id="Mask2"
+        className="BackgroundFill"
+        // eslint-disable-next-line max-len
+        d="m32.138 145.34h73.536v10.382h-73.536zm0-44.092c7.4164 13.363 21.492 21.652 36.768 21.652 15.277 0 29.352-8.2886 36.768-21.652v-40.859c-7.4164-13.363-21.492-21.652-36.768-21.652-15.277 0-29.352 8.2886-36.768 21.652zm-32.046 57.498h158.66v-158.75h-158.66zm115.14-35.191v-85.473h15.609v85.473zm-113.33 0v-85.473h27.548v85.473z"
+    />
+));
 
 const isCaptainSide = (displayIndex: number | undefined) => displayIndex === 1;
 

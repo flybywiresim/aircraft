@@ -21,18 +21,20 @@ export const LandingSystem: FC<LSButtonPressedProps> = memo(({ LSButtonPressed }
     return (
         <g id="LSAndDeviationGroup">
             <LandingSystemInfo displayed={LSButtonPressed} />
+
             {LSButtonPressed && (
-                <g id="LSGroup">
+                <>
                     <LocalizerIndicator />
                     <GlideslopeIndicator />
                     <MarkerBeaconIndicator />
-                </g>
+                </>
             )}
+
             {showVDev && (
-                <g id="DeviationGroup">
+                <>
                     <VDevIndicator />
                     <LDevIndicator />
-                </g>
+                </>
             )}
         </g>
     );

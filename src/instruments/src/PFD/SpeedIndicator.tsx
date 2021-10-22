@@ -1,6 +1,6 @@
 import React, { memo, useEffect, useMemo, useState } from 'react';
 import { Arinc429Word } from '@instruments/common/arinc429';
-import { VerticalTape, BarberpoleIndicator } from './PFDUtils';
+import { VerticalTape } from './PFDUtils';
 import { getSimVar } from '../util.js';
 import { Knots } from '../../../../typings';
 
@@ -227,16 +227,19 @@ export const AirspeedIndicator = ({ airspeed, airspeedAcc, FWCFlightPhase, altit
             >
                 {bugs}
             </VerticalTape>
+
             <SpeedTrendArrow airspeedAcc={airspeedAcc} />
-            {FWCFlightPhase <= 4
-            && <V1Offtape airspeed={clampedSpeed} v1={v1} />}
-            {showBars
-                && (
-                    <>
-                        <VLsBar airspeed={fixedAirspeed} VLs={VLs} VAlphaProt={ValphaProtection} />
-                        <VAlphaLimBar airspeed={fixedAirspeed} VAlphalim={fixedValphaMax} />
-                    </>
-                )}
+
+            {FWCFlightPhase <= 4 && (
+                <V1Offtape airspeed={clampedSpeed} v1={v1} />
+            )}
+
+            {showBars && (
+                <>
+                    <VLsBar airspeed={fixedAirspeed} VLs={VLs} VAlphaProt={ValphaProtection} />
+                    <VAlphaLimBar airspeed={fixedAirspeed} VAlphalim={fixedValphaMax} />
+                </>
+            )}
         </g>
     );
 };
@@ -292,15 +295,22 @@ export const AirspeedIndicatorOfftape = memo(({ airspeed, targetSpeed, speedIsMa
     const clampedTargetSpeed = Math.max(Math.min(targetSpeed ?? 0, 660), 30);
 
     return (
-        <g id="SpeedOfftapeGroup">
-            <path id="SpeedTapeOutlineUpper" className="NormalStroke White" d="m1.9058 38.086h21.859" />
-            <path id="SpeedTapeOutlineLower" className="NormalStroke White" d="m1.9058 123.56h21.859" />
+        <>
+            <AirspeedIndicatorOfftapeFixedElements />
+
             <SpeedTarget airspeed={clampedSpeed} targetSpeed={clampedTargetSpeed} isManaged={speedIsManaged} />
-            <path className="Fill Yellow SmallOutline" d="m13.994 80.46v0.7257h6.5478l3.1228 1.1491v-3.0238l-3.1228 1.1491z" />
-            <path className="Fill Yellow SmallOutline" d="m0.092604 81.185v-0.7257h2.0147v0.7257z" />
-        </g>
+        </>
     );
 });
+
+const AirspeedIndicatorOfftapeFixedElements = memo(() => (
+    <>
+        <path id="SpeedTapeOutlineUpper" className="NormalStroke White" d="m1.9058 38.086h21.859" />
+        <path id="SpeedTapeOutlineLower" className="NormalStroke White" d="m1.9058 123.56h21.859" />
+        <path className="Fill Yellow SmallOutline" d="m13.994 80.46v0.7257h6.5478l3.1228 1.1491v-3.0238l-3.1228 1.1491z" />
+        <path className="Fill Yellow SmallOutline" d="m0.092604 81.185v-0.7257h2.0147v0.7257z" />
+    </>
+));
 
 export const AirspeedIndicatorOfftapeFail = () => (
     <>
@@ -403,10 +413,10 @@ const SpeedTrendArrow = ({ airspeedAcc }) => {
         }
 
         return (
-            <g id="SpeedTrendArrow">
+            <>
                 <path id="SpeedTrendArrowBase" className="NormalStroke Yellow" d={`m15.455 80.823v${offset}`} />
                 <path id="SpeedTrendArrowHead" className="NormalStroke Yellow" d={pathString} />
-            </g>
+            </>
         );
     }
     return null;

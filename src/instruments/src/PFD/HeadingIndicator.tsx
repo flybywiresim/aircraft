@@ -49,7 +49,7 @@ export const HeadingTape = memo(({ heading }: HeadingTapeProps) => {
         return null;
     }
 
-    const fixedHeading = Number(heading.value.toFixed(2));
+    const fixedHeading = Number(heading.value.toFixed(3));
 
     return (
         <g>
@@ -155,7 +155,7 @@ interface QFUIndicatorProps {
 }
 
 const QFUIndicator = memo(({ ILSCourse, heading }: QFUIndicatorProps) => {
-    console.log('Root -> HeadingOfftape -> QFUIndicator: render');
+    console.log(`Root -> HeadingOfftape -> QFUIndicator: render (${ILSCourse}, ${heading})`);
 
     if (Number.isNaN(ILSCourse) || !getSimVar('NAV HAS LOCALIZER:3', 'Bool')) {
         return null;

@@ -29,7 +29,7 @@ export const VerticalSpeedIndicator = memo(({ radioAlt, verticalSpeed }: Vertica
         yOffset = sign * -47.37;
     }
 
-    yOffset = Math.round(yOffset);
+    yOffset = Number(yOffset.toFixed(2));
 
     return (
         <g>
@@ -91,10 +91,6 @@ interface VSpeedNeedleProps {
 }
 
 const VSpeedNeedle: FC<VSpeedNeedleProps> = ({ yOffset, isAmber }) => {
-    if (yOffset === 0) {
-        return null;
-    }
-
     const className = `HugeStroke ${isAmber ? 'Amber' : 'Green'}`;
 
     return (

@@ -69,11 +69,12 @@ export const HorizontalTape = memo(({ displayRange, valueSpacing, distanceSpacin
         return graduationElements;
     }, [distanceSpacing, graduationElementFunction, leftmostHeading, numTicks, valueSpacing]);
 
+    const angleToZero = getSmallestAngle(heading, 0);
+
     const bugElements: JSX.Element[] = useMemo(() => {
         const bugElements: JSX.Element[] = [];
 
         bugs?.forEach((currentElement) => {
-            const angleToZero = getSmallestAngle(heading, 0);
             const smallestAngle = getSmallestAngle(currentElement[1], 0);
             let offset = currentElement[1];
             if (Math.abs(angleToZero) < 90 && Math.abs(smallestAngle) < 90) {
@@ -89,9 +90,9 @@ export const HorizontalTape = memo(({ displayRange, valueSpacing, distanceSpacin
         });
 
         return bugElements;
-    }, [bugs, distanceSpacing, heading, valueSpacing]);
+    }, [angleToZero, bugs, distanceSpacing, valueSpacing]);
 
-    const xOffset = Number((-heading * distanceSpacing / valueSpacing).toFixed(1));
+    const xOffset = Number((-heading * distanceSpacing / valueSpacing).toFixed(3));
 
     return (
         <g transform={`translate(${xOffset} ${yOffset})`}>
