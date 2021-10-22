@@ -3,11 +3,11 @@ use super::{
     A320ElectricalOverheadPanel, A320EmergencyElectricalOverheadPanel,
 };
 use std::time::Duration;
+use systems::simulation::InitContext;
 use systems::{
     electrical::{
-        AlternatingCurrentElectricalSystem, Contactor, ElectricalBus,
-        ElectricalElementIdentifierProvider, Electricity, EmergencyGenerator, EngineGenerator,
-        ExternalPowerSource, TransformerRectifier,
+        AlternatingCurrentElectricalSystem, Contactor, ElectricalBus, Electricity,
+        EmergencyGenerator, EngineGenerator, ExternalPowerSource, TransformerRectifier,
     },
     shared::{
         AuxiliaryPowerUnitElectrical, DelayedTrueLogicGate, ElectricalBusType, EngineCorrectedN2,
@@ -37,46 +37,34 @@ pub(super) struct A320AlternatingCurrentElectrical {
     ext_pwr_to_ac_gnd_flt_service_bus_and_tr_2_contactor: Contactor,
 }
 impl A320AlternatingCurrentElectrical {
-    pub fn new(identifier_provider: &mut impl ElectricalElementIdentifierProvider) -> Self {
+    pub fn new(context: &mut InitContext) -> Self {
         A320AlternatingCurrentElectrical {
-            main_power_sources: A320MainPowerSources::new(identifier_provider),
-            ac_ess_feed_contactors: A320AcEssFeedContactors::new(identifier_provider),
-            ac_bus_1: ElectricalBus::new(
-                ElectricalBusType::AlternatingCurrent(1),
-                identifier_provider,
-            ),
-            ac_bus_2: ElectricalBus::new(
-                ElectricalBusType::AlternatingCurrent(2),
-                identifier_provider,
-            ),
-            ac_ess_bus: ElectricalBus::new(
-                ElectricalBusType::AlternatingCurrentEssential,
-                identifier_provider,
-            ),
+            main_power_sources: A320MainPowerSources::new(context),
+            ac_ess_feed_contactors: A320AcEssFeedContactors::new(context),
+            ac_bus_1: ElectricalBus::new(context, ElectricalBusType::AlternatingCurrent(1)),
+            ac_bus_2: ElectricalBus::new(context, ElectricalBusType::AlternatingCurrent(2)),
+            ac_ess_bus: ElectricalBus::new(context, ElectricalBusType::AlternatingCurrentEssential),
             ac_ess_shed_bus: ElectricalBus::new(
+                context,
                 ElectricalBusType::AlternatingCurrentEssentialShed,
-                identifier_provider,
             ),
-            ac_ess_shed_contactor: Contactor::new("8XH", identifier_provider),
-            tr_1: TransformerRectifier::new(1, identifier_provider),
-            tr_2: TransformerRectifier::new(2, identifier_provider),
-            ac_bus_2_to_tr_2_contactor: Contactor::new("14PU", identifier_provider),
-            tr_ess: TransformerRectifier::new(3, identifier_provider),
-            ac_ess_to_tr_ess_contactor: Contactor::new("15XE1", identifier_provider),
-            emergency_gen_contactor: Contactor::new("2XE", identifier_provider),
-            static_inv_to_ac_ess_bus_contactor: Contactor::new("15XE2", identifier_provider),
+            ac_ess_shed_contactor: Contactor::new(context, "8XH"),
+            tr_1: TransformerRectifier::new(context, 1),
+            tr_2: TransformerRectifier::new(context, 2),
+            ac_bus_2_to_tr_2_contactor: Contactor::new(context, "14PU"),
+            tr_ess: TransformerRectifier::new(context, 3),
+            ac_ess_to_tr_ess_contactor: Contactor::new(context, "15XE1"),
+            emergency_gen_contactor: Contactor::new(context, "2XE"),
+            static_inv_to_ac_ess_bus_contactor: Contactor::new(context, "15XE2"),
             ac_stat_inv_bus: ElectricalBus::new(
+                context,
                 ElectricalBusType::AlternatingCurrentStaticInverter,
-                identifier_provider,
             ),
             ac_gnd_flt_service_bus: ElectricalBus::new(
+                context,
                 ElectricalBusType::AlternatingCurrentGndFltService,
-                identifier_provider,
             ),
-            ext_pwr_to_ac_gnd_flt_service_bus_and_tr_2_contactor: Contactor::new(
-                "12XN",
-                identifier_provider,
-            ),
+            ext_pwr_to_ac_gnd_flt_service_bus_and_tr_2_contactor: Contactor::new(context, "12XN"),
         }
     }
 
@@ -358,18 +346,18 @@ struct A320MainPowerSources {
     ext_pwr_contactor: Contactor,
 }
 impl A320MainPowerSources {
-    fn new(identifier_provider: &mut impl ElectricalElementIdentifierProvider) -> Self {
+    fn new(context: &mut InitContext) -> Self {
         A320MainPowerSources {
-            engine_1_gen: EngineGenerator::new(1, identifier_provider),
-            engine_2_gen: EngineGenerator::new(2, identifier_provider),
+            engine_1_gen: EngineGenerator::new(context, 1),
+            engine_2_gen: EngineGenerator::new(context, 2),
             engine_generator_contactors: [
-                Contactor::new("9XU1", identifier_provider),
-                Contactor::new("9XU2", identifier_provider),
+                Contactor::new(context, "9XU1"),
+                Contactor::new(context, "9XU2"),
             ],
-            bus_tie_1_contactor: Contactor::new("11XU1", identifier_provider),
-            bus_tie_2_contactor: Contactor::new("11XU2", identifier_provider),
-            apu_gen_contactor: Contactor::new("3XS", identifier_provider),
-            ext_pwr_contactor: Contactor::new("3XG", identifier_provider),
+            bus_tie_1_contactor: Contactor::new(context, "11XU1"),
+            bus_tie_2_contactor: Contactor::new(context, "11XU2"),
+            apu_gen_contactor: Contactor::new(context, "3XS"),
+            ext_pwr_contactor: Contactor::new(context, "3XG"),
         }
     }
 
@@ -491,10 +479,10 @@ pub(super) struct A320AcEssFeedContactors {
 impl A320AcEssFeedContactors {
     pub const AC_ESS_FEED_TO_AC_BUS_2_DELAY_IN_SECONDS: Duration = Duration::from_secs(3);
 
-    fn new(identifier_provider: &mut impl ElectricalElementIdentifierProvider) -> Self {
+    fn new(context: &mut InitContext) -> Self {
         A320AcEssFeedContactors {
-            ac_ess_feed_contactor_1: Contactor::new("3XC1", identifier_provider),
-            ac_ess_feed_contactor_2: Contactor::new("3XC2", identifier_provider),
+            ac_ess_feed_contactor_1: Contactor::new(context, "3XC1"),
+            ac_ess_feed_contactor_2: Contactor::new(context, "3XC2"),
             ac_ess_feed_contactor_delay_logic_gate: DelayedTrueLogicGate::new(
                 A320AcEssFeedContactors::AC_ESS_FEED_TO_AC_BUS_2_DELAY_IN_SECONDS,
             ),

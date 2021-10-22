@@ -6,13 +6,15 @@ use crate::{
 };
 
 use super::Engine;
+use crate::simulation::{InitContext, VariableIdentifier};
+
 pub struct LeapEngine {
-    corrected_n1_id: String,
+    corrected_n1_id: VariableIdentifier,
     corrected_n1: Ratio,
-    corrected_n2_id: String,
+    corrected_n2_id: VariableIdentifier,
     corrected_n2: Ratio,
 
-    uncorrected_n2_id: String,
+    uncorrected_n2_id: VariableIdentifier,
     uncorrected_n2: Ratio,
 
     n2_speed: AngularVelocity,
@@ -29,13 +31,13 @@ impl LeapEngine {
 
     const MIN_IDLE_N2_UNCORRECTED_THRESHOLD_PERCENT: f64 = 55.;
 
-    pub fn new(number: usize) -> LeapEngine {
+    pub fn new(context: &mut InitContext, number: usize) -> LeapEngine {
         LeapEngine {
-            corrected_n1_id: format!("TURB ENG CORRECTED N1:{}", number),
+            corrected_n1_id: context.get_identifier(format!("TURB ENG CORRECTED N1:{}", number)),
             corrected_n1: Ratio::new::<percent>(0.),
-            corrected_n2_id: format!("TURB ENG CORRECTED N2:{}", number),
+            corrected_n2_id: context.get_identifier(format!("TURB ENG CORRECTED N2:{}", number)),
             corrected_n2: Ratio::new::<percent>(0.),
-            uncorrected_n2_id: format!("ENGINE_N2:{}", number),
+            uncorrected_n2_id: context.get_identifier(format!("ENGINE_N2:{}", number)),
             uncorrected_n2: Ratio::new::<percent>(0.),
             n2_speed: AngularVelocity::new::<revolution_per_minute>(0.),
             hydraulic_pump_output_speed: AngularVelocity::new::<revolution_per_minute>(0.),
