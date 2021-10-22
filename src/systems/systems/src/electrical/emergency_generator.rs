@@ -1,15 +1,17 @@
 use std::time::Duration;
 
+use uom::si::{electric_potential::volt, f64::*, frequency::hertz};
+
+use crate::{
+    shared::{PowerConsumptionReport, RamAirTurbineHydraulicCircuitPressurised},
+    simulation::{InitContext, SimulationElement, SimulatorWriter, UpdateContext},
+};
+
 use super::{
     ElectricalElement, ElectricalElementIdentifier, ElectricalElementIdentifierProvider,
     ElectricalStateWriter, ElectricitySource, Potential, PotentialOrigin, ProvideFrequency,
     ProvidePotential,
 };
-use crate::{
-    shared::{PowerConsumptionReport, RamAirTurbineHydraulicCircuitPressurised},
-    simulation::{SimulationElement, SimulatorWriter, UpdateContext},
-};
-use uom::si::{electric_potential::volt, f64::*, frequency::hertz};
 
 pub struct EmergencyGenerator {
     identifier: ElectricalElementIdentifier,
@@ -21,12 +23,10 @@ pub struct EmergencyGenerator {
     starting_or_started: bool,
 }
 impl EmergencyGenerator {
-    pub fn new(
-        identifier_provider: &mut impl ElectricalElementIdentifierProvider,
-    ) -> EmergencyGenerator {
+    pub fn new(context: &mut InitContext) -> EmergencyGenerator {
         EmergencyGenerator {
-            identifier: identifier_provider.next(),
-            writer: ElectricalStateWriter::new("EMER_GEN"),
+            identifier: context.next_electrical_identifier(),
+            writer: ElectricalStateWriter::new(context, "EMER_GEN"),
             supplying: false,
             output_frequency: Frequency::new::<hertz>(0.),
             output_potential: ElectricPotential::new::<volt>(0.),
@@ -122,11 +122,13 @@ impl SimulationElement for EmergencyGenerator {
 #[cfg(test)]
 mod emergency_generator_tests {
     use super::*;
+    use crate::simulation::test::ReadByName;
+    use crate::simulation::InitContext;
     use crate::{
         electrical::Electricity,
         simulation::{
             test::{SimulationTestBed, TestBed},
-            Aircraft, Read, SimulationElementVisitor, UpdateContext,
+            Aircraft, SimulationElementVisitor, UpdateContext,
         },
     };
 
@@ -136,16 +138,16 @@ mod emergency_generator_tests {
     impl EmergencyGeneratorTestBed {
         fn new() -> Self {
             Self {
-                test_bed: SimulationTestBed::new(|electricity| TestAircraft::new(electricity)),
+                test_bed: SimulationTestBed::new(TestAircraft::new),
             }
         }
 
         fn frequency_is_normal(&mut self) -> bool {
-            self.read("ELEC_EMER_GEN_FREQUENCY_NORMAL")
+            self.read_by_name("ELEC_EMER_GEN_FREQUENCY_NORMAL")
         }
 
         fn potential_is_normal(&mut self) -> bool {
-            self.read("ELEC_EMER_GEN_POTENTIAL_NORMAL")
+            self.read_by_name("ELEC_EMER_GEN_POTENTIAL_NORMAL")
         }
 
         fn emer_gen_is_powered(&self) -> bool {
@@ -190,9 +192,9 @@ mod emergency_generator_tests {
         generator_output_within_normal_parameters_before_processing_power_consumption_report: bool,
     }
     impl TestAircraft {
-        fn new(electricity: &mut Electricity) -> Self {
+        fn new(context: &mut InitContext) -> Self {
             Self {
-                emer_gen: EmergencyGenerator::new(electricity),
+                emer_gen: EmergencyGenerator::new(context),
                 hydraulic: TestHydraulicSystem::new(),
                 generator_output_within_normal_parameters_before_processing_power_consumption_report: false,
             }
@@ -362,12 +364,12 @@ mod emergency_generator_tests {
 
     #[test]
     fn writes_its_state() {
-        let mut test_bed = SimulationTestBed::new(|electricity| TestAircraft::new(electricity));
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
         test_bed.run();
 
-        assert!(test_bed.contains_key("ELEC_EMER_GEN_POTENTIAL"));
-        assert!(test_bed.contains_key("ELEC_EMER_GEN_POTENTIAL_NORMAL"));
-        assert!(test_bed.contains_key("ELEC_EMER_GEN_FREQUENCY"));
-        assert!(test_bed.contains_key("ELEC_EMER_GEN_FREQUENCY_NORMAL"));
+        assert!(test_bed.contains_variable_with_name("ELEC_EMER_GEN_POTENTIAL"));
+        assert!(test_bed.contains_variable_with_name("ELEC_EMER_GEN_POTENTIAL_NORMAL"));
+        assert!(test_bed.contains_variable_with_name("ELEC_EMER_GEN_FREQUENCY"));
+        assert!(test_bed.contains_variable_with_name("ELEC_EMER_GEN_FREQUENCY_NORMAL"));
     }
 }

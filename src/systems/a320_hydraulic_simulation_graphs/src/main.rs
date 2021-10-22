@@ -10,14 +10,17 @@ use systems::electrical::Electricity;
 pub use systems::hydraulic::*;
 use systems::shared::PotentialOrigin;
 use systems::simulation::SimulationElement;
-use systems::{shared::ElectricalBusType, simulation::UpdateContext};
+use systems::{
+    electrical::Electricity,
+    shared::ElectricalBusType,
+    simulation::{test::TestVariableRegistry, InitContext, UpdateContext},
+};
 use uom::si::{
     acceleration::foot_per_second_squared, angle::radian, angular_velocity::revolution_per_minute,
     electric_current::ampere, f64::*, length::foot, pressure::psi, ratio::percent,
     thermodynamic_temperature::degree_celsius, velocity::knot, volume::gallon,
 };
 
-extern crate rustplotlib;
 use rustplotlib::Figure;
 
 struct TestHydraulicCircuitController {
@@ -231,15 +234,19 @@ fn hyd_circuit_basic(path: &str) {
     let mut hyd_circuit_history = History::new(hyd_circuit_names);
     let mut reservoir_history = History::new(reservoir_names);
 
-    let mut edp = EngineDrivenPump::new("EDP");
+    let mut electricity = Electricity::new();
+    let mut registry: TestVariableRegistry = Default::default();
+    let mut init_context = InitContext::new(&mut electricity, &mut registry);
+
+    let mut edp = EngineDrivenPump::new(&mut init_context, "EDP");
     let mut edp_controller = TestPumpController::commanding_depressurise();
 
-    let mut epump = electric_pump();
+    let mut epump = electric_pump(&mut init_context);
     let mut epump_controller = TestPumpController::commanding_depressurise();
 
-    let mut hydraulic_loop = hydraulic_loop("YELLOW", 1);
+    let mut hydraulic_loop = hydraulic_loop(&mut init_context, "YELLOW", 1);
 
-    let context = context(Duration::from_millis(50));
+    let context = context(&mut init_context,Duration::from_millis(50));
 
     hyd_circuit_history.init(
         0.0,
@@ -357,9 +364,9 @@ fn test_electricity(bus_id: ElectricalBusType, is_powered: bool) -> Electricity 
     electricity
 }
 
-fn hydraulic_loop(loop_color: &str, main_pump_number: usize) -> HydraulicCircuit {
+fn hydraulic_loop(context: &mut InitContext,loop_color: &str, main_pump_number: usize) -> HydraulicCircuit {
     match loop_color {
-        "GREEN" => HydraulicCircuit::new(
+        "GREEN" => HydraulicCircuit::new(context,
             loop_color,
             main_pump_number,
             Ratio::new::<percent>(100.),
@@ -373,6 +380,7 @@ fn hydraulic_loop(loop_color: &str, main_pump_number: usize) -> HydraulicCircuit
             false,
         ),
         "YELLOW" => HydraulicCircuit::new(
+            context,
             loop_color,
             main_pump_number,
             Ratio::new::<percent>(100.),
@@ -386,6 +394,7 @@ fn hydraulic_loop(loop_color: &str, main_pump_number: usize) -> HydraulicCircuit
             false,
         ),
         _ => HydraulicCircuit::new(
+            context,
             loop_color,
             main_pump_number,
             Ratio::new::<percent>(100.),
@@ -401,20 +410,20 @@ fn hydraulic_loop(loop_color: &str, main_pump_number: usize) -> HydraulicCircuit
     }
 }
 
-fn electric_pump() -> ElectricPump {
-    ElectricPump::new(
+fn electric_pump(context: &mut InitContext) -> ElectricPump {
+    ElectricPump::new(context,
         "DEFAULT",
         ElectricalBusType::AlternatingCurrentGndFltService,
         ElectricCurrent::new::<ampere>(45.),
     )
 }
 
-fn _engine_driven_pump() -> EngineDrivenPump {
-    EngineDrivenPump::new("DEFAULT")
+fn _engine_driven_pump(context: &mut InitContext) -> EngineDrivenPump {
+    EngineDrivenPump::new(context,"DEFAULT")
 }
 
-fn context(delta_time: Duration) -> UpdateContext {
-    UpdateContext::new(
+fn context(context: &mut InitContext,delta_time: Duration) -> UpdateContext {
+    UpdateContext::new(context,
         delta_time,
         Velocity::new::<knot>(250.),
         Length::new::<foot>(5000.),

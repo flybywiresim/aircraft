@@ -2,10 +2,9 @@ use self::linear_actuator::Actuator;
 use crate::hydraulic::electrical_pump_physics::ElectricalPumpPhysics;
 use crate::shared::{interpolation, ElectricalBusType, ElectricalBuses};
 use crate::simulation::{
-    SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext, Write,
+    InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
+    VariableIdentifier, Write,
 };
-
-use std::string::String;
 use std::time::Duration;
 use uom::si::angular_velocity::radian_per_second;
 use uom::si::{
@@ -103,6 +102,11 @@ pub trait PowerTransferUnitController {
 }
 
 pub struct PowerTransferUnit {
+    active_l2r_id: VariableIdentifier,
+    active_r2l_id: VariableIdentifier,
+    motor_flow_id: VariableIdentifier,
+    valve_opened_id: VariableIdentifier,
+
     is_enabled: bool,
     is_active_right: bool,
     is_active_left: bool,
@@ -119,8 +123,13 @@ impl PowerTransferUnit {
     const EFFICIENCY_LEFT_TO_RIGHT: f64 = 0.8;
     const EFFICIENCY_RIGHT_TO_LEFT: f64 = 0.8;
 
-    pub fn new() -> Self {
+    pub fn new(context: &mut InitContext) -> Self {
         Self {
+            active_l2r_id: context.get_identifier("HYD_PTU_ACTIVE_L2R".to_owned()),
+            active_r2l_id: context.get_identifier("HYD_PTU_ACTIVE_R2L".to_owned()),
+            motor_flow_id: context.get_identifier("HYD_PTU_MOTOR_FLOW".to_owned()),
+            valve_opened_id: context.get_identifier("HYD_PTU_VALVE_OPENED".to_owned()),
+
             is_enabled: false,
             is_active_right: false,
             is_active_left: false,
@@ -207,15 +216,10 @@ impl PowerTransferUnit {
 }
 impl SimulationElement for PowerTransferUnit {
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write("HYD_PTU_ACTIVE_L2R", self.is_active_left);
-        writer.write("HYD_PTU_ACTIVE_R2L", self.is_active_right);
-        writer.write("HYD_PTU_MOTOR_FLOW", self.flow());
-        writer.write("HYD_PTU_VALVE_OPENED", self.is_enabled());
-    }
-}
-impl Default for PowerTransferUnit {
-    fn default() -> Self {
-        Self::new()
+        writer.write(&self.active_l2r_id, self.is_active_left);
+        writer.write(&self.active_r2l_id, self.is_active_right);
+        writer.write(&self.motor_flow_id, self.flow());
+        writer.write(&self.valve_opened_id, self.is_enabled());
     }
 }
 
@@ -371,6 +375,7 @@ impl HydraulicCircuit {
         ElectricalBusType::DirectCurrentEssential;
 
     pub fn new(
+        context: &mut InitContext,
         id: &str,
 
         number_of_pump_sections: usize,
@@ -390,6 +395,7 @@ impl HydraulicCircuit {
 
         for pump_id in 0..number_of_pump_sections {
             pump_sections.push(Section::new(
+                context,
                 id,
                 "PUMP",
                 pump_id,
@@ -402,6 +408,7 @@ impl HydraulicCircuit {
                 pump_pressure_switch_lo_hyst,
                 pump_pressure_switch_hi_hyst,
                 Some(FireValve::new(
+                    context,
                     id,
                     pump_id,
                     Self::DEFAULT_FIRE_VALVE_POWERING_BUS,
@@ -420,6 +427,7 @@ impl HydraulicCircuit {
         Self {
             pump_sections,
             system_section: Section::new(
+                context,
                 id,
                 "SYSTEM",
                 0,
@@ -441,6 +449,7 @@ impl HydraulicCircuit {
             pump_to_system_check_valves,
             fluid: Fluid::new(Pressure::new::<pascal>(Self::FLUID_BULK_MODULUS_PASCAL)),
             reservoir: Reservoir::new(
+                context,
                 id,
                 Volume::new::<gallon>(Self::RESERVOIR_MAX_VOLUME_GAL),
                 reservoir_volume,
@@ -655,7 +664,7 @@ impl SimulationElement for HydraulicCircuit {
 /// This is an hydraulic section with its own volume of fluid and pressure. It can be connected to another section
 /// through a checkvalve
 pub struct Section {
-    pressure_id: String,
+    pressure_id: VariableIdentifier,
 
     section_id_number: usize,
 
@@ -686,6 +695,7 @@ pub struct Section {
 impl Section {
     #[allow(clippy::too_many_arguments)]
     pub fn new(
+        context: &mut InitContext,
         loop_id: &str,
         section_id: &str,
         pump_id: usize,
@@ -702,7 +712,9 @@ impl Section {
         let section_name: String = format!("HYD_{}_{}{}_SECTION", loop_id, section_id, pump_id);
 
         Self {
-            pressure_id: format!("{}_PRESSURE", section_name),
+            pressure_id: context
+                .get_identifier(format!("{}_PRESSURE", section_name))
+                .to_owned(),
             section_id_number: pump_id,
             static_leak_at_max_press,
             current_volume,
@@ -958,15 +970,25 @@ impl HydraulicSectionState for Section {
 }
 
 pub struct FireValve {
-    opened_id: String,
+    opened_id: VariableIdentifier,
     is_open: bool,
     bus_type: ElectricalBusType,
     is_powered: bool,
 }
 impl FireValve {
-    fn new(hyd_loop_id: &str, pump_id: usize, bus_type: ElectricalBusType) -> Self {
+    fn new(
+        context: &mut InitContext,
+        hyd_loop_id: &str,
+        pump_id: usize,
+        bus_type: ElectricalBusType,
+    ) -> Self {
         Self {
-            opened_id: format!("HYD_{}_PUMP{}_FIRE_VALVE_OPENED", hyd_loop_id, pump_id),
+            opened_id: context
+                .get_identifier(format!(
+                    "HYD_{}_PUMP{}_FIRE_VALVE_OPENED",
+                    hyd_loop_id, pump_id
+                ))
+                .to_owned(),
             is_open: true,
             bus_type,
             is_powered: false,
@@ -1054,7 +1076,7 @@ impl CheckValve {
 }
 
 pub struct Reservoir {
-    level_id: String,
+    level_id: VariableIdentifier,
     max_capacity: Volume,
     current_level: Volume,
     min_usable: Volume,
@@ -1062,9 +1084,15 @@ pub struct Reservoir {
 impl Reservoir {
     const MIN_USABLE_VOLUME: f64 = 0.2; // Gallons
 
-    pub fn new(hyd_loop_id: &str, max_capacity: Volume, current_level: Volume) -> Self {
+    pub fn new(
+        context: &mut InitContext,
+        hyd_loop_id: &str,
+        max_capacity: Volume,
+        current_level: Volume,
+    ) -> Self {
         Self {
-            level_id: format!("HYD_{}_RESERVOIR_LEVEL", hyd_loop_id),
+            level_id: context
+                .get_identifier(format!("HYD_{}_RESERVOIR_LEVEL", hyd_loop_id).to_owned()),
             max_capacity,
             current_level,
             min_usable: Volume::new::<gallon>(Self::MIN_USABLE_VOLUME),
@@ -1270,7 +1298,12 @@ impl ElectricPump {
     // 1 == No filtering
     const DISPLACEMENT_DYNAMICS: f64 = 0.4;
 
-    pub fn new(id: &str, bus_type: ElectricalBusType, max_current: ElectricCurrent) -> Self {
+    pub fn new(
+        context: &mut InitContext,
+        id: &str,
+        bus_type: ElectricalBusType,
+        max_current: ElectricCurrent,
+    ) -> Self {
         Self {
             pump: Pump::new(
                 Self::DISPLACEMENT_BREAKPTS,
@@ -1278,6 +1311,7 @@ impl ElectricPump {
                 Self::DISPLACEMENT_DYNAMICS,
             ),
             pump_physics: ElectricalPumpPhysics::new(
+                context,
                 id,
                 bus_type,
                 max_current,
@@ -1343,7 +1377,7 @@ impl SimulationElement for ElectricPump {
 }
 
 pub struct EngineDrivenPump {
-    active_id: String,
+    active_id: VariableIdentifier,
 
     is_active: bool,
     speed: AngularVelocity,
@@ -1358,9 +1392,9 @@ impl EngineDrivenPump {
     // 0.1 == 90% filtering on max displacement transient
     const DISPLACEMENT_DYNAMICS: f64 = 0.1;
 
-    pub fn new(id: &str) -> Self {
+    pub fn new(context: &mut InitContext, id: &str) -> Self {
         Self {
-            active_id: format!("HYD_{}_EDPUMP_ACTIVE", id),
+            active_id: context.get_identifier(format!("HYD_{}_EDPUMP_ACTIVE", id)),
             is_active: false,
             speed: AngularVelocity::new::<revolution_per_minute>(0.),
             pump: Pump::new(
@@ -1420,6 +1454,8 @@ impl SimulationElement for EngineDrivenPump {
 }
 
 struct WindTurbine {
+    rpm_id: VariableIdentifier,
+
     position: f64,
     speed: AngularVelocity,
     acceleration: f64,
@@ -1435,8 +1471,10 @@ impl WindTurbine {
     ];
     const PROP_ALPHA_MAP: [f64; 9] = [45., 45., 45., 45., 35., 25., 1., 1., 1.];
 
-    fn new() -> Self {
+    fn new(context: &mut InitContext) -> Self {
         Self {
+            rpm_id: context.get_identifier("HYD_RAT_RPM".to_owned()),
+
             position: Self::STOWED_ANGLE,
             speed: AngularVelocity::new::<revolution_per_minute>(0.),
             acceleration: 0.,
@@ -1504,12 +1542,7 @@ impl WindTurbine {
 }
 impl SimulationElement for WindTurbine {
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write("HYD_RAT_RPM", self.speed().get::<revolution_per_minute>());
-    }
-}
-impl Default for WindTurbine {
-    fn default() -> Self {
-        Self::new()
+        writer.write(&self.rpm_id, self.speed().get::<revolution_per_minute>());
     }
 }
 
@@ -1535,6 +1568,8 @@ pub trait RamAirTurbineController {
 }
 
 pub struct RamAirTurbine {
+    stow_position_id: VariableIdentifier,
+
     deployment_commanded: bool,
     pump: Pump,
     pump_controller: AlwaysPressurisePumpController,
@@ -1554,7 +1589,7 @@ impl RamAirTurbine {
     // Speed to go from 0 to 1 stow position per sec. 1 means full deploying in 1s
     const STOWING_SPEED: f64 = 1.;
 
-    pub fn new() -> Self {
+    pub fn new(context: &mut InitContext) -> Self {
         let mut max_disp = 0.;
         for v in Self::DISPLACEMENT_MAP.iter() {
             if v > &max_disp {
@@ -1563,6 +1598,8 @@ impl RamAirTurbine {
         }
 
         Self {
+            stow_position_id: context.get_identifier("HYD_RAT_STOW_POSITION".to_owned()),
+
             deployment_commanded: false,
             pump: Pump::new(
                 Self::DISPLACEMENT_BREAKPTS,
@@ -1570,7 +1607,7 @@ impl RamAirTurbine {
                 Self::DISPLACEMENT_DYNAMICS,
             ),
             pump_controller: AlwaysPressurisePumpController::new(),
-            wind_turbine: WindTurbine::new(),
+            wind_turbine: WindTurbine::new(context),
             position: 0.,
             max_displacement: max_disp,
         }
@@ -1655,18 +1692,16 @@ impl SimulationElement for RamAirTurbine {
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write("HYD_RAT_STOW_POSITION", self.position);
-    }
-}
-impl Default for RamAirTurbine {
-    fn default() -> Self {
-        Self::new()
+        writer.write(&self.stow_position_id, self.position);
     }
 }
 
 #[cfg(test)]
 mod tests {
+    use crate::electrical::Electricity;
+    use crate::simulation::test::TestVariableRegistry;
     use crate::simulation::test::{SimulationTestBed, TestBed};
+    use crate::simulation::InitContext;
 
     use uom::si::{f64::*, pressure::psi, ratio::percent, volume::gallon};
 
@@ -1674,7 +1709,12 @@ mod tests {
 
     #[test]
     fn reservoir_gives_desired_flow() {
+        let mut electricity = Electricity::new();
+        let mut registry: TestVariableRegistry = Default::default();
+        let mut init_context = InitContext::new(&mut electricity, &mut registry);
+
         let mut reservoir = Reservoir::new(
+            &mut init_context,
             "GREEN",
             Volume::new::<gallon>(5.),
             Volume::new::<gallon>(5.),
@@ -1689,7 +1729,12 @@ mod tests {
 
     #[test]
     fn reservoir_gives_only_volume_available() {
+        let mut electricity = Electricity::new();
+        let mut registry: TestVariableRegistry = Default::default();
+        let mut init_context = InitContext::new(&mut electricity, &mut registry);
+
         let mut reservoir = Reservoir::new(
+            &mut init_context,
             "GREEN",
             Volume::new::<gallon>(5.),
             Volume::new::<gallon>(5.),
@@ -1701,32 +1746,47 @@ mod tests {
 
     #[test]
     fn section_writes_its_state() {
-        let mut test_bed = SimulationTestBed::from(section("BROWN", "PUMP", 2));
+        let mut electricity = Electricity::new();
+        let mut registry: TestVariableRegistry = Default::default();
+        let mut init_context = InitContext::new(&mut electricity, &mut registry);
+
+        let mut test_bed = SimulationTestBed::from(section(&mut init_context, "BROWN", "PUMP", 2));
 
         test_bed.run();
 
-        assert!(test_bed.contains_key("HYD_BROWN_PUMP2_SECTION_PRESSURE"));
-        assert!(test_bed.contains_key("HYD_BROWN_PUMP2_FIRE_VALVE_OPENED"));
+        assert!(test_bed.contains_variable_with_name("HYD_BROWN_PUMP2_SECTION_PRESSURE"));
+        assert!(test_bed.contains_variable_with_name("HYD_BROWN_PUMP2_FIRE_VALVE_OPENED"));
     }
 
     #[test]
     fn hyd_circuit_writes_its_state() {
-        let mut test_bed = SimulationTestBed::from(hydraulic_circuit("BROWN", 2));
+        let mut electricity = Electricity::new();
+        let mut registry: TestVariableRegistry = Default::default();
+        let mut init_context = InitContext::new(&mut electricity, &mut registry);
+
+        let mut test_bed =
+            SimulationTestBed::from(hydraulic_circuit(&mut init_context, "BROWN", 2));
 
         test_bed.run();
 
-        assert!(test_bed.contains_key("HYD_BROWN_PUMP0_SECTION_PRESSURE"));
-        assert!(test_bed.contains_key("HYD_BROWN_PUMP0_FIRE_VALVE_OPENED"));
+        assert!(test_bed.contains_variable_with_name("HYD_BROWN_PUMP0_SECTION_PRESSURE"));
+        assert!(test_bed.contains_variable_with_name("HYD_BROWN_PUMP0_FIRE_VALVE_OPENED"));
 
-        assert!(test_bed.contains_key("HYD_BROWN_PUMP1_SECTION_PRESSURE"));
-        assert!(test_bed.contains_key("HYD_BROWN_PUMP1_FIRE_VALVE_OPENED"));
+        assert!(test_bed.contains_variable_with_name("HYD_BROWN_PUMP1_SECTION_PRESSURE"));
+        assert!(test_bed.contains_variable_with_name("HYD_BROWN_PUMP1_FIRE_VALVE_OPENED"));
 
-        assert!(!test_bed.contains_key("HYD_BROWN_PUMP2_SECTION_PRESSURE"));
-        assert!(!test_bed.contains_key("HYD_BROWN_PUMP2_FIRE_VALVE_OPENED"));
+        assert!(!test_bed.contains_variable_with_name("HYD_BROWN_PUMP2_SECTION_PRESSURE"));
+        assert!(!test_bed.contains_variable_with_name("HYD_BROWN_PUMP2_FIRE_VALVE_OPENED"));
     }
 
-    fn section(loop_id: &str, section_id: &str, pump_id: usize) -> Section {
+    fn section(
+        context: &mut InitContext,
+        loop_id: &str,
+        section_id: &str,
+        pump_id: usize,
+    ) -> Section {
         Section::new(
+            context,
             loop_id,
             section_id,
             pump_id,
@@ -1739,6 +1799,7 @@ mod tests {
             Pressure::new::<psi>(1400.),
             Pressure::new::<psi>(2000.),
             Some(FireValve::new(
+                context,
                 loop_id,
                 pump_id,
                 HydraulicCircuit::DEFAULT_FIRE_VALVE_POWERING_BUS,
@@ -1748,9 +1809,14 @@ mod tests {
         )
     }
 
-    fn hydraulic_circuit(loop_color: &str, main_pump_number: usize) -> HydraulicCircuit {
+    fn hydraulic_circuit(
+        context: &mut InitContext,
+        loop_color: &str,
+        main_pump_number: usize,
+    ) -> HydraulicCircuit {
         match loop_color {
             "GREEN" => HydraulicCircuit::new(
+                context,
                 loop_color,
                 main_pump_number,
                 Ratio::new::<percent>(100.),
@@ -1764,6 +1830,7 @@ mod tests {
                 false,
             ),
             "YELLOW" => HydraulicCircuit::new(
+                context,
                 loop_color,
                 main_pump_number,
                 Ratio::new::<percent>(100.),
@@ -1777,6 +1844,7 @@ mod tests {
                 false,
             ),
             _ => HydraulicCircuit::new(
+                context,
                 loop_color,
                 main_pump_number,
                 Ratio::new::<percent>(100.),
@@ -1792,17 +1860,23 @@ mod tests {
         }
     }
 
-    fn engine_driven_pump() -> EngineDrivenPump {
-        EngineDrivenPump::new("DEFAULT")
+    fn engine_driven_pump(context: &mut InitContext) -> EngineDrivenPump {
+        EngineDrivenPump::new(context, "DEFAULT")
     }
 
     #[cfg(test)]
     mod edp_tests {
         use super::*;
 
+        use crate::simulation::test::{ElementCtorFn, SimulationTestBed, TestBed};
+        use crate::simulation::Aircraft;
+        use uom::si::time::second;
+
         #[test]
         fn starts_inactive() {
-            assert!(!engine_driven_pump().is_active);
+            let test_bed = SimulationTestBed::from(ElementCtorFn(engine_driven_pump));
+
+            assert!(test_bed.query_element(|e| !e.is_active));
         }
     }
 }

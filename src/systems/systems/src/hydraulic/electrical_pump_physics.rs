@@ -12,11 +12,13 @@ use uom::si::{
 
 use crate::hydraulic::HydraulicSectionState;
 use crate::shared::{pid::PidController, ConsumePower, ElectricalBusType, ElectricalBuses};
-use crate::simulation::{SimulationElement, SimulatorWriter, UpdateContext, Write};
+use crate::simulation::{
+    InitContext, SimulationElement, SimulatorWriter, UpdateContext, VariableIdentifier, Write,
+};
 
 pub(super) struct ElectricalPumpPhysics {
-    active_id: String,
-    rpm_id: String,
+    active_id: VariableIdentifier,
+    rpm_id: VariableIdentifier,
     powered_by: ElectricalBusType,
     is_powered: bool,
     available_potential: ElectricPotential,
@@ -48,14 +50,15 @@ impl ElectricalPumpPhysics {
     const DEFAULT_I_GAIN: f64 = 0.4;
 
     pub fn new(
+        context: &mut InitContext,
         id: &str,
         bus_type: ElectricalBusType,
         max_current: ElectricCurrent,
         regulated_speed: AngularVelocity,
     ) -> Self {
         Self {
-            active_id: format!("HYD_{}_EPUMP_ACTIVE", id),
-            rpm_id: format!("HYD_{}_EPUMP_RPM", id),
+            active_id: context.get_identifier(format!("HYD_{}_EPUMP_ACTIVE", id).to_owned()),
+            rpm_id: context.get_identifier(format!("HYD_{}_EPUMP_RPM", id).to_owned()),
             powered_by: bus_type,
             is_powered: false,
             available_potential: ElectricPotential::new::<volt>(0.),
@@ -253,17 +256,17 @@ mod tests {
         is_ac_1_powered: bool,
     }
     impl TestAircraft {
-        fn new(electricity: &mut Electricity) -> Self {
+        fn new(context: &mut InitContext) -> Self {
             Self {
                 core_hydraulic_updater: FixedStepLoop::new(Duration::from_millis(33)),
-                pump: physical_pump(),
+                pump: physical_pump(context),
                 hydraulic_section: TestHydraulicSection::new(),
                 current_displacement: Volume::new::<gallon>(0.),
                 powered_source_ac: TestElectricitySource::powered(
+                    context,
                     PotentialOrigin::EngineGenerator(1),
-                    electricity,
                 ),
-                ac_1_bus: ElectricalBus::new(ElectricalBusType::AlternatingCurrent(1), electricity),
+                ac_1_bus: ElectricalBus::new(context, ElectricalBusType::AlternatingCurrent(1)),
                 is_ac_1_powered: false,
             }
         }
@@ -409,8 +412,9 @@ mod tests {
         );
     }
 
-    fn physical_pump() -> ElectricalPumpPhysics {
+    fn physical_pump(context: &mut InitContext) -> ElectricalPumpPhysics {
         ElectricalPumpPhysics::new(
+            context,
             "YELLOW",
             ElectricalBusType::AlternatingCurrent(1),
             ElectricCurrent::new::<ampere>(45.),

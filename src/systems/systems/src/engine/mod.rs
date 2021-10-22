@@ -1,5 +1,6 @@
 use uom::si::f64::*;
 
+use crate::simulation::InitContext;
 use crate::{
     overhead::FirePushButton,
     shared::{EngineCorrectedN2, EngineFirePushButtons, EngineUncorrectedN2},
@@ -20,9 +21,12 @@ pub struct EngineFireOverheadPanel {
     engine_fire_push_buttons: [FirePushButton; 2],
 }
 impl EngineFireOverheadPanel {
-    pub fn new() -> Self {
+    pub fn new(context: &mut InitContext) -> Self {
         Self {
-            engine_fire_push_buttons: [FirePushButton::new("ENG1"), FirePushButton::new("ENG2")],
+            engine_fire_push_buttons: [
+                FirePushButton::new(context, "ENG1"),
+                FirePushButton::new(context, "ENG2"),
+            ],
         }
     }
 }
@@ -38,33 +42,24 @@ impl SimulationElement for EngineFireOverheadPanel {
         visitor.visit(self);
     }
 }
-impl Default for EngineFireOverheadPanel {
-    fn default() -> Self {
-        Self::new()
-    }
-}
 
 #[cfg(test)]
 mod engine_fire_overhead_panel_tests {
-    use crate::simulation::{
-        test::{SimulationTestBed, TestBed},
-        Write,
-    };
-
     use super::*;
+    use crate::simulation::test::{ElementCtorFn, SimulationTestBed, TestBed, WriteByName};
 
     #[test]
     fn after_construction_fire_push_buttons_are_not_released() {
-        let panel = EngineFireOverheadPanel::new();
+        let test_bed = SimulationTestBed::from(ElementCtorFn(EngineFireOverheadPanel::new));
 
-        assert_eq!(panel.is_released(1), false);
-        assert_eq!(panel.is_released(2), false);
+        assert_eq!(test_bed.query_element(|e| e.is_released(1)), false);
+        assert_eq!(test_bed.query_element(|e| e.is_released(2)), false);
     }
 
     #[test]
     fn fire_push_button_is_released_returns_false_when_not_released() {
-        let mut test_bed = SimulationTestBed::from(EngineFireOverheadPanel::new());
-        test_bed.write("FIRE_BUTTON_ENG1", false);
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(EngineFireOverheadPanel::new));
+        test_bed.write_by_name("FIRE_BUTTON_ENG1", false);
         test_bed.run();
 
         assert_eq!(test_bed.query_element(|e| e.is_released(1)), false);
@@ -72,8 +67,8 @@ mod engine_fire_overhead_panel_tests {
 
     #[test]
     fn fire_push_button_is_released_returns_true_when_released() {
-        let mut test_bed = SimulationTestBed::from(EngineFireOverheadPanel::new());
-        test_bed.write("FIRE_BUTTON_ENG1", true);
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(EngineFireOverheadPanel::new));
+        test_bed.write_by_name("FIRE_BUTTON_ENG1", true);
         test_bed.run();
 
         assert_eq!(test_bed.query_element(|e| e.is_released(1)), true);
