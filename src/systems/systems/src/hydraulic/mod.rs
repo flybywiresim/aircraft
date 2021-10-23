@@ -394,6 +394,13 @@ impl HydraulicCircuit {
         let mut pump_to_system_check_valves: Vec<CheckValve> = Vec::new();
 
         for pump_id in 0..number_of_pump_sections {
+            let fire_valve = Some(FireValve::new(
+                context,
+                id,
+                pump_id,
+                Self::DEFAULT_FIRE_VALVE_POWERING_BUS,
+            ));
+
             pump_sections.push(Section::new(
                 context,
                 id,
@@ -407,12 +414,7 @@ impl HydraulicCircuit {
                 None,
                 pump_pressure_switch_lo_hyst,
                 pump_pressure_switch_hi_hyst,
-                Some(FireValve::new(
-                    context,
-                    id,
-                    pump_id,
-                    Self::DEFAULT_FIRE_VALVE_POWERING_BUS,
-                )),
+                fire_valve,
                 false,
                 false,
             ));
@@ -1785,6 +1787,12 @@ mod tests {
         section_id: &str,
         pump_id: usize,
     ) -> Section {
+        let fire_valve = Some(FireValve::new(
+            context,
+            loop_id,
+            pump_id,
+            HydraulicCircuit::DEFAULT_FIRE_VALVE_POWERING_BUS,
+        ));
         Section::new(
             context,
             loop_id,
@@ -1798,12 +1806,7 @@ mod tests {
             None,
             Pressure::new::<psi>(1400.),
             Pressure::new::<psi>(2000.),
-            Some(FireValve::new(
-                context,
-                loop_id,
-                pump_id,
-                HydraulicCircuit::DEFAULT_FIRE_VALVE_POWERING_BUS,
-            )),
+            fire_valve,
             false,
             false,
         )

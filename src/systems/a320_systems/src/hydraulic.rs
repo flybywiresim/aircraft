@@ -108,7 +108,6 @@ impl A320HydraulicCircuitFactory {
         )
     }
 }
-use systems::simulation::{InitContext, VariableIdentifier};
 
 struct A320CargoDoorFactory {}
 impl A320CargoDoorFactory {
@@ -2361,7 +2360,7 @@ mod tests {
                     )),
                     electrical: A320TestElectrical::new(),
                     ext_pwr: ExternalPowerSource::new(context),
-                    powered_source: TestElectricitySource::powered(
+                    powered_source_ac: TestElectricitySource::powered(
                         context,
                         PotentialOrigin::EngineGenerator(1),
                     ),
@@ -2762,21 +2761,25 @@ mod tests {
             }
 
             fn is_fire_valve_eng1_closed(&mut self) -> bool {
-                !ReadByName::<bool>::read_by_name(self, "HYD_GREEN_PUMP0_FIRE_VALVE_OPENED")
-                    && !self.query(|a| {
-                        a.hydraulics.green_circuit.is_fire_shutoff_valve_open(
-                            A320HydraulicCircuitFactory::GREEN_ENGINE_PUMP_INDEX,
-                        )
-                    })
+                !ReadByName::<A320HydraulicsTestBed, bool>::read_by_name(
+                    self,
+                    "HYD_GREEN_PUMP0_FIRE_VALVE_OPENED",
+                ) && !self.query(|a| {
+                    a.hydraulics.green_circuit.is_fire_shutoff_valve_open(
+                        A320HydraulicCircuitFactory::GREEN_ENGINE_PUMP_INDEX,
+                    )
+                })
             }
 
             fn is_fire_valve_eng2_closed(&mut self) -> bool {
-                !ReadByName::<bool>::read_by_name(self, "HYD_YELLOW_PUMP0_FIRE_VALVE_OPENED")
-                    && !self.query(|a| {
-                        a.hydraulics.yellow_circuit.is_fire_shutoff_valve_open(
-                            A320HydraulicCircuitFactory::YELLOW_ENGINE_PUMP_INDEX,
-                        )
-                    })
+                !ReadByName::<A320HydraulicsTestBed, bool>::read_by_name(
+                    self,
+                    "HYD_YELLOW_PUMP0_FIRE_VALVE_OPENED",
+                ) && !self.query(|a| {
+                    a.hydraulics.green_circuit.is_fire_shutoff_valve_open(
+                        A320HydraulicCircuitFactory::YELLOW_ENGINE_PUMP_INDEX,
+                    )
+                })
             }
 
             fn engines_off(self) -> Self {

@@ -3,13 +3,9 @@ use plotlib::repr::Plot;
 use plotlib::style::LineStyle;
 use plotlib::view::ContinuousView;
 use std::time::Duration;
-use systems::electrical::test::TestElectricitySource;
-use systems::electrical::ElectricalBus;
-use systems::electrical::Electricity;
 
 pub use systems::hydraulic::*;
-use systems::shared::PotentialOrigin;
-use systems::simulation::SimulationElement;
+
 use systems::{
     electrical::Electricity,
     shared::ElectricalBusType,
@@ -246,7 +242,7 @@ fn hyd_circuit_basic(path: &str) {
 
     let mut hydraulic_loop = hydraulic_loop(&mut init_context, "YELLOW", 1);
 
-    let context = context(&mut init_context,Duration::from_millis(50));
+    let context = context(&mut init_context, Duration::from_millis(50));
 
     hyd_circuit_history.init(
         0.0,
@@ -302,10 +298,6 @@ fn hyd_circuit_basic(path: &str) {
             &edp_controller,
         );
 
-        epump.receive_power(&test_electricity(
-            ElectricalBusType::AlternatingCurrentGndFltService,
-            true,
-        ));
         epump.update(
             &context,
             hydraulic_loop.system_section(),
@@ -347,26 +339,14 @@ fn hyd_circuit_basic(path: &str) {
     reservoir_history.show_matplotlib("hyd_circuit_reservoir_tests", &path);
 }
 
-fn test_electricity(bus_id: ElectricalBusType, is_powered: bool) -> Electricity {
-    let mut electricity = Electricity::new();
-    let mut source =
-        TestElectricitySource::unpowered(PotentialOrigin::EngineGenerator(1), &mut electricity);
-
-    if is_powered {
-        source.power();
-    }
-
-    let bus = ElectricalBus::new(bus_id, &mut electricity);
-
-    electricity.supplied_by(&source);
-    electricity.flow(&source, &bus);
-
-    electricity
-}
-
-fn hydraulic_loop(context: &mut InitContext,loop_color: &str, main_pump_number: usize) -> HydraulicCircuit {
+fn hydraulic_loop(
+    context: &mut InitContext,
+    loop_color: &str,
+    main_pump_number: usize,
+) -> HydraulicCircuit {
     match loop_color {
-        "GREEN" => HydraulicCircuit::new(context,
+        "GREEN" => HydraulicCircuit::new(
+            context,
             loop_color,
             main_pump_number,
             Ratio::new::<percent>(100.),
@@ -411,7 +391,8 @@ fn hydraulic_loop(context: &mut InitContext,loop_color: &str, main_pump_number: 
 }
 
 fn electric_pump(context: &mut InitContext) -> ElectricPump {
-    ElectricPump::new(context,
+    ElectricPump::new(
+        context,
         "DEFAULT",
         ElectricalBusType::AlternatingCurrentGndFltService,
         ElectricCurrent::new::<ampere>(45.),
@@ -419,11 +400,12 @@ fn electric_pump(context: &mut InitContext) -> ElectricPump {
 }
 
 fn _engine_driven_pump(context: &mut InitContext) -> EngineDrivenPump {
-    EngineDrivenPump::new(context,"DEFAULT")
+    EngineDrivenPump::new(context, "DEFAULT")
 }
 
-fn context(context: &mut InitContext,delta_time: Duration) -> UpdateContext {
-    UpdateContext::new(context,
+fn context(context: &mut InitContext, delta_time: Duration) -> UpdateContext {
+    UpdateContext::new(
+        context,
         delta_time,
         Velocity::new::<knot>(250.),
         Length::new::<foot>(5000.),
