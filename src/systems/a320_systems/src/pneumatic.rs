@@ -583,7 +583,7 @@ impl BleedMonitoringComputerChannel {
             is_engine_fire_pushbutton_released: false,
             is_apu_bleed_valve_open: false,
             is_apu_bleed_on: false,
-            high_pressure_valve_pid: PidController::new(0.05, 0.003, 0.001, 0., 1., 65.),
+            high_pressure_valve_pid: PidController::new(0.05, 0.003, 0., 0., 1., 65.),
             pressure_regulating_valve_pid: PidController::new(0., 0.01, 0., 0., 1., 46.),
             fan_air_valve_pid: PidController::new(-0.005, -0.001, 0., 0., 1., 200.),
             cross_bleed_valve_selector: CrossBleedValveSelectorMode::Auto,
@@ -2071,26 +2071,10 @@ mod tests {
         let mut abv_open = Vec::new();
         let mut fav_open = Vec::new();
 
-        for i in 1..10000 {
+        for i in 1..3000 {
             if i == 5000 {
                 test_bed = test_bed.idle_eng1().idle_eng2();
             }
-
-            println!(
-                "{} m^3/s",
-                test_bed
-                    .pack_flow_valve_flow(1)
-                    .get::<cubic_meter_per_second>()
-            );
-            println!(
-                "{}",
-                test_bed.query(|aircraft| {
-                    aircraft.pneumatic.packs[0]
-                        .pack_flow_valve
-                        .open_amount()
-                        .get::<ratio>()
-                })
-            );
 
             ts.push(i as f64 * 16.);
 
