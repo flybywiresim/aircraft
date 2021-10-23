@@ -183,18 +183,9 @@ impl EngineCompressionChamberController {
         let n1 = engine.corrected_n1().get::<ratio>();
         let n2 = engine.corrected_n2().get::<ratio>();
 
-        // TODO: I know I'm probably shooting myself in the foot by actively avoiding using units, but I couldn't find another way
-        // This computes an estimate of the airflow velocity. It uses the current mach number as basis and adds contributions for n1 and n2.
-        // We make sure it never exceeds mach 1 using some math.
-        let corrected_mach = (self.current_mach.0
+        let corrected_mach = self.current_mach.0
             + self.n1_contribution_factor * n1
-            + self.n2_contribution_factor * n2)
-            / (1.
-                + self.current_mach.0
-                    * self.n1_contribution_factor
-                    * n1
-                    * self.n2_contribution_factor
-                    * n2);
+            + self.n2_contribution_factor * n2;
 
         // Static pressure + compressionfactor * dynamic pressure
         // Dynamic pressure from here: https://en.wikipedia.org/wiki/Mach_number

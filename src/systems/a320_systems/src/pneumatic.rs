@@ -570,7 +570,7 @@ impl BleedMonitoringComputerChannel {
             is_apu_bleed_on: false,
             high_pressure_valve_pid: PidController::new(0.05, 0.003, 0.001, 0., 1., 65.),
             pressure_regulating_valve_pid: PidController::new(0., 0.01, 0., 0., 1., 46.),
-            fan_air_valve_pid: PidController::new(0.1, 0., 0.1, 0., 1., 160.),
+            fan_air_valve_pid: PidController::new(-0.005, -0.001, 0., 0., 1., 200.),
             cross_bleed_valve_selector: CrossBleedValveSelectorMode::Auto,
             cross_bleed_valve_is_open: false,
             engine_bleed_fault_light_monitor: EngineBleedFaultLightMonitor::new(engine_number),
@@ -824,11 +824,11 @@ impl EngineBleedAirSystem {
     fn new(number: usize, powered_by: ElectricalBusType) -> Self {
         Self {
             number,
-            fan_compression_chamber_controller: EngineCompressionChamberController::new(1., 0., 1.),
+            fan_compression_chamber_controller: EngineCompressionChamberController::new(1., 0., 2.),
             intermediate_pressure_compression_chamber_controller:
-                EngineCompressionChamberController::new(3., 0., 2.),
+                EngineCompressionChamberController::new(4., 0., 5.),
             high_pressure_compression_chamber_controller: EngineCompressionChamberController::new(
-                1.5, 2.5, 4.,
+                4., 2., 5.,
             ),
             fan_compression_chamber: CompressionChamber::new(Volume::new::<cubic_meter>(1.)),
             intermediate_pressure_compression_chamber: CompressionChamber::new(Volume::new::<
@@ -868,7 +868,7 @@ impl EngineBleedAirSystem {
             ),
             engine_starter_exhaust: PneumaticExhaust::new(1e-2),
             engine_starter_valve: DefaultValve::new_closed(),
-            precooler: Precooler::new(1.),
+            precooler: Precooler::new(5.),
         }
     }
 
@@ -2013,18 +2013,30 @@ mod tests {
         let mut abv_open = Vec::new();
         let mut fav_open = Vec::new();
 
-        for i in 1..3000 {
+        for i in 1..5000 {
+            // if i == 5000 {
+            //     test_bed = test_bed.toga_eng1().toga_eng2();
+            // }
+
+            println!(
+                "{}",
+                test_bed.query(|a| a.pneumatic.engine_systems[0]
+                    .fan_compression_chamber
+                    .temperature()
+                    .get::<degree_celsius>())
+            );
+
             ts.push(i as f64 * 16.);
 
             hps.push(test_bed.hp_pressure(1).get::<psi>());
             ips.push(test_bed.ip_pressure(1).get::<psi>());
             c2s.push(test_bed.transfer_pressure(1).get::<psi>());
-            // c1s.push(test_bed.precooler_inlet_pressure(1).get::<psi>());
-            // c0s.push(test_bed.precooler_outlet_pressure(1).get::<psi>());
-            // pcss.push(test_bed.precooler_supply_pressure(1).get::<psi>());
-            c1s.push(test_bed.green_hydraulic_reservoir_pressure().get::<psi>());
-            c0s.push(test_bed.blue_hydraulic_reservoir_pressure().get::<psi>());
-            pcss.push(test_bed.yellow_hydraulic_reservoir_pressure().get::<psi>());
+            c1s.push(test_bed.precooler_inlet_pressure(1).get::<psi>());
+            c0s.push(test_bed.precooler_outlet_pressure(1).get::<psi>());
+            pcss.push(test_bed.precooler_supply_pressure(1).get::<psi>());
+            // c1s.push(test_bed.green_hydraulic_reservoir_pressure().get::<psi>());
+            // c0s.push(test_bed.blue_hydraulic_reservoir_pressure().get::<psi>());
+            // pcss.push(test_bed.yellow_hydraulic_reservoir_pressure().get::<psi>());
             escs.push(test_bed.engine_starter_container_pressure(1).get::<psi>());
 
             ipts.push(test_bed.ip_temperature(1).get::<degree_celsius>());

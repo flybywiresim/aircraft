@@ -215,7 +215,7 @@ pub struct PneumaticContainerConnector {
 }
 impl PneumaticContainerConnector {
     const HEAT_CAPACITY_RATIO: f64 = 1.4;
-    const TRANSFER_SPEED: f64 = 3.;
+    const TRANSFER_SPEED: f64 = 5.;
     const HEAT_TRANSFER_SPEED: f64 = 3.;
 
     pub fn new() -> Self {
