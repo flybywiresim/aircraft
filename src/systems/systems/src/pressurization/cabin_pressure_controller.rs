@@ -162,10 +162,6 @@ impl CabinPressureController {
                 const TARGET_LANDING_ALT_DIFF: f64 = 187.818;
 
                 if self.cabin_altitude()
-                    < self.departure_elev - Length::new::<foot>(TARGET_LANDING_ALT_DIFF)
-                {
-                    Velocity::new::<foot_per_minute>(Self::MAX_CLIMB_RATE_IN_DESCENT)
-                } else if self.cabin_altitude()
                     > self.departure_elev - Length::new::<foot>(TARGET_LANDING_ALT_DIFF)
                 {
                     Velocity::new::<foot_per_minute>(Self::MAX_ABORT_DESCENT_RATE)
