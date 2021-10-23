@@ -5,9 +5,10 @@ use uom::si::{
 };
 
 use super::{Read, SimulatorReader};
+use crate::simulation::{InitContext, VariableIdentifier};
 use nalgebra::{Rotation3, Vector3};
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, Default)]
 pub struct Attitude {
     pitch: Angle,
     bank: Angle,
@@ -33,7 +34,7 @@ impl Attitude {
         self.bank
     }
 }
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, Default)]
 pub struct LocalAcceleration {
     acceleration: [Acceleration; 3],
 }
@@ -80,6 +81,18 @@ impl LocalAcceleration {
 /// for the purpose of handling a simulation tick.
 #[derive(Clone, Copy, Debug)]
 pub struct UpdateContext {
+    ambient_temperature_id: VariableIdentifier,
+    indicated_airspeed_id: VariableIdentifier,
+    indicated_altitude_id: VariableIdentifier,
+    is_on_ground_id: VariableIdentifier,
+    ambient_pressure_id: VariableIdentifier,
+    vertical_speed_id: VariableIdentifier,
+    accel_body_x_id: VariableIdentifier,
+    accel_body_y_id: VariableIdentifier,
+    accel_body_z_id: VariableIdentifier,
+    plane_pitch_id: VariableIdentifier,
+    plane_bank_id: VariableIdentifier,
+
     delta: Duration,
     indicated_airspeed: Velocity,
     indicated_altitude: Length,
@@ -103,7 +116,11 @@ impl UpdateContext {
     pub(crate) const PLANE_PITCH_KEY: &'static str = "PLANE PITCH DEGREES";
     pub(crate) const PLANE_BANK_KEY: &'static str = "PLANE BANK DEGREES";
 
+    #[deprecated(
+        note = "Do not create UpdateContext directly. Instead use the SimulationTestBed or your own custom test bed."
+    )]
     pub fn new(
+        context: &mut InitContext,
         delta: Duration,
         indicated_airspeed: Velocity,
         indicated_altitude: Length,
@@ -116,6 +133,19 @@ impl UpdateContext {
         bank: Angle,
     ) -> UpdateContext {
         UpdateContext {
+            ambient_temperature_id: context
+                .get_identifier(Self::AMBIENT_TEMPERATURE_KEY.to_owned()),
+            indicated_airspeed_id: context.get_identifier(Self::INDICATED_AIRSPEED_KEY.to_owned()),
+            indicated_altitude_id: context.get_identifier(Self::INDICATED_ALTITUDE_KEY.to_owned()),
+            is_on_ground_id: context.get_identifier(Self::IS_ON_GROUND_KEY.to_owned()),
+            ambient_pressure_id: context.get_identifier(Self::AMBIENT_PRESSURE_KEY.to_owned()),
+            vertical_speed_id: context.get_identifier(Self::VERTICAL_SPEED_KEY.to_owned()),
+            accel_body_x_id: context.get_identifier(Self::ACCEL_BODY_X_KEY.to_owned()),
+            accel_body_y_id: context.get_identifier(Self::ACCEL_BODY_Y_KEY.to_owned()),
+            accel_body_z_id: context.get_identifier(Self::ACCEL_BODY_Z_KEY.to_owned()),
+            plane_pitch_id: context.get_identifier(Self::PLANE_PITCH_KEY.to_owned()),
+            plane_bank_id: context.get_identifier(Self::PLANE_BANK_KEY.to_owned()),
+
             delta,
             indicated_airspeed,
             indicated_altitude,
@@ -132,31 +162,53 @@ impl UpdateContext {
         }
     }
 
-    /// Creates a context based on the data that was read from the simulator.
-    pub(super) fn from_reader(reader: &mut SimulatorReader, delta_time: Duration) -> UpdateContext {
+    pub(super) fn new_for_simulation(context: &mut InitContext) -> UpdateContext {
         UpdateContext {
-            ambient_temperature: reader.read(UpdateContext::AMBIENT_TEMPERATURE_KEY),
-            indicated_airspeed: reader.read(UpdateContext::INDICATED_AIRSPEED_KEY),
-            indicated_altitude: reader.read(UpdateContext::INDICATED_ALTITUDE_KEY),
-            is_on_ground: reader.read(UpdateContext::IS_ON_GROUND_KEY),
-            ambient_pressure: Pressure::new::<inch_of_mercury>(
-                reader.read(UpdateContext::AMBIENT_PRESSURE_KEY),
-            ),
-            vertical_speed: Velocity::new::<foot_per_minute>(
-                reader.read(UpdateContext::VERTICAL_SPEED_KEY),
-            ),
-            delta: delta_time,
-            local_acceleration: LocalAcceleration::new(
-                reader.read(UpdateContext::ACCEL_BODY_X_KEY),
-                reader.read(UpdateContext::ACCEL_BODY_Y_KEY),
-                reader.read(UpdateContext::ACCEL_BODY_Z_KEY),
-            ),
+            ambient_temperature_id: context.get_identifier("AMBIENT TEMPERATURE".to_owned()),
+            indicated_airspeed_id: context.get_identifier("AIRSPEED INDICATED".to_owned()),
+            indicated_altitude_id: context.get_identifier("INDICATED ALTITUDE".to_owned()),
+            is_on_ground_id: context.get_identifier("SIM ON GROUND".to_owned()),
+            ambient_pressure_id: context.get_identifier("AMBIENT PRESSURE".to_owned()),
+            vertical_speed_id: context.get_identifier("VELOCITY WORLD Y".to_owned()),
+            accel_body_x_id: context.get_identifier("ACCELERATION BODY X".to_owned()),
+            accel_body_y_id: context.get_identifier("ACCELERATION BODY Y".to_owned()),
+            accel_body_z_id: context.get_identifier("ACCELERATION BODY Z".to_owned()),
+            plane_pitch_id: context.get_identifier("PLANE PITCH DEGREES".to_owned()),
+            plane_bank_id: context.get_identifier("PLANE BANK DEGREES".to_owned()),
 
-            attitude: Attitude::new(
-                reader.read(UpdateContext::PLANE_PITCH_KEY),
-                reader.read(UpdateContext::PLANE_BANK_KEY),
-            ),
+            delta: Default::default(),
+            indicated_airspeed: Default::default(),
+            indicated_altitude: Default::default(),
+            ambient_temperature: Default::default(),
+            ambient_pressure: Default::default(),
+            is_on_ground: Default::default(),
+            vertical_speed: Default::default(),
+            local_acceleration: Default::default(),
+            attitude: Default::default(),
         }
+    }
+
+    /// Updates a context based on the data that was read from the simulator.
+    pub(super) fn update(&mut self, reader: &mut SimulatorReader, delta_time: Duration) {
+        self.ambient_temperature = reader.read(&self.ambient_temperature_id);
+        self.indicated_airspeed = reader.read(&self.indicated_airspeed_id);
+        self.indicated_altitude = reader.read(&self.indicated_altitude_id);
+        self.is_on_ground = reader.read(&self.is_on_ground_id);
+        self.ambient_pressure =
+            Pressure::new::<inch_of_mercury>(reader.read(&self.ambient_pressure_id));
+        self.vertical_speed =
+            Velocity::new::<foot_per_minute>(reader.read(&self.vertical_speed_id));
+        self.delta = delta_time;
+        self.local_acceleration = LocalAcceleration::new(
+            reader.read(&self.accel_body_x_id),
+            reader.read(&self.accel_body_y_id),
+            reader.read(&self.accel_body_z_id),
+        );
+
+        self.attitude = Attitude::new(
+            reader.read(&self.plane_pitch_id),
+            reader.read(&self.plane_bank_id),
+        );
     }
 
     pub fn is_in_flight(&self) -> bool {

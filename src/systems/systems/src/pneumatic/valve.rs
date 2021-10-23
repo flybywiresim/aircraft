@@ -362,8 +362,10 @@ impl PneumaticExhaust {
 mod tests {
     use super::*;
     use crate::{
+        electrical::Electricity,
         pneumatic::{DefaultValve, PneumaticContainer, PneumaticPipe},
         shared::{ControllerSignal, InternationalStandardAtmosphere},
+        simulation::{test::TestVariableRegistry, InitContext},
     };
 
     use std::time::Duration;
@@ -410,7 +412,12 @@ mod tests {
     }
 
     fn context(delta_time: Duration, altitude: Length) -> UpdateContext {
+        let mut electricity = Electricity::new();
+        let mut registry: TestVariableRegistry = Default::default();
+        let mut init_context = InitContext::new(&mut electricity, &mut registry);
+
         UpdateContext::new(
+            &mut init_context,
             delta_time,
             Velocity::new::<knot>(0.),
             altitude,

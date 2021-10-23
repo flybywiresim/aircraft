@@ -30,7 +30,8 @@ use systems::{
         PneumaticValve,
     },
     simulation::{
-        Read, SimulationElement, SimulationElementVisitor, SimulatorReader, SimulatorWriter, Write,
+        InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
+        SimulatorWriter, VariableIdentifier, Write,
     },
 };
 
@@ -100,6 +101,9 @@ valve_signal_implementation!(FanAirValveSignal);
 valve_signal_implementation!(PackFlowValveSignal);
 
 pub struct A320Pneumatic {
+    cross_bleed_valve_open_id: VariableIdentifier,
+    apu_bleed_air_valve_open_id: VariableIdentifier,
+
     bleed_monitoring_computers: [BleedMonitoringComputer; 2],
     engine_systems: [EngineBleedAirSystem; 2],
 
@@ -120,26 +124,33 @@ pub struct A320Pneumatic {
     packs: [PackComplex; 2],
 }
 impl A320Pneumatic {
-    pub fn new() -> Self {
+    pub fn new(context: &mut InitContext) -> Self {
         Self {
+            cross_bleed_valve_open_id: context.get_identifier("PNEU_XBLEED_VALVE_OPEN".to_owned()),
+            apu_bleed_air_valve_open_id: context
+                .get_identifier("APU_BLEED_AIR_VALVE_OPEN".to_owned()),
             bleed_monitoring_computers: [
                 BleedMonitoringComputer::new(1, 2, ElectricalBusType::DirectCurrentEssentialShed),
                 BleedMonitoringComputer::new(2, 1, ElectricalBusType::DirectCurrent(2)),
             ],
             engine_systems: [
-                EngineBleedAirSystem::new(1, ElectricalBusType::DirectCurrentEssentialShed),
-                EngineBleedAirSystem::new(2, ElectricalBusType::DirectCurrent(2)),
+                EngineBleedAirSystem::new(
+                    context,
+                    1,
+                    ElectricalBusType::DirectCurrentEssentialShed,
+                ),
+                EngineBleedAirSystem::new(context, 2, ElectricalBusType::DirectCurrent(2)),
             ],
             cross_bleed_valve_controller: CrossBleedValveController::new(),
             cross_bleed_valve: CrossBleedValve::new(1.),
-            fadec: FullAuthorityDigitalEngineControl::new(),
+            fadec: FullAuthorityDigitalEngineControl::new(context),
             engine_starter_valve_controllers: [
                 EngineStarterValveController::new(1),
                 EngineStarterValveController::new(2),
             ],
             apu: CompressionChamber::new(Volume::new::<cubic_meter>(5.)),
             apu_bleed_air_valve: DefaultValve::new_closed(),
-            apu_bleed_air_controller: ApuCompressionChamberController::new(),
+            apu_bleed_air_controller: ApuCompressionChamberController::new(context),
             // TODO: I don't like how I have to initialize these containers independently of the actual reservoirs.
             // If the volumes of the reservoirs were to be changed in the hydraulics code, we would have to manually change them here as well
             green_hydraulic_reservoir_with_valve: PneumaticContainerWithConnector::new(
@@ -163,7 +174,7 @@ impl A320Pneumatic {
                     ThermodynamicTemperature::new::<degree_celsius>(15.),
                 ),
             ),
-            packs: [PackComplex::new(1), PackComplex::new(2)],
+            packs: [PackComplex::new(context, 1), PackComplex::new(context, 2)],
         }
     }
 
@@ -331,9 +342,12 @@ impl SimulationElement for A320Pneumatic {
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write("PNEU_XBLEED_VALVE_OPEN", self.cross_bleed_valve.is_open());
         writer.write(
-            "APU_BLEED_AIR_VALVE_OPEN",
+            &self.cross_bleed_valve_open_id,
+            self.cross_bleed_valve.is_open(),
+        );
+        writer.write(
+            &self.apu_bleed_air_valve_open_id,
             self.apu_bleed_air_valve.is_open(),
         );
     }
@@ -800,6 +814,23 @@ impl ControllerSignal<FaultLightSignal> for EngineBleedFaultLightMonitor {
 }
 
 struct EngineBleedAirSystem {
+    intermediate_pressure_id: VariableIdentifier,
+    high_pressure_id: VariableIdentifier,
+    transfer_pressure_id: VariableIdentifier,
+    precooler_inlet_pressure_id: VariableIdentifier,
+    precooler_outlet_pressure_id: VariableIdentifier,
+    starter_container_pressure_id: VariableIdentifier,
+    intermediate_temperature_id: VariableIdentifier,
+    high_temperature_id: VariableIdentifier,
+    transfer_temperature_id: VariableIdentifier,
+    precooler_inlet_temperature_id: VariableIdentifier,
+    precooler_outlet_temperature_id: VariableIdentifier,
+    starter_container_temperature_id: VariableIdentifier,
+    intermediate_pressure_valve_open_id: VariableIdentifier,
+    high_pressure_valve_open_id: VariableIdentifier,
+    pressure_regulating_valve_open_id: VariableIdentifier,
+    starter_valve_open_id: VariableIdentifier,
+
     number: usize,
     fan_compression_chamber_controller: EngineCompressionChamberController, // Controls pressure just behind the main fan
     intermediate_pressure_compression_chamber_controller: EngineCompressionChamberController,
@@ -821,14 +852,47 @@ struct EngineBleedAirSystem {
     precooler: Precooler,
 }
 impl EngineBleedAirSystem {
-    fn new(number: usize, powered_by: ElectricalBusType) -> Self {
+    fn new(context: &mut InitContext, number: usize, powered_by: ElectricalBusType) -> Self {
         Self {
             number,
-            fan_compression_chamber_controller: EngineCompressionChamberController::new(1., 0., 2.),
+            intermediate_pressure_id: context
+                .get_identifier(format!("PNEU_ENG_{}_IP_PRESSURE", number)),
+            high_pressure_id: context.get_identifier(format!("PNEU_ENG_{}_HP_PRESSURE", number)),
+            transfer_pressure_id: context
+                .get_identifier(format!("PNEU_ENG_{}_TRANSFER_PRESSURE", number)),
+            precooler_inlet_pressure_id: context
+                .get_identifier(format!("PNEU_ENG_{}_PRECOOLER_INLET_PRESSURE", number)),
+            precooler_outlet_pressure_id: context
+                .get_identifier(format!("PNEU_ENG_{}_PRECOOLER_OUTLET_PRESSURE", number)),
+            starter_container_pressure_id: context
+                .get_identifier(format!("PNEU_ENG_{}_STARTER_CONTAINER_PRESSURE", number)),
+            intermediate_temperature_id: context
+                .get_identifier(format!("PNEU_ENG_{}_IP_TEMPERATURE", number)),
+            high_temperature_id: context
+                .get_identifier(format!("PNEU_ENG_{}_HP_TEMPERATURE", number)),
+            transfer_temperature_id: context
+                .get_identifier(format!("PNEU_ENG_{}_TRANSFER_TEMPERATURE", number)),
+            precooler_inlet_temperature_id: context
+                .get_identifier(format!("PNEU_ENG_{}_PRECOOLER_INLET_TEMPERATURE", number)),
+            precooler_outlet_temperature_id: context
+                .get_identifier(format!("PNEU_ENG_{}_PRECOOLER_OUTLET_TEMPERATURE", number)),
+            starter_container_temperature_id: context
+                .get_identifier(format!("PNEU_ENG_{}_STARTER_CONTAINER_TEMPERATURE", number)),
+            intermediate_pressure_valve_open_id: context
+                .get_identifier(format!("PNEU_ENG_{}_IP_VALVE_OPEN", number)),
+            high_pressure_valve_open_id: context
+                .get_identifier(format!("PNEU_ENG_{}_HP_VALVE_OPEN", number)),
+            pressure_regulating_valve_open_id: context
+                .get_identifier(format!("PNEU_ENG_{}_PR_VALVE_OPEN", number)),
+            starter_valve_open_id: context
+                .get_identifier(format!("PNEU_ENG_{}_STARTER_VALVE_OPEN", number)),
+            fan_compression_chamber_controller: EngineCompressionChamberController::new(
+                context, 1., 0., 2.,
+            ),
             intermediate_pressure_compression_chamber_controller:
-                EngineCompressionChamberController::new(4., 0., 5.),
+                EngineCompressionChamberController::new(context, 4., 0., 5.),
             high_pressure_compression_chamber_controller: EngineCompressionChamberController::new(
-                4., 2., 5.,
+                context, 4., 2., 5.,
             ),
             fan_compression_chamber: CompressionChamber::new(Volume::new::<cubic_meter>(1.)),
             intermediate_pressure_compression_chamber: CompressionChamber::new(Volume::new::<
@@ -1029,83 +1093,53 @@ impl SimulationElement for EngineBleedAirSystem {
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(&self.intermediate_pressure_id, self.intermediate_pressure());
+        writer.write(&self.high_pressure_id, self.high_pressure());
+        writer.write(&self.transfer_pressure_id, self.transfer_pressure());
         writer.write(
-            &format!("PNEU_ENG_{}_IP_PRESSURE", self.number),
-            self.intermediate_pressure(),
-        );
-
-        writer.write(
-            &format!("PNEU_ENG_{}_HP_PRESSURE", self.number),
-            self.high_pressure(),
-        );
-
-        writer.write(
-            &format!("PNEU_ENG_{}_TRANSFER_PRESSURE", self.number),
-            self.transfer_pressure(),
-        );
-
-        writer.write(
-            &format!("PNEU_ENG_{}_PRECOOLER_INLET_PRESSURE", self.number),
+            &self.precooler_inlet_pressure_id,
             self.precooler_inlet_pressure(),
         );
-
         writer.write(
-            &format!("PNEU_ENG_{}_PRECOOLER_OUTLET_PRESSURE", self.number),
+            &self.precooler_outlet_pressure_id,
             self.precooler_outlet_pressure(),
         );
-
         writer.write(
-            &format!("PNEU_ENG_{}_STARTER_CONTAINER_PRESSURE", self.number),
+            &self.starter_container_pressure_id,
             self.engine_starter_container.pressure(),
         );
-
         writer.write(
-            &format!("PNEU_ENG_{}_IP_TEMPERATURE", self.number),
+            &self.intermediate_temperature_id,
             self.intermediate_temperature(),
         );
-
+        writer.write(&self.high_temperature_id, self.high_temperature());
+        writer.write(&self.transfer_temperature_id, self.transfer_temperature());
         writer.write(
-            &format!("PNEU_ENG_{}_HP_TEMPERATURE", self.number),
-            self.high_temperature(),
-        );
-
-        writer.write(
-            &format!("PNEU_ENG_{}_TRANSFER_TEMPERATURE", self.number),
-            self.transfer_temperature(),
-        );
-
-        writer.write(
-            &format!("PNEU_ENG_{}_PRECOOLER_INLET_TEMPERATURE", self.number),
+            &self.precooler_inlet_temperature_id,
             self.precooler_inlet_temperature(),
         );
-
         writer.write(
-            &format!("PNEU_ENG_{}_PRECOOLER_OUTLET_TEMPERATURE", self.number),
+            &self.precooler_outlet_temperature_id,
             self.precooler_outlet_temperature(),
         );
-
         writer.write(
-            &format!("PNEU_ENG_{}_STARTER_CONTAINER_TEMPERATURE", self.number),
+            &self.starter_container_temperature_id,
             self.engine_starter_container.temperature(),
         );
-
         writer.write(
-            &format!("PNEU_ENG_{}_IP_VALVE_OPEN", self.number),
+            &self.intermediate_pressure_valve_open_id,
             self.intermediate_pressure_valve.is_open(),
         );
-
         writer.write(
-            &format!("PNEU_ENG_{}_HP_VALVE_OPEN", self.number),
+            &self.high_pressure_valve_open_id,
             self.high_pressure_valve.is_open(),
         );
-
         writer.write(
-            &format!("PNEU_ENG_{}_PR_VALVE_OPEN", self.number),
+            &self.pressure_regulating_valve_open_id,
             self.pressure_regulating_valve.is_open(),
         );
-
         writer.write(
-            &format!("PNEU_ENG_{}_STARTER_VALVE_OPEN", self.number),
+            &self.starter_valve_open_id,
             self.engine_starter_valve.is_open(),
         );
     }
@@ -1139,12 +1173,12 @@ pub struct A320PneumaticOverheadPanel {
     engine_2_bleed: AutoOffFaultPushButton,
 }
 impl A320PneumaticOverheadPanel {
-    pub fn new() -> Self {
+    pub fn new(context: &mut InitContext) -> Self {
         A320PneumaticOverheadPanel {
-            apu_bleed: OnOffFaultPushButton::new_on("PNEU_APU_BLEED"),
-            cross_bleed: CrossBleedValveSelectorKnob::new_auto(),
-            engine_1_bleed: AutoOffFaultPushButton::new_auto("PNEU_ENG_1_BLEED"),
-            engine_2_bleed: AutoOffFaultPushButton::new_auto("PNEU_ENG_2_BLEED"),
+            apu_bleed: OnOffFaultPushButton::new_on(context, "PNEU_APU_BLEED"),
+            cross_bleed: CrossBleedValveSelectorKnob::new_auto(context),
+            engine_1_bleed: AutoOffFaultPushButton::new_auto(context, "PNEU_ENG_1_BLEED"),
+            engine_2_bleed: AutoOffFaultPushButton::new_auto(context, "PNEU_ENG_2_BLEED"),
         }
     }
 
@@ -1193,12 +1227,17 @@ impl SimulationElement for A320PneumaticOverheadPanel {
 
 /// We use this simply as an interface to engine parameter simvars. It should probably not be part of the pneumatic system.
 struct FullAuthorityDigitalEngineControl {
+    engine_1_state_id: VariableIdentifier,
+    engine_2_state_id: VariableIdentifier,
+
     engine_1_state: EngineState,
     engine_2_state: EngineState,
 }
 impl FullAuthorityDigitalEngineControl {
-    fn new() -> Self {
+    fn new(context: &mut InitContext) -> Self {
         Self {
+            engine_1_state_id: context.get_identifier("ENGINE_STATE:1".to_owned()),
+            engine_2_state_id: context.get_identifier("ENGINE_STATE:2".to_owned()),
             engine_1_state: EngineState::Off,
             engine_2_state: EngineState::Off,
         }
@@ -1218,8 +1257,8 @@ impl FullAuthorityDigitalEngineControl {
 }
 impl SimulationElement for FullAuthorityDigitalEngineControl {
     fn read(&mut self, reader: &mut SimulatorReader) {
-        self.engine_1_state = reader.read("ENGINE_STATE:1");
-        self.engine_2_state = reader.read("ENGINE_STATE:2");
+        self.engine_1_state = reader.read(&self.engine_1_state_id);
+        self.engine_2_state = reader.read(&self.engine_2_state_id);
     }
 }
 
@@ -1232,7 +1271,7 @@ struct PackComplex {
 }
 // TODO: Consumption rate should be like 0.75 m^3/s which is a about 0.4 kg/s.
 impl PackComplex {
-    fn new(engine_number: usize) -> Self {
+    fn new(context: &mut InitContext, engine_number: usize) -> Self {
         Self {
             pack_container: PneumaticPipe::new(
                 Volume::new::<cubic_meter>(1.),
@@ -1241,7 +1280,7 @@ impl PackComplex {
             ),
             exhaust: PneumaticExhaust::new(1.),
             pack_flow_valve: DefaultValve::new_closed(),
-            pack_flow_valve_controller: PackFlowValveController::new(engine_number),
+            pack_flow_valve_controller: PackFlowValveController::new(context, engine_number),
         }
     }
 
@@ -1289,13 +1328,16 @@ impl SimulationElement for PackComplex {
 
 // This will probably be removed in the future, but
 struct PackFlowValveController {
+    pack_toggle_pb_id: VariableIdentifier,
     engine_number: usize,
     pack_pb_is_auto: bool,
 }
 impl PackFlowValveController {
-    fn new(engine_number: usize) -> Self {
+    fn new(context: &mut InitContext, engine_number: usize) -> Self {
         Self {
             engine_number,
+            pack_toggle_pb_id: context
+                .get_identifier(format!("AIRCOND_PACK{}_TOGGLE", engine_number)),
             pack_pb_is_auto: true,
         }
     }
@@ -1310,7 +1352,7 @@ impl ControllerSignal<PackFlowValveSignal> for PackFlowValveController {
 }
 impl SimulationElement for PackFlowValveController {
     fn read(&mut self, reader: &mut SimulatorReader) {
-        self.pack_pb_is_auto = reader.read(&format!("AIRCOND_PACK{}_TOGGLE", self.engine_number));
+        self.pack_pb_is_auto = reader.read(&self.pack_toggle_pb_id);
     }
 }
 
@@ -1413,7 +1455,7 @@ mod tests {
             InternationalStandardAtmosphere, MachNumber, PotentialOrigin,
         },
         simulation::{
-            test::{SimulationTestBed, TestBed},
+            test::{SimulationTestBed, TestBed, WriteByName},
             Aircraft, SimulationElement, Write,
         },
     };
@@ -1512,29 +1554,26 @@ mod tests {
         is_dc_ess_shed_powered: bool,
     }
     impl PneumaticTestAircraft {
-        fn new(electricity: &mut Electricity) -> Self {
+        fn new(context: &mut InitContext) -> Self {
             Self {
-                pneumatic: A320Pneumatic::new(),
+                pneumatic: A320Pneumatic::new(context),
                 apu: TestApu::new(),
-                engine_1: LeapEngine::new(1),
-                engine_2: LeapEngine::new(2),
-                overhead_panel: A320PneumaticOverheadPanel::new(),
+                engine_1: LeapEngine::new(context, 1),
+                engine_2: LeapEngine::new(context, 2),
+                overhead_panel: A320PneumaticOverheadPanel::new(context),
                 fire_pushbuttons: TestEngineFirePushButtons::new(),
-                hydraulic: A320Hydraulic::new(),
+                hydraulic: A320Hydraulic::new(context),
                 electrical: A320TestElectrical::new(),
                 powered_source: TestElectricitySource::powered(
+                    context,
                     PotentialOrigin::EngineGenerator(1),
-                    electricity,
                 ),
-                dc_1_bus: ElectricalBus::new(ElectricalBusType::DirectCurrent(1), electricity),
-                dc_2_bus: ElectricalBus::new(ElectricalBusType::DirectCurrent(2), electricity),
-                dc_ess_bus: ElectricalBus::new(
-                    ElectricalBusType::DirectCurrentEssential,
-                    electricity,
-                ),
+                dc_1_bus: ElectricalBus::new(context, ElectricalBusType::DirectCurrent(1)),
+                dc_2_bus: ElectricalBus::new(context, ElectricalBusType::DirectCurrent(2)),
+                dc_ess_bus: ElectricalBus::new(context, ElectricalBusType::DirectCurrentEssential),
                 dc_ess_shed_bus: ElectricalBus::new(
+                    context,
                     ElectricalBusType::DirectCurrentEssentialShed,
-                    electricity,
                 ),
                 is_dc_1_powered: true,
                 is_dc_2_powered: true,
@@ -1617,8 +1656,8 @@ mod tests {
     impl PneumaticTestBed {
         fn new() -> Self {
             Self {
-                test_bed: SimulationTestBed::<PneumaticTestAircraft>::new(|electricity| {
-                    PneumaticTestAircraft::new(electricity)
+                test_bed: SimulationTestBed::<PneumaticTestAircraft>::new(|context| {
+                    PneumaticTestAircraft::new(context)
                 }),
             }
         }
@@ -1636,7 +1675,7 @@ mod tests {
         }
 
         fn mach_number(mut self, mach: MachNumber) -> Self {
-            self.write("AIRSPEED MACH", mach);
+            self.write_by_name("AIRSPEED MACH", mach);
 
             self
         }
@@ -1653,75 +1692,75 @@ mod tests {
         }
 
         fn idle_eng1(mut self) -> Self {
-            self.write("GENERAL ENG STARTER ACTIVE:1", true);
-            self.write("TURB ENG CORRECTED N2:1", Ratio::new::<ratio>(0.55));
-            self.write("TURB ENG CORRECTED N1:1", Ratio::new::<ratio>(0.2));
-            self.write("ENGINE_STATE:1", EngineState::On);
+            self.write_by_name("GENERAL ENG STARTER ACTIVE:1", true);
+            self.write_by_name("TURB ENG CORRECTED N2:1", Ratio::new::<ratio>(0.55));
+            self.write_by_name("TURB ENG CORRECTED N1:1", Ratio::new::<ratio>(0.2));
+            self.write_by_name("ENGINE_STATE:1", EngineState::On);
 
             self
         }
 
         fn idle_eng2(mut self) -> Self {
-            self.write("GENERAL ENG STARTER ACTIVE:2", true);
-            self.write("TURB ENG CORRECTED N2:2", Ratio::new::<ratio>(0.55));
-            self.write("TURB ENG CORRECTED N1:2", Ratio::new::<ratio>(0.2));
-            self.write("ENGINE_STATE:2", EngineState::On);
+            self.write_by_name("GENERAL ENG STARTER ACTIVE:2", true);
+            self.write_by_name("TURB ENG CORRECTED N2:2", Ratio::new::<ratio>(0.55));
+            self.write_by_name("TURB ENG CORRECTED N1:2", Ratio::new::<ratio>(0.2));
+            self.write_by_name("ENGINE_STATE:2", EngineState::On);
 
             self
         }
 
         fn toga_eng1(mut self) -> Self {
-            self.write("GENERAL ENG STARTER ACTIVE:1", true);
-            self.write("TURB ENG CORRECTED N2:1", Ratio::new::<ratio>(0.65));
-            self.write("TURB ENG CORRECTED N1:1", Ratio::new::<ratio>(0.99));
-            self.write("ENGINE_STATE:1", EngineState::On);
+            self.write_by_name("GENERAL ENG STARTER ACTIVE:1", true);
+            self.write_by_name("TURB ENG CORRECTED N2:1", Ratio::new::<ratio>(0.65));
+            self.write_by_name("TURB ENG CORRECTED N1:1", Ratio::new::<ratio>(0.99));
+            self.write_by_name("ENGINE_STATE:1", EngineState::On);
 
             self
         }
 
         fn toga_eng2(mut self) -> Self {
-            self.write("GENERAL ENG STARTER ACTIVE:2", true);
-            self.write("TURB ENG CORRECTED N2:2", Ratio::new::<ratio>(0.65));
-            self.write("TURB ENG CORRECTED N1:2", Ratio::new::<ratio>(0.99));
-            self.write("ENGINE_STATE:2", EngineState::On);
+            self.write_by_name("GENERAL ENG STARTER ACTIVE:2", true);
+            self.write_by_name("TURB ENG CORRECTED N2:2", Ratio::new::<ratio>(0.65));
+            self.write_by_name("TURB ENG CORRECTED N1:2", Ratio::new::<ratio>(0.99));
+            self.write_by_name("ENGINE_STATE:2", EngineState::On);
 
             self
         }
 
         fn stop_eng1(mut self) -> Self {
-            self.write("GENERAL ENG STARTER ACTIVE:1", false);
-            self.write("TURB ENG CORRECTED N2:1", Ratio::new::<ratio>(0.));
-            self.write("TURB ENG CORRECTED N1:1", Ratio::new::<ratio>(0.));
-            self.write("ENGINE_STATE:1", EngineState::Off);
+            self.write_by_name("GENERAL ENG STARTER ACTIVE:1", false);
+            self.write_by_name("TURB ENG CORRECTED N2:1", Ratio::new::<ratio>(0.));
+            self.write_by_name("TURB ENG CORRECTED N1:1", Ratio::new::<ratio>(0.));
+            self.write_by_name("ENGINE_STATE:1", EngineState::Off);
 
             self
         }
 
         fn stop_eng2(mut self) -> Self {
-            self.write("GENERAL ENG STARTER ACTIVE:2", false);
-            self.write("TURB ENG CORRECTED N2:2", Ratio::new::<ratio>(0.));
-            self.write("TURB ENG CORRECTED N1:2", Ratio::new::<ratio>(0.));
-            self.write("ENGINE_STATE:2", EngineState::Off);
+            self.write_by_name("GENERAL ENG STARTER ACTIVE:2", false);
+            self.write_by_name("TURB ENG CORRECTED N2:2", Ratio::new::<ratio>(0.));
+            self.write_by_name("TURB ENG CORRECTED N1:2", Ratio::new::<ratio>(0.));
+            self.write_by_name("ENGINE_STATE:2", EngineState::Off);
 
             self
         }
 
         fn start_eng1(mut self) -> Self {
-            self.write("GENERAL ENG STARTER ACTIVE:1", true);
-            self.write("ENGINE_STATE:1", EngineState::Starting);
+            self.write_by_name("GENERAL ENG STARTER ACTIVE:1", true);
+            self.write_by_name("ENGINE_STATE:1", EngineState::Starting);
 
             self
         }
 
         fn start_eng2(mut self) -> Self {
-            self.write("GENERAL ENG STARTER ACTIVE:2", true);
-            self.write("ENGINE_STATE:2", EngineState::Starting);
+            self.write_by_name("GENERAL ENG STARTER ACTIVE:2", true);
+            self.write_by_name("ENGINE_STATE:2", EngineState::Starting);
 
             self
         }
 
         fn cross_bleed_valve_selector_knob(mut self, mode: CrossBleedValveSelectorMode) -> Self {
-            self.write("KNOB_OVHD_AIRCOND_XBLEED_Position", mode);
+            self.write_by_name("KNOB_OVHD_AIRCOND_XBLEED_Position", mode);
 
             self
         }
@@ -1843,7 +1882,7 @@ mod tests {
         }
 
         fn set_engine_bleed_push_button_off(mut self, number: usize) -> Self {
-            self.write(&format!("OVHD_PNEU_ENG_{}_BLEED_PB_IS_AUTO", number), false);
+            self.write_by_name(&format!("OVHD_PNEU_ENG_{}_BLEED_PB_IS_AUTO", number), false);
 
             self
         }
@@ -1855,13 +1894,13 @@ mod tests {
         }
 
         fn set_apu_bleed_air_pb(mut self, is_on: bool) -> Self {
-            self.write("OVHD_APU_BLEED_PB_IS_ON", is_on);
+            self.write_by_name("OVHD_APU_BLEED_PB_IS_ON", is_on);
 
             self
         }
 
         fn set_bleed_air_running(mut self) -> Self {
-            self.write_arinc429(
+            self.write_arinc429_by_name(
                 "APU_BLEED_AIR_PRESSURE",
                 Pressure::new::<psi>(42.),
                 SignStatus::NormalOperation,
@@ -1877,7 +1916,7 @@ mod tests {
         }
 
         fn set_engine_state(mut self, number: usize, engine_state: EngineState) -> Self {
-            self.write(&format!("ENGINE_STATE:{}", number), engine_state);
+            self.write_by_name(&format!("ENGINE_STATE:{}", number), engine_state);
 
             self
         }
@@ -1919,7 +1958,7 @@ mod tests {
         }
 
         fn set_pack_flow_pb_is_auto(mut self, number: usize, is_auto: bool) -> Self {
-            self.write(&format!("AIRCOND_PACK{}_TOGGLE", number), is_auto);
+            self.write_by_name(&format!("AIRCOND_PACK{}_TOGGLE", number), is_auto);
 
             self
         }
@@ -2313,64 +2352,64 @@ mod tests {
             .in_isa_atmosphere(Length::new::<foot>(0.))
             .and_run();
 
-        assert!(test_bed.contains_key("PNEU_ENG_1_IP_PRESSURE"));
-        assert!(test_bed.contains_key("PNEU_ENG_2_IP_PRESSURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_1_IP_PRESSURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_2_IP_PRESSURE"));
 
-        assert!(test_bed.contains_key("PNEU_ENG_1_HP_PRESSURE"));
-        assert!(test_bed.contains_key("PNEU_ENG_2_HP_PRESSURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_1_HP_PRESSURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_2_HP_PRESSURE"));
 
-        assert!(test_bed.contains_key("PNEU_ENG_1_TRANSFER_PRESSURE"));
-        assert!(test_bed.contains_key("PNEU_ENG_2_TRANSFER_PRESSURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_1_TRANSFER_PRESSURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_2_TRANSFER_PRESSURE"));
 
-        assert!(test_bed.contains_key("PNEU_ENG_1_PRECOOLER_INLET_PRESSURE"));
-        assert!(test_bed.contains_key("PNEU_ENG_2_PRECOOLER_INLET_PRESSURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_1_PRECOOLER_INLET_PRESSURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_2_PRECOOLER_INLET_PRESSURE"));
 
-        assert!(test_bed.contains_key("PNEU_ENG_1_PRECOOLER_OUTLET_PRESSURE"));
-        assert!(test_bed.contains_key("PNEU_ENG_2_PRECOOLER_OUTLET_PRESSURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_1_PRECOOLER_OUTLET_PRESSURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_2_PRECOOLER_OUTLET_PRESSURE"));
 
-        assert!(test_bed.contains_key("PNEU_ENG_1_STARTER_CONTAINER_PRESSURE"));
-        assert!(test_bed.contains_key("PNEU_ENG_2_STARTER_CONTAINER_PRESSURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_1_STARTER_CONTAINER_PRESSURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_2_STARTER_CONTAINER_PRESSURE"));
 
-        assert!(test_bed.contains_key("PNEU_ENG_1_IP_TEMPERATURE"));
-        assert!(test_bed.contains_key("PNEU_ENG_2_IP_TEMPERATURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_1_IP_TEMPERATURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_2_IP_TEMPERATURE"));
 
-        assert!(test_bed.contains_key("PNEU_ENG_1_HP_TEMPERATURE"));
-        assert!(test_bed.contains_key("PNEU_ENG_2_HP_TEMPERATURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_1_HP_TEMPERATURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_2_HP_TEMPERATURE"));
 
-        assert!(test_bed.contains_key("PNEU_ENG_1_TRANSFER_TEMPERATURE"));
-        assert!(test_bed.contains_key("PNEU_ENG_2_TRANSFER_TEMPERATURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_1_TRANSFER_TEMPERATURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_2_TRANSFER_TEMPERATURE"));
 
-        assert!(test_bed.contains_key("PNEU_ENG_1_PRECOOLER_INLET_TEMPERATURE"));
-        assert!(test_bed.contains_key("PNEU_ENG_2_PRECOOLER_INLET_TEMPERATURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_1_PRECOOLER_INLET_TEMPERATURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_2_PRECOOLER_INLET_TEMPERATURE"));
 
-        assert!(test_bed.contains_key("PNEU_ENG_1_PRECOOLER_OUTLET_TEMPERATURE"));
-        assert!(test_bed.contains_key("PNEU_ENG_2_PRECOOLER_OUTLET_TEMPERATURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_1_PRECOOLER_OUTLET_TEMPERATURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_2_PRECOOLER_OUTLET_TEMPERATURE"));
 
-        assert!(test_bed.contains_key("PNEU_ENG_1_STARTER_CONTAINER_TEMPERATURE"));
-        assert!(test_bed.contains_key("PNEU_ENG_2_STARTER_CONTAINER_TEMPERATURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_1_STARTER_CONTAINER_TEMPERATURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_2_STARTER_CONTAINER_TEMPERATURE"));
 
-        assert!(test_bed.contains_key("PNEU_ENG_1_IP_PRESSURE"));
-        assert!(test_bed.contains_key("PNEU_ENG_2_IP_PRESSURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_1_IP_PRESSURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_2_IP_PRESSURE"));
 
-        assert!(test_bed.contains_key("PNEU_ENG_1_IP_VALVE_OPEN"));
-        assert!(test_bed.contains_key("PNEU_ENG_2_IP_VALVE_OPEN"));
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_1_IP_VALVE_OPEN"));
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_2_IP_VALVE_OPEN"));
 
-        assert!(test_bed.contains_key("PNEU_ENG_1_HP_VALVE_OPEN"));
-        assert!(test_bed.contains_key("PNEU_ENG_2_HP_VALVE_OPEN"));
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_1_HP_VALVE_OPEN"));
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_2_HP_VALVE_OPEN"));
 
-        assert!(test_bed.contains_key("PNEU_ENG_1_PR_VALVE_OPEN"));
-        assert!(test_bed.contains_key("PNEU_ENG_2_PR_VALVE_OPEN"));
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_1_PR_VALVE_OPEN"));
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_2_PR_VALVE_OPEN"));
 
-        assert!(test_bed.contains_key("PNEU_ENG_1_STARTER_VALVE_OPEN"));
-        assert!(test_bed.contains_key("PNEU_ENG_2_STARTER_VALVE_OPEN"));
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_1_STARTER_VALVE_OPEN"));
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_2_STARTER_VALVE_OPEN"));
 
-        assert!(test_bed.contains_key("OVHD_PNEU_ENG_1_BLEED_PB_HAS_FAULT"));
-        assert!(test_bed.contains_key("OVHD_PNEU_ENG_2_BLEED_PB_HAS_FAULT"));
+        assert!(test_bed.contains_variable_with_name("OVHD_PNEU_ENG_1_BLEED_PB_HAS_FAULT"));
+        assert!(test_bed.contains_variable_with_name("OVHD_PNEU_ENG_2_BLEED_PB_HAS_FAULT"));
 
-        assert!(test_bed.contains_key("OVHD_PNEU_ENG_1_BLEED_PB_IS_AUTO"));
-        assert!(test_bed.contains_key("OVHD_PNEU_ENG_2_BLEED_PB_IS_AUTO"));
+        assert!(test_bed.contains_variable_with_name("OVHD_PNEU_ENG_1_BLEED_PB_IS_AUTO"));
+        assert!(test_bed.contains_variable_with_name("OVHD_PNEU_ENG_2_BLEED_PB_IS_AUTO"));
 
-        assert!(test_bed.contains_key("PNEU_XBLEED_VALVE_OPEN"));
+        assert!(test_bed.contains_variable_with_name("PNEU_XBLEED_VALVE_OPEN"));
     }
 
     #[test]

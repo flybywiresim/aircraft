@@ -27,14 +27,14 @@
 !manifest-base.json
 !Cargo.lock
 !Cargo.toml
+!rust-toolchain.toml
 !/.cargo/config.toml
 !jest.config.js
 !/jest/**
 .DS_Store
 node_modules
 /src/sound/.cache
-/src/instruments/devServer/bundles
-/src/instruments/devServer/instruments.json
+/src/instruments/aceBundles
 /src/instruments/src/EFB/dist
 /src/autothrottle/target
 /flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/model/*.gltf

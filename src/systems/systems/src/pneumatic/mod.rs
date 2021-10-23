@@ -5,8 +5,8 @@ use crate::{
         PneumaticValve,
     },
     simulation::{
-        Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
-        SimulatorWriter, UpdateContext, Write, Writer,
+        test::TestBed, InitContext, Read, Reader, SimulationElement, SimulationElementVisitor,
+        SimulatorReader, SimulatorWriter, UpdateContext, VariableIdentifier, Write, Writer,
     },
 };
 
@@ -135,6 +135,7 @@ impl TargetPressureSignal {
 }
 
 pub struct EngineCompressionChamberController {
+    current_mach_id: VariableIdentifier,
     current_mach: MachNumber,
     target_pressure: Pressure,
     n1_contribution_factor: f64,
@@ -155,18 +156,21 @@ impl SimulationElement for EngineCompressionChamberController {
     }
 
     fn read(&mut self, reader: &mut SimulatorReader) {
-        self.current_mach = reader.read("AIRSPEED MACH");
+        self.current_mach = reader.read(&self.current_mach_id);
     }
 }
 impl EngineCompressionChamberController {
     const HEAT_CAPACITY_RATIO: f64 = 1.4; // Adiabatic index of dry air
 
     pub fn new(
+        context: &mut InitContext,
         n1_contribution_factor: f64,
         n2_contribution_factor: f64,
         compression_factor: f64,
     ) -> Self {
         Self {
+            current_mach_id: context.get_identifier("AIRSPEED MACH".to_owned()),
+
             current_mach: MachNumber::default(),
             target_pressure: Pressure::new::<psi>(0.),
             n1_contribution_factor,
@@ -243,13 +247,13 @@ impl CompressionChamber {
 }
 
 pub struct CrossBleedValveSelectorKnob {
-    mode_id: String,
+    mode_id: VariableIdentifier,
     mode: CrossBleedValveSelectorMode,
 }
 impl CrossBleedValveSelectorKnob {
-    pub fn new_auto() -> Self {
+    pub fn new_auto(context: &mut InitContext) -> Self {
         Self {
-            mode_id: String::from("KNOB_OVHD_AIRCOND_XBLEED_Position"),
+            mode_id: context.get_identifier("KNOB_OVHD_AIRCOND_XBLEED_Position".to_owned()),
             mode: CrossBleedValveSelectorMode::Auto,
         }
     }
@@ -309,18 +313,20 @@ impl From<f64> for EngineState {
 }
 
 pub struct ApuCompressionChamberController {
+    apu_bleed_air_pressure_id: VariableIdentifier,
     current_pressure: Pressure,
 }
 impl ApuCompressionChamberController {
-    pub fn new() -> Self {
+    pub fn new(context: &mut InitContext) -> Self {
         Self {
+            apu_bleed_air_pressure_id: context.get_identifier("APU_BLEED_AIR_PRESSURE".to_owned()),
             current_pressure: Pressure::new::<psi>(14.7),
         }
     }
 }
 impl SimulationElement for ApuCompressionChamberController {
     fn read(&mut self, reader: &mut SimulatorReader) {
-        let read: Arinc429Word<Pressure> = reader.read_arinc429("APU_BLEED_AIR_PRESSURE");
+        let read: Arinc429Word<Pressure> = reader.read_arinc429(&self.apu_bleed_air_pressure_id);
         if let Some(pressure) = read.normal_value() {
             self.current_pressure = pressure;
         }
@@ -461,10 +467,11 @@ pub enum BleedMonitoringComputerChannelOperationMode {
 mod tests {
     use super::*;
     use crate::{
+        electrical::{test::TestElectricitySource, Electricity},
         pneumatic::{DefaultValve, PneumaticContainer, PneumaticPipe},
         shared::{ControllerSignal, InternationalStandardAtmosphere},
         simulation::{
-            test::{SimulationTestBed, TestBed},
+            test::{SimulationTestBed, TestBed, TestVariableRegistry},
             UpdateContext,
         },
     };
@@ -541,7 +548,12 @@ mod tests {
     }
 
     fn context(delta_time: Duration, altitude: Length) -> UpdateContext {
+        let mut electricity = Electricity::new();
+        let mut registry: TestVariableRegistry = Default::default();
+        let mut init_context = InitContext::new(&mut electricity, &mut registry);
+
         UpdateContext::new(
+            &mut init_context,
             delta_time,
             Velocity::new::<knot>(0.),
             altitude,
@@ -601,8 +613,12 @@ mod tests {
 
     #[test]
     fn engine_compression_chamber_signal_n1_dependence() {
+        let mut electricity = Electricity::new();
+        let mut registry: TestVariableRegistry = Default::default();
+        let mut init_context = InitContext::new(&mut electricity, &mut registry);
+
         let mut compression_chamber_controller =
-            EngineCompressionChamberController::new(1., 0., 1.);
+            EngineCompressionChamberController::new(&mut init_context, 1., 0., 1.);
         let engine = TestEngine::new(Ratio::new::<ratio>(0.2), Ratio::new::<ratio>(0.));
 
         let context = context(Duration::from_millis(1000), Length::new::<foot>(0.));
@@ -620,8 +636,12 @@ mod tests {
 
     #[test]
     fn engine_compression_chamber_signal_n2_dependence() {
+        let mut electricity = Electricity::new();
+        let mut registry: TestVariableRegistry = Default::default();
+        let mut init_context = InitContext::new(&mut electricity, &mut registry);
+
         let mut compression_chamber_controller =
-            EngineCompressionChamberController::new(0., 1., 1.);
+            EngineCompressionChamberController::new(&mut init_context, 0., 1., 1.);
         let engine = TestEngine::new(Ratio::new::<ratio>(0.), Ratio::new::<ratio>(0.2));
 
         let context = context(Duration::from_millis(1000), Length::new::<foot>(0.));
@@ -639,8 +659,13 @@ mod tests {
 
     #[test]
     fn engine_compression_chamber_pressure_cold_and_dark() {
+        let mut electricity = Electricity::new();
+        let mut registry: TestVariableRegistry = Default::default();
+        let mut init_context = InitContext::new(&mut electricity, &mut registry);
+
         let engine = TestEngine::cold_dark();
-        let mut compression_chamber = EngineCompressionChamberController::new(0.5, 0.5, 2.);
+        let mut compression_chamber =
+            EngineCompressionChamberController::new(&mut init_context, 0.5, 0.5, 2.);
         let context = context(Duration::from_millis(1000), Length::new::<foot>(0.));
 
         compression_chamber.update(&context, &engine);
@@ -654,8 +679,13 @@ mod tests {
 
     #[test]
     fn engine_compression_chamber_pressure_toga() {
+        let mut electricity = Electricity::new();
+        let mut registry: TestVariableRegistry = Default::default();
+        let mut init_context = InitContext::new(&mut electricity, &mut registry);
+
         let engine = TestEngine::toga();
-        let mut compression_chamber = EngineCompressionChamberController::new(1., 1., 1.);
+        let mut compression_chamber =
+            EngineCompressionChamberController::new(&mut init_context, 1., 1., 1.);
         let context = context(Duration::from_millis(1000), Length::new::<foot>(0.));
 
         compression_chamber.update(&context, &engine);
@@ -669,8 +699,13 @@ mod tests {
 
     #[test]
     fn engine_compression_chamber_pressure_idle() {
+        let mut electricity = Electricity::new();
+        let mut registry: TestVariableRegistry = Default::default();
+        let mut init_context = InitContext::new(&mut electricity, &mut registry);
+
         let engine = TestEngine::idle();
-        let mut compression_chamber = EngineCompressionChamberController::new(1., 1., 1.);
+        let mut compression_chamber =
+            EngineCompressionChamberController::new(&mut init_context, 1., 1., 1.);
         let context = context(Duration::from_millis(1000), Length::new::<foot>(0.));
 
         compression_chamber.update(&context, &engine);
@@ -684,11 +719,13 @@ mod tests {
 
     #[test]
     fn engine_compression_chamber_stabilises() {
-        let epsilon = Pressure::new::<pascal>(100.);
+        let mut electricity = Electricity::new();
+        let mut registry: TestVariableRegistry = Default::default();
+        let mut init_context = InitContext::new(&mut electricity, &mut registry);
 
         let engine = TestEngine::toga();
         let mut compression_chamber_controller =
-            EngineCompressionChamberController::new(1., 1., 1.);
+            EngineCompressionChamberController::new(&mut init_context, 1., 1., 1.);
         let mut compression_chamber = CompressionChamber::new(Volume::new::<cubic_meter>(1.));
         let context = context(Duration::from_millis(1000), Length::new::<foot>(0.));
 
@@ -696,7 +733,10 @@ mod tests {
         compression_chamber.update(&compression_chamber_controller);
 
         if let Some(signal) = compression_chamber_controller.signal() {
-            assert!((signal.target_pressure - compression_chamber.pressure()).abs() < epsilon);
+            assert_about_eq!(
+                signal.target_pressure.get::<psi>(),
+                compression_chamber.pressure().get::<psi>()
+            );
         } else {
             assert!(false)
         }
@@ -834,46 +874,5 @@ mod tests {
 
         assert!(container_with_valve.pressure().get::<psi>() > 10.);
         assert!(container_with_valve.temperature().get::<degree_celsius>() > 15.);
-    }
-
-    mod cross_bleed_selector_knob {
-        use super::*;
-
-        #[test]
-        fn new_auto_push_button_is_auto() {
-            assert_eq!(
-                CrossBleedValveSelectorKnob::new_auto().mode(),
-                CrossBleedValveSelectorMode::Auto
-            );
-        }
-
-        #[test]
-        fn valve_modes_are_represented_as_simvar_integers() {
-            let mut test_bed = SimulationTestBed::from(CrossBleedValveSelectorKnob::new_auto());
-
-            test_bed.write("KNOB_OVHD_AIRCOND_XBLEED_Position", 0);
-            test_bed.run();
-
-            let read_mode: CrossBleedValveSelectorMode =
-                test_bed.read("KNOB_OVHD_AIRCOND_XBLEED_Position");
-
-            assert_eq!(read_mode, CrossBleedValveSelectorMode::Shut);
-
-            test_bed.write("KNOB_OVHD_AIRCOND_XBLEED_Position", 1);
-            test_bed.run();
-
-            let read_mode: CrossBleedValveSelectorMode =
-                test_bed.read("KNOB_OVHD_AIRCOND_XBLEED_Position");
-
-            assert_eq!(read_mode, CrossBleedValveSelectorMode::Auto);
-
-            test_bed.write("KNOB_OVHD_AIRCOND_XBLEED_Position", 2);
-            test_bed.run();
-
-            let read_mode: CrossBleedValveSelectorMode =
-                test_bed.read("KNOB_OVHD_AIRCOND_XBLEED_Position");
-
-            assert_eq!(read_mode, CrossBleedValveSelectorMode::Open);
-        }
     }
 }
