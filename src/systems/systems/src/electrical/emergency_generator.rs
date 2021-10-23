@@ -1,20 +1,12 @@
-use std::time::Duration;
-
-use uom::si::{electric_potential::volt, f64::*, frequency::hertz};
-
-use crate::{
-    shared::{PowerConsumptionReport, RamAirTurbineHydraulicLoopPressurised},
-    simulation::{InitContext, SimulationElement, SimulatorWriter, UpdateContext},
-};
+use crate::simulation::{InitContext, SimulationElement, SimulatorWriter, UpdateContext};
 
 use super::{
     ElectricalElement, ElectricalElementIdentifier, ElectricalElementIdentifierProvider,
     ElectricalStateWriter, ElectricitySource, Potential, PotentialOrigin, ProvideFrequency,
     ProvidePotential,
 };
-use crate::{
-    shared::{EmergencyGeneratorInterface, GeneratorControlUnitInterface, PowerConsumptionReport},
-    simulation::{SimulationElement, SimulatorWriter, UpdateContext},
+use crate::shared::{
+    EmergencyGeneratorInterface, GeneratorControlUnitInterface, PowerConsumptionReport,
 };
 use uom::si::{
     angular_velocity::{radian_per_second, revolution_per_minute},
@@ -40,9 +32,7 @@ impl EmergencyGenerator {
     const EFFICIENCY: f64 = 0.95;
     const STATIC_RESISTANT_TORQUE_WHEN_UNPOWERED_NM: f64 = 0.3;
 
-    pub fn new(
-        context: &mut InitContext
-    ) -> EmergencyGenerator {
+    pub fn new(context: &mut InitContext) -> EmergencyGenerator {
         EmergencyGenerator {
             identifier: context.next_electrical_identifier(),
             writer: ElectricalStateWriter::new(context, "EMER_GEN"),

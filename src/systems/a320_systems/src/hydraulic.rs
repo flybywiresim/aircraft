@@ -339,7 +339,10 @@ impl A320Hydraulic {
                 [0., 0., 0., 0., 1000., 6000., 1000., 0., 0.],
             ),
 
-            emergency_gen: ElectricalEmergencyGenerator::new(Volume::new::<cubic_inch>(0.19)),
+            emergency_gen: ElectricalEmergencyGenerator::new(
+                context,
+                Volume::new::<cubic_inch>(0.19),
+            ),
             forward_cargo_door: A320CargoDoorFactory::new_a320_cargo_door(
                 context,
                 Self::FORWARD_CARGO_DOOR_ID,
@@ -2822,7 +2825,7 @@ mod tests {
             }
 
             fn _get_emergency_gen_rpm(&mut self) -> f64 {
-                self.read("HYD_EMERGENCY_GEN_RPM")
+                self.read_by_name("HYD_EMERGENCY_GEN_RPM")
             }
 
             fn rat_deploy_commanded(&self) -> bool {
