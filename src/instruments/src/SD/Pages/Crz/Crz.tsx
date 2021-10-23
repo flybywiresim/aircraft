@@ -121,11 +121,11 @@ export const OilComponent = () => {
 export const PressureComponent = () => {
     const [landingElevDialPosition] = useSimVar('L:XMLVAR_KNOB_OVHD_CABINPRESS_LDGELEV', 'Number', 100);
     const [landingRunwayElevation] = useSimVar('L:A32NX_PRESS_AUTO_LANDING_ELEVATION', 'feet', 1000);
-    const [manMode] = useSimVar('L:A32NX_CAB_PRESS_MODE_MAN', 'Bool', 1000);
+    const [autoMode] = useSimVar('L:A32NX_OVHD_PRESS_MODE_SEL_PB_IS_AUTO', 'Bool', 1000);
     const [ldgElevMode, setLdgElevMode] = useState('AUTO');
     const [ldgElevValue, setLdgElevValue] = useState('XX');
     const [cssLdgElevName, setCssLdgElevName] = useState('green');
-    const [landingElev] = useSimVar('L:A32NX_LANDING_ELEVATION', 'feet', 100);
+    const [landingElev] = useSimVar('L:A32NX_OVHD_PRESS_LDG_ELEV_KNOB', 'feet', 100);
     const [cabinAlt] = useSimVar('L:A32NX_PRESS_CABIN_ALTITUDE', 'feet', 500);
     const [cabinVs] = useSimVar('L:A32NX_PRESS_CABIN_VS', 'feet per minute', 500);
     const [deltaPsi] = useSimVar('L:A32NX_PRESS_CABIN_DELTA_PRESSURE', 'psi', 1000);
@@ -153,7 +153,7 @@ export const PressureComponent = () => {
 
     return (
         <>
-            <g id="LandingElevation" className={!manMode ? 'show' : 'hide'}>
+            <g id="LandingElevation" className={autoMode ? 'show' : 'hide'}>
                 <text className="Standard Center" x="330" y="335">LDG ELEV</text>
                 <text id="LandingElevationMode" className="Standard Green" x="385" y="335">{ldgElevMode}</text>
 
@@ -170,7 +170,7 @@ export const PressureComponent = () => {
                     <GaugeMarkerComponent value={-1} x={vsx} y={y} min={-2} max={2} radius={radius} startAngle={180} endAngle={0} className="GaugeText" />
                     <GaugeMarkerComponent value={-2} x={vsx} y={y} min={-2} max={2} radius={radius} startAngle={180} endAngle={0} className="GaugeText" showValue />
                     <GaugeMarkerComponent
-                        value={cabinVs / 1000}
+                        value={Math.abs((cabinVs / 50 * 50) / 1000) <= 2.25 ? (cabinVs / 50 * 50) / 1000 : 2.250}
                         x={vsx}
                         y={y}
                         min={-2}
@@ -202,7 +202,7 @@ export const PressureComponent = () => {
 
             <g
                 id="vsArrow"
-                className={(cabinVs * 60 <= -50 || cabinVs * 60 >= 50) && !manMode ? '' : 'Hide'}
+                className={(cabinVs * 60 <= -50 || cabinVs * 60 >= 50) && autoMode ? '' : 'Hide'}
                 transform={cabinVs * 60 <= -50 ? 'translate(0, 795) scale(1, -1)' : 'scale(1, 1)'}
             >
                 <path d="M433,405 h7 L446,395" className="VsIndicator" strokeLinejoin="miter" />
