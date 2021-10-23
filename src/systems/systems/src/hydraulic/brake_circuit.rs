@@ -485,7 +485,7 @@ mod tests {
 
     use crate::electrical::Electricity;
     use crate::simulation::test::{ElementCtorFn, SimulationTestBed, TestVariableRegistry};
-    use crate::{ simulation::UpdateContext};
+    use crate::simulation::UpdateContext;
     use std::time::Duration;
     use uom::si::{
         acceleration::foot_per_second_squared, angle::radian, length::foot, pressure::psi,
