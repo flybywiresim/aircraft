@@ -1,142 +1,189 @@
-import React from 'react';
-import {
-    IconBox,
-    IconPlane,
-    IconPlaneDeparture,
-    IconPlaneArrival,
-} from '@tabler/icons';
-import { SimbriefData } from '../../Efb';
-import fuselage from '../../Assets/320neo-outline-nose.svg';
+import React, { useEffect, useState } from 'react';
+import { IconPlane } from '@tabler/icons';
+import { FileEarmarkArrowDown } from 'react-bootstrap-icons';
+import { usePersistentProperty } from '@instruments/common/persistence';
+import { toast } from 'react-toastify';
+import { useSimVarValue } from '@instruments/common/simVars';
 
-type FlightWidgetProps = {
-    simbriefData: SimbriefData,
-    fetchSimbrief: Function,
+import { useAppSelector, useAppDispatch } from '../../Store/store';
+
+import { fetchSimbriefDataAction } from '../../Store/features/simBrief';
+import { ScrollableContainer } from '../../Components/ScrollableContainer';
+
+interface InformationEntryProps {
+    title: string;
+    info: string;
 }
 
-const FlightWidget = (props: FlightWidgetProps) => {
-    const { simbriefData } = props;
+const InformationEntry = ({ title, info }: InformationEntryProps) => (
+    <div className="flex flex-col items-center w-full">
+        <h3 className="font-bold textl-xl">{title}</h3>
+        <p className="text-2xl font-light">{info}</p>
+    </div>
+);
 
-    let schedInParsed = '--:--';
-    let schedOutParsed = '--:--';
+export const FlightWidget = () => {
+    const [simbriefUserId] = usePersistentProperty('CONFIG_SIMBRIEF_USERID');
+    const {
+        schedIn,
+        schedOut,
+        weather,
+        cruiseAltitude,
+        weights,
+        arrivingAirport,
+        arrivingIata,
+        arrivingName,
+        arrivingPosLat,
+        arrivingPosLong,
+        departingAirport,
+        departingIata,
+        departingName,
+        departingPosLat,
+        departingPosLong,
+        airline,
+        route,
+        flightNum,
+        altIcao,
+        costInd,
+    } = useAppSelector((state) => state.simbrief.data);
+    const dispatch = useAppDispatch();
+
+    const [totalDistance, setTotalDistance] = useState(0);
+    const [remainingDistance, setRemainingDistance] = useState(0);
+
+    let schedInParsed = '----';
+    let schedOutParsed = '----';
     let crzAlt = '-----';
     let avgWind = '---/---';
     let estimatedZfw = '--.-';
 
-    if (simbriefData.schedIn !== '--:--') {
-        const sta = new Date(parseInt(simbriefData.schedIn) * 1000);
-        schedInParsed = `${sta.getUTCHours().toString().padStart(2, '0')}:${sta.getUTCMinutes().toString().padStart(2, '0')}z`;
+    if (schedIn !== '--:--') {
+        const sta = new Date(parseInt(schedIn) * 1000);
+        schedInParsed = `ETA ${sta.getUTCHours().toString().padStart(2, '0')}${sta.getUTCMinutes().toString().padStart(2, '0')}Z`;
     }
 
-    if (simbriefData.schedOut !== '--:--') {
-        const std = new Date(parseInt(simbriefData.schedOut) * 1000);
-        schedOutParsed = `${std.getUTCHours().toString().padStart(2, '0')}:${std.getUTCMinutes().toString().padStart(2, '0')}z`;
+    if (schedOut !== '--:--') {
+        const std = new Date(parseInt(schedOut) * 1000);
+        schedOutParsed = `${std.getUTCHours().toString().padStart(2, '0')}${std.getUTCMinutes().toString().padStart(2, '0')}Z`;
     }
 
-    if (simbriefData.cruiseAltitude !== 0) {
-        const flightLevel = (simbriefData.cruiseAltitude / 100);
+    if (cruiseAltitude !== 0) {
+        const flightLevel = (cruiseAltitude / 100);
         crzAlt = `FL${flightLevel}`;
     }
 
-    if (simbriefData.weather.avgWindDir !== '---' && simbriefData.weather.avgWindSpeed !== '---') {
-        avgWind = `${simbriefData.weather.avgWindDir}/${simbriefData.weather.avgWindSpeed}`;
+    if (weather.avgWindDir !== '---' && weather.avgWindSpeed !== '---') {
+        avgWind = `${weather.avgWindDir}/${weather.avgWindSpeed}`;
     }
 
-    if (simbriefData.weights.estZeroFuelWeight !== 0) {
-        const eZfwUnround = simbriefData.weights.estZeroFuelWeight / 100;
+    if (weights.estZeroFuelWeight !== 0) {
+        const eZfwUnround = weights.estZeroFuelWeight / 100;
         const eZfw = Math.round(eZfwUnround) / 10;
         estimatedZfw = `${eZfw}`;
     }
 
+    const lat = useSimVarValue('PLANE LATITUDE', 'degree latitude', 2000);
+    const long = useSimVarValue('PLANE LONGITUDE', 'degree longitude', 2000);
+
+    useEffect(() => {
+        setRemainingDistance(Avionics.Utils.computeGreatCircleDistance(
+            { lat, long },
+            { lat: arrivingPosLat, long: arrivingPosLong },
+        ));
+    }, [lat, long, arrivingPosLat, arrivingPosLong]);
+
+    useEffect(() => {
+        setTotalDistance(Avionics.Utils.computeGreatCircleDistance(
+            { lat: departingPosLat, long: departingPosLong },
+            { lat: arrivingPosLat, long: arrivingPosLong },
+        ));
+    }, [departingPosLat, departingPosLong, arrivingPosLat, arrivingPosLong]);
+
+    const flightPlanProgress = totalDistance ? ((totalDistance - remainingDistance) / totalDistance) * 100 : 0;
+
     return (
-        <div className="w-2/5 h-full bg-navy-lighter text-white rounded-2xl mr-3 shadow-lg p-6 overflow-hidden">
-            <div className="h-full flex flex-col justify-between">
-                <div className="w-full">
-                    <div className="text-center mb-6">
-                        <h1 className="text-2xl font-medium">{(simbriefData.airline.length > 0 ? simbriefData.airline : '') + simbriefData.flightNum}</h1>
-                        <span className="text-lg">{simbriefData.aircraftReg}</span>
-                        {' '}
-                        <br />
-                        <span className="text-lg">A320-251N</span>
+        <div className="overflow-hidden p-6 mr-3 w-2/5 h-full rounded-lg border-2 shadow-md border-theme-accent">
+            <div className="flex flex-col justify-between h-full">
+                <div className="space-y-8">
+                    <div className="flex flex-row justify-between">
+                        <div>
+                            <p>{(airline.length > 0 ? airline : '') + flightNum}</p>
+                            <h1 className="text-4xl font-bold">{departingAirport}</h1>
+                            <p className="w-52 text-sm">{departingName}</p>
+                        </div>
+                        <div>
+                            <p className="text-right">A320-251N</p>
+                            <h1 className="text-4xl font-bold text-right">{arrivingAirport}</h1>
+                            <p className="w-52 text-sm text-right">{arrivingName}</p>
+                        </div>
                     </div>
-
-                    <div className="flex items-center justify-center mb-6 text-lg">
-                        [
-                        {simbriefData.departingIata}
-                        ]
-                        {' '}
-                        <span className="mx-3 text-3xl">{simbriefData.departingAirport}</span>
-                        <IconPlane size={35} stroke={1.5} strokeLinejoin="miter" />
-                        <span className="mx-3 text-3xl">{simbriefData.arrivingAirport}</span>
-                        {' '}
-                        [
-                        {simbriefData.arrivingIata}
-                        ]
-                    </div>
-
-                    <div className="flex">
-                        <div className="w-1/2 mr-4">
-                            <div className="flex justify-end text-lg">
-                                STD
-                                {' '}
-                                <IconPlaneDeparture className="ml-2" size={23} stroke={1.5} strokeLinejoin="miter" />
+                    <div>
+                        <div className="w-full">
+                            <div>
+                                <p className={`text-theme-highlight font-body ${flightPlanProgress > 1 ? 'text-theme-highlight' : 'text-theme-text'}`}>
+                                    {schedOutParsed}
+                                </p>
+                                <div className={`w-1 h-4 ${flightPlanProgress > 1 ? 'bg-theme-highlight' : 'bg-theme-text'}`} />
                             </div>
-                            <div className="text-right mt-1 text-2xl">{schedOutParsed}</div>
-                        </div>
-                        <div className="w-1/2 ml-4">
-                            <div className="flex justify-start text-lg">
-                                <IconPlaneArrival className="mr-2" size={23} stroke={1.5} strokeLinejoin="miter" />
-                                {' '}
-                                STA
+                            <div className="flex flex-row h-1">
+                                <div className="relative w-full bg-theme-highlight" style={{ width: `${flightPlanProgress}%` }}>
+                                    {!!totalDistance && (
+                                        <IconPlane
+                                            className="absolute right-0 transform translate-x-1/2 -translate-y-1/2 fill-current text-theme-highlight"
+                                            size={50}
+                                            strokeLinejoin="miter"
+                                        />
+                                    )}
+                                </div>
+                                <div className="w-full bg-white border-dashed" style={{ width: `${100 - flightPlanProgress}%` }} />
                             </div>
-                            <div className="text-left mt-1 text-2xl">{schedInParsed}</div>
+                            <div>
+                                <div className={`w-1 ml-auto h-4 ${flightPlanProgress > 99 ? 'bg-theme-highlight' : 'bg-theme-text'}`} />
+                                <p className={`text-right font-body ${flightPlanProgress > 99 ? 'text-theme-highlight' : 'text-theme-text'}`}>
+                                    {schedInParsed}
+                                </p>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div className="w-full my-3">
-                    <img src={fuselage} alt="Aircraft outline" className="flip-horizontal -ml-48" />
-                </div>
-                <div className="w-full mt-3">
-                    <div className="grid grid-cols-3 gap-4 text-center mb-10">
-                        <div className="mb-3">
-                            <h3 className="text-xl font-medium">ALTN</h3>
-                            <span className="text-lg font-mono font-light">{simbriefData.altIcao}</span>
+                    <div>
+                        <div className="flex flex-row mb-4">
+                            <InformationEntry title="ALTN" info={altIcao} />
+                            <div className="my-auto w-2 h-8 bg-theme-text" />
+                            <InformationEntry title="CO RTE" info={departingIata + arrivingIata} />
+                            <div className="my-auto w-2 h-8 bg-theme-text" />
+                            <InformationEntry title="ZFW" info={estimatedZfw} />
                         </div>
-                        <div className="mb-3">
-                            <h3 className="text-xl font-medium">CO RTE</h3>
-                            <span className="text-lg font-mono font-light">{simbriefData.departingIata + simbriefData.arrivingIata}</span>
-                        </div>
-                        <div className="mb-3">
-                            <h3 className="text-xl font-medium">ZFW</h3>
-                            <span className="text-lg font-mono font-light">{estimatedZfw}</span>
-                        </div>
-                        <div>
-                            <h3 className="text-xl font-medium">AVG WIND</h3>
-                            <span className="text-lg font-mono font-light">{avgWind}</span>
-                        </div>
-                        <div>
-                            <h3 className="text-xl font-medium">CI</h3>
-                            <span className="text-lg font-mono font-light">{simbriefData.costInd}</span>
-                        </div>
-                        <div>
-                            <h3 className="text-xl font-medium">CRZ</h3>
-                            <span className="text-lg font-mono font-light">{crzAlt}</span>
+                        <div className="my-auto w-full h-0.5 bg-theme-text" />
+                        <div className="flex flex-row mt-4">
+                            <InformationEntry title="CI" info={avgWind} />
+                            <div className="my-auto w-2 h-8 bg-theme-text" />
+                            <InformationEntry title="AVG WIND" info={costInd} />
+                            <div className="my-auto w-2 h-8 bg-theme-text" />
+                            <InformationEntry title="CRZ" info={crzAlt} />
                         </div>
                     </div>
-                    <div className="flex items-center justify-center">
-                        <button
-                            type="button"
-                            onClick={() => props.fetchSimbrief()}
-                            className="mr-1 w-1/2 text-white bg-teal-light p-2 flex items-center justify-center rounded-lg focus:outline-none text-lg"
-                        >
-                            <IconBox className="mr-2" size={23} stroke={1.5} strokeLinejoin="miter" />
-                            {' '}
-                            FROM SIMBRIEF
-                        </button>
+                    <div>
+                        <h5 className="text-2xl font-bold">Route</h5>
+                        <ScrollableContainer height={15} resizeDependencies={[route]}>
+                            <p className="font-mono text-justify">{route}</p>
+                        </ScrollableContainer>
                     </div>
                 </div>
+                <button
+                    type="button"
+                    onClick={() => {
+                        fetchSimbriefDataAction(simbriefUserId ?? '').then((action) => {
+                            dispatch(action);
+                        }).catch((e) => {
+                            toast.error(e.message);
+                        });
+                    }}
+                    className="flex justify-center items-center p-2 space-x-4 w-full rounded-lg border-2 shadow-lg focus:outline-none bg-theme-highlight border-theme-secondary"
+                >
+                    <FileEarmarkArrowDown size={26} />
+                    <p>Import Flightplan from SimBrief</p>
+                </button>
             </div>
         </div>
     );
 };
-
-export default FlightWidget;
