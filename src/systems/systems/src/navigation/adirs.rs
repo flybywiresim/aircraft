@@ -466,11 +466,11 @@ struct AdirsData<T> {
 }
 impl<T: Copy + Default> AdirsData<T> {
     fn new_adr(context: &mut InitContext, number: usize, name: &str) -> Self {
-        Self::new(context, OutputDataType::ADR, number, name)
+        Self::new(context, OutputDataType::Adr, number, name)
     }
 
     fn new_ir(context: &mut InitContext, number: usize, name: &str) -> Self {
-        Self::new(context, OutputDataType::IR, number, name)
+        Self::new(context, OutputDataType::Ir, number, name)
     }
 
     fn new(
@@ -506,14 +506,14 @@ impl<T: Copy + Default> AdirsData<T> {
 
 #[derive(Clone, Copy)]
 enum OutputDataType {
-    ADR,
-    IR,
+    Adr,
+    Ir,
 }
 impl Display for OutputDataType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            OutputDataType::ADR => write!(f, "ADR"),
-            OutputDataType::IR => write!(f, "IR"),
+            OutputDataType::Adr => write!(f, "ADR"),
+            OutputDataType::Ir => write!(f, "IR"),
         }
     }
 }
@@ -1237,7 +1237,7 @@ mod tests {
 
         fn altitude(&mut self, adiru_number: usize) -> Arinc429Word<Length> {
             self.read_arinc429_by_name(&output_data_id(
-                OutputDataType::ADR,
+                OutputDataType::Adr,
                 adiru_number,
                 AirDataReference::ALTITUDE,
             ))
@@ -1245,7 +1245,7 @@ mod tests {
 
         fn computed_airspeed(&mut self, adiru_number: usize) -> Arinc429Word<Velocity> {
             self.read_arinc429_by_name(&output_data_id(
-                OutputDataType::ADR,
+                OutputDataType::Adr,
                 adiru_number,
                 AirDataReference::COMPUTED_AIRSPEED,
             ))
@@ -1253,7 +1253,7 @@ mod tests {
 
         fn mach(&mut self, adiru_number: usize) -> Arinc429Word<MachNumber> {
             self.read_arinc429_by_name(&output_data_id(
-                OutputDataType::ADR,
+                OutputDataType::Adr,
                 adiru_number,
                 AirDataReference::MACH,
             ))
@@ -1261,7 +1261,7 @@ mod tests {
 
         fn barometric_vertical_speed(&mut self, adiru_number: usize) -> Arinc429Word<Velocity> {
             let vertical_speed: Arinc429Word<f64> = self.read_arinc429_by_name(&output_data_id(
-                OutputDataType::ADR,
+                OutputDataType::Adr,
                 adiru_number,
                 AirDataReference::BAROMETRIC_VERTICAL_SPEED,
             ));
@@ -1273,7 +1273,7 @@ mod tests {
 
         fn true_airspeed(&mut self, adiru_number: usize) -> Arinc429Word<Velocity> {
             self.read_arinc429_by_name(&output_data_id(
-                OutputDataType::ADR,
+                OutputDataType::Adr,
                 adiru_number,
                 AirDataReference::TRUE_AIRSPEED,
             ))
@@ -1284,7 +1284,7 @@ mod tests {
             adiru_number: usize,
         ) -> Arinc429Word<ThermodynamicTemperature> {
             self.read_arinc429_by_name(&output_data_id(
-                OutputDataType::ADR,
+                OutputDataType::Adr,
                 adiru_number,
                 AirDataReference::STATIC_AIR_TEMPERATURE,
             ))
@@ -1295,7 +1295,7 @@ mod tests {
             adiru_number: usize,
         ) -> Arinc429Word<ThermodynamicTemperature> {
             self.read_arinc429_by_name(&output_data_id(
-                OutputDataType::ADR,
+                OutputDataType::Adr,
                 adiru_number,
                 AirDataReference::TOTAL_AIR_TEMPERATURE,
             ))
@@ -1306,7 +1306,7 @@ mod tests {
             adiru_number: usize,
         ) -> Arinc429Word<ThermodynamicTemperature> {
             self.read_arinc429_by_name(&output_data_id(
-                OutputDataType::ADR,
+                OutputDataType::Adr,
                 adiru_number,
                 AirDataReference::INTERNATIONAL_STANDARD_ATMOSPHERE_DELTA,
             ))
@@ -1314,7 +1314,7 @@ mod tests {
 
         fn pitch(&mut self, adiru_number: usize) -> Arinc429Word<Angle> {
             self.read_arinc429_by_name(&output_data_id(
-                OutputDataType::IR,
+                OutputDataType::Ir,
                 adiru_number,
                 InertialReference::PITCH,
             ))
@@ -1322,7 +1322,7 @@ mod tests {
 
         fn roll(&mut self, adiru_number: usize) -> Arinc429Word<Angle> {
             self.read_arinc429_by_name(&output_data_id(
-                OutputDataType::IR,
+                OutputDataType::Ir,
                 adiru_number,
                 InertialReference::ROLL,
             ))
@@ -1330,7 +1330,7 @@ mod tests {
 
         fn heading(&mut self, adiru_number: usize) -> Arinc429Word<Angle> {
             self.read_arinc429_by_name(&output_data_id(
-                OutputDataType::IR,
+                OutputDataType::Ir,
                 adiru_number,
                 InertialReference::HEADING,
             ))
@@ -1338,7 +1338,7 @@ mod tests {
 
         fn track(&mut self, adiru_number: usize) -> Arinc429Word<Angle> {
             self.read_arinc429_by_name(&output_data_id(
-                OutputDataType::IR,
+                OutputDataType::Ir,
                 adiru_number,
                 InertialReference::TRACK,
             ))
@@ -1346,7 +1346,7 @@ mod tests {
 
         fn ground_speed(&mut self, adiru_number: usize) -> Arinc429Word<Velocity> {
             self.read_arinc429_by_name(&output_data_id(
-                OutputDataType::IR,
+                OutputDataType::Ir,
                 adiru_number,
                 InertialReference::GROUND_SPEED,
             ))
@@ -1354,7 +1354,7 @@ mod tests {
 
         fn wind_direction(&mut self, adiru_number: usize) -> Arinc429Word<Angle> {
             self.read_arinc429_by_name(&output_data_id(
-                OutputDataType::IR,
+                OutputDataType::Ir,
                 adiru_number,
                 InertialReference::WIND_DIRECTION,
             ))
@@ -1362,7 +1362,7 @@ mod tests {
 
         fn wind_velocity(&mut self, adiru_number: usize) -> Arinc429Word<Velocity> {
             self.read_arinc429_by_name(&output_data_id(
-                OutputDataType::IR,
+                OutputDataType::Ir,
                 adiru_number,
                 InertialReference::WIND_VELOCITY,
             ))
@@ -1370,7 +1370,7 @@ mod tests {
 
         fn inertial_vertical_speed(&mut self, adiru_number: usize) -> Arinc429Word<Velocity> {
             let vertical_speed: Arinc429Word<f64> = self.read_arinc429_by_name(&output_data_id(
-                OutputDataType::IR,
+                OutputDataType::Ir,
                 adiru_number,
                 InertialReference::VERTICAL_SPEED,
             ));
@@ -1382,7 +1382,7 @@ mod tests {
 
         fn longitude(&mut self, adiru_number: usize) -> Arinc429Word<Angle> {
             self.read_arinc429_by_name(&output_data_id(
-                OutputDataType::IR,
+                OutputDataType::Ir,
                 adiru_number,
                 InertialReference::LONGITUDE,
             ))
@@ -1390,7 +1390,7 @@ mod tests {
 
         fn latitude(&mut self, adiru_number: usize) -> Arinc429Word<Angle> {
             self.read_arinc429_by_name(&output_data_id(
-                OutputDataType::IR,
+                OutputDataType::Ir,
                 adiru_number,
                 InertialReference::LATITUDE,
             ))

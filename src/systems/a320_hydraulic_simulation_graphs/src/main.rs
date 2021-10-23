@@ -107,7 +107,7 @@ fn make_figure(h: &History) -> Figure {
         let mut curr_axis = Axes2D::new()
             .add(
                 Line2D::new(h.name_vector[idx].as_str())
-                    .data(&h.time_vector, &cur_data)
+                    .data(&h.time_vector, cur_data)
                     .color("blue")
                     // .marker("x")
                     // .linestyle("--")
@@ -194,7 +194,7 @@ impl History {
 
     /// Builds a graph using matplotlib python backend. PYTHON REQUIRED AS WELL AS MATPLOTLIB PACKAGE
     fn show_matplotlib(&self, figure_title: &str, path: &str) {
-        let fig = make_figure(&self);
+        let fig = make_figure(self);
 
         use rustplotlib::backend::Matplotlib;
         use rustplotlib::Backend;

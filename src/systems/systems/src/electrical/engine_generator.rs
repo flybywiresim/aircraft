@@ -822,10 +822,7 @@ mod tests {
 
             test_bed.run_with_delta(Duration::from_millis(500));
 
-            assert_eq!(
-                test_bed.query_element(|e| e.provides_stable_power_output()),
-                true
-            );
+            assert!(test_bed.query_element(|e| e.provides_stable_power_output()));
         }
 
         #[test]
@@ -842,10 +839,7 @@ mod tests {
 
             test_bed.run_with_delta(Duration::from_millis(499));
 
-            assert_eq!(
-                test_bed.query_element(|e| e.provides_stable_power_output()),
-                false
-            );
+            assert!(!test_bed.query_element(|e| e.provides_stable_power_output()));
         }
 
         #[test]
@@ -873,10 +867,7 @@ mod tests {
 
             test_bed.run_with_delta(Duration::from_millis(500));
 
-            assert_eq!(
-                test_bed.query_element(|e| e.provides_stable_power_output()),
-                false
-            );
+            assert!(!test_bed.query_element(|e| e.provides_stable_power_output()));
         }
 
         #[test]

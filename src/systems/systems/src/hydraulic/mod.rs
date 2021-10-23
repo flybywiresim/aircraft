@@ -1638,7 +1638,7 @@ impl RamAirTurbine {
         // Calculate the ratio of current displacement vs max displacement as an image of the load of the pump
         let displacement_ratio = self.delta_vol_max().get::<gallon>() / self.max_displacement;
         self.wind_turbine.update(
-            &delta_time,
+            delta_time,
             indicated_airspeed,
             self.position,
             displacement_ratio,
