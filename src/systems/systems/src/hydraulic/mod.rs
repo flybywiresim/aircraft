@@ -1871,9 +1871,9 @@ mod tests {
     mod edp_tests {
         use super::*;
 
-        use crate::simulation::test::{ElementCtorFn, SimulationTestBed, TestBed};
-        use crate::simulation::Aircraft;
-        use uom::si::time::second;
+        use crate::simulation::test::{ElementCtorFn, SimulationTestBed};
+        
+        
 
         #[test]
         fn starts_inactive() {
