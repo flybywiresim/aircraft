@@ -67,7 +67,6 @@ impl CabinPressureController {
         }
     }
 
-    #[allow(clippy::too_many_arguments)]
     pub(super) fn update(
         &mut self,
         context: &UpdateContext,
@@ -692,7 +691,7 @@ transition!(ClimbInternal, Abort);
 #[cfg(test)]
 mod pressure_schedule_manager_tests {
     use super::*;
-    use crate::simulation::{Aircraft, SimulationElement};
+    use crate::simulation::{Aircraft, InitContext, SimulationElement};
     use crate::{
         shared::EngineCorrectedN1,
         simulation::test::{SimulationTestBed, TestBed},
@@ -737,13 +736,13 @@ mod pressure_schedule_manager_tests {
         lgciu_gears_compressed: bool,
     }
     impl TestAircraft {
-        fn new() -> Self {
+        fn new(context: &mut InitContext) -> Self {
             let mut test_aircraft = Self {
                 cpc: CabinPressureController::new(),
                 cabin_simulation: CabinPressureSimulation::new(),
                 outflow_valve: PressureValve::new_outflow_valve(),
                 safety_valve: PressureValve::new_safety_valve(),
-                press_overhead: PressurizationOverheadPanel::new(),
+                press_overhead: PressurizationOverheadPanel::new(context),
                 engine_1: TestEngine::new(Ratio::new::<percent>(0.)),
                 engine_2: TestEngine::new(Ratio::new::<percent>(0.)),
                 lgciu_gears_compressed: false,
@@ -824,14 +823,14 @@ mod pressure_schedule_manager_tests {
 
     #[test]
     fn schedule_starts_on_ground() {
-        let test_bed = SimulationTestBed::new(|_| TestAircraft::new());
+        let test_bed = SimulationTestBed::new(TestAircraft::new);
 
         assert!(test_bed.query(|a| a.is_ground()));
     }
 
     #[test]
     fn schedule_changes_from_ground_to_takeoff() {
-        let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
         test_bed.command(|a| a.set_engine_n1(Ratio::new::<percent>(95.)));
 
@@ -845,7 +844,7 @@ mod pressure_schedule_manager_tests {
 
     #[test]
     fn schedule_changes_from_ground_to_climb() {
-        let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
         test_bed.command(|a| a.set_on_ground(true));
         test_bed.set_indicated_airspeed(Velocity::new::<knot>(101.));
@@ -860,7 +859,7 @@ mod pressure_schedule_manager_tests {
 
     #[test]
     fn schedule_changes_from_takeoff_to_climb() {
-        let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
         test_bed.command(|a| a.set_engine_n1(Ratio::new::<percent>(95.)));
 
@@ -877,7 +876,7 @@ mod pressure_schedule_manager_tests {
 
     #[test]
     fn schedule_changes_from_takeoff_to_ground() {
-        let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
         test_bed.command(|a| a.set_engine_n1(Ratio::new::<percent>(95.)));
         test_bed.command(|a| a.set_on_ground(true));
@@ -895,7 +894,7 @@ mod pressure_schedule_manager_tests {
 
     #[test]
     fn schedule_does_not_instantly_change_from_climb_to_abort() {
-        let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
         test_bed.run();
 
@@ -910,7 +909,7 @@ mod pressure_schedule_manager_tests {
 
     #[test]
     fn schedule_changes_from_climb_to_abort() {
-        let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
         test_bed.run();
 
@@ -926,7 +925,7 @@ mod pressure_schedule_manager_tests {
 
     #[test]
     fn schedule_does_not_instantly_change_from_climb_to_cruise() {
-        let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
         test_bed.run();
 
@@ -941,7 +940,7 @@ mod pressure_schedule_manager_tests {
 
     #[test]
     fn schedule_changes_from_climb_to_cruise() {
-        let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
         test_bed.run();
 
@@ -957,7 +956,7 @@ mod pressure_schedule_manager_tests {
 
     #[test]
     fn schedule_does_not_instantly_change_from_cruise_to_climb_and_descent() {
-        let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
         test_bed.run();
         test_bed.run_with_delta(Duration::from_secs(31));
@@ -978,7 +977,7 @@ mod pressure_schedule_manager_tests {
 
     #[test]
     fn schedule_changes_from_cruise_to_climb() {
-        let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
         test_bed.run();
         test_bed.run_with_delta(Duration::from_secs(31));
@@ -995,7 +994,7 @@ mod pressure_schedule_manager_tests {
 
     #[test]
     fn schedule_changes_from_cruise_to_descent() {
-        let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
         test_bed.run();
         test_bed.run_with_delta(Duration::from_secs(31));
@@ -1012,7 +1011,7 @@ mod pressure_schedule_manager_tests {
 
     #[test]
     fn schedule_changes_from_descent_to_climb() {
-        let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
         test_bed.run();
         test_bed.run_with_delta(Duration::from_secs(31));
@@ -1033,7 +1032,7 @@ mod pressure_schedule_manager_tests {
 
     #[test]
     fn schedule_changes_from_descent_to_ground() {
-        let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
         test_bed.run();
         test_bed.run_with_delta(Duration::from_secs(31));
@@ -1054,7 +1053,7 @@ mod pressure_schedule_manager_tests {
 
     #[test]
     fn schedule_changes_from_abort_to_climb() {
-        let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
         test_bed.set_indicated_altitude(Length::new::<foot>(7900.));
         test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(-201.));
@@ -1073,7 +1072,7 @@ mod pressure_schedule_manager_tests {
 
     #[test]
     fn schedule_changes_from_abort_to_ground() {
-        let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
         test_bed.set_indicated_altitude(Length::new::<foot>(7900.));
         test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(-201.));
@@ -1092,7 +1091,7 @@ mod pressure_schedule_manager_tests {
 
     #[test]
     fn schedule_timer_resets_after_climb_condition_is_not_met() {
-        let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
         test_bed.run();
         assert!(test_bed.query(|a| a.is_climb()));
@@ -1123,7 +1122,7 @@ mod pressure_schedule_manager_tests {
 
     #[test]
     fn schedule_timer_resets_after_cruise_condition_is_not_met() {
-        let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
         test_bed.run();
         test_bed.run_with_delta(Duration::from_secs(31));
@@ -1156,7 +1155,7 @@ mod pressure_schedule_manager_tests {
 
     #[test]
     fn schedule_timer_resets_after_descent_condition_is_not_met() {
-        let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
         test_bed.run();
         test_bed.run_with_delta(Duration::from_secs(31));
@@ -1195,7 +1194,7 @@ mod pressure_schedule_manager_tests {
 
     #[test]
     fn schedule_timer_resets_after_abort_condition_is_not_met() {
-        let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
         test_bed.set_indicated_altitude(Length::new::<foot>(7900.));
         test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(-201.));

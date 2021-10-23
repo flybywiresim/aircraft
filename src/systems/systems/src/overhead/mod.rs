@@ -1,25 +1,28 @@
-use crate::simulation::{Read, SimulationElement, SimulatorReader, SimulatorWriter, Write};
+use crate::simulation::{
+    InitContext, Read, SimulationElement, SimulatorReader, SimulatorWriter, VariableIdentifier,
+    Write,
+};
 
 pub struct OnOffFaultPushButton {
-    is_on_id: String,
-    has_fault_id: String,
+    is_on_id: VariableIdentifier,
+    has_fault_id: VariableIdentifier,
 
     is_on: bool,
     has_fault: bool,
 }
 impl OnOffFaultPushButton {
-    pub fn new_on(name: &str) -> Self {
-        Self::new(name, true)
+    pub fn new_on(context: &mut InitContext, name: &str) -> Self {
+        Self::new(context, name, true)
     }
 
-    pub fn new_off(name: &str) -> Self {
-        Self::new(name, false)
+    pub fn new_off(context: &mut InitContext, name: &str) -> Self {
+        Self::new(context, name, false)
     }
 
-    fn new(name: &str, is_on: bool) -> Self {
+    fn new(context: &mut InitContext, name: &str, is_on: bool) -> Self {
         Self {
-            is_on_id: format!("OVHD_{}_PB_IS_ON", name),
-            has_fault_id: format!("OVHD_{}_PB_HAS_FAULT", name),
+            is_on_id: context.get_identifier(format!("OVHD_{}_PB_IS_ON", name)),
+            has_fault_id: context.get_identifier(format!("OVHD_{}_PB_HAS_FAULT", name)),
             is_on,
             has_fault: false,
         }
@@ -74,21 +77,21 @@ impl SimulationElement for OnOffFaultPushButton {
 }
 
 pub struct AutoManFaultPushButton {
-    is_auto_id: String,
-    has_fault_id: String,
+    is_auto_id: VariableIdentifier,
+    has_fault_id: VariableIdentifier,
 
     is_auto: bool,
     has_fault: bool,
 }
 impl AutoManFaultPushButton {
-    pub fn new_auto(name: &str) -> Self {
-        Self::new(name, true)
+    pub fn new_auto(context: &mut InitContext, name: &str) -> Self {
+        Self::new(context, name, true)
     }
 
-    fn new(name: &str, is_auto: bool) -> Self {
+    fn new(context: &mut InitContext, name: &str, is_auto: bool) -> Self {
         Self {
-            is_auto_id: format!("OVHD_{}_PB_IS_AUTO", name),
-            has_fault_id: format!("OVHD_{}_PB_HAS_FAULT", name),
+            is_auto_id: context.get_identifier(format!("OVHD_{}_PB_IS_AUTO", name)),
+            has_fault_id: context.get_identifier(format!("OVHD_{}_PB_HAS_FAULT", name)),
             is_auto,
             has_fault: false,
         }
@@ -127,25 +130,25 @@ impl SimulationElement for AutoManFaultPushButton {
 }
 
 pub struct OnOffAvailablePushButton {
-    is_on_id: String,
-    is_available_id: String,
+    is_on_id: VariableIdentifier,
+    is_available_id: VariableIdentifier,
 
     is_on: bool,
     is_available: bool,
 }
 impl OnOffAvailablePushButton {
-    pub fn new_on(name: &str) -> Self {
-        Self::new(name, true)
+    pub fn new_on(context: &mut InitContext, name: &str) -> Self {
+        Self::new(context, name, true)
     }
 
-    pub fn new_off(name: &str) -> Self {
-        Self::new(name, false)
+    pub fn new_off(context: &mut InitContext, name: &str) -> Self {
+        Self::new(context, name, false)
     }
 
-    fn new(name: &str, is_on: bool) -> Self {
+    fn new(context: &mut InitContext, name: &str, is_on: bool) -> Self {
         Self {
-            is_on_id: format!("OVHD_{}_PB_IS_ON", name),
-            is_available_id: format!("OVHD_{}_PB_IS_AVAILABLE", name),
+            is_on_id: context.get_identifier(format!("OVHD_{}_PB_IS_ON", name)),
+            is_available_id: context.get_identifier(format!("OVHD_{}_PB_IS_AVAILABLE", name)),
             is_on,
             is_available: false,
         }
@@ -192,21 +195,21 @@ impl SimulationElement for OnOffAvailablePushButton {
 }
 
 pub struct NormalOnPushButton {
-    is_on_id: String,
+    is_on_id: VariableIdentifier,
     is_on: bool,
 }
 impl NormalOnPushButton {
-    pub fn new_on(name: &str) -> Self {
-        Self::new(name, true)
+    pub fn new_on(context: &mut InitContext, name: &str) -> Self {
+        Self::new(context, name, true)
     }
 
-    pub fn new_normal(name: &str) -> Self {
-        Self::new(name, false)
+    pub fn new_normal(context: &mut InitContext, name: &str) -> Self {
+        Self::new(context, name, false)
     }
 
-    fn new(name: &str, is_on: bool) -> Self {
+    fn new(context: &mut InitContext, name: &str, is_on: bool) -> Self {
         Self {
-            is_on_id: format!("OVHD_{}_PB_IS_ON", name),
+            is_on_id: context.get_identifier(format!("OVHD_{}_PB_IS_ON", name)),
             is_on,
         }
     }
@@ -242,25 +245,25 @@ impl SimulationElement for NormalOnPushButton {
 }
 
 pub struct NormalAltnFaultPushButton {
-    is_normal_id: String,
-    has_fault_id: String,
+    is_normal_id: VariableIdentifier,
+    has_fault_id: VariableIdentifier,
 
     is_normal: bool,
     has_fault: bool,
 }
 impl NormalAltnFaultPushButton {
-    pub fn new_normal(name: &str) -> Self {
-        Self::new(name, true)
+    pub fn new_normal(context: &mut InitContext, name: &str) -> Self {
+        Self::new(context, name, true)
     }
 
-    pub fn new_altn(name: &str) -> Self {
-        Self::new(name, false)
+    pub fn new_altn(context: &mut InitContext, name: &str) -> Self {
+        Self::new(context, name, false)
     }
 
-    fn new(name: &str, is_normal: bool) -> Self {
+    fn new(context: &mut InitContext, name: &str, is_normal: bool) -> Self {
         Self {
-            is_normal_id: format!("OVHD_{}_PB_IS_NORMAL", name),
-            has_fault_id: format!("OVHD_{}_PB_HAS_FAULT", name),
+            is_normal_id: context.get_identifier(format!("OVHD_{}_PB_IS_NORMAL", name)),
+            has_fault_id: context.get_identifier(format!("OVHD_{}_PB_HAS_FAULT", name)),
             is_normal,
             has_fault: false,
         }
@@ -303,25 +306,25 @@ impl SimulationElement for NormalAltnFaultPushButton {
 }
 
 pub struct AutoOffFaultPushButton {
-    is_auto_id: String,
-    has_fault_id: String,
+    is_auto_id: VariableIdentifier,
+    has_fault_id: VariableIdentifier,
 
     is_auto: bool,
     has_fault: bool,
 }
 impl AutoOffFaultPushButton {
-    pub fn new_auto(name: &str) -> Self {
-        Self::new(name, true)
+    pub fn new_auto(context: &mut InitContext, name: &str) -> Self {
+        Self::new(context, name, true)
     }
 
-    pub fn new_off(name: &str) -> Self {
-        Self::new(name, false)
+    pub fn new_off(context: &mut InitContext, name: &str) -> Self {
+        Self::new(context, name, false)
     }
 
-    fn new(name: &str, is_auto: bool) -> Self {
+    fn new(context: &mut InitContext, name: &str, is_auto: bool) -> Self {
         Self {
-            is_auto_id: format!("OVHD_{}_PB_IS_AUTO", name),
-            has_fault_id: format!("OVHD_{}_PB_HAS_FAULT", name),
+            is_auto_id: context.get_identifier(format!("OVHD_{}_PB_IS_AUTO", name)),
+            has_fault_id: context.get_identifier(format!("OVHD_{}_PB_HAS_FAULT", name)),
             is_auto,
             has_fault: false,
         }
@@ -368,25 +371,25 @@ impl SimulationElement for AutoOffFaultPushButton {
 }
 
 pub struct AutoOnFaultPushButton {
-    is_auto_id: String,
-    has_fault_id: String,
+    is_auto_id: VariableIdentifier,
+    has_fault_id: VariableIdentifier,
 
     is_auto: bool,
     has_fault: bool,
 }
 impl AutoOnFaultPushButton {
-    pub fn new_auto(name: &str) -> Self {
-        Self::new(name, true)
+    pub fn new_auto(context: &mut InitContext, name: &str) -> Self {
+        Self::new(context, name, true)
     }
 
-    pub fn new_on(name: &str) -> Self {
-        Self::new(name, false)
+    pub fn new_on(context: &mut InitContext, name: &str) -> Self {
+        Self::new(context, name, false)
     }
 
-    fn new(name: &str, is_auto: bool) -> Self {
+    fn new(context: &mut InitContext, name: &str, is_auto: bool) -> Self {
         Self {
-            is_auto_id: format!("OVHD_{}_PB_IS_AUTO", name),
-            has_fault_id: format!("OVHD_{}_PB_HAS_FAULT", name),
+            is_auto_id: context.get_identifier(format!("OVHD_{}_PB_IS_AUTO", name)),
+            has_fault_id: context.get_identifier(format!("OVHD_{}_PB_HAS_FAULT", name)),
             is_auto,
             has_fault: false,
         }
@@ -433,25 +436,25 @@ impl SimulationElement for AutoOnFaultPushButton {
 }
 
 pub struct FaultReleasePushButton {
-    is_released_id: String,
-    has_fault_id: String,
+    is_released_id: VariableIdentifier,
+    has_fault_id: VariableIdentifier,
     is_released: bool,
     has_fault: bool,
 }
 impl FaultReleasePushButton {
     #[cfg(test)]
-    pub fn new_released(name: &str) -> Self {
-        Self::new(name, true)
+    pub fn new_released(context: &mut InitContext, name: &str) -> Self {
+        Self::new(context, name, true)
     }
 
-    pub fn new_in(name: &str) -> Self {
-        Self::new(name, false)
+    pub fn new_in(context: &mut InitContext, name: &str) -> Self {
+        Self::new(context, name, false)
     }
 
-    fn new(name: &str, is_released: bool) -> Self {
+    fn new(context: &mut InitContext, name: &str, is_released: bool) -> Self {
         Self {
-            is_released_id: format!("OVHD_{}_PB_IS_RELEASED", name),
-            has_fault_id: format!("OVHD_{}_PB_HAS_FAULT", name),
+            is_released_id: context.get_identifier(format!("OVHD_{}_PB_IS_RELEASED", name)),
+            has_fault_id: context.get_identifier(format!("OVHD_{}_PB_HAS_FAULT", name)),
             is_released,
             has_fault: false,
         }
@@ -486,18 +489,18 @@ impl SimulationElement for FaultReleasePushButton {
 }
 
 pub struct FirePushButton {
-    is_released_id: String,
+    is_released_id: VariableIdentifier,
     is_released: bool,
 }
 impl FirePushButton {
-    pub fn new(name: &str) -> Self {
+    pub fn new(context: &mut InitContext, name: &str) -> Self {
         Self {
-            is_released_id: format!("FIRE_BUTTON_{}", name),
+            is_released_id: context.get_identifier(format!("FIRE_BUTTON_{}", name)),
             is_released: false,
         }
     }
 
-    pub fn set(&mut self, released: bool) {
+    pub fn set_released(&mut self, released: bool) {
         self.is_released = self.is_released || released;
     }
 
@@ -511,18 +514,18 @@ impl SimulationElement for FirePushButton {
     }
 
     fn read(&mut self, reader: &mut SimulatorReader) {
-        self.set(reader.read(&self.is_released_id));
+        self.set_released(reader.read(&self.is_released_id));
     }
 }
 
 pub struct FaultIndication {
-    has_fault_id: String,
+    has_fault_id: VariableIdentifier,
     has_fault: bool,
 }
 impl FaultIndication {
-    pub fn new(name: &str) -> Self {
+    pub fn new(context: &mut InitContext, name: &str) -> Self {
         Self {
-            has_fault_id: format!("OVHD_{}_HAS_FAULT", name),
+            has_fault_id: context.get_identifier(format!("OVHD_{}_HAS_FAULT", name)),
             has_fault: false,
         }
     }
@@ -538,13 +541,13 @@ impl SimulationElement for FaultIndication {
 }
 
 pub struct MomentaryPushButton {
-    is_pressed_id: String,
+    is_pressed_id: VariableIdentifier,
     is_pressed: bool,
 }
 impl MomentaryPushButton {
-    pub fn new(name: &str) -> Self {
+    pub fn new(context: &mut InitContext, name: &str) -> Self {
         Self {
-            is_pressed_id: format!("OVHD_{}_IS_PRESSED", name),
+            is_pressed_id: context.get_identifier(format!("OVHD_{}_IS_PRESSED", name)),
             is_pressed: false,
         }
     }
@@ -561,14 +564,14 @@ impl SimulationElement for MomentaryPushButton {
 
 /// Same implementation as MomentaryPushButton but is only "pressed" for one update even if kept pressed
 pub struct PressSingleSignalButton {
-    is_pressed_id: String,
+    is_pressed_id: VariableIdentifier,
     is_pressed: bool,
     last_pressed_state: bool,
 }
 impl PressSingleSignalButton {
-    pub fn new(name: &str) -> Self {
+    pub fn new(context: &mut InitContext, name: &str) -> Self {
         Self {
-            is_pressed_id: format!("OVHD_{}_IS_PRESSED", name),
+            is_pressed_id: context.get_identifier(format!("OVHD_{}_IS_PRESSED", name)),
             is_pressed: false,
             last_pressed_state: false,
         }
@@ -587,17 +590,17 @@ impl SimulationElement for PressSingleSignalButton {
 }
 
 pub struct MomentaryOnPushButton {
-    is_pressed_id: String,
-    is_on_id: String,
+    is_pressed_id: VariableIdentifier,
+    is_on_id: VariableIdentifier,
     is_pressed: bool,
     last_pressed_state: bool,
     is_on: bool,
 }
 impl MomentaryOnPushButton {
-    pub fn new(name: &str) -> Self {
+    pub fn new(context: &mut InitContext, name: &str) -> Self {
         Self {
-            is_pressed_id: format!("OVHD_{}_IS_PRESSED", name),
-            is_on_id: format!("OVHD_{}_IS_ON", name),
+            is_pressed_id: context.get_identifier(format!("OVHD_{}_IS_PRESSED", name)),
+            is_on_id: context.get_identifier(format!("OVHD_{}_IS_ON", name)),
             is_pressed: false,
             last_pressed_state: false,
             is_on: false,
@@ -638,13 +641,13 @@ impl SimulationElement for MomentaryOnPushButton {
 }
 
 pub struct IndicationLight {
-    is_illuminated_id: String,
+    is_illuminated_id: VariableIdentifier,
     is_illuminated: bool,
 }
 impl IndicationLight {
-    pub fn new(name: &str) -> Self {
+    pub fn new(context: &mut InitContext, name: &str) -> Self {
         Self {
-            is_illuminated_id: Self::is_illuminated_id(name),
+            is_illuminated_id: context.get_identifier(Self::is_illuminated_id(name)),
             is_illuminated: false,
         }
     }
@@ -664,20 +667,20 @@ impl SimulationElement for IndicationLight {
 }
 
 pub struct ValueKnob {
-    value_id: String,
+    value_id: VariableIdentifier,
     value: f64,
 }
 impl ValueKnob {
-    pub fn new(name: &str) -> Self {
+    pub fn new(context: &mut InitContext, name: &str) -> Self {
         Self {
-            value_id: format!("OVHD_{}_KNOB", name),
+            value_id: context.get_identifier(format!("OVHD_{}_KNOB", name)),
             value: 0.,
         }
     }
 
-    pub fn new_with_value(name: &str, value: f64) -> Self {
+    pub fn new_with_value(context: &mut InitContext, name: &str, value: f64) -> Self {
         Self {
-            value_id: format!("OVHD_{}_KNOB", name),
+            value_id: context.get_identifier(format!("OVHD_{}_KNOB", name)),
             value,
         }
     }
@@ -701,13 +704,13 @@ impl SimulationElement for ValueKnob {
 }
 
 pub struct SpringLoadedSwitch {
-    is_toggled_id: String,
+    is_toggled_id: VariableIdentifier,
     position: usize,
 }
 impl SpringLoadedSwitch {
-    pub fn new(name: &str) -> Self {
+    pub fn new(context: &mut InitContext, name: &str) -> Self {
         Self {
-            is_toggled_id: format!("OVHD_{}_SWITCH", name),
+            is_toggled_id: context.get_identifier(format!("OVHD_{}_SWITCH", name)),
             position: 1,
         }
     }
@@ -736,55 +739,75 @@ impl SimulationElement for SpringLoadedSwitch {
 
 #[cfg(test)]
 mod on_off_fault_push_button_tests {
-    use crate::simulation::test::{SimulationTestBed, TestBed};
+    use crate::simulation::test::{ElementCtorFn, SimulationTestBed, TestBed};
 
     use super::*;
 
     #[test]
     fn new_on_push_button_is_on() {
-        assert!(OnOffFaultPushButton::new_on("BUTTON").is_on());
+        let test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            OnOffFaultPushButton::new_on(context, "BUTTON")
+        }));
+
+        assert!(test_bed.query_element(|e| e.is_on()));
     }
 
     #[test]
     fn new_off_push_button_is_off() {
-        assert!(OnOffFaultPushButton::new_off("BUTTON").is_off());
+        let test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            OnOffFaultPushButton::new_off(context, "BUTTON")
+        }));
+
+        assert!(test_bed.query_element(|e| e.is_off()));
     }
 
     #[test]
     fn writes_its_state() {
-        let mut test_bed = SimulationTestBed::from(OnOffFaultPushButton::new_on("ELEC_GEN_1"));
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            OnOffFaultPushButton::new_on(context, "ELEC_GEN_1")
+        }));
 
         test_bed.run();
 
-        assert!(test_bed.contains_key("OVHD_ELEC_GEN_1_PB_IS_ON"));
-        assert!(test_bed.contains_key("OVHD_ELEC_GEN_1_PB_HAS_FAULT"));
+        assert!(test_bed.contains_variable_with_name("OVHD_ELEC_GEN_1_PB_IS_ON"));
+        assert!(test_bed.contains_variable_with_name("OVHD_ELEC_GEN_1_PB_HAS_FAULT"));
     }
 }
 
 #[cfg(test)]
 mod auto_man_fault_push_button_tests {
-    use crate::simulation::test::{SimulationTestBed, TestBed};
+    use crate::simulation::test::{ElementCtorFn, SimulationTestBed, TestBed, WriteByName};
 
     use super::*;
 
     #[test]
     fn new_auto_push_button_is_auto() {
-        assert!(AutoManFaultPushButton::new_auto("TEST").is_auto());
+        let test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            AutoManFaultPushButton::new_auto(context, "TEST")
+        }));
+
+        assert!(test_bed.query_element(|e| e.is_auto()));
     }
 
     #[test]
     fn when_set_as_auto_is_auto() {
-        let mut pb = AutoManFaultPushButton::new("TEST", false);
-        pb.set_auto(true);
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            AutoManFaultPushButton::new(context, "TEST", false)
+        }));
 
-        assert!(pb.is_auto());
+        test_bed.command_element(|e| e.set_auto(true));
+
+        assert!(test_bed.query_element(|e| e.is_auto()));
     }
 
     #[test]
     fn reads_its_state() {
-        let mut test_bed = SimulationTestBed::from(AutoManFaultPushButton::new_auto("TEST"));
-        test_bed.write("OVHD_TEST_PB_IS_AUTO", false);
-        test_bed.write("OVHD_TEST_PB_HAS_FAULT", true);
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            AutoManFaultPushButton::new_auto(context, "TEST")
+        }));
+
+        test_bed.write_by_name("OVHD_TEST_PB_IS_AUTO", false);
+        test_bed.write_by_name("OVHD_TEST_PB_HAS_FAULT", true);
 
         test_bed.run();
 
@@ -794,268 +817,346 @@ mod auto_man_fault_push_button_tests {
 
     #[test]
     fn writes_its_state() {
-        let mut test_bed = SimulationTestBed::from(AutoManFaultPushButton::new_auto("TEST"));
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            AutoManFaultPushButton::new_auto(context, "TEST")
+        }));
 
         test_bed.run();
 
-        assert!(test_bed.contains_key("OVHD_TEST_PB_IS_AUTO"));
-        assert!(test_bed.contains_key("OVHD_TEST_PB_HAS_FAULT"));
+        assert!(test_bed.contains_variable_with_name("OVHD_TEST_PB_IS_AUTO"));
+        assert!(test_bed.contains_variable_with_name("OVHD_TEST_PB_HAS_FAULT"));
     }
 }
 
 #[cfg(test)]
 mod on_off_available_push_button_tests {
-    use crate::simulation::test::{SimulationTestBed, TestBed};
+    use crate::simulation::test::{ElementCtorFn, SimulationTestBed, TestBed};
 
     use super::*;
 
     #[test]
     fn new_on_push_button_is_on() {
-        assert!(OnOffAvailablePushButton::new_on("BUTTON").is_on());
+        let test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            OnOffAvailablePushButton::new_on(context, "BUTTON")
+        }));
+
+        assert!(test_bed.query_element(|e| e.is_on()));
     }
 
     #[test]
     fn new_off_push_button_is_off() {
-        assert!(OnOffAvailablePushButton::new_off("BUTTON").is_off());
+        let test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            OnOffAvailablePushButton::new_off(context, "BUTTON")
+        }));
+
+        assert!(test_bed.query_element(|e| e.is_off()));
     }
 
     #[test]
     fn writes_its_state() {
-        let mut test_bed =
-            SimulationTestBed::from(OnOffAvailablePushButton::new_on("ELEC_EXT_PWR"));
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            OnOffAvailablePushButton::new_on(context, "ELEC_EXT_PWR")
+        }));
 
         test_bed.run();
 
-        assert!(test_bed.contains_key("OVHD_ELEC_EXT_PWR_PB_IS_ON"));
-        assert!(test_bed.contains_key("OVHD_ELEC_EXT_PWR_PB_IS_AVAILABLE"));
+        assert!(test_bed.contains_variable_with_name("OVHD_ELEC_EXT_PWR_PB_IS_ON"));
+        assert!(test_bed.contains_variable_with_name("OVHD_ELEC_EXT_PWR_PB_IS_AVAILABLE"));
     }
 }
 
 #[cfg(test)]
 mod normal_on_push_button_tests {
-    use crate::simulation::test::{SimulationTestBed, TestBed};
+    use crate::simulation::test::{ElementCtorFn, SimulationTestBed, TestBed, WriteByName};
 
     use super::*;
 
     #[test]
     fn new_normal_push_button_is_normal() {
-        assert!(NormalOnPushButton::new_normal("TEST").is_normal());
+        let test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            NormalOnPushButton::new_normal(context, "TEST")
+        }));
+
+        assert!(test_bed.query_element(|e| e.is_normal()));
     }
 
     #[test]
     fn new_on_push_button_is_on() {
-        assert!(NormalOnPushButton::new_on("TEST").is_on());
+        let test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            NormalOnPushButton::new_on(context, "TEST")
+        }));
+
+        assert!(test_bed.query_element(|e| e.is_on()));
     }
 
     #[test]
     fn when_set_on_is_on() {
-        let mut pb = NormalOnPushButton::new_normal("TEST");
-        pb.turn_on();
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            NormalOnPushButton::new_normal(context, "TEST")
+        }));
 
-        assert!(pb.is_on());
+        test_bed.command_element(|e| e.turn_on());
+
+        assert!(test_bed.query_element(|e| e.is_on()));
     }
 
     #[test]
     fn reads_its_state() {
-        let mut test_bed = SimulationTestBed::from(NormalOnPushButton::new_normal("TEST"));
-        test_bed.write("OVHD_TEST_PB_IS_ON", true);
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            NormalOnPushButton::new_normal(context, "TEST")
+        }));
+
+        test_bed.write_by_name("OVHD_TEST_PB_IS_ON", true);
 
         test_bed.run();
 
-        assert!(test_bed.query_element(|button| button.is_on()));
+        assert!(test_bed.query_element(|e| e.is_on()));
     }
 
     #[test]
     fn writes_its_state() {
-        let mut test_bed = SimulationTestBed::from(NormalOnPushButton::new_normal("TEST"));
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            NormalOnPushButton::new_normal(context, "TEST")
+        }));
 
         test_bed.run();
 
-        assert!(test_bed.contains_key("OVHD_TEST_PB_IS_ON"));
+        assert!(test_bed.contains_variable_with_name("OVHD_TEST_PB_IS_ON"));
     }
 }
 
 #[cfg(test)]
 mod normal_altn_fault_push_button_tests {
-    use crate::simulation::test::{SimulationTestBed, TestBed};
+    use crate::simulation::test::{ElementCtorFn, SimulationTestBed, TestBed};
 
     use super::*;
 
     #[test]
     fn new_normal_push_button_is_normal() {
-        assert!(NormalAltnFaultPushButton::new_normal("TEST").is_normal());
+        let test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            NormalAltnFaultPushButton::new_normal(context, "TEST")
+        }));
+
+        assert!(test_bed.query_element(|e| e.is_normal()));
     }
 
     #[test]
     fn new_altn_push_button_is_altn() {
-        assert!(NormalAltnFaultPushButton::new_altn("TEST").is_altn());
+        let test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            NormalAltnFaultPushButton::new_altn(context, "TEST")
+        }));
+
+        assert!(test_bed.query_element(|e| e.is_altn()));
     }
 
     #[test]
     fn writes_its_state() {
-        let mut test_bed =
-            SimulationTestBed::from(NormalAltnFaultPushButton::new_normal("ELEC_AC_ESS_FEED"));
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            NormalAltnFaultPushButton::new_normal(context, "ELEC_AC_ESS_FEED")
+        }));
 
         test_bed.run();
 
-        assert!(test_bed.contains_key("OVHD_ELEC_AC_ESS_FEED_PB_IS_NORMAL"));
-        assert!(test_bed.contains_key("OVHD_ELEC_AC_ESS_FEED_PB_HAS_FAULT"));
+        assert!(test_bed.contains_variable_with_name("OVHD_ELEC_AC_ESS_FEED_PB_IS_NORMAL"));
+        assert!(test_bed.contains_variable_with_name("OVHD_ELEC_AC_ESS_FEED_PB_HAS_FAULT"));
     }
 }
 
 #[cfg(test)]
 mod auto_off_fault_push_button_tests {
-    use crate::simulation::test::{SimulationTestBed, TestBed};
+    use crate::simulation::test::{ElementCtorFn, SimulationTestBed, TestBed};
 
     use super::*;
 
     #[test]
     fn new_auto_push_button_is_auto() {
-        assert!(AutoOffFaultPushButton::new_auto("TEST").is_auto());
+        let test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            AutoOffFaultPushButton::new_auto(context, "TEST")
+        }));
+
+        assert!(test_bed.query_element(|e| e.is_auto()));
     }
 
     #[test]
     fn new_off_push_button_is_off() {
-        assert!(AutoOffFaultPushButton::new_off("TEST").is_off());
+        let test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            AutoOffFaultPushButton::new_off(context, "TEST")
+        }));
+
+        assert!(test_bed.query_element(|e| e.is_off()));
     }
 
     #[test]
     fn writes_its_state() {
-        let mut test_bed =
-            SimulationTestBed::from(AutoOffFaultPushButton::new_auto("ELEC_BUS_TIE"));
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            AutoOffFaultPushButton::new_auto(context, "ELEC_BUS_TIE")
+        }));
 
         test_bed.run();
 
-        assert!(test_bed.contains_key("OVHD_ELEC_BUS_TIE_PB_IS_AUTO"));
-        assert!(test_bed.contains_key("OVHD_ELEC_BUS_TIE_PB_HAS_FAULT"));
+        assert!(test_bed.contains_variable_with_name("OVHD_ELEC_BUS_TIE_PB_IS_AUTO"));
+        assert!(test_bed.contains_variable_with_name("OVHD_ELEC_BUS_TIE_PB_HAS_FAULT"));
     }
 }
 
 #[cfg(test)]
 mod fault_release_push_button_tests {
-    use crate::simulation::test::{SimulationTestBed, TestBed};
+    use crate::simulation::test::{ElementCtorFn, SimulationTestBed, TestBed};
 
     use super::*;
 
     #[test]
     fn new_in_is_not_released() {
-        let pb = FaultReleasePushButton::new_in("TEST");
+        let test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            FaultReleasePushButton::new_in(context, "TEST")
+        }));
 
-        assert_eq!(pb.is_released(), false);
+        assert!(test_bed.query_element(|e| !e.is_released()));
     }
 
     #[test]
     fn new_released_is_released() {
-        let pb = FaultReleasePushButton::new_released("TEST");
+        let test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            FaultReleasePushButton::new_released(context, "TEST")
+        }));
 
-        assert_eq!(pb.is_released(), true);
+        assert!(test_bed.query_element(|e| e.is_released()));
     }
 
     #[test]
     fn when_set_as_released_is_released() {
-        let mut pb = FaultReleasePushButton::new_in("TEST");
-        pb.set_released(true);
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            FaultReleasePushButton::new_released(context, "TEST")
+        }));
 
-        assert_eq!(pb.is_released(), true);
+        test_bed.command_element(|e| e.set_released(true));
+
+        assert!(test_bed.query_element(|e| e.is_released()));
     }
 
     #[test]
     fn once_released_stays_released() {
-        let mut pb = FaultReleasePushButton::new_in("TEST");
-        pb.set_released(true);
-        pb.set_released(false);
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            FaultReleasePushButton::new_released(context, "TEST")
+        }));
 
-        assert_eq!(pb.is_released(), true);
+        test_bed.command_element(|e| e.set_released(true));
+        test_bed.command_element(|e| e.set_released(false));
+
+        assert!(test_bed.query_element(|e| e.is_released()));
     }
 
     #[test]
     fn writes_its_state() {
-        let mut test_bed = SimulationTestBed::from(FaultReleasePushButton::new_in("IDG_1"));
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            FaultReleasePushButton::new_in(context, "IDG_1")
+        }));
 
         test_bed.run();
 
-        assert!(test_bed.contains_key("OVHD_IDG_1_PB_IS_RELEASED"));
-        assert!(test_bed.contains_key("OVHD_IDG_1_PB_HAS_FAULT"));
+        assert!(test_bed.contains_variable_with_name("OVHD_IDG_1_PB_IS_RELEASED"));
+        assert!(test_bed.contains_variable_with_name("OVHD_IDG_1_PB_HAS_FAULT"));
     }
 }
 
 #[cfg(test)]
 mod fire_push_button_tests {
-    use crate::simulation::test::{SimulationTestBed, TestBed};
+    use crate::simulation::test::{ElementCtorFn, SimulationTestBed, TestBed};
 
     use super::*;
 
     #[test]
     fn new_fire_push_button_is_not_released() {
-        let pb = FirePushButton::new("TEST");
+        let test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            FirePushButton::new(context, "TEST")
+        }));
 
-        assert_eq!(pb.is_released(), false);
+        assert!(test_bed.query_element(|e| !e.is_released()));
     }
 
     #[test]
     fn when_set_as_released_is_released() {
-        let mut pb = FirePushButton::new("TEST");
-        pb.set(true);
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            FirePushButton::new(context, "TEST")
+        }));
 
-        assert_eq!(pb.is_released(), true);
+        test_bed.command_element(|e| e.set_released(true));
+
+        assert!(test_bed.query_element(|e| e.is_released()));
     }
 
     #[test]
     fn once_released_stays_released() {
-        let mut pb = FirePushButton::new("TEST");
-        pb.set(true);
-        pb.set(false);
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            FirePushButton::new(context, "TEST")
+        }));
 
-        assert_eq!(pb.is_released(), true);
+        test_bed.command_element(|e| e.set_released(true));
+        test_bed.command_element(|e| e.set_released(false));
+
+        assert!(test_bed.query_element(|e| e.is_released()));
     }
 
     #[test]
     fn writes_its_state() {
-        let mut test_bed = SimulationTestBed::from(FirePushButton::new("APU"));
+        let mut test_bed =
+            SimulationTestBed::from(ElementCtorFn(|context| FirePushButton::new(context, "APU")));
 
         test_bed.run();
 
-        assert!(test_bed.contains_key("FIRE_BUTTON_APU"));
+        assert!(test_bed.contains_variable_with_name("FIRE_BUTTON_APU"));
     }
 }
 
 #[cfg(test)]
 mod fault_indication_tests {
     use super::*;
-    use crate::simulation::test::{SimulationTestBed, TestBed};
+    use crate::simulation::test::{ElementCtorFn, SimulationTestBed, TestBed};
 
     #[test]
     fn new_does_not_have_fault() {
-        assert!(!FaultIndication::new("TEST").has_fault);
+        let test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            FaultIndication::new(context, "TEST")
+        }));
+
+        assert!(test_bed.query_element(|e| !e.has_fault));
     }
 
     #[test]
     fn writes_its_state() {
-        let mut test_bed = SimulationTestBed::from(FaultIndication::new("TEST"));
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            FaultIndication::new(context, "TEST")
+        }));
 
         test_bed.run();
 
-        assert!(test_bed.contains_key("OVHD_TEST_HAS_FAULT"));
+        assert!(test_bed.contains_variable_with_name("OVHD_TEST_HAS_FAULT"));
     }
 }
 
 #[cfg(test)]
 mod momentary_push_button_tests {
     use super::*;
-    use crate::simulation::test::{SimulationTestBed, TestBed};
+    use crate::simulation::test::{ElementCtorFn, SimulationTestBed, TestBed, WriteByName};
 
     #[test]
     fn new_is_not_pressed() {
-        assert!(!MomentaryPushButton::new("TEST").is_pressed());
+        let test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            MomentaryPushButton::new(context, "TEST")
+        }));
+
+        assert!(test_bed.query_element(|e| !e.is_pressed()));
     }
 
     #[test]
     fn reads_its_state() {
-        let mut test_bed = SimulationTestBed::from(MomentaryPushButton::new("TEST"));
-        test_bed.write("OVHD_TEST_IS_PRESSED", true);
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            MomentaryPushButton::new(context, "TEST")
+        }));
+
+        test_bed.write_by_name("OVHD_TEST_IS_PRESSED", true);
 
         test_bed.run();
-
         assert!(test_bed.query_element(|e| e.is_pressed()));
     }
 }
@@ -1063,27 +1164,36 @@ mod momentary_push_button_tests {
 #[cfg(test)]
 mod momentary_on_push_button_tests {
     use super::*;
-    use crate::simulation::test::{SimulationTestBed, TestBed};
+    use crate::simulation::test::{ElementCtorFn, SimulationTestBed, TestBed, WriteByName};
 
     #[test]
     fn new_is_not_pressed() {
-        assert!(!MomentaryOnPushButton::new("TEST").is_pressed());
+        let test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            MomentaryOnPushButton::new(context, "TEST")
+        }));
+
+        assert!(test_bed.query_element(|e| !e.is_pressed()));
     }
 
     #[test]
     fn reads_its_state() {
-        let mut test_bed = SimulationTestBed::from(MomentaryOnPushButton::new("TEST"));
-        test_bed.write("OVHD_TEST_IS_PRESSED", true);
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            MomentaryOnPushButton::new(context, "TEST")
+        }));
+
+        test_bed.write_by_name("OVHD_TEST_IS_PRESSED", true);
 
         test_bed.run();
-
-        assert!(test_bed.query_element(|button| button.is_pressed()));
+        assert!(test_bed.query_element(|e| e.is_pressed()));
     }
 
     #[test]
     fn stays_on_while_kept_pressed() {
-        let mut test_bed = SimulationTestBed::from(MomentaryOnPushButton::new("TEST"));
-        test_bed.write("OVHD_TEST_IS_PRESSED", true);
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            MomentaryOnPushButton::new(context, "TEST")
+        }));
+
+        test_bed.write_by_name("OVHD_TEST_IS_PRESSED", true);
 
         test_bed.run();
         assert!(test_bed.query_element(|button| button.is_on()));
@@ -1094,8 +1204,11 @@ mod momentary_on_push_button_tests {
 
     #[test]
     fn can_be_forced_off() {
-        let mut test_bed = SimulationTestBed::from(MomentaryOnPushButton::new("TEST"));
-        test_bed.write("OVHD_TEST_IS_PRESSED", true);
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            MomentaryOnPushButton::new(context, "TEST")
+        }));
+
+        test_bed.write_by_name("OVHD_TEST_IS_PRESSED", true);
 
         test_bed.run();
         assert!(test_bed.query_element(|button| button.is_on()));
@@ -1108,18 +1221,20 @@ mod momentary_on_push_button_tests {
 
     #[test]
     fn remains_off_when_forced_off() {
-        let mut test_bed = SimulationTestBed::from(MomentaryOnPushButton::new("TEST"));
-        test_bed.write("OVHD_TEST_IS_PRESSED", true);
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            MomentaryOnPushButton::new(context, "TEST")
+        }));
+        test_bed.write_by_name("OVHD_TEST_IS_PRESSED", true);
         test_bed.run();
 
         test_bed.command_element(|button| button.turn_off());
 
         assert!(!test_bed.query_element(|button| button.is_on()));
 
-        test_bed.write("OVHD_TEST_IS_PRESSED", false);
+        test_bed.write_by_name("OVHD_TEST_IS_PRESSED", false);
         test_bed.run();
 
-        test_bed.write("OVHD_TEST_IS_PRESSED", true);
+        test_bed.write_by_name("OVHD_TEST_IS_PRESSED", true);
         test_bed.run();
         test_bed.command_element(|button| button.turn_off());
 
@@ -1128,23 +1243,25 @@ mod momentary_on_push_button_tests {
 
     #[test]
     fn can_press_on_and_off() {
-        let mut test_bed = SimulationTestBed::from(MomentaryOnPushButton::new("TEST"));
-        test_bed.write("OVHD_TEST_IS_PRESSED", true);
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            MomentaryOnPushButton::new(context, "TEST")
+        }));
+        test_bed.write_by_name("OVHD_TEST_IS_PRESSED", true);
 
         test_bed.run();
         assert!(test_bed.query_element(|button| button.is_on()));
 
-        test_bed.write("OVHD_TEST_IS_PRESSED", false);
+        test_bed.write_by_name("OVHD_TEST_IS_PRESSED", false);
 
         test_bed.run();
         assert!(test_bed.query_element(|button| button.is_on()));
 
-        test_bed.write("OVHD_TEST_IS_PRESSED", true);
+        test_bed.write_by_name("OVHD_TEST_IS_PRESSED", true);
 
         test_bed.run();
         assert!(!test_bed.query_element(|button| button.is_on()));
 
-        test_bed.write("OVHD_TEST_IS_PRESSED", false);
+        test_bed.write_by_name("OVHD_TEST_IS_PRESSED", false);
 
         test_bed.run();
         assert!(!test_bed.query_element(|button| button.is_on()));
@@ -1152,28 +1269,36 @@ mod momentary_on_push_button_tests {
 
     #[test]
     fn writes_its_state() {
-        let mut test_bed = SimulationTestBed::from(MomentaryOnPushButton::new("TEST"));
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            MomentaryOnPushButton::new(context, "TEST")
+        }));
 
         test_bed.run();
 
-        assert!(test_bed.contains_key("OVHD_TEST_IS_ON"));
+        assert!(test_bed.contains_variable_with_name("OVHD_TEST_IS_ON"));
     }
 }
 
 #[cfg(test)]
-mod momentary_rising_edge_push_button_tests {
+mod press_single_signal_button_tests {
     use super::*;
-    use crate::simulation::test::{SimulationTestBed, TestBed};
+    use crate::simulation::test::{ElementCtorFn, SimulationTestBed, TestBed, WriteByName};
 
     #[test]
     fn new_is_not_pressed() {
-        assert!(!PressSingleSignalButton::new("TEST").is_pressed());
+        let test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            PressSingleSignalButton::new(context, "TEST")
+        }));
+
+        assert!(test_bed.query_element(|e| !e.is_pressed()));
     }
 
     #[test]
     fn reads_its_state() {
-        let mut test_bed = SimulationTestBed::from(PressSingleSignalButton::new("TEST"));
-        test_bed.write("OVHD_TEST_IS_PRESSED", true);
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            PressSingleSignalButton::new(context, "TEST")
+        }));
+        test_bed.write_by_name("OVHD_TEST_IS_PRESSED", true);
 
         test_bed.run();
 
@@ -1182,8 +1307,10 @@ mod momentary_rising_edge_push_button_tests {
 
     #[test]
     fn can_be_pressed() {
-        let mut test_bed = SimulationTestBed::from(PressSingleSignalButton::new("TEST"));
-        test_bed.write("OVHD_TEST_IS_PRESSED", true);
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            PressSingleSignalButton::new(context, "TEST")
+        }));
+        test_bed.write_by_name("OVHD_TEST_IS_PRESSED", true);
 
         test_bed.run();
         assert!(test_bed.query_element(|button| button.is_pressed()));
@@ -1191,8 +1318,10 @@ mod momentary_rising_edge_push_button_tests {
 
     #[test]
     fn is_only_pressed_for_one_update() {
-        let mut test_bed = SimulationTestBed::from(PressSingleSignalButton::new("TEST"));
-        test_bed.write("OVHD_TEST_IS_PRESSED", true);
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            PressSingleSignalButton::new(context, "TEST")
+        }));
+        test_bed.write_by_name("OVHD_TEST_IS_PRESSED", true);
 
         test_bed.run();
         assert!(test_bed.query_element(|button| button.is_pressed()));
@@ -1208,15 +1337,18 @@ mod momentary_rising_edge_push_button_tests {
 #[cfg(test)]
 mod indication_light_tests {
     use super::*;
-    use crate::simulation::test::{SimulationTestBed, TestBed};
+    use crate::simulation::test::{ElementCtorFn, ReadByName, SimulationTestBed, TestBed};
     use rstest::rstest;
 
     #[test]
     fn new_is_not_illuminated() {
-        let mut test_bed = SimulationTestBed::from(IndicationLight::new("TEST"));
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            IndicationLight::new(context, "TEST")
+        }));
         test_bed.run();
 
-        let is_illuminated: bool = test_bed.read(&IndicationLight::is_illuminated_id("TEST"));
+        let is_illuminated: bool =
+            test_bed.read_by_name(&IndicationLight::is_illuminated_id("TEST"));
         assert!(!is_illuminated);
     }
 
@@ -1227,48 +1359,57 @@ mod indication_light_tests {
         #[case] set_illuminated: bool,
         #[case] expected: bool,
     ) {
-        let mut test_bed = SimulationTestBed::from(IndicationLight::new("TEST"));
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            IndicationLight::new(context, "TEST")
+        }));
         test_bed.command_element(|light| light.set_illuminated(set_illuminated));
         test_bed.run();
 
-        let is_illuminated: bool = test_bed.read(&IndicationLight::is_illuminated_id("TEST"));
+        let is_illuminated: bool =
+            test_bed.read_by_name(&IndicationLight::is_illuminated_id("TEST"));
         assert_eq!(is_illuminated, expected);
     }
 }
 
 #[cfg(test)]
 mod value_knob_tests {
-    use crate::simulation::test::{SimulationTestBed, TestBed};
+    use crate::simulation::test::{ElementCtorFn, SimulationTestBed, TestBed, WriteByName};
 
     use super::*;
 
     #[test]
     fn new_has_0_value() {
-        let knob = ValueKnob::new("TEST");
+        let test_bed =
+            SimulationTestBed::from(ElementCtorFn(|context| ValueKnob::new(context, "TEST")));
 
-        assert!(knob.value() < f64::EPSILON);
+        assert!(test_bed.query_element(|e| e.value()) < f64::EPSILON);
     }
 
     #[test]
     fn new_with_value_has_value() {
-        let knob = ValueKnob::new_with_value("TEST", 10.);
+        let test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            ValueKnob::new_with_value(context, "TEST", 10.)
+        }));
 
-        assert!((knob.value() - 10.).abs() < f64::EPSILON);
+        assert!((test_bed.query_element(|e| e.value()) - 10.).abs() < f64::EPSILON);
     }
 
     #[test]
     fn set_value_changes_value() {
-        let mut knob = ValueKnob::new_with_value("TEST", 10.);
+        let mut test_bed =
+            SimulationTestBed::from(ElementCtorFn(|context| ValueKnob::new(context, "TEST")));
 
-        knob.set_value(20.);
+        test_bed.command_element(|e| e.set_value(20.));
 
-        assert!((knob.value() - 20.).abs() < f64::EPSILON);
+        assert!((test_bed.query_element(|e| e.value()) - 20.).abs() < f64::EPSILON);
     }
 
     #[test]
     fn reads_its_state() {
-        let mut test_bed = SimulationTestBed::from(ValueKnob::new("TEST"));
-        test_bed.write("OVHD_TEST_KNOB", 10.);
+        let mut test_bed =
+            SimulationTestBed::from(ElementCtorFn(|context| ValueKnob::new(context, "TEST")));
+
+        test_bed.write_by_name("OVHD_TEST_KNOB", 10.);
 
         test_bed.run();
 
@@ -1277,29 +1418,37 @@ mod value_knob_tests {
 
     #[test]
     fn writes_its_state() {
-        let mut test_bed = SimulationTestBed::from(ValueKnob::new("TEST"));
+        let mut test_bed =
+            SimulationTestBed::from(ElementCtorFn(|context| ValueKnob::new(context, "TEST")));
 
         test_bed.run();
 
-        assert!(test_bed.contains_key("OVHD_TEST_KNOB"));
+        assert!(test_bed.contains_variable_with_name("OVHD_TEST_KNOB"));
     }
 }
 
 #[cfg(test)]
 mod spring_loaded_switch_tests {
-    use crate::simulation::test::{SimulationTestBed, TestBed};
+    use crate::simulation::test::{ElementCtorFn, SimulationTestBed, TestBed, WriteByName};
 
     use super::*;
 
     #[test]
     fn new_is_neutral_position() {
-        assert!(SpringLoadedSwitch::new("TEST").is_in_neutral_position());
+        let test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            SpringLoadedSwitch::new(context, "TEST")
+        }));
+
+        assert!(test_bed.query_element(|e| e.is_in_neutral_position()));
     }
 
     #[test]
     fn reads_its_state() {
-        let mut test_bed = SimulationTestBed::from(SpringLoadedSwitch::new("TEST"));
-        test_bed.write("OVHD_TEST_SWITCH", 2);
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            SpringLoadedSwitch::new(context, "TEST")
+        }));
+
+        test_bed.write_by_name("OVHD_TEST_SWITCH", 2);
 
         test_bed.run();
 
@@ -1308,10 +1457,12 @@ mod spring_loaded_switch_tests {
 
     #[test]
     fn writes_its_state() {
-        let mut test_bed = SimulationTestBed::from(SpringLoadedSwitch::new("TEST"));
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            SpringLoadedSwitch::new(context, "TEST")
+        }));
 
         test_bed.run();
 
-        assert!(test_bed.contains_key("OVHD_TEST_SWITCH"));
+        assert!(test_bed.contains_variable_with_name("OVHD_TEST_SWITCH"));
     }
 }

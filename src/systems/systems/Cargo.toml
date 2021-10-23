@@ -12,6 +12,7 @@ num-derive = "0.3.3"
 num-traits = "0.2.14"
 nalgebra = "0.25.0"
 bounded-vec-deque = "0.1.1"
+fxhash = "0.2.1"
 
 [dev-dependencies]
 rstest = "0.10.0"

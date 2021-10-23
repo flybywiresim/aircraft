@@ -59,7 +59,6 @@ impl CabinPressureSimulation {
         }
     }
 
-    #[allow(clippy::too_many_arguments)]
     pub(super) fn update(
         &mut self,
         context: &UpdateContext,

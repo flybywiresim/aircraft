@@ -7,8 +7,8 @@ use crate::{
     overhead::{AutoManFaultPushButton, NormalOnPushButton, SpringLoadedSwitch, ValueKnob},
     shared::{random_number, ControllerSignal, EngineCorrectedN1, LgciuWeightOnWheels},
     simulation::{
-        Read, SimulationElement, SimulationElementVisitor, SimulatorReader, SimulatorWriter,
-        UpdateContext, Write,
+        InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
+        SimulatorWriter, UpdateContext, VariableIdentifier, Write,
     },
 };
 
@@ -38,6 +38,22 @@ trait CabinPressure {
 }
 
 pub struct Pressurization {
+    active_cpc_sys_id: VariableIdentifier,
+    cabin_altitude_id: VariableIdentifier,
+    cabin_vs_id: VariableIdentifier,
+    cabin_delta_pressure_id: VariableIdentifier,
+    outflow_valve_open_percentage_id: VariableIdentifier,
+    safety_valve_open_percentage_id: VariableIdentifier,
+    fwc_excess_cabin_altitude_id: VariableIdentifier,
+    fwc_excess_residual_pressure_id: VariableIdentifier,
+    fwc_low_diff_pressure_id: VariableIdentifier,
+    auto_landing_elevation_id: VariableIdentifier,
+    departure_elevation_id: VariableIdentifier,
+    sea_level_pressure_id: VariableIdentifier,
+    destination_qnh_id: VariableIdentifier,
+    packs_1_supply_id: VariableIdentifier,
+    packs_2_supply_id: VariableIdentifier,
+
     cabin_pressure_simulation: CabinPressureSimulation,
     cpc: [CabinPressureController; 2],
     outflow_valve: PressureValve,
@@ -54,7 +70,7 @@ pub struct Pressurization {
 }
 
 impl Pressurization {
-    pub fn new() -> Self {
+    pub fn new(context: &mut InitContext) -> Self {
         let random = random_number();
         let mut active: usize = 1;
         if random % 2 == 0 {
@@ -62,6 +78,27 @@ impl Pressurization {
         }
 
         Self {
+            active_cpc_sys_id: context.get_identifier("PRESS_ACTIVE_CPC_SYS".to_owned()),
+            cabin_altitude_id: context.get_identifier("PRESS_CABIN_ALTITUDE".to_owned()),
+            cabin_vs_id: context.get_identifier("PRESS_CABIN_VS".to_owned()),
+            cabin_delta_pressure_id: context
+                .get_identifier("PRESS_CABIN_DELTA_PRESSURE".to_owned()),
+            outflow_valve_open_percentage_id: context
+                .get_identifier("PRESS_OUTFLOW_VALVE_OPEN_PERCENTAGE".to_owned()),
+            safety_valve_open_percentage_id: context
+                .get_identifier("PRESS_SAFETY_VALVE_OPEN_PERCENTAGE".to_owned()),
+            fwc_excess_cabin_altitude_id: context.get_identifier("PRESS_EXCESS_CAB_ALT".to_owned()),
+            fwc_excess_residual_pressure_id: context
+                .get_identifier("PRESS_EXCESS_RESIDUAL_PR".to_owned()),
+            fwc_low_diff_pressure_id: context.get_identifier("PRESS_LOW_DIFF_PR".to_owned()),
+            auto_landing_elevation_id: context
+                .get_identifier("PRESS_AUTO_LANDING_ELEVATION".to_owned()),
+            departure_elevation_id: context.get_identifier("DEPARTURE_ELEVATION".to_owned()),
+            sea_level_pressure_id: context.get_identifier("SEA LEVEL PRESSURE".to_owned()),
+            destination_qnh_id: context.get_identifier("DESTINATION_QNH".to_owned()),
+            packs_1_supply_id: context.get_identifier("PACKS_1_IS_SUPPLYING".to_owned()),
+            packs_2_supply_id: context.get_identifier("PACKS_2_IS_SUPPLYING".to_owned()),
+
             cabin_pressure_simulation: CabinPressureSimulation::new(),
             cpc: [
                 CabinPressureController::new(),
@@ -176,60 +213,55 @@ impl Pressurization {
 
 impl SimulationElement for Pressurization {
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write("PRESS_ACTIVE_CPC_SYS", self.active_system);
+        writer.write(&self.active_cpc_sys_id, self.active_system);
         writer.write(
-            "PRESS_CABIN_ALTITUDE",
+            &self.cabin_altitude_id,
             self.cpc[self.active_system - 1].cabin_altitude(),
         );
         writer.write(
-            "PRESS_CABIN_VS",
+            &self.cabin_vs_id,
             self.cabin_pressure_simulation
                 .cabin_vs()
                 .get::<foot_per_minute>(),
         );
         writer.write(
-            "PRESS_CABIN_DELTA_PRESSURE",
+            &self.cabin_delta_pressure_id,
             self.cabin_pressure_simulation.cabin_delta_p(),
         );
         writer.write(
-            "PRESS_OUTFLOW_VALVE_OPEN_PERCENTAGE",
+            &self.outflow_valve_open_percentage_id,
             self.outflow_valve.open_amount(),
         );
         writer.write(
-            "PRESS_SAFETY_VALVE_OPEN_PERCENTAGE",
+            &self.safety_valve_open_percentage_id,
             self.safety_valve.open_amount(),
         );
 
         // FWC warning signals
         writer.write(
-            "PRESS_EXCESS_CAB_ALT",
+            &self.fwc_excess_cabin_altitude_id,
             self.cpc[self.active_system - 1].is_excessive_alt(),
         );
         writer.write(
-            "PRESS_EXCESS_RESIDUAL_PR",
+            &self.fwc_excess_residual_pressure_id,
             self.cpc[self.active_system - 1].is_excessive_residual_pressure(),
         );
         writer.write(
-            "PRESS_LOW_DIFF_PR",
+            &self.fwc_low_diff_pressure_id,
             self.cpc[self.active_system - 1].is_low_diff_pressure(),
         );
     }
 
     fn read(&mut self, reader: &mut SimulatorReader) {
-        self.landing_elevation = reader.read("PRESS_AUTO_LANDING_ELEVATION");
-        self.departure_elevation = reader.read("DEPARTURE_ELEVATION");
-        self.sea_level_pressure = Pressure::new::<hectopascal>(reader.read("SEA LEVEL PRESSURE"));
-        self.destination_qnh = Pressure::new::<hectopascal>(reader.read("DESTINATION_QNH"));
+        self.landing_elevation = reader.read(&self.auto_landing_elevation_id);
+        self.departure_elevation = reader.read(&self.departure_elevation_id);
+        self.sea_level_pressure =
+            Pressure::new::<hectopascal>(reader.read(&self.sea_level_pressure_id));
+        self.destination_qnh = Pressure::new::<hectopascal>(reader.read(&self.destination_qnh_id));
         // The future implementation of the air cond system will take into account the effects of having only
         // one pack supplying air, for now we assume either pack can supply the full volume
         self.packs_are_on =
-            reader.read("PACKS_1_IS_SUPPLYING") || reader.read("PACKS_2_IS_SUPPLYING");
-    }
-}
-
-impl Default for Pressurization {
-    fn default() -> Self {
-        Self::new()
+            reader.read(&self.packs_1_supply_id) || reader.read(&self.packs_2_supply_id);
     }
 }
 
@@ -241,12 +273,12 @@ pub struct PressurizationOverheadPanel {
 }
 
 impl PressurizationOverheadPanel {
-    pub fn new() -> Self {
+    pub fn new(context: &mut InitContext) -> Self {
         Self {
-            mode_sel: AutoManFaultPushButton::new_auto("PRESS_MODE_SEL"),
-            man_vs_ctl_switch: SpringLoadedSwitch::new("PRESS_MAN_VS_CTL"),
-            ldg_elev_knob: ValueKnob::new_with_value("PRESS_LDG_ELEV", -2000.),
-            ditching: NormalOnPushButton::new_normal("PRESS_DITCHING"),
+            mode_sel: AutoManFaultPushButton::new_auto(context, "PRESS_MODE_SEL"),
+            man_vs_ctl_switch: SpringLoadedSwitch::new(context, "PRESS_MAN_VS_CTL"),
+            ldg_elev_knob: ValueKnob::new_with_value(context, "PRESS_LDG_ELEV", -2000.),
+            ditching: NormalOnPushButton::new_normal(context, "PRESS_DITCHING"),
         }
     }
 
@@ -276,11 +308,6 @@ impl SimulationElement for PressurizationOverheadPanel {
         self.ditching.accept(visitor);
 
         visitor.visit(self);
-    }
-}
-impl Default for PressurizationOverheadPanel {
-    fn default() -> Self {
-        Self::new()
     }
 }
 
@@ -351,7 +378,7 @@ mod tests {
     use crate::simulation::{Aircraft, SimulationElement, SimulationElementVisitor};
     use crate::{
         shared::EngineCorrectedN1,
-        simulation::test::{SimulationTestBed, TestBed},
+        simulation::test::{ReadByName, SimulationTestBed, TestBed, WriteByName},
     };
 
     use std::time::Duration;
@@ -468,10 +495,10 @@ mod tests {
     }
 
     impl TestAircraft {
-        fn new() -> Self {
+        fn new(context: &mut InitContext) -> Self {
             let mut test_aircraft = Self {
-                pressurization: Pressurization::new(),
-                pressurization_overhead: PressurizationOverheadPanel::new(),
+                pressurization: Pressurization::new(context),
+                pressurization_overhead: PressurizationOverheadPanel::new(context),
                 engine_1: TestEngine::new(Ratio::new::<percent>(0.)),
                 engine_2: TestEngine::new(Ratio::new::<percent>(0.)),
                 lgciu1: TestLgciu::new(false),
@@ -520,50 +547,50 @@ mod tests {
     impl PressurizationTestBed {
         fn new() -> Self {
             let mut test_bed = Self {
-                test_bed: SimulationTestBed::new(|_| TestAircraft::new()),
+                test_bed: SimulationTestBed::new(TestAircraft::new),
             };
             test_bed = test_bed.command_packs_on();
             test_bed
         }
 
         fn command_ditching_pb_on(mut self) -> Self {
-            self.write("OVHD_PRESS_DITCHING_PB_IS_ON", true);
+            self.write_by_name("OVHD_PRESS_DITCHING_PB_IS_ON", true);
             self
         }
 
         fn command_mode_sel_pb_auto(mut self) -> Self {
-            self.write("OVHD_PRESS_MODE_SEL_PB_IS_AUTO", true);
+            self.write_by_name("OVHD_PRESS_MODE_SEL_PB_IS_AUTO", true);
             self
         }
 
         fn command_mode_sel_pb_man(mut self) -> Self {
-            self.write("OVHD_PRESS_MODE_SEL_PB_IS_AUTO", false);
+            self.write_by_name("OVHD_PRESS_MODE_SEL_PB_IS_AUTO", false);
             self
         }
 
         fn command_man_vs_switch_position(mut self, position: usize) -> Self {
             if position == 0 {
-                self.write("OVHD_PRESS_MAN_VS_CTL_SWITCH", 0);
+                self.write_by_name("OVHD_PRESS_MAN_VS_CTL_SWITCH", 0);
             } else if position == 2 {
-                self.write("OVHD_PRESS_MAN_VS_CTL_SWITCH", 2);
+                self.write_by_name("OVHD_PRESS_MAN_VS_CTL_SWITCH", 2);
             } else {
-                self.write("OVHD_PRESS_MAN_VS_CTL_SWITCH", 1);
+                self.write_by_name("OVHD_PRESS_MAN_VS_CTL_SWITCH", 1);
             }
             self
         }
 
         fn command_ldg_elev_knob_value(mut self, value: f64) -> Self {
-            self.write("OVHD_PRESS_LDG_ELEV_KNOB", value);
+            self.write_by_name("OVHD_PRESS_LDG_ELEV_KNOB", value);
             self
         }
 
         fn command_packs_on(mut self) -> Self {
-            self.write("PACKS_1_IS_SUPPLYING", true);
+            self.write_by_name("PACKS_1_IS_SUPPLYING", true);
             self
         }
 
         fn command_packs_off(mut self) -> Self {
-            self.write("PACKS_1_IS_SUPPLYING", false);
+            self.write_by_name("PACKS_1_IS_SUPPLYING", false);
             self
         }
 
@@ -599,7 +626,7 @@ mod tests {
         }
 
         fn is_mode_sel_pb_auto(&mut self) -> bool {
-            self.read("OVHD_PRESS_MODE_SEL_PB_IS_AUTO")
+            self.read_by_name("OVHD_PRESS_MODE_SEL_PB_IS_AUTO")
         }
 
         fn cabin_vs(&self) -> Velocity {
