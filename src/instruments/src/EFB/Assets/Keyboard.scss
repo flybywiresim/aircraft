@@ -1,5 +1,3 @@
-$button-spacing: 7px;
-
 .simple-keyboard {
   @apply text-theme-text;
 }
@@ -10,8 +8,8 @@ $button-spacing: 7px;
   overflow: hidden;
 }
 .hg-theme-default {
-  @apply bg-theme-body;
-  border-radius: 5px;
+@apply bg-theme-body;
+    border-radius: 5px;
   box-sizing: border-box;
   overflow: hidden;
   padding: 5px;
@@ -39,13 +37,13 @@ $button-spacing: 7px;
   display: flex;
 }
 .hg-theme-default .hg-row:not(:last-child) {
-  margin-bottom: $button-spacing;
+  margin-bottom: 5px;
 }
 .hg-theme-default .hg-row .hg-button:not(:last-child) {
-  margin-right: $button-spacing;
+  margin-right: 5px;
 }
 .hg-theme-default .hg-row .hg-button-container {
-  margin-right: $button-spacing;
+  margin-right: 5px;
 }
 .hg-theme-default .hg-row > div:last-child {
   margin-right: 0;
@@ -53,19 +51,14 @@ $button-spacing: 7px;
 .hg-theme-default .hg-row .hg-button-container {
   display: flex;
 }
-.hg-row {
-    height: 80px;
-}
-.hg-row:first-child {
-    height: 70px;
-}
 .hg-theme-default .hg-button {
   @apply bg-theme-accent;
   align-items: center;
-  border-radius: 7px;
+  border-radius: 5px;
   box-sizing: border-box;
   cursor: pointer;
   display: flex;
+  height: 80px;
   justify-content: center;
   padding: 5px;
 }
@@ -96,8 +89,8 @@ $button-spacing: 7px;
   max-width: 45px;
 }
 .hg-theme-default .hg-button.hg-selectedButton {
-  //   background: rgba(5, 25, 70, 0.53);
-  //   color: #00ff2a;
+//   background: rgba(5, 25, 70, 0.53);
+//   color: #00ff2a;
 }
 .hg-theme-default .hg-button.hg-standardBtn[data-skbtn=".com"] {
   max-width: 90px;
@@ -106,12 +99,13 @@ $button-spacing: 7px;
   max-width: 90px;
 }
 .hg-candidate-box {
-  @apply bg-theme-accent;
-  @apply border-2 border-theme-highlight;
+@apply bg-theme-unselected;
+    border-bottom: 2px solid;
+  @apply border-theme-unselected;
   border-radius: 5px;
   display: inline-flex;
   margin-top: -10px;
-  max-width: 100vw;
+  max-width: 272px;
   position: absolute;
   transform: translateY(-100%);
   -webkit-user-select: none;
@@ -120,7 +114,6 @@ $button-spacing: 7px;
   user-select: none;
 }
 ul.hg-candidate-box-list {
-  @apply text-4xl text-theme-text;
   display: flex;
   flex: 1;
   list-style: none;
@@ -130,15 +123,16 @@ ul.hg-candidate-box-list {
 li.hg-candidate-box-list-item {
   align-items: center;
   display: flex;
+  height: 40px;
   justify-content: center;
-  padding: 10px;
+  width: 40px;
 }
 li.hg-candidate-box-list-item:hover {
-  background: rgba(0, 0, 0, 0.1);
+  background: rgba(0, 0, 0, 0.03);
   cursor: pointer;
 }
 li.hg-candidate-box-list-item:active {
-  background: rgba(0, 0, 0, 0.2);
+  background: rgba(0, 0, 0, 0.1);
 }
 .hg-candidate-box-prev:before {
   content: "◄";
@@ -148,8 +142,9 @@ li.hg-candidate-box-list-item:active {
 }
 .hg-candidate-box-next,
 .hg-candidate-box-prev {
-  @apply bg-theme-highlight text-theme-unselected;
   align-items: center;
+  background: #d0d0d0;
+  color: #969696;
   cursor: pointer;
   display: flex;
   padding: 0 10px;
@@ -163,5 +158,5 @@ li.hg-candidate-box-list-item:active {
   border-top-left-radius: 5px;
 }
 .hg-candidate-box-btn-active {
-  @apply text-theme-text;
+  color: #444;
 }

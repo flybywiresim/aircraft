@@ -2,12 +2,12 @@ import React, { useState } from 'react';
 
 import { usePersistentProperty } from '@instruments/common/persistence';
 
+import { PopUp } from '@shared/popup';
 import { HttpError } from '@flybywiresim/api-client';
 import { toast } from 'react-toastify';
-import { useModals, PromptModal } from '../../UtilComponents/Modals/Modals';
-import { Toggle } from '../../UtilComponents/Form/Toggle';
-import { SelectGroup, SelectItem } from '../../UtilComponents/Form/Select';
-import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
+import { Toggle } from '../../Components/Form/Toggle';
+import { SelectGroup, SelectItem } from '../../Components/Form/Select';
+import SimpleInput from '../../Components/Form/SimpleInput/SimpleInput';
 import { ButtonType, SettingItem, SettingsPage } from '../Settings';
 
 export const AtsuAocPage = () => {
@@ -64,7 +64,7 @@ export const AtsuAocPage = () => {
 
     const handleUsernameInput = (value: string) => {
         getSimbriefUserId(value).then((response) => {
-            toast.success(`Your SimBrief PilotID has been validated and updated to ${response}`);
+            toast.success(`Your SimBrief PilotID has been validated and updated to ${response}.`);
 
             setSimbriefUserId(response);
             setSimbriefDisplay(response);
@@ -93,17 +93,15 @@ export const AtsuAocPage = () => {
         { name: 'NOAA', setting: 'NOAA' },
     ];
 
-    const modals = useModals();
-
     function handleTelexToggle(toggleValue: boolean): void {
         if (toggleValue) {
-            modals.showModal(
-                <PromptModal
-                    title="TELEX Warning"
-                    bodyText="TELEX enables free text and live map. If enabled, aircraft position data is published for the duration of the flight. Messages are public and not moderated. USE THIS FEATURE AT YOUR OWN RISK. To learn more about TELEX and the features it enables, please go to https://docs.flybywiresim.com/telex."
-                    onConfirm={() => setTelexEnabled('ENABLED')}
-                    confirmText="Enable TELEX"
-                />,
+            new PopUp().showPopUp(
+                'TELEX WARNING',
+                // eslint-disable-next-line max-len
+                'Telex enables free text and live map. If enabled, aircraft position data is published for the duration of the flight. Messages are public and not moderated. USE AT YOUR OWN RISK. To learn more about telex and the features it enables, please go to https://docs.flybywiresim.com/telex. Would you like to enable telex?',
+                'small',
+                () => setTelexEnabled('ENABLED'),
+                () => {},
             );
         } else {
             setTelexEnabled('DISABLED');
@@ -116,6 +114,7 @@ export const AtsuAocPage = () => {
                 <SelectGroup>
                     {atisSourceButtons.map((button) => (
                         <SelectItem
+                            enabled
                             onSelect={() => setAtisSource(button.setting)}
                             selected={atisSource === button.setting}
                         >
@@ -129,6 +128,7 @@ export const AtsuAocPage = () => {
                 <SelectGroup>
                     {metarSourceButtons.map((button) => (
                         <SelectItem
+                            enabled
                             onSelect={() => setMetarSource(button.setting)}
                             selected={metarSource === button.setting}
                         >
@@ -142,6 +142,7 @@ export const AtsuAocPage = () => {
                 <SelectGroup>
                     {tafSourceButtons.map((button) => (
                         <SelectItem
+                            enabled
                             onSelect={() => setTafSource(button.setting)}
                             selected={tafSource === button.setting}
                         >

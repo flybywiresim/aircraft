@@ -5,9 +5,7 @@ import { useSimVar } from '@instruments/common/simVars';
 import { useInteractionEvent } from '@instruments/common/hooks';
 import { Battery, BatteryCharging } from 'react-bootstrap-icons';
 import { ToastContainer, toast } from 'react-toastify';
-import { usePersistentNumberProperty, usePersistentProperty } from '@instruments/common/persistence';
-import { distanceTo } from 'msfs-geo';
-import { AlertModal, ModalContainer, useModals } from './UtilComponents/Modals/Modals';
+import { usePersistentNumberProperty, usePersistentProperty } from '../Common/persistence';
 import NavigraphClient, { NavigraphContext } from './ChartsApi/Navigraph';
 import 'react-toastify/dist/ReactToastify.css';
 import './toast.css';
@@ -26,28 +24,28 @@ import { Failures } from './Failures/Failures';
 
 import { clearEfbState, useAppDispatch, useAppSelector } from './Store/store';
 
-import { fetchSimbriefDataAction, isSimbriefDataLoaded } from './Store/features/simbrief';
+import { fetchSimbriefDataAction, initialState as simbriefInitialState } from './Store/features/simBrief';
 
-import { FbwLogo } from './UtilComponents/FbwLogo';
-import { setFlightPlanProgress } from './Store/features/flightProgress';
+import { FbwLogo } from './Assets/FbwLogo';
 
 const BATTERY_DURATION_CHARGE_MIN = 180;
 const BATTERY_DURATION_DISCHARGE_MIN = 240;
 
 const navigraph = new NavigraphClient();
 
-const LoadingScreen = () => (
+const ScreenLoading = () => (
     <div className="flex justify-center items-center w-screen h-screen bg-theme-statusbar">
         <FbwLogo width={128} height={120} className="text-theme-text" />
     </div>
 );
 
-const EmptyScreen = ({ isCharging }: { isCharging: boolean }) => (
+const ScreenEmpty = ({ isCharging }: { isCharging: boolean }) => (
     <div className="flex justify-center items-center w-screen h-screen bg-theme-statusbar">
-        {isCharging ? (
-            <BatteryCharging size={128} className="text-red-500" />
-        ) : (
+        {!isCharging && (
             <Battery size={128} className="text-red-500" />
+        )}
+        {isCharging && (
+            <BatteryCharging size={128} className="text-red-500" />
         )}
     </div>
 );
@@ -76,8 +74,7 @@ interface BatteryStatus {
 export const usePower = () => React.useContext(PowerContext);
 
 const Efb = () => {
-    // TODO: CHANGE ME
-    const [powerState, setPowerState] = useState<PowerStates>(PowerStates.LOADED);
+    const [powerState, setPowerState] = useState<PowerStates>(PowerStates.SHUTOFF);
 
     const [currentLocalTime] = useSimVar('E:LOCAL TIME', 'seconds', 3000);
     const [absoluteTime] = useSimVar('E:ABSOLUTE TIME', 'seconds', 3000);
@@ -95,38 +92,9 @@ const Efb = () => {
     const [dc2BusIsPowered] = useSimVar('L:A32NX_ELEC_DC_2_BUS_IS_POWERED', 'bool');
     const [batteryLevel, setBatteryLevel] = useState<BatteryStatus>({ level: 100, lastChangeTimestamp: absoluteTime, isCharging: dc2BusIsPowered });
 
-    const [lat] = useSimVar('PLANE LATITUDE', 'degree latitude', 4000);
-    const [long] = useSimVar('PLANE LONGITUDE', 'degree longitude', 4000);
-
-    const { arrivingPosLat, arrivingPosLong, departingPosLat, departingPosLong } = useAppSelector((state) => state.simbrief.data);
-
-    const [theme] = usePersistentProperty('EFB_UI_THEME', 'blue');
-
-    const modals = useModals();
-
     useEffect(() => {
-        document.documentElement.classList.add(`theme-${theme}`);
-    }, []);
-
-    useEffect(() => {
-        const remainingDistance = distanceTo(
-            { lat, long },
-            { lat: arrivingPosLat, long: arrivingPosLong },
-        );
-
-        const totalDistance = distanceTo(
-            { lat: departingPosLat, long: departingPosLong },
-            { lat: arrivingPosLat, long: arrivingPosLong },
-        );
-
-        const flightPlanProgress = totalDistance ? Math.max(((totalDistance - remainingDistance) / totalDistance) * 100, 0) : 0;
-
-        dispatch(setFlightPlanProgress(flightPlanProgress));
-    }, [lat, long, arrivingPosLat, arrivingPosLong, departingPosLat, departingPosLong]);
-
-    useEffect(() => {
-        setBatteryLevel((oldLevel) => {
-            const deltaTs = Math.max(absoluteTime - oldLevel.lastChangeTimestamp, 0);
+        setBatteryLevel((oldLevel:BatteryStatus) => {
+            const deltaTs = absoluteTime - oldLevel.lastChangeTimestamp;
             const batteryDurationSec = oldLevel.isCharging ? BATTERY_DURATION_CHARGE_MIN * 60 : -BATTERY_DURATION_DISCHARGE_MIN * 60;
 
             let level = oldLevel.level + 100 * deltaTs / batteryDurationSec;
@@ -134,15 +102,6 @@ const Efb = () => {
             if (level < 0) level = 0;
             const lastChangeTimestamp = absoluteTime;
             const isCharging = oldLevel.isCharging;
-
-            if (oldLevel.level > 20 && level <= 20) {
-                modals.showModal(
-                    <AlertModal
-                        title="Battery Low"
-                        bodyText="The battery is low. Please charge the battery."
-                    />,
-                );
-            }
 
             return { level, lastChangeTimestamp, isCharging };
         });
@@ -171,7 +130,7 @@ const Efb = () => {
         if (powerState === PowerStates.SHUTOFF) {
             dispatch(clearEfbState());
         } else if (powerState === PowerStates.LOADED) {
-            if ((!simbriefData || !isSimbriefDataLoaded()) && autoSimbriefImport === 'ENABLED') {
+            if ((!simbriefData || simbriefData === simbriefInitialState.data) && autoSimbriefImport === 'ENABLED') {
                 fetchSimbriefDataAction(simbriefUserId ?? '').then((action) => {
                     dispatch(action);
                 }).catch((e) => {
@@ -213,6 +172,7 @@ const Efb = () => {
         return Math.min(Math.max((-solarAltitude * (180 / Math.PI)) / solarZenith * 100, 0), 100);
     };
 
+    // handle setting brightness if user is using autobrightness
     useEffect(() => {
         if (usingAutobrightness) {
             const localTime = currentLocalTime / 3600;
@@ -226,13 +186,12 @@ const Efb = () => {
     case PowerStates.SHUTOFF:
         return <div className="w-screen h-screen" onClick={() => offToLoaded()} />;
     case PowerStates.LOADING:
-        return <LoadingScreen />;
+        return <ScreenLoading />;
     case PowerStates.EMPTY:
-        return <EmptyScreen isCharging={dc2BusIsPowered === 1} />;
+        return <ScreenEmpty isCharging={dc2BusIsPowered === 1} />;
     case PowerStates.LOADED:
         return (
             <NavigraphContext.Provider value={navigraph}>
-                <ModalContainer />
                 <PowerContext.Provider value={{ powerState, setPowerState }}>
                     <div className="bg-theme-body">
                         <ToastContainer
@@ -246,7 +205,7 @@ const Efb = () => {
                         />
                         <div className="flex flex-row">
                             <ToolBar />
-                            <div className="pt-14 pr-6 w-screen h-screen">
+                            <div className="pt-14 pr-6 w-screen h-screen text-gray-700">
                                 <Switch>
                                     <Route exact path="/">
                                         <Redirect to="/dashboard" />

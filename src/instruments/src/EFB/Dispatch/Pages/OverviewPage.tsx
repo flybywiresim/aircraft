@@ -1,9 +1,9 @@
 import React, { FC } from 'react';
 import { IconPlane } from '@tabler/icons';
 import { Box, LightningFill, PeopleFill, Rulers, Speedometer2 } from 'react-bootstrap-icons';
-import { useSimVar } from '@instruments/common/simVars';
-import { Units } from '@shared/units';
-import { NoseOutline } from '../../Assets/NoseOutline';
+import { usePersistentProperty } from '@instruments/common/persistence';
+import fuselage from '../../Assets/320neo-outline-nose.svg';
+import { useSimVar } from '../../../Common/simVars';
 
 interface InformationEntryProps {
     title: string;
@@ -14,14 +14,14 @@ const InformationEntry: FC<InformationEntryProps> = ({ children, title, info }) 
     <div>
         <div className="flex flex-row items-center space-x-4 text-theme-highlight">
             {children}
-            <p className="whitespace-nowrap">{title}</p>
+            <p>{title}</p>
         </div>
         <p className="font-bold">{info}</p>
     </div>
 );
 
 export const OverviewPage = () => {
-    const { usingMetric } = Units;
+    const usingMetric = usePersistentProperty('CONFIG_USING_METRIC_UNIT')[0] === '1';
 
     let [airline] = useSimVar('ATC AIRLINE', 'String', 1_000);
 
@@ -48,12 +48,12 @@ export const OverviewPage = () => {
     };
 
     return (
-        <div className="overflow-hidden p-6 mt-4 mr-3 w-1/2 rounded-lg border-2 h-efb border-theme-accent">
+        <div className="overflow-hidden p-6 mt-4 mr-3 w-1/2 rounded-lg border-2 shadow-md border-theme-accent h-efb">
             <h1 className="font-bold">Airbus A320neo</h1>
             <p>{airline}</p>
 
             <div className="flex justify-center items-center mt-6">
-                <NoseOutline className="mr-32 -ml-96 h-64 flip-horizontal text-theme-text" />
+                <img className="mr-32 -ml-96 h-64 flip-horizontal" src={fuselage} />
             </div>
 
             <div className="flex flex-row mt-8 space-x-16">

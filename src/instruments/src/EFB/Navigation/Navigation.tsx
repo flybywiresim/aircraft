@@ -1,77 +1,45 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useContext, useEffect, useState, useRef } from 'react';
 import QRCode from 'qrcode.react';
-import useInterval from '@instruments/common/useInterval';
-import { usePersistentProperty } from '@instruments/common/persistence';
-import {
-    ArrowClockwise,
-    ArrowCounterclockwise,
-    ArrowReturnRight,
-    ArrowsExpand,
-    ArrowsFullscreen,
-    Bullseye,
-    CloudArrowDown,
-    Dash,
-    FullscreenExit,
-    MoonFill,
-    Pin,
-    PinFill,
-    Plus,
-    ShieldLock,
-    SunFill,
-} from 'react-bootstrap-icons';
-import { useSimVar } from '@instruments/common/simVars';
-import { toast } from 'react-toastify';
-import { ScrollableContainer } from '../UtilComponents/ScrollableContainer';
-import { SelectGroup, SelectItem } from '../UtilComponents/Form/Select';
+import { IconArrowsMaximize, IconArrowsMinimize, IconLock, IconMoon, IconSun, IconPlus, IconMinus } from '@tabler/icons';
+import useInterval from '../../Common/useInterval';
 import NavigraphClient, {
+    AirportInfo,
     emptyNavigraphCharts,
     NavigraphAirportCharts,
     NavigraphChart,
+    NavigraphContext,
     useNavigraph,
 } from '../ChartsApi/Navigraph';
-import { ChartFoxAirportCharts, ChartFoxChart } from '../ChartsApi/ChartFox';
-import { SimpleInput } from '../UtilComponents/Form/SimpleInput/SimpleInput';
-import { isSimbriefDataLoaded } from '../Store/features/simbrief';
-import { useAppSelector, useAppDispatch } from '../Store/store';
-import {
-    setIsFullScreen,
-    setPlaneInFocus,
-    setChartId,
-    setChartLinks,
-    setChartRotation,
-    setTabIndex,
-    setUsingDarkTheme,
-    setChartDimensions,
-    setIcao,
-    setChartName,
-    setBoundingBox,
-    setPagesViewable,
-    setCurrentPage,
-    removedPinnedChart,
-    addPinnedChart,
-    isChartPinned,
-} from '../Store/features/navigationPage';
-
-type LocalFileChart = {
-    fileName: string;
-    type: 'IMAGE' | 'PDF';
-};
-interface LocalFileCharts {
-    images: LocalFileChart[];
-    pdfs: LocalFileChart[];
-}
+import ChartFoxClient, { ChartFoxAirportCharts, ChartFoxChart } from '../ChartsApi/ChartFox';
+import navigraphLogo from '../Assets/navigraph-logo.svg';
+import { usePersistentProperty } from '../../Common/persistence';
+import SimpleInput from '../Components/Form/SimpleInput/SimpleInput';
 
 type Chart = NavigraphChart | ChartFoxChart;
+
 type Charts = NavigraphAirportCharts | ChartFoxAirportCharts;
 
-interface NavigraphChartSelectorProps {
-    selectedTab: OrganizedChartType;
-    loading?: boolean;
+type ChartsUiProps = {
+    enableNavigraph: boolean,
+    chartFox: ChartFoxClient,
+    icao: string,
+    charts: Charts,
+    setIcao: (string) => void,
+    setCharts: (Charts) => void,
 }
 
-interface LocalFileChartSelectorProps {
-    selectedTab: LocalFileOrganizedCharts;
-    loading?: boolean;
+type NavigraphChartComponentProps = {
+    chartLink: ChartDisplay,
+    isFullscreen: boolean,
+    enableDarkCharts: boolean
+    setIsFullscreen: (boolean) => void,
+    setEnableDarkCharts: (boolean) => void,
+}
+
+type NavigraphChartSelectorProps = {
+    selectedTab: OrganizedChartType,
+    selectedChartId: string,
+    onChartClick: CallableFunction,
 }
 
 type OrganizedChartType = {
@@ -80,46 +48,31 @@ type OrganizedChartType = {
     bundleRunways?: boolean,
 }
 
-type LocalFileOrganizedCharts = {
-    name: string,
-    charts: LocalFileChart[],
-}
-
 type RunwayOrganizedChartType = {
     name: string,
     charts: Chart[],
 }
 
+type ChartDisplay = {
+    light: string,
+    dark: string
+}
+
 const Loading = () => {
     const navigraph = useNavigraph();
     const [, setRefreshToken] = usePersistentProperty('NAVIGRAPH_REFRESH_TOKEN');
-    const [showResetButton, setShowResetButton] = useState(false);
 
     const handleResetRefreshToken = () => {
         setRefreshToken('');
         navigraph.authenticate();
     };
 
-    useEffect(() => {
-        const timeout = setTimeout(() => {
-            setShowResetButton(true);
-        }, 2_000);
-
-        return () => clearTimeout(timeout);
-    }, []);
-
     return (
         <div className="flex flex-col justify-center items-center">
-            <div
-                className="flex justify-center items-center rounded-md bg-theme-secondary"
-                style={{ width: '400px', height: '400px' }}
-            >
-                <CloudArrowDown className="animate-bounce" size={40} />
-            </div>
+            <p className="text-xl ">Loading...</p>
             <button
                 type="button"
-                className={`flex justify-center items-center p-2 mt-6 rounded-md focus:outline-none bg-theme-highlight transition duration-200 opacity-0 ${showResetButton && 'opacity-100'}`}
-                style={{ width: '400px' }}
+                className="flex justify-center items-center p-2 mt-6 w-64 rounded-lg focus:outline-none bg-teal-light"
                 onClick={handleResetRefreshToken}
             >
                 Reset Navigraph Authentication
@@ -133,129 +86,50 @@ const AuthUi = () => {
 
     const hasQr = !!navigraph.auth.qrLink;
 
-    useInterval(async () => {
-        if (!navigraph.hasToken) {
-            try {
-                await navigraph.getToken();
-            } catch (e) {
-                toast.error(`Navigraph Authentication Error: ${e.message}`, { autoClose: 10_000 });
-            }
+    useInterval(() => {
+        if (!navigraph.hasToken()) {
+            navigraph.getToken();
         }
     }, (navigraph.auth.interval * 1000));
 
     return (
-        <div className="flex overflow-x-hidden justify-center items-center p-6 w-full rounded-lg h-efb bg-theme-accent">
-            <div className="flex flex-col justify-center items-center">
-                <ShieldLock className="mr-2" size={40} />
-                <h2 className="flex justify-center items-center mt-2">
-                    Authenticate with Navigraph
-                </h2>
-                <p className="mt-6 w-2/3 text-center">
-                    Scan the QR Code or open
+        <div className="flex overflow-x-hidden justify-center items-center p-6 w-full rounded-lg shadow-lg h-efb bg-theme-secondary">
+            <div className="flex flex-col">
+                <p className="flex justify-center items-center mb-6 text-2xl">
+                    <IconLock className="mr-2" size={24} stroke={1.5} strokeLinejoin="miter" />
+                    Authenticate with
                     {' '}
-                    <span className="text-theme-highlight">{navigraph.auth.link}</span>
-                    {' '}
-                    into your browser and enter the code below
+                    <img src={navigraphLogo} className="ml-3 h-10" alt="Navigraph Logo" />
                 </p>
-                <h1
-                    className="flex items-center px-4 mt-4 h-16 text-4xl font-bold tracking-wider rounded-md border-2 border-theme-highlight bg-theme-secondary"
-                    style={{ minWidth: '200px' }}
-                >
-                    {navigraph.auth.code || 'LOADING'}
-                </h1>
-                <div className="mt-16">
-                    {hasQr
-                        ? (
-                            <div className="p-3 bg-white rounded-md">
+                {hasQr
+                    ? (
+                        <>
+                            <div className="p-3 mr-auto ml-auto bg-white rounded-xl">
                                 <QRCode
                                     value={navigraph.auth.qrLink}
                                     size={400}
                                 />
                             </div>
-                        )
-                        : <Loading />}
-                </div>
+                            <p className="mt-8 mr-auto ml-auto w-2/3 text-xl text-center ">
+                                Scan the QR Code or open '
+                                <span className="text-teal-regular">{navigraph.auth.link}</span>
+                                ' into your browser and enter the code below
+                            </p>
+                            <h1 className="py-2 px-4 mt-4 mr-auto ml-auto text-center rounded-md bg-navy-medium">{navigraph.auth.code}</h1>
+                        </>
+                    )
+                    : <Loading />}
             </div>
         </div>
     );
 };
 
-const ChartComponent = () => {
-    const dispatch = useAppDispatch();
-    const {
-        chartDimensions,
-        chartLinks,
-        chartRotation,
-        isFullScreen,
-        usingDarkTheme,
-        planeInFocus,
-        boundingBox,
-        pagesViewable,
-        chartId,
-        currentPage,
-    } = useAppSelector((state) => state.navigationTab);
-
-    const { userName } = useNavigraph();
+const NavigraphChartComponent = (props: NavigraphChartComponentProps) => {
+    const navigraph = useNavigraph();
     const position = useRef({ top: 0, y: 0, left: 0, x: 0 });
     const ref = useRef<HTMLDivElement>(null);
 
-    const chartRef = useRef<HTMLDivElement>(null);
-
-    const [aircraftIconVisible, setAircraftIconVisible] = useState(false);
-    const [aircraftIconPosition, setAircraftIconPosition] = useState<{ x: number, y: number, r: number }>({ x: 0, y: 0, r: 0 });
-    const [aircraftLatitude] = useSimVar('PLANE LATITUDE', 'degree latitude', 1000);
-    const [aircraftLongitude] = useSimVar('PLANE LONGITUDE', 'degree longitude', 1000);
-    const [aircraftTrueHeading] = useSimVar('PLANE HEADING DEGREES TRUE', 'degrees', 100);
-
-    useEffect(() => {
-        let visible = false;
-
-        if (boundingBox
-            && aircraftLatitude >= boundingBox.bottomLeft.lat
-            && aircraftLatitude <= boundingBox.topRight.lat
-            && aircraftLongitude >= boundingBox.bottomLeft.lon
-            && aircraftLongitude <= boundingBox.topRight.lon
-        ) {
-            const dx = boundingBox.topRight.xPx - boundingBox.bottomLeft.xPx;
-            const dy = boundingBox.bottomLeft.yPx - boundingBox.topRight.yPx;
-            const dLat = boundingBox.topRight.lat - boundingBox.bottomLeft.lat;
-            const dLon = boundingBox.topRight.lon - boundingBox.bottomLeft.lon;
-            const x = boundingBox.bottomLeft.xPx + dx * ((aircraftLongitude - boundingBox.bottomLeft.lon) / dLon);
-            const y = boundingBox.topRight.yPx + dy * ((boundingBox.topRight.lat - aircraftLatitude) / dLat);
-
-            setAircraftIconPosition({ x, y, r: aircraftTrueHeading });
-            visible = true;
-        }
-
-        setAircraftIconVisible(visible);
-    }, [boundingBox, chartLinks, aircraftLatitude.toFixed(2), aircraftLongitude.toFixed(2), aircraftTrueHeading]);
-
-    useEffect(() => {
-        const { width, height } = chartDimensions;
-
-        if (chartRef.current) {
-            if (width) {
-                chartRef.current.style.width = `${width}px`;
-            }
-
-            if (height) {
-                chartRef.current.style.height = `${height}px`;
-            }
-        }
-    }, [chartRef, chartDimensions]);
-
-    useEffect(() => {
-        if (planeInFocus) {
-            dispatch(setChartRotation(360 - aircraftIconPosition.r));
-            // TODO: implement the chart translation
-            // if (ref.current) {
-            //     ref.current.scrollTop = aircraftIconPosition.y + ((ref.current.clientHeight - aircraftIconPosition.y) / 2);
-            //     ref.current.scrollLeft = -(ref.current.clientWidth - aircraftIconPosition.x) / 2;
-            // }
-        }
-    }, [aircraftIconPosition.r, planeInFocus]);
-
-    const handleMouseDown = (event: React.MouseEvent<HTMLDivElement>) => {
+    const handleMouseDown = (event) => {
         position.current.top = ref.current ? ref.current.scrollTop : 0;
         position.current.y = event.clientY;
         position.current.left = ref.current ? ref.current.scrollLeft : 0;
@@ -280,406 +154,86 @@ const ChartComponent = () => {
     };
 
     const handleZoomIn = () => {
-        if (!chartRef.current) return;
+        const chart :any = document.getElementById('chart');
+        const currWidth = chart.clientWidth;
+        if (currWidth === 2500) return;
 
-        const currentHeight = chartRef.current.clientHeight;
-        const currentWidth = chartRef.current.clientWidth;
-        if (currentHeight >= 2500) return;
-
-        // TODO: maybe use width here eventually?
-        dispatch(setChartDimensions({ height: currentHeight * 1.1, width: currentWidth * 1.1 }));
+        chart.style.width = `${currWidth + 100}px`;
     };
 
     const handleZoomOut = () => {
-        if (!chartRef.current) return;
+        const chart :any = document.getElementById('chart');
+        const currWidth = chart.clientWidth;
+        if (currWidth === 100) return;
 
-        const currentHeight = chartRef.current!.clientHeight;
-        const currenWidth = chartRef.current!.clientWidth;
-        if (currentHeight <= 775) return;
-
-        dispatch(setChartDimensions({ height: currentHeight * 0.9, width: currenWidth * 0.9 }));
+        chart.style.width = `${currWidth - 100}px`;
     };
-
-    const expandToHeight = () => {
-        if (!ref.current || !chartRef.current) return;
-
-        const scale = ref.current.clientHeight / chartRef.current.clientHeight;
-
-        dispatch(setChartDimensions({ width: (chartDimensions.width ?? 0) * scale, height: ref.current!.clientHeight }));
-    };
-
-    const expandToWidth = () => {
-        if (!ref.current || !chartRef.current) return;
-
-        const scale = ref.current.clientWidth / chartRef.current.clientWidth;
-
-        dispatch(setChartDimensions({ width: ref.current!.clientWidth, height: (chartDimensions.height ?? 0) * scale }));
-    };
-
-    // The functions that handle rotation get the closest 45 degree angle increment to the current angle
-    const handleRotateRight = () => {
-        dispatch(setChartRotation(chartRotation + (45 - chartRotation % 45)));
-    };
-
-    const handleRotateLeft = () => {
-        dispatch(setChartRotation(chartRotation - (45 + chartRotation % 45)));
-    };
-
-    useEffect(() => {
-        console.log(chartDimensions);
-
-        if (!chartDimensions.height && !chartDimensions.width) {
-            const img = new Image();
-            img.onload = function () {
-                if (ref.current) {
-                    // @ts-ignore
-                    // eslint-disable-next-line react/no-this-in-sfc
-                    dispatch(setChartDimensions({ width: this.width * (ref.current.clientHeight / this.height), height: ref.current.clientHeight }));
-                }
-            };
-            img.src = chartLinks.light;
-        }
-    }, [chartLinks]);
-
-    useEffect(() => {
-        setCurrentPage(1);
-    }, [chartId]);
-
-    useEffect(() => {
-        if (pagesViewable > 1) {
-            getPdfUrl(chartId, currentPage).then((url) => {
-                dispatch(setChartName({ light: url, dark: url }));
-            });
-        }
-    }, [currentPage]);
-
-    if (!chartLinks.light || !chartLinks.dark) {
-        return (
-            <div
-                className={`flex relative items-center justify-center bg-theme-accent rounded-lg ${!isFullScreen && 'rounded-l-none ml-6'}`}
-                style={{ width: `${isFullScreen ? '1278px' : '804px'}` }}
-            >
-                {isFullScreen && (
-                    <div
-                        className="flex absolute top-6 right-6 flex-row items-center p-4 rounded-md transition duration-100 bg-theme-secondary hover:bg-theme-highlight hover:text-theme-body"
-                        onClick={() => dispatch(setIsFullScreen(false))}
-                    >
-                        <FullscreenExit size={40} />
-                        <p className="ml-4 text-current">Exit Fullscreen Mode</p>
-                    </div>
-                )}
-                <p>There is no chart to display.</p>
-            </div>
-        );
-    }
 
     return (
         <div
-            className={`relative flex flex-row overflow-x-hidden overflow-y-scroll mx-auto grabbable no-scrollbar bg-theme-accent rounded-lg ${!isFullScreen && 'rounded-l-none ml-6'}`}
+            className={props.isFullscreen
+                ? 'relative flex flex-row overflow-x-hidden overflow-y-scroll w-full max-w-6xl mx-auto grabbable no-scrollbar'
+                : 'relative flex flex-row overflow-x-hidden overflow-y-scroll w-2/3 max-w-3xl mx-auto grabbable no-scrollbar'}
             ref={ref}
-            style={{ width: `${isFullScreen ? '1278px' : '804px'}` }}
             onMouseDown={handleMouseDown}
         >
-            {pagesViewable > 1 && (
-                <div className="flex overflow-hidden fixed top-32 right-32 z-40 flex-row items-center rounded-md">
-                    <div
-                        className={`flex flex-row justify-center items-center h-14 bg-opacity-40 transition duration-100 cursor-pointer hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight ${currentPage === 1 && 'opacity-50 pointer-events-none'}`}
-                        onClick={() => dispatch(setCurrentPage(currentPage - 1))}
-                    >
-                        <Dash size={40} />
-                    </div>
-                    <SimpleInput
-                        min={1}
-                        max={pagesViewable}
-                        value={currentPage}
-                        noLabel
-                        number
-                        onBlur={(value) => {
-                            dispatch(setCurrentPage(Number.parseInt(value)));
-                        }}
-                        className="w-16 h-14 rounded-r-none rounded-l-none border-transparent"
-                    />
-                    <div className="flex flex-shrink-0 items-center px-2 h-14 bg-theme-secondary">
-                        of
-                        {' '}
-                        {pagesViewable}
-                    </div>
-                    <div
-                        className={`flex flex-row justify-center items-center h-14 bg-opacity-40 transition duration-100 cursor-pointer hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight ${currentPage === pagesViewable && 'opacity-50 pointer-events-none'}`}
-                        onClick={() => dispatch(setCurrentPage(currentPage + 1))}
-                    >
-
-                        <Plus size={40} />
+            <div className="flex fixed top-40 right-12 z-40 flex-col justify-end">
+                <div className="p-2 mb-2 bg-opacity-50 rounded-lg bg-navy-lighter">
+                    <div onClick={() => props.setIsFullscreen(!props.isFullscreen)}>
+                        {!props.isFullscreen
+                            ? <IconArrowsMaximize size={30} />
+                            : <IconArrowsMinimize size={30} />}
                     </div>
                 </div>
-            )}
 
-            <div className="flex overflow-hidden fixed top-32 right-12 bottom-12 z-30 flex-col justify-between rounded-md cursor-pointer">
-                <div className="flex overflow-hidden flex-col rounded-md">
-                    <button
-                        type="button"
-                        onClick={handleRotateLeft}
-                        className={`p-2 transition hover:text-theme-body duration-100 cursor-pointer bg-theme-secondary hover:bg-theme-highlight ${planeInFocus && 'text-theme-unselected pointer-events-none'}`}
-                    >
-                        <ArrowCounterclockwise size={40} />
-                    </button>
-                    {boundingBox && (
-                        <button
-                            type="button"
-                            onClick={() => dispatch(setPlaneInFocus(!planeInFocus))}
-                            className={`p-2 transition hover:text-theme-body duration-100 cursor-pointer bg-theme-secondary hover:bg-theme-highlight ${planeInFocus && 'text-theme-highlight  hover:text-theme-text'}`}
-                        >
-                            <Bullseye size={40} />
-                        </button>
-                    )}
-                    <button
-                        type="button"
-                        onClick={handleRotateRight}
-                        className={`p-2 transition hover:text-theme-body duration-100 cursor-pointer bg-theme-secondary hover:bg-theme-highlight ${planeInFocus && 'text-theme-unselected pointer-events-none'}`}
-                    >
-                        <ArrowClockwise className="fill-current" size={40} />
-                    </button>
-                </div>
-                <div className="flex overflow-hidden flex-col rounded-md">
-                    <button
-                        type="button"
-                        onClick={expandToHeight}
-                        className="p-2 transition duration-100 cursor-pointer hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight"
-                    >
-                        <ArrowsExpand size={40} />
-                    </button>
-                    <button
-                        type="button"
-                        onClick={expandToWidth}
-                        className="p-2 transition duration-100 cursor-pointer hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight"
-                    >
-                        <ArrowsExpand className="transform rotate-90" size={40} />
-                    </button>
-
-                    <button
-                        type="button"
-                        onClick={handleZoomIn}
-                        className="p-2 transition duration-100 cursor-pointer hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight"
-                    >
-                        <Plus size={40} />
-                    </button>
-                    <button
-                        type="button"
-                        onClick={handleZoomOut}
-                        className="p-2 transition duration-100 cursor-pointer hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight"
-                    >
-                        <Dash size={40} />
-                    </button>
-                </div>
-                <div className="flex overflow-hidden flex-col rounded-md">
-                    <div
-                        className="p-2 rounded-md transition duration-100 cursor-pointer hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight"
-                        onClick={() => {
-                            if (chartRef.current && ref.current) {
-                                if (chartRef.current.clientWidth === ref.current.clientWidth) {
-                                    const width = isFullScreen ? 804 : 1278;
-
-                                    const scale = width / (chartDimensions.width ?? 0);
-                                    const height = chartDimensions.height ?? 0 * scale;
-
-                                    dispatch(setChartDimensions({ width, height }));
-                                }
-                            }
-                            dispatch(setIsFullScreen(!isFullScreen));
-                        }}
-                    >
-                        {isFullScreen
-                            ? <FullscreenExit size={40} />
-                            : <ArrowsFullscreen size={40} />}
-                    </div>
-                    <div
-                        className="p-2 mt-3 rounded-md transition duration-100 cursor-pointer hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight"
-                        onClick={() => dispatch(setUsingDarkTheme(!usingDarkTheme))}
-                    >
-                        {!usingDarkTheme ? <MoonFill size={40} /> : <SunFill size={40} />}
+                <div className="p-2 bg-opacity-50 rounded-lg bg-navy-lighter">
+                    <div onClick={() => props.setEnableDarkCharts(!props.enableDarkCharts)}>
+                        {!props.enableDarkCharts
+                            ? <IconMoon size={30} />
+                            : <IconSun size={30} />}
                     </div>
                 </div>
             </div>
 
-            <div
-                className="relative m-auto transition duration-100"
-                style={{ transform: `rotate(${chartRotation}deg)` }}
-            >
-                {chartLinks && (
-                    <p
-                        className="absolute top-0 left-0 font-bold whitespace-nowrap transition duration-100 transform -translate-y-full text-theme-highlight"
-                    >
-                        This chart is linked to
-                        {' '}
-                        {userName}
-                    </p>
-                )}
-
-                { (aircraftIconVisible && boundingBox) && (
-                    <svg viewBox={`0 0 ${boundingBox.width} ${boundingBox.height}`} style={{ position: 'absolute', top: 0, left: 0 }}>
-                        <g
-                            className="transition duration-100"
-                            transform={`translate(${aircraftIconPosition.x} ${aircraftIconPosition.y}) rotate(${aircraftIconPosition.r})`}
-                            strokeLinecap="square"
-                        >
-                            <path d="M-20,0 L20,0" stroke="black" strokeWidth="7" />
-                            <path d="M-10,20 L10,20" stroke="black" strokeWidth="7" />
-                            <path d="M0,-10 L0,30" stroke="black" strokeWidth="7" />
-                            <path d="M-20,0 L20,0" stroke="yellow" strokeWidth="5" />
-                            <path d="M-10,20 L10,20" stroke="yellow" strokeWidth="5" />
-                            <path d="M0,-10 L0,30" stroke="yellow" strokeWidth="5" />
-                        </g>
-                    </svg>
-                )}
-
-                <div ref={chartRef}>
-                    <img
-                        className="absolute left-0 w-full transition duration-100 select-none"
-                        draggable={false}
-                        src={chartLinks.dark}
-                        alt="chart"
-                    />
-                    <img
-                        className={`absolute left-0 w-full transition duration-100 select-none ${usingDarkTheme && 'opacity-0'}`}
-                        draggable={false}
-                        src={chartLinks.light}
-                        alt="chart"
-                    />
-                </div>
-            </div>
-        </div>
-    );
-};
-
-const getPdfUrl = async (fileName: string, pageNumber: number): Promise<string> => {
-    try {
-        const resp = await fetch(`http://localhost:3838/utility/v1/pdf?filename=${fileName}&pagenumber=${pageNumber}`);
-
-        if (!resp.ok) {
-            toast.error('Failed to retrieve requested PDF Document.');
-            return Promise.reject();
-        }
-
-        const blob = await resp.blob();
-        return URL.createObjectURL(blob);
-    } catch (_) {
-        toast.error('Failed to retrieve requested PDF Document.');
-        return Promise.reject();
-    }
-};
-
-const LocalFileChartSelector = ({ selectedTab, loading }: LocalFileChartSelectorProps) => {
-    const dispatch = useAppDispatch();
-
-    const { chartId } = useAppSelector((state) => state.navigationTab);
-
-    if (loading) {
-        return (
-            <div
-                className="flex justify-center items-center h-full rounded-md border-2 border-theme-accent"
-                style={{ height: '42.25rem' }}
-            >
-                <CloudArrowDown className="animate-bounce" size={40} />
-            </div>
-        );
-    }
-
-    if (!selectedTab.charts.length) {
-        return (
-            <div
-                className="flex justify-center items-center h-full rounded-md border-2 border-theme-accent"
-                style={{ height: '42.25rem' }}
-            >
-                <p>There are no charts to display.</p>
-            </div>
-        );
-    }
-
-    const handleChartClick = async (chart: LocalFileChart) => {
-        try {
-            if (chart.type === 'PDF') {
-                const pageNumResp = await fetch(`http://localhost:3838/utility/v1/pdf/numpages?filename=${chart.fileName}`);
-                const numberOfPages = await pageNumResp.json();
-
-                // TODO Implement several pages
-                dispatch(setPagesViewable(numberOfPages));
-            } else {
-                dispatch(setPagesViewable(1));
-            }
-
-            const resp = await fetch(chart.type === 'PDF'
-                ? `http://localhost:3838/utility/v1/pdf?filename=${chart.fileName}&pagenumber=1`
-                : `http://localhost:3838/utility/v1/image?filename=${chart.fileName}`);
-
-            if (!resp.ok) {
-                if (chart.type === 'PDF') {
-                    toast.error('Failed to retrieve requested PDF Document.');
-                } else {
-                    toast.error('Failed to retrieve requested image.');
-                }
-                return;
-            }
-
-            const blob = await resp.blob();
-            const url = URL.createObjectURL(blob);
-
-            dispatch(setChartDimensions({ width: undefined, height: undefined }));
-            dispatch(setChartName({ light: url, dark: url }));
-
-            dispatch(setBoundingBox(undefined));
-        } catch (_) {
-            if (chart.type === 'PDF') {
-                toast.error('Failed to retrieve requested PDF Document.');
-            } else {
-                toast.error('Failed to retrieve requested image.');
-            }
-
-            return;
-        }
-        dispatch(setCurrentPage(1));
-        dispatch(setChartId(chart.fileName));
-    };
-
-    return (
-        <div className="space-y-4">
-            {selectedTab.charts.map((chart) => (
-                <div
-                    className="group flex overflow-hidden flex-row w-full rounded-md bg-theme-accent"
-                    onClick={() => handleChartClick(chart)}
-                    key={chart.fileName}
+            <div className="flex fixed right-12 bottom-16 z-40 flex-col justify-end">
+                <button
+                    type="button"
+                    onClick={handleZoomIn}
+                    className="p-2 mb-2 bg-opacity-50 rounded-lg bg-navy-regular"
                 >
-                    <span className={`w-2 transition flex-shrink-0 duration-100 group-hover:bg-theme-highlight ${chart.fileName === chartId
-                        ? 'bg-theme-highlight'
-                        : 'bg-theme-secondary'}`}
-                    />
-                    <div className="flex flex-col m-2">
-                        <span>{chart.fileName}</span>
-                        <span
-                            className="px-2 mr-auto text-sm rounded-sm text-theme-text bg-theme-secondary"
-                        >
-                            {chart.type}
-                        </span>
-                    </div>
-                </div>
-            ))}
+                    <IconPlus size={30} />
+                </button>
+                <button
+                    type="button"
+                    onClick={handleZoomOut}
+                    className="p-2 bg-opacity-50 rounded-lg bg-navy-regular"
+                >
+                    <IconMinus size={30} />
+                </button>
+            </div>
+
+            <div className="relative m-auto">
+                <span className="absolute mt-2 ml-6 font-bold text-red-600">
+                    {`This chart is linked to ${navigraph.userName}`}
+                </span>
+                {!props.enableDarkCharts
+                    ? <img className="max-w-none" id="chart" draggable={false} src={props.chartLink.light} alt="chart" />
+                    : <img className="max-w-none" id="chart" draggable={false} src={props.chartLink.dark} alt="chart" />}
+            </div>
         </div>
     );
 };
 
-const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartSelectorProps) => {
-    const NO_RUNWAY_NAME = 'NONE';
-    const [runwaySet, setRunwaySet] = useState<Set<string>>(new Set());
+const NavigraphChartSelector = (props: NavigraphChartSelectorProps) => {
+    const noRunwayName = 'NONE';
+    const [runwaySet, setRunwaySet] = useState<Set<string>>(() => new Set());
     const [organizedCharts, setOrganizedCharts] = useState<RunwayOrganizedChartType[]>([]);
 
-    const dispatch = useAppDispatch();
-
-    const { chartId, icao, tabIndex } = useAppSelector((state) => state.navigationTab);
-
     useEffect(() => {
-        if (selectedTab.bundleRunways) {
+        if (props.selectedTab.bundleRunways) {
             const runwayNumbers: string[] = [];
 
-            selectedTab.charts.forEach((chart) => {
+            props.selectedTab.charts.forEach((chart) => {
                 const navigraphChart = (chart as NavigraphChart);
 
                 if (navigraphChart.runway.length !== 0) {
@@ -687,7 +241,7 @@ const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartSelector
                         runwayNumbers.push(runway);
                     });
                 } else {
-                    runwayNumbers.push(NO_RUNWAY_NAME);
+                    runwayNumbers.push(noRunwayName);
                 }
             });
 
@@ -695,18 +249,18 @@ const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartSelector
         } else {
             setRunwaySet(new Set());
         }
-    }, [selectedTab.charts]);
+    }, [props.selectedTab.charts]);
 
     useEffect(() => {
-        if (selectedTab.bundleRunways) {
+        if (props.selectedTab.bundleRunways) {
             const organizedRunwayCharts: RunwayOrganizedChartType[] = [];
 
             runwaySet.forEach((runway) => {
                 organizedRunwayCharts.push({
                     name: runway,
-                    charts: selectedTab.charts.filter(
+                    charts: props.selectedTab.charts.filter(
                         (chart) => (chart as NavigraphChart).runway.includes(runway)
-                            || ((chart as NavigraphChart).runway.length === 0 && runway === NO_RUNWAY_NAME),
+                            || ((chart as NavigraphChart).runway.length === 0 && runway === noRunwayName),
                     ),
                 });
             });
@@ -717,94 +271,28 @@ const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartSelector
         }
     }, [runwaySet]);
 
-    const handleChartClick = (chart: NavigraphChart) => {
-        dispatch(setPagesViewable(1));
-
-        dispatch(setCurrentPage(1));
-
-        dispatch(setChartId(chart.id));
-
-        dispatch(setChartDimensions({ width: undefined, height: undefined }));
-        dispatch(setChartName({ light: chart.fileDay, dark: chart.fileNight }));
-
-        dispatch(setBoundingBox(chart.boundingBox));
-    };
-
-    if (loading) {
-        return (
-            <div
-                className="flex justify-center items-center h-full rounded-md border-2 border-theme-accent"
-                style={{ height: '42.25rem' }}
-            >
-                <CloudArrowDown className="animate-bounce" size={40} />
-            </div>
-        );
-    }
-
-    if (!selectedTab.charts.length) {
-        return (
-            <div
-                className="flex justify-center items-center h-full rounded-md border-2 border-theme-accent"
-                style={{ height: '42.25rem' }}
-            >
-                <p>There are no charts to display.</p>
-            </div>
-        );
-    }
-
     return (
-        <div className="space-y-4">
-            {selectedTab.bundleRunways
+        <>
+            {props.selectedTab.bundleRunways
                 ? (
                     <>
                         {organizedCharts.map((item) => (
-                            <div className="flex overflow-hidden flex-col w-full rounded-md divide-y-2 divide-gray-700" key={item.name}>
-                                <span className="p-1 text-center rounded-t-lg bg-theme-secondary">{item.name}</span>
+                            <div className="flex flex-col pb-2 mr-4 text-lg rounded-2xl divide-gray-700 divide-y-2-2 bg-navy-lighter" key={item.name}>
+                                <span className="p-1 text-center bg-gray-700 rounded-t-lg">{item.name}</span>
                                 {item.charts.map((chart) => (
                                     <div
-                                        className="group flex flex-row bg-theme-accent"
-                                        onClick={() => handleChartClick(chart as NavigraphChart)}
+                                        className="flex flex-row bg-navy-medium"
+                                        onClick={() => props.onChartClick((chart as NavigraphChart).fileDay, (chart as NavigraphChart).fileNight, (chart as NavigraphChart).id)}
                                         key={(chart as NavigraphChart).id}
                                     >
-                                        <div className="flex flex-row items-center">
-                                            <div className={`w-2 h-full transition duration-100 group-hover:bg-theme-highlight ${(chart as NavigraphChart).id === chartId
-                                                ? 'bg-theme-highlight'
-                                                : 'bg-theme-secondary'}`}
-                                            />
-                                            <div
-                                                className="flex items-center px-2 h-full transition duration-100 hover:bg-theme-highlight hover:text-theme-body"
-                                                onClick={(event) => {
-                                                    event.stopPropagation();
-
-                                                    if (isChartPinned((chart as NavigraphChart).id)) {
-                                                        dispatch(removedPinnedChart({
-                                                            chartId: (chart as NavigraphChart).id,
-                                                            chartName: { light: (chart as NavigraphChart).fileDay, dark: (chart as NavigraphChart).fileNight },
-                                                            icao,
-                                                            title: (chart as NavigraphChart).procedureIdentifier,
-                                                            tabIndex,
-                                                        }));
-                                                    } else {
-                                                        dispatch(addPinnedChart({
-                                                            chartId: (chart as NavigraphChart).id,
-                                                            chartName: { light: (chart as NavigraphChart).fileDay, dark: (chart as NavigraphChart).fileNight },
-                                                            icao,
-                                                            title: (chart as NavigraphChart).procedureIdentifier,
-                                                            tabIndex,
-                                                        }));
-                                                    }
-                                                }}
-                                            >
-                                                {
-                                                    isChartPinned((chart as NavigraphChart).id)
-                                                        ? <PinFill size={40} />
-                                                        : <Pin size={40} />
-                                                }
-                                            </div>
-                                        </div>
+                                        {(chart as NavigraphChart).id === props.selectedChartId
+                                            ? <span className="w-2 bg-teal-light-contrast"> </span>
+                                            : <span className="w-2 bg-navy-medium"> </span>}
                                         <div className="flex flex-col m-2">
-                                            <span>{(chart as NavigraphChart).procedureIdentifier}</span>
-                                            <span className="px-2 mt-0.5 mr-auto text-sm rounded-md text-theme-text bg-theme-secondary">
+                                            <span className="">{(chart as NavigraphChart).procedureIdentifier}</span>
+                                            <span
+                                                className="px-2 mt-0.5 mr-auto text-sm text-gray-400 bg-gray-700 rounded-md"
+                                            >
                                                 {(chart as NavigraphChart).indexNumber}
                                             </span>
                                         </div>
@@ -816,52 +304,19 @@ const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartSelector
                 )
                 : (
                     <>
-                        {selectedTab.charts.map((chart) => (
+                        {props.selectedTab.charts.map((chart) => (
                             <div
-                                className="group flex overflow-hidden flex-row w-full rounded-md bg-theme-accent"
-                                onClick={() => handleChartClick(chart as NavigraphChart)}
+                                className="flex flex-row mr-4 text-lg rounded-lg bg-navy-medium"
+                                onClick={() => props.onChartClick((chart as NavigraphChart).fileDay, (chart as NavigraphChart).fileNight, (chart as NavigraphChart).id)}
                                 key={(chart as NavigraphChart).id}
                             >
-                                <div className="flex flex-row items-center">
-                                    <div className={`w-2 h-full transition duration-100 group-hover:bg-theme-highlight ${(chart as NavigraphChart).id === chartId
-                                        ? 'bg-theme-highlight'
-                                        : 'bg-theme-secondary'}`}
-                                    />
-                                    <div
-                                        className="flex items-center px-2 h-full transition duration-100 hover:bg-theme-highlight hover:text-theme-body"
-                                        onClick={(event) => {
-                                            event.stopPropagation();
-
-                                            if (isChartPinned((chart as NavigraphChart).id)) {
-                                                dispatch(removedPinnedChart({
-                                                    chartId: (chart as NavigraphChart).id,
-                                                    chartName: { light: (chart as NavigraphChart).fileDay, dark: (chart as NavigraphChart).fileNight },
-                                                    icao,
-                                                    title: (chart as NavigraphChart).procedureIdentifier,
-                                                    tabIndex,
-                                                }));
-                                            } else {
-                                                dispatch(addPinnedChart({
-                                                    chartId: (chart as NavigraphChart).id,
-                                                    chartName: { light: (chart as NavigraphChart).fileDay, dark: (chart as NavigraphChart).fileNight },
-                                                    icao,
-                                                    title: (chart as NavigraphChart).procedureIdentifier,
-                                                    tabIndex,
-                                                }));
-                                            }
-                                        }}
-                                    >
-                                        {
-                                            isChartPinned((chart as NavigraphChart).id)
-                                                ? <PinFill size={40} />
-                                                : <Pin size={40} />
-                                        }
-                                    </div>
-                                </div>
+                                {(chart as NavigraphChart).id === props.selectedChartId
+                                    ? <span className="w-2 rounded-l-lg bg-teal-light-contrast"> </span>
+                                    : <span className="w-2 rounded-l-lg bg-navy-medium"> </span>}
                                 <div className="flex flex-col m-2">
-                                    <span>{(chart as NavigraphChart).procedureIdentifier}</span>
+                                    <span className="">{(chart as NavigraphChart).procedureIdentifier}</span>
                                     <span
-                                        className="px-2 mr-auto text-sm rounded-sm text-theme-text bg-theme-secondary"
+                                        className="px-2 mr-auto text-sm text-gray-400 bg-gray-700 rounded-md"
                                     >
                                         {(chart as NavigraphChart).indexNumber}
                                     </span>
@@ -870,20 +325,263 @@ const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartSelector
                         ))}
                     </>
                 )}
+        </>
+    );
+};
+
+const ChartsUi = (props: ChartsUiProps) => {
+    const navigraph = useNavigraph();
+
+    const [enableDarkCharts, setEnableDarkCharts] = useState<boolean>(true); // Navigraph Only
+    const [airportInfo, setAirportInfo] = useState<AirportInfo>({ name: '' }); // Navigraph Only
+
+    const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
+
+    const [organizedCharts, setOrganizedCharts] = useState<OrganizedChartType[]>([
+        { name: 'STAR', charts: props.charts.arrival },
+        { name: 'APP', charts: props.charts.approach, bundleRunways: true },
+        { name: 'TAXI', charts: props.charts.airport },
+        { name: 'SID', charts: props.charts.departure },
+        { name: 'REF', charts: props.charts.reference },
+    ]);
+
+    const [selectedTab, setSelectedTab] = useState<OrganizedChartType>(organizedCharts[0]);
+    const [selectedChartName, setSelectedChartName] = useState<ChartDisplay>({ light: '', dark: '' });
+    const [selectedChartId, setSelectedChartId] = useState<string>('');
+    const [chartLink, setChartLink] = useState<ChartDisplay>({ light: '', dark: '' });
+
+    useEffect(() => {
+        if (props.enableNavigraph) {
+            navigraph.getAirportInfo(props.icao).then((r) => setAirportInfo(r));
+        }
+    }, [props.icao]);
+
+    useEffect(() => {
+        if (props.icao.length <= 3) {
+            setAirportInfo({ name: '' });
+            props.setCharts(emptyNavigraphCharts);
+        }
+    }, [props.icao]);
+
+    useEffect(() => {
+        if (props.enableNavigraph) {
+            setOrganizedCharts([
+                { name: 'STAR', charts: props.charts.arrival },
+                { name: 'APP', charts: props.charts.approach, bundleRunways: true },
+                { name: 'TAXI', charts: props.charts.airport },
+                { name: 'SID', charts: props.charts.departure },
+                { name: 'REF', charts: props.charts.reference },
+            ]);
+        }
+    }, [props.charts]);
+
+    useEffect(() => {
+        if (props.enableNavigraph) {
+            setSelectedTab(organizedCharts[0]);
+        }
+    }, [organizedCharts]);
+
+    useEffect(() => {
+        if (props.enableNavigraph) {
+            const chartsGet = async () => {
+                const light = await navigraph.chartCall(props.icao, selectedChartName.light);
+                const dark = await navigraph.chartCall(props.icao, selectedChartName.dark);
+
+                setChartLink({ light, dark });
+            };
+
+            chartsGet();
+        }
+    }, [selectedChartName]);
+
+    const handleIcaoChange = (value: string) => {
+        const newValue = value.toUpperCase();
+
+        if (newValue.length === 4) {
+            if (props.enableNavigraph) {
+                navigraph.getChartList(newValue).then((r) => {
+                    if (r) {
+                        props.setCharts(r);
+                    }
+                });
+            } else {
+                props.chartFox.getChartList(newValue).then((r) => props.setCharts(r));
+            }
+        }
+
+        props.setIcao(newValue);
+    };
+
+    const onChartClick = (chartNameDay: string, chartNameNight: string, chartId: string) => {
+        setSelectedChartId(chartId);
+
+        setSelectedChartName({ light: chartNameDay, dark: chartNameNight });
+    };
+
+    const position = useRef({ top: 0, y: 0 });
+    const ref = useRef<HTMLDivElement>(null);
+
+    const handleMouseDown = (event) => {
+        position.current.top = ref.current ? ref.current.scrollTop : 0;
+        position.current.y = event.clientY;
+
+        document.addEventListener('mousemove', mouseMoveHandler);
+        document.addEventListener('mouseup', mouseUpHandler);
+    };
+
+    const mouseMoveHandler = (event) => {
+        const dy = event.clientY - position.current.y;
+        if (ref.current) {
+            ref.current.scrollTop = position.current.top - dy;
+        }
+    };
+
+    const mouseUpHandler = () => {
+        document.removeEventListener('mousemove', mouseMoveHandler);
+        document.removeEventListener('mouseup', mouseUpHandler);
+    };
+
+    return (
+        <div className="flex overflow-x-hidden flex-row mr-4 w-full rounded-2xl shadow-lg h-efb bg-navy-medium">
+            {!isFullscreen
+                ? (
+                    <>
+                        <div className="flex flex-col p-6 w-1/3 bg-navy-lighter">
+                            <SimpleInput
+                                placeholder="ICAO"
+                                value={props.icao}
+                                noLabel
+                                maxLength={4}
+                                className="w-full"
+                                onChange={(event) => handleIcaoChange(event)}
+                            />
+                            <div className="flex items-center px-6 mt-6 w-full h-9 rounded-lg bg-teal-light-contrast">
+                                {props.icao.length !== 4
+                                    ? <span className="text-xl">No Airport Selected</span>
+                                    : <span className="text-xl">{airportInfo.name.slice(0, 20)}</span>}
+                            </div>
+                            <div className="flex flex-col mt-6">
+                                <div className="flex flex-row justify-around text-base rounded-lg bg-navy-lighter">
+                                    {organizedCharts.map((organizedChart) => (organizedChart.name === selectedTab.name
+                                        ? (
+                                            <span
+                                                className={`flex items-center px-4 py-2  bg-white bg-opacity-5 rounded-lg ${organizedChart.name === 'REF' ? '' : 'mr-2'}`}
+                                                onClick={() => setSelectedTab(organizedChart)}
+                                                key={organizedChart.name}
+                                            >
+                                                {organizedChart.name}
+                                            </span>
+                                        )
+                                        : (
+                                            <span
+                                                className={`flex items-center px-4 py-2  hover:bg-white hover:bg-opacity-5 transition
+                                                duration-300 rounded-lg ${organizedChart.name === 'REF' ? '' : 'mr-2'}`}
+                                                onClick={() => setSelectedTab(organizedChart)}
+                                                key={organizedChart.name}
+                                            >
+                                                {organizedChart.name}
+                                            </span>
+                                        )))}
+                                </div>
+                                <div
+                                    className="overflow-x-hidden overflow-y-scroll mt-5 space-y-4 rounded-lg h-124 grabbable scrollbar"
+                                    ref={ref}
+                                    onMouseDown={handleMouseDown}
+                                >
+                                    {props.enableNavigraph
+                                        ? (
+                                            <NavigraphChartSelector
+                                                selectedTab={selectedTab}
+                                                selectedChartId={selectedChartId}
+                                                onChartClick={onChartClick}
+                                            />
+                                        )
+                                        : (
+                                            <>
+                                                {selectedTab.charts.map((chart) => (
+                                                    <div className="mt-4" key={(chart as ChartFoxChart).name}>
+                                                        <span>{(chart as ChartFoxChart).name}</span>
+                                                    </div>
+                                                ))}
+                                            </>
+                                        )}
+                                </div>
+                            </div>
+                        </div>
+                        {chartLink.light
+                            ? (
+                                <NavigraphChartComponent
+                                    chartLink={chartLink}
+                                    isFullscreen={isFullscreen}
+                                    enableDarkCharts={enableDarkCharts}
+                                    setIsFullscreen={setIsFullscreen}
+                                    setEnableDarkCharts={setEnableDarkCharts}
+                                />
+                            )
+                            : <></>}
+                    </>
+                )
+                : (
+                    <NavigraphChartComponent
+                        chartLink={chartLink}
+                        isFullscreen={isFullscreen}
+                        enableDarkCharts={enableDarkCharts}
+                        setIsFullscreen={setIsFullscreen}
+                        setEnableDarkCharts={setEnableDarkCharts}
+                    />
+                )}
         </div>
     );
 };
 
-const NavigraphChartsUI = () => {
-    const dispatch = useAppDispatch();
+const NavigraphNav = (props: ChartsUiProps) => (
+    <NavigraphContext.Consumer>
+        {(navigraph) => (
+            <>
+                {NavigraphClient.sufficientEnv()
+                    ? (
+                        <>
+                            {navigraph.hasToken()
+                                ? (
+                                    <ChartsUi
+                                        enableNavigraph
+                                        chartFox={props.chartFox}
+                                        icao={props.icao}
+                                        charts={props.charts}
+                                        setIcao={props.setIcao}
+                                        setCharts={props.setCharts}
+                                    />
+                                )
+                                : <AuthUi />}
+                        </>
+                    )
+                    : (
+                        <div className="flex overflow-x-hidden justify-center items-center mr-4 w-full rounded-lg shadow-lg h-efb bg-theme-secondary">
+                            <p className="pt-6 mb-6 text-3xl ">Insufficient .env file</p>
+                        </div>
+                    )}
+            </>
+        )}
+    </NavigraphContext.Consumer>
+);
 
-    const navigraph = useNavigraph();
+const ChartFoxNav = (props: ChartsUiProps) => (
+    <ChartsUi
+        enableNavigraph={false}
+        chartFox={props.chartFox}
+        icao={props.icao}
+        charts={props.charts}
+        setIcao={props.setIcao}
+        setCharts={props.setCharts}
+    />
+);
 
-    const [statusBarInfo, setStatusBarInfo] = useState('');
+export const Navigation = () => {
+    const navigraph = useContext(NavigraphContext);
 
-    const [icaoAndNameDisagree, setIcaoAndNameDisagree] = useState(false);
-    const [chartListDisagrees, setChartListDisagrees] = useState(false);
-
+    const [enableNavigraph] = useState<boolean>(true);
+    const [chartFox] = useState(() => new ChartFoxClient());
+    const [icao, setIcao] = useState<string>('');
     const [charts, setCharts] = useState<Charts>({
         arrival: [],
         approach: [],
@@ -892,455 +590,36 @@ const NavigraphChartsUI = () => {
         reference: [],
     });
 
-    const [organizedCharts, setOrganizedCharts] = useState<OrganizedChartType[]>([
-        { name: 'STAR', charts: charts.arrival },
-        { name: 'APP', charts: charts.approach, bundleRunways: true },
-        { name: 'TAXI', charts: charts.airport },
-        { name: 'SID', charts: charts.departure },
-        { name: 'REF', charts: charts.reference },
-    ]);
-    const { tabIndex, icao, chartName, isFullScreen } = useAppSelector((state) => state.navigationTab);
-
-    const assignAirportInfo = async () => {
-        setIcaoAndNameDisagree(true);
-
-        const airportInfo = await navigraph.getAirportInfo(icao);
-        setStatusBarInfo(airportInfo.name);
-
-        setIcaoAndNameDisagree(false);
-    };
-
-    useEffect(() => {
-        if (icao.length === 4) {
-            assignAirportInfo();
-        } else {
-            setStatusBarInfo('');
-            setCharts(emptyNavigraphCharts);
-        }
-    }, [icao]);
-
-    useEffect(() => {
-        setOrganizedCharts([
-            { name: 'STAR', charts: charts.arrival },
-            { name: 'APP', charts: charts.approach, bundleRunways: true },
-            { name: 'TAXI', charts: charts.airport },
-            { name: 'SID', charts: charts.departure },
-            { name: 'REF', charts: charts.reference },
-        ]);
-    }, [charts]);
-
-    useEffect(() => {
-        const fetchCharts = async () => {
-            const light = await navigraph.chartCall(icao, chartName.light);
-
-            const dark = await navigraph.chartCall(icao, chartName.dark);
-
-            dispatch(setChartLinks({ light, dark }));
-        };
-
-        fetchCharts();
-    }, [chartName]);
-
-    const handleIcaoChange = async (value: string) => {
-        if (value.length !== 4) return;
-
-        const newValue = value.toUpperCase();
-
-        dispatch(setIcao(newValue));
-
-        setChartListDisagrees(true);
-        const chartList = await navigraph.getChartList(newValue);
-
-        if (chartList) {
-            setCharts(chartList);
-        }
-        setChartListDisagrees(false);
-    };
-
-    useEffect(() => {
-        handleIcaoChange(icao);
-    }, []);
-
-    const AIRPORT_CHARACTER_LIMIT = 30;
-
-    const loading = (!statusBarInfo.length || icaoAndNameDisagree || chartListDisagrees) && icao.length === 4;
-
-    const getStatusBarText = () => {
-        if (icao.length !== 4) {
-            return 'No Airport Selected';
-        }
-
-        if (loading) {
-            return 'Please Wait';
-        }
-
-        return `${statusBarInfo.slice(0, AIRPORT_CHARACTER_LIMIT)}${statusBarInfo.length > AIRPORT_CHARACTER_LIMIT ? '...' : ''}`;
-    };
-
-    const simbriefDataLoaded = isSimbriefDataLoaded();
-
-    const { altIcao, departingAirport, arrivingAirport } = useAppSelector((state) => state.simbrief.data);
-
-    return (
-        <div className="flex overflow-x-hidden flex-row w-full rounded-lg h-efb">
-            <>
-                {!isFullScreen && (
-                    <div className="flex-shrink-0" style={{ width: '450px' }}>
-                        <div className="flex flex-row justify-center items-center">
-                            <SimpleInput
-                                placeholder="ICAO"
-                                value={icao}
-                                noLabel
-                                maxLength={4}
-                                className={`w-full flex-shrink uppercase ${!simbriefDataLoaded && 'rounded-r-none'}`}
-                                onChange={handleIcaoChange}
-                            />
-                            {(!simbriefDataLoaded) && (
-                                <SelectGroup className="flex-shrink-0 rounded-l-none">
-                                    <SelectItem
-                                        selected={icao === departingAirport}
-                                        onSelect={() => handleIcaoChange(departingAirport)}
-                                    >
-                                        FROM
-                                    </SelectItem>
-                                    <SelectItem
-                                        selected={icao === arrivingAirport}
-                                        onSelect={() => handleIcaoChange(arrivingAirport)}
-                                    >
-                                        TO
-                                    </SelectItem>
-                                    <SelectItem
-                                        selected={icao === altIcao}
-                                        onSelect={() => handleIcaoChange(altIcao)}
-                                    >
-                                        ALTN
-                                    </SelectItem>
-                                </SelectGroup>
-                            )}
-                        </div>
-                        <div className="flex flex-row items-center w-full h-11">
-                            <ArrowReturnRight size={30} />
-                            <div className="flex items-center px-4 w-full whitespace-nowrap">
-                                {getStatusBarText()}
-                            </div>
-                        </div>
-                        <div className="mt-6">
-                            <SelectGroup>
-                                {organizedCharts.map((organizedChart, index) => (
-                                    <SelectItem
-                                        selected={index === tabIndex}
-                                        onSelect={() => dispatch(setTabIndex(index))}
-                                        key={organizedChart.name}
-                                        className="flex justify-center w-full"
-                                    >
-                                        {organizedChart.name}
-                                    </SelectItem>
-                                ))}
-                            </SelectGroup>
-                            <ScrollableContainer className="mt-5" height={42.25}>
-                                <NavigraphChartSelector
-                                    selectedTab={organizedCharts[tabIndex]}
-                                    loading={loading}
-                                />
-                            </ScrollableContainer>
-                        </div>
-                    </div>
-                )}
-                <ChartComponent />
-            </>
-        </div>
-    );
-};
-
-const LocalFileChartUI = () => {
-    const dispatch = useAppDispatch();
-
-    const [statusBarInfo, setStatusBarInfo] = useState('');
-
-    const [icaoAndNameDisagree, setIcaoAndNameDisagree] = useState(false);
-
-    const [charts, setCharts] = useState<LocalFileCharts>({
-        images: [],
-        pdfs: [],
-    });
-
-    const [organizedCharts, setOrganizedCharts] = useState<LocalFileOrganizedCharts[]>([
-        { name: 'IMAGE', charts: charts.images },
-        { name: 'PDF', charts: charts.pdfs },
-        { name: 'BOTH', charts: [...charts.images, ...charts.pdfs] },
-    ]);
-    const { tabIndex, icao, chartName, isFullScreen } = useAppSelector((state) => state.navigationTab);
-
-    const updateSearchStatus = async () => {
-        setIcaoAndNameDisagree(true);
-
-        const searchedCharts: string[] = [];
-
-        if (tabIndex === 0 || tabIndex === 2) {
-            searchedCharts.push(...charts.images.map((image) => image.fileName));
-        }
-
-        if (tabIndex === 1 || tabIndex === 2) {
-            searchedCharts.push(...charts.pdfs.map((pdf) => pdf.fileName));
-        }
-
-        const numItemsFound = searchedCharts.filter((chartName) => {
-            if (chartName.toUpperCase().includes(icao)) {
-                return true;
-            }
-            return false;
-        }).length;
-
-        setStatusBarInfo(`${numItemsFound} ${numItemsFound === 1 ? 'Item' : 'Items'} Found`);
-
-        setIcaoAndNameDisagree(false);
-    };
-
-    useEffect(() => {
-        updateSearchStatus();
-    }, [icao, tabIndex]);
-
-    useEffect(() => {
-        setOrganizedCharts([
-            { name: 'IMAGE', charts: charts.images },
-            { name: 'PDF', charts: charts.pdfs },
-            { name: 'BOTH', charts: [...charts.pdfs, ...charts.images] },
-        ]);
-    }, [charts]);
-
-    useEffect(() => {
-        dispatch(setChartLinks({ light: chartName.light, dark: chartName.dark }));
-    }, [chartName]);
-
-    const getLocalFileChartList = async (searchQuery: string): Promise<LocalFileCharts> => {
-        const pdfs: LocalFileChart[] = [];
-        const images: LocalFileChart[] = [];
-
-        try {
-        // IMAGE or BOTH
-            if (tabIndex === 0 || tabIndex === 2) {
-                const resp = await fetch('http://localhost:3838/utility/v1/image/list');
-
-                const imageNames: string[] = await resp.json();
-
-                imageNames.forEach((imageName) => {
-                    if (imageName.toUpperCase().includes(searchQuery)) {
-                        images.push({
-                            fileName: imageName,
-                            type: 'IMAGE',
-                        });
-                    }
-                });
-            }
-
-            // PDF or BOTH
-            if (tabIndex === 1 || tabIndex === 2) {
-                const resp = await fetch('http://localhost:3838/utility/v1/pdf/list');
-                const pdfNames: string[] = await resp.json();
-
-                pdfNames.forEach((pdfName) => {
-                    if (pdfName.toUpperCase().includes(searchQuery)) {
-                        pdfs.push({
-                            fileName: pdfName,
-                            type: 'PDF',
-                        });
-                    }
-                });
-            }
-        } catch (err) {
-            toast.error('Error encountered while fetching resources.');
-        }
-
-        return {
-            images,
-            pdfs,
-        };
-    };
-
-    const handleIcaoChange = (value: string) => {
-        const newValue = value.toUpperCase();
-
-        dispatch(setIcao(newValue));
-
-        getLocalFileChartList(newValue).then((r) => setCharts(r));
-    };
-
-    useEffect(() => {
-        handleIcaoChange(icao);
-    }, [tabIndex]);
-
-    const AIRPORT_CHARACTER_LIMIT = 30;
-
-    const loading = icaoAndNameDisagree;
-
-    const getStatusBarText = () => {
-        if (!icao.length) {
-            return 'Showing All Items';
-        }
-
-        if (loading) {
-            return 'Please Wait';
-        }
-
-        return `${statusBarInfo.slice(0, AIRPORT_CHARACTER_LIMIT)}${statusBarInfo.length > AIRPORT_CHARACTER_LIMIT ? '...' : ''}`;
-    };
-
-    const simbriefDataLoaded = isSimbriefDataLoaded();
-
-    const { altIcao, departingAirport, arrivingAirport } = useAppSelector((state) => state.simbrief.data);
-
-    return (
-        <div className="flex overflow-x-hidden flex-row w-full rounded-lg h-efb">
-            <>
-                {!isFullScreen && (
-                    <div className="overflow-hidden flex-shrink-0" style={{ width: '450px' }}>
-                        <div className="flex flex-row justify-center items-center">
-                            <SimpleInput
-                                placeholder="File Name"
-                                value={icao}
-                                noLabel
-                                className={`w-full flex-shrink uppercase ${!simbriefDataLoaded && 'rounded-r-none'}`}
-                                onChange={handleIcaoChange}
-                            />
-                            {(!simbriefDataLoaded) && (
-                                <SelectGroup className="flex-shrink-0 rounded-l-none">
-                                    <SelectItem
-                                        selected={icao === departingAirport}
-                                        onSelect={() => handleIcaoChange(departingAirport)}
-                                    >
-                                        FROM
-                                    </SelectItem>
-                                    <SelectItem
-                                        selected={icao === arrivingAirport}
-                                        onSelect={() => handleIcaoChange(arrivingAirport)}
-                                    >
-                                        TO
-                                    </SelectItem>
-                                    <SelectItem
-                                        selected={icao === altIcao}
-                                        onSelect={() => handleIcaoChange(altIcao)}
-                                    >
-                                        ALTN
-                                    </SelectItem>
-                                </SelectGroup>
-                            )}
-                        </div>
-                        <div className="flex flex-row items-center w-full h-11">
-                            <ArrowReturnRight size={30} />
-                            <div className="flex items-center px-4 w-full whitespace-nowrap">
-                                {getStatusBarText()}
-                            </div>
-                        </div>
-                        <div className="mt-6">
-                            <SelectGroup>
-                                {organizedCharts.map((organizedChart, index) => (
-                                    <SelectItem
-                                        selected={index === tabIndex}
-                                        onSelect={() => dispatch(setTabIndex(index))}
-                                        key={organizedChart.name}
-                                        className="flex justify-center w-full"
-                                    >
-                                        {organizedChart.name}
-                                    </SelectItem>
-                                ))}
-                            </SelectGroup>
-                            <ScrollableContainer className="mt-5" height={42.25}>
-                                <LocalFileChartSelector
-                                    selectedTab={organizedCharts[Math.min(tabIndex, 2)]}
-                                    loading={loading}
-                                />
-                            </ScrollableContainer>
-                        </div>
-                    </div>
-                )}
-                <ChartComponent />
-            </>
-        </div>
-    );
-};
-
-const NavigraphNav = () => {
-    const navigraph = useNavigraph();
-
-    return (
-        <>
-            {NavigraphClient.hasSufficientEnv
-                ? (
-                    <>
-                        {navigraph.hasToken
-                            ? (
-                                <NavigraphChartsUI />
-                            )
-                            : <AuthUi />}
-                    </>
-                )
-                : (
-                    <div className="flex overflow-x-hidden justify-center items-center mr-4 w-full rounded-lg shadow-lg h-efb bg-theme-secondary">
-                        <p className="pt-6 mb-6 text-3xl">Insufficient .env file</p>
-                    </div>
-                )}
-        </>
-    );
-};
-
-export const Navigation = () => {
-    const navigraph = useNavigraph();
-
-    const dispatch = useAppDispatch();
-
-    const [chartSource, setChartSource] = usePersistentProperty('EFB_CHART_SOURCE', 'NAVIGRAPH');
-    const usingNavigraph = chartSource === 'NAVIGRAPH';
-
-    useInterval(async () => {
-        if (chartSource === 'NAVIGRAPH') {
-            try {
-                await navigraph.getToken();
-            } catch (e) {
-                toast.error(`Navigraph Authentication Error: ${e.message}`, { autoClose: 10_000 });
-            }
+    useInterval(() => {
+        if (enableNavigraph) {
+            navigraph.getToken();
         }
     }, (navigraph.tokenRefreshInterval * 1000));
 
-    useEffect(() => {
-        if (chartSource === 'NAVIGRAPH' && !navigraph.hasToken) {
-            navigraph.authenticate();
-        }
-    }, []);
-
     return (
         <div className="w-full h-full">
-            <div className="flex flex-row justify-between items-start w-full">
-                <h1 className="mb-4 font-bold">Navigation & Charts</h1>
-                <SelectGroup>
-                    <SelectItem
-                        selected={chartSource === 'NAVIGRAPH'}
-                        onSelect={() => {
-                            dispatch(setChartLinks({ light: '', dark: '' }));
-                            dispatch(setChartName({ light: '', dark: '' }));
-                            dispatch(setTabIndex(0));
-                            setChartSource('NAVIGRAPH');
-                        }}
-                    >
-                        Navigraph
-                    </SelectItem>
-                    <SelectItem
-                        selected={chartSource === 'LOCAL_FILES'}
-                        onSelect={() => {
-                            dispatch(setChartLinks({ light: '', dark: '' }));
-                            dispatch(setChartName({ light: '', dark: '' }));
-                            dispatch(setTabIndex(0));
-                            setChartSource('LOCAL_FILES');
-                        }}
-                    >
-                        Local Files
-                    </SelectItem>
-                </SelectGroup>
-            </div>
-            {usingNavigraph ? (
-                <NavigraphNav />
-            ) : (
-                <LocalFileChartUI />
-            )}
+            <h1 className="mb-4 font-bold">Navigation & Charts</h1>
+            {enableNavigraph
+                ? (
+                    <NavigraphNav
+                        enableNavigraph={enableNavigraph}
+                        chartFox={chartFox}
+                        icao={icao}
+                        charts={charts}
+                        setIcao={setIcao}
+                        setCharts={setCharts}
+                    />
+                )
+                : (
+                    <ChartFoxNav
+                        enableNavigraph={enableNavigraph}
+                        chartFox={chartFox}
+                        icao={icao}
+                        charts={charts}
+                        setIcao={setIcao}
+                        setCharts={setCharts}
+                    />
+                )}
         </div>
     );
 };

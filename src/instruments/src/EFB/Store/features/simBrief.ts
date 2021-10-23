@@ -1,69 +1,65 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice } from '@reduxjs/toolkit';
 import { getSimbriefData } from '../../SimbriefApi';
 import { IFuel, IWeights } from '../../SimbriefApi/simbriefInterface';
 
-import { store, RootState } from '../store';
+import { TypedAction } from '../store';
 
-export interface SimbriefData {
-    departingAirport: string;
-    departingRunway: string;
-    departingIata: string;
-    departingName: string;
-    departingPosLat: number;
-    departingPosLong: number;
-    arrivingAirport: string;
-    arrivingRunway: string;
-    arrivingIata: string;
-    arrivingName: string;
-    arrivingPosLat: number;
-    arrivingPosLong: number;
-    flightDistance: string;
-    flightETAInSeconds: string;
-    cruiseAltitude: number;
-    weights: IWeights;
-    fuels: IFuel;
+export type SimbriefData = {
+    departingAirport: string,
+    departingIata: string,
+    departingName: string,
+    departingPosLat: number,
+    departingPosLong: number,
+    arrivingAirport: string,
+    arrivingIata: string,
+    arrivingName: string,
+    arrivingPosLat: number,
+    arrivingPosLong: number,
+    flightDistance: string,
+    flightETAInSeconds: string,
+    cruiseAltitude: number,
+    weights: IWeights,
+    fuels: IFuel,
     weather: {
-        avgWindDir: string;
-        avgWindSpeed: string;
+        avgWindDir: string,
+        avgWindSpeed: string,
     }
-    units: string;
-    altIcao: string;
-    altIata: string;
-    altBurn: number;
-    tripTime: number;
-    contFuelTime: number;
-    resFuelTime: number;
-    taxiOutTime: number;
-    schedOut: string;
-    schedIn: string;
-    airline: string;
-    flightNum: string;
-    aircraftReg: string;
-    route: string;
-    loadsheet: string;
-    costInd: string;
-}
+    units: string,
+    altIcao: string,
+    altIata: string,
+    altBurn: number,
+    tripTime: number,
+    contFuelTime: number,
+    resFuelTime: number,
+    taxiOutTime: number,
+    schedOut: string,
+    schedIn: string,
+    airline: string,
+    flightNum: string,
+    aircraftReg: string,
+    route: string,
+    loadsheet: string,
+    costInd: string
+};
 
 export const initialState: {data: SimbriefData} = {
     data: {
-        airline: '',
-        flightNum: '',
-        departingAirport: '',
-        departingRunway: '',
-        departingIata: '',
-        departingName: '',
+        airline: '---',
+        flightNum: '----',
+        departingAirport: '----',
+        departingIata: '---',
+        departingName: '---',
         departingPosLat: 0,
         departingPosLong: 0,
-        arrivingAirport: '',
-        arrivingRunway: '',
-        arrivingIata: '',
-        arrivingName: '',
+        arrivingAirport: '----',
+        arrivingIata: '---',
+        arrivingName: '---',
         arrivingPosLat: 0,
         arrivingPosLong: 0,
-        aircraftReg: '',
-        flightDistance: '',
-        route: '',
-        flightETAInSeconds: '',
+        aircraftReg: '-----',
+        flightDistance: '---NM',
+        route: '---- --- ---- --- ---- ----',
+        flightETAInSeconds: 'N/A',
         cruiseAltitude: 0,
         weights: {
             cargo: 0,
@@ -92,37 +88,35 @@ export const initialState: {data: SimbriefData} = {
             taxi: 0,
         },
         weather: {
-            avgWindDir: '',
-            avgWindSpeed: '',
+            avgWindDir: '---',
+            avgWindSpeed: '---',
         },
-        units: '',
-        altIcao: '',
-        altIata: '',
+        units: 'kgs',
+        altIcao: '----',
+        altIata: '---',
         altBurn: 0,
         tripTime: 0,
         contFuelTime: 0,
         resFuelTime: 0,
         taxiOutTime: 0,
-        schedIn: '',
-        schedOut: '',
-        loadsheet: '',
-        costInd: '',
+        schedIn: '--:--',
+        schedOut: '--:--',
+        loadsheet: 'N/A',
+        costInd: '--',
     },
 };
 
-export const simbriefSlice = createSlice({
+export const simBriefSlice = createSlice({
     name: 'simBrief',
     initialState,
     reducers: {
-        setSimbriefData: (state, action: PayloadAction<
-SimbriefData>) => {
+        setSimbriefData: (state, action: TypedAction<SimbriefData>) => {
             state.data = action.payload;
         },
     },
 });
 
-export async function fetchSimbriefDataAction(simbriefUserId: string): Promise<PayloadAction<
-SimbriefData>> {
+export async function fetchSimbriefDataAction(simbriefUserId: string): Promise<TypedAction<SimbriefData>> {
     const returnedSimbriefData = await getSimbriefData(simbriefUserId);
 
     if (simbriefUserId) {
@@ -130,13 +124,11 @@ SimbriefData>> {
             airline: returnedSimbriefData.airline,
             flightNum: returnedSimbriefData.flightNumber,
             departingAirport: returnedSimbriefData.origin.icao,
-            departingRunway: returnedSimbriefData.origin.runway,
             departingIata: returnedSimbriefData.origin.iata,
             departingName: returnedSimbriefData.origin.name,
             departingPosLat: returnedSimbriefData.origin.posLat,
             departingPosLong: returnedSimbriefData.origin.posLong,
             arrivingAirport: returnedSimbriefData.destination.icao,
-            arrivingRunway: returnedSimbriefData.destination.runway,
             arrivingIata: returnedSimbriefData.destination.iata,
             arrivingName: returnedSimbriefData.destination.name,
             arrivingPosLat: returnedSimbriefData.destination.posLat,
@@ -197,11 +189,6 @@ SimbriefData>> {
     };
 }
 
-/**
- * @returns Whether or not the simbrief data has been altered from its original state
- */
-export const isSimbriefDataLoaded = (): boolean => (store.getState() as RootState).simbrief === initialState;
+export const { setSimbriefData } = simBriefSlice.actions;
 
-export const { setSimbriefData } = simbriefSlice.actions;
-
-export default simbriefSlice.reducer;
+export default simBriefSlice.reducer;
