@@ -22,6 +22,12 @@ When reading and writing `uom` types using `SimulatorReader` and `SimulatorWrite
 
 **Rationale**: This leads to shorter and easier to read code. The default unit works for the majority of cases.
 
+## HashMap and HashSet
+
+Prefer using `fxhash::{FxHashMap, FxHashSet}` over using `std::collections::{HashMap, HashSet}`.
+
+**Rationale**: These use a significantly faster hasher.
+
 ## Testing
 
 Automated tests are mandatory.
@@ -164,6 +170,22 @@ self.flap_gear.update(context, &self.sfcc);
 In the scenario mentioned above, prefer `&impl SomeTrait` arguments over `&SomeStruct` arguments.
 
 **Rationale:** Easier code reuse, more generic, avoids bidirectional dependencies, and allows for application of [Interface Segregation Principle](https://en.wikipedia.org/wiki/Interface_segregation_principle).
+
+Prefer taking ownership over borrowing when the function's internals would clone the value if borrowing were used.
+
+```rust
+// INCORRECT
+fn some_function(value: &str) -> Vec<String> {
+    vec![value.to_owned()]
+}
+
+// CORRECT
+fn some_function(value: String) -> Vec<String> {
+    vec![value]
+}
+```
+
+**Rationale**: Allows for more efficient code when the caller already owns the value and doesn't use it after the call to `some_function`, as this avoids an unnecessary clone.
 
 ## Do not re-read SimVars written by Rust code
 

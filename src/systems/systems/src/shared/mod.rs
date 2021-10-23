@@ -276,7 +276,7 @@ impl DelayedPulseTrueLogicGate {
     }
 
     pub fn update(&mut self, context: &UpdateContext, expression_result: bool) {
-        self.true_delayed_gate.update(&context, expression_result);
+        self.true_delayed_gate.update(context, expression_result);
 
         let gate_out = self.true_delayed_gate.output();
 
@@ -440,7 +440,7 @@ mod delayed_true_logic_gate_tests {
         test_bed.run_with_delta(Duration::from_millis(0));
         test_bed.run();
 
-        assert_eq!(test_bed.query(|a| a.gate_output()), false);
+        assert!(!test_bed.query(|a| a.gate_output()));
     }
 
     #[test]
@@ -454,7 +454,7 @@ mod delayed_true_logic_gate_tests {
         test_bed.run_with_delta(Duration::from_millis(0));
         test_bed.run();
 
-        assert_eq!(test_bed.query(|a| a.gate_output()), false);
+        assert!(!test_bed.query(|a| a.gate_output()));
     }
 
     #[test]
@@ -468,7 +468,7 @@ mod delayed_true_logic_gate_tests {
         test_bed.run_with_delta(Duration::from_millis(0));
         test_bed.run();
 
-        assert_eq!(test_bed.query(|a| a.gate_output()), true);
+        assert!(test_bed.query(|a| a.gate_output()));
     }
 
     #[test]
@@ -486,7 +486,7 @@ mod delayed_true_logic_gate_tests {
         test_bed.run_with_delta(Duration::from_millis(100));
         test_bed.run_with_delta(Duration::from_millis(200));
 
-        assert_eq!(test_bed.query(|a| a.gate_output()), false);
+        assert!(!test_bed.query(|a| a.gate_output()));
     }
 }
 
@@ -536,7 +536,7 @@ mod delayed_false_logic_gate_tests {
 
         test_bed.run();
 
-        assert_eq!(test_bed.query(|a| a.gate_output()), false);
+        assert!(!test_bed.query(|a| a.gate_output()));
     }
 
     #[test]
@@ -548,7 +548,7 @@ mod delayed_false_logic_gate_tests {
         test_bed.command(|a| a.set_expression(true));
         test_bed.run();
 
-        assert_eq!(test_bed.query(|a| a.gate_output()), true);
+        assert!(test_bed.query(|a| a.gate_output()));
     }
 
     #[test]
@@ -563,7 +563,7 @@ mod delayed_false_logic_gate_tests {
         test_bed.command(|a| a.set_expression(false));
         test_bed.run();
 
-        assert_eq!(test_bed.query(|a| a.gate_output()), true);
+        assert!(test_bed.query(|a| a.gate_output()));
     }
 
     #[test]
@@ -578,7 +578,7 @@ mod delayed_false_logic_gate_tests {
         test_bed.command(|a| a.set_expression(false));
         test_bed.run();
 
-        assert_eq!(test_bed.query(|a| a.gate_output()), false);
+        assert!(!test_bed.query(|a| a.gate_output()));
     }
 
     #[test]
@@ -596,7 +596,7 @@ mod delayed_false_logic_gate_tests {
         test_bed.run_with_delta(Duration::from_millis(100));
         test_bed.run_with_delta(Duration::from_millis(200));
 
-        assert_eq!(test_bed.query(|a| a.gate_output()), true);
+        assert!(test_bed.query(|a| a.gate_output()));
     }
 }
 
@@ -646,7 +646,7 @@ mod delayed_pulse_true_logic_gate_tests {
 
         test_bed.run();
 
-        assert_eq!(test_bed.query(|a| a.gate_output()), false);
+        assert!(!test_bed.query(|a| a.gate_output()));
     }
 
     #[test]
@@ -658,7 +658,7 @@ mod delayed_pulse_true_logic_gate_tests {
         test_bed.command(|a| a.set_expression(true));
         test_bed.run_with_delta(Duration::from_millis(0));
 
-        assert_eq!(test_bed.query(|a| a.gate_output()), false);
+        assert!(!test_bed.query(|a| a.gate_output()));
     }
 
     #[test]
@@ -670,7 +670,7 @@ mod delayed_pulse_true_logic_gate_tests {
         test_bed.command(|a| a.set_expression(false));
         test_bed.run();
 
-        assert_eq!(test_bed.query(|a| a.gate_output()), false);
+        assert!(!test_bed.query(|a| a.gate_output()));
     }
 
     #[test]
@@ -686,7 +686,7 @@ mod delayed_pulse_true_logic_gate_tests {
         test_bed.command(|a| a.set_expression(false));
         test_bed.run_with_delta(Duration::from_millis(300));
 
-        assert_eq!(test_bed.query(|a| a.gate_output()), false);
+        assert!(!test_bed.query(|a| a.gate_output()));
     }
 
     #[test]
@@ -699,15 +699,15 @@ mod delayed_pulse_true_logic_gate_tests {
         test_bed.command(|a| a.set_expression(true));
         test_bed.run_with_delta(Duration::from_millis(1200));
 
-        assert_eq!(test_bed.query(|a| a.gate_output()), true);
+        assert!(test_bed.query(|a| a.gate_output()));
 
         test_bed.run_with_delta(Duration::from_millis(100));
 
-        assert_eq!(test_bed.query(|a| a.gate_output()), false);
+        assert!(!test_bed.query(|a| a.gate_output()));
 
         test_bed.run_with_delta(Duration::from_millis(1200));
 
-        assert_eq!(test_bed.query(|a| a.gate_output()), false);
+        assert!(!test_bed.query(|a| a.gate_output()));
     }
 }
 #[cfg(test)]
