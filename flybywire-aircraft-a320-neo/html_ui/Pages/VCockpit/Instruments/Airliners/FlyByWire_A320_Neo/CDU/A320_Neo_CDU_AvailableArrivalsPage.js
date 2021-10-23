@@ -1,3 +1,24 @@
+/**
+ * translates MSFS navdata approach type to honeywell ordering
+ */
+const ApproachTypeOrder = Object.freeze([
+    // MLS
+    ApproachType.APPROACH_TYPE_ILS,
+    // GLS
+    // IGS
+    ApproachType.APPROACH_TYPE_LOCALIZER,
+    ApproachType.APPROACH_TYPE_LOCALIZER_BACK_COURSE,
+    ApproachType.APPROACH_TYPE_LDA,
+    ApproachType.APPROACH_TYPE_SDF,
+    ApproachType.APPROACH_TYPE_GPS,
+    ApproachType.APPROACH_TYPE_RNAV,
+    ApproachType.APPROACH_TYPE_VORDME,
+    ApproachType.APPROACH_TYPE_VOR,
+    ApproachType.APPROACH_TYPE_NDBDME,
+    ApproachType.APPROACH_TYPE_NDB,
+    ApproachType.APPROACH_TYPE_UNKNOWN, // should be "runway by itself"...
+]);
+
 class CDUAvailableArrivalsPage {
     static ShowPage(mcdu, airport, pageCurrent = 0, starSelection = false, selectedStarIndex = -1) {
         const airportInfo = airport.infos;
@@ -45,8 +66,7 @@ class CDUAvailableArrivalsPage {
                 approaches[j].index = j;
             }
             // Sort the approaches in Honeywell's documented order
-            const approachTypeOrder = {"MLS":0, "ILS":1, "GLS":2, "IGS":3, "LOC":4, "BLOC":5, "LDA":6, "SDF": 7, "GPS": 8, "RNAV":9, "VORDME":10, "NDB":11};
-            const sortedApproaches = approaches.slice().sort((a, b) => approachTypeOrder[a.name.split(" ")[0]] - approachTypeOrder[b.name.split(" ")[0]]);
+            const sortedApproaches = approaches.slice().sort((a, b) => ApproachTypeOrder.indexOf(a.approachType) - ApproachTypeOrder.indexOf(b.approachType));
             const rows = [[""], [""], [""], [""], [""], [""], [""], [""]];
             if (!starSelection) {
                 for (let i = 0; i < 3; i++) {
