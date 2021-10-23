@@ -1123,6 +1123,36 @@
       0 or greater | Seconds elapsed
       -1 | Empty value
 
+- A32NX_LOAD_LIGHTING_PRESET
+  - Number
+  - ID for preset
+  - When set to >0 the corresponding preset will be loaded if defined
+  - Will be reset to 0 after loading is done
+
+- A32NX_SAVE_LIGHTING_PRESET
+    - Number
+    - ID for preset
+    - When set to >0 the corresponding preset will be overwritten and saved to an ini file
+    - Will be reset to 0 after saving is done
+
+- A32NX_LOAD_AIRCRAFT_PRESET
+    - Number
+    - ID for preset (1..5)
+    - When set to >0 the corresponding preset will be loaded if defined
+    - Will be reset to 0 after loading is done
+    - When set to 0 during loading will stop and cancel the loading process
+    - Value | Meaning
+      ---   | ---
+          1 | Cold & Dark
+          2 | Turnaround
+          3 | Ready for Pushback
+          4 | Ready for Taxi
+          5 | Ready for Takeoff
+
+- A32NX_LOAD_AIRCRAFT_PRESET_PROGRESS
+  - Number (0.0..1.0)
+  - While loading a preset this will contain the percentage of the total progress of loading
+
 ## EIS Display System
 
 - A32NX_EFIS_{side}_NAVAID_{1|2}_MODE

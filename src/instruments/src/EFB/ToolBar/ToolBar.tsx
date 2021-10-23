@@ -1,74 +1,75 @@
-import React, { useState } from 'react';
-import { IconClipboard, IconMap, IconCalculator, IconSettings, IconTruck, IconBuildingLighthouse, IconAlertTriangle } from '@tabler/icons';
-import logo from '../Assets/fbw-logo.svg';
+import React, { FC } from 'react';
+import {
+    Clipboard,
+    Truck,
+    Compass,
+    BroadcastPin,
+    ExclamationDiamond,
+    Gear,
+    Calculator,
+    JournalCheck,
+    Sliders,
+} from 'react-bootstrap-icons';
+import { NavLink } from 'react-router-dom';
+import { TooltipWrapper } from '../UtilComponents/TooltipWrapper';
 
-type ToolbarProps = {
-    setPageIndex: (index) => void;
-};
+// @ts-ignore
+import FbwTail from '../Assets/FBW-Tail.svg';
 
-const c = {
-    active: 'py-4 bg-white bg-opacity-5 py-4 mx-5 rounded-lg mt-2',
-    inactive: 'hover:bg-white hover:bg-opacity-5 transition duration-300 py-4 mx-5 rounded-lg mt-2',
-};
+interface ToolBarButtonProps {
+    to: string;
+    tooltipText: string;
+}
 
-const ToolBar = (props: ToolbarProps) => {
-    const [activeIndex, setActiveIndex] = useState(0);
+const ToolBarButton: FC<ToolBarButtonProps> = ({ to, tooltipText, children }) => (
+    <TooltipWrapper text={tooltipText}>
+        <NavLink
+            to={to}
+            activeClassName="bg-theme-accent !text-theme-text"
+            className="flex justify-center items-center py-3.5 px-3.5 rounded-md transition duration-100 text-theme-unselected hover:text-theme-text hover:bg-theme-accent"
+        >
+            {children}
+        </NavLink>
+    </TooltipWrapper>
+);
 
-    function handleClick(index: number) {
-        setActiveIndex(index);
-        props.setPageIndex(index);
-    }
+export const ToolBar = () => (
+    <nav className="flex flex-col flex-shrink-0 justify-between py-6 w-32">
+        <div className="flex flex-col items-center mt-9 space-y-4">
+            <ToolBarButton to="/dashboard" tooltipText="Dashboard">
+                <img className="w-[35px]" src={FbwTail} alt="FbwTail" />
+            </ToolBarButton>
+            <ToolBarButton to="/dispatch" tooltipText="Dispatch">
+                <Clipboard size={35} />
+            </ToolBarButton>
+            <ToolBarButton to="/ground" tooltipText="Ground">
+                <Truck size={35} />
+            </ToolBarButton>
+            <ToolBarButton to="/performance" tooltipText="Performance">
+                <Calculator size={35} />
+            </ToolBarButton>
+            <ToolBarButton to="/navigation" tooltipText="Navigation & Charts">
+                <Compass size={35} />
+            </ToolBarButton>
+            <ToolBarButton to="/atc" tooltipText="Air Traffic Control">
+                <BroadcastPin size={35} />
+            </ToolBarButton>
+            <ToolBarButton to="/failures" tooltipText="Failures">
+                <ExclamationDiamond size={35} />
+            </ToolBarButton>
+            <ToolBarButton to="/checklists" tooltipText="Checklists">
+                <JournalCheck size={35} />
+            </ToolBarButton>
+            <ToolBarButton to="/presets" tooltipText="Presets">
+                <Sliders size={35} />
+            </ToolBarButton>
+        </div>
 
-    return (
-        <nav className="overflow-hidden bg-navy-lighter w-32 justify-between flex flex-col -mx-1">
-            <div className="mt-14">
-                <ul>
-                    <li className={activeIndex === 0 ? c.active : c.inactive}>
-                        <a onClick={() => handleClick(0)}>
-                            <img src={logo} alt="FlyByWire" className="w-10 py-2 mx-auto" />
-                        </a>
-                    </li>
-                    <li className={activeIndex === 1 ? c.active : c.inactive}>
-                        <a onClick={() => handleClick(1)}>
-                            <IconClipboard className="mx-auto" size={45} color="white" stroke={1} strokeLinejoin="miter" />
-                        </a>
-                    </li>
-                    <li className={activeIndex === 2 ? c.active : c.inactive}>
-                        <a onClick={() => handleClick(2)}>
-                            <IconTruck className="mx-auto" size={45} color="white" stroke={1} strokeLinejoin="miter" />
-                        </a>
-                    </li>
-                    <li className={activeIndex === 3 ? c.active : c.inactive}>
-                        <a onClick={() => handleClick(3)}>
-                            <IconCalculator className="mx-auto" size={45} color="white" stroke={1} strokeLinejoin="miter" />
-                        </a>
-                    </li>
-                    <li className={activeIndex === 4 ? c.active : c.inactive}>
-                        <a onClick={() => handleClick(4)}>
-                            <IconMap className="mx-auto" size={45} color="white" stroke={1} strokeLinejoin="miter" />
-                        </a>
-                    </li>
-                    <li className={activeIndex === 5 ? c.active : c.inactive}>
-                        <a onClick={() => handleClick(5)}>
-                            <IconBuildingLighthouse className="mx-auto" size={45} color="white" stroke={1} strokeLinejoin="miter" />
-                        </a>
-                    </li>
-                    <li className={activeIndex === 7 ? c.active : c.inactive}>
-                        <a onClick={() => handleClick(7)}>
-                            <IconAlertTriangle className="mx-auto" size={45} color="white" stroke={1} strokeLinejoin="miter" />
-                        </a>
-                    </li>
-                </ul>
-            </div>
-
-            <div className="mb-6">
-                <div className="mx-6 border-t-2 border-gray-700 mt-6" />
-                <div className={activeIndex === 6 ? `${c.active} mt-6` : `${c.inactive} mt-6`} onClick={() => handleClick(6)}>
-                    <IconSettings className="mx-auto" size={45} color="white" stroke={1} strokeLinejoin="miter" />
-                </div>
-            </div>
-        </nav>
-    );
-};
-
-export default ToolBar;
+        <div className="flex flex-col items-center">
+            <div className="my-4 w-14 h-1.5 rounded-full bg-theme-accent" />
+            <ToolBarButton to="/settings" tooltipText="Settings">
+                <Gear color="currentColor" size={35} />
+            </ToolBarButton>
+        </div>
+    </nav>
+);

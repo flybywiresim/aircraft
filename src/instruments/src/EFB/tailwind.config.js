@@ -1,18 +1,12 @@
 'use strict';
 
-const reactComponentsClasses = require('../../../../node_modules/@flybywiresim/react-components/build/usedCSSClasses.json');
+const colors = require('tailwindcss/colors');
 
 module.exports = {
     mode: 'jit',
-    purge: {
-        content: [
-            './**/*.{jsx,tsx}',
-        ],
-        safelist: [
-            ...reactComponentsClasses,
-        ],
-    },
-    darkMode: false, // or 'media' or 'class'
+    content: [
+        './**/*.{jsx,tsx}',
+    ],
     theme: {
         extend: {
             width: () => ({
@@ -20,9 +14,8 @@ module.exports = {
                 'out-tk': '5.25rem',
             }),
             height: () => ({
-                'efb': '50rem',
-                'efb-nav': '45.75rem',
-                '124': '34.75rem',
+                'content-section-reduced': '54rem',
+                'content-section-full': '57.25rem',
             }),
             inset: () => ({
                 'ctr-tk-y': '18.75rem',
@@ -45,11 +38,41 @@ module.exports = {
                 '26.5': '26.5deg',
                 '-26.5': '-26.5deg',
             }),
+            colors: {
+                colors,
+                'theme-highlight': 'var(--color-highlight)',
+                'theme-body': 'var(--color-body)',
+                'theme-text': 'var(--color-text)',
+                'theme-unselected': 'var(--color-unselected)',
+                'theme-secondary': 'var(--color-secondary)',
+                'theme-statusbar': 'var(--color-statusbar)',
+                'theme-accent': 'var(--color-accent)',
+                'cyan': {
+                    DEFAULT: '#00E0FE',
+                    medium: '#00C4F5',
+                },
+                'utility': {
+                    'red': 'var(--color-utility-red)',
+                    'green': 'var(--color-utility-green)',
+                    'orange': 'var(--color-utility-orange)',
+                    'amber': 'var(--color-utility-amber)',
+                    'blue': 'var(--color-utility-blue)',
+                    'purple': 'var(--color-utility-purple)',
+                    'pink': 'var(--color-utility-pink)',
+                    'salmon': 'var(--color-utility-salmon)',
+                    'grey': 'var(--color-utility-grey)',
+                    'dark-grey': 'var(--color-utility-dark-grey)',
+                },
+            },
+            maxWidth: { '1/2': '50%' },
         },
-        fontFamily: { mono: ['IBMPlexMono'], efb: ['NunitoSans'] },
-        letterSpacing: { nunito: '0.35px' },
+        fontFamily: {
+            mono: ['JetBrains Mono'],
+            body: ['Inter'],
+            title: ['Manrope'],
+            rmp: ['AirbusRMP'],
+        },
     },
-    variants: { extend: {} },
     // eslint-disable-next-line global-require
     plugins: [require('@flybywiresim/tailwind-config')],
 };

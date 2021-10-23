@@ -1,28 +1,26 @@
-import { connect } from 'react-redux';
 import React, { useEffect } from 'react';
-import { round, isNaN, last } from 'lodash';
-import { TOD_CALCULATOR_REDUCER } from '../../../Store';
-import {
-    removeTodGroundSpeed,
-    setTodGroundSpeed,
-    setTodGroundSpeedMode,
-} from '../../../Store/action-creator/tod-calculator';
-import './GroundSpeedAuto.scss';
-import Button, { BUTTON_TYPE } from '../../../Components/Button/Button';
-import { TOD_INPUT_MODE } from '../../../Enum/TODInputMode.enum';
-import { useSimVar } from '../../../../Common/simVars';
+import { useSimVar } from '@instruments/common/simVars';
+import { useAppDispatch, useAppSelector } from '../../../Store/store';
+import { removeTodGroundSpeed, setTodGroundSpeed, setTodGroundSpeedMode } from '../../../Store/features/todCalculator';
+import { TOD_INPUT_MODE } from '../../../Enum/TODInputMode';
 
-const GroundSpeedAuto = ({ groundSpeedData, currentAltitude, setTodGroundSpeed, removeTodGroundSpeed, setTodGroundSpeedMode, ...props }) => {
+export const GroundSpeedAuto = () => {
+    const dispatch = useAppDispatch();
+
+    const currentAltitude = useAppSelector((state) => state.todCalculator.currentAltitude);
+    const groundSpeedData = useAppSelector((state) => state.todCalculator.groundSpeed);
+    const { groundSpeed } = groundSpeedData[groundSpeedData.length - 1];
+
     let [simGroundSpeed] = useSimVar('GPS GROUND SPEED', 'knots', 1_000);
-    simGroundSpeed = round(simGroundSpeed);
+    simGroundSpeed = Math.round(simGroundSpeed);
 
     const setCurrentGroundSpeed = () => {
-        if (currentAltitude > 10000 && groundSpeed >= 250) {
-            setTodGroundSpeed(0, { from: 0, groundSpeed: 250 });
-            setTodGroundSpeed(1, { from: 10000, groundSpeed: simGroundSpeed });
+        if ((currentAltitude ?? 0) > 10000 && groundSpeed >= 250) {
+            dispatch(setTodGroundSpeed({ index: 0, value: { from: 0, groundSpeed: 250 } }));
+            dispatch(setTodGroundSpeed({ index: 1, value: { from: 10000, groundSpeed: simGroundSpeed } }));
         } else {
-            setTodGroundSpeed(0, { from: 0, groundSpeed: simGroundSpeed > 0 ? simGroundSpeed : '' });
-            removeTodGroundSpeed(1);
+            dispatch(setTodGroundSpeed({ index: 0, value: { from: 0, groundSpeed: simGroundSpeed > 0 ? simGroundSpeed : '' } }));
+            dispatch(removeTodGroundSpeed(1));
         }
     };
 
@@ -30,30 +28,30 @@ const GroundSpeedAuto = ({ groundSpeedData, currentAltitude, setTodGroundSpeed, 
         setCurrentGroundSpeed();
     }, [currentAltitude, simGroundSpeed]);
 
-    const { groundSpeed } = last(groundSpeedData);
-
-    if (isNaN(groundSpeed)) {
+    if (Number.isNaN(groundSpeed)) {
         return null;
     }
 
     return (
-        <div {...props}>
-            <div className="flex flex-col items-center justify-center">
-                <span className="font-medium mb-4 text-xl">Fetching from sim</span>
-
-                <span className="font-medium mb-4 text-5xl">
-                    {groundSpeed || 0}
-                    {' '}
-                    kt
-                </span>
-
-                <Button text="Manual input" onClick={() => setTodGroundSpeedMode(TOD_INPUT_MODE.MANUAL)} type={BUTTON_TYPE.BLUE} />
+        <div className="flex flex-col justify-center items-center">
+            <div className="flex absolute top-0 flex-row items-center p-2 space-x-4 w-full bg-theme-accent">
+                <div className="w-6 h-6 bg-theme-highlight rounded-full animate-pulse" />
+                <p>Fetching speed from simulator</p>
             </div>
+
+            <span className="mb-4 text-5xl">
+                {groundSpeed || 0}
+                {' '}
+                kt
+            </span>
+
+            <button
+                type="button"
+                className="flex justify-center p-3 text-theme-highlight hover:text-theme-body hover:bg-theme-highlight rounded-md border-2 border-theme-highlight transition duration-100"
+                onClick={() => dispatch(setTodGroundSpeedMode(TOD_INPUT_MODE.MANUAL))}
+            >
+                <p className="text-current">Manual Input</p>
+            </button>
         </div>
     );
 };
-
-export default connect(
-    ({ [TOD_CALCULATOR_REDUCER]: { groundSpeed, currentAltitude } }) => ({ groundSpeedData: groundSpeed, currentAltitude }),
-    { setTodGroundSpeed, removeTodGroundSpeed, setTodGroundSpeedMode },
-)(GroundSpeedAuto);

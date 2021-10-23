@@ -1,30 +1,27 @@
-import { connect } from 'react-redux';
 import React from 'react';
-import Card from '../../Components/Card/Card';
-import { TOD_CALCULATOR_REDUCER } from '../../Store';
-import { TOD_INPUT_MODE } from '../../Enum/TODInputMode.enum';
-import GroundSpeedAuto from './GroundSpeedAuto/GroundSpeedAuto';
-import GroundSpeedManual from './GroundSpeedManual/GroundSpeedManual';
+import Card from '../../UtilComponents/Card/Card';
+import { TOD_INPUT_MODE } from '../../Enum/TODInputMode';
+import { useAppSelector } from '../../Store/store';
+import { GroundSpeedAuto } from './GroundSpeedAuto/GroundSpeedAuto';
+import { GroundSpeedManual } from './GroundSpeedManual/GroundSpeedManual';
 
-const GroundSpeed = ({ groundSpeedMode, ...props }) => {
-    const groundSpeedComponent = ({
+export const GroundSpeed = ({ className }: {className: string}) => {
+    const groundSpeedMode = useAppSelector((state) => state.todCalculator.groundSpeedMode);
+
+    const groundSpeedComponent = {
         [TOD_INPUT_MODE.AUTO]: {
-            render: () => <GroundSpeedAuto />,
+            component: GroundSpeedAuto,
             childrenContainerClassName: 'flex-1 flex flex-col justify-center',
         },
         [TOD_INPUT_MODE.MANUAL]: {
-            render: () => <GroundSpeedManual />,
+            component: GroundSpeedManual,
             childrenContainerClassName: 'flex-1 flex flex-col justify-start',
         },
-    })[groundSpeedMode];
+    }[groundSpeedMode];
 
     return (
-        <Card title="Ground Speed" childrenContainerClassName={groundSpeedComponent.childrenContainerClassName} {...props}>
-            {groundSpeedComponent.render()}
+        <Card title="Ground Speed" childrenContainerClassName={`${groundSpeedComponent.childrenContainerClassName} relative`} className={className}>
+            <groundSpeedComponent.component />
         </Card>
     );
 };
-
-export default connect(
-    ({ [TOD_CALCULATOR_REDUCER]: { groundSpeedMode } }) => ({ groundSpeedMode }),
-)(GroundSpeed);

@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
 
-import Button, { BUTTON_TYPE } from '../../Components/Button/Button';
-import SimpleInput from '../../Components/Form/SimpleInput/SimpleInput';
-import { ProgressBar } from '../../Components/Progress/Progress';
+import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
+import { ProgressBar } from '../../UtilComponents/Progress/Progress';
 
 interface Props {
     upperBoundDetentSetter,
@@ -50,9 +49,9 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
                             completedBarBeginValue={props.lowerBoundDetentGetter.toFixed(2)}
                             completedBarEnd={(props.upperBoundDetentGetter + 1) * 50}
                             completedBarEndValue={props.upperBoundDetentGetter.toFixed(2)}
-                            bgcolor="#3b82f6"
+                            bgcolor="var(--color-highlight)"
                             vertical
-                            baseBgColor="rgba(55, 65, 81, var(--tw-bg-opacity))"
+                            baseBgColor="var(--color-accent)"
                             completed={(props.throttlePosition + 1) / 2 * 100}
                             completionValue={props.throttlePosition}
                             greenBarsWhenInRange
@@ -64,13 +63,11 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
                 {!props.expertMode
                     && (
                         <div className="flex flex-col w-full">
+                            <p>Deadband +/-</p>
                             <SimpleInput
-                                label="Deadband +/-"
                                 className="mb-4 w-52"
                                 value={deadZone.toFixed(2)}
-                                labelPosition="col"
                                 reverse
-                                noLeftMargin
                                 onChange={(deadZone) => {
                                     if (parseFloat(deadZone) >= 0.01) {
                                         if (previousMode === props.expertMode) {
@@ -82,26 +79,25 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
                                     }
                                 }}
                             />
-                            <Button
-                                className="bg-blue-500 hover:bg-blue-600 border-blue-500 hover:border-blue-600"
-                                text="Set From Throttle"
+                            <button
+                                className="py-3 px-5 rounded-md border-2 transition duration-100 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight"
                                 onClick={() => {
                                     setFromTo(props.throttlePosition, props.lowerBoundDetentSetter, props.upperBoundDetentSetter, deadZone);
                                 }}
-                                type={BUTTON_TYPE.NONE}
-                            />
+                                type="button"
+                            >
+                                Set From Throttle
+                            </button>
                         </div>
                     )}
                 {props.expertMode
                     && (
                         <div>
+                            <p>Configure End</p>
                             <SimpleInput
-                                label="Configure End"
-                                labelPosition="col"
                                 reverse
-                                className="mr-0 w-36 dark-option"
+                                className="mr-0 w-36"
                                 value={!props.expertMode ? deadZone : props.upperBoundDetentGetter.toFixed(2)}
-                                noLeftMargin
                                 onChange={(deadZone) => {
                                     if (previousMode === props.expertMode && deadZone.length > 1 && !Number.isNaN(Number(deadZone))) {
                                         props.upperBoundDetentSetter.forEach((f) => f(parseFloat(deadZone)));
@@ -109,13 +105,12 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
                                     }
                                 }}
                             />
+
+                            <p>{props.expertMode ? 'Configure Start' : 'Configure Range'}</p>
                             <SimpleInput
-                                label={props.expertMode ? 'Configure Start' : 'Configure Range'}
-                                className="mt-2 w-36 dark-option"
-                                labelPosition="col"
+                                className="mt-2 w-36"
                                 reverse
                                 value={!props.expertMode ? deadZone : props.lowerBoundDetentGetter.toFixed(2)}
-                                noLeftMargin
                                 onChange={(deadZone) => {
                                     if (previousMode === props.expertMode && deadZone.length > 1 && !Number.isNaN(Number(deadZone))) {
                                         props.lowerBoundDetentSetter.forEach((f) => f(parseFloat(deadZone)));
@@ -126,7 +121,7 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
                         </div>
                     )}
 
-                <h2 style={{ visibility: showWarning ? 'visible' : 'hidden' }} className="mt-4  w-48 h-12 text-xl text-red-600">
+                <h2 style={{ visibility: showWarning ? 'visible' : 'hidden' }} className="mt-4 w-48 h-12 text-xl text-utility-red">
                     Please enter a
                     valid deadzone (&gt; 0.05)
                 </h2>
@@ -145,9 +140,9 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
                             completedBarBeginValue={props.lowerBoundDetentGetter.toFixed(2)}
                             completedBarEnd={(props.upperBoundDetentGetter + 1) * 50}
                             completedBarEndValue={props.upperBoundDetentGetter.toFixed(2)}
-                            bgcolor="#3b82f6"
+                            bgcolor="var(--color-highlight)"
                             vertical
-                            baseBgColor="rgba(55, 65, 81, var(--tw-bg-opacity))"
+                            baseBgColor="var(--color-accent)"
                             completed={(props.throttlePosition + 1) / 2 * 100}
                             completionValue={props.throttlePosition}
                             greenBarsWhenInRange

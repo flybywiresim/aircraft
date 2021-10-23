@@ -10,52 +10,33 @@ import { ColorCode, MetarParserType } from '@instruments/common/metarTypes';
  */
 export const ColoredMetar = ({ metar }: { metar: MetarParserType }) => {
     const partsList = metar.raw_parts.map((metarPart, index) => {
+        let style = '';
+
         switch (metar.color_codes[index]) {
         case ColorCode.Highlight:
-            return (
-                <span className="text-teal-regular">
-                    {metarPart}
-                    {' '}
-                </span>
-            );
+            style = 'text-theme-highlight';
+            break;
         case ColorCode.Info:
-            return (
-                <span className="text-gray-500">
-                    {metarPart}
-                    {' '}
-                </span>
-            );
+            style = 'text-gray-500';
+            break;
         case ColorCode.Caution:
-            return (
-                <span className="text-yellow-500">
-                    {metarPart}
-                    {' '}
-                </span>
-            );
+            style = 'text-yellow-500';
+            break;
         case ColorCode.Warning:
-            return (
-                <span className="text-red-400">
-                    {metarPart}
-                    {' '}
-                </span>
-            );
+            style = 'text-red-400';
+            break;
         case ColorCode.TrendMarker:
-            return (
-                <>
-                    <span className="font-bold text-gray-500">
-                        {metarPart}
-                    </span>
-                    {' '}
-                </>
-            );
+            style = 'font-bold text-gray-500';
+            break;
         default:
-            return (
-                <span>
-                    {metarPart}
-                    {' '}
-                </span>
-            );
         }
+
+        return (
+            <span className={`text-2xl ${style}`}>
+                {metarPart}
+                {' '}
+            </span>
+        );
     });
 
     return (

@@ -1,112 +1,29 @@
-import React, { useState } from 'react';
+import React from 'react';
 
-import OverviewPage from './Pages/OverviewPage';
-import LoadsheetPage from './Pages/LoadsheetPage';
-import { Navbar } from '../Components/Navbar';
-import { FuelPage } from './Pages/FuelPage';
+import { OverviewPage } from './Pages/OverviewPage';
+import { LoadSheetWidget } from './Pages/LoadsheetPage';
+import { Navbar } from '../UtilComponents/Navbar';
+import { TabRoutes, PageLink, PageRedirect } from '../Utils/routing';
 
-type DispatchProps = {
-    loadsheet: string,
-    weights: {
-        cargo: number,
-        estLandingWeight: number,
-        estTakeOffWeight: number,
-        estZeroFuelWeight: number,
-        maxLandingWeight: number,
-        maxTakeOffWeight: number,
-        maxZeroFuelWeight: number,
-        passengerCount: number,
-        passengerWeight: number,
-        payload: number,
-    },
-    fuels: {
-        avgFuelFlow: number,
-        contingency: number,
-        enrouteBurn: number,
-        etops: number,
-        extra: number,
-        maxTanks: number,
-        minTakeOff: number,
-        planLanding: number,
-        planRamp: number,
-        planTakeOff: number,
-        reserve: number,
-        taxi: number,
-    },
-    units: string,
-    arrivingAirport: string,
-    arrivingIata: string,
-    departingAirport: string,
-    departingIata: string,
-    altBurn: number,
-    altIcao: string,
-    altIata: string,
-    tripTime: number,
-    contFuelTime: number,
-    resFuelTime: number,
-    taxiOutTime: number,
-};
-
-const Dispatch = (props: DispatchProps) => {
-    const [activeIndex, setActiveIndex] = useState(0);
-
-    const tabs = [
-        'Overview',
-        'OFP',
-        'Fuel',
+export const Dispatch = () => {
+    const tabs: PageLink[] = [
+        { name: 'Overview', component: <OverviewPage /> },
+        { name: 'OFP', component: <LoadSheetWidget /> },
     ];
-
-    function handleClick(index: number) {
-        setActiveIndex(index);
-    }
-
-    function currentPage() {
-        switch (activeIndex) {
-        case 1:
-            return (
-                <LoadsheetPage loadsheet={props.loadsheet} />
-            );
-        case 2:
-            return (
-                <FuelPage />
-            );
-        case 3:
-            return (
-                <div className="w-full h-full">
-                    <p className="text-white font-medium mt-6 ml-4 text-3xl">Inop.</p>
-                </div>
-            );
-        default:
-            return (
-                <OverviewPage
-                    weights={props.weights}
-                    fuels={props.fuels}
-                    units={props.units}
-                    arrivingAirport={props.arrivingAirport}
-                    arrivingIata={props.arrivingIata}
-                    departingAirport={props.departingAirport}
-                    departingIata={props.departingIata}
-                    altBurn={props.altBurn}
-                    altIcao={props.altIcao}
-                    altIata={props.altIata}
-                    tripTime={props.tripTime}
-                    contFuelTime={props.contFuelTime}
-                    resFuelTime={props.resFuelTime}
-                    taxiOutTime={props.taxiOutTime}
-                />
-            );
-        }
-    }
 
     return (
         <div className="w-full">
-            <h1 className="text-3xl pt-6 text-white">Dispatch</h1>
-            <Navbar tabs={tabs} onSelected={(index) => handleClick(index)} />
-            <div>
-                {currentPage()}
+            <div className="relative mb-4">
+                <h1 className="font-bold">Dispatch</h1>
+                <Navbar
+                    className="absolute top-0 right-0"
+                    tabs={tabs}
+                    basePath="/dispatch"
+                />
             </div>
+
+            <PageRedirect basePath="/dispatch" tabs={tabs} />
+            <TabRoutes basePath="/dispatch" tabs={tabs} />
         </div>
     );
 };
-
-export default Dispatch;

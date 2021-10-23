@@ -1,24 +1,26 @@
+/* eslint-disable max-len */
 import React, { useEffect, useState } from 'react';
-import { Toggle } from '@flybywiresim/react-components';
-import { usePersistentProperty } from '../../../Common/persistence';
-import { useSimVar } from '../../../Common/simVars';
-import Button, { BUTTON_TYPE } from '../../Components/Button/Button';
-import { SelectItem, VerticalSelectGroup } from '../../Components/Form/Select';
+import { usePersistentNumberProperty } from '@instruments/common/persistence';
+import { useSimVar } from '@instruments/common/simVars';
+import { ExclamationCircleFill } from 'react-bootstrap-icons';
+import { Toggle } from '../../UtilComponents/Form/Toggle';
+import { SelectItem, VerticalSelectGroup } from '../../UtilComponents/Form/Select';
 
-import BaseThrottleConfig from './BaseThrottleConfig';
+import { BaseThrottleConfig } from './BaseThrottleConfig';
 import { ThrottleSimvar } from './ThrottleSimVar';
+import { PromptModal, useModals } from '../../UtilComponents/Modals/Modals';
 
-interface Props {
+interface ThrottleConfigProps {
     isShown: boolean,
-    onClose: any
+    onClose: () => void,
 }
 
-const ThrottleConfig: React.FC<Props> = (props: Props) => {
-    const [isDualAxis, setDualAxis] = usePersistentProperty('THROTTLE_DUAL_AXIS', '1');
+export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
+    const [isDualAxis, setDualAxis] = usePersistentNumberProperty('THROTTLE_DUAL_AXIS', 1);
 
     const [selectedIndex, setSelectedIndex] = useState(0);
     const [validConfig, setValidConfig] = useState(true);
-    const [validationErrors, setValidationErrors] = useState<string>();
+    const [validationError, setValidationError] = useState<string>();
 
     const [reverserOnAxis1, setReverserOnAxis1] = useSimVar('L:A32NX_THROTTLE_MAPPING_USE_REVERSE_ON_AXIS:1', 'number', 1000);
     const [, setReverserOnAxis2] = useSimVar('L:A32NX_THROTTLE_MAPPING_USE_REVERSE_ON_AXIS:2', 'number', 1000);
@@ -45,33 +47,35 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
         new ThrottleSimvar('TOGA', 'L:A32NX_THROTTLE_MAPPING_TOGA_', 2),
     ];
 
+    const { showModal } = useModals();
+
     useEffect(() => {
         if (reverserOnAxis1 === 0 && selectedIndex < 2) {
             setSelectedIndex(2);
         }
     }, [reverserOnAxis1, selectedIndex]);
 
+    const getOverlapErrors = (mappingsAxis: ThrottleSimvar[]) => {
+        const overlapErrors: string[] = [];
+
+        for (let index = reverserOnAxis1 ? 0 : 2; index < mappingsAxis.length; index++) {
+            const element = mappingsAxis[index];
+
+            for (let nextIndex = index + 1; nextIndex < mappingsAxis.length; nextIndex++) {
+                const nextElement = mappingsAxis[nextIndex];
+                if (element.getHiGetter() >= nextElement.getLowGetter() || element.getLowGetter() >= nextElement.getHiGetter()) {
+                    overlapErrors.push(`${element.readableName} (${element.getLowGetter().toFixed(2)}) overlaps with ${nextElement.readableName} (${nextElement.getLowGetter().toFixed(2)})`);
+                }
+            }
+        }
+
+        return overlapErrors;
+    };
+
     useEffect(() => {
-        const errors: string[] = [];
-        for (let index = reverserOnAxis1 ? 0 : 2; index < mappingsAxisOne.length; index++) {
-            const element = mappingsAxisOne[index];
-            for (let nextIndex = index + 1; nextIndex < mappingsAxisOne.length; nextIndex++) {
-                const nextElement = mappingsAxisOne[nextIndex];
-                if (element.getHiGetter() >= nextElement.getLowGetter() || element.getLowGetter() >= nextElement.getHiGetter()) {
-                    errors.push(`${element.readableName} (${element.getLowGetter().toFixed(2)}) overlaps with ${nextElement.readableName} (${nextElement.getLowGetter().toFixed(2)})`);
-                }
-            }
-        }
-        for (let index = reverserOnAxis1 ? 0 : 2; index < mappingsAxisTwo.length; index++) {
-            const element = mappingsAxisTwo[index];
-            for (let nextIndex = index + 1; nextIndex < mappingsAxisTwo.length; nextIndex++) {
-                const nextElement = mappingsAxisTwo[nextIndex];
-                if (element.getHiGetter() >= nextElement.getLowGetter() || element.getLowGetter() >= nextElement.getHiGetter()) {
-                    errors.push(`${element.readableName} (${element.getLowGetter().toFixed(2)}) overlaps with ${nextElement.readableName} (${nextElement.getLowGetter().toFixed(2)})`);
-                }
-            }
-        }
-        setValidationErrors(errors[0]);
+        const errors: string[] = [...getOverlapErrors(mappingsAxisOne), ...getOverlapErrors(mappingsAxisTwo)];
+
+        setValidationError(errors[0]);
         setValidConfig(errors.length === 0);
     }, [mappingsAxisOne, mappingsAxisTwo]);
 
@@ -90,76 +94,70 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
     };
 
     const navigationBar = (
-        <div className="h-80 flex flex-row">
-            <VerticalSelectGroup>
-                <SelectItem enabled onSelect={() => switchDetent(5)} selected={selectedIndex === 5}>TO/GA</SelectItem>
-                <SelectItem enabled onSelect={() => switchDetent(4)} selected={selectedIndex === 4}>FLX</SelectItem>
-                <SelectItem enabled onSelect={() => switchDetent(3)} selected={selectedIndex === 3}>CLB</SelectItem>
-                <SelectItem enabled onSelect={() => switchDetent(2)} selected={selectedIndex === 2}>Idle</SelectItem>
-                <SelectItem
-                    enabled
-                    classNames={`${reverserOnAxis1 ? '' : 'opacity-30'}`}
-                    onSelect={() => {
-                        if (reverserOnAxis1) {
-                            switchDetent(1);
-                        }
-                    }}
-                    selected={selectedIndex === 1}
-                >
-                    Reverse Idle
-                </SelectItem>
-                <SelectItem
-                    enabled
-                    classNames={`${reverserOnAxis1 ? '' : 'opacity-30'}`}
-                    onSelect={() => {
-                        if (reverserOnAxis1) {
-                            switchDetent(0);
-                        }
-                    }}
-                    selected={selectedIndex === 0}
-                >
-                    Reverse Full
-                </SelectItem>
-            </VerticalSelectGroup>
-        </div>
+        <VerticalSelectGroup>
+            <SelectItem onSelect={() => switchDetent(5)} selected={selectedIndex === 5}>TO/GA</SelectItem>
+            <SelectItem onSelect={() => switchDetent(4)} selected={selectedIndex === 4}>FLX</SelectItem>
+            <SelectItem onSelect={() => switchDetent(3)} selected={selectedIndex === 3}>CLB</SelectItem>
+            <SelectItem onSelect={() => switchDetent(2)} selected={selectedIndex === 2}>Idle</SelectItem>
+            <SelectItem
+                disabled={!reverserOnAxis1}
+                className={`${reverserOnAxis1 ? '' : 'opacity-30'}`}
+                onSelect={() => {
+                    if (reverserOnAxis1) {
+                        switchDetent(1);
+                    }
+                }}
+                selected={selectedIndex === 1}
+            >
+                Reverse Idle
+            </SelectItem>
+            <SelectItem
+                disabled={!reverserOnAxis1}
+                className={`${reverserOnAxis1 ? '' : 'opacity-30'}`}
+                onSelect={() => {
+                    if (reverserOnAxis1) {
+                        switchDetent(0);
+                    }
+                }}
+                selected={selectedIndex === 0}
+            >
+                Reverse Full
+            </SelectItem>
+        </VerticalSelectGroup>
     );
 
-    if (props.isShown) {
-        return (
-            <div className="flex flex-col pt-4 text-center">
-                <div className="rounded-xl py-6">
+    if (!isShown) return null;
 
-                    <div className="flex flex-row rounded-2xl justify-center bg-navy-lighter mt-auto mb-8 p-4 w-full divide divide-x-2 divide-gray-500">
-                        <div className="flex flex-row mr-2">
-                            <span className="text-lg text-gray-300 mr-2">Reverser On Axis</span>
+    return (
+        <div className="flex flex-col justify-between h-content-section-full">
+            <div className="space-y-6">
+                <div>
+                    <div className="flex flex-row justify-center p-4 mt-auto mb-8 space-x-16 w-full rounded-lg border-2 border-theme-accent">
+                        <div className="flex flex-row space-x-4">
+                            <div>Reverser On Axis</div>
                             <Toggle value={!!reverserOnAxis1} onToggle={(value) => setReversersOnAxis(value ? 1 : 0)} />
-
                         </div>
-                        <div className="flex flex-row">
-                            <span>
-                                <span className="text-lg text-gray-300 mr-2 ml-2">Independent Axis</span>
-                            </span>
+                        <div className="flex flex-row space-x-4">
+                            <div>Independent Axis</div>
                             <Toggle
-                                value={!!parseInt(isDualAxis)}
+                                value={!!isDualAxis}
                                 onToggle={(value) => {
-                                    setDualAxis(value ? '1' : '0');
+                                    setDualAxis(value ? 1 : 0);
                                 }}
                             />
                         </div>
                     </div>
 
-                    {parseInt(isDualAxis) === 1 && (
-                        <div className="flex flex-row justify-center rounded-xl">
-                            <div className="ml-4" />
-
+                    {isDualAxis ? (
+                        <div className="flex flex-row justify-between rounded-xl">
                             <BaseThrottleConfig
                                 mappingsAxisOne={mappingsAxisOne}
                                 disabled={false}
                                 throttleNumber={1}
-                                throttleCount={parseInt(isDualAxis) === 0 ? 2 : 1}
+                                throttleCount={isDualAxis ? 1 : 2}
                                 activeIndex={selectedIndex}
                             />
-                            <div className="mr-8 ml-8 mt-auto mb-auto">
+                            <div className="m-auto">
                                 {navigationBar}
                             </div>
                             <BaseThrottleConfig
@@ -169,34 +167,84 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
                                 throttleCount={1}
                                 activeIndex={selectedIndex}
                             />
-                            <div className="mr-4" />
+                        </div>
+                    ) : (
+                        <div className="flex flex-row justify-center rounded-xl">
+                            <BaseThrottleConfig
+                                mappingsAxisOne={mappingsAxisOne}
+                                mappingsAxisTwo={mappingsAxisTwo}
+                                disabled={false}
+                                throttleNumber={1}
+                                throttleCount={2}
+                                activeIndex={selectedIndex}
+                            />
+                            <div className="mt-auto mb-auto ml-8">
+                                {navigationBar}
+                            </div>
                         </div>
                     )}
+                </div>
 
-                    {parseInt(isDualAxis) === 0
-            && (
-                <div className="flex flex-row ml-4 justify-center rounded-xl">
-                    <BaseThrottleConfig
-                        mappingsAxisOne={mappingsAxisOne}
-                        mappingsAxisTwo={mappingsAxisTwo}
-                        disabled={false}
-                        throttleNumber={1}
-                        throttleCount={2}
-                        activeIndex={selectedIndex}
-                    />
-                    <div className="ml-8 mt-auto mb-auto">
-                        {navigationBar}
+                {!validConfig && (
+                    <div className="overflow-hidden w-full rounded-md border-2 border-theme-accent">
+                        <div className="flex justify-center items-center py-3 w-full bg-utility-red">
+                            <ExclamationCircleFill size={25} />
+                        </div>
+                        <h2 className="py-4 text-center">
+                            {validationError}
+                        </h2>
                     </div>
-                </div>
-            )}
-                </div>
-                <h1 className="text-xl h-4 text-red-600">{validConfig ? ' ' : validationErrors}</h1>
+                )}
+            </div>
 
-                <div className="bg-navy-lighter flex flex-row-reverse h-16 p-2 w-full mt-40 mb-2 rounded-lg">
-
-                    <Button
-                        text="Save &amp; Apply"
-                        type={BUTTON_TYPE.GREEN}
+            <div className="flex flex-row justify-between p-4 w-full rounded-lg border-2 border-theme-accent">
+                <div>
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        className="py-2.5 px-5 rounded-md border-2 transition duration-100 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight"
+                    >
+                        Back
+                    </button>
+                </div>
+                <div className="flex flex-row space-x-3">
+                    <button
+                        type="button"
+                        onClick={() => {
+                            showModal(
+                                <PromptModal
+                                    title="Throttle Configuration Reset"
+                                    bodyText="Are you sure that you want to reset your current throttle configuration settings to their default states? This action is irreversible."
+                                    onConfirm={() => {
+                                        defaultsToThrottle(1);
+                                    }}
+                                />,
+                            );
+                        }}
+                        className="py-2.5 px-5 rounded-md border-2 transition duration-100 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight"
+                    >
+                        Reset to Defaults
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => {
+                            syncToThrottle(1);
+                        }}
+                        className="py-2.5 px-5 rounded-md border-2 transition duration-100 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight"
+                    >
+                        Load from File
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => applyLocalVar(1)}
+                        className={`py-2.5 px-5 rounded-md transition duration-100 border-2 ${validConfig
+                            ? 'text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight'
+                            : 'bg-theme-accent border-theme-accent opacity-30'}`}
+                    >
+                        Apply
+                    </button>
+                    <button
+                        type="button"
                         onClick={() => {
                             if (validConfig) {
                                 syncToDisk(1);
@@ -204,41 +252,14 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
                             }
                         }}
                         disabled={!validConfig}
-                        className={`ml-2 mr-4 ${validConfig ? 'bg-green-500 border-green-500 hover:bg-green-600 hover:border-green-600' : 'opacity-30'}`}
-                    />
-                    <Button
-                        text="Apply"
-                        type={validConfig ? BUTTON_TYPE.BLUE : BUTTON_TYPE.NONE}
-                        onClick={() => applyLocalVar(1)}
-                        className={`ml-2 ${validConfig ? 'hover:bg-blue-600 hover:border-blue-600' : 'bg-gray-500 border-gray-500 opacity-30'}`}
-                    />
-                    <Button
-                        text="Load From File"
-                        type={BUTTON_TYPE.BLUE}
-                        onClick={() => {
-                            syncToThrottle(1);
-                        }}
-                        className="ml-2 hover:bg-blue-600 hover:border-blue-600"
-                    />
-                    <Button
-                        text="Reset to Defaults"
-                        type={BUTTON_TYPE.BLUE}
-                        onClick={() => {
-                            defaultsToThrottle(1);
-                        }}
-                        className="ml-2 hover:bg-blue-600 hover:border-blue-600"
-                    />
-                    <Button
-                        text="Back"
-                        type={BUTTON_TYPE.BLUE}
-                        onClick={() => props.onClose()}
-                        className="ml-4 mr-auto hover:bg-blue-600 hover:border-blue-600"
-                    />
+                        className={`py-2.5 px-5 rounded-md transition duration-100 border-2 ${validConfig
+                            ? 'bg-green-400 text-theme-body hover:text-green-400 hover:bg-theme-body border-green-400'
+                            : 'bg-theme-accent border-theme-accent opacity-30'}`}
+                    >
+                        Save and Apply
+                    </button>
                 </div>
             </div>
-        );
-    }
-    return <></>;
+        </div>
+    );
 };
-
-export default ThrottleConfig;

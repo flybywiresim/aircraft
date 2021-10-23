@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 /*
  * A32NX
  * Copyright (C) 2020-2021 FlyByWire Simulations and its contributors
@@ -16,9 +17,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import React from 'react';
-
-import '../../Assets/Performance.scss';
+import { Units } from '@shared/units';
+import React, { useEffect, useState } from 'react';
 
 export type DistanceLabel = {
     distance: number,
@@ -32,184 +32,149 @@ export enum LabelType {
     Toda
 }
 
-type RunwayVisualizationProps = {
-    mainLength?: number,
-    asda?: number,
-    toda?: number,
-    labels?: DistanceLabel[],
-    runwayNumber?: number,
-    stopMargin?: number
-};
+interface RunwayVisualizationProps {
+    mainLength?: number;
+    asda?: number;
+    toda?: number;
+    labels?: DistanceLabel[];
+    runwayHeading?: number;
+    distanceUnit: 'ft' | 'm';
+}
 
-const RunwayVisualizationWidget = (props: RunwayVisualizationProps) => {
-    function maxDist(): number {
-        const distances = props.labels?.map((label) => label.distance) ?? [];
+const RunwayVisualizationWidget = ({ asda = 0, labels = [], mainLength = 0, runwayHeading, toda = 0, distanceUnit }: RunwayVisualizationProps) => {
+    const maxDist = () => {
+        const distances = labels.map((label) => label.distance);
 
-        return Math.max(props.mainLength ?? 0, props.asda ?? 0, props.toda ?? 0, ...distances);
-    }
+        return Math.max(mainLength ?? 0, asda ?? 0, toda ?? 0, ...distances);
+    };
 
-    function getStopMarginLabelHeightPercentage(): number {
-        if (!props.stopMargin) return 0;
+    const getLabelBottomPercentage = (label: DistanceLabel): number => (label.distance / maxDist()) * 100;
 
-        return (Math.abs(props.stopMargin) / maxDist()) * 100;
-    }
-
-    function getLabelBottomPercentage(label: DistanceLabel): number {
-        return (label.distance / maxDist()) * 100;
-    }
-
-    function mainHeightPercentage(): number {
-        const mainLength = props.mainLength ?? 0;
+    const mainHeightPercentage = (): number => {
         const maximumDist = maxDist();
 
         if (mainLength === 0 || maximumDist === 0) {
             return 100;
         }
+
         const percentage = (mainLength / maxDist()) * 100;
 
         return Math.max(percentage, 20);
-    }
+    };
 
-    function asdaHeightPercentage(): number {
-        const asda = props.asda ?? 0;
-        const mainLength = props.mainLength ?? 0;
+    const asdaHeightPercentage = (): number => Math.max(((asda - mainLength) / maxDist()) * 100, 0);
 
-        return Math.max(((asda - mainLength) / maxDist()) * 100, 0);
-    }
+    const todaHeightPercentage = (): number => Math.max(((toda - asda) / maxDist()) * 100, 0);
 
-    function todaHeightPercentage(): number {
-        const toda = props.toda ?? 0;
-        const asda = props.asda ?? 0;
-
-        return Math.max(((toda - asda) / maxDist()) * 100, 0);
-    }
-
-    function isLabelOverDistance(label: DistanceLabel): boolean {
+    const isLabelOverDistance = (label: DistanceLabel): boolean => {
         switch (label.type) {
         case LabelType.Asda:
-            return label.distance > (props.asda ?? 0);
+            return label.distance > (asda);
         case LabelType.Toda:
-            return label.distance > (props.toda ?? 0);
+            return label.distance > (toda);
         default:
-            return label.distance > (props.mainLength ?? 0);
+            return label.distance > (mainLength);
         }
-    }
+    };
 
-    function runwayLengthLabel(): JSX.Element {
-        return (
-            <div className="text-white absolute top-1/2 -right-3 transform -rotate-90 translate-x-1/2">
-                { props.mainLength ?? 0 }
-                m
-            </div>
-        );
-    }
+    const [labelComponents, setLabelComponents] = useState<JSX.Element>();
 
-    function stopMarginLabel(): JSX.Element | undefined {
-        if (props.stopMargin) {
-            return (
-                <div
-                    className={`text-center ml-1 pl-2 flex flex-col justify-center relative ${props.stopMargin > 0 ? 'text-green-500' : 'text-red-500'}`}
-                    style={{
-                        height: `${getStopMarginLabelHeightPercentage()}%`,
-                        top: `${100 - (mainHeightPercentage() + asdaHeightPercentage())}%`,
-                        transform: `translateY(${props.stopMargin < 0 ? '-100%' : '0'})`,
-                    }}
-                >
-                    <div>
-                        Stop Margin
-                    </div>
-                    <div>
-                        { Math.round(props.stopMargin)}
-                        m
-                    </div>
-                    <div className={`border-l-4 h-full absolute top-0 left-0 ${props.stopMargin > 0 ? 'border-green-500' : 'border-red-500'}`} />
-                </div>
-            );
-        }
-        return undefined;
-    }
-
-    function runwayNumber(): JSX.Element | undefined {
-        if (props.runwayNumber) {
-            const paddedNumber = props.runwayNumber.toString().padStart(2, '0');
-            return (
-                <div className="runway-id text-white text-4xl absolute left-1/2 bottom-20 transform -translate-x-1/2 opacity-40">{paddedNumber}</div>
-            );
-        }
-        return undefined;
-    }
-
-    function labels(): JSX.Element[] {
-        const elements: JSX.Element[] = [];
-
-        for (const label of props.labels ?? []) {
+    useEffect(() => setLabelComponents(() => {
+        const elements = labels.map((label) => {
             const bottomPercentage = getLabelBottomPercentage(label);
 
-            const closestLabel = (props.labels ?? []).reduce((a, b) => {
+            const closestLabel = (labels).reduce((a, b) => {
                 if (a.label === label.label) return b;
                 if (b.label === label.label) return a;
 
                 return Math.abs(getLabelBottomPercentage(b) - bottomPercentage) < Math.abs(getLabelBottomPercentage(a) - bottomPercentage) ? b : a;
             });
 
-            const showText = (Math.abs(getLabelBottomPercentage(closestLabel) - bottomPercentage) > 5);
+            const showText = Math.abs(getLabelBottomPercentage(closestLabel) - bottomPercentage) > 5;
 
-            elements.push(
-                (
-                    <div
-                        className={`w-32 h-1 bg-white text-white absolute left-1/2 transform -translate-x-1/2 ${
-                            (isLabelOverDistance(label)) ? 'error-label' : ''}`}
-                        style={{ bottom: `${bottomPercentage}%` }}
-                    >
-
-                        {showText && (
-                            <div className="w-full text-center absolute -top-0.5 transform -translate-y-full">
-                                {label.label}
-                                {' '}
-                                { Math.round(label.distance) }
-                                m
-                            </div>
-                        )}
-
-                    </div>),
+            return (
+                <div
+                    className={`w-32 h-1 absolute left-1/2 transform -translate-x-1/2 bg-current ${isLabelOverDistance(label) ? 'text-white' : 'text-theme-highlight'}`}
+                    style={{ bottom: `${bottomPercentage}%` }}
+                >
+                    {showText && (
+                        <p className={`absolute w-full font-bold text-center text-current transform -top-0.5 ${isLabelOverDistance(label) ? 'bg-red-900' : 'bg-black'} ${bottomPercentage < 95 ? '-translate-y-full' : 'translate-y-full'}`}>
+                            {label.label}
+                            {' '}
+                            { Math.round(distanceUnit === 'ft' ? Units.metreToFoot(label.distance) : label.distance) }
+                            {distanceUnit}
+                        </p>
+                    )}
+                </div>
             );
-        }
+        });
 
-        return elements;
-    }
+        return <>{elements}</>;
+    }), [labels, distanceUnit]);
+
+    const runwayBoundMarkers = (
+        <div className="flex flex-row space-x-1.5">
+            <div className="w-1.5 h-12 bg-white " />
+            <div className="w-1.5 h-12 bg-white " />
+            <div className="w-1.5 h-12 bg-white " />
+            <div className="w-1.5 h-12 bg-white " />
+            <div className="w-1.5 h-12 bg-white " />
+            <div className="w-1.5 h-12 bg-white " />
+        </div>
+    );
+
+    const runwayNumber = (
+        <div className="mx-auto w-min text-4xl font-bold text-white">
+            {runwayHeading !== undefined ? Math.round((runwayHeading ?? 0) / 10).toString().padStart(2, '0') : '??'}
+        </div>
+    );
 
     return (
-        <div className="h-full flex px-10">
-            <div className="h-full flex flex-col relative">
-                <div className="flex-grow bg-red-900 opacity-30" />
+        <div className="flex h-full">
+            <div className="flex relative flex-col h-full">
+                <div className="flex-shrink-0 bg-red-900" style={{ height: `${100 - mainHeightPercentage()}%` }} />
                 <div className="bg-green-200 opacity-50" style={{ height: `${todaHeightPercentage()}%` }} />
                 <div className="bg-gray-700 opacity-50" style={{ height: `${asdaHeightPercentage()}%` }} />
                 <div
-                    className="bg-black w-40 relative"
-                    style={{ height: `${mainHeightPercentage()}%` }}
+                    className="relative flex-shrink-0 w-44 h-full bg-black"
                 >
-                    {runwayLengthLabel()}
-                    <div className="w-1 h-full bg-white opacity-30 absolute left-0" />
-                    <div className="w-1 h-full bg-white opacity-30 absolute right-0" />
-                    <div className="flex absolute left-1/2 bottom-2 transform -translate-x-1/2">
-                        <div className="mr-2 w-2 h-14 bg-white opacity-30" />
-                        <div className="mr-2 w-2 h-14 bg-white opacity-30" />
-                        <div className="mr-2 w-2 h-14 bg-white opacity-30" />
-                        <div className="mr-5 w-2 h-14 bg-white opacity-30" />
-                        <div className="mr-2 w-2 h-14 bg-white opacity-30" />
-                        <div className="mr-2 w-2 h-14 bg-white opacity-30" />
-                        <div className="mr-2 w-2 h-14 bg-white opacity-30" />
-                        <div className="w-2 h-14 bg-white opacity-30" />
+                    <div className="flex overflow-hidden absolute inset-0 flex-col justify-between py-3 px-2.5 h-full border-4 border-white">
+                        <div>
+                            <div className="flex flex-row justify-between">
+                                {runwayBoundMarkers}
+                                {runwayBoundMarkers}
+                            </div>
+                            <div className="transform rotate-180">
+                                {runwayNumber}
+                            </div>
+                        </div>
+
+                        <div className="flex flex-col items-center py-3 px-2.5 space-y-4 h-full">
+                            <div className="w-1 h-full bg-white" />
+                            <div className="w-1 h-full bg-white" />
+                            <div className="w-1 h-full bg-white" />
+                            <div className="w-1 h-full bg-white" />
+                            <div className="w-1 h-full bg-white" />
+                            <div className="w-1 h-full bg-white" />
+                            <div className="w-1 h-full bg-white" />
+                            <div className="w-1 h-full bg-white" />
+                            <div className="w-1 h-full bg-white" />
+                            <div className="w-1 h-full bg-white" />
+                            <div className="w-1 h-full bg-white" />
+                            <div className="w-1 h-full bg-white" />
+                        </div>
+
+                        <div>
+                            {runwayNumber}
+                            <div className="flex flex-row justify-between">
+                                {runwayBoundMarkers}
+                                {runwayBoundMarkers}
+                            </div>
+                        </div>
                     </div>
-                    <div className="relative h-full overflow-hidden">
-                        <div className="w-1.5 h-20 bg-white opacity-30 absolute left-1/2 bottom-40 transform -translate-x-1/2" />
-                        <div className="w-1.5 h-20 bg-white opacity-30 absolute left-1/2 bottom-72 transform -translate-x-1/2" />
-                    </div>
-                    {runwayNumber()}
                 </div>
-                {labels()}
+                {labelComponents}
             </div>
-            {stopMarginLabel()}
         </div>
     );
 };
