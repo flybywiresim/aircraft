@@ -564,20 +564,20 @@ impl SimulationElement for IndicationLight {
 }
 
 pub struct ValueKnob {
-    value_id: String,
+    value_id: VariableIdentifier,
     value: f64,
 }
 impl ValueKnob {
-    pub fn new(name: &str) -> Self {
+    pub fn new(context: &mut InitContext, name: &str) -> Self {
         Self {
-            value_id: format!("OVHD_{}_KNOB", name),
+            value_id: context.get_identifier(format!("OVHD_{}_KNOB", name)),
             value: 0.,
         }
     }
 
-    pub fn new_with_value(name: &str, value: f64) -> Self {
+    pub fn new_with_value(context: &mut InitContext, name: &str, value: f64) -> Self {
         Self {
-            value_id: format!("OVHD_{}_KNOB", name),
+            value_id: context.get_identifier(format!("OVHD_{}_KNOB", name)),
             value,
         }
     }
@@ -1122,37 +1122,43 @@ mod indication_light_tests {
 
 #[cfg(test)]
 mod value_knob_tests {
-    use crate::simulation::test::{SimulationTestBed, TestBed};
+    use crate::simulation::test::{ElementCtorFn, SimulationTestBed, TestBed, WriteByName};
 
     use super::*;
 
     #[test]
     fn new_has_0_value() {
-        let knob = ValueKnob::new("TEST");
+        let test_bed =
+            SimulationTestBed::from(ElementCtorFn(|context| ValueKnob::new(context, "TEST")));
 
-        assert!(knob.value() < f64::EPSILON);
+        assert!(test_bed.query_element(|e| e.value()) < f64::EPSILON);
     }
 
     #[test]
     fn new_with_value_has_value() {
-        let knob = ValueKnob::new_with_value("TEST", 10.);
+        let test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            ValueKnob::new_with_value(context, "TEST", 10.)
+        }));
 
-        assert!((knob.value() - 10.).abs() < f64::EPSILON);
+        assert!((test_bed.query_element(|e| e.value()) - 10.).abs() < f64::EPSILON);
     }
 
     #[test]
     fn set_value_changes_value() {
-        let mut knob = ValueKnob::new_with_value("TEST", 10.);
+        let mut test_bed =
+            SimulationTestBed::from(ElementCtorFn(|context| ValueKnob::new(context, "TEST")));
 
-        knob.set_value(20.);
+        test_bed.command_element(|e| e.set_value(20.));
 
-        assert!((knob.value() - 20.).abs() < f64::EPSILON);
+        assert!((test_bed.query_element(|e| e.value()) - 20.).abs() < f64::EPSILON);
     }
 
     #[test]
     fn reads_its_state() {
-        let mut test_bed = SimulationTestBed::from(ValueKnob::new("TEST"));
-        test_bed.write("OVHD_TEST_KNOB", 10.);
+        let mut test_bed =
+            SimulationTestBed::from(ElementCtorFn(|context| ValueKnob::new(context, "TEST")));
+
+        test_bed.write_by_name("OVHD_TEST_KNOB", 10.);
 
         test_bed.run();
 
@@ -1161,10 +1167,11 @@ mod value_knob_tests {
 
     #[test]
     fn writes_its_state() {
-        let mut test_bed = SimulationTestBed::from(ValueKnob::new("TEST"));
+        let mut test_bed =
+            SimulationTestBed::from(ElementCtorFn(|context| ValueKnob::new(context, "TEST")));
 
         test_bed.run();
 
-        assert!(test_bed.contains_key("OVHD_TEST_KNOB"));
+        assert!(test_bed.contains_variable_with_name("OVHD_TEST_KNOB"));
     }
 }

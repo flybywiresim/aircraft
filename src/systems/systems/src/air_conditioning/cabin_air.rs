@@ -1,11 +1,15 @@
 use super::{Air, DuctTemperature};
-use crate::simulation::{SimulationElement, SimulatorWriter, UpdateContext, Write};
+use crate::simulation::{
+    InitContext, SimulationElement, SimulatorWriter, UpdateContext, VariableIdentifier, Write,
+};
 use uom::si::{
     f64::*, mass_rate::kilogram_per_second, pressure::pascal, thermodynamic_temperature::kelvin,
     volume::cubic_meter,
 };
 
 pub struct CabinZone {
+    zone_identifier: VariableIdentifier,
+
     zone_id: String,
     zone_air: ZoneAir,
     zone_volume: Volume,
@@ -13,9 +17,15 @@ pub struct CabinZone {
 }
 
 impl CabinZone {
-    pub fn new(zone_id: String, zone_volume: Volume, passengers: usize) -> Self {
+    pub fn new(
+        context: &mut InitContext,
+        zone_id: &str,
+        zone_volume: Volume,
+        passengers: usize,
+    ) -> Self {
         Self {
-            zone_id,
+            zone_identifier: context.get_identifier(format!("COND_{}_TEMP", zone_id)),
+            zone_id: zone_id.to_owned(),
             zone_air: ZoneAir::new(),
             zone_volume,
             passengers,
@@ -42,8 +52,7 @@ impl CabinZone {
 
 impl SimulationElement for CabinZone {
     fn write(&self, writer: &mut SimulatorWriter) {
-        let zone_id = format!("COND_{}_TEMP", &self.zone_id);
-        writer.write(&zone_id, self.zone_air.zone_air_temperature());
+        writer.write(&self.zone_identifier, self.zone_air.zone_air_temperature());
     }
 }
 
@@ -152,10 +161,11 @@ mod cabin_air_tests {
     }
 
     impl TestAircraft {
-        fn new() -> Self {
+        fn new(context: &mut InitContext) -> Self {
             Self {
                 cabin_zone: CabinZone::new(
-                    "FWD".to_string(),
+                    context,
+                    "FWD",
                     Volume::new::<cubic_meter>(400. / 2.),
                     174 / 2,
                 ),
@@ -192,7 +202,7 @@ mod cabin_air_tests {
     impl CabinZoneTestBed {
         fn new() -> Self {
             Self {
-                test_bed: SimulationTestBed::new(|_| TestAircraft::new()),
+                test_bed: SimulationTestBed::new(TestAircraft::new),
             }
         }
 

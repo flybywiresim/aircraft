@@ -3,7 +3,8 @@ use systems::{
     air_conditioning::{cabin_air::CabinZone, AirConditioningSystem, DuctTemperature},
     shared::{CabinAltitude, EngineCorrectedN1, LgciuWeightOnWheels},
     simulation::{
-        Read, SimulationElement, SimulationElementVisitor, SimulatorReader, UpdateContext,
+        InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
+        UpdateContext, VariableIdentifier,
     },
 };
 use uom::si::{f64::*, volume::cubic_meter};
@@ -14,12 +15,12 @@ pub(super) struct A320AirConditioning {
 }
 
 impl A320AirConditioning {
-    pub fn new() -> Self {
+    pub fn new(context: &mut InitContext) -> Self {
         let cabin_zone_ids: Vec<&str> = vec!["CKPT", "FWD", "AFT"];
 
         Self {
-            a320cabin: A320Cabin::new(),
-            air_conditioning_system: AirConditioningSystem::new(cabin_zone_ids),
+            a320cabin: A320Cabin::new(context),
+            air_conditioning_system: AirConditioningSystem::new(context, cabin_zone_ids),
         }
     }
 
@@ -47,6 +48,11 @@ impl SimulationElement for A320AirConditioning {
 }
 
 struct A320Cabin {
+    pax_rows_1_6_id: VariableIdentifier,
+    pax_rows_7_13_id: VariableIdentifier,
+    pax_rows_14_21_id: VariableIdentifier,
+    pax_rows_22_29_id: VariableIdentifier,
+
     cabin_zone: [CabinZone; 3],
 }
 
@@ -55,21 +61,29 @@ impl A320Cabin {
     const A320_CABIN_VOLUME: f64 = 400.; //m3
     const A320_COCKPIT_VOLUME: f64 = 60.;
 
-    fn new() -> Self {
+    fn new(context: &mut InitContext) -> Self {
         Self {
+            pax_rows_1_6_id: context.get_identifier("PAX_TOTAL_ROWS_1_6".to_owned()),
+            pax_rows_7_13_id: context.get_identifier("PAX_TOTAL_ROWS_7_13".to_owned()),
+            pax_rows_14_21_id: context.get_identifier("PAX_TOTAL_ROWS_14_21".to_owned()),
+            pax_rows_22_29_id: context.get_identifier("PAX_TOTAL_ROWS_22_29".to_owned()),
+
             cabin_zone: [
                 CabinZone::new(
-                    "CKPT".to_string(),
+                    context,
+                    "CKPT",
                     Volume::new::<cubic_meter>(Self::A320_COCKPIT_VOLUME),
                     2,
                 ),
                 CabinZone::new(
-                    "FWD".to_string(),
+                    context,
+                    "FWD",
                     Volume::new::<cubic_meter>(Self::A320_CABIN_VOLUME / 2.),
                     0,
                 ),
                 CabinZone::new(
-                    "AFT".to_string(),
+                    context,
+                    "AFT",
                     Volume::new::<cubic_meter>(Self::A320_CABIN_VOLUME / 2.),
                     0,
                 ),
@@ -94,12 +108,12 @@ impl SimulationElement for A320Cabin {
     fn read(&mut self, reader: &mut SimulatorReader) {
         for zone in self.cabin_zone.iter_mut() {
             if zone.zone_id() == "FWD" {
-                let zone_passengers_1: usize = reader.read("PAX_TOTAL_ROWS_1_6");
-                let zone_passengers_2: usize = reader.read("PAX_TOTAL_ROWS_7_13");
+                let zone_passengers_1: usize = reader.read(&self.pax_rows_1_6_id);
+                let zone_passengers_2: usize = reader.read(&self.pax_rows_7_13_id);
                 zone.update_number_of_passengers(zone_passengers_1 + zone_passengers_2);
             } else if zone.zone_id() == "AFT" {
-                let zone_passengers_1: usize = reader.read("PAX_TOTAL_ROWS_14_21");
-                let zone_passengers_2: usize = reader.read("PAX_TOTAL_ROWS_22_29");
+                let zone_passengers_1: usize = reader.read(&self.pax_rows_14_21_id);
+                let zone_passengers_2: usize = reader.read(&self.pax_rows_22_29_id);
                 zone.update_number_of_passengers(zone_passengers_1 + zone_passengers_2);
             }
         }

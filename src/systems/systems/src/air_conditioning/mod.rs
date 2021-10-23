@@ -3,7 +3,7 @@ use self::acs_controller::ACSController;
 use crate::{
     overhead::ValueKnob,
     shared::{CabinAltitude, EngineCorrectedN1, LgciuWeightOnWheels},
-    simulation::{SimulationElement, SimulationElementVisitor, UpdateContext},
+    simulation::{InitContext, SimulationElement, SimulationElementVisitor, UpdateContext},
 };
 
 use std::collections::HashMap;
@@ -30,10 +30,10 @@ pub struct AirConditioningSystem {
 }
 
 impl AirConditioningSystem {
-    pub fn new(cabin_zone_ids: Vec<&'static str>) -> Self {
+    pub fn new(context: &mut InitContext, cabin_zone_ids: Vec<&'static str>) -> Self {
         Self {
-            acs_overhead: AirConditioningSystemOverhead::new(&cabin_zone_ids),
-            acsc: ACSController::new(cabin_zone_ids),
+            acs_overhead: AirConditioningSystemOverhead::new(context, &cabin_zone_ids),
+            acsc: ACSController::new(context, cabin_zone_ids),
         }
     }
 
@@ -63,11 +63,11 @@ pub struct AirConditioningSystemOverhead {
 }
 
 impl AirConditioningSystemOverhead {
-    fn new(cabin_zone_ids: &[&'static str]) -> Self {
+    fn new(context: &mut InitContext, cabin_zone_ids: &[&'static str]) -> Self {
         let mut temperature_selectors: HashMap<&'static str, ValueKnob> = HashMap::new();
         for id in cabin_zone_ids.iter() {
             let knob_id = format!("COND_{}_SELECTOR", id);
-            temperature_selectors.insert(id, ValueKnob::new_with_value(&knob_id, 24.));
+            temperature_selectors.insert(id, ValueKnob::new_with_value(context, &knob_id, 24.));
         }
         Self {
             temperature_selectors,
