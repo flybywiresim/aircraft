@@ -1,3 +1,5 @@
+extern crate systems;
+
 mod electrical;
 mod fuel;
 mod hydraulic;
@@ -11,6 +13,7 @@ use electrical::{
 };
 use hydraulic::{A320Hydraulic, A320HydraulicOverheadPanel};
 use power_consumption::A320PowerConsumption;
+use systems::simulation::InitContext;
 use systems::{
     apu::{
         Aps3200ApuGenerator, Aps3200StartMotor, AuxiliaryPowerUnit, AuxiliaryPowerUnitFactory,
@@ -53,36 +56,36 @@ pub struct A320 {
     pressurization: Pressurization,
 }
 impl A320 {
-    pub fn new(electricity: &mut Electricity) -> A320 {
+    pub fn new(context: &mut InitContext) -> A320 {
         A320 {
-            adirs: AirDataInertialReferenceSystem::new(),
-            adirs_overhead: AirDataInertialReferenceSystemOverheadPanel::new(),
+            adirs: AirDataInertialReferenceSystem::new(context),
+            adirs_overhead: AirDataInertialReferenceSystemOverheadPanel::new(context),
             apu: AuxiliaryPowerUnitFactory::new_aps3200(
+                context,
                 1,
-                electricity,
                 APU_START_MOTOR_BUS_TYPE,
                 ElectricalBusType::DirectCurrentBattery,
                 ElectricalBusType::DirectCurrentBattery,
             ),
-            apu_fire_overhead: AuxiliaryPowerUnitFireOverheadPanel::new(),
-            apu_overhead: AuxiliaryPowerUnitOverheadPanel::new(),
-            pneumatic_overhead: A320PneumaticOverheadPanel::new(),
-            electrical_overhead: A320ElectricalOverheadPanel::new(),
-            emergency_electrical_overhead: A320EmergencyElectricalOverheadPanel::new(),
-            fuel: A320Fuel::new(),
-            engine_1: LeapEngine::new(1),
-            engine_2: LeapEngine::new(2),
-            engine_fire_overhead: EngineFireOverheadPanel::new(),
-            electrical: A320Electrical::new(electricity),
-            power_consumption: A320PowerConsumption::new(),
-            ext_pwr: ExternalPowerSource::new(electricity),
+            apu_fire_overhead: AuxiliaryPowerUnitFireOverheadPanel::new(context),
+            apu_overhead: AuxiliaryPowerUnitOverheadPanel::new(context),
+            pneumatic_overhead: A320PneumaticOverheadPanel::new(context),
+            electrical_overhead: A320ElectricalOverheadPanel::new(context),
+            emergency_electrical_overhead: A320EmergencyElectricalOverheadPanel::new(context),
+            fuel: A320Fuel::new(context),
+            engine_1: LeapEngine::new(context, 1),
+            engine_2: LeapEngine::new(context, 2),
+            engine_fire_overhead: EngineFireOverheadPanel::new(context),
+            electrical: A320Electrical::new(context),
+            power_consumption: A320PowerConsumption::new(context),
+            ext_pwr: ExternalPowerSource::new(context),
             lgciu1: LandingGearControlInterfaceUnit::new(ElectricalBusType::DirectCurrentEssential),
             lgciu2: LandingGearControlInterfaceUnit::new(ElectricalBusType::DirectCurrent(2)),
-            hydraulic: A320Hydraulic::new(),
-            hydraulic_overhead: A320HydraulicOverheadPanel::new(),
-            autobrake_panel: AutobrakePanel::new(),
-            landing_gear: LandingGear::new(),
-            pressurization: Pressurization::new(),
+            hydraulic: A320Hydraulic::new(context),
+            hydraulic_overhead: A320HydraulicOverheadPanel::new(context),
+            autobrake_panel: AutobrakePanel::new(context),
+            landing_gear: LandingGear::new(context),
+            pressurization: Pressurization::new(context),
         }
     }
 }

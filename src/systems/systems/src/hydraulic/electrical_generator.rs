@@ -15,6 +15,7 @@ use crate::shared::{
     EmergencyGeneratorInterface, GeneratorControlUnitInterface, LgciuWeightOnWheels,
 };
 
+use crate::simulation::{InitContext, VariableIdentifier};
 use crate::simulation::{SimulationElement, SimulatorWriter, UpdateContext, Write};
 
 use super::linear_actuator::Actuator;
@@ -286,12 +287,14 @@ impl MeteringValve {
 }
 
 pub struct ElectricalEmergencyGenerator {
+    generator_rpm_id: VariableIdentifier,
     hyd_motor: HydraulicMotor,
     produced_power: Power,
 }
 impl ElectricalEmergencyGenerator {
-    pub fn new(displacement: Volume) -> Self {
+    pub fn new(context: &mut InitContext, displacement: Volume) -> Self {
         Self {
+            generator_rpm_id: context.get_identifier("HYD_EMERGENCY_GEN_RPM".to_owned()),
             hyd_motor: HydraulicMotor::new(displacement),
             produced_power: Power::new::<watt>(0.),
         }
@@ -345,7 +348,7 @@ impl Actuator for ElectricalEmergencyGenerator {
 impl SimulationElement for ElectricalEmergencyGenerator {
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(
-            "HYD_EMERGENCY_GEN_RPM",
+            &self.generator_rpm_id,
             self.speed().get::<revolution_per_minute>(),
         );
     }
