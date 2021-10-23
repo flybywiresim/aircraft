@@ -5,11 +5,10 @@ import thunk from 'redux-thunk';
 import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
 import todCalculatorReducer from './features/todCalculator';
 import buttonsReducer from './features/buttons';
-import simbriefReducer from './features/simbrief';
+import simbriefReducer from './features/simBrief';
 import performanceReducer from './features/performance';
-import flightProgressReducer from './features/flightProgress';
-import navigationTabReducer from './features/navigationPage';
 
+export type TypedAction<T> = { type: string, payload: T };
 export type RootState = ReturnType<typeof combinedReducer>;
 export type AppDispatch = typeof store.dispatch;
 
@@ -20,8 +19,6 @@ const combinedReducer = combineReducers({
     buttons: buttonsReducer,
     simbrief: simbriefReducer,
     performance: performanceReducer,
-    flightProgress: flightProgressReducer,
-    navigationTab: navigationTabReducer,
 });
 
 const rootReducer: Reducer = (state: RootState, action: AnyAction) => {

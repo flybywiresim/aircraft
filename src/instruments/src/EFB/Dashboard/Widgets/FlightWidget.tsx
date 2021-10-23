@@ -1,13 +1,14 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { IconPlane } from '@tabler/icons';
-import { CloudArrowDown } from 'react-bootstrap-icons';
+import { FileEarmarkArrowDown } from 'react-bootstrap-icons';
 import { usePersistentProperty } from '@instruments/common/persistence';
 import { toast } from 'react-toastify';
+import { useSimVarValue } from '@instruments/common/simVars';
 
-import { fetchSimbriefDataAction, isSimbriefDataLoaded } from '../../Store/features/simbrief';
 import { useAppSelector, useAppDispatch } from '../../Store/store';
 
-import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
+import { fetchSimbriefDataAction } from '../../Store/features/simBrief';
+import { ScrollableContainer } from '../../Components/ScrollableContainer';
 
 interface InformationEntryProps {
     title: string;
@@ -21,75 +22,8 @@ const InformationEntry = ({ title, info }: InformationEntryProps) => (
     </div>
 );
 
-const simbriefValuePlaceholders = {
-    airline: '---',
-    flightNum: '----',
-    departingAirport: '----',
-    departingRunway: '---',
-    departingIata: '---',
-    departingName: '---',
-    departingPosLat: 0,
-    departingPosLong: 0,
-    arrivingAirport: '----',
-    arrivingRunway: '---',
-    arrivingIata: '---',
-    arrivingName: '---',
-    arrivingPosLat: 0,
-    arrivingPosLong: 0,
-    aircraftReg: '-----',
-    flightDistance: '---NM',
-    route: '---- --- ---- --- ---- ----',
-    flightETAInSeconds: 'N/A',
-    cruiseAltitude: 0,
-    weights: {
-        cargo: 0,
-        estLandingWeight: 0,
-        estTakeOffWeight: 0,
-        estZeroFuelWeight: 0,
-        maxLandingWeight: 0,
-        maxTakeOffWeight: 0,
-        maxZeroFuelWeight: 0,
-        passengerCount: 0,
-        passengerWeight: 0,
-        payload: 0,
-    },
-    fuels: {
-        avgFuelFlow: 0,
-        contingency: 0,
-        enrouteBurn: 0,
-        etops: 0,
-        extra: 0,
-        maxTanks: 0,
-        minTakeOff: 0,
-        planLanding: 0,
-        planRamp: 0,
-        planTakeOff: 0,
-        reserve: 0,
-        taxi: 0,
-    },
-    weather: {
-        avgWindDir: '---',
-        avgWindSpeed: '---',
-    },
-    units: 'kgs',
-    altIcao: '----',
-    altIata: '---',
-    altBurn: 0,
-    tripTime: 0,
-    contFuelTime: 0,
-    resFuelTime: 0,
-    taxiOutTime: 0,
-    schedIn: '--:--',
-    schedOut: '--:--',
-    loadsheet: 'N/A',
-    costInd: '--',
-};
-
 export const FlightWidget = () => {
     const [simbriefUserId] = usePersistentProperty('CONFIG_SIMBRIEF_USERID');
-    const { data } = useAppSelector((state) => state.simbrief);
-    const simbriefDataLoaded = isSimbriefDataLoaded();
-
     const {
         schedIn,
         schedOut,
@@ -99,21 +33,23 @@ export const FlightWidget = () => {
         arrivingAirport,
         arrivingIata,
         arrivingName,
+        arrivingPosLat,
+        arrivingPosLong,
         departingAirport,
         departingIata,
         departingName,
+        departingPosLat,
+        departingPosLong,
         airline,
         route,
         flightNum,
         altIcao,
         costInd,
-        arrivingRunway,
-        departingRunway,
-        aircraftReg,
-    } = simbriefDataLoaded ? simbriefValuePlaceholders : data;
-    const { flightPlanProgress } = useAppSelector((state) => state.flightProgress);
-
+    } = useAppSelector((state) => state.simbrief.data);
     const dispatch = useAppDispatch();
+
+    const [totalDistance, setTotalDistance] = useState(0);
+    const [remainingDistance, setRemainingDistance] = useState(0);
 
     let schedInParsed = '----';
     let schedOutParsed = '----';
@@ -146,8 +82,27 @@ export const FlightWidget = () => {
         estimatedZfw = `${eZfw}`;
     }
 
+    const lat = useSimVarValue('PLANE LATITUDE', 'degree latitude', 2000);
+    const long = useSimVarValue('PLANE LONGITUDE', 'degree longitude', 2000);
+
+    useEffect(() => {
+        setRemainingDistance(Avionics.Utils.computeGreatCircleDistance(
+            { lat, long },
+            { lat: arrivingPosLat, long: arrivingPosLong },
+        ));
+    }, [lat, long, arrivingPosLat, arrivingPosLong]);
+
+    useEffect(() => {
+        setTotalDistance(Avionics.Utils.computeGreatCircleDistance(
+            { lat: departingPosLat, long: departingPosLong },
+            { lat: arrivingPosLat, long: arrivingPosLong },
+        ));
+    }, [departingPosLat, departingPosLong, arrivingPosLat, arrivingPosLong]);
+
+    const flightPlanProgress = totalDistance ? ((totalDistance - remainingDistance) / totalDistance) * 100 : 0;
+
     return (
-        <div className="overflow-hidden flex-shrink-0 p-6 w-1/2 h-full rounded-lg border-2 border-theme-accent">
+        <div className="overflow-hidden p-6 mr-3 w-2/5 h-full rounded-lg border-2 shadow-md border-theme-accent">
             <div className="flex flex-col justify-between h-full">
                 <div className="space-y-8">
                     <div className="flex flex-row justify-between">
@@ -157,7 +112,7 @@ export const FlightWidget = () => {
                             <p className="w-52 text-sm">{departingName}</p>
                         </div>
                         <div>
-                            <p className="text-right">{aircraftReg}</p>
+                            <p className="text-right">A320-251N</p>
                             <h1 className="text-4xl font-bold text-right">{arrivingAirport}</h1>
                             <p className="w-52 text-sm text-right">{arrivingName}</p>
                         </div>
@@ -172,7 +127,7 @@ export const FlightWidget = () => {
                             </div>
                             <div className="flex flex-row h-1">
                                 <div className="relative w-full bg-theme-highlight" style={{ width: `${flightPlanProgress}%` }}>
-                                    {!!flightPlanProgress && (
+                                    {!!totalDistance && (
                                         <IconPlane
                                             className="absolute right-0 transform translate-x-1/2 -translate-y-1/2 fill-current text-theme-highlight"
                                             size={50}
@@ -180,7 +135,7 @@ export const FlightWidget = () => {
                                         />
                                     )}
                                 </div>
-                                <div className="w-full border-dashed bg-theme-text" style={{ width: `${100 - flightPlanProgress}%` }} />
+                                <div className="w-full bg-white border-dashed" style={{ width: `${100 - flightPlanProgress}%` }} />
                             </div>
                             <div>
                                 <div className={`w-1 ml-auto h-4 ${flightPlanProgress > 99 ? 'bg-theme-highlight' : 'bg-theme-text'}`} />
@@ -209,26 +164,8 @@ export const FlightWidget = () => {
                     </div>
                     <div>
                         <h5 className="text-2xl font-bold">Route</h5>
-                        <ScrollableContainer height={15}>
-                            <p className="font-mono">
-                                {!simbriefDataLoaded && (
-                                    <span className="text-theme-highlight">
-                                        {departingAirport}
-                                        /
-                                        {departingRunway}
-                                    </span>
-                                )}
-                                {' '}
-                                {route}
-                                {' '}
-                                {!simbriefDataLoaded && (
-                                    <span className="text-theme-highlight">
-                                        {arrivingAirport}
-                                        /
-                                        {arrivingRunway}
-                                    </span>
-                                )}
-                            </p>
+                        <ScrollableContainer height={15} resizeDependencies={[route]}>
+                            <p className="font-mono text-justify">{route}</p>
                         </ScrollableContainer>
                     </div>
                 </div>
@@ -241,10 +178,10 @@ export const FlightWidget = () => {
                             toast.error(e.message);
                         });
                     }}
-                    className="flex justify-center items-center p-2 space-x-4 w-full rounded-lg border-2 shadow-lg focus:outline-none text-navy bg-theme-highlight border-theme-secondary"
+                    className="flex justify-center items-center p-2 space-x-4 w-full rounded-lg border-2 shadow-lg focus:outline-none bg-theme-highlight border-theme-secondary"
                 >
-                    <CloudArrowDown size={26} />
-                    <p className="text-navy">Import OFP from simBrief</p>
+                    <FileEarmarkArrowDown size={26} />
+                    <p>Import Flightplan from SimBrief</p>
                 </button>
             </div>
         </div>

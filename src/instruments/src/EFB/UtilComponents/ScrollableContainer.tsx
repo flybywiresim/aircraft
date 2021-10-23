@@ -1,15 +1,16 @@
-import React, { FC, useEffect, useRef, useState } from 'react';
+import React, { DependencyList, FC, useEffect, useRef, useState } from 'react';
 
 interface ScrollableContainerProps {
     height: number;
-    className?: string;
+    resizeDependencies?: DependencyList;
 }
 
 /**
  * A container that can be scrolled vertically.
  * @param height - height of the container, in rem, that if exceeded will cause the container to become scrollable
+ * @param resizeDependencies - optional dependency list to trigger a re-calculation of the height of the content
  */
-export const ScrollableContainer: FC<ScrollableContainerProps> = ({ children, className, height }) => {
+export const ScrollableContainer: FC<ScrollableContainerProps> = ({ children, height, resizeDependencies = [] }) => {
     const [contentOverflows, setContentOverflows] = useState(false);
     const contentRef = useRef<HTMLDivElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -19,11 +20,9 @@ export const ScrollableContainer: FC<ScrollableContainerProps> = ({ children, cl
         if (contentRef.current) {
             if (contentRef.current.clientHeight > height * parseFloat(getComputedStyle(document.documentElement).fontSize)) {
                 setContentOverflows(true);
-            } else {
-                setContentOverflows(false);
             }
         }
-    }, [children]);
+    }, resizeDependencies);
 
     const handleMouseDown = (event: React.MouseEvent) => {
         position.current.top = containerRef.current ? containerRef.current.scrollTop : 0;
@@ -47,7 +46,7 @@ export const ScrollableContainer: FC<ScrollableContainerProps> = ({ children, cl
 
     return (
         <div
-            className={`w-full overflow-y-auto scrollbar ${className}`}
+            className={`w-full ${contentOverflows && 'overflow-y-scroll'} scrollbar`}
             style={{ height: `${height}rem` }}
             ref={containerRef}
             onMouseDown={handleMouseDown}

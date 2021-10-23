@@ -3,21 +3,19 @@ import React from 'react';
 import { usePersistentNumberProperty, usePersistentProperty } from '@instruments/common/persistence';
 import { useSimVar } from '@instruments/common/simVars';
 
-import Slider from 'rc-slider';
-import { Toggle } from '../../UtilComponents/Form/Toggle';
+import { Toggle } from '../../Components/Form/Toggle';
+import { Slider } from '../../Components/Form/Slider';
 import { ButtonType, SettingItem, SettingsPage } from '../Settings';
-import { SelectGroup, SelectItem } from '../../UtilComponents/Form/Select';
-import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
+import { SelectGroup, SelectItem } from '../../Components/Form/Select';
 
 export const FlyPadPage = () => {
     const [brightnessSetting, setBrightnessSetting] = usePersistentNumberProperty('EFB_BRIGHTNESS', 0);
     const [brightness] = useSimVar('L:A32NX_EFB_BRIGHTNESS', 'number', 500);
     const [usingAutobrightness, setUsingAutobrightness] = usePersistentNumberProperty('EFB_USING_AUTOBRIGHTNESS', 0);
-    const [theme, setTheme] = usePersistentProperty('EFB_UI_THEME', 'blue');
+    const [theme, setTheme] = usePersistentProperty('EFB_THEME', 'blue');
     const [autoOSK, setAutoOSK] = usePersistentNumberProperty('EFB_AUTO_OSK', 0);
     const [timeDisplayed, setTimeDisplayed] = usePersistentProperty('EFB_TIME_DISPLAYED', 'utc');
     const [timeFormat, setTimeFormat] = usePersistentProperty('EFB_TIME_FORMAT', '24');
-    const [showStatusBarFlightProgress, setShowStatusBarFlightProgress] = usePersistentNumberProperty('EFB_SHOW_STATUSBAR_FLIGHTPROGRESS', 1);
 
     const themeButtons: ButtonType[] = [
         { name: 'Blue', setting: 'blue' },
@@ -36,35 +34,10 @@ export const FlyPadPage = () => {
         { name: '24 Hour', setting: '24' },
     ];
 
-    const handleThemeSelect = (theme: string) => {
-        setTheme(theme);
-        document.documentElement.classList.forEach((className) => {
-            if (className.includes('theme-')) {
-                document.documentElement.classList.remove(className);
-            }
-        });
-        document.documentElement.classList.add(`theme-${theme}`);
-    };
-
     return (
         <SettingsPage name="flyPad">
             <SettingItem name="Brightness" disabled={!!usingAutobrightness}>
-                <div className="flex flex-row gap-x-4 items-center">
-                    <Slider
-                        style={{ width: '24rem' }}
-                        value={usingAutobrightness ? brightness : brightnessSetting}
-                        onChange={setBrightnessSetting}
-                    />
-                    <SimpleInput
-                        min={1}
-                        max={100}
-                        value={usingAutobrightness ? brightness : brightnessSetting}
-                        className="w-20 text-center"
-                        onChange={(value) => setBrightnessSetting(parseInt(value))}
-                        decimalPrecision={0}
-                        number
-                    />
-                </div>
+                <Slider className="w-96" value={usingAutobrightness ? brightness : brightnessSetting} onInput={(value) => setBrightnessSetting(value)} />
             </SettingItem>
 
             <SettingItem name="Auto Brightness">
@@ -75,7 +48,8 @@ export const FlyPadPage = () => {
                 <SelectGroup>
                     {themeButtons.map((button) => (
                         <SelectItem
-                            onSelect={() => handleThemeSelect(button.setting)}
+                            enabled
+                            onSelect={() => setTheme(button.setting)}
                             selected={theme === button.setting}
                         >
                             {button.name}
@@ -92,6 +66,7 @@ export const FlyPadPage = () => {
                 <SelectGroup>
                     {timeDisplayButtons.map((button) => (
                         <SelectItem
+                            enabled
                             onSelect={() => setTimeDisplayed(button.setting)}
                             selected={timeDisplayed === button.setting}
                         >
@@ -105,6 +80,7 @@ export const FlyPadPage = () => {
                 <SelectGroup>
                     {timeFormatButtons.map((button) => (
                         <SelectItem
+                            enabled
                             onSelect={() => setTimeFormat(button.setting)}
                             selected={timeFormat === button.setting}
                         >
@@ -112,10 +88,6 @@ export const FlyPadPage = () => {
                         </SelectItem>
                     ))}
                 </SelectGroup>
-            </SettingItem>
-
-            <SettingItem name="Show Status Bar Flight Progress">
-                <Toggle value={!!showStatusBarFlightProgress} onToggle={(value) => setShowStatusBarFlightProgress(value ? 1 : 0)} />
             </SettingItem>
         </SettingsPage>
     );

@@ -1,13 +1,12 @@
 import React, { FC } from 'react';
-import { Clipboard, Truck, Compass, BroadcastPin, ExclamationDiamond, Gear, Calculator } from 'react-bootstrap-icons';
+import { HouseDoor, Clipboard, Truck, Compass, BroadcastPin, ExclamationDiamond, Gear, Calculator } from 'react-bootstrap-icons';
 import { Link, useHistory } from 'react-router-dom';
-import { FbwLogo } from '../UtilComponents/FbwLogo';
 
 export const ToolBar = () => (
     <nav className="flex overflow-hidden flex-col flex-shrink-0 justify-between w-32">
         <div className="flex flex-col items-center mt-11">
             <ToolBarButton to="/dashboard">
-                <FbwLogo width={40} height={40} />
+                <HouseDoor size={35} />
             </ToolBarButton>
             <ToolBarButton to="/dispatch">
                 <Clipboard size={35} />
@@ -49,7 +48,7 @@ const ToolBarButton: FC<ToolBarButtonProps> = ({ to, children }) => {
         <Link
             to={to}
             className={`${history.location.pathname.includes(to) ? 'bg-theme-accent text-theme-text' : 'text-theme-unselected'}`
-            + ' flex w-min items-center justify-center hover:text-theme-text hover:bg-theme-accent transition duration-100 py-3.5 px-3.5 rounded-md mt-4'}
+            + ' flex w-min items-center justify-center hover:text-theme-text bg-transparent hover:bg-theme-accent transition duration-100 py-3.5 px-3.5 rounded-md mt-4'}
         >
             {children}
         </Link>

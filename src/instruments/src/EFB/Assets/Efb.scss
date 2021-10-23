@@ -74,11 +74,7 @@
 }
 
 .scrollbar::-webkit-scrollbar-thumb {
-  @apply rounded-md bg-theme-accent;
-
-  &:hover {
-      @apply bg-theme-highlight;
-  }
+  @apply rounded-md bg-theme-highlight;
 }
 
 .no-scrollbar::-webkit-scrollbar {
@@ -90,15 +86,15 @@
   scrollbar-width: none;
 }
 
-/* ---- Dashboard UtilComponents ---- */
+/* ---- Dashboard Components ---- */
 
 .flip-horizontal {
   transform: scaleX(-1);
 }
 
-/* ---- Dispatch UtilComponents ---- */
+/* ---- Dispatch Components ---- */
 
-.image-theme {
+.loadsheet-container {
   /* fbw flypad theme for simbrief maps */
   & img {
     width: 70.5%;
@@ -118,3 +114,22 @@
     cursor: -webkit-grabbing;
   }
 }
+
+/* ---- Notifications ---- */
+
+.drop {
+    animation: drop 5s ease-out;
+
+    @keyframes drop {
+      from {
+        top: 0;
+      }
+      to {
+        top: -500px
+      }
+      8%,
+      92% {
+        top: 2em;
+      }
+    }
+  }

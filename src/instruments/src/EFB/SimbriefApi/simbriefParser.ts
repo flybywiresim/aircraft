@@ -1,6 +1,6 @@
 import { ISimbriefData } from './simbriefInterface';
 
-const simbriefApiUrl = new URL('https://www.simbrief.com/api/xml.fetcher.php');
+const simbriefApiUrl: URL = new URL('https://www.simbrief.com/api/xml.fetcher.php');
 const simbriefApiParams = simbriefApiUrl.searchParams;
 
 const getRequestData: RequestInit = {
@@ -8,7 +8,7 @@ const getRequestData: RequestInit = {
     method: 'GET',
 };
 
-export const getSimbriefData = (simbriefUserId: string): Promise<ISimbriefData> => {
+export function getSimbriefData(simbriefUserId: string): Promise<ISimbriefData> {
     simbriefApiParams.append('userid', simbriefUserId);
     simbriefApiParams.append('json', '1');
     simbriefApiUrl.search = simbriefApiParams.toString();
@@ -20,9 +20,9 @@ export const getSimbriefData = (simbriefUserId: string): Promise<ISimbriefData> 
             }
             return res.json().then((json) => simbriefDataParser(json));
         });
-};
+}
 
-const simbriefDataParser = (simbriefJson: any): ISimbriefData => {
+function simbriefDataParser(simbriefJson: any): ISimbriefData {
     const { general } = simbriefJson;
     const { origin } = simbriefJson;
     const { aircraft } = simbriefJson;
@@ -44,7 +44,6 @@ const simbriefDataParser = (simbriefJson: any): ISimbriefData => {
         files: { loadsheet: files.pdf.link ? files.directory + files.pdf.link : undefined },
         origin: {
             iata: origin.iata_code,
-            runway: origin.plan_rwy,
             icao: origin.icao_code,
             name: origin.name,
             posLat: origin.pos_lat,
@@ -52,7 +51,6 @@ const simbriefDataParser = (simbriefJson: any): ISimbriefData => {
         },
         destination: {
             iata: destination.iata_code,
-            runway: destination.plan_rwy,
             icao: destination.icao_code,
             name: destination.name,
             posLat: destination.pos_lat,
@@ -121,4 +119,4 @@ const simbriefDataParser = (simbriefJson: any): ISimbriefData => {
         },
         text: text.plan_html.replace(/^<div [^>]+>/, '').replace(/<\/div>$/, ''),
     };
-};
+}

@@ -1,47 +1,38 @@
 import React, { useState } from 'react';
 import Keyboard, { KeyboardInput } from 'react-simple-keyboard';
 import '../Assets/Keyboard.scss';
-import SimpleKeyboardLayouts from 'simple-keyboard-layouts';
-import { usePersistentProperty } from '@instruments/common/persistence';
 
 interface KeyboardWrapperProps {
-  onChangeAll: (inputObj: KeyboardInput, e?: MouseEvent) => any;
+  onChangeAll: (inputObj: KeyboardInput, e?: MouseEvent | undefined) => any;
   keyboardRef: any;
   setOpen: (value: boolean) => void;
-  blurInput: () => void;
-  onKeyDown?: (buttonName: string) => void;
+  inputRef: React.RefObject<HTMLInputElement>;
 }
 
-export const KeyboardWrapper = ({ onChangeAll, keyboardRef, setOpen, blurInput, onKeyDown }: KeyboardWrapperProps) => {
-    // TODO: Write to this property using a dropdown in settings later on
-    const [currentLayoutIdentifier] = usePersistentProperty('EFB_KEYBOARD_LAYOUT_IDENT', 'english');
-    const [currentLayout] = useState(() => new SimpleKeyboardLayouts().get(currentLayoutIdentifier));
-    const [currentLayoutName, setCurrentLayoutName] = useState('default');
+export const KeyboardWrapper = ({ onChangeAll, keyboardRef, setOpen, inputRef }: KeyboardWrapperProps) => {
+    const [layoutName, setLayoutName] = useState('default');
 
     const onKeyPress = (button: string) => {
         if (button === '{shift}' || button === '{lock}') {
-            setCurrentLayoutName(currentLayoutName === 'default' ? 'shift' : 'default');
+            setLayoutName(layoutName === 'default' ? 'shift' : 'default');
         }
         if (button === '{enter}') {
-            blurInput();
+            if (inputRef.current) {
+                inputRef.current.blur();
+            }
             setOpen(false);
         }
-        onKeyDown?.(button);
     };
 
     return (
-        <div
-            className="fixed inset-x-0 bottom-0 z-50 m-0 shadow-lg"
-        >
+        <div className="shadow-lg">
             <Keyboard
                 keyboardRef={(r) => {
                     keyboardRef.current = r;
                 }}
-                layoutName={currentLayoutName}
-                preventMouseDownDefault
+                layoutName={layoutName}
                 onChangeAll={onChangeAll}
                 onKeyPress={onKeyPress}
-                {...currentLayout}
             />
         </div>
     );

@@ -1,40 +1,17 @@
 'use strict';
 
-const reactComponentsClasses = require('@flybywiresim/react-components/build/usedCSSClasses.json');
-
-const watchFolders = [
-    'ATC',
-    'ChartsApi',
-    'Dashboard',
-    'Dispatch',
-    'Enum',
-    'Failures',
-    'Ground',
-    'Navigation',
-    'Performance',
-    'Service',
-    'Settings',
-    'SimbriefApi',
-    'StatusBar',
-    'Store',
-    'TODCalculator',
-    'ToolBar',
-    'UtilComponents',
-    'Utils',
-];
+const reactComponentsClasses = require('../../../../node_modules/@flybywiresim/react-components/build/usedCSSClasses.json');
 
 module.exports = {
     purge: {
-        enabled: false,
         content: [
-        // './Efb.tsx',
-        // './index.tsx',
-        // './failures-orchestrator-provider.tsx',
-        // './node_modules/@flybywiresim/react-components/build/usedCSSClasses.json',
-        // ...watchFolders.map((folder) => `./EFB/${folder}/**/*.tsx`),
+            './**/*.{jsx,tsx}',
         ],
-        safelist: [...reactComponentsClasses],
+        safelist: [
+            ...reactComponentsClasses,
+        ],
     },
+    darkMode: false, // or 'media' or 'class'
     theme: {
         extend: {
             width: () => ({
@@ -75,10 +52,6 @@ module.exports = {
                 'theme-secondary': 'var(--color-secondary)',
                 'theme-statusbar': 'var(--color-statusbar)',
                 'theme-accent': 'var(--color-accent)',
-                'cyan': {
-                    DEFAULT: '#00E0FE',
-                    medium: '#00C4F5',
-                },
             },
             maxWidth: { '1/2': '50%' },
         },
@@ -88,7 +61,9 @@ module.exports = {
             title: ['Manrope'],
             rmp: ['AirbusRMP'],
         },
+        boxShadow: { lg: '0px 0px 4px 2px rgba(0, 0, 0, 0.5)' },
     },
+    variants: { extend: {} },
     // eslint-disable-next-line global-require
     plugins: [require('@flybywiresim/tailwind-config')],
 };
