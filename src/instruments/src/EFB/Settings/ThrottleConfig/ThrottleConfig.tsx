@@ -1,19 +1,19 @@
 import React, { useEffect, useState } from 'react';
-import { usePersistentProperty } from '@instruments/common/persistence';
-import { useSimVar } from '@instruments/common/simVars';
-import { Toggle } from '../../UtilComponents/Form/Toggle';
-import Button, { BUTTON_TYPE } from '../../UtilComponents/Button/Button';
-import { SelectItem, VerticalSelectGroup } from '../../UtilComponents/Form/Select';
+import { Toggle } from '../../Components/Form/Toggle';
+import { usePersistentProperty } from '../../../Common/persistence';
+import { useSimVar } from '../../../Common/simVars';
+import Button, { BUTTON_TYPE } from '../../Components/Button/Button';
+import { SelectItem, VerticalSelectGroup } from '../../Components/Form/Select';
 
-import { BaseThrottleConfig } from './BaseThrottleConfig';
+import BaseThrottleConfig from './BaseThrottleConfig';
 import { ThrottleSimvar } from './ThrottleSimVar';
 
-interface ThrottleConfigProps {
+interface Props {
     isShown: boolean,
-    onClose: () => void,
+    onClose: any
 }
 
-export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
+const ThrottleConfig: React.FC<Props> = (props: Props) => {
     const [isDualAxis, setDualAxis] = usePersistentProperty('THROTTLE_DUAL_AXIS', '1');
 
     const [selectedIndex, setSelectedIndex] = useState(0);
@@ -89,40 +89,42 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
         }
     };
 
-    const navigationBar = (
-        <VerticalSelectGroup>
-            <SelectItem onSelect={() => switchDetent(5)} selected={selectedIndex === 5}>TO/GA</SelectItem>
-            <SelectItem onSelect={() => switchDetent(4)} selected={selectedIndex === 4}>FLX</SelectItem>
-            <SelectItem onSelect={() => switchDetent(3)} selected={selectedIndex === 3}>CLB</SelectItem>
-            <SelectItem onSelect={() => switchDetent(2)} selected={selectedIndex === 2}>Idle</SelectItem>
-            <SelectItem
-                disabled={!reverserOnAxis1}
-                className={`${reverserOnAxis1 ? '' : 'opacity-30'}`}
-                onSelect={() => {
-                    if (reverserOnAxis1) {
-                        switchDetent(1);
-                    }
-                }}
-                selected={selectedIndex === 1}
-            >
-                Reverse Idle
-            </SelectItem>
-            <SelectItem
-                disabled={!reverserOnAxis1}
-                className={`${reverserOnAxis1 ? '' : 'opacity-30'}`}
-                onSelect={() => {
-                    if (reverserOnAxis1) {
-                        switchDetent(0);
-                    }
-                }}
-                selected={selectedIndex === 0}
-            >
-                Reverse Full
-            </SelectItem>
-        </VerticalSelectGroup>
+    const NavigationBar = () => (
+        <div className="flex flex-row h-80">
+            <VerticalSelectGroup>
+                <SelectItem enabled onSelect={() => switchDetent(5)} selected={selectedIndex === 5}>TO/GA</SelectItem>
+                <SelectItem enabled onSelect={() => switchDetent(4)} selected={selectedIndex === 4}>FLX</SelectItem>
+                <SelectItem enabled onSelect={() => switchDetent(3)} selected={selectedIndex === 3}>CLB</SelectItem>
+                <SelectItem enabled onSelect={() => switchDetent(2)} selected={selectedIndex === 2}>Idle</SelectItem>
+                <SelectItem
+                    enabled
+                    classNames={`${reverserOnAxis1 ? '' : 'opacity-30'}`}
+                    onSelect={() => {
+                        if (reverserOnAxis1) {
+                            switchDetent(1);
+                        }
+                    }}
+                    selected={selectedIndex === 1}
+                >
+                    Reverse Idle
+                </SelectItem>
+                <SelectItem
+                    enabled
+                    classNames={`${reverserOnAxis1 ? '' : 'opacity-30'}`}
+                    onSelect={() => {
+                        if (reverserOnAxis1) {
+                            switchDetent(0);
+                        }
+                    }}
+                    selected={selectedIndex === 0}
+                >
+                    Reverse Full
+                </SelectItem>
+            </VerticalSelectGroup>
+        </div>
     );
 
-    if (isShown) {
+    if (props.isShown) {
         return (
             <div className="flex flex-col text-center">
                 <div className="py-6 rounded-xl">
@@ -155,7 +157,7 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
                                 activeIndex={selectedIndex}
                             />
                             <div className="mt-auto mr-8 mb-auto ml-8">
-                                {navigationBar}
+                                <NavigationBar />
                             </div>
                             <BaseThrottleConfig
                                 mappingsAxisOne={mappingsAxisTwo}
@@ -180,7 +182,7 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
                         activeIndex={selectedIndex}
                     />
                     <div className="mt-auto mb-auto ml-8">
-                        {navigationBar}
+                        <NavigationBar />
                     </div>
                 </div>
             )}
@@ -192,7 +194,7 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
                         <Button
                             text="Back"
                             type={BUTTON_TYPE.BLUE}
-                            onClick={() => onClose()}
+                            onClick={() => props.onClose()}
                             className="hover:bg-blue-600 hover:border-blue-600"
                         />
                     </div>
@@ -238,3 +240,5 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
     }
     return <></>;
 };
+
+export default ThrottleConfig;

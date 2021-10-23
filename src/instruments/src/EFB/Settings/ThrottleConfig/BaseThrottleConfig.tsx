@@ -1,6 +1,6 @@
 import React, { FC, useState } from 'react';
 import { PencilSquare } from 'react-bootstrap-icons';
-import { useSimVar } from '@instruments/common/simVars';
+import { useSimVar } from '../../../Common/simVars';
 import DetentConfig from './DetentConfig';
 import { ThrottleSimvar } from './ThrottleSimVar';
 
@@ -13,7 +13,7 @@ interface BaseThrottleConfigProps {
     disabled?: boolean;
 }
 
-export const BaseThrottleConfig: FC<BaseThrottleConfigProps> = ({
+const BaseThrottleConfig: FC<BaseThrottleConfigProps> = ({
     throttleNumber,
     throttleCount,
     mappingsAxisOne,
@@ -25,7 +25,7 @@ export const BaseThrottleConfig: FC<BaseThrottleConfigProps> = ({
     const [throttlePosition] = useSimVar(`L:A32NX_THROTTLE_MAPPING_INPUT:${throttleNumber}`, 'number', 30);
     const [expertMode, setExpertMode] = useState(false);
 
-    const currentDetent = (
+    const CurrentDetent = () => (
         <DetentConfig
             key={activeIndex}
             index={activeIndex}
@@ -64,10 +64,12 @@ export const BaseThrottleConfig: FC<BaseThrottleConfigProps> = ({
 
                 <div className="flex flex-row">
                     <div className="flex flex-col justify-between items-center">
-                        {currentDetent}
+                        <CurrentDetent />
                     </div>
                 </div>
             </div>
         </div>
     );
 };
+
+export default BaseThrottleConfig;

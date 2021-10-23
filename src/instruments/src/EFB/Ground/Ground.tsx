@@ -15,10 +15,11 @@ import {
 } from 'react-bootstrap-icons';
 
 import useInterval from '@instruments/common/useInterval';
-import { useSimVar, useSplitSimVar } from '@instruments/common/simVars';
-import { UprightOutline } from '../Assets/UprightOutline';
+import fuselage from '../Assets/320neo-outline-upright.svg';
 
-import Button, { BUTTON_TYPE } from '../UtilComponents/Button/Button';
+import { useSimVar, useSplitSimVar } from '../../Common/simVars';
+
+import Button, { BUTTON_TYPE } from '../Components/Button/Button';
 
 import { useAppDispatch, useAppSelector } from '../Store/store';
 import {
@@ -56,20 +57,22 @@ const ServiceButtonWrapper: FC<ServiceButtonWrapperProps> = ({ children, classNa
 interface GroundServiceButtonProps {
     className?: string,
     name: string,
-    onClick: (e: React.MouseEvent<HTMLDivElement>) => void,
+    onClick: (e: React.MouseEvent<HTMLButtonElement>) => void,
     disabled?: boolean,
     id: string,
 }
 
 const GroundServiceButton: FC<GroundServiceButtonProps> = ({ children, className, name, onClick, disabled, id }) => (
-    <div
+    <button
+        type="button"
         id={id}
         className={`flex flex-row items-center space-x-6 py-6 px-6 cursor-pointer ${className}`}
-        onClick={disabled ? undefined : onClick}
+        onClick={onClick}
+        disabled={disabled}
     >
         {children}
-        <h1 className="flex-shrink-0 text-2xl font-medium text-current">{name}</h1>
-    </div>
+        <h1 className="flex-shrink-0 text-2xl font-medium text-white">{name}</h1>
+    </button>
 );
 
 export const Ground = () => {
@@ -97,7 +100,7 @@ export const Ground = () => {
     const [tugDirection, setTugDirection] = useState(0);
     const [tugActive, setTugActive] = useState(false);
 
-    const buttonInactive = ' hover:bg-theme-highlight text-theme-text hover:text-theme-secondary transition duration-200 disabled:bg-grey-600';
+    const buttonBlue = ' hover:bg-blue-600 transition duration-200 disabled:bg-grey-600';
     const buttonActive = ' text-white bg-green-600 border-green-600';
 
     const STATE_WAITING = 'WAITING';
@@ -208,7 +211,7 @@ export const Ground = () => {
     const applySelected = (className: string, id?: string) => {
         if (id) {
             return className + (activeButtons.map((b: StatefulButton) => b.id).includes(id) ? buttonActive
-                : buttonInactive);
+                : buttonBlue);
         }
         return className;
     };
@@ -225,7 +228,7 @@ export const Ground = () => {
             return `${className} ${buttonActive}`;
         }
         return className + (activeButtons.map((b: StatefulButton) => b.id).includes(id) ? ' text-white bg-gray-600'
-            : buttonInactive);
+            : buttonBlue);
     };
 
     return (
@@ -233,9 +236,9 @@ export const Ground = () => {
             <h1 className="font-bold">Ground</h1>
 
             {/* TODO: Replace with JIT value */}
-            <UprightOutline className="inset-x-0 mx-auto w-full h-full text-theme-text" />
+            <img className="inset-x-0 mx-auto h-full" style={{ width: '51rem' }} src={fuselage} alt="fuselage" />
 
-            <ServiceButtonWrapper x={64} y={64}>
+            <ServiceButtonWrapper x={64} y={64} className="">
                 <GroundServiceButton
                     name="Connect Jet Bridge"
                     onClick={(e) => handleClick(() => {
@@ -308,32 +311,32 @@ export const Ground = () => {
             <div className="flex absolute bottom-6 left-0 flex-col ml-4 space-y-4">
                 <div className="flex flex-row space-x-4">
                     <div>
-                        <h1 className="pb-1 text-xl font-medium text-center text-theme-text">Call Tug</h1>
+                        <h1 className="pb-1 text-xl font-medium text-center text-white">Call Tug</h1>
                         <Button
                             id="tug-request"
                             onClick={(e) => handlePushBackClick(() => togglePushback(true), e)}
-                            className={applySelectedWithSync('w-32 h-20 text-white bg-theme-highlight hover:bg-blue-600 transition duration-200 border-none', 'tug-request', pushBackAttached)}
+                            className={applySelectedWithSync('w-32 h-20 bg-blue-500 hover:bg-blue-600 transition duration-200 border-none', 'tug-request', pushBackAttached)}
                             type={BUTTON_TYPE.NONE}
                         >
                             <TruckFlatbed size="2.825rem" />
                         </Button>
                     </div>
                     <div>
-                        <h1 className="pb-1 text-xl font-medium text-center text-theme-text">Pushback</h1>
+                        <h1 className="pb-1 text-xl font-medium text-center text-white">Pushback</h1>
                         <Button
                             id="stop"
                             onClick={(e) => handlePushBackClick(() => {
                                 computeAndSetTugHeading(0);
                                 dispatch(setTugRequestOnly(true));
                             }, e)}
-                            className={applySelected('w-32 h-20 text-white border-none bg-red-500 border-red-500 hover:bg-red-600 hover:border-red-600')}
+                            className={applySelected('w-32 h-20 border-none bg-red-500 border-red-500 hover:bg-red-600 hover:border-red-600')}
                             type={BUTTON_TYPE.NONE}
                         >
                             <StopCircleFill size="2.825rem" />
                         </Button>
                     </div>
                     <div>
-                        <h1 className="pb-1 text-xl font-medium text-center text-theme-text">Parking Brake</h1>
+                        <h1 className="pb-1 text-xl font-medium text-center text-white">Parking Brake</h1>
                         <Button
                             id="parking-brake"
                             onClick={() => setBrakeLeverPos((old) => !old)}
@@ -350,7 +353,7 @@ export const Ground = () => {
                         id="down-left"
                         type={BUTTON_TYPE.NONE}
                         onClick={(e) => handlePushBackClick(() => computeAndSetTugHeading(90), e)}
-                        className={applySelected('w-32 h-20 text-white bg-theme-highlight hover:bg-blue-600 transition duration-200 border-none', 'down-left')}
+                        className={applySelected('w-32 h-20 bg-blue-500 hover:bg-blue-600 transition duration-200 border-none', 'down-left')}
                     >
                         <ArrowReturnLeft size="2.825rem" />
                     </Button>
@@ -358,7 +361,7 @@ export const Ground = () => {
                         id="down"
                         type={BUTTON_TYPE.NONE}
                         onClick={(e) => handlePushBackClick(() => computeAndSetTugHeading(0), e)}
-                        className={applySelected('w-32 h-20 text-white bg-theme-highlight hover:bg-blue-600 transition duration-200 border-none', 'down')}
+                        className={applySelected('w-32 h-20 bg-blue-500 hover:bg-blue-600 transition duration-200 border-none', 'down')}
                     >
                         <ArrowDown size="2.825rem" />
                     </Button>
@@ -366,7 +369,7 @@ export const Ground = () => {
                         id="down-right"
                         type={BUTTON_TYPE.NONE}
                         onClick={(e) => handlePushBackClick(() => computeAndSetTugHeading(270), e)}
-                        className={applySelected('w-32 h-20 text-white bg-theme-highlight hover:bg-blue-600 transition duration-200 border-none', 'down-right')}
+                        className={applySelected('w-32 h-20 bg-blue-500 hover:bg-blue-600 transition duration-200 border-none', 'down-right')}
                     >
                         <ArrowReturnRight size="2.825rem" />
                     </Button>

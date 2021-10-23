@@ -1,34 +1,34 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice } from '@reduxjs/toolkit';
 import { LandingFlapsConfig, LandingRunwayConditions } from '../../Performance/Calculators/LandingCalculator';
 import { DistanceLabel } from '../../Performance/Widgets/RunwayVisualizationWidget';
+import { TypedAction } from '../store';
 
-interface TPerformanceLanding {
-    icao: string;
-    windDirection?: number;
-    windMagnitude?: number;
-    weight?: number;
-    runwayHeading?: number;
-    approachSpeed?: number;
-    flaps: LandingFlapsConfig;
-    runwayCondition: LandingRunwayConditions;
-    reverseThrust: boolean;
-    altitude?: number;
-    slope?: number;
-    temperature?: number;
-    overweightProcedure: boolean;
-    pressure?: number;
-    runwayLength?: number;
-    maxAutobrakeLandingDist: number;
-    mediumAutobrakeLandingDist: number;
-    lowAutobrakeLandingDist: number;
-    runwayVisualizationLabels: DistanceLabel[];
-    runwayNumber: number;
-    displayedRunwayLength: number;
-    autoland: boolean;
+type TPerformanceLanding = {
+    icao: string,
+    windDirection?: number,
+    windMagnitude?: number,
+    weight?: number,
+    runwayHeading?: number,
+    approachSpeed?: number,
+    flaps: LandingFlapsConfig,
+    runwayCondition: LandingRunwayConditions,
+    reverseThrust: boolean,
+    altitude?: number,
+    slope?: number,
+    temperature?: number,
+    overweightProcedure: boolean,
+    pressure?: number,
+    runwayLength?: number,
+    maxAutobrakeLandingDist: number,
+    mediumAutobrakeLandingDist: number,
+    lowAutobrakeLandingDist: number,
+    runwayVisualizationLabels: Array<DistanceLabel>,
+    runwayNumber: number,
+    displayedRunwayLength: number,
 }
 
-interface TPerformanceState {
-    landing: TPerformanceLanding;
+type TPerformanceState = {
+    landing: TPerformanceLanding,
 }
 
 export const initialState: TPerformanceState = {
@@ -54,7 +54,6 @@ export const initialState: TPerformanceState = {
         runwayVisualizationLabels: [],
         runwayNumber: 0,
         displayedRunwayLength: 0,
-        autoland: false,
     },
 };
 
@@ -62,7 +61,7 @@ const performanceSlice = createSlice({
     name: 'performance',
     initialState,
     reducers: {
-        setLandingValues: (state, action: PayloadAction<Partial<TPerformanceLanding>>) => {
+        setLandingValues: (state, action: TypedAction<Partial<TPerformanceLanding>>) => {
             Object.keys(action.payload).forEach((key) => {
                 state.landing[key] = action.payload[key];
             });

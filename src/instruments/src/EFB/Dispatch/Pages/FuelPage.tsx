@@ -1,37 +1,35 @@
 import React from 'react';
 import { round } from 'lodash';
-import { CloudArrowDown, PlayFill, StopCircleFill } from 'react-bootstrap-icons';
-import { useSimVar } from '@instruments/common/simVars';
-import { usePersistentProperty } from '@instruments/common/persistence';
-import Slider from 'rc-slider';
-import { Units } from '@shared/units';
-import { isSimbriefDataLoaded } from '../../Store/features/simbrief';
-import { useAppSelector } from '../../Store/store';
-import { SelectGroup, SelectItem } from '../../UtilComponents/Form/Select';
-import { ProgressBar } from '../../UtilComponents/Progress/Progress';
-import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
-import { OverWingOutline } from '../../Assets/OverWingOutline';
+import { PlayFill, StopCircleFill } from 'react-bootstrap-icons';
+import { Slider } from '../../Components/Form/Slider';
+import { SelectGroup, SelectItem } from '../../Components/Form/Select';
+import { ProgressBar } from '../../Components/Progress/Progress';
+import SimpleInput from '../../Components/Form/SimpleInput/SimpleInput';
+import fuselage from '../../Assets/320neo_outline_fuel.svg';
+import { useSimVar } from '../../../Common/simVars';
+import { usePersistentProperty } from '../../../Common/persistence';
 
-interface TankReadoutProps {
-    title: string;
-    current: number;
-    target: number;
-    capacity: number;
-    currentUnit: string;
-    tankValue: number;
-    convertedFuelValue: number;
-    className?: string;
-    inlinedTitle?: boolean;
+type TankReadoutProps = {
+    title: string,
+    current: number,
+    target: number,
+    capacity: number,
+    currentUnit: string,
+    tankValue: number,
+    convertedFuelValue: number,
+    className?: string,
 }
 
-const TankReadoutWidget = ({ title, current, target, capacity, currentUnit, tankValue, convertedFuelValue, className, inlinedTitle }: TankReadoutProps) => {
-    const getFuelBarPercent = (curr: number, max: number) => (Math.max(curr, 0) / max) * 100;
+const TankReadoutWidget = ({ title, current, target, capacity, currentUnit, tankValue, convertedFuelValue, className }: TankReadoutProps) => {
+    const getFuelBarPercent = (curr:number, max: number) => (Math.max(curr, 0) / max) * 100;
 
     return (
-        <div className={`overflow-hidden w-min p-4 space-y-3 bg-theme-body ${className}`} style={{ width: '366px' }}>
-            <div className={inlinedTitle ? 'flex flex-row items-center justify-between' : undefined}>
+        <div className={`overflow-hidden w-min p-4 space-y-3 ${className}`}>
+            <div className="flex flex-row justify-between items-center">
                 <h2>{title}</h2>
-                <p>{`${convertedFuelValue}/${round(tankValue)} ${currentUnit}`}</p>
+                <p>
+                    {`${convertedFuelValue}/${round(tankValue)} ${currentUnit}`}
+                </p>
             </div>
             <ProgressBar
                 height="20px"
@@ -53,11 +51,21 @@ export const FuelPage = () => {
     const CENTER_TANK_GALLONS = 2179;
     const wingTotalRefuelTimeSeconds = 1020;
     const CenterTotalRefuelTimeSeconds = 180;
-    const usingMetric = Units.usingMetric;
+    const [usingMetric] = usePersistentProperty('CONFIG_USING_METRIC_UNIT', '1');
 
-    const currentUnit = () => (usingMetric ? 'KG' : 'LB');
+    function currentUnit() {
+        if (usingMetric === '1') {
+            return 'KG';
+        }
+        return 'LB';
+    }
 
-    const convertUnit = () => (usingMetric ? 1 : 2.204617615);
+    function convertUnit() {
+        if (usingMetric === '1') {
+            return 1;
+        }
+        return 2.204617615;
+    }
 
     const [galToKg] = useSimVar('FUEL WEIGHT PER GALLON', 'kilograms', 1_000);
     const outerCell = () => OUTER_CELL_GALLONS * galToKg * convertUnit();
@@ -88,32 +96,28 @@ export const FuelPage = () => {
     const [RInnCurrent] = useSimVar('FUEL TANK RIGHT MAIN QUANTITY', 'Gallons', 1_000);
     const [ROutCurrent] = useSimVar('FUEL TANK RIGHT AUX QUANTITY', 'Gallons', 1_000);
 
-    const { units } = useAppSelector((state) => state.simbrief.data);
-    const { planRamp } = useAppSelector((state) => state.simbrief.data.fuels);
-    const simbriefDataLoaded = isSimbriefDataLoaded();
-
-    const isAirplaneCnD = () => {
+    function isAirplaneCnD() {
         if (simGroundSpeed > 0.1 || eng1Running || eng2Running || !isOnGround || (!busDC2 && !busDCHot1)) {
             return false;
         }
         return true;
-    };
+    }
 
-    const airplaneCanRefuel = () => {
+    function airplaneCanRefuel() {
         if (refuelRate !== '2') {
             if (!isAirplaneCnD()) {
                 setRefuelRate('2');
             }
         }
         return true;
-    };
+    }
 
     const currentWingFuel = () => round(Math.max((LInnCurrent + (LOutCurrent) + (RInnCurrent) + (ROutCurrent)), 0));
     const targetWingFuel = () => round(Math.max((LInnTarget + (LOutTarget) + (RInnTarget) + (ROutTarget)), 0));
     const convertToGallon = (curr : number) => curr * (1 / convertUnit()) * (1 / galToKg);
     const totalCurrentGallon = () => round(Math.max((LInnCurrent + (LOutCurrent) + (RInnCurrent) + (ROutCurrent) + (centerCurrent)), 0));
 
-    const totalCurrent = () => {
+    function totalCurrent() {
         if (round(totalTarget) === totalCurrentGallon()) {
             return inputValue;
         }
@@ -122,9 +126,9 @@ export const FuelPage = () => {
             return round(val + convertUnit());
         }
         return val;
-    };
+    }
 
-    const formatRefuelStatusLabel = () => {
+    function formatRefuelStatusLabel() {
         if (airplaneCanRefuel()) {
             if (round(totalTarget) === totalCurrentGallon()) {
                 return '(Completed)';
@@ -138,31 +142,33 @@ export const FuelPage = () => {
             setRefuelStartedByUser(false);
         }
         return '(Unavailable)';
-    };
+    }
 
-    const formatRefuelStatusClass = () => {
+    function formatRefuelStatusClass() {
         if (airplaneCanRefuel()) {
             if (round(totalTarget) === totalCurrentGallon() || !refuelStartedByUser) {
                 if (refuelStartedByUser) {
                     setRefuelStartedByUser(false);
                 }
-                return 'text-theme-highlight';
+                return 'text-blue-500';
             }
             return ((totalTarget) > (totalCurrentGallon())) ? 'text-green-500' : 'text-yellow-500';
         }
         return 'text-theme-accent';
-    };
+    }
 
     const getFuelMultiplier = () => galToKg * convertUnit();
 
-    const formatFuelFilling = (curr: number, max: number) => {
+    function formatFuelFilling(curr: number, max: number) {
         const percent = (Math.max(curr, 0) / max) * 100;
-        return `linear-gradient(to top, var(--color-highlight) ${percent}%,#ffffff00 0%)`;
-    };
+        return `linear-gradient(to top, #3b82f6 ${percent}%,#ffffff00 0%)`;
+    }
 
-    const convertFuelValue = (curr: number) => round(round(Math.max(curr, 0)) * getFuelMultiplier());
+    function convertFuelValue(curr: number) {
+        return round(round(Math.max(curr, 0)) * getFuelMultiplier());
+    }
 
-    const convertFuelValueCenter = (curr: number) => {
+    function convertFuelValueCenter(curr: number) {
         if (curr < 1) {
             return 0;
         }
@@ -170,9 +176,9 @@ export const FuelPage = () => {
             return convertFuelValue(curr);
         }
         return round(convertFuelValue(curr) + convertUnit());
-    };
+    }
 
-    const setDesiredFuel = (fuel: number) => {
+    function setDesiredFuel(fuel: number) {
         fuel -= (OUTER_CELL_GALLONS) * 2;
         const outerTank = (((OUTER_CELL_GALLONS) * 2) + Math.min(fuel, 0)) / 2;
         setLOutTarget(outerTank);
@@ -192,9 +198,9 @@ export const FuelPage = () => {
             return;
         }
         setCenterTarget(fuel);
-    };
+    }
 
-    const updateDesiredFuel = (value: string) => {
+    function updateDesiredFuel(value:string) {
         let fuel = 0;
         let originalFuel = 0;
         if (value.length > 0) {
@@ -211,7 +217,7 @@ export const FuelPage = () => {
         setTotalTarget(fuel);
         setSliderValue((fuel / TOTAL_FUEL_GALLONS) * 100);
         setDesiredFuel(fuel);
-    };
+    }
 
     const updateSlider = (value: number) => {
         if (value < 2) {
@@ -247,24 +253,6 @@ export const FuelPage = () => {
         }
     };
 
-    const handleFuelAutoFill = () => {
-        let fuelToLoad = -1;
-
-        if (usingMetric) {
-            if (units === 'kgs') {
-                fuelToLoad = planRamp;
-            } else {
-                fuelToLoad = Units.poundToKilogram(planRamp);
-            }
-        } else if (units === 'kgs') {
-            fuelToLoad = Units.kilogramToPound(planRamp);
-        } else {
-            fuelToLoad = planRamp;
-        }
-
-        updateDesiredFuel(fuelToLoad.toString());
-    };
-
     return (
         <div className="flex relative flex-col justify-between mt-6 h-efb">
             <div className="z-30">
@@ -277,8 +265,7 @@ export const FuelPage = () => {
                         currentUnit={currentUnit()}
                         tankValue={totalFuel()}
                         convertedFuelValue={totalCurrent()}
-                        className="overflow-hidden rounded-2xl border-2 border-theme-accent"
-                        inlinedTitle
+                        className="overflow-hidden rounded-2xl border-2 shadow-lg border-theme-accent"
                     />
                     <TankReadoutWidget
                         title="Center Tank"
@@ -288,12 +275,11 @@ export const FuelPage = () => {
                         currentUnit={currentUnit()}
                         tankValue={centerTank()}
                         convertedFuelValue={convertFuelValueCenter(centerCurrent)}
-                        className="overflow-hidden rounded-2xl border-2 border-theme-accent"
-                        inlinedTitle
+                        className="overflow-hidden rounded-2xl border-2 shadow-lg border-theme-accent"
                     />
                 </div>
-                <div className="flex absolute inset-x-0 top-40 flex-row justify-between">
-                    <div className="overflow-hidden w-min rounded-2xl border-2 divide-y border-theme-accent divide-theme-accent">
+                <div className="flex absolute inset-x-0 top-52 flex-row justify-between items-center">
+                    <div className="overflow-hidden w-min rounded-2xl border-2 divide-y shadow-lg divide-theme-accent border-theme-accent">
                         <TankReadoutWidget
                             title="Left Inner Tank"
                             current={LInnCurrent}
@@ -313,7 +299,7 @@ export const FuelPage = () => {
                             convertedFuelValue={convertFuelValueCenter(LOutCurrent)}
                         />
                     </div>
-                    <div className="overflow-hidden w-min rounded-2xl border-2 divide-y border-theme-accent divide-theme-accent">
+                    <div className="overflow-hidden w-min rounded-2xl border-2 divide-y shadow-lg divide-theme-accent border-theme-accent">
                         <TankReadoutWidget
                             title="Right Inner Tank"
                             current={RInnCurrent}
@@ -338,8 +324,7 @@ export const FuelPage = () => {
             <div className="flex flex-col justify-end items-center">
                 {/* FIXME TODO: Replace with Tailwind JIT values later */}
                 <div className="absolute inset-x-0 bottom-0" style={{ transform: 'translate(0px, -150px)' }}>
-                    <OverWingOutline className="absolute bottom-0 left-0 z-20" />
-
+                    <img className="absolute bottom-0 left-0 z-30" src={fuselage} style={{ height: '455px' }} />
                     <div
                         className="absolute z-20"
                         style={{ width: '137px', height: '110px', bottom: '243px', left: '572px', background: formatFuelFilling(centerCurrent, CENTER_TANK_GALLONS) }}
@@ -362,26 +347,26 @@ export const FuelPage = () => {
                     />
                     {/* tl overlay */}
                     <div
-                        className="absolute z-10 bottom-overlay-t-y left-overlay-tl bg-theme-body -rotate-26.5"
+                        className="absolute z-10 bg-theme-body bottom-overlay-t-y left-overlay-tl -rotate-26.5"
                         style={{ transform: 'rotate(-26.5deg)', width: '490px', height: '140px', bottom: '240px', left: '82px' }}
                     />
                     {/* tr overlay */}
                     <div
-                        className="absolute z-10 right-overlay-tr bottom-overlay-t-y bg-theme-body rotate-26.5"
+                        className="absolute z-10 bg-theme-body bottom-overlay-t-y right-overlay-tr rotate-26.5"
                         style={{ transform: 'rotate(26.5deg)', width: '490px', height: '140px', bottom: '240px', right: '82px' }}
                     />
                     {/* bl overlay */}
                     <div
-                        className="absolute z-10 bottom-overlay-b-y left-overlay-bl bg-theme-body -rotate-18.5"
+                        className="absolute z-10 bg-theme-body bottom-overlay-b-y left-overlay-bl -rotate-18.5"
                         style={{ transform: 'rotate(-18.5deg)', width: '484px', height: '101px', bottom: '78px', left: '144px' }}
                     />
                     {/* br overlay */}
                     <div
-                        className="absolute z-10 right-overlay-br bottom-overlay-b-y bg-theme-body rotate-18.5"
+                        className="absolute z-10 bg-theme-body bottom-overlay-b-y right-overlay-br rotate-18.5"
                         style={{ transform: 'rotate(18.5deg)', width: '484px', height: '101px', bottom: '78px', right: '144px' }}
                     />
                 </div>
-                <div className="flex overflow-hidden absolute bottom-0 left-0 flex-row rounded-2xl border border-theme-accent ">
+                <div className="flex overflow-hidden absolute bottom-0 left-0 flex-row rounded-2xl border shadow-lg border-theme-accent">
                     <div className="py-3 px-5 space-y-4">
                         <div className="flex flex-row justify-between items-center">
                             <div className="flex flex-row items-center space-x-3">
@@ -391,34 +376,20 @@ export const FuelPage = () => {
                             <p>{`Estimated ${calculateEta()} minutes`}</p>
                         </div>
                         <div style={{ width: '470px' }} className="flex flex-row items-center space-x-6">
-                            <Slider
-                                style={{ width: '24rem' }}
-                                value={sliderValue}
-                                onChange={updateSlider}
-                            />
-                            <div className="flex flex-row">
-                                <div className="relative">
-                                    <SimpleInput
-                                        className={`w-32 ${!simbriefDataLoaded && 'rounded-r-none'}`}
-                                        noLeftMargin
-                                        noLabel
-                                        placeholder={round(totalFuel()).toString()}
-                                        number
-                                        min={0}
-                                        max={round(totalFuel())}
-                                        value={inputValue}
-                                        onChange={(x) => updateDesiredFuel(x)}
-                                    />
-                                    <div className="absolute top-2 right-4 text-lg text-gray-400">{currentUnit()}</div>
-                                </div>
-                                {!simbriefDataLoaded && (
-                                    <div
-                                        className="flex justify-center items-center px-2 rounded-md rounded-l-none bg-theme-highlight"
-                                        onClick={simbriefDataLoaded ? undefined : handleFuelAutoFill}
-                                    >
-                                        <CloudArrowDown size={26} />
-                                    </div>
-                                )}
+                            <Slider className="w-96" value={sliderValue} onInput={(value) => updateSlider(value)} />
+                            <div className="relative">
+                                <SimpleInput
+                                    className="w-32"
+                                    noLeftMargin
+                                    noLabel
+                                    placeholder={round(totalFuel()).toString()}
+                                    number
+                                    min={0}
+                                    max={round(totalFuel())}
+                                    value={inputValue}
+                                    onChange={(x) => updateDesiredFuel(x)}
+                                />
+                                <div className="absolute top-2 right-4 text-lg text-gray-400">{currentUnit()}</div>
                             </div>
                         </div>
                     </div>
@@ -432,12 +403,12 @@ export const FuelPage = () => {
                         </div>
                     </div>
                 </div>
-                <div className="flex overflow-x-hidden absolute right-6 bottom-0 flex-row justify-between items-center py-3 px-6 space-x-14 rounded-2xl border border-theme-accent ">
+                <div className="flex overflow-x-hidden absolute right-6 bottom-0 flex-row justify-between items-center py-3 px-6 space-x-14 rounded-2xl border shadow-lg border-theme-accent">
                     <h2 className="font-medium">Refuel Time</h2>
                     <SelectGroup>
-                        <SelectItem selected={isAirplaneCnD() ? refuelRate === '2' : !isAirplaneCnD()} onSelect={() => setRefuelRate('2')}>Instant</SelectItem>
-                        <SelectItem disabled={!isAirplaneCnD()} selected={refuelRate === '1'} onSelect={() => setRefuelRate('1')}>Fast</SelectItem>
-                        <SelectItem disabled={!isAirplaneCnD()} selected={refuelRate === '0'} onSelect={() => setRefuelRate('0')}>Real</SelectItem>
+                        <SelectItem enabled selected={isAirplaneCnD() ? refuelRate === '2' : !isAirplaneCnD()} onSelect={() => setRefuelRate('2')}>Instant</SelectItem>
+                        <SelectItem enabled={isAirplaneCnD()} selected={refuelRate === '1'} onSelect={() => setRefuelRate('1')}>Fast</SelectItem>
+                        <SelectItem enabled={isAirplaneCnD()} selected={refuelRate === '0'} onSelect={() => setRefuelRate('0')}>Real</SelectItem>
                     </SelectGroup>
                 </div>
             </div>

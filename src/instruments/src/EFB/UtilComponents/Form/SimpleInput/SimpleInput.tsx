@@ -1,30 +1,30 @@
 import { usePersistentNumberProperty } from '@instruments/common/persistence';
-import React, { useEffect, useRef, useState, PropsWithChildren } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { KeyboardWrapper } from '../../KeyboardWrapper';
 
-interface SimpleInputProps {
-    label?: string;
-    placeholder?: string;
+type SimpleInputProps = {
+    label?: string,
+    placeholder?: string,
     labelPosition?: 'col' | 'row';
-    value?: any;
-    onChange?: (value: string) => void;
-    onFocus?: (value: string) => void;
+    value?: any,
+    onChange?: (value: string) => void,
+    onFocus?: (value: string) => void,
     onBlur?: (value: string) => void
-    min?: number;
-    max?: number;
-    number?: boolean;
-    noLeftMargin?: boolean;
-    padding?: number;
-    decimalPrecision?: number;
-    reverse?: boolean; // Flip label/input order;
-    className?: string;
-    maxLength?: number;
-    noLabel?: boolean;
-    disabled?: boolean;
-}
+    min?: number,
+    max?: number,
+    number?: boolean,
+    noLeftMargin?: boolean,
+    padding?: number,
+    decimalPrecision?: number,
+    reverse?: boolean, // Flip label/input order,
+    className?: string,
+    maxLength?: number,
+    noLabel?: boolean,
+    disabled?: boolean,
+};
 
-export const SimpleInput = (props: PropsWithChildren<SimpleInputProps>) => {
-    const [displayValue, setDisplayValue] = useState(props.value?.toString() ?? '');
+const SimpleInput = (props: SimpleInputProps) => {
+    const [displayValue, setDisplayValue] = useState<string>(props.value?.toString() ?? '');
     const [focused, setFocused] = useState(false);
 
     const [autoOSK] = usePersistentNumberProperty('EFB_AUTO_OSK', 0);
@@ -38,7 +38,7 @@ export const SimpleInput = (props: PropsWithChildren<SimpleInputProps>) => {
         if (keyboard.current) {
             keyboard.current.setInput(displayValue);
         }
-    }, [keyboard.current, OSKOpen]);
+    }, [keyboard.current]);
 
     useEffect(() => {
         if (props.value === undefined || props.value === '') {
@@ -51,25 +51,17 @@ export const SimpleInput = (props: PropsWithChildren<SimpleInputProps>) => {
         setDisplayValue(getConstrainedValue(props.value));
     }, [props.value]);
 
-    const onChange = (value: string): void => {
-        if (props.disabled) return;
+    const onChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
+        if (!props.disabled) {
+            let originalValue = event.currentTarget.value;
 
-        let originalValue = value;
+            if (props.number) {
+                originalValue = originalValue.replace(/[^\d.-]/g, ''); // Replace all non-numeric characters
+            }
 
-        if (props.number) {
-            originalValue = originalValue.replace(/[^\d.-]/g, ''); // Replace all non-numeric characters
+            props.onChange?.(originalValue);
+            setDisplayValue(originalValue);
         }
-
-        if (props.maxLength) {
-            originalValue = originalValue.substring(0, props.maxLength);
-        }
-
-        props.onChange?.(originalValue);
-
-        if (keyboard.current) {
-            keyboard.current.setInput(originalValue.slice(0, props.maxLength));
-        }
-        setDisplayValue(originalValue);
     };
 
     const onFocus = (event: React.FocusEvent<HTMLInputElement>): void => {
@@ -92,7 +84,7 @@ export const SimpleInput = (props: PropsWithChildren<SimpleInputProps>) => {
         setOSKOpen(false);
 
         if (!props.disabled) {
-            props.onBlur?.(constrainedValue);
+            props.onBlur?.(event.target.value);
         }
     };
 
@@ -143,23 +135,21 @@ export const SimpleInput = (props: PropsWithChildren<SimpleInputProps>) => {
         };
     }, [focused]);
 
-    const blurInputField = () => {
-        if (inputRef.current) {
-            inputRef.current.blur();
-        }
-    };
+    function onChangeAll(newInput) {
+        setDisplayValue(newInput.default);
+    }
 
     const Input = (
         <input
-            className={`px-3 py-1.5 text-lg text-theme-text rounded-md bg-theme-accent
+            className={`px-5 py-1.5 text-lg text-white rounded-lg bg-theme-accent
             border-2 border-theme-accent focus-within:outline-none focus-within:border-theme-highlight ${props.className}`}
             value={displayValue}
-            placeholder={props.placeholder}
-            onChange={(e) => onChange(e.target.value)}
+            placeholder={props.placeholder ?? ''}
+            onChange={onChange}
             onFocus={onFocus}
             onBlur={onFocusOut}
+            maxLength={props.maxLength}
             disabled={props.disabled}
-            ref={inputRef}
         />
     );
 
@@ -181,19 +171,17 @@ export const SimpleInput = (props: PropsWithChildren<SimpleInputProps>) => {
                         </div>
                     </>
                 )}
-            {OSKOpen && (
-                <KeyboardWrapper
-                    keyboardRef={keyboard}
-                    onChangeAll={(v) => onChange(v.default)}
-                    blurInput={blurInputField}
-                    setOpen={setOSKOpen}
-                    onKeyDown={(e) => {
-                        if (e === '{bksp}') {
-                            onChange(displayValue.slice(0, displayValue.length - 1));
-                        }
-                    }}
-                />
-            )}
+            {OSKOpen
+                && (
+                    <div
+                        className="fixed inset-x-0 bottom-0 z-50"
+                        onMouseDown={(e) => e.preventDefault()}
+                    >
+                        <KeyboardWrapper keyboardRef={keyboard} onChangeAll={(v) => onChangeAll(v)} setOpen={setOSKOpen} inputRef={inputRef} />
+                    </div>
+                )}
         </>
     );
 };
+
+export default SimpleInput;

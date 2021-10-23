@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import * as apiClient from '@flybywiresim/api-client';
-import useInterval from '@instruments/common/useInterval';
+import { useInterval } from '@flybywiresim/react-components';
 import { Link } from 'react-router-dom';
 import { Gear } from 'react-bootstrap-icons';
-import { ScrollableContainer } from '../UtilComponents/ScrollableContainer';
+import { ScrollableContainer } from '../Components/ScrollableContainer';
 import { useSimVar, useSplitSimVar } from '../../Common/simVars';
 import { usePersistentProperty } from '../../Common/persistence';
 
@@ -93,9 +93,13 @@ export const ATC = () => {
         }
     }, [controllers, activeFrequency]);
 
+    useEffect(() => {
+
+    }, [currentAtc]);
+
     useInterval(() => {
         loadAtc();
-    }, 60_000);
+    }, 60 * 1000);
 
     return (
         <div>
@@ -106,7 +110,7 @@ export const ATC = () => {
             { (atisSource === 'IVAO' || atisSource === 'VATSIM') ? (
                 <div className="w-full h-efb">
                     {/* TODO: REPLACE WITH JIT VALUE */}
-                    <ScrollableContainer height={29}>
+                    <ScrollableContainer height={29} resizeDependencies={[controllers]}>
                         {controllers && controllers.map((controller, index) => (
                             <div className={`${index % 2 === 0 && 'pr-4'} w-full max-w-1/2`}>
                                 <div className="overflow-hidden relative p-6 mt-4 w-full rounded-md bg-theme-secondary">
@@ -135,17 +139,17 @@ export const ATC = () => {
                             </div>
                         ))}
                     </ScrollableContainer>
-                    <div className="flex flex-row mt-8 h-96 rounded-lg border-2 divide-x-2 border-theme-accent divide-theme-accent">
+                    <div className="flex flex-row mt-8 h-96 rounded-lg border divide-x shadow-lg divide-theme-accent border-theme-accent">
                         <div className="flex flex-col justify-between p-6">
                             <div>
                                 <p>Active</p>
-                                <div className="flex justify-center items-center mt-4 w-72 h-24 text-6xl rounded-lg border-2 font-rmp text-theme-highlight border-theme-accent">
+                                <div className="flex justify-center items-center mt-4 w-72 h-24 text-6xl rounded-lg border shadow-lg text-theme-highlight font-rmp border-theme-accent">
                                     {displayedActiveFrequency && displayedActiveFrequency}
                                 </div>
                             </div>
                             <div>
                                 <p>Standby</p>
-                                <div className="flex justify-center items-center mt-4 w-72 h-24 text-6xl text-yellow-500 rounded-lg border-2 font-rmp border-theme-accent">
+                                <div className="flex justify-center items-center mt-4 w-72 h-24 text-6xl text-yellow-500 rounded-lg border shadow-lg font-rmp border-theme-accent">
                                     {displayedStandbyFrequency && displayedStandbyFrequency}
                                 </div>
                             </div>
@@ -164,10 +168,10 @@ export const ATC = () => {
                     <h1 className="max-w-4xl text-center">This page is only available when IVAO or VATSIM is selected as the ATIS/ATC source in the settings page</h1>
                     <Link
                         to="/settings/atsu-/-aoc"
-                        className="flex justify-center items-center py-2 px-16 space-x-4 rounded-lg border-2 focus:outline-none text-navy bg-theme-highlight border-theme-secondary"
+                        className="flex justify-center items-center py-2 px-16 space-x-4 rounded-lg border-2 shadow-lg focus:outline-none bg-theme-highlight border-theme-secondary"
                     >
                         <Gear size={26} />
-                        <p className="text-navy">Change ATIS/ATC source</p>
+                        <p>Change ATIS/ATC source</p>
                     </Link>
                 </div>
             )}
@@ -180,7 +184,7 @@ type ControllerInformationProps = {
 }
 
 const ControllerInformation = ({ currentAtc }: ControllerInformationProps) => (
-    <ScrollableContainer height={24}>
+    <ScrollableContainer height={24} resizeDependencies={[currentAtc]}>
         <h2>{currentAtc?.callsign}</h2>
         {currentAtc?.textAtis.map((line) => (
             <p className="flex flex-wrap mt-4">{line}</p>
