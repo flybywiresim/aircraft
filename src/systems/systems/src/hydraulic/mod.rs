@@ -966,6 +966,7 @@ impl HydraulicSectionState for Section {
     fn pressure(&self) -> Pressure {
         self.pressure()
     }
+
     fn is_pressure_switch_pressurised(&self) -> bool {
         self.pressure_switch_state() == PressureSwitchState::Pressurised
     }
@@ -1093,8 +1094,7 @@ impl Reservoir {
         current_level: Volume,
     ) -> Self {
         Self {
-            level_id: context
-                .get_identifier(format!("HYD_{}_RESERVOIR_LEVEL", hyd_loop_id)),
+            level_id: context.get_identifier(format!("HYD_{}_RESERVOIR_LEVEL", hyd_loop_id)),
             max_capacity,
             current_level,
             min_usable: Volume::new::<gallon>(Self::MIN_USABLE_VOLUME),
@@ -1702,7 +1702,7 @@ impl SimulationElement for RamAirTurbine {
 mod tests {
     use crate::electrical::Electricity;
     use crate::simulation::test::TestVariableRegistry;
-    use crate::simulation::test::{SimulationTestBed, TestBed};
+    use crate::simulation::test::{ElementCtorFn, SimulationTestBed, TestBed};
     use crate::simulation::InitContext;
 
     use uom::si::{f64::*, pressure::psi, ratio::percent, volume::gallon};
@@ -1748,11 +1748,9 @@ mod tests {
 
     #[test]
     fn section_writes_its_state() {
-        let mut electricity = Electricity::new();
-        let mut registry: TestVariableRegistry = Default::default();
-        let mut init_context = InitContext::new(&mut electricity, &mut registry);
-
-        let mut test_bed = SimulationTestBed::from(section(&mut init_context, "BROWN", "PUMP", 2));
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            section(context, "BROWN", "PUMP", 2)
+        }));
 
         test_bed.run();
 
@@ -1762,12 +1760,9 @@ mod tests {
 
     #[test]
     fn hyd_circuit_writes_its_state() {
-        let mut electricity = Electricity::new();
-        let mut registry: TestVariableRegistry = Default::default();
-        let mut init_context = InitContext::new(&mut electricity, &mut registry);
-
-        let mut test_bed =
-            SimulationTestBed::from(hydraulic_circuit(&mut init_context, "BROWN", 2));
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            hydraulic_circuit(context, "BROWN", 2)
+        }));
 
         test_bed.run();
 
@@ -1872,8 +1867,6 @@ mod tests {
         use super::*;
 
         use crate::simulation::test::{ElementCtorFn, SimulationTestBed};
-        
-        
 
         #[test]
         fn starts_inactive() {

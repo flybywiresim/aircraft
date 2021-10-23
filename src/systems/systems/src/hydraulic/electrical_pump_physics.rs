@@ -320,7 +320,7 @@ mod tests {
 
     #[test]
     fn pump_inactive_at_init() {
-        let test_bed = SimulationTestBed::new(|electricity| TestAircraft::new(electricity));
+        let test_bed = SimulationTestBed::new(TestAircraft::new);
 
         assert_eq!(
             test_bed.query(|a| a.pump.speed()),
@@ -332,7 +332,7 @@ mod tests {
 
     #[test]
     fn pump_spools_up_less_than_half_second_at_half_displacement() {
-        let mut test_bed = SimulationTestBed::new(|electricity| TestAircraft::new(electricity));
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
         test_bed.command(|a| a.set_ac_1_power(true));
         test_bed.command(|a| a.pump.set_active(true));
@@ -349,7 +349,7 @@ mod tests {
 
     #[test]
     fn pump_regulates_on_displacement_gradient() {
-        let mut test_bed = SimulationTestBed::new(|electricity| TestAircraft::new(electricity));
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
         test_bed.command(|a| a.set_ac_1_power(true));
         test_bed.command(|a| a.pump.set_active(true));
@@ -390,7 +390,7 @@ mod tests {
 
     #[test]
     fn pump_spools_down_less_than_three_second_when_unpowered_with_no_displacement() {
-        let mut test_bed = SimulationTestBed::new(|electricity| TestAircraft::new(electricity));
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
         test_bed.command(|a| a.set_ac_1_power(true));
         test_bed.command(|a| a.pump.set_active(true));
