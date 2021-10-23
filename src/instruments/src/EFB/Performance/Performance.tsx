@@ -1,27 +1,28 @@
-import React, { useState } from 'react';
-import { map } from 'lodash';
+import React from 'react';
 
-import { Navbar } from '../Components/Navbar';
-import TODCalculator from '../TODCalculator/TODCalculator';
-import LandingWidget from './Widgets/LandingWidget';
+import { Navbar } from '../UtilComponents/Navbar';
+import { TODCalculator } from '../TODCalculator/TODCalculator';
+import { LandingWidget } from './Widgets/LandingWidget';
+import { TabRoutes, PageLink, PageRedirect } from '../Utils/routing';
 
-const tabs = [
-    { name: 'Top of Descent', renderComponent: () => <TODCalculator /> },
-    { name: 'Landing', renderComponent: () => <LandingWidget /> },
+const tabs: PageLink[] = [
+    { name: 'Top of Descent', component: <TODCalculator /> },
+    { name: 'Landing', component: <LandingWidget /> },
 ];
 
-const Performance = () => {
-    const [activeIndex, setActiveIndex] = useState(0);
-
-    return (
-        <div className="w-full">
-            <h1 className="text-3xl pt-6 text-white">Performance</h1>
-            <Navbar tabs={map(tabs, 'name')} onSelected={(activeIndex) => setActiveIndex(activeIndex)} />
-            <div className="mt-6">
-                {tabs[activeIndex].renderComponent()}
-            </div>
+export const Performance = () => (
+    <div className="w-full">
+        <div className="relative">
+            <h1 className="font-bold">Performance</h1>
+            <Navbar
+                className="absolute top-0 right-0"
+                tabs={tabs}
+                basePath="/performance"
+            />
         </div>
-    );
-};
-
-export default Performance;
+        <div className="mt-4">
+            <PageRedirect basePath="/performance" tabs={tabs} />
+            <TabRoutes basePath="/performance" tabs={tabs} />
+        </div>
+    </div>
+);

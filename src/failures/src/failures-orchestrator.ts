@@ -1,7 +1,9 @@
+import { AtaChapterNumber } from '@shared/ata';
 import { QueuedSimVarWriter, SimVarReaderWriter } from './communication';
 import { getActivateFailureSimVarName, getDeactivateFailureSimVarName } from './sim-vars';
 
 export interface Failure {
+    ata: AtaChapterNumber,
     identifier: number,
     name: string,
 }
@@ -22,13 +24,14 @@ export class FailuresOrchestrator {
 
     private deactivateFailureQueue: QueuedSimVarWriter;
 
-    constructor(simVarPrefix: string, failures: [number, string][]) {
+    constructor(simVarPrefix: string, failures: [AtaChapterNumber, number, string][]) {
         this.activateFailureQueue = new QueuedSimVarWriter(new SimVarReaderWriter(getActivateFailureSimVarName(simVarPrefix)));
         this.deactivateFailureQueue = new QueuedSimVarWriter(new SimVarReaderWriter(getDeactivateFailureSimVarName(simVarPrefix)));
         failures.forEach((failure) => {
             this.failures.push({
-                identifier: failure[0],
-                name: failure[1],
+                ata: failure[0],
+                identifier: failure[1],
+                name: failure[2],
             });
         });
     }
