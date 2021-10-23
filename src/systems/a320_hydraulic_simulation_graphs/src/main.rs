@@ -335,8 +335,8 @@ fn hyd_circuit_basic(path: &str) {
         );
     }
 
-    hyd_circuit_history.show_matplotlib("hyd_circuit_tests", &path);
-    reservoir_history.show_matplotlib("hyd_circuit_reservoir_tests", &path);
+    hyd_circuit_history.show_matplotlib("hyd_circuit_tests", path);
+    reservoir_history.show_matplotlib("hyd_circuit_reservoir_tests", path);
 }
 
 fn hydraulic_loop(
