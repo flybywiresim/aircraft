@@ -33,12 +33,12 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
     completedBarBegin = 0,
     completedBarBeginValue,
     completionValue,
-    baseBgColor = '#e0e0de',
+    baseBgColor = 'var(--color-secondary)',
     height = '20px',
     width = '100%',
     margin,
     padding,
-    borderRadius = '50px',
+    borderRadius = '4px',
     labelAlignment = 'right',
     labelColor = '#fff',
     labelSize = '15px',
@@ -76,7 +76,6 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
         width,
         margin,
         transform: vertical ? 'rotateX(180deg)' : '',
-
     };
 
     const convertProgress = (completed) => (typeof completed === 'string' || completed > 100
@@ -133,7 +132,7 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
         <div className="flex flex-row">
             {vertical && (
                 <div
-                    className="text-xl mr-2 text-white"
+                    className="mr-2 text-xl"
                     style={vertical
                         ? { marginTop: `${formatBar(completedBarBegin + 2 || 0)}`, width: fillerStyles.width } : { marginLeft: `${formatBar(completedBarBegin || 0)}` }}
                 >
@@ -143,13 +142,13 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
             <div className={`mt-2 ${!vertical ? 'mr-2' : ''}`}>
 
                 <div
-                    className={`text-white ${displayBar ? getBarStyle() : 'hidden'}`}
+                    className={` ${displayBar ? getBarStyle() : 'hidden'}`}
                     style={vertical
                         ? { marginTop: `${formatBar(completedBarBegin || 0)}`, width: fillerStyles.width } : { marginLeft: `${formatBar(completedBarBegin || 0)}` }}
                 />
 
                 <div
-                    className={`text-white ${displayBar ? getBarStyle() : 'hidden'}`}
+                    className={` ${displayBar ? getBarStyle() : 'hidden'}`}
                     style={vertical
                         ? { marginTop: `${formatBar(completedBarEnd || 0)}`, width: fillerStyles.width } : { marginLeft: `${formatBar(completedBarEnd || 0)}` }}
                 />
@@ -172,7 +171,7 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
             </div>
             {vertical && (
                 <div
-                    className="text-xl ml-2 text-white"
+                    className="ml-2 text-xl"
                     style={vertical
                         ? { marginTop: `${formatBar(completedBarEnd + 2 || 0)}`, width: fillerStyles.width } : { marginLeft: `${formatBar(completedBarEnd || 0)}` }}
                 >
