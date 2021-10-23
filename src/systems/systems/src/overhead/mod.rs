@@ -76,6 +76,59 @@ impl SimulationElement for OnOffFaultPushButton {
     }
 }
 
+pub struct AutoManFaultPushButton {
+    is_auto_id: VariableIdentifier,
+    has_fault_id: VariableIdentifier,
+
+    is_auto: bool,
+    has_fault: bool,
+}
+impl AutoManFaultPushButton {
+    pub fn new_auto(context: &mut InitContext, name: &str) -> Self {
+        Self::new(context, name, true)
+    }
+
+    fn new(context: &mut InitContext, name: &str, is_auto: bool) -> Self {
+        Self {
+            is_auto_id: context.get_identifier(format!("OVHD_{}_PB_IS_AUTO", name)),
+            has_fault_id: context.get_identifier(format!("OVHD_{}_PB_HAS_FAULT", name)),
+            is_auto,
+            has_fault: false,
+        }
+    }
+
+    pub fn set_auto(&mut self, value: bool) {
+        self.is_auto = value;
+    }
+
+    pub fn set_fault(&mut self, has_fault: bool) {
+        self.has_fault = has_fault;
+    }
+
+    pub fn has_fault(&self) -> bool {
+        self.has_fault
+    }
+
+    pub fn is_auto(&self) -> bool {
+        self.is_auto
+    }
+
+    pub fn is_man(&self) -> bool {
+        !self.is_auto
+    }
+}
+impl SimulationElement for AutoManFaultPushButton {
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(&self.is_auto_id, self.is_auto());
+        writer.write(&self.has_fault_id, self.has_fault());
+    }
+
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        self.set_auto(reader.read(&self.is_auto_id));
+        self.set_fault(reader.read(&self.has_fault_id));
+    }
+}
+
 pub struct OnOffAvailablePushButton {
     is_on_id: VariableIdentifier,
     is_available_id: VariableIdentifier,
@@ -138,6 +191,56 @@ impl SimulationElement for OnOffAvailablePushButton {
     fn read(&mut self, reader: &mut SimulatorReader) {
         self.set_on(reader.read(&self.is_on_id));
         self.set_available(reader.read(&self.is_available_id));
+    }
+}
+
+pub struct NormalOnPushButton {
+    is_on_id: VariableIdentifier,
+    is_on: bool,
+}
+impl NormalOnPushButton {
+    pub fn new_on(context: &mut InitContext, name: &str) -> Self {
+        Self::new(context, name, true)
+    }
+
+    pub fn new_normal(context: &mut InitContext, name: &str) -> Self {
+        Self::new(context, name, false)
+    }
+
+    fn new(context: &mut InitContext, name: &str, is_on: bool) -> Self {
+        Self {
+            is_on_id: context.get_identifier(format!("OVHD_{}_PB_IS_ON", name)),
+            is_on,
+        }
+    }
+
+    pub fn set_on(&mut self, value: bool) {
+        self.is_on = value;
+    }
+
+    pub fn turn_on(&mut self) {
+        self.is_on = true;
+    }
+
+    pub fn turn_normal(&mut self) {
+        self.is_on = false;
+    }
+
+    pub fn is_on(&self) -> bool {
+        self.is_on
+    }
+
+    pub fn is_normal(&self) -> bool {
+        !self.is_on
+    }
+}
+impl SimulationElement for NormalOnPushButton {
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(&self.is_on_id, self.is_on());
+    }
+
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        self.set_on(reader.read(&self.is_on_id));
     }
 }
 
@@ -563,6 +666,77 @@ impl SimulationElement for IndicationLight {
     }
 }
 
+pub struct ValueKnob {
+    value_id: VariableIdentifier,
+    value: f64,
+}
+impl ValueKnob {
+    pub fn new(context: &mut InitContext, name: &str) -> Self {
+        Self {
+            value_id: context.get_identifier(format!("OVHD_{}_KNOB", name)),
+            value: 0.,
+        }
+    }
+
+    pub fn new_with_value(context: &mut InitContext, name: &str, value: f64) -> Self {
+        Self {
+            value_id: context.get_identifier(format!("OVHD_{}_KNOB", name)),
+            value,
+        }
+    }
+
+    pub fn set_value(&mut self, value: f64) {
+        self.value = value
+    }
+
+    pub fn value(&self) -> f64 {
+        self.value
+    }
+}
+impl SimulationElement for ValueKnob {
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(&self.value_id, self.value);
+    }
+
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        self.set_value(reader.read(&self.value_id));
+    }
+}
+
+pub struct SpringLoadedSwitch {
+    is_toggled_id: VariableIdentifier,
+    position: usize,
+}
+impl SpringLoadedSwitch {
+    pub fn new(context: &mut InitContext, name: &str) -> Self {
+        Self {
+            is_toggled_id: context.get_identifier(format!("OVHD_{}_SWITCH", name)),
+            position: 1,
+        }
+    }
+
+    pub fn set(&mut self, position: usize) {
+        self.position = position;
+    }
+
+    pub fn position(&self) -> usize {
+        self.position
+    }
+
+    pub fn is_in_neutral_position(&self) -> bool {
+        self.position == 1
+    }
+}
+impl SimulationElement for SpringLoadedSwitch {
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(&self.is_toggled_id, self.position);
+    }
+
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        self.set(reader.read(&self.is_toggled_id));
+    }
+}
+
 #[cfg(test)]
 mod on_off_fault_push_button_tests {
     use crate::simulation::test::{ElementCtorFn, SimulationTestBed, TestBed};
@@ -601,6 +775,60 @@ mod on_off_fault_push_button_tests {
 }
 
 #[cfg(test)]
+mod auto_man_fault_push_button_tests {
+    use crate::simulation::test::{ElementCtorFn, SimulationTestBed, TestBed, WriteByName};
+
+    use super::*;
+
+    #[test]
+    fn new_auto_push_button_is_auto() {
+        let test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            AutoManFaultPushButton::new_auto(context, "TEST")
+        }));
+
+        assert!(test_bed.query_element(|e| e.is_auto()));
+    }
+
+    #[test]
+    fn when_set_as_auto_is_auto() {
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            AutoManFaultPushButton::new(context, "TEST", false)
+        }));
+
+        test_bed.command_element(|e| e.set_auto(true));
+
+        assert!(test_bed.query_element(|e| e.is_auto()));
+    }
+
+    #[test]
+    fn reads_its_state() {
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            AutoManFaultPushButton::new_auto(context, "TEST")
+        }));
+
+        test_bed.write_by_name("OVHD_TEST_PB_IS_AUTO", false);
+        test_bed.write_by_name("OVHD_TEST_PB_HAS_FAULT", true);
+
+        test_bed.run();
+
+        assert!(test_bed.query_element(|button| button.is_man()));
+        assert!(test_bed.query_element(|button| button.has_fault()));
+    }
+
+    #[test]
+    fn writes_its_state() {
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            AutoManFaultPushButton::new_auto(context, "TEST")
+        }));
+
+        test_bed.run();
+
+        assert!(test_bed.contains_variable_with_name("OVHD_TEST_PB_IS_AUTO"));
+        assert!(test_bed.contains_variable_with_name("OVHD_TEST_PB_HAS_FAULT"));
+    }
+}
+
+#[cfg(test)]
 mod on_off_available_push_button_tests {
     use crate::simulation::test::{ElementCtorFn, SimulationTestBed, TestBed};
 
@@ -634,6 +862,66 @@ mod on_off_available_push_button_tests {
 
         assert!(test_bed.contains_variable_with_name("OVHD_ELEC_EXT_PWR_PB_IS_ON"));
         assert!(test_bed.contains_variable_with_name("OVHD_ELEC_EXT_PWR_PB_IS_AVAILABLE"));
+    }
+}
+
+#[cfg(test)]
+mod normal_on_push_button_tests {
+    use crate::simulation::test::{ElementCtorFn, SimulationTestBed, TestBed, WriteByName};
+
+    use super::*;
+
+    #[test]
+    fn new_normal_push_button_is_normal() {
+        let test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            NormalOnPushButton::new_normal(context, "TEST")
+        }));
+
+        assert!(test_bed.query_element(|e| e.is_normal()));
+    }
+
+    #[test]
+    fn new_on_push_button_is_on() {
+        let test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            NormalOnPushButton::new_on(context, "TEST")
+        }));
+
+        assert!(test_bed.query_element(|e| e.is_on()));
+    }
+
+    #[test]
+    fn when_set_on_is_on() {
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            NormalOnPushButton::new_normal(context, "TEST")
+        }));
+
+        test_bed.command_element(|e| e.turn_on());
+
+        assert!(test_bed.query_element(|e| e.is_on()));
+    }
+
+    #[test]
+    fn reads_its_state() {
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            NormalOnPushButton::new_normal(context, "TEST")
+        }));
+
+        test_bed.write_by_name("OVHD_TEST_PB_IS_ON", true);
+
+        test_bed.run();
+
+        assert!(test_bed.query_element(|e| e.is_on()));
+    }
+
+    #[test]
+    fn writes_its_state() {
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            NormalOnPushButton::new_normal(context, "TEST")
+        }));
+
+        test_bed.run();
+
+        assert!(test_bed.contains_variable_with_name("OVHD_TEST_PB_IS_ON"));
     }
 }
 
@@ -1080,5 +1368,101 @@ mod indication_light_tests {
         let is_illuminated: bool =
             test_bed.read_by_name(&IndicationLight::is_illuminated_id("TEST"));
         assert_eq!(is_illuminated, expected);
+    }
+}
+
+#[cfg(test)]
+mod value_knob_tests {
+    use crate::simulation::test::{ElementCtorFn, SimulationTestBed, TestBed, WriteByName};
+
+    use super::*;
+
+    #[test]
+    fn new_has_0_value() {
+        let test_bed =
+            SimulationTestBed::from(ElementCtorFn(|context| ValueKnob::new(context, "TEST")));
+
+        assert!(test_bed.query_element(|e| e.value()) < f64::EPSILON);
+    }
+
+    #[test]
+    fn new_with_value_has_value() {
+        let test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            ValueKnob::new_with_value(context, "TEST", 10.)
+        }));
+
+        assert!((test_bed.query_element(|e| e.value()) - 10.).abs() < f64::EPSILON);
+    }
+
+    #[test]
+    fn set_value_changes_value() {
+        let mut test_bed =
+            SimulationTestBed::from(ElementCtorFn(|context| ValueKnob::new(context, "TEST")));
+
+        test_bed.command_element(|e| e.set_value(20.));
+
+        assert!((test_bed.query_element(|e| e.value()) - 20.).abs() < f64::EPSILON);
+    }
+
+    #[test]
+    fn reads_its_state() {
+        let mut test_bed =
+            SimulationTestBed::from(ElementCtorFn(|context| ValueKnob::new(context, "TEST")));
+
+        test_bed.write_by_name("OVHD_TEST_KNOB", 10.);
+
+        test_bed.run();
+
+        assert!((test_bed.query_element(|knob| knob.value()) - 10.).abs() < f64::EPSILON);
+    }
+
+    #[test]
+    fn writes_its_state() {
+        let mut test_bed =
+            SimulationTestBed::from(ElementCtorFn(|context| ValueKnob::new(context, "TEST")));
+
+        test_bed.run();
+
+        assert!(test_bed.contains_variable_with_name("OVHD_TEST_KNOB"));
+    }
+}
+
+#[cfg(test)]
+mod spring_loaded_switch_tests {
+    use crate::simulation::test::{ElementCtorFn, SimulationTestBed, TestBed, WriteByName};
+
+    use super::*;
+
+    #[test]
+    fn new_is_neutral_position() {
+        let test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            SpringLoadedSwitch::new(context, "TEST")
+        }));
+
+        assert!(test_bed.query_element(|e| e.is_in_neutral_position()));
+    }
+
+    #[test]
+    fn reads_its_state() {
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            SpringLoadedSwitch::new(context, "TEST")
+        }));
+
+        test_bed.write_by_name("OVHD_TEST_SWITCH", 2);
+
+        test_bed.run();
+
+        assert_eq!(test_bed.query_element(|switch| switch.position()), 2);
+    }
+
+    #[test]
+    fn writes_its_state() {
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            SpringLoadedSwitch::new(context, "TEST")
+        }));
+
+        test_bed.run();
+
+        assert!(test_bed.contains_variable_with_name("OVHD_TEST_SWITCH"));
     }
 }
