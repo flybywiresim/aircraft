@@ -70,8 +70,32 @@ const MetarParserTypeProp: MetarParserType = {
 
 type WeatherWidgetProps = { name: string, editIcao: string, icao: string};
 
-const WeatherWidget = (props: WeatherWidgetProps) => {
+export const WeatherWidget = (props: WeatherWidgetProps) => {
     const [metar, setMetar] = useState<MetarParserType>(MetarParserTypeProp);
+
+    const getBaroTypeForAirport = (icao: string) => (['K', 'C', 'M', 'P', 'RJ', 'RO', 'TI', 'TJ'].some((r) => icao.startsWith(r)) ? 'IN HG' : 'HPA');
+
+    const BaroValue = () => {
+        if (baroType === 'IN HG') {
+            return (
+                <>
+                    {metar.barometer.hg.toFixed(2)}
+                    {' '}
+                    inHg
+                </>
+            );
+        }
+
+        return (
+            <>
+                {metar.barometer.mb.toFixed(0)}
+                {' '}
+                mb
+            </>
+        );
+    };
+
+    let [baroType] = usePersistentProperty('CONFIG_INIT_BARO_UNIT', 'HPA');
     const [showMetar, setShowMetar] = usePersistentProperty(`CONFIG_SHOW_METAR_${props.name}`, 'DISABLED');
     let [metarSource] = usePersistentProperty('CONFIG_METAR_SRC', 'MSFS');
 
@@ -105,12 +129,16 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
             });
     }
 
+    if (baroType === 'AUTO') {
+        baroType = getBaroTypeForAirport(props.icao);
+    }
+
     useEffect(() => {
         getMetar(props.icao, source);
     }, [props.icao, source]);
 
     return (
-        <div className="text-white">
+        <div>
             {metar === undefined
                 ? <p>Loading ...</p>
                 : (
@@ -147,9 +175,7 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
                                             </div>
                                             {metar.raw_text ? (
                                                 <>
-                                                    {metar.barometer.mb.toFixed(0)}
-                                                    {' '}
-                                                    mb
+                                                    {metar.barometer ? <BaroValue /> : 'N/A'}
                                                 </>
                                             ) : (
                                                 <>
@@ -249,5 +275,3 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
         </div>
     );
 };
-
-export default WeatherWidget;

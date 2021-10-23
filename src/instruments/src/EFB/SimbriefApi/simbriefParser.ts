@@ -1,4 +1,4 @@
-import { ISimbriefData, EmptyISimbriefData } from './simbriefInterface';
+import { ISimbriefData } from './simbriefInterface';
 
 const simbriefApiUrl: URL = new URL('https://www.simbrief.com/api/xml.fetcher.php');
 const simbriefApiParams = simbriefApiUrl.searchParams;
@@ -14,11 +14,12 @@ export function getSimbriefData(simbriefUserId: string): Promise<ISimbriefData> 
     simbriefApiUrl.search = simbriefApiParams.toString();
 
     return fetch(simbriefApiUrl.toString(), getRequestData)
-        .then((res) => res.json())
-        .then(
-            (result: any) => simbriefDataParser(result),
-            () => EmptyISimbriefData,
-        );
+        .then((res) => {
+            if (!res.ok) {
+                return res.json().then((json) => Promise.reject(new Error(json.fetch.status)));
+            }
+            return res.json().then((json) => simbriefDataParser(json));
+        });
 }
 
 function simbriefDataParser(simbriefJson: any): ISimbriefData {
@@ -44,10 +45,16 @@ function simbriefDataParser(simbriefJson: any): ISimbriefData {
         origin: {
             iata: origin.iata_code,
             icao: origin.icao_code,
+            name: origin.name,
+            posLat: origin.pos_lat,
+            posLong: origin.pos_long,
         },
         destination: {
             iata: destination.iata_code,
             icao: destination.icao_code,
+            name: destination.name,
+            posLat: destination.pos_lat,
+            posLong: destination.pos_long,
         },
         distance: `${general.air_distance}nm`,
         flightETAInSeconds: times.est_time_enroute,

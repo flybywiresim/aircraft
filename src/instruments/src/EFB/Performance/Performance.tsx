@@ -1,27 +1,35 @@
-import React, { useState } from 'react';
-import { map } from 'lodash';
+import React from 'react';
+import { useHistory } from 'react-router-dom';
 
 import { Navbar } from '../Components/Navbar';
 import TODCalculator from '../TODCalculator/TODCalculator';
 import LandingWidget from './Widgets/LandingWidget';
+import { TabRoutes, PageLink, pathify, PageRedirect } from '../Utils/routing';
 
-const tabs = [
-    { name: 'Top of Descent', renderComponent: () => <TODCalculator /> },
-    { name: 'Landing', renderComponent: () => <LandingWidget /> },
+const tabs: PageLink[] = [
+    { name: 'Top of Descent', component: <TODCalculator /> },
+    { name: 'Landing', component: <LandingWidget /> },
 ];
 
-const Performance = () => {
-    const [activeIndex, setActiveIndex] = useState(0);
+export const Performance = () => {
+    const history = useHistory();
 
     return (
         <div className="w-full">
-            <h1 className="text-3xl pt-6 text-white">Performance</h1>
-            <Navbar tabs={map(tabs, 'name')} onSelected={(activeIndex) => setActiveIndex(activeIndex)} />
+            <div className="relative">
+                <h1 className="font-bold ">Performance</h1>
+                <Navbar
+                    className="absolute top-0 right-0"
+                    tabs={tabs.map((tab) => tab.name)}
+                    onSelected={(index) => {
+                        history.push(`/performance/${pathify(tabs[index].name)}`);
+                    }}
+                />
+            </div>
             <div className="mt-6">
-                {tabs[activeIndex].renderComponent()}
+                <PageRedirect basePath="/performance" tabs={tabs} />
+                <TabRoutes basePath="/performance" tabs={tabs} />
             </div>
         </div>
     );
 };
-
-export default Performance;

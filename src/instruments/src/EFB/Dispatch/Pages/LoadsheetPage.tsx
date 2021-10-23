@@ -1,17 +1,22 @@
-import { usePersistentProperty } from '@instruments/common/persistence';
-import { IconMinus, IconPlus } from '@tabler/icons';
 import React, { useRef, useState, useEffect } from 'react';
+import { usePersistentProperty } from '@instruments/common/persistence';
+import { FileEarmarkArrowDown, ZoomIn, ZoomOut } from 'react-bootstrap-icons';
+import { toast } from 'react-toastify';
+import { ScrollableContainer } from '../../Components/ScrollableContainer';
+import { fetchSimbriefDataAction } from '../../Store/features/simBrief';
+import { useAppDispatch, useAppSelector } from '../../Store/store';
 
-type LoadsheetPageProps = {
-    loadsheet: string,
-};
+export const LoadSheetWidget = () => {
+    const loadsheet = useAppSelector((state) => state.simbrief.data.loadsheet);
 
-const LoadSheetWidget = (props: LoadsheetPageProps) => {
-    const position = useRef({ top: 0, y: 0 });
     const ref = useRef<HTMLDivElement>(null);
 
     const [fontSize, setFontSize] = usePersistentProperty('LOADSHEET_FONTSIZE', '14');
+    const [simbriefUserId] = usePersistentProperty('CONFIG_SIMBRIEF_USERID');
+
     const [imageSize, setImageSize] = useState(60);
+
+    const dispatch = useAppDispatch();
 
     useEffect(() => {
         const pImages = ref.current?.getElementsByTagName('img');
@@ -24,32 +29,13 @@ const LoadSheetWidget = (props: LoadsheetPageProps) => {
     }, [imageSize]);
 
     const [loadSheetStyle, setLoadSheetStyle] = useState({});
+
     useEffect(() => setLoadSheetStyle({
         fontSize: `${fontSize}px`,
         lineHeight: `${fontSize}px`,
     }), [fontSize]);
 
-    const handleMouseDown = (event) => {
-        position.current.top = ref.current ? ref.current.scrollTop : 0;
-        position.current.y = event.clientY;
-
-        document.addEventListener('mousemove', mouseMoveHandler);
-        document.addEventListener('mouseup', mouseUpHandler);
-    };
-
-    const mouseMoveHandler = (event) => {
-        const dy = event.clientY - position.current.y;
-        if (ref.current) {
-            ref.current.scrollTop = position.current.top - dy;
-        }
-    };
-
-    const mouseUpHandler = () => {
-        document.removeEventListener('mousemove', mouseMoveHandler);
-        document.removeEventListener('mouseup', mouseUpHandler);
-    };
-
-    const handleFontIncrease = () => {
+    function handleFontIncrease() {
         let cFontSize = (Number)(fontSize);
         let cImageSize = imageSize;
 
@@ -58,9 +44,9 @@ const LoadSheetWidget = (props: LoadsheetPageProps) => {
             cImageSize += 5;
             handleScaling(cFontSize, cImageSize);
         }
-    };
+    }
 
-    const handleFontDecrease = () => {
+    function handleFontDecrease() {
         let cFontSize = (Number)(fontSize);
         let cImageSize = imageSize;
 
@@ -69,7 +55,7 @@ const LoadSheetWidget = (props: LoadsheetPageProps) => {
             cImageSize -= 5;
             handleScaling(cFontSize, cImageSize);
         }
-    };
+    }
 
     const handleScaling = (cFontSize, cImageSize) => {
         setFontSize((String)(cFontSize));
@@ -77,46 +63,53 @@ const LoadSheetWidget = (props: LoadsheetPageProps) => {
     };
 
     return (
-        <div className="mt-6">
-            <div className="w-full">
-                <div className="text-white overflow-hidden bg-navy-lighter rounded-2xl shadow-lg p-6 h-efb-nav relative">
-                    {props.loadsheet !== 'N/A' ? (
-                        <>
-                            <div className="flex flex-col justify-end absolute bottom-6 right-16">
-                                <button
-                                    type="button"
-                                    onClick={handleFontIncrease}
-                                    className="z-10 mb-2 bg-navy-regular p-2 rounded-lg bg-opacity-50"
-                                >
-                                    <IconPlus size={30} />
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={handleFontDecrease}
-                                    className="z-10 bg-navy-regular p-2 rounded-lg bg-opacity-50"
-                                >
-                                    <IconMinus size={30} />
-                                </button>
-                            </div>
-                            <div
-                                ref={ref}
-                                className="loadsheet-container grabbable scrollbar overflow-y-scroll"
-                                style={loadSheetStyle}
-                                onMouseDown={handleMouseDown}
-                                // eslint-disable-next-line react/no-danger
-                                dangerouslySetInnerHTML={{ __html: props.loadsheet }}
-                            />
-                        </>
-                    ) : (
-                        <>
-                            <div className="h-full flex items-center justify-center text-lg">
-                                Please Import Flightplan from Simbrief.
-                            </div>
-                        </>
-                    )}
+        <div className="overflow-hidden relative p-6 mt-4 w-full rounded-lg border-2 shadow-md h-efb border-theme-accent">
+            {loadsheet !== 'N/A' ? (
+                <>
+                    <div className="absolute top-6 right-16 rounded-md bg-theme-accent">
+                        <button
+                            type="button"
+                            onClick={handleFontDecrease}
+                            className="p-2 bg-opacity-50 hover:bg-opacity-100"
+                        >
+                            <ZoomOut size={30} />
+                        </button>
+                        <button
+                            type="button"
+                            onClick={handleFontIncrease}
+                            className="p-2 bg-opacity-50 hover:bg-opacity-100"
+                        >
+                            <ZoomIn size={30} />
+                        </button>
+                    </div>
+                    <ScrollableContainer height={51} resizeDependencies={[loadsheet, fontSize]}>
+                        <div
+                            ref={ref}
+                            className="loadsheet-container"
+                            style={loadSheetStyle}
+                            dangerouslySetInnerHTML={{ __html: loadsheet }}
+                        />
+                    </ScrollableContainer>
+                </>
+            ) : (
+                <div className="flex flex-col justify-center items-center space-y-8 h-full text-lg">
+                    <h1 className="max-w-4xl text-center">You have not yet imported a flightplan from SimBrief</h1>
+                    <button
+                        type="button"
+                        onClick={() => {
+                            fetchSimbriefDataAction(simbriefUserId ?? '').then((action) => {
+                                dispatch(action);
+                            }).catch((e) => {
+                                toast.error(e.message);
+                            });
+                        }}
+                        className="flex justify-center items-center py-2 px-16 space-x-4 rounded-lg border-2 shadow-lg focus:outline-none bg-theme-highlight border-theme-secondary"
+                    >
+                        <FileEarmarkArrowDown size={26} />
+                        <p>Import Flightplan from SimBrief</p>
+                    </button>
                 </div>
-            </div>
+            )}
         </div>
     );
 };
-export default LoadSheetWidget;

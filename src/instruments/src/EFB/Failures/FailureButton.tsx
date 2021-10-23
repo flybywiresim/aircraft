@@ -21,7 +21,7 @@ export const FailureButton: FC<FailureButtonProps> = ({ name, isActive, isChangi
             onClick={onClick}
             type={type}
             disabled={isChanging}
-            className="mx-2 my-2"
+            className="my-1 mx-1 h-36"
         >
             <span>{name}</span>
         </Button>

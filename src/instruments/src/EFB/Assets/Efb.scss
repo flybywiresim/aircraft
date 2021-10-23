@@ -8,47 +8,73 @@
 
 @layer base {
   @font-face {
-    font-family: "IBMPlexMono";
+    font-family: "JetBrains Mono";
     font-weight: 300;
-    src: url("/Fonts/ibm-plex-mono-v6-latin-300.ttf") format("truetype");
+    src: url("/Fonts/JetBrainsMono-Regular.ttf") format("truetype");
   }
   @font-face {
-    font-family: "NunitoSans";
-    font-weight: 200;
-    src: url("/Fonts/nunito-sans-v6-latin-200.ttf") format("truetype");
-  }
-  @font-face {
-    font-family: "NunitoSans";
+    font-family: "Inter";
     font-weight: 400;
-    src: url("/Fonts/nunito-sans-v6-latin-regular.ttf") format("truetype");
+    src: url("/Fonts/Inter-Regular.ttf") format("truetype");
   }
   @font-face {
-    font-family: "NunitoSans";
-    font-weight: 700;
-    src: url("/Fonts/nunito-sans-v6-latin-700.ttf") format("truetype");
+    font-family: "Inter";
+    font-weight: 600;
+    src: url("/Fonts/Inter-SemiBold.ttf") format("truetype");
   }
-}
+  @font-face {
+    font-family: "Manrope";
+    font-weight: 500;
+    src: url("/Fonts/Manrope-Medium.ttf") format("truetype");
+  }
+  @font-face {
+    font-family: "Manrope";
+    font-weight: 700;
+    src: url("/Fonts/Manrope-Bold.ttf") format("truetype");
+  }
+  @font-face {
+    font-family: "AirbusRMP";
+    font-weight: 900;
+    src: url("/Fonts/AirbusRMP.ttf") format("truetype");
+  }
 
-html body {
-  @apply font-efb;
-  @apply tracking-nunito;
+  html body {
+    @apply font-body;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-title text-theme-text;
+  }
+
+  h1 {
+    @apply text-3xl;
+  }
+
+  h2 {
+    @apply text-2xl;
+  }
+
+  h3, h4, h5, h6 {
+    @apply text-xl;
+  }
+
+  p, div, a, span, button {
+      @apply text-xl text-theme-text;
+  }
 }
 
 /* ---- Global Scrollbar ---- */
 
 .scrollbar::-webkit-scrollbar {
-  @apply rounded-xl w-4;
-  @apply bg-navy-regular;
+  @apply rounded-md w-6 bg-theme-secondary;
 }
 
 .scrollbar::-webkit-scrollbar-track {
-  @apply rounded-xl;
-  @apply bg-navy-regular;
+  @apply rounded-md bg-theme-secondary;
 }
 
 .scrollbar::-webkit-scrollbar-thumb {
-  @apply rounded-xl;
-  @apply bg-teal-light;
+  @apply rounded-md bg-theme-highlight;
 }
 
 .no-scrollbar::-webkit-scrollbar {
@@ -60,73 +86,15 @@ html body {
   scrollbar-width: none;
 }
 
-/* ---- Loading/Boot Components ---- */
-
-.loading-screen {
-  @apply bg-black text-4xl font-normal text-gray-100;
-
-  .center {
-    padding: 475px 0;
-    @apply text-center;
-
-    .placeholder {
-      @apply w-full flex justify-center items-center;
-    }
-  }
-
-  .loading-bar {
-    @apply flex justify-center mx-auto bg-gray-500;
-    margin-top: 16px;
-    height: 3px;
-    width: 200px;
-  }
-
-  .loaded {
-    @apply w-full h-full bg-white;
-    animation: 6s linear loading;
-    animation-fill-mode: forwards;
-    transform-origin: 0%;
-  }
-
-  button:active {
-    @apply transform;
-    @apply translate-y-1;
-  }
-
-  @keyframes loading {
-    0% {
-      transform: scaleX(0);
-    }
-    100% {
-      transform: scaleX(100%);
-    }
-  }
-}
-
-.fbw-logo {
-  width: 5rem;
-  margin-right: 16px;
-}
-
 /* ---- Dashboard Components ---- */
 
 .flip-horizontal {
   transform: scaleX(-1);
 }
 
-.leaflet-container {
-  @apply rounded-2xl;
-
-  .leaflet-control-attribution {
-    @apply hidden;
-  }
-}
-
 /* ---- Dispatch Components ---- */
 
 .loadsheet-container {
-  height: 685px;
-
   /* fbw flypad theme for simbrief maps */
   & img {
     width: 70.5%;
@@ -146,3 +114,22 @@ html body {
     cursor: -webkit-grabbing;
   }
 }
+
+/* ---- Notifications ---- */
+
+.drop {
+    animation: drop 5s ease-out;
+
+    @keyframes drop {
+      from {
+        top: 0;
+      }
+      to {
+        top: -500px
+      }
+      8%,
+      92% {
+        top: 2em;
+      }
+    }
+  }

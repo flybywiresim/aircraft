@@ -3,7 +3,6 @@
 const reactComponentsClasses = require('../../../../node_modules/@flybywiresim/react-components/build/usedCSSClasses.json');
 
 module.exports = {
-    mode: 'jit',
     purge: {
         content: [
             './**/*.{jsx,tsx}',
@@ -20,7 +19,7 @@ module.exports = {
                 'out-tk': '5.25rem',
             }),
             height: () => ({
-                'efb': '50rem',
+                'efb': '54rem',
                 'efb-nav': '45.75rem',
                 '124': '34.75rem',
             }),
@@ -45,9 +44,24 @@ module.exports = {
                 '26.5': '26.5deg',
                 '-26.5': '-26.5deg',
             }),
+            colors: {
+                'theme-highlight': 'var(--color-highlight)',
+                'theme-body': 'var(--color-body)',
+                'theme-text': 'var(--color-text)',
+                'theme-unselected': 'var(--color-unselected)',
+                'theme-secondary': 'var(--color-secondary)',
+                'theme-statusbar': 'var(--color-statusbar)',
+                'theme-accent': 'var(--color-accent)',
+            },
+            maxWidth: { '1/2': '50%' },
         },
-        fontFamily: { mono: ['IBMPlexMono'], efb: ['NunitoSans'] },
-        letterSpacing: { nunito: '0.35px' },
+        fontFamily: {
+            mono: ['JetBrains Mono'],
+            body: ['Inter'],
+            title: ['Manrope'],
+            rmp: ['AirbusRMP'],
+        },
+        boxShadow: { lg: '0px 0px 4px 2px rgba(0, 0, 0, 0.5)' },
     },
     variants: { extend: {} },
     // eslint-disable-next-line global-require
