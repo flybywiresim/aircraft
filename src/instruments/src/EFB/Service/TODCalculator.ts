@@ -1,6 +1,6 @@
 import { get, orderBy, min, max, inRange, set, last, head } from 'lodash';
 
-type groundSpeed = {from: number, groundSpeed: number};
+export type groundSpeed = {from: number, groundSpeed: number};
 type groundSpeedRange= {groundSpeed: number, range: [number, number]};
 
 export default class TODCalculator {

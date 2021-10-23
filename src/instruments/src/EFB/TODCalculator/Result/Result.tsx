@@ -1,17 +1,21 @@
 import React from 'react';
-import { connect } from 'react-redux';
 import { round, isNil, toNumber, last } from 'lodash';
-import { TOD_CALCULATOR_REDUCER } from '../../Store';
-import { setTodData } from '../../Store/action-creator/tod-calculator';
 import TODCalculator from '../../Service/TODCalculator';
 import Card from '../../Components/Card/Card';
-import { TOD_CALCULATION_TYPE } from '../../Enum/TODCalculationType.enum';
+import { TOD_CALCULATION_TYPE } from '../../Enum/TODCalculationType';
+import { useAppSelector } from '../../Store/store';
 
-const Result = ({ currentAltitude, targetAltitude, calculation, groundSpeed, ...props }) => {
+const Result = ({ className }: {className: string}) => {
+    const calculationInput = useAppSelector((state) => state.todCalculator.calculation.input) ?? 0;
+    const calculationType = useAppSelector((state) => state.todCalculator.calculation.type) ?? TOD_CALCULATION_TYPE.DISTANCE;
+    const targetAltitude = useAppSelector((state) => state.todCalculator.targetAltitude) ?? 0;
+    const groundSpeed = useAppSelector((state) => state.todCalculator.groundSpeed) ?? 0;
+    const currentAltitude = useAppSelector((state) => state.todCalculator.currentAltitude) ?? 0;
+
     const todCalculator = new TODCalculator(toNumber(currentAltitude), toNumber(targetAltitude), groundSpeed);
     const currentGroundSpeed = last(groundSpeed).groundSpeed;
 
-    if (isNil(calculation.type)) {
+    if (isNil(calculationType)) {
         return null;
     }
 
@@ -21,13 +25,13 @@ const Result = ({ currentAltitude, targetAltitude, calculation, groundSpeed, ...
                 headerText: 'Desired vertical speed',
                 footerText: '',
                 unit: 'ft/min',
-                calculate: () => round(todCalculator.calculateVS(calculation.input)),
+                calculate: () => round(todCalculator.calculateVS(calculationInput)),
             },
             {
                 headerText: 'Desired descend angle',
                 footerText: '',
                 unit: 'degrees',
-                calculate: () => -round(todCalculator.calculateDegree(calculation.input), 1),
+                calculate: () => -round(todCalculator.calculateDegree(calculationInput), 1),
             },
         ],
         [TOD_CALCULATION_TYPE.VERTICAL_SPEED]: [
@@ -35,7 +39,7 @@ const Result = ({ currentAltitude, targetAltitude, calculation, groundSpeed, ...
                 headerText: 'Start your descent about',
                 footerText: 'before target',
                 unit: 'NM',
-                calculate: () => round(todCalculator.calculateDistance(Math.abs(calculation.input), 'FTM')),
+                calculate: () => round(todCalculator.calculateDistance(Math.abs(calculationInput), 'FTM')),
             },
         ],
         [TOD_CALCULATION_TYPE.FLIGHT_PATH_ANGLE]: [
@@ -43,12 +47,12 @@ const Result = ({ currentAltitude, targetAltitude, calculation, groundSpeed, ...
                 headerText: 'Start your descent about',
                 footerText: 'before target',
                 unit: 'NM',
-                calculate: () => round(todCalculator.calculateDistance(Math.abs(calculation.input), 'DEGREE')),
+                calculate: () => round(todCalculator.calculateDistance(Math.abs(calculationInput), 'DEGREE')),
             },
         ],
-    }[calculation.type]);
+    }[calculationType]);
 
-    const inputDataValid = targetAltitude !== '' && currentAltitude !== '' && (targetAltitude < currentAltitude) && targetAltitude >= 0 && calculation.input !== '' && currentGroundSpeed > 0;
+    const inputDataValid = targetAltitude !== '' && currentAltitude !== '' && (targetAltitude < currentAltitude) && targetAltitude >= 0 && calculationInput !== '' && currentGroundSpeed > 0;
 
     const calculationValid = (value) => !Number.isNaN(value) && Number.isFinite(value);
 
@@ -57,22 +61,22 @@ const Result = ({ currentAltitude, targetAltitude, calculation, groundSpeed, ...
 
     if (inputDataValid && validCalculations.length > 0) {
         return (
-            <Card title="Result" childrenContainerClassName="flex-1 flex flex-col justify-center px-0" {...props}>
+            <Card title="Result" childrenContainerClassName="flex-1 flex flex-col justify-center px-0" className={className}>
                 {results.map(({ headerText, footerText, calculate, unit }) => {
                     const calculation = calculate();
 
                     if (calculationValid(calculation)) {
                         return (
-                            <div className="flex flex-col items-center justify-center mb-10 last:mb-0">
-                                <h1 className="text-white font-medium mb-4 text-2xl">{headerText}</h1>
+                            <div className="flex flex-col justify-center items-center mb-10 last:mb-0">
+                                <h1 className="mb-4 text-2xl font-medium ">{headerText}</h1>
 
-                                <span className="text-white text-6xl whitespace-nowrap">
+                                <span className="text-6xl whitespace-nowrap">
                                     {calculation}
                                     {' '}
                                     {unit}
                                 </span>
 
-                                {!!footerText && <span className="text-white font-medium mt-4 text-2xl">{footerText}</span>}
+                                {!!footerText && <span className="mt-4 text-2xl font-medium ">{footerText}</span>}
                             </div>
                         );
                     }
@@ -86,7 +90,4 @@ const Result = ({ currentAltitude, targetAltitude, calculation, groundSpeed, ...
     return null;
 };
 
-export default connect(
-    ({ [TOD_CALCULATOR_REDUCER]: { currentAltitude, targetAltitude, calculation, groundSpeed } }) => ({ currentAltitude, targetAltitude, calculation, groundSpeed }),
-    { setTodData },
-)(Result);
+export default Result;
