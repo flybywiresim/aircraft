@@ -57,8 +57,8 @@ impl ElectricalPumpPhysics {
         regulated_speed: AngularVelocity,
     ) -> Self {
         Self {
-            active_id: context.get_identifier(format!("HYD_{}_EPUMP_ACTIVE", id).to_owned()),
-            rpm_id: context.get_identifier(format!("HYD_{}_EPUMP_RPM", id).to_owned()),
+            active_id: context.get_identifier(format!("HYD_{}_EPUMP_ACTIVE", id)),
+            rpm_id: context.get_identifier(format!("HYD_{}_EPUMP_RPM", id)),
             powered_by: bus_type,
             is_powered: false,
             available_potential: ElectricPotential::new::<volt>(0.),

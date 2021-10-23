@@ -529,11 +529,11 @@ impl HydraulicCircuit {
 
     fn update_final_delta_vol_and_pressure(&mut self, context: &UpdateContext) {
         for section in &mut self.pump_sections {
-            section.update_final_delta_vol_and_pressure(&context, &self.fluid);
+            section.update_final_delta_vol_and_pressure(context, &self.fluid);
         }
 
         self.system_section
-            .update_final_delta_vol_and_pressure(&context, &self.fluid);
+            .update_final_delta_vol_and_pressure(context, &self.fluid);
     }
 
     fn update_maximum_valve_flows(&mut self) {
@@ -1094,7 +1094,7 @@ impl Reservoir {
     ) -> Self {
         Self {
             level_id: context
-                .get_identifier(format!("HYD_{}_RESERVOIR_LEVEL", hyd_loop_id).to_owned()),
+                .get_identifier(format!("HYD_{}_RESERVOIR_LEVEL", hyd_loop_id)),
             max_capacity,
             current_level,
             min_usable: Volume::new::<gallon>(Self::MIN_USABLE_VOLUME),
@@ -1336,7 +1336,7 @@ impl ElectricPump {
         self.pump.update(
             context,
             pressure_state,
-            &reservoir,
+            reservoir,
             self.pump_physics.speed(),
             controller,
         );
@@ -1417,7 +1417,7 @@ impl EngineDrivenPump {
     ) {
         self.speed = pump_speed;
         self.pump
-            .update(context, pressure_state, &reservoir, pump_speed, controller);
+            .update(context, pressure_state, reservoir, pump_speed, controller);
         self.is_active = controller.should_pressurise();
     }
 }
@@ -1628,7 +1628,7 @@ impl RamAirTurbine {
         self.pump.update(
             context,
             pressure_state,
-            &reservoir,
+            reservoir,
             self.wind_turbine.speed(),
             &self.pump_controller,
         );
