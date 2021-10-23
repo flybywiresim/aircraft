@@ -238,11 +238,11 @@ pub struct Accumulator {
     has_control_valve: bool,
 }
 impl Accumulator {
-    const FLOW_DYNAMIC_LOW_PASS: f64 = 0.2;
+    const FLOW_DYNAMIC_LOW_PASS: f64 = 0.7;
 
     // Gain of the delta pressure to flow relation.
     // Higher gain enables faster flow transient but brings instability.
-    const DELTA_PRESSURE_CHARACTERISTICS: f64 = 0.01;
+    const DELTA_PRESSURE_CHARACTERISTICS: f64 = 0.009;
 
     fn new(
         gas_precharge: Pressure,
@@ -796,8 +796,8 @@ impl Section {
 
         reservoir.add_return_volume(static_leak);
 
-        if self.accumulator.is_some() {
-            self.accumulator.as_mut().unwrap().update(
+        if let Some(accumulator) = &mut self.accumulator {
+            accumulator.update(
                 context,
                 &mut delta_volume_flow_pass,
                 self.current_pressure,
@@ -805,13 +805,8 @@ impl Section {
             );
         }
 
-        if ptu.is_some() {
-            self.update_ptu_flows(
-                context,
-                ptu.as_ref().unwrap(),
-                &mut delta_volume_flow_pass,
-                reservoir,
-            );
+        if let Some(ptu) = ptu {
+            self.update_ptu_flows(context, ptu, &mut delta_volume_flow_pass, reservoir);
         }
 
         delta_volume_flow_pass -= self.total_actuator_consumed_volume;
