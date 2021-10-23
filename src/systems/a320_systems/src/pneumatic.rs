@@ -12,6 +12,7 @@ use uom::si::{
     ratio::ratio,
     thermodynamic_temperature::degree_celsius,
     volume::{cubic_meter, gallon},
+    volume_rate::cubic_meter_per_second,
 };
 
 use systems::{
@@ -1285,6 +1286,9 @@ impl PackComplex {
     }
 
     fn update(&mut self, context: &UpdateContext, from: &mut impl PneumaticContainer) {
+        self.pack_flow_valve_controller
+            .update(context, self.pack_flow_valve.fluid_flow());
+
         self.pack_flow_valve
             .update_open_amount(&self.pack_flow_valve_controller);
 
@@ -1329,23 +1333,30 @@ impl SimulationElement for PackComplex {
 // This will probably be removed in the future, but
 struct PackFlowValveController {
     pack_toggle_pb_id: VariableIdentifier,
-    engine_number: usize,
     pack_pb_is_auto: bool,
+    pid: PidController,
 }
 impl PackFlowValveController {
     fn new(context: &mut InitContext, engine_number: usize) -> Self {
         Self {
-            engine_number,
             pack_toggle_pb_id: context
                 .get_identifier(format!("AIRCOND_PACK{}_TOGGLE", engine_number)),
             pack_pb_is_auto: true,
+            pid: PidController::new(0., 0.05, 0., 0., 1., 0.75),
         }
+    }
+
+    fn update(&mut self, context: &UpdateContext, pack_flow_valve_flow_rate: VolumeRate) {
+        self.pid.next_control_output(
+            pack_flow_valve_flow_rate.get::<cubic_meter_per_second>(),
+            Some(context.delta()),
+        );
     }
 }
 impl ControllerSignal<PackFlowValveSignal> for PackFlowValveController {
     fn signal(&self) -> Option<PackFlowValveSignal> {
         Some(match self.pack_pb_is_auto {
-            true => PackFlowValveSignal::new_open(),
+            true => PackFlowValveSignal::new(Ratio::new::<ratio>(self.pid.output())),
             false => PackFlowValveSignal::new_closed(),
         })
     }
@@ -2003,6 +2014,14 @@ mod tests {
         fn fadec_single_vs_dual_bleed_config(&self) -> bool {
             self.query(|a| a.pneumatic.fadec.is_single_vs_dual_bleed_config())
         }
+
+        fn pack_flow_valve_flow(&self, engine_number: usize) -> VolumeRate {
+            self.query(|a| {
+                a.pneumatic.packs[engine_number - 1]
+                    .pack_flow_valve
+                    .fluid_flow()
+            })
+        }
     }
 
     fn test_bed() -> PneumaticTestBed {
@@ -2023,8 +2042,8 @@ mod tests {
         let alt = Length::new::<foot>(0.);
 
         let mut test_bed = test_bed_with()
-            .idle_eng1()
-            .idle_eng2()
+            .toga_eng1()
+            .toga_eng2()
             .in_isa_atmosphere(alt)
             .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Auto)
             .mach_number(MachNumber(0.))
@@ -2052,17 +2071,25 @@ mod tests {
         let mut abv_open = Vec::new();
         let mut fav_open = Vec::new();
 
-        for i in 1..5000 {
-            // if i == 5000 {
-            //     test_bed = test_bed.toga_eng1().toga_eng2();
-            // }
+        for i in 1..10000 {
+            if i == 5000 {
+                test_bed = test_bed.idle_eng1().idle_eng2();
+            }
 
             println!(
+                "{} m^3/s",
+                test_bed
+                    .pack_flow_valve_flow(1)
+                    .get::<cubic_meter_per_second>()
+            );
+            println!(
                 "{}",
-                test_bed.query(|a| a.pneumatic.engine_systems[0]
-                    .fan_compression_chamber
-                    .temperature()
-                    .get::<degree_celsius>())
+                test_bed.query(|aircraft| {
+                    aircraft.pneumatic.packs[0]
+                        .pack_flow_valve
+                        .open_amount()
+                        .get::<ratio>()
+                })
             );
 
             ts.push(i as f64 * 16.);
