@@ -1,74 +1,56 @@
-import React, { useState } from 'react';
-import { IconClipboard, IconMap, IconCalculator, IconSettings, IconTruck, IconBuildingLighthouse, IconAlertTriangle } from '@tabler/icons';
-import logo from '../Assets/fbw-logo.svg';
+import React, { FC } from 'react';
+import { HouseDoor, Clipboard, Truck, Compass, BroadcastPin, ExclamationDiamond, Gear, Calculator } from 'react-bootstrap-icons';
+import { Link, useHistory } from 'react-router-dom';
 
-type ToolbarProps = {
-    setPageIndex: (index) => void;
-};
+export const ToolBar = () => (
+    <nav className="flex overflow-hidden flex-col flex-shrink-0 justify-between w-32">
+        <div className="flex flex-col items-center mt-11">
+            <ToolBarButton to="/dashboard">
+                <HouseDoor size={35} />
+            </ToolBarButton>
+            <ToolBarButton to="/dispatch">
+                <Clipboard size={35} />
+            </ToolBarButton>
+            <ToolBarButton to="/ground">
+                <Truck size={35} />
+            </ToolBarButton>
+            <ToolBarButton to="/performance">
+                <Calculator size={35} />
+            </ToolBarButton>
+            <ToolBarButton to="/navigation">
+                <Compass size={35} />
+            </ToolBarButton>
+            <ToolBarButton to="/atc">
+                <BroadcastPin size={35} />
+            </ToolBarButton>
+            <ToolBarButton to="/failures">
+                <ExclamationDiamond size={35} />
+            </ToolBarButton>
+        </div>
 
-const c = {
-    active: 'py-4 bg-white bg-opacity-5 py-4 mx-5 rounded-lg mt-2',
-    inactive: 'hover:bg-white hover:bg-opacity-5 transition duration-300 py-4 mx-5 rounded-lg mt-2',
-};
+        <div className="flex flex-col items-center mb-6">
+            <div className="w-14 h-1.5 rounded-full bg-theme-accent" />
+            <ToolBarButton to="/settings">
+                <Gear color="currentColor" size={35} />
+            </ToolBarButton>
+        </div>
+    </nav>
+);
 
-const ToolBar = (props: ToolbarProps) => {
-    const [activeIndex, setActiveIndex] = useState(0);
+type ToolBarButtonProps = {
+    to: string,
+}
 
-    function handleClick(index: number) {
-        setActiveIndex(index);
-        props.setPageIndex(index);
-    }
+const ToolBarButton: FC<ToolBarButtonProps> = ({ to, children }) => {
+    const history = useHistory();
 
     return (
-        <nav className="overflow-hidden bg-navy-lighter w-32 justify-between flex flex-col -mx-1">
-            <div className="mt-14">
-                <ul>
-                    <li className={activeIndex === 0 ? c.active : c.inactive}>
-                        <a onClick={() => handleClick(0)}>
-                            <img src={logo} alt="FlyByWire" className="w-10 py-2 mx-auto" />
-                        </a>
-                    </li>
-                    <li className={activeIndex === 1 ? c.active : c.inactive}>
-                        <a onClick={() => handleClick(1)}>
-                            <IconClipboard className="mx-auto" size={45} color="white" stroke={1} strokeLinejoin="miter" />
-                        </a>
-                    </li>
-                    <li className={activeIndex === 2 ? c.active : c.inactive}>
-                        <a onClick={() => handleClick(2)}>
-                            <IconTruck className="mx-auto" size={45} color="white" stroke={1} strokeLinejoin="miter" />
-                        </a>
-                    </li>
-                    <li className={activeIndex === 3 ? c.active : c.inactive}>
-                        <a onClick={() => handleClick(3)}>
-                            <IconCalculator className="mx-auto" size={45} color="white" stroke={1} strokeLinejoin="miter" />
-                        </a>
-                    </li>
-                    <li className={activeIndex === 4 ? c.active : c.inactive}>
-                        <a onClick={() => handleClick(4)}>
-                            <IconMap className="mx-auto" size={45} color="white" stroke={1} strokeLinejoin="miter" />
-                        </a>
-                    </li>
-                    <li className={activeIndex === 5 ? c.active : c.inactive}>
-                        <a onClick={() => handleClick(5)}>
-                            <IconBuildingLighthouse className="mx-auto" size={45} color="white" stroke={1} strokeLinejoin="miter" />
-                        </a>
-                    </li>
-                    <li className={activeIndex === 7 ? c.active : c.inactive}>
-                        <a onClick={() => handleClick(7)}>
-                            <IconAlertTriangle className="mx-auto" size={45} color="white" stroke={1} strokeLinejoin="miter" />
-                        </a>
-                    </li>
-                </ul>
-            </div>
-
-            <div className="mb-6">
-                <div className="mx-6 border-t-2 border-gray-700 mt-6" />
-                <div className={activeIndex === 6 ? `${c.active} mt-6` : `${c.inactive} mt-6`} onClick={() => handleClick(6)}>
-                    <IconSettings className="mx-auto" size={45} color="white" stroke={1} strokeLinejoin="miter" />
-                </div>
-            </div>
-        </nav>
+        <Link
+            to={to}
+            className={`${history.location.pathname.includes(to) ? 'bg-theme-accent text-theme-text' : 'text-theme-unselected'}`
+            + ' flex w-min items-center justify-center hover:text-theme-text bg-transparent hover:bg-theme-accent transition duration-100 py-3.5 px-3.5 rounded-md mt-4'}
+        >
+            {children}
+        </Link>
     );
 };
-
-export default ToolBar;

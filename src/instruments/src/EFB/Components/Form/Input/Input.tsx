@@ -75,14 +75,14 @@ const Input = ({
             {leftComponent}
 
             <div className="flex-1">
-                {!!label && !emptyValue && <span className="text-sm text-white font-light inline-block -mb-2.5 overflow-hidden">{label}</span>}
+                {!!label && !emptyValue && <span className="inline-block overflow-hidden -mb-2.5 text-sm font-light">{label}</span>}
 
                 <div className={classNames('inner-container', { disabled })}>
                     {leftInnerComponent}
 
-                    <div className="relative flex flex-row">
+                    <div className="flex relative flex-row">
                         <input
-                            className="w-full h-full bg-transparent text-white text-2xl flex items-center justify-center focus:outline-none"
+                            className="flex justify-center items-center w-full h-full text-2xl bg-transparent focus:outline-none"
                             type={type}
                             value={value}
                             onChange={(event) => onChange(event.target.value)}
@@ -91,7 +91,7 @@ const Input = ({
                             {...props}
                         />
 
-                        {!!label && emptyValue && <span className="absolute h-full top-0 flex items-center text-2xl text-gray-medium pointer-events-none">{label}</span>}
+                        {!!label && emptyValue && <span className="flex absolute top-0 items-center h-full text-2xl pointer-events-none text-gray-medium">{label}</span>}
                     </div>
 
                     {rightInnerComponent}

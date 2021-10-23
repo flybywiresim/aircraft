@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Toggle } from '@flybywiresim/react-components';
+import { Toggle } from '../../Components/Form/Toggle';
 import { usePersistentProperty } from '../../../Common/persistence';
 import { useSimVar } from '../../../Common/simVars';
 import Button, { BUTTON_TYPE } from '../../Components/Button/Button';
@@ -89,8 +89,8 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
         }
     };
 
-    const navigationBar = (
-        <div className="h-80 flex flex-row">
+    const NavigationBar = () => (
+        <div className="flex flex-row h-80">
             <VerticalSelectGroup>
                 <SelectItem enabled onSelect={() => switchDetent(5)} selected={selectedIndex === 5}>TO/GA</SelectItem>
                 <SelectItem enabled onSelect={() => switchDetent(4)} selected={selectedIndex === 4}>FLX</SelectItem>
@@ -126,19 +126,16 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
 
     if (props.isShown) {
         return (
-            <div className="flex flex-col pt-4 text-center">
-                <div className="rounded-xl py-6">
+            <div className="flex flex-col text-center">
+                <div className="py-6 rounded-xl">
 
-                    <div className="flex flex-row rounded-2xl justify-center bg-navy-lighter mt-auto mb-8 p-4 w-full divide divide-x-2 divide-gray-500">
-                        <div className="flex flex-row mr-2">
-                            <span className="text-lg text-gray-300 mr-2">Reverser On Axis</span>
+                    <div className="flex flex-row justify-center p-4 mt-auto mb-8 space-x-16 w-full rounded-lg border-2 border-theme-accent">
+                        <div className="flex flex-row space-x-4">
+                            <div>Reverser On Axis</div>
                             <Toggle value={!!reverserOnAxis1} onToggle={(value) => setReversersOnAxis(value ? 1 : 0)} />
-
                         </div>
-                        <div className="flex flex-row">
-                            <span>
-                                <span className="text-lg text-gray-300 mr-2 ml-2">Independent Axis</span>
-                            </span>
+                        <div className="flex flex-row space-x-4">
+                            <div>Independent Axis</div>
                             <Toggle
                                 value={!!parseInt(isDualAxis)}
                                 onToggle={(value) => {
@@ -159,8 +156,8 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
                                 throttleCount={parseInt(isDualAxis) === 0 ? 2 : 1}
                                 activeIndex={selectedIndex}
                             />
-                            <div className="mr-8 ml-8 mt-auto mb-auto">
-                                {navigationBar}
+                            <div className="mt-auto mr-8 mb-auto ml-8">
+                                <NavigationBar />
                             </div>
                             <BaseThrottleConfig
                                 mappingsAxisOne={mappingsAxisTwo}
@@ -175,7 +172,7 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
 
                     {parseInt(isDualAxis) === 0
             && (
-                <div className="flex flex-row ml-4 justify-center rounded-xl">
+                <div className="flex flex-row justify-center ml-4 rounded-xl">
                     <BaseThrottleConfig
                         mappingsAxisOne={mappingsAxisOne}
                         mappingsAxisTwo={mappingsAxisTwo}
@@ -184,56 +181,59 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
                         throttleCount={2}
                         activeIndex={selectedIndex}
                     />
-                    <div className="ml-8 mt-auto mb-auto">
-                        {navigationBar}
+                    <div className="mt-auto mb-auto ml-8">
+                        <NavigationBar />
                     </div>
                 </div>
             )}
                 </div>
-                <h1 className="text-xl h-4 text-red-600">{validConfig ? ' ' : validationErrors}</h1>
+                <h1 className="text-red-600">{validConfig ? ' ' : validationErrors}</h1>
 
-                <div className="bg-navy-lighter flex flex-row-reverse h-16 p-2 w-full mt-40 mb-2 rounded-lg">
-
-                    <Button
-                        text="Save &amp; Apply"
-                        type={BUTTON_TYPE.GREEN}
-                        onClick={() => {
-                            if (validConfig) {
-                                syncToDisk(1);
-                                applyLocalVar(1);
-                            }
-                        }}
-                        disabled={!validConfig}
-                        className={`ml-2 mr-4 ${validConfig ? 'bg-green-500 border-green-500 hover:bg-green-600 hover:border-green-600' : 'opacity-30'}`}
-                    />
-                    <Button
-                        text="Apply"
-                        type={validConfig ? BUTTON_TYPE.BLUE : BUTTON_TYPE.NONE}
-                        onClick={() => applyLocalVar(1)}
-                        className={`ml-2 ${validConfig ? 'hover:bg-blue-600 hover:border-blue-600' : 'bg-gray-500 border-gray-500 opacity-30'}`}
-                    />
-                    <Button
-                        text="Load From File"
-                        type={BUTTON_TYPE.BLUE}
-                        onClick={() => {
-                            syncToThrottle(1);
-                        }}
-                        className="ml-2 hover:bg-blue-600 hover:border-blue-600"
-                    />
-                    <Button
-                        text="Reset to Defaults"
-                        type={BUTTON_TYPE.BLUE}
-                        onClick={() => {
-                            defaultsToThrottle(1);
-                        }}
-                        className="ml-2 hover:bg-blue-600 hover:border-blue-600"
-                    />
-                    <Button
-                        text="Back"
-                        type={BUTTON_TYPE.BLUE}
-                        onClick={() => props.onClose()}
-                        className="ml-4 mr-auto hover:bg-blue-600 hover:border-blue-600"
-                    />
+                <div className="flex flex-row justify-between p-4 mt-40 mb-2 w-full rounded-lg border-2 border-theme-accent">
+                    <div>
+                        <Button
+                            text="Back"
+                            type={BUTTON_TYPE.BLUE}
+                            onClick={() => props.onClose()}
+                            className="hover:bg-blue-600 hover:border-blue-600"
+                        />
+                    </div>
+                    <div className="flex flex-row space-x-3">
+                        <Button
+                            text="Reset to Defaults"
+                            type={BUTTON_TYPE.BLUE}
+                            onClick={() => {
+                                defaultsToThrottle(1);
+                            }}
+                            className="hover:bg-blue-600 hover:border-blue-600"
+                        />
+                        <Button
+                            text="Load from File"
+                            type={BUTTON_TYPE.BLUE}
+                            onClick={() => {
+                                syncToThrottle(1);
+                            }}
+                            className="hover:bg-blue-600 hover:border-blue-600"
+                        />
+                        <Button
+                            text="Apply"
+                            type={validConfig ? BUTTON_TYPE.BLUE : BUTTON_TYPE.NONE}
+                            onClick={() => applyLocalVar(1)}
+                            className={`${validConfig ? 'hover:bg-blue-600 hover:border-blue-600' : 'bg-gray-500 border-gray-500 opacity-30'}`}
+                        />
+                        <Button
+                            text="Save and Apply"
+                            type={BUTTON_TYPE.GREEN}
+                            onClick={() => {
+                                if (validConfig) {
+                                    syncToDisk(1);
+                                    applyLocalVar(1);
+                                }
+                            }}
+                            disabled={!validConfig}
+                            className={`${validConfig ? 'bg-green-500 border-green-500 hover:bg-green-600 hover:border-green-600' : 'opacity-30'}`}
+                        />
+                    </div>
                 </div>
             </div>
         );
