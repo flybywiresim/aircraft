@@ -81,7 +81,8 @@ class CDUAvailableArrivalsPage {
                             const runwayName = Avionics.Utils.formatRunway(runway.designation);
                             if (runwayName.match("^" + approachRunwayName + "C?$")) {
                                 runwayLength = runway.length.toFixed(0);
-                                runwayCourse = Utils.leadingZeros(Math.round((runway.direction)), 3);
+                                const magVar = Facilities.getMagVar(runway.latitude, runway.longitude);
+                                runwayCourse = Utils.leadingZeros(Math.round(A32NX_Util.trueToMagnetic(runway.direction, magVar)), 3);
                             }
                         }
                         rows[2 * i] = ["{" + Avionics.Utils.formatRunway(approach.name.replace(/\s+/g, '')) + "[color]cyan", "", "{sp}{sp}{sp}{sp}" + runwayLength + "{small}M{end}[color]cyan"];
