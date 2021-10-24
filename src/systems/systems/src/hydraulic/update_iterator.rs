@@ -7,6 +7,7 @@ use std::time::Duration;
 /// With a fixed time interval of 10 ms and a frame delta of 35 ms, this type will provide three
 /// iterations of 10 ms. The remaining 5 ms will carry over to the next frame. When the next frame
 /// takes 15 ms, this will result in 2 iterations of 10 ms (15 ms + 5 ms).
+#[derive(Copy, Clone)]
 pub struct FixedStepLoop {
     lag_time_accumulator: Duration,
     time_step: Duration,
@@ -53,19 +54,17 @@ impl FixedStepLoop {
         }
     }
 }
-impl IntoIterator for &mut FixedStepLoop {
+impl Iterator for FixedStepLoop {
     type Item = Duration;
 
-    type IntoIter = std::vec::IntoIter<Self::Item>;
-
-    fn into_iter(self) -> Self::IntoIter {
-        let mut v = vec![];
-        while self.number_of_loops_remaining > 0 {
-            self.number_of_loops_remaining -= 1;
-            v.push(self.time_step);
+    fn next(&mut self) -> Option<Self::Item> {
+        match self.number_of_loops_remaining {
+            0 => None,
+            _ => {
+                self.number_of_loops_remaining -= 1;
+                Some(self.time_step)
+            }
         }
-
-        IntoIterator::into_iter(v)
     }
 }
 
@@ -74,6 +73,7 @@ impl IntoIterator for &mut FixedStepLoop {
 /// ## Example scenario
 /// With a max fixed time interval of 10 ms and a frame delta of 35 ms, this type will provide three
 /// iterations of 10 ms, and one iteration of 5ms to complete the 35ms total delta.
+#[derive(Copy, Clone)]
 pub struct MaxFixedStepLoop {
     max_time_step: Duration,
     num_of_max_step_loop: u32,
@@ -106,25 +106,17 @@ impl MaxFixedStepLoop {
         }
     }
 }
-impl IntoIterator for &mut MaxFixedStepLoop {
+impl Iterator for MaxFixedStepLoop {
     type Item = Duration;
 
-    type IntoIter = std::vec::IntoIter<Self::Item>;
-
-    fn into_iter(self) -> Self::IntoIter {
-        let mut v = vec![];
-
-        while self.num_of_max_step_loop > 0 {
-            self.num_of_max_step_loop -= 1;
-
-            v.push(self.max_time_step);
+    fn next(&mut self) -> Option<Self::Item> {
+        match self.num_of_max_step_loop {
+            0 => self.remaining_frame_duration.take(),
+            _ => {
+                self.num_of_max_step_loop -= 1;
+                Some(self.max_time_step)
+            }
         }
-
-        if self.remaining_frame_duration.is_some() {
-            v.push(self.remaining_frame_duration.unwrap());
-            self.remaining_frame_duration = None;
-        }
-        IntoIterator::into_iter(v)
     }
 }
 
@@ -146,7 +138,7 @@ mod fixed_tests {
     fn no_step_after_init() {
         let mut fixed_step = FixedStepLoop::new(Duration::from_millis(100));
 
-        assert!(fixed_step.into_iter().len() == 0);
+        assert_eq!(fixed_step.next(), None);
     }
 
     #[test]
@@ -159,7 +151,7 @@ mod fixed_tests {
 
         fixed_step.update(&context(&mut init_context, Duration::from_secs(0)));
 
-        assert!(fixed_step.into_iter().len() == 0);
+        assert_eq!(fixed_step.next(), None);
     }
 
     #[test]
@@ -172,7 +164,8 @@ mod fixed_tests {
 
         fixed_step.update(&context(&mut init_context, Duration::from_millis(100)));
 
-        assert!(fixed_step.into_iter().len() == 1);
+        assert!(matches!(fixed_step.next(), Some(_)));
+        assert_eq!(fixed_step.next(), None);
     }
 
     #[test]
@@ -239,7 +232,7 @@ mod max_step_tests {
     fn no_step_after_init() {
         let mut max_step = MaxFixedStepLoop::new(Duration::from_millis(100));
 
-        assert!(max_step.into_iter().len() == 0);
+        assert!(max_step.next() == None);
     }
 
     #[test]
@@ -252,7 +245,7 @@ mod max_step_tests {
 
         max_step.update(&context(&mut init_context, Duration::from_secs(0)));
 
-        assert!(max_step.into_iter().len() == 0);
+        assert_eq!(max_step.next(), None);
     }
 
     #[test]
@@ -265,7 +258,8 @@ mod max_step_tests {
 
         max_step.update(&context(&mut init_context, Duration::from_millis(100)));
 
-        assert!(max_step.into_iter().len() == 1);
+        assert!(matches!(max_step.next(), Some(_)));
+        assert_eq!(max_step.next(), None);
     }
 
     #[test]
