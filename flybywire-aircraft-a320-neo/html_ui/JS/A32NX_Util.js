@@ -189,11 +189,11 @@ class UpdateThrottler {
 }
 
 /**
- * PopUpParams class container for popups to package popup metadata
+ * NotificationParams class container for popups to package popup metadata
  */
-class PopUpParams {
+class NotificationParams {
     constructor() {
-        this.__Type = "PopUpParams";
+        this.__Type = "SNotificationParams";
         this.buttons = [];
         this.style = "normal";
         this.displayGlobalPopup = true;
@@ -205,7 +205,7 @@ class PopUpParams {
  */
 class NXPopUp {
     constructor() {
-        this.params = new PopUpParams();
+        this.params = new NotificationParams();
         this.popupListener;
         this.params.title = "A32NX POPUP";
         this.params.time = new Date().getTime();
@@ -313,7 +313,8 @@ class NXNotif {
         }
         nxNotificationsListener.triggerToAllSubscribers('SendNewNotification', this.params);
         setTimeout(() => {
-            nxNotificationsListener.triggerToAllSubscribers('HideNotification', this.params.type, this.params.id);
+            // TODO FIXME: May break in the future, check every update
+            nxNotificationsListener.triggerToAllSubscribers('HideNotification', this.params.type, null, this.params.id);
         }, this.params.timeout);
     }
 }

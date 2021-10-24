@@ -98,7 +98,8 @@ export class Notification {
         }
         nxNotificationsListener.triggerToAllSubscribers('SendNewNotification', this.params);
         setTimeout(() => {
-            nxNotificationsListener.triggerToAllSubscribers('HideNotification', this.params.type, this.params.id);
+            // TODO FIXME: May break in the future, check every update
+            nxNotificationsListener.triggerToAllSubscribers('HideNotification', this.params.type, null, this.params.id);
         }, this.params.timeout);
     }
 }
