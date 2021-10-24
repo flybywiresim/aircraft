@@ -274,7 +274,7 @@ impl CabinPressureController {
     }
 
     pub(super) fn is_excessive_residual_pressure(&self) -> bool {
-        self.cabin_delta_p() > Pressure::new::<psi>(0.01)
+        self.cabin_delta_p() > Pressure::new::<psi>(0.03)
     }
 
     pub(super) fn is_low_diff_pressure(&self) -> bool {
