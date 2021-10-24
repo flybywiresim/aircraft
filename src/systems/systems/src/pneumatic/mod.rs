@@ -5,8 +5,8 @@ use crate::{
         PneumaticValve,
     },
     simulation::{
-        test::TestBed, InitContext, Read, Reader, SimulationElement, SimulationElementVisitor,
-        SimulatorReader, SimulatorWriter, UpdateContext, VariableIdentifier, Write, Writer,
+        InitContext, Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
+        SimulatorWriter, UpdateContext, VariableIdentifier, Write, Writer,
     },
 };
 
@@ -463,26 +463,37 @@ pub enum BleedMonitoringComputerChannelOperationMode {
     Slave,
 }
 
+pub struct FaultLightSignal {
+    fault_light_should_be_on: bool,
+}
+impl FaultLightSignal {
+    pub fn new(fault_light_should_be_on: bool) -> Self {
+        Self {
+            fault_light_should_be_on,
+        }
+    }
+
+    pub fn fault_light_should_be_on(&self) -> bool {
+        self.fault_light_should_be_on
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::{
-        electrical::{test::TestElectricitySource, Electricity},
+        electrical::Electricity,
         pneumatic::{DefaultValve, PneumaticContainer, PneumaticPipe},
         shared::{ControllerSignal, InternationalStandardAtmosphere},
-        simulation::{
-            test::{SimulationTestBed, TestBed, TestVariableRegistry},
-            UpdateContext,
-        },
+        simulation::{test::TestVariableRegistry, UpdateContext},
     };
     use ntest::assert_about_eq;
-    use std::{fs::File, time::Duration};
+    use std::time::Duration;
 
     use uom::si::{
         acceleration::foot_per_second_squared,
         angle::radian,
         length::foot,
-        pressure::pascal,
         thermodynamic_temperature::degree_celsius,
         velocity::knot,
         volume::{cubic_meter, gallon},
@@ -569,10 +580,6 @@ mod tests {
 
     fn pressure_tolerance() -> Pressure {
         Pressure::new::<psi>(0.5)
-    }
-
-    fn temperature_tolerance() -> TemperatureInterval {
-        TemperatureInterval::new::<temperature_interval::degree_celsius>(0.5)
     }
 
     // It's a bit of a pain to initialize all the units manually

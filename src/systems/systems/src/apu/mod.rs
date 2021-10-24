@@ -11,7 +11,7 @@ use crate::{
     pneumatic::ControllablePneumaticValve,
     shared::{
         ApuAvailable, ApuBleedAirValveSignal, ApuMaster, ApuStart, AuxiliaryPowerUnitElectrical,
-        ContactorSignal, ControllerSignal, ElectricalBusType, PneumaticValve,
+        ContactorSignal, ControllerSignal, ElectricalBusType,
     },
     simulation::{
         SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext, Write,

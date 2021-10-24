@@ -431,14 +431,6 @@ mod tests {
         )
     }
 
-    fn pressure_tolerance() -> Pressure {
-        Pressure::new::<psi>(0.5)
-    }
-
-    fn volume_rate_tolerance() -> VolumeRate {
-        VolumeRate::new::<cubic_meter_per_second>(1e-4)
-    }
-
     // It's a bit of a pain to initialize all the units manually
     fn quick_container(
         volume_in_cubic_meter: f64,
@@ -578,7 +570,7 @@ mod tests {
         let context = context(Duration::from_secs(5), Length::new::<foot>(0.));
         connector.update_move_fluid(&context, &mut from, &mut to);
 
-        assert!((from.pressure() - to.pressure()).abs() < pressure_tolerance());
+        assert_about_eq!(from.pressure().get::<psi>(), to.pressure().get::<psi>());
     }
 
     #[test]
@@ -671,12 +663,15 @@ mod tests {
         let context = context(Duration::from_millis(16), Length::new::<foot>(0.));
 
         exhaust.update_move_fluid(&context, &mut container);
-        assert!(exhaust.fluid_flow() > volume_rate_tolerance());
+        assert!(exhaust.fluid_flow().get::<cubic_meter_per_second>() > 0.);
 
         for _ in 1..1000 {
             exhaust.update_move_fluid(&context, &mut container);
         }
 
-        assert!((container.pressure() - context.ambient_pressure()) < pressure_tolerance());
+        assert_about_eq!(
+            container.pressure().get::<psi>(),
+            context.ambient_pressure().get::<psi>()
+        );
     }
 }
