@@ -105,7 +105,6 @@ pub struct A320Pneumatic {
     bleed_monitoring_computers: [BleedMonitoringComputer; 2],
     engine_systems: [EngineBleedAirSystem; 2],
 
-    cross_bleed_valve_controller: CrossBleedValveController,
     cross_bleed_valve: CrossBleedValve,
 
     fadec: FullAuthorityDigitalEngineControl,
@@ -139,7 +138,6 @@ impl A320Pneumatic {
                 ),
                 EngineBleedAirSystem::new(context, 2, ElectricalBusType::DirectCurrent(2)),
             ],
-            cross_bleed_valve_controller: CrossBleedValveController::new(),
             cross_bleed_valve: CrossBleedValve::new(1.),
             fadec: FullAuthorityDigitalEngineControl::new(context),
             engine_starter_valve_controllers: [
@@ -182,14 +180,6 @@ impl A320Pneumatic {
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         hydraulics: &A320Hydraulic,
     ) {
-        // Update cross bleed
-        self.cross_bleed_valve_controller.update(
-            self.apu_bleed_air_valve.is_open(),
-            overhead_panel.cross_bleed_mode(),
-        );
-        self.cross_bleed_valve
-            .update_open_amount(&self.cross_bleed_valve_controller);
-
         self.apu.update(&self.apu_bleed_air_controller);
 
         for bleed_monitoring_computer in self.bleed_monitoring_computers.iter_mut() {
@@ -202,6 +192,10 @@ impl A320Pneumatic {
                 self.cross_bleed_valve.is_open(),
                 &self.fadec,
             );
+
+            // I am not exactly sure if both BMCs should actually control this valve all the time.
+            self.cross_bleed_valve
+                .update_open_amount(&bleed_monitoring_computer.main_channel);
         }
 
         let (bleed_monitoring_computer_one, bleed_monitoring_computer_two) =
@@ -365,43 +359,6 @@ impl EngineStarterValveController {
     }
 }
 
-struct CrossBleedValveController {
-    is_apu_bleed_valve_open: bool,
-    cross_bleed_valve_selector: CrossBleedValveSelectorMode,
-}
-impl CrossBleedValveController {
-    fn new() -> Self {
-        Self {
-            is_apu_bleed_valve_open: false,
-            cross_bleed_valve_selector: CrossBleedValveSelectorMode::Auto,
-        }
-    }
-
-    fn update(
-        &mut self,
-        apu_bleed_air_valve_is_open: bool,
-        cross_bleed_valve_selector: CrossBleedValveSelectorMode,
-    ) {
-        self.is_apu_bleed_valve_open = apu_bleed_air_valve_is_open;
-        self.cross_bleed_valve_selector = cross_bleed_valve_selector;
-    }
-}
-impl ControllerSignal<CrossBleedValveSignal> for CrossBleedValveController {
-    fn signal(&self) -> Option<CrossBleedValveSignal> {
-        match self.cross_bleed_valve_selector {
-            CrossBleedValveSelectorMode::Shut => Some(CrossBleedValveSignal::new_closed(true)),
-            CrossBleedValveSelectorMode::Open => Some(CrossBleedValveSignal::new_open(true)),
-            CrossBleedValveSelectorMode::Auto => {
-                if self.is_apu_bleed_valve_open {
-                    Some(CrossBleedValveSignal::new_open(false))
-                } else {
-                    Some(CrossBleedValveSignal::new_closed(false))
-                }
-            }
-        }
-    }
-}
-
 struct BleedMonitoringComputer {
     main_channel_engine_number: usize,
     backup_channel_engine_number: usize,
@@ -417,7 +374,6 @@ impl BleedMonitoringComputer {
         powered_by: ElectricalBusType,
     ) -> Self {
         Self {
-            // This is the BMC number, not directly related to any engine number.
             main_channel_engine_number,
             backup_channel_engine_number,
             main_channel: BleedMonitoringComputerChannel::new(
@@ -702,6 +658,21 @@ impl ControllerSignal<FanAirValveSignal> for BleedMonitoringComputerChannel {
         Some(FanAirValveSignal::new(Ratio::new::<ratio>(
             self.fan_air_valve_pid.output().max(0.).min(1.),
         )))
+    }
+}
+impl ControllerSignal<CrossBleedValveSignal> for BleedMonitoringComputerChannel {
+    fn signal(&self) -> Option<CrossBleedValveSignal> {
+        match self.cross_bleed_valve_selector {
+            CrossBleedValveSelectorMode::Shut => Some(CrossBleedValveSignal::new_closed(true)),
+            CrossBleedValveSelectorMode::Open => Some(CrossBleedValveSignal::new_open(true)),
+            CrossBleedValveSelectorMode::Auto => {
+                if self.is_apu_bleed_valve_open {
+                    Some(CrossBleedValveSignal::new_open(false))
+                } else {
+                    Some(CrossBleedValveSignal::new_closed(false))
+                }
+            }
+        }
     }
 }
 
