@@ -1568,6 +1568,7 @@ class FMCMainDisplay extends BaseAirliners {
             const currentRunway = this.flightPlanManager.getDepartureRunway();
             this.flightPlanManager.setDepartureProcIndex(departureIndex, () => {
                 if (currentRunway) {
+                    SimVar.SetSimVarValue("L:A32NX_DEPARTURE_ELEVATION", "feet", A32NX_Util.meterToFeet(currentRunway.elevation));
                     const departure = this.flightPlanManager.getDeparture();
                     const departureRunwayIndex = departure.runwayTransitions.findIndex(t => {
                         return t.name.indexOf(currentRunway.designation) !== -1;
