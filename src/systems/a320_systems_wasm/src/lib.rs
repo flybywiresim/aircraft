@@ -124,13 +124,13 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn std::error::Error
                 "BLEED AIR ENGINE",
                 "Bool",
                 1,
-                vec!["OVHD_PNEU_ENG_1_BLEED_PB_IS_AUTO"],
+                vec!["OVHD_PNEU_ENG_1_BLEED_PB_IS_AUTO".to_owned()],
             )?
             .provides_aircraft_variable_with_additional_names(
                 "BLEED AIR ENGINE",
                 "Bool",
                 2,
-                vec!["OVHD_PNEU_ENG_2_BLEED_PB_IS_AUTO"],
+                vec!["OVHD_PNEU_ENG_2_BLEED_PB_IS_AUTO".to_owned()],
             )?
             .build(A320::new);
 
