@@ -570,7 +570,7 @@ impl BleedMonitoringComputerChannel {
             is_apu_bleed_valve_open: false,
             is_apu_bleed_on: false,
             high_pressure_valve_pid: PidController::new(0.05, 0.003, 0., 0., 1., 65.),
-            pressure_regulating_valve_pid: PidController::new(0., 0.01, 0., 0., 1., 46.),
+            pressure_regulating_valve_pid: PidController::new(0.05, 0.01, 0., 0., 1., 46.),
             fan_air_valve_pid: PidController::new(-0.005, -0.001, 0., 0., 1., 200.),
             cross_bleed_valve_selector: CrossBleedValveSelectorMode::Auto,
             cross_bleed_valve_is_open: false,
@@ -877,9 +877,9 @@ impl EngineBleedAirSystem {
                 context, 1., 0., 2.,
             ),
             intermediate_pressure_compression_chamber_controller:
-                EngineCompressionChamberController::new(context, 4., 0., 5.),
+                EngineCompressionChamberController::new(context, 3., 0., 4.),
             high_pressure_compression_chamber_controller: EngineCompressionChamberController::new(
-                context, 4., 2., 5.,
+                context, 3., 2., 4.,
             ),
             fan_compression_chamber: CompressionChamber::new(Volume::new::<cubic_meter>(1.)),
             intermediate_pressure_compression_chamber: CompressionChamber::new(Volume::new::<
@@ -1265,7 +1265,7 @@ impl PackComplex {
                 Pressure::new::<psi>(14.7),
                 ThermodynamicTemperature::new::<degree_celsius>(15.),
             ),
-            exhaust: PneumaticExhaust::new(1.),
+            exhaust: PneumaticExhaust::new(0.1),
             pack_flow_valve: DefaultValve::new_closed(),
             pack_flow_valve_controller: PackFlowValveController::new(context, engine_number),
         }
@@ -2101,6 +2101,14 @@ mod tests {
                     .fluid_flow()
             })
         }
+
+        fn pack_container_pressure(&self, engine_number: usize) -> Pressure {
+            self.query(|a| {
+                a.pneumatic.packs[engine_number - 1]
+                    .pack_container
+                    .pressure()
+            })
+        }
     }
 
     fn test_bed() -> PneumaticTestBed {
@@ -2121,8 +2129,8 @@ mod tests {
         let alt = Length::new::<foot>(0.);
 
         let mut test_bed = test_bed_with()
-            .toga_eng1()
-            .toga_eng2()
+            .idle_eng1()
+            .idle_eng2()
             .in_isa_atmosphere(alt)
             .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Auto)
             .mach_number(MachNumber(0.))
@@ -2150,10 +2158,18 @@ mod tests {
         let mut abv_open = Vec::new();
         let mut fav_open = Vec::new();
 
-        for i in 1..3000 {
+        for i in 1..5000 {
             if i == 5000 {
-                test_bed = test_bed.idle_eng1().idle_eng2();
+                // test_bed = test_bed.toga_eng1().toga_eng2();
             }
+
+            // println!(
+            //     "{}",
+            //     test_bed
+            //         .pack_flow_valve_flow(1)
+            //         .get::<cubic_meter_per_second>()
+            // );
+            // println!("{}", test_bed.pack_container_pressure(1).get::<psi>());
 
             ts.push(i as f64 * 16.);
 
@@ -2163,9 +2179,6 @@ mod tests {
             c1s.push(test_bed.precooler_inlet_pressure(1).get::<psi>());
             c0s.push(test_bed.precooler_outlet_pressure(1).get::<psi>());
             pcss.push(test_bed.precooler_supply_pressure(1).get::<psi>());
-            // c1s.push(test_bed.green_hydraulic_reservoir_pressure().get::<psi>());
-            // c0s.push(test_bed.blue_hydraulic_reservoir_pressure().get::<psi>());
-            // pcss.push(test_bed.yellow_hydraulic_reservoir_pressure().get::<psi>());
             escs.push(test_bed.engine_starter_container_pressure(1).get::<psi>());
 
             ipts.push(test_bed.ip_temperature(1).get::<degree_celsius>());
@@ -2278,6 +2291,10 @@ mod tests {
 
             test_bed.run_with_delta(Duration::from_millis(16));
         }
+
+        assert!(test_bed.green_hydraulic_reservoir_pressure() > Pressure::new::<psi>(35.));
+        assert!(test_bed.blue_hydraulic_reservoir_pressure() > Pressure::new::<psi>(35.));
+        assert!(test_bed.yellow_hydraulic_reservoir_pressure() > Pressure::new::<psi>(35.));
 
         // If anyone is wondering, I am using python to plot pressure curves. This will be removed once the model is complete.
         let data = vec![ts, green_pressures, blue_pressures, yellow_pressures];
