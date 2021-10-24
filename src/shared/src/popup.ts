@@ -2,9 +2,9 @@
 /// <reference path="../../../typings/fs-base-ui/html_ui/JS/common.d.ts" />
 
 /**
- * PopUpParams container for popups to package popup metadata
+ * NotiticationParams container for popups to package popup metadata
  */
-export type PopUpParams = {
+export type NotiticationParams = {
     __Type: string;
     buttons: NotificationButton[];
     style: string;
@@ -27,7 +27,7 @@ export type PopUpParams = {
  * popup.showPopUp({ title: "CRITICAL SETTING CHANGED", message: "Your message here", style: "small"}, yesFunc, noFunc);
  */
 export class PopUp {
-    params: PopUpParams;
+    params: NotiticationParams;
 
     popupListener: any;
 
@@ -39,7 +39,7 @@ export class PopUp {
         const time = new Date().getTime();
         this.popupListener = undefined;
         this.params = {
-            __Type: 'PopUpParams',
+            __Type: 'SNotificationParams',
             buttons: [new NotificationButton('TT:MENU.YES', `A32NX_POP_${title}_${time}_YES`), new NotificationButton('TT:MENU.NO', `A32NX_POP_${title}_${time}_NO`)],
             style: 'normal',
             displayGlobalPopup: true,
