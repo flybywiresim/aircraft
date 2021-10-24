@@ -1396,9 +1396,8 @@ impl SimulationElement for CrossBleedValve {
 
 #[cfg(test)]
 mod tests {
-    use crate::hydraulic::A320HydraulicOverheadPanel;
+    use crate::hydraulic::{A320Hydraulic, A320HydraulicOverheadPanel};
 
-    use super::*;
     use systems::{
         electrical::{
             test::TestElectricitySource, ElectricalBus, Electricity, ElectricitySource,
@@ -1408,23 +1407,30 @@ mod tests {
         hydraulic::brake_circuit::AutobrakePanel,
         landing_gear::{LandingGear, LandingGearControlInterfaceUnit},
         overhead::MomentaryPushButton,
-        pneumatic::EngineState,
+        pneumatic::{
+            BleedMonitoringComputerChannelOperationMode, ControllablePneumaticValve,
+            CrossBleedValveSelectorMode, EngineState, PneumaticContainer, PneumaticValveSignal,
+        },
         shared::{
-            arinc429::SignStatus, ApuBleedAirValveSignal, ElectricalBusType, ElectricalBuses,
-            EmergencyElectricalRatPushButton, EmergencyElectricalState,
-            InternationalStandardAtmosphere, MachNumber, PotentialOrigin,
+            arinc429::SignStatus, ApuBleedAirValveSignal, ControllerSignal, ElectricalBusType,
+            ElectricalBuses, EmergencyElectricalRatPushButton, EmergencyElectricalState,
+            EngineFirePushButtons, InternationalStandardAtmosphere, MachNumber, PneumaticValve,
+            PotentialOrigin,
         },
         simulation::{
             test::{SimulationTestBed, TestBed, WriteByName},
-            Aircraft, SimulationElement,
+            Aircraft, InitContext, SimulationElement, SimulationElementVisitor, UpdateContext,
         },
     };
 
     use std::{fs::File, time::Duration};
 
     use uom::si::{
-        length::foot, pressure::psi, thermodynamic_temperature::degree_celsius, velocity::knot,
+        f64::*, length::foot, pressure::psi, ratio::ratio,
+        thermodynamic_temperature::degree_celsius, velocity::knot,
     };
+
+    use super::{A320Pneumatic, A320PneumaticOverheadPanel};
 
     struct TestApu {
         bleed_air_valve_signal: ApuBleedAirValveSignal,
@@ -2332,8 +2338,6 @@ mod tests {
             .stop_eng2()
             .in_isa_atmosphere(altitude)
             .mach_number(MachNumber(0.))
-            .set_pack_flow_pb_is_auto(1, false)
-            .set_pack_flow_pb_is_auto(2, false)
             .and_stabilize();
 
         let ambient_pressure = InternationalStandardAtmosphere::pressure_at_altitude(altitude);
@@ -2355,6 +2359,42 @@ mod tests {
 
         assert!(test_bed.hp_valve_is_open(1));
         assert!(!test_bed.hp_valve_is_open(2));
+
+        assert!(!test_bed.es_valve_is_open(1));
+        assert!(!test_bed.es_valve_is_open(2));
+
+        assert!(!test_bed.cross_bleed_valve_is_open());
+    }
+
+    #[test]
+    fn two_engine_idle_full_state() {
+        let altitude = Length::new::<foot>(0.);
+        let test_bed = test_bed_with()
+            .idle_eng1()
+            .idle_eng2()
+            .in_isa_atmosphere(altitude)
+            .mach_number(MachNumber(0.))
+            .and_stabilize();
+
+        let ambient_pressure = InternationalStandardAtmosphere::pressure_at_altitude(altitude);
+
+        assert!(test_bed.ip_pressure(1) - ambient_pressure > pressure_tolerance());
+        assert!(test_bed.ip_pressure(2) - ambient_pressure > pressure_tolerance());
+
+        assert!(test_bed.hp_pressure(1) - ambient_pressure > pressure_tolerance());
+        assert!(test_bed.hp_pressure(2) - ambient_pressure > pressure_tolerance());
+
+        assert!(test_bed.transfer_pressure(1) - ambient_pressure > pressure_tolerance());
+        assert!(test_bed.transfer_pressure(2) - ambient_pressure > pressure_tolerance());
+
+        assert!((test_bed.precooler_inlet_pressure(1) - ambient_pressure) > pressure_tolerance());
+        assert!((test_bed.precooler_inlet_pressure(2) - ambient_pressure) > pressure_tolerance());
+
+        assert!((test_bed.precooler_outlet_pressure(1) - ambient_pressure) > pressure_tolerance());
+        assert!((test_bed.precooler_outlet_pressure(2) - ambient_pressure) > pressure_tolerance());
+
+        assert!(test_bed.hp_valve_is_open(1));
+        assert!(test_bed.hp_valve_is_open(2));
 
         assert!(!test_bed.es_valve_is_open(1));
         assert!(!test_bed.es_valve_is_open(2));
