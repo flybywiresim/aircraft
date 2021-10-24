@@ -308,6 +308,11 @@ impl PneumaticContainerConnector {
         self.fluid_flow
     }
 }
+impl Default for PneumaticContainerConnector {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 
 pub struct PneumaticExhaust {
     exhaust_speed: f64,
@@ -370,7 +375,7 @@ mod tests {
 
     use std::time::Duration;
     use uom::si::{
-        acceleration::foot_per_second_squared, angle::radian, length::foot, pressure::pascal,
+        acceleration::foot_per_second_squared, angle::radian, length::foot,
         thermodynamic_temperature::degree_celsius, velocity::knot, volume::cubic_meter,
         volume_rate::cubic_meter_per_second,
     };

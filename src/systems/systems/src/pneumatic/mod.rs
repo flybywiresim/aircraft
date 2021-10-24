@@ -132,6 +132,10 @@ impl TargetPressureSignal {
     pub fn new(target_pressure: Pressure) -> Self {
         Self { target_pressure }
     }
+
+    pub fn target_pressure(&self) -> Pressure {
+        self.target_pressure
+    }
 }
 
 pub struct EngineCompressionChamberController {
@@ -600,11 +604,14 @@ mod tests {
         let compression_chamber_controller =
             ConstantPressureController::new(Pressure::new::<psi>(30.));
 
-        if let Some(signal) = compression_chamber_controller.signal() {
-            assert_eq!(signal.target_pressure, Pressure::new::<psi>(30.));
-        } else {
-            assert!(false);
-        }
+        assert_about_eq!(
+            compression_chamber_controller
+                .signal()
+                .unwrap()
+                .target_pressure()
+                .get::<psi>(),
+            30.
+        );
     }
 
     #[test]
@@ -634,11 +641,13 @@ mod tests {
 
         compression_chamber_controller.update(&context, &engine);
 
-        if let Some(signal) = compression_chamber_controller.signal() {
-            assert!(signal.target_pressure > ambient_pressure);
-        } else {
-            assert!(false);
-        }
+        assert!(
+            compression_chamber_controller
+                .signal()
+                .unwrap()
+                .target_pressure()
+                > ambient_pressure
+        );
     }
 
     #[test]
@@ -657,11 +666,13 @@ mod tests {
 
         compression_chamber_controller.update(&context, &engine);
 
-        if let Some(signal) = compression_chamber_controller.signal() {
-            assert!(signal.target_pressure > ambient_pressure);
-        } else {
-            assert!(false);
-        }
+        assert!(
+            compression_chamber_controller
+                .signal()
+                .unwrap()
+                .target_pressure()
+                > ambient_pressure
+        );
     }
 
     #[test]
@@ -671,17 +682,19 @@ mod tests {
         let mut init_context = InitContext::new(&mut electricity, &mut registry);
 
         let engine = TestEngine::cold_dark();
-        let mut compression_chamber =
+        let mut compression_chamber_controller =
             EngineCompressionChamberController::new(&mut init_context, 0.5, 0.5, 2.);
         let context = context(Duration::from_millis(1000), Length::new::<foot>(0.));
 
-        compression_chamber.update(&context, &engine);
+        compression_chamber_controller.update(&context, &engine);
 
-        if let Some(signal) = compression_chamber.signal() {
-            assert_eq!(signal.target_pressure, context.ambient_pressure());
-        } else {
-            assert!(false)
-        }
+        assert_eq!(
+            compression_chamber_controller
+                .signal()
+                .unwrap()
+                .target_pressure(),
+            context.ambient_pressure()
+        );
     }
 
     #[test]
@@ -691,17 +704,19 @@ mod tests {
         let mut init_context = InitContext::new(&mut electricity, &mut registry);
 
         let engine = TestEngine::toga();
-        let mut compression_chamber =
+        let mut compression_chamber_controller =
             EngineCompressionChamberController::new(&mut init_context, 1., 1., 1.);
         let context = context(Duration::from_millis(1000), Length::new::<foot>(0.));
 
-        compression_chamber.update(&context, &engine);
+        compression_chamber_controller.update(&context, &engine);
 
-        if let Some(signal) = compression_chamber.signal() {
-            assert!(signal.target_pressure > context.ambient_pressure());
-        } else {
-            assert!(false)
-        }
+        assert!(
+            compression_chamber_controller
+                .signal()
+                .unwrap()
+                .target_pressure()
+                > context.ambient_pressure()
+        );
     }
 
     #[test]
@@ -711,17 +726,19 @@ mod tests {
         let mut init_context = InitContext::new(&mut electricity, &mut registry);
 
         let engine = TestEngine::idle();
-        let mut compression_chamber =
+        let mut compression_chamber_controller =
             EngineCompressionChamberController::new(&mut init_context, 1., 1., 1.);
         let context = context(Duration::from_millis(1000), Length::new::<foot>(0.));
 
-        compression_chamber.update(&context, &engine);
+        compression_chamber_controller.update(&context, &engine);
 
-        if let Some(signal) = compression_chamber.signal() {
-            assert!(signal.target_pressure > context.ambient_pressure());
-        } else {
-            assert!(false)
-        }
+        assert!(
+            compression_chamber_controller
+                .signal()
+                .unwrap()
+                .target_pressure()
+                > context.ambient_pressure()
+        );
     }
 
     #[test]
@@ -739,14 +756,14 @@ mod tests {
         compression_chamber_controller.update(&context, &engine);
         compression_chamber.update(&compression_chamber_controller);
 
-        if let Some(signal) = compression_chamber_controller.signal() {
-            assert_about_eq!(
-                signal.target_pressure.get::<psi>(),
-                compression_chamber.pressure().get::<psi>()
-            );
-        } else {
-            assert!(false)
-        }
+        assert_about_eq!(
+            compression_chamber_controller
+                .signal()
+                .unwrap()
+                .target_pressure()
+                .get::<psi>(),
+            compression_chamber.pressure().get::<psi>()
+        );
     }
 
     #[test]

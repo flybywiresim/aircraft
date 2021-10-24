@@ -462,6 +462,19 @@ impl BleedMonitoringComputer {
     pub fn is_powered(&self) -> bool {
         self.is_powered
     }
+
+    fn operation_mode_for_engine(
+        &self,
+        engine_number: usize,
+    ) -> BleedMonitoringComputerChannelOperationMode {
+        if engine_number == self.main_channel_engine_number {
+            return self.main_channel.operation_mode();
+        } else if engine_number == self.backup_channel_engine_number {
+            return self.backup_channel.operation_mode();
+        };
+
+        panic!("Unknown engine number");
+    }
 }
 impl SimulationElement for BleedMonitoringComputer {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
@@ -601,7 +614,7 @@ impl BleedMonitoringComputerChannel {
 
     pub fn or_none_if_slave(&self) -> Option<&BleedMonitoringComputerChannel> {
         match self.operation_mode() {
-            BleedMonitoringComputerChannelOperationMode::Master => Some(&self),
+            BleedMonitoringComputerChannelOperationMode::Master => Some(self),
             BleedMonitoringComputerChannelOperationMode::Slave => None,
         }
     }
@@ -738,9 +751,9 @@ impl EngineBleedFaultLightMonitor {
             && is_cross_bleed_selector_shut
             && is_cross_bleed_valve_fully_closed;
 
-        return !is_engine_starter_valve_fully_closed
+        !is_engine_starter_valve_fully_closed
             || apu_bleed_closure_condition
-            || cross_bleed_closure_condition;
+            || cross_bleed_closure_condition
     }
 }
 impl ControllerSignal<FaultLightSignal> for EngineBleedFaultLightMonitor {
@@ -1660,6 +1673,8 @@ mod tests {
         fn update_after_power_distribution(&mut self, context: &UpdateContext) {
             self.electrical.update(context);
 
+            self.update_hydraulics(context);
+
             self.apu.update(self.pneumatic.apu_bleed_air_valve());
             self.pneumatic.update(
                 context,
@@ -2022,15 +2037,14 @@ mod tests {
                 .set_pack_flow_pb_is_auto(2, true)
         }
 
-        fn bmc_channel_for_engine(
+        fn bmc_operation_mode_for_engine(
             &self,
             bmc_number: usize,
             engine_number: usize,
-        ) -> Option<BleedMonitoringComputerChannelOperationMode> {
+        ) -> BleedMonitoringComputerChannelOperationMode {
             self.query(|a| {
                 a.pneumatic.bleed_monitoring_computers[bmc_number - 1]
-                    .channel_for_engine(engine_number)
-                    .map_or(None, |channel| Some(channel.operation_mode()))
+                    .operation_mode_for_engine(engine_number)
             })
         }
 
@@ -2748,16 +2762,22 @@ mod tests {
             .and_run();
 
         assert_eq!(
-            test_bed.bmc_channel_for_engine(1, 1).unwrap(),
+            test_bed.bmc_operation_mode_for_engine(1, 1),
             BleedMonitoringComputerChannelOperationMode::Master
         );
         assert_eq!(
-            test_bed.bmc_channel_for_engine(2, 2).unwrap(),
+            test_bed.bmc_operation_mode_for_engine(2, 2),
             BleedMonitoringComputerChannelOperationMode::Master
         );
 
-        assert!(test_bed.bmc_channel_for_engine(1, 2).is_none());
-        assert!(test_bed.bmc_channel_for_engine(2, 1).is_none());
+        assert_eq!(
+            test_bed.bmc_operation_mode_for_engine(1, 2),
+            BleedMonitoringComputerChannelOperationMode::Slave
+        );
+        assert_eq!(
+            test_bed.bmc_operation_mode_for_engine(2, 1),
+            BleedMonitoringComputerChannelOperationMode::Slave
+        );
     }
 
     #[test]
@@ -2771,16 +2791,22 @@ mod tests {
         assert!(!test_bed.bmc_is_powered(2));
 
         assert_eq!(
-            test_bed.bmc_channel_for_engine(1, 1).unwrap(),
+            test_bed.bmc_operation_mode_for_engine(1, 1),
             BleedMonitoringComputerChannelOperationMode::Master
         );
         assert_eq!(
-            test_bed.bmc_channel_for_engine(1, 2).unwrap(),
+            test_bed.bmc_operation_mode_for_engine(1, 2),
             BleedMonitoringComputerChannelOperationMode::Master
         );
 
-        assert!(test_bed.bmc_channel_for_engine(2, 1).is_none());
-        assert!(test_bed.bmc_channel_for_engine(2, 2).is_none());
+        assert_eq!(
+            test_bed.bmc_operation_mode_for_engine(2, 1),
+            BleedMonitoringComputerChannelOperationMode::Slave
+        );
+        assert_eq!(
+            test_bed.bmc_operation_mode_for_engine(2, 2),
+            BleedMonitoringComputerChannelOperationMode::Slave
+        );
     }
 
     #[test]
@@ -2794,16 +2820,22 @@ mod tests {
         assert!(test_bed.bmc_is_powered(2));
 
         assert_eq!(
-            test_bed.bmc_channel_for_engine(2, 1).unwrap(),
+            test_bed.bmc_operation_mode_for_engine(2, 1),
             BleedMonitoringComputerChannelOperationMode::Master
         );
         assert_eq!(
-            test_bed.bmc_channel_for_engine(2, 2).unwrap(),
+            test_bed.bmc_operation_mode_for_engine(2, 2),
             BleedMonitoringComputerChannelOperationMode::Master
         );
 
-        assert!(test_bed.bmc_channel_for_engine(1, 1).is_none());
-        assert!(test_bed.bmc_channel_for_engine(1, 2).is_none(),);
+        assert_eq!(
+            test_bed.bmc_operation_mode_for_engine(1, 1),
+            BleedMonitoringComputerChannelOperationMode::Slave
+        );
+        assert_eq!(
+            test_bed.bmc_operation_mode_for_engine(1, 2),
+            BleedMonitoringComputerChannelOperationMode::Slave
+        );
     }
 
     #[test]
