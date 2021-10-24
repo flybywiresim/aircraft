@@ -897,13 +897,13 @@ declare global {
     namespace Popup {
         function isBlockedByPopUp(): boolean;
 
-        class PopUpParams {
+        class NotiticationParams {
             buttons: any[];
             style: string;
             displayGlobalPopup: boolean;
         }
 
-        function showPopUp(params: PopUpParams): void;
+        function showPopUp(params: NotiticationParams): void;
     }
 
     class ComponentRegister {
