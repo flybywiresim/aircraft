@@ -462,6 +462,7 @@ impl ControlValveCommand for TestGeneratorControlUnit {
 
 #[cfg(test)]
 mod tests {
+    use crate::hydraulic::update_iterator::FixedStepLoop;
     use crate::simulation::test::{SimulationTestBed, TestBed};
     use crate::simulation::{Aircraft, SimulationElement, SimulationElementVisitor};
     use std::time::Duration;
@@ -480,6 +481,10 @@ mod tests {
                 is_emergency: false,
             }
         }
+
+        fn set_in_emergency(&mut self, state: bool) {
+            self.is_emergency = state;
+        }
     }
     impl EmergencyElectricalState for TestEmergencyState {
         fn is_in_emergency_elec(&self) -> bool {
@@ -494,11 +499,15 @@ mod tests {
 
     #[cfg(test)]
     impl TestRatManOn {
-        fn _pressed() -> Self {
+        fn pressed() -> Self {
             Self { is_pressed: true }
         }
         fn not_pressed() -> Self {
             Self { is_pressed: false }
+        }
+
+        fn press(&mut self) {
+            self.is_pressed = true;
         }
     }
 
@@ -555,6 +564,8 @@ mod tests {
     }
 
     struct TestAircraft {
+        updater_fixed_step: FixedStepLoop,
+
         gcu: GeneratorControlUnit,
         lgciu: TestLgciuInterface,
         rat_man_on: TestRatManOn,
@@ -567,6 +578,7 @@ mod tests {
     impl TestAircraft {
         fn new(context: &mut InitContext) -> Self {
             Self {
+                updater_fixed_step: FixedStepLoop::new(Duration::from_millis(33)),
                 gcu: gen_control_unit(),
                 lgciu: TestLgciuInterface::_is_compressed(),
                 rat_man_on: TestRatManOn::not_pressed(),
@@ -580,24 +592,40 @@ mod tests {
                 ),
             }
         }
+
+        fn rat_man_on_pressed(&mut self) {
+            self.rat_man_on.press();
+        }
+
+        fn set_in_emergency(&mut self, state: bool) {
+            self.emergency_state.set_in_emergency(state);
+        }
+
+        fn set_hyd_pressure(&mut self, pressure: Pressure) {
+            self.current_pressure = pressure;
+        }
     }
 
     impl Aircraft for TestAircraft {
         fn update_after_power_distribution(&mut self, context: &UpdateContext) {
-            self.gcu.update(
-                self.emergency_gen.speed(),
-                self.current_pressure,
-                &self.emergency_state,
-                &self.rat_man_on,
-                &self.lgciu,
-            );
+            self.updater_fixed_step.update(context);
 
-            self.emergency_gen.update(
-                self.current_pressure,
-                &self.gcu,
-                &TestGenerator::from_gcu(&self.gcu),
-                context,
-            );
+            for cur_time_step in &mut self.updater_fixed_step {
+                self.gcu.update(
+                    self.emergency_gen.speed(),
+                    self.current_pressure,
+                    &self.emergency_state,
+                    &self.rat_man_on,
+                    &self.lgciu,
+                );
+
+                self.emergency_gen.update(
+                    self.current_pressure,
+                    &self.gcu,
+                    &TestGenerator::from_gcu(&self.gcu),
+                    &context.with_delta(cur_time_step),
+                );
+            }
         }
     }
     impl SimulationElement for TestAircraft {
@@ -616,310 +644,86 @@ mod tests {
 
         test_bed.run();
 
-        test_bed.query(|a| {
+        assert!(test_bed.query(|a| {
             a.emergency_gen.hyd_motor.speed() == AngularVelocity::new::<radian_per_second>(0.)
-        });
-        test_bed.query(|a| a.gcu.valve_position_command() == Ratio::new::<ratio>(0.));
+        }));
+
+        assert!(test_bed.query(|a| a.gcu.valve_position_command() == Ratio::new::<ratio>(0.)));
     }
 
     #[test]
-    fn new_emergency_generator_with_opened_valve_should_spin_if_pressure_available() {
+    fn emergency_generator_in_emergency_state_should_start_spining_with_pressure() {
         let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
-        test_bed.run_with_delta(Duration::from_secs_f64(3.));
+        test_bed.run_with_delta(Duration::from_secs_f64(0.5));
 
-        test_bed.query(|a| {
-            a.emergency_gen.hyd_motor.speed()
-                >= AngularVelocity::new::<revolution_per_minute>(1000.)
-        });
+        assert!(test_bed.query(|a| {
+            a.emergency_gen.hyd_motor.speed() == AngularVelocity::new::<revolution_per_minute>(0.)
+        }));
+
+        test_bed.command(|a| a.set_in_emergency(true));
+
+        test_bed.run_with_delta(Duration::from_secs_f64(0.5));
+
+        assert!(test_bed.query(|a| {
+            a.emergency_gen.hyd_motor.speed() >= AngularVelocity::new::<revolution_per_minute>(100.)
+        }));
     }
 
-    // #[test]
-    // fn emergency_generator_with_opened_valve_should_spin_if_pressure_available() {
-    //     let mut emergency_gen = ElectricalEmergencyGenerator::new(Volume::new::<cubic_inch>(0.19));
+    #[test]
+    fn emergency_generator_in_emergency_state_should_not_start_spining_without_pressure() {
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
-    //     let gcu = TestGeneratorControlUnit::commanding_full_open();
+        test_bed.command(|a| a.set_hyd_pressure(Pressure::new::<psi>(0.)));
+        test_bed.command(|a| a.set_in_emergency(true));
 
-    //     let timestep = 0.05;
-    //     let context = context(Duration::from_secs_f64(timestep));
+        test_bed.run_with_delta(Duration::from_secs_f64(0.5));
 
-    //     let mut time = 0.0;
-    //     for _ in 0..500 {
-    //         emergency_gen.update(
-    //             Pressure::new::<psi>(2500.),
-    //             &gcu,
-    //             &TestGenerator::from_gcu(&gcu),
-    //             &context,
-    //         );
+        assert!(test_bed.query(|a| {
+            a.emergency_gen.hyd_motor.speed() == AngularVelocity::new::<revolution_per_minute>(0.)
+        }));
+    }
 
-    //         assert!(emergency_gen.hyd_motor.speed > AngularVelocity::new::<radian_per_second>(0.));
+    #[test]
+    fn emergency_generator_in_emergency_state_regulates_speed() {
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
-    //         time += timestep;
+        test_bed.command(|a| a.set_in_emergency(true));
 
-    //         if (3.0..=3.5).contains(&time) {
-    //             // Check we reached a relevant speed threshold after 3s
-    //             assert!(
-    //                 emergency_gen.hyd_motor.speed
-    //                     >= AngularVelocity::new::<revolution_per_minute>(1000.)
-    //             );
-    //         }
+        test_bed.run_with_delta(Duration::from_secs_f64(15.));
 
-    //         println!(
-    //             "Time:{:.2} Rpm:{:.0}",
-    //             time,
-    //             emergency_gen
-    //                 .hyd_motor
-    //                 .speed()
-    //                 .get::<revolution_per_minute>()
-    //         );
-    //     }
+        assert!(test_bed.query(|a| {
+            a.emergency_gen.hyd_motor.speed()
+                >= AngularVelocity::new::<revolution_per_minute>(11900.)
+        }));
 
-    //     // Check it's not going at crazy speed even though we keep control valve fully opened
-    //     assert!(
-    //         emergency_gen.hyd_motor.speed <= AngularVelocity::new::<revolution_per_minute>(100000.)
-    //     );
-    // }
+        assert!(test_bed.query(|a| {
+            a.emergency_gen.hyd_motor.speed()
+                <= AngularVelocity::new::<revolution_per_minute>(12100.)
+        }));
+    }
 
-    // #[test]
-    // fn emergency_generator_with_opened_valve_should_not_spin_without_pressure() {
-    //     let mut emergency_gen = ElectricalEmergencyGenerator::new(Volume::new::<cubic_inch>(0.19));
+    #[test]
+    fn emergency_generator_stops_in_less_than_5_seconds() {
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
-    //     let gcu = TestGeneratorControlUnit::commanding_full_open();
+        test_bed.command(|a| a.set_in_emergency(true));
 
-    //     let timestep = 0.05;
-    //     let context = context(Duration::from_secs_f64(timestep));
+        test_bed.run_with_delta(Duration::from_secs_f64(15.));
 
-    //     let mut time = 0.0;
-    //     for _ in 0..500 {
-    //         emergency_gen.update(
-    //             Pressure::new::<psi>(0.),
-    //             &gcu,
-    //             &TestGenerator::from_gcu(&gcu),
-    //             &context,
-    //         );
+        assert!(test_bed.query(|a| {
+            a.emergency_gen.hyd_motor.speed()
+                >= AngularVelocity::new::<revolution_per_minute>(11000.)
+        }));
 
-    //         assert!(
-    //             emergency_gen.hyd_motor.speed <= AngularVelocity::new::<revolution_per_minute>(5.)
-    //         );
+        test_bed.command(|a| a.set_in_emergency(false));
 
-    //         time += timestep;
+        test_bed.run_with_delta(Duration::from_secs_f64(5.));
 
-    //         println!(
-    //             "Time:{:.2} Rpm:{:.0}",
-    //             time,
-    //             emergency_gen
-    //                 .hyd_motor
-    //                 .speed()
-    //                 .get::<revolution_per_minute>()
-    //         );
-    //     }
-    // }
-
-    // #[test]
-    // fn gen_control_unit_init() {
-    //     let gcu = gen_control_unit();
-    //     let mut emergency_gen = ElectricalEmergencyGenerator::new(Volume::new::<cubic_inch>(0.19));
-
-    //     assert!(!gcu.is_active);
-
-    //     let timestep = 0.05;
-    //     let context = context(Duration::from_secs_f64(timestep));
-
-    //     let mut time = 0.0;
-    //     for _ in 0..50 {
-    //         emergency_gen.update(
-    //             Pressure::new::<psi>(2500.),
-    //             &gcu,
-    //             &TestGenerator::from_gcu(&gcu),
-    //             &context,
-    //         );
-
-    //         assert!(emergency_gen.hyd_motor.speed == AngularVelocity::new::<radian_per_second>(0.));
-    //         assert!(!gcu.is_active);
-
-    //         time += timestep;
-
-    //         println!(
-    //             "Time:{:.2} Rpm:{:.0}",
-    //             time,
-    //             emergency_gen
-    //                 .hyd_motor
-    //                 .speed()
-    //                 .get::<revolution_per_minute>()
-    //         );
-    //     }
-    // }
-
-    // #[test]
-    // fn gen_control_unit_starts() {
-    //     let mut gcu = gen_control_unit();
-    //     let mut emergency_gen = ElectricalEmergencyGenerator::new(Volume::new::<cubic_inch>(0.19));
-
-    //     assert!(!gcu.is_active);
-
-    //     let timestep = 0.05;
-    //     let context = context(Duration::from_secs_f64(timestep));
-
-    //     let mut time = 0.0;
-
-    //     let mut emergency_state = TestEmergencyState::not_in_emergency();
-    //     let lgciu = TestLgciuInterface::is_extended();
-    //     for _ in 0..500 {
-    //         if time > 2. {
-    //             emergency_state = TestEmergencyState::in_emergency();
-    //         }
-
-    //         gcu.update(
-    //             emergency_gen.speed(),
-    //             Pressure::new::<psi>(2500.),
-    //             &emergency_state,
-    //             &TestRatManOn::not_pressed(),
-    //             &lgciu,
-    //         );
-    //         emergency_gen.update(
-    //             Pressure::new::<psi>(2500.),
-    //             &gcu,
-    //             &TestGenerator::from_gcu(&gcu),
-    //             &context,
-    //         );
-
-    //         if time > 5. {
-    //             assert!(
-    //                 emergency_gen
-    //                     .hyd_motor
-    //                     .speed()
-    //                     .get::<revolution_per_minute>()
-    //                     > 10000.
-    //             );
-    //             assert!(
-    //                 emergency_gen
-    //                     .hyd_motor
-    //                     .speed()
-    //                     .get::<revolution_per_minute>()
-    //                     < 15000.
-    //             );
-    //         }
-
-    //         // Full load should be below 12 GPM
-    //         assert!(
-    //             emergency_gen
-    //                 .hyd_motor
-    //                 .current_flow
-    //                 .get::<gallon_per_minute>()
-    //                 < 12.
-    //         );
-
-    //         time += timestep;
-
-    //         println!(
-    //             "Time:{:.2} Rpm:{:.0} Power{:.0}",
-    //             time,
-    //             emergency_gen
-    //                 .hyd_motor
-    //                 .speed()
-    //                 .get::<revolution_per_minute>(),
-    //             emergency_gen.produced_power.get::<watt>()
-    //         );
-    //     }
-    // }
-
-    // #[test]
-    // fn gen_control_unit_stops() {
-    //     let mut gcu = gen_control_unit();
-    //     let mut emergency_gen = ElectricalEmergencyGenerator::new(Volume::new::<cubic_inch>(0.19));
-
-    //     assert!(!gcu.is_active);
-
-    //     let timestep = 0.05;
-    //     let context = context(Duration::from_secs_f64(timestep));
-
-    //     let mut time = 0.0;
-
-    //     let mut emergency_state = TestEmergencyState::not_in_emergency();
-    //     let lgciu = TestLgciuInterface::is_extended();
-    //     for _ in 0..500 {
-    //         if time > 2. {
-    //             emergency_state = TestEmergencyState::in_emergency();
-    //         }
-
-    //         if time > 10. {
-    //             emergency_state = TestEmergencyState::not_in_emergency();
-    //         }
-
-    //         gcu.update(
-    //             emergency_gen.speed(),
-    //             Pressure::new::<psi>(2500.),
-    //             &emergency_state,
-    //             &TestRatManOn::not_pressed(),
-    //             &lgciu,
-    //         );
-    //         emergency_gen.update(
-    //             Pressure::new::<psi>(2500.),
-    //             &gcu,
-    //             &TestGenerator::from_gcu(&gcu),
-    //             &context,
-    //         );
-
-    //         if time > 5. && time < 10. {
-    //             assert!(
-    //                 emergency_gen
-    //                     .hyd_motor
-    //                     .speed()
-    //                     .get::<revolution_per_minute>()
-    //                     > 10000.
-    //             );
-    //             assert!(
-    //                 emergency_gen
-    //                     .hyd_motor
-    //                     .speed()
-    //                     .get::<revolution_per_minute>()
-    //                     < 15000.
-    //             );
-    //         }
-
-    //         if time > 10.5 {
-    //             assert!(!gcu.is_active);
-    //         }
-
-    //         if time > 15. {
-    //             assert!(
-    //                 emergency_gen
-    //                     .hyd_motor
-    //                     .speed()
-    //                     .get::<revolution_per_minute>()
-    //                     < 10000.
-    //             );
-    //         }
-
-    //         time += timestep;
-
-    //         println!(
-    //             "Time:{:.2} Rpm:{:.0} Power{:.0}",
-    //             time,
-    //             emergency_gen
-    //                 .hyd_motor
-    //                 .speed()
-    //                 .get::<revolution_per_minute>(),
-    //             emergency_gen.produced_power.get::<watt>()
-    //         );
-    //     }
-    // }
-
-    // #[cfg(test)]
-    // fn context(delta_time: Duration) -> UpdateContext {
-    //     UpdateContext::new(
-    //         delta_time,
-    //         Velocity::new::<knot>(250.),
-    //         Length::new::<foot>(5000.),
-    //         ThermodynamicTemperature::new::<degree_celsius>(25.0),
-    //         true,
-    //         Acceleration::new::<foot_per_second_squared>(0.),
-    //         Acceleration::new::<foot_per_second_squared>(0.),
-    //         Acceleration::new::<foot_per_second_squared>(0.),
-    //         Angle::new::<radian>(0.),
-    //         Angle::new::<radian>(0.),
-    //     )
-    // }
+        assert!(test_bed.query(|a| {
+            a.emergency_gen.hyd_motor.speed() <= AngularVelocity::new::<revolution_per_minute>(5.)
+        }));
+    }
 
     #[cfg(test)]
     fn gen_control_unit() -> GeneratorControlUnit {
