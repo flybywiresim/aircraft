@@ -1,10 +1,7 @@
 use core::panic;
 use std::{f64::consts::PI, time::Duration};
 
-use crate::{
-    hydraulic::{A320Hydraulic, FakeHydraulicReservoir},
-    UpdateContext,
-};
+use crate::{hydraulic::A320Hydraulic, UpdateContext};
 
 use uom::si::{
     f64::*,
@@ -152,18 +149,16 @@ impl A320Pneumatic {
             apu: CompressionChamber::new(Volume::new::<cubic_meter>(5.)),
             apu_bleed_air_valve: DefaultValve::new_closed(),
             apu_bleed_air_controller: ApuCompressionChamberController::new(context),
-            // TODO: I don't like how I have to initialize these containers independently of the actual reservoirs.
-            // If the volumes of the reservoirs were to be changed in the hydraulics code, we would have to manually change them here as well
             green_hydraulic_reservoir_with_valve: PneumaticContainerWithConnector::new(
                 VariableVolumeContainer::new(
-                    Volume::new::<gallon>(10.),
+                    Volume::new::<gallon>(8.),
                     Pressure::new::<psi>(14.7),
                     ThermodynamicTemperature::new::<degree_celsius>(15.),
                 ),
             ),
             blue_hydraulic_reservoir_with_valve: PneumaticContainerWithConnector::new(
                 VariableVolumeContainer::new(
-                    Volume::new::<gallon>(8.),
+                    Volume::new::<gallon>(15.),
                     Pressure::new::<psi>(14.7),
                     ThermodynamicTemperature::new::<degree_celsius>(15.),
                 ),
@@ -242,9 +237,9 @@ impl A320Pneumatic {
         }
 
         self.update_hydraulic_reservoir_spatial_volumes(
-            hydraulics.fake_green_reservoir(),
-            hydraulics.fake_blue_reservoir(),
-            hydraulics.fake_yellow_reservoir(),
+            hydraulics.green_reservoir_capacity() - hydraulics.green_reservoir_volume(),
+            hydraulics.blue_reservoir_capacity() - hydraulics.blue_reservoir_volume(),
+            hydraulics.yellow_reservoir_capacity() - hydraulics.yellow_reservoir_volume(),
         );
 
         let (left_system, right_system) = self.engine_systems.split_at_mut(1);
@@ -279,28 +274,19 @@ impl A320Pneumatic {
 
     fn update_hydraulic_reservoir_spatial_volumes(
         &mut self,
-        fake_green_hydraulic_reservoir: &FakeHydraulicReservoir,
-        fake_blue_hydraulic_reservoir: &FakeHydraulicReservoir,
-        fake_yellow_hydraulic_reservoir: &FakeHydraulicReservoir,
+        green_hydraulic_reservoir_volume: Volume,
+        blue_hydraulic_reservoir_volume: Volume,
+        yellow_hydraulic_reservoir_volume: Volume,
     ) {
         self.green_hydraulic_reservoir_with_valve
             .container()
-            .change_spatial_volume(
-                fake_green_hydraulic_reservoir.max_capacity()
-                    - fake_green_hydraulic_reservoir.level(),
-            );
+            .change_spatial_volume(green_hydraulic_reservoir_volume);
         self.blue_hydraulic_reservoir_with_valve
             .container()
-            .change_spatial_volume(
-                fake_blue_hydraulic_reservoir.max_capacity()
-                    - fake_blue_hydraulic_reservoir.level(),
-            );
+            .change_spatial_volume(blue_hydraulic_reservoir_volume);
         self.yellow_hydraulic_reservoir_with_valve
             .container()
-            .change_spatial_volume(
-                fake_yellow_hydraulic_reservoir.max_capacity()
-                    - fake_yellow_hydraulic_reservoir.level(),
-            );
+            .change_spatial_volume(yellow_hydraulic_reservoir_volume);
     }
 
     pub fn green_hydraulic_reservoir_pressure(&self) -> Pressure {
@@ -1456,18 +1442,27 @@ impl SimulationElement for CrossBleedValve {
 
 #[cfg(test)]
 mod tests {
+    use crate::hydraulic::A320HydraulicOverheadPanel;
+
     use super::*;
     use systems::{
-        electrical::{test::TestElectricitySource, ElectricalBus, Electricity},
+        electrical::{
+            test::TestElectricitySource, ElectricalBus, Electricity, ElectricitySource,
+            ExternalPowerSource,
+        },
         engine::leap_engine::LeapEngine,
+        hydraulic::brake_circuit::AutobrakePanel,
+        landing_gear::{LandingGear, LandingGearControlInterfaceUnit},
+        overhead::MomentaryPushButton,
         pneumatic::EngineState,
         shared::{
             arinc429::SignStatus, ApuBleedAirValveSignal, ElectricalBusType, ElectricalBuses,
+            EmergencyElectricalRatPushButton, EmergencyElectricalState,
             InternationalStandardAtmosphere, MachNumber, PotentialOrigin,
         },
         simulation::{
             test::{SimulationTestBed, TestBed, WriteByName},
-            Aircraft, SimulationElement, Write,
+            Aircraft, SimulationElement,
         },
     };
 
@@ -1537,10 +1532,42 @@ mod tests {
             self.airspeed = context.indicated_airspeed();
         }
     }
+    impl EmergencyElectricalState for A320TestElectrical {
+        fn is_in_emergency_elec(&self) -> bool {
+            self.all_ac_lost && self.airspeed >= Velocity::new::<knot>(100.)
+        }
+    }
     impl SimulationElement for A320TestElectrical {
         fn receive_power(&mut self, buses: &impl ElectricalBuses) {
             self.all_ac_lost = !buses.is_powered(ElectricalBusType::AlternatingCurrent(1))
                 && !buses.is_powered(ElectricalBusType::AlternatingCurrent(2));
+        }
+    }
+
+    struct A320TestEmergencyElectricalOverheadPanel {
+        rat_and_emer_gen_man_on: MomentaryPushButton,
+    }
+
+    impl A320TestEmergencyElectricalOverheadPanel {
+        pub fn new(context: &mut InitContext) -> Self {
+            A320TestEmergencyElectricalOverheadPanel {
+                rat_and_emer_gen_man_on: MomentaryPushButton::new(
+                    context,
+                    "EMER_ELEC_RAT_AND_EMER_GEN",
+                ),
+            }
+        }
+    }
+    impl SimulationElement for A320TestEmergencyElectricalOverheadPanel {
+        fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+            self.rat_and_emer_gen_man_on.accept(visitor);
+
+            visitor.visit(self);
+        }
+    }
+    impl EmergencyElectricalRatPushButton for A320TestEmergencyElectricalOverheadPanel {
+        fn is_pressed(&self) -> bool {
+            self.rat_and_emer_gen_man_on.is_pressed()
         }
     }
 
@@ -1549,11 +1576,18 @@ mod tests {
         apu: TestApu,
         engine_1: LeapEngine,
         engine_2: LeapEngine,
-        overhead_panel: A320PneumaticOverheadPanel,
+        pneumatic_overhead_panel: A320PneumaticOverheadPanel,
         fire_pushbuttons: TestEngineFirePushButtons,
-        hydraulic: A320Hydraulic,
+        hydraulics: A320Hydraulic,
+        hydraulics_overhead_panel: A320HydraulicOverheadPanel,
+        autobrake_panel: AutobrakePanel,
+        emergency_electrical_overhead: A320TestEmergencyElectricalOverheadPanel,
+        landing_gear: LandingGear,
+        lgciu1: LandingGearControlInterfaceUnit,
+        lgciu2: LandingGearControlInterfaceUnit,
         electrical: A320TestElectrical,
         powered_source: TestElectricitySource,
+        ext_pwr: ExternalPowerSource,
         dc_1_bus: ElectricalBus,
         dc_2_bus: ElectricalBus,
         dc_ess_bus: ElectricalBus,
@@ -1571,10 +1605,21 @@ mod tests {
                 apu: TestApu::new(),
                 engine_1: LeapEngine::new(context, 1),
                 engine_2: LeapEngine::new(context, 2),
-                overhead_panel: A320PneumaticOverheadPanel::new(context),
+                pneumatic_overhead_panel: A320PneumaticOverheadPanel::new(context),
                 fire_pushbuttons: TestEngineFirePushButtons::new(),
-                hydraulic: A320Hydraulic::new(context),
+                hydraulics_overhead_panel: A320HydraulicOverheadPanel::new(context),
+                autobrake_panel: AutobrakePanel::new(context),
+                emergency_electrical_overhead: A320TestEmergencyElectricalOverheadPanel::new(
+                    context,
+                ),
+                landing_gear: LandingGear::new(context),
+                lgciu1: LandingGearControlInterfaceUnit::new(
+                    ElectricalBusType::DirectCurrentEssential,
+                ),
+                lgciu2: LandingGearControlInterfaceUnit::new(ElectricalBusType::DirectCurrent(2)),
+                hydraulics: A320Hydraulic::new(context),
                 electrical: A320TestElectrical::new(),
+                ext_pwr: ExternalPowerSource::new(context),
                 powered_source: TestElectricitySource::powered(
                     context,
                     PotentialOrigin::EngineGenerator(1),
@@ -1599,6 +1644,32 @@ mod tests {
 
         fn set_dc_ess_shed_bus_power(&mut self, is_powered: bool) {
             self.is_dc_ess_shed_powered = is_powered;
+        }
+
+        fn update_hydraulics(&mut self, context: &UpdateContext) {
+            self.lgciu1.update(
+                &self.landing_gear,
+                self.ext_pwr.output_potential().is_powered(),
+            );
+            self.lgciu2.update(
+                &self.landing_gear,
+                self.ext_pwr.output_potential().is_powered(),
+            );
+
+            self.hydraulics.update(
+                context,
+                &self.engine_1,
+                &self.engine_2,
+                &self.hydraulics_overhead_panel,
+                &self.autobrake_panel,
+                &self.fire_pushbuttons,
+                &self.lgciu1,
+                &self.lgciu2,
+                &self.emergency_electrical_overhead,
+                &self.electrical,
+            );
+
+            self.hydraulics_overhead_panel.update(&self.hydraulics);
         }
     }
     impl Aircraft for PneumaticTestAircraft {
@@ -1633,19 +1704,27 @@ mod tests {
             self.pneumatic.update(
                 context,
                 [&self.engine_1, &self.engine_2],
-                &mut self.overhead_panel,
+                &mut self.pneumatic_overhead_panel,
                 &self.fire_pushbuttons,
-                &self.hydraulic,
+                &self.hydraulics,
             );
         }
     }
     impl SimulationElement for PneumaticTestAircraft {
         fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+            self.landing_gear.accept(visitor);
+            self.lgciu1.accept(visitor);
+            self.lgciu2.accept(visitor);
+            self.hydraulics.accept(visitor);
+            self.autobrake_panel.accept(visitor);
+            self.hydraulics_overhead_panel.accept(visitor);
+            self.emergency_electrical_overhead.accept(visitor);
+            self.electrical.accept(visitor);
+            self.ext_pwr.accept(visitor);
             self.pneumatic.accept(visitor);
             self.engine_1.accept(visitor);
             self.engine_2.accept(visitor);
-            self.overhead_panel.accept(visitor);
-            self.electrical.accept(visitor);
+            self.pneumatic_overhead_panel.accept(visitor);
 
             visitor.visit(self);
         }
@@ -1945,15 +2024,15 @@ mod tests {
         }
 
         fn cross_bleed_valve_selector(&self) -> CrossBleedValveSelectorMode {
-            self.query(|a| a.overhead_panel.cross_bleed_mode())
+            self.query(|a| a.pneumatic_overhead_panel.cross_bleed_mode())
         }
 
         fn engine_bleed_push_button_is_auto(&self, number: usize) -> bool {
-            self.query(|a| a.overhead_panel.engine_bleed_pb_is_auto(number))
+            self.query(|a| a.pneumatic_overhead_panel.engine_bleed_pb_is_auto(number))
         }
 
         fn engine_bleed_push_button_has_fault(&self, number: usize) -> bool {
-            self.query(|a| a.overhead_panel.engine_bleed_pb_has_fault(number))
+            self.query(|a| a.pneumatic_overhead_panel.engine_bleed_pb_has_fault(number))
         }
 
         fn green_hydraulic_reservoir_pressure(&self) -> Pressure {

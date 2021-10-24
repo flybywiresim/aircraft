@@ -435,6 +435,10 @@ impl HydraulicLoop {
         self.reservoir_volume
     }
 
+    pub fn reservoir_capacity(&self) -> Volume {
+        self.high_pressure_volume
+    }
+
     pub fn loop_fluid_volume(&self) -> Volume {
         self.loop_volume
     }

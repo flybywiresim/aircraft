@@ -48,28 +48,6 @@ use systems::{
     },
 };
 
-// TODO: Remove when hydraulics refactor is done
-pub struct FakeHydraulicReservoir {
-    max_capacity: Volume,
-    current_level: Volume,
-}
-impl FakeHydraulicReservoir {
-    pub fn new(max_capacity: Volume, current_level: Volume) -> Self {
-        Self {
-            max_capacity,
-            current_level,
-        }
-    }
-
-    pub fn level(&self) -> Volume {
-        self.current_level
-    }
-
-    pub fn max_capacity(&self) -> Volume {
-        self.max_capacity
-    }
-}
-
 struct A320CargoDoorFactory {}
 impl A320CargoDoorFactory {
     fn a320_cargo_door_actuator(
@@ -171,10 +149,6 @@ pub(super) struct A320Hydraulic {
 
     total_sim_time_elapsed: Duration,
     lag_time_accumulator: Duration,
-
-    fake_green_hydraulic_reservoir: FakeHydraulicReservoir,
-    fake_blue_hydraulic_reservoir: FakeHydraulicReservoir,
-    fake_yellow_hydraulic_reservoir: FakeHydraulicReservoir,
 
     forward_cargo_door: CargoDoor,
     forward_cargo_door_controller: A320DoorController,
@@ -357,19 +331,6 @@ impl A320Hydraulic {
 
             total_sim_time_elapsed: Duration::new(0, 0),
             lag_time_accumulator: Duration::new(0, 0),
-
-            fake_green_hydraulic_reservoir: FakeHydraulicReservoir::new(
-                Volume::new::<gallon>(10.),
-                Volume::new::<gallon>(1.),
-            ),
-            fake_blue_hydraulic_reservoir: FakeHydraulicReservoir::new(
-                Volume::new::<gallon>(8.),
-                Volume::new::<gallon>(1.),
-            ),
-            fake_yellow_hydraulic_reservoir: FakeHydraulicReservoir::new(
-                Volume::new::<gallon>(10.),
-                Volume::new::<gallon>(1.),
-            ),
 
             forward_cargo_door: A320CargoDoorFactory::new_a320_cargo_door(
                 context,
@@ -768,16 +729,28 @@ impl A320Hydraulic {
         self.braking_circuit_altn.update(context, &self.yellow_loop);
     }
 
-    pub fn fake_green_reservoir(&self) -> &FakeHydraulicReservoir {
-        &self.fake_green_hydraulic_reservoir
+    pub fn green_reservoir_capacity(&self) -> Volume {
+        self.green_loop.reservoir_capacity()
     }
 
-    pub fn fake_blue_reservoir(&self) -> &FakeHydraulicReservoir {
-        &self.fake_blue_hydraulic_reservoir
+    pub fn blue_reservoir_capacity(&self) -> Volume {
+        self.blue_loop.reservoir_capacity()
     }
 
-    pub fn fake_yellow_reservoir(&self) -> &FakeHydraulicReservoir {
-        &self.fake_yellow_hydraulic_reservoir
+    pub fn yellow_reservoir_capacity(&self) -> Volume {
+        self.yellow_loop.reservoir_capacity()
+    }
+
+    pub fn green_reservoir_volume(&self) -> Volume {
+        self.green_loop.reservoir_volume()
+    }
+
+    pub fn blue_reservoir_volume(&self) -> Volume {
+        self.blue_loop.reservoir_volume()
+    }
+
+    pub fn yellow_reservoir_volume(&self) -> Volume {
+        self.yellow_loop.reservoir_volume()
     }
 }
 impl RamAirTurbineHydraulicLoopPressurised for A320Hydraulic {
