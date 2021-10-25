@@ -367,7 +367,7 @@ class A32NX_FlightPhase_Done {
         _fmc.flightPlanManager.clearFlightPlan();
         _fmc.initVariables();
         _fmc.initMcduVariables();
-        _fmc.forceClearScratchpad();
+        _fmc.scratchpad.setText("");
         SimVar.SetSimVarValue("L:A32NX_COLD_AND_DARK_SPAWN", "Bool", true);
         CDUIdentPage.ShowPage(_fmc);
     }
