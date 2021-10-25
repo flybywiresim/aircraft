@@ -50,12 +50,12 @@
 1. [ECAM] Fixed misaligned items on ecam memos - @tyler58546 (tyler58546)
 1. [ECAM] Revised fuel page to match neo - @RichardPilbery (tricky_dicky#3571)
 1. [RMP] Added 25 kHz VHF spacing option - @tyler58546 (tyler58546)
+1. [MCDU] Scratchpad rewrite - @derl30n (Leon)
 1. [FLIGHT MODEL] Fixed station locations and loads consistent with real A320 W&B manual - @ghosh9691
 1. [MCDU] Boarding and W/B AOC Pages update with Simbrief Integration - @viniciusfont
 1. [MCDU] Updated boarding logic, separate loading for pax and baggage - @sidnov (Sid)
 1. [FLIGHT MODEL] Updated OEW/dry operating weight, max payload, station weights - @sidnov (Sid)
 1. [EFB/UI] Override in-game fuel UI and fuel initialization - @Taz5150 (TazX [Z+2]#0405)
-1. [MCDU] Scratchpad rewrite - @derl30n (Leon)
 
 ## 0.7.0
 
