@@ -280,22 +280,6 @@ impl A320Pneumatic {
             .container()
             .change_spatial_volume(yellow_hydraulic_reservoir_volume);
     }
-
-    pub fn green_hydraulic_reservoir_pressure(&self) -> Pressure {
-        self.green_hydraulic_reservoir_with_valve.pressure()
-    }
-
-    pub fn blue_hydraulic_reservoir_pressure(&self) -> Pressure {
-        self.blue_hydraulic_reservoir_with_valve.pressure()
-    }
-
-    pub fn yellow_hydraulic_reservoir_pressure(&self) -> Pressure {
-        self.yellow_hydraulic_reservoir_with_valve.pressure()
-    }
-
-    pub fn pack_flow_valve_is_open(&self, number: usize) -> bool {
-        self.packs[number - 1].pack_flow_valve_is_open()
-    }
 }
 impl SimulationElement for A320Pneumatic {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
@@ -459,21 +443,8 @@ impl BleedMonitoringComputer {
         }
     }
 
-    pub fn is_powered(&self) -> bool {
+    fn is_powered(&self) -> bool {
         self.is_powered
-    }
-
-    fn operation_mode_for_engine(
-        &self,
-        engine_number: usize,
-    ) -> BleedMonitoringComputerChannelOperationMode {
-        if engine_number == self.main_channel_engine_number {
-            return self.main_channel.operation_mode();
-        } else if engine_number == self.backup_channel_engine_number {
-            return self.backup_channel.operation_mode();
-        };
-
-        panic!("Unknown engine number");
     }
 }
 impl SimulationElement for BleedMonitoringComputer {
@@ -487,7 +458,7 @@ impl SimulationElement for BleedMonitoringComputer {
 }
 impl ControllerSignal<BleedMonitoringComputerIsAliveSignal> for BleedMonitoringComputer {
     fn signal(&self) -> Option<BleedMonitoringComputerIsAliveSignal> {
-        if self.is_powered {
+        if self.is_powered() {
             Some(BleedMonitoringComputerIsAliveSignal)
         } else {
             None
@@ -798,7 +769,7 @@ struct EngineBleedAirSystem {
     transfer_pressure_pipe: PneumaticPipe,
     precooler_inlet_pipe: PneumaticPipe,
     precooler_outlet_pipe: PneumaticPipe,
-    precooler_cooling_pipe: PneumaticPipe,
+    precooler_supply_pipe: PneumaticPipe,
     engine_starter_exhaust: PneumaticExhaust,
     engine_starter_container: PneumaticPipe,
     engine_starter_valve: DefaultValve,
@@ -874,7 +845,7 @@ impl EngineBleedAirSystem {
                 Pressure::new::<psi>(14.7),
                 ThermodynamicTemperature::new::<degree_celsius>(15.),
             ),
-            precooler_cooling_pipe: PneumaticPipe::new(
+            precooler_supply_pipe: PneumaticPipe::new(
                 Volume::new::<cubic_meter>(1.),
                 Pressure::new::<psi>(14.7),
                 ThermodynamicTemperature::new::<degree_celsius>(15.),
@@ -938,7 +909,7 @@ impl EngineBleedAirSystem {
         self.fan_air_valve.update_move_fluid(
             context,
             &mut self.fan_compression_chamber,
-            &mut self.precooler_cooling_pipe,
+            &mut self.precooler_supply_pipe,
         );
         self.pressure_regulating_valve.update_move_fluid(
             context,
@@ -948,7 +919,7 @@ impl EngineBleedAirSystem {
         self.precooler.update(
             context,
             &mut self.precooler_inlet_pipe,
-            &mut self.precooler_cooling_pipe,
+            &mut self.precooler_supply_pipe,
             &mut self.precooler_outlet_pipe,
         );
         self.engine_starter_valve.update_move_fluid(
@@ -980,14 +951,6 @@ impl EngineBleedAirSystem {
         self.precooler_outlet_pipe.pressure()
     }
 
-    fn precooler_supply_pressure(&self) -> Pressure {
-        self.precooler_cooling_pipe.pressure()
-    }
-
-    fn engine_starter_container_pressure(&self) -> Pressure {
-        self.engine_starter_container.pressure()
-    }
-
     fn intermediate_temperature(&self) -> ThermodynamicTemperature {
         self.intermediate_pressure_compression_chamber.temperature()
     }
@@ -1006,22 +969,6 @@ impl EngineBleedAirSystem {
 
     fn precooler_outlet_temperature(&self) -> ThermodynamicTemperature {
         self.precooler_outlet_pipe.temperature()
-    }
-
-    fn precooler_supply_temperature(&self) -> ThermodynamicTemperature {
-        self.precooler_cooling_pipe.temperature()
-    }
-
-    fn engine_starter_container_temperature(&self) -> ThermodynamicTemperature {
-        self.engine_starter_container.temperature()
-    }
-
-    fn pressure_regulating_valve_open_amount(&self) -> Ratio {
-        self.pressure_regulating_valve.open_amount()
-    }
-
-    fn high_pressure_valve_open_amount(&self) -> Ratio {
-        self.high_pressure_valve.open_amount()
     }
 
     fn engine_starter_valve_is_open(&self) -> bool {
@@ -1152,14 +1099,6 @@ impl A320PneumaticOverheadPanel {
         }
     }
 
-    pub fn engine_bleed_pb_has_fault(&self, engine_number: usize) -> bool {
-        match engine_number {
-            1 => self.engine_1_bleed.has_fault(),
-            2 => self.engine_2_bleed.has_fault(),
-            _ => panic!("Invalid engine number"),
-        }
-    }
-
     pub fn set_engine_bleed_has_fault(&mut self, engine_number: usize, has_fault: bool) {
         match engine_number {
             1 => self.engine_1_bleed.set_fault(has_fault),
@@ -1253,10 +1192,6 @@ impl PackComplex {
 
         self.exhaust
             .update_move_fluid(context, &mut self.pack_container);
-    }
-
-    pub fn pack_flow_valve_is_open(&self) -> bool {
-        self.pack_flow_valve.is_open()
     }
 }
 impl PneumaticContainer for PackComplex {
@@ -1375,22 +1310,6 @@ impl CrossBleedValve {
         );
     }
 
-    pub fn fluid_flow(&self) -> VolumeRate {
-        self.connector.fluid_flow()
-    }
-
-    pub fn is_powered_for_manual_control(&self) -> bool {
-        self.is_powered_for_manual_control
-    }
-
-    pub fn is_powered_for_automatic_control(&self) -> bool {
-        self.is_powered_for_automatic_control
-    }
-
-    pub fn open_amount(&self) -> Ratio {
-        self.open_amount
-    }
-
     fn update_open_amount(&mut self, controller: &impl ControllerSignal<CrossBleedValveSignal>) {
         if let Some(signal) = controller.signal() {
             if signal.is_manual_vs_automatic && self.is_powered_for_manual_control
@@ -1453,6 +1372,7 @@ mod tests {
     use uom::si::{
         f64::*, length::foot, pressure::psi, ratio::ratio,
         thermodynamic_temperature::degree_celsius, velocity::knot,
+        volume_rate::cubic_meter_per_second,
     };
 
     use super::{A320Pneumatic, A320PneumaticOverheadPanel};
@@ -1863,12 +1783,18 @@ mod tests {
         }
 
         fn precooler_supply_pressure(&self, number: usize) -> Pressure {
-            self.query(|a| a.pneumatic.engine_systems[number - 1].precooler_supply_pressure())
+            self.query(|a| {
+                a.pneumatic.engine_systems[number - 1]
+                    .precooler_supply_pipe
+                    .pressure()
+            })
         }
 
         fn engine_starter_container_pressure(&self, number: usize) -> Pressure {
             self.query(|a| {
-                a.pneumatic.engine_systems[number - 1].engine_starter_container_pressure()
+                a.pneumatic.engine_systems[number - 1]
+                    .engine_starter_container
+                    .pressure()
             })
         }
 
@@ -1893,20 +1819,18 @@ mod tests {
         }
 
         fn precooler_supply_temperature(&self, number: usize) -> ThermodynamicTemperature {
-            self.query(|a| a.pneumatic.engine_systems[number - 1].precooler_supply_temperature())
+            self.query(|a| {
+                a.pneumatic.engine_systems[number - 1]
+                    .precooler_supply_pipe
+                    .temperature()
+            })
         }
 
         fn engine_starter_container_temperature(&self, number: usize) -> ThermodynamicTemperature {
             self.query(|a| {
-                a.pneumatic.engine_systems[number - 1].engine_starter_container_temperature()
-            })
-        }
-
-        fn ip_valve_is_open(&self, number: usize) -> bool {
-            self.query(|a| {
                 a.pneumatic.engine_systems[number - 1]
-                    .intermediate_pressure_valve
-                    .is_open()
+                    .engine_starter_container
+                    .temperature()
             })
         }
 
@@ -2002,10 +1926,6 @@ mod tests {
             self.query(|a| a.pneumatic.fadec.engine_state(number))
         }
 
-        fn is_fire_pushbutton_released(&self, number: usize) -> bool {
-            self.query(|a| a.fire_pushbuttons.is_released(number))
-        }
-
         fn cross_bleed_valve_is_open(&self) -> bool {
             self.query(|a| a.pneumatic.cross_bleed_valve.is_open())
         }
@@ -2019,19 +1939,23 @@ mod tests {
         }
 
         fn engine_bleed_push_button_has_fault(&self, number: usize) -> bool {
-            self.query(|a| a.pneumatic_overhead_panel.engine_bleed_pb_has_fault(number))
+            self.query(|a| match number {
+                1 => a.pneumatic_overhead_panel.engine_1_bleed.has_fault(),
+                2 => a.pneumatic_overhead_panel.engine_2_bleed.has_fault(),
+                _ => panic!("Invalid engine number"),
+            })
         }
 
         fn green_hydraulic_reservoir_pressure(&self) -> Pressure {
-            self.query(|a| a.pneumatic.green_hydraulic_reservoir_pressure())
+            self.query(|a| a.pneumatic.green_hydraulic_reservoir_with_valve.pressure())
         }
 
         fn blue_hydraulic_reservoir_pressure(&self) -> Pressure {
-            self.query(|a| a.pneumatic.blue_hydraulic_reservoir_pressure())
+            self.query(|a| a.pneumatic.blue_hydraulic_reservoir_with_valve.pressure())
         }
 
         fn yellow_hydraulic_reservoir_pressure(&self) -> Pressure {
-            self.query(|a| a.pneumatic.yellow_hydraulic_reservoir_pressure())
+            self.query(|a| a.pneumatic.yellow_hydraulic_reservoir_with_valve.pressure())
         }
 
         fn set_pack_flow_pb_is_auto(mut self, number: usize, is_auto: bool) -> Self {
@@ -2041,7 +1965,7 @@ mod tests {
         }
 
         fn pack_flow_valve_is_open(&self, number: usize) -> bool {
-            self.query(|a| a.pneumatic.pack_flow_valve_is_open(number))
+            self.query(|a| a.pneumatic.packs[number - 1].pack_flow_valve.is_open())
         }
 
         fn both_packs_auto(self) -> Self {
@@ -2054,9 +1978,20 @@ mod tests {
             bmc_number: usize,
             engine_number: usize,
         ) -> BleedMonitoringComputerChannelOperationMode {
-            self.query(|a| {
-                a.pneumatic.bleed_monitoring_computers[bmc_number - 1]
-                    .operation_mode_for_engine(engine_number)
+            self.query(|a| match (bmc_number, engine_number) {
+                (1, 1) => a.pneumatic.bleed_monitoring_computers[0]
+                    .main_channel
+                    .operation_mode(),
+                (1, 2) => a.pneumatic.bleed_monitoring_computers[0]
+                    .backup_channel
+                    .operation_mode(),
+                (2, 1) => a.pneumatic.bleed_monitoring_computers[1]
+                    .backup_channel
+                    .operation_mode(),
+                (2, 2) => a.pneumatic.bleed_monitoring_computers[1]
+                    .main_channel
+                    .operation_mode(),
+                _ => panic!("Invalid combination of BMC number and engine number"),
             })
         }
 
@@ -2088,28 +2023,16 @@ mod tests {
             })
         }
 
-        fn pack_container_pressure(&self, engine_number: usize) -> Pressure {
-            self.query(|a| {
-                a.pneumatic.packs[engine_number - 1]
-                    .pack_container
-                    .pressure()
-            })
-        }
-
         fn cross_bleed_valve_is_powered_for_automatic_control(&self) -> bool {
             self.query(|a| {
                 a.pneumatic
                     .cross_bleed_valve
-                    .is_powered_for_automatic_control()
+                    .is_powered_for_automatic_control
             })
         }
 
         fn cross_bleed_valve_is_powered_for_manual_control(&self) -> bool {
-            self.query(|a| {
-                a.pneumatic
-                    .cross_bleed_valve
-                    .is_powered_for_manual_control()
-            })
+            self.query(|a| a.pneumatic.cross_bleed_valve.is_powered_for_manual_control)
         }
     }
 
@@ -2123,6 +2046,10 @@ mod tests {
 
     fn pressure_tolerance() -> Pressure {
         Pressure::new::<psi>(0.5)
+    }
+
+    fn flow_rate_tolerance() -> VolumeRate {
+        VolumeRate::new::<cubic_meter_per_second>(0.1)
     }
 
     // Just a way for me to plot some graphs
@@ -2985,6 +2912,28 @@ mod tests {
             .and_run();
 
         assert!(!test_bed.cross_bleed_valve_is_open());
+    }
+
+    #[test]
+    fn pack_flow_drops_when_valve_is_closed() {
+        let mut test_bed = test_bed_with()
+            .idle_eng1()
+            .idle_eng2()
+            .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Shut)
+            .mach_number(MachNumber(0.))
+            .both_packs_auto()
+            .and_stabilize();
+
+        assert!(test_bed.pack_flow_valve_flow(1) > flow_rate_tolerance());
+        assert!(test_bed.pack_flow_valve_flow(2) > flow_rate_tolerance());
+
+        test_bed = test_bed
+            .set_pack_flow_pb_is_auto(1, false)
+            .set_pack_flow_pb_is_auto(2, false)
+            .and_run();
+
+        assert!(test_bed.pack_flow_valve_flow(1) < flow_rate_tolerance());
+        assert!(test_bed.pack_flow_valve_flow(2) < flow_rate_tolerance());
     }
 
     mod overhead {

@@ -147,9 +147,6 @@ pub(super) struct A320Hydraulic {
     braking_circuit_altn: BrakeCircuit,
     braking_force: A320BrakingForce,
 
-    total_sim_time_elapsed: Duration,
-    lag_time_accumulator: Duration,
-
     forward_cargo_door: CargoDoor,
     forward_cargo_door_controller: A320DoorController,
     aft_cargo_door: CargoDoor,
@@ -328,9 +325,6 @@ impl A320Hydraulic {
             ),
 
             braking_force: A320BrakingForce::new(context),
-
-            total_sim_time_elapsed: Duration::new(0, 0),
-            lag_time_accumulator: Duration::new(0, 0),
 
             forward_cargo_door: A320CargoDoorFactory::new_a320_cargo_door(
                 context,
