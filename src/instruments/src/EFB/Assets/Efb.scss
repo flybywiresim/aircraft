@@ -8,47 +8,60 @@
 
 @layer base {
   @font-face {
-    font-family: "IBMPlexMono";
+    font-family: "JetBrains Mono";
     font-weight: 300;
-    src: url("/Fonts/ibm-plex-mono-v6-latin-300.ttf") format("truetype");
+    src: url("/Fonts/JetBrainsMono-Regular.ttf") format("truetype");
   }
   @font-face {
-    font-family: "NunitoSans";
-    font-weight: 200;
-    src: url("/Fonts/nunito-sans-v6-latin-200.ttf") format("truetype");
-  }
-  @font-face {
-    font-family: "NunitoSans";
+    font-family: "Inter";
     font-weight: 400;
-    src: url("/Fonts/nunito-sans-v6-latin-regular.ttf") format("truetype");
+    src: url("/Fonts/Inter-Regular.ttf") format("truetype");
   }
   @font-face {
-    font-family: "NunitoSans";
-    font-weight: 700;
-    src: url("/Fonts/nunito-sans-v6-latin-700.ttf") format("truetype");
+    font-family: "Inter";
+    font-weight: 600;
+    src: url("/Fonts/Inter-SemiBold.ttf") format("truetype");
   }
-}
+  @font-face {
+    font-family: "Manrope";
+    font-weight: 500;
+    src: url("/Fonts/Manrope-Medium.ttf") format("truetype");
+  }
+  @font-face {
+    font-family: "Manrope";
+    font-weight: 700;
+    src: url("/Fonts/Manrope-Bold.ttf") format("truetype");
+  }
 
-html body {
-  @apply font-efb;
-  @apply tracking-nunito;
+  html body {
+    @apply font-body;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-title;
+  }
+
+  h1 {
+    @apply text-3xl font-bold;
+  }
+
+  p, div {
+      @apply text-xl;
+  }
 }
 
 /* ---- Global Scrollbar ---- */
 
 .scrollbar::-webkit-scrollbar {
-  @apply rounded-xl w-4;
-  @apply bg-navy-regular;
+  @apply rounded-md w-4 bg-navy-regular;
 }
 
 .scrollbar::-webkit-scrollbar-track {
-  @apply rounded-xl;
-  @apply bg-navy-regular;
+  @apply rounded-md bg-navy-regular;
 }
 
 .scrollbar::-webkit-scrollbar-thumb {
-  @apply rounded-xl;
-  @apply bg-teal-light;
+  @apply rounded-md bg-teal-light;
 }
 
 .no-scrollbar::-webkit-scrollbar {
@@ -112,14 +125,6 @@ html body {
 
 .flip-horizontal {
   transform: scaleX(-1);
-}
-
-.leaflet-container {
-  @apply rounded-2xl;
-
-  .leaflet-control-attribution {
-    @apply hidden;
-  }
 }
 
 /* ---- Dispatch Components ---- */

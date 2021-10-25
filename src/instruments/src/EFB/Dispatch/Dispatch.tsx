@@ -100,8 +100,10 @@ const Dispatch = (props: DispatchProps) => {
 
     return (
         <div className="w-full">
-            <h1 className="text-3xl pt-6 text-white">Dispatch</h1>
-            <Navbar tabs={tabs} onSelected={(index) => handleClick(index)} />
+            <div className="relative">
+                <h1 className="text-white">Dispatch</h1>
+                <Navbar className="absolute right-0 top-0" tabs={tabs} onSelected={(index) => handleClick(index)} />
+            </div>
             <div>
                 {currentPage()}
             </div>

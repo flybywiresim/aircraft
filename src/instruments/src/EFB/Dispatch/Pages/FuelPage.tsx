@@ -233,7 +233,7 @@ export const FuelPage = () => {
             <div className="z-40">
                 <div className="flex flex-row w-full">
                     <div className="w-1/3 mr-3">
-                        <div className="bg-navy-lighter rounded-2xl p-6 text-white shadow-lg overflow-x-hidden">
+                        <div className="bg-navy-lighter rounded-2xl p-6 text-white overflow-x-hidden">
                             <h2 className="text-2xl font-medium">Left Inner Tank</h2>
                             <div className="flex mt-4">
                                 <ProgressBar
@@ -258,7 +258,7 @@ export const FuelPage = () => {
                         </div>
                     </div>
                     <div className="w-1/3 mx-3">
-                        <div className="bg-navy-lighter rounded-2xl p-6 text-white shadow-lg overflow-x-hidden">
+                        <div className="bg-navy-lighter rounded-2xl p-6 text-white overflow-x-hidden">
                             <h2 className="text-2xl font-medium">Center Tank</h2>
                             <div className="flex mt-4">
                                 <ProgressBar
@@ -283,7 +283,7 @@ export const FuelPage = () => {
                         </div>
                     </div>
                     <div className="w-1/3 ml-3">
-                        <div className="bg-navy-lighter rounded-2xl p-6 text-white shadow-lg overflow-x-hidden">
+                        <div className="bg-navy-lighter rounded-2xl p-6 text-white overflow-x-hidden">
                             <h2 className="text-2xl font-medium">Right Inner Tank</h2>
                             <div className="flex mt-4">
                                 <ProgressBar
@@ -310,7 +310,7 @@ export const FuelPage = () => {
                 </div>
                 <div className="flex flex-row w-full mt-6">
                     <div className="w-4/12 mr-3">
-                        <div className="bg-navy-lighter rounded-2xl p-6 text-white shadow-lg overflow-x-hidden">
+                        <div className="bg-navy-lighter rounded-2xl p-6 text-white overflow-x-hidden">
                             <h2 className="text-2xl font-medium">Left Outer Tank</h2>
                             <div className="mt-4">
                                 <ProgressBar
@@ -335,7 +335,7 @@ export const FuelPage = () => {
                         </div>
                     </div>
                     <div className="w-2/4 mx-3">
-                        <div className="bg-navy-lighter rounded-2xl p-6 text-white shadow-lg overflow-x-hidden">
+                        <div className="bg-navy-lighter rounded-2xl p-6 text-white overflow-x-hidden">
                             <div className="flex w-full items-center">
                                 <h2 className="text-2xl font-medium mr-2">Refuel</h2>
                                 <label htmlFor="fuel-label" className={formatRefuelStatusClass()}>{formatRefuelStatusLabel()}</label>
@@ -389,7 +389,7 @@ export const FuelPage = () => {
                         </div>
                     </div>
                     <div className="w-4/12 ml-3">
-                        <div className="bg-navy-lighter rounded-2xl p-6 text-white shadow-lg overflow-x-hidden">
+                        <div className="bg-navy-lighter rounded-2xl p-6 text-white overflow-x-hidden">
                             <h2 className="text-2xl font-medium">Right Outer Tank</h2>
                             <div className="mt-4">
                                 <ProgressBar
@@ -426,7 +426,7 @@ export const FuelPage = () => {
                 <div className="z-10 w-96 h-20 absolute bg-navy-regular bottom-overlay-b-y right-overlay-br transform rotate-18.5" />
                 <div className="z-10 w-96 h-24 absolute bg-navy-regular bottom-overlay-t-y left-overlay-tl transform -rotate-26.5" />
                 <div className="z-10 w-96 h-24 absolute bg-navy-regular bottom-overlay-t-y right-overlay-tr transform rotate-26.5" />
-                <div className="absolute bg-navy-lighter rounded-2xl text-white shadow-lg overflow-x-hidden p-6 z-30">
+                <div className="absolute bg-navy-lighter rounded-2xl text-white overflow-x-hidden p-6 z-30">
                     <div className="w-96 flex flex-row justify-between items-center">
                         <span className="text-lg text-gray-300">Refuel Time</span>
                         {refuelButtonStatus()}

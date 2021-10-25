@@ -115,7 +115,7 @@ const AuthUi = () => {
                                 <span className="text-teal-regular">{navigraph.auth.link}</span>
                                 ' into your browser and enter the code below
                             </p>
-                            <p className="ml-auto mr-auto rounded-md bg-navy-medium px-4 py-2 mt-4 text-3xl text-center text-white">{navigraph.auth.code}</p>
+                            <h1 className="ml-auto mr-auto rounded-md bg-navy-medium px-4 py-2 mt-4 text-center text-white">{navigraph.auth.code}</h1>
                         </>
                     )
                     : <Loading />}
@@ -599,7 +599,7 @@ const Navigation = () => {
     return (
         <div className="w-full h-full">
             <div className="flex">
-                <h1 className="text-3xl mt-6 text-white mb-6">Navigation & Charts</h1>
+                <h1 className="text-white mb-6">Navigation & Charts</h1>
             </div>
             {enableNavigraph
                 ? (

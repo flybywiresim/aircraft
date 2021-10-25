@@ -79,7 +79,7 @@ const LoadSheetWidget = (props: LoadsheetPageProps) => {
     return (
         <div className="mt-6">
             <div className="w-full">
-                <div className="text-white overflow-hidden bg-navy-lighter rounded-2xl shadow-lg p-6 h-efb-nav relative">
+                <div className="text-white overflow-hidden bg-navy-lighter rounded-2xl p-6 h-efb-nav relative">
                     {props.loadsheet !== 'N/A' ? (
                         <>
                             <div className="flex flex-col justify-end absolute bottom-6 right-16">
