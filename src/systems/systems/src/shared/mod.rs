@@ -53,7 +53,6 @@ pub trait ControlValveCommand {
 
 pub trait EmergencyGeneratorInterface {
     fn generated_power(&self) -> Power;
-    fn resistant_torque(&self) -> Torque;
 }
 
 pub trait LandingGearRealPosition {

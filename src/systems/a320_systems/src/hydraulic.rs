@@ -2358,9 +2358,6 @@ mod tests {
             fn generated_power(&self) -> Power {
                 self.emergency_generator.generated_power()
             }
-            fn resistant_torque(&self) -> Torque {
-                self.emergency_generator.resistant_torque()
-            }
         }
         impl SimulationElement for A320TestElectrical {
             fn receive_power(&mut self, buses: &impl ElectricalBuses) {

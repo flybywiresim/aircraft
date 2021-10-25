@@ -46,7 +46,6 @@ impl EmergencyGenerator {
 
     pub fn update(&mut self, gcu: &impl GeneratorControlUnitInterface) {
         self.update_generated_power(gcu);
-        self.update_resistant_torque(gcu);
 
         self.supplying =
             self.generated_power > Power::new::<watt>(Self::MIN_POWER_TO_DECLARE_SUPPLYING_WATT);
@@ -70,20 +69,6 @@ impl EmergencyGenerator {
             self.generated_power = gcu.power_demand();
         } else {
             self.generated_power = Power::new::<watt>(0.)
-        }
-    }
-
-    fn update_resistant_torque(&mut self, gcu: &impl GeneratorControlUnitInterface) {
-        if gcu.hydraulic_motor_speed() < AngularVelocity::new::<radian_per_second>(1.) {
-            self.resistant_torque_from_power_gen =
-                Torque::new::<newton_meter>(Self::STATIC_RESISTANT_TORQUE_WHEN_UNPOWERED_NM);
-        } else {
-            let elec_torque = Torque::new::<newton_meter>(
-                gcu.power_demand().get::<watt>()
-                    / gcu.hydraulic_motor_speed().get::<radian_per_second>(),
-            );
-            self.resistant_torque_from_power_gen =
-                elec_torque + (1. - Self::EFFICIENCY) * elec_torque;
         }
     }
 }
@@ -114,9 +99,6 @@ impl ElectricitySource for EmergencyGenerator {
 impl EmergencyGeneratorInterface for EmergencyGenerator {
     fn generated_power(&self) -> Power {
         self.generated_power
-    }
-    fn resistant_torque(&self) -> Torque {
-        self.resistant_torque_from_power_gen
     }
 }
 impl SimulationElement for EmergencyGenerator {

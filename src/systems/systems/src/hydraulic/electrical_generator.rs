@@ -5,7 +5,7 @@ use uom::si::{
     power::watt,
     pressure::psi,
     ratio::ratio,
-    torque::{newton_meter, pound_force_inch},
+    torque::{newton_hectometer, newton_meter, pound_force_inch},
     volume::{cubic_inch, gallon},
     volume_rate::{gallon_per_minute, gallon_per_second},
 };
@@ -163,6 +163,8 @@ struct HydraulicMotor {
 }
 impl HydraulicMotor {
     const MOTOR_INERTIA: f64 = 0.01;
+    const STATIC_RESISTANT_TORQUE_WHEN_UNPOWERED_NM: f64 = 2.;
+    const EFFICIENCY: f64 = 0.95;
 
     fn new(displacement: Volume) -> Self {
         Self {
@@ -196,13 +198,29 @@ impl HydraulicMotor {
     }
 
     fn update_resistant_torque(&mut self, emergency_generator: &impl EmergencyGeneratorInterface) {
-        self.total_torque -= emergency_generator.resistant_torque();
+
+        let mut elec_torque ;
+        if self.speed().get::<radian_per_second>() < 1. || self.virtual_displacement < Volume::new::<cubic_inch>(0.001)
+         {
+            elec_torque = Torque::new::<newton_meter>(Self::STATIC_RESISTANT_TORQUE_WHEN_UNPOWERED_NM);
+        } else {
+            elec_torque=
+            Torque::new::<newton_meter>(
+                emergency_generator.generated_power().get::<watt>()
+                    / self.speed().get::<radian_per_second>(),
+            );
+            elec_torque = elec_torque + (1. - Self::EFFICIENCY) * elec_torque;
+        };
+
+        println!("Res trq {:.2}", elec_torque.get::<newton_meter>());
+
+        self.total_torque -= elec_torque;
     }
 
     fn update_generated_torque(&mut self, pressure: Pressure) {
         self.virtual_displacement = self.virtual_displacement_after_valve_inlet();
 
-        if self.virtual_displacement > Volume::new::<cubic_inch>(0.001) {
+
             self.generated_torque = Torque::new::<pound_force_inch>(
                 pressure.get::<psi>() * self.virtual_displacement.get::<cubic_inch>()
                     / (2. * std::f64::consts::PI),
@@ -213,10 +231,7 @@ impl HydraulicMotor {
                 self.generated_torque.get::<newton_meter>(),
                 self.speed().get::<revolution_per_minute>()
             );
-        } else {
-            self.generated_torque =
-                Torque::new::<newton_meter>(-0.0005 * self.speed().get::<revolution_per_minute>())
-        }
+
     }
 
     fn virtual_displacement_after_valve_inlet(&mut self) -> Volume {
@@ -404,9 +419,6 @@ impl TestGenerator {
 impl EmergencyGeneratorInterface for TestGenerator {
     fn generated_power(&self) -> Power {
         self.generated_power
-    }
-    fn resistant_torque(&self) -> Torque {
-        self.resistant_torque_from_power_gen
     }
 }
 impl Default for TestGenerator {
