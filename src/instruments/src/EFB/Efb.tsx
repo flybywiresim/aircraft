@@ -1,30 +1,26 @@
 import React, { useEffect, useState, useReducer } from 'react';
 
 import { Provider } from 'react-redux';
-import { Route, Switch, useHistory } from 'react-router-dom';
+import { Redirect, Route, Switch } from 'react-router-dom';
 import { useSimVar } from '@instruments/common/simVars';
 import { usePersistentNumberProperty, usePersistentProperty } from '../Common/persistence';
 import NavigraphClient, { NavigraphContext } from './ChartsApi/Navigraph';
 import { getSimbriefData, IFuel, IWeights } from './SimbriefApi';
+
 import StatusBar from './StatusBar/StatusBar';
 import ToolBar from './ToolBar/ToolBar';
+
 import Dashboard from './Dashboard/Dashboard';
 import Dispatch from './Dispatch/Dispatch';
 import Ground from './Ground/Ground';
 import Performance from './Performance/Performance';
 import Navigation from './Navigation/Navigation';
+import ATC from './ATC/ATC';
 import Settings from './Settings/Settings';
+import Failures from './Failures/Failures';
 
 import { PerformanceContext, PerformanceReducer, performanceInitialState } from './Store/performance-context';
-import store from './Store';
-import ATC from './ATC/ATC';
-import { Failures } from './Failures/Failures';
-
-type TimeState = {
-    currentTime: Date,
-    initTime: Date,
-    timeSinceStart: string,
-}
+import store from './Store/store';
 
 export type SimbriefData = {
     departingAirport: string,
@@ -124,8 +120,6 @@ type SimbriefUserIdContextType = {
 export const SimbriefUserIdContext = React.createContext<SimbriefUserIdContextType>(undefined!);
 
 const Efb = () => {
-    const history = useHistory();
-
     const [currentLocalTime] = useSimVar('E:LOCAL TIME', 'seconds', 3000);
     const [, setBrightness] = useSimVar('L:A32NX_EFB_BRIGHTNESS', 'number');
     const [brightnessSetting] = usePersistentNumberProperty('EFB_BRIGHTNESS', 0);
@@ -135,7 +129,7 @@ const Efb = () => {
     useEffect(() => {
         if (usingAutobrightness) {
             const localTime = currentLocalTime / 3600;
-            // the below code defines a semicircular function.
+            // the following code defines a semicircular function.
             // eslint-disable-next-line no-restricted-properties
             setBrightness(((Math.sqrt(48 - Math.pow((localTime - 14), 2))) * 14.431) || 0);
         } else {
@@ -146,42 +140,6 @@ const Efb = () => {
     const [performanceState, performanceDispatch] = useReducer(PerformanceReducer, performanceInitialState);
     const [simbriefData, setSimbriefData] = useState<SimbriefData>(emptySimbriefData);
     const [simbriefUserId, setSimbriefUserId] = usePersistentProperty('CONFIG_SIMBRIEF_USERID');
-
-    const [timeState, setTimeState] = useState<TimeState>({
-        currentTime: new Date(),
-        initTime: new Date(),
-        timeSinceStart: '00:00',
-    });
-    const [currentPageIndex, setCurrentPageIndex] = useState<0 | 1 | 2 | 3 | 4 | 5 | 6 | 7>(0);
-
-    useEffect(() => {
-        switch (currentPageIndex) {
-        case 1:
-            history.push('/dispatch');
-            break;
-        case 2:
-            history.push('/ground');
-            break;
-        case 3:
-            history.push('/performance');
-            break;
-        case 4:
-            history.push('/navigation');
-            break;
-        case 5:
-            history.push('/atc');
-            break;
-        case 6:
-            history.push('/settings');
-            break;
-        case 7:
-            history.push('/failures');
-            break;
-        default:
-            history.push('/dashboard');
-            break;
-        }
-    }, [currentPageIndex]);
 
     const fetchSimbriefData = async () => {
         if (!simbriefUserId) {
@@ -246,25 +204,20 @@ const Efb = () => {
         });
     };
 
-    const updateCurrentTime = (currentTime: Date) => {
-        setTimeState({ ...timeState, currentTime });
-    };
-
-    const updateTimeSinceStart = (timeSinceStart: string) => {
-        setTimeState({ ...timeState, timeSinceStart });
-    };
-
     return (
         <Provider store={store}>
             <PerformanceContext.Provider value={{ performanceState, performanceDispatch }}>
                 <NavigraphContext.Provider value={navigraph}>
                     <SimbriefUserIdContext.Provider value={{ simbriefUserId, setSimbriefUserId }}>
-                        <div className="flex flex-col">
-                            <StatusBar initTime={timeState.initTime} updateCurrentTime={updateCurrentTime} updateTimeSinceStart={updateTimeSinceStart} />
+                        <div className="flex flex-col bg-navy-regular">
+                            <StatusBar />
                             <div className="flex flex-row">
-                                <ToolBar setPageIndex={(index) => setCurrentPageIndex(index)} />
-                                <div className="py-16 px-8 text-gray-700 bg-navy-regular h-screen w-screen">
+                                <ToolBar />
+                                <div className="pt-14 pr-6 w-screen h-screen text-gray-700">
                                     <Switch>
+                                        <Route exact path="/">
+                                            <Redirect to="/dashboard" />
+                                        </Route>
                                         <Route path="/dashboard">
                                             <Dashboard
                                                 simbriefData={simbriefData}

@@ -3,7 +3,6 @@
 const reactComponentsClasses = require('../../../../node_modules/@flybywiresim/react-components/build/usedCSSClasses.json');
 
 module.exports = {
-    mode: 'jit',
     purge: {
         content: [
             './**/*.{jsx,tsx}',
@@ -20,7 +19,7 @@ module.exports = {
                 'out-tk': '5.25rem',
             }),
             height: () => ({
-                'efb': '50rem',
+                'efb': '54rem',
                 'efb-nav': '45.75rem',
                 '124': '34.75rem',
             }),
@@ -46,8 +45,11 @@ module.exports = {
                 '-26.5': '-26.5deg',
             }),
         },
-        fontFamily: { mono: ['IBMPlexMono'], efb: ['NunitoSans'] },
-        letterSpacing: { nunito: '0.35px' },
+        fontFamily: {
+            mono: ['JetBrains Mono'],
+            body: ['Inter'],
+            title: ['Manrope'],
+        },
     },
     variants: { extend: {} },
     // eslint-disable-next-line global-require

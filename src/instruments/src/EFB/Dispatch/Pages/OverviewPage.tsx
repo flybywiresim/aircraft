@@ -61,9 +61,9 @@ const OverviewPage = (props: OverviewPageProps) => {
     }
 
     return (
-        <div className="flex mt-6">
+        <div className="flex mt-4">
             <div className="w-1/2 mr-3">
-                <div className="text-white overflow-hidden bg-navy-lighter rounded-2xl shadow-lg p-6 h-efb-nav">
+                <div className="text-white overflow-hidden bg-navy-lighter rounded-lg p-6 h-efb">
                     <h2 className="text-2xl font-medium">Airbus A320neo</h2>
                     <span className="text-lg">{airline}</span>
                     <div className="flex items-center justify-center mt-6">

@@ -1,11 +1,11 @@
 import React from 'react';
 import {
     IconBox,
-    IconLink,
     IconPlane,
     IconPlaneDeparture,
     IconPlaneArrival,
 } from '@tabler/icons';
+import { FileEarmarkArrowDown } from 'react-bootstrap-icons';
 import { SimbriefData } from '../../Efb';
 import fuselage from '../../Assets/320neo-outline-nose.svg';
 
@@ -49,10 +49,10 @@ const FlightWidget = (props: FlightWidgetProps) => {
     }
 
     return (
-        <div className="w-2/5 h-full bg-navy-lighter text-white rounded-2xl mr-3 shadow-lg p-6 overflow-hidden">
-            <div className="h-full flex flex-col justify-between">
+        <div className="overflow-hidden p-6 mr-3 w-2/5 h-full text-white rounded-lg border-2 shadow-md border-navy-lighter">
+            <div className="flex flex-col justify-between h-full">
                 <div className="w-full">
-                    <div className="text-center mb-6">
+                    <div className="mb-6 text-center">
                         <h1 className="text-2xl font-medium">{(simbriefData.airline.length > 0 ? simbriefData.airline : '') + simbriefData.flightNum}</h1>
                         <span className="text-lg">{simbriefData.aircraftReg}</span>
                         {' '}
@@ -60,7 +60,7 @@ const FlightWidget = (props: FlightWidgetProps) => {
                         <span className="text-lg">A320-251N</span>
                     </div>
 
-                    <div className="flex items-center justify-center mb-6 text-lg">
+                    <div className="flex justify-center items-center mb-6 text-lg">
                         [
                         {simbriefData.departingIata}
                         ]
@@ -75,73 +75,62 @@ const FlightWidget = (props: FlightWidgetProps) => {
                     </div>
 
                     <div className="flex">
-                        <div className="w-1/2 mr-4">
+                        <div className="mr-4 w-1/2">
                             <div className="flex justify-end text-lg">
                                 STD
                                 {' '}
                                 <IconPlaneDeparture className="ml-2" size={23} stroke={1.5} strokeLinejoin="miter" />
                             </div>
-                            <div className="text-right mt-1 text-2xl">{schedOutParsed}</div>
+                            <div className="mt-1 text-2xl text-right">{schedOutParsed}</div>
                         </div>
-                        <div className="w-1/2 ml-4">
+                        <div className="ml-4 w-1/2">
                             <div className="flex justify-start text-lg">
                                 <IconPlaneArrival className="mr-2" size={23} stroke={1.5} strokeLinejoin="miter" />
                                 {' '}
                                 STA
                             </div>
-                            <div className="text-left mt-1 text-2xl">{schedInParsed}</div>
+                            <div className="mt-1 text-2xl text-left">{schedInParsed}</div>
                         </div>
                     </div>
                 </div>
-                <div className="w-full my-3">
-                    <img src={fuselage} alt="Aircraft outline" className="flip-horizontal -ml-48" />
+                <div className="my-3 w-full">
+                    <img src={fuselage} alt="Aircraft outline" className="-ml-48 flip-horizontal" />
                 </div>
-                <div className="w-full mt-3">
-                    <div className="grid grid-cols-3 gap-4 text-center mb-10">
+                <div className="mt-3 w-full">
+                    <div className="grid grid-cols-3 gap-4 mb-10 text-center">
                         <div className="mb-3">
                             <h3 className="text-xl font-medium">ALTN</h3>
-                            <span className="text-lg font-mono font-light">{simbriefData.altIcao}</span>
+                            <span className="font-mono text-lg font-light">{simbriefData.altIcao}</span>
                         </div>
                         <div className="mb-3">
                             <h3 className="text-xl font-medium">CO RTE</h3>
-                            <span className="text-lg font-mono font-light">{simbriefData.departingIata + simbriefData.arrivingIata}</span>
+                            <span className="font-mono text-lg font-light">{simbriefData.departingIata + simbriefData.arrivingIata}</span>
                         </div>
                         <div className="mb-3">
                             <h3 className="text-xl font-medium">ZFW</h3>
-                            <span className="text-lg font-mono font-light">{estimatedZfw}</span>
+                            <span className="font-mono text-lg font-light">{estimatedZfw}</span>
                         </div>
                         <div>
                             <h3 className="text-xl font-medium">AVG WIND</h3>
-                            <span className="text-lg font-mono font-light">{avgWind}</span>
+                            <span className="font-mono text-lg font-light">{avgWind}</span>
                         </div>
                         <div>
                             <h3 className="text-xl font-medium">CI</h3>
-                            <span className="text-lg font-mono font-light">{simbriefData.costInd}</span>
+                            <span className="font-mono text-lg font-light">{simbriefData.costInd}</span>
                         </div>
                         <div>
                             <h3 className="text-xl font-medium">CRZ</h3>
-                            <span className="text-lg font-mono font-light">{crzAlt}</span>
+                            <span className="font-mono text-lg font-light">{crzAlt}</span>
                         </div>
                     </div>
-                    <div className="flex">
-                        <button
-                            type="button"
-                            onClick={() => props.fetchSimbrief()}
-                            className="mr-1 w-1/2 text-white bg-teal-light p-2 flex items-center justify-center rounded-lg focus:outline-none text-lg"
-                        >
-                            <IconBox className="mr-2" size={23} stroke={1.5} strokeLinejoin="miter" />
-                            {' '}
-                            FROM SIMBRIEF
-                        </button>
-                        <button
-                            type="button"
-                            className="ml-1 w-1/2 text-white bg-green-500 p-2 flex items-center justify-center rounded-lg focus:outline-none opacity-50 text-lg"
-                        >
-                            <IconLink className="mr-2" size={23} stroke={1.5} strokeLinejoin="miter" />
-                            {' '}
-                            LINK MCDU
-                        </button>
-                    </div>
+                    <button
+                        type="button"
+                        onClick={() => props.fetchSimbrief()}
+                        className="flex justify-center items-center p-2 space-x-4 w-full text-white rounded-lg border-2 shadow-lg focus:outline-none border-navy-lighter bg-teal-light"
+                    >
+                        <FileEarmarkArrowDown size={26} />
+                        <p>Import Flightplan from SimBrief</p>
+                    </button>
                 </div>
             </div>
         </div>

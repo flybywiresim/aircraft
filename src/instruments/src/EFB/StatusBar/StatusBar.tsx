@@ -1,16 +1,8 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { IconAccessPoint, IconBattery4, IconPower } from '@tabler/icons';
-import { connect } from 'react-redux';
-import { efbClearState } from '../Store/action-creator/efb';
-
-import { PowerContext, ContentState } from '../index';
-
-type StatusBarProps = {
-    initTime: Date,
-    updateTimeSinceStart: (newTimeSinceStart: string) => void,
-    updateCurrentTime: (newCurrentTime: Date) => void,
-    efbClearState: () => {}
-}
+import React from 'react';
+import { Wifi2, BatteryFull, Power } from 'react-bootstrap-icons';
+import { useSimVar } from '@instruments/common/simVars';
+// FIXME import { efbClearState } from '../Store/action-creator/efb';
+import { usePower, ContentState } from '../index';
 
 export function formatTime(numbers: number[]) {
     if (numbers.length === 2) {
@@ -39,67 +31,53 @@ export function dateFormat(date: number): string {
     return numberWithSuffix;
 }
 
-const StatusBar = (props: StatusBarProps) => {
-    const [currentTime, setCurrentTime] = useState(props.initTime);
+const StatusBar = () => {
+    const [currentUTC] = useSimVar('E:ZULU TIME', 'seconds');
+    const [dayOfWeek] = useSimVar('E:ZULU DAY OF WEEK', 'number');
+    const [monthOfYear] = useSimVar('E:ZULU MONTH OF YEAR', 'number');
+    const [dayOfMonth] = useSimVar('E:ZULU DAY OF MONTH', 'number');
 
-    const Power = useContext(PowerContext);
+    const power = usePower();
 
-    function calculateTimeSinceStart(currentTime: Date) {
-        const diff = currentTime.getTime() - props.initTime.getTime();
-        const minutes = Math.floor(diff / 1000 / 60);
-        const diffMinusMinutes = diff - (minutes * 1000 * 60);
-        const seconds = Math.floor(diffMinusMinutes / 1000);
-
-        return formatTime(([minutes, seconds]));
+    function getDayName(day: number) {
+        const monthNames = ['Mon', 'Tue', 'Wed', 'Thurs', 'Fri', 'Sat', 'Sun'];
+        return monthNames[day];
     }
 
-    useEffect(() => {
-        setInterval(() => {
-            const date = new Date();
-            const timeSinceStart = calculateTimeSinceStart(date);
-            props.updateCurrentTime(date);
-            props.updateTimeSinceStart(timeSinceStart);
-            setCurrentTime(date);
-        }, 1000);
+    function getMonthName(month: number) {
+        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        return monthNames[month - 1];
+    }
 
-        return () => clearInterval();
-    }, []);
-
-    const { efbClearState } = props;
+    function getHoursAndMinutes(seconds: number) {
+        return `${Math.floor(seconds / 3600).toString().padStart(2, '0')}
+        :${Math.floor((seconds % 3600) / 60).toString().padStart(2, '0')}z`;
+    }
 
     return (
-        <div className="fixed w-full py-2 px-8 flex items-center justify-between bg-navy-medium text-white font-medium leading-none text-lg">
-            <div className="flex items-center">
-                <IconAccessPoint className="mr-2 animate-pulse" size={30} stroke={1.5} strokeLinejoin="miter" />
-                flyPad
-            </div>
-            <div>{`${formatTime(([currentTime.getUTCHours(), currentTime.getUTCMinutes()]))}z`}</div>
-            <div className="flex items-center">
-                100%
+        <div className="flex fixed justify-between items-center px-6 w-full h-10 text-lg font-medium leading-none text-white bg-navy-medium">
+            <p>
+                {`${getDayName(dayOfWeek)} ${getMonthName(monthOfYear)} ${dayOfMonth}`}
+            </p>
+            <p className="absolute inset-x-0 mx-auto w-min">
+                {getHoursAndMinutes(currentUTC)}
+            </p>
+            <div className="flex items-center space-x-8">
+                <div className="mb-1.5">
+                    <Wifi2 size={32} />
+                </div>
 
-                {/* TODO find a way to use `setSimVar` here */}
-                <IconBattery4
-                    className="ml-2"
-                    size={30}
-                    stroke={1.5}
-                    strokeLinejoin="miter"
-                />
-                <IconPower
-                    onClick={() => {
-                        efbClearState();
-                        Power.setContent(ContentState.OFF);
-                    }}
-                    className="ml-6"
-                    size={25}
-                    stroke={1.5}
-                    strokeLinejoin="miter"
-                />
+                <div className="flex items-center space-x-4">
+                    <p>100%</p>
+
+                    {/* TODO find a way to use `setSimVar` here */}
+                    <BatteryFull size={28} />
+                </div>
+
+                <Power size={26} onClick={() => power.setContent(ContentState.OFF)} />
             </div>
         </div>
     );
 };
 
-export default connect(
-    () => {},
-    { efbClearState },
-)(StatusBar);
+export default StatusBar;
