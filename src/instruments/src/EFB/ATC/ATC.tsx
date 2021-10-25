@@ -100,8 +100,8 @@ export const ATC = () => {
                         {' - '}
                         Controllers currently in range
                     </h1>
-                    <div className="bg-gray-800 rounded-xl p-2 text-white shadow-lg">
-                        <div className="flex p-2 w-full flex flex-wrap justify-between">
+                    <div className="bg-gray-800 rounded-xl p-2 text-white">
+                        <div className="flex p-2 w-full flex-wrap justify-between">
                             { controllers && controllers.map((atc) => (
                                 <Button
                                     className={classNames({ 'w-60 m-1 flex': true, 'text-yellow-200': atc.frequency === currentFrequency })}
@@ -145,7 +145,7 @@ export const ATC = () => {
             { (atisSource === 'IVAO' || atisSource === 'VATSIM') && (
                 <div className="w-4/12 ml-4">
                     <h1 className="text-white font-medium mb-4 text-2xl">Active frequency</h1>
-                    <div className="bg-gray-800 rounded-xl p-6 text-white shadow-lg">
+                    <div className="bg-gray-800 rounded-xl p-6 text-white">
                         <div>
                             <div className="flex text-2xl text-yellow-200">
                                 <div className="mr-4">

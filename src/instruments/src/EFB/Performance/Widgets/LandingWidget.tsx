@@ -333,7 +333,7 @@ export const LandingWidget = () => {
 
     return (
         <div className="flex flex-grow">
-            <div className="text-white overflow-hidden bg-navy-lighter rounded-2xl shadow-lg p-6 h-efb-nav mr-3 w-9/12">
+            <div className="text-white overflow-hidden bg-navy-lighter rounded-2xl p-6 h-efb-nav mr-3 w-9/12">
                 <div className="w-full">
                     <div className="text-center mb-4">
                         <div className="flex mx-2 flex-1 justify-center">
@@ -551,7 +551,7 @@ export const LandingWidget = () => {
                     </div>
                 </div>
             </div>
-            <div className="text-white overflow-hidden bg-navy-lighter rounded-2xl shadow-lg p-6 h-efb-nav ml-3 w-3/12">
+            <div className="text-white overflow-hidden bg-navy-lighter rounded-2xl p-6 h-efb-nav ml-3 w-3/12">
                 <RunwayVisualizationWidget mainLength={displayedRunwayLength} labels={runwayVisualizationLabels} runwayNumber={runwayNumber} />
             </div>
         </div>
