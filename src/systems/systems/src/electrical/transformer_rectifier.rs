@@ -1,5 +1,7 @@
 use std::cell::Ref;
 
+use uom::si::{electric_current::ampere, electric_potential::volt, f64::*};
+
 use super::{
     ElectricalElement, ElectricalElementIdentifier, ElectricalElementIdentifierProvider,
     ElectricalStateWriter, ElectricityTransformer, Potential, PotentialOrigin, ProvideCurrent,
@@ -8,9 +10,10 @@ use super::{
 use crate::{
     failures::{Failure, FailureType},
     shared::{ConsumePower, PowerConsumptionReport},
-    simulation::{SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext},
+    simulation::{
+        InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
+    },
 };
-use uom::si::{electric_current::ampere, electric_potential::volt, f64::*};
 
 pub struct TransformerRectifier {
     writer: ElectricalStateWriter,
@@ -22,15 +25,12 @@ pub struct TransformerRectifier {
     output_current: ElectricCurrent,
 }
 impl TransformerRectifier {
-    pub fn new(
-        number: usize,
-        identifier_provider: &mut impl ElectricalElementIdentifierProvider,
-    ) -> TransformerRectifier {
+    pub fn new(context: &mut InitContext, number: usize) -> TransformerRectifier {
         TransformerRectifier {
-            writer: ElectricalStateWriter::new(&format!("TR_{}", number)),
+            writer: ElectricalStateWriter::new(context, &format!("TR_{}", number)),
             number,
-            input_identifier: identifier_provider.next(),
-            output_identifier: identifier_provider.next(),
+            input_identifier: context.next_electrical_identifier(),
+            output_identifier: context.next_electrical_identifier(),
             failure: Failure::new(FailureType::TransformerRectifier(number)),
             output_potential: ElectricPotential::new::<volt>(0.),
             output_current: ElectricCurrent::new::<ampere>(0.),
@@ -124,6 +124,8 @@ mod transformer_rectifier_tests {
     use uom::si::power::watt;
 
     use super::*;
+    use crate::simulation::test::ReadByName;
+    use crate::simulation::InitContext;
     use crate::{
         electrical::{
             consumption::PowerConsumer, test::TestElectricitySource, ElectricalBus,
@@ -131,7 +133,7 @@ mod transformer_rectifier_tests {
         },
         simulation::{
             test::{SimulationTestBed, TestBed},
-            Aircraft, Read, SimulationElementVisitor, UpdateContext,
+            Aircraft, SimulationElementVisitor, UpdateContext,
         },
     };
 
@@ -141,30 +143,30 @@ mod transformer_rectifier_tests {
     impl TransformerRectifierTestBed {
         fn with_unpowered_transformer_rectifier() -> Self {
             Self {
-                test_bed: SimulationTestBed::new(|electricity| {
-                    TestAircraft::new(electricity).with_unpowered_transformer_rectifier()
+                test_bed: SimulationTestBed::new(|context| {
+                    TestAircraft::new(context).with_unpowered_transformer_rectifier()
                 }),
             }
         }
 
         fn with_powered_transformer_rectifier() -> Self {
             Self {
-                test_bed: SimulationTestBed::new(|electricity| {
-                    TestAircraft::new(electricity).with_powered_transformer_rectifier()
+                test_bed: SimulationTestBed::new(|context| {
+                    TestAircraft::new(context).with_powered_transformer_rectifier()
                 }),
             }
         }
 
         fn current_is_normal(&mut self) -> bool {
-            self.read("ELEC_TR_1_CURRENT_NORMAL")
+            self.read_by_name("ELEC_TR_1_CURRENT_NORMAL")
         }
 
         fn potential_is_normal(&mut self) -> bool {
-            self.read("ELEC_TR_1_POTENTIAL_NORMAL")
+            self.read_by_name("ELEC_TR_1_POTENTIAL_NORMAL")
         }
 
         fn current(&mut self) -> ElectricCurrent {
-            self.read("ELEC_TR_1_CURRENT")
+            self.read_by_name("ELEC_TR_1_CURRENT")
         }
 
         fn transformer_rectifier_is_powered(&self) -> bool {
@@ -191,14 +193,14 @@ mod transformer_rectifier_tests {
         transformer_rectifier_consumption: Power,
     }
     impl TestAircraft {
-        fn new(electricity: &mut Electricity) -> Self {
+        fn new(context: &mut InitContext) -> Self {
             Self {
                 electricity_source: TestElectricitySource::unpowered(
+                    context,
                     PotentialOrigin::ApuGenerator(1),
-                    electricity,
                 ),
-                transformer_rectifier: TransformerRectifier::new(1, electricity),
-                bus: ElectricalBus::new(ElectricalBusType::DirectCurrent(1), electricity),
+                transformer_rectifier: TransformerRectifier::new(context, 1),
+                bus: ElectricalBus::new(context, ElectricalBusType::DirectCurrent(1)),
                 consumer: PowerConsumer::from(ElectricalBusType::DirectCurrent(1)),
                 transformer_rectifier_consumption: Power::new::<watt>(0.),
             }
@@ -388,9 +390,9 @@ mod transformer_rectifier_tests {
 
         test_bed.run();
 
-        assert!(test_bed.contains_key("ELEC_TR_1_CURRENT"));
-        assert!(test_bed.contains_key("ELEC_TR_1_CURRENT_NORMAL"));
-        assert!(test_bed.contains_key("ELEC_TR_1_POTENTIAL"));
-        assert!(test_bed.contains_key("ELEC_TR_1_POTENTIAL_NORMAL"));
+        assert!(test_bed.contains_variable_with_name("ELEC_TR_1_CURRENT"));
+        assert!(test_bed.contains_variable_with_name("ELEC_TR_1_CURRENT_NORMAL"));
+        assert!(test_bed.contains_variable_with_name("ELEC_TR_1_POTENTIAL"));
+        assert!(test_bed.contains_variable_with_name("ELEC_TR_1_POTENTIAL_NORMAL"));
     }
 }
