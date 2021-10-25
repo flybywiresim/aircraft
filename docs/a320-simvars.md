@@ -1966,6 +1966,13 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Indicates whether the cross bleed air valve is open
     - Bool
 
+- A32NX_PNEU_PACK_{number}_FLOW_VALVE_FLOW_RATE:
+    - Indicates the flow rate through the pack flow valve
+    - Gallon per second
+    - {number}
+        - 1
+        - 2
+
 - A32NX_OVHD_PNEU_ENG_{number}_BLEED_PB_IS_AUTO:
     - Indicates whether the engine bleed air is on
     - Is aliased from aircraft variable A:BLEED AIR ENGINE

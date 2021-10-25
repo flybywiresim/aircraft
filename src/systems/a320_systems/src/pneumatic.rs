@@ -1218,6 +1218,7 @@ impl SimulationElement for FullAuthorityDigitalEngineControl {
 
 // Just sticking all of the pack related things into this.
 struct PackComplex {
+    pack_flow_valve_flow_rate_id: VariableIdentifier,
     pack_container: PneumaticPipe,
     exhaust: PneumaticExhaust,
     pack_flow_valve: DefaultValve,
@@ -1227,6 +1228,8 @@ struct PackComplex {
 impl PackComplex {
     fn new(context: &mut InitContext, engine_number: usize) -> Self {
         Self {
+            pack_flow_valve_flow_rate_id: context
+                .get_identifier(format!("PNEU_PACK_{}_FLOW_VALVE_FLOW_RATE", engine_number)),
             pack_container: PneumaticPipe::new(
                 Volume::new::<cubic_meter>(1.),
                 Pressure::new::<psi>(14.7),
@@ -1280,6 +1283,15 @@ impl PneumaticContainer for PackComplex {
 impl SimulationElement for PackComplex {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.pack_flow_valve_controller.accept(visitor);
+
+        visitor.visit(self);
+    }
+
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(
+            &self.pack_flow_valve_flow_rate_id,
+            self.pack_flow_valve.fluid_flow(),
+        );
     }
 }
 
@@ -2533,6 +2545,9 @@ mod tests {
 
         assert!(test_bed.contains_variable_with_name("PNEU_ENG_1_STARTER_VALVE_OPEN"));
         assert!(test_bed.contains_variable_with_name("PNEU_ENG_2_STARTER_VALVE_OPEN"));
+
+        assert!(test_bed.contains_variable_with_name("PNEU_PACK_1_FLOW_VALVE_FLOW_RATE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_PACK_2_FLOW_VALVE_FLOW_RATE"));
 
         assert!(test_bed.contains_variable_with_name("OVHD_PNEU_ENG_1_BLEED_PB_HAS_FAULT"));
         assert!(test_bed.contains_variable_with_name("OVHD_PNEU_ENG_2_BLEED_PB_HAS_FAULT"));
