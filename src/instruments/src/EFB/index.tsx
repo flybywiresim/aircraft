@@ -9,6 +9,7 @@ import './Assets/Efb.scss';
 import { render } from '../Common/index';
 import { readSettingsFromPersistentStorage } from './Settings/sync';
 import { useInteractionEvent } from '../util';
+import { clearEfbState, useAppDispatch } from './Store/store';
 
 const ScreenLoading = () => (
     <div className="loading-screen">
@@ -37,15 +38,17 @@ interface PowerContextInterface {
 }
 
 export const PowerContext = React.createContext<PowerContextInterface>(undefined as any);
+export const usePower = () => React.useContext(PowerContext);
 
 const EFBLoad = () => {
-    const [content, setContent] = useState<ContentState>(ContentState.OFF);
+    const [content, setContent] = useState<ContentState>(ContentState.LOADED);
+    const dispatch = useAppDispatch();
 
     function offToLoaded() {
         setContent(ContentState.LOADING);
         setTimeout(() => {
             setContent(ContentState.LOADED);
-        }, 6000);
+        }, 100);
     }
 
     useInteractionEvent('A32NX_EFB_POWER', () => {
@@ -53,6 +56,7 @@ const EFBLoad = () => {
             offToLoaded();
         } else {
             setContent(ContentState.OFF);
+            dispatch(clearEfbState());
         }
     });
 

@@ -43,7 +43,7 @@ const BaseThrottleConfig: React.FC<Props> = (props: Props) => {
 
     return (
         <div className="w-50">
-            <h1 className="text-white mb-4 text-3xl ">
+            <h1 className="text-white mb-4">
                 Axis
                 {' '}
                 {props.throttleCount === 1 ? props.throttleNumber : '1 & 2'}
