@@ -1155,7 +1155,7 @@ impl SimulationElement for FullAuthorityDigitalEngineControl {
     }
 }
 
-// Just sticking all of the pack related things into this.
+/// A struct to hold all the pack related components
 struct PackComplex {
     pack_flow_valve_flow_rate_id: VariableIdentifier,
     pack_container: PneumaticPipe,
@@ -1163,7 +1163,6 @@ struct PackComplex {
     pack_flow_valve: DefaultValve,
     pack_flow_valve_controller: PackFlowValveController,
 }
-// TODO: Consumption rate should be like 0.75 m^3/s which is a about 0.4 kg/s.
 impl PackComplex {
     fn new(context: &mut InitContext, engine_number: usize) -> Self {
         Self {
@@ -1230,7 +1229,7 @@ impl SimulationElement for PackComplex {
     }
 }
 
-// This will probably be removed in the future, but
+// In the future, this will be done by the ACSC, hence why I have used an external controller and not the BMC
 struct PackFlowValveController {
     pack_toggle_pb_id: VariableIdentifier,
     pack_pb_is_auto: bool,
@@ -2510,7 +2509,6 @@ mod tests {
     fn prv_closes_with_ovhd_engine_fire_pushbutton_released() {
         let mut test_bed = test_bed().idle_eng1().idle_eng2().and_run();
 
-        // TODO: I shouldn't have to run this twice, but it just takes two updates for the pressure to propagate through the system.
         test_bed.run_with_delta(Duration::from_secs(5));
 
         assert!(test_bed.pr_valve_is_open(1));

@@ -16,7 +16,7 @@ use uom::si::{
 
 use super::{ControllablePneumaticValve, PneumaticContainer, PneumaticValveSignal};
 
-/// This is only controlled by physical forces
+/// A valve only controlled by the physical forces due to the pressure gradient. This does not accept any signals.
 pub struct PurelyPneumaticValve {
     open_amount: Ratio,
     connector: PneumaticContainerConnector,
@@ -584,7 +584,7 @@ mod tests {
 
         let mut from = PneumaticPipe::new(
             Volume::new::<cubic_meter>(1.),
-            Pressure::new::<psi>(100.), // really high pressure
+            Pressure::new::<psi>(100.),
             ThermodynamicTemperature::new::<degree_celsius>(15.),
         );
         let mut to = PneumaticPipe::new(
