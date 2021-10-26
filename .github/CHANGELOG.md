@@ -51,6 +51,7 @@
 1. [ECAM] Fixed misaligned items on ecam memos - @tyler58546 (tyler58546)
 1. [ECAM] Revised fuel page to match neo - @RichardPilbery (tricky_dicky#3571)
 1. [RMP] Added 25 kHz VHF spacing option - @tyler58546 (tyler58546)
+1. [BLEED] Replace default bleed system - @BlueberryKing (BlueberryKing)
 
 ## 0.7.0
 
