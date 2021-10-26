@@ -1,36 +1,30 @@
 import React from 'react';
 import FlightWidget from './Widgets/FlightWidget';
 import WeatherWidget from './Widgets/WeatherWidget';
-import { SimbriefData } from '../Efb';
+import { useAppSelector } from '../Store/store';
 
-type DashboardProps = {
-    simbriefData: SimbriefData,
-    fetchSimbrief: Function,
-}
+export const Dashboard = () => {
+    const simbriefData = useAppSelector((state) => state.simbrief.data);
 
-const Dashboard = ({ simbriefData, fetchSimbrief }: DashboardProps) => (
-    <div className="w-full">
-        <h1 className="text-white">Dashboard</h1>
-        <div className="flex w-full mt-4 h-efb">
-            <FlightWidget
-                simbriefData={simbriefData}
-                fetchSimbrief={fetchSimbrief}
-            />
-            <div className="flex flex-col w-3/5">
-                <div className="h-2/5 bg-navy-lighter rounded-lg ml-3 mb-3 p-6">
-                    <div className="h-full flex items-center">
-                        <div className="w-1/2">
-                            <WeatherWidget name="origin" editIcao="yes" icao={simbriefData.departingAirport} />
-                        </div>
-                        <div className="border border-gray-500 rounded-full h-48" />
-                        <div className="w-1/2">
-                            <WeatherWidget name="origin" editIcao="yes" icao={simbriefData.arrivingAirport} />
+    return (
+        <div className="w-full">
+            <h1 className="text-white">Dashboard</h1>
+            <div className="flex mt-4 w-full h-efb">
+                <FlightWidget />
+                <div className="flex flex-col w-3/5">
+                    <div className="p-6 mb-3 ml-3 h-2/5 rounded-lg bg-navy-lighter">
+                        <div className="flex items-center h-full">
+                            <div className="w-1/2">
+                                <WeatherWidget name="origin" editIcao="yes" icao={simbriefData.departingAirport} />
+                            </div>
+                            <div className="h-48 rounded-full border border-gray-500" />
+                            <div className="w-1/2">
+                                <WeatherWidget name="origin" editIcao="yes" icao={simbriefData.arrivingAirport} />
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-);
-
-export default Dashboard;
+    );
+};

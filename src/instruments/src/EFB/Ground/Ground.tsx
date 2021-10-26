@@ -27,7 +27,7 @@ type StatefulButton = {
     state: string
 }
 
-const Ground = () => {
+export const Ground = () => {
     const dispatch = useAppDispatch();
 
     const activeButtons = useAppSelector((state) => state.buttons.activeButtons);
@@ -332,5 +332,3 @@ const Ground = () => {
         </div>
     );
 };
-
-export default Ground;

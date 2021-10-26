@@ -1,21 +1,21 @@
 import React from 'react';
 import {
-    IconBox,
     IconPlane,
     IconPlaneDeparture,
     IconPlaneArrival,
 } from '@tabler/icons';
 import { FileEarmarkArrowDown } from 'react-bootstrap-icons';
-import { SimbriefData } from '../../Efb';
+import { usePersistentProperty } from '@instruments/common/persistence';
 import fuselage from '../../Assets/320neo-outline-nose.svg';
 
-type FlightWidgetProps = {
-    simbriefData: SimbriefData,
-    fetchSimbrief: Function,
-}
+import { useAppSelector, useAppDispatch } from '../../Store/store';
 
-const FlightWidget = (props: FlightWidgetProps) => {
-    const { simbriefData } = props;
+import { fetchSimbriefDataAction } from '../../Store/features/simBrief';
+
+const FlightWidget = () => {
+    const [simbriefUserId] = usePersistentProperty('CONFIG_SIMBRIEF_USERID');
+    const simbriefData = useAppSelector((state) => state.simbrief.data);
+    const dispatch = useAppDispatch();
 
     let schedInParsed = '--:--';
     let schedOutParsed = '--:--';
@@ -49,7 +49,7 @@ const FlightWidget = (props: FlightWidgetProps) => {
     }
 
     return (
-        <div className="overflow-hidden p-6 mr-3 w-2/5 h-full text-white rounded-lg border-2 shadow-md border-navy-lighter">
+        <div className="overflow-hidden p-6 mr-3 w-2/5 h-full text-white rounded-lg border-2 border-navy-lighter shadow-md">
             <div className="flex flex-col justify-between h-full">
                 <div className="w-full">
                     <div className="mb-6 text-center">
@@ -125,8 +125,12 @@ const FlightWidget = (props: FlightWidgetProps) => {
                     </div>
                     <button
                         type="button"
-                        onClick={() => props.fetchSimbrief()}
-                        className="flex justify-center items-center p-2 space-x-4 w-full text-white rounded-lg border-2 shadow-lg focus:outline-none border-navy-lighter bg-teal-light"
+                        onClick={() => {
+                            fetchSimbriefDataAction(simbriefUserId ?? '').then((action) => {
+                                dispatch(action)
+                            });
+                        }}
+                        className="flex justify-center items-center p-2 space-x-4 w-full text-white bg-teal-light rounded-lg border-2 border-navy-lighter shadow-lg focus:outline-none"
                     >
                         <FileEarmarkArrowDown size={26} />
                         <p>Import Flightplan from SimBrief</p>
