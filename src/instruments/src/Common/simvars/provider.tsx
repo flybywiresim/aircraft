@@ -1,3 +1,6 @@
+//  Copyright (c) 2021 FlyByWire Simulations
+//  SPDX-License-Identifier: GPL-3.0
+
 import React, { useCallback, FC, useState, createContext, useContext, useMemo } from 'react';
 import { throttle } from 'lodash';
 import { useUpdate } from '../hooks';
@@ -24,7 +27,7 @@ export const SimVarProvider: FC<SimVarProviderProps> = ({ maxUpdateFrequency = 3
 
     const updateInstances = useMemo(() => throttle(() => {
         for (const [, instance] of Object.entries(instances)) {
-            if (!instance.maxStaleness || (Date.now() - instance.lastUpdated >= instance.maxStaleness)) {
+            if (!instance.maxStaleness || (Date.now() - instance.lastUpdated >= instance.maxStaleness) || !instance.lastUpdated) {
                 instance.updateValue();
             }
         }
