@@ -3,33 +3,6 @@ import { Wifi2, BatteryFull, Power } from 'react-bootstrap-icons';
 import { useSimVar } from '@instruments/common/simVars';
 import { usePower, PowerState } from '../Efb';
 
-export function formatTime(numbers: number[]) {
-    if (numbers.length === 2) {
-        return `${(numbers[0] <= 9 ? '0' : '') + numbers[0]}:${numbers[1] <= 9 ? '0' : ''}${numbers[1]}`;
-    } if (numbers.length === 3) {
-        return `${(numbers[0] <= 9 ? '0' : '') + numbers[0]}:${numbers[1] <= 9 ? '0' : ''}${numbers[1]}:${numbers[2] <= 9 ? '0' : ''}${numbers[2]}`;
-    }
-    return 'N/A';
-}
-
-export function dateFormat(date: number): string {
-    let numberWithSuffix;
-    const dateRemOf10 = date % 10;
-    const dateRemOf100 = date % 100;
-
-    if ((dateRemOf10 === 1) && (dateRemOf100 !== 11)) {
-        numberWithSuffix = `${date}st`;
-    } else if ((dateRemOf10 === 2) && (dateRemOf100 !== 12)) {
-        numberWithSuffix = `${date}nd`;
-    } else if ((dateRemOf10 === 3) && (dateRemOf100 !== 13)) {
-        numberWithSuffix = `${date}rd`;
-    } else {
-        numberWithSuffix = `${date}th`;
-    }
-
-    return numberWithSuffix;
-}
-
 const StatusBar = () => {
     const [currentUTC] = useSimVar('E:ZULU TIME', 'seconds');
     const [dayOfWeek] = useSimVar('E:ZULU DAY OF WEEK', 'number');
