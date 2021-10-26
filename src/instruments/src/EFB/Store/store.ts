@@ -27,12 +27,10 @@ const rootReducer: Reducer = (state: RootState, action: AnyAction) => {
 
 export const clearEfbState = createAction(EFB_CLEAR_STATE);
 
-const store = configureStore({
+export const store = configureStore({
     reducer: rootReducer,
     middleware: [thunk],
 });
-
-export default store;
 
 export const useAppDispatch = () => useDispatch<AppDispatch>();
 export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;

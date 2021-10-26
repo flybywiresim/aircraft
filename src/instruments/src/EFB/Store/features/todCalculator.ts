@@ -35,7 +35,7 @@ export const todCalculatorSlice = createSlice({
     name: 'todCalculator',
     initialState,
     reducers: {
-        setTodData: (state, action) => ({
+        setTodData: (state, action: TypedAction<any>) => ({
             ...state,
             ...action.payload,
         }),
@@ -52,13 +52,16 @@ export const todCalculatorSlice = createSlice({
             if (action.payload === TOD_INPUT_MODE.AUTO) {
                 state.groundSpeed = initialState.groundSpeed;
             }
-            // FIXME
-            setTodData(action.payload);
+
+            return ({
+                ...state,
+                ...{ groundSpeedMode: action.payload },
+            });
         },
-        setTodCurrentAltitudeSync: (_, action: TypedAction<boolean>) => {
-            // FIXME
-            setTodData({ currentAltitudeMode: action.payload ? TOD_INPUT_MODE.AUTO : TOD_INPUT_MODE.MANUAL });
-        },
+        setTodCurrentAltitudeSync: (state, action: TypedAction<boolean>) => ({
+            ...state,
+            ...{ currentAltitudeMode: action.payload ? TOD_INPUT_MODE.AUTO : TOD_INPUT_MODE.MANUAL },
+        }),
         clearTodGroundSpeed: (state) => {
             state.groundSpeed = initialState.groundSpeed;
         },

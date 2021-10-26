@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useReducer } from 'react';
 
-import { Provider } from 'react-redux';
 import { Redirect, Route, Switch } from 'react-router-dom';
 import { useSimVar } from '@instruments/common/simVars';
+import { useInteractionEvent } from '@instruments/common/hooks';
 import { usePersistentNumberProperty, usePersistentProperty } from '../Common/persistence';
 import NavigraphClient, { NavigraphContext } from './ChartsApi/Navigraph';
 import { getSimbriefData, IFuel, IWeights } from './SimbriefApi';
@@ -20,7 +20,8 @@ import Settings from './Settings/Settings';
 import Failures from './Failures/Failures';
 
 import { PerformanceContext, PerformanceReducer, performanceInitialState } from './Store/performance-context';
-import store from './Store/store';
+import { clearEfbState, useAppDispatch } from './Store/store';
+import logo from './Assets/fbw-logo.svg';
 
 export type SimbriefData = {
     departingAirport: string,
@@ -117,13 +118,71 @@ type SimbriefUserIdContextType = {
     setSimbriefUserId: (newValue: string) => void
 }
 
+const ScreenLoading = () => (
+    <div className="loading-screen">
+        <div className="center">
+            <div className="placeholder">
+                <img src={logo} className="fbw-logo" alt="logo" />
+                {' '}
+                flyPad
+            </div>
+            <div className="loading-bar">
+                <div className="loaded" />
+            </div>
+        </div>
+    </div>
+);
+
 export const SimbriefUserIdContext = React.createContext<SimbriefUserIdContextType>(undefined!);
 
+export enum PowerState {
+    OFF,
+    LOADING,
+    LOADED
+}
+
+interface PowerContextInterface {
+    powerState: PowerState,
+    setPowerState: (PowerState) => void
+}
+
+export const PowerContext = React.createContext<PowerContextInterface>(undefined as any);
+export const usePower = () => React.useContext(PowerContext);
+
 const Efb = () => {
+    const [powerState, setPowerState] = useState<PowerState>(PowerState.LOADED);
+
     const [currentLocalTime] = useSimVar('E:LOCAL TIME', 'seconds', 3000);
     const [, setBrightness] = useSimVar('L:A32NX_EFB_BRIGHTNESS', 'number');
     const [brightnessSetting] = usePersistentNumberProperty('EFB_BRIGHTNESS', 0);
     const [usingAutobrightness] = useSimVar('L:A32NX_EFB_USING_AUTOBRIGHTNESS', 'bool', 5000);
+
+    const [performanceState, performanceDispatch] = useReducer(PerformanceReducer, performanceInitialState);
+    const [simbriefData, setSimbriefData] = useState<SimbriefData>(emptySimbriefData);
+    const [simbriefUserId, setSimbriefUserId] = usePersistentProperty('CONFIG_SIMBRIEF_USERID');
+
+    const dispatch = useAppDispatch();
+
+    useEffect(() => {
+        if (powerState === PowerState.OFF) {
+            dispatch(clearEfbState());
+        }
+    }, [powerState]);
+
+    function offToLoaded() {
+        setPowerState(PowerState.LOADING);
+        setTimeout(() => {
+            setPowerState(PowerState.LOADED);
+        }, 100);
+    }
+
+    useInteractionEvent('A32NX_EFB_POWER', () => {
+        if (powerState === PowerState.OFF) {
+            offToLoaded();
+        } else {
+            setPowerState(PowerState.OFF);
+        }
+    });
 
     // handle setting brightness if user is using autobrightness
     useEffect(() => {
@@ -136,10 +195,6 @@ const Efb = () => {
             setBrightness(brightnessSetting);
         }
     }, [currentLocalTime, usingAutobrightness]);
-
-    const [performanceState, performanceDispatch] = useReducer(PerformanceReducer, performanceInitialState);
-    const [simbriefData, setSimbriefData] = useState<SimbriefData>(emptySimbriefData);
-    const [simbriefUserId, setSimbriefUserId] = usePersistentProperty('CONFIG_SIMBRIEF_USERID');
 
     const fetchSimbriefData = async () => {
         if (!simbriefUserId) {
@@ -204,72 +259,81 @@ const Efb = () => {
         });
     };
 
-    return (
-        <Provider store={store}>
+    switch (powerState) {
+    case PowerState.OFF:
+        return <div className="w-screen h-screen" onClick={() => offToLoaded()} />;
+    case PowerState.LOADING:
+        return <ScreenLoading />;
+    case PowerState.LOADED:
+        return (
             <PerformanceContext.Provider value={{ performanceState, performanceDispatch }}>
                 <NavigraphContext.Provider value={navigraph}>
                     <SimbriefUserIdContext.Provider value={{ simbriefUserId, setSimbriefUserId }}>
-                        <div className="flex flex-col bg-navy-regular">
-                            <StatusBar />
-                            <div className="flex flex-row">
-                                <ToolBar />
-                                <div className="pt-14 pr-6 w-screen h-screen text-gray-700">
-                                    <Switch>
-                                        <Route exact path="/">
-                                            <Redirect to="/dashboard" />
-                                        </Route>
-                                        <Route path="/dashboard">
-                                            <Dashboard
-                                                simbriefData={simbriefData}
-                                                fetchSimbrief={fetchSimbriefData}
-                                            />
-                                        </Route>
-                                        <Route path="/dispatch">
-                                            <Dispatch
-                                                loadsheet={simbriefData.loadsheet}
-                                                weights={simbriefData.weights}
-                                                fuels={simbriefData.fuels}
-                                                units={simbriefData.units}
-                                                arrivingAirport={simbriefData.arrivingAirport}
-                                                arrivingIata={simbriefData.arrivingIata}
-                                                departingAirport={simbriefData.departingAirport}
-                                                departingIata={simbriefData.departingIata}
-                                                altBurn={simbriefData.altBurn}
-                                                altIcao={simbriefData.altIcao}
-                                                altIata={simbriefData.altIata}
-                                                tripTime={simbriefData.tripTime}
-                                                contFuelTime={simbriefData.contFuelTime}
-                                                resFuelTime={simbriefData.resFuelTime}
-                                                taxiOutTime={simbriefData.taxiOutTime}
-                                            />
-                                        </Route>
-                                        <Route path="/ground">
-                                            <Ground />
-                                        </Route>
-                                        <Route path="/performance">
-                                            <Performance />
-                                        </Route>
-                                        <Route path="/navigation">
-                                            <Navigation />
-                                        </Route>
-                                        <Route path="/atc">
-                                            <ATC />
-                                        </Route>
-                                        <Route path="/failures">
-                                            <Failures />
-                                        </Route>
-                                        <Route path="/settings">
-                                            <Settings />
-                                        </Route>
-                                    </Switch>
+                        <PowerContext.Provider value={{ powerState, setPowerState }}>
+                            <div className="flex flex-col bg-navy-regular">
+                                <StatusBar />
+                                <div className="flex flex-row">
+                                    <ToolBar />
+                                    <div className="pt-14 pr-6 w-screen h-screen text-gray-700">
+                                        <Switch>
+                                            <Route exact path="/">
+                                                <Redirect to="/dashboard" />
+                                            </Route>
+                                            <Route path="/dashboard">
+                                                <Dashboard
+                                                    simbriefData={simbriefData}
+                                                    fetchSimbrief={fetchSimbriefData}
+                                                />
+                                            </Route>
+                                            <Route path="/dispatch">
+                                                <Dispatch
+                                                    loadsheet={simbriefData.loadsheet}
+                                                    weights={simbriefData.weights}
+                                                    fuels={simbriefData.fuels}
+                                                    units={simbriefData.units}
+                                                    arrivingAirport={simbriefData.arrivingAirport}
+                                                    arrivingIata={simbriefData.arrivingIata}
+                                                    departingAirport={simbriefData.departingAirport}
+                                                    departingIata={simbriefData.departingIata}
+                                                    altBurn={simbriefData.altBurn}
+                                                    altIcao={simbriefData.altIcao}
+                                                    altIata={simbriefData.altIata}
+                                                    tripTime={simbriefData.tripTime}
+                                                    contFuelTime={simbriefData.contFuelTime}
+                                                    resFuelTime={simbriefData.resFuelTime}
+                                                    taxiOutTime={simbriefData.taxiOutTime}
+                                                />
+                                            </Route>
+                                            <Route path="/ground">
+                                                <Ground />
+                                            </Route>
+                                            <Route path="/performance">
+                                                <Performance />
+                                            </Route>
+                                            <Route path="/navigation">
+                                                <Navigation />
+                                            </Route>
+                                            <Route path="/atc">
+                                                <ATC />
+                                            </Route>
+                                            <Route path="/failures">
+                                                <Failures />
+                                            </Route>
+                                            <Route path="/settings">
+                                                <Settings />
+                                            </Route>
+                                        </Switch>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        </PowerContext.Provider>
                     </SimbriefUserIdContext.Provider>
                 </NavigraphContext.Provider>
             </PerformanceContext.Provider>
-        </Provider>
-    );
+        );
+    default:
+        throw new Error('Invalid content state provided');
+    }
 };
 
 export default Efb;
