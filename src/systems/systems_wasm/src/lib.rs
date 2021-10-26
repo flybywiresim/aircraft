@@ -2,12 +2,12 @@
 mod electrical;
 mod failures;
 
-use std::{error::Error, pin::Pin, time::Duration};
+use std::{error::Error, time::Duration};
 
 use fxhash::FxHashMap;
 use msfs::{
     legacy::{AircraftVariable, NamedVariable},
-    sim_connect::{SimConnect, SimConnectRecv},
+    sim_connect::{data_definition, Period, SimConnect, SimConnectRecv, SIMCONNECT_OBJECT_ID_USER},
     MSFSEvent,
 };
 
@@ -59,7 +59,7 @@ pub trait MsfsAspectCtor {
     fn new(
         registry: &mut MsfsVariableRegistry,
         sim_connect: &mut SimConnect,
-    ) -> Result<Self, Box<dyn std::error::Error>>
+    ) -> Result<Self, Box<dyn Error>>
     where
         Self: Sized;
 }
@@ -68,7 +68,7 @@ pub struct MsfsSimulationBuilder<'a, 'b> {
     variable_registry: Option<MsfsVariableRegistry>,
     key_prefix: String,
     electrical_buses: Option<MsfsElectricalBuses>,
-    sim_connect: Pin<&'a mut SimConnect<'b>>,
+    sim_connect: &'a mut SimConnect<'b>,
     apu: Option<MsfsAuxiliaryPowerUnit>,
     failures: Option<Failures>,
     additional_aspects: Vec<Box<dyn SimulatorAspect>>,
@@ -77,7 +77,7 @@ pub struct MsfsSimulationBuilder<'a, 'b> {
 impl<'a, 'b> MsfsSimulationBuilder<'a, 'b> {
     const MSFS_INFINITELY_POWERED_BUS_IDENTIFIER: usize = 1;
 
-    pub fn new(key_prefix: String, sim_connect: Pin<&'a mut SimConnect<'b>>) -> Self {
+    pub fn new(key_prefix: String, sim_connect: &'a mut SimConnect<'b>) -> Self {
         Self {
             variable_registry: Some(MsfsVariableRegistry::new(key_prefix.clone())),
             key_prefix,
@@ -92,7 +92,7 @@ impl<'a, 'b> MsfsSimulationBuilder<'a, 'b> {
     pub fn build<T: Aircraft, U: FnOnce(&mut InitContext) -> T>(
         mut self,
         aircraft_ctor_fn: U,
-    ) -> (Simulation<T>, MsfsHandler) {
+    ) -> Result<(Simulation<T>, MsfsHandler), Box<dyn Error>> {
         let mut aspects: Vec<Box<dyn SimulatorAspect>> =
             vec![Box::new(self.electrical_buses.unwrap())];
         if self.apu.is_some() {
@@ -105,17 +105,18 @@ impl<'a, 'b> MsfsSimulationBuilder<'a, 'b> {
         let simulation = Simulation::new(aircraft_ctor_fn, &mut registry);
         aspects.push(Box::new(registry));
 
-        (simulation, MsfsHandler::new(aspects, self.failures))
+        Ok((
+            simulation,
+            MsfsHandler::new(aspects, self.failures, self.sim_connect)?,
+        ))
     }
 
     pub fn with<T: 'static + MsfsAspectCtor + SimulatorAspect>(
         mut self,
-    ) -> Result<Self, Box<dyn std::error::Error>> {
+    ) -> Result<Self, Box<dyn Error>> {
         if let Some(registry) = &mut self.variable_registry {
-            self.additional_aspects.push(Box::new(T::new(
-                registry,
-                self.sim_connect.as_mut().get_mut(),
-            )?));
+            self.additional_aspects
+                .push(Box::new(T::new(registry, self.sim_connect)?));
         }
 
         Ok(self)
@@ -147,7 +148,7 @@ impl<'a, 'b> MsfsSimulationBuilder<'a, 'b> {
         mut self,
         is_available_variable_name: String,
         fuel_valve_number: u8,
-    ) -> Result<Self, Box<dyn std::error::Error>> {
+    ) -> Result<Self, Box<dyn Error>> {
         if let Some(registry) = &mut self.variable_registry {
             self.apu = Some(MsfsAuxiliaryPowerUnit::new(
                 registry,
@@ -178,7 +179,7 @@ impl<'a, 'b> MsfsSimulationBuilder<'a, 'b> {
         name: &str,
         units: &str,
         index: usize,
-    ) -> Result<Self, Box<dyn std::error::Error>> {
+    ) -> Result<Self, Box<dyn Error>> {
         if let Some(registry) = &mut self.variable_registry {
             registry.add_aircraft_variable(name, units, index)?;
         }
@@ -192,7 +193,7 @@ impl<'a, 'b> MsfsSimulationBuilder<'a, 'b> {
         units: &str,
         index: usize,
         additional_names: Vec<String>,
-    ) -> Result<Self, Box<dyn std::error::Error>> {
+    ) -> Result<Self, Box<dyn Error>> {
         if let Some(registry) = &mut self.variable_registry {
             registry.add_aircraft_variable_with_additional_names(
                 name,
@@ -210,45 +211,60 @@ impl<'a, 'b> MsfsSimulationBuilder<'a, 'b> {
 pub struct MsfsHandler {
     aspects: Vec<Box<dyn SimulatorAspect>>,
     failures: Option<Failures>,
+    time: Time,
 }
 impl MsfsHandler {
-    fn new(aspects: Vec<Box<dyn SimulatorAspect>>, failures: Option<Failures>) -> Self {
-        Self { aspects, failures }
+    fn new(
+        aspects: Vec<Box<dyn SimulatorAspect>>,
+        failures: Option<Failures>,
+        sim_connect: &mut SimConnect,
+    ) -> Result<Self, Box<dyn Error>> {
+        Ok(Self {
+            aspects,
+            failures,
+            time: Time::new(sim_connect)?,
+        })
     }
 
-    pub fn handle<'a, 'b, T: Aircraft>(
+    pub fn handle<T: Aircraft>(
         &mut self,
         event: MSFSEvent,
         simulation: &mut Simulation<T>,
-        sim_connect: Pin<&'a mut SimConnect<'b>>,
-    ) -> Result<(), Box<dyn std::error::Error>> {
+        sim_connect: &mut SimConnect,
+    ) -> Result<(), Box<dyn Error>> {
         match event {
-            MSFSEvent::PreDraw(d) => {
-                self.pre_tick(d.delta_time());
-                if let Some(failures) = &self.failures {
-                    Self::read_failures_into_simulation(failures, simulation);
+            MSFSEvent::PreDraw(_) => {
+                if !self.time.is_pausing() {
+                    let delta_time = self.time.take();
+                    self.pre_tick(delta_time);
+                    if let Some(failures) = &self.failures {
+                        Self::read_failures_into_simulation(failures, simulation);
+                    }
+                    simulation.tick(delta_time, self);
+                    self.post_tick(sim_connect)?;
                 }
-                simulation.tick(d.delta_time(), self);
-                self.post_tick(sim_connect.get_mut())?;
             }
-            MSFSEvent::SimConnect(message) => {
-                self.handle_message(&message);
-                ()
-            }
+            MSFSEvent::SimConnect(message) => match message {
+                SimConnectRecv::SimObjectData(data) if data.id() == SimulationTime::REQUEST_ID => {
+                    self.time
+                        .increment(data.into::<SimulationTime>(sim_connect).unwrap());
+                }
+                _ => {
+                    self.handle_message(&message);
+                }
+            },
             _ => {}
         }
 
         Ok(())
     }
 
-    fn handle_message(&mut self, message: &SimConnectRecv) -> bool {
+    fn handle_message(&mut self, message: &SimConnectRecv) {
         for aspect in self.aspects.iter_mut() {
             if aspect.handle_message(message) {
-                return true;
+                break;
             }
         }
-
-        false
     }
 
     fn pre_tick(&mut self, delta: Duration) {
@@ -257,10 +273,7 @@ impl MsfsHandler {
         });
     }
 
-    fn post_tick(
-        &mut self,
-        sim_connect: &mut SimConnect,
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    fn post_tick(&mut self, sim_connect: &mut SimConnect) -> Result<(), Box<dyn Error>> {
         for aspect in self.aspects.iter_mut() {
             aspect.post_tick(sim_connect)?;
         }
@@ -333,7 +346,7 @@ impl MsfsVariableRegistry {
         name: &str,
         units: &str,
         index: usize,
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    ) -> Result<(), Box<dyn Error>> {
         self.add_aircraft_variable_with_additional_names(name, units, index, None)
     }
 
@@ -347,7 +360,7 @@ impl MsfsVariableRegistry {
         units: &str,
         index: usize,
         additional_names: Option<Vec<String>>,
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    ) -> Result<(), Box<dyn Error>> {
         match AircraftVariable::from(&name, units, index) {
             Ok(var) => {
                 let name = if index > 0 {
@@ -420,6 +433,53 @@ impl SimulatorAspect for MsfsVariableRegistry {
             }
             _ => false,
         }
+    }
+}
+
+#[data_definition]
+struct SimulationTime {
+    #[name = "SIMULATION TIME"]
+    #[unit = "Number"]
+    value: f64,
+}
+
+impl SimulationTime {
+    const REQUEST_ID: u32 = 0;
+}
+
+struct Time {
+    previous_simulation_time_value: f64,
+    next_delta: f64,
+}
+
+impl Time {
+    fn new(sim_connect: &mut SimConnect) -> Result<Self, Box<dyn Error>> {
+        sim_connect.request_data_on_sim_object::<SimulationTime>(
+            SimulationTime::REQUEST_ID,
+            SIMCONNECT_OBJECT_ID_USER,
+            Period::SimFrame,
+        )?;
+
+        Ok(Self {
+            previous_simulation_time_value: 0.,
+            next_delta: 0.,
+        })
+    }
+
+    fn increment(&mut self, simulation_time: &SimulationTime) {
+        self.next_delta += simulation_time.value - self.previous_simulation_time_value;
+        self.previous_simulation_time_value = simulation_time.value;
+    }
+
+    fn is_pausing(&self) -> bool {
+        self.next_delta == 0.
+    }
+
+    fn take(&mut self) -> Duration {
+        let value = self.next_delta;
+        self.next_delta = 0.;
+
+        Duration::from_secs_f64(value)
     }
 }
 
