@@ -33,7 +33,7 @@ type SelectionTabsProps = {
     tabs: PageLink[],
 }
 
-const SelectionTabs = ({ tabs }: SelectionTabsProps) => (
+export const SelectionTabs = ({ tabs }: SelectionTabsProps) => (
     <div className="space-y-6">
         {
             tabs.map((tab) => (
@@ -49,7 +49,7 @@ const SelectionTabs = ({ tabs }: SelectionTabsProps) => (
     </div>
 );
 
-const Settings = () => {
+export const Settings = () => {
     const [showNavbar, setShowNavbar] = useState(true);
 
     const tabs: PageLink[] = [
@@ -81,5 +81,3 @@ const Settings = () => {
         </SettingsNavbarContext.Provider>
     );
 };
-
-export default Settings;

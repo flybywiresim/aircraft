@@ -56,7 +56,7 @@ const Data = ({ className }: {className: string}) => {
         }
 
         if (!inputValid(calculationType!, syncedInput)) {
-            setTodData({ calculationInputMode: TOD_INPUT_MODE.MANUAL, calculation: { input: '', type: undefined } });
+            setTodData({ calculationInputMode: TOD_INPUT_MODE.MANUAL, calculation: { input: -1, type: undefined } });
             return;
         }
 
@@ -86,7 +86,7 @@ const Data = ({ className }: {className: string}) => {
                     </div>
                 )}
                 value={currentAltitude}
-                onChange={(currentAltitude) => setTodData({ currentAltitude })}
+                onChange={(currentAltitude) => setTodData({ currentAltitude: parseFloat(currentAltitude) })}
                 disabled={currentAltitudeSyncEnabled}
             />
 
@@ -96,7 +96,7 @@ const Data = ({ className }: {className: string}) => {
                 className="mb-6 dark-option"
                 rightComponent={<span className="text-2xl">ft</span>}
                 value={targetAltitude}
-                onChange={(targetAltitude) => setTodData({ targetAltitude })}
+                onChange={(targetAltitude) => setTodData({ targetAltitude: parseFloat(targetAltitude) })}
             />
 
             <Divider className="mb-6" />
@@ -129,12 +129,12 @@ const Data = ({ className }: {className: string}) => {
                                         className="ml-1"
                                         text="X"
                                         type={BUTTON_TYPE.RED_OUTLINE}
-                                        onClick={() => setTodData({ calculation: { input: '', type: undefined } })}
+                                        onClick={() => setTodData({ calculation: { input: -1, type: undefined } })}
                                     />
                                 )}
                             </div>
                         )}
-                        onChange={(input) => setTodData({ calculation: { input, type: input !== '' ? type : undefined } })}
+                        onChange={(input) => setTodData({ calculation: { input: parseFloat(input), type: input !== '' ? type : undefined } })}
                         value={calculationInput ? Math.abs(calculationInput) : ''}
                         disabled={calculationInputSyncEnabled}
                     />

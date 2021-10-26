@@ -1,17 +1,24 @@
 import { usePersistentProperty } from '@instruments/common/persistence';
 import { IconMinus, IconPlus } from '@tabler/icons';
 import React, { useRef, useState, useEffect } from 'react';
+import { FileEarmarkArrowDown } from 'react-bootstrap-icons';
+import { fetchSimbriefDataAction } from '../../Store/features/simbrief';
+import { useAppDispatch } from '../../Store/store';
 
 type LoadsheetPageProps = {
     loadsheet: string,
 };
 
-const LoadSheetWidget = (props: LoadsheetPageProps) => {
+export const LoadSheetWidget = (props: LoadsheetPageProps) => {
     const position = useRef({ top: 0, y: 0 });
     const ref = useRef<HTMLDivElement>(null);
 
     const [fontSize, setFontSize] = usePersistentProperty('LOADSHEET_FONTSIZE', '14');
+    const [simbriefUserId] = usePersistentProperty('CONFIG_SIMBRIEF_USERID');
+
     const [imageSize, setImageSize] = useState(60);
+
+    const dispatch = useAppDispatch();
 
     useEffect(() => {
         const pImages = ref.current?.getElementsByTagName('img');
@@ -77,12 +84,10 @@ const LoadSheetWidget = (props: LoadsheetPageProps) => {
     };
 
     return (
-        <div className="mt-6">
-            <div className="w-full">
-                <div className="text-white overflow-hidden bg-navy-lighter rounded-2xl p-6 h-efb-nav relative">
+                <div className="w-full mt-6 text-white overflow-hidden rounded-lg p-6 h-efb relative border-2 border-navy-lighter shadow-md">
                     {props.loadsheet !== 'N/A' ? (
                         <>
-                            <div className="flex flex-col justify-end absolute bottom-6 right-16">
+                            <div className="absolute top-0 right-10">
                                 <button
                                     type="button"
                                     onClick={handleFontIncrease}
@@ -108,15 +113,22 @@ const LoadSheetWidget = (props: LoadsheetPageProps) => {
                             />
                         </>
                     ) : (
-                        <>
-                            <div className="h-full flex items-center justify-center text-lg">
-                                Please Import Flightplan from Simbrief.
+                            <div className="h-full flex flex-col items-center space-y-8 justify-center text-lg">
+                                <h1>You have not yet imported a flightplan from SimBrief</h1>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        fetchSimbriefDataAction(simbriefUserId ?? '').then((action) => {
+                                            dispatch(action)
+                                        });
+                                    }}
+                                    className="flex max-w-md justify-center items-center p-2 space-x-4 w-full text-white bg-teal-light rounded-lg border-2 border-navy-lighter shadow-lg focus:outline-none"
+                                >
+                        <FileEarmarkArrowDown size={26} />
+                        <p>Import Flightplan from SimBrief</p>
+                    </button>
                             </div>
-                        </>
                     )}
-                </div>
-            </div>
         </div>
     );
 };
-export default LoadSheetWidget;

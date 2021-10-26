@@ -2,7 +2,7 @@ import React, { FC } from 'react';
 import { HouseDoor, Clipboard, Truck, Compass, BroadcastPin, ExclamationDiamond, Gear, Calculator } from 'react-bootstrap-icons';
 import { Link, useHistory } from 'react-router-dom';
 
-const ToolBar = () => (
+export const ToolBar = () => (
     <nav className="flex overflow-hidden flex-col justify-between w-32">
         <div className="flex flex-col items-center mt-11">
             <ToolBarButton to="/dashboard">
@@ -55,5 +55,3 @@ const ToolBarButton: FC<ToolBarButtonProps> = ({ to, children }) => {
         </Link>
     );
 };
-
-export default ToolBar;

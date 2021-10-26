@@ -3,8 +3,6 @@ import { IconAlignRight, IconBox, IconPlane, IconSwitchHorizontal, IconUsers, Ic
 import fuselage from '../../Assets/320neo-outline-nose.svg';
 import { useSimVar } from '../../../Common/simVars';
 
-/* eslint-disable react/no-unused-prop-types */
-
 type OverviewPageProps = {
     weights: {
         cargo: number,
@@ -46,7 +44,7 @@ type OverviewPageProps = {
     taxiOutTime: number,
 };
 
-const OverviewPage = (props: OverviewPageProps) => {
+export const OverviewPage = (props: OverviewPageProps) => {
     const [, setUnitConversion] = useState(1000);
 
     useEffect(() => {
@@ -61,9 +59,7 @@ const OverviewPage = (props: OverviewPageProps) => {
     }
 
     return (
-        <div className="flex mt-4">
-            <div className="w-1/2 mr-3">
-                <div className="text-white overflow-hidden bg-navy-lighter rounded-lg p-6 h-efb">
+                <div className="mt-4 w-1/2 mr-3 text-white overflow-hidden border-2 border-navy-lighter shadow-md rounded-lg p-6 h-efb">
                     <h2 className="text-2xl font-medium">Airbus A320neo</h2>
                     <span className="text-lg">{airline}</span>
                     <div className="flex items-center justify-center mt-6">
@@ -144,9 +140,5 @@ const OverviewPage = (props: OverviewPageProps) => {
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
     );
 };
-
-export default OverviewPage;
