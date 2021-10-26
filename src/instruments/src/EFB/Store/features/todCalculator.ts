@@ -35,7 +35,7 @@ export const todCalculatorSlice = createSlice({
     name: 'todCalculator',
     initialState,
     reducers: {
-        setTodData: (state, action: TypedAction<any>) => ({
+        setTodData: (state, action: TypedAction<Partial<TodCalculatorState>>) => ({
             ...state,
             ...action.payload,
         }),

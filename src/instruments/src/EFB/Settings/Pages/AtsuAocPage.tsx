@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useState } from 'react';
 
 import { usePersistentProperty } from '@instruments/common/persistence';
 
@@ -9,8 +9,6 @@ import { SelectGroup, SelectItem } from '../../Components/Form/Select';
 import SimpleInput from '../../Components/Form/SimpleInput/SimpleInput';
 import { ButtonType } from '../Settings';
 
-import { SimbriefUserIdContext } from '../../Efb';
-
 export const AtsuAocPage = () => {
     const [atisSource, setAtisSource] = usePersistentProperty('CONFIG_ATIS_SRC', 'FAA');
     const [metarSource, setMetarSource] = usePersistentProperty('CONFIG_METAR_SRC', 'MSFS');
@@ -18,7 +16,7 @@ export const AtsuAocPage = () => {
     const [telexEnabled, setTelexEnabled] = usePersistentProperty('CONFIG_ONLINE_FEATURES_STATUS', 'DISABLED');
 
     const [simbriefError, setSimbriefError] = useState(false);
-    const { simbriefUserId, setSimbriefUserId } = useContext(SimbriefUserIdContext);
+    const [simbriefUserId, setSimbriefUserId] = usePersistentProperty('CONFIG_SIMBRIEF_USERID');
     const [simbriefDisplay, setSimbriefDisplay] = useState(simbriefUserId);
 
     function getSimbriefUserData(value: string): Promise<any> {
@@ -112,8 +110,8 @@ export const AtsuAocPage = () => {
     }
 
     return (
-        <div className="bg-navy-lighter rounded-xl px-6 divide-y divide-gray-700 flex flex-col">
-            <div className="py-4 flex flex-row justify-between items-center">
+        <div className="flex flex-col px-6 bg-navy-lighter rounded-xl divide-y divide-gray-700">
+            <div className="flex flex-row justify-between items-center py-4">
                 <span className="text-lg text-gray-300">ATIS/ATC Source</span>
                 <SelectGroup>
                     {atisSourceButtons.map((button) => (
@@ -127,7 +125,7 @@ export const AtsuAocPage = () => {
                     ))}
                 </SelectGroup>
             </div>
-            <div className="py-4 flex flex-row justify-between items-center">
+            <div className="flex flex-row justify-between items-center py-4">
                 <span className="text-lg text-gray-300">METAR Source</span>
                 <SelectGroup>
                     {metarSourceButtons.map((button) => (
@@ -141,7 +139,7 @@ export const AtsuAocPage = () => {
                     ))}
                 </SelectGroup>
             </div>
-            <div className="py-4 flex flex-row justify-between items-center">
+            <div className="flex flex-row justify-between items-center py-4">
                 <span className="text-lg text-gray-300">TAF Source</span>
                 <SelectGroup>
                     {tafSourceButtons.map((button) => (
@@ -155,11 +153,11 @@ export const AtsuAocPage = () => {
                     ))}
                 </SelectGroup>
             </div>
-            <div className="py-4 flex flex-row justify-between items-center">
+            <div className="flex flex-row justify-between items-center py-4">
                 <span className="text-lg text-gray-300">TELEX</span>
                 <Toggle value={telexEnabled === 'ENABLED'} onToggle={(toggleValue) => handleTelexToggle(toggleValue)} />
             </div>
-            <div className="py-4 flex flex-row justify-between items-center">
+            <div className="flex flex-row justify-between items-center py-4">
                 <span className="text-lg text-gray-300">
                     SimBrief Username/Pilot ID
                     <span className={`${!simbriefError && 'hidden'} text-red-600`}>

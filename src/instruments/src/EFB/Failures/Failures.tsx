@@ -2,7 +2,7 @@ import React from 'react';
 import { useFailuresOrchestrator } from '../failures-orchestrator-provider';
 import { FailureButton } from './FailureButton';
 
-const Failures = () => {
+export const Failures = () => {
     const orchestrator = useFailuresOrchestrator();
 
     const buttons: JSX.Element[] = [];
@@ -25,11 +25,9 @@ const Failures = () => {
         <div className="w-full ">
             <h1 className="text-white">Failures</h1>
             <h2 className="text-2xl text-white">Full simulation of the failures below isn't yet guaranteed.</h2>
-            <div className="grid grid-flow-row grid-cols-4 grid-rows-4 gap-4 p-4 mr-3 overflow-hidden text-white bg-navy-lighter rounded-2xl h-efb-nav">
+            <div className="grid overflow-hidden grid-cols-4 grid-rows-4 grid-flow-row gap-4 p-4 mr-3 text-white rounded-2xl bg-navy-lighter h-efb-nav">
                 {buttons}
             </div>
         </div>
     );
 };
-
-export default Failures;
