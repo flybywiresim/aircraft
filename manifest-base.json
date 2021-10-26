@@ -2,30 +2,30 @@
   "creator": "FlyByWire Simulations",
   "release_notes": {
     "neutral": {
-      "LastUpdate": "VERSION 0.6.3\\nSim Update 5 compatibility",
+      "LastUpdate": "VERSION 0.7.1\\nSim Update 6 compatibility",
       "OlderHistory": ""
     }
   },
   "title": "A32NX",
   "dependencies": [
     {
-      "package_version": "0.1.58",
+      "package_version": "0.1.99",
       "name": "asobo-aircraft-a320-neo"
     },
     {
-      "package_version": "0.1.52",
+      "package_version": "0.1.127",
       "name": "asobo-vcockpits-instruments-a320-neo"
     },
     {
-      "package_version": "0.1.53",
+      "package_version": "0.1.128",
       "name": "asobo-vcockpits-instruments-airliners"
     },
     {
-      "package_version": "0.1.66",
+      "package_version": "0.1.123",
       "name": "fs-base-aircraft-common"
     }
   ],
   "content_type": "AIRCRAFT",
-  "minimum_game_version": "1.9.5",
+  "minimum_game_version": "1.20.6",
   "manufacturer": "Airbus"
 }
