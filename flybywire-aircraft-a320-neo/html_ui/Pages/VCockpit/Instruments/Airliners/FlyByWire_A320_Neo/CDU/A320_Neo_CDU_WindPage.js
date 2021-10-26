@@ -103,7 +103,7 @@ class CDUWindPage {
 
         mcdu.setTemplate(CDUWindPage.ShowWinds(template, mcdu, CDUWindPage.ShowDESPage, mcdu.winds.des, offset, 5));
 
-        mcdu.onRightInput[0] = (value) => {
+        mcdu.onRightInput[0] = (value, scratchpadCallback) => {
             if (value == FMCMainDisplay.clrValue) {
                 mcdu.winds.alternate = null;
                 CDUWindPage.ShowDESPage(mcdu, offset);
@@ -112,6 +112,7 @@ class CDUWindPage {
             const wind = CDUWindPage.ParseWind(value);
             if (wind == null) {
                 mcdu.addNewMessage(NXSystemMessages.formatError);
+                scratchpadCallback();
             } else {
                 mcdu.winds.alternate = wind;
                 CDUWindPage.ShowDESPage(mcdu, offset);
@@ -154,10 +155,8 @@ class CDUWindPage {
         }
         if (entries < _max) {
             rows[(entries * 2) + 2][0] = "{cyan}[ ]°/[ ]/[{sp}{sp}{sp}]{end}";
-            mcdu.onLeftInput[entries] = (value) => {
-                CDUWindPage.TryAddWind(mcdu, _winds, value, () => {
-                    _showPage(mcdu, _offset);
-                });
+            mcdu.onLeftInput[entries] = (value, scratchpadCallback) => {
+                CDUWindPage.TryAddWind(mcdu, _winds, value, () => _showPage(mcdu, _offset), scratchpadCallback);
             };
         }
 
@@ -214,10 +213,11 @@ class CDUWindPage {
         };
     }
 
-    static TryAddWind(mcdu, _windArray, _input, _showPage) {
+    static TryAddWind(mcdu, _windArray, _input, _showPage, scratchpadCallback) {
         const data = CDUWindPage.ParseTrueWindAlt(_input);
         if (data == null) {
             mcdu.addNewMessage(NXSystemMessages.formatError);
+            scratchpadCallback(_input);
         } else {
             _windArray.push(data);
             _showPage();

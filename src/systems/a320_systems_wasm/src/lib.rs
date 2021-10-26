@@ -1,5 +1,8 @@
 #![cfg(any(target_arch = "wasm32", doc))]
-use std::time::{Duration, Instant};
+use std::{
+    error::Error,
+    time::{Duration, Instant},
+};
 
 use msfs::{
     legacy::{AircraftVariable, NamedVariable},
@@ -19,11 +22,11 @@ use systems_wasm::{
 };
 
 #[msfs::gauge(name=systems)]
-async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn std::error::Error>> {
+async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     let mut sim_connect = gauge.open_simconnect("systems")?;
 
     let (mut simulation, mut handler) =
-        MsfsSimulationBuilder::new("A32NX_".to_owned(), sim_connect.as_mut())
+        MsfsSimulationBuilder::new("A32NX_".to_owned(), sim_connect.as_mut().get_mut())
             .with_electrical_buses(vec![
                 ("AC_1", 2),
                 ("AC_1", 2),
@@ -132,10 +135,10 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn std::error::Error
                 2,
                 vec!["OVHD_PNEU_ENG_2_BLEED_PB_IS_AUTO".to_owned()],
             )?
-            .build(A320::new);
+            .build(A320::new)?;
 
     while let Some(event) = gauge.next_event().await {
-        handler.handle(event, &mut simulation, sim_connect.as_mut())?;
+        handler.handle(event, &mut simulation, sim_connect.as_mut().get_mut())?;
     }
 
     Ok(())
@@ -168,7 +171,7 @@ impl MsfsAspectCtor for Autobrakes {
     fn new(
         registry: &mut MsfsVariableRegistry,
         sim_connect: &mut SimConnect,
-    ) -> Result<Self, Box<dyn std::error::Error>> {
+    ) -> Result<Self, Box<dyn Error>> {
         Ok(Self {
             autobrake_disarm_id: registry.get("AUTOBRAKE_DISARM".to_owned()),
             ovhd_autobrk_low_on_is_pressed_id: registry
@@ -295,7 +298,7 @@ impl SimulatorAspect for Autobrakes {
         self.synchronise_with_sim();
     }
 
-    fn post_tick(&mut self, _: &mut SimConnect) -> Result<(), Box<dyn std::error::Error>> {
+    fn post_tick(&mut self, _: &mut SimConnect) -> Result<(), Box<dyn Error>> {
         self.reset_events();
 
         Ok(())
@@ -339,7 +342,7 @@ impl MsfsAspectCtor for Brakes {
     fn new(
         registry: &mut MsfsVariableRegistry,
         sim_connect: &mut SimConnect,
-    ) -> Result<Self, Box<dyn std::error::Error>> {
+    ) -> Result<Self, Box<dyn Error>> {
         Ok(Self {
             park_brak_lever_pos_id: registry.get("PARK_BRAKE_LEVER_POS".to_owned()),
             left_brake_pedal_input_id: registry.get("LEFT_BRAKE_PEDAL_INPUT".to_owned()),
@@ -447,7 +450,7 @@ impl Brakes {
     fn transmit_client_events(
         &mut self,
         sim_connect: &mut SimConnect,
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    ) -> Result<(), Box<dyn Error>> {
         // We want to send our brake commands once per refresh event, thus doing it after a draw event
         sim_connect.transmit_client_event(
             SIMCONNECT_OBJECT_ID_USER,
@@ -573,10 +576,7 @@ impl SimulatorAspect for Brakes {
         self.update_keyboard_inputs(delta);
     }
 
-    fn post_tick(
-        &mut self,
-        sim_connect: &mut SimConnect,
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    fn post_tick(&mut self, sim_connect: &mut SimConnect) -> Result<(), Box<dyn Error>> {
         self.reset_keyboard_events();
         self.transmit_client_events(sim_connect)?;
         self.transmit_masked_inputs();
@@ -598,7 +598,7 @@ impl MsfsAspectCtor for CargoDoors {
     fn new(
         registry: &mut MsfsVariableRegistry,
         _: &mut SimConnect,
-    ) -> Result<Self, Box<dyn std::error::Error>> {
+    ) -> Result<Self, Box<dyn Error>> {
         Ok(Self {
             fwd_door_cargo_position_id: registry.get("FWD_DOOR_CARGO_POSITION".to_owned()),
             fwd_door_cargo_open_req_id: registry.get("FWD_DOOR_CARGO_OPEN_REQ".to_owned()),
@@ -653,7 +653,7 @@ impl SimulatorAspect for CargoDoors {
         self.set_in_sim_position_request(read_val);
     }
 
-    fn post_tick(&mut self, _: &mut SimConnect) -> Result<(), Box<dyn std::error::Error>> {
+    fn post_tick(&mut self, _: &mut SimConnect) -> Result<(), Box<dyn Error>> {
         self.forward_cargo_door_position
             .set_value(self.fwd_position);
 
