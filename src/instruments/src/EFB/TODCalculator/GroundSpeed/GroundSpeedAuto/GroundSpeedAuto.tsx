@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { useAppDispatch, useAppSelector } from 'instruments/src/EFB/Store/store';
+import { useAppDispatch, useAppSelector } from '../../../Store/store';
 import { removeTodGroundSpeed, setTodGroundSpeed, setTodGroundSpeedMode } from '../../../Store/features/todCalculator';
 import Button, { BUTTON_TYPE } from '../../../Components/Button/Button';
 import { TOD_INPUT_MODE } from '../../../Enum/TODInputMode';
