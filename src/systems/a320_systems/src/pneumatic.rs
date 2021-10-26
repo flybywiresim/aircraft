@@ -469,6 +469,7 @@ impl ControllerSignal<BleedMonitoringComputerIsAliveSignal> for BleedMonitoringC
 struct BleedMonitoringComputerChannel {
     engine_number: usize,
     operation_mode: BleedMonitoringComputerChannelOperationMode,
+    pressure_regulating_valve_is_closed: bool,
     high_pressure_compressor_pressure: Pressure,
     transfer_pressure: Pressure,
     engine_starter_valve_is_open: bool,
@@ -491,6 +492,7 @@ impl BleedMonitoringComputerChannel {
         Self {
             engine_number,
             operation_mode,
+            pressure_regulating_valve_is_closed: false,
             high_pressure_compressor_pressure: Pressure::new::<psi>(0.),
             transfer_pressure: Pressure::new::<psi>(0.),
             engine_starter_valve_is_open: false,
@@ -527,6 +529,8 @@ impl BleedMonitoringComputerChannel {
                 46.
             },
         );
+
+        self.pressure_regulating_valve_is_closed = !sensors.pressure_regulating_valve_is_open();
 
         self.high_pressure_valve_pid
             .next_control_output(self.transfer_pressure.get::<psi>(), Some(context.delta()));
@@ -592,6 +596,10 @@ impl BleedMonitoringComputerChannel {
 }
 impl ControllerSignal<HighPressureValveSignal> for BleedMonitoringComputerChannel {
     fn signal(&self) -> Option<HighPressureValveSignal> {
+        if self.pressure_regulating_valve_is_closed {
+            return Some(HighPressureValveSignal::new_closed());
+        }
+
         if self.high_pressure_compressor_pressure < Pressure::new::<psi>(18.) {
             return Some(HighPressureValveSignal::new_closed());
         }
@@ -2022,6 +2030,14 @@ mod tests {
             })
         }
 
+        fn pack_pressure(&self, engine_number: usize) -> Pressure {
+            self.query(|a| {
+                a.pneumatic.packs[engine_number - 1]
+                    .pack_container
+                    .pressure()
+            })
+        }
+
         fn cross_bleed_valve_is_powered_for_automatic_control(&self) -> bool {
             self.query(|a| {
                 a.pneumatic
@@ -2053,7 +2069,7 @@ mod tests {
 
     // Just a way for me to plot some graphs
     #[test]
-    fn test() {
+    fn full_graphing_test() {
         let alt = Length::new::<foot>(0.);
 
         let mut test_bed = test_bed_with()
@@ -2064,110 +2080,101 @@ mod tests {
             .mach_number(MachNumber(0.))
             .both_packs_auto();
 
-        let mut ts = Vec::new();
-        let mut hps = Vec::new();
-        let mut ips = Vec::new();
-        let mut c2s = Vec::new(); // Transfer pressure (before PRV)
-        let mut c1s = Vec::new(); // Precooler inlet pressure
-        let mut c0s = Vec::new(); // Precooler outlet pressure
-        let mut pcss = Vec::new(); // Precooler cooling air pressure
-        let mut escs = Vec::new(); // Precooler cooling air pressure
-        let mut ipts = Vec::new();
-        let mut hpts = Vec::new(); // Transfer temperature (before PRV)
-        let mut c2ts = Vec::new(); // Precooler inlet temperature
-        let mut c1ts = Vec::new(); // Precooler outlet temperature
-        let mut c0ts = Vec::new(); // Precooler cooling air temperature
-        let mut pcsts = Vec::new();
-        let mut escts = Vec::new();
-        let mut hpv_open = Vec::new();
-        let mut prv_open = Vec::new();
-        let mut ipv_open = Vec::new();
-        let mut esv_open = Vec::new();
-        let mut abv_open = Vec::new();
-        let mut fav_open = Vec::new();
+        let mut time_points = Vec::new();
+        let mut high_pressures = Vec::new();
+        let mut intermediate_pressures = Vec::new();
+        let mut transfer_pressures = Vec::new(); // Transfer pressure (before PRV)
+        let mut precooler_inlet_pressures = Vec::new(); // Precooler inlet pressure
+        let mut precooler_outlet_pressures = Vec::new(); // Precooler outlet pressure
+        let mut precooler_supply_pressures = Vec::new(); // Precooler cooling air pressure
+        let mut engine_starter_container_pressures = Vec::new(); // Precooler cooling air pressure
+        let mut intermediate_pressure_compressor_temperatures = Vec::new();
+        let mut high_pressure_compressor_temperatures = Vec::new(); // Transfer temperature (before PRV)
+        let mut transfer_temperatures = Vec::new(); // Precooler inlet temperature
+        let mut precooler_inlet_temperatures = Vec::new(); // Precooler outlet temperature
+        let mut precooler_outlet_temperatures = Vec::new(); // Precooler cooling air temperature
+        let mut precooler_supply_temperatures = Vec::new();
+        let mut engine_starter_container_temperatures = Vec::new();
+        let mut high_pressure_valve_open_amounts = Vec::new();
+        let mut pressure_regulating_valve_open_amounts = Vec::new();
+        let mut intermediate_pressure_valve_open_amounts = Vec::new();
+        let mut engine_starter_valve_open_amounts = Vec::new();
+        let mut apu_bleed_valve_open_amounts = Vec::new();
+        let mut fan_air_valve_open_amounts = Vec::new();
 
         for i in 1..5000 {
-            if i == 5000 {
-                // test_bed = test_bed.toga_eng1().toga_eng2();
-            }
+            time_points.push(i as f64 * 16.);
 
-            // println!(
-            //     "{}",
-            //     test_bed
-            //         .pack_flow_valve_flow(1)
-            //         .get::<cubic_meter_per_second>()
-            // );
-            // println!("{}", test_bed.pack_container_pressure(1).get::<psi>());
+            high_pressures.push(test_bed.hp_pressure(1).get::<psi>());
+            intermediate_pressures.push(test_bed.ip_pressure(1).get::<psi>());
+            transfer_pressures.push(test_bed.transfer_pressure(1).get::<psi>());
+            precooler_inlet_pressures.push(test_bed.precooler_inlet_pressure(1).get::<psi>());
+            precooler_outlet_pressures.push(test_bed.precooler_outlet_pressure(1).get::<psi>());
+            precooler_supply_pressures.push(test_bed.precooler_supply_pressure(1).get::<psi>());
+            engine_starter_container_pressures
+                .push(test_bed.engine_starter_container_pressure(1).get::<psi>());
 
-            ts.push(i as f64 * 16.);
-
-            hps.push(test_bed.hp_pressure(1).get::<psi>());
-            ips.push(test_bed.ip_pressure(1).get::<psi>());
-            c2s.push(test_bed.transfer_pressure(1).get::<psi>());
-            c1s.push(test_bed.precooler_inlet_pressure(1).get::<psi>());
-            c0s.push(test_bed.precooler_outlet_pressure(1).get::<psi>());
-            pcss.push(test_bed.precooler_supply_pressure(1).get::<psi>());
-            escs.push(test_bed.engine_starter_container_pressure(1).get::<psi>());
-
-            ipts.push(test_bed.ip_temperature(1).get::<degree_celsius>());
-            hpts.push(test_bed.hp_temperature(1).get::<degree_celsius>());
-            c2ts.push(test_bed.transfer_temperature(1).get::<degree_celsius>());
-            c1ts.push(
+            intermediate_pressure_compressor_temperatures
+                .push(test_bed.ip_temperature(1).get::<degree_celsius>());
+            high_pressure_compressor_temperatures
+                .push(test_bed.hp_temperature(1).get::<degree_celsius>());
+            transfer_temperatures.push(test_bed.transfer_temperature(1).get::<degree_celsius>());
+            precooler_inlet_temperatures.push(
                 test_bed
                     .precooler_inlet_temperature(1)
                     .get::<degree_celsius>(),
             );
-            c0ts.push(
+            precooler_outlet_temperatures.push(
                 test_bed
                     .precooler_outlet_temperature(1)
                     .get::<degree_celsius>(),
             );
-            pcsts.push(
+            precooler_supply_temperatures.push(
                 test_bed
                     .precooler_supply_temperature(1)
                     .get::<degree_celsius>(),
             );
-            escts.push(
+            engine_starter_container_temperatures.push(
                 test_bed
                     .engine_starter_container_temperature(1)
                     .get::<degree_celsius>(),
             );
 
-            hpv_open.push(test_bed.query(|aircraft| {
+            high_pressure_valve_open_amounts.push(test_bed.query(|aircraft| {
                 aircraft.pneumatic.engine_systems[0]
                     .high_pressure_valve
                     .open_amount()
                     .get::<ratio>()
             }));
 
-            prv_open.push(test_bed.query(|aircraft| {
+            pressure_regulating_valve_open_amounts.push(test_bed.query(|aircraft| {
                 aircraft.pneumatic.engine_systems[0]
                     .pressure_regulating_valve
                     .open_amount()
                     .get::<ratio>()
             }));
 
-            ipv_open.push(test_bed.query(|aircraft| {
+            intermediate_pressure_valve_open_amounts.push(test_bed.query(|aircraft| {
                 aircraft.pneumatic.engine_systems[0]
                     .intermediate_pressure_valve
                     .open_amount()
                     .get::<ratio>()
             }));
 
-            esv_open.push(test_bed.query(|aircraft| {
+            engine_starter_valve_open_amounts.push(test_bed.query(|aircraft| {
                 aircraft.pneumatic.engine_systems[0]
                     .engine_starter_valve
                     .open_amount()
                     .get::<ratio>()
             }));
 
-            abv_open.push(if test_bed.apu_bleed_valve_is_open() {
+            apu_bleed_valve_open_amounts.push(if test_bed.apu_bleed_valve_is_open() {
                 1.
             } else {
                 0.
             });
 
-            fav_open.push(test_bed.query(|aircraft| {
+            fan_air_valve_open_amounts.push(test_bed.query(|aircraft| {
                 aircraft.pneumatic.engine_systems[0]
                     .fan_air_valve
                     .open_amount()
@@ -2183,8 +2190,27 @@ mod tests {
 
         // If anyone is wondering, I am using python to plot pressure curves. This will be removed once the model is complete.
         let data = vec![
-            ts, hps, ips, c2s, c1s, c0s, pcss, escs, hpts, ipts, c2ts, c1ts, c0ts, pcsts, escts,
-            hpv_open, prv_open, ipv_open, esv_open, abv_open, fav_open,
+            time_points,
+            high_pressures,
+            intermediate_pressures,
+            transfer_pressures,
+            precooler_inlet_pressures,
+            precooler_outlet_pressures,
+            precooler_supply_pressures,
+            engine_starter_container_pressures,
+            high_pressure_compressor_temperatures,
+            intermediate_pressure_compressor_temperatures,
+            transfer_temperatures,
+            precooler_inlet_temperatures,
+            precooler_outlet_temperatures,
+            precooler_supply_temperatures,
+            engine_starter_container_temperatures,
+            high_pressure_valve_open_amounts,
+            pressure_regulating_valve_open_amounts,
+            intermediate_pressure_valve_open_amounts,
+            engine_starter_valve_open_amounts,
+            apu_bleed_valve_open_amounts,
+            fan_air_valve_open_amounts,
         ];
         let mut file = File::create("../a320_pneumatic_simulation_graph_data/generic_data.txt")
             .expect("Could not create file");
@@ -2230,6 +2256,42 @@ mod tests {
             "../a320_pneumatic_simulation_graph_data/hydraulic_reservoir_pressures_data.txt",
         )
         .expect("Could not create file");
+
+        use std::io::Write;
+
+        writeln!(file, "{:?}", data).expect("Could not write file");
+    }
+
+    #[test]
+    fn pack_pressurization_graphs() {
+        let alt = Length::new::<foot>(0.);
+
+        let mut test_bed = test_bed_with()
+            .in_isa_atmosphere(alt)
+            .stop_eng1()
+            .stop_eng2()
+            .set_bleed_air_running()
+            .both_packs_auto()
+            .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Open);
+
+        let mut ts = Vec::new();
+        let mut left_pressures = Vec::new();
+        let mut right_pressures = Vec::new();
+
+        for i in 1..10000 {
+            ts.push(i as f64 * 16.);
+
+            left_pressures.push(test_bed.pack_pressure(1).get::<psi>());
+            right_pressures.push(test_bed.pack_pressure(2).get::<psi>());
+
+            test_bed.run_with_delta(Duration::from_millis(16));
+        }
+
+        // If anyone is wondering, I am using python to plot pressure curves. This will be removed once the model is complete.
+        let data = vec![ts, left_pressures, right_pressures];
+        let mut file =
+            File::create("../a320_pneumatic_simulation_graph_data/pack_pressures_data.txt")
+                .expect("Could not create file");
 
         use std::io::Write;
 
