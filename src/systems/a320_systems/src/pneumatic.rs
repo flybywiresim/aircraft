@@ -1374,7 +1374,7 @@ mod tests {
         },
     };
 
-    use std::{fs::File, time::Duration};
+    use std::{fs, fs::File, time::Duration};
 
     use uom::si::{
         f64::*, length::foot, pressure::psi, ratio::ratio,
@@ -2212,12 +2212,15 @@ mod tests {
             apu_bleed_valve_open_amounts,
             fan_air_valve_open_amounts,
         ];
-        let mut file = File::create("../a320_pneumatic_simulation_graph_data/generic_data.txt")
-            .expect("Could not create file");
 
-        use std::io::Write;
+        if fs::create_dir_all("../a320_pneumatic_simulation_graph_data").is_ok() {
+            let mut file = File::create("../a320_pneumatic_simulation_graph_data/generic_data.txt")
+                .expect("Could not create file");
 
-        writeln!(file, "{:?}", data).expect("Could not write file");
+            use std::io::Write;
+
+            writeln!(file, "{:?}", data).expect("Could not write file");
+        };
     }
 
     #[test]
@@ -2252,14 +2255,17 @@ mod tests {
 
         // If anyone is wondering, I am using python to plot pressure curves. This will be removed once the model is complete.
         let data = vec![ts, green_pressures, blue_pressures, yellow_pressures];
-        let mut file = File::create(
-            "../a320_pneumatic_simulation_graph_data/hydraulic_reservoir_pressures_data.txt",
-        )
-        .expect("Could not create file");
 
-        use std::io::Write;
+        if fs::create_dir_all("../a320_pneumatic_simulation_graph_data").is_ok() {
+            let mut file = File::create(
+                "../a320_pneumatic_simulation_graph_data/hydraulic_reservoir_pressures_data.txt",
+            )
+            .expect("Could not create file");
 
-        writeln!(file, "{:?}", data).expect("Could not write file");
+            use std::io::Write;
+
+            writeln!(file, "{:?}", data).expect("Could not write file");
+        };
     }
 
     #[test]
@@ -2289,13 +2295,16 @@ mod tests {
 
         // If anyone is wondering, I am using python to plot pressure curves. This will be removed once the model is complete.
         let data = vec![ts, left_pressures, right_pressures];
-        let mut file =
-            File::create("../a320_pneumatic_simulation_graph_data/pack_pressures_data.txt")
-                .expect("Could not create file");
 
-        use std::io::Write;
+        if fs::create_dir_all("../a320_pneumatic_simulation_graph_data").is_ok() {
+            let mut file =
+                File::create("../a320_pneumatic_simulation_graph_data/pack_pressures_data.txt")
+                    .expect("Could not create file");
 
-        writeln!(file, "{:?}", data).expect("Could not write file");
+            use std::io::Write;
+
+            writeln!(file, "{:?}", data).expect("Could not write file");
+        };
     }
 
     #[test]
