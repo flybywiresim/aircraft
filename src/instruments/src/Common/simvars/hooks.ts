@@ -1,3 +1,6 @@
+//  Copyright (c) 2021 FlyByWire Simulations
+//  SPDX-License-Identifier: GPL-3.0
+
 import { useCallback, useEffect, useState } from 'react';
 import { useInteractionEvents } from '../hooks';
 import { usePersistentProperty } from '../persistence';
@@ -6,10 +9,6 @@ import { SimVarSetter, SimVarType, SimVarValue } from './types';
 import { SimVarUnit } from './units';
 
 export const useVariableValue = (name: string, unit: SimVarUnit, type: SimVarType, maxStaleness?: number, interactionEvents?: string | string[]): SimVarValue => {
-    if (process.env.SIMVAR_DISABLE) {
-        return [0, () => {}];
-    }
-
     const { getValue, subscribe, unsubscribe } = useSimVarContext();
     const [value, setValue] = useState<SimVarValue>(getValue(name, unit, type));
 

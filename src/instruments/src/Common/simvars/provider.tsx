@@ -9,11 +9,13 @@ import { SimVarInstance } from './instance';
 import { SimVarType, SimVarValue } from './types';
 import { SimVarUnit } from './units';
 
+type SimVarSetter = SimVarValue | ((old: SimVarValue) => SimVarValue);
+
 export type SimVarContextType = {
     subscribe: (name: string, unit: SimVarUnit, type: SimVarType, onUpdated:(value: SimVarValue) => void, maxStaleness?: number) => string;
     unsubscribe: (name: string, unit: SimVarUnit, type: SimVarType, subscriptionId: string) => void;
     getValue: (name: string, unit: SimVarUnit, type: SimVarType, force?: boolean) => SimVarValue;
-    setValue: (name: string, unit: SimVarUnit, type: SimVarType, value: SimVarValue, proxy?: string) => void;
+    setValue: (name: string, unit: SimVarUnit, type: SimVarType, value: SimVarSetter, proxy?: string) => void;
 }
 
 const SimVarContext = createContext<SimVarContextType>(undefined!);
@@ -72,11 +74,15 @@ export const SimVarProvider: FC<SimVarProviderProps> = ({ maxUpdateFrequency = 3
         return instances[key].getValue();
     }, [instances]);
 
-    const setValue = useCallback((name: string, unit: SimVarUnit, type: SimVarType, value: SimVarValue, proxy?: string): void => {
+    const setValue = useCallback((name: string, unit: SimVarUnit, type: SimVarType, value: SimVarSetter, proxy?: string): void => {
         const key = getSimVarKey(type, name, unit);
 
         if (instances[key]) {
-            instances[key].setValue(value, proxy);
+            if (typeof value === 'function') {
+                instances[key].setValue(value(instances[key].getValue()), proxy);
+            } else {
+                instances[key].setValue(value, proxy);
+            }
         }
     }, [instances]);
 

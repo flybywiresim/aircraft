@@ -1,3 +1,6 @@
+//  Copyright (c) 2021 FlyByWire Simulations
+//  SPDX-License-Identifier: GPL-3.0
+
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { v4 as uuidv4 } from 'uuid';
 import { isEqual } from 'lodash';
@@ -83,12 +86,18 @@ export class SimVarInstance {
         switch (this.type) {
         case SimVarType.Sim: {
             SimVar.SetSimVarValue(proxy || this.name, this.unit, value);
-            this.item.next(value);
+            this.item.next({
+                value,
+                lastUpdated: Date.now(),
+            });
             break;
         }
         case SimVarType.Game: {
             SimVar.SetGameVarValue(proxy || this.name, this.unit, value);
-            this.item.next(value);
+            this.item.next({
+                value,
+                lastUpdated: Date.now(),
+            });
             break;
         }
         default: throw new Error(`Unable to set value for type ${this.type}`);

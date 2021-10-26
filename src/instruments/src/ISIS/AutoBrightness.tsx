@@ -1,3 +1,6 @@
+//  Copyright (c) 2021 FlyByWire Simulations
+//  SPDX-License-Identifier: GPL-3.0
+
 import React, { useEffect, useRef, useState } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import { useInteractionEvent } from '@instruments/common/hooks';
@@ -81,9 +84,11 @@ export const AutoBrightness: React.FC<AutoBrightnessProps> = ({ bugsActive, chil
     }, [timeOfDay]);
 
     useInterval(
-        () => setCurrentBrightness(targetBrightness > currentBrightness
-            ? Math.min(currentBrightness + transitionSpeedModifier, targetBrightness)
-            : Math.max(currentBrightness - transitionSpeedModifier, targetBrightness)),
+        () => {
+            setCurrentBrightness((currentBrightness) => (targetBrightness > currentBrightness
+                ? Math.min(currentBrightness + transitionSpeedModifier, targetBrightness)
+                : Math.max(currentBrightness - transitionSpeedModifier, targetBrightness)));
+        },
         targetBrightness === currentBrightness ? null : 150,
         { additionalDeps: [currentBrightness, targetBrightness], runOnStart: false },
     );
