@@ -5,6 +5,7 @@ import thunk from 'redux-thunk';
 import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
 import todCalculatorReducer from './features/todCalculator';
 import buttonsReducer from './features/buttons';
+import simbriefReducer from './features/simbrief';
 
 export type TypedAction<T> = { type: string, payload: T };
 export type RootState = ReturnType<typeof combinedReducer>;
@@ -15,6 +16,7 @@ export const EFB_CLEAR_STATE = 'EFB_CLEAR_STATE';
 const combinedReducer = combineReducers({
     todCalculator: todCalculatorReducer,
     buttons: buttonsReducer,
+    simbrief: simbriefReducer,
 });
 
 const rootReducer: Reducer = (state: RootState, action: AnyAction) => {

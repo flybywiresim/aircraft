@@ -3,7 +3,7 @@ import { Wifi2, BatteryFull, Power } from 'react-bootstrap-icons';
 import { useSimVar } from '@instruments/common/simVars';
 import { usePower, PowerState } from '../Efb';
 
-const StatusBar = () => {
+export const StatusBar = () => {
     const [currentUTC] = useSimVar('E:ZULU TIME', 'seconds');
     const [dayOfWeek] = useSimVar('E:ZULU DAY OF WEEK', 'number');
     const [monthOfYear] = useSimVar('E:ZULU MONTH OF YEAR', 'number');
@@ -50,5 +50,3 @@ const StatusBar = () => {
         </div>
     );
 };
-
-export default StatusBar;

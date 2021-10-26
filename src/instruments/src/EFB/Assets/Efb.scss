@@ -53,7 +53,7 @@
 /* ---- Global Scrollbar ---- */
 
 .scrollbar::-webkit-scrollbar {
-  @apply rounded-md w-4 bg-navy-regular;
+  @apply rounded-md w-6 bg-navy-regular;
 }
 
 .scrollbar::-webkit-scrollbar-track {
@@ -130,7 +130,7 @@
 /* ---- Dispatch Components ---- */
 
 .loadsheet-container {
-  height: 685px;
+  height: 51rem;
 
   /* fbw flypad theme for simbrief maps */
   & img {
