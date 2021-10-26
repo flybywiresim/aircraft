@@ -6,13 +6,15 @@ mod hydraulic;
 mod pneumatic;
 mod power_consumption;
 
-use self::{fuel::A320Fuel, pneumatic::A320PneumaticOverheadPanel};
+use self::{
+    fuel::A320Fuel,
+    pneumatic::{A320Pneumatic, A320PneumaticOverheadPanel},
+};
 use electrical::{
     A320Electrical, A320ElectricalOverheadPanel, A320EmergencyElectricalOverheadPanel,
     APU_START_MOTOR_BUS_TYPE,
 };
 use hydraulic::{A320Hydraulic, A320HydraulicOverheadPanel};
-use pneumatic::A320Pneumatic;
 use power_consumption::A320PowerConsumption;
 use systems::simulation::InitContext;
 use systems::{
