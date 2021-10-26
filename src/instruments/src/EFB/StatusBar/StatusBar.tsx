@@ -1,8 +1,7 @@
 import React from 'react';
 import { Wifi2, BatteryFull, Power } from 'react-bootstrap-icons';
 import { useSimVar } from '@instruments/common/simVars';
-// FIXME import { efbClearState } from '../Store/action-creator/efb';
-import { usePower, ContentState } from '../index';
+import { usePower, PowerState } from '../Efb';
 
 export function formatTime(numbers: number[]) {
     if (numbers.length === 2) {
@@ -50,8 +49,7 @@ const StatusBar = () => {
     }
 
     function getHoursAndMinutes(seconds: number) {
-        return `${Math.floor(seconds / 3600).toString().padStart(2, '0')}
-        :${Math.floor((seconds % 3600) / 60).toString().padStart(2, '0')}z`;
+        return `${Math.floor(seconds / 3600).toString().padStart(2, '0')}:${Math.floor((seconds % 3600) / 60).toString().padStart(2, '0')}z`;
     }
 
     return (
@@ -74,7 +72,7 @@ const StatusBar = () => {
                     <BatteryFull size={28} />
                 </div>
 
-                <Power size={26} onClick={() => power.setContent(ContentState.OFF)} />
+                <Power size={26} onClick={() => power.setPowerState(PowerState.OFF)} />
             </div>
         </div>
     );
