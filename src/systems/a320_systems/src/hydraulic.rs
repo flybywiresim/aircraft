@@ -2826,10 +2826,6 @@ mod tests {
                 self.read_by_name("A32NX_HYD_RAT_RPM")
             }
 
-            fn _get_emergency_gen_rpm(&mut self) -> f64 {
-                self.read_by_name("HYD_EMERGENCY_GEN_RPM")
-            }
-
             fn rat_deploy_commanded(&self) -> bool {
                 self.query(|a| a.is_rat_commanded_to_deploy())
             }
