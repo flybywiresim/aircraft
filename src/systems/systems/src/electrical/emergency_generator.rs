@@ -10,7 +10,7 @@ use crate::shared::{
 };
 use uom::si::{
     angular_velocity::revolution_per_minute, electric_potential::volt, f64::*, frequency::hertz,
-    power::watt, torque::newton_meter,
+    power::watt,
 };
 
 pub struct EmergencyGenerator {
@@ -59,7 +59,8 @@ impl EmergencyGenerator {
         if gcu.hydraulic_motor_speed().get::<revolution_per_minute>()
             > Self::MIN_RPM_TO_SUPPLY_POWER
         {
-            self.generated_power = Power::new::<watt>(Self::DEFAULT_POWER_DEMAND_WATT).min(gcu.max_allowed_power());
+            self.generated_power =
+                Power::new::<watt>(Self::DEFAULT_POWER_DEMAND_WATT).min(gcu.max_allowed_power());
         } else {
             self.generated_power = Power::new::<watt>(0.)
         }

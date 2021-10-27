@@ -8,7 +8,6 @@ use uom::si::{
     f64::*,
     length::meter,
     mass::kilogram,
-    power::watt,
     pressure::pascal,
     pressure::psi,
     ratio::{percent, ratio},
@@ -23,7 +22,7 @@ use systems::{
         brake_circuit::{
             AutobrakeDecelerationGovernor, AutobrakeMode, AutobrakePanel, BrakeCircuit,
         },
-        electrical_generator::{ElectricalEmergencyGenerator, GeneratorControlUnit},
+        electrical_generator::{GeneratorControlUnit, HydraulicGeneratorMotor},
         linear_actuator::{
             Actuator, BoundedLinearLength, HydraulicAssemblyController,
             HydraulicLinearActuatorAssembly, LinearActuatedRigidBodyOnHingeAxis, LinearActuator,
@@ -150,7 +149,7 @@ pub(super) struct A320Hydraulic {
     braking_circuit_altn: BrakeCircuit,
     braking_force: A320BrakingForce,
     gcu: GeneratorControlUnit,
-    emergency_gen: ElectricalEmergencyGenerator,
+    emergency_gen: HydraulicGeneratorMotor,
     forward_cargo_door: CargoDoor,
     forward_cargo_door_controller: A320DoorController,
     aft_cargo_door: CargoDoor,
@@ -338,10 +337,7 @@ impl A320Hydraulic {
                 [0., 0., 0., 0., 1000., 6000., 1000., 0., 0.],
             ),
 
-            emergency_gen: ElectricalEmergencyGenerator::new(
-                context,
-                Volume::new::<cubic_inch>(0.19),
-            ),
+            emergency_gen: HydraulicGeneratorMotor::new(context, Volume::new::<cubic_inch>(0.19)),
             forward_cargo_door: A320CargoDoorFactory::new_a320_cargo_door(
                 context,
                 Self::FORWARD_CARGO_DOOR_ID,
@@ -557,10 +553,10 @@ impl A320Hydraulic {
         );
 
         self.emergency_gen.update(
+            context,
             self.blue_loop.pressure(),
             &self.gcu,
             emergency_generator,
-            context,
         );
     }
 
@@ -2475,8 +2471,8 @@ mod tests {
                 self.hydraulics.ram_air_turbine_controller.should_deploy()
             }
 
-            fn is_emergency_gen_active(&self) -> bool {
-                self.hydraulics.emergency_gen.is_producing_power()
+            fn is_emergency_gen_at_nominal_speed(&self) -> bool {
+                self.hydraulics.gcu.is_at_nominal_speed()
             }
 
             fn is_green_edp_commanded_on(&self) -> bool {
@@ -2838,8 +2834,8 @@ mod tests {
                 self.query(|a| a.is_rat_commanded_to_deploy())
             }
 
-            fn is_emergency_gen_active(&self) -> bool {
-                self.query(|a| a.is_emergency_gen_active())
+            fn is_emergency_gen_at_nominal_speed(&self) -> bool {
+                self.query(|a| a.is_emergency_gen_at_nominal_speed())
             }
 
             fn is_fire_valve_eng1_closed(&mut self) -> bool {
@@ -5703,13 +5699,13 @@ mod tests {
                 .start_eng2(Ratio::new::<percent>(80.))
                 .run_waiting_for(Duration::from_secs(10));
 
-            assert!(!test_bed.is_emergency_gen_active());
+            assert!(!test_bed.is_emergency_gen_at_nominal_speed());
 
             test_bed = test_bed
                 .ac_bus_1_lost()
                 .run_waiting_for(Duration::from_secs(2));
 
-            assert!(!test_bed.is_emergency_gen_active());
+            assert!(!test_bed.is_emergency_gen_at_nominal_speed());
 
             // Now all AC off should deploy RAT in flight
             test_bed = test_bed
@@ -5717,7 +5713,7 @@ mod tests {
                 .ac_bus_2_lost()
                 .run_waiting_for(Duration::from_secs(20));
 
-            assert!(test_bed.is_emergency_gen_active());
+            assert!(test_bed.is_emergency_gen_at_nominal_speed());
         }
 
         #[test]
