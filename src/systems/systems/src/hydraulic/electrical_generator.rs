@@ -235,6 +235,13 @@ impl HydraulicGeneratorMotor {
     }
 
     fn update_generated_torque(&mut self, pressure: Pressure) {
+        println!(
+            "RPM: {:.0} FLOW BLUE: {:.1} gpm press: {:.0}",
+            self.speed().get::<revolution_per_minute>(),
+            self.current_flow.get::<gallon_per_minute>(),
+            pressure.get::<psi>()
+        );
+
         self.virtual_displacement = self.virtual_displacement_after_valve_inlet();
 
         self.generated_torque = Torque::new::<pound_force_inch>(

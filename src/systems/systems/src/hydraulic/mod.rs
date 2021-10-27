@@ -2,8 +2,8 @@ use self::linear_actuator::Actuator;
 
 use crate::shared::{interpolation, ElectricalBusType, ElectricalBuses};
 use crate::simulation::{
-    InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
-    VariableIdentifier, Write,
+    InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
+    SimulatorWriter, UpdateContext, VariableIdentifier, Write,
 };
 use std::time::Duration;
 use uom::si::{
@@ -894,6 +894,14 @@ impl SimulationElement for EngineDrivenPump {
 struct WindTurbine {
     rpm_id: VariableIdentifier,
 
+    debug_air_trq_coef_id: VariableIdentifier,
+    debug_friction_coef_id: VariableIdentifier,
+    debug_inertia_id: VariableIdentifier,
+
+    debug_air_trq_coef: f64,
+    debug_friction_coef: f64,
+    debug_inertia: f64,
+
     position: f64,
     speed: f64,
     acceleration: f64,
@@ -902,9 +910,9 @@ struct WindTurbine {
 }
 impl WindTurbine {
     // Low speed special calculation threshold. Under that value we compute resistant torque depending on pump angle and displacement.
-    const LOW_SPEED_PHYSICS_ACTIVATION: f64 = 50.;
+    const LOW_SPEED_PHYSICS_ACTIVATION: f64 = 15.;
     const STOWED_ANGLE: f64 = std::f64::consts::PI / 2.;
-    const PROPELLER_INERTIA: f64 = 2.;
+    const PROPELLER_INERTIA: f64 = 0.2;
     const RPM_GOVERNOR_BREAKPTS: [f64; 9] = [
         0.0, 1000., 3000.0, 4000.0, 4800.0, 5800.0, 6250.0, 9000.0, 15000.0,
     ];
@@ -913,6 +921,15 @@ impl WindTurbine {
     fn new(context: &mut InitContext) -> Self {
         Self {
             rpm_id: context.get_identifier("HYD_RAT_RPM".to_owned()),
+
+            debug_air_trq_coef_id: context.get_identifier("HYD_RAT_DEBUG_AIR_COEF".to_owned()),
+            debug_friction_coef_id: context
+                .get_identifier("HYD_RAT_DEBUG_FRICTION_COEF".to_owned()),
+            debug_inertia_id: context.get_identifier("HYD_RAT_DEBUG_INERTIA".to_owned()),
+
+            debug_air_trq_coef: 0.,
+            debug_friction_coef: 0.,
+            debug_inertia: 0.2,
 
             position: Self::STOWED_ANGLE,
             speed: 0.,
@@ -933,29 +950,55 @@ impl WindTurbine {
             self.rpm,
         );
 
+        let mut coef = self.debug_air_trq_coef;
+        if coef < 0.00001 {
+            coef = 0.018;
+        }
         // Simple model. stow pos sin simulates the angle of the blades vs wind while deploying
         let air_speed_torque = cur_alpha.to_radians().sin()
-            * (indicated_speed.get::<knot>() * indicated_speed.get::<knot>() / 100.)
+            * (indicated_speed.get::<knot>() * indicated_speed.get::<knot>() * coef)
             * 0.5
             * (std::f64::consts::PI / 2. * stow_pos).sin();
         self.torque_sum += air_speed_torque;
+
+        let power_watt = self.torque_sum * self.speed;
+
+        println!(
+            "------GEN TRQ {:.1}  GEN POWER HP{:.1}",
+            self.torque_sum,
+            power_watt * 0.00134102
+        );
     }
 
     fn update_friction_torque(&mut self, displacement: f64, pressure: Pressure) {
         let mut pump_torque = 0.;
         if self.rpm < Self::LOW_SPEED_PHYSICS_ACTIVATION {
-            pump_torque += (self.position * 4.).cos() * displacement.max(0.35) * 35.;
-            pump_torque += -self.speed * 15.;
+            pump_torque += (self.position * 4.).cos() * displacement.max(0.35) * 2.;
+            pump_torque -= self.speed * 0.25;
         } else {
-            pump_torque -= pressure.get::<psi>() * displacement / (2. * std::f64::consts::PI)
+            pump_torque -= pressure.get::<psi>() * displacement / (2. * std::f64::consts::PI);
+
+            let mut coef = self.debug_friction_coef;
+            if coef < 0.000001 {
+                coef = 0.0002;
+            }
+
+            pump_torque -= 20. + (self.speed * self.speed) * coef;
         }
-        pump_torque -= self.speed * 0.05;
+
+        println!("RES TRQ {:.1}", pump_torque);
         // Static air drag of the propeller
         self.torque_sum += pump_torque;
     }
 
     fn update_physics(&mut self, delta_time: &Duration) {
-        self.acceleration = self.torque_sum / Self::PROPELLER_INERTIA;
+        let inertia;
+        if self.debug_inertia < 0.00001 {
+            inertia = Self::PROPELLER_INERTIA;
+        } else {
+            inertia = self.debug_inertia;
+        }
+        self.acceleration = self.torque_sum / inertia;
         self.speed += self.acceleration * delta_time.as_secs_f64();
         self.position += self.speed * delta_time.as_secs_f64();
 
@@ -985,6 +1028,12 @@ impl WindTurbine {
 impl SimulationElement for WindTurbine {
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.rpm_id, self.rpm());
+    }
+
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        self.debug_air_trq_coef = reader.read(&self.debug_air_trq_coef_id);
+        self.debug_friction_coef = reader.read(&self.debug_friction_coef_id);
+        self.debug_inertia = reader.read(&self.debug_inertia_id);
     }
 }
 
@@ -1022,7 +1071,7 @@ impl RamAirTurbine {
     const DISPLACEMENT_BREAKPTS: [f64; 9] = [
         0.0, 500.0, 1000.0, 1500.0, 2100.0, 2300.0, 2600.0, 2700.0, 3500.0,
     ];
-    const DISPLACEMENT_MAP: [f64; 9] = [1.15, 1.15, 1.15, 1.15, 1.15, 1.15, 0.8, 0.0, 0.0];
+    const DISPLACEMENT_MAP: [f64; 9] = [0.5, 0.8, 1.15, 1.15, 1.15, 0.8, 0.3, 0.0, 0.0];
 
     // 1 == no filtering. 0.1 == 90% filtering. 0.2==80%... !!Warning, filter frequency is time delta dependant.
     const DISPLACEMENT_DYNAMICS: f64 = 0.2;
