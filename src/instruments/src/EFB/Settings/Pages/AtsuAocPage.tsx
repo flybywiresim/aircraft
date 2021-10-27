@@ -8,6 +8,8 @@ import { HttpError } from '@flybywiresim/api-client';
 import { SelectGroup, SelectItem } from '../../Components/Form/Select';
 import SimpleInput from '../../Components/Form/SimpleInput/SimpleInput';
 import { ButtonType } from '../Settings';
+import { useUIMessages } from '../../UIMessages/Provider';
+import { Notification, NotificationTypes } from '../../UIMessages/Notification';
 
 export const AtsuAocPage = () => {
     const [atisSource, setAtisSource] = usePersistentProperty('CONFIG_ATIS_SRC', 'FAA');
@@ -15,7 +17,8 @@ export const AtsuAocPage = () => {
     const [tafSource, setTafSource] = usePersistentProperty('CONFIG_TAF_SRC', 'NOAA');
     const [telexEnabled, setTelexEnabled] = usePersistentProperty('CONFIG_ONLINE_FEATURES_STATUS', 'DISABLED');
 
-    const [simbriefError, setSimbriefError] = useState(false);
+    const uiMessages = useUIMessages();
+
     const [simbriefUserId, setSimbriefUserId] = usePersistentProperty('CONFIG_SIMBRIEF_USERID');
     const [simbriefDisplay, setSimbriefDisplay] = useState(simbriefUserId);
 
@@ -67,11 +70,13 @@ export const AtsuAocPage = () => {
             setSimbriefUserId(response);
             setSimbriefDisplay(response);
         }).catch(() => {
-            setSimbriefError(true);
             setSimbriefDisplay(simbriefUserId);
-            setTimeout(() => {
-                setSimbriefError(false);
-            }, 4000);
+            uiMessages.pushNotification(
+            <Notification
+            type={NotificationTypes.ERROR}
+             title='SimBrief Error'
+              message='Please check that you have correctly entered your SimBrief username or pilot ID.'/>
+              )
         });
     }
 
@@ -158,13 +163,7 @@ export const AtsuAocPage = () => {
                 <Toggle value={telexEnabled === 'ENABLED'} onToggle={(toggleValue) => handleTelexToggle(toggleValue)} />
             </div>
             <div className="flex flex-row justify-between items-center py-4">
-                <span className="text-lg text-gray-300">
-                    SimBrief Username/Pilot ID
-                    <span className={`${!simbriefError && 'hidden'} text-red-600`}>
-                        <span className="text-white"> | </span>
-                        SimBrief Error
-                    </span>
-                </span>
+                <span className="text-lg text-gray-300">SimBrief Username/Pilot ID</span>
                 <div className="flex flex-row items-center">
                     <SimpleInput
                         className="w-30"

@@ -6,6 +6,7 @@ import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
 import todCalculatorReducer from './features/todCalculator';
 import buttonsReducer from './features/buttons';
 import simbriefReducer from './features/simbrief';
+import performanceReducer from './features/performance';
 
 export type TypedAction<T> = { type: string, payload: T };
 export type RootState = ReturnType<typeof combinedReducer>;
@@ -17,6 +18,7 @@ const combinedReducer = combineReducers({
     todCalculator: todCalculatorReducer,
     buttons: buttonsReducer,
     simbrief: simbriefReducer,
+    performance: performanceReducer,
 });
 
 const rootReducer: Reducer = (state: RootState, action: AnyAction) => {

@@ -130,7 +130,7 @@ const FlightWidget = () => {
                                 dispatch(action)
                             });
                         }}
-                        className="flex justify-center items-center p-2 space-x-4 w-full text-white bg-teal-light rounded-lg border-2 border-navy-lighter shadow-lg focus:outline-none"
+                        className="flex justify-center items-center p-2 space-x-4 w-full text-white bg-teal-regular rounded-lg border-2 border-navy-lighter shadow-lg focus:outline-none"
                     >
                         <FileEarmarkArrowDown size={26} />
                         <p>Import Flightplan from SimBrief</p>
