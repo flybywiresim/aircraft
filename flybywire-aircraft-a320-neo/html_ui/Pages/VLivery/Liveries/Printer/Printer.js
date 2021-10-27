@@ -29,23 +29,28 @@ class LiveryPrinter extends TemplateElement {
     disconnectedCallback() {
     }
     Update() {
+
+        Coherent.on('A32NX_PRINT', (data) => {
+            console.log("BRUHEG" + data);
+
+            const pages = JSON.parse(localStorage.getItem("pages")) || [];
+
+            if (this.index == 0) {
+                const currentPageID = SimVar.GetSimVarValue("L:A32NX_PAGE_ID", "number") - 1;
+                if (currentPageID >= 0 && pages[currentPageID] == null) {
+                    const elements = [];
+                    for (let i = 0; i < SimVar.GetSimVarValue('L:A32NX_PRINT_LINES', 'number'); i += 1) {
+                        elements.push(data[i]);
+                    }
+                    pages[currentPageID] = elements;
+                    localStorage.setItem("pages", JSON.stringify(pages));
+                }
+            }
+
+        });
+
         const pages = JSON.parse(localStorage.getItem("pages")) || [];
 
-        if (this.index == 0) {
-            const currentPageID = SimVar.GetSimVarValue("L:A32NX_PAGE_ID", "number") - 1;
-            if (currentPageID >= 0 && pages[currentPageID] == null) {
-                const elements = [];
-                for (let i = 0; i < SimVar.GetSimVarValue('L:A32NX_PRINT_LINES', 'number'); i += 1) {
-                    let line = '';
-                    for (let j = 0; j < SimVar.GetSimVarValue(`L:A32NX_PRINT_LINE_LENGTH_${i}`, 'number'); j += 1) {
-                        line += String.fromCharCode(SimVar.GetSimVarValue(`L:A32NX_PRINT_${i}_${j}`, 'number'));
-                    }
-                    elements.push(line);
-                }
-                pages[currentPageID] = elements;
-                localStorage.setItem("pages", JSON.stringify(pages));
-            }
-        }
         if (pages == null) {
             return;
         }
