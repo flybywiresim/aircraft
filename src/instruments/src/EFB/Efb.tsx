@@ -1,4 +1,6 @@
-import React, { useEffect, useState, useReducer } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
+
+import { UIMessagesProvider, useUIMessages } from './UIMessages/Provider';
 
 import { Redirect, Route, Switch } from 'react-router-dom';
 import { useSimVar } from '@instruments/common/simVars';
@@ -18,11 +20,22 @@ import { ATC } from './ATC/ATC';
 import { Settings } from './Settings/Settings';
 import { Failures } from './Failures/Failures';
 
-import { PerformanceContext, PerformanceReducer, performanceInitialState } from './Store/performance-context';
 import { clearEfbState, useAppDispatch } from './Store/store';
 import logo from './Assets/fbw-logo.svg';
 
+import { NotificationsContainer } from './UIMessages/Notification';
+
 const navigraph = new NavigraphClient();
+
+const ApplicationNotifications = () => {
+    const firstNotification = useUIMessages().notifications[0];
+
+    return (
+        <NotificationsContainer>
+            {firstNotification}
+        </NotificationsContainer>
+    );
+};
 
 const ScreenLoading = () => (
     <div className="loading-screen">
@@ -58,8 +71,6 @@ const Efb = () => {
     const [, setBrightness] = useSimVar('L:A32NX_EFB_BRIGHTNESS', 'number');
     const [brightnessSetting] = usePersistentNumberProperty('EFB_BRIGHTNESS', 0);
     const [usingAutobrightness] = useSimVar('L:A32NX_EFB_USING_AUTOBRIGHTNESS', 'bool', 5000);
-
-    const [performanceState, performanceDispatch] = useReducer(PerformanceReducer, performanceInitialState);
 
     const dispatch = useAppDispatch();
 
@@ -103,10 +114,11 @@ const Efb = () => {
         return <ScreenLoading />;
     case PowerState.LOADED:
         return (
-            <PerformanceContext.Provider value={{ performanceState, performanceDispatch }}>
                 <NavigraphContext.Provider value={navigraph}>
                     <PowerContext.Provider value={{ powerState, setPowerState }}>
-                        <div className="flex flex-col bg-navy-regular">
+                        <UIMessagesProvider>
+                        <div className="bg-navy-regular">
+                            <ApplicationNotifications />
                             <StatusBar />
                             <div className="flex flex-row">
                                 <ToolBar />
@@ -143,9 +155,9 @@ const Efb = () => {
                                 </div>
                             </div>
                         </div>
+                        </UIMessagesProvider>
                     </PowerContext.Provider>
                 </NavigraphContext.Provider>
-            </PerformanceContext.Provider>
         );
     default:
         throw new Error('Invalid content state provided');
