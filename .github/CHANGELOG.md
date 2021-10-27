@@ -35,6 +35,7 @@
 1. [LIGHTS] Sync Strobe/Beacon, EXT LT refactor + LDG LT behavior - @bouveng (Johan Bouveng)
 1. [AP] Improved SPD/MACH law model - @IbrahimK42 (IbrahimK42)
 1. [AP/FBW] Improved behavior in cruise when using high sim rate with roll performance - @aguther (Andreas Guther) and @IbrahimK42 (IbrahimK42)
+1. [PRESS] Introduce manual functionality of cabin pressurization system - @MJuhe (Miquel)
 1. [LIGHTS] Add TO/TAXI LT logic, ambience to TAXI/TO/LDG LT + min. changes to strobe/beacon/nav - @bouveng (Johan Bouveng)
 1. [FMGC] Fixed issue with TO flight phase transition when no V2 is entered and airport is near sea level - @aguther (Andreas Guther)
 1. [MISC] Fix for incrementing ISIS pressure values - @RichardPilbery (tricky_dicky#3571)
@@ -51,6 +52,8 @@
 1. [ECAM] Fixed misaligned items on ecam memos - @tyler58546 (tyler58546)
 1. [ECAM] Revised fuel page to match neo - @RichardPilbery (tricky_dicky#3571)
 1. [RMP] Added 25 kHz VHF spacing option - @tyler58546 (tyler58546)
+1. [MCDU] Scratchpad rewrite - @derl30n (Leon)
+1. [ATHR/ENGINE] Improved CLB thrust limit for improved FLEX N1 numbers - @aguther (Andreas Guther)
 
 ## 0.7.0
 
