@@ -70,7 +70,9 @@ const Efb = () => {
     const [currentLocalTime] = useSimVar('E:LOCAL TIME', 'seconds', 3000);
     const [, setBrightness] = useSimVar('L:A32NX_EFB_BRIGHTNESS', 'number');
     const [brightnessSetting] = usePersistentNumberProperty('EFB_BRIGHTNESS', 0);
-    const [usingAutobrightness] = useSimVar('L:A32NX_EFB_USING_AUTOBRIGHTNESS', 'bool', 5000);
+    const [usingAutobrightness] = useSimVar('L:A32NX_EFB_USING_AUTOBRIGHTNESS', 'bool', 300);
+    const [dayOfYear] = useSimVar('E:ZULU DAY OF YEAR', 'number');
+    const [latitude] = useSimVar("PLANE LATITUDE", 'degree latitude');
 
     const dispatch = useAppDispatch();
 
@@ -95,13 +97,20 @@ const Efb = () => {
         }
     });
 
+    function calculateBrightness (latitude: number, dayOfYear: number, timeOfDay: number)  {
+        const solarTime = timeOfDay + (dayOfYear - 1) * 24;
+        const solarDeclination = 0.409 * Math.sin(2 * Math.PI * (284 + dayOfYear) / 365);
+        const solarAltitude = Math.asin(Math.sin(latitude * Math.PI / 180) * Math.sin(solarDeclination) + Math.cos(latitude * Math.PI / 180) * Math.cos(solarDeclination) * Math.cos(2 * Math.PI * solarTime / 24));
+        const solarZenith = 90 - (latitude - solarDeclination);
+
+        return Math.min(Math.max((-solarAltitude * (180 / Math.PI)) / solarZenith * 100, 0), 100);
+    };
+
     // handle setting brightness if user is using autobrightness
     useEffect(() => {
         if (usingAutobrightness) {
             const localTime = currentLocalTime / 3600;
-            // the following code defines a semicircular function.
-            // eslint-disable-next-line no-restricted-properties
-            setBrightness(((Math.sqrt(48 - Math.pow((localTime - 14), 2))) * 14.431) || 0);
+            setBrightness((calculateBrightness(latitude, dayOfYear, localTime)));
         } else {
             setBrightness(brightnessSetting);
         }
