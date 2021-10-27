@@ -331,7 +331,6 @@ impl A320Hydraulic {
             braking_force: A320BrakingForce::new(context),
 
             gcu: GeneratorControlUnit::new(
-                Power::new::<watt>(6000.),
                 AngularVelocity::new::<revolution_per_minute>(12000.),
                 [
                     0., 1000., 6000., 9999., 10000., 12000., 14000., 14001., 30000.,

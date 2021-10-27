@@ -25,21 +25,17 @@ pub struct GeneratorControlUnit {
     pid_controller: PidController,
 
     is_active: bool,
-    power_demand: Power,
-    power_target: Power,
     max_allowed_power_rpm_breakpoints: [f64; 9],
-    max_allowed_power: [f64; 9],
-    nominal_power: Power,
+    max_allowed_power_vs_rpm: [f64; 9],
     current_speed: AngularVelocity,
 
     emer_on_was_pressed: bool,
 }
 impl GeneratorControlUnit {
     pub fn new(
-        nominal_power: Power,
         nominal_rpm: AngularVelocity,
         max_allowed_power_rpm_breakpoints: [f64; 9],
-        max_allowed_power: [f64; 9],
+        max_allowed_power_vs_rpm: [f64; 9],
     ) -> Self {
         Self {
             pid_controller: PidController::new(
@@ -52,11 +48,8 @@ impl GeneratorControlUnit {
             ),
 
             is_active: false,
-            power_demand: Power::new::<watt>(0.),
-            power_target: Power::new::<watt>(0.),
             max_allowed_power_rpm_breakpoints,
-            max_allowed_power,
-            nominal_power,
+            max_allowed_power_vs_rpm,
             current_speed: AngularVelocity::new::<revolution_per_minute>(0.),
             emer_on_was_pressed: false,
         }
@@ -100,28 +93,17 @@ impl GeneratorControlUnit {
         );
 
         self.update_valve_control(context);
-
-        self.update_power_demand();
     }
 
     fn max_allowed_power(&self) -> Power {
-        Power::new::<watt>(interpolation(
-            &self.max_allowed_power_rpm_breakpoints,
-            &self.max_allowed_power,
-            self.current_speed.get::<revolution_per_minute>(),
-        ))
-    }
-
-    fn update_power_demand(&mut self) {
         if self.is_active() {
-            self.power_target = self.nominal_power;
-            self.power_demand = self
-                .power_target
-                .min(self.power_demand + Power::new::<watt>(100.))
-                .min(self.max_allowed_power());
+            Power::new::<watt>(interpolation(
+                &self.max_allowed_power_rpm_breakpoints,
+                &self.max_allowed_power_vs_rpm,
+                self.current_speed.get::<revolution_per_minute>(),
+            ))
         } else {
-            self.power_demand = Power::new::<watt>(0.);
-            self.power_target = Power::new::<watt>(0.);
+            Power::new::<watt>(0.)
         }
     }
 
@@ -138,8 +120,8 @@ impl GeneratorControlUnit {
     }
 }
 impl GeneratorControlUnitInterface for GeneratorControlUnit {
-    fn power_demand(&self) -> Power {
-        self.power_demand
+    fn max_allowed_power(&self) -> Power {
+        self.max_allowed_power()
     }
 
     fn hydraulic_motor_speed(&self) -> AngularVelocity {
@@ -376,16 +358,12 @@ impl SimulationElement for ElectricalEmergencyGenerator {
 
 pub struct TestGenerator {
     speed: AngularVelocity,
-    resistant_torque_from_power_gen: Torque,
     generated_power: Power,
 }
 impl TestGenerator {
-    const EFFICIENCY: f64 = 0.95;
-
     pub fn new() -> Self {
         Self {
             speed: AngularVelocity::new::<revolution_per_minute>(0.),
-            resistant_torque_from_power_gen: Torque::new::<newton_meter>(0.),
             generated_power: Power::new::<watt>(0.),
         }
     }
@@ -394,7 +372,6 @@ impl TestGenerator {
     fn from_gcu(gcu: &impl GeneratorControlUnitInterface) -> Self {
         let mut g = TestGenerator {
             speed: gcu.hydraulic_motor_speed(),
-            resistant_torque_from_power_gen: Torque::new::<newton_meter>(0.),
             generated_power: Power::new::<watt>(0.),
         };
 
@@ -404,21 +381,7 @@ impl TestGenerator {
 
     pub fn update(&mut self, gcu: &impl GeneratorControlUnitInterface) {
         self.speed = gcu.hydraulic_motor_speed();
-        self.generated_power = gcu.power_demand();
-        self.update_resistant_torque(gcu);
-    }
-
-    fn update_resistant_torque(&mut self, gcu: &impl GeneratorControlUnitInterface) {
-        if gcu.hydraulic_motor_speed() < AngularVelocity::new::<radian_per_second>(1.) {
-            self.resistant_torque_from_power_gen = Torque::new::<newton_meter>(0.3);
-        } else {
-            let elec_torque = Torque::new::<newton_meter>(
-                gcu.power_demand().get::<watt>()
-                    / gcu.hydraulic_motor_speed().get::<radian_per_second>(),
-            );
-            self.resistant_torque_from_power_gen =
-                elec_torque + (1. - Self::EFFICIENCY) * elec_torque;
-        }
+        self.generated_power = gcu.max_allowed_power();
     }
 }
 impl EmergencyGeneratorInterface for TestGenerator {
@@ -431,52 +394,6 @@ impl Default for TestGenerator {
         Self::new()
     }
 }
-
-pub struct TestGeneratorControlUnit {
-    power_demand: Power,
-    valve_position_request: Ratio,
-    current_speed: AngularVelocity,
-}
-
-impl TestGeneratorControlUnit {
-    pub fn commanding_full_open() -> Self {
-        Self {
-            power_demand: Power::new::<watt>(50.),
-            valve_position_request: Ratio::new::<ratio>(1.),
-            current_speed: AngularVelocity::new::<revolution_per_minute>(0.),
-        }
-    }
-    pub fn commanding_full_closed() -> Self {
-        Self {
-            power_demand: Power::new::<watt>(0.),
-            valve_position_request: Ratio::new::<ratio>(0.),
-            current_speed: AngularVelocity::new::<revolution_per_minute>(0.),
-        }
-    }
-    pub fn _steady_state_generating_power() -> Self {
-        Self {
-            power_demand: Power::new::<watt>(5000.),
-            valve_position_request: Ratio::new::<ratio>(0.7),
-            current_speed: AngularVelocity::new::<revolution_per_minute>(12000.),
-        }
-    }
-}
-
-impl GeneratorControlUnitInterface for TestGeneratorControlUnit {
-    fn power_demand(&self) -> Power {
-        self.power_demand
-    }
-
-    fn hydraulic_motor_speed(&self) -> AngularVelocity {
-        self.current_speed
-    }
-}
-impl ControlValveCommand for TestGeneratorControlUnit {
-    fn valve_position_command(&self) -> Ratio {
-        self.valve_position_request
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use crate::hydraulic::update_iterator::FixedStepLoop;
@@ -484,6 +401,50 @@ mod tests {
     use crate::simulation::{Aircraft, SimulationElement, SimulationElementVisitor};
     use std::time::Duration;
 
+    pub struct TestGeneratorControlUnit {
+        power_demand: Power,
+        valve_position_request: Ratio,
+        current_speed: AngularVelocity,
+    }
+
+    impl TestGeneratorControlUnit {
+        pub fn commanding_full_open() -> Self {
+            Self {
+                power_demand: Power::new::<watt>(50.),
+                valve_position_request: Ratio::new::<ratio>(1.),
+                current_speed: AngularVelocity::new::<revolution_per_minute>(0.),
+            }
+        }
+        pub fn commanding_full_closed() -> Self {
+            Self {
+                power_demand: Power::new::<watt>(0.),
+                valve_position_request: Ratio::new::<ratio>(0.),
+                current_speed: AngularVelocity::new::<revolution_per_minute>(0.),
+            }
+        }
+        pub fn _steady_state_generating_power() -> Self {
+            Self {
+                power_demand: Power::new::<watt>(5000.),
+                valve_position_request: Ratio::new::<ratio>(0.7),
+                current_speed: AngularVelocity::new::<revolution_per_minute>(12000.),
+            }
+        }
+    }
+
+    impl GeneratorControlUnitInterface for TestGeneratorControlUnit {
+        fn max_allowed_power(&self) -> Power {
+            self.power_demand
+        }
+
+        fn hydraulic_motor_speed(&self) -> AngularVelocity {
+            self.current_speed
+        }
+    }
+    impl ControlValveCommand for TestGeneratorControlUnit {
+        fn valve_position_command(&self) -> Ratio {
+            self.valve_position_request
+        }
+    }
     struct TestEmergencyState {
         is_emergency: bool,
     }
@@ -769,7 +730,6 @@ mod tests {
     #[cfg(test)]
     fn gen_control_unit() -> GeneratorControlUnit {
         GeneratorControlUnit::new(
-            Power::new::<watt>(6000.),
             AngularVelocity::new::<revolution_per_minute>(12000.),
             [
                 0., 1000., 6000., 9999., 10000., 12000., 14000., 14001., 30000.,

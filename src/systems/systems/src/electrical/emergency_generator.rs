@@ -24,6 +24,7 @@ pub struct EmergencyGenerator {
 impl EmergencyGenerator {
     const MIN_RPM_TO_SUPPLY_POWER: f64 = 10000.;
     const MIN_POWER_TO_DECLARE_SUPPLYING_WATT: f64 = 100.;
+    const DEFAULT_POWER_DEMAND_WATT: f64 = 3500.;
 
     pub fn new(context: &mut InitContext) -> EmergencyGenerator {
         EmergencyGenerator {
@@ -58,7 +59,7 @@ impl EmergencyGenerator {
         if gcu.hydraulic_motor_speed().get::<revolution_per_minute>()
             > Self::MIN_RPM_TO_SUPPLY_POWER
         {
-            self.generated_power = gcu.power_demand();
+            self.generated_power = Power::new::<watt>(Self::DEFAULT_POWER_DEMAND_WATT).min(gcu.max_allowed_power());
         } else {
             self.generated_power = Power::new::<watt>(0.)
         }
@@ -181,7 +182,7 @@ mod emergency_generator_tests {
         }
     }
     impl GeneratorControlUnitInterface for TestHydraulicSystem {
-        fn power_demand(&self) -> Power {
+        fn max_allowed_power(&self) -> Power {
             if self.motor_speed.get::<revolution_per_minute>() > 10000. {
                 Power::new::<watt>(5000.)
             } else {

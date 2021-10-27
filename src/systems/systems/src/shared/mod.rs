@@ -43,7 +43,7 @@ pub trait ApuStart {
 }
 
 pub trait GeneratorControlUnitInterface {
-    fn power_demand(&self) -> Power;
+    fn max_allowed_power(&self) -> Power;
     fn hydraulic_motor_speed(&self) -> AngularVelocity;
 }
 

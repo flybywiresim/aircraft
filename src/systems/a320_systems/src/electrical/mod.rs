@@ -2229,7 +2229,7 @@ mod a320_electrical_circuit_tests {
         }
     }
     impl GeneratorControlUnitInterface for TestHydraulicSystem {
-        fn power_demand(&self) -> Power {
+        fn max_allowed_power(&self) -> Power {
             if self.emergency_motor_speed.get::<revolution_per_minute>() > 10000. {
                 Power::new::<watt>(5000.)
             } else {
