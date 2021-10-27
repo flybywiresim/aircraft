@@ -45,6 +45,14 @@
     @apply text-3xl font-bold;
   }
 
+  h2 {
+    @apply text-2xl font-bold;
+  }
+
+  h3, h4, h5, h6 {
+    @apply text-xl font-bold;
+  }
+
   p, div {
       @apply text-xl;
   }
@@ -151,3 +159,22 @@
     cursor: -webkit-grabbing;
   }
 }
+
+/* ---- Notifications ---- */
+
+.drop {
+    animation: drop 2.5s ease-out;
+
+    @keyframes drop {
+      from {
+        top: 0;
+      }
+      to {
+        top: -500px
+      }
+      8%,
+      92% {
+        top: 2em;
+      }
+    }
+  }

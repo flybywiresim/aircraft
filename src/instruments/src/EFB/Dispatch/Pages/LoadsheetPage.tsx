@@ -1,6 +1,6 @@
+import React, { useRef, useState, useEffect } from 'react';
 import { usePersistentProperty } from '@instruments/common/persistence';
 import { IconMinus, IconPlus } from '@tabler/icons';
-import React, { useRef, useState, useEffect } from 'react';
 import { FileEarmarkArrowDown } from 'react-bootstrap-icons';
 import { fetchSimbriefDataAction } from '../../Store/features/simbrief';
 import { useAppDispatch } from '../../Store/store';
