@@ -9,12 +9,8 @@ use crate::shared::{
     EmergencyGeneratorInterface, GeneratorControlUnitInterface, PowerConsumptionReport,
 };
 use uom::si::{
-    angular_velocity::{radian_per_second, revolution_per_minute},
-    electric_potential::volt,
-    f64::*,
-    frequency::hertz,
-    power::watt,
-    torque::newton_meter,
+    angular_velocity::revolution_per_minute, electric_potential::volt, f64::*, frequency::hertz,
+    power::watt, torque::newton_meter,
 };
 
 pub struct EmergencyGenerator {
@@ -24,13 +20,10 @@ pub struct EmergencyGenerator {
     output_frequency: Frequency,
     output_potential: ElectricPotential,
     generated_power: Power,
-    resistant_torque_from_power_gen: Torque,
 }
 impl EmergencyGenerator {
     const MIN_RPM_TO_SUPPLY_POWER: f64 = 10000.;
     const MIN_POWER_TO_DECLARE_SUPPLYING_WATT: f64 = 100.;
-    const EFFICIENCY: f64 = 0.95;
-    const STATIC_RESISTANT_TORQUE_WHEN_UNPOWERED_NM: f64 = 0.3;
 
     pub fn new(context: &mut InitContext) -> EmergencyGenerator {
         EmergencyGenerator {
@@ -40,7 +33,6 @@ impl EmergencyGenerator {
             output_frequency: Frequency::new::<hertz>(0.),
             output_potential: ElectricPotential::new::<volt>(0.),
             generated_power: Power::new::<watt>(0.),
-            resistant_torque_from_power_gen: Torque::new::<newton_meter>(0.),
         }
     }
 

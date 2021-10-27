@@ -378,7 +378,13 @@ impl A320Hydraulic {
         self.physics_updater.update(context);
 
         for cur_time_step in &mut self.physics_updater {
-            self.update_fast_physics(&context.with_delta(cur_time_step), emergency_generator);
+            self.update_fast_physics(
+                &context.with_delta(cur_time_step),
+                emergency_generator,
+                rat_and_emer_gen_man_on,
+                emergency_elec_state,
+                lgciu1,
+            );
         }
 
         self.update_with_sim_rate(
@@ -520,6 +526,9 @@ impl A320Hydraulic {
         &mut self,
         context: &UpdateContext,
         emergency_generator: &impl EmergencyGeneratorInterface,
+        rat_and_emer_gen_man_on: &impl EmergencyElectricalRatPushButton,
+        emergency_elec_state: &impl EmergencyElectricalState,
+        lgciu1: &impl LgciuInterface,
     ) {
         self.forward_cargo_door.update(
             &self.forward_cargo_door_controller,
@@ -537,6 +546,15 @@ impl A320Hydraulic {
             &context.delta(),
             context.indicated_airspeed(),
             self.blue_loop.pressure(),
+        );
+
+        self.gcu.update(
+            context,
+            self.emergency_gen.speed(),
+            self.blue_loop.pressure(),
+            emergency_elec_state,
+            rat_and_emer_gen_man_on,
+            lgciu1,
         );
 
         self.emergency_gen.update(
@@ -596,14 +614,6 @@ impl A320Hydraulic {
             context,
             &self.aft_cargo_door,
             self.yellow_loop.pressure(),
-        );
-
-        self.gcu.update(
-            self.emergency_gen.speed(),
-            self.blue_loop.pressure(),
-            emergency_elec_state,
-            rat_and_emer_gen_man_on,
-            lgciu1,
         );
     }
 
@@ -5706,7 +5716,7 @@ mod tests {
             test_bed = test_bed
                 .ac_bus_1_lost()
                 .ac_bus_2_lost()
-                .run_waiting_for(Duration::from_secs(15));
+                .run_waiting_for(Duration::from_secs(20));
 
             assert!(test_bed.is_emergency_gen_active());
         }

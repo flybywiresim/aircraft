@@ -208,9 +208,6 @@ impl EmergencyGeneratorInterface for A320Electrical {
     fn generated_power(&self) -> Power {
         self.emergency_gen.generated_power()
     }
-    fn resistant_torque(&self) -> Torque {
-        self.emergency_gen.resistant_torque()
-    }
 }
 
 trait A320DirectCurrentElectricalSystem {
