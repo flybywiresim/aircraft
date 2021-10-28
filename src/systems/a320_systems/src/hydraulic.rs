@@ -28,8 +28,8 @@ use systems::{
         },
         update_iterator::{FixedStepLoop, MaxFixedStepLoop},
         ElectricPump, EngineDrivenPump, HydraulicCircuit, HydraulicCircuitController,
-        HydraulicSectionState, PowerTransferUnit, PowerTransferUnitController, PressureSwitchState,
-        PumpController, RamAirTurbine, RamAirTurbineController,
+        PowerTransferUnit, PowerTransferUnitController, PressureSwitchState, PumpController,
+        RamAirTurbine, RamAirTurbineController, SectionPressure,
     },
     overhead::{
         AutoOffFaultPushButton, AutoOnFaultPushButton, MomentaryOnPushButton, MomentaryPushButton,
@@ -852,10 +852,10 @@ impl A320EngineDrivenPumpController {
         }
     }
 
-    fn update_low_pressure_state(
+    fn update_low_section(
         &mut self,
         engine: &impl Engine,
-        pressure_state: &impl HydraulicSectionState,
+        section: &impl SectionPressure,
         lgciu: &impl LgciuInterface,
     ) {
         // Engine off state uses oil pressure threshold (treshold is 18psi)
@@ -863,7 +863,7 @@ impl A320EngineDrivenPumpController {
             < Self::MIN_ENGINE_OIL_PRESS_THRESHOLD_TO_INHIBIT_FAULT;
 
         self.is_pressure_low =
-            self.should_pressurise() && !pressure_state.is_pressure_switch_pressurised();
+            self.should_pressurise() && !section.is_pressure_switch_pressurised();
 
         // Fault inhibited if on ground AND engine oil pressure is low (11KS1 elec relay)
         self.has_pressure_low_fault = self.is_pressure_low
@@ -876,7 +876,7 @@ impl A320EngineDrivenPumpController {
         overhead_panel: &A320HydraulicOverheadPanel,
         engine_fire_push_buttons: &T,
         engine: &impl Engine,
-        pressure_state: &impl HydraulicSectionState,
+        section: &impl SectionPressure,
         lgciu: &impl LgciuInterface,
     ) {
         let mut should_pressurise_if_powered = false;
@@ -893,7 +893,7 @@ impl A320EngineDrivenPumpController {
         // Inverted logic, no power means solenoid valve always leave pump in pressurise mode
         self.should_pressurise = !self.is_powered || should_pressurise_if_powered;
 
-        self.update_low_pressure_state(engine, pressure_state, lgciu);
+        self.update_low_section(engine, section, lgciu);
     }
 
     fn has_pressure_low_fault(&self) -> bool {
@@ -948,7 +948,7 @@ impl A320BlueElectricPumpController {
     fn update(
         &mut self,
         overhead_panel: &A320HydraulicOverheadPanel,
-        pressure_state: &impl HydraulicSectionState,
+        section: &impl SectionPressure,
         engine1: &impl Engine,
         engine2: &impl Engine,
         lgciu1: &impl LgciuInterface,
@@ -971,20 +971,13 @@ impl A320BlueElectricPumpController {
 
         self.should_pressurise = self.is_powered && should_pressurise_if_powered;
 
-        self.update_low_pressure_state(
-            overhead_panel,
-            pressure_state,
-            engine1,
-            engine2,
-            lgciu1,
-            lgciu2,
-        );
+        self.update_low_section(overhead_panel, section, engine1, engine2, lgciu1, lgciu2);
     }
 
-    fn update_low_pressure_state(
+    fn update_low_section(
         &mut self,
         overhead_panel: &A320HydraulicOverheadPanel,
-        pressure_state: &impl HydraulicSectionState,
+        section: &impl SectionPressure,
         engine1: &impl Engine,
         engine2: &impl Engine,
         lgciu1: &impl LgciuInterface,
@@ -997,7 +990,7 @@ impl A320BlueElectricPumpController {
                 < Self::MIN_ENGINE_OIL_PRESS_THRESHOLD_TO_INHIBIT_FAULT;
 
         self.is_pressure_low =
-            self.should_pressurise() && !pressure_state.is_pressure_switch_pressurised();
+            self.should_pressurise() && !section.is_pressure_switch_pressurised();
 
         self.has_pressure_low_fault = self.is_pressure_low
             && (!is_engine_low_oil_pressure
@@ -1069,7 +1062,7 @@ impl A320YellowElectricPumpController {
         overhead_panel: &A320HydraulicOverheadPanel,
         forward_cargo_door_controller: &A320DoorController,
         aft_cargo_door_controller: &A320DoorController,
-        pressure_state: &impl HydraulicSectionState,
+        section: &impl SectionPressure,
     ) {
         self.should_activate_yellow_pump_for_cargo_door_operation
             .update(
@@ -1084,12 +1077,12 @@ impl A320YellowElectricPumpController {
                 .output())
             && self.is_powered;
 
-        self.update_low_pressure_state(pressure_state);
+        self.update_low_section(section);
     }
 
-    fn update_low_pressure_state(&mut self, pressure_state: &impl HydraulicSectionState) {
+    fn update_low_section(&mut self, section: &impl SectionPressure) {
         self.is_pressure_low =
-            self.should_pressurise() && !pressure_state.is_pressure_switch_pressurised();
+            self.should_pressurise() && !section.is_pressure_switch_pressurised();
 
         self.has_pressure_low_fault = self.is_pressure_low;
     }
@@ -2763,7 +2756,7 @@ mod tests {
             fn is_fire_valve_eng1_closed(&mut self) -> bool {
                 !ReadByName::<A320HydraulicsTestBed, bool>::read_by_name(
                     self,
-                    "HYD_GREEN_PUMP0_FIRE_VALVE_OPENED",
+                    "HYD_GREEN_PUMP1_FIRE_VALVE_OPENED",
                 ) && !self.query(|a| {
                     a.hydraulics.green_circuit.is_fire_shutoff_valve_open(
                         A320HydraulicCircuitFactory::GREEN_ENGINE_PUMP_INDEX,
@@ -2774,7 +2767,7 @@ mod tests {
             fn is_fire_valve_eng2_closed(&mut self) -> bool {
                 !ReadByName::<A320HydraulicsTestBed, bool>::read_by_name(
                     self,
-                    "HYD_YELLOW_PUMP0_FIRE_VALVE_OPENED",
+                    "HYD_YELLOW_PUMP1_FIRE_VALVE_OPENED",
                 ) && !self.query(|a| {
                     a.hydraulics.green_circuit.is_fire_shutoff_valve_open(
                         A320HydraulicCircuitFactory::YELLOW_ENGINE_PUMP_INDEX,

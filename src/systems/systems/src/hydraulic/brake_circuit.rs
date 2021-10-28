@@ -15,7 +15,7 @@ use uom::si::{
 
 use super::linear_actuator::Actuator;
 use super::Accumulator;
-use super::HydraulicSectionState;
+use super::SectionPressure;
 use crate::simulation::{InitContext, VariableIdentifier};
 
 struct BrakeActuator {
@@ -206,13 +206,13 @@ impl BrakeCircuit {
             .update(context, actual_max_allowed_pressure);
     }
 
-    pub fn update(&mut self, context: &UpdateContext, pressure_state: &impl HydraulicSectionState) {
+    pub fn update(&mut self, context: &UpdateContext, section: &impl SectionPressure) {
         // The pressure available in brakes is the one of accumulator only if accumulator has fluid
         let actual_pressure_available: Pressure;
         if self.accumulator.fluid_volume() > Volume::new::<gallon>(0.) {
             actual_pressure_available = self.accumulator.raw_gas_press();
         } else {
-            actual_pressure_available = pressure_state.pressure();
+            actual_pressure_available = section.pressure();
         }
 
         self.update_brake_actuators(context, actual_pressure_available);
@@ -225,7 +225,7 @@ impl BrakeCircuit {
             self.accumulator.update(
                 context,
                 &mut volume_into_accumulator,
-                pressure_state.pressure(),
+                section.pressure(),
                 Volume::new::<gallon>(1.),
             );
 
@@ -502,7 +502,7 @@ mod tests {
             }
         }
     }
-    impl HydraulicSectionState for TestHydraulicSection {
+    impl SectionPressure for TestHydraulicSection {
         fn pressure(&self) -> Pressure {
             self.current_pressure
         }

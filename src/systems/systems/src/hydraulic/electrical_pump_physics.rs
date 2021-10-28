@@ -10,7 +10,7 @@ use uom::si::{
     volume::cubic_inch,
 };
 
-use crate::hydraulic::HydraulicSectionState;
+use crate::hydraulic::SectionPressure;
 use crate::shared::{pid::PidController, ConsumePower, ElectricalBusType, ElectricalBuses};
 use crate::simulation::{
     InitContext, SimulationElement, SimulatorWriter, UpdateContext, VariableIdentifier, Write,
@@ -85,10 +85,10 @@ impl ElectricalPumpPhysics {
     pub fn update(
         &mut self,
         context: &UpdateContext,
-        pressure_state: &impl HydraulicSectionState,
+        section: &impl SectionPressure,
         current_displacement: Volume,
     ) {
-        self.update_pump_resistant_torque(pressure_state, current_displacement);
+        self.update_pump_resistant_torque(section, current_displacement);
         self.update_pump_generated_torque(context);
         self.update_pump_speed(context);
     }
@@ -109,7 +109,7 @@ impl ElectricalPumpPhysics {
 
     fn update_pump_resistant_torque(
         &mut self,
-        pressure_state: &impl HydraulicSectionState,
+        section: &impl SectionPressure,
         current_displacement: Volume,
     ) {
         let dynamic_friction_torque = Torque::new::<newton_meter>(
@@ -118,7 +118,7 @@ impl ElectricalPumpPhysics {
 
         let pumping_torque = if self.is_active && self.is_powered {
             Torque::new::<pound_force_inch>(
-                pressure_state
+                section
                     .pressure()
                     .get::<psi>()
                     .max(Self::BACKPRESSURE_PRELOAD_PSI)
@@ -235,7 +235,7 @@ mod tests {
             self.current_pressure = pressure;
         }
     }
-    impl HydraulicSectionState for TestHydraulicSection {
+    impl SectionPressure for TestHydraulicSection {
         fn pressure(&self) -> Pressure {
             self.current_pressure
         }

@@ -22,7 +22,7 @@ pub mod electrical_pump_physics;
 pub mod linear_actuator;
 pub mod update_iterator;
 
-pub trait HydraulicSectionState {
+pub trait SectionPressure {
     fn pressure(&self) -> Pressure;
     fn is_pressure_switch_pressurised(&self) -> bool;
 }
@@ -64,6 +64,7 @@ pub enum PressureSwitchState {
     Pressurised,
     NotPressurised,
 }
+
 /// Physical pressure switch.
 /// It's a physical switch reacting to pressure.
 struct PressureSwitch {
@@ -157,13 +158,13 @@ impl PowerTransferUnit {
 
     pub fn update<T: PowerTransferUnitController>(
         &mut self,
-        loop_left_pressure_state: &impl HydraulicSectionState,
-        loop_right_pressure_state: &impl HydraulicSectionState,
+        loop_left_section: &impl SectionPressure,
+        loop_right_section: &impl SectionPressure,
         controller: &T,
     ) {
         self.is_enabled = controller.should_enable();
 
-        let delta_p = loop_left_pressure_state.pressure() - loop_right_pressure_state.pressure();
+        let delta_p = loop_left_section.pressure() - loop_right_section.pressure();
 
         if !self.is_enabled
             || self.is_active_right && delta_p.get::<psi>() > -5.
@@ -179,7 +180,7 @@ impl PowerTransferUnit {
             // Left sends flow to right
             // Flow computed as a function of pressure  min(16gal per minute,pressure * 0.0058)
             let mut new_flow =
-                16.0f64.min(loop_left_pressure_state.pressure().get::<psi>() * 0.0058) / 60.0;
+                16.0f64.min(loop_left_section.pressure().get::<psi>() * 0.0058) / 60.0;
 
             // Low pass on flow
             new_flow = Self::FLOW_DYNAMIC_LOW_PASS_LEFT_SIDE * new_flow
@@ -198,7 +199,7 @@ impl PowerTransferUnit {
             // Right sends flow to left
             // Flow computed as a function of pressure  min(34gal per minute,pressure * 0.00125)
             let mut new_flow =
-                34.0f64.min(loop_right_pressure_state.pressure().get::<psi>() * 0.0125) / 60.0;
+                34.0f64.min(loop_right_section.pressure().get::<psi>() * 0.0125) / 60.0;
 
             // Low pass on flow
             new_flow = Self::FLOW_DYNAMIC_LOW_PASS_RIGHT_SIDE * new_flow
@@ -379,7 +380,7 @@ impl HydraulicCircuit {
         id: &str,
 
         number_of_pump_sections: usize,
-        priming_volume_percent: Ratio,
+        priming_volume: Ratio,
         high_pressure_max_volume: Volume,
         reservoir_volume: Volume,
 
@@ -410,7 +411,7 @@ impl HydraulicCircuit {
                 pump_id,
                 VolumeRate::new::<gallon_per_second>(Self::PUMP_SECTION_STATIC_LEAK_GAL_P_S),
                 Volume::new::<gallon>(
-                    Self::PUMP_SECTION_MAX_VOLUME_GAL * priming_volume_percent.get::<ratio>(),
+                    Self::PUMP_SECTION_MAX_VOLUME_GAL * priming_volume.get::<ratio>(),
                 ),
                 Volume::new::<gallon>(Self::PUMP_SECTION_MAX_VOLUME_GAL),
                 None,
@@ -436,7 +437,7 @@ impl HydraulicCircuit {
                 "SYSTEM",
                 0,
                 VolumeRate::new::<gallon_per_second>(Self::SYSTEM_SECTION_STATIC_LEAK_GAL_P_S),
-                system_section_volume * priming_volume_percent,
+                system_section_volume * priming_volume,
                 system_section_volume,
                 Some(Accumulator::new(
                     Pressure::new::<psi>(Self::ACCUMULATOR_GAS_PRE_CHARGE_PSI),
@@ -643,11 +644,11 @@ impl HydraulicCircuit {
         &self.reservoir
     }
 
-    pub fn system_section(&self) -> &impl HydraulicSectionState {
+    pub fn system_section(&self) -> &impl SectionPressure {
         &self.system_section
     }
 
-    pub fn pump_section(&self, pump_index: usize) -> &impl HydraulicSectionState {
+    pub fn pump_section(&self, pump_index: usize) -> &impl SectionPressure {
         &self.pump_sections[pump_index]
     }
 }
@@ -906,10 +907,9 @@ impl Section {
     }
 
     pub fn accumulator_volume(&self) -> Volume {
-        if self.accumulator.is_some() {
-            self.accumulator.as_ref().unwrap().fluid_volume()
-        } else {
-            Volume::new::<gallon>(0.)
+        match &self.accumulator {
+            Some(accumulator) => accumulator.fluid_volume(),
+            None => Volume::new::<gallon>(0.),
         }
     }
 
@@ -948,8 +948,8 @@ impl Section {
 }
 impl SimulationElement for Section {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        if self.fire_valve.is_some() {
-            self.fire_valve.as_mut().unwrap().accept(visitor);
+        if let Some(fire_valve) = &mut self.fire_valve {
+            fire_valve.accept(visitor);
         }
 
         visitor.visit(self);
@@ -959,7 +959,7 @@ impl SimulationElement for Section {
         writer.write(&self.pressure_id, self.pressure());
     }
 }
-impl HydraulicSectionState for Section {
+impl SectionPressure for Section {
     fn pressure(&self) -> Pressure {
         self.pressure()
     }
@@ -1175,14 +1175,14 @@ impl Pump {
     fn update<T: PumpController>(
         &mut self,
         context: &UpdateContext,
-        pressure_state: &impl HydraulicSectionState,
+        section: &impl SectionPressure,
         reservoir: &Reservoir,
         speed: AngularVelocity,
         controller: &T,
     ) {
         self.speed = speed;
 
-        let theoretical_displacement = self.calculate_displacement(pressure_state, controller);
+        let theoretical_displacement = self.calculate_displacement(section, controller);
 
         // Actual displacement is the calculated one with a low pass filter applied to mimic displacement transients dynamic
         // Note this is applied on "max" delta vol, so any regulation within pump capacity will remain "instantaneous'
@@ -1200,14 +1200,14 @@ impl Pump {
 
     fn calculate_displacement<T: PumpController>(
         &self,
-        pressure_state: &impl HydraulicSectionState,
+        section: &impl SectionPressure,
         controller: &T,
     ) -> Volume {
         if controller.should_pressurise() {
             Volume::new::<cubic_inch>(interpolation(
                 &self.press_breakpoints,
                 &self.displacement_carac,
-                pressure_state.pressure().get::<psi>(),
+                section.pressure().get::<psi>(),
             ))
         } else {
             Volume::new::<cubic_inch>(0.)
@@ -1322,17 +1322,17 @@ impl ElectricPump {
     pub fn update<T: PumpController>(
         &mut self,
         context: &UpdateContext,
-        pressure_state: &impl HydraulicSectionState,
+        section: &impl SectionPressure,
         reservoir: &Reservoir,
         controller: &T,
     ) {
         self.pump_physics.set_active(controller.should_pressurise());
         self.pump_physics
-            .update(context, pressure_state, self.pump.displacement());
+            .update(context, section, self.pump.displacement());
 
         self.pump.update(
             context,
-            pressure_state,
+            section,
             reservoir,
             self.pump_physics.speed(),
             controller,
@@ -1407,14 +1407,14 @@ impl EngineDrivenPump {
     pub fn update<T: PumpController>(
         &mut self,
         context: &UpdateContext,
-        pressure_state: &impl HydraulicSectionState,
+        section: &impl SectionPressure,
         reservoir: &Reservoir,
         pump_speed: AngularVelocity,
         controller: &T,
     ) {
         self.speed = pump_speed;
         self.pump
-            .update(context, pressure_state, reservoir, pump_speed, controller);
+            .update(context, section, reservoir, pump_speed, controller);
         self.is_active = controller.should_pressurise();
     }
 }
@@ -1615,7 +1615,7 @@ impl RamAirTurbine {
     pub fn update<T: RamAirTurbineController>(
         &mut self,
         context: &UpdateContext,
-        pressure_state: &impl HydraulicSectionState,
+        section: &impl SectionPressure,
         reservoir: &Reservoir,
         controller: &T,
     ) {
@@ -1624,7 +1624,7 @@ impl RamAirTurbine {
 
         self.pump.update(
             context,
-            pressure_state,
+            section,
             reservoir,
             self.wind_turbine.speed(),
             &self.pump_controller,
