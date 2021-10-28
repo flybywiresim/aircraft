@@ -5,7 +5,7 @@ import { UIMessagesProvider, useUIMessages } from './UIMessages/Provider';
 import { Redirect, Route, Switch } from 'react-router-dom';
 import { useSimVar } from '@instruments/common/simVars';
 import { useInteractionEvent } from '@instruments/common/hooks';
-import { usePersistentNumberProperty } from '../Common/persistence';
+import { usePersistentNumberProperty, usePersistentProperty } from '../Common/persistence';
 import NavigraphClient, { NavigraphContext } from './ChartsApi/Navigraph';
 
 import { StatusBar } from './StatusBar/StatusBar';
@@ -20,8 +20,10 @@ import { ATC } from './ATC/ATC';
 import { Settings } from './Settings/Settings';
 import { Failures } from './Failures/Failures';
 
-import { clearEfbState, useAppDispatch } from './Store/store';
+import { clearEfbState, useAppDispatch, useAppSelector } from './Store/store';
 import logo from './Assets/fbw-logo.svg';
+
+import { fetchSimbriefDataAction, initialState as simbriefInitialState, setSimbriefData } from './Store/features/simbrief';
 
 import { NotificationsContainer } from './UIMessages/Notification';
 
@@ -75,6 +77,16 @@ const Efb = () => {
     const [latitude] = useSimVar("PLANE LATITUDE", 'degree latitude');
 
     const dispatch = useAppDispatch();
+    const simbriefData = useAppSelector(state => state.simbrief.data);
+    const [simbriefUserId] = usePersistentProperty('CONFIG_SIMBRIEF_USERID');
+    const [autoSimbriefImport] = usePersistentProperty('CONFIG_AUTO_SIMBRIEF_IMPORT');
+
+
+    useEffect(() => {
+        if((!simbriefData || simbriefData === simbriefInitialState.data) && autoSimbriefImport === 'ENABLED'){
+            fetchSimbriefDataAction(simbriefUserId ?? '').then(res => dispatch(res));
+        }
+    }, [])
 
     useEffect(() => {
         if (powerState === PowerState.OFF) {
@@ -97,6 +109,12 @@ const Efb = () => {
         }
     });
 
+    /**
+     * Returns a brightness value between 0 and 100 inclusive based on the ratio of the solar altitude to the solar zenith
+     * @param {number} latitude - The latitude of the location (-90 to 90)
+     * @param {number} dayOfYear - The day of the year (0 to 365)
+     * @param {number} timeOfDay - The time of day in hours (0 to 24)
+     */
     function calculateBrightness (latitude: number, dayOfYear: number, timeOfDay: number)  {
         const solarTime = timeOfDay + (dayOfYear - 1) * 24;
         const solarDeclination = 0.409 * Math.sin(2 * Math.PI * (284 + dayOfYear) / 365);

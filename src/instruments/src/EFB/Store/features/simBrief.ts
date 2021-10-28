@@ -36,7 +36,7 @@ export type SimbriefData = {
     costInd: string
 };
 
-const initialState: {data: SimbriefData} = {
+export const initialState: {data: SimbriefData} = {
     data: {
         airline: '---',
         flightNum: '----',
