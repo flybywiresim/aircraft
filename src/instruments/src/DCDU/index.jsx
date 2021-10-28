@@ -1,3 +1,6 @@
+//  Copyright (c) 2021 FlyByWire Simulations
+//  SPDX-License-Identifier: GPL-3.0
+
 import ReactDOM from 'react-dom';
 import { useState } from 'react';
 
@@ -73,7 +76,8 @@ function DCDU() {
         } else if (!powerAvailable()) {
             setState('OFF');
         }
-        setOpacity(getSimVar('L:A32NX_MFD_MASK_OPACITY', 'number'));
+        const opacityValue = getSimVar('L:A32NX_MFD_MASK_OPACITY', 'number');
+        setOpacity(opacityValue.toFixed(2));
     });
 
     switch (state) {

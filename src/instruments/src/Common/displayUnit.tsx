@@ -1,3 +1,6 @@
+//  Copyright (c) 2021 FlyByWire Simulations
+//  SPDX-License-Identifier: GPL-3.0
+
 import React, { useEffect, useState } from 'react';
 import { NXDataStore } from '@shared/persistence';
 import { useSimVar } from './simVars';
@@ -27,6 +30,8 @@ export const DisplayUnit: React.FC<DisplayUnitProps> = (props) => {
     const [potentiometer] = useSimVar(`LIGHT POTENTIOMETER:${props.potentiometerIndex}`, 'percent over 100', 200);
     const [electricityState] = useSimVar(props.electricitySimvar, 'bool', 200);
     const [opacity] = useSimVar('L:A32NX_MFD_MASK_OPACITY', 'number', 200);
+
+    const fixedOpacity = opacity.toFixed(2);
 
     useUpdate((deltaTime) => {
         if (timer !== null) {
@@ -63,7 +68,7 @@ export const DisplayUnit: React.FC<DisplayUnitProps> = (props) => {
     if (state === DisplayUnitState.Selftest) {
         return (
             <>
-                <div className="LcdOverlay" style={{ opacity }} />
+                <div className="LcdOverlay" style={{ opacity: fixedOpacity }} />
                 <div className="BacklightBleed" />
                 <svg className="SelfTest" viewBox="0 0 600 600">
                     <rect className="SelfTestBackground" x="0" y="0" width="100%" height="100%" />
@@ -92,7 +97,7 @@ export const DisplayUnit: React.FC<DisplayUnitProps> = (props) => {
     }
     return (
         <>
-            <div className="LcdOverlay" style={{ opacity }} />
+            <div className="LcdOverlay" style={{ opacity: fixedOpacity }} />
             <div className="BacklightBleed" />
             <div style={{ display: state === DisplayUnitState.On ? 'block' : 'none' }}>{props.children}</div>
         </>

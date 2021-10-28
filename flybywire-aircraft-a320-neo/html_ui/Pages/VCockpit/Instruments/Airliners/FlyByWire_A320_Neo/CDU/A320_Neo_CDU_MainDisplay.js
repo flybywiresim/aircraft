@@ -279,7 +279,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     onUpdate(_deltaTime) {
         super.onUpdate(_deltaTime);
 
-        this.lcdOverlay.style.opacity = SimVar.GetSimVarValue("L:A32NX_MFD_MASK_OPACITY", "number");
+        const opacityValue = SimVar.GetSimVarValue("L:A32NX_MFD_MASK_OPACITY", "number");
+        this.lcdOverlay.style.opacity = opacityValue.toFixed(2);
 
         if (this.minPageUpdateThrottler.canUpdate(_deltaTime) !== -1 && this.updateRequest) {
             this.updateRequest = false;
