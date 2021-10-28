@@ -12,15 +12,18 @@ import { useUIMessages } from '../../UIMessages/Provider';
 import { Notification, NotificationTypes } from '../../UIMessages/Notification';
 
 export const AtsuAocPage = () => {
+    const uiMessages = useUIMessages();
+
     const [atisSource, setAtisSource] = usePersistentProperty('CONFIG_ATIS_SRC', 'FAA');
     const [metarSource, setMetarSource] = usePersistentProperty('CONFIG_METAR_SRC', 'MSFS');
     const [tafSource, setTafSource] = usePersistentProperty('CONFIG_TAF_SRC', 'NOAA');
     const [telexEnabled, setTelexEnabled] = usePersistentProperty('CONFIG_ONLINE_FEATURES_STATUS', 'DISABLED');
 
-    const uiMessages = useUIMessages();
-
     const [simbriefUserId, setSimbriefUserId] = usePersistentProperty('CONFIG_SIMBRIEF_USERID');
     const [simbriefDisplay, setSimbriefDisplay] = useState(simbriefUserId);
+
+    const [autoSimbriefImport, setAutoSimbriefImport] = usePersistentProperty('CONFIG_AUTO_SIMBRIEF_IMPORT', 'DISABLED');
+
 
     function getSimbriefUserData(value: string): Promise<any> {
         const SIMBRIEF_URL = 'http://www.simbrief.com/api/xml.fetcher.php?json=1';
@@ -173,6 +176,10 @@ export const AtsuAocPage = () => {
                         onChange={(value) => setSimbriefDisplay(value)}
                     />
                 </div>
+            </div>
+            <div className="flex flex-row justify-between items-center py-4">
+                <span className="text-lg text-gray-300">Automatically Import SimBrief Data</span>
+                <Toggle value={autoSimbriefImport === 'ENABLED'} onToggle={(toggleValue) => setAutoSimbriefImport(toggleValue ? 'ENABLED' : 'DISABLED')} />
             </div>
         </div>
     );
