@@ -390,10 +390,12 @@ impl HydraulicCircuit {
         connected_to_ptu_left_side: bool,
         connected_to_ptu_right_side: bool,
     ) -> Self {
+        assert!(number_of_pump_sections > 0);
+
         let mut pump_sections: Vec<Section> = Vec::new();
         let mut pump_to_system_check_valves: Vec<CheckValve> = Vec::new();
 
-        for pump_id in 0..number_of_pump_sections {
+        for pump_id in 1..=number_of_pump_sections {
             let fire_valve = Some(FireValve::new(
                 context,
                 id,
@@ -1761,14 +1763,17 @@ mod tests {
 
         test_bed.run();
 
-        assert!(test_bed.contains_variable_with_name("HYD_BROWN_PUMP0_SECTION_PRESSURE"));
-        assert!(test_bed.contains_variable_with_name("HYD_BROWN_PUMP0_FIRE_VALVE_OPENED"));
-
         assert!(test_bed.contains_variable_with_name("HYD_BROWN_PUMP1_SECTION_PRESSURE"));
         assert!(test_bed.contains_variable_with_name("HYD_BROWN_PUMP1_FIRE_VALVE_OPENED"));
 
-        assert!(!test_bed.contains_variable_with_name("HYD_BROWN_PUMP2_SECTION_PRESSURE"));
-        assert!(!test_bed.contains_variable_with_name("HYD_BROWN_PUMP2_FIRE_VALVE_OPENED"));
+        assert!(test_bed.contains_variable_with_name("HYD_BROWN_PUMP2_SECTION_PRESSURE"));
+        assert!(test_bed.contains_variable_with_name("HYD_BROWN_PUMP2_FIRE_VALVE_OPENED"));
+
+        assert!(!test_bed.contains_variable_with_name("HYD_BROWN_PUMP0_SECTION_PRESSURE"));
+        assert!(!test_bed.contains_variable_with_name("HYD_BROWN_PUMP0_FIRE_VALVE_OPENED"));
+
+        assert!(!test_bed.contains_variable_with_name("HYD_BROWN_PUMP3_SECTION_PRESSURE"));
+        assert!(!test_bed.contains_variable_with_name("HYD_BROWN_PUMP3_FIRE_VALVE_OPENED"));
     }
 
     fn section(
