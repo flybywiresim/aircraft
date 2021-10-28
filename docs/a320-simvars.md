@@ -744,7 +744,7 @@
         - 1
         - 2
 
-- A32NX_HYD_{loop_name}_SYSTEM0_SECTION_PRESSURE
+- A32NX_HYD_{loop_name}_SYSTEM1_SECTION_PRESSURE
     - Psi
     - Current pressure in the system section of the {loop_name} hydraulic circuit
     - {loop_name}
@@ -752,7 +752,7 @@
         - BLUE
         - YELLOW
 
-- A32NX_HYD_{loop_name}_PUMP_SECTION_PRESSURE
+- A32NX_HYD_{loop_name}_PUMP1_SECTION_PRESSURE
     - Psi
     - Current pressure in the pump section of the {loop_name} hydraulic circuit
     - {loop_name}

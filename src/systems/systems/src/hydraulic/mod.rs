@@ -435,7 +435,7 @@ impl HydraulicCircuit {
                 context,
                 id,
                 "SYSTEM",
-                0,
+                1,
                 VolumeRate::new::<gallon_per_second>(Self::SYSTEM_SECTION_STATIC_LEAK_GAL_P_S),
                 system_section_volume * priming_volume,
                 system_section_volume,
@@ -1762,6 +1762,9 @@ mod tests {
         }));
 
         test_bed.run();
+
+        assert!(test_bed.contains_variable_with_name("HYD_BROWN_SYSTEM1_SECTION_PRESSURE"));
+        assert!(!test_bed.contains_variable_with_name("HYD_BROWN_SYSTEM1_FIRE_VALVE_OPENED"));
 
         assert!(test_bed.contains_variable_with_name("HYD_BROWN_PUMP1_SECTION_PRESSURE"));
         assert!(test_bed.contains_variable_with_name("HYD_BROWN_PUMP1_FIRE_VALVE_OPENED"));

@@ -2639,15 +2639,15 @@ mod tests {
             }
 
             fn green_pressure(&mut self) -> Pressure {
-                self.read_by_name("HYD_GREEN_SYSTEM0_SECTION_PRESSURE")
+                self.read_by_name("HYD_GREEN_SYSTEM1_SECTION_PRESSURE")
             }
 
             fn blue_pressure(&mut self) -> Pressure {
-                self.read_by_name("HYD_BLUE_SYSTEM0_SECTION_PRESSURE")
+                self.read_by_name("HYD_BLUE_SYSTEM1_SECTION_PRESSURE")
             }
 
             fn yellow_pressure(&mut self) -> Pressure {
-                self.read_by_name("HYD_YELLOW_SYSTEM0_SECTION_PRESSURE")
+                self.read_by_name("HYD_YELLOW_SYSTEM1_SECTION_PRESSURE")
             }
 
             fn get_yellow_reservoir_volume(&mut self) -> Volume {
