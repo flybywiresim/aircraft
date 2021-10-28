@@ -714,7 +714,7 @@ impl Section {
         connected_to_ptu_left_side: bool,
         connected_to_ptu_right_side: bool,
     ) -> Self {
-        let section_name: String = format!("HYD_{}_{}{}_SECTION", loop_id, section_id, pump_id);
+        let section_name: String = format!("HYD_{}_{}_{}_SECTION", loop_id, section_id, pump_id);
 
         Self {
             pressure_id: context
@@ -985,7 +985,7 @@ impl FireValve {
         Self {
             opened_id: context
                 .get_identifier(format!(
-                    "HYD_{}_PUMP{}_FIRE_VALVE_OPENED",
+                    "HYD_{}_PUMP_{}_FIRE_VALVE_OPENED",
                     hyd_loop_id, pump_id
                 ))
                 .to_owned(),
@@ -1751,8 +1751,8 @@ mod tests {
 
         test_bed.run();
 
-        assert!(test_bed.contains_variable_with_name("HYD_BROWN_PUMP2_SECTION_PRESSURE"));
-        assert!(test_bed.contains_variable_with_name("HYD_BROWN_PUMP2_FIRE_VALVE_OPENED"));
+        assert!(test_bed.contains_variable_with_name("HYD_BROWN_PUMP_2_SECTION_PRESSURE"));
+        assert!(test_bed.contains_variable_with_name("HYD_BROWN_PUMP_2_FIRE_VALVE_OPENED"));
     }
 
     #[test]
@@ -1763,20 +1763,20 @@ mod tests {
 
         test_bed.run();
 
-        assert!(test_bed.contains_variable_with_name("HYD_BROWN_SYSTEM1_SECTION_PRESSURE"));
-        assert!(!test_bed.contains_variable_with_name("HYD_BROWN_SYSTEM1_FIRE_VALVE_OPENED"));
+        assert!(test_bed.contains_variable_with_name("HYD_BROWN_SYSTEM_1_SECTION_PRESSURE"));
+        assert!(!test_bed.contains_variable_with_name("HYD_BROWN_SYSTEM_1_FIRE_VALVE_OPENED"));
 
-        assert!(test_bed.contains_variable_with_name("HYD_BROWN_PUMP1_SECTION_PRESSURE"));
-        assert!(test_bed.contains_variable_with_name("HYD_BROWN_PUMP1_FIRE_VALVE_OPENED"));
+        assert!(test_bed.contains_variable_with_name("HYD_BROWN_PUMP_1_SECTION_PRESSURE"));
+        assert!(test_bed.contains_variable_with_name("HYD_BROWN_PUMP_1_FIRE_VALVE_OPENED"));
 
-        assert!(test_bed.contains_variable_with_name("HYD_BROWN_PUMP2_SECTION_PRESSURE"));
-        assert!(test_bed.contains_variable_with_name("HYD_BROWN_PUMP2_FIRE_VALVE_OPENED"));
+        assert!(test_bed.contains_variable_with_name("HYD_BROWN_PUMP_2_SECTION_PRESSURE"));
+        assert!(test_bed.contains_variable_with_name("HYD_BROWN_PUMP_2_FIRE_VALVE_OPENED"));
 
-        assert!(!test_bed.contains_variable_with_name("HYD_BROWN_PUMP0_SECTION_PRESSURE"));
-        assert!(!test_bed.contains_variable_with_name("HYD_BROWN_PUMP0_FIRE_VALVE_OPENED"));
+        assert!(!test_bed.contains_variable_with_name("HYD_BROWN_PUMP_0_SECTION_PRESSURE"));
+        assert!(!test_bed.contains_variable_with_name("HYD_BROWN_PUMP_0_FIRE_VALVE_OPENED"));
 
-        assert!(!test_bed.contains_variable_with_name("HYD_BROWN_PUMP3_SECTION_PRESSURE"));
-        assert!(!test_bed.contains_variable_with_name("HYD_BROWN_PUMP3_FIRE_VALVE_OPENED"));
+        assert!(!test_bed.contains_variable_with_name("HYD_BROWN_PUMP_3_SECTION_PRESSURE"));
+        assert!(!test_bed.contains_variable_with_name("HYD_BROWN_PUMP_3_FIRE_VALVE_OPENED"));
     }
 
     fn section(

@@ -27,8 +27,8 @@ export const HydPage = () => {
     const [yellowHydLevel] = useSimVar('L:A32NX_HYD_YELLOW_RESERVOIR_LEVEL', 'gallon', 1000);
     const [blueHydLevel] = useSimVar('L:A32NX_HYD_BLUE_RESERVOIR_LEVEL', 'gallon', 1000);
 
-    const [greenFireValve] = useSimVar('L:A32NX_HYD_GREEN_PUMP1_FIRE_VALVE_OPENED', 'boolean', 500);
-    const [yellowFireValve] = useSimVar('L:A32NX_HYD_YELLOW_PUMP1_FIRE_VALVE_OPENED', 'boolean', 500);
+    const [greenFireValve] = useSimVar('L:A32NX_HYD_GREEN_PUMP_1_FIRE_VALVE_OPENED', 'boolean', 500);
+    const [yellowFireValve] = useSimVar('L:A32NX_HYD_YELLOW_PUMP_1_FIRE_VALVE_OPENED', 'boolean', 500);
 
     const [ACBus1IsPowered] = useSimVar('L:A32NX_ELEC_AC_1_BUS_IS_POWERED', 'bool', 1000);
     const [ACBus2IsPowered] = useSimVar('L:A32NX_ELEC_AC_2_BUS_IS_POWERED', 'bool', 1000);

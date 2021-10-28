@@ -2639,15 +2639,15 @@ mod tests {
             }
 
             fn green_pressure(&mut self) -> Pressure {
-                self.read_by_name("HYD_GREEN_SYSTEM1_SECTION_PRESSURE")
+                self.read_by_name("HYD_GREEN_SYSTEM_1_SECTION_PRESSURE")
             }
 
             fn blue_pressure(&mut self) -> Pressure {
-                self.read_by_name("HYD_BLUE_SYSTEM1_SECTION_PRESSURE")
+                self.read_by_name("HYD_BLUE_SYSTEM_1_SECTION_PRESSURE")
             }
 
             fn yellow_pressure(&mut self) -> Pressure {
-                self.read_by_name("HYD_YELLOW_SYSTEM1_SECTION_PRESSURE")
+                self.read_by_name("HYD_YELLOW_SYSTEM_1_SECTION_PRESSURE")
             }
 
             fn get_yellow_reservoir_volume(&mut self) -> Volume {
@@ -2741,7 +2741,7 @@ mod tests {
             fn is_fire_valve_eng1_closed(&mut self) -> bool {
                 !ReadByName::<A320HydraulicsTestBed, bool>::read_by_name(
                     self,
-                    "HYD_GREEN_PUMP1_FIRE_VALVE_OPENED",
+                    "HYD_GREEN_PUMP_1_FIRE_VALVE_OPENED",
                 ) && !self.query(|a| {
                     a.hydraulics.green_circuit.is_fire_shutoff_valve_open(
                         A320HydraulicCircuitFactory::GREEN_ENGINE_PUMP_INDEX,
@@ -2752,7 +2752,7 @@ mod tests {
             fn is_fire_valve_eng2_closed(&mut self) -> bool {
                 !ReadByName::<A320HydraulicsTestBed, bool>::read_by_name(
                     self,
-                    "HYD_YELLOW_PUMP1_FIRE_VALVE_OPENED",
+                    "HYD_YELLOW_PUMP_1_FIRE_VALVE_OPENED",
                 ) && !self.query(|a| {
                     a.hydraulics.green_circuit.is_fire_shutoff_valve_open(
                         A320HydraulicCircuitFactory::YELLOW_ENGINE_PUMP_INDEX,

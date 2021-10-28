@@ -744,7 +744,7 @@
         - 1
         - 2
 
-- A32NX_HYD_{loop_name}_SYSTEM1_SECTION_PRESSURE
+- A32NX_HYD_{loop_name}_SYSTEM_1_SECTION_PRESSURE
     - Psi
     - Current pressure in the system section of the {loop_name} hydraulic circuit
     - {loop_name}
@@ -752,7 +752,7 @@
         - BLUE
         - YELLOW
 
-- A32NX_HYD_{loop_name}_PUMP1_SECTION_PRESSURE
+- A32NX_HYD_{loop_name}_PUMP_1_SECTION_PRESSURE
     - Psi
     - Current pressure in the pump section of the {loop_name} hydraulic circuit
     - {loop_name}
@@ -811,7 +811,7 @@
         - BLUE
         - YELLOW
 
-- A32NX_HYD_{loop_name}_PUMP1_FIRE_VALVE_OPENED
+- A32NX_HYD_{loop_name}_PUMP_1_FIRE_VALVE_OPENED
     - Bool
     - Engine driven pump of {loop_name} hydraulic circuit can receive hydraulic fluid
     - {loop_name}
