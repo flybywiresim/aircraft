@@ -1379,7 +1379,7 @@ var A320_Neo_UpperECAM;
                         message: "NW STRG DISC",
                         style: () => this.isEngineRunning(1) || this.isEngineRunning(2) ? "InfoCaution" : "InfoIndication",
                         isActive: () => (
-                            this.getCachedSimVar("PUSHBACK STATE", "Enum") !== 3
+                            this.getCachedSimVar("L:A32NX_HYD_NW_STRG_DISC_ECAM_MEMO", "Bool")
                         )
                     },
                     {

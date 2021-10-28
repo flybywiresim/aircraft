@@ -424,8 +424,7 @@ impl A320Hydraulic {
 
     #[cfg(test)]
     fn nose_wheel_steering_pin_is_inserted(&self) -> bool {
-        self.power_transfer_unit_controller
-            .nose_wheel_steering_pin_is_inserted()
+        self.pushback_tug.is_nose_wheel_steering_pin_inserted()
     }
 
     fn is_blue_pressurised(&self) -> bool {
@@ -490,8 +489,7 @@ impl A320Hydraulic {
             emergency_elec_state,
         );
 
-        // Tug has its angle changing on each frame and we'd like to detect this
-        self.pushback_tug.update();
+        self.pushback_tug.update(context);
 
         self.braking_force.update_forces(
             context,
@@ -1126,7 +1124,6 @@ struct A320PowerTransferUnitController {
     powered_by: ElectricalBusType,
     should_enable: bool,
     should_inhibit_ptu_after_cargo_door_operation: DelayedFalseLogicGate,
-    nose_wheel_steering_pin_inserted: DelayedFalseLogicGate,
 
     parking_brake_lever_pos: bool,
     eng_1_master_on: bool,
@@ -1134,8 +1131,6 @@ struct A320PowerTransferUnitController {
 }
 impl A320PowerTransferUnitController {
     const DURATION_OF_PTU_INHIBIT_AFTER_CARGO_DOOR_OPERATION: Duration = Duration::from_secs(40);
-    const DURATION_AFTER_WHICH_NWS_PIN_IS_REMOVED_AFTER_PUSHBACK: Duration =
-        Duration::from_secs(15);
 
     fn new(context: &mut InitContext, powered_by: ElectricalBusType) -> Self {
         Self {
@@ -1150,9 +1145,6 @@ impl A320PowerTransferUnitController {
             should_enable: false,
             should_inhibit_ptu_after_cargo_door_operation: DelayedFalseLogicGate::new(
                 Self::DURATION_OF_PTU_INHIBIT_AFTER_CARGO_DOOR_OPERATION,
-            ),
-            nose_wheel_steering_pin_inserted: DelayedFalseLogicGate::new(
-                Self::DURATION_AFTER_WHICH_NWS_PIN_IS_REMOVED_AFTER_PUSHBACK,
             ),
 
             parking_brake_lever_pos: false,
@@ -1175,8 +1167,6 @@ impl A320PowerTransferUnitController {
             forward_cargo_door_controller.should_pressurise_hydraulics()
                 || aft_cargo_door_controller.should_pressurise_hydraulics(),
         );
-        self.nose_wheel_steering_pin_inserted
-            .update(context, pushback_tug.is_connected());
 
         let ptu_inhibited = self.should_inhibit_ptu_after_cargo_door_operation.output()
             && overhead_panel.yellow_epump_push_button_is_auto();
@@ -1186,16 +1176,11 @@ impl A320PowerTransferUnitController {
                 || self.eng_1_master_on && self.eng_2_master_on
                 || !self.eng_1_master_on && !self.eng_2_master_on
                 || (!self.parking_brake_lever_pos
-                    && !self.nose_wheel_steering_pin_inserted.output()))
+                    && !pushback_tug.is_nose_wheel_steering_pin_inserted()))
             && !ptu_inhibited;
 
         // When there is no power, the PTU is always ON.
         self.should_enable = !self.is_powered || should_enable_if_powered;
-    }
-
-    #[cfg(test)]
-    fn nose_wheel_steering_pin_is_inserted(&self) -> bool {
-        self.nose_wheel_steering_pin_inserted.output()
     }
 }
 impl PowerTransferUnitController for A320PowerTransferUnitController {
@@ -1824,11 +1809,9 @@ impl SimulationElement for CargoDoor {
 }
 
 struct PushbackTug {
-    angle_id: VariableIdentifier,
+    nw_strg_disc_memo_id: VariableIdentifier,
     state_id: VariableIdentifier,
 
-    angle: f64,
-    previous_angle: f64,
     // Type of pushback:
     // 0 = Straight
     // 1 = Left
@@ -1836,46 +1819,49 @@ struct PushbackTug {
     // 3 = Assumed to be no pushback
     // 4 = might be finishing pushback, to confirm
     state: f64,
-    is_connected_to_nose_gear: bool,
+    nose_wheel_steering_pin_inserted: DelayedFalseLogicGate,
 }
 impl PushbackTug {
+    const DURATION_AFTER_WHICH_NWS_PIN_IS_REMOVED_AFTER_PUSHBACK: Duration =
+        Duration::from_secs(15);
+
     const STATE_NO_PUSHBACK: f64 = 3.;
 
     fn new(context: &mut InitContext) -> Self {
         Self {
-            angle_id: context.get_identifier("PUSHBACK ANGLE".to_owned()),
+            nw_strg_disc_memo_id: context.get_identifier("HYD_NW_STRG_DISC_ECAM_MEMO".to_owned()),
             state_id: context.get_identifier("PUSHBACK STATE".to_owned()),
 
-            angle: 0.,
-            previous_angle: 0.,
             state: Self::STATE_NO_PUSHBACK,
-            is_connected_to_nose_gear: false,
+            nose_wheel_steering_pin_inserted: DelayedFalseLogicGate::new(
+                Self::DURATION_AFTER_WHICH_NWS_PIN_IS_REMOVED_AFTER_PUSHBACK,
+            ),
         }
     }
 
-    fn update(&mut self) {
-        if self.is_pushing() {
-            self.is_connected_to_nose_gear = true;
-        } else if (self.state - PushbackTug::STATE_NO_PUSHBACK).abs() <= f64::EPSILON {
-            self.is_connected_to_nose_gear = false;
-        }
+    fn update(&mut self, context: &UpdateContext) {
+        self.nose_wheel_steering_pin_inserted
+            .update(context, self.is_pushing());
     }
 
-    fn is_connected(&self) -> bool {
-        self.is_connected_to_nose_gear
+    fn is_nose_wheel_steering_pin_inserted(&self) -> bool {
+        self.nose_wheel_steering_pin_inserted.output()
     }
 
     fn is_pushing(&self) -> bool {
-        // The angle keeps changing while pushing or is frozen high on high angle manoeuvering.
-        (self.angle - self.previous_angle).abs() > f64::EPSILON
-            && (self.state - PushbackTug::STATE_NO_PUSHBACK).abs() > f64::EPSILON
+        (self.state - PushbackTug::STATE_NO_PUSHBACK).abs() > f64::EPSILON
     }
 }
 impl SimulationElement for PushbackTug {
     fn read(&mut self, reader: &mut SimulatorReader) {
-        self.previous_angle = self.angle;
-        self.angle = reader.read(&self.angle_id);
         self.state = reader.read(&self.state_id);
+    }
+
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(
+            &self.nw_strg_disc_memo_id,
+            self.is_nose_wheel_steering_pin_inserted(),
+        );
     }
 }
 
@@ -2220,7 +2206,6 @@ impl SimulationElement for A320HydraulicOverheadPanel {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use rand::Rng;
 
     mod a320_hydraulics {
         use super::*;
@@ -2844,14 +2829,15 @@ mod tests {
 
             fn set_pushback_state(mut self, is_pushed_back: bool) -> Self {
                 if is_pushed_back {
-                    let mut rng = rand::thread_rng();
-
-                    self.write_by_name("PUSHBACK ANGLE", rng.gen_range(0.0..0.1));
                     self.write_by_name("PUSHBACK STATE", 0.);
                 } else {
                     self.write_by_name("PUSHBACK STATE", 3.);
                 }
                 self
+            }
+
+            fn is_nw_disc_memo_shown(&mut self) -> bool {
+                self.read_by_name("HYD_NW_STRG_DISC_ECAM_MEMO")
             }
 
             fn start_eng1(mut self, n2: Ratio) -> Self {
@@ -3006,6 +2992,7 @@ mod tests {
                     .set_left_brake(Ratio::new::<percent>(0.))
                     .set_right_brake(Ratio::new::<percent>(0.))
                     .set_gear_down()
+                    .set_pushback_state(false)
             }
 
             fn set_left_brake(self, position_percent: Ratio) -> Self {
@@ -3280,20 +3267,24 @@ mod tests {
                 .run_one_tick();
 
             assert!(!test_bed.query(|a| a.is_nws_pin_inserted()));
+            assert!(!test_bed.is_nw_disc_memo_shown());
 
             test_bed = test_bed.set_pushback_state(true).run_one_tick();
             assert!(test_bed.query(|a| a.is_nws_pin_inserted()));
+            assert!(test_bed.is_nw_disc_memo_shown());
 
             test_bed = test_bed
                 .set_pushback_state(false)
                 .run_waiting_for(Duration::from_secs(1));
             assert!(test_bed.query(|a| a.is_nws_pin_inserted()));
+            assert!(test_bed.is_nw_disc_memo_shown());
 
             test_bed = test_bed.set_pushback_state(false).run_waiting_for(
-                A320PowerTransferUnitController::DURATION_AFTER_WHICH_NWS_PIN_IS_REMOVED_AFTER_PUSHBACK,
+                PushbackTug::DURATION_AFTER_WHICH_NWS_PIN_IS_REMOVED_AFTER_PUSHBACK,
             );
 
             assert!(!test_bed.query(|a| a.is_nws_pin_inserted()));
+            assert!(!test_bed.is_nw_disc_memo_shown());
         }
 
         #[test]

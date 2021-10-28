@@ -800,6 +800,10 @@
     - Bool
     - HYD PTU memo indication should show on ecam if true
 
+- A32NX_HYD_NW_STRG_DISC_ECAM_MEMO
+    - Bool
+    - NW STRG DISC memo indication should show on ecam if true
+
 - A32NX_HYD_{loop_name}_EPUMP_LOW_PRESS
     - Bool
     - Electric pump of {loop_name} hydraulic circuit is active but pressure is too low
