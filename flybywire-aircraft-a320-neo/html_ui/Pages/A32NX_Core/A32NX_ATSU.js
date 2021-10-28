@@ -131,7 +131,7 @@ const lbsToKg = (value) => {
  * @param {FMCMainDisplay} mcdu FMCMainDisplay
  * @param {() => void} updateView
  */
-const getSimBriefOfp = (mcdu, updateView, callback) => {
+const getSimBriefOfp = (mcdu, updateView, callback = () => {}) => {
     const simBriefUserId = NXDataStore.get("CONFIG_SIMBRIEF_USERID", "");
 
     if (!simBriefUserId) {
@@ -140,6 +140,8 @@ const getSimBriefOfp = (mcdu, updateView, callback) => {
     }
 
     mcdu.simbrief["sendStatus"] = "REQUESTING";
+
+    updateView();
 
     return SimBriefApi.getSimBriefOfp(simBriefUserId)
         .then(data => {
