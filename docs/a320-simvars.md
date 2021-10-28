@@ -811,7 +811,7 @@
         - BLUE
         - YELLOW
 
-- A32NX_HYD_{loop_name}_PUMP0_FIRE_VALVE_OPENED
+- A32NX_HYD_{loop_name}_PUMP1_FIRE_VALVE_OPENED
     - Bool
     - Engine driven pump of {loop_name} hydraulic circuit can receive hydraulic fluid
     - {loop_name}
