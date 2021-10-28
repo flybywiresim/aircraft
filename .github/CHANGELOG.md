@@ -54,6 +54,7 @@
 1. [RMP] Added 25 kHz VHF spacing option - @tyler58546 (tyler58546)
 1. [MCDU] Scratchpad rewrite - @derl30n (Leon)
 1. [ATHR/ENGINE] Improved CLB thrust limit for improved FLEX N1 numbers - @aguther (Andreas Guther)
+1. [FBW] Improved roll stability in turbulence or with performance issues - @IbrahimK42 (IbrahimK42) and @aguther (Andreas Guther)
 
 ## 0.7.0
 
