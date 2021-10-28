@@ -1382,16 +1382,13 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         }
         this.printing = true;
 
-        const formattedValues = [];
+        const formattedValues = lines.map((l) => {
+            let formatted = l.replace(/\[color]cyan/g, "<br/>");
+            formatted = l.replace(/(\[color][a-z]*)/g, "");
+            formatted = l.replace(/-{3,}/g, "<br/><br/>");
+            return formatted;
+        });
 
-        for (let i = 0; i < lines.length; i++) {
-            let value = lines[i];
-            value = value.replace(/\[color]cyan/g, "<br/>");
-            value = value.replace(/(\[color][a-z]*)/g, "");
-            value = value.replace(/-{3,}/g, "<br/><br/>");
-            formattedValues.push(value);
-        }
-        console.log("SET ALL stuff");
         if (SimVar.GetSimVarValue("L:A32NX_PRINTER_PRINTING", "bool") === 1) {
             SimVar.SetSimVarValue("L:A32NX_PAGES_PRINTED", "number", SimVar.GetSimVarValue("L:A32NX_PAGES_PRINTED", "number") + 1);
             SimVar.SetSimVarValue("L:A32NX_PRINT_PAGE_OFFSET", "number", 0);
@@ -1400,15 +1397,11 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         SimVar.SetSimVarValue("L:A32NX_PAGE_ID", "number", SimVar.GetSimVarValue("L:A32NX_PAGE_ID", "number") + 1);
         SimVar.SetSimVarValue("L:A32NX_PRINTER_PRINTING", "bool", 0).then(v => {
             this.fmgcMesssagesListener.triggerToAllSubscribers('A32NX_PRINT', formattedValues);
-
-            console.log("PREPARED PRINTER");
             setTimeout(() => {
                 SimVar.SetSimVarValue("L:A32NX_PRINTER_PRINTING", "bool", 1);
                 this.printing = false;
             }, 2500);
         });
-        console.log("END OF PRINT FUNCTION");
-
     }
 
     /* END OF MCDU AOC MESSAGE SYSTEM */

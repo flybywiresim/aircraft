@@ -30,37 +30,37 @@ class LiveryPrinter extends TemplateElement {
     }
     Update() {
 
-        Coherent.on('A32NX_PRINT', (data) => {
-            console.log("BRUHEG" + data);
-
+        Coherent.on('A32NX_PRINT', (lines) => {
             const pages = JSON.parse(localStorage.getItem("pages")) || [];
 
             if (this.index == 0) {
                 const currentPageID = SimVar.GetSimVarValue("L:A32NX_PAGE_ID", "number") - 1;
                 if (currentPageID >= 0 && pages[currentPageID] == null) {
-                    const elements = [];
-                    for (let i = 0; i < SimVar.GetSimVarValue('L:A32NX_PRINT_LINES', 'number'); i += 1) {
-                        elements.push(data[i]);
-                    }
-                    pages[currentPageID] = elements;
+                    pages[currentPageID] = lines;
                     localStorage.setItem("pages", JSON.stringify(pages));
                 }
             }
-
         });
 
         const pages = JSON.parse(localStorage.getItem("pages")) || [];
-
         if (pages == null) {
             return;
         }
         let displayedPage = 0;
         if (this.index == 0) {
             displayedPage = pages.length - 1;
+            if (displayedPage != 0 && displayedPage !== this.lastDisplayedPage) {
+                return;
+            }
+            this.lastDisplayedPage = displayedPage;
         } else {
             let pagesPrinted = SimVar.GetSimVarValue("L:A32NX_PAGES_PRINTED", "number");
             const offset = SimVar.GetSimVarValue("L:A32NX_PRINT_PAGE_OFFSET", "number");
             displayedPage = pagesPrinted - 1 + offset;
+            if (displayedPage != 0 && displayedPage !== this.lastDisplayedPage) {
+                return;
+            }
+            this.lastDisplayedPage = displayedPage;
 
             const discard = SimVar.GetSimVarValue("L:A32NX_DISCARD_PAGE", "bool");
 
