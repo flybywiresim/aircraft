@@ -2341,7 +2341,7 @@ mod tests {
                 A320TestElectrical {
                     airspeed: Velocity::new::<knot>(100.),
                     all_ac_lost: false,
-                    emergency_generator: TestGenerator::new(),
+                    emergency_generator: TestGenerator::default(),
                 }
             }
 

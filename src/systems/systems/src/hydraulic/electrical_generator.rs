@@ -30,11 +30,11 @@ pub struct GeneratorControlUnit {
     max_allowed_power_vs_rpm: [f64; 9],
     current_speed: AngularVelocity,
 
-    emer_on_was_pressed: bool,
+    manual_generator_on_was_pressed: bool,
 }
 impl GeneratorControlUnit {
     const NOMINAL_SPEED_MARGIN_RPM: f64 = 500.;
-    const MIN_ACTIVATION_PRESSURE_PSI: f64 = 800.;
+    const MIN_ACTIVATION_PRESSURE_PSI: f64 = 1000.;
 
     pub fn new(
         nominal_rpm: AngularVelocity,
@@ -56,7 +56,7 @@ impl GeneratorControlUnit {
             max_allowed_power_rpm_breakpoints,
             max_allowed_power_vs_rpm,
             current_speed: AngularVelocity::new::<revolution_per_minute>(0.),
-            emer_on_was_pressed: false,
+            manual_generator_on_was_pressed: false,
         }
     }
 
@@ -67,10 +67,11 @@ impl GeneratorControlUnit {
         lgciu: &impl LgciuWeightOnWheels,
         pressure_feedback: Pressure,
     ) {
-        self.emer_on_was_pressed = self.emer_on_was_pressed || rat_and_emer_gen_man_on.is_pressed();
+        self.manual_generator_on_was_pressed =
+            self.manual_generator_on_was_pressed || rat_and_emer_gen_man_on.is_pressed();
 
         self.is_active = elec_emergency_state.is_in_emergency_elec()
-            || self.emer_on_was_pressed
+            || self.manual_generator_on_was_pressed
                 && !lgciu.left_and_right_gear_compressed(false)
                 && pressure_feedback.get::<psi>() > Self::MIN_ACTIVATION_PRESSURE_PSI;
     }
@@ -235,13 +236,6 @@ impl HydraulicGeneratorMotor {
     }
 
     fn update_generated_torque(&mut self, pressure: Pressure) {
-        println!(
-            "RPM: {:.0} FLOW BLUE: {:.1} gpm press: {:.0}",
-            self.speed().get::<revolution_per_minute>(),
-            self.current_flow.get::<gallon_per_minute>(),
-            pressure.get::<psi>()
-        );
-
         self.virtual_displacement = self.virtual_displacement_after_valve_inlet();
 
         self.generated_torque = Torque::new::<pound_force_inch>(
@@ -339,18 +333,12 @@ impl MeteringValve {
     }
 }
 
+#[derive(Default)]
 pub struct TestGenerator {
     speed: AngularVelocity,
     generated_power: Power,
 }
 impl TestGenerator {
-    pub fn new() -> Self {
-        Self {
-            speed: AngularVelocity::new::<revolution_per_minute>(0.),
-            generated_power: Power::new::<watt>(0.),
-        }
-    }
-
     #[cfg(test)]
     fn from_gcu(gcu: &impl GeneratorControlUnitInterface) -> Self {
         let mut g = TestGenerator {
@@ -372,17 +360,16 @@ impl EmergencyGeneratorInterface for TestGenerator {
         self.generated_power
     }
 }
-impl Default for TestGenerator {
-    fn default() -> Self {
-        Self::new()
-    }
-}
+
 #[cfg(test)]
 mod tests {
+    use super::*;
     use crate::hydraulic::update_iterator::FixedStepLoop;
     use crate::simulation::test::{SimulationTestBed, TestBed};
     use crate::simulation::{Aircraft, SimulationElement, SimulationElementVisitor};
     use std::time::Duration;
+
+
 
     struct TestEmergencyState {
         is_emergency: bool,
@@ -477,7 +464,6 @@ mod tests {
 
         emergency_gen: HydraulicGeneratorMotor,
     }
-
     impl TestAircraft {
         fn new(context: &mut InitContext) -> Self {
             Self {
@@ -512,7 +498,6 @@ mod tests {
             self.current_pressure = pressure;
         }
     }
-
     impl Aircraft for TestAircraft {
         fn update_after_power_distribution(&mut self, context: &UpdateContext) {
             self.updater_fixed_step.update(context);
@@ -543,8 +528,6 @@ mod tests {
             visitor.visit(self);
         }
     }
-
-    use super::*;
 
     #[test]
     fn emergency_generator_init_state() {
