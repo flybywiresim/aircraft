@@ -58,6 +58,7 @@
 1. [MCDU] Sort approaches by type - @tracernz (Mike)
 1. [MODEL] Add dynamic registration decal option - @tracernz (Mike)
 1. [FCU] Autopilot button integ light brightness corrected - @tracernz (Mike)
+1. [FBW] Reduced rotation law maximum pitch rate from 12°/s to 8°/s - @aguther (Andreas Guther)
 
 ## 0.7.0
 
