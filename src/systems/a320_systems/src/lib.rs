@@ -26,7 +26,7 @@ use systems::{
     navigation::adirs::{
         AirDataInertialReferenceSystem, AirDataInertialReferenceSystemOverheadPanel,
     },
-    pressurization::Pressurization,
+    pressurization::{Pressurization, PressurizationOverheadPanel},
     shared::ElectricalBusType,
     simulation::{Aircraft, SimulationElement, SimulationElementVisitor, UpdateContext},
 };
@@ -54,6 +54,7 @@ pub struct A320 {
     autobrake_panel: AutobrakePanel,
     landing_gear: LandingGear,
     pressurization: Pressurization,
+    pressurization_overhead: PressurizationOverheadPanel,
 }
 impl A320 {
     pub fn new(context: &mut InitContext) -> A320 {
@@ -86,6 +87,7 @@ impl A320 {
             autobrake_panel: AutobrakePanel::new(context),
             landing_gear: LandingGear::new(context),
             pressurization: Pressurization::new(context),
+            pressurization_overhead: PressurizationOverheadPanel::new(context),
         }
     }
 }
@@ -141,8 +143,12 @@ impl Aircraft for A320 {
             &self.landing_gear,
             self.ext_pwr.output_potential().is_powered(),
         );
-        self.pressurization
-            .update(context, [&self.engine_1, &self.engine_2]);
+        self.pressurization.update(
+            context,
+            &self.pressurization_overhead,
+            [&self.engine_1, &self.engine_2],
+            [&self.lgciu1, &self.lgciu2],
+        );
 
         self.hydraulic.update(
             context,
@@ -189,6 +195,7 @@ impl SimulationElement for A320 {
         self.hydraulic_overhead.accept(visitor);
         self.landing_gear.accept(visitor);
         self.pressurization.accept(visitor);
+        self.pressurization_overhead.accept(visitor);
 
         visitor.visit(self);
     }
