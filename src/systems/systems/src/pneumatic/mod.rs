@@ -123,6 +123,10 @@ impl PneumaticPipe {
             + temperature_change.get::<temperature_interval::kelvin>()
                 / self.temperature().get::<kelvin>();
     }
+
+    fn change_volume(&mut self, new_volume: Volume) {
+        self.volume = new_volume;
+    }
 }
 
 pub struct TargetPressureSignal {
@@ -400,7 +404,7 @@ impl VariableVolumeContainer {
 
     pub fn change_spatial_volume(&mut self, new_volume: Volume) {
         self.change_fluid_amount(self.volume() - new_volume);
-        self.pipe.volume = new_volume;
+        self.pipe.change_volume(new_volume);
     }
 }
 impl PneumaticContainer for VariableVolumeContainer {
