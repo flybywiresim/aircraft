@@ -70,6 +70,14 @@ export const AtsuAocPage = () => {
 
     function handleUsernameInput(value: string) {
         getSimbriefUserId(value).then((response) => {
+            uiMessages.pushNotification(
+                <Notification
+                type={NotificationTypes.SUCCESS}
+                 title='SimBrief Information Updated Successfully'
+                  message='Your SimBrief information has been validated and updated.'
+                  />
+                  )
+
             setSimbriefUserId(response);
             setSimbriefDisplay(response);
         }).catch(() => {
