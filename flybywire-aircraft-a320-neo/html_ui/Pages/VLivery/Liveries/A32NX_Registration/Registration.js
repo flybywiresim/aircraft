@@ -49,7 +49,7 @@ class LiveryRegistration extends TemplateElement {
         if ((this.frameCount++ % 100) == 0) {
             if (this.regEnabled) {
                 const atcId = SimVar.GetSimVarValue("ATC ID", "string");
-                if (atcId !== this.registration) {
+                if (atcId && atcId !== this.registration) {
                     this.registration = atcId;
                     this.needUpdate = true;
                 }
@@ -60,7 +60,7 @@ class LiveryRegistration extends TemplateElement {
 
         if (this.needUpdate) {
             this.needUpdate = false;
-            if (this.regEnabled) {
+            if (this.regEnabled && this.registration.trim().length > 0) {
                 diffAndSetText(this.text, this.registration);
                 var rect = this.getBoundingClientRect();
                 if (rect.width > 0 && rect.height > 0) {
