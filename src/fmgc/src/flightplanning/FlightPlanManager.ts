@@ -1557,12 +1557,12 @@ export class FlightPlanManager {
         }
         const currentFlightPlan = this._flightPlans[flightPlanIndex];
 
-        if (currentFlightPlan.procedureDetails.arrivalRunwayIndex !== -1 && currentFlightPlan.destinationAirfield) {
-            return currentFlightPlan.procedureDetails.arrivalRunwayIndex;
+        if (currentFlightPlan.procedureDetails.destinationRunwayIndex !== -1 && currentFlightPlan.destinationAirfield) {
+            return currentFlightPlan.procedureDetails.destinationRunwayIndex;
         }
 
         if (currentFlightPlan.hasDestination && currentFlightPlan.procedureDetails.approachIndex !== -1) {
-            console.error(`Arrival runway index is -1 with valid STAR`);
+            console.error(`Destination runway index is -1 with valid STAR`);
             const approachRunwayName = (currentFlightPlan.destinationAirfield.infos as AirportInfo).approaches[currentFlightPlan.procedureDetails.approachIndex].runway;
 
             return this.getRunwayIndex((currentFlightPlan.destinationAirfield.infos as AirportInfo).oneWayRunways, approachRunwayName);
