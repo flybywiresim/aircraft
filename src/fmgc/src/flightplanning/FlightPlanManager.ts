@@ -517,13 +517,8 @@ export class FlightPlanManager {
     /**
      * Gets the destination airfield of the current flight plan, if any.
      */
-    public getDestination(flightPlanIndex = NaN): WayPoint | undefined {
-        if (isNaN(flightPlanIndex)) {
-            flightPlanIndex = this._currentFlightPlanIndex;
-        }
-
-        const currentFlightPlan = this._flightPlans[flightPlanIndex];
-        return currentFlightPlan.destinationAirfield;
+    public getDestination(): WayPoint | undefined {
+        return this._flightPlans[this._currentFlightPlanIndex].destinationAirfield;
     }
 
     /**
@@ -531,9 +526,9 @@ export class FlightPlanManager {
      * @param flightPlanIndex flight plan index
      * @returns Index of destination
      */
-    public getDestinationIndex(flightPlanIndex = NaN): number {
-        if (this.getDestination(flightPlanIndex)) {
-            return this.getWaypointsCount(flightPlanIndex) - 1;
+    public getDestinationIndex(): number {
+        if (this.getDestination()) {
+            return this.getWaypointsCount() - 1;
         }
         return -1;
     }
