@@ -2,7 +2,6 @@ import React from 'react';
 import { Arinc429Word } from '@shared/arinc429';
 import { getSmallestAngle } from '@instruments/common/utils';
 import { HorizontalTape } from './PFDUtils';
-import { getSimVar } from '../util.js';
 
 const DisplayRange = 24;
 const DistanceSpacing = 7.555;
