@@ -85,10 +85,10 @@ mod tests {
         let mut low_pass = LowPassFilter::new(Duration::from_secs(0), 0.);
 
         low_pass.update(Duration::from_secs_f64(0.5), 1.);
-        assert_about_eq!(low_pass.output() ,1.);
+        assert_about_eq!(low_pass.output(), 1.);
 
         low_pass.update(Duration::from_secs_f64(0.5), 12.);
-        assert_about_eq!(low_pass.output() ,12.);
+        assert_about_eq!(low_pass.output(), 12.);
     }
 
     fn expected_step_response_0_to_1(delta_time: Duration, time_constant: Duration) -> f64 {
