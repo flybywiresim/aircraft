@@ -26,7 +26,7 @@ export const StatusBar = () => {
     }
 
     return (
-        <div className="flex fixed justify-between items-center px-6 w-full h-10 text-lg font-medium leading-none text-white bg-navy-medium">
+        <div className="flex fixed justify-between items-center px-6 w-full h-10 text-lg font-medium leading-none text-white bg-theme-statusbar">
             <p>
                 {`${getDayName(dayOfWeek)} ${getMonthName(monthOfYear)} ${dayOfMonth}`}
             </p>

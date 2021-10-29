@@ -53,7 +53,7 @@ const FlightWidget = () => {
     }
 
     return (
-        <div className="overflow-hidden p-6 mr-3 w-2/5 h-full text-white rounded-lg border-2 border-navy-lighter shadow-md">
+        <div className="overflow-hidden p-6 mr-3 w-2/5 h-full text-white rounded-lg border-2 border-theme-secondary shadow-md">
             <div className="flex flex-col justify-between h-full">
                 <div className="w-full">
                     <div className="mb-6 text-center">
@@ -142,7 +142,7 @@ const FlightWidget = () => {
                                 )
                             });
                         }}
-                        className="flex justify-center items-center p-2 space-x-4 w-full text-white bg-teal-regular rounded-lg border-2 border-navy-lighter shadow-lg focus:outline-none"
+                        className="flex justify-center items-center p-2 space-x-4 w-full text-white bg-theme-highlight rounded-lg border-2 border-theme-secondary shadow-lg focus:outline-none"
                     >
                         <FileEarmarkArrowDown size={26} />
                         <p>Import Flightplan from SimBrief</p>
