@@ -1,0 +1,25 @@
+{
+  "LocalisationPackage": {
+    "Language": "fi-FI",
+    "Strings": {
+      "AIRCRAFT.DESCRIPTION": "Airbus lanseerasi ensimmäisen A320 koneensa vuoden 1984 maaliskuussa. Vuonna 2010, lähes 26 vuotta myöhemmin, julkaisivat he A320neo:n (\"new engine option\") uusimpana A320 -perheen jäsenenä pitääkseen yllä sarjan asemaa maailman johtavana kapearunkoisena ja ohivirtausmoottorillisena matkustajakonesarjana.<\/br><\/br>Pidennetyn valmistusprosessin jälkeen A320neo aloitti virallisesti palveluksensa vuoden 2016 alussa Lufthansalla, ja saavutti hetkessä parhaiten myyvän matkustajakoneen statuksen yli 7400 tilauksella tähän päivään mennessä, jopa 115 eri lentoyhtiölle.<\/br><\/br>Jatkumona alkuperäisen A320 mallin asettamiin perinteisiin, jossa käytettiin ensimmäisenä lentokoneena Concorden jälkeen Fly-By-Wire ohjausjärjestelmää normaalissa operoinnissa, jakaa A320neo yli 95 prosenttisesti yhtäläisen rungon aiempien mallien kanssa. Erottavana tekijänä neossa on kuitenkin sen tuomat kaksi uuden generaation moottorityyppiä yhdistettynä Airbussin omiin 'Sharklet' tyyppisiin wingletteihin.<\/br><\/br>Polttoaineen säästö, pidennetty toimintamatka, suurempi maksimikuorma ja lyhyempi laskeutumismatka; nämä avaintekijät -- lisättynä suureen vähennykseen melutasossa ja CO₂ päästöissä -- todistavat miksi A320neo ei ole vain kaupallinen menestys, vaan myös merkittävä askel eteenpäin ympäristöllisen vastuullisuuden kannalta ilmailussa.",
+      "AIRCRAFT.UI_MANUFACTURER": "FlyByWire Simulations",
+      "AIRCRAFT.UI_MODEL": "A320neo (LEAP)",
+      "AIRCRAFT.UI_VARIATION": "Airbus",
+      "COCKPIT.TOOLTIPS.LIGHTING_KNOB_L_PFD_DECREASE": "Vähennä vasemman PFD:n kirkkautta",
+      "COCKPIT.TOOLTIPS.LIGHTING_KNOB_L_PFD_INCREASE": "Lisää vasemman PFD:n kirkkautta",
+      "COCKPIT.TOOLTIPS.LIGHTING_KNOB_R_PFD_DECREASE": "Vähennä oikean PFD:n kirkkautta",
+      "COCKPIT.TOOLTIPS.LIGHTING_KNOB_R_PFD_INCREASE": "Kasvata oikean PFD:n kirkkautta",
+      "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_TRK_TUNING_LEFT": "Säädä valittua suuntaa vasemmalle (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)",
+      "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_TRK_TUNING_RIGHT": "Säädä valittua suuntaa oikealla (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)",
+      "COCKPIT.TOOLTIPS.APU_AVAILABLE": "APU käytettävissä",
+      "COCKPIT.TOOLTIPS.LIGHTS_NOSMOKE_AUTO": "Kytke tupakointi kielletty -valo AUTO tilaan",
+      "A32NX.LOADING.TIPS.A320NEO_001": "FlyByWire A32NX on useiden eri sisällöntuottajien yhteistyön tulos.",
+      "A32NX.LOADING.TIPS.A320NEO_002": "Tiesitkö tätä? A320 voi laskeutua 38 solmun ristuuleen ja jopa 15 solmun myötätuuleen!",
+      "A32NX.LOADING.TIPS.A320NEO_003": "FlyByWire on nimetty alunperin Airbus A320 koneessa käytetyn fly-by-wire ohjausjärjestelmän mukaan.",
+      "A32NX.LOADING.TIPS.A320NEO_004": "A320 perheeseen kuuluvia koneita on rakennettu yli 9900! Se on lähes yhtä paljon kuin asukkaita Tuvalussa!",
+      "A32NX.LOADING.TIPS.A320NEO_005": "Airbus A320neo koneen toimintamatka on 3500 NM tai 6500 KM. Se riittää Pariisista jopa New Yorkiin asti!",
+      "A32NX.LOADING.TIPS.A320NEO_006": "Tiesitkö tätä? A320 perheeseen kuuluu 4 eri mallia: A318, A319, A320, ja A321."
+    }
+  }
+}

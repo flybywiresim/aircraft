@@ -1,11 +1,13 @@
-use self::brake_circuit::Actuator;
+use self::linear_actuator::Actuator;
+
 use crate::shared::{interpolation, ElectricalBusType, ElectricalBuses};
 use crate::simulation::{
-    SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext, Write,
+    InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
+    VariableIdentifier, Write,
 };
-use std::string::String;
 use std::time::Duration;
 use uom::si::{
+    angular_velocity::revolution_per_minute,
     f64::*,
     pressure::psi,
     velocity::knot,
@@ -14,6 +16,8 @@ use uom::si::{
 };
 
 pub mod brake_circuit;
+pub mod linear_actuator;
+pub mod update_iterator;
 
 pub trait PressureSource {
     /// Gives the maximum available volume at that time as if it is a variable displacement
@@ -72,6 +76,11 @@ pub trait PowerTransferUnitController {
 }
 
 pub struct PowerTransferUnit {
+    active_l2r_id: VariableIdentifier,
+    active_r2l_id: VariableIdentifier,
+    motor_flow_id: VariableIdentifier,
+    valve_opened_id: VariableIdentifier,
+
     is_enabled: bool,
     is_active_right: bool,
     is_active_left: bool,
@@ -92,8 +101,13 @@ impl PowerTransferUnit {
     // set to 0.5 PTU will only use half of the flow that all pumps are able to generate
     const AGRESSIVENESS_FACTOR: f64 = 0.78;
 
-    pub fn new() -> Self {
+    pub fn new(context: &mut InitContext) -> Self {
         Self {
+            active_l2r_id: context.get_identifier("HYD_PTU_ACTIVE_L2R".to_owned()),
+            active_r2l_id: context.get_identifier("HYD_PTU_ACTIVE_R2L".to_owned()),
+            motor_flow_id: context.get_identifier("HYD_PTU_MOTOR_FLOW".to_owned()),
+            valve_opened_id: context.get_identifier("HYD_PTU_VALVE_OPENED".to_owned()),
+
             is_enabled: false,
             is_active_right: false,
             is_active_left: false,
@@ -188,15 +202,10 @@ impl PowerTransferUnit {
 }
 impl SimulationElement for PowerTransferUnit {
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write("HYD_PTU_ACTIVE_L2R", self.is_active_left);
-        writer.write("HYD_PTU_ACTIVE_R2L", self.is_active_right);
-        writer.write("HYD_PTU_MOTOR_FLOW", self.flow());
-        writer.write("HYD_PTU_VALVE_OPENED", self.is_enabled());
-    }
-}
-impl Default for PowerTransferUnit {
-    fn default() -> Self {
-        Self::new()
+        writer.write(&self.active_l2r_id, self.is_active_left);
+        writer.write(&self.active_r2l_id, self.is_active_right);
+        writer.write(&self.motor_flow_id, self.flow());
+        writer.write(&self.valve_opened_id, self.is_enabled());
     }
 }
 
@@ -310,9 +319,10 @@ impl Accumulator {
     }
 }
 pub struct HydraulicLoop {
-    pressure_id: String,
-    reservoir_id: String,
-    fire_valve_id: String,
+    pressure_id: VariableIdentifier,
+    reservoir_id: VariableIdentifier,
+    fire_valve_id: VariableIdentifier,
+
     fluid: Fluid,
     accumulator: Accumulator,
     connected_to_ptu_left_side: bool,
@@ -352,8 +362,8 @@ impl HydraulicLoop {
     const ACCUMULATOR_FLOW_CARAC: [f64; 10] =
         [0.0, 0.001, 0.005, 0.05, 0.08, 0.15, 0.25, 0.35, 0.5, 0.5];
 
-    #[allow(clippy::too_many_arguments)]
     pub fn new(
+        context: &mut InitContext,
         id: &str,
         connected_to_ptu_left_side: bool, // Is connected to PTU "left" side: non variable displacement side
         connected_to_ptu_right_side: bool, // Is connected to PTU "right" side: variable displacement side
@@ -367,9 +377,9 @@ impl HydraulicLoop {
         min_pressure_pressurised_hi_hyst: Pressure,
     ) -> Self {
         Self {
-            pressure_id: format!("HYD_{}_PRESSURE", id),
-            reservoir_id: format!("HYD_{}_RESERVOIR", id),
-            fire_valve_id: format!("HYD_{}_FIRE_VALVE_OPENED", id),
+            pressure_id: context.get_identifier(format!("HYD_{}_PRESSURE", id)),
+            reservoir_id: context.get_identifier(format!("HYD_{}_RESERVOIR", id)),
+            fire_valve_id: context.get_identifier(format!("HYD_{}_FIRE_VALVE_OPENED", id)),
 
             connected_to_ptu_left_side,
             connected_to_ptu_right_side,
@@ -437,9 +447,10 @@ impl HydraulicLoop {
         self.accumulator.gas_volume
     }
 
-    pub fn update_actuator_volumes<T: Actuator>(&mut self, actuator: &T) {
+    pub fn update_actuator_volumes<T: Actuator>(&mut self, actuator: &mut T) {
         self.total_actuators_consumed_volume += actuator.used_volume();
         self.total_actuators_returned_volume += actuator.reservoir_return();
+        actuator.reset_accumulators();
     }
 
     /// Returns the max flow that can be output from reservoir in dt time
@@ -721,12 +732,12 @@ impl PressureSource for Pump {
 }
 
 pub struct ElectricPump {
-    active_id: String,
+    active_id: VariableIdentifier,
 
     is_active: bool,
     bus_type: ElectricalBusType,
     is_powered: bool,
-    rpm: f64,
+    speed: AngularVelocity,
     pump: Pump,
 }
 impl ElectricPump {
@@ -740,13 +751,13 @@ impl ElectricPump {
     // 1 == No filtering
     const DISPLACEMENT_DYNAMICS: f64 = 1.0;
 
-    pub fn new(id: &str, bus_type: ElectricalBusType) -> Self {
+    pub fn new(context: &mut InitContext, id: &str, bus_type: ElectricalBusType) -> Self {
         Self {
-            active_id: format!("HYD_{}_EPUMP_ACTIVE", id),
+            active_id: context.get_identifier(format!("HYD_{}_EPUMP_ACTIVE", id)),
             is_active: false,
             bus_type,
             is_powered: false,
-            rpm: 0.,
+            speed: AngularVelocity::new::<revolution_per_minute>(0.),
             pump: Pump::new(
                 Self::DISPLACEMENT_BREAKPTS,
                 Self::DISPLACEMENT_MAP,
@@ -755,8 +766,8 @@ impl ElectricPump {
         }
     }
 
-    pub fn rpm(&self) -> f64 {
-        self.rpm
+    pub fn speed(&self) -> AngularVelocity {
+        self.speed
     }
 
     pub fn update<T: PumpController>(
@@ -768,16 +779,33 @@ impl ElectricPump {
         self.is_active = controller.should_pressurise() && self.is_powered;
 
         // Pump startup/shutdown process
-        if self.is_active && self.rpm < Self::NOMINAL_SPEED {
-            self.rpm += (Self::NOMINAL_SPEED / Self::SPOOLUP_TIME) * context.delta_as_secs_f64();
-        } else if !self.is_active && self.rpm > 0.0 {
-            self.rpm -= (Self::NOMINAL_SPEED / Self::SPOOLDOWN_TIME) * context.delta_as_secs_f64();
+        if self.is_active
+            && self.speed < AngularVelocity::new::<revolution_per_minute>(Self::NOMINAL_SPEED)
+        {
+            self.speed += AngularVelocity::new::<revolution_per_minute>(
+                (Self::NOMINAL_SPEED / Self::SPOOLUP_TIME) * context.delta_as_secs_f64(),
+            );
+        } else if !self.is_active && self.speed > AngularVelocity::new::<revolution_per_minute>(0.0)
+        {
+            self.speed -= AngularVelocity::new::<revolution_per_minute>(
+                (Self::NOMINAL_SPEED / Self::SPOOLDOWN_TIME) * context.delta_as_secs_f64(),
+            );
         }
 
         // Limiting min and max speed
-        self.rpm = self.rpm.min(Self::NOMINAL_SPEED).max(0.0);
+        self.speed = self
+            .speed
+            .min(AngularVelocity::new::<revolution_per_minute>(
+                Self::NOMINAL_SPEED,
+            ))
+            .max(AngularVelocity::new::<revolution_per_minute>(0.0));
 
-        self.pump.update(context, line, self.rpm, controller);
+        self.pump.update(
+            context,
+            line,
+            self.speed.get::<revolution_per_minute>(),
+            controller,
+        );
     }
 }
 impl PressureSource for ElectricPump {
@@ -799,10 +827,10 @@ impl SimulationElement for ElectricPump {
 }
 
 pub struct EngineDrivenPump {
-    active_id: String,
+    active_id: VariableIdentifier,
 
     is_active: bool,
-    rpm: f64,
+    speed: AngularVelocity,
     pump: Pump,
 }
 impl EngineDrivenPump {
@@ -814,11 +842,11 @@ impl EngineDrivenPump {
     // 0.1 == 90% filtering on max displacement transient
     const DISPLACEMENT_DYNAMICS: f64 = 0.95;
 
-    pub fn new(id: &str) -> Self {
+    pub fn new(context: &mut InitContext, id: &str) -> Self {
         Self {
-            active_id: format!("HYD_{}_EDPUMP_ACTIVE", id),
+            active_id: context.get_identifier(format!("HYD_{}_EDPUMP_ACTIVE", id)),
             is_active: false,
-            rpm: 0.,
+            speed: AngularVelocity::new::<revolution_per_minute>(0.),
             pump: Pump::new(
                 Self::DISPLACEMENT_BREAKPTS,
                 Self::DISPLACEMENT_MAP,
@@ -831,16 +859,21 @@ impl EngineDrivenPump {
         &mut self,
         context: &UpdateContext,
         line: &HydraulicLoop,
-        pump_rpm: f64,
+        pump_speed: AngularVelocity,
         controller: &T,
     ) {
-        self.rpm = pump_rpm;
-        self.pump.update(context, line, pump_rpm, controller);
+        self.speed = pump_speed;
+        self.pump.update(
+            context,
+            line,
+            pump_speed.get::<revolution_per_minute>(),
+            controller,
+        );
         self.is_active = controller.should_pressurise();
     }
 
-    pub fn rpm(&self) -> f64 {
-        self.rpm
+    pub fn speed(&self) -> AngularVelocity {
+        self.speed
     }
 }
 impl PressureSource for EngineDrivenPump {
@@ -858,6 +891,8 @@ impl SimulationElement for EngineDrivenPump {
 }
 
 struct WindTurbine {
+    rpm_id: VariableIdentifier,
+
     position: f64,
     speed: f64,
     acceleration: f64,
@@ -874,8 +909,10 @@ impl WindTurbine {
     ];
     const PROP_ALPHA_MAP: [f64; 9] = [45., 45., 45., 45., 35., 25., 1., 1., 1.];
 
-    fn new() -> Self {
+    fn new(context: &mut InitContext) -> Self {
         Self {
+            rpm_id: context.get_identifier("HYD_RAT_RPM".to_owned()),
+
             position: Self::STOWED_ANGLE,
             speed: 0.,
             acceleration: 0.,
@@ -888,15 +925,15 @@ impl WindTurbine {
         self.rpm
     }
 
-    fn update_generated_torque(&mut self, indicated_speed: &Velocity, stow_pos: f64) {
-        let cur_aplha = interpolation(
+    fn update_generated_torque(&mut self, indicated_speed: Velocity, stow_pos: f64) {
+        let cur_alpha = interpolation(
             &Self::RPM_GOVERNOR_BREAKPTS,
             &Self::PROP_ALPHA_MAP,
             self.rpm,
         );
 
         // Simple model. stow pos sin simulates the angle of the blades vs wind while deploying
-        let air_speed_torque = cur_aplha.to_radians().sin()
+        let air_speed_torque = cur_alpha.to_radians().sin()
             * (indicated_speed.get::<knot>() * indicated_speed.get::<knot>() / 100.)
             * 0.5
             * (std::f64::consts::PI / 2. * stow_pos).sin();
@@ -931,7 +968,7 @@ impl WindTurbine {
     fn update(
         &mut self,
         delta_time: &Duration,
-        indicated_speed: &Velocity,
+        indicated_speed: Velocity,
         stow_pos: f64,
         displacement_ratio: f64,
     ) {
@@ -945,12 +982,7 @@ impl WindTurbine {
 }
 impl SimulationElement for WindTurbine {
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write("HYD_RAT_RPM", self.rpm());
-    }
-}
-impl Default for WindTurbine {
-    fn default() -> Self {
-        Self::new()
+        writer.write(&self.rpm_id, self.rpm());
     }
 }
 
@@ -976,6 +1008,8 @@ pub trait RamAirTurbineController {
 }
 
 pub struct RamAirTurbine {
+    stow_position_id: VariableIdentifier,
+
     deployment_commanded: bool,
     pump: Pump,
     pump_controller: AlwaysPressurisePumpController,
@@ -995,7 +1029,7 @@ impl RamAirTurbine {
     // Speed to go from 0 to 1 stow position per sec. 1 means full deploying in 1s
     const STOWING_SPEED: f64 = 1.;
 
-    pub fn new() -> Self {
+    pub fn new(context: &mut InitContext) -> Self {
         let mut max_disp = 0.;
         for v in Self::DISPLACEMENT_MAP.iter() {
             if v > &max_disp {
@@ -1004,6 +1038,8 @@ impl RamAirTurbine {
         }
 
         Self {
+            stow_position_id: context.get_identifier("HYD_RAT_STOW_POSITION".to_owned()),
+
             deployment_commanded: false,
             pump: Pump::new(
                 Self::DISPLACEMENT_BREAKPTS,
@@ -1011,7 +1047,7 @@ impl RamAirTurbine {
                 Self::DISPLACEMENT_DYNAMICS,
             ),
             pump_controller: AlwaysPressurisePumpController::new(),
-            wind_turbine: WindTurbine::new(),
+            wind_turbine: WindTurbine::new(context),
             position: 0.,
             max_displacement: max_disp,
         }
@@ -1038,12 +1074,12 @@ impl RamAirTurbine {
         self.pump.delta_vol_min = self.pump.delta_vol_max;
     }
 
-    pub fn update_physics(&mut self, delta_time: &Duration, indicated_airspeed: &Velocity) {
+    pub fn update_physics(&mut self, delta_time: &Duration, indicated_airspeed: Velocity) {
         // Calculate the ratio of current displacement vs max displacement as an image of the load of the pump
         let displacement_ratio = self.delta_vol_max().get::<gallon>() / self.max_displacement;
         self.wind_turbine.update(
-            &delta_time,
-            &indicated_airspeed,
+            delta_time,
+            indicated_airspeed,
             self.position,
             displacement_ratio,
         );
@@ -1083,20 +1119,16 @@ impl SimulationElement for RamAirTurbine {
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write("HYD_RAT_STOW_POSITION", self.position);
-    }
-}
-impl Default for RamAirTurbine {
-    fn default() -> Self {
-        Self::new()
+        writer.write(&self.stow_position_id, self.position);
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::simulation::UpdateContext;
+    use crate::simulation::{Aircraft, UpdateContext};
     use uom::si::{
         acceleration::foot_per_second_squared,
+        angle::radian,
         f64::*,
         length::foot,
         pressure::{pascal, psi},
@@ -1156,91 +1188,119 @@ mod tests {
         }
     }
 
+    struct BlueLoopRatDeploySimulationAircraft {
+        rat: RamAirTurbine,
+        blue_loop: HydraulicLoop,
+        context: UpdateContext,
+    }
+    impl BlueLoopRatDeploySimulationAircraft {
+        const TIME_STEP_SECS: f64 = 0.05;
+
+        fn new(init_context: &mut InitContext) -> Self {
+            Self {
+                rat: RamAirTurbine::new(init_context),
+                blue_loop: hydraulic_loop(init_context, "BLUE"),
+                context: context(init_context, Duration::from_secs_f64(Self::TIME_STEP_SECS)),
+            }
+        }
+
+        fn update(&mut self) {
+            let mut rat_controller = TestRamAirTurbineController::new();
+            let blue_loop_controller =
+                TestHydraulicLoopController::commanding_open_fire_shutoff_valve();
+
+            let mut indicated_airspeed = self.context.indicated_airspeed();
+
+            let mut time = 0.0;
+            for x in 0..1500 {
+                self.rat.update_position(&self.context.delta());
+                if (10.0..10.0 + Self::TIME_STEP_SECS).contains(&time) {
+                    println!("ASSERT RAT STOWED");
+                    assert!(self.blue_loop.loop_pressure <= Pressure::new::<psi>(50.0));
+                    self.rat.deployment_commanded = false;
+                    assert!(self.rat.position == 0.);
+                }
+
+                if (20.0..20.0 + Self::TIME_STEP_SECS).contains(&time) {
+                    println!("ASSERT RAT STOWED STILL NO PRESS");
+                    assert!(self.blue_loop.loop_pressure <= Pressure::new::<psi>(50.0));
+                    rat_controller.command_deployment();
+                }
+
+                if (30.0..30.0 + Self::TIME_STEP_SECS).contains(&time) {
+                    println!("ASSERT RAT OUT AND SPINING");
+                    assert!(self.blue_loop.loop_pressure >= Pressure::new::<psi>(2000.0));
+                    assert!(self.rat.position >= 0.999);
+                    assert!(self.rat.wind_turbine.rpm >= 1000.);
+                }
+                if (60.0..60.0 + Self::TIME_STEP_SECS).contains(&time) {
+                    println!("ASSERT RAT AT SPEED");
+                    assert!(self.blue_loop.loop_pressure >= Pressure::new::<psi>(2000.0));
+                    assert!(self.rat.wind_turbine.rpm >= 4500.);
+                }
+
+                if (70.0..70.0 + Self::TIME_STEP_SECS).contains(&time) {
+                    println!("STOPING THE PLANE");
+                    indicated_airspeed = Velocity::new::<knot>(0.);
+                }
+
+                if (120.0..120.0 + Self::TIME_STEP_SECS).contains(&time) {
+                    println!("ASSERT RAT SLOWED DOWN");
+                    assert!(self.rat.wind_turbine.rpm <= 2500.);
+                }
+
+                self.rat
+                    .update_physics(&self.context.delta(), indicated_airspeed);
+                self.rat
+                    .update(&self.context, &self.blue_loop, &rat_controller);
+                self.blue_loop.update(
+                    &self.context,
+                    Vec::new(),
+                    Vec::new(),
+                    vec![&self.rat],
+                    Vec::new(),
+                    &blue_loop_controller,
+                );
+                if x % 20 == 0 {
+                    println!("Iteration {} Time {}", x, time);
+                    println!("-------------------------------------------");
+                    println!("---PSI: {}", self.blue_loop.loop_pressure.get::<psi>());
+                    println!("---RAT stow pos: {}", self.rat.position);
+                    println!("---RAT RPM: {}", self.rat.wind_turbine.rpm);
+                    println!(
+                        "---RAT volMax: {}",
+                        self.rat.delta_vol_max().get::<gallon>()
+                    );
+                    println!(
+                        "--------Reservoir Volume (g): {}",
+                        self.blue_loop.reservoir_volume.get::<gallon>()
+                    );
+                    println!(
+                        "--------Loop Volume (g): {}",
+                        self.blue_loop.loop_volume.get::<gallon>()
+                    );
+                }
+                time += Self::TIME_STEP_SECS;
+            }
+        }
+    }
+    impl Aircraft for BlueLoopRatDeploySimulationAircraft {}
+    impl SimulationElement for BlueLoopRatDeploySimulationAircraft {}
+
     use super::*;
+    use crate::simulation::test::{SimulationTestBed, TestBed};
+
     #[test]
     /// Runs electric pump, checks pressure OK, shut it down, check drop of pressure after 20s
     fn blue_loop_rat_deploy_simulation() {
-        let mut rat = RamAirTurbine::new();
-        let mut rat_controller = TestRamAirTurbineController::new();
-        let mut blue_loop = hydraulic_loop("BLUE");
-        let blue_loop_controller =
-            TestHydraulicLoopController::commanding_open_fire_shutoff_valve();
-
-        let timestep = 0.05;
-        let context = context(Duration::from_secs_f64(timestep));
-        let mut indicated_airspeed = context.indicated_airspeed();
-
-        let mut time = 0.0;
-        for x in 0..1500 {
-            rat.update_position(&context.delta());
-            if time >= 10. && time < 10. + timestep {
-                println!("ASSERT RAT STOWED");
-                assert!(blue_loop.loop_pressure <= Pressure::new::<psi>(50.0));
-                rat.deployment_commanded = false;
-                assert!(rat.position == 0.);
-            }
-
-            if time >= 20. && time < 20. + timestep {
-                println!("ASSERT RAT STOWED STILL NO PRESS");
-                assert!(blue_loop.loop_pressure <= Pressure::new::<psi>(50.0));
-                rat_controller.command_deployment();
-            }
-
-            if time >= 30. && time < 30. + timestep {
-                println!("ASSERT RAT OUT AND SPINING");
-                assert!(blue_loop.loop_pressure >= Pressure::new::<psi>(2000.0));
-                assert!(rat.position >= 0.999);
-                assert!(rat.wind_turbine.rpm >= 1000.);
-            }
-            if time >= 60. && time < 60. + timestep {
-                println!("ASSERT RAT AT SPEED");
-                assert!(blue_loop.loop_pressure >= Pressure::new::<psi>(2000.0));
-                assert!(rat.wind_turbine.rpm >= 4500.);
-            }
-
-            if time >= 70. && time < 70. + timestep {
-                println!("STOPING THE PLANE");
-                indicated_airspeed = Velocity::new::<knot>(0.);
-            }
-
-            if time >= 120. && time < 120. + timestep {
-                println!("ASSERT RAT SLOWED DOWN");
-                assert!(rat.wind_turbine.rpm <= 2500.);
-            }
-
-            rat.update_physics(&context.delta(), &indicated_airspeed);
-            rat.update(&context, &blue_loop, &rat_controller);
-            blue_loop.update(
-                &context,
-                Vec::new(),
-                Vec::new(),
-                vec![&rat],
-                Vec::new(),
-                &blue_loop_controller,
-            );
-            if x % 20 == 0 {
-                println!("Iteration {} Time {}", x, time);
-                println!("-------------------------------------------");
-                println!("---PSI: {}", blue_loop.loop_pressure.get::<psi>());
-                println!("---RAT stow pos: {}", rat.position);
-                println!("---RAT RPM: {}", rat.wind_turbine.rpm);
-                println!("---RAT volMax: {}", rat.delta_vol_max().get::<gallon>());
-                println!(
-                    "--------Reservoir Volume (g): {}",
-                    blue_loop.reservoir_volume.get::<gallon>()
-                );
-                println!(
-                    "--------Loop Volume (g): {}",
-                    blue_loop.loop_volume.get::<gallon>()
-                );
-            }
-            time += timestep;
-        }
+        let mut test_bed = SimulationTestBed::new(BlueLoopRatDeploySimulationAircraft::new);
+        test_bed.command(|e| e.update());
     }
 
-    fn hydraulic_loop(loop_color: &str) -> HydraulicLoop {
+    fn hydraulic_loop(context: &mut InitContext, loop_color: &str) -> HydraulicLoop {
         match loop_color {
             "GREEN" => HydraulicLoop::new(
+                context,
                 loop_color,
                 true,
                 false,
@@ -1254,6 +1314,7 @@ mod tests {
                 Pressure::new::<psi>(1750.0),
             ),
             "YELLOW" => HydraulicLoop::new(
+                context,
                 loop_color,
                 false,
                 true,
@@ -1267,6 +1328,7 @@ mod tests {
                 Pressure::new::<psi>(1750.0),
             ),
             _ => HydraulicLoop::new(
+                context,
                 loop_color,
                 false,
                 false,
@@ -1282,18 +1344,23 @@ mod tests {
         }
     }
 
-    fn engine_driven_pump() -> EngineDrivenPump {
-        EngineDrivenPump::new("DEFAULT")
+    fn engine_driven_pump(context: &mut InitContext) -> EngineDrivenPump {
+        EngineDrivenPump::new(context, "DEFAULT")
     }
 
-    fn context(delta_time: Duration) -> UpdateContext {
+    fn context(context: &mut InitContext, delta_time: Duration) -> UpdateContext {
         UpdateContext::new(
+            context,
             delta_time,
             Velocity::new::<knot>(250.),
             Length::new::<foot>(5000.),
             ThermodynamicTemperature::new::<degree_celsius>(25.0),
             true,
             Acceleration::new::<foot_per_second_squared>(0.),
+            Acceleration::new::<foot_per_second_squared>(0.),
+            Acceleration::new::<foot_per_second_squared>(0.),
+            Angle::new::<radian>(0.),
+            Angle::new::<radian>(0.),
         )
     }
 
@@ -1301,22 +1368,27 @@ mod tests {
     mod edp_tests {
         use super::*;
 
+        use crate::simulation::test::{ElementCtorFn, SimulationTestBed, TestBed};
+        use crate::simulation::Aircraft;
+        use uom::si::time::second;
+
         #[test]
         fn starts_inactive() {
-            assert!(!engine_driven_pump().is_active);
+            let test_bed = SimulationTestBed::from(ElementCtorFn(engine_driven_pump));
+
+            assert!(test_bed.query_element(|e| !e.is_active));
         }
 
         #[test]
         fn zero_flow_above_3000_psi_after_25ms() {
             let pump_rpm = 3300.;
             let pressure = Pressure::new::<psi>(3100.);
-            let context = context(Duration::from_millis(25));
             let displacement = Volume::new::<cubic_inch>(0.);
             assert!(delta_vol_equality_check(
                 pump_rpm,
                 displacement,
                 pressure,
-                &context
+                Duration::from_millis(25),
             ))
         }
 
@@ -1324,10 +1396,10 @@ mod tests {
             pump_rpm: f64,
             displacement: Volume,
             pressure: Pressure,
-            context: &UpdateContext,
+            delta_time: Duration,
         ) -> bool {
-            let actual = get_edp_actual_delta_vol_when(pump_rpm, pressure, context);
-            let predicted = get_edp_predicted_delta_vol_when(pump_rpm, displacement, context);
+            let actual = get_edp_actual_delta_vol_when(pump_rpm, pressure, delta_time);
+            let predicted = get_edp_predicted_delta_vol_when(pump_rpm, displacement, delta_time);
             println!("Actual: {}", actual.get::<gallon>());
             println!("Predicted: {}", predicted.get::<gallon>());
             actual == predicted
@@ -1336,31 +1408,62 @@ mod tests {
         fn get_edp_actual_delta_vol_when(
             pump_rpm: f64,
             pressure: Pressure,
-            context: &UpdateContext,
+            delta_time: Duration,
         ) -> Volume {
-            let mut edp = engine_driven_pump();
-            let mut line = hydraulic_loop("GREEN");
+            let mut test_bed = SimulationTestBed::new(|context| {
+                EdpActualDeltaVolAircraft::new(context, delta_time)
+            });
+            test_bed.command(|e| e.update(pump_rpm, pressure));
 
-            let engine_driven_pump_controller = TestPumpController::commanding_pressurise();
-            line.loop_pressure = pressure;
-            edp.update(
-                &context.with_delta(Duration::from_secs(1)),
-                &line,
-                pump_rpm,
-                &engine_driven_pump_controller,
-            ); // Update 10 times to stabilize displacement
-
-            edp.update(context, &line, pump_rpm, &engine_driven_pump_controller);
-            edp.delta_vol_max()
+            test_bed.query(|e| e.delta_vol_max())
         }
 
         fn get_edp_predicted_delta_vol_when(
             pump_rpm: f64,
             displacement: Volume,
-            context: &UpdateContext,
+            delta_time: Duration,
         ) -> Volume {
             let expected_flow = Pump::calculate_flow(pump_rpm, displacement);
-            expected_flow * context.delta_as_time()
+            expected_flow * Time::new::<second>(delta_time.as_secs_f64())
         }
+
+        struct EdpActualDeltaVolAircraft {
+            edp: EngineDrivenPump,
+            line: HydraulicLoop,
+            context: UpdateContext,
+        }
+        impl EdpActualDeltaVolAircraft {
+            fn new(init_context: &mut InitContext, delta_time: Duration) -> Self {
+                Self {
+                    edp: engine_driven_pump(init_context),
+                    line: hydraulic_loop(init_context, "GREEN"),
+                    context: context(init_context, delta_time),
+                }
+            }
+
+            fn update(&mut self, pump_rpm: f64, pressure: Pressure) {
+                let engine_driven_pump_controller = TestPumpController::commanding_pressurise();
+                self.line.loop_pressure = pressure;
+                self.edp.update(
+                    &self.context.with_delta(Duration::from_secs(1)),
+                    &self.line,
+                    AngularVelocity::new::<revolution_per_minute>(pump_rpm),
+                    &engine_driven_pump_controller,
+                ); // Update 10 times to stabilize displacement
+
+                self.edp.update(
+                    &self.context,
+                    &self.line,
+                    AngularVelocity::new::<revolution_per_minute>(pump_rpm),
+                    &engine_driven_pump_controller,
+                );
+            }
+
+            fn delta_vol_max(&self) -> Volume {
+                self.edp.delta_vol_max()
+            }
+        }
+        impl Aircraft for EdpActualDeltaVolAircraft {}
+        impl SimulationElement for EdpActualDeltaVolAircraft {}
     }
 }

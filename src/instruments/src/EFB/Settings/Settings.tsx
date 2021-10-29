@@ -2,12 +2,15 @@ import React, { useContext, useState, useEffect } from 'react';
 import { Slider, Toggle } from '@flybywiresim/react-components';
 import { useSimVar } from '@instruments/common/simVars';
 import { IconArrowLeft, IconArrowRight } from '@tabler/icons';
+import { HttpError } from '@flybywiresim/api-client';
+import { PopUp } from '@shared/popup';
 import { SelectGroup, SelectItem } from '../Components/Form/Select';
-import { usePersistentProperty, useSimVarSyncedPersistentProperty } from '../../Common/persistence';
+import { usePersistentNumberProperty, usePersistentProperty } from '../../Common/persistence';
 import Button from '../Components/Button/Button';
 import ThrottleConfig from './ThrottleConfig/ThrottleConfig';
 import SimpleInput from '../Components/Form/SimpleInput/SimpleInput';
 import { Navbar } from '../Components/Navbar';
+import { SimbriefUserIdContext } from '../Efb';
 
 type ButtonType = {
     name: string,
@@ -77,6 +80,8 @@ const DefaultsPage = () => {
                         placeholder={thrustReductionHeight}
                         noLabel
                         value={thrustReductionHeightSetting}
+                        min={400}
+                        max={5000}
                         onChange={(event) => handleSetThrustReductionAlt(event)}
                     />
                 </div>
@@ -90,6 +95,8 @@ const DefaultsPage = () => {
                         placeholder={accelerationHeight}
                         noLabel
                         value={accelerationHeightSetting}
+                        min={400}
+                        max={10000}
                         onChange={(event) => handleSetAccelerationAlt(event)}
                     />
                 </div>
@@ -103,6 +110,8 @@ const DefaultsPage = () => {
                         placeholder={accelerationOutHeight}
                         noLabel
                         value={accelerationOutHeightSetting}
+                        min={400}
+                        max={10000}
                         onChange={(event) => handleSetAccelerationOutAlt(event)}
                     />
                 </div>
@@ -114,6 +123,9 @@ const DefaultsPage = () => {
 const AircraftConfigurationPage = () => {
     const [weightUnit, setWeightUnit] = usePersistentProperty('CONFIG_USING_METRIC_UNIT', '1');
     const [paxSigns, setPaxSigns] = usePersistentProperty('CONFIG_USING_PORTABLE_DEVICES', '0');
+    const [isisBaro, setIsisBaro] = usePersistentProperty('ISIS_BARO_UNIT_INHG', '0');
+    const [isisMetricAltitude, setIsisMetricAltitude] = usePersistentProperty('ISIS_METRIC_ALTITUDE', '0');
+    const [vhfSpacing, setVhfSpacing] = usePersistentProperty('RMP_VHF_SPACING_25KHZ', '0');
 
     const paxSignsButtons: ButtonType[] = [
         { name: 'No Smoking', setting: '0' },
@@ -121,8 +133,23 @@ const AircraftConfigurationPage = () => {
     ];
 
     const weightUnitButtons: ButtonType[] = [
-        { name: 'Kg', setting: '1' },
+        { name: 'kg', setting: '1' },
         { name: 'lbs', setting: '0' },
+    ];
+
+    const isisBaroButtons: ButtonType[] = [
+        { name: 'hPa', setting: '0' },
+        { name: 'hPa/inHg', setting: '1' },
+    ];
+
+    const isisMetricAltitudeButtons: ButtonType[] = [
+        { name: 'Disabled', setting: '0' },
+        { name: 'Enabled', setting: '1' },
+    ];
+
+    const vhfSpacingButtons: ButtonType[] = [
+        { name: '8.33 kHz', setting: '0' },
+        { name: '25 kHz', setting: '1' },
     ];
 
     return (
@@ -132,6 +159,7 @@ const AircraftConfigurationPage = () => {
                 <SelectGroup>
                     {weightUnitButtons.map((button) => (
                         <SelectItem
+                            enabled
                             onSelect={() => setWeightUnit(button.setting)}
                             selected={weightUnit === button.setting}
                         >
@@ -146,8 +174,54 @@ const AircraftConfigurationPage = () => {
                 <SelectGroup>
                     {paxSignsButtons.map((button) => (
                         <SelectItem
+                            enabled
                             onSelect={() => setPaxSigns(button.setting)}
                             selected={paxSigns === button.setting}
+                        >
+                            {button.name}
+                        </SelectItem>
+                    ))}
+                </SelectGroup>
+            </div>
+
+            <div className="py-4 flex flex-row justify-between items-center">
+                <span className="text-lg text-gray-300">ISIS Baro Unit</span>
+                <SelectGroup>
+                    {isisBaroButtons.map((button) => (
+                        <SelectItem
+                            enabled
+                            onSelect={() => setIsisBaro(button.setting)}
+                            selected={isisBaro === button.setting}
+                        >
+                            {button.name}
+                        </SelectItem>
+                    ))}
+                </SelectGroup>
+            </div>
+
+            <div className="py-4 flex flex-row justify-between items-center">
+                <span className="text-lg text-gray-300">ISIS Metric Altitude</span>
+                <SelectGroup>
+                    {isisMetricAltitudeButtons.map((button) => (
+                        <SelectItem
+                            enabled
+                            onSelect={() => setIsisMetricAltitude(button.setting)}
+                            selected={isisMetricAltitude === button.setting}
+                        >
+                            {button.name}
+                        </SelectItem>
+                    ))}
+                </SelectGroup>
+            </div>
+
+            <div className="py-4 flex flex-row justify-between items-center">
+                <span className="text-lg text-gray-300">RMP VHF Spacing</span>
+                <SelectGroup>
+                    {vhfSpacingButtons.map((button) => (
+                        <SelectItem
+                            enabled
+                            onSelect={() => setVhfSpacing(button.setting)}
+                            selected={vhfSpacing === button.setting}
                         >
                             {button.name}
                         </SelectItem>
@@ -166,7 +240,10 @@ const SimOptionsPage = () => {
     const [, setAdirsAlignTimeSimVar] = useSimVar('L:A32NX_CONFIG_ADIRS_IR_ALIGN_TIME', 'Enum', Number.MAX_SAFE_INTEGER);
     const [dmcSelfTestTime, setDmcSelfTestTime] = usePersistentProperty('CONFIG_SELF_TEST_TIME', '12');
 
-    const [defaultBaro, setDefaultBaro] = usePersistentProperty('CONFIG_INIT_BARO_UNIT', 'IN HG');
+    const [defaultBaro, setDefaultBaro] = usePersistentProperty('CONFIG_INIT_BARO_UNIT', 'AUTO');
+
+    const [mcduInput, setMcduInput] = usePersistentProperty('MCDU_KB_INPUT', 'DISABLED');
+    const [mcduTimeout, setMcduTimeout] = usePersistentProperty('CONFIG_MCDU_KB_TIMEOUT', '60');
 
     const adirsAlignTimeButtons: (ButtonType & AdirsButton)[] = [
         { name: 'Instant', setting: 'INSTANT', simVarValue: 1 },
@@ -201,6 +278,7 @@ const SimOptionsPage = () => {
                         <SelectGroup>
                             {adirsAlignTimeButtons.map((button) => (
                                 <SelectItem
+                                    enabled
                                     onSelect={() => {
                                         setAdirsAlignTime(button.setting);
                                         setAdirsAlignTimeSimVar(button.simVarValue);
@@ -218,6 +296,7 @@ const SimOptionsPage = () => {
                         <SelectGroup>
                             {dmcSelfTestTimeButtons.map((button) => (
                                 <SelectItem
+                                    enabled
                                     onSelect={() => setDmcSelfTestTime(button.setting)}
                                     selected={dmcSelfTestTime === button.setting}
                                 >
@@ -232,6 +311,7 @@ const SimOptionsPage = () => {
                         <SelectGroup>
                             {defaultBaroButtons.map((button) => (
                                 <SelectItem
+                                    enabled
                                     onSelect={() => setDefaultBaro(button.setting)}
                                     selected={defaultBaro === button.setting}
                                 >
@@ -239,6 +319,32 @@ const SimOptionsPage = () => {
                                 </SelectItem>
                             ))}
                         </SelectGroup>
+                    </div>
+                    <div className="py-4 flex flex-row justify-between items-center">
+                        <span>
+                            <span className="text-lg text-gray-300">MCDU Keyboard Input</span>
+                            <span className="text-lg text-gray-500 ml-2">(unrealistic)</span>
+                        </span>
+                        <Toggle value={mcduInput === 'ENABLED'} onToggle={(value) => setMcduInput(value ? 'ENABLED' : 'DISABLED')} />
+                    </div>
+                    <div className="py-4 flex flex-row justify-between items-center">
+                        <span>
+                            <span className="text-lg text-gray-300">MCDU Focus Timeout (s)</span>
+                        </span>
+                        <SimpleInput
+                            className="w-30 ml-1.5 px-5 py-1.5 text-lg text-gray-300 rounded-lg bg-navy-light
+                            border-2 border-navy-light focus-within:outline-none focus-within:border-teal-light-contrast text-center disabled"
+                            value={mcduTimeout}
+                            noLabel
+                            min={5}
+                            max={120}
+                            disabled={(mcduInput !== 'ENABLED')}
+                            onChange={(event) => {
+                                if (!Number.isNaN(event) && parseInt(event) >= 5 && parseInt(event) <= 120) {
+                                    setMcduTimeout(event.trim());
+                                }
+                            }}
+                        />
                     </div>
                 </div>
                 <ControlSettings setShowSettings={setShowThrottleSettings} />
@@ -249,10 +355,71 @@ const SimOptionsPage = () => {
     );
 };
 
-const ATSUAOCPage = (props: {simbriefUsername, setSimbriefUsername}) => {
+const ATSUAOCPage = () => {
     const [atisSource, setAtisSource] = usePersistentProperty('CONFIG_ATIS_SRC', 'FAA');
     const [metarSource, setMetarSource] = usePersistentProperty('CONFIG_METAR_SRC', 'MSFS');
     const [tafSource, setTafSource] = usePersistentProperty('CONFIG_TAF_SRC', 'NOAA');
+    const [telexEnabled, setTelexEnabled] = usePersistentProperty('CONFIG_ONLINE_FEATURES_STATUS', 'DISABLED');
+
+    const [simbriefError, setSimbriefError] = useState(false);
+    const { simbriefUserId, setSimbriefUserId } = useContext(SimbriefUserIdContext);
+    const [simbriefDisplay, setSimbriefDisplay] = useState(simbriefUserId);
+
+    function getSimbriefUserData(value: string): Promise<any> {
+        const SIMBRIEF_URL = 'http://www.simbrief.com/api/xml.fetcher.php?json=1';
+
+        if (!value) {
+            throw new Error('No SimBrief username/pilot ID provided');
+        }
+
+        // The SimBrief API will try both username and pilot ID if either one
+        // isn't valid, so request both if the input is plausibly a pilot ID.
+        let apiUrl = `${SIMBRIEF_URL}&username=${value}`;
+        if (/^\d{1,8}$/.test(value)) {
+            apiUrl += `&userid=${value}`;
+        }
+
+        return fetch(apiUrl)
+            .then((response) => {
+                // 400 status means request was invalid, probably invalid username so preserve to display error properly
+                if (!response.ok && response.status !== 400) {
+                    throw new HttpError(response.status);
+                }
+
+                return response.json();
+            });
+    }
+
+    function getSimbriefUserId(value: string):Promise<any> {
+        return new Promise((resolve, reject) => {
+            if (!value) {
+                reject(new Error('No SimBrief username/pilot ID provided'));
+            }
+            getSimbriefUserData(value)
+                .then((data) => {
+                    if (data.fetch.status === 'Error: Unknown UserID') {
+                        reject(new Error('Error: Unknown UserID'));
+                    }
+                    resolve(data.fetch.userid);
+                })
+                .catch((_error) => {
+                    reject(_error);
+                });
+        });
+    }
+
+    function handleUsernameInput(value: string) {
+        getSimbriefUserId(value).then((response) => {
+            setSimbriefUserId(response);
+            setSimbriefDisplay(response);
+        }).catch(() => {
+            setSimbriefError(true);
+            setSimbriefDisplay(simbriefUserId);
+            setTimeout(() => {
+                setSimbriefError(false);
+            }, 4000);
+        });
+    }
 
     const atisSourceButtons: ButtonType[] = [
         { name: 'FAA (US)', setting: 'FAA' },
@@ -273,6 +440,21 @@ const ATSUAOCPage = (props: {simbriefUsername, setSimbriefUsername}) => {
         { name: 'NOAA', setting: 'NOAA' },
     ];
 
+    function handleTelexToggle(toggleValue: boolean) {
+        if (toggleValue) {
+            new PopUp().showPopUp(
+                'TELEX WARNING',
+                // eslint-disable-next-line max-len
+                'Telex enables free text and live map. If enabled, aircraft position data is published for the duration of the flight. Messages are public and not moderated. USE AT YOUR OWN RISK. To learn more about telex and the features it enables, please go to https://docs.flybywiresim.com/telex. Would you like to enable telex?',
+                'small',
+                () => setTelexEnabled('ENABLED'),
+                () => {},
+            );
+        } else {
+            setTelexEnabled('DISABLED');
+        }
+    }
+
     return (
         <div className="bg-navy-lighter rounded-xl px-6 divide-y divide-gray-700 flex flex-col">
             <div className="py-4 flex flex-row justify-between items-center">
@@ -280,6 +462,7 @@ const ATSUAOCPage = (props: {simbriefUsername, setSimbriefUsername}) => {
                 <SelectGroup>
                     {atisSourceButtons.map((button) => (
                         <SelectItem
+                            enabled
                             onSelect={() => setAtisSource(button.setting)}
                             selected={atisSource === button.setting}
                         >
@@ -293,6 +476,7 @@ const ATSUAOCPage = (props: {simbriefUsername, setSimbriefUsername}) => {
                 <SelectGroup>
                     {metarSourceButtons.map((button) => (
                         <SelectItem
+                            enabled
                             onSelect={() => setMetarSource(button.setting)}
                             selected={metarSource === button.setting}
                         >
@@ -306,6 +490,7 @@ const ATSUAOCPage = (props: {simbriefUsername, setSimbriefUsername}) => {
                 <SelectGroup>
                     {tafSourceButtons.map((button) => (
                         <SelectItem
+                            enabled
                             onSelect={() => setTafSource(button.setting)}
                             selected={tafSource === button.setting}
                         >
@@ -315,13 +500,24 @@ const ATSUAOCPage = (props: {simbriefUsername, setSimbriefUsername}) => {
                 </SelectGroup>
             </div>
             <div className="py-4 flex flex-row justify-between items-center">
-                <span className="text-lg text-gray-300">Simbrief Username</span>
+                <span className="text-lg text-gray-300">TELEX</span>
+                <Toggle value={telexEnabled === 'ENABLED'} onToggle={(toggleValue) => handleTelexToggle(toggleValue)} />
+            </div>
+            <div className="py-4 flex flex-row justify-between items-center">
+                <span className="text-lg text-gray-300">
+                    SimBrief Username/Pilot ID
+                    <span className={`${!simbriefError && 'hidden'} text-red-600`}>
+                        <span className="text-white"> | </span>
+                        SimBrief Error
+                    </span>
+                </span>
                 <div className="flex flex-row items-center">
                     <SimpleInput
                         className="w-30"
-                        value={props.simbriefUsername}
+                        value={simbriefDisplay}
                         noLabel
-                        onChange={(event) => props.setSimbriefUsername(event)}
+                        onBlur={(value) => handleUsernameInput(value.replace(/\s/g, ''))}
+                        onChange={(value) => setSimbriefDisplay(value)}
                     />
                 </div>
             </div>
@@ -330,10 +526,10 @@ const ATSUAOCPage = (props: {simbriefUsername, setSimbriefUsername}) => {
 };
 
 const AudioPage = () => {
-    const [ptuAudible, setPtuAudible] = useSimVarSyncedPersistentProperty('L:A32NX_SOUND_PTU_AUDIBLE_COCKPIT', 'Bool', 'SOUND_PTU_AUDIBLE_COCKPIT');
-    const [exteriorVolume, setExteriorVolume] = useSimVarSyncedPersistentProperty('L:A32NX_SOUND_EXTERIOR_MASTER', 'number', 'SOUND_EXTERIOR_MASTER');
-    const [engineVolume, setEngineVolume] = useSimVarSyncedPersistentProperty('L:A32NX_SOUND_INTERIOR_ENGINE', 'number', 'SOUND_INTERIOR_ENGINE');
-    const [windVolume, setWindVolume] = useSimVarSyncedPersistentProperty('L:A32NX_SOUND_INTERIOR_WIND', 'number', 'SOUND_INTERIOR_WIND');
+    const [ptuAudible, setPtuAudible] = usePersistentNumberProperty('SOUND_PTU_AUDIBLE_COCKPIT', 0);
+    const [exteriorVolume, setExteriorVolume] = usePersistentNumberProperty('SOUND_EXTERIOR_MASTER', 0);
+    const [engineVolume, setEngineVolume] = usePersistentNumberProperty('SOUND_INTERIOR_ENGINE', 0);
+    const [windVolume, setWindVolume] = usePersistentNumberProperty('SOUND_INTERIOR_WIND', 0);
 
     return (
         <div className="bg-navy-lighter divide-y divide-gray-700 flex flex-col rounded-xl px-6 ">
@@ -370,15 +566,16 @@ const AudioPage = () => {
 };
 
 const FlyPadPage = () => {
-    const [brightness, setBrightness] = useSimVarSyncedPersistentProperty('L:A32NX_EFB_BRIGHTNESS', 'number', 'EFB_BRIGHTNESS');
-    const [usingAutobrightness, setUsingAutobrightness] = useSimVarSyncedPersistentProperty('L:A32NX_EFB_USING_AUTOBRIGHTNESS', 'bool', 'EFB_USING_AUTOBRIGHTNESS');
+    const [brightnessSetting, setBrightnessSetting] = usePersistentNumberProperty('EFB_BRIGHTNESS', 0);
+    const [brightness] = useSimVar('L:A32NX_EFB_BRIGHTNESS', 'number', 500);
+    const [usingAutobrightness, setUsingAutobrightness] = usePersistentNumberProperty('EFB_USING_AUTOBRIGHTNESS', 0);
 
     return (
         <div className="bg-navy-lighter rounded-xl px-6 shadow-lg divide-y divide-gray-700 flex flex-col">
             <div className="py-4 flex flex-row justify-between items-center">
                 <span className="text-lg text-gray-300">Brightness</span>
                 <div className={`flex flex-row items-center py-1.5 ${usingAutobrightness && 'pointer-events-none filter saturate-0'}`}>
-                    <Slider className="w-60" value={brightness} onInput={(value) => setBrightness(value)} />
+                    <Slider className="w-60" value={usingAutobrightness ? brightness : brightnessSetting} onInput={(value) => setBrightnessSetting(value)} />
                 </div>
             </div>
             <div className="py-4 flex flex-row justify-between items-center">
@@ -398,7 +595,7 @@ interface SettingsNavbarContextInterface {
 
 const SettingsNavbarContext = React.createContext<SettingsNavbarContextInterface>(undefined as any);
 
-const Settings = (props: {simbriefUsername, setSimbriefUsername}) => {
+const Settings = () => {
     const [selectedTabIndex, setSelectedTabIndex] = useState(0);
     const [subPageIndex, setSubPageIndex] = useState(0);
     const [showNavbar, setShowNavbar] = useState(true);
@@ -408,7 +605,7 @@ const Settings = (props: {simbriefUsername, setSimbriefUsername}) => {
         case 0: return [<DefaultsPage />];
         case 1: return [<AircraftConfigurationPage />];
         case 2: return [<SimOptionsPage />];
-        case 3: return [<ATSUAOCPage simbriefUsername={props.simbriefUsername} setSimbriefUsername={props.setSimbriefUsername} />];
+        case 3: return [<ATSUAOCPage />];
         case 4: return [<AudioPage />];
         case 5: return [<FlyPadPage />];
         default: return [<AircraftConfigurationPage />];

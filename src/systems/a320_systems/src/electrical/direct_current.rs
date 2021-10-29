@@ -2,11 +2,11 @@ use super::{
     A320AlternatingCurrentElectricalSystem, A320DirectCurrentElectricalSystem,
     A320ElectricalOverheadPanel,
 };
+use systems::simulation::InitContext;
 use systems::{
     electrical::{
-        Battery, BatteryChargeLimiter, Contactor, ElectricalBus,
-        ElectricalElementIdentifierProvider, Electricity, EmergencyElectrical, EmergencyGenerator,
-        StaticInverter,
+        Battery, BatteryChargeLimiter, Contactor, ElectricalBus, Electricity, EmergencyElectrical,
+        EmergencyGenerator, StaticInverter,
     },
     shared::{
         ApuMaster, ApuStart, AuxiliaryPowerUnitElectrical, ContactorSignal, ElectricalBusType,
@@ -49,61 +49,45 @@ pub(super) struct A320DirectCurrentElectrical {
     dc_bus_2_to_dc_gnd_flt_service_bus_contactor: Contactor,
 }
 impl A320DirectCurrentElectrical {
-    pub fn new(identifier_provider: &mut impl ElectricalElementIdentifierProvider) -> Self {
+    pub fn new(context: &mut InitContext) -> Self {
         A320DirectCurrentElectrical {
-            dc_bus_1: ElectricalBus::new(ElectricalBusType::DirectCurrent(1), identifier_provider),
-            dc_bus_1_tie_contactor: Contactor::new("1PC1", identifier_provider),
-            dc_bus_2: ElectricalBus::new(ElectricalBusType::DirectCurrent(2), identifier_provider),
-            dc_bus_2_tie_contactor: Contactor::new("1PC2", identifier_provider),
-            dc_bat_bus: ElectricalBus::new(
-                ElectricalBusType::DirectCurrentBattery,
-                identifier_provider,
-            ),
-            dc_ess_bus: ElectricalBus::new(
-                ElectricalBusType::DirectCurrentEssential,
-                identifier_provider,
-            ),
-            dc_bat_bus_to_dc_ess_bus_contactor: Contactor::new("4PC", identifier_provider),
+            dc_bus_1: ElectricalBus::new(context, ElectricalBusType::DirectCurrent(1)),
+            dc_bus_1_tie_contactor: Contactor::new(context, "1PC1"),
+            dc_bus_2: ElectricalBus::new(context, ElectricalBusType::DirectCurrent(2)),
+            dc_bus_2_tie_contactor: Contactor::new(context, "1PC2"),
+            dc_bat_bus: ElectricalBus::new(context, ElectricalBusType::DirectCurrentBattery),
+            dc_ess_bus: ElectricalBus::new(context, ElectricalBusType::DirectCurrentEssential),
+            dc_bat_bus_to_dc_ess_bus_contactor: Contactor::new(context, "4PC"),
             dc_ess_shed_bus: ElectricalBus::new(
+                context,
                 ElectricalBusType::DirectCurrentEssentialShed,
-                identifier_provider,
             ),
-            dc_ess_shed_contactor: Contactor::new("8PH", identifier_provider),
-            battery_1: Battery::full(1, identifier_provider),
-            battery_1_contactor: Contactor::new("6PB1", identifier_provider),
-            battery_1_charge_limiter: BatteryChargeLimiter::new(1, "6PB1"),
-            battery_2: Battery::full(2, identifier_provider),
-            battery_2_contactor: Contactor::new("6PB2", identifier_provider),
-            battery_2_charge_limiter: BatteryChargeLimiter::new(2, "6PB2"),
-            hot_bus_2_to_dc_ess_bus_contactor: Contactor::new("2XB2", identifier_provider),
-            hot_bus_1_to_static_inv_contactor: Contactor::new("2XB1", identifier_provider),
-            static_inverter: StaticInverter::new(identifier_provider),
-            hot_bus_1: ElectricalBus::new(
-                ElectricalBusType::DirectCurrentHot(1),
-                identifier_provider,
-            ),
-            hot_bus_2: ElectricalBus::new(
-                ElectricalBusType::DirectCurrentHot(2),
-                identifier_provider,
-            ),
-            tr_1_contactor: Contactor::new("5PU1", identifier_provider),
-            tr_2_contactor: Contactor::new("5PU2", identifier_provider),
-            tr_ess_contactor: Contactor::new("3PE", identifier_provider),
-            apu_start_contactors: Contactor::new("10KA_AND_5KA", identifier_provider),
-            apu_start_motor_bus: ElectricalBus::new(APU_START_MOTOR_BUS_TYPE, identifier_provider),
+            dc_ess_shed_contactor: Contactor::new(context, "8PH"),
+            battery_1: Battery::full(context, 1),
+            battery_1_contactor: Contactor::new(context, "6PB1"),
+            battery_1_charge_limiter: BatteryChargeLimiter::new(context, 1, "6PB1"),
+            battery_2: Battery::full(context, 2),
+            battery_2_contactor: Contactor::new(context, "6PB2"),
+            battery_2_charge_limiter: BatteryChargeLimiter::new(context, 2, "6PB2"),
+            hot_bus_2_to_dc_ess_bus_contactor: Contactor::new(context, "2XB2"),
+            hot_bus_1_to_static_inv_contactor: Contactor::new(context, "2XB1"),
+            static_inverter: StaticInverter::new(context),
+            hot_bus_1: ElectricalBus::new(context, ElectricalBusType::DirectCurrentHot(1)),
+            hot_bus_2: ElectricalBus::new(context, ElectricalBusType::DirectCurrentHot(2)),
+            tr_1_contactor: Contactor::new(context, "5PU1"),
+            tr_2_contactor: Contactor::new(context, "5PU2"),
+            tr_ess_contactor: Contactor::new(context, "3PE"),
+            apu_start_contactors: Contactor::new(context, "10KA_AND_5KA"),
+            apu_start_motor_bus: ElectricalBus::new(context, APU_START_MOTOR_BUS_TYPE),
             dc_gnd_flt_service_bus: ElectricalBus::new(
+                context,
                 ElectricalBusType::DirectCurrentGndFltService,
-                identifier_provider,
             ),
-            tr_2_to_dc_gnd_flt_service_bus_contactor: Contactor::new("3PX", identifier_provider),
-            dc_bus_2_to_dc_gnd_flt_service_bus_contactor: Contactor::new(
-                "8PN",
-                identifier_provider,
-            ),
+            tr_2_to_dc_gnd_flt_service_bus_contactor: Contactor::new(context, "3PX"),
+            dc_bus_2_to_dc_gnd_flt_service_bus_contactor: Contactor::new(context, "8PN"),
         }
     }
 
-    #[allow(clippy::too_many_arguments)]
     pub fn update(
         &mut self,
         context: &UpdateContext,

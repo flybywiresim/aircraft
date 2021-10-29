@@ -1,6 +1,8 @@
 #pragma once
 
-// SimConnect data types for sending the sim updates.
+/// <summary>
+/// SimConnect data types to send Sim Updated
+/// </summary>
 enum DataTypesID {
   FuelControls,
   OilControls,
@@ -8,6 +10,12 @@ enum DataTypesID {
   OilPsiRight,
   StartCN2Left,
   StartCN2Right,
+  SimulationDataTypeId,
+};
+
+struct SimulationData {
+  double simulationTime;
+  double simulationRate;
 };
 
 // Fuel controls.
@@ -27,7 +35,9 @@ struct OilControlData {
   double OilTempRight;
 };
 
-// A collection of SimVar unit enums.
+/// <summary>
+/// A collection of SimVar unit enums.
+/// </summary>
 class Units {
  public:
   ENUM Percent = get_units_enum("Percent");
@@ -47,14 +57,18 @@ class Units {
   ENUM Seconds = get_units_enum("Seconds");
 };
 
-// A collection of SimVar enums.
+/// <summary>
+/// A collection of SimVars and LVars for the A32NX
+/// </summary>
 class SimVars {
  public:
   Units* m_Units;
 
-  // Collection of MSFS Simulation Variables
-  ENUM correctedN1 = get_aircraft_var_enum("TURB ENG CORRECTED N1");
-  ENUM correctedN2 = get_aircraft_var_enum("TURB ENG CORRECTED N2");
+  /// <summary>
+  /// Collection of SimVars for the A32NX
+  /// </summary>
+  ENUM CorrectedN1 = get_aircraft_var_enum("TURB ENG CORRECTED N1");
+  ENUM CorrectedN2 = get_aircraft_var_enum("TURB ENG CORRECTED N2");
   ENUM N1 = get_aircraft_var_enum("TURB ENG N1");
   ENUM N2 = get_aircraft_var_enum("TURB ENG N2");
   ENUM OilPSI = get_aircraft_var_enum("GENERAL ENG OIL PRESSURE");
@@ -88,7 +102,9 @@ class SimVars {
   ENUM FuelTotalQuantity = get_aircraft_var_enum("FUEL TOTAL QUANTITY");
   ENUM FuelWeightGallon = get_aircraft_var_enum("FUEL WEIGHT PER GALLON");
 
-  // Collection of local variables for the FADEC model.
+  /// <summary>
+  /// Collection of LVars for the A32NX
+  /// </summary>
   ID Engine1N2;
   ID Engine2N2;
   ID Engine1N1;
@@ -126,7 +142,6 @@ class SimVars {
   SimVars() { this->initializeVars(); }
 
   void initializeVars() {
-    // Initializing LVars
     Engine1N2 = register_named_variable("A32NX_ENGINE_N2:1");
     Engine2N2 = register_named_variable("A32NX_ENGINE_N2:2");
     Engine1N1 = register_named_variable("A32NX_ENGINE_N1:1");
@@ -255,8 +270,8 @@ class SimVars {
   FLOAT64 getFuelAuxLeftPre() { return get_named_variable_value(FuelAuxLeftPre); }
   FLOAT64 getFuelAuxRightPre() { return get_named_variable_value(FuelAuxRightPre); }
   FLOAT64 getFuelCenterPre() { return get_named_variable_value(FuelCenterPre); }
-  FLOAT64 getCN1(int index) { return aircraft_varget(correctedN1, m_Units->Percent, index); }
-  FLOAT64 getCN2(int index) { return aircraft_varget(correctedN2, m_Units->Percent, index); }
+  FLOAT64 getCN1(int index) { return aircraft_varget(CorrectedN1, m_Units->Percent, index); }
+  FLOAT64 getCN2(int index) { return aircraft_varget(CorrectedN2, m_Units->Percent, index); }
   FLOAT64 getN1(int index) { return aircraft_varget(N1, m_Units->Percent, index); }
   FLOAT64 getN2(int index) { return aircraft_varget(N2, m_Units->Percent, index); }
   FLOAT64 getOilPsi(int index) { return aircraft_varget(OilPSI, m_Units->Psi, index); }

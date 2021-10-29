@@ -37,8 +37,8 @@ const ecamPages = [
         path: 'SD/Pages/Crz',
     },
     {
-        name: 'bleed-page',
-        path: 'SD/Pages/Bleed',
+        name: 'fuel-page',
+        path: 'SD/Pages/Fuel',
     },
 ];
 

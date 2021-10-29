@@ -30,11 +30,9 @@ class EICASCommonDisplay extends Airliners.EICASTemplateElement {
         this.loadFactorVisible = new NXLogic_MemoryNode(true);
         this.gwUnit = this.querySelector("#GWUnit");
         this.gwValue = this.querySelector("#GWValue");
-        this.conversionWeight = parseFloat(NXDataStore.get("CONFIG_USING_METRIC_UNIT", "1"));
-        this.gwUnit.textContent = this.conversionWeight === 1 ? "KG" : "LBS";
-        this.refreshTAT(0);
-        this.refreshSAT(0);
-        this.refreshISA(0);
+        this.refreshTAT(Arinc429Word.empty());
+        this.refreshSAT(Arinc429Word.empty());
+        this.refreshISA(Arinc429Word.empty());
         this.refreshClock();
         this.refreshGrossWeight(true);
         this.isInitialised = true;
@@ -45,10 +43,10 @@ class EICASCommonDisplay extends Airliners.EICASTemplateElement {
         }
 
         const airDataReferenceSource = this.getStatusAirDataReferenceSource();
-        const sat = Math.round(ADIRS.getValue(`L:A32NX_ADIRS_ADR_${airDataReferenceSource}_STATIC_AIR_TEMPERATURE`, 'Celsius'));
-        this.refreshTAT(Math.round(ADIRS.getValue(`L:A32NX_ADIRS_ADR_${airDataReferenceSource}_TOTAL_AIR_TEMPERATURE`, 'Celsius')));
+        const sat = Arinc429Word.fromSimVarValue(`L:A32NX_ADIRS_ADR_${airDataReferenceSource}_STATIC_AIR_TEMPERATURE`);
+        this.refreshTAT(Arinc429Word.fromSimVarValue(`L:A32NX_ADIRS_ADR_${airDataReferenceSource}_TOTAL_AIR_TEMPERATURE`));
         this.refreshSAT(sat);
-        this.refreshISA(Math.round(ADIRS.getValue(`L:A32NX_ADIRS_ADR_${airDataReferenceSource}_INTERNATIONAL_STANDARD_ATMOSPHERE_DELTA`, 'Celsius')), sat);
+        this.refreshISA(Arinc429Word.fromSimVarValue(`L:A32NX_ADIRS_ADR_${airDataReferenceSource}_INTERNATIONAL_STANDARD_ATMOSPHERE_DELTA`), sat);
 
         this.refreshClock();
         this.refreshLoadFactor(_deltaTime, SimVar.GetSimVarValue("G FORCE", "GFORCE"));
@@ -64,34 +62,34 @@ class EICASCommonDisplay extends Airliners.EICASTemplateElement {
         return knobValue === adirs3ToCaptain ? 3 : 1;
     }
 
-    refreshTAT(value) {
-        if (Number.isNaN(value)) {
+    refreshTAT(tat) {
+        if (!tat.isNormalOperation()) {
             this.tatText.textContent = "XX";
             this.toggleWarning(true, this.tatText);
         } else {
-            this.setValueOnTemperatureElement(value, this.tatText);
+            this.setValueOnTemperatureElement(Math.round(tat.value), this.tatText);
             this.toggleWarning(false, this.tatText);
         }
     }
 
-    refreshSAT(value) {
-        if (Number.isNaN(value)) {
+    refreshSAT(sat) {
+        if (!sat.isNormalOperation()) {
             this.satText.textContent = "XX";
             this.toggleWarning(true, this.satText);
         } else {
-            this.setValueOnTemperatureElement(value, this.satText);
+            this.setValueOnTemperatureElement(Math.round(sat.value), this.satText);
             this.toggleWarning(false, this.satText);
         }
     }
 
-    refreshISA(value, sat) {
+    refreshISA(isa, sat) {
         const isInStdMode = Simplane.getPressureSelectedMode(Aircraft.A320_NEO) === "STD";
         // As ISA relates to SAT, we cannot present ISA when SAT is unavailable. We might want to move this into
         // Rust ADIRS code itself.
-        const isaShouldBeVisible = isInStdMode && !Number.isNaN(value) && !Number.isNaN(sat);
+        const isaShouldBeVisible = isInStdMode && isa.isNormalOperation() && sat.isNormalOperation();
         this.isaContainer.setAttribute("visibility", isaShouldBeVisible ? "visible" : "hidden");
 
-        this.setValueOnTemperatureElement(value, this.isaText);
+        this.setValueOnTemperatureElement(Math.round(isa.value), this.isaText);
     }
 
     setValueOnTemperatureElement(value, element) {
@@ -155,12 +153,19 @@ class EICASCommonDisplay extends Airliners.EICASTemplateElement {
         const fuelWeight = SimVar.GetSimVarValue("FUEL TOTAL QUANTITY WEIGHT", "kg");
         const emptyWeight = SimVar.GetSimVarValue("EMPTY WEIGHT", "kg");
         const payloadWeight = this.getPayloadWeight("kg");
-        const gw = Math.round((emptyWeight + fuelWeight + payloadWeight) * this.conversionWeight);
+        const gw = Math.round(NXUnits.kgToUser(emptyWeight + fuelWeight + payloadWeight));
+        const gwUnit = NXUnits.userWeightUnit();
         if ((gw != this.currentGW) || _force) {
             this.currentGW = gw;
             if (this.gwValue != null) {
                 // Lower EICAS displays GW in increments of 100
                 this.gwValue.textContent = (Math.floor(this.currentGW / 100) * 100).toString();
+            }
+        }
+        if (gwUnit != this.currentGwUnit) {
+            this.currentGwUnit = gwUnit;
+            if (this.gwUnit != null) {
+                this.gwUnit.textContent = gwUnit;
             }
         }
     }

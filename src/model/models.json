@@ -78,6 +78,10 @@
       {
         "gltf": "./buttondecals/buttondecals.gltf",
         "bin": "./buttondecals/buttondecals.bin"
+      },
+      {
+        "gltf": "./mcdu-annunc/mcdu-annunc.gltf",
+        "bin": "./mcdu-annunc/mcdu-annunc.bin"
       }
     ],
     "modifications": [
@@ -31713,6 +31717,21 @@
           [0.724365234375, 0.1878662109375],
           [0.3984375, 0.2010498046875],
           [0.40380859375, 0.2099609375]
+        ]
+      }
+    ],
+    "splitAnimations": [
+      {
+        "animation": "opening_landing_light",
+        "newAnimations": [
+          {
+            "name": "r_opening_landing_light",
+            "indices": [0, 1]
+          },
+          {
+            "name": "l_opening_landing_light",
+            "indices": [2, 3]
+          }
         ]
       }
     ]

@@ -294,6 +294,27 @@ function applyOutputSamplerModifications(buffer, gltfPath, modifications) {
     return buffer;
 }
 
+function splitAnimations(gltfPath, outputPath, splitData) {
+    const gltf = JSON.parse(fs.readFileSync(gltfPath, 'utf8'));
+
+    for (let i = 0; i < gltf.animations.length; i++) {
+        const anim = gltf.animations[i];
+        if (splitData.animation === anim.name) {
+            gltf.animations.splice(i, 1);
+            for (const newAnim of splitData.newAnimations) {
+                gltf.animations.push({
+                    name: newAnim.name,
+                    channels: newAnim.indices.map((oldIndex, newIndex) => ({ ...anim.channels[oldIndex], sampler: newIndex })),
+                    samplers: newAnim.indices.map((oldIndex) => anim.samplers[oldIndex]),
+                });
+            }
+        }
+    }
+
+    const data = JSON.stringify(gltf);
+    fs.writeFileSync(outputPath, data);
+}
+
 const models = JSON.parse(fs.readFileSync(path.join(__dirname, 'models.json'), 'utf8'));
 const p = (n) => path.resolve(__dirname, n);
 for (const model of models) {
@@ -323,6 +344,11 @@ for (const model of models) {
 
             // add the second bin file to the end of the first one
             fs.appendFileSync(p(model.output.bin[i]), fs.readFileSync(p(addition.bin)));
+        }
+        if (model.splitAnimations) {
+            for (const split of model.splitAnimations) {
+                splitAnimations(p(model.output.gltf[i]), p(model.output.gltf[i]), split);
+            }
         }
     }
 }

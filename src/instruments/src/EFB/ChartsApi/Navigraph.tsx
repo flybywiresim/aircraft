@@ -2,7 +2,7 @@ import React, { useContext } from 'react';
 // @ts-ignore
 import pkce from '@navigraph/pkce';
 
-import { NXDataStore } from '../../Common/persistence';
+import { NXDataStore } from '@shared/persistence';
 
 export interface ChartType {
     code: string,

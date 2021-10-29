@@ -1,6 +1,6 @@
 {
   "name": "a32nx",
-  "version": "0.7.0-dev",
+  "version": "0.8.0-dev",
   "scripts": {
     "lint": "eslint --cache **/*.{js,mjs,jsx,ts,tsx}",
     "lint-fix": "npm run lint -- --fix",
@@ -36,7 +36,7 @@
     "@rollup/plugin-replace": "^2.3.3",
     "@rollup/plugin-sucrase": "^3.1.0",
     "@rollup/plugin-typescript": "~8.0.0",
-    "@types/jest": "^26.0.24",
+    "@types/jest": "^27.0.2",
     "@types/react": "~17.0.0",
     "@types/react-dom": "~17.0.0",
     "@types/react-router-dom": "~5.1.6",

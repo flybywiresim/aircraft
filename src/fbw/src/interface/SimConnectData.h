@@ -117,6 +117,10 @@ struct SimData {
   double fuelWeightPerGallon;
   unsigned long long kohlsmanSettingStd_3;
   double cameraState;
+  double altitude_m;
+  double nav_loc_magvar_deg;
+  SIMCONNECT_DATA_LATLONALT nav_loc_pos;
+  SIMCONNECT_DATA_LATLONALT nav_gs_pos;
 };
 
 struct SimInput {
@@ -214,6 +218,10 @@ struct ClientDataAutopilotStateMachine {
   double EXPED_mode_active;
   double FD_disconnect;
   double FD_connect;
+  double nav_e_loc_valid;
+  double nav_e_loc_error_deg;
+  double nav_e_gs_valid;
+  double nav_e_gs_error_deg;
 };
 
 struct ClientDataAutopilotLaws {
@@ -247,6 +255,7 @@ struct ClientDataFlyByWire {
   double protection_ap_disc;
   double v_alpha_prot_kn;
   double v_alpha_max_kn;
+  double beta_target_deg;
 };
 
 struct ClientDataLocalVariables {

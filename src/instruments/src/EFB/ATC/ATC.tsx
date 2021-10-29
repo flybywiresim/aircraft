@@ -85,7 +85,7 @@ export const ATC = () => {
         if (frequency) {
             setCurrentAtc(controllers?.find((c) => c.frequency === fromFrequency(frequency)));
         }
-    }, [controllers]);
+    }, [controllers, frequency]);
 
     useInterval(() => {
         loadAtc();

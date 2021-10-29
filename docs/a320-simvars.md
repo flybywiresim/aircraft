@@ -221,30 +221,13 @@
     - Bool
     - True if "HYD LEAK MEASUREMENT Y" switch lock is down
 
-- A32NX_LANDING_ELEVATION
-    - Number in feet
-    - Minimum -2000, maximum 15000
-
-- A32NX_MAN_VS_CONTROL
-    - Number, either 0,1 or 2
-    - 0 if switch is in up position, 1 if switch is neutral, 2 if switch is down.
-
-- A32NX_CAB_PRESS_MODE_MAN
-    - Bool
-    - True if CABIN PRESS MODE SEL is in manual mode
-
-- A32NX_CAB_PRESS_SYS_FAULT
-    - Bool
-    - Determines if the FAULT light on the CABIN PRESS MODE SEL pushbutton
-      should be on
-
 - A32NX_DESTINATION_QNH
     - Millibar
     - Destination QNH as entered by the pilot in the MCDU during descent
 
-- A32NX_DITCHING
-    - Bool
-    - True if DITCHING mode is enabled
+- A32NX_DEPARTURE_ELEVATION
+    - Feet
+    - Departure runway elevation as calculated by the FMC
 
 - A32NX_FWC_FLIGHT_PHASE
     - Enum
@@ -333,34 +316,33 @@
     - The selected flight path angle in the FCU
 
 - A32NX_APU_EGT_CAUTION
-    - Celsius
-    - The APU's exhaust gas temperature caution level, to be indicated in amber in the cockpit,
-      when < -273.15 the ECB isn't supplying information, for example due to being unpowered.
+    - `Arinc429Word<Celsius>`
+    - The APU's exhaust gas temperature caution level, to be indicated in amber in the cockpit
 
 - A32NX_APU_EGT_WARNING
-    - Celsius
-    - The APU's exhaust gas temperature warning level, to be indicated in red in the cockpit,
-      when < -273.15 the ECB isn't supplying information, for example due to being unpowered.
+    - `Arinc429Word<Celsius>`
+    - The APU's exhaust gas temperature warning level, to be indicated in red in the cockpit
 
 - A32NX_APU_EGT
-    - Celsius
+    - `Arinc429Word<Celsius>`
     - The APU's exhaust gas temperature,
       when < -273.15 the ECB isn't supplying information, for example due to being unpowered.
 
 - A32NX_APU_N
+    - `Arinc429Word<Percent>`
+    - The APU's rotations per minute in percentage of the maximum RPM
+
+- A32NX_APU_N_RAW
     - Percent
-    - The APU's rotations per minute in percentage of the maximum RPM,
-      when < 0 the ECB isn't supplying information, for example due to being unpowered.
+    - The APU's rotations per minute in percentage of the maximum RPM
+      This raw value should only be used for sounds and effects.
 
 - A32NX_APU_BLEED_AIR_VALVE_OPEN
     - Bool
     - Indicates if the APU bleed air valve is open
 
 - A32NX_APU_LOW_FUEL_PRESSURE_FAULT
-    - Number
-        - -1: The ECB isn't supplying information, for example due to being unpowered.
-        - 0: The APU doesn't have an active LOW FUEL PRESSURE fault.
-        - 1: Indicates the APU has an active LOW FUEL PRESSURE fault.
+    - `Arinc429Word<Bool>`
 
 - A32NX_APU_IS_AUTO_SHUTDOWN
     - Bool
@@ -379,10 +361,7 @@
     - Indicates the percentage the APU air intake flap is open
 
 - A32NX_APU_FLAP_FULLY_OPEN
-    - Number
-        - -1: The ECB isn't supplying information, for example due to being unpowered.
-        - 0: The APU air intake flap isn't fully open.
-        - 1: The APU air intake flap is fully open.
+    - `Arinc429Word<Bool>`
 
 - A32NX_FIRE_BUTTON_APU
     - Bool
@@ -868,6 +847,14 @@
     - Psi
     - Current pressure in brake accumulator on yellow alternate brake circuit
 
+- A32NX_FWD_DOOR_CARGO_POSITION
+    - Percent
+    - Real position of the forward cargo door
+
+- A32NX_FWD_DOOR_CARGO_LOCKED
+    - Bool
+    - Forward cargo door is locked in closed position
+
 - A32NX_PARK_BRAKE_LEVER_POS
     - Bool
     - Current position of the parking brake lever
@@ -1019,6 +1006,48 @@
         - 2
         - 3
 
+- A32NX_PAX_TOTAL_ROWS_{rows}
+    - Number
+    - Indicates the current number of pax in the selected rows
+    - {rows}
+        - 1_6
+        - 7_13
+        - 14_21
+        - 22_29
+
+- A32NX_PAX_TOTAL_ROWS_{rows}_DESIRED
+    - Number
+    - Indicates the target number of pax in the selected rows
+    - {rows}
+        - 1_6
+        - 7_13
+        - 14_21
+        - 22_29
+
+- PAYLOAD STATION WEIGHT:{stationIndex}
+    - Number (Kilograms)
+    - Indicates the weight of the selected payload station
+    - {stationIndex}
+        - 6 + 1 | FWD BAGGAGE/CONTAINER
+        - 7 + 1 | AFT CONTAINER
+        - 8 + 1 | AFT BAGGAGE
+        - 9 + 1 | AFT BULK/LOOSE
+
+- A32NX_MCDU_{side}_ANNUNC_{annunciator}
+    - Boolean
+    - Indicates whether the annunciator light on the MCDU is lit
+    - {side}
+        - L
+        - R
+    - {annunciator}
+        - FAIL
+        - FMGC
+        - MCDU_MENU
+        - FM1
+        - IND
+        - RDY
+        - FM2
+
 ## Fly-By-Wire System
 
 - A32NX_SIDESTICK_POSITION_X
@@ -1052,6 +1081,10 @@
     - Number (0.0 -> 1.0)
     - Percentage of current (filtered) alpha to alpha max
     - alpha max can be overshoot so values beyond 1.0 should be expected
+
+- A32NX_BETA_TARGET
+    - Degrees
+    - Target beta (sideslip) in case of asymmetric thrust
 
 - A32NX_3D_AILERON_LEFT_DEFLECTION
     - Number
@@ -1138,79 +1171,79 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - The remaining alignment duration. Zero seconds when the system is aligned or the system is not aligning.
 
 - A32NX_ADIRS_ADR_{number}_ALTITUDE
-    - Feet
-    - The altitude. Approximately -1000000 when unavailable.
+    - Arinc429Word<Feet>
+    - The altitude.
 
 - A32NX_ADIRS_ADR_{number}_COMPUTED_AIRSPEED
-    - Knots
-    - The computed airspeed (CAS). Approximately -1000000 when unavailable.
+    - Arinc429Word<Knots>
+    - The computed airspeed (CAS).
 
 - A32NX_ADIRS_ADR_{number}_MACH
-    - Mach
-    - The Mach number (M). Approximately -1000000 when unavailable.
+    - Arinc429Word<Mach>
+    - The Mach number (M).
 
 - A32NX_ADIRS_ADR_{number}_BAROMETRIC_VERTICAL_SPEED
-    - Feet per minute
-    - The vertical speed (V/S) based on barometric altitude data. Approximately -1000000 when unavailable.
+    - Arinc429Word<Feet per minute>
+    - The vertical speed (V/S) based on barometric altitude data.
 
 - A32NX_ADIRS_ADR_{number}_TRUE_AIRSPEED
-    - Knots
-    - The true airspeed (TAS). Approximately -1000000 when unavailable.
+    - Arinc429Word<Knots>
+    - The true airspeed (TAS).
 
 - A32NX_ADIRS_ADR_{number}_STATIC_AIR_TEMPERATURE
-    - Celsius
-    - The static air temperature (SAT). Approximately -1000000 when unavailable.
+    - Arinc429Word<Celsius>
+    - The static air temperature (SAT).
       {number}: 1 or 3
 
 - A32NX_ADIRS_ADR_{number}_TOTAL_AIR_TEMPERATURE
-    - Celsius
-    - The total air temperature (TAT). Approximately -1000000 when unavailable.
+    - Arinc429Word<Celsius>
+    - The total air temperature (TAT).
       {number}: 1 or 3
 
 - A32NX_ADIRS_ADR_{number}_INTERNATIONAL_STANDARD_ATMOSPHERE_DELTA
-    - Celsius
-    - The delta (deviation) from international standard atmosphere temperature. Approximately -1000000 when unavailable.
+    - Arinc429Word<Celsius>
+    - The delta (deviation) from international standard atmosphere temperature.
       {number}: 1 or 3
 
 - A32NX_ADIRS_IR_{number}_PITCH
-    - Degrees
-    - The pitch angle of the aircraft. Approximately -1000000 when unavailable.
+    - Arinc429Word<Degrees>
+    - The pitch angle of the aircraft.
 
 - A32NX_ADIRS_IR_{number}_ROLL
-    - Degrees
-    - The roll angle of the aircraft. Approximately -1000000 when unavailable.
+    - Arinc429Word<Degrees>
+    - The roll angle of the aircraft.
 
 - A32NX_ADIRS_IR_{number}_HEADING
-    - Degrees
-    - The inertial heading of the aircraft. Approximately -1000000 when unavailable.
+    - Arinc429Word<Degrees>
+    - The inertial heading of the aircraft.
 
 - A32NX_ADIRS_IR_{number}_TRACK
-    - Degrees
-    - The inertial track of the aircraft. Approximately -1000000 when unavailable.
+    - Arinc429Word<Degrees>
+    - The inertial track of the aircraft.
 
 - A32NX_ADIRS_IR_{number}_VERTICAL_SPEED
-    - Feet per minute
-    - The vertical speed (V/S) based on inertial reference data. Approximately -1000000 when unavailable.
+    - Arinc429Word<Feet per minute>
+    - The vertical speed (V/S) based on inertial reference data.
 
 - A32NX_ADIRS_IR_{number}_GROUND_SPEED
-    - Knots
-    - The ground speed (GS) of the aircraft. Approximately -1000000 when unavailable.
+    - Arinc429Word<Knots>
+    - The ground speed (GS) of the aircraft.
 
 - A32NX_ADIRS_IR_{number}_WIND_DIRECTION
-    - Degrees
-    - The direction of the wind. Approximately -1000000 when unavailable.
+    - Arinc429Word<Degrees>
+    - The direction of the wind.
 
 - A32NX_ADIRS_IR_{number}_WIND_VELOCITY
-    - Degrees
-    - The velocity of the wind. Approximately -1000000 when unavailable.
+    - Arinc429Word<Degrees>
+    - The velocity of the wind.
 
 - A32NX_ADIRS_IR_{number}_LATITUDE
-    - Degrees
-    - The latitude of the aircraft. Approximately -1000000 when unavailable.
+    - Arinc429Word<Degrees>
+    - The latitude of the aircraft.
 
 - A32NX_ADIRS_IR_{number}_LONGITUDE
-    - Degrees
-    - The longitude of the aircraft. Approximately -1000000 when unavailable.
+    - Arinc429Word<Degrees>
+    - The longitude of the aircraft.
 
 - A32NX_ADIRS_USES_GPS_AS_PRIMARY
     - Bool
@@ -1613,6 +1646,10 @@ In the variables below, {number} should be replaced with one item in the set: { 
 
 ## Throttle Mapping System
 
+- A32NX_THROTTLE_MAPPING_LOADED_CONFIG:{index}
+    - Bool
+    - Indicates if we are using a configured throttle mapping for throttle axis {index}, first axis has index 1
+
 - A32NX_THROTTLE_MAPPING_INPUT:{index}
     - Number
     - Indicates the raw input values for throttle axis {index}, first axis has index 1
@@ -1763,6 +1800,49 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Ratio
     - Percent open of the cabin pressure outflow valve
 
+- A32NX_PRESS_SAFETY_VALVE_OPEN_PERCENTAGE
+    - Ratio
+    - Percent open of the cabin pressure safety valves
+
 - A32NX_PRESS_AUTO_LANDING_ELEVATION
     - Feet
     - Automatic landing elevation as calculated by the MCDU when a destination runway is entered
+
+- A32NX_PRESS_EXCESS_CAB_ALT
+    - Bool
+    - True when FWC condition for "EXCESS CAB ALT" is met
+
+- A32NX_PRESS_EXCESS_RESIDUAL_PR
+    - Bool
+    - True when FWC condition for "EXCES RESIDUAL PR" is met
+
+- A32NX_PRESS_LOW_DIFF_PR
+    - Bool
+    - True when FWC condition for "LO DIFF PR" is met
+
+- A32NX_OVHD_PRESS_LDG_ELEV_KNOB
+    - Feet
+    - Manual landing elevation as selected on the overhead LDG ELEV knob
+
+- A32NX_OVHD_PRESS_MAN_VS_CTL_SWITCH
+    - Number
+    - 0 if switch is in up position, 1 if switch is neutral, 2 if switch is down.
+
+- A32NX_OVHD_PRESS_MODE_SEL_PB_IS_AUTO
+    - Bool
+    - True if MODE SEL overhead pushbutton is depressed (in auto mode)
+
+- A32NX_OVHD_PRESS_MODE_SEL_PB_HAS_FAULT
+    - Bool
+    - True only when both Cabin Pressure Controller systems are faulty.
+
+- A32NX_OVHD_PRESS_DITCHING_PB_IS_ON
+    - Bool
+    - True if DITCHING pushbutton is pressed
+
+- A32NX_PACKS_{number}_IS_SUPPLYING
+    - Bool
+    - True if the corresponding pack is on and supplying air to the cabin
+    - {number}
+        - 1
+        - 2

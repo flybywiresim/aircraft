@@ -87,6 +87,7 @@ module.exports = {
         'import/extensions': 'off',
         'no-param-reassign': 'off',
         'no-undef-init': 'off',
+        'no-undef': 'off',
         'max-len': ['error', { code: 192 }],
 
         // Irrelevant for our use
@@ -96,6 +97,14 @@ module.exports = {
         'jsx-a11y/anchor-is-valid': 'off',
         'object-curly-newline': ['error', { multiline: true }],
         'linebreak-style': 'off',
+
+        // allow typescript overloads
+        'no-redeclare': 'off',
+        '@typescript-eslint/no-redeclare': ['error'],
+        'lines-between-class-members': 'off',
+        '@typescript-eslint/lines-between-class-members': ['error'],
+        'no-dupe-class-members': 'off',
+        '@typescript-eslint/no-dupe-class-members': ['error'],
     },
     globals: {
         Simplane: 'readonly',
@@ -103,5 +112,7 @@ module.exports = {
         Utils: 'readonly',
         JSX: 'readonly',
         Coherent: 'readonly',
+        ViewListener: 'readonly',
+        RegisterViewListener: 'readonly',
     },
 };

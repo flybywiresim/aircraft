@@ -8,12 +8,11 @@ class CDUMenuPage {
         let textAIDS;
         let textCFDS;
         let textMaint;
-        let textReturn;
         let selectedFMGC = false;
         let selectedATSU = false;
         let selectedAIDS = false;
         let selectedCFDS = false;
-        let selectedMaint = false;
+        const selectedMaint = false;
 
         const updateView = () => {
             textFMGC = "<FMGC (REQ)";
@@ -21,7 +20,6 @@ class CDUMenuPage {
             textAIDS = "<AIDS";
             textCFDS = "<CFDS";
             textMaint = "MCDU MAINT>";
-            textReturn = "RETURN>";
             if (activeSystem === "FMGC") {
                 textFMGC = "<FMGC (REQ)[color]green";
             }
@@ -64,9 +62,9 @@ class CDUMenuPage {
                 [""],
                 [textCFDS],
                 [""],
-                ["", "OPTIONS>"],
                 [""],
-                ["", textReturn]
+                [""],
+                [""]
             ]);
         };
 
@@ -81,7 +79,7 @@ class CDUMenuPage {
             setTimeout(() => {
                 mcdu.addNewMessage(NXFictionalMessages.emptyMessage);
                 CDUIdentPage.ShowPage(mcdu);
-            }, Math.floor(Math.random() * 400) + 100);
+            }, Math.floor(Math.random() * 400) + 200);
         };
 
         mcdu.onLeftInput[1] = () => {
@@ -112,16 +110,6 @@ class CDUMenuPage {
                 mcdu.addNewMessage(NXFictionalMessages.emptyMessage);
                 CDUCfdsMainMenu.ShowPage(mcdu);
             }, Math.floor(Math.random() * 400) + 400);
-        };
-
-        mcdu.onRightInput[4] = () => {
-            mcdu.addNewMessage(NXSystemMessages.waitForSystemResponse);
-            selectedMaint = true;
-            updateView();
-            setTimeout(() => {
-                mcdu.addNewMessage(NXFictionalMessages.emptyMessage);
-                CDU_OPTIONS_MainMenu.ShowPage(mcdu);
-            }, Math.floor(Math.random() * 400) + 200);
         };
 
         mcdu.onDir = () => {

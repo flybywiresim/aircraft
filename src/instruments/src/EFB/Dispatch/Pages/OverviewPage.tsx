@@ -51,7 +51,6 @@ const OverviewPage = (props: OverviewPageProps) => {
 
     useEffect(() => {
         const unitConv = (props.units === 'kgs') ? 1000 : 2240;
-        console.log(`Units changed to ${unitConv}`);
         setUnitConversion(unitConv);
     }, [props.units]);
 
@@ -105,7 +104,7 @@ const OverviewPage = (props: OverviewPageProps) => {
                                 {' '}
                                 Max PAX
                             </h3>
-                            <span className="mt-2 text-lg">180</span>
+                            <span className="mt-2 text-lg">174</span>
                         </div>
                         <div className="w-1/2">
                             <h3 className="text-xl font-medium flex items-center">

@@ -29,6 +29,11 @@ class A32NX_Core {
                 updateInterval: 150,
             },
             {
+                name: 'Boarding',
+                module: new A32NX_Boarding(),
+                updateInterval: 150,
+            },
+            {
                 name: 'LocalVars',
                 module: new A32NX_LocalVarUpdater(),
                 updateInterval: 50,
@@ -59,13 +64,13 @@ class A32NX_Core {
                 updateInterval: 500,
             },
         ];
-
         this.moduleThrottlers = {};
         for (const moduleDefinition of this.modules) {
             this.moduleThrottlers[moduleDefinition.name] = new UpdateThrottler(moduleDefinition.updateInterval);
         }
 
         this.soundManager = new A32NX_SoundManager();
+        this.tipsManager = new A32NX_TipsManager();
     }
 
     init(startTime) {

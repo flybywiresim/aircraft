@@ -39,17 +39,19 @@ typedef enum {
 #ifndef DEFINED_TYPEDEF_FOR_athr_time_
 #define DEFINED_TYPEDEF_FOR_athr_time_
 
-typedef struct {
+struct athr_time
+{
   real_T dt;
   real_T simulation_time;
-} athr_time;
+};
 
 #endif
 
 #ifndef DEFINED_TYPEDEF_FOR_athr_raw_data_
 #define DEFINED_TYPEDEF_FOR_athr_raw_data_
 
-typedef struct {
+struct athr_raw_data
+{
   real_T nz_g;
   real_T Theta_deg;
   real_T Phi_deg;
@@ -78,14 +80,15 @@ typedef struct {
   real_T corrected_engine_N1_2_percent;
   real_T TAT_degC;
   real_T OAT_degC;
-} athr_raw_data;
+};
 
 #endif
 
 #ifndef DEFINED_TYPEDEF_FOR_athr_input_
 #define DEFINED_TYPEDEF_FOR_athr_input_
 
-typedef struct {
+struct athr_input
+{
   boolean_T ATHR_push;
   boolean_T ATHR_disconnect;
   real_T TLA_1_deg;
@@ -118,18 +121,19 @@ typedef struct {
   boolean_T is_air_conditioning_2_active;
   boolean_T FD_active;
   boolean_T ATHR_reset_disable;
-} athr_input;
+};
 
 #endif
 
 #ifndef DEFINED_TYPEDEF_FOR_athr_in_
 #define DEFINED_TYPEDEF_FOR_athr_in_
 
-typedef struct {
+struct athr_in
+{
   athr_time time;
   athr_raw_data data;
   athr_input input;
-} athr_in;
+};
 
 #endif
 
@@ -164,7 +168,8 @@ typedef enum {
 #ifndef DEFINED_TYPEDEF_FOR_athr_data_
 #define DEFINED_TYPEDEF_FOR_athr_data_
 
-typedef struct {
+struct athr_data
+{
   real_T nz_g;
   real_T Theta_deg;
   real_T Phi_deg;
@@ -194,27 +199,29 @@ typedef struct {
   real_T TAT_degC;
   real_T OAT_degC;
   real_T ISA_degC;
-} athr_data;
+};
 
 #endif
 
 #ifndef DEFINED_TYPEDEF_FOR_athr_data_computed_
 #define DEFINED_TYPEDEF_FOR_athr_data_computed_
 
-typedef struct {
+struct athr_data_computed
+{
   boolean_T TLA_in_active_range;
   boolean_T is_FLX_active;
   boolean_T ATHR_push;
   boolean_T ATHR_disabled;
   real_T time_since_touchdown;
-} athr_data_computed;
+};
 
 #endif
 
 #ifndef DEFINED_TYPEDEF_FOR_athr_output_
 #define DEFINED_TYPEDEF_FOR_athr_output_
 
-typedef struct {
+struct athr_output
+{
   real_T sim_throttle_lever_1_pos;
   real_T sim_throttle_lever_2_pos;
   real_T sim_thrust_mode_1;
@@ -232,20 +239,21 @@ typedef struct {
   athr_mode_message mode_message;
   boolean_T thrust_lever_warning_flex;
   boolean_T thrust_lever_warning_toga;
-} athr_output;
+};
 
 #endif
 
 #ifndef DEFINED_TYPEDEF_FOR_athr_out_
 #define DEFINED_TYPEDEF_FOR_athr_out_
 
-typedef struct {
+struct athr_out
+{
   athr_time time;
   athr_data data;
   athr_data_computed data_computed;
   athr_input input;
   athr_output output;
-} athr_out;
+};
 
 #endif
 #endif

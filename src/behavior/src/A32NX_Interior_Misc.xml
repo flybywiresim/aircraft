@@ -650,6 +650,8 @@
 
     <Template Name="FBW_CVR_Ground_Control_Pushbutton">
         <DefaultTemplateParameters>
+            <WWISE_EVENT_1>mpb1on</WWISE_EVENT_1>
+            <WWISE_EVENT_2>mpb1off</WWISE_EVENT_2>
             <GNDCTL_PERMISSIVES type="rnp" return="boolean">
 // from 801PP via CB 4RK
 alias ctlPower = (L:A32NX_ELEC_DC_ESS_SHED_BUS_IS_POWERED, bool);

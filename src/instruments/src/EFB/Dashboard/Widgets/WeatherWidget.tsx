@@ -108,7 +108,7 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
 
     useEffect(() => {
         getMetar(props.icao, source);
-    }, [props.icao]);
+    }, [props.icao, source]);
 
     return (
         <div className="text-white">

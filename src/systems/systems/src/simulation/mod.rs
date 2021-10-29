@@ -1,28 +1,22 @@
 use std::time::Duration;
 
 mod update_context;
+use crate::electrical::{ElectricalElementIdentifier, ElectricalElementIdentifierProvider};
+use crate::shared::ElectricalBusType;
 use crate::{
     electrical::Electricity,
     failures::FailureType,
+    shared::arinc429::{from_arinc429, to_arinc429, Arinc429Word, SignStatus},
     shared::{to_bool, ConsumePower, ElectricalBuses, MachNumber, PowerConsumptionReport},
 };
 use uom::si::{
-    acceleration::foot_per_second_squared,
-    angle::degree,
-    electric_current::ampere,
-    electric_potential::volt,
-    f64::*,
-    frequency::hertz,
-    length::foot,
-    mass::pound,
-    pressure::psi,
-    ratio::percent,
-    thermodynamic_temperature::{degree_celsius, kelvin},
-    velocity::knot,
-    volume::gallon,
+    acceleration::foot_per_second_squared, angle::degree, electric_current::ampere,
+    electric_potential::volt, f64::*, frequency::hertz, length::foot, mass::pound, pressure::psi,
+    ratio::percent, thermodynamic_temperature::degree_celsius, velocity::knot, volume::gallon,
     volume_rate::gallon_per_second,
 };
 pub use update_context::*;
+
 pub mod test;
 
 /// Trait for a type which can read and write simulator data.
@@ -30,10 +24,79 @@ pub mod test;
 /// interacts with the simulator. This separation of concerns is very important
 /// for keeping the majority of the code unit testable.
 pub trait SimulatorReaderWriter {
-    /// Reads a variable with the given name from the simulator.
-    fn read(&mut self, name: &str) -> f64;
-    /// Writes a variable with the given name to the simulator.
-    fn write(&mut self, name: &str, value: f64);
+    /// Reads a variable with the given identifier from the simulator.
+    fn read(&mut self, identifier: &VariableIdentifier) -> f64;
+    /// Writes a variable with the given identifier to the simulator.
+    fn write(&mut self, identifier: &VariableIdentifier, value: f64);
+}
+
+pub trait VariableRegistry {
+    fn get(&mut self, name: String) -> VariableIdentifier;
+}
+
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq, Hash)]
+pub struct VariableIdentifier(u8, usize);
+
+impl VariableIdentifier {
+    pub fn new(identifier_type: u8) -> Self {
+        Self {
+            0: identifier_type,
+            1: 0,
+        }
+    }
+
+    pub fn identifier_type(&self) -> u8 {
+        self.0
+    }
+
+    pub fn identifier_index(&self) -> usize {
+        self.1
+    }
+}
+
+impl VariableIdentifier {
+    pub fn next(&self) -> Self {
+        Self {
+            0: self.0,
+            1: self.1 + 1,
+        }
+    }
+}
+
+pub struct InitContext<'a> {
+    electrical_identifier_provider: &'a mut dyn ElectricalElementIdentifierProvider,
+    registry: &'a mut dyn VariableRegistry,
+}
+
+impl<'a> InitContext<'a> {
+    pub fn new(
+        electricity: &'a mut impl ElectricalElementIdentifierProvider,
+        registry: &'a mut impl VariableRegistry,
+    ) -> Self {
+        Self {
+            electrical_identifier_provider: electricity,
+            registry,
+        }
+    }
+
+    pub fn get_identifier(&mut self, name: String) -> VariableIdentifier {
+        self.registry.get(name)
+    }
+}
+
+impl<'a> ElectricalElementIdentifierProvider for InitContext<'a> {
+    fn next_electrical_identifier(&mut self) -> ElectricalElementIdentifier {
+        self.electrical_identifier_provider
+            .next_electrical_identifier()
+    }
+
+    fn next_electrical_identifier_for_bus(
+        &mut self,
+        bus_type: ElectricalBusType,
+    ) -> ElectricalElementIdentifier {
+        self.electrical_identifier_provider
+            .next_electrical_identifier_for_bus(bus_type)
+    }
 }
 
 /// An [`Aircraft`] that can be simulated by the [`Simulation`].
@@ -115,13 +178,14 @@ pub trait SimulationElement {
     /// # Examples
     /// ```rust
     /// # use systems::simulation::{SimulationElement, SimulationElementVisitor,
-    /// #    SimulatorReader, SimulatorWriter, Read};
+    /// # SimulatorReader, SimulatorWriter, Read, VariableIdentifier};
     /// struct MySimulationElement {
     ///     is_on: bool,
     /// }
     /// impl SimulationElement for MySimulationElement {
     ///     fn read(&mut self, reader: &mut SimulatorReader) {
-    ///         self.is_on = reader.read("MY_SIMULATOR_ELEMENT_IS_ON");
+    ///         // The identifier would ordinarily be retrieved from the registry.
+    ///         self.is_on = reader.read(&VariableIdentifier::default());
     ///     }
     /// }
     /// ```
@@ -131,13 +195,14 @@ pub trait SimulationElement {
     /// # Examples
     /// ```rust
     /// # use systems::simulation::{SimulationElement, SimulationElementVisitor,
-    /// #    SimulatorReader, SimulatorWriter, Write};
+    /// # SimulatorReader, SimulatorWriter, Write, VariableIdentifier};
     /// struct MySimulationElement {
     ///     is_on: bool,
     /// }
     /// impl SimulationElement for MySimulationElement {
     ///     fn write(&self, writer: &mut SimulatorWriter) {
-    ///        writer.write("MY_SIMULATOR_ELEMENT_IS_ON", self.is_on);
+    ///        // The identifier would ordinarily be retrieved from the registry.
+    ///        writer.write(&VariableIdentifier::default(), self.is_on);
     ///     }
     /// }
     /// ```
@@ -212,13 +277,20 @@ pub trait SimulationElementVisitor {
 pub struct Simulation<T: Aircraft> {
     aircraft: T,
     electricity: Electricity,
+    update_context: UpdateContext,
 }
 impl<T: Aircraft> Simulation<T> {
-    pub fn new<U: FnOnce(&mut Electricity) -> T>(aircraft_ctor_fn: U) -> Self {
+    pub fn new<U: FnOnce(&mut InitContext) -> T>(
+        aircraft_ctor_fn: U,
+        registry: &mut impl VariableRegistry,
+    ) -> Self {
         let mut electricity = Electricity::new();
+        let mut context = InitContext::new(&mut electricity, registry);
+        let update_context = UpdateContext::new_for_simulation(&mut context);
         Self {
-            aircraft: (aircraft_ctor_fn)(&mut electricity),
+            aircraft: (aircraft_ctor_fn)(&mut context),
             electricity,
+            update_context,
         }
     }
 
@@ -234,11 +306,11 @@ impl<T: Aircraft> Simulation<T> {
     /// Basic usage is as follows:
     /// ```rust
     /// # use std::time::Duration;
-    /// # use systems::electrical::Electricity;
-    /// # use systems::simulation::{Aircraft, SimulationElement, SimulatorReaderWriter, Simulation, UpdateContext};
+    /// # use systems::simulation::{Aircraft, SimulationElement, SimulatorReaderWriter, Simulation,
+    /// # UpdateContext, InitContext, VariableRegistry, VariableIdentifier};
     /// # struct MyAircraft {}
     /// # impl MyAircraft {
-    /// #     fn new(_: &mut Electricity) -> Self {
+    /// #     fn new(_: &mut InitContext) -> Self {
     /// #         Self {}
     /// #     }
     /// # }
@@ -252,10 +324,22 @@ impl<T: Aircraft> Simulation<T> {
     /// #     }
     /// # }
     /// # impl SimulatorReaderWriter for MySimulatorReaderWriter {
-    /// #     fn read(&mut self, name: &str) -> f64 { 0.0 }
-    /// #     fn write(&mut self, name: &str, value: f64) { }
+    /// #     fn read(&mut self, identifier: &VariableIdentifier) -> f64 { 0.0 }
+    /// #     fn write(&mut self, identifier: &VariableIdentifier, value: f64) { }
     /// # }
-    /// let mut simulation = Simulation::new(|electricity| MyAircraft::new(electricity));
+    /// # struct MyVariableRegistry {}
+    /// # impl MyVariableRegistry {
+    /// #     fn new() -> Self {
+    /// #         Self {}
+    /// #     }
+    /// # }
+    /// # impl VariableRegistry for MyVariableRegistry {
+    /// #     fn get(&mut self, name: String) -> VariableIdentifier {
+    /// #         Default::default()
+    /// #     }
+    /// # }
+    /// let mut registry = MyVariableRegistry::new();
+    /// let mut simulation = Simulation::new(MyAircraft::new, &mut registry);
     /// let mut reader_writer = MySimulatorReaderWriter::new();
     /// // For each frame, call the tick function.
     /// simulation.tick(Duration::from_millis(50), &mut reader_writer)
@@ -265,22 +349,23 @@ impl<T: Aircraft> Simulation<T> {
         self.electricity.pre_tick();
 
         let mut reader = SimulatorReader::new(reader_writer);
-        let context = UpdateContext::from_reader(&mut reader, delta);
+        self.update_context.update(&mut reader, delta);
 
         let mut visitor = SimulatorToSimulationVisitor::new(&mut reader);
         self.aircraft.accept(&mut visitor);
 
         self.aircraft
-            .update_before_power_distribution(&context, &mut self.electricity);
+            .update_before_power_distribution(&self.update_context, &mut self.electricity);
 
         self.aircraft
-            .distribute_electricity(&context, &self.electricity);
+            .distribute_electricity(&self.update_context, &self.electricity);
 
-        self.aircraft.update_after_power_distribution(&context);
         self.aircraft
-            .consume_electricity(&context, &mut self.electricity);
+            .update_after_power_distribution(&self.update_context);
         self.aircraft
-            .report_electricity_consumption(&context, &self.electricity);
+            .consume_electricity(&self.update_context, &mut self.electricity);
+        self.aircraft
+            .report_electricity_consumption(&self.update_context, &self.electricity);
 
         let mut writer = SimulatorWriter::new(reader_writer);
         let mut visitor = SimulationToSimulatorVisitor::new(&mut writer);
@@ -374,7 +459,7 @@ impl<'a> SimulationElementVisitor for SimulationToSimulatorVisitor<'a> {
 }
 
 pub trait Reader {
-    fn read_f64(&mut self, name: &str) -> f64;
+    fn read_f64(&mut self, identifier: &VariableIdentifier) -> f64;
 }
 
 /// Reads data from the simulator into the aircraft system simulation.
@@ -389,13 +474,13 @@ impl<'a> SimulatorReader<'a> {
     }
 }
 impl<'a> Reader for SimulatorReader<'a> {
-    fn read_f64(&mut self, name: &str) -> f64 {
-        self.simulator_read_writer.read(name)
+    fn read_f64(&mut self, identifier: &VariableIdentifier) -> f64 {
+        self.simulator_read_writer.read(identifier)
     }
 }
 
 pub trait Writer {
-    fn write_f64(&mut self, name: &str, value: f64);
+    fn write_f64(&mut self, identifier: &VariableIdentifier, value: f64);
 }
 
 /// Writes data from the aircraft system simulation into the the simulator.
@@ -410,8 +495,8 @@ impl<'a> SimulatorWriter<'a> {
     }
 }
 impl<'a> Writer for SimulatorWriter<'a> {
-    fn write_f64(&mut self, name: &str, value: f64) {
-        self.simulator_read_writer.write(name, value);
+    fn write_f64(&mut self, identifier: &VariableIdentifier, value: f64) {
+        self.simulator_read_writer.write(identifier, value);
     }
 }
 
@@ -424,22 +509,55 @@ fn from_bool(value: bool) -> f64 {
     }
 }
 
-pub trait Read<T> {
+pub trait Read<T: Copy> {
     /// Reads a value from the simulator.
     /// # Examples
     /// ```rust
     /// # use systems::simulation::{SimulationElement, SimulationElementVisitor,
-    /// #    SimulatorReader, SimulatorWriter, Read};
+    /// # SimulatorReader, SimulatorWriter, Read, VariableIdentifier};
     /// struct MySimulationElement {
     ///     is_on: bool,
     /// }
     /// impl SimulationElement for MySimulationElement {
     ///     fn read(&mut self, reader: &mut SimulatorReader) {
-    ///         self.is_on = reader.read("MY_SIMULATOR_ELEMENT_IS_ON");
+    ///         // The identifier would ordinarily be retrieved from the registry.
+    ///         self.is_on = reader.read(&VariableIdentifier::default());
     ///     }
     /// }
     /// ```
-    fn read(&mut self, name: &str) -> T;
+    fn read(&mut self, identifier: &VariableIdentifier) -> T
+    where
+        Self: Sized + Reader,
+    {
+        let value = self.read_f64(identifier);
+        self.convert(value)
+    }
+
+    /// Reads an ARINC 429 value from the simulator.
+    /// # Examples
+    /// ```rust
+    /// # use systems::simulation::{SimulationElement, SimulationElementVisitor,
+    /// # SimulatorReader, SimulatorWriter, Read, VariableIdentifier};
+    /// # use systems::shared::arinc429::Arinc429Word;
+    /// struct MySimulationElement {
+    ///     is_on: Arinc429Word<bool>,
+    /// }
+    /// impl SimulationElement for MySimulationElement {
+    ///     fn read(&mut self, reader: &mut SimulatorReader) {
+    ///         // The identifier would ordinarily be retrieved from the registry.
+    ///         self.is_on = reader.read_arinc429(&VariableIdentifier::default());
+    ///     }
+    /// }
+    /// ```
+    fn read_arinc429(&mut self, identifier: &VariableIdentifier) -> Arinc429Word<T>
+    where
+        Self: Sized + Reader,
+    {
+        let value = from_arinc429(self.read_f64(identifier));
+        Arinc429Word::new(self.convert(value.0), value.1)
+    }
+
+    fn convert(&mut self, value: f64) -> T;
 }
 
 pub trait Write<T> {
@@ -447,266 +565,164 @@ pub trait Write<T> {
     /// # Examples
     /// ```rust
     /// # use systems::simulation::{SimulationElement, SimulationElementVisitor,
-    /// #    SimulatorReader, SimulatorWriter, Write};
+    /// # SimulatorReader, SimulatorWriter, Write, VariableIdentifier};
     /// struct MySimulationElement {
     ///     n: f64,
     /// }
     /// impl SimulationElement for MySimulationElement {
     ///     fn write(&self, writer: &mut SimulatorWriter) {
-    ///        writer.write("MY_SIMULATOR_ELEMENT_N", self.n);
+    ///        // The identifier would ordinarily be retrieved from the registry.
+    ///        writer.write(&VariableIdentifier::default(), self.n);
     ///     }
     /// }
     /// ```
-    fn write(&mut self, name: &str, value: T);
-}
+    fn write(&mut self, identifier: &VariableIdentifier, value: T)
+    where
+        Self: Sized + Writer,
+    {
+        let value = self.convert(value);
+        self.write_f64(identifier, value)
+    }
 
-pub trait WriteWhen<T> {
-    /// Write a value to the simulator when the given condition is true,
-    /// otherwise write a value which indicates the lack of a value.
+    /// Write an ARINC 429 value to the simulator.
+    ///
+    /// Note that the `f64` will be converted to a `f32` internally, thus reducing precision.
     /// # Examples
     /// ```rust
     /// # use systems::simulation::{SimulationElement, SimulationElementVisitor,
-    /// #    SimulatorReader, SimulatorWriter, WriteWhen};
-    /// # use uom::si::f64::*;
+    /// # SimulatorReader, SimulatorWriter, Write, VariableIdentifier};
+    /// # use systems::shared::arinc429::SignStatus;
     /// struct MySimulationElement {
-    ///     is_powered: bool,
-    ///     egt: ThermodynamicTemperature,
+    ///     n: f64,
     /// }
     /// impl SimulationElement for MySimulationElement {
     ///     fn write(&self, writer: &mut SimulatorWriter) {
-    ///        writer.write_when(self.is_powered, "MY_SIMULATOR_ELEMENT_EGT", self.egt);
+    ///        // The identifier would ordinarily be retrieved from the registry.
+    ///        writer.write_arinc429(&VariableIdentifier::default(), self.n, SignStatus::NormalOperation);
     ///     }
     /// }
     /// ```
-    fn write_when(&mut self, condition: bool, name: &str, value: T);
+    fn write_arinc429(&mut self, identifier: &VariableIdentifier, value: T, ssm: SignStatus)
+    where
+        Self: Sized + Writer,
+    {
+        let value = self.convert(value);
+        self.write_f64(identifier, to_arinc429(value, ssm));
+    }
+
+    fn convert(&mut self, value: T) -> f64;
 }
 
-impl<T: Reader> Read<Velocity> for T {
-    fn read(&mut self, name: &str) -> Velocity {
-        Velocity::new::<knot>(self.read_f64(name))
-    }
+macro_rules! read_write_uom {
+    ($t: ty, $t2: ty) => {
+        impl<T: Reader> Read<$t> for T {
+            fn convert(&mut self, value: f64) -> $t {
+                <$t>::new::<$t2>(value)
+            }
+        }
+
+        impl<T: Writer> Write<$t> for T {
+            fn convert(&mut self, value: $t) -> f64 {
+                value.get::<$t2>()
+            }
+        }
+    };
 }
 
-impl<T: Writer> Write<Velocity> for T {
-    fn write(&mut self, name: &str, value: Velocity) {
-        self.write_f64(name, value.get::<knot>())
-    }
+macro_rules! read_write_as {
+    ($t: ty) => {
+        impl<T: Reader> Read<$t> for T {
+            fn convert(&mut self, value: f64) -> $t {
+                value as $t
+            }
+        }
+
+        impl<T: Writer> Write<$t> for T {
+            fn convert(&mut self, value: $t) -> f64 {
+                value as f64
+            }
+        }
+    };
 }
 
-impl<T: Reader> Read<Length> for T {
-    fn read(&mut self, name: &str) -> Length {
-        // Length is tricky, as we might have usage of nautical mile
-        // or other units later. We'll have to work around that problem
-        // when we get there.
-        Length::new::<foot>(self.read_f64(name))
-    }
+macro_rules! read_write_into {
+    ($t: ty) => {
+        impl<T: Reader> Read<$t> for T {
+            fn convert(&mut self, value: f64) -> $t {
+                value.into()
+            }
+        }
+
+        impl<T: Writer> Write<$t> for T {
+            fn convert(&mut self, value: $t) -> f64 {
+                value.into()
+            }
+        }
+    };
 }
 
-impl<T: Writer> Write<Length> for T {
-    fn write(&mut self, name: &str, value: Length) {
-        // Length is tricky, as we might have usage of nautical mile
-        // or other units later. We'll have to work around that problem
-        // when we get there.
-        self.write_f64(name, value.get::<foot>())
-    }
-}
+read_write_as!(i8);
+read_write_as!(u8);
+read_write_as!(i16);
+read_write_as!(u16);
+read_write_as!(i32);
+read_write_as!(u32);
+read_write_as!(i64);
+read_write_as!(u64);
+read_write_as!(i128);
+read_write_as!(u128);
+read_write_as!(usize);
+read_write_as!(isize);
+read_write_as!(f32);
 
-impl<T: Reader> Read<Acceleration> for T {
-    fn read(&mut self, name: &str) -> Acceleration {
-        Acceleration::new::<foot_per_second_squared>(self.read_f64(name))
-    }
-}
+read_write_uom!(Velocity, knot);
+read_write_uom!(Length, foot);
+read_write_uom!(Acceleration, foot_per_second_squared);
+read_write_uom!(ThermodynamicTemperature, degree_celsius);
+read_write_uom!(Ratio, percent);
+read_write_uom!(ElectricPotential, volt);
+read_write_uom!(ElectricCurrent, ampere);
+read_write_uom!(Frequency, hertz);
+read_write_uom!(Pressure, psi);
+read_write_uom!(Volume, gallon);
+read_write_uom!(VolumeRate, gallon_per_second);
+read_write_uom!(Mass, pound);
+read_write_uom!(Angle, degree);
 
-impl<T: Reader> Read<ThermodynamicTemperature> for T {
-    fn read(&mut self, name: &str) -> ThermodynamicTemperature {
-        ThermodynamicTemperature::new::<degree_celsius>(self.read_f64(name))
-    }
-}
-
-impl<T: Writer> Write<ThermodynamicTemperature> for T {
-    fn write(&mut self, name: &str, value: ThermodynamicTemperature) {
-        self.write_f64(name, value.get::<degree_celsius>())
-    }
-}
-
-impl<T: Writer> WriteWhen<ThermodynamicTemperature> for T {
-    fn write_when(&mut self, condition: bool, name: &str, value: ThermodynamicTemperature) {
-        self.write_f64(
-            name,
-            if condition {
-                value.get::<degree_celsius>()
-            } else {
-                ThermodynamicTemperature::new::<kelvin>(0.).get::<degree_celsius>() - 1.
-            },
-        );
-    }
-}
-
-impl<T: Reader> Read<Ratio> for T {
-    fn read(&mut self, name: &str) -> Ratio {
-        Ratio::new::<percent>(self.read_f64(name))
-    }
-}
-
-impl<T: Writer> Write<Ratio> for T {
-    fn write(&mut self, name: &str, value: Ratio) {
-        self.write_f64(name, value.get::<percent>())
-    }
-}
-
-impl<T: Writer> WriteWhen<Ratio> for T {
-    fn write_when(&mut self, condition: bool, name: &str, value: Ratio) {
-        self.write_f64(
-            name,
-            if condition {
-                value.get::<percent>()
-            } else {
-                -1.
-            },
-        );
-    }
-}
-
-impl<T: Reader> Read<bool> for T {
-    fn read(&mut self, name: &str) -> bool {
-        to_bool(self.read_f64(name))
-    }
-}
-
-impl<T: Writer> Write<bool> for T {
-    fn write(&mut self, name: &str, value: bool) {
-        self.write_f64(name, from_bool(value));
-    }
-}
-
-impl<T: Writer> WriteWhen<bool> for T {
-    fn write_when(&mut self, condition: bool, name: &str, value: bool) {
-        self.write_f64(name, if condition { from_bool(value) } else { -1. });
-    }
-}
-
-impl<T: Writer> Write<usize> for T {
-    fn write(&mut self, name: &str, value: usize) {
-        self.write_f64(name, value as f64)
-    }
-}
+read_write_into!(MachNumber);
 
 impl<T: Reader> Read<f64> for T {
-    fn read(&mut self, name: &str) -> f64 {
-        self.read_f64(name)
+    fn convert(&mut self, value: f64) -> f64 {
+        value
     }
 }
 
 impl<T: Writer> Write<f64> for T {
-    fn write(&mut self, name: &str, value: f64) {
-        self.write_f64(name, value);
+    fn convert(&mut self, value: f64) -> f64 {
+        value
     }
 }
 
-impl<T: Reader> Read<ElectricPotential> for T {
-    fn read(&mut self, name: &str) -> ElectricPotential {
-        ElectricPotential::new::<volt>(self.read_f64(name))
+impl<T: Reader> Read<bool> for T {
+    fn convert(&mut self, value: f64) -> bool {
+        to_bool(value)
     }
 }
 
-impl<T: Writer> Write<ElectricPotential> for T {
-    fn write(&mut self, name: &str, value: ElectricPotential) {
-        self.write_f64(name, value.get::<volt>());
-    }
-}
-
-impl<T: Reader> Read<ElectricCurrent> for T {
-    fn read(&mut self, name: &str) -> ElectricCurrent {
-        ElectricCurrent::new::<ampere>(self.read_f64(name))
-    }
-}
-
-impl<T: Writer> Write<ElectricCurrent> for T {
-    fn write(&mut self, name: &str, value: ElectricCurrent) {
-        self.write_f64(name, value.get::<ampere>());
-    }
-}
-
-impl<T: Reader> Read<Frequency> for T {
-    fn read(&mut self, name: &str) -> Frequency {
-        Frequency::new::<hertz>(self.read_f64(name))
-    }
-}
-
-impl<T: Writer> Write<Frequency> for T {
-    fn write(&mut self, name: &str, value: Frequency) {
-        self.write_f64(name, value.get::<hertz>());
-    }
-}
-
-impl<T: Reader> Read<Pressure> for T {
-    fn read(&mut self, name: &str) -> Pressure {
-        Pressure::new::<psi>(self.read_f64(name))
-    }
-}
-
-impl<T: Writer> Write<Pressure> for T {
-    fn write(&mut self, name: &str, value: Pressure) {
-        self.write_f64(name, value.get::<psi>());
-    }
-}
-
-impl<T: Reader> Read<Volume> for T {
-    fn read(&mut self, name: &str) -> Volume {
-        Volume::new::<gallon>(self.read_f64(name))
-    }
-}
-
-impl<T: Writer> Write<Volume> for T {
-    fn write(&mut self, name: &str, value: Volume) {
-        self.write_f64(name, value.get::<gallon>());
-    }
-}
-
-impl<T: Writer> Write<VolumeRate> for T {
-    fn write(&mut self, name: &str, value: VolumeRate) {
-        self.write_f64(name, value.get::<gallon_per_second>());
-    }
-}
-
-impl<T: Reader> Read<Mass> for T {
-    fn read(&mut self, name: &str) -> Mass {
-        Mass::new::<pound>(self.read_f64(name))
-    }
-}
-
-impl<T: Reader> Read<Angle> for T {
-    fn read(&mut self, name: &str) -> Angle {
-        Angle::new::<degree>(self.read_f64(name))
-    }
-}
-
-impl<T: Writer> Write<Angle> for T {
-    fn write(&mut self, name: &str, value: Angle) {
-        self.write_f64(name, value.get::<degree>());
+impl<T: Writer> Write<bool> for T {
+    fn convert(&mut self, value: bool) -> f64 {
+        from_bool(value)
     }
 }
 
 impl<T: Reader> Read<Duration> for T {
-    fn read(&mut self, name: &str) -> Duration {
-        Duration::from_secs_f64(self.read_f64(name))
+    fn convert(&mut self, value: f64) -> Duration {
+        Duration::from_secs_f64(value)
     }
 }
 
 impl<T: Writer> Write<Duration> for T {
-    fn write(&mut self, name: &str, value: Duration) {
-        self.write_f64(name, value.as_secs_f64());
-    }
-}
-
-impl<T: Reader> Read<MachNumber> for T {
-    fn read(&mut self, name: &str) -> MachNumber {
-        MachNumber(self.read_f64(name))
-    }
-}
-
-impl<T: Writer> Write<MachNumber> for T {
-    fn write(&mut self, name: &str, value: MachNumber) {
-        self.write_f64(name, value.0);
+    fn convert(&mut self, value: Duration) -> f64 {
+        value.as_secs_f64()
     }
 }
