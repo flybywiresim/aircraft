@@ -294,8 +294,8 @@ impl PneumaticContainerConnector {
         to: &mut impl PneumaticContainer,
         volume: Volume,
     ) {
-        from.change_volume(-volume);
-        to.change_volume(volume);
+        from.change_fluid_amount(-volume);
+        to.change_fluid_amount(volume);
     }
 
     pub fn with_transfer_speed_factor(&mut self, new_transfer_speed_factor: Ratio) -> &mut Self {
@@ -342,7 +342,7 @@ impl PneumaticExhaust {
             * (1. - (-Self::TRANSFER_SPEED * context.delta_as_secs_f64()).exp()))
         .max(-from.volume());
 
-        from.change_volume(fluid_to_move);
+        from.change_fluid_amount(fluid_to_move);
 
         self.fluid_flow = -fluid_to_move / context.delta_as_time();
     }

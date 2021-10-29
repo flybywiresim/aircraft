@@ -1053,8 +1053,8 @@ impl PneumaticContainer for EngineBleedAirSystem {
         self.precooler_outlet_pipe.temperature()
     }
 
-    fn change_volume(&mut self, volume: Volume) {
-        self.precooler_outlet_pipe.change_volume(volume)
+    fn change_fluid_amount(&mut self, volume: Volume) {
+        self.precooler_outlet_pipe.change_fluid_amount(volume)
     }
 
     fn update_temperature(&mut self, temperature: TemperatureInterval) {
@@ -1201,8 +1201,8 @@ impl PneumaticContainer for PackComplex {
         self.pack_container.temperature()
     }
 
-    fn change_volume(&mut self, volume: Volume) {
-        self.pack_container.change_volume(volume);
+    fn change_fluid_amount(&mut self, volume: Volume) {
+        self.pack_container.change_fluid_amount(volume);
     }
 
     fn update_temperature(&mut self, temperature_change: TemperatureInterval) {

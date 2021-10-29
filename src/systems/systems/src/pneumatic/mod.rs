@@ -49,7 +49,7 @@ pub trait PneumaticContainer {
     fn pressure(&self) -> Pressure;
     fn volume(&self) -> Volume; // Not the volume of gas, but the physical measurements
     fn temperature(&self) -> ThermodynamicTemperature;
-    fn change_volume(&mut self, volume: Volume);
+    fn change_fluid_amount(&mut self, fluid_amount: Volume);
     fn update_temperature(&mut self, temperature_change: TemperatureInterval);
 }
 
@@ -73,7 +73,7 @@ impl PneumaticContainer for PneumaticPipe {
     }
 
     // Adds or removes a certain amount of air
-    fn change_volume(&mut self, volume_change: Volume) {
+    fn change_fluid_amount(&mut self, volume_change: Volume) {
         let pressure_change = self.calculate_pressure_change_for_volume_change(volume_change);
 
         self.update_temperature_for_pressure_change(pressure_change);
@@ -221,8 +221,8 @@ impl PneumaticContainer for CompressionChamber {
         self.pipe.temperature()
     }
 
-    fn change_volume(&mut self, volume_change: Volume) {
-        self.pipe.change_volume(volume_change);
+    fn change_fluid_amount(&mut self, volume_change: Volume) {
+        self.pipe.change_fluid_amount(volume_change);
     }
 
     fn update_temperature(&mut self, temperature_change: TemperatureInterval) {
@@ -242,7 +242,7 @@ impl CompressionChamber {
 
     pub fn update(&mut self, controller: &impl ControllerSignal<TargetPressureSignal>) {
         if let Some(signal) = controller.signal() {
-            self.change_volume(
+            self.change_fluid_amount(
                 self.pipe
                     .calculate_required_volume_for_target_pressure(signal.target_pressure),
             )
@@ -399,7 +399,7 @@ impl VariableVolumeContainer {
     }
 
     pub fn change_spatial_volume(&mut self, new_volume: Volume) {
-        self.change_volume(self.volume() - new_volume);
+        self.change_fluid_amount(self.volume() - new_volume);
         self.pipe.volume = new_volume;
     }
 }
@@ -416,8 +416,8 @@ impl PneumaticContainer for VariableVolumeContainer {
         self.pipe.temperature()
     }
 
-    fn change_volume(&mut self, volume: Volume) {
-        self.pipe.change_volume(volume);
+    fn change_fluid_amount(&mut self, volume: Volume) {
+        self.pipe.change_fluid_amount(volume);
     }
 
     fn update_temperature(&mut self, temperature_change: TemperatureInterval) {
