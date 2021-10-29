@@ -7,8 +7,8 @@ export type NavbarProps = {
 };
 
 const c = {
-    active: 'flex items-center px-6 py-2 text-white bg-gray-600 bg-opacity-100',
-    inactive: 'flex items-center px-6 py-2 text-white bg-gray-600 bg-opacity-0 hover:bg-opacity-100 transition duration-300',
+    active: 'flex items-center px-6 py-2 text-white bg-theme-secondary bg-opacity-100',
+    inactive: 'flex items-center px-6 py-2 text-white bg-opacity-0 hover:bg-opacity-100 transition duration-300',
 };
 
 export const Navbar = ({ tabs, onSelected, className }: NavbarProps) => {
@@ -21,7 +21,7 @@ export const Navbar = ({ tabs, onSelected, className }: NavbarProps) => {
 
     return (
         <nav className={`flex justify-between ${className}`}>
-            <div className="flex text-xl divide-x divide-gray-600 rounded-md overflow-hidden border border-gray-600">
+            <div className="flex text-xl divide-x divide-theme-secondary rounded-md overflow-hidden border border-theme-secondary">
                 {
                     tabs.map((tab, index) => (
                         <a className={index === activeIndex ? c.active : c.inactive} key={tab} onClick={() => handleClick(index)}>

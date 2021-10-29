@@ -29,7 +29,7 @@ export const ToolBar = () => (
         </div>
 
         <div className="flex flex-col items-center mb-6">
-            <div className="w-14 h-1.5 bg-gray-700 rounded-full" />
+            <div className="w-14 h-1.5 bg-theme-secondary rounded-full" />
             <ToolBarButton to="/settings">
                 <Gear color="currentColor" size={35} />
             </ToolBarButton>
@@ -48,8 +48,8 @@ const ToolBarButton: FC<ToolBarButtonProps> = ({ to, children }) => {
         <Link
             to={to}
             className={`${history.location.pathname.includes(to)
-                ? 'bg-navy-lightest text-white'
-                : 'text-gray-400'} flex w-min items-center justify-center  hover:text-white bg-transparent hover:bg-navy-lightest transition duration-200 py-3.5 px-3.5 rounded-md mt-4`}
+                ? 'bg-theme-secondary text-theme-text'
+                : 'text-theme-unselected'} flex w-min items-center justify-center  hover:text-theme-text bg-transparent hover:bg-theme-secondary transition duration-200 py-3.5 px-3.5 rounded-md mt-4`}
         >
             {children}
         </Link>
