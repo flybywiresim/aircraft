@@ -11,7 +11,7 @@ use uom::si::{
     pressure::psi,
     ratio::{percent, ratio},
     velocity::knot,
-    volume::gallon,
+    volume::{gallon, liter},
     volume_rate::gallon_per_second,
 };
 
@@ -29,7 +29,7 @@ use systems::{
         update_iterator::{FixedStepLoop, MaxFixedStepLoop},
         ElectricPump, EngineDrivenPump, HydraulicCircuit, HydraulicCircuitController,
         PowerTransferUnit, PowerTransferUnitController, PressureSwitchState, PumpController,
-        RamAirTurbine, RamAirTurbineController, SectionPressure,
+        RamAirTurbine, RamAirTurbineController, Reservoir, SectionPressure,
     },
     overhead::{
         AutoOffFaultPushButton, AutoOnFaultPushButton, MomentaryOnPushButton, MomentaryPushButton,
@@ -46,6 +46,39 @@ use systems::{
     },
 };
 
+struct A320HydraulicReservoirFactory {}
+impl A320HydraulicReservoirFactory {
+    fn new_green_reservoir(context: &mut InitContext) -> Reservoir {
+        Reservoir::new(
+            context,
+            "GREEN",
+            Volume::new::<liter>(23.),
+            Volume::new::<liter>(18.),
+            Volume::new::<gallon>(3.6),
+        )
+    }
+
+    fn new_blue_reservoir(context: &mut InitContext) -> Reservoir {
+        Reservoir::new(
+            context,
+            "BLUE",
+            Volume::new::<liter>(10.),
+            Volume::new::<liter>(8.),
+            Volume::new::<gallon>(1.56),
+        )
+    }
+
+    fn new_yellow_reservoir(context: &mut InitContext) -> Reservoir {
+        Reservoir::new(
+            context,
+            "YELLOW",
+            Volume::new::<liter>(20.),
+            Volume::new::<liter>(18.),
+            Volume::new::<gallon>(3.6),
+        )
+    }
+}
+
 struct A320HydraulicCircuitFactory {}
 impl A320HydraulicCircuitFactory {
     const MIN_PRESS_EDP_SECTION_LO_HYST: f64 = 1740.0;
@@ -58,13 +91,14 @@ impl A320HydraulicCircuitFactory {
     const BLUE_ELECTRIC_PUMP_INDEX: usize = 0;
 
     fn new_green_circuit(context: &mut InitContext) -> HydraulicCircuit {
+        let reservoir = A320HydraulicReservoirFactory::new_green_reservoir(context);
         HydraulicCircuit::new(
             context,
             "GREEN",
             1,
             Ratio::new::<percent>(100.),
             Volume::new::<gallon>(10.),
-            Volume::new::<gallon>(3.6),
+            reservoir,
             Pressure::new::<psi>(Self::MIN_PRESS_PRESSURISED_LO_HYST),
             Pressure::new::<psi>(Self::MIN_PRESS_PRESSURISED_HI_HYST),
             Pressure::new::<psi>(Self::MIN_PRESS_EDP_SECTION_LO_HYST),
@@ -75,13 +109,14 @@ impl A320HydraulicCircuitFactory {
     }
 
     fn new_blue_circuit(context: &mut InitContext) -> HydraulicCircuit {
+        let reservoir = A320HydraulicReservoirFactory::new_blue_reservoir(context);
         HydraulicCircuit::new(
             context,
             "BLUE",
             1,
             Ratio::new::<percent>(100.),
             Volume::new::<gallon>(8.),
-            Volume::new::<gallon>(1.56),
+            reservoir,
             Pressure::new::<psi>(Self::MIN_PRESS_PRESSURISED_LO_HYST),
             Pressure::new::<psi>(Self::MIN_PRESS_PRESSURISED_HI_HYST),
             Pressure::new::<psi>(Self::MIN_PRESS_EDP_SECTION_LO_HYST),
@@ -92,13 +127,14 @@ impl A320HydraulicCircuitFactory {
     }
 
     fn new_yellow_circuit(context: &mut InitContext) -> HydraulicCircuit {
+        let reservoir = A320HydraulicReservoirFactory::new_yellow_reservoir(context);
         HydraulicCircuit::new(
             context,
             "YELLOW",
             1,
             Ratio::new::<percent>(100.),
             Volume::new::<gallon>(10.),
-            Volume::new::<gallon>(3.6),
+            reservoir,
             Pressure::new::<psi>(Self::MIN_PRESS_PRESSURISED_LO_HYST),
             Pressure::new::<psi>(Self::MIN_PRESS_PRESSURISED_HI_HYST),
             Pressure::new::<psi>(Self::MIN_PRESS_EDP_SECTION_LO_HYST),
