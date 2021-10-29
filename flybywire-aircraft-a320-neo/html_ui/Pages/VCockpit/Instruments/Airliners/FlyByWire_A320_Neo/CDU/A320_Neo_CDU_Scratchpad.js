@@ -45,6 +45,9 @@ class ScratchpadDataLink {
     }
 
     addChar(char) {
+        if (this._status === SpDisplayStatus.clrValue) {
+            this.setText("");
+        }
         if (this._text.length + 1 < 23) {
             this.setText(this._text + char);
         }
