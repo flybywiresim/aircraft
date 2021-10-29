@@ -1,3 +1,5 @@
+/* Original file licensed under Xbox Game Content Usage Rules */
+
 class LiveryRegistration extends TemplateElement {
     constructor() {
         super();
@@ -8,7 +10,9 @@ class LiveryRegistration extends TemplateElement {
         this.frameCount = 0;
         this._isConnected = false;
     }
-    get templateID() { return "LiveryRegistration"; }
+    get templateID() {
+        return "LiveryRegistration";
+    }
     connectedCallback() {
         super.connectedCallback();
         this.bg = this.querySelector("#background");
@@ -19,15 +23,16 @@ class LiveryRegistration extends TemplateElement {
         }
     }
     parseURL() {
-        let url = new URL(this.getAttribute("Url").toLowerCase());
+        const url = new URL(this.getAttribute("Url").toLowerCase());
         var sizeAttribute = url.searchParams.get("font_scale");
         if (sizeAttribute) {
             this.textScale = parseFloat(sizeAttribute);
         }
         var colorAttribute = url.searchParams.get("font_color");
         if (colorAttribute) {
-            if (colorAttribute.startsWith("0x"))
+            if (colorAttribute.startsWith("0x")) {
                 colorAttribute = colorAttribute.replace("0x", "#");
+            }
             this.text.style.color = colorAttribute;
         }
         var styleAttribute = url.searchParams.get("font_style");
@@ -35,15 +40,13 @@ class LiveryRegistration extends TemplateElement {
             var style = styleAttribute.toLowerCase();
             if (style == "bold") {
                 this.text.style.fontFamily = "Font-Bold";
-            }
-            else if (style == "italic") {
+            } else if (style == "italic") {
                 this.text.style.fontFamily = "Font-Italic";
-            }
-            else if (style == "bold-italic" || style == "italic-bold") {
+            } else if (style == "bold-italic" || style == "italic-bold") {
                 this.text.style.fontFamily = "Font-BoldItalic";
-            }
-            else
+            } else {
                 this.text.style.fontFamily = "Font-Medium";
+            }
         }
         var strokeSizeAttribute = url.searchParams.get("stroke_size");
         if (strokeSizeAttribute) {
@@ -51,14 +54,16 @@ class LiveryRegistration extends TemplateElement {
         }
         var strokeColorAttribute = url.searchParams.get("stroke_color");
         if (strokeColorAttribute) {
-            if (strokeColorAttribute.startsWith("0x"))
+            if (strokeColorAttribute.startsWith("0x")) {
                 strokeColorAttribute = strokeColorAttribute.replace("0x", "#");
+            }
             this.text.style.setProperty("--stroke-color", strokeColorAttribute + "");
         }
         var bgColorAttribute = url.searchParams.get("back_color");
         if (bgColorAttribute) {
-            if (bgColorAttribute.startsWith("0x"))
+            if (bgColorAttribute.startsWith("0x")) {
                 bgColorAttribute = bgColorAttribute.replace("0x", "#");
+            }
             this.bg.style.backgroundColor = bgColorAttribute;
             diffAndSetStyle(this.bg, StyleProperty.display, "block");
         }
@@ -68,9 +73,10 @@ class LiveryRegistration extends TemplateElement {
         }
     }
     initMainLoop() {
-        let updateLoop = () => {
-            if (!this._isConnected)
+        const updateLoop = () => {
+            if (!this._isConnected) {
                 return;
+            }
             this.Update();
             requestAnimationFrame(updateLoop);
         };
@@ -85,7 +91,7 @@ class LiveryRegistration extends TemplateElement {
             this.SetTailNumber(tailNumber);
         }
         if (this.needUpdate) {
-            let timeSinceUpdate = (Date.now() - this.curTime) * 0.001;
+            const timeSinceUpdate = (Date.now() - this.curTime) * 0.001;
             if (timeSinceUpdate >= 1.5) {
                 var rect = this.getBoundingClientRect();
                 if (rect.width > 0 && rect.height > 0) {
@@ -101,8 +107,8 @@ class LiveryRegistration extends TemplateElement {
                     }
                     charHeight--;
                     this.text.style.fontSize = charHeight + "px";
-                    let textWidth = Math.ceil(this.text.clientWidth);
-                    let textHeight = Math.ceil(this.text.clientHeight);
+                    const textWidth = Math.ceil(this.text.clientWidth);
+                    const textHeight = Math.ceil(this.text.clientHeight);
                     var deltaW = rect.width - textWidth;
                     var deltaH = rect.height - textHeight;
                     this.text.style.marginLeft = deltaW * 0.5 + "px";
@@ -120,9 +126,9 @@ class LiveryRegistration extends TemplateElement {
             if (_tailNumber && _tailNumber != "") {
                 this.needUpdate = true;
                 this.curTime = Date.now();
-            }
-            else
+            } else {
                 this.needUpdate = false;
+            }
         }
     }
 }
