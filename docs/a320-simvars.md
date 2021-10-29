@@ -908,6 +908,14 @@
     - Bool
     - Auto brake panel push button for MAX mode is pressed
 
+- A32NX_FM_LS_COURSE
+    - Number
+    - Landing system course. Values, in priority order:
+        - Pilot entered course
+        - Database course
+        - Course received from LOC when LOC available
+        - -1 when invalid
+
 - A32NX_FMGC_FLIGHT_PHASE
     - Enum
     - Holds the FMGCs current flight phase

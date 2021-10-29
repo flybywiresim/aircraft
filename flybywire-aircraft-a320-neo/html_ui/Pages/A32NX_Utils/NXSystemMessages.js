@@ -47,6 +47,7 @@ const NXSystemMessages = {
     noIntersectionFound:    new McduMessage("NO INTERSECTION FOUND", false, false),
     notAllowed:             new McduMessage("NOT ALLOWED", false, false),
     notInDatabase:          new McduMessage("NOT IN DATABASE", false, false),
+    rwyLsMismatch:          new McduMessage("RWY/LS MISMATCH", true, true),
     selectDesiredSystem:    new McduMessage("SELECT DESIRED SYSTEM", false, false),
     uplinkInsertInProg:     new McduMessage("UPLINK INSERT IN PROG", false, true),
     vToDisagree:            new McduMessage("V1/VR/V2 DISAGREE", true, true),

@@ -144,7 +144,7 @@ interface QFUIndicatorProps {
 }
 
 const QFUIndicator = ({ ILSCourse, heading }: QFUIndicatorProps) => {
-    if (Number.isNaN(ILSCourse) || !getSimVar('NAV HAS LOCALIZER:3', 'Bool')) {
+    if (ILSCourse < 0) {
         return null;
     }
 

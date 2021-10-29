@@ -148,9 +148,9 @@ export const PFD: React.FC = () => {
         selectedHeading = Simplane.getAutoPilotSelectedHeadingLockValue(false) || 0;
     }
 
-    let ILSCourse = NaN;
+    let ILSCourse = -1;
     if (lsButtonPressed) {
-        ILSCourse = getSimVar('NAV LOCALIZER:3', 'degrees');
+        ILSCourse = getSimVar('L:A32NX_FM_LS_COURSE', 'number');
     }
 
     return (
