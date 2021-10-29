@@ -13,6 +13,7 @@ use uom::si::{
 };
 
 use systems::{
+    accept_iterable,
     overhead::{AutoOffFaultPushButton, OnOffFaultPushButton},
     pneumatic::{
         valve::*, ApuCompressionChamberController, BleedMonitoringComputerChannelOperationMode,
@@ -172,10 +173,10 @@ impl A320Pneumatic {
         }
     }
 
-    pub(crate) fn update<T: EngineCorrectedN1 + EngineCorrectedN2>(
+    pub(crate) fn update(
         &mut self,
         context: &UpdateContext,
-        engines: [&T; 2],
+        engines: [&(impl EngineCorrectedN1 + EngineCorrectedN2); 2],
         overhead_panel: &mut A320PneumaticOverheadPanel,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         hydraulics: &A320Hydraulic,
@@ -284,22 +285,12 @@ impl A320Pneumatic {
 impl SimulationElement for A320Pneumatic {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.apu_bleed_air_controller.accept(visitor);
-
         self.cross_bleed_valve.accept(visitor);
-
-        for bmc in self.bleed_monitoring_computers.iter_mut() {
-            bmc.accept(visitor);
-        }
-
-        for engine_system in self.engine_systems.iter_mut() {
-            engine_system.accept(visitor);
-        }
-
         self.fadec.accept(visitor);
 
-        for pack in self.packs.iter_mut() {
-            pack.accept(visitor)
-        }
+        accept_iterable!(self.bleed_monitoring_computers, visitor);
+        accept_iterable!(self.engine_systems, visitor);
+        accept_iterable!(self.packs, visitor);
 
         visitor.visit(self);
     }
@@ -448,10 +439,6 @@ impl BleedMonitoringComputer {
     }
 }
 impl SimulationElement for BleedMonitoringComputer {
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        visitor.visit(self);
-    }
-
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
         self.is_powered = buses.is_powered(self.powered_by)
     }
@@ -869,14 +856,14 @@ impl EngineBleedAirSystem {
         }
     }
 
-    fn update<T: EngineCorrectedN1 + EngineCorrectedN2>(
+    fn update(
         &mut self,
         context: &UpdateContext,
         high_pressure_valve_controller: &impl ControllerSignal<HighPressureValveSignal>,
         pressure_regulating_valve_controller: &impl ControllerSignal<PressureRegulatingValveSignal>,
         engine_starter_valve_controller: &impl ControllerSignal<EngineStarterValveSignal>,
         fan_air_valve_controller: &impl ControllerSignal<FanAirValveSignal>,
-        engine: &T,
+        engine: &(impl EngineCorrectedN1 + EngineCorrectedN2),
     ) {
         // Update engines
         self.fan_compression_chamber_controller
@@ -1262,9 +1249,10 @@ impl PackFlowValveController {
 }
 impl ControllerSignal<PackFlowValveSignal> for PackFlowValveController {
     fn signal(&self) -> Option<PackFlowValveSignal> {
-        Some(match self.pack_pb_is_auto {
-            true => PackFlowValveSignal::new(Ratio::new::<ratio>(self.pid.output())),
-            false => PackFlowValveSignal::new_closed(),
+        Some(if self.pack_pb_is_auto {
+            PackFlowValveSignal::new(Ratio::new::<ratio>(self.pid.output()))
+        } else {
+            PackFlowValveSignal::new_closed()
         })
     }
 }
@@ -1333,10 +1321,6 @@ impl PneumaticValve for CrossBleedValve {
     }
 }
 impl SimulationElement for CrossBleedValve {
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        visitor.visit(self);
-    }
-
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
         self.is_powered_for_manual_control =
             buses.is_powered(ElectricalBusType::DirectCurrentEssentialShed);
