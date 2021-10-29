@@ -80,6 +80,17 @@ mod tests {
         );
     }
 
+    #[test]
+    fn filter_null_time_constant_step_test_outputs_input() {
+        let mut low_pass = LowPassFilter::new(Duration::from_secs(0), 0.);
+
+        low_pass.update(Duration::from_secs_f64(0.5), 1.);
+        assert_about_eq!(low_pass.output() ,1.);
+
+        low_pass.update(Duration::from_secs_f64(0.5), 12.);
+        assert_about_eq!(low_pass.output() ,12.);
+    }
+
     fn expected_step_response_0_to_1(delta_time: Duration, time_constant: Duration) -> f64 {
         1. - std::f64::consts::E.powf(-1. / time_constant.as_secs_f64() * delta_time.as_secs_f64())
     }
