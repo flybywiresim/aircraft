@@ -56,6 +56,7 @@
 1. [FBW] Improved roll stability in turbulence or with performance issues - @IbrahimK42 (IbrahimK42) and @aguther (Andreas Guther)
 1. [MCDU] Hide POSITION UPDATE AT field on PROG page when GPS is available - @BlueberryKing (BlueberryKing)
 1. [MCDU] Sort approaches by type - @tracernz (Mike)
+1. [MODEL] Add four portholes. Two opposite the existing ones, and two under the wing. - @igor8518 (Igor Milovidov)
 
 ## 0.7.0
 
