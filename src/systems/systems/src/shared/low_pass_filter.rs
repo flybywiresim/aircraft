@@ -4,6 +4,8 @@ use std::ops::Sub;
 use std::time::Duration;
 
 /// First order low pass filter
+/// y(k) = y(k-1)  +  (1-a)*( x(k) - y(k-1) ) with a = exp (-T/tau)
+/// See https://gregstanleyandassociates.com/whitepapers/FaultDiagnosis/Filtering/Exponential-Filter/exponential-filter.htm
 pub struct LowPassFilter<T>
 where
     T: AddAssign<T> + Sub<Output = T> + Mul<f64, Output = T> + Copy,
@@ -52,7 +54,7 @@ mod tests {
     #[test]
     fn filter_init_non_zero_f64() {
         let low_pass = LowPassFilter::new(Duration::from_secs_f64(0.5), 12.);
-        assert!(low_pass.output() == 12.);
+        assert_about_eq!(low_pass.output(), 12.);
     }
 
     #[test]
