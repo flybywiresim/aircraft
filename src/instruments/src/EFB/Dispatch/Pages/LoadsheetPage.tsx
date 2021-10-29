@@ -4,12 +4,16 @@ import { IconMinus, IconPlus } from '@tabler/icons';
 import { FileEarmarkArrowDown } from 'react-bootstrap-icons';
 import { fetchSimbriefDataAction } from '../../Store/features/simbrief';
 import { useAppDispatch } from '../../Store/store';
+import { NotificationTypes, Notification } from '../../UIMessages/Notification';
+import { useUIMessages } from '../../UIMessages/Provider';
 
 type LoadsheetPageProps = {
     loadsheet: string,
 };
 
 export const LoadSheetWidget = (props: LoadsheetPageProps) => {
+    const uiMessages = useUIMessages();
+
     const position = useRef({ top: 0, y: 0 });
     const ref = useRef<HTMLDivElement>(null);
 
@@ -120,6 +124,14 @@ export const LoadSheetWidget = (props: LoadsheetPageProps) => {
                                     onClick={() => {
                                         fetchSimbriefDataAction(simbriefUserId ?? '').then((action) => {
                                             dispatch(action)
+                                        }).catch(() => {
+                                            uiMessages.pushNotification(
+                                                <Notification
+                                                    type={NotificationTypes.ERROR}
+                                                    title='SimBrief Error'
+                                                    message='An error occurred when trying to fetch your SimBrief data.'
+                                                />
+                                            )
                                         });
                                     }}
                                     className="flex max-w-md justify-center items-center p-2 space-x-4 w-full text-white bg-teal-light rounded-lg border-2 border-navy-lighter shadow-lg focus:outline-none"

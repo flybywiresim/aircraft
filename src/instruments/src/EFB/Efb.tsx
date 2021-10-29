@@ -25,7 +25,7 @@ import logo from './Assets/fbw-logo.svg';
 
 import { fetchSimbriefDataAction, initialState as simbriefInitialState, setSimbriefData } from './Store/features/simbrief';
 
-import { NotificationsContainer } from './UIMessages/Notification';
+import { NotificationsContainer, NotificationTypes, Notification } from './UIMessages/Notification';
 
 const navigraph = new NavigraphClient();
 
@@ -67,6 +67,8 @@ export const PowerContext = React.createContext<PowerContextInterface>(undefined
 export const usePower = () => React.useContext(PowerContext);
 
 const Efb = () => {
+    const uiMessages = useUIMessages();
+
     const [powerState, setPowerState] = useState<PowerState>(PowerState.LOADED);
 
     const [currentLocalTime] = useSimVar('E:LOCAL TIME', 'seconds', 3000);
@@ -84,7 +86,18 @@ const Efb = () => {
 
     useEffect(() => {
         if((!simbriefData || simbriefData === simbriefInitialState.data) && autoSimbriefImport === 'ENABLED'){
-            fetchSimbriefDataAction(simbriefUserId ?? '').then(res => dispatch(res));
+            console.log('called')
+            fetchSimbriefDataAction(simbriefUserId ?? '').then((action) => {
+                dispatch(action)
+            }).catch(() => {
+                uiMessages.pushNotification(
+                    <Notification
+                        type={NotificationTypes.ERROR}
+                        title='SimBrief Error'
+                        message='An error occurred when trying to fetch your SimBrief data.'
+                    />
+                )
+            });
         }
     }, [])
 
@@ -144,7 +157,7 @@ const Efb = () => {
                 <NavigraphContext.Provider value={navigraph}>
                     <PowerContext.Provider value={{ powerState, setPowerState }}>
                         <UIMessagesProvider>
-                        <div className="bg-navy-regular">
+                        <div className="bg-theme-body">
                             <ApplicationNotifications />
                             <StatusBar />
                             <div className="flex flex-row">

@@ -11,8 +11,12 @@ import fuselage from '../../Assets/320neo-outline-nose.svg';
 import { useAppSelector, useAppDispatch } from '../../Store/store';
 
 import { fetchSimbriefDataAction } from '../../Store/features/simBrief';
+import { useUIMessages } from '../../UIMessages/Provider';
+import { Notification, NotificationTypes } from '../../UIMessages/Notification';
 
 const FlightWidget = () => {
+    const uiMessages = useUIMessages();
+
     const [simbriefUserId] = usePersistentProperty('CONFIG_SIMBRIEF_USERID');
     const simbriefData = useAppSelector((state) => state.simbrief.data);
     const dispatch = useAppDispatch();
@@ -128,6 +132,14 @@ const FlightWidget = () => {
                         onClick={() => {
                             fetchSimbriefDataAction(simbriefUserId ?? '').then((action) => {
                                 dispatch(action)
+                            }).catch(() => {
+                                uiMessages.pushNotification(
+                                    <Notification
+                                        type={NotificationTypes.ERROR}
+                                        title='SimBrief Error'
+                                        message='An error occurred when trying to fetch your SimBrief data.'
+                                    />
+                                )
                             });
                         }}
                         className="flex justify-center items-center p-2 space-x-4 w-full text-white bg-teal-regular rounded-lg border-2 border-navy-lighter shadow-lg focus:outline-none"
