@@ -15,12 +15,12 @@ where
 }
 impl<T> LowPassFilter<T>
 where
-    T: AddAssign<T> + Sub<Output = T> + Mul<f64, Output = T> + Copy,
+    T: AddAssign<T> + Sub<Output = T> + Mul<f64, Output = T> + Copy + Default,
 {
-    pub fn new(time_constant: Duration, init_value: T) -> Self {
+    pub fn new(time_constant: Duration) -> Self {
         Self {
             time_constant,
-            filtered_output: init_value,
+            filtered_output: T::default(),
         }
     }
 
@@ -47,29 +47,20 @@ mod tests {
 
     #[test]
     fn filter_init_f64() {
-        let low_pass = LowPassFilter::new(Duration::from_secs_f64(0.5), 0.);
+        let low_pass = LowPassFilter::<f64>::new(Duration::from_secs_f64(0.5));
         assert!(low_pass.output() == 0.);
     }
 
     #[test]
-    fn filter_init_non_zero_f64() {
-        let low_pass = LowPassFilter::new(Duration::from_secs_f64(0.5), 12.);
-        assert_about_eq!(low_pass.output(), 12.);
-    }
-
-    #[test]
     fn filter_init_uom() {
-        let low_pass = LowPassFilter::new(
-            Duration::from_secs_f64(0.5),
-            Acceleration::new::<meter_per_second_squared>(0.),
-        );
+        let low_pass = LowPassFilter::<Acceleration>::new(Duration::from_secs_f64(0.5));
 
         assert!(low_pass.output().get::<meter_per_second_squared>() == 0.);
     }
 
     #[test]
     fn filter_step_test_1_second() {
-        let mut low_pass = LowPassFilter::new(Duration::from_secs(1), 0.);
+        let mut low_pass = LowPassFilter::<f64>::new(Duration::from_secs(1));
 
         low_pass.update(Duration::from_secs_f64(0.5), 1.);
         assert!(low_pass.output() > 0.);
@@ -81,8 +72,8 @@ mod tests {
     }
 
     #[test]
-    fn filter_null_time_constant_step_test_outputs_input() {
-        let mut low_pass = LowPassFilter::new(Duration::from_secs(0), 0.);
+    fn filter_zero_time_constant_step_test_outputs_input() {
+        let mut low_pass = LowPassFilter::<f64>::new(Duration::from_secs(0));
 
         low_pass.update(Duration::from_secs_f64(0.5), 1.);
         assert_about_eq!(low_pass.output(), 1.);

@@ -190,9 +190,8 @@ impl BrakeCircuit {
             volume_to_res_accumulator: Volume::new::<gallon>(0.),
 
             // Pressure measured after accumulator in brake circuit
-            accumulator_fluid_pressure_sensor_filter: LowPassFilter::new(
+            accumulator_fluid_pressure_sensor_filter: LowPassFilter::<Pressure>::new(
                 Self::ACC_PRESSURE_SENSOR_FILTER_TIMECONST,
-                Pressure::new::<psi>(0.0),
             ),
         }
     }
@@ -408,9 +407,8 @@ impl AutobrakeDecelerationGovernor {
             pid_controller: PidController::new(0.3, 0.25, 0., -1., 0., 0.),
 
             current_output: 0.,
-            acceleration_filter: LowPassFilter::new(
+            acceleration_filter: LowPassFilter::<Acceleration>::new(
                 Self::ACCELERATION_FILTER_TIME_CONSTANT,
-                Acceleration::new::<meter_per_second_squared>(0.),
             ),
             is_engaged: false,
             time_engaged: Duration::from_secs(0),
