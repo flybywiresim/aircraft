@@ -10,11 +10,14 @@ use self::{
 pub(super) use direct_current::APU_START_MOTOR_BUS_TYPE;
 #[cfg(test)]
 use systems::electrical::Battery;
+
+use systems::simulation::VariableIdentifier;
 use systems::{
+    accept_iterable,
     electrical::{
-        AlternatingCurrentElectricalSystem, BatteryPushButtons,
-        ElectricalElementIdentifierProvider, Electricity, EmergencyElectrical, EmergencyGenerator,
-        EngineGeneratorPushButtons, ExternalPowerSource, StaticInverter, TransformerRectifier,
+        AlternatingCurrentElectricalSystem, BatteryPushButtons, Electricity, EmergencyElectrical,
+        EmergencyGenerator, EngineGeneratorPushButtons, ExternalPowerSource, StaticInverter,
+        TransformerRectifier,
     },
     overhead::{
         AutoOffFaultPushButton, FaultIndication, FaultReleasePushButton, MomentaryPushButton,
@@ -22,15 +25,18 @@ use systems::{
     },
     shared::{
         ApuMaster, ApuStart, AuxiliaryPowerUnitElectrical, EmergencyElectricalRatPushButton,
-        EmergencyElectricalState, EngineCorrectedN2, EngineFirePushButtons, LandingGearPosition,
-        RamAirTurbineHydraulicLoopPressurised,
+        EmergencyElectricalState, EngineCorrectedN2, EngineFirePushButtons,
+        LandingGearRealPosition, RamAirTurbineHydraulicLoopPressurised,
     },
     simulation::{
-        SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext, Write,
+        InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
+        Write,
     },
 };
 
 pub(super) struct A320Electrical {
+    galley_is_shed_id: VariableIdentifier,
+
     alternating_current: A320AlternatingCurrentElectrical,
     direct_current: A320DirectCurrentElectrical,
     main_galley: MainGalley,
@@ -39,20 +45,18 @@ pub(super) struct A320Electrical {
     emergency_gen: EmergencyGenerator,
 }
 impl A320Electrical {
-    pub fn new(
-        identifier_provider: &mut impl ElectricalElementIdentifierProvider,
-    ) -> A320Electrical {
+    pub fn new(context: &mut InitContext) -> A320Electrical {
         A320Electrical {
-            alternating_current: A320AlternatingCurrentElectrical::new(identifier_provider),
-            direct_current: A320DirectCurrentElectrical::new(identifier_provider),
+            galley_is_shed_id: context.get_identifier("ELEC_GALLEY_IS_SHED".to_owned()),
+            alternating_current: A320AlternatingCurrentElectrical::new(context),
+            direct_current: A320DirectCurrentElectrical::new(context),
             main_galley: MainGalley::new(),
             secondary_galley: SecondaryGalley::new(),
             emergency_elec: EmergencyElectrical::new(),
-            emergency_gen: EmergencyGenerator::new(identifier_provider),
+            emergency_gen: EmergencyGenerator::new(context),
         }
     }
 
-    #[allow(clippy::too_many_arguments)]
     pub fn update(
         &mut self,
         context: &UpdateContext,
@@ -65,7 +69,7 @@ impl A320Electrical {
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         engines: [&impl EngineCorrectedN2; 2],
         hydraulic: &impl RamAirTurbineHydraulicLoopPressurised,
-        landing_gear: &impl LandingGearPosition,
+        landing_gear: &impl LandingGearRealPosition,
     ) {
         self.alternating_current.update_main_power_sources(
             context,
@@ -141,16 +145,6 @@ impl A320Electrical {
     }
 
     #[cfg(test)]
-    fn fail_tr_1(&mut self) {
-        self.alternating_current.fail_tr_1();
-    }
-
-    #[cfg(test)]
-    fn fail_tr_2(&mut self) {
-        self.alternating_current.fail_tr_2();
-    }
-
-    #[cfg(test)]
     fn attempt_emergency_gen_start(&mut self) {
         self.emergency_gen.start();
     }
@@ -208,7 +202,7 @@ impl SimulationElement for A320Electrical {
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write("ELEC_GALLEY_IS_SHED", self.galley_is_shed())
+        writer.write(&self.galley_is_shed_id, self.galley_is_shed())
     }
 }
 impl EmergencyElectricalState for A320Electrical {
@@ -241,26 +235,26 @@ pub(super) struct A320ElectricalOverheadPanel {
     commercial: OnOffFaultPushButton,
 }
 impl A320ElectricalOverheadPanel {
-    pub fn new() -> A320ElectricalOverheadPanel {
+    pub fn new(context: &mut InitContext) -> A320ElectricalOverheadPanel {
         A320ElectricalOverheadPanel {
             batteries: [
-                AutoOffFaultPushButton::new_auto("ELEC_BAT_1"),
-                AutoOffFaultPushButton::new_auto("ELEC_BAT_2"),
+                AutoOffFaultPushButton::new_auto(context, "ELEC_BAT_1"),
+                AutoOffFaultPushButton::new_auto(context, "ELEC_BAT_2"),
             ],
             idgs: [
-                FaultReleasePushButton::new_in("ELEC_IDG_1"),
-                FaultReleasePushButton::new_in("ELEC_IDG_2"),
+                FaultReleasePushButton::new_in(context, "ELEC_IDG_1"),
+                FaultReleasePushButton::new_in(context, "ELEC_IDG_2"),
             ],
             generators: [
-                OnOffFaultPushButton::new_on("ELEC_ENG_GEN_1"),
-                OnOffFaultPushButton::new_on("ELEC_ENG_GEN_2"),
+                OnOffFaultPushButton::new_on(context, "ELEC_ENG_GEN_1"),
+                OnOffFaultPushButton::new_on(context, "ELEC_ENG_GEN_2"),
             ],
-            apu_gen: OnOffFaultPushButton::new_on("ELEC_APU_GEN"),
-            bus_tie: AutoOffFaultPushButton::new_auto("ELEC_BUS_TIE"),
-            ac_ess_feed: NormalAltnFaultPushButton::new_normal("ELEC_AC_ESS_FEED"),
-            galy_and_cab: AutoOffFaultPushButton::new_auto("ELEC_GALY_AND_CAB"),
-            ext_pwr: OnOffAvailablePushButton::new_off("ELEC_EXT_PWR"),
-            commercial: OnOffFaultPushButton::new_on("ELEC_COMMERCIAL"),
+            apu_gen: OnOffFaultPushButton::new_on(context, "ELEC_APU_GEN"),
+            bus_tie: AutoOffFaultPushButton::new_auto(context, "ELEC_BUS_TIE"),
+            ac_ess_feed: NormalAltnFaultPushButton::new_normal(context, "ELEC_AC_ESS_FEED"),
+            galy_and_cab: AutoOffFaultPushButton::new_auto(context, "ELEC_GALY_AND_CAB"),
+            ext_pwr: OnOffAvailablePushButton::new_off(context, "ELEC_EXT_PWR"),
+            commercial: OnOffFaultPushButton::new_on(context, "ELEC_COMMERCIAL"),
         }
     }
 
@@ -332,15 +326,10 @@ impl BatteryPushButtons for A320ElectricalOverheadPanel {
 }
 impl SimulationElement for A320ElectricalOverheadPanel {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        self.batteries.iter_mut().for_each(|bat| {
-            bat.accept(visitor);
-        });
-        self.idgs.iter_mut().for_each(|idg| {
-            idg.accept(visitor);
-        });
-        self.generators.iter_mut().for_each(|gen| {
-            gen.accept(visitor);
-        });
+        accept_iterable!(self.batteries, visitor);
+        accept_iterable!(self.idgs, visitor);
+        accept_iterable!(self.generators, visitor);
+
         self.apu_gen.accept(visitor);
         self.bus_tie.accept(visitor);
         self.ac_ess_feed.accept(visitor);
@@ -359,11 +348,17 @@ pub(super) struct A320EmergencyElectricalOverheadPanel {
     rat_and_emer_gen_man_on: MomentaryPushButton,
 }
 impl A320EmergencyElectricalOverheadPanel {
-    pub fn new() -> Self {
+    pub fn new(context: &mut InitContext) -> Self {
         Self {
-            gen_1_line: OnOffFaultPushButton::new_on("EMER_ELEC_GEN_1_LINE"),
-            rat_and_emergency_gen_fault: FaultIndication::new("EMER_ELEC_RAT_AND_EMER_GEN"),
-            rat_and_emer_gen_man_on: MomentaryPushButton::new("EMER_ELEC_RAT_AND_EMER_GEN"),
+            gen_1_line: OnOffFaultPushButton::new_on(context, "EMER_ELEC_GEN_1_LINE"),
+            rat_and_emergency_gen_fault: FaultIndication::new(
+                context,
+                "EMER_ELEC_RAT_AND_EMER_GEN",
+            ),
+            rat_and_emer_gen_man_on: MomentaryPushButton::new(
+                context,
+                "EMER_ELEC_RAT_AND_EMER_GEN",
+            ),
         }
     }
 
@@ -412,7 +407,7 @@ mod a320_electrical {
 
         test_bed.run();
 
-        assert!(test_bed.contains_key("ELEC_GALLEY_IS_SHED"));
+        assert!(test_bed.contains_variable_with_name("ELEC_GALLEY_IS_SHED"));
     }
 }
 
@@ -423,17 +418,18 @@ mod a320_electrical_circuit_tests {
     use std::{cell::Ref, time::Duration};
     use systems::{
         electrical::{
-            ElectricalElement, ElectricalElementIdentifier, Electricity, ElectricitySource,
-            ExternalPowerSource, Potential,
+            ElectricalElement, ElectricalElementIdentifier, ElectricalElementIdentifierProvider,
+            Electricity, ElectricitySource, ExternalPowerSource, Potential,
             INTEGRATED_DRIVE_GENERATOR_STABILIZATION_TIME_IN_MILLISECONDS,
         },
+        failures::FailureType,
         shared::{
             ApuAvailable, ContactorSignal, ControllerSignal, ElectricalBusType, ElectricalBuses,
             PotentialOrigin,
         },
         simulation::{
-            test::{SimulationTestBed, TestBed},
-            Aircraft, Read,
+            test::{ReadByName, SimulationTestBed, TestBed, WriteByName},
+            Aircraft,
         },
     };
     use uom::si::f64::*;
@@ -2050,9 +2046,9 @@ mod a320_electrical_circuit_tests {
         should_close_start_contactor: bool,
     }
     impl TestApu {
-        fn new(identifier_provider: &mut impl ElectricalElementIdentifierProvider) -> Self {
+        fn new(context: &mut InitContext) -> Self {
             Self {
-                identifier: identifier_provider.next(),
+                identifier: context.next_electrical_identifier(),
                 is_available: false,
                 start_motor_is_powered: false,
                 should_close_start_contactor: false,
@@ -2216,7 +2212,7 @@ mod a320_electrical_circuit_tests {
             Self {}
         }
     }
-    impl LandingGearPosition for TestLandingGear {
+    impl LandingGearRealPosition for TestLandingGear {
         fn is_up_and_locked(&self) -> bool {
             true
         }
@@ -2237,14 +2233,14 @@ mod a320_electrical_circuit_tests {
         engine_fire_push_buttons: TestEngineFirePushButtons,
     }
     impl A320ElectricalTestAircraft {
-        fn new(electricity: &mut Electricity) -> Self {
+        fn new(context: &mut InitContext) -> Self {
             Self {
                 engines: [TestEngine::new(), TestEngine::new()],
-                ext_pwr: ExternalPowerSource::new(electricity),
-                elec: A320Electrical::new(electricity),
-                overhead: A320ElectricalOverheadPanel::new(),
-                emergency_overhead: A320EmergencyElectricalOverheadPanel::new(),
-                apu: TestApu::new(electricity),
+                ext_pwr: ExternalPowerSource::new(context),
+                elec: A320Electrical::new(context),
+                overhead: A320ElectricalOverheadPanel::new(context),
+                emergency_overhead: A320EmergencyElectricalOverheadPanel::new(context),
+                apu: TestApu::new(context),
                 apu_overhead: TestApuOverhead::new(),
                 engine_fire_push_buttons: TestEngineFirePushButtons::new(),
             }
@@ -2284,14 +2280,6 @@ mod a320_electrical_circuit_tests {
 
         fn empty_battery_2(&mut self) {
             self.elec.empty_battery_2();
-        }
-
-        fn failed_tr_1(&mut self) {
-            self.elec.fail_tr_1();
-        }
-
-        fn failed_tr_2(&mut self) {
-            self.elec.fail_tr_2();
         }
 
         fn running_emergency_generator(&mut self) {
@@ -2371,9 +2359,7 @@ mod a320_electrical_circuit_tests {
     impl A320ElectricalTestBed {
         fn new() -> Self {
             Self {
-                test_bed: SimulationTestBed::new(|electricity| {
-                    A320ElectricalTestAircraft::new(electricity)
-                }),
+                test_bed: SimulationTestBed::new(A320ElectricalTestAircraft::new),
             }
         }
 
@@ -2404,7 +2390,7 @@ mod a320_electrical_circuit_tests {
         }
 
         fn connected_external_power(mut self) -> Self {
-            self.write("EXTERNAL POWER AVAILABLE:1", true);
+            self.write_by_name("EXTERNAL POWER AVAILABLE:1", true);
 
             self.without_triggering_emergency_elec(|x| x.run())
         }
@@ -2448,12 +2434,12 @@ mod a320_electrical_circuit_tests {
         }
 
         fn failed_tr_1(mut self) -> Self {
-            self.command(|a| a.failed_tr_1());
+            self.test_bed.fail(FailureType::TransformerRectifier(1));
             self
         }
 
         fn failed_tr_2(mut self) -> Self {
-            self.command(|a| a.failed_tr_2());
+            self.test_bed.fail(FailureType::TransformerRectifier(2));
             self
         }
 
@@ -2463,7 +2449,7 @@ mod a320_electrical_circuit_tests {
         }
 
         fn gen_off(mut self, number: usize) -> Self {
-            self.write(&format!("OVHD_ELEC_ENG_GEN_{}_PB_IS_ON", number), false);
+            self.write_by_name(&format!("OVHD_ELEC_ENG_GEN_{}_PB_IS_ON", number), false);
             self
         }
 
@@ -2473,27 +2459,27 @@ mod a320_electrical_circuit_tests {
         }
 
         fn gen_1_line_off(mut self) -> Self {
-            self.write("OVHD_EMER_ELEC_GEN_1_LINE_PB_IS_ON", false);
+            self.write_by_name("OVHD_EMER_ELEC_GEN_1_LINE_PB_IS_ON", false);
             self
         }
 
         fn apu_gen_off(mut self) -> Self {
-            self.write("OVHD_ELEC_APU_GEN_PB_IS_ON", false);
+            self.write_by_name("OVHD_ELEC_APU_GEN_PB_IS_ON", false);
             self
         }
 
         fn ext_pwr_on(mut self) -> Self {
-            self.write("OVHD_ELEC_EXT_PWR_PB_IS_ON", true);
+            self.write_by_name("OVHD_ELEC_EXT_PWR_PB_IS_ON", true);
             self
         }
 
         fn ext_pwr_off(mut self) -> Self {
-            self.write("OVHD_ELEC_EXT_PWR_PB_IS_ON", false);
+            self.write_by_name("OVHD_ELEC_EXT_PWR_PB_IS_ON", false);
             self
         }
 
         fn ac_ess_feed_altn(mut self) -> Self {
-            self.write("OVHD_ELEC_AC_ESS_FEED_PB_IS_NORMAL", false);
+            self.write_by_name("OVHD_ELEC_AC_ESS_FEED_PB_IS_NORMAL", false);
             self
         }
 
@@ -2506,12 +2492,12 @@ mod a320_electrical_circuit_tests {
         }
 
         fn bat(mut self, number: usize, auto: bool) -> Self {
-            self.write(&format!("OVHD_ELEC_BAT_{}_PB_IS_AUTO", number), auto);
+            self.write_by_name(&format!("OVHD_ELEC_BAT_{}_PB_IS_AUTO", number), auto);
             self
         }
 
         fn bus_tie(mut self, auto: bool) -> Self {
-            self.write("OVHD_ELEC_BUS_TIE_PB_IS_AUTO", auto);
+            self.write_by_name("OVHD_ELEC_BUS_TIE_PB_IS_AUTO", auto);
             self
         }
 
@@ -2524,12 +2510,12 @@ mod a320_electrical_circuit_tests {
         }
 
         fn commercial_off(mut self) -> Self {
-            self.write("OVHD_ELEC_COMMERCIAL_PB_IS_ON", false);
+            self.write_by_name("OVHD_ELEC_COMMERCIAL_PB_IS_ON", false);
             self
         }
 
         fn galy_and_cab_off(mut self) -> Self {
-            self.write("OVHD_ELEC_GALY_AND_CAB_PB_IS_AUTO", false);
+            self.write_by_name("OVHD_ELEC_GALY_AND_CAB_PB_IS_AUTO", false);
             self
         }
 
@@ -2544,7 +2530,7 @@ mod a320_electrical_circuit_tests {
         }
 
         fn rat_and_emer_gen_man_on_pressed(mut self) -> Self {
-            self.write("OVHD_EMER_ELEC_RAT_AND_EMER_GEN_IS_PRESSED", true);
+            self.write_by_name("OVHD_EMER_ELEC_RAT_AND_EMER_GEN_IS_PRESSED", true);
             self
         }
 
@@ -2554,7 +2540,7 @@ mod a320_electrical_circuit_tests {
         }
 
         fn apu_start_contactors_closed(&mut self) -> bool {
-            self.read("ELEC_CONTACTOR_10KA_AND_5KA_IS_CLOSED")
+            self.read_by_name("ELEC_CONTACTOR_10KA_AND_5KA_IS_CLOSED")
         }
 
         fn apu_start_motor_is_powered(&self) -> bool {
@@ -2652,28 +2638,36 @@ mod a320_electrical_circuit_tests {
         }
 
         fn ac_ess_feed_has_fault(&mut self) -> bool {
-            self.read("OVHD_ELEC_AC_ESS_FEED_PB_HAS_FAULT")
+            self.read_by_name("OVHD_ELEC_AC_ESS_FEED_PB_HAS_FAULT")
         }
 
         fn gen_has_fault(&mut self, number: usize) -> bool {
-            self.read(&format!("OVHD_ELEC_ENG_GEN_{}_PB_HAS_FAULT", number))
+            self.read_by_name(&format!("OVHD_ELEC_ENG_GEN_{}_PB_HAS_FAULT", number))
         }
 
         fn rat_and_emer_gen_has_fault(&mut self) -> bool {
-            self.read("OVHD_EMER_ELEC_RAT_AND_EMER_GEN_HAS_FAULT")
+            self.read_by_name("OVHD_EMER_ELEC_RAT_AND_EMER_GEN_HAS_FAULT")
         }
 
         fn galley_is_shed(&mut self) -> bool {
-            self.read("ELEC_GALLEY_IS_SHED")
+            self.read_by_name("ELEC_GALLEY_IS_SHED")
         }
 
         fn both_ac_ess_feed_contactors_open(&mut self) -> bool {
-            !Read::<bool>::read(self, "ELEC_CONTACTOR_3XC1_IS_CLOSED")
-                && !Read::<bool>::read(self, "ELEC_CONTACTOR_3XC2_IS_CLOSED")
+            !ReadByName::<A320ElectricalTestBed, bool>::read_by_name(
+                self,
+                "ELEC_CONTACTOR_3XC1_IS_CLOSED",
+            ) && !ReadByName::<A320ElectricalTestBed, bool>::read_by_name(
+                self,
+                "ELEC_CONTACTOR_3XC2_IS_CLOSED",
+            )
         }
 
         fn dc_bus_2_tie_contactor_is_open(&mut self) -> bool {
-            !Read::<bool>::read(self, "ELEC_CONTACTOR_1PC2_IS_CLOSED")
+            !ReadByName::<A320ElectricalTestBed, bool>::read_by_name(
+                self,
+                "ELEC_CONTACTOR_1PC2_IS_CLOSED",
+            )
         }
 
         fn run(self) -> Self {

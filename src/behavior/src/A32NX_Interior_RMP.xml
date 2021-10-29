@@ -152,9 +152,9 @@
                 <ANIM_LENGTH>100</ANIM_LENGTH>
                 <ANIM_CODE>(L:XMLVAR_RMP_#SIDE#_NavLockOff) 100 *</ANIM_CODE>
                 <LEFT_SINGLE_CODE>(L:XMLVAR_RMP_#SIDE#_NavLockOff) ! (&gt;L:XMLVAR_RMP_#SIDE#_NavLockOff)</LEFT_SINGLE_CODE>
-                <WWISE_EVENT_1>radio_lock_on</WWISE_EVENT_1>
+                <WWISE_EVENT_1></WWISE_EVENT_1>
                 <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
-                <WWISE_EVENT_2>radio_lock_off</WWISE_EVENT_2>
+                <WWISE_EVENT_2></WWISE_EVENT_2>
                 <NORMALIZED_TIME_2>0.</NORMALIZED_TIME_2>
                 <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.GENERIC_BUTTON_GUARD_ON</ANIMTIP_0>
                 <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.GENERIC_BUTTON_GUARD_OFF</ANIMTIP_1>

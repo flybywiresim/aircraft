@@ -5,17 +5,19 @@
 #ifndef DEFINED_TYPEDEF_FOR_base_raw_time_
 #define DEFINED_TYPEDEF_FOR_base_raw_time_
 
-typedef struct {
+struct base_raw_time
+{
   real_T dt;
   real_T simulation_time;
-} base_raw_time;
+};
 
 #endif
 
 #ifndef DEFINED_TYPEDEF_FOR_base_raw_data_
 #define DEFINED_TYPEDEF_FOR_base_raw_data_
 
-typedef struct {
+struct base_raw_data
+{
   real_T nz_g;
   real_T Theta_deg;
   real_T Phi_deg;
@@ -79,47 +81,51 @@ typedef struct {
   real_T thrust_lever_2_pos;
   boolean_T tailstrike_protection_on;
   real_T VLS_kn;
-} base_raw_data;
+};
 
 #endif
 
 #ifndef DEFINED_TYPEDEF_FOR_base_input_
 #define DEFINED_TYPEDEF_FOR_base_input_
 
-typedef struct {
+struct base_input
+{
   real_T delta_eta_pos;
   real_T delta_xi_pos;
   real_T delta_zeta_pos;
-} base_input;
+};
 
 #endif
 
 #ifndef DEFINED_TYPEDEF_FOR_fbw_input_
 #define DEFINED_TYPEDEF_FOR_fbw_input_
 
-typedef struct {
+struct fbw_input
+{
   base_raw_time time;
   base_raw_data data;
   base_input input;
-} fbw_input;
+};
 
 #endif
 
 #ifndef DEFINED_TYPEDEF_FOR_base_time_
 #define DEFINED_TYPEDEF_FOR_base_time_
 
-typedef struct {
+struct base_time
+{
   real_T dt;
   real_T simulation_time;
   real_T monotonic_time;
-} base_time;
+};
 
 #endif
 
 #ifndef DEFINED_TYPEDEF_FOR_base_data_
 #define DEFINED_TYPEDEF_FOR_base_data_
 
-typedef struct {
+struct base_data
+{
   real_T nz_g;
   real_T Theta_deg;
   real_T Phi_deg;
@@ -186,14 +192,15 @@ typedef struct {
   real_T thrust_lever_2_pos;
   boolean_T tailstrike_protection_on;
   real_T VLS_kn;
-} base_data;
+};
 
 #endif
 
 #ifndef DEFINED_TYPEDEF_FOR_base_data_computed_
 #define DEFINED_TYPEDEF_FOR_base_data_computed_
 
-typedef struct {
+struct base_data_computed
+{
   real_T on_ground;
   real_T tracking_mode_on;
   real_T high_aoa_prot_active;
@@ -202,41 +209,44 @@ typedef struct {
   real_T high_speed_prot_active;
   real_T high_speed_prot_low_kn;
   real_T high_speed_prot_high_kn;
-} base_data_computed;
+};
 
 #endif
 
 #ifndef DEFINED_TYPEDEF_FOR_base_data_speeds_aoa_
 #define DEFINED_TYPEDEF_FOR_base_data_speeds_aoa_
 
-typedef struct {
+struct base_data_speeds_aoa
+{
   real_T v_alpha_max_kn;
   real_T alpha_max_deg;
   real_T v_alpha_prot_kn;
   real_T alpha_prot_deg;
   real_T alpha_floor_deg;
   real_T alpha_filtered_deg;
-} base_data_speeds_aoa;
+};
 
 #endif
 
 #ifndef DEFINED_TYPEDEF_FOR_base_sim_
 #define DEFINED_TYPEDEF_FOR_base_sim_
 
-typedef struct {
+struct base_sim
+{
   base_time time;
   base_data data;
   base_data_computed data_computed;
   base_data_speeds_aoa data_speeds_aoa;
   base_input input;
-} base_sim;
+};
 
 #endif
 
 #ifndef DEFINED_TYPEDEF_FOR_base_pitch_data_computed_
 #define DEFINED_TYPEDEF_FOR_base_pitch_data_computed_
 
-typedef struct {
+struct base_pitch_data_computed
+{
   real_T eta_trim_deg_limit_lo;
   real_T eta_trim_deg_limit_up;
   real_T delta_eta_deg;
@@ -256,128 +266,139 @@ typedef struct {
   real_T flare_Theta_deg;
   real_T flare_Theta_c_deg;
   real_T flare_Theta_c_rate_deg_s;
-} base_pitch_data_computed;
+};
 
 #endif
 
 #ifndef DEFINED_TYPEDEF_FOR_base_pitch_rotation_
 #define DEFINED_TYPEDEF_FOR_base_pitch_rotation_
 
-typedef struct {
+struct base_pitch_rotation
+{
   real_T qk_c_deg_s;
   real_T eta_deg;
-} base_pitch_rotation;
+};
 
 #endif
 
 #ifndef DEFINED_TYPEDEF_FOR_base_pitch_normal_
 #define DEFINED_TYPEDEF_FOR_base_pitch_normal_
 
-typedef struct {
+struct base_pitch_normal
+{
   real_T nz_c_g;
   real_T Cstar_g;
   real_T protection_alpha_c_deg;
   real_T protection_V_c_kn;
   real_T eta_dot_deg_s;
-} base_pitch_normal;
+};
 
 #endif
 
 #ifndef DEFINED_TYPEDEF_FOR_base_pitch_law_output_
 #define DEFINED_TYPEDEF_FOR_base_pitch_law_output_
 
-typedef struct {
+struct base_pitch_law_output
+{
   real_T eta_dot_deg_s;
-} base_pitch_law_output;
+};
 
 #endif
 
 #ifndef DEFINED_TYPEDEF_FOR_base_pitch_integrated_
 #define DEFINED_TYPEDEF_FOR_base_pitch_integrated_
 
-typedef struct {
+struct base_pitch_integrated
+{
   real_T eta_deg;
-} base_pitch_integrated;
+};
 
 #endif
 
 #ifndef DEFINED_TYPEDEF_FOR_base_pitch_output_
 #define DEFINED_TYPEDEF_FOR_base_pitch_output_
 
-typedef struct {
+struct base_pitch_output
+{
   real_T eta_deg;
   real_T eta_trim_deg;
-} base_pitch_output;
+};
 
 #endif
 
 #ifndef DEFINED_TYPEDEF_FOR_base_pitch_
 #define DEFINED_TYPEDEF_FOR_base_pitch_
 
-typedef struct {
+struct base_pitch
+{
   base_pitch_data_computed data_computed;
   base_pitch_rotation law_rotation;
   base_pitch_normal law_normal;
   base_pitch_law_output vote;
   base_pitch_integrated integrated;
   base_pitch_output output;
-} base_pitch;
+};
 
 #endif
 
 #ifndef DEFINED_TYPEDEF_FOR_base_roll_data_computed_
 #define DEFINED_TYPEDEF_FOR_base_roll_data_computed_
 
-typedef struct {
+struct base_roll_data_computed
+{
   real_T delta_xi_deg;
   real_T delta_zeta_deg;
   real_T in_flight;
   real_T in_flight_gain;
   boolean_T zeta_trim_deg_should_write;
   real_T beta_target_deg;
-} base_roll_data_computed;
+};
 
 #endif
 
 #ifndef DEFINED_TYPEDEF_FOR_base_roll_normal_
 #define DEFINED_TYPEDEF_FOR_base_roll_normal_
 
-typedef struct {
+struct base_roll_normal
+{
   real_T pk_c_deg_s;
   real_T Phi_c_deg;
   real_T xi_deg;
   real_T zeta_deg;
   real_T zeta_tc_yd_deg;
-} base_roll_normal;
+};
 
 #endif
 
 #ifndef DEFINED_TYPEDEF_FOR_base_roll_output_
 #define DEFINED_TYPEDEF_FOR_base_roll_output_
 
-typedef struct {
+struct base_roll_output
+{
   real_T xi_deg;
   real_T zeta_deg;
   real_T zeta_trim_deg;
-} base_roll_output;
+};
 
 #endif
 
 #ifndef DEFINED_TYPEDEF_FOR_base_roll_
 #define DEFINED_TYPEDEF_FOR_base_roll_
 
-typedef struct {
+struct base_roll
+{
   base_roll_data_computed data_computed;
   base_roll_normal law_normal;
   base_roll_output output;
-} base_roll;
+};
 
 #endif
 
 #ifndef DEFINED_TYPEDEF_FOR_base_raw_output_
 #define DEFINED_TYPEDEF_FOR_base_raw_output_
 
-typedef struct {
+struct base_raw_output
+{
   real_T eta_pos;
   real_T eta_trim_deg;
   boolean_T eta_trim_deg_should_write;
@@ -385,19 +406,20 @@ typedef struct {
   real_T zeta_pos;
   real_T zeta_trim_pos;
   boolean_T zeta_trim_pos_should_write;
-} base_raw_output;
+};
 
 #endif
 
 #ifndef DEFINED_TYPEDEF_FOR_fbw_output_
 #define DEFINED_TYPEDEF_FOR_fbw_output_
 
-typedef struct {
+struct fbw_output
+{
   base_sim sim;
   base_pitch pitch;
   base_roll roll;
   base_raw_output output;
-} fbw_output;
+};
 
 #endif
 #endif

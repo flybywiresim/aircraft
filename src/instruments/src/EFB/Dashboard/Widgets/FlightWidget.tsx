@@ -53,7 +53,7 @@ const FlightWidget = (props: FlightWidgetProps) => {
             <div className="h-full flex flex-col justify-between">
                 <div className="w-full">
                     <div className="text-center mb-6">
-                        <h1 className="text-2xl font-medium">{simbriefData.airline + simbriefData.flightNum}</h1>
+                        <h1 className="text-2xl font-medium">{(simbriefData.airline.length > 0 ? simbriefData.airline : '') + simbriefData.flightNum}</h1>
                         <span className="text-lg">{simbriefData.aircraftReg}</span>
                         {' '}
                         <br />

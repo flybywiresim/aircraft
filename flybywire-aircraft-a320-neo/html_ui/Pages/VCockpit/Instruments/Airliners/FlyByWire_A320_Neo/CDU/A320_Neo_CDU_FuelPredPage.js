@@ -2,6 +2,7 @@ class CDUFuelPredPage {
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.FuelPredPage;
+        mcdu.pageRedrawCallback = () => CDUFuelPredPage.ShowPage(mcdu);
         mcdu.activeSystem = 'FMGC';
         const isFlying = parseInt(SimVar.GetSimVarValue("GROUND VELOCITY", "knots")) > 30;
         let destIdentCell = "NONE";
@@ -24,15 +25,19 @@ class CDUFuelPredPage {
         let zfwCell = "___._";
         let zfwCgCell = (" __._");
         let zfwColor = "[color]amber";
-        mcdu.onRightInput[2] = async (value) => {
+        mcdu.onRightInput[2] = async (value, scratchpadCallback) => {
             if (value === "") {
                 mcdu.updateZfwVars();
-                mcdu.sendDataToScratchpad(
-                    (isFinite(mcdu.zeroFuelWeight) ? (mcdu.zeroFuelWeight * mcdu._conversionWeight).toFixed(1) : "") +
+                mcdu.scratchpad.setText(
+                    (isFinite(mcdu.zeroFuelWeight) ? (NXUnits.kgToUser(mcdu.zeroFuelWeight)).toFixed(1) : "") +
                     "/" +
                     (isFinite(mcdu.zeroFuelWeightMassCenter) ? mcdu.zeroFuelWeightMassCenter.toFixed(1) : ""));
-            } else if (mcdu.trySetZeroFuelWeightZFWCG(value)) {
-                CDUFuelPredPage.ShowPage(mcdu);
+            } else {
+                if (mcdu.trySetZeroFuelWeightZFWCG(value)) {
+                    CDUFuelPredPage.ShowPage(mcdu);
+                } else {
+                    scratchpadCallback();
+                }
             }
         };
 
@@ -63,7 +68,7 @@ class CDUFuelPredPage {
 
         if (mcdu._zeroFuelWeightZFWCGEntered) {
             if (isFinite(mcdu.zeroFuelWeight)) {
-                zfwCell = (mcdu.zeroFuelWeight * mcdu._conversionWeight).toFixed(1);
+                zfwCell = (NXUnits.kgToUser(mcdu.zeroFuelWeight)).toFixed(1);
                 zfwColor = "[color]cyan";
             }
             if (isFinite(mcdu.zeroFuelWeightMassCenter)) {
@@ -82,11 +87,11 @@ class CDUFuelPredPage {
                 destIdentCell = dest.ident;
             }
 
-            gwCell = "{small}" + (mcdu.getGW() * mcdu._conversionWeight).toFixed(1);
+            gwCell = "{small}" + NXUnits.kgToUser(mcdu.getGW()).toFixed(1);
             cgCell = mcdu.getCG().toFixed(1) + "{end}";
             gwCgCellColor = "[color]green";
 
-            fobCell = "{small}" + (mcdu.getFOB() * mcdu._conversionWeight).toFixed(1) + "{end}";
+            fobCell = "{small}" + (NXUnits.kgToUser(mcdu.getFOB())).toFixed(1) + "{end}";
             fobOtherCell = "{inop}FF{end}";
             fobCellColor = "[color]cyan";
         }
@@ -100,9 +105,9 @@ class CDUFuelPredPage {
                 }
                 if (isFinite(mcdu.getRouteFinalFuelWeight()) && isFinite(mcdu.getRouteFinalFuelTime())) {
                     if (mcdu._rteFinalWeightEntered) {
-                        finalFuelCell = "{sp}{sp}" + (mcdu.getRouteFinalFuelWeight() * mcdu._conversionWeight).toFixed(1);
+                        finalFuelCell = "{sp}{sp}" + (NXUnits.kgToUser(mcdu.getRouteFinalFuelWeight())).toFixed(1);
                     } else {
-                        finalFuelCell = "{sp}{sp}{small}" + (mcdu.getRouteFinalFuelWeight() * mcdu._conversionWeight).toFixed(1) + "{end}";
+                        finalFuelCell = "{sp}{sp}{small}" + (NXUnits.kgToUser(mcdu.getRouteFinalFuelWeight())).toFixed(1) + "{end}";
                     }
                     if (mcdu._rteFinalTimeEntered || !mcdu.routeFinalEntered()) {
                         finalTimeCell = FMCMainDisplay.minutesTohhmm(mcdu.getRouteFinalFuelTime());
@@ -111,16 +116,18 @@ class CDUFuelPredPage {
                     }
                     finalColor = "[color]cyan";
                 }
-                mcdu.onLeftInput[4] = async (value) => {
+                mcdu.onLeftInput[4] = async (value, scratchpadCallback) => {
                     if (await mcdu.trySetRouteFinalFuel(value)) {
                         CDUFuelPredPage.ShowPage(mcdu);
+                    } else {
+                        scratchpadCallback();
                     }
                 };
 
                 if (mcdu.altDestination) {
                     if (mcdu._routeAltFuelEntered) {
                         if (isFinite(mcdu.getRouteAltFuelWeight())) {
-                            altFuelCell = "{sp}{sp}" + (mcdu.getRouteAltFuelWeight() * mcdu._conversionWeight).toFixed(1);
+                            altFuelCell = "{sp}{sp}" + (NXUnits.kgToUser(mcdu.getRouteAltFuelWeight())).toFixed(1);
                             altFuelTimeCell = "{small}" + FMCMainDisplay.minutesTohhmm(mcdu.getRouteAltFuelTime()) + "{end}";
                             altTimeColor = "{green}";
                             altFuelColor = "[color]cyan";
@@ -128,7 +135,7 @@ class CDUFuelPredPage {
                     } else {
                         mcdu.tryUpdateRouteAlternate();
                         if (isFinite(mcdu.getRouteAltFuelWeight())) {
-                            altFuelCell = "{sp}{sp}{small}" + (mcdu.getRouteAltFuelWeight() * mcdu._conversionWeight).toFixed(1);
+                            altFuelCell = "{sp}{sp}{small}" + (NXUnits.kgToUser(mcdu.getRouteAltFuelWeight())).toFixed(1);
                             altFuelTimeCell = FMCMainDisplay.minutesTohhmm(mcdu.getRouteAltFuelTime()) + "{end}";
                             altTimeColor = "{green}";
                             altFuelColor = "[color]cyan";
@@ -140,17 +147,18 @@ class CDUFuelPredPage {
                     altFuelColor = "[color]green";
                     altTimeColor = "{white}";
                 }
-                mcdu.onLeftInput[3] = async (value) => {
-                    console.log("Entered Val : " + value);
+                mcdu.onLeftInput[3] = async (value, scratchpadCallback) => {
                     if (await mcdu.trySetRouteAlternateFuel(value)) {
                         CDUFuelPredPage.ShowPage(mcdu);
+                    } else {
+                        scratchpadCallback();
                     }
                 };
                 if (mcdu.altDestination) {
                     altIdentCell = mcdu.altDestination.ident;
-                    altEFOBCell = (mcdu.getAltEFOB(true) * mcdu._conversionWeight).toFixed(1);
+                    altEFOBCell = (NXUnits.kgToUser(mcdu.getAltEFOB(true))).toFixed(1);
+                    altEFOBCellColor = mcdu.getAltEFOB(true) < mcdu._minDestFob ? "[color]amber" : "[color]green";
                     altTimeCellColor = "[color]green";
-                    altEFOBCellColor = "[color]green";
                 }
 
                 mcdu.tryUpdateRouteTrip(isFlying);
@@ -158,7 +166,7 @@ class CDUFuelPredPage {
                 if (dest) {
                     destIdentCell = dest.ident;
                 }
-                destEFOBCell = (mcdu.getDestEFOB(true) * mcdu._conversionWeight).toFixed(1);
+                destEFOBCell = (NXUnits.kgToUser(mcdu.getDestEFOB(true))).toFixed(1);
                 // Should we use predicted values or liveETATo and liveUTCto?
                 destTimeCell = isFlying ? FMCMainDisplay.secondsToUTC(utcTime + FMCMainDisplay.minuteToSeconds(mcdu._routeTripTime))
                     : destTimeCell = FMCMainDisplay.minutesTohhmm(mcdu._routeTripTime);
@@ -175,7 +183,7 @@ class CDUFuelPredPage {
                     rteRSvCellColor = "[color]green";
                     rteRsvPctColor = "{white}";
                 } else {
-                    rteRsvWeightCell = "{sp}{sp}" + (mcdu.getRouteReservedWeight() * mcdu._conversionWeight).toFixed(1);
+                    rteRsvWeightCell = "{sp}{sp}" + (NXUnits.kgToUser(mcdu.getRouteReservedWeight())).toFixed(1);
                     if (!mcdu._rteReservedWeightEntered) {
                         rteRsvWeightCell = "{small}" + rteRsvWeightCell + "{end}";
                     }
@@ -197,29 +205,33 @@ class CDUFuelPredPage {
                     }
                     rteRSvCellColor = "[color]cyan";
 
-                    mcdu.onLeftInput[2] = async (value) => {
+                    mcdu.onLeftInput[2] = async (value, scratchpadCallback) => {
                         if (await mcdu.trySetRouteReservedFuel(value)) {
                             CDUFuelPredPage.ShowPage(mcdu);
+                        } else {
+                            scratchpadCallback();
                         }
                     };
                 }
 
                 if (mcdu._minDestFobEntered) {
-                    minDestFobCell = "{sp}{sp}" + (mcdu._minDestFob * mcdu._conversionWeight).toFixed(1);
+                    minDestFobCell = "{sp}{sp}" + (NXUnits.kgToUser(mcdu._minDestFob)).toFixed(1);
                     minDestFobCellColor = "[color]cyan";
                 } else {
                     mcdu.tryUpdateMinDestFob();
-                    minDestFobCell = "{sp}{sp}{small}" + (mcdu._minDestFob * mcdu._conversionWeight).toFixed(1) + "{end}";
+                    minDestFobCell = "{sp}{sp}{small}" + (NXUnits.kgToUser(mcdu._minDestFob)).toFixed(1) + "{end}";
                     minDestFobCellColor = "[color]cyan";
                 }
-                mcdu.onLeftInput[5] = async (value) => {
+                mcdu.onLeftInput[5] = async (value, scratchpadCallback) => {
                     if (await mcdu.trySetMinDestFob(value)) {
                         CDUFuelPredPage.ShowPage(mcdu);
+                    } else {
+                        scratchpadCallback();
                     }
                 };
                 mcdu.checkEFOBBelowMin();
 
-                extraFuelCell = "{small}" + (mcdu.tryGetExtraFuel(true) * mcdu._conversionWeight).toFixed(1);
+                extraFuelCell = "{small}" + (NXUnits.kgToUser(mcdu.tryGetExtraFuel(true))).toFixed(1);
                 if (mcdu.tryGetExtraFuel(true) < 0) {
                     extraTimeCell = "----{end}";
                     extraTimeColor = "{white}";
@@ -231,7 +243,7 @@ class CDUFuelPredPage {
 
                 // Currently not updating as there's no simvar to retrieve this.
                 if (isFinite(mcdu.zeroFuelWeight)) {
-                    zfwCell = (mcdu.zeroFuelWeight * mcdu._conversionWeight).toFixed(1);
+                    zfwCell = (NXUnits.kgToUser(mcdu.zeroFuelWeight)).toFixed(1);
                     zfwColor = "[color]cyan";
                 }
                 if (isFinite(mcdu.zeroFuelWeightMassCenter)) {

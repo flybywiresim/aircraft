@@ -128,13 +128,14 @@
             <ANIM_NAME>AIRBUS_Push_Transfer</ANIM_NAME>
             <PART_ID>AIRBUS_Push_Transfer</PART_ID>
             <ID>1</ID>
-            <WWISE_EVENT_1>transfer_push_button_on</WWISE_EVENT_1>
-            <WWISE_EVENT_2>transfer_push_button_on</WWISE_EVENT_2>
+            <WWISE_EVENT_1>roundbutton</WWISE_EVENT_1>
+            <WWISE_EVENT_2>roundbutton</WWISE_EVENT_2>
         </DefaultTemplateParameters>
 
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
-            <UseTemplate Name="ASOBO_GT_Push_Button">
+            <UseTemplate Name="ASOBO_GT_Push_Button_Held">
                 <LEFT_SINGLE_CODE>0</LEFT_SINGLE_CODE><!-- TODO -->
+                <TOOLTIPID>Inoperant</TOOLTIPID>
             </UseTemplate>
         </Component>
     </Template>
@@ -227,9 +228,9 @@
             <BACKLIGHT_NODE_ID>PUSH_ECAM_#BASE_NAME#_SEQ1</BACKLIGHT_NODE_ID>
             <EVENT_NAME>A320_Neo_EICAS_2_ECAM_CHANGE_PAGE_#BASE_NAME#</EVENT_NAME>
             <CURRENT_BUTTON_VAR_NAME>A32NX_ECAM_SD_CURRENT_PAGE_INDEX</CURRENT_BUTTON_VAR_NAME>
-            <WWISE_EVENT_1>fcubutton</WWISE_EVENT_1>
+            <WWISE_EVENT_1>mcdubuttons</WWISE_EVENT_1>
             <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
-            <WWISE_EVENT_2>fcubutton</WWISE_EVENT_2>
+            <WWISE_EVENT_2>mcdubuttons</WWISE_EVENT_2>
             <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
             <SEQ1_POWERED>1</SEQ1_POWERED>
             <SEQ2_POWERED>1</SEQ2_POWERED>
@@ -286,9 +287,9 @@
             <NODE_ID>PUSH_ECAM_#BASE_NAME#</NODE_ID>
             <ANIM_NAME_BUTTON>PUSH_ECAM_#BASE_NAME#</ANIM_NAME_BUTTON>
             <BACKLIGHT_NODE_ID>PUSH_ECAM_#BASE_NAME#_SEQ1</BACKLIGHT_NODE_ID>
-            <WWISE_EVENT_1>fcubutton</WWISE_EVENT_1>
+            <WWISE_EVENT_1>mcdubuttons</WWISE_EVENT_1>
             <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
-            <WWISE_EVENT_2>fcubutton</WWISE_EVENT_2>
+            <WWISE_EVENT_2>mcdubuttons</WWISE_EVENT_2>
             <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
             <SEQ2_POWERED>1</SEQ2_POWERED>
         </DefaultTemplateParameters>
@@ -330,9 +331,9 @@
             <ANIM_NAME_BUTTON>PUSH_ECAM_#BASE_NAME#</ANIM_NAME_BUTTON>
             <LED_NODE_ID>PUSH_ECAM_#BASE_NAME#_SEQ2</LED_NODE_ID>
             <BACKLIGHT_NODE_ID>PUSH_ECAM_#BASE_NAME#_SEQ1</BACKLIGHT_NODE_ID>
-            <WWISE_EVENT_1>fcubutton</WWISE_EVENT_1>
+            <WWISE_EVENT_1>mcdubuttons</WWISE_EVENT_1>
             <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
-            <WWISE_EVENT_2>fcubutton</WWISE_EVENT_2>
+            <WWISE_EVENT_2>mcdubuttons</WWISE_EVENT_2>
             <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
             <SEQ1_POWERED>1</SEQ1_POWERED>
             <SEQ2_POWERED>1</SEQ2_POWERED>
@@ -375,9 +376,9 @@
             <NODE_ID>PUSH_ECAM_#BASE_NAME#</NODE_ID>
             <ANIM_NAME_BUTTON>PUSH_ECAM_#BASE_NAME#</ANIM_NAME_BUTTON>
             <BACKLIGHT_NODE_ID>PUSH_ECAM_#BASE_NAME#_SEQ1</BACKLIGHT_NODE_ID>
-            <WWISE_EVENT_1>fcubutton</WWISE_EVENT_1>
+            <WWISE_EVENT_1>mcdubuttons</WWISE_EVENT_1>
             <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
-            <WWISE_EVENT_2>fcubutton</WWISE_EVENT_2>
+            <WWISE_EVENT_2>mcdubuttons</WWISE_EVENT_2>
             <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
             <SEQ2_POWERED>1</SEQ2_POWERED>
         </DefaultTemplateParameters>
@@ -406,9 +407,9 @@
             <NODE_ID>PUSH_ECAM_#BASE_NAME#</NODE_ID>
             <ANIM_NAME_BUTTON>PUSH_ECAM_#BASE_NAME#</ANIM_NAME_BUTTON>
             <BACKLIGHT_NODE_ID>PUSH_ECAM_#BASE_NAME#_SEQ1</BACKLIGHT_NODE_ID>
-            <WWISE_EVENT_1>fcubutton</WWISE_EVENT_1>
+            <WWISE_EVENT_1>mcdubuttons</WWISE_EVENT_1>
             <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
-            <WWISE_EVENT_2>fcubutton</WWISE_EVENT_2>
+            <WWISE_EVENT_2>mcdubuttons</WWISE_EVENT_2>
             <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
             <SEQ2_POWERED>1</SEQ2_POWERED>
         </DefaultTemplateParameters>
@@ -718,15 +719,14 @@
             <ANIM_NAME_MODE_KNOB>AIRBUS_Knob_WeatherRader_Mode</ANIM_NAME_MODE_KNOB>
             <NODE_ID_ONOFF_SWITCH>AIRBUS_Switch_WeatherRader_OnOff</NODE_ID_ONOFF_SWITCH>
             <ANIM_NAME_ONOFF_SWITCH>AIRBUS_Switch_WeatherRader_OnOff</ANIM_NAME_ONOFF_SWITCH>
-            <WWISE_EVENT>radar_mode_knob</WWISE_EVENT>
-            <WWISE_EVENT_1>mpb1on</WWISE_EVENT_1>
-            <WWISE_EVENT_2>mpb1off</WWISE_EVENT_2>
+            <WWISE_EVENT>smallknob</WWISE_EVENT>
         </DefaultTemplateParameters>
 
         <Component ID="#NODE_ID_ONOFF_SWITCH#" Node="#NODE_ID_ONOFF_SWITCH#">
             <UseTemplate Name="ASOBO_GT_Switch_XStates">
                 <ANIM_NAME>#ANIM_NAME_ONOFF_SWITCH#</ANIM_NAME>
                 <NUM_STATES>3</NUM_STATES>
+                <WWISE_EVENT>lswitch</WWISE_EVENT>
                 <SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
                 <SWITCH_POSITION_VAR>XMLVAR_A320_WeatherRadar_Sys</SWITCH_POSITION_VAR>
                 <SWITCH_DIRECTION>Horizontal</SWITCH_DIRECTION>
@@ -789,8 +789,8 @@
         <DefaultTemplateParameters>
             <HELPID/>
             <PART_ID>Chrono</PART_ID>
-            <WWISE_EVENT_1>mpb1on</WWISE_EVENT_1>
-            <WWISE_EVENT_2>mpb1off</WWISE_EVENT_2>
+            <WWISE_EVENT_1>roundbutton</WWISE_EVENT_1>
+            <WWISE_EVENT_2>roundbutton</WWISE_EVENT_2>
             <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
             <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
             <MouseFlags>LeftSingle</MouseFlags>
@@ -1016,96 +1016,8 @@
                 </Component>
             </False>
         </Condition>
-
-    </Template>
-    <Template Name="A32NX_Knob_ND_Range_Template">
-        <DefaultTemplateParameters>
-            <ID>1</ID>
-        </DefaultTemplateParameters>
-
-        <UseTemplate Name="A32NX_Knob_ND_Range_SubTemplate">
-        </UseTemplate>
     </Template>
 
-    <Template Name="A32NX_Knob_ND_Range_SubTemplate">
-        <DefaultTemplateParameters>
-            <NODE_ID>AIRLINER_Knob_Autopilot_ND_Range_#ID#</NODE_ID>
-            <ANIM_NAME>AIRLINER_Knob_Autopilot_ND_Range_#ID#</ANIM_NAME>
-            <PART_ID>AIRLINER_Knob_Autopilot_ND_Range</PART_ID>
-            <BUTTON_NODE_ID>AIRLINER_Knob_Autopilot_ND_Range_#ID#_Push</BUTTON_NODE_ID>
-            <BUTTON_ANIM_NAME>AIRLINER_Knob_Autopilot_ND_Range_#ID#_Push</BUTTON_ANIM_NAME>
-            <WWISE_EVENT>autopilot_knob</WWISE_EVENT>
-            <WWISE_EVENT_1>autopilot_knob_push_button_on</WWISE_EVENT_1>
-            <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
-            <WWISE_EVENT_2>autopilot_knob_push_button_off</WWISE_EVENT_2>
-            <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
-
-            <KNOB_NUM_STATE>6</KNOB_NUM_STATE>
-            <KNOB_POSITION_TYPE>L</KNOB_POSITION_TYPE>
-            <KNOB_POSITION_VAR>A320_Neo_MFD_Range_1</KNOB_POSITION_VAR>
-            <ANIMTIP_0_ON_PERCENT>0</ANIMTIP_0_ON_PERCENT>
-            <ANIMTIP_1_ON_PERCENT>.2</ANIMTIP_1_ON_PERCENT>
-            <ANIMTIP_2_ON_PERCENT>.4</ANIMTIP_2_ON_PERCENT>
-            <ANIMTIP_3_ON_PERCENT>.6</ANIMTIP_3_ON_PERCENT>
-            <ANIMTIP_4_ON_PERCENT>.8</ANIMTIP_4_ON_PERCENT>
-            <ANIMTIP_5_ON_PERCENT>1</ANIMTIP_5_ON_PERCENT>
-            <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.EFIS_PANEL_RANGE_SELECTOR_SET_10</ANIMTIP_0>
-            <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.EFIS_PANEL_RANGE_SELECTOR_SET_20</ANIMTIP_1>
-            <ANIMTIP_2>TT:COCKPIT.TOOLTIPS.EFIS_PANEL_RANGE_SELECTOR_SET_40</ANIMTIP_2>
-            <ANIMTIP_3>TT:COCKPIT.TOOLTIPS.EFIS_PANEL_RANGE_SELECTOR_SET_80</ANIMTIP_3>
-            <ANIMTIP_4>TT:COCKPIT.TOOLTIPS.EFIS_PANEL_RANGE_SELECTOR_SET_160</ANIMTIP_4>
-            <ANIMTIP_5>TT:COCKPIT.TOOLTIPS.EFIS_PANEL_RANGE_SELECTOR_SET_320</ANIMTIP_5>
-            <ANIMREF_ID>0</ANIMREF_ID>
-            <ANIMCURSOR_MAX>1</ANIMCURSOR_MAX>
-        </DefaultTemplateParameters>
-
-        <Component ID="#NODE_ID#_Group">
-            <Component ID="#NODE_ID#" Node="#NODE_ID#">
-                <Condition Check="KNOB_NUM_STATE">
-                    <True>
-                        <UseTemplate Name="ASOBO_GT_Switch_XStates">
-                            <NUM_STATES>#KNOB_NUM_STATE#</NUM_STATES>
-                            <SWITCH_DIRECTION>Horizontal</SWITCH_DIRECTION>
-                            <ARROW_TYPE>Curved</ARROW_TYPE>
-                            <SWITCH_POSITION_TYPE>#KNOB_POSITION_TYPE#</SWITCH_POSITION_TYPE>
-                            <SWITCH_POSITION_VAR>#KNOB_POSITION_VAR#</SWITCH_POSITION_VAR>
-                        </UseTemplate>
-                    </True>
-                    <False>
-                        <UseTemplate Name="ASOBO_GT_Knob_Infinite">
-                        </UseTemplate>
-                    </False>
-                </Condition>
-            </Component>
-
-            <Condition Valid="LEFT_SINGLE_CODE">
-                <True>
-                    <Component ID="#BUTTON_NODE_ID#" Node="#BUTTON_NODE_ID#">
-                        <UseTemplate Name="ASOBO_GT_Push_Button">
-                            <ANIM_NAME>#BUTTON_ANIM_NAME#</ANIM_NAME>
-                            <Condition Check="VALUE_TOOLTIP_PUSH">
-                                <True>
-                                    <TOOLTIPID>#VALUE_TOOLTIP_PUSH#</TOOLTIPID>
-                                </True>
-                            </Condition>
-                            <ANIMTIP_0></ANIMTIP_0>
-                            <ANIMTIP_1></ANIMTIP_1>
-                            <ANIMTIP_2></ANIMTIP_2>
-                            <ANIMTIP_3></ANIMTIP_3>
-                            <ANIMTIP_4></ANIMTIP_4>
-                            <ANIMTIP_5></ANIMTIP_5>
-                            <ANIMTIP_6></ANIMTIP_6>
-                            <ANIMTIP_7></ANIMTIP_7>
-                            <ANIMTIP_8></ANIMTIP_8>
-                            <ANIMTIP_9></ANIMTIP_9>
-                            <ANIMTIP_10></ANIMTIP_10>
-                            <ANIMTIP_11></ANIMTIP_11>
-                        </UseTemplate>
-                    </Component>
-                </True>
-            </Condition>
-        </Component>
-    </Template>
     <Template Name="A32NX_GlassCockpit_Push_Template">
         <DefaultTemplateParameters>
             <NODE_ID>AIRBUS_Push_Autopilot_#BTN_ID#_#ID#</NODE_ID>
@@ -1143,6 +1055,15 @@
     </Template>
 
     <Template Name="A32NX_AIRBUS_DATA_SWITCHING_TEMPLATE">
+        <DefaultTemplateParameters>
+            <Node_ID>KNOB_SWITCHING_#ID#</Node_ID>
+            <PART_ID>KNOB_SWITCHING_#ID#</PART_ID>
+            <ANIM_NAME>KNOB_SWITCHING_#ID#</ANIM_NAME>
+            <ANIM_CODE>50</ANIM_CODE>
+            <ANIMTIP_0>Set #TIP_TEXT# to CAPT</ANIMTIP_0>
+            <ANIMTIP_1>Set #TIP_TEXT# to NORM</ANIMTIP_1>
+            <ANIMTIP_2>Set #TIP_TEXT# to F/O</ANIMTIP_2>
+        </DefaultTemplateParameters>
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
             <UseTemplate Name="ASOBO_GT_Switch_3States">
                 <WWISE_EVENT>turnknob</WWISE_EVENT>
@@ -1150,36 +1071,7 @@
                 <SWITCH_DIRECTION>Horizontal</SWITCH_DIRECTION>
                 <ARROW_TYPE>Curved</ARROW_TYPE>
                 <SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
-                <SWITCH_POSITION_VAR>A32NX_#NODE_ID#_Position</SWITCH_POSITION_VAR>
-            </UseTemplate>
-        </Component>
-  </Template>
-    <Template Name="A32NX_Push_BARO_Template">
-        <Component ID="#NODE_ID#" Node="#NODE_ID#">
-            <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
-                <ANIM_NAME>#NODE_ID#</ANIM_NAME>
-                <PART_ID>#NODE_ID#</PART_ID>
-                <LEFT_SINGLE_CODE>(&gt;H:A320_Neo_SAI_BTN_#BTN_ID#)</LEFT_SINGLE_CODE>
-                <WWISE_EVENT_1>autopilot_push_button_on</WWISE_EVENT_1>
-                <WWISE_EVENT_2>autopilot_push_button_off</WWISE_EVENT_2>
-                <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
-                <NORMALIZED_TIME_2>0.3</NORMALIZED_TIME_2>
-                <TOOLTIPID>#TOOLTIPID#</TOOLTIPID>
-            </UseTemplate>
-        </Component>
-    </Template>
-    <Template Name="A32NX_Push_Held_BARO_Template">
-        <Component ID="#NODE_ID#" Node="#NODE_ID#">
-            <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
-                <ANIM_NAME>#NODE_ID#</ANIM_NAME>
-                <PART_ID>#NODE_ID#</PART_ID>
-                <LEFT_SINGLE_CODE>0 (&gt;H:A320_Neo_SAI_BTN_#BTN_ID#)</LEFT_SINGLE_CODE>
-                <LEFT_LEAVE_CODE>1 (&gt;H:A320_Neo_SAI_BTN_#BTN_ID#)</LEFT_LEAVE_CODE>
-                <WWISE_EVENT_1>autopilot_push_button_on</WWISE_EVENT_1>
-                <WWISE_EVENT_2>autopilot_push_button_off</WWISE_EVENT_2>
-                <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
-                <NORMALIZED_TIME_2>0.3</NORMALIZED_TIME_2>
-                <TOOLTIPID>#TOOLTIPID#</TOOLTIPID>
+                <SWITCH_POSITION_VAR>A32NX_#TYPE#_SWITCHING_KNOB</SWITCH_POSITION_VAR>
             </UseTemplate>
         </Component>
     </Template>
@@ -1243,8 +1135,6 @@
             <NODE_ID>AUTOPILOT_Push_#DEFAULT_NAME##SUFFIX_ID#</NODE_ID>
             <ANIM_NAME>AUTOPILOT_Push_#DEFAULT_NAME##SUFFIX_ID#</ANIM_NAME>
             <PART_ID>AUTOPILOT_Push_#DEFAULT_NAME#</PART_ID>
-            <WWISE_EVENT_AUTOPILOT_SWITCH_ON>autopilot_switch_on</WWISE_EVENT_AUTOPILOT_SWITCH_ON>
-            <WWISE_EVENT_AUTOPILOT_SWITCH_OFF>autopilot_switch_off</WWISE_EVENT_AUTOPILOT_SWITCH_OFF>
             <WWISE_EVENT_AUTOPILOT_PUSH_BUTTON_ON>fcubutton</WWISE_EVENT_AUTOPILOT_PUSH_BUTTON_ON>
             <WWISE_EVENT_AUTOPILOT_PUSH_BUTTON_OFF>fcubutton</WWISE_EVENT_AUTOPILOT_PUSH_BUTTON_OFF>
         </DefaultTemplateParameters>

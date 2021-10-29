@@ -408,8 +408,7 @@ declare global {
         function getFuelUsed(engineIndex: number): Kilograms | null;
         function getCompassAngle(): Radians | null;
         function getPressureValue(): InchesOfMercury | null;
-        function getPressureValue(units?: "inches of mercury"): InchesOfMercury | null;
-        function getPressureValue(units?: "millibar"): Millibar | null;
+        function getPressureValue(units?: "inches of mercury" | "millibar"): InchesOfMercury | Millibar | null;
         function getPressureSelectedUnits(): "inches of mercury" | "millibar";
         function getPressureSelectedMode(aircraft: Aircraft): "QFE" | "QNH" | "STD" | "";
         function getHasGlassCockpit(): boolean | null;

@@ -3,8 +3,13 @@ class CDUIRSInit {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.IRSInit;
         mcdu.setTitle('IRS INIT');
-        const checkAligned = SimVar.GetSimVarValue("L:A32NX_ADIRS_STATE", "Number");
-        if (checkAligned === 0) {
+
+        const adiru1State = SimVar.GetSimVarValue("L:A32NX_ADIRS_ADIRU_1_STATE", "Enum");
+        const adiru2State = SimVar.GetSimVarValue("L:A32NX_ADIRS_ADIRU_2_STATE", "Enum");
+        const adiru3State = SimVar.GetSimVarValue("L:A32NX_ADIRS_ADIRU_3_STATE", "Enum");
+        const areAllAligned = adiru1State === 2 && adiru2State === 2 && adiru3State === 2;
+
+        if (adiru1State === 0 || adiru2State === 0 || adiru3State === 0) {
             SimVar.SetSimVarValue("L:A32XN_Neo_ADIRS_ALIGN_TYPE_REF", "Enum", 0);
             alignMsg = "ALIGN ON REF}[color]cyan";
         }
@@ -42,7 +47,8 @@ class CDUIRSInit {
         let originAirportTitle;
         let GPSPosTitle;
         let originAirportString;
-        if (checkAligned !== 2) {
+
+        if (!areAllAligned) {
             GPSPosTitle = ["LAT", "LONG", "GPS POSITION"];
             originAirportTitle = ["LAT" + larrowupdwn , rarrowupdwn + "LONG", "REFERENCE"];
             GPSPosAlign = ["--°--.--", "--°--.--", " "];
@@ -57,12 +63,12 @@ class CDUIRSInit {
         if (SimVar.GetSimVarValue("L:A32XN_Neo_ADIRS_ALIGN_TYPE_REF", "Enum") === 1) {
             alignMsg = "";
             alignType = "REF";
-            if (checkAligned !== 2) {
+            if (!areAllAligned) {
                 IRSAlignOnPos = originAirportLat['deg'] + "°{small}" + originAirportLat['min'] + "." + originAirportLat['sec'] + "{end}" + originAirportLat['dir'] + "/" + originAirportLon['deg'] + "°{small}" + originAirportLon['min'] + "." + originAirportLon['sec'] + "{end}" + originAirportLon['dir'];
             }
         }
 
-        if (checkAligned === 2) {
+        if (areAllAligned) {
             alignMsg = "";
             if (SimVar.GetSimVarValue("L:A32XN_Neo_ADIRS_ALIGN_TYPE_REF", "Enum") === 0) {
                 alignType = "GPS";
@@ -71,7 +77,7 @@ class CDUIRSInit {
 
         let IRS1GpsString = emptyIRSGpsString;
         if (SimVar.GetSimVarValue("L:A32NX_OVHD_ADIRS_IR_1_MODE_SELECTOR_KNOB", "Enum") === 1) {
-            if (checkAligned === 2) {
+            if (adiru1State === 2) {
                 statusIRS1 = "IRS1 ALIGNED ON " + alignType;
             } else {
                 statusIRS1 = "IRS1 ALIGNING ON " + alignType;
@@ -82,7 +88,7 @@ class CDUIRSInit {
         }
         let IRS2GpsString = emptyIRSGpsString;
         if (SimVar.GetSimVarValue("L:A32NX_OVHD_ADIRS_IR_2_MODE_SELECTOR_KNOB", "Enum") === 1) {
-            if (checkAligned === 2) {
+            if (adiru2State === 2) {
                 statusIRS2 = "IRS2 ALIGNED ON " + alignType;
             } else {
                 statusIRS2 = "IRS2 ALIGNING ON " + alignType;
@@ -93,7 +99,7 @@ class CDUIRSInit {
         }
         let IRS3GpsString = emptyIRSGpsString;
         if (SimVar.GetSimVarValue("L:A32NX_OVHD_ADIRS_IR_3_MODE_SELECTOR_KNOB", "Enum") === 1) {
-            if (checkAligned === 2) {
+            if (adiru3State === 2) {
                 statusIRS3 = "IRS3 ALIGNED ON " + alignType;
             } else {
                 statusIRS3 = "IRS3 ALIGNING ON " + alignType;
@@ -136,7 +142,7 @@ class CDUIRSInit {
         };
 
         mcdu.onRightInput[5] = () => {
-            if (checkAligned !== 2) {
+            if (!areAllAligned) {
                 if (alignMsg.includes("CONFIRM")) {
                     SimVar.SetSimVarValue("L:A32XN_Neo_ADIRS_ALIGN_TYPE_REF", "Enum", 1);
                 } else {
@@ -146,7 +152,7 @@ class CDUIRSInit {
         };
 
         mcdu.onUp = () => {
-            if (checkAligned !== 2 && SimVar.GetSimVarValue("L:A32XN_Neo_ADIRS_ALIGN_TYPE_REF", "Enum") !== 1) {
+            if (!areAllAligned && SimVar.GetSimVarValue("L:A32XN_Neo_ADIRS_ALIGN_TYPE_REF", "Enum") !== 1) {
                 referenceName = "----";
                 let activeReference = originAirportLat;
                 if (lon) {
@@ -169,7 +175,7 @@ class CDUIRSInit {
         };
 
         mcdu.onDown = () => {
-            if (checkAligned !== 2 && SimVar.GetSimVarValue("L:A32XN_Neo_ADIRS_ALIGN_TYPE_REF", "Enum") !== 1) {
+            if (!areAllAligned && SimVar.GetSimVarValue("L:A32XN_Neo_ADIRS_ALIGN_TYPE_REF", "Enum") !== 1) {
                 referenceName = "----";
                 let activeReference = originAirportLat;
                 if (lon) {

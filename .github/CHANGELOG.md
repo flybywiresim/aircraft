@@ -4,7 +4,60 @@
 <!-- Use the following format below -->
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 
+## 0.8.0
+
+1. [FBW] Improved speed dependent roll law model - @IbrahimK42 (IbrahimK42)
+1. [SOUND] Pack sounds use new APU model variables - @tracernz (Mike)
+1. [EFB] Added in-flight refueling capabilities - @Taz5150 (TazX [Z+2]#0405)
+1. [EFB] Moved setting for MCDU keyboard input into the EFB - @2hwk (2Cas#1022)
+1. [HYD] Placeholder simvar to trigger ptu high pitch sound - @crocket6 (crocket)
+1. [EFB] Neatened up failure buttons on failure page - @nathanmayall (AbsoluteNath#9406)
+1. [SOUND] Added PTU sounds in correct conditions - @hotshotp (Boris)
+1. [ADIRS] Use heading as track at low ground speeds - @beheh (Benedict Etzel)
+1. [PFD] Fix mach number flickering between mach 0.45 and 0.5 - @beheh (Benedict Etzel)
+1. [AP] Improved flight director guidance
+1. [FBW] Improved turn coodination in manual flight - @aguther (Andreas Guther)
+1. [FBW] Roll normal law is no longer using elasticity table - @IbrahimK42 (IbrahimK42)
+1. [AP] Improved LOC law and condition - @aguther (Andreas Guther)
+1. [AP] Improved LOC ALIGN law - @aguther (Andreas Guther)
+1. [AP] improved G/S law - @aguther (Andreas Guther)
+1. [AP] Allow V/S push and pull during ALT CPT - @aguther (Andreas Guther)
+1. [AP] Soft Altitude mode uses now FMGC flight phase to detect cruise situation
+1. [MCDU] Fix GPS ground speed monitor to show ground speed in knots rather than meters/second - @donstim (donbikes#4084)
+1. [AP] Improved LOC* law - @aguther (Andreas Guther)
+1. [AP] Improved ROLL OUT law - @aguther (Andreas Guther)
+1. [ENGINE] Refactor FADEC and fuel consumption code (comments, variable nomenclature and overall clean-up) - @Taz5150 (TazX [Z+2]#0405)
+1. [ARCH] Support ARINC 429 communication between aircraft components - @davidwalschots (David Walschots)
+1. [UTILS] Fix lbs to kgs units conversion to match MSFS - @donstim (donbikes#4084)
+1. [EFB] OFP supports all formats - @tracernz (Mike)
+1. [MODEL] Landing lights retract fully and independently - @tracernz (Mike)
+1. [LIGHTS] Sync Strobe/Beacon, EXT LT refactor + LDG LT behavior - @bouveng (Johan Bouveng)
+1. [AP] Improved SPD/MACH law model - @IbrahimK42 (IbrahimK42)
+1. [AP/FBW] Improved behavior in cruise when using high sim rate with roll performance - @aguther (Andreas Guther) and @IbrahimK42 (IbrahimK42)
+1. [PRESS] Introduce manual functionality of cabin pressurization system - @MJuhe (Miquel)
+1. [LIGHTS] Add TO/TAXI LT logic, ambience to TAXI/TO/LDG LT + min. changes to strobe/beacon/nav - @bouveng (Johan Bouveng)
+1. [FMGC] Fixed issue with TO flight phase transition when no V2 is entered and airport is near sea level - @aguther (Andreas Guther)
+1. [MISC] Fix for incrementing ISIS pressure values - @RichardPilbery (tricky_dicky#3571)
+1. [MCDU] Fix GPS ground speed on IRS status page to show ground speed in knots rather than meters/second - @donstim (donbikes#4084)
+1. [MCDU] Fixed length limitation for system messages - @derl30n (Leon)
+1. [FMGC] Use correct variable to determine lateral AP mode for APPROACH phase switch - @aguther (Andreas Guther)
+1. [ENGINE] Correctly adapt fuel burn with sim rate - @aguther (Andreas Guther)
+1. [PFD/FBW] Added beta target indication - @aguther (Andreas Guther)
+1. [ISIS] Added inHg and metric altitude pin programs - @tracernz (Mike)
+1. [MCDU] Fixed transition alt init and display - @derl30n (Leon)
+1. [AP] Fixed V/S, FPA or ALT* speed protection to engage too early on high altitudes - @aguther (Andreas Guther)
+1. [MODEL] Add MCDU annunciator lights - @tracernz (Mike)
+1. [LIGHTS] Add ambient lt for all INTEG LT emssivies + C&D ambient fix - @bouveng (Johan Bouveng)
+1. [ECAM] Fixed misaligned items on ecam memos - @tyler58546 (tyler58546)
+1. [ECAM] Revised fuel page to match neo - @RichardPilbery (tricky_dicky#3571)
+1. [RMP] Added 25 kHz VHF spacing option - @tyler58546 (tyler58546)
+1. [MCDU] Scratchpad rewrite - @derl30n (Leon)
+1. [ATHR/ENGINE] Improved CLB thrust limit for improved FLEX N1 numbers - @aguther (Andreas Guther)
+1. [FBW] Improved roll stability in turbulence or with performance issues - @IbrahimK42 (IbrahimK42) and @aguther (Andreas Guther)
+1. [MCDU] Hide POSITION UPDATE AT field on PROG page when GPS is available - @BlueberryKing (BlueberryKing)
+
 ## 0.7.0
+
 1. [HYD] First building block, more to come. Hydraulics do not impact the sim YET. - @crocket6 (crocket)
 1. [HYD] Connected hydraulics element to electrical buses. - @crocket6 (crocket)
 1. [ENGINE] Fixed fuel consumption model - @Taz5150 (TazX [Z+2]#0405)
@@ -136,15 +189,58 @@
 1. [HYD] Switched hydraulics to new engine model simvars - @Crocket63 (crocket)
 1. [LIGHTS] New potentiometer for lights, emissives and screens. - @bouveng (Johan Bouveng)
 1. [SOUND] Improved engine startup sound and added wiper sounds - @hotshotp (Boris)
+1. [FCU] Fix FCU DISPLAY AC1 BUS power. - @bouveng (Johan Bouveng)
 1. [HYD] Fixed autobrake inputs response for rotating knob type controllers - @Crocket63 (crocket)
 1. [ECAM] Autoswitch ECAM pages use proper FWC phase logic - @2hwk (2Cas#1022)
+1. [HYD] Added basic LGCIU implementation with per wheel weight on wheels sensors - @Crocket63 (crocket)
 1. [MISC] Improved logic for chronometer operations - @sidnov (Sid)
 1. [DISPLAYS] Fix Self-Test no longer triggers when spawning from an in-flight state i.e. cruise/landing/takeoff on runway - @2hwk (2Cas#1022)
 1. [SOUND] Improved engine startup, idle sounds, and cabin wind - @hotshotp (Boris)
 1. [MODEL] Swap EFIS WPT and VOR D buttons - @tracernz (Mike)
 1. [MODEL] Fix no-smoking/no-PED switch animation - @tracernz (Mike)
+1. [DISPLAYS] Add pixelated screens - @bouveng (Johan Bouveng)
+1. [ADIRS] Simple ATT mode implementation (does not yet include HDG entry) - @davidwalschots (David Walschots)
+1. [ADIRS] The longest instead of the shortest remaining alignment time is displayed on the upper ECAM - @davidwalschots (David Walschots)
+1. [ADIRS] IR1, IR3, or IR2 can be pushed OFF to disconnect output of IR information from that particular ADIRU - @davidwalschots (David Walschots)
+1. [ADIRS] ADR1, ADR3, or ADR2 can be pushed OFF to disconnect output of ADR information from that particular ADIRU - @davidwalschots (David Walschots)
+1. [ADIRS] GPS PRIMARY LOST is only indicated when none of the IRs are aligned or ON - @davidwalschots (David Walschots)
+1. [ADIRS] Switching panel's ATT HDG and AIR DATA knobs functionality - @davidwalschots (David Walschots)
+1. [ADIRS] Upper ECAM shows IR x IN ATT ALIGN when any ADIRU is in ATT mode alignment  - @davidwalschots (David Walschots)
+1. [ADIRS] Wind, TAS, and GS indications depend on availability of IR and ADR data - @davidwalschots (David Walschots)
+1. [ADIRS] SAT, TAT, and ISA indications depend on the selected ADR (1 or 3) - @davidwalschots (David Walschots)
+1. [PRESS] First implementation of automatic pressurization system - @MJuhe (Miquel)
+1. [MISC] Added annunciator lights to interactive checklist - @oim1 (oim)
+1. [MISC] Workaround for altitude issues of MSFS - @aguther (Andreas Guther)
+1. [MODEL] Un-mirror sharklet textures - @tracernz (Mike)
+1. [DISPLAYS] Improved pixelated screens, only appears when camera is close to displays - @2hwk (2Cas#1022)
+1. [MISC] Change back to airliner hud in external view for SU5 - @donstim (donbikes#4084)
+1. [TEXTURE] Improved cockpit textures and screen reflections - @MoreRightRudder (Mike), @tyler58546 (tyler58546)
+1. [MCDU] DEST EFOB and ALT DEST EFOB amber coloring fixed - @erso44 (Ersin Karakilic)
+1. [EFB] Add tabbed settings page to EFB - @ErickSharp (Erick [Z-6]#6484)
+1. [FCU] Added LVAR for selected speed and only fill active LVAR for VS or FPA mode
+1. [MODEL] Removed unused material to fix potential crash to desktop - @aguther (Andreas Guther)
+1. [ARCH] Failures are supported - @davidwalschots (David Walschots)
+1. [HYD] Updated fix for autobrake rotating knob type controllers - @Crocket63 (crocket)
+1. [MODEL] Fix Cockpit Door Video Toggle - @sidnov (Sid)
+1. [MISC] Added JP, FI, SE, NO and NL language support for tooltips. - @kpotschi (MelodyConnor)
+1. [ECAM] Rewrite fuel page for React - @Benjozork (Benjamin Dupont) and @RichardPilbery (tricky_dicky[Z+0]#3571)
+1. [LIGHTS] Added workaround for missing lighting definitions in Asobo templates - @cloudynetwork (Peter Joseph)
+1. [MODEL] Change ECAM button lights to white - @tracernz (Mike)
+1. [GPWS] Fix "retard" callout so it plays at less than 20 ft radio altitude with autopilot off - @donstim (donbikes#4084)
+1. [FADAC] Fix "fuel used. Fuel used is reset to zero when an engine is restarted on the gound. - john P Maguire#9027
+1. [SOUNDS] Replace all remaining Asobo sounds - @hotshotp (boris#8008)
+1. [SOUNDS] Implement an early version of closed vs open cockpit door sounds - @hotshotp (boris#8008)
+1. [OVHD] CVR ground test auto-resets on first engine start - @tracernz (Mike)
+1. [GENERAL] Added Notification to user via popup + notification when settings change requires aircraft reload. - @2hwk (2Cas#1022
+1. [ECAM] ENG oil temperature amber while below takeoff minimum - @tracernz (Mike)
+1. [MISC] Sync settings across instruments - @tracernz (Mike)
+1. [MCDU] Remove some settings from MCDU the are now in the FlyPad - @tracernz (Mike)
+1. [EFB] Persist sound and EFB settings correctly - @tracernz (Mike)
+1. [FLIGHT MODEL] Fixed station locations and loads consistent with real A320 W&B manual - @ghosh9691
+1. [MCDU] Boarding and W/B AOC Pages update with Simbrief Integration - @viniciusfont
 
 ## 0.6.0
+
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
 1. [SOUND] Improved engine startup and fly by sound - @hotshotp (Boris#9134)
 1. [SOUND] Added new vent test and ext pwr relay random sounds - @hotshotp (Boris#9134)
@@ -382,8 +478,12 @@
 1. [TEXTURE] Upscaled the external airframe decals to go nicely with the upscaled livery. @FoxinTale (Aubrey)
 1. [MCDU] Scratchpad is now limited to 22 characters - @tyler58546 (tyler58546)
 1. [MISC] Added Marketplace Data - @kiwi2021 (kiwi2022#0001)
+1. [FBW] Support additional mode to handle rudder axis plus/minus events - @aguther (Andreas Guther)
+1. [FBW] Improved pitch/C* law using streamlined pitch rate target - @aguther (Andreas Guther)
+1. [AP] Improved ALT* law that targets 0.05g capture - @aguther (Andreas Guther)
 
 ## 0.5.2
+
 1. [CDU] Changing CRZ/DES speed to acknowledge any speed restriction - @Watsi01 (RogePete)
 1. [CDU] Two tiny fixes for flightphase speeds - @Watsi01 (RogePete)
 1. [ND] Flight route now hidden in VOR ROSE and ILS ROSE modes - @2hwk (2Cas#1022)
@@ -404,6 +504,7 @@
 1. [SOUND] Made the altitude callouts louder - @hotshotp (Boris)
 
 ## 0.5.1
+
 1. [CDU] Allow SimBrief user IDs as well as usernames - @pareil6 (pareil6)
 1. [CDU] Fix incorrect block time display on INIT/REVIEW - @pareil6 (pareil6)
 1. [ECAM] Improved PACKS indication - @MisterChocker (Leon)
@@ -414,6 +515,7 @@
 1. [MODEL] Incorporate new Asobo model changes - @pepperoni505 (pepperoni505)
 
 ## 0.5.0
+
 1. [FLIGHTMODEL] Reworked AOA table - @donstim - (donbikes#4084)
 1. [FLIGHTMODEL] Reworked flaps - @donstim - (donbikes#4084)
 1. [FLIGHTMODEL] Reworked drag/thrust ratio - @donstim - (donbikes#4084)
@@ -577,6 +679,7 @@
 1. [CDU] Fix SIDs scrolling on departures page - @SergeySoprykin (SergeyS)
 
 ## 0.4.0
+
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
 1. [ECAM] Improved Upper ECAM Visuals - @wpine215 (Iceman)
 1. [TEXTURES] Changed roughness of glareshield - @Pleasure (Pleasure)

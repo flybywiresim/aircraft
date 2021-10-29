@@ -16,6 +16,13 @@ class A32NX_LocalVarUpdater {
             "FWD":false,
             "AFT":false
         };
+        // Init for LCD effect
+        this.zoomLevel = SimVar.GetSimVarValue('COCKPIT CAMERA ZOOM', 'percent');
+        const camXyz = SimVar.GetGameVarValue('CAMERA POS IN PLANE', 'xyz');
+        this.camZ = camXyz.z;
+        this.camY = camXyz.y;
+        this.opacityMfd = 0;
+        this.opacityMcdu = 0;
 
         this.updaters = [
             {
@@ -73,9 +80,15 @@ class A32NX_LocalVarUpdater {
                 refreshInterval: 50,
             },
             {
-                varName: "L:32NX_PACKS_1_IS_SUPPLYING",
+                varName: "L:A32NX_PACKS_1_IS_SUPPLYING",
                 type: "Bool",
                 selector: this._isPacksOneSupplying.bind(this),
+                refreshInterval: 1000,
+            },
+            {
+                varName: "L:A32NX_PACKS_2_IS_SUPPLYING",
+                type: "Bool",
+                selector: this._isPacksTwoSupplying.bind(this),
                 refreshInterval: 1000,
             },
             {
@@ -85,10 +98,16 @@ class A32NX_LocalVarUpdater {
                 refreshInterval: 100,
             },
             {
-                varName: "L:A32NX_DELTA_PSI",
-                type: "psi",
-                selector: this._deltaPSI.bind(this),
-                refreshInterval: 1000,
+                varName: "L:A32NX_MFD_MASK_OPACITY",
+                type: "number",
+                selector: this._mfdLcdEffectSelector.bind(this),
+                refreshInterval: 150,
+            },
+            {
+                varName: "L:A32NX_MCDU_MASK_OPACITY",
+                type: "number",
+                selector: this._mcduLcdEffectSelector.bind(this),
+                refreshInterval: 150,
             }
             // New updaters go here...
         ];
@@ -190,9 +209,14 @@ class A32NX_LocalVarUpdater {
         const xBleedPos = SimVar.GetSimVarValue("L:A32NX_KNOB_OVHD_AIRCOND_XBLEED_Position", "number");
         const engineModeSelector = SimVar.GetSimVarValue("L:XMLVAR_ENG_MODE_SEL", "Enum");
 
-        const isApuDelivering = SimVar.GetSimVarValue("APU PCT RPM", "Percent") >= 95 && SimVar.GetSimVarValue("L:A32NX_APU_BLEED_AIR_VALVE_OPEN", "Bool") && engineModeSelector === 1;
-        const isEngineOneRunning = SimVar.GetSimVarValue("ENG COMBUSTION:1", "bool") && SimVar.GetSimVarValue("ENG N2 RPM:1", "Rpm(0 to 16384 = 0 to 100%)") >= 55;
-        const isEngineTwoRunning = SimVar.GetSimVarValue("ENG COMBUSTION:2", "bool") && SimVar.GetSimVarValue("ENG N2 RPM:2", "Rpm(0 to 16384 = 0 to 100%)") >= 55;
+        const engineOneState = SimVar.GetSimVarValue("L:A32NX_ENGINE_STATE:1", "number");
+        const engineTwoState = SimVar.GetSimVarValue("L:A32NX_ENGINE_STATE:2", "number");
+
+        const isEngineOneRunning = engineOneState === 1 || (engineOneState === 2 && SimVar.GetSimVarValue("L:A32NX_ENGINE_N1:1", "number") >= 18);
+        const isEngineTwoRunning = engineTwoState === 1 || (engineTwoState === 2 && SimVar.GetSimVarValue("L:A32NX_ENGINE_N1:2", "number") >= 18);
+
+        // As this function is used for sound effects, we use the raw APU N instead of the arinc 429 APU N.
+        const isApuDelivering = SimVar.GetSimVarValue("L:A32NX_APU_N_RAW", "Percent") >= 95 && SimVar.GetSimVarValue("L:A32NX_APU_BLEED_AIR_VALVE_OPEN", "Bool") && engineModeSelector === 1;
         const isEngineOneDelivering = isEngineOneRunning && SimVar.GetSimVarValue("BLEED AIR ENGINE:1", "Bool");
         const isEngineTwoDelivering = isEngineTwoRunning && SimVar.GetSimVarValue("BLEED AIR ENGINE:2", "Bool");
 
@@ -203,7 +227,32 @@ class A32NX_LocalVarUpdater {
          */
         const packOneHasAir = engineModeSelector === 1 || (isEngineOneRunning && isEngineTwoRunning) ? isApuDelivering || isEngineOneDelivering || (isEngineTwoDelivering && isXBleedOpen) : false;
 
-        return packOneHasAir && SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK1_TOGGLE", "Bool");
+        return packOneHasAir && SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK1_TOGGLE", "Bool") && !SimVar.GetSimVarValue("L:A32NX_OVHD_PRESS_DITCHING_PB_IS_ON", "Bool");
+    }
+
+    _isPacksTwoSupplying() {
+        const xBleedPos = SimVar.GetSimVarValue("L:A32NX_KNOB_OVHD_AIRCOND_XBLEED_Position", "number");
+        const engineModeSelector = SimVar.GetSimVarValue("L:XMLVAR_ENG_MODE_SEL", "Enum");
+
+        const engineOneState = SimVar.GetSimVarValue("L:A32NX_ENGINE_STATE:1", "number");
+        const engineTwoState = SimVar.GetSimVarValue("L:A32NX_ENGINE_STATE:2", "number");
+
+        const isEngineOneRunning = engineOneState === 1 || (engineOneState === 2 && SimVar.GetSimVarValue("L:A32NX_ENGINE_N1:1", "number") >= 18);
+        const isEngineTwoRunning = engineTwoState === 1 || (engineTwoState === 2 && SimVar.GetSimVarValue("L:A32NX_ENGINE_N1:2", "number") >= 18);
+
+        // As this function is used for sound effects, we use the raw APU N instead of the arinc 429 APU N.
+        const isApuDelivering = SimVar.GetSimVarValue("L:A32NX_APU_N_RAW", "Percent") >= 95 && SimVar.GetSimVarValue("L:A32NX_APU_BLEED_AIR_VALVE_OPEN", "Bool") && engineModeSelector === 1;
+        const isEngineOneDelivering = isEngineOneRunning && SimVar.GetSimVarValue("BLEED AIR ENGINE:1", "Bool");
+        const isEngineTwoDelivering = isEngineTwoRunning && SimVar.GetSimVarValue("BLEED AIR ENGINE:2", "Bool");
+
+        const isXBleedOpen = xBleedPos === 2 || (xBleedPos === 1 && (isApuDelivering || engineModeSelector !== 1));
+
+        /**
+         * Whether engine mode selector is set to norm or both engines are running -> return packsTwoHasSupply state; otherwise return false
+         */
+        const packTwoHasAir = engineModeSelector === 1 || (isEngineOneRunning && isEngineTwoRunning) ? isApuDelivering || isEngineTwoDelivering || (isEngineOneDelivering && isXBleedOpen) : false;
+
+        return packTwoHasAir && SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK2_TOGGLE", "Bool") && !SimVar.GetSimVarValue("L:A32NX_OVHD_PRESS_DITCHING_PB_IS_ON", "Bool");
     }
 
     _areSlidesArmed() {
@@ -213,29 +262,46 @@ class A32NX_LocalVarUpdater {
         (SimVar.GetSimVarValue('LIGHT BEACON ON', 'bool') &&
             SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:0', 'percent') < 5 && // Pilot side front door for ramp/stairs
             SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:3', 'percent') < 5 && // Rear door, FO side for catering
-            SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:5', 'percent') < 5 // Cargo door FO side
+            SimVar.GetSimVarValue('L:A32NX_FWD_DOOR_CARGO_LOCKED', 'bool') // Cargo door FO side
         );
     }
 
-    _deltaPSI() {
-        const cabinVs = SimVar.GetSimVarValue('PRESSURIZATION CABIN ALTITUDE RATE', 'feet per second');
-        const cabinAlt = SimVar.GetSimVarValue('PRESSURIZATION CABIN ALTITUDE', 'feet');
-        const ambPressure = SimVar.GetSimVarValue('AMBIENT PRESSURE', 'inHg');
+    _mfdLcdEffectSelector() {
+        // Calculate opacity for MFD LCD effect
+        const zoomLevel = SimVar.GetSimVarValue('COCKPIT CAMERA ZOOM', 'percent');
+        const camXyz = SimVar.GetGameVarValue('CAMERA POS IN PLANE', 'xyz');
 
-        const feetToMeters = 0.3048;
-        const seaLevelPressurePascal = 101325;
-        const barometricPressureFactor = -0.00011857591;
-        const pascalToPSI = 0.000145038;
-        const inHgToPSI = 0.491154;
+        if (this.zoomLevel !== zoomLevel || this.camZ !== camXyz.z) {
+            // z-axis - away from screen >> -ve
+            // zTarget: Target zPos that marks max pixel effect point [11.625z @ 100%, 11.7z @ 75%]
+            const zTarget = (3975 - zoomLevel) / 333.33;
+            // zΔ: Diff between current zPos and zTarget
+            const zDelta = camXyz.z - zTarget;
+            // opacity: 0 < [4zΔ + 0.5] < 0.5
+            this.opacityMfd = Math.max(0, Math.min(0.5, 4 * (zDelta) + 0.5));
 
-        const cabinAltMeters = cabinAlt * feetToMeters;
-        const cabinPressurePascal = seaLevelPressurePascal * Math.exp(barometricPressureFactor * cabinAltMeters); // Barometric formula
-        const cabinPressurePSI = cabinPressurePascal * pascalToPSI;
-        const outsidePressurePSI = ambPressure * inHgToPSI;
-        let pressureDiff = cabinPressurePSI - outsidePressurePSI;
-        pressureDiff = (pressureDiff > -0.05) && (pressureDiff < 0.0) ? 0.0 : pressureDiff;
-        pressureDiff = pressureDiff > 8.6 ? 8.6 : pressureDiff; // DeltaPSI will not go above 8.6psi normally
-        return (pressureDiff);
+            this.camZ = camXyz.z;
+            this.zoomLevel = zoomLevel;
+        }
+        return this.opacityMfd;
+    }
+
+    _mcduLcdEffectSelector() {
+        // Calculate opacity for MCDU LCD effect
+        const zoomLevel = SimVar.GetSimVarValue('COCKPIT CAMERA ZOOM', 'percent');
+        const camXyz = SimVar.GetGameVarValue('CAMERA POS IN PLANE', 'xyz');
+
+        if (this.zoomLevel !== zoomLevel || this.camY !== camXyz.y) {
+            // y-axis - away from screen >> +ve
+            const yTarget = (zoomLevel + 423.33) / 333.33;
+            const yDelta = yTarget - camXyz.y;
+            // opacity: 0 < [4yΔ + 0.5] < 1
+            this.opacityMcdu = Math.max(0, Math.min(1, 4 * (yDelta) + 0.5));
+
+            this.camY = camXyz.y;
+            this.zoomLevel = zoomLevel;
+        }
+        return this.opacityMcdu;
     }
 
     // New selectors go here...

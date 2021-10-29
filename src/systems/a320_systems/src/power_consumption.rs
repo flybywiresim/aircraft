@@ -1,3 +1,4 @@
+use systems::simulation::InitContext;
 use systems::{
     electrical::consumption::{FlightPhasePowerConsumer, PowerConsumerFlightPhase},
     shared::ElectricalBusType,
@@ -25,10 +26,11 @@ pub(super) struct A320PowerConsumption {
     dc_gnd_flt_service_consumer: FlightPhasePowerConsumer,
 }
 impl A320PowerConsumption {
-    pub fn new() -> Self {
+    pub fn new(context: &mut InitContext) -> Self {
         // The watts in this function are all provided by komp.
         Self {
-            ac_bus_1_consumer: FlightPhasePowerConsumer::from(
+            ac_bus_1_consumer: FlightPhasePowerConsumer::new(
+                context,
                 ElectricalBusType::AlternatingCurrent(1),
             )
             .demand([
@@ -57,7 +59,8 @@ impl A320PowerConsumption {
                     Power::new::<watt>(30243.1),
                 ),
             ]),
-            ac_bus_2_consumer: FlightPhasePowerConsumer::from(
+            ac_bus_2_consumer: FlightPhasePowerConsumer::new(
+                context,
                 ElectricalBusType::AlternatingCurrent(2),
             )
             .demand([
@@ -86,7 +89,8 @@ impl A320PowerConsumption {
                     Power::new::<watt>(24475.8),
                 ),
             ]),
-            ac_ess_bus_consumer: FlightPhasePowerConsumer::from(
+            ac_ess_bus_consumer: FlightPhasePowerConsumer::new(
+                context,
                 ElectricalBusType::AlternatingCurrentEssential,
             )
             .demand([
@@ -103,7 +107,8 @@ impl A320PowerConsumption {
                 (PowerConsumerFlightPhase::Landing, Power::new::<watt>(715.7)),
                 (PowerConsumerFlightPhase::TaxiIn, Power::new::<watt>(715.7)),
             ]),
-            ac_ess_shed_bus_consumer: FlightPhasePowerConsumer::from(
+            ac_ess_shed_bus_consumer: FlightPhasePowerConsumer::new(
+                context,
                 ElectricalBusType::AlternatingCurrentEssentialShed,
             )
             .demand([
@@ -120,7 +125,8 @@ impl A320PowerConsumption {
                 (PowerConsumerFlightPhase::Landing, Power::new::<watt>(823.5)),
                 (PowerConsumerFlightPhase::TaxiIn, Power::new::<watt>(823.5)),
             ]),
-            ac_stat_inv_bus_consumer: FlightPhasePowerConsumer::from(
+            ac_stat_inv_bus_consumer: FlightPhasePowerConsumer::new(
+                context,
                 ElectricalBusType::AlternatingCurrentStaticInverter,
             )
             .demand([
@@ -137,7 +143,8 @@ impl A320PowerConsumption {
                 (PowerConsumerFlightPhase::Landing, Power::new::<watt>(135.)),
                 (PowerConsumerFlightPhase::TaxiIn, Power::new::<watt>(135.)),
             ]),
-            ac_gnd_flt_service_consumer: FlightPhasePowerConsumer::from(
+            ac_gnd_flt_service_consumer: FlightPhasePowerConsumer::new(
+                context,
                 ElectricalBusType::AlternatingCurrentGndFltService,
             )
             .demand([
@@ -154,37 +161,44 @@ impl A320PowerConsumption {
                 (PowerConsumerFlightPhase::Landing, Power::new::<watt>(2628.)),
                 (PowerConsumerFlightPhase::TaxiIn, Power::new::<watt>(3663.)),
             ]),
-            dc_bus_1_consumer: FlightPhasePowerConsumer::from(ElectricalBusType::DirectCurrent(1))
-                .demand([
-                    (
-                        PowerConsumerFlightPhase::BeforeStart,
-                        Power::new::<watt>(252.),
-                    ),
-                    (
-                        PowerConsumerFlightPhase::AfterStart,
-                        Power::new::<watt>(308.),
-                    ),
-                    (PowerConsumerFlightPhase::Takeoff, Power::new::<watt>(364.)),
-                    (PowerConsumerFlightPhase::Flight, Power::new::<watt>(280.)),
-                    (PowerConsumerFlightPhase::Landing, Power::new::<watt>(364.)),
-                    (PowerConsumerFlightPhase::TaxiIn, Power::new::<watt>(336.)),
-                ]),
-            dc_bus_2_consumer: FlightPhasePowerConsumer::from(ElectricalBusType::DirectCurrent(2))
-                .demand([
-                    (
-                        PowerConsumerFlightPhase::BeforeStart,
-                        Power::new::<watt>(532.),
-                    ),
-                    (
-                        PowerConsumerFlightPhase::AfterStart,
-                        Power::new::<watt>(448.),
-                    ),
-                    (PowerConsumerFlightPhase::Takeoff, Power::new::<watt>(392.)),
-                    (PowerConsumerFlightPhase::Flight, Power::new::<watt>(392.)),
-                    (PowerConsumerFlightPhase::Landing, Power::new::<watt>(392.)),
-                    (PowerConsumerFlightPhase::TaxiIn, Power::new::<watt>(448.)),
-                ]),
-            dc_ess_bus_consumer: FlightPhasePowerConsumer::from(
+            dc_bus_1_consumer: FlightPhasePowerConsumer::new(
+                context,
+                ElectricalBusType::DirectCurrent(1),
+            )
+            .demand([
+                (
+                    PowerConsumerFlightPhase::BeforeStart,
+                    Power::new::<watt>(252.),
+                ),
+                (
+                    PowerConsumerFlightPhase::AfterStart,
+                    Power::new::<watt>(308.),
+                ),
+                (PowerConsumerFlightPhase::Takeoff, Power::new::<watt>(364.)),
+                (PowerConsumerFlightPhase::Flight, Power::new::<watt>(280.)),
+                (PowerConsumerFlightPhase::Landing, Power::new::<watt>(364.)),
+                (PowerConsumerFlightPhase::TaxiIn, Power::new::<watt>(336.)),
+            ]),
+            dc_bus_2_consumer: FlightPhasePowerConsumer::new(
+                context,
+                ElectricalBusType::DirectCurrent(2),
+            )
+            .demand([
+                (
+                    PowerConsumerFlightPhase::BeforeStart,
+                    Power::new::<watt>(532.),
+                ),
+                (
+                    PowerConsumerFlightPhase::AfterStart,
+                    Power::new::<watt>(448.),
+                ),
+                (PowerConsumerFlightPhase::Takeoff, Power::new::<watt>(392.)),
+                (PowerConsumerFlightPhase::Flight, Power::new::<watt>(392.)),
+                (PowerConsumerFlightPhase::Landing, Power::new::<watt>(392.)),
+                (PowerConsumerFlightPhase::TaxiIn, Power::new::<watt>(448.)),
+            ]),
+            dc_ess_bus_consumer: FlightPhasePowerConsumer::new(
+                context,
                 ElectricalBusType::DirectCurrentEssential,
             )
             .demand([
@@ -201,7 +215,8 @@ impl A320PowerConsumption {
                 (PowerConsumerFlightPhase::Landing, Power::new::<watt>(168.)),
                 (PowerConsumerFlightPhase::TaxiIn, Power::new::<watt>(140.)),
             ]),
-            dc_ess_shed_bus_consumer: FlightPhasePowerConsumer::from(
+            dc_ess_shed_bus_consumer: FlightPhasePowerConsumer::new(
+                context,
                 ElectricalBusType::DirectCurrentEssentialShed,
             )
             .demand([
@@ -218,7 +233,8 @@ impl A320PowerConsumption {
                 (PowerConsumerFlightPhase::Landing, Power::new::<watt>(196.)),
                 (PowerConsumerFlightPhase::TaxiIn, Power::new::<watt>(168.)),
             ]),
-            dc_bat_bus_consumer: FlightPhasePowerConsumer::from(
+            dc_bat_bus_consumer: FlightPhasePowerConsumer::new(
+                context,
                 ElectricalBusType::DirectCurrentBattery,
             )
             .demand([
@@ -235,7 +251,8 @@ impl A320PowerConsumption {
                 (PowerConsumerFlightPhase::Landing, Power::new::<watt>(28.)),
                 (PowerConsumerFlightPhase::TaxiIn, Power::new::<watt>(28.)),
             ]),
-            dc_hot_bus_1_consumer: FlightPhasePowerConsumer::from(
+            dc_hot_bus_1_consumer: FlightPhasePowerConsumer::new(
+                context,
                 ElectricalBusType::DirectCurrentHot(1),
             )
             .demand([
@@ -252,7 +269,8 @@ impl A320PowerConsumption {
                 (PowerConsumerFlightPhase::Landing, Power::new::<watt>(15.3)),
                 (PowerConsumerFlightPhase::TaxiIn, Power::new::<watt>(11.)),
             ]),
-            dc_hot_bus_2_consumer: FlightPhasePowerConsumer::from(
+            dc_hot_bus_2_consumer: FlightPhasePowerConsumer::new(
+                context,
                 ElectricalBusType::DirectCurrentHot(2),
             )
             .demand([
@@ -269,7 +287,8 @@ impl A320PowerConsumption {
                 (PowerConsumerFlightPhase::Landing, Power::new::<watt>(24.3)),
                 (PowerConsumerFlightPhase::TaxiIn, Power::new::<watt>(24.3)),
             ]),
-            dc_gnd_flt_service_consumer: FlightPhasePowerConsumer::from(
+            dc_gnd_flt_service_consumer: FlightPhasePowerConsumer::new(
+                context,
                 ElectricalBusType::DirectCurrentGndFltService,
             )
             .demand([
@@ -324,10 +343,5 @@ impl SimulationElement for A320PowerConsumption {
         self.dc_gnd_flt_service_consumer.accept(visitor);
 
         visitor.visit(self);
-    }
-}
-impl Default for A320PowerConsumption {
-    fn default() -> Self {
-        A320PowerConsumption::new()
     }
 }

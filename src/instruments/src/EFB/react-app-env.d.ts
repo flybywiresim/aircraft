@@ -20,6 +20,16 @@ declare global {
          * @param args any extra arguments to be passed to the event handlers.
          */
         function trigger(name: string, ...args: any[]): void;
+
+        /**
+         * Add a handler for an event.
+         * @param name The event name.
+         * @param callback Function to be called when the event is triggered.
+         * @param context This binding for executing the handler, defaults to the Emitter.
+         * @return An object with a clear function to remove the handler for the event.
+         */
+        function on(name: string, callback: (event, ...args) => void): { clear: () => void };
+        function on(name: string, callback: (event, ...args) => void, context: any): { clear: () => void };
     }
 }
 

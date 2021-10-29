@@ -8,7 +8,7 @@ import Button, { BUTTON_TYPE } from '../../Components/Button/Button';
 import SimpleInput from '../../Components/Form/SimpleInput/SimpleInput';
 import fuselage from '../../Assets/320neo_outline_fuel.svg';
 import { useSimVar } from '../../../Common/simVars';
-import { useSimVarSyncedPersistentProperty } from '../../../Common/persistence';
+import { usePersistentProperty } from '../../../Common/persistence';
 
 export const FuelPage = () => {
     const totalFuelGallons = 6267;
@@ -17,17 +17,17 @@ export const FuelPage = () => {
     const centerTankGallon = 2179;
     const wingTotalRefuelTimeSeconds = 1020;
     const CenterTotalRefuelTimeSeconds = 180;
-    const [usingMetrics, setUsingMetrics] = useSimVarSyncedPersistentProperty('L:A32NX_CONFIG_USING_METRIC_UNIT', 'Number', 'CONFIG_USING_METRIC_UNIT');
+    const [usingMetrics] = usePersistentProperty('CONFIG_USING_METRIC_UNIT', '1');
 
     const currentUnit = () => {
-        if (usingMetrics === 1) {
+        if (usingMetrics === '1') {
             return 'KG';
         }
         return 'LB';
     };
 
     const convertUnit = () => {
-        if (usingMetrics === 1) {
+        if (usingMetrics === '1') {
             return 1;
         }
         return 2.204617615;
@@ -46,7 +46,7 @@ export const FuelPage = () => {
     const [isOnGround] = useSimVar('SIM ON GROUND', 'Bool', 1_000);
     const [eng1Running] = useSimVar('ENG COMBUSTION:1', 'Bool', 1_000);
     const [eng2Running] = useSimVar('ENG COMBUSTION:2', 'Bool', 1_000);
-    const [refuelRate, setRefuelRate] = useSimVarSyncedPersistentProperty('L:A32NX_REFUEL_RATE_SETTING', 'Number', 'REFUEL_RATE_SETTING');
+    const [refuelRate, setRefuelRate] = usePersistentProperty('REFUEL_RATE_SETTING');
     const [sliderValue, setSliderValue] = useSimVar('L:A32NX_FUEL_DESIRED_PERCENT', 'Number');
     const [inputValue, setInputValue] = useSimVar('L:A32NX_FUEL_DESIRED', 'Number');
     const [totalTarget, setTotalTarget] = useSimVar('L:A32NX_FUEL_TOTAL_DESIRED', 'Number');
@@ -63,13 +63,18 @@ export const FuelPage = () => {
     const [ROutCurrent] = useSimVar('FUEL TANK RIGHT AUX QUANTITY', 'Gallons', 1_000);
     const getFuelBarPercent = (curr:number, max: number) => (Math.max(curr, 0) / max) * 100;
 
-    const airplaneCanRefuel = () => {
-        // TODO : REMOVE THIS IF WHENEVER PERSISTANCE IS IMPLEMENTED
-        if (usingMetrics !== 1) {
-            setUsingMetrics(1);
-        }
+    const isAirplaneCnD = () => {
         if (simGroundSpeed > 0.1 || eng1Running || eng2Running || !isOnGround || (!busDC2 && !busDCHot1)) {
             return false;
+        }
+        return true;
+    };
+
+    const airplaneCanRefuel = () => {
+        if (refuelRate !== '2') {
+            if (!isAirplaneCnD()) {
+                return false;
+            }
         }
         return true;
     };
@@ -189,7 +194,7 @@ export const FuelPage = () => {
     };
 
     const calculateEta = () => {
-        if (round(totalTarget) === totalCurrentGallon() || refuelRate === 2) {
+        if (round(totalTarget) === totalCurrentGallon() || refuelRate === '2') { // instant
             return ' 0';
         }
         let estimatedTimeSeconds = 0;
@@ -198,7 +203,7 @@ export const FuelPage = () => {
         const differentialFuelCenter = Math.abs(centerTarget - centerCurrent);
         estimatedTimeSeconds += (differentialFuelWings / totalWingFuel) * wingTotalRefuelTimeSeconds;
         estimatedTimeSeconds += (differentialFuelCenter / centerTankGallon) * CenterTotalRefuelTimeSeconds;
-        if (refuelRate === 1) {
+        if (refuelRate === '1') { // fast
             estimatedTimeSeconds /= 5;
         }
         if (estimatedTimeSeconds < 35) {
@@ -212,6 +217,16 @@ export const FuelPage = () => {
             setRefuelStartedByUser(!refuelStartedByUser);
         }
     };
+
+    const refuelButtonStatus = () => (
+        <>
+            <SelectGroup>
+                <SelectItem enabled selected={isAirplaneCnD() ? refuelRate === '2' : !isAirplaneCnD()} onSelect={() => setRefuelRate('2')}>Instant</SelectItem>
+                <SelectItem enabled={isAirplaneCnD()} selected={refuelRate === '1'} onSelect={() => setRefuelRate('1')}>Fast</SelectItem>
+                <SelectItem enabled={isAirplaneCnD()} selected={refuelRate === '0'} onSelect={() => setRefuelRate('0')}>Real</SelectItem>
+            </SelectGroup>
+        </>
+    );
 
     return (
         <div className="text-white mt-6 h-efb-nav flex flex-col justify-between">
@@ -414,11 +429,7 @@ export const FuelPage = () => {
                 <div className="absolute bg-navy-lighter rounded-2xl text-white shadow-lg overflow-x-hidden p-6 z-30">
                     <div className="w-96 flex flex-row justify-between items-center">
                         <span className="text-lg text-gray-300">Refuel Time</span>
-                        <SelectGroup>
-                            <SelectItem selected={refuelRate === 2} onSelect={() => setRefuelRate(2)}>Instant</SelectItem>
-                            <SelectItem selected={refuelRate === 1} onSelect={() => setRefuelRate(1)}>Fast</SelectItem>
-                            <SelectItem selected={refuelRate === 0} onSelect={() => setRefuelRate(0)}>Real</SelectItem>
-                        </SelectGroup>
+                        {refuelButtonStatus()}
                     </div>
                 </div>
             </div>

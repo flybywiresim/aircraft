@@ -2,7 +2,13 @@ import React from 'react';
 
 import './PageTitle.scss';
 
-export const PageTitle = ({ x, y, text }) => (
+type PageTitleProps = {
+    x: number,
+    y: number,
+    text: string
+}
+
+export const PageTitle = ({ x, y, text }: PageTitleProps) => (
     <text
         id="pageTitle"
         className="PageTitle"

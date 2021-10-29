@@ -1,16 +1,20 @@
 use uom::si::{angular_velocity::revolution_per_minute, f64::*, pressure::psi, ratio::percent};
 
 use crate::{
-    shared::{EngineCorrectedN2, EngineUncorrectedN2},
+    shared::{EngineCorrectedN1, EngineCorrectedN2, EngineUncorrectedN2},
     simulation::{Read, SimulationElement, SimulatorReader, UpdateContext},
 };
 
 use super::Engine;
+use crate::simulation::{InitContext, VariableIdentifier};
+
 pub struct LeapEngine {
-    corrected_n2_id: String,
+    corrected_n1_id: VariableIdentifier,
+    corrected_n1: Ratio,
+    corrected_n2_id: VariableIdentifier,
     corrected_n2: Ratio,
 
-    uncorrected_n2_id: String,
+    uncorrected_n2_id: VariableIdentifier,
     uncorrected_n2: Ratio,
 
     n2_speed: AngularVelocity,
@@ -27,11 +31,13 @@ impl LeapEngine {
 
     const MIN_IDLE_N2_UNCORRECTED_THRESHOLD_PERCENT: f64 = 55.;
 
-    pub fn new(number: usize) -> LeapEngine {
+    pub fn new(context: &mut InitContext, number: usize) -> LeapEngine {
         LeapEngine {
-            corrected_n2_id: format!("TURB ENG CORRECTED N2:{}", number),
+            corrected_n1_id: context.get_identifier(format!("TURB ENG CORRECTED N1:{}", number)),
+            corrected_n1: Ratio::new::<percent>(0.),
+            corrected_n2_id: context.get_identifier(format!("TURB ENG CORRECTED N2:{}", number)),
             corrected_n2: Ratio::new::<percent>(0.),
-            uncorrected_n2_id: format!("ENGINE_N2:{}", number),
+            uncorrected_n2_id: context.get_identifier(format!("ENGINE_N2:{}", number)),
             uncorrected_n2: Ratio::new::<percent>(0.),
             n2_speed: AngularVelocity::new::<revolution_per_minute>(0.),
             hydraulic_pump_output_speed: AngularVelocity::new::<revolution_per_minute>(0.),
@@ -53,9 +59,15 @@ impl LeapEngine {
 }
 impl SimulationElement for LeapEngine {
     fn read(&mut self, reader: &mut SimulatorReader) {
+        self.corrected_n1 = reader.read(&self.corrected_n1_id);
         self.corrected_n2 = reader.read(&self.corrected_n2_id);
         self.uncorrected_n2 = reader.read(&self.uncorrected_n2_id);
         self.update_parameters();
+    }
+}
+impl EngineCorrectedN1 for LeapEngine {
+    fn corrected_n1(&self) -> Ratio {
+        self.corrected_n1
     }
 }
 impl EngineCorrectedN2 for LeapEngine {

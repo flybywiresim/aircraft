@@ -5,4 +5,4 @@ interface SvgGroupProps {
     y: number,
     className?: string,
 }
-export const SvgGroup: React.FunctionComponent<SvgGroupProps> = ({ x, y, children }) => <g transform={`translate(${x},${y})`}>{children}</g>;
+export const SvgGroup: React.FunctionComponent<SvgGroupProps> = ({ x, y, children, className }) => <g transform={`translate(${x},${y})`} className={className}>{children}</g>;

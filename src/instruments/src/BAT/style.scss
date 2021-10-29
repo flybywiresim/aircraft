@@ -10,6 +10,8 @@
   height: 100%;
   width: 100%;
   left: 0;
+  /* TODO: Remove opacity when SAI/ISIS/CLOCK/BAT/ATC/RMP/RUD TRIM is split and not share the same emissive/mesh */
+  opacity: 0.5;
 }
 
 text {

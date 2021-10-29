@@ -6,37 +6,37 @@
 
 class FlyByWireModelClass {
  public:
-  typedef struct {
+  struct rtDW_LagFilter_FlyByWire_T {
     real_T pY;
     real_T pU;
     boolean_T pY_not_empty;
     boolean_T pU_not_empty;
-  } rtDW_LagFilter_FlyByWire_T;
+  };
 
-  typedef struct {
+  struct rtDW_RateLimiter_FlyByWire_T {
     real_T pY;
     boolean_T pY_not_empty;
-  } rtDW_RateLimiter_FlyByWire_T;
+  };
 
-  typedef struct {
+  struct rtDW_WashoutFilter_FlyByWire_T {
     real_T pY;
     real_T pU;
     boolean_T pY_not_empty;
     boolean_T pU_not_empty;
-  } rtDW_WashoutFilter_FlyByWire_T;
+  };
 
-  typedef struct {
+  struct rtDW_eta_trim_limit_lofreeze_FlyByWire_T {
     real_T frozen_eta_trim;
     boolean_T frozen_eta_trim_not_empty;
-  } rtDW_eta_trim_limit_lofreeze_FlyByWire_T;
+  };
 
-  typedef struct {
+  struct BlockIO_FlyByWire_T {
     real_T in_flight;
     real_T flare_Theta_c_deg;
     real_T flare_Theta_c_rate_deg_s;
-  } BlockIO_FlyByWire_T;
+  };
 
-  typedef struct {
+  struct D_Work_FlyByWire_T {
     real_T Delay_DSTATE;
     real_T Delay_DSTATE_d;
     real_T Delay_DSTATE_dq;
@@ -63,6 +63,7 @@ class FlyByWireModelClass {
     real_T Delay_DSTATE_f1;
     real_T Delay_DSTATE_h;
     real_T Delay_DSTATE_ea;
+    real_T Delay_DSTATE_i5;
     real_T Delay_DSTATE_ho;
     real_T Delay_DSTATE_gt;
     real_T Delay_DSTATE_j5;
@@ -72,14 +73,8 @@ class FlyByWireModelClass {
     real_T sProtActive;
     real_T eventTime_o;
     real_T resetEventTime;
-    real_T sProtActive_n;
+    real_T sProtActive_k;
     real_T sAlphaFloor;
-    uint8_T icLoad;
-    uint8_T icLoad_e;
-    uint8_T icLoad_i;
-    uint8_T icLoad_m;
-    uint8_T icLoad_id;
-    uint8_T icLoad_c;
     uint8_T is_active_c5_FlyByWire;
     uint8_T is_c5_FlyByWire;
     uint8_T is_active_c6_FlyByWire;
@@ -98,8 +93,14 @@ class FlyByWireModelClass {
     uint8_T is_c15_FlyByWire;
     uint8_T is_active_c1_FlyByWire;
     uint8_T is_c1_FlyByWire;
+    boolean_T icLoad;
+    boolean_T icLoad_e;
+    boolean_T icLoad_i;
+    boolean_T icLoad_m;
+    boolean_T icLoad_id;
+    boolean_T icLoad_c;
     boolean_T eventTime_not_empty;
-    boolean_T eventTime_not_empty_f;
+    boolean_T eventTime_not_empty_l;
     boolean_T resetEventTime_not_empty;
     rtDW_RateLimiter_FlyByWire_T sf_RateLimiter_b5;
     rtDW_RateLimiter_FlyByWire_T sf_RateLimiter_pr;
@@ -114,11 +115,13 @@ class FlyByWireModelClass {
     rtDW_LagFilter_FlyByWire_T sf_LagFilter_d;
     rtDW_RateLimiter_FlyByWire_T sf_RateLimiter_d;
     rtDW_WashoutFilter_FlyByWire_T sf_WashoutFilter_i;
-    rtDW_RateLimiter_FlyByWire_T sf_RateLimiter_j;
+    rtDW_RateLimiter_FlyByWire_T sf_RateLimiter_a0;
     rtDW_RateLimiter_FlyByWire_T sf_RateLimiter_lp;
     rtDW_LagFilter_FlyByWire_T sf_LagFilter_c;
+    rtDW_LagFilter_FlyByWire_T sf_LagFilter_a;
+    rtDW_LagFilter_FlyByWire_T sf_LagFilter_pc;
+    rtDW_LagFilter_FlyByWire_T sf_LagFilter_f;
     rtDW_RateLimiter_FlyByWire_T sf_RateLimiter_gp;
-    rtDW_LagFilter_FlyByWire_T sf_LagFilter_pl;
     rtDW_eta_trim_limit_lofreeze_FlyByWire_T sf_eta_trim_limit_upfreeze;
     rtDW_eta_trim_limit_lofreeze_FlyByWire_T sf_eta_trim_limit_lofreeze;
     rtDW_RateLimiter_FlyByWire_T sf_RateLimiter_a;
@@ -135,19 +138,22 @@ class FlyByWireModelClass {
     rtDW_RateLimiter_FlyByWire_T sf_RateLimiter;
     rtDW_LagFilter_FlyByWire_T sf_LagFilter_h;
     rtDW_LagFilter_FlyByWire_T sf_LagFilter;
-  } D_Work_FlyByWire_T;
+  };
 
-  typedef struct {
+  struct ExternalInputs_FlyByWire_T {
     fbw_input in;
-  } ExternalInputs_FlyByWire_T;
+  };
 
-  typedef struct {
+  struct ExternalOutputs_FlyByWire_T {
     fbw_output out;
-  } ExternalOutputs_FlyByWire_T;
+  };
 
   struct Parameters_FlyByWire_T {
     fbw_output fbw_output_MATLABStruct;
-    real_T ScheduledGain_BreakpointsForDimension1[4];
+    real_T ScheduledGain_BreakpointsForDimension1[5];
+    real_T ScheduledGain_BreakpointsForDimension1_f[5];
+    real_T ScheduledGain_BreakpointsForDimension1_k[7];
+    real_T ScheduledGain1_BreakpointsForDimension1[7];
     real_T LagFilter_C1;
     real_T LagFilter_C1_a;
     real_T LagFilter_C1_n;
@@ -158,7 +164,9 @@ class FlyByWireModelClass {
     real_T WashoutFilter_C1;
     real_T Subsystem1_C1;
     real_T Subsystem3_C1;
-    real_T LagFilter_C1_l;
+    real_T LagFilter1_C1_j;
+    real_T LagFilter2_C1;
+    real_T LagFilter3_C1;
     real_T LagFilter_C1_d;
     real_T WashoutFilter_C1_i;
     real_T LagFilter_C1_c;
@@ -206,7 +214,7 @@ class FlyByWireModelClass {
     real_T DiscreteDerivativeVariableTs_InitialCondition_c;
     real_T RateLimiterDynamicVariableTs_InitialCondition_i;
     real_T RateLimiterVariableTs_InitialCondition_f;
-    real_T RateLimiterVariableTs2_InitialCondition_l;
+    real_T RateLimiterVariableTs_InitialCondition_j;
     real_T RateLimiterVariableTs_InitialCondition_fc;
     real_T RateLimiterVariableTs_InitialCondition_p;
     real_T RateLimiterVariableTs1_InitialCondition_f;
@@ -219,13 +227,17 @@ class FlyByWireModelClass {
     real_T DiscreteTimeIntegratorVariableTs_LowerLimit_k;
     real_T DiscreteTimeIntegratorVariableTs1_LowerLimit;
     real_T DiscreteTimeIntegratorVariableTs1_LowerLimit_o;
-    real_T ScheduledGain_Table[4];
+    real_T ScheduledGain_Table[5];
+    real_T ScheduledGain_Table_l[5];
+    real_T ScheduledGain_Table_k[7];
+    real_T ScheduledGain1_Table[7];
     real_T DiscreteTimeIntegratorVariableTs_UpperLimit;
     real_T DiscreteTimeIntegratorVariableTs_UpperLimit_c;
     real_T DiscreteTimeIntegratorVariableTs_UpperLimit_d;
     real_T DiscreteTimeIntegratorVariableTs1_UpperLimit;
     real_T DiscreteTimeIntegratorVariableTs1_UpperLimit_e;
     real_T CompareToConstant_const;
+    real_T CompareToConstant1_const;
     real_T CompareToConstant_const_g;
     real_T RateLimiterVariableTs2_lo;
     real_T RateLimiterVariableTs3_lo;
@@ -244,7 +256,7 @@ class FlyByWireModelClass {
     real_T RateLimiterVariableTs2_lo_n;
     real_T RateLimiterVariableTs5_lo;
     real_T RateLimiterVariableTs_lo_fs;
-    real_T RateLimiterVariableTs2_lo_a;
+    real_T RateLimiterVariableTs_lo_g;
     real_T RateLimiterVariableTs_lo_p;
     real_T RateLimiterVariableTs_lo_fw;
     real_T RateLimiterVariableTs1_lo_hd;
@@ -268,8 +280,8 @@ class FlyByWireModelClass {
     real_T RateLimiterVariableTs2_up_b;
     real_T RateLimiterVariableTs5_up;
     real_T RateLimiterVariableTs_up_k;
-    real_T RateLimiterVariableTs2_up_bi;
     real_T RateLimiterVariableTs_up_m;
+    real_T RateLimiterVariableTs_up_mm;
     real_T RateLimiterVariableTs_up_dlj;
     real_T RateLimiterVariableTs1_up_p;
     real_T RateLimitereta_up;
@@ -327,6 +339,7 @@ class FlyByWireModelClass {
     real_T Switch2_Threshold_f;
     real_T Switch1_Threshold;
     real_T Constant2_Value_c;
+    real_T Constant3_Value_p;
     real_T Constant_Value_j;
     real_T Delay_InitialCondition;
     real_T GainTheta_Gain;
@@ -390,6 +403,7 @@ class FlyByWireModelClass {
     real_T Constant_Value_jz;
     real_T Saturation1_UpperSat_f;
     real_T Saturation1_LowerSat_p;
+    real_T Constant2_Value_l;
     real_T uDLookupTable_tableData_d[25];
     real_T uDLookupTable_bp01Data_l[5];
     real_T uDLookupTable_bp02Data[5];
@@ -438,8 +452,8 @@ class FlyByWireModelClass {
     real_T Saturation_LowerSat_ps;
     real_T Constant_Value_p;
     real_T Gain3_Gain_l;
-    real_T uDLookupTable_tableData_l[5];
-    real_T uDLookupTable_bp01Data_j[5];
+    real_T uDLookupTable_tableData_l[7];
+    real_T uDLookupTable_bp01Data_j[7];
     real_T Saturation3_UpperSat_p;
     real_T Saturation3_LowerSat_i;
     real_T Gain5_Gain_g;
@@ -464,31 +478,40 @@ class FlyByWireModelClass {
     real_T Gain1_Gain_jh;
     real_T Saturation_UpperSat_p;
     real_T Saturation_LowerSat_h;
+    real_T Gain4_Gain_f;
+    real_T Saturation_UpperSat_l;
+    real_T Saturation_LowerSat_cj;
+    real_T Gain5_Gain_l;
+    real_T Saturation1_UpperSat_fa;
+    real_T Saturation1_LowerSat_o;
+    real_T Gain_Gain_o;
     real_T Gain1_Gain_m;
     real_T Switch3_Threshold;
     real_T Saturation_UpperSat_n;
     real_T Saturation_LowerSat_o;
+    real_T Delay_InitialCondition_o;
+    real_T Saturation_UpperSat_f;
+    real_T Saturation_LowerSat_f;
     real_T Switch_Threshold_p;
-    real_T Gain3_Gain_k;
-    real_T Gain2_Gain_i;
-    real_T Gain1_Gain_mg;
-    real_T pKp_Gain;
-    real_T Constant2_Value_l;
+    real_T Gain1_Gain_be;
+    real_T Gain1_Gain_d;
+    real_T Gain1_Gain_mu;
+    real_T Gain_Gain_j;
+    real_T Constant2_Value_li;
     real_T Gain1_Gain_br;
     real_T Gain1_Gain_cq;
-    real_T Saturation_UpperSat_l;
+    real_T Saturation_UpperSat_lo;
     real_T Saturation_LowerSat_lu;
     real_T Gain6_Gain_j;
     real_T Gain_Gain_cd;
-    real_T Gain_Gain_hk;
     real_T Saturation1_UpperSat_h;
     real_T Saturation1_LowerSat_g;
-    real_T Gain6_Gain_k;
     real_T Saturation2_UpperSat_e;
     real_T Saturation2_LowerSat_gp;
     real_T Saturation_UpperSat_d1;
     real_T Saturation_LowerSat_j;
     real_T Constant_Value_i;
+    real_T Switch2_Threshold_p;
     real_T Gain4_Gain_o;
     real_T Gain7_Gain;
     real_T Saturation_UpperSat_k;
@@ -506,7 +529,7 @@ class FlyByWireModelClass {
     real_T Saturation_UpperSat_eq;
     real_T Saturation_LowerSat_n;
     real_T Saturation_UpperSat_i;
-    real_T Saturation_LowerSat_f;
+    real_T Saturation_LowerSat_fr;
     real_T Constant_Value_f;
     real_T Gaineta_Gain_d;
     real_T Limitereta_UpperSat;

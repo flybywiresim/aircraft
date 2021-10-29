@@ -12,7 +12,7 @@ class CDUIRSStatus {
         const latStr = currPosSplit[0];
         const lonStr = currPosSplit[1];
         currPos = latStr + sep + lonStr;
-        const GROUNDSPEED = SimVar.GetSimVarValue("GPS GROUND SPEED", "Meters per second") || "0";
+        const GROUNDSPEED = SimVar.GetSimVarValue("GPS GROUND SPEED", "Knots") || "0";
         const THDG = SimVar.GetSimVarValue("GPS GROUND TRUE HEADING", "radians") || "000";
         const TTRK = SimVar.GetSimVarValue("GPS GROUND MAGNETIC TRACK", "radians") || "000";
         const MHDG = SimVar.GetSimVarValue("GPS GROUND TRUE TRACK", "radians") || "000";

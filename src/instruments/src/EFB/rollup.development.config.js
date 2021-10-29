@@ -59,5 +59,6 @@ module.exports = {
     output: {
         file: `${__dirname}/web/bundle.js`,
         format: 'iife',
+        sourcemap: true,
     },
 };

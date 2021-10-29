@@ -15,6 +15,7 @@ class CDUFlightPlanPage {
                 CDUFlightPlanPage.ShowPage(mcdu, offset);
             }
         };
+        mcdu.pageRedrawCallback = () => CDUFlightPlanPage.ShowPage(mcdu, offset);
         const flightPhase = SimVar.GetSimVarValue("L:A32NX_FWC_FLIGHT_PHASE", "Enum");
         const isFlying = flightPhase >= 5 && flightPhase <= 7;
         let originIdentCell = "----";
@@ -45,7 +46,6 @@ class CDUFlightPlanPage {
             approachRunway = mcdu.flightPlanManager.getApproachRunway();
             if (approachRunway) {
                 destCell += Avionics.Utils.formatRunway(approachRunway.designation);
-                SimVar.SetSimVarValue('L:A32NX_APPROACH_RUNWAY_ELEVATION', 'Meters', approachRunway.elevation);
             }
         }
         let rows = [[""], [""], [""], [""], [""], [""], [""], [""], [""], [""], [""], [""],];
@@ -71,7 +71,7 @@ class CDUFlightPlanPage {
             let destEFOBCell = "---";
             if (mcdu.flightPlanManager.getDestination()) {
                 destDistCell = mcdu.flightPlanManager.getDestination().liveDistanceTo.toFixed(0);
-                destEFOBCell = (mcdu.getDestEFOB(isFlying) * mcdu._conversionWeight).toFixed(1);
+                destEFOBCell = (NXUnits.kgToUser(mcdu.getDestEFOB(isFlying))).toFixed(1);
                 if (isFlying) {
                     destTimeCell = FMCMainDisplay.secondsToUTC(mcdu.flightPlanManager.getDestination().liveUTCTo);
                 } else {
@@ -347,7 +347,7 @@ class CDUFlightPlanPage {
                                 }
                                 return mcdu.getDelayBasic();
                             };
-                            mcdu.onLeftInput[i] = async (value) => {
+                            mcdu.onLeftInput[i] = async (value, scratchpadCallback) => {
                                 if (value === "") {
                                     if (waypoint) {
                                         CDULateralRevisionPage.ShowPage(mcdu, waypoint, fpIndex);
@@ -357,7 +357,10 @@ class CDUFlightPlanPage {
                                         CDUFlightPlanPage.ShowPage(mcdu, offset);
                                     });
                                 } else if (value.length > 0) {
-                                    mcdu.insertWaypoint(value, fpIndex, () => {
+                                    mcdu.insertWaypoint(value, fpIndex, (success) => {
+                                        if (!success) {
+                                            scratchpadCallback();
+                                        }
                                         CDUFlightPlanPage.ShowPage(mcdu, offset);
                                     });
                                 }

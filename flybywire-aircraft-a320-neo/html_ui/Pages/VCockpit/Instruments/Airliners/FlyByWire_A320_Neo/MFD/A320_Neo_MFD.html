@@ -5,6 +5,8 @@
     <glasscockpit-highlight id="highlight"></glasscockpit-highlight>
     <div id="Mainframe">
         <div id="Electricity" state="off">
+            <div id="LcdOverlay"></div>
+            <div id="BacklightBleed"></div>
             <svg id="MfdEngTest" class="engineering-mode-overlay" viewBox="0 0 600 600">
                 <text class="start" x="9" y="250">P/N : C19755BA01</text>
                 <text class="start" x="10" y="270">S/N : C1975517332</text>
@@ -190,6 +192,9 @@
 <script type="text/html" import-script="/Pages/A32NX_Utils/NXDataStore.js"></script>
 <script type="text/html" import-script="/Pages/A32NX_Core/A32NX_DMC.js"></script>
 <script type="text/html" import-script="/Pages/A32NX_Core/DisplayUnit.js"></script>
+<script type="text/html" import-script="/Pages/A32NX_Utils/arinc429.js"></script>
+<script type="text/html" import-script="/Pages/A32NX_Core/Adirs.js"></script>
+<script type="text/html" import-script="/JS/Services/ToolBarPanels.js"></script>
 
 <script type="text/html" import-script="/Pages/VCockpit/Instruments/Shared/Utils/RadioNav.js"></script>
 

@@ -82,6 +82,13 @@
     - Triggered to set ALT value on FCU
     - Value is rounded to 100 ft
 
+- A32NX.FCU_ALT_INCREMENT_TOGGLE
+    - Triggered to toggle ALT increment value on FCU
+
+- A32NX.FCU_ALT_INCREMENT_SET
+    - Triggered to set ALT increment value on FCU
+    - Value can be either 100 or 1000, others are ignored
+
 - A32NX.FCU_ALT_PUSH
     - Triggered when ALT knob is **pushed** on FCU
 

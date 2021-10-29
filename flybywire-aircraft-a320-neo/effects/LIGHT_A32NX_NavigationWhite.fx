@@ -2,7 +2,7 @@
 Lifetime=5
 Version=2.0
 Radius=-1
-Priority=0		  
+Priority=0
 
 [Properties]
 
@@ -51,8 +51,8 @@ Face=1, 1, 1
 Blend Mode=2
 Texture=fx_0.png
 Bounce=0.0
-Color Start=255, 255, 255, 2
-Color End=255, 255, 255, 2
+Color Start=237, 242, 248, 10
+Color End=237, 242, 248, 10
 Jitter Distance=0.0
 Jitter Time=0.0
 uv1=0.0, 0.0
@@ -63,17 +63,17 @@ Z Scale Goal=0.0
 Extrude Length=0.0
 Extrude Pitch Max=0.0
 Extrude Heading Max=0.0
-NearEndFade= 1.0
-NearFade= 6.0
-MinProjSize=0.2
+NearEndFade=1.0
+NearFade=10.0
+MinProjSize=0.25
 
 [LightAttributes.0]
-Type=spot	
+Type=spot
 Size=0.0
-Range=20
-Intensity=0.3
+Range=40
+Intensity=1.5
 Softness=0.0
-SpotInner=60.0
-SpotOuter=90.0
+SpotInner=40.0
+SpotOuter=70.0
 Volumetric=1
 ScatDir=0.0

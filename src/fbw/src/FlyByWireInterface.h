@@ -31,15 +31,22 @@ class FlyByWireInterface {
  private:
   const std::string CONFIGURATION_FILEPATH = "\\work\\ModelConfiguration.ini";
 
-  static constexpr double MAX_ACCEPTABLE_SAMPLE_TIME = 0.06;
-  static constexpr uint32_t LOW_PERFORMANCE_CYCLE_THRESHOLD = 10;
-  static constexpr uint32_t LOW_PERFORMANCE_CYCLE_MAX = 15;
-  uint32_t lowPerformanceCycleCounter = 0;
+  static constexpr double MAX_ACCEPTABLE_SAMPLE_TIME = 0.11;
+  static constexpr uint32_t LOW_PERFORMANCE_TIMER_THRESHOLD = 10;
+  uint32_t lowPerformanceTimer = 0;
 
   double previousSimulationTime = 0;
+  double calculatedSampleTime = 0;
 
   int currentApproachCapability = 0;
   double previousApproachCapabilityUpdateTime = 0;
+
+  double maxSimulationRate = 4;
+  bool simulationRateReductionEnabled = true;
+  bool limitSimulationRateByPerformance = true;
+
+  double targetSimulationRate = 1;
+  bool targetSimulationRateModified = false;
 
   bool flightDirectorSmoothingEnabled = false;
   double flightDirectorSmoothingFactor = 0;
@@ -70,6 +77,8 @@ class FlyByWireInterface {
   double flightControlsKeyChangeAileron = 0.0;
   double flightControlsKeyChangeElevator = 0.0;
   double flightControlsKeyChangeRudder = 0.0;
+
+  bool disableXboxCompatibilityRudderAxisPlusMinus = false;
 
   FlightDataRecorder flightDataRecorder;
 
@@ -123,6 +132,9 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idFlightDirectorBank;
   std::unique_ptr<LocalVariable> idFlightDirectorPitch;
   std::unique_ptr<LocalVariable> idFlightDirectorYaw;
+
+  std::unique_ptr<LocalVariable> idBetaTarget;
+  std::unique_ptr<LocalVariable> idBetaTargetActive;
 
   std::unique_ptr<LocalVariable> idAutopilotAutolandWarning;
 
@@ -180,6 +192,7 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idAutothrustStatus;
   std::unique_ptr<LocalVariable> idAutothrustMode;
   std::unique_ptr<LocalVariable> idAutothrustModeMessage;
+  std::unique_ptr<LocalVariable> idAutothrustDisabled;
   std::unique_ptr<LocalVariable> idAutothrustThrustLeverWarningFlex;
   std::unique_ptr<LocalVariable> idAutothrustThrustLeverWarningToga;
   std::unique_ptr<LocalVariable> idAutothrustDisconnect;
@@ -238,10 +251,19 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idAileronPositionRight;
   std::shared_ptr<AnimationAileronHandler> animationAileronHandler;
 
+  std::unique_ptr<LocalVariable> idRadioReceiverLocalizerValid;
+  std::unique_ptr<LocalVariable> idRadioReceiverLocalizerDeviation;
+  std::unique_ptr<LocalVariable> idRadioReceiverLocalizerDistance;
+  std::unique_ptr<LocalVariable> idRadioReceiverGlideSlopeValid;
+  std::unique_ptr<LocalVariable> idRadioReceiverGlideSlopeDeviation;
+
   void loadConfiguration();
   void setupLocalVariables();
 
   bool readDataAndLocalVariables(double sampleTime);
+
+  bool updatePerformanceMonitoring(double sampleTime);
+  bool handleSimulationRate(double sampleTime);
 
   bool updateEngineData(double sampleTime);
 
@@ -251,6 +273,8 @@ class FlyByWireInterface {
   bool updateAutothrust(double sampleTime);
 
   bool updateFlapsSpoilers(double sampleTime);
+
+  bool updateAltimeterSetting(double sampleTime);
 
   double smoothFlightDirector(double sampleTime, double factor, double limit, double currentValue, double targetValue);
 

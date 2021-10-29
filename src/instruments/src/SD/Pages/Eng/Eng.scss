@@ -1,0 +1,104 @@
+@import "../../style";
+@import "../../../Common/definitions";
+
+#main-eng {
+    .TextCenter {
+        text-anchor: middle;
+        alignment-baseline: central;
+    }
+    .FontSmall {
+        font-size: 16px;
+    }
+    .FontMedium{
+        font-size: 18px;
+    }
+    .FontLarge {
+        font-size: 20px;
+    }
+    .Indicator {
+        stroke: $display-white;
+        stroke-width: 1;
+    }
+    .GaugeMarking {
+        stroke: $display-white;
+        stroke-width: 2;
+    }
+    .NoFill {
+        fill: none;
+    }
+    .FillCyan {
+        fill: $display-cyan;
+    }
+    .FillGreen {
+      fill: $display-green;
+    }
+    .FillAmber {
+      fill: $display-amber;
+    }
+    .FillWhite {
+      fill: $display-white;
+    }
+    .FillRed {
+        fill: $display-red;
+    }
+    .AmberHeavy  {
+        stroke: $display-amber;
+        stroke-width: 6;
+    }
+    .AmberLine {
+      stroke: $display-amber;
+      stroke-width: 2;
+    }
+    .WhiteLine {
+      stroke: $display-white;
+      stroke-width: 2;
+    }
+    .RedLine {
+        stroke: $display-red;
+        stroke-width: 2;
+    }
+    .GreenLine {
+        stroke: $display-green;
+        stroke-width: 2;
+    }
+    .Hidden {
+      display: none;
+    }
+    .FillPulse {
+        animation: fill-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+
+        @keyframes fill-pulse {
+            0%, 100% {
+              fill: $display-green;
+            }
+            50% {
+                fill: hsl(126, 93%, 17%);
+            }
+        }
+    }
+    .LinePulse {
+        animation: line-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+
+        @keyframes line-pulse {
+            0%, 100% {
+              stroke: $display-green;
+            }
+            50% {
+              stroke: hsl(126, 93%, 17%);
+            }
+        }
+    }
+    .StartValveDiagram {
+        stroke: $display-green;
+        stroke-width: 2;
+        &path {
+            fill: none;
+        }
+        &circle {
+            fill: rgba(4, 4, 5, 1);
+        }
+        &line {
+            fill: $display-green
+        }
+    }
+}

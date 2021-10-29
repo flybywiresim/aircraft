@@ -16,7 +16,7 @@ const HydraulicContext = React.createContext<HydraulicsContext>({
     B: { available: false },
 });
 
-export const HydraulicsProvider = ({ children }) => {
+export const HydraulicsProvider: React.FC = ({ children }) => {
     const [greenPress] = useSimVar('L:A32NX_HYD_GREEN_PRESSURE', 'number', 1000);
     const [yellowPress] = useSimVar('L:A32NX_HYD_YELLOW_PRESSURE', 'number', 1000);
     const [bluePress] = useSimVar('L:A32NX_HYD_BLUE_PRESSURE', 'number', 1000);

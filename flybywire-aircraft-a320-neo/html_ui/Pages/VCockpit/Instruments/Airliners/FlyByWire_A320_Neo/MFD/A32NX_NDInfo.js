@@ -41,16 +41,14 @@ class Jet_MFD_NDInfo extends HTMLElement {
         this.VORRight = new VORDMENavAid(this.querySelector("#VORDMENavaid_Right"), 2);
         this.elapsedTime = this.querySelector("#ElapsedTime");
         this.elapsedTimeValue = this.querySelector("#ET_Value");
-        this.setGroundSpeed(0, true);
-        this.setTrueAirSpeed(0, true);
-        this.setWind(0, 0, 0, true);
+        this.setWind(Arinc429Word.empty(), Arinc429Word.empty(), Arinc429Word.empty(), true);
         this.setWaypoint("", 0, 0, 0, true);
         this.setMode(this._navMode, this._navSource, true);
     }
-    update(_dTime) {
+    update(_dTime, airDataReferenceSource, inertialReferenceSource) {
         this._dTime = _dTime / 1000;
         this.updateTitle();
-        this.updateSpeeds();
+        this.updateSpeeds(airDataReferenceSource, inertialReferenceSource);
         this.updateWaypoint();
         this.updateVOR();
         this.updateApproach();
@@ -101,10 +99,12 @@ class Jet_MFD_NDInfo extends HTMLElement {
             }
         }
     }
-    updateSpeeds() {
-        this.setGroundSpeed(Math.round(Simplane.getGroundSpeed()));
-        this.setTrueAirSpeed(Math.round(Simplane.getTrueSpeed()));
-        this.setWind(Math.round(Simplane.getWindDirection()), Math.round(Simplane.getWindStrength()), Simplane.getHeadingMagnetic());
+    updateSpeeds(airDataReferenceSource, inertialReferenceSource) {
+        const windDirection = Arinc429Word.fromSimVarValue(`L:A32NX_ADIRS_IR_${inertialReferenceSource}_WIND_DIRECTION`);
+        const windVelocity = Arinc429Word.fromSimVarValue(`L:A32NX_ADIRS_IR_${inertialReferenceSource}_WIND_VELOCITY`);
+        const heading = Arinc429Word.fromSimVarValue(`L:A32NX_ADIRS_IR_${airDataReferenceSource}_HEADING`);
+
+        this.setWind(windDirection, windVelocity, heading);
     }
     updateWaypoint() {
         const wpETE = SimVar.GetSimVarValue("GPS WP ETE", "seconds"); // ETE is not available in Simplane 🙄
@@ -112,29 +112,17 @@ class Jet_MFD_NDInfo extends HTMLElement {
         const utcETA = wpETE > 0 ? (utcTime + wpETE) % 86400 : 0;
         this.setWaypoint(Simplane.getNextWaypointName(), Math.round(Simplane.getNextWaypointTrack()), Simplane.getNextWaypointDistance(), utcETA, true);
     }
-    setGroundSpeed(_speed, _force = false) {
-        if ((_speed != this.currentGroundSpeed) || _force) {
-            this.currentGroundSpeed = _speed;
-            if (this.groundSpeed != null) {
-                this.groundSpeed.textContent = this.currentGroundSpeed.toString().padStart(3, "0");
-            }
-        }
-    }
-    setTrueAirSpeed(_speed, _force = false) {
-        if ((_speed != this.currentTrueAirSpeed) || _force) {
-            this.currentTrueAirSpeed = _speed;
-            if (this.trueAirSpeed != null) {
-                this.trueAirSpeed.textContent = this.currentTrueAirSpeed.toString().padStart(3, "0");
-            }
-        }
-    }
     setWind(_windAngle, _windStrength, _planeAngle, _force = false) {
-        const refreshWindAngle = ((_windAngle != this.currentWindAngle) || _force);
-        const refreshWindStrength = ((_windStrength != this.currentWindStrength) || _force);
-        const refreshWindArrow = (refreshWindAngle || refreshWindStrength || (_planeAngle != this.currentPlaneAngle) || _force);
+        const anyAbnormal = !_windAngle.isNormalOperation() || !_windStrength.isNormalOperation() || !_planeAngle.isNormalOperation();
+        const windAngle = anyAbnormal ? 0 : Math.round(_windAngle.value);
+        const windStrength = anyAbnormal ? 0 : Math.round(_windStrength.value);
+        const planeAngle = anyAbnormal ? 0 : _planeAngle.value;
+        const refreshWindAngle = ((windAngle != this.currentWindAngle) || _force);
+        const refreshWindStrength = ((windStrength != this.currentWindStrength) || _force);
+        const refreshWindArrow = (refreshWindAngle || refreshWindStrength || (planeAngle != this.currentPlaneAngle) || _force);
         if (refreshWindAngle) {
             let startAngle = this.currentWindAngle;
-            let endAngle = _windAngle;
+            let endAngle = windAngle;
             const delta = endAngle - startAngle;
             if (delta > 180) {
                 startAngle += 360;
@@ -145,7 +133,7 @@ class Jet_MFD_NDInfo extends HTMLElement {
             this.currentWindAngle = smoothedAngle % 360;
         }
         if (refreshWindArrow) {
-            this.currentPlaneAngle = _planeAngle;
+            this.currentPlaneAngle = planeAngle;
             if (this.windArrow != null) {
                 {
                     let arrowAngle = this.currentWindAngle - this.currentPlaneAngle;
@@ -155,7 +143,6 @@ class Jet_MFD_NDInfo extends HTMLElement {
                     if ((split != null) && (split.length > 0)) {
                         this.windArrow.setAttribute("transform", split[0] + " rotate(" + arrowAngle + ")");
                     }
-                    this.windArrow.style.display = "block";
                 }
             }
         }

@@ -7,7 +7,7 @@ import { HydraulicSystem } from './HydraulicSystem';
 import { SvgGroup } from './SvgGroup';
 import './Spoilers.scss';
 
-export const Spoilers = ({ x, y }) => {
+export const Spoilers = ({ x, y }: ComponentPositionProps) => {
     const [aileronLeftDeflectionState] = useSimVar('L:A32NX_3D_AILERON_LEFT_DEFLECTION', 'number', 50);
     const [aileronRightDeflectionState] = useSimVar('L:A32NX_3D_AILERON_RIGHT_DEFLECTION', 'number', 50);
 

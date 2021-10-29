@@ -6,21 +6,22 @@
       "AIRCRAFT.UI_MANUFACTURER": "FlyByWire Simulations",
       "AIRCRAFT.UI_MODEL": "A320neo (LEAP)",
       "AIRCRAFT.UI_VARIATION": "Airbus",
+      "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_LEFT": "Adjust selected heading to the left (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)",
+      "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_RIGHT": "Adjust selected heading to the right (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)",
+      "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_TRK_TUNING_LEFT": "Adjust selected track to the left (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)",
+      "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_TRK_TUNING_RIGHT": "Adjust selected track to the right (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)",
+      "COCKPIT.TOOLTIPS.LIGHTING_KNOB_L_PFD_DECREASE": "Decrease left PFD brightness",
+      "COCKPIT.TOOLTIPS.LIGHTING_KNOB_L_PFD_INCREASE": "Increase left PFD brightness",
       "COCKPIT.TOOLTIPS.LIGHTING_KNOB_R_PFD_DECREASE": "Decrease right PFD brightness",
       "COCKPIT.TOOLTIPS.LIGHTING_KNOB_R_PFD_INCREASE": "Increase right PFD brightness",
-      "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_LEFT": "Adjust selected heading to the left (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)",
-      "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_RIGHT": "Adjust selected heading to the right  (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)",
-      "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_TRK_TUNING_LEFT": "Adjust selected track to the left (%((L:A32NX_AUTOPILOT_TRACK_SELECTED:1,degrees))%!d!°)",
-      "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_TRK_TUNING_RIGHT": "Adjust selected track to the right  (%((L:A32NX_AUTOPILOT_TRACK_SELECTED:1,degrees))%!d!°)",
-      "COCKPIT.TOOLTIPS.CHRONO_RST": "Reset chronometer",
       "COCKPIT.TOOLTIPS.LIGHTS_NOSMOKE_AUTO": "Set \"no smoke\" prompt light to AUTO",
       "COCKPIT.TOOLTIPS.APU_AVAILABLE": "APU available",
       "A32NX.LOADING.TIPS.A320NEO_001": "The FlyByWire A32NX is a collaboration between hundreds of individual contributors.",
       "A32NX.LOADING.TIPS.A320NEO_002": "Did you know? The A320 can land at crosswinds up to 38 knots and tailwinds of up to 15 knots!",
       "A32NX.LOADING.TIPS.A320NEO_003": "FlyByWire is named after the fly-by-wire controls first introduced in the Airbus A320.",
-      "A32NX.LOADING.TIPS.A320NEO_004": "There are 9693 A320 family aircraft built! That's almost as much as the population of Tuvalu!",
+      "A32NX.LOADING.TIPS.A320NEO_004": "More than 9900 aircraft of the A320 family have been built! That's almost as much as the population of Tuvalu!",
       "A32NX.LOADING.TIPS.A320NEO_005": "Airbus A320neo aircraft have a range of 3500 NM or 6500 KM. That's enough to fly from New York to Paris!",
-      "A32NX.LOADING.TIPS.A320NEO_006": "Did you know? The A320 family has 4 variants! The A318, A319, A320, and A321."
+      "A32NX.LOADING.TIPS.A320NEO_006": "Did you know? The A320 family has 4 variants: The A318, A319, A320, and A321."
     }
   }
 }

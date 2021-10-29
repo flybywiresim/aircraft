@@ -59,12 +59,12 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
     }
 
     createLowerScreenPages() {
-        this.createLowerScreenPage("ENG", "BottomScreen", "a320-neo-lower-ecam-engine");
+        this.createLowerScreenPage("ENG", "BottomScreen", "a32nx-eng-page-element");
         this.createLowerScreenPage("BLEED", "BottomScreen", "a320-neo-lower-ecam-bleed");
         this.createLowerScreenPage("PRESS", "BottomScreen", "a320-neo-lower-ecam-press");
         this.createLowerScreenPage("ELEC", "BottomScreen", "a32nx-elec-page-element");
         this.createLowerScreenPage("HYD", "BottomScreen", "a32nx-hyd-page-element");
-        this.createLowerScreenPage("FUEL", "BottomScreen", "a320-neo-lower-ecam-fuel");
+        this.createLowerScreenPage("FUEL", "BottomScreen", "a32nx-fuel-page-element");
         this.createLowerScreenPage("APU", "BottomScreen", "a320-neo-lower-ecam-apu");
         this.createLowerScreenPage("COND", "BottomScreen", "a32nx-cond-page-element");
         this.createLowerScreenPage("DOOR", "BottomScreen", "a32nx-door-page-element");
@@ -136,6 +136,9 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
             this.isTopScreen ? 92 : 93,
             this.querySelector(`#${this.isTopScreen ? "Top" : "Bottom"}SelfTest`)
         );
+
+        // LCD OVERLAY
+        this.lcdOverlay = document.querySelector("#LcdOverlay");
     }
 
     onUpdate() {
@@ -148,6 +151,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         if (deltaTime === -1) {
             return;
         }
+        this.lcdOverlay.style.opacity = SimVar.GetSimVarValue("L:A32NX_MFD_MASK_OPACITY", "number");
 
         this.displayUnit.update(deltaTime);
 
@@ -282,12 +286,12 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
 
     checkApuPage(deltaTime) {
         const currentAPUMasterState = SimVar.GetSimVarValue("L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON", "Bool");
-        const apuRpm = SimVar.GetSimVarValue("L:A32NX_APU_N", "Percent Over 100");
-        if (currentAPUMasterState && (apuRpm <= 95 || this.ApuAboveThresholdTimer >= 0)) {
+        const apuRpm = Arinc429Word.fromSimVarValue("L:A32NX_APU_N");
+        if (currentAPUMasterState && apuRpm.isNormalOperation() && (apuRpm.value <= 95 || this.ApuAboveThresholdTimer >= 0)) {
             // Show APU on Lower ECAM until 15s after RPM > 95%
-            if (this.ApuAboveThresholdTimer <= 0 && apuRpm <= 95) {
+            if (this.ApuAboveThresholdTimer <= 0 && apuRpm.value <= 95) {
                 this.ApuAboveThresholdTimer = 15;
-            } else if (apuRpm > 95) {
+            } else if (apuRpm.value > 95) {
                 this.ApuAboveThresholdTimer -= deltaTime / 1000;
             }
             this.pageNameWhenUnselected = "APU";

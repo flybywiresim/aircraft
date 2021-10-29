@@ -123,10 +123,10 @@ var A320_Neo_UpperECAM;
             return value;
         }
         getADIRSMins() {
-            const secs = this.getCachedSimVar("L:A32NX_ADIRS_TIME", "seconds");
-            const mins = Math.ceil(secs / 60);
-            if (secs > 0 && this.getCachedSimVar("L:A32NX_ADIRS_STATE", "Enum") === 1) {
-                return mins;
+            const secs = this.getCachedSimVar("L:A32NX_ADIRS_REMAINING_IR_ALIGNMENT_TIME", "seconds");
+            if (secs > 0) {
+                const minutes = Math.ceil(secs / 60);
+                return minutes;
             } else {
                 return -1;
             }
@@ -717,9 +717,9 @@ var A320_Neo_UpperECAM;
                                 message: "EXCESS CAB ALT",
                                 level: 3,
                                 flightPhasesInhib: [1, 2, 3, 4, 5, 7, 8, 9, 10],
+                                page: "PRESS",
                                 isActive: () => (
-                                    !Simplane.getIsGrounded() &&
-                                    this.getCachedSimVar("PRESSURIZATION CABIN ALTITUDE", "feet") > 10000
+                                    !Simplane.getIsGrounded() && this.getCachedSimVar("L:A32NX_PRESS_EXCESS_CAB_ALT", "bool")
                                 ),
                                 actions: [
                                     {
@@ -766,7 +766,54 @@ var A320_Neo_UpperECAM;
                                         action: "MAN ON"
                                     },
                                 ]
-                            }
+                            },
+                            {
+                                message: "EXCES RESIDUAL PR",
+                                level: 3,
+                                flightPhasesInhib: [1, 2, 3, 4, 5, 6, 7, 8, 9],
+                                isActive: () => (
+                                    Simplane.getIsGrounded() &&
+                                    !this.isEngineRunning(1) && !this.isEngineRunning(2) &&
+                                    this.getCachedSimVar("L:A32NX_PRESS_EXCESS_RESIDUAL_PR", "bool")
+                                ),
+                                actions: [
+                                    {
+                                        style: "action",
+                                        message: "PACK 1",
+                                        action: "OFF"
+                                    },
+                                    {
+                                        style: "action",
+                                        message: "PACK 2",
+                                        action: "OFF",
+                                    },
+                                    {
+                                        style: "action",
+                                        message: "CABIN CREW",
+                                        action: "ALERT",
+                                    },
+                                ]
+                            },
+                            {
+                                message: "LO DIFF PR",
+                                level: 2,
+                                flightPhasesInhib: [2, 3, 4, 5, 7, 8, 9, 10],
+                                page: "PRESS",
+                                isActive: () => (
+                                    this.getCachedSimVar("L:A32NX_PRESS_LOW_DIFF_PR", "bool")
+                                ),
+                                actions: [
+                                    {
+                                        style: "cyan",
+                                        message: "&nbsp;-EXPECT HI CAB RATE",
+                                    },
+                                    {
+                                        style: "action",
+                                        message: "A/C V/S",
+                                        action: "REDUCE",
+                                    },
+                                ]
+                            },
                         ]
                     },
                     {
@@ -1030,7 +1077,9 @@ var A320_Neo_UpperECAM;
                                     "TCAS"
                                 ],
                                 flightPhasesInhib: [3, 4, 5, 7, 8],
-                                isActive: () => !this.isInFlightPhase(1, 10) && this.getCachedSimVar("L:A32NX_ADIRS_STATE", "Enum") !== 2,
+                                isActive: () => {
+                                    return !this.isInFlightPhase(1, 10) && !this.anyAdiruAligned();
+                                },
                             },
                             {
                                 message: "TCAS STBY",
@@ -1039,7 +1088,7 @@ var A320_Neo_UpperECAM;
                                 isActive: () => (
                                     this.fwcFlightPhase === 6 &&
                                     this.getCachedSimVar("L:A32NX_SWITCH_TCAS_Position", "Enum") === 0 &&
-                                    this.getCachedSimVar("L:A32NX_ADIRS_STATE", "Enum") === 2
+                                    this.anyAdiruAligned()
                                 ),
                             }
                         ]
@@ -1180,6 +1229,34 @@ var A320_Neo_UpperECAM;
                         isActive: () => this.isInFlightPhase(1, 2) && (this.getADIRSMins() === 0 || this.getADIRSMins() === 1)
                     },
                     {
+                        message: "IR 1 IN ATT ALIGN",
+                        isActive: () => this.isInAttAlign(1) && !this.isInAttAlign(2) && !this.isInAttAlign(3)
+                    },
+                    {
+                        message: "IR 2 IN ATT ALIGN",
+                        isActive: () => !this.isInAttAlign(1) && this.isInAttAlign(2) && !this.isInAttAlign(3)
+                    },
+                    {
+                        message: "IR 3 IN ATT ALIGN",
+                        isActive: () => !this.isInAttAlign(1) && !this.isInAttAlign(2) && this.isInAttAlign(3)
+                    },
+                    {
+                        message: "IR 1+2 IN ATT ALIGN",
+                        isActive: () => this.isInAttAlign(1) && this.isInAttAlign(2) && !this.isInAttAlign(3)
+                    },
+                    {
+                        message: "IR 1+3 IN ATT ALIGN",
+                        isActive: () => this.isInAttAlign(1) && !this.isInAttAlign(2) && this.isInAttAlign(3)
+                    },
+                    {
+                        message: "IR 2+3 IN ATT ALIGN",
+                        isActive: () => !this.isInAttAlign(1) && this.isInAttAlign(2) && this.isInAttAlign(3)
+                    },
+                    {
+                        message: "IR 1+2+3 IN ATT ALIGN",
+                        isActive: () => this.isInAttAlign(1) && this.isInAttAlign(2) && this.isInAttAlign(3)
+                    },
+                    {
                         message: "GND SPLRS ARMED",
                         isActive: () => this.getCachedSimVar("L:A32NX_SPOILERS_ARMED", "Bool")
                     },
@@ -1307,16 +1384,6 @@ var A320_Neo_UpperECAM;
                         )
                     },
                     {
-                        message: "CABIN READY",
-                        isActive: () => {
-                            return (
-                                (this.getCachedSimVar("L:A32NX_CABIN_READY", "Bool")) &&
-                                ((this.isInFlightPhase(2)) ||
-                                (this.isInFlightPhase(6, 7) && this.getCachedSimVar("GEAR CENTER POSITION", "Percent") > 80))
-                            );
-                        }
-                    },
-                    {
                         message: "PRED W/S OFF",
                         style: () => (
                             this.isInFlightPhase(3, 4, 5, 7, 8, 9) || this.predWsMemo.read()
@@ -1376,8 +1443,8 @@ var A320_Neo_UpperECAM;
                     {
                         message: "LDG LT",
                         isActive: () => (
-                            !SimVar.GetSimVarValue("L:LANDING_1_Retracted", "Bool") ||
-                            !SimVar.GetSimVarValue("L:LANDING_2_Retracted", "Bool")
+                            !SimVar.GetSimVarValue("L:LANDING_2_Retracted", "Bool") ||
+                            !SimVar.GetSimVarValue("L:LANDING_3_Retracted", "Bool")
                         ),
                     },
                     {
@@ -1390,8 +1457,8 @@ var A320_Neo_UpperECAM;
                         message: "SWITCHG PNL",
                         isActive: () => {
                             return (
-                                (SimVar.GetSimVarValue("L:A32NX_KNOB_SWITCHING_3_Position", "Enum") != 1) ||
-                                (SimVar.GetSimVarValue("L:A32NX_KNOB_SWITCHING_4_Position", "Enum") != 1)
+                                (SimVar.GetSimVarValue("L:A32NX_EIS_DMC_SWITCHING_KNOB", "Enum") != 1) ||
+                                (SimVar.GetSimVarValue("L:A32NX_ECAM_ND_XFR_SWITCHING_KNOB", "Enum") != 1)
                             );
                         }
                     },
@@ -1439,8 +1506,16 @@ var A320_Neo_UpperECAM;
                         message: "ADIRS SWTG",
                         isActive: () => {
                             return (
-                                (SimVar.GetSimVarValue("L:A32NX_KNOB_SWITCHING_1_Position", "Enum") != 1) ||
-                                (SimVar.GetSimVarValue("L:A32NX_KNOB_SWITCHING_2_Position", "Enum") != 1)
+                                (SimVar.GetSimVarValue("L:A32NX_ATT_HDG_SWITCHING_KNOB", "Enum") != 1) ||
+                                (SimVar.GetSimVarValue("L:A32NX_AIR_DATA_SWITCHING_KNOB", "Enum") != 1)
+                            );
+                        }
+                    },
+                    {
+                        message: "MAN LDG ELEV",
+                        isActive: () => {
+                            return (
+                                (this.getCachedSimVar("L:XMLVAR_KNOB_OVHD_CABINPRESS_LDGELEV", "number") !== 0)
                             );
                         }
                     },
@@ -1833,6 +1908,18 @@ var A320_Neo_UpperECAM;
         getInfoPanelManager() {
             return this.infoPanelsManager;
         };
+
+        anyAdiruAligned() {
+            return [1, 2, 3].some((number) => {
+                return this.getCachedSimVar(`L:A32NX_ADIRS_ADIRU_${number}_STATE`, "Enum") === 2;
+            });
+        }
+
+        isInAttAlign(number) {
+            const knobValue = this.getCachedSimVar(`L:A32NX_OVHD_ADIRS_IR_${number}_MODE_SELECTOR_KNOB`, "Enum");
+            const pitch = new Arinc429Word(this.getCachedSimVar(`L:A32NX_ADIRS_IR_${number}_PITCH`, "Degrees"));
+            return knobValue === 2 && !pitch.isNormalOperation();
+        }
     }
     A320_Neo_UpperECAM.Display = Display;
     class PanelBase {
@@ -2205,10 +2292,10 @@ var A320_Neo_UpperECAM;
     A320_Neo_UpperECAM.LinesStyleComponent_Right = LinesStyleComponent_Right;
     class LinesStyleInfo {
         constructor(_divMain, _bottomValue) {
-            this.conversionWeight = parseFloat(NXDataStore.get("CONFIG_USING_METRIC_UNIT", "1"));
             const svgRoot = document.createElementNS(Avionics.SVG.NS, "svg");
             svgRoot.appendChild(A320_Neo_UpperECAM.createSVGText(this.getTitle(), "Title", "50%", "65%", "bottom"));
-            svgRoot.appendChild(A320_Neo_UpperECAM.createSVGText(this.getUnit(this.conversionWeight === 1), "Unit", "50%", "100%", "bottom"));
+            this.unitElement = A320_Neo_UpperECAM.createSVGText(this.getUnit(), "Unit", "50%", "100%", "bottom");
+            svgRoot.appendChild(this.unitElement);
             this.leftComponent = new LinesStyleComponent_Left(svgRoot);
             this.rightComponent = new LinesStyleComponent_Right(svgRoot);
             const div = A320_Neo_UpperECAM.createDiv("LineStyleInfos");
@@ -2222,6 +2309,9 @@ var A320_Neo_UpperECAM;
             }
             if (this.rightComponent != null) {
                 this.rightComponent.refresh((SimVar.GetSimVarValue("L:A32NX_FADEC_POWERED_ENG2", "Bool") == 1), this.getValue(2), this.getValueStringPrecision(), false, this.getTitle(), this.getDisplayActiveEngine(2));
+            }
+            if (this.unitElement.textContent !== this.getUnit()) {
+                this.unitElement.textContent = this.getUnit();
             }
         }
         getValueStringPrecision() {
@@ -2263,17 +2353,16 @@ var A320_Neo_UpperECAM;
         constructor(_divMain, _bottomValue) {
             super(_divMain, _bottomValue);
             this.gallonToKG = SimVar.GetSimVarValue("FUEL WEIGHT PER GALLON", "kilogram");
-            this.conversionWeight = parseFloat(NXDataStore.get("CONFIG_USING_METRIC_UNIT", "1"));
         }
         getTitle() {
             return "FF";
         }
-        getUnit(_isMetric = true) {
-            return _isMetric ? "KG/H" : "LBS/H";
+        getUnit() {
+            return NXUnits.userWeightUnit() + "/H";
         }
         getValue(_engine, _conversion) {
-            let ff = SimVar.GetSimVarValue("L:A32NX_ENGINE_FF:" + _engine, "number") * this.conversionWeight;
-            if (this.conversionWeight == 1) {
+            let ff = NXUnits.kgToUser(SimVar.GetSimVarValue("L:A32NX_ENGINE_FF:" + _engine, "number"));
+            if (NXUnits.metricWeight) {
                 if (ff % 20 > 0) {
                     ff = (ff - (ff % 20)) + 20;
                 }
@@ -2308,8 +2397,7 @@ var A320_Neo_UpperECAM;
                 fuelOnBoardDiv.appendChild(A320_Neo_UpperECAM.createDiv("Title", "", "FOB :"));
                 this.fobValue = A320_Neo_UpperECAM.createDiv("Value");
                 fuelOnBoardDiv.appendChild(this.fobValue);
-                this.conversionWeight = parseFloat(NXDataStore.get("CONFIG_USING_METRIC_UNIT", "1"));
-                this.fobUnit = A320_Neo_UpperECAM.createDiv("Unit", "", this.conversionWeight === 1 ? "KG" : "LBS");
+                this.fobUnit = A320_Neo_UpperECAM.createDiv("Unit", "", "");
                 fuelOnBoardDiv.appendChild(this.fobUnit);
                 this.divMain.appendChild(fuelOnBoardDiv);
             }
@@ -2353,7 +2441,10 @@ var A320_Neo_UpperECAM;
                 this.setFlexTemperature(false);
             }
 
-            this.setFuelOnBoard(SimVar.GetSimVarValue("FUEL TOTAL QUANTITY WEIGHT", "kg") * this.conversionWeight);
+            this.setFuelOnBoard(NXUnits.kgToUser(SimVar.GetSimVarValue("FUEL TOTAL QUANTITY WEIGHT", "kg")));
+            if (this.fobUnit.textContent !== NXUnits.userWeightUnit()) {
+                this.fobUnit.textContent = NXUnits.userWeightUnit();
+            }
         }
 
         /**
@@ -3147,7 +3238,7 @@ var A320_Neo_UpperECAM;
                 } else {
                     actionText = _item.action;
                 }
-                action.textContent = this.leftPad(actionText, ".", 19 - _item.name.length);
+                action.textContent = actionText.padStart(16 - _item.name.length, '.');
                 div.appendChild(action);
 
                 //Completed
@@ -3165,13 +3256,6 @@ var A320_Neo_UpperECAM;
             }
         }
 
-        leftPad(_text, _pad, _length) {
-            for (let i = 0; i < (_length - _text.length); i++) {
-                _text = _pad + _text;
-            }
-            return _text;
-        }
-
         /**
          * @param {MemoItem} _item
          * @param {boolean} _completed
@@ -3183,8 +3267,7 @@ var A320_Neo_UpperECAM;
                         if (child.className == "Action") {
                             child.style.display = _completed ? "none" : "inline";
                             if (typeof _item.action === 'function') {
-                                const actionText = _item.action();
-                                child.textContent = this.leftPad(actionText, ".", 19 - _item.name.length);
+                                child.textContent = _item.action().padStart(16 - _item.name.length, '.');
                             }
                         }
                         if (child.className == "Completed") {

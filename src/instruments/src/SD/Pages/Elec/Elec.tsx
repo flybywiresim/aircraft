@@ -24,8 +24,6 @@ export const ElecPage = () => {
     const [acEssShedBusIsPowered] = useSimVar('L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED', 'Bool', maxStaleness);
     const [externalPowerAvailable] = useSimVar('EXTERNAL POWER AVAILABLE:1', 'Bool', maxStaleness);
     const [staticInverterInUse] = useSimVar('L:A32NX_ELEC_CONTACTOR_15XE2_IS_CLOSED', 'Bool', maxStaleness);
-    const [trEssInUse] = useSimVar('L:A32NX_ELEC_CONTACTOR_3PE_IS_CLOSED', 'Bool', maxStaleness);
-    const [emergencyGeneratorInUse] = useSimVar('L:A32NX_ELEC_CONTACTOR_2XE_IS_CLOSED', 'Bool', maxStaleness);
     const [galleyIsShed] = useSimVar('L:A32NX_ELEC_GALLEY_IS_SHED', 'Bool', maxStaleness);
     const [tr1SuppliesDc1] = useSimVar('L:A32NX_ELEC_CONTACTOR_5PU1_IS_CLOSED', 'Bool', maxStaleness);
     const [tr2SuppliesDc2] = useSimVar('L:A32NX_ELEC_CONTACTOR_5PU2_IS_CLOSED', 'Bool', maxStaleness);
@@ -131,8 +129,8 @@ export const ElecPage = () => {
             { !staticInverterInUse && externalPowerAvailable ? <ExternalPower x={315} y={390} /> : null }
             <TransformerRectifier x={13.125} y={161.25} number={1} />
             <TransformerRectifier x={493.125} y={161.25} number={2} />
-            <TransformerRectifier x={213.75} y={161.25} number={3} titleOnly={!trEssInUse} />
-            <EmergencyGenerator x={330} y={161.25} titleOnly={!emergencyGeneratorInUse} />
+            <TransformerRectifier x={213.75} y={161.25} number={3} titleOnly={!trEssSuppliesDcEss && !acEssBusContactorClosed && !emergencyGeneratorSupplies} />
+            <EmergencyGenerator x={330} y={161.25} titleOnly={!emergencyGeneratorSupplies} />
 
             { galleyIsShed ? <GalleyShed x={300} y={483.75} /> : null }
 
@@ -246,7 +244,7 @@ const Bus = ({ x, y, width, name, number, isNormal, isShed } : BusProps) => {
     return (
         <SvgGroup x={x} y={y}>
             <rect width={width} height={busHeight} className="Bus" />
-            <text x={width / 2} y={10.5} className={`Large ${number ? 'Right' : 'Middle'} ${isNormal ? 'Green' : 'Amber'}`} dominantBaseline="middle">{name}</text>
+            <text x={width / 2} y={21} className={`QuiteLarge ${number ? 'Right' : 'Middle'} ${isNormal ? 'Green' : 'Amber'}`}>{name}</text>
             {number ? <text x={(width / 2) + 3.75} y={22} className={`ExtraLarge ${isNormal ? 'Green' : 'Amber'}`}>{number}</text> : null}
             {isShed ? <text x={(width / 2)} y={busHeight + 8.25} className="Middle ExtraSmall Amber" dominantBaseline="middle">SHED</text> : null}
         </SvgGroup>

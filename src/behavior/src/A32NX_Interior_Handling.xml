@@ -420,8 +420,8 @@
                             <UseTemplate Name = "ASOBO_GT_Push_Button_Held">
                                 <ANIM_NAME>#RESET_PUSH_ANIM_NAME#</ANIM_NAME>
                                 <LEFT_SINGLE_CODE>(&gt;K:RUDDER_TRIM_RESET)</LEFT_SINGLE_CODE>
-                                <WWISE_EVENT_1>mpb1on</WWISE_EVENT_1>
-                                <WWISE_EVENT_2>mpb1off</WWISE_EVENT_2>
+                                <WWISE_EVENT_1>roundbutton</WWISE_EVENT_1>
+                                <WWISE_EVENT_2>roundbutton</WWISE_EVENT_2>
                                 <TOOLTIPID>TT:COCKPIT.TOOLTIPS.RUDDER_TRIM_RESET</TOOLTIPID>
                             </UseTemplate>
                         </Component>
@@ -621,6 +621,19 @@
                 <ANIM_NAME>#ANIM_NAME_R#</ANIM_NAME>
                 <ANIM_CODE>(L:A32NX_RIGHT_BRAKE_PEDAL_INPUT, number)</ANIM_CODE>
             </UseTemplate>
+    </Template>
+
+    <Template Name="FBW_HANDLING_Switch_AntiSkid_Template">
+        <DefaultTemplateParameters>
+            <WWISE_EVENT_1>lswitch</WWISE_EVENT_1>
+            <WWISE_EVENT_2>lswitch</WWISE_EVENT_2>
+        </DefaultTemplateParameters>
+        <Component ID="#NODE_ID#" Node="#NODE_ID#">
+            <UseTemplate Name="ASOBO_GT_Switch_Code">
+                <LEFT_SINGLE_CODE>(&gt;K:ANTISKID_BRAKES_TOGGLE)</LEFT_SINGLE_CODE>
+                <ANIM_CODE>(A:ANTISKID BRAKES ACTIVE, Bool) 100 *</ANIM_CODE>
+            </UseTemplate>
+        </Component>
     </Template>
 
 </ModelBehaviors>

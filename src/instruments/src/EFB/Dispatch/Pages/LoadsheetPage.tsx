@@ -1,3 +1,4 @@
+import { usePersistentProperty } from '@instruments/common/persistence';
 import { IconMinus, IconPlus } from '@tabler/icons';
 import React, { useRef, useState, useEffect } from 'react';
 
@@ -9,7 +10,7 @@ const LoadSheetWidget = (props: LoadsheetPageProps) => {
     const position = useRef({ top: 0, y: 0 });
     const ref = useRef<HTMLDivElement>(null);
 
-    const [fontSize, setFontSize] = useState(14);
+    const [fontSize, setFontSize] = usePersistentProperty('LOADSHEET_FONTSIZE', '14');
     const [imageSize, setImageSize] = useState(60);
 
     useEffect(() => {
@@ -22,16 +23,13 @@ const LoadSheetWidget = (props: LoadsheetPageProps) => {
         }
     }, [imageSize]);
 
-    useEffect(() => {
-        const pLoadsheet = ref.current?.firstChild as HTMLElement;
+    const [loadSheetStyle, setLoadSheetStyle] = useState({});
+    useEffect(() => setLoadSheetStyle({
+        fontSize: `${fontSize}px`,
+        lineHeight: `${fontSize}px`,
+    }), [fontSize]);
 
-        if (pLoadsheet) {
-            pLoadsheet.style.fontSize = `${fontSize}px`;
-            pLoadsheet.style.lineHeight = `${fontSize}px`;
-        }
-    }, [fontSize]);
-
-    const mouseDownHandler = (event) => {
+    const handleMouseDown = (event) => {
         position.current.top = ref.current ? ref.current.scrollTop : 0;
         position.current.y = event.clientY;
 
@@ -51,8 +49,8 @@ const LoadSheetWidget = (props: LoadsheetPageProps) => {
         document.removeEventListener('mouseup', mouseUpHandler);
     };
 
-    const fontIncreaseHandler = () => {
-        let cFontSize = fontSize;
+    const handleFontIncrease = () => {
+        let cFontSize = (Number)(fontSize);
         let cImageSize = imageSize;
 
         if (cFontSize < 26) {
@@ -62,8 +60,8 @@ const LoadSheetWidget = (props: LoadsheetPageProps) => {
         }
     };
 
-    const fontDecreaseHandler = () => {
-        let cFontSize = fontSize;
+    const handleFontDecrease = () => {
+        let cFontSize = (Number)(fontSize);
         let cImageSize = imageSize;
 
         if (cFontSize > 14) {
@@ -74,7 +72,7 @@ const LoadSheetWidget = (props: LoadsheetPageProps) => {
     };
 
     const handleScaling = (cFontSize, cImageSize) => {
-        setFontSize(cFontSize);
+        setFontSize((String)(cFontSize));
         setImageSize(cImageSize);
     };
 
@@ -87,14 +85,14 @@ const LoadSheetWidget = (props: LoadsheetPageProps) => {
                             <div className="flex flex-col justify-end absolute bottom-6 right-16">
                                 <button
                                     type="button"
-                                    onClick={fontIncreaseHandler}
+                                    onClick={handleFontIncrease}
                                     className="z-10 mb-2 bg-navy-regular p-2 rounded-lg bg-opacity-50"
                                 >
                                     <IconPlus size={30} />
                                 </button>
                                 <button
                                     type="button"
-                                    onClick={fontDecreaseHandler}
+                                    onClick={handleFontDecrease}
                                     className="z-10 bg-navy-regular p-2 rounded-lg bg-opacity-50"
                                 >
                                     <IconMinus size={30} />
@@ -103,7 +101,8 @@ const LoadSheetWidget = (props: LoadsheetPageProps) => {
                             <div
                                 ref={ref}
                                 className="loadsheet-container grabbable scrollbar overflow-y-scroll"
-                                onMouseDown={mouseDownHandler}
+                                style={loadSheetStyle}
+                                onMouseDown={handleMouseDown}
                                 // eslint-disable-next-line react/no-danger
                                 dangerouslySetInnerHTML={{ __html: props.loadsheet }}
                             />

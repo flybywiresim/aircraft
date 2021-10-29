@@ -48,14 +48,14 @@ macro_rules! provide_potential {
 macro_rules! read_write_enum {
     ($t: ty) => {
         impl<T: Reader> Read<$t> for T {
-            fn read(&mut self, name: &str) -> $t {
-                self.read_f64(name).into()
+            fn convert(&mut self, value: f64) -> $t {
+                value.into()
             }
         }
 
         impl<T: Writer> Write<$t> for T {
-            fn write(&mut self, name: &str, value: $t) {
-                self.write_f64(name, value.into());
+            fn convert(&mut self, value: $t) -> f64 {
+                value.into()
             }
         }
 
@@ -64,5 +64,14 @@ macro_rules! read_write_enum {
                 value as u8 as f64
             }
         }
+    };
+}
+
+#[macro_export]
+macro_rules! accept_iterable {
+    ($iterable: expr, $visitor: expr) => {
+        $iterable.iter_mut().for_each(|el| {
+            el.accept($visitor);
+        });
     };
 }

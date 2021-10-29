@@ -318,6 +318,8 @@
             <NODE_ID>PUSH_AUTOPILOT_AUTOLAND_#SIDE#</NODE_ID>
             <SEQ_POWERED>1</SEQ_POWERED>
             <NO_SEQ1/>
+            <WWISE_EVENT_1>mpb1on</WWISE_EVENT_1>
+            <WWISE_EVENT_2>mpb1off</WWISE_EVENT_2>
         </DefaultTemplateParameters>
 
         <UseTemplate Name="FBW_Push_Held">

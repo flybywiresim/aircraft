@@ -2,8 +2,9 @@ use super::{
     AlternatingCurrentElectricalSystem, BatteryPushButtons, ElectricalElement, Electricity,
     ElectricitySource, EmergencyElectrical, ProvideCurrent, ProvidePotential,
 };
+use crate::simulation::{InitContext, VariableIdentifier};
 use crate::{
-    shared::{ApuAvailable, ApuMaster, ApuStart, DelayedTrueLogicGate, LandingGearPosition},
+    shared::{ApuAvailable, ApuMaster, ApuStart, DelayedTrueLogicGate, LandingGearRealPosition},
     simulation::{SimulationElement, SimulatorWriter, UpdateContext, Write},
 };
 use std::time::Duration;
@@ -23,7 +24,6 @@ impl State {
         State::Open(Open::for_initial_bcl_state())
     }
 
-    #[allow(clippy::too_many_arguments)]
     fn update(
         self,
         context: &UpdateContext,
@@ -33,7 +33,7 @@ impl State {
         emergency_generator: &impl ElectricitySource,
         battery: &(impl ProvidePotential + ProvideCurrent),
         battery_bus: &impl ElectricalElement,
-        landing_gear: &impl LandingGearPosition,
+        landing_gear: &impl LandingGearRealPosition,
         battery_push_buttons: &impl BatteryPushButtons,
         apu: &impl ApuAvailable,
         apu_overhead: &(impl ApuMaster + ApuStart),
@@ -77,24 +77,23 @@ impl State {
 
 pub struct BatteryChargeLimiter {
     number: usize,
-    should_show_arrow_when_contactor_closed_id: String,
+    should_show_arrow_when_contactor_closed_id: VariableIdentifier,
     arrow: ArrowBetweenBatteryAndBatBus,
     observer: Option<State>,
 }
 impl BatteryChargeLimiter {
-    pub fn new(number: usize, contactor_id: &str) -> Self {
+    pub fn new(context: &mut InitContext, number: usize, contactor_id: &str) -> Self {
         Self {
             number,
-            should_show_arrow_when_contactor_closed_id: format!(
+            should_show_arrow_when_contactor_closed_id: context.get_identifier(format!(
                 "ELEC_CONTACTOR_{}_SHOW_ARROW_WHEN_CLOSED",
                 contactor_id
-            ),
+            )),
             arrow: ArrowBetweenBatteryAndBatBus::new(),
             observer: Some(State::new()),
         }
     }
 
-    #[allow(clippy::too_many_arguments)]
     pub fn update(
         &mut self,
         context: &UpdateContext,
@@ -103,7 +102,7 @@ impl BatteryChargeLimiter {
         emergency_generator: &impl ElectricitySource,
         battery: &(impl ProvidePotential + ProvideCurrent),
         battery_bus: &impl ElectricalElement,
-        landing_gear: &impl LandingGearPosition,
+        landing_gear: &impl LandingGearRealPosition,
         battery_push_buttons: &impl BatteryPushButtons,
         apu: &impl ApuAvailable,
         apu_overhead: &(impl ApuMaster + ApuStart),
@@ -235,14 +234,13 @@ impl Open {
         }
     }
 
-    #[allow(clippy::too_many_arguments)]
     fn should_close(
         &self,
         context: &UpdateContext,
         electricity: &Electricity,
         emergency_elec: &EmergencyElectrical,
         emergency_generator: &impl ElectricitySource,
-        landing_gear: &impl LandingGearPosition,
+        landing_gear: &impl LandingGearRealPosition,
         apu: &impl ApuAvailable,
         apu_overhead: &impl ApuMaster,
         ac_electrical_system: &impl AlternatingCurrentElectricalSystem,
@@ -281,7 +279,7 @@ impl Open {
         electricity: &Electricity,
         emergency_elec: &EmergencyElectrical,
         emergency_generator: &impl ElectricitySource,
-        landing_gear: &impl LandingGearPosition,
+        landing_gear: &impl LandingGearRealPosition,
     ) -> bool {
         emergency_elec.is_active()
             && (!landing_gear.is_up_and_locked()
@@ -306,7 +304,6 @@ impl Open {
         );
     }
 
-    #[allow(clippy::too_many_arguments)]
     fn update(
         mut self,
         context: &UpdateContext,
@@ -316,7 +313,7 @@ impl Open {
         emergency_generator: &impl ElectricitySource,
         battery: &impl ProvidePotential,
         battery_bus: &impl ElectricalElement,
-        landing_gear: &impl LandingGearPosition,
+        landing_gear: &impl LandingGearRealPosition,
         battery_push_buttons: &impl BatteryPushButtons,
         apu: &impl ApuAvailable,
         apu_overhead: &impl ApuMaster,
@@ -418,13 +415,12 @@ impl Closed {
         emergency_elec.is_active() && self.beyond_emergency_elec_closed_time_allowance()
     }
 
-    #[allow(clippy::too_many_arguments)]
     fn should_open(
         &self,
         context: &UpdateContext,
         electricity: &Electricity,
         emergency_elec: &EmergencyElectrical,
-        landing_gear: &impl LandingGearPosition,
+        landing_gear: &impl LandingGearRealPosition,
         apu: &impl ApuAvailable,
         apu_overhead: &impl ApuMaster,
         ac_electrical_system: &impl AlternatingCurrentElectricalSystem,
@@ -444,7 +440,7 @@ impl Closed {
         }
     }
 
-    fn emergency_elec_inhibited(&self, landing_gear: &impl LandingGearPosition) -> bool {
+    fn emergency_elec_inhibited(&self, landing_gear: &impl LandingGearRealPosition) -> bool {
         !self.entered_in_emergency_elec || !landing_gear.is_up_and_locked()
     }
 
@@ -474,7 +470,6 @@ impl Closed {
                 )
     }
 
-    #[allow(clippy::too_many_arguments)]
     fn update(
         mut self,
         context: &UpdateContext,
@@ -482,7 +477,7 @@ impl Closed {
         battery_number: usize,
         emergency_elec: &EmergencyElectrical,
         battery: &(impl ProvidePotential + ProvideCurrent),
-        landing_gear: &impl LandingGearPosition,
+        landing_gear: &impl LandingGearRealPosition,
         battery_push_buttons: &impl BatteryPushButtons,
         apu: &impl ApuAvailable,
         apu_overhead: &(impl ApuMaster + ApuStart),
@@ -565,7 +560,10 @@ mod tests {
 
     #[cfg(test)]
     mod battery_charge_limiter_tests {
-        use super::*;
+        use std::time::Duration;
+
+        use uom::si::{length::foot, power::watt};
+
         use crate::{
             electrical::{
                 battery::Battery, consumption::PowerConsumer, test::TestElectricitySource,
@@ -574,12 +572,12 @@ mod tests {
                 Potential, PotentialOrigin,
             },
             simulation::{
-                test::{SimulationTestBed, TestBed},
-                Aircraft, Read, SimulationElementVisitor,
+                test::{ReadByName, SimulationTestBed, TestBed},
+                Aircraft, InitContext, SimulationElementVisitor,
             },
         };
-        use std::time::Duration;
-        use uom::si::{length::foot, power::watt};
+
+        use super::*;
 
         struct BatteryChargeLimiterTestBed {
             test_bed: SimulationTestBed<TestAircraft>,
@@ -587,8 +585,9 @@ mod tests {
         impl BatteryChargeLimiterTestBed {
             fn new() -> Self {
                 Self {
-                    test_bed: SimulationTestBed::new(|electricity| {
-                        TestAircraft::new(Battery::half(1, electricity), electricity)
+                    test_bed: SimulationTestBed::new(|context| {
+                        let battery = Battery::half(context, 1);
+                        TestAircraft::new(context, battery)
                     }),
                 }
             }
@@ -760,7 +759,7 @@ mod tests {
             }
 
             fn current(&mut self) -> ElectricCurrent {
-                self.read(&format!("ELEC_BAT_{}_CURRENT", 1))
+                self.read_by_name(&format!("ELEC_BAT_{}_CURRENT", 1))
             }
 
             fn battery_contactor_is_closed(&self) -> bool {
@@ -778,7 +777,7 @@ mod tests {
             }
 
             fn should_show_arrow_when_contactor_closed(&mut self) -> bool {
-                self.read("ELEC_CONTACTOR_TEST_SHOW_ARROW_WHEN_CLOSED")
+                self.read_by_name("ELEC_CONTACTOR_TEST_SHOW_ARROW_WHEN_CLOSED")
             }
 
             fn emergency_elec(mut self) -> Self {
@@ -830,7 +829,7 @@ mod tests {
                 Self { is_down }
             }
         }
-        impl LandingGearPosition for TestLandingGear {
+        impl LandingGearRealPosition for TestLandingGear {
             fn is_up_and_locked(&self) -> bool {
                 !self.is_down
             }
@@ -845,9 +844,9 @@ mod tests {
             is_available: bool,
         }
         impl TestEmergencyGenerator {
-            fn new(identifier_provider: &mut impl ElectricalElementIdentifierProvider) -> Self {
+            fn new(context: &mut InitContext) -> Self {
                 Self {
-                    identifier: identifier_provider.next(),
+                    identifier: context.next_electrical_identifier(),
                     is_available: false,
                 }
             }
@@ -950,20 +949,20 @@ mod tests {
             any_non_essential_bus_powered: bool,
         }
         impl TestAircraft {
-            fn new(battery: Battery, electricity: &mut Electricity) -> Self {
+            fn new(context: &mut InitContext, battery: Battery) -> Self {
                 Self {
                     battery_bus_electricity_source: TestElectricitySource::powered(
+                        context,
                         PotentialOrigin::TransformerRectifier(1),
-                        electricity,
                     ),
                     battery,
-                    battery_charge_limiter: BatteryChargeLimiter::new(1, "TEST"),
+                    battery_charge_limiter: BatteryChargeLimiter::new(context, 1, "TEST"),
                     battery_bus: ElectricalBus::new(
+                        context,
                         ElectricalBusType::DirectCurrentBattery,
-                        electricity,
                     ),
-                    battery_contactor: Contactor::new("TEST", electricity),
-                    emergency_generator: TestEmergencyGenerator::new(electricity),
+                    battery_contactor: Contactor::new(context, "TEST"),
+                    emergency_generator: TestEmergencyGenerator::new(context),
                     consumer: PowerConsumer::from(ElectricalBusType::DirectCurrentBattery),
                     apu_master_sw_pb_on: false,
                     apu_start_pb_on: false,

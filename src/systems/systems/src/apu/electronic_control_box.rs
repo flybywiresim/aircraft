@@ -3,12 +3,13 @@ use super::{
     AuxiliaryPowerUnitFireOverheadPanel, AuxiliaryPowerUnitOverheadPanel, FuelPressureSwitch,
     Turbine, TurbineSignal, TurbineState,
 };
+use crate::simulation::{InitContext, VariableIdentifier};
 use crate::{
     shared::{
-        ApuMaster, ApuStart, ConsumePower, ContactorSignal, ControllerSignal, ElectricalBusType,
-        ElectricalBuses, PneumaticValve, PneumaticValveSignal,
+        arinc429::SignStatus, ApuMaster, ApuStart, ConsumePower, ContactorSignal, ControllerSignal,
+        ElectricalBusType, ElectricalBuses, PneumaticValve, PneumaticValveSignal,
     },
-    simulation::{SimulationElement, SimulatorWriter, UpdateContext, Write, WriteWhen},
+    simulation::{SimulationElement, SimulatorWriter, UpdateContext, Write},
 };
 use std::time::Duration;
 use uom::si::{
@@ -16,6 +17,17 @@ use uom::si::{
 };
 
 pub(super) struct ElectronicControlBox {
+    apu_n_raw_id: VariableIdentifier,
+    apu_n_id: VariableIdentifier,
+    apu_egt_id: VariableIdentifier,
+    apu_egt_caution_id: VariableIdentifier,
+    apu_egt_warning_id: VariableIdentifier,
+    apu_low_fuel_pressure_fault_id: VariableIdentifier,
+    apu_flap_fully_open_id: VariableIdentifier,
+    ecam_inop_sys_apu_id: VariableIdentifier,
+    apu_is_auto_shutdown_id: VariableIdentifier,
+    apu_is_emergency_shutdown_id: VariableIdentifier,
+
     powered_by: ElectricalBusType,
     is_powered: bool,
     turbine_state: TurbineState,
@@ -37,8 +49,21 @@ impl ElectronicControlBox {
     const START_MOTOR_POWERED_UNTIL_N: f64 = 55.;
     pub const BLEED_AIR_COOLDOWN_DURATION_MILLIS: u64 = 120000;
 
-    pub fn new(powered_by: ElectricalBusType) -> Self {
+    pub fn new(context: &mut InitContext, powered_by: ElectricalBusType) -> Self {
         ElectronicControlBox {
+            apu_n_raw_id: context.get_identifier("APU_N_RAW".to_owned()),
+            apu_n_id: context.get_identifier("APU_N".to_owned()),
+            apu_egt_id: context.get_identifier("APU_EGT".to_owned()),
+            apu_egt_caution_id: context.get_identifier("APU_EGT_CAUTION".to_owned()),
+            apu_egt_warning_id: context.get_identifier("APU_EGT_WARNING".to_owned()),
+            apu_low_fuel_pressure_fault_id: context
+                .get_identifier("APU_LOW_FUEL_PRESSURE_FAULT".to_owned()),
+            apu_flap_fully_open_id: context.get_identifier("APU_FLAP_FULLY_OPEN".to_owned()),
+            ecam_inop_sys_apu_id: context.get_identifier("ECAM_INOP_SYS_APU".to_owned()),
+            apu_is_auto_shutdown_id: context.get_identifier("APU_IS_AUTO_SHUTDOWN".to_owned()),
+            apu_is_emergency_shutdown_id: context
+                .get_identifier("APU_IS_EMERGENCY_SHUTDOWN".to_owned()),
+
             powered_by,
             is_powered: false,
             turbine_state: TurbineState::Shutdown,
@@ -93,7 +118,7 @@ impl ElectronicControlBox {
         self.start_motor_is_powered = start_motor.is_powered();
 
         if matches!(
-            <ElectronicControlBox as ControllerSignal<ContactorSignal>>::signal(&self),
+            <ElectronicControlBox as ControllerSignal<ContactorSignal>>::signal(self),
             Some(ContactorSignal::Close)
         ) && !self.start_motor_is_powered
         {
@@ -315,29 +340,41 @@ impl ControllerSignal<PneumaticValveSignal> for ElectronicControlBox {
 }
 impl SimulationElement for ElectronicControlBox {
     fn write(&self, writer: &mut SimulatorWriter) {
-        let is_on = self.is_on();
+        let ssm = if self.is_on() {
+            SignStatus::NormalOperation
+        } else {
+            SignStatus::FailureWarning
+        };
 
-        writer.write_when(is_on, "APU_N", self.n());
+        // For sound and effects.
+        writer.write(&self.apu_n_raw_id, self.n());
 
-        writer.write_when(is_on, "APU_EGT", self.egt);
-        writer.write_when(is_on, "APU_EGT_CAUTION", self.egt_caution_temperature());
-        writer.write_when(is_on, "APU_EGT_WARNING", self.egt_warning_temperature);
-
-        writer.write_when(
-            is_on,
-            "APU_LOW_FUEL_PRESSURE_FAULT",
-            self.has_fuel_low_pressure_fault(),
+        writer.write_arinc429(&self.apu_n_id, self.n(), ssm);
+        writer.write_arinc429(&self.apu_egt_id, self.egt, ssm);
+        writer.write_arinc429(
+            &self.apu_egt_caution_id,
+            self.egt_caution_temperature(),
+            ssm,
         );
-        writer.write_when(
-            is_on,
-            "APU_FLAP_FULLY_OPEN",
+        writer.write_arinc429(&self.apu_egt_warning_id, self.egt_warning_temperature, ssm);
+        writer.write_arinc429(
+            &self.apu_low_fuel_pressure_fault_id,
+            self.has_fuel_low_pressure_fault(),
+            ssm,
+        );
+        writer.write_arinc429(
+            &self.apu_flap_fully_open_id,
             self.air_intake_flap_is_fully_open(),
+            ssm,
         );
 
         // Flight Warning Computer related information.
-        writer.write("ECAM_INOP_SYS_APU", self.is_inoperable());
-        writer.write("APU_IS_AUTO_SHUTDOWN", self.is_auto_shutdown());
-        writer.write("APU_IS_EMERGENCY_SHUTDOWN", self.is_emergency_shutdown());
+        writer.write(&self.ecam_inop_sys_apu_id, self.is_inoperable());
+        writer.write(&self.apu_is_auto_shutdown_id, self.is_auto_shutdown());
+        writer.write(
+            &self.apu_is_emergency_shutdown_id,
+            self.is_emergency_shutdown(),
+        );
     }
 
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {

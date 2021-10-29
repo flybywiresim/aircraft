@@ -72,17 +72,15 @@ var A320_Neo_LowerECAM_PRESS;
             this.oldActiveSystemValue = 0;
             this.oldManModValue = 0;
 
-            this.manModeTime = 0;
-
             //set initial visibility
             this.htmlSYS1text.setAttribute("visibility", "visible");
             this.htmlSYS2text.setAttribute("visibility", "hidden");
             this.htmlMANtext.setAttribute("visibility", "hidden");
-            this.htmlTextSafety.setAttribute("visibility", "hidden");
-            this.htmlCabinAltValue.setAttribute("visibility", "hidden");
-            this.htmlCabinVSValue.setAttribute("visibility", "hidden");
-            this.htmlPsiDecimal.setAttribute("visibility", "hidden");
-            this.htmlPsiInt.setAttribute("visibility", "hidden");
+            this.htmlTextSafety.setAttribute("visibility", "visible");
+            this.htmlCabinAltValue.setAttribute("visibility", "visible");
+            this.htmlCabinVSValue.setAttribute("visibility", "visible");
+            this.htmlPsiDecimal.setAttribute("visibility", "visible");
+            this.htmlPsiInt.setAttribute("visibility", "visible");
 
             this.updateThrottler = new UpdateThrottler(200);
         }
@@ -202,21 +200,28 @@ var A320_Neo_LowerECAM_PRESS;
             }
             const inletValvePosition = SimVar.GetSimVarValue("L:VENT_INLET_VALVE", "Percent");
             const outletValvePosition = SimVar.GetSimVarValue("L:VENT_OUTLET_VALVE", "Percent");
-            const safetyValvePosition = (SimVar.GetSimVarValue("L:SAFETY_VALVE_1", "Bool") || SimVar.GetSimVarValue("L:SAFETY_VALVE_2", "Bool"));
-            const activeSystem = (SimVar.GetSimVarValue("L:CPC_SYS1", "Bool")) ? 1 : 2;
+            const safetyValvePosition = (SimVar.GetSimVarValue("L:A32NX_PRESS_SAFETY_VALVE_OPEN_PERCENTAGE", "Percent") / 100).toFixed(0);
+            const activeSystem = SimVar.GetSimVarValue("L:A32NX_PRESS_ACTIVE_CPC_SYS", "Number");
 
-            const cabinVSValue = fastToFixed(SimVar.GetSimVarValue("L:CABIN_ALTITUDE_RATE", "Feet per second"), 0);
-            const pressureDelta = SimVar.GetSimVarValue("L:DELTA_PRESSURE", "PSI");
-            const cabinAltitude = fastToFixed(SimVar.GetSimVarValue("L:CABIN_ALTITUDE", "Feet"), 0);
+            const cabinVSValue = SimVar.GetSimVarValue("L:A32NX_PRESS_CABIN_VS", "Feet per minute");
+            const pressureDelta = Math.round(SimVar.GetSimVarValue("L:A32NX_PRESS_CABIN_DELTA_PRESSURE", "PSI") * 10) / 10;
+            const cabinAltitude = SimVar.GetSimVarValue("L:A32NX_PRESS_CABIN_ALTITUDE", "feet");
             const pressureDeltaDecimalSplit = pressureDelta.toFixed(1).split(".", 2);
-            const outletValveOpenPercent = SimVar.GetSimVarValue("L:OUTFLOW_VAVLE_PCT", "Percent");//it is defined as "VAVLE" in the wasm, not a typo on my part
+            const outletValveOpenPercent = SimVar.GetSimVarValue("L:A32NX_PRESS_OUTFLOW_VALVE_OPEN_PERCENTAGE", "Percent");
 
-            const leftPackState = (!SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK1_TOGGLE", "bool") && SimVar.GetSimVarValue("ENG COMBUSTION:1", "Bool"));
-            const rightPackState = (!SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK2_TOGGLE", "bool") && SimVar.GetSimVarValue("ENG COMBUSTION:2", "Bool"));
-            const landingElev = SimVar.GetSimVarValue("L:A32NX_LANDING_ELEVATION", "feet");
+            const leftPackState = ((!SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK1_TOGGLE", "bool") || SimVar.GetSimVarValue("L:A32NX_OVHD_PRESS_DITCHING_PB_IS_ON", "bool")) && SimVar.GetSimVarValue("ENG COMBUSTION:1", "Bool"));
+            const rightPackState = ((!SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK2_TOGGLE", "bool") || SimVar.GetSimVarValue("L:A32NX_OVHD_PRESS_DITCHING_PB_IS_ON", "bool")) && SimVar.GetSimVarValue("ENG COMBUSTION:2", "Bool"));
+            let landingElev;
+            let landingElevManual;
+            if (SimVar.GetSimVarValue("L:XMLVAR_KNOB_OVHD_CABINPRESS_LDGELEV", "number") !== 0) {
+                landingElev = SimVar.GetSimVarValue("L:A32NX_OVHD_PRESS_LDG_ELEV_KNOB", "feet");
+                landingElevManual = true;
+            } else {
+                landingElev = SimVar.GetSimVarValue("L:A32NX_PRESS_AUTO_LANDING_ELEVATION", "feet");
+                landingElevManual = false;
+            }
             const flightPhase = SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "int");
-            const manMode = SimVar.GetSimVarValue("L:A32NX_CAB_PRESS_MODE_MAN", "Bool");
-            const landingElevMode = SimVar.GetSimVarValue("L:LANDING_ELEV_MODE", "Bool");
+            const manMode = !SimVar.GetSimVarValue("L:A32NX_OVHD_PRESS_MODE_SEL_PB_IS_AUTO", "Bool");
 
             const cabinOutletIndicatorRot = this.setMaxIndicatorRotation(outletValveOpenPercent, 0.9, 10, 90, 0);
             const cabinVSIndicatorRot = this.setMaxIndicatorRotation(cabinVSValue, 0.045, 0, 108, -108);
@@ -224,8 +229,8 @@ var A320_Neo_LowerECAM_PRESS;
             const cabinPsiDeltaIndicatorRot = this.setMaxIndicatorRotation(pressureDelta, 20, 0, 175, -15);
 
             //update values
-            this.oldCabinAltitudeValue = this.updateValue(this.htmlCabinAltValue, this.oldCabinAltitudeValue, cabinAltitude);
-            this.oldCabinVSValue = this.updateValue(this.htmlCabinVSValue, this.oldCabinVSValue, cabinVSValue);
+            this.oldCabinAltitudeValue = this.updateValue(this.htmlCabinAltValue, this.oldCabinAltitudeValue, Math.round(cabinAltitude / 50) * 50);
+            this.oldCabinVSValue = this.updateValue(this.htmlCabinVSValue, this.oldCabinVSValue, Math.round(cabinVSValue / 50) * 50);
 
             if (pressureDelta < 0) {
                 this.oldCabinPsiDeltaIntValue = this.updateValue(this.htmlPsiInt, this.oldCabinPsiDeltaIntValue, "-" + Math.abs(pressureDeltaDecimalSplit[0]) + ".");
@@ -260,7 +265,7 @@ var A320_Neo_LowerECAM_PRESS;
             this.oldSafetyValue = this.updateValve(this.htmlValveSafety, this.oldSafetyValue, safetyValvePosition, "550px 340px", -90);
 
             //landing elev
-            if (landingElevMode) {
+            if (landingElevManual) {
                 this.oldLandingElev = this.updateValue(this.htmlLdgElevValue, this.oldLandingElev, fastToFixed(landingElev, 0));
                 this.oldLandingElevText = this.updateValue(this.htmlLdgElevText, this.oldLandingElevText, "MAN");
             } else {
@@ -268,11 +273,11 @@ var A320_Neo_LowerECAM_PRESS;
                 this.oldLandingElevText = this.updateValue(this.htmlLdgElevText, this.oldLandingElevText, "AUTO");
             }
 
-            if (activeSystem == 1 && this.oldActiveSystemValue != 1) {
+            if (activeSystem == 1 && this.oldActiveSystemValue != 1 && !manMode) {
                 this.htmlSYS1text.setAttribute("visibility", "visible");
                 this.htmlSYS2text.setAttribute("visibility", "hidden");
                 this.oldActiveSystemValue = 1;
-            } else if (activeSystem == 2 && this.oldActiveSystemValue != 2) {
+            } else if (activeSystem == 2 && this.oldActiveSystemValue != 2 && !manMode) {
                 this.htmlSYS2text.setAttribute("visibility", "visible");
                 this.htmlSYS1text.setAttribute("visibility", "hidden");
                 this.oldActiveSystemValue = 2;
@@ -286,7 +291,6 @@ var A320_Neo_LowerECAM_PRESS;
                 this.htmlLdgElevValueUnit.setAttribute("visibility", "hidden");
                 this.htmlSYS1text.setAttribute("visibility", "hidden");
                 this.htmlSYS2text.setAttribute("visibility", "hidden");
-                this.manModeTime = Date.now();
                 this.oldManModValue = 1;
             } else if (!manMode && this.oldManModValue) {
                 this.htmlMANtext.setAttribute("visibility", "hidden");
@@ -294,14 +298,11 @@ var A320_Neo_LowerECAM_PRESS;
                 this.htmlLdgElevValue.setAttribute("visibility", "visible");
                 this.htmlLdgElevTitle.setAttribute("visibility", "visible");
                 this.htmlLdgElevValueUnit.setAttribute("visibility", "visible");
-                // The switch from one system to the other should only happen if there's at least 10s between presses - placeholder until PRESS system is fully simulated
-                if ((Date.now() - this.manModeTime) > 10000) {
-                    activeSystem === 1 ? SimVar.SetSimVarValue("L:CPC_SYS1", "Bool", 0) : SimVar.SetSimVarValue("L:CPC_SYS2", "Bool", 1);
-                    activeSystem === 2 ? SimVar.SetSimVarValue("L:CPC_SYS1", "Bool", 1) : SimVar.SetSimVarValue("L:CPC_SYS2", "Bool", 0);
+                if (activeSystem === 1) {
+                    this.htmlSYS1text.setAttribute("visibility", "visible");
                 } else {
-                    activeSystem === 1 ? this.htmlSYS1text.setAttribute("visibility", "visible") : this.htmlSYS2text.setAttribute("visibility", "visible");
+                    this.htmlSYS2text.setAttribute("visibility", "visible");
                 }
-                this.manModeTime = 0;
                 this.oldManModValue = 0;
             }
 
@@ -316,7 +317,7 @@ var A320_Neo_LowerECAM_PRESS;
             } else if (parseInt(this.htmlCabinVSValue.textContent) <= 1600 && this.blinkingObjs.indexOf(this.htmlCabinVSValue) != -1) {
                 this.removeHtmlObjFromBlinker(this.htmlCabinVSValue);
             }
-            if (flightPhase == 5 && pressureDelta >= 1.5 && this.blinkingObjs.indexOf(this.htmlPsiDecimal) == -1) {
+            if (flightPhase == 7 && pressureDelta >= 1.5 && this.blinkingObjs.indexOf(this.htmlPsiDecimal) == -1) {
                 this.addHtmlObjToBlinker(this.htmlPsiDecimal);
                 this.addHtmlObjToBlinker(this.htmlPsiInt);
             } else if (pressureDelta < 1 && this.blinkingObjs.indexOf(this.htmlPsiDecimal) != -1) {

@@ -10,16 +10,16 @@
     <Template Name="FBW_Airbus_FIRE_TEST_BUTTON">
         <UseTemplate Name="FBW_Push_Held">
             <HOLD_SIMVAR>L:A32NX_FIRE_TEST_#TYPE##ID#</HOLD_SIMVAR>
-            <WWISE_EVENT_1>fcubutton</WWISE_EVENT_1>
-            <WWISE_EVENT_2>fcubutton</WWISE_EVENT_2>
+            <WWISE_EVENT_1>firetestbutton</WWISE_EVENT_1>
+            <WWISE_EVENT_2>firetestbutton</WWISE_EVENT_2>
         </UseTemplate>
     </Template>
 
     <Template Name="FBW_Airbus_CARGOSMOKE_TEST_BUTTON">
         <UseTemplate Name="FBW_Push_Held">
             <HOLD_SIMVAR>L:A32NX_FIRE_TEST_#TYPE##ID#</HOLD_SIMVAR>
-            <WWISE_EVENT_1>mpb1on</WWISE_EVENT_1>
-            <WWISE_EVENT_2>mpb1off</WWISE_EVENT_2>
+            <WWISE_EVENT_1>roundbutton</WWISE_EVENT_1>
+            <WWISE_EVENT_2>roundbutton</WWISE_EVENT_2>
         </UseTemplate>
     </Template>
 
@@ -83,6 +83,11 @@
                 </LEFT_SINGLE_CODE>
                 <LEFT_LEAVE_CODE />
             </UseTemplate>
+
+            <UseTemplate Name="ASOBO_GT_AnimTriggers_SoundEvent">
+                <ANIM_NAME>#NODE_ID#</ANIM_NAME>
+                <WWISE_EVENT>firepb</WWISE_EVENT>
+            </UseTemplate>
         </Component>
     </Template>
 
@@ -127,6 +132,11 @@
                     } #LEFT_SINGLE_CODE#
                 </LEFT_SINGLE_CODE>
                 <LEFT_LEAVE_CODE />
+            </UseTemplate>
+
+            <UseTemplate Name="ASOBO_GT_AnimTriggers_SoundEvent">
+                <ANIM_NAME>#NODE_ID#</ANIM_NAME>
+                <WWISE_EVENT>firepbguard</WWISE_EVENT>
             </UseTemplate>
         </Component>
     </Template>

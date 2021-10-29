@@ -12,6 +12,8 @@ $colour-main: hsl(32, 100%, 69%);
   position: absolute;
   width: 105%;
   height: 100%;
+  /* TODO: Remove opacity when SAI/ISIS/CLOCK/BAT/ATC/RMP/RUD TRIM is split and not share the same emissive/mesh */
+  opacity: 0.5;
 }
 
 text {

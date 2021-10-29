@@ -1,11 +1,11 @@
-import * as React from 'react';
-import './Progress.scss';
+import React from 'react';
 
 export type ProgressBarProps = {
     completed: string | number;
     displayBar?: boolean;
     completedBarBegin?: number;
     completedBarBeginValue?: string;
+    completionValue?: number
 
     completedBarEnd?: number;
     completedBarEndValue?: string;
@@ -21,27 +21,30 @@ export type ProgressBarProps = {
     labelColor?: string;
     labelSize?: string;
     isLabelVisible?: boolean;
-    vertical?: boolean
+    vertical?: boolean;
+    greenBarsWhenInRange?: boolean;
 }
 
 export const ProgressBar: React.FC<ProgressBarProps> = ({
-    bgcolor,
+    bgcolor = '#6a1b9a',
     completed,
-    displayBar,
+    displayBar = false,
     completedBarEnd,
-    completedBarBegin,
+    completedBarBegin = 0,
     completedBarBeginValue,
-    baseBgColor,
-    height,
-    width,
+    completionValue,
+    baseBgColor = '#e0e0de',
+    height = '20px',
+    width = '100%',
     margin,
     padding,
-    borderRadius,
-    labelAlignment,
-    labelColor,
-    labelSize,
-    isLabelVisible,
+    borderRadius = '50px',
+    labelAlignment = 'right',
+    labelColor = '#fff',
+    labelSize = '15px',
+    isLabelVisible = true,
     vertical,
+    greenBarsWhenInRange,
 }) => {
     const getAlignment = (
         alignmentOption: ProgressBarProps['labelAlignment'],
@@ -107,39 +110,46 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
         alignItems: labelAlignment === 'outside' ? 'center' : 'initial',
     };
 
-    const checkOrientation = () => {
-        if (vertical) {
-            return 'horizontal-progress-bar';
+    const getBarStyle = () => {
+        if (completedBarBeginValue && completedBarEnd && completionValue) {
+            const barBegin = parseFloat(completedBarBeginValue);
+            const barEnd = parseFloat((completedBarEnd !== 0 ? (completedBarEnd / 50 - 1) : 0.00).toFixed(2));
+            const roundedCompletion = parseFloat(completionValue.toPrecision(2));
+
+            if (vertical) {
+                if (roundedCompletion <= barEnd && roundedCompletion >= barBegin && greenBarsWhenInRange) {
+                    return 'absolute z-10 -mt-2.5 h-1.5 bg-green-500'; // horizontal progress bar with green bg
+                }
+                return 'absolute z-10 -mt-2.5 h-1.5 bg-gray-400'; // horizontal progress bar
+            }
+            if (roundedCompletion <= barEnd && roundedCompletion >= barBegin && greenBarsWhenInRange) {
+                return 'absolute -mt-2.5 w-1.5 h-8 bg-green-500'; // vertical progress bar with green bg
+            }
         }
-        return 'vertical-progress-bar';
+        return 'absolute -mt-2.5 w-1.5 h-8 bg-gray-400'; // vertical progress bar
     };
 
     return (
-
         <div className="flex flex-row">
-
-            <div>
-                {vertical && (
-                    <div
-                        className="text-xl mr-2 text-white"
-                        style={vertical
-                            ? { marginTop: `${formatBar(completedBarBegin + 2 || 0)}`, width: fillerStyles.width } : { marginLeft: `${formatBar(completedBarBegin || 0)}` }}
-                    >
-                        {completedBarBeginValue}
-                    </div>
-                )}
-
-            </div>
-            <div className={`progress-bar ${!vertical ? 'mr-2' : ''}`}>
+            {vertical && (
+                <div
+                    className="text-xl mr-2 text-white"
+                    style={vertical
+                        ? { marginTop: `${formatBar(completedBarBegin + 2 || 0)}`, width: fillerStyles.width } : { marginLeft: `${formatBar(completedBarBegin || 0)}` }}
+                >
+                    {completedBarBeginValue}
+                </div>
+            )}
+            <div className={`mt-2 ${!vertical ? 'mr-2' : ''}`}>
 
                 <div
-                    className={`text-white ${displayBar ? checkOrientation() : 'hidden'}`}
+                    className={`text-white ${displayBar ? getBarStyle() : 'hidden'}`}
                     style={vertical
                         ? { marginTop: `${formatBar(completedBarBegin || 0)}`, width: fillerStyles.width } : { marginLeft: `${formatBar(completedBarBegin || 0)}` }}
                 />
 
                 <div
-                    className={`text-white ${displayBar ? checkOrientation() : 'hidden'}`}
+                    className={`text-white ${displayBar ? getBarStyle() : 'hidden'}`}
                     style={vertical
                         ? { marginTop: `${formatBar(completedBarEnd || 0)}`, width: fillerStyles.width } : { marginLeft: `${formatBar(completedBarEnd || 0)}` }}
                 />
@@ -171,18 +181,4 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
             )}
         </div>
     );
-};
-
-ProgressBar.defaultProps = {
-    bgcolor: '#6a1b9a',
-    height: '20px',
-    width: '100%',
-    borderRadius: '50px',
-    labelAlignment: 'right',
-    baseBgColor: '#e0e0de',
-    labelColor: '#fff',
-    labelSize: '15px',
-    isLabelVisible: true,
-    displayBar: false,
-    completedBarBegin: 0,
 };

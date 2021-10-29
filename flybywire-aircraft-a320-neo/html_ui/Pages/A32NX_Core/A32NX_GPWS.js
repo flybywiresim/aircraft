@@ -19,17 +19,59 @@ class A32NX_GPWS {
         this.prevRadioAlt = NaN;
         this.prevRadioAlt2 = NaN;
 
-        this.Mode1Code = 0; //0: no mode 1 warning, 1: mode 1 "sink rate", 2: mode 1 "pull up"
-        this.Mode2Code = 0; //0: no mode 2 warning, 1: mode 2 "Terrain", 2: mode 2 "pull up"
-        this.Mode3Code = 0; //0: no mode 3 warning, 1: mode 3 "don't sink"
-        this.Mode4Code = 0; //0: no mode 4 warning, 1: mode 4 "too low gear", 2: mode 4 "too low flaps", 3: mode 4 "too low terrain"
-        this.Mode5Code = 0; //0: no mode 5 warning, 1: mode 5 "glideslope", 2: mode 5 "hard glideslope"(louder)
-
-        this.PrevMode1Code = 0;
-        this.PrevMode2Code = 0;
-        this.PrevMode3Code = 0;
-        this.PrevMode4Code = 0;
-        this.PrevMode5Code = 0;
+        this.modes = [
+            // Mode 1
+            {
+                // 0: no warning, 1: "sink rate", 2 "pull up"
+                current: 0,
+                previous: 0,
+                type: [
+                    {},
+                    { sound: soundList.sink_rate, soundPeriod: 1.1, gpwsLight: true },
+                    { gpwsLight: true, pullUp: true }
+                ]
+            },
+            // Mode 2 is currently inactive.
+            {
+                // 0: no warning, 1: "terrain", 2: "pull up"
+                current: 0,
+                previous: 0,
+                type: [{}, { gpwsLight: true }, { gpwsLight: true, pullUp: true }],
+            },
+            // Mode 3
+            {
+                // 0: no warning, 1: "don't sink"
+                current: 0,
+                previous: 0,
+                type: [{}, { sound: soundList.dont_sink, soundPeriod: 1.1, gpwsLight: true }]
+            },
+            // Mode 4
+            {
+                // 0: no warning, 1: "too low gear", 2: "too low flaps", 3: "too low terrain"
+                current: 0,
+                previous: 0,
+                type: [
+                    {},
+                    { sound: soundList.too_low_gear, soundPeriod: 1.1, gpwsLight: true },
+                    { sound: soundList.too_low_flaps, soundPeriod: 1.1, gpwsLight: true },
+                    { sound: soundList.too_low_terrain, soundPeriod: 1.1, gpwsLight: true }
+                ]
+            },
+            // Mode 5, not all warnings are fully implemented
+            {
+                // 0: no warning, 1: "glideslope", 2: "hard glideslope" (louder)
+                current: 0,
+                previous: 0,
+                type: [
+                    {},
+                    {},
+                    {},
+                ],
+                onChange: (current, _) => {
+                    SimVar.SetSimVarValue("L:A32NX_GPWS_GS_Warning_Active", "Bool", current >= 1);
+                }
+            }
+        ];
 
         this.PrevShouldPullUpPlay = 0;
 
@@ -72,19 +114,17 @@ class A32NX_GPWS {
 
             this.update_maxRA(radioAlt, onGround, phase);
 
-            this.GPWSMode1(radioAlt, vSpeed);
+            this.GPWSMode1(this.modes[0], radioAlt, vSpeed);
             //Mode 2 is disabled because of an issue with the terrain height simvar which causes false warnings very frequently. See PR#1742 for more info
-            //this.GPWSMode2(radioAlt, Airspeed, FlapsInLandingConfig, gearExtended);
-            this.GPWSMode3(radioAlt, phase, FlapsInLandingConfig);
-            this.GPWSMode4(radioAlt, Airspeed, FlapsInLandingConfig, gearExtended, phase);
-            this.GPWSMode5(radioAlt);
+            //this.GPWSMode2(this.modes[1], radioAlt, Airspeed, FlapsInLandingConfig, gearExtended);
+            this.GPWSMode3(this.modes[2], radioAlt, phase);
+            this.GPWSMode4(this.modes[3], radioAlt, Airspeed, FlapsInLandingConfig, gearExtended, phase);
+            this.GPWSMode5(this.modes[4], radioAlt);
 
         } else {
-            this.Mode1Code = 0;
-            this.Mode2Code = 0;
-            this.Mode3Code = 0;
-            this.Mode4Code = 0;
-            this.Mode5Code = 0;
+            this.modes.forEach((mode) => {
+                mode.current = 0;
+            });
 
             this.Mode3MaxBaroAlt = NaN;
             if (onGround || radioAlt < 10) {
@@ -164,58 +204,27 @@ class A32NX_GPWS {
     }
 
     GPWSComputeLightsAndCallouts() {
-        let shouldGPWSLightActive = 0;
-
-        if (this.Mode1Code !== this.PrevMode1Code) {
-            if (this.PrevMode1Code === 1) {
-                this.core.soundManager.removePeriodicSound(soundList.sink_rate);
-            }
-            if (this.Mode1Code === 1) {
-                shouldGPWSLightActive |= true;
-                this.core.soundManager.addPeriodicSound(soundList.sink_rate, 1.1);
-            } else if (this.Mode1Code === 2) {
-                shouldGPWSLightActive |= true;
-            }
-            this.PrevMode1Code = this.Mode1Code;
-        }
-
-        if (this.Mode2Code !== 0) {
-            shouldGPWSLightActive |= true;
-        }
-
-        if (this.Mode3Code !== this.PrevMode3Code) {
-            if (this.Mode3Code === 1) {
-                this.core.soundManager.addPeriodicSound(soundList.dont_sink, 1.1);
-                shouldGPWSLightActive |= true;
-            } else {
-                this.core.soundManager.removePeriodicSound(soundList.dont_sink);
-            }
-            this.PrevMode3Code = this.Mode3Code;
-        }
-
-        if (this.Mode4Code !== this.PrevMode4Code) {
-            if (this.PrevMode4Code === 1) {
-                this.core.soundManager.removePeriodicSound(soundList.too_low_gear);
-            } else if (this.PrevMode4Code === 2) {
-                this.core.soundManager.removePeriodicSound(soundList.too_low_flaps);
-            } else if (this.PrevMode4Code === 3) {
-                this.core.soundManager.removePeriodicSound(soundList.too_low_terrain);
+        this.modes.forEach((mode) => {
+            if (mode.current === mode.previous) {
+                return;
             }
 
-            if (this.Mode4Code === 1) {
-                this.core.soundManager.addPeriodicSound(soundList.too_low_gear, 1.1);
-                shouldGPWSLightActive |= true;
-            } else if (this.Mode4Code === 2) {
-                this.core.soundManager.addPeriodicSound(soundList.too_low_flaps, 1.1);
-                shouldGPWSLightActive |= true;
-            } else if (this.Mode4Code === 3) {
-                this.core.soundManager.addPeriodicSound(soundList.too_low_terrain, 1.1);
-                shouldGPWSLightActive |= true;
-            }
-            this.PrevMode4Code = this.Mode4Code;
-        }
+            const previousType = mode.type[mode.previous];
+            this.core.soundManager.removePeriodicSound(previousType.sound);
 
-        const shouldPullUpPlay = this.Mode1Code === 2 || this.Mode2Code === 2;
+            const currentType = mode.type[mode.current];
+            this.core.soundManager.addPeriodicSound(currentType.sound, currentType.soundPeriod);
+
+            if (mode.onChange) {
+                mode.onChange(mode.current, mode.previous);
+            }
+
+            mode.previous = mode.current;
+        });
+
+        const activeTypes = this.modes.map((mode) => mode.type[mode.current]);
+
+        const shouldPullUpPlay = activeTypes.some((type) => type.pullUp);
         if (shouldPullUpPlay !== this.PrevShouldPullUpPlay) {
             if (shouldPullUpPlay) {
                 this.core.soundManager.addPeriodicSound(soundList.pull_up, 1.1);
@@ -225,27 +234,21 @@ class A32NX_GPWS {
             this.PrevShouldPullUpPlay = shouldPullUpPlay;
         }
 
-        SimVar.SetSimVarValue("L:A32NX_GPWS_Warning_Active", "Bool", shouldGPWSLightActive);
-
-        if (this.Mode5Code !== this.PrevMode5Code) {
-            SimVar.SetSimVarValue("L:A32NX_GPWS_GS_Warning_Active", "Bool", Math.min(this.Mode5Code, 1));
-            if (this.Mode5Code === 1) {
-                // no callout for that (yet)
-            }
-            this.PrevMode5Code = this.Mode5Code;
-        }
+        const illuminateGpwsLight = activeTypes.some((type) => type.gpwsLight);
+        SimVar.SetSimVarValue("L:A32NX_GPWS_Warning_Active", "Bool", illuminateGpwsLight);
     }
 
     /**
      * Compute the GPWS Mode 1 state.
+     * @param mode - The mode object which stores the state.
      * @param radioAlt - Radio altitude in feet
      * @param vSpeed - Vertical speed, in feet/min, should be inertial vertical speed, not sure if simconnect provides that
      */
-    GPWSMode1(radioAlt, vSpeed) {
+    GPWSMode1(mode, radioAlt, vSpeed) {
         const sinkrate = -vSpeed;
 
         if (sinkrate <= 1000) {
-            this.Mode1Code = 0;
+            mode.current = 0;
             return;
         }
 
@@ -253,22 +256,23 @@ class A32NX_GPWS {
         const maxPullUpAlt = sinkrate < 1700 ? 1.3 * sinkrate - 1940 : 0.4 * sinkrate - 410;
 
         if (radioAlt <= maxPullUpAlt) {
-            this.Mode1Code = 2;
+            mode.current = 2;
         } else if (radioAlt <= maxSinkrateAlt) {
-            this.Mode1Code = 1;
+            mode.current = 1;
         } else {
-            this.Mode1Code = 0;
+            mode.current = 0;
         }
     }
 
     /**
      * Compute the GPWS Mode 2 state.
+     * @param mode - The mode object which stores the state.
      * @param radioAlt - Radio altitude in feet
      * @param speed - Airspeed in knots.
      * @param FlapsInLandingConfig - If flaps is in landing config
      * @param gearExtended - If the gear is deployed
      */
-    GPWSMode2(radioAlt, speed, FlapsInLandingConfig, gearExtended) {
+    GPWSMode2(mode, radioAlt, speed, FlapsInLandingConfig, gearExtended) {
         let IsInBoundary = false;
         const UpperBoundaryRate = -this.RadioAltRate < 3500 ? 0.7937 * -this.RadioAltRate - 1557.5 : 0.19166 * -this.RadioAltRate + 610;
         const UpperBoundarySpeed = Math.max(1650, Math.min(2450, 8.8888 * speed - 305.555));
@@ -297,17 +301,17 @@ class A32NX_GPWS {
                 if (this.core.soundManager.tryPlaySound(soundList.too_low_terrain)) { // too low terrain is not correct, but no "terrain" call yet
                     this.Mode2NumTerrain += 1;
                 }
-                this.Mode2Code = 1;
+                mode.current = 1;
             } else if (!gearExtended) {
-                this.Mode2Code = 2;
+                mode.current = 2;
             }
         } else if (this.Mode2BoundaryLeaveAlt === -1) {
             this.Mode2BoundaryLeaveAlt = radioAlt;
         } else if (this.Mode2BoundaryLeaveAlt + 300 > radioAlt) {
-            this.Mode2Code = 1;
+            mode.current = 1;
             this.core.soundManager.tryPlaySound(soundList.too_low_terrain);
         } else if (this.Mode2BoundaryLeaveAlt + 300 <= radioAlt) {
-            this.Mode2Code = 0;
+            mode.current = 0;
             this.Mode2NumTerrain = 0;
             this.Mode2BoundaryLeaveAlt = NaN;
         }
@@ -315,15 +319,16 @@ class A32NX_GPWS {
 
     /**
      * Compute the GPWS Mode 3 state.
+     * @param mode - The mode object which stores the state.
      * @param radioAlt - Radio altitude in feet
      * @param phase - Flight phase index
      * @param FlapsInLandingConfig - If flaps is in landing config
      * @constructor
      */
-    GPWSMode3(radioAlt, phase, FlapsInLandingConfig) {
+    GPWSMode3(mode, radioAlt, phase) {
         if (!(phase === FmgcFlightPhases.TAKEOFF || phase === FmgcFlightPhases.GOAROUND) || radioAlt > 1500 || radioAlt < 10) {
             this.Mode3MaxBaroAlt = NaN;
-            this.Mode3Code = 0;
+            mode.current = 0;
             return;
         }
 
@@ -333,16 +338,17 @@ class A32NX_GPWS {
 
         if (baroAlt > this.Mode3MaxBaroAlt || isNaN(this.Mode3MaxBaroAlt)) {
             this.Mode3MaxBaroAlt = baroAlt;
-            this.Mode3Code = 0;
+            mode.current = 0;
         } else if ((this.Mode3MaxBaroAlt - baroAlt) > maxAltLoss) {
-            this.Mode3Code = 1;
+            mode.current = 1;
         } else {
-            this.Mode3Code = 0;
+            mode.current = 0;
         }
     }
 
     /**
      * Compute the GPWS Mode 4 state.
+     * @param mode - The mode object which stores the state.
      * @param radioAlt - Radio altitude in feet
      * @param speed - Airspeed in knots.
      * @param FlapsInLandingConfig - If flaps is in landing config
@@ -350,9 +356,9 @@ class A32NX_GPWS {
      * @param phase - Flight phase index
      * @constructor
      */
-    GPWSMode4(radioAlt, speed, FlapsInLandingConfig, gearExtended, phase) {
+    GPWSMode4(mode, radioAlt, speed, FlapsInLandingConfig, gearExtended, phase) {
         if (radioAlt < 30 || radioAlt > 1000) {
-            this.Mode4Code = 0;
+            mode.current = 0;
             return;
         }
         const FlapModeOff = SimVar.GetSimVarValue("L:A32NX_GPWS_FLAP_OFF", "Bool");
@@ -360,44 +366,45 @@ class A32NX_GPWS {
         // Mode 4 A and B logic
         if (!gearExtended && phase === FmgcFlightPhases.APPROACH) {
             if (speed < 190 && radioAlt < 500) {
-                this.Mode4Code = 1;
+                mode.current = 1;
             } else if (speed >= 190) {
                 const maxWarnAlt = 8.333 * speed - 1083.333;
-                this.Mode4Code = radioAlt < maxWarnAlt ? 3 : 0;
+                mode.current = radioAlt < maxWarnAlt ? 3 : 0;
             }
         } else if (!FlapsInLandingConfig && !FlapModeOff && phase === FmgcFlightPhases.APPROACH) {
             if (speed < 159 && radioAlt < 245) {
-                this.Mode4Code = 2;
+                mode.current = 2;
             } else if (speed >= 159) {
                 const maxWarnAlt = 8.2967 * speed - 1074.18;
-                this.Mode4Code = radioAlt < maxWarnAlt ? 3 : 0;
+                mode.current = radioAlt < maxWarnAlt ? 3 : 0;
             }
         } else {
-            this.Mode4Code = 0;
+            mode.current = 0;
         }
         if (!FlapsInLandingConfig || !gearExtended) {
             const maxWarnAltSpeed = Math.max(Math.min(8.3333 * speed - 1083.33, 1000), 500);
             const maxWarnAlt = 0.750751 * this.Mode4MaxRAAlt - 0.750751;
 
             if (this.Mode4MaxRAAlt > 100 && radioAlt < maxWarnAltSpeed && radioAlt < maxWarnAlt) {
-                this.Mode4Code = 3;
+                mode.current = 3;
             }
         }
     }
 
     /**
      * Compute the GPWS Mode 5 state.
+     * @param mode - The mode object which stores the state.
      * @param - radioAlt Radio altitude in feet
      * @constructor
      */
-    GPWSMode5(radioAlt) {
+    GPWSMode5(mode, radioAlt) {
         if (radioAlt > 1000 || radioAlt < 30 || SimVar.GetSimVarValue("L:A32NX_GPWS_GS_OFF", "Bool")) {
-            this.Mode5Code = 0;
+            mode.current = 0;
             return;
         }
         const localizer = this.radnav.getBestILSBeacon();
         if (localizer.id <= 0 || !SimVar.GetSimVarValue("NAV HAS GLIDE SLOPE:" + localizer.id, "Bool")) {
-            this.Mode5Code = 0;
+            mode.current = 0;
             return;
         }
         const error = SimVar.GetSimVarValue("NAV GLIDE SLOPE ERROR:" + localizer.id, "Degrees");
@@ -407,11 +414,11 @@ class A32NX_GPWS {
         const minAltForHardWarning = dots < 3.8 ? -66.66 * dots + 283.33 : 30;
 
         if (dots > 2 && radioAlt > minAltForHardWarning && radioAlt < 350) {
-            this.Mode5Code = 2;
+            mode.current = 2;
         } else if (dots > 1.3 && radioAlt > minAltForWarning) {
-            this.Mode5Code = 1;
+            mode.current = 1;
         } else {
-            this.Mode5Code = 0;
+            mode.current = 0;
         }
     }
 
@@ -533,7 +540,7 @@ class A32NX_GPWS {
         switch (this.RetardState.value) {
             case "overRetard":
                 if (radioAlt < 20) {
-                    if (!SimVar.GetSimVarValue("A32NX_AUTOPILOT_ACTIVE", "Bool")) {
+                    if (!SimVar.GetSimVarValue("L:A32NX_AUTOPILOT_ACTIVE", "Bool")) {
                         this.RetardState.action("play");
                         this.core.soundManager.addPeriodicSound(soundList.retard, 1.1);
                     } else if (radioAlt < 10) {
