@@ -471,7 +471,15 @@ class AirportInfo extends WayPointInfo {
                 const approachData = data.approaches[i];
                 const approach = new Approach();
                 approach.name = approachData.name;
+                // runway name as a string
                 approach.runway = approachData.runway;
+                // runway designator char as an enum
+                approach.runwayDesignator = approachData.runwayDesignator;
+                // runway number as an int
+                approach.runwayNumber = approachData.runwayNumber;
+                approach.approachSuffix = approachData.approachSuffix;
+                approach.approachType = approachData.approachType;
+                approach.rnavTypeFlags = approachData.rnavTypeFlags;
 
                 approach.transitions = [];
                 for (let i = 0; i < approachData.transitions.length; i++) {
