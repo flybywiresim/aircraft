@@ -344,6 +344,14 @@ fn hydraulic_loop(
     loop_color: &str,
     main_pump_number: usize,
 ) -> HydraulicCircuit {
+    let reservoir = reservoir(
+        context,
+        loop_color,
+        Volume::new::<gallon>(5.),
+        Volume::new::<gallon>(4.),
+        Volume::new::<gallon>(3.),
+    );
+
     match loop_color {
         "GREEN" => HydraulicCircuit::new(
             context,
@@ -351,7 +359,7 @@ fn hydraulic_loop(
             main_pump_number,
             Ratio::new::<percent>(100.),
             Volume::new::<gallon>(10.),
-            Volume::new::<gallon>(3.6),
+            reservoir,
             Pressure::new::<psi>(1450.),
             Pressure::new::<psi>(1750.),
             Pressure::new::<psi>(1450.),
@@ -365,13 +373,13 @@ fn hydraulic_loop(
             main_pump_number,
             Ratio::new::<percent>(100.),
             Volume::new::<gallon>(10.),
-            Volume::new::<gallon>(3.6),
+            reservoir,
             Pressure::new::<psi>(1450.),
             Pressure::new::<psi>(1750.),
             Pressure::new::<psi>(1450.),
             Pressure::new::<psi>(1750.),
-            true,
             false,
+            true,
         ),
         _ => HydraulicCircuit::new(
             context,
@@ -379,15 +387,31 @@ fn hydraulic_loop(
             main_pump_number,
             Ratio::new::<percent>(100.),
             Volume::new::<gallon>(10.),
-            Volume::new::<gallon>(3.6),
+            reservoir,
             Pressure::new::<psi>(1450.),
             Pressure::new::<psi>(1750.),
             Pressure::new::<psi>(1450.),
             Pressure::new::<psi>(1750.),
-            true,
+            false,
             false,
         ),
     }
+}
+
+fn reservoir(
+    context: &mut InitContext,
+    hyd_loop_id: &str,
+    max_capacity: Volume,
+    max_gaugeable: Volume,
+    current_level: Volume,
+) -> Reservoir {
+    Reservoir::new(
+        context,
+        hyd_loop_id,
+        max_capacity,
+        max_gaugeable,
+        current_level,
+    )
 }
 
 fn electric_pump(context: &mut InitContext) -> ElectricPump {
