@@ -104,6 +104,8 @@ class CDUAvailableArrivalsPage {
                         rows[2 * i + 1] = ["{sp}{sp}{sp}{sp}" + runwayCourse + "[color]cyan"];
                         mcdu.onLeftInput[i + 2] = () => {
                             mcdu.setApproachIndex(approach.index, () => {
+                                const apprRunwayIndex = mcdu.flightPlanManager.getRunwayIndex(airportInfo.oneWayRunways, approaches[approach.index].runway);
+                                mcdu.flightPlanManager.setDestinationRunwayIndex(apprRunwayIndex);
                                 CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true);
                             });
                         };

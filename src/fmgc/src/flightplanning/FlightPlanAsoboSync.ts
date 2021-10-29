@@ -91,25 +91,35 @@ export class FlightPlanAsoboSync {
 
                           // set departure
                           //  rwy index
-                          await fpln.setOriginRunwayIndex(data.originRunwayIndex)
-                              // .then(() => console.log(`[FP LOAD] Setting Origin  ${data.originRunwayIndex} ... SUCCESS`))
-                              .catch((e) => {
-                                  console.error(`[FP LOAD] Setting Origin ${data.originRunwayIndex} ... FAILED`);
-                                  console.error(e);
-                              });
                           await fpln.setDepartureRunwayIndex(data.departureRunwayIndex)
                               // .then(() => console.log(`[FP LOAD] Setting Departure Runway ${data.departureRunwayIndex} ... SUCCESS`))
                               .catch((e) => {
                                   console.error(`[FP LOAD] Setting Departure Runway ${data.departureRunwayIndex} ... FAILED`);
                                   console.error(e);
                               });
-                          //  proc index
+                          // proc index
                           await fpln.setDepartureProcIndex(data.departureProcIndex)
                               // .then(() => console.log(`[FP LOAD] Setting Departure Procedure  ${data.departureProcIndex} ... SUCCESS`))
                               .catch((e) => {
                                   console.error(`[FP LOAD] Setting Departure Procedure ${data.departureProcIndex} ... FAILED`);
                                   console.error(e);
                               });
+                          // origin runway
+                          if (data.originRunwayIndex !== -1) {
+                              await fpln.setOriginRunwayIndex(data.originRunwayIndex)
+                                  // .then(() => console.log(`[FP LOAD] Setting Origin  ${data.originRunwayIndex} ... SUCCESS`))
+                                  .catch((e) => {
+                                      console.error(`[FP LOAD] Setting Origin ${data.originRunwayIndex} ... FAILED`);
+                                      console.error(e);
+                                  });
+                          } else if (data.departureRunwayIndex !== -1 && data.departureProcIndex !== -1) {
+                            await fpln.setOriginRunwayIndex(fpln.getDepartureRunwayIndex())
+                            // .then(() => console.log(`[FP LOAD] Setting Origin  ${fpln.getDepartureRunwayIndex()} ... SUCCESS`))
+                              .catch((e) => {
+                                console.error(`[FP LOAD] Setting Origin ${fpln.getDepartureRunwayIndex()} ... FAILED`);
+                                console.error(e);
+                            });
+                          }
                           //  enroutetrans index
                           await fpln.setDepartureEnRouteTransitionIndex(data.departureEnRouteTransitionIndex)
                               // .then(() => console.log(`[FP LOAD] Setting Departure En Route Transition ${data.departureEnRouteTransitionIndex} ... SUCCESS`))
