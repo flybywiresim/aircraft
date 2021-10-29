@@ -39,6 +39,7 @@
 1. [ECAM] Fixed misaligned items on ecam memos - @tyler58546 (tyler58546)
 1. [FBW] Fixed instability of roll law due to turbulence or low performance - @IbrahimK42 (IbrahimK42) and @aguther (Andreas Guther)
 1. [MCDU] Hide POSITION UPDATE AT field on PROG page when GPS is available - @BlueberryKing (BlueberryKing)
+1. [MCDU] Sort approaches by type - @tracernz (Mike)
 
 ## 0.7.0
 
