@@ -120,22 +120,22 @@ export const LoadSheetWidget = (props: LoadsheetPageProps) => {
                             <div className="h-full flex flex-col items-center space-y-8 justify-center text-lg">
                                 <h1>You have not yet imported a flightplan from SimBrief</h1>
                                 <button
-                                    type="button"
-                                    onClick={() => {
-                                        fetchSimbriefDataAction(simbriefUserId ?? '').then((action) => {
-                                            dispatch(action)
-                                        }).catch(() => {
-                                            uiMessages.pushNotification(
-                                                <Notification
-                                                    type={NotificationTypes.ERROR}
-                                                    title='SimBrief Error'
-                                                    message='An error occurred when trying to fetch your SimBrief data.'
-                                                />
-                                            )
-                                        });
-                                    }}
-                                    className="flex max-w-md justify-center items-center p-2 space-x-4 w-full text-white bg-teal-light rounded-lg border-2 border-navy-lighter shadow-lg focus:outline-none"
-                                >
+                        type="button"
+                        onClick={() => {
+                            fetchSimbriefDataAction(simbriefUserId ?? '').then((action) => {
+                                dispatch(action)
+                            }).catch(() => {
+                                uiMessages.pushNotification(
+                                    <Notification
+                                        type={NotificationTypes.ERROR}
+                                        title='SimBrief Error'
+                                        message='An error occurred when trying to fetch your SimBrief data.'
+                                    />
+                                )
+                            });
+                        }}
+                        className="flex justify-center items-center p-2 space-x-4 w-full text-white bg-theme-highlight rounded-lg border-2 border-theme-secondary shadow-lg focus:outline-none"
+                    >
                         <FileEarmarkArrowDown size={26} />
                         <p>Import Flightplan from SimBrief</p>
                     </button>
