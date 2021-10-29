@@ -1171,7 +1171,7 @@ export class ManagedFlightPlan {
 
     public getDestinationRunway(): OneWayRunway | null{
         if (this.destinationAirfield) {
-            if (this.procedureDetails.arrivalRunwayIndex !== -1) {
+            if (this.procedureDetails.destinationRunwayIndex !== -1) {
                 return this.destinationAirfield.infos.oneWayRunways[this.procedureDetails.destinationRunwayIndex];
             }
         }
