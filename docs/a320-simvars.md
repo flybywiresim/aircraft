@@ -762,7 +762,7 @@
 
 - A32NX_HYD_{loop_name}_RESERVOIR_LEVEL
     - Gallon
-    - Current fluid level in the {loop_name} hydraulic circuit reservoir
+    - Current gaugeable fluid level in the {loop_name} hydraulic circuit reservoir
     - {loop_name}
         - GREEN
         - BLUE
