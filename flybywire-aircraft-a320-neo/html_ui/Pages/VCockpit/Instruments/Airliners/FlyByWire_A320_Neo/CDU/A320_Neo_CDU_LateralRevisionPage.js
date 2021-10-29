@@ -19,14 +19,14 @@ class CDULateralRevisionPage {
         if (waypoint) {
             waypointIdent = waypoint.ident;
             if (isDeparture) {
-                const departureRunway = mcdu.flightPlanManager.getDepartureRunway();
-                if (departureRunway) {
-                    waypointIdent += Avionics.Utils.formatRunway(departureRunway.designation);
+                const originRunway = mcdu.flightPlanManager.getOriginRunway();
+                if (originRunway) {
+                    waypointIdent += Avionics.Utils.formatRunway(originRunway.designation);
                 }
             } else if (isDestination) {
-                const approachRunway = mcdu.flightPlanManager.getApproachRunway();
-                if (approachRunway) {
-                    waypointIdent += Avionics.Utils.formatRunway(approachRunway.designation);
+                const destinationRunway = mcdu.flightPlanManager.getDestinationRunway();
+                if (destinationRunway) {
+                    waypointIdent += Avionics.Utils.formatRunway(destinationRunway.designation);
                 }
             }
         }

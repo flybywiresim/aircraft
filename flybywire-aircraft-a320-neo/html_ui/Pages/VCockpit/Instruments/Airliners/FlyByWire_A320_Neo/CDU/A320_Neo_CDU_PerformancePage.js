@@ -40,7 +40,7 @@ class CDUPerformancePage {
         let runway = "";
         let hasRunway = false;
         if (hasOrigin) {
-            const runwayObj = mcdu.flightPlanManager.getDepartureRunway();
+            const runwayObj = mcdu.flightPlanManager.getOriginRunway();
             if (runwayObj) {
                 runway = Avionics.Utils.formatRunway(runwayObj.designation);
                 hasRunway = true;

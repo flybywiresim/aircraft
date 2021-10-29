@@ -1688,7 +1688,7 @@ class FMCMainDisplay extends BaseAirliners {
 
     setDepartureIndex(departureIndex, callback = EmptyCallback.Boolean) {
         this.ensureCurrentFlightPlanIsTemporary(() => {
-            const currentRunway = this.flightPlanManager.getDepartureRunway();
+            const currentRunway = this.flightPlanManager.getOriginRunway();
             this.flightPlanManager.setDepartureProcIndex(departureIndex, () => {
                 if (currentRunway) {
                     SimVar.SetSimVarValue("L:A32NX_DEPARTURE_ELEVATION", "feet", A32NX_Util.meterToFeet(currentRunway.elevation));
@@ -1745,7 +1745,7 @@ class FMCMainDisplay extends BaseAirliners {
             this.flightPlanManager.setApproachIndex(approachIndex, () => {
                 const approach = this.flightPlanManager.getApproach();
                 if (approach) {
-                    const runway = this.flightPlanManager.getApproachRunway();
+                    const runway = this.flightPlanManager.getDestinationRunway();
                     if (runway) {
                         SimVar.SetSimVarValue("L:A32NX_PRESS_AUTO_LANDING_ELEVATION", "feet", A32NX_Util.meterToFeet(runway.elevation));
                     }
@@ -1811,7 +1811,7 @@ class FMCMainDisplay extends BaseAirliners {
                     return;
                 }
                 airport = this.flightPlanManager.getDestination();
-                runway = this.flightPlanManager.getApproachRunway();
+                runway = this.flightPlanManager.getDestinationRunway();
 
                 const planeLla = new LatLongAlt(
                     SimVar.GetSimVarValue("PLANE LATITUDE", "degree latitude"),
@@ -1830,7 +1830,7 @@ class FMCMainDisplay extends BaseAirliners {
             }
             this.ilsAutoTuned = false;
             airport = this.flightPlanManager.getOrigin();
-            runway = this.flightPlanManager.getDepartureRunway();
+            runway = this.flightPlanManager.getOriginRunway();
         }
 
         // If the airport has correct navdata, the ILS will be listed as the reference navaid (originIcao in MSFS land) on at least the last leg of the
@@ -3077,7 +3077,7 @@ class FMCMainDisplay extends BaseAirliners {
             return true;
         } else if (s.match(/^[0-9]{1,5}$/) !== null) {
             const value = parseInt(s);
-            let ldgRwy = this.flightPlanManager.getApproachRunway();
+            let ldgRwy = this.flightPlanManager.getDestinationRunway();
             if (!ldgRwy) {
                 const dest = this.flightPlanManager.getDestination();
                 if (dest && dest.infos && dest.infos.runways.length > 0) {
@@ -3524,7 +3524,7 @@ class FMCMainDisplay extends BaseAirliners {
 
     updateTowerHeadwind() {
         if (isFinite(this.perfApprWindSpeed) && isFinite(this.perfApprWindHeading)) {
-            const rwy = this.flightPlanManager.getApproachRunway();
+            const rwy = this.flightPlanManager.getDestinationRunway();
             if (rwy) {
                 this._towerHeadwind = NXSpeedsUtils.getHeadwind(this.perfApprWindSpeed, this.perfApprWindHeading, rwy.direction);
             }
@@ -3560,7 +3560,7 @@ class FMCMainDisplay extends BaseAirliners {
      *   Only prompt the confirmation of FLEX TEMP when the TO runway was changed, not on initial insertion of the runway
      */
     onToRwyChanged() {
-        const selectedRunway = this.flightPlanManager.getDepartureRunway();
+        const selectedRunway = this.flightPlanManager.getOriginRunway();
         if (!!selectedRunway) {
             const toRunway = Avionics.Utils.formatRunway(selectedRunway.designation);
             if (toRunway === this.toRunway) {

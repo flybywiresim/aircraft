@@ -113,10 +113,10 @@ export class FlightPlanAsoboSync {
                                         console.error(e);
                                     });
                             } else if (data.departureRunwayIndex !== -1 && data.departureProcIndex !== -1) {
-                              await fpln.setOriginRunwayIndex(fpln.getDepartureRunwayIndex())
-                              // .then(() => console.log(`[FP LOAD] Setting Origin  ${fpln.getDepartureRunwayIndex()} ... SUCCESS`))
+                              await fpln.setOriginRunwayIndexFromDeparture()
+                              // .then(() => console.log(`[FP LOAD] Setting Origin using ${data.departureProcIndex}/${data.departureRunwayIndex}... SUCCESS`))
                                 .catch((e) => {
-                                  console.error(`[FP LOAD] Setting Origin ${fpln.getDepartureRunwayIndex()} ... FAILED`);
+                                  console.error(`[FP LOAD] Setting Origin using ${data.departureProcIndex}/${data.departureRunwayIndex} ... FAILED`);
                                   console.error(e);
                               });
                             }
@@ -165,10 +165,10 @@ export class FlightPlanAsoboSync {
                                 });
                             // .then(() => console.log(`[FP LOAD] Setting Approach Transition ${data.approachTransitionIndex} ... SUCCESS`));
 
-                            await fpln.setDestinationRunwayIndex(fpln.getApproachRunwayIndex())
-                            // .then(() => console.log(`[FP LOAD] Setting Destination Runway ${fpln.getApproachRunwayIndex()} ... SUCCESS`))
+                            await fpln.setDestinationRunwayIndexFromApproach()
+                            // .then(() => console.log(`[FP LOAD] Setting Destination Runway using ${data.approachIndex} ... SUCCESS`))
                             .catch((e) => {
-                                console.error(`[FP LOAD] Setting Destination Runway ${fpln.getApproachRunwayIndex()} ... FAILED`);
+                                console.error(`[FP LOAD] Setting Destination Runway using ${data.approachIndex} ... FAILED`);
                                 console.error(e);
                             });
 
