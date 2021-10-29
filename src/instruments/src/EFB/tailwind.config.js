@@ -44,12 +44,23 @@ module.exports = {
                 '26.5': '26.5deg',
                 '-26.5': '-26.5deg',
             }),
+            colors: {
+                'theme-highlight': 'var(--color-highlight)',
+                'theme-body': 'var(--color-body)',
+                'theme-text': 'var(--color-text)',
+                'theme-unselected': 'var(--color-unselected)',
+                'theme-secondary': 'var(--color-secondary)',
+                'theme-statusbar': 'var(--color-statusbar)',
+            }
         },
         fontFamily: {
             mono: ['JetBrains Mono'],
             body: ['Inter'],
             title: ['Manrope'],
         },
+        boxShadow: {
+            lg: '0px 0px 4px 2px rgba(0, 0, 0, 0.5)'
+        }
     },
     variants: { extend: {} },
     // eslint-disable-next-line global-require

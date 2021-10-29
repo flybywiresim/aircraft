@@ -100,7 +100,7 @@ export const ATC = () => {
                         {' - '}
                         Controllers currently in range
                     </h1>
-                    <div className="bg-gray-800 rounded-xl p-2 text-white">
+                    <div className="p-2 text-theme-text">
                         <div className="flex p-2 w-full flex-wrap justify-between">
                             { controllers && controllers.map((atc) => (
                                 <Button
