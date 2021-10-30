@@ -12,10 +12,15 @@ class CDUFixInfoPage {
 
         const fixInfo = mcdu.flightPlanManager.getFixInfo(page);
 
-        mcdu.onLeftInput[0] = (value) => {
+        mcdu.onLeftInput[0] = (value, scratchpadCallback) => {
             if (value === FMCMainDisplay.clrValue) {
-                fixInfo.setRefFix();
-                return CDUFixInfoPage.ShowPage(mcdu, page);
+                if (fixInfo.getRefFixIdent()) {
+                    fixInfo.setRefFix();
+                    return CDUFixInfoPage.ShowPage(mcdu, page);
+                } else {
+                    mcdu.addNewMessage(NXSystemMessages.notAllowed);
+                    return scratchpadCallback();
+                }
             }
             if (mcdu.isRunwayFormat(value)) {
                 // this is a horrible ugly hack until fbw nav database
@@ -24,13 +29,14 @@ class CDUFixInfoPage {
                     fix.icao = `R  ${value}`;
                     fix.ident = value;
                     fix.infos = new WayPointInfo(mcdu.instrument);
-                    fix.infos.icap = fix.icao;
+                    fix.infos.icao = fix.icao;
                     fix.infos.coordinates = coordinates;
 
                     fixInfo.setRefFix(fix);
                     CDUFixInfoPage.ShowPage(mcdu, page);
                 }, (message) => {
                     mcdu.addNewMessage(message);
+                    scratchpadCallback();
                 });
             } else {
                 mcdu.getOrSelectWaypointByIdent(value, (wp) => {
@@ -39,6 +45,7 @@ class CDUFixInfoPage {
                         CDUFixInfoPage.ShowPage(mcdu, page);
                     } else {
                         mcdu.addNewMessage(NXSystemMessages.notInDatabase);
+                        scratchpadCallback();
                     }
                 });
             }
@@ -71,13 +78,14 @@ class CDUFixInfoPage {
                 } else if (i === 0 || fixInfo.getRadial(0) !== undefined) {
                     template[4 + i * 2] = [`\xa0{cyan}[\xa0]°{end}\xa0\xa0\xa0\xa0----\xa0----\xa0----`];
                 }
-                mcdu.onLeftInput[1 + i] = (value) => {
+                mcdu.onLeftInput[1 + i] = (value, scratchpadCallback) => {
                     if (value === FMCMainDisplay.clrValue) {
                         if (radial !== undefined) {
                             fixInfo.setRadial(i);
                             CDUFixInfoPage.ShowPage(mcdu, page);
                         } else {
                             mcdu.addNewMessage(NXSystemMessages.notAllowed);
+                            scratchpadCallback();
                         }
                     } else if (value.match(/^[0-9]{1,3}$/)) {
                         const degrees = parseInt(value);
@@ -87,11 +95,14 @@ class CDUFixInfoPage {
                             CDUFixInfoPage.ShowPage(mcdu, page);
                         } else {
                             mcdu.addNewMessage(NXSystemMessages.entryOutOfRange);
+                            scratchpadCallback();
                         }
                     } else if (value === '' && radial !== undefined) {
                         mcdu.addNewMessage(NXFictionalMessages.notYetImplemented);
+                        scratchpadCallback();
                     } else {
                         mcdu.addNewMessage(NXSystemMessages.formatError);
+                        scratchpadCallback();
                     }
                 };
             }
@@ -102,13 +113,14 @@ class CDUFixInfoPage {
             } else {
                 template[8] = [`\xa0{cyan}[\xa0]{small}NM{end}{end}\xa0\xa0\xa0----\xa0----\xa0----`];
             }
-            mcdu.onLeftInput[3] = (value) => {
+            mcdu.onLeftInput[3] = (value, scratchpadCallback) => {
                 if (value === FMCMainDisplay.clrValue) {
                     if (fixInfo.radius !== undefined) {
                         fixInfo.setRadius();
                         CDUFixInfoPage.ShowPage(mcdu, page);
                     } else {
                         mcdu.addNewMessage(NXSystemMessages.notAllowed);
+                        scratchpadCallback();
                     }
                 } else if (value.match(/^[0-9]{1,3}$/)) {
                     const radius = parseInt(value);
@@ -117,11 +129,14 @@ class CDUFixInfoPage {
                         CDUFixInfoPage.ShowPage(mcdu, page);
                     } else {
                         mcdu.addNewMessage(NXSystemMessages.entryOutOfRange);
+                        scratchpadCallback();
                     }
                 } else if (value === '' && fixInfo.radius !== undefined) {
                     mcdu.addNewMessage(NXFictionalMessages.notYetImplemented);
+                    scratchpadCallback();
                 } else {
                     mcdu.addNewMessage(NXSystemMessages.formatError);
+                    scratchpadCallback();
                 }
             };
 
