@@ -1241,10 +1241,10 @@
                 <Case Check="POTENTIOMETER">
                     <Condition Check="SEQ2_POWERED">
                         <True>
-                            <EMISSIVE_CODE>(A:LIGHT POTENTIOMETER:#POTENTIOMETER#, Percent over 100) #SEQ2_POWERED# *</EMISSIVE_CODE>
+                            <EMISSIVE_CODE>#SEQ2_POWERED#</EMISSIVE_CODE>
                         </True>
                         <False>
-                            <EMISSIVE_CODE>(A:LIGHT POTENTIOMETER:#POTENTIOMETER#, Percent over 100)</EMISSIVE_CODE>
+                            <EMISSIVE_CODE>1</EMISSIVE_CODE>
                         </False>
                     </Condition>
                 </Case>
