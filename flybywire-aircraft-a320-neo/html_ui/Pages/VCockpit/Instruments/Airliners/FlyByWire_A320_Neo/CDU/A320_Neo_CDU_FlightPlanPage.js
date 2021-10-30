@@ -424,7 +424,7 @@ class CDUFlightPlanPage {
                             }
                             return mcdu.getDelayBasic();
                         },
-                        (value) => {
+                        (value, scratchpadCallback) => {
                             switch (value) {
                                 case "":
                                     CDULateralRevisionPage.ShowPage(mcdu, wp, fpIndex);
@@ -443,6 +443,7 @@ class CDUFlightPlanPage {
                                             case 34:
                                             case 50:
                                                 mcdu.addNewMessage(NXSystemMessages.notAllowedInNav);
+                                                scratchpadCallback();
                                                 return;
                                         }
                                     }

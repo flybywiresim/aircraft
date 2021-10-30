@@ -64,7 +64,7 @@ class CDUVerticalRevisionPage {
             mcdu.onRightInput[0] = () => {}; // EXTRA
             mcdu.onLeftInput[1] = () => {}; // CLB SPD LIM
             mcdu.onRightInput[1] = () => {}; // RTA
-            mcdu.onLeftInput[2] = async (value) => {
+            mcdu.onLeftInput[2] = async (value, scratchpadCallback) => {
                 const speed = (value !== FMCMainDisplay.clrValue) ? parseInt(value) : 0;
                 if (isFinite(speed)) {
                     if (speed >= 0) {
@@ -75,6 +75,7 @@ class CDUVerticalRevisionPage {
                     }
                 } else {
                     mcdu.addNewMessage(NXSystemMessages.notAllowed);
+                    scratchpadCallback();
                 }
             }; // SPD CSTR
             mcdu.onRightInput[2] = (value, scratchpadCallback) => {
