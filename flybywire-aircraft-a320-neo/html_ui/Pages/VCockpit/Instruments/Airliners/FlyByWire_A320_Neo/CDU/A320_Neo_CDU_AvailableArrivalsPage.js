@@ -161,9 +161,9 @@ class CDUAvailableArrivalsPage {
                             rows[2 * i] = ["{" + star.name + "[color]" + color];
                             mcdu.onLeftInput[i + 2] = () => {
                                 const destinationRunway = mcdu.flightPlanManager.getDestinationRunway();
-                                const arrivalRunwayIndex = star.runwayTransitions.findIndex(t => {
-                                    return t.name.indexOf("RW" + destinationRunway.designation) != -1;
-                                });
+                                const arrivalRunwayIndex = destinationRunway ? star.runwayTransitions.findIndex(t => {
+                                    return t.name.indexOf("RW" + destinationRunway.designation) !== -1;
+                                }) : -1;
                                 if (arrivalRunwayIndex !== -1) {
                                     mcdu.flightPlanManager.setArrivalRunwayIndex(arrivalRunwayIndex);
                                 }
