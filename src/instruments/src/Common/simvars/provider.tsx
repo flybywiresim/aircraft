@@ -41,6 +41,13 @@ export const SimVarProvider: FC<SimVarProviderProps> = ({ maxUpdateFrequency = 3
 
     const subscribe = useCallback((name: string, unit: SimVarUnit, type: SimVarType, onUpdated:(value: SimVarValue) => void, maxStaleness?: number): string => {
         const key = getSimVarKey(type, name, unit);
+
+        // It is possible for this function to be called by a mount effect without getValue being called first, so
+        // we check if there is an instance first
+        if (!instances[key]) {
+            instances[key] = new SimVarInstance(name, unit, type);
+        }
+
         return instances[key].subscribe(onUpdated, maxStaleness);
     }, [instances]);
 
