@@ -797,6 +797,9 @@
       {
         "gltf": "./fx_exhaust_apu/fx_exhaust_apu.gltf",
         "bin": "./fx_exhaust_apu/fx_exhaust_apu.bin"
+      },
+      {
+        "gltf": "./hublots/hublots.gltf"
       }
     ],
     "modifications": [

@@ -53,19 +53,23 @@ function combineGltf(pathA, pathB, outputPath) {
     const bufferSize = gltfA.buffers[0].byteLength;
 
     // Add bufferViews
-    for (const bufferView of gltfB.bufferViews) {
-        if (Number.isFinite(bufferView.byteOffset)) {
-            bufferView.byteOffset += bufferSize + ((4 - (bufferSize % 4)) % 4);
-        } else {
-            bufferView.byteOffset = bufferSize + ((4 - (bufferSize % 4)) % 4);
+    if (gltfB.bufferViews) {
+        for (const bufferView of gltfB.bufferViews) {
+            if (Number.isFinite(bufferView.byteOffset)) {
+                bufferView.byteOffset += bufferSize + ((4 - (bufferSize % 4)) % 4);
+            } else {
+                bufferView.byteOffset = bufferSize + ((4 - (bufferSize % 4)) % 4);
+            }
+            gltfA.bufferViews.push(bufferView);
         }
-        gltfA.bufferViews.push(bufferView);
     }
 
     // Add accessors
-    for (const accessor of gltfB.accessors) {
-        accessor.bufferView += bufferViewsCount;
-        gltfA.accessors.push(accessor);
+    if (gltfB.accessors) {
+        for (const accessor of gltfB.accessors) {
+            accessor.bufferView += bufferViewsCount;
+            gltfA.accessors.push(accessor);
+        }
     }
 
     // Add textures & images
@@ -112,33 +116,48 @@ function combineGltf(pathA, pathB, outputPath) {
     }
 
     // Add meshes
-    for (const mesh of gltfB.meshes) {
-        Object.keys(mesh.primitives[0].attributes)
-            .forEach((attribute) => {
-                mesh.primitives[0].attributes[attribute] += accessorsCount;
-            });
-        mesh.primitives[0].indices += accessorsCount;
-        // workaround to allow added meshes to use existing materials
-        if (!Number.isFinite(mesh.primitives[0].material)) {
-            for (let i = 0; i < gltfA.materials.length; i += 1) {
-                if (gltfA.materials[i].name === mesh.primitives[0].material) {
-                    mesh.primitives[0].material = i;
-                    break;
-                }
-            }
-            // If the material is not found, use material 0
+    if (gltfB.meshes) {
+        for (const mesh of gltfB.meshes) {
+            Object.keys(mesh.primitives[0].attributes)
+                .forEach((attribute) => {
+                    mesh.primitives[0].attributes[attribute] += accessorsCount;
+                });
+            mesh.primitives[0].indices += accessorsCount;
+            // workaround to allow added meshes to use existing materials
             if (!Number.isFinite(mesh.primitives[0].material)) {
-                mesh.primitives[0].material = 0;
+                for (let i = 0; i < gltfA.materials.length; i += 1) {
+                    if (gltfA.materials[i].name === mesh.primitives[0].material) {
+                        mesh.primitives[0].material = i;
+                        break;
+                    }
+                }
+                // If the material is not found, use material 0
+                if (!Number.isFinite(mesh.primitives[0].material)) {
+                    mesh.primitives[0].material = 0;
+                }
+            } else {
+                mesh.primitives[0].material += materialsCount;
             }
-        } else {
-            mesh.primitives[0].material += materialsCount;
+            gltfA.meshes.push(mesh);
         }
-        gltfA.meshes.push(mesh);
     }
 
     // Add nodes
     for (const node of gltfB.nodes) {
-        node.mesh += meshesCount;
+        if (!Number.isFinite(node.mesh)) {
+            for (let i = 0; i < gltfA.meshes.length; i += 1) {
+                if (gltfA.meshes[i].name === node.mesh) {
+                    node.mesh = i;
+                    break;
+                }
+            }
+            // If the mesh is not found, use mesh 0
+            if (!Number.isFinite(node.mesh)) {
+                node.mesh = 0;
+            }
+        } else {
+            node.mesh += meshesCount;
+        }
         if (node.children) {
             const newChildren = [];
             for (const child of node.children) {
@@ -189,7 +208,9 @@ function combineGltf(pathA, pathB, outputPath) {
     }
 
     // Adjust buffer size
-    gltfA.buffers[0].byteLength += gltfB.buffers[0].byteLength + ((4 - (bufferSize % 4)) % 4);
+    if (gltfB.buffers) {
+        gltfA.buffers[0].byteLength += gltfB.buffers[0].byteLength + ((4 - (bufferSize % 4)) % 4);
+    }
 
     // Write output file
     const data = JSON.stringify(gltfA);
@@ -343,7 +364,9 @@ for (const model of models) {
             fs.appendFileSync(p(model.output.bin[i]), Buffer.alloc((4 - (fs.statSync(p(model.output.bin[i])).size % 4)) % 4));
 
             // add the second bin file to the end of the first one
-            fs.appendFileSync(p(model.output.bin[i]), fs.readFileSync(p(addition.bin)));
+            if (addition.bin) {
+                fs.appendFileSync(p(model.output.bin[i]), fs.readFileSync(p(addition.bin)));
+            }
         }
         if (model.splitAnimations) {
             for (const split of model.splitAnimations) {
