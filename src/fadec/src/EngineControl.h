@@ -10,8 +10,8 @@ class EngineControl {
   SimVars* simVars;
   EngineRatios* ratios;
   Polynomial* poly;
-  Timer* timerLeft;
-  Timer* timerRight;
+  Timer timerLeft;
+  Timer timerRight;
 
   bool simPaused;
   double animationDeltaTime;
@@ -614,40 +614,44 @@ class EngineControl {
 
     deltaTime = deltaTime / 3600;
 
-    // Pump State Logic for Left Wing & tank zeroing
-    if (pumpStateLeft == 0) {
-      if (fuelLeftPre - leftQuantity > 0 && leftQuantity <= 1) {
-        timerLeft->reset();
+    // Pump State Logic for Left Wing
+    if (pumpStateLeft == 0 && (timerLeft.elapsed() == 0 || timerLeft.elapsed() >= 1000)) {
+      if (fuelLeftPre - leftQuantity > 0 && leftQuantity == 0) {
+        timerLeft.reset();
         simVars->setPumpStateLeft(1);
-      } else if (fuelLeftPre >= 0.01 && leftQuantity - fuelLeftPre > 0) {
-        timerLeft->reset();
+      } else if (fuelLeftPre == 0 && leftQuantity - fuelLeftPre > 0) {
+        timerLeft.reset();
         simVars->setPumpStateLeft(2);
       } else {
         simVars->setPumpStateLeft(0);
       }
-    } else if (pumpStateLeft == 1 && timerLeft->elapsed() >= 2100) {
+    } else if (pumpStateLeft == 1 && timerLeft.elapsed() >= 2100) {
       simVars->setPumpStateLeft(0);
-      timerLeft->reset();
-    } else if (pumpStateLeft == 2 && timerLeft->elapsed() >= 2700) {
+      fuelLeftPre = 0;
+      timerLeft.reset();
+    } else if (pumpStateLeft == 2 && timerLeft.elapsed() >= 2700) {
       simVars->setPumpStateLeft(0);
-      timerLeft->reset();
+      timerLeft.reset();
     }
 
     // Pump State Logic for Right Wing
-    if (pumpStateRight == 0) {
-      if (fuelRightPre > 0.01 && rightQuantity <= 0.01) {
-        timerRight->reset();
+    if (pumpStateRight == 0 && (timerRight.elapsed() == 0 || timerRight.elapsed() >= 1000)) {
+      if (fuelRightPre - rightQuantity > 0 && rightQuantity == 0) {
+        timerRight.reset();
         simVars->setPumpStateRight(1);
-      } else if (fuelRightPre <= 0.01 && rightQuantity > 0.01) {
-        timerRight->reset();
+      } else if (fuelRightPre == 0 && rightQuantity - fuelRightPre > 0) {
+        timerRight.reset();
         simVars->setPumpStateRight(2);
       } else {
         simVars->setPumpStateRight(0);
       }
-    } else if (pumpStateRight == 1 && timerRight->elapsed() >= 2100) {
+    } else if (pumpStateRight == 1 && timerRight.elapsed() >= 2100) {
       simVars->setPumpStateRight(0);
-    } else if (pumpStateRight == 2 && timerRight->elapsed() >= 2700) {
+      fuelRightPre = 0;
+      timerRight.reset();
+    } else if (pumpStateRight == 2 && timerRight.elapsed() >= 2700) {
       simVars->setPumpStateRight(0);
+      timerRight.reset();
     }
 
     // Checking for in-game UI Fuel tampering
@@ -656,14 +660,13 @@ class EngineControl {
       uiFuelTamper = true;
     }
 
-    if (simPaused || uiFuelTamper) {  // Detects whether the Sim is paused or the Fuel UI is being tampered with
+    if (simPaused || uiFuelTamper) {                 // Detects whether the Sim is paused or the Fuel UI is being tampered with
+      simVars->setFuelLeftPre(fuelLeftPre);          // in LBS
+      simVars->setFuelRightPre(fuelRightPre);        // in LBS
+      simVars->setFuelAuxLeftPre(fuelAuxLeftPre);    // in LBS
+      simVars->setFuelAuxRightPre(fuelAuxRightPre);  // in LBS
+      simVars->setFuelCenterPre(fuelCenterPre);      // in LBS
       if (devState == 0) {
-        simVars->setFuelLeftPre(fuelLeftPre);          // in LBS
-        simVars->setFuelRightPre(fuelRightPre);        // in LBS
-        simVars->setFuelAuxLeftPre(fuelAuxLeftPre);    // in LBS
-        simVars->setFuelAuxRightPre(fuelAuxRightPre);  // in LBS
-        simVars->setFuelCenterPre(fuelCenterPre);      // in LBS
-
         fuelLeft = (fuelLeftPre / fuelWeightGallon);          // USG
         fuelRight = (fuelRightPre / fuelWeightGallon);        // USG
         fuelCenter = (fuelCenterPre / fuelWeightGallon);      // USG
@@ -677,12 +680,6 @@ class EngineControl {
         SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelLeftAux, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double), &fuelLeftAux);
         SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelRightAux, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
                                       &fuelRightAux);
-      } else {
-        simVars->setFuelLeftPre(fuelLeftPre);          // in LBS
-        simVars->setFuelRightPre(fuelRightPre);        // in LBS
-        simVars->setFuelAuxLeftPre(fuelAuxLeftPre);    // in LBS
-        simVars->setFuelAuxRightPre(fuelAuxRightPre);  // in LBS
-        simVars->setFuelCenterPre(fuelCenterPre);      // in LBS
       }
     } else if (!uiFuelTamper && refuelStartedByUser == 1) {  // Detects refueling from the EFB
       simVars->setFuelLeftPre(leftQuantity);                 // in LBS
@@ -801,7 +798,7 @@ class EngineControl {
     double fuelLeftInit = (rand() % 100) + 340;
     double fuelRightInit = fuelLeftInit;
     double fuelLeftAuxInit = 228;
-    double fuelRightAuxInit = 228;
+    double fuelRightAuxInit = fuelLeftAuxInit;
 
     std::cout << "FADEC: Initializing EngineControl" << std::endl;
 
