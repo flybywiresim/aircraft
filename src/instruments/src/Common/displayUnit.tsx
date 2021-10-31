@@ -1,3 +1,6 @@
+//  Copyright (c) 2021 FlyByWire Simulations
+//  SPDX-License-Identifier: GPL-3.0
+
 import React, { useEffect, useState } from 'react';
 import { NXDataStore } from '@shared/persistence';
 import { useSimVar } from '@instruments/common/simVars';
@@ -39,7 +42,7 @@ export const DisplayUnit: React.FC<DisplayUnitProps> = (props) => {
                 setTimer(null);
             }
         }
-    });
+    }, [timer]);
 
     useEffect(() => {
         if (state !== DisplayUnitState.Off && props.failed) {
