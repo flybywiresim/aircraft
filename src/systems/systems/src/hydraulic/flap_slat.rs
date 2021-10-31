@@ -1,7 +1,7 @@
 use super::linear_actuator::Actuator;
 use crate::shared::{interpolation, FeedbackPositionPickoffUnit};
 use crate::simulation::{
-    SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext, Write,
+    SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext, Write,InitContext, VariableIdentifier
 };
 
 use uom::si::{
@@ -19,7 +19,7 @@ use uom::si::{
 /// Speed is smoothly rising or lowering to simulate transients states
 /// Flow is updated from current motor speed
 pub struct FlapSlatHydraulicMotor {
-    rpm_id: String,
+    rpm_id: VariableIdentifier,
 
     speed: AngularVelocity,
     displacement: Volume,
@@ -35,9 +35,9 @@ impl FlapSlatHydraulicMotor {
     // Corrective factor to adjust final flow consumption to tune the model
     const FLOW_CORRECTION_FACTOR: f64 = 0.9;
 
-    fn new(id: &str, displacement: Volume) -> Self {
+    fn new(context: &mut InitContext,id: &str, displacement: Volume) -> Self {
         Self {
-            rpm_id: format!("HYD_{}_MOTOR_RPM", id),
+            rpm_id: context.get_identifier(format!("HYD_{}_MOTOR_RPM", id)),
             speed: AngularVelocity::new::<radian_per_second>(0.),
             displacement,
             current_flow: VolumeRate::new::<gallon_per_second>(0.),
@@ -104,15 +104,18 @@ impl Actuator for FlapSlatHydraulicMotor {
 }
 impl SimulationElement for FlapSlatHydraulicMotor {
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write(&self.rpm_id, self.speed.get::<revolution_per_minute>());
+        writer.write(
+            &self.rpm_id,
+            self.speed.get::<revolution_per_minute>(),
+        );
     }
 }
 
 pub struct FlapSlatAssembly {
-    position_left_percent_id: String,
-    position_right_percent_id: String,
-    angle_left_id: String,
-    angle_right_id: String,
+    position_left_percent_id: VariableIdentifier,
+    position_right_percent_id: VariableIdentifier,
+    angle_left_id: VariableIdentifier,
+    angle_right_id: VariableIdentifier,
 
     flap_control_arm_position: Angle,
 
@@ -141,6 +144,7 @@ impl FlapSlatAssembly {
     const ANGULAR_SPEED_LIMIT_FACTOR_WHEN_APROACHING_POSITION: f64 = 0.5;
 
     pub fn new(
+        context: &mut InitContext,
         id: &str,
         motor_displacement: Volume,
         full_pressure_max_speed: AngularVelocity,
@@ -151,11 +155,23 @@ impl FlapSlatAssembly {
         synchro_gear_breakpoints: [f64; 12],
         final_flap_angle_carac: [f64; 12],
     ) -> Self {
+        let left_motor= FlapSlatHydraulicMotor::new(context,
+            format!("LEFT_{}", id).as_str(),
+            motor_displacement,
+        );
+
+        let right_motor= FlapSlatHydraulicMotor::new(context,
+            format!("RIGHT_{}", id).as_str(),
+            motor_displacement,
+        );
+
         Self {
-            position_left_percent_id: format!("LEFT_{}_POSITION_PERCENT", id),
-            position_right_percent_id: format!("RIGHT_{}_POSITION_PERCENT", id),
-            angle_left_id: format!("LEFT_{}_ANGLE", id),
-            angle_right_id: format!("RIGHT_{}_ANGLE", id),
+            position_left_percent_id: context.get_identifier(format!("LEFT_{}_POSITION_PERCENT", id)),
+            position_right_percent_id: context.get_identifier(format!("RIGHT_{}_POSITION_PERCENT", id)),
+
+            angle_left_id: context.get_identifier(format!("LEFT_{}_ANGLE", id)),
+            angle_right_id:  context.get_identifier(format!("RIGHT_{}_ANGLE", id)),
+
             flap_control_arm_position: Angle::new::<radian>(0.),
             max_synchro_gear_position,
             final_requested_synchro_gear_position: Angle::new::<radian>(0.),
@@ -165,14 +181,8 @@ impl FlapSlatAssembly {
             gearbox_ratio,
             flap_to_synchro_gear_ratio: flap_gear_ratio / synchro_gear_ratio,
             flap_gear_ratio,
-            left_motor: FlapSlatHydraulicMotor::new(
-                format!("LEFT_{}", id).as_str(),
-                motor_displacement,
-            ),
-            right_motor: FlapSlatHydraulicMotor::new(
-                format!("RIGHT_{}", id).as_str(),
-                motor_displacement,
-            ),
+            left_motor,
+            right_motor,
             synchro_gear_breakpoints,
             final_flap_angle_carac,
         }
