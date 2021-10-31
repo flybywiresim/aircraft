@@ -104,6 +104,7 @@ class SimVars {
   /// <summary>
   /// Collection of LVars for the A32NX
   /// </summary>
+  ID DevVar;
   ID Engine1N2;
   ID Engine2N2;
   ID Engine1N1;
@@ -161,6 +162,7 @@ class SimVars {
   SimVars() { this->initializeVars(); }
 
   void initializeVars() {
+    DevVar = register_named_variable("A32NX_DEVELOPER_STATE");
     Engine1N2 = register_named_variable("A32NX_ENGINE_N2:1");
     Engine2N2 = register_named_variable("A32NX_ENGINE_N2:2");
     Engine1N1 = register_named_variable("A32NX_ENGINE_N1:1");
@@ -212,6 +214,7 @@ class SimVars {
     CargoAftBaggageDesired = register_named_variable("A32NX_CARGO_AFT_BAGGAGE_DESIRED");
     CargoAftBulkDesired = register_named_variable("A32NX_CARGO_AFT_BULK_LOOSE_DESIRED");
 
+    this->setDeveloperState(0);
     this->setEngine1N2(0);
     this->setEngine2N2(0);
     this->setEngine1N1(0);
@@ -249,6 +252,7 @@ class SimVars {
   }
 
   // Collection of LVar 'set' Functions
+  void setDeveloperState(FLOAT64 value) { set_named_variable_value(DevVar, value); }
   void setEngine1N2(FLOAT64 value) { set_named_variable_value(Engine1N2, value); }
   void setEngine2N2(FLOAT64 value) { set_named_variable_value(Engine2N2, value); }
   void setEngine1N1(FLOAT64 value) { set_named_variable_value(Engine1N1, value); }
@@ -283,6 +287,7 @@ class SimVars {
   void setPumpStateRight(FLOAT64 value) { set_named_variable_value(PumpStateRight, value); }
 
   // Collection of SimVar/LVar 'get' Functions
+  FLOAT64 getDeveloperState() { return get_named_variable_value(DevVar); }
   FLOAT64 getEngine1N2() { return get_named_variable_value(Engine1N2); }
   FLOAT64 getEngine2N2() { return get_named_variable_value(Engine2N2); }
   FLOAT64 getEngine1N1() { return get_named_variable_value(Engine1N1); }

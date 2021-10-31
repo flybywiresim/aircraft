@@ -609,16 +609,17 @@ class EngineControl {
     double fuelTotalPre = fuelLeftPre + fuelRightPre + fuelAuxLeftPre + fuelAuxRightPre + fuelCenterPre;          // LBS
     double deltaFuelRate = abs(fuelTotalActual - fuelTotalPre) / (fuelWeightGallon * deltaTime);                  // LBS/ sec
 
+    // Check Development State for UI
+    double devState = simVars->getDeveloperState();
+
     deltaTime = deltaTime / 3600;
-    // std::cout << std::scientific << "FADEC: deltaT= " << deltaTime * 3600 << " pre=" << fuelLeftPre * LBS_TO_KGS
-    //          << " actual=" << leftQuantity * LBS_TO_KGS << " diff= " << (fuelLeftPre - leftQuantity) * LBS_TO_KGS
-    //          << " diff= " << (fuelLeftPre - leftQuantity) * LBS_TO_KGS / (deltaTime * 3600) << std::flush;
-    // Pump State Logic for Left Wing
+
+    // Pump State Logic for Left Wing & tank zeroing
     if (pumpStateLeft == 0) {
-      if (fuelLeftPre > 0 && leftQuantity <= 0.01) {
+      if (fuelLeftPre - leftQuantity > 0 && leftQuantity <= 1) {
         timerLeft->reset();
         simVars->setPumpStateLeft(1);
-      } else if (fuelLeftPre == 0 && leftQuantity > 0.01) {
+      } else if (fuelLeftPre >= 0.01 && leftQuantity - fuelLeftPre > 0) {
         timerLeft->reset();
         simVars->setPumpStateLeft(2);
       } else {
@@ -626,16 +627,18 @@ class EngineControl {
       }
     } else if (pumpStateLeft == 1 && timerLeft->elapsed() >= 2100) {
       simVars->setPumpStateLeft(0);
+      timerLeft->reset();
     } else if (pumpStateLeft == 2 && timerLeft->elapsed() >= 2700) {
       simVars->setPumpStateLeft(0);
+      timerLeft->reset();
     }
 
     // Pump State Logic for Right Wing
     if (pumpStateRight == 0) {
-      if (fuelRightPre > 0 && rightQuantity <= 0.01) {
+      if (fuelRightPre > 0.01 && rightQuantity <= 0.01) {
         timerRight->reset();
         simVars->setPumpStateRight(1);
-      } else if (fuelRightPre == 0 && rightQuantity > 0.01) {
+      } else if (fuelRightPre <= 0.01 && rightQuantity > 0.01) {
         timerRight->reset();
         simVars->setPumpStateRight(2);
       } else {
@@ -651,35 +654,42 @@ class EngineControl {
     if ((refuelStartedByUser == 0 && deltaFuelRate > FUEL_THRESHOLD) ||
         (refuelStartedByUser == 1 && deltaFuelRate > FUEL_THRESHOLD && refuelRate < 2)) {
       uiFuelTamper = true;
-      std::cout << "Fadec: Tamper TRUE" << std::flush;
     }
 
     if (simPaused || uiFuelTamper) {  // Detects whether the Sim is paused or the Fuel UI is being tampered with
-      std::cout << "Fadec: PAUSED" << std::flush;
-      simVars->setFuelLeftPre(fuelLeftPre);          // in LBS
-      simVars->setFuelRightPre(fuelRightPre);        // in LBS
-      simVars->setFuelAuxLeftPre(fuelAuxLeftPre);    // in LBS
-      simVars->setFuelAuxRightPre(fuelAuxRightPre);  // in LBS
-      simVars->setFuelCenterPre(fuelCenterPre);      // in LBS
+      if (devState == 0) {
+        simVars->setFuelLeftPre(fuelLeftPre);          // in LBS
+        simVars->setFuelRightPre(fuelRightPre);        // in LBS
+        simVars->setFuelAuxLeftPre(fuelAuxLeftPre);    // in LBS
+        simVars->setFuelAuxRightPre(fuelAuxRightPre);  // in LBS
+        simVars->setFuelCenterPre(fuelCenterPre);      // in LBS
 
-      fuelLeft = (fuelLeftPre / fuelWeightGallon);          // USG
-      fuelRight = (fuelRightPre / fuelWeightGallon);        // USG
-      fuelCenter = (fuelCenterPre / fuelWeightGallon);      // USG
-      fuelLeftAux = (fuelAuxLeftPre / fuelWeightGallon);    // USG
-      fuelRightAux = (fuelAuxRightPre / fuelWeightGallon);  // USG
+        fuelLeft = (fuelLeftPre / fuelWeightGallon);          // USG
+        fuelRight = (fuelRightPre / fuelWeightGallon);        // USG
+        fuelCenter = (fuelCenterPre / fuelWeightGallon);      // USG
+        fuelLeftAux = (fuelAuxLeftPre / fuelWeightGallon);    // USG
+        fuelRightAux = (fuelAuxRightPre / fuelWeightGallon);  // USG
 
-      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelCenterMain, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double), &fuelCenter);
-      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelLeftMain, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double), &fuelLeft);
-      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelRightMain, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double), &fuelRight);
-      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelLeftAux, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double), &fuelLeftAux);
-      SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelRightAux, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double), &fuelRightAux);
+        SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelCenterMain, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
+                                      &fuelCenter);
+        SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelLeftMain, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double), &fuelLeft);
+        SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelRightMain, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double), &fuelRight);
+        SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelLeftAux, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double), &fuelLeftAux);
+        SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelRightAux, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
+                                      &fuelRightAux);
+      } else {
+        simVars->setFuelLeftPre(fuelLeftPre);          // in LBS
+        simVars->setFuelRightPre(fuelRightPre);        // in LBS
+        simVars->setFuelAuxLeftPre(fuelAuxLeftPre);    // in LBS
+        simVars->setFuelAuxRightPre(fuelAuxRightPre);  // in LBS
+        simVars->setFuelCenterPre(fuelCenterPre);      // in LBS
+      }
     } else if (!uiFuelTamper && refuelStartedByUser == 1) {  // Detects refueling from the EFB
-      std::cout << "Fadec: EFB TRUE" << std::flush;
-      simVars->setFuelLeftPre(leftQuantity);          // in LBS
-      simVars->setFuelRightPre(rightQuantity);        // in LBS
-      simVars->setFuelAuxLeftPre(leftAuxQuantity);    // in LBS
-      simVars->setFuelAuxRightPre(rightAuxQuantity);  // in LBS
-      simVars->setFuelCenterPre(centerQuantity);      // in LBS
+      simVars->setFuelLeftPre(leftQuantity);                 // in LBS
+      simVars->setFuelRightPre(rightQuantity);               // in LBS
+      simVars->setFuelAuxLeftPre(leftAuxQuantity);           // in LBS
+      simVars->setFuelAuxRightPre(rightAuxQuantity);         // in LBS
+      simVars->setFuelCenterPre(centerQuantity);             // in LBS
     } else {
       //--------------------------------------------
       // Left Engine and Wing routine
@@ -933,7 +943,9 @@ class EngineControl {
       }
     }
 
-    checkPayload();
+    // If Development State is 1, UI Payload will be enabled
+    if (simVars->getDeveloperState() == 0)
+      checkPayload();
     updateFuel(deltaTime);
     // timer.elapsed();
   }
