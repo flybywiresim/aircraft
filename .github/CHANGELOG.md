@@ -53,6 +53,10 @@
 1. [RMP] Added 25 kHz VHF spacing option - @tyler58546 (tyler58546)
 1. [MCDU] Scratchpad rewrite - @derl30n (Leon)
 1. [ATHR/ENGINE] Improved CLB thrust limit for improved FLEX N1 numbers - @aguther (Andreas Guther)
+1. [FBW] Improved roll stability in turbulence or with performance issues - @IbrahimK42 (IbrahimK42) and @aguther (Andreas Guther)
+1. [MCDU] Hide POSITION UPDATE AT field on PROG page when GPS is available - @BlueberryKing (BlueberryKing)
+1. [MCDU] Sort approaches by type - @tracernz (Mike)
+1. [FCU] Autopilot button integ light brightness corrected - @tracernz (Mike)
 1. [FLIGHT MODEL] Fixed station locations and loads consistent with real A320 W&B manual - @ghosh9691
 1. [MCDU] Boarding and W/B AOC Pages update with Simbrief Integration - @viniciusfont
 1. [MCDU] Updated boarding logic, separate loading for pax and baggage - @sidnov (Sid)
