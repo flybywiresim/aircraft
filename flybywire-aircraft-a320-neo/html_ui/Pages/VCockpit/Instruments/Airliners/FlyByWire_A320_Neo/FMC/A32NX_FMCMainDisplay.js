@@ -1292,7 +1292,9 @@ class FMCMainDisplay extends BaseAirliners {
     /* FMS CHECK ROUTINE */
 
     checkDestData() {
-        this.addNewMessage(NXSystemMessages.enterDestData);
+        this.addNewMessage(NXSystemMessages.enterDestData, () => {
+            return isFinite(this.perfApprQNH) && isFinite(this.perfApprTemp) && isFinite(this.perfApprWindHeading) && isFinite(this.perfApprWindSpeed);
+        });
     }
 
     /* END OF FMS CHECK ROUTINE */
@@ -2130,8 +2132,16 @@ class FMCMainDisplay extends BaseAirliners {
         }
     }
 
+    vSpeedsValid() {
+        return this._v1Checked && this._vRChecked && this._v2Checked ? (
+            (!!this.v1Speed && !!this.vRSpeed ? this.v1Speed <= this.vRSpeed : true)
+            && (!!this.vRSpeed && !!this.v2Speed ? this.vRSpeed <= this.v2Speed : true)
+            && (!!this.v1Speed && !!this.v2Speed ? this.v1Speed <= this.v2Speed : true)
+        ) : true;
+    }
+
     vSpeedDisagreeCheck() {
-        this.addNewMessage(NXSystemMessages.vToDisagree);
+        this.addNewMessage(NXSystemMessages.vToDisagree, this.vSpeedsValid.bind(this));
     }
 
     //Needs PR Merge #3082
@@ -3495,10 +3505,18 @@ class FMCMainDisplay extends BaseAirliners {
         if (EFOBBelMin < this._minDestFob) {
             if (this.isAnEngineOn()) {
                 setTimeout(() => {
-                    this.addNewMessage(NXSystemMessages.destEfobBelowMin);
+                    this.addNewMessage(NXSystemMessages.destEfobBelowMin, () => {
+                        return this._EfobBelowMinClr === true;
+                    }, () => {
+                        this._EfobBelowMinClr = true;
+                    });
                 }, 180000);
             } else {
-                this.addNewMessage(NXSystemMessages.destEfobBelowMin);
+                this.addNewMessage(NXSystemMessages.destEfobBelowMin, () => {
+                    return this._EfobBelowMinClr === true;
+                }, () => {
+                    this._EfobBelowMinClr = true;
+                });
             }
         }
     }
