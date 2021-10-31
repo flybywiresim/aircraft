@@ -42,12 +42,16 @@
             <UseTemplate Name="FBW_MULTI_FUNCTION_CONTROL_DISPLAY_UNIT_Template">
                 <SIDE>L</SIDE>
                 <DISPLAY_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</DISPLAY_POWERED>
+                <!-- annunciators powered by transformer 37LP via C/B 26LP -->
+                <ANNUNC_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</ANNUNC_POWERED>
                 <!-- TODO: to be removed when MCDU is refactored. -->
                 <SIDE_NUMERIC>1</SIDE_NUMERIC>
             </UseTemplate>
             <UseTemplate Name="FBW_MULTI_FUNCTION_CONTROL_DISPLAY_UNIT_Template">
                 <SIDE>R</SIDE>
                 <DISPLAY_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</DISPLAY_POWERED>
+                <!-- annunciators powered by transformer 36LP via C/B 27LP -->
+                <ANNUNC_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</ANNUNC_POWERED>
                 <!-- TODO: to be removed when MCDU is refactored. -->
                 <SIDE_NUMERIC>2</SIDE_NUMERIC>
             </UseTemplate>
@@ -2446,12 +2450,14 @@
                 <Component ID="Overhead_Handling">
                     <UseTemplate Name="FBW_Push_Held">
                         <NODE_ID>PUSH_OVHD_RAINRPLNTL</NODE_ID>
-                        <HOLD_SIMVAR>L:A32NX_RAIN_REPELLENT_LEFT_ON</HOLD_SIMVAR>
+                        <!-- Model has buttons exchanged -->
+                        <HOLD_SIMVAR>L:A32NX_RAIN_REPELLENT_RIGHT_ON</HOLD_SIMVAR>
                         <TOOLTIPID>Dispense rain repellent (Inop.)</TOOLTIPID>
                     </UseTemplate>
                     <UseTemplate Name="FBW_Push_Held">
                         <NODE_ID>PUSH_OVHD_RAINRPNLTR</NODE_ID>
-                        <HOLD_SIMVAR>L:A32NX_RAIN_REPELLENT_RIGHT_ON</HOLD_SIMVAR>
+                        <!-- Model has buttons exchanged -->
+                        <HOLD_SIMVAR>L:A32NX_RAIN_REPELLENT_LEFT_ON</HOLD_SIMVAR>
                         <TOOLTIPID>Dispense rain repellent (Inop.)</TOOLTIPID>
                     </UseTemplate>
                     <UseTemplate Name="FBW_Airbus_Wiper_Knob">
@@ -2983,7 +2989,7 @@
                         <UseTemplate Name="FBW_Continuous_Knob_Limited_From_Simvar">
                             <NODE_ID>KNOB_OVHD_CABINPRESS_LDGELEV</NODE_ID>
                             <ANIM_SIMVAR_MAX>88</ANIM_SIMVAR_MAX>
-                            <LOCAL_SIMVAR>L:A32NX_LANDING_ELEVATION</LOCAL_SIMVAR>
+                            <LOCAL_SIMVAR>L:A32NX_OVHD_PRESS_LDG_ELEV_KNOB</LOCAL_SIMVAR>
                             <LOCAL_SIMVAR_UNITS>feet</LOCAL_SIMVAR_UNITS>
                             <INCREMENT>0.5</INCREMENT>
                             <CONVERSION_FORMULA>193.182 * 2000 -</CONVERSION_FORMULA>
@@ -2993,17 +2999,18 @@
 
                     <UseTemplate Name="FBW_3State_Springloaded_Switch">
                         <NODE_ID>SWITCH_OVHD_CABINPRESS_MANVSCTL</NODE_ID>
-                        <ANIM_SIMVAR>L:A32NX_MAN_VS_CONTROL</ANIM_SIMVAR>
+                        <ANIM_SIMVAR>L:A32NX_OVHD_PRESS_MAN_VS_CTL_SWITCH</ANIM_SIMVAR>
                         <INVERT_ANIM>1</INVERT_ANIM>
                     </UseTemplate>
 
                     <!-- MODE SEL -->
                     <UseTemplate Name="FBW_Push_Toggle">
                         <NODE_ID>PUSH_OVHD_CABINPRESS_MODESEL</NODE_ID>
-                        <TOGGLE_SIMVAR>L:A32NX_CAB_PRESS_MODE_MAN</TOGGLE_SIMVAR>
+                        <TOGGLE_SIMVAR>L:A32NX_OVHD_PRESS_MODE_SEL_PB_IS_AUTO</TOGGLE_SIMVAR>
+                        <DOWN_CODE>(L:A32NX_OVHD_PRESS_MODE_SEL_PB_IS_AUTO, Bool) !</DOWN_CODE>
                         <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_STAT_INV_BUS_IS_POWERED, Bool) or</SEQ_POWERED>
-                        <SEQ1_CODE>(L:A32NX_CAB_PRESS_SYS_FAULT)</SEQ1_CODE>
-                        <SEQ2_CODE>(L:A32NX_CAB_PRESS_MODE_MAN)</SEQ2_CODE>
+                        <SEQ1_CODE>(L:A32NX_OVHD_PRESS_MODE_SEL_PB_HAS_FAULT)</SEQ1_CODE>
+                        <SEQ2_CODE>(L:A32NX_OVHD_PRESS_MODE_SEL_PB_IS_AUTO) !</SEQ2_CODE>
                         <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                         <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
                         <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
@@ -3012,9 +3019,9 @@
                     <UseTemplate Name="FBW_Covered_Push_Toggle">
                         <NODE_ID>PUSH_OVHD_CABINPRESS_DITCHING</NODE_ID>
                         <LOCK_NODE_ID>LOCK_OVHD_CABINPRESS_DITCHING</LOCK_NODE_ID>
-                        <TOGGLE_SIMVAR>L:A32NX_DITCHING</TOGGLE_SIMVAR>
+                        <TOGGLE_SIMVAR>L:A32NX_OVHD_PRESS_DITCHING_PB_IS_ON</TOGGLE_SIMVAR>
                         <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_STAT_INV_BUS_IS_POWERED, Bool) or</SEQ_POWERED>
-                        <SEQ2_CODE>(L:A32NX_DITCHING)</SEQ2_CODE>
+                        <SEQ2_CODE>(L:A32NX_OVHD_PRESS_DITCHING_PB_IS_ON)</SEQ2_CODE>
                         <NO_SEQ1 />
                     </UseTemplate>
                 </Component>

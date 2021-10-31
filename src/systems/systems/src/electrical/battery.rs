@@ -1,15 +1,17 @@
+use uom::si::{
+    electric_charge::ampere_hour, electric_current::ampere, electric_potential::volt,
+    electrical_resistance::ohm, f64::*, time::second,
+};
+
+use crate::{
+    shared::{ConsumePower, PowerConsumptionReport},
+    simulation::{InitContext, SimulationElement, SimulatorWriter, UpdateContext},
+};
+
 use super::{
     ElectricalElement, ElectricalElementIdentifier, ElectricalElementIdentifierProvider,
     ElectricalStateWriter, ElectricitySource, Potential, PotentialOrigin, ProvideCurrent,
     ProvidePotential,
-};
-use crate::{
-    shared::{ConsumePower, PowerConsumptionReport},
-    simulation::{SimulationElement, SimulatorWriter, UpdateContext},
-};
-use uom::si::{
-    electric_charge::ampere_hour, electric_current::ampere, electric_potential::volt,
-    electrical_resistance::ohm, f64::*, time::second,
 };
 
 pub struct Battery {
@@ -24,48 +26,31 @@ pub struct Battery {
 impl Battery {
     const RATED_CAPACITY_AMPERE_HOURS: f64 = 23.;
 
-    pub fn full(
-        number: usize,
-        identifier_provider: &mut impl ElectricalElementIdentifierProvider,
-    ) -> Battery {
+    pub fn full(context: &mut InitContext, number: usize) -> Battery {
         Battery::new(
+            context,
             number,
             ElectricCharge::new::<ampere_hour>(Battery::RATED_CAPACITY_AMPERE_HOURS),
-            identifier_provider,
         )
     }
 
-    pub fn half(
-        number: usize,
-        identifier_provider: &mut impl ElectricalElementIdentifierProvider,
-    ) -> Battery {
+    pub fn half(context: &mut InitContext, number: usize) -> Battery {
         Battery::new(
+            context,
             number,
             ElectricCharge::new::<ampere_hour>(Battery::RATED_CAPACITY_AMPERE_HOURS / 2.),
-            identifier_provider,
         )
     }
 
-    pub fn empty(
-        number: usize,
-        identifier_provider: &mut impl ElectricalElementIdentifierProvider,
-    ) -> Battery {
-        Battery::new(
-            number,
-            ElectricCharge::new::<ampere_hour>(0.),
-            identifier_provider,
-        )
+    pub fn empty(context: &mut InitContext, number: usize) -> Battery {
+        Battery::new(context, number, ElectricCharge::new::<ampere_hour>(0.))
     }
 
-    pub fn new(
-        number: usize,
-        charge: ElectricCharge,
-        identifier_provider: &mut impl ElectricalElementIdentifierProvider,
-    ) -> Self {
+    pub fn new(context: &mut InitContext, number: usize, charge: ElectricCharge) -> Self {
         Self {
             number,
-            identifier: identifier_provider.next(),
-            writer: ElectricalStateWriter::new(&format!("BAT_{}", number)),
+            identifier: context.next_electrical_identifier(),
+            writer: ElectricalStateWriter::new(context, &format!("BAT_{}", number)),
             charge,
             input_potential: ElectricPotential::new::<volt>(0.),
             output_potential: Battery::calculate_output_potential_for_charge(charge),
@@ -241,6 +226,8 @@ mod tests {
     #[cfg(test)]
     mod battery_tests {
         use super::*;
+        use crate::simulation::test::ReadByName;
+        use crate::simulation::InitContext;
         use crate::{
             electrical::{
                 consumption::PowerConsumer, test::TestElectricitySource, Contactor, ElectricalBus,
@@ -248,7 +235,7 @@ mod tests {
             },
             simulation::{
                 test::{SimulationTestBed, TestBed},
-                Aircraft, Read, SimulationElementVisitor, UpdateContext,
+                Aircraft, SimulationElementVisitor, UpdateContext,
             },
         };
         use std::time::Duration;
@@ -260,11 +247,11 @@ mod tests {
         impl BatteryTestBed {
             fn with_full_batteries() -> Self {
                 Self {
-                    test_bed: SimulationTestBed::new(|electricity| {
+                    test_bed: SimulationTestBed::new(|context| {
                         TestAircraft::new(
-                            Battery::full(1, electricity),
-                            Battery::full(2, electricity),
-                            electricity,
+                            Battery::full(context, 1),
+                            Battery::full(context, 2),
+                            context,
                         )
                     }),
                 }
@@ -272,11 +259,11 @@ mod tests {
 
             fn with_half_charged_batteries() -> Self {
                 Self {
-                    test_bed: SimulationTestBed::new(|electricity| {
+                    test_bed: SimulationTestBed::new(|context| {
                         TestAircraft::new(
-                            Battery::half(1, electricity),
-                            Battery::half(2, electricity),
-                            electricity,
+                            Battery::half(context, 1),
+                            Battery::half(context, 2),
+                            context,
                         )
                     }),
                 }
@@ -284,11 +271,11 @@ mod tests {
 
             fn with_nearly_empty_batteries() -> Self {
                 Self {
-                    test_bed: SimulationTestBed::new(|electricity| {
+                    test_bed: SimulationTestBed::new(|context| {
                         TestAircraft::new(
-                            Battery::new(1, ElectricCharge::new::<ampere_hour>(0.001), electricity),
-                            Battery::new(2, ElectricCharge::new::<ampere_hour>(0.001), electricity),
-                            electricity,
+                            Battery::new(context, 1, ElectricCharge::new::<ampere_hour>(0.001)),
+                            Battery::new(context, 2, ElectricCharge::new::<ampere_hour>(0.001)),
+                            context,
                         )
                     }),
                 }
@@ -296,11 +283,11 @@ mod tests {
 
             fn with_nearly_empty_dissimilarly_charged_batteries() -> Self {
                 Self {
-                    test_bed: SimulationTestBed::new(|electricity| {
+                    test_bed: SimulationTestBed::new(|context| {
                         TestAircraft::new(
-                            Battery::new(1, ElectricCharge::new::<ampere_hour>(0.002), electricity),
-                            Battery::new(2, ElectricCharge::new::<ampere_hour>(0.001), electricity),
-                            electricity,
+                            Battery::new(context, 1, ElectricCharge::new::<ampere_hour>(0.002)),
+                            Battery::new(context, 2, ElectricCharge::new::<ampere_hour>(0.001)),
+                            context,
                         )
                     }),
                 }
@@ -308,11 +295,11 @@ mod tests {
 
             fn with_full_and_empty_battery() -> Self {
                 Self {
-                    test_bed: SimulationTestBed::new(|electricity| {
+                    test_bed: SimulationTestBed::new(|context| {
                         TestAircraft::new(
-                            Battery::full(1, electricity),
-                            Battery::empty(2, electricity),
-                            electricity,
+                            Battery::full(context, 1),
+                            Battery::empty(context, 2),
+                            context,
                         )
                     }),
                 }
@@ -320,30 +307,30 @@ mod tests {
 
             fn with_empty_batteries() -> Self {
                 Self {
-                    test_bed: SimulationTestBed::new(|electricity| {
+                    test_bed: SimulationTestBed::new(|context| {
                         TestAircraft::new(
-                            Battery::empty(1, electricity),
-                            Battery::empty(2, electricity),
-                            electricity,
+                            Battery::empty(context, 1),
+                            Battery::empty(context, 2),
+                            context,
                         )
                     }),
                 }
             }
 
             fn current_is_normal(&mut self, number: usize) -> bool {
-                self.read(&format!("ELEC_BAT_{}_CURRENT_NORMAL", number))
+                self.read_by_name(&format!("ELEC_BAT_{}_CURRENT_NORMAL", number))
             }
 
             fn current(&mut self, number: usize) -> ElectricCurrent {
-                self.read(&format!("ELEC_BAT_{}_CURRENT", number))
+                self.read_by_name(&format!("ELEC_BAT_{}_CURRENT", number))
             }
 
             fn potential_is_normal(&mut self, number: usize) -> bool {
-                self.read(&format!("ELEC_BAT_{}_POTENTIAL_NORMAL", number))
+                self.read_by_name(&format!("ELEC_BAT_{}_POTENTIAL_NORMAL", number))
             }
 
             fn potential(&mut self, number: usize) -> ElectricPotential {
-                self.read(&format!("ELEC_BAT_{}_POTENTIAL", number))
+                self.read_by_name(&format!("ELEC_BAT_{}_POTENTIAL", number))
             }
         }
         impl TestBed for BatteryTestBed {
@@ -369,20 +356,17 @@ mod tests {
             battery_consumption: Power,
         }
         impl TestAircraft {
-            fn new(battery_1: Battery, battery_2: Battery, electricity: &mut Electricity) -> Self {
+            fn new(battery_1: Battery, battery_2: Battery, context: &mut InitContext) -> Self {
                 let mut aircraft = Self {
                     electricity_source: TestElectricitySource::unpowered(
+                        context,
                         PotentialOrigin::TransformerRectifier(1),
-                        electricity,
                     ),
                     battery_1,
                     battery_2,
-                    bat_bus: ElectricalBus::new(
-                        ElectricalBusType::DirectCurrentBattery,
-                        electricity,
-                    ),
-                    battery_1_contactor: Contactor::new("BAT1", electricity),
-                    battery_2_contactor: Contactor::new("BAT2", electricity),
+                    bat_bus: ElectricalBus::new(context, ElectricalBusType::DirectCurrentBattery),
+                    battery_1_contactor: Contactor::new(context, "BAT1"),
+                    battery_2_contactor: Contactor::new(context, "BAT2"),
                     consumer: PowerConsumer::from(ElectricalBusType::DirectCurrentBattery),
                     battery_consumption: Power::new::<watt>(0.),
                 };

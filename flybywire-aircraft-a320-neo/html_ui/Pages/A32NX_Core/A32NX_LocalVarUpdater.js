@@ -9,7 +9,7 @@ const FLAPS_IN_MOTION_MIN_DELTA = 0.1;
 class A32NX_LocalVarUpdater {
     constructor() {
         // Initial data for deltas
-        this.lastFlapsPosition = SimVar.GetSimVarValue("L:A32NX_LEFT_FLAPS_POSITION_PERCENT", "Percent");
+        this.lastFlapsPosition = SimVar.GetSimVarValue("TRAILING EDGE FLAPS LEFT PERCENT", "percent");
         // track which compartment has gotten temperature initialization
         this.initializedCabinTemp = {
             "CKPT":false,
@@ -80,9 +80,15 @@ class A32NX_LocalVarUpdater {
                 refreshInterval: 50,
             },
             {
-                varName: "L:32NX_PACKS_1_IS_SUPPLYING",
+                varName: "L:A32NX_PACKS_1_IS_SUPPLYING",
                 type: "Bool",
                 selector: this._isPacksOneSupplying.bind(this),
+                refreshInterval: 1000,
+            },
+            {
+                varName: "L:A32NX_PACKS_2_IS_SUPPLYING",
+                type: "Bool",
+                selector: this._isPacksTwoSupplying.bind(this),
                 refreshInterval: 1000,
             },
             {
@@ -191,7 +197,7 @@ class A32NX_LocalVarUpdater {
     }
 
     _flapsInMotionSelector() {
-        const currentFlapsPosition = SimVar.GetSimVarValue("L:A32NX_LEFT_FLAPS_POSITION_PERCENT", "Percent");
+        const currentFlapsPosition = SimVar.GetSimVarValue("TRAILING EDGE FLAPS LEFT PERCENT", "percent");
         const lastFlapsPosition = this.lastFlapsPosition;
 
         this.lastFlapsPosition = currentFlapsPosition;
@@ -221,7 +227,32 @@ class A32NX_LocalVarUpdater {
          */
         const packOneHasAir = engineModeSelector === 1 || (isEngineOneRunning && isEngineTwoRunning) ? isApuDelivering || isEngineOneDelivering || (isEngineTwoDelivering && isXBleedOpen) : false;
 
-        return packOneHasAir && SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK1_TOGGLE", "Bool");
+        return packOneHasAir && SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK1_TOGGLE", "Bool") && !SimVar.GetSimVarValue("L:A32NX_OVHD_PRESS_DITCHING_PB_IS_ON", "Bool");
+    }
+
+    _isPacksTwoSupplying() {
+        const xBleedPos = SimVar.GetSimVarValue("L:A32NX_KNOB_OVHD_AIRCOND_XBLEED_Position", "number");
+        const engineModeSelector = SimVar.GetSimVarValue("L:XMLVAR_ENG_MODE_SEL", "Enum");
+
+        const engineOneState = SimVar.GetSimVarValue("L:A32NX_ENGINE_STATE:1", "number");
+        const engineTwoState = SimVar.GetSimVarValue("L:A32NX_ENGINE_STATE:2", "number");
+
+        const isEngineOneRunning = engineOneState === 1 || (engineOneState === 2 && SimVar.GetSimVarValue("L:A32NX_ENGINE_N1:1", "number") >= 18);
+        const isEngineTwoRunning = engineTwoState === 1 || (engineTwoState === 2 && SimVar.GetSimVarValue("L:A32NX_ENGINE_N1:2", "number") >= 18);
+
+        // As this function is used for sound effects, we use the raw APU N instead of the arinc 429 APU N.
+        const isApuDelivering = SimVar.GetSimVarValue("L:A32NX_APU_N_RAW", "Percent") >= 95 && SimVar.GetSimVarValue("L:A32NX_APU_BLEED_AIR_VALVE_OPEN", "Bool") && engineModeSelector === 1;
+        const isEngineOneDelivering = isEngineOneRunning && SimVar.GetSimVarValue("BLEED AIR ENGINE:1", "Bool");
+        const isEngineTwoDelivering = isEngineTwoRunning && SimVar.GetSimVarValue("BLEED AIR ENGINE:2", "Bool");
+
+        const isXBleedOpen = xBleedPos === 2 || (xBleedPos === 1 && (isApuDelivering || engineModeSelector !== 1));
+
+        /**
+         * Whether engine mode selector is set to norm or both engines are running -> return packsTwoHasSupply state; otherwise return false
+         */
+        const packTwoHasAir = engineModeSelector === 1 || (isEngineOneRunning && isEngineTwoRunning) ? isApuDelivering || isEngineTwoDelivering || (isEngineOneDelivering && isXBleedOpen) : false;
+
+        return packTwoHasAir && SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK2_TOGGLE", "Bool") && !SimVar.GetSimVarValue("L:A32NX_OVHD_PRESS_DITCHING_PB_IS_ON", "Bool");
     }
 
     _areSlidesArmed() {
