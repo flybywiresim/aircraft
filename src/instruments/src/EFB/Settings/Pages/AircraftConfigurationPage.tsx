@@ -38,7 +38,7 @@ export const AircraftConfigurationPage = () => {
     ];
 
     return (
-        <div className="bg-navy-lighter rounded-xl px-6 divide-y divide-gray-700 flex flex-col">
+        <div className="bg-navy-lighter rounded-xl px-6 divide-y-2 divide-gray-700 flex flex-col">
             <div className="py-4 flex-grow flex flex-row justify-between items-center">
                 <span className="text-lg text-gray-300 mr-1">Weight Unit</span>
                 <SelectGroup>

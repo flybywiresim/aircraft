@@ -133,7 +133,7 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
         <div className="flex flex-row">
             {vertical && (
                 <div
-                    className="text-xl mr-2 text-white"
+                    className="mr-2 text-xl"
                     style={vertical
                         ? { marginTop: `${formatBar(completedBarBegin + 2 || 0)}`, width: fillerStyles.width } : { marginLeft: `${formatBar(completedBarBegin || 0)}` }}
                 >
@@ -143,13 +143,13 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
             <div className={`mt-2 ${!vertical ? 'mr-2' : ''}`}>
 
                 <div
-                    className={`text-white ${displayBar ? getBarStyle() : 'hidden'}`}
+                    className={` ${displayBar ? getBarStyle() : 'hidden'}`}
                     style={vertical
                         ? { marginTop: `${formatBar(completedBarBegin || 0)}`, width: fillerStyles.width } : { marginLeft: `${formatBar(completedBarBegin || 0)}` }}
                 />
 
                 <div
-                    className={`text-white ${displayBar ? getBarStyle() : 'hidden'}`}
+                    className={` ${displayBar ? getBarStyle() : 'hidden'}`}
                     style={vertical
                         ? { marginTop: `${formatBar(completedBarEnd || 0)}`, width: fillerStyles.width } : { marginLeft: `${formatBar(completedBarEnd || 0)}` }}
                 />
@@ -172,7 +172,7 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
             </div>
             {vertical && (
                 <div
-                    className="text-xl ml-2 text-white"
+                    className="ml-2 text-xl"
                     style={vertical
                         ? { marginTop: `${formatBar(completedBarEnd + 2 || 0)}`, width: fillerStyles.width } : { marginLeft: `${formatBar(completedBarEnd || 0)}` }}
                 >

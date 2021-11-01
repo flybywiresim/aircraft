@@ -16,7 +16,7 @@ export const Performance = () => {
     return (
         <div className="w-full">
             <div className="relative">
-                <h1 className="font-bold text-white">Performance</h1>
+                <h1 className="font-bold ">Performance</h1>
                 <Navbar className="absolute top-0 right-0" tabs={map(tabs, 'name')} onSelected={(activeIndex) => setActiveIndex(activeIndex)} />
             </div>
             <div className="mt-6">

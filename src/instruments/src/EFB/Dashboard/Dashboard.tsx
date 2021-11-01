@@ -8,7 +8,7 @@ export const Dashboard = () => {
 
     return (
         <div className="w-full">
-            <h1 className="text-white">Dashboard</h1>
+            <h1>Dashboard</h1>
             <div className="flex mt-4 w-full h-efb">
                 <FlightWidget />
                 <div className="flex flex-col w-3/5">

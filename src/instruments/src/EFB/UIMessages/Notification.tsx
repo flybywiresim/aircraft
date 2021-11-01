@@ -1,13 +1,13 @@
-import React, {FC, useRef, useState} from 'react'
+import React, { FC, useRef, useState } from 'react';
 
-import { InfoCircle, CheckCircle, ExclamationCircle, ExclamationOctagon } from 'react-bootstrap-icons'
-import {useUIMessages} from "./Provider";
+import { InfoCircle, CheckCircle, ExclamationCircle, ExclamationOctagon } from 'react-bootstrap-icons';
+import { useUIMessages } from './Provider';
 
-export enum NotificationTypes  {
-    INFO = "INFO",
-    SUCCESS = "SUCCESS",
-    WARNING = "WARNING",
-    ERROR = "ERROR"
+export enum NotificationTypes {
+    INFO = 'INFO',
+    SUCCESS = 'SUCCESS',
+    WARNING = 'WARNING',
+    ERROR = 'ERROR'
 }
 
 type NotificationProps = {
@@ -16,7 +16,7 @@ type NotificationProps = {
     message?: string
 }
 
-export const Notification: FC<NotificationProps> = ({type, title, message, children}) => {
+export const Notification: FC<NotificationProps> = ({ type, title, message, children }) => {
     const ref = useRef<HTMLDivElement>(null);
 
     const uiMessages = useUIMessages();
@@ -24,44 +24,45 @@ export const Notification: FC<NotificationProps> = ({type, title, message, child
     let icon: JSX.Element;
 
     switch (type) {
-        case NotificationTypes.INFO:
-            icon = <InfoCircle size={40}/>
-            break;
-        case NotificationTypes.SUCCESS:
-            icon = <CheckCircle size={40}/>
-            break;
-        case NotificationTypes.WARNING:
-            icon = <ExclamationCircle size={40}/>
-            break;
-        case NotificationTypes.ERROR:
-            icon = <ExclamationOctagon size={40}/>
-            break;
-        default:
-            icon = <InfoCircle size={40}/>
-            break;
+    case NotificationTypes.INFO:
+        icon = <InfoCircle size={40} />;
+        break;
+    case NotificationTypes.SUCCESS:
+        icon = <CheckCircle size={40} />;
+        break;
+    case NotificationTypes.WARNING:
+        icon = <ExclamationCircle size={40} />;
+        break;
+    case NotificationTypes.ERROR:
+        icon = <ExclamationOctagon size={40} />;
+        break;
+    default:
+        icon = <InfoCircle size={40} />;
+        break;
     }
 
     function pauseAnimation() {
-        if(ref.current){
+        if (ref.current) {
             ref.current.style.animationPlayState = 'paused';
         }
     }
 
     function unpauseAnimation() {
-        if(ref.current) {
+        if (ref.current) {
             ref.current.style.animationPlayState = 'running';
         }
     }
 
     return (
+        // eslint-disable-next-line jsx-a11y/mouse-events-have-key-events
         <div
-            className="absolute overflow-hidden rounded-lg border-2 border-navy-lighter bg-navy-regular flex items-stretch drop max-h-96 pointer-events-auto"
+            className="flex overflow-hidden absolute items-stretch max-h-96 rounded-lg border-2 pointer-events-auto border-theme-accent bg-theme-body drop"
             onMouseOver={() => pauseAnimation()}
             onMouseLeave={() => unpauseAnimation()}
             onAnimationEnd={() => uiMessages.popNotification()}
             ref={ref}
         >
-            <div className="flex items-center justify-center bg-navy-lightest w-24 text-teal-regular">
+            <div className="flex justify-center items-center w-24 bg-theme-accent text-theme-highlight">
                 {icon}
             </div>
 
@@ -72,11 +73,11 @@ export const Notification: FC<NotificationProps> = ({type, title, message, child
                 {children}
             </div>
         </div>
-    )
-}
+    );
+};
 
 export const NotificationsContainer: FC = ({ children }) => (
-    <div className="absolute w-full h-full flex flex-row justify-center z-40 pointer-events-none">
+    <div className="flex absolute z-40 flex-row justify-center w-full h-full pointer-events-none">
         {children}
     </div>
 );

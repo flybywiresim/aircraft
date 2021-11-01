@@ -69,10 +69,10 @@ const Loading = () => {
 
     return (
         <div className="flex flex-col justify-center items-center">
-            <p className="text-xl text-white">Loading...</p>
+            <p className="text-xl ">Loading...</p>
             <button
                 type="button"
-                className="flex justify-center items-center p-2 mt-6 w-64 text-white rounded-lg focus:outline-none bg-teal-light"
+                className="flex justify-center items-center p-2 mt-6 w-64 rounded-lg focus:outline-none bg-teal-light"
                 onClick={handleResetRefreshToken}
             >
                 Reset Navigraph Authentication
@@ -93,9 +93,9 @@ const AuthUi = () => {
     }, (navigraph.auth.interval * 1000));
 
     return (
-        <div className="flex overflow-x-hidden justify-center items-center p-6 w-full text-white rounded-2xl shadow-lg h-efb bg-navy-lighter">
+        <div className="flex overflow-x-hidden justify-center items-center p-6 w-full rounded-lg shadow-lg h-efb bg-theme-secondary">
             <div className="flex flex-col">
-                <p className="flex justify-center items-center mb-6 text-2xl text-white">
+                <p className="flex justify-center items-center mb-6 text-2xl">
                     <IconLock className="mr-2" size={24} stroke={1.5} strokeLinejoin="miter" />
                     Authenticate with
                     {' '}
@@ -110,12 +110,12 @@ const AuthUi = () => {
                                     size={400}
                                 />
                             </div>
-                            <p className="mt-8 mr-auto ml-auto w-2/3 text-xl text-center text-white">
+                            <p className="mt-8 mr-auto ml-auto w-2/3 text-xl text-center ">
                                 Scan the QR Code or open '
                                 <span className="text-teal-regular">{navigraph.auth.link}</span>
                                 ' into your browser and enter the code below
                             </p>
-                            <h1 className="py-2 px-4 mt-4 mr-auto ml-auto text-center text-white rounded-md bg-navy-medium">{navigraph.auth.code}</h1>
+                            <h1 className="py-2 px-4 mt-4 mr-auto ml-auto text-center rounded-md bg-navy-medium">{navigraph.auth.code}</h1>
                         </>
                     )
                     : <Loading />}
@@ -277,7 +277,7 @@ const NavigraphChartSelector = (props: NavigraphChartSelectorProps) => {
                 ? (
                     <>
                         {organizedCharts.map((item) => (
-                            <div className="flex flex-col pb-2 mr-4 text-lg rounded-2xl divide-y divide-gray-700 bg-navy-lighter" key={item.name}>
+                            <div className="flex flex-col pb-2 mr-4 text-lg rounded-2xl divide-gray-700 divide-y-2-2 bg-navy-lighter" key={item.name}>
                                 <span className="p-1 text-center bg-gray-700 rounded-t-lg">{item.name}</span>
                                 {item.charts.map((chart) => (
                                     <div
@@ -442,7 +442,7 @@ const ChartsUi = (props: ChartsUiProps) => {
     };
 
     return (
-        <div className="flex overflow-x-hidden flex-row mr-4 w-full text-white rounded-2xl shadow-lg h-efb bg-navy-medium">
+        <div className="flex overflow-x-hidden flex-row mr-4 w-full rounded-2xl shadow-lg h-efb bg-navy-medium">
             {!isFullscreen
                 ? (
                     <>
@@ -465,7 +465,7 @@ const ChartsUi = (props: ChartsUiProps) => {
                                     {organizedCharts.map((organizedChart) => (organizedChart.name === selectedTab.name
                                         ? (
                                             <span
-                                                className={`flex items-center px-4 py-2 text-white bg-white bg-opacity-5 rounded-lg ${organizedChart.name === 'REF' ? '' : 'mr-2'}`}
+                                                className={`flex items-center px-4 py-2  bg-white bg-opacity-5 rounded-lg ${organizedChart.name === 'REF' ? '' : 'mr-2'}`}
                                                 onClick={() => setSelectedTab(organizedChart)}
                                                 key={organizedChart.name}
                                             >
@@ -474,7 +474,7 @@ const ChartsUi = (props: ChartsUiProps) => {
                                         )
                                         : (
                                             <span
-                                                className={`flex items-center px-4 py-2 text-white hover:bg-white hover:bg-opacity-5 transition
+                                                className={`flex items-center px-4 py-2  hover:bg-white hover:bg-opacity-5 transition
                                                 duration-300 rounded-lg ${organizedChart.name === 'REF' ? '' : 'mr-2'}`}
                                                 onClick={() => setSelectedTab(organizedChart)}
                                                 key={organizedChart.name}
@@ -556,8 +556,8 @@ const NavigraphNav = (props: ChartsUiProps) => (
                         </>
                     )
                     : (
-                        <div className="flex overflow-x-hidden justify-center items-center mr-4 w-full rounded-2xl shadow-lg h-efb bg-navy-lighter">
-                            <p className="pt-6 mb-6 text-3xl text-white">Insufficient .env file</p>
+                        <div className="flex overflow-x-hidden justify-center items-center mr-4 w-full rounded-lg shadow-lg h-efb bg-theme-secondary">
+                            <p className="pt-6 mb-6 text-3xl ">Insufficient .env file</p>
                         </div>
                     )}
             </>
@@ -599,7 +599,7 @@ export const Navigation = () => {
     return (
         <div className="w-full h-full">
             <div className="flex">
-                <h1 className="mb-6 text-white">Navigation & Charts</h1>
+                <h1 className="mb-6 ">Navigation & Charts</h1>
             </div>
             {enableNavigraph
                 ? (

@@ -229,11 +229,11 @@ export const FuelPage = () => {
     );
 
     return (
-        <div className="text-white mt-6 h-efb-nav flex flex-col justify-between">
+        <div className="flex flex-col justify-between mt-6 h-efb-nav">
             <div className="z-40">
                 <div className="flex flex-row w-full">
-                    <div className="w-1/3 mr-3">
-                        <div className="bg-navy-lighter rounded-2xl p-6 text-white overflow-x-hidden">
+                    <div className="mr-3 w-1/3">
+                        <div className="overflow-x-hidden p-6 rounded-2xl bg-navy-lighter">
                             <h2 className="text-2xl font-medium">Left Inner Tank</h2>
                             <div className="flex mt-4">
                                 <ProgressBar
@@ -246,7 +246,7 @@ export const FuelPage = () => {
                                     completed={(Math.max(LInnCurrent, 0) / innerCellGallon) * 100}
                                 />
                                 <div className="fuel-label">
-                                    <label className="fuel-content-label text-base" htmlFor="fuel-label">
+                                    <label className="text-base fuel-content-label" htmlFor="fuel-label">
                                         {convertFuelValue(LInnCurrent)}
                                         /
                                         {round(innerCell())}
@@ -257,8 +257,8 @@ export const FuelPage = () => {
                             </div>
                         </div>
                     </div>
-                    <div className="w-1/3 mx-3">
-                        <div className="bg-navy-lighter rounded-2xl p-6 text-white overflow-x-hidden">
+                    <div className="mx-3 w-1/3">
+                        <div className="overflow-x-hidden p-6 rounded-2xl bg-navy-lighter">
                             <h2 className="text-2xl font-medium">Center Tank</h2>
                             <div className="flex mt-4">
                                 <ProgressBar
@@ -271,7 +271,7 @@ export const FuelPage = () => {
                                     completed={(Math.max(centerCurrent, 0) / centerTankGallon) * 100}
                                 />
                                 <div className="fuel-label">
-                                    <label className="fuel-content-label text-base" htmlFor="fuel-label">
+                                    <label className="text-base fuel-content-label" htmlFor="fuel-label">
                                         {convertFuelValueCenter(centerCurrent)}
                                         /
                                         {round(centerTank())}
@@ -282,8 +282,8 @@ export const FuelPage = () => {
                             </div>
                         </div>
                     </div>
-                    <div className="w-1/3 ml-3">
-                        <div className="bg-navy-lighter rounded-2xl p-6 text-white overflow-x-hidden">
+                    <div className="ml-3 w-1/3">
+                        <div className="overflow-x-hidden p-6 rounded-2xl bg-navy-lighter">
                             <h2 className="text-2xl font-medium">Right Inner Tank</h2>
                             <div className="flex mt-4">
                                 <ProgressBar
@@ -296,7 +296,7 @@ export const FuelPage = () => {
                                     completed={(Math.max(RInnCurrent, 0) / innerCellGallon) * 100}
                                 />
                                 <div className="fuel-label">
-                                    <label className="fuel-content-label text-base" htmlFor="fuel-label">
+                                    <label className="text-base fuel-content-label" htmlFor="fuel-label">
                                         {convertFuelValue(RInnCurrent)}
                                         /
                                         {round(innerCell())}
@@ -308,9 +308,9 @@ export const FuelPage = () => {
                         </div>
                     </div>
                 </div>
-                <div className="flex flex-row w-full mt-6">
-                    <div className="w-4/12 mr-3">
-                        <div className="bg-navy-lighter rounded-2xl p-6 text-white overflow-x-hidden">
+                <div className="flex flex-row mt-6 w-full">
+                    <div className="mr-3 w-4/12">
+                        <div className="overflow-x-hidden p-6 rounded-2xl bg-navy-lighter">
                             <h2 className="text-2xl font-medium">Left Outer Tank</h2>
                             <div className="mt-4">
                                 <ProgressBar
@@ -323,7 +323,7 @@ export const FuelPage = () => {
                                     completed={(Math.max(LOutCurrent, 0) / outerCellGallon) * 100}
                                 />
                                 <div className="mt-4">
-                                    <label className="fuel-content-label text-base" htmlFor="fuel-label">
+                                    <label className="text-base fuel-content-label" htmlFor="fuel-label">
                                         {convertFuelValue(LOutCurrent)}
                                         /
                                         {round(outerCell())}
@@ -334,17 +334,17 @@ export const FuelPage = () => {
                             </div>
                         </div>
                     </div>
-                    <div className="w-2/4 mx-3">
-                        <div className="bg-navy-lighter rounded-2xl p-6 text-white overflow-x-hidden">
-                            <div className="flex w-full items-center">
-                                <h2 className="text-2xl font-medium mr-2">Refuel</h2>
+                    <div className="mx-3 w-2/4">
+                        <div className="overflow-x-hidden p-6 rounded-2xl bg-navy-lighter">
+                            <div className="flex items-center w-full">
+                                <h2 className="mr-2 text-2xl font-medium">Refuel</h2>
                                 <label htmlFor="fuel-label" className={formatRefuelStatusClass()}>{formatRefuelStatusLabel()}</label>
                             </div>
-                            <div className="flex flex-row mt-4 mb-2 items-center relative">
+                            <div className="flex relative flex-row items-center mt-4 mb-2">
                                 <div className="fuel-progress">
                                     <Slider className="w-48" value={sliderValue} onInput={(value) => updateSlider(value)} />
                                 </div>
-                                <div className="fuel-label ml-4 relative">
+                                <div className="relative ml-4 fuel-label">
                                     <SimpleInput
                                         className="w-32"
                                         noLeftMargin
@@ -356,10 +356,10 @@ export const FuelPage = () => {
                                         value={inputValue}
                                         onChange={(x) => updateDesiredFuel(x)}
                                     />
-                                    <div className="absolute top-2 right-4 text-gray-400 text-lg">{currentUnit()}</div>
+                                    <div className="absolute top-2 right-4 text-lg text-gray-400">{currentUnit()}</div>
                                 </div>
-                                <div className="absolute border-l-0 border-t-0 border-b-0 border-white border-r h-28 right-28" />
-                                <div className="absolute flex flex-col justify-center items-center right-3 mt-3">
+                                <div className="absolute right-28 h-28 border-t-0 border-r border-b-0 border-l-0 border-white" />
+                                <div className="flex absolute right-3 flex-col justify-center items-center mt-3">
                                     <div className={formatRefuelStatusClass()}>
                                         <Button onClick={() => switchRefuelState()} type={BUTTON_TYPE.NONE}>
                                             <IconPlayerPlay className={refuelStartedByUser ? 'hidden' : ''} />
@@ -373,11 +373,11 @@ export const FuelPage = () => {
                                     </div>
                                 </div>
                             </div>
-                            <span className="fuel-content-label text-base">Current Fuel:</span>
+                            <span className="text-base fuel-content-label">Current Fuel:</span>
                             <div className="flex current-fuel-line">
                                 <ProgressBar height="10px" width="200px" displayBar={false} isLabelVisible={false} bgcolor="#3b82f6" completed={(totalCurrent() / round(totalFuel())) * 100} />
                                 <div className="fuel-label">
-                                    <label className="fuel-content-label text-base" htmlFor="fuel-label">
+                                    <label className="text-base fuel-content-label" htmlFor="fuel-label">
                                         {totalCurrent()}
                                         /
                                         {round(totalFuel())}
@@ -388,8 +388,8 @@ export const FuelPage = () => {
                             </div>
                         </div>
                     </div>
-                    <div className="w-4/12 ml-3">
-                        <div className="bg-navy-lighter rounded-2xl p-6 text-white overflow-x-hidden">
+                    <div className="ml-3 w-4/12">
+                        <div className="overflow-x-hidden p-6 rounded-2xl bg-navy-lighter">
                             <h2 className="text-2xl font-medium">Right Outer Tank</h2>
                             <div className="mt-4">
                                 <ProgressBar
@@ -415,19 +415,19 @@ export const FuelPage = () => {
                     </div>
                 </div>
             </div>
-            <div className="flex flex-col items-center justify-end">
-                <img className="z-20 h-96 mb-3" src={fuselage} />
-                <div className="z-0 w-24 h-20 absolute bottom-ctr-tk-y" style={{ background: formatFuelFilling(centerCurrent, centerTankGallon) }} />
-                <div className="z-0 w-inr-tk h-36 absolute bottom-inn-tk-y left-inn-tk-l" style={{ background: formatFuelFilling(LInnCurrent, innerCellGallon) }} />
-                <div className="z-0 w-inr-tk h-36 absolute bottom-inn-tk-y right-inn-tk-r" style={{ background: formatFuelFilling(RInnCurrent, innerCellGallon) }} />
-                <div className="z-0 w-out-tk h-16 absolute bottom-out-tk-y left-out-tk-l" style={{ background: formatFuelFilling(LOutCurrent, outerCellGallon) }} />
-                <div className="z-0 w-out-tk h-16 absolute bottom-out-tk-y right-out-tk-r" style={{ background: formatFuelFilling(ROutCurrent, outerCellGallon) }} />
-                <div className="z-10 w-96 h-20 absolute bg-navy-regular bottom-overlay-b-y left-overlay-bl transform -rotate-18.5" />
-                <div className="z-10 w-96 h-20 absolute bg-navy-regular bottom-overlay-b-y right-overlay-br transform rotate-18.5" />
-                <div className="z-10 w-96 h-24 absolute bg-navy-regular bottom-overlay-t-y left-overlay-tl transform -rotate-26.5" />
-                <div className="z-10 w-96 h-24 absolute bg-navy-regular bottom-overlay-t-y right-overlay-tr transform rotate-26.5" />
-                <div className="absolute bg-navy-lighter rounded-2xl text-white overflow-x-hidden p-6 z-30">
-                    <div className="w-96 flex flex-row justify-between items-center">
+            <div className="flex flex-col justify-end items-center">
+                <img className="z-20 mb-3 h-96" src={fuselage} />
+                <div className="absolute z-0 w-24 h-20 bottom-ctr-tk-y" style={{ background: formatFuelFilling(centerCurrent, centerTankGallon) }} />
+                <div className="absolute z-0 h-36 w-inr-tk bottom-inn-tk-y left-inn-tk-l" style={{ background: formatFuelFilling(LInnCurrent, innerCellGallon) }} />
+                <div className="absolute z-0 h-36 w-inr-tk bottom-inn-tk-y right-inn-tk-r" style={{ background: formatFuelFilling(RInnCurrent, innerCellGallon) }} />
+                <div className="absolute z-0 h-16 w-out-tk bottom-out-tk-y left-out-tk-l" style={{ background: formatFuelFilling(LOutCurrent, outerCellGallon) }} />
+                <div className="absolute z-0 h-16 w-out-tk bottom-out-tk-y right-out-tk-r" style={{ background: formatFuelFilling(ROutCurrent, outerCellGallon) }} />
+                <div className="absolute z-10 w-96 h-20 transform bg-navy-regular bottom-overlay-b-y left-overlay-bl -rotate-18.5" />
+                <div className="absolute z-10 w-96 h-20 transform bg-navy-regular bottom-overlay-b-y right-overlay-br rotate-18.5" />
+                <div className="absolute z-10 w-96 h-24 transform bg-navy-regular bottom-overlay-t-y left-overlay-tl -rotate-26.5" />
+                <div className="absolute z-10 w-96 h-24 transform bg-navy-regular bottom-overlay-t-y right-overlay-tr rotate-26.5" />
+                <div className="overflow-x-hidden absolute z-30 p-6 rounded-2xl bg-navy-lighter">
+                    <div className="flex flex-row justify-between items-center w-96">
                         <span className="text-lg text-gray-300">Refuel Time</span>
                         {refuelButtonStatus()}
                     </div>

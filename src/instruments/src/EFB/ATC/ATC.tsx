@@ -95,20 +95,20 @@ export const ATC = () => {
         <div className="flex p-6 w-full">
             { (atisSource === 'IVAO' || atisSource === 'VATSIM') && (
                 <div className="w-8/12">
-                    <h1 className="text-white font-medium mb-4 text-2xl">
+                    <h1 className="mb-4 text-2xl font-medium ">
                         {atisSource}
                         {' - '}
                         Controllers currently in range
                     </h1>
                     <div className="p-2 text-theme-text">
-                        <div className="flex p-2 w-full flex-wrap justify-between">
+                        <div className="flex flex-wrap justify-between p-2 w-full">
                             { controllers && controllers.map((atc) => (
                                 <Button
                                     className={classNames({ 'w-60 m-1 flex': true, 'text-yellow-200': atc.frequency === currentFrequency })}
                                     id="atc.callsign"
                                     onClick={() => setFrequency(toFrequency(atc.frequency))}
                                 >
-                                    <div className="flex w-full justify-start text-lg">
+                                    <div className="flex justify-start w-full text-lg">
                                         <div>
                                             { atc.type === apiClient.AtcType.RADAR && <IconChartRadar size="2rem" /> }
                                             { atc.type === apiClient.AtcType.GROUND && <IconTrafficLights size="2rem" /> }
@@ -118,7 +118,7 @@ export const ATC = () => {
                                             { atc.type === apiClient.AtcType.DELIVERY && <IconCircleCheck size="2rem" /> }
                                             { atc.type === apiClient.AtcType.ATIS && <IconRadio size="2rem" /> }
                                         </div>
-                                        <div className="flex flex-col flex-grow text-center justify-center items-center">
+                                        <div className="flex flex-col flex-grow justify-center items-center text-center">
                                             <div>
                                                 {atc.callsign}
                                             </div>
@@ -136,16 +136,16 @@ export const ATC = () => {
 
             { (atisSource !== 'IVAO' && atisSource !== 'VATSIM') && (
                 <div className="w-full">
-                    <h1 className="text-white font-medium mb-4 text-2xl">
+                    <h1 className="mb-4 text-2xl font-medium ">
                         Only available when 'IVAO' or 'VATSIM' is selected as ATIS/ATC source in the settings page
                     </h1>
                 </div>
             )}
 
             { (atisSource === 'IVAO' || atisSource === 'VATSIM') && (
-                <div className="w-4/12 ml-4">
-                    <h1 className="text-white font-medium mb-4 text-2xl">Active frequency</h1>
-                    <div className="bg-gray-800 rounded-xl p-6 text-white">
+                <div className="ml-4 w-4/12">
+                    <h1 className="mb-4 text-2xl font-medium ">Active frequency</h1>
+                    <div className="p-6 bg-gray-800 rounded-xl">
                         <div>
                             <div className="flex text-2xl text-yellow-200">
                                 <div className="mr-4">
@@ -155,9 +155,9 @@ export const ATC = () => {
                                     {currentAtc && currentAtc.callsign}
                                 </div>
                             </div>
-                            <div className="active-atis flex-wrap mt-8 text-2xl">
+                            <div className="flex-wrap mt-8 text-2xl active-atis">
                                 { currentAtc?.textAtis && currentAtc.textAtis.map((line) => (
-                                    <p className="flex text-base flex-wrap mt-2">{line}</p>
+                                    <p className="flex flex-wrap mt-2 text-base">{line}</p>
                                 )) }
                             </div>
                         </div>
