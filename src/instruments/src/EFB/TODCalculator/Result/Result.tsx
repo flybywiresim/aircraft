@@ -68,15 +68,15 @@ const Result = ({ className }: {className: string}) => {
                     if (calculationValid(calculation)) {
                         return (
                             <div className="flex flex-col justify-center items-center mb-10 last:mb-0">
-                                <h1 className="mb-4 text-2xl font-medium text-white">{headerText}</h1>
+                                <h1 className="mb-4 text-2xl font-medium ">{headerText}</h1>
 
-                                <span className="text-6xl text-white whitespace-nowrap">
+                                <span className="text-6xl whitespace-nowrap">
                                     {calculation}
                                     {' '}
                                     {unit}
                                 </span>
 
-                                {!!footerText && <span className="mt-4 text-2xl font-medium text-white">{footerText}</span>}
+                                {!!footerText && <span className="mt-4 text-2xl font-medium ">{footerText}</span>}
                             </div>
                         );
                     }

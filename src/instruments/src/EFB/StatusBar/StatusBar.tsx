@@ -1,7 +1,7 @@
 import React from 'react';
 import { Wifi2, BatteryFull, Power } from 'react-bootstrap-icons';
 import { useSimVar } from '@instruments/common/simVars';
-import { usePower, PowerState } from '../Efb';
+import { usePower, PowerStates } from '../Efb';
 
 export const StatusBar = () => {
     const [currentUTC] = useSimVar('E:ZULU TIME', 'seconds');
@@ -26,7 +26,7 @@ export const StatusBar = () => {
     }
 
     return (
-        <div className="flex fixed justify-between items-center px-6 w-full h-10 text-lg font-medium leading-none text-white bg-theme-statusbar">
+        <div className="flex fixed justify-between items-center px-6 w-full h-10 text-lg font-medium leading-none text-theme-text bg-theme-statusbar">
             <p>
                 {`${getDayName(dayOfWeek)} ${getMonthName(monthOfYear)} ${dayOfMonth}`}
             </p>
@@ -45,7 +45,8 @@ export const StatusBar = () => {
                     <BatteryFull size={28} />
                 </div>
 
-                <Power size={26} onClick={() => power.setPowerState(PowerState.OFF)} />
+                {/* Show overlay to either power down or restart when this is held down, set to standby mode otherwise */}
+                <Power size={26} onClick={() => power.setPowerState(PowerStates.SHUTOFF)} />
             </div>
         </div>
     );

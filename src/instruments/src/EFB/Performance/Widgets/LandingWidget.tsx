@@ -60,7 +60,7 @@ export const LandingWidget = () => {
         runwayVisualizationLabels,
         runwayNumber,
         displayedRunwayLength,
-    } = useAppSelector(state => state.performance.landing);
+    } = useAppSelector((state) => state.performance.landing);
 
     const handleCalculateLanding = (): void => {
         if (!areInputsValid()) return;
@@ -81,28 +81,28 @@ export const LandingWidget = () => {
         );
 
         dispatch(setLandingValues({
-                maxAutobrakeLandingDist: Math.round(landingDistances.maxAutobrakeDist),
-                mediumAutobrakeLandingDist: Math.round(landingDistances.mediumAutobrakeDist),
-                lowAutobrakeLandingDist: Math.round(landingDistances.lowAutobrakeDist),
-                runwayVisualizationLabels: [
-                    {
-                        label: 'MAX MANUAL',
-                        distance: landingDistances.maxAutobrakeDist,
-                        type: LabelType.Main,
-                    },
-                    {
-                        label: 'MEDIUM',
-                        distance: landingDistances.mediumAutobrakeDist,
-                        type: LabelType.Main,
-                    },
-                    {
-                        label: 'LOW',
-                        distance: landingDistances.lowAutobrakeDist,
-                        type: LabelType.Main,
-                    },
-                ],
-                runwayNumber: Math.round((runwayHeading ?? 0) / 10),
-                displayedRunwayLength: runwayLength ?? 0,
+            maxAutobrakeLandingDist: Math.round(landingDistances.maxAutobrakeDist),
+            mediumAutobrakeLandingDist: Math.round(landingDistances.mediumAutobrakeDist),
+            lowAutobrakeLandingDist: Math.round(landingDistances.lowAutobrakeDist),
+            runwayVisualizationLabels: [
+                {
+                    label: 'MAX MANUAL',
+                    distance: landingDistances.maxAutobrakeDist,
+                    type: LabelType.Main,
+                },
+                {
+                    label: 'MEDIUM',
+                    distance: landingDistances.mediumAutobrakeDist,
+                    type: LabelType.Main,
+                },
+                {
+                    label: 'LOW',
+                    distance: landingDistances.lowAutobrakeDist,
+                    type: LabelType.Main,
+                },
+            ],
+            runwayNumber: Math.round((runwayHeading ?? 0) / 10),
+            displayedRunwayLength: runwayLength ?? 0,
         }));
     };
 
@@ -114,11 +114,11 @@ export const LandingWidget = () => {
         const weightKgs = Math.round(totalWeight * poundsToKgs);
 
         dispatch(setLandingValues({
-                weight: weightKgs,
-                windDirection: parsedMetar.wind.degrees,
-                windMagnitude: parsedMetar.wind.speed_kts,
-                temperature: parsedMetar.temperature.celsius,
-                pressure: parsedMetar.barometer.mb,
+            weight: weightKgs,
+            windDirection: parsedMetar.wind.degrees,
+            windMagnitude: parsedMetar.wind.speed_kts,
+            temperature: parsedMetar.temperature.celsius,
+            pressure: parsedMetar.barometer.mb,
         }));
     };
 
@@ -126,7 +126,7 @@ export const LandingWidget = () => {
 
     const handleICAOChange = (icao: string): void => {
         dispatch(setLandingValues(
-            { icao }
+            { icao },
         ));
     };
 
@@ -137,9 +137,7 @@ export const LandingWidget = () => {
             windDirection = undefined;
         }
 
-        dispatch(setLandingValues({
-             windDirection
-        }));
+        dispatch(setLandingValues({ windDirection }));
     };
 
     const handleWindMagnitudeChange = (value: string): void => {
@@ -149,9 +147,7 @@ export const LandingWidget = () => {
             magnitude = undefined;
         }
 
-        dispatch(setLandingValues({
-             windMagnitude: magnitude
-        }));
+        dispatch(setLandingValues({ windMagnitude: magnitude }));
     };
 
     const handleWeightChange = (value: string): void => {
@@ -161,7 +157,7 @@ export const LandingWidget = () => {
             weight = undefined;
         }
 
-        dispatch(setLandingValues({weight}));
+        dispatch(setLandingValues({ weight }));
     };
 
     const handleRunwayHeadingChange = (value: string): void => {
@@ -171,7 +167,7 @@ export const LandingWidget = () => {
             runwayHeading = undefined;
         }
 
-        dispatch(setLandingValues({runwayHeading}));
+        dispatch(setLandingValues({ runwayHeading }));
     };
 
     const handleApproachSpeedChange = (value: string): void => {
@@ -181,7 +177,7 @@ export const LandingWidget = () => {
             approachSpeed = undefined;
         }
 
-        dispatch(setLandingValues({approachSpeed}));
+        dispatch(setLandingValues({ approachSpeed }));
     };
 
     const handleAltitudeChange = (value: string): void => {
@@ -201,7 +197,7 @@ export const LandingWidget = () => {
             temperature = undefined;
         }
 
-        dispatch(setLandingValues({temperature}));
+        dispatch(setLandingValues({ temperature }));
     };
 
     const handleFlapsChange = (newValue: number | string): void => {
@@ -221,7 +217,7 @@ export const LandingWidget = () => {
             runwayCondition = LandingRunwayConditions.Dry;
         }
 
-        dispatch(setLandingValues({runwayCondition}));
+        dispatch(setLandingValues({ runwayCondition }));
     };
 
     const handleReverseThrustChange = (newValue: boolean): void => {
@@ -254,16 +250,16 @@ export const LandingWidget = () => {
         const overweightProcedure: boolean = newValue;
 
         dispatch(setLandingValues({ overweightProcedure }));
-};
+    };
 
     const handlePressureChange = (value: string): void => {
         let pressure: number | undefined = parseFloat(value);
 
-            if (Number.isNaN(pressure)) {
+        if (Number.isNaN(pressure)) {
             pressure = undefined;
         }
 
-        dispatch(setLandingValues({pressure} ));
+        dispatch(setLandingValues({ pressure }));
     };
 
     const handleClearInputs = (): void => {
@@ -281,21 +277,21 @@ export const LandingWidget = () => {
             && pressure !== undefined
             && runwayLength !== undefined;
 
-    const calculateButtonClass = `mx-2 w-2/4 text-white bg-green-500 p-2 flex items-center justify-center rounded-lg focus:outline-none text-lg ${areInputsValid() ? '' : 'opacity-50'}`;
+    const calculateButtonClass = `mx-2 w-2/4  bg-green-500 p-2 flex items-center justify-center rounded-lg focus:outline-none text-lg ${areInputsValid() ? '' : 'opacity-50'}`;
 
     return (
         <div className="flex flex-grow">
-            <div className="text-white overflow-hidden bg-navy-lighter rounded-2xl p-6 h-efb-nav mr-3 w-9/12">
+            <div className="overflow-hidden p-6 mr-3 w-9/12 rounded-2xl bg-navy-lighter h-efb-nav">
                 <div className="w-full">
-                    <div className="text-center mb-4">
-                        <div className="flex mx-2 flex-1 justify-center">
+                    <div className="mb-4 text-center">
+                        <div className="flex flex-1 justify-center mx-2">
                             <SimpleInput className="uppercase" label="Airport ICAO" value={icao} onChange={handleICAOChange} maxLength={4} />
 
                         </div>
                         <div className="flex">
                             <div className="flex-1 m-2.5 column-left">
                                 <SimpleInput
-                                    className="w-56 my-1.5"
+                                    className="my-1.5 w-56"
                                     label="Wind Direction"
                                     value={windDirection}
                                     min={0}
@@ -306,7 +302,7 @@ export const LandingWidget = () => {
                                     number
                                 />
                                 <SimpleInput
-                                    className="w-56 my-1.5"
+                                    className="my-1.5 w-56"
                                     label="Wind Magnitude"
                                     value={windMagnitude}
                                     placeholder="KTS"
@@ -316,7 +312,7 @@ export const LandingWidget = () => {
                                     number
                                 />
                                 <SimpleInput
-                                    className="w-56 my-1.5"
+                                    className="my-1.5 w-56"
                                     label="Temperature"
                                     value={temperature}
                                     placeholder="°C"
@@ -327,7 +323,7 @@ export const LandingWidget = () => {
                                     number
                                 />
                                 <SimpleInput
-                                    className="w-56 my-1.5"
+                                    className="my-1.5 w-56"
                                     label="QNH"
                                     value={pressure}
                                     placeholder="mb"
@@ -338,7 +334,7 @@ export const LandingWidget = () => {
                                     number
                                 />
                                 <SimpleInput
-                                    className="w-56 my-1.5"
+                                    className="my-1.5 w-56"
                                     label="Rwy Altitude"
                                     value={altitude}
                                     placeholder='" ASL'
@@ -349,7 +345,7 @@ export const LandingWidget = () => {
                                     number
                                 />
                                 <SimpleInput
-                                    className="w-56 my-1.5"
+                                    className="my-1.5 w-56"
                                     label="Rwy Heading"
                                     value={runwayHeading}
                                     min={0}
@@ -360,7 +356,7 @@ export const LandingWidget = () => {
                                     number
                                 />
                                 <SelectInput
-                                    className="w-56 my-1.5"
+                                    className="my-1.5 w-56"
                                     label="Rwy Condition"
                                     defaultValue={runwayCondition}
                                     onChange={handleRunwayConditionChange}
@@ -377,7 +373,7 @@ export const LandingWidget = () => {
                             </div>
                             <div className="flex-1 m-2.5 column-right">
                                 <SimpleInput
-                                    className="w-56 my-1.5"
+                                    className="my-1.5 w-56"
                                     label="Rwy Slope"
                                     value={slope}
                                     placeholder="%"
@@ -389,7 +385,7 @@ export const LandingWidget = () => {
                                     reverse
                                 />
                                 <SimpleInput
-                                    className="w-56 my-1.5"
+                                    className="my-1.5 w-56"
                                     label="Rwy LDA"
                                     value={runwayLength}
                                     placeholder="m"
@@ -401,7 +397,7 @@ export const LandingWidget = () => {
                                     reverse
                                 />
                                 <SimpleInput
-                                    className="w-56 my-1.5"
+                                    className="my-1.5 w-56"
                                     label="Approach Speed"
                                     value={approachSpeed}
                                     placeholder="KTS"
@@ -413,7 +409,7 @@ export const LandingWidget = () => {
                                     reverse
                                 />
                                 <SimpleInput
-                                    className="w-56 my-1.5"
+                                    className="my-1.5 w-56"
                                     label="Weight"
                                     value={weight}
                                     placeholder="KG"
@@ -425,7 +421,7 @@ export const LandingWidget = () => {
                                     reverse
                                 />
                                 <SelectInput
-                                    className="w-56 my-1.5"
+                                    className="my-1.5 w-56"
                                     label="Flaps"
                                     defaultValue={flaps}
                                     onChange={handleFlapsChange}
@@ -436,7 +432,7 @@ export const LandingWidget = () => {
                                     ]}
                                 />
                                 <SelectInput
-                                    className="w-56 my-1.5"
+                                    className="my-1.5 w-56"
                                     label="Overweight Proc"
                                     defaultValue={overweightProcedure}
                                     onChange={handleOverweightProcedureChange}
@@ -447,7 +443,7 @@ export const LandingWidget = () => {
                                     ]}
                                 />
                                 <SelectInput
-                                    className="w-56 my-1.5"
+                                    className="my-1.5 w-56"
                                     label="Reverse Thrust"
                                     defaultValue={reverseThrust}
                                     onChange={handleReverseThrustChange}
@@ -469,7 +465,7 @@ export const LandingWidget = () => {
                             </button>
                             <button
                                 onClick={handleSyncValues}
-                                className={`mx-2 w-1/4 text-white bg-teal-light p-2 flex items-center justify-center rounded-lg
+                                className={`mx-2 w-1/4  bg-teal-light p-2 flex items-center justify-center rounded-lg
                                 focus:outline-none text-lg ${isValidIcao() ? '' : 'opacity-50'}`}
                                 type="button"
                                 disabled={!isValidIcao()}
@@ -478,14 +474,14 @@ export const LandingWidget = () => {
                             </button>
                             <button
                                 onClick={handleClearInputs}
-                                className="mx-2 w-1/4 text-lg font-medium bg-blue-500 p-2 text-white flex items-center justify-center rounded-lg focus:outline-none"
+                                className="flex justify-center items-center p-2 mx-2 w-1/4 text-lg font-medium bg-blue-500 rounded-lg focus:outline-none"
                                 type="button"
                             >
                                 Clear
                             </button>
                         </div>
                     </div>
-                    <div className="border-t border-white pt-3">
+                    <div className="pt-3 border-t border-white">
                         <div className="flex flex-col items-center m-3">
                             <div className="flex items-end">
                                 <OutputDisplay label="MAX MANUAL" value={`${maxAutobrakeLandingDist}m`} error={maxAutobrakeLandingDist > displayedRunwayLength} />
@@ -496,7 +492,7 @@ export const LandingWidget = () => {
                     </div>
                 </div>
             </div>
-            <div className="text-white overflow-hidden bg-navy-lighter rounded-2xl p-6 h-efb-nav ml-3 w-3/12">
+            <div className="overflow-hidden p-6 ml-3 w-3/12 rounded-2xl bg-navy-lighter h-efb-nav">
                 <RunwayVisualizationWidget mainLength={displayedRunwayLength} labels={runwayVisualizationLabels} runwayNumber={runwayNumber} />
             </div>
         </div>

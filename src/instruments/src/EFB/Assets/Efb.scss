@@ -38,7 +38,7 @@
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-title;
+    @apply font-title text-theme-text;
   }
 
   h1 {
@@ -54,22 +54,22 @@
   }
 
   p, div {
-      @apply text-xl;
+      @apply text-xl text-theme-text;
   }
 }
 
 /* ---- Global Scrollbar ---- */
 
 .scrollbar::-webkit-scrollbar {
-  @apply rounded-md w-6 bg-navy-regular;
+  @apply rounded-md w-6 bg-theme-secondary;
 }
 
 .scrollbar::-webkit-scrollbar-track {
-  @apply rounded-md bg-navy-regular;
+  @apply rounded-md bg-theme-secondary;
 }
 
 .scrollbar::-webkit-scrollbar-thumb {
-  @apply rounded-md bg-teal-light;
+  @apply rounded-md bg-theme-highlight;
 }
 
 .no-scrollbar::-webkit-scrollbar {
@@ -79,54 +79,6 @@
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
-}
-
-/* ---- Loading/Boot Components ---- */
-
-.loading-screen {
-  @apply bg-black text-4xl font-normal text-gray-100;
-
-  .center {
-    padding: 475px 0;
-    @apply text-center;
-
-    .placeholder {
-      @apply w-full flex justify-center items-center;
-    }
-  }
-
-  .loading-bar {
-    @apply flex justify-center mx-auto bg-gray-500;
-    margin-top: 16px;
-    height: 3px;
-    width: 200px;
-  }
-
-  .loaded {
-    @apply w-full h-full bg-white;
-    animation: 6s linear loading;
-    animation-fill-mode: forwards;
-    transform-origin: 0%;
-  }
-
-  button:active {
-    @apply transform;
-    @apply translate-y-1;
-  }
-
-  @keyframes loading {
-    0% {
-      transform: scaleX(0);
-    }
-    100% {
-      transform: scaleX(100%);
-    }
-  }
-}
-
-.fbw-logo {
-  width: 5rem;
-  margin-right: 16px;
 }
 
 /* ---- Dashboard Components ---- */

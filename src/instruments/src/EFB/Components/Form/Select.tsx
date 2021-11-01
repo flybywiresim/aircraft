@@ -4,7 +4,7 @@ export type SelectProps = { selected?: boolean, onSelect?: () => void, className
 
 export const Select: React.FC<SelectProps> = (props) => (
     <div onClick={props.onSelect || (() => {})} className={`${props.selected ? 'bg-teal-light-contrast' : 'bg-navy-light'} ml-1.5 px-5 py-1.5 rounded-lg flex flex-row justify-between`}>
-        <span className={`${props.classNames} text-lg text-white mt-0.5`}>{props.children}</span>
+        <span className={`${props.classNames} text-lg  mt-0.5`}>{props.children}</span>
     </div>
 );
 
@@ -12,10 +12,10 @@ export type SelectItemProps = {enabled?: boolean, selected?: boolean, onSelect?:
 
 export const activeButtonRow = (props) => {
     if (props.enabled && props.selected) {
-        return ('text-lg font-medium bg-teal-light-contrast text-blue-darkest text-white py-2 px-3.5 rounded-lg');
+        return ('text-lg font-medium bg-teal-light-contrast text-blue-darkest  py-2 px-3.5 rounded-lg');
     }
     if (props.enabled && !props.selected) {
-        return ('text-lg font-medium text-white py-2 px-3.5 rounded-lg');
+        return ('text-lg font-medium  py-2 px-3.5 rounded-lg');
     }
     if (!props.enabled) {
         return ('text-lg font-medium text-gray-600 py-2 px-3.5 rounded-lg');
@@ -33,13 +33,13 @@ export const SelectItem: React.FC<SelectItemProps> = (props) => (
 );
 
 export const SelectGroup: React.FC = (props) => (
-    <div className="bg-navy-light flex flex-row justify-between rounded-lg">
+    <div className="flex flex-row justify-between rounded-lg bg-navy-light">
         {props.children}
     </div>
 );
 
 export const VerticalSelectGroup: React.FC = (props) => (
-    <div className="bg-navy-lighter flex flex-col justify-between rounded-2xl">
+    <div className="flex flex-col justify-between rounded-2xl bg-navy-lighter">
         {props.children}
     </div>
 );

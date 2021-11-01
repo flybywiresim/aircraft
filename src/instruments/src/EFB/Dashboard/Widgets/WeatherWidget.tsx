@@ -109,18 +109,18 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
     }, [props.icao, source]);
 
     return (
-        <div className="text-white">
+        <div>
             {metar === undefined
                 ? <p>Loading ...</p>
                 : (
                     <>
                         <div className="mb-6">
-                            <div className="inline-flex items-center w-64 overflow-hidden">
+                            <div className="inline-flex overflow-hidden items-center w-64">
                                 <div className="ml-8">
                                     <IconCloud size={35} stroke={1.5} strokeLinejoin="miter" />
                                 </div>
                                 <input
-                                    className="text-left ml-4 border-none focus:outline-none text-2xl bg-transparent font-medium uppercase"
+                                    className="ml-4 text-2xl font-medium text-left uppercase bg-transparent border-none focus:outline-none"
                                     type="text"
                                     placeholder={props.icao}
                                     onChange={handleIcao}
@@ -129,7 +129,7 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
                             </div>
                         </div>
                         <div className="grid grid-cols-2">
-                            <div className="text-center text-lg">
+                            <div className="text-lg text-center">
                                 <div className="flex justify-center">
                                     <IconGauge className="mb-2" size={35} stroke={1.5} strokeLinejoin="miter" />
                                 </div>
@@ -141,7 +141,7 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
                                     </>
                                 ) : 'N/A'}
                             </div>
-                            <div className="text-center text-lg">
+                            <div className="text-lg text-center">
                                 <div className="flex justify-center">
                                     <IconWind className="mb-2" size={35} stroke={1.5} strokeLinejoin="miter" />
                                 </div>
@@ -165,7 +165,7 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
                                         </>
                                     ) : 'N/A'}
                             </div>
-                            <div className="text-center text-lg mt-6">
+                            <div className="mt-6 text-lg text-center">
                                 <div className="flex justify-center">
                                     <IconTemperature className="mb-2" size={35} stroke={1.5} strokeLinejoin="miter" />
                                 </div>
@@ -186,7 +186,7 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
                                         </>
                                     ) : 'N/A'}
                             </div>
-                            <div className="text-center text-lg mt-6">
+                            <div className="mt-6 text-lg text-center">
                                 <div className="flex justify-center">
                                     <IconDroplet className="mb-2" size={35} stroke={1.5} strokeLinejoin="miter" />
                                 </div>
