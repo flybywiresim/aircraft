@@ -27,7 +27,7 @@ import OutputDisplay from '../../Components/Form/OutputDisplay/OutputDisplay';
 import { useSimVar } from '../../../Common/simVars';
 import { MetarParserType } from '../../../Common/metarTypes';
 import { useAppDispatch, useAppSelector } from '../../Store/store';
-import { clearLandingValues, setLandingValues } from '../../Store/features/performance';
+import { clearLandingValues, initialState, setLandingValues } from '../../Store/features/performance';
 
 const poundsToKgs = 0.453592;
 
@@ -147,7 +147,7 @@ export const LandingWidget = () => {
             windMagnitude = undefined;
         }
 
-        dispatch(setLandingValues({ windMagnitude: magnitude }));
+        dispatch(setLandingValues({ windMagnitude }));
     };
 
     const handleWeightChange = (value: string): void => {
@@ -277,7 +277,7 @@ export const LandingWidget = () => {
             && pressure !== undefined
             && runwayLength !== undefined;
 
-    const calculateButtonClass = `mx-2 w-2/4 text-white bg-green-500 p-2 flex items-center justify-center rounded-lg focus:outline-none text-lg ${areInputsValid() ? '' : 'opacity-50'}`;
+    const calculateButtonClass = `mx-2 w-2/4  bg-green-500 p-2 flex items-center justify-center rounded-lg focus:outline-none text-lg ${areInputsValid() ? '' : 'opacity-50'}`;
 
     return (
         <div className="flex flex-grow">
@@ -360,7 +360,7 @@ export const LandingWidget = () => {
                                 <SelectInput
                                     className="my-1.5 w-56"
                                     label="Rwy Condition"
-                                    defaultValue={performanceInitialState.landing.runwayCondition}
+                                    defaultValue={initialState.landing.runwayCondition}
                                     value={runwayCondition}
                                     onChange={handleRunwayConditionChange}
                                     dropdownOnTop
@@ -426,7 +426,7 @@ export const LandingWidget = () => {
                                 <SelectInput
                                     className="my-1.5 w-56"
                                     label="Flaps"
-                                    defaultValue={performanceInitialState.landing.flaps}
+                                    defaultValue={initialState.landing.flaps}
                                     value={flaps}
                                     onChange={handleFlapsChange}
                                     reverse
@@ -438,7 +438,7 @@ export const LandingWidget = () => {
                                 <SelectInput
                                     className="my-1.5 w-56"
                                     label="Overweight Proc"
-                                    defaultValue={performanceInitialState.landing.overweightProcedure}
+                                    defaultValue={initialState.landing.overweightProcedure}
                                     value={overweightProcedure}
                                     onChange={handleOverweightProcedureChange}
                                     reverse
@@ -450,7 +450,7 @@ export const LandingWidget = () => {
                                 <SelectInput
                                     className="my-1.5 w-56"
                                     label="Reverse Thrust"
-                                    defaultValue={performanceInitialState.landing.reverseThrust}
+                                    defaultValue={initialState.landing.reverseThrust}
                                     value={reverseThrust}
                                     onChange={handleReverseThrustChange}
                                     reverse
@@ -472,7 +472,7 @@ export const LandingWidget = () => {
                             </button>
                             <button
                                 onClick={handleSyncValues}
-                                className={`mx-2 w-1/4 text-white bg-teal-light p-2 flex items-center justify-center rounded-lg
+                                className={`mx-2 w-1/4  bg-teal-light p-2 flex items-center justify-center rounded-lg
                                 focus:outline-none text-lg ${isValidIcao() ? '' : 'opacity-50'}`}
                                 type="button"
                                 disabled={!isValidIcao()}
@@ -481,7 +481,7 @@ export const LandingWidget = () => {
                             </button>
                             <button
                                 onClick={handleClearInputs}
-                                className="flex justify-center items-center p-2 mx-2 w-1/4 text-lg font-medium text-white bg-blue-500 rounded-lg focus:outline-none"
+                                className="flex justify-center items-center p-2 mx-2 w-1/4 text-lg font-medium bg-blue-500 rounded-lg focus:outline-none"
                                 type="button"
                             >
                                 Clear

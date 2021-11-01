@@ -51,16 +51,15 @@ module.exports = {
                 'theme-unselected': 'var(--color-unselected)',
                 'theme-secondary': 'var(--color-secondary)',
                 'theme-statusbar': 'var(--color-statusbar)',
-            }
+                'theme-accent': 'var(--color-accent)',
+            },
         },
         fontFamily: {
             mono: ['JetBrains Mono'],
             body: ['Inter'],
             title: ['Manrope'],
         },
-        boxShadow: {
-            lg: '0px 0px 4px 2px rgba(0, 0, 0, 0.5)'
-        }
+        boxShadow: { lg: '0px 0px 4px 2px rgba(0, 0, 0, 0.5)' },
     },
     variants: { extend: {} },
     // eslint-disable-next-line global-require

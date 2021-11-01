@@ -1,4 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import { usePersistentNumberProperty } from '@instruments/common/persistence';
+import React, { useEffect, useRef, useState } from 'react';
+import { KeyboardWrapper } from '../../KeyboardWrapper';
 
 type SimpleInputProps = {
     label?: string,
@@ -25,12 +27,27 @@ const SimpleInput = (props: SimpleInputProps) => {
     const [displayValue, setDisplayValue] = useState<string>(props.value?.toString() ?? '');
     const [focused, setFocused] = useState(false);
 
+    const [autoOSK] = usePersistentNumberProperty('EFB_AUTO_OSK', 0);
+
+    const keyboard = useRef<any>(null);
+    const inputRef = useRef<HTMLInputElement>(null);
+
+    const [OSKOpen, setOSKOpen] = useState(false);
+
+    useEffect(() => {
+        if (keyboard.current) {
+            keyboard.current.setInput(displayValue);
+        }
+    }, [keyboard.current]);
+
     useEffect(() => {
         if (props.value === undefined || props.value === '') {
             setDisplayValue('');
             return;
         }
+
         if (focused) return;
+
         setDisplayValue(getConstrainedValue(props.value));
     }, [props.value]);
 
@@ -52,6 +69,10 @@ const SimpleInput = (props: SimpleInputProps) => {
         if (!props.disabled) {
             props.onFocus?.(event.target.value);
         }
+
+        if (autoOSK) {
+            setOSKOpen(true);
+        }
     };
 
     const onFocusOut = (event: React.FocusEvent<HTMLInputElement>): void => {
@@ -60,6 +81,7 @@ const SimpleInput = (props: SimpleInputProps) => {
 
         setDisplayValue(constrainedValue);
         setFocused(false);
+        setOSKOpen(false);
 
         if (!props.disabled) {
             props.onBlur?.(event.target.value);
@@ -113,6 +135,10 @@ const SimpleInput = (props: SimpleInputProps) => {
         };
     }, [focused]);
 
+    function onChangeAll(newInput) {
+        setDisplayValue(newInput.default);
+    }
+
     return (
         <>
             {props.noLabel
@@ -137,7 +163,7 @@ const SimpleInput = (props: SimpleInputProps) => {
                             <div className={`text-lg flex flex-grow ${props.noLeftMargin ? '' : 'm-2.5'} items-center ${props.reverse ? 'justify-start' : 'justify-end'}`}>{props.label}</div>
                             <div className="flex items-center">
                                 <input
-                                    className={`px-5 py-1.5 text-lg text-white rounded-lg bg-navy-light border-2 border-navy-light focus-within:outline-none
+                                    className={`px-5 py-1.5 text-lg  rounded-lg bg-navy-light border-2 border-navy-light focus-within:outline-none
                                     focus-within:border-teal-light-contrast ${props.className}`}
                                     value={displayValue}
                                     placeholder={props.placeholder ?? ''}
@@ -150,6 +176,15 @@ const SimpleInput = (props: SimpleInputProps) => {
                             </div>
                         </div>
                     </>
+                )}
+            {OSKOpen
+                && (
+                    <div
+                        className="absolute inset-x-0 bottom-0 z-50"
+                        onMouseDown={(e) => e.preventDefault()}
+                    >
+                        <KeyboardWrapper keyboardRef={keyboard} onChangeAll={(v) => onChangeAll(v)} setOpen={setOSKOpen} inputRef={inputRef} />
+                    </div>
                 )}
         </>
     );

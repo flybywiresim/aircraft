@@ -39,7 +39,7 @@ export const SelectionTabs = ({ tabs }: SelectionTabsProps) => (
             tabs.map((tab) => (
                 <Link
                     to={`settings/${tab.name.toLowerCase().replace(/\s/g, '-')}`}
-                    className="flex justify-between items-center p-6 text-white rounded-md hover:shadow-lg transition duration-200 bg-navy-lighter"
+                    className="flex justify-between items-center p-6 rounded-md hover:shadow-lg transition duration-200 bg-theme-secondary"
                 >
                     <p className="text-2xl">{tab.name}</p>
                     <ChevronRight size={30} />
@@ -66,7 +66,7 @@ export const Settings = () => {
             <div className="w-full h-efb">
                 <Switch>
                     <Route exact path="/settings">
-                        <h1 className="mb-4 text-white">Settings</h1>
+                        <h1 className="mb-4 ">Settings</h1>
                         <SelectionTabs tabs={tabs} />
                     </Route>
                     {tabs.map((tab) => (
