@@ -24,7 +24,6 @@ export const AtsuAocPage = () => {
 
     const [autoSimbriefImport, setAutoSimbriefImport] = usePersistentProperty('CONFIG_AUTO_SIMBRIEF_IMPORT', 'DISABLED');
 
-
     function getSimbriefUserData(value: string): Promise<any> {
         const SIMBRIEF_URL = 'http://www.simbrief.com/api/xml.fetcher.php?json=1';
 
@@ -72,22 +71,23 @@ export const AtsuAocPage = () => {
         getSimbriefUserId(value).then((response) => {
             uiMessages.pushNotification(
                 <Notification
-                type={NotificationTypes.SUCCESS}
-                 title='SimBrief Information Updated Successfully'
-                  message='Your SimBrief information has been validated and updated.'
-                  />
-                  )
+                    type={NotificationTypes.SUCCESS}
+                    title="SimBrief Information Updated Successfully"
+                    message="Your SimBrief information has been validated and updated."
+                />,
+            );
 
             setSimbriefUserId(response);
             setSimbriefDisplay(response);
         }).catch(() => {
             setSimbriefDisplay(simbriefUserId);
             uiMessages.pushNotification(
-            <Notification
-            type={NotificationTypes.ERROR}
-             title='SimBrief Error'
-              message='Please check that you have correctly entered your SimBrief username or pilot ID.'/>
-              )
+                <Notification
+                    type={NotificationTypes.ERROR}
+                    title="SimBrief Error"
+                    message="Please check that you have correctly entered your SimBrief username or pilot ID."
+                />,
+            );
         });
     }
 
@@ -126,7 +126,7 @@ export const AtsuAocPage = () => {
     }
 
     return (
-        <div className="flex flex-col px-6 bg-navy-lighter rounded-xl divide-y divide-gray-700">
+        <div className="flex flex-col px-6 rounded-xl divide-y-2 divide-gray-700 bg-navy-lighter">
             <div className="flex flex-row justify-between items-center py-4">
                 <span className="text-lg text-gray-300">ATIS/ATC Source</span>
                 <SelectGroup>

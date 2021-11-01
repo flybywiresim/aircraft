@@ -53,7 +53,7 @@ const FlightWidget = () => {
     }
 
     return (
-        <div className="overflow-hidden p-6 mr-3 w-2/5 h-full text-white rounded-lg border-2 border-theme-secondary shadow-md">
+        <div className="overflow-hidden p-6 mr-3 w-2/5 h-full rounded-lg border-2 shadow-md border-theme-secondary">
             <div className="flex flex-col justify-between h-full">
                 <div className="w-full">
                     <div className="mb-6 text-center">
@@ -131,18 +131,18 @@ const FlightWidget = () => {
                         type="button"
                         onClick={() => {
                             fetchSimbriefDataAction(simbriefUserId ?? '').then((action) => {
-                                dispatch(action)
+                                dispatch(action);
                             }).catch(() => {
                                 uiMessages.pushNotification(
                                     <Notification
                                         type={NotificationTypes.ERROR}
-                                        title='SimBrief Error'
-                                        message='An error occurred when trying to fetch your SimBrief data.'
-                                    />
-                                )
+                                        title="SimBrief Error"
+                                        message="An error occurred when trying to fetch your SimBrief data."
+                                    />,
+                                );
                             });
                         }}
-                        className="flex justify-center items-center p-2 space-x-4 w-full text-white bg-theme-highlight rounded-lg border-2 border-theme-secondary shadow-lg focus:outline-none"
+                        className="flex justify-center items-center p-2 space-x-4 w-full rounded-lg border-2 shadow-lg focus:outline-none bg-theme-highlight border-theme-secondary"
                     >
                         <FileEarmarkArrowDown size={26} />
                         <p>Import Flightplan from SimBrief</p>

@@ -97,7 +97,7 @@ const RunwayVisualizationWidget = (props: RunwayVisualizationProps) => {
 
     function runwayLengthLabel(): JSX.Element {
         return (
-            <div className="text-white absolute top-1/2 -right-3 transform -rotate-90 translate-x-1/2">
+            <div className=" absolute top-1/2 -right-3 transform -rotate-90 translate-x-1/2">
                 { props.mainLength ?? 0 }
                 m
             </div>
@@ -133,7 +133,7 @@ const RunwayVisualizationWidget = (props: RunwayVisualizationProps) => {
         if (props.runwayNumber) {
             const paddedNumber = props.runwayNumber.toString().padStart(2, '0');
             return (
-                <div className="runway-id text-white text-4xl absolute left-1/2 bottom-20 transform -translate-x-1/2 opacity-40">{paddedNumber}</div>
+                <div className="absolute bottom-20 left-1/2 text-4xl opacity-40 transform -translate-x-1/2 runway-id">{paddedNumber}</div>
             );
         }
         return undefined;
@@ -157,13 +157,13 @@ const RunwayVisualizationWidget = (props: RunwayVisualizationProps) => {
             elements.push(
                 (
                     <div
-                        className={`w-32 h-1 bg-white text-white absolute left-1/2 transform -translate-x-1/2 ${
+                        className={`w-32 h-1 bg-white  absolute left-1/2 transform -translate-x-1/2 ${
                             (isLabelOverDistance(label)) ? 'error-label' : ''}`}
                         style={{ bottom: `${bottomPercentage}%` }}
                     >
 
                         {showText && (
-                            <div className="w-full text-center absolute -top-0.5 transform -translate-y-full">
+                            <div className="absolute -top-0.5 w-full text-center transform -translate-y-full">
                                 {label.label}
                                 {' '}
                                 { Math.round(label.distance) }
@@ -179,19 +179,19 @@ const RunwayVisualizationWidget = (props: RunwayVisualizationProps) => {
     }
 
     return (
-        <div className="h-full flex px-10">
-            <div className="h-full flex flex-col relative">
+        <div className="flex px-10 h-full">
+            <div className="flex relative flex-col h-full">
                 <div className="flex-grow bg-red-900 opacity-30" />
                 <div className="bg-green-200 opacity-50" style={{ height: `${todaHeightPercentage()}%` }} />
                 <div className="bg-gray-700 opacity-50" style={{ height: `${asdaHeightPercentage()}%` }} />
                 <div
-                    className="bg-black w-40 relative"
+                    className="relative w-40 bg-black"
                     style={{ height: `${mainHeightPercentage()}%` }}
                 >
                     {runwayLengthLabel()}
-                    <div className="w-1 h-full bg-white opacity-30 absolute left-0" />
-                    <div className="w-1 h-full bg-white opacity-30 absolute right-0" />
-                    <div className="flex absolute left-1/2 bottom-2 transform -translate-x-1/2">
+                    <div className="absolute left-0 w-1 h-full bg-white opacity-30" />
+                    <div className="absolute right-0 w-1 h-full bg-white opacity-30" />
+                    <div className="flex absolute bottom-2 left-1/2 transform -translate-x-1/2">
                         <div className="mr-2 w-2 h-14 bg-white opacity-30" />
                         <div className="mr-2 w-2 h-14 bg-white opacity-30" />
                         <div className="mr-2 w-2 h-14 bg-white opacity-30" />
@@ -201,9 +201,9 @@ const RunwayVisualizationWidget = (props: RunwayVisualizationProps) => {
                         <div className="mr-2 w-2 h-14 bg-white opacity-30" />
                         <div className="w-2 h-14 bg-white opacity-30" />
                     </div>
-                    <div className="relative h-full overflow-hidden">
-                        <div className="w-1.5 h-20 bg-white opacity-30 absolute left-1/2 bottom-40 transform -translate-x-1/2" />
-                        <div className="w-1.5 h-20 bg-white opacity-30 absolute left-1/2 bottom-72 transform -translate-x-1/2" />
+                    <div className="overflow-hidden relative h-full">
+                        <div className="absolute bottom-40 left-1/2 w-1.5 h-20 bg-white opacity-30 transform -translate-x-1/2" />
+                        <div className="absolute bottom-72 left-1/2 w-1.5 h-20 bg-white opacity-30 transform -translate-x-1/2" />
                     </div>
                     {runwayNumber()}
                 </div>

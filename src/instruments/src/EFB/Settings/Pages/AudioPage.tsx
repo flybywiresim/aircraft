@@ -10,7 +10,7 @@ export const AudioPage = () => {
     const [windVolume, setWindVolume] = usePersistentNumberProperty('SOUND_INTERIOR_WIND', 0);
 
     return (
-        <div className="bg-navy-lighter divide-y divide-gray-700 flex flex-col rounded-xl px-6 ">
+        <div className="bg-navy-lighter divide-y-2 divide-gray-700 flex flex-col rounded-xl px-6 ">
             <div className="py-8 flex flex-row justify-between items-center">
                 <span>
                     <span className="text-lg text-gray-300">PTU Audible in Cockpit</span>

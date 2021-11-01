@@ -1,4 +1,4 @@
-import React, {FC} from 'react';
+import React, { FC } from 'react';
 
 interface UIMessagesContextType {
     modals: JSX.Element[];
@@ -18,19 +18,19 @@ export const UIMessagesProvider: FC = ({ children }) => {
     const [notifications, setNotifications] = React.useState<JSX.Element[]>([]);
 
     function pushModal(modal: JSX.Element) {
-        setModals(modals => [...modals, modal]);
+        setModals((modals) => [...modals, modal]);
     }
 
     function pushNotification(notification: JSX.Element) {
-        setNotifications(notifications => [...notifications, notification]);
+        setNotifications((notifications) => [...notifications, notification]);
     }
 
     function popModal() {
-        setModals(modals => modals.slice(1));
+        setModals((modals) => modals.slice(1));
     }
 
     function popNotification() {
-        setNotifications(notifications => notifications.slice(1));
+        setNotifications((notifications) => notifications.slice(1));
     }
 
     return (
@@ -41,8 +41,9 @@ export const UIMessagesProvider: FC = ({ children }) => {
             pushNotification,
             popModal,
             popNotification,
-        }}>
+        }}
+        >
             {children}
         </UIMessagesContext.Provider>
     );
-}
+};

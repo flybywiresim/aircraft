@@ -16,7 +16,7 @@ type AdirsButton = {
 }
 
 const ControlSettings = ({ setShowSettings }) => (
-    <div className="bg-navy-lighter divide-y my-4 divide-gray-700 flex flex-col rounded-xl p-6">
+    <div className="bg-navy-lighter divide-y-2 my-4 divide-gray-700 flex flex-col rounded-xl p-6">
         <div className="flex flex-row justify-between items-center">
             <span className="text-lg text-gray-300">Detents</span>
             <Button className="bg-teal-light-contrast border-teal-light-contrast" text="Calibrate" onClick={() => setShowSettings(true)} />
@@ -64,7 +64,7 @@ export const SimOptionsPage = () => {
             {!showThrottleSettings
         && (
             <>
-                <div className="bg-navy-lighter rounded-xl px-6 divide-y divide-gray-700 flex flex-col">
+                <div className="bg-navy-lighter rounded-xl px-6 divide-y-2 divide-gray-700 flex flex-col">
                     <div className="py-4 flex flex-row justify-between items-center">
                         <span className="text-lg text-gray-300">ADIRS Align Time</span>
                         <SelectGroup>
