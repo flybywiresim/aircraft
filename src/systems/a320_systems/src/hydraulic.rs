@@ -48,6 +48,8 @@ use systems::{
 };
 
 use systems::simulation::{InitContext, VariableIdentifier};
+mod flaps_computer;
+use flaps_computer::SlatFlapComplex;
 
 struct A320CargoDoorFactory {}
 impl A320CargoDoorFactory {
@@ -152,6 +154,8 @@ pub(super) struct A320Hydraulic {
     forward_cargo_door_controller: A320DoorController,
     aft_cargo_door: CargoDoor,
     aft_cargo_door_controller: A320DoorController,
+
+    slats_flaps_complex: SlatFlapComplex,
 }
 impl A320Hydraulic {
     const FORWARD_CARGO_DOOR_ID: &'static str = "FWD";
@@ -341,6 +345,8 @@ impl A320Hydraulic {
                 Self::AFT_CARGO_DOOR_ID,
             ),
             aft_cargo_door_controller: A320DoorController::new(context, Self::AFT_CARGO_DOOR_ID),
+
+            slats_flaps_complex: SlatFlapComplex::new(),
         }
     }
 
@@ -561,6 +567,9 @@ impl A320Hydraulic {
             &self.aft_cargo_door,
             self.yellow_loop.pressure(),
         );
+
+        self.slats_flaps_complex
+            .update(context, self.green_loop.pressure());
     }
 
     // For each hydraulic loop retrieves volumes from and to each actuator and pass it to the loops
@@ -766,6 +775,8 @@ impl SimulationElement for A320Hydraulic {
         self.braking_circuit_norm.accept(visitor);
         self.braking_circuit_altn.accept(visitor);
         self.braking_force.accept(visitor);
+
+        self.slats_flaps_complex.accept(visitor);
 
         visitor.visit(self);
     }
@@ -1548,9 +1559,9 @@ impl A320BrakingForce {
             brake_right_force_factor_id: context
                 .get_identifier("BRAKE RIGHT FORCE FACTOR".to_owned()),
             trailing_edge_flaps_left_percent_id: context
-                .get_identifier("TRAILING EDGE FLAPS LEFT PERCENT".to_owned()),
+                .get_identifier("LEFT_FLAPS_POSITION_PERCENT".to_owned()),
             trailing_edge_flaps_right_percent_id: context
-                .get_identifier("TRAILING EDGE FLAPS RIGHT PERCENT".to_owned()),
+                .get_identifier("RIGHT_FLAPS_POSITION_PERCENT".to_owned()),
 
             left_braking_force: 0.,
             right_braking_force: 0.,
