@@ -55,6 +55,7 @@ export class Predictions {
         isaDev: number,
         tropoAltitude: number,
         speedbrakesExtended = false,
+        flapsConfig: FlapConf = FlapConf.CLEAN
     ): StepResults {
         const midStepAltitude = initialAltitude + (stepSize / 2);
         const theta = Common.getTheta(midStepAltitude, isaDev);
@@ -98,7 +99,7 @@ export class Predictions {
         do {
             // Assume lift force is equal to weight as an initial approximation
             const liftCoefficient = FlightModel.getLiftCoefficientFromEAS(lift, eas);
-            const dragCoefficient = FlightModel.getDragCoefficient(liftCoefficient, speedbrakesExtended);
+            const dragCoefficient = FlightModel.getDragCoefficient(liftCoefficient, speedbrakesExtended, false, flapsConfig);
             const accelFactorMode = usingMach ? AccelFactorMode.CONSTANT_MACH : AccelFactorMode.CONSTANT_CAS;
             const accelFactor = Common.getAccelerationFactor(mach, midStepAltitude, isaDev, midStepAltitude > tropoAltitude, accelFactorMode);
             pathAngle = FlightModel.getConstantThrustPathAngleFromCoefficients(

@@ -14,6 +14,8 @@ import { Geometry } from '../Geometry';
 import { GuidanceComponent } from '../GuidanceComponent';
 import { GuidanceController } from '../GuidanceController';
 import { NauticalMiles } from '../../../../../typings';
+import { ClimbPathBuilder } from './climb/ClimbPathBuilder';
+import { ClimbProfileBuilderResult } from './climb/ClimbProfileBuilderResult';
 
 const PWP_IDENT_TOD = '(T/D)';
 const PWP_IDENT_DECEL = '(DECEL)';
@@ -21,6 +23,8 @@ const PWP_IDENT_FLAP1 = '(FLAP1)';
 const PWP_IDENT_FLAP2 = '(FLAP2)';
 
 export class VnavDriver implements GuidanceComponent {
+    currentClimbProfile: ClimbProfileBuilderResult;
+
     currentDescentProfile: TheoreticalDescentPathCharacteristics
 
     currentApproachProfile: DecelPathCharacteristics;
@@ -145,6 +149,7 @@ export class VnavDriver implements GuidanceComponent {
 
     private computeVerticalProfile(geometry: Geometry) {
         if (geometry.legs.size > 0) {
+            this.currentClimbProfile = ClimbPathBuilder.computeClimbPath(geometry);
             this.currentApproachProfile = DecelPathBuilder.computeDecelPath(geometry);
             this.currentDescentProfile = DescentBuilder.computeDescentPath(geometry, this.currentApproachProfile);
         } else if (DEBUG) {
