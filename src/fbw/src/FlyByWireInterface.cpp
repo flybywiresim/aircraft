@@ -1239,7 +1239,7 @@ bool FlyByWireInterface::updateFlyByWire(double sampleTime) {
 
   // determine if beta target needs to be active (blue)
   bool conditionDifferenceEngineN1Larger35 = (abs(simData.engine_N1_1_percent - simData.engine_N1_2_percent) > 35);
-  bool conditionConfigruation123 = (flapsHandler->getHandlePosition() > 0 && flapsHandler->getHandlePosition() < 4);
+  bool conditionConfigruation123 = (flapsHandleIndexFlapConf->get() > 0 && flapsHandleIndexFlapConf->get() < 4);
   bool conditionAnyEngineN1Above80 = (simData.engine_N1_1_percent > 80 || simData.engine_N1_2_percent > 80);
   bool conditionAnyThrustLeverAboveMct = (thrustLeverAngle_1->get() > 35 || thrustLeverAngle_2->get() > 35);
   bool conditionAnyThrustLeverInFlex = ((thrustLeverAngle_1->get() >= 35 || thrustLeverAngle_2->get() >= 35) &&

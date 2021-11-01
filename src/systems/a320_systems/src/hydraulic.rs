@@ -346,7 +346,7 @@ impl A320Hydraulic {
             ),
             aft_cargo_door_controller: A320DoorController::new(context, Self::AFT_CARGO_DOOR_ID),
 
-            slats_flaps_complex: SlatFlapComplex::new(),
+            slats_flaps_complex: SlatFlapComplex::new(context),
         }
     }
 
@@ -568,8 +568,12 @@ impl A320Hydraulic {
             self.yellow_loop.pressure(),
         );
 
-        self.slats_flaps_complex
-            .update(context, self.green_loop.pressure());
+        self.slats_flaps_complex.update(
+            context,
+            self.green_loop.pressure(),
+            self.blue_loop.pressure(),
+            self.yellow_loop.pressure(),
+        );
     }
 
     // For each hydraulic loop retrieves volumes from and to each actuator and pass it to the loops

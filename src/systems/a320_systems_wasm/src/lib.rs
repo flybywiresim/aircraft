@@ -13,7 +13,6 @@ use msfs::{
     sys,
 };
 
-use a320_systems::A320;
 use systems::{
     failures::FailureType,
     simulation::{VariableIdentifier, VariableRegistry},
@@ -157,7 +156,19 @@ struct SlatsSurface {
     right_slat: f64,
 }
 
+#[sim_connect::data_definition]
+struct FlapsHandleIndex {
+    #[name = "FLAPS HANDLE INDEX"]
+    #[unit = "Number"]
+    index: f64,
+}
+
 struct Flaps {
+    flaps_left_position_id: VariableIdentifier,
+    flaps_right_position_id: VariableIdentifier,
+    slats_left_position_id: VariableIdentifier,
+    slats_right_position_id: VariableIdentifier,
+
     //IDs of the flaps handle events
     id_flaps_incr: sys::DWORD,
     id_flaps_decr: sys::DWORD,
@@ -177,6 +188,8 @@ struct Flaps {
     right_flaps_position_sim_var: NamedVariable,
     left_slats_position_sim_var: NamedVariable,
     right_slats_position_sim_var: NamedVariable,
+
+    msfs_flaps_handle_index: FlapsHandleIndex,
     flaps_surface_sim_object: FlapsSurface,
     slats_surface_sim_object: SlatsSurface,
     flaps_handle_position: u8,
@@ -186,10 +199,17 @@ struct Flaps {
     left_slats_position: f64,
     right_slats_position: f64,
 }
-
-impl Flaps {
-    fn new(sim_connect: &mut Pin<&mut SimConnect>) -> Result<Self, Box<dyn std::error::Error>> {
+impl MsfsAspectCtor for Flaps {
+    fn new(
+        registry: &mut MsfsVariableRegistry,
+        sim_connect: &mut SimConnect,
+    ) -> Result<Self, Box<dyn Error>> {
         Ok(Self {
+            flaps_left_position_id: registry.get("LEFT_FLAPS_POSITION_PERCENT".to_owned()),
+            flaps_right_position_id: registry.get("RIGHT_FLAPS_POSITION_PERCENT".to_owned()),
+            slats_left_position_id: registry.get("LEFT_SLATS_POSITION_PERCENT".to_owned()),
+            slats_right_position_id: registry.get("RIGHT_SLATS_POSITION_PERCENT".to_owned()),
+
             id_flaps_incr: sim_connect.map_client_event_to_sim_event("FLAPS_INCR", true)?,
             id_flaps_decr: sim_connect.map_client_event_to_sim_event("FLAPS_DECR", true)?,
             id_flaps_1: sim_connect.map_client_event_to_sim_event("FLAPS_1", true)?,
@@ -207,6 +227,7 @@ impl Flaps {
             left_slats_position_sim_var: NamedVariable::from("A32NX_LEFT_SLATS_POSITION_PERCENT"),
             right_slats_position_sim_var: NamedVariable::from("A32NX_RIGHT_SLATS_POSITION_PERCENT"),
 
+            msfs_flaps_handle_index: FlapsHandleIndex { index: 0. },
             flaps_surface_sim_object: FlapsSurface {
                 left_flap: 0.,
                 right_flap: 0.,
@@ -224,9 +245,42 @@ impl Flaps {
             right_slats_position: 0.,
         })
     }
+}
 
+impl Flaps {
     fn flaps_handle_position_f64(&self) -> f64 {
         self.flaps_handle_position as f64
+    }
+
+    /// Tries to take actual surfaces position PERCENTS and convert it into flight model FLAP HANDLE INDEX
+    /// This index is used by MSFS to select correct aerodynamic properties
+    /// There is no index available for flaps but no slats configurations (possible plane failure case)
+    /// The percent thresholds can be tuned to change the timing of aerodynamic impact versus surface actual position
+    fn msfs_flap_index_from_surfaces_positions_percent(&self) -> u8 {
+        let flap_mean_position = (self.left_flaps_position + self.right_flaps_position) / 2.;
+        let slat_mean_position = (self.left_slats_position + self.right_slats_position) / 2.;
+
+        // Clean configuration no flaps no slats
+        if flap_mean_position < 2. && slat_mean_position < 2. {
+            return 0;
+        }
+
+        // Almost no flaps but some slats -> CONF 1
+        if flap_mean_position < 12. && slat_mean_position > 15. {
+            return 1;
+        }
+
+        if flap_mean_position > 80. {
+            5
+        } else if flap_mean_position > 49. {
+            4
+        } else if flap_mean_position > 30. {
+            3
+        } else if flap_mean_position > 12. {
+            2
+        } else {
+            0
+        }
     }
 
     fn get_handle_pos_from_0_1(&self, input: f64) -> u8 {
@@ -300,35 +354,35 @@ impl Flaps {
 }
 
 impl SimulatorAspect for Flaps {
-    fn read(&mut self, name: &str) -> Option<f64> {
-        match name {
-            "LEFT_FLAPS_POSITION_PERCENT" => Some(self.left_flaps_position),
-            "RIGHT_FLAPS_POSITION_PERCENT" => Some(self.right_flaps_position),
-            "LEFT_SLATS_POSITION_PERCENT" => Some(self.left_slats_position),
-            "RIGHT_SLATS_POSITION_PERCENT" => Some(self.right_slats_position),
-            _ => None,
+    fn read(&mut self, identifier: &VariableIdentifier) -> Option<f64> {
+        if identifier == &self.flaps_left_position_id {
+            Some(self.left_flaps_position)
+        } else if identifier == &self.flaps_right_position_id {
+            Some(self.right_flaps_position)
+        } else if identifier == &self.slats_left_position_id {
+            Some(self.left_slats_position)
+        } else if identifier == &self.slats_right_position_id {
+            Some(self.right_slats_position)
+        } else {
+            None
         }
     }
 
-    fn write(&mut self, name: &str, value: f64) -> bool {
-        match name {
-            "LEFT_FLAPS_POSITION_PERCENT" => {
-                self.left_flaps_position = value;
-                true
-            }
-            "RIGHT_FLAPS_POSITION_PERCENT" => {
-                self.right_flaps_position = value;
-                true
-            }
-            "LEFT_SLATS_POSITION_PERCENT" => {
-                self.left_slats_position = value;
-                true
-            }
-            "RIGHT_SLATS_POSITION_PERCENT" => {
-                self.right_slats_position = value;
-                true
-            }
-            _ => false,
+    fn write(&mut self, identifier: &VariableIdentifier, value: f64) -> bool {
+        if identifier == &self.flaps_left_position_id {
+            self.left_flaps_position = value;
+            true
+        } else if identifier == &self.flaps_right_position_id {
+            self.right_flaps_position = value;
+            true
+        } else if identifier == &self.slats_left_position_id {
+            self.left_slats_position = value;
+            true
+        } else if identifier == &self.slats_right_position_id {
+            self.right_slats_position = value;
+            true
+        } else {
+            false
         }
     }
 
@@ -340,17 +394,18 @@ impl SimulatorAspect for Flaps {
         }
     }
 
-    fn post_tick(
-        &mut self,
-        sim_connect: &mut Pin<&mut SimConnect>,
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    fn post_tick(&mut self, sim_connect: &mut SimConnect) -> Result<(), Box<dyn Error>> {
         self.flaps_surface_sim_object.left_flap = self.left_flaps_position;
         self.flaps_surface_sim_object.right_flap = self.right_flaps_position;
         self.slats_surface_sim_object.left_slat = self.left_slats_position;
         self.slats_surface_sim_object.right_slat = self.right_slats_position;
+        self.msfs_flaps_handle_index.index =
+            self.msfs_flap_index_from_surfaces_positions_percent() as f64;
 
         self.write_sim_vars();
 
+        sim_connect
+            .set_data_on_sim_object(SIMCONNECT_OBJECT_ID_USER, &self.msfs_flaps_handle_index);
         sim_connect
             .set_data_on_sim_object(SIMCONNECT_OBJECT_ID_USER, &self.flaps_surface_sim_object);
         sim_connect

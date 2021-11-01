@@ -944,7 +944,7 @@
     - Degrees
     - Indicates the target angle of the left flaps
       according to the configuration.
-    
+
 - A32NX_RIGHT_FLAPS_TARGET_ANGLE
     - Degrees
     - Indicates the target angle of the right flaps
@@ -954,7 +954,7 @@
     - Degrees
     - Indicates the target angle of the left slats
       according to the configuration.
-    
+
 - A32NX_RIGHT_SLATS_TARGET_ANGLE
     - Degrees
     - Indicates the target angle of the right slats
@@ -975,10 +975,10 @@
 - A32NX_RIGHT_SLATS_ANGLE
     - Degrees
     - The actual angle of the right slats
-    
+
 - A32NX_FLAPS_CONF_INDEX
     - Number
-    - Indicates the flap configuration index according to the table
+    - Indicates the desired flap configuration index according to the table
     - Value | Meaning
       --- | ---
       0 | Conf0
