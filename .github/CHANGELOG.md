@@ -59,6 +59,8 @@
 1. [MODEL] Add dynamic registration decal option - @tracernz (Mike)
 1. [FCU] Autopilot button integ light brightness corrected - @tracernz (Mike)
 1. [FBW] Reduced rotation law maximum pitch rate from 12°/s to 8°/s - @aguther (Andreas Guther)
+1. [FBW/AP/ATHR] Only enable client data section when a model runs externally - @aguther (Andreas Guther)
+1. [FBW/AP/ATHR] Added local variables to enable logging of flight controls and/or throttle events - @aguther (Andreas Guther)
 
 ## 0.7.0
 
