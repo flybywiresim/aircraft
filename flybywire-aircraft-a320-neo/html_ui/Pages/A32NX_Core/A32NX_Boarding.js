@@ -98,7 +98,7 @@ class A32NX_Boarding {
             return;
         }
 
-        if ((!airplaneCanBoard() && boardingRate == 'REAL') || (!airplaneCanBoard() && boardingRate == 'FAST') || (boardingRate == 'INSTANT' && !isOnGround)) {
+        if ((!airplaneCanBoard() && boardingRate == 'REAL') || (!airplaneCanBoard() && boardingRate == 'FAST')) {
             return;
         }
 

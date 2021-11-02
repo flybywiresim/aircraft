@@ -71,6 +71,7 @@ class CDUAocOfpData {
                 },
                 async (value) => {
                     await SimVar.SetSimVarValue(`L:${station.simVar}_DESIRED`, "Number", value);
+                    await setTargetCargo(value, '');
                     updateView();
                 }
             );
