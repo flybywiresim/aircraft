@@ -13,7 +13,7 @@ class LiveryPrinter extends TemplateElement {
         const url = document.getElementsByTagName("livery-printer-element")[0].getAttribute("url");
         this.index = parseInt(url.substring(url.length - 1));
         if (this.index == 0) {
-            localStorage.setItem("pages", "[]");
+            NXDataStore.set("pages", "[]");
         }
         this.lines = this.querySelector("#lines");
         const updateLoop = () => {
@@ -31,36 +31,27 @@ class LiveryPrinter extends TemplateElement {
     Update() {
 
         Coherent.on('A32NX_PRINT', (lines) => {
-            const pages = JSON.parse(localStorage.getItem("pages")) || [];
-
+            const pages = JSON.parse(NXDataStore.get("pages")) || [];
             if (this.index == 0) {
                 const currentPageID = SimVar.GetSimVarValue("L:A32NX_PAGE_ID", "number") - 1;
                 if (currentPageID >= 0 && pages[currentPageID] == null) {
                     pages[currentPageID] = lines;
-                    localStorage.setItem("pages", JSON.stringify(pages));
+                    NXDataStore.set("pages", JSON.stringify(pages));
                 }
             }
         });
 
-        const pages = JSON.parse(localStorage.getItem("pages")) || [];
+        const pages = JSON.parse(NXDataStore.get("pages")) || [];
         if (pages == null) {
             return;
         }
         let displayedPage = 0;
         if (this.index == 0) {
             displayedPage = pages.length - 1;
-            if (displayedPage != 0 && displayedPage !== this.lastDisplayedPage) {
-                return;
-            }
-            this.lastDisplayedPage = displayedPage;
         } else {
             let pagesPrinted = SimVar.GetSimVarValue("L:A32NX_PAGES_PRINTED", "number");
             const offset = SimVar.GetSimVarValue("L:A32NX_PRINT_PAGE_OFFSET", "number");
             displayedPage = pagesPrinted - 1 + offset;
-            if (displayedPage != 0 && displayedPage !== this.lastDisplayedPage) {
-                return;
-            }
-            this.lastDisplayedPage = displayedPage;
 
             const discard = SimVar.GetSimVarValue("L:A32NX_DISCARD_PAGE", "bool");
 
@@ -76,7 +67,7 @@ class LiveryPrinter extends TemplateElement {
 
             if (discard) {
                 pages.splice(displayedPage, 1);
-                localStorage.setItem("pages", JSON.stringify(pages));
+                NXDataStore.set("pages", JSON.stringify(pages));
                 pagesPrinted--;
                 SimVar.SetSimVarValue("L:A32NX_PAGES_PRINTED", "number", pagesPrinted);
                 SimVar.SetSimVarValue("L:A32NX_PAGE_ID", "number", SimVar.GetSimVarValue("L:A32NX_PAGE_ID", "number") - 1);
