@@ -1040,6 +1040,10 @@
 
 ## Fly-By-Wire System
 
+- A32NX_LOGGING_FLIGHT_CONTROLS_ENABLED
+    - Bool
+    - Indicates if logging of flight control events is enabled
+
 - A32NX_SIDESTICK_POSITION_X
     - Number
     - Provides the direct sidestick position (lateral)
@@ -1635,6 +1639,10 @@ In the variables below, {number} should be replaced with one item in the set: { 
       ACTIVE | 1
 
 ## Throttle Mapping System
+
+- A32NX_LOGGING_THROTTLES_ENABLED
+    - Bool
+    - Indicates if logging of throttle events is enabled
 
 - A32NX_THROTTLE_MAPPING_LOADED_CONFIG:{index}
     - Bool
