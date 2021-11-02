@@ -17,6 +17,7 @@ export const PressPage: FC = () => {
     const [cabinAlt] = useSimVar('L:A32NX_PRESS_CABIN_ALTITUDE', 'feet', 500);
     const [deltaPsi] = useSimVar('L:A32NX_PRESS_CABIN_DELTA_PRESSURE', 'psi', 500);
     const [flightPhase] = useSimVar('L:A32NX_FWC_FLIGHT_PHASE', 'enum', 1000);
+    const [systemNumber] = useSimVar("L:A32NX_PRESS_ACTIVE_CPC_SYS", "Number", 1000);
 
     const deltaPress = splitDecimals(deltaPsi);
     const vsx = 275;
@@ -25,14 +26,7 @@ export const PressPage: FC = () => {
     const y = 165;
 
     const radius = 50;
-    // FIXME: Once systems implemented reference that simvar rather than random number generator.
-    const [systemNumber, setSystemNumber] = useState(0);
-
     const safetyValve = 2;
-
-    useEffect(() => {
-        setSystemNumber(Math.random() < 0.5 ? 1 : 2);
-    }, []);
 
     return (
         <EcamPage name="main-press">
@@ -95,7 +89,7 @@ export const PressPage: FC = () => {
                     <GaugeMarkerComponent value={-1} x={vsx} y={y} min={-2} max={2} radius={radius} startAngle={180} endAngle={0} className="GaugeText" />
                     <GaugeMarkerComponent value={-2} x={vsx} y={y} min={-2} max={2} radius={radius} startAngle={180} endAngle={0} className="GaugeText" showValue />
                     <GaugeMarkerComponent
-                        value={cabinVs / 1000}
+                        value={Math.abs((cabinVs / 50 * 50) / 1000) <= 2.25 ? (cabinVs / 50 * 50) / 1000 : 2.250}
                         x={vsx}
                         y={y}
                         min={-2}
@@ -374,7 +368,7 @@ type OverboardInletComponentType = {
 }
 
 const OverboardInletComponent = ({ validSDAC, flightPhase }: OverboardInletComponentType) => {
-    const realInletValvePosition = 0.01;
+    const [realInletValvePosition] = useSimVar("L:VENT_INLET_VALVE", "Percent", 500);
     let indicator = true;
     let classNameValue = 'GreenLine';
     let classNameText = 'White';
@@ -429,7 +423,7 @@ type OverboardOutletComponentType = {
 }
 
 const OverboardOutletComponent = ({ validSDAC, flightPhase }: OverboardOutletComponentType) => {
-    const realOutletValvePosition = 0.01;
+    const [realOutletValvePosition] = useSimVar("L:VENT_OUTLET_VALVE", "Percent", 500);
     let indicator = true;
     let classNameValue = 'GreenLine';
     let classNameText = 'White';
