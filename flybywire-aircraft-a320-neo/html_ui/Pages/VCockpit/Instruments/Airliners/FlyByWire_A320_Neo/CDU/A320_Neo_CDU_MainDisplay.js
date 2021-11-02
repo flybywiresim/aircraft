@@ -111,9 +111,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         super.Init();
         Coherent.trigger('UNFOCUS_INPUT_FIELD');// note: without this, resetting mcdu kills camera
 
-        // LCD OVERLAY
-        this.lcdOverlay = document.querySelector("#LcdOverlay");
-
         this.minPageUpdateThrottler = new UpdateThrottler(100);
 
         this.generateHTMLLayout(this.getChildById("Mainframe") || this);
@@ -350,8 +347,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
     onUpdate(_deltaTime) {
         super.onUpdate(_deltaTime);
-
-        this.lcdOverlay.style.opacity = SimVar.GetSimVarValue("L:A32NX_MFD_MASK_OPACITY", "number");
 
         if (this.minPageUpdateThrottler.canUpdate(_deltaTime) !== -1 && this.updateRequest) {
             this.updateRequest = false;
