@@ -57,6 +57,7 @@
 1. [MCDU] Hide POSITION UPDATE AT field on PROG page when GPS is available - @BlueberryKing (BlueberryKing)
 1. [MCDU] Sort approaches by type - @tracernz (Mike)
 1. [MODEL] Add dynamic registration decal option - @tracernz (Mike)
+1. [FCU] Autopilot button integ light brightness corrected - @tracernz (Mike)
 
 ## 0.7.0
 
