@@ -1,3 +1,4 @@
+/* eslint-disable max-classes-per-file */
 type SignStatusMatrixRange = (typeof Arinc429Word.SignStatusMatrix)[keyof typeof Arinc429Word.SignStatusMatrix];
 
 export class Arinc429WordSsmParseError extends Error {

@@ -1,6 +1,5 @@
-/* eslint-disable max-classes-per-file */
-import { useSimVarValue } from './simVars';
 import { Arinc429Word, Arinc429WordSsmParseError } from '@shared/arinc429';
+import { useSimVarValue } from './simVars';
 
 export const useArinc429Var = (
     name: string,
