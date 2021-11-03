@@ -91,20 +91,20 @@ export const LoadSheetWidget = (props: LoadsheetPageProps) => {
         <div className="overflow-hidden relative p-6 mt-4 w-full rounded-lg border-2 shadow-md h-efb border-theme-accent">
             {props.loadsheet !== 'N/A' ? (
                 <>
-                    <div className="absolute top-6 right-16">
-                        <button
-                            type="button"
-                            onClick={handleFontIncrease}
-                            className="z-10 p-2 mb-2 bg-opacity-50 rounded-lg bg-navy-regular"
-                        >
-                            <ZoomIn size={30} />
-                        </button>
+                    <div className="absolute top-6 right-16 bg-theme-accent rounded-md">
                         <button
                             type="button"
                             onClick={handleFontDecrease}
-                            className="z-10 p-2 bg-opacity-50 rounded-lg bg-navy-regular"
+                            className="p-2 bg-opacity-50 hover:bg-opacity-100"
                         >
                             <ZoomOut size={30} />
+                        </button>
+                        <button
+                            type="button"
+                            onClick={handleFontIncrease}
+                            className="p-2 bg-opacity-50 hover:bg-opacity-100"
+                        >
+                            <ZoomIn size={30} />
                         </button>
                     </div>
                     <div
