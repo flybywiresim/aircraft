@@ -495,6 +495,8 @@ class AutopilotLawsModelClass {
     real_T ug_Gain;
     real_T Gain1_Gain_bf;
     real_T Gain_Gain_b0;
+    real_T Constant4_Value;
+    real_T Constant3_Value_nq;
     real_T Gain1_Gain_ik;
     real_T Gain_Gain_aj;
     real_T Switch_Threshold_l;
@@ -526,6 +528,8 @@ class AutopilotLawsModelClass {
     real_T ug_Gain_a;
     real_T Gain1_Gain_hm;
     real_T Gain_Gain_kj;
+    real_T Constant2_Value_c;
+    real_T Constant1_Value_b4;
     real_T Gain1_Gain_mz;
     real_T Gain_Gain_ie;
     real_T Switch_Threshold_b;
@@ -593,6 +597,8 @@ class AutopilotLawsModelClass {
     real_T ug_Gain_aa;
     real_T Gain1_Gain_gf;
     real_T Gain_Gain_j;
+    real_T Constant4_Value_f;
+    real_T Constant3_Value_h1;
     real_T Gain1_Gain_ovr;
     real_T Gain_Gain_jy;
     real_T Switch_Threshold_o;
@@ -624,6 +630,8 @@ class AutopilotLawsModelClass {
     real_T ug_Gain_f;
     real_T Gain1_Gain_ot;
     real_T Gain_Gain_dm;
+    real_T Constant2_Value_k;
+    real_T Constant1_Value_d;
     real_T Gain1_Gain_ou;
     real_T Gain_Gain_jg;
     real_T Switch_Threshold_a;
@@ -663,6 +671,8 @@ class AutopilotLawsModelClass {
     real_T ug_Gain_n;
     real_T Gain1_Gain_b1;
     real_T Gain_Gain_d0;
+    real_T Constant4_Value_o;
+    real_T Constant3_Value_nk;
     real_T Gain1_Gain_on;
     real_T Gain_Gain_hy;
     real_T Switch_Threshold_d;
@@ -694,6 +704,8 @@ class AutopilotLawsModelClass {
     real_T ug_Gain_e;
     real_T Gain1_Gain_be1;
     real_T Gain_Gain_gx;
+    real_T Constant2_Value_hd;
+    real_T Constant1_Value_o;
     real_T Gain1_Gain_nj;
     real_T Gain_Gain_aq;
     real_T Switch_Threshold_g;
@@ -728,7 +740,7 @@ class AutopilotLawsModelClass {
     real_T Saturation_UpperSat_ew;
     real_T Saturation_LowerSat_an;
     real_T Gain_Gain_by;
-    real_T Constant1_Value_o;
+    real_T Constant1_Value_o0;
     real_T fpmtoms_Gain_n;
     real_T kntoms_Gain_iv;
     real_T Saturation_UpperSat_je;
@@ -755,7 +767,7 @@ class AutopilotLawsModelClass {
     real_T ug_Gain_c;
     real_T Gain1_Gain_ejc;
     real_T Gain_Gain_p2;
-    real_T Constant2_Value_k;
+    real_T Constant2_Value_kz;
     real_T Gain1_Gain_h3;
     real_T Gain_Gain_ox;
     real_T Gain1_Gain_fo;
