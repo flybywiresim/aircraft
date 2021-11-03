@@ -45,7 +45,7 @@ export class Arinc429Word {
     }
 
     static fromSimVarValue(name: string): Arinc429Word {
-        return new Arinc429Word(SimVar.GetSimVarValue(name, "number"));
+        return new Arinc429Word(SimVar.GetSimVarValue(name, 'number'));
     }
 
     isFailureWarning() {
