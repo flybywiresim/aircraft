@@ -40,6 +40,14 @@ export class Arinc429Word {
         this.value = Arinc429Word.f32View[1];
     }
 
+    static empty(): Arinc429Word {
+        return new Arinc429Word(0);
+    }
+
+    static fromSimVarValue(name: string): Arinc429Word {
+        return new Arinc429Word(SimVar.GetSimVarValue(name, "number"));
+    }
+
     isFailureWarning() {
         return this.ssm === Arinc429Word.SignStatusMatrix.FailureWarning;
     }
