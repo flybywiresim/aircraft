@@ -129,7 +129,7 @@ impl<T: ApuGenerator, U: ApuStartMotor> AuxiliaryPowerUnit<T, U> {
         self.fuel_pressure_switch.update(has_fuel_remaining);
         self.ecb
             .update_fuel_pressure_switch_state(&self.fuel_pressure_switch);
-        bleed_air_valve.update_open_amount::<ApuBleedAirValveSignal>(self);
+        bleed_air_valve.update_open_amount::<ApuBleedAirValveSignal, Self>(self);
         self.ecb
             .update_bleed_air_valve_state(context, bleed_air_valve);
         self.air_intake_flap.update(context, &self.ecb);

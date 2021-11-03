@@ -42,7 +42,10 @@ pub trait PneumaticValveSignal {
 }
 
 pub trait ControllablePneumaticValve: PneumaticValve {
-    fn update_open_amount<T: PneumaticValveSignal>(&mut self, controller: &dyn ControllerSignal<T>);
+    fn update_open_amount<T: PneumaticValveSignal, U: ControllerSignal<T>>(
+        &mut self,
+        controller: &U,
+    );
 }
 
 pub trait PneumaticContainer {
@@ -363,24 +366,25 @@ impl Precooler {
     pub fn update(
         &mut self,
         context: &UpdateContext,
-        from: &mut impl PneumaticContainer,
+        container_one: &mut impl PneumaticContainer,
         supply: &mut impl PneumaticContainer,
-        to: &mut impl PneumaticContainer,
+        container_two: &mut impl PneumaticContainer,
     ) {
         let temperature_gradient = TemperatureInterval::new::<temperature_interval::degree_celsius>(
             supply.temperature().get::<degree_celsius>()
-                - from.temperature().get::<degree_celsius>(),
+                - container_one.temperature().get::<degree_celsius>(),
         );
 
         supply.update_temperature(
             -self.coefficient * temperature_gradient * context.delta_as_secs_f64(),
         );
-        from.update_temperature(
+        container_one.update_temperature(
             self.coefficient * temperature_gradient * context.delta_as_secs_f64(),
         );
 
         self.exhaust.update_move_fluid(context, supply);
-        self.internal_connector.update_move_fluid(context, from, to);
+        self.internal_connector
+            .update_move_fluid(context, container_one, container_two);
     }
 
     pub fn exhaust_flow(&self) -> VolumeRate {

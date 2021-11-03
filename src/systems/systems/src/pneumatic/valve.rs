@@ -34,14 +34,16 @@ impl PurelyPneumaticValve {
     pub fn update_move_fluid(
         &mut self,
         context: &UpdateContext,
-        from: &mut impl PneumaticContainer,
-        to: &mut impl PneumaticContainer,
+        container_one: &mut impl PneumaticContainer,
+        container_two: &mut impl PneumaticContainer,
     ) {
-        self.set_open_amount_from_pressure_difference(from.pressure() - to.pressure());
+        self.set_open_amount_from_pressure_difference(
+            container_one.pressure() - container_two.pressure(),
+        );
 
         self.connector
             .with_transfer_speed_factor(self.open_amount)
-            .update_move_fluid(context, from, to);
+            .update_move_fluid(context, container_one, container_two);
     }
 
     fn set_open_amount_from_pressure_difference(&mut self, pressure_difference: Pressure) {
@@ -88,16 +90,18 @@ impl ElectroPneumaticValve {
     pub fn update_move_fluid(
         &mut self,
         context: &UpdateContext,
-        from: &mut impl PneumaticContainer,
-        to: &mut impl PneumaticContainer,
+        container_one: &mut impl PneumaticContainer,
+        container_two: &mut impl PneumaticContainer,
     ) {
         if !self.is_powered {
-            self.set_open_amount_from_pressure_difference(from.pressure() - to.pressure())
+            self.set_open_amount_from_pressure_difference(
+                container_one.pressure() - container_two.pressure(),
+            )
         }
 
         self.connector
             .with_transfer_speed_factor(self.open_amount)
-            .update_move_fluid(context, from, to);
+            .update_move_fluid(context, container_one, container_two);
     }
 
     fn set_open_amount_from_pressure_difference(&mut self, pressure_difference: Pressure) {
@@ -127,9 +131,9 @@ impl PneumaticValve for ElectroPneumaticValve {
     }
 }
 impl ControllablePneumaticValve for ElectroPneumaticValve {
-    fn update_open_amount<T: PneumaticValveSignal>(
+    fn update_open_amount<T: PneumaticValveSignal, U: ControllerSignal<T>>(
         &mut self,
-        controller: &dyn ControllerSignal<T>,
+        controller: &U,
     ) {
         if self.is_powered {
             if let Some(signal) = controller.signal() {
@@ -181,12 +185,12 @@ impl DefaultValve {
     pub fn update_move_fluid(
         &mut self,
         context: &UpdateContext,
-        from: &mut impl PneumaticContainer,
-        to: &mut impl PneumaticContainer,
+        container_one: &mut impl PneumaticContainer,
+        container_two: &mut impl PneumaticContainer,
     ) {
         self.connector
             .with_transfer_speed_factor(self.open_amount)
-            .update_move_fluid(context, from, to);
+            .update_move_fluid(context, container_one, container_two);
     }
 
     pub fn fluid_flow(&self) -> VolumeRate {
@@ -194,9 +198,9 @@ impl DefaultValve {
     }
 }
 impl ControllablePneumaticValve for DefaultValve {
-    fn update_open_amount<T: PneumaticValveSignal>(
+    fn update_open_amount<T: PneumaticValveSignal, U: ControllerSignal<T>>(
         &mut self,
-        controller: &dyn ControllerSignal<T>,
+        controller: &U,
     ) {
         if let Some(signal) = controller.signal() {
             self.open_amount = signal.target_open_amount();
@@ -225,63 +229,67 @@ impl PneumaticContainerConnector {
         }
     }
 
+    /// Transfer fluid between two containers based on the pressure difference
     pub fn update_move_fluid(
         &mut self,
         context: &UpdateContext,
-        from: &mut impl PneumaticContainer,
-        to: &mut impl PneumaticContainer,
+        container_one: &mut impl PneumaticContainer,
+        container_two: &mut impl PneumaticContainer,
     ) {
-        self.heat_conduction(context, from, to);
+        self.heat_conduction(context, container_one, container_two);
 
-        let equalization_volume: Volume = (from
+        let equalization_volume: Volume = (container_one
             .pressure()
             .get::<pascal>()
             .powf(1. / Self::HEAT_CAPACITY_RATIO)
-            - to.pressure()
+            - container_two
+                .pressure()
                 .get::<pascal>()
                 .powf(1. / Self::HEAT_CAPACITY_RATIO))
-            * from.volume()
-            * to.volume()
-            / (to
+            * container_one.volume()
+            * container_two.volume()
+            / (container_two
                 .pressure()
                 .get::<pascal>()
                 .powf(1. / Self::HEAT_CAPACITY_RATIO)
-                * from.volume()
-                + from
+                * container_one.volume()
+                + container_one
                     .pressure()
                     .get::<pascal>()
                     .powf(1. / Self::HEAT_CAPACITY_RATIO)
-                    * to.volume());
+                    * container_two.volume());
 
         let fluid_to_move = (self.transfer_speed_factor
             * equalization_volume
             * (1. - (-Self::TRANSFER_SPEED * context.delta_as_secs_f64()).exp()))
-        .min(from.volume())
-        .max(-to.volume());
+        .min(container_one.volume())
+        .max(-container_two.volume());
 
-        self.move_volume(from, to, fluid_to_move);
+        self.move_volume(container_one, container_two, fluid_to_move);
 
         self.fluid_flow = fluid_to_move / context.delta_as_time();
     }
 
+    /// Transfer heat between two containers depending on the temperature difference
     fn heat_conduction(
         &self,
         context: &UpdateContext,
-        from: &mut impl PneumaticContainer,
-        to: &mut impl PneumaticContainer,
+        container_one: &mut impl PneumaticContainer,
+        container_two: &mut impl PneumaticContainer,
     ) {
         let coefficient = 1e-1;
 
         let temperature_gradient = TemperatureInterval::new::<temperature_interval::kelvin>(
-            from.temperature().get::<kelvin>() - to.temperature().get::<kelvin>(),
+            container_one.temperature().get::<kelvin>()
+                - container_two.temperature().get::<kelvin>(),
         );
 
-        from.update_temperature(
+        container_one.update_temperature(
             -coefficient
                 * temperature_gradient
                 * (1. - (-Self::HEAT_TRANSFER_SPEED * context.delta_as_secs_f64()).exp()),
         );
-        to.update_temperature(
+        container_two.update_temperature(
             coefficient
                 * temperature_gradient
                 * (1. - (-Self::HEAT_TRANSFER_SPEED * context.delta_as_secs_f64()).exp()),
