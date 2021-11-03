@@ -246,6 +246,8 @@ const SimOptionsPage = () => {
     const [mcduInput, setMcduInput] = usePersistentProperty('MCDU_KB_INPUT', 'DISABLED');
     const [mcduTimeout, setMcduTimeout] = usePersistentProperty('CONFIG_MCDU_KB_TIMEOUT', '60');
 
+    const [dynamicRegistration, setDynamicRegistration] = usePersistentProperty('DYNAMIC_REGISTRATION_DECAL', '0');
+
     const adirsAlignTimeButtons: (ButtonType & AdirsButton)[] = [
         { name: 'Instant', setting: 'INSTANT', simVarValue: 1 },
         { name: 'Fast', setting: 'FAST', simVarValue: 2 },
@@ -268,6 +270,11 @@ const SimOptionsPage = () => {
         { name: 'Auto', setting: 'AUTO' },
         { name: 'in Hg', setting: 'IN HG' },
         { name: 'hPa', setting: 'HPA' },
+    ];
+
+    const dynamicRegistrationButtons: ButtonType[] = [
+        { name: 'Disabled', setting: '0' },
+        { name: 'Enabled', setting: '1' },
     ];
 
     useEffect(() => {
@@ -367,6 +374,21 @@ const SimOptionsPage = () => {
                                 }
                             }}
                         />
+                    </div>
+
+                    <div className="py-4 flex flex-row justify-between items-center">
+                        <span className="text-lg text-gray-300 mr-1">Dynamic Registration Decal</span>
+                        <SelectGroup>
+                            {dynamicRegistrationButtons.map((button) => (
+                                <SelectItem
+                                    enabled
+                                    onSelect={() => setDynamicRegistration(button.setting)}
+                                    selected={dynamicRegistration === button.setting}
+                                >
+                                    {button.name}
+                                </SelectItem>
+                            ))}
+                        </SelectGroup>
                     </div>
                 </div>
                 <ControlSettings setShowSettings={setShowThrottleSettings} />
