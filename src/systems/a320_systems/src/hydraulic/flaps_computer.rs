@@ -1337,7 +1337,7 @@ mod tests {
     }
 
     #[test]
-    fn flaps_only_moves_when_yellow_only() {
+    fn only_flaps_move_when_yellow_only() {
         let mut test_bed = test_bed_with()
             .set_yellow_hyd_pressure()
             .set_indicated_airspeed(0.)
@@ -1363,7 +1363,7 @@ mod tests {
     }
 
     #[test]
-    fn slats_only_moves_when_blue_only() {
+    fn only_slats_move_when_blue_only() {
         let mut test_bed = test_bed_with()
             .set_blue_hyd_pressure()
             .set_indicated_airspeed(0.)
