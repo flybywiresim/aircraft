@@ -62,6 +62,7 @@
 1. [FBW/AP/ATHR] Only enable client data section when a model runs externally - @aguther (Andreas Guther)
 1. [FBW/AP/ATHR] Added local variables to enable logging of flight controls and/or throttle events - @aguther (Andreas Guther)
 1. [AP] Fixed VMAX speed protection for several modes not working properly - @aguther (Andreas Guther)
+1. [AP] Added support for event AUTOPILOT_DISENGAGE_SET to disengage AP - @aguther (Andreas Guther)
 
 ## 0.7.0
 
