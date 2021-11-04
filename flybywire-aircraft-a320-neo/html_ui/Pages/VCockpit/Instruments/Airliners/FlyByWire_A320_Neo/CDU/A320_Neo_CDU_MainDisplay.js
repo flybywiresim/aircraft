@@ -27,6 +27,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             Prog: 2000,
             Dyn: 1500
         };
+        this.fmgcMesssagesListener = RegisterViewListener('JS_LISTENER_SIMVARS');
         this.page = {
             SelfPtr: false,
             Current: 0,
