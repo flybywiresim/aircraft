@@ -956,7 +956,7 @@
       --- | ---
       0 | inactive
       1 | active
-    
+
 ## EIS Display System
 
 - A32NX_EFIS_{side}_NAVAID_{1|2}_MODE
@@ -1689,6 +1689,27 @@ In the variables below, {number} should be replaced with one item in the set: { 
 - A32NX_AUTOTHRUST_THRUST_LIMIT
     - Number (% N1)
     - Indicates the thrust limit N1
+
+- A32NX_AUTOTHRUST_THRUST_LIMIT_IDLE
+    - Number (% N1)
+    - Indicates the thrust limit N1 for IDLE
+
+- A32NX_AUTOTHRUST_THRUST_LIMIT_CLB
+    - Number (% N1)
+    - Indicates the thrust limit N1 for CLB
+
+- A32NX_AUTOTHRUST_THRUST_LIMIT_MCT
+    - Number (% N1)
+    - Indicates the thrust limit N1 for MCT
+
+- A32NX_AUTOTHRUST_THRUST_LIMIT_FLX
+    - Number (% N1)
+    - If FLX is not active the value 0 is provided
+    - Indicates the thrust limit N1 for FLX
+
+- A32NX_AUTOTHRUST_THRUST_LIMIT_TOGA
+    - Number (% N1)
+    - Indicates the thrust limit N1 for TOGA
 
 - A32NX_AUTOTHRUST_TLA_N1:{index}
     - Number (% N1)
