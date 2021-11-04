@@ -238,7 +238,7 @@ mod emergency_generator_tests {
     impl Aircraft for TestAircraft {
         fn update_before_power_distribution(
             &mut self,
-            _context: &UpdateContext,
+            _: &UpdateContext,
             electricity: &mut Electricity,
         ) {
             self.emer_gen.update(&self.hydraulic);
