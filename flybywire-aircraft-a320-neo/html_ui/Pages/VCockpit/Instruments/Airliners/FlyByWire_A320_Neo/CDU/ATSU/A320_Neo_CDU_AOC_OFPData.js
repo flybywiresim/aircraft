@@ -254,7 +254,7 @@ function getZfwcg() {
     const leMacZ = -5.386; // Accurate to 3 decimals, replaces debug weight values
     const macSize = 13.454; // Accurate to 3 decimals, replaces debug weight values
 
-    const emptyWeight = 93697 * 0.453592; // Value from flight_model.cfg to kgs
+    const emptyWeight = (SimVar.GetSimVarValue("EMPTY WEIGHT", "Number")) * 0.453592; // Value from flight_model.cfg to kgs
     const emptyPosition = -8.75; // Value from flight_model.cfg
     const emptyMoment = emptyPosition * emptyWeight;
 
@@ -290,6 +290,6 @@ function getTotalPayload() {
 }
 
 function getZfw() {
-    const emptyWeight = 93697 * 0.453592; // Value from flight_model.cfg to kgs
+    const emptyWeight = (SimVar.GetSimVarValue("EMPTY WEIGHT", "Number")) * 0.453592; // Value from flight_model.cfg to kgs
     return emptyWeight + getTotalPayload();
 }
