@@ -1,5 +1,5 @@
 import { GuidanceComponent } from '@fmgc/guidance/GuidanceComponent';
-import { PseudoWaypoint } from '@fmgc/guidance/PsuedoWaypoint';
+import { PseudoWaypoint, PseudoWaypointSequencingAction } from '@fmgc/guidance/PsuedoWaypoint';
 import { VnavConfig, VnavDescentMode } from '@fmgc/guidance/vnav/VnavConfig';
 import { NdSymbolTypeFlags } from '@shared/NavigationDisplay';
 import { Geometry } from '@fmgc/guidance/Geometry';
@@ -26,63 +26,73 @@ export class PseudoWaypoints implements GuidanceComponent {
         const newPseudoWaypoints: PseudoWaypoint[] = [];
 
         if (VnavConfig.VNAV_EMIT_TOD) {
-            const tod = PseudoWaypoints.findPointFromEndOfPath(geometry, this.guidanceController.vnavDriver.currentDescentProfile.tod);
+            const tod = PseudoWaypoints.pointFromEndOfPath(geometry, this.guidanceController.vnavDriver.currentDescentProfile.tod);
 
             if (tod) {
+                const [efisSymbolLla, distanceFromLegTermination, alongLegIndex] = tod;
+
                 newPseudoWaypoints.push({
                     ident: PWP_IDENT_TOD,
-                    alongLegIndex: tod[2],
-                    distanceFromLegTermination: tod[1],
+                    sequencingType: PseudoWaypointSequencingAction.TOD_REACHED,
+                    alongLegIndex,
+                    distanceFromLegTermination,
                     efisSymbolFlag: NdSymbolTypeFlags.PwpTopOfDescent,
-                    efisSymbolLla: tod[0],
+                    efisSymbolLla,
                     displayedOnMcdu: true,
-                    stats: PseudoWaypoints.computePseudoWaypointStats(PWP_IDENT_TOD, geometry.legs.get(tod[2]), this.guidanceController.vnavDriver.currentDescentProfile.tod),
+                    stats: PseudoWaypoints.computePseudoWaypointStats(PWP_IDENT_TOD, geometry.legs.get(alongLegIndex), distanceFromLegTermination),
                 });
             }
         }
 
         if (VnavConfig.VNAV_EMIT_DECEL) {
-            const decel = PseudoWaypoints.findPointFromEndOfPath(geometry, this.guidanceController.vnavDriver.currentApproachProfile.decel);
+            const decel = PseudoWaypoints.pointFromEndOfPath(geometry, this.guidanceController.vnavDriver.currentApproachProfile.decel);
 
             if (decel) {
+                const [efisSymbolLla, distanceFromLegTermination, alongLegIndex] = decel;
+
                 newPseudoWaypoints.push({
                     ident: PWP_IDENT_DECEL,
-                    alongLegIndex: decel[2],
-                    distanceFromLegTermination: decel[1],
+                    sequencingType: PseudoWaypointSequencingAction.APPROACH_PHASE_AUTO_ENGAGE,
+                    alongLegIndex,
+                    distanceFromLegTermination,
                     efisSymbolFlag: NdSymbolTypeFlags.PwpDecel,
-                    efisSymbolLla: decel[0],
+                    efisSymbolLla,
                     displayedOnMcdu: true,
-                    stats: PseudoWaypoints.computePseudoWaypointStats(PWP_IDENT_DECEL, geometry.legs.get(decel[2]), this.guidanceController.vnavDriver.currentApproachProfile.decel),
+                    stats: PseudoWaypoints.computePseudoWaypointStats(PWP_IDENT_DECEL, geometry.legs.get(alongLegIndex), distanceFromLegTermination),
                 });
             }
         }
 
         if (VnavConfig.VNAV_DESCENT_MODE === VnavDescentMode.CDA && VnavConfig.VNAV_EMIT_CDA_FLAP_PWP) {
-            const flap1 = PseudoWaypoints.findPointFromEndOfPath(geometry, this.guidanceController.vnavDriver.currentApproachProfile.flap1);
+            const flap1 = PseudoWaypoints.pointFromEndOfPath(geometry, this.guidanceController.vnavDriver.currentApproachProfile.flap1);
 
             if (flap1) {
+                const [efisSymbolLla, distanceFromLegTermination, alongLegIndex] = flap1;
+
                 newPseudoWaypoints.push({
                     ident: PWP_IDENT_FLAP1,
-                    alongLegIndex: flap1[2],
-                    distanceFromLegTermination: flap1[1],
+                    alongLegIndex,
+                    distanceFromLegTermination,
                     efisSymbolFlag: NdSymbolTypeFlags.PwpCdaFlap1,
-                    efisSymbolLla: flap1[0],
+                    efisSymbolLla,
                     displayedOnMcdu: true,
-                    stats: PseudoWaypoints.computePseudoWaypointStats(PWP_IDENT_FLAP1, geometry.legs.get(flap1[2]), this.guidanceController.vnavDriver.currentApproachProfile.flap1),
+                    stats: PseudoWaypoints.computePseudoWaypointStats(PWP_IDENT_FLAP1, geometry.legs.get(alongLegIndex), distanceFromLegTermination),
                 });
             }
 
-            const flap2 = PseudoWaypoints.findPointFromEndOfPath(geometry, this.guidanceController.vnavDriver.currentApproachProfile.flap2);
+            const flap2 = PseudoWaypoints.pointFromEndOfPath(geometry, this.guidanceController.vnavDriver.currentApproachProfile.flap2);
 
             if (flap2) {
+                const [efisSymbolLla, distanceFromLegTermination, alongLegIndex] = flap2;
+
                 newPseudoWaypoints.push({
                     ident: PWP_IDENT_FLAP2,
-                    alongLegIndex: flap2[2],
-                    distanceFromLegTermination: flap2[1],
+                    alongLegIndex,
+                    distanceFromLegTermination,
                     efisSymbolFlag: NdSymbolTypeFlags.PwpCdaFlap2,
-                    efisSymbolLla: flap2[0],
+                    efisSymbolLla,
                     displayedOnMcdu: true,
-                    stats: PseudoWaypoints.computePseudoWaypointStats(PWP_IDENT_FLAP2, geometry.legs.get(flap2[2]), this.guidanceController.vnavDriver.currentApproachProfile.flap2),
+                    stats: PseudoWaypoints.computePseudoWaypointStats(PWP_IDENT_FLAP2, geometry.legs.get(alongLegIndex), distanceFromLegTermination),
                 });
             }
         }
@@ -121,6 +131,16 @@ export class PseudoWaypoints implements GuidanceComponent {
         if (DEBUG) {
             console.log(`[FMS/PseudoWaypoints] Pseudo-waypoint '${pseudoWaypoint.ident}' sequenced.`);
         }
+
+        switch (pseudoWaypoint.sequencingType) {
+        case PseudoWaypointSequencingAction.TOD_REACHED:
+            // TODO EFIS message;
+            break;
+        case PseudoWaypointSequencingAction.APPROACH_PHASE_AUTO_ENGAGE:
+            // TODO engage APPROACH phase
+            break;
+        default:
+        }
     }
 
     /**
@@ -145,7 +165,7 @@ export class PseudoWaypoints implements GuidanceComponent {
         };
     }
 
-    private static findPointFromEndOfPath(path: Geometry, distanceFromEnd: NauticalMiles): [lla: Coordinates, distanceFromLegTermination: number, legIndex: number] | undefined {
+    private static pointFromEndOfPath(path: Geometry, distanceFromEnd: NauticalMiles): [lla: Coordinates, distanceFromLegTermination: number, legIndex: number] | undefined {
         let accumulator = 0;
 
         // FIXME take transitions into account on newer FMSs
