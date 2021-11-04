@@ -30,7 +30,7 @@ class LiveryPrinter extends TemplateElement {
 
         Coherent.on('A32NX_PRINT', (lines) => {
             const currentPageID = SimVar.GetSimVarValue("L:A32NX_PAGE_ID", "number") - 1;
-            if (currentPageID >= 0 && pages[currentPageID] == null) {
+            if (currentPageID >= 0 && this.pages[currentPageID] == null) {
                 this.pages[currentPageID] = lines;
             } else if (this.index === 0) {
                 this.pages = [];
