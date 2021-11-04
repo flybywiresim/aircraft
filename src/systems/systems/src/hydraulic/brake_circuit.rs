@@ -1,12 +1,12 @@
 use crate::{
     overhead::PressSingleSignalButton,
+    shared::low_pass_filter::LowPassFilter,
     shared::pid::PidController,
     simulation::{
         SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext, Write,
     },
 };
 
-use std::f64::consts::E;
 use std::time::Duration;
 
 use uom::si::{
@@ -138,14 +138,14 @@ pub struct BrakeCircuit {
     total_volume_to_reservoir: Volume,
 
     /// Fluid pressure in brake circuit filtered for cockpit gauges
-    accumulator_fluid_pressure_sensor_filtered: Pressure,
+    accumulator_fluid_pressure_sensor_filter: LowPassFilter<Pressure>,
 }
 impl BrakeCircuit {
     const ACCUMULATOR_GAS_PRE_CHARGE: f64 = 1000.0; // Nitrogen PSI
 
     // Filtered using time constant low pass: new_val = old_val + (new_val - old_val)* (1 - e^(-dt/TCONST))
     // Time constant of the filter used to measure brake circuit pressure
-    const ACC_PRESSURE_SENSOR_FILTER_TIMECONST: f64 = 0.1;
+    const ACC_PRESSURE_SENSOR_FILTER_TIMECONST: Duration = Duration::from_millis(100);
 
     pub fn new(
         context: &mut InitContext,
@@ -184,7 +184,9 @@ impl BrakeCircuit {
             total_volume_to_reservoir: Volume::new::<gallon>(0.),
 
             // Pressure measured after accumulator in brake circuit
-            accumulator_fluid_pressure_sensor_filtered: Pressure::new::<psi>(0.0),
+            accumulator_fluid_pressure_sensor_filter: LowPassFilter::<Pressure>::new(
+                Self::ACC_PRESSURE_SENSOR_FILTER_TIMECONST,
+            ),
         }
     }
 
@@ -251,14 +253,8 @@ impl BrakeCircuit {
         self.pressure_applied_left = self.left_brake_actuator.get_applied_brake_pressure();
         self.pressure_applied_right = self.right_brake_actuator.get_applied_brake_pressure();
 
-        self.accumulator_fluid_pressure_sensor_filtered = self
-            .accumulator_fluid_pressure_sensor_filtered
-            + (actual_pressure_available - self.accumulator_fluid_pressure_sensor_filtered)
-                * (1.
-                    - E.powf(
-                        -context.delta_as_secs_f64()
-                            / BrakeCircuit::ACC_PRESSURE_SENSOR_FILTER_TIMECONST,
-                    ));
+        self.accumulator_fluid_pressure_sensor_filter
+            .update(context.delta(), actual_pressure_available);
     }
 
     pub fn set_brake_demand_left(&mut self, brake_ratio: Ratio) {
@@ -282,7 +278,7 @@ impl BrakeCircuit {
     }
 
     fn accumulator_pressure(&self) -> Pressure {
-        self.accumulator_fluid_pressure_sensor_filtered
+        self.accumulator_fluid_pressure_sensor_filter.output()
     }
 
     pub fn accumulator_fluid_volume(&self) -> Volume {
@@ -392,25 +388,25 @@ pub struct AutobrakeDecelerationGovernor {
     pid_controller: PidController,
 
     current_output: f64,
-    filtered_acceleration: Acceleration,
+    acceleration_filter: LowPassFilter<Acceleration>,
 
     is_engaged: bool,
     time_engaged: Duration,
-    filter: f64,
 }
 impl AutobrakeDecelerationGovernor {
     // Low pass filter for controller acceleration input, time constant in second
-    const ACCELERATION_INPUT_FILTER: f64 = 0.1;
+    const ACCELERATION_FILTER_TIME_CONSTANT: Duration = Duration::from_millis(100);
 
     pub fn new() -> AutobrakeDecelerationGovernor {
         Self {
             pid_controller: PidController::new(0.3, 0.25, 0., -1., 0., 0.),
 
             current_output: 0.,
-            filtered_acceleration: Acceleration::new::<meter_per_second_squared>(0.),
+            acceleration_filter: LowPassFilter::<Acceleration>::new(
+                Self::ACCELERATION_FILTER_TIME_CONSTANT,
+            ),
             is_engaged: false,
             time_engaged: Duration::from_secs(0),
-            filter: Self::ACCELERATION_INPUT_FILTER,
         }
     }
 
@@ -438,7 +434,7 @@ impl AutobrakeDecelerationGovernor {
 
     pub fn is_on_target(&self, percent_margin_to_target: Ratio) -> bool {
         self.is_engaged
-            && self.filtered_acceleration
+            && self.acceleration_filter.output()
                 < Acceleration::new::<meter_per_second_squared>(self.pid_controller.setpoint())
                     * percent_margin_to_target.get::<ratio>()
     }
@@ -447,16 +443,16 @@ impl AutobrakeDecelerationGovernor {
         self.pid_controller
             .change_setpoint(target.get::<meter_per_second_squared>());
 
-        let accel = context.long_accel();
-        self.filtered_acceleration = self.filtered_acceleration
-            + (accel - self.filtered_acceleration)
-                * (1. - std::f64::consts::E.powf(-context.delta_as_secs_f64() / self.filter));
+        self.acceleration_filter
+            .update(context.delta(), context.long_accel());
 
         if self.is_engaged {
             self.time_engaged += context.delta();
 
             self.current_output = -self.pid_controller.next_control_output(
-                self.filtered_acceleration.get::<meter_per_second_squared>(),
+                self.acceleration_filter
+                    .output()
+                    .get::<meter_per_second_squared>(),
                 Some(context.delta()),
             );
         } else {
@@ -470,7 +466,7 @@ impl AutobrakeDecelerationGovernor {
     }
 
     pub fn decelerating_at_or_above_rate(&self, target_threshold: Acceleration) -> bool {
-        self.filtered_acceleration < target_threshold
+        self.acceleration_filter.output() < target_threshold
     }
 }
 impl Default for AutobrakeDecelerationGovernor {
