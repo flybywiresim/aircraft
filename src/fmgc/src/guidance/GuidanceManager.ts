@@ -25,16 +25,16 @@ export class GuidanceManager {
         this.flightPlanManager = flightPlanManager;
     }
 
-    private static tfBetween(from: WayPoint, to: WayPoint, segment: SegmentType) {
-        return new TFLeg(from, to, segment);
+    private static tfBetween(from: WayPoint, to: WayPoint, segment: SegmentType, indexInFullPath: number) {
+        return new TFLeg(from, to, segment, indexInFullPath);
     }
 
-    private static vmWithHeading(heading: Degrees, initialPosition: Coordinates, initialCourse: Degrees, segment: SegmentType) {
-        return new VMLeg(heading, initialPosition, initialCourse, segment);
+    private static vmWithHeading(heading: Degrees, initialPosition: Coordinates, initialCourse: Degrees, segment: SegmentType, indexInFullPath: number) {
+        return new VMLeg(heading, initialPosition, initialCourse, segment, indexInFullPath);
     }
 
-    private static rfLeg(from: WayPoint, to: WayPoint, center: LatLongData, segment: SegmentType) {
-        return new RFLeg(from, to, center, segment);
+    private static rfLeg(from: WayPoint, to: WayPoint, center: LatLongData, segment: SegmentType, indexInFullPath: number) {
+        return new RFLeg(from, to, center, segment, indexInFullPath);
     }
 
     getPreviousLeg(): RFLeg | TFLeg | VMLeg | null {
@@ -53,14 +53,14 @@ export class GuidanceManager {
         }
 
         if (to.additionalData && to.additionalData.legType === 17) {
-            return GuidanceManager.rfLeg(from, to, to.additionalData.center, segment);
+            return GuidanceManager.rfLeg(from, to, to.additionalData.center, segment, activeIndex - 1);
         }
 
         if (to.isVectors) {
-            return GuidanceManager.vmWithHeading(to.additionalData.vectorsHeading, to.infos.coordinates, to.additionalData.vectorsCourse, segment);
+            return GuidanceManager.vmWithHeading(to.additionalData.vectorsHeading, to.infos.coordinates, to.additionalData.vectorsCourse, segment, activeIndex - 1);
         }
 
-        return GuidanceManager.tfBetween(from, to, segment);
+        return GuidanceManager.tfBetween(from, to, segment, activeIndex - 1);
     }
 
     getActiveLeg(): RFLeg | TFLeg | VMLeg | null {
@@ -79,14 +79,14 @@ export class GuidanceManager {
         }
 
         if (to.additionalData && to.additionalData.legType === 17) {
-            return GuidanceManager.rfLeg(from, to, to.additionalData.center, segment);
+            return GuidanceManager.rfLeg(from, to, to.additionalData.center, segment, activeIndex);
         }
 
         if (to.isVectors) {
-            return GuidanceManager.vmWithHeading(to.additionalData.vectorsHeading, to.infos.coordinates, to.additionalData.vectorsCourse, segment);
+            return GuidanceManager.vmWithHeading(to.additionalData.vectorsHeading, to.infos.coordinates, to.additionalData.vectorsCourse, segment, activeIndex);
         }
 
-        return GuidanceManager.tfBetween(from, to, segment);
+        return GuidanceManager.tfBetween(from, to, segment, activeIndex);
     }
 
     getNextLeg(): RFLeg | TFLeg | VMLeg | null {
@@ -105,14 +105,14 @@ export class GuidanceManager {
         }
 
         if (to.additionalData && to.additionalData.legType === 17) {
-            return GuidanceManager.rfLeg(from, to, to.additionalData.center, segment);
+            return GuidanceManager.rfLeg(from, to, to.additionalData.center, segment, activeIndex + 1);
         }
 
         if (to.isVectors) {
-            return GuidanceManager.vmWithHeading(to.additionalData.vectorsHeading, to.infos.coordinates, to.additionalData.vectorsCourse, segment);
+            return GuidanceManager.vmWithHeading(to.additionalData.vectorsHeading, to.infos.coordinates, to.additionalData.vectorsCourse, segment, activeIndex + 1);
         }
 
-        return GuidanceManager.tfBetween(from, to, segment);
+        return GuidanceManager.tfBetween(from, to, segment, activeIndex + 1);
     }
 
     /**
@@ -197,7 +197,7 @@ export class GuidanceManager {
             }
 
             if (to.additionalData && to.additionalData.legType === 17) {
-                const currentLeg = GuidanceManager.rfLeg(from, to, to.additionalData.center, segment);
+                const currentLeg = GuidanceManager.rfLeg(from, to, to.additionalData.center, segment, i);
                 legs.set(i, currentLeg);
 
                 continue;
@@ -205,7 +205,7 @@ export class GuidanceManager {
 
             // If TO is a MANUAL leg, make a VM(FROM -> TO)
             if (to.isVectors) {
-                const currentLeg = GuidanceManager.vmWithHeading(to.additionalData.vectorsHeading, to.infos.coordinates, to.additionalData.vectorsCourse, segment);
+                const currentLeg = GuidanceManager.vmWithHeading(to.additionalData.vectorsHeading, to.infos.coordinates, to.additionalData.vectorsCourse, segment, i);
                 legs.set(i, currentLeg);
 
                 continue;
@@ -217,7 +217,7 @@ export class GuidanceManager {
             }
 
             // Leg (hard-coded to TF for now)
-            const currentLeg = new TFLeg(from, to, segment);
+            const currentLeg = new TFLeg(from, to, segment, i);
             legs.set(i, currentLeg);
 
             // Transition (hard-coded to Type 1 for now)

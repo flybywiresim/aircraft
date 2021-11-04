@@ -22,15 +22,18 @@ export class TFLeg implements Leg {
 
     public segment: SegmentType;
 
+    public indexInFullPath: number;
+
     public constraintType: WaypointConstraintType;
 
     private mDistance: NauticalMiles;
 
-    constructor(from: WayPoint, to: WayPoint, segment: SegmentType) {
+    constructor(from: WayPoint, to: WayPoint, segment: SegmentType, indexInFullPath: number) {
         this.from = from;
         this.to = to;
         this.mDistance = Avionics.Utils.computeGreatCircleDistance(this.from.infos.coordinates, this.to.infos.coordinates);
         this.segment = segment;
+        this.indexInFullPath = indexInFullPath;
         this.constraintType = to.constraintType;
     }
 

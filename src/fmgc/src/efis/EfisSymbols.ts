@@ -107,7 +107,7 @@ export class EfisSymbols {
             return false;
         };
 
-        EfisSymbols.sides.forEach(async (side) => {
+        for (const side of EfisSymbols.sides) {
             const range = rangeSettings[SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_ND_RANGE`, 'number')];
             const mode: Mode = SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_ND_MODE`, 'number');
             const efisOption = SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_OPTION`, 'Enum');
@@ -121,7 +121,7 @@ export class EfisSymbols {
             const nearbyOverlayChanged = efisOption !== EfisOption.Constraints && efisOption !== EfisOption.None && nearbyFacilitiesChanged;
 
             if (!pposChanged && !trueHeadingChanged && !rangeChange && !modeChange && !efisOptionChange && !nearbyOverlayChanged && !fpChanged && !planCentreChanged) {
-                return;
+                continue;
             }
 
             const [editAhead, editBehind, editBeside] = this.calculateEditArea(range, mode);
@@ -351,7 +351,7 @@ export class EfisSymbols {
 
             // Pseudo waypoints
 
-            for (const pwp of this.guidanceController.pseudoWaypoints) {
+            for (const pwp of this.guidanceController.currentPseudoWaypoints.filter((it) => it)) {
                 upsertSymbol({
                     databaseId: pwp.ident,
                     ident: pwp.ident,
@@ -376,7 +376,7 @@ export class EfisSymbols {
             setTimeout(() => {
                 this.blockUpdate = false;
             }, 200);
-        });
+        }
     }
 
     private vorDmeTypeFlag(type: VorType): NdSymbolTypeFlags {

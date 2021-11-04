@@ -74,8 +74,8 @@ export const FlightPlan: FC<FlightPathProps> = memo(({ x = 0, y = 0, symbols, fl
                 return (
                     <ConstraintMarker
                         key={symbol.databaseId}
-                        x={Math.round(position[0])}
-                        y={Math.round(position[1])}
+                        x={Number(MathUtils.fastToFixed(position[0], 1))}
+                        y={Number(MathUtils.fastToFixed(position[1], 1))}
                         type={symbol.type}
                         mapParams={mapParams}
                     />
@@ -92,8 +92,8 @@ export const FlightPlan: FC<FlightPathProps> = memo(({ x = 0, y = 0, symbols, fl
                     <SymbolMarker
                         key={symbol.databaseId}
                         ident={symbol.ident}
-                        x={Math.round(position[0])}
-                        y={Math.round(position[1])}
+                        x={Number(MathUtils.fastToFixed(position[0], 1))}
+                        y={Number(MathUtils.fastToFixed(position[1], 1))}
                         type={symbol.type}
                         length={symbol.length}
                         direction={symbol.direction}

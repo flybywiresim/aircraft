@@ -83,7 +83,7 @@ class CDUFlightPlanPage {
         const first = (mcdu.currentFlightPhase <= FmgcFlightPhases.TAKEOFF) ? 0 : activeFirst;
 
         // PWPs
-        const fmsPseudoWaypoints = mcdu.guidanceController.pseudoWaypoints;
+        const fmsPseudoWaypoints = mcdu.guidanceController.currentPseudoWaypoints;
 
         // Primary F-PLAN
         for (let i = first; i < fpm.getWaypointsCount(); i++) {

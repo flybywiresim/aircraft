@@ -3,36 +3,47 @@
 
 import { Geometry } from '@fmgc/guidance/Geometry';
 import { PseudoWaypoint } from '@fmgc/guidance/PsuedoWaypoint';
+import { PseudoWaypoints } from '@fmgc/guidance/lnav/PseudoWaypoints';
 import { LnavDriver } from './lnav/LnavDriver';
 import { FlightPlanManager } from '../flightplanning/FlightPlanManager';
 import { GuidanceManager } from './GuidanceManager';
 import { VnavDriver } from './vnav/VnavDriver';
+import { NauticalMiles } from '../../../../typings';
 
 export class GuidanceController {
     public flightPlanManager: FlightPlanManager;
 
     public guidanceManager: GuidanceManager;
 
-    private lnavDriver: LnavDriver;
+    public lnavDriver: LnavDriver;
 
-    private vnavDriver: VnavDriver;
+    public vnavDriver: VnavDriver;
+
+    private pseudoWaypoints: PseudoWaypoints;
 
     public currentMultipleLegGeometry: Geometry;
 
-    public pseudoWaypoints: PseudoWaypoint[] = [];
+    public activeLegIndex: number;
+
+    public activeLegDtg: NauticalMiles;
+
+    public currentPseudoWaypoints: PseudoWaypoint[] = [];
 
     constructor(flightPlanManager: FlightPlanManager, guidanceManager: GuidanceManager) {
         this.flightPlanManager = flightPlanManager;
         this.guidanceManager = guidanceManager;
 
         this.lnavDriver = new LnavDriver(this);
-        this.vnavDriver = new VnavDriver(this);
+        this.vnavDriver = new VnavDriver();
+        this.pseudoWaypoints = new PseudoWaypoints(this);
     }
 
     init() {
         console.log('[FMGC/Guidance] GuidanceController initialized!');
 
         this.lnavDriver.init();
+        this.vnavDriver.init();
+        this.pseudoWaypoints.init();
 
         this.currentMultipleLegGeometry = this.guidanceManager.getMultipleLegGeometry();
     }
@@ -52,10 +63,12 @@ export class GuidanceController {
 
             this.lnavDriver.acceptNewMultipleLegGeometry(this.currentMultipleLegGeometry);
             this.vnavDriver.acceptNewMultipleLegGeometry(this.currentMultipleLegGeometry);
+            this.pseudoWaypoints.acceptNewMultipleLegGeometry(this.currentMultipleLegGeometry);
         }
 
         this.lnavDriver.update(deltaTime);
         this.vnavDriver.update(deltaTime);
+        this.pseudoWaypoints.update(deltaTime);
     }
 
     /**
@@ -66,6 +79,6 @@ export class GuidanceController {
      * @param pseudoWaypoint the {@link PseudoWaypoint} to sequence.
      */
     public sequencePseudoWaypoint(pseudoWaypoint: PseudoWaypoint): void {
-        this.vnavDriver.sequencePseudoWaypoint(pseudoWaypoint);
+        this.pseudoWaypoints.sequencePseudoWaypoint(pseudoWaypoint);
     }
 }

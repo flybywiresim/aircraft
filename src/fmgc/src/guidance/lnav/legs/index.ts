@@ -31,6 +31,8 @@ export interface SpeedConstraint {
 export interface Leg extends Guidable {
     segment: SegmentType;
 
+    indexInFullPath: number;
+
     get isCircularArc(): boolean;
 
     get bearing(): Degrees;

@@ -22,6 +22,8 @@ export class RFLeg implements Leg {
 
     public segment: SegmentType;
 
+    public indexInFullPath: number;
+
     // location of the centre fix of the arc
     public center: LatLongData;
 
@@ -33,12 +35,13 @@ export class RFLeg implements Leg {
 
     private mDistance: NauticalMiles;
 
-    constructor(from: WayPoint, to: WayPoint, center: LatLongData, segment: SegmentType) {
+    constructor(from: WayPoint, to: WayPoint, center: LatLongData, segment: SegmentType, indexInFullPath: number) {
         this.from = from;
         this.to = to;
         this.center = center;
         this.radius = Avionics.Utils.computeGreatCircleDistance(this.center, this.to.infos.coordinates);
         this.segment = segment;
+        this.indexInFullPath = indexInFullPath;
 
         const bearingFrom = Avionics.Utils.computeGreatCircleHeading(this.center, this.from.infos.coordinates); // -90?
         const bearingTo = Avionics.Utils.computeGreatCircleHeading(this.center, this.to.infos.coordinates); // -90?
