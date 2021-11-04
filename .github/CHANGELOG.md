@@ -4,6 +4,16 @@
 <!-- Use the following format below -->
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 
+## 0.7.2
+
+1. [MCDU] Hide POSITION UPDATE AT field on PROG page when GPS is available - @BlueberryKing (BlueberryKing)
+1. [MCDU] Sort approaches by type - @tracernz (Mike)
+1. [FCU] Autopilot button integ light brightness corrected - @tracernz (Mike)
+1. [FBW/AP/ATHR] Only enable client data section when a model runs externally - @aguther (Andreas Guther)
+1. [FBW/AP/ATHR] Added local variables to enable logging of flight controls and/or throttle events - @aguther (Andreas Guther)
+1. [AP] Fixed VMAX speed protection for several modes not working properly - @aguther (Andreas Guther)
+1. [AP] Added support for event AUTOPILOT_DISENGAGE_SET to disengage AP - @aguther (Andreas Guther)
+
 ## 0.7.1
 
 1. [FBW] Improved speed dependent roll law model - @IbrahimK42 (IbrahimK42)
@@ -38,13 +48,6 @@
 1. [AP] Fixed V/S, FPA or ALT* speed protection to engage too early on high altitudes - @aguther (Andreas Guther)
 1. [ECAM] Fixed misaligned items on ecam memos - @tyler58546 (tyler58546)
 1. [FBW] Fixed instability of roll law due to turbulence or low performance - @IbrahimK42 (IbrahimK42) and @aguther (Andreas Guther)
-1. [MCDU] Hide POSITION UPDATE AT field on PROG page when GPS is available - @BlueberryKing (BlueberryKing)
-1. [MCDU] Sort approaches by type - @tracernz (Mike)
-1. [FCU] Autopilot button integ light brightness corrected - @tracernz (Mike)
-1. [FBW/AP/ATHR] Only enable client data section when a model runs externally - @aguther (Andreas Guther)
-1. [FBW/AP/ATHR] Added local variables to enable logging of flight controls and/or throttle events - @aguther (Andreas Guther)
-1. [AP] Fixed VMAX speed protection for several modes not working properly - @aguther (Andreas Guther)
-1. [AP] Added support for event AUTOPILOT_DISENGAGE_SET to disengage AP - @aguther (Andreas Guther)
 
 ## 0.7.0
 
