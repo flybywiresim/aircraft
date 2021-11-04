@@ -4,6 +4,7 @@ class LiveryPrinter extends TemplateElement {
         this.curTime = 0.0;
         this.bNeedUpdate = false;
         this._isConnected = false;
+        this.pages = [];
     }
     get templateID() {
         return "LiveryPrinter";
@@ -12,9 +13,6 @@ class LiveryPrinter extends TemplateElement {
         super.connectedCallback();
         const url = document.getElementsByTagName("livery-printer-element")[0].getAttribute("url");
         this.index = parseInt(url.substring(url.length - 1));
-        if (this.index == 0) {
-            localStorage.setItem("pages", "[]");
-        }
         this.lines = this.querySelector("#lines");
         const updateLoop = () => {
             if (!this._isConnected) {
@@ -31,23 +29,18 @@ class LiveryPrinter extends TemplateElement {
     Update() {
 
         Coherent.on('A32NX_PRINT', (lines) => {
-            const pages = JSON.parse(localStorage.getItem("pages")) || [];
-            if (this.index == 0) {
-                const currentPageID = SimVar.GetSimVarValue("L:A32NX_PAGE_ID", "number") - 1;
-                if (currentPageID >= 0 && pages[currentPageID] == null) {
-                    pages[currentPageID] = lines;
-                    localStorage.setItem("pages", JSON.stringify(pages));
-                }
+            const currentPageID = SimVar.GetSimVarValue("L:A32NX_PAGE_ID", "number") - 1;
+            if (currentPageID >= 0 && this.pages[currentPageID] == null) {
+                this.pages[currentPageID] = lines;
             }
         });
 
-        const pages = JSON.parse(localStorage.getItem("pages")) || [];
-        if (pages == null) {
+        if (this.pages == null) {
             return;
         }
         let displayedPage = 0;
         if (this.index == 0) {
-            displayedPage = pages.length - 1;
+            displayedPage = this.pages.length - 1;
         } else {
             let pagesPrinted = SimVar.GetSimVarValue("L:A32NX_PAGES_PRINTED", "number");
             const offset = SimVar.GetSimVarValue("L:A32NX_PRINT_PAGE_OFFSET", "number");
@@ -66,8 +59,6 @@ class LiveryPrinter extends TemplateElement {
             }
 
             if (discard) {
-                pages.splice(displayedPage, 1);
-                localStorage.setItem("pages", JSON.stringify(pages));
                 pagesPrinted--;
                 SimVar.SetSimVarValue("L:A32NX_PAGES_PRINTED", "number", pagesPrinted);
                 SimVar.SetSimVarValue("L:A32NX_PAGE_ID", "number", SimVar.GetSimVarValue("L:A32NX_PAGE_ID", "number") - 1);
@@ -76,7 +67,7 @@ class LiveryPrinter extends TemplateElement {
         }
 
         let newLines = '';
-        const page = pages[displayedPage] || [];
+        const page = this.pages[displayedPage] || [];
         for (const value of page) {
             newLines += `<span class="line">${value}<br/></span>`;
         }
