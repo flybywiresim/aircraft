@@ -127,7 +127,7 @@ const SimpleInput = (props: SimpleInputProps) => {
                 )
                 : (
                     <>
-                        <div className={`flex ${props.reverse ? `flex-${props.labelPosition ?? 'row'}-reverse` : `flex-${props.labelPosition ?? 'row'}`}`}>
+                        <div className={`flex ${props.reverse && props.labelPosition === 'row' ? 'flex-row-reverse' : `flex-${props.labelPosition ?? 'row'}`}`}>
                             <div className={`text-lg flex flex-grow ${props.noLeftMargin ? '' : 'm-2.5'} items-center ${props.reverse ? 'justify-start' : 'justify-end'}`}>{props.label}</div>
                             <div className="flex items-center">
                                 <input

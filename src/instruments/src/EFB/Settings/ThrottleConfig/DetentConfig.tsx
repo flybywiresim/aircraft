@@ -93,7 +93,8 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
                                 label="Deadband +/-"
                                 className="w-52 mb-4"
                                 value={deadZone}
-                                labelPosition="row"
+                                labelPosition="col"
+                                reverse
                                 noLeftMargin
                                 onChange={(deadZone) => {
                                     if (parseFloat(deadZone) >= 0.01) {
