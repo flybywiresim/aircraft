@@ -535,8 +535,7 @@ class AutopilotLawsModelClass {
     real_T Switch_Threshold_b;
     real_T Gain1_Gain_f1;
     real_T Gain_Gain_lr;
-    real_T uDLookupTable_tableData[4];
-    real_T uDLookupTable_bp01Data[4];
+    real_T Constant_Value_ig;
     real_T fpmtoms_Gain_i;
     real_T kntoms_Gain_hx;
     real_T Saturation_UpperSat_nd;
@@ -637,8 +636,7 @@ class AutopilotLawsModelClass {
     real_T Switch_Threshold_a;
     real_T Gain1_Gain_gy;
     real_T Gain_Gain_eq;
-    real_T uDLookupTable_tableData_c[4];
-    real_T uDLookupTable_bp01Data_l[4];
+    real_T Constant_Value_ga;
     real_T fpmtoms_Gain_ps;
     real_T kntoms_Gain_c;
     real_T Saturation_UpperSat_oz;
@@ -711,8 +709,7 @@ class AutopilotLawsModelClass {
     real_T Switch_Threshold_g;
     real_T Gain1_Gain_fle;
     real_T Gain_Gain_ko;
-    real_T uDLookupTable_tableData_cr[4];
-    real_T uDLookupTable_bp01Data_d[4];
+    real_T Constant_Value_fo;
     real_T Gain2_Gain_m;
     real_T Gain4_Gain_g;
     real_T Gain3_Gain_n;
