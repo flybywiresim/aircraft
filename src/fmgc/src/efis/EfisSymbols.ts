@@ -353,7 +353,7 @@ export class EfisSymbols {
 
             for (const pwp of this.guidanceController.currentPseudoWaypoints.filter((it) => it)) {
                 upsertSymbol({
-                    databaseId: pwp.ident,
+                    databaseId: `W      ${pwp.ident}`,
                     ident: pwp.ident,
                     location: pwp.efisSymbolLla,
                     type: pwp.efisSymbolFlag,
