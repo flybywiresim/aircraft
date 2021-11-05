@@ -6,6 +6,7 @@ use num_derive::FromPrimitive;
 use std::{cell::Ref, fmt::Display, time::Duration};
 use uom::si::{f64::*, pressure::hectopascal, thermodynamic_temperature::degree_celsius};
 
+pub mod low_pass_filter;
 pub mod pid;
 
 mod random;
