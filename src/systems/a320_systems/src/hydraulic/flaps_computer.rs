@@ -179,11 +179,11 @@ impl SlatFlapControlComputer {
 }
 
 trait SlatFlapLane {
-    fn signal_demanded_angle(&self, surface_type: &'static str) -> Option<Angle>;
+    fn signal_demanded_angle(&self, surface_type: &str) -> Option<Angle>;
 }
 
 impl SlatFlapLane for SlatFlapControlComputer {
-    fn signal_demanded_angle(&self, surface_type: &'static str) -> Option<Angle> {
+    fn signal_demanded_angle(&self, surface_type: &str) -> Option<Angle> {
         match surface_type {
             "FLAPS"
                 if Self::surface_movement_required(
@@ -227,7 +227,7 @@ struct SlatFlapGear {
     right_position_percent_id: VariableIdentifier,
     left_position_angle_id: VariableIdentifier,
     right_position_angle_id: VariableIdentifier,
-    surface_type: &'static str,
+    surface_type: String,
 }
 
 pub trait FeedbackPositionPickoffUnit {
@@ -247,7 +247,7 @@ impl SlatFlapGear {
         context: &mut InitContext,
         speed: AngularVelocity,
         max_angle: Angle,
-        surface_type: &'static str,
+        surface_type: &str,
     ) -> Self {
         Self {
             current_angle: Angle::new::<degree>(0.),
@@ -263,7 +263,7 @@ impl SlatFlapGear {
             right_position_angle_id: context
                 .get_identifier(format!("RIGHT_{}_ANGLE", surface_type)),
 
-            surface_type,
+            surface_type: surface_type.to_string(),
         }
     }
 
@@ -277,7 +277,7 @@ impl SlatFlapGear {
         if hydraulic_pressure_left_side.get::<psi>() > 1500.
             || hydraulic_pressure_right_side.get::<psi>() > 1500.
         {
-            if let Some(demanded_angle) = sfcc.signal_demanded_angle(self.surface_type) {
+            if let Some(demanded_angle) = sfcc.signal_demanded_angle(&self.surface_type) {
                 let actual_minus_target = demanded_angle - self.current_angle;
                 if actual_minus_target.get::<degree>().abs() > Self::ANGLE_DELTA_DEGREE {
                     self.current_angle += Angle::new::<degree>(
