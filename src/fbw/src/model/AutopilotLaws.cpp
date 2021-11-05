@@ -1315,9 +1315,8 @@ void AutopilotLawsModelClass::step()
 
   b_R += AutopilotLaws_P.Gain_Gain_kj * rtb_out_f - Phi2;
   AutopilotLaws_SpeedProtectionSignalSelection(&AutopilotLaws_Y.out, b_L, AutopilotLaws_P.VS_Gain * b_L, rtb_Sum2_o,
-    AutopilotLaws_P.Gain_Gain_m0 * rtb_Sum2_o, b_R, AutopilotLaws_P.Gain_Gain_lr * b_R, look1_binlxpw
-    (AutopilotLaws_U.in.data.H_ft, AutopilotLaws_P.uDLookupTable_bp01Data, AutopilotLaws_P.uDLookupTable_tableData, 3U),
-    &L, &rtb_out_f);
+    AutopilotLaws_P.Gain_Gain_m0 * rtb_Sum2_o, b_R, AutopilotLaws_P.Gain_Gain_lr * b_R,
+    AutopilotLaws_P.Constant_Value_ig, &L, &rtb_out_f);
   rtb_Gain_no = AutopilotLaws_P.kntoms_Gain_hx * AutopilotLaws_U.in.data.V_gnd_kn;
   if (rtb_Gain_no > AutopilotLaws_P.Saturation_UpperSat_nd) {
     rtb_Gain_no = AutopilotLaws_P.Saturation_UpperSat_nd;
@@ -1522,9 +1521,8 @@ void AutopilotLawsModelClass::step()
 
   b_R += AutopilotLaws_P.Gain_Gain_dm * rtb_Sum2_o - Phi2;
   AutopilotLaws_SpeedProtectionSignalSelection(&AutopilotLaws_Y.out, rtb_Y_o, b_L, rtb_Add3_gy,
-    AutopilotLaws_P.Gain_Gain_h4 * rtb_Add3_gy, b_R, AutopilotLaws_P.Gain_Gain_eq * b_R, look1_binlxpw
-    (AutopilotLaws_U.in.data.H_ft, AutopilotLaws_P.uDLookupTable_bp01Data_l, AutopilotLaws_P.uDLookupTable_tableData_c,
-     3U), &rtb_Gain1_pj, &rtb_Sum2_o);
+    AutopilotLaws_P.Gain_Gain_h4 * rtb_Add3_gy, b_R, AutopilotLaws_P.Gain_Gain_eq * b_R,
+    AutopilotLaws_P.Constant_Value_ga, &rtb_Gain1_pj, &rtb_Sum2_o);
   rtb_Gain_no = AutopilotLaws_P.kntoms_Gain_c * AutopilotLaws_U.in.data.V_gnd_kn;
   if (rtb_Gain_no > AutopilotLaws_P.Saturation_UpperSat_oz) {
     rtb_Gain_no = AutopilotLaws_P.Saturation_UpperSat_oz;
@@ -1653,9 +1651,8 @@ void AutopilotLawsModelClass::step()
 
   b_R += AutopilotLaws_P.Gain_Gain_gx * b_L - Phi2;
   AutopilotLaws_SpeedProtectionSignalSelection(&AutopilotLaws_Y.out, rtb_Add3_gy, rtb_Y_o, rtb_Add3_n2,
-    AutopilotLaws_P.Gain_Gain_fnw * rtb_Add3_n2, b_R, AutopilotLaws_P.Gain_Gain_ko * b_R, look1_binlxpw
-    (AutopilotLaws_U.in.data.H_ft, AutopilotLaws_P.uDLookupTable_bp01Data_d, AutopilotLaws_P.uDLookupTable_tableData_cr,
-     3U), &rtb_FD_a, &rtb_Cos1_o1);
+    AutopilotLaws_P.Gain_Gain_fnw * rtb_Add3_n2, b_R, AutopilotLaws_P.Gain_Gain_ko * b_R,
+    AutopilotLaws_P.Constant_Value_fo, &rtb_FD_a, &rtb_Cos1_o1);
   rtb_Add3_gy = AutopilotLaws_P.Gain2_Gain_m * AutopilotLaws_U.in.data.H_dot_ft_min *
     AutopilotLaws_P.DiscreteDerivativeVariableTs1_Gain;
   Phi2 = rtb_Add3_gy - AutopilotLaws_DWork.Delay_DSTATE_hi;
