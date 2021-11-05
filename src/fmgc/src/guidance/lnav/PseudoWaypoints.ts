@@ -7,6 +7,7 @@ import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { Leg } from '@fmgc/guidance/lnav/legs';
 import { WaypointStats } from '@fmgc/flightplanning/data/flightplan';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
+import { LateralMode } from '@shared/autopilot';
 import { NauticalMiles } from '../../../../../typings';
 
 const PWP_IDENT_TOD = '(T/D)';
@@ -137,7 +138,17 @@ export class PseudoWaypoints implements GuidanceComponent {
             // TODO EFIS message;
             break;
         case PseudoWaypointSequencingAction.APPROACH_PHASE_AUTO_ENGAGE:
-            // TODO engage APPROACH phase
+            const apLateralMode = SimVar.GetSimVarValue('L:A32NX_FMA_LATERAL_MODE', 'Number');
+            const agl = Simplane.getAltitudeAboveGround();
+
+            if (agl < 9500 && (apLateralMode === LateralMode.NAV || apLateralMode === LateralMode.LOC_CPT || apLateralMode === LateralMode.LOC_TRACK)) {
+                // Request APPROACH phase engagement for 5 seconds
+                SimVar.SetSimVarValue('L:A32NX_FM_ENABLE_APPROACH_PHASE', 'Bool', true).then(() => [
+                    setTimeout(() => {
+                        SimVar.SetSimVarValue('L:A32NX_FM_ENABLE_APPROACH_PHASE', 'Bool', false);
+                    }, 5_000),
+                ]);
+            }
             break;
         default:
         }

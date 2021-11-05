@@ -4,6 +4,7 @@
 import { TheoreticalDescentPathCharacteristics } from '@fmgc/guidance/vnav/descent/TheoreticalDescentPath';
 import { DecelPathBuilder, DecelPathCharacteristics } from '@fmgc/guidance/vnav/descent/DecelPathBuilder';
 import { DescentBuilder } from '@fmgc/guidance/vnav/descent/DescentBuilder';
+import { VnavConfig } from '@fmgc/guidance/vnav/VnavConfig';
 import { Geometry } from '../Geometry';
 import { GuidanceComponent } from '../GuidanceComponent';
 import { ClimbPathBuilder } from './climb/ClimbPathBuilder';
@@ -30,7 +31,9 @@ export class VnavDriver implements GuidanceComponent {
 
     private computeVerticalProfile(geometry: Geometry) {
         if (geometry.legs.size > 0) {
-            this.currentClimbProfile = ClimbPathBuilder.computeClimbPath(geometry);
+            if (VnavConfig.VNAV_CALCULATE_CLIMB_PROFILE) {
+                this.currentClimbProfile = ClimbPathBuilder.computeClimbPath(geometry);
+            }
             this.currentApproachProfile = DecelPathBuilder.computeDecelPath(geometry);
             this.currentDescentProfile = DescentBuilder.computeDescentPath(geometry, this.currentApproachProfile);
         } else if (DEBUG) {

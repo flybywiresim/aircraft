@@ -287,6 +287,7 @@ class A32NX_FlightPhase_Descent {
     check(_deltaTime, _fmc) {
         const fl = Math.round(Simplane.getAltitude() / 100);
         const fcuSelFl = Simplane.getAutoPilotDisplayedAltitudeLockValue("feet") / 100;
+
         if (fl === _fmc.cruiseFlightLevel && fcuSelFl === fl) {
             this.nextFmgcFlightPhase = FmgcFlightPhases.CRUISE;
             return true;
@@ -297,28 +298,8 @@ class A32NX_FlightPhase_Descent {
             return true;
         }
 
-        // TODO: move this somewhere else (inside fmgc) and call flightPhaseManager.changeFlightPhase(FmgcFlightPhases.APPROACH)
-        if (!_fmc.flightPlanManager._decelReached && _fmc.flightPlanManager.decelWaypoint) {
-            const lat = SimVar.GetSimVarValue("PLANE LATITUDE", "degree latitude");
-            const long = SimVar.GetSimVarValue("PLANE LONGITUDE", "degree longitude");
-            const planeLla = new LatLongAlt(lat, long);
-            const dist = Avionics.Utils.computeGreatCircleDistance(_fmc.flightPlanManager.decelWaypoint.infos.coordinates, planeLla);
-            if (dist < 3) {
-                _fmc.flightPlanManager._decelReached = true;
-                _fmc._waypointReachedAt = SimVar.GetGlobalVarValue("ZULU TIME", "seconds");
-            }
-        }
-
-        const autopilotLateralMode = SimVar.GetSimVarValue("L:A32NX_FMA_LATERAL_MODE", "Number");
-
-        return _fmc.flightPlanManager._decelReached &&
-            (
-                Simplane.getAltitudeAboveGround() < 9500 &&
-                (
-                    // NAV || LOC* || LOC
-                    autopilotLateralMode === 20 || autopilotLateralMode === 30 || autopilotLateralMode === 31
-                )
-            );
+        // APPROACH phase from DECEL pseudo waypoint case. This is decided by the new TS FMS.
+        return SimVar.GetSimVarValue('L:A32NX_FM_ENABLE_APPROACH_PHASE', 'Bool');
     }
 }
 

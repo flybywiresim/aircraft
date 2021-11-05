@@ -10,9 +10,14 @@ export enum VnavDescentMode {
 export const VnavConfig = {
 
     /**
+     * Whether to calculate climb profile
+     */
+    VNAV_CALCULATE_CLIMB_PROFILE: false,
+
+    /**
      * Whether to emit ToD pseudo waypoint
      */
-    VNAV_EMIT_TOD: true,
+    VNAV_EMIT_TOD: false,
 
     /**
      * Whether to emit (DECEL) pseudo waypoint
@@ -22,11 +27,11 @@ export const VnavConfig = {
     /**
      * VNAV descent calculation mode (NORMAL, CDA or DPO)
      */
-    VNAV_DESCENT_MODE: VnavDescentMode.CDA,
+    VNAV_DESCENT_MODE: VnavDescentMode.NORMAL,
 
     /**
      * Whether to emit CDA flap1/2 pseudo-waypoints (only if VNAV_DESCENT_MODE is CDA)
      */
-    VNAV_EMIT_CDA_FLAP_PWP: true,
+    VNAV_EMIT_CDA_FLAP_PWP: false,
 
 };
