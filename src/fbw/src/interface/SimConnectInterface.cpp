@@ -1514,7 +1514,7 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
             "+ 100 max (>K:2:AP_ALT_VAR_SET_ENGLISH) (>H:AP_KNOB_Down) (>H:A320_Neo_CDU_AP_DEC_ALT)",
             nullptr, nullptr, nullptr);
       }
-      cout << "WASM: event triggered: A32NX_FCU_ALT_INC" << endl;
+      cout << "WASM: event triggered: A32NX_FCU_ALT_DEC" << endl;
       break;
     }
 
