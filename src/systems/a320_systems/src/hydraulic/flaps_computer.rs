@@ -32,7 +32,7 @@ impl From<u8> for FlapsConf {
     }
 }
 
-//A struct to read the handle position
+/// A struct to read the handle position
 struct FlapsHandle {
     handle_position_id: VariableIdentifier,
     position: u8,
