@@ -433,7 +433,7 @@ mod tests {
 
     impl A320FlapsTestBed {
         const HYD_TIME_STEP_MILLIS: u64 = 100;
-        
+
         fn new() -> Self {
             Self {
                 test_bed: SimulationTestBed::new(A320FlapsTestAircraft::new),
