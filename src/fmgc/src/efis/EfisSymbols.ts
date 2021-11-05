@@ -1,8 +1,8 @@
 //  Copyright (c) 2021 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import { FlightPlanManager } from '@fmgc/flightplanning/FlightPlanManager';
-import { RunwaySurface, VorType, WaypointConstraintType } from '@fmgc/types/fstypes/FSEnums';
+import { FlightPlanManager, WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
+import { RunwaySurface, VorType } from '@fmgc/types/fstypes/FSEnums';
 import { OneWayRunway, RawAirport, WayPoint } from '@fmgc/types/fstypes/FSTypes';
 import { EfisOption, Mode, NdSymbol, NdSymbolTypeFlags, RangeSetting, rangeSettings } from '@shared/NavigationDisplay';
 import { GuidanceManager } from '@fmgc/guidance/GuidanceManager';

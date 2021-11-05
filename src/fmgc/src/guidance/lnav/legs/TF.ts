@@ -11,9 +11,10 @@ import {
     getSpeedConstraintFromWaypoint,
     waypointToLocation,
 } from '@fmgc/guidance/lnav/legs';
-import { WayPoint, WaypointConstraintType } from '@fmgc/types/fstypes/FSTypes';
+import { WayPoint } from '@fmgc/types/fstypes/FSTypes';
 import { SegmentType } from '@fmgc/wtsdk';
 import { GeoMath } from '@fmgc/flightplanning/GeoMath';
+import { WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
 
 export class TFLeg implements Leg {
     public from: WayPoint;
