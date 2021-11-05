@@ -1004,8 +1004,8 @@ mod tests {
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::ConfFull);
     }
 
-    //The tests below test the movement of the
-    //flaps/slats.
+    // The tests below test the movement of the
+    // flaps/slats.
     #[test]
     fn flaps_test_movement_0_to_1f() {
         let angle_delta = 0.01;
