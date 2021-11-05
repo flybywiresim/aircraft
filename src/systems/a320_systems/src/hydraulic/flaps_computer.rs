@@ -371,8 +371,10 @@ mod tests {
     use super::*;
     use ntest::assert_about_eq;
     use std::time::Duration;
-    use systems::simulation::test::{ReadByName, TestBed, WriteByName};
-    use systems::simulation::{test::SimulationTestBed, Aircraft};
+    use systems::simulation::{
+        test::{ReadByName, SimulationTestBed, TestBed, WriteByName},
+        Aircraft,
+    };
 
     struct A320FlapsTestAircraft {
         green_hydraulic_pressure_id: VariableIdentifier,
