@@ -123,7 +123,8 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
                         <div>
                             <SimpleInput
                                 label="Configure End"
-                                labelPosition="row"
+                                labelPosition="col"
+                                reverse
                                 className="dark-option w-36 mr-0"
                                 value={!props.expertMode ? deadZone : props.upperBoundDetentGetter.toFixed(2)}
                                 noLeftMargin
@@ -140,7 +141,8 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
                             <SimpleInput
                                 label={props.expertMode ? 'Configure Start' : 'Configure Range'}
                                 className="dark-option mt-2 w-36"
-                                labelPosition="row"
+                                labelPosition="col"
+                                reverse
                                 value={!props.expertMode ? deadZone : props.lowerBoundDetentGetter.toFixed(2)}
                                 noLeftMargin
                                 onChange={(deadZone) => {
