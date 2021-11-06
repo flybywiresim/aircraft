@@ -216,9 +216,3 @@ export enum VorType {
     ILS = 6,
     VOT = 7,
 }
-
-// TODO this is an FBW enum, not MSFS, belongs somewhere else
-export enum WaypointConstraintType {
-    CLB = 1,
-    DES = 2,
-}

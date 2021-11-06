@@ -24,12 +24,16 @@
  */
 
 import { NXDataStore } from '@shared/persistence';
-import { WaypointConstraintType } from '@fmgc/types/fstypes/FSEnums';
 import { ManagedFlightPlan } from './ManagedFlightPlan';
 import { GPS } from './GPS';
 import { FlightPlanSegment } from './FlightPlanSegment';
 import { FlightPlanAsoboSync } from './FlightPlanAsoboSync';
 import { FixInfo } from './FixInfo';
+
+export enum WaypointConstraintType {
+    CLB = 1,
+    DES = 2,
+}
 
 /**
  * A system for managing flight plan data used by various instruments.

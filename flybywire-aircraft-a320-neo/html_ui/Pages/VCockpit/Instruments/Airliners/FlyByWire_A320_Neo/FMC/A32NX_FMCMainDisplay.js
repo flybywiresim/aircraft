@@ -187,7 +187,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.guidanceManager = new Fmgc.GuidanceManager(this.flightPlanManager);
         this.guidanceController = new Fmgc.GuidanceController(this.flightPlanManager, this.guidanceManager);
         this.navRadioManager = new Fmgc.NavRadioManager(this);
-        this.efisSymbols = new Fmgc.EfisSymbols(this.flightPlanManager);
+        this.efisSymbols = new Fmgc.EfisSymbols(this.flightPlanManager, this.guidanceController);
 
         Fmgc.initFmgcLoop();
 
@@ -1084,6 +1084,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.updateDisplayedConstraints(true);
     }
 
+    // TODO/VNAV: Speed constraint
     getSpeedConstraint() {
         if (this.flightPlanManager.getIsDirectTo()) {
             return Infinity;

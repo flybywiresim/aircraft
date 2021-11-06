@@ -45,7 +45,7 @@ export class FmsMessages implements FmgcComponent {
     }
 
     init(): void {
-
+        // Do nothing
     }
 
     update(_deltaTime: number): void {
