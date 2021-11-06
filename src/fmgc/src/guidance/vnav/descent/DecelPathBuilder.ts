@@ -96,7 +96,7 @@ export class DecelPathBuilder {
 
         const c1toCleanSegment = DecelPathBuilder.computeConfigurationChangeSegment(
             ApproachPathSegmentType.CONSTANT_SLOPE,
-            -3,
+            -2.5,
             c2to1Segment.initialAltitude,
             O,
             S,
