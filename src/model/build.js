@@ -86,7 +86,6 @@ function addNodes(pathA, nodes, outputPath) {
             nodeNum++;
         }
         gltfA.nodes.push(node);
-
     }
 
     // Write output file
@@ -94,7 +93,7 @@ function addNodes(pathA, nodes, outputPath) {
     fs.writeFileSync(outputPath, data);
     // Restore nodes
     nodes = nodesBackup;
-};
+}
 
 function combineGltf(pathA, pathB, outputPath) {
     const gltfA = JSON.parse(fs.readFileSync(pathA, 'utf8'));
