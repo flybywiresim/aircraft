@@ -59,6 +59,7 @@
 1. [MODEL] Add four portholes. Two opposite the existing ones, and two under the wing. - @igor8518 (Igor Milovidov)
 1. [MODEL] Add dynamic registration decal option - @tracernz (Mike)
 1. [FCU] Autopilot button integ light brightness corrected - @tracernz (Mike)
+1. [MODEL] Removed glass due to issues with brightness in clouds since SU6 - @aguther (Andreas Guther)
 
 ## 0.7.0
 

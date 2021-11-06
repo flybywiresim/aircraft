@@ -52,10 +52,6 @@
         "bin": "./printer/print-torn.bin"
       },
       {
-        "gltf": "./glass/glass.gltf",
-        "bin": "./glass/glass.bin"
-      },
-      {
         "gltf": "./cup/cup.gltf",
         "bin": "./cup/cup.bin"
       },
