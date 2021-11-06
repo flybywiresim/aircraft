@@ -11,11 +11,11 @@ using namespace std;
 using namespace mINI;
 
 bool FlyByWireInterface::connect() {
-  // load configuration
-  loadConfiguration();
-
   // setup local variables
   setupLocalVariables();
+
+  // load configuration
+  loadConfiguration();
 
   // setup handlers
   spoilersHandler = make_shared<SpoilersHandler>();
@@ -33,7 +33,7 @@ bool FlyByWireInterface::connect() {
   flightDataRecorder.initialize();
 
   // connect to sim connect
-  return simConnectInterface.connect(autopilotStateMachineEnabled, autopilotLawsEnabled, flyByWireEnabled, throttleAxis,
+  return simConnectInterface.connect(clientDataEnabled, autopilotStateMachineEnabled, autopilotLawsEnabled, flyByWireEnabled, throttleAxis,
                                      spoilersHandler, elevatorTrimHandler, rudderTrimHandler, flightControlsKeyChangeAileron,
                                      flightControlsKeyChangeElevator, flightControlsKeyChangeRudder,
                                      disableXboxCompatibilityRudderAxisPlusMinus, maxSimulationRate, limitSimulationRateByPerformance);
@@ -120,12 +120,27 @@ void FlyByWireInterface::loadConfiguration() {
   INIFile iniFile(CONFIGURATION_FILEPATH);
   iniFile.read(iniStructure);
 
-  // load values
+  // --------------------------------------------------------------------------
+  // load values - model
   autopilotStateMachineEnabled = INITypeConversion::getBoolean(iniStructure, "MODEL", "AUTOPILOT_STATE_MACHINE_ENABLED", true);
   autopilotLawsEnabled = INITypeConversion::getBoolean(iniStructure, "MODEL", "AUTOPILOT_LAWS_ENABLED", true);
   autoThrustEnabled = INITypeConversion::getBoolean(iniStructure, "MODEL", "AUTOTHRUST_ENABLED", true);
   flyByWireEnabled = INITypeConversion::getBoolean(iniStructure, "MODEL", "FLY_BY_WIRE_ENABLED", true);
   tailstrikeProtectionEnabled = INITypeConversion::getBoolean(iniStructure, "MODEL", "TAILSTRIKE_PROTECTION_ENABLED", false);
+
+  // if any model is deactivated we need to enable client data
+  clientDataEnabled = (!autopilotStateMachineEnabled || !autopilotLawsEnabled || !autoThrustEnabled || !flyByWireEnabled);
+
+  // print configuration into console
+  cout << "WASM: MODEL     : CLIENT_DATA_ENABLED (auto)           = " << clientDataEnabled << endl;
+  cout << "WASM: MODEL     : AUTOPILOT_STATE_MACHINE_ENABLED      = " << autopilotStateMachineEnabled << endl;
+  cout << "WASM: MODEL     : AUTOPILOT_LAWS_ENABLED               = " << autopilotLawsEnabled << endl;
+  cout << "WASM: MODEL     : AUTOTHRUST_ENABLED                   = " << autoThrustEnabled << endl;
+  cout << "WASM: MODEL     : FLY_BY_WIRE_ENABLED                  = " << flyByWireEnabled << endl;
+  cout << "WASM: MODEL     : TAILSTRIKE_PROTECTION_ENABLED        = " << tailstrikeProtectionEnabled << endl;
+
+  // --------------------------------------------------------------------------
+  // load values - autopilot
   customFlightGuidanceEnabled = INITypeConversion::getBoolean(iniStructure, "AUTOPILOT", "CUSTOM_FLIGHT_GUIDANCE_ENABLED", false);
   gpsCourseToSteerEnabled = INITypeConversion::getBoolean(iniStructure, "AUTOPILOT", "GPS_COURSE_TO_STEER_ENABLED", true);
   flightDirectorSmoothingEnabled = INITypeConversion::getBoolean(iniStructure, "AUTOPILOT", "FLIGHT_DIRECTOR_SMOOTHING_ENABLED", true);
@@ -135,6 +150,18 @@ void FlyByWireInterface::loadConfiguration() {
   limitSimulationRateByPerformance = INITypeConversion::getBoolean(iniStructure, "AUTOPILOT", "LIMIT_SIMULATION_RATE_BY_PERFORMANCE", true);
   simulationRateReductionEnabled = INITypeConversion::getBoolean(iniStructure, "AUTOPILOT", "SIMULATION_RATE_REDUCTION_ENABLED", true);
 
+  // print configuration into console
+  cout << "WASM: AUTOPILOT : CUSTOM_FLIGHT_GUIDANCE_ENABLED       = " << customFlightGuidanceEnabled << endl;
+  cout << "WASM: AUTOPILOT : GPS_COURSE_TO_STEER_ENABLED          = " << gpsCourseToSteerEnabled << endl;
+  cout << "WASM: AUTOPILOT : FLIGHT_DIRECTOR_SMOOTHING_ENABLED    = " << flightDirectorSmoothingEnabled << endl;
+  cout << "WASM: AUTOPILOT : FLIGHT_DIRECTOR_SMOOTHING_FACTOR     = " << flightDirectorSmoothingFactor << endl;
+  cout << "WASM: AUTOPILOT : FLIGHT_DIRECTOR_SMOOTHING_LIMIT      = " << flightDirectorSmoothingLimit << endl;
+  cout << "WASM: AUTOPILOT : MAXIMUM_SIMULATION_RATE              = " << maxSimulationRate << endl;
+  cout << "WASM: AUTOPILOT : LIMIT_SIMULATION_RATE_BY_PERFORMANCE = " << limitSimulationRateByPerformance << endl;
+  cout << "WASM: AUTOPILOT : SIMULATION_RATE_REDUCTION_ENABLED    = " << simulationRateReductionEnabled << endl;
+
+  // --------------------------------------------------------------------------
+  // load values - flight controls
   flightControlsKeyChangeAileron = INITypeConversion::getDouble(iniStructure, "FLIGHT_CONTROLS", "KEY_CHANGE_AILERON", 0.02);
   flightControlsKeyChangeAileron = abs(flightControlsKeyChangeAileron);
   flightControlsKeyChangeElevator = INITypeConversion::getDouble(iniStructure, "FLIGHT_CONTROLS", "KEY_CHANGE_ELEVATOR", 0.02);
@@ -145,25 +172,22 @@ void FlyByWireInterface::loadConfiguration() {
       INITypeConversion::getBoolean(iniStructure, "FLIGHT_CONTROLS", "DISABLE_XBOX_COMPATIBILITY_RUDDER_AXIS_PLUS_MINUS", false);
 
   // print configuration into console
-  std::cout << "WASM: MODEL     : AUTOPILOT_STATE_MACHINE_ENABLED      = " << autopilotStateMachineEnabled << endl;
-  std::cout << "WASM: MODEL     : AUTOPILOT_LAWS_ENABLED               = " << autopilotLawsEnabled << endl;
-  std::cout << "WASM: MODEL     : AUTOTHRUST_ENABLED                   = " << autoThrustEnabled << endl;
-  std::cout << "WASM: MODEL     : FLY_BY_WIRE_ENABLED                  = " << flyByWireEnabled << endl;
-  std::cout << "WASM: MODEL     : TAILSTRIKE_PROTECTION_ENABLED        = " << tailstrikeProtectionEnabled << endl;
-  std::cout << "WASM: AUTOPILOT : CUSTOM_FLIGHT_GUIDANCE_ENABLED       = " << customFlightGuidanceEnabled << endl;
-  std::cout << "WASM: AUTOPILOT : GPS_COURSE_TO_STEER_ENABLED          = " << gpsCourseToSteerEnabled << endl;
-  std::cout << "WASM: AUTOPILOT : FLIGHT_DIRECTOR_SMOOTHING_ENABLED    = " << flightDirectorSmoothingEnabled << endl;
-  std::cout << "WASM: AUTOPILOT : FLIGHT_DIRECTOR_SMOOTHING_FACTOR     = " << flightDirectorSmoothingFactor << endl;
-  std::cout << "WASM: AUTOPILOT : FLIGHT_DIRECTOR_SMOOTHING_LIMIT      = " << flightDirectorSmoothingLimit << endl;
-  std::cout << "WASM: AUTOPILOT : MAXIMUM_SIMULATION_RATE              = " << maxSimulationRate << endl;
-  std::cout << "WASM: AUTOPILOT : LIMIT_SIMULATION_RATE_BY_PERFORMANCE = " << limitSimulationRateByPerformance << endl;
-  std::cout << "WASM: AUTOPILOT : SIMULATION_RATE_REDUCTION_ENABLED    = " << simulationRateReductionEnabled << endl;
-  std::cout << "WASM: FLIGHT_CONTROLS : KEY_CHANGE_AILERON = " << flightControlsKeyChangeAileron << endl;
-  std::cout << "WASM: FLIGHT_CONTROLS : KEY_CHANGE_ELEVATOR = " << flightControlsKeyChangeElevator << endl;
-  std::cout << "WASM: FLIGHT_CONTROLS : KEY_CHANGE_RUDDER = " << flightControlsKeyChangeRudder << endl;
-  std::cout << "WASM: FLIGHT_CONTROLS : DISABLE_XBOX_COMPATIBILITY_RUDDER_AXIS_PLUS_MINUS = " << disableXboxCompatibilityRudderAxisPlusMinus
-            << endl;
+  cout << "WASM: FLIGHT_CONTROLS : KEY_CHANGE_AILERON = " << flightControlsKeyChangeAileron << endl;
+  cout << "WASM: FLIGHT_CONTROLS : KEY_CHANGE_ELEVATOR = " << flightControlsKeyChangeElevator << endl;
+  cout << "WASM: FLIGHT_CONTROLS : KEY_CHANGE_RUDDER = " << flightControlsKeyChangeRudder << endl;
+  cout << "WASM: FLIGHT_CONTROLS : DISABLE_XBOX_COMPATIBILITY_RUDDER_AXIS_PLUS_MINUS = " << disableXboxCompatibilityRudderAxisPlusMinus
+       << endl;
 
+  // --------------------------------------------------------------------------
+  // load values - logging
+  idLoggingFlightControlsEnabled->set(INITypeConversion::getBoolean(iniStructure, "LOGGING", "FLIGHT_CONTROLS_ENABLED", false));
+  idLoggingThrottlesEnabled->set(INITypeConversion::getBoolean(iniStructure, "LOGGING", "THROTTLES_ENABLED", false));
+
+  // print configuration into console
+  cout << "WASM: LOGGING : FLIGHT_CONTROLS_ENABLED = " << idLoggingFlightControlsEnabled->get() << endl;
+  cout << "WASM: LOGGING : THROTTLES_ENABLED = " << idLoggingThrottlesEnabled->get() << endl;
+
+  // --------------------------------------------------------------------------
   // create axis and load configuration
   for (size_t i = 1; i <= 2; i++) {
     // create new mapping
@@ -185,6 +209,10 @@ void FlyByWireInterface::loadConfiguration() {
 }
 
 void FlyByWireInterface::setupLocalVariables() {
+  // regsiter L variable for logging
+  idLoggingFlightControlsEnabled = make_unique<LocalVariable>("A32NX_LOGGING_FLIGHT_CONTROLS_ENABLED");
+  idLoggingThrottlesEnabled = make_unique<LocalVariable>("A32NX_LOGGING_THROTTLES_ENABLED");
+
   // register L variable for performance warning
   idPerformanceWarningActive = make_unique<LocalVariable>("A32NX_PERFORMANCE_WARNING_ACTIVE");
 
@@ -350,15 +378,19 @@ bool FlyByWireInterface::readDataAndLocalVariables(double sampleTime) {
   // reset input
   simConnectInterface.resetSimInputAutopilot();
 
+  // set logging options
+  simConnectInterface.setLoggingFlightControlsEnabled(idLoggingFlightControlsEnabled->get() == 1);
+  simConnectInterface.setLoggingThrottlesEnabled(idLoggingThrottlesEnabled->get() == 1);
+
   // request data
   if (!simConnectInterface.requestData()) {
-    std::cout << "WASM: Request data failed!" << endl;
+    cout << "WASM: Request data failed!" << endl;
     return false;
   }
 
   // read data
   if (!simConnectInterface.readData()) {
-    std::cout << "WASM: Read data failed!" << endl;
+    cout << "WASM: Read data failed!" << endl;
     return false;
   }
 
@@ -1129,16 +1161,10 @@ bool FlyByWireInterface::updateFlyByWire(double sampleTime) {
     flyByWireInput.in.data.thrust_lever_2_pos = thrustLeverAngle_2->get();
     flyByWireInput.in.data.tailstrike_protection_on = tailstrikeProtectionEnabled;
 
-    // process the sidestick handling ---------------------------------------------------------------------------------
-    // write sidestick position
-    idSideStickPositionX->set(-1.0 * simInput.inputs[1]);
-    idSideStickPositionY->set(-1.0 * simInput.inputs[0]);
-    // fill inputs into model
+    // set inputs -----------------------------------------------------------------------------------------------------
     flyByWireInput.in.input.delta_eta_pos = simInput.inputs[0];
     flyByWireInput.in.input.delta_xi_pos = simInput.inputs[1];
     flyByWireInput.in.input.delta_zeta_pos = simInput.inputs[2];
-    // set rudder pedals position
-    idRudderPedalPosition->set(max(-100, min(100, (-100.0 * simInput.inputs[2]) + (100.0 * simData.zeta_trim_pos))));
 
     // step the model -------------------------------------------------------------------------------------------------
     flyByWire.setExternalInputs(&flyByWireInput);
@@ -1150,26 +1176,30 @@ bool FlyByWireInterface::updateFlyByWire(double sampleTime) {
     // write client data if necessary
     if (!autopilotStateMachineEnabled) {
       ClientDataFlyByWire clientDataFlyByWire = {
-          flyByWireOutput.output.eta_trim_deg_should_write,      flyByWireOutput.output.zeta_trim_pos_should_write,
-          flyByWireOutput.sim.data_computed.alpha_floor_command, flyByWireOutput.sim.data_computed.protection_ap_disc,
-          flyByWireOutput.sim.data_speeds_aoa.v_alpha_prot_kn,   flyByWireOutput.sim.data_speeds_aoa.v_alpha_max_kn,
+          flyByWireOutput.output.eta_pos,
+          flyByWireOutput.output.xi_pos,
+          flyByWireOutput.output.zeta_pos,
+          flyByWireOutput.output.eta_trim_deg_should_write,
+          flyByWireOutput.output.eta_trim_deg,
+          flyByWireOutput.output.zeta_trim_pos_should_write,
+          flyByWireOutput.output.zeta_trim_pos,
+          flyByWireOutput.sim.data_computed.alpha_floor_command,
+          flyByWireOutput.sim.data_computed.protection_ap_disc,
+          flyByWireOutput.sim.data_speeds_aoa.v_alpha_prot_kn,
+          flyByWireOutput.sim.data_speeds_aoa.v_alpha_max_kn,
           flyByWireOutput.roll.data_computed.beta_target_deg,
       };
       simConnectInterface.setClientDataFlyByWire(clientDataFlyByWire);
     }
-
-    if (!flyByWireOutput.sim.data_computed.tracking_mode_on) {
-      // object to write with trim
-      SimOutput output = {flyByWireOutput.output.eta_pos, flyByWireOutput.output.xi_pos, flyByWireOutput.output.zeta_pos};
-
-      // send data via sim connect
-      if (!simConnectInterface.sendData(output)) {
-        std::cout << "WASM: Write data failed!" << endl;
-        return false;
-      }
-    }
   } else {
     // send data to client data to be read by simulink
+    ClientDataFlyByWireInput clientDataFlyByWireInput = {
+        simInput.inputs[0],
+        simInput.inputs[1],
+        simInput.inputs[2],
+    };
+    simConnectInterface.setClientDataFlyByWireInput(clientDataFlyByWireInput);
+
     ClientDataAutopilotLaws clientDataLaws = {autopilotLawsOutput.ap_on,
                                               autopilotLawsOutput.flight_director.Theta_c_deg,
                                               autopilotLawsOutput.autopilot.Theta_c_deg,
@@ -1177,16 +1207,41 @@ bool FlyByWireInterface::updateFlyByWire(double sampleTime) {
                                               autopilotLawsOutput.autopilot.Phi_c_deg,
                                               autopilotLawsOutput.autopilot.Beta_c_deg};
     simConnectInterface.setClientDataAutopilotLaws(clientDataLaws);
+
     // read data
     auto clientDataFlyByWire = simConnectInterface.getClientDataFlyByWire();
+    flyByWireOutput.output.eta_pos = clientDataFlyByWire.eta_pos;
+    flyByWireOutput.output.xi_pos = clientDataFlyByWire.xi_pos;
+    flyByWireOutput.output.zeta_pos = clientDataFlyByWire.zeta_pos;
     flyByWireOutput.output.eta_trim_deg_should_write = clientDataFlyByWire.eta_trim_deg_should_write;
+    flyByWireOutput.output.eta_trim_deg = clientDataFlyByWire.eta_trim_deg;
     flyByWireOutput.output.zeta_trim_pos_should_write = clientDataFlyByWire.zeta_trim_pos_should_write;
+    flyByWireOutput.output.zeta_trim_pos = clientDataFlyByWire.zeta_trim_pos;
     flyByWireOutput.sim.data_computed.tracking_mode_on = simData.slew_on || pauseDetected || idExternalOverride->get() == 1;
     flyByWireOutput.sim.data_computed.alpha_floor_command = clientDataFlyByWire.alpha_floor_command;
     flyByWireOutput.sim.data_computed.protection_ap_disc = clientDataFlyByWire.protection_ap_disc;
     flyByWireOutput.sim.data_speeds_aoa.v_alpha_prot_kn = clientDataFlyByWire.v_alpha_prot_kn;
     flyByWireOutput.sim.data_speeds_aoa.v_alpha_max_kn = clientDataFlyByWire.v_alpha_max_kn;
     flyByWireOutput.roll.data_computed.beta_target_deg = clientDataFlyByWire.beta_target_deg;
+  }
+
+  // write sidestick position
+  idSideStickPositionX->set(-1.0 * simInput.inputs[1]);
+  idSideStickPositionY->set(-1.0 * simInput.inputs[0]);
+
+  // set rudder pedals position
+  idRudderPedalPosition->set(max(-100, min(100, (-100.0 * simInput.inputs[2]) + (100.0 * simData.zeta_trim_pos))));
+
+  // set outputs
+  if (!flyByWireOutput.sim.data_computed.tracking_mode_on) {
+    // object to write with trim
+    SimOutput output = {flyByWireOutput.output.eta_pos, flyByWireOutput.output.xi_pos, flyByWireOutput.output.zeta_pos};
+
+    // send data via sim connect
+    if (!simConnectInterface.sendData(output)) {
+      cout << "WASM: Write data failed!" << endl;
+      return false;
+    }
   }
 
   // set trim values
@@ -1199,7 +1254,7 @@ bool FlyByWireInterface::updateFlyByWire(double sampleTime) {
   }
   if (!flyByWireOutput.sim.data_computed.tracking_mode_on && (flyByWireEnabled || !flyByWireOutput.output.eta_trim_deg_should_write)) {
     if (!simConnectInterface.sendData(outputEtaTrim)) {
-      std::cout << "WASM: Write data failed!" << endl;
+      cout << "WASM: Write data failed!" << endl;
       return false;
     }
   }
@@ -1214,7 +1269,7 @@ bool FlyByWireInterface::updateFlyByWire(double sampleTime) {
   }
   if (!flyByWireOutput.sim.data_computed.tracking_mode_on && (flyByWireEnabled || !flyByWireOutput.output.zeta_trim_pos_should_write)) {
     if (!simConnectInterface.sendData(outputZetaTrim)) {
-      std::cout << "WASM: Write data failed!" << endl;
+      cout << "WASM: Write data failed!" << endl;
       return false;
     }
   }
@@ -1389,7 +1444,7 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
     SimOutputThrottles simOutputThrottles = {autoThrustOutput.sim_throttle_lever_1_pos, autoThrustOutput.sim_throttle_lever_2_pos,
                                              autoThrustOutput.sim_thrust_mode_1, autoThrustOutput.sim_thrust_mode_2};
     if (!simConnectInterface.sendData(simOutputThrottles)) {
-      std::cout << "WASM: Write data failed!" << endl;
+      cout << "WASM: Write data failed!" << endl;
       return false;
     }
   } else {
