@@ -22,6 +22,8 @@
  * SOFTWARE.
  */
 
+import { AltitudeDescriptor, FixTypeFlags, LegType } from '@fmgc/types/fstypes/FSEnums';
+import { OneWayRunway } from '@fmgc/types/fstypes/FSTypes';
 import { FixNamingScheme } from './FixNamingScheme';
 import { GeoMath } from './GeoMath';
 import { RawDataMapper } from './RawDataMapper';
@@ -90,6 +92,17 @@ export class LegsProcedure {
       return this._currentIndex < this._legs.length || this._isDiscontinuityPending;
   }
 
+  private async ensureFacilitiesLoaded(): Promise<void> {
+    if (!this._facilitiesLoaded) {
+        const facilityResults = await Promise.all(this._facilitiesToLoad.values());
+        for (const facility of facilityResults.filter((f) => f !== undefined)) {
+            this._facilities.set(facility.icao, facility);
+        }
+
+        this._facilitiesLoaded = true;
+    }
+  }
+
   /**
    * Gets the next mapped leg from the procedure.
    * @returns The mapped waypoint from the leg of the procedure.
@@ -98,14 +111,7 @@ export class LegsProcedure {
       let isLegMappable = false;
       let mappedLeg: WayPoint;
 
-      if (!this._facilitiesLoaded) {
-          const facilityResults = await Promise.all(this._facilitiesToLoad.values());
-          for (const facility of facilityResults.filter((f) => f !== undefined)) {
-              this._facilities.set(facility.icao, facility);
-          }
-
-          this._facilitiesLoaded = true;
-      }
+      await this.ensureFacilitiesLoaded();
 
       while (!isLegMappable && this._currentIndex < this._legs.length) {
           const currentLeg = this._legs[this._currentIndex];
@@ -491,5 +497,79 @@ export class LegsProcedure {
       waypoint.additionalData = {};
 
       return waypoint;
+  }
+
+  public async calculateApproachData(runway: OneWayRunway): Promise<void> {
+    await this.ensureFacilitiesLoaded();
+
+    // our fallback for threshold crossing altitude is threshold + 50 feet
+    let threshCrossAlt = runway.thresholdElevation + 15.24;
+
+    // see if we have a runway fix, to give us coded TCH
+    // it can either be the MAP, or be before the MAP (MAP must be last leg of final approach)
+    // TCH altitude must be coded in altitude1 according to ARINC
+    for (let i = this._legs.length - 1; i > 0; i--) {
+        const leg = this._legs[i];
+        // TODO check it's the same runway for robustness?
+        if (leg.fixIcao.charAt(0) === 'R') {
+            threshCrossAlt = leg.altitude1;
+            break;
+        }
+    }
+
+    // MSFS does not give the coded descent angle
+    // we do our best to calculate one...
+    let fafAlt;
+    let fafIndex;
+    let fafToTcaDist = 0;
+    let lastLegPoint;
+
+    for (let i = 0; i < this._legs.length; i++) {
+        const leg = this._legs[i];
+        let termPoint;
+        if (leg.fixIcao.charAt(0) === 'R') {
+            termPoint = runway.thresholdCoordinates;
+        } else {
+            const fix = this._facilities.get(leg.fixIcao);
+            termPoint = new LatLongAlt(fix.lat, fix.lon);
+        }
+
+        if (leg.fixTypeFlags & FixTypeFlags.FAF) {
+            if (leg.altDesc === AltitudeDescriptor.Empty) {
+                // this is illegal by ARINC
+                break;
+            }
+
+            fafIndex = i;
+            // MSFS codes the wrong altDesc... but the right data...
+            fafAlt = leg.altitude2 > 0 ? leg.altitude2 : leg.altitude1;
+        } else if (fafIndex !== undefined) {
+            if (leg.distance > 0) {
+                fafToTcaDist += leg.distance;
+            } else {
+                // assume a straight leg
+                fafToTcaDist += 1852 * Avionics.Utils.computeGreatCircleDistance(lastLegPoint, termPoint);
+            }
+        }
+
+        if (leg.fixIcao.charAt(0) === 'R') {
+            break;
+        }
+
+        lastLegPoint = termPoint;
+    }
+
+    if (fafIndex !== undefined && fafAlt > 0 && fafToTcaDist > 0) {
+        let glideAngle = Math.atan((fafAlt - threshCrossAlt) / fafToTcaDist) * 180 / Math.PI;
+        // arinc specifics < 3 degrees is rounded up to 3 degrees when calculating glide angle from alt sources
+        // we do the same if we have invalid data..
+        if (!Number.isFinite(glideAngle) || glideAngle < 3 || glideAngle > 10) {
+            glideAngle = 3;
+        }
+
+        for (let i = fafIndex + 1; i < this._legs.length; i++) {
+            this._legs[i].verticalAngle = glideAngle;
+        }
+    }
   }
 }

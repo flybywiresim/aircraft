@@ -29,13 +29,19 @@ class Runway {
         for (let i = 0; i < designations.length; i++) {
             const newRunway = new Runway();
             newRunway.designation = designations[i];
+            newRunway.slope = 100 * (this.secondaryElevation - this.primaryElevation) / (this.length - this.primaryThresholdLength - this.secondaryThresholdLength);
             if (i === 0) {
                 newRunway.designation += this.designatorChar(this.designatorCharPrimary);
                 newRunway.direction = this.direction;
+                newRunway.thresholdLength = this.primaryThresholdLength;
+                newRunway.thresholdElevation = this.primaryElevation;
             }
             if (i === 1) {
                 newRunway.designation += this.designatorChar(this.designatorCharSecondary);
                 newRunway.direction = Avionics.Utils.clampAngle(this.direction + 180);
+                newRunway.thresholdLength = this.secondaryThresholdLength;
+                newRunway.thresholdElevation = this.secondaryElevation;
+                newRunway.slope *= -1;
             }
             newRunway.latitude = this.latitude;
             newRunway.longitude = this.longitude;
@@ -45,6 +51,7 @@ class Runway {
             newRunway.surface = this.surface;
             newRunway.lighting = this.lighting;
             newRunway.primaryILSFrequency = i == 0 ? this.primaryILSFrequency : this.secondaryILSFrequency;
+            newRunway.thresholdCoordinates = Avionics.Utils.bearingDistanceToCoordinates(newRunway.direction - 180, (this.length * 0.5 - newRunway.thresholdLength) / 1852, this.latitude, this.longitude);
             newRunway.beginningCoordinates = Avionics.Utils.bearingDistanceToCoordinates(newRunway.direction - 180, this.length / 1852 * 0.5, this.latitude, this.longitude);
             newRunway.endCoordinates = Avionics.Utils.bearingDistanceToCoordinates(newRunway.direction, this.length / 1852 * 0.5, this.latitude, this.longitude);
             splitRunways.push(newRunway);

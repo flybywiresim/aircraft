@@ -976,7 +976,18 @@ export class ManagedFlightPlan {
                 }
             }
 
+            let runway: OneWayRunway;
+            if (approachIndex !== -1) {
+                runway = this.getRunway(destinationInfo.oneWayRunways, destinationInfo.approaches[approachIndex].runway);
+            } else if (destinationRunwayIndex !== -1) {
+                runway = destinationInfo.oneWayRunways[destinationRunwayIndex];
+            }
+
             const procedure = new LegsProcedure(legs, this.getWaypoint(_startIndex - 1), this._parentInstrument);
+
+            if (runway) {
+                procedure.calculateApproachData(runway);
+            }
 
             let waypointIndex = _startIndex;
             // console.log('MFP: buildApproach - ADDING WAYPOINTS ------------------------');
@@ -988,13 +999,6 @@ export class ManagedFlightPlan {
                     // console.log('  ---- MFP: buildApproach: added waypoint', waypoint.ident, ' to segment ', segment);
                     this.addWaypointAvoidingDuplicates(waypoint, ++waypointIndex, segment);
                 }
-            }
-
-            let runway: OneWayRunway;
-            if (approachIndex !== -1) {
-                runway = this.getRunway(destinationInfo.oneWayRunways, destinationInfo.approaches[approachIndex].runway);
-            } else if (destinationRunwayIndex !== -1) {
-                runway = destinationInfo.oneWayRunways[destinationRunwayIndex];
             }
 
             if (runway) {
