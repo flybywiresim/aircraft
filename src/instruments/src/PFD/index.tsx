@@ -76,7 +76,7 @@ export const PFD: React.FC = () => {
         setVls(smoothSpeeds(deltaTime, vls, getSimVar('L:A32NX_SPEEDS_VLS', 'number')));
 
         forceUpdate();
-    });
+    }, [computedAirspeed, previousAirspeed, vls]);
 
     useInteractionEvent(`A320_Neo_PFD_BTN_LS_${displayIndex}`, () => {
         setLsButtonPressed(!lsButtonPressed);
