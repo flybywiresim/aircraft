@@ -1,5 +1,4 @@
 import { MathUtils } from '@shared/MathUtils';
-import { bindActionCreators } from 'redux';
 import { FlapConf } from './common';
 import { Radians } from '../../../../../typings';
 

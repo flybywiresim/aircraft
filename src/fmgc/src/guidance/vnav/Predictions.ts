@@ -55,7 +55,7 @@ export class Predictions {
         isaDev: number,
         tropoAltitude: number,
         speedbrakesExtended = false,
-        flapsConfig: FlapConf = FlapConf.CLEAN
+        flapsConfig: FlapConf = FlapConf.CLEAN,
     ): StepResults {
         const midStepAltitude = initialAltitude + (stepSize / 2);
         const theta = Common.getTheta(midStepAltitude, isaDev);
@@ -234,32 +234,32 @@ export class Predictions {
         let actualFinalMach = Common.CAStoMach(finalCAS, delta);
         let initialTas;
         let finalTas;
-        let initialEas;
-        let finalEas;
+        // let initialEas;
+        // let finalEas;
 
-        let usingMachAtStart;
+        // let usingMachAtStart;
         // If above crossover altitude, use mach
         if (actualInitialMach > initialMach) {
             actualInitialMach = initialMach;
             initialTas = Common.machToTAS(actualInitialMach, theta);
-            initialEas = Common.machToEAS(actualInitialMach, delta);
-            usingMachAtStart = true;
+            // initialEas = Common.machToEAS(actualInitialMach, delta);
+            // usingMachAtStart = true;
         } else {
             initialTas = Common.CAStoTAS(initialCAS, theta, delta);
-            initialEas = Common.CAStoEAS(initialCAS, delta);
-            usingMachAtStart = false;
+            // initialEas = Common.CAStoEAS(initialCAS, delta);
+            // usingMachAtStart = false;
         }
 
-        let usingMachAtEnd;
+        // let usingMachAtEnd;
         if (actualFinalMach > finalMach) {
             actualFinalMach = finalMach;
             finalTas = Common.machToTAS(actualFinalMach, theta);
-            finalEas = Common.machToEAS(actualFinalMach, delta);
-            usingMachAtEnd = true;
+            // finalEas = Common.machToEAS(actualFinalMach, delta);
+            // usingMachAtEnd = true;
         } else {
             finalTas = Common.CAStoTAS(finalCAS, theta, delta);
-            finalEas = Common.CAStoEAS(finalCAS, delta);
-            usingMachAtEnd = false;
+            // finalEas = Common.CAStoEAS(finalCAS, delta);
+            // usingMachAtEnd = false;
         }
 
         const averageMach = (actualInitialMach + actualFinalMach) / 2;
@@ -508,13 +508,13 @@ export class Predictions {
         };
     }
 
-    static constantSlopeSegment(
-
-    ): StepResults {
-        // e = ((T - D / W)
-        // a = g * (sin(available climb angle) - sin (desired fpa))
-        // d = ((final velocity squared) - (initial velocity squared)) / (2 * a)
-    }
+    // static constantSlopeSegment(
+    //
+    // ): StepResults {
+    //     // e = ((T - D / W)
+    //     // a = g * (sin(available climb angle) - sin (desired fpa))
+    //     // d = ((final velocity squared) - (initial velocity squared)) / (2 * a)
+    // }
 
     /**
      * THIS IS DONE.

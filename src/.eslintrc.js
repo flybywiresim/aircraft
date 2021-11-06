@@ -56,7 +56,7 @@ module.exports = {
         'radix': 'off',
         'max-classes-per-file': 'off',
         'no-useless-constructor': 'off',
-        'no-empty-function': ['error', { allow: ['constructors'] }],
+        'no-empty-function': ['error', { allow: ['constructors', 'arrowFunctions'] }],
         '@typescript-eslint/no-empty-function': 'off',
 
         // buggy

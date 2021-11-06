@@ -21,5 +21,6 @@ export class NavRadioManager {
     }
 
     public update(_deltaTime: number): void {
+        // Do nothing
     }
 }

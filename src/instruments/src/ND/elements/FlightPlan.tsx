@@ -344,26 +344,30 @@ const SymbolMarker: FC<SymbolMarkerProps> = memo(({ ident, x, y, type, constrain
     } else if (type & (NdSymbolTypeFlags.PwpTopOfDescent)) {
         showIdent = false;
         elements.push(
-            <image xlinkHref="/Images/ND/PWP_TOD_WHITE.svg" x={0} y={-0.75} width={56} height={26} />,
+            <>
+                <path d="M 0, 0.5 h 15.5 l 12, 12 m -4, 0 l 4, 0 l 0, -4" strokeWidth={1.8} className="shadow" />
+
+                <path d="M 0, 0.5 h 15.5 l 12, 12 m -4, 0 l 4, 0 l 0, -4" strokeWidth={1.5} className="White" />
+            </>,
         );
     } else if (type & (NdSymbolTypeFlags.PwpCdaFlap1)) {
         showIdent = false;
         elements.push(
             <>
-                <circle cx={0} cy={0} r={13} strokeWidth={1.6} className="shadow" />
+                <circle cx={0} cy={0} r={12} strokeWidth={1.8} className="shadow" />
                 <circle cx={0} cy={0} r={12} strokeWidth={1.5} className="White" />
 
-                <text x={2.5} y={2} className="White shadow" textAnchor="middle" dominantBaseline="middle" fontSize={23}>1</text>
+                <text x={2.5} y={2} className="White shadow" textAnchor="middle" dominantBaseline="middle" fontSize={21}>1</text>
             </>,
         );
     } else if (type & (NdSymbolTypeFlags.PwpCdaFlap2)) {
         showIdent = false;
         elements.push(
             <>
-                <circle cx={0} cy={0} r={13} strokeWidth={1.6} className="shadow" />
+                <circle cx={0} cy={0} r={12} strokeWidth={1.8} className="shadow" />
                 <circle cx={0} cy={0} r={12} strokeWidth={1.5} className="White" />
 
-                <text x={1} y={2} className="White shadow" textAnchor="middle" dominantBaseline="middle" fontSize={23}>2</text>
+                <text x={1} y={2} className="White shadow" textAnchor="middle" dominantBaseline="middle" fontSize={21}>2</text>
             </>,
         );
     } else if (type & (NdSymbolTypeFlags.PwpDecel)) {

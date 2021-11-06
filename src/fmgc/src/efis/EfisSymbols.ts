@@ -126,6 +126,7 @@ export class EfisSymbols {
 
             const [editAhead, editBehind, editBeside] = this.calculateEditArea(range, mode);
 
+            // eslint-disable-next-line no-loop-func
             const withinEditArea = (ll): boolean => {
                 const dist = Avionics.Utils.computeGreatCircleDistance(mode === Mode.PLAN ? planCentre : ppos, ll);
                 let bearing = Avionics.Utils.computeGreatCircleHeading(mode === Mode.PLAN ? planCentre : ppos, ll);
@@ -142,6 +143,7 @@ export class EfisSymbols {
 
             // symbols most recently inserted always end up at the end of the array
             // we reverse the array at the end to make sure symbols are drawn in the correct order
+            // eslint-disable-next-line no-loop-func
             const upsertSymbol = (symbol: NdSymbol): void => {
                 if (DEBUG) {
                     console.time(`upsert symbol ${symbol.databaseId}`);

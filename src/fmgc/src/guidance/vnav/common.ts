@@ -1,5 +1,3 @@
-import { WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
-import { SegmentType } from '@fmgc/flightplanning/FlightPlanSegment';
 import { NauticalMiles } from '@typings/types';
 import { AltitudeConstraint, SpeedConstraint } from '../lnav/legs';
 

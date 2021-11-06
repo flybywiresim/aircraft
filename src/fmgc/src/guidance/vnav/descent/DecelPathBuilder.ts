@@ -5,7 +5,6 @@ import { Geometry } from '@fmgc/guidance/Geometry';
 import { TFLeg } from '@fmgc/guidance/lnav/legs/TF';
 import { Predictions, StepResults, VnavStepError } from '@fmgc/guidance/vnav/Predictions';
 import { FlapConf } from '@fmgc/guidance/vnav/common';
-import { VnavConfig, VnavDescentMode } from '@fmgc/guidance/vnav/VnavConfig';
 import { Feet, Knots, NauticalMiles } from '../../../../../../typings';
 
 const ALTITUDE_ADJUSTMENT_FACTOR = 1.4;
