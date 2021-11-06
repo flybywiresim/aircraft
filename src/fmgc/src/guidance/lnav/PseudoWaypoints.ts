@@ -186,7 +186,13 @@ export class PseudoWaypoints implements GuidanceComponent {
             if (accumulator > distanceFromEnd) {
                 const distanceFromEndOfLeg = distanceFromEnd - (accumulator - leg.distance);
 
-                return [leg.getPseudoWaypointLocation(distanceFromEndOfLeg), distanceFromEndOfLeg, i];
+                const lla = leg.getPseudoWaypointLocation(distanceFromEndOfLeg);
+
+                if (lla) {
+                    return [lla, distanceFromEndOfLeg, i];
+                }
+
+                return undefined;
             }
         }
 
