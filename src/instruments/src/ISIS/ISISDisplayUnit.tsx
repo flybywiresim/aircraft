@@ -37,7 +37,7 @@ export const ISISDisplayUnit: React.FC<ISISDisplayUnitProps> = ({ indicatedAirsp
                 setTimer(null);
             }
         }
-    });
+    }, [timer, state]);
 
     useEffect(() => {
         if (state === DisplayUnitState.On && !hasElectricity) {
