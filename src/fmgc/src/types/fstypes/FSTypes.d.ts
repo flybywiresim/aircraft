@@ -67,6 +67,8 @@ export declare class WayPoint {
 
     additionalData: { [key: string]: any }
 
+    verticalAngle?: number;
+
     _svgElements: any;
 }
 
@@ -136,6 +138,10 @@ declare interface OneWayRunway {
     endCoordinates: LatLongAlt;
     elevation: number;
     length: number;
+    slope: number;
+    thresholdCoordinates: LatLongAlt;
+    thresholdLength: number;
+    thresholdElevation: number;
 }
 
 declare interface RawProcedureLeg {

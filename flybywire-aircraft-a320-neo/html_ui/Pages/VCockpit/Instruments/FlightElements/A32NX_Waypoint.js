@@ -438,6 +438,10 @@ class AirportInfo extends WayPointInfo {
                 runway.direction = data.runways[i].direction;
                 runway.designatorCharPrimary = data.runways[i].designatorCharPrimary;
                 runway.designatorCharSecondary = data.runways[i].designatorCharSecondary;
+                runway.primaryElevation = data.runways[i].primaryElevation;
+                runway.secondaryElevation = data.runways[i].secondaryElevation;
+                runway.primaryThresholdLength = data.runways[i].primaryThresholdLength;
+                runway.secondaryThresholdLength = data.runways[i].secondaryThresholdLength;
                 this.runways.push(runway);
                 this.oneWayRunways.push(...runway.splitIfTwoWays());
             }
@@ -514,6 +518,7 @@ class AirportInfo extends WayPointInfo {
                     waypoint.ident = waypoint.icao.substr(7, 5);
                     waypoint.bearingInFP = approachData.finalLegs[i].course;
                     waypoint.distanceInFP = approachData.finalLegs[i].distance / 1852;
+                    waypoint.fixTypeFlags = approachData.finalLegs[i].fixTypeFlags;
                     approach.wayPoints.push(waypoint);
                     if (loadApproachesData) {
                         this.instrument.facilityLoader.getFacilityDataCB(waypoint.icao, (data) => {
