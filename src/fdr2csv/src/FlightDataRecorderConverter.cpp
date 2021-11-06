@@ -103,6 +103,9 @@ void FlightDataRecorderConverter::writeHeader(ofstream& out, const string& delim
   out << "ap_sm.input.ATHR_engaged" << delimiter;
   out << "ap_sm.input.is_SPEED_managed" << delimiter;
   out << "ap_sm.input.FDR_event" << delimiter;
+  out << "ap_sm.input.FM_requested_vertical_mode" << delimiter;
+  out << "ap_sm.input.FM_H_c_ft" << delimiter;
+  out << "ap_sm.input.FM_H_dot_c_fpm" << delimiter;
   out << "ap_sm.lateral.armed.NAV" << delimiter;
   out << "ap_sm.lateral.armed.LOC" << delimiter;
   out << "ap_sm.lateral.condition.NAV" << delimiter;
@@ -598,6 +601,9 @@ void FlightDataRecorderConverter::writeStruct(ofstream& out,
   out << static_cast<unsigned int>(ap_sm.input.ATHR_engaged) << delimiter;
   out << static_cast<unsigned int>(ap_sm.input.is_SPEED_managed) << delimiter;
   out << static_cast<unsigned int>(ap_sm.input.FDR_event) << delimiter;
+  out << static_cast<unsigned int>(ap_sm.input.FM_requested_vertical_mode) << delimiter;
+  out << ap_sm.input.FM_H_c_ft << delimiter;
+  out << ap_sm.input.FM_H_dot_c_fpm << delimiter;
   out << static_cast<unsigned int>(ap_sm.lateral.armed.NAV) << delimiter;
   out << static_cast<unsigned int>(ap_sm.lateral.armed.LOC) << delimiter;
   out << static_cast<unsigned int>(ap_sm.lateral.condition.NAV) << delimiter;

@@ -34,12 +34,12 @@ class AutopilotStateMachineModelClass {
     real_T Delay_DSTATE_d[100];
     real_T Delay_DSTATE_c[100];
     real_T DelayInput1_DSTATE;
-    real_T Delay_DSTATE_o;
-    real_T Delay_DSTATE_d2[100];
-    real_T Delay_DSTATE_f;
     real_T Delay_DSTATE_l;
+    real_T Delay_DSTATE_d2[100];
     real_T Delay_DSTATE_e;
-    real_T Delay_DSTATE_n;
+    real_T Delay_DSTATE_f;
+    real_T Delay_DSTATE_k;
+    real_T Delay_DSTATE_m;
     real_T local_H_fcu_ft;
     real_T local_H_constraint_ft;
     real_T local_H_GA_init_ft;
@@ -49,7 +49,7 @@ class AutopilotStateMachineModelClass {
     real_T nav_gs_deg;
     real_T eventTime;
     real_T eventTime_j;
-    real_T eventTime_g;
+    real_T eventTime_o;
     real_T eventTime_a;
     real_T lastTargetSpeed;
     real_T timeDeltaSpeed4;
@@ -104,8 +104,8 @@ class AutopilotStateMachineModelClass {
     boolean_T nav_gs_deg_not_empty;
     boolean_T eventTime_not_empty;
     boolean_T eventTime_not_empty_k;
-    boolean_T eventTime_not_empty_a;
-    boolean_T eventTime_not_empty_kn;
+    boolean_T eventTime_not_empty_h;
+    boolean_T eventTime_not_empty_j;
     boolean_T lastTargetSpeed_not_empty;
     boolean_T timeDeltaSpeed4_not_empty;
     boolean_T timeDeltaSpeed10_not_empty;
@@ -126,9 +126,9 @@ class AutopilotStateMachineModelClass {
     boolean_T sDES;
     boolean_T sCLB;
     rtDW_LagFilter_AutopilotStateMachine_T sf_LagFilter_h;
-    rtDW_WashoutFilter_AutopilotStateMachine_T sf_WashoutFilter_d;
+    rtDW_WashoutFilter_AutopilotStateMachine_T sf_WashoutFilter_k;
     rtDW_WashoutFilter_AutopilotStateMachine_T sf_WashoutFilter;
-    rtDW_LagFilter_AutopilotStateMachine_T sf_LagFilter_j;
+    rtDW_LagFilter_AutopilotStateMachine_T sf_LagFilter_d;
     rtDW_LagFilter_AutopilotStateMachine_T sf_LagFilter;
   };
 
