@@ -47,7 +47,7 @@ function addNodes(pathA, nodes, outputPath) {
     let nodeNum = 0;
 
     // Backup nodes
-    let nodesBackup = nodes;
+    const nodesBackup = nodes;
 
     for (const node of nodes) {
         if (!Number.isFinite(node.mesh)) {
