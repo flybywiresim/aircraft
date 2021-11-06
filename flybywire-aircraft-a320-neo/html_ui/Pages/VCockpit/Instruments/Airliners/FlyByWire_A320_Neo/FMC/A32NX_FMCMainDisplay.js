@@ -1925,27 +1925,54 @@ class FMCMainDisplay extends BaseAirliners {
         if (newWaypointTo === "" || newWaypointTo === FMCMainDisplay.clrValue) {
             return callback(false);
         }
-        this.getOrSelectWaypointByIdent(newWaypointTo, (waypoint) => {
-            if (!waypoint) {
-                this.addNewMessage(NXSystemMessages.notInDatabase);
-                return callback(false);
-            }
-            if (immediately) {
-                if (this.flightPlanManager.isCurrentFlightPlanTemporary()) {
-                    this.addNewMessage(NXSystemMessages.notAllowed);
+        try {
+            this.getOrCreateWaypoint(newWaypointTo, true).then((waypoint) => {
+                if (!waypoint) {
                     return callback(false);
                 }
-                this.flightPlanManager.addWaypoint(waypoint.icao, index, () => {
-                    return callback(true);
-                }).catch(console.error);
+                if (immediately) {
+                    if (this.flightPlanManager.isCurrentFlightPlanTemporary()) {
+                        this.addNewMessage(NXSystemMessages.notAllowed);
+                        return callback(false);
+                    }
+                    if (waypoint.additionalData && waypoint.additionalData.storedType !== undefined) {
+                        this.flightPlanManager.addUserWaypoint(waypoint, index, () => {
+                            return callback(true);
+                        }).catch(console.error);
+                    } else {
+                        this.flightPlanManager.addWaypoint(waypoint.icao, index, () => {
+                            return callback(true);
+                        }).catch(console.error);
+                    }
+                } else {
+                    this.ensureCurrentFlightPlanIsTemporary(async () => {
+                        if (waypoint.additionalData && waypoint.additionalData.storedType !== undefined) {
+                            this.flightPlanManager.addUserWaypoint(waypoint, index, () => {
+                                return callback(true);
+                            }).catch(console.error);
+                        } else {
+                            this.flightPlanManager.addWaypoint(waypoint.icao, index, () => {
+                                return callback(true);
+                            }).catch(console.error);
+                        }
+                    });
+                }
+            }).catch((err) => {
+                if (err instanceof McduMessage) {
+                    this.addNewMessage(err);
+                } else {
+                    console.error(err);
+                }
+                return callback(false);
+            });
+        } catch (err) {
+            if (err instanceof McduMessage) {
+                this.addNewMessage(err);
             } else {
-                this.ensureCurrentFlightPlanIsTemporary(async () => {
-                    this.flightPlanManager.addWaypoint(waypoint.icao, index, () => {
-                        return callback(true);
-                    }).catch(console.error);
-                });
+                console.error(err);
             }
-        });
+            return callback(false);
+        }
     }
 
     activateDirectToWaypoint(waypoint, callback = EmptyCallback.Void) {
@@ -3610,20 +3637,6 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     /**
-     * LatLongAltCallback
-     *
-     * @callback LatLongAltCallback
-     * @param {LatLongAlt} result
-     * @param {number=} magVar magnetic variation if available
-     */
-    /**
-     * McduMessageCallback
-     *
-     * @callback McduMessageCallback
-     * @param {McduMessage} message
-     */
-
-    /**
      * Check if a place is the correct format for a runway
      * @param {string} s
      * @returns true if valid runway format
@@ -3636,31 +3649,23 @@ class FMCMainDisplay extends BaseAirliners {
      * Parse a runway string and return the location of the threshold
      * Returns undefined if invalid format or not in database
      * @param {string} place
-     * @param {LatLongAltCallback} onSuccess location of runway threshold
-     * @param {McduMessageCallback} onError suggested error message
+     * @throws {McduMessage}
+     * @returns {WayPoint}
      */
-    parseRunway(place, onSuccess, onError) {
+    async parseRunway(place) {
         const rwy = place.match(/^([A-Z]{4})([0-9]{2}[RCL]?)$/);
         if (rwy !== null) {
-            this.dataManager.GetAirportByIdent(rwy[1]).then((airport) => {
-                if (airport) {
-                    for (let i = 0; i < airport.infos.oneWayRunways.length; i++) {
-                        if (Avionics.Utils.formatRunway(airport.infos.oneWayRunways[i].designation) === rwy[2]) {
-                            const runway = airport.infos.oneWayRunways[i];
-                            // this should be to the treshold but we don't have that, so we just use half the length
-                            const adjustedCoordinates = Avionics.Utils.bearingDistanceToCoordinates(
-                                (runway.direction + 180) % 360,
-                                runway.length / 2 / 1852, // TODO unit conversion lib
-                                runway.latitude, runway.longitude
-                            );
-                            return onSuccess(adjustedCoordinates, Facilities.getMagVar(adjustedCoordinates.lat, adjustedCoordinates.long));
-                        }
+            const airport = await this.dataManager.GetAirportByIdent(rwy[1]);
+            if (airport) {
+                for (let i = 0; i < airport.infos.oneWayRunways.length; i++) {
+                    if (Avionics.Utils.formatRunway(airport.infos.oneWayRunways[i].designation) === rwy[2]) {
+                        return this.dataManager.createRunwayWaypoint(airport, airport.infos.oneWayRunways[i]);
                     }
-                    return onError(NXSystemMessages.notInDatabase);
                 }
-            }).catch(console.error);
+                throw NXSystemMessages.notInDatabase;
+            }
         } else {
-            return onError(NXSystemMessages.notInDatabase);
+            throw NXSystemMessages.notInDatabase;
         }
     }
 
@@ -3676,10 +3681,10 @@ class FMCMainDisplay extends BaseAirliners {
     /**
      * Parse a lat/lon string into a position
      * @param {string} place
-     * @param {LatLongAltCallback} onSuccess location
-     * @param {McduMessageCallback} onError suggested error message
+     * @throws {McduMessage}
+     * @returns {LatLongAlt}
      */
-    parseLatLon(place, onSuccess, onError) {
+    parseLatLon(place) {
         const latlon = place.match(/^(N|S)?([0-9]{2,4}\.[0-9])(N|S)?\/(E|W)?([0-9]{2,5}\.[0-9])(E|W)?$/);
         if (latlon !== null) {
             const latB = (latlon[1] || "") + (latlon[3] || "");
@@ -3691,17 +3696,16 @@ class FMCMainDisplay extends BaseAirliners {
             const lonD = parseInt(latlon[5].substring(0, latlon[5].length - lonDdigits));
             const lonM = parseFloat(latlon[5].substring(latlon[5].length - lonDdigits));
             if (latB.length !== 1 || lonB.length !== 1 || !isFinite(latM) || !isFinite(lonM)) {
-                return onError(NXSystemMessages.formatError);
+                throw NXSystemMessages.formatError;
             }
             if (latD > 90 || latM > 59.9 || lonD > 180 || lonM > 59.9) {
-                return onError(NXSystemMessages.entryOutOfRange);
+                throw NXSystemMessages.entryOutOfRange;
             }
             const lat = (latD + latM / 60) * (latB === "S" ? -1 : 1);
             const lon = (lonD + lonM / 60) * (lonB === "W" ? -1 : 1);
-            const ll = new LatLongAlt(lat, lon);
-            return onSuccess(ll, Facilities.getMagVar(ll.lat, ll.long));
+            return new LatLongAlt(lat, lon);
         }
-        return onError(NXSystemMessages.formatError);
+        throw NXSystemMessages.formatError;
     }
 
     /**
@@ -3710,27 +3714,29 @@ class FMCMainDisplay extends BaseAirliners {
      * @returns true if valid place format
      */
     isPlaceFormat(s) {
-        return s.match(/^[A-Z0-9]{2,6}$/) !== null || this.isRunwayFormat(s);
+        return s.match(/^[A-Z0-9]{2,7}$/) !== null || this.isRunwayFormat(s);
     }
 
     /**
      * Parse a place string into a position
      * @param {string} place
-     * @param {LatLongAltCallback} onSuccess location
-     * @param {McduMessageCallback} onError suggested error message
+     * @throws {McduMessage}
+     * @returns {WayPoint}
      */
-    parsePlace(place, onSuccess, onError) {
+    async parsePlace(place) {
         if (this.isRunwayFormat(place)) {
-            this.parseRunway(place, onSuccess, onError);
-        } else {
+            return this.parseRunway(place);
+        }
+
+        return new Promise((resolve, reject) => {
             this.getOrSelectWaypointByIdent(place, (waypoint) => {
                 if (waypoint) {
-                    return onSuccess(waypoint.infos.coordinates, waypoint.infos.magneticVariation || Facilities.getMagVar(waypoint.infos.coordinates.lat, waypoint.infos.coordinates.long));
+                    return resolve(waypoint);
                 } else {
-                    return onError(NXSystemMessages.notInDatabase);
+                    return reject(NXSystemMessages.notInDatabase);
                 }
             });
-        }
+        });
     }
 
     /**
@@ -3738,36 +3744,33 @@ class FMCMainDisplay extends BaseAirliners {
      * @param {string} s
      * @returns true if valid place format
      */
-    isPbPbFormat(s) {
-        const pbpb = s.match(/^([^\-\/]+)\-([0-9]{1,3})\/([^\-\/]+)\-([0-9]{1,3})$/);
-        return pbpb !== null && this.isPlaceFormat(pbpb[1]) && this.isPlaceFormat(pbpb[3]);
+    isPbxFormat(s) {
+        const pbx = s.match(/^([^\-\/]+)\-([0-9]{1,3})\/([^\-\/]+)\-([0-9]{1,3})$/);
+        return pbx !== null && this.isPlaceFormat(pbx[1]) && this.isPlaceFormat(pbx[3]);
     }
 
     /**
-     * Parse a p-b/p-b string into a position
+     * Parse a place-bearing/place-bearing string
      * @param {string} s place-bearing/place-bearing
-     * @param {LatLongAltCallback} onSuccess location
-     * @param {McduMessageCallback} onError suggested error message
+     * @throws {McduMessage}
+     * @returns {[WayPoint, number, WayPoint, number]} place and true bearing * 2
      */
-    parsePbPb(s, onSuccess, onError) {
-        const pbpb = s.match(/^([^\-\/]+)\-([0-9]{1,3})\/([^\-\/]+)\-([0-9]{1,3})$/);
-        if (pbpb === null) {
-            return onError(NXSystemMessages.formatError);
+    async parsePbx(s) {
+        const pbx = s.match(/^([^\-\/]+)\-([0-9]{1,3})\/([^\-\/]+)\-([0-9]{1,3})$/);
+        if (pbx === null) {
+            throw NXSystemMessages.formatError;
         }
-        const brg1 = parseInt(pbpb[2]);
-        const brg2 = parseInt(pbpb[4]);
+        const brg1 = parseInt(pbx[2]);
+        const brg2 = parseInt(pbx[4]);
         if (brg1 > 360 || brg2 > 360) {
-            return onError(NXSystemMessages.entryOutOfRange);
+            throw NXSystemMessages.entryOutOfRange;
         }
-        this.parsePlace(pbpb[1], (loc1, magVar1) => {
-            this.parsePlace(pbpb[3], (loc2, magVar2) => {
-                onSuccess(A32NX_Util.greatCircleIntersection(loc1, A32NX_Util.magneticToTrue(brg1, magVar1), loc2, A32NX_Util.magneticToTrue(brg2, magVar2)));
-            }, (err2) => {
-                onError(err2);
-            });
-        }, (err1) => {
-            onError(err1);
-        });
+        const place1 = await this.parsePlace(pbx[1]);
+        const magVar1 = Facilities.getMagVar(place1.infos.coordinates.lat, place1.infos.coordinates.long);
+        const place2 = await this.parsePlace(pbx[3]);
+        const magVar2 = Facilities.getMagVar(place2.infos.coordinates.lat, place2.infos.coordinates.long);
+
+        return [place1, A32NX_Util.magneticToTrue(brg1, magVar1), place2, A32NX_Util.magneticToTrue(brg2, magVar2)];
     }
 
     /**
@@ -3793,27 +3796,95 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     /**
+     *
+     * @param {string} s
+     * @returns [wp: WayPoint, trueBearing: number, dist: number]
+     */
+    async parsePbd(s) {
+        const [place, brg, dist] = this.splitPbd(s);
+        if (brg > 360 || dist > 999.9) {
+            throw NXSystemMessages.entryOutOfRange;
+        }
+        if (this.isPlaceFormat(place)) {
+            const wp = await this.parsePlace(place);
+            const magVar = Facilities.getMagVar(wp.infos.coordinates.lat, wp.infos.coordinates.long);
+            return [wp, A32NX_Util.magneticToTrue(brg, magVar), dist];
+        }
+        throw NXSystemMessages.formatError;
+    }
+
+    isPdFormat(s) {
+        const pd = s.match(/^([^\/]+)\/([0-9]{1,3}(\.[0-9])?)$/);
+        return pd !== null && this.isPlaceFormat(pd[1]);
+    }
+
+    parsePlaceDist(s) {
+        let [place, dist] = s.split('/');
+        dist = parseInt(dist);
+        // TODO get waypoint in flightplan
+        //Fmgc.WaypointBuilder.fromPlaceAlongFlightPlan(ident: string, placeIndex: number, distance: number, instrument: BaseInstrument, fpm: FlightPlanManager);
+        throw NXFictionalMessages.notYetImplemented;
+    }
+
+    /**
      * Set the progress page bearing/dist location
      * @param {string} ident ident of the waypoint or runway, will be replaced by "ENTRY" if brg/dist offset are specified
      * @param {LatLongAlt} coordinates co-ordinates of the waypoint/navaid/runway, without brg/dist offset
-     * @param {(number|undefined)} brg undefined or (true) bearing for offset
-     * @param {(number|undefined)} dist undefined or dist for offset
+     * @param {string?} icao icao database id of the waypoint if applicable
      */
-    _setProgLocation(ident, coordinates, brg, dist) {
-        console.log(`progLocation: ${ident} ${coordinates} ${brg} ${dist}`);
-        const displayIdent = (brg !== undefined && dist !== undefined) ? "ENTRY" : ident;
-        let adjustedCoordinates = coordinates;
-        if (brg !== undefined && dist !== undefined) {
-            adjustedCoordinates = Avionics.Utils.bearingDistanceToCoordinates(brg % 360, dist, coordinates.lat, coordinates.long);
-        }
+    _setProgLocation(ident, coordinates, icao) {
+        console.log(`progLocation: ${ident} ${coordinates}`);
         this._progBrgDist = {
-            ident: displayIdent,
-            coordinates: adjustedCoordinates,
+            icao,
+            ident,
+            coordinates,
             bearing: -1,
             distance: -1
         };
 
         this.updateProgDistance();
+    }
+
+    /**
+     *
+     * @param {string} s value to search for or create a waypoint from
+     * @param {boolean} stored if a waypoint is created, should it be a stored waypoint?
+     * @returns
+     */
+    async getOrCreateWaypoint(s, stored = true) {
+        if (this.isLatLonFormat(s)) {
+            const coordinates = this.parseLatLon(s);
+            return this.dataManager.createLatLonWaypoint(coordinates, stored);
+        } else if (this.isPbxFormat(s)) {
+            const [place1, bearing1, place2, bearing2] = await this.parsePbx(s);
+            return this.dataManager.createPlaceBearingPlaceBearingWaypoint(place1, bearing1, place2, bearing2, stored);
+        } else if (this.isPdFormat(s)) {
+            throw NXFictionalMessages.notYetImplemented;
+        } else if (this.isPbdFormat(s)) {
+            const [wp, bearing, dist] = await this.parsePbd(s);
+            return this.dataManager.createPlaceBearingDistWaypoint(wp, bearing, dist, stored);
+        } else if (this.isPlaceFormat(s)) {
+            try {
+                return await this.parsePlace(s);
+            } catch (err) {
+                if (err === NXSystemMessages.notInDatabase) {
+                    this.addNewMessage(err);
+                    return new Promise((resolve, reject) => {
+                        CDUNewWaypoint.ShowPage(this, (waypoint) => {
+                            if (waypoint) {
+                                resolve(waypoint);
+                            } else {
+                                reject('User aborted');
+                            }
+                        }, { ident: s });
+                    });
+                } else {
+                    throw err;
+                }
+            }
+        } else {
+            throw NXSystemMessages.formatError;
+        }
     }
 
     /**
@@ -3827,45 +3898,25 @@ class FMCMainDisplay extends BaseAirliners {
             return callback(true);
         }
 
-        if (this.isLatLonFormat(s)) {
-            this.parseLatLon(s, (loc) => {
-                this._setProgLocation("ENTRY", loc);
+        try {
+            this.getOrCreateWaypoint(s, false).then((wp) => {
+                this._setProgLocation(wp.additionalData.temporary ? "ENTRY" : wp.ident, wp.infos.coordinates, wp.infos.icao);
                 return callback(true);
-            }, (err) => {
-                this.addNewMessage(err);
-                return callback(false);
-            });
-        } else if (this.isPbPbFormat(s)) {
-            this.parsePbPb(s, (loc) => {
-                this._setProgLocation("ENTRY", loc);
-                return callback(true);
-            }, (err) => {
-                this.addNewMessage(err);
-                return callback(false);
-            });
-        } else { // place or PBD
-            let place, brg, dist;
-            if (this.isPbdFormat(s)) {
-                [place, brg, dist] = this.splitPbd(s);
-                if (brg > 360 || dist > 999.9) {
-                    this.addNewMessage(NXSystemMessages.entryOutOfRange);
-                    return callback(false);
-                }
-            } else {
-                place = s;
-            }
-            if (this.isPlaceFormat(place)) {
-                this.parsePlace(place, (loc, magVar) => {
-                    this._setProgLocation(place, loc, brg ? A32NX_Util.magneticToTrue(brg, magVar) : undefined, dist);
-                    return callback(true);
-                }, (err) => {
+            }).catch((err) => {
+                if (err instanceof McduMessage) {
                     this.addNewMessage(err);
-                    return callback(false);
-                });
-            } else {
-                this.addNewMessage(NXSystemMessages.formatError);
+                } else {
+                    console.error(err);
+                }
                 return callback(false);
+            });
+        } catch (err) {
+            if (err instanceof McduMessage) {
+                this.addNewMessage(err);
+            } else {
+                console.error(err);
             }
+            return callback(false);
         }
     }
 
@@ -3901,6 +3952,17 @@ class FMCMainDisplay extends BaseAirliners {
 
     get progWaypointIdent() {
         return this._progBrgDist ? this._progBrgDist.ident : undefined;
+    }
+
+    isWaypointInUse(icao) {
+        if (this.flightPlanManager.isWaypointInUse(icao)) {
+            return true;
+        }
+        // TODO check tuned navaids
+        if (this._progBrgDist && this._progBrgDist.icao === icao) {
+            return true;
+        }
+        return false;
     }
 
     /* END OF MCDU GET/SET METHODS */
