@@ -63,6 +63,7 @@
 1. [AP] Fixed VMAX speed protection for several modes not working properly - @aguther (Andreas Guther)
 1. [AP] Added support for event AUTOPILOT_DISENGAGE_SET to disengage AP - @aguther (Andreas Guther)
 1. [AP] Reduced speed margin of speed protection to 5 kn - @aguther (Andreas Guther)
+1. [MODEL] Removed glass due to issues with brightness in clouds since SU6 - @aguther (Andreas Guther)
 
 ## 0.7.0
 
