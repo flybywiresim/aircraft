@@ -95,15 +95,15 @@ export const ArcMode: React.FC<ArcModeProps> = ({ symbols, adirsAlign, rangeSett
                                 (fmaLatMode === LateralMode.NONE
                                     || fmaLatMode === LateralMode.HDG
                                     || fmaLatMode === LateralMode.TRACK)
-                                    && !fmaLatArmed
+                                && !fmaLatArmed
                                     ? FlightPlanType.Dashed
                                     : FlightPlanType.Nav
                             }
                         />
                         {tmpFplan}
                         { (((fmaLatMode === LateralMode.NONE
-                        || fmaLatMode === LateralMode.HDG
-                        || fmaLatMode === LateralMode.TRACK) && !fmaLatArmed) || !flightPlanManager.getCurrentFlightPlan().length) && (
+                            || fmaLatMode === LateralMode.HDG
+                            || fmaLatMode === LateralMode.TRACK) && !fmaLatArmed) || !flightPlanManager.getCurrentFlightPlan().length) && (
                             <TrackLine x={384} y={620} heading={heading} track={track} />
                         )}
                     </g>
@@ -169,37 +169,34 @@ const Overlay: React.FC<OverlayProps> = memo(({ heading, rangeSetting, tcasMode 
             <text x={592} y={528} textAnchor="end" fill="#00ffff" stroke="none" fontSize={22}>{rangeSetting / 2}</text>
 
             {/* R = 123 */}
-            { (tcasMode === 0 || rangeSetting > 10)
-                    && (
-                        <path
-                            d="M261,620a123,123 0 1,0 246,0a123,123 0 1,0 -246,00"
-                            strokeDasharray="15 10"
-                            strokeDashoffset="-4.2"
-                            clipPath="url(#arc-mode-overlay-clip-1)"
-                        />
-                    )}
-            { (tcasMode > 0 && rangeSetting === 10)
-                    && (
-                        <g>
-                            <line x1={384} x2={384} y1={497 - 6} y2={497 + 6} className="White rounded" transform="rotate(-60 384 620)" />
-                            <line x1={384} x2={384} y1={497 - 6} y2={497 + 6} className="White rounded" transform="rotate(-30 384 620)" />
-                            <line x1={384} x2={384} y1={497 - 6} y2={497 + 6} className="White rounded" transform="rotate(0 384 620)" />
-                            <line x1={384} x2={384} y1={497 - 6} y2={497 + 6} className="White rounded" transform="rotate(30 384 620)" />
-                            <line x1={384} x2={384} y1={497 - 6} y2={497 + 6} className="White rounded" transform="rotate(60 384 620)" />
-                        </g>
-                    )}
+            { (tcasMode === 0 || rangeSetting > 10) && (
+                <path
+                    d="M261,620a123,123 0 1,0 246,0a123,123 0 1,0 -246,00"
+                    strokeDasharray="15 10"
+                    strokeDashoffset="-4.2"
+                    clipPath="url(#arc-mode-overlay-clip-1)"
+                />
+            )}
+            { (tcasMode > 0 && rangeSetting === 10) && (
+                <g>
+                    <line x1={384} x2={384} y1={497 - 6} y2={497 + 6} className="White rounded" transform="rotate(-60 384 620)" />
+                    <line x1={384} x2={384} y1={497 - 6} y2={497 + 6} className="White rounded" transform="rotate(-30 384 620)" />
+                    <line x1={384} x2={384} y1={497 - 6} y2={497 + 6} className="White rounded" transform="rotate(0 384 620)" />
+                    <line x1={384} x2={384} y1={497 - 6} y2={497 + 6} className="White rounded" transform="rotate(30 384 620)" />
+                    <line x1={384} x2={384} y1={497 - 6} y2={497 + 6} className="White rounded" transform="rotate(60 384 620)" />
+                </g>
+            )}
 
             {/* R = 62 */}
-            { (tcasMode > 0 && rangeSetting === 20)
-                    && (
-                        <g>
-                            <line x1={384} x2={384} y1={558 - 6} y2={558 + 6} className="White rounded" transform="rotate(-60 384 620)" />
-                            <line x1={384} x2={384} y1={558 - 6} y2={558 + 6} className="White rounded" transform="rotate(-30 384 620)" />
-                            <line x1={384} x2={384} y1={558 - 6} y2={558 + 6} className="White rounded" transform="rotate(0 384 620)" />
-                            <line x1={384} x2={384} y1={558 - 6} y2={558 + 6} className="White rounded" transform="rotate(30 384 620)" />
-                            <line x1={384} x2={384} y1={558 - 6} y2={558 + 6} className="White rounded" transform="rotate(60 384 620)" />
-                        </g>
-                    )}
+            { (tcasMode > 0 && rangeSetting === 20) && (
+                <g>
+                    <line x1={384} x2={384} y1={558 - 6} y2={558 + 6} className="White rounded" transform="rotate(-60 384 620)" />
+                    <line x1={384} x2={384} y1={558 - 6} y2={558 + 6} className="White rounded" transform="rotate(-30 384 620)" />
+                    <line x1={384} x2={384} y1={558 - 6} y2={558 + 6} className="White rounded" transform="rotate(0 384 620)" />
+                    <line x1={384} x2={384} y1={558 - 6} y2={558 + 6} className="White rounded" transform="rotate(30 384 620)" />
+                    <line x1={384} x2={384} y1={558 - 6} y2={558 + 6} className="White rounded" transform="rotate(60 384 620)" />
+                </g>
+            )}
         </g>
     </>
 ));

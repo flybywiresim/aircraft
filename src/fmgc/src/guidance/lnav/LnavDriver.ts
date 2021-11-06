@@ -5,6 +5,7 @@ import { MathUtils } from '@shared/MathUtils';
 import { GuidanceComponent } from '../GuidanceComponent';
 import { ControlLaw } from '../ControlLaws';
 import { GuidanceController } from '../GuidanceController';
+import { Geometry } from '../Geometry';
 
 export class LnavDriver implements GuidanceComponent {
     private guidanceController: GuidanceController;
@@ -30,6 +31,10 @@ export class LnavDriver implements GuidanceComponent {
         this.lastPhi = null;
     }
 
+    acceptNewMultipleLegGeometry(_geometry: Geometry) {
+        // TODO We don't really care about this for now
+    }
+
     init(): void {
         console.log('[FMGC/Guidance] LnavDriver initialized!');
     }
@@ -37,9 +42,23 @@ export class LnavDriver implements GuidanceComponent {
     update(_deltaTime: number): void {
         let available = false;
 
-        /* Run sequencing */
-
         const geometry = this.guidanceController.guidanceManager.getActiveLegPathGeometry();
+        const dtg = geometry.getDistanceToGo(this.ppos);
+
+        this.guidanceController.activeLegIndex = geometry.legs.get(1).indexInFullPath;
+        this.guidanceController.activeLegDtg = dtg;
+
+        // Pseudo waypoint sequencing
+
+        const pseudoWaypointsOnActiveLeg = this.guidanceController.currentPseudoWaypoints.filter((it) => it.alongLegIndex === geometry.legs.get(1).indexInFullPath);
+
+        for (const pseudoWaypoint of pseudoWaypointsOnActiveLeg) {
+            if (dtg <= pseudoWaypoint.distanceFromLegTermination) {
+                this.guidanceController.sequencePseudoWaypoint(pseudoWaypoint);
+            }
+        }
+
+        // Leg sequencing
 
         if (geometry !== null) {
             // TODO FIXME: Use FM position
@@ -124,7 +143,7 @@ export class LnavDriver implements GuidanceComponent {
                 available = true;
             }
 
-            SimVar.SetSimVarValue('L:A32NX_GPS_WP_DISTANCE', 'nautical miles', geometry.getDistanceToGo(this.ppos));
+            SimVar.SetSimVarValue('L:A32NX_GPS_WP_DISTANCE', 'nautical miles', dtg);
 
             if (!this.guidanceController.flightPlanManager.isActiveWaypointAtEnd(false, false, 0) && geometry.shouldSequenceLeg(this.ppos)) {
                 const currentLeg = geometry.legs.get(1);

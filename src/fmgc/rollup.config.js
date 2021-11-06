@@ -64,6 +64,7 @@ module.exports = {
             preserveExtensions: true,
         }),
         replace({
+            'DEBUG': 'false',
             'process.env.NODE_ENV': '"production"',
             'preventAssignment': true,
         }),

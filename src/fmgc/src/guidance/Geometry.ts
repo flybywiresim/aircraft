@@ -6,6 +6,7 @@ import { TFLeg } from '@fmgc/guidance/lnav/legs/TF';
 import { GeoMath } from '@fmgc/flightplanning/GeoMath';
 import { MathUtils } from '@shared/MathUtils';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
+import { SegmentType } from '@fmgc/flightplanning/FlightPlanSegment';
 import { Degrees, NauticalMiles } from '../../../../typings';
 import { GuidanceParameters } from './ControlLaws';
 
@@ -186,5 +187,17 @@ export class Geometry {
         }
 
         return false;
+    }
+
+    legsInSegment(segmentType: SegmentType): Map<number, Leg> {
+        const newMap = new Map<number, Leg>();
+
+        for (const entry of this.legs.entries()) {
+            if (entry[1].segment === segmentType) {
+                newMap.set(...entry);
+            }
+        }
+
+        return newMap;
     }
 }

@@ -1344,6 +1344,13 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Bool
     - Whether or not the GPS is used as the primary means of navigation/position determination.
 
+## Flight Management System
+
+- A32NX_FM_ENABLE_APPROACH_PHASE
+  - Bool
+  - Indicates whether the FMS should switch to APPROACH phase.
+  - **WARNING:** This is temporary and internal. Do not use.
+
 ## Autopilot System
 
 - A32NX_FMA_LATERAL_MODE

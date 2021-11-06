@@ -54,6 +54,7 @@ export class NearbyFacilities {
     }
 
     init(): void {
+        // Do nothing for now
     }
 
     async update(deltaTime: number): Promise<void> {

@@ -16,11 +16,14 @@ export class VMLeg implements Leg {
 
     public segment: SegmentType;
 
-    constructor(heading: Degrees, initialPosition: Coordinates, initialCourse: Degrees, segment: SegmentType) {
+    public indexInFullPath: number;
+
+    constructor(heading: Degrees, initialPosition: Coordinates, initialCourse: Degrees, segment: SegmentType, indexInFullPath: number) {
         this.heading = heading;
         this.initialPosition = initialPosition;
         this.initialCourse = initialCourse;
         this.segment = segment;
+        this.indexInFullPath = indexInFullPath;
     }
 
     get isCircularArc(): boolean {

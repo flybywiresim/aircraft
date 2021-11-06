@@ -7,6 +7,9 @@ import { NavRadioManager } from './radionav/NavRadioManager';
 import { initFmgcLoop, updateFmgcLoop } from './loop';
 import { FmsMessages } from './components/FmsMessages';
 import { EfisSymbols } from './efis/EfisSymbols';
+import { DescentBuilder } from './guidance/vnav/descent/DescentBuilder';
+import { DecelPathBuilder } from './guidance/vnav/descent/DecelPathBuilder';
+import { VerticalFlightPlanBuilder } from './guidance/vnav/verticalFlightPlan/VerticalFlightPlanBuilder';
 
 export {
     FlightPlanManager,
@@ -19,4 +22,7 @@ export {
     updateFmgcLoop,
     FmsMessages,
     EfisSymbols,
+    DescentBuilder,
+    DecelPathBuilder,
+    VerticalFlightPlanBuilder,
 };
