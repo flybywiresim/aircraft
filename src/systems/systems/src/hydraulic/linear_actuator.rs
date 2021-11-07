@@ -13,7 +13,7 @@ use uom::si::{
     torque::newton_meter,
     velocity::meter_per_second,
     volume::{cubic_meter, gallon},
-    volume_rate::gallon_per_second,
+    volume_rate::{cubic_meter_per_second, gallon_per_second},
 };
 
 use crate::simulation::UpdateContext;
@@ -76,6 +76,7 @@ impl CoreHydraulicForce {
     const DEFAULT_I_GAIN: f64 = 0.2;
     const DEFAULT_P_GAIN: f64 = 0.05;
     const DEFAULT_FORCE_GAIN: f64 = 200000.;
+    const OPEN_LOOP_GAIN: f64 = 1.;
 
     fn new(
         init_position: Ratio,
@@ -229,13 +230,11 @@ impl CoreHydraulicForce {
     ) -> Force {
         let position_error = required_position - position_normalized;
 
-        let open_loop_flow_target = if position_error >= Ratio::new::<ratio>(0.001) {
-            self.max_flow
-        } else if position_error <= Ratio::new::<ratio>(-0.001) {
-            self.min_flow
-        } else {
-            VolumeRate::new::<gallon_per_second>(0.)
-        };
+        let mut open_loop_flow_target = VolumeRate::new::<cubic_meter_per_second>(
+            position_error.get::<ratio>().powi(3) * Self::OPEN_LOOP_GAIN,
+        );
+
+        open_loop_flow_target = open_loop_flow_target.min(self.max_flow).max(self.min_flow);
 
         let flow_error = open_loop_flow_target.get::<gallon_per_second>()
             - signed_flow.get::<gallon_per_second>();
@@ -458,6 +457,10 @@ impl LinearActuator {
         self.requested_position = target_position;
     }
 
+    fn position_normalized(&self) -> Ratio {
+        self.position_normalized
+    }
+
     #[cfg(test)]
     fn force(&self) -> Force {
         self.core_hydraulics.force()
@@ -542,6 +545,10 @@ impl HydraulicLinearActuatorAssembly {
 
     pub fn position_normalized(&self) -> Ratio {
         self.rigid_body.position_normalized()
+    }
+
+    pub fn actuator_position_normalized(&self) -> Ratio {
+        self.linear_actuator.position_normalized()
     }
 }
 
@@ -945,6 +952,10 @@ mod tests {
             self.actuator_assembly.position_normalized()
         }
 
+        fn actuator_position(&self) -> Ratio {
+            self.actuator_assembly.actuator_position_normalized()
+        }
+
         fn is_locked(&self) -> bool {
             self.actuator_assembly.is_locked()
         }
@@ -1024,7 +1035,7 @@ mod tests {
         let actuator_position_init = test_bed.query(|a| a.body_position());
 
         test_bed.command(|a| a.command_unlock());
-        test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(1.)));
+        test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(1.1)));
 
         test_bed.command(|a| a.set_pressure(Pressure::new::<psi>(3000.)));
 
@@ -1206,6 +1217,30 @@ mod tests {
 
         assert!(test_bed.query(|a| a.is_locked()));
         assert!(test_bed.query(|a| a.body_position()) == Ratio::new::<ratio>(0.3));
+    }
+
+    #[test]
+    fn linear_actuator_can_control_position() {
+        let rigid_body = cargo_door_body(true);
+        let actuator = cargo_door_actuator(&rigid_body);
+
+        let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new(actuator, rigid_body));
+
+        test_bed.command(|a| a.command_unlock());
+        test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(0.7)));
+
+        test_bed.command(|a| a.set_pressure(Pressure::new::<psi>(3000.)));
+
+        test_bed.run_with_delta(Duration::from_secs(20));
+
+        assert!(test_bed.query(|a| a.actuator_position()) > Ratio::new::<ratio>(0.68));
+        assert!(test_bed.query(|a| a.actuator_position()) < Ratio::new::<ratio>(0.72));
+
+        test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(0.2)));
+        test_bed.run_with_delta(Duration::from_secs(20));
+
+        assert!(test_bed.query(|a| a.actuator_position()) > Ratio::new::<ratio>(0.18));
+        assert!(test_bed.query(|a| a.actuator_position()) < Ratio::new::<ratio>(0.22));
     }
 
     fn cargo_door_body(is_locked: bool) -> LinearActuatedRigidBodyOnHingeAxis {
