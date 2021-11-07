@@ -51,28 +51,36 @@ class CDUInitPage {
                 }
 
                 // Cost index
-                costIndex = new CDU_SingleValueField(mcdu,
-                    "int",
-                    mcdu.costIndexSet ? mcdu.costIndex : null,
+                costIndex = new MCDU_ValueField(mcdu,
                     {
-                        clearable: true,
-                        emptyValue: "___[color]amber",
-                        minValue: 0,
-                        maxValue: 999,
-                        suffix: "[color]cyan"
-                    },
-                    (value, resolve) => {
-                        if (value != null) {
-                            mcdu.costIndex = value;
-                            mcdu.costIndexSet = true;
-                        } else {
-                            mcdu.costIndexSet = false;
-                            mcdu.costIndex = 0;
-                        }
-                        resolve();
+                        variable: mcdu.costIndex,
+                        emptyValue: "{amber}___{end}",
+                        color: "cyan"
                     },
                     mcdu.pageRedrawCallback
                 );
+                // costIndex = new CDU_SingleValueField(mcdu,
+                //     "int",
+                //     mcdu.costIndexSet ? mcdu.costIndex : null,
+                //     {
+                //         clearable: true,
+                //         emptyValue: "___[color]amber",
+                //         minValue: 0,
+                //         maxValue: 999,
+                //         suffix: "[color]cyan"
+                //     },
+                //     (value, resolve) => {
+                //         if (value != null) {
+                //             mcdu.costIndex = value;
+                //             mcdu.costIndexSet = true;
+                //         } else {
+                //             mcdu.costIndexSet = false;
+                //             mcdu.costIndex = 0;
+                //         }
+                //         resolve();
+                //     },
+                //     mcdu.pageRedrawCallback
+                // );
 
                 cruiseFlTemp = "_____\xa0|___°[color]amber";
                 //This is done so pilot enters a FL first, rather than using the computed one

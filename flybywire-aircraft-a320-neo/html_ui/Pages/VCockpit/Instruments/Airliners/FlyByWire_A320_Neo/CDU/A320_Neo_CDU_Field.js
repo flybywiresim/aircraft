@@ -153,4 +153,75 @@ class CDU_SingleValueField extends CDU_Field {
     }
 }
 
+class MCDU_ValueField extends CDU_Field {
+    constructor(mcdu, options, resolveAction, delay = undefined) {
+        super(mcdu, () => {}, resolveAction, delay);
+        // first variable
+        this.variable = null;
+        this.color = "";
+        this.size = "";
+        this.emptyValue = "";
+        this._sizeSuffix = "";
+        this._colorSuffix = "";
+
+        // second variable
+        this.devider = "/";
+        this.variable2 = null;
+        this.color2 = "";
+        this.size2 = "";
+        this.emptyValue2 = "";
+        this._sizeSuffix2 = "";
+        this._colorSuffix2 = "";
+        this.valueSetEvent = () => {};
+
+        this.setOptions(options);
+
+        if (this.color) {
+            this.color = `{${this.color}}`;
+            this._colorSuffix = "{end}";
+        }
+
+        if (this.size) {
+            this.size = `{${this.size}}`;
+            this._sizeSuffix = "{end}";
+        }
+    }
+
+    getValue() {
+        if (this.variable2) {
+            const value = this.variable.getDisplayValue();
+            const value2 = this.variable2.getDisplayValue();
+
+            const text1 = this._getText(value, this.size, this.color, this._sizeSuffix, this._colorSuffix, this.emptyValue);
+            const text2 = this._getText(value2, this.size2, this.color2, this._sizeSuffix2, this._colorSuffix2, this.emptyValue2);
+
+            return text1 + this.devider + text2;
+        }
+
+        return this._getText(value, this.size, this.color, this._sizeSuffix, this._colorSuffix, this.emptyValue);
+    }
+
+    onSelect(value, resolve, reject) {
+        if (this.variable2) {
+            const split = value.split(this.devider);
+
+            const res1 = this.variable.validateAndSetValue(split[0], true);
+            const res2 = this.variable2.validateAndSetValue(split[1], true);
+
+            this.variable.setValue(res1);
+            this.variable2.setValue(res2);
+
+            this.valueSetEvent(res1, res2);
+        } else {
+            this.variable.validateAndSetValue(value);
+        }
+
+        resolve();
+    }
+
+    _getText(value, size, color, sizeSuffix, colorSuffix, emptyValue) {
+        return value ? `${size}${color}${value}${colorSuffix}${sizeSuffix}` : emptyValue;
+    }
+}
+
 // TODO: Create classes for multi value fields

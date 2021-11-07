@@ -19,7 +19,15 @@ class FMCMainDisplay extends BaseAirliners {
 
         /** Declaration of every variable used (NOT initialization) */
         this.currentFlightPlanWaypointIndex = undefined;
-        this.costIndex = undefined;
+        // this.costIndex = undefined;
+        this.costIndex = new FmgcVariable({
+            valueMinOrLengthMin: 0,
+            valueMaxOrLengthMax: 999,
+            valueSetEvent: () => {
+                this.costIndexSet = true;
+                this.updateManagedSpeeds();
+            }
+        });
         this.costIndexSet = undefined;
         this.maxCruiseFL = undefined;
         this.routeIndex = undefined;
@@ -269,7 +277,7 @@ class FMCMainDisplay extends BaseAirliners {
 
     initVariables() {
         this.currentFlightPlanWaypointIndex = -1;
-        this.costIndex = 0;
+        this.costIndex.reset();
         this.costIndexSet = false;
         this.maxCruiseFL = 390;
         this.routeIndex = 0;
@@ -1053,17 +1061,17 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     getClbManagedSpeedFromCostIndex() {
-        const dCI = (this.costIndex / 999) ** 2;
+        const dCI = (this.costIndex.getRawValue() / 999) ** 2;
         return 290 * (1 - dCI) + 330 * dCI;
     }
 
     getCrzManagedSpeedFromCostIndex() {
-        const dCI = (this.costIndex / 999) ** 2;
+        const dCI = (this.costIndex.getRawValue() / 999) ** 2;
         return 290 * (1 - dCI) + 310 * dCI;
     }
 
     getDesManagedSpeedFromCostIndex() {
-        const dCI = this.costIndex / 999;
+        const dCI = this.costIndex.getRawValue() / 999;
         return 288 * (1 - dCI) + 300 * dCI;
     }
 
@@ -1231,23 +1239,6 @@ class FMCMainDisplay extends BaseAirliners {
             }
         }
         return reject(NXSystemMessages.formatError);
-    }
-
-    tryUpdateCostIndex(costIndex, badInputCallback = () => {}, successCallback = () => {}) {
-        const value = parseInt(costIndex);
-        if (isFinite(value)) {
-            if (value >= 0) {
-                if (value < 1000) {
-                    this.costIndexSet = true;
-                    this.costIndex = value;
-                    this.updateManagedSpeeds();
-                    return successCallback();
-                } else {
-                    return badInputCallback(NXSystemMessages.entryOutOfRange);
-                }
-            }
-        }
-        return badInputCallback(NXSystemMessages.notAllowed);
     }
 
     /**

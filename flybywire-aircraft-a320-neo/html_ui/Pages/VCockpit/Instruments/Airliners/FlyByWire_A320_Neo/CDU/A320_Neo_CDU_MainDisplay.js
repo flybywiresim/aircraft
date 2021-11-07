@@ -494,7 +494,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     setLine(content, row, col = -1) {
         if (content instanceof CDU_Field) {
             const field = content;
-            console.log("onSelect: " + field.onSelect);
             this._setLsk((col === 0 || col === -1 ? 0 : 1), row, (value, resolve, reject) => field.onSelect(value, resolve, reject), field.resolveAction, field.delay);
             content = content.getValue();
         }

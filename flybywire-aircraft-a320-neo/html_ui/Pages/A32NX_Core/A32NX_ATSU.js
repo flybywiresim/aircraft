@@ -230,7 +230,7 @@ const insertUplink = (mcdu) => {
     */
     setTimeout(() => {
         mcdu.setCruiseFlightLevelAndTemperature(cruiseAltitude);
-        mcdu.tryUpdateCostIndex(costIndex);
+        mcdu.costIndex.setValue(costIndex);
         mcdu.tryUpdateTropo(avgTropopause);
         if (mcdu.page.Current === mcdu.page.InitPageA) {
             CDUInitPage.ShowPage1(mcdu);

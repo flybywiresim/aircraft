@@ -377,7 +377,14 @@ class CDUPerformancePage {
         const titleColor = isPhaseActive ? "green" : "white";
         const isSelected = Simplane.getAutoPilotAirspeedSelected();
         const actModeCell = isSelected ? "SELECTED" : "MANAGED";
-        const costIndexCell = isFinite(mcdu.costIndex) ? mcdu.costIndex.toFixed(0) + "[color]cyan" : "[][color]cyan";
+        const costIndexCell = new MCDU_ValueField(mcdu,
+            {
+                variable: mcdu.costIndex,
+                emptyValue: "{amber}___{end}",
+                color: "cyan"
+            },
+            () => CDUPerformancePage.ShowCLBPage(mcdu)
+        );
         let managedSpeedCell = "";
         if (isPhaseActive) {
             if (mcdu.managedSpeedTarget === mcdu.managedSpeedClimb) {
@@ -393,7 +400,7 @@ class CDUPerformancePage {
             mcdu.onLeftInput[3] = (value, badInputCallback) => mcdu.trySetPreSelectedClimbSpeed(value, badInputCallback, () => CDUPerformancePage.ShowCLBPage(mcdu));
         }
         const [selectedSpeedTitle, selectedSpeedCell] = CDUPerformancePage.getSelectedTitleAndValue(isPhaseActive, isSelected, mcdu.preSelectedClbSpeed);
-        mcdu.onLeftInput[1] = (value, badInputCallback) => mcdu.tryUpdateCostIndex(value, badInputCallback, () => CDUPerformancePage.ShowCLBPage(mcdu));
+        // mcdu.onLeftInput[1] = (value, badInputCallback) => mcdu.tryUpdateCostIndex(value, badInputCallback, () => CDUPerformancePage.ShowCLBPage(mcdu));
         const timeLabel = mcdu.getIsFlying() ? "UTC" : "TIME";
         const bottomRowLabels = ["\xa0PREV", "NEXT\xa0"];
         const bottomRowCells = ["<PHASE", "PHASE>"];
@@ -454,14 +461,22 @@ class CDUPerformancePage {
         const isSelected = Simplane.getAutoPilotAirspeedSelected();
         const isFlying = false;
         const actModeCell = isSelected ? "SELECTED" : "MANAGED";
-        const costIndexCell = isFinite(mcdu.costIndex) ? mcdu.costIndex.toFixed(0) + "[color]cyan" : "[][color]cyan";
+        // const costIndexCell = isFinite(mcdu.costIndex.getRawValue()) ? mcdu.costIndex.getRawValue() + "[color]cyan" : "[][color]cyan";
+        const costIndexCell = new MCDU_ValueField(mcdu,
+            {
+                variable: mcdu.costIndex,
+                emptyValue: "{amber}___{end}",
+                color: "cyan"
+            },
+            () => CDUPerformancePage.ShowCRZPage(mcdu)
+        );
         let managedSpeedCell = "";
         const managedSpeed = isPhaseActive ? mcdu.managedSpeedTarget : mcdu.managedSpeedCruise;
         if (isFinite(managedSpeed)) {
             managedSpeedCell = (isSelected ? "*" : "") + managedSpeed.toFixed(0);
         }
         const [selectedSpeedTitle, selectedSpeedCell] = CDUPerformancePage.getSelectedTitleAndValue(isPhaseActive, isSelected, mcdu.preSelectedCrzSpeed);
-        mcdu.onLeftInput[1] = (value, badInputCallback) => mcdu.tryUpdateCostIndex(value, badInputCallback, () => CDUPerformancePage.ShowCRZPage(mcdu));
+        // mcdu.onLeftInput[1] = (value, badInputCallback) => mcdu.tryUpdateCostIndex(value, badInputCallback, () => CDUPerformancePage.ShowCRZPage(mcdu));
         const timeLabel = isFlying ? "UTC" : "TIME";
         const bottomRowLabels = ["\xa0PREV", "NEXT\xa0"];
         const bottomRowCells = ["<PHASE", "PHASE>"];
@@ -523,7 +538,14 @@ class CDUPerformancePage {
         const isFlying = false;
         const isSelected = Simplane.getAutoPilotAirspeedSelected();
         const actModeCell = isSelected ? "SELECTED" : "MANAGED";
-        const costIndexCell = isFinite(mcdu.costIndex) ? mcdu.costIndex.toFixed(0) + "[color]cyan" : "[][color]cyan";
+        const costIndexCell = new MCDU_ValueField(mcdu,
+            {
+                variable: mcdu.costIndex,
+                emptyValue: "{amber}___{end}",
+                color: "cyan"
+            },
+            () => CDUPerformancePage.ShowDESPage(mcdu)
+        );
         let managedSpeedCell = "";
         const managedSpeed = isPhaseActive ? mcdu.managedSpeedTarget : mcdu.managedSpeedDescend;
         if (isFinite(managedSpeed)) {
@@ -553,7 +575,7 @@ class CDUPerformancePage {
             mcdu.onLeftInput[3] = (value, badInputCallback) => mcdu.trySetPreSelectedDescentSpeed(value, badInputCallback, () => CDUPerformancePage.ShowDESPage(mcdu));
             mcdu.onLeftInput[5] = () => CDUPerformancePage.ShowCRZPage(mcdu);
         }
-        mcdu.onLeftInput[1] = (value, badInputCallback) => mcdu.tryUpdateCostIndex(value, badInputCallback, () => CDUPerformancePage.ShowDESPage(mcdu));
+        // mcdu.onLeftInput[1] = (value, badInputCallback) => mcdu.tryUpdateCostIndex(value, badInputCallback, () => CDUPerformancePage.ShowDESPage(mcdu));
         mcdu.rightInputDelay[5] = () => mcdu.getDelaySwitchPage();
         mcdu.onRightInput[5] = () => CDUPerformancePage.ShowAPPRPage(mcdu);
         mcdu.setTemplate([
