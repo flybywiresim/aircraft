@@ -6,7 +6,7 @@ class CDUInitPage {
         mcdu.activeSystem = 'FMGC';
 
         let fromTo = "____|____[color]amber";
-        let coRoute = "__________[color]amber";
+        let coRoute = mcdu.coRoute ? mcdu.coRoute + "[color]cyan" : "__________[color]amber";
         const flightNo = new CDU_SingleValueField(mcdu,
             "string",
             mcdu.flightNumber,
@@ -15,15 +15,8 @@ class CDUInitPage {
                 suffix: "[color]cyan",
                 maxLength: 7
             },
-            (value) => {
-                mcdu.updateFlightNo(
-                    value,
-                    (badInputMessage) => {
-                        mcdu.scratchpadCallback(value, badInputMessage);
-                    },
-                    () => CDUInitPage.ShowPage1(mcdu)
-                );
-            }
+            mcdu.updateFlightNo,
+            mcdu.pageRedrawCallback
         );
 
         //;
@@ -68,7 +61,7 @@ class CDUInitPage {
                         maxValue: 999,
                         suffix: "[color]cyan"
                     },
-                    (value) => {
+                    (value, resolve) => {
                         if (value != null) {
                             mcdu.costIndex = value;
                             mcdu.costIndexSet = true;
@@ -76,8 +69,9 @@ class CDUInitPage {
                             mcdu.costIndexSet = false;
                             mcdu.costIndex = 0;
                         }
-                        CDUInitPage.ShowPage1(mcdu);
-                    }
+                        resolve();
+                    },
+                    mcdu.pageRedrawCallback
                 );
 
                 cruiseFlTemp = "_____\xa0|___°[color]amber";
@@ -90,7 +84,7 @@ class CDUInitPage {
                 }
 
                 // CRZ FL / FLX TEMP
-                mcdu.onLeftInput[5] = (value, badInputCallback) => mcdu.setCruiseFlightLevelAndTemperature(value, badInputCallback, () => CDUInitPage.ShowPage1(mcdu));
+                mcdu.setLskLeft(5, mcdu.setCruiseFlightLevelAndTemperature, mcdu.pageRedrawCallback);
 
                 if (mcdu.flightPlanManager.getOrigin()) {
                     alignOption = "IRS INIT>";
@@ -103,49 +97,55 @@ class CDUInitPage {
                 } else {
                     altDest = "NONE" + "[color]cyan";
                 }
-                mcdu.onLeftInput[1] = (value, badInputCallback) => {
-                    if (value === "") {
-                        CDUAvailableFlightPlanPage.ShowPage(mcdu);
-                    } else {
-                        mcdu.tryUpdateAltDestination(value, badInputCallback, () => CDUInitPage.ShowPage1(mcdu));
-                    }
-                };
+                mcdu.setLskLeft(
+                    1,
+                    (value, resolve, reject) => {
+                        if (value === "") {
+                            CDUAvailableFlightPlanPage.ShowPage(mcdu);
+                        } else {
+                            mcdu.tryUpdateAltDestination(value, resolve, reject);
+                        }
+                    },
+                    mcdu.pageRedrawCallback
+                );
             }
         }
 
-        if (mcdu.coRoute) {
-            coRoute = mcdu.coRoute + "[color]cyan";
-        }
-        mcdu.onLeftInput[0] = (value, badInputCallback) => mcdu.updateCoRoute(value, badInputCallback, () => CDUInitPage.ShowPage1(mcdu));
+        mcdu.setLskLeft(
+            0,
+            mcdu.updateCoRoute,
+            mcdu.pageRedrawCallback
+        );
 
         if (mcdu.tropo) {
             tropo = mcdu.tropo + "[color]cyan";
         }
-        mcdu.onRightInput[4] = (value, badInputCallback) => mcdu.tryUpdateTropo(value, badInputCallback, () => CDUInitPage.ShowPage1(mcdu));
+        mcdu.setLskRight(4, mcdu.tryUpdateTropo, mcdu.pageRedrawCallback);
 
         /**
          * If scratchpad is filled, attempt to update city pair
          * else show route selection pair if city pair is displayed
          * Ref: FCOM 4.03.20 P6
          */
-        mcdu.onRightInput[0] = (value, badInputCallback) => {
-            if (value !== "") {
-                mcdu.tryUpdateFromTo(
-                    value,
-                    badInputCallback,
-                    () => {
-                        CDUPerformancePage.UpdateThrRedAccFromOrigin(mcdu);
-                        CDUPerformancePage.UpdateEngOutAccFromOrigin(mcdu);
-                        CDUPerformancePage.UpdateThrRedAccFromDestination(mcdu);
+        mcdu.setLskRight(
+            0,
+            (value, resolve, reject) => {
+                if (value !== "") {
+                    mcdu.tryUpdateFromTo(value, resolve, reject);
+                } else if (mcdu.flightPlanManager.getOrigin() && mcdu.flightPlanManager.getOrigin().ident) {
+                    if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident) {
                         CDUAvailableFlightPlanPage.ShowPage(mcdu);
                     }
-                );
-            } else if (mcdu.flightPlanManager.getOrigin() && mcdu.flightPlanManager.getOrigin().ident) {
-                if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident) {
-                    CDUAvailableFlightPlanPage.ShowPage(mcdu);
                 }
+            },
+            () => {
+                CDUPerformancePage.UpdateThrRedAccFromOrigin(mcdu);
+                CDUPerformancePage.UpdateEngOutAccFromOrigin(mcdu);
+                CDUPerformancePage.UpdateThrRedAccFromDestination(mcdu);
+                CDUAvailableFlightPlanPage.ShowPage(mcdu);
             }
-        };
+        );
+
         mcdu.onRightInput[1] = () => {
             if (requestEnable) {
                 getSimBriefOfp(mcdu, () => {
@@ -158,14 +158,10 @@ class CDUInitPage {
                     });
             }
         };
-        mcdu.rightInputDelay[2] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
-        mcdu.onRightInput[2] = () => {
-            if (alignOption) {
-                CDUIRSInit.ShowPage(mcdu);
-            }
-        };
+
+        if (alignOption) {
+            mcdu.setLskRight(2, (value, resolve) => resolve(), CDUIRSInit.ShowPage, mcdu.getDelaySwitchPage);
+        }
 
         mcdu.setTemplate([
             ["INIT"],

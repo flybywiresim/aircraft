@@ -63,25 +63,31 @@ class CDUPerformancePage {
                     v1Check = `{small}{cyan}${("" + mcdu.v1Speed).padEnd(3)}{end}{end}`;
                 }
             }
-            mcdu.onLeftInput[0] = (value, badInputCallback) => {
-                if (value === "") {
-                    if (mcdu._v1Checked) {
-                        // not real: v-speed helper
-                        if (mcdu.flaps) {
-                            mcdu.setScratchpadText(mcdu._getV1Speed().toString());
+
+            mcdu.setLskLeft(
+                0,
+                (value, resolve) => {
+                    if (value === "") {
+                        if (mcdu._v1Checked) {
+                            // not real: v-speed helper
+                            if (mcdu.flaps) {
+                                mcdu.setScratchpadText(mcdu._getV1Speed().toString());
+                            } else {
+                                throw NXSystemMessages.formatError;
+                            }
                         } else {
-                            badInputCallback(NXSystemMessages.formatError);
+                            mcdu._v1Checked = true;
+                            mcdu.removeMessageFromQueue(NXSystemMessages.checkToData.text);
+                            mcdu.vSpeedDisagreeCheck();
                         }
+                        resolve();
                     } else {
-                        mcdu._v1Checked = true;
-                        mcdu.removeMessageFromQueue(NXSystemMessages.checkToData.text);
-                        mcdu.vSpeedDisagreeCheck();
+                        mcdu.trySetV1Speed(value, resolve);
                     }
-                    CDUPerformancePage.ShowTAKEOFFPage(mcdu);
-                } else {
-                    mcdu.trySetV1Speed(value, badInputCallback, () => CDUPerformancePage.ShowTAKEOFFPage(mcdu));
-                }
-            };
+                },
+                () => CDUPerformancePage.ShowTAKEOFFPage(mcdu)
+            );
+
             vR = "{amber}___{end}";
             if (mcdu.vRSpeed) {
                 if (mcdu._vRChecked) {

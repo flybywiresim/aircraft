@@ -1194,25 +1194,25 @@ class FMCMainDisplay extends BaseAirliners {
         SimVar.SetSimVarValue("L:AIRLINER_CRUISE_ALTITUDE", "number", this._activeCruiseFlightLevel * 100);
     }
 
-    setCruiseFlightLevelAndTemperature(input, badInputCallback = () => {}, successCallback = () => {}) {
+    setCruiseFlightLevelAndTemperature(input, resolve = () => {}, reject = () => {}) {
         if (input === FMCMainDisplay.clrValue) {
             this.cruiseFlightLevel = undefined;
             this._cruiseFlightLevel = undefined;
             this.cruiseTemperature = undefined;
-            return successCallback();
+            return resolve();
         }
         const flString = input.split("/")[0].replace("FL", "");
         const tempString = input.split("/")[1];
         const onlyTemp = flString.length === 0;
 
-        if (!!flString && !onlyTemp && this.trySetCruiseFl(parseFloat(flString), badInputCallback, () => true)) {
+        if (!!flString && !onlyTemp && this.trySetCruiseFl(parseFloat(flString), () => true, reject)) {
             if (SimVar.GetSimVarValue("L:A32NX_CRZ_ALT_SET_INITIAL", "bool") === 1 && SimVar.GetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool") === 1) {
                 SimVar.SetSimVarValue("L:A32NX_NEW_CRZ_ALT", "number", this.cruiseFlightLevel);
             } else {
                 SimVar.SetSimVarValue("L:A32NX_CRZ_ALT_SET_INITIAL", "bool", 1);
             }
             if (!tempString) {
-                return successCallback();
+                return resolve();
             }
         }
         if (!!tempString) {
@@ -1222,15 +1222,15 @@ class FMCMainDisplay extends BaseAirliners {
             if (isFinite(temp) && this._cruiseEntered) {
                 if (temp > -270 && temp < 100) {
                     this.cruiseTemperature = temp;
-                    return successCallback();
+                    return resolve();
                 } else {
-                    return badInputCallback(NXSystemMessages.entryOutOfRange);
+                    return reject(NXSystemMessages.entryOutOfRange);
                 }
             } else {
-                return badInputCallback(NXSystemMessages.notAllowed);
+                return reject(NXSystemMessages.notAllowed);
             }
         }
-        return badInputCallback(NXSystemMessages.formatError);
+        return reject(NXSystemMessages.formatError);
     }
 
     tryUpdateCostIndex(costIndex, badInputCallback = () => {}, successCallback = () => {}) {
@@ -1253,30 +1253,30 @@ class FMCMainDisplay extends BaseAirliners {
     /**
      * Any tropopause altitude up to 60,000 ft is able to be entered
      * @param {string} tropo Format: NNNN or NNNNN Leading 0’s must be included. Entry is rounded to the nearest 10 ft
-     * @param {function} badInputCallback
-     * @param {function} successCallback
+     * @param resolve
+     * @param reject
      * @return {boolean} Whether tropopause could be set or not
      */
-    tryUpdateTropo(tropo, badInputCallback = () => {}, successCallback = () => {}) {
+    tryUpdateTropo(tropo, resolve = () => {}, reject = () => {}) {
         if (tropo === FMCMainDisplay.clrValue) {
             if (this.tropo) {
                 this.tropo = "";
-                return successCallback();
+                return resolve();
             }
-            return badInputCallback(NXSystemMessages.notAllowed);
+            return reject(NXSystemMessages.notAllowed);
         }
 
         if (!tropo.match(/^(?=(\D*\d){4,5}\D*$)/g)) {
-            return badInputCallback(NXSystemMessages.formatError);
+            return reject(NXSystemMessages.formatError);
         }
 
         const value = parseInt(tropo);
         if (isFinite(value) && value >= 0 && value <= 60000) {
             this.tropo = ("" + Math.round(value / 10) * 10).padStart(5, "0");
-            return successCallback();
+            return resolve();
         }
 
-        return badInputCallback(NXSystemMessages.entryOutOfRange);
+        return reject(NXSystemMessages.entryOutOfRange);
     }
 
     ensureCurrentFlightPlanIsTemporary(callback = EmptyCallback.Boolean) {
@@ -1293,37 +1293,35 @@ class FMCMainDisplay extends BaseAirliners {
         }
     }
 
-    tryUpdateFromTo(fromTo, errorCallback, successCallback) {
+    async tryUpdateFromTo(fromTo, resolve, reject = EmptyCallback.Void) {
         if (fromTo === FMCMainDisplay.clrValue) {
-            return errorCallback(NXSystemMessages.notAllowed);
+            return reject(NXSystemMessages.notAllowed);
         }
         const from = fromTo.split("/")[0];
         const to = fromTo.split("/")[1];
-        this.dataManager.GetAirportByIdent(from).then((airportFrom) => {
-            if (airportFrom) {
-                this.dataManager.GetAirportByIdent(to).then((airportTo) => {
-                    if (airportTo) {
-                        this.eraseTemporaryFlightPlan(() => {
-                            this.flightPlanManager.clearFlightPlan(() => {
-                                this.flightPlanManager.setOrigin(airportFrom.icao, () => {
-                                    this.tmpOrigin = airportFrom.ident;
-                                    this.flightPlanManager.setDestination(airportTo.icao, () => {
-                                        this.aocAirportList.init(this.tmpOrigin, airportTo.ident);
-                                        this.tmpOrigin = airportTo.ident;
-                                        SimVar.SetSimVarValue("L:FLIGHTPLAN_USE_DECEL_WAYPOINT", "number", 1);
-                                        successCallback();
-                                    });
-                                });
-                            });
-                        });
-                    } else {
-                        errorCallback(NXSystemMessages.notInDatabase);
-                    }
-                });
-            } else {
-                errorCallback(NXSystemMessages.notInDatabase);
-            }
-        });
+
+        if (!from || !to) {
+            return reject(NXSystemMessages.formatError);
+        }
+
+        const airportFrom = await this.dataManager.GetAirportByIdent(from);
+        const airportTo = await this.dataManager.GetAirportByIdent(to);
+
+        if (!airportFrom || !airportTo) {
+            return reject(NXSystemMessages.notInDatabase);
+        }
+
+        await this.eraseTemporaryFlightPlan();
+        await this.flightPlanManager.clearFlightPlan();
+
+        await this.flightPlanManager.setOrigin(airportFrom.icao);
+        await this.flightPlanManager.setDestination(airportTo.icao);
+
+        this.aocAirportList.init(airportFrom.ident, airportTo.ident);
+
+        SimVar.SetSimVarValue("L:FLIGHTPLAN_USE_DECEL_WAYPOINT", "number", 1);
+
+        resolve();
     }
 
     /**
@@ -1388,20 +1386,20 @@ class FMCMainDisplay extends BaseAirliners {
         return badInputCallback(NXSystemMessages.formatError);
     }
 
-    async tryUpdateAltDestination(altDestIdent, badInputCallback = () => {}, successCallback = () => {}) {
+    async tryUpdateAltDestination(altDestIdent, resolve = EmptyCallback, reject = EmptyCallback) {
         if (altDestIdent === "NONE" || altDestIdent === FMCMainDisplay.clrValue) {
             this.altDestination = undefined;
             this._DistanceToAlt = 0;
-            return successCallback();
+            return resolve();
         }
         const airportAltDest = await this.dataManager.GetAirportByIdent(altDestIdent);
         if (airportAltDest) {
             this.altDestination = airportAltDest;
             this.aocAirportList.alternate = altDestIdent;
             this.tryUpdateDistanceToAlt();
-            return successCallback();
+            return resolve();
         }
-        return badInputCallback(NXSystemMessages.notInDatabase);
+        reject(NXSystemMessages.notInDatabase);
     }
 
     /**
@@ -1713,29 +1711,23 @@ class FMCMainDisplay extends BaseAirliners {
         }
     }
 
-    updateFlightNo(flightNo, badInputCallback, successCallback) {
+    updateFlightNo(flightNo, resolve, reject = EmptyCallback.Void) {
         if (flightNo.length > 7) {
-            return badInputCallback(NXSystemMessages.notAllowed);
+            return reject(NXSystemMessages.formatError);
         }
 
         this.flightNumber = flightNo;
+        console.log("fln: " + this.flightNumber);
 
-        SimVar.SetSimVarValue("ATC FLIGHT NUMBER", "string", flightNo, "FMC").then(() => {
-            NXApi.connectTelex(flightNo)
-                .then(() => {
-                    return successCallback();
-                })
-                .catch((err) => {
-                    if (err !== NXApi.disabledError) {
-                        return badInputCallback(NXFictionalMessages.fltNbrInUse);
-                    }
+        SimVar.SetSimVarValue("ATC FLIGHT NUMBER", "string", flightNo, "FMC");
+        NXApi.connectTelex(flightNo)
+            .then(() => {})
+            .catch(() => {});
 
-                    return successCallback();
-                });
-        });
+        resolve();
     }
 
-    updateCoRoute(coRoute, badInputCallback, successCallback) {
+    updateCoRoute(coRoute, resolve) {
         if (coRoute.length > 2) {
             if (coRoute.length < 10) {
                 if (coRoute === "NONE") {
@@ -1743,10 +1735,10 @@ class FMCMainDisplay extends BaseAirliners {
                 } else {
                     this.coRoute = coRoute;
                 }
-                return successCallback();
+                return resolve();
             }
         }
-        return badInputCallback(NXSystemMessages.notAllowed);
+        throw NXSystemMessages.notAllowed;
     }
 
     getTotalTripTime() {
@@ -2347,46 +2339,46 @@ class FMCMainDisplay extends BaseAirliners {
     /**
      * Checks input and passes to trySetCruiseFl()
      * @param input
-     * @param badInputCallback
-     * @param successCallback
+     * @param resolve
+     * @param reject
      * @returns {boolean} input passed checks
      */
-    trySetCruiseFlCheckInput(input, badInputCallback, successCallback) {
+    trySetCruiseFlCheckInput(input, resolve, reject) {
         if (input === FMCMainDisplay.clrValue) {
-            return badInputCallback(NXSystemMessages.notAllowed);
+            return reject(NXSystemMessages.notAllowed);
         }
         const flString = input.replace("FL", "");
         if (!flString) {
-            return badInputCallback(NXSystemMessages.notAllowed);
+            return reject(NXSystemMessages.notAllowed);
         }
-        this.trySetCruiseFl(parseFloat(flString), badInputCallback, successCallback);
+        this.trySetCruiseFl(parseFloat(flString), resolve, reject);
     }
 
     /**
      * Sets new Cruise FL if all conditions good
      * @param fl {number} Altitude or FL
-     * @param badInputCallback {function}
-     * @param successCallback
+     * @param resolve
+     * @param reject
      * @returns {boolean} input passed checks
      */
-    trySetCruiseFl(fl, badInputCallback, successCallback) {
+    trySetCruiseFl(fl, resolve, reject) {
         if (!isFinite(fl)) {
-            return badInputCallback(NXSystemMessages.notAllowed);
+            return reject(NXSystemMessages.notAllowed);
         }
         if (fl >= 1000) {
             fl = Math.floor(fl / 100);
         }
         if (fl > this.maxCruiseFL) {
-            return badInputCallback(NXSystemMessages.entryOutOfRange);
+            return reject(NXSystemMessages.entryOutOfRange);
         }
         const phase = this.currentFlightPhase;
         const selFl = Math.floor(Math.max(0, Simplane.getAutoPilotDisplayedAltitudeLockValue("feet")) / 100);
         if (fl < selFl && (phase === FmgcFlightPhases.CLIMB || phase === FmgcFlightPhases.APPROACH || phase === FmgcFlightPhases.GOAROUND)) {
-            return badInputCallback(NXSystemMessages.entryOutOfRange);
+            return reject(NXSystemMessages.entryOutOfRange);
         }
 
         if (fl <= 0 || fl > this.maxCruiseFL) {
-            return badInputCallback(NXSystemMessages.entryOutOfRange);
+            return reject(NXSystemMessages.entryOutOfRange);
         }
 
         this.cruiseFlightLevel = fl;
@@ -2404,7 +2396,7 @@ class FMCMainDisplay extends BaseAirliners {
             this.flightPhaseManager.changeFlightPhase(FmgcFlightPhases.CLIMB);
         }
 
-        return successCallback();
+        return resolve();
     }
 
     trySetRouteReservedFuel(s, badInputCallback, successCallback) {

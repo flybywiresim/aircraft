@@ -150,8 +150,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.onClr = () => this._scratchpad.clear();
         this.onClrHeld = () => this._scratchpad.clearHeld();
         this.onPlusMinus = (defaultKey = "-") => this._scratchpad.plusMinus(defaultKey);
-        this.onLeftFunction = (f) => this._onLsk(this.onLeftInput[f], this.leftInputDelay[f]);
-        this.onRightFunction = (f) => this._onLsk(this.onRightInput[f], this.rightInputDelay[f]);
+        this.onLeftFunction = (f) => this._onLsk(this.onLeftInput[f]);
+        this.onRightFunction = (f) => this._onLsk(this.onRightInput[f]);
 
         const flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string");
         NXApi.connectTelex(flightNo)
@@ -492,12 +492,10 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
      * @param {number} col
      */
     setLine(content, row, col = -1) {
-
         if (content instanceof CDU_Field) {
             const field = content;
-            ((col === 0 || col === -1) ? this.onLeftInput : this.onRightInput)[row] = (value) => {
-                field.onSelect(value);
-            };
+            console.log("onSelect: " + field.onSelect);
+            this._setLsk((col === 0 || col === -1 ? 0 : 1), row, (value, resolve, reject) => field.onSelect(value, resolve, reject), field.resolveAction, field.delay);
             content = content.getValue();
         }
 
@@ -928,6 +926,36 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
 
     /* END OF MCDU SCRATCHPAD */
+    /* MCDU LSK */
+
+    /**
+     * @param index {number} represents lsk button index
+     * @param executor {function(): void} performs the input check
+     * @param resolveAction {function(): void} is called if the input check is successful
+     * @param delay {function()} shall return a number representing ms
+     */
+    setLskLeft(index, executor, resolveAction = undefined, delay = undefined) {
+        this._setLsk(0, index, executor, resolveAction, delay);
+    }
+
+    /**
+     * @param index {number} represents lsk button index
+     * @param executor {function(*, *): *} performs the input check
+     * @param resolveAction {function(): void} is called if the input check is successful
+     * @param delay {function()} shall return a number representing ms
+     */
+    setLskRight(index, executor, resolveAction = undefined, delay = undefined) {
+        this._setLsk(1, index, executor, resolveAction, delay);
+    }
+
+    _setLsk(side, index, executor, resolveAction = () => {} , delay = this.getDelayBasic) {
+        (side === 0 ? this.onLeftInput : this.onRightInput)[index] = {
+            actions: [executor.bind(this), resolveAction],
+            delay: delay.bind(this)
+        };
+    }
+
+    /* END OF MCDU LSK */
     /* MCDU EVENTS */
 
     onPowerOn() {
@@ -1122,8 +1150,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         return false;
     }
 
-    _onLsk(fncAction, fncActionDelay = this.getDelayBasic) {
-        if (!fncAction) {
+    _onLsk(input) {
+        if (!input || !input.actions) {
             return;
         }
 
@@ -1134,17 +1162,22 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             const value = this._scratchpad.removeUserContentFromScratchpadAndDisplayAndReturnTextContent();
             setTimeout(() => {
                 if (this.page.Current === cur) {
-                    this._inputValidation(value, fncAction);
+                    this._inputValidation(value, ...input.actions);
                 }
-            }, fncActionDelay());
+            }, input.delay());
         }, 100);
     }
 
-    _inputValidation(value, inputProcessor) {
-        inputProcessor(
-            value,
-            (message) => this.scratchpadCallback(value, message)
-        );
+    _inputValidation(value, executor, resolveAction) {
+        new Promise((resolve, reject) => executor(value, resolve, reject))
+            .then(() => resolveAction(this))
+            .catch(errorMessage => {
+                if (errorMessage instanceof Error) {
+                    console.log(errorMessage.stack);
+                } else {
+                    this.scratchpadCallback(value, errorMessage);
+                }
+            });
     }
 
     /* END OF MCDU EVENTS */

@@ -207,7 +207,7 @@ const insertUplink = (mcdu) => {
     /**
      * AOC ACT F-PLN UPLINK
      */
-    mcdu.tryUpdateFromTo(fromTo, () => {}, async () => {
+    mcdu.tryUpdateFromTo(fromTo, async () => {
         CDUPerformancePage.UpdateThrRedAccFromOrigin(mcdu);
         CDUPerformancePage.UpdateEngOutAccFromOrigin(mcdu);
 
@@ -223,15 +223,7 @@ const insertUplink = (mcdu) => {
             CDUInitPage.ShowPage1(mcdu);
         }
     });
-    mcdu.updateFlightNo(
-        fltNbr,
-        () => {},
-        () => {
-            if (mcdu.page.Current === mcdu.page.InitPageA) {
-                CDUInitPage.ShowPage1(mcdu);
-            }
-        }
-    );
+    mcdu.updateFlightNo(fltNbr, () => CDUInitPage.ShowPage1(mcdu));
 
     /**
      * INIT PAGE DATA UPLINK

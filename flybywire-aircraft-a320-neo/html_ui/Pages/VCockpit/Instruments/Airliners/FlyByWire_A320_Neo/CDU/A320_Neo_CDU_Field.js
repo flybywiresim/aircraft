@@ -1,7 +1,8 @@
 class CDU_Field {
-    constructor(mcdu, selectedCallback) {
-        this.mcdu = mcdu;
-        this.selectedCallback = selectedCallback;
+    constructor(mcdu, selectedCallback, resolveAction, delay) {
+        this.selectedCallback = selectedCallback.bind(mcdu);
+        this.resolveAction = resolveAction;
+        this.delay = delay;
         this.currentValue = null;
     }
     setOptions(options) {
@@ -15,10 +16,12 @@ class CDU_Field {
     }
 
     /**
-     * @param {string|number|null} value
+     * @param value
+     * @param resolve {PromiseFulfilledResult}
+     * @param reject {PromiseRejectedResult}
      */
-    onSelect(value) {
-        this.selectedCallback(this.currentValue);
+    onSelect(value, resolve, reject) {
+        return this.selectedCallback(this.currentValue, resolve, reject);
     }
 }
 
@@ -27,12 +30,11 @@ class CDU_Field {
  */
 class CDU_InopField extends CDU_Field {
     /**
-     * @param {A320_Neo_CDU_MainDisplay} mcdu
      * @param {string} value
      * @param {boolean} [inopColor=true] whether to append "[color]inop" to the value
      */
-    constructor(mcdu, value, inopColor = true) {
-        super(mcdu, () => {});
+    constructor(value, inopColor = true) {
+        super(() => {});
         this.value = inopColor ? `${value}[color]inop` : value;
     }
     getValue() {
@@ -40,15 +42,14 @@ class CDU_InopField extends CDU_Field {
     }
 
     onSelect() {
-        this.mcdu.setScratchpadMessage(NXFictionalMessages.notYetImplemented);
-        super.onSelect();
+        throw NXFictionalMessages.notYetImplemented;
     }
 
 }
 
 class CDU_SingleValueField extends CDU_Field {
     /**
-     * @param {A320_Neo_CDU_MainDisplay} mcdu
+     * @param mcdu
      * @param {"string"|"int"|"number"} type
      * @param {string|number|null} value
      * @param {object} options
@@ -62,9 +63,11 @@ class CDU_SingleValueField extends CDU_Field {
      * @param {string} [options.suffix=""]
      * @param {function} [options.isValid=]
      * @param {function(*=): void} selectedCallback
+     * @param {function(*=): void} resolveAction
+     * @param {function(*=): void} delay
      */
-    constructor(mcdu, type, value, options, selectedCallback) {
-        super(mcdu, selectedCallback);
+    constructor(mcdu, type, value, options, selectedCallback, resolveAction = undefined, delay = undefined) {
+        super(mcdu, selectedCallback, resolveAction, delay);
         this.type = type;
         this.currentValue = value;
         this.clearable = false;
@@ -97,24 +100,24 @@ class CDU_SingleValueField extends CDU_Field {
     setValue(value) {
         // Custom isValid callback
         if (value.length === 0 || (this.isValid && !this.isValid(value))) {
-            return [false, NXSystemMessages.formatError];
+            throw NXSystemMessages.formatError;
         }
 
         switch (this.type) {
             case "string":
                 // Check max length
                 if (value.length > this.maxLength) {
-                    return [false, NXSystemMessages.formatError];
+                    throw NXSystemMessages.formatError;
                 }
                 break;
             case "int":
                 // Make sure value is an integer and is within the min/max
                 const valueAsInt = Number.parseInt(value, 10);
                 if (!isFinite(valueAsInt) || value.includes(".")) {
-                    return [false, NXSystemMessages.formatError];
+                    throw NXSystemMessages.formatError;
                 }
                 if (valueAsInt > this.maxValue || valueAsInt < this.minValue) {
-                    return [false, NXSystemMessages.entryOutOfRange];
+                    throw NXSystemMessages.entryOutOfRange;
                 }
                 value = valueAsInt;
                 break;
@@ -122,44 +125,31 @@ class CDU_SingleValueField extends CDU_Field {
                 // Make sure value is a valid number and is within the min/max
                 const valueAsFloat = Number.parseFloat(value);
                 if (!isFinite(valueAsFloat)) {
-                    return [false, NXSystemMessages.formatError];
+                    throw NXSystemMessages.formatError;
                 }
                 if (valueAsFloat > this.maxValue || valueAsFloat < this.minValue) {
-                    return [false, NXSystemMessages.entryOutOfRange];
+                    throw NXSystemMessages.entryOutOfRange;
                 }
                 value = valueAsFloat;
                 break;
         }
         // Update the value
         this.currentValue = value;
-        return [true, null];
     }
     clearValue() {
         if (this.clearable) {
-            if (this.type === "string") {
-                this.currentValue = "";
-            } else {
-                this.currentValue = null;
-            }
-
-            return [true, null];
+            this.currentValue = this.type === "string" ? "" : null;
         } else {
-            return [false, NXSystemMessages.notAllowed];
+            throw NXSystemMessages.notAllowed;
         }
     }
-    onSelect(value) {
+    onSelect(value, resolve, reject) {
         if (value === FMCMainDisplay.clrValue) {
-            const [success, badInputMessage] = this.clearValue();
-            if (!success) {
-                this.mcdu.scratchpadCallback(value, badInputMessage);
-            }
+            this.clearValue();
         } else {
-            const [success, badInputMessage] = this.setValue(value);
-            if (!success) {
-                this.mcdu.scratchpadCallback(value, badInputMessage);
-            }
+            this.setValue(value);
         }
-        super.onSelect();
+        super.onSelect(value, resolve, reject);
     }
 }
 
