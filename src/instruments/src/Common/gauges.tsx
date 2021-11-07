@@ -45,6 +45,16 @@ function polarToCartesian(centerX: number, centerY: number, radius: number, angl
     };
 }
 
+/**
+ * Draws an arc between startAngle and endAngle. This can start and finish anywhere on a circle
+ * Note all arcs are drawn in a clockwise fashion
+ *
+ * @param x             x coordinate of arc centre
+ * @param y             y coordinate of arc centre
+ * @param radius        radius of arc
+ * @param startAngle    value between 0 and 360 degrees where arc starts
+ * @param endAngle      value between 0 and 360 degrees where arc finishes
+ */
 export function describeArc(x: number, y: number, radius: number, startAngle: number, endAngle: number) {
     const start = polarToCartesian(x, y, radius, endAngle);
     const end = polarToCartesian(x, y, radius, startAngle);
@@ -210,17 +220,25 @@ type GaugeMarkerComponentType = {
     showValue?: boolean,
     indicator?: boolean,
     outer?: boolean,
-    multiplier?: number,
+    multiplierOuter?: number,
+    multiplierInner?: number,
+    textNudgeX?: number,
+    textNudgeY?: number
 };
 
-const GaugeMarkerComponentNoMemo = ({ value, x, y, min, max, radius, startAngle, endAngle, className, showValue, indicator, outer, multiplier } : GaugeMarkerComponentType) => {
+
+export const GaugeMarkerComponent: FC<GaugeMarkerComponentType> = memo(({ value, x, y, min, max, radius, startAngle, endAngle, className, showValue, indicator, outer, multiplierOuter, multiplierInner, textNudgeX, textNudgeY }) => {
     const dir = valueRadianAngleConverter({ value, min, max, endAngle, startAngle });
 
-    if (typeof multiplier === 'undefined') multiplier = 1.15;
+    if (typeof multiplierOuter === 'undefined') multiplierOuter = 1.15;
+    if (typeof multiplierInner === 'undefined') multiplierInner = 0.9;
+    if (typeof textNudgeX === 'undefined') textNudgeX = 0;
+    if (typeof textNudgeY === 'undefined') textNudgeY = 0;
+
 
     let start = {
-        x: x + (dir.x * radius * 0.9),
-        y: y + (dir.y * radius * 0.9),
+        x: x + (dir.x * radius * multiplierInner),
+        y: y + (dir.y * radius * multiplierInner),
     };
     let end = {
         x: x + (dir.x * radius),
@@ -233,8 +251,8 @@ const GaugeMarkerComponentNoMemo = ({ value, x, y, min, max, radius, startAngle,
             y: y + (dir.y * radius),
         };
         end = {
-            x: x + (dir.x * radius * multiplier),
-            y: y + (dir.y * radius * multiplier),
+            x: x + (dir.x * radius * multiplierOuter),
+            y: y + (dir.y * radius * multiplierOuter),
         };
     }
 
@@ -242,17 +260,15 @@ const GaugeMarkerComponentNoMemo = ({ value, x, y, min, max, radius, startAngle,
         start = { x, y };
 
         end = {
-            x: x + (dir.x * radius * multiplier),
-            y: y + (dir.y * radius * multiplier),
+            x: x + (dir.x * radius * multiplierOuter),
+            y: y + (dir.y * radius * multiplierOuter),
         };
     }
 
     // Text
-    const multiplierX = value >= 8 ? 0.8 : 0.7;
-    const multiplierY = value >= 8 ? 0.52 : 0.7;
     const pos = {
-        x: x + (dir.x * (radius * multiplierX)),
-        y: y + (dir.y * (radius * multiplierY)),
+        x: x + (dir.x * radius * multiplierInner) + textNudgeX,
+        y: y + (dir.y * radius * multiplierInner) + textNudgeY,
     };
 
     const textValue = !showValue ? '' : Math.abs(value).toString();
@@ -263,8 +279,7 @@ const GaugeMarkerComponentNoMemo = ({ value, x, y, min, max, radius, startAngle,
             <text x={pos.x} y={pos.y} className={className} alignmentBaseline="central" textAnchor="middle">{textValue}</text>
         </>
     );
-};
-export const GaugeMarkerComponent = memo(GaugeMarkerComponentNoMemo);
+});
 
 type GaugeComponentProps = {
     x: number,
@@ -273,16 +288,18 @@ type GaugeComponentProps = {
     startAngle: number,
     endAngle: number,
     className: string,
-    manMode: boolean,
+    visible?: boolean,
 }
 
-export const GaugeComponent: FC<GaugeComponentProps> = memo(({ x, y, radius, startAngle, endAngle, className, children, manMode }) => {
+export const GaugeComponent: FC<GaugeComponentProps> = memo(({ x, y, radius, startAngle, endAngle, className, children, visible }) => {
     const d = describeArc(x, y, radius, startAngle, endAngle);
+
+    if (typeof visible === 'undefined') visible = false;
 
     return (
         <>
             <g className="GaugeComponent">
-                <g className={manMode ? 'Show' : 'Hide'}>
+                <g className={visible ? 'Show' : 'Hide'}>
                     <path d={d} className={className} />
                     <>{children}</>
                 </g>

@@ -163,7 +163,7 @@ export const PressureComponent = () => {
 
             {/* Vertical speed gauge */}
             <g id="VsIndicator">
-                <GaugeComponent x={vsx} y={y} radius={radius} startAngle={170} endAngle={10} manMode={!autoMode} className="Gauge">
+                <GaugeComponent x={vsx} y={y} radius={radius} startAngle={170} endAngle={10} showOrHide={autoMode} className="Gauge">
                     <GaugeMarkerComponent value={2} x={vsx} y={y} min={-2} max={2} radius={radius} startAngle={180} endAngle={0} className="GaugeText" showValue />
                     <GaugeMarkerComponent value={1} x={vsx} y={y} min={-2} max={2} radius={radius} startAngle={180} endAngle={0} className="GaugeText" />
                     <GaugeMarkerComponent value={0} x={vsx} y={y} min={-2} max={2} radius={radius} startAngle={180} endAngle={0} className="GaugeText" showValue />

@@ -18,6 +18,7 @@ export const PressPage: FC = () => {
     const [deltaPsi] = useSimVar('L:A32NX_PRESS_CABIN_DELTA_PRESSURE', 'psi', 500);
     const [flightPhase] = useSimVar('L:A32NX_FWC_FLIGHT_PHASE', 'enum', 1000);
     const [systemNumber] = useSimVar("L:A32NX_PRESS_ACTIVE_CPC_SYS", "Number", 1000);
+    const [safetyValve] = useSimVar("L:A32NX_PRESS_SAFETY_VALVE_OPEN_PERCENTAGE", 'percentage', 500);
 
     const deltaPress = splitDecimals(deltaPsi);
     const vsx = 275;
@@ -26,7 +27,6 @@ export const PressPage: FC = () => {
     const y = 165;
 
     const radius = 50;
-    const safetyValve = 2;
 
     return (
         <EcamPage name="main-press">
@@ -46,10 +46,10 @@ export const PressPage: FC = () => {
                 </text>
                 <text className={`Huge End ${deltaPsi < -0.4 || deltaPsi >= 8.5 ? 'Amber' : 'Green'}`} x={dpx + 53} y={y + 25}>.</text>
                 <text className={`Standard End ${deltaPsi < -0.4 || deltaPsi >= 8.5 ? 'Amber' : 'Green'}`} x={dpx + 63} y={y + 25}>{deltaPress[1]}</text>
-                <GaugeComponent x={dpx} y={y} radius={radius} startAngle={210} endAngle={50} manMode className="Gauge">
-                    <GaugeComponent x={dpx} y={y} radius={radius} startAngle={40} endAngle={50} manMode className="Gauge Amber" />
-                    <GaugeComponent x={dpx} y={y} radius={radius} startAngle={210} endAngle={218} manMode className="Gauge Amber" />
-                    <GaugeMarkerComponent value={8} x={dpx} y={y} min={-1} max={9} radius={radius} startAngle={210} endAngle={50} className="GaugeText" showValue />
+                <GaugeComponent x={dpx} y={y} radius={radius} startAngle={210} endAngle={50} visible className="Gauge">
+                    <GaugeComponent x={dpx} y={y} radius={radius} startAngle={40} endAngle={50} visible className="Gauge Amber" />
+                    <GaugeComponent x={dpx} y={y} radius={radius} startAngle={210} endAngle={218} visible className="Gauge Amber" />
+                    <GaugeMarkerComponent value={8} x={dpx} y={y} min={-1} max={9} radius={radius} startAngle={210} endAngle={50} className="GaugeText" showValue textNudgeY={10} />
                     <GaugeMarkerComponent
                         value={4}
                         x={dpx}
@@ -61,7 +61,7 @@ export const PressPage: FC = () => {
                         endAngle={50}
                         className="GaugeText"
                     />
-                    <GaugeMarkerComponent value={0} x={dpx} y={y} min={-1} max={9} radius={radius} startAngle={210} endAngle={50} className="GaugeText" showValue />
+                    <GaugeMarkerComponent value={0} x={dpx} y={y} min={-1} max={9} radius={radius} startAngle={210} endAngle={50} className="GaugeText" showValue textNudgeY={-10} textNudgeX={5}/>
                     <GaugeMarkerComponent
                         value={deltaPsi}
                         x={dpx}
@@ -82,12 +82,12 @@ export const PressPage: FC = () => {
                 <text className="Large Center" x={vsx + 15} y="80">V/S</text>
                 <text className="Medium Center Cyan" x={vsx + 20} y="100">FT/MIN</text>
                 <text className="Huge Green End" x={vsx + 85} y={y + 5}>{Math.round(cabinVs / 50) * 50}</text>
-                <GaugeComponent x={vsx} y={y} radius={radius} startAngle={170} endAngle={10} manMode className="Gauge">
-                    <GaugeMarkerComponent value={2} x={vsx} y={y} min={-2} max={2} radius={radius} startAngle={180} endAngle={0} className="GaugeText" showValue />
+                <GaugeComponent x={vsx} y={y} radius={radius} startAngle={170} endAngle={10} visible className="Gauge">
+                    <GaugeMarkerComponent value={2} x={vsx} y={y} min={-2} max={2} radius={radius} startAngle={180} endAngle={0} className="GaugeText" showValue textNudgeY={10} />
                     <GaugeMarkerComponent value={1} x={vsx} y={y} min={-2} max={2} radius={radius} startAngle={180} endAngle={0} className="GaugeText" />
-                    <GaugeMarkerComponent value={0} x={vsx} y={y} min={-2} max={2} radius={radius} startAngle={180} endAngle={0} className="GaugeText" showValue />
+                    <GaugeMarkerComponent value={0} x={vsx} y={y} min={-2} max={2} radius={radius} startAngle={180} endAngle={0} className="GaugeText" showValue textNudgeX={10}/>
                     <GaugeMarkerComponent value={-1} x={vsx} y={y} min={-2} max={2} radius={radius} startAngle={180} endAngle={0} className="GaugeText" />
-                    <GaugeMarkerComponent value={-2} x={vsx} y={y} min={-2} max={2} radius={radius} startAngle={180} endAngle={0} className="GaugeText" showValue />
+                    <GaugeMarkerComponent value={-2} x={vsx} y={y} min={-2} max={2} radius={radius} startAngle={180} endAngle={0} className="GaugeText" showValue textNudgeY={-10} />
                     <GaugeMarkerComponent
                         value={Math.abs((cabinVs / 50 * 50) / 1000) <= 2.25 ? (cabinVs / 50 * 50) / 1000 : 2.250}
                         x={vsx}
@@ -116,9 +116,9 @@ export const PressPage: FC = () => {
                 >
                     {Math.round(cabinAlt / 50) * 50 > 0 ? Math.round(cabinAlt / 50) * 50 : 0}
                 </text>
-                <GaugeComponent x={cax} y={y} radius={radius} startAngle={210} endAngle={50} manMode className="Gauge">
-                    <GaugeComponent x={cax} y={y} radius={radius} startAngle={30} endAngle={50} manMode className="Gauge Red" />
-                    <GaugeMarkerComponent value={10} x={cax} y={y} min={-0.625} max={10.625} radius={radius} startAngle={210} endAngle={50} className="GaugeText" showValue indicator={false} />
+                <GaugeComponent x={cax} y={y} radius={radius} startAngle={210} endAngle={50} visible className="Gauge">
+                    <GaugeComponent x={cax} y={y} radius={radius} startAngle={30} endAngle={50} visible className="Gauge Red" />
+                    <GaugeMarkerComponent value={10} x={cax} y={y} min={-0.625} max={10.625} radius={radius} startAngle={210} endAngle={50} className="GaugeText" showValue indicator={false} textNudgeY={15} />
                     <GaugeMarkerComponent
                         value={5}
                         x={cax}
@@ -129,8 +129,9 @@ export const PressPage: FC = () => {
                         startAngle={210}
                         endAngle={50}
                         className="GaugeText"
+                        textNudgeY={10}
                     />
-                    <GaugeMarkerComponent value={0} x={cax} y={y} min={-0.625} max={10.625} radius={radius} startAngle={210} endAngle={50} className="GaugeText" showValue indicator={false} />
+                    <GaugeMarkerComponent value={0} x={cax} y={y} min={-0.625} max={10.625} radius={radius} startAngle={210} endAngle={50} className="GaugeText" showValue indicator={false} textNudgeY={-10} textNudgeX={5}/>
                     <GaugeMarkerComponent
                         value={Math.round(cabinAlt / 50) * 50 > 0 ? Math.round(cabinAlt / 50) * 50 / 1000 : 0}
                         x={cax}
@@ -156,9 +157,9 @@ export const PressPage: FC = () => {
 
             {/* Safety and vent valves */}
 
-            <text className={safetyValve > 1 ? 'Large White' : 'Large Amber'} x={490} y={305}>SAFETY</text>
+            <text className={safetyValve < 0.2 ? 'Large White' : 'Large Amber'} x={490} y={305}>SAFETY</text>
             <GaugeMarkerComponent
-                value={safetyValve}
+                value={safetyValve < 0.2 ? 2 : 1 }
                 x={545}
                 y={315}
                 min={0}
@@ -166,7 +167,7 @@ export const PressPage: FC = () => {
                 radius={34}
                 startAngle={90}
                 endAngle={180}
-                className={safetyValve > 1 ? 'GreenLine' : 'AmberLine'}
+                className={safetyValve < 0.2 ? 'GreenLine' : 'AmberLine'}
                 indicator
             />
             <circle className="WhiteCircle" cx={545} cy={315} r={3} />
@@ -198,11 +199,11 @@ export const PressPage: FC = () => {
 const PressureComponent = () => {
     const [landingElevDialPosition] = useSimVar('L:XMLVAR_KNOB_OVHD_CABINPRESS_LDGELEV', 'number', 100);
     const [landingRunwayElevation] = useSimVar('L:A32NX_PRESS_AUTO_LANDING_ELEVATION', 'feet', 1000);
-    const [manMode] = useSimVar('L:A32NX_CAB_PRESS_MODE_MAN', 'bool', 1000);
+    const [autoMode] = useSimVar('L:A32NX_OVHD_PRESS_MODE_SEL_PB_IS_AUTO', 'Bool', 1000);
     const [ldgElevMode, setLdgElevMode] = useState('AUTO');
     const [ldgElevValue, setLdgElevValue] = useState('XX');
     const [cssLdgElevName, setCssLdgElevName] = useState('green');
-    const [landingElev] = useSimVar('L:A32NX_LANDING_ELEVATION', 'feet', 100);
+    const [landingElev] = useSimVar('L:A32NX_OVHD_PRESS_LDG_ELEV_KNOB', 'feet', 100);
 
     useEffect(() => {
         setLdgElevMode(landingElevDialPosition === 0 ? 'AUTO' : 'MAN');
@@ -228,7 +229,7 @@ const PressureComponent = () => {
                 <text id="LandingElevation" className={`Large ${cssLdgElevName}`} x="510" y="25" textAnchor="end">{ldgElevValue}</text>
                 <text className="Medium Cyan" x="525" y="25">FT</text>
             </g>
-            <text className={`Large Green ${manMode ? 'Show' : 'Hide'}`} x="420" y="340">MAN</text>
+            <text className={`Large Green ${!autoMode ? 'Show' : 'Hide'}`} x="420" y="340">MAN</text>
         </>
     );
 };
@@ -301,10 +302,10 @@ const OutflowValveComponent: FC<OutflowValveComponentType> = memo(({ flightPhase
                 radius={ofradius}
                 startAngle={270 + (outflowValueOpenPercentage / 100 * 90)}
                 endAngle={360}
-                manMode
+                visible
                 className="Gauge"
             >
-                <GaugeComponent x={ofx} y={ofy} radius={ofradius} startAngle={355.5} endAngle={360} manMode className="Gauge Amber" />
+                <GaugeComponent x={ofx} y={ofy} radius={ofradius} startAngle={355.5} endAngle={360} visible className="Gauge Amber" />
                 <GaugeMarkerComponent
                     value={outflowValueOpenPercentage}
                     x={ofx}
@@ -316,7 +317,7 @@ const OutflowValveComponent: FC<OutflowValveComponentType> = memo(({ flightPhase
                     endAngle={360}
                     className={flightPhase >= 5 && flightPhase <= 7 && outflowValueOpenPercentage > 95 ? 'AmberLine' : 'GreenLine'}
                     indicator
-                    multiplier={1}
+                    multiplierOuter={1}
                 />
                 <GaugeMarkerComponent
                     value={25}
@@ -329,7 +330,7 @@ const OutflowValveComponent: FC<OutflowValveComponentType> = memo(({ flightPhase
                     endAngle={360}
                     className="Gauge"
                     outer
-                    multiplier={1.1}
+                    multiplierOuter={1.1}
                 />
                 <GaugeMarkerComponent
                     value={50}
@@ -342,7 +343,7 @@ const OutflowValveComponent: FC<OutflowValveComponentType> = memo(({ flightPhase
                     endAngle={360}
                     className="Gauge"
                     outer
-                    multiplier={1.1}
+                    multiplierOuter={1.1}
                 />
                 <GaugeMarkerComponent
                     value={75}
@@ -355,7 +356,7 @@ const OutflowValveComponent: FC<OutflowValveComponentType> = memo(({ flightPhase
                     endAngle={360}
                     className="Gauge"
                     outer
-                    multiplier={1.1}
+                    multiplierOuter={1.1}
                 />
             </GaugeComponent>
         </>
@@ -435,7 +436,7 @@ const OverboardOutletComponent = ({ validSDAC, flightPhase }: OverboardOutletCom
         indicator = false;
         classNameText = 'Amber';
         break;
-    case (realOutletValvePosition < 0.01 && flightPhase >= 5 && flightPhase <= 7): // case 2b
+    case (realOutletValvePosition > 0 && realOutletValvePosition < 0.01 && flightPhase >= 5 && flightPhase <= 7): // case 2b
         classNameValue = 'AmberLine';
         classNameText = 'Amber';
         displayOutletValvePosition = 1;
