@@ -1,5 +1,4 @@
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
-import { Degrees } from '../../../../../typings';
 
 /**
  * Compute the remaining distance around an arc

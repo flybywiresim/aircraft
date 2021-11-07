@@ -1,11 +1,8 @@
-import { WayPoint } from '@fmgc/types/fstypes/FSTypes';
-import { Degrees } from '@typings/types';
 import { RFLeg } from '@fmgc/guidance/lnav/legs/RF';
 import { TFLeg } from '@fmgc/guidance/lnav/legs/TF';
 import { VMLeg } from '@fmgc/guidance/lnav/legs/VM';
 import { Leg } from '@fmgc/guidance/lnav/legs';
 import { Transition } from '@fmgc/guidance/lnav/transitions';
-import { LatLongData } from '@typings/fs-base-ui/html_ui/JS/Types';
 import { Type1Transition } from '@fmgc/guidance/lnav/transitions/Type1';
 import { SegmentType } from '@fmgc/wtsdk';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';

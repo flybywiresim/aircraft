@@ -1,6 +1,5 @@
 import { MathUtils } from '@shared/MathUtils';
 import { FlapConf } from './common';
-import { Radians } from '../../../../../typings';
 
 export class FlightModel {
     static Cd0 = 0.0237;

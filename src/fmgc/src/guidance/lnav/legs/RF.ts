@@ -1,6 +1,4 @@
-import { Degrees, NauticalMiles } from '@typings/types';
 import { ControlLaw, GuidanceParameters } from '@fmgc/guidance/ControlLaws';
-import { LatLongData } from '@typings/fs-base-ui/html_ui/JS/Types';
 import {
     Leg,
     AltitudeConstraint,

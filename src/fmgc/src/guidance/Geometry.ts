@@ -7,7 +7,6 @@ import { GeoMath } from '@fmgc/flightplanning/GeoMath';
 import { MathUtils } from '@shared/MathUtils';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { SegmentType } from '@fmgc/flightplanning/FlightPlanSegment';
-import { Degrees, NauticalMiles } from '../../../../typings';
 import { GuidanceParameters } from './ControlLaws';
 
 export const EARTH_RADIUS_NM = 3440.1;

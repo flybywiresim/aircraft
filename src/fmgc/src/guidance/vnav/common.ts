@@ -1,4 +1,3 @@
-import { NauticalMiles } from '@typings/types';
 import { AltitudeConstraint, SpeedConstraint } from '../lnav/legs';
 
 export enum FlapConf {

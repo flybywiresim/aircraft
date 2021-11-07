@@ -1,7 +1,4 @@
-import { Degrees, NauticalMiles, Feet, Knots } from '@typings/types';
 import { Guidable } from '@fmgc/guidance/Geometry';
-import { LatLongData } from '@typings/fs-base-ui/html_ui/JS/Types';
-import { WayPoint } from '@fmgc/types/fstypes/FSTypes';
 import { SegmentType } from '@fmgc/wtsdk';
 
 export enum AltitudeConstraintType {
