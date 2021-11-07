@@ -837,58 +837,94 @@ mod tests {
     use super::*;
 
     use crate::electrical::Electricity;
+    use crate::hydraulic::update_iterator::MaxFixedStepLoop;
     use crate::simulation::test::TestVariableRegistry;
+    use crate::simulation::test::{SimulationTestBed, TestBed};
     use crate::simulation::InitContext;
+    use crate::simulation::{Aircraft, SimulationElement};
     use std::time::Duration;
     use uom::si::{
         acceleration::meter_per_second_squared, angle::degree, length::foot, mass::kilogram,
         pressure::psi, thermodynamic_temperature::degree_celsius, velocity::knot,
     };
 
+    struct TestAircraft {
+        loop_updater: MaxFixedStepLoop,
+        actuator: LinearActuator,
+        body: LinearActuatedRigidBodyOnHingeAxis,
+
+        pressure: Pressure,
+        control_mode: LinearActuatorMode,
+        required_position: Ratio,
+    }
+    impl TestAircraft {
+        fn new(actuator: LinearActuator, body: LinearActuatedRigidBodyOnHingeAxis) -> Self {
+            Self {
+                loop_updater: MaxFixedStepLoop::new(Duration::from_millis(33)),
+                actuator,
+                body,
+
+                pressure: Pressure::new::<psi>(0.),
+                control_mode: LinearActuatorMode::ClosedValves,
+                required_position: Ratio::new::<ratio>(0.),
+            }
+        }
+
+        fn set_pressure(&mut self, pressure: Pressure) {
+            self.pressure = pressure;
+        }
+
+        fn command_damping_mode(&mut self) {
+            self.control_mode = LinearActuatorMode::ActiveDamping;
+        }
+
+        fn command_closed_valve_mode(&mut self) {
+            self.control_mode = LinearActuatorMode::ClosedValves;
+        }
+
+        fn command_position_control(&mut self, position: Ratio) {
+            self.control_mode = LinearActuatorMode::PositionControl;
+            self.actuator.set_position_target(position);
+        }
+
+        fn command_lock(&mut self, lock: bool) {
+            // self.body.lock_position_request
+        }
+
+        fn update_actuator_physics(&mut self, context: &UpdateContext) {
+            self.actuator.update_before_rigid_body(
+                &mut self.body,
+                self.control_mode,
+                self.pressure,
+            );
+            self.body.update(context);
+
+            self.actuator.update_after_rigid_body(&self.body, context);
+        }
+    }
+    impl Aircraft for TestAircraft {
+        fn update_after_power_distribution(&mut self, context: &UpdateContext) {
+            self.loop_updater.update(context);
+
+            for cur_time_step in self.loop_updater {
+                self.update_actuator_physics(&context.with_delta(cur_time_step));
+            }
+        }
+    }
+    impl SimulationElement for TestAircraft {}
+
     #[test]
     fn linear_actuator_not_moving_on_locked_rigid_body() {
-        let mut electricity = Electricity::new();
-        let mut registry: TestVariableRegistry = Default::default();
-        let mut init_context = InitContext::new(&mut electricity, &mut registry);
-
         let mut rigid_body = cargo_door_body(true);
-
         let mut actuator = cargo_door_actuator(&rigid_body);
 
-        let dt = 0.05;
+        let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new(actuator, rigid_body));
 
         let actuator_position_init = actuator.position_normalized;
 
-        for _ in 0..5 {
-            actuator.update_before_rigid_body(
-                &mut rigid_body,
-                LinearActuatorMode::ClosedValves,
-                Pressure::new::<psi>(1500.),
-            );
-            rigid_body.update(&context(
-                &mut init_context,
-                Duration::from_secs_f64(dt),
-                Angle::new::<degree>(0.),
-                Angle::new::<degree>(0.),
-            ));
-            actuator.update_after_rigid_body(
-                &rigid_body,
-                &context(
-                    &mut init_context,
-                    Duration::from_secs_f64(dt),
-                    Angle::new::<degree>(0.),
-                    Angle::new::<degree>(0.),
-                ),
-            );
+        test_bed.run_with_delta(Duration::from_secs(1));
 
-            assert!(actuator.position_normalized == actuator_position_init);
-            println!(
-                "Body pos {:.3}, Actuator pos {:.3}, Actuator force {:.1}",
-                rigid_body.position_normalized().get::<ratio>(),
-                actuator.position_normalized.get::<ratio>(),
-                actuator.force().get::<newton>()
-            );
-        }
+        assert!(actuator.position_normalized == actuator_position_init);
     }
 
     #[test]
