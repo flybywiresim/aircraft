@@ -111,6 +111,4 @@ declare global {
     }
 }
 
-export {
-    SimVar
-}
+export {};
