@@ -8,7 +8,6 @@ import { LnavDriver } from './lnav/LnavDriver';
 import { FlightPlanManager } from '../flightplanning/FlightPlanManager';
 import { GuidanceManager } from './GuidanceManager';
 import { VnavDriver } from './vnav/VnavDriver';
-import { NauticalMiles } from '../../../../typings';
 
 export class GuidanceController {
     public flightPlanManager: FlightPlanManager;

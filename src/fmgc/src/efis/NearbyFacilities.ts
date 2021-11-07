@@ -1,8 +1,7 @@
 // Copyright (c) 2021 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { NearestSearchType } from '@fmgc/types/fstypes/FSEnums';
-import { NearestSearch, RawAirport, RawIntersection, RawNdb, RawVor } from '@fmgc/types/fstypes/FSTypes';
+import { NearestSearchType } from '../types/fstypes/FSEnums';
 
 // WARNING: this is a temporary implementation until the new nav database is complete
 // Do not write any code which depends on it

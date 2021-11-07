@@ -1,7 +1,6 @@
 import React, { FC, memo, useEffect, useState } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import { Layer, getSmallestAngle } from '@instruments/common/utils';
-import { LatLongData } from '@typings/fs-base-ui/html_ui/JS/Types';
 import { useFlightPlanManager } from '@instruments/common/flightplan';
 import { MathUtils } from '@shared/MathUtils';
 import { TuningMode } from '@fmgc/radionav';

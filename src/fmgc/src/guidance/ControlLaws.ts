@@ -1,8 +1,6 @@
 /**
  * This enum represents a Control Law selected by the guidance system.
  */
-import { Degrees, NauticalMiles } from '@typings/types';
-
 export enum ControlLaw {
     /**
      * The only parameter for the Heading law is the desired heading.

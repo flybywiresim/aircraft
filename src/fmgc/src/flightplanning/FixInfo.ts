@@ -1,7 +1,6 @@
 // Copyright (c) 2021 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { WayPoint } from '@fmgc/types/fstypes/FSTypes';
 import { FlightPlanManager } from '@fmgc/wtsdk';
 
 export interface FixInfoRadial {

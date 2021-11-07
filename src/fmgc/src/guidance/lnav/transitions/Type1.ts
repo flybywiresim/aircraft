@@ -1,4 +1,3 @@
-import { Degrees, Knots, NauticalMiles } from '@typings/types';
 import { MathUtils } from '@shared/MathUtils';
 import { TFLeg } from '@fmgc/guidance/lnav/legs/TF';
 import { VMLeg } from '@fmgc/guidance/lnav/legs/VM';

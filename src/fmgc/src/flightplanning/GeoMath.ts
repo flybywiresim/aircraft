@@ -24,7 +24,6 @@
 
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { WorldMagneticModel } from './WorldMagneticModel';
-import { NauticalMiles } from '../../../../typings';
 
 /** A class for geographical mathematics. */
 export class GeoMath {

@@ -2,15 +2,13 @@
 //  SPDX-License-Identifier: GPL-3.0
 
 import { FlightPlanManager, WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
-import { RunwaySurface, VorType } from '@fmgc/types/fstypes/FSEnums';
-import { OneWayRunway, RawAirport, WayPoint } from '@fmgc/types/fstypes/FSTypes';
 import { EfisOption, Mode, NdSymbol, NdSymbolTypeFlags, RangeSetting, rangeSettings } from '@shared/NavigationDisplay';
 import { GuidanceManager } from '@fmgc/guidance/GuidanceManager';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { Geometry } from '@fmgc/guidance/Geometry';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
+import { RunwaySurface, VorType } from '../types/fstypes/FSEnums';
 import { NearbyFacilities } from './NearbyFacilities';
-import { NauticalMiles } from '../../../../typings';
 
 export class EfisSymbols {
     private blockUpdate = false;

@@ -1,5 +1,3 @@
-import { Degrees, Knots, NauticalMiles } from '../../../../../../typings';
-
 /**
  * Theoretical descent path model
  */

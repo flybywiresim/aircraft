@@ -1,8 +1,6 @@
 /// <reference path="../../../types.d.ts" />
 /// <reference path="./Types.d.ts" />
 
-import {Heading, Latitude, NauticalMiles, Longitude} from "../../../types";
-
 declare global {
     namespace Avionics {
         class Utils {

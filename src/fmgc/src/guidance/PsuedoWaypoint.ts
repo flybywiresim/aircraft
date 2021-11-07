@@ -3,7 +3,6 @@
 
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { WaypointStats } from '@fmgc/flightplanning/data/flightplan';
-import { NauticalMiles } from '../../../../typings';
 
 /**
  * Types that tie pseudo waypoints to sequencing actions

@@ -1,6 +1,4 @@
-import { Degrees, NauticalMiles, Track } from '@typings/types';
 import { ControlLaw, GuidanceParameters } from '@fmgc/guidance/ControlLaws';
-import { LatLongData } from '@typings/fs-base-ui/html_ui/JS/Types';
 import { Leg } from '@fmgc/guidance/lnav/legs';
 import { SegmentType } from '@fmgc/wtsdk';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';

@@ -8,7 +8,6 @@ import { Leg } from '@fmgc/guidance/lnav/legs';
 import { WaypointStats } from '@fmgc/flightplanning/data/flightplan';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { LateralMode } from '@shared/autopilot';
-import { NauticalMiles } from '../../../../../typings';
 
 const PWP_IDENT_TOD = '(T/D)';
 const PWP_IDENT_DECEL = '(DECEL)';

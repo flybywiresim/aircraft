@@ -1,5 +1,4 @@
 import React, { FC, memo, useEffect, useState } from 'react';
-import { LatLongData } from '@typings/fs-base-ui/html_ui/JS/Types';
 import { useFlightPlanManager } from '@instruments/common/flightplan';
 import { MathUtils } from '@shared/MathUtils';
 import { useSimVar } from '@instruments/common/simVars';
@@ -9,7 +8,6 @@ import { LateralMode } from '@shared/autopilot';
 import { ToWaypointIndicator } from '../elements/ToWaypointIndicator';
 import { FlightPlan, FlightPlanType } from '../elements/FlightPlan';
 import { MapParameters } from '../utils/MapParameters';
-import { Degrees } from '../../../../../typings';
 
 export interface PlanModeProps {
     symbols: NdSymbol[],
