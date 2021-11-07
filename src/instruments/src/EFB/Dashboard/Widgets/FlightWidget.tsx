@@ -1,7 +1,6 @@
 import React from 'react';
 import {
     IconBox,
-    IconLink,
     IconPlane,
     IconPlaneDeparture,
     IconPlaneArrival,
