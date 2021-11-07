@@ -19,6 +19,8 @@ export class Type1Transition extends Transition {
 
     public clockwise: boolean;
 
+    public isFrozen: boolean = false;
+
     constructor(
         previousLeg: TFLeg,
         nextLeg: TFLeg | VMLeg, // FIXME this cannot happen, but what are you gonna do about it ?,
@@ -36,7 +38,18 @@ export class Type1Transition extends Transition {
             kts = Math.max(SimVar.GetSimVarValue('AIRSPEED TRUE', 'knots'), 150); // knots, i.e. nautical miles per hour
         }
 
-        const courseChange = mod(nextLeg.bearing - previousLeg.bearing + 180, 360) - 180;
+        this.recomputeWithParameters(kts);
+    }
+
+    recomputeWithParameters(tas: Knots) {
+        if (this.isFrozen) {
+            if (DEBUG) {
+                console.log('[FMS/Geometry] Not recomputing Type I transition as it is frozen.');
+            }
+            return;
+        }
+
+        const courseChange = mod(this.nextLeg.bearing - this.previousLeg.bearing + 180, 360) - 180;
 
         // Always at least 5 degrees turn
         const minBankAngle = 5;
@@ -46,19 +59,22 @@ export class Type1Transition extends Transition {
 
         // Bank angle limits, always assume limit 2 for now @ 25 degrees between 150 and 300 knots
         let maxBankAngle = 25;
-        if (kts < 150) {
-            maxBankAngle = 15 + Math.min(kts / 150, 1) * (25 - 15);
-        } else if (kts > 300) {
-            maxBankAngle = 25 - Math.min((kts - 300) / 150, 1) * (25 - 19);
+        if (tas < 150) {
+            maxBankAngle = 15 + Math.min(tas / 150, 1) * (25 - 15);
+        } else if (tas > 300) {
+            maxBankAngle = 25 - Math.min((tas - 300) / 150, 1) * (25 - 19);
         }
 
         const finalBankAngle = Math.max(Math.min(bankAngle, maxBankAngle), minBankAngle);
 
         // Turn radius
-        this.radius = (kts ** 2 / (9.81 * Math.tan(finalBankAngle * Avionics.Utils.DEG2RAD))) / 6080.2;
+        this.radius = (tas ** 2 / (9.81 * Math.tan(finalBankAngle * Avionics.Utils.DEG2RAD))) / 6080.2;
 
         // Turn direction
         this.clockwise = courseChange >= 0;
+
+        // Turning points
+        this.turningPoints = this.computeTurningPoints();
     }
 
     get isCircularArc(): boolean {
@@ -91,7 +107,7 @@ export class Type1Transition extends Transition {
         );
     }
 
-    isAbeam(ppos: LatLongAlt): boolean {
+    isAbeam(ppos: LatLongData): boolean {
         const [inbound, outbound] = this.getTurningPoints();
 
         const inBearingAc = Avionics.Utils.computeGreatCircleHeading(inbound, ppos);
@@ -108,7 +124,19 @@ export class Type1Transition extends Transition {
         return circumference / 360 * this.angle;
     }
 
-    getTurningPoints(): [LatLongAlt, LatLongAlt] {
+    /**
+     * Returns the distance between the inbound turning point and the reference fix
+     */
+    get unflownDistance() {
+        return Avionics.Utils.computeGreatCircleDistance(
+            this.previousLeg.to.infos.coordinates,
+            this.getTurningPoints()[0],
+        );
+    }
+
+    private turningPoints;
+
+    private computeTurningPoints(): [LatLongAlt, LatLongAlt] {
         const bisecting = (180 - this.angle) / 2;
         const distanceTurningPointToWaypoint = this.radius / Math.tan(bisecting * Avionics.Utils.DEG2RAD);
 
@@ -130,32 +158,18 @@ export class Type1Transition extends Transition {
         return [inbound, outbound];
     }
 
+    getTurningPoints(): [LatLongAlt, LatLongAlt] {
+        return this.turningPoints;
+    }
+
     /**
      * Returns the distance to the termination point
      *
      * @param _ppos
      */
-    getDistanceToGo(ppos: LatLongAlt): NauticalMiles {
+    getDistanceToGo(ppos: LatLongData): NauticalMiles {
         const [itp] = this.getTurningPoints();
         return arcDistanceToGo(ppos, itp, this.center, this.clockwise ? this.angle : -this.angle);
-    }
-
-    getTrackDistanceToTerminationPoint(ppos: LatLongAlt): NauticalMiles {
-        // In order to make the angles easier, we rotate the entire frame of reference so that the line from the center
-        // towards the intersection point (the bisector line) is at 180°. Thus, the bisector is crossed when the
-        // aircraft reaches 180° (rotated) bearing as seen from the center point.
-
-        const brgInverseBisector = Avionics.Utils.computeGreatCircleHeading(this.center, this.previousLeg.to.infos.coordinates);
-
-        const correctiveFactor = 180 - brgInverseBisector;
-
-        const minBearing = this.clockwise ? 180 - this.angle / 2 : 180;
-        const maxBearing = this.clockwise ? 180 : 180 + this.angle / 2;
-        const rotatedBearing = mod(Avionics.Utils.computeGreatCircleHeading(this.center, ppos) + correctiveFactor, 360);
-        const limitedBearing = Math.min(Math.max(rotatedBearing, minBearing), maxBearing);
-        const remainingArcDegs = this.clockwise ? 180 - limitedBearing : limitedBearing - 180;
-
-        return (2 * Math.PI * this.radius) / 360 * remainingArcDegs;
     }
 
     getGuidanceParameters(ppos: LatLongAlt, trueTrack: number): GuidanceParameters | null {
@@ -189,6 +203,20 @@ export class Type1Transition extends Transition {
             crossTrackError,
             phiCommand,
         };
+    }
+
+    getPseudoWaypointLocation(distanceBeforeTerminator: NauticalMiles): LatLongData | undefined {
+        const distanceRatio = distanceBeforeTerminator / this.distance;
+        const angleFromTerminator = distanceRatio * this.angle;
+
+        const centerToTerminationBearing = Avionics.Utils.computeGreatCircleHeading(this.center, this.getTurningPoints()[1]);
+
+        return Avionics.Utils.bearingDistanceToCoordinates(
+            Avionics.Utils.clampAngle(centerToTerminationBearing + (this.clockwise ? -angleFromTerminator : angleFromTerminator)),
+            this.radius,
+            this.center.lat,
+            this.center.long,
+        );
     }
 
     getNominalRollAngle(gs): Degrees {

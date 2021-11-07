@@ -25,7 +25,7 @@ export interface SpeedConstraint {
     speed: Knots,
 }
 
-export interface Leg extends Guidable {
+export abstract class Leg implements Guidable {
     segment: SegmentType;
 
     indexInFullPath: number;
@@ -44,20 +44,25 @@ export interface Leg extends Guidable {
 
     get terminatorLocation(): LatLongData | undefined;
 
-    getPseudoWaypointLocation(distanceBeforeTerminator: NauticalMiles): LatLongData | undefined;
+    abstract getPseudoWaypointLocation(distanceBeforeTerminator: NauticalMiles): LatLongData | undefined;
 
-    getGuidanceParameters(ppos: LatLongAlt, trueTrack: Degrees);
+    /** @inheritDoc */
+    recomputeWithParameters(_tas: Knots): void {
+        // Default impl.
+    }
 
-    getNominalRollAngle(gs): Degrees;
+    abstract getGuidanceParameters(ppos: LatLongAlt, trueTrack: Degrees);
+
+    abstract getNominalRollAngle(gs): Degrees;
 
     /**
      * Calculates directed DTG parameter
      *
      * @param ppos {LatLong} the current position of the aircraft
      */
-    getDistanceToGo(ppos: LatLongData): NauticalMiles;
+    abstract getDistanceToGo(ppos: LatLongData): NauticalMiles;
 
-    isAbeam(ppos);
+    abstract isAbeam(ppos);
 }
 
 export function getAltitudeConstraintFromWaypoint(wp: WayPoint): AltitudeConstraint | undefined {

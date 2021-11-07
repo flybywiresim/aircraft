@@ -2,32 +2,28 @@ import { ControlLaw, GuidanceParameters } from '@fmgc/guidance/ControlLaws';
 import { MathUtils } from '@shared/MathUtils';
 import { EARTH_RADIUS_NM } from '@fmgc/guidance/Geometry';
 import {
-    Leg,
     AltitudeConstraint,
-    SpeedConstraint,
     getAltitudeConstraintFromWaypoint,
     getSpeedConstraintFromWaypoint,
+    Leg,
+    SpeedConstraint,
     waypointToLocation,
 } from '@fmgc/guidance/lnav/legs';
-import { WayPoint } from '@fmgc/types/fstypes/FSTypes';
 import { SegmentType } from '@fmgc/wtsdk';
 import { GeoMath } from '@fmgc/flightplanning/GeoMath';
 import { WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
 
-export class TFLeg implements Leg {
+export class TFLeg extends Leg {
     public from: WayPoint;
 
     public to: WayPoint;
-
-    public segment: SegmentType;
-
-    public indexInFullPath: number;
 
     public constraintType: WaypointConstraintType;
 
     private mDistance: NauticalMiles;
 
     constructor(from: WayPoint, to: WayPoint, segment: SegmentType, indexInFullPath: number) {
+        super();
         this.from = from;
         this.to = to;
         this.mDistance = Avionics.Utils.computeGreatCircleDistance(this.from.infos.coordinates, this.to.infos.coordinates);
@@ -82,17 +78,13 @@ export class TFLeg implements Leg {
             this.to.infos.coordinates,
             this.from.infos.coordinates,
         );
-        const latLongAltResult = Avionics.Utils.bearingDistanceToCoordinates(
+
+        return Avionics.Utils.bearingDistanceToCoordinates(
             inverseBearing,
             distanceBeforeTerminator,
             this.terminatorLocation.lat,
             this.terminatorLocation.long,
         );
-        const loc: LatLongData = {
-            lat: latLongAltResult.lat,
-            long: latLongAltResult.long,
-        };
-        return loc;
     }
 
     getIntermediatePoint(start: LatLongData, end: LatLongData, fraction: number): LatLongData {

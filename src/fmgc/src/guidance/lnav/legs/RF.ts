@@ -7,25 +7,20 @@ import {
     getSpeedConstraintFromWaypoint,
     waypointToLocation,
 } from '@fmgc/guidance/lnav/legs';
-import { WayPoint } from '@fmgc/types/fstypes/FSTypes';
 import { SegmentType } from '@fmgc/wtsdk';
 import { arcDistanceToGo } from '../CommonGeometry';
 
-export class RFLeg implements Leg {
+export class RFLeg extends Leg {
     // termination fix of the previous leg
     public from: WayPoint;
 
     // to fix for the RF leg, most params referenced off this
     public to: WayPoint;
 
-    public segment: SegmentType;
-
-    public indexInFullPath: number;
-
     // location of the centre fix of the arc
     public center: LatLongData;
 
-    public radius: number;
+    public radius: NauticalMiles;
 
     public angle: Degrees;
 
@@ -34,6 +29,7 @@ export class RFLeg implements Leg {
     private mDistance: NauticalMiles;
 
     constructor(from: WayPoint, to: WayPoint, center: LatLongData, segment: SegmentType, indexInFullPath: number) {
+        super();
         this.from = from;
         this.to = to;
         this.center = center;
@@ -95,20 +91,17 @@ export class RFLeg implements Leg {
     }
 
     getPseudoWaypointLocation(distanceBeforeTerminator: NauticalMiles): LatLongData {
-        const bearingTo = Avionics.Utils.computeGreatCircleHeading(this.center, this.to.infos.coordinates);
-        const angleDelta = distanceBeforeTerminator / ((2 * Math.PI * this.radius) / 360);
-        const pseudoWaypointBearing = this.clockwise ? Avionics.Utils.clampAngle(bearingTo + angleDelta) : Avionics.Utils.clampAngle(bearingTo - angleDelta);
-        const latLongAltResult = Avionics.Utils.bearingDistanceToCoordinates(
-            pseudoWaypointBearing,
+        const distanceRatio = distanceBeforeTerminator / this.distance;
+        const angleFromTerminator = distanceRatio * this.angle;
+
+        const centerToTerminationBearing = Avionics.Utils.computeGreatCircleHeading(this.center, this.terminatorLocation);
+
+        return Avionics.Utils.bearingDistanceToCoordinates(
+            Avionics.Utils.clampAngle(centerToTerminationBearing + (this.clockwise ? -angleFromTerminator : angleFromTerminator)),
             this.radius,
             this.center.lat,
             this.center.long,
         );
-        const loc: LatLongData = {
-            lat: latLongAltResult.lat,
-            long: latLongAltResult.long,
-        };
-        return loc;
     }
 
     // basically straight from type 1 transition... willl need refinement

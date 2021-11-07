@@ -9,6 +9,9 @@ import { FlightPlanManager } from '../flightplanning/FlightPlanManager';
 import { GuidanceManager } from './GuidanceManager';
 import { VnavDriver } from './vnav/VnavDriver';
 
+// How often the (milliseconds)
+const GEOMETRY_RECOMPUTATION_TIMER = 5_000;
+
 export class GuidanceController {
     public flightPlanManager: FlightPlanManager;
 
@@ -18,13 +21,19 @@ export class GuidanceController {
 
     public vnavDriver: VnavDriver;
 
-    private pseudoWaypoints: PseudoWaypoints;
+    public pseudoWaypoints: PseudoWaypoints;
 
-    public currentMultipleLegGeometry: Geometry;
+    public currentActiveLegPathGeometry: Geometry | null;
+
+    public currentMultipleLegGeometry: Geometry | null;
 
     public activeLegIndex: number;
 
     public activeLegDtg: NauticalMiles;
+
+    public activeLegCompleteLegPathDtg: NauticalMiles;
+
+    public displayActiveLegCompleteLegPathDtg: NauticalMiles;
 
     public currentPseudoWaypoints: PseudoWaypoint[] = [];
 
@@ -33,41 +42,70 @@ export class GuidanceController {
         this.guidanceManager = guidanceManager;
 
         this.lnavDriver = new LnavDriver(this);
-        this.vnavDriver = new VnavDriver();
+        this.vnavDriver = new VnavDriver(this);
         this.pseudoWaypoints = new PseudoWaypoints(this);
     }
 
     init() {
         console.log('[FMGC/Guidance] GuidanceController initialized!');
 
+        this.generateNewGeometry();
+
         this.lnavDriver.init();
         this.vnavDriver.init();
         this.pseudoWaypoints.init();
-
-        this.currentMultipleLegGeometry = this.guidanceManager.getMultipleLegGeometry();
     }
 
-    private geometryUpdateTimer = 0;
+    private lastFlightPlanVersion = SimVar.GetSimVarValue(FlightPlanManager.FlightPlanVersionKey, 'number');
+
+    private geometryRecomputationTimer = 0;
 
     update(deltaTime: number) {
-        this.geometryUpdateTimer += deltaTime;
+        this.geometryRecomputationTimer += deltaTime;
 
-        // FIXME probably wanna do this on certain events, rather than on a timer:
-        // - FP changes
-        // - Predicted atmospheric conditions changes
-        if (this.geometryUpdateTimer > 5_000) {
-            this.geometryUpdateTimer = 0;
+        // Generate new geometry when flight plan changes
+        const newFlightPlanVersion = this.flightPlanManager.currentFlightPlanVersion;
+        if (newFlightPlanVersion !== this.lastFlightPlanVersion) {
+            this.lastFlightPlanVersion = newFlightPlanVersion;
 
-            this.currentMultipleLegGeometry = this.guidanceManager.getMultipleLegGeometry();
+            this.generateNewGeometry();
+        }
 
-            this.lnavDriver.acceptNewMultipleLegGeometry(this.currentMultipleLegGeometry);
-            this.vnavDriver.acceptNewMultipleLegGeometry(this.currentMultipleLegGeometry);
-            this.pseudoWaypoints.acceptNewMultipleLegGeometry(this.currentMultipleLegGeometry);
+        if (this.geometryRecomputationTimer > GEOMETRY_RECOMPUTATION_TIMER) {
+            this.geometryRecomputationTimer = 0;
+
+            const tas = SimVar.GetSimVarValue('AIRSPEED TRUE', 'Knots');
+
+            if (this.currentActiveLegPathGeometry) {
+                this.currentActiveLegPathGeometry.recomputeWithParameters(tas, this.activeLegIndex);
+            }
+
+            if (this.currentMultipleLegGeometry) {
+                this.currentMultipleLegGeometry.recomputeWithParameters(tas, this.activeLegIndex);
+
+                this.vnavDriver.acceptMultipleLegGeometry(this.currentMultipleLegGeometry);
+                this.pseudoWaypoints.acceptMultipleLegGeometry(this.currentMultipleLegGeometry);
+            }
         }
 
         this.lnavDriver.update(deltaTime);
         this.vnavDriver.update(deltaTime);
         this.pseudoWaypoints.update(deltaTime);
+    }
+
+    /**
+     * Called when the lateral flight plan is changed
+     */
+    generateNewGeometry() {
+        this.currentActiveLegPathGeometry = this.guidanceManager.getActiveLegPathGeometry();
+        this.currentMultipleLegGeometry = this.guidanceManager.getMultipleLegGeometry();
+
+        // Avoid dual updates if geometry was gonna be recomputed soon
+        if (this.geometryRecomputationTimer > GEOMETRY_RECOMPUTATION_TIMER - 1_000) {
+            this.geometryRecomputationTimer = 0;
+            this.vnavDriver.acceptMultipleLegGeometry(this.currentMultipleLegGeometry);
+            this.pseudoWaypoints.acceptMultipleLegGeometry(this.currentMultipleLegGeometry);
+        }
     }
 
     /**

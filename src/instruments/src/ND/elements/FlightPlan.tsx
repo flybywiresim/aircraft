@@ -1,7 +1,7 @@
 //  Copyright (c) 2021 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import React, { FC, memo, useState } from 'react';
+import React, { FC, memo, useEffect, useState } from 'react';
 import { Geometry } from '@fmgc/guidance/Geometry';
 import { Type1Transition } from '@fmgc/guidance/lnav/transitions/Type1';
 import { GuidanceManager } from '@fmgc/guidance/GuidanceManager';
@@ -37,6 +37,7 @@ export type FlightPathProps = {
 
 export const FlightPlan: FC<FlightPathProps> = memo(({ x = 0, y = 0, symbols, flightPlanManager, mapParams, debug = false, type = FlightPlanType.Nav }) => {
     const [guidanceManager] = useState(() => new GuidanceManager(flightPlanManager));
+    const [flightPlanVersion] = useSimVar(FlightPlanManager.FlightPlanVersionKey, 'number', 1_000);
     const [tempGeometry, setTempGeometry] = useState(() => guidanceManager.getMultipleLegGeometry(true));
     const [activeGeometry, setActiveGeometry] = useState(() => guidanceManager.getMultipleLegGeometry());
 
@@ -44,13 +45,27 @@ export const FlightPlan: FC<FlightPathProps> = memo(({ x = 0, y = 0, symbols, fl
         ? [tempGeometry, setTempGeometry]
         : [activeGeometry, setActiveGeometry];
 
-    useInterval(() => {
+    // Create new geometry for new flight plan versions
+    useEffect(() => {
         if (type === FlightPlanType.Temp) {
             setGeometry(guidanceManager.getMultipleLegGeometry(true));
         } else {
             setGeometry(guidanceManager.getMultipleLegGeometry());
         }
-    }, 2_000);
+    }, [flightPlanVersion]);
+
+    // Recompute geometry every 5 seconds
+    useInterval(() => {
+        const tas = SimVar.GetSimVarValue('AIRSPEED TRUE', 'Knots');
+
+        const activeIdx = type === FlightPlanType.Temp
+            ? flightPlanManager.getFlightPlan(1).activeWaypointIndex
+            : flightPlanManager.getCurrentFlightPlan().activeWaypointIndex;
+
+        if (tas !== null) {
+            geometry?.recomputeWithParameters(tas, activeIdx);
+        }
+    }, 5_000, { additionalDeps: [type, flightPlanManager, geometry] });
 
     useCurrentFlightPlan();
 
