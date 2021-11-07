@@ -56,6 +56,7 @@
 1. [FBW] Improved roll stability in turbulence or with performance issues - @IbrahimK42 (IbrahimK42) and @aguther (Andreas Guther)
 1. [MCDU] Hide POSITION UPDATE AT field on PROG page when GPS is available - @BlueberryKing (BlueberryKing)
 1. [MCDU] Sort approaches by type - @tracernz (Mike)
+1. [MODEL] Add four portholes. Two opposite the existing ones, and two above the wing. - @igor8518 (Igor Milovidov)
 1. [MODEL] Add dynamic registration decal option - @tracernz (Mike)
 1. [FCU] Autopilot button integ light brightness corrected - @tracernz (Mike)
 1. [FBW/AP/ATHR] Only enable client data section when a model runs externally - @aguther (Andreas Guther)
