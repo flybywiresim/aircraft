@@ -67,7 +67,7 @@ export class LegsProcedure {
    * @param startingPoint The starting point for the procedure.
    * @param instrument The instrument that is attached to the flight plan.
    */
-  constructor(private _legs: ProcedureLeg[], private _previousFix: WayPoint, private _instrument: BaseInstrument) {
+  constructor(private _legs: RawProcedureLeg[], private _previousFix: WayPoint, private _instrument: BaseInstrument) {
       for (const leg of this._legs) {
           if (this.isIcaoValid(leg.fixIcao)) {
               this._facilitiesToLoad.set(leg.fixIcao, this._instrument.facilityLoader.getFacilityRaw(leg.fixIcao, 2000));
@@ -215,7 +215,7 @@ export class LegsProcedure {
    * @param prevLeg The previously mapped waypoint in the procedure.
    * @returns The mapped leg.
    */
-  public mapHeadingUntilDistanceFromOrigin(leg: ProcedureLeg, prevLeg: WayPoint): WayPoint {
+  public mapHeadingUntilDistanceFromOrigin(leg: RawProcedureLeg, prevLeg: WayPoint): WayPoint {
       const origin = this._facilities.get(leg.originIcao);
       const originIdent = origin.icao.substring(7, 12).trim();
 
@@ -249,7 +249,7 @@ export class LegsProcedure {
    * @param leg The procedure leg to map.
    * @returns The mapped leg.
    */
-  public mapBearingAndDistanceFromOrigin(leg: ProcedureLeg): WayPoint {
+  public mapBearingAndDistanceFromOrigin(leg: RawProcedureLeg): WayPoint {
       const origin = this._facilities.get(leg.originIcao);
       const originIdent = origin.icao.substring(7, 12).trim();
 
@@ -265,7 +265,7 @@ export class LegsProcedure {
    * @param prevLeg The previously mapped leg.
    * @returns The mapped leg.
    */
-  public mapOriginRadialForDistance(leg: ProcedureLeg, prevLeg: WayPoint): WayPoint {
+  public mapOriginRadialForDistance(leg: RawProcedureLeg, prevLeg: WayPoint): WayPoint {
       if (leg.fixIcao.trim() !== '') {
           return this.mapExactFix(leg);
       }
@@ -287,7 +287,7 @@ export class LegsProcedure {
    * @param nextLeg The next leg in the procedure to intercept.
    * @returns The mapped leg.
    */
-  public mapHeadingToInterceptNextLeg(leg: ProcedureLeg, prevLeg: WayPoint, nextLeg: ProcedureLeg): WayPoint | null {
+  public mapHeadingToInterceptNextLeg(leg: RawProcedureLeg, prevLeg: WayPoint, nextLeg: RawProcedureLeg): WayPoint | null {
       let referenceCoordinates;
       let courseToIntercept;
       let referenceFix;
@@ -339,7 +339,7 @@ export class LegsProcedure {
    * @param prevLeg The previously mapped leg.
    * @returns The mapped leg.
    */
-  public mapHeadingUntilRadialCrossing(leg: ProcedureLeg, prevLeg: WayPoint) {
+  public mapHeadingUntilRadialCrossing(leg: RawProcedureLeg, prevLeg: WayPoint) {
       const origin = this._facilities.get(leg.originIcao);
       const originCoordinates = new LatLongAlt(origin.lat, origin.lon);
 
@@ -368,7 +368,7 @@ export class LegsProcedure {
    * @param prevLeg The previous leg in the procedure.
    * @returns The mapped leg.
    */
-  public mapHeadingUntilAltitude(leg: ProcedureLeg, prevLeg: WayPoint) {
+  public mapHeadingUntilAltitude(leg: RawProcedureLeg, prevLeg: WayPoint) {
       const magVar = Facilities.getMagVar(prevLeg.infos.coordinates.lat, prevLeg.infos.coordinates.long);
       const course = leg.trueDegrees ? leg.course : A32NX_Util.magneticToTrue(leg.course, magVar);
       const heading = leg.trueDegrees ? A32NX_Util.trueToMagnetic(leg.course, magVar) : leg.course;
@@ -389,7 +389,7 @@ export class LegsProcedure {
    * @param prevLeg The previous leg in the procedure.
    * @returns The mapped leg.
    */
-  public mapVectors(leg: ProcedureLeg, prevLeg: WayPoint) {
+  public mapVectors(leg: RawProcedureLeg, prevLeg: WayPoint) {
       const magVar = Facilities.getMagVar(prevLeg.infos.coordinates.lat, prevLeg.infos.coordinates.long);
       const course = leg.trueDegrees ? leg.course : A32NX_Util.magneticToTrue(leg.course, magVar);
       const heading = leg.trueDegrees ? A32NX_Util.trueToMagnetic(leg.course, magVar) : leg.course;
@@ -411,7 +411,7 @@ export class LegsProcedure {
    * @param leg The procedure leg to map.
    * @returns The mapped leg.
    */
-  public mapExactFix(leg: ProcedureLeg): WayPoint {
+  public mapExactFix(leg: RawProcedureLeg): WayPoint {
       const facility = this._facilities.get(leg.fixIcao);
       if (facility) {
           return RawDataMapper.toWaypoint(facility, this._instrument);
@@ -424,7 +424,7 @@ export class LegsProcedure {
       return this.buildWaypoint(`${originIdent}${Math.trunc(leg.rho / 1852)}`, coordinates);
   }
 
-  public mapRadiusToFix(leg: ProcedureLeg): Waypoint {
+  public mapRadiusToFix(leg: RawProcedureLeg): WayPoint {
       const arcCentreFix = this._facilities.get(leg.arcCenterFixIcao);
       const arcCenterCoordinates = new LatLongAlt(arcCentreFix.lat, arcCentreFix.lon, 0);
 
@@ -465,7 +465,7 @@ export class LegsProcedure {
    * @param icao The icao to check.
    * @returns Whether or not the ICAO is valid.
    */
-  private isIcaoValid(icao): boolean {
+  private isIcaoValid(icao: string): boolean {
       for (const rule of this.legFilteringRules) {
           if (!rule(icao)) {
               return false;
