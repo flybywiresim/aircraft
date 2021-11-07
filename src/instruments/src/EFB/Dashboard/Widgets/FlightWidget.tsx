@@ -123,7 +123,7 @@ const FlightWidget = (props: FlightWidgetProps) => {
                             <span className="text-lg font-mono font-light">{crzAlt}</span>
                         </div>
                     </div>
-                    <div className="flex">
+                    <div className="flex items-center justify-center">
                         <button
                             type="button"
                             onClick={() => props.fetchSimbrief()}
