@@ -1,6 +1,8 @@
 use std::time::Duration;
 
 mod update_context;
+use crate::electrical::{ElectricalElementIdentifier, ElectricalElementIdentifierProvider};
+use crate::shared::ElectricalBusType;
 use crate::{
     electrical::Electricity,
     failures::FailureType,
@@ -14,6 +16,7 @@ use uom::si::{
     volume_rate::gallon_per_second,
 };
 pub use update_context::*;
+
 pub mod test;
 
 /// Trait for a type which can read and write simulator data.
@@ -21,10 +24,79 @@ pub mod test;
 /// interacts with the simulator. This separation of concerns is very important
 /// for keeping the majority of the code unit testable.
 pub trait SimulatorReaderWriter {
-    /// Reads a variable with the given name from the simulator.
-    fn read(&mut self, name: &str) -> f64;
-    /// Writes a variable with the given name to the simulator.
-    fn write(&mut self, name: &str, value: f64);
+    /// Reads a variable with the given identifier from the simulator.
+    fn read(&mut self, identifier: &VariableIdentifier) -> f64;
+    /// Writes a variable with the given identifier to the simulator.
+    fn write(&mut self, identifier: &VariableIdentifier, value: f64);
+}
+
+pub trait VariableRegistry {
+    fn get(&mut self, name: String) -> VariableIdentifier;
+}
+
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq, Hash)]
+pub struct VariableIdentifier(u8, usize);
+
+impl VariableIdentifier {
+    pub fn new(identifier_type: u8) -> Self {
+        Self {
+            0: identifier_type,
+            1: 0,
+        }
+    }
+
+    pub fn identifier_type(&self) -> u8 {
+        self.0
+    }
+
+    pub fn identifier_index(&self) -> usize {
+        self.1
+    }
+}
+
+impl VariableIdentifier {
+    pub fn next(&self) -> Self {
+        Self {
+            0: self.0,
+            1: self.1 + 1,
+        }
+    }
+}
+
+pub struct InitContext<'a> {
+    electrical_identifier_provider: &'a mut dyn ElectricalElementIdentifierProvider,
+    registry: &'a mut dyn VariableRegistry,
+}
+
+impl<'a> InitContext<'a> {
+    pub fn new(
+        electricity: &'a mut impl ElectricalElementIdentifierProvider,
+        registry: &'a mut impl VariableRegistry,
+    ) -> Self {
+        Self {
+            electrical_identifier_provider: electricity,
+            registry,
+        }
+    }
+
+    pub fn get_identifier(&mut self, name: String) -> VariableIdentifier {
+        self.registry.get(name)
+    }
+}
+
+impl<'a> ElectricalElementIdentifierProvider for InitContext<'a> {
+    fn next_electrical_identifier(&mut self) -> ElectricalElementIdentifier {
+        self.electrical_identifier_provider
+            .next_electrical_identifier()
+    }
+
+    fn next_electrical_identifier_for_bus(
+        &mut self,
+        bus_type: ElectricalBusType,
+    ) -> ElectricalElementIdentifier {
+        self.electrical_identifier_provider
+            .next_electrical_identifier_for_bus(bus_type)
+    }
 }
 
 /// An [`Aircraft`] that can be simulated by the [`Simulation`].
@@ -106,13 +178,14 @@ pub trait SimulationElement {
     /// # Examples
     /// ```rust
     /// # use systems::simulation::{SimulationElement, SimulationElementVisitor,
-    /// #    SimulatorReader, SimulatorWriter, Read};
+    /// # SimulatorReader, SimulatorWriter, Read, VariableIdentifier};
     /// struct MySimulationElement {
     ///     is_on: bool,
     /// }
     /// impl SimulationElement for MySimulationElement {
     ///     fn read(&mut self, reader: &mut SimulatorReader) {
-    ///         self.is_on = reader.read("MY_SIMULATOR_ELEMENT_IS_ON");
+    ///         // The identifier would ordinarily be retrieved from the registry.
+    ///         self.is_on = reader.read(&VariableIdentifier::default());
     ///     }
     /// }
     /// ```
@@ -122,13 +195,14 @@ pub trait SimulationElement {
     /// # Examples
     /// ```rust
     /// # use systems::simulation::{SimulationElement, SimulationElementVisitor,
-    /// #    SimulatorReader, SimulatorWriter, Write};
+    /// # SimulatorReader, SimulatorWriter, Write, VariableIdentifier};
     /// struct MySimulationElement {
     ///     is_on: bool,
     /// }
     /// impl SimulationElement for MySimulationElement {
     ///     fn write(&self, writer: &mut SimulatorWriter) {
-    ///        writer.write("MY_SIMULATOR_ELEMENT_IS_ON", self.is_on);
+    ///        // The identifier would ordinarily be retrieved from the registry.
+    ///        writer.write(&VariableIdentifier::default(), self.is_on);
     ///     }
     /// }
     /// ```
@@ -203,13 +277,20 @@ pub trait SimulationElementVisitor {
 pub struct Simulation<T: Aircraft> {
     aircraft: T,
     electricity: Electricity,
+    update_context: UpdateContext,
 }
 impl<T: Aircraft> Simulation<T> {
-    pub fn new<U: FnOnce(&mut Electricity) -> T>(aircraft_ctor_fn: U) -> Self {
+    pub fn new<U: FnOnce(&mut InitContext) -> T>(
+        aircraft_ctor_fn: U,
+        registry: &mut impl VariableRegistry,
+    ) -> Self {
         let mut electricity = Electricity::new();
+        let mut context = InitContext::new(&mut electricity, registry);
+        let update_context = UpdateContext::new_for_simulation(&mut context);
         Self {
-            aircraft: (aircraft_ctor_fn)(&mut electricity),
+            aircraft: (aircraft_ctor_fn)(&mut context),
             electricity,
+            update_context,
         }
     }
 
@@ -225,11 +306,11 @@ impl<T: Aircraft> Simulation<T> {
     /// Basic usage is as follows:
     /// ```rust
     /// # use std::time::Duration;
-    /// # use systems::electrical::Electricity;
-    /// # use systems::simulation::{Aircraft, SimulationElement, SimulatorReaderWriter, Simulation, UpdateContext};
+    /// # use systems::simulation::{Aircraft, SimulationElement, SimulatorReaderWriter, Simulation,
+    /// # UpdateContext, InitContext, VariableRegistry, VariableIdentifier};
     /// # struct MyAircraft {}
     /// # impl MyAircraft {
-    /// #     fn new(_: &mut Electricity) -> Self {
+    /// #     fn new(_: &mut InitContext) -> Self {
     /// #         Self {}
     /// #     }
     /// # }
@@ -243,10 +324,22 @@ impl<T: Aircraft> Simulation<T> {
     /// #     }
     /// # }
     /// # impl SimulatorReaderWriter for MySimulatorReaderWriter {
-    /// #     fn read(&mut self, name: &str) -> f64 { 0.0 }
-    /// #     fn write(&mut self, name: &str, value: f64) { }
+    /// #     fn read(&mut self, identifier: &VariableIdentifier) -> f64 { 0.0 }
+    /// #     fn write(&mut self, identifier: &VariableIdentifier, value: f64) { }
     /// # }
-    /// let mut simulation = Simulation::new(|electricity| MyAircraft::new(electricity));
+    /// # struct MyVariableRegistry {}
+    /// # impl MyVariableRegistry {
+    /// #     fn new() -> Self {
+    /// #         Self {}
+    /// #     }
+    /// # }
+    /// # impl VariableRegistry for MyVariableRegistry {
+    /// #     fn get(&mut self, name: String) -> VariableIdentifier {
+    /// #         Default::default()
+    /// #     }
+    /// # }
+    /// let mut registry = MyVariableRegistry::new();
+    /// let mut simulation = Simulation::new(MyAircraft::new, &mut registry);
     /// let mut reader_writer = MySimulatorReaderWriter::new();
     /// // For each frame, call the tick function.
     /// simulation.tick(Duration::from_millis(50), &mut reader_writer)
@@ -256,22 +349,23 @@ impl<T: Aircraft> Simulation<T> {
         self.electricity.pre_tick();
 
         let mut reader = SimulatorReader::new(reader_writer);
-        let context = UpdateContext::from_reader(&mut reader, delta);
+        self.update_context.update(&mut reader, delta);
 
         let mut visitor = SimulatorToSimulationVisitor::new(&mut reader);
         self.aircraft.accept(&mut visitor);
 
         self.aircraft
-            .update_before_power_distribution(&context, &mut self.electricity);
+            .update_before_power_distribution(&self.update_context, &mut self.electricity);
 
         self.aircraft
-            .distribute_electricity(&context, &self.electricity);
+            .distribute_electricity(&self.update_context, &self.electricity);
 
-        self.aircraft.update_after_power_distribution(&context);
         self.aircraft
-            .consume_electricity(&context, &mut self.electricity);
+            .update_after_power_distribution(&self.update_context);
         self.aircraft
-            .report_electricity_consumption(&context, &self.electricity);
+            .consume_electricity(&self.update_context, &mut self.electricity);
+        self.aircraft
+            .report_electricity_consumption(&self.update_context, &self.electricity);
 
         let mut writer = SimulatorWriter::new(reader_writer);
         let mut visitor = SimulationToSimulatorVisitor::new(&mut writer);
@@ -365,7 +459,7 @@ impl<'a> SimulationElementVisitor for SimulationToSimulatorVisitor<'a> {
 }
 
 pub trait Reader {
-    fn read_f64(&mut self, name: &str) -> f64;
+    fn read_f64(&mut self, identifier: &VariableIdentifier) -> f64;
 }
 
 /// Reads data from the simulator into the aircraft system simulation.
@@ -380,13 +474,13 @@ impl<'a> SimulatorReader<'a> {
     }
 }
 impl<'a> Reader for SimulatorReader<'a> {
-    fn read_f64(&mut self, name: &str) -> f64 {
-        self.simulator_read_writer.read(name)
+    fn read_f64(&mut self, identifier: &VariableIdentifier) -> f64 {
+        self.simulator_read_writer.read(identifier)
     }
 }
 
 pub trait Writer {
-    fn write_f64(&mut self, name: &str, value: f64);
+    fn write_f64(&mut self, identifier: &VariableIdentifier, value: f64);
 }
 
 /// Writes data from the aircraft system simulation into the the simulator.
@@ -401,8 +495,8 @@ impl<'a> SimulatorWriter<'a> {
     }
 }
 impl<'a> Writer for SimulatorWriter<'a> {
-    fn write_f64(&mut self, name: &str, value: f64) {
-        self.simulator_read_writer.write(name, value);
+    fn write_f64(&mut self, identifier: &VariableIdentifier, value: f64) {
+        self.simulator_read_writer.write(identifier, value);
     }
 }
 
@@ -420,21 +514,22 @@ pub trait Read<T: Copy> {
     /// # Examples
     /// ```rust
     /// # use systems::simulation::{SimulationElement, SimulationElementVisitor,
-    /// #    SimulatorReader, SimulatorWriter, Read};
+    /// # SimulatorReader, SimulatorWriter, Read, VariableIdentifier};
     /// struct MySimulationElement {
     ///     is_on: bool,
     /// }
     /// impl SimulationElement for MySimulationElement {
     ///     fn read(&mut self, reader: &mut SimulatorReader) {
-    ///         self.is_on = reader.read("MY_SIMULATOR_ELEMENT_IS_ON");
+    ///         // The identifier would ordinarily be retrieved from the registry.
+    ///         self.is_on = reader.read(&VariableIdentifier::default());
     ///     }
     /// }
     /// ```
-    fn read(&mut self, name: &str) -> T
+    fn read(&mut self, identifier: &VariableIdentifier) -> T
     where
         Self: Sized + Reader,
     {
-        let value = self.read_f64(name);
+        let value = self.read_f64(identifier);
         self.convert(value)
     }
 
@@ -442,22 +537,23 @@ pub trait Read<T: Copy> {
     /// # Examples
     /// ```rust
     /// # use systems::simulation::{SimulationElement, SimulationElementVisitor,
-    /// #    SimulatorReader, SimulatorWriter, Read};
+    /// # SimulatorReader, SimulatorWriter, Read, VariableIdentifier};
     /// # use systems::shared::arinc429::Arinc429Word;
     /// struct MySimulationElement {
     ///     is_on: Arinc429Word<bool>,
     /// }
     /// impl SimulationElement for MySimulationElement {
     ///     fn read(&mut self, reader: &mut SimulatorReader) {
-    ///         self.is_on = reader.read_arinc429("MY_SIMULATOR_ELEMENT_IS_ON");
+    ///         // The identifier would ordinarily be retrieved from the registry.
+    ///         self.is_on = reader.read_arinc429(&VariableIdentifier::default());
     ///     }
     /// }
     /// ```
-    fn read_arinc429(&mut self, name: &str) -> Arinc429Word<T>
+    fn read_arinc429(&mut self, identifier: &VariableIdentifier) -> Arinc429Word<T>
     where
         Self: Sized + Reader,
     {
-        let value = from_arinc429(self.read_f64(name));
+        let value = from_arinc429(self.read_f64(identifier));
         Arinc429Word::new(self.convert(value.0), value.1)
     }
 
@@ -469,22 +565,23 @@ pub trait Write<T> {
     /// # Examples
     /// ```rust
     /// # use systems::simulation::{SimulationElement, SimulationElementVisitor,
-    /// #    SimulatorReader, SimulatorWriter, Write};
+    /// # SimulatorReader, SimulatorWriter, Write, VariableIdentifier};
     /// struct MySimulationElement {
     ///     n: f64,
     /// }
     /// impl SimulationElement for MySimulationElement {
     ///     fn write(&self, writer: &mut SimulatorWriter) {
-    ///        writer.write("MY_SIMULATOR_ELEMENT_N", self.n);
+    ///        // The identifier would ordinarily be retrieved from the registry.
+    ///        writer.write(&VariableIdentifier::default(), self.n);
     ///     }
     /// }
     /// ```
-    fn write(&mut self, name: &str, value: T)
+    fn write(&mut self, identifier: &VariableIdentifier, value: T)
     where
         Self: Sized + Writer,
     {
         let value = self.convert(value);
-        self.write_f64(name, value)
+        self.write_f64(identifier, value)
     }
 
     /// Write an ARINC 429 value to the simulator.
@@ -493,23 +590,24 @@ pub trait Write<T> {
     /// # Examples
     /// ```rust
     /// # use systems::simulation::{SimulationElement, SimulationElementVisitor,
-    /// #    SimulatorReader, SimulatorWriter, Write};
+    /// # SimulatorReader, SimulatorWriter, Write, VariableIdentifier};
     /// # use systems::shared::arinc429::SignStatus;
     /// struct MySimulationElement {
     ///     n: f64,
     /// }
     /// impl SimulationElement for MySimulationElement {
     ///     fn write(&self, writer: &mut SimulatorWriter) {
-    ///        writer.write_arinc429("MY_SIMULATOR_ELEMENT_N", self.n, SignStatus::NormalOperation);
+    ///        // The identifier would ordinarily be retrieved from the registry.
+    ///        writer.write_arinc429(&VariableIdentifier::default(), self.n, SignStatus::NormalOperation);
     ///     }
     /// }
     /// ```
-    fn write_arinc429(&mut self, name: &str, value: T, ssm: SignStatus)
+    fn write_arinc429(&mut self, identifier: &VariableIdentifier, value: T, ssm: SignStatus)
     where
         Self: Sized + Writer,
     {
         let value = self.convert(value);
-        self.write_f64(name, to_arinc429(value, ssm));
+        self.write_f64(identifier, to_arinc429(value, ssm));
     }
 
     fn convert(&mut self, value: T) -> f64;

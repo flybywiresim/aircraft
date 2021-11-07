@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "../ElevatorTrimHandler.h"
+#include "../FlapsHandler.h"
 #include "../LocalVariable.h"
 #include "../RudderTrimHandler.h"
 #include "../SpoilersHandler.h"
@@ -43,6 +44,7 @@ class SimConnectInterface {
     AP_MASTER,
     AUTOPILOT_OFF,
     AUTOPILOT_ON,
+    AUTOPILOT_DISENGAGE_SET,
     AUTOPILOT_DISENGAGE_TOGGLE,
     TOGGLE_FLIGHT_DIRECTOR,
     A32NX_FCU_AP_1_PUSH,
@@ -163,10 +165,12 @@ class SimConnectInterface {
 
   ~SimConnectInterface() = default;
 
-  bool connect(bool autopilotStateMachineEnabled,
+  bool connect(bool clientDataEnabled,
+               bool autopilotStateMachineEnabled,
                bool autopilotLawsEnabled,
                bool flyByWireEnabled,
                const std::vector<std::shared_ptr<ThrottleAxisMapping>>& throttleAxis,
+               std::shared_ptr<FlapsHandler> flapsHandler,
                std::shared_ptr<SpoilersHandler> spoilersHandler,
                std::shared_ptr<ElevatorTrimHandler> elevatorTrimHandler,
                std::shared_ptr<RudderTrimHandler> rudderTrimHandler,
@@ -231,14 +235,23 @@ class SimConnectInterface {
 
   ClientDataAutothrust getClientDataAutothrust();
 
+  bool setClientDataFlyByWireInput(ClientDataFlyByWireInput output);
+
   bool setClientDataFlyByWire(ClientDataFlyByWire output);
   ClientDataFlyByWire getClientDataFlyByWire();
+
+  void setLoggingFlightControlsEnabled(bool enabled);
+  bool getLoggingFlightControlsEnabled();
+
+  void setLoggingThrottlesEnabled(bool enabled);
+  bool getLoggingThrottlesEnabled();
 
  private:
   enum ClientData {
     AUTOPILOT_STATE_MACHINE,
     AUTOPILOT_LAWS,
     AUTOTHRUST,
+    FLY_BY_WIRE_INPUT,
     FLY_BY_WIRE,
     LOCAL_VARIABLES,
     LOCAL_VARIABLES_AUTOTHRUST,
@@ -251,6 +264,10 @@ class SimConnectInterface {
 
   double maxSimulationRate = 0;
   bool limitSimulationRateByPerformance = true;
+  bool clientDataEnabled = false;
+
+  bool loggingFlightControlsEnabled = false;
+  bool loggingThrottlesEnabled = false;
 
   SimData simData = {};
   SimInput simInput = {};
@@ -259,6 +276,7 @@ class SimConnectInterface {
   SimInputThrottles simInputThrottles = {};
   std::vector<std::shared_ptr<ThrottleAxisMapping>> throttleAxis;
 
+  std::shared_ptr<FlapsHandler> flapsHandler;
   std::shared_ptr<SpoilersHandler> spoilersHandler;
   std::shared_ptr<ElevatorTrimHandler> elevatorTrimHandler;
   std::shared_ptr<RudderTrimHandler> rudderTrimHandler;
@@ -279,7 +297,7 @@ class SimConnectInterface {
 
   bool prepareSimDataSimConnectDataDefinitions();
 
-  bool prepareSimInputSimConnectDataDefinitions(bool autopilotStateMachineEnabled, bool autopilotLawsEnabled, bool flyByWireEnabled);
+  bool prepareSimInputSimConnectDataDefinitions();
 
   bool prepareSimOutputSimConnectDataDefinitions();
 

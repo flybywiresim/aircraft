@@ -36,6 +36,8 @@ struct SimData {
   double gear_animation_pos_0;
   double gear_animation_pos_1;
   double gear_animation_pos_2;
+  double flaps_handle_index;
+  double flaps_position;
   double spoilers_handle_position;
   double spoilers_left_pos;
   double spoilers_right_pos;
@@ -246,13 +248,25 @@ struct ClientDataAutothrust {
   double mode_message;
 };
 
+struct ClientDataFlyByWireInput {
+  double delta_eta_pos;
+  double delta_xi_pos;
+  double delta_zeta_pos;
+};
+
 struct ClientDataFlyByWire {
+  double eta_pos;
+  double xi_pos;
+  double zeta_pos;
   double eta_trim_deg_should_write;
+  double eta_trim_deg;
   double zeta_trim_pos_should_write;
+  double zeta_trim_pos;
   double alpha_floor_command;
   double protection_ap_disc;
   double v_alpha_prot_kn;
   double v_alpha_max_kn;
+  double beta_target_deg;
 };
 
 struct ClientDataLocalVariables {

@@ -52,10 +52,6 @@
         "bin": "./printer/print-torn.bin"
       },
       {
-        "gltf": "./glass/glass.gltf",
-        "bin": "./glass/glass.bin"
-      },
-      {
         "gltf": "./cup/cup.gltf",
         "bin": "./cup/cup.bin"
       },
@@ -78,6 +74,10 @@
       {
         "gltf": "./buttondecals/buttondecals.gltf",
         "bin": "./buttondecals/buttondecals.bin"
+      },
+      {
+        "gltf": "./mcdu-annunc/mcdu-annunc.gltf",
+        "bin": "./mcdu-annunc/mcdu-annunc.bin"
       }
     ],
     "modifications": [
