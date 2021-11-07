@@ -163,12 +163,12 @@ export const PressureComponent = () => {
 
             {/* Vertical speed gauge */}
             <g id="VsIndicator">
-                <GaugeComponent x={vsx} y={y} radius={radius} startAngle={170} endAngle={10} showOrHide={autoMode} className="Gauge">
-                    <GaugeMarkerComponent value={2} x={vsx} y={y} min={-2} max={2} radius={radius} startAngle={180} endAngle={0} className="GaugeText" showValue />
+                <GaugeComponent x={vsx} y={y} radius={radius} startAngle={170} endAngle={10} visible={!autoMode} className="Gauge">
+                    <GaugeMarkerComponent value={2} x={vsx} y={y} min={-2} max={2} radius={radius} startAngle={180} endAngle={0} className="GaugeText" showValue textNudgeY={10} />
                     <GaugeMarkerComponent value={1} x={vsx} y={y} min={-2} max={2} radius={radius} startAngle={180} endAngle={0} className="GaugeText" />
-                    <GaugeMarkerComponent value={0} x={vsx} y={y} min={-2} max={2} radius={radius} startAngle={180} endAngle={0} className="GaugeText" showValue />
+                    <GaugeMarkerComponent value={0} x={vsx} y={y} min={-2} max={2} radius={radius} startAngle={180} endAngle={0} className="GaugeText" showValue textNudgeX={10} />
                     <GaugeMarkerComponent value={-1} x={vsx} y={y} min={-2} max={2} radius={radius} startAngle={180} endAngle={0} className="GaugeText" />
-                    <GaugeMarkerComponent value={-2} x={vsx} y={y} min={-2} max={2} radius={radius} startAngle={180} endAngle={0} className="GaugeText" showValue />
+                    <GaugeMarkerComponent value={-2} x={vsx} y={y} min={-2} max={2} radius={radius} startAngle={180} endAngle={0} className="GaugeText" showValue textNudgeY={-10} />
                     <GaugeMarkerComponent
                         value={Math.abs((cabinVs / 50 * 50) / 1000) <= 2.25 ? (cabinVs / 50 * 50) / 1000 : 2.250}
                         x={vsx}
@@ -193,7 +193,7 @@ export const PressureComponent = () => {
             <text className="Standard Cyan" x="320" y="370">PSI</text>
 
             <text className="Standard" x="480" y="380">CAB V/S</text>
-            <text id="CabinVerticalSpeed" className="Large Green" x="515" y="405" textAnchor="end">{autoMode ? Math.round(cabinVs / 50) * 50 : Math.abs(Math.round(cabinVs / 50) * 50)}</text>
+            <text id="CabinVerticalSpeed" className="Large Green" x="515" y="405" textAnchor="end">{!autoMode ? Math.round(cabinVs / 50) * 50 : Math.abs(Math.round(cabinVs / 50) * 50)}</text>
             <text className="Medium Cyan" x="525" y="405">FT/MIN</text>
 
             <text className="Standard" x="480" y="450">CAB ALT</text>
