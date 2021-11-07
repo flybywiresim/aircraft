@@ -12,7 +12,8 @@ class FmgcVariable {
      * @param {boolean} [attributes.autoPopulationClearable=false]
      * @param {boolean} [attributes.autoPopulationEnabled=true]
      * @param {function} [attributes.autoPopulateSource=null]
-     * @param {function} [attributes.customValidation=null]
+     * @param {function} [attributes.overrideValidation=null]
+     * @param {function} [attributes.advancedFormatCheck=null]
      */
     constructor(
         attributes
@@ -25,7 +26,8 @@ class FmgcVariable {
         this._valueMinOrLengthMin = -Infinity;
         this._valueMaxOrLengthMax = Infinity;
         this._valueSetEvent = () => {};
-        this._customValidation = null;
+        this._overrideValidation = null;
+        this._advancedFormatCheck = null;
 
         // mcdu display cosmetics
         this._setValueOnValidation = true;
@@ -41,8 +43,8 @@ class FmgcVariable {
     validateAndSetValue(_value, _validateOnly = false) {
         const setValueOnValidation = _validateOnly ? false : this._setValueOnValidation;
 
-        if (this._customValidation) {
-            const [value, message ] = this._customValidation(_value);
+        if (this._overrideValidation) {
+            const [value, message ] = this._overrideValidation(_value);
 
             if (message) {
                 throw message;
@@ -72,7 +74,7 @@ class FmgcVariable {
         }
 
         if (this._valueType === "string") {
-            if (_value.length < this._valueMinOrLengthMin || _value.length > this._valueMaxOrLengthMax) {
+            if (_value.length < this._valueMinOrLengthMin || _value.length > this._valueMaxOrLengthMax || this._advancedFormatCheck && this._advancedFormatCheck(_value)) {
                 throw NXSystemMessages.formatError;
             }
 
@@ -85,7 +87,7 @@ class FmgcVariable {
 
         const value = this._valueType === "number" ? Number.parseFloat(_value) : Number.parseInt(_value, 10);
 
-        if (!isFinite(value) || this._valueType === "int" && _value.includes(".")) {
+        if (!isFinite(value) || this._valueType === "int" && _value.includes(".") || this._advancedFormatCheck && this._advancedFormatCheck(_value)) {
             throw NXSystemMessages.formatError;
         }
 

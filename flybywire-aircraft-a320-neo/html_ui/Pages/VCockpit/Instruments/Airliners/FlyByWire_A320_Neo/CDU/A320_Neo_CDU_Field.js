@@ -188,28 +188,33 @@ class MCDU_ValueField extends CDU_Field {
     }
 
     getValue() {
-        if (this.variable2) {
-            const value = this.variable.getDisplayValue();
-            const value2 = this.variable2.getDisplayValue();
+        const value = this.variable.getDisplayValue();
+        const text = this._getText(value, this.size, this.color, this._sizeSuffix, this._colorSuffix, this.emptyValue);
 
-            const text1 = this._getText(value, this.size, this.color, this._sizeSuffix, this._colorSuffix, this.emptyValue);
+        if (this.variable2) {
+            const value2 = this.variable2.getDisplayValue();
             const text2 = this._getText(value2, this.size2, this.color2, this._sizeSuffix2, this._colorSuffix2, this.emptyValue2);
 
-            return text1 + this.devider + text2;
+            return text + this.devider + text2;
         }
 
-        return this._getText(value, this.size, this.color, this._sizeSuffix, this._colorSuffix, this.emptyValue);
+        return text;
     }
 
     onSelect(value, resolve, reject) {
         if (this.variable2) {
-            const split = value.split(this.devider);
+            const [value1, value2] = value.split(this.devider);
 
-            const res1 = this.variable.validateAndSetValue(split[0], true);
-            const res2 = this.variable2.validateAndSetValue(split[1], true);
+            const res1 = value1 ? this.variable.validateAndSetValue(value1, true) : null;
+            const res2 = value2 ? this.variable2.validateAndSetValue(value2, true) : null;
 
-            this.variable.setValue(res1);
-            this.variable2.setValue(res2);
+            if (value1) {
+                this.variable.setValue(res1);
+            }
+
+            if (value2) {
+                this.variable2.setValue(res2);
+            }
 
             this.valueSetEvent(res1, res2);
         } else {
