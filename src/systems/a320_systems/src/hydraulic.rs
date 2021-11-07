@@ -1824,7 +1824,7 @@ impl CargoDoor {
         current_pressure: Pressure,
     ) {
         self.hydraulic_assembly
-            .update(cargo_door_controller, context, current_pressure);
+            .update(context, cargo_door_controller, current_pressure);
         self.is_locked = self.hydraulic_assembly.is_locked();
         self.position = self.hydraulic_assembly.position_normalized();
     }
