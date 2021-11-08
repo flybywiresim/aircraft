@@ -423,6 +423,33 @@ export class FlightPlanManager {
     }
 
     /**
+     *
+     * @param fplnIndex index of the flight plan of interest, default active fp
+     * @returns distance in NM, or -1 on error
+     */
+    public getDistanceToDestination(fplnIndex: number = -1): number {
+        if (fplnIndex < 0) {
+            fplnIndex = this._currentFlightPlanIndex;
+        }
+
+        const destIndex = this.getDestinationIndex(fplnIndex);
+        if (destIndex < 0) {
+            return -1;
+        }
+
+        // TODO get proper pos from FMGC
+        const fmPos =  {
+            lat: SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude'),
+            long: SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude'),
+        };
+
+        const fpln = this._flightPlans[fplnIndex];
+        const stats = fpln.computeWaypointStatistics(fmPos);
+
+        return stats[destIndex].distanceFromPpos;
+    }
+
+    /**
      * Gets the bearing, in degrees, to the active waypoint.
      */
     public getBearingToActiveWaypoint(): number {

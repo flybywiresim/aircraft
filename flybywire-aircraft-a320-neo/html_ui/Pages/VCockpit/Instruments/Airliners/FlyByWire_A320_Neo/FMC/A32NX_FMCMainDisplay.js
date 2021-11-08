@@ -1580,7 +1580,7 @@ class FMCMainDisplay extends BaseAirliners {
      */
     tryUpdateRouteTrip(dynamic = false) {
         let airDistance = 0;
-        const groundDistance = dynamic ? this.flightPlanManager.getDestination().liveDistanceTo : this.flightPlanManager.getDestination().cumulativeDistanceInFP;
+        const groundDistance = dynamic ? this.flightPlanManager.getDistanceToDestination(0) : this.flightPlanManager.getDestination().cumulativeDistanceInFP;
         if (this._windDir === this._windDirections.TAILWIND) {
             airDistance = A32NX_FuelPred.computeAirDistance(groundDistance, this.averageWind);
         } else if (this._windDir === this._windDirections.HEADWIND) {
