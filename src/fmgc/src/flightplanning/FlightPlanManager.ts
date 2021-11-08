@@ -446,7 +446,7 @@ export class FlightPlanManager {
         const fpln = this._flightPlans[fplnIndex];
         const stats = fpln.computeWaypointStatistics(fmPos);
 
-        return stats[destIndex].distanceFromPpos;
+        return stats.get(destIndex)?.distanceFromPpos ?? -1;
     }
 
     /**
