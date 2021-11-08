@@ -1,7 +1,8 @@
 <ModelBehaviors>
     <Template Name="FBW_Airbus_ATC_Panel_ALT">
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
-            <UseTemplate Name="ASOBO_GT_Switch_3States">
+            <UseTemplate Name="ASOBO_GT_Switch_XStates">
+                <NUM_STATES>2</NUM_STATES>
                 <PART_ID>knob_atc_alt</PART_ID>
                 <WWISE_EVENT>smallknob</WWISE_EVENT>
                 <ANIM_NAME>#NODE_ID#</ANIM_NAME>
@@ -53,7 +54,9 @@
         </DefaultTemplateParameters>
 
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
-            <UseTemplate Name="ASOBO_GT_Push_Button">
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>BUTTON</ANIM_TYPE>
+                <ANIM_TEMPLATE>ASOBO_GT_Push_Button</ANIM_TEMPLATE>
                 <ANIM_NAME>#ANIM_NAME_BUTTON#</ANIM_NAME>
                 <LEFT_SINGLE_CODE>
                     (&gt;H:#EVENT_NAME#)
