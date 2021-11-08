@@ -3345,18 +3345,9 @@
                 <ANIM_NAME>PUSH_AUTOPILOT_METRICALT</ANIM_NAME>
             </UseTemplate>
 
-            <UseTemplate Name="ASOBO_AUTOPILOT_Switch_Altitude_Increment_Template">
+            <UseTemplate Name="FBW_AUTOPILOT_Switch_Altitude_Increment_Template">
                 <NODE_ID>KNOB_AUTOPILOT_SELECTOR_ALT</NODE_ID>
                 <ANIM_NAME>KNOB_AUTOPILOT_SELECTOR_ALT</ANIM_NAME>
-                <WWISE_EVENT_1>lswitch</WWISE_EVENT_1>
-                <WWISE_EVENT_2>lswitch</WWISE_EVENT_2>
-            </UseTemplate>
-
-            <UseTemplate Name="ASOBO_LIGHTING_Potentiometer_Emissive_Template">
-                <NODE_ID>KNOB_AUTOPILOT_SELECTOR_ALT</NODE_ID>
-                <POTENTIOMETER>84</POTENTIOMETER>
-                <DONT_OVERRIDE_BASE_EMISSIVE>True</DONT_OVERRIDE_BASE_EMISSIVE>
-                <EMISSIVE_CODE>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
             </UseTemplate>
 
             <UseTemplate Name="FBW_Airbus_FCU_Altitude_Knob">
