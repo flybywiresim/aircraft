@@ -5,7 +5,6 @@ import { usePersistentProperty } from '@instruments/common/persistence';
 import { FailuresOrchestratorProvider } from './failures-orchestrator-provider';
 import Efb from './Efb';
 
-import './Assets/Reset.scss';
 import './Assets/Efb.scss';
 import './Assets/Theme.css';
 import { render } from '../Common/index';
