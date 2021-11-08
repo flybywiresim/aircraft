@@ -91,7 +91,7 @@ export const LoadSheetWidget = (props: LoadsheetPageProps) => {
         <div className="overflow-hidden relative p-6 mt-4 w-full rounded-lg border-2 shadow-md h-efb border-theme-accent">
             {props.loadsheet !== 'N/A' ? (
                 <>
-                    <div className="absolute top-6 right-16 bg-theme-accent rounded-md">
+                    <div className="absolute top-6 right-16 rounded-md bg-theme-accent">
                         <button
                             type="button"
                             onClick={handleFontDecrease}

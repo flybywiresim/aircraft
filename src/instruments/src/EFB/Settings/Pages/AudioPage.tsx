@@ -10,32 +10,32 @@ export const AudioPage = () => {
     const [windVolume, setWindVolume] = usePersistentNumberProperty('SOUND_INTERIOR_WIND', 0);
 
     return (
-        <div className="bg-navy-lighter divide-y-2 divide-gray-700 flex flex-col rounded-xl px-6 ">
-            <div className="py-8 flex flex-row justify-between items-center">
+        <div className="flex flex-col px-6 rounded-xl divide-y-2 divide-gray-700 bg-navy-lighter">
+            <div className="flex flex-row justify-between items-center py-8">
                 <span>
                     <span className="text-lg text-gray-300">PTU Audible in Cockpit</span>
-                    <span className="text-lg text-gray-500 ml-2">(unrealistic)</span>
+                    <span className="ml-2 text-lg text-gray-500">(unrealistic)</span>
                 </span>
                 <Toggle value={!!ptuAudible} onToggle={(value) => setPtuAudible(value ? 1 : 0)} />
             </div>
-            <div className="py-4 flex flex-row justify-between items-center">
+            <div className="flex flex-row justify-between items-center py-4">
                 <span className="text-lg text-gray-300">Exterior Master Volume</span>
                 <div className="flex flex-row items-center py-1.5">
-                    <span className="text-base pr-3">{exteriorVolume}</span>
+                    <span className="pr-3 text-base">{exteriorVolume}</span>
                     <Slider className="w-60" value={exteriorVolume + 50} onInput={(value) => setExteriorVolume(value - 50)} />
                 </div>
             </div>
-            <div className="py-4 flex flex-row justify-between items-center">
+            <div className="flex flex-row justify-between items-center py-4">
                 <span className="text-lg text-gray-300">Engine Interior Volume</span>
                 <div className="flex flex-row items-center py-1.5">
-                    <span className="text-base pr-3">{engineVolume}</span>
+                    <span className="pr-3 text-base">{engineVolume}</span>
                     <Slider className="w-60" value={engineVolume + 50} onInput={(value) => setEngineVolume(value - 50)} />
                 </div>
             </div>
-            <div className="py-4 flex flex-row justify-between items-center">
+            <div className="flex flex-row justify-between items-center py-4">
                 <span className="text-lg text-gray-300">Wind Interior Volume</span>
                 <div className="flex flex-row items-center py-1.5">
-                    <span className="text-base pr-3">{windVolume}</span>
+                    <span className="pr-3 text-base">{windVolume}</span>
                     <Slider className="w-60" value={windVolume + 50} onInput={(value) => setWindVolume(value - 50)} />
                 </div>
             </div>

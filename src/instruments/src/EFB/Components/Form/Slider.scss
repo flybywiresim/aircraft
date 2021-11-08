@@ -1,5 +1,5 @@
 .slider {
-  @apply bg-blue-darker;
+  @apply bg-theme-accent;
   -webkit-appearance: none;
   appearance: none;
   height: 5px;
@@ -7,7 +7,7 @@
 }
 
 @mixin slider-handle {
-  @apply bg-teal-light-contrast;
+  @apply bg-theme-highlight;
   @apply rounded-full;
   @apply border-0;
   @apply shadow-lg;

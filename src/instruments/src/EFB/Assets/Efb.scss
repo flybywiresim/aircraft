@@ -42,18 +42,18 @@
   }
 
   h1 {
-    @apply text-3xl font-bold;
+    @apply text-3xl;
   }
 
   h2 {
-    @apply text-2xl font-bold;
+    @apply text-2xl;
   }
 
   h3, h4, h5, h6 {
-    @apply text-xl font-bold;
+    @apply text-xl;
   }
 
-  p, div {
+  p, div, a, span {
       @apply text-xl text-theme-text;
   }
 }
@@ -115,7 +115,7 @@
 /* ---- Notifications ---- */
 
 .drop {
-    animation: drop 2.5s ease-out;
+    animation: drop 5s ease-out;
 
     @keyframes drop {
       from {
