@@ -347,8 +347,10 @@ class EngineControl {
                  double mach,
                  double pressAltitude,
                  double ambientTemp) {
-    double egtFbwPrevious;
-    double egtFbwActual;
+    double egtFbwPreviousEng1;
+    double egtFbwActualEng1;
+    double egtFbwPreviousEng2;
+    double egtFbwActualEng2;
 
     // Engine imbalance timer
     engineImbalanced = imbalanceExtractor(imbalance, 1);
@@ -365,19 +367,19 @@ class EngineControl {
       if (simOnGround == 1 && engineState == 0) {
         simVars->setEngine1EGT(ambientTemp);
       } else {
-        egtFbwPrevious = simVars->getEngine1EGT();
-        egtFbwActual = (correctedEGT * ratios->theta2(mach, ambientTemp)) - paramImbalance;
-        egtFbwActual = egtFbwActual + (egtFbwPrevious - egtFbwActual) * expFBW(-0.1 * deltaTime);
-        simVars->setEngine1EGT(egtFbwActual);
+        egtFbwPreviousEng1 = simVars->getEngine1EGT();
+        egtFbwActualEng1 = (correctedEGT * ratios->theta2(mach, ambientTemp)) - paramImbalance;
+        egtFbwActualEng1 = egtFbwActualEng1 + (egtFbwPreviousEng1 - egtFbwActualEng1) * expFBW(-0.1 * deltaTime);
+        simVars->setEngine1EGT(egtFbwActualEng1);
       }
     } else {
       if (simOnGround == 1 && engineState == 0) {
         simVars->setEngine2EGT(ambientTemp);
       } else {
-        egtFbwPrevious = simVars->getEngine1EGT();
-        egtFbwActual = (correctedEGT * ratios->theta2(mach, ambientTemp)) - paramImbalance;
-        egtFbwActual = egtFbwActual + (egtFbwPrevious - egtFbwActual) * expFBW(-0.1 * deltaTime);
-        simVars->setEngine2EGT(egtFbwActual);
+        egtFbwPreviousEng2 = simVars->getEngine2EGT();
+        egtFbwActualEng2 = (correctedEGT * ratios->theta2(mach, ambientTemp)) - paramImbalance;
+        egtFbwActualEng2 = egtFbwActualEng2 + (egtFbwPreviousEng2 - egtFbwActualEng2) * expFBW(-0.1 * deltaTime);
+        simVars->setEngine2EGT(egtFbwActualEng2);
       }
     }
   }
