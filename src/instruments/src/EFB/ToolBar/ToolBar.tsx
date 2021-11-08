@@ -3,7 +3,7 @@ import { HouseDoor, Clipboard, Truck, Compass, BroadcastPin, ExclamationDiamond,
 import { Link, useHistory } from 'react-router-dom';
 
 export const ToolBar = () => (
-    <nav className="flex overflow-hidden flex-col justify-between w-32">
+    <nav className="flex overflow-hidden flex-col flex-shrink-0 justify-between w-32">
         <div className="flex flex-col items-center mt-11">
             <ToolBarButton to="/dashboard">
                 <HouseDoor size={35} />
