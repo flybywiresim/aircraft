@@ -33,12 +33,12 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
     completedBarBegin = 0,
     completedBarBeginValue,
     completionValue,
-    baseBgColor = '#e0e0de',
+    baseBgColor = 'var(--color-secondary)',
     height = '20px',
     width = '100%',
     margin,
     padding,
-    borderRadius = '50px',
+    borderRadius = '4px',
     labelAlignment = 'right',
     labelColor = '#fff',
     labelSize = '15px',
@@ -76,7 +76,6 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
         width,
         margin,
         transform: vertical ? 'rotateX(180deg)' : '',
-
     };
 
     const convertProgress = (completed) => (typeof completed === 'string' || completed > 100
