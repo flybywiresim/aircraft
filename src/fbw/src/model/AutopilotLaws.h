@@ -6,16 +6,21 @@
 
 class AutopilotLawsModelClass {
  public:
-  struct rtDW_Chart_AutopilotLaws_T {
-    uint8_T is_active_c10_AutopilotLaws;
-    uint8_T is_c10_AutopilotLaws;
-  };
-
   struct rtDW_LagFilter_AutopilotLaws_T {
     real_T pY;
     real_T pU;
     boolean_T pY_not_empty;
     boolean_T pU_not_empty;
+  };
+
+  struct rtDW_RateLimiter_AutopilotLaws_T {
+    real_T pY;
+    boolean_T pY_not_empty;
+  };
+
+  struct rtDW_Chart_AutopilotLaws_T {
+    uint8_T is_active_c10_AutopilotLaws;
+    uint8_T is_c10_AutopilotLaws;
   };
 
   struct rtDW_Chart_AutopilotLaws_m_T {
@@ -26,11 +31,6 @@ class AutopilotLawsModelClass {
   struct rtDW_storevalue_AutopilotLaws_T {
     real_T storage;
     boolean_T storage_not_empty;
-  };
-
-  struct rtDW_RateLimiter_AutopilotLaws_T {
-    real_T pY;
-    boolean_T pY_not_empty;
   };
 
   struct rtDW_LeadLagFilter_AutopilotLaws_T {
@@ -86,7 +86,7 @@ class AutopilotLawsModelClass {
     rtDW_WashoutFilter_AutopilotLaws_T sf_WashoutFilter_fs;
     rtDW_LeadLagFilter_AutopilotLaws_T sf_LeadLagFilter_kq;
     rtDW_LeadLagFilter_AutopilotLaws_T sf_LeadLagFilter_b;
-    rtDW_RateLimiter_AutopilotLaws_T sf_RateLimiter_e;
+    rtDW_RateLimiter_AutopilotLaws_T sf_RateLimiter_eb;
     rtDW_WashoutFilter_AutopilotLaws_T sf_WashoutFilter_fo;
     rtDW_LagFilter_AutopilotLaws_T sf_LagFilter_gn;
     rtDW_WashoutFilter_AutopilotLaws_T sf_WashoutFilter_l;
@@ -126,8 +126,10 @@ class AutopilotLawsModelClass {
     rtDW_Chart_AutopilotLaws_m_T sf_Chart_h;
     rtDW_LagFilter_AutopilotLaws_T sf_LagFilter_h;
     rtDW_LagFilter_AutopilotLaws_T sf_LagFilter_c;
-    rtDW_LagFilter_AutopilotLaws_T sf_LagFilter;
+    rtDW_LagFilter_AutopilotLaws_T sf_LagFilter_m;
     rtDW_Chart_AutopilotLaws_T sf_Chart;
+    rtDW_RateLimiter_AutopilotLaws_T sf_RateLimiter;
+    rtDW_LagFilter_AutopilotLaws_T sf_LagFilter;
   };
 
   struct ExternalInputs_AutopilotLaws_T {
@@ -146,8 +148,9 @@ class AutopilotLawsModelClass {
     real_T ScheduledGain_BreakpointsForDimension1_e[5];
     real_T ScheduledGain2_BreakpointsForDimension1[7];
     real_T ScheduledGain_BreakpointsForDimension1_ec[6];
-    real_T LagFilter2_C1;
     real_T LagFilter_C1;
+    real_T LagFilter2_C1;
+    real_T LagFilter_C1_n;
     real_T LagFilter1_C1;
     real_T LagFilter_C1_l;
     real_T WashoutFilter_C1;
@@ -245,9 +248,10 @@ class AutopilotLawsModelClass {
     real_T VS_Gain_e;
     real_T VS_Gain_nx;
     real_T DiscreteTimeIntegratorVariableTs_InitialCondition;
-    real_T DiscreteDerivativeVariableTs_InitialCondition;
     real_T RateLimiterVariableTs_InitialCondition;
+    real_T DiscreteDerivativeVariableTs_InitialCondition;
     real_T RateLimiterVariableTs_InitialCondition_i;
+    real_T RateLimiterVariableTs_InitialCondition_il;
     real_T DiscreteDerivativeVariableTs1_InitialCondition;
     real_T DiscreteDerivativeVariableTs_InitialCondition_c;
     real_T DiscreteDerivativeVariableTs2_InitialCondition;
@@ -281,9 +285,11 @@ class AutopilotLawsModelClass {
     real_T CompareToConstant1_const_g;
     real_T CompareToConstant2_const_m;
     real_T RateLimiterVariableTs_lo;
+    real_T RateLimiterVariableTs_lo_k;
     real_T RateLimiterVariableTs_lo_b;
     real_T RateLimiterVariableTs_lo_o;
     real_T RateLimiterVariableTs_up;
+    real_T RateLimiterVariableTs_up_n;
     real_T RateLimiterVariableTs_up_b;
     real_T RateLimiterVariableTs_up_i;
     boolean_T CompareToConstant_const_hx;
@@ -489,6 +495,8 @@ class AutopilotLawsModelClass {
     real_T ug_Gain;
     real_T Gain1_Gain_bf;
     real_T Gain_Gain_b0;
+    real_T Constant4_Value;
+    real_T Constant3_Value_nq;
     real_T Gain1_Gain_ik;
     real_T Gain_Gain_aj;
     real_T Switch_Threshold_l;
@@ -520,13 +528,14 @@ class AutopilotLawsModelClass {
     real_T ug_Gain_a;
     real_T Gain1_Gain_hm;
     real_T Gain_Gain_kj;
+    real_T Constant2_Value_c;
+    real_T Constant1_Value_b4;
     real_T Gain1_Gain_mz;
     real_T Gain_Gain_ie;
     real_T Switch_Threshold_b;
     real_T Gain1_Gain_f1;
     real_T Gain_Gain_lr;
-    real_T uDLookupTable_tableData[4];
-    real_T uDLookupTable_bp01Data[4];
+    real_T Constant_Value_ig;
     real_T fpmtoms_Gain_i;
     real_T kntoms_Gain_hx;
     real_T Saturation_UpperSat_nd;
@@ -587,6 +596,8 @@ class AutopilotLawsModelClass {
     real_T ug_Gain_aa;
     real_T Gain1_Gain_gf;
     real_T Gain_Gain_j;
+    real_T Constant4_Value_f;
+    real_T Constant3_Value_h1;
     real_T Gain1_Gain_ovr;
     real_T Gain_Gain_jy;
     real_T Switch_Threshold_o;
@@ -618,13 +629,14 @@ class AutopilotLawsModelClass {
     real_T ug_Gain_f;
     real_T Gain1_Gain_ot;
     real_T Gain_Gain_dm;
+    real_T Constant2_Value_k;
+    real_T Constant1_Value_d;
     real_T Gain1_Gain_ou;
     real_T Gain_Gain_jg;
     real_T Switch_Threshold_a;
     real_T Gain1_Gain_gy;
     real_T Gain_Gain_eq;
-    real_T uDLookupTable_tableData_c[4];
-    real_T uDLookupTable_bp01Data_l[4];
+    real_T Constant_Value_ga;
     real_T fpmtoms_Gain_ps;
     real_T kntoms_Gain_c;
     real_T Saturation_UpperSat_oz;
@@ -657,6 +669,8 @@ class AutopilotLawsModelClass {
     real_T ug_Gain_n;
     real_T Gain1_Gain_b1;
     real_T Gain_Gain_d0;
+    real_T Constant4_Value_o;
+    real_T Constant3_Value_nk;
     real_T Gain1_Gain_on;
     real_T Gain_Gain_hy;
     real_T Switch_Threshold_d;
@@ -688,13 +702,14 @@ class AutopilotLawsModelClass {
     real_T ug_Gain_e;
     real_T Gain1_Gain_be1;
     real_T Gain_Gain_gx;
+    real_T Constant2_Value_hd;
+    real_T Constant1_Value_o;
     real_T Gain1_Gain_nj;
     real_T Gain_Gain_aq;
     real_T Switch_Threshold_g;
     real_T Gain1_Gain_fle;
     real_T Gain_Gain_ko;
-    real_T uDLookupTable_tableData_cr[4];
-    real_T uDLookupTable_bp01Data_d[4];
+    real_T Constant_Value_fo;
     real_T Gain2_Gain_m;
     real_T Gain4_Gain_g;
     real_T Gain3_Gain_n;
@@ -722,7 +737,7 @@ class AutopilotLawsModelClass {
     real_T Saturation_UpperSat_ew;
     real_T Saturation_LowerSat_an;
     real_T Gain_Gain_by;
-    real_T Constant1_Value_o;
+    real_T Constant1_Value_o0;
     real_T fpmtoms_Gain_n;
     real_T kntoms_Gain_iv;
     real_T Saturation_UpperSat_je;
@@ -749,7 +764,7 @@ class AutopilotLawsModelClass {
     real_T ug_Gain_c;
     real_T Gain1_Gain_ejc;
     real_T Gain_Gain_p2;
-    real_T Constant2_Value_k;
+    real_T Constant2_Value_kz;
     real_T Gain1_Gain_h3;
     real_T Gain_Gain_ox;
     real_T Gain1_Gain_fo;
@@ -793,18 +808,18 @@ class AutopilotLawsModelClass {
   ExternalInputs_AutopilotLaws_T AutopilotLaws_U;
   ExternalOutputs_AutopilotLaws_T AutopilotLaws_Y;
   static void AutopilotLaws_MATLABFunction(real_T rtu_tau, real_T rtu_zeta, real_T *rty_k2, real_T *rty_k1);
+  static void AutopilotLaws_LagFilter(real_T rtu_U, real_T rtu_C1, real_T rtu_dt, real_T *rty_Y,
+    rtDW_LagFilter_AutopilotLaws_T *localDW);
+  static void AutopilotLaws_RateLimiter(real_T rtu_u, real_T rtu_up, real_T rtu_lo, real_T rtu_Ts, real_T rtu_init,
+    real_T *rty_Y, rtDW_RateLimiter_AutopilotLaws_T *localDW);
   static void AutopilotLaws_Chart_Init(real_T *rty_out);
   static void AutopilotLaws_Chart(real_T rtu_right, real_T rtu_left, boolean_T rtu_use_short_path, real_T *rty_out,
     rtDW_Chart_AutopilotLaws_T *localDW);
-  static void AutopilotLaws_LagFilter(real_T rtu_U, real_T rtu_C1, real_T rtu_dt, real_T *rty_Y,
-    rtDW_LagFilter_AutopilotLaws_T *localDW);
   static void AutopilotLaws_Chart_g_Init(real_T *rty_out);
   static void AutopilotLaws_Chart_h(real_T rtu_right, real_T rtu_left, real_T rtu_use_short_path, real_T *rty_out,
     rtDW_Chart_AutopilotLaws_m_T *localDW);
   static void AutopilotLaws_storevalue(boolean_T rtu_active, real_T rtu_u, real_T *rty_y,
     rtDW_storevalue_AutopilotLaws_T *localDW);
-  static void AutopilotLaws_RateLimiter(real_T rtu_u, real_T rtu_up, real_T rtu_lo, real_T rtu_Ts, real_T rtu_init,
-    real_T *rty_Y, rtDW_RateLimiter_AutopilotLaws_T *localDW);
   static void AutopilotLaws_LeadLagFilter(real_T rtu_U, real_T rtu_C1, real_T rtu_C2, real_T rtu_C3, real_T rtu_C4,
     real_T rtu_dt, real_T *rty_Y, rtDW_LeadLagFilter_AutopilotLaws_T *localDW);
   static void AutopilotLaws_WashoutFilter(real_T rtu_U, real_T rtu_C1, real_T rtu_dt, real_T *rty_Y,
