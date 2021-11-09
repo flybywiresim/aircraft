@@ -1698,9 +1698,9 @@ impl A320DoorController {
                 self.control_position_request = if self.position_requested > Ratio::new::<ratio>(0.)
                     || self.duration_in_hyd_control < Self::UP_CONTROL_TIME_BEFORE_DOWN_CONTROL
                 {
-                    Ratio::new::<ratio>(1.2)
+                    Ratio::new::<ratio>(1.0)
                 } else {
-                    Ratio::new::<ratio>(-0.2)
+                    Ratio::new::<ratio>(-0.1)
                 }
             }
             DoorControlState::UpLocked => {
