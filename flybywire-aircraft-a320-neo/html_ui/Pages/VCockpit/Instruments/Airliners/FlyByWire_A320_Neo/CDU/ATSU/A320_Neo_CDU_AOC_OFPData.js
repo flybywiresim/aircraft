@@ -89,7 +89,7 @@ class CDUAocOfpData {
         mcdu.leftInputDelay[0] = () => {
             return mcdu.getDelayBasic();
         };
-        mcdu.onLeftInput[0] = (value) => {
+        mcdu.onLeftInput[0] = (value, scratchpadCallback) => {
             if (value === FMCMainDisplay.clrValue) {
                 mcdu.aocWeight.blockFuel = undefined;
                 updateView();
@@ -102,13 +102,14 @@ class CDUAocOfpData {
                 return true;
             }
             mcdu.addNewMessage(NXSystemMessages.notAllowed);
+            scratchpadCallback();
             return false;
         };
 
         mcdu.leftInputDelay[1] = () => {
             return mcdu.getDelayBasic();
         };
-        mcdu.onLeftInput[1] = (value) => {
+        mcdu.onLeftInput[1] = (value, scratchpadCallback) => {
             if (value === FMCMainDisplay.clrValue) {
                 mcdu.aocWeight.taxiFuel = undefined;
                 updateView();
@@ -121,13 +122,14 @@ class CDUAocOfpData {
                 return true;
             }
             mcdu.addNewMessage(NXSystemMessages.notAllowed);
+            scratchpadCallback();
             return false;
         };
 
         mcdu.leftInputDelay[2] = () => {
             return mcdu.getDelayBasic();
         };
-        mcdu.onLeftInput[2] = (value) => {
+        mcdu.onLeftInput[2] = (value, scratchpadCallback) => {
             if (value === FMCMainDisplay.clrValue) {
                 mcdu.aocWeight.tripFuel = undefined;
                 updateView();
@@ -140,6 +142,7 @@ class CDUAocOfpData {
                 return true;
             }
             mcdu.addNewMessage(NXSystemMessages.notAllowed);
+            scratchpadCallback();
             return false;
         };
 

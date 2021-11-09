@@ -34,6 +34,7 @@
 1. [LIGHTS] Sync Strobe/Beacon, EXT LT refactor + LDG LT behavior - @bouveng (Johan Bouveng)
 1. [AP] Improved SPD/MACH law model - @IbrahimK42 (IbrahimK42)
 1. [AP/FBW] Improved behavior in cruise when using high sim rate with roll performance - @aguther (Andreas Guther) and @IbrahimK42 (IbrahimK42)
+1. [PRESS] Introduce manual functionality of cabin pressurization system - @MJuhe (Miquel)
 1. [LIGHTS] Add TO/TAXI LT logic, ambience to TAXI/TO/LDG LT + min. changes to strobe/beacon/nav - @bouveng (Johan Bouveng)
 1. [FMGC] Fixed issue with TO flight phase transition when no V2 is entered and airport is near sea level - @aguther (Andreas Guther)
 1. [MISC] Fix for incrementing ISIS pressure values - @RichardPilbery (tricky_dicky#3571)
@@ -50,6 +51,20 @@
 1. [ECAM] Fixed misaligned items on ecam memos - @tyler58546 (tyler58546)
 1. [ECAM] Revised fuel page to match neo - @RichardPilbery (tricky_dicky#3571)
 1. [RMP] Added 25 kHz VHF spacing option - @tyler58546 (tyler58546)
+1. [MCDU] Scratchpad rewrite - @derl30n (Leon)
+1. [ATHR/ENGINE] Improved CLB thrust limit for improved FLEX N1 numbers - @aguther (Andreas Guther)
+1. [FBW] Improved roll stability in turbulence or with performance issues - @IbrahimK42 (IbrahimK42) and @aguther (Andreas Guther)
+1. [MCDU] Hide POSITION UPDATE AT field on PROG page when GPS is available - @BlueberryKing (BlueberryKing)
+1. [MCDU] Sort approaches by type - @tracernz (Mike)
+1. [MODEL] Add four portholes. Two opposite the existing ones, and two above the wing. - @igor8518 (Igor Milovidov)
+1. [MODEL] Add dynamic registration decal option - @tracernz (Mike)
+1. [FCU] Autopilot button integ light brightness corrected - @tracernz (Mike)
+1. [FBW/AP/ATHR] Only enable client data section when a model runs externally - @aguther (Andreas Guther)
+1. [FBW/AP/ATHR] Added local variables to enable logging of flight controls and/or throttle events - @aguther (Andreas Guther)
+1. [AP] Fixed VMAX speed protection for several modes not working properly - @aguther (Andreas Guther)
+1. [AP] Added support for event AUTOPILOT_DISENGAGE_SET to disengage AP - @aguther (Andreas Guther)
+1. [AP] Reduced speed margin of speed protection to 5 kn - @aguther (Andreas Guther)
+1. [MODEL] Removed glass due to issues with brightness in clouds since SU6 - @aguther (Andreas Guther)
 
 ## 0.7.0
 

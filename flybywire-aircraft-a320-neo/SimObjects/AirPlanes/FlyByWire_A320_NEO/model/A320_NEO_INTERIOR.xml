@@ -517,7 +517,7 @@
                     <PART_ID>SCREEN_PFD1</PART_ID>
                     <CAMERA_TITLE>PFD</CAMERA_TITLE>
                     <!-- Effects such as pixels and glass reflections require the screen brightness to be increased -->
-                    <EMISSIVE_CODE>3</EMISSIVE_CODE>
+                    <EMISSIVE_CODE>1</EMISSIVE_CODE>
                 </UseTemplate>
 
                 <UseTemplate Name="FBW_Airbus_Push_EFIS_GPWS">
@@ -618,7 +618,7 @@
                     <PART_ID>SCREEN_MFD1</PART_ID>
                     <CAMERA_TITLE>MFD</CAMERA_TITLE>
                     <!-- Effects such as pixels and glass reflections require the screen brightness to be increased -->
-                    <EMISSIVE_CODE>3</EMISSIVE_CODE>
+                    <EMISSIVE_CODE>1</EMISSIVE_CODE>
                 </UseTemplate>
 
                 <!-- DCDU -->
@@ -627,7 +627,7 @@
                     <!-- Effects such as pixels and glass reflections require the screen brightness to be increased -->
                     <EMISSIVE_CODE>
                         (L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool) if{
-                            3 (L:#PLANE_NAME#_PANEL_DCDU_L_BRIGHTNESS, percent over 100) *
+                            1 (L:#PLANE_NAME#_PANEL_DCDU_L_BRIGHTNESS, percent over 100) *
                         } els{
                             0
                         }
@@ -662,7 +662,7 @@
                     <POTENTIOMETER>90</POTENTIOMETER>
                     <PART_ID>SCREEN_PFD2</PART_ID>
                     <!-- Effects such as pixels and glass reflections require the screen brightness to be increased -->
-                    <EMISSIVE_CODE>3</EMISSIVE_CODE>
+                    <EMISSIVE_CODE>1</EMISSIVE_CODE>
                 </UseTemplate>
 
                 <!-- F/O ND SCREEN -->
@@ -679,7 +679,7 @@
                     <POTENTIOMETER>91</POTENTIOMETER>
                     <PART_ID>SCREEN_MFD2</PART_ID>
                     <!-- Effects such as pixels and glass reflections require the screen brightness to be increased -->
-                    <EMISSIVE_CODE>3</EMISSIVE_CODE>
+                    <EMISSIVE_CODE>1</EMISSIVE_CODE>
                 </UseTemplate>
 
                 <!-- F/O WX SCREEN -->
@@ -697,7 +697,7 @@
                     <!-- Effects such as pixels and glass reflections require the screen brightness to be increased -->
                     <EMISSIVE_CODE>
                         (L:A32NX_ELEC_DC_2_BUS_IS_POWERED, Bool) if{
-                            3 (L:#PLANE_NAME#_PANEL_DCDU_R_BRIGHTNESS, percent over 100) *
+                            1 (L:#PLANE_NAME#_PANEL_DCDU_R_BRIGHTNESS, percent over 100) *
                         } els{
                             0
                         }
@@ -807,7 +807,7 @@
                 <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
                     <NODE_ID>DYN_SCREEN</NODE_ID>
                     <!-- Effects such as pixels and glass reflections require the screen brightness to be increased -->
-                    <EMISSIVE_CODE>3</EMISSIVE_CODE>
+                    <EMISSIVE_CODE>1</EMISSIVE_CODE>
                 </UseTemplate>
                 <CameraTitle>PA</CameraTitle>
 
@@ -882,7 +882,7 @@
                     <PART_ID>SCREEN_EICAS1</PART_ID>
                     <CAMERA_TITLE>ECAM</CAMERA_TITLE>
                     <!-- Effects such as pixels and glass reflections require the screen brightness to be increased -->
-                    <EMISSIVE_CODE>3</EMISSIVE_CODE>
+                    <EMISSIVE_CODE>1</EMISSIVE_CODE>
                 </UseTemplate>
 
                 <!-- LOWER ECAM SCREEN -->
@@ -899,7 +899,7 @@
                     <PART_ID>SCREEN_EICAS2</PART_ID>
                     <CAMERA_TITLE>ECAM</CAMERA_TITLE>
                     <!-- Effects such as pixels and glass reflections require the screen brightness to be increased -->
-                    <EMISSIVE_CODE>3</EMISSIVE_CODE>
+                    <EMISSIVE_CODE>1</EMISSIVE_CODE>
                 </UseTemplate>
             </Component>
 
@@ -2989,7 +2989,7 @@
                         <UseTemplate Name="FBW_Continuous_Knob_Limited_From_Simvar">
                             <NODE_ID>KNOB_OVHD_CABINPRESS_LDGELEV</NODE_ID>
                             <ANIM_SIMVAR_MAX>88</ANIM_SIMVAR_MAX>
-                            <LOCAL_SIMVAR>L:A32NX_LANDING_ELEVATION</LOCAL_SIMVAR>
+                            <LOCAL_SIMVAR>L:A32NX_OVHD_PRESS_LDG_ELEV_KNOB</LOCAL_SIMVAR>
                             <LOCAL_SIMVAR_UNITS>feet</LOCAL_SIMVAR_UNITS>
                             <INCREMENT>0.5</INCREMENT>
                             <CONVERSION_FORMULA>193.182 * 2000 -</CONVERSION_FORMULA>
@@ -2999,17 +2999,18 @@
 
                     <UseTemplate Name="FBW_3State_Springloaded_Switch">
                         <NODE_ID>SWITCH_OVHD_CABINPRESS_MANVSCTL</NODE_ID>
-                        <ANIM_SIMVAR>L:A32NX_MAN_VS_CONTROL</ANIM_SIMVAR>
+                        <ANIM_SIMVAR>L:A32NX_OVHD_PRESS_MAN_VS_CTL_SWITCH</ANIM_SIMVAR>
                         <INVERT_ANIM>1</INVERT_ANIM>
                     </UseTemplate>
 
                     <!-- MODE SEL -->
                     <UseTemplate Name="FBW_Push_Toggle">
                         <NODE_ID>PUSH_OVHD_CABINPRESS_MODESEL</NODE_ID>
-                        <TOGGLE_SIMVAR>L:A32NX_CAB_PRESS_MODE_MAN</TOGGLE_SIMVAR>
+                        <TOGGLE_SIMVAR>L:A32NX_OVHD_PRESS_MODE_SEL_PB_IS_AUTO</TOGGLE_SIMVAR>
+                        <DOWN_CODE>(L:A32NX_OVHD_PRESS_MODE_SEL_PB_IS_AUTO, Bool) !</DOWN_CODE>
                         <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_STAT_INV_BUS_IS_POWERED, Bool) or</SEQ_POWERED>
-                        <SEQ1_CODE>(L:A32NX_CAB_PRESS_SYS_FAULT)</SEQ1_CODE>
-                        <SEQ2_CODE>(L:A32NX_CAB_PRESS_MODE_MAN)</SEQ2_CODE>
+                        <SEQ1_CODE>(L:A32NX_OVHD_PRESS_MODE_SEL_PB_HAS_FAULT)</SEQ1_CODE>
+                        <SEQ2_CODE>(L:A32NX_OVHD_PRESS_MODE_SEL_PB_IS_AUTO) !</SEQ2_CODE>
                         <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                         <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
                         <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
@@ -3018,9 +3019,9 @@
                     <UseTemplate Name="FBW_Covered_Push_Toggle">
                         <NODE_ID>PUSH_OVHD_CABINPRESS_DITCHING</NODE_ID>
                         <LOCK_NODE_ID>LOCK_OVHD_CABINPRESS_DITCHING</LOCK_NODE_ID>
-                        <TOGGLE_SIMVAR>L:A32NX_DITCHING</TOGGLE_SIMVAR>
+                        <TOGGLE_SIMVAR>L:A32NX_OVHD_PRESS_DITCHING_PB_IS_ON</TOGGLE_SIMVAR>
                         <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_STAT_INV_BUS_IS_POWERED, Bool) or</SEQ_POWERED>
-                        <SEQ2_CODE>(L:A32NX_DITCHING)</SEQ2_CODE>
+                        <SEQ2_CODE>(L:A32NX_OVHD_PRESS_DITCHING_PB_IS_ON)</SEQ2_CODE>
                         <NO_SEQ1 />
                     </UseTemplate>
                 </Component>

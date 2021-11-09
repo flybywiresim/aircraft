@@ -4,8 +4,9 @@ use crate::{
 };
 use num_derive::FromPrimitive;
 use std::{cell::Ref, fmt::Display, time::Duration};
-use uom::si::{f64::*, thermodynamic_temperature::degree_celsius};
+use uom::si::{f64::*, pressure::hectopascal, thermodynamic_temperature::degree_celsius};
 
+pub mod low_pass_filter;
 pub mod pid;
 
 mod random;
@@ -390,6 +391,54 @@ impl From<f64> for MachNumber {
 impl From<MachNumber> for f64 {
     fn from(value: MachNumber) -> Self {
         value.0
+    }
+}
+
+pub trait AverageExt: Iterator {
+    fn average<M>(self) -> M
+    where
+        M: Average<Self::Item>,
+        Self: Sized,
+    {
+        M::average(self)
+    }
+}
+
+impl<I: Iterator> AverageExt for I {}
+
+pub trait Average<A = Self> {
+    fn average<I>(iter: I) -> Self
+    where
+        I: Iterator<Item = A>;
+}
+
+impl Average for Pressure {
+    fn average<I>(iter: I) -> Self
+    where
+        I: Iterator<Item = Pressure>,
+    {
+        let mut sum = 0.0;
+        let mut count: usize = 0;
+
+        for v in iter {
+            sum += v.get::<hectopascal>();
+            count += 1;
+        }
+
+        if count > 0 {
+            Pressure::new::<hectopascal>(sum / (count as f64))
+        } else {
+            Pressure::new::<hectopascal>(0.)
+        }
+    }
+}
+
+impl<'a> Average<&'a Pressure> for Pressure {
+    fn average<I>(iter: I) -> Self
+    where
+        I: Iterator<Item = &'a Pressure>,
+    {
+        iter.copied().average()
     }
 }
 
@@ -876,5 +925,22 @@ mod electrical_bus_type_tests {
             ElectricalBusType::DirectCurrentHot(2).to_string(),
             "DC_HOT_2"
         );
+    }
+}
+
+#[cfg(test)]
+mod average_tests {
+    use super::*;
+
+    #[test]
+    fn average_returns_average() {
+        let iterator = [
+            Pressure::new::<hectopascal>(100.),
+            Pressure::new::<hectopascal>(200.),
+            Pressure::new::<hectopascal>(300.),
+        ];
+
+        let average: Pressure = iterator.iter().average();
+        assert_eq!(average, Pressure::new::<hectopascal>(200.));
     }
 }
