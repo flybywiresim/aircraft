@@ -16,9 +16,10 @@ use uom::si::{
     volume_rate::{cubic_meter_per_second, gallon_per_second},
 };
 
-use crate::simulation::UpdateContext;
+use crate::{shared::low_pass_filter::LowPassFilter, simulation::UpdateContext};
 
 use crate::shared::low_pass_filter;
+use std::time::Duration;
 
 pub trait Actuator {
     fn used_volume(&self) -> Volume;
@@ -72,7 +73,8 @@ struct CoreHydraulicForce {
 
     last_control_force: Force,
 
-    force: Force,
+    force_raw: Force,
+    force_filtered: LowPassFilter<Force>,
 }
 impl CoreHydraulicForce {
     const DEFAULT_I_GAIN: f64 = 0.2;
@@ -102,12 +104,14 @@ impl CoreHydraulicForce {
             bore_side_area,
             rod_side_area,
             last_control_force: Force::new::<newton>(0.),
-            force: Force::new::<newton>(0.),
+            force_raw: Force::new::<newton>(0.),
+            force_filtered: LowPassFilter::<Force>::new(Duration::from_millis(50)),
         }
     }
 
     fn update_force(
         &mut self,
+        context: &UpdateContext,
         required_position: Ratio,
         requested_mode: LinearActuatorMode,
         position_normalized: Ratio,
@@ -118,6 +122,7 @@ impl CoreHydraulicForce {
         self.update_actions(requested_mode, position_normalized);
 
         self.update_force_from_current_mode(
+            context,
             required_position,
             position_normalized,
             current_pressure,
@@ -164,6 +169,7 @@ impl CoreHydraulicForce {
     }
 
     fn go_to_close_control_valves(&mut self, position_normalized: Ratio) {
+        self.force_filtered.reset(self.force_raw);
         self.closed_valves_reference_position = position_normalized;
         self.current_mode = LinearActuatorMode::ClosedValves;
     }
@@ -173,11 +179,13 @@ impl CoreHydraulicForce {
     }
 
     fn go_to_damping(&mut self) {
+        self.force_filtered.reset(self.force_raw);
         self.current_mode = LinearActuatorMode::ActiveDamping;
     }
 
     fn update_force_from_current_mode(
         &mut self,
+        context: &UpdateContext,
         required_position: Ratio,
         position_normalized: Ratio,
         current_pressure: Pressure,
@@ -186,13 +194,19 @@ impl CoreHydraulicForce {
     ) {
         match self.current_mode {
             LinearActuatorMode::ClosedValves => {
-                self.force = self.force_closed_valves(position_normalized, speed);
+                self.force_filtered.update(
+                    context.delta(),
+                    self.force_closed_valves(position_normalized, speed),
+                );
+                self.force_raw = self.force_filtered.output();
             }
             LinearActuatorMode::ActiveDamping => {
-                self.force = self.force_damping(speed);
+                self.force_filtered
+                    .update(context.delta(), self.force_damping(speed));
+                self.force_raw = self.force_filtered.output();
             }
             LinearActuatorMode::PositionControl => {
-                self.force = self.force_position_control(
+                self.force_raw = self.force_position_control(
                     required_position,
                     position_normalized,
                     signed_flow,
@@ -204,7 +218,7 @@ impl CoreHydraulicForce {
     }
 
     fn force(&self) -> Force {
-        self.force
+        self.force_raw
     }
 
     fn force_damping(&self, speed: Velocity) -> Force {
@@ -393,11 +407,13 @@ impl LinearActuator {
 
     fn update_before_rigid_body(
         &mut self,
+        context: &UpdateContext,
         connected_body: &mut LinearActuatedRigidBodyOnHingeAxis,
         requested_mode: LinearActuatorMode,
         current_pressure: Pressure,
     ) {
         self.core_hydraulics.update_force(
+            context,
             self.requested_position,
             requested_mode,
             self.position_normalized,
@@ -522,6 +538,7 @@ impl HydraulicLinearActuatorAssembly {
 
         if !self.rigid_body.is_locked() {
             self.linear_actuator.update_before_rigid_body(
+                context,
                 &mut self.rigid_body,
                 assembly_controller.requested_mode(),
                 current_pressure,
@@ -1093,7 +1110,8 @@ mod tests {
 
         test_bed.run_with_delta(Duration::from_secs(5));
 
-        assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.5));
+        assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.9));
+        assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.5));
     }
 
     #[test]
@@ -1241,7 +1259,7 @@ mod tests {
             VolumeRate::new::<gallon_per_second>(0.008),
             800000.,
             15000.,
-            10000.,
+            500000.,
         )
     }
 
