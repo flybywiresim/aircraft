@@ -909,7 +909,7 @@
     - Auto brake panel push button for MAX mode is pressed
 
 - A32NX_FM_LS_COURSE
-    - Number
+    - Number<Degrees | -1>
     - Landing system course. Values, in priority order:
         - Pilot entered course
         - Database course
