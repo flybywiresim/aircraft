@@ -248,9 +248,20 @@ struct ClientDataAutothrust {
   double mode_message;
 };
 
+struct ClientDataFlyByWireInput {
+  double delta_eta_pos;
+  double delta_xi_pos;
+  double delta_zeta_pos;
+};
+
 struct ClientDataFlyByWire {
+  double eta_pos;
+  double xi_pos;
+  double zeta_pos;
   double eta_trim_deg_should_write;
+  double eta_trim_deg;
   double zeta_trim_pos_should_write;
+  double zeta_trim_pos;
   double alpha_floor_command;
   double protection_ap_disc;
   double v_alpha_prot_kn;

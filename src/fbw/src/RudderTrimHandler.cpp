@@ -43,3 +43,7 @@ void RudderTrimHandler::update(double dt) {
 double RudderTrimHandler::getPosition() {
   return rateLimiter.getValue();
 }
+
+double RudderTrimHandler::getTargetPosition() {
+  return targetValue;
+}
