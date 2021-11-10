@@ -43,24 +43,25 @@ export class LnavDriver implements GuidanceComponent {
         let available = false;
 
         const geometry = this.guidanceController.guidanceManager.getActiveLegPathGeometry();
-        const dtg = geometry.getDistanceToGo(this.ppos);
-
-        this.guidanceController.activeLegIndex = geometry.legs.get(1).indexInFullPath;
-        this.guidanceController.activeLegDtg = dtg;
-
-        // Pseudo waypoint sequencing
-
-        const pseudoWaypointsOnActiveLeg = this.guidanceController.currentPseudoWaypoints.filter((it) => it.alongLegIndex === geometry.legs.get(1).indexInFullPath);
-
-        for (const pseudoWaypoint of pseudoWaypointsOnActiveLeg) {
-            if (dtg <= pseudoWaypoint.distanceFromLegTermination) {
-                this.guidanceController.sequencePseudoWaypoint(pseudoWaypoint);
-            }
-        }
-
-        // Leg sequencing
 
         if (geometry !== null) {
+            const dtg = geometry.getDistanceToGo(this.ppos);
+
+            this.guidanceController.activeLegIndex = geometry.legs.get(1).indexInFullPath;
+            this.guidanceController.activeLegDtg = dtg;
+
+            // Pseudo waypoint sequencing
+
+            const pseudoWaypointsOnActiveLeg = this.guidanceController.currentPseudoWaypoints.filter((it) => it.alongLegIndex === geometry.legs.get(1).indexInFullPath);
+
+            for (const pseudoWaypoint of pseudoWaypointsOnActiveLeg) {
+                if (dtg <= pseudoWaypoint.distanceFromLegTermination) {
+                    this.guidanceController.sequencePseudoWaypoint(pseudoWaypoint);
+                }
+            }
+
+            // Leg sequencing
+
             // TODO FIXME: Use FM position
             this.ppos.lat = SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude');
             this.ppos.long = SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude');

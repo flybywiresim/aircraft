@@ -23,6 +23,11 @@ export class PseudoWaypoints implements GuidanceComponent {
     }
 
     acceptNewMultipleLegGeometry(geometry: Geometry) {
+        if (!geometry || geometry.legs.size < 1) {
+            this.pseudoWaypoints.length = 0;
+            return;
+        }
+
         const newPseudoWaypoints: PseudoWaypoint[] = [];
 
         if (VnavConfig.VNAV_EMIT_TOD) {
