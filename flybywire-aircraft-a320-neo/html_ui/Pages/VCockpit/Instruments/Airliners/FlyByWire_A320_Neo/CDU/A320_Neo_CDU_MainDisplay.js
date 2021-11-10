@@ -1379,10 +1379,9 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.printing = true;
 
         const formattedValues = lines.map((l) => {
-            let formatted = l.replace(/\[color]cyan/g, "<br/>");
-            formatted = l.replace(/(\[color][a-z]*)/g, "");
-            formatted = l.replace(/-{3,}/g, "<br/><br/>");
-            return formatted;
+            return l.replace(/\[color]cyan/g, "<br/>")
+                .replace(/(\[color][a-z]*)/g, "")
+                .replace(/-{3,}/g, "<br/><br/>");
         });
 
         if (SimVar.GetSimVarValue("L:A32NX_PRINTER_PRINTING", "bool") === 1) {
