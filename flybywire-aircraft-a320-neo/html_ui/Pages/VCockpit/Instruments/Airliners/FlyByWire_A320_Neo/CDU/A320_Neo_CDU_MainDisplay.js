@@ -30,6 +30,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             Prog: 2000,
             Dyn: 1500
         };
+        this.fmgcMesssagesListener = RegisterViewListener('JS_LISTENER_SIMVARS');
         this.page = {
             SelfPtr: false,
             Current: 0,
@@ -1515,27 +1516,26 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             return;
         }
         this.printing = true;
-        for (let i = 0; i < lines.length; i++) {
-            let value = lines[i];
-            value = value.replace(/\[color]cyan/g, "<br/>");
-            value = value.replace(/(\[color][a-z]*)/g, "");
-            value = value.replace(/-{3,}/g, "<br/><br/>");
-            for (let j = 0; j < value.length; j++) {
-                SimVar.SetSimVarValue(`L:A32NX_PRINT_${i}_${j}`, "number", value.charCodeAt(j));
-            }
-            SimVar.SetSimVarValue(`L:A32NX_PRINT_LINE_LENGTH_${i}`, "number", value.length);
-        }
+
+        const formattedValues = lines.map((l) => {
+            return l.replace(/\[color]cyan/g, "<br/>")
+                .replace(/(\[color][a-z]*)/g, "")
+                .replace(/-{3,}/g, "<br/><br/>");
+        });
+
         if (SimVar.GetSimVarValue("L:A32NX_PRINTER_PRINTING", "bool") === 1) {
             SimVar.SetSimVarValue("L:A32NX_PAGES_PRINTED", "number", SimVar.GetSimVarValue("L:A32NX_PAGES_PRINTED", "number") + 1);
             SimVar.SetSimVarValue("L:A32NX_PRINT_PAGE_OFFSET", "number", 0);
         }
         SimVar.SetSimVarValue("L:A32NX_PRINT_LINES", "number", lines.length);
         SimVar.SetSimVarValue("L:A32NX_PAGE_ID", "number", SimVar.GetSimVarValue("L:A32NX_PAGE_ID", "number") + 1);
-        SimVar.SetSimVarValue("L:A32NX_PRINTER_PRINTING", "bool", 0);
-        setTimeout(() => {
-            SimVar.SetSimVarValue("L:A32NX_PRINTER_PRINTING", "bool", 1);
-            this.printing = false;
-        }, 2500);
+        SimVar.SetSimVarValue("L:A32NX_PRINTER_PRINTING", "bool", 0).then(v => {
+            this.fmgcMesssagesListener.triggerToAllSubscribers('A32NX_PRINT', formattedValues);
+            setTimeout(() => {
+                SimVar.SetSimVarValue("L:A32NX_PRINTER_PRINTING", "bool", 1);
+                this.printing = false;
+            }, 2500);
+        });
     }
 
     /* END OF MCDU AOC MESSAGE SYSTEM */
