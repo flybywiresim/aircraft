@@ -18,6 +18,8 @@ use uom::si::{
 
 use crate::simulation::UpdateContext;
 
+use crate::shared::low_pass_filter;
+
 pub trait Actuator {
     fn used_volume(&self) -> Volume;
     fn reservoir_return(&self) -> Volume;
@@ -1136,19 +1138,6 @@ mod tests {
         );
     }
 
-    fn cargo_door_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
-        LinearActuator::new(
-            bounded_linear_length,
-            2,
-            Length::new::<meter>(0.04422),
-            Length::new::<meter>(0.03366),
-            VolumeRate::new::<gallon_per_second>(0.008),
-            800000.,
-            15000.,
-            10000.,
-        )
-    }
-
     #[test]
     fn body_gravity_movement_if_unlocked() {
         let rigid_body = cargo_door_body(false);
@@ -1243,6 +1232,19 @@ mod tests {
         assert!(test_bed.query(|a| a.actuator_position()) < Ratio::new::<ratio>(0.22));
     }
 
+    fn cargo_door_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
+        LinearActuator::new(
+            bounded_linear_length,
+            2,
+            Length::new::<meter>(0.04422),
+            Length::new::<meter>(0.03366),
+            VolumeRate::new::<gallon_per_second>(0.008),
+            800000.,
+            15000.,
+            10000.,
+        )
+    }
+
     fn cargo_door_body(is_locked: bool) -> LinearActuatedRigidBodyOnHingeAxis {
         let size = Vector3::new(100. / 1000., 1855. / 1000., 2025. / 1000.);
         let cg_offset = Vector3::new(0., -size[1] / 2., 0.);
@@ -1258,6 +1260,40 @@ mod tests {
             anchor,
             Angle::new::<degree>(-23.),
             Angle::new::<degree>(136.),
+            100.,
+            is_locked,
+            Vector3::new(0., 0., 1.),
+        )
+    }
+
+    fn main_gear_door_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
+        LinearActuator::new(
+            bounded_linear_length,
+            1,
+            Length::new::<meter>(0.014),
+            Length::new::<meter>(0.0112),
+            VolumeRate::new::<gallon_per_second>(0.004),
+            20000.,
+            5000.,
+            2000.,
+        )
+    }
+
+    fn main_gear_door_right_body(is_locked: bool) -> LinearActuatedRigidBodyOnHingeAxis {
+        let size = Vector3::new(1.73, 0.03, 1.7);
+        let cg_offset = Vector3::new(2. / 3. * size[1], 0.2, 0.);
+
+        let control_arm = Vector3::new(0.5, 0., 0.);
+        let anchor = Vector3::new(0.2, 0.2, 0.);
+
+        LinearActuatedRigidBodyOnHingeAxis::new(
+            Mass::new::<kilogram>(40.),
+            size,
+            cg_offset,
+            control_arm,
+            anchor,
+            Angle::new::<degree>(90.),
+            Angle::new::<degree>(85.),
             100.,
             is_locked,
             Vector3::new(0., 0., 1.),
