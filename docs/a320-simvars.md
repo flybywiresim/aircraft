@@ -221,30 +221,13 @@
     - Bool
     - True if "HYD LEAK MEASUREMENT Y" switch lock is down
 
-- A32NX_LANDING_ELEVATION
-    - Number in feet
-    - Minimum -2000, maximum 15000
-
-- A32NX_MAN_VS_CONTROL
-    - Number, either 0,1 or 2
-    - 0 if switch is in up position, 1 if switch is neutral, 2 if switch is down.
-
-- A32NX_CAB_PRESS_MODE_MAN
-    - Bool
-    - True if CABIN PRESS MODE SEL is in manual mode
-
-- A32NX_CAB_PRESS_SYS_FAULT
-    - Bool
-    - Determines if the FAULT light on the CABIN PRESS MODE SEL pushbutton
-      should be on
-
 - A32NX_DESTINATION_QNH
     - Millibar
     - Destination QNH as entered by the pilot in the MCDU during descent
 
-- A32NX_DITCHING
-    - Bool
-    - True if DITCHING mode is enabled
+- A32NX_DEPARTURE_ELEVATION
+    - Feet
+    - Departure runway elevation as calculated by the FMC
 
 - A32NX_FWC_FLIGHT_PHASE
     - Enum
@@ -973,14 +956,6 @@
       0 | inactive
       1 | active
 
-- A32NX_MFD_MASK_OPACITY
-    - Number
-    - Current LCD mask opacity for MFDs, used for driving LCD display pixels effect
-
-- A32NX_MCDU_MASK_OPACITY
-    - Number
-    - Current LCD mask opacity for MCDU, used for driving MCDU display pixels effect
-
 - A32NX_ISIS_LS_ACTIVE
 	- Bool
 	- Indicates whether LS scales are shown on the ISIS
@@ -1050,7 +1025,26 @@
         - 8 + 1 | AFT BAGGAGE
         - 9 + 1 | AFT BULK/LOOSE
 
+- A32NX_MCDU_{side}_ANNUNC_{annunciator}
+    - Boolean
+    - Indicates whether the annunciator light on the MCDU is lit
+    - {side}
+        - L
+        - R
+    - {annunciator}
+        - FAIL
+        - FMGC
+        - MCDU_MENU
+        - FM1
+        - IND
+        - RDY
+        - FM2
+
 ## Fly-By-Wire System
+
+- A32NX_LOGGING_FLIGHT_CONTROLS_ENABLED
+    - Bool
+    - Indicates if logging of flight control events is enabled
 
 - A32NX_SIDESTICK_POSITION_X
     - Number
@@ -1083,6 +1077,10 @@
     - Number (0.0 -> 1.0)
     - Percentage of current (filtered) alpha to alpha max
     - alpha max can be overshoot so values beyond 1.0 should be expected
+
+- A32NX_BETA_TARGET
+    - Degrees
+    - Target beta (sideslip) in case of asymmetric thrust
 
 - A32NX_3D_AILERON_LEFT_DEFLECTION
     - Number
@@ -1644,6 +1642,10 @@ In the variables below, {number} should be replaced with one item in the set: { 
 
 ## Throttle Mapping System
 
+- A32NX_LOGGING_THROTTLES_ENABLED
+    - Bool
+    - Indicates if logging of throttle events is enabled
+
 - A32NX_THROTTLE_MAPPING_LOADED_CONFIG:{index}
     - Bool
     - Indicates if we are using a configured throttle mapping for throttle axis {index}, first axis has index 1
@@ -1798,6 +1800,49 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Ratio
     - Percent open of the cabin pressure outflow valve
 
+- A32NX_PRESS_SAFETY_VALVE_OPEN_PERCENTAGE
+    - Ratio
+    - Percent open of the cabin pressure safety valves
+
 - A32NX_PRESS_AUTO_LANDING_ELEVATION
     - Feet
     - Automatic landing elevation as calculated by the MCDU when a destination runway is entered
+
+- A32NX_PRESS_EXCESS_CAB_ALT
+    - Bool
+    - True when FWC condition for "EXCESS CAB ALT" is met
+
+- A32NX_PRESS_EXCESS_RESIDUAL_PR
+    - Bool
+    - True when FWC condition for "EXCES RESIDUAL PR" is met
+
+- A32NX_PRESS_LOW_DIFF_PR
+    - Bool
+    - True when FWC condition for "LO DIFF PR" is met
+
+- A32NX_OVHD_PRESS_LDG_ELEV_KNOB
+    - Feet
+    - Manual landing elevation as selected on the overhead LDG ELEV knob
+
+- A32NX_OVHD_PRESS_MAN_VS_CTL_SWITCH
+    - Number
+    - 0 if switch is in up position, 1 if switch is neutral, 2 if switch is down.
+
+- A32NX_OVHD_PRESS_MODE_SEL_PB_IS_AUTO
+    - Bool
+    - True if MODE SEL overhead pushbutton is depressed (in auto mode)
+
+- A32NX_OVHD_PRESS_MODE_SEL_PB_HAS_FAULT
+    - Bool
+    - True only when both Cabin Pressure Controller systems are faulty.
+
+- A32NX_OVHD_PRESS_DITCHING_PB_IS_ON
+    - Bool
+    - True if DITCHING pushbutton is pressed
+
+- A32NX_PACKS_{number}_IS_SUPPLYING
+    - Bool
+    - True if the corresponding pack is on and supplying air to the cabin
+    - {number}
+        - 1
+        - 2

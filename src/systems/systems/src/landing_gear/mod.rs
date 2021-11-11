@@ -1,3 +1,4 @@
+use crate::simulation::{InitContext, VariableIdentifier};
 use crate::{
     shared::{
         ElectricalBusType, ElectricalBuses, LandingGearRealPosition, LgciuGearExtension,
@@ -21,6 +22,13 @@ pub enum GearWheel {
 /// locked or down and locked. No in between state.
 /// It provides as well the state of all weight on wheel sensors
 pub struct LandingGear {
+    center_position_id: VariableIdentifier,
+    left_position_id: VariableIdentifier,
+    right_position_id: VariableIdentifier,
+    center_compression_id: VariableIdentifier,
+    left_compression_id: VariableIdentifier,
+    right_compression_id: VariableIdentifier,
+
     center_position: Ratio,
     left_position: Ratio,
     right_position: Ratio,
@@ -41,8 +49,15 @@ impl LandingGear {
     // Is extended at 0.5, we set a super small margin of 0.02 from fully extended so 0.52
     const COMPRESSION_THRESHOLD_FOR_WEIGHT_ON_WHEELS_RATIO: f64 = 0.52;
 
-    pub fn new() -> Self {
+    pub fn new(context: &mut InitContext) -> Self {
         Self {
+            center_position_id: context.get_identifier(Self::GEAR_CENTER_POSITION.to_owned()),
+            left_position_id: context.get_identifier(Self::GEAR_LEFT_POSITION.to_owned()),
+            right_position_id: context.get_identifier(Self::GEAR_RIGHT_POSITION.to_owned()),
+            center_compression_id: context.get_identifier(Self::GEAR_CENTER_COMPRESSION.to_owned()),
+            left_compression_id: context.get_identifier(Self::GEAR_LEFT_COMPRESSION.to_owned()),
+            right_compression_id: context.get_identifier(Self::GEAR_RIGHT_COMPRESSION.to_owned()),
+
             center_position: Ratio::new::<percent>(0.),
             left_position: Ratio::new::<percent>(0.),
             right_position: Ratio::new::<percent>(0.),
@@ -97,18 +112,13 @@ impl LandingGearRealPosition for LandingGear {
 }
 impl SimulationElement for LandingGear {
     fn read(&mut self, reader: &mut SimulatorReader) {
-        self.center_position = reader.read(LandingGear::GEAR_CENTER_POSITION);
-        self.left_position = reader.read(LandingGear::GEAR_LEFT_POSITION);
-        self.right_position = reader.read(LandingGear::GEAR_RIGHT_POSITION);
+        self.center_position = reader.read(&self.center_position_id);
+        self.left_position = reader.read(&self.left_position_id);
+        self.right_position = reader.read(&self.right_position_id);
 
-        self.center_compression = reader.read(LandingGear::GEAR_CENTER_COMPRESSION);
-        self.left_compression = reader.read(LandingGear::GEAR_LEFT_COMPRESSION);
-        self.right_compression = reader.read(LandingGear::GEAR_RIGHT_COMPRESSION);
-    }
-}
-impl Default for LandingGear {
-    fn default() -> Self {
-        Self::new()
+        self.center_compression = reader.read(&self.center_compression_id);
+        self.left_compression = reader.read(&self.left_compression_id);
+        self.right_compression = reader.read(&self.right_compression_id);
     }
 }
 
@@ -235,10 +245,8 @@ impl LgciuInterface for LandingGearControlInterfaceUnit {}
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::simulation::{
-        test::{SimulationTestBed, TestAircraft, TestBed},
-        Write,
-    };
+    use crate::simulation::test::{ElementCtorFn, WriteByName};
+    use crate::simulation::test::{SimulationTestBed, TestAircraft, TestBed};
 
     #[test]
     fn is_up_and_locked_returns_false_when_fully_down() {
@@ -324,10 +332,10 @@ mod tests {
     fn run_test_bed_on_with_position(
         position: Ratio,
     ) -> SimulationTestBed<TestAircraft<LandingGear>> {
-        let mut test_bed = SimulationTestBed::from(LandingGear::new());
-        test_bed.write(LandingGear::GEAR_CENTER_POSITION, position);
-        test_bed.write(LandingGear::GEAR_LEFT_POSITION, position);
-        test_bed.write(LandingGear::GEAR_RIGHT_POSITION, position);
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(LandingGear::new));
+        test_bed.write_by_name(LandingGear::GEAR_CENTER_POSITION, position);
+        test_bed.write_by_name(LandingGear::GEAR_LEFT_POSITION, position);
+        test_bed.write_by_name(LandingGear::GEAR_RIGHT_POSITION, position);
 
         test_bed.run();
 
@@ -339,10 +347,10 @@ mod tests {
         center: Ratio,
         right: Ratio,
     ) -> SimulationTestBed<TestAircraft<LandingGear>> {
-        let mut test_bed = SimulationTestBed::from(LandingGear::new());
-        test_bed.write(LandingGear::GEAR_LEFT_COMPRESSION, left);
-        test_bed.write(LandingGear::GEAR_CENTER_COMPRESSION, center);
-        test_bed.write(LandingGear::GEAR_RIGHT_COMPRESSION, right);
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(LandingGear::new));
+        test_bed.write_by_name(LandingGear::GEAR_LEFT_COMPRESSION, left);
+        test_bed.write_by_name(LandingGear::GEAR_CENTER_COMPRESSION, center);
+        test_bed.write_by_name(LandingGear::GEAR_RIGHT_COMPRESSION, right);
 
         test_bed.run();
 
