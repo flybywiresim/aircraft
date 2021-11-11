@@ -80,6 +80,8 @@ class FlyByWireInterface {
 
   bool disableXboxCompatibilityRudderAxisPlusMinus = false;
 
+  bool clientDataEnabled = false;
+
   FlightDataRecorder flightDataRecorder;
 
   SimConnectInterface simConnectInterface;
@@ -101,6 +103,9 @@ class FlyByWireInterface {
   athr_output autoThrustOutput;
 
   InterpolatingLookupTable throttleLookupTable;
+
+  std::unique_ptr<LocalVariable> idLoggingFlightControlsEnabled;
+  std::unique_ptr<LocalVariable> idLoggingThrottlesEnabled;
 
   std::unique_ptr<LocalVariable> idPerformanceWarningActive;
 
@@ -132,6 +137,9 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idFlightDirectorBank;
   std::unique_ptr<LocalVariable> idFlightDirectorPitch;
   std::unique_ptr<LocalVariable> idFlightDirectorYaw;
+
+  std::unique_ptr<LocalVariable> idBetaTarget;
+  std::unique_ptr<LocalVariable> idBetaTargetActive;
 
   std::unique_ptr<LocalVariable> idAutopilotAutolandWarning;
 

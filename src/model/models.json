@@ -52,10 +52,6 @@
         "bin": "./printer/print-torn.bin"
       },
       {
-        "gltf": "./glass/glass.gltf",
-        "bin": "./glass/glass.bin"
-      },
-      {
         "gltf": "./cup/cup.gltf",
         "bin": "./cup/cup.bin"
       },
@@ -78,6 +74,10 @@
       {
         "gltf": "./buttondecals/buttondecals.gltf",
         "bin": "./buttondecals/buttondecals.bin"
+      },
+      {
+        "gltf": "./mcdu-annunc/mcdu-annunc.gltf",
+        "bin": "./mcdu-annunc/mcdu-annunc.bin"
       }
     ],
     "modifications": [
@@ -793,6 +793,77 @@
       {
         "gltf": "./fx_exhaust_apu/fx_exhaust_apu.gltf",
         "bin": "./fx_exhaust_apu/fx_exhaust_apu.bin"
+      },
+      {
+        "combineFiles": ["./a320-exterior/A320_NEO_LOD00.gltf"],
+        "nodes": [
+          {
+            "translation": [-1.81209111, 1.94373608, -3.108832359313965],
+            "rotation": [0.0, 0.0, 0.0, 1.0],
+            "scale": [0.009609489, 0.009609489, 0.009609489],
+            "mesh": "x0_HublotIn",
+            "name": "HublotIn003"
+          },
+          {
+            "translation": [-1.81209111, 1.94373608, -7.9187912940979],
+            "rotation": [0.0, 0.0, 0.0, 1.0],
+            "scale": [0.009609489, 0.009609489, 0.009609489],
+            "mesh": "x0_HublotIn",
+            "name": "HublotIn004"
+          },
+          {
+            "translation": [-1.86640084, 2.17727923, -3.1645054817199707],
+            "rotation": [
+              4.93009722e-8,
+              -4.93009722e-8,
+              0.953716934,
+              0.30070582
+            ],
+            "scale": [1.0, 1.0, 1.0],
+            "mesh": "x0_glass",
+            "name": "glass003"
+          },
+          {
+            "translation": [-1.86640084, 2.17727923, -7.963076591491699],
+            "rotation": [
+              4.93009722e-8,
+              -4.93009722e-8,
+              0.953716934,
+              0.30070582
+            ],
+            "scale": [1.0, 1.0, 1.0],
+            "mesh": "x0_glass",
+            "name": "glass004"
+          },
+          {
+            "translation": [1.81355882, 1.94373608, -3.1946215629577637],
+            "rotation": [0.0, -1.0, 0.0, -7.54979e-8],
+            "scale": [0.009609489, 0.009609489, 0.009609489],
+            "mesh": "x0_HublotIn002",
+            "name": "HublotIn005"
+          },
+          {
+            "translation": [1.81355882, 1.94373608, 0.6726460456848145],
+            "rotation": [0.0, -1.0, 0.0, -7.54979e-8],
+            "scale": [0.009609489, 0.009609489, 0.009609489],
+            "mesh": "x0_HublotIn002",
+            "name": "HublotIn006"
+          },
+          {
+            "translation": [1.967343, 1.84899247, -3.1452555656433105],
+            "rotation": [0.0, 0.0, 0.0, 1.0],
+            "scale": [1.0, 1.0, 1.0],
+            "mesh": "x0_glass002",
+            "name": "glass005"
+          },
+          {
+            "translation": [1.967343, 1.84899247, 0.729894757270813],
+            "rotation": [0.0, 0.0, 0.0, 1.0],
+            "scale": [1.0, 1.0, 1.0],
+            "mesh": "x0_glass002",
+            "name": "glass006"
+          }
+        ]
       }
     ],
     "modifications": [

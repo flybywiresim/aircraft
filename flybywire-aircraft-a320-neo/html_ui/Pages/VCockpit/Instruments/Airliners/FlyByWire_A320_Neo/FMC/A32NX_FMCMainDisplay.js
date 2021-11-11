@@ -23,7 +23,6 @@ class FMCMainDisplay extends BaseAirliners {
         this.routeIndex = undefined;
         this.coRoute = undefined;
         this.tmpOrigin = undefined;
-        this.transitionAltitude = undefined;
         this.perfTOTemp = undefined;
         this._overridenFlapApproachSpeed = undefined;
         this._overridenSlatApproachSpeed = undefined;
@@ -83,6 +82,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.engineOutAccelerationAltitude = undefined;
         this.engineOutAccelerationAltitudeGoaround = undefined;
         this.engineOutAccelerationAltitudeIsPilotEntered = undefined;
+        this.transitionAltitude = undefined;
         this.transitionAltitudeIsPilotEntered = undefined;
         this._windDirections = undefined;
         this._fuelPlanningPhases = undefined;
@@ -169,9 +169,8 @@ class FMCMainDisplay extends BaseAirliners {
         this.blockFuel = undefined;
         this.zeroFuelWeight = undefined;
         this.zeroFuelWeightMassCenter = undefined;
-        this.gpsPrimaryLostMessageAcknowledged = false;
-        this.gpsPrimaryMessageAcknowledged = false;
         this.activeWpIdx = undefined;
+        this.previousAdirsStatus = undefined;
     }
 
     Init() {
@@ -290,7 +289,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.perfApprTemp = NaN;
         this.perfApprWindHeading = NaN;
         this.perfApprWindSpeed = NaN;
-        this.perfApprTransAlt = NaN;
+        this.perfApprTransAlt = 10000;
         this.perfApprTransAltPilotEntered = false;
         this.v1Speed = undefined;
         this.vRSpeed = undefined;
@@ -466,12 +465,14 @@ class FMCMainDisplay extends BaseAirliners {
         this.blockFuel = undefined;
         this.zeroFuelWeight = undefined;
         this.zeroFuelWeightMassCenter = undefined;
+        this.previousAdirsStatus = undefined;
 
         // Reset SimVars
         SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", NaN);
         SimVar.SetSimVarValue("L:AIRLINER_V2_SPEED", "Knots", NaN);
         SimVar.SetSimVarValue("L:AIRLINER_VR_SPEED", "Knots", NaN);
-        SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", 0);
+        SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", this.transitionAltitude);
+        SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", this.perfApprTransAlt);
 
         CDUPerformancePage.UpdateThrRedAccFromOrigin(this, true, true);
         CDUPerformancePage.UpdateEngOutAccFromOrigin(this);
@@ -990,28 +991,25 @@ class FMCMainDisplay extends BaseAirliners {
         this.approachSpeeds.valid = this.currentFlightPhase >= FmgcFlightPhases.APPROACH || isFinite(weight);
     }
 
+    // updateGPSMessage is called every 250ms, only call addNewMessage when the status changed, anything else confuses the message system
     updateGPSMessage() {
-        if (SimVar.GetSimVarValue("L:A32NX_ADIRS_USES_GPS_AS_PRIMARY", "Bool")) {
-            this.gpsPrimaryLostMessageAcknowledged = false;
-        } else {
-            this.gpsPrimaryMessageAcknowledged = false;
+        const currentAdirsStatus = SimVar.GetSimVarValue("L:A32NX_ADIRS_USES_GPS_AS_PRIMARY", "Bool");
+
+        if (currentAdirsStatus !== this.previousAdirsStatus) {
+            this.previousAdirsStatus = currentAdirsStatus;
+            SimVar.SetSimVarValue("L:GPSPrimaryAcknowledged", "Bool", 0);
+
+            this.addNewMessage(
+                NXSystemMessages.gpsPrimary,
+                () => !SimVar.GetSimVarValue("L:A32NX_ADIRS_USES_GPS_AS_PRIMARY", "Bool"),
+                () => SimVar.SetSimVarValue("L:GPSPrimaryAcknowledged", "Bool", 1)
+            );
+
+            this.addNewMessage(
+                NXSystemMessages.gpsPrimaryLost,
+                () => SimVar.GetSimVarValue("L:A32NX_ADIRS_USES_GPS_AS_PRIMARY", "Bool")
+            );
         }
-
-        this.addNewMessage(NXSystemMessages.gpsPrimary, () => {
-            return this.gpsPrimaryMessageAcknowledged ||
-                !SimVar.GetSimVarValue("L:A32NX_ADIRS_USES_GPS_AS_PRIMARY", "Bool");
-        }, () => {
-            this.gpsPrimaryMessageAcknowledged = true;
-        });
-
-        this.addNewMessage(NXSystemMessages.gpsPrimaryLost, () => {
-            return this.gpsPrimaryLostMessageAcknowledged ||
-                SimVar.GetSimVarValue("L:A32NX_ADIRS_USES_GPS_AS_PRIMARY", "Bool");
-        }, () => {
-            this.gpsPrimaryLostMessageAcknowledged = true;
-        });
-
-        SimVar.SetSimVarValue("L:GPSPrimaryAcknowledged", "Bool", this.gpsPrimaryMessageAcknowledged);
     }
 
     updateDisplayedConstraints(force = false) {
@@ -1570,6 +1568,7 @@ class FMCMainDisplay extends BaseAirliners {
             const currentRunway = this.flightPlanManager.getDepartureRunway();
             this.flightPlanManager.setDepartureProcIndex(departureIndex, () => {
                 if (currentRunway) {
+                    SimVar.SetSimVarValue("L:A32NX_DEPARTURE_ELEVATION", "feet", A32NX_Util.meterToFeet(currentRunway.elevation));
                     const departure = this.flightPlanManager.getDeparture();
                     const departureRunwayIndex = departure.runwayTransitions.findIndex(t => {
                         return t.name.indexOf(currentRunway.designation) !== -1;
@@ -2011,7 +2010,8 @@ class FMCMainDisplay extends BaseAirliners {
 
     trySetTakeOffTransAltitude(s) {
         if (s === FMCMainDisplay.clrValue) {
-            this.transitionAltitude = NaN;
+            // TODO when possible fetch default from database
+            this.transitionAltitude = this.transitionAltitudeIsPilotEntered ? 10000 : NaN;
             this.transitionAltitudeIsPilotEntered = false;
             SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", 0);
             return true;
@@ -2033,15 +2033,6 @@ class FMCMainDisplay extends BaseAirliners {
         this.transitionAltitudeIsPilotEntered = true;
         SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", value);
         return true;
-    }
-
-    getTransitionAltitude() {
-        if (isFinite(this.transitionAltitude)) {
-            return this.transitionAltitude;
-        }
-
-        // TODO fetch this from the nav database once we have it in future
-        return 10000;
     }
 
     //Needs PR Merge #3082
@@ -2804,9 +2795,10 @@ class FMCMainDisplay extends BaseAirliners {
 
     setPerfApprTransAlt(s) {
         if (s === FMCMainDisplay.clrValue) {
-            this.perfApprTransAlt = NaN;
+            // TODO when possible fetch default from database
+            this.perfApprTransAlt = this.perfApprTransAltPilotEntered ? 10000 : NaN;
             this.perfApprTransAltPilotEntered = false;
-            SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", 0);
+            SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", this.perfApprTransAlt);
             return true;
         }
 
@@ -3467,7 +3459,7 @@ class FMCMainDisplay extends BaseAirliners {
                                 runway.length / 2 / 1852, // TODO unit conversion lib
                                 runway.latitude, runway.longitude
                             );
-                            return onSuccess(adjustedCoordinates, Facilities.getMagVar(adjustedCoordinates));
+                            return onSuccess(adjustedCoordinates, Facilities.getMagVar(adjustedCoordinates.lat, adjustedCoordinates.long));
                         }
                     }
                     return onError(NXSystemMessages.notInDatabase);
@@ -3513,7 +3505,7 @@ class FMCMainDisplay extends BaseAirliners {
             const lat = (latD + latM / 60) * (latB === "S" ? -1 : 1);
             const lon = (lonD + lonM / 60) * (lonB === "W" ? -1 : 1);
             const ll = new LatLongAlt(lat, lon);
-            return onSuccess(ll, Facilities.getMagVar(ll));
+            return onSuccess(ll, Facilities.getMagVar(ll.lat, ll.long));
         }
         return onError(NXSystemMessages.formatError);
     }
@@ -3539,7 +3531,7 @@ class FMCMainDisplay extends BaseAirliners {
         } else {
             this.getOrSelectWaypointByIdent(place, (waypoint) => {
                 if (waypoint) {
-                    return onSuccess(waypoint.infos.coordinates, waypoint.infos.magneticVariation || Facilities.getMagVar(waypoint.infos.coordinates));
+                    return onSuccess(waypoint.infos.coordinates, waypoint.infos.magneticVariation || Facilities.getMagVar(waypoint.infos.coordinates.lat, waypoint.infos.coordinates.long));
                 } else {
                     return onError(NXSystemMessages.notInDatabase);
                 }
