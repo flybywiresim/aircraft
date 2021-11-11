@@ -1,5 +1,18 @@
 @import "./definitions.scss";
 
+@mixin GenericPulsingStroke($color) {
+    @keyframes pulsing {
+      0% {stroke: scale-color($color, $lightness: -30%);}
+      50% {stroke: scale-color($color, $lightness: -30%);}
+      51% {stroke: scale-color($color, $lightness: 30%);}
+      100% {stroke: scale-color($color, $lightness: 30%);}
+    }
+    animation-name: pulsing;
+    animation-duration: 1s;
+    animation-iteration-count: infinite;
+  }
+
+
 .GaugeComponent {
     .Show {
         display:block;
@@ -24,5 +37,10 @@
         stroke: $display-green;
         stroke-width: 3;
         fill: none;
+    }
+
+    .GreenPulseIndicator {
+        @include GenericPulsingStroke($display-green);
+        stroke-width: 3;
     }
 }

@@ -13,7 +13,6 @@ import './Press.scss';
 setIsEcamPage('press_page');
 
 export const PressPage: FC = () => {
-    const [cabinVs] = useSimVar('L:A32NX_PRESS_CABIN_VS', 'feet per minute', 500);
     const [cabinAlt] = useSimVar('L:A32NX_PRESS_CABIN_ALTITUDE', 'feet', 500);
     const [deltaPsi] = useSimVar('L:A32NX_PRESS_CABIN_DELTA_PRESSURE', 'psi', 500);
     const [flightPhase] = useSimVar('L:A32NX_FWC_FLIGHT_PHASE', 'enum', 1000);
@@ -21,7 +20,6 @@ export const PressPage: FC = () => {
     const [safetyValve] = useSimVar("L:A32NX_PRESS_SAFETY_VALVE_OPEN_PERCENTAGE", 'percentage', 500);
 
     const deltaPress = splitDecimals(deltaPsi);
-    const vsx = 275;
     const cax = 455;
     const dpx = 110;
     const y = 165;
@@ -37,7 +35,7 @@ export const PressPage: FC = () => {
             <SystemComponent id={1} x={180} y={290} visible={systemNumber === 1} />
             <SystemComponent id={2} x={350} y={290} visible={systemNumber === 2} />
 
-            {/* Delta pressure gauge  */}
+            {/* Delta pressure gauge */}
             <g id="DeltaPressure">
                 <text className="Large Center" x={dpx - 5} y="80">@P</text>
                 <text className="Medium Center Cyan" x={dpx - 5} y="100">PSI</text>
@@ -77,31 +75,8 @@ export const PressPage: FC = () => {
                 </GaugeComponent>
             </g>
 
-            {/* Vertical speed gauge */}
-            <g id="VsIndicator">
-                <text className="Large Center" x={vsx + 15} y="80">V/S</text>
-                <text className="Medium Center Cyan" x={vsx + 20} y="100">FT/MIN</text>
-                <text className="Huge Green End" x={vsx + 85} y={y + 5}>{Math.round(cabinVs / 50) * 50}</text>
-                <GaugeComponent x={vsx} y={y} radius={radius} startAngle={170} endAngle={10} visible className="Gauge">
-                    <GaugeMarkerComponent value={2} x={vsx} y={y} min={-2} max={2} radius={radius} startAngle={180} endAngle={0} className="GaugeText" showValue textNudgeY={10} />
-                    <GaugeMarkerComponent value={1} x={vsx} y={y} min={-2} max={2} radius={radius} startAngle={180} endAngle={0} className="GaugeText" />
-                    <GaugeMarkerComponent value={0} x={vsx} y={y} min={-2} max={2} radius={radius} startAngle={180} endAngle={0} className="GaugeText" showValue textNudgeX={10}/>
-                    <GaugeMarkerComponent value={-1} x={vsx} y={y} min={-2} max={2} radius={radius} startAngle={180} endAngle={0} className="GaugeText" />
-                    <GaugeMarkerComponent value={-2} x={vsx} y={y} min={-2} max={2} radius={radius} startAngle={180} endAngle={0} className="GaugeText" showValue textNudgeY={-10} />
-                    <GaugeMarkerComponent
-                        value={Math.abs((cabinVs / 50 * 50) / 1000) <= 2.25 ? (cabinVs / 50 * 50) / 1000 : 2.250}
-                        x={vsx}
-                        y={y}
-                        min={-2}
-                        max={2}
-                        radius={radius}
-                        startAngle={180}
-                        endAngle={0}
-                        className="GaugeIndicator"
-                        indicator
-                    />
-                </GaugeComponent>
-            </g>
+            {/* Vertical speed gauge  */}
+            <CabinVerticalSpeedComponent vsx={275} y={y} radius={radius} />
 
             {/* Cabin altitude gauge */}
             <g id="CaIndicator">
@@ -196,6 +171,45 @@ export const PressPage: FC = () => {
     );
 };
 
+type CabinVerticalSpeedComponentType = {
+    vsx: number,
+    y: number,
+    radius: number
+}
+
+const CabinVerticalSpeedComponent: FC<CabinVerticalSpeedComponentType> = ({vsx, y, radius}) => {
+    const [cabinVs] = useSimVar('L:A32NX_PRESS_CABIN_VS', 'feet per minute', 500);
+
+    return (
+        <>
+            <g id="VsIndicator" >
+                <text className="Large Center" x={vsx + 15} y="80">V/S</text>
+                <text className="Medium Center Cyan" x={vsx + 20} y="100">FT/MIN</text>
+                <text className="Huge Green End" x={vsx + 85} y={y + 5}>{Math.round(cabinVs / 50) * 50}</text>
+                <GaugeComponent x={vsx} y={y} radius={radius} startAngle={170} endAngle={10} visible className="Gauge">
+                    <GaugeMarkerComponent value={2} x={vsx} y={y} min={-2} max={2} radius={radius} startAngle={180} endAngle={0} className="GaugeText" showValue textNudgeY={10} />
+                    <GaugeMarkerComponent value={1} x={vsx} y={y} min={-2} max={2} radius={radius} startAngle={180} endAngle={0} className="GaugeText" />
+                    <GaugeMarkerComponent value={0} x={vsx} y={y} min={-2} max={2} radius={radius} startAngle={180} endAngle={0} className="GaugeText" showValue textNudgeX={10}/>
+                    <GaugeMarkerComponent value={-1} x={vsx} y={y} min={-2} max={2} radius={radius} startAngle={180} endAngle={0} className="GaugeText" />
+                    <GaugeMarkerComponent value={-2} x={vsx} y={y} min={-2} max={2} radius={radius} startAngle={180} endAngle={0} className="GaugeText" showValue textNudgeY={-10} />
+                    <GaugeMarkerComponent
+                        value={Math.abs((cabinVs / 50 * 50) / 1000) <= 2.25 ? (cabinVs / 50 * 50) / 1000 : 2.250}
+                        x={vsx}
+                        y={y}
+                        min={-2}
+                        max={2}
+                        radius={radius}
+                        startAngle={180}
+                        endAngle={0}
+                        className="GaugeIndicator"
+                        indicator
+                    />
+                </GaugeComponent>
+            </g>
+        </>
+    );
+};
+
 const PressureComponent = () => {
     const [landingElevDialPosition] = useSimVar('L:XMLVAR_KNOB_OVHD_CABINPRESS_LDGELEV', 'number', 100);
     const [landingRunwayElevation] = useSimVar('L:A32NX_PRESS_AUTO_LANDING_ELEVATION', 'feet', 1000);
@@ -265,7 +279,7 @@ type PackComponentType = {
     y: number
 }
 
-const PackComponent = ({ id, x, y }: PackComponentType) => {
+const PackComponent: FC<PackComponentType> = ({ id, x, y }) => {
     const [engN2] = useSimVar(`L:A32NX_ENGINE_N2:${id}`, 'number', 500);
     const [packOff] = useSimVar(`L:A32NX_AIRCOND_PACK${id}_TOGGLE`, 'bool', 500);
     const triangleColour = !packOff && engN2 >= 60 ? 'Amber' : 'Green';
@@ -368,7 +382,7 @@ type OverboardInletComponentType = {
     flightPhase: number,
 }
 
-const OverboardInletComponent = ({ validSDAC, flightPhase }: OverboardInletComponentType) => {
+const OverboardInletComponent: FC<OverboardInletComponentType> = ({ validSDAC, flightPhase }) => {
     const [realInletValvePosition] = useSimVar("L:VENT_INLET_VALVE", "Percent", 500);
     let indicator = true;
     let classNameValue = 'GreenLine';
@@ -423,7 +437,7 @@ type OverboardOutletComponentType = {
     flightPhase: number,
 }
 
-const OverboardOutletComponent = ({ validSDAC, flightPhase }: OverboardOutletComponentType) => {
+const OverboardOutletComponent: FC<OverboardOutletComponentType> = ({ validSDAC, flightPhase }) => {
     const [realOutletValvePosition] = useSimVar("L:VENT_OUTLET_VALVE", "Percent", 500);
     let indicator = true;
     let classNameValue = 'GreenLine';
