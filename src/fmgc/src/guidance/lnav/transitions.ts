@@ -3,7 +3,13 @@ import { Guidable } from '@fmgc/guidance/Geometry';
 export abstract class Transition implements Guidable {
     abstract isAbeam(ppos: LatLongData): boolean;
 
+    recomputeWithParameters(_tas: Knots) {
+        // Default impl.
+    }
+
     abstract getGuidanceParameters(ppos: LatLongData, trueTrack: Degrees);
+
+    abstract getPseudoWaypointLocation(distanceBeforeTerminator: NauticalMiles): LatLongData | undefined;
 
     abstract getNominalRollAngle(gs): Degrees;
 
@@ -11,7 +17,7 @@ export abstract class Transition implements Guidable {
 
     abstract getDistanceToGo(ppos: LatLongData);
 
-    abstract getTrackDistanceToTerminationPoint(ppos: LatLongData): NauticalMiles;
+    abstract getTurningPoints(): [LatLongData, LatLongData];
 
-    abstract getTurningPoints(): [LatLongData, LatLongData]
+    abstract get distance(): NauticalMiles;
 }

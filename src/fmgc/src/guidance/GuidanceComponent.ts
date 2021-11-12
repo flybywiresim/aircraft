@@ -6,6 +6,11 @@ export interface GuidanceComponent {
 
     update(deltaTime: number): void;
 
-    acceptNewMultipleLegGeometry(geometry: Geometry): void;
+    /**
+     * Callback invoked when the FMS decides to generate new multiple leg geometry
+     *
+     * @param geometry the new multiple leg geometry
+     */
+    acceptMultipleLegGeometry?(geometry: Geometry): void;
 
 }

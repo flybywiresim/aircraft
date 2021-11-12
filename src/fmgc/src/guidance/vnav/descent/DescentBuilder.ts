@@ -16,7 +16,13 @@ export class DescentBuilder {
             console.log(verticalDistance);
         }
 
-        return { tod: decelPath.decel + (verticalDistance / Math.tan((fpa * Math.PI) / 180)) * 0.000164579 };
+        const tod = decelPath.decel + (verticalDistance / Math.tan((fpa * Math.PI) / 180)) * 0.000164579;
+
+        if (DEBUG) {
+            console.log(`[FMS/VNAV] T/D: ${tod.toFixed(1)}nm`);
+        }
+
+        return { tod };
 
         //     const decelPointDistance = DecelPathBuilder.computeDecelPath(geometry);
         //

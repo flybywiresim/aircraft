@@ -4,7 +4,7 @@ import { SegmentType } from '@fmgc/wtsdk';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 
 // TODO needs updated with wind prediction, and maybe local magvar if following for longer distances
-export class VMLeg implements Leg {
+export class VMLeg extends Leg {
     // FIXME this is not really a thing, but it's temporary, ok ? I promise !
     public initialPosition: Coordinates;
 
@@ -12,11 +12,8 @@ export class VMLeg implements Leg {
 
     public initialCourse: Degrees;
 
-    public segment: SegmentType;
-
-    public indexInFullPath: number;
-
     constructor(heading: Degrees, initialPosition: Coordinates, initialCourse: Degrees, segment: SegmentType, indexInFullPath: number) {
+        super();
         this.heading = heading;
         this.initialPosition = initialPosition;
         this.initialCourse = initialCourse;
