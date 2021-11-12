@@ -1,15 +1,30 @@
 import { connect } from 'react-redux';
-import React, { useEffect, useState } from 'react';
-import { IconCornerDownLeft, IconCornerDownRight, IconArrowDown, IconHandStop, IconTruck, IconBriefcase, IconBuildingArch, IconArchive, IconPlug, IconTir } from '@tabler/icons';
+import React, { useCallback, useEffect, useState } from 'react';
+import {
+    IconArchive,
+    IconArrowDown,
+    IconBriefcase,
+    IconBuildingArch,
+    IconCornerDownLeft,
+    IconCornerDownRight,
+    IconHandStop,
+    IconPlug,
+    IconTir,
+    IconTruck,
+} from '@tabler/icons';
 import './Ground.scss';
 import { useSimVar, useSplitSimVar } from '../../Common/simVars';
 import Button, { BUTTON_TYPE } from '../Components/Button/Button';
 import { DoorToggle } from './DoorToggle';
 import { BUTTON_STATE_REDUCER } from '../Store';
 import {
-    addActiveButton, removeActiveButton, setTugRequestOnly,
-    setActiveButtons, addDisabledButton, removeDisabledButton,
+    addActiveButton,
+    addDisabledButton,
+    removeActiveButton,
+    removeDisabledButton,
+    setActiveButtons,
     setPushBackWaitTimerHandle,
+    setTugRequestOnly,
 } from '../Store/action-creator/ground-state';
 
 import fuselage from '../Assets/320neo-outline-upright.svg';
@@ -44,6 +59,19 @@ export const Ground = ({
 
     const STATE_WAITING = 'WAITING';
     const STATE_ACTIVE = 'ACTIVE';
+
+    const computeAndSetTugHeading = useCallback((direction: number) => {
+        if (tugRequestOnly) {
+            setTugRequestOnly(false);
+        }
+        const heading = (tugHeading + direction) % 360;
+        // KEY_TUG_HEADING is an unsigned integer, so let's convert
+        /* eslint no-bitwise: ["error", { "allow": ["&"] }] */
+        setPushBackWait(0);
+        setTugHeading((heading * 11930465) & 0xffffffff);
+        setTugDirection(direction);
+    }, [setPushBackWait, setTugHeading, setTugRequestOnly, tugHeading, tugRequestOnly]);
+
     /**
      * allows a direction to be selected directly
      * rather than first backwards and after that the direction
@@ -65,21 +93,7 @@ export const Ground = ({
             clearInterval(pushBackWaitTimerHandle);
             setPushBackWaitTimerHandle(-1);
         }
-    }, [pushBack, tugDirection, activeButtons, pushBackWaitTimerHandle, tugRequestOnly, pushBack, tugDirection]);
-
-    const getTugHeading = (value: number): number => (tugHeading + value) % 360;
-
-    const computeAndSetTugHeading = (direction: number) => {
-        if (tugRequestOnly) {
-            setTugRequestOnly(false);
-        }
-        const tugHeading = getTugHeading(direction);
-        // KEY_TUG_HEADING is an unsigned integer, so let's convert
-        /* eslint no-bitwise: ["error", { "allow": ["&"] }] */
-        setPushBackWait(0);
-        setTugHeading((tugHeading * 11930465) & 0xffffffff);
-        setTugDirection(direction);
-    };
+    }, [pushBack, tugDirection, activeButtons, pushBackWaitTimerHandle, tugRequestOnly, computeAndSetTugHeading, setPushBackWaitTimerHandle, setPushBackWait]);
 
     const togglePushback = (callOnly: boolean = false) => {
         setPushBack(!pushBack);

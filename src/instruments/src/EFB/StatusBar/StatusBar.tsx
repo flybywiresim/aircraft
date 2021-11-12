@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { IconAccessPoint, IconBattery4, IconPower } from '@tabler/icons';
 import { connect } from 'react-redux';
 import { efbClearState } from '../Store/action-creator/efb';
@@ -44,14 +44,14 @@ const StatusBar = (props: StatusBarProps) => {
 
     const Power = useContext(PowerContext);
 
-    function calculateTimeSinceStart(currentTime: Date) {
+    const calculateTimeSinceStart = useCallback((currentTime: Date) => {
         const diff = currentTime.getTime() - props.initTime.getTime();
         const minutes = Math.floor(diff / 1000 / 60);
         const diffMinusMinutes = diff - (minutes * 1000 * 60);
         const seconds = Math.floor(diffMinusMinutes / 1000);
 
         return formatTime(([minutes, seconds]));
-    }
+    }, [props.initTime]);
 
     useEffect(() => {
         setInterval(() => {
@@ -63,7 +63,7 @@ const StatusBar = (props: StatusBarProps) => {
         }, 1000);
 
         return () => clearInterval();
-    }, []);
+    }, [calculateTimeSinceStart, props]);
 
     const { efbClearState } = props;
 

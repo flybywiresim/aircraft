@@ -16,7 +16,9 @@ const GroundSpeedAuto = ({ groundSpeedData, currentAltitude, setTodGroundSpeed, 
     let [simGroundSpeed] = useSimVar('GPS GROUND SPEED', 'knots', 1_000);
     simGroundSpeed = round(simGroundSpeed);
 
-    const setCurrentGroundSpeed = () => {
+    const { groundSpeed } = last(groundSpeedData);
+
+    useEffect(() => {
         if (currentAltitude > 10000 && groundSpeed >= 250) {
             setTodGroundSpeed(0, { from: 0, groundSpeed: 250 });
             setTodGroundSpeed(1, { from: 10000, groundSpeed: simGroundSpeed });
@@ -24,13 +26,7 @@ const GroundSpeedAuto = ({ groundSpeedData, currentAltitude, setTodGroundSpeed, 
             setTodGroundSpeed(0, { from: 0, groundSpeed: simGroundSpeed > 0 ? simGroundSpeed : '' });
             removeTodGroundSpeed(1);
         }
-    };
-
-    useEffect(() => {
-        setCurrentGroundSpeed();
-    }, [currentAltitude, simGroundSpeed]);
-
-    const { groundSpeed } = last(groundSpeedData);
+    }, [currentAltitude, groundSpeed, removeTodGroundSpeed, setTodGroundSpeed, simGroundSpeed]);
 
     if (isNaN(groundSpeed)) {
         return null;

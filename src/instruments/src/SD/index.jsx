@@ -43,7 +43,7 @@ const Idle = () => {
     );
 };
 
-function SD() {
+const SD = () => {
     const [state, setState] = useState('DEFAULT');
 
     useUpdate((_deltaTime) => {
@@ -78,6 +78,6 @@ function SD() {
     default:
         throw new RangeError();
     }
-}
+};
 
 ReactDOM.render(<SD />, renderTarget);

@@ -101,6 +101,7 @@ const offsetFrequencyChannel = (spacing: ChannelSpacing, channel: number, offset
  */
 export const StandbyFrequency:React.FC<Props> = ({ side, value, setValue }) => {
     const spacing = usePersistentProperty('RMP_VHF_SPACING_25KHZ', '0')[0] === '0' ? 8.33 : 25;
+
     // Handle outer knob turned.
     const outerKnobUpdateCallback: UpdateValueCallback = useCallback((offset) => {
         const frequency = Math.round(value / 1000);
@@ -126,7 +127,7 @@ export const StandbyFrequency:React.FC<Props> = ({ side, value, setValue }) => {
         const maxDecimal = integer === 136 ? 975 : 1000;
         const newDecimal = Utils.Clamp(decimal, 0, maxDecimal);
         setValue((integer * 1000 + newDecimal) * 1000);
-    }, [value, setValue]);
+    }, [value, spacing, setValue]);
 
     // Used to change integer value of freq.
     const outerKnob = useRef(new RateMultiplierKnob());

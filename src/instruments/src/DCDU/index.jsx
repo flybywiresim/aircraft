@@ -57,7 +57,7 @@ const Idle = () => {
     );
 };
 
-function DCDU() {
+const DCDU = () => {
     const [state, setState] = useState('DEFAULT');
 
     useUpdate((_deltaTime) => {
@@ -116,6 +116,6 @@ function DCDU() {
     default:
         throw new RangeError();
     }
-}
+};
 
 ReactDOM.render(<DCDU />, renderTarget);

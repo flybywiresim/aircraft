@@ -1,5 +1,5 @@
 import { connect } from 'react-redux';
-import React, { useEffect } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { round } from 'lodash';
 import Input from '../../Components/Form/Input/Input';
 import Card from '../../Components/Card/Card';
@@ -38,11 +38,11 @@ const Data = ({
         [TOD_CALCULATION_TYPE.FLIGHT_PATH_ANGLE]: pitchAngle,
     })[calculationType] || undefined;
 
-    const inputValid = (type: TOD_CALCULATION_TYPE, input) => ({
+    const inputValid = useCallback((type: TOD_CALCULATION_TYPE, input) => ({
         [TOD_CALCULATION_TYPE.DISTANCE]: input > 0,
         [TOD_CALCULATION_TYPE.VERTICAL_SPEED]: input < -50,
         [TOD_CALCULATION_TYPE.FLIGHT_PATH_ANGLE]: !!trkModeActive && input < 0,
-    })[type];
+    })[type], [trkModeActive]);
 
     useEffect(() => {
         if (!currentAltitudeSyncEnabled) {
@@ -50,7 +50,7 @@ const Data = ({
         }
 
         setTodData({ currentAltitude: altitude });
-    }, [currentAltitudeSyncEnabled, altitude]);
+    }, [currentAltitudeSyncEnabled, altitude, setTodData]);
 
     useEffect(() => {
         if (!calculationInputSyncEnabled) {
@@ -63,7 +63,7 @@ const Data = ({
         }
 
         setTodData({ calculation: { input: syncedInput, type: calculationType } });
-    }, [calculationInputSyncEnabled, distance, verticalSpeed, pitchAngle]);
+    }, [calculationInputSyncEnabled, distance, verticalSpeed, pitchAngle, inputValid, calculationType, syncedInput, setTodData]);
 
     const calculationTypes = [
         { label: 'Distance', rightLabel: 'NM', type: TOD_CALCULATION_TYPE.DISTANCE, syncValue: distance, negativeValue: false },

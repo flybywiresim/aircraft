@@ -40,7 +40,7 @@ const Idle = () => {
     );
 };
 
-function EWD() {
+const EWD = () => {
     const [state, setState] = useState('DEFAULT');
 
     useUpdate((_deltaTime) => {
@@ -75,6 +75,6 @@ function EWD() {
     default:
         throw new RangeError();
     }
-}
+};
 
 ReactDOM.render(<EWD />, renderTarget);

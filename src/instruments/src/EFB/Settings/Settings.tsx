@@ -272,7 +272,7 @@ const SimOptionsPage = () => {
 
     useEffect(() => {
         setShowNavbar(!showThrottleSettings);
-    }, [showThrottleSettings]);
+    }, [setShowNavbar, showThrottleSettings]);
 
     return (
         <div>
