@@ -82,16 +82,15 @@ export class Common {
 
     /**
      * Get pressure ratio for a particular theta
-     * @param theta temperature ratio
+     * @param alt pressure altitude
      * @param aboveTropo whether the aircraft is above the tropopause
-     * @param alt? pressure altitude used only if aboveTropo is true
      * @returns pressure ratio
      */
-    static getDelta(theta: number, aboveTropo = false, alt?: number): number {
+    static getDelta(alt: number, aboveTropo = false): number {
         if (aboveTropo && alt !== undefined) {
             return 0.22336 * Math.exp((36089.24 - alt) / 20805.7);
         }
-        return theta ** 5.25588;
+        return this.getTheta(alt, 0, aboveTropo) ** 5.25588;
     }
 
     /**
@@ -123,6 +122,12 @@ export class Common {
         const term2 = (1 / delta) * ((term1 ** 3.5) - 1);
         const term3 = 5 * (((term2 + 1) ** (1 / 3.5)) - 1);
         return Math.sqrt(term3);
+    }
+
+    static machToCas(mach: number, delta: number): number {
+        const term1 = (0.2 * mach ** 2 + 1) ** 3.5;
+        const term2 = (delta * term1 + 1) ** (1 / 3.5) - 1;
+        return 1479.1 * Math.sqrt(term2);
     }
 
     static TAStoCAS(tas: number, theta: number, delta: number): number {

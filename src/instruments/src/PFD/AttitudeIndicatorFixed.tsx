@@ -1,5 +1,6 @@
 import { Arinc429Word } from '@shared/arinc429';
 import { getSmallestAngle } from '@instruments/common/utils.js';
+import { LateralMode, VerticalMode } from '@shared/autopilot.js';
 import React from 'react';
 import { calculateHorizonOffsetFromPitch } from './PFDUtils';
 import { getSimVar } from '../util.js';
@@ -101,7 +102,7 @@ export const AttitudeIndicatorFixedCenter = ({ pitch, roll, vs, gs, heading, tra
 const FDYawBar = ({ FDActive }) => {
     const lateralMode = getSimVar('L:A32NX_FMA_LATERAL_MODE', 'number');
 
-    if (!FDActive || !(lateralMode === 40 || lateralMode === 33 || lateralMode === 34)) {
+    if (!FDActive || !(lateralMode === LateralMode.RWY || lateralMode === LateralMode.FLARE || lateralMode === LateralMode.ROLL_OUT)) {
         return null;
     }
 
@@ -121,8 +122,8 @@ const FlightDirector = ({ FDActive }) => {
     const lateralAPMode = getSimVar('L:A32NX_FMA_LATERAL_MODE', 'number');
     const verticalAPMode = getSimVar('L:A32NX_FMA_VERTICAL_MODE', 'enum');
 
-    const showLateralFD = lateralAPMode !== 0 && lateralAPMode !== 34 && lateralAPMode !== 40;
-    const showVerticalFD = verticalAPMode !== 0 && verticalAPMode !== 34;
+    const showLateralFD = lateralAPMode !== LateralMode.NONE && lateralAPMode !== LateralMode.ROLL_OUT && lateralAPMode !== LateralMode.RWY;
+    const showVerticalFD = verticalAPMode !== VerticalMode.NONE && verticalAPMode !== VerticalMode.ROLL_OUT;
 
     let FDRollOffset = 0;
     let FDPitchOffset = 0;
@@ -218,8 +219,8 @@ const FlightPathDirector = ({ pitch, roll, vs, gs, heading, track, FDActive }: F
 
     const lateralAPMode = getSimVar('L:A32NX_FMA_LATERAL_MODE', 'number');
     const verticalAPMode = getSimVar('L:A32NX_FMA_VERTICAL_MODE', 'enum');
-    const showLateralFD = lateralAPMode !== 0 && lateralAPMode !== 34 && lateralAPMode !== 40;
-    const showVerticalFD = verticalAPMode !== 0 && verticalAPMode !== 34;
+    const showLateralFD = lateralAPMode !== LateralMode.NONE && lateralAPMode !== LateralMode.ROLL_OUT && lateralAPMode !== LateralMode.RWY;
+    const showVerticalFD = verticalAPMode !== VerticalMode.NONE && verticalAPMode !== VerticalMode.ROLL_OUT;
 
     if (!showVerticalFD && !showLateralFD) {
         return null;

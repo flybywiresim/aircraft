@@ -1,6 +1,7 @@
 class FMCMainDisplay extends BaseAirliners {
     constructor() {
         super(...arguments);
+        FMCMainDisplay.DEBUG_INSTANCE = this;
         this.flightPhaseUpdateThrottler = new UpdateThrottler(800);
         this.fmsUpdateThrottler = new UpdateThrottler(250);
         this._progBrgDistUpdateThrottler = new UpdateThrottler(2000);
@@ -177,6 +178,10 @@ class FMCMainDisplay extends BaseAirliners {
         // ATSU data
         this.atsuManager = undefined;
         this.pdcMessage = undefined;
+        this.holdSpeedTarget = undefined;
+        this.holdIndex = undefined;
+        this.holdDecelReached = undefined;
+        this.setHoldSpeedMessageActive = undefined;
     }
 
     Init() {
@@ -380,7 +385,7 @@ class FMCMainDisplay extends BaseAirliners {
         this._fuelPlanningPhase = this._fuelPlanningPhases.PLANNING;
         this._blockFuelEntered = false;
         /* CPDLC Fields */
-        this.tropo = "";
+        this.tropo = undefined;
         this._destDataChecked = false;
         this._towerHeadwind = 0;
         this._EfobBelowMinClr = false;
@@ -489,6 +494,10 @@ class FMCMainDisplay extends BaseAirliners {
         this.blockFuel = undefined;
         this.zeroFuelWeight = undefined;
         this.zeroFuelWeightMassCenter = undefined;
+        this.holdSpeedTarget = undefined;
+        this.holdIndex = 0;
+        this.holdDecelReached = false;
+        this.setHoldSpeedMessageActive = false;
 
         // ATSU data
         this.atsuManager = new Atsu.AtsuManager(this);
@@ -520,6 +529,8 @@ class FMCMainDisplay extends BaseAirliners {
         if (SimVar.GetSimVarValue("L:A32NX_AUTOTHRUST_DISABLED", "number") === 1) {
             SimVar.SetSimVarValue("K:A32NX.ATHR_RESET_DISABLE", "number", 1);
         }
+
+        SimVar.SetSimVarValue("L:A32NX_PFD_MSG_SET_HOLD_SPEED", "bool", false);
     }
 
     onUpdate(_deltaTime) {
@@ -741,6 +752,172 @@ class FMCMainDisplay extends BaseAirliners {
         }
     }
 
+    /** FIXME these functions are in the new VNAV but not in this branch, remove when able */
+    /**
+     *
+     * @param {Feet} alt geopotential altitude
+     * @returns °C
+     */
+    getIsaTemp(alt) {
+        if (alt > (this.tropo ? this.tropo : 36090)) {
+            return -56.5;
+        }
+        return 15 - (0.0019812 * alt);
+    }
+
+    /**
+     *
+     * @param {Feet} alt geopotential altitude
+     * @param {Degrees} isaDev temperature deviation from ISA conditions
+     * @returns °C
+     */
+    getTemp(alt, isaDev = 0) {
+        return this.getIsaTemp(alt) + isaDev;
+    }
+
+    /**
+     *
+     * @param {Feet} alt geopotential altitude
+     * @param {Degrees} isaDev temperature deviation from ISA conditions
+     * @returns hPa
+     */
+    getPressure(alt, isaDev = 0) {
+        if (alt > (this.tropo ? this.tropo : 36090)) {
+            return ((216.65 + isaDev) / 288.15) ** 5.25588 * 1013.2;
+        }
+        return ((288.15 - 0.0019812 * alt + isaDev) / 288.15) ** 5.25588 * 1013.2;
+    }
+
+    /**
+     * @returns {Degrees} temperature deviation from ISA conditions
+     */
+    getIsaDeviation() {
+        const geoAlt = SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet');
+        const temperature = SimVar.GetSimVarValue('AMBIENT TEMPERATURE', 'celsius');
+        return temperature - this.getIsaTemp(geoAlt);
+    }
+    /** FIXME ^these functions are in the new VNAV but not in this branch, remove when able */
+
+    /*
+        When the aircraft is in the holding, predictions assume that the leg is flown at holding speed
+        with a vertical speed equal to - 1000 ft/mn until reaching a restrictive altitude constraint, the
+        FCU altitude or the exit fix. If FCU or constraint altitude is reached first, the rest of the
+        pattern is assumed to be flown level at that altitude
+        */
+    getHoldingSpeed(speedConstraint = undefined, altitude = undefined) {
+        const fcuAltitude = SimVar.GetSimVarValue('AUTOPILOT ALTITUDE LOCK VAR:3', 'feet');
+        const alt = Math.max(fcuAltitude, altitude ? altitude : 0);
+
+        let kcas = SimVar.GetSimVarValue('L:A32NX_SPEEDS_GD', 'number');
+        if (this.currentFlightPhase === FmgcFlightPhases.APPROACH) {
+            kcas = this.getAppManagedSpeed();
+        }
+
+        if (speedConstraint > 100) {
+            kcas = Math.min(kcas, speedConstraint);
+        }
+
+        // apply icao limits
+        if (alt < 14000) {
+            kcas = Math.min(230, kcas);
+        } else if (alt < 20000) {
+            kcas = Math.min(240, kcas);
+        } else if (alt < 34000) {
+            kcas = Math.min(265, kcas);
+        } else {
+            const isaDeviation = this.getIsaDeviation();
+            const temperature = 273.15 + this.getTemp(alt, isaDeviation);
+            const pressure = this.getPressure(alt, isaDeviation);
+            kcas = Math.min(
+                _convertMachToKCas(0.83, temperature, pressure),
+                kcas,
+            );
+        }
+
+        // apply speed limit/alt
+        if (alt <= this.managedSpeedLimitAlt) {
+            kcas = Math.min(this.managedSpeedLimit, kcas);
+        }
+
+        kcas = Math.max(kcas, this.computedVls);
+
+        return Math.ceil(kcas);
+    }
+
+    updateHoldingSpeed() {
+        const currentLeg = this.flightPlanManager.getActiveWaypoint();
+        const nextLeg = this.flightPlanManager.getWaypoint(this.flightPlanManager.getActiveWaypointIndex() + 1);
+
+        const casWord = ADIRS.getCalibratedAirspeed();
+        const cas = casWord.isNormalOperation() ? casWord.value : 0;
+
+        let enableHoldSpeedWarning = false;
+        let holdSpeedTarget = 0;
+        let holdDecelReached = this.holdDecelReached;
+        // FIXME big hack until VNAV can do this
+        if (currentLeg && currentLeg.additionalData.legType === 14 /* HM */) {
+            holdSpeedTarget = this.getHoldingSpeed(currentLeg.speedConstraint);
+            holdDecelReached = true;
+            enableHoldSpeedWarning = !Simplane.getAutoPilotAirspeedManaged();
+            this.holdIndex = this.flightPlanManager.getActiveWaypointIndex();
+        } else if (nextLeg && nextLeg.additionalData.legType === 14 /* HM */) {
+            const adirLat = ADIRS.getLatitude();
+            const adirLong = ADIRS.getLongitude();
+            if (adirLat.isNormalOperation() && adirLong.isNormalOperation()) {
+                holdSpeedTarget = this.getHoldingSpeed(nextLeg.speedConstraint);
+
+                const ppos = {
+                    lat: adirLat.value,
+                    long: adirLong.value,
+                };
+                const stats = this.flightPlanManager.getCurrentFlightPlan().computeWaypointStatistics(ppos);
+                const dtg = stats.get(this.flightPlanManager.getActiveWaypointIndex()).distanceFromPpos;
+                // decel range limits are [3, 20] NM
+                // TODO better decel distance calc
+                const decelDist = Math.min(20, Math.max(3, (cas - holdSpeedTarget) * 0.3));
+                if (dtg < decelDist) {
+                    holdDecelReached = true;
+                }
+
+                const gsWord = ADIRS.getGroundSpeed();
+                const gs = gsWord.isNormalOperation() ? gsWord.value : 0;
+                const warningDist = decelDist + gs / 120;
+                if (!Simplane.getAutoPilotAirspeedManaged() && dtg <= warningDist) {
+                    enableHoldSpeedWarning = true;
+                }
+            }
+            this.holdIndex = this.flightPlanManager.getActiveWaypointIndex() + 1;
+        } else {
+            this.holdIndex = 0;
+            holdDecelReached = false;
+        }
+
+        if (holdDecelReached !== this.holdDecelReached) {
+            this.holdDecelReached = holdDecelReached;
+            SimVar.SetSimVarValue('L:A32NX_FM_HOLD_DECEL', 'bool', this.holdDecelReached);
+        }
+
+        if (holdSpeedTarget !== this.holdSpeedTarget) {
+            this.holdSpeedTarget = holdSpeedTarget;
+            SimVar.SetSimVarValue('L:A32NX_FM_HOLD_SPEED', 'number', this.holdSpeedTarget);
+        }
+
+        if (enableHoldSpeedWarning && (cas - this.holdSpeedTarget) > 5) {
+            if (!this.setHoldSpeedMessageActive) {
+                this.setHoldSpeedMessageActive = true;
+                this.addNewMessage(
+                    NXSystemMessages.setHoldSpeed,
+                    () => !this.setHoldSpeedMessageActive,
+                    () => SimVar.SetSimVarValue("L:A32NX_PFD_MSG_SET_HOLD_SPEED", "bool", false),
+                );
+                SimVar.SetSimVarValue("L:A32NX_PFD_MSG_SET_HOLD_SPEED", "bool", true);
+            }
+        } else if (this.setHoldSpeedMessageActive) {
+            SimVar.SetSimVarValue("L:A32NX_PFD_MSG_SET_HOLD_SPEED", "bool", false);
+            this.setHoldSpeedMessageActive = false;
+        }
+    }
+
     getManagedTargets(v, m) {
         //const vM = _convertMachToKCas(m, _convertCtoK(Simplane.getAmbientTemperature()), SimVar.GetSimVarValue("AMBIENT PRESSURE", "millibar"));
         const vM = SimVar.GetGameVarValue("FROM MACH TO KIAS", "number", m);
@@ -763,6 +940,8 @@ class FMCMainDisplay extends BaseAirliners {
         let vPfd = 0;
         let isMach = false;
 
+        this.updateHoldingSpeed();
+
         if (SimVar.GetSimVarValue("L:A32NX_FMA_EXPEDITE_MODE", "number") === 1) {
             const verticalMode = SimVar.GetSimVarValue("L:A32NX_FMA_VERTICAL_MODE", "number");
             if (verticalMode === 12) {
@@ -783,7 +962,16 @@ class FMCMainDisplay extends BaseAirliners {
                 this.managedSpeedTarget = SimVar.GetSimVarValue("L:A32NX_FLAPS_HANDLE_INDEX", "Number") === 0 ? Math.min(340, SimVar.GetGameVarValue("FROM MACH TO KIAS", "number", 0.8)) : SimVar.GetSimVarValue("L:A32NX_SPEEDS_VMAX", "number") - 10;
             }
             vPfd = this.managedSpeedTarget;
+        } else if (this.holdDecelReached) {
+            vPfd = this.holdSpeedTarget;
+            this.managedSpeedTarget = this.holdSpeedTarget;
         } else {
+            if (this.setHoldSpeedMessageActive) {
+                this.setHoldSpeedMessageActive = false;
+                SimVar.SetSimVarValue("L:A32NX_PFD_MSG_SET_HOLD_SPEED", "bool", false);
+                this.tryRemoveMessage(NXSystemMessages.setHoldSpeed);
+            }
+
             switch (this.flightPhaseManager.phase) {
                 case FmgcFlightPhases.PREFLIGHT: {
                     if (this.v2Speed) {
@@ -842,13 +1030,9 @@ class FMCMainDisplay extends BaseAirliners {
                     // the guidance target is lower limited by FAC manouvering speeds (O, S, F) unless in landing config
                     // constraints are not considered
                     const speed = this.getAppManagedSpeed();
-                    let vAppTarget = this.getVApp();
-                    if (isFinite(this.perfApprWindSpeed) && isFinite(this.perfApprWindHeading)) {
-                        vAppTarget = NXSpeedsUtils.getVtargetGSMini(vAppTarget, NXSpeedsUtils.getHeadWindDiff(this._towerHeadwind));
-                    }
+                    vPfd = this.getVAppGsMini();
 
-                    vPfd = vAppTarget;
-                    this.managedSpeedTarget = Math.max(speed, vAppTarget);
+                    this.managedSpeedTarget = Math.max(speed, vPfd);
                     break;
                 }
                 case FmgcFlightPhases.GOAROUND: {
@@ -1414,7 +1598,7 @@ class FMCMainDisplay extends BaseAirliners {
     tryUpdateTropo(tropo) {
         if (tropo === FMCMainDisplay.clrValue) {
             if (this.tropo) {
-                this.tropo = "";
+                this.tropo = undefined;
                 return true;
             }
             this.addNewMessage(NXSystemMessages.notAllowed);
@@ -1428,7 +1612,7 @@ class FMCMainDisplay extends BaseAirliners {
 
         const value = parseInt(tropo);
         if (isFinite(value) && value >= 0 && value <= 60000) {
-            this.tropo = ("" + Math.round(value / 10) * 10).padStart(5, "0");
+            this.tropo = Math.round(value / 10) * 10;
             return true;
         }
 
@@ -2151,10 +2335,10 @@ class FMCMainDisplay extends BaseAirliners {
                 this.addNewMessage(NXSystemMessages.notAllowed);
                 return callback(false);
             }
-            this.flightPlanManager.removeWaypoint(index, true, callback);
+            this.flightPlanManager.removeWaypoint(index, false, callback);
         } else {
             this.ensureCurrentFlightPlanIsTemporary(() => {
-                this.flightPlanManager.removeWaypoint(index, true, callback);
+                this.flightPlanManager.removeWaypoint(index, false, callback);
             });
         }
     }
@@ -3176,6 +3360,17 @@ class FMCMainDisplay extends BaseAirliners {
             return this.vApp;
         }
         return this.approachSpeeds.vapp;
+    }
+
+    /**
+     * VApp for _selected_ landing config with GSMini correction
+     */
+    getVAppGsMini() {
+        let vAppTarget = this.getVApp();
+        if (isFinite(this.perfApprWindSpeed) && isFinite(this.perfApprWindHeading)) {
+            vAppTarget = NXSpeedsUtils.getVtargetGSMini(vAppTarget, NXSpeedsUtils.getHeadWindDiff(this._towerHeadwind));
+        }
+        return vAppTarget;
     }
 
     //Needs PR Merge #3154

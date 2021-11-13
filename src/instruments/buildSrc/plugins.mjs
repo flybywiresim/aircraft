@@ -70,6 +70,7 @@ export function baseCompile(instrumentName, instrumentFolder) {
             preserveExtensions: true,
         }),
         replace({
+            'DEBUG': 'false',
             'preventAssignment': true,
             'process.env.NODE_ENV': JSON.stringify('production'),
             'process.env.CLIENT_ID': JSON.stringify(process.env.CLIENT_ID),
