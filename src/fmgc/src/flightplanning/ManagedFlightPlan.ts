@@ -969,12 +969,7 @@ export class ManagedFlightPlan {
                 }
             }
 
-            let runway: OneWayRunway;
-            if (approachIndex !== -1) {
-                runway = this.getRunway(destinationInfo.oneWayRunways, destinationInfo.approaches[approachIndex].runway);
-            } else if (destinationRunwayIndex !== -1) {
-                runway = destinationInfo.oneWayRunways[destinationRunwayIndex];
-            }
+            let runway: OneWayRunway | null = this.getDestinationRunway();
 
             const procedure = new LegsProcedure(legs, this.getWaypoint(_startIndex - 1), this._parentInstrument);
 
