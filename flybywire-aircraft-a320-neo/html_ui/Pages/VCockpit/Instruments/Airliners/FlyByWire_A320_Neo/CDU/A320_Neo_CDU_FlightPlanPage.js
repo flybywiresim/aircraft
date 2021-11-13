@@ -503,7 +503,7 @@ class CDUFlightPlanPage {
                     fpIndex: fpIndex,
                     active: false,
                     ident: pwp.ident,
-                    color: "green",
+                    color: (fpm.isCurrentFlightPlanTemporary()) ? "yellow" : "green",
                     distance: Math.round(pwp.stats.distanceInFP).toString(),
                     spdColor: "white",
                     speedConstraint: "---",
