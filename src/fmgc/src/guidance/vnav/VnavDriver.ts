@@ -42,7 +42,7 @@ export class VnavDriver implements GuidanceComponent {
                 console.log('[FMS/VNAV] Computed new vertical profile because of new cruise altitude.');
             }
 
-            this.computeVerticalProfile(this.guidanceController.currentMultipleLegGeometry);
+            this.computeVerticalProfile(this.guidanceController.activeGeometry);
         }
     }
 
