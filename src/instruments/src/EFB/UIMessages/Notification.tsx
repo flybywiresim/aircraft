@@ -56,7 +56,7 @@ export const Notification: FC<NotificationProps> = ({ type, title, message, chil
     return (
         // eslint-disable-next-line jsx-a11y/mouse-events-have-key-events
         <div
-            className="flex overflow-hidden absolute items-stretch max-h-96 rounded-lg border-2 pointer-events-auto border-theme-accent bg-theme-body drop"
+            className="flex overflow-hidden absolute items-stretch max-h-96 rounded-lg border-2 shadow-lg pointer-events-auto border-theme-accent bg-theme-body drop"
             onMouseOver={() => pauseAnimation()}
             onMouseLeave={() => unpauseAnimation()}
             onAnimationEnd={() => uiMessages.popNotification()}

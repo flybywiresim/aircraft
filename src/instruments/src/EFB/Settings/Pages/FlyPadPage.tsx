@@ -4,7 +4,7 @@ import { usePersistentNumberProperty, usePersistentProperty } from '@instruments
 import { useSimVar } from '@instruments/common/simVars';
 
 import { Slider, Toggle } from '@flybywiresim/react-components';
-import { ButtonType } from '../Settings';
+import { ButtonType, SettingItem, SettingsPage } from '../Settings';
 import { SelectGroup, SelectItem } from '../../Components/Form/Select';
 
 export const FlyPadPage = () => {
@@ -21,22 +21,16 @@ export const FlyPadPage = () => {
     ];
 
     return (
-        <div className="flex flex-col px-6 rounded-xl divide-y-2 divide-gray-700 bg-navy-lighter">
-            <div className="flex flex-row justify-between items-center py-4">
-                <span className="text-lg text-gray-300">Brightness</span>
-                <div className={`flex flex-row items-center py-1.5 ${usingAutobrightness && 'pointer-events-none filter saturate-0'}`}>
-                    <Slider className="w-60" value={usingAutobrightness ? brightness : brightnessSetting} onInput={(value) => setBrightnessSetting(value)} />
-                </div>
-            </div>
-            <div className="flex flex-row justify-between items-center py-4">
-                <span className="text-lg text-gray-300">Auto Brightness</span>
-                <div className="flex flex-row items-center py-1.5">
-                    <Toggle value={!!usingAutobrightness} onToggle={(value) => setUsingAutobrightness(value ? 1 : 0)} />
-                </div>
-            </div>
-            <div className="flex flex-row justify-between items-center py-4">
-                <span className="text-lg text-gray-300">Theme</span>
-                <div className="flex flex-row items-center py-1.5">
+        <SettingsPage name="flyPad">
+            <SettingItem name="Brightness">
+                <Slider className="w-60" value={usingAutobrightness ? brightness : brightnessSetting} onInput={(value) => setBrightnessSetting(value)} />
+            </SettingItem>
+
+            <SettingItem name="Auto Brightness">
+                <Toggle value={!!usingAutobrightness} onToggle={(value) => setUsingAutobrightness(value ? 1 : 0)} />
+            </SettingItem>
+
+            <SettingItem name="Theme">
                     <SelectGroup>
                         {themeButtons.map((button) => (
                             <SelectItem
@@ -48,14 +42,11 @@ export const FlyPadPage = () => {
                             </SelectItem>
                         ))}
                     </SelectGroup>
-                </div>
-            </div>
-            <div className="flex flex-row justify-between items-center py-4">
-                <span className="text-lg text-gray-300">Automatically Show Onscreen Keyboard</span>
-                <div className="flex flex-row items-center py-1.5">
-                    <Toggle value={!!autoOSK} onToggle={(value) => setAutoOSK(value ? 1 : 0)} />
-                </div>
-            </div>
-        </div>
+            </SettingItem>
+
+            <SettingItem name="Automatically Show Onscreen Keyboard">
+                <Toggle value={!!autoOSK} onToggle={(value) => setAutoOSK(value ? 1 : 0)} />
+            </SettingItem>
+        </SettingsPage>
     );
 };
