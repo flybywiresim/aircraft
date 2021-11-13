@@ -1,7 +1,9 @@
-export class MathUtils {
-   static DEEGREES_TO_RADIANS = Math.PI / 180;
+import { TurnDirection } from '@fmgc/types/fstypes/FSEnums';
 
-   static Rad2Deg = 180 / Math.PI;
+export class MathUtils {
+   static DEGREES_TO_RADIANS = Math.PI / 180;
+
+   static RADIANS_TO_DEGREES = 180 / Math.PI;
 
    private static optiPow10 = [];
 
@@ -19,7 +21,21 @@ export class MathUtils {
        return (Math.round(val * coefficient) / coefficient).toString();
    }
 
-   public static diffAngle(a: number, b: number): number {
+   public static fastToFixedNum(val: number, fraction: number): number {
+       if (fraction <= 0) {
+           return Math.round(val);
+       }
+
+       let coefficient = MathUtils.optiPow10[fraction];
+       if (!coefficient || Number.isNaN(coefficient)) {
+           coefficient = 10 ** fraction;
+           MathUtils.optiPow10[fraction] = coefficient;
+       }
+
+       return (Math.round(val * coefficient) / coefficient);
+   }
+
+   public static diffAngle(a: number, b: number, direction?: TurnDirection): number {
        let diff = b - a;
        while (diff > 180) {
            diff -= 360;
@@ -27,7 +43,26 @@ export class MathUtils {
        while (diff <= -180) {
            diff += 360;
        }
+       if (diff < 0 && direction === TurnDirection.Right) {
+           diff += 360;
+       }
+       if (diff > 0 && direction === TurnDirection.Left) {
+           diff -= 360;
+       }
        return diff;
+   }
+
+   public static adjustAngleForTurnDirection(angle: Degrees, turnDirection: TurnDirection) {
+       let ret = angle;
+
+       if (angle < 0 && turnDirection === TurnDirection.Right) {
+           ret += 360;
+       }
+       if (angle > 0 && turnDirection === TurnDirection.Left) {
+           ret -= 360;
+       }
+
+       return ret;
    }
 
    /**

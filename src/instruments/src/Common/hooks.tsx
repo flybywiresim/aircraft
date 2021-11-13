@@ -62,7 +62,7 @@ export const useInteractionEvents = (events: string[], handler: (any?) => void):
     ]);
 };
 
-export const useCoherentEvent = (event: string, handler: (any?) => void): void => {
+export const useCoherentEvent = (event: string, handler: (...any) => void): void => {
     const savedHandler = React.useRef(handler);
     React.useEffect(() => {
         savedHandler.current = handler;

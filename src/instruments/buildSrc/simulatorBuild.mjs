@@ -19,6 +19,9 @@ export default getInputs()
             output: {
                 file: join(Directories.temp, 'bundle.js'),
                 format: 'iife',
+                globals: [
+                    'console',
+                ],
             },
             plugins: [
                 ...baseCompile(name, path),
@@ -28,6 +31,8 @@ export default getInputs()
                     imports: [
                         '/JS/dataStorage.js',
                         '/Pages/VCockpit/Instruments/FlightElements/A32NX_Waypoint.js',
+                        '/Pages/A32NX_Core/math.js',
+                        '/JS/A32NX_Util.js',
                         ...additionalImports,
                     ],
                     config,

@@ -149,11 +149,9 @@ path.rounded {
 }
 
 text.shadow {
-  text-shadow:
-    -0.1px -0.1px 0 $display-background,
-    0.1px -0.1px 0 $display-background,
-    -0.1px 0.1px 0 $display-background,
-    0.1px 0.1px 0 $display-background;
+  stroke: $display-background;
+  stroke-width: 1px;
+  paint-order: stroke;
 }
 
 circle.shadow,

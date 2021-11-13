@@ -25,7 +25,7 @@ export type HeadingGuidance = {
 }
 
 export type TrackGuidance = {
-    law: ControlLaw.HEADING,
+    law: ControlLaw.TRACK,
     course: Degrees;
 }
 

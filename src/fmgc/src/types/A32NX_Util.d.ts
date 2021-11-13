@@ -39,6 +39,8 @@ declare global {
 
         function greatCircleIntersection(latlon1: LatLongData, brg1: Degrees, latlon2: LatLongData, brg2: Degrees): LatLongData
 
+        function bothGreatCircleIntersections(latlon1: LatLongData, brg1: Degrees, latlon2: LatLongData, brg2: Degrees): [LatLongData, LatLongData]
+
         function getIsaTemp(alt?: Feet): number;
 
         function getIsaTempDeviation(alt?: Feet, sat?: Celcius): Celcius

@@ -1,6 +1,7 @@
 class CDUHoldAtPage {
     static ShowPage(mcdu, waypoint, waypointIndexFP) {
         try {
+            // TODO move this into the FM
             const SpeedConstraints = {
                 14000: 230,
                 20000: 240,
@@ -161,6 +162,7 @@ class CDUHoldAtPage {
                     }
                 );
                 mcdu.manualHoldData = null;
+                // TODO add HM leg to flightplan
                 CDUFlightPlanPage.ShowPage(mcdu);
             };
         } catch (err) {

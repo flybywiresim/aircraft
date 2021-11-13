@@ -220,9 +220,18 @@ class CDUFlightPlanPage {
                     // ARINC Leg Types - R1A 610
                     switch (wp.additionalData.legType) {
                         case 2: // CA
-                            fixAnnotation = `C${wp.additionalData.vectorsHeading.toFixed(0).padStart(3,"0")}\u00b0`;
+                        case 5: // CI
+                            fixAnnotation = `C${wp.additionalData.vectorsCourse.toFixed(0).padStart(3,"0")}\u00b0`;
+                            break;
+                        case 12: // HA
+                        case 13: // HF
+                            fixAnnotation = `HOLD ${wp.turnDirection === 1 ? 'L' : 'R'}`;
+                            break;
+                        case 14: // HM
+                            fixAnnotation = `C${wp.additionalData.course.toFixed(0).padStart(3, '0')}`;
                             break;
                         case 19: // VA
+                        case 21: // VI
                             fixAnnotation = `H${wp.additionalData.vectorsHeading.toFixed(0).padStart(3,"0")}\u00b0`;
                             break;
                         case 11: // FM

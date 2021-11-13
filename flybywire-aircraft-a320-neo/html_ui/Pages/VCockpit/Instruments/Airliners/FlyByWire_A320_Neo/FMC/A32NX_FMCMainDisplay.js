@@ -1,6 +1,7 @@
 class FMCMainDisplay extends BaseAirliners {
     constructor() {
         super(...arguments);
+        FMCMainDisplay.DEBUG_INSTANCE = this;
         this.flightPhaseUpdateThrottler = new UpdateThrottler(800);
         this.fmsUpdateThrottler = new UpdateThrottler(250);
         this._progBrgDistUpdateThrottler = new UpdateThrottler(2000);

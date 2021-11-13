@@ -4,8 +4,8 @@ import {
     VerticalFlightPlan,
 } from '@fmgc/guidance/vnav/verticalFlightPlan/VerticalFlightPlan';
 import { Geometry } from '@fmgc/guidance/Geometry';
-import { Leg } from '@fmgc/guidance/lnav/legs';
 import { SegmentType } from '@fmgc/flightplanning/FlightPlanSegment';
+import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
 
 export class VerticalFlightPlanBuilder {
     static buildVerticalFlightPlan(geometry: Geometry): VerticalFlightPlan {

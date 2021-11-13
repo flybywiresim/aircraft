@@ -93,6 +93,7 @@
     "pdf-to-printer": "^5.1.1",
     "pdfkit": "^0.13.0",
     "pkg": "^5.1.0",
+    "geolib": "^3.3.3",
     "qrcode.react": "^1.0.1",
     "react": "^17.0.0",
     "react-dom": "^17.0.0",

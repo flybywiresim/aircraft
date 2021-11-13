@@ -60,20 +60,6 @@ export const RoseMode: FC<RoseModeProps> = ({ symbols, adirsAlign, rangeSetting,
     }, [ppos.lat, ppos.long, trueHeading, rangeSetting].map((n) => MathUtils.fastToFixed(n, 6)));
 
     if (adirsAlign) {
-        let tmpFplan;
-        if (showTmpFplan) {
-            tmpFplan = (
-                <FlightPlan
-                    x={384}
-                    y={384}
-                    flightPlanManager={flightPlanManager}
-                    symbols={symbols}
-                    mapParams={mapParams}
-                    debug={false}
-                    type={FlightPlanType.Temp}
-                />
-            );
-        }
         return (
             <>
                 <Overlay
@@ -88,21 +74,14 @@ export const RoseMode: FC<RoseModeProps> = ({ symbols, adirsAlign, rangeSetting,
                             <FlightPlan
                                 x={384}
                                 y={384}
-                                flightPlanManager={flightPlanManager}
+                                side={side}
+                                range={rangeSetting}
                                 symbols={symbols}
                                 mapParams={mapParams}
+                                mapParamsVersion={mapParams.version}
                                 debug={false}
-                                type={
-                                    /* TODO FIXME: Check if intercepts active leg */
-                                    (fmaLatMode === LateralMode.NONE
-                                        || fmaLatMode === LateralMode.HDG
-                                        || fmaLatMode === LateralMode.TRACK)
-                                        && !fmaLatArmed
-                                        ? FlightPlanType.Dashed
-                                        : FlightPlanType.Nav
-                                }
                             />
-                            {tmpFplan}
+
                             { (((fmaLatMode === LateralMode.NONE
                                 || fmaLatMode === LateralMode.HDG
                                 || fmaLatMode === LateralMode.TRACK) && !fmaLatArmed) || !flightPlanManager.getCurrentFlightPlan().length) && (
@@ -118,7 +97,7 @@ export const RoseMode: FC<RoseModeProps> = ({ symbols, adirsAlign, rangeSetting,
 
                 { mode === Mode.ROSE_ILS && <IlsCaptureOverlay heading={magHeading} _side={side} /> }
 
-                { mode === Mode.ROSE_NAV && <ToWaypointIndicator info={flightPlanManager.getCurrentFlightPlan().computeActiveWaypointStatistics(ppos)} /> }
+                { mode === Mode.ROSE_NAV && <ToWaypointIndicator side={side} /> }
                 { mode === Mode.ROSE_VOR && <VorInfo side={side} /> }
                 { mode === Mode.ROSE_ILS && <IlsInfo /> }
 

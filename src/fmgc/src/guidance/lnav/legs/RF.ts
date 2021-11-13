@@ -1,16 +1,17 @@
-import { ControlLaw, GuidanceParameters } from '@fmgc/guidance/ControlLaws';
+import { GuidanceParameters } from '@fmgc/guidance/ControlLaws';
 import {
-    Leg,
     AltitudeConstraint,
     SpeedConstraint,
     getAltitudeConstraintFromWaypoint,
     getSpeedConstraintFromWaypoint,
-    waypointToLocation,
 } from '@fmgc/guidance/lnav/legs';
 import { SegmentType } from '@fmgc/wtsdk';
-import { arcDistanceToGo } from '../CommonGeometry';
+import { Coordinates } from '@fmgc/flightplanning/data/geo';
+import { arcDistanceToGo, arcGuidance } from '@fmgc/guidance/lnav/CommonGeometry';
+import { XFLeg } from '@fmgc/guidance/lnav/legs/XF';
+import { PathVector, PathVectorType } from '../PathVector';
 
-export class RFLeg extends Leg {
+export class RFLeg extends XFLeg {
     // termination fix of the previous leg
     from: WayPoint;
 
@@ -28,14 +29,16 @@ export class RFLeg extends Leg {
 
     private mDistance: NauticalMiles;
 
-    constructor(from: WayPoint, to: WayPoint, center: LatLongData, segment: SegmentType, indexInFullPath: number) {
-        super();
+    private computedPath: PathVector[] = [];
+
+    constructor(from: WayPoint, to: WayPoint, center: LatLongData, segment: SegmentType) {
+        super(to);
+
         this.from = from;
         this.to = to;
         this.center = center;
         this.radius = Avionics.Utils.computeGreatCircleDistance(this.center, this.to.infos.coordinates);
         this.segment = segment;
-        this.indexInFullPath = indexInFullPath;
 
         const bearingFrom = Avionics.Utils.computeGreatCircleHeading(this.center, this.from.infos.coordinates); // -90?
         const bearingTo = Avionics.Utils.computeGreatCircleHeading(this.center, this.to.infos.coordinates); // -90?
@@ -53,21 +56,52 @@ export class RFLeg extends Leg {
         case 3: // either
         default:
             const angle = Avionics.Utils.diffAngle(bearingTo, bearingFrom);
-            this.clockwise = this.angle > 0;
+            this.clockwise = angle > 0;
             this.angle = Math.abs(angle);
             break;
         }
 
         this.mDistance = 2 * Math.PI * this.radius / 360 * this.angle;
+
+        this.computedPath = [
+            {
+                type: PathVectorType.Arc,
+                startPoint: this.from.infos.coordinates,
+                centrePoint: this.center,
+                endPoint: this.to.infos.coordinates,
+                sweepAngle: this.clockwise ? this.angle : -this.angle,
+            },
+        ];
+
+        this.isComputed = true;
     }
 
-    get isCircularArc(): boolean {
+    getPathStartPoint(): Coordinates | undefined {
+        return this.from.infos.coordinates;
+    }
+
+    getPathEndPoint(): Coordinates | undefined {
+        return this.to.infos.coordinates;
+    }
+
+    get predictedPath(): PathVector[] {
+        return this.computedPath;
+    }
+
+    get startsInCircularArc(): boolean {
         return true;
     }
 
-    // this is used for transitions... which are not allowed for RF
-    get bearing(): Degrees {
-        return -1;
+    get endsInCircularArc(): boolean {
+        return true;
+    }
+
+    get inboundCourse(): Degrees {
+        return Avionics.Utils.clampAngle(Avionics.Utils.computeGreatCircleHeading(this.center, this.from.infos.coordinates) + (this.clockwise ? 90 : -90));
+    }
+
+    get outboundCourse(): Degrees {
+        return Avionics.Utils.clampAngle(Avionics.Utils.computeGreatCircleHeading(this.center, this.to.infos.coordinates) + (this.clockwise ? 90 : -90));
     }
 
     get distance(): NauticalMiles {
@@ -82,62 +116,15 @@ export class RFLeg extends Leg {
         return getAltitudeConstraintFromWaypoint(this.to);
     }
 
-    get initialLocation(): LatLongData {
-        return waypointToLocation(this.from);
-    }
-
-    get terminatorLocation(): LatLongData {
-        return waypointToLocation(this.to);
-    }
-
-    getPseudoWaypointLocation(distanceBeforeTerminator: NauticalMiles): LatLongData {
-        const distanceRatio = distanceBeforeTerminator / this.distance;
-        const angleFromTerminator = distanceRatio * this.angle;
-
-        const centerToTerminationBearing = Avionics.Utils.computeGreatCircleHeading(this.center, this.terminatorLocation);
-
-        return Avionics.Utils.bearingDistanceToCoordinates(
-            Avionics.Utils.clampAngle(centerToTerminationBearing + (this.clockwise ? -angleFromTerminator : angleFromTerminator)),
-            this.radius,
-            this.center.lat,
-            this.center.long,
-        );
-    }
-
     // basically straight from type 1 transition... willl need refinement
     getGuidanceParameters(ppos: LatLongAlt, trueTrack: number): GuidanceParameters | null {
-        const { center } = this;
-
-        const bearingPpos = Avionics.Utils.computeGreatCircleHeading(
-            center,
-            ppos,
-        );
-
-        const desiredTrack = this.clockwise ? Avionics.Utils.clampAngle(bearingPpos + 90) : Avionics.Utils.clampAngle(bearingPpos - 90);
-        const trackAngleError = Avionics.Utils.diffAngle(trueTrack, desiredTrack);
-
-        const distanceFromCenter = Avionics.Utils.computeGreatCircleDistance(
-            center,
-            ppos,
-        );
-        const crossTrackError = this.clockwise
-            ? distanceFromCenter - this.radius
-            : this.radius - distanceFromCenter;
-
-        const groundSpeed = SimVar.GetSimVarValue('GPS GROUND SPEED', 'meters per second');
-        const radiusInMeter = this.radius * 1852;
-        const phiCommand = (this.clockwise ? 1 : -1) * Math.atan((groundSpeed * groundSpeed) / (radiusInMeter * 9.81)) * (180 / Math.PI);
-
-        return {
-            law: ControlLaw.LATERAL_PATH,
-            trackAngleError,
-            crossTrackError,
-            phiCommand,
-        };
+        // FIXME should be defined in terms of to fix
+        return arcGuidance(ppos, trueTrack, this.from.infos.coordinates, this.center, this.clockwise ? this.angle : -this.angle);
     }
 
-    getNominalRollAngle(gs): Degrees {
-        return (this.clockwise ? 1 : -1) * Math.atan((gs ** 2) / (this.radius * 1852 * 9.81)) * (180 / Math.PI);
+    getNominalRollAngle(gs: Knots): Degrees {
+        const gsMs = gs * (463 / 900);
+        return (this.clockwise ? 1 : -1) * Math.atan((gsMs ** 2) / (this.radius * 1852 * 9.81)) * (180 / Math.PI);
     }
 
     /**
@@ -146,7 +133,7 @@ export class RFLeg extends Leg {
      * @param ppos {LatLong} the current position of the aircraft
      */
     getDistanceToGo(ppos: LatLongData): NauticalMiles {
-        // TODO geometry should be defined in terms of to...
+        // FIXME geometry should be defined in terms of to...
         return arcDistanceToGo(ppos, this.from.infos.coordinates, this.center, this.clockwise ? this.angle : -this.angle);
     }
 
@@ -168,5 +155,9 @@ export class RFLeg extends Leg {
 
     toString(): string {
         return `<RFLeg radius=${this.radius} to=${this.to}>`;
+    }
+
+    get repr(): string {
+        return `RF(${this.radius.toFixed(1)}NM. ${this.angle.toFixed(1)}°) TO ${this.to.ident}`;
     }
 }
