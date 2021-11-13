@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Arinc429Word } from '@instruments/common/arinc429';
+import { Arinc429Word } from '@shared/arinc429';
 import { useUpdate } from '@instruments/common/hooks';
 import {
     calculateHorizonOffsetFromPitch,
