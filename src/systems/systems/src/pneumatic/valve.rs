@@ -20,14 +20,14 @@ use super::{ControllablePneumaticValve, PneumaticContainer, PneumaticValveSignal
 pub struct PurelyPneumaticValve {
     open_amount: Ratio,
     connector: PneumaticContainerConnector,
-    spring_characteristic: f64,
 }
 impl PurelyPneumaticValve {
-    pub fn new(spring_characteristic: f64) -> Self {
+    const SPRING_CHARACTERISTIC: f64 = 1.;
+
+    pub fn new() -> Self {
         Self {
             open_amount: Ratio::new::<ratio>(0.),
             connector: PneumaticContainerConnector::new(),
-            spring_characteristic,
         }
     }
 
@@ -49,7 +49,7 @@ impl PurelyPneumaticValve {
     fn set_open_amount_from_pressure_difference(&mut self, pressure_difference: Pressure) {
         self.open_amount = Ratio::new::<ratio>(
             2. / PI
-                * (pressure_difference.get::<psi>() * self.spring_characteristic)
+                * (pressure_difference.get::<psi>() * Self::SPRING_CHARACTERISTIC)
                     .atan()
                     .max(0.),
         );
@@ -68,20 +68,25 @@ impl PneumaticValve for PurelyPneumaticValve {
         self.open_amount.get::<percent>() > 0.
     }
 }
+impl Default for PurelyPneumaticValve {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 
 pub struct ElectroPneumaticValve {
     open_amount: Ratio,
     connector: PneumaticContainerConnector,
-    spring_characteristic: f64,
     is_powered: bool,
     powered_by: ElectricalBusType,
 }
 impl ElectroPneumaticValve {
-    pub fn new(spring_characteristic: f64, powered_by: ElectricalBusType) -> Self {
+    const SPRING_CHARACTERISTIC: f64 = 1.;
+
+    pub fn new(powered_by: ElectricalBusType) -> Self {
         Self {
             open_amount: Ratio::new::<ratio>(0.),
             connector: PneumaticContainerConnector::new(),
-            spring_characteristic,
             is_powered: false,
             powered_by,
         }
@@ -107,7 +112,7 @@ impl ElectroPneumaticValve {
     fn set_open_amount_from_pressure_difference(&mut self, pressure_difference: Pressure) {
         self.open_amount = Ratio::new::<ratio>(
             2. / PI
-                * (pressure_difference.get::<psi>() * self.spring_characteristic)
+                * (pressure_difference.get::<psi>() * Self::SPRING_CHARACTERISTIC)
                     .atan()
                     .max(0.),
         );
@@ -277,23 +282,17 @@ impl PneumaticContainerConnector {
         container_one: &mut impl PneumaticContainer,
         container_two: &mut impl PneumaticContainer,
     ) {
-        let coefficient = 1e-1;
-
         let temperature_gradient = TemperatureInterval::new::<temperature_interval::kelvin>(
             container_one.temperature().get::<kelvin>()
                 - container_two.temperature().get::<kelvin>(),
         );
 
-        container_one.update_temperature(
-            -coefficient
-                * temperature_gradient
-                * (1. - (-Self::HEAT_TRANSFER_SPEED * context.delta_as_secs_f64()).exp()),
-        );
-        container_two.update_temperature(
-            coefficient
-                * temperature_gradient
-                * (1. - (-Self::HEAT_TRANSFER_SPEED * context.delta_as_secs_f64()).exp()),
-        );
+        let heat_transfer_coefficient = 1e-1;
+        let temperature_change = heat_transfer_coefficient
+            * temperature_gradient
+            * (1. - (-Self::HEAT_TRANSFER_SPEED * context.delta_as_secs_f64()).exp());
+        container_one.update_temperature(-temperature_change);
+        container_two.update_temperature(temperature_change);
     }
 
     fn move_volume(
@@ -357,7 +356,7 @@ impl PneumaticExhaust {
 
     fn calculate_required_volume_for_target_pressure(
         &self,
-        from: &mut impl PneumaticContainer,
+        from: &impl PneumaticContainer,
         target_pressure: Pressure,
     ) -> Volume {
         from.volume()
@@ -444,7 +443,6 @@ mod tests {
         )
     }
 
-    // It's a bit of a pain to initialize all the units manually
     fn quick_container(
         volume_in_cubic_meter: f64,
         pressure_in_psi: f64,
@@ -612,7 +610,7 @@ mod tests {
     fn electropneumatic_valve_does_not_accept_signal_when_unpowered() {
         let controller = TestValveController::new(Ratio::new::<percent>(100.));
 
-        let mut valve = ElectroPneumaticValve::new(1., ElectricalBusType::DirectCurrent(2));
+        let mut valve = ElectroPneumaticValve::new(ElectricalBusType::DirectCurrent(2));
 
         valve.update_open_amount(&controller);
 
@@ -625,7 +623,7 @@ mod tests {
         let mut container_one = quick_container(1., 14., 15.);
         let mut container_two = quick_container(1., 14., 15.);
 
-        let mut valve = PurelyPneumaticValve::new(1.);
+        let mut valve = PurelyPneumaticValve::new();
 
         // We fake it being open for due to it having moved fluid previously
         valve.open_amount = Ratio::new::<ratio>(0.5);
@@ -649,7 +647,7 @@ mod tests {
         let controller = TestValveController::new(Ratio::new::<percent>(1.));
 
         // The electrical bus doesn't really matter here
-        let mut valve = ElectroPneumaticValve::new(1., ElectricalBusType::DirectCurrent(2));
+        let mut valve = ElectroPneumaticValve::new(ElectricalBusType::DirectCurrent(2));
 
         // We fake it being open for due to it having moved fluid previously
         valve.open_amount = Ratio::new::<ratio>(0.5);

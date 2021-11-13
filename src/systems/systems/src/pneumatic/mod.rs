@@ -5,8 +5,8 @@ use crate::{
         PneumaticValve,
     },
     simulation::{
-        InitContext, Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
-        SimulatorWriter, UpdateContext, VariableIdentifier, Write, Writer,
+        InitContext, Read, Reader, SimulationElement, SimulatorReader, SimulatorWriter,
+        UpdateContext, VariableIdentifier, Write, Writer,
     },
 };
 
@@ -159,13 +159,6 @@ impl ControllerSignal<TargetPressureSignal> for EngineCompressionChamberControll
     }
 }
 impl SimulationElement for EngineCompressionChamberController {
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T)
-    where
-        Self: Sized,
-    {
-        visitor.visit(self);
-    }
-
     fn read(&mut self, reader: &mut SimulatorReader) {
         self.current_mach = reader.read(&self.current_mach_id);
     }
@@ -297,7 +290,8 @@ impl From<f64> for CrossBleedValveSelectorMode {
         match value as u8 {
             0 => CrossBleedValveSelectorMode::Shut,
             1 => CrossBleedValveSelectorMode::Auto,
-            _ => CrossBleedValveSelectorMode::Open,
+            2 => CrossBleedValveSelectorMode::Open,
+            _ => panic!("CrossBleedValveSelectorMode value does not correspond to any enum member"),
         }
     }
 }
@@ -315,10 +309,11 @@ read_write_enum!(EngineState);
 impl From<f64> for EngineState {
     fn from(value: f64) -> Self {
         match value as u8 {
+            0 => EngineState::Off,
             1 => EngineState::On,
             2 => EngineState::Starting,
             3 => EngineState::Shutting,
-            _ => EngineState::Off,
+            _ => panic!("EngineState value does not correspond to any enum member"),
         }
     }
 }
@@ -375,12 +370,10 @@ impl Precooler {
                 - container_one.temperature().get::<degree_celsius>(),
         );
 
-        supply.update_temperature(
-            -self.coefficient * temperature_gradient * context.delta_as_secs_f64(),
-        );
-        container_one.update_temperature(
-            self.coefficient * temperature_gradient * context.delta_as_secs_f64(),
-        );
+        let temperature_change =
+            self.coefficient * temperature_gradient * context.delta_as_secs_f64();
+        supply.update_temperature(-temperature_change);
+        container_one.update_temperature(temperature_change);
 
         self.exhaust.update_move_fluid(context, supply);
         self.internal_connector
@@ -441,7 +434,7 @@ impl<T: PneumaticContainer> PneumaticContainerWithConnector<T> {
     pub fn new(container: T) -> Self {
         Self {
             container,
-            connector: PurelyPneumaticValve::new(1.),
+            connector: PurelyPneumaticValve::new(),
         }
     }
 
@@ -594,7 +587,6 @@ mod tests {
         Pressure::new::<psi>(0.5)
     }
 
-    // It's a bit of a pain to initialize all the units manually
     fn quick_container(
         volume_in_cubic_meter: f64,
         pressure_in_psi: f64,

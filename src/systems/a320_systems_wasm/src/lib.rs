@@ -71,6 +71,18 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
                 vec!["OVHD_ELEC_APU_GEN_PB_IS_ON".to_owned()],
             )?
             .provides_aircraft_variable_with_additional_names(
+                "BLEED AIR ENGINE",
+                "Bool",
+                1,
+                vec!["OVHD_PNEU_ENG_1_BLEED_PB_IS_AUTO".to_owned()],
+            )?
+            .provides_aircraft_variable_with_additional_names(
+                "BLEED AIR ENGINE",
+                "Bool",
+                2,
+                vec!["OVHD_PNEU_ENG_2_BLEED_PB_IS_AUTO".to_owned()],
+            )?
+            .provides_aircraft_variable_with_additional_names(
                 "EXTERNAL POWER AVAILABLE",
                 "Bool",
                 1,
@@ -123,18 +135,6 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
             .provides_aircraft_variable("TURB ENG CORRECTED N2", "Percent", 2)?
             .provides_aircraft_variable("UNLIMITED FUEL", "Bool", 0)?
             .provides_aircraft_variable("VELOCITY WORLD Y", "feet per minute", 0)?
-            .provides_aircraft_variable_with_additional_names(
-                "BLEED AIR ENGINE",
-                "Bool",
-                1,
-                vec!["OVHD_PNEU_ENG_1_BLEED_PB_IS_AUTO".to_owned()],
-            )?
-            .provides_aircraft_variable_with_additional_names(
-                "BLEED AIR ENGINE",
-                "Bool",
-                2,
-                vec!["OVHD_PNEU_ENG_2_BLEED_PB_IS_AUTO".to_owned()],
-            )?
             .build(A320::new)?;
 
     while let Some(event) = gauge.next_event().await {

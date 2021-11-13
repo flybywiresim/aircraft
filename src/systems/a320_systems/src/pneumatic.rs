@@ -145,7 +145,7 @@ impl A320Pneumatic {
                 ),
                 EngineBleedAirSystem::new(context, 2, ElectricalBusType::DirectCurrent(2)),
             ],
-            cross_bleed_valve: CrossBleedValve::new(1.),
+            cross_bleed_valve: CrossBleedValve::new(),
             fadec: FullAuthorityDigitalEngineControl::new(context),
             engine_starter_valve_controllers: [
                 EngineStarterValveController::new(1),
@@ -480,6 +480,9 @@ struct BleedMonitoringComputerChannel {
     engine_bleed_fault_light_monitor: EngineBleedFaultLightMonitor,
 }
 impl BleedMonitoringComputerChannel {
+    const PRESSURE_REGULATING_VALVE_SINGLE_BLEED_CONFIG_TARGET_PSI: f64 = 52.;
+    const PRESSURE_REGULATING_VALVE_DUAL_BLEED_CONFIG_TARGET_PSI: f64 = 46.;
+
     fn new(
         engine_number: usize,
         operation_mode: BleedMonitoringComputerChannelOperationMode,
@@ -519,9 +522,9 @@ impl BleedMonitoringComputerChannel {
 
         self.pressure_regulating_valve_pid.change_setpoint(
             if fadec.is_single_vs_dual_bleed_config() {
-                52.
+                Self::PRESSURE_REGULATING_VALVE_SINGLE_BLEED_CONFIG_TARGET_PSI
             } else {
-                46.
+                Self::PRESSURE_REGULATING_VALVE_DUAL_BLEED_CONFIG_TARGET_PSI
             },
         );
 
@@ -574,60 +577,53 @@ impl BleedMonitoringComputerChannel {
         }
     }
 
-    pub fn operation_mode(&self) -> BleedMonitoringComputerChannelOperationMode {
+    fn operation_mode(&self) -> BleedMonitoringComputerChannelOperationMode {
         self.operation_mode
     }
 
-    pub fn set_operation_mode(&mut self, mode: BleedMonitoringComputerChannelOperationMode) {
+    fn set_operation_mode(&mut self, mode: BleedMonitoringComputerChannelOperationMode) {
         self.operation_mode = mode;
     }
 
-    pub fn or_none_if_slave(&self) -> Option<&BleedMonitoringComputerChannel> {
+    fn or_none_if_slave(&self) -> Option<&BleedMonitoringComputerChannel> {
         match self.operation_mode() {
             BleedMonitoringComputerChannelOperationMode::Master => Some(self),
             BleedMonitoringComputerChannelOperationMode::Slave => None,
         }
     }
+
+    fn should_close_pressure_regulating_valve_because_apu_bleed_is_on(&self) -> bool {
+        self.is_apu_bleed_on
+            && self.is_apu_bleed_valve_open
+            && (self.engine_number == 1 || self.cross_bleed_valve_is_open)
+    }
 }
 impl ControllerSignal<HighPressureValveSignal> for BleedMonitoringComputerChannel {
     fn signal(&self) -> Option<HighPressureValveSignal> {
-        if self.pressure_regulating_valve_is_closed {
-            return Some(HighPressureValveSignal::new_closed());
+        if self.pressure_regulating_valve_is_closed
+            || self.high_pressure_compressor_pressure < Pressure::new::<psi>(18.)
+        {
+            Some(HighPressureValveSignal::new_closed())
+        } else {
+            Some(HighPressureValveSignal::new(Ratio::new::<ratio>(
+                self.high_pressure_valve_pid.output(),
+            )))
         }
-
-        if self.high_pressure_compressor_pressure < Pressure::new::<psi>(18.) {
-            return Some(HighPressureValveSignal::new_closed());
-        }
-
-        Some(HighPressureValveSignal::new(Ratio::new::<ratio>(
-            self.high_pressure_valve_pid.output(),
-        )))
     }
 }
 impl ControllerSignal<PressureRegulatingValveSignal> for BleedMonitoringComputerChannel {
     fn signal(&self) -> Option<PressureRegulatingValveSignal> {
-        if self.transfer_pressure < Pressure::new::<psi>(18.) {
-            return Some(PressureRegulatingValveSignal::new_closed());
-        }
-
-        if !self.is_engine_bleed_pushbutton_auto || self.is_engine_fire_pushbutton_released {
-            return Some(PressureRegulatingValveSignal::new_closed());
-        }
-
-        if self.is_apu_bleed_on
-            && self.is_apu_bleed_valve_open
-            && (self.engine_number == 1 || self.cross_bleed_valve_is_open)
+        if self.transfer_pressure < Pressure::new::<psi>(18.)
+            || (!self.is_engine_bleed_pushbutton_auto || self.is_engine_fire_pushbutton_released)
+            || self.should_close_pressure_regulating_valve_because_apu_bleed_is_on()
+            || self.engine_starter_valve_is_open
         {
-            return Some(PressureRegulatingValveSignal::new_closed());
+            Some(PressureRegulatingValveSignal::new_closed())
+        } else {
+            Some(PressureRegulatingValveSignal::new(Ratio::new::<ratio>(
+                self.pressure_regulating_valve_pid.output(),
+            )))
         }
-
-        if self.engine_starter_valve_is_open {
-            return Some(PressureRegulatingValveSignal::new_closed());
-        }
-
-        Some(PressureRegulatingValveSignal::new(Ratio::new::<ratio>(
-            self.pressure_regulating_valve_pid.output(),
-        )))
     }
 }
 impl ControllerSignal<FanAirValveSignal> for BleedMonitoringComputerChannel {
@@ -837,10 +833,10 @@ impl EngineBleedAirSystem {
             high_pressure_compression_chamber: CompressionChamber::new(Volume::new::<cubic_meter>(
                 1.,
             )),
-            intermediate_pressure_valve: PurelyPneumaticValve::new(1.),
-            high_pressure_valve: ElectroPneumaticValve::new(1e-2, powered_by),
-            pressure_regulating_valve: ElectroPneumaticValve::new(1., powered_by),
-            fan_air_valve: ElectroPneumaticValve::new(1., powered_by),
+            intermediate_pressure_valve: PurelyPneumaticValve::new(),
+            high_pressure_valve: ElectroPneumaticValve::new(powered_by),
+            pressure_regulating_valve: ElectroPneumaticValve::new(powered_by),
+            fan_air_valve: ElectroPneumaticValve::new(powered_by),
             transfer_pressure_pipe: PneumaticPipe::new(
                 Volume::new::<cubic_meter>(1.),
                 Pressure::new::<psi>(14.7),
@@ -896,7 +892,6 @@ impl EngineBleedAirSystem {
         self.high_pressure_compression_chamber
             .update(&self.high_pressure_compression_chamber_controller);
 
-        // Update valves (open amount)
         self.high_pressure_valve
             .update_open_amount(high_pressure_valve_controller);
         self.pressure_regulating_valve
@@ -906,7 +901,6 @@ impl EngineBleedAirSystem {
         self.fan_air_valve
             .update_open_amount(fan_air_valve_controller);
 
-        // Update valves (fluid movement)
         self.intermediate_pressure_valve.update_move_fluid(
             context,
             &mut self.intermediate_pressure_compression_chamber,
@@ -1155,7 +1149,7 @@ impl FullAuthorityDigitalEngineControl {
         }
     }
 
-    pub fn is_single_vs_dual_bleed_config(&self) -> bool {
+    fn is_single_vs_dual_bleed_config(&self) -> bool {
         (self.engine_1_state == EngineState::On) ^ (self.engine_2_state == EngineState::On)
     }
 }
@@ -1282,16 +1276,16 @@ impl SimulationElement for PackFlowValveController {
 pub struct CrossBleedValve {
     open_amount: Ratio,
     connector: PneumaticContainerConnector,
-    spring_characteristic: f64,
     is_powered_for_manual_control: bool,
     is_powered_for_automatic_control: bool,
 }
 impl CrossBleedValve {
-    pub fn new(spring_characteristic: f64) -> Self {
+    const SPRING_CHARACTERISTIC: f64 = 1.;
+
+    pub fn new() -> Self {
         Self {
             open_amount: Ratio::new::<ratio>(0.),
             connector: PneumaticContainerConnector::new(),
-            spring_characteristic,
             is_powered_for_manual_control: false,
             is_powered_for_automatic_control: false,
         }
@@ -1317,7 +1311,7 @@ impl CrossBleedValve {
     fn set_open_amount_from_pressure_difference(&mut self, pressure_difference: Pressure) {
         self.open_amount = Ratio::new::<ratio>(
             2. / PI
-                * (pressure_difference.get::<psi>() * self.spring_characteristic)
+                * (pressure_difference.get::<psi>() * Self::SPRING_CHARACTERISTIC)
                     .atan()
                     .max(0.),
         );
@@ -1949,14 +1943,6 @@ mod tests {
             self.query(|a| a.pneumatic_overhead_panel.engine_bleed_pb_is_auto(number))
         }
 
-        fn engine_bleed_push_button_has_fault(&self, number: usize) -> bool {
-            self.query(|a| match number {
-                1 => a.pneumatic_overhead_panel.engine_1_bleed.has_fault(),
-                2 => a.pneumatic_overhead_panel.engine_2_bleed.has_fault(),
-                _ => panic!("Invalid engine number"),
-            })
-        }
-
         fn green_hydraulic_reservoir_pressure(&self) -> Pressure {
             self.query(|a| a.pneumatic.green_hydraulic_reservoir_with_valve.pressure())
         }
@@ -1989,20 +1975,16 @@ mod tests {
             bmc_number: usize,
             engine_number: usize,
         ) -> BleedMonitoringComputerChannelOperationMode {
-            self.query(|a| match (bmc_number, engine_number) {
-                (1, 1) => a.pneumatic.bleed_monitoring_computers[0]
-                    .main_channel
-                    .operation_mode(),
-                (1, 2) => a.pneumatic.bleed_monitoring_computers[0]
-                    .backup_channel
-                    .operation_mode(),
-                (2, 1) => a.pneumatic.bleed_monitoring_computers[1]
-                    .backup_channel
-                    .operation_mode(),
-                (2, 2) => a.pneumatic.bleed_monitoring_computers[1]
-                    .main_channel
-                    .operation_mode(),
-                _ => panic!("Invalid combination of BMC number and engine number"),
+            self.query(|a| {
+                let bmc = &a.pneumatic.bleed_monitoring_computers[bmc_number - 1];
+
+                let channel = if bmc_number == engine_number {
+                    &bmc.main_channel
+                } else {
+                    &bmc.backup_channel
+                };
+
+                channel.operation_mode()
             })
         }
 
@@ -2491,7 +2473,7 @@ mod tests {
     }
 
     #[test]
-    fn simvars_initialized_properly() {
+    fn vars_initialized_properly() {
         let test_bed = test_bed()
             .in_isa_atmosphere(Length::new::<foot>(0.))
             .and_run();
@@ -2560,7 +2542,7 @@ mod tests {
     }
 
     #[test]
-    fn prv_closes_with_ovhd_engine_bleed_off() {
+    fn pressure_regulating_valve_closes_with_ovhd_engine_bleed_off() {
         let mut test_bed = test_bed().idle_eng1().idle_eng2().and_run();
 
         // We have to run two update ticks for the pressure to propagate through the system.
@@ -2581,7 +2563,7 @@ mod tests {
     }
 
     #[test]
-    fn prv_closes_with_ovhd_engine_fire_pushbutton_released() {
+    fn pressure_regulating_valve_closes_with_ovhd_engine_fire_pushbutton_released() {
         let mut test_bed = test_bed().idle_eng1().idle_eng2().and_run();
 
         test_bed.run_with_delta(Duration::from_secs(5));
@@ -2601,7 +2583,7 @@ mod tests {
     }
 
     #[test]
-    fn prv_1_closes_with_apu_bleed_on() {
+    fn pressure_regulating_valve_1_closes_with_apu_bleed_on() {
         let mut test_bed = test_bed_with().idle_eng1().idle_eng2().and_run();
 
         test_bed.run_with_delta(Duration::from_secs(5));
@@ -2617,7 +2599,7 @@ mod tests {
     }
 
     #[test]
-    fn prv_2_closes_with_apu_bleed_on_and_cross_bleed_open() {
+    fn pressure_regulating_valve_2_closes_with_apu_bleed_on_and_cross_bleed_open() {
         let mut test_bed = test_bed_with().idle_eng1().idle_eng2().and_run();
 
         test_bed.run_with_delta(Duration::from_secs(5));
