@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { usePersistentProperty } from '../../../Common/persistence';
 
 import Button, { BUTTON_TYPE } from '../../Components/Button/Button';
-import Input from '../../Components/Form/Input/Input';
 import SimpleInput from '../../Components/Form/SimpleInput/SimpleInput';
 import { ProgressBar } from '../../Components/Progress/Progress';
 
@@ -27,7 +26,7 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
     const [deadZone, setDeadZone] = usePersistentProperty(`THROTTLE_${props.throttleNumber}DETENT_${props.index}_RANGE`, '0.05');
 
     const [previousMode, setPreviousMode] = useState(props.expertMode);
-    const [axisValue, setAxisValue] = usePersistentProperty(`THROTTLE_${props.throttleNumber}AXIS_${props.index}_VALUE`);
+    const [axisValue, setAxisValue] = usePersistentProperty(`THROTTLE_${props.throttleNumber}AXIS_${props.index}_VALUE`, '0');
 
     const setFromTo = (throttle1Position, settingLower, settingUpper, deadZone: number, overrideValue?: string) => {
         const newSetting = overrideValue || throttle1Position;
@@ -60,8 +59,7 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
     }, [axisValue, props, deadZone]);
 
     return (
-        <div className="mb-2 w-full h-96 justify-between items-center p-2 flex flex-row flex-shrink-0 text-white overflow-hidden">
-
+        <div className="mb-2w-full h-96 justify-between items-center p-2 flex flex-row flex-shrink-0 text-white overflow-hidden">
             {props.barPosition === 'left'
                 && (
                     <div className="mr-8 h-full">
