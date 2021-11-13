@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-import { AltitudeDescriptor, FixTypeFlags } from '../types/fstypes/FSEnums';
+import { AltitudeDescriptor, FixTypeFlags, LegType } from '../types/fstypes/FSEnums';
 import { FixNamingScheme } from './FixNamingScheme';
 import { GeoMath } from './GeoMath';
 import { RawDataMapper } from './RawDataMapper';
@@ -124,10 +124,10 @@ export class LegsProcedure {
           } else {
               try {
                   switch (currentLeg.type) {
-                  case 3:
+                  case LegType.CD:
                       mappedLeg = this.mapHeadingUntilDistanceFromOrigin(currentLeg, this._previousFix);
                       break;
-                  case 4:
+                  case LegType.CF:
                       // Only map if the fix is itself not a runway fix to avoid double
                       // adding runway fixes
                       if (currentLeg.fixIcao === '' || currentLeg.fixIcao[0] !== 'R') {
@@ -136,23 +136,23 @@ export class LegsProcedure {
                           isLegMappable = false;
                       }
                       break;
-                  case 5:
-                  case 21:
+                  case LegType.CI:
+                  case LegType.VI:
                       mappedLeg = this.mapHeadingToInterceptNextLeg(currentLeg, this._previousFix, this._legs[this._currentIndex + 1]);
                       break;
-                  case 6:
-                  case 23:
+                  case LegType.CR:
+                  case LegType.VR:
                       mappedLeg = this.mapHeadingUntilRadialCrossing(currentLeg, this._previousFix);
                       break;
-                  case 9:
-                  case 10:
+                  case LegType.FC:
+                  case LegType.FD:
                       mappedLeg = this.mapBearingAndDistanceFromOrigin(currentLeg);
                       break;
-                  case 11:
-                  case 22:
+                  case LegType.FM:
+                  case LegType.VM:
                       mappedLeg = this.mapVectors(currentLeg, this._previousFix);
                       break;
-                  case 15:
+                  case LegType.IF:
                       if (currentLeg.fixIcao[0] !== 'A') {
                           const leg = this.mapExactFix(currentLeg);
                           const prevLeg = this._previousFix;
@@ -169,16 +169,21 @@ export class LegsProcedure {
                           isLegMappable = false;
                       }
                       break;
-                  case 7:
-                  case 18:
+                  case LegType.DF:
+                  case LegType.TF:
                       mappedLeg = this.mapExactFix(currentLeg);
                       break;
-                  case 17:
+                  case LegType.RF:
                       mappedLeg = this.mapRadiusToFix(currentLeg);
                       break;
-                  case 2:
-                  case 19:
+                  case LegType.CA:
+                  case LegType.VA:
                       mappedLeg = this.mapHeadingUntilAltitude(currentLeg, this._previousFix);
+                      break;
+                  case LegType.HA:
+                  case LegType.HF:
+                  case LegType.HM:
+                      mappedLeg = this.mapHold(currentLeg);
                       break;
                   default:
                       isLegMappable = false;
@@ -193,8 +198,14 @@ export class LegsProcedure {
                   mappedLeg.legAltitude1 = currentLeg.altitude1 * 3.28084;
                   mappedLeg.legAltitude2 = currentLeg.altitude2 * 3.28084;
                   mappedLeg.speedConstraint = currentLeg.speedRestriction;
+                  mappedLeg.turnDirection = currentLeg.turnDirection;
                   mappedLeg.additionalData.legType = currentLeg.type;
                   mappedLeg.additionalData.overfly = currentLeg.flyOver;
+
+                  mappedLeg.additionalData.distance = currentLeg.distanceMinutes ? 0 : currentLeg.distance / 1852;
+                  mappedLeg.additionalData.distanceInMinutes = currentLeg.distanceMinutes ? currentLeg.distance : 0;
+                  mappedLeg.additionalData.course = currentLeg.trueDegrees ? currentLeg.course : A32NX_Util.magneticToTrue(currentLeg.course, Facilities.getMagVar(mappedLeg.infos.coordinates.lat, mappedLeg.infos.coordinates.long));
+                  mappedLeg.additionalData.course = mappedLeg.additionalData.course;
               }
 
               this._currentIndex++;
@@ -378,7 +389,9 @@ export class LegsProcedure {
       const coordinates = GeoMath.relativeBearingDistanceToCoords(course, distanceInNM, prevLeg.infos.coordinates);
       const waypoint = this.buildWaypoint(FixNamingScheme.headingUntilAltitude(altitudeFeet), coordinates, prevLeg.infos.magneticVariation);
 
+      waypoint.additionalData.vectorsCourse = course;
       waypoint.additionalData.vectorsHeading = heading;
+      waypoint.additionalData.vectorsAltitude = altitudeFeet;
 
       return waypoint;
   }
@@ -437,6 +450,17 @@ export class LegsProcedure {
       waypoint.additionalData.radius = radius;
       waypoint.additionalData.center = arcCenterCoordinates;
       waypoint.additionalData.turnDirection = leg.turnDirection;
+
+      return waypoint;
+  }
+
+  public mapHold(leg: RawProcedureLeg): WayPoint {
+      const facility = this._facilities.get(leg.fixIcao);
+      const waypoint = RawDataMapper.toWaypoint(facility, this._instrument);
+
+      waypoint.additionalData.distance = leg.distanceMinutes ? 0 : leg.distance / 1852;
+      waypoint.additionalData.distanceInMinutes = leg.distanceMinutes ? leg.distance : 0;
+      waypoint.additionalData.course = leg.trueDegrees ? leg.course : A32NX_Util.magneticToTrue(leg.course, Facilities.getMagVar(facility.lat, facility.lon));
 
       return waypoint;
   }

@@ -4,11 +4,11 @@ import { VnavConfig, VnavDescentMode } from '@fmgc/guidance/vnav/VnavConfig';
 import { NdSymbolTypeFlags } from '@shared/NavigationDisplay';
 import { Geometry } from '@fmgc/guidance/Geometry';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
-import { Leg } from '@fmgc/guidance/lnav/legs';
 import { WaypointStats } from '@fmgc/flightplanning/data/flightplan';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { LateralMode } from '@shared/autopilot';
-import { Type1Transition } from '@fmgc/guidance/lnav/transitions/Type1';
+import { FixedRadiusTransition } from '@fmgc/guidance/lnav/transitions/FixedRadiusTransition';
+import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
 
 const PWP_IDENT_TOD = '(T/D)';
 const PWP_IDENT_DECEL = '(DECEL)';
@@ -35,7 +35,7 @@ export class PseudoWaypoints implements GuidanceComponent {
     }
 
     private recompute() {
-        const geometry = this.guidanceController.currentMultipleLegGeometry;
+        const geometry = this.guidanceController.activeGeometry;
 
         if (!geometry || geometry.legs.size < 1) {
             this.pseudoWaypoints.length = 0;
@@ -80,6 +80,25 @@ export class PseudoWaypoints implements GuidanceComponent {
                     stats: PseudoWaypoints.computePseudoWaypointStats(PWP_IDENT_DECEL, geometry.legs.get(alongLegIndex), distanceFromLegTermination),
                 });
             }
+
+            // for (let i = 0; i < 75; i++) {
+            //     const point = PseudoWaypoints.pointFromEndOfPath(geometry, this.guidanceController.vnavDriver.currentApproachProfile.decel + i / 2, `(BRUH${i}`);
+            //
+            //     if (point) {
+            //         const [efisSymbolLla, distanceFromLegTermination, alongLegIndex] = point;
+            //
+            //         newPseudoWaypoints.push({
+            //             ident: `(BRUH${i})`,
+            //             sequencingType: PseudoWaypointSequencingAction.TOD_REACHED,
+            //             alongLegIndex,
+            //             distanceFromLegTermination,
+            //             efisSymbolFlag: NdSymbolTypeFlags.PwpTopOfDescent,
+            //             efisSymbolLla,
+            //             displayedOnMcdu: true,
+            //             stats: PseudoWaypoints.computePseudoWaypointStats(`(BRUH${i})`, geometry.legs.get(alongLegIndex), distanceFromLegTermination),
+            //         });
+            //     }
+            // }
         }
 
         if (VnavConfig.VNAV_DESCENT_MODE === VnavDescentMode.CDA && VnavConfig.VNAV_EMIT_CDA_FLAP_PWP) {
@@ -215,7 +234,6 @@ export class PseudoWaypoints implements GuidanceComponent {
             console.log(`[FMS/PWP] Starting placement of PWP '${debugString}': dist: ${distanceFromEnd.toFixed(2)}nm`);
         }
 
-        // FIXME take transitions into account on newer FMSs
         for (const [i, leg] of path.legs) {
             const inboundTrans = path.transitions.get(i - 1);
             const outboundTrans = path.transitions.get(i);
@@ -223,7 +241,7 @@ export class PseudoWaypoints implements GuidanceComponent {
             const [inboundTransLength, legPartLength, outboundTransLength] = Geometry.completeLegPathLengths(
                 leg,
                 inboundTrans,
-                (outboundTrans instanceof Type1Transition) ? outboundTrans : null,
+                (outboundTrans instanceof FixedRadiusTransition) ? outboundTrans : null,
             );
 
             const totalLegPathLength = inboundTransLength + legPartLength + outboundTransLength;
@@ -253,7 +271,7 @@ export class PseudoWaypoints implements GuidanceComponent {
                     lla = outboundTrans.getPseudoWaypointLocation(distanceBeforeTerminator);
                 } else if (distanceFromEndOfLeg >= outboundTransLength && distanceFromEndOfLeg < (outboundTransLength + legPartLength)) {
                     // Point is in leg segment
-                    const distanceBeforeTerminator = distanceFromEndOfLeg - outboundTransLength + (outboundTrans instanceof Type1Transition ? outboundTrans.unflownDistance : 0);
+                    const distanceBeforeTerminator = distanceFromEndOfLeg - outboundTransLength + (outboundTrans instanceof FixedRadiusTransition ? outboundTrans.unflownDistance : 0);
 
                     if (DEBUG) {
                         console.log(`[FMS/PWP] Placed PWP '${debugString}' on leg #${i} leg segment (${distanceBeforeTerminator.toFixed(2)}nm before end)`);

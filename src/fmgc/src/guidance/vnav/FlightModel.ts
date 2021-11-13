@@ -167,7 +167,7 @@ export class FlightModel {
         accelFactor: number,
     ): number {
         // fpa is in degrees
-        return weight * (accelFactor * Math.sin(fpa * MathUtils.DEEGREES_TO_RADIANS)) + drag;
+        return weight * (accelFactor * Math.sin(fpa * MathUtils.DEGREES_TO_RADIANS)) + drag;
     }
 
     static getThrustFromConstantPathAngleCoefficients(
@@ -178,7 +178,7 @@ export class FlightModel {
         accelFactor: number,
     ): number {
         // fpa is in degrees
-        return weight * (accelFactor * Math.sin(fpa * MathUtils.DEEGREES_TO_RADIANS) + (Cd / Cl));
+        return weight * (accelFactor * Math.sin(fpa * MathUtils.DEGREES_TO_RADIANS) + (Cd / Cl));
     }
 
     static getSpeedChangePathAngle(
@@ -205,7 +205,7 @@ export class FlightModel {
         fpaDeg: number,
     ): number {
         // fpa is in degrees
-        const fpaRad = fpaDeg * MathUtils.DEEGREES_TO_RADIANS;
+        const fpaRad = fpaDeg * MathUtils.DEGREES_TO_RADIANS;
         return FlightModel.gravityConstKNS * ((thrust - drag) / weight - Math.sin(fpaRad));
     }
 
@@ -217,7 +217,7 @@ export class FlightModel {
         fpaDeg: number,
     ): number {
         // fpa is in degrees
-        const fpaRad = fpaDeg * MathUtils.DEEGREES_TO_RADIANS;
+        const fpaRad = fpaDeg * MathUtils.DEGREES_TO_RADIANS;
         return FlightModel.gravityConstKNS * (((thrust / weight) - (Cd / Cl)) - Math.sin(fpaRad));
     }
 

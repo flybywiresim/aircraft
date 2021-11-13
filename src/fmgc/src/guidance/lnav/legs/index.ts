@@ -1,5 +1,4 @@
-import { Guidable } from '@fmgc/guidance/Geometry';
-import { SegmentType } from '@fmgc/wtsdk';
+import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
 
 export enum AltitudeConstraintType {
     at,
@@ -25,44 +24,8 @@ export interface SpeedConstraint {
     speed: Knots,
 }
 
-export abstract class Leg implements Guidable {
-    segment: SegmentType;
-
-    indexInFullPath: number;
-
-    abstract get isCircularArc(): boolean;
-
-    abstract get bearing(): Degrees;
-
-    abstract get distance(): NauticalMiles;
-
-    abstract get speedConstraint(): SpeedConstraint | undefined;
-
-    abstract get altitudeConstraint(): AltitudeConstraint | undefined;
-
-    abstract get initialLocation(): LatLongData | undefined;
-
-    abstract get terminatorLocation(): LatLongData | undefined;
-
-    abstract getPseudoWaypointLocation(distanceBeforeTerminator: NauticalMiles): LatLongData | undefined;
-
-    /** @inheritDoc */
-    recomputeWithParameters(_tas: Knots): void {
-        // Default impl.
-    }
-
-    abstract getGuidanceParameters(ppos: LatLongAlt, trueTrack: Degrees);
-
-    abstract getNominalRollAngle(gs): Degrees;
-
-    /**
-     * Calculates directed DTG parameter
-     *
-     * @param ppos {LatLong} the current position of the aircraft
-     */
-    abstract getDistanceToGo(ppos: LatLongData): NauticalMiles;
-
-    abstract isAbeam(ppos);
+export abstract class FXLeg extends Leg {
+    from: WayPoint;
 }
 
 export function getAltitudeConstraintFromWaypoint(wp: WayPoint): AltitudeConstraint | undefined {

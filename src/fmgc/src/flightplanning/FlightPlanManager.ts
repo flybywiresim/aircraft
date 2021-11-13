@@ -23,6 +23,7 @@
  */
 
 import { NXDataStore } from '@shared/persistence';
+import { LegType } from '@fmgc/types/fstypes/FSEnums';
 import { ManagedFlightPlan } from './ManagedFlightPlan';
 import { GPS } from './GPS';
 import { FlightPlanSegment } from './FlightPlanSegment';
@@ -33,6 +34,11 @@ import { FlightLevel } from '@fmgc/guidance/vnav/verticalFlightPlan/VerticalFlig
 export enum WaypointConstraintType {
     CLB = 1,
     DES = 2,
+}
+
+export enum FlightPlans {
+    Active,
+    Temporary,
 }
 
 /**
@@ -313,6 +319,9 @@ export class FlightPlanManager {
         const currentFlightPlan = this._flightPlans[this._currentFlightPlanIndex];
         const airport = await this._parentInstrument.facilityLoader.getFacilityRaw(icao).catch(console.error);
         if (airport) {
+            airport.additionalData = {};
+            airport.additionalData.legType = LegType.IF;
+
             await currentFlightPlan.clearPlan().catch(console.error);
             await currentFlightPlan.addWaypoint(airport, 0);
             // clear pilot trans alt
@@ -337,7 +346,7 @@ export class FlightPlanManager {
             return this._flightPlans[this._currentFlightPlanIndex].activeWaypointIndex;
         }
 
-        return this._flightPlans[flightPlanIndex].activeWaypointIndex;
+        return this._flightPlans[flightPlanIndex]?.activeWaypointIndex ?? -1;
     }
 
     public isActiveWaypointAtEnd(forceSimVarCall = false, useCorrection = false, flightPlanIndex = NaN): boolean {
@@ -463,7 +472,7 @@ export class FlightPlanManager {
         }
 
         // TODO get proper pos from FMGC
-        const fmPos =  {
+        const fmPos = {
             lat: SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude'),
             long: SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude'),
         };
@@ -1673,7 +1682,7 @@ export class FlightPlanManager {
         return this._flightPlans[this._currentFlightPlanIndex].directTo.interceptPoints[0];
     }
 
-    public getCoordinatesHeadingAtDistanceAlongFlightPlan(distance) {
+    public getCoordinatesHeadingAtDistanceAlongFlightPlan(_distance) {
     }
 
     /**
@@ -1722,7 +1731,13 @@ export class FlightPlanManager {
         } else if (window.localStorage.getItem(FlightPlanManager.FlightPlanCompressedKey) === '1') {
             this._flightPlans = JSON.parse(LZUTF8.decompress(fpln, { inputEncoding: 'StorageBinaryString' }));
         } else {
-            this._flightPlans = JSON.parse(fpln);
+            try {
+                this._flightPlans = JSON.parse(fpln);
+            } catch (e) {
+                // Assume we failed because compression status did not match up. Try to decompress anyway.
+
+                this._flightPlans = JSON.parse(LZUTF8.decompress(fpln, { inputEncoding: 'StorageBinaryString' }));
+            }
         }
     }
 

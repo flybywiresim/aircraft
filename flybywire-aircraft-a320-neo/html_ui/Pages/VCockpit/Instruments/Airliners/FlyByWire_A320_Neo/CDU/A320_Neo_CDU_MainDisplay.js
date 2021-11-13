@@ -28,7 +28,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             Dyn: 1500
         };
         this.fmgcMesssagesListener = RegisterViewListener('JS_LISTENER_SIMVARS');
-        this.setupFmgcTriggers();
         this.page = {
             SelfPtr: false,
             Current: 0,
@@ -155,6 +154,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
         const display = new ScratchpadDisplay(this.getChildById("in-out"));
         this.scratchpad = new ScratchpadDataLink(this, display);
+
+        this.setupFmgcTriggers();
 
         this.setTimeout = (func) => {
             setTimeout(() => {

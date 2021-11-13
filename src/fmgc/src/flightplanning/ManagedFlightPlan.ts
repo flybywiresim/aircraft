@@ -23,7 +23,7 @@
  */
 
 import { WaypointStats } from '@fmgc/flightplanning/data/flightplan';
-import { AltitudeDescriptor } from '../types/fstypes/FSEnums';
+import { AltitudeDescriptor, LegType } from '../types/fstypes/FSEnums';
 import { FlightPlanSegment, SegmentType } from './FlightPlanSegment';
 import { LegsProcedure } from './LegsProcedure';
 import { RawDataMapper } from './RawDataMapper';
@@ -355,6 +355,7 @@ export class ManagedFlightPlan {
         index?: number | undefined,
         segmentType?: SegmentType,
     ): void {
+        console.log('addWaypoint', waypoint, index, SegmentType[segmentType]);
         const mappedWaypoint: WayPoint = (waypoint instanceof WayPoint) ? waypoint : RawDataMapper.toWaypoint(waypoint, this._parentInstrument);
 
         if (mappedWaypoint.type === 'A' && index === 0) {
@@ -640,6 +641,7 @@ export class ManagedFlightPlan {
             legAltitude1: waypoint.legAltitude1,
             legAltitude2: waypoint.legAltitude2,
             speedConstraint: waypoint.speedConstraint,
+            turnDirection: waypoint.turnDirection,
             isVectors: waypoint.isVectors,
             endsInDiscontinuity: waypoint.endsInDiscontinuity,
             discontinuityCanBeCleared: waypoint.discontinuityCanBeCleared,
@@ -768,6 +770,11 @@ export class ManagedFlightPlan {
 
         const airportInfo = origin.infos as AirportInfo;
 
+        // Make origin fix an IF leg
+        if (origin) {
+            origin.additionalData.legType = LegType.IF;
+        }
+
         // Set origin fix coordinates to runway beginning coordinates
         if (origin && selectedOriginRunwayIndex !== -1) {
             origin.infos.coordinates = airportInfo.oneWayRunways[selectedOriginRunwayIndex].beginningCoordinates;
@@ -805,7 +812,7 @@ export class ManagedFlightPlan {
             segment = this.addSegment(SegmentType.Departure);
             let procedure = new LegsProcedure(legs, origin, this._parentInstrument);
 
-            let runway: OneWayRunway | null = this.getOriginRunway();
+            const runway: OneWayRunway | null = this.getOriginRunway();
 
             if (runway) {
                 // console.error('bruh');
@@ -891,7 +898,7 @@ export class ManagedFlightPlan {
             while (procedure.hasNext()) {
                 const waypoint = await procedure.getNext().catch(console.error);
 
-                if (waypoint !== undefined) {
+                if (waypoint) {
                     // console.log('  ---- MFP: buildArrival: added waypoint ', waypoint.ident, ' to segment ', segment);
                     this.addWaypointAvoidingDuplicates(waypoint, ++waypointIndex, segment);
                 }
@@ -930,6 +937,7 @@ export class ManagedFlightPlan {
      */
     public async buildApproach(): Promise<void> {
         const legs = [];
+        const missedLegs = [];
         const destination = this.destinationAirfield;
 
         const { approachIndex } = this.procedureDetails;
@@ -947,7 +955,7 @@ export class ManagedFlightPlan {
 
         if (approachIndex !== -1) {
             legs.push(...destinationInfo.approaches[approachIndex].finalLegs);
-            // console.log('MFP: buildApproach - pushing final legs ->', legs);
+            missedLegs.push(...destinationInfo.approaches[approachIndex].missedLegs);
         }
 
         let { _startIndex, segment } = this.truncateSegment(SegmentType.Approach);
@@ -967,7 +975,7 @@ export class ManagedFlightPlan {
                 }
             }
 
-            let runway: OneWayRunway | null = this.getDestinationRunway();
+            const runway: OneWayRunway | null = this.getDestinationRunway();
 
             const procedure = new LegsProcedure(legs, this.getWaypoint(_startIndex - 1), this._parentInstrument);
 
@@ -1022,6 +1030,29 @@ export class ManagedFlightPlan {
                 }
             }
         }
+
+        /* if (missedLegs.length > 0) {
+            let { _startIndex, segment } = this.truncateSegment(SegmentType.Missed);
+
+            if (segment === FlightPlanSegment.Empty) {
+                segment = this.addSegment(SegmentType.Missed);
+                _startIndex = segment.offset;
+            }
+
+            let waypointIndex = _startIndex;
+
+            const missedProcedure = new LegsProcedure(missedLegs, this.getWaypoint(_startIndex - 1), this._parentInstrument);
+            while (missedProcedure.hasNext()) {
+                // eslint-disable-next-line no-await-in-loop
+                const waypoint = await missedProcedure.getNext().catch(console.error);
+
+                if (waypoint !== undefined) {
+                    // console.log('  ---- MFP: buildApproach: added waypoint', waypoint.ident, ' to segment ', segment);
+                    this.addWaypoint(waypoint, ++waypointIndex, segment.type);
+                }
+            }
+        } */
+
         this.updateArrivalApproachSpeeds();
     }
 
@@ -1132,11 +1163,13 @@ export class ManagedFlightPlan {
         return plan;
     }
 
-    private addWaypointAvoidingDuplicates(waypoint: Waypoint, waypointIndex: number, segment: FlightPlanSegment): void {
+    private addWaypointAvoidingDuplicates(waypoint: WayPoint, waypointIndex: number, segment: FlightPlanSegment): void {
         const index = this.waypoints.findIndex((wp) => wp.ident === waypoint.ident); // FIXME this should really compare icaos...
 
         // FIXME this should collapse any legs between the old position and the newly inserted position
-        if (index !== -1 && (index === waypointIndex - 1 || index === waypointIndex + 1)) {
+        const wptDist = Math.abs(index - waypointIndex);
+
+        if (wptDist <= 2) {
             // console.log('  -------> MFP: addWaypointAvoidingDuplicates: removing duplicate waypoint ', this.getWaypoint(index).ident);
             const removedWp = this.getWaypoint(index);
             if (waypoint.legAltitudeDescription === AltitudeDescriptor.Empty && removedWp.legAltitudeDescription !== AltitudeDescriptor.Empty) {
@@ -1161,7 +1194,7 @@ export class ManagedFlightPlan {
         return null;
     }
 
-    public getDestinationRunway(): OneWayRunway | null{
+    public getDestinationRunway(): OneWayRunway | null {
         if (this.destinationAirfield) {
             if (this.procedureDetails.destinationRunwayIndex !== -1) {
                 return this.destinationAirfield.infos.oneWayRunways[this.procedureDetails.destinationRunwayIndex];

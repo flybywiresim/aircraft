@@ -85,6 +85,7 @@
     "classnames": "^2.2.6",
     "immer": "^9.0.3",
     "lodash": "^4.17.20",
+    "geolib": "^3.3.3",
     "qrcode.react": "^1.0.1",
     "react": "^17.0.0",
     "react-dom": "^17.0.0",
