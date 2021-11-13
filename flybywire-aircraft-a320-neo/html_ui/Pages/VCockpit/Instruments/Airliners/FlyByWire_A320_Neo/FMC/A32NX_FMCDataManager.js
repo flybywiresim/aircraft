@@ -110,7 +110,12 @@ class FMCDataManager {
         // fetch results from the nav database
         // we filter for equal idents, because the search returns everything starting with the given string
         const results = (await Coherent.call('SEARCH_BY_IDENT', ident, filter, maxItems)).filter((icao) => ident === icao.substr(7, 5).trim());
-        const waypoints = await Promise.all(results.map(async (icao) => await this.fmc.facilityLoader.getFacility(icao)));
+        const waypoints = (await Promise.all(results.map(async (icao) => await this.fmc.facilityLoader.getFacility(icao))))
+            .filter((obj) => !!obj); // Remove waypoints we couldn't find
+
+        if (results.length !== waypoints.length) {
+            console.warn('[FMS/DataManager] Could not resolve all icaos to facilities.');
+        }
 
         // fetch pilot stored waypoints
         if (filter === IcaoSearchFilter.None || (filter & IcaoSearchFilter.Intersections) > 0) {

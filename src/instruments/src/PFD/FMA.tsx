@@ -553,6 +553,8 @@ const getBC3Message = (isAttExcessive: boolean) => {
     const trkFpaDeselectedTCAS = getSimVar('L:A32NX_AUTOPILOT_TCAS_MESSAGE_TRK_FPA_DESELECTION', 'bool');
     const tcasRaInhibited = getSimVar('L:A32NX_AUTOPILOT_TCAS_MESSAGE_RA_INHIBITED', 'bool');
 
+    const setHoldSpeed = getSimVar('L:A32NX_PFD_MSG_SET_HOLD_SPEED', 'bool');
+
     let text: string;
     let className: string;
     // All currently unused message are set to false
@@ -595,7 +597,7 @@ const getBC3Message = (isAttExcessive: boolean) => {
     } else if (false) {
         text = 'TURN AREA EXCEEDANCE';
         className = 'White';
-    } else if (false) {
+    } else if (setHoldSpeed) {
         text = 'SET HOLD SPEED';
         className = 'White';
     } else if (false) {
