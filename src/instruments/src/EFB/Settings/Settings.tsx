@@ -1,28 +1,20 @@
-import React, { useState } from 'react';
+import React, { FC, useEffect, useRef, useState } from 'react';
 
 import { Route, Switch } from 'react-router';
 import { Link } from 'react-router-dom';
 
-import { ChevronRight } from 'react-bootstrap-icons';
 
-import { FlyPadPage } from './Pages/FlyPadPage';
-import { AtsuAocPage } from './Pages/AtsuAocPage';
-import { AircraftConfigurationPage } from './Pages/AircraftConfigurationPage';
-import { DefaultsPage } from './Pages/DefaultsPage';
-import { AudioPage } from './Pages/AudioPage';
+import { AircraftOptionsPinProgramsPage } from './Pages/AircraftOptionsPinProgramsPage';
 import { SimOptionsPage } from './Pages/SimOptionsPage';
+import { AtsuAocPage } from './Pages/AtsuAocPage';
+import { AudioPage } from './Pages/AudioPage';
+import { FlyPadPage } from './Pages/FlyPadPage';
+import { ArrowLeft, ChevronRight } from 'react-bootstrap-icons';
 
 export type ButtonType = {
     name: string,
     setting: string,
 }
-
-interface SettingsNavbarContextInterface {
-    showNavbar: boolean,
-    setShowNavbar: (newValue: boolean) => void
-}
-
-export const SettingsNavbarContext = React.createContext<SettingsNavbarContextInterface>(undefined as any);
 
 interface PageLink {
     name: string,
@@ -39,7 +31,7 @@ export const SelectionTabs = ({ tabs }: SelectionTabsProps) => (
             tabs.map((tab) => (
                 <Link
                     to={`settings/${tab.name.toLowerCase().replace(/\s/g, '-')}`}
-                    className="flex justify-between items-center p-6 rounded-md hover:shadow-lg transition duration-200 bg-theme-secondary"
+                    className="flex justify-between items-center p-6 rounded-md hover:shadow-lg transition duration-100 bg-theme-secondary"
                 >
                     <p className="text-2xl">{tab.name}</p>
                     <ChevronRight size={30} />
@@ -50,34 +42,105 @@ export const SelectionTabs = ({ tabs }: SelectionTabsProps) => (
 );
 
 export const Settings = () => {
-    const [showNavbar, setShowNavbar] = useState(true);
-
     const tabs: PageLink[] = [
-        { name: 'Defaults', component: <DefaultsPage /> },
-        { name: 'Aircraft Configuration', component: <AircraftConfigurationPage /> },
+        { name: 'Aircraft Options / Pin Programs', component: <AircraftOptionsPinProgramsPage /> },
         { name: 'Sim Options', component: <SimOptionsPage /> },
-        { name: 'ATSU AOC', component: <AtsuAocPage /> },
+        { name: 'ATSU / AOC', component: <AtsuAocPage /> },
         { name: 'Audio', component: <AudioPage /> },
         { name: 'flyPad', component: <FlyPadPage /> },
     ];
 
     return (
-        <SettingsNavbarContext.Provider value={{ showNavbar, setShowNavbar }}>
             <div className="w-full h-efb">
                 <Switch>
                     <Route exact path="/settings">
-                        <h1 className="mb-4 ">Settings</h1>
+                        <h1 className="mb-4">Settings</h1>
                         <SelectionTabs tabs={tabs} />
                     </Route>
                     {tabs.map((tab) => (
                         <Route path={`/settings/${tab.name.toLowerCase().replace(/\s/g, '-')}`}>
-                            <div className="mt-4">
                                 {tab.component}
-                            </div>
                         </Route>
                     ))}
                 </Switch>
             </div>
-        </SettingsNavbarContext.Provider>
     );
 };
+
+type SettingsPageProps = {
+    name: string,
+}
+
+export const SettingsPage: FC<SettingsPageProps> = ({name, children}) => {
+    const [contentOverflows, setContentOverflows] = useState(false);
+    const contentRef = useRef<HTMLDivElement>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
+    const position = useRef({ top: 0, y: 0 });
+
+    useEffect(() => {
+        if (contentRef.current) {
+            if(contentRef.current.clientHeight > 53 * parseFloat(getComputedStyle(document.documentElement).fontSize)) {
+                setContentOverflows(true);
+            }
+        }
+    }, [])
+
+    function handleMouseDown(event: React.MouseEvent) {
+        position.current.top = containerRef.current ? containerRef.current.scrollTop : 0;
+        position.current.y = event.clientY;
+
+        document.addEventListener('mousemove', mouseMoveHandler);
+        document.addEventListener('mouseup', mouseUpHandler);
+    };
+
+    function mouseMoveHandler(event: MouseEvent) {
+        const dy = event.clientY - position.current.y;
+        if (containerRef.current) {
+            containerRef.current.scrollTop = position.current.top - dy;
+        }
+    };
+
+    function mouseUpHandler() {
+        document.removeEventListener('mousemove', mouseMoveHandler);
+        document.removeEventListener('mouseup', mouseUpHandler);
+    };
+
+    return (
+        <div>
+            <Link to="/settings" className='inline-block mb-4'>
+                <div className='flex flex-row items-center space-x-3 hover:text-theme-highlight transition duration-100'>
+                    <ArrowLeft size={30} />
+                    <h1 className="text-current">Settings - {name}</h1>
+                </div>
+            </Link>
+            <div className="px-6 py-2 w-full rounded-lg border-2 shadow-md h-efb border-theme-accent">
+                {/* TODO: replace with JIT value */}
+                <div
+                className={`w-full ${contentOverflows && 'overflow-y-scroll'} scrollbar`}
+                style={{ height: '53rem' }}
+                 ref={containerRef}
+                  onMouseDown={handleMouseDown}>
+                    <div className={`divide-y-2 divide-theme-accent ${contentOverflows && 'mr-6'}`} ref={contentRef}>
+                        {children}
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+type SettingItemProps = {
+    name: string,
+    unrealistic?: boolean,
+}
+
+export const SettingItem: FC<SettingItemProps> = ({name, unrealistic, children}) => (
+    <div className="flex flex-row items-center justify-between py-4">
+        <p>
+            {name}
+            {unrealistic && <span className="ml-2 text-theme-highlight"> (Unrealistic)</span>}
+        </p>
+
+        {children}
+    </div>
+)

@@ -1,6 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { usePersistentProperty } from '@instruments/common/persistence';
-import { IconMinus, IconPlus } from '@tabler/icons';
 import { FileEarmarkArrowDown, ZoomIn, ZoomOut } from 'react-bootstrap-icons';
 import { fetchSimbriefDataAction } from '../../Store/features/simbrief';
 import { useAppDispatch } from '../../Store/store';
@@ -35,12 +34,13 @@ export const LoadSheetWidget = (props: LoadsheetPageProps) => {
     }, [imageSize]);
 
     const [loadSheetStyle, setLoadSheetStyle] = useState({});
+
     useEffect(() => setLoadSheetStyle({
         fontSize: `${fontSize}px`,
         lineHeight: `${fontSize}px`,
     }), [fontSize]);
 
-    const handleMouseDown = (event) => {
+    function handleMouseDown(event: React.MouseEvent) {
         position.current.top = ref.current ? ref.current.scrollTop : 0;
         position.current.y = event.clientY;
 
@@ -48,19 +48,19 @@ export const LoadSheetWidget = (props: LoadsheetPageProps) => {
         document.addEventListener('mouseup', mouseUpHandler);
     };
 
-    const mouseMoveHandler = (event) => {
+    function mouseMoveHandler(event: MouseEvent) {
         const dy = event.clientY - position.current.y;
         if (ref.current) {
             ref.current.scrollTop = position.current.top - dy;
         }
     };
 
-    const mouseUpHandler = () => {
+    function mouseUpHandler() {
         document.removeEventListener('mousemove', mouseMoveHandler);
         document.removeEventListener('mouseup', mouseUpHandler);
-    };
+    }
 
-    const handleFontIncrease = () => {
+    function handleFontIncrease() {
         let cFontSize = (Number)(fontSize);
         let cImageSize = imageSize;
 
@@ -69,9 +69,9 @@ export const LoadSheetWidget = (props: LoadsheetPageProps) => {
             cImageSize += 5;
             handleScaling(cFontSize, cImageSize);
         }
-    };
+    }
 
-    const handleFontDecrease = () => {
+    function handleFontDecrease() {
         let cFontSize = (Number)(fontSize);
         let cImageSize = imageSize;
 
@@ -80,12 +80,12 @@ export const LoadSheetWidget = (props: LoadsheetPageProps) => {
             cImageSize -= 5;
             handleScaling(cFontSize, cImageSize);
         }
-    };
+    }
 
-    const handleScaling = (cFontSize, cImageSize) => {
+    function handleScaling(cFontSize, cImageSize) {
         setFontSize((String)(cFontSize));
         setImageSize(cImageSize);
-    };
+    }
 
     return (
         <div className="overflow-hidden relative p-6 mt-4 w-full rounded-lg border-2 shadow-md h-efb border-theme-accent">

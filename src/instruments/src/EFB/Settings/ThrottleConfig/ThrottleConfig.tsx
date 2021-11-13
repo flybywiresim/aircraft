@@ -124,14 +124,13 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
 
     if (props.isShown) {
         return (
-            <div className="flex flex-col pt-4 text-center">
+            <div className="flex flex-col text-center">
                 <div className="rounded-xl py-6">
 
                     <div className="flex flex-row rounded-2xl justify-center bg-navy-lighter mt-auto mb-8 p-4 w-full divide divide-x-2 divide-gray-500">
                         <div className="flex flex-row mr-2">
                             <span className="text-lg text-gray-300 mr-2">Reverser On Axis</span>
                             <Toggle value={!!reverserOnAxis1} onToggle={(value) => setReversersOnAxis(value ? 1 : 0)} />
-
                         </div>
                         <div className="flex flex-row">
                             <span>

@@ -3,7 +3,7 @@ import { usePersistentProperty } from '@instruments/common/persistence';
 import { useSimVar } from '@instruments/common/simVars';
 
 import { Toggle } from '@flybywiresim/react-components';
-import { ButtonType, SettingsNavbarContext } from '../Settings';
+import { ButtonType, SettingItem, SettingsPage } from '../Settings';
 
 import Button from '../../Components/Button/Button';
 import { SelectGroup, SelectItem } from '../../Components/Form/Select';
@@ -15,18 +15,8 @@ type AdirsButton = {
     simVarValue: number,
 }
 
-const ControlSettings = ({ setShowSettings }) => (
-    <div className="bg-navy-lighter divide-y-2 my-4 divide-gray-700 flex flex-col rounded-xl p-6">
-        <div className="flex flex-row justify-between items-center">
-            <span className="text-lg text-gray-300">Detents</span>
-            <Button className="bg-teal-light-contrast border-teal-light-contrast" text="Calibrate" onClick={() => setShowSettings(true)} />
-        </div>
-    </div>
-);
-
 export const SimOptionsPage = () => {
     const [showThrottleSettings, setShowThrottleSettings] = useState(false);
-    const { setShowNavbar } = useContext(SettingsNavbarContext);
 
     const [adirsAlignTime, setAdirsAlignTime] = usePersistentProperty('CONFIG_ALIGN_TIME', 'REAL');
     const [, setAdirsAlignTimeSimVar] = useSimVar('L:A32NX_CONFIG_ADIRS_IR_ALIGN_TIME', 'Enum', Number.MAX_SAFE_INTEGER);
@@ -55,18 +45,12 @@ export const SimOptionsPage = () => {
         { name: 'hPa', setting: 'HPA' },
     ];
 
-    useEffect(() => {
-        setShowNavbar(!showThrottleSettings);
-    }, [showThrottleSettings]);
-
     return (
         <div>
             {!showThrottleSettings
         && (
-            <>
-                <div className="bg-navy-lighter rounded-xl px-6 divide-y-2 divide-gray-700 flex flex-col">
-                    <div className="py-4 flex flex-row justify-between items-center">
-                        <span className="text-lg text-gray-300">ADIRS Align Time</span>
+        <SettingsPage name="Sim Options">
+            <SettingItem name="ADIRS Align Time">
                         <SelectGroup>
                             {adirsAlignTimeButtons.map((button) => (
                                 <SelectItem
@@ -81,10 +65,9 @@ export const SimOptionsPage = () => {
                                 </SelectItem>
                             ))}
                         </SelectGroup>
-                    </div>
+                    </SettingItem>
 
-                    <div className="py-4 flex flex-row justify-between items-center">
-                        <span className="text-lg text-gray-300">DMC Self Test Time</span>
+                    <SettingItem name="DMC Self Test Time">
                         <SelectGroup>
                             {dmcSelfTestTimeButtons.map((button) => (
                                 <SelectItem
@@ -96,10 +79,9 @@ export const SimOptionsPage = () => {
                                 </SelectItem>
                             ))}
                         </SelectGroup>
-                    </div>
+                    </SettingItem>
 
-                    <div className="py-4 flex flex-row justify-between items-center">
-                        <span className="text-lg text-gray-300 mr-1">Default Baro</span>
+                    <SettingItem name="Default Barometer Unit">
                         <SelectGroup>
                             {defaultBaroButtons.map((button) => (
                                 <SelectItem
@@ -111,18 +93,13 @@ export const SimOptionsPage = () => {
                                 </SelectItem>
                             ))}
                         </SelectGroup>
-                    </div>
-                    <div className="py-4 flex flex-row justify-between items-center">
-                        <span>
-                            <span className="text-lg text-gray-300">MCDU Keyboard Input</span>
-                            <span className="text-lg text-gray-500 ml-2">(unrealistic)</span>
-                        </span>
+</SettingItem>
+
+<SettingItem name="MCDU Keyboard Input" unrealistic>
                         <Toggle value={mcduInput === 'ENABLED'} onToggle={(value) => setMcduInput(value ? 'ENABLED' : 'DISABLED')} />
-                    </div>
-                    <div className="py-4 flex flex-row justify-between items-center">
-                        <span>
-                            <span className="text-lg text-gray-300">MCDU Focus Timeout (s)</span>
-                        </span>
+                    </SettingItem>
+
+                    <SettingItem name="MCDU Focus Timeout (seconds)">
                         <SimpleInput
                             className="w-30 ml-1.5 px-5 py-1.5 text-lg text-gray-300 rounded-lg bg-navy-light
                             border-2 border-navy-light focus-within:outline-none focus-within:border-teal-light-contrast text-center disabled"
@@ -137,10 +114,12 @@ export const SimOptionsPage = () => {
                                 }
                             }}
                         />
-                    </div>
-                </div>
-                <ControlSettings setShowSettings={setShowThrottleSettings} />
-            </>
+                </SettingItem>
+
+                <SettingItem name="Throttle Detents">
+                    <Button className="bg-teal-light-contrast border-teal-light-contrast" text="Calibrate" onClick={() => setShowThrottleSettings(true)} />
+                </SettingItem>
+                </SettingsPage>
         )}
             <ThrottleConfig isShown={showThrottleSettings} onClose={() => setShowThrottleSettings(false)} />
         </div>

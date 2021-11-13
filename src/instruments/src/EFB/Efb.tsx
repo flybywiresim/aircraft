@@ -127,6 +127,7 @@ const Efb = () => {
 
         return Math.min(Math.max((-solarAltitude * (180 / Math.PI)) / solarZenith * 100, 0), 100);
     }
+
     // handle setting brightness if user is using autobrightness
     useEffect(() => {
         if (usingAutobrightness) {
