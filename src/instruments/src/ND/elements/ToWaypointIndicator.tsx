@@ -1,16 +1,25 @@
-import React, { FC, memo } from 'react';
+import React, { FC, memo, useState } from 'react';
 import { Layer } from '@instruments/common/utils';
-import { WaypointStats } from '@fmgc/flightplanning/data/flightplan';
-import { GeoMath } from '@fmgc/flightplanning/GeoMath';
+import { useCoherentEvent } from '@instruments/common/hooks';
+import { EfisSide } from '@shared/NavigationDisplay';
+import { useSimVar } from '@instruments/common/simVars';
 
 export type ToWaypointIndicatorProps = {
-    info?: WaypointStats,
+    side: EfisSide,
 }
 
-export const ToWaypointIndicator: FC<ToWaypointIndicatorProps> = memo(({ info }) => {
-    if (!info) {
-        return null;
-    }
+export const ToWaypointIndicator: FC<ToWaypointIndicatorProps> = memo(({ side }) => {
+    // TODO replace with appropriate ARINC 429 labels
+
+    const [ident, setIdent] = useState<string | null>(null);
+    const [bearing] = useSimVar(`L:A32NX_EFIS_${side}_TO_WPT_BEARING`, 'Degrees');
+    const [distance] = useSimVar(`L:A32NX_EFIS_${side}_TO_WPT_DISTANCE`, 'Number');
+    const [eta] = useSimVar(`L:A32NX_EFIS_${side}_TO_WPT_ETA`, 'Seconds');
+
+    useCoherentEvent(`A32NX_EFIS_${side}_TO_WPT_IDENT`, (ident: string) => {
+        // EIS2 can only display 9 characters for the ident
+        setIdent(ident.substring(0, 8));
+    });
 
     let distanceFixed;
     let distanceIntegralPart;
@@ -20,40 +29,38 @@ export const ToWaypointIndicator: FC<ToWaypointIndicatorProps> = memo(({ info })
      * distance < 20nm: XX.Y NM
      * distance > 20nm: XXXX NM
      */
-    if (info.distanceFromPpos < 20) {
-        distanceFixed = info.distanceFromPpos.toFixed(1);
+    if (!distance) {
+        distanceFixed = '';
+        distanceIntegralPart = '';
+        distanceDecimalPart = '';
+    } else if (distance < 20) {
+        distanceFixed = distance.toFixed(1);
         [distanceIntegralPart, distanceDecimalPart] = distanceFixed.split('.');
     } else {
-        distanceFixed = Math.round(Math.min(9999, info.distanceFromPpos));
+        distanceFixed = Math.round(Math.min(9999, distance));
     }
 
-    let timeText;
-    if (info.etaFromPpos) {
-        const timeMinutes = Math.floor(info.timeFromPpos / 60).toString().padStart(2, '0');
-        const timeSeconds = Math.floor(info.timeFromPpos % 60).toString().padStart(2, '0');
+    const hh = Math.floor(eta / 3600);
+    const mm = Math.floor((eta % 3600) / 60);
 
-        timeText = `${timeMinutes}:${timeSeconds}`;
-    } else {
-        timeText = '--:--';
-    }
-
-    const heading = Avionics.Utils.clampAngle(GeoMath.correctMagvar(info.bearingInFp, info.magneticVariation));
+    const utc = `${hh.toString().padStart(2, '0')}:${mm.toString().padStart(2, '0')}`;
 
     return (
         <Layer x={690} y={28}>
-            {/* EIS2 can only display 9 characters for this ident */}
-            <text x={-9} y={0} fontSize={25} className="White" textAnchor="end">{info.ident.substring(0, 8)}</text>
+            {ident && (
+                <text x={-9} y={0} fontSize={25} className="White" textAnchor="end">{ident}</text>
+            )}
 
-            {Number.isFinite(heading) && (
+            {bearing && Number.isFinite(bearing) && (
                 <>
-                    <text x={54} y={0} fontSize={25} className="Green" textAnchor="end">{(Math.round(heading)).toString().padStart(3, '0')}</text>
+                    <text x={54} y={0} fontSize={25} className="Green" textAnchor="end">{(Math.round(bearing)).toString().padStart(3, '0')}</text>
                     <text x={73} y={2} fontSize={25} className="Cyan" textAnchor="end">&deg;</text>
                 </>
             )}
 
-            {Number.isFinite(info.distanceFromPpos) && (
+            {distance && Number.isFinite(distance) && (
                 <>
-                    {info.distanceFromPpos < 20 ? (
+                    {distance < 20 ? (
                         <>
                             <text x={8} y={30} fontSize={24} className="Green" textAnchor="end">{distanceIntegralPart}</text>
                             <text x={8} y={30} fontSize={23} className="Green" textAnchor="start">.</text>
@@ -69,8 +76,8 @@ export const ToWaypointIndicator: FC<ToWaypointIndicatorProps> = memo(({ info })
                 </>
             )}
 
-            {Number.isFinite(info.etaFromPpos) && (
-                <text x={72} y={62} fontSize={25} className="Green" textAnchor="end">{timeText}</text>
+            {utc && (
+                <text x={72} y={62} fontSize={25} className="Green" textAnchor="end">{utc}</text>
             )}
         </Layer>
     );
