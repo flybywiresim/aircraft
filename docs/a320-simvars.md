@@ -957,14 +957,6 @@
       0 | inactive
       1 | active
 
-- A32NX_MFD_MASK_OPACITY
-    - Number
-    - Current LCD mask opacity for MFDs, used for driving LCD display pixels effect
-
-- A32NX_MCDU_MASK_OPACITY
-    - Number
-    - Current LCD mask opacity for MCDU, used for driving MCDU display pixels effect
-
 - A32NX_ISIS_LS_ACTIVE
 	- Bool
 	- Indicates whether LS scales are shown on the ISIS
@@ -1050,6 +1042,10 @@
         - FM2
 
 ## Fly-By-Wire System
+
+- A32NX_LOGGING_FLIGHT_CONTROLS_ENABLED
+    - Bool
+    - Indicates if logging of flight control events is enabled
 
 - A32NX_SIDESTICK_POSITION_X
     - Number
@@ -1646,6 +1642,10 @@ In the variables below, {number} should be replaced with one item in the set: { 
       ACTIVE | 1
 
 ## Throttle Mapping System
+
+- A32NX_LOGGING_THROTTLES_ENABLED
+    - Bool
+    - Indicates if logging of throttle events is enabled
 
 - A32NX_THROTTLE_MAPPING_LOADED_CONFIG:{index}
     - Bool

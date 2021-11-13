@@ -56,6 +56,15 @@
 1. [FBW] Improved roll stability in turbulence or with performance issues - @IbrahimK42 (IbrahimK42) and @aguther (Andreas Guther)
 1. [MCDU] Hide POSITION UPDATE AT field on PROG page when GPS is available - @BlueberryKing (BlueberryKing)
 1. [MCDU] Sort approaches by type - @tracernz (Mike)
+1. [MODEL] Add four portholes. Two opposite the existing ones, and two above the wing. - @igor8518 (Igor Milovidov)
+1. [MODEL] Add dynamic registration decal option - @tracernz (Mike)
+1. [FCU] Autopilot button integ light brightness corrected - @tracernz (Mike)
+1. [FBW/AP/ATHR] Only enable client data section when a model runs externally - @aguther (Andreas Guther)
+1. [FBW/AP/ATHR] Added local variables to enable logging of flight controls and/or throttle events - @aguther (Andreas Guther)
+1. [AP] Fixed VMAX speed protection for several modes not working properly - @aguther (Andreas Guther)
+1. [AP] Added support for event AUTOPILOT_DISENGAGE_SET to disengage AP - @aguther (Andreas Guther)
+1. [AP] Reduced speed margin of speed protection to 5 kn - @aguther (Andreas Guther)
+1. [MODEL] Removed glass due to issues with brightness in clouds since SU6 - @aguther (Andreas Guther)
 1. [BLEED] Replace default bleed system - @BlueberryKing (BlueberryKing)
 
 ## 0.7.0

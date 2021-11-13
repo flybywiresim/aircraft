@@ -12,6 +12,7 @@ use uom::si::{
     thermodynamic_temperature::{degree_celsius, kelvin},
 };
 
+pub mod low_pass_filter;
 pub mod pid;
 
 mod random;
