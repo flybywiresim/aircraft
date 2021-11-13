@@ -42,6 +42,14 @@ class CDUDirectToPage {
                 CDUDirectToPage.ShowPage(mcdu);
             };
         }
+        // TODO create leg sequence
+        //  - IF at T-P
+        //  - CF equal to A/C track (turn anticipation)
+        //  - DF to waypoint or what about radial in/out?
+        //  - clear fp up to waypoint
+        //  - discont if waypoint not in FP
+        // TODO enable automatic sequencing
+        // TODO engage NAV mode
         mcdu.onLeftInput[0] = (value) => {
             mcdu.getOrSelectWaypointByIdent(value, (w) => {
                 if (w) {

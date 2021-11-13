@@ -30,7 +30,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             Dyn: 1500
         };
         this.fmgcMesssagesListener = RegisterViewListener('JS_LISTENER_SIMVARS');
-        this.setupFmgcTriggers();
         this.page = {
             SelfPtr: false,
             Current: 0,
@@ -158,6 +157,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         const display = new ScratchpadDisplay(this.getChildById("in-out"));
         this.scratchpad = new ScratchpadDataLink(this, display);
 
+        this.setupFmgcTriggers();
+
         this.setTimeout = (func) => {
             setTimeout(() => {
                 func;
@@ -176,6 +177,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.onPlusMinus = (defaultKey = "-") => this.scratchpad.plusMinus(defaultKey);
         this.onLeftFunction = (f) => this.onLsk(this.onLeftInput[f], this.leftInputDelay[f]);
         this.onRightFunction = (f) => this.onLsk(this.onRightInput[f], this.rightInputDelay[f]);
+        this.onOvfy = () => this.scratchpad.addChar('Δ');
 
         const flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string");
         NXApi.connectTelex(flightNo)

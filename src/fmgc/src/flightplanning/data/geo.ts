@@ -1,6 +1,9 @@
+/**
+ * MSFS API compatible lla object
+ */
 export type Coordinates = {
-    lat: number,
-    long: number,
+    lat: Degrees,
+    long: Degrees,
 }
 
 export type Xy = [x: number, y: number];
