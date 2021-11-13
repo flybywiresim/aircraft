@@ -818,13 +818,11 @@ impl EngineBleedAirSystem {
                 .get_identifier(format!("PNEU_ENG_{}_PR_VALVE_OPEN", number)),
             starter_valve_open_id: context
                 .get_identifier(format!("PNEU_ENG_{}_STARTER_VALVE_OPEN", number)),
-            fan_compression_chamber_controller: EngineCompressionChamberController::new(
-                context, 1., 0., 2.,
-            ),
+            fan_compression_chamber_controller: EngineCompressionChamberController::new(1., 0., 2.),
             intermediate_pressure_compression_chamber_controller:
-                EngineCompressionChamberController::new(context, 3., 0., 4.),
+                EngineCompressionChamberController::new(3., 0., 4.),
             high_pressure_compression_chamber_controller: EngineCompressionChamberController::new(
-                context, 3., 2., 4.,
+                3., 2., 4.,
             ),
             fan_compression_chamber: CompressionChamber::new(Volume::new::<cubic_meter>(1.)),
             intermediate_pressure_compression_chamber: CompressionChamber::new(Volume::new::<
@@ -986,11 +984,6 @@ impl EngineBleedAirSystem {
 }
 impl SimulationElement for EngineBleedAirSystem {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        self.intermediate_pressure_compression_chamber_controller
-            .accept(visitor);
-        self.high_pressure_compression_chamber_controller
-            .accept(visitor);
-
         self.high_pressure_valve.accept(visitor);
         self.pressure_regulating_valve.accept(visitor);
         self.fan_air_valve.accept(visitor);

@@ -836,9 +836,9 @@ mod tests {
 
     use super::*;
 
-    use crate::electrical::Electricity;
     use crate::simulation::test::TestVariableRegistry;
     use crate::simulation::InitContext;
+    use crate::{electrical::Electricity, shared::MachNumber};
     use std::time::Duration;
     use uom::si::{
         acceleration::meter_per_second_squared, angle::degree, length::foot, mass::kilogram,
@@ -1259,6 +1259,7 @@ mod tests {
             Acceleration::new::<meter_per_second_squared>(0.),
             pitch,
             bank,
+            MachNumber(0.),
         )
     }
 

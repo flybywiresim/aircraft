@@ -1,7 +1,7 @@
 use crate::{
     pneumatic::valve::*,
     shared::{
-        arinc429::Arinc429Word, ControllerSignal, EngineCorrectedN1, EngineCorrectedN2, MachNumber,
+        arinc429::Arinc429Word, ControllerSignal, EngineCorrectedN1, EngineCorrectedN2,
         PneumaticValve,
     },
     simulation::{
@@ -146,8 +146,6 @@ impl TargetPressureSignal {
 }
 
 pub struct EngineCompressionChamberController {
-    current_mach_id: VariableIdentifier,
-    current_mach: MachNumber,
     target_pressure: Pressure,
     n1_contribution_factor: f64,
     n2_contribution_factor: f64,
@@ -158,24 +156,15 @@ impl ControllerSignal<TargetPressureSignal> for EngineCompressionChamberControll
         Some(TargetPressureSignal::new(self.target_pressure))
     }
 }
-impl SimulationElement for EngineCompressionChamberController {
-    fn read(&mut self, reader: &mut SimulatorReader) {
-        self.current_mach = reader.read(&self.current_mach_id);
-    }
-}
 impl EngineCompressionChamberController {
     const HEAT_CAPACITY_RATIO: f64 = 1.4; // Adiabatic index of dry air
 
     pub fn new(
-        context: &mut InitContext,
         n1_contribution_factor: f64,
         n2_contribution_factor: f64,
         compression_factor: f64,
     ) -> Self {
         Self {
-            current_mach_id: context.get_identifier("AIRSPEED MACH".to_owned()),
-
-            current_mach: MachNumber::default(),
             target_pressure: Pressure::new::<psi>(0.),
             n1_contribution_factor,
             n2_contribution_factor,
@@ -191,7 +180,7 @@ impl EngineCompressionChamberController {
         let n1 = engine.corrected_n1().get::<ratio>();
         let n2 = engine.corrected_n2().get::<ratio>();
 
-        let corrected_mach = self.current_mach.0
+        let corrected_mach = f64::from(context.mach_number())
             + self.n1_contribution_factor * n1
             + self.n2_contribution_factor * n2;
 
@@ -489,7 +478,7 @@ mod tests {
     use crate::{
         electrical::Electricity,
         pneumatic::{DefaultValve, PneumaticContainer, PneumaticPipe},
-        shared::{ControllerSignal, InternationalStandardAtmosphere},
+        shared::{ControllerSignal, InternationalStandardAtmosphere, MachNumber},
         simulation::{test::TestVariableRegistry, UpdateContext},
     };
     use ntest::assert_about_eq;
@@ -580,6 +569,7 @@ mod tests {
             Acceleration::new::<foot_per_second_squared>(0.),
             Angle::new::<radian>(0.),
             Angle::new::<radian>(0.),
+            MachNumber(0.),
         )
     }
 
@@ -627,12 +617,8 @@ mod tests {
 
     #[test]
     fn engine_compression_chamber_signal_n1_dependence() {
-        let mut electricity = Electricity::new();
-        let mut registry: TestVariableRegistry = Default::default();
-        let mut init_context = InitContext::new(&mut electricity, &mut registry);
-
         let mut compression_chamber_controller =
-            EngineCompressionChamberController::new(&mut init_context, 1., 0., 1.);
+            EngineCompressionChamberController::new(1., 0., 1.);
         let engine = TestEngine::new(Ratio::new::<ratio>(0.2), Ratio::new::<ratio>(0.));
 
         let context = context(Duration::from_millis(1000), Length::new::<foot>(0.));
@@ -652,12 +638,8 @@ mod tests {
 
     #[test]
     fn engine_compression_chamber_signal_n2_dependence() {
-        let mut electricity = Electricity::new();
-        let mut registry: TestVariableRegistry = Default::default();
-        let mut init_context = InitContext::new(&mut electricity, &mut registry);
-
         let mut compression_chamber_controller =
-            EngineCompressionChamberController::new(&mut init_context, 0., 1., 1.);
+            EngineCompressionChamberController::new(0., 1., 1.);
         let engine = TestEngine::new(Ratio::new::<ratio>(0.), Ratio::new::<ratio>(0.2));
 
         let context = context(Duration::from_millis(1000), Length::new::<foot>(0.));
@@ -677,13 +659,9 @@ mod tests {
 
     #[test]
     fn engine_compression_chamber_pressure_cold_and_dark() {
-        let mut electricity = Electricity::new();
-        let mut registry: TestVariableRegistry = Default::default();
-        let mut init_context = InitContext::new(&mut electricity, &mut registry);
-
         let engine = TestEngine::cold_dark();
         let mut compression_chamber_controller =
-            EngineCompressionChamberController::new(&mut init_context, 0.5, 0.5, 2.);
+            EngineCompressionChamberController::new(0.5, 0.5, 2.);
         let context = context(Duration::from_millis(1000), Length::new::<foot>(0.));
 
         compression_chamber_controller.update(&context, &engine);
@@ -699,13 +677,9 @@ mod tests {
 
     #[test]
     fn engine_compression_chamber_pressure_toga() {
-        let mut electricity = Electricity::new();
-        let mut registry: TestVariableRegistry = Default::default();
-        let mut init_context = InitContext::new(&mut electricity, &mut registry);
-
         let engine = TestEngine::toga();
         let mut compression_chamber_controller =
-            EngineCompressionChamberController::new(&mut init_context, 1., 1., 1.);
+            EngineCompressionChamberController::new(1., 1., 1.);
         let context = context(Duration::from_millis(1000), Length::new::<foot>(0.));
 
         compression_chamber_controller.update(&context, &engine);
@@ -721,13 +695,9 @@ mod tests {
 
     #[test]
     fn engine_compression_chamber_pressure_idle() {
-        let mut electricity = Electricity::new();
-        let mut registry: TestVariableRegistry = Default::default();
-        let mut init_context = InitContext::new(&mut electricity, &mut registry);
-
         let engine = TestEngine::idle();
         let mut compression_chamber_controller =
-            EngineCompressionChamberController::new(&mut init_context, 1., 1., 1.);
+            EngineCompressionChamberController::new(1., 1., 1.);
         let context = context(Duration::from_millis(1000), Length::new::<foot>(0.));
 
         compression_chamber_controller.update(&context, &engine);
@@ -743,13 +713,9 @@ mod tests {
 
     #[test]
     fn engine_compression_chamber_stabilises() {
-        let mut electricity = Electricity::new();
-        let mut registry: TestVariableRegistry = Default::default();
-        let mut init_context = InitContext::new(&mut electricity, &mut registry);
-
         let engine = TestEngine::toga();
         let mut compression_chamber_controller =
-            EngineCompressionChamberController::new(&mut init_context, 1., 1., 1.);
+            EngineCompressionChamberController::new(1., 1., 1.);
         let mut compression_chamber = CompressionChamber::new(Volume::new::<cubic_meter>(1.));
         let context = context(Duration::from_millis(1000), Length::new::<foot>(0.));
 

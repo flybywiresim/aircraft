@@ -484,6 +484,7 @@ impl Default for AutobrakeDecelerationGovernor {
 mod tests {
     use super::*;
     use crate::electrical::Electricity;
+    use crate::shared::MachNumber;
     use crate::simulation::test::{ElementCtorFn, SimulationTestBed, TestVariableRegistry};
     use crate::{
         hydraulic::{Fluid, HydraulicLoop},
@@ -882,6 +883,7 @@ mod tests {
             Acceleration::new::<foot_per_second_squared>(0.),
             Angle::new::<radian>(0.),
             Angle::new::<radian>(0.),
+            MachNumber(0.),
         )
     }
 }

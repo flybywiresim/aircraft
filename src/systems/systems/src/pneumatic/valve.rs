@@ -376,7 +376,7 @@ mod tests {
     use crate::{
         electrical::Electricity,
         pneumatic::{DefaultValve, PneumaticContainer, PneumaticPipe},
-        shared::{ControllerSignal, InternationalStandardAtmosphere},
+        shared::{ControllerSignal, InternationalStandardAtmosphere, MachNumber},
         simulation::{test::TestVariableRegistry, InitContext},
     };
 
@@ -440,6 +440,7 @@ mod tests {
             Acceleration::new::<foot_per_second_squared>(0.),
             Angle::new::<radian>(0.),
             Angle::new::<radian>(0.),
+            MachNumber(0.),
         )
     }
 

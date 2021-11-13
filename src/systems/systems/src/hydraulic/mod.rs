@@ -1129,7 +1129,10 @@ impl SimulationElement for RamAirTurbine {
 
 #[cfg(test)]
 mod tests {
-    use crate::simulation::{Aircraft, UpdateContext};
+    use crate::{
+        shared::MachNumber,
+        simulation::{Aircraft, UpdateContext},
+    };
     use uom::si::{
         acceleration::foot_per_second_squared,
         angle::radian,
@@ -1365,6 +1368,7 @@ mod tests {
             Acceleration::new::<foot_per_second_squared>(0.),
             Angle::new::<radian>(0.),
             Angle::new::<radian>(0.),
+            MachNumber(0.),
         )
     }
 
