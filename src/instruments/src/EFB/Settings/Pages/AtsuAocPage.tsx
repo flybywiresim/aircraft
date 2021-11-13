@@ -7,7 +7,7 @@ import { PopUp } from '@shared/popup';
 import { HttpError } from '@flybywiresim/api-client';
 import { SelectGroup, SelectItem } from '../../Components/Form/Select';
 import SimpleInput from '../../Components/Form/SimpleInput/SimpleInput';
-import { ButtonType } from '../Settings';
+import { ButtonType, SettingItem, SettingsPage } from '../Settings';
 import { useUIMessages } from '../../UIMessages/Provider';
 import { Notification, NotificationTypes } from '../../UIMessages/Notification';
 
@@ -126,9 +126,8 @@ export const AtsuAocPage = () => {
     }
 
     return (
-        <div className="flex flex-col px-6 rounded-xl divide-y-2 divide-gray-700 bg-navy-lighter">
-            <div className="flex flex-row justify-between items-center py-4">
-                <span className="text-lg text-gray-300">ATIS/ATC Source</span>
+        <SettingsPage name="ATSU / AOC">
+<SettingItem name='ATIS/ATC Source'>
                 <SelectGroup>
                     {atisSourceButtons.map((button) => (
                         <SelectItem
@@ -140,9 +139,9 @@ export const AtsuAocPage = () => {
                         </SelectItem>
                     ))}
                 </SelectGroup>
-            </div>
-            <div className="flex flex-row justify-between items-center py-4">
-                <span className="text-lg text-gray-300">METAR Source</span>
+                </SettingItem>
+
+                <SettingItem name='METAR Source'>
                 <SelectGroup>
                     {metarSourceButtons.map((button) => (
                         <SelectItem
@@ -154,9 +153,9 @@ export const AtsuAocPage = () => {
                         </SelectItem>
                     ))}
                 </SelectGroup>
-            </div>
-            <div className="flex flex-row justify-between items-center py-4">
-                <span className="text-lg text-gray-300">TAF Source</span>
+                </SettingItem>
+
+                <SettingItem name='TAF Source'>
                 <SelectGroup>
                     {tafSourceButtons.map((button) => (
                         <SelectItem
@@ -168,14 +167,13 @@ export const AtsuAocPage = () => {
                         </SelectItem>
                     ))}
                 </SelectGroup>
-            </div>
-            <div className="flex flex-row justify-between items-center py-4">
-                <span className="text-lg text-gray-300">TELEX</span>
+                </SettingItem>
+
+                        <SettingItem name="TELEX">
                 <Toggle value={telexEnabled === 'ENABLED'} onToggle={(toggleValue) => handleTelexToggle(toggleValue)} />
-            </div>
-            <div className="flex flex-row justify-between items-center py-4">
-                <span className="text-lg text-gray-300">SimBrief Username/Pilot ID</span>
-                <div className="flex flex-row items-center">
+                </SettingItem>
+
+<SettingItem name="SimBrief Username/Pilot ID">
                     <SimpleInput
                         className="w-30"
                         value={simbriefDisplay}
@@ -183,12 +181,11 @@ export const AtsuAocPage = () => {
                         onBlur={(value) => handleUsernameInput(value.replace(/\s/g, ''))}
                         onChange={(value) => setSimbriefDisplay(value)}
                     />
-                </div>
-            </div>
-            <div className="flex flex-row justify-between items-center py-4">
-                <span className="text-lg text-gray-300">Automatically Import SimBrief Data</span>
+                </SettingItem>
+
+                <SettingItem name="Automatically Import SimBrief Data">
                 <Toggle value={autoSimbriefImport === 'ENABLED'} onToggle={(toggleValue) => setAutoSimbriefImport(toggleValue ? 'ENABLED' : 'DISABLED')} />
-            </div>
-        </div>
+                </SettingItem>
+        </SettingsPage>
     );
 };

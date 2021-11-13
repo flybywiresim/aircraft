@@ -374,9 +374,7 @@ export const FuelPage = () => {
                                 <h2 className="font-medium">Refuel</h2>
                                 <p className={formatRefuelStatusClass()}>{formatRefuelStatusLabel()}</p>
                             </div>
-                            <p>
-                                {`Estimated ${calculateEta()} minutes`}
-                            </p>
+                            <p>{`Estimated ${calculateEta()} minutes`}</p>
                         </div>
                         <div style={{ width: '470px' }} className="flex flex-row items-center space-x-6">
                             <Slider className="w-96" value={sliderValue} onInput={(value) => updateSlider(value)} />
