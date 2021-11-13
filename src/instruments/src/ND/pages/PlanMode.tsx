@@ -1,16 +1,14 @@
 import React, { FC, memo, useEffect, useState } from 'react';
-import { useFlightPlanManager } from '@instruments/common/flightplan';
-import { MathUtils } from '@shared/MathUtils';
 import { useSimVar } from '@instruments/common/simVars';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
-import { NdSymbol } from '@shared/NavigationDisplay';
-import { LateralMode } from '@shared/autopilot';
+import { EfisSide, NdSymbol } from '@shared/NavigationDisplay';
 import { CrossTrack } from '../elements/CrossTrack';
 import { ToWaypointIndicator } from '../elements/ToWaypointIndicator';
-import { FlightPlan, FlightPlanType } from '../elements/FlightPlan';
+import { FlightPlan } from '../elements/FlightPlan';
 import { MapParameters } from '../utils/MapParameters';
 
 export interface PlanModeProps {
+    side: EfisSide,
     symbols: NdSymbol[],
     adirsAlign: boolean,
     rangeSetting: number,
@@ -18,47 +16,17 @@ export interface PlanModeProps {
     mapHidden: boolean,
 }
 
-export const PlanMode: FC<PlanModeProps> = ({ symbols, adirsAlign, rangeSetting, ppos, mapHidden }) => {
-    const flightPlanManager = useFlightPlanManager();
+export const PlanMode: FC<PlanModeProps> = ({ side, symbols, adirsAlign, rangeSetting, ppos, mapHidden }) => {
+    const [planCentreLat] = useSimVar('L:A32NX_SELECTED_WAYPOINT_LAT', 'Degrees');
+    const [planCentreLong] = useSimVar('L:A32NX_SELECTED_WAYPOINT_LONG', 'Degrees');
 
-    const [selectedWaypointIndex] = useSimVar('L:A32NX_SELECTED_WAYPOINT', 'number', 50);
-    const [showTmpFplan] = useSimVar('L:MAP_SHOW_TEMPORARY_FLIGHT_PLAN', 'bool');
-    const [selectedWaypoint, setSelectedWaypoint] = useState<WayPoint>();
     const [trueHeading] = useSimVar('PLANE HEADING DEGREES TRUE', 'degrees');
-    const [fmaLatMode] = useSimVar('L:A32NX_FMA_LATERAL_MODE', 'enum', 200);
-    const [fmaLatArmed] = useSimVar('L:A32NX_FMA_LATERAL_ARMED', 'enum', 200);
+
+    const [mapParams] = useState<MapParameters>(new MapParameters());
 
     useEffect(() => {
-        setSelectedWaypoint(flightPlanManager.getCurrentFlightPlan().waypoints[selectedWaypointIndex]);
-    }, [selectedWaypointIndex]);
-
-    const [mapParams] = useState(() => {
-        const params = new MapParameters();
-        params.compute(selectedWaypoint?.infos.coordinates ?? ppos, rangeSetting / 2, 250, 0);
-
-        return params;
-    });
-
-    useEffect(() => {
-        if (selectedWaypoint) {
-            mapParams.compute(selectedWaypoint.infos.coordinates, rangeSetting / 2, 250, 0);
-        }
-    }, [selectedWaypoint?.infos.coordinates.lat, selectedWaypoint?.infos.coordinates.long, rangeSetting].map((n) => MathUtils.fastToFixed(n, 6)));
-
-    let tmpFplan;
-    if (showTmpFplan) {
-        tmpFplan = (
-            <FlightPlan
-                x={384}
-                y={384}
-                flightPlanManager={flightPlanManager}
-                mapParams={mapParams}
-                symbols={symbols}
-                debug={false}
-                type={FlightPlanType.Temp}
-            />
-        );
-    }
+        mapParams.compute({ lat: planCentreLat, long: planCentreLong }, rangeSetting / 2, 250, 0);
+    }, [planCentreLat, planCentreLong, rangeSetting]);
 
     return (
         <>
@@ -68,28 +36,20 @@ export const PlanMode: FC<PlanModeProps> = ({ symbols, adirsAlign, rangeSetting,
                 <FlightPlan
                     x={384}
                     y={384}
-                    flightPlanManager={flightPlanManager}
-                    mapParams={mapParams}
+                    side={side}
+                    range={rangeSetting}
                     symbols={symbols}
+                    mapParams={mapParams}
+                    mapParamsVersion={mapParams.version}
                     debug={false}
-                    type={
-                        /* TODO FIXME: Check if intercepts active leg */
-                        (fmaLatMode === LateralMode.NONE
-                            || fmaLatMode === LateralMode.HDG
-                            || fmaLatMode === LateralMode.TRACK)
-                            && !fmaLatArmed
-                            ? FlightPlanType.Dashed
-                            : FlightPlanType.Nav
-                    }
                 />
-                {tmpFplan}
             </g>
 
-            {adirsAlign && !mapHidden && (
+            {adirsAlign && !mapHidden && mapParams.valid && (
                 <Plane location={ppos} heading={trueHeading} mapParams={mapParams} />
             )}
 
-            <ToWaypointIndicator info={flightPlanManager.getCurrentFlightPlan().computeActiveWaypointStatistics(ppos)} />
+            <ToWaypointIndicator side={side} />
 
             <CrossTrack x={44} y={690} isPlanMode />
         </>
