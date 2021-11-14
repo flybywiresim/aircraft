@@ -1,13 +1,13 @@
 use systems::{
     accept_iterable,
-    air_conditioning::{cabin_air::CabinZone, AirConditioningSystem, DuctTemperature},
+    air_conditioning::{cabin_air::CabinZone, AirConditioningSystem, DuctTemperature, PackFlow},
     shared::{CabinAltitude, EngineCorrectedN1, LgciuWeightOnWheels},
     simulation::{
         InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
         UpdateContext, VariableIdentifier,
     },
 };
-use uom::si::{f64::*, volume::cubic_meter};
+use uom::si::{f64::*, mass_rate::kilogram_per_second, volume::cubic_meter};
 
 pub(super) struct A320AirConditioning {
     a320cabin: A320Cabin,
@@ -31,8 +31,11 @@ impl A320AirConditioning {
         pressurization: &impl CabinAltitude,
         lgciu: [&impl LgciuWeightOnWheels; 2],
     ) {
-        self.a320cabin
-            .update(context, &self.air_conditioning_system);
+        self.a320cabin.update(
+            context,
+            &self.air_conditioning_system,
+            &self.air_conditioning_system,
+        );
         self.air_conditioning_system
             .update(context, engines, pressurization, lgciu);
     }
@@ -91,9 +94,18 @@ impl A320Cabin {
         }
     }
 
-    fn update(&mut self, context: &UpdateContext, duct_temperature: &impl DuctTemperature) {
+    fn update(
+        &mut self,
+        context: &UpdateContext,
+        duct_temperature: &impl DuctTemperature,
+        pack_flow: &impl PackFlow,
+    ) {
+        let flow_rate_per_cubic_meter: MassRate = MassRate::new::<kilogram_per_second>(
+            pack_flow.pack_flow().get::<kilogram_per_second>()
+                / (Self::A320_CABIN_VOLUME + Self::A320_COCKPIT_VOLUME),
+        );
         for zone in self.cabin_zone.iter_mut() {
-            zone.update(context, duct_temperature);
+            zone.update(context, duct_temperature, flow_rate_per_cubic_meter);
         }
     }
 }

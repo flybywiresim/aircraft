@@ -5,7 +5,9 @@ use self::{
 };
 use crate::{
     overhead::{AutoManFaultPushButton, NormalOnPushButton, SpringLoadedSwitch, ValueKnob},
-    shared::{random_number, ControllerSignal, CabinAltitude, EngineCorrectedN1, LgciuWeightOnWheels},
+    shared::{
+        random_number, CabinAltitude, ControllerSignal, EngineCorrectedN1, LgciuWeightOnWheels,
+    },
     simulation::{
         InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
         SimulatorWriter, UpdateContext, VariableIdentifier, Write,

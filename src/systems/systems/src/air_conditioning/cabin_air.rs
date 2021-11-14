@@ -32,10 +32,15 @@ impl CabinZone {
         }
     }
 
-    pub fn update(&mut self, context: &UpdateContext, duct_temperature: &impl DuctTemperature) {
+    pub fn update(
+        &mut self,
+        context: &UpdateContext,
+        duct_temperature: &impl DuctTemperature,
+        pack_flow_per_cubic_meter: MassRate,
+    ) {
         let mut flow_in = Air::new();
         flow_in.set_temperature(duct_temperature.duct_demand_temperature()[&self.zone_id as &str]);
-        flow_in.set_flow_rate(MassRate::new::<kilogram_per_second>(1.)); // TODO Replace with selection
+        flow_in.set_flow_rate(pack_flow_per_cubic_meter * self.zone_volume.get::<cubic_meter>());
 
         self.zone_air
             .update(context, &flow_in, self.zone_volume, self.passengers);
@@ -123,26 +128,35 @@ impl ZoneAir {
 #[cfg(test)]
 mod cabin_air_tests {
     use super::*;
-    use crate::simulation::{
-        test::{SimulationTestBed, TestBed},
-        Aircraft, SimulationElement, UpdateContext,
+    use crate::{
+        air_conditioning::PackFlow,
+        simulation::{
+            test::{SimulationTestBed, TestBed},
+            Aircraft, SimulationElement, UpdateContext,
+        },
     };
     use std::{collections::HashMap, time::Duration};
     use uom::si::thermodynamic_temperature::degree_celsius;
 
     struct TestAirConditioningSystem {
         duct_demand_temperature: ThermodynamicTemperature,
+        pack_flow: MassRate,
     }
 
     impl TestAirConditioningSystem {
         fn new() -> Self {
             Self {
                 duct_demand_temperature: ThermodynamicTemperature::new::<degree_celsius>(24.),
+                pack_flow: MassRate::new::<kilogram_per_second>(0.),
             }
         }
 
         fn set_duct_demand_temperature(&mut self, temperature: ThermodynamicTemperature) {
             self.duct_demand_temperature = temperature;
+        }
+
+        fn set_pack_flow(&mut self, flow: MassRate) {
+            self.pack_flow = flow;
         }
     }
 
@@ -154,9 +168,14 @@ mod cabin_air_tests {
         }
     }
 
+    impl PackFlow for TestAirConditioningSystem {
+        fn pack_flow(&self) -> MassRate {
+            self.pack_flow
+        }
+    }
+
     struct TestAircraft {
         cabin_zone: CabinZone,
-        flow_in: Air,
         air_conditioning_system: TestAirConditioningSystem,
     }
 
@@ -169,7 +188,6 @@ mod cabin_air_tests {
                     Volume::new::<cubic_meter>(400. / 2.),
                     174 / 2,
                 ),
-                flow_in: Air::new(),
                 air_conditioning_system: TestAirConditioningSystem::new(),
             }
         }
@@ -179,9 +197,8 @@ mod cabin_air_tests {
                 .set_duct_demand_temperature(temperature);
         }
 
-        // BROKEN!! Needs to be implemented
         fn set_flow_in_flow_rate(&mut self, flow_rate: MassRate) {
-            self.flow_in.set_flow_rate(flow_rate)
+            self.air_conditioning_system.set_pack_flow(flow_rate);
         }
 
         fn set_passengers(&mut self, passengers: usize) {
@@ -190,8 +207,17 @@ mod cabin_air_tests {
     }
     impl Aircraft for TestAircraft {
         fn update_after_power_distribution(&mut self, context: &UpdateContext) {
-            self.cabin_zone
-                .update(context, &self.air_conditioning_system)
+            let flow_rate_per_cubic_meter: MassRate = MassRate::new::<kilogram_per_second>(
+                self.air_conditioning_system
+                    .pack_flow()
+                    .get::<kilogram_per_second>()
+                    / (460.),
+            );
+            self.cabin_zone.update(
+                context,
+                &self.air_conditioning_system,
+                flow_rate_per_cubic_meter,
+            );
         }
     }
     impl SimulationElement for TestAircraft {}
@@ -207,7 +233,7 @@ mod cabin_air_tests {
         }
 
         fn with_flow(mut self) -> Self {
-            self.command(|a| a.set_flow_in_flow_rate(MassRate::new::<kilogram_per_second>(1.)));
+            self.command(|a| a.set_flow_in_flow_rate(MassRate::new::<kilogram_per_second>(1.3)));
             self
         }
 
@@ -282,8 +308,8 @@ mod cabin_air_tests {
         let mut test_bed = test_bed().with_flow();
 
         let initial_temp = test_bed.cabin_temperature();
-        test_bed.set_flow_in_temperature(ThermodynamicTemperature::new::<degree_celsius>(8.));
-        test_bed = test_bed.iterate(40);
+        test_bed.set_flow_in_temperature(ThermodynamicTemperature::new::<degree_celsius>(4.));
+        test_bed = test_bed.iterate(80);
 
         assert!(initial_temp > test_bed.cabin_temperature());
     }

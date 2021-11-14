@@ -1,12 +1,12 @@
 use self::acs_controller::ACSController;
 
 use crate::{
-    overhead::ValueKnob,
+    overhead::{OnOffFaultPushButton, ValueKnob},
     shared::{CabinAltitude, EngineCorrectedN1, LgciuWeightOnWheels},
     simulation::{InitContext, SimulationElement, SimulationElementVisitor, UpdateContext},
 };
 
-use std::collections::HashMap;
+use std::{collections::HashMap, time::Duration};
 
 use uom::si::{
     f64::*, mass_rate::kilogram_per_second, pressure::hectopascal,
@@ -20,10 +20,18 @@ pub trait DuctTemperature {
     fn duct_demand_temperature(&self) -> HashMap<&'static str, ThermodynamicTemperature>;
 } // TODO: Initially taken from duct_demand_temperature, needs to be switched once Trim system implemented
 
+pub trait FlowControlValveSignal {
+    fn should_open_fcv(&self) -> [bool; 2];
+}
+
+pub trait PackFlow {
+    fn pack_flow(&self) -> MassRate;
+}
+
 pub struct AirConditioningSystem {
     acs_overhead: AirConditioningSystemOverhead,
     acsc: ACSController,
-    // TODO: pack_flow_valve: PackFlowValve,
+    pack_flow_valve: [PackFlowValve; 2],
     // TODO: pack: [AirConditioningPack; 2],
     // TODO: mixer_unit: MixerUnit,
     // TODO: trim_air_system: TrimAirSystem,
@@ -34,6 +42,7 @@ impl AirConditioningSystem {
         Self {
             acs_overhead: AirConditioningSystemOverhead::new(context, &cabin_zone_ids),
             acsc: ACSController::new(context, cabin_zone_ids),
+            pack_flow_valve: [PackFlowValve::new(1), PackFlowValve::new(2)],
         }
     }
 
@@ -44,8 +53,18 @@ impl AirConditioningSystem {
         pressurization: &impl CabinAltitude,
         lgciu: [&impl LgciuWeightOnWheels; 2],
     ) {
-        self.acsc
-            .update(context, &self.acs_overhead, engines, pressurization, lgciu);
+        self.acsc.update(
+            context,
+            &self.acs_overhead,
+            &self.pack_flow_valve,
+            engines,
+            pressurization,
+            lgciu,
+        );
+
+        for fcv in self.pack_flow_valve.iter_mut() {
+            fcv.update(context, &self.acsc);
+        }
     }
 }
 
@@ -59,6 +78,8 @@ impl SimulationElement for AirConditioningSystem {
 }
 
 pub struct AirConditioningSystemOverhead {
+    pack_1_pb: OnOffFaultPushButton,
+    pack_2_pb: OnOffFaultPushButton,
     temperature_selectors: HashMap<&'static str, ValueKnob>,
 }
 
@@ -70,6 +91,8 @@ impl AirConditioningSystemOverhead {
             temperature_selectors.insert(id, ValueKnob::new_with_value(context, &knob_id, 24.));
         }
         Self {
+            pack_1_pb: OnOffFaultPushButton::new_on(context, "COND_PACK_1"),
+            pack_2_pb: OnOffFaultPushButton::new_on(context, "COND_PACK_2"),
             temperature_selectors,
         }
     }
@@ -86,6 +109,14 @@ impl AirConditioningSystemOverhead {
         }
         temperature_selectors_values
     }
+
+    fn pack_1_pb_is_on(&self) -> bool {
+        self.pack_1_pb.is_on()
+    }
+
+    fn pack_2_pb_is_on(&self) -> bool {
+        self.pack_2_pb.is_on()
+    }
 }
 
 impl SimulationElement for AirConditioningSystemOverhead {
@@ -93,6 +124,8 @@ impl SimulationElement for AirConditioningSystemOverhead {
         for selector in self.temperature_selectors.values_mut() {
             selector.accept(visitor);
         }
+        self.pack_1_pb.accept(visitor);
+        self.pack_2_pb.accept(visitor);
 
         visitor.visit(self);
     }
@@ -101,6 +134,45 @@ impl SimulationElement for AirConditioningSystemOverhead {
 impl DuctTemperature for AirConditioningSystem {
     fn duct_demand_temperature(&self) -> HashMap<&'static str, ThermodynamicTemperature> {
         self.acsc.duct_demand_temperature()
+    }
+}
+
+impl PackFlow for AirConditioningSystem {
+    fn pack_flow(&self) -> MassRate {
+        self.acsc.pack_flow()
+    }
+}
+
+struct PackFlowValve {
+    pub number: usize,
+    is_open: bool,
+    timer_open: Duration,
+}
+
+impl PackFlowValve {
+    fn new(number: usize) -> Self {
+        Self {
+            number,
+            is_open: false,
+            timer_open: Duration::from_secs(0),
+        }
+    }
+
+    fn update(&mut self, context: &UpdateContext, open_fcv: &impl FlowControlValveSignal) {
+        self.is_open = open_fcv.should_open_fcv()[self.number - 1];
+        if self.is_open {
+            self.timer_open += context.delta();
+        } else {
+            self.timer_open = Duration::from_secs(0);
+        }
+    }
+
+    fn fcv_timer(&self) -> Duration {
+        self.timer_open
+    }
+
+    fn fcv_is_open(&self) -> bool {
+        self.is_open
     }
 }
 
@@ -149,5 +221,142 @@ impl Air {
 impl Default for Air {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+#[cfg(test)]
+mod air_conditioning_tests {
+    use super::*;
+    use crate::simulation::test::{SimulationTestBed, TestBed};
+    use crate::simulation::{Aircraft, SimulationElement};
+
+    struct TestAircraft {
+        flow_control_valve: PackFlowValve,
+        actuator_signal: TestActuatorSignal,
+    }
+
+    impl TestAircraft {
+        fn new(_context: &mut InitContext) -> Self {
+            Self {
+                flow_control_valve: PackFlowValve::new(1),
+                actuator_signal: TestActuatorSignal::new(),
+            }
+        }
+
+        fn command_valve_open(&mut self) {
+            self.actuator_signal.open();
+        }
+
+        fn command_valve_close(&mut self) {
+            self.actuator_signal.close();
+        }
+
+        fn valve_is_open(&self) -> bool {
+            self.flow_control_valve.fcv_is_open()
+        }
+
+        fn valve_timer(&self) -> Duration {
+            self.flow_control_valve.fcv_timer()
+        }
+    }
+
+    impl Aircraft for TestAircraft {
+        fn update_after_power_distribution(&mut self, context: &UpdateContext) {
+            self.flow_control_valve
+                .update(context, &self.actuator_signal);
+        }
+    }
+
+    impl SimulationElement for TestAircraft {}
+
+    struct TestActuatorSignal {
+        should_open_fcv: bool,
+    }
+
+    impl TestActuatorSignal {
+        fn new() -> Self {
+            Self {
+                should_open_fcv: false,
+            }
+        }
+
+        fn open(&mut self) {
+            self.should_open_fcv = true;
+        }
+
+        fn close(&mut self) {
+            self.should_open_fcv = false;
+        }
+    }
+
+    impl FlowControlValveSignal for TestActuatorSignal {
+        fn should_open_fcv(&self) -> [bool; 2] {
+            [self.should_open_fcv, self.should_open_fcv]
+        }
+    }
+
+    #[test]
+    fn fcv_starts_closed() {
+        let test_bed = SimulationTestBed::new(TestAircraft::new);
+
+        assert!(!test_bed.query(|a| a.valve_is_open()));
+    }
+
+    #[test]
+    fn fcv_opens_when_signal_to_open() {
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
+
+        test_bed.command(|a| a.command_valve_open());
+        test_bed.run();
+
+        assert!(test_bed.query(|a| a.valve_is_open()));
+    }
+
+    #[test]
+    fn fcv_closes_when_signal_to_close() {
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
+
+        test_bed.command(|a| a.command_valve_open());
+        test_bed.run();
+        test_bed.command(|a| a.command_valve_close());
+        test_bed.run();
+
+        assert!(!test_bed.query(|a| a.valve_is_open()));
+    }
+
+    #[test]
+    fn timer_starts_at_zero() {
+        let test_bed = SimulationTestBed::new(TestAircraft::new);
+
+        assert_eq!(test_bed.query(|a| a.valve_timer()), Duration::from_secs(0));
+    }
+
+    #[test]
+    fn timer_starts_when_valve_opens() {
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
+
+        assert_eq!(test_bed.query(|a| a.valve_timer()), Duration::from_secs(0));
+
+        test_bed.command(|a| a.command_valve_open());
+        test_bed.run();
+
+        assert!(test_bed.query(|a| a.valve_timer()) > Duration::from_secs(0));
+    }
+
+    #[test]
+    fn timer_resets_when_valve_closes() {
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
+
+        assert_eq!(test_bed.query(|a| a.valve_timer()), Duration::from_secs(0));
+
+        test_bed.command(|a| a.command_valve_open());
+        test_bed.run();
+
+        assert!(test_bed.query(|a| a.valve_timer()) > Duration::from_secs(0));
+
+        test_bed.command(|a| a.command_valve_close());
+        test_bed.run();
+
+        assert_eq!(test_bed.query(|a| a.valve_timer()), Duration::from_secs(0));
     }
 }
