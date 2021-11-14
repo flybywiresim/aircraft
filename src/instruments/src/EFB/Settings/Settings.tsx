@@ -135,15 +135,18 @@ export const SettingsPage: FC<SettingsPageProps> = ({ name, children }) => {
 type SettingItemProps = {
     name: string,
     unrealistic?: boolean,
+    disabled?: boolean
 }
 
-export const SettingItem: FC<SettingItemProps> = ({ name, unrealistic, children }) => (
+export const SettingItem: FC<SettingItemProps> = ({ name, unrealistic, disabled, children }) => (
     <div className="flex flex-row justify-between items-center py-4">
         <p>
             {name}
             {unrealistic && <span className="ml-2 text-theme-highlight"> (Unrealistic)</span>}
         </p>
 
-        {children}
+        <div className={`${disabled && 'pointer-events-none filter grayscale'}`}>
+            {children}
+        </div>
     </div>
 );

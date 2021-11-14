@@ -19,21 +19,21 @@ export const AudioPage = () => {
             <SettingItem name="Exterior Master Volume">
                 <div className="flex flex-row items-center">
                     <span className="pr-3 text-base">{exteriorVolume}</span>
-                    <Slider className="w-60" value={exteriorVolume + 50} onInput={(value) => setExteriorVolume(value - 50)} />
+                    <Slider className="w-96" value={exteriorVolume + 50} onInput={(value) => setExteriorVolume(value - 50)} />
                 </div>
             </SettingItem>
 
             <SettingItem name="Engine Interior Volume">
                 <div className="flex flex-row items-center">
                     <span className="pr-3 text-base">{engineVolume}</span>
-                    <Slider className="w-60" value={engineVolume + 50} onInput={(value) => setEngineVolume(value - 50)} />
+                    <Slider className="w-96" value={engineVolume + 50} onInput={(value) => setEngineVolume(value - 50)} />
                 </div>
             </SettingItem>
 
             <SettingItem name="Wind Interior Volume">
                 <div className="flex flex-row items-center">
                     <span className="pr-3 text-base">{windVolume}</span>
-                    <Slider className="w-60" value={windVolume + 50} onInput={(value) => setWindVolume(value - 50)} />
+                    <Slider className="w-96" value={windVolume + 50} onInput={(value) => setWindVolume(value - 50)} />
                 </div>
             </SettingItem>
         </SettingsPage>

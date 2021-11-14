@@ -13,6 +13,8 @@ export const FlyPadPage = () => {
     const [usingAutobrightness, setUsingAutobrightness] = usePersistentNumberProperty('EFB_USING_AUTOBRIGHTNESS', 0);
     const [theme, setTheme] = usePersistentProperty('EFB_THEME', 'blue');
     const [autoOSK, setAutoOSK] = usePersistentNumberProperty('EFB_AUTO_OSK', 0);
+    const [timeDisplayed, setTimeDisplayed] = usePersistentProperty('EFB_TIME_DISPLAYED', 'utc');
+    const [timeFormat, setTimeFormat] = usePersistentProperty('EFB_TIME_FORMAT', '24');
 
     const themeButtons: ButtonType[] = [
         { name: 'Blue', setting: 'blue' },
@@ -20,10 +22,21 @@ export const FlyPadPage = () => {
         { name: 'Light', setting: 'light' },
     ];
 
+    const timeDisplayButtons: ButtonType[] = [
+        { name: 'UTC', setting: 'utc' },
+        { name: 'Local', setting: 'local' },
+        { name: 'UTC and Local', setting: 'both' },
+    ];
+
+    const timeFormatButtons: ButtonType[] = [
+        { name: '12 Hour', setting: '12' },
+        { name: '24 Hour', setting: '24' },
+    ];
+
     return (
         <SettingsPage name="flyPad">
-            <SettingItem name="Brightness">
-                <Slider className="w-60" value={usingAutobrightness ? brightness : brightnessSetting} onInput={(value) => setBrightnessSetting(value)} />
+            <SettingItem name="Brightness" disabled={!!usingAutobrightness}>
+                <Slider className="w-96" value={usingAutobrightness ? brightness : brightnessSetting} onInput={(value) => setBrightnessSetting(value)} />
             </SettingItem>
 
             <SettingItem name="Auto Brightness">
@@ -46,6 +59,34 @@ export const FlyPadPage = () => {
 
             <SettingItem name="Automatically Show Onscreen Keyboard">
                 <Toggle value={!!autoOSK} onToggle={(value) => setAutoOSK(value ? 1 : 0)} />
+            </SettingItem>
+
+            <SettingItem name="Time Displayed">
+                <SelectGroup>
+                    {timeDisplayButtons.map((button) => (
+                        <SelectItem
+                            enabled
+                            onSelect={() => setTimeDisplayed(button.setting)}
+                            selected={timeDisplayed === button.setting}
+                        >
+                            {button.name}
+                        </SelectItem>
+                    ))}
+                </SelectGroup>
+            </SettingItem>
+
+            <SettingItem name="Local Time Format" disabled={timeDisplayed === 'utc'}>
+                <SelectGroup>
+                    {timeFormatButtons.map((button) => (
+                        <SelectItem
+                            enabled
+                            onSelect={() => setTimeFormat(button.setting)}
+                            selected={timeFormat === button.setting}
+                        >
+                            {button.name}
+                        </SelectItem>
+                    ))}
+                </SelectGroup>
             </SettingItem>
         </SettingsPage>
     );
