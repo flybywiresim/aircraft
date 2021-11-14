@@ -355,7 +355,7 @@ type DoorToggleProps = {
     selectionCallback: (className: string, id: string, doorState: any, disabledId: string) => string,
     id: string,
     tugActive: boolean,
-    disabled?
+    disabled?: boolean
 }
 
 const DoorToggle = (props: DoorToggleProps) => {
