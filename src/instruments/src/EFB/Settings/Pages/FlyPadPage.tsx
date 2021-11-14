@@ -31,17 +31,17 @@ export const FlyPadPage = () => {
             </SettingItem>
 
             <SettingItem name="Theme">
-                    <SelectGroup>
-                        {themeButtons.map((button) => (
-                            <SelectItem
-                                enabled
-                                onSelect={() => setTheme(button.setting)}
-                                selected={theme === button.setting}
-                            >
-                                {button.name}
-                            </SelectItem>
-                        ))}
-                    </SelectGroup>
+                <SelectGroup>
+                    {themeButtons.map((button) => (
+                        <SelectItem
+                            enabled
+                            onSelect={() => setTheme(button.setting)}
+                            selected={theme === button.setting}
+                        >
+                            {button.name}
+                        </SelectItem>
+                    ))}
+                </SelectGroup>
             </SettingItem>
 
             <SettingItem name="Automatically Show Onscreen Keyboard">

@@ -2,7 +2,7 @@ import { usePersistentProperty } from '@instruments/common/persistence';
 import React, { useState } from 'react';
 import { SelectGroup, SelectItem } from '../../Components/Form/Select';
 import SimpleInput from '../../Components/Form/SimpleInput/SimpleInput';
-import { ButtonType, SettingItem, SettingsPage } from "../Settings"
+import { ButtonType, SettingItem, SettingsPage } from '../Settings';
 
 export const AircraftOptionsPinProgramsPage = () => {
     const [thrustReductionHeight, setThrustReductionHeight] = usePersistentProperty('CONFIG_THR_RED_ALT', '1500');
@@ -18,7 +18,7 @@ export const AircraftOptionsPinProgramsPage = () => {
     const [isisMetricAltitude, setIsisMetricAltitude] = usePersistentProperty('ISIS_METRIC_ALTITUDE', '0');
     const [vhfSpacing, setVhfSpacing] = usePersistentProperty('RMP_VHF_SPACING_25KHZ', '0');
 
-    function handleSetThrustReductionAlt(value: string) {
+    const handleSetThrustReductionAlt = (value: string) => {
         setThrustReductionHeightSetting(value);
 
         const parsedValue = parseInt(value);
@@ -26,9 +26,9 @@ export const AircraftOptionsPinProgramsPage = () => {
         if (parsedValue >= 400 && parsedValue <= 5000) {
             setThrustReductionHeight(value.trim());
         }
-    }
+    };
 
-    function handleSetAccelerationAlt(value: string) {
+    const handleSetAccelerationAlt = (value: string) => {
         setAccelerationHeightSetting(value);
 
         const parsedValue = parseInt(value);
@@ -36,9 +36,9 @@ export const AircraftOptionsPinProgramsPage = () => {
         if (parsedValue >= 400 && parsedValue <= 10000) {
             setAccelerationHeight(value.trim());
         }
-    }
+    };
 
-    function handleSetAccelerationOutAlt(value: string) {
+    const handleSetAccelerationOutAlt = (value: string) => {
         setAccelerationOutHeightSetting(value);
 
         const parsedValue = parseInt(value);
@@ -46,7 +46,7 @@ export const AircraftOptionsPinProgramsPage = () => {
         if (parsedValue >= 400 && parsedValue <= 10000) {
             setAccelerationOutHeight(value.trim());
         }
-    }
+    };
 
     const paxSignsButtons: ButtonType[] = [
         { name: 'No Smoking', setting: '0' },
@@ -77,43 +77,43 @@ export const AircraftOptionsPinProgramsPage = () => {
         <SettingsPage name="Aircraft Options / Pin Programs">
             <SettingItem name="Thrust Reduction Height (ft)">
                 {/* HANDLE THIS CLASSNAME SOME OTHER WAY */}
-                    <SimpleInput
-                        className="w-30 px-5 py-1.5 text-lg text-gray-300 rounded-lg bg-navy-light
+                <SimpleInput
+                    className="w-30 px-5 py-1.5 text-lg text-gray-300 rounded-lg bg-navy-light
                             border-2 border-navy-light focus-within:outline-none focus-within:border-teal-light-contrast text-center"
-                        placeholder={thrustReductionHeight}
-                        noLabel
-                        value={thrustReductionHeightSetting}
-                        min={400}
-                        max={5000}
-                        onChange={(event) => handleSetThrustReductionAlt(event)}
-                    />
+                    placeholder={thrustReductionHeight}
+                    noLabel
+                    value={thrustReductionHeightSetting}
+                    min={400}
+                    max={5000}
+                    onChange={(event) => handleSetThrustReductionAlt(event)}
+                />
             </SettingItem>
             <SettingItem name="Acceleration Height (ft)">
-                    <SimpleInput
-                        className="w-30 px-5 py-1.5 text-lg text-gray-300 rounded-lg bg-navy-light
+                <SimpleInput
+                    className="w-30 px-5 py-1.5 text-lg text-gray-300 rounded-lg bg-navy-light
                             border-2 border-navy-light focus-within:outline-none focus-within:border-teal-light-contrast text-center"
-                        placeholder={accelerationHeight}
-                        noLabel
-                        value={accelerationHeightSetting}
-                        min={400}
-                        max={10000}
-                        onChange={(event) => handleSetAccelerationAlt(event)}
-                    />
+                    placeholder={accelerationHeight}
+                    noLabel
+                    value={accelerationHeightSetting}
+                    min={400}
+                    max={10000}
+                    onChange={(event) => handleSetAccelerationAlt(event)}
+                />
             </SettingItem>
             <SettingItem name="Engine-Out Acceleration Height (ft)">
-                    <SimpleInput
-                        className="w-30 px-5 py-1.5 text-lg text-gray-300 rounded-lg bg-navy-light
+                <SimpleInput
+                    className="w-30 px-5 py-1.5 text-lg text-gray-300 rounded-lg bg-navy-light
                             border-2 border-navy-light focus-within:outline-none focus-within:border-teal-light-contrast text-center"
-                        placeholder={accelerationOutHeight}
-                        noLabel
-                        value={accelerationOutHeightSetting}
-                        min={400}
-                        max={10000}
-                        onChange={(event) => handleSetAccelerationOutAlt(event)}
-                    />
+                    placeholder={accelerationOutHeight}
+                    noLabel
+                    value={accelerationOutHeightSetting}
+                    min={400}
+                    max={10000}
+                    onChange={(event) => handleSetAccelerationOutAlt(event)}
+                />
             </SettingItem>
             <SettingItem name="Weight Unit">
-<SelectGroup>
+                <SelectGroup>
                     {weightUnitButtons.map((button) => (
                         <SelectItem
                             enabled
@@ -124,10 +124,10 @@ export const AircraftOptionsPinProgramsPage = () => {
                         </SelectItem>
                     ))}
                 </SelectGroup>
-</SettingItem>
+            </SettingItem>
 
-<SettingItem name="PAX Signs">
-<SelectGroup>
+            <SettingItem name="PAX Signs">
+                <SelectGroup>
                     {paxSignsButtons.map((button) => (
                         <SelectItem
                             enabled
@@ -138,10 +138,10 @@ export const AircraftOptionsPinProgramsPage = () => {
                         </SelectItem>
                     ))}
                 </SelectGroup>
-</SettingItem>
+            </SettingItem>
 
-<SettingItem name="ISIS Baro Unit">
-<SelectGroup>
+            <SettingItem name="ISIS Baro Unit">
+                <SelectGroup>
                     {isisBaroButtons.map((button) => (
                         <SelectItem
                             enabled
@@ -152,10 +152,10 @@ export const AircraftOptionsPinProgramsPage = () => {
                         </SelectItem>
                     ))}
                 </SelectGroup>
-</SettingItem>
+            </SettingItem>
 
-<SettingItem name="ISIS Metric Altitude">
-<SelectGroup>
+            <SettingItem name="ISIS Metric Altitude">
+                <SelectGroup>
                     {isisMetricAltitudeButtons.map((button) => (
                         <SelectItem
                             enabled
@@ -166,10 +166,10 @@ export const AircraftOptionsPinProgramsPage = () => {
                         </SelectItem>
                     ))}
                 </SelectGroup>
-</SettingItem>
+            </SettingItem>
 
-<SettingItem name="RMP VHF Spacing">
-<SelectGroup>
+            <SettingItem name="RMP VHF Spacing">
+                <SelectGroup>
                     {vhfSpacingButtons.map((button) => (
                         <SelectItem
                             enabled
@@ -180,7 +180,7 @@ export const AircraftOptionsPinProgramsPage = () => {
                         </SelectItem>
                     ))}
                 </SelectGroup>
-</SettingItem>
+            </SettingItem>
         </SettingsPage>
-    )
-}
+    );
+};
