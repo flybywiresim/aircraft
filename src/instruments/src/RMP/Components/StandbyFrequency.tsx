@@ -99,7 +99,7 @@ const offsetFrequencyChannel = (spacing: ChannelSpacing, channel: number, offset
  * Hooks to outer and inner rotary encoder knobs.
  * Renders standby frequency RadioPanelDisplay sub-component.
  */
-export const StandbyFrequency:React.FC<Props> = ({ side, value, setValue }) => {
+export const StandbyFrequency: React.FC<Props> = ({ side, value, setValue }) => {
     const spacing = usePersistentProperty('RMP_VHF_SPACING_25KHZ', '0')[0] === '0' ? 8.33 : 25;
 
     // Handle outer knob turned.
