@@ -11,19 +11,17 @@ export const StatusBar = () => {
 
     const power = usePower();
 
-    function getDayName(day: number) {
+    const getDayName = (day: number) => {
         const monthNames = ['Mon', 'Tue', 'Wed', 'Thurs', 'Fri', 'Sat', 'Sun'];
         return monthNames[day];
-    }
+    };
 
-    function getMonthName(month: number) {
+    const getMonthName = (month: number) => {
         const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
         return monthNames[month - 1];
-    }
+    };
 
-    function getHoursAndMinutes(seconds: number) {
-        return `${Math.floor(seconds / 3600).toString().padStart(2, '0')}:${Math.floor((seconds % 3600) / 60).toString().padStart(2, '0')}z`;
-    }
+    const getHoursAndMinutes = (seconds: number) => `${Math.floor(seconds / 3600).toString().padStart(2, '0')}:${Math.floor((seconds % 3600) / 60).toString().padStart(2, '0')}z`;
 
     return (
         <div className="flex fixed justify-between items-center px-6 w-full h-10 text-lg font-medium leading-none text-theme-text bg-theme-statusbar">

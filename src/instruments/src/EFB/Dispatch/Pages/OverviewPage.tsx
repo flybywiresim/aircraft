@@ -2,55 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { IconAlignRight, IconBox, IconPlane, IconSwitchHorizontal, IconUsers, IconBolt } from '@tabler/icons';
 import fuselage from '../../Assets/320neo-outline-nose.svg';
 import { useSimVar } from '../../../Common/simVars';
+import { useAppSelector } from '../../Store/store';
 
-type OverviewPageProps = {
-    weights: {
-        cargo: number,
-        estLandingWeight: number,
-        estTakeOffWeight: number,
-        estZeroFuelWeight: number,
-        maxLandingWeight: number,
-        maxTakeOffWeight: number,
-        maxZeroFuelWeight: number,
-        passengerCount: number,
-        passengerWeight: number,
-        payload: number,
-    },
-    fuels: {
-        avgFuelFlow: number,
-        contingency: number,
-        enrouteBurn: number,
-        etops: number,
-        extra: number,
-        maxTanks: number,
-        minTakeOff: number,
-        planLanding: number,
-        planRamp: number,
-        planTakeOff: number,
-        reserve: number,
-        taxi: number,
-    },
-    units: string,
-    arrivingAirport: string,
-    arrivingIata: string,
-    departingAirport: string,
-    departingIata: string,
-    altBurn: number,
-    altIcao: string,
-    altIata: string,
-    tripTime: number,
-    contFuelTime: number,
-    resFuelTime: number,
-    taxiOutTime: number,
-};
-
-export const OverviewPage = (props: OverviewPageProps) => {
+export const OverviewPage = () => {
     const [, setUnitConversion] = useState(1000);
 
+    const { units } = useAppSelector((state) => state.simbrief.data);
+
     useEffect(() => {
-        const unitConv = (props.units === 'kgs') ? 1000 : 2240;
+        const unitConv = (units === 'kgs') ? 1000 : 2240;
         setUnitConversion(unitConv);
-    }, [props.units]);
+    }, [units]);
 
     let [airline] = useSimVar('ATC AIRLINE', 'String', 1_000);
 
