@@ -1,17 +1,5 @@
 @import "../Assets/Efb.scss";
 
-.airplane {
-  height: 100%;
-  max-width: 100%;
-  // position the image in the center of the screen while still being able to position elements on top of it
-  // basically this should be a background but I couldn't figure that out with rotation and sizing
-  position: relative;
-  left: 0;
-  right: 0;
-  margin-left: auto;
-  margin-right: auto;
-}
-
 .control-grid {
   grid-gap: 1rem;
 }

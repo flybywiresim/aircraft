@@ -12,7 +12,7 @@ export const AudioPage = () => {
 
     return (
         <SettingsPage name="Audio">
-        <SettingItem name="PTU Audible in Cockpit" unrealistic>
+            <SettingItem name="PTU Audible in Cockpit" unrealistic>
                 <Toggle value={!!ptuAudible} onToggle={(value) => setPtuAudible(value ? 1 : 0)} />
             </SettingItem>
 

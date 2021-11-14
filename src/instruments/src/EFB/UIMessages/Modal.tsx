@@ -1,5 +1,5 @@
-import React from 'react'
+import React from 'react';
 
-export const Modal = () => {
-
-}
+export const Modal = () => (
+    <div />
+);

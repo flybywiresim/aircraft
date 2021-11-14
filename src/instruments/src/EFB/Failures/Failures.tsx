@@ -23,8 +23,8 @@ export const Failures = () => {
 
     return (
         <div className="w-full ">
-            <h1 className="">Failures</h1>
-            <h2 className="text-2xl ">Full simulation of the failures below isn't yet guaranteed.</h2>
+            <h1 className="font-bold">Failures</h1>
+            <h2>Full simulation of the failures below isn't yet guaranteed.</h2>
             <div className="grid overflow-hidden grid-cols-4 grid-rows-4 grid-flow-row gap-4 p-4 mr-3 rounded-2xl bg-navy-lighter h-efb-nav">
                 {buttons}
             </div>
