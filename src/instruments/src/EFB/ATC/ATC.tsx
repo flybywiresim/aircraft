@@ -72,13 +72,11 @@ export const ATC = () => {
         loadAtc();
     }, [loadAtc]);
 
-    /* eslint-disable react-hooks/exhaustive-deps */
     useEffect(() => {
         const converted = fromFrequency(frequency);
         setCurrentFrequency(converted);
         setCurrentAtc(controllers?.find((c) => c.frequency === converted));
-    }, [frequency]);
-    /* eslint-enable react-hooks/exhaustive-deps */
+    }, [controllers, frequency]);
 
     useEffect(() => {
         if (frequency) {
