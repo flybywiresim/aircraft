@@ -41,7 +41,6 @@ module.exports = {
             'process.env.CLIENT_ID': JSON.stringify(process.env.CLIENT_ID),
             'process.env.CLIENT_SECRET': JSON.stringify(process.env.CLIENT_SECRET),
             'process.env.CHARTFOX_SECRET': JSON.stringify(process.env.CHARTFOX_SECRET),
-            'process.env.SIMVAR_DISABLE': 'true',
         }),
         postcss({
             use: { sass: {} },

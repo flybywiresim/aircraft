@@ -292,14 +292,9 @@ export const useSimVar = (
     maxStaleness = 0,
 ): [SimVarValue, (newValueOrSetter: SimVarValue | SimVarSetter
 ) => void] => {
-    if (process.env.SIMVAR_DISABLE) {
-        return [0, () => {}];
-    }
-
-    /* eslint-disable react-hooks/rules-of-hooks */
     const value = useSimVarValue(name, unit, maxStaleness);
     const setter = useSimVarSetter(name, unit);
-    /* eslint-enable react-hooks/rules-of-hooks */
+
     return [value, setter];
 };
 
@@ -484,14 +479,9 @@ export const useSplitSimVar = (
     maxStaleness = 0,
 ): [SimVarValue, (newValueOrSetter: SimVarValue | SimVarSetter
 ) => void] => {
-    if (process.env.SIMVAR_DISABLE) {
-        return [0, () => {}];
-    }
-
-    /* eslint-disable react-hooks/rules-of-hooks */
     const value = useSimVarValue(readName, readUnit, maxStaleness);
     const setter = useSimVarSetter(readName, writeUnit || readUnit, writeName);
-    /* eslint-enable react-hooks/rules-of-hooks */
+
     return [value, setter];
 };
 
