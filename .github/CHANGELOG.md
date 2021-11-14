@@ -74,6 +74,7 @@
 1. [MODEL] Adjust heat effect on ENG1+2 - @bouveng (Johan Bouveng)
 1. [PFD] Fixed speed tape outline at low speeds - @beheh (Benedict Etzel)
 1. [FM] Fetch transition alt and level from SimBrief - @tracernz (Mike)
+1. [CLK/ND] Fixed/Improved chrono & ET behavior on time shift - @vkrizan (Viliam)
 
 ## 0.7.0
 
