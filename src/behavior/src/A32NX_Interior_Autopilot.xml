@@ -213,7 +213,7 @@
         </UseTemplate>
     </Template>
 
-<Template Name="FBW_AUTOPILOT_Switch_Altitude_Increment_SubTemplate">
+<Template Name="FBW_AUTOPILOT_Switch_Altitude_Increment_Template">
     <Parameters Type="Default">
         <DEFAULT_NAME>Altitude_Increment</DEFAULT_NAME>
         <NODE_ID>AUTOPILOT_Switch_Altitude_Increment</NODE_ID>
