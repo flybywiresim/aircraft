@@ -127,6 +127,29 @@ export class FlightPlanAsoboSync {
                                     console.error(`[FP LOAD] Setting Departure En Route Transition ${data.departureEnRouteTransitionIndex} ... FAILED`);
                                     console.error(e);
                                 });
+                             // set approach
+                            //  rwy index
+                            await fpln.setArrivalRunwayIndex(data.arrivalRunwayIndex)
+                            // .then(() => console.log(`[FP LOAD] Setting Arrival Runway ${data.arrivalRunwayIndex} ... SUCCESS`))
+                            .catch((e) => {
+                                console.error(`[FP LOAD] Setting Arrival Runway ${data.arrivalRunwayIndex} ... FAILED`);
+                                console.error(e);
+                            });
+                            //  approach index
+                            await fpln.setApproachIndex(data.approachIndex)
+                                // .then(() => console.log(`[FP LOAD] Setting Approach ${data.approachIndex} ... SUCCESS`))
+                                .catch((e) => {
+                                    console.error(`[FP LOAD] Setting Approach ${data.approachIndex} ... FAILED`);
+                                    console.error(e);
+                                });
+                            //  approachtrans index
+                            await fpln.setApproachTransitionIndex(data.approachTransitionIndex)
+                                // .then(() => console.log(`[FP LOAD] Setting Approach Transition ${data.approachTransitionIndex} ... SUCCESS`))
+                                .catch((e) => {
+                                    console.error(`[FP LOAD] Setting Approach Transition ${data.approachTransitionIndex} ... FAILED`);
+                                    console.error(e);
+                                });
+
                             // set arrival
                             //  arrivalproc index
                             await fpln.setArrivalProcIndex(data.arrivalProcIndex)
@@ -142,28 +165,6 @@ export class FlightPlanAsoboSync {
                                     console.error(`[FP LOAD] Setting En Route Transition ${data.arrivalEnRouteTransitionIndex} ... FAILED`);
                                     console.error(e);
                                 });
-                             // set approach
-                            //  rwy index
-                            await fpln.setArrivalRunwayIndex(data.arrivalRunwayIndex)
-                            // .then(() => console.log(`[FP LOAD] Setting Arrival Runway ${data.arrivalRunwayIndex} ... SUCCESS`))
-                            .catch((e) => {
-                                console.error(`[FP LOAD] Setting Arrival Runway ${data.arrivalRunwayIndex} ... FAILED`);
-                                console.error(e);
-                            });
-                            //  approach index
-                            await fpln.setApproachIndex(data.approachIndex)
-                                .catch((e) => {
-                                    console.error(`[FP LOAD] Setting Approach ${data.approachIndex} ... FAILED`);
-                                    console.error(e);
-                                });
-                            // .then(() => console.log(`[FP LOAD] Setting Approach ${data.approachIndex} ... SUCCESS`));
-                            //  approachtrans index
-                            await fpln.setApproachTransitionIndex(data.approachTransitionIndex)
-                                .catch((e) => {
-                                    console.error(`[FP LOAD] Setting Approach Transition ${data.approachTransitionIndex} ... FAILED`);
-                                    console.error(e);
-                                });
-                            // .then(() => console.log(`[FP LOAD] Setting Approach Transition ${data.approachTransitionIndex} ... SUCCESS`));
 
                             await fpln.setDestinationRunwayIndexFromApproach()
                             // .then(() => console.log(`[FP LOAD] Setting Destination Runway using ${data.approachIndex} ... SUCCESS`))
