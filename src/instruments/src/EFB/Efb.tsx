@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { Redirect, Route, Switch } from 'react-router-dom';
 import { useSimVar } from '@instruments/common/simVars';
@@ -96,12 +96,12 @@ const Efb = () => {
         }
     }, [powerState]);
 
-    function offToLoaded() {
+    const offToLoaded = () => {
         setPowerState(PowerStates.LOADING);
         setTimeout(() => {
             setPowerState(PowerStates.LOADED);
         }, 2500);
-    }
+    };
 
     useInteractionEvent('A32NX_EFB_POWER', () => {
         if (powerState === PowerStates.SHUTOFF) {
@@ -117,7 +117,7 @@ const Efb = () => {
      * @param {number} dayOfYear - The day of the year (0 to 365)
      * @param {number} timeOfDay - The time of day in hours (0 to 24)
      */
-    function calculateBrightness(latitude: number, dayOfYear: number, timeOfDay: number) {
+    const calculateBrightness = (latitude: number, dayOfYear: number, timeOfDay: number) => {
         const solarTime = timeOfDay + (dayOfYear - 1) * 24;
         const solarDeclination = 0.409 * Math.sin(2 * Math.PI * (284 + dayOfYear) / 365);
         const solarAltitude = Math.asin(
@@ -126,7 +126,7 @@ const Efb = () => {
         const solarZenith = 90 - (latitude - solarDeclination);
 
         return Math.min(Math.max((-solarAltitude * (180 / Math.PI)) / solarZenith * 100, 0), 100);
-    }
+    };
 
     // handle setting brightness if user is using autobrightness
     useEffect(() => {

@@ -2,16 +2,14 @@ import React, { useRef, useState, useEffect } from 'react';
 import { usePersistentProperty } from '@instruments/common/persistence';
 import { FileEarmarkArrowDown, ZoomIn, ZoomOut } from 'react-bootstrap-icons';
 import { fetchSimbriefDataAction } from '../../Store/features/simbrief';
-import { useAppDispatch } from '../../Store/store';
+import { useAppDispatch, useAppSelector } from '../../Store/store';
 import { NotificationTypes, Notification } from '../../UIMessages/Notification';
 import { useUIMessages } from '../../UIMessages/Provider';
 
-type LoadsheetPageProps = {
-    loadsheet: string,
-};
-
-export const LoadSheetWidget = (props: LoadsheetPageProps) => {
+export const LoadSheetWidget = () => {
     const uiMessages = useUIMessages();
+
+    const loadsheet = useAppSelector((state) => state.simbrief.data.loadsheet);
 
     const position = useRef({ top: 0, y: 0 });
     const ref = useRef<HTMLDivElement>(null);
@@ -40,7 +38,7 @@ export const LoadSheetWidget = (props: LoadsheetPageProps) => {
         lineHeight: `${fontSize}px`,
     }), [fontSize]);
 
-    function handleMouseDown(event: React.MouseEvent) {
+    const handleMouseDown = (event: React.MouseEvent) => {
         position.current.top = ref.current ? ref.current.scrollTop : 0;
         position.current.y = event.clientY;
 
@@ -48,17 +46,17 @@ export const LoadSheetWidget = (props: LoadsheetPageProps) => {
         document.addEventListener('mouseup', mouseUpHandler);
     };
 
-    function mouseMoveHandler(event: MouseEvent) {
+    const mouseMoveHandler = (event: MouseEvent) => {
         const dy = event.clientY - position.current.y;
         if (ref.current) {
             ref.current.scrollTop = position.current.top - dy;
         }
     };
 
-    function mouseUpHandler() {
+    const mouseUpHandler = () => {
         document.removeEventListener('mousemove', mouseMoveHandler);
         document.removeEventListener('mouseup', mouseUpHandler);
-    }
+    };
 
     function handleFontIncrease() {
         let cFontSize = (Number)(fontSize);
@@ -82,14 +80,14 @@ export const LoadSheetWidget = (props: LoadsheetPageProps) => {
         }
     }
 
-    function handleScaling(cFontSize, cImageSize) {
+    const handleScaling = (cFontSize, cImageSize) => {
         setFontSize((String)(cFontSize));
         setImageSize(cImageSize);
-    }
+    };
 
     return (
         <div className="overflow-hidden relative p-6 mt-4 w-full rounded-lg border-2 shadow-md h-efb border-theme-accent">
-            {props.loadsheet !== 'N/A' ? (
+            {loadsheet !== 'N/A' ? (
                 <>
                     <div className="absolute top-6 right-16 rounded-md bg-theme-accent">
                         <button
@@ -113,7 +111,7 @@ export const LoadSheetWidget = (props: LoadsheetPageProps) => {
                         style={loadSheetStyle}
                         onMouseDown={handleMouseDown}
                         // eslint-disable-next-line react/no-danger
-                        dangerouslySetInnerHTML={{ __html: props.loadsheet }}
+                        dangerouslySetInnerHTML={{ __html: loadsheet }}
                     />
                 </>
             ) : (

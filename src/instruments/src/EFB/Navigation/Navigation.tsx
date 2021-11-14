@@ -598,9 +598,7 @@ export const Navigation = () => {
 
     return (
         <div className="w-full h-full">
-            <div className="flex">
-                <h1 className="mb-6 ">Navigation & Charts</h1>
-            </div>
+            <h1 className="mb-4 font-bold">Navigation & Charts</h1>
             {enableNavigraph
                 ? (
                     <NavigraphNav

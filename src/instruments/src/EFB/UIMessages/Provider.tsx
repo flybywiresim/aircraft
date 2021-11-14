@@ -17,21 +17,21 @@ export const UIMessagesProvider: FC = ({ children }) => {
     const [modals, setModals] = React.useState<JSX.Element[]>([]);
     const [notifications, setNotifications] = React.useState<JSX.Element[]>([]);
 
-    function pushModal(modal: JSX.Element) {
+    const pushModal = (modal: JSX.Element) => {
         setModals((modals) => [...modals, modal]);
-    }
+    };
 
-    function pushNotification(notification: JSX.Element) {
+    const pushNotification = (notification: JSX.Element) => {
         setNotifications((notifications) => [...notifications, notification]);
-    }
+    };
 
-    function popModal() {
+    const popModal = () => {
         setModals((modals) => modals.slice(1));
-    }
+    };
 
-    function popNotification() {
+    const popNotification = () => {
         setNotifications((notifications) => notifications.slice(1));
-    }
+    };
 
     return (
         <UIMessagesContext.Provider value={{

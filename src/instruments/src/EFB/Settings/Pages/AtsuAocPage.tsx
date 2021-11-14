@@ -24,7 +24,7 @@ export const AtsuAocPage = () => {
 
     const [autoSimbriefImport, setAutoSimbriefImport] = usePersistentProperty('CONFIG_AUTO_SIMBRIEF_IMPORT', 'DISABLED');
 
-    function getSimbriefUserData(value: string): Promise<any> {
+    const getSimbriefUserData = (value: string): Promise<any> => {
         const SIMBRIEF_URL = 'http://www.simbrief.com/api/xml.fetcher.php?json=1';
 
         if (!value) {
@@ -47,27 +47,25 @@ export const AtsuAocPage = () => {
 
                 return response.json();
             });
-    }
+    };
 
-    function getSimbriefUserId(value: string):Promise<any> {
-        return new Promise((resolve, reject) => {
-            if (!value) {
-                reject(new Error('No SimBrief username/pilot ID provided'));
-            }
-            getSimbriefUserData(value)
-                .then((data) => {
-                    if (data.fetch.status === 'Error: Unknown UserID') {
-                        reject(new Error('Error: Unknown UserID'));
-                    }
-                    resolve(data.fetch.userid);
-                })
-                .catch((_error) => {
-                    reject(_error);
-                });
-        });
-    }
+    const getSimbriefUserId = (value: string):Promise<any> => new Promise((resolve, reject) => {
+        if (!value) {
+            reject(new Error('No SimBrief username/pilot ID provided'));
+        }
+        getSimbriefUserData(value)
+            .then((data) => {
+                if (data.fetch.status === 'Error: Unknown UserID') {
+                    reject(new Error('Error: Unknown UserID'));
+                }
+                resolve(data.fetch.userid);
+            })
+            .catch((_error) => {
+                reject(_error);
+            });
+    });
 
-    function handleUsernameInput(value: string) {
+    const handleUsernameInput = (value: string) => {
         getSimbriefUserId(value).then((response) => {
             uiMessages.pushNotification(
                 <Notification
@@ -89,7 +87,7 @@ export const AtsuAocPage = () => {
                 />,
             );
         });
-    }
+    };
 
     const atisSourceButtons: ButtonType[] = [
         { name: 'FAA (US)', setting: 'FAA' },
@@ -110,7 +108,7 @@ export const AtsuAocPage = () => {
         { name: 'NOAA', setting: 'NOAA' },
     ];
 
-    function handleTelexToggle(toggleValue: boolean) {
+    function handleTelexToggle(toggleValue: boolean): void {
         if (toggleValue) {
             new PopUp().showPopUp(
                 'TELEX WARNING',
@@ -127,7 +125,7 @@ export const AtsuAocPage = () => {
 
     return (
         <SettingsPage name="ATSU / AOC">
-<SettingItem name='ATIS/ATC Source'>
+            <SettingItem name="ATIS/ATC Source">
                 <SelectGroup>
                     {atisSourceButtons.map((button) => (
                         <SelectItem
@@ -139,9 +137,9 @@ export const AtsuAocPage = () => {
                         </SelectItem>
                     ))}
                 </SelectGroup>
-                </SettingItem>
+            </SettingItem>
 
-                <SettingItem name='METAR Source'>
+            <SettingItem name="METAR Source">
                 <SelectGroup>
                     {metarSourceButtons.map((button) => (
                         <SelectItem
@@ -153,9 +151,9 @@ export const AtsuAocPage = () => {
                         </SelectItem>
                     ))}
                 </SelectGroup>
-                </SettingItem>
+            </SettingItem>
 
-                <SettingItem name='TAF Source'>
+            <SettingItem name="TAF Source">
                 <SelectGroup>
                     {tafSourceButtons.map((button) => (
                         <SelectItem
@@ -167,25 +165,25 @@ export const AtsuAocPage = () => {
                         </SelectItem>
                     ))}
                 </SelectGroup>
-                </SettingItem>
+            </SettingItem>
 
-                        <SettingItem name="TELEX">
+            <SettingItem name="TELEX">
                 <Toggle value={telexEnabled === 'ENABLED'} onToggle={(toggleValue) => handleTelexToggle(toggleValue)} />
-                </SettingItem>
+            </SettingItem>
 
-<SettingItem name="SimBrief Username/Pilot ID">
-                    <SimpleInput
-                        className="w-30"
-                        value={simbriefDisplay}
-                        noLabel
-                        onBlur={(value) => handleUsernameInput(value.replace(/\s/g, ''))}
-                        onChange={(value) => setSimbriefDisplay(value)}
-                    />
-                </SettingItem>
+            <SettingItem name="SimBrief Username/Pilot ID">
+                <SimpleInput
+                    className="w-30"
+                    value={simbriefDisplay}
+                    noLabel
+                    onBlur={(value) => handleUsernameInput(value.replace(/\s/g, ''))}
+                    onChange={(value) => setSimbriefDisplay(value)}
+                />
+            </SettingItem>
 
-                <SettingItem name="Automatically Import SimBrief Data">
+            <SettingItem name="Automatically Import SimBrief Data">
                 <Toggle value={autoSimbriefImport === 'ENABLED'} onToggle={(toggleValue) => setAutoSimbriefImport(toggleValue ? 'ENABLED' : 'DISABLED')} />
-                </SettingItem>
+            </SettingItem>
         </SettingsPage>
     );
 };

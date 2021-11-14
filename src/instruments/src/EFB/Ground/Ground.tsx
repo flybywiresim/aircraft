@@ -1,12 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { FC, useEffect, useState } from 'react';
 
-import { IconCornerDownLeft, IconCornerDownRight, IconArrowDown, IconHandStop, IconTruck, IconBriefcase, IconBuildingArch, IconArchive, IconPlug, IconTir } from '@tabler/icons';
+import { IconCornerDownLeft, IconCornerDownRight, IconArrowDown, IconHandStop, IconTruck, IconBriefcase, IconBuildingArch, IconArchive, IconPlug, IconTir, IconLayoutSidebar } from '@tabler/icons';
 
 import fuselage from '../Assets/320neo-outline-upright.svg';
 
 import { useSimVar, useSplitSimVar } from '../../Common/simVars';
 
-import { DoorToggle } from './DoorToggle';
 import Button, { BUTTON_TYPE } from '../Components/Button/Button';
 
 import { useAppDispatch, useAppSelector } from '../Store/store';
@@ -26,6 +25,18 @@ type StatefulButton = {
     id: string,
     state: string
 }
+
+type GroundServiceButtonProps = {
+    name: string,
+    onClick?: (e: React.MouseEvent) => void,
+}
+
+const GroundServiceButton: FC<GroundServiceButtonProps> = ({ children, name, onClick }) => (
+    <div className="flex flex-row items-center p-8 space-x-8" onClick={onClick}>
+        <h1>{name}</h1>
+        {children}
+    </div>
+);
 
 export const Ground = () => {
     const dispatch = useAppDispatch();
@@ -182,10 +193,13 @@ export const Ground = () => {
 
     return (
         <div className="flex relative flex-col flex-grow h-full">
-            <div className="flex">
-                <h1 className="text-white">Ground</h1>
+            <div>
+                <h1 className="font-bold">Ground</h1>
             </div>
-            <img className="w-full airplane" src={fuselage} alt="fuselage" />
+
+            {/* TODO: Replace with JIT value */}
+            <img className="inset-x-0 mx-auto h-full" style={{ width: '51rem' }} src={fuselage} alt="fuselage" />
+
             <div className="grid absolute top-16 left-72 grid-cols-2 control-grid">
                 <div>
                     <h1 className="pb-1 text-xl font-medium text-center text-white">Pax</h1>
@@ -252,6 +266,7 @@ export const Ground = () => {
                     </Button>
                 </div>
             </div>
+
             <div className="grid absolute right-72 bottom-36 grid-cols-2 control-grid">
                 <div>
                     <h1 className="pb-1 text-xl font-medium text-center text-white">Door Aft</h1>
@@ -304,6 +319,7 @@ export const Ground = () => {
                         <IconHandStop size="2.825rem" stroke="1.5" />
                     </Button>
                 </div>
+
                 <Button
                     id="down-left"
                     type={BUTTON_TYPE.NONE}
@@ -330,5 +346,45 @@ export const Ground = () => {
                 </Button>
             </div>
         </div>
+    );
+};
+
+type DoorToggleProps = {
+    index: number,
+    onClick: (callback: () => void, e: React.MouseEvent) => void,
+    selectionCallback: (className: string, id: string, doorState: any, disabledId: string) => string,
+    id: string,
+    tugActive: boolean,
+    disabled?
+}
+
+const DoorToggle = (props: DoorToggleProps) => {
+    const [doorState, setDoorState] = useSplitSimVar(`A:INTERACTIVE POINT OPEN:${props.index}`, 'Percent over 100', 'K:TOGGLE_AIRCRAFT_EXIT', 'Enum', 500);
+    const [previousDoorState, setPreviousDoorState] = useState(doorState);
+
+    useEffect(() => {
+        if (props.tugActive && previousDoorState) {
+            setDoorState(props.index + 1);
+            setPreviousDoorState(!previousDoorState);
+        } else if (props.tugActive) {
+            setPreviousDoorState(false);
+        } else {
+            setPreviousDoorState(doorState);
+        }
+    }, [props.tugActive, props.index, previousDoorState, setDoorState, doorState]);
+
+    return (
+        <Button
+            onClick={(e) => props.onClick(() => {
+                setDoorState(props.index + 1);
+                setPreviousDoorState(true);
+            }, e)}
+            className={props.selectionCallback('w-32', props.id, doorState, props.id)}
+            type={BUTTON_TYPE.NONE}
+            id={props.id}
+            disabled={props.disabled}
+        >
+            <IconLayoutSidebar size="2.825rem" stroke="1.5" />
+        </Button>
     );
 };

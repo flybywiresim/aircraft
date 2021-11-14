@@ -48,17 +48,15 @@ const RunwayVisualizationWidget = (props: RunwayVisualizationProps) => {
         return Math.max(props.mainLength ?? 0, props.asda ?? 0, props.toda ?? 0, ...distances);
     }
 
-    function getStopMarginLabelHeightPercentage(): number {
+    const getStopMarginLabelHeightPercentage = (): number => {
         if (!props.stopMargin) return 0;
 
         return (Math.abs(props.stopMargin) / maxDist()) * 100;
-    }
+    };
 
-    function getLabelBottomPercentage(label: DistanceLabel): number {
-        return (label.distance / maxDist()) * 100;
-    }
+    const getLabelBottomPercentage = (label: DistanceLabel): number => (label.distance / maxDist()) * 100;
 
-    function mainHeightPercentage(): number {
+    const mainHeightPercentage = (): number => {
         const mainLength = props.mainLength ?? 0;
         const maximumDist = maxDist();
 
@@ -68,23 +66,23 @@ const RunwayVisualizationWidget = (props: RunwayVisualizationProps) => {
         const percentage = (mainLength / maxDist()) * 100;
 
         return Math.max(percentage, 20);
-    }
+    };
 
-    function asdaHeightPercentage(): number {
+    const asdaHeightPercentage = (): number => {
         const asda = props.asda ?? 0;
         const mainLength = props.mainLength ?? 0;
 
         return Math.max(((asda - mainLength) / maxDist()) * 100, 0);
-    }
+    };
 
-    function todaHeightPercentage(): number {
+    const todaHeightPercentage = (): number => {
         const toda = props.toda ?? 0;
         const asda = props.asda ?? 0;
 
         return Math.max(((toda - asda) / maxDist()) * 100, 0);
-    }
+    };
 
-    function isLabelOverDistance(label: DistanceLabel): boolean {
+    const isLabelOverDistance = (label: DistanceLabel): boolean => {
         switch (label.type) {
         case LabelType.Asda:
             return label.distance > (props.asda ?? 0);
@@ -93,18 +91,16 @@ const RunwayVisualizationWidget = (props: RunwayVisualizationProps) => {
         default:
             return label.distance > (props.mainLength ?? 0);
         }
-    }
+    };
 
-    function runwayLengthLabel(): JSX.Element {
-        return (
-            <div className=" absolute top-1/2 -right-3 transform -rotate-90 translate-x-1/2">
-                { props.mainLength ?? 0 }
-                m
-            </div>
-        );
-    }
+    const runwayLengthLabel = () => (
+        <div className=" absolute top-1/2 -right-3 transform -rotate-90 translate-x-1/2">
+            { props.mainLength ?? 0 }
+            m
+        </div>
+    );
 
-    function stopMarginLabel(): JSX.Element | undefined {
+    const stopMarginLabel = () => {
         if (props.stopMargin) {
             return (
                 <div
@@ -126,17 +122,17 @@ const RunwayVisualizationWidget = (props: RunwayVisualizationProps) => {
                 </div>
             );
         }
-        return undefined;
-    }
+        return <></>;
+    };
 
-    function runwayNumber(): JSX.Element | undefined {
+    function runwayNumber(): JSX.Element {
         if (props.runwayNumber) {
             const paddedNumber = props.runwayNumber.toString().padStart(2, '0');
             return (
                 <div className="absolute bottom-20 left-1/2 text-4xl opacity-40 transform -translate-x-1/2 runway-id">{paddedNumber}</div>
             );
         }
-        return undefined;
+        return <></>;
     }
 
     function labels(): JSX.Element[] {
