@@ -1,6 +1,32 @@
 @import "../../../Common/definitions";
 @import "../../../Common/gauges";
 
+@mixin GenericPulsingFill($color) {
+    @keyframes pulsing {
+        0%, 100% {
+            fill: $color;
+        }
+        50% {
+            fill: scale-color($color, $lightness: -50%);
+        }
+    }
+    animation: pulsing 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+@mixin GenericPulsingStroke($color) {
+@keyframes pulsingS {
+    0%, 100% {
+        stroke: $color;
+    }
+    50% {
+        stroke: scale-color($color, $lightness: -50%);
+    }
+}
+animation: pulsingS 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+
+
 #main-press {
 
     text {
@@ -44,6 +70,10 @@
 
         &.End {
             text-anchor: end !important;
+        }
+
+        &.GreenTextPulse {
+            @include GenericPulsingFill($display-green);
         }
     }
 
@@ -95,6 +125,11 @@
         fill: $display-background;
         stroke: $display-white;
         stroke-width: 2;
+    }
+
+    .GreenIndicatorPulse {
+        @include GenericPulsingStroke($display-green);
+        stroke-width: 3;
     }
 
 }

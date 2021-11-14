@@ -83,9 +83,9 @@ export const PressPage: FC = () => {
                 <text className="Large Center" x={cax + 15} y="80">CAB ALT</text>
                 <text className="Medium Center Cyan" x={cax + 20} y="100">FT</text>
                 <text
-                    className={`Huge End ${Math.round(cabinAlt / 50) * 50 >= 9550
-                        ? 'Red'
-                        : 'Green'}`}
+                    className={`Huge End ${Math.round(cabinAlt / 50) * 50 >= 8800 && Math.round(cabinAlt / 50) * 50 < 9550
+                        ? 'GreenTextPulse'
+                        : Math.round(cabinAlt / 50) * 50 >= 9550 ? 'Red' : 'Green'}`}
                     x={cax + 85}
                     y={y + 25}
                 >
@@ -116,7 +116,9 @@ export const PressPage: FC = () => {
                         radius={radius}
                         startAngle={210}
                         endAngle={50}
-                        className={`GaugeIndicator ${Math.round(cabinAlt / 50) * 50 >= 9550 ? 'Red' : ''}`}
+                        className={`GaugeIndicator ${Math.round(cabinAlt / 50) * 50 >= 8800 && Math.round(cabinAlt / 50) * 50 < 9550
+                            ? 'GreenIndicatorPulse'
+                            : Math.round(cabinAlt / 50) * 50 >= 9550 ? 'Red' : 'Green'}`}
                         indicator
                     />
                 </GaugeComponent>
@@ -182,11 +184,12 @@ const CabinVerticalSpeedComponent: FC<CabinVerticalSpeedComponentType> = ({vsx, 
 
     return (
         <>
+            {/*    */}
             <g id="VsIndicator" >
                 <text className="Large Center" x={vsx + 15} y="80">V/S</text>
                 <text className="Medium Center Cyan" x={vsx + 20} y="100">FT/MIN</text>
-                <text className="Huge Green End" x={vsx + 85} y={y + 5}>{Math.round(cabinVs / 50) * 50}</text>
-                <GaugeComponent x={vsx} y={y} radius={radius} startAngle={170} endAngle={10} visible className="Gauge">
+                <text className={`Huge End ${Math.abs(Math.round(cabinVs / 50) * 50) > 1750 ? 'GreenTextPulse' : 'Green'}`} x={vsx + 85} y={y + 5}>{Math.round(cabinVs / 50) * 50}</text>
+                <GaugeComponent x={vsx} y={y} radius={radius} startAngle={170} endAngle={10} visible className="GaugeComponent Gauge">
                     <GaugeMarkerComponent value={2} x={vsx} y={y} min={-2} max={2} radius={radius} startAngle={180} endAngle={0} className="GaugeText" showValue textNudgeY={10} />
                     <GaugeMarkerComponent value={1} x={vsx} y={y} min={-2} max={2} radius={radius} startAngle={180} endAngle={0} className="GaugeText" />
                     <GaugeMarkerComponent value={0} x={vsx} y={y} min={-2} max={2} radius={radius} startAngle={180} endAngle={0} className="GaugeText" showValue textNudgeX={10}/>
@@ -201,7 +204,7 @@ const CabinVerticalSpeedComponent: FC<CabinVerticalSpeedComponentType> = ({vsx, 
                         radius={radius}
                         startAngle={180}
                         endAngle={0}
-                        className="GaugeIndicator"
+                        className={`GaugeIndicator ${Math.abs(Math.round(cabinVs / 50) * 50) > 1750 ? 'GreenIndicatorPulse' : ''}`}
                         indicator
                     />
                 </GaugeComponent>
