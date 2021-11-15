@@ -84,25 +84,25 @@ export const SettingsPage: FC<SettingsPageProps> = ({ name, children }) => {
         }
     }, []);
 
-    function handleMouseDown(event: React.MouseEvent) {
+    const handleMouseDown = (event: React.MouseEvent) => {
         position.current.top = containerRef.current ? containerRef.current.scrollTop : 0;
         position.current.y = event.clientY;
 
         document.addEventListener('mousemove', mouseMoveHandler);
         document.addEventListener('mouseup', mouseUpHandler);
-    }
+    };
 
-    function mouseMoveHandler(event: MouseEvent) {
+    const mouseMoveHandler = (event: MouseEvent) => {
         const dy = event.clientY - position.current.y;
         if (containerRef.current) {
             containerRef.current.scrollTop = position.current.top - dy;
         }
-    }
+    };
 
-    function mouseUpHandler() {
+    const mouseUpHandler = () => {
         document.removeEventListener('mousemove', mouseMoveHandler);
         document.removeEventListener('mouseup', mouseUpHandler);
-    }
+    };
 
     return (
         <div>
