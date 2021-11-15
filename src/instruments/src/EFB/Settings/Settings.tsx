@@ -110,7 +110,8 @@ export const SettingsPage: FC<SettingsPageProps> = ({ name, children }) => {
                 <div className="flex flex-row items-center space-x-3 transition duration-100 hover:text-theme-highlight">
                     <ArrowLeft size={30} />
                     <h1 className="font-bold text-current">
-                        Settings -
+                        Settings
+                        {' - '}
                         {name}
                     </h1>
                 </div>
