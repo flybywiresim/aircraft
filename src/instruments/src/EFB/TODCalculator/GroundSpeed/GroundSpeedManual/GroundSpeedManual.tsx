@@ -54,7 +54,14 @@ const GroundSpeedManual = ({ groundSpeed, addTodGroundSpeed, removeTodGroundSpee
         <Divider className="mb-4" />
 
         <div className="flex flex-row justify-center">
-            <Button text="SYNC" type={BUTTON_TYPE.BLUE_OUTLINE} onClick={() => setTodGroundSpeedMode(TOD_INPUT_MODE.AUTO)} />
+            <Button
+                text="SYNC"
+                type={BUTTON_TYPE.BLUE_OUTLINE}
+                onClick={() => {
+                    setTodGroundSpeedMode(TOD_INPUT_MODE.AUTO);
+                    Coherent.trigger('UNFOCUS_INPUT_FIELD');
+                }}
+            />
         </div>
     </div>
 );
