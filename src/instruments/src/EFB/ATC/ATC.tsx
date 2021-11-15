@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import * as apiClient from '@flybywiresim/api-client';
 import { useInterval } from '@flybywiresim/react-components';
 import { Link } from 'react-router-dom';
@@ -20,6 +20,40 @@ export const ATC = () => {
     const [currentLatitude] = useSimVar('GPS POSITION LAT', 'Degrees', 5000);
     const [currentLongitude] = useSimVar('GPS POSITION LON', 'Degrees', 5000);
     const [atisSource] = usePersistentProperty('CONFIG_ATIS_SRC', 'FAA');
+
+    const [contentOverflows, setContentOverflows] = useState(false);
+
+    const containerRef = useRef<HTMLDivElement>(null);
+    const contentRef = useRef<HTMLDivElement>(null);
+    const position = useRef({ top: 0, y: 0 });
+
+    const handleMouseDown = (event: React.MouseEvent) => {
+        position.current.top = containerRef.current ? containerRef.current.scrollTop : 0;
+        position.current.y = event.clientY;
+
+        document.addEventListener('mousemove', mouseMoveHandler);
+        document.addEventListener('mouseup', mouseUpHandler);
+    };
+
+    const mouseMoveHandler = (event: MouseEvent) => {
+        const dy = event.clientY - position.current.y;
+        if (containerRef.current) {
+            containerRef.current.scrollTop = position.current.top - dy;
+        }
+    };
+
+    const mouseUpHandler = () => {
+        document.removeEventListener('mousemove', mouseMoveHandler);
+        document.removeEventListener('mouseup', mouseUpHandler);
+    };
+
+    useEffect(() => {
+        if (contentRef.current) {
+            if (contentRef.current.clientHeight > 29 * parseFloat(getComputedStyle(document.documentElement).fontSize)) {
+                setContentOverflows(true);
+            }
+        }
+    }, [controllers]);
 
     const loadAtc = useCallback(() => {
         apiClient.ATC.getAtc(atisSource.toString().toLowerCase()).then((res) => {
@@ -90,6 +124,10 @@ export const ATC = () => {
         }
     }, [controllers, activeFrequency]);
 
+    useEffect(() => {
+
+    }, [currentAtc]);
+
     useInterval(() => {
         loadAtc();
     }, 60 * 1000);
@@ -102,37 +140,44 @@ export const ATC = () => {
             </h1>
             { (atisSource === 'IVAO' || atisSource === 'VATSIM') ? (
                 <div className="w-full h-efb">
-                    <div className="flex flex-wrap">
-                        {controllers && controllers.map((atc, index) => (
-                            // TODO: Replace with JIT value
-                            <div className={`${index % 2 === 0 && 'pr-4'} w-full max-w-1/2`}>
-                                <div className="overflow-hidden relative p-6 mt-4 w-full rounded-md bg-theme-secondary">
-                                    <h2 className="font-bold">
-                                        {atc.callsign}
-                                    </h2>
-                                    <h2>
-                                        {atc.frequency}
-                                    </h2>
+                    {/* TODO: REPLACE WITH JIT VALUE */}
+                    <div
+                        className={`${contentOverflows && 'overflow-y-scroll'} scrollbar`}
+                        style={{ height: '29rem' }}
+                        ref={containerRef}
+                        onMouseDown={handleMouseDown}
+                    >
+                        <div className={`flex flex-wrap ${contentOverflows && 'mr-4'}`} ref={contentRef}>
+                            {controllers && controllers.map((controller, index) => (
+                                <div className={`${index % 2 === 0 && 'pr-4'} w-full max-w-1/2`}>
+                                    <div className="overflow-hidden relative p-6 mt-4 w-full rounded-md bg-theme-secondary">
+                                        <h2 className="font-bold">
+                                            {controller.callsign}
+                                        </h2>
+                                        <h2>
+                                            {controller.frequency}
+                                        </h2>
 
-                                    <div className="flex absolute inset-0 flex-row opacity-0 hover:opacity-100 transition duration-100">
-                                        <div
-                                            className="flex justify-center items-center w-full bg-opacity-80 bg-theme-highlight"
-                                            onClick={() => setActiveFrequency(toFrequency(atc.frequency))}
-                                        >
-                                            <h2>Set Active</h2>
-                                        </div>
-                                        <div
-                                            className="flex justify-center items-center w-full bg-yellow-500 bg-opacity-80"
-                                            onClick={() => setStandbyFrequency(toFrequency(atc.frequency))}
-                                        >
-                                            <h2>Set Standby</h2>
+                                        <div className="flex absolute inset-0 flex-row opacity-0 hover:opacity-100 transition duration-100">
+                                            <div
+                                                className="flex justify-center items-center w-full bg-opacity-80 bg-theme-highlight"
+                                                onClick={() => setActiveFrequency(toFrequency(controller.frequency))}
+                                            >
+                                                <h2>Set Active</h2>
+                                            </div>
+                                            <div
+                                                className="flex justify-center items-center w-full bg-yellow-500 bg-opacity-80"
+                                                onClick={() => setStandbyFrequency(toFrequency(controller.frequency))}
+                                            >
+                                                <h2>Set Standby</h2>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        ))}
+                            ))}
+                        </div>
                     </div>
-                    <div className="flex flex-row h-96 rounded-lg border divide-x shadow-lg divide-theme-accent border-theme-accent">
+                    <div className="flex flex-row mt-8 h-96 rounded-lg border divide-x shadow-lg divide-theme-accent border-theme-accent">
                         <div className="flex flex-col justify-between p-6">
                             <div>
                                 <p>Active</p>
@@ -148,12 +193,7 @@ export const ATC = () => {
                             </div>
                         </div>
                         {currentAtc?.textAtis ? (
-                            <div className="flex-wrap p-2 w-full">
-                                <h1>{currentAtc?.callsign}</h1>
-                                {currentAtc?.textAtis.map((line) => (
-                                    <p className="flex flex-wrap mt-2">{line}</p>
-                                ))}
-                            </div>
+                            <ControllerInformation currentAtc={currentAtc} />
                         ) : (
                             <div className="flex justify-center items-center w-full">
                                 <h1 className="font-bold">NO INFORMATION AVAILABLE FOR THIS FREQUENCY</h1>
@@ -173,6 +213,61 @@ export const ATC = () => {
                     </Link>
                 </div>
             )}
+        </div>
+    );
+};
+
+type ControllerInformationProps = {
+    currentAtc: ATCInfoExtended | undefined,
+}
+
+const ControllerInformation = ({ currentAtc }: ControllerInformationProps) => {
+    const [contentOverflows, setContentOverflows] = useState(false);
+
+    const containerRef = useRef<HTMLDivElement>(null);
+    const contentRef = useRef<HTMLDivElement>(null);
+    const position = useRef({ top: 0, y: 0 });
+
+    const handleMouseDown = (event: React.MouseEvent) => {
+        position.current.top = containerRef.current ? containerRef.current.scrollTop : 0;
+        position.current.y = event.clientY;
+
+        document.addEventListener('mousemove', mouseMoveHandler);
+        document.addEventListener('mouseup', mouseUpHandler);
+    };
+
+    const mouseMoveHandler = (event: MouseEvent) => {
+        const dy = event.clientY - position.current.y;
+        if (containerRef.current) {
+            containerRef.current.scrollTop = position.current.top - dy;
+        }
+    };
+
+    const mouseUpHandler = () => {
+        document.removeEventListener('mousemove', mouseMoveHandler);
+        document.removeEventListener('mouseup', mouseUpHandler);
+    };
+
+    useEffect(() => {
+        if (contentRef.current) {
+            if (contentRef.current.clientHeight > 24 * parseFloat(getComputedStyle(document.documentElement).fontSize)) {
+                setContentOverflows(true);
+            }
+        }
+    }, [currentAtc]);
+
+    return (
+        <div
+            className={`${contentOverflows && 'overflow-y-scroll'} overflow-hidden flex-wrap p-2 w-full h-96 scrollbar`}
+            ref={containerRef}
+            onMouseDown={handleMouseDown}
+        >
+            <div ref={contentRef}>
+                <h2>{currentAtc?.callsign}</h2>
+                {currentAtc?.textAtis.map((line) => (
+                    <p className="flex flex-wrap mt-4">{line}</p>
+                ))}
+            </div>
         </div>
     );
 };
