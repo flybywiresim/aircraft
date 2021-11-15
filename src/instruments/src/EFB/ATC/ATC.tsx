@@ -202,7 +202,7 @@ export const ATC = () => {
                     </div>
                 </div>
             ) : (
-                <div className="flex flex-col justify-center items-center space-y-8 w-full bg-blue-500 rounded-lg border-2 shadow-md h-efb border-theme-accent">
+                <div className="flex flex-col justify-center items-center space-y-8 w-full rounded-lg border-2 shadow-md h-efb border-theme-accent">
                     <h1 className="max-w-4xl text-center">This page is only available when IVAO or VATSIM is selected as the ATIS/ATC source in the settings page</h1>
                     <Link
                         to="/settings/atsu-/-aoc"
