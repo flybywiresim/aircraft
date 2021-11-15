@@ -32,6 +32,11 @@
     font-weight: 700;
     src: url("/Fonts/Manrope-Bold.ttf") format("truetype");
   }
+  @font-face {
+    font-family: "AirbusRMP";
+    font-weight: 900;
+    src: url("/Fonts/AirbusRMP.ttf") format("truetype");
+  }
 
   html body {
     @apply font-body;

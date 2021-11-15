@@ -116,7 +116,7 @@ export const LoadSheetWidget = () => {
                 </>
             ) : (
                 <div className="flex flex-col justify-center items-center space-y-8 h-full text-lg">
-                    <h1>You have not yet imported a flightplan from SimBrief</h1>
+                    <h1 className="max-w-4xl text-center">You have not yet imported a flightplan from SimBrief</h1>
                     <button
                         type="button"
                         onClick={() => {
@@ -132,7 +132,7 @@ export const LoadSheetWidget = () => {
                                 );
                             });
                         }}
-                        className="flex justify-center items-center p-2 space-x-4 w-full max-w-lg rounded-lg border-2 shadow-lg focus:outline-none bg-theme-highlight border-theme-secondary"
+                        className="flex justify-center items-center py-2 px-16 space-x-4 rounded-lg border-2 shadow-lg focus:outline-none bg-theme-highlight border-theme-secondary"
                     >
                         <FileEarmarkArrowDown size={26} />
                         <p>Import Flightplan from SimBrief</p>

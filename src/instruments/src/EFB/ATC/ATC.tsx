@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import classNames from 'classnames';
 import * as apiClient from '@flybywiresim/api-client';
-import { IconBuildingLighthouse, IconChartRadar, IconCircleCheck, IconPlaneArrival, IconPlaneDeparture, IconRadio, IconTrafficLights } from '@tabler/icons';
 import { useInterval } from '@flybywiresim/react-components';
+import { Link } from 'react-router-dom';
+import { Gear } from 'react-bootstrap-icons';
 import { useSimVar, useSplitSimVar } from '../../Common/simVars';
-import Button from '../Components/Button/Button';
 import { usePersistentProperty } from '../../Common/persistence';
 
 export declare class ATCInfoExtended extends apiClient.ATCInfo {
@@ -13,15 +12,17 @@ export declare class ATCInfoExtended extends apiClient.ATCInfo {
 
 export const ATC = () => {
     const [controllers, setControllers] = useState<ATCInfoExtended[]>();
-    const [frequency, setFrequency] = useSplitSimVar('COM ACTIVE FREQUENCY:1', 'Hz', 'K:COM_RADIO_SET_HZ', 'Hz', 500);
-    const [currentFrequency, setCurrentFrequency] = useState<string>();
+    const [activeFrequency, setActiveFrequency] = useSplitSimVar('COM ACTIVE FREQUENCY:1', 'Hz', 'K:COM_RADIO_SET_HZ', 'Hz', 500);
+    const [stanbdyFrequency, setStandbyFrequency] = useSplitSimVar('COM STANDBY FREQUENCY:1', 'Hz', 'K:COM_RADIO_SET_HZ', 'Hz', 500);
+    const [displayedActiveFrequency, setDisplayedActiveFrequency] = useState<string>();
+    const [displayedStandbyFrequency, setDisplayedStandbyFrequency] = useState<string>();
     const [currentAtc, setCurrentAtc] = useState<ATCInfoExtended>();
     const [currentLatitude] = useSimVar('GPS POSITION LAT', 'Degrees', 5000);
     const [currentLongitude] = useSimVar('GPS POSITION LON', 'Degrees', 5000);
     const [atisSource] = usePersistentProperty('CONFIG_ATIS_SRC', 'FAA');
 
     const loadAtc = useCallback(() => {
-        apiClient.ATC.getAtc((atisSource as string).toLowerCase()).then((res) => {
+        apiClient.ATC.getAtc(atisSource.toString().toLowerCase()).then((res) => {
             let allAtc : ATCInfoExtended[] = res as ATCInfoExtended[];
             allAtc = allAtc.filter((a) => a.callsign.indexOf('_OBS') === -1 && parseFloat(a.frequency) <= 136.975);
             for (const a of allAtc) {
@@ -37,25 +38,19 @@ export const ATC = () => {
         });
     }, [currentLatitude, currentLongitude, atisSource]);
 
-    const setAtc = () => {
-        const converted = fromFrequency(frequency);
-        setCurrentFrequency(converted);
-        setCurrentAtc(controllers?.find((c) => c.frequency === converted));
-    };
-
     const getDistanceFromLatLonInNm = (lat1, lon1, lat2, lon2) : number => {
         const R = 6371; // Radius of the earth in km
-        const dLat = deg2rad(lat2 - lat1); // deg2rad below
-        const dLon = deg2rad(lon2 - lon1);
+        const dLat = deg2Rad(lat2 - lat1); // deg2Rad below
+        const dLon = deg2Rad(lon2 - lon1);
         const a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
-          + Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2))
+          + Math.cos(deg2Rad(lat1)) * Math.cos(deg2Rad(lat2))
           * Math.sin(dLon / 2) * Math.sin(dLon / 2);
         const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         const d = R * c * 0.5399568; // Distance in nm
         return d;
     };
 
-    const deg2rad = (deg) => deg * (Math.PI / 180);
+    const deg2Rad = (deg) => deg * (Math.PI / 180);
 
     const toFrequency = (frequency:string) : number => {
         if (frequency) {
@@ -64,9 +59,9 @@ export const ATC = () => {
         return 0;
     };
 
-    const fromFrequency = (frequency:number) : string => {
+    const fromFrequency = (frequency:number): string => {
         if (frequency) {
-            let converted : string = frequency.toString().replace('.', '');
+            let converted: string = frequency.toString().replace('.', '');
             converted = `${converted.substring(0, 3)}.${converted.substring(3)}`;
             return parseFloat(converted).toFixed(3);
         }
@@ -78,91 +73,104 @@ export const ATC = () => {
     }, [loadAtc]);
 
     useEffect(() => {
-        setAtc();
-    }, [frequency]);
+        const converted = fromFrequency(activeFrequency);
+        setDisplayedActiveFrequency(converted);
+        setCurrentAtc(controllers?.find((c) => c.frequency === converted));
+    }, [activeFrequency]);
 
     useEffect(() => {
-        if (frequency) {
-            setCurrentAtc(controllers?.find((c) => c.frequency === fromFrequency(frequency)));
+        const converted = fromFrequency(stanbdyFrequency);
+        setDisplayedStandbyFrequency(converted);
+        setCurrentAtc(controllers?.find((c) => c.frequency === converted));
+    }, [stanbdyFrequency]);
+
+    useEffect(() => {
+        if (activeFrequency) {
+            setCurrentAtc(controllers?.find((c) => c.frequency === fromFrequency(activeFrequency)));
         }
-    }, [controllers, frequency]);
+    }, [controllers, activeFrequency]);
 
     useInterval(() => {
         loadAtc();
     }, 60 * 1000);
 
     return (
-        <div className="flex p-6 w-full">
-            { (atisSource === 'IVAO' || atisSource === 'VATSIM') && (
-                <div className="w-8/12">
-                    <h1 className="mb-4 text-2xl font-medium ">
-                        {atisSource}
-                        {' - '}
-                        Controllers currently in range
-                    </h1>
-                    <div className="p-2 text-theme-text">
-                        <div className="flex flex-wrap justify-between p-2 w-full">
-                            { controllers && controllers.map((atc) => (
-                                <Button
-                                    className={classNames({ 'w-60 m-1 flex': true, 'text-yellow-200': atc.frequency === currentFrequency })}
-                                    id="atc.callsign"
-                                    onClick={() => setFrequency(toFrequency(atc.frequency))}
-                                >
-                                    <div className="flex justify-start w-full text-lg">
-                                        <div>
-                                            { atc.type === apiClient.AtcType.RADAR && <IconChartRadar size="2rem" /> }
-                                            { atc.type === apiClient.AtcType.GROUND && <IconTrafficLights size="2rem" /> }
-                                            { atc.type === apiClient.AtcType.DEPARTURE && <IconPlaneDeparture size="2rem" /> }
-                                            { atc.type === apiClient.AtcType.APPROACH && <IconPlaneArrival size="2rem" /> }
-                                            { atc.type === apiClient.AtcType.TOWER && <IconBuildingLighthouse size="2rem" /> }
-                                            { atc.type === apiClient.AtcType.DELIVERY && <IconCircleCheck size="2rem" /> }
-                                            { atc.type === apiClient.AtcType.ATIS && <IconRadio size="2rem" /> }
+        <div>
+            <h1 className="font-bold">
+                Air Traffic Control
+                {(atisSource === 'IVAO' || atisSource === 'VATSIM') && ` - ${atisSource} Controllers currently in range`}
+            </h1>
+            { (atisSource === 'IVAO' || atisSource === 'VATSIM') ? (
+                <div className="w-full h-efb">
+                    <div className="flex flex-wrap">
+                        {controllers && controllers.map((atc, index) => (
+                            // TODO: Replace with JIT value
+                            <div className={`${index % 2 === 0 && 'pr-4'} w-full max-w-1/2`}>
+                                <div className="overflow-hidden relative p-6 mt-4 w-full rounded-md bg-theme-secondary">
+                                    <h2 className="font-bold">
+                                        {atc.callsign}
+                                    </h2>
+                                    <h2>
+                                        {atc.frequency}
+                                    </h2>
+
+                                    <div className="flex absolute inset-0 flex-row opacity-0 hover:opacity-100 transition duration-100">
+                                        <div
+                                            className="flex justify-center items-center w-full bg-opacity-80 bg-theme-highlight"
+                                            onClick={() => setActiveFrequency(toFrequency(atc.frequency))}
+                                        >
+                                            <h2>Set Active</h2>
                                         </div>
-                                        <div className="flex flex-col flex-grow justify-center items-center text-center">
-                                            <div>
-                                                {atc.callsign}
-                                            </div>
-                                            <div>
-                                                {atc.frequency}
-                                            </div>
+                                        <div
+                                            className="flex justify-center items-center w-full bg-yellow-500 bg-opacity-80"
+                                            onClick={() => setStandbyFrequency(toFrequency(atc.frequency))}
+                                        >
+                                            <h2>Set Standby</h2>
                                         </div>
                                     </div>
-                                </Button>
-                            ))}
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            { (atisSource !== 'IVAO' && atisSource !== 'VATSIM') && (
-                <div className="w-full">
-                    <h1 className="mb-4 text-2xl font-medium ">
-                        Only available when 'IVAO' or 'VATSIM' is selected as ATIS/ATC source in the settings page
-                    </h1>
-                </div>
-            )}
-
-            { (atisSource === 'IVAO' || atisSource === 'VATSIM') && (
-                <div className="ml-4 w-4/12">
-                    <h1 className="mb-4 text-2xl font-medium ">Active frequency</h1>
-                    <div className="p-6 bg-gray-800 rounded-xl">
-                        <div>
-                            <div className="flex text-2xl text-yellow-200">
-                                <div className="mr-4">
-                                    {currentFrequency && currentFrequency.toString()}
-                                </div>
-                                <div>
-                                    {currentAtc && currentAtc.callsign}
                                 </div>
                             </div>
-                            <div className="flex-wrap mt-8 text-2xl active-atis">
-                                { currentAtc?.textAtis && currentAtc.textAtis.map((line) => (
-                                    <p className="flex flex-wrap mt-2 text-base">{line}</p>
-                                )) }
+                        ))}
+                    </div>
+                    <div className="flex flex-row h-96 rounded-lg border divide-x shadow-lg divide-theme-accent border-theme-accent">
+                        <div className="flex flex-col justify-between p-6">
+                            <div>
+                                <p>Active</p>
+                                <div className="flex justify-center items-center py-4 px-10 mt-4 text-6xl rounded-lg border shadow-lg text-theme-highlight font-rmp border-theme-accent">
+                                    {displayedActiveFrequency && displayedActiveFrequency}
+                                </div>
+                            </div>
+                            <div>
+                                <p>Standby</p>
+                                <div className="flex justify-center items-center py-4 px-10 mt-4 text-6xl text-yellow-500 rounded-lg border shadow-lg font-rmp border-theme-accent">
+                                    {displayedStandbyFrequency && displayedStandbyFrequency}
+                                </div>
                             </div>
                         </div>
+                        {currentAtc?.textAtis ? (
+                            <div className="flex-wrap p-2 w-full">
+                                <h1>{currentAtc?.callsign}</h1>
+                                {currentAtc?.textAtis.map((line) => (
+                                    <p className="flex flex-wrap mt-2">{line}</p>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="flex justify-center items-center w-full">
+                                <h1 className="font-bold">NO INFORMATION AVAILABLE FOR THIS FREQUENCY</h1>
+                            </div>
+                        )}
                     </div>
-
+                </div>
+            ) : (
+                <div className="flex flex-col justify-center items-center space-y-8 w-full bg-blue-500 rounded-lg border-2 shadow-md h-efb border-theme-accent">
+                    <h1 className="max-w-4xl text-center">This page is only available when IVAO or VATSIM is selected as the ATIS/ATC source in the settings page</h1>
+                    <Link
+                        to="/settings/atsu-/-aoc"
+                        className="flex justify-center items-center py-2 px-16 space-x-4 rounded-lg border-2 shadow-lg focus:outline-none bg-theme-highlight border-theme-secondary"
+                    >
+                        <Gear size={26} />
+                        <p>Change ATIS/ATC source</p>
+                    </Link>
                 </div>
             )}
         </div>
