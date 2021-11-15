@@ -53,11 +53,13 @@ module.exports = {
                 'theme-statusbar': 'var(--color-statusbar)',
                 'theme-accent': 'var(--color-accent)',
             },
+            maxWidth: { '1/2': '50%' },
         },
         fontFamily: {
             mono: ['JetBrains Mono'],
             body: ['Inter'],
             title: ['Manrope'],
+            rmp: ['AirbusRMP'],
         },
         boxShadow: { lg: '0px 0px 4px 2px rgba(0, 0, 0, 0.5)' },
     },
