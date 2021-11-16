@@ -137,6 +137,9 @@
 1. [ATHR] Fix ATHR Alt Soft Mode - @IbrahimK42 (IbrahimK42)
 1. [HYD] Simplified max step loop updater - @Crocket63
 1. [MISC] Fix for bleed/hyd system failure in some conditions - @Crocket63
+1. [TCAS] Implemented traffic advisories, resolution advisories, and collision avoidance logic - @wpine215 (Iceman) @2hwk (2Cas#1022)
+1. [PFD] Implemented TCAS guidance on vertical speed tape - @wpine215 (Iceman)
+1. [SOUNDS] Connected TCAS TA/RA logic to TCAS Wwise events - @wpine215 (Iceman)  @2hwk (2Cas#1022)
 
 ## 0.7.0
 

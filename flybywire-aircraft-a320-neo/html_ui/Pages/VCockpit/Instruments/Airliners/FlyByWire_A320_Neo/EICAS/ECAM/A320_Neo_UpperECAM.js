@@ -1078,7 +1078,7 @@ var A320_Neo_UpperECAM;
                                 ],
                                 flightPhasesInhib: [3, 4, 5, 7, 8],
                                 isActive: () => {
-                                    return !this.isInFlightPhase(1, 10) && !this.anyAdiruAligned();
+                                    return !this.isInFlightPhase(1, 10) && this.getCachedSimVar('L:A32NX_TCAS_FAULT', 'bool');
                                 },
                             },
                             {
@@ -1087,8 +1087,7 @@ var A320_Neo_UpperECAM;
                                 flightPhasesInhib: [1, 2, 3, 4, 5, 7, 8, 9, 10],
                                 isActive: () => (
                                     this.fwcFlightPhase === 6 &&
-                                    this.getCachedSimVar("L:A32NX_SWITCH_TCAS_Position", "Enum") === 0 &&
-                                    this.anyAdiruAligned()
+                                    this.getCachedSimVar('L:A32NX_TCAS_MODE', 'Enum') === 0
                                 ),
                             }
                         ]
