@@ -13,6 +13,7 @@
     "build:fadec": "cd src/fadec && ./build.sh",
     "build:failures": "rollup -c src/failures/rollup.config.js",
     "build:fmgc": "rollup -c src/fmgc/rollup.config.js",
+    "build:tcas": "rollup -c src/tcas/rollup.config.js",
     "build:mcdu-client": "rollup -c src/mcdu-server/client/rollup.config.js",
     "build:mcdu-server": "pkg src/mcdu-server/index.js --target node12-win-x64 --no-bytecode --public-packages \"*\" --public --output \"flybywire-aircraft-a320-neo/MCDU SERVER/server.exe\""
   },

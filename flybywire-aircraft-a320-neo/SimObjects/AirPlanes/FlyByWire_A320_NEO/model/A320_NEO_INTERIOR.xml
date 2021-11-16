@@ -4288,6 +4288,15 @@
                 <NODE_ID>PUSH_ATC_FAIL_SEQ2</NODE_ID>
                 <EMISSIVE_CODE>(L:A32NX_OVHD_INTLT_ANN) 0 == (L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) and</EMISSIVE_CODE>
             </UseTemplate>
+
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TEMPLATE>FBW_Airbus_ATC_Panel_ATC</ANIM_TEMPLATE>
+                <ANIM_TYPE>KNOB</ANIM_TYPE>
+                <Node_ID>Knob_ATC_1</Node_ID>
+                <PART_ID>Knob_ATC_1</PART_ID>
+                <ANIMTIP_0>Set XPDR to 1</ANIMTIP_0>
+                <ANIMTIP_1>Set XPDR to 2</ANIMTIP_1>
+            </UseTemplate>
             <!-- TCAS MODE -->
             <UseTemplate Name="FBW_Anim_Interactions">
                 <ANIM_TYPE>KNOB</ANIM_TYPE>
@@ -4843,9 +4852,6 @@
             </UseTemplate>
             <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
                 <NODE_ID>KNOB_RADAR_TILT</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>KNOB_ATC_1</NODE_ID>
             </UseTemplate>
             <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
                 <NODE_ID>PUSH_HANDLE_LEFT_YOKE</NODE_ID>
