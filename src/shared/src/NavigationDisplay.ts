@@ -122,3 +122,24 @@ export enum EfisVectorsGroup {
      */
     ACTIVE_EOSID,
 }
+
+export interface NdTraffic {
+    alive?: boolean;
+    ID: string;
+    lat: number;
+    lon: number;
+    relativeAlt: number;
+    bitfield: number;
+    vertSpeed?: number;
+    intrusionLevel?: number;
+    posX?: number;
+    posY?: number;
+    // debug
+    seen?: number;
+    hidden?: boolean;
+    raTau?: number;
+    taTau?: number;
+    vTau?: number;
+    closureRate?: number;
+    closureAccel?: number;
+}

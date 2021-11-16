@@ -17,7 +17,6 @@ import { FMMessages } from './elements/messages/FMMessages';
 import { TcasWxrMessages } from './elements/messages/TcasWxrMessages';
 import { PlanMode } from './pages/PlanMode';
 import { RoseMode } from './pages/RoseMode';
-
 import './styles.scss';
 import { LnavStatus } from './elements/LnavStatus';
 
