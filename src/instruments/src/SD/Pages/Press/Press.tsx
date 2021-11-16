@@ -16,7 +16,7 @@ export const PressPage: FC = () => {
     const [cabinAlt] = useSimVar('L:A32NX_PRESS_CABIN_ALTITUDE', 'feet', 500);
     const [deltaPsi] = useSimVar('L:A32NX_PRESS_CABIN_DELTA_PRESSURE', 'psi', 500);
     const [flightPhase] = useSimVar('L:A32NX_FWC_FLIGHT_PHASE', 'enum', 1000);
-    const [systemNumber] = useSimVar("L:A32NX_PRESS_ACTIVE_CPC_SYS", "Number", 1000);
+    const [systemNumber] = useSimVar('L:A32NX_PRESS_ACTIVE_CPC_SYS', 'number', 1000);
     const [safetyValve] = useSimVar("L:A32NX_PRESS_SAFETY_VALVE_OPEN_PERCENTAGE", 'percentage', 500);
 
     const deltaPress = splitDecimals(deltaPsi);
@@ -59,7 +59,8 @@ export const PressPage: FC = () => {
                         endAngle={50}
                         className="GaugeText"
                     />
-                    <GaugeMarkerComponent value={0} x={dpx} y={y} min={-1} max={9} radius={radius} startAngle={210} endAngle={50} className="GaugeText" showValue textNudgeY={-10} textNudgeX={5}/>
+                    <GaugeMarkerComponent value={0} x={dpx} y={y} min={-1} max={9} radius={radius} startAngle={210}
+                        endAngle={50} className="GaugeText" showValue textNudgeY={-10} textNudgeX={5}/>
                     <GaugeMarkerComponent
                         value={deltaPsi}
                         x={dpx}
@@ -93,7 +94,8 @@ export const PressPage: FC = () => {
                 </text>
                 <GaugeComponent x={cax} y={y} radius={radius} startAngle={210} endAngle={50} visible className="Gauge">
                     <GaugeComponent x={cax} y={y} radius={radius} startAngle={30} endAngle={50} visible className="Gauge Red" />
-                    <GaugeMarkerComponent value={10} x={cax} y={y} min={-0.625} max={10.625} radius={radius} startAngle={210} endAngle={50} className="GaugeText" showValue indicator={false} textNudgeY={15} />
+                    <GaugeMarkerComponent value={10} x={cax} y={y} min={-0.625} max={10.625}
+                        radius={radius} startAngle={210} endAngle={50} className="GaugeText" showValue indicator={false} textNudgeY={15} />
                     <GaugeMarkerComponent
                         value={5}
                         x={cax}
@@ -386,7 +388,7 @@ type OverboardInletComponentType = {
 }
 
 const OverboardInletComponent: FC<OverboardInletComponentType> = ({ validSDAC, flightPhase }) => {
-    const [realInletValvePosition] = useSimVar("L:VENT_INLET_VALVE", "Percent", 500);
+    const [realInletValvePosition] = useSimVar('L:VENT_INLET_VALVE', 'percent', 500);
     let indicator = true;
     let classNameValue = 'GreenLine';
     let classNameText = 'White';
@@ -441,7 +443,7 @@ type OverboardOutletComponentType = {
 }
 
 const OverboardOutletComponent: FC<OverboardOutletComponentType> = ({ validSDAC, flightPhase }) => {
-    const [realOutletValvePosition] = useSimVar("L:VENT_OUTLET_VALVE", "Percent", 500);
+    const [realOutletValvePosition] = useSimVar('L:VENT_OUTLET_VALVE', 'percent', 500);
     let indicator = true;
     let classNameValue = 'GreenLine';
     let classNameText = 'White';
