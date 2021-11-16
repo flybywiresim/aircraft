@@ -1560,7 +1560,7 @@
                     <POTENTIOMETER>7</POTENTIOMETER>
                     <FAILURE>1</FAILURE>
                     <SIMVAR_INDEX>1</SIMVAR_INDEX>
-                    <EMISSIVE_CODE>(L:A32NX_ELEC_DC_2_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
+                    <EMISSIVE_CODE>(L:A32NX_ELEC_DC_GND_FLT_SVC_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
                 </UseTemplate>
 
                 <!-- F/O dome light -->
