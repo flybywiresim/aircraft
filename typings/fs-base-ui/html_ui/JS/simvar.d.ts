@@ -6,7 +6,7 @@ type BooleanVarUnit = "bool" | "Bool" | "Boolean" | "boolean";
 
 type NumberVarUnit = ("number" | "Number") | "position 32k" | ("SINT32") | BooleanVarUnit | "Enum" | "lbs" | "kg" | ("Degrees" | "degree" | "Radians")
     | "radians" | ("Percent" | "percent") | ("Feet" | "feet" | "feets" | "Feets") | "Volts" | "Amperes" | "Hertz" | "PSI" | "celsius" | "degree latitude"
-    | "degree longitude" | "meters per second" | "Meters per second" | "Position" | ("Knots" | "knots") | "Seconds" | "seconds" | "kilograms per second" | "nautical miles" | "degrees"
+    | "degree longitude" | "meters per second" | "Meters per second" | "Position" | ("Knots" | "knots") | "Seconds" | "seconds" | "kilograms per second" | "nautical miles" | "degrees" | "feet per minute"
 
 type TextVarUnit = "Text" | "string"
 

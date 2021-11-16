@@ -13,6 +13,7 @@ import { RadioNeedle } from '../elements/RadioNeedles';
 import { ApproachMessage } from '../elements/ApproachMessage';
 import { CrossTrack } from '../elements/CrossTrack';
 import { TrackLine } from '../elements/TrackLine';
+import { Traffic } from '../elements/Traffic';
 
 export interface RoseModeProps {
     symbols: NdSymbol[],
@@ -81,7 +82,6 @@ export const RoseMode: FC<RoseModeProps> = ({ symbols, adirsAlign, rangeSetting,
                     rangeSetting={rangeSetting}
                     tcasMode={tcasMode}
                 />
-
                 <g id="map" clipPath="url(#rose-mode-map-clip)">
                     { mode === Mode.ROSE_NAV && (
                         <g visibility={mapHidden ? 'hidden' : 'visible'}>
@@ -129,6 +129,9 @@ export const RoseMode: FC<RoseModeProps> = ({ symbols, adirsAlign, rangeSetting,
                 { mode === Mode.ROSE_ILS && <GlideSlope /> }
                 <Plane />
                 {mode === Mode.ROSE_NAV && <CrossTrack x={390} y={407} />}
+                <g clipPath="url(#rose-mode-tcas-clip)">
+                    <Traffic mode={mode} mapParams={mapParams} />
+                </g>
             </>
         );
     }

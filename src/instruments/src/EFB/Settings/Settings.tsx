@@ -246,6 +246,7 @@ const SimOptionsPage = () => {
     const [fpSync, setFpSync] = usePersistentProperty('FP_SYNC', 'LOAD');
     const [mcduInput, setMcduInput] = usePersistentProperty('MCDU_KB_INPUT', 'DISABLED');
     const [mcduTimeout, setMcduTimeout] = usePersistentProperty('CONFIG_MCDU_KB_TIMEOUT', '60');
+    const [tcasDebug, setTcasDebug] = usePersistentProperty('TCAS_DEBUG', '0');
 
     const [dynamicRegistration, setDynamicRegistration] = usePersistentProperty('DYNAMIC_REGISTRATION_DECAL', '0');
 
@@ -370,6 +371,13 @@ const SimOptionsPage = () => {
                                 </SelectItem>
                             ))}
                         </SelectGroup>
+                    </div>
+                    <div className="py-4 flex flex-row justify-between items-center">
+                        <span>
+                            <span className="text-lg text-gray-300">TCAS Debug</span>
+                            <span className="text-lg text-gray-500 ml-2">(testing)</span>
+                        </span>
+                        <Toggle value={tcasDebug === '1'} onToggle={(value) => setTcasDebug(value ? '1' : '0')} />
                     </div>
                     <div className="py-4 flex flex-row justify-between items-center">
                         <span>

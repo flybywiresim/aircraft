@@ -8,6 +8,7 @@
 /flybywire-aircraft-a320-neo/manifest.json
 /flybywire-aircraft-a320-neo/build_info.json
 /flybywire-aircraft-a320-neo/html_ui/JS/fmgc/
+/flybywire-aircraft-a320-neo/html_ui/JS/tcas/
 /flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX
 /flybywire-aircraft-a320-neo/html_ui/JS/generated/**
 /flybywire-aircraft-a320-neo/ModelBehaviorDefs/A32NX/generated
@@ -37,6 +38,7 @@ node_modules
 /src/sound/.cache
 /src/instruments/aceBundles
 /src/instruments/src/EFB/dist
+/src/instruments/buildSrc/custom/*
 /src/autothrottle/target
 /flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/model/*.gltf
 /flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/model/*.bin

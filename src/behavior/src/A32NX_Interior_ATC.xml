@@ -12,6 +12,19 @@
             </UseTemplate>
         </Component>
     </Template>
+    <Template Name="FBW_Airbus_ATC_Panel_ATC">
+        <Component ID="#NODE_ID#" Node="#NODE_ID#">
+            <UseTemplate Name="ASOBO_GT_Switch_2States">
+                <PART_ID>knob_atc_1</PART_ID>
+                <WWISE_EVENT>smallknob</WWISE_EVENT>
+                <ANIM_NAME>#NODE_ID#</ANIM_NAME>
+                <SWITCH_DIRECTION>Horizontal</SWITCH_DIRECTION>
+                <ARROW_TYPE>Curved</ARROW_TYPE>
+                <SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
+                <SWITCH_POSITION_VAR>A32NX_SWITCH_ATC</SWITCH_POSITION_VAR>
+            </UseTemplate>
+        </Component>
+    </Template>
     <Template Name="FBW_Airbus_ATC_Panel_TARA">
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
             <UseTemplate Name="ASOBO_GT_Switch_3States">

@@ -3,6 +3,7 @@ import { useSimVar } from '@instruments/common/simVars';
 import { getSmallestAngle } from '@instruments/common/utils';
 import { MathUtils } from '@shared/MathUtils';
 import { useFlightPlanManager } from '@instruments/common/flightplan';
+import { LatLongData } from '@typings/fs-base-ui/html_ui/JS/Types';
 import { RangeSetting, Mode, EfisSide, NdSymbol } from '@shared/NavigationDisplay';
 import { LateralMode } from '@shared/autopilot';
 import { FlightPlan } from '../elements/FlightPlan';
@@ -12,6 +13,7 @@ import { ToWaypointIndicator } from '../elements/ToWaypointIndicator';
 import { ApproachMessage } from '../elements/ApproachMessage';
 import { CrossTrack } from '../elements/CrossTrack';
 import { TrackLine } from '../elements/TrackLine';
+import { Traffic } from '../elements/Traffic';
 
 export interface ArcModeProps {
     symbols: NdSymbol[],
@@ -86,15 +88,21 @@ export const ArcMode: React.FC<ArcModeProps> = ({ symbols, adirsAlign, rangeSett
                     <RadioNeedle index={1} side={side} displayMode={Mode.ARC} centreHeight={620} />
                     <RadioNeedle index={2} side={side} displayMode={Mode.ARC} centreHeight={620} />
                 </g>
-
+                <Overlay
+                    heading={heading}
+                    rangeSetting={rangeSetting}
+                    tcasMode={tcasMode}
+                />
                 <ToWaypointIndicator side={side} />
-
                 <ApproachMessage info={flightPlanManager.getAirportApproach()} flightPhase={fmgcFlightPhase} />
                 <TrackBug heading={heading} track={track} />
                 { lsDisplayed && <IlsCourseBug heading={heading} ilsCourse={ilsCourse} /> }
                 <SelectedHeadingBug heading={heading} selected={selectedHeading} />
                 <Plane />
                 <CrossTrack x={390} y={646} />
+                <g clipPath="url(#arc-mode-tcas-clip)">
+                    <Traffic mode={Mode.ARC} mapParams={mapParams} />
+                </g>
             </>
         );
     }

@@ -1,4 +1,5 @@
 import { Arinc429Word } from '@shared/arinc429';
+import { useSimVar } from '@instruments/common/simVars';
 import React from 'react';
 
 interface VerticalSpeedIndicatorProps {
@@ -27,23 +28,21 @@ export const VerticalSpeedIndicator = ({ radioAlt, verticalSpeed }: VerticalSpee
         isAmber = true;
     }
 
-    const sign = Math.sign(verticalSpeed.value);
+    const yOffset = getYoffset(verticalSpeed.value);
 
-    let yOffset = 0;
-
-    if (absVSpeed < 1000) {
-        yOffset = verticalSpeed.value / 1000 * -27.22;
-    } else if (absVSpeed < 2000) {
-        yOffset = (verticalSpeed.value - sign * 1000) / 1000 * -10.1 - sign * 27.22;
-    } else if (absVSpeed < 6000) {
-        yOffset = (verticalSpeed.value - sign * 2000) / 4000 * -10.1 - sign * 37.32;
-    } else {
-        yOffset = sign * -47.37;
-    }
+    const [tcasState] = useSimVar('L:A32NX_TCAS_STATE', 'Enum', 200);
+    const [tcasCorrective] = useSimVar('L:A32NX_TCAS_RA_CORRECTIVE', 'Boolean', 200);
+    const [tcasRedZoneL] = useSimVar('L:A32NX_TCAS_VSPEED_RED:1', 'Number', 200);
+    const [tcasRedZoneH] = useSimVar('L:A32NX_TCAS_VSPEED_RED:2', 'Number', 200);
+    const [tcasGreenZoneL] = useSimVar('L:A32NX_TCAS_VSPEED_GREEN:1', 'Number', 200);
+    const [tcasGreenZoneH] = useSimVar('L:A32NX_TCAS_VSPEED_GREEN:2', 'Number', 200);
 
     return (
         <g>
             <path className="TapeBackground" d="m151.84 131.72 4.1301-15.623v-70.556l-4.1301-15.623h-5.5404v101.8z" />
+
+            <VSpeedTcas tcasState={tcasState} tcasCorrective={tcasCorrective} redZone={[tcasRedZoneL, tcasRedZoneH]} greenZone={[tcasGreenZoneL, tcasGreenZoneH]} />
+
             <g id="VerticalSpeedGroup">
                 <g className="Fill White">
                     <path d="m149.92 54.339v-1.4615h1.9151v1.4615z" />
@@ -70,15 +69,122 @@ export const VerticalSpeedIndicator = ({ radioAlt, verticalSpeed }: VerticalSpee
                     <text x="148.11371" y="35.195072">6</text>
                 </g>
                 <path className="Fill Yellow" d="m145.79 80.067h6.0476v1.5119h-6.0476z" />
-                <VSpeedNeedle isAmber={isAmber} yOffset={yOffset} />
-                <VSpeedText yOffset={yOffset} isAmber={isAmber} VSpeed={verticalSpeed.value} />
+                <VSpeedNeedle isAmber={isAmber} yOffset={yOffset} activeRA={tcasState === 2} />
+                <VSpeedText
+                    yOffset={yOffset}
+                    isAmber={isAmber}
+                    VSpeed={verticalSpeed.value}
+                    tcasRedZone={[tcasRedZoneL, tcasRedZoneH]}
+                    tcasGreenZone={[tcasGreenZoneL, tcasGreenZoneH]}
+                    activeRA={tcasState === 2}
+                    isCorrective={tcasCorrective}
+                />
             </g>
         </g>
     );
 };
 
-const VSpeedNeedle = ({ yOffset, isAmber }) => {
-    const className = `HugeStroke ${isAmber ? 'Amber' : 'Green'}`;
+const getYoffset = (VSpeed) => {
+    const absVSpeed = Math.abs(VSpeed);
+    const sign = Math.sign(VSpeed);
+
+    if (absVSpeed < 1000) {
+        return VSpeed / 1000 * -27.22;
+    }
+    if (absVSpeed < 2000) {
+        return (VSpeed - sign * 1000) / 1000 * -10.1 - sign * 27.22;
+    }
+    if (absVSpeed < 6000) {
+        return (VSpeed - sign * 2000) / 4000 * -10.1 - sign * 37.32;
+    }
+    return sign * -47.37;
+};
+
+const VSpeedTcas = ({ tcasState, tcasCorrective, redZone, greenZone }) => {
+    if (tcasState !== 2) {
+        return (
+            <g id="VerticalSpeedTCASGroup" />
+        );
+    }
+
+    if (tcasCorrective) {
+        return (
+            <g id="VerticalSpeedTCASGroup">
+                <rect className="TapeBackground" height="101.8" width="5.5404" y="29.92" x="151.84" />
+                <VSpeedTcasZone zoneBounds={redZone} zoneClass="Fill Red" isCorrective />
+                <VSpeedTcasZone zoneBounds={greenZone} zoneClass="Fill Green" extended isCorrective />
+            </g>
+        );
+    }
+
+    return (
+        <g id="VerticalSpeedTCASGroup">
+            <VSpeedTcasZone zoneBounds={redZone} zoneClass="Fill Red" />
+        </g>
+    );
+};
+
+const VSpeedTcasZone = ({ zoneBounds, zoneClass, extended, isCorrective }) => {
+    if (zoneBounds === null) {
+        return (
+            <path />
+        );
+    }
+
+    let y1;
+    let y2;
+    let y3;
+    let y4;
+
+    if (zoneBounds[0] >= 6000) {
+        y1 = 29.92;
+    } else if (zoneBounds[0] <= -6000) {
+        y1 = 131.72;
+    } else {
+        y1 = 80.822 + getYoffset(zoneBounds[0]);
+    }
+
+    if (zoneBounds[1] >= 6000) {
+        y2 = 29.92;
+    } else if (zoneBounds[1] <= -6000) {
+        y2 = 131.72;
+    } else {
+        y2 = 80.822 + getYoffset(zoneBounds[1]);
+    }
+
+    if ((Math.abs(zoneBounds[1]) > 1750 && Math.abs(zoneBounds[1]) > Math.abs(zoneBounds[0]))
+        || (isCorrective && zoneClass === 'Fill Red')) {
+        y3 = y2;
+    } else {
+        // y3 = 80.822 + getYoffset(zoneBounds[1] / 2);
+        y3 = 80.822;
+    }
+
+    if (Math.abs(zoneBounds[0]) > 1750 && Math.abs(zoneBounds[0]) > Math.abs(zoneBounds[1])
+        || (isCorrective && zoneClass === 'Fill Red')) {
+        y4 = y1;
+    } else {
+        // y4 = 80.822 + getYoffset(zoneBounds[0] / 2);
+        y4 = 80.822;
+    }
+
+    const x1 = 151.84;
+    const x2 = extended ? 162.74 : 157.3804;
+
+    console.log(`TCAS PATH DEBUG: ${zoneClass}: m${x1},${y1} L${x1},${y2} L${x2},${y3} L${x2},${y4} L${x1},${y1}z, BOUNDS: `, zoneBounds);
+
+    return (
+        <path className={zoneClass} d={`m${x1},${y1} L${x1},${y2} L${x2},${y3} L${x2},${y4} L${x1},${y1}z`} />
+    );
+};
+
+const VSpeedNeedle = ({ yOffset, isAmber, activeRA }) => {
+    let className;
+    if (activeRA) {
+        className = 'HugeStroke White';
+    } else {
+        className = `HugeStroke ${isAmber ? 'Amber' : 'Green'}`;
+    }
 
     return (
         <>
@@ -88,9 +194,12 @@ const VSpeedNeedle = ({ yOffset, isAmber }) => {
     );
 };
 
-const VSpeedText = ({ VSpeed, yOffset, isAmber }) => {
+const VSpeedText = ({ VSpeed, yOffset, isAmber, tcasRedZone, tcasGreenZone, activeRA, isCorrective }) => {
     const absVSpeed = Math.abs(VSpeed);
     const sign = Math.sign(VSpeed);
+    const isRed = activeRA
+        && (VSpeed >= tcasRedZone[0] && VSpeed <= tcasRedZone[1])
+        && (isCorrective && VSpeed <= tcasGreenZone[0] && VSpeed >= tcasGreenZone[1]);
 
     if (absVSpeed < 200) {
         return null;
@@ -99,7 +208,13 @@ const VSpeedText = ({ VSpeed, yOffset, isAmber }) => {
     const textOffset = yOffset - sign * 2.4;
 
     const text = (Math.round(absVSpeed / 100) < 10 ? '0' : '') + Math.round(absVSpeed / 100).toString();
-    const className = `FontSmallest MiddleAlign ${isAmber ? 'Amber' : 'Green'}`;
+
+    let className;
+    if (isRed) {
+        className = 'FontSmallest MiddleAlign Red';
+    } else {
+        className = `FontSmallest MiddleAlign ${isAmber ? 'Amber' : 'Green'}`;
+    }
 
     return (
         <g id="VSpeedTextGroup" transform={`translate(0 ${textOffset})`}>
