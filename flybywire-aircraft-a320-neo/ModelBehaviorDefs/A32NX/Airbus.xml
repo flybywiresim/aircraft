@@ -363,6 +363,7 @@
             <SEQ1_POWERED>1</SEQ1_POWERED>
             <SEQ2_POWERED>1</SEQ2_POWERED>
         </DefaultTemplateParameters>
+
         <!-- ECAM ENG -->
         <UseTemplate Name="FBW_Anim_Interactions">
             <ANIM_TYPE>BUTTON</ANIM_TYPE>
@@ -372,6 +373,7 @@
             <GROUP_INDEX>0</GROUP_INDEX>
             <TOOLTIPID>TT:COCKPIT.TOOLTIPS.PUSH_ECAM_ENG</TOOLTIPID>
         </UseTemplate>
+
         <!-- ECAM BLEED -->
         <UseTemplate Name="FBW_Anim_Interactions">
             <ANIM_TYPE>BUTTON</ANIM_TYPE>
@@ -381,6 +383,7 @@
             <GROUP_INDEX>1</GROUP_INDEX> <!--Change to positive to activate-->
             <TOOLTIPID>TT:COCKPIT.TOOLTIPS.PUSH_ECAM_BLEED</TOOLTIPID>
         </UseTemplate>
+
         <!-- ECAM PRESS -->
         <UseTemplate Name="FBW_Anim_Interactions">
             <ANIM_TYPE>BUTTON</ANIM_TYPE>
@@ -390,6 +393,7 @@
             <GROUP_INDEX>2</GROUP_INDEX> <!--Change to positive to activate-->
             <TOOLTIPID>TT:COCKPIT.TOOLTIPS.PUSH_ECAM_PRESS</TOOLTIPID>
         </UseTemplate>
+
         <!-- ECAM ELEC -->
         <UseTemplate Name="FBW_Anim_Interactions">
             <ANIM_TYPE>BUTTON</ANIM_TYPE>
@@ -399,6 +403,7 @@
             <GROUP_INDEX>3</GROUP_INDEX> <!--Change to positive to activate-->
             <TOOLTIPID>TT:COCKPIT.TOOLTIPS.PUSH_ECAM_ELEC</TOOLTIPID>
         </UseTemplate>
+
         <!-- ECAM HYD -->
         <UseTemplate Name="FBW_Anim_Interactions">
             <ANIM_TYPE>BUTTON</ANIM_TYPE>
@@ -408,6 +413,7 @@
             <GROUP_INDEX>4</GROUP_INDEX> <!--Change to positive to activate-->
             <TOOLTIPID>TT:COCKPIT.TOOLTIPS.PUSH_ECAM_HYD</TOOLTIPID>
         </UseTemplate>
+
         <!-- ECAM FUEL -->
         <UseTemplate Name="FBW_Anim_Interactions">
             <ANIM_TYPE>BUTTON</ANIM_TYPE>
@@ -417,6 +423,7 @@
             <GROUP_INDEX>5</GROUP_INDEX>
             <TOOLTIPID>TT:COCKPIT.TOOLTIPS.PUSH_ECAM_FUEL</TOOLTIPID>
         </UseTemplate>
+
         <!-- ECAM APU -->
         <UseTemplate Name="FBW_Anim_Interactions">
             <ANIM_TYPE>BUTTON</ANIM_TYPE>
@@ -426,6 +433,7 @@
             <GROUP_INDEX>6</GROUP_INDEX> <!--Change to positive to activate-->
             <TOOLTIPID>TT:COCKPIT.TOOLTIPS.PUSH_ECAM_APU</TOOLTIPID>
         </UseTemplate>
+
         <!-- ECAM COND -->
         <UseTemplate Name="FBW_Anim_Interactions">
             <ANIM_TYPE>BUTTON</ANIM_TYPE>
@@ -435,6 +443,7 @@
             <GROUP_INDEX>7</GROUP_INDEX> <!--Change to positive to activate-->
             <TOOLTIPID>TT:COCKPIT.TOOLTIPS.PUSH_ECAM_COND</TOOLTIPID>
         </UseTemplate>
+
         <!-- ECAM DOOR -->
         <UseTemplate Name="FBW_Anim_Interactions">
             <ANIM_TYPE>BUTTON</ANIM_TYPE>
@@ -444,6 +453,7 @@
             <GROUP_INDEX>8</GROUP_INDEX> <!--Change to positive to activate-->
             <TOOLTIPID>TT:COCKPIT.TOOLTIPS.PUSH_ECAM_DOOR</TOOLTIPID>
         </UseTemplate>
+
         <!-- ECAM WHEEL -->
         <UseTemplate Name="FBW_Anim_Interactions">
             <ANIM_TYPE>BUTTON</ANIM_TYPE>
@@ -453,6 +463,7 @@
             <GROUP_INDEX>9</GROUP_INDEX> <!--Change to positive to activate-->
             <TOOLTIPID>TT:COCKPIT.TOOLTIPS.PUSH_ECAM_WHEEL</TOOLTIPID>
         </UseTemplate>
+
         <!-- ECAM F CTL -->
         <UseTemplate Name="FBW_Anim_Interactions">
             <ANIM_TYPE>BUTTON</ANIM_TYPE>
@@ -462,6 +473,7 @@
             <GROUP_INDEX>10</GROUP_INDEX> <!--Change to positive to activate-->
             <TOOLTIPID>TT:COCKPIT.TOOLTIPS.PUSH_ECAM_FCTL</TOOLTIPID>
         </UseTemplate>
+
         <!-- ECAM ALL -->
         <UseTemplate Name="FBW_Anim_Interactions">
             <ANIM_TYPE>BUTTON_HELD</ANIM_TYPE>
@@ -472,6 +484,7 @@
             <SWITCH_POSITION_VAR>A32NX_ECAM_ALL_Push</SWITCH_POSITION_VAR>
             <TOOLTIPID>Cycle through ECAM pages</TOOLTIPID>
         </UseTemplate>
+
         <!-- ECAM STS -->
         <UseTemplate Name="FBW_Anim_Interactions">
             <ANIM_TYPE>BUTTON</ANIM_TYPE>
@@ -481,6 +494,7 @@
             <GROUP_INDEX>11</GROUP_INDEX> <!--Change to positive to activate-->
             <TOOLTIPID>Display STS informations on ECAM</TOOLTIPID>
         </UseTemplate>
+
         <!-- ECAM T.O CONFIG -->
         <UseTemplate Name="FBW_Anim_Interactions">
             <ANIM_TYPE>BUTTON</ANIM_TYPE>
@@ -489,6 +503,7 @@
             <PART_ID>ECAM_TOCFG</PART_ID>
             <TOOLTIPID>Test T.O CONFIG</TOOLTIPID>
         </UseTemplate>
+
         <!-- ECAM EMER CANC -->
         <UseTemplate Name="FBW_Anim_Interactions">
             <ANIM_TYPE>BUTTON</ANIM_TYPE>
@@ -497,6 +512,7 @@
             <PART_ID>ECAM_EMERCANC</PART_ID>
             <TOOLTIPID>Emergency cancel (Inop.)</TOOLTIPID>
         </UseTemplate>
+
         <!-- ECAM EMER CANC -->
         <UseTemplate Name="FBW_Anim_Interactions">
             <ANIM_TYPE>BUTTON_PROTECTED</ANIM_TYPE>
@@ -504,6 +520,7 @@
             <LOCK_NODE_ID>LOCK_ECAM_EMERCANC</LOCK_NODE_ID>
             <TOOLTIPID>Emergency cancel (Inop.)</TOOLTIPID>
         </UseTemplate>
+
         <!-- ECAM CLR -->
         <UseTemplate Name="FBW_Anim_Interactions">
             <ANIM_TYPE>BUTTON</ANIM_TYPE>
@@ -512,6 +529,7 @@
             <PART_ID>ECAM_CLR</PART_ID>
             <TOOLTIPID>Clear ECAM messages</TOOLTIPID>
         </UseTemplate>
+
         <!-- ECAM CLR -->
         <UseTemplate Name="FBW_Anim_Interactions">
             <ANIM_TYPE>BUTTON</ANIM_TYPE>
@@ -520,6 +538,7 @@
             <PART_ID>ECAM_CLR2</PART_ID>
             <TOOLTIPID>Clear ECAM messages</TOOLTIPID>
         </UseTemplate>
+
         <!-- ECAM RCL -->
         <UseTemplate Name="FBW_Anim_Interactions">
             <ANIM_TYPE>BUTTON</ANIM_TYPE>
