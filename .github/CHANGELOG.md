@@ -69,6 +69,7 @@
 1. [FBW] Reduced rotation law maximum pitch rate from 12°/s to 8°/s - @aguther (Andreas Guther)
 1. [AP] Added support for events AP_MACH_INC/DEC and AP_ALT_INC/DEC - @aguther (Andreas Guther)
 1. [SOUND] Added ALT increment selector and fixed ISIS sounds - @ImenesFBW (Imenes)
+1. [AP] Added support for other default events to basically push/pull all FCU buttons - @aguther (Andreas Guther)
 
 ## 0.7.0
 
