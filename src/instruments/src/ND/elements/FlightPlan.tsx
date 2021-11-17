@@ -16,7 +16,6 @@ import { VMLeg } from '@fmgc/guidance/lnav/legs/VM';
 import { Leg } from '@fmgc/guidance/lnav/legs';
 import { Transition } from '@fmgc/guidance/lnav/transitions';
 import { NdSymbol, NdSymbolTypeFlags } from '@shared/NavigationDisplay';
-import { useCurrentFlightPlan } from '@instruments/common/flightplan';
 import { MapParameters } from '../utils/MapParameters';
 
 export enum FlightPlanType {
@@ -47,12 +46,14 @@ export const FlightPlan: FC<FlightPathProps> = memo(({ x = 0, y = 0, symbols, fl
 
     // Create new geometry for new flight plan versions
     useEffect(() => {
+        flightPlanManager.updateFlightPlan();
+
         if (type === FlightPlanType.Temp) {
             setGeometry(guidanceManager.getMultipleLegGeometry(true));
         } else {
             setGeometry(guidanceManager.getMultipleLegGeometry());
         }
-    }, [flightPlanVersion]);
+    }, [flightPlanVersion, flightPlanManager, type]);
 
     // Recompute geometry every 5 seconds
     useInterval(() => {
@@ -66,8 +67,6 @@ export const FlightPlan: FC<FlightPathProps> = memo(({ x = 0, y = 0, symbols, fl
             geometry?.recomputeWithParameters(tas, activeIdx);
         }
     }, 5_000, { additionalDeps: [type, flightPlanManager, geometry] });
-
-    useCurrentFlightPlan();
 
     if (!mapParams.valid) {
         return null;
