@@ -66,6 +66,7 @@
 1. [AP] Reduced speed margin of speed protection to 5 kn - @aguther (Andreas Guther)
 1. [MODEL] Removed glass due to issues with brightness in clouds since SU6 - @aguther (Andreas Guther)
 1. [ECAM] Converted ECAM SD cabin pressure page to React - @RichardPilbery (tricky_dicky#3571)
+1. [SOUND] Added ALT increment selector and fixed ISIS sounds - @ImenesFBW (Imenes)
 
 ## 0.7.0
 
