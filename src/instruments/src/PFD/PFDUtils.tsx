@@ -1,5 +1,5 @@
 /* eslint-disable max-classes-per-file */
-import { Arinc429Word } from '@instruments/common/arinc429';
+import { Arinc429Word } from '@shared/arinc429';
 import React from 'react';
 
 export const calculateHorizonOffsetFromPitch = (pitch: number) => {
