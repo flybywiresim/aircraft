@@ -8,7 +8,7 @@ use crate::{
         ProvideFrequency, ProvidePotential,
     },
     overhead::{FirePushButton, OnOffAvailablePushButton, OnOffFaultPushButton},
-    pneumatic::ControllablePneumaticValve,
+    pneumatic::{ControllablePneumaticValve, TargetPressureSignal},
     shared::{
         ApuAvailable, ApuBleedAirValveSignal, ApuMaster, ApuStart, AuxiliaryPowerUnitElectrical,
         ContactorSignal, ControllerSignal, ElectricalBusType,
@@ -228,7 +228,15 @@ impl<T: ApuGenerator, U: ApuStartMotor> ControllerSignal<ApuBleedAirValveSignal>
         self.ecb.signal()
     }
 }
-
+impl<T: ApuGenerator, U: ApuStartMotor> ControllerSignal<TargetPressureSignal>
+    for AuxiliaryPowerUnit<T, U>
+{
+    fn signal(&self) -> Option<TargetPressureSignal> {
+        self.turbine
+            .as_ref()
+            .map(|s| TargetPressureSignal::new(s.bleed_air_pressure()))
+    }
+}
 impl<T: ApuGenerator, U: ApuStartMotor> SimulationElement for AuxiliaryPowerUnit<T, U> {
     fn accept<V: SimulationElementVisitor>(&mut self, visitor: &mut V) {
         self.generator.accept(visitor);

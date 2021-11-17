@@ -16,12 +16,12 @@ use systems::{
     accept_iterable,
     overhead::{AutoOffFaultPushButton, OnOffFaultPushButton},
     pneumatic::{
-        valve::*, ApuCompressionChamberController, BleedMonitoringComputerChannelOperationMode,
+        valve::*, BleedMonitoringComputerChannelOperationMode,
         BleedMonitoringComputerIsAliveSignal, CompressionChamber, ControllablePneumaticValve,
         CrossBleedValveSelectorKnob, CrossBleedValveSelectorMode,
         EngineCompressionChamberController, EngineState, FaultLightSignal, PneumaticContainer,
         PneumaticContainerWithConnector, PneumaticPipe, PneumaticValveSignal, Precooler,
-        VariableVolumeContainer,
+        TargetPressureSignal, VariableVolumeContainer,
     },
     shared::{
         pid::PidController, ControllerSignal, DelayedTrueLogicGate, ElectricalBusType,
@@ -119,7 +119,6 @@ pub struct A320Pneumatic {
 
     apu_compression_chamber: CompressionChamber,
     apu_bleed_air_valve: DefaultValve,
-    apu_bleed_air_controller: ApuCompressionChamberController,
 
     green_hydraulic_reservoir_with_valve: PneumaticContainerWithConnector<VariableVolumeContainer>,
     blue_hydraulic_reservoir_with_valve: PneumaticContainerWithConnector<VariableVolumeContainer>,
@@ -153,7 +152,6 @@ impl A320Pneumatic {
             ],
             apu_compression_chamber: CompressionChamber::new(Volume::new::<cubic_meter>(5.)),
             apu_bleed_air_valve: DefaultValve::new_closed(),
-            apu_bleed_air_controller: ApuCompressionChamberController::new(context),
             green_hydraulic_reservoir_with_valve: PneumaticContainerWithConnector::new(
                 VariableVolumeContainer::new(
                     Volume::new::<gallon>(8.),
@@ -186,9 +184,9 @@ impl A320Pneumatic {
         overhead_panel: &mut A320PneumaticOverheadPanel,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         hydraulics: &A320Hydraulic,
+        apu: &impl ControllerSignal<TargetPressureSignal>,
     ) {
-        self.apu_compression_chamber
-            .update(&self.apu_bleed_air_controller);
+        self.apu_compression_chamber.update(apu);
 
         for bleed_monitoring_computer in self.bleed_monitoring_computers.iter_mut() {
             bleed_monitoring_computer.update(
@@ -292,7 +290,6 @@ impl A320Pneumatic {
 }
 impl SimulationElement for A320Pneumatic {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        self.apu_bleed_air_controller.accept(visitor);
         self.cross_bleed_valve.accept(visitor);
         self.fadec.accept(visitor);
 
@@ -1352,12 +1349,12 @@ mod tests {
         pneumatic::{
             BleedMonitoringComputerChannelOperationMode, ControllablePneumaticValve,
             CrossBleedValveSelectorMode, EngineState, PneumaticContainer, PneumaticValveSignal,
+            TargetPressureSignal,
         },
         shared::{
-            arinc429::SignStatus, ApuBleedAirValveSignal, ControllerSignal, ElectricalBusType,
-            ElectricalBuses, EmergencyElectricalRatPushButton, EmergencyElectricalState,
-            EngineFirePushButtons, InternationalStandardAtmosphere, MachNumber, PneumaticValve,
-            PotentialOrigin,
+            ApuBleedAirValveSignal, ControllerSignal, ElectricalBusType, ElectricalBuses,
+            EmergencyElectricalRatPushButton, EmergencyElectricalState, EngineFirePushButtons,
+            InternationalStandardAtmosphere, MachNumber, PneumaticValve, PotentialOrigin,
         },
         simulation::{
             test::{SimulationTestBed, TestBed, WriteByName},
@@ -1377,16 +1374,22 @@ mod tests {
 
     struct TestApu {
         bleed_air_valve_signal: ApuBleedAirValveSignal,
+        bleed_air_pressure: Pressure,
     }
     impl TestApu {
         fn new() -> Self {
             Self {
                 bleed_air_valve_signal: ApuBleedAirValveSignal::new_closed(),
+                bleed_air_pressure: Pressure::new::<psi>(14.7),
             }
         }
 
         fn update(&self, bleed_valve: &mut impl ControllablePneumaticValve) {
-            bleed_valve.update_open_amount(self);
+            bleed_valve.update_open_amount::<ApuBleedAirValveSignal, Self>(self);
+        }
+
+        fn set_bleed_air_pressure(&mut self, pressure: Pressure) {
+            self.bleed_air_pressure = pressure;
         }
 
         fn set_bleed_air_valve_signal(&mut self, signal: ApuBleedAirValveSignal) {
@@ -1396,6 +1399,11 @@ mod tests {
     impl ControllerSignal<ApuBleedAirValveSignal> for TestApu {
         fn signal(&self) -> Option<ApuBleedAirValveSignal> {
             Some(self.bleed_air_valve_signal)
+        }
+    }
+    impl ControllerSignal<TargetPressureSignal> for TestApu {
+        fn signal(&self) -> Option<TargetPressureSignal> {
+            Some(TargetPressureSignal::new(self.bleed_air_pressure))
         }
     }
 
@@ -1612,6 +1620,7 @@ mod tests {
                 &mut self.pneumatic_overhead_panel,
                 &self.fire_pushbuttons,
                 &self.hydraulics,
+                &self.apu,
             );
         }
     }
@@ -1899,11 +1908,8 @@ mod tests {
         }
 
         fn set_bleed_air_running(mut self) -> Self {
-            self.write_arinc429_by_name(
-                "APU_BLEED_AIR_PRESSURE",
-                Pressure::new::<psi>(42.),
-                SignStatus::NormalOperation,
-            );
+            self.command(|a| a.apu.set_bleed_air_pressure(Pressure::new::<psi>(42.)));
+
             self.set_apu_bleed_valve_signal(ApuBleedAirValveSignal::new_open())
                 .set_apu_bleed_air_pb(true)
         }

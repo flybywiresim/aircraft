@@ -182,6 +182,7 @@ impl Aircraft for A320 {
             &mut self.pneumatic_overhead,
             &self.engine_fire_overhead,
             &self.hydraulic,
+            &self.apu,
         );
     }
 }

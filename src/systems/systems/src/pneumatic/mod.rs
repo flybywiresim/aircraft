@@ -1,9 +1,6 @@
 use crate::{
     pneumatic::valve::*,
-    shared::{
-        arinc429::Arinc429Word, ControllerSignal, EngineCorrectedN1, EngineCorrectedN2,
-        PneumaticValve,
-    },
+    shared::{ControllerSignal, EngineCorrectedN1, EngineCorrectedN2, PneumaticValve},
     simulation::{
         InitContext, Read, Reader, SimulationElement, SimulatorReader, SimulatorWriter,
         UpdateContext, VariableIdentifier, Write, Writer,
@@ -233,7 +230,7 @@ impl CompressionChamber {
         if let Some(signal) = controller.signal() {
             self.change_fluid_amount(
                 self.pipe
-                    .calculate_required_volume_for_target_pressure(signal.target_pressure),
+                    .calculate_required_volume_for_target_pressure(signal.target_pressure()),
             )
         }
     }
@@ -304,32 +301,6 @@ impl From<f64> for EngineState {
             3 => EngineState::Shutting,
             _ => panic!("EngineState value does not correspond to any enum member"),
         }
-    }
-}
-
-pub struct ApuCompressionChamberController {
-    apu_bleed_air_pressure_id: VariableIdentifier,
-    current_pressure: Pressure,
-}
-impl ApuCompressionChamberController {
-    pub fn new(context: &mut InitContext) -> Self {
-        Self {
-            apu_bleed_air_pressure_id: context.get_identifier("APU_BLEED_AIR_PRESSURE".to_owned()),
-            current_pressure: Pressure::new::<psi>(14.7),
-        }
-    }
-}
-impl SimulationElement for ApuCompressionChamberController {
-    fn read(&mut self, reader: &mut SimulatorReader) {
-        let read: Arinc429Word<Pressure> = reader.read_arinc429(&self.apu_bleed_air_pressure_id);
-        if let Some(pressure) = read.normal_value() {
-            self.current_pressure = pressure;
-        }
-    }
-}
-impl ControllerSignal<TargetPressureSignal> for ApuCompressionChamberController {
-    fn signal(&self) -> Option<TargetPressureSignal> {
-        Some(TargetPressureSignal::new(self.current_pressure))
     }
 }
 
