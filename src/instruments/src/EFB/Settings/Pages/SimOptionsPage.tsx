@@ -27,6 +27,8 @@ export const SimOptionsPage = () => {
     const [mcduInput, setMcduInput] = usePersistentProperty('MCDU_KB_INPUT', 'DISABLED');
     const [mcduTimeout, setMcduTimeout] = usePersistentProperty('CONFIG_MCDU_KB_TIMEOUT', '60');
 
+    const [dynamicRegistration, setDynamicRegistration] = usePersistentProperty('DYNAMIC_REGISTRATION_DECAL', 'DISABLED');
+
     const adirsAlignTimeButtons: (ButtonType & AdirsButton)[] = [
         { name: 'Instant', setting: 'INSTANT', simVarValue: 1 },
         { name: 'Fast', setting: 'FAST', simVarValue: 2 },
@@ -114,6 +116,10 @@ export const SimOptionsPage = () => {
                             }
                         }}
                     />
+                </SettingItem>
+
+                <SettingItem name="Dynamic Registration Decal">
+                    <Toggle value={dynamicRegistration === 'ENABLED'} onToggle={(value) => setDynamicRegistration(value ? 'ENABLED' : 'DISABLED')} />
                 </SettingItem>
 
                 <SettingItem name="Throttle Detents">
