@@ -18,7 +18,6 @@ use uom::si::{
 
 use crate::{shared::low_pass_filter::LowPassFilter, simulation::UpdateContext};
 
-use crate::shared::low_pass_filter;
 use std::time::Duration;
 
 pub trait Actuator {
@@ -41,6 +40,7 @@ pub enum LinearActuatorMode {
     ClosedValves,
     PositionControl,
     ActiveDamping,
+    SlowDamping,
 }
 
 /// Represents an abstraction of the low level hydraulic actuator control system that would in real life consist of a lot of
@@ -61,6 +61,8 @@ struct CoreHydraulicForce {
     closed_valves_reference_position: Ratio,
 
     active_hydraulic_damping_constant: f64,
+    slow_hydraulic_damping_constant: f64,
+
     fluid_compression_spring_constant: f64,
     fluid_compression_damping_constant: f64,
 
@@ -85,6 +87,7 @@ impl CoreHydraulicForce {
     fn new(
         init_position: Ratio,
         active_hydraulic_damping_constant: f64,
+        slow_hydraulic_damping_constant: f64,
         fluid_compression_spring_constant: f64,
         fluid_compression_damping_constant: f64,
         max_flow: VolumeRate,
@@ -96,6 +99,7 @@ impl CoreHydraulicForce {
             current_mode: LinearActuatorMode::ClosedValves,
             closed_valves_reference_position: init_position,
             active_hydraulic_damping_constant,
+            slow_hydraulic_damping_constant,
             fluid_compression_spring_constant,
             fluid_compression_damping_constant,
             max_flow,
@@ -137,14 +141,17 @@ impl CoreHydraulicForce {
                 self.actions_from_current_to_closed_valves(position_normalized)
             }
             LinearActuatorMode::PositionControl => self.actions_from_current_to_position_control(),
-            LinearActuatorMode::ActiveDamping => self.actions_from_current_to_damping(),
+            LinearActuatorMode::ActiveDamping => self.actions_from_current_to_active_damping(),
+            LinearActuatorMode::SlowDamping => self.actions_from_current_to_slow_damping(),
         }
     }
 
     fn actions_from_current_to_closed_valves(&mut self, position_normalized: Ratio) {
         match self.current_mode {
             LinearActuatorMode::ClosedValves => {}
-            LinearActuatorMode::PositionControl | LinearActuatorMode::ActiveDamping => {
+            LinearActuatorMode::PositionControl
+            | LinearActuatorMode::ActiveDamping
+            | LinearActuatorMode::SlowDamping => {
                 self.go_to_close_control_valves(position_normalized);
             }
         }
@@ -153,17 +160,32 @@ impl CoreHydraulicForce {
     fn actions_from_current_to_position_control(&mut self) {
         match self.current_mode {
             LinearActuatorMode::PositionControl => {}
-            LinearActuatorMode::ClosedValves | LinearActuatorMode::ActiveDamping => {
+            LinearActuatorMode::ClosedValves
+            | LinearActuatorMode::ActiveDamping
+            | LinearActuatorMode::SlowDamping => {
                 self.go_to_position_control();
             }
         }
     }
 
-    fn actions_from_current_to_damping(&mut self) {
+    fn actions_from_current_to_active_damping(&mut self) {
         match self.current_mode {
             LinearActuatorMode::ActiveDamping => {}
-            LinearActuatorMode::ClosedValves | LinearActuatorMode::PositionControl => {
-                self.go_to_damping();
+            LinearActuatorMode::ClosedValves
+            | LinearActuatorMode::PositionControl
+            | LinearActuatorMode::SlowDamping => {
+                self.go_to_active_damping();
+            }
+        }
+    }
+
+    fn actions_from_current_to_slow_damping(&mut self) {
+        match self.current_mode {
+            LinearActuatorMode::SlowDamping => {}
+            LinearActuatorMode::ClosedValves
+            | LinearActuatorMode::PositionControl
+            | LinearActuatorMode::ActiveDamping => {
+                self.go_to_slow_damping();
             }
         }
     }
@@ -178,9 +200,14 @@ impl CoreHydraulicForce {
         self.current_mode = LinearActuatorMode::PositionControl;
     }
 
-    fn go_to_damping(&mut self) {
+    fn go_to_active_damping(&mut self) {
         self.force_filtered.reset(self.force_raw);
         self.current_mode = LinearActuatorMode::ActiveDamping;
+    }
+
+    fn go_to_slow_damping(&mut self) {
+        self.force_filtered.reset(self.force_raw);
+        self.current_mode = LinearActuatorMode::SlowDamping;
     }
 
     fn update_force_from_current_mode(
@@ -194,15 +221,16 @@ impl CoreHydraulicForce {
     ) {
         match self.current_mode {
             LinearActuatorMode::ClosedValves => {
-                self.force_filtered.update(
-                    context.delta(),
-                    self.force_closed_valves(position_normalized, speed),
-                );
-                self.force_raw = self.force_filtered.output();
+                self.force_raw = self.force_closed_valves(position_normalized, speed);
             }
             LinearActuatorMode::ActiveDamping => {
                 self.force_filtered
-                    .update(context.delta(), self.force_damping(speed));
+                    .update(context.delta(), self.force_active_damping(speed));
+                self.force_raw = self.force_filtered.output();
+            }
+            LinearActuatorMode::SlowDamping => {
+                self.force_filtered
+                    .update(context.delta(), self.force_slow_damping(speed));
                 self.force_raw = self.force_filtered.output();
             }
             LinearActuatorMode::PositionControl => {
@@ -221,9 +249,15 @@ impl CoreHydraulicForce {
         self.force_raw
     }
 
-    fn force_damping(&self, speed: Velocity) -> Force {
+    fn force_active_damping(&self, speed: Velocity) -> Force {
         Force::new::<newton>(
             -speed.get::<meter_per_second>() * self.active_hydraulic_damping_constant,
+        )
+    }
+
+    fn force_slow_damping(&self, speed: Velocity) -> Force {
+        Force::new::<newton>(
+            -speed.get::<meter_per_second>() * self.slow_hydraulic_damping_constant,
         )
     }
 
@@ -331,6 +365,7 @@ impl LinearActuator {
         fluid_compression_spring_constant: f64,
         fluid_compression_damping_constant: f64,
         active_hydraulic_damping_constant: f64,
+        slow_hydraulic_damping_constant: f64,
     ) -> Self {
         let total_travel = bounded_linear_length.max_absolute_length_to_anchor()
             - bounded_linear_length.min_absolute_length_to_anchor();
@@ -395,6 +430,7 @@ impl LinearActuator {
             core_hydraulics: CoreHydraulicForce::new(
                 Ratio::new::<ratio>(0.),
                 active_hydraulic_damping_constant,
+                slow_hydraulic_damping_constant,
                 fluid_compression_spring_constant,
                 fluid_compression_damping_constant,
                 actual_max_flow,
@@ -945,8 +981,12 @@ mod tests {
             self.pressure = pressure;
         }
 
-        fn command_damping_mode(&mut self) {
+        fn command_active_damping_mode(&mut self) {
             self.controller.set_mode(LinearActuatorMode::ActiveDamping);
+        }
+
+        fn command_slow_damping_mode(&mut self) {
+            self.controller.set_mode(LinearActuatorMode::SlowDamping);
         }
 
         fn command_closed_valve_mode(&mut self) {
@@ -1039,7 +1079,7 @@ mod tests {
         assert!(test_bed.query(|a| a.body_position()) == actuator_position_init);
 
         test_bed.command(|a| a.command_unlock());
-        test_bed.run_with_delta(Duration::from_secs(1));
+        test_bed.run_with_delta(Duration::from_secs(5));
 
         assert!(test_bed.query(|a| a.body_position()) > actuator_position_init);
     }
@@ -1091,7 +1131,7 @@ mod tests {
     }
 
     #[test]
-    fn linear_actuator_dampens_body_drop_when_damping_mode() {
+    fn linear_actuator_dampens_body_drop_when_active_damping_mode() {
         let rigid_body = cargo_door_body(true);
         let actuator = cargo_door_actuator(&rigid_body);
 
@@ -1106,9 +1146,33 @@ mod tests {
 
         assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.9));
 
-        test_bed.command(|a| a.command_damping_mode());
+        test_bed.command(|a| a.command_active_damping_mode());
 
-        test_bed.run_with_delta(Duration::from_secs(5));
+        test_bed.run_with_delta(Duration::from_secs(1));
+
+        assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.9));
+        assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.5));
+    }
+
+    #[test]
+    fn linear_actuator_dampens_super_slow_body_drop_when_slow_damping_mode() {
+        let rigid_body = cargo_door_body(true);
+        let actuator = cargo_door_actuator(&rigid_body);
+
+        let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new(actuator, rigid_body));
+
+        test_bed.command(|a| a.command_unlock());
+        test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(1.)));
+
+        test_bed.command(|a| a.set_pressure(Pressure::new::<psi>(3000.)));
+
+        test_bed.run_with_delta(Duration::from_secs(25));
+
+        assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.9));
+
+        test_bed.command(|a| a.command_slow_damping_mode());
+
+        test_bed.run_with_delta(Duration::from_secs(10));
 
         assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.9));
         assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.5));
@@ -1164,7 +1228,7 @@ mod tests {
         let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new(actuator, rigid_body));
 
         test_bed.command(|a| a.command_unlock());
-        test_bed.command(|a| a.command_damping_mode());
+        test_bed.command(|a| a.command_active_damping_mode());
 
         test_bed.write_by_name(UpdateContext::PLANE_BANK_KEY, -45.);
 
@@ -1190,7 +1254,7 @@ mod tests {
         assert!(test_bed.query(|a| a.body_position()) == actuator_position_at_init);
 
         test_bed.command(|a| a.command_unlock());
-        test_bed.command(|a| a.command_damping_mode());
+        test_bed.command(|a| a.command_active_damping_mode());
 
         test_bed.run_with_delta(Duration::from_secs(5));
 
@@ -1212,7 +1276,7 @@ mod tests {
         assert!(test_bed.query(|a| a.body_position()) == actuator_position_at_init);
 
         test_bed.command(|a| a.command_unlock());
-        test_bed.command(|a| a.command_damping_mode());
+        test_bed.command(|a| a.command_active_damping_mode());
 
         test_bed.run_with_delta(Duration::from_secs_f64(0.1));
 
@@ -1259,6 +1323,7 @@ mod tests {
             VolumeRate::new::<gallon_per_second>(0.008),
             800000.,
             15000.,
+            50000.,
             500000.,
         )
     }
@@ -1294,6 +1359,7 @@ mod tests {
             20000.,
             5000.,
             2000.,
+            20000.,
         )
     }
 
@@ -1310,7 +1376,28 @@ mod tests {
             cg_offset,
             control_arm,
             anchor,
-            Angle::new::<degree>(90.),
+            Angle::new::<degree>(-85.),
+            Angle::new::<degree>(85.),
+            100.,
+            is_locked,
+            Vector3::new(0., 0., 1.),
+        )
+    }
+
+    fn main_gear_door_left_body(is_locked: bool) -> LinearActuatedRigidBodyOnHingeAxis {
+        let size = Vector3::new(-1.73, 0.03, 1.7);
+        let cg_offset = Vector3::new(-2. / 3. * size[1], 0.2, 0.);
+
+        let control_arm = Vector3::new(-0.5, 0., 0.);
+        let anchor = Vector3::new(-0.2, 0.2, 0.);
+
+        LinearActuatedRigidBodyOnHingeAxis::new(
+            Mass::new::<kilogram>(40.),
+            size,
+            cg_offset,
+            control_arm,
+            anchor,
+            Angle::new::<degree>(0.),
             Angle::new::<degree>(85.),
             100.,
             is_locked,

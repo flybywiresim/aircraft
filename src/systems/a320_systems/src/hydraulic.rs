@@ -63,6 +63,7 @@ impl A320CargoDoorFactory {
             600000.,
             15000.,
             500.,
+            500.,
         )
     }
 
