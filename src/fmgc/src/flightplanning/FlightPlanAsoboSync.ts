@@ -197,7 +197,7 @@ export class FlightPlanAsoboSync {
                 const plan = fpln.getCurrentFlightPlan();
                 if ((plan.checksum !== this.fpChecksum)) {
                     // await Coherent.call("CREATE_NEW_FLIGHTPLAN").catch(console.error);
-                    yield Coherent.call('SET_CURRENT_FLIGHTPLAN_INDEX', 0).catch(console.error);
+                    yield Coherent.call('SET_CURRENT_FLIGHTPLAN_INDEX', 0, false).catch(console.error);
                     yield Coherent.call('CLEAR_CURRENT_FLIGHT_PLAN').catch(console.error);
                     if (plan.hasPersistentOrigin && plan.hasDestination) {
                         yield Coherent.call('SET_ORIGIN', plan.persistentOriginAirfield.icao, false).catch(console.error);
