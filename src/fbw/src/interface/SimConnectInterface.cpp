@@ -327,6 +327,10 @@ bool SimConnectInterface::prepareSimInputSimConnectDataDefinitions() {
   result &= addInputDataDefinition(hSimConnect, 0, Events::AP_ALT_HOLD_OFF, "AP_ALT_HOLD_OFF", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::AP_VS_ON, "AP_VS_ON", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::AP_VS_OFF, "AP_VS_OFF", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::AP_ALT_HOLD, "AP_ALT_HOLD", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::AP_VS_HOLD, "AP_VS_HOLD", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::AP_ATT_HOLD, "AP_ATT_HOLD", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::AP_MACH_HOLD, "AP_MACH_HOLD", true);
 
   result &= addInputDataDefinition(hSimConnect, 0, Events::AUTO_THROTTLE_ARM, "AUTO_THROTTLE_ARM", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::AUTO_THROTTLE_DISCONNECT, "AUTO_THROTTLE_DISCONNECT", true);
@@ -1429,7 +1433,8 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
       break;
     }
 
-    case Events::A32NX_FCU_SPD_MACH_TOGGLE_PUSH: {
+    case Events::A32NX_FCU_SPD_MACH_TOGGLE_PUSH:
+    case Events::AP_MACH_HOLD: {
       execute_calculator_code("(>H:A320_Neo_FCU_SPEED_TOGGLE_SPEED_MACH)", nullptr, nullptr, nullptr);
       cout << "WASM: event triggered: A32NX_FCU_SPD_MACH_TOGGLE_PUSH" << endl;
       break;
@@ -1472,7 +1477,8 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
       break;
     }
 
-    case Events::A32NX_FCU_TRK_FPA_TOGGLE_PUSH: {
+    case Events::A32NX_FCU_TRK_FPA_TOGGLE_PUSH:
+    case Events::AP_VS_HOLD: {
       execute_calculator_code("(L:A32NX_TRK_FPA_MODE_ACTIVE) ! (>L:A32NX_TRK_FPA_MODE_ACTIVE)", nullptr, nullptr, nullptr);
       cout << "WASM: event triggered: A32NX_FCU_TRK_FPA_TOGGLE_PUSH" << endl;
       break;
@@ -1550,7 +1556,8 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
       break;
     }
 
-    case Events::A32NX_FCU_ALT_INCREMENT_TOGGLE: {
+    case Events::A32NX_FCU_ALT_INCREMENT_TOGGLE:
+    case Events::AP_ALT_HOLD: {
       execute_calculator_code(
           "(L:XMLVAR_Autopilot_Altitude_Increment, number) 100 == "
           "if{ 1000 (>L:XMLVAR_Autopilot_Altitude_Increment) } "
@@ -1650,7 +1657,8 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
       break;
     }
 
-    case Events::A32NX_FCU_EXPED_PUSH: {
+    case Events::A32NX_FCU_EXPED_PUSH:
+    case Events::AP_ATT_HOLD: {
       simInputAutopilot.EXPED_push = 1;
       cout << "WASM: event triggered: A32NX_FCU_EXPED_PUSH" << endl;
       break;
