@@ -661,7 +661,7 @@ class FlightPlanManager {
         return this._currentFlightPlanIndex;
     }
     setCurrentFlightPlanIndex(index, callback = EmptyCallback.Boolean) {
-        Coherent.call("SET_CURRENT_FLIGHTPLAN_INDEX", index).then(() => {
+        Coherent.call("SET_CURRENT_FLIGHTPLAN_INDEX", index, false).then(() => {
             let attempts = 0;
             const checkTrueFlightPlanIndex = () => {
                 Coherent.call("GET_CURRENT_FLIGHTPLAN_INDEX").then((value) => {

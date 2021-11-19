@@ -3,7 +3,7 @@ use std::time::Duration;
 use uom::si::{electric_potential::volt, f64::*, frequency::hertz};
 
 use crate::{
-    shared::{PowerConsumptionReport, RamAirTurbineHydraulicLoopPressurised},
+    shared::{PowerConsumptionReport, RamAirTurbineHydraulicCircuitPressurised},
     simulation::{InitContext, SimulationElement, SimulatorWriter, UpdateContext},
 };
 
@@ -38,7 +38,7 @@ impl EmergencyGenerator {
     pub fn update(
         &mut self,
         context: &UpdateContext,
-        hydraulic: &impl RamAirTurbineHydraulicLoopPressurised,
+        hydraulic: &impl RamAirTurbineHydraulicCircuitPressurised,
     ) {
         // TODO: All of this is a very simple implementation.
         // Once hydraulics is available we should improve it.
@@ -46,7 +46,7 @@ impl EmergencyGenerator {
             self.time_since_start += context.delta();
         }
 
-        self.supplying = hydraulic.is_rat_hydraulic_loop_pressurised()
+        self.supplying = hydraulic.is_rat_hydraulic_circuit_pressurised()
             && self.starting_or_started
             && self.time_since_start > Duration::from_secs(8);
     }
@@ -180,8 +180,8 @@ mod emergency_generator_tests {
             self.is_rat_hydraulic_loop_pressurised = pressurised;
         }
     }
-    impl RamAirTurbineHydraulicLoopPressurised for TestHydraulicSystem {
-        fn is_rat_hydraulic_loop_pressurised(&self) -> bool {
+    impl RamAirTurbineHydraulicCircuitPressurised for TestHydraulicSystem {
+        fn is_rat_hydraulic_circuit_pressurised(&self) -> bool {
             self.is_rat_hydraulic_loop_pressurised
         }
     }
