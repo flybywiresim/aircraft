@@ -165,6 +165,9 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idFlightGuidanceRequestedVerticalMode;
   std::unique_ptr<LocalVariable> idFlightGuidanceTargetAltitude;
   std::unique_ptr<LocalVariable> idFlightGuidanceTargetVerticalSpeed;
+  std::unique_ptr<LocalVariable> idFmRnavAppSelected;
+  std::unique_ptr<LocalVariable> idFmFinalCanEngage;
+
 
   std::unique_ptr<LocalVariable> idFwcFlightPhase;
   std::unique_ptr<LocalVariable> idFmgcFlightPhase;
