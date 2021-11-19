@@ -299,8 +299,6 @@
                     <POTENTIOMETER>9999</POTENTIOMETER>
                 </UseTemplate>
 
-                <UseTemplate Name="FBW_AIRBUS_Update_PTU_Template">
-                </UseTemplate>
 
                 <!-- Mixture Lever does not exist in A320 but can be set to 0 by Auto Shutdown. Ensure it is always >0.9 -->
                 <Update Frequency="1">

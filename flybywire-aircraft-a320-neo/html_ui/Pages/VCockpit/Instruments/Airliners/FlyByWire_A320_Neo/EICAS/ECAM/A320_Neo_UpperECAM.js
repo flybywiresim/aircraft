@@ -1371,16 +1371,15 @@ var A320_Neo_UpperECAM;
                     {
                         message: "HYD PTU",
                         isActive: () => {
-                            // Rough approximation until hydraulic system fully implemented
-                            // Needs the last 2 conditions because PTU_ON is (incorrectly) permanently set to true during first engine start
-                            return (this.getCachedSimVar("L:XMLVAR_PTU_ON", "Bool") == 1) && (SimVar.GetSimVarValue("ENG N1 RPM:1", "Percent") < 1 || SimVar.GetSimVarValue("ENG N1 RPM:2", "Percent") < 1);
+                            // Info computed in hydraulic system while waiting for FWS implementation
+                            return SimVar.GetSimVarValue("L:A32NX_HYD_PTU_ON_ECAM_MEMO", "Bool");
                         }
                     },
                     {
                         message: "NW STRG DISC",
                         style: () => this.isEngineRunning(1) || this.isEngineRunning(2) ? "InfoCaution" : "InfoIndication",
                         isActive: () => (
-                            this.getCachedSimVar("PUSHBACK STATE", "Enum") !== 3
+                            this.getCachedSimVar("L:A32NX_HYD_NW_STRG_DISC_ECAM_MEMO", "Bool")
                         )
                     },
                     {
