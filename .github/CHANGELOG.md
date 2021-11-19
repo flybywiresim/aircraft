@@ -66,6 +66,7 @@
 1. [AP] Reduced speed margin of speed protection to 5 kn - @aguther (Andreas Guther)
 1. [MODEL] Removed glass due to issues with brightness in clouds since SU6 - @aguther (Andreas Guther)
 1. [SOUND] Added ALT increment selector and fixed ISIS sounds - @ImenesFBW (Imenes)
+1. [MCDU] Fix backlight, brightness - @tracernz (Mike)
 
 ## 0.7.0
 
