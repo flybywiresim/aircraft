@@ -185,10 +185,12 @@ impl Aircraft for A320 {
         self.pneumatic.update(
             context,
             [&self.engine_1, &self.engine_2],
-            &mut self.pneumatic_overhead,
+            &self.pneumatic_overhead,
             &self.engine_fire_overhead,
             &self.apu,
         );
+
+        self.pneumatic_overhead.update_fault_lights(&self.pneumatic);
     }
 }
 impl SimulationElement for A320 {

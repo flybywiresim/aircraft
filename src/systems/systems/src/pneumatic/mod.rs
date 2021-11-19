@@ -433,21 +433,6 @@ pub enum BleedMonitoringComputerChannelOperationMode {
     Slave,
 }
 
-pub struct FaultLightSignal {
-    fault_light_should_be_on: bool,
-}
-impl FaultLightSignal {
-    pub fn new(fault_light_should_be_on: bool) -> Self {
-        Self {
-            fault_light_should_be_on,
-        }
-    }
-
-    pub fn fault_light_should_be_on(&self) -> bool {
-        self.fault_light_should_be_on
-    }
-}
-
 pub trait PressurizeableReservoir {
     fn available_volume(&self) -> Volume;
 }
