@@ -16,7 +16,10 @@ use uom::si::{
     volume_rate::{cubic_meter_per_second, gallon_per_second},
 };
 
-use crate::{shared::low_pass_filter::LowPassFilter, simulation::UpdateContext};
+use crate::{
+    shared::{interpolation, low_pass_filter::LowPassFilter},
+    simulation::UpdateContext,
+};
 
 use std::time::Duration;
 
@@ -66,6 +69,9 @@ struct CoreHydraulicForce {
     fluid_compression_spring_constant: f64,
     fluid_compression_damping_constant: f64,
 
+    flow_open_loop_modifier_map: [f64; 6],
+    flow_open_loop_position_breakpoints: [f64; 6],
+
     max_flow: VolumeRate,
     min_flow: VolumeRate,
     flow_error_prev: VolumeRate,
@@ -94,14 +100,21 @@ impl CoreHydraulicForce {
         min_flow: VolumeRate,
         bore_side_area: Area,
         rod_side_area: Area,
+        flow_open_loop_modifier_map: [f64; 6],
+        flow_open_loop_position_breakpoints: [f64; 6],
     ) -> Self {
         Self {
             current_mode: LinearActuatorMode::ClosedValves,
             closed_valves_reference_position: init_position,
+
             active_hydraulic_damping_constant,
             slow_hydraulic_damping_constant,
             fluid_compression_spring_constant,
             fluid_compression_damping_constant,
+
+            flow_open_loop_modifier_map,
+            flow_open_loop_position_breakpoints,
+
             max_flow,
             min_flow,
             flow_error_prev: VolumeRate::new::<gallon_per_second>(0.),
@@ -284,7 +297,15 @@ impl CoreHydraulicForce {
             position_error.get::<ratio>().powi(3) * Self::OPEN_LOOP_GAIN,
         );
 
-        open_loop_flow_target = open_loop_flow_target.min(self.max_flow).max(self.min_flow);
+        let open_loop_modifier_from_position = interpolation(
+            &self.flow_open_loop_position_breakpoints,
+            &self.flow_open_loop_modifier_map,
+            position_normalized.get::<ratio>(),
+        );
+
+        open_loop_flow_target = (open_loop_modifier_from_position * open_loop_flow_target)
+            .min(self.max_flow)
+            .max(self.min_flow);
 
         let flow_error = open_loop_flow_target.get::<gallon_per_second>()
             - signed_flow.get::<gallon_per_second>();
@@ -366,6 +387,8 @@ impl LinearActuator {
         fluid_compression_damping_constant: f64,
         active_hydraulic_damping_constant: f64,
         slow_hydraulic_damping_constant: f64,
+        flow_open_loop_modifier_map: [f64; 6],
+        flow_open_loop_position_breakpoints: [f64; 6],
     ) -> Self {
         let total_travel = bounded_linear_length.max_absolute_length_to_anchor()
             - bounded_linear_length.min_absolute_length_to_anchor();
@@ -437,6 +460,8 @@ impl LinearActuator {
                 actual_min_flow,
                 total_bore_side_area,
                 total_rod_side_area,
+                flow_open_loop_modifier_map,
+                flow_open_loop_position_breakpoints,
             ),
         }
     }
@@ -1325,6 +1350,8 @@ mod tests {
             15000.,
             50000.,
             500000.,
+            [1., 1., 1., 1., 1., 1.],
+            [0., 0.2, 0.21, 0.79, 0.8, 1.],
         )
     }
 
@@ -1360,6 +1387,8 @@ mod tests {
             5000.,
             2000.,
             20000.,
+            [1., 1., 1., 1., 1., 1.],
+            [0., 0.2, 0.21, 0.79, 0.8, 1.],
         )
     }
 
