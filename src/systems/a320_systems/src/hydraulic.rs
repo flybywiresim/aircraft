@@ -518,9 +518,9 @@ impl A320Hydraulic {
 
         self.slats_flaps_complex.update(
             context,
-            self.green_loop.pressure(),
-            self.blue_loop.pressure(),
-            self.yellow_loop.pressure(),
+            self.green_loop.system_pressure(),
+            self.blue_loop.system_pressure(),
+            self.yellow_loop.system_pressure(),
         );
     }
 
