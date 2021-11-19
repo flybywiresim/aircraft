@@ -419,6 +419,11 @@ impl<T: PneumaticContainer> PneumaticContainerWithConnector<T> {
         self.container.temperature()
     }
 }
+impl PneumaticContainerWithConnector<VariableVolumeContainer> {
+    pub fn change_spatial_volume(&mut self, new_volume: Volume) {
+        self.container.change_spatial_volume(new_volume);
+    }
+}
 
 pub struct BleedMonitoringComputerIsAliveSignal;
 
@@ -441,6 +446,10 @@ impl FaultLightSignal {
     pub fn fault_light_should_be_on(&self) -> bool {
         self.fault_light_should_be_on
     }
+}
+
+pub trait PressurizeableReservoir {
+    fn available_volume(&self) -> Volume;
 }
 
 #[cfg(test)]

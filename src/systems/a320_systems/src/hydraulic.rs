@@ -29,7 +29,7 @@ use systems::{
         update_iterator::{FixedStepLoop, MaxFixedStepLoop},
         ElectricPump, EngineDrivenPump, HydraulicCircuit, HydraulicCircuitController,
         PowerTransferUnit, PowerTransferUnitController, PressureSwitchState, PumpController,
-        RamAirTurbine, RamAirTurbineController, SectionPressure,
+        RamAirTurbine, RamAirTurbineController, Reservoir, SectionPressure,
     },
     overhead::{
         AutoOffFaultPushButton, AutoOnFaultPushButton, MomentaryOnPushButton, MomentaryPushButton,
@@ -414,6 +414,18 @@ impl A320Hydraulic {
 
     fn blue_epump_has_fault(&self) -> bool {
         self.blue_electric_pump_controller.has_pressure_low_fault()
+    }
+
+    pub fn green_reservoir(&self) -> &Reservoir {
+        self.green_circuit.reservoir()
+    }
+
+    pub fn blue_reservoir(&self) -> &Reservoir {
+        self.blue_circuit.reservoir()
+    }
+
+    pub fn yellow_reservoir(&self) -> &Reservoir {
+        self.yellow_circuit.reservoir()
     }
 
     #[cfg(test)]
