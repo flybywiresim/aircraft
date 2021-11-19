@@ -8,6 +8,7 @@
 
 1. [FBW] Improved speed dependent roll law model - @IbrahimK42 (IbrahimK42)
 1. [SOUND] Pack sounds use new APU model variables - @tracernz (Mike)
+1. [HYD] Hydraulic system updated. Multiple sections. Better regulation - @Crocket63 (crocket)
 1. [EFB] Added in-flight refueling capabilities - @Taz5150 (TazX [Z+2]#0405)
 1. [EFB] Moved setting for MCDU keyboard input into the EFB - @2hwk (2Cas#1022)
 1. [HYD] Placeholder simvar to trigger ptu high pitch sound - @crocket6 (crocket)
