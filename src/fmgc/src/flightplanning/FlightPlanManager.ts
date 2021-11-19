@@ -288,6 +288,7 @@ export class FlightPlanManager {
      * @param callback A callback to call when the operation has completed.
      */
     public async setOrigin(icao: string, callback = () => { }): Promise<void> {
+        const sameAirport = this.getOrigin()?.ident === icao;
         const currentFlightPlan = this._flightPlans[this._currentFlightPlanIndex];
         const airport = await this._parentInstrument.facilityLoader.getFacilityRaw(icao).catch(console.error);
         if (airport) {
@@ -296,7 +297,10 @@ export class FlightPlanManager {
             // clear pilot trans alt
             this.setOriginTransitionAltitude(undefined, false);
             // TODO get origin trans alt from database
-            this.setOriginTransitionAltitude(undefined, true);
+            // until then, don't erase the database value from ATSU if same airport as before
+            if (!sameAirport) {
+                this.setOriginTransitionAltitude(undefined, true);
+            }
             this.updateFlightPlanVersion().catch(console.error);
         }
         callback();
@@ -711,6 +715,7 @@ export class FlightPlanManager {
      * @param callback A callback to call once the operation completes.
      */
     public async setDestination(icao: string, callback = () => { }): Promise<void> {
+        const sameAirport = this.getDestination()?.ident === icao;
         const waypoint = await this._parentInstrument.facilityLoader.getFacilityRaw(icao);
         const currentFlightPlan = this._flightPlans[this._currentFlightPlanIndex];
         const destinationIndex = currentFlightPlan.length - 1;
@@ -736,7 +741,10 @@ export class FlightPlanManager {
         // clear pilot trans level
         this.setDestinationTransitionLevel(undefined, false);
         // TODO get destination trans level from database
-        this.setDestinationTransitionLevel(undefined, true);
+        // until then, don't erase the database value from ATSU if same airport as before
+        if (!sameAirport) {
+            this.setDestinationTransitionLevel(undefined, true);
+        }
 
         this.updateFlightPlanVersion().catch(console.error);
         callback();
