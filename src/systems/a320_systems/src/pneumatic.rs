@@ -233,12 +233,6 @@ impl A320Pneumatic {
             }
         }
 
-        self.update_hydraulic_reservoir_spatial_volumes(
-            hydraulics.green_reservoir_capacity() - hydraulics.green_reservoir_volume(),
-            hydraulics.blue_reservoir_capacity() - hydraulics.blue_reservoir_volume(),
-            hydraulics.yellow_reservoir_capacity() - hydraulics.yellow_reservoir_volume(),
-        );
-
         let [left_system, right_system] = &mut self.engine_systems;
         self.apu_bleed_air_valve.update_move_fluid(
             context,
