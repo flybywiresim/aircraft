@@ -10,6 +10,8 @@ class FMCDataManager {
 
         this.storedWaypoints = [];
 
+        // we keep these in localStorage so they live for the same length of time as the flightplan (that they could appear in)
+        // if the f-pln is not stored there anymore we can delete this
         const stored = localStorage.getItem(FMCDataManager.STORED_WP_KEY);
         if (stored !== null) {
             JSON.parse(stored).forEach((wp) => {

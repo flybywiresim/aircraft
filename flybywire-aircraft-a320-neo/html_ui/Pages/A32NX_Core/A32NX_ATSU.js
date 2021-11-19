@@ -300,8 +300,16 @@ const addWaypointAsync = (fix, mcdu, routeIdent, via) => {
 };
 
 const addLatLonWaypoint = async (mcdu, lat, lon) => {
-    const wp = mcdu.dataManager.createLatLonWaypoint(new LatLongAlt(lat, lon), true);
-    await mcdu.flightPlanManager.addUserWaypoint(wp);
+    try {
+        const wp = mcdu.dataManager.createLatLonWaypoint(new LatLongAlt(lat, lon), true);
+        await mcdu.flightPlanManager.addUserWaypoint(wp);
+    } catch (err) {
+        if (err instanceof McduMessage) {
+            mcdu.addNewMessage(err);
+        } else {
+            console.error(err);
+        }
+    }
 };
 
 const uplinkRoute = async (mcdu) => {
