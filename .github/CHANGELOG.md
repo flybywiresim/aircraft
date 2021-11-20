@@ -4,6 +4,10 @@
 <!-- Use the following format below -->
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 
+## 0.7.3
+
+1. [FMS] Fixed default flight plan interface for SU7 - @Benjozork (Benjamin Dupont)
+
 ## 0.7.2
 
 1. [MCDU] Hide POSITION UPDATE AT field on PROG page when GPS is available - @BlueberryKing (BlueberryKing)
