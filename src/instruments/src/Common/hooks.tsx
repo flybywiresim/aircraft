@@ -57,7 +57,5 @@ export const useInteractionEvents = (events: string[], handler: (any?) => void):
         return () => {
             events.forEach((event) => getRootElement().removeEventListener(event, wrappedHandler));
         };
-    }, [ /* eslint-disable-line react-hooks/exhaustive-deps */
-        ...events, /* eslint-disable-line react-hooks/exhaustive-deps */
-    ]);
+    }, [...events]); // eslint-disable-line react-hooks/exhaustive-deps
 };
