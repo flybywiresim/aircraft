@@ -7,6 +7,7 @@
 ## 0.7.3
 
 1. [FMS] Fixed default flight plan interface for SU7 - @Benjozork (Benjamin Dupont)
+2. [PRINTER] Use Coherent events for printer data transmission - @saschl (Saschl)
 
 ## 0.7.2
 
