@@ -26,7 +26,7 @@ use std::time::Duration;
 pub trait Actuator {
     fn used_volume(&self) -> Volume;
     fn reservoir_return(&self) -> Volume;
-    fn reset_accumulators(&mut self);
+    fn reset_volumes(&mut self);
 }
 
 /// Trait linked to anything moving bounded between a minimum and maximum position.
@@ -487,18 +487,18 @@ impl LinearActuator {
 
     fn update_after_rigid_body(
         &mut self,
-        connected_body: &LinearActuatedRigidBodyOnHingeAxis,
         context: &UpdateContext,
+        connected_body: &LinearActuatedRigidBodyOnHingeAxis,
     ) {
-        self.update_speed_position(connected_body, context);
+        self.update_speed_position(context, connected_body);
 
         self.update_fluid_displacements(context);
     }
 
     fn update_speed_position(
         &mut self,
-        connected_body: &LinearActuatedRigidBodyOnHingeAxis,
         context: &UpdateContext,
+        connected_body: &LinearActuatedRigidBodyOnHingeAxis,
     ) {
         self.last_position = self.position;
         self.position = connected_body.linear_extension_to_anchor();
@@ -554,7 +554,7 @@ impl Actuator for LinearActuator {
         self.volume_to_res_accumulator
     }
 
-    fn reset_accumulators(&mut self) {
+    fn reset_volumes(&mut self) {
         self.volume_to_res_accumulator = Volume::new::<gallon>(0.);
         self.volume_to_actuator_accumulator = Volume::new::<gallon>(0.);
     }
@@ -606,7 +606,7 @@ impl HydraulicLinearActuatorAssembly {
             );
             self.rigid_body.update(context);
             self.linear_actuator
-                .update_after_rigid_body(&self.rigid_body, context);
+                .update_after_rigid_body(context, &self.rigid_body);
         }
     }
 
