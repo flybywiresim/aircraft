@@ -1677,10 +1677,10 @@ var A320_Neo_UpperECAM;
                 const xBleedPos = this.getCachedSimVar("L:A32NX_KNOB_OVHD_AIRCOND_XBLEED_Position", "number");
                 const engBleedAndPackActive = xBleedPos === 2 || (xBleedPos === 1 && this.getCachedSimVar("L:A32NX_OVHD_APU_START_PB_IS_AVAILABLE", "Bool") === 1 && SimVar.GetSimVarValue("L:A32NX_APU_BLEED_AIR_VALVE_OPEN", "Bool")) ?
                     (this.getCachedSimVar("BLEED AIR ENGINE:1", "Bool") || this.getCachedSimVar("BLEED AIR ENGINE:2", "Bool"))
-                    && ((this.getCachedSimVar("L:A32NX_AIRCOND_PACK1_TOGGLE", "bool") && eng1active) || (this.getCachedSimVar("L:A32NX_AIRCOND_PACK2_TOGGLE", "bool") && eng2active))
+                    && ((this.getCachedSimVar("L:A32NX_OVHD_COND_PACK_1_PB_IS_ON", "bool") && eng1active) || (this.getCachedSimVar("L:A32NX_OVHD_COND_PACK_2_PB_IS_ON", "bool") && eng2active))
                     :
-                    (eng1active && this.getCachedSimVar("BLEED AIR ENGINE:1", "Bool") && this.getCachedSimVar("L:A32NX_AIRCOND_PACK1_TOGGLE", "bool"))
-                    || (eng2active && this.getCachedSimVar("BLEED AIR ENGINE:2", "Bool") && this.getCachedSimVar("L:A32NX_AIRCOND_PACK2_TOGGLE", "bool"));
+                    (eng1active && this.getCachedSimVar("BLEED AIR ENGINE:1", "Bool") && this.getCachedSimVar("L:A32NX_OVHD_COND_PACK_1_PB_IS_ON", "bool"))
+                    || (eng2active && this.getCachedSimVar("BLEED AIR ENGINE:2", "Bool") && this.getCachedSimVar("L:A32NX_OVHD_COND_PACK_2_PB_IS_ON", "bool"));
                 const eng1NAIactive = this.getCachedSimVar("ENG ANTI ICE:1", "Bool");
                 const eng2NAIactive = this.getCachedSimVar("ENG ANTI ICE:2", "Bool");
                 const WAIactive = this.getCachedSimVar("STRUCTURAL DEICE SWITCH", "Bool");

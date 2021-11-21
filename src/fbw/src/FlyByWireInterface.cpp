@@ -309,8 +309,8 @@ void FlyByWireInterface::setupLocalVariables() {
   idAutothrustThrustLeverWarningToga = make_unique<LocalVariable>("A32NX_AUTOTHRUST_THRUST_LEVER_WARNING_TOGA");
   idAutothrustDisconnect = make_unique<LocalVariable>("A32NX_AUTOTHRUST_DISCONNECT");
 
-  idAirConditioningPack_1 = make_unique<LocalVariable>("A32NX_AIRCOND_PACK1_TOGGLE");
-  idAirConditioningPack_2 = make_unique<LocalVariable>("A32NX_AIRCOND_PACK2_TOGGLE");
+  idAirConditioningPack_1 = make_unique<LocalVariable>("A32NX_OVHD_COND_PACK_1_PB_IS_ON");
+  idAirConditioningPack_2 = make_unique<LocalVariable>("A32NX_OVHD_COND_PACK_2_PB_IS_ON");
 
   idAutothrustThrustLimitType = make_unique<LocalVariable>("A32NX_AUTOTHRUST_THRUST_LIMIT_TYPE");
   idAutothrustThrustLimit = make_unique<LocalVariable>("A32NX_AUTOTHRUST_THRUST_LIMIT");

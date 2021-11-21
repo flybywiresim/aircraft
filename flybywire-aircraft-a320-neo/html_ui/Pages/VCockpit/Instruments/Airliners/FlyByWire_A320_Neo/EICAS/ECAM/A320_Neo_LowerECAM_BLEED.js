@@ -161,9 +161,16 @@ var A320_Neo_LowerECAM_BLEED;
             const outsidePressurePSI = outsidePressureINHG * this.inHgToPSI;
             const pressureDiff = cabinPressurePSI - outsidePressurePSI;
 
-            let currentPackFlow = SimVar.GetSimVarValue("L:A32NX_KNOB_OVHD_AIRCOND_PACKFLOW_Position", "number");
-            let currentLeftPackState = SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK1_TOGGLE", "bool");
-            let currentRightPackState = SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK2_TOGGLE", "bool");
+            const currentLeftPackState = SimVar.GetSimVarValue("L:A32NX_COND_PACK_FLOW_VALVE_1_IS_OPEN", "bool");
+            const currentRightPackState = SimVar.GetSimVarValue("L:A32NX_COND_PACK_FLOW_VALVE_2_IS_OPEN", "bool");
+            let currentPackFlow = SimVar.GetSimVarValue("L:A32NX_COND_PACK_FLOW", "number");
+            if (currentPackFlow == 80) {
+                currentPackFlow = 0;
+            } else if (currentPackFlow == 120) {
+                currentPackFlow = 2;
+            } else {
+                currentPackFlow = 1;
+            }
             let currentRamState = SimVar.GetSimVarValue("L:A32NX_AIRCOND_RAMAIR_TOGGLE", "bool");
             let currentEngineBleedState = [0, 0];
             currentEngineBleedState = [SimVar.GetSimVarValue("BLEED AIR ENGINE:1", "Bool"), SimVar.GetSimVarValue("BLEED AIR ENGINE:2", "Bool")];
@@ -213,16 +220,6 @@ var A320_Neo_LowerECAM_BLEED;
                 currentRamState = 0;
             }
 
-            //closes packs when engines are starting
-            if (((currentEng2N2 > 1 && currentEng2N2 < 58) || (currentEng1N2 > 1 && currentEng1N2 < 58)) && xBleedValveOpen) {
-                currentLeftPackState = 0;
-                currentRightPackState = 0;
-            } else if ((currentEng2N2 > 1 && currentEng2N2 < 58) && !xBleedValveOpen) {
-                currentRightPackState = 0;
-            } else if ((currentEng1N2 > 1 && currentEng1N2 < 58) && !xBleedValveOpen) {
-                currentLeftPackState = 0;
-            }
-
             //sets the engine bleed local variable to 0 if the engine is not running
             if (!eng1Running) {
                 currentEngineBleedState[0] = 0;
@@ -230,11 +227,6 @@ var A320_Neo_LowerECAM_BLEED;
 
             if (!eng2Running) {
                 currentEngineBleedState[1] = 0;
-            }
-
-            //sets pack flow to high if TOGA applied/ single pack on / bleed provided by apu alone
-            if (this.thrustTOGAApplied || this.singlePackOn || (!currentEngineBleedState[0] && !currentEngineBleedState[1] && this.apuProvidesBleed)) {
-                currentPackFlow = 2;
             }
 
             //sets IP valve to open or closed

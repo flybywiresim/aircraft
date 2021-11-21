@@ -209,8 +209,8 @@ var A320_Neo_LowerECAM_PRESS;
             const pressureDeltaDecimalSplit = pressureDelta.toFixed(1).split(".", 2);
             const outletValveOpenPercent = SimVar.GetSimVarValue("L:A32NX_PRESS_OUTFLOW_VALVE_OPEN_PERCENTAGE", "Percent");
 
-            const leftPackState = ((!SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK1_TOGGLE", "bool") || SimVar.GetSimVarValue("L:A32NX_OVHD_PRESS_DITCHING_PB_IS_ON", "bool")) && SimVar.GetSimVarValue("ENG COMBUSTION:1", "Bool"));
-            const rightPackState = ((!SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK2_TOGGLE", "bool") || SimVar.GetSimVarValue("L:A32NX_OVHD_PRESS_DITCHING_PB_IS_ON", "bool")) && SimVar.GetSimVarValue("ENG COMBUSTION:2", "Bool"));
+            const leftPackState = !SimVar.GetSimVarValue("L:A32NX_COND_PACK_FLOW_VALVE_1_IS_OPEN", "bool") && SimVar.GetSimVarValue("ENG COMBUSTION:1", "Bool");
+            const rightPackState = !SimVar.GetSimVarValue("L:A32NX_COND_PACK_FLOW_VALVE_2_IS_OPEN", "bool") && SimVar.GetSimVarValue("ENG COMBUSTION:2", "Bool");
             let landingElev;
             let landingElevManual;
             if (SimVar.GetSimVarValue("L:XMLVAR_KNOB_OVHD_CABINPRESS_LDGELEV", "number") !== 0) {

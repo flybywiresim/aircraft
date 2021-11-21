@@ -59,17 +59,9 @@
     - Bool
     - True if fault in pack 1
 
-- A32NX_AIRCOND_PACK1_TOGGLE
-    - Bool
-    - True if pack 1 is on
-
 - A32NX_AIRCOND_PACK2_FAULT
     - Bool
     - True if fault in pack 2
-
-- A32NX_AIRCOND_PACK2_TOGGLE
-    - Bool
-    - True if pack 2 is on
 
 - A32NX_AIRCOND_HOTAIR_FAULT
     - Bool
@@ -1795,14 +1787,30 @@ In the variables below, {number} should be replaced with one item in the set: { 
         - FWD
         - AFT
 
+- A32NX_COND_PACK_FLOW_VALVE_{index}_IS_OPEN
+    - Bool
+    - True if the respective {1 or 2} pack flow valve is open
+
+- A32NX_COND_PACK_FLOW
+    - Percent
+    - Percentage flow coming out of the packs into the cabin (LO: 80%, NORM: 100%, HI: 120%)
+
 - A32NX_OVHD_COND_{id}_SELECTOR_KNOB
     - Percentage
     - Percent rotation of the overhead temperature selectors for each of the cabin zones
     - To transform the value into degree celsius use this formula: this * 0.12 + 18
-     - {id}
+    - {id}
         - CKPT
         - FWD
         - AFT
+
+- A32NX_OVHD_COND_PACK_{index}_PB_IS_ON
+    - Bool
+    - True if pack {1 or 2} pushbutton is pressed in the on position (no white light)
+
+- A32NX_OVHD_COND_PACK_{index}_PB_HAS_FAULT
+    - Bool
+    - True if pack {1 or 2} has a fault
 
 - A32NX_PRESS_CABIN_ALTITUDE
     - Feet

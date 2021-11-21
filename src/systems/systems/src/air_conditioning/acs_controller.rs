@@ -1,8 +1,8 @@
 use crate::{
     shared::{pid::PidController, CabinAltitude, EngineCorrectedN1, LgciuWeightOnWheels},
     simulation::{
-        InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
-        SimulatorWriter, UpdateContext, VariableIdentifier, Write,
+        InitContext, Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
+        SimulatorWriter, UpdateContext, VariableIdentifier, Write, Writer,
     },
 };
 
@@ -479,14 +479,38 @@ impl SimulationElement for ZoneController {
     }
 }
 
+#[derive(Clone, Copy)]
+enum OvhdFlowSelector {
+    Lo = 80,
+    Norm = 100,
+    Hi = 120,
+}
+
+read_write_enum!(OvhdFlowSelector);
+
+impl From<f64> for OvhdFlowSelector {
+    fn from(value: f64) -> Self {
+        match value as u8 {
+            0 => OvhdFlowSelector::Lo,
+            1 => OvhdFlowSelector::Norm,
+            2 => OvhdFlowSelector::Hi,
+            _ => panic!("Overhead flow selector position not recognized."),
+        }
+    }
+}
+
 struct PackFlowController {
     apu_bleed_valve_open_id: VariableIdentifier,
     apu_rpm_id: VariableIdentifier,
     ditching_id: VariableIdentifier,
-    engine_selector_id: VariableIdentifier,
     crossbleed_id: VariableIdentifier,
+    engine_1_state_id: VariableIdentifier,
+    engine_2_state_id: VariableIdentifier,
     eng_1_fire_id: VariableIdentifier,
     eng_2_fire_id: VariableIdentifier,
+    ovhd_flow_selector_id: VariableIdentifier,
+
+    pack_flow_id: VariableIdentifier,
 
     flow_demand: Ratio,
     absolute_flow: MassRate,
@@ -499,10 +523,12 @@ struct PackFlowController {
     apu_bleed_on: bool,
     pack_in_start_condition: bool,
     ditching_is_on: bool,
-    engine_in_start_mode: bool,
     crossbleed_is_on: bool,
+    engine_1_in_start_mode: bool,
+    engine_2_in_start_mode: bool,
     engine_1_on_fire: bool,
     engine_2_on_fire: bool,
+    flow_selector_position: OvhdFlowSelector,
 }
 
 impl PackFlowController {
@@ -521,10 +547,15 @@ impl PackFlowController {
             apu_bleed_valve_open_id: context.get_identifier("APU_BLEED_AIR_VALVE_OPEN".to_owned()),
             apu_rpm_id: context.get_identifier("APU_N_RAW".to_owned()),
             ditching_id: context.get_identifier("OVHD_PRESS_DITCHING_PB_IS_ON".to_owned()),
-            engine_selector_id: context.get_identifier("XMLVAR_ENG_MODE_SEL".to_owned()),
             crossbleed_id: context.get_identifier("KNOB_OVHD_AIRCOND_XBLEED_Position".to_owned()),
+            engine_1_state_id: context.get_identifier("ENGINE_STATE:1".to_owned()),
+            engine_2_state_id: context.get_identifier("ENGINE_STATE:2".to_owned()),
             eng_1_fire_id: context.get_identifier("Fire_ENG1_Agent1_Discharge".to_owned()),
             eng_2_fire_id: context.get_identifier("Fire_ENG2_Agent1_Discharge".to_owned()),
+            ovhd_flow_selector_id: context
+                .get_identifier("KNOB_OVHD_AIRCOND_PACKFLOW_Position".to_owned()),
+
+            pack_flow_id: context.get_identifier("COND_PACK_FLOW".to_owned()),
 
             flow_demand: Ratio::new::<percent>(0.),
             absolute_flow: MassRate::new::<kilogram_per_second>(0.),
@@ -537,10 +568,12 @@ impl PackFlowController {
             apu_bleed_on: false,
             pack_in_start_condition: false,
             ditching_is_on: false,
-            engine_in_start_mode: false,
-            crossbleed_is_on: false,
+            crossbleed_is_on: true,
+            engine_1_in_start_mode: false,
+            engine_2_in_start_mode: false,
             engine_1_on_fire: false,
             engine_2_on_fire: false,
+            flow_selector_position: OvhdFlowSelector::Norm,
         }
     }
 
@@ -560,16 +593,7 @@ impl PackFlowController {
         self.flow_demand = self.flow_demand_determination(aircraft_state);
         self.absolute_flow = self.absolute_flow_calculation(pressurization);
         self.fcv_open_allowed_determination(acs_overhead);
-        self.should_open_fcv = [
-            self.fcv_1_open_allowed
-                && (engines[0].corrected_n1() >= Ratio::new::<percent>(15.)
-                    || (engines[1].corrected_n1() >= Ratio::new::<percent>(15.)
-                        && self.crossbleed_is_on)),
-            self.fcv_2_open_allowed
-                && (engines[1].corrected_n1() >= Ratio::new::<percent>(15.)
-                    || (engines[0].corrected_n1() >= Ratio::new::<percent>(15.)
-                        && self.crossbleed_is_on)),
-        ];
+        self.should_open_fcv = self.should_open_fcv_determination(engines);
     }
 
     fn pack_start_condition_determination(&mut self, pack_flow_valve: &[PackFlowValve; 2]) -> bool {
@@ -580,8 +604,8 @@ impl PackFlowController {
     }
 
     fn flow_demand_determination(&self, aircraft_state: &AcStateManager) -> Ratio {
-        // TODO: Add connection with flow selector
-        let mut intermediate_flow = Ratio::new::<percent>(100.);
+        let mut intermediate_flow =
+            Ratio::new::<percent>((self.flow_selector_position as u32) as f64);
         // TODO: Add "insufficient performance" based on Pack Mixer Temperature Demand
         if self.pack_in_start_condition {
             intermediate_flow =
@@ -620,16 +644,34 @@ impl PackFlowController {
     fn fcv_open_allowed_determination(&mut self, acs_overhead: &AirConditioningSystemOverhead) {
         // Flow Control Valve 1
         self.fcv_1_open_allowed = acs_overhead.pack_1_pb_is_on()
-            && !self.engine_in_start_mode
+            && !self.engine_1_in_start_mode
+            && (!self.engine_2_in_start_mode || !self.crossbleed_is_on)
             && !self.engine_1_on_fire
             && !self.ditching_is_on;
         // && ! pack 1 overheat
         // Flow Control Valve 2
         self.fcv_2_open_allowed = acs_overhead.pack_2_pb_is_on()
-            && !self.engine_in_start_mode
+            && !self.engine_2_in_start_mode
+            && (!self.engine_1_in_start_mode || !self.crossbleed_is_on)
             && !self.engine_2_on_fire
             && !self.ditching_is_on;
         // && ! pack 2 overheat
+    }
+
+    fn should_open_fcv_determination(&self, engines: [&impl EngineCorrectedN1; 2]) -> [bool; 2] {
+        // Engine bleed pushbuttons not yet integrated. TODO after Bleed PR is merged
+        [
+            self.fcv_1_open_allowed
+                && ((engines[0].corrected_n1() >= Ratio::new::<percent>(15.)
+                    || (engines[1].corrected_n1() >= Ratio::new::<percent>(15.)
+                        && self.crossbleed_is_on))
+                    || self.apu_bleed_on),
+            self.fcv_2_open_allowed
+                && ((engines[1].corrected_n1() >= Ratio::new::<percent>(15.)
+                    || (engines[0].corrected_n1() >= Ratio::new::<percent>(15.)
+                        && self.crossbleed_is_on))
+                    || self.apu_bleed_on),
+        ]
     }
 }
 
@@ -659,13 +701,23 @@ impl SimulationElement for PackFlowController {
         let apu_rpm_read: Ratio = reader.read(&self.apu_rpm_id);
         self.apu_bleed_on = apu_bleed_read && (apu_rpm_read > Ratio::new::<percent>(95.));
         self.ditching_is_on = reader.read(&self.ditching_id);
-        // TODO: Improve logic to determine engine start state
-        let engine_selector_position: usize = reader.read(&self.engine_selector_id);
-        self.engine_in_start_mode = engine_selector_position == 2;
         let crossbleed_position: usize = reader.read(&self.crossbleed_id);
-        self.crossbleed_is_on = crossbleed_position != 0;
+        if self.apu_bleed_on {
+            self.crossbleed_is_on = crossbleed_position != 0;
+        } else {
+            self.crossbleed_is_on = crossbleed_position == 2;
+        }
+        let engine_1_state: usize = reader.read(&self.engine_1_state_id);
+        self.engine_1_in_start_mode = engine_1_state == 2;
+        let engine_2_state: usize = reader.read(&self.engine_2_state_id);
+        self.engine_2_in_start_mode = engine_2_state == 2;
         self.engine_1_on_fire = reader.read(&self.eng_1_fire_id);
         self.engine_2_on_fire = reader.read(&self.eng_2_fire_id);
+        self.flow_selector_position = reader.read(&self.ovhd_flow_selector_id);
+    }
+
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(&self.pack_flow_id, self.flow_demand);
     }
 }
 
@@ -826,7 +878,10 @@ mod acs_controller_tests {
             Self {
                 acsc: ACSController::new(context, vec!["CKPT", "FWD"]),
                 acs_overhead: AirConditioningSystemOverhead::new(context, &["CKPT", "FWD"]),
-                pack_flow_valve: [PackFlowValve::new(1), PackFlowValve::new(2)],
+                pack_flow_valve: [
+                    PackFlowValve::new(context, 1),
+                    PackFlowValve::new(context, 2),
+                ],
                 engine_1: TestEngine::new(Ratio::new::<percent>(0.)),
                 engine_2: TestEngine::new(Ratio::new::<percent>(0.)),
                 pressurization: TestPressurization::new(),
@@ -891,6 +946,7 @@ mod acs_controller_tests {
                 [ThermodynamicTemperature::new::<degree_celsius>(24.); 2],
             );
             test_bed.command_pax_quantity(0);
+            test_bed.command_pack_flow_selector_position(1);
 
             test_bed
         }
@@ -1039,6 +1095,10 @@ mod acs_controller_tests {
             self.command(|a| a.pressurization.set_cabin_altitude(altitude));
         }
 
+        fn command_pack_flow_selector_position(&mut self, value: usize) {
+            self.write_by_name("KNOB_OVHD_AIRCOND_PACKFLOW_Position", value);
+        }
+
         fn command_pack_1_pb_position(&mut self, value: bool) {
             self.write_by_name("OVHD_COND_PACK_1_PB_IS_ON", value);
         }
@@ -1053,7 +1113,8 @@ mod acs_controller_tests {
         }
 
         fn command_engine_in_start_mode(&mut self) {
-            self.write_by_name("XMLVAR_ENG_MODE_SEL", 2);
+            self.write_by_name("ENGINE_STATE:1", 2);
+            self.write_by_name("ENGINE_STATE:2", 2);
         }
 
         fn command_engine_on_fire(&mut self) {
@@ -1066,7 +1127,7 @@ mod acs_controller_tests {
         }
 
         fn command_crossbleed_on(&mut self) {
-            self.write_by_name("KNOB_OVHD_AIRCOND_XBLEED_Position", 1);
+            self.write_by_name("KNOB_OVHD_AIRCOND_XBLEED_Position", 2);
         }
 
         fn duct_demand_temperature(&self) -> HashMap<&str, ThermodynamicTemperature> {
@@ -1538,6 +1599,36 @@ mod acs_controller_tests {
             test_bed.run();
 
             assert!(test_bed.pack_flow() > MassRate::new::<kilogram_per_second>(0.));
+        }
+
+        #[test]
+        fn pack_flow_increases_when_knob_on_hi_setting() {
+            let mut test_bed = test_bed().with().both_packs_on().and().engine_idle();
+            test_bed.run();
+            test_bed.run_with_delta(Duration::from_secs(31));
+            test_bed.run();
+            let initial_flow = test_bed.pack_flow();
+
+            test_bed.command_pack_flow_selector_position(2);
+            test_bed.run();
+            test_bed.run();
+
+            assert!(test_bed.pack_flow() > initial_flow);
+        }
+
+        #[test]
+        fn pack_flow_decreases_when_knob_on_lo_setting() {
+            let mut test_bed = test_bed().with().both_packs_on().and().engine_idle();
+            test_bed.run();
+            test_bed.run_with_delta(Duration::from_secs(31));
+            test_bed.run();
+            let initial_flow = test_bed.pack_flow();
+
+            test_bed.command_pack_flow_selector_position(0);
+            test_bed.run();
+            test_bed.run();
+
+            assert!(test_bed.pack_flow() < initial_flow);
         }
 
         #[test]

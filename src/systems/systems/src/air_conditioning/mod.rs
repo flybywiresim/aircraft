@@ -3,7 +3,10 @@ use self::acs_controller::ACSController;
 use crate::{
     overhead::{OnOffFaultPushButton, ValueKnob},
     shared::{CabinAltitude, EngineCorrectedN1, LgciuWeightOnWheels},
-    simulation::{InitContext, SimulationElement, SimulationElementVisitor, UpdateContext},
+    simulation::{
+        InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
+        VariableIdentifier, Write,
+    },
 };
 
 use std::{collections::HashMap, time::Duration};
@@ -42,7 +45,10 @@ impl AirConditioningSystem {
         Self {
             acs_overhead: AirConditioningSystemOverhead::new(context, &cabin_zone_ids),
             acsc: ACSController::new(context, cabin_zone_ids),
-            pack_flow_valve: [PackFlowValve::new(1), PackFlowValve::new(2)],
+            pack_flow_valve: [
+                PackFlowValve::new(context, 1),
+                PackFlowValve::new(context, 2),
+            ],
         }
     }
 
@@ -72,6 +78,7 @@ impl SimulationElement for AirConditioningSystem {
     fn accept<V: SimulationElementVisitor>(&mut self, visitor: &mut V) {
         self.acs_overhead.accept(visitor);
         self.acsc.accept(visitor);
+        accept_iterable!(self.pack_flow_valve, visitor);
 
         visitor.visit(self);
     }
@@ -144,18 +151,25 @@ impl PackFlow for AirConditioningSystem {
 }
 
 struct PackFlowValve {
-    pub number: usize,
+    pack_flow_valve_id: VariableIdentifier,
+
+    number: usize,
     is_open: bool,
     timer_open: Duration,
 }
 
 impl PackFlowValve {
-    fn new(number: usize) -> Self {
+    fn new(context: &mut InitContext, number: usize) -> Self {
         Self {
+            pack_flow_valve_id: context.get_identifier(Self::pack_flow_valve_id(&number)),
             number,
             is_open: false,
             timer_open: Duration::from_secs(0),
         }
+    }
+
+    fn pack_flow_valve_id(number: &usize) -> String {
+        format!("COND_PACK_FLOW_VALVE_{}_IS_OPEN", number)
     }
 
     fn update(&mut self, context: &UpdateContext, open_fcv: &impl FlowControlValveSignal) {
@@ -173,6 +187,12 @@ impl PackFlowValve {
 
     fn fcv_is_open(&self) -> bool {
         self.is_open
+    }
+}
+
+impl SimulationElement for PackFlowValve {
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(&self.pack_flow_valve_id, self.is_open);
     }
 }
 
@@ -236,9 +256,9 @@ mod air_conditioning_tests {
     }
 
     impl TestAircraft {
-        fn new(_context: &mut InitContext) -> Self {
+        fn new(context: &mut InitContext) -> Self {
             Self {
-                flow_control_valve: PackFlowValve::new(1),
+                flow_control_valve: PackFlowValve::new(context, 1),
                 actuator_signal: TestActuatorSignal::new(),
             }
         }
