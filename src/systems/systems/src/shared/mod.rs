@@ -43,8 +43,8 @@ pub trait ApuStart {
     fn start_is_on(&self) -> bool;
 }
 
-pub trait RamAirTurbineHydraulicLoopPressurised {
-    fn is_rat_hydraulic_loop_pressurised(&self) -> bool;
+pub trait RamAirTurbineHydraulicCircuitPressurised {
+    fn is_rat_hydraulic_circuit_pressurised(&self) -> bool;
 }
 
 pub trait LandingGearRealPosition {
