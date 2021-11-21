@@ -22,87 +22,6 @@
         </UseTemplate>
     </Template>
 
-    <Template Name="FBW_AIRBUS_Push_ILS_Template">
-        <DefaultTemplateParameters>
-            <ID>1</ID>
-            <SEQ1_POWERED>1</SEQ1_POWERED>
-            <SEQ2_POWERED>1</SEQ2_POWERED>
-        </DefaultTemplateParameters>
-
-        <UseTemplate Name="A32NX_GlassCockpit_Push_Template">
-            <PART_ID>LS_Button</PART_ID>
-            <BTN_ID>LS_#ID#</BTN_ID>
-            <BTN_TOOLTIP_ID>LS</BTN_TOOLTIP_ID>
-            <PLANE_PREFIX>A320_Neo</PLANE_PREFIX>
-        </UseTemplate>
-    </Template>
-
-    <Template Name="FBW_AIRBUS_Push_CSTR_Template">
-        <DefaultTemplateParameters>
-            <PART_ID>CSTR_Button</PART_ID>
-            <ID>1</ID>
-            <BTN_TOOLTIP_ID>CSTR</BTN_TOOLTIP_ID>
-            <SEQ1_POWERED>1</SEQ1_POWERED>
-            <SEQ2_POWERED>1</SEQ2_POWERED>
-        </DefaultTemplateParameters>
-
-        <UseTemplate Name="A32NX_GlassCockpit_Push_Template">
-            <PLANE_PREFIX>A320_Neo</PLANE_PREFIX>
-        </UseTemplate>
-    </Template>
-
-    <Template Name="FBW_AIRBUS_Push_VORD_Template">
-        <DefaultTemplateParameters>
-            <ID>1</ID>
-            <BTN_TOOLTIP_ID>VORD</BTN_TOOLTIP_ID>
-            <SEQ1_POWERED>1</SEQ1_POWERED>
-            <SEQ2_POWERED>1</SEQ2_POWERED>
-        </DefaultTemplateParameters>
-
-        <UseTemplate Name="A32NX_GlassCockpit_Push_Template">
-            <PLANE_PREFIX>A320_Neo</PLANE_PREFIX>
-        </UseTemplate>
-    </Template>
-
-    <Template Name="FBW_AIRBUS_Push_WPT_Template">
-        <DefaultTemplateParameters>
-            <ID>1</ID>
-            <BTN_TOOLTIP_ID>WPT</BTN_TOOLTIP_ID>
-            <SEQ1_POWERED>1</SEQ1_POWERED>
-            <SEQ2_POWERED>1</SEQ2_POWERED>
-        </DefaultTemplateParameters>
-
-        <UseTemplate Name="A32NX_GlassCockpit_Push_Template">
-            <PLANE_PREFIX>A320_Neo</PLANE_PREFIX>
-        </UseTemplate>
-    </Template>
-
-    <Template Name="FBW_AIRBUS_Push_NDB_Template">
-        <DefaultTemplateParameters>
-            <ID>1</ID>
-            <BTN_TOOLTIP_ID>NDB</BTN_TOOLTIP_ID>
-            <SEQ1_POWERED>1</SEQ1_POWERED>
-            <SEQ2_POWERED>1</SEQ2_POWERED>
-        </DefaultTemplateParameters>
-
-        <UseTemplate Name="A32NX_GlassCockpit_Push_Template">
-            <PLANE_PREFIX>A320_Neo</PLANE_PREFIX>
-        </UseTemplate>
-    </Template>
-
-    <Template Name="FBW_AIRBUS_Push_ARPT_Template">
-        <DefaultTemplateParameters>
-            <ID>1</ID>
-            <BTN_TOOLTIP_ID>ARPT</BTN_TOOLTIP_ID>
-            <SEQ1_POWERED>1</SEQ1_POWERED>
-            <SEQ2_POWERED>1</SEQ2_POWERED>
-        </DefaultTemplateParameters>
-
-        <UseTemplate Name="A32NX_GlassCockpit_Push_Template">
-            <PLANE_PREFIX>A320_Neo</PLANE_PREFIX>
-        </UseTemplate>
-    </Template>
-
     <Template Name="FBW_AIRBUS_Push_Metric_Alt_Template">
         <DefaultTemplateParameters>
             <NODE_ID>AIRBUS_Push_Metric_Alt</NODE_ID>
@@ -145,7 +64,6 @@
             <ANIM_NAME>#BASE_NAME#</ANIM_NAME>
             <NODE_ID>#BASE_NAME#</NODE_ID>
             <PART_ID>#BASE_NAME#</PART_ID>
-            <STATE_VAR_NAME>XMLVAR_#BASE_NAME#_State</STATE_VAR_NAME>
             <WWISE_EVENT>lswitch</WWISE_EVENT>
 
         </DefaultTemplateParameters>
@@ -178,12 +96,13 @@
             <PART_ID>NAVAID_Switch</PART_ID>
             <ANIMREF_ID>0</ANIMREF_ID>
             <ANIMCURSOR_MAX>1</ANIMCURSOR_MAX>
+            <STATE_VAR_NAME>A32NX_EFIS_#SIDE#_NAVAID_#INDEX#_MODE</STATE_VAR_NAME>
+            <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.EFIS_PANEL_ADFSWITCH_ADF#INDEX#</ANIMTIP_0>
+            <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.EFIS_PANEL_ADFSWITCH_OFF#INDEX#</ANIMTIP_1>
+            <ANIMTIP_2>TT:COCKPIT.TOOLTIPS.EFIS_PANEL_ADFSWITCH_VOR#INDEX#</ANIMTIP_2>
             <ANIMTIP_0_ON_PERCENT>0</ANIMTIP_0_ON_PERCENT>
             <ANIMTIP_1_ON_PERCENT>.5</ANIMTIP_1_ON_PERCENT>
             <ANIMTIP_2_ON_PERCENT>1</ANIMTIP_2_ON_PERCENT>
-            <ANIMTIP_0>EE</ANIMTIP_0>
-            <ANIMTIP_1>FF</ANIMTIP_1>
-            <ANIMTIP_2>CC</ANIMTIP_2>
         </DefaultTemplateParameters>
 
         <UseTemplate Name="FBW_AIRBUS_NAV_AID_SWITCH_SubTemplate">
@@ -700,18 +619,6 @@
         </UseTemplate>
     </Template>
 
-    <Template Name="FBW_AIRBUS_Update_PTU_Template">
-        <DefaultTemplateParameters>
-            <MIN_N1>19</MIN_N1>
-        </DefaultTemplateParameters>
-        <UseTemplate Name="ASOBO_GT_Update">
-            <FREQUENCY>1</FREQUENCY>
-            <UPDATE_CODE>
-            (A:TURB ENG N1:1, Percent) #MIN_N1# &gt; (A:GENERAL ENG COMBUSTION:1, Bool) and
-            (A:TURB ENG N1:2, Percent) #MIN_N1# &gt; (A:GENERAL ENG COMBUSTION:2, Bool) and + 1 == (&gt;L:XMLVAR_PTU_ON)
-            </UPDATE_CODE>
-        </UseTemplate>
-    </Template>
 
     <Template Name="FBW_AIRBUS_WeatherRadar_Template">
         <DefaultTemplateParameters>
@@ -799,7 +706,7 @@
 
         <UseTemplate Name="FBW_AIRLINER_SubNodes_Setter_Template">
             <TEMPLATE_TO_CALL>ASOBO_GT_Push_Button_Airliner</TEMPLATE_TO_CALL>
-            <LEFT_SINGLE_CODE>(L:#NODE_ID#) ! (>L:#NODE_ID#)</LEFT_SINGLE_CODE>
+            <LEFT_SINGLE_CODE>0 (&gt;H:A32NX_EFIS_#SIDE#_CHRONO_PUSHED)</LEFT_SINGLE_CODE>
         </UseTemplate>
     </Template>
 
@@ -1074,45 +981,6 @@
                 <SWITCH_POSITION_VAR>A32NX_#TYPE#_SWITCHING_KNOB</SWITCH_POSITION_VAR>
             </UseTemplate>
         </Component>
-    </Template>
-
-    <Template Name="A32NX_AUTOPILOT_Push_FlightDirector_Template">
-        <DefaultTemplateParameters>
-            <ID>1</ID>
-            <FD_TOGGLE_CONDITION>1</FD_TOGGLE_CONDITION>
-            <SEQ1_POWERED>1</SEQ1_POWERED>
-            <SEQ2_POWERED>1</SEQ2_POWERED>
-        </DefaultTemplateParameters>
-
-        <UseTemplate Name="A32NX_AUTOPILOT_Push_FlightDirector_SubTemplate">
-        </UseTemplate>
-    </Template>
-
-    <Template Name="A32NX_AUTOPILOT_Push_FlightDirector_SubTemplate">
-        <DefaultTemplateParameters>
-            <DEFAULT_NAME>FlightDirector</DEFAULT_NAME>
-            <HELPID>HELPID_AUTOPILOT_FLIGHT_DIRECTOR_SWITCH</HELPID>
-            <TOOLTIPID>%((A:AUTOPILOT FLIGHT DIRECTOR ACTIVE:#ID#, bool))%{if}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_FD_ON%{else}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_FD_OFF%{end}</TOOLTIPID>
-            <Condition Check="TOGGLEABLE">
-                <True>
-                    <ANIM_CODE>(A:AUTOPILOT FLIGHT DIRECTOR ACTIVE:#ID#, Bool) 100 *</ANIM_CODE>
-                </True>
-            </Condition>
-        </DefaultTemplateParameters>
-        <EditableTemplateParameters>
-            <AddParams>
-                <ID></ID>
-                <FD_TOGGLE_CONDITION></FD_TOGGLE_CONDITION>
-            </AddParams>
-            <AddOptions>
-                <TOGGLEABLE/>
-            </AddOptions>
-        </EditableTemplateParameters>
-
-        <UseTemplate Name="FBW_AUTOPILOT_Push_Template">
-            <LEFT_SINGLE_CODE>#FD_TOGGLE_CONDITION# if{ #ID# (&gt;K:TOGGLE_FLIGHT_DIRECTOR) }</LEFT_SINGLE_CODE>
-            <EMISSIVE_SIMVAR_ACTIVE>AUTOPILOT FLIGHT DIRECTOR ACTIVE:#ID#</EMISSIVE_SIMVAR_ACTIVE>
-        </UseTemplate>
     </Template>
 
     <Template Name="FBW_AUTOPILOT_Push_Template">

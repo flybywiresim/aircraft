@@ -39,8 +39,6 @@ const NXSystemMessages = {
     enterDestData:          new McduMessage("ENTER DEST DATA", true, true),
     entryOutOfRange:        new McduMessage("ENTRY OUT OF RANGE", false, false),
     formatError:            new McduMessage("FORMAT ERROR", false, false),
-    gpsPrimary:             new McduMessage("GPS PRIMARY", false, true),
-    gpsPrimaryLost:         new McduMessage("GPS PRIMARY LOST", true, true),
     initializeWeightOrCg:   new McduMessage("INITIALIZE WEIGHT/CG", true, true),
     newCrzAlt:              new McduMessage("NEW CRZ ALT - HHHHH", false, true, "HHHHH"),
     noIntersectionFound:    new McduMessage("NO INTERSECTION FOUND", false, false),
