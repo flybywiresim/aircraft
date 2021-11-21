@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { ScratchpadMessage } from '@fmgc/lib/ScratchpadMessage';
 import { NXSystemMessages } from '@fmgc/lib/NXSystemMessages';
-import { add } from 'mathjs';
 import { useMCDUDispatch } from '../../../redux/hooks';
 import * as titlebarActions from '../../../redux/actions/titlebarActionCreators';
 import { RowHolder } from '../../../Components/Holders/RowHolder';
