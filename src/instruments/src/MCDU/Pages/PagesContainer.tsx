@@ -28,7 +28,6 @@ import { PAGE_KEYS } from '../Components/Buttons';
 import FuelPred from './FMGC/Fuel/FuelPred';
 import FplanHolder from './FMGC/Fplan/Fplan';
 import RadnavPage from './FMGC/RadNav/Radnav';
-import { addScratchpadMessage } from '../redux/actions/scratchpadActionCreators';
 
 const PagesContainer = () => {
     const [currentPage, setCurrentPage] = useState('MENU');
@@ -61,7 +60,7 @@ const PagesContainer = () => {
         IDENT: <IdentPage />,
         FUEL: <FuelPred />,
         FPLAN: <FplanHolder eraseTemporaryFlightPlan={eraseTemporaryFlightPlan} insertTemporaryFlightPlan={insertTemporaryFlightPlan} />,
-        RADNAV: <RadnavPage addMessage={addScratchpadMessage} />,
+        RADNAV: <RadnavPage />,
     };
 
     useInteractionEvent(PAGE_KEYS.INIT, () => setCurrentPage('INIT'));
