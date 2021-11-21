@@ -176,8 +176,8 @@ class CDUFlightPlanPage {
                 // Fix Header
                 let fixAnnotation;
                 const currentApproach = fpm.getApproach();
-                if (fpm.getDepartureRunway() && wpPrev === fpm.getOrigin() && prevFpIndex === 0) {
-                    fixAnnotation = `${wpPrev.ident.substring(0,3)}${fpm.getDepartureRunway().direction.toFixed(0)}`;
+                if (fpm.getOriginRunway() && wpPrev === fpm.getOrigin() && prevFpIndex === 0) {
+                    fixAnnotation = `${wpPrev.ident.substring(0,3)}${fpm.getOriginRunway().direction.toFixed(0)}`;
                 } else if (fpm.getDepartureProcIndex() !== -1 && fpm.getDepartureWaypoints().some(fix => fix === wp)) {
                     const departureName = fpm.getDepartureName();
                     fixAnnotation = departureName ? departureName : undefined;
@@ -296,7 +296,7 @@ class CDUFlightPlanPage {
                     // Only for destination waypoint, show runway elevation.
                     altColor = "white";
                     spdColor = "white";
-                    const [rwTxt, rwAlt] = getRunwayInfo(fpm.getApproachRunway());
+                    const [rwTxt, rwAlt] = getRunwayInfo(fpm.getDestinationRunway());
                     if (rwTxt && rwAlt) {
                         altPrefix = "{magenta}*{end}";
                         ident += rwTxt;
@@ -306,7 +306,7 @@ class CDUFlightPlanPage {
                     altitudeConstraint = altitudeConstraint.padStart(5,"\xa0");
 
                 } else if (wp === fpm.getOrigin() && fpIndex === 0) {
-                    const [rwTxt, rwAlt] = getRunwayInfo(fpm.getDepartureRunway());
+                    const [rwTxt, rwAlt] = getRunwayInfo(fpm.getOriginRunway());
                     if (rwTxt && rwAlt) {
                         ident += rwTxt;
                         altitudeConstraint = rwAlt;
@@ -503,7 +503,7 @@ class CDUFlightPlanPage {
                     fpIndex: fpIndex,
                     active: false,
                     ident: pwp.ident,
-                    color: "green",
+                    color: (fpm.isCurrentFlightPlanTemporary()) ? "yellow" : "green",
                     distance: Math.round(pwp.stats.distanceInFP).toString(),
                     spdColor: "white",
                     speedConstraint: "---",
@@ -614,12 +614,12 @@ class CDUFlightPlanPage {
             });
         } else {
             let destCell = "----";
-            let approachRunway = null;
+            let destinationRunway = null;
             if (fpm.getDestination()) {
                 destCell = fpm.getDestination().ident;
-                approachRunway = fpm.getApproachRunway();
-                if (approachRunway) {
-                    destCell += Avionics.Utils.formatRunway(approachRunway.designation);
+                destinationRunway = fpm.getDestinationRunway();
+                if (destinationRunway) {
+                    destCell += Avionics.Utils.formatRunway(destinationRunway.designation);
                 }
             }
             let destTimeCell = "----";

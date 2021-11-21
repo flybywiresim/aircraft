@@ -805,12 +805,7 @@ export class ManagedFlightPlan {
             segment = this.addSegment(SegmentType.Departure);
             let procedure = new LegsProcedure(legs, origin, this._parentInstrument);
 
-            let runway;
-            if (selectedOriginRunwayIndex !== -1) {
-                runway = airportInfo.oneWayRunways[selectedOriginRunwayIndex];
-            } else if (runwayIndex !== -1) {
-                runway = this.getRunway(airportInfo.oneWayRunways, airportInfo.departures[departureIndex].runwayTransitions[runwayIndex].name);
-            }
+            let runway: OneWayRunway | null = this.getOriginRunway();
 
             if (runway) {
                 // console.error('bruh');
@@ -974,12 +969,7 @@ export class ManagedFlightPlan {
                 }
             }
 
-            let runway: OneWayRunway;
-            if (approachIndex !== -1) {
-                runway = this.getRunway(destinationInfo.oneWayRunways, destinationInfo.approaches[approachIndex].runway);
-            } else if (destinationRunwayIndex !== -1) {
-                runway = destinationInfo.oneWayRunways[destinationRunwayIndex];
-            }
+            let runway: OneWayRunway | null = this.getDestinationRunway();
 
             const procedure = new LegsProcedure(legs, this.getWaypoint(_startIndex - 1), this._parentInstrument);
 
@@ -1075,35 +1065,6 @@ export class ManagedFlightPlan {
     }
 
     /**
-     * Gets the runway information from a given runway name.
-     * @param runways The collection of runways to search.
-     * @param runwayName The runway name.
-     * @returns The found runway, if any.
-     */
-    public getRunway(runways: OneWayRunway[], runwayName: string): OneWayRunway | null {
-        if (runways.length > 0) {
-            let runwayIndex;
-            const match = runwayName.match(/^(RW)?([0-9]{1,2})([LCRT ])?$/);
-            if (match === null) {
-                return null;
-            }
-            const runwayLetter = match[3] ?? ' ';
-            if (runwayLetter === ' ' || runwayLetter === 'C') {
-                const runwayDirection = runwayName.trim();
-                runwayIndex = runways.findIndex((r) => r.designation === runwayDirection || r.designation === `${runwayDirection}C`);
-            } else {
-                runwayIndex = runways.findIndex((r) => r.designation === runwayName);
-            }
-
-            if (runwayIndex !== -1) {
-                return runways[runwayIndex];
-            }
-        }
-
-        return null;
-    }
-
-    /**
      * Converts a plain object into a ManagedFlightPlan.
      * @param flightPlanObject The object to convert.
      * @param parentInstrument The parent instrument attached to this flight plan.
@@ -1194,27 +1155,21 @@ export class ManagedFlightPlan {
         this.addWaypoint(waypoint, waypointIndex, segment.type);
     }
 
-    public getOriginRunway(): OneWayRunway {
-        if (!this.originAirfield) {
-            return;
+    public getOriginRunway(): OneWayRunway | null {
+        if (this.originAirfield) {
+            if (this.procedureDetails.originRunwayIndex !== -1) {
+                return this.originAirfield.infos.oneWayRunways[this.procedureDetails.originRunwayIndex];
+            }
         }
-        const airportInfo = this.originAirfield.infos;
-        if (this.procedureDetails.originRunwayIndex !== -1) {
-            return airportInfo.oneWayRunways[this.procedureDetails.originRunwayIndex];
-        } if (this.procedureDetails.departureRunwayIndex !== -1 && this.procedureDetails.departureIndex !== -1) {
-            return this.getRunway(airportInfo.oneWayRunways, airportInfo.departures[this.procedureDetails.departureIndex].runwayTransitions[this.procedureDetails.departureRunwayIndex].name);
-        }
+        return null;
     }
 
-    public getDestinationRunway(): OneWayRunway {
-        if (!this.destinationAirfield) {
-            return;
+    public getDestinationRunway(): OneWayRunway | null{
+        if (this.destinationAirfield) {
+            if (this.procedureDetails.destinationRunwayIndex !== -1) {
+                return this.destinationAirfield.infos.oneWayRunways[this.procedureDetails.destinationRunwayIndex];
+            }
         }
-        const airportInfo = this.destinationAirfield.infos;
-        if (this.procedureDetails.approachIndex !== -1) {
-            return this.getRunway(airportInfo.oneWayRunways, airportInfo.approaches[this.procedureDetails.approachIndex].runway);
-        } if (this.procedureDetails.destinationRunwayIndex !== -1) {
-            return airportInfo.oneWayRunways[this.procedureDetails.destinationRunwayIndex];
-        }
+        return null;
     }
 }

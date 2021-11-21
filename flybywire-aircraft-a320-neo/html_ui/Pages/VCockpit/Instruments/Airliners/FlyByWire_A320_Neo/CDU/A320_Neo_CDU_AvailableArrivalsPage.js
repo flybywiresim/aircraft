@@ -104,6 +104,7 @@ class CDUAvailableArrivalsPage {
                         rows[2 * i + 1] = ["{sp}{sp}{sp}{sp}" + runwayCourse + "[color]cyan"];
                         mcdu.onLeftInput[i + 2] = () => {
                             mcdu.setApproachIndex(approach.index, () => {
+                                mcdu.flightPlanManager.setDestinationRunwayIndexFromApproach();
                                 CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true);
                             });
                         };
@@ -159,10 +160,10 @@ class CDUAvailableArrivalsPage {
                             }
                             rows[2 * i] = ["{" + star.name + "[color]" + color];
                             mcdu.onLeftInput[i + 2] = () => {
-                                const approachRunway = mcdu.flightPlanManager.getApproachRunway();
-                                const arrivalRunwayIndex = star.runwayTransitions.findIndex(t => {
-                                    return t.name.indexOf("RW" + approachRunway.designation) != -1;
-                                });
+                                const destinationRunway = mcdu.flightPlanManager.getDestinationRunway();
+                                const arrivalRunwayIndex = destinationRunway ? star.runwayTransitions.findIndex(t => {
+                                    return t.name.indexOf("RW" + destinationRunway.designation) !== -1;
+                                }) : -1;
                                 if (arrivalRunwayIndex !== -1) {
                                     mcdu.flightPlanManager.setArrivalRunwayIndex(arrivalRunwayIndex);
                                 }

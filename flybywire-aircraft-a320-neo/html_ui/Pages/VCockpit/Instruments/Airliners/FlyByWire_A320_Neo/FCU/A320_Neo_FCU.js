@@ -44,12 +44,6 @@ class A320_Neo_FCU extends BaseAirliners {
     }
     onEvent(_event) {
     }
-    onFlightStart() {
-        super.onFlightStart();
-        if (this.mainPage) {
-            this.mainPage.onFlightStart();
-        }
-    }
 }
 
 class A320_Neo_FCU_MainElement extends NavSystemElement {
@@ -84,10 +78,6 @@ class A320_Neo_FCU_MainPage extends NavSystemPage {
     reboot() {
         this.largeScreen.reboot();
         this.smallScreen.reboot();
-    }
-    onFlightStart() {
-        this.largeScreen.onFlightStart();
-        this.smallScreen.onFlightStart();
     }
 }
 
@@ -133,13 +123,9 @@ class A320_Neo_FCU_Component {
         this.gps = _gps;
         this.divRef = _gps.getChildById(_divName);
         this.textValue = this.getTextElement("Value");
-        this.init();
-        this.update(0);
     }
     reboot() {
         this.init();
-    }
-    onFlightStart() {
     }
 }
 
@@ -170,8 +156,8 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
         this._rotaryEncoderTimeout = 300;
         this._rotaryEncoderIncrement = 0.15;
         this._rotaryEncoderPreviousTimestamp = 0;
-
-        this.onPull();
+        this.init();
+        this.update(0);
     }
 
     init() {
@@ -188,11 +174,6 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
         Coherent.call("AP_SPD_VAR_SET", 0, this.MIN_SPEED).catch(console.error);
         SimVar.SetSimVarValue("K:AP_MANAGED_SPEED_IN_MACH_OFF", "number", 0);
         this.onPull();
-    }
-
-    onFlightStart() {
-        super.onFlightStart();
-        this.init();
     }
 
     update(_deltaTime) {
@@ -494,6 +475,8 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
 class A320_Neo_FCU_Autopilot extends A320_Neo_FCU_Component {
     constructor() {
         super(...arguments);
+        this.init();
+        this.update(0);
     }
 
     init() {
@@ -528,6 +511,8 @@ class A320_Neo_FCU_Heading extends A320_Neo_FCU_Component {
         this._rotaryEncoderTimeout = 350;
         this._rotaryEncoderIncrement = 0.1;
         this._rotaryEncoderPreviousTimestamp = 0;
+        this.init();
+        this.update(0);
     }
 
     init() {
@@ -540,11 +525,6 @@ class A320_Neo_FCU_Heading extends A320_Neo_FCU_Component {
         this.isSelectedValueActive = true;
         this.isPreselectionModeActive = false;
         this.refresh(true, false, false, false, true, 0, false, true);
-    }
-
-    onFlightStart() {
-        super.onFlightStart();
-        this.init();
     }
 
     onRotate() {
@@ -814,6 +794,12 @@ class A320_Neo_FCU_Heading extends A320_Neo_FCU_Component {
 }
 
 class A320_Neo_FCU_Mode extends A320_Neo_FCU_Component {
+    constructor() {
+        super(...arguments);
+        this.init();
+        this.update(0);
+    }
+
     init() {
         this.textHDG = this.getTextElement("HDG");
         this.textVS = this.getTextElement("VS");
@@ -848,6 +834,12 @@ class A320_Neo_FCU_Mode extends A320_Neo_FCU_Component {
 }
 
 class A320_Neo_FCU_Altitude extends A320_Neo_FCU_Component {
+    constructor() {
+        super(...arguments);
+        this.init();
+        this.update(0);
+    }
+
     init() {
         this.illuminator = this.getElement("circle", "Illuminator");
         this.isActive = false;
@@ -859,11 +851,6 @@ class A320_Neo_FCU_Altitude extends A320_Neo_FCU_Component {
         }
         Coherent.call("AP_ALT_VAR_SET_ENGLISH", 3, initValue, true).catch(console.error);
         this.refresh(false, false, initValue, 0, true);
-    }
-
-    onFlightStart() {
-        super.onFlightStart();
-        this.init();
     }
 
     reboot() {
@@ -933,6 +920,8 @@ class A320_Neo_FCU_VerticalSpeed extends A320_Neo_FCU_Component {
         this.ABS_MINMAX_VS = 6000;
         this.backToIdleTimeout = 45000;
         this.previousVerticalMode = 0;
+        this.init();
+        this.update(0);
     }
     get currentState() {
         return this._currentState;
@@ -951,11 +940,6 @@ class A320_Neo_FCU_VerticalSpeed extends A320_Neo_FCU_Component {
         this.selectedVs = 0;
         this.selectedFpa = 0;
         this.refresh(false, false, 0, 0, true);
-    }
-
-    onFlightStart() {
-        super.onFlightStart();
-        this.init();
     }
 
     onPush() {
@@ -1226,15 +1210,6 @@ class A320_Neo_FCU_LargeScreen extends NavSystemElement {
             }
         }
     }
-    onFlightStart() {
-        if (this.components != null) {
-            for (let i = 0; i < this.components.length; ++i) {
-                if (this.components[i] != null) {
-                    this.components[i].onFlightStart();
-                }
-            }
-        }
-    }
     onUpdate(_deltaTime) {
         if (this.components != null) {
             for (let i = 0; i < this.components.length; ++i) {
@@ -1256,6 +1231,11 @@ class A320_Neo_FCU_LargeScreen extends NavSystemElement {
 }
 
 class A320_Neo_FCU_Pressure extends A320_Neo_FCU_Component {
+    constructor() {
+        super(...arguments);
+        this.init();
+        this.update(0);
+    }
     init() {
         this.selectedElem = this.getDivElement("Selected");
         this.standardElem = this.getDivElement("Standard");
@@ -1328,8 +1308,6 @@ class A320_Neo_FCU_SmallScreen extends NavSystemElement {
         if (this.pressure) {
             this.pressure.reboot();
         }
-    }
-    onFlightStart() {
     }
 }
 
