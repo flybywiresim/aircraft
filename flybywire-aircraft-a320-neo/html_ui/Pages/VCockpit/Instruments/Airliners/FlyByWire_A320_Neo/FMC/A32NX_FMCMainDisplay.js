@@ -1438,6 +1438,7 @@ class FMCMainDisplay extends BaseAirliners {
                     if (airportTo) {
                         this.eraseTemporaryFlightPlan(() => {
                             this.flightPlanManager.clearFlightPlan(() => {
+                                this.tempFpPendingAutoTune = true;
                                 this.flightPlanManager.setOrigin(airportFrom.icao, () => {
                                     this.tmpOrigin = airportFrom.ident;
                                     this.flightPlanManager.setDestination(airportTo.icao, () => {
