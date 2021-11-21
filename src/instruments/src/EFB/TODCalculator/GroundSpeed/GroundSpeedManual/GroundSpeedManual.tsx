@@ -57,10 +57,7 @@ const GroundSpeedManual = ({ groundSpeed, addTodGroundSpeed, removeTodGroundSpee
             <Button
                 text="SYNC"
                 type={BUTTON_TYPE.BLUE_OUTLINE}
-                onClick={() => {
-                    setTodGroundSpeedMode(TOD_INPUT_MODE.AUTO);
-                    Coherent.trigger('UNFOCUS_INPUT_FIELD');
-                }}
+                onClick={() => setTodGroundSpeedMode(TOD_INPUT_MODE.AUTO)}
             />
         </div>
     </div>

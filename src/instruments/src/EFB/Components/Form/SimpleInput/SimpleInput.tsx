@@ -105,6 +105,9 @@ const SimpleInput = (props: SimpleInputProps) => {
                 Coherent.trigger('UNFOCUS_INPUT_FIELD');
             }
         }
+        return () => {
+            Coherent.trigger('UNFOCUS_INPUT_FIELD');
+        };
     }, [focused]);
 
     return (

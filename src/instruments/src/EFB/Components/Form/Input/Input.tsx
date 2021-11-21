@@ -63,6 +63,9 @@ const Input = ({
         } else {
             Coherent.trigger('UNFOCUS_INPUT_FIELD');
         }
+        return () => {
+            Coherent.trigger('UNFOCUS_INPUT_FIELD');
+        };
     }, [propsValue, focusActive]);
 
     const emptyValue = value === '' || (isNumber(value) && Number.isNaN(value));
