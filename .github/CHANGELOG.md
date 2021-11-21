@@ -90,6 +90,8 @@
 1. [ECAM] Fixed gross weight being shown without engines running - @BlueberryKing (BlueberryKing)
 1. [FLIGHT MODEL] Fixes co-pilot not being shown in external view -  @donstim (donbikes#4084)
 1. [BLEED] Replace default bleed system - @BlueberryKing (BlueberryKing)
+1. [FM] Stored waypoints - @tracernz (Mike)
+1. [ATSU] Import lat/lon waypoints correctly from SimBrief - @tracernz (Mike)
 
 ## 0.7.0
 
