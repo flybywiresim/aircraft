@@ -5,6 +5,7 @@
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 ## 0.7.4
 1. [FBW] Intermediate support for aileron keyboard events - @aguther (Andreas Guther)
+1. [MODEL] Adjust heat effect on ENG1+2 - @bouveng (Johan Bouveng)
 
 ## 0.7.3
 
