@@ -1,7 +1,10 @@
-import {Feet, Latitude, Longitude} from "../../../types";
-
 declare global {
-    class LatLong {
+    class LatLongData {
+        lat: Latitude;
+        long: Longitude;
+    }
+
+    class LatLong extends LatLongData {
         constructor(latitude: Latitude, longitude: Longitude);
         constructor(data: { lat: Latitude, long: Longitude });
 
@@ -48,7 +51,9 @@ declare global {
         static fromStringFloat(str: string): LatLong | LatLongAlt | null;
     }
 
-    class LatLongAlt {
+    class LatLongAlt implements LatLong {
+        constructor();
+        constructor(latitude: Latitude, longitude: Longitude);
         constructor(latitude: Latitude, longitude: Longitude, alt: Feet);
         constructor(data: { lat: Latitude, long: Longitude, alt: Feet });
 

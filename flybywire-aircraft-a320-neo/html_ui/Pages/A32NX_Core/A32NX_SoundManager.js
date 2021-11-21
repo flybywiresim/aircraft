@@ -54,7 +54,7 @@ class A32NX_SoundManager {
             this.playingSound = sound;
             this.playingSoundRemaining = sound.length;
 
-            Coherent.call("PLAY_INSTRUMENT_SOUND", sound.name);
+            Coherent.call("PLAY_INSTRUMENT_SOUND", sound.name).catch(console.error);
             return true;
         }
         return false;
