@@ -134,6 +134,9 @@ AutopilotStateMachineModelClass::Parameters_AutopilotStateMachine_T AutopilotSta
       false,
       false,
       false,
+      0.0,
+      fm_requested_vertical_mode_NONE,
+      0.0,
       0.0
     },
 

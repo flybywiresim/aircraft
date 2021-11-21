@@ -48,8 +48,8 @@ class NavSystem extends BaseInstrument {
         this.contextualMenuElements = this.getChildById("ContextualMenuElements");
         this.menuSlider = this.getChildById("SliderMenu");
         this.menuSliderCursor = this.getChildById("SliderMenuCursor");
-        this.currFlightPlanManager = new FlightPlanManager(this);
-        this.currFlightPlan = new FlightPlan(this, this.currFlightPlanManager);
+        this.currFlightPlanManager = new Fmgc.FlightPlanManager(this);
+        this.currFlightPlan = new Fmgc.ManagedFlightPlan();
     }
     disconnectedCallback() {
         super.disconnectedCallback();
@@ -400,7 +400,9 @@ class NavSystem extends BaseInstrument {
                 this.currentContextualMenu.Update(this, this.menuMaxElems);
                 break;
         }
-        this.onUpdate(this.accumulatedDeltaTime);
+        try {
+            this.onUpdate(this.accumulatedDeltaTime);
+        } catch (e) {}
         const t = performance.now() - t0;
         NavSystem.maxTimeUpdateAllTime = Math.max(t, NavSystem.maxTimeUpdateAllTime);
         NavSystem.maxTimeUpdate = Math.max(t, NavSystem.maxTimeUpdate);
