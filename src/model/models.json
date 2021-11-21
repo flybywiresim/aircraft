@@ -78,6 +78,10 @@
       {
         "gltf": "./mcdu-annunc/mcdu-annunc.gltf",
         "bin": "./mcdu-annunc/mcdu-annunc.bin"
+      },
+      {
+        "gltf": "./inop/inop.gltf",
+        "bin": "./inop/inop.bin"
       }
     ],
     "modifications": [
