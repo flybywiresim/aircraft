@@ -201,10 +201,11 @@ export const AirspeedIndicatorOfftape = ({ airspeed, targetSpeed, speedIsManaged
 
     const clampedSpeed = Math.max(Math.min(airspeed, 660), 30);
     const clampedTargetSpeed = Math.max(Math.min(targetSpeed, 660), 30);
+    const showLower = clampedSpeed > 72;
     return (
         <g id="SpeedOfftapeGroup">
             <path id="SpeedTapeOutlineUpper" className="NormalStroke White" d="m1.9058 38.086h21.859" />
-            <path id="SpeedTapeOutlineLower" className="NormalStroke White" d="m1.9058 123.56h21.859" />
+            {showLower ? <path id="SpeedTapeOutlineLower" className="NormalStroke White" d="m1.9058 123.56h21.859" /> : null}
             <SpeedTarget airspeed={clampedSpeed} targetSpeed={clampedTargetSpeed} isManaged={speedIsManaged} />
             <path className="Fill Yellow SmallOutline" d="m13.994 80.46v0.7257h6.5478l3.1228 1.1491v-3.0238l-3.1228 1.1491z" />
             <path className="Fill Yellow SmallOutline" d="m0.092604 81.185v-0.7257h2.0147v0.7257z" />
@@ -231,7 +232,7 @@ const SpeedTarget = ({ airspeed, targetSpeed, isManaged }) => {
 };
 
 const SpeedTapeOutline = ({ airspeed, isRed = false }) => {
-    const length = Math.max(Math.min(airspeed, 72), 30) * 1.01754 + 12.2104;
+    const length = 42.9 + Math.max(Math.max(Math.min(airspeed, 72.1), 30) - 30, 0);
     const className = isRed ? 'NormalStroke Red' : 'NormalStroke White';
 
     return (
