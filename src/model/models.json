@@ -30917,6 +30917,20 @@
         ]
       },
       {
+        "node": "fx_exhaust_left",
+        "mods": {
+          "translation": [-3.045, 0.000683486462, -0.0133237839],
+          "scale": [0.5, 0.5, 0.5]
+        }
+      },
+      {
+        "node": "fx_exhaust_right",
+        "mods": {
+          "translation": [0.0284314156,1.00650072,0],
+          "scale": [0.5, 0.5, 0.5]
+        }
+      },
+      {
         "accessors": [
           "x0_LIVERY_OFFICIAL_WINGL_vertices#0_TEXCOORD_0",
           "x0_LIVERY_OFFICIAL_WINGL_vertices#0_TEXCOORD_1"
