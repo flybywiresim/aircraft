@@ -29,6 +29,7 @@ import { GPS } from './GPS';
 import { FlightPlanSegment } from './FlightPlanSegment';
 import { FlightPlanAsoboSync } from './FlightPlanAsoboSync';
 import { FixInfo } from './FixInfo';
+import { OneWayRunway } from '@fmgc/types/fstypes/FSTypes';
 
 export enum WaypointConstraintType {
     CLB = 1,
@@ -262,24 +263,47 @@ export class FlightPlanManager {
         callback();
     }
 
+    /** Reverse lookup a runway index for the current flight plan using provided information
+     * Gets the runway information from a given runway name.
+     * @param runways The collection of runways to search.
+     * @param runwayName The runway name.
+     * @returns The found runway, if any.
+     */
+    public getRunwayIndex(runways: OneWayRunway[], runwayName: string): number {
+        if (runways.length > 0) {
+            let runwayIndex;
+            const match = runwayName.match(/^(RW)?([0-9]{1,2})([LCRT ])?$/);
+            if (match === null) {
+                return -1;
+            }
+            const runwayLetter = match[3] ?? ' ';
+            if (runwayLetter === ' ' || runwayLetter === 'C') {
+                const runwayDirection = runwayName.trim();
+                runwayIndex = runways.findIndex((r) =>
+                r.designation === runwayDirection
+                || r.designation === `${runwayDirection}C`
+                || `RW${r.designation}` === runwayDirection
+                || `RW${r.designation}` === `${runwayDirection}C`);
+            } else {
+                runwayIndex = runways.findIndex((r) => r.designation === runwayName || `RW${r.designation}` === runwayName);
+            }
+
+            return runwayIndex;
+        }
+    }
+
     /**
      * Gets the origin of the currently active flight plan.
      */
-    public getOrigin(flightPlanIndex = NaN): WayPoint | undefined {
-        if (isNaN(flightPlanIndex)) {
-            flightPlanIndex = this._currentFlightPlanIndex;
-        }
-
-        const currentFlightPlan = this._flightPlans[flightPlanIndex];
-        return currentFlightPlan.originAirfield;
+    public getOrigin(): WayPoint | undefined {
+        return this._flightPlans[this._currentFlightPlanIndex].originAirfield;
     }
 
     /**
      * Gets the origin of the currently active flight plan, even after it has been cleared for a direct-to.
      */
     public getPersistentOrigin(): WayPoint | undefined {
-        const currentFlightPlan = this._flightPlans[this._currentFlightPlanIndex];
-        return currentFlightPlan.persistentOriginAirfield;
+        return  this._flightPlans[this._currentFlightPlanIndex].persistentOriginAirfield;
     }
 
     /**
@@ -497,13 +521,8 @@ export class FlightPlanManager {
     /**
      * Gets the destination airfield of the current flight plan, if any.
      */
-    public getDestination(flightPlanIndex = NaN): WayPoint | undefined {
-        if (isNaN(flightPlanIndex)) {
-            flightPlanIndex = this._currentFlightPlanIndex;
-        }
-
-        const currentFlightPlan = this._flightPlans[flightPlanIndex];
-        return currentFlightPlan.destinationAirfield;
+    public getDestination(): WayPoint | undefined {
+        return this._flightPlans[this._currentFlightPlanIndex].destinationAirfield;
     }
 
     /**
@@ -511,9 +530,9 @@ export class FlightPlanManager {
      * @param flightPlanIndex flight plan index
      * @returns Index of destination
      */
-    public getDestinationIndex(flightPlanIndex = NaN): number {
-        if (this.getDestination(flightPlanIndex)) {
-            return this.getWaypointsCount(flightPlanIndex) - 1;
+    public getDestinationIndex(): number {
+        if (this.getDestination()) {
+            return this.getWaypointsCount() - 1;
         }
         return -1;
     }
@@ -1028,7 +1047,7 @@ export class FlightPlanManager {
     }
 
     /**
-     * Gets the index of the departure runway in the current flight plan.
+     * Gets the departure runway index, based on the departure in a flight plan.
      */
     public getDepartureRunwayIndex(): number {
         const currentFlightPlan = this._flightPlans[this._currentFlightPlanIndex];
@@ -1040,37 +1059,25 @@ export class FlightPlanManager {
     }
 
     /**
+     * Gets the index value of the origin runway (oneWayRunways) in a flight plan.
+     */
+     public getOriginRunwayIndex(): number {
+        const currentFlightPlan = this._flightPlans[this._currentFlightPlanIndex];
+
+        if (currentFlightPlan.procedureDetails.originRunwayIndex !== -1 && currentFlightPlan.originAirfield) {
+            return currentFlightPlan.procedureDetails.originRunwayIndex;
+        }
+        return -1;
+    }
+
+    /**
      * Gets the string value of the departure runway in the current flight plan.
      */
-    public getDepartureRunway(flightPlanIndex = NaN): OneWayRunway {
-        if (isNaN(flightPlanIndex)) {
-            flightPlanIndex = this._currentFlightPlanIndex;
+    public getOriginRunway(): OneWayRunway {
+        const runwayIndex = this.getOriginRunwayIndex();
+        if (runwayIndex !== -1) {
+            return this.getOrigin().infos.oneWayRunways[runwayIndex];
         }
-        const currentFlightPlan = this._flightPlans[flightPlanIndex];
-
-        if (currentFlightPlan.hasOrigin
-            && currentFlightPlan.procedureDetails.departureRunwayIndex !== -1
-            && currentFlightPlan.procedureDetails.departureIndex !== -1
-            && currentFlightPlan.originAirfield
-        ) {
-            const depRunway = (currentFlightPlan.originAirfield.infos as AirportInfo)
-                .departures[currentFlightPlan.procedureDetails.departureIndex]
-                .runwayTransitions[currentFlightPlan.procedureDetails.departureRunwayIndex]
-                .name.replace('RW', '');
-
-            const runway = (currentFlightPlan.originAirfield.infos as AirportInfo).oneWayRunways
-                .find((r) => r.designation.indexOf(depRunway) !== -1);
-
-            if (runway) {
-                return runway;
-            }
-
-            return undefined;
-        }
-        if (currentFlightPlan.procedureDetails.originRunwayIndex !== -1 && currentFlightPlan.originAirfield) {
-            return (currentFlightPlan.originAirfield.infos as AirportInfo).oneWayRunways[currentFlightPlan.procedureDetails.originRunwayIndex];
-        }
-
         return undefined;
     }
 
@@ -1161,6 +1168,22 @@ export class FlightPlanManager {
         }
 
         callback();
+    }
+
+    public async setOriginRunwayIndexFromDeparture() {
+        const currentFlightPlan = this._flightPlans[this._currentFlightPlanIndex];
+
+        if (currentFlightPlan.hasOrigin
+            && currentFlightPlan.procedureDetails.departureRunwayIndex !== -1
+            && currentFlightPlan.procedureDetails.departureIndex !== -1
+            && currentFlightPlan.originAirfield
+        ) {
+            const originRunwayName = (currentFlightPlan.originAirfield.infos as AirportInfo)
+                .departures[currentFlightPlan.procedureDetails.departureIndex]
+                .runwayTransitions[currentFlightPlan.procedureDetails.departureRunwayIndex]
+                .name.replace('RW', '');
+            await this.setOriginRunwayIndex(this.getRunwayIndex((currentFlightPlan.originAirfield.infos as AirportInfo).oneWayRunways, originRunwayName));
+        }
     }
 
     /**
@@ -1361,11 +1384,24 @@ export class FlightPlanManager {
     }
 
     /**
+     * Sets the destination runway index using the current selected approach
+     */
+    public async setDestinationRunwayIndexFromApproach() {
+        const currentFlightPlan = this._flightPlans[this._currentFlightPlanIndex];
+
+        if (currentFlightPlan.hasDestination && currentFlightPlan.procedureDetails.approachIndex !== -1) {
+            console.error(`Destination runway index is -1 with valid STAR`);
+            const approachRunwayName = (currentFlightPlan.destinationAirfield.infos as AirportInfo).approaches[currentFlightPlan.procedureDetails.approachIndex].runway;
+
+            await this.setDestinationRunwayIndex(this.getRunwayIndex((currentFlightPlan.destinationAirfield.infos as AirportInfo).oneWayRunways, approachRunwayName));
+        }
+    }
+
+    /**
      * Gets the index of the approach in the currently active flight plan.
      */
     public getApproachIndex(): number {
-        const currentFlightPlan = this._flightPlans[this._currentFlightPlanIndex];
-        return currentFlightPlan.procedureDetails.approachIndex;
+        return this._flightPlans[this._currentFlightPlanIndex].procedureDetails.approachIndex;
     }
 
     /**
@@ -1499,24 +1535,36 @@ export class FlightPlanManager {
     }
 
     /**
-     * Gets the approach runway from the current flight plan.
+     * Gets the destination runway from the current flight plan.
      */
-    public getApproachRunway(flightPlanIndex = NaN): OneWayRunway {
-        if (isNaN(flightPlanIndex)) {
-            flightPlanIndex = this._currentFlightPlanIndex;
-        }
+    public getDestinationRunway(): OneWayRunway {
+        const currentFlightPlan = this._flightPlans[this._currentFlightPlanIndex];
 
-        const currentFlightPlan = this._flightPlans[flightPlanIndex];
+        const runwayIndex = this.getDestinationRunwayIndex();
+        if (runwayIndex !== -1) {
+            return (currentFlightPlan.destinationAirfield.infos as AirportInfo).oneWayRunways[runwayIndex];
+        }
+        return undefined;
+    }
+
+    /**
+     * Gets the destination runway index (oneWayRunways) from the current flight plan.
+     */
+    public getDestinationRunwayIndex(): number {
+        const currentFlightPlan = this._flightPlans[this._currentFlightPlanIndex];
+
+        if (currentFlightPlan.procedureDetails.destinationRunwayIndex !== -1 && currentFlightPlan.destinationAirfield) {
+            return currentFlightPlan.procedureDetails.destinationRunwayIndex;
+        }
 
         if (currentFlightPlan.hasDestination && currentFlightPlan.procedureDetails.approachIndex !== -1) {
-            const destination = currentFlightPlan.waypoints[currentFlightPlan.waypoints.length - 1];
-            const approachRunwayName = (destination.infos as AirportInfo).approaches[currentFlightPlan.procedureDetails.approachIndex].runway;
+            console.error(`Destination runway index is -1 with valid STAR`);
+            const approachRunwayName = (currentFlightPlan.destinationAirfield.infos as AirportInfo).approaches[currentFlightPlan.procedureDetails.approachIndex].runway;
 
-            const runway = currentFlightPlan.getRunway((destination.infos as AirportInfo).oneWayRunways, approachRunwayName);
-            return runway;
+            return this.getRunwayIndex((currentFlightPlan.destinationAirfield.infos as AirportInfo).oneWayRunways, approachRunwayName);
+
         }
-
-        return undefined;
+        return -1;
     }
 
     /**

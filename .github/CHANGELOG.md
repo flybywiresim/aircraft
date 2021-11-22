@@ -70,6 +70,8 @@
 1. [AP] Added support for events AP_MACH_INC/DEC and AP_ALT_INC/DEC - @aguther (Andreas Guther)
 1. [SOUND] Added ALT increment selector and fixed ISIS sounds - @ImenesFBW (Imenes)
 1. [AP] Added support for other default events to basically push/pull all FCU buttons - @aguther (Andreas Guther)
+1. [MCDU] Fix backlight, brightness - @tracernz (Mike)
+1. [MODEL] Adjust heat effect on ENG1+2 - @bouveng (Johan Bouveng)
 1. [FM] Fetch transition alt and level from SimBrief - @tracernz (Mike)
 
 ## 0.7.0

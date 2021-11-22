@@ -6,7 +6,7 @@ class CDUAvailableDeparturesPage {
             mcdu.page.Current = mcdu.page.AvailableDeparturesPage;
             let selectedRunwayCell = "---";
             let selectedRunwayCellColor = "white";
-            const selectedRunway = mcdu.flightPlanManager.getDepartureRunway();
+            const selectedRunway = mcdu.flightPlanManager.getOriginRunway();
             if (selectedRunway) {
                 selectedRunwayCell = Avionics.Utils.formatRunway(selectedRunway.designation);
                 selectedRunwayCellColor = mcdu.flightPlanManager.getCurrentFlightPlanIndex() === 1 ? "yellow" : "green";
