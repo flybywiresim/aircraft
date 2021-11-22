@@ -6,6 +6,13 @@
 
 using namespace std;
 
+// remove when aileron events can be processed via SimConnect
+bool SimConnectInterface::loggingFlightControlsEnabled = false;
+// remove when aileron events can be processed via SimConnect
+SimInput SimConnectInterface::simInput = {};
+// remove when aileron events can be processed via SimConnect
+double SimConnectInterface::flightControlsKeyChangeAileron = 0.0;
+
 bool SimConnectInterface::connect(bool clientDataEnabled,
                                   bool autopilotStateMachineEnabled,
                                   bool autopilotLawsEnabled,
@@ -71,6 +78,9 @@ bool SimConnectInterface::connect(bool clientDataEnabled,
       // failed to connect
       return false;
     }
+    // register key event handler
+    // remove when aileron events can be processed via SimConnect
+    register_key_event_handler(static_cast<GAUGE_KEY_EVENT_HANDLER>(processKeyEvent), NULL);
     // send initial event to FCU to force HDG mode
     execute_calculator_code("(>H:A320_Neo_FCU_HDG_PULL)", nullptr, nullptr, nullptr);
     // success
@@ -82,6 +92,9 @@ bool SimConnectInterface::connect(bool clientDataEnabled,
 
 void SimConnectInterface::disconnect() {
   if (isConnected) {
+    // unregister key event handler
+    // remove when aileron events can be processed via SimConnect
+    unregister_key_event_handler(static_cast<GAUGE_KEY_EVENT_HANDLER>(processKeyEvent), NULL);
     // info message
     cout << "WASM: Disconnecting..." << endl;
     // close connection
@@ -973,6 +986,37 @@ void SimConnectInterface::setLoggingThrottlesEnabled(bool enabled) {
 
 bool SimConnectInterface::getLoggingThrottlesEnabled() {
   return loggingThrottlesEnabled;
+}
+
+// remove when aileron events can be processed via SimConnect (which also allows to mask the events)
+void SimConnectInterface::processKeyEvent(ID32 event, UINT32 evdata, PVOID userdata) {
+  switch (event) {
+    case KEY_AILERON_LEFT: {
+      simInput.inputs[AXIS_AILERONS_SET] = fmin(1.0, simInput.inputs[AXIS_AILERONS_SET] + flightControlsKeyChangeAileron);
+      if (loggingFlightControlsEnabled) {
+        cout << "WASM: AILERONS_LEFT: ";
+        cout << "(no data)";
+        cout << " -> ";
+        cout << simInput.inputs[AXIS_AILERONS_SET];
+        cout << endl;
+      }
+      break;
+    }
+    case KEY_AILERON_RIGHT: {
+      simInput.inputs[AXIS_AILERONS_SET] = fmax(-1.0, simInput.inputs[AXIS_AILERONS_SET] - flightControlsKeyChangeAileron);
+      if (loggingFlightControlsEnabled) {
+        cout << "WASM: AILERONS_RIGHT: ";
+        cout << "(no data)";
+        cout << " -> ";
+        cout << simInput.inputs[AXIS_AILERONS_SET];
+        cout << endl;
+      }
+      break;
+    }
+    default: {
+      return;
+    }
+  }
 }
 
 void SimConnectInterface::simConnectProcessDispatchMessage(SIMCONNECT_RECV* pData, DWORD* cbData) {
