@@ -162,6 +162,9 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idFlightGuidanceCrossTrackError;
   std::unique_ptr<LocalVariable> idFlightGuidanceTrackAngleError;
   std::unique_ptr<LocalVariable> idFlightGuidancePhiCommand;
+  std::unique_ptr<LocalVariable> idFlightGuidanceRequestedVerticalMode;
+  std::unique_ptr<LocalVariable> idFlightGuidanceTargetAltitude;
+  std::unique_ptr<LocalVariable> idFlightGuidanceTargetVerticalSpeed;
 
   std::unique_ptr<LocalVariable> idFwcFlightPhase;
   std::unique_ptr<LocalVariable> idFmgcFlightPhase;
@@ -191,6 +194,11 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idAutothrustReverse_2;
   std::unique_ptr<LocalVariable> idAutothrustThrustLimitType;
   std::unique_ptr<LocalVariable> idAutothrustThrustLimit;
+  std::unique_ptr<LocalVariable> idAutothrustThrustLimitIDLE;
+  std::unique_ptr<LocalVariable> idAutothrustThrustLimitCLB;
+  std::unique_ptr<LocalVariable> idAutothrustThrustLimitMCT;
+  std::unique_ptr<LocalVariable> idAutothrustThrustLimitFLX;
+  std::unique_ptr<LocalVariable> idAutothrustThrustLimitTOGA;
   std::unique_ptr<LocalVariable> idAutothrustN1_c_1;
   std::unique_ptr<LocalVariable> idAutothrustN1_c_2;
   std::unique_ptr<LocalVariable> idAutothrustStatus;

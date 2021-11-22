@@ -66,7 +66,13 @@
 1. [AP] Added support for event AUTOPILOT_DISENGAGE_SET to disengage AP - @aguther (Andreas Guther)
 1. [AP] Reduced speed margin of speed protection to 5 kn - @aguther (Andreas Guther)
 1. [MODEL] Removed glass due to issues with brightness in clouds since SU6 - @aguther (Andreas Guther)
+1. [FBW] Reduced rotation law maximum pitch rate from 12°/s to 8°/s - @aguther (Andreas Guther)
+1. [AP] Added support for events AP_MACH_INC/DEC and AP_ALT_INC/DEC - @aguther (Andreas Guther)
 1. [SOUND] Added ALT increment selector and fixed ISIS sounds - @ImenesFBW (Imenes)
+1. [AP] Added support for other default events to basically push/pull all FCU buttons - @aguther (Andreas Guther)
+1. [MCDU] Fix backlight, brightness - @tracernz (Mike)
+1. [MODEL] Adjust heat effect on ENG1+2 - @bouveng (Johan Bouveng)
+1. [PFD] Fixed speed tape outline at low speeds - @beheh (Benedict Etzel)
 
 ## 0.7.0
 

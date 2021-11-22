@@ -1,0 +1,122 @@
+<ModelBehaviors>
+    <Template Name="FBW_AIRBUS_Push_ILS_Template">
+        <DefaultTemplateParameters>
+            <ID>1</ID><!-- TODO factor out ID with condition on SIDE -->
+            <BASE_NAME>LS</BASE_NAME>
+        </DefaultTemplateParameters>
+
+        <UseTemplate Name="A32NX_GlassCockpit_Push_Template">
+            <PART_ID>LS_Button</PART_ID>
+            <BTN_ID>LS_#ID#</BTN_ID>
+            <BTN_TOOLTIP_ID>LS</BTN_TOOLTIP_ID>
+            <PLANE_PREFIX>A320_Neo</PLANE_PREFIX>
+        </UseTemplate>
+
+        <UseTemplate Name="FBW_AIRBUS_Push_EFIS_Button_Template">
+            <INDICATOR_CODE type="rnp" return="boolean">
+                (L:BTN_LS_#ID#_FILTER_ACTIVE, boolean)
+            </INDICATOR_CODE>
+            <BUTTON_CODE type="rnp">
+                (H:A320_Neo_PFD_BTN_LS_#ID#, boolean) = true;
+            </BUTTON_CODE>
+        </UseTemplate>
+    </Template>
+
+    <Template Name="A32NX_AUTOPILOT_Push_FlightDirector_Template">
+        <DefaultTemplateParameters>
+            <ID>1</ID><!-- TODO factor out ID with condition on SIDE -->
+            <BASE_NAME>FD</BASE_NAME>
+            <HELPID>HELPID_AUTOPILOT_FLIGHT_DIRECTOR_SWITCH</HELPID>
+            <TOOLTIPID>%((A:AUTOPILOT FLIGHT DIRECTOR ACTIVE:#ID#, bool))%{if}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_FD_ON%{else}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_FD_OFF%{end}</TOOLTIPID>
+            <ANIM_CODE>(A:AUTOPILOT FLIGHT DIRECTOR ACTIVE:#ID#, Bool) 100 *</ANIM_CODE>
+        </DefaultTemplateParameters>
+
+        <UseTemplate Name="FBW_AIRBUS_Push_EFIS_Button_Template">
+            <INDICATOR_CODE type="rnp" return="boolean">
+                (A:AUTOPILOT FLIGHT DIRECTOR ACTIVE:#ID#, boolean)
+            </INDICATOR_CODE>
+            <BUTTON_CODE type="rnp">
+                (K:TOGGLE_FLIGHT_DIRECTOR, number) = #ID, number#;
+            </BUTTON_CODE>
+        </UseTemplate>
+    </Template>
+
+    <Template Name="FBW_AIRBUS_Push_EFIS_Option">
+        <DefaultTemplateParameters>
+            <OPTION_ID>0</OPTION_ID>
+            <TOOLTIPID>#BASE_NAME#</TOOLTIPID>
+        </DefaultTemplateParameters>
+
+        <UseTemplate Name="FBW_AIRBUS_Push_EFIS_Button_Template">
+            <INDICATOR_CODE type="rnp" return="boolean">
+                let optionId = #OPTION_ID, number#;
+                alias selectedOption = (L:A32NX_EFIS_#SIDE#_OPTION, enum);
+                optionId == selectedOption
+            </INDICATOR_CODE>
+            <BUTTON_CODE type="rnp">
+                alias selectedOption = (L:A32NX_EFIS_#SIDE#_OPTION, enum);
+                if selectedOption == #OPTION_ID, number# {
+                    selectedOption = 0;
+                } else {
+                    selectedOption = #OPTION_ID, number#;
+                }
+            </BUTTON_CODE>
+        </UseTemplate>
+    </Template>
+
+    <Template Name="FBW_AIRBUS_Push_EFIS_Button_Template">
+        <DefaultTemplateParameters>
+            <SIDE>L</SIDE>
+            <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+            <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+            <ANIM_NAME>PUSH_AUTOPILOT_#BASE_NAME#_#SIDE#</ANIM_NAME>
+            <NODE_ID>PUSH_AUTOPILOT_#BASE_NAME#_#SIDE#</NODE_ID>
+            <INDICATOR_CODE>0</INDICATOR_CODE>
+            <INDICATOR_NODE_ID>PUSH_AUTOPILOT_#BASE_NAME#_#SIDE#_SEQ1</INDICATOR_NODE_ID>
+            <BACKLIGHT_NODE_ID>PUSH_AUTOPILOT_#BASE_NAME#_#SIDE#_SEQ2</BACKLIGHT_NODE_ID>
+            <INDICATOR_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</INDICATOR_POWERED>
+            <BACKLIGHT_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</BACKLIGHT_POWERED>
+            <BACKLIGHT_POTENTIOMETER>84</BACKLIGHT_POTENTIOMETER>
+            <BUTTON_CODE></BUTTON_CODE>
+            <WWISE_EVENT_1>fcubutton</WWISE_EVENT_1>
+            <WWISE_EVENT_2>fcubutton</WWISE_EVENT_2>
+            <TOOLTIPID>#BASE_NAME#</TOOLTIPID>
+        </DefaultTemplateParameters>
+
+        <Component ID="#NODE_ID#" Node="#NODE_ID#">
+            <Component ID="#NODE_ID#_BUTTON" Node="#NODE_ID#">
+                <UseTemplate Name="ASOBO_GT_Push_Button">
+                    <LEFT_SINGLE_CODE type="rnp">
+                        if #INDICATOR_POWERED, bool# {
+                            #BUTTON_CODE#;
+                        }
+                    </LEFT_SINGLE_CODE>
+                </UseTemplate>
+            </Component>
+
+            <Component ID="#INDICATOR_NODE_ID#" Node="#INDICATOR_NODE_ID#">
+                <UseTemplate Name="ASOBO_GT_Emissive_Gauge">
+                    <EMISSIVE_CODE type="rnp" return="number">
+                        let indicatorActive = #INDICATOR_CODE, bool#;
+                        let indicatorsPowered = #INDICATOR_POWERED, bool#;
+                        alias annunciatorLight = (L:A32NX_OVHD_INTLT_ANN, number);
+                        let emissiveDim = if annunciatorLight == 2 { 0.1 } else { 1 };
+                        (if (indicatorActive or annunciatorLight == 0) and indicatorsPowered {
+                            1 * emissiveDim
+                        } else {
+                            0
+                        })
+                    </EMISSIVE_CODE>
+                </UseTemplate>
+            </Component>
+
+            <Component ID="#BACKLIGHT_NODE_ID#" Node="#BACKLIGHT_NODE_ID#">
+                <UseTemplate Name="ASOBO_GT_Emissive_Gauge">
+                    <EMISSIVE_CODE>
+                        (A:LIGHT POTENTIOMETER:#BACKLIGHT_POTENTIOMETER#, Percent over 100) #BACKLIGHT_POWERED# *
+                    </EMISSIVE_CODE>
+                </UseTemplate>
+            </Component>
+        </Component>
+    </Template>
+</ModelBehaviors>

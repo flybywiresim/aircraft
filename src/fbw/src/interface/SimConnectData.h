@@ -290,6 +290,9 @@ struct ClientDataLocalVariables {
   double flightManagementCrossTrackError;
   double flightManagementTrackAngleError;
   double flightManagementPhiCommand;
+  unsigned long long flightManagementRequestedVerticalMode;
+  double flightManagement_H_c_ft;
+  double flightManagement_H_dot_c_fpm;
   double is_SPEED_managed;
   double locPhiCommand;
 };
