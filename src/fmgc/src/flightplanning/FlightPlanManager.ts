@@ -29,7 +29,6 @@ import { GPS } from './GPS';
 import { FlightPlanSegment } from './FlightPlanSegment';
 import { FlightPlanAsoboSync } from './FlightPlanAsoboSync';
 import { FixInfo } from './FixInfo';
-import { OneWayRunway } from '@fmgc/types/fstypes/FSTypes';
 
 export enum WaypointConstraintType {
     CLB = 1,
