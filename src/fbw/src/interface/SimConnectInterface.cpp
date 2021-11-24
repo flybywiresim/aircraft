@@ -25,6 +25,7 @@ bool SimConnectInterface::connect(bool clientDataEnabled,
                                   double keyChangeElevator,
                                   double keyChangeRudder,
                                   bool disableXboxCompatibilityRudderPlusMinus,
+                                  double minSimulationRate,
                                   double maxSimulationRate,
                                   bool limitSimulationRateByPerformance) {
   // info message
@@ -46,6 +47,7 @@ bool SimConnectInterface::connect(bool clientDataEnabled,
     // store rudder trim handler
     this->rudderTrimHandler = rudderTrimHandler;
     // store maximum allowed simulation rate
+    this->minSimulationRate = minSimulationRate;
     this->maxSimulationRate = maxSimulationRate;
     this->limitSimulationRateByPerformance = limitSimulationRateByPerformance;
     // store is client data is enabled
@@ -107,6 +109,11 @@ void SimConnectInterface::disconnect() {
 
 void SimConnectInterface::setSampleTime(double sampleTime) {
   this->sampleTime = sampleTime;
+}
+
+void SimConnectInterface::updateSimulationRateLimits(double minSimulationRate, double maxSimulationRate) {
+  this->minSimulationRate = minSimulationRate;
+  this->maxSimulationRate = maxSimulationRate;
 }
 
 bool SimConnectInterface::prepareSimDataSimConnectDataDefinitions() {
@@ -2318,7 +2325,7 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
     }
 
     case Events::SIM_RATE_DECR: {
-      if (simData.simulation_rate > 1) {
+      if (simData.simulation_rate > minSimulationRate) {
         sendEvent(Events::SIM_RATE_DECR, 0, SIMCONNECT_GROUP_PRIORITY_DEFAULT);
         cout << "WASM: Simulation rate " << simData.simulation_rate;
         cout << " -> " << simData.simulation_rate / 2;

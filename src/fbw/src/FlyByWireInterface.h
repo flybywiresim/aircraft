@@ -40,7 +40,6 @@ class FlyByWireInterface {
   int currentApproachCapability = 0;
   double previousApproachCapabilityUpdateTime = 0;
 
-  double maxSimulationRate = 4;
   bool simulationRateReductionEnabled = true;
   bool limitSimulationRateByPerformance = true;
 
@@ -105,6 +104,9 @@ class FlyByWireInterface {
 
   std::unique_ptr<LocalVariable> idLoggingFlightControlsEnabled;
   std::unique_ptr<LocalVariable> idLoggingThrottlesEnabled;
+
+  std::unique_ptr<LocalVariable> idMinimumSimulationRate;
+  std::unique_ptr<LocalVariable> idMaximumSimulationRate;
 
   std::unique_ptr<LocalVariable> idPerformanceWarningActive;
 
