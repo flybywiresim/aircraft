@@ -3564,7 +3564,10 @@
                 <BUS_BOTTOM>AC_ESS_SHED</BUS_BOTTOM>
             </UseTemplate>
 
-            <UseTemplate Name="FBW_AUTOPILOT_Push_SpeedToggle_Template">
+            <!-- FCU SPD MACH -->
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>BUTTON</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_AUTOPILOT_Push_SpeedToggle_Template</ANIM_TEMPLATE>
                 <NODE_ID>PUSH_AUTOPILOT_SPDMACH_L</NODE_ID>
                 <ANIM_NAME>PUSH_AUTOPILOT_SPDMACH_L</ANIM_NAME>
                 <NO_INDICATOR>True</NO_INDICATOR>
@@ -3776,11 +3779,13 @@
                 <SIDE>L</SIDE>
             </DefaultTemplateParameters>
 
+            <!-- FCU BARO SELECT L-->
             <UseTemplate Name="FBW_AIRLINER_Switch_Baro_Selector_Template">
                 <NODE_ID>KNOB_AUTOPILOT_SELECTOR_L1</NODE_ID>
                 <ANIM_NAME>KNOB_AUTOPILOT_SELECTOR_L1</ANIM_NAME>
             </UseTemplate>
 
+            <!-- FCU BARO KNOB L -->
             <UseTemplate Name="FBW_Airbus_FCU_Baro_Knob">
                 <NODE_ID>KNOB_AUTOPILOT_KNOB1_L</NODE_ID>
                 <ANIM_NAME_KNOB>KNOB_AUTOPILOT_KNOB1_L</ANIM_NAME_KNOB>
@@ -3788,17 +3793,26 @@
                 <AIRLINER_TYPE>A320</AIRLINER_TYPE>
             </UseTemplate>
 
-            <UseTemplate Name="A32NX_AUTOPILOT_Push_FlightDirector_Template">
+            <!-- FCU FD -->
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>BUTTON</ANIM_TYPE>
+                <ANIM_TEMPLATE>A32NX_AUTOPILOT_Push_FlightDirector_Template</ANIM_TEMPLATE>
                 <SIDE>L</SIDE>
                 <ID>1</ID>
             </UseTemplate>
 
-            <UseTemplate Name="FBW_AIRBUS_Push_ILS_Template">
+            <!-- FCU LS -->
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>BUTTON</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_AIRBUS_Push_ILS_Template</ANIM_TEMPLATE>
                 <SIDE>L</SIDE>
                 <ID>1</ID>
             </UseTemplate>
 
-            <UseTemplate Name="FBW_AIRLINER_Knob_ND_Template">
+            <!-- FCU ND ROSE -->
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>KNOB</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_AIRLINER_Knob_ND_Template</ANIM_TEMPLATE>
                 <TYPE>AIRBUS</TYPE>
                 <NODE_ID>KNOB_AUTOPILOT_ROSE_L</NODE_ID>
                 <PART_ID>KNOB_AUTOPILOT_ROSE_L</PART_ID>
@@ -3806,38 +3820,56 @@
                 <KNOB_POSITION_VAR>A32NX_EFIS_L_ND_MODE</KNOB_POSITION_VAR>
             </UseTemplate>
 
-            <UseTemplate Name="FBW_AIRLINER_Knob_ND_Range_Template">
+            <!-- FCU ND RANGE -->
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>KNOB</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_AIRLINER_Knob_ND_Range_Template</ANIM_TEMPLATE>
                 <TYPE>AIRBUS</TYPE>
                 <NODE_ID>KNOB_AUTOPILOT_L1</NODE_ID>
                 <ANIM_NAME>KNOB_AUTOPILOT_L1</ANIM_NAME>
                 <KNOB_POSITION_VAR>A32NX_EFIS_L_ND_RANGE</KNOB_POSITION_VAR>
             </UseTemplate>
 
-            <UseTemplate Name="FBW_AIRBUS_Push_EFIS_Option">
+            <!-- FCU CSTR L -->
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>BUTTON</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_AIRBUS_Push_EFIS_Option</ANIM_TEMPLATE>
                 <SIDE>L</SIDE>
                 <BASE_NAME>CSTR</BASE_NAME>
                 <OPTION_ID>1</OPTION_ID>
             </UseTemplate>
 
-            <UseTemplate Name="FBW_AIRBUS_Push_EFIS_Option">
+            <!-- FCU VOR D L -->
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>BUTTON</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_AIRBUS_Push_EFIS_Option</ANIM_TEMPLATE>
                 <SIDE>L</SIDE>
                 <BASE_NAME>VORD</BASE_NAME>
                 <OPTION_ID>2</OPTION_ID>
             </UseTemplate>
 
-            <UseTemplate Name="FBW_AIRBUS_Push_EFIS_Option">
+            <!-- FCU WPT L -->
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>BUTTON</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_AIRBUS_Push_EFIS_Option</ANIM_TEMPLATE>
                 <SIDE>L</SIDE>
                 <BASE_NAME>WPT</BASE_NAME>
                 <OPTION_ID>3</OPTION_ID>
             </UseTemplate>
 
-            <UseTemplate Name="FBW_AIRBUS_Push_EFIS_Option">
+            <!-- FCU NDB L -->
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>BUTTON</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_AIRBUS_Push_EFIS_Option</ANIM_TEMPLATE>
                 <SIDE>L</SIDE>
                 <BASE_NAME>NDB</BASE_NAME>
                 <OPTION_ID>4</OPTION_ID>
             </UseTemplate>
 
-            <UseTemplate Name="FBW_AIRBUS_Push_EFIS_Option">
+            <!-- FCU ARPT L -->
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>BUTTON</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_AIRBUS_Push_EFIS_Option</ANIM_TEMPLATE>
                 <SIDE>L</SIDE>
                 <BASE_NAME>ARPT</BASE_NAME>
                 <OPTION_ID>5</OPTION_ID>
@@ -3861,17 +3893,26 @@
                 <AIRLINER_TYPE>A320</AIRLINER_TYPE>
             </UseTemplate>
 
-            <UseTemplate Name="A32NX_AUTOPILOT_Push_FlightDirector_Template">
+            <!-- FCU FD R -->
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>BUTTON</ANIM_TYPE>
+                <ANIM_TEMPLATE>A32NX_AUTOPILOT_Push_FlightDirector_Template</ANIM_TEMPLATE>
                 <SIDE>R</SIDE>
                 <ID>2</ID>
             </UseTemplate>
 
-            <UseTemplate Name="FBW_AIRBUS_Push_ILS_Template">
+            <!-- FCU LS R -->
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>BUTTON</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_AIRBUS_Push_ILS_Template</ANIM_TEMPLATE>
                 <SIDE>R</SIDE>
                 <ID>2</ID>
             </UseTemplate>
 
-            <UseTemplate Name="FBW_AIRLINER_Knob_ND_Template">
+            <!-- FCU ND ROSE R -->
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>KNOB</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_AIRLINER_Knob_ND_Template</ANIM_TEMPLATE>
                 <TYPE>AIRBUS</TYPE>
                 <NODE_ID>KNOB_AUTOPILOT_ROSE_R</NODE_ID>
                 <PART_ID>KNOB_AUTOPILOT_ROSE_R</PART_ID>
@@ -3879,38 +3920,56 @@
                 <KNOB_POSITION_VAR>A32NX_EFIS_R_ND_MODE</KNOB_POSITION_VAR>
             </UseTemplate>
 
-            <UseTemplate Name="FBW_AIRLINER_Knob_ND_Range_Template">
+            <!-- FCU ND RANGE R -->
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>KNOB</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_AIRLINER_Knob_ND_Range_Template</ANIM_TEMPLATE>
                 <TYPE>AIRBUS</TYPE>
                 <NODE_ID>KNOB_AUTOPILOT_R1</NODE_ID>
                 <ANIM_NAME>KNOB_AUTOPILOT_R1</ANIM_NAME>
                 <KNOB_POSITION_VAR>A32NX_EFIS_R_ND_RANGE</KNOB_POSITION_VAR>
             </UseTemplate>
 
-            <UseTemplate Name="FBW_AIRBUS_Push_EFIS_Option">
+            <!-- FCU CSTR R -->
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>BUTTON</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_AIRBUS_Push_EFIS_Option</ANIM_TEMPLATE>
                 <SIDE>R</SIDE>
                 <BASE_NAME>CSTR</BASE_NAME>
                 <OPTION_ID>1</OPTION_ID>
             </UseTemplate>
 
-            <UseTemplate Name="FBW_AIRBUS_Push_EFIS_Option">
+            <!-- FCU VORD R -->
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>BUTTON</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_AIRBUS_Push_EFIS_Option</ANIM_TEMPLATE>
                 <SIDE>R</SIDE>
                 <BASE_NAME>VORD</BASE_NAME>
                 <OPTION_ID>2</OPTION_ID>
             </UseTemplate>
 
-            <UseTemplate Name="FBW_AIRBUS_Push_EFIS_Option">
+            <!-- FCU WPT R -->
+                <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>BUTTON</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_AIRBUS_Push_EFIS_Option</ANIM_TEMPLATE>
                 <SIDE>R</SIDE>
                 <BASE_NAME>WPT</BASE_NAME>
                 <OPTION_ID>3</OPTION_ID>
             </UseTemplate>
 
-            <UseTemplate Name="FBW_AIRBUS_Push_EFIS_Option">
+            <!-- FCU NDB R -->
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>BUTTON</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_AIRBUS_Push_EFIS_Option</ANIM_TEMPLATE>
                 <SIDE>R</SIDE>
                 <BASE_NAME>NDB</BASE_NAME>
                 <OPTION_ID>4</OPTION_ID>
             </UseTemplate>
 
-            <UseTemplate Name="FBW_AIRBUS_Push_EFIS_Option">
+            <!-- FCU ARPT R -->
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>BUTTON</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_AIRBUS_Push_EFIS_Option</ANIM_TEMPLATE>
                 <SIDE>R</SIDE>
                 <BASE_NAME>ARPT</BASE_NAME>
                 <OPTION_ID>5</OPTION_ID>
