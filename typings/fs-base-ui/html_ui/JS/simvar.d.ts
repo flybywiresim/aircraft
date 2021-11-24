@@ -2,9 +2,11 @@
 /// <reference path="./Simplane.d.ts" />
 /// <reference path="../../../types.d.ts" />
 
-type NumberVarUnit = ("number" | "Number") | "position 32k" | ("SINT32") | ("bool" | "Bool" | "Boolean" | "boolean") | "Enum" | "lbs" | "kg" | ("Degrees" | "degree" | "Radians")
+type NumberVarUnit = ("number" | "Number") | "position 32k" | ("SINT32") | BooleanVarUnit | "Enum" | "lbs" | "kg" | ("Degrees" | "degree" | "Radians")
     | "radians" | ("Percent" | "percent") | ("Feet" | "feet" | "feets" | "Feets") | "Volts" | "Amperes" | "Hertz" | "PSI" | "celsius" | "degree latitude"
     | "degree longitude" | "meters per second" | "Meters per second" | "Position" | ("Knots" | "knots") | "Seconds" | "seconds" | "kilograms per second" | "nautical miles" | "degrees"
+
+type BooleanVarUnit = 'Bool' | 'bool' | 'Boolean' | 'boolean'
 
 type TextVarUnit = "Text" | "string"
 
@@ -86,6 +88,7 @@ declare global {
         function GetSimVarValue(name: string, unit: XYZVarUnit, dataSource?: string): XYZ | null;
 
         function SetSimVarValue(name: string, unit: NumberVarUnit, value: number, dataSource?: string): Promise<void>;
+        function SetSimVarValue(name: string, unit: BooleanVarUnit, value: boolean, dataSource?: string): Promise<void>;
         function SetSimVarValue(name: string, unit: TextVarUnit, value: string, dataSource?: string): Promise<void>;
         function SetSimVarValue(name: string, unit: LatLongAltVarUnit, value: LatLongAlt, dataSource?: string): Promise<void>;
         function SetSimVarValue(name: string, unit: LatLongAltPBHVarUnit, value: LatLongAltPBH, dataSource?: string): Promise<void>;
