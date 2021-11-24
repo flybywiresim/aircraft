@@ -459,7 +459,7 @@ export class FlightPlanManager {
             fplnIndex = this._currentFlightPlanIndex;
         }
 
-        const destIndex = this.getDestinationIndex(fplnIndex);
+        const destIndex = this.getDestinationIndex();
         if (destIndex < 0) {
             return -1;
         }
