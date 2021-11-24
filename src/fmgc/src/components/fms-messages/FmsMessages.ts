@@ -93,7 +93,7 @@ export class FmsMessages implements FmgcComponent {
         }
     }
 
-    public send(messageClass: { new(): FMMessageSelector }): void {
+    send(messageClass: { new(): FMMessageSelector }): void {
         const message = this.messageSelectors.find((it) => it instanceof messageClass).message;
 
         this.listener.triggerToAllSubscribers(FMMessageTriggers.SEND_TO_MCDU, message);
@@ -108,7 +108,7 @@ export class FmsMessages implements FmgcComponent {
         }
     }
 
-    public recall(messageClass: { new(): FMMessageSelector }): void {
+    recall(messageClass: { new(): FMMessageSelector }): void {
         const message = this.messageSelectors.find((it) => it instanceof messageClass).message;
 
         this.listener.triggerToAllSubscribers(FMMessageTriggers.RECALL_FROM_MCDU_WITH_ID, message.text); // TODO id
@@ -123,7 +123,7 @@ export class FmsMessages implements FmgcComponent {
         }
     }
 
-    public recallId(id: number) {
+    recallId(id: number) {
         const message = this.messageSelectors.find((it) => it.message.id === id).message;
 
         this.listener.triggerToAllSubscribers(FMMessageTriggers.RECALL_FROM_MCDU_WITH_ID, message.text); // TODO id
