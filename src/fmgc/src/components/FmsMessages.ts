@@ -15,8 +15,6 @@ import { ConfirmationNode, Trigger } from '@shared/logic';
  * -Benjamin
  */
 export class FmsMessages implements FmgcComponent {
-    private static mInstance?: FmsMessages;
-
     private listener = RegisterViewListener('JS_LISTENER_SIMVARS');
 
     private ndMessageFlags: Record<'L' | 'R', number> = {
@@ -29,20 +27,7 @@ export class FmsMessages implements FmgcComponent {
         new GpsPrimaryLost(),
         new MapPartlyDisplayedLeft(),
         new MapPartlyDisplayedRight(),
-    ]
-
-    // singleton
-    /* eslint-disable no-useless-constructor,no-empty-function */
-    private constructor() {
-    }
-    /* eslint-enable no-useless-constructor,no-empty-function */
-
-    public static get instance(): FmsMessages {
-        if (!this.mInstance) {
-            this.mInstance = new FmsMessages();
-        }
-        return this.mInstance;
-    }
+    ];
 
     init(): void {
         // Do nothing
