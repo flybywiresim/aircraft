@@ -15,9 +15,9 @@ export class NavRadioManager {
     tuningMode3: TuningMode = TuningMode.Auto;
 
     constructor(public _parentInstrument: BaseInstrument) {
-        SimVar.SetSimVarValue('L:A32NX_FMGC_RADIONAV_1_TUNING_MODE', 'enum', TuningMode.Manual);
-        SimVar.SetSimVarValue('L:A32NX_FMGC_RADIONAV_2_TUNING_MODE', 'enum', TuningMode.Manual);
-        SimVar.SetSimVarValue('L:A32NX_FMGC_RADIONAV_3_TUNING_MODE', 'enum', TuningMode.Manual);
+        SimVar.SetSimVarValue('L:A32NX_FMGC_RADIONAV_1_TUNING_MODE', 'Enum', TuningMode.Manual);
+        SimVar.SetSimVarValue('L:A32NX_FMGC_RADIONAV_2_TUNING_MODE', 'Enum', TuningMode.Manual);
+        SimVar.SetSimVarValue('L:A32NX_FMGC_RADIONAV_3_TUNING_MODE', 'Enum', TuningMode.Manual);
     }
 
     public update(_deltaTime: number): void {
