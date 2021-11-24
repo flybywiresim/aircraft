@@ -18,7 +18,6 @@ bool FlyByWireInterface::connect() {
   loadConfiguration();
 
   // setup handlers
-  flapsHandler = make_shared<FlapsHandler>();
   spoilersHandler = make_shared<SpoilersHandler>();
   elevatorTrimHandler = make_shared<ElevatorTrimHandler>();
   rudderTrimHandler = make_shared<RudderTrimHandler>();
@@ -35,7 +34,7 @@ bool FlyByWireInterface::connect() {
 
   // connect to sim connect
   return simConnectInterface.connect(clientDataEnabled, autopilotStateMachineEnabled, autopilotLawsEnabled, flyByWireEnabled, throttleAxis,
-                                     flapsHandler, spoilersHandler, elevatorTrimHandler, rudderTrimHandler, flightControlsKeyChangeAileron,
+                                     spoilersHandler, elevatorTrimHandler, rudderTrimHandler, flightControlsKeyChangeAileron,
                                      flightControlsKeyChangeElevator, flightControlsKeyChangeRudder,
                                      disableXboxCompatibilityRudderAxisPlusMinus, maxSimulationRate, limitSimulationRateByPerformance);
 }
@@ -97,8 +96,8 @@ bool FlyByWireInterface::update(double sampleTime) {
   // update engine data
   result &= updateEngineData(calculatedSampleTime);
 
-  // update flaps and spoilers
-  result &= updateFlapsSpoilers(calculatedSampleTime);
+  // update spoilers
+  result &= updateSpoilers(calculatedSampleTime);
 
   // update flight data recorder
   flightDataRecorder.update(&autopilotStateMachine, &autopilotLaws, &autoThrust, &flyByWire, engineData);
@@ -142,7 +141,7 @@ void FlyByWireInterface::loadConfiguration() {
 
   // --------------------------------------------------------------------------
   // load values - autopilot
-  customFlightGuidanceEnabled = INITypeConversion::getBoolean(iniStructure, "AUTOPILOT", "CUSTOM_FLIGHT_GUIDANCE_ENABLED", false);
+  customFlightGuidanceEnabled = INITypeConversion::getBoolean(iniStructure, "AUTOPILOT", "CUSTOM_FLIGHT_GUIDANCE_ENABLED", true);
   gpsCourseToSteerEnabled = INITypeConversion::getBoolean(iniStructure, "AUTOPILOT", "GPS_COURSE_TO_STEER_ENABLED", true);
   flightDirectorSmoothingEnabled = INITypeConversion::getBoolean(iniStructure, "AUTOPILOT", "FLIGHT_DIRECTOR_SMOOTHING_ENABLED", true);
   flightDirectorSmoothingFactor = INITypeConversion::getDouble(iniStructure, "AUTOPILOT", "FLIGHT_DIRECTOR_SMOOTHING_FACTOR", 2.5);
@@ -287,6 +286,11 @@ void FlyByWireInterface::setupLocalVariables() {
   idFlightGuidanceCrossTrackError = make_unique<LocalVariable>("A32NX_FG_CROSS_TRACK_ERROR");
   idFlightGuidanceTrackAngleError = make_unique<LocalVariable>("A32NX_FG_TRACK_ANGLE_ERROR");
   idFlightGuidancePhiCommand = make_unique<LocalVariable>("A32NX_FG_PHI_COMMAND");
+  idFlightGuidanceRequestedVerticalMode = make_unique<LocalVariable>("A32NX_FG_REQUESTED_VERTICAL_MODE");
+  idFlightGuidanceTargetAltitude = make_unique<LocalVariable>("A32NX_FG_TARGET_ALTITUDE");
+  idFlightGuidanceTargetVerticalSpeed = make_unique<LocalVariable>("A32NX_FG_TARGET_VERTICAL_SPEED");
+  idFmRnavAppSelected = make_unique<LocalVariable>("A32NX_FG_RNAV_APP_SELECTED");
+  idFmFinalCanEngage = make_unique<LocalVariable>("A32NX_FG_FINAL_CAN_ENGAGE");
 
   idFcuTrkFpaModeActive = make_unique<LocalVariable>("A32NX_TRK_FPA_MODE_ACTIVE");
   idFcuSelectedFpa = make_unique<LocalVariable>("A32NX_AUTOPILOT_FPA_SELECTED");
@@ -314,6 +318,11 @@ void FlyByWireInterface::setupLocalVariables() {
 
   idAutothrustThrustLimitType = make_unique<LocalVariable>("A32NX_AUTOTHRUST_THRUST_LIMIT_TYPE");
   idAutothrustThrustLimit = make_unique<LocalVariable>("A32NX_AUTOTHRUST_THRUST_LIMIT");
+  idAutothrustThrustLimitIDLE = make_unique<LocalVariable>("A32NX_AUTOTHRUST_THRUST_LIMIT_IDLE");
+  idAutothrustThrustLimitCLB = make_unique<LocalVariable>("A32NX_AUTOTHRUST_THRUST_LIMIT_CLB");
+  idAutothrustThrustLimitMCT = make_unique<LocalVariable>("A32NX_AUTOTHRUST_THRUST_LIMIT_MCT");
+  idAutothrustThrustLimitFLX = make_unique<LocalVariable>("A32NX_AUTOTHRUST_THRUST_LIMIT_FLX");
+  idAutothrustThrustLimitTOGA = make_unique<LocalVariable>("A32NX_AUTOTHRUST_THRUST_LIMIT_TOGA");
   thrustLeverAngle_1 = make_unique<LocalVariable>("A32NX_AUTOTHRUST_TLA:1");
   thrustLeverAngle_2 = make_unique<LocalVariable>("A32NX_AUTOTHRUST_TLA:2");
   idAutothrustN1_TLA_1 = make_unique<LocalVariable>("A32NX_AUTOTHRUST_TLA_N1:1");
@@ -355,8 +364,8 @@ void FlyByWireInterface::setupLocalVariables() {
   engineEngine1Timer = make_unique<LocalVariable>("A32NX_ENGINE_TIMER:1");
   engineEngine2Timer = make_unique<LocalVariable>("A32NX_ENGINE_TIMER:2");
 
-  idFlapsHandleIndex = make_unique<LocalVariable>("A32NX_FLAPS_HANDLE_INDEX");
-  idFlapsHandlePercent = make_unique<LocalVariable>("A32NX_FLAPS_HANDLE_PERCENT");
+  flapsHandleIndexFlapConf = make_unique<LocalVariable>("A32NX_FLAPS_CONF_INDEX");
+  flapsPosition = make_unique<LocalVariable>("A32NX_LEFT_FLAPS_ANGLE");
 
   idSpoilersArmed = make_unique<LocalVariable>("A32NX_SPOILERS_ARMED");
   idSpoilersHandlePosition = make_unique<LocalVariable>("A32NX_SPOILERS_HANDLE_POSITION");
@@ -443,6 +452,11 @@ bool FlyByWireInterface::readDataAndLocalVariables(double sampleTime) {
                                                          flightGuidanceCrossTrackError,
                                                          flightGuidanceTrackAngleError,
                                                          flightGuidancePhiPreCommand,
+                                                         static_cast<unsigned long long>(idFlightGuidanceRequestedVerticalMode->get()),
+                                                         idFlightGuidanceTargetAltitude->get(),
+                                                         idFlightGuidanceTargetVerticalSpeed->get(),
+                                                         static_cast<unsigned long long>(idFmRnavAppSelected->get()),
+                                                         static_cast<unsigned long long>(idFmFinalCanEngage->get()),
                                                          simData.speed_slot_index == 2,
                                                          autopilotLawsOutput.Phi_loc_c};
     simConnectInterface.setClientDataLocalVariables(clientDataLocalVariables);
@@ -688,7 +702,7 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
     autopilotStateMachineInput.in.data.gear_strut_compression_1 = simData.gear_animation_pos_1;
     autopilotStateMachineInput.in.data.gear_strut_compression_2 = simData.gear_animation_pos_2;
     autopilotStateMachineInput.in.data.zeta_pos = simData.zeta_pos;
-    autopilotStateMachineInput.in.data.flaps_handle_index = simData.flaps_handle_index;
+    autopilotStateMachineInput.in.data.flaps_handle_index = flapsHandleIndexFlapConf->get();
     autopilotStateMachineInput.in.data.is_engine_operative_1 = simData.engine_combustion_1;
     autopilotStateMachineInput.in.data.is_engine_operative_2 = simData.engine_combustion_2;
 
@@ -722,6 +736,12 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
     autopilotStateMachineInput.in.input.is_SPEED_managed = (simData.speed_slot_index == 2);
     autopilotStateMachineInput.in.input.FDR_event = idFdrEvent->get();
     autopilotStateMachineInput.in.input.Phi_loc_c = autopilotLawsOutput.Phi_loc_c;
+    autopilotStateMachineInput.in.input.FM_requested_vertical_mode =
+        static_cast<fm_requested_vertical_mode>(idFlightGuidanceRequestedVerticalMode->get());
+    autopilotStateMachineInput.in.input.FM_H_c_ft = idFlightGuidanceTargetAltitude->get();
+    autopilotStateMachineInput.in.input.FM_H_dot_c_fpm = idFlightGuidanceTargetVerticalSpeed->get();
+    autopilotStateMachineInput.in.input.FM_rnav_appr_selected = static_cast<bool>(idFmRnavAppSelected->get());
+    autopilotStateMachineInput.in.input.FM_final_des_can_engage = static_cast<bool>(idFmFinalCanEngage->get());
 
     // step the model -------------------------------------------------------------------------------------------------
     autopilotStateMachine.setExternalInputs(&autopilotStateMachineInput);
@@ -782,8 +802,10 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
   bool isLocEngaged = autopilotStateMachineOutput.lateral_mode >= 30 && autopilotStateMachineOutput.lateral_mode <= 34;
   bool isGsArmed = static_cast<unsigned long long>(autopilotStateMachineOutput.vertical_mode_armed) >> 4 & 0x01;
   bool isGsEngaged = autopilotStateMachineOutput.vertical_mode >= 30 && autopilotStateMachineOutput.vertical_mode <= 34;
+  bool isFinalArmed = static_cast<unsigned long long>(autopilotStateMachineOutput.vertical_mode_armed) >> 5 & 0x01;
+  bool isFinalEngaged = autopilotStateMachineOutput.vertical_mode == 24;
   idFcuLocModeActive->set((isLocArmed || isLocEngaged) && !(isGsArmed || isGsEngaged));
-  idFcuApprModeActive->set((isLocArmed || isLocEngaged) && (isGsArmed || isGsEngaged));
+  idFcuApprModeActive->set(((isLocArmed || isLocEngaged) && (isGsArmed || isGsEngaged)) || isFinalArmed || isFinalEngaged);
   idFcuModeReversionActive->set(autopilotStateMachineOutput.mode_reversion_lateral || autopilotStateMachineOutput.mode_reversion_vertical);
   idFcuModeReversionTrkFpaActive->set(autopilotStateMachineOutput.mode_reversion_TRK_FPA);
 
@@ -1010,7 +1032,7 @@ bool FlyByWireInterface::updateAutopilotLaws(double sampleTime) {
     autopilotLawsInput.in.data.gear_strut_compression_1 = simData.gear_animation_pos_1;
     autopilotLawsInput.in.data.gear_strut_compression_2 = simData.gear_animation_pos_2;
     autopilotLawsInput.in.data.zeta_pos = simData.zeta_pos;
-    autopilotLawsInput.in.data.flaps_handle_index = simData.flaps_handle_index;
+    autopilotLawsInput.in.data.flaps_handle_index = flapsHandleIndexFlapConf->get();
     autopilotLawsInput.in.data.is_engine_operative_1 = simData.engine_combustion_1;
     autopilotLawsInput.in.data.is_engine_operative_2 = simData.engine_combustion_2;
 
@@ -1129,7 +1151,7 @@ bool FlyByWireInterface::updateFlyByWire(double sampleTime) {
     flyByWireInput.in.data.gear_animation_pos_0 = simData.gear_animation_pos_0;
     flyByWireInput.in.data.gear_animation_pos_1 = simData.gear_animation_pos_1;
     flyByWireInput.in.data.gear_animation_pos_2 = simData.gear_animation_pos_2;
-    flyByWireInput.in.data.flaps_handle_index = simData.flaps_handle_index;
+    flyByWireInput.in.data.flaps_handle_index = flapsHandleIndexFlapConf->get();
     flyByWireInput.in.data.spoilers_left_pos = simData.spoilers_left_pos;
     flyByWireInput.in.data.spoilers_right_pos = simData.spoilers_right_pos;
     flyByWireInput.in.data.autopilot_master_on = simData.autopilot_master_on;
@@ -1288,14 +1310,14 @@ bool FlyByWireInterface::updateFlyByWire(double sampleTime) {
 
   // update aileron positions
   animationAileronHandler->update(idAutopilotActiveAny->get(), spoilersHandler->getIsGroundSpoilersActive(), simData.simulationTime,
-                                  simData.Theta_deg, simData.flaps_handle_index, simData.flaps_position,
+                                  simData.Theta_deg, flapsHandleIndexFlapConf->get(), flapsPosition->get(),
                                   idExternalOverride->get() == 1 ? simData.xi_pos : flyByWireOutput.output.xi_pos, sampleTime);
   idAileronPositionLeft->set(animationAileronHandler->getPositionLeft());
   idAileronPositionRight->set(animationAileronHandler->getPositionRight());
 
   // determine if beta target needs to be active (blue)
   bool conditionDifferenceEngineN1Larger35 = (abs(simData.engine_N1_1_percent - simData.engine_N1_2_percent) > 35);
-  bool conditionConfigruation123 = (flapsHandler->getHandlePosition() > 0 && flapsHandler->getHandlePosition() < 4);
+  bool conditionConfigruation123 = (flapsHandleIndexFlapConf->get() > 0 && flapsHandleIndexFlapConf->get() < 4);
   bool conditionAnyEngineN1Above80 = (simData.engine_N1_1_percent > 80 || simData.engine_N1_2_percent > 80);
   bool conditionAnyThrustLeverAboveMct = (thrustLeverAngle_1->get() > 35 || thrustLeverAngle_2->get() > 35);
   bool conditionAnyThrustLeverInFlex = ((thrustLeverAngle_1->get() >= 35 || thrustLeverAngle_2->get() >= 35) &&
@@ -1384,7 +1406,7 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
     autoThrustInput.in.data.bz_m_s2 = simData.bz_m_s2;
     autoThrustInput.in.data.gear_strut_compression_1 = simData.gear_animation_pos_1;
     autoThrustInput.in.data.gear_strut_compression_2 = simData.gear_animation_pos_2;
-    autoThrustInput.in.data.flap_handle_index = simData.flaps_handle_index;
+    autoThrustInput.in.data.flap_handle_index = flapsHandleIndexFlapConf->get();
     autoThrustInput.in.data.is_engine_operative_1 = simData.engine_combustion_1;
     autoThrustInput.in.data.is_engine_operative_2 = simData.engine_combustion_2;
     autoThrustInput.in.data.commanded_engine_N1_1_percent = simData.commanded_engine_N1_1_percent;
@@ -1441,6 +1463,19 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
     // set autothrust disabled state (when ATHR disconnect is pressed longer than 15s)
     idAutothrustDisabled->set(autoThrust.getExternalOutputs().out.data_computed.ATHR_disabled);
 
+    // write thrust limits
+    auto autoThrustInput = autoThrust.getExternalOutputs().out.input;
+    auto autoThrustDataComputed = autoThrust.getExternalOutputs().out.data_computed;
+    idAutothrustThrustLimitIDLE->set(autoThrustInput.thrust_limit_IDLE_percent);
+    idAutothrustThrustLimitCLB->set(autoThrustInput.thrust_limit_CLB_percent);
+    idAutothrustThrustLimitMCT->set(autoThrustInput.thrust_limit_MCT_percent);
+    if (autoThrustDataComputed.is_FLX_active) {
+      idAutothrustThrustLimitFLX->set(autoThrustInput.thrust_limit_FLEX_percent);
+    } else {
+      idAutothrustThrustLimitFLX->set(0);
+    }
+    idAutothrustThrustLimitTOGA->set(autoThrustInput.thrust_limit_TOGA_percent);
+
     // write output to sim --------------------------------------------------------------------------------------------
     SimOutputThrottles simOutputThrottles = {autoThrustOutput.sim_throttle_lever_1_pos, autoThrustOutput.sim_throttle_lever_2_pos,
                                              autoThrustOutput.sim_thrust_mode_1, autoThrustOutput.sim_thrust_mode_2};
@@ -1462,6 +1497,13 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
     autoThrustOutput.status = static_cast<athr_status>(clientData.status);
     autoThrustOutput.mode = static_cast<athr_mode>(clientData.mode);
     autoThrustOutput.mode_message = static_cast<athr_mode_message>(clientData.mode_message);
+
+    // TODO: thrust limits are currently not available when model is running externally
+    idAutothrustThrustLimitIDLE->set(0);
+    idAutothrustThrustLimitCLB->set(0);
+    idAutothrustThrustLimitMCT->set(0);
+    idAutothrustThrustLimitFLX->set(0);
+    idAutothrustThrustLimitTOGA->set(0);
   }
 
   // update local variables
@@ -1494,41 +1536,9 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
   return true;
 }
 
-bool FlyByWireInterface::updateFlapsSpoilers(double sampleTime) {
+bool FlyByWireInterface::updateSpoilers(double sampleTime) {
   // get sim data
   auto simData = simConnectInterface.getSimData();
-
-  // falps ------------------------------------------------------------------------------------------------------------
-
-  // initialize position if needed
-  if (!flapsHandler->getIsInitialized()) {
-    if (simData.flaps_handle_index == 0) {
-      flapsHandler->setInitialPosition(FlapsHandler::HANDLE_POSITION_FLAPS_0);
-    } else if (simData.flaps_handle_index == 1 || simData.flaps_handle_index == 2) {
-      flapsHandler->setInitialPosition(FlapsHandler::HANDLE_POSITION_FLAPS_1);
-    } else if (simData.flaps_handle_index == 3) {
-      flapsHandler->setInitialPosition(FlapsHandler::HANDLE_POSITION_FLAPS_2);
-    } else if (simData.flaps_handle_index == 4) {
-      flapsHandler->setInitialPosition(FlapsHandler::HANDLE_POSITION_FLAPS_3);
-    } else if (simData.flaps_handle_index == 5) {
-      flapsHandler->setInitialPosition(FlapsHandler::HANDLE_POSITION_FLAPS_4);
-    }
-  }
-
-  // update airspeed on flaps logic
-  flapsHandler->setAirspeed(simData.V_ias_kn);
-
-  // determine if flaps setting has changed
-  if (flapsHandler->getSimPosition() != simData.flaps_handle_index) {
-    SimOutputFlaps out = {flapsHandler->getSimPosition()};
-    simConnectInterface.sendData(out);
-  }
-
-  // set 3D handle position
-  idFlapsHandleIndex->set(flapsHandler->getHandlePosition());
-  idFlapsHandlePercent->set(flapsHandler->getHandlePositionPercent());
-
-  // spoilers ---------------------------------------------------------------------------------------------------------
 
   // initialize position if needed
   if (!spoilersHandler->getIsInitialized()) {
@@ -1539,7 +1549,7 @@ bool FlyByWireInterface::updateFlapsSpoilers(double sampleTime) {
   spoilersHandler->setSimulationVariables(
       simData.simulationTime, autopilotStateMachineOutput.enabled_AP1 == 1 || autopilotStateMachineOutput.enabled_AP2 == 1,
       simData.V_gnd_kn, thrustLeverAngle_1->get(), thrustLeverAngle_2->get(), simData.gear_animation_pos_1, simData.gear_animation_pos_2,
-      simData.flaps_handle_index, flyByWireOutput.sim.data_computed.high_aoa_prot_active == 1);
+      flapsHandleIndexFlapConf->get(), flyByWireOutput.sim.data_computed.high_aoa_prot_active == 1);
 
   // check state of spoilers and adapt if necessary
   if (spoilersHandler->getSimPosition() != simData.spoilers_handle_position) {

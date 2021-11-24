@@ -115,6 +115,7 @@ class CDUMenuPage {
         mcdu.onDir = () => {
             const cur = mcdu.page.Current;
             setTimeout(() => {
+                mcdu.eraseTemporaryFlightPlan();
                 if (mcdu.page.Current === cur) {
                     CDUDirectToPage.ShowPage(mcdu);
                 }

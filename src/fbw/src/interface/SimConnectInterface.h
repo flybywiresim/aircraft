@@ -6,7 +6,6 @@
 #include <vector>
 
 #include "../ElevatorTrimHandler.h"
-#include "../FlapsHandler.h"
 #include "../LocalVariable.h"
 #include "../RudderTrimHandler.h"
 #include "../SpoilersHandler.h"
@@ -84,18 +83,34 @@ class SimConnectInterface {
     A32NX_FCU_APPR_PUSH,
     A32NX_FCU_EXPED_PUSH,
     A32NX_FMGC_DIR_TO_TRIGGER,
+    AP_AIRSPEED_ON,
+    AP_AIRSPEED_OFF,
+    AP_HDG_HOLD_ON,
+    AP_HDG_HOLD_OFF,
+    AP_ALT_HOLD_ON,
+    AP_ALT_HOLD_OFF,
+    AP_VS_ON,
+    AP_VS_OFF,
     AP_SPEED_SLOT_INDEX_SET,
     AP_SPD_VAR_INC,
     AP_SPD_VAR_DEC,
+    AP_MACH_VAR_INC,
+    AP_MACH_VAR_DEC,
     AP_HEADING_SLOT_INDEX_SET,
     HEADING_BUG_INC,
     HEADING_BUG_DEC,
     AP_ALTITUDE_SLOT_INDEX_SET,
+    AP_ALT_VAR_INC,
+    AP_ALT_VAR_DEC,
     AP_VS_SLOT_INDEX_SET,
     AP_VS_VAR_INC,
     AP_VS_VAR_DEC,
     AP_APR_HOLD,
     AP_LOC_HOLD,
+    AP_ALT_HOLD,
+    AP_VS_HOLD,
+    AP_ATT_HOLD,
+    AP_MACH_HOLD,
     AUTO_THROTTLE_ARM,
     AUTO_THROTTLE_DISCONNECT,
     AUTO_THROTTLE_TO_GA,
@@ -170,7 +185,6 @@ class SimConnectInterface {
                bool autopilotLawsEnabled,
                bool flyByWireEnabled,
                const std::vector<std::shared_ptr<ThrottleAxisMapping>>& throttleAxis,
-               std::shared_ptr<FlapsHandler> flapsHandler,
                std::shared_ptr<SpoilersHandler> spoilersHandler,
                std::shared_ptr<ElevatorTrimHandler> elevatorTrimHandler,
                std::shared_ptr<RudderTrimHandler> rudderTrimHandler,
@@ -276,7 +290,6 @@ class SimConnectInterface {
   SimInputThrottles simInputThrottles = {};
   std::vector<std::shared_ptr<ThrottleAxisMapping>> throttleAxis;
 
-  std::shared_ptr<FlapsHandler> flapsHandler;
   std::shared_ptr<SpoilersHandler> spoilersHandler;
   std::shared_ptr<ElevatorTrimHandler> elevatorTrimHandler;
   std::shared_ptr<RudderTrimHandler> rudderTrimHandler;
