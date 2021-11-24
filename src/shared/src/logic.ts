@@ -1,7 +1,5 @@
 export interface LogicNode {
-
     update(deltaTime: number): void
-
 }
 
 export class ConfirmationNode implements LogicNode {
@@ -57,7 +55,7 @@ export class Trigger implements LogicNode {
 
     public output = false;
 
-    update(_deltaTime: number): void {
+    update(_: number): void {
         // State change - set output
         if (this.lastInput !== this.input) {
             if (this.risingEdge && this.input) {

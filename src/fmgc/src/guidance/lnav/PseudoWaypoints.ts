@@ -126,7 +126,7 @@ export class PseudoWaypoints implements GuidanceComponent {
         console.log('[FMGC/Guidance] PseudoWaypoints initialized!');
     }
 
-    update(_deltaTime: number) {
+    update(_: number) {
         // Pass our pseudo waypoints to the GuidanceController
         this.guidanceController.currentPseudoWaypoints.length = 0;
 

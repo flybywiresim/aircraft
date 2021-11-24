@@ -6,7 +6,7 @@ export class GpsPrimary implements FMMessageSelector {
 
     private lastState = false;
 
-    process(_deltaTime: number): FMMessageUpdate {
+    process(_: number): FMMessageUpdate {
         const newState = SimVar.GetSimVarValue('L:A32NX_ADIRS_USES_GPS_AS_PRIMARY', 'Bool') === 1;
 
         if (newState !== this.lastState) {

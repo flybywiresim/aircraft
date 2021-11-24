@@ -102,9 +102,7 @@ export class FlightPlanManager {
         this.__currentFlightPlanIndex = value;
     }
 
-    public update(_deltaTime: number): void {
-
-    }
+    public update(_: number): void { }
 
     public onCurrentGameFlightLoaded(_callback: () => any) {
         _callback();

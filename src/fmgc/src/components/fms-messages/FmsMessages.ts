@@ -35,10 +35,10 @@ export class FmsMessages implements FmgcComponent {
         // Do nothing
     }
 
-    update(_deltaTime: number): void {
+    update(deltaTime: number): void {
         let didMutateNd = false;
         for (const selector of this.messageSelectors) {
-            const newState = selector.process(_deltaTime);
+            const newState = selector.process(deltaTime);
             const message = selector.message;
 
             switch (newState) {

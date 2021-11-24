@@ -20,7 +20,7 @@ export class NavRadioManager {
         SimVar.SetSimVarValue('L:A32NX_FMGC_RADIONAV_3_TUNING_MODE', 'Enum', TuningMode.Manual);
     }
 
-    public update(_deltaTime: number): void {
+    public update(_: number): void {
         // Do nothing
     }
 }
