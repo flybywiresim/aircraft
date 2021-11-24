@@ -207,6 +207,9 @@ impl Air {
     const SPECIFIC_HEAT_CAPACITY_VOLUME: f64 = 0.718; // kJ/kg*K
     const SPECIFIC_HEAT_CAPACITY_PRESSURE: f64 = 1.005; // kJ/kg*K
     const R: f64 = 287.058; // Specific gas constant for air - m2/s2/K
+    const MU: f64 = 1.6328e-5; // Viscosity kg/(m*s)
+    const K: f64 = 0.022991; // Thermal conductivity - W/(m*C)
+    const PRANDT_NUMBER: f64 = 0.677725;
 
     pub fn new() -> Self {
         Self {
@@ -219,6 +222,10 @@ impl Air {
 
     pub fn set_temperature(&mut self, temperature: ThermodynamicTemperature) {
         self.temperature = temperature;
+    }
+
+    pub fn set_pressure(&mut self, pressure: Pressure) {
+        self.pressure = pressure;
     }
 
     pub fn set_flow_rate(&mut self, flow_rate: MassRate) {

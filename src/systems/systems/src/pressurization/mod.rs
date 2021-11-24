@@ -217,6 +217,10 @@ impl CabinAltitude for Pressurization {
     fn cabin_altitude(&self) -> Length {
         self.cpc[self.active_system - 1].cabin_altitude()
     }
+
+    fn cabin_pressure(&self) -> Pressure {
+        self.cabin_pressure_simulation.cabin_pressure()
+    }
 }
 
 impl SimulationElement for Pressurization {

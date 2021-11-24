@@ -85,6 +85,7 @@ pub trait EngineUncorrectedN2 {
 
 pub trait CabinAltitude {
     fn cabin_altitude(&self) -> Length;
+    fn cabin_pressure(&self) -> Pressure;
 }
 
 /// The common types of electrical buses within Airbus aircraft.

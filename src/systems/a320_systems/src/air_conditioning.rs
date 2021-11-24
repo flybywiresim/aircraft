@@ -35,6 +35,7 @@ impl A320AirConditioning {
             context,
             &self.air_conditioning_system,
             &self.air_conditioning_system,
+            pressurization,
         );
         self.air_conditioning_system
             .update(context, engines, pressurization, lgciu);
@@ -61,8 +62,8 @@ struct A320Cabin {
 
 impl A320Cabin {
     // TODO: Improve volume according to specs
-    const A320_CABIN_VOLUME: f64 = 400.; //m3
-    const A320_COCKPIT_VOLUME: f64 = 60.;
+    const A320_CABIN_VOLUME: f64 = 400.; // m3
+    const A320_COCKPIT_VOLUME: f64 = 60.; // m3
 
     fn new(context: &mut InitContext) -> Self {
         Self {
@@ -99,13 +100,19 @@ impl A320Cabin {
         context: &UpdateContext,
         duct_temperature: &impl DuctTemperature,
         pack_flow: &impl PackFlow,
+        pressurization: &impl CabinAltitude,
     ) {
         let flow_rate_per_cubic_meter: MassRate = MassRate::new::<kilogram_per_second>(
             pack_flow.pack_flow().get::<kilogram_per_second>()
                 / (Self::A320_CABIN_VOLUME + Self::A320_COCKPIT_VOLUME),
         );
         for zone in self.cabin_zone.iter_mut() {
-            zone.update(context, duct_temperature, flow_rate_per_cubic_meter);
+            zone.update(
+                context,
+                duct_temperature,
+                flow_rate_per_cubic_meter,
+                pressurization,
+            );
         }
     }
 }

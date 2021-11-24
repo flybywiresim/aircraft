@@ -732,8 +732,8 @@ mod acs_controller_tests {
         },
     };
     use uom::si::{
-        length::foot, thermodynamic_temperature::degree_celsius, velocity::knot,
-        volume::cubic_meter,
+        length::foot, pressure::hectopascal, thermodynamic_temperature::degree_celsius,
+        velocity::knot, volume::cubic_meter,
     };
 
     struct TestEngine {
@@ -772,6 +772,10 @@ mod acs_controller_tests {
     impl CabinAltitude for TestPressurization {
         fn cabin_altitude(&self) -> Length {
             self.cabin_altitude
+        }
+
+        fn cabin_pressure(&self) -> Pressure {
+            Pressure::new::<hectopascal>(1013.15)
         }
     }
 
@@ -837,14 +841,23 @@ mod acs_controller_tests {
             context: &UpdateContext,
             duct_temperature: &impl DuctTemperature,
             pack_flow: &impl PackFlow,
+            pressurization: &impl CabinAltitude,
         ) {
             let flow_rate_per_cubic_meter: MassRate = MassRate::new::<kilogram_per_second>(
                 pack_flow.pack_flow().get::<kilogram_per_second>() / (460.),
             );
-            self.cockpit
-                .update(context, duct_temperature, flow_rate_per_cubic_meter);
-            self.passenger_cabin
-                .update(context, duct_temperature, flow_rate_per_cubic_meter);
+            self.cockpit.update(
+                context,
+                duct_temperature,
+                flow_rate_per_cubic_meter,
+                pressurization,
+            );
+            self.passenger_cabin.update(
+                context,
+                duct_temperature,
+                flow_rate_per_cubic_meter,
+                pressurization,
+            );
         }
 
         fn update_number_of_passengers(&mut self, number_of_passengers: usize) {
@@ -907,7 +920,8 @@ mod acs_controller_tests {
     }
     impl Aircraft for TestAircraft {
         fn update_after_power_distribution(&mut self, context: &UpdateContext) {
-            self.test_cabin.update(context, &self.acsc, &self.acsc);
+            self.test_cabin
+                .update(context, &self.acsc, &self.acsc, &self.pressurization);
             self.acsc.update(
                 context,
                 &self.acs_overhead,
