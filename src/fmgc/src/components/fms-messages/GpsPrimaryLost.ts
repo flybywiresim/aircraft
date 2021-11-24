@@ -9,13 +9,13 @@ import { FMMessageSelector, FMMessageUpdate } from './FmsMessages';
 export class GpsPrimaryLost implements FMMessageSelector {
     message: FMMessage = FMMessageTypes.GpsPrimaryLost;
 
-    confLost = new ConfirmationNode(1_000);
+    private confLost = new ConfirmationNode(1_000);
 
-    trigLost = new Trigger(true);
+    private trigLost = new Trigger(true);
 
-    confRegained = new ConfirmationNode(1_000);
+    private confRegained = new ConfirmationNode(1_000);
 
-    trigRegained = new Trigger(true);
+    private trigRegained = new Trigger(true);
 
     process(deltaTime: number): FMMessageUpdate {
         const lostNow = SimVar.GetSimVarValue('L:A32NX_ADIRS_USES_GPS_AS_PRIMARY', 'Bool') === 0;

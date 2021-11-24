@@ -162,20 +162,15 @@ export enum FMMessageUpdate {
 }
 
 /**
- * This class defines a selector for a Type II message.
- *
- * It can optionally implement a {@link FMMessageSelector.process `process`} method that runs on every FMGC tick, if the
- * message is not manually triggered by any system or Redux update.
+ * Defines a selector for a Type II message.
  */
-export abstract class FMMessageSelector {
-    abstract message: FMMessage;
+export interface FMMessageSelector {
+    message: FMMessage;
 
-    abstract efisSide?: 'L' | 'R';
+    efisSide?: 'L' | 'R';
 
     /**
-     * This function allows per-tick processing of a message if implemented
+     * Optionally triggers a message when there isn't any other system or Redux update triggering it.
      */
-    process(_deltaTime: number): FMMessageUpdate {
-        return FMMessageUpdate.NO_ACTION;
-    }
+    process(deltaTime: number): FMMessageUpdate;
 }
