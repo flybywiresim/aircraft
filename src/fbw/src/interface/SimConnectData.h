@@ -293,6 +293,8 @@ struct ClientDataLocalVariables {
   unsigned long long flightManagementRequestedVerticalMode;
   double flightManagement_H_c_ft;
   double flightManagement_H_dot_c_fpm;
+  unsigned long long flightManagement_rnav_app_selected;
+  unsigned long long flightManagement_final_can_engage;
   double is_SPEED_managed;
   double locPhiCommand;
 };
