@@ -144,6 +144,8 @@ struct ap_raw_sm_input
   fm_requested_vertical_mode FM_requested_vertical_mode;
   real_T FM_H_c_ft;
   real_T FM_H_dot_c_fpm;
+  boolean_T FM_rnav_appr_selected;
+  boolean_T FM_final_des_can_engage;
 };
 
 #endif
@@ -344,6 +346,7 @@ typedef enum {
   vertical_mode_ALT_CST_CPT = 21,
   vertical_mode_CLB = 22,
   vertical_mode_DES = 23,
+  vertical_mode_FINAL_DES = 24,
   vertical_mode_GS_CPT = 30,
   vertical_mode_GS_TRACK = 31,
   vertical_mode_LAND = 32,
@@ -406,6 +409,7 @@ struct ap_vertical_armed
   boolean_T ALT_CST;
   boolean_T CLB;
   boolean_T DES;
+  boolean_T FINAL_DES;
   boolean_T GS;
 };
 
@@ -422,6 +426,7 @@ struct ap_vertical_condition
   boolean_T ALT_CST_CPT;
   boolean_T CLB;
   boolean_T DES;
+  boolean_T FINAL_DES;
   boolean_T GS_CPT;
   boolean_T GS_TRACK;
   boolean_T LAND;
