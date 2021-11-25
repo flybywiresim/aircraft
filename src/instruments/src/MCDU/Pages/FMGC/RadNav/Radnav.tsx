@@ -176,20 +176,23 @@ const Lscrs: React.FC = () => {
     };
 
     return (
-        <LineHolder columnPosition={1}>
-            <LabelField lineSide={lineSides.left} value="CRS" color={lineColors.white} />
-            <NumberInputField
-                lineSide={lineSides.left}
-                defaultValue={lscrs ? parseInt(lscrs).toFixed(0) : undefined}
-                nullValue="[  ]"
-                color={lscrs !== undefined ? lineColors.cyan : lineColors.cyan}
-                lsk={LINESELECT_KEYS.L4}
-                selectedCallback={(value) => setNewValue(value)}
-                size={lineSizes.regular}
-                max={359}
-                min={0}
-            />
-        </LineHolder>
+        <RowHolder columns={2}>
+            <LineHolder columnPosition={1}>
+                <LabelField lineSide={lineSides.left} value="CRS" color={lineColors.white} />
+                <NumberInputField
+                    lineSide={lineSides.left}
+                    defaultValue={lscrs ? parseInt(lscrs).toFixed(0) : undefined}
+                    nullValue="[  ]"
+                    color={lscrs !== undefined ? lineColors.cyan : lineColors.cyan}
+                    lsk={LINESELECT_KEYS.L4}
+                    selectedCallback={(value) => setNewValue(value)}
+                    size={lineSizes.regular}
+                    max={359}
+                    min={0}
+                />
+            </LineHolder>
+        </RowHolder>
+
     );
 };
 
