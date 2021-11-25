@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars,@typescript-eslint/no-empty-function,no-restricted-globals,no-underscore-dangle */
 /*
  * MIT License
  *
