@@ -2270,8 +2270,10 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
     }
 
     case Events::SIM_RATE_DECR: {
+      sendEvent(Events::SIM_RATE_DECR, 0, SIMCONNECT_GROUP_PRIORITY_DEFAULT);
       cout << "WASM: Simulation rate " << simData.simulation_rate;
-      cout << " -> " << simData.simulation_rate;
+      cout << " -> " << simData.simulation_rate / 2;
+      cout << endl;
       break;
     }
 
