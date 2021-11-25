@@ -14,22 +14,25 @@ import { LINESELECT_KEYS } from '../../../Components/Buttons';
 import * as scratchpadActions from '../../../redux/actions/scratchpadActionCreators';
 import NumberInputField from '../../../Components/Fields/Interactive/NumberInputField';
 
-type VorProps = {
+type vorProps = {
     addMessage: (msg: ScratchpadMessage) => void,
+    clearMessage :()=> void
 }
 
-const Vor: React.FC<VorProps> = ({ addMessage }) => {
+const Vor: React.FC<vorProps> = ({ addMessage, clearMessage }) => {
     const [vorone, setVorone] = useState<string>();
     const [vortwo, setVortwo] = useState<string>();
     const setNewValue = (value: string | undefined, select) => {
         if (select === 1) {
             if (value === undefined) {
                 setVorone(undefined);
+                clearMessage();
             }
             setVorone(value);
         } else if (select === 2) {
             if (value === undefined) {
                 setVortwo(undefined);
+                clearMessage();
             }
             setVortwo(value);
         }
@@ -74,18 +77,24 @@ const Vor: React.FC<VorProps> = ({ addMessage }) => {
     );
 };
 
-const Crs: React.FC = () => {
+type crsProps = {
+    clearMessage :()=> void
+}
+
+const Crs: React.FC<crsProps> = ({ clearMessage }) => {
     const [crsone, setCrsone] = useState<string | undefined>(undefined);
     const [crstwo, setCrstwo] = useState<string | undefined>(undefined);
     const setNewValue = (value: string | undefined, select) => {
         if (select === 1) {
             if (value === undefined) {
                 setCrsone(undefined);
+                clearMessage();
             }
             setCrsone(value);
         } else if (select === 2) {
             if (value === undefined) {
                 setCrstwo(undefined);
+                clearMessage();
             }
             setCrstwo(value);
         }
@@ -124,15 +133,17 @@ const Crs: React.FC = () => {
     );
 };
 
-type LsProps = {
+type lsProps = {
     addMessage: (msg: ScratchpadMessage) => void,
+    clearMessage :()=> void
 }
-const Ls: React.FC<LsProps> = ({ addMessage }) => {
+const Ls: React.FC<lsProps> = ({ addMessage, clearMessage }) => {
     const [ls, setLs] = useState<string | undefined>(undefined);
 
     const setNewValue = (value: string | undefined) => {
         if (value === undefined) {
             setLs(undefined);
+            clearMessage();
         } else {
             setLs(value);
         }
@@ -163,13 +174,17 @@ const Ls: React.FC<LsProps> = ({ addMessage }) => {
         </RowHolder>
     );
 };
+type lscrsProps = {
+    clearMessage :()=> void
+}
 
-const Lscrs: React.FC = () => {
+const Lscrs: React.FC<lscrsProps> = ({ clearMessage }) => {
     const [lscrs, setLscrs] = useState<string | undefined>(undefined);
 
     const setNewValue = (value: string | undefined) => {
         if (value === undefined) {
             setLscrs(undefined);
+            clearMessage();
         } else {
             setLscrs(value);
         }
@@ -198,20 +213,23 @@ const Lscrs: React.FC = () => {
 
 type AdfProps = {
     addMessage: (msg: ScratchpadMessage) => void,
+    clearScratchpad: () => void
 }
 
-const Adf: React.FC<AdfProps> = ({ addMessage }) => {
+const Adf: React.FC<AdfProps> = ({ addMessage, clearScratchpad }) => {
     const [adfone, setAdfone] = useState<string | undefined>(undefined);
     const [adftwo, setAdftwo] = useState<string | undefined>(undefined);
     const setNewValue = (value: string | undefined, select) => {
         if (select === 1) {
             if (value === undefined) {
                 setAdfone(undefined);
+                clearScratchpad();
             }
             setAdfone(value);
         } else if (select === 2) {
             if (value === undefined) {
                 setAdftwo(undefined);
+                clearScratchpad();
             }
             setAdftwo(value);
         }
@@ -295,17 +313,19 @@ const RadnavPage: React.FC = () => {
     const setTitlebar = ((msg: string) => {
         dispatch(titlebarActions.setTitleBarText(msg));
     });
-
+    const clearMessage = () => {
+        dispatch(scratchpadActions.clearScratchpad());
+    };
     useEffect(() => {
         setTitlebar(' RADIO NAV ');
     }, []);
     return (
         <>
-            <Vor addMessage={addMessage} />
-            <Crs />
-            <Ls addMessage={addMessage} />
-            <Lscrs />
-            <Adf addMessage={addMessage} />
+            <Vor addMessage={addMessage} clearMessage={clearMessage} />
+            <Crs clearMessage={clearMessage} />
+            <Ls addMessage={addMessage} clearMessage={clearMessage} />
+            <Lscrs clearMessage={clearMessage} />
+            <Adf addMessage={addMessage} clearScratchpad={clearMessage} />
             <Adfbfo />
         </>
     );
