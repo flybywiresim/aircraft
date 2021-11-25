@@ -1459,6 +1459,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
       ALT_CST_CPT | 21
       CLB | 22
       DES | 23
+      FINAL | 24
       GS_CPT | 30
       GS_TRACK | 31
       LAND | 32
@@ -1477,6 +1478,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
       CLB | 2
       DES | 3
       GS | 4
+      FINAL | 5
 
 - A32NX_FMA_EXPEDITE_MODE
     - Boolean
@@ -1732,6 +1734,20 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Number in fpm or degrees depending on requested mode
     - Used for vertical guidance in mode DES
     - Indicates the target vertical speed
+
+- A32NX_FG_RNAV_APP_SELECTED
+    - Boolean
+    - Used for FINAL mode selection
+    - Indicates if an RNAV approach is selected. If it is true, pressing the APPR button
+      results in the FINAL mode being armed, instead of G/S and LOC
+
+- A32NX_FG_FINAL_CAN_ENGAGE
+    - Boolean
+    - Indicates if the FINAL vertical mode can engage
+    - FINAL mode will engage if :
+      - This Simvar is true
+      - NAV mode is engaged
+      - FINAL mode is armed
 
 ## Autothrust System
 
