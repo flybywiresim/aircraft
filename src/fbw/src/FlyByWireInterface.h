@@ -57,6 +57,8 @@ class FlyByWireInterface {
   bool autoThrustEnabled = false;
   bool tailstrikeProtectionEnabled = true;
 
+  bool wasTcasEngaged = false;
+
   bool pauseDetected = false;
   bool wasInSlew = false;
 
@@ -135,6 +137,10 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idFmaTripleClick;
   std::unique_ptr<LocalVariable> idFmaModeReversion;
 
+  std::unique_ptr<LocalVariable> idAutopilotTcasMessageDisarm;
+  std::unique_ptr<LocalVariable> idAutopilotTcasMessageRaInhibited;
+  std::unique_ptr<LocalVariable> idAutopilotTcasMessageTrkFpaDeselection;
+
   std::unique_ptr<LocalVariable> idFlightDirectorBank;
   std::unique_ptr<LocalVariable> idFlightDirectorPitch;
   std::unique_ptr<LocalVariable> idFlightDirectorYaw;
@@ -159,6 +165,7 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idFcuApprModeActive;
   std::unique_ptr<LocalVariable> idFcuModeReversionActive;
   std::unique_ptr<LocalVariable> idFcuModeReversionTrkFpaActive;
+  std::unique_ptr<LocalVariable> idFcuModeReversionTargetFpm;
 
   std::unique_ptr<LocalVariable> idFlightGuidanceAvailable;
   std::unique_ptr<LocalVariable> idFlightGuidanceCrossTrackError;
@@ -170,6 +177,15 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idFmRnavAppSelected;
   std::unique_ptr<LocalVariable> idFmFinalCanEngage;
 
+  std::unique_ptr<LocalVariable> idTcasFault;
+  std::unique_ptr<LocalVariable> idTcasMode;
+  std::unique_ptr<LocalVariable> idTcasTaOnly;
+  std::unique_ptr<LocalVariable> idTcasState;
+  std::unique_ptr<LocalVariable> idTcasRaCorrective;
+  std::unique_ptr<LocalVariable> idTcasTargetGreenMin;
+  std::unique_ptr<LocalVariable> idTcasTargetGreenMax;
+  std::unique_ptr<LocalVariable> idTcasTargetRedMin;
+  std::unique_ptr<LocalVariable> idTcasTargetRedMax;
 
   std::unique_ptr<LocalVariable> idFwcFlightPhase;
   std::unique_ptr<LocalVariable> idFmgcFlightPhase;
@@ -298,4 +314,8 @@ class FlyByWireInterface {
   double smoothFlightDirector(double sampleTime, double factor, double limit, double currentValue, double targetValue);
 
   double getHeadingAngleError(double u1, double u2);
+
+  double getTcasModeAvailable();
+
+  double getTcasAdvisoryState();
 };

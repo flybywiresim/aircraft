@@ -28,11 +28,12 @@ class AutothrustModelClass {
     real_T eventTime_p;
     real_T prev_TLA_1;
     real_T prev_TLA_2;
-    real_T eventTime_l;
     real_T eventTime_c;
+    real_T eventTime_cc;
     real_T pY;
     real_T pU;
     real_T eventTime_o;
+    real_T eventTime_b;
     real_T eventTime_i;
     athr_mode pMode;
     athr_status pStatus;
@@ -49,7 +50,9 @@ class AutothrustModelClass {
     boolean_T prev_TLA_1_not_empty;
     boolean_T prev_TLA_2_not_empty;
     boolean_T flightDirectorOffTakeOff;
-    boolean_T eventTime_not_empty_m;
+    boolean_T prev_condition_AlphaFloor;
+    boolean_T prev_condition_TCAS;
+    boolean_T eventTime_not_empty_p;
     boolean_T pConditionAlphaFloor;
     boolean_T was_SRS_TO_active;
     boolean_T was_SRS_GA_active;
@@ -62,6 +65,9 @@ class AutothrustModelClass {
     boolean_T pU_not_empty;
     boolean_T eventTime_not_empty_a;
     boolean_T latch;
+    boolean_T sInhibit;
+    boolean_T prev_TCAS_active;
+    boolean_T eventTime_not_empty_f;
     boolean_T eventTime_not_empty_g;
     rtDW_RateLimiterwithThreshold_Autothrust_T sf_RateLimiterwithThreshold_n;
     rtDW_RateLimiterwithThreshold_Autothrust_T sf_RateLimiterwithThreshold_k;
@@ -85,7 +91,7 @@ class AutothrustModelClass {
 
   struct Parameters_Autothrust_T {
     athr_out athr_out_MATLABStruct;
-    real_T ScheduledGain_BreakpointsForDimension1[4];
+    real_T ScheduledGain_BreakpointsForDimension1[3];
     real_T ScheduledGain2_BreakpointsForDimension1[2];
     real_T ScheduledGain1_BreakpointsForDimension1[2];
     real_T ScheduledGain_BreakpointsForDimension1_p[2];
@@ -114,7 +120,7 @@ class AutothrustModelClass {
     real_T DiscreteTimeIntegratorVariableTs1_LowerLimit;
     real_T DiscreteTimeIntegratorVariableTs_LowerLimit_e;
     real_T DiscreteTimeIntegratorVariableTs1_LowerLimit_h;
-    real_T ScheduledGain_Table[4];
+    real_T ScheduledGain_Table[3];
     real_T ScheduledGain2_Table[2];
     real_T ScheduledGain1_Table[2];
     real_T ScheduledGain_Table_b[2];
@@ -304,6 +310,7 @@ class AutothrustModelClass {
     *rty_inReverse);
   static void Autothrust_RateLimiterwithThreshold(real_T rtu_U, real_T rtu_up, real_T rtu_lo, real_T rtu_Ts, real_T
     rtu_init, real_T rtu_threshold, real_T *rty_Y, rtDW_RateLimiterwithThreshold_Autothrust_T *localDW);
+  real_T Autothrust_timeSinceConditionArmedActive(real_T in_time_simulation_time, athr_status status);
 };
 
 #endif

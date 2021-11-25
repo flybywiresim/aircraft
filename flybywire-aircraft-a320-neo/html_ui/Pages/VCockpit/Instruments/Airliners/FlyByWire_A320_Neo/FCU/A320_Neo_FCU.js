@@ -172,6 +172,7 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
         this.textMACH = this.getTextElement("MACH");
         this.illuminator = this.getElement("circle", "Illuminator");
         Coherent.call("AP_SPD_VAR_SET", 0, this.MIN_SPEED).catch(console.error);
+        SimVar.SetSimVarValue("L:A32NX_AUTOPILOT_SPEED_SELECTED", "number", this.MIN_SPEED);
         SimVar.SetSimVarValue("K:AP_MANAGED_SPEED_IN_MACH_OFF", "number", 0);
         this.onPull();
     }
@@ -222,6 +223,10 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
             if (targetSpeed !== this.targetSpeed) {
                 Coherent.call("AP_SPD_VAR_SET", 0, targetSpeed).catch(console.error);
                 this.targetSpeed = targetSpeed;
+            }
+            // detect mismatch
+            if (Simplane.getAutoPilotAirspeedHoldValue() !== this.targetSpeed) {
+                Coherent.call("AP_SPD_VAR_SET", 0, targetSpeed).catch(console.error);
             }
         } else {
             this.targetSpeed = -1;
@@ -468,6 +473,13 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
             this.onPreSelSpeed(false);
         } else if (_event === "USE_PRE_SEL_MACH") {
             this.onPreSelSpeed(true);
+        } else if (_event === "SPEED_TCAS") {
+            this.onPull();
+            if (this.isMachActive) {
+                this.selectedValue = this.getCurrentMach();
+            } else {
+                this.selectedValue = this.getCurrentSpeed();
+            }
         }
     }
 }
@@ -770,23 +782,23 @@ class A320_Neo_FCU_Heading extends A320_Neo_FCU_Component {
 
     onEvent(_event) {
         if (_event === "HDG_INC_HEADING") {
-            this.selectedValue = (((this.selectedValue + this.getRotationSpeed()) % 360) + 360) % 360;
+            this.selectedValue = ((Math.round(this.selectedValue + this.getRotationSpeed()) % 360) + 360) % 360;
             this.onRotate();
         } else if (_event === "HDG_DEC_HEADING") {
-            this.selectedValue = (((this.selectedValue - this.getRotationSpeed()) % 360) + 360) % 360;
+            this.selectedValue = ((Math.round(this.selectedValue - this.getRotationSpeed()) % 360) + 360) % 360;
             this.onRotate();
         } else if (_event === "HDG_INC_TRACK") {
-            this.selectedValue = (((this.selectedValue + this.getRotationSpeed()) % 360) + 360) % 360;
+            this.selectedValue = ((Math.round(this.selectedValue + this.getRotationSpeed()) % 360) + 360) % 360;
             this.onRotate();
         } else if (_event === "HDG_DEC_TRACK") {
-            this.selectedValue = (((this.selectedValue - this.getRotationSpeed()) % 360) + 360) % 360;
+            this.selectedValue = ((Math.round(this.selectedValue - this.getRotationSpeed()) % 360) + 360) % 360;
             this.onRotate();
         } else if (_event === "HDG_PUSH") {
             this.onPush();
         } else if (_event === "HDG_PULL") {
             this.onPull();
         } else if (_event === "HDG_SET") {
-            this.selectedValue = SimVar.GetSimVarValue("L:A320_Neo_FCU_HDG_SET_DATA", "number") % 360;
+            this.selectedValue = Math.round(SimVar.GetSimVarValue("L:A320_Neo_FCU_HDG_SET_DATA", "number") % 360);
             this.isSelectedValueActive = true;
             this.onRotate();
         }
@@ -1029,10 +1041,12 @@ class A320_Neo_FCU_VerticalSpeed extends A320_Neo_FCU_Component {
             clearTimeout(this._resetSelectionTimeout);
             this.forceUpdate = true;
             const isModeReversion = SimVar.GetSimVarValue("L:A32NX_FCU_MODE_REVERSION_ACTIVE", "Number");
+            const modeReversionTargetFpm = SimVar.GetSimVarValue("L:A32NX_FCU_MODE_REVERSION_TARGET_FPM", "Number");
             if (isFPAMode) {
                 if (isModeReversion === 1) {
                     this.currentState = A320_Neo_FCU_VSpeed_State.Flying;
-                    this.selectedFpa = this.getCurrentFlightPathAngle();
+                    const modeReversionTargetFpa = this.calculateAngleForVerticalSpeed(modeReversionTargetFpm);
+                    this.selectedFpa = Utils.Clamp(Math.round(modeReversionTargetFpa * 10) / 10, -this.ABS_MINMAX_FPA, this.ABS_MINMAX_FPA);
                 } else if (this.selectedFpa !== 0) {
                     this.currentState = A320_Neo_FCU_VSpeed_State.Flying;
                 } else {
@@ -1041,7 +1055,7 @@ class A320_Neo_FCU_VerticalSpeed extends A320_Neo_FCU_Component {
             } else {
                 if (isModeReversion === 1) {
                     this.currentState = A320_Neo_FCU_VSpeed_State.Flying;
-                    this.selectedVs = this.getCurrentVerticalSpeed();
+                    this.selectedVs = Utils.Clamp(Math.round(modeReversionTargetFpm / 100) * 100, -this.ABS_MINMAX_VS, this.ABS_MINMAX_VS);
                 } else if (this.currentVs !== 0) {
                     this.currentState = A320_Neo_FCU_VSpeed_State.Flying;
                 } else {

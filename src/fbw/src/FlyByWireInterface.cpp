@@ -247,6 +247,10 @@ void FlyByWireInterface::setupLocalVariables() {
   idFmaTripleClick = make_unique<LocalVariable>("A32NX_FMA_TRIPLE_CLICK");
   idFmaModeReversion = make_unique<LocalVariable>("A32NX_FMA_MODE_REVERSION");
 
+  idAutopilotTcasMessageDisarm = make_unique<LocalVariable>("A32NX_AUTOPILOT_TCAS_MESSAGE_DISARM");
+  idAutopilotTcasMessageRaInhibited = make_unique<LocalVariable>("A32NX_AUTOPILOT_TCAS_MESSAGE_RA_INHIBITED");
+  idAutopilotTcasMessageTrkFpaDeselection = make_unique<LocalVariable>("A32NX_AUTOPILOT_TCAS_MESSAGE_TRK_FPA_DESELECTION");
+
   // register L variable for flight director
   idFlightDirectorBank = make_unique<LocalVariable>("A32NX_FLIGHT_DIRECTOR_BANK");
   idFlightDirectorPitch = make_unique<LocalVariable>("A32NX_FLIGHT_DIRECTOR_PITCH");
@@ -299,6 +303,16 @@ void FlyByWireInterface::setupLocalVariables() {
   idFmRnavAppSelected = make_unique<LocalVariable>("A32NX_FG_RNAV_APP_SELECTED");
   idFmFinalCanEngage = make_unique<LocalVariable>("A32NX_FG_FINAL_CAN_ENGAGE");
 
+  idTcasFault = make_unique<LocalVariable>("A32NX_TCAS_FAULT");
+  idTcasMode = make_unique<LocalVariable>("A32NX_TCAS_MODE");
+  idTcasTaOnly = make_unique<LocalVariable>("A32NX_TCAS_TA_ONLY");
+  idTcasState = make_unique<LocalVariable>("A32NX_TCAS_STATE");
+  idTcasRaCorrective = make_unique<LocalVariable>("A32NX_TCAS_RA_CORRECTIVE");
+  idTcasTargetGreenMin = make_unique<LocalVariable>("A32NX_TCAS_VSPEED_GREEN:1");
+  idTcasTargetGreenMax = make_unique<LocalVariable>("A32NX_TCAS_VSPEED_GREEN:2");
+  idTcasTargetRedMin = make_unique<LocalVariable>("A32NX_TCAS_VSPEED_RED:1");
+  idTcasTargetRedMax = make_unique<LocalVariable>("A32NX_TCAS_VSPEED_RED:2");
+
   idFcuTrkFpaModeActive = make_unique<LocalVariable>("A32NX_TRK_FPA_MODE_ACTIVE");
   idFcuSelectedFpa = make_unique<LocalVariable>("A32NX_AUTOPILOT_FPA_SELECTED");
   idFcuSelectedVs = make_unique<LocalVariable>("A32NX_AUTOPILOT_VS_SELECTED");
@@ -308,6 +322,7 @@ void FlyByWireInterface::setupLocalVariables() {
   idFcuApprModeActive = make_unique<LocalVariable>("A32NX_FCU_APPR_MODE_ACTIVE");
   idFcuModeReversionActive = make_unique<LocalVariable>("A32NX_FCU_MODE_REVERSION_ACTIVE");
   idFcuModeReversionTrkFpaActive = make_unique<LocalVariable>("A32NX_FCU_MODE_REVERSION_TRK_FPA_ACTIVE");
+  idFcuModeReversionTargetFpm = make_unique<LocalVariable>("A32NX_FCU_MODE_REVERSION_TARGET_FPM");
 
   idThrottlePosition3d_1 = make_unique<LocalVariable>("A32NX_3D_THROTTLE_LEVER_POSITION_1");
   idThrottlePosition3d_2 = make_unique<LocalVariable>("A32NX_3D_THROTTLE_LEVER_POSITION_2");
@@ -468,7 +483,12 @@ bool FlyByWireInterface::readDataAndLocalVariables(double sampleTime) {
                                                          static_cast<unsigned long long>(idFmRnavAppSelected->get()),
                                                          static_cast<unsigned long long>(idFmFinalCanEngage->get()),
                                                          simData.speed_slot_index == 2,
-                                                         autopilotLawsOutput.Phi_loc_c};
+                                                         autopilotLawsOutput.Phi_loc_c,
+                                                         static_cast<unsigned long long>(idTcasFault->get()),
+                                                         static_cast<unsigned long long>(getTcasModeAvailable()),
+                                                         getTcasAdvisoryState(),
+                                                         idTcasTargetGreenMin->get(),
+                                                         idTcasTargetGreenMax->get()};
     simConnectInterface.setClientDataLocalVariables(clientDataLocalVariables);
   }
 
@@ -752,6 +772,10 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
     autopilotStateMachineInput.in.input.FM_H_dot_c_fpm = idFlightGuidanceTargetVerticalSpeed->get();
     autopilotStateMachineInput.in.input.FM_rnav_appr_selected = static_cast<bool>(idFmRnavAppSelected->get());
     autopilotStateMachineInput.in.input.FM_final_des_can_engage = static_cast<bool>(idFmFinalCanEngage->get());
+    autopilotStateMachineInput.in.input.TCAS_mode_available = getTcasModeAvailable();
+    autopilotStateMachineInput.in.input.TCAS_advisory_state = getTcasAdvisoryState();
+    autopilotStateMachineInput.in.input.TCAS_advisory_target_min_fpm = idTcasTargetGreenMin->get();
+    autopilotStateMachineInput.in.input.TCAS_advisory_target_max_fpm = idTcasTargetGreenMax->get();
 
     // step the model -------------------------------------------------------------------------------------------------
     autopilotStateMachine.setExternalInputs(&autopilotStateMachineInput);
@@ -779,6 +803,7 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
     autopilotStateMachineOutput.vertical_mode_armed = clientData.vertical_mode_armed;
     autopilotStateMachineOutput.mode_reversion_lateral = clientData.mode_reversion_lateral;
     autopilotStateMachineOutput.mode_reversion_vertical = clientData.mode_reversion_vertical;
+    autopilotStateMachineOutput.mode_reversion_vertical_target_fpm = clientData.mode_reversion_vertical_target_fpm;
     autopilotStateMachineOutput.mode_reversion_TRK_FPA = clientData.mode_reversion_TRK_FPA;
     autopilotStateMachineOutput.mode_reversion_triple_click = clientData.mode_reversion_triple_click;
     autopilotStateMachineOutput.mode_reversion_fma = clientData.mode_reversion_fma;
@@ -794,6 +819,9 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
     autopilotStateMachineOutput.EXPED_mode_active = clientData.EXPED_mode_active;
     autopilotStateMachineOutput.FD_disconnect = clientData.FD_disconnect;
     autopilotStateMachineOutput.FD_connect = clientData.FD_connect;
+    autopilotStateMachineOutput.TCAS_message_disarm = clientData.TCAS_message_disarm;
+    autopilotStateMachineOutput.TCAS_message_RA_inhibit = clientData.TCAS_message_RA_inhibit;
+    autopilotStateMachineOutput.TCAS_message_TRK_FPA_deselection = clientData.TCAS_message_TRK_FPA_deselection;
 
     // update radio
     idRadioReceiverLocalizerValid->set(clientData.nav_e_loc_valid);
@@ -817,7 +845,17 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
   idFcuLocModeActive->set((isLocArmed || isLocEngaged) && !(isGsArmed || isGsEngaged));
   idFcuApprModeActive->set(((isLocArmed || isLocEngaged) && (isGsArmed || isGsEngaged)) || isFinalArmed || isFinalEngaged);
   idFcuModeReversionActive->set(autopilotStateMachineOutput.mode_reversion_lateral || autopilotStateMachineOutput.mode_reversion_vertical);
+  idFcuModeReversionTargetFpm->set(autopilotStateMachineOutput.mode_reversion_vertical_target_fpm);
   idFcuModeReversionTrkFpaActive->set(autopilotStateMachineOutput.mode_reversion_TRK_FPA);
+  idAutopilotTcasMessageDisarm->set(autopilotStateMachineOutput.TCAS_message_disarm);
+  idAutopilotTcasMessageRaInhibited->set(autopilotStateMachineOutput.TCAS_message_RA_inhibit);
+  idAutopilotTcasMessageTrkFpaDeselection->set(autopilotStateMachineOutput.TCAS_message_TRK_FPA_deselection);
+
+  bool isTcasEngaged = autopilotStateMachineOutput.vertical_mode == 50;
+  if (!wasTcasEngaged && isTcasEngaged) {
+    execute_calculator_code("(>H:A320_Neo_FCU_SPEED_TCAS)", nullptr, nullptr, nullptr);
+  }
+  wasTcasEngaged = isTcasEngaged;
 
   // update autothrust mode -------------------------------------------------------------------------------------------
   idAutopilotAutothrustMode->set(autopilotStateMachineOutput.autothrust_mode);
@@ -1069,6 +1107,7 @@ bool FlyByWireInterface::updateAutopilotLaws(double sampleTime) {
           autopilotStateMachineOutput.vertical_mode_armed,
           autopilotStateMachineOutput.mode_reversion_lateral,
           autopilotStateMachineOutput.mode_reversion_vertical,
+          autopilotStateMachineOutput.mode_reversion_vertical_target_fpm,
           autopilotStateMachineOutput.mode_reversion_TRK_FPA,
           autopilotStateMachineOutput.mode_reversion_triple_click,
           autopilotStateMachineOutput.mode_reversion_fma,
@@ -1084,6 +1123,13 @@ bool FlyByWireInterface::updateAutopilotLaws(double sampleTime) {
           autopilotStateMachineOutput.EXPED_mode_active,
           autopilotStateMachineOutput.FD_disconnect,
           autopilotStateMachineOutput.FD_connect,
+          idRadioReceiverLocalizerValid->get(),
+          idRadioReceiverLocalizerDeviation->get(),
+          idRadioReceiverGlideSlopeValid->get(),
+          idRadioReceiverGlideSlopeDeviation->get(),
+          autopilotStateMachineOutput.TCAS_message_disarm,
+          autopilotStateMachineOutput.TCAS_message_RA_inhibit,
+          autopilotStateMachineOutput.TCAS_message_TRK_FPA_deselection,
       };
       simConnectInterface.setClientDataAutopilotStateMachine(clientDataStateMachine);
     }
@@ -1391,6 +1437,8 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
         idFmgcThrustReductionAltitudeGoAround->get(),
         idFmgcFlightPhase->get(),
         autopilotStateMachineOutput.ALT_soft_mode_active,
+        getTcasAdvisoryState() > 1,
+        autopilotStateMachineOutput.H_dot_c_fpm,
     };
     simConnectInterface.setClientDataLocalVariablesAutothrust(ClientDataLocalVariablesAutothrust);
   }
@@ -1462,6 +1510,8 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
     autoThrustInput.in.input.is_air_conditioning_2_active = idAirConditioningPack_2->get();
     autoThrustInput.in.input.FD_active = simData.ap_fd_1_active || simData.ap_fd_2_active;
     autoThrustInput.in.input.ATHR_reset_disable = simConnectInterface.getSimInputThrottles().ATHR_reset_disable == 1;
+    autoThrustInput.in.input.is_TCAS_active = getTcasAdvisoryState() > 1;
+    autoThrustInput.in.input.target_TCAS_RA_rate_fpm = autopilotStateMachineOutput.H_dot_c_fpm;
 
     // step the model -------------------------------------------------------------------------------------------------
     autoThrust.setExternalInputs(&autoThrustInput);
@@ -1608,4 +1658,23 @@ double FlyByWireInterface::getHeadingAngleError(double u1, double u2) {
   } else {
     return dPsi_2;
   }
+}
+
+double FlyByWireInterface::getTcasModeAvailable() {
+  auto state = idTcasMode->get();
+  auto isTaOnly = idTcasTaOnly->get();
+
+  // TA/RA active and TCAS not in TA only mode
+  return state == 2 && !isTaOnly;
+}
+
+double FlyByWireInterface::getTcasAdvisoryState() {
+  auto state = idTcasState->get();
+  auto isCorrective = idTcasRaCorrective->get();
+
+  if (state == 2 && isCorrective) {
+    state = 3;
+  }
+
+  return state;
 }
