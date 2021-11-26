@@ -96,18 +96,48 @@ export const PressPage: FC = () => {
                 <text className="Large Center" x={cax + 15} y="80">CAB ALT</text>
                 <text className="Medium Center Cyan" x={cax + 20} y="100">FT</text>
                 <text
+                    /* eslint-disable no-nested-ternary */
                     className={`Huge End ${Math.round(cabinAlt / 50) * 50 >= 8800 && Math.round(cabinAlt / 50) * 50 < 9550
                         ? 'GreenTextPulse'
                         : Math.round(cabinAlt / 50) * 50 >= 9550 ? 'Red' : 'Green'}`}
+                    /* eslint-enable no-nested-ternary */
                     x={cax + 85}
                     y={y + 25}
                 >
                     {Math.round(cabinAlt / 50) * 50 > 0 ? Math.round(cabinAlt / 50) * 50 : 0}
                 </text>
-                <GaugeComponent x={cax} y={y} radius={radius} startAngle={210} endAngle={50} visible className="Gauge">
-                    <GaugeComponent x={cax} y={y} radius={radius} startAngle={30} endAngle={50} visible className="Gauge Red" />
-                    <GaugeMarkerComponent value={10} x={cax} y={y} min={-0.625} max={10.625}
-                        radius={radius} startAngle={210} endAngle={50} className="GaugeText" showValue indicator={false} textNudgeY={15} />
+                <GaugeComponent
+                    x={cax}
+                    y={y}
+                    radius={radius}
+                    startAngle={210}
+                    endAngle={50}
+                    visible
+                    className="Gauge"
+                >
+                    <GaugeComponent
+                        x={cax}
+                        y={y}
+                        radius={radius}
+                        startAngle={30}
+                        endAngle={50}
+                        visible
+                        className="Gauge Red"
+                    />
+                    <GaugeMarkerComponent
+                        value={10}
+                        x={cax}
+                        y={y}
+                        min={-0.625}
+                        max={10.625}
+                        radius={radius}
+                        startAngle={210}
+                        endAngle={50}
+                        className="GaugeText"
+                        showValue
+                        indicator={false}
+                        textNudgeY={15}
+                    />
                     <GaugeMarkerComponent
                         value={5}
                         x={cax}
@@ -144,9 +174,11 @@ export const PressPage: FC = () => {
                         radius={radius}
                         startAngle={210}
                         endAngle={50}
+                        /* eslint-disable no-nested-ternary */
                         className={`GaugeIndicator ${Math.round(cabinAlt / 50) * 50 >= 8800 && Math.round(cabinAlt / 50) * 50 < 9550
                             ? 'GreenIndicatorPulse'
                             : Math.round(cabinAlt / 50) * 50 >= 9550 ? 'Red' : 'Green'}`}
+                        /* eslint-enable no-nested-ternary */
                         indicator
                     />
                 </GaugeComponent>
