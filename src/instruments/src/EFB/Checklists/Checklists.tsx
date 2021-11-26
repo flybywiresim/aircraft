@@ -87,11 +87,6 @@ export const Checklists = () => {
 
     const setItemState = (itemIdx: number, newValue: ChecklistItemState) => {
         checklistItemState[currentChecklistIdx].itemStates[itemIdx] = newValue;
-        console.log(
-            `checklistItemState[${currentChecklistIdx}]=${JSON.stringify(
-                checklistItemState[currentChecklistIdx]
-            )}`
-        );
         setChecklistItemState(checklistItemState);
     };
 
@@ -113,6 +108,11 @@ export const Checklists = () => {
                 }
             );
             setChecklistItemState(checklistItemState);
+        } else {
+            if (currentChecklistIdx < CHECKLISTS.length - 1) {
+                console.log(`Show next checklist: ${currentChecklistIdx + 1}`);
+                setCurrentChecklistIdx(currentChecklistIdx + 1);
+            }
         }
     };
 
@@ -133,6 +133,7 @@ export const Checklists = () => {
             <h1 className="text-3xl pt-6 text-white">Checklists</h1>
             <Navbar
                 tabs={CHECKLIST_NAMES}
+                selectedTabIndex={currentChecklistIdx}
                 onSelected={(index) => handleClick(index)}
             />
             <ChecklistPage
