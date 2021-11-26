@@ -53,7 +53,12 @@ impl ACSController {
     ) {
         self.aircraft_state = self.aircraft_state.update(context, engines, lgciu);
         for zone in self.zone_controller.iter_mut() {
-            zone.update(context, acs_overhead, pressurization)
+            zone.update(
+                context,
+                acs_overhead,
+                &self.pack_flow_controller,
+                pressurization,
+            )
         }
         self.pack_flow_controller.update(
             &self.aircraft_state,
@@ -388,6 +393,7 @@ impl ZoneController {
         &mut self,
         context: &UpdateContext,
         acs_overhead: &AirConditioningSystemOverhead,
+        pack_flow: &impl PackFlow,
         pressurization: &impl CabinAltitude,
     ) {
         if acs_overhead
@@ -397,7 +403,16 @@ impl ZoneController {
             self.zone_selected_temperature =
                 acs_overhead.selected_cabin_temperatures()[&self.zone_id];
         }
-        self.duct_demand_temperature = self.calculate_duct_temp_demand(context, pressurization);
+        self.duct_demand_temperature =
+            if pack_flow.pack_flow() < MassRate::new::<kilogram_per_second>(0.01) {
+                // When there's no pack flow, duct temperature is mostly determined by cabin recirculated air and ambient temperature
+                ThermodynamicTemperature::new::<degree_celsius>(
+                    0.8 * self.zone_measured_temperature.get::<degree_celsius>()
+                        + 0.2 * context.ambient_temperature().get::<degree_celsius>(),
+                )
+            } else {
+                self.calculate_duct_temp_demand(context, pressurization)
+            };
     }
 
     fn calculate_duct_temp_demand(
@@ -727,7 +742,7 @@ mod acs_controller_tests {
     use crate::{
         air_conditioning::cabin_air::CabinZone,
         simulation::{
-            test::{SimulationTestBed, TestBed, WriteByName},
+            test::{ReadByName, SimulationTestBed, TestBed, WriteByName},
             Aircraft, SimulationElement, SimulationElementVisitor, UpdateContext,
         },
     };
@@ -955,7 +970,7 @@ mod acs_controller_tests {
             };
             test_bed.set_indicated_airspeed(Velocity::new::<knot>(0.));
             test_bed.set_indicated_altitude(Length::new::<foot>(0.));
-            test_bed.set_ambient_temperature(ThermodynamicTemperature::new::<degree_celsius>(25.));
+            test_bed.set_ambient_temperature(ThermodynamicTemperature::new::<degree_celsius>(24.));
             test_bed.command_measured_temperature(
                 [ThermodynamicTemperature::new::<degree_celsius>(24.); 2],
             );
@@ -1142,6 +1157,10 @@ mod acs_controller_tests {
 
         fn command_crossbleed_on(&mut self) {
             self.write_by_name("KNOB_OVHD_AIRCOND_XBLEED_Position", 2);
+        }
+
+        fn measured_temperature(&mut self) -> ThermodynamicTemperature {
+            self.read_by_name("COND_FWD_TEMP")
         }
 
         fn duct_demand_temperature(&self) -> HashMap<&str, ThermodynamicTemperature> {
@@ -1461,6 +1480,26 @@ mod acs_controller_tests {
         }
 
         #[test]
+        fn duct_demand_temperature_is_cabin_temp_when_no_flow() {
+            let mut test_bed = test_bed()
+                .with()
+                .engine_idle()
+                .and()
+                .command_selected_temperature(
+                    [ThermodynamicTemperature::new::<degree_celsius>(18.); 2],
+                );
+            test_bed.command_pack_1_pb_position(false);
+            test_bed.command_pack_2_pb_position(false);
+            test_bed = test_bed.iterate_with_delta(100, Duration::from_secs(10));
+            assert!(
+                (test_bed.duct_demand_temperature()["FWD"].get::<degree_celsius>()
+                    - test_bed.measured_temperature().get::<degree_celsius>())
+                .abs()
+                    < 1.
+            );
+        }
+
+        #[test]
         fn increasing_selected_temp_increases_duct_demand_temp() {
             let mut test_bed = test_bed()
                 .with()
@@ -1516,7 +1555,7 @@ mod acs_controller_tests {
                 .command_selected_temperature(
                     [ThermodynamicTemperature::new::<degree_celsius>(30.); 2],
                 );
-            test_bed.run();
+            test_bed = test_bed.iterate_with_delta(3, Duration::from_secs(1));
 
             let mut previous_temp = test_bed.duct_demand_temperature()["FWD"];
             test_bed.run();
@@ -1571,8 +1610,7 @@ mod acs_controller_tests {
             test_bed.command_measured_temperature(
                 [ThermodynamicTemperature::new::<degree_celsius>(24.); 2],
             );
-            test_bed.run();
-            test_bed.run();
+            test_bed = test_bed.iterate_with_delta(3, Duration::from_secs(1));
             assert!(
                 (test_bed.duct_demand_temperature()["FWD"].get::<degree_celsius>() - 8.).abs() < 1.
             );

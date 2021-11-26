@@ -85,6 +85,10 @@ pub trait TestBed {
             .set_ambient_temperature(ambient_temperature);
     }
 
+    fn ambient_temperature(&mut self) -> ThermodynamicTemperature {
+        self.test_bed_mut().ambient_temperature()
+    }
+
     fn set_on_ground(&mut self, on_ground: bool) {
         self.test_bed_mut().set_on_ground(on_ground);
     }
@@ -309,6 +313,10 @@ impl<T: Aircraft> SimulationTestBed<T> {
 
     fn set_ambient_temperature(&mut self, ambient_temperature: ThermodynamicTemperature) {
         self.write_by_name(UpdateContext::AMBIENT_TEMPERATURE_KEY, ambient_temperature);
+    }
+
+    fn ambient_temperature(&mut self) -> ThermodynamicTemperature {
+        self.read_by_name(UpdateContext::AMBIENT_TEMPERATURE_KEY)
     }
 
     fn set_on_ground(&mut self, on_ground: bool) {

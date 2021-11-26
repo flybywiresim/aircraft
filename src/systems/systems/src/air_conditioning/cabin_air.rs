@@ -13,6 +13,7 @@ use uom::si::{
     mass_rate::kilogram_per_second,
     power::{kilowatt, watt},
     pressure::pascal,
+    ratio::percent,
     thermodynamic_temperature::kelvin,
     velocity::meter_per_second,
     volume::cubic_meter,
@@ -21,16 +22,23 @@ use uom::si::{
 pub struct CabinZone {
     zone_identifier: VariableIdentifier,
     true_airspeed_id: VariableIdentifier,
+    fwd_door_id: VariableIdentifier,
+    rear_door_id: VariableIdentifier,
 
     zone_id: String,
     zone_air: ZoneAir,
     zone_volume: Volume,
     passengers: usize,
     true_airspeed: Velocity,
+    fwd_door_is_open: bool,
+    rear_door_is_open: bool,
 }
 
 impl CabinZone {
     const TRUE_AIRSPEED: &'static str = "AIRSPEED TRUE";
+    const FWD_DOOR: &'static str = "INTERACTIVE POINT OPEN:0";
+    const READ_DOOR: &'static str = "INTERACTIVE POINT OPEN:3";
+
     const FIBER_GLASS_BLANKET_THERMAL_CONDUCTIVITY: f64 = 35.; // m*W/m*C
     const FIBER_GLASS_BLANKET_THICKNESS: f64 = 0.06; //m
     const ALUMINIUM_ALLOY_THERMAL_CONDUCTIVITY: f64 = 177.; // m*W/m*C
@@ -45,12 +53,16 @@ impl CabinZone {
         Self {
             zone_identifier: context.get_identifier(format!("COND_{}_TEMP", zone_id)),
             true_airspeed_id: context.get_identifier(Self::TRUE_AIRSPEED.to_owned()),
+            fwd_door_id: context.get_identifier(Self::FWD_DOOR.to_owned()),
+            rear_door_id: context.get_identifier(Self::READ_DOOR.to_owned()),
 
             zone_id: zone_id.to_owned(),
             zone_air: ZoneAir::new(),
             zone_volume,
             passengers,
             true_airspeed: Velocity::new::<meter_per_second>(0.),
+            fwd_door_is_open: false,
+            rear_door_is_open: false,
         }
     }
 
@@ -71,6 +83,8 @@ impl CabinZone {
             self.true_airspeed,
             self.zone_volume,
             self.passengers,
+            self.fwd_door_is_open,
+            self.rear_door_is_open,
             pressurization,
         );
     }
@@ -87,6 +101,10 @@ impl CabinZone {
 impl SimulationElement for CabinZone {
     fn read(&mut self, reader: &mut SimulatorReader) {
         self.true_airspeed = reader.read(&self.true_airspeed_id);
+        let rear_door_read: Ratio = reader.read(&self.rear_door_id);
+        self.rear_door_is_open = rear_door_read > Ratio::new::<percent>(0.);
+        let fwd_door_read: Ratio = reader.read(&self.fwd_door_id);
+        self.fwd_door_is_open = fwd_door_read > Ratio::new::<percent>(0.);
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
@@ -97,6 +115,7 @@ impl SimulationElement for CabinZone {
 struct ZoneAir {
     flow_out: Air,
     internal_air: Air,
+    is_initialised: bool,
 }
 
 impl ZoneAir {
@@ -107,6 +126,7 @@ impl ZoneAir {
         Self {
             flow_out: Air::new(),
             internal_air: Air::new(),
+            is_initialised: false,
         }
     }
 
@@ -117,12 +137,22 @@ impl ZoneAir {
         true_airspeed: Velocity,
         zone_volume: Volume,
         zone_passengers: usize,
+        fwd_door_is_open: bool,
+        rear_door_is_open: bool,
         pressurization: &impl CabinAltitude,
     ) {
+        if !self.is_initialised {
+            self.internal_air
+                .set_temperature(context.ambient_temperature());
+            self.flow_out.set_temperature(context.ambient_temperature());
+            self.is_initialised = true;
+        }
         self.internal_air
             .set_pressure(pressurization.cabin_pressure());
+        let number_of_open_doors: usize = fwd_door_is_open as usize + rear_door_is_open as usize;
         let new_equilibrium_temperature = self.calculate_equilibrium_temperature(
             context,
+            number_of_open_doors,
             flow_in,
             true_airspeed,
             zone_volume,
@@ -137,6 +167,7 @@ impl ZoneAir {
     fn calculate_equilibrium_temperature(
         &self,
         context: &UpdateContext,
+        number_of_open_doors: usize,
         flow_in: &Air,
         true_airspeed: Velocity,
         zone_volume: Volume,
@@ -145,9 +176,17 @@ impl ZoneAir {
         let inlet_air_energy = flow_in.flow_rate().get::<kilogram_per_second>()
             * Air::SPECIFIC_HEAT_CAPACITY_PRESSURE
             * flow_in.temperature().get::<kelvin>();
+        let inlet_door_air_energy = number_of_open_doors as f64
+            * (0.5)
+            * Air::SPECIFIC_HEAT_CAPACITY_PRESSURE
+            * context.ambient_temperature().get::<kelvin>();
         let outlet_air_energy = self.flow_out.flow_rate().get::<kilogram_per_second>()
             * Air::SPECIFIC_HEAT_CAPACITY_PRESSURE
             * self.flow_out.temperature().get::<kelvin>();
+        let outlet_door_air_energy = number_of_open_doors as f64
+            * (0.5)
+            * Air::SPECIFIC_HEAT_CAPACITY_PRESSURE
+            * self.internal_air.temperature().get::<kelvin>();
         let passenger_heat_energy = Self::PASSENGER_HEAT_RELEASE * (zone_passengers as f64);
         let wall_transfer_heat_energy = self
             .heat_transfer_through_wall_calculation(context, true_airspeed, zone_volume)
@@ -160,12 +199,14 @@ impl ZoneAir {
             * Air::SPECIFIC_HEAT_CAPACITY_VOLUME
             * self.internal_air.temperature().get::<kelvin>();
 
-        let equilibrium_temperature = ((passenger_heat_energy + inlet_air_energy
-            - outlet_air_energy
-            - wall_transfer_heat_energy)
-            * context.delta_as_secs_f64()
-            + internal_energy)
-            / (internal_mass * Air::SPECIFIC_HEAT_CAPACITY_VOLUME);
+        let equilibrium_temperature =
+            ((passenger_heat_energy + inlet_air_energy + inlet_door_air_energy
+                - outlet_air_energy
+                - outlet_door_air_energy
+                - wall_transfer_heat_energy)
+                * context.delta_as_secs_f64()
+                + internal_energy)
+                / (internal_mass * Air::SPECIFIC_HEAT_CAPACITY_VOLUME);
         ThermodynamicTemperature::new::<kelvin>(equilibrium_temperature)
     }
 
@@ -426,6 +467,10 @@ mod cabin_air_tests {
             self.write_by_name("AIRSPEED TRUE", speed);
         }
 
+        fn command_open_door(&mut self) {
+            self.write_by_name("INTERACTIVE POINT OPEN:0", Ratio::new::<percent>(100.));
+        }
+
         fn cabin_temperature(&self) -> ThermodynamicTemperature {
             self.query(|a| a.cabin_zone.zone_air.zone_air_temperature())
         }
@@ -461,13 +506,11 @@ mod cabin_air_tests {
     }
 
     #[test]
-    fn cabin_air_starts_at_24_degrees() {
-        let test_bed = test_bed();
-
-        assert_eq!(
-            test_bed.cabin_temperature(),
-            ThermodynamicTemperature::new::<degree_celsius>(24.)
-        );
+    fn cabin_air_starts_at_exterior_temperature() {
+        let mut test_bed = test_bed();
+        test_bed.set_ambient_temperature(ThermodynamicTemperature::new::<degree_celsius>(10.));
+        test_bed.run();
+        assert!((test_bed.cabin_temperature().get::<degree_celsius>() - 10.) < 1.);
     }
 
     #[test]
@@ -572,6 +615,7 @@ mod cabin_air_tests {
         let mut test_bed = test_bed();
         test_bed.set_passengers(0);
         test_bed.set_flow_in_flow_rate(MassRate::new::<kilogram_per_second>(0.));
+        test_bed.run();
         test_bed.set_ambient_temperature(ThermodynamicTemperature::new::<degree_celsius>(0.));
         let initial_temp = test_bed.cabin_temperature();
         test_bed = test_bed.iterate_with_delta(100, Duration::from_secs(10));
@@ -596,6 +640,8 @@ mod cabin_air_tests {
         let mut test_bed = test_bed();
         test_bed.set_passengers(0);
         test_bed.set_flow_in_flow_rate(MassRate::new::<kilogram_per_second>(0.));
+        test_bed.set_ambient_temperature(ThermodynamicTemperature::new::<degree_celsius>(24.));
+        test_bed.run();
         test_bed.set_ambient_temperature(ThermodynamicTemperature::new::<degree_celsius>(0.));
         test_bed.set_true_airspeed(Velocity::new::<meter_per_second>(130.));
         let initial_temp = test_bed.cabin_temperature();
@@ -606,6 +652,8 @@ mod cabin_air_tests {
         let mut test_bed2 = CabinZoneTestBed::new();
         test_bed2.set_passengers(0);
         test_bed2.set_flow_in_flow_rate(MassRate::new::<kilogram_per_second>(0.));
+        test_bed2.set_ambient_temperature(ThermodynamicTemperature::new::<degree_celsius>(24.));
+        test_bed2.run();
         test_bed2.set_ambient_temperature(ThermodynamicTemperature::new::<degree_celsius>(0.));
         test_bed2.set_true_airspeed(Velocity::new::<meter_per_second>(130.));
         test_bed2.set_ambient_pressure(Pressure::new::<pascal>(45000.));
@@ -615,5 +663,25 @@ mod cabin_air_tests {
             - test_bed2.cabin_temperature().get::<degree_celsius>();
 
         assert!(first_temperature_differential > second_temperature_differential);
+    }
+
+    #[test]
+    fn opening_doors_affects_cabin_temp() {
+        let mut test_bed = test_bed();
+        test_bed.set_passengers(0);
+        test_bed.set_flow_in_flow_rate(MassRate::new::<kilogram_per_second>(0.));
+        test_bed.set_ambient_temperature(ThermodynamicTemperature::new::<degree_celsius>(24.));
+
+        test_bed.run();
+        test_bed.set_ambient_temperature(ThermodynamicTemperature::new::<degree_celsius>(0.));
+        test_bed.command_open_door();
+        test_bed = test_bed.iterate_with_delta(100, Duration::from_secs(10));
+
+        assert!(
+            (test_bed.cabin_temperature().get::<degree_celsius>()
+                - test_bed.ambient_temperature().get::<degree_celsius>())
+            .abs()
+                < 1.
+        );
     }
 }
