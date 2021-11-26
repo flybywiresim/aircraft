@@ -1,23 +1,23 @@
 .dotsUnchecked {
   border-bottom: thin dashed white;
   width: 100%;
-  height: 14px;
+  height: 1.5rem;
 }
 
 .dotsChecked {
   border-bottom: thin dashed rgba(16, 185, 129, var(--tw-text-opacity));
   width: 100%;
-  height: 14px;
+  height: 1.5rem;
 }
 
-
-.text {
-  margin-top: -14px;
-  background-color: var(--color-hightlight);
+.checklistTextDiv {
+  margin-top: -1.5rem;
+  padding-bottom: 0.1rem;
 }
 
-.text-span {
+.checklistTextSpan {
   padding-right: 5px;
+  background-color: var(--color-body);
 }
 
 .pull-right {

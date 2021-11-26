@@ -72,7 +72,7 @@ export const ChecklistPage = (props: ChecklistPageProps) => {
                         <button
                             type="button"
                             onClick={() => setChecklistComplete(true)}
-                            className="mr-1 w-1/3 text-white bg-teal-light p-2 flex items-center justify-center rounded-lg focus:outline-none text-3xl"
+                            className="mr-1 w-1/3 text-white bg-teal-light p-2 flex items-center justify-center rounded-lg focus:outline-none text-2xl"
                         >
                             <IconCheck
                                 className="mr-2"
@@ -89,7 +89,7 @@ export const ChecklistPage = (props: ChecklistPageProps) => {
                         <button
                             type="button"
                             onClick={() => setChecklistComplete(false)}
-                            className="mr-1 w-1/3 text-red-600 bg-teal-light p-2 flex items-center justify-center rounded-lg focus:outline-none text-3xl"
+                            className="mr-1 w-1/3 text-red-600 bg-teal-light p-2 flex items-center justify-center rounded-lg focus:outline-none text-2xl"
                         >
                             <IconRepeat
                                 className="mr-2"

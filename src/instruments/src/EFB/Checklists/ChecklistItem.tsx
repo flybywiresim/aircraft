@@ -19,10 +19,7 @@ export const CheckListItem = (props: CheckListItemProps) => {
         return clItem.condition !== undefined;
     };
 
-    let itemClassName = isItemChecked ? "text-green-500" : "text-white";
-    if (false === isChecklistComplete && false === isConditionItem()) {
-        itemClassName += " checklistItem";
-    }
+    const itemClassName = (false === isChecklistComplete && false === isConditionItem() && clItem.item !=="") ? "checklistItem" : "";
     // console.log(`item ${clItem.item}: ${itemClassName}`)
 
     const itemText = (text:string, conditionPrefix: string) => {
@@ -33,7 +30,7 @@ export const CheckListItem = (props: CheckListItemProps) => {
     const coloredItemText = (text:string, conditionPrefix: string) => {
         const theText = isConditionItem() ? conditionPrefix + text : text;
         const color = isItemChecked ? "text-green-500" : "text-white";
-        return (<text className={color}>{theText}</text>)
+        return (<text className={"text-2xl "+color}>{theText}</text>)
     }
 
     return (
@@ -49,11 +46,11 @@ export const CheckListItem = (props: CheckListItemProps) => {
             {clItem.item != "" && (
                 <>
                     <div className={isItemChecked ? "dotsChecked" : "dotsUnchecked"}></div>
-                    <div className="text">
-                        <span className={"text-span bg-navy-regular"}>
+                    <div className="checklistTextDiv">
+                        <span className="checklistTextSpan">
                             {itemText(clItem.item, "* ")}
                         </span>
-                        <span className={"text-span pull-right bg-navy-regular"}>
+                        <span className="checklistTextSpan pull-right">
                             {itemText(clItem.result, "")}
                         </span>
                     </div>
