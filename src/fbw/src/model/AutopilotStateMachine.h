@@ -34,12 +34,12 @@ class AutopilotStateMachineModelClass {
     real_T Delay_DSTATE_d[100];
     real_T Delay_DSTATE_c[100];
     real_T DelayInput1_DSTATE;
-    real_T Delay_DSTATE_o;
-    real_T Delay_DSTATE_d2[100];
-    real_T Delay_DSTATE_f;
     real_T Delay_DSTATE_l;
+    real_T Delay_DSTATE_d2[100];
     real_T Delay_DSTATE_e;
-    real_T Delay_DSTATE_n;
+    real_T Delay_DSTATE_f;
+    real_T Delay_DSTATE_k;
+    real_T Delay_DSTATE_m;
     real_T local_H_fcu_ft;
     real_T local_H_constraint_ft;
     real_T local_H_GA_init_ft;
@@ -49,7 +49,7 @@ class AutopilotStateMachineModelClass {
     real_T nav_gs_deg;
     real_T eventTime;
     real_T eventTime_j;
-    real_T eventTime_g;
+    real_T eventTime_o;
     real_T eventTime_a;
     real_T lastTargetSpeed;
     real_T timeDeltaSpeed4;
@@ -102,10 +102,12 @@ class AutopilotStateMachineModelClass {
     boolean_T sRollOutActive;
     boolean_T sGoAroundModeActive;
     boolean_T nav_gs_deg_not_empty;
+    boolean_T prev_FDES_active;
+    boolean_T prev_FDES_armed;
     boolean_T eventTime_not_empty;
     boolean_T eventTime_not_empty_k;
-    boolean_T eventTime_not_empty_a;
-    boolean_T eventTime_not_empty_kn;
+    boolean_T eventTime_not_empty_h;
+    boolean_T eventTime_not_empty_j;
     boolean_T lastTargetSpeed_not_empty;
     boolean_T timeDeltaSpeed4_not_empty;
     boolean_T timeDeltaSpeed10_not_empty;
@@ -123,12 +125,13 @@ class AutopilotStateMachineModelClass {
     boolean_T state_h;
     boolean_T state_m;
     boolean_T state_a;
+    boolean_T sFINAL_DES;
     boolean_T sDES;
     boolean_T sCLB;
     rtDW_LagFilter_AutopilotStateMachine_T sf_LagFilter_h;
-    rtDW_WashoutFilter_AutopilotStateMachine_T sf_WashoutFilter_d;
+    rtDW_WashoutFilter_AutopilotStateMachine_T sf_WashoutFilter_k;
     rtDW_WashoutFilter_AutopilotStateMachine_T sf_WashoutFilter;
-    rtDW_LagFilter_AutopilotStateMachine_T sf_LagFilter_j;
+    rtDW_LagFilter_AutopilotStateMachine_T sf_LagFilter_d;
     rtDW_LagFilter_AutopilotStateMachine_T sf_LagFilter;
   };
 
@@ -277,6 +280,7 @@ class AutopilotStateMachineModelClass {
   void AutopilotStateMachine_CLB_entry(void);
   void AutopilotStateMachine_OP_CLB_entry(void);
   void AutopilotStateMachine_OP_DES_entry(void);
+  void AutopilotStateMachine_FINAL_DES_entry(void);
   void AutopilotStateMachine_GS_CPT_entry(void);
   boolean_T AutopilotStateMachine_X_TO_SRS_GA(void);
   void AutopilotStateMachine_OFF_during(void);
@@ -297,6 +301,7 @@ class AutopilotStateMachineModelClass {
   void AutopilotStateMachine_ALT_CST_CPT_entry(void);
   void AutopilotStateMachine_DES_during(void);
   void AutopilotStateMachine_DES(void);
+  void AutopilotStateMachine_FINAL_DES_during(void);
   void AutopilotStateMachine_FLARE_during(void);
   void AutopilotStateMachine_ROLL_OUT_entry_e(void);
   boolean_T AutopilotStateMachine_GS_TO_X(void);
@@ -308,7 +313,9 @@ class AutopilotStateMachineModelClass {
   void AutopilotStateMachine_GS(void);
   void AutopilotStateMachine_OP_CLB_during(void);
   void AutopilotStateMachine_OP_CLB_exit(void);
+  void AutopilotStateMachine_OP_CLB(void);
   void AutopilotStateMachine_OP_DES_during(void);
+  void AutopilotStateMachine_OP_DES(void);
   void AutopilotStateMachine_SRS_during(void);
   void AutopilotStateMachine_SRS(void);
   void AutopilotStateMachine_exit_internal_ON(void);

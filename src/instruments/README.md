@@ -48,3 +48,64 @@ After running `npm install`, from the root folder, run:
 ```
 rollup -wc .\src\instruments\buildSrc\simulatorBuild.mjs
 ```
+
+### ERROR: Javascript heap out of memory
+
+#### Increase memory limit
+
+```
+node --max-old-space-size=8192 node_modules/rollup/dist/bin/rollup -wc .\src\instruments\buildSrc\simulatorBuild.mjs
+```
+
+#### Custom ES Module (.mjs)
+
+Note: If you are memory resource constrained, create a custom ``build.mjs`` targeted at ``.\src\instruments\buildSrc\custom\``
+i.e.
+
+``rollup -wc src\instruments\buildSrc\custom\mfdBuild.mjs``
+
+```
+import fs from 'fs';
+import { join } from 'path';
+import { baseCompile } from '../plugins.mjs';
+import { getTemplatePlugin } from '../templatePlugins.mjs';
+import { Directories } from '../directories.mjs';
+import { getInputs } from '../igniter/tasks.mjs';
+
+process.chdir(Directories.src);
+
+export default getInputs()
+    .filter(({ path, name }) => name === 'ND' || name === 'PFD')
+    .map(({ path, name, isInstrument }) => {
+        const config = JSON.parse(fs.readFileSync(join(Directories.instruments, 'src', path, 'config.json')));
+
+        const additionalImports = config.additionalImports ? config.additionalImports : [];
+        return {
+            watch: true,
+            name,
+            input: join(Directories.instruments, 'src', path, config.index),
+            output: {
+                file: join(Directories.temp, 'bundle.js'),
+                format: 'iife',
+            },
+            plugins: [
+                ...baseCompile(name, path),
+                getTemplatePlugin({
+                    name,
+                    path,
+                    imports: [
+                        '/JS/dataStorage.js',
+                        '/Pages/VCockpit/Instruments/FlightElements/A32NX_Waypoint.js',
+                        ...additionalImports,
+                    ],
+                    config,
+                    isInstrument,
+                }),
+            ],
+        };
+    });
+```
+
+This module only watches ``PFD`` and ``ND`` and no other instruments, reducing rollup memory usage.
+
+IMPORTANT NOTE: Increasing memory size is greatly preferred to this, as you must be careful of any unwatched dependencies. It is highly recommended to occasionally check with `` .\scripts\dev-env\run.cmd ./scripts/setup.sh`` and ``.\scripts\dev-env\run.cmd ./scripts/build.sh --no-cache``
