@@ -74,6 +74,7 @@
 1. [MODEL] Adjust heat effect on ENG1+2 - @bouveng (Johan Bouveng)
 1. [PFD] Fixed speed tape outline at low speeds - @beheh (Benedict Etzel)
 1. [FM] Fetch transition alt and level from SimBrief - @tracernz (Mike)
+1. [FBW] Intermediate support for aileron keyboard events - @aguther (Andreas Guther)
 1. [FLIGHT MODEL] Fixed station locations and loads consistent with real A320 W&B manual - @ghosh9691
 1. [MCDU] Boarding and W/B AOC Pages update with Simbrief Integration - @viniciusfont
 1. [MCDU] Updated boarding logic, separate loading for pax and baggage - @sidnov (Sid)
