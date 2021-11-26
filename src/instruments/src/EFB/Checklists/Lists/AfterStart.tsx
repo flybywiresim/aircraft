@@ -15,7 +15,7 @@ export const afterStartChecklist = {
         },
         {
             item: "PITCH TRIM",
-            result: "_____ % SET",
+            result: "___ % SET",
             condition: undefined,
         },
         {
