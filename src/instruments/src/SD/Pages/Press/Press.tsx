@@ -17,7 +17,7 @@ export const PressPage: FC = () => {
     const [deltaPsi] = useSimVar('L:A32NX_PRESS_CABIN_DELTA_PRESSURE', 'psi', 500);
     const [flightPhase] = useSimVar('L:A32NX_FWC_FLIGHT_PHASE', 'enum', 1000);
     const [systemNumber] = useSimVar('L:A32NX_PRESS_ACTIVE_CPC_SYS', 'number', 1000);
-    const [safetyValve] = useSimVar("L:A32NX_PRESS_SAFETY_VALVE_OPEN_PERCENTAGE", 'percentage', 500);
+    const [safetyValve] = useSimVar('L:A32NX_PRESS_SAFETY_VALVE_OPEN_PERCENTAGE', 'percentage', 500);
 
     const deltaPress = splitDecimals(deltaPsi);
     const cax = 455;
@@ -59,8 +59,20 @@ export const PressPage: FC = () => {
                         endAngle={50}
                         className="GaugeText"
                     />
-                    <GaugeMarkerComponent value={0} x={dpx} y={y} min={-1} max={9} radius={radius} startAngle={210}
-                        endAngle={50} className="GaugeText" showValue textNudgeY={-10} textNudgeX={5}/>
+                    <GaugeMarkerComponent
+                        value={0}
+                        x={dpx}
+                        y={y}
+                        min={-1}
+                        max={9}
+                        radius={radius}
+                        startAngle={210}
+                        endAngle={50}
+                        className="GaugeText"
+                        showValue
+                        textNudgeY={-10}
+                        textNudgeX={5}
+                    />
                     <GaugeMarkerComponent
                         value={deltaPsi}
                         x={dpx}
@@ -108,7 +120,21 @@ export const PressPage: FC = () => {
                         className="GaugeText"
                         textNudgeY={10}
                     />
-                    <GaugeMarkerComponent value={0} x={cax} y={y} min={-0.625} max={10.625} radius={radius} startAngle={210} endAngle={50} className="GaugeText" showValue indicator={false} textNudgeY={-10} textNudgeX={5}/>
+                    <GaugeMarkerComponent
+                        value={0}
+                        x={cax}
+                        y={y}
+                        min={-0.625}
+                        max={10.625}
+                        radius={radius}
+                        startAngle={210}
+                        endAngle={50}
+                        className="GaugeText"
+                        showValue
+                        indicator={false}
+                        textNudgeY={-10}
+                        textNudgeX={5}
+                    />
                     <GaugeMarkerComponent
                         value={Math.round(cabinAlt / 50) * 50 > 0 ? Math.round(cabinAlt / 50) * 50 / 1000 : 0}
                         x={cax}

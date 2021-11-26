@@ -226,8 +226,11 @@ type GaugeMarkerComponentType = {
     textNudgeY?: number
 };
 
-export const GaugeMarkerComponent: FC<GaugeMarkerComponentType> = memo(({ value, x, y, min, max, radius, startAngle, endAngle, className, showValue,
-    indicator, outer, multiplierOuter, multiplierInner, textNudgeX, textNudgeY }) => {
+export const GaugeMarkerComponent: FC<GaugeMarkerComponentType> = memo(({
+        value, x, y, min, max, radius, startAngle, endAngle, className, showValue,
+        indicator, outer, multiplierOuter, multiplierInner, textNudgeX, textNudgeY
+    }) => {
+
     const dir = valueRadianAngleConverter({ value, min, max, endAngle, startAngle });
 
     if (typeof multiplierOuter === 'undefined') multiplierOuter = 1.15;
