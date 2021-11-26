@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { ReactElement, useState } from 'react';
 
 export type NavbarProps = {
-    tabs: string[],
+    tabs: string[] | ReactElement[];
     onSelected: (index: number) => void,
     className?: string,
 };
