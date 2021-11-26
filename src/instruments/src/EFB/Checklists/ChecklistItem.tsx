@@ -19,19 +19,24 @@ export const CheckListItem = (props: CheckListItemProps) => {
         return clItem.condition !== undefined;
     };
 
-    const itemClassName = (false === isChecklistComplete && false === isConditionItem() && clItem.item !=="") ? "checklistItem" : "";
-    // console.log(`item ${clItem.item}: ${itemClassName}`)
+    const itemClassName =
+        false === isChecklistComplete &&
+        false === isConditionItem() &&
+        clItem.item !== ""
+            ? "checklistItem"
+            : "";
 
-    const itemText = (text:string, conditionPrefix: string) => {
-        if (true == isConditionItem()) return (<i>{coloredItemText(text, conditionPrefix)}</i>);
-        return (<>{coloredItemText(text, conditionPrefix)}</>)
-    }
+    const itemText = (text: string, conditionPrefix: string) => {
+        if (true == isConditionItem())
+            return <i>{coloredItemText(text, conditionPrefix)}</i>;
+        return <>{coloredItemText(text, conditionPrefix)}</>;
+    };
 
-    const coloredItemText = (text:string, conditionPrefix: string) => {
+    const coloredItemText = (text: string, conditionPrefix: string) => {
         const theText = isConditionItem() ? conditionPrefix + text : text;
         const color = isItemChecked ? "text-green-500" : "text-white";
-        return (<text className={"text-2xl "+color}>{theText}</text>)
-    }
+        return <text className={"text-2xl " + color}>{theText}</text>;
+    };
 
     return (
         <div className={itemClassName} onClick={onClick}>
@@ -45,7 +50,11 @@ export const CheckListItem = (props: CheckListItemProps) => {
 
             {clItem.item != "" && (
                 <>
-                    <div className={isItemChecked ? "dotsChecked" : "dotsUnchecked"}></div>
+                    <div
+                        className={
+                            isItemChecked ? "dotsChecked" : "dotsUnchecked"
+                        }
+                    ></div>
                     <div className="checklistTextDiv">
                         <span className="checklistTextSpan">
                             {itemText(clItem.item, "* ")}

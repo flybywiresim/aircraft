@@ -59,8 +59,11 @@ export const Checklists = () => {
             cl.items.forEach((it, itIdx) => {
                 if (it.condition !== undefined) {
                     const condEval = it.condition();
-                    if (false === checklistState[clIdx]) { // do not overwrite status for completed checklists
-                        checklistItemState[clIdx].itemStates[itIdx].itemState = condEval;
+                    if (false === checklistState[clIdx]) {
+                        // do not overwrite status for completed checklists
+                        checklistItemState[clIdx].itemStates[
+                            itIdx
+                        ].itemState = condEval;
                     }
                 }
             });
@@ -73,7 +76,9 @@ export const Checklists = () => {
     };
 
     const setItemState = (itemIdx: number, value: boolean) => {
-        checklistItemState[currentChecklistIdx].itemStates[itemIdx].itemState = value;
+        checklistItemState[currentChecklistIdx].itemStates[
+            itemIdx
+        ].itemState = value;
         setChecklistItemState(checklistItemState);
     };
 

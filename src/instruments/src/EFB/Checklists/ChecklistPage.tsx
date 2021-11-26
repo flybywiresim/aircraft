@@ -1,7 +1,6 @@
 import { IconCheck, IconRepeat } from "@tabler/icons";
 import React, { useEffect } from "react";
 import { CheckListItem } from "./ChecklistItem";
-// import "./Checklist.css";
 
 export type ChecklistState = {
     itemStates: ChecklistItemState[];
@@ -39,16 +38,12 @@ export const ChecklistPage = (props: ChecklistPageProps) => {
         setChecklistComplete,
     } = props;
 
-    useEffect(() => {
-        console.log(`Page: isChecklistComplete=${isChecklistComplete}`);
-    },[items, isChecklistComplete])
-
     const toggleItemState = (idx: number) => {
-        console.log(`toggle ${idx} --> ${!itemStates[idx].itemState}`)
         setItemState(idx, !itemStates[idx].itemState);
     };
 
-    const allItemsChecked = itemStates.findIndex(it => it.itemState == false) == -1;
+    const allItemsChecked =
+        itemStates.findIndex((it) => it.itemState == false) == -1;
 
     const itemTags = items.map((it, idx) => {
         return (
