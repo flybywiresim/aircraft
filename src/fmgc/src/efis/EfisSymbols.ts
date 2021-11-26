@@ -11,6 +11,7 @@ import { Geometry } from '@fmgc/guidance/Geometry';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { RunwaySurface, VorType } from '../types/fstypes/FSEnums';
 import { NearbyFacilities } from './NearbyFacilities';
+import { NXDataStore } from '@shared/persistence';
 
 export class EfisSymbols {
     private blockUpdate = false;
@@ -37,11 +38,13 @@ export class EfisSymbols {
 
     private lastPpos: Coordinates = { lat: 0, long: 0 };
 
-    private lastTrueHeading: number = -1;
+    private lastUpBearing: number = -1;
 
     private lastNearbyFacilitiesVersion;
 
     private lastFpVersion;
+
+    private trackUpMode: boolean = false;
 
     constructor(flightPlanManager: FlightPlanManager, guidanceController: GuidanceController) {
         this.flightPlanManager = flightPlanManager;
@@ -52,6 +55,10 @@ export class EfisSymbols {
 
     init(): void {
         this.nearby.init();
+
+        NXDataStore.getAndSubscribe('A32NX_ND_TRACK_UP', (key: string, value: string) => {
+            this.trackUpMode = value === '1';
+        });
     }
 
     async update(deltaTime: number): Promise<void> {
@@ -66,15 +73,19 @@ export class EfisSymbols {
             lat: SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude'),
             long: SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude'),
         };
-        const trueHeading = SimVar.GetSimVarValue('PLANE HEADING DEGREES TRUE', 'degrees');
+        const groundSpeed = SimVar.GetSimVarValue('GPS GROUND SPEED', 'knots');
+        // TODO in true mode, this should be true track/heading... should get the values from FM position when implemented
+        const upBearing = (this.trackUpMode && groundSpeed >= 40)
+            ? SimVar.GetSimVarValue('GPS GROUND MAGNETIC TRACK', 'degrees')
+            : SimVar.GetSimVarValue('PLANE HEADING DEGREES MAGNETIC', 'degrees');
 
         const pposChanged = Avionics.Utils.computeDistance(this.lastPpos, ppos) > 2;
         if (pposChanged) {
             this.lastPpos = ppos;
         }
-        const trueHeadingChanged = Avionics.Utils.diffAngle(trueHeading, this.lastTrueHeading) > 2;
-        if (trueHeadingChanged) {
-            this.lastTrueHeading = trueHeading;
+        const upBearingChanged = Avionics.Utils.diffAngle(upBearing, this.lastUpBearing) > 2;
+        if (upBearingChanged) {
+            this.lastUpBearing = upBearing;
         }
 
         const nearbyFacilitiesChanged = this.nearby.version !== this.lastNearbyFacilitiesVersion;
@@ -120,7 +131,7 @@ export class EfisSymbols {
             this.lastEfisOption[side] = efisOption;
             const nearbyOverlayChanged = efisOption !== EfisOption.Constraints && efisOption !== EfisOption.None && nearbyFacilitiesChanged;
 
-            if (!pposChanged && !trueHeadingChanged && !rangeChange && !modeChange && !efisOptionChange && !nearbyOverlayChanged && !fpChanged && !planCentreChanged) {
+            if (!pposChanged && !upBearingChanged && !rangeChange && !modeChange && !efisOptionChange && !nearbyOverlayChanged && !fpChanged && !planCentreChanged) {
                 continue;
             }
 
@@ -135,7 +146,7 @@ export class EfisSymbols {
                         continue;
                     }
                     const ll = { lat: vor.lat, long: vor.lon };
-                    if (this.withinEditArea(ll, mode, planCentre, ppos, editAhead, editBehind, editBeside, trueHeading)) {
+                    if (this.withinEditArea(ll, mode, planCentre, ppos, editAhead, editBehind, editBeside, upBearing)) {
                         this.upsertSymbol(symbols, {
                             databaseId: vor.icao,
                             ident: vor.icao.substring(7, 12),
@@ -147,7 +158,7 @@ export class EfisSymbols {
             } else if (efisOption === EfisOption.Ndbs) {
                 for (const ndb of this.nearby.nearbyNdbNavaids.values()) {
                     const ll = { lat: ndb.lat, long: ndb.lon };
-                    if (this.withinEditArea(ll, mode, planCentre, ppos, editAhead, editBehind, editBeside, trueHeading)) {
+                    if (this.withinEditArea(ll, mode, planCentre, ppos, editAhead, editBehind, editBeside, upBearing)) {
                         this.upsertSymbol(symbols, {
                             databaseId: ndb.icao,
                             ident: ndb.icao.substring(7, 12),
@@ -159,7 +170,7 @@ export class EfisSymbols {
             } else if (efisOption === EfisOption.Airports) {
                 for (const ap of this.nearby.nearbyAirports.values()) {
                     const ll = { lat: ap.lat, long: ap.lon };
-                    if (this.withinEditArea(ll, mode, planCentre, ppos, editAhead, editBehind, editBeside, trueHeading) && hasSuitableRunway(ap)) {
+                    if (this.withinEditArea(ll, mode, planCentre, ppos, editAhead, editBehind, editBeside, upBearing) && hasSuitableRunway(ap)) {
                         this.upsertSymbol(symbols, {
                             databaseId: ap.icao,
                             ident: ap.icao.substring(7, 12),
@@ -171,7 +182,7 @@ export class EfisSymbols {
             } else if (efisOption === EfisOption.Waypoints) {
                 for (const wp of this.nearby.nearbyWaypoints.values()) {
                     const ll = { lat: wp.lat, long: wp.lon };
-                    if (this.withinEditArea(ll, mode, planCentre, ppos, editAhead, editBehind, editBeside, trueHeading)) {
+                    if (this.withinEditArea(ll, mode, planCentre, ppos, editAhead, editBehind, editBeside, upBearing)) {
                         this.upsertSymbol(symbols, {
                             databaseId: wp.icao,
                             ident: wp.icao.substring(7, 12),
@@ -226,7 +237,7 @@ export class EfisSymbols {
                     continue;
                 }
 
-                if (!this.withinEditArea(wp.infos.coordinates, mode, planCentre, ppos, editAhead, editBehind, editBeside, trueHeading)) {
+                if (!this.withinEditArea(wp.infos.coordinates, mode, planCentre, ppos, editAhead, editBehind, editBeside, upBearing)) {
                     continue;
                 }
 
@@ -285,7 +296,7 @@ export class EfisSymbols {
                     continue;
                 }
                 if (runway) {
-                    if (this.withinEditArea(runway.beginningCoordinates, mode, planCentre, ppos, editAhead, editBehind, editBeside, trueHeading)) {
+                    if (this.withinEditArea(runway.beginningCoordinates, mode, planCentre, ppos, editAhead, editBehind, editBeside, upBearing)) {
                         this.upsertSymbol(symbols, {
                             databaseId: airport.icao,
                             ident: `${airport.ident}${Avionics.Utils.formatRunway(runway.designation)}`,
@@ -295,7 +306,7 @@ export class EfisSymbols {
                             type: NdSymbolTypeFlags.Runway,
                         });
                     }
-                } else if (this.withinEditArea(airport.infos.coordinates, mode, planCentre, ppos, editAhead, editBehind, editBeside, trueHeading)) {
+                } else if (this.withinEditArea(airport.infos.coordinates, mode, planCentre, ppos, editAhead, editBehind, editBeside, upBearing)) {
                     this.upsertSymbol(symbols, {
                         databaseId: airport.icao,
                         ident: airport.ident,
@@ -336,11 +347,11 @@ export class EfisSymbols {
     }
 
     private withinEditArea(ll: LatLongData, mode: Mode, planCentre: LatLongAlt, ppos: LatLongData,
-        editAhead: number, editBehind: number, editBeside: number, trueHeading: number): boolean {
+        editAhead: number, editBehind: number, editBeside: number, upBearing: number): boolean {
         const dist = Avionics.Utils.computeGreatCircleDistance(mode === Mode.PLAN ? planCentre : ppos, ll);
         let bearing = Avionics.Utils.computeGreatCircleHeading(mode === Mode.PLAN ? planCentre : ppos, ll);
         if (mode !== Mode.PLAN) {
-            bearing = Avionics.Utils.clampAngle(bearing - trueHeading);
+            bearing = Avionics.Utils.clampAngle(bearing - upBearing);
         }
         bearing = bearing * Math.PI / 180;
         const dx = dist * Math.sin(bearing);

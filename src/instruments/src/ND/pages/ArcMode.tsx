@@ -6,6 +6,7 @@ import { useFlightPlanManager } from '@instruments/common/flightplan';
 import { LatLongData } from '@typings/fs-base-ui/html_ui/JS/Types';
 import { RangeSetting, Mode, EfisSide, NdSymbol } from '@shared/NavigationDisplay';
 import { LateralMode } from '@shared/autopilot';
+import { usePersistentNumberProperty } from '@instruments/common/persistence';
 import { FlightPlan, FlightPlanType } from '../elements/FlightPlan';
 import { MapParameters } from '../utils/MapParameters';
 import { RadioNeedle } from '../elements/RadioNeedles';
@@ -30,6 +31,7 @@ export const ArcMode: React.FC<ArcModeProps> = ({ symbols, adirsAlign, rangeSett
     const [magHeading] = useSimVar('PLANE HEADING DEGREES MAGNETIC', 'degrees');
     const [magTrack] = useSimVar('GPS GROUND MAGNETIC TRACK', 'degrees');
     const [trueHeading] = useSimVar('PLANE HEADING DEGREES TRUE', 'degrees');
+    const [trueTrack] = useSimVar('GPS GROUND TRUE TRACK', 'degrees');
     const [tcasMode] = useSimVar('L:A32NX_SWITCH_TCAS_Position', 'number');
     const [fmgcFlightPhase] = useSimVar('L:A32NX_FMGC_FLIGHT_PHASE', 'enum');
     const [selectedHeading] = useSimVar('L:A32NX_AUTOPILOT_HEADING_SELECTED', 'degrees');
@@ -39,6 +41,7 @@ export const ArcMode: React.FC<ArcModeProps> = ({ symbols, adirsAlign, rangeSett
     const [fmaLatMode] = useSimVar('L:A32NX_FMA_LATERAL_MODE', 'enum', 200);
     const [fmaLatArmed] = useSimVar('L:A32NX_FMA_LATERAL_ARMED', 'enum', 200);
     const [groundSpeed] = useSimVar('GPS GROUND SPEED', 'Meters per second', 200);
+    const [trackUpMode] = usePersistentNumberProperty('A32NX_ND_TRACK_UP', 0);
 
     const heading = Number(MathUtils.fastToFixed(magHeading, 2));
     let track = Number(MathUtils.fastToFixed(magTrack, 2));
@@ -49,16 +52,27 @@ export const ArcMode: React.FC<ArcModeProps> = ({ symbols, adirsAlign, rangeSett
         track = Number(MathUtils.fastToFixed(track, 2));
     }
 
+    const magVar = getSmallestAngle(trueTrack, magTrack);
+
+    const mapUpTrue = trackUpMode ? track + magVar : trueHeading;
+
     const [mapParams] = useState(() => {
         const params = new MapParameters();
-        params.compute(ppos, rangeSetting, 492, trueHeading);
+        params.compute(ppos, rangeSetting, 492, mapUpTrue);
 
         return params;
     });
 
     useEffect(() => {
-        mapParams.compute(ppos, rangeSetting, 492, trueHeading);
-    }, [ppos.lat, ppos.long, magHeading, rangeSetting].map((n) => MathUtils.fastToFixed(n, 6)));
+        mapParams.compute(ppos, rangeSetting, 492, mapUpTrue);
+    }, [ppos.lat, ppos.long, Number(MathUtils.fastToFixed(mapUpTrue, 2)), rangeSetting].map((n) => MathUtils.fastToFixed(n, 6)));
+
+    const headingRotationOffset = trackUpMode ? getSmallestAngle(heading, track) : 0;
+    const trackRotationOffset = trackUpMode ? 0 : getSmallestAngle(track, heading);
+
+    const selectedMode = ((fmaLatMode === LateralMode.NONE
+        || fmaLatMode === LateralMode.HDG
+        || fmaLatMode === LateralMode.TRACK) && !fmaLatArmed) || !flightPlanManager.getCurrentFlightPlan().length;
 
     if (adirsAlign) {
         let tmpFplan;
@@ -78,7 +92,7 @@ export const ArcMode: React.FC<ArcModeProps> = ({ symbols, adirsAlign, rangeSett
         return (
             <>
                 <Overlay
-                    heading={heading}
+                    upBearing={trackUpMode ? track : heading}
                     rangeSetting={rangeSetting}
                     tcasMode={tcasMode}
                 />
@@ -93,30 +107,22 @@ export const ArcMode: React.FC<ArcModeProps> = ({ symbols, adirsAlign, rangeSett
                             debug={false}
                             type={
                                 /* TODO FIXME: Check if intercepts active leg */
-                                (fmaLatMode === LateralMode.NONE
-                                    || fmaLatMode === LateralMode.HDG
-                                    || fmaLatMode === LateralMode.TRACK)
-                                && !fmaLatArmed
+                                selectedMode
                                     ? FlightPlanType.Dashed
                                     : FlightPlanType.Nav
                             }
                         />
                         {tmpFplan}
-                        { (((fmaLatMode === LateralMode.NONE
-                            || fmaLatMode === LateralMode.HDG
-                            || fmaLatMode === LateralMode.TRACK) && !fmaLatArmed) || !flightPlanManager.getCurrentFlightPlan().length) && (
-                            <TrackLine x={384} y={620} heading={heading} track={track} />
-                        )}
                     </g>
-                    <RadioNeedle index={1} side={side} displayMode={Mode.ARC} centreHeight={620} />
-                    <RadioNeedle index={2} side={side} displayMode={Mode.ARC} centreHeight={620} />
+                    <RadioNeedle index={1} side={side} displayMode={Mode.ARC} centreHeight={620} rotationOffset={headingRotationOffset} />
+                    <RadioNeedle index={2} side={side} displayMode={Mode.ARC} centreHeight={620} rotationOffset={headingRotationOffset} />
                 </g>
                 <ToWaypointIndicator info={flightPlanManager.getCurrentFlightPlan().computeActiveWaypointStatistics(ppos)} />
                 <ApproachMessage info={flightPlanManager.getAirportApproach()} flightPhase={fmgcFlightPhase} />
-                <TrackBug heading={heading} track={track} />
-                { lsDisplayed && <LsCourseBug heading={heading} lsCourse={lsCourse} /> }
-                <SelectedHeadingBug heading={heading} selected={selectedHeading} />
-                <Plane />
+                <TrackBug rotation={trackRotationOffset} showLine={selectedMode} />
+                { lsDisplayed && lsCourse >= 0 && <LsCourseBug mapUpTrue={mapUpTrue} lsCourse={lsCourse} /> }
+                <SelectedHeadingBug heading={mapUpTrue - magVar} selected={selectedHeading} />
+                <Plane rotation={headingRotationOffset} />
                 <CrossTrack x={390} y={646} />
                 <g clipPath="url(#arc-mode-tcas-clip)">
                     <Traffic mode={Mode.ARC} mapParams={mapParams} />
@@ -128,6 +134,7 @@ export const ArcMode: React.FC<ArcModeProps> = ({ symbols, adirsAlign, rangeSett
         <>
             <MapFailOverlay
                 rangeSetting={rangeSetting}
+                trackUpMode={trackUpMode === 1}
             />
             <text x={681} y={28} fontSize={25} className="White" textAnchor="end">PPOS</text>
         </>
@@ -135,19 +142,19 @@ export const ArcMode: React.FC<ArcModeProps> = ({ symbols, adirsAlign, rangeSett
 };
 
 interface OverlayProps {
-    heading: number,
+    upBearing: number,
     rangeSetting: number,
     tcasMode: number,
 }
 
-const Overlay: React.FC<OverlayProps> = memo(({ heading, rangeSetting, tcasMode }) => (
+const Overlay: React.FC<OverlayProps> = memo(({ upBearing, rangeSetting, tcasMode }) => (
     <>
         <ArcModeOverlayDefs />
 
         {/* C = 384,620 */}
         <g transform="rotateX(0deg)" stroke="white" strokeWidth={3} fill="none">
             <g clipPath="url(#arc-mode-overlay-clip-4)">
-                <g transform={`rotate(${MathUtils.diffAngle(heading, 60)} 384 620)`}>
+                <g transform={`rotate(${MathUtils.diffAngle(upBearing, 60)} 384 620)`}>
                     <ArcModeOverlayHeadingRing />
                 </g>
             </g>
@@ -532,11 +539,15 @@ const ArcModeOverlayHeadingRing = memo(() => (
 
 type MapFailOverlayProps = {
     rangeSetting: RangeSetting,
+    trackUpMode: boolean,
 }
 
-const MapFailOverlay: React.FC<MapFailOverlayProps> = memo(({ rangeSetting }) => (
+const MapFailOverlay: React.FC<MapFailOverlayProps> = memo(({ rangeSetting, trackUpMode }) => (
     <>
         <>
+            {trackUpMode && (
+                <text className="Red" fontSize={19} textAnchor="middle" x={381} y={206}>TRK</text>
+            )}
             <text className="Red" fontSize={30} textAnchor="middle" x={384} y={241}>HDG</text>
             <text className="Red" fontSize={30} textAnchor="middle" x={384} y={320.6}>MAP NOT AVAIL</text>
         </>
@@ -611,40 +622,49 @@ const MapFailOverlay: React.FC<MapFailOverlayProps> = memo(({ rangeSetting }) =>
     </>
 ));
 
-const Plane: React.FC = memo(() => (
-    <g>
-        <line id="lubber-shadow" x1={384} y1={108} x2={384} y2={148} className="shadow" strokeWidth={5.5} strokeLinejoin="round" strokeLinecap="round" />
-        <line id="lubber" x1={384} y1={108} x2={384} y2={148} className="Yellow" strokeWidth={5} strokeLinejoin="round" strokeLinecap="round" />
+const Plane: React.FC<{ rotation: Degrees }> = memo(({ rotation }) => (
+    <g transform={`rotate(${rotation} 384 620)`}>
+        { Math.abs(rotation) <= 48
+            && (
+                <>
+                    <line id="lubber-shadow" x1={384} y1={108} x2={384} y2={148} className="shadow" strokeWidth={5.5} strokeLinejoin="round" strokeLinecap="round" />
+                    <line id="lubber" x1={384} y1={108} x2={384} y2={148} className="Yellow" strokeWidth={5} strokeLinejoin="round" strokeLinecap="round" />
+                </>
+            )}
         <image x={342} y={596} width={84} height={71} xlinkHref="/Images/ND/AIRPLANE.svg" />
     </g>
 ));
 
-const TrackBug: React.FC<{heading: number, track: number}> = memo(({ heading, track }) => {
-    const diff = getSmallestAngle(track, heading);
-    if (diff > 48) {
-        return null;
-    }
-    return (
-        <>
-            <path
-                d="M384,128 L378,138 L384,148 L390,138 L384,128"
-                transform={`rotate(${diff} 384 620)`}
-                className="shadow rounded"
-                strokeWidth={3.5}
-            />
-            <path
-                d="M384,128 L378,138 L384,148 L390,138 L384,128"
-                transform={`rotate(${diff} 384 620)`}
-                className="Green rounded"
-                strokeWidth={3}
-            />
-        </>
-    );
-});
+const TrackBug: React.FC<{ rotation: Degrees, showLine: boolean }> = memo(({ rotation, showLine }) => (
+    <g transform={`rotate(${rotation} 384 620)`}>
+        { Math.abs(rotation) <= 48
+            && (
+                <>
+                    <path
+                        d="M384,128 L378,138 L384,148 L390,138 L384,128"
+                        className="shadow rounded"
+                        strokeWidth={3.5}
+                    />
+                    <path
+                        d="M384,128 L378,138 L384,148 L390,138 L384,128"
+                        className="Green rounded"
+                        strokeWidth={3}
+                    />
+                </>
+            )}
+        { showLine
+            && (
+                <>
+                    <line x1={384} y1={149} x2={384} y2={620} className="shadow rounded" strokeWidth={3.0} />
+                    <line x1={384} y1={149} x2={384} y2={620} className="Green rounded" strokeWidth={2.5} />
+                </>
+            )}
+    </g>
+));
 
-const LsCourseBug: React.FC<{heading: number, lsCourse: number}> = ({ heading, lsCourse }) => {
-    const diff = getSmallestAngle(lsCourse, heading);
-    if (lsCourse < 0 || Math.abs(diff) > 48) {
+const LsCourseBug: React.FC<{ mapUpTrue: Degrees, lsCourse: number }> = ({ mapUpTrue, lsCourse }) => {
+    const rotation = getSmallestAngle(lsCourse, mapUpTrue);
+    if (lsCourse < 0 || Math.abs(rotation) > 48) {
         return null;
     }
 
@@ -652,15 +672,15 @@ const LsCourseBug: React.FC<{heading: number, lsCourse: number}> = ({ heading, l
         <>
             <path
                 d="M384,122 L384,74 M376,114 L392,114"
-                transform={`rotate(${diff} 384 620)`}
+                transform={`rotate(${rotation} 384 620)`}
                 className="shadow rounded"
-                strokeWidth={2.5}
+                strokeWidth={1.5}
             />
             <path
                 d="M384,122 L384,74 M376,114 L392,114"
-                transform={`rotate(${diff} 384 620)`}
+                transform={`rotate(${rotation} 384 620)`}
                 className="Magenta rounded"
-                strokeWidth={2}
+                strokeWidth={1.5}
             />
         </>
     );

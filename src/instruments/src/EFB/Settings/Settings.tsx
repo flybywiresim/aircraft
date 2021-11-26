@@ -131,6 +131,7 @@ const AircraftConfigurationPage = () => {
     const [isisBaro, setIsisBaro] = usePersistentProperty('ISIS_BARO_UNIT_INHG', '0');
     const [isisMetricAltitude, setIsisMetricAltitude] = usePersistentProperty('ISIS_METRIC_ALTITUDE', '0');
     const [vhfSpacing, setVhfSpacing] = usePersistentProperty('RMP_VHF_SPACING_25KHZ', '0');
+    const [ndTrackUp, setNdTrackUp] = usePersistentProperty('A32NX_ND_TRACK_UP', '0');
 
     const paxSignsButtons: ButtonType[] = [
         { name: 'No Smoking', setting: '0' },
@@ -232,6 +233,14 @@ const AircraftConfigurationPage = () => {
                         </SelectItem>
                     ))}
                 </SelectGroup>
+            </div>
+
+            <div className="py-4 flex flex-row justify-between items-center">
+            <span className="text-lg text-gray-300">ND Track Up Mode</span>
+            <Toggle
+                value={ndTrackUp === '1'}
+                onToggle={() => setNdTrackUp(ndTrackUp === '1' ? '0' : '1')}
+            />
             </div>
         </div>
     );

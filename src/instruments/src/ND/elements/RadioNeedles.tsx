@@ -3,9 +3,15 @@ import { useSimVar } from '@instruments/common/simVars';
 import { Mode, EfisSide } from '@shared/NavigationDisplay';
 import { NavAidMode } from './RadioNavInfo';
 
-type RadioNavPointerProps = { index: 1 | 2, side: EfisSide, displayMode: Mode, centreHeight: number };
+type RadioNavPointerProps = {
+    index: 1 | 2,
+    side: EfisSide,
+    displayMode: Mode,
+    centreHeight: number,
+    rotationOffset: number,
+};
 
-const AdfNeedle: React.FC<Omit<RadioNavPointerProps, 'side'>> = ({ index, displayMode, centreHeight }) => {
+const AdfNeedle: React.FC<Omit<RadioNavPointerProps, 'side'>> = ({ index, displayMode, centreHeight, rotationOffset }) => {
     const [relativeBearing] = useSimVar(`ADF RADIAL:${index}`, 'degrees');
     const [available] = useSimVar(`ADF SIGNAL:${index}`, 'number');
 
@@ -32,7 +38,7 @@ const AdfNeedle: React.FC<Omit<RadioNavPointerProps, 'side'>> = ({ index, displa
     }
 
     return available && (
-        <g transform={`rotate(${relativeBearing} 384 ${centreHeight})`}>
+        <g transform={`rotate(${relativeBearing + rotationOffset} 384 ${centreHeight})`}>
             <path
                 d={paths[index - 1]}
                 strokeWidth={3.7}
@@ -47,7 +53,7 @@ const AdfNeedle: React.FC<Omit<RadioNavPointerProps, 'side'>> = ({ index, displa
     );
 };
 
-const VorNeedle: React.FC<Omit<RadioNavPointerProps, 'side'>> = ({ index, displayMode, centreHeight }) => {
+const VorNeedle: React.FC<Omit<RadioNavPointerProps, 'side'>> = ({ index, displayMode, centreHeight, rotationOffset }) => {
     const [relativeBearing] = useSimVar(`NAV RELATIVE BEARING TO STATION:${index}`, 'degrees');
     const [available] = useSimVar(`NAV HAS NAV:${index}`, 'number');
 
@@ -74,7 +80,7 @@ const VorNeedle: React.FC<Omit<RadioNavPointerProps, 'side'>> = ({ index, displa
     }
 
     return available && (
-        <g transform={`rotate(${relativeBearing} 384 ${centreHeight})`}>
+        <g transform={`rotate(${relativeBearing + rotationOffset} 384 ${centreHeight})`}>
             <path
                 d={paths[index - 1]}
                 strokeWidth={3.7}
@@ -89,14 +95,14 @@ const VorNeedle: React.FC<Omit<RadioNavPointerProps, 'side'>> = ({ index, displa
     );
 };
 
-export const RadioNeedle: React.FC<RadioNavPointerProps> = ({ index, side, displayMode, centreHeight }) => {
+export const RadioNeedle: React.FC<RadioNavPointerProps> = ({ index, side, displayMode, centreHeight, rotationOffset }) => {
     const [mode] = useSimVar(`L:A32NX_EFIS_${side}_NAVAID_${index}_MODE`, 'enum');
 
     switch (mode) {
     case NavAidMode.ADF:
-        return <AdfNeedle index={index} displayMode={displayMode} centreHeight={centreHeight} />;
+        return <AdfNeedle index={index} displayMode={displayMode} centreHeight={centreHeight} rotationOffset={rotationOffset} />;
     case NavAidMode.VOR:
-        return <VorNeedle index={index} displayMode={displayMode} centreHeight={centreHeight} />;
+        return <VorNeedle index={index} displayMode={displayMode} centreHeight={centreHeight} rotationOffset={rotationOffset} />;
     case NavAidMode.Off:
     default:
         return null;
