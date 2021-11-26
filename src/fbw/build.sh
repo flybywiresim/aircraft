@@ -91,7 +91,6 @@ clang++ \
   "${DIR}/src/zlib/zfstream.cc" \
   "${DIR}/src/AnimationAileronHandler.cpp" \
   "${DIR}/src/ElevatorTrimHandler.cpp" \
-  "${DIR}/src/FlapsHandler.cpp" \
   "${DIR}/src/FlyByWireInterface.cpp" \
   "${DIR}/src/FlightDataRecorder.cpp" \
   "${DIR}/src/LocalVariable.cpp" \
