@@ -4,6 +4,7 @@ import { Navbar } from "../Components/Navbar";
 import { ChecklistPage, ChecklistState } from "./ChecklistPage";
 import { CHECKLISTS, mapFlightPhaseToChecklist } from "./Lists";
 import "./Checklist.css";
+import { ChecklistItemState } from "./ChecklistItem";
 
 const INITIAL_ITEM_STATES: ChecklistState[] = Array.from(
     { length: CHECKLISTS.length },
@@ -11,8 +12,12 @@ const INITIAL_ITEM_STATES: ChecklistState[] = Array.from(
         return {
             itemStates: Array.from(
                 { length: CHECKLISTS[i].items.length },
-                () => {
-                    return { itemState: false };
+                (vv, ii) => {
+                    return {
+                        checked:
+                            CHECKLISTS[i].items[ii].item === "" ? true : false,
+                        overwritten: false,
+                    };
                 }
             ),
         };
@@ -59,11 +64,16 @@ export const Checklists = () => {
             cl.items.forEach((it, itIdx) => {
                 if (it.condition !== undefined) {
                     const condEval = it.condition();
-                    if (false === checklistState[clIdx]) {
+                    if (
+                        false === checklistState[clIdx] &&
+                        false ===
+                            checklistItemState[clIdx].itemStates[itIdx]
+                                .overwritten
+                    ) {
                         // do not overwrite status for completed checklists
                         checklistItemState[clIdx].itemStates[
                             itIdx
-                        ].itemState = condEval;
+                        ].checked = condEval;
                     }
                 }
             });
@@ -75,22 +85,42 @@ export const Checklists = () => {
         setCurrentChecklistIdx(index);
     };
 
-    const setItemState = (itemIdx: number, value: boolean) => {
-        checklistItemState[currentChecklistIdx].itemStates[
-            itemIdx
-        ].itemState = value;
+    const setItemState = (itemIdx: number, newValue: ChecklistItemState) => {
+        checklistItemState[currentChecklistIdx].itemStates[itemIdx] = newValue;
+        console.log(
+            `checklistItemState[${currentChecklistIdx}]=${JSON.stringify(
+                checklistItemState[currentChecklistIdx]
+            )}`
+        );
         setChecklistItemState(checklistItemState);
     };
 
-    const setChecklistComplete = (complete: boolean) => {
+    const setChecklistCompleteStatus = (
+        complete: boolean,
+        resetOverwrite: boolean
+    ) => {
         checklistState[currentChecklistIdx] = complete;
         setChecklistState(checklistState);
         if (false === complete) {
             checklistItemState[currentChecklistIdx].itemStates.forEach(
-                (it) => (it.itemState = false)
+                (it, idx) => {
+                    if (
+                        CHECKLISTS[currentChecklistIdx].items[idx].item !== ""
+                    ) {
+                        it.checked = false;
+                        if (resetOverwrite) it.overwritten = false;
+                    }
+                }
             );
             setChecklistItemState(checklistItemState);
         }
+    };
+
+    const setChecklistComplete = () => {
+        setChecklistCompleteStatus(true, false);
+    };
+    const resetChecklist = () => {
+        setChecklistCompleteStatus(false, true);
     };
 
     const CHECKLIST_NAMES = CHECKLISTS.map((cl, idx) => {
@@ -111,6 +141,7 @@ export const Checklists = () => {
                 setItemState={setItemState}
                 isChecklistComplete={checklistState[currentChecklistIdx]}
                 setChecklistComplete={setChecklistComplete}
+                resetChecklist={resetChecklist}
             />
         </>
     );
