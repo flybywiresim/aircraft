@@ -1,5 +1,4 @@
 #pragma once
-#include <math.h>
 
 class SimVars;
 
@@ -78,7 +77,7 @@ std::string to_string_with_zero_padding(const T& value, std::size_t total_length
 double imbalanceExtractor(double imbalanceCode, int parameter) {
   double reg = 0;
 
-  parameter = 8 - parameter;
+  parameter = 9 - parameter;
 
   while (parameter > 0) {
     reg = fmod(imbalanceCode, 100);
@@ -94,20 +93,22 @@ double imbalanceExtractor(double imbalanceCode, int parameter) {
 /// </summary>
 class Timer {
  public:
-  Timer() { m_StartTimepoint = std::chrono::high_resolution_clock::now(); }
+  Timer() : m_StartTimepoint{clock_type::now()} {}
+  ~Timer() {}
 
-  ~Timer() { Stop(); }
-  void Stop() {
-    auto endTimepoint = std::chrono::high_resolution_clock::now();
+  void reset() { m_StartTimepoint = clock_type::now(); }
 
+  double elapsed() {
     auto start = std::chrono::time_point_cast<std::chrono::microseconds>(m_StartTimepoint).time_since_epoch().count();
-    auto end = std::chrono::time_point_cast<std::chrono::microseconds>(endTimepoint).time_since_epoch().count();
+    auto end = std::chrono::time_point_cast<std::chrono::microseconds>(clock_type::now()).time_since_epoch().count();
 
     auto duration = end - start;
     double ms = duration * 0.001;
-    // std::cout << "WASM: " << duration << "us (" << ms << "ms)\n" << std::flush;
+    return ms;  // ms
   }
 
  private:
-  std::chrono::time_point<std::chrono::high_resolution_clock> m_StartTimepoint;
+  using clock_type = std::chrono::steady_clock;
+
+  std::chrono::time_point<clock_type> m_StartTimepoint;
 };
