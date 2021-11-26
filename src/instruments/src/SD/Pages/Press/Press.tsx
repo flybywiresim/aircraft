@@ -164,7 +164,7 @@ export const PressPage: FC = () => {
 
             <text className={safetyValve < 0.2 ? 'Large White' : 'Large Amber'} x={490} y={305}>SAFETY</text>
             <GaugeMarkerComponent
-                value={safetyValve < 0.2 ? 2 : 1 }
+                value={safetyValve < 0.2 ? 2 : 1}
                 x={545}
                 y={315}
                 min={0}
@@ -207,20 +207,19 @@ type CabinVerticalSpeedComponentType = {
     radius: number
 }
 
-const CabinVerticalSpeedComponent: FC<CabinVerticalSpeedComponentType> = ({vsx, y, radius}) => {
+const CabinVerticalSpeedComponent: FC<CabinVerticalSpeedComponentType> = ({ vsx, y, radius }) => {
     const [cabinVs] = useSimVar('L:A32NX_PRESS_CABIN_VS', 'feet per minute', 500);
 
     return (
         <>
-            {/*    */}
-            <g id="VsIndicator" >
+            <g id="VsIndicator">
                 <text className="Large Center" x={vsx + 15} y="80">V/S</text>
                 <text className="Medium Center Cyan" x={vsx + 20} y="100">FT/MIN</text>
                 <text className={`Huge End ${Math.abs(Math.round(cabinVs / 50) * 50) > 1750 ? 'GreenTextPulse' : 'Green'}`} x={vsx + 85} y={y + 5}>{Math.round(cabinVs / 50) * 50}</text>
                 <GaugeComponent x={vsx} y={y} radius={radius} startAngle={170} endAngle={10} visible className="GaugeComponent Gauge">
                     <GaugeMarkerComponent value={2} x={vsx} y={y} min={-2} max={2} radius={radius} startAngle={180} endAngle={0} className="GaugeText" showValue textNudgeY={10} />
                     <GaugeMarkerComponent value={1} x={vsx} y={y} min={-2} max={2} radius={radius} startAngle={180} endAngle={0} className="GaugeText" />
-                    <GaugeMarkerComponent value={0} x={vsx} y={y} min={-2} max={2} radius={radius} startAngle={180} endAngle={0} className="GaugeText" showValue textNudgeX={10}/>
+                    <GaugeMarkerComponent value={0} x={vsx} y={y} min={-2} max={2} radius={radius} startAngle={180} endAngle={0} className="GaugeText" showValue textNudgeX={10} />
                     <GaugeMarkerComponent value={-1} x={vsx} y={y} min={-2} max={2} radius={radius} startAngle={180} endAngle={0} className="GaugeText" />
                     <GaugeMarkerComponent value={-2} x={vsx} y={y} min={-2} max={2} radius={radius} startAngle={180} endAngle={0} className="GaugeText" showValue textNudgeY={-10} />
                     <GaugeMarkerComponent
