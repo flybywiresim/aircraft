@@ -489,7 +489,7 @@ impl SimulationElement for ZoneController {
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
-        // TODO: Replace this with actual duct temperature, not duct demand temperature
+        // TODO: Replace this with actual duct temperature when mixer is modelled, not duct demand temperature
         writer.write(&self.zone_duct_temp_id, self.duct_demand_temperature);
     }
 }
@@ -517,8 +517,8 @@ impl From<f64> for OvhdFlowSelector {
 struct PackFlowController {
     apu_bleed_valve_open_id: VariableIdentifier,
     apu_rpm_id: VariableIdentifier,
-    ditching_id: VariableIdentifier,
     crossbleed_id: VariableIdentifier,
+    ditching_id: VariableIdentifier,
     engine_1_state_id: VariableIdentifier,
     engine_2_state_id: VariableIdentifier,
     eng_1_fire_id: VariableIdentifier,
@@ -533,17 +533,17 @@ struct PackFlowController {
     fcv_2_open_allowed: bool,
     should_open_fcv: [bool; 2],
 
-    flow_control_valve_open: bool,
-    single_pack_operation: bool,
     apu_bleed_on: bool,
-    pack_in_start_condition: bool,
-    ditching_is_on: bool,
     crossbleed_is_on: bool,
+    ditching_is_on: bool,
     engine_1_in_start_mode: bool,
     engine_2_in_start_mode: bool,
     engine_1_on_fire: bool,
     engine_2_on_fire: bool,
+    flow_control_valve_open: bool,
     flow_selector_position: OvhdFlowSelector,
+    pack_in_start_condition: bool,
+    single_pack_operation: bool,
 }
 
 impl PackFlowController {
@@ -561,8 +561,8 @@ impl PackFlowController {
         Self {
             apu_bleed_valve_open_id: context.get_identifier("APU_BLEED_AIR_VALVE_OPEN".to_owned()),
             apu_rpm_id: context.get_identifier("APU_N_RAW".to_owned()),
-            ditching_id: context.get_identifier("OVHD_PRESS_DITCHING_PB_IS_ON".to_owned()),
             crossbleed_id: context.get_identifier("KNOB_OVHD_AIRCOND_XBLEED_Position".to_owned()),
+            ditching_id: context.get_identifier("OVHD_PRESS_DITCHING_PB_IS_ON".to_owned()),
             engine_1_state_id: context.get_identifier("ENGINE_STATE:1".to_owned()),
             engine_2_state_id: context.get_identifier("ENGINE_STATE:2".to_owned()),
             eng_1_fire_id: context.get_identifier("Fire_ENG1_Agent1_Discharge".to_owned()),
@@ -578,17 +578,17 @@ impl PackFlowController {
             fcv_2_open_allowed: false,
             should_open_fcv: [false, false],
 
-            flow_control_valve_open: false,
-            single_pack_operation: false,
             apu_bleed_on: false,
-            pack_in_start_condition: false,
+            crossbleed_is_on: false,
             ditching_is_on: false,
-            crossbleed_is_on: true,
             engine_1_in_start_mode: false,
             engine_2_in_start_mode: false,
             engine_1_on_fire: false,
             engine_2_on_fire: false,
+            flow_control_valve_open: false,
             flow_selector_position: OvhdFlowSelector::Norm,
+            pack_in_start_condition: false,
+            single_pack_operation: false,
         }
     }
 

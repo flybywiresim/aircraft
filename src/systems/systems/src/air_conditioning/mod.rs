@@ -21,7 +21,7 @@ pub mod cabin_air;
 
 pub trait DuctTemperature {
     fn duct_demand_temperature(&self) -> HashMap<&'static str, ThermodynamicTemperature>;
-} // TODO: Initially taken from duct_demand_temperature, needs to be switched once Trim system implemented
+}
 
 pub trait FlowControlValveSignal {
     fn should_open_fcv(&self) -> [bool; 2];
@@ -199,7 +199,6 @@ impl SimulationElement for PackFlowValve {
 pub struct Air {
     temperature: ThermodynamicTemperature,
     pressure: Pressure,
-    //density: MassDensity,
     flow_rate: MassRate,
 }
 
@@ -215,7 +214,6 @@ impl Air {
         Self {
             temperature: ThermodynamicTemperature::new::<degree_celsius>(24.),
             pressure: Pressure::new::<hectopascal>(1013.25),
-            //density: MassDensity::new::<kilogram_per_cubic_meter>(1.225),
             flow_rate: MassRate::new::<kilogram_per_second>(0.),
         }
     }

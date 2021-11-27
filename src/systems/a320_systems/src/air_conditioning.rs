@@ -63,7 +63,7 @@ struct A320Cabin {
 impl A320Cabin {
     // TODO: Improve volume according to specs
     const A320_CABIN_VOLUME: f64 = 400.; // m3
-    const A320_COCKPIT_VOLUME: f64 = 60.; // m3
+    const A320_COCKPIT_VOLUME: f64 = 20.; // m3
 
     fn new(context: &mut InitContext) -> Self {
         Self {

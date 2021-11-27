@@ -121,6 +121,8 @@ struct ZoneAir {
 impl ZoneAir {
     const PASSENGER_HEAT_RELEASE: f64 = 0.1; // kW - from Thermodynamics: An Engineering Approach (Cengel and Boles)
     const A320_CABIN_DIAMETER: f64 = 4.14; // m
+    const FLOW_RATE_THROUGH_OPEN_DOOR: f64 = 0.6; // kg/s
+    const CONVECTION_COEFFICIENT_CONSTANT_FOR_NATURAL_CONVECTION: f64 = 1.32;
 
     fn new() -> Self {
         Self {
@@ -150,7 +152,7 @@ impl ZoneAir {
         self.internal_air
             .set_pressure(pressurization.cabin_pressure());
         let number_of_open_doors: usize = fwd_door_is_open as usize + rear_door_is_open as usize;
-        let new_equilibrium_temperature = self.calculate_equilibrium_temperature(
+        let new_equilibrium_temperature = self.equilibrium_temperature_calculation(
             context,
             number_of_open_doors,
             flow_in,
@@ -164,7 +166,7 @@ impl ZoneAir {
         self.flow_out.set_flow_rate(flow_in.flow_rate());
     }
 
-    fn calculate_equilibrium_temperature(
+    fn equilibrium_temperature_calculation(
         &self,
         context: &UpdateContext,
         number_of_open_doors: usize,
@@ -173,24 +175,30 @@ impl ZoneAir {
         zone_volume: Volume,
         zone_passengers: usize,
     ) -> ThermodynamicTemperature {
+        // Energy balance calculation to determine equilibrium temperature in the cabin
         let inlet_air_energy = flow_in.flow_rate().get::<kilogram_per_second>()
             * Air::SPECIFIC_HEAT_CAPACITY_PRESSURE
             * flow_in.temperature().get::<kelvin>();
-        let inlet_door_air_energy = number_of_open_doors as f64
-            * (0.5)
+        let mut inlet_door_air_energy = number_of_open_doors as f64
+            * (Self::FLOW_RATE_THROUGH_OPEN_DOOR)
             * Air::SPECIFIC_HEAT_CAPACITY_PRESSURE
             * context.ambient_temperature().get::<kelvin>();
         let outlet_air_energy = self.flow_out.flow_rate().get::<kilogram_per_second>()
             * Air::SPECIFIC_HEAT_CAPACITY_PRESSURE
             * self.flow_out.temperature().get::<kelvin>();
-        let outlet_door_air_energy = number_of_open_doors as f64
-            * (0.5)
+        let mut outlet_door_air_energy = number_of_open_doors as f64
+            * (Self::FLOW_RATE_THROUGH_OPEN_DOOR)
             * Air::SPECIFIC_HEAT_CAPACITY_PRESSURE
             * self.internal_air.temperature().get::<kelvin>();
         let passenger_heat_energy = Self::PASSENGER_HEAT_RELEASE * (zone_passengers as f64);
         let wall_transfer_heat_energy = self
             .heat_transfer_through_wall_calculation(context, true_airspeed, zone_volume)
             .get::<kilowatt>();
+        // For the cocklpit we reduce the effect of opening doors
+        if zone_volume < Volume::new::<cubic_meter>(100.) {
+            inlet_door_air_energy = inlet_door_air_energy * 0.2;
+            outlet_door_air_energy = outlet_door_air_energy * 0.2;
+        }
 
         let internal_mass = self.internal_air.pressure().get::<pascal>()
             * zone_volume.get::<cubic_meter>()
@@ -245,8 +253,10 @@ impl ZoneAir {
         let temperature_differential: f64 = self.internal_air.temperature().get::<kelvin>()
             - context.ambient_temperature().get::<kelvin>(); // Kelvin
 
+        // Convection coefficient for horizontal cylinder in air
         let convection_coefficient: f64 =
-            1.32 * (temperature_differential.abs() / Self::A320_CABIN_DIAMETER).powf(1. / 4.);
+            Self::CONVECTION_COEFFICIENT_CONSTANT_FOR_NATURAL_CONVECTION
+                * (temperature_differential.abs() / Self::A320_CABIN_DIAMETER).powf(1. / 4.);
         convection_coefficient
     }
 
