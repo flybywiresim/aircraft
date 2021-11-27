@@ -6,7 +6,6 @@
 #include <vector>
 
 #include "../ElevatorTrimHandler.h"
-#include "../FlapsHandler.h"
 #include "../LocalVariable.h"
 #include "../RudderTrimHandler.h"
 #include "../SpoilersHandler.h"
@@ -186,7 +185,6 @@ class SimConnectInterface {
                bool autopilotLawsEnabled,
                bool flyByWireEnabled,
                const std::vector<std::shared_ptr<ThrottleAxisMapping>>& throttleAxis,
-               std::shared_ptr<FlapsHandler> flapsHandler,
                std::shared_ptr<SpoilersHandler> spoilersHandler,
                std::shared_ptr<ElevatorTrimHandler> elevatorTrimHandler,
                std::shared_ptr<RudderTrimHandler> rudderTrimHandler,
@@ -262,6 +260,9 @@ class SimConnectInterface {
   void setLoggingThrottlesEnabled(bool enabled);
   bool getLoggingThrottlesEnabled();
 
+  // remove when aileron events can be processed via SimConnect
+  static void processKeyEvent(ID32 event, UINT32 evdata, PVOID userdata);
+
  private:
   enum ClientData {
     AUTOPILOT_STATE_MACHINE,
@@ -282,17 +283,18 @@ class SimConnectInterface {
   bool limitSimulationRateByPerformance = true;
   bool clientDataEnabled = false;
 
-  bool loggingFlightControlsEnabled = false;
+  // change to non-static when aileron events can be processed via SimConnect
+  static bool loggingFlightControlsEnabled;
   bool loggingThrottlesEnabled = false;
 
   SimData simData = {};
-  SimInput simInput = {};
+  // change to non-static when aileron events can be processed via SimConnect
+  static SimInput simInput;
   SimInputAutopilot simInputAutopilot = {};
 
   SimInputThrottles simInputThrottles = {};
   std::vector<std::shared_ptr<ThrottleAxisMapping>> throttleAxis;
 
-  std::shared_ptr<FlapsHandler> flapsHandler;
   std::shared_ptr<SpoilersHandler> spoilersHandler;
   std::shared_ptr<ElevatorTrimHandler> elevatorTrimHandler;
   std::shared_ptr<RudderTrimHandler> rudderTrimHandler;
@@ -302,7 +304,8 @@ class SimConnectInterface {
   ClientDataAutothrust clientDataAutothrust = {};
   ClientDataFlyByWire clientDataFlyByWire = {};
 
-  double flightControlsKeyChangeAileron = 0.0;
+  // change to non-static when aileron events can be processed via SimConnect
+  static double flightControlsKeyChangeAileron;
   double flightControlsKeyChangeElevator = 0.0;
   double flightControlsKeyChangeRudder = 0.0;
   bool disableXboxCompatibilityRudderPlusMinus = false;

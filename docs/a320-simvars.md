@@ -933,6 +933,70 @@
       0 | Retracted
       1 | Full extension
 
+- A32NX_LEFT_FLAPS_POSITION_PERCENT
+    - Percent
+    - Indicates the angle of the left flaps out of 40 degrees
+
+- A32NX_RIGHT_FLAPS_POSITION_PERCENT
+    - Percent
+    - Indicates the angle of the right flaps out of 40 degrees
+
+- A32NX_LEFT_SLATS_POSITION_PERCENT
+    - Percent
+    - Indicates the angle of the left slats out of 27 degrees
+
+- A32NX_RIGHT_SLATS_POSITION_PERCENT
+    - Percent
+    - Indicates the angle of the right slats out of 27 degrees
+
+- A32NX_LEFT_FLAPS_TARGET_ANGLE
+    - Degrees
+    - Indicates the target angle of the left flaps
+      according to the configuration.
+
+- A32NX_RIGHT_FLAPS_TARGET_ANGLE
+    - Degrees
+    - Indicates the target angle of the right flaps
+      according to the configuration.
+
+- A32NX_LEFT_SLATS_TARGET_ANGLE
+    - Degrees
+    - Indicates the target angle of the left slats
+      according to the configuration.
+
+- A32NX_RIGHT_SLATS_TARGET_ANGLE
+    - Degrees
+    - Indicates the target angle of the right slats
+      according to the configuration.
+
+- A32NX_LEFT_FLAPS_ANGLE
+    - Degrees
+    - The actual angle of the left flaps
+
+- A32NX_RIGHT_FLAPS_ANGLE
+    - Degrees
+    - The actual angle of the right flaps
+
+- A32NX_LEFT_SLATS_ANGLE
+    - Degrees
+    - The actual angle of the left slats
+
+- A32NX_RIGHT_SLATS_ANGLE
+    - Degrees
+    - The actual angle of the right slats
+
+- A32NX_FLAPS_CONF_INDEX
+    - Number
+    - Indicates the desired flap configuration index according to the table
+    - Value | Meaning
+      --- | ---
+      0 | Conf0
+      1 | Conf1
+      2 | Conf1F
+      3 | Conf2
+      4 | Conf3
+      5 | ConfFull
+
 - A32NX_SPOILERS_ARMED
     - Bool
     - Indicates if the ground spoilers are armed
@@ -1111,10 +1175,10 @@
     - Number (Kilograms)
     - Indicates the weight of the selected payload station
     - {stationIndex}
-        - 6 + 1 | FWD BAGGAGE/CONTAINER
-        - 7 + 1 | AFT CONTAINER
-        - 8 + 1 | AFT BAGGAGE
-        - 9 + 1 | AFT BULK/LOOSE
+        - 5 | FWD BAGGAGE/CONTAINER
+        - 6 | AFT CONTAINER
+        - 7 | AFT BAGGAGE
+        - 8 | AFT BULK/LOOSE
 
 - A32NX_MCDU_{side}_ANNUNC_{annunciator}
     - Boolean
@@ -1387,6 +1451,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
       ALT_CST_CPT | 21
       CLB | 22
       DES | 23
+      FINAL | 24
       GS_CPT | 30
       GS_TRACK | 31
       LAND | 32
@@ -1405,6 +1470,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
       CLB | 2
       DES | 3
       GS | 4
+      FINAL | 5
 
 - A32NX_FMA_EXPEDITE_MODE
     - Boolean
@@ -1660,6 +1726,20 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Number in fpm or degrees depending on requested mode
     - Used for vertical guidance in mode DES
     - Indicates the target vertical speed
+
+- A32NX_FG_RNAV_APP_SELECTED
+    - Boolean
+    - Used for FINAL mode selection
+    - Indicates if an RNAV approach is selected. If it is true, pressing the APPR button
+      results in the FINAL mode being armed, instead of G/S and LOC
+
+- A32NX_FG_FINAL_CAN_ENGAGE
+    - Boolean
+    - Indicates if the FINAL vertical mode can engage
+    - FINAL mode will engage if :
+      - This Simvar is true
+      - NAV mode is engaged
+      - FINAL mode is armed
 
 ## Autothrust System
 

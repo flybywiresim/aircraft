@@ -1258,7 +1258,7 @@
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N1" />
             <WwiseRTPC LocalVar="A32NX_SOUND_EXTERIOR_MASTER" Units="number" Index="0" RTPCName="LOCALVAR_A32NX_EXTERIOR_VOLUME" />
         </Sound>
-        
+
         <!-- PUMP SOUNDS ========================================================================================== -->
 
         <Sound WwiseEvent="Fuelpump" WwiseData="true" Continuous="true" NodeName="WING_BONE_LEFT_01" SimVar="FUELSYSTEM PUMP ACTIVE" Units="BOOL" Index="5">
@@ -1711,6 +1711,10 @@
         </Sound>
 
         <Sound WwiseEvent="gmain" WwiseData="true" Continuous="false" NodeName="PEDALS_LEFT" SimVar="GEAR TOTAL PCT EXTENDED" Units="PERCENT">
+            <Range LowerBound="0.05" UpperBound="0.95" />
+        </Sound>
+        
+        <Sound WwiseEvent="gmain" WwiseData="true" Continuous="false" NodeName="WHEELS_L" SimVar="GEAR TOTAL PCT EXTENDED" Units="PERCENT">
             <Range LowerBound="0.05" UpperBound="0.95" />
         </Sound>
 
