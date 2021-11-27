@@ -285,9 +285,9 @@ export const GaugeMarkerComponent = ({ value, x, y, min, max, radius, startAngle
 export const GaugeMarkerComponentMemo = React.memo(GaugeMarkerComponent);
 
 export const CondComponent = () => {
-    const [cockpitCabinTemp] = useSimVar('L:A32NX_CKPT_TEMP', 'celsius', 1000);
-    const [fwdCabinTemp] = useSimVar('L:A32NX_FWD_TEMP', 'celsius', 1000);
-    const [aftCabinTemp] = useSimVar('L:A32NX_AFT_TEMP', 'celsius', 1000);
+    const [cockpitCabinTemp] = useSimVar('L:A32NX_COND_CKPT_TEMP', 'celsius', 1000);
+    const [fwdCabinTemp] = useSimVar('L:A32NX_COND_FWD_TEMP', 'celsius', 1000);
+    const [aftCabinTemp] = useSimVar('L:A32NX_COND_AFT_TEMP', 'celsius', 1000);
 
     return (
         <>
