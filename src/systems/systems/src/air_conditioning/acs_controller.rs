@@ -732,7 +732,15 @@ impl SimulationElement for PackFlowController {
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write(&self.pack_flow_id, self.flow_demand);
+        // If both flow control valves are closed, the flow indication is in the Lo position
+        if self.should_open_fcv.iter().any(|&x| x) {
+            writer.write(&self.pack_flow_id, self.flow_demand);
+        } else {
+            writer.write(
+                &self.pack_flow_id,
+                Ratio::new::<percent>((OvhdFlowSelector::Lo as u32) as f64),
+            );
+        }
     }
 }
 

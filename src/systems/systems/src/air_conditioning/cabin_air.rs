@@ -196,8 +196,8 @@ impl ZoneAir {
             .get::<kilowatt>();
         // For the cocklpit we reduce the effect of opening doors
         if zone_volume < Volume::new::<cubic_meter>(100.) {
-            inlet_door_air_energy = inlet_door_air_energy * 0.2;
-            outlet_door_air_energy = outlet_door_air_energy * 0.2;
+            inlet_door_air_energy *= 0.2;
+            outlet_door_air_energy *= 0.2;
         }
 
         let internal_mass = self.internal_air.pressure().get::<pascal>()
