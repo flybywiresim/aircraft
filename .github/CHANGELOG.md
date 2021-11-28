@@ -80,6 +80,8 @@
 1. [MCDU] Updated boarding logic, separate loading for pax and baggage - @sidnov (Sid)
 1. [FLIGHT MODEL] Updated OEW/dry operating weight, max payload, station weights - @sidnov (Sid)
 1. [EFB/UI] Override in-game fuel UI and fuel initialization - @Taz5150 (TazX [Z+2]#0405)
+1. [COND] Add cabin temperature simulation and control - @mjuhe (Miquel Juhe)
+1. [COND] Improve air conditioning pack flow model - @mjuhe (Miquel Juhe)
 
 ## 0.7.0
 
