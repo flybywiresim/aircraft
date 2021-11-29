@@ -9,9 +9,8 @@ export class EfisLabels implements FmgcComponent {
 
     private flightPlanManager: FlightPlanManager;
 
-    init(): void {
-        // FIXME we need a better way to fetch this... maybe just make it a singleton
-        this.flightPlanManager = FlightPlanManager.DEBUG_INSTANCE;
+    init(flightPlanManager: FlightPlanManager): void {
+        this.flightPlanManager = flightPlanManager;
     }
 
     update(_deltaTime: number): void {
