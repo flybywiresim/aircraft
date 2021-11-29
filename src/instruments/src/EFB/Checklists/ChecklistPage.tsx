@@ -1,5 +1,5 @@
 import { IconCheck, IconRepeat } from "@tabler/icons";
-import React, { useEffect } from "react";
+import React from "react";
 import {
     ChecklistItem,
     CheckListItem,
@@ -50,7 +50,7 @@ export const ChecklistPage = (props: ChecklistPageProps) => {
     };
 
     const allItemsChecked =
-        itemStates.findIndex((it) => it.checked == false) == -1;
+        itemStates.findIndex((it) => false === it.checked) == -1;
 
     const itemTags = items.map((it, idx) => {
         return (

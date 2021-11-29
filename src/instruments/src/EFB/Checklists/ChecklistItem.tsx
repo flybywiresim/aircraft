@@ -1,5 +1,4 @@
-import { IconCheck, IconRepeat } from "@tabler/icons";
-import React, { MouseEventHandler, useEffect } from "react";
+import React from "react";
 
 export type ChecklistItemState = {
     checked: boolean;
@@ -49,7 +48,7 @@ export const CheckListItem = (props: CheckListItemProps) => {
             : "";
 
     const itemText = (text: string, conditionPrefix: string) => {
-        if (true == isConditionItem())
+        if (true === isConditionItem())
             return <i>{coloredItemText(text, conditionPrefix)}</i>;
         return <>{coloredItemText(text, conditionPrefix)}</>;
     };
