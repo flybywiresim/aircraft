@@ -119,6 +119,11 @@ struct SimData {
   double nav_loc_magvar_deg;
   SIMCONNECT_DATA_LATLONALT nav_loc_pos;
   SIMCONNECT_DATA_LATLONALT nav_gs_pos;
+  double brakeLeftPosition;
+  double brakeRightPosition;
+  double spoilerHandlePosition;
+  double flapsHandleIndex;
+  double gearHandlePosition;
 };
 
 struct SimInput {

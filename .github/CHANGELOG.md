@@ -84,6 +84,7 @@
 1. [CLK/ND] Fixed/Improved chrono & ET behavior on time shift - @vkrizan (Viliam)
 1. [AP] Added TCAS modes for Autopilot and Flight Director guidance - @aguther (Andreas Guther)
 1. [PFD] Added new messages and modes for TCAS - @lukecologne (lukecologne#1156)
+1. [FDR] Added additional data to the FDR - @aguther (Andreas Guther)
 
 ## 0.7.0
 

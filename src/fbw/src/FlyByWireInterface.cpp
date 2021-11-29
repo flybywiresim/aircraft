@@ -94,6 +94,9 @@ bool FlyByWireInterface::update(double sampleTime) {
   // get throttle data and process it
   result &= updateAutothrust(calculatedSampleTime);
 
+  // update additional recording data
+  result &= updateAdditionalData(calculatedSampleTime);
+
   // update engine data
   result &= updateEngineData(calculatedSampleTime);
 
@@ -101,7 +104,7 @@ bool FlyByWireInterface::update(double sampleTime) {
   result &= updateSpoilers(calculatedSampleTime);
 
   // update flight data recorder
-  flightDataRecorder.update(&autopilotStateMachine, &autopilotLaws, &autoThrust, &flyByWire, engineData);
+  flightDataRecorder.update(&autopilotStateMachine, &autopilotLaws, &autoThrust, &flyByWire, engineData, additionalData);
 
   // if default AP is on -> disconnect it
   if (simConnectInterface.getSimData().autopilot_master_on) {
@@ -354,6 +357,19 @@ void FlyByWireInterface::setupLocalVariables() {
   idAutothrustN1_c_1 = make_unique<LocalVariable>("A32NX_AUTOTHRUST_N1_COMMANDED:1");
   idAutothrustN1_c_2 = make_unique<LocalVariable>("A32NX_AUTOTHRUST_N1_COMMANDED:2");
 
+  idMasterWarning = make_unique<LocalVariable>("A32NX_MASTER_WARNING");
+  idMasterCaution = make_unique<LocalVariable>("A32NX_MASTER_CAUTION");
+  idParkBrakeLeverPos = make_unique<LocalVariable>("A32NX_PARK_BRAKE_LEVER_POS");
+  idBrakePedalLeftPos = make_unique<LocalVariable>("A32NX_LEFT_BRAKE_PEDAL_INPUT");
+  idBrakePedalRightPos = make_unique<LocalVariable>("A32NX_RIGHT_BRAKE_PEDAL_INPUT");
+  idAutobrakeArmedMode = make_unique<LocalVariable>("A32NX_AUTOBRAKES_ARMED_MODE");
+  idAutobrakeDecelLight = make_unique<LocalVariable>("A32NX_AUTOBRAKES_DECEL_LIGHT");
+  idFlapsHandlePercent = make_unique<LocalVariable>("A32NX_FLAPS_HANDLE_PERCENT");
+  idFlapsHandleIndex = make_unique<LocalVariable>("A32NX_FLAPS_HANDLE_INDEX");
+  idHydraulicGreenPressure = make_unique<LocalVariable>("A32NX_HYD_GREEN_SYSTEM_1_SECTION_PRESSURE");
+  idHydraulicBluePressure = make_unique<LocalVariable>("A32NX_HYD_BLUE_SYSTEM_1_SECTION_PRESSURE");
+  idHydraulicYellowPressure = make_unique<LocalVariable>("A32NX_HYD_YELLOW_SYSTEM_1_SECTION_PRESSURE");
+
   engineEngine1N2 = make_unique<LocalVariable>("A32NX_ENGINE_N2:1");
   engineEngine2N2 = make_unique<LocalVariable>("A32NX_ENGINE_N2:2");
   engineEngine1N1 = make_unique<LocalVariable>("A32NX_ENGINE_N1:1");
@@ -591,6 +607,33 @@ bool FlyByWireInterface::handleSimulationRate(double sampleTime) {
   }
 
   // success
+  return true;
+}
+
+bool FlyByWireInterface::updateAdditionalData(double sampleTime) {
+  auto simData = simConnectInterface.getSimData();
+  additionalData.master_warning_active = idMasterWarning->get();
+  additionalData.master_caution_active = idMasterCaution->get();
+  additionalData.park_brake_lever_pos = idParkBrakeLeverPos->get();
+  additionalData.brake_pedal_left_pos = idBrakePedalLeftPos->get();
+  additionalData.brake_pedal_right_pos = idBrakePedalRightPos->get();
+  additionalData.brake_left_sim_pos = simData.brakeLeftPosition;
+  additionalData.brake_right_sim_pos = simData.brakeRightPosition;
+  additionalData.autobrake_armed_mode = idAutobrakeArmedMode->get();
+  additionalData.autobrake_decel_light = idAutobrakeDecelLight->get();
+  additionalData.spoilers_handle_pos = idSpoilersHandlePosition->get();
+  additionalData.spoilers_armed = idSpoilersArmed->get();
+  additionalData.spoilers_handle_sim_pos = simData.spoilerHandlePosition;
+  additionalData.ground_spoilers_active = idSpoilersGroundSpoilersActive->get();
+  additionalData.flaps_handle_percent = idFlapsHandlePercent->get();
+  additionalData.flaps_handle_index = idFlapsHandleIndex->get();
+  additionalData.flaps_handle_configuration_index = flapsHandleIndexFlapConf->get();
+  additionalData.flaps_handle_sim_index = simData.flapsHandleIndex;
+  additionalData.gear_handle_pos = simData.gearHandlePosition;
+  additionalData.hydraulic_green_pressure = idHydraulicGreenPressure->get();
+  additionalData.hydraulic_blue_pressure = idHydraulicBluePressure->get();
+  additionalData.hydraulic_yellow_pressure = idHydraulicYellowPressure->get();
+
   return true;
 }
 

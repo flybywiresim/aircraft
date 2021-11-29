@@ -3,6 +3,7 @@
 #include <MSFS/Legacy/gauges.h>
 #include <SimConnect.h>
 
+#include "AdditionalData.h"
 #include "AnimationAileronHandler.h"
 #include "AutopilotLaws.h"
 #include "AutopilotStateMachine.h"
@@ -235,6 +236,18 @@ class FlyByWireInterface {
 
   std::vector<std::shared_ptr<ThrottleAxisMapping>> throttleAxis;
 
+  AdditionalData additionalData = {};
+  std::unique_ptr<LocalVariable> idParkBrakeLeverPos;
+  std::unique_ptr<LocalVariable> idBrakePedalLeftPos;
+  std::unique_ptr<LocalVariable> idBrakePedalRightPos;
+  std::unique_ptr<LocalVariable> idAutobrakeArmedMode;
+  std::unique_ptr<LocalVariable> idAutobrakeDecelLight;
+  std::unique_ptr<LocalVariable> idHydraulicGreenPressure;
+  std::unique_ptr<LocalVariable> idHydraulicBluePressure;
+  std::unique_ptr<LocalVariable> idHydraulicYellowPressure;
+  std::unique_ptr<LocalVariable> idMasterWarning;
+  std::unique_ptr<LocalVariable> idMasterCaution;
+
   EngineData engineData = {};
   std::unique_ptr<LocalVariable> engineEngine1N2;
   std::unique_ptr<LocalVariable> engineEngine2N2;
@@ -301,6 +314,7 @@ class FlyByWireInterface {
   bool handleSimulationRate(double sampleTime);
 
   bool updateEngineData(double sampleTime);
+  bool updateAdditionalData(double sampleTime);
 
   bool updateAutopilotStateMachine(double sampleTime);
   bool updateAutopilotLaws(double sampleTime);

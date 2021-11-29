@@ -524,6 +524,27 @@ void FlightDataRecorderConverter::writeHeader(ofstream& out, const string& delim
   out << "engine.engineEngine2State" << delimiter;
   out << "engine.engineEngine1Timer" << delimiter;
   out << "engine.engineEngine2Timer" << delimiter;
+  out << "data.master_warning_active" << delimiter;
+  out << "data.master_caution_active" << delimiter;
+  out << "data.park_brake_lever_pos" << delimiter;
+  out << "data.brake_pedal_left_pos" << delimiter;
+  out << "data.brake_pedal_right_pos" << delimiter;
+  out << "data.brake_left_sim_pos" << delimiter;
+  out << "data.brake_right_sim_pos" << delimiter;
+  out << "data.autobrake_armed_mode" << delimiter;
+  out << "data.autobrake_decel_light" << delimiter;
+  out << "data.spoilers_handle_pos" << delimiter;
+  out << "data.spoilers_armed" << delimiter;
+  out << "data.spoilers_handle_sim_pos" << delimiter;
+  out << "data.ground_spoilers_active" << delimiter;
+  out << "data.flaps_handle_percent" << delimiter;
+  out << "data.flaps_handle_index" << delimiter;
+  out << "data.flaps_handle_configuration_index" << delimiter;
+  out << "data.flaps_handle_sim_index" << delimiter;
+  out << "data.gear_handle_pos" << delimiter;
+  out << "data.hydraulic_green_pressure" << delimiter;
+  out << "data.hydraulic_blue_pressure" << delimiter;
+  out << "data.hydraulic_yellow_pressure" << delimiter;
   out << endl;
 }
 
@@ -533,7 +554,8 @@ void FlightDataRecorderConverter::writeStruct(ofstream& out,
                                               const ap_raw_output& ap_law,
                                               const athr_out& athr,
                                               const fbw_output& fbw,
-                                              const EngineData& engine) {
+                                              const EngineData& engine,
+                                              const AdditionalData& data) {
   out << ap_sm.time.dt << delimiter;
   out << ap_sm.time.simulation_time << delimiter;
   out << ap_sm.data.aircraft_position.lat << delimiter;
@@ -1055,5 +1077,26 @@ void FlightDataRecorderConverter::writeStruct(ofstream& out,
   out << engine.engineEngine2State << delimiter;
   out << engine.engineEngine1Timer << delimiter;
   out << engine.engineEngine2Timer << delimiter;
+  out << data.master_warning_active << delimiter;
+  out << data.master_caution_active << delimiter;
+  out << data.park_brake_lever_pos << delimiter;
+  out << data.brake_pedal_left_pos << delimiter;
+  out << data.brake_pedal_right_pos << delimiter;
+  out << data.brake_left_sim_pos << delimiter;
+  out << data.brake_right_sim_pos << delimiter;
+  out << data.autobrake_armed_mode << delimiter;
+  out << data.autobrake_decel_light << delimiter;
+  out << data.spoilers_handle_pos << delimiter;
+  out << data.spoilers_armed << delimiter;
+  out << data.spoilers_handle_sim_pos << delimiter;
+  out << data.ground_spoilers_active << delimiter;
+  out << data.flaps_handle_percent << delimiter;
+  out << data.flaps_handle_index << delimiter;
+  out << data.flaps_handle_configuration_index << delimiter;
+  out << data.flaps_handle_sim_index << delimiter;
+  out << data.gear_handle_pos << delimiter;
+  out << data.hydraulic_green_pressure << delimiter;
+  out << data.hydraulic_blue_pressure << delimiter;
+  out << data.hydraulic_yellow_pressure << delimiter;
   out << endl;
 }

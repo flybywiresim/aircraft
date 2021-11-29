@@ -2,6 +2,7 @@
 
 #include <fstream>
 
+#include "AdditionalData.h"
 #include "AutopilotLaws.h"
 #include "AutopilotStateMachine.h"
 #include "Autothrust.h"
@@ -20,7 +21,8 @@ class FlightDataRecorder {
               AutopilotLawsModelClass* autopilotLaws,
               AutothrustModelClass* autoThrust,
               FlyByWireModelClass* flyByWire,
-              const EngineData& engineData);
+              const EngineData& engineData,
+              const AdditionalData& additionalData);
 
   void terminate();
 
