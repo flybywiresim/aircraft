@@ -188,7 +188,7 @@ class CDUPerformancePage {
             transAltCell = "[\xa0".padEnd(4, "\xa0") + "]";
             if (mcdu.flightPlanManager.originTransitionAltitude !== undefined) {
                 transAltCell = `{cyan}${mcdu.flightPlanManager.originTransitionAltitude}{end}`;
-                if (mcdu.flightPlanManager.originTransitionAltitudeFromDb) {
+                if (mcdu.flightPlanManager.originTransitionAltitudeIsFromDb) {
                     transAltCell += "[s-text]";
                 }
             }
@@ -762,7 +762,7 @@ class CDUPerformancePage {
         if (hasDestination) {
             if (mcdu.flightPlanManager.destinationTransitionLevel !== undefined) {
                 transAltCell = (mcdu.flightPlanManager.destinationTransitionLevel * 100).toFixed(0).padEnd(5, "\xa0");
-                if (mcdu.flightPlanManager.destinationTransitionLevelFromDb) {
+                if (mcdu.flightPlanManager.destinationTransitionLevelIsFromDb) {
                     transAltCell = `{small}${transAltCell}{end}`;
                 }
             } else {
