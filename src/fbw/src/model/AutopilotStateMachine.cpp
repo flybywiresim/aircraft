@@ -3580,9 +3580,11 @@ void AutopilotStateMachineModelClass::step()
                         (!AutopilotStateMachine_U.in.input.TCAS_mode_fail));
   AutopilotStateMachine_DWork.sTCAS_e = ((speedTargetChanged && (!AutopilotStateMachine_DWork.Delay1_DSTATE.armed.TCAS) &&
     (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode != vertical_mode_TCAS) &&
-    (AutopilotStateMachine_U.in.input.TCAS_advisory_state == 1.0)) || AutopilotStateMachine_DWork.sTCAS_e);
+    (AutopilotStateMachine_U.in.input.TCAS_advisory_state == 1.0) && (AutopilotStateMachine_U.in.data.H_radio_ft >=
+    900.0)) || AutopilotStateMachine_DWork.sTCAS_e);
   AutopilotStateMachine_DWork.sTCAS_e = (speedTargetChanged && (AutopilotStateMachine_U.in.input.TCAS_advisory_state !=
-    0.0) && (!(AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode_TCAS)) &&
+    0.0) && (AutopilotStateMachine_U.in.data.H_radio_ft >= 900.0) &&
+    (!(AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode_TCAS)) &&
     AutopilotStateMachine_DWork.sTCAS_e);
   a = AutopilotStateMachine_U.in.data.H_dot_ft_min * 0.00508;
   a = a * a / 0.49050000000000005 * 3.2808398950131235;
@@ -3707,17 +3709,18 @@ void AutopilotStateMachineModelClass::step()
   }
 
   if (speedTargetChanged && (AutopilotStateMachine_U.in.input.TCAS_advisory_state >= 2.0) &&
-      (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode != vertical_mode_TCAS) &&
-      (!AutopilotStateMachine_DWork.latch)) {
+      (AutopilotStateMachine_U.in.data.H_radio_ft >= 900.0) && (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode !=
+       vertical_mode_TCAS) && (!AutopilotStateMachine_DWork.latch)) {
     AutopilotStateMachine_DWork.sTCAS = true;
     AutopilotStateMachine_DWork.latch = true;
   }
 
   AutopilotStateMachine_DWork.sTCAS = (speedTargetChanged && (AutopilotStateMachine_U.in.input.TCAS_advisory_state >=
-    2.0) && (!(AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode_TCAS)) &&
+    2.0) && (AutopilotStateMachine_U.in.data.H_radio_ft >= 900.0) &&
+    (!(AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode_TCAS)) &&
     AutopilotStateMachine_DWork.sTCAS);
-  AutopilotStateMachine_DWork.latch = (speedTargetChanged && (AutopilotStateMachine_U.in.input.TCAS_advisory_state >=
-    2.0) && AutopilotStateMachine_DWork.latch);
+  AutopilotStateMachine_DWork.latch = (speedTargetChanged && (AutopilotStateMachine_U.in.data.H_radio_ft >= 900.0) &&
+    (AutopilotStateMachine_U.in.input.TCAS_advisory_state >= 2.0) && AutopilotStateMachine_DWork.latch);
   AutopilotStateMachine_B.BusAssignment_g.time = AutopilotStateMachine_U.in.time;
   AutopilotStateMachine_B.BusAssignment_g.data.aircraft_position = AutopilotStateMachine_U.in.data.aircraft_position;
   AutopilotStateMachine_B.BusAssignment_g.data.Theta_deg = rtb_GainTheta;
