@@ -6,7 +6,7 @@
             <MIN_N1_PCT_FOR_BLUR>110</MIN_N1_PCT_FOR_BLUR>
             <FROSTED>False</FROSTED>
         </DefaultTemplateParameters>
-        <UseTemplate Name="A32NX_ENGINE_Turbine_SubTemplate"></UseTemplate>
+        <UseTemplate Name="A32NX_ENGINE_Turbine_SubTemplate"/>
     </Template>
     <Template Name="A32NX_ENGINE_Turbine_SubTemplate">
         <DefaultTemplateParameters>
@@ -57,7 +57,7 @@
     <Template Name="A32NX_ENGINE_Turbine_Rotation_Template">
         <UseTemplate Name="ASOBO_GT_Anim">
             <!-- 3894 is the max rated N1 of the LEAP, times 6 is from RPM to deg/s, times 0.01 because percentages -->
-            <ANIM_CODE>0.01 6 3894 (A:TURB ENG N1:#ID#, Percent) (A:ANIMATION DELTA TIME, seconds) * * * *</ANIM_CODE>
+            <ANIM_CODE>0.01 6 3856 (L:A32NX_ENGINE_N1:#ID#, Percent) (A:ANIMATION DELTA TIME, seconds) * * * *</ANIM_CODE>
             <ANIM_LENGTH>360</ANIM_LENGTH>
             <ANIM_WRAP>1</ANIM_WRAP>
             <ANIM_DELTA>1</ANIM_DELTA>
@@ -65,20 +65,20 @@
     </Template>
     <Template Name="A32NX_ENGINE_Turbine_Still_Visibility_Template">
         <UseTemplate Name="ASOBO_GT_Visibility">
-            <VISIBILITY_CODE>(A:TURB ENG N1:#ID#, Percent) #MIN_N1_PCT_FOR_SLOW# &lt;</VISIBILITY_CODE>
+            <VISIBILITY_CODE>(L:A32NX_ENGINE_N1:#ID#, Percent) #MIN_N1_PCT_FOR_SLOW# &lt;</VISIBILITY_CODE>
         </UseTemplate>
     </Template>
     <Template Name="A32NX_ENGINE_Turbine_Slow_Visibility_Template">
         <UseTemplate Name="ASOBO_GT_Visibility">
             <VISIBILITY_CODE>
-                (A:TURB ENG N1:#ID#, Percent) #MIN_N1_PCT_FOR_SLOW# &gt;
-                (A:TURB ENG N1:#ID#, Percent) #MIN_N1_PCT_FOR_BLUR# &lt; and
+                (L:A32NX_ENGINE_N1:#ID#, Percent) #MIN_N1_PCT_FOR_SLOW# &gt;
+                (L:A32NX_ENGINE_N1:#ID#, Percent) #MIN_N1_PCT_FOR_BLUR# &lt; and
             </VISIBILITY_CODE>
         </UseTemplate>
     </Template>
     <Template Name="A32NX_ENGINE_Turbine_Blurred_Visibility_Template">
         <UseTemplate Name="ASOBO_GT_Visibility">
-            <VISIBILITY_CODE>(A:TURB ENG N1:#ID#, Percent) #MIN_N1_PCT_FOR_BLUR# &gt;</VISIBILITY_CODE>
+            <VISIBILITY_CODE>(L:A32NX_ENGINE_N1:#ID#, Percent) #MIN_N1_PCT_FOR_BLUR# &gt;</VISIBILITY_CODE>
         </UseTemplate>
     </Template>
     <!-- Base visibility template for turbines -->
