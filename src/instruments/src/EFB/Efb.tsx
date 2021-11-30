@@ -4,7 +4,10 @@ import { Redirect, Route, Switch } from "react-router-dom";
 import { useSimVar } from "@instruments/common/simVars";
 import { useInteractionEvent } from "@instruments/common/hooks";
 import { UIMessagesProvider, useUIMessages } from "./UIMessages/Provider";
-import { usePersistentNumberProperty, usePersistentProperty } from "../Common/persistence";
+import {
+    usePersistentNumberProperty,
+    usePersistentProperty,
+} from "../Common/persistence";
 import NavigraphClient, { NavigraphContext } from "./ChartsApi/Navigraph";
 
 import { StatusBar } from "./StatusBar/StatusBar";
@@ -21,10 +24,20 @@ import { Failures } from "./Failures/Failures";
 
 import { clearEfbState, useAppDispatch, useAppSelector } from "./Store/store";
 
-import { fetchSimbriefDataAction, initialState as simbriefInitialState } from "./Store/features/simbrief";
+import {
+    fetchSimbriefDataAction,
+    initialState as simbriefInitialState,
+} from "./Store/features/simbrief";
 
-import { NotificationsContainer, NotificationTypes, Notification } from "./UIMessages/Notification";
+import {
+    NotificationsContainer,
+    NotificationTypes,
+    Notification,
+} from "./UIMessages/Notification";
 import { FbwLogo } from "./Assets/FbwLogo";
+import { IconBatteryCharging, IconBatteryOff } from "@tabler/icons";
+
+const BATTERY_DURATION_MIN = 1;
 
 const navigraph = new NavigraphClient();
 
@@ -40,11 +53,23 @@ const ScreenLoading = () => (
     </div>
 );
 
+const ScreenEmpty = (props: { charging: boolean }) => (
+    <div className="flex justify-center items-center w-screen h-screen bg-theme-statusbar">
+        {false === props.charging && (
+            <IconBatteryOff size={128} className="text-red-500" />
+        )}
+        {true === props.charging && (
+            <IconBatteryCharging size={128} className="text-red-500" />
+        )}
+    </div>
+);
+
 export enum PowerStates {
     SHUTOFF,
     STANDBY,
     LOADING,
     LOADED,
+    EMPTY,
 }
 
 interface PowerContextInterface {
@@ -52,31 +77,80 @@ interface PowerContextInterface {
     setPowerState: (PowerState) => void;
 }
 
-export const PowerContext = React.createContext<PowerContextInterface>(undefined as any);
+export const PowerContext = React.createContext<PowerContextInterface>(
+    undefined as any
+);
+
 export const usePower = () => React.useContext(PowerContext);
 
 const Efb = () => {
     const uiMessages = useUIMessages();
 
-    const [powerState, setPowerState] = useState<PowerStates>(PowerStates.SHUTOFF);
+    const [powerState, setPowerState] = useState<PowerStates>(
+        PowerStates.SHUTOFF
+    );
 
     const [currentLocalTime] = useSimVar("E:LOCAL TIME", "seconds", 3000);
     const [, setBrightness] = useSimVar("L:A32NX_EFB_BRIGHTNESS", "number");
-    const [brightnessSetting] = usePersistentNumberProperty("EFB_BRIGHTNESS", 0);
-    const [usingAutobrightness] = useSimVar("L:A32NX_EFB_USING_AUTOBRIGHTNESS", "bool", 300);
+    const [brightnessSetting] = usePersistentNumberProperty(
+        "EFB_BRIGHTNESS",
+        0
+    );
+    const [usingAutobrightness] = useSimVar(
+        "L:A32NX_EFB_USING_AUTOBRIGHTNESS",
+        "bool",
+        300
+    );
     const [dayOfYear] = useSimVar("E:ZULU DAY OF YEAR", "number");
     const [latitude] = useSimVar("PLANE LATITUDE", "degree latitude");
 
     const dispatch = useAppDispatch();
     const simbriefData = useAppSelector((state) => state.simbrief.data);
     const [simbriefUserId] = usePersistentProperty("CONFIG_SIMBRIEF_USERID");
-    const [autoSimbriefImport] = usePersistentProperty("CONFIG_AUTO_SIMBRIEF_IMPORT");
+    const [autoSimbriefImport] = usePersistentProperty(
+        "CONFIG_AUTO_SIMBRIEF_IMPORT"
+    );
+
+    const [batteryLevel, setBatteryLevel] = useState(100);
+    const [timer, setTimer] = useState<NodeJS.Timer | undefined>(undefined);
+    const [dc2BusIsPowered] = useSimVar(
+        "L:A32NX_ELEC_DC_2_BUS_IS_POWERED",
+        "bool"
+    );
+
+    useEffect(() => {
+        if (timer != undefined) {
+            clearInterval(timer);
+        }
+        const newTimer = setInterval(() => {
+            setBatteryLevel((level) => {
+                let newLevel = dc2BusIsPowered ? level + 1 : level - 1;
+                if (newLevel < 0) newLevel = 0;
+                if (newLevel > 100) newLevel = 100;
+                return newLevel;
+            });
+        }, (BATTERY_DURATION_MIN * 60 * 1000) / 100);
+        setTimer(newTimer);
+    }, [dc2BusIsPowered]);
+
+    useEffect(() => {
+        if (batteryLevel === 0) {
+            setPowerState(PowerStates.EMPTY);
+        }
+
+        if (batteryLevel > 1 && powerState === PowerStates.EMPTY) {
+            offToLoaded();
+        }
+    }, [batteryLevel, powerState]);
 
     useEffect(() => {
         if (powerState === PowerStates.SHUTOFF) {
             dispatch(clearEfbState());
         } else if (powerState === PowerStates.LOADED) {
-            if ((!simbriefData || simbriefData === simbriefInitialState.data) && autoSimbriefImport === "ENABLED") {
+            if (
+                (!simbriefData || simbriefData === simbriefInitialState.data) &&
+                autoSimbriefImport === "ENABLED"
+            ) {
                 fetchSimbriefDataAction(simbriefUserId ?? "")
                     .then((action) => {
                         dispatch(action);
@@ -115,9 +189,14 @@ const Efb = () => {
      * @param {number} dayOfYear - The day of the year (0 to 365)
      * @param {number} timeOfDay - The time of day in hours (0 to 24)
      */
-    const calculateBrightness = (latitude: number, dayOfYear: number, timeOfDay: number) => {
+    const calculateBrightness = (
+        latitude: number,
+        dayOfYear: number,
+        timeOfDay: number
+    ) => {
         const solarTime = timeOfDay + (dayOfYear - 1) * 24;
-        const solarDeclination = 0.409 * Math.sin((2 * Math.PI * (284 + dayOfYear)) / 365);
+        const solarDeclination =
+            0.409 * Math.sin((2 * Math.PI * (284 + dayOfYear)) / 365);
         const solarAltitude = Math.asin(
             Math.sin((latitude * Math.PI) / 180) * Math.sin(solarDeclination) +
                 Math.cos((latitude * Math.PI) / 180) *
@@ -126,7 +205,13 @@ const Efb = () => {
         );
         const solarZenith = 90 - (latitude - solarDeclination);
 
-        return Math.min(Math.max(((-solarAltitude * (180 / Math.PI)) / solarZenith) * 100, 0), 100);
+        return Math.min(
+            Math.max(
+                ((-solarAltitude * (180 / Math.PI)) / solarZenith) * 100,
+                0
+            ),
+            100
+        );
     };
 
     // handle setting brightness if user is using autobrightness
@@ -141,17 +226,29 @@ const Efb = () => {
 
     switch (powerState) {
         case PowerStates.SHUTOFF:
-            return <div className="w-screen h-screen" onClick={() => offToLoaded()} />;
+            return (
+                <div
+                    className="w-screen h-screen"
+                    onClick={() => offToLoaded()}
+                />
+            );
+        case PowerStates.EMPTY:
+            return <ScreenEmpty charging={dc2BusIsPowered === 1} />;
         case PowerStates.LOADING:
             return <ScreenLoading />;
         case PowerStates.LOADED:
             return (
                 <NavigraphContext.Provider value={navigraph}>
-                    <PowerContext.Provider value={{ powerState, setPowerState }}>
+                    <PowerContext.Provider
+                        value={{ powerState, setPowerState }}
+                    >
                         <UIMessagesProvider>
                             <div className="bg-theme-body">
                                 <ApplicationNotifications />
-                                <StatusBar />
+                                <StatusBar
+                                    batteryLevel={batteryLevel}
+                                    isCharging={dc2BusIsPowered === 1}
+                                />
                                 <div className="flex flex-row">
                                     <ToolBar />
                                     <div className="pt-14 pr-6 w-screen h-screen text-gray-700">
