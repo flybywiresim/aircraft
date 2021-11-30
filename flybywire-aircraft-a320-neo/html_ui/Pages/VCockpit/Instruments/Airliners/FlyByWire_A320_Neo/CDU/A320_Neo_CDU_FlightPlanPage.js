@@ -318,7 +318,7 @@ class CDUFlightPlanPage {
                     const lastRouteIndex = fpm.getLastIndexBeforeApproach();
                     //const departureWp = firstRouteIndex > 1 && fpm.getDepartureWaypoints().indexOf(wp) !== -1;
 
-                    if (mcdu.transitionAltitude >= 100 && wp.legAltitude1 > mcdu.transitionAltitude) {
+                    if (mcdu.flightPlanManager.getOriginTransitionAltitude() >= 100 && wp.legAltitude1 > mcdu.flightPlanManager.getOriginTransitionAltitude()) {
                         altitudeConstraint = (wp.legAltitude1 / 100).toFixed(0).toString();
                         altitudeConstraint = `FL${altitudeConstraint.padStart(3,"0")}`;
                     } else {

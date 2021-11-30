@@ -21,26 +21,27 @@ class CDUVerticalRevisionPage {
                 speedConstraint = waypoint.speedConstraint.toFixed(0);
             }
             let altitudeConstraint = "";
+            const transAltLevel = waypoint.constraintType === 2 /* DES */ ? mcdu.flightPlanManager.destinationTransitionLevel : mcdu.flightPlanManager.originTransitionAltitude;
             switch (waypoint.legAltitudeDescription) {
                 case 1: {
-                    altitudeConstraint = this.formatFl(Math.round(waypoint.legAltitude1), mcdu.transitionAltitude);
+                    altitudeConstraint = this.formatFl(Math.round(waypoint.legAltitude1), transAltLevel);
                     break;
                 }
                 case 2: {
-                    altitudeConstraint = "+" + this.formatFl(Math.round(waypoint.legAltitude1), mcdu.transitionAltitude);
+                    altitudeConstraint = "+" + this.formatFl(Math.round(waypoint.legAltitude1), transAltLevel);
                     break;
                 }
                 case 3: {
-                    altitudeConstraint = "-" + this.formatFl(Math.round(waypoint.legAltitude1), mcdu.transitionAltitude);
+                    altitudeConstraint = "-" + this.formatFl(Math.round(waypoint.legAltitude1), transAltLevel);
                     break;
                 }
                 case 4: {
                     if (waypoint.legAltitude1 < waypoint.legAltitude2) {
-                        altitudeConstraint = "+" + this.formatFl(Math.round(waypoint.legAltitude1), mcdu.transitionAltitude)
-                            + "/-" + this.formatFl(Math.round(waypoint.legAltitude2), mcdu.transitionAltitude);
+                        altitudeConstraint = "+" + this.formatFl(Math.round(waypoint.legAltitude1), transAltLevel)
+                            + "/-" + this.formatFl(Math.round(waypoint.legAltitude2), transAltLevel);
                     } else {
-                        altitudeConstraint = "+" + this.formatFl(Math.round(waypoint.legAltitude2), mcdu.transitionAltitude)
-                            + "/-" + this.formatFl(Math.round(waypoint.legAltitude1), mcdu.transitionAltitude);
+                        altitudeConstraint = "+" + this.formatFl(Math.round(waypoint.legAltitude2), transAltLevel)
+                            + "/-" + this.formatFl(Math.round(waypoint.legAltitude1), transAltLevel);
                     }
                     break;
                 }
