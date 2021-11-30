@@ -1184,10 +1184,10 @@
     - Number (Kilograms)
     - Indicates the weight of the selected payload station
     - {stationIndex}
-        - 6 + 1 | FWD BAGGAGE/CONTAINER
-        - 7 + 1 | AFT CONTAINER
-        - 8 + 1 | AFT BAGGAGE
-        - 9 + 1 | AFT BULK/LOOSE
+        - 5 | FWD BAGGAGE/CONTAINER
+        - 6 | AFT CONTAINER
+        - 7 | AFT BAGGAGE
+        - 8 | AFT BULK/LOOSE
 
 - A32NX_MCDU_{side}_ANNUNC_{annunciator}
     - Boolean

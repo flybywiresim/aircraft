@@ -239,6 +239,7 @@ const SimOptionsPage = () => {
     const [adirsAlignTime, setAdirsAlignTime] = usePersistentProperty('CONFIG_ALIGN_TIME', 'REAL');
     const [, setAdirsAlignTimeSimVar] = useSimVar('L:A32NX_CONFIG_ADIRS_IR_ALIGN_TIME', 'Enum', Number.MAX_SAFE_INTEGER);
     const [dmcSelfTestTime, setDmcSelfTestTime] = usePersistentProperty('CONFIG_SELF_TEST_TIME', '12');
+    const [boardingRate, setBoardingRate] = usePersistentProperty('CONFIG_BOARDING_RATE', 'REAL');
 
     const [defaultBaro, setDefaultBaro] = usePersistentProperty('CONFIG_INIT_BARO_UNIT', 'AUTO');
 
@@ -258,6 +259,12 @@ const SimOptionsPage = () => {
         { name: 'Instant', setting: '0' },
         { name: 'Fast', setting: '5' },
         { name: 'Real', setting: '12' },
+    ];
+
+    const boardingRateButtons: ButtonType[] = [
+        { name: 'Instant', setting: 'INSTANT' },
+        { name: 'Fast', setting: 'FAST' },
+        { name: 'Real', setting: 'REAL' },
     ];
 
     const defaultBaroButtons: ButtonType[] = [
@@ -313,6 +320,21 @@ const SimOptionsPage = () => {
                                     enabled
                                     onSelect={() => setDmcSelfTestTime(button.setting)}
                                     selected={dmcSelfTestTime === button.setting}
+                                >
+                                    {button.name}
+                                </SelectItem>
+                            ))}
+                        </SelectGroup>
+                    </div>
+
+                    <div className="py-4 flex flex-row justify-between items-center">
+                        <span className="text-lg text-gray-300">Boarding Time</span>
+                        <SelectGroup>
+                            {boardingRateButtons.map((button) => (
+                                <SelectItem
+                                    enabled
+                                    onSelect={() => setBoardingRate(button.setting)}
+                                    selected={boardingRate === button.setting}
                                 >
                                     {button.name}
                                 </SelectItem>
