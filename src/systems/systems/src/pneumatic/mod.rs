@@ -169,10 +169,10 @@ impl EngineCompressionChamberController {
         }
     }
 
-    pub fn update<T: EngineCorrectedN1 + EngineCorrectedN2>(
+    pub fn update(
         &mut self,
         context: &UpdateContext,
-        engine: &T,
+        engine: &(impl EngineCorrectedN1 + EngineCorrectedN2),
     ) {
         let n1 = engine.corrected_n1().get::<ratio>();
         let n2 = engine.corrected_n2().get::<ratio>();

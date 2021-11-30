@@ -210,23 +210,23 @@ impl A320Pneumatic {
             controller.update(&self.fadec);
         }
 
-        for (index, (engine_system, bleed_monitoring_computer)) in self
-            .engine_systems
-            .iter_mut()
-            .zip(self.bleed_monitoring_computers.iter())
-            .enumerate()
-        {
-            if let Some(channel) =
-                bleed_monitoring_computer.channel_for_engine(engine_system.number)
-            {
-                engine_system.update(
-                    context,
-                    channel,
-                    channel,
-                    &self.engine_starter_valve_controllers[index],
-                    channel,
-                    engines[index],
-                )
+        for engine_system in self.engine_systems.iter_mut() {
+            for bleed_monitoring_computer in self.bleed_monitoring_computers.iter() {
+                let index = engine_system.number - 1;
+
+                // If we get an actual channel here, this means that the channel is not in slave mode
+                if let Some(channel) =
+                    bleed_monitoring_computer.channel_for_engine(engine_system.number)
+                {
+                    engine_system.update(
+                        context,
+                        channel,
+                        channel,
+                        &self.engine_starter_valve_controllers[index],
+                        channel,
+                        engines[index],
+                    );
+                }
             }
         }
 
