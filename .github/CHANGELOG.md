@@ -80,6 +80,7 @@
 1. [MCDU] Updated boarding logic, separate loading for pax and baggage - @sidnov (Sid)
 1. [FLIGHT MODEL] Updated OEW/dry operating weight, max payload, station weights - @sidnov (Sid)
 1. [EFB/UI] Override in-game fuel UI and fuel initialization - @Taz5150 (TazX [Z+2]#0405)
+1. [FCU] FCU backlight is fed from proper bus - @tracernz (Mike)
 
 ## 0.7.0
 
