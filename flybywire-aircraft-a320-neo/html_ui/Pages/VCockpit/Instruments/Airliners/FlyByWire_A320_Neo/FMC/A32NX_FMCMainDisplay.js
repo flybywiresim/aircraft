@@ -1887,21 +1887,33 @@ class FMCMainDisplay extends BaseAirliners {
         return SimVar.SetSimVarValue('L:A32NX_FM_LS_COURSE', 'number', course);
     }
 
-    checkRunwayLsMismatch() {
+    isRunwayLsMismatched() {
         if (!this.ilsAutoTuned || this.currentFlightPhase === FmgcFlightPhases.DONE) {
             return false;
         }
 
-        if ((this._ilsFrequencyPilotEntered && Math.abs(this.ilsFrequency - this.ilsAutoFrequency) >= 0.05) || (this._ilsIdentPilotEntered && this._ilsIcao !== this.ilsAutoIcao)) {
-            this.addNewMessage(NXSystemMessages.rwyLsMismatch);
+        return (this._ilsFrequencyPilotEntered && Math.abs(this.ilsFrequency - this.ilsAutoFrequency) >= 0.05) || (this._ilsIdentPilotEntered && this._ilsIcao !== this.ilsAutoIcao);
+    }
+
+    isRunwayLsCourseMismatched() {
+        if (!this.ilsAutoTuned || this.ilsCourse === undefined) {
+            return false;
+        }
+
+        return Math.abs(Avionics.Utils.diffAngle(this.ilsCourse, this.ilsAutoCourse)) > 3;
+    }
+
+    checkRunwayLsMismatch() {
+        if (this.isRunwayLsMismatched()) {
+            this.addNewMessage(NXSystemMessages.rwyLsMismatch, () => !(this.isRunwayLsMismatched() || this.isRunwayLsCourseMismatched()));
         }
 
         // manually entered course mismatch is handled separately to avoid unwanted messages
     }
 
     checkRunwayLsCourseMismatch() {
-        if (this.ilsAutoTuned && !this._ilsFrequencyPilotEntered && (!this._ilsIdentPilotEntered || this._ilsIcao === this.ilsAutoIcao) && this.ilsCourse !== undefined && Math.abs(Avionics.Utils.diffAngle(this.ilsCourse, this.ilsAutoCourse)) > 3) {
-            this.addNewMessage(NXSystemMessages.rwyLsMismatch);
+        if (this.isRunwayLsCourseMismatched()) {
+            this.addNewMessage(NXSystemMessages.rwyLsMismatch, () => !(this.isRunwayLsMismatched() || this.isRunwayLsCourseMismatched()));
         }
     }
 
