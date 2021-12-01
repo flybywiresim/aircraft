@@ -1,23 +1,31 @@
+:root {
+  --color-checked: lime;
+  --color-unchecked: white;
+  --color-overwritten: orange;
+  --color-endTag: white;
+  --height-dots: 1.5rem;
+}
+
 .dotsUnchecked {
-  border-bottom: thin dashed rgba(255, 255, 255, var(--tw-text-opacity));
+  border-bottom: thin dashed var(--color-unchecked);
   width: 100%;
-  height: 1.5rem;
+  height: var(--height-dots);
 }
 
 .dotsChecked {
-  border-bottom: thin dashed rgba(16, 185, 129, var(--tw-text-opacity));
+  border-bottom: thin dashed var(--color-checked);
   width: 100%;
-  height: 1.5rem;
+  height: var(--height-dots);
 }
 
 .dotsCheckedOverwrite {
-  border-bottom: thin dashed rgba(59, 130, 246, var(--tw-text-opacity));
+  border-bottom: thin dashed var(--color-overwritten);
   width: 100%;
-  height: 1.5rem;
+  height: var(--height-dots);
 }
 
 .checklistTextDiv {
-  margin-top: -1.5rem;
+  margin-top: calc(var(--height-dots)*-1);
   padding-bottom: 0.1rem;
   user-select: none;
 }
@@ -37,7 +45,18 @@
   cursor: pointer;
 }
 
-.checkedItem {
-  --tw-text-opacity: 1;
-  color: rgba(16, 185, 129, var(--tw-text-opacity));
+.itemUnchecked {
+  color: var(--color-unchecked);
+}
+
+.itemChecked {
+  color: var(--color-checked);
+}
+
+.itemOverwritten {
+  color: var(--color-overwritten);
+}
+
+.endTag {
+  color: var(--color-endTag);
 }

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { usePersistentProperty } from '@instruments/common/persistence';
 import { useSimVar } from '@instruments/common/simVars';
 
@@ -12,8 +12,8 @@ import SimpleInput from '../../Components/Form/SimpleInput/SimpleInput';
 import ThrottleConfig from '../ThrottleConfig/ThrottleConfig';
 
 type AdirsButton = {
-    simVarValue: number,
-}
+  simVarValue: number;
+};
 
 export const SimOptionsPage = () => {
     const [showThrottleSettings, setShowThrottleSettings] = useState(false);
@@ -28,6 +28,14 @@ export const SimOptionsPage = () => {
     const [mcduTimeout, setMcduTimeout] = usePersistentProperty('CONFIG_MCDU_KB_TIMEOUT', '60');
 
     const [dynamicRegistration, setDynamicRegistration] = usePersistentProperty('DYNAMIC_REGISTRATION_DECAL', 'DISABLED');
+    const [automaticChecklistChecks, setAutomaticChecklistChecks] = usePersistentProperty(
+        'EFB_CHECKLISTS_AUTOMATIC',
+        'ENABLED',
+    );
+
+    useEffect(() => {
+        console.log(`automaticChecklistChecks=${automaticChecklistChecks}`);
+    }, [automaticChecklistChecks]);
 
     const adirsAlignTimeButtons: (ButtonType & AdirsButton)[] = [
         { name: 'Instant', setting: 'INSTANT', simVarValue: 1 },
@@ -49,84 +57,100 @@ export const SimOptionsPage = () => {
 
     return (
         <div>
-            {!showThrottleSettings
-        && (
-            <SettingsPage name="Sim Options">
-                <SettingItem name="ADIRS Align Time">
-                    <SelectGroup>
-                        {adirsAlignTimeButtons.map((button) => (
-                            <SelectItem
-                                enabled
-                                onSelect={() => {
-                                    setAdirsAlignTime(button.setting);
-                                    setAdirsAlignTimeSimVar(button.simVarValue);
-                                }}
-                                selected={adirsAlignTime === button.setting}
-                            >
-                                {button.name}
-                            </SelectItem>
-                        ))}
-                    </SelectGroup>
-                </SettingItem>
+            {!showThrottleSettings && (
+                <SettingsPage name="Sim Options">
+                    <SettingItem name="ADIRS Align Time">
+                        <SelectGroup>
+                            {adirsAlignTimeButtons.map((button) => (
+                                <SelectItem
+                                    enabled
+                                    onSelect={() => {
+                                        setAdirsAlignTime(button.setting);
+                                        setAdirsAlignTimeSimVar(button.simVarValue);
+                                    }}
+                                    selected={adirsAlignTime === button.setting}
+                                >
+                                    {button.name}
+                                </SelectItem>
+                            ))}
+                        </SelectGroup>
+                    </SettingItem>
 
-                <SettingItem name="DMC Self Test Time">
-                    <SelectGroup>
-                        {dmcSelfTestTimeButtons.map((button) => (
-                            <SelectItem
-                                enabled
-                                onSelect={() => setDmcSelfTestTime(button.setting)}
-                                selected={dmcSelfTestTime === button.setting}
-                            >
-                                {button.name}
-                            </SelectItem>
-                        ))}
-                    </SelectGroup>
-                </SettingItem>
+                    <SettingItem name="DMC Self Test Time">
+                        <SelectGroup>
+                            {dmcSelfTestTimeButtons.map((button) => (
+                                <SelectItem
+                                    enabled
+                                    onSelect={() => setDmcSelfTestTime(button.setting)}
+                                    selected={dmcSelfTestTime === button.setting}
+                                >
+                                    {button.name}
+                                </SelectItem>
+                            ))}
+                        </SelectGroup>
+                    </SettingItem>
 
-                <SettingItem name="Default Barometer Unit">
-                    <SelectGroup>
-                        {defaultBaroButtons.map((button) => (
-                            <SelectItem
-                                enabled
-                                onSelect={() => setDefaultBaro(button.setting)}
-                                selected={defaultBaro === button.setting}
-                            >
-                                {button.name}
-                            </SelectItem>
-                        ))}
-                    </SelectGroup>
-                </SettingItem>
+                    <SettingItem name="Default Barometer Unit">
+                        <SelectGroup>
+                            {defaultBaroButtons.map((button) => (
+                                <SelectItem
+                                    enabled
+                                    onSelect={() => setDefaultBaro(button.setting)}
+                                    selected={defaultBaro === button.setting}
+                                >
+                                    {button.name}
+                                </SelectItem>
+                            ))}
+                        </SelectGroup>
+                    </SettingItem>
 
-                <SettingItem name="MCDU Keyboard Input" unrealistic>
-                    <Toggle value={mcduInput === 'ENABLED'} onToggle={(value) => setMcduInput(value ? 'ENABLED' : 'DISABLED')} />
-                </SettingItem>
+                    <SettingItem name="MCDU Keyboard Input" unrealistic>
+                        <Toggle
+                            value={mcduInput === 'ENABLED'}
+                            onToggle={(value) => setMcduInput(value ? 'ENABLED' : 'DISABLED')}
+                        />
+                    </SettingItem>
 
-                <SettingItem name="MCDU Focus Timeout (seconds)">
-                    <SimpleInput
-                        className="w-30 ml-1.5 px-5 py-1.5 text-lg text-gray-300 rounded-lg bg-navy-light
+                    <SettingItem name="MCDU Focus Timeout (seconds)">
+                        <SimpleInput
+                            className="w-30 ml-1.5 px-5 py-1.5 text-lg text-gray-300 rounded-lg bg-navy-light
                             border-2 border-navy-light focus-within:outline-none focus-within:border-teal-light-contrast text-center disabled"
-                        value={mcduTimeout}
-                        noLabel
-                        min={5}
-                        max={120}
-                        disabled={(mcduInput !== 'ENABLED')}
-                        onChange={(event) => {
-                            if (!Number.isNaN(event) && parseInt(event) >= 5 && parseInt(event) <= 120) {
-                                setMcduTimeout(event.trim());
-                            }
-                        }}
-                    />
-                </SettingItem>
+                            value={mcduTimeout}
+                            noLabel
+                            min={5}
+                            max={120}
+                            disabled={mcduInput !== 'ENABLED'}
+                            onChange={(event) => {
+                                if (!Number.isNaN(event) && parseInt(event) >= 5 && parseInt(event) <= 120) {
+                                    setMcduTimeout(event.trim());
+                                }
+                            }}
+                        />
+                    </SettingItem>
 
-                <SettingItem name="Dynamic Registration Decal">
-                    <Toggle value={dynamicRegistration === 'ENABLED'} onToggle={(value) => setDynamicRegistration(value ? 'ENABLED' : 'DISABLED')} />
-                </SettingItem>
+                    <SettingItem name="Dynamic Registration Decal">
+                        <Toggle
+                            value={dynamicRegistration === 'ENABLED'}
+                            onToggle={(value) => setDynamicRegistration(value ? 'ENABLED' : 'DISABLED')}
+                        />
+                    </SettingItem>
 
-                <SettingItem name="Throttle Detents">
-                    <Button className="bg-teal-light-contrast border-teal-light-contrast" text="Calibrate" onClick={() => setShowThrottleSettings(true)} />
-                </SettingItem>
-            </SettingsPage>
-        )}
+                    <SettingItem name="Throttle Detents">
+                        <Button
+                            className="bg-teal-light-contrast border-teal-light-contrast"
+                            text="Calibrate"
+                            onClick={() => setShowThrottleSettings(true)}
+                        />
+                    </SettingItem>
+
+                    <SettingItem name="Automatic checklist items">
+                        <Toggle
+                            value={automaticChecklistChecks === 'ENABLED'}
+                            onToggle={(value) => setAutomaticChecklistChecks(value ? 'ENABLED' : 'DISABLED')}
+                        />
+                    </SettingItem>
+                </SettingsPage>
+            )}
             <ThrottleConfig isShown={showThrottleSettings} onClose={() => setShowThrottleSettings(false)} />
         </div>
     );

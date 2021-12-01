@@ -49,7 +49,7 @@ export const ChecklistPage = (props: ChecklistPageProps) => {
         }
     };
 
-    const allItemsChecked = itemStates.findIndex((it) => it.checked === false) == -1;
+    const allItemsChecked = itemStates.findIndex((it) => it.checked === false) === -1;
 
     const itemTags = items.map((it, idx) => (
         <CheckListItem
@@ -66,6 +66,10 @@ export const ChecklistPage = (props: ChecklistPageProps) => {
             <div className="w-full h-full">
                 <br />
                 <ol className="w-full text-2xl text-white">{itemTags}</ol>
+                <br />
+                <div className="flex justify-center">
+                    <span className="endTag">=== END ===</span>
+                </div>
                 <br />
                 {allItemsChecked === true && isChecklistComplete === false && (
                     <div className="flex items-center">
