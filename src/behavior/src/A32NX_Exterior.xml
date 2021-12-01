@@ -198,4 +198,10 @@
         </UseTemplate>
     </Template>
 
+    <Template Name="FBW_Gnd_Equipment">
+        <Component ID="#NODE_ID#" Node="#NODE_ID#">
+            <UseTemplate Name="ASOBO_GT_Visibility_Code"/>
+        </Component>
+    </Template>
+
 </ModelBehaviors>
