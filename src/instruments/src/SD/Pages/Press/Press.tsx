@@ -19,6 +19,22 @@ export const PressPage: FC = () => {
     const [systemNumber] = useSimVar('L:A32NX_PRESS_ACTIVE_CPC_SYS', 'number', 1000);
     const [safetyValve] = useSimVar('L:A32NX_PRESS_SAFETY_VALVE_OPEN_PERCENTAGE', 'percentage', 500);
 
+    const [cabinAltTextCss, setCabinAltTextCss] = useState("");
+    const [cabinAltGaugeCss, setCabinAltGaugeCss] = useState("");
+
+    useEffect(() => {
+        if (Math.round(cabinAlt / 50) * 50 >= 8800 && Math.round(cabinAlt / 50) * 50 < 9550) {
+            setCabinAltTextCss('GreenTextPulse');
+            setCabinAltGaugeCss('GreenIndicatorPulse');
+        } else if (Math.round(cabinAlt / 50) * 50 >= 9550) {
+            setCabinAltTextCss('Red');
+            setCabinAltGaugeCss('Red');
+        } else {
+            setCabinAltTextCss('Green');
+            setCabinAltGaugeCss('Green');
+        }
+    }, [cabinAlt]);
+
     const deltaPress = splitDecimals(deltaPsi);
     const cax = 455;
     const dpx = 110;
@@ -96,9 +112,7 @@ export const PressPage: FC = () => {
                 <text className="Large Center" x={cax + 15} y="80">CAB ALT</text>
                 <text className="Medium Center Cyan" x={cax + 20} y="100">FT</text>
                 <text
-                    className={`Huge End ${Math.round(cabinAlt / 50) * 50 >= 8800 && Math.round(cabinAlt / 50) * 50 < 9550
-                        ? 'GreenTextPulse'
-                        : (Math.round(cabinAlt / 50) * 50 >= 9550 ? 'Red' : 'Green')}`}
+                    className={`Huge End ${cabinAltTextCss}`}
                     x={cax + 85}
                     y={y + 25}
                 >
@@ -172,9 +186,7 @@ export const PressPage: FC = () => {
                         radius={radius}
                         startAngle={210}
                         endAngle={50}
-                        className={`GaugeIndicator ${Math.round(cabinAlt / 50) * 50 >= 8800 && Math.round(cabinAlt / 50) * 50 < 9550
-                            ? 'GreenIndicatorPulse'
-                            : (Math.round(cabinAlt / 50) * 50 >= 9550 ? 'Red' : 'Green') }`}
+                        className={`GaugeIndicator ${setCabinAltGaugeCss}`}
                         indicator
                     />
                 </GaugeComponent>
