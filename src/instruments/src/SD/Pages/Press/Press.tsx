@@ -172,11 +172,9 @@ export const PressPage: FC = () => {
                         radius={radius}
                         startAngle={210}
                         endAngle={50}
-                        /* eslint-disable no-nested-ternary */
                         className={`GaugeIndicator ${Math.round(cabinAlt / 50) * 50 >= 8800 && Math.round(cabinAlt / 50) * 50 < 9550
                             ? 'GreenIndicatorPulse'
-                            : Math.round(cabinAlt / 50) * 50 >= 9550 ? 'Red' : 'Green'}`}
-                        /* eslint-enable no-nested-ternary */
+                            : (Math.round(cabinAlt / 50) * 50 >= 9550 ? 'Red' : 'Green') }`}
                         indicator
                     />
                 </GaugeComponent>
