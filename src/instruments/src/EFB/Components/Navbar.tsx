@@ -1,4 +1,4 @@
-import React, { ReactElement, useEffect, useState } from "react";
+import React, { ReactElement, useEffect, useState } from 'react';
 
 export type NavbarProps = {
     tabs: string[] | ReactElement[];
@@ -8,9 +8,9 @@ export type NavbarProps = {
 };
 
 const c = {
-    active: "flex items-center px-6 py-2 bg-theme-accent bg-opacity-100",
+    active: 'flex items-center px-6 py-2 bg-theme-accent bg-opacity-100',
     inactive:
-        "flex items-center px-6 py-2 bg-opacity-0 hover:bg-opacity-100 transition duration-300",
+        'flex items-center px-6 py-2 bg-opacity-0 hover:bg-opacity-100 transition duration-300',
 };
 
 export const Navbar = ({
@@ -20,7 +20,7 @@ export const Navbar = ({
     selectedTabIndex,
 }: NavbarProps) => {
     const [activeIndex, setActiveIndex] = useState(
-        selectedTabIndex === undefined ? 0 : selectedTabIndex
+        selectedTabIndex === undefined ? 0 : selectedTabIndex,
     );
 
     useEffect(() => {

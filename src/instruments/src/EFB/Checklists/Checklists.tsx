@@ -1,56 +1,52 @@
-import React, { useEffect, useState } from "react";
-import { useSimVar } from "@instruments/common/simVars";
-import { Navbar } from "../Components/Navbar";
-import { ChecklistPage, ChecklistState } from "./ChecklistPage";
-import { CHECKLISTS, mapFlightPhaseToChecklist } from "./Lists";
-import "./Checklist.css";
-import { ChecklistItemState } from "./ChecklistItem";
+import React, { useEffect, useState } from 'react';
+import { useSimVar } from '@instruments/common/simVars';
+import { Navbar } from '../Components/Navbar';
+import { ChecklistPage, ChecklistState } from './ChecklistPage';
+import { CHECKLISTS, mapFlightPhaseToChecklist } from './Lists';
+import './Checklist.css';
+import { ChecklistItemState } from './ChecklistItem';
 
 const INITIAL_ITEM_STATES: ChecklistState[] = Array.from(
     { length: CHECKLISTS.length },
-    (v, i) => {
-        return {
-            itemStates: Array.from(
-                { length: CHECKLISTS[i].items.length },
-                (vv, ii) => {
-                    return {
-                        checked:
-                            CHECKLISTS[i].items[ii].item === "" ? true : false,
-                        overwritten: false,
-                    };
-                }
-            ),
-        };
-    }
+    (v, i) => ({
+        itemStates: Array.from(
+            { length: CHECKLISTS[i].items.length },
+            (vv, ii) => ({
+                checked:
+                            CHECKLISTS[i].items[ii].item === '',
+                overwritten: false,
+            }),
+        ),
+    }),
 );
 const INITIAL_CHECKLIST_STATES: boolean[] = Array.from(
     { length: CHECKLISTS.length },
-    () => false
+    () => false,
 );
 
 export const Checklists = () => {
     const [simFlightPhase] = useSimVar(
-        "L:A32NX_FMGC_FLIGHT_PHASE",
-        "number",
-        0
+        'L:A32NX_FMGC_FLIGHT_PHASE',
+        'number',
+        0,
     );
     const [currentChecklistIdx, setCurrentChecklistIdx] = useState<number>(
         mapFlightPhaseToChecklist(simFlightPhase) === -1
             ? 0
-            : mapFlightPhaseToChecklist(simFlightPhase)
+            : mapFlightPhaseToChecklist(simFlightPhase),
     );
     const [flightPhase, setFlightPhase] = useState(simFlightPhase);
     const [checklistItemState, setChecklistItemState] = useState<
         ChecklistState[]
     >(INITIAL_ITEM_STATES);
     const [checklistState, setChecklistState] = useState<boolean[]>(
-        INITIAL_CHECKLIST_STATES
+        INITIAL_CHECKLIST_STATES,
     );
 
     useEffect(() => {
         if (simFlightPhase !== flightPhase) {
             const newChecklist = mapFlightPhaseToChecklist(simFlightPhase);
-            if (-1 !== newChecklist) {
+            if (newChecklist !== -1) {
                 setCurrentChecklistIdx(newChecklist);
             }
             setFlightPhase(simFlightPhase);
@@ -65,10 +61,10 @@ export const Checklists = () => {
                 if (it.condition !== undefined) {
                     const condEval = it.condition();
                     if (
-                        false === checklistState[clIdx] &&
-                        false ===
-                            checklistItemState[clIdx].itemStates[itIdx]
-                                .overwritten
+                        checklistState[clIdx] === false
+                        && checklistItemState[clIdx].itemStates[itIdx]
+                            .overwritten
+                            === false
                     ) {
                         // do not overwrite status for completed checklists
                         checklistItemState[clIdx].itemStates[
@@ -92,27 +88,25 @@ export const Checklists = () => {
 
     const setChecklistCompleteStatus = (
         complete: boolean,
-        resetOverwrite: boolean
+        resetOverwrite: boolean,
     ) => {
         checklistState[currentChecklistIdx] = complete;
         setChecklistState(checklistState);
-        if (false === complete) {
+        if (complete === false) {
             checklistItemState[currentChecklistIdx].itemStates.forEach(
                 (it, idx) => {
                     if (
-                        CHECKLISTS[currentChecklistIdx].items[idx].item !== ""
+                        CHECKLISTS[currentChecklistIdx].items[idx].item !== ''
                     ) {
                         it.checked = false;
                         if (resetOverwrite) it.overwritten = false;
                     }
-                }
+                },
             );
             setChecklistItemState(checklistItemState);
-        } else {
-            if (currentChecklistIdx < CHECKLISTS.length - 1) {
-                console.log(`Show next checklist: ${currentChecklistIdx + 1}`);
-                setCurrentChecklistIdx(currentChecklistIdx + 1);
-            }
+        } else if (currentChecklistIdx < CHECKLISTS.length - 1) {
+            console.log(`Show next checklist: ${currentChecklistIdx + 1}`);
+            setCurrentChecklistIdx(currentChecklistIdx + 1);
         }
     };
 
@@ -124,13 +118,13 @@ export const Checklists = () => {
     };
 
     const CHECKLIST_NAMES = CHECKLISTS.map((cl, idx) => {
-        const color = true === checklistState[idx] ? "text-green-500" : "";
+        const color = checklistState[idx] === true ? 'text-green-500' : '';
         return <span className={color}>{cl.name}</span>;
     });
 
     return (
         <>
-            <h1 className="text-3xl pt-6 text-white">Checklists</h1>
+            <h1 className="pt-6 text-3xl text-white">Checklists</h1>
             <Navbar
                 tabs={CHECKLIST_NAMES}
                 selectedTabIndex={currentChecklistIdx}

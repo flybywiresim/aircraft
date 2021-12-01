@@ -181,7 +181,7 @@ const Efb = () => {
                                             <Failures />
                                         </Route>
                                         <Route path="/checklists">
-                                            <Checklists/>
+                                            <Checklists />
                                         </Route>
                                         <Route path="/settings">
                                             <Settings />

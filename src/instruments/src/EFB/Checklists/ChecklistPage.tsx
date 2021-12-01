@@ -1,10 +1,10 @@
-import { IconCheck, IconRepeat } from "@tabler/icons";
-import React from "react";
+import { IconCheck, IconRepeat } from '@tabler/icons';
+import React from 'react';
 import {
     ChecklistItem,
     CheckListItem,
     ChecklistItemState,
-} from "./ChecklistItem";
+} from './ChecklistItem';
 
 export type ChecklistState = {
     itemStates: ChecklistItemState[];
@@ -35,47 +35,44 @@ export const ChecklistPage = (props: ChecklistPageProps) => {
     } = props;
 
     const toggleItemCheckState = (idx: number) => {
-        let newState = itemStates[idx];
+        const newState = itemStates[idx];
         newState.checked = !newState.checked;
         setItemState(idx, newState);
     };
 
     const toggleItemOverwriteState = (idx: number) => {
-        let newState = itemStates[idx];
-        if (false === newState.checked) {
+        const newState = itemStates[idx];
+        if (newState.checked === false) {
             newState.overwritten = !newState.overwritten;
             newState.checked = true;
             setItemState(idx, newState);
         }
     };
 
-    const allItemsChecked =
-        itemStates.findIndex((it) => false === it.checked) == -1;
+    const allItemsChecked = itemStates.findIndex((it) => it.checked === false) == -1;
 
-    const itemTags = items.map((it, idx) => {
-        return (
-            <CheckListItem
-                isChecklistComplete={isChecklistComplete}
-                clItem={it}
-                itemState={itemStates[idx]}
-                toggleItemCheckStatus={() => toggleItemCheckState(idx)}
-                toggleItemOverwriteStatus={() => toggleItemOverwriteState(idx)}
-            />
-        );
-    });
+    const itemTags = items.map((it, idx) => (
+        <CheckListItem
+            isChecklistComplete={isChecklistComplete}
+            clItem={it}
+            itemState={itemStates[idx]}
+            toggleItemCheckStatus={() => toggleItemCheckState(idx)}
+            toggleItemOverwriteStatus={() => toggleItemOverwriteState(idx)}
+        />
+    ));
 
     return (
         <>
             <div className="w-full h-full">
                 <br />
-                <ol className="w-full text-white text-2xl">{itemTags}</ol>
+                <ol className="w-full text-2xl text-white">{itemTags}</ol>
                 <br />
-                {true === allItemsChecked && false === isChecklistComplete && (
+                {allItemsChecked === true && isChecklistComplete === false && (
                     <div className="flex items-center">
                         <button
                             type="button"
                             onClick={() => setChecklistComplete()}
-                            className="mr-1 w-1/3 text-white bg-teal-light p-2 flex items-center justify-center rounded-lg focus:outline-none text-2xl"
+                            className="flex justify-center items-center p-2 mr-1 w-1/3 text-2xl text-white rounded-lg focus:outline-none bg-teal-light"
                         >
                             <IconCheck
                                 className="mr-2"
@@ -87,12 +84,12 @@ export const ChecklistPage = (props: ChecklistPageProps) => {
                         </button>
                     </div>
                 )}
-                {true === isChecklistComplete && (
+                {isChecklistComplete === true && (
                     <div className="flex items-center">
                         <button
                             type="button"
                             onClick={() => resetChecklist()}
-                            className="mr-1 w-1/3 text-red-600 bg-teal-light p-2 flex items-center justify-center rounded-lg focus:outline-none text-2xl"
+                            className="flex justify-center items-center p-2 mr-1 w-1/3 text-2xl text-red-600 rounded-lg focus:outline-none bg-teal-light"
                         >
                             <IconRepeat
                                 className="mr-2"

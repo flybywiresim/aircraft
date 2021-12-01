@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 
 export type ChecklistItemState = {
     checked: boolean;
@@ -28,7 +28,7 @@ export const CheckListItem = (props: CheckListItemProps) => {
         toggleItemOverwriteStatus,
     } = props;
     const onClick = () => {
-        if (false === isChecklistComplete) toggleItemCheckStatus();
+        if (isChecklistComplete === false) toggleItemCheckStatus();
     };
 
     const onDoubleClick = (e: any) => {
@@ -36,37 +36,35 @@ export const CheckListItem = (props: CheckListItemProps) => {
         toggleItemOverwriteStatus();
     };
 
-    const isConditionItem = () => {
-        return clItem.condition !== undefined;
-    };
+    const isConditionItem = () => clItem.condition !== undefined;
 
-    const itemClassName =
-        false === isChecklistComplete &&
-        false === isConditionItem() &&
-        clItem.item !== ""
-            ? "checklistItem"
-            : "";
+    const itemClassName = isChecklistComplete === false
+        && isConditionItem() === false
+        && clItem.item !== ''
+        ? 'checklistItem'
+        : '';
 
     const itemText = (text: string, conditionPrefix: string) => {
-        if (true === isConditionItem())
+        if (isConditionItem() === true) {
             return <i>{coloredItemText(text, conditionPrefix)}</i>;
+        }
         return <>{coloredItemText(text, conditionPrefix)}</>;
     };
 
     const coloredItemText = (text: string, conditionPrefix: string) => {
         const theText = isConditionItem() ? conditionPrefix + text : text;
-        let color = itemState.checked ? "text-green-500" : "text-white";
+        let color = itemState.checked ? 'text-green-500' : 'text-white';
         if (itemState.overwritten) {
-            color = "text-blue-500";
+            color = 'text-blue-500';
         }
-        return <text className={"text-2xl " + color}>{theText}</text>;
+        return <text className={`text-2xl ${color}`}>{theText}</text>;
     };
 
     const dotsClassName = itemState.checked
         ? itemState.overwritten
-            ? "dotsCheckedOverwrite"
-            : "dotsChecked"
-        : "dotsUnchecked";
+            ? 'dotsCheckedOverwrite'
+            : 'dotsChecked'
+        : 'dotsUnchecked';
 
     return (
         <div
@@ -74,23 +72,23 @@ export const CheckListItem = (props: CheckListItemProps) => {
             onClick={isConditionItem() ? undefined : onClick}
             onDoubleClick={isConditionItem() ? onDoubleClick : undefined}
         >
-            {clItem.item === "" && (
+            {clItem.item === '' && (
                 <>
                     <br />
-                    <hr className="solid"></hr>
+                    <hr className="solid" />
                     <br />
                 </>
             )}
 
-            {clItem.item != "" && (
+            {clItem.item != '' && (
                 <>
-                    <div className={dotsClassName}></div>
+                    <div className={dotsClassName} />
                     <div className="checklistTextDiv">
                         <span className="checklistTextSpan">
-                            {itemText(clItem.item, "* ")}
+                            {itemText(clItem.item, '* ')}
                         </span>
                         <span className="checklistTextSpan pull-right">
-                            {itemText(clItem.result, "")}
+                            {itemText(clItem.result, '')}
                         </span>
                     </div>
                 </>
