@@ -19,8 +19,8 @@ export const PressPage: FC = () => {
     const [systemNumber] = useSimVar('L:A32NX_PRESS_ACTIVE_CPC_SYS', 'number', 1000);
     const [safetyValve] = useSimVar('L:A32NX_PRESS_SAFETY_VALVE_OPEN_PERCENTAGE', 'percentage', 500);
 
-    const [cabinAltTextCss, setCabinAltTextCss] = useState("");
-    const [cabinAltGaugeCss, setCabinAltGaugeCss] = useState("");
+    const [cabinAltTextCss, setCabinAltTextCss] = useState('');
+    const [cabinAltGaugeCss, setCabinAltGaugeCss] = useState('');
 
     useEffect(() => {
         if (Math.round(cabinAlt / 50) * 50 >= 8800 && Math.round(cabinAlt / 50) * 50 < 9550) {
@@ -186,7 +186,7 @@ export const PressPage: FC = () => {
                         radius={radius}
                         startAngle={210}
                         endAngle={50}
-                        className={`GaugeIndicator ${setCabinAltGaugeCss}`}
+                        className={`GaugeIndicator ${cabinAltGaugeCss}`}
                         indicator
                     />
                 </GaugeComponent>
