@@ -173,13 +173,27 @@
             "scale": [0.5, 0.5, 0.5],
             "mesh": 0,
             "name": "CONE_R"
+          },
+          {
+            "translation": [5.75, -2.25, 3.5],
+            "rotation": [0, 0, 0, 0],
+            "scale": [0.5, 0.5, 0.5],
+            "mesh": 0,
+            "name": "CONE_ENG1"
+          },
+          {
+            "translation": [-5.75, -2.25, 3.5],
+            "rotation": [0, 0.993, 0, 0.117],
+            "scale": [0.5, 0.5, 0.5],
+            "mesh": 0,
+            "name": "CONE_ENG2"
           }
     ],
     "scene": 0,
     "scenes": [
         {
             "nodes": [
-                0, 1, 2
+                0, 1, 2, 3, 4
             ],
             "name": "Scene"
         }
