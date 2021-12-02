@@ -21,6 +21,11 @@ use crate::{
     simulation::UpdateContext,
 };
 
+use crate::simulation::{
+    InitContext, Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
+    SimulatorWriter, VariableIdentifier, Write,
+};
+
 use std::time::Duration;
 
 pub trait Actuator {
@@ -83,6 +88,11 @@ struct CoreHydraulicForce {
 
     force_raw: Force,
     force_filtered: LowPassFilter<Force>,
+
+    pi_gain: f64,
+    pd_gain: f64,
+    pi_id: VariableIdentifier,
+    pd_id: VariableIdentifier,
 }
 impl CoreHydraulicForce {
     const DEFAULT_I_GAIN: f64 = 0.2;
@@ -91,6 +101,7 @@ impl CoreHydraulicForce {
     const OPEN_LOOP_GAIN: f64 = 1.;
 
     fn new(
+        context: &mut InitContext,
         init_position: Ratio,
         active_hydraulic_damping_constant: f64,
         slow_hydraulic_damping_constant: f64,
@@ -123,6 +134,11 @@ impl CoreHydraulicForce {
             last_control_force: Force::new::<newton>(0.),
             force_raw: Force::new::<newton>(0.),
             force_filtered: LowPassFilter::<Force>::new(Duration::from_millis(50)),
+
+            pi_gain: Self::DEFAULT_I_GAIN,
+            pd_gain: Self::DEFAULT_P_GAIN,
+            pi_id: context.get_identifier("TEST_GAIN_PI".to_owned()),
+            pd_id: context.get_identifier("TEST_GAIN_PD".to_owned()),
         }
     }
 
@@ -313,8 +329,8 @@ impl CoreHydraulicForce {
         let delta_error = flow_error - self.flow_error_prev.get::<gallon_per_second>();
         self.flow_error_prev = VolumeRate::new::<gallon_per_second>(flow_error);
 
-        let p_term = Self::DEFAULT_P_GAIN * delta_error;
-        let i_term = Self::DEFAULT_I_GAIN * flow_error;
+        let p_term = self.pd_gain * delta_error;
+        let i_term = self.pi_gain * flow_error;
 
         let force_gain = Self::DEFAULT_FORCE_GAIN;
         self.last_control_force += Force::new::<newton>((p_term + i_term) * force_gain);
@@ -331,9 +347,34 @@ impl CoreHydraulicForce {
             self.last_control_force = self.last_control_force.max(max_force);
         }
 
+        println!(
+            "HYDctl: ErrorPos {:.2} TargetFlow {:.2} CurrentFlow {:.2} Force {:.0}",
+            position_error.get::<ratio>(),
+            open_loop_flow_target.get::<gallon_per_second>(),
+            signed_flow.get::<gallon_per_second>(),
+            self.last_control_force.get::<newton>()
+        );
+
         self.last_control_force
     }
 }
+impl SimulationElement for CoreHydraulicForce {
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        let new_pi = reader.read(&self.pi_id);
+        let new_pd = reader.read(&self.pd_id);
+
+        if new_pi != 0. {
+            self.pi_gain = new_pi;
+        }
+
+        if new_pd != 0. {
+            self.pd_gain = new_pd;
+        }
+
+        println!("pi {:.4}, pd {:.4}", self.pi_gain, self.pd_gain);
+    }
+}
+
 /// Represents a classical linear actuator with a rod side area and a bore side area
 /// It is connected between an anchor point on the plane and a control arm of a rigid body
 /// When the actuator moves, it takes fluid on one side and gives back to reservoir the fluid on other side
@@ -378,6 +419,7 @@ pub struct LinearActuator {
 }
 impl LinearActuator {
     pub fn new(
+        context: &mut InitContext,
         bounded_linear_length: &impl BoundedLinearLength,
         number_of_actuators: u8,
         bore_side_diameter: Length,
@@ -451,6 +493,7 @@ impl LinearActuator {
             requested_position: Ratio::new::<ratio>(0.),
 
             core_hydraulics: CoreHydraulicForce::new(
+                context,
                 Ratio::new::<ratio>(0.),
                 active_hydraulic_damping_constant,
                 slow_hydraulic_damping_constant,
@@ -559,6 +602,13 @@ impl Actuator for LinearActuator {
         self.volume_to_actuator_accumulator = Volume::new::<gallon>(0.);
     }
 }
+impl SimulationElement for LinearActuator {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.core_hydraulics.accept(visitor);
+
+        visitor.visit(self);
+    }
+}
 
 pub trait HydraulicAssemblyController {
     fn requested_mode(&self) -> LinearActuatorMode;
@@ -629,6 +679,13 @@ impl HydraulicLinearActuatorAssembly {
 
     pub fn actuator_position_normalized(&self) -> Ratio {
         self.linear_actuator.position_normalized()
+    }
+}
+impl SimulationElement for HydraulicLinearActuatorAssembly {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.linear_actuator.accept(visitor);
+
+        visitor.visit(self);
     }
 }
 

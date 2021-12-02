@@ -115,9 +115,11 @@ impl A320HydraulicCircuitFactory {
 struct A320CargoDoorFactory {}
 impl A320CargoDoorFactory {
     fn a320_cargo_door_actuator(
+        context: &mut InitContext,
         bounded_linear_length: &impl BoundedLinearLength,
     ) -> LinearActuator {
         LinearActuator::new(
+            context,
             bounded_linear_length,
             2,
             Length::new::<meter>(0.04422),
@@ -156,18 +158,16 @@ impl A320CargoDoorFactory {
 
     /// Builds a cargo door assembly consisting of the door physical rigid body and the hydraulic actuator connected
     /// to it
-    fn a320_cargo_door_assembly() -> HydraulicLinearActuatorAssembly {
+    fn a320_cargo_door_assembly(context: &mut InitContext) -> HydraulicLinearActuatorAssembly {
         let cargo_door_body = A320CargoDoorFactory::a320_cargo_door_body(true);
-        let cargo_door_actuator = A320CargoDoorFactory::a320_cargo_door_actuator(&cargo_door_body);
+        let cargo_door_actuator =
+            A320CargoDoorFactory::a320_cargo_door_actuator(context, &cargo_door_body);
         HydraulicLinearActuatorAssembly::new(cargo_door_actuator, cargo_door_body)
     }
 
     fn new_a320_cargo_door(context: &mut InitContext, id: &str) -> CargoDoor {
-        CargoDoor::new(
-            context,
-            id,
-            A320CargoDoorFactory::a320_cargo_door_assembly(),
-        )
+        let assembly = A320CargoDoorFactory::a320_cargo_door_assembly(context);
+        CargoDoor::new(context, id, assembly)
     }
 }
 
@@ -771,8 +771,8 @@ impl SimulationElement for A320Hydraulic {
         self.forward_cargo_door_controller.accept(visitor);
         self.forward_cargo_door.accept(visitor);
 
-        self.aft_cargo_door_controller.accept(visitor);
-        self.aft_cargo_door.accept(visitor);
+        // self.aft_cargo_door_controller.accept(visitor);
+        // self.aft_cargo_door.accept(visitor);
 
         self.pushback_tug.accept(visitor);
 
@@ -1821,6 +1821,12 @@ impl CargoDoor {
     }
 }
 impl SimulationElement for CargoDoor {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.hydraulic_assembly.accept(visitor);
+
+        visitor.visit(self);
+    }
+
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.position_id, self.position());
         writer.write(&self.locked_id, self.is_locked());
