@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useInteractionEvent } from '@instruments/common/hooks';
 import { useSimVar } from '@instruments/common/simVars';
 import { EfisSide } from '@shared/NavigationDisplay';
+import { debouncedTimeDelta } from '../../Common';
 
 // TODO need a font with the right H ' and " chars
 
@@ -22,7 +23,9 @@ export const Chrono: React.FC<{ side: EfisSide }> = ({ side }) => {
     useEffect(() => {
         if (state === 'RUNNING') {
             // max 99 hours, 59 min
-            setElapsedTime(Math.min(359940, Math.max(elapsedTime + absTime - prevTime, 0)));
+            setElapsedTime(
+                Math.min(359940, elapsedTime + debouncedTimeDelta(absTime, prevTime)),
+            );
         }
         setPrevTime(absTime);
     }, [absTime]);
