@@ -236,6 +236,7 @@ struct ap_raw_output
 {
   real_T ap_on;
   real_T Phi_loc_c;
+  real_T Nosewheel_c;
   ap_raw_output_command flight_director;
   ap_raw_output_command autopilot;
 };

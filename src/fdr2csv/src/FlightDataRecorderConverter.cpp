@@ -250,6 +250,8 @@ void FlightDataRecorderConverter::writeHeader(ofstream& out, const string& delim
   out << "ap_sm.output.TCAS_message_RA_inhibit)" << delimiter;
   out << "ap_sm.output.TCAS_message_TRK_FPA_deselection)" << delimiter;
   out << "ap_law.ap_on" << delimiter;
+  out << "ap_law.Phi_loc_c" << delimiter;
+  out << "ap_law.Nosewheel_c" << delimiter;
   out << "ap_law.flight_director.Theta_c_deg" << delimiter;
   out << "ap_law.flight_director.Phi_c_deg" << delimiter;
   out << "ap_law.flight_director.Beta_c_deg" << delimiter;
@@ -803,6 +805,8 @@ void FlightDataRecorderConverter::writeStruct(ofstream& out,
   out << static_cast<unsigned int>(ap_sm.output.TCAS_message_RA_inhibit) << delimiter;
   out << static_cast<unsigned int>(ap_sm.output.TCAS_message_TRK_FPA_deselection) << delimiter;
   out << ap_law.ap_on << delimiter;
+  out << ap_law.Phi_loc_c << delimiter;
+  out << ap_law.Nosewheel_c << delimiter;
   out << ap_law.flight_director.Theta_c_deg << delimiter;
   out << ap_law.flight_director.Phi_c_deg << delimiter;
   out << ap_law.flight_director.Beta_c_deg << delimiter;

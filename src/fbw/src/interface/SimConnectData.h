@@ -239,6 +239,7 @@ struct ClientDataAutopilotLaws {
   double autopilotPhi;
   double autopilotBeta;
   double locPhiCommand;
+  double nosewheelCommand;
 };
 
 struct ClientDataAutothrust {
