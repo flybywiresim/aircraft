@@ -443,55 +443,53 @@
             </Component>
         </Component>
 
-        <!--
-            (A:SIM ON GROUND, BOOL)
-        -->
         <Component ID="GND_EQUIPMENT">
             <!-- GND CHOCKS -->
             <UseTemplate Name="FBW_Gnd_Equipment">
                 <NODE_ID>CHOCK_NOSEGEAR_FRONT</NODE_ID>
-                <VISIBILITY_CODE>(L:A32NX_GND_CHOCKS)</VISIBILITY_CODE>
+                <GND_DISABLE_OVRD>(L:A32NX_MODEL_WHEELCHOCKS_HIDDEN)</GND_DISABLE_OVRD>
             </UseTemplate>
             <UseTemplate Name="FBW_Gnd_Equipment">
                 <NODE_ID>CHOCK_NOSEGEAR_BACK</NODE_ID>
-                <VISIBILITY_CODE>(L:A32NX_GND_CHOCKS)</VISIBILITY_CODE>
+                <GND_DISABLE_OVRD>(L:A32NX_MODEL_WHEELCHOCKS_HIDDEN)</GND_DISABLE_OVRD>
             </UseTemplate>
             <UseTemplate Name="FBW_Gnd_Equipment">
                 <NODE_ID>CHOCK_MAINGEAR_RIGHT_FRONT</NODE_ID>
-                <VISIBILITY_CODE>(L:A32NX_GND_CHOCKS)</VISIBILITY_CODE>
+                <GND_DISABLE_OVRD>(L:A32NX_MODEL_WHEELCHOCKS_HIDDEN)</GND_DISABLE_OVRD>
             </UseTemplate>
             <UseTemplate Name="FBW_Gnd_Equipment">
                 <NODE_ID>CHOCK_MAINGEAR_RIGHT_BACK</NODE_ID>
-                <VISIBILITY_CODE>(L:A32NX_GND_CHOCKS)</VISIBILITY_CODE>
+                <GND_DISABLE_OVRD>(L:A32NX_MODEL_WHEELCHOCKS_HIDDEN)</GND_DISABLE_OVRD>
             </UseTemplate>
             <UseTemplate Name="FBW_Gnd_Equipment">
                 <NODE_ID>CHOCK_MAINGEAR_LEFT_FRONT</NODE_ID>
-                <VISIBILITY_CODE>(L:A32NX_GND_CHOCKS)</VISIBILITY_CODE>
+                <GND_DISABLE_OVRD>(L:A32NX_MODEL_WHEELCHOCKS_HIDDEN)</GND_DISABLE_OVRD>
             </UseTemplate>
             <UseTemplate Name="FBW_Gnd_Equipment">
                 <NODE_ID>CHOCK_MAINGEAR_LEFT_BACK</NODE_ID>
-                <VISIBILITY_CODE>(L:A32NX_GND_CHOCKS)</VISIBILITY_CODE>
+                <GND_DISABLE_OVRD>(L:A32NX_MODEL_WHEELCHOCKS_HIDDEN)</GND_DISABLE_OVRD>
             </UseTemplate>
+
             <!--GND CONES -->
             <UseTemplate Name="FBW_Gnd_Equipment">
                 <NODE_ID>CONE_B</NODE_ID>
-                <VISIBILITY_CODE>(L:A32NX_GND_CONES)</VISIBILITY_CODE>
+                <GND_DISABLE_OVRD>(L:A32NX_MODEL_CONES_HIDDEN)</GND_DISABLE_OVRD>
             </UseTemplate>
             <UseTemplate Name="FBW_Gnd_Equipment">
                 <NODE_ID>CONE_R</NODE_ID>
-                <VISIBILITY_CODE>(L:A32NX_GND_CONES)</VISIBILITY_CODE>
+                <GND_DISABLE_OVRD>(L:A32NX_MODEL_CONES_HIDDEN)</GND_DISABLE_OVRD>
             </UseTemplate>
             <UseTemplate Name="FBW_Gnd_Equipment">
                 <NODE_ID>CONE_L</NODE_ID>
-                <VISIBILITY_CODE>(L:A32NX_GND_CONES)</VISIBILITY_CODE>
+                <GND_DISABLE_OVRD>(L:A32NX_MODEL_CONES_HIDDEN)</GND_DISABLE_OVRD>
             </UseTemplate>
             <UseTemplate Name="FBW_Gnd_Equipment">
                 <NODE_ID>CONE_ENG1</NODE_ID>
-                <VISIBILITY_CODE>(L:A32NX_GND_CONES)</VISIBILITY_CODE>
+                <GND_DISABLE_OVRD>(L:A32NX_MODEL_CONES_HIDDEN)</GND_DISABLE_OVRD>
             </UseTemplate>
             <UseTemplate Name="FBW_Gnd_Equipment">
                 <NODE_ID>CONE_ENG2</NODE_ID>
-                <VISIBILITY_CODE>(L:A32NX_GND_CONES)</VISIBILITY_CODE>
+                <GND_DISABLE_OVRD>(L:A32NX_MODEL_CONES_HIDDEN)</GND_DISABLE_OVRD>
             </UseTemplate>
         </Component>
 
