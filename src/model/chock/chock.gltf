@@ -153,37 +153,37 @@
     ],
     "nodes": [
         {
-          "translation": [-4.33451, -2.55, -3.1459],
+          "translation": [-4.33451, -2.53, -3.11],
           "scale": [1.25, 1.25, 1.25],
           "mesh": 0,
           "name": "CHOCK_MAINGEAR_RIGHT_FRONT"
         },
         {
-          "translation": [-4.33451, -2.55, -4.17],
+          "translation": [-4.33451, -2.54, -4.18],
           "scale": [1.25, 1.25, 1.25],
           "mesh": 0,
           "name": "CHOCK_MAINGEAR_RIGHT_BACK"
         },
         {
-          "translation": [4.3351, -2.55, -3.1459],
+          "translation": [4.3351, -2.53, -3.11],
           "scale": [1.25, 1.25, 1.25],
           "mesh": 0,
           "name": "CHOCK_MAINGEAR_LEFT_FRONT"
         },
         {
-          "translation": [4.3351, -2.55, -4.17],
+          "translation": [4.3351, -2.54, -4.18],
           "scale": [1.25, 1.25, 1.25],
           "mesh": 0,
           "name": "CHOCK_MAINGEAR_LEFT_BACK"
         },
         {
-          "translation": [0.25, -2.495, 8.576],
+          "translation": [0.25, -2.52, 8.585],
           "scale": [0.8, 0.8, 0.8],
           "mesh": 0,
           "name": "CHOCK_NOSEGEAR_FRONT"
         },
         {
-          "translation": [0.25, -2.495, 7.865],
+          "translation": [0.25, -2.52, 7.86],
           "scale": [0.8, 0.8, 0.8],
           "mesh": 0,
           "name": "CHOCK_NOSEGEAR_BACK"

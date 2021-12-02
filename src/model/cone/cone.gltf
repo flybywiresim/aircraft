@@ -108,7 +108,6 @@
     "materials": [
         {
             "name": "CONE",
-            "doubleSided": true,
             "normalTexture": {
                 "index": 0
             },
@@ -156,38 +155,38 @@
         {
             "translation": [0, -2.4, -25],
             "rotation": [0, 0.117, 0, 0.993],
-            "scale": [0.5, 0.5, 0.5],
+            "scale": [0.4, 0.4, 0.4],
             "mesh": 0,
             "name": "CONE_B"
         },
         {
-            "translation": [18, -2.3, -8],
+            "translation": [18, -2.4, -8],
             "rotation": [0, 0.993, 0, 0.117],
-            "scale": [0.5, 0.5, 0.5],
+            "scale": [0.4, 0.4, 0.4],
             "mesh": 0,
             "name": "CONE_L"
-          },
-          {
-            "translation": [-18, -2.3, -8],
+        },
+        {
+            "translation": [-18, -2.4, -8],
             "rotation": [0, 0, 0, 0],
-            "scale": [0.5, 0.5, 0.5],
+            "scale": [0.4, 0.4, 0.4],
             "mesh": 0,
             "name": "CONE_R"
-          },
-          {
-            "translation": [5.75, -2.25, 3.5],
+        },
+        {
+            "translation": [5.75, -2.3, 3.5],
             "rotation": [0, 0, 0, 0],
-            "scale": [0.5, 0.5, 0.5],
+            "scale": [0.4, 0.4, 0.4],
             "mesh": 0,
             "name": "CONE_ENG1"
-          },
-          {
-            "translation": [-5.75, -2.25, 3.5],
+        },
+        {
+            "translation": [-5.75, -2.3, 3.5],
             "rotation": [0, 0.993, 0, 0.117],
-            "scale": [0.5, 0.5, 0.5],
+            "scale": [0.4, 0.4, 0.4],
             "mesh": 0,
             "name": "CONE_ENG2"
-          }
+        }
     ],
     "scene": 0,
     "scenes": [
