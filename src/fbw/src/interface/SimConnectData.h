@@ -36,8 +36,6 @@ struct SimData {
   double gear_animation_pos_0;
   double gear_animation_pos_1;
   double gear_animation_pos_2;
-  double flaps_handle_index;
-  double flaps_position;
   double spoilers_handle_position;
   double spoilers_left_pos;
   double spoilers_right_pos;
@@ -292,6 +290,11 @@ struct ClientDataLocalVariables {
   double flightManagementCrossTrackError;
   double flightManagementTrackAngleError;
   double flightManagementPhiCommand;
+  unsigned long long flightManagementRequestedVerticalMode;
+  double flightManagement_H_c_ft;
+  double flightManagement_H_dot_c_fpm;
+  unsigned long long flightManagement_rnav_app_selected;
+  unsigned long long flightManagement_final_can_engage;
   double is_SPEED_managed;
   double locPhiCommand;
 };

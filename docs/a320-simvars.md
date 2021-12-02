@@ -3,6 +3,7 @@
 ## Contents
 
 1. [Uncategorized](#uncategorized)
+1. [EIS Display System](#eis-display-system)
 1. [Fly-By-Wire System](#fly-by-wire-system)
 1. [ADIRS](#adirs)
 1. [Autopilot System](#autopilot-system)
@@ -940,6 +941,70 @@
       0 | Retracted
       1 | Full extension
 
+- A32NX_LEFT_FLAPS_POSITION_PERCENT
+    - Percent
+    - Indicates the angle of the left flaps out of 40 degrees
+
+- A32NX_RIGHT_FLAPS_POSITION_PERCENT
+    - Percent
+    - Indicates the angle of the right flaps out of 40 degrees
+
+- A32NX_LEFT_SLATS_POSITION_PERCENT
+    - Percent
+    - Indicates the angle of the left slats out of 27 degrees
+
+- A32NX_RIGHT_SLATS_POSITION_PERCENT
+    - Percent
+    - Indicates the angle of the right slats out of 27 degrees
+
+- A32NX_LEFT_FLAPS_TARGET_ANGLE
+    - Degrees
+    - Indicates the target angle of the left flaps
+      according to the configuration.
+
+- A32NX_RIGHT_FLAPS_TARGET_ANGLE
+    - Degrees
+    - Indicates the target angle of the right flaps
+      according to the configuration.
+
+- A32NX_LEFT_SLATS_TARGET_ANGLE
+    - Degrees
+    - Indicates the target angle of the left slats
+      according to the configuration.
+
+- A32NX_RIGHT_SLATS_TARGET_ANGLE
+    - Degrees
+    - Indicates the target angle of the right slats
+      according to the configuration.
+
+- A32NX_LEFT_FLAPS_ANGLE
+    - Degrees
+    - The actual angle of the left flaps
+
+- A32NX_RIGHT_FLAPS_ANGLE
+    - Degrees
+    - The actual angle of the right flaps
+
+- A32NX_LEFT_SLATS_ANGLE
+    - Degrees
+    - The actual angle of the left slats
+
+- A32NX_RIGHT_SLATS_ANGLE
+    - Degrees
+    - The actual angle of the right slats
+
+- A32NX_FLAPS_CONF_INDEX
+    - Number
+    - Indicates the desired flap configuration index according to the table
+    - Value | Meaning
+      --- | ---
+      0 | Conf0
+      1 | Conf1
+      2 | Conf1F
+      3 | Conf2
+      4 | Conf3
+      5 | ConfFull
+
 - A32NX_SPOILERS_ARMED
     - Bool
     - Indicates if the ground spoilers are armed
@@ -971,6 +1036,88 @@
       --- | ---
       0 | inactive
       1 | active
+
+## EIS Display System
+
+- A32NX_EFIS_{side}_NAVAID_{1|2}_MODE
+    - Enum
+    - Provides the selected NAVAIDs for display on the EFIS
+      Value | Meaning
+      --- | ---
+      0 | Off
+      1 | ADF
+      2 | VOR
+    - {side}
+        - L
+        - R
+
+- A32NX_EFIS_{side}_ND_MODE
+    - Enum
+    - Provides the selected navigation display mode for the EFIS
+      Value | Meaning
+      --- | ---
+      0 | ROSE ILS
+      1 | ROSE VOR
+      2 | ROSE NAV
+      3 | ARC
+      4 | PLAN
+    - {side}
+        - L
+        - R
+
+- A32NX_EFIS_{side}_ND_RANGE
+    - Enum
+    - Provides the selected navigation display range for the EFIS
+      Value | Meaning
+      --- | ---
+      0 | 10
+      1 | 20
+      2 | 40
+      3 | 80
+      4 | 160
+      5 | 320
+    - {side}
+        - L
+        - R
+
+- A32NX_EFIS_{side}_OPTION
+    - Enum
+    - Provides the selected EFIS option/overlay
+      Value | Meaning
+      --- | ---
+      0 | None
+      1 | Constraints
+      2 | VOR/DMEs
+      3 | Waypoints
+      4 | NDBs
+      5 | Airports
+    - {side}
+        - L
+        - R
+
+- A32NX_EFIS_{side}_ND_FM_MESSAGE_FLAGS
+    - Flag
+    - Provides a bitfield of the active FM messages to the NDs
+      Bit | Meaning
+      --- | ---
+      0  | SelectTrueRef
+      1  | CheckNorthRef
+      2  | NavAccuracyDowngrade
+      3  | NavAccuracyUpgradeNoGps
+      4  | SpecifiedVorDmeUnavailble
+      5  | NavAccuracyUpgradeGps
+      6  | GpsPrimary
+      7  | MapPartlyDisplayed
+      8  | SetOffsideRangeMode
+      9  | OffsideFmControl
+      10 | OffsideFmWxrControl
+      11 | OffsideWxrControl
+      12 | GpsPrimaryLost
+      13 | RtaMissed
+      14 | BackupNav
+    - {side}
+        - L
+        - R
 
 - A32NX_ISIS_LS_ACTIVE
 	- Bool
@@ -1036,10 +1183,10 @@
     - Number (Kilograms)
     - Indicates the weight of the selected payload station
     - {stationIndex}
-        - 6 + 1 | FWD BAGGAGE/CONTAINER
-        - 7 + 1 | AFT CONTAINER
-        - 8 + 1 | AFT BAGGAGE
-        - 9 + 1 | AFT BULK/LOOSE
+        - 5 | FWD BAGGAGE/CONTAINER
+        - 6 | AFT CONTAINER
+        - 7 | AFT BAGGAGE
+        - 8 | AFT BULK/LOOSE
 
 - A32NX_MCDU_{side}_ANNUNC_{annunciator}
     - Boolean
@@ -1261,6 +1408,13 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Bool
     - Whether or not the GPS is used as the primary means of navigation/position determination.
 
+## Flight Management System
+
+- A32NX_FM_ENABLE_APPROACH_PHASE
+  - Bool
+  - Indicates whether the FMS should switch to APPROACH phase.
+  - **WARNING:** This is temporary and internal. Do not use.
+
 ## Autopilot System
 
 - A32NX_FMA_LATERAL_MODE
@@ -1305,6 +1459,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
       ALT_CST_CPT | 21
       CLB | 22
       DES | 23
+      FINAL | 24
       GS_CPT | 30
       GS_TRACK | 31
       LAND | 32
@@ -1323,6 +1478,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
       CLB | 2
       DES | 3
       GS | 4
+      FINAL | 5
 
 - A32NX_FMA_EXPEDITE_MODE
     - Boolean
@@ -1541,6 +1697,58 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Number
     - Used as data transport for event `H:A320_Neo_FCU_VS_SET`
 
+- A32NX_FG_CROSS_TRACK_ERROR
+    - Number in nm
+    - Used for laternal guidance in mode NAV
+    - Error from desired path
+
+- A32NX_FG_TRACK_ANGLE_ERROR
+    - Number in degrees
+    - Used for laternal guidance in mode NAV
+    - Error from desired heading or track
+
+- A32NX_FG_PHI_COMMAND
+    - Number in degrees
+    - Used for laternal guidance in mode NAV
+    - Bank angle command
+
+- A32NX_FG_REQUESTED_VERTICAL_MODE
+    - Enum
+    - Indicates the requested vertical mode in DES
+    - Possible values:
+      Mode | Value
+      --- | ---
+      NONE | 0
+      SPEED_THRUST | 1
+      VPATH_THRUST | 2
+      VPATH_SPEED | 3
+      FPA_SPEED | 4
+      VS_SPEED | 5
+
+- A32NX_FG_TARGET_ALTITUDE
+    - Number in ft
+    - Used for vertical guidance in mode DES
+    - Indicates the target altitude
+
+- A32NX_FG_TARGET_VERTICAL_SPEED
+    - Number in fpm or degrees depending on requested mode
+    - Used for vertical guidance in mode DES
+    - Indicates the target vertical speed
+
+- A32NX_FG_RNAV_APP_SELECTED
+    - Boolean
+    - Used for FINAL mode selection
+    - Indicates if an RNAV approach is selected. If it is true, pressing the APPR button
+      results in the FINAL mode being armed, instead of G/S and LOC
+
+- A32NX_FG_FINAL_CAN_ENGAGE
+    - Boolean
+    - Indicates if the FINAL vertical mode can engage
+    - FINAL mode will engage if :
+      - This Simvar is true
+      - NAV mode is engaged
+      - FINAL mode is armed
+
 ## Autothrust System
 
 - A32NX_3D_THROTTLE_LEVER_POSITION_{index}
@@ -1615,6 +1823,27 @@ In the variables below, {number} should be replaced with one item in the set: { 
 - A32NX_AUTOTHRUST_THRUST_LIMIT
     - Number (% N1)
     - Indicates the thrust limit N1
+
+- A32NX_AUTOTHRUST_THRUST_LIMIT_IDLE
+    - Number (% N1)
+    - Indicates the thrust limit N1 for IDLE
+
+- A32NX_AUTOTHRUST_THRUST_LIMIT_CLB
+    - Number (% N1)
+    - Indicates the thrust limit N1 for CLB
+
+- A32NX_AUTOTHRUST_THRUST_LIMIT_MCT
+    - Number (% N1)
+    - Indicates the thrust limit N1 for MCT
+
+- A32NX_AUTOTHRUST_THRUST_LIMIT_FLX
+    - Number (% N1)
+    - If FLX is not active the value 0 is provided
+    - Indicates the thrust limit N1 for FLX
+
+- A32NX_AUTOTHRUST_THRUST_LIMIT_TOGA
+    - Number (% N1)
+    - Indicates the thrust limit N1 for TOGA
 
 - A32NX_AUTOTHRUST_TLA_N1:{index}
     - Number (% N1)
