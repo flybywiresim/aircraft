@@ -319,7 +319,7 @@ class EngineControl {
   /// <summary>
   /// Engine Shutdown Procedure - TEMPORAL SOLUTION
   /// </summary>
-  void engineShutdownProcedure(int engine, double ambientTemp, double deltaTime, double timer) {
+  void engineShutdownProcedure(int engine, double ambientTemp, double simN1, double deltaTime, double timer) {
     double preN1Fbw;
     double preN2Fbw;
     double preEgtFbw;
@@ -335,6 +335,9 @@ class EngineControl {
         preN2Fbw = simVars->getEngine1N2();
         preEgtFbw = simVars->getEngine1EGT();
         newN1Fbw = poly->shutdownN1(preN1Fbw, deltaTime);
+        if (simN1 < 5 && simN1 > newN1Fbw) {  // Takes care of windmilling
+          newN1Fbw = simN1;
+        }
         newN2Fbw = poly->shutdownN2(preN2Fbw, deltaTime);
         newEgtFbw = poly->shutdownEGT(preEgtFbw, ambientTemp, deltaTime);
         simVars->setEngine1N1(newN1Fbw);
@@ -350,6 +353,9 @@ class EngineControl {
         preN2Fbw = simVars->getEngine2N2();
         preEgtFbw = simVars->getEngine2EGT();
         newN1Fbw = poly->shutdownN1(preN1Fbw, deltaTime);
+        if (simN1 < 5 && simN1 > newN1Fbw) {  // Takes care of windmilling
+          newN1Fbw = simN1;
+        }
         newN2Fbw = poly->shutdownN2(preN2Fbw, deltaTime);
         newEgtFbw = poly->shutdownEGT(preEgtFbw, ambientTemp, deltaTime);
         simVars->setEngine2N1(newN1Fbw);
@@ -984,7 +990,7 @@ class EngineControl {
           engineStartProcedure(engine, imbalance, deltaTime, timer, simN2, pressAltitude, ambientTemp);
           break;
         case 3:
-          engineShutdownProcedure(engine, ambientTemp, deltaTime, timer);
+          engineShutdownProcedure(engine, ambientTemp, simN1, deltaTime, timer);
           cFbwFF = updateFF(engine, imbalance, simCN1, mach, pressAltitude, ambientTemp, ambientPressure);
           break;
         default:

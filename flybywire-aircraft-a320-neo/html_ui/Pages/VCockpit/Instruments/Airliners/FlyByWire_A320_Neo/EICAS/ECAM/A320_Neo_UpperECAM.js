@@ -2143,10 +2143,11 @@ var A320_Neo_UpperECAM;
         getN1GaugeValue() {
             const engineId = (this.index + 1);
             const value = Math.max(SimVar.GetSimVarValue("L:A32NX_ENGINE_N1:" + engineId, "percent"), 0);
-            if (value >= 1.2) {
-                return value;
-            } else {
+            const state = SimVar.GetSimVarValue("L:A32NX_ENGINE_STATE:" + engineId, "number");
+            if (value <= 1.2 && state == 2) {
                 return 0;
+            } else {
+                return value;
             }
         }
         getN1GaugeThrottleValue() {
