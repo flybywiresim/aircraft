@@ -172,7 +172,7 @@ class CDUNewWaypoint {
                         mcdu.requestCall(() => CDUNewWaypoint.ShowPage(mcdu, doneCallback, {
                             ident: _inProgressData.ident,
                             type: StoredWaypointType.Pbx,
-                            wp: mcdu.dataManager.createPlaceBearingPlaceBearingWaypoint(place1, bearing1, place2, bearing2, false, tempWp.ident),
+                            wp: mcdu.dataManager.createPlaceBearingPlaceBearingWaypoint(place1, bearing1, place2, bearing2, false, _inProgressData.ident),
                             place1,
                             bearing1,
                             place2,
