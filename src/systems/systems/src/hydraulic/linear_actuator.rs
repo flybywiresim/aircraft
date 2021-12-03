@@ -103,6 +103,9 @@ impl CoreHydraulicForce {
     const DEFAULT_FORCE_GAIN: f64 = 200000.;
     const OPEN_LOOP_GAIN: f64 = 1.;
 
+    const MIN_PRESSURE_TO_EXIT_POSITION_CONTROL_PSI: f64 = 500.;
+    const MIN_PRESSURE_TO_ALLOW_POSITION_CONTROL_PSI: f64 = 700.;
+
     fn new(
         context: &mut InitContext,
         init_position: Ratio,
@@ -167,7 +170,9 @@ impl CoreHydraulicForce {
         signed_flow: VolumeRate,
         speed: Velocity,
     ) {
-        self.update_actions(requested_mode, position_normalized);
+        let new_requested_mode = self.new_requested_mode(requested_mode, current_pressure);
+
+        self.update_actions(new_requested_mode, position_normalized, current_pressure);
 
         self.update_force_from_current_mode(
             context,
@@ -179,12 +184,42 @@ impl CoreHydraulicForce {
         );
     }
 
-    fn update_actions(&mut self, requested_mode: LinearActuatorMode, position_normalized: Ratio) {
-        match requested_mode {
+    /// Computes what new requested mode is allowed depending on current mode
+    fn new_requested_mode(
+        &mut self,
+        requested_mode: LinearActuatorMode,
+        current_pressure: Pressure,
+    ) -> LinearActuatorMode {
+        match self.current_mode {
+            LinearActuatorMode::ClosedValves => requested_mode,
+            LinearActuatorMode::PositionControl => {
+                if current_pressure.get::<psi>() < Self::MIN_PRESSURE_TO_EXIT_POSITION_CONTROL_PSI {
+                    LinearActuatorMode::SlowDamping
+                } else {
+                    requested_mode
+                }
+            }
+            LinearActuatorMode::ActiveDamping => requested_mode,
+            LinearActuatorMode::SlowDamping => requested_mode,
+        }
+    }
+
+    fn update_actions(
+        &mut self,
+        new_mode: LinearActuatorMode,
+        position_normalized: Ratio,
+        current_pressure: Pressure,
+    ) {
+        match new_mode {
             LinearActuatorMode::ClosedValves => {
                 self.actions_from_current_to_closed_valves(position_normalized)
             }
-            LinearActuatorMode::PositionControl => self.actions_from_current_to_position_control(),
+            LinearActuatorMode::PositionControl => {
+                if current_pressure.get::<psi>() > Self::MIN_PRESSURE_TO_ALLOW_POSITION_CONTROL_PSI
+                {
+                    self.actions_from_current_to_position_control()
+                }
+            }
             LinearActuatorMode::ActiveDamping => self.actions_from_current_to_active_damping(),
             LinearActuatorMode::SlowDamping => self.actions_from_current_to_slow_damping(),
         }
@@ -241,6 +276,7 @@ impl CoreHydraulicForce {
     }
 
     fn go_to_position_control(&mut self) {
+        self.pid_controller.reset();
         self.current_mode = LinearActuatorMode::PositionControl;
     }
 
