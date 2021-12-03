@@ -11,7 +11,7 @@ use crate::{
         PowerConsumptionReport,
     },
     simulation::{
-        InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
+        InitContext, NestedElement, SimulationElement, SimulatorWriter, UpdateContext,
         VariableIdentifier, Write,
     },
 };
@@ -24,6 +24,7 @@ use super::{
 
 pub const INTEGRATED_DRIVE_GENERATOR_STABILIZATION_TIME_IN_MILLISECONDS: u64 = 500;
 
+#[derive(NestedElement)]
 pub struct EngineGenerator {
     writer: ElectricalStateWriter,
     number: usize,
@@ -100,12 +101,6 @@ impl ElectricalElement for EngineGenerator {
     }
 }
 impl SimulationElement for EngineGenerator {
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        self.idg.accept(visitor);
-
-        visitor.visit(self);
-    }
-
     fn process_power_consumption_report<T: PowerConsumptionReport>(
         &mut self,
         _: &UpdateContext,
@@ -138,6 +133,7 @@ impl SimulationElement for EngineGenerator {
     }
 }
 
+#[derive(NestedElement)]
 struct IntegratedDriveGenerator {
     oil_outlet_temperature_id: VariableIdentifier,
     oil_outlet_temperature: ThermodynamicTemperature,
@@ -409,6 +405,7 @@ mod tests {
             }
         }
 
+        #[derive(NestedElement)]
         struct TestAircraft {
             engine_gen: EngineGenerator,
             bus: ElectricalBus,
@@ -496,14 +493,7 @@ mod tests {
                 self.generator_output_within_normal_parameters_before_processing_power_consumption_report = self.engine_gen.output_within_normal_parameters();
             }
         }
-        impl SimulationElement for TestAircraft {
-            fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-                self.engine_gen.accept(visitor);
-                self.consumer.accept(visitor);
-
-                visitor.visit(self);
-            }
-        }
+        impl SimulationElement for TestAircraft {}
 
         #[test]
         fn when_engine_running_provides_output() {

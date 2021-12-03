@@ -13,10 +13,11 @@ use systems::{
         AuxiliaryPowerUnitElectrical, DelayedTrueLogicGate, ElectricalBusType, EngineCorrectedN2,
         EngineFirePushButtons,
     },
-    simulation::{SimulationElement, SimulationElementVisitor, UpdateContext},
+    simulation::{NestedElement, SimulationElement, UpdateContext},
 };
 use uom::si::{f64::*, velocity::knot};
 
+#[derive(NestedElement)]
 pub(super) struct A320AlternatingCurrentElectrical {
     main_power_sources: A320MainPowerSources,
     ac_ess_feed_contactors: A320AcEssFeedContactors,
@@ -308,34 +309,9 @@ impl AlternatingCurrentElectricalSystem for A320AlternatingCurrentElectrical {
         electricity.is_powered(&self.ac_bus_1) || electricity.is_powered(&self.ac_bus_2)
     }
 }
-impl SimulationElement for A320AlternatingCurrentElectrical {
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        self.main_power_sources.accept(visitor);
-        self.ac_ess_feed_contactors.accept(visitor);
-        self.tr_1.accept(visitor);
-        self.tr_2.accept(visitor);
-        self.ac_bus_2_to_tr_2_contactor.accept(visitor);
-        self.tr_ess.accept(visitor);
+impl SimulationElement for A320AlternatingCurrentElectrical {}
 
-        self.ac_ess_shed_contactor.accept(visitor);
-        self.ac_ess_to_tr_ess_contactor.accept(visitor);
-        self.emergency_gen_contactor.accept(visitor);
-        self.static_inv_to_ac_ess_bus_contactor.accept(visitor);
-
-        self.ac_bus_1.accept(visitor);
-        self.ac_bus_2.accept(visitor);
-        self.ac_ess_bus.accept(visitor);
-        self.ac_ess_shed_bus.accept(visitor);
-        self.ac_stat_inv_bus.accept(visitor);
-
-        self.ac_gnd_flt_service_bus.accept(visitor);
-        self.ext_pwr_to_ac_gnd_flt_service_bus_and_tr_2_contactor
-            .accept(visitor);
-
-        visitor.visit(self);
-    }
-}
-
+#[derive(NestedElement)]
 struct A320MainPowerSources {
     engine_1_gen: EngineGenerator,
     engine_2_gen: EngineGenerator,
@@ -453,24 +429,9 @@ impl A320MainPowerSources {
         self.engine_generator_contactors[number - 1].is_open()
     }
 }
-impl SimulationElement for A320MainPowerSources {
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        self.engine_1_gen.accept(visitor);
-        self.engine_2_gen.accept(visitor);
-        self.engine_generator_contactors
-            .iter_mut()
-            .for_each(|contactor| {
-                contactor.accept(visitor);
-            });
-        self.bus_tie_1_contactor.accept(visitor);
-        self.bus_tie_2_contactor.accept(visitor);
-        self.apu_gen_contactor.accept(visitor);
-        self.ext_pwr_contactor.accept(visitor);
+impl SimulationElement for A320MainPowerSources {}
 
-        visitor.visit(self);
-    }
-}
-
+#[derive(NestedElement)]
 pub(super) struct A320AcEssFeedContactors {
     ac_ess_feed_contactor_1: Contactor,
     ac_ess_feed_contactor_2: Contactor,
@@ -525,11 +486,4 @@ impl A320AcEssFeedContactors {
             || electricity.is_powered(&self.ac_ess_feed_contactor_2)
     }
 }
-impl SimulationElement for A320AcEssFeedContactors {
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        self.ac_ess_feed_contactor_1.accept(visitor);
-        self.ac_ess_feed_contactor_2.accept(visitor);
-
-        visitor.visit(self);
-    }
-}
+impl SimulationElement for A320AcEssFeedContactors {}

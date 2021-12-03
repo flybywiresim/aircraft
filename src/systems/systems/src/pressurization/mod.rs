@@ -7,8 +7,8 @@ use crate::{
     overhead::{AutoManFaultPushButton, NormalOnPushButton, SpringLoadedSwitch, ValueKnob},
     shared::{random_number, ControllerSignal, EngineCorrectedN1, LgciuWeightOnWheels},
     simulation::{
-        InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
-        SimulatorWriter, UpdateContext, VariableIdentifier, Write,
+        InitContext, NestedElement, Read, SimulationElement, SimulatorReader, SimulatorWriter,
+        UpdateContext, VariableIdentifier, Write,
     },
 };
 
@@ -37,6 +37,7 @@ trait CabinPressure {
     fn cabin_pressure(&self) -> Pressure;
 }
 
+#[derive(NestedElement)]
 pub struct Pressurization {
     active_cpc_sys_id: VariableIdentifier,
     cabin_altitude_id: VariableIdentifier,
@@ -265,6 +266,7 @@ impl SimulationElement for Pressurization {
     }
 }
 
+#[derive(NestedElement)]
 pub struct PressurizationOverheadPanel {
     mode_sel: AutoManFaultPushButton,
     man_vs_ctl_switch: SpringLoadedSwitch,
@@ -300,16 +302,7 @@ impl PressurizationOverheadPanel {
     }
 }
 
-impl SimulationElement for PressurizationOverheadPanel {
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        self.mode_sel.accept(visitor);
-        self.man_vs_ctl_switch.accept(visitor);
-        self.ldg_elev_knob.accept(visitor);
-        self.ditching.accept(visitor);
-
-        visitor.visit(self);
-    }
-}
+impl SimulationElement for PressurizationOverheadPanel {}
 
 impl ControllerSignal<PressureValveSignal> for PressurizationOverheadPanel {
     fn signal(&self) -> Option<PressureValveSignal> {
@@ -375,7 +368,7 @@ impl ControllerSignal<PressureValveSignal> for ResidualPressureController {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::simulation::{Aircraft, SimulationElement, SimulationElementVisitor};
+    use crate::simulation::{Aircraft, SimulationElement};
     use crate::{
         shared::EngineCorrectedN1,
         simulation::test::{ReadByName, SimulationTestBed, TestBed, WriteByName},
@@ -485,6 +478,7 @@ mod tests {
         }
     }
 
+    #[derive(NestedElement)]
     pub struct TestAircraft {
         pressurization: Pressurization,
         pressurization_overhead: PressurizationOverheadPanel,
@@ -531,14 +525,7 @@ mod tests {
         }
     }
 
-    impl SimulationElement for TestAircraft {
-        fn accept<V: SimulationElementVisitor>(&mut self, visitor: &mut V) {
-            self.pressurization.accept(visitor);
-            self.pressurization_overhead.accept(visitor);
-
-            visitor.visit(self);
-        }
-    }
+    impl SimulationElement for TestAircraft {}
 
     pub struct PressurizationTestBed {
         test_bed: SimulationTestBed<TestAircraft>,

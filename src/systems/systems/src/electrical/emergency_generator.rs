@@ -4,7 +4,7 @@ use uom::si::{electric_potential::volt, f64::*, frequency::hertz};
 
 use crate::{
     shared::{PowerConsumptionReport, RamAirTurbineHydraulicCircuitPressurised},
-    simulation::{InitContext, SimulationElement, SimulatorWriter, UpdateContext},
+    simulation::{InitContext, NestedElement, SimulationElement, SimulatorWriter, UpdateContext},
 };
 
 use super::{
@@ -13,6 +13,7 @@ use super::{
     ProvidePotential,
 };
 
+#[derive(NestedElement)]
 pub struct EmergencyGenerator {
     identifier: ElectricalElementIdentifier,
     writer: ElectricalStateWriter,
@@ -128,7 +129,7 @@ mod emergency_generator_tests {
         electrical::Electricity,
         simulation::{
             test::{SimulationTestBed, TestBed},
-            Aircraft, SimulationElementVisitor, UpdateContext,
+            Aircraft, UpdateContext,
         },
     };
 
@@ -186,6 +187,7 @@ mod emergency_generator_tests {
         }
     }
 
+    #[derive(NestedElement)]
     struct TestAircraft {
         emer_gen: EmergencyGenerator,
         hydraulic: TestHydraulicSystem,
@@ -241,13 +243,7 @@ mod emergency_generator_tests {
             self.generator_output_within_normal_parameters_before_processing_power_consumption_report = self.emer_gen.output_within_normal_parameters();
         }
     }
-    impl SimulationElement for TestAircraft {
-        fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-            self.emer_gen.accept(visitor);
-
-            visitor.visit(self);
-        }
-    }
+    impl SimulationElement for TestAircraft {}
 
     #[test]
     fn when_shutdown_has_no_output() {

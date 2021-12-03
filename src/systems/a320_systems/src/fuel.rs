@@ -1,8 +1,9 @@
 use systems::simulation::{
-    InitContext, Read, SimulationElement, SimulatorReader, VariableIdentifier,
+    InitContext, Read, SimulationElement, SimulatorReader, VariableIdentifier, NestedElement,
 };
 use uom::si::{f64::*, mass::kilogram};
 
+#[derive(NestedElement)]
 pub struct A320Fuel {
     unlimited_fuel_id: VariableIdentifier,
     fuel_tank_left_main_quantity_id: VariableIdentifier,

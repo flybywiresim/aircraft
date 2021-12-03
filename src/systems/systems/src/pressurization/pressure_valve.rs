@@ -103,8 +103,9 @@ impl PressureValve {
 mod pressure_valve_tests {
     use super::*;
     use crate::simulation::test::{SimulationTestBed, TestBed};
-    use crate::simulation::{Aircraft, SimulationElement};
+    use crate::simulation::{Aircraft, NestedElement, SimulationElement};
 
+    #[derive(NestedElement)]
     struct TestAircraft {
         valve: PressureValve,
         actuator: TestValveActuator,

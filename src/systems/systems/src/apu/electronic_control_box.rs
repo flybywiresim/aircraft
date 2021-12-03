@@ -9,13 +9,14 @@ use crate::{
         arinc429::SignStatus, ApuMaster, ApuStart, ConsumePower, ContactorSignal, ControllerSignal,
         ElectricalBusType, ElectricalBuses, PneumaticValve, PneumaticValveSignal,
     },
-    simulation::{SimulationElement, SimulatorWriter, UpdateContext, Write},
+    simulation::{NestedElement, SimulationElement, SimulatorWriter, UpdateContext, Write},
 };
 use std::time::Duration;
 use uom::si::{
     f64::*, length::foot, power::watt, ratio::percent, thermodynamic_temperature::degree_celsius,
 };
 
+#[derive(NestedElement)]
 pub(super) struct ElectronicControlBox {
     apu_n_raw_id: VariableIdentifier,
     apu_n_id: VariableIdentifier,

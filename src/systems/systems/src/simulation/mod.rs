@@ -1,3 +1,5 @@
+use std::cell::RefCell;
+use std::collections::HashMap;
 use std::time::Duration;
 
 mod update_context;
@@ -9,6 +11,7 @@ use crate::{
     shared::arinc429::{from_arinc429, to_arinc429, Arinc429Word, SignStatus},
     shared::{to_bool, ConsumePower, ElectricalBuses, MachNumber, PowerConsumptionReport},
 };
+pub use systems_derive::NestedElement;
 use uom::si::{
     acceleration::foot_per_second_squared, angle::degree, electric_current::ampere,
     electric_potential::volt, f64::*, frequency::hertz, length::foot, mass::pound, pressure::psi,
@@ -135,6 +138,90 @@ pub trait Aircraft: SimulationElement {
     }
 }
 
+pub trait NestedElement {
+    /// Accept a visitor which should visit the element and any children of the element which are
+    /// themselves a [`NestedElement`].
+    ///
+    /// You should use the derive macro (`#[derive(NestedElement)]`) to implement this, unless you have very specific reasons to not do so.
+    ///
+    /// [`NestedElement`]: trait.NestedElement.html
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T)
+    where
+        Self: Sized;
+}
+pub trait BaseNestedElement {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T)
+    where
+        Self: Sized;
+}
+// Autoref base implementation that does nothing.
+impl<T> BaseNestedElement for &mut T {
+    fn accept<V: SimulationElementVisitor>(&mut self, _visitor: &mut V)
+    where
+        Self: Sized,
+    {
+    }
+}
+// Implementation for some container types.
+impl<T: NestedElement> NestedElement for Option<T> {
+    fn accept<V: SimulationElementVisitor>(&mut self, visitor: &mut V)
+    where
+        Self: Sized,
+    {
+        if let Some(element) = self {
+            element.accept(visitor);
+        }
+    }
+}
+impl<T: NestedElement> NestedElement for Vec<T> {
+    fn accept<V: SimulationElementVisitor>(&mut self, visitor: &mut V)
+    where
+        Self: Sized,
+    {
+        for element in self {
+            element.accept(visitor);
+        }
+    }
+}
+impl<T: NestedElement> NestedElement for [T] {
+    fn accept<V: SimulationElementVisitor>(&mut self, visitor: &mut V)
+    where
+        Self: Sized,
+    {
+        for element in self {
+            element.accept(visitor);
+        }
+    }
+}
+impl<T: NestedElement, const N: usize> NestedElement for [T; N] {
+    fn accept<V: SimulationElementVisitor>(&mut self, visitor: &mut V)
+    where
+        Self: Sized,
+    {
+        for element in self {
+            element.accept(visitor);
+        }
+    }
+}
+impl<K, V: NestedElement> NestedElement for HashMap<K, V> {
+    fn accept<Vis: SimulationElementVisitor>(&mut self, visitor: &mut Vis)
+    where
+        Self: Sized,
+    {
+        for (_, element) in self.iter_mut() {
+            element.accept(visitor);
+        }
+    }
+}
+impl<T: NestedElement> NestedElement for RefCell<T> {
+    fn accept<V: SimulationElementVisitor>(&mut self, visitor: &mut V)
+    where
+        Self: Sized,
+    {
+        self.get_mut().accept(visitor);
+    }
+}
+
 /// The [`Simulation`] runs across many different [`SimulationElement`]s.
 /// This trait enables the [`Simulation`] to do various things with the element,
 /// including reading simulator state into it and writing state from the element to the simulator.
@@ -143,42 +230,13 @@ pub trait Aircraft: SimulationElement {
 ///
 /// [`Simulation`]: struct.Simulation.html
 /// [`SimulationElement`]: trait.SimulationElement.html
-pub trait SimulationElement {
-    /// Accept a visitor which should visit the element and any children of the element which are
-    /// themselves a [`SimulationElement`].
-    ///
-    /// # Examples
-    /// The default implementation only visits the element itself.
-    /// If the element contains fields pointing to other elements, you need to override
-    /// the default implementation:
-    /// ```rust
-    /// # use systems::simulation::{SimulationElement, SimulationElementVisitor};
-    /// # struct InnerElement {}
-    /// # impl SimulationElement for InnerElement {}
-    /// struct OuterElement {
-    ///     inner_element: InnerElement,
-    /// }
-    /// impl SimulationElement for OuterElement {
-    ///     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-    ///         self.inner_element.accept(visitor);
-    ///
-    ///         visitor.visit(self);
-    ///     }
-    /// }
-    /// ```
-    /// [`SimulationElement`]: trait.SimulationElement.html
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T)
-    where
-        Self: Sized,
-    {
-        visitor.visit(self);
-    }
-
+pub trait SimulationElement: NestedElement {
     /// Reads data representing the current state of the simulator into the aircraft system simulation.
     /// # Examples
     /// ```rust
-    /// # use systems::simulation::{SimulationElement, SimulationElementVisitor,
+    /// # use systems::simulation::{SimulationElement, SimulationElementVisitor, NestedElement,
     /// # SimulatorReader, SimulatorWriter, Read, VariableIdentifier};
+    /// #[derive(NestedElement)]
     /// struct MySimulationElement {
     ///     is_on: bool,
     /// }
@@ -195,7 +253,9 @@ pub trait SimulationElement {
     /// # Examples
     /// ```rust
     /// # use systems::simulation::{SimulationElement, SimulationElementVisitor,
-    /// # SimulatorReader, SimulatorWriter, Write, VariableIdentifier};
+    /// # SimulatorReader, SimulatorWriter, Write, VariableIdentifier, NestedElement};
+    ///
+    /// #[derive(NestedElement)]
     /// struct MySimulationElement {
     ///     is_on: bool,
     /// }
@@ -307,7 +367,8 @@ impl<T: Aircraft> Simulation<T> {
     /// ```rust
     /// # use std::time::Duration;
     /// # use systems::simulation::{Aircraft, SimulationElement, SimulatorReaderWriter, Simulation,
-    /// # UpdateContext, InitContext, VariableRegistry, VariableIdentifier};
+    /// # UpdateContext, InitContext, VariableRegistry, VariableIdentifier, NestedElement};
+    /// # #[derive(NestedElement)]
     /// # struct MyAircraft {}
     /// # impl MyAircraft {
     /// #     fn new(_: &mut InitContext) -> Self {
@@ -514,7 +575,8 @@ pub trait Read<T: Copy> {
     /// # Examples
     /// ```rust
     /// # use systems::simulation::{SimulationElement, SimulationElementVisitor,
-    /// # SimulatorReader, SimulatorWriter, Read, VariableIdentifier};
+    /// # SimulatorReader, SimulatorWriter, Read, VariableIdentifier, NestedElement};
+    /// #[derive(NestedElement)]
     /// struct MySimulationElement {
     ///     is_on: bool,
     /// }
@@ -537,8 +599,9 @@ pub trait Read<T: Copy> {
     /// # Examples
     /// ```rust
     /// # use systems::simulation::{SimulationElement, SimulationElementVisitor,
-    /// # SimulatorReader, SimulatorWriter, Read, VariableIdentifier};
+    /// # SimulatorReader, SimulatorWriter, Read, VariableIdentifier, NestedElement};
     /// # use systems::shared::arinc429::Arinc429Word;
+    /// #[derive(NestedElement)]
     /// struct MySimulationElement {
     ///     is_on: Arinc429Word<bool>,
     /// }
@@ -565,7 +628,8 @@ pub trait Write<T> {
     /// # Examples
     /// ```rust
     /// # use systems::simulation::{SimulationElement, SimulationElementVisitor,
-    /// # SimulatorReader, SimulatorWriter, Write, VariableIdentifier};
+    /// # SimulatorReader, SimulatorWriter, Write, VariableIdentifier, NestedElement};
+    /// #[derive(NestedElement)]
     /// struct MySimulationElement {
     ///     n: f64,
     /// }
@@ -590,8 +654,9 @@ pub trait Write<T> {
     /// # Examples
     /// ```rust
     /// # use systems::simulation::{SimulationElement, SimulationElementVisitor,
-    /// # SimulatorReader, SimulatorWriter, Write, VariableIdentifier};
+    /// # SimulatorReader, SimulatorWriter, Write, VariableIdentifier, NestedElement};
     /// # use systems::shared::arinc429::SignStatus;
+    /// #[derive(NestedElement)]
     /// struct MySimulationElement {
     ///     n: f64,
     /// }

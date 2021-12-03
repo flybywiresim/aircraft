@@ -4,7 +4,7 @@ use crate::{
         ElectricalBusType, ElectricalBuses, LandingGearRealPosition, LgciuGearExtension,
         LgciuInterface, LgciuWeightOnWheels,
     },
-    simulation::{Read, SimulationElement, SimulatorReader},
+    simulation::{NestedElement, Read, SimulationElement, SimulatorReader},
 };
 use uom::si::{
     f64::*,
@@ -21,6 +21,7 @@ pub enum GearWheel {
 /// The real aircraft also can only check whether or not the gear is up and
 /// locked or down and locked. No in between state.
 /// It provides as well the state of all weight on wheel sensors
+#[derive(NestedElement)]
 pub struct LandingGear {
     center_position_id: VariableIdentifier,
     left_position_id: VariableIdentifier,
@@ -122,6 +123,7 @@ impl SimulationElement for LandingGear {
     }
 }
 
+#[derive(NestedElement)]
 pub struct LandingGearControlInterfaceUnit {
     is_powered: bool,
     powered_by: ElectricalBusType,

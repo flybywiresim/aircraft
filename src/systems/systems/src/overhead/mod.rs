@@ -1,8 +1,9 @@
 use crate::simulation::{
-    InitContext, Read, SimulationElement, SimulatorReader, SimulatorWriter, VariableIdentifier,
-    Write,
+    InitContext, NestedElement, Read, SimulationElement, SimulatorReader, SimulatorWriter,
+    VariableIdentifier, Write,
 };
 
+#[derive(NestedElement)]
 pub struct OnOffFaultPushButton {
     is_on_id: VariableIdentifier,
     has_fault_id: VariableIdentifier,
@@ -76,6 +77,7 @@ impl SimulationElement for OnOffFaultPushButton {
     }
 }
 
+#[derive(NestedElement)]
 pub struct AutoManFaultPushButton {
     is_auto_id: VariableIdentifier,
     has_fault_id: VariableIdentifier,
@@ -129,6 +131,7 @@ impl SimulationElement for AutoManFaultPushButton {
     }
 }
 
+#[derive(NestedElement)]
 pub struct OnOffAvailablePushButton {
     is_on_id: VariableIdentifier,
     is_available_id: VariableIdentifier,
@@ -194,6 +197,7 @@ impl SimulationElement for OnOffAvailablePushButton {
     }
 }
 
+#[derive(NestedElement)]
 pub struct NormalOnPushButton {
     is_on_id: VariableIdentifier,
     is_on: bool,
@@ -244,6 +248,7 @@ impl SimulationElement for NormalOnPushButton {
     }
 }
 
+#[derive(NestedElement)]
 pub struct NormalAltnFaultPushButton {
     is_normal_id: VariableIdentifier,
     has_fault_id: VariableIdentifier,
@@ -305,6 +310,7 @@ impl SimulationElement for NormalAltnFaultPushButton {
     }
 }
 
+#[derive(NestedElement)]
 pub struct AutoOffFaultPushButton {
     is_auto_id: VariableIdentifier,
     has_fault_id: VariableIdentifier,
@@ -370,6 +376,7 @@ impl SimulationElement for AutoOffFaultPushButton {
     }
 }
 
+#[derive(NestedElement)]
 pub struct AutoOnFaultPushButton {
     is_auto_id: VariableIdentifier,
     has_fault_id: VariableIdentifier,
@@ -435,6 +442,7 @@ impl SimulationElement for AutoOnFaultPushButton {
     }
 }
 
+#[derive(NestedElement)]
 pub struct FaultReleasePushButton {
     is_released_id: VariableIdentifier,
     has_fault_id: VariableIdentifier,
@@ -488,6 +496,7 @@ impl SimulationElement for FaultReleasePushButton {
     }
 }
 
+#[derive(NestedElement)]
 pub struct FirePushButton {
     is_released_id: VariableIdentifier,
     is_released: bool,
@@ -518,6 +527,7 @@ impl SimulationElement for FirePushButton {
     }
 }
 
+#[derive(NestedElement)]
 pub struct FaultIndication {
     has_fault_id: VariableIdentifier,
     has_fault: bool,
@@ -540,6 +550,7 @@ impl SimulationElement for FaultIndication {
     }
 }
 
+#[derive(NestedElement)]
 pub struct MomentaryPushButton {
     is_pressed_id: VariableIdentifier,
     is_pressed: bool,
@@ -563,6 +574,7 @@ impl SimulationElement for MomentaryPushButton {
 }
 
 /// Same implementation as MomentaryPushButton but is only "pressed" for one update even if kept pressed
+#[derive(NestedElement)]
 pub struct PressSingleSignalButton {
     is_pressed_id: VariableIdentifier,
     is_pressed: bool,
@@ -589,6 +601,7 @@ impl SimulationElement for PressSingleSignalButton {
     }
 }
 
+#[derive(NestedElement)]
 pub struct MomentaryOnPushButton {
     is_pressed_id: VariableIdentifier,
     is_on_id: VariableIdentifier,
@@ -640,6 +653,7 @@ impl SimulationElement for MomentaryOnPushButton {
     }
 }
 
+#[derive(NestedElement)]
 pub struct IndicationLight {
     is_illuminated_id: VariableIdentifier,
     is_illuminated: bool,
@@ -666,6 +680,7 @@ impl SimulationElement for IndicationLight {
     }
 }
 
+#[derive(NestedElement)]
 pub struct ValueKnob {
     value_id: VariableIdentifier,
     value: f64,
@@ -703,6 +718,7 @@ impl SimulationElement for ValueKnob {
     }
 }
 
+#[derive(NestedElement)]
 pub struct SpringLoadedSwitch {
     is_toggled_id: VariableIdentifier,
     position: usize,

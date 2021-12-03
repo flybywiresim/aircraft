@@ -6,8 +6,8 @@ use crate::{
         MachNumber,
     },
     simulation::{
-        Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
-        SimulatorWriter, UpdateContext, Write, Writer,
+        NestedElement, Read, Reader, SimulationElement, SimulatorReader, SimulatorWriter,
+        UpdateContext, Write, Writer,
     },
 };
 use std::{fmt::Display, time::Duration};
@@ -19,6 +19,7 @@ use uom::si::{
     velocity::{foot_per_minute, knot},
 };
 
+#[derive(NestedElement)]
 pub struct AirDataInertialReferenceSystemOverheadPanel {
     ir: [OnOffFaultPushButton; 3],
     mode_selectors: [InertialReferenceModeSelector; 3],
@@ -87,16 +88,7 @@ impl AirDataInertialReferenceSystemOverheadPanel {
         self.ir[number - 1].is_on()
     }
 }
-impl SimulationElement for AirDataInertialReferenceSystemOverheadPanel {
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        accept_iterable!(self.ir, visitor);
-        accept_iterable!(self.mode_selectors, visitor);
-        accept_iterable!(self.adr, visitor);
-        self.on_bat.accept(visitor);
-
-        visitor.visit(self);
-    }
-}
+impl SimulationElement for AirDataInertialReferenceSystemOverheadPanel {}
 
 #[derive(Clone, Copy, PartialEq)]
 enum InertialReferenceMode {
@@ -117,6 +109,7 @@ impl From<f64> for InertialReferenceMode {
     }
 }
 
+#[derive(NestedElement)]
 struct InertialReferenceModeSelector {
     mode_id: VariableIdentifier,
     mode: InertialReferenceMode,
@@ -178,7 +171,7 @@ impl From<f64> for AlignState {
     }
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, NestedElement)]
 struct AdirsSimulatorData {
     mach_id: VariableIdentifier,
     mach: MachNumber,
@@ -298,6 +291,7 @@ impl SimulationElement for AdirsSimulatorData {
     }
 }
 
+#[derive(NestedElement)]
 pub struct AirDataInertialReferenceSystem {
     remaining_alignment_time_id: VariableIdentifier,
     configured_align_time_id: VariableIdentifier,
@@ -365,14 +359,8 @@ impl AirDataInertialReferenceSystem {
         self.adirus[number - 1].ir_has_fault()
     }
 }
+
 impl SimulationElement for AirDataInertialReferenceSystem {
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        accept_iterable!(self.adirus, visitor);
-        self.simulator_data.accept(visitor);
-
-        visitor.visit(self);
-    }
-
     fn read(&mut self, reader: &mut SimulatorReader) {
         self.configured_align_time = reader.read(&self.configured_align_time_id);
     }
@@ -389,6 +377,7 @@ impl SimulationElement for AirDataInertialReferenceSystem {
     }
 }
 
+#[derive(NestedElement)]
 struct AirDataInertialReferenceUnit {
     state_id: VariableIdentifier,
 
@@ -447,13 +436,6 @@ impl AirDataInertialReferenceUnit {
     }
 }
 impl SimulationElement for AirDataInertialReferenceUnit {
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        self.adr.accept(visitor);
-        self.ir.accept(visitor);
-
-        visitor.visit(self);
-    }
-
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.state_id, self.state())
     }
@@ -526,6 +508,7 @@ trait TrueAirspeedSource {
     fn true_airspeed(&self) -> Arinc429Word<Velocity>;
 }
 
+#[derive(NestedElement)]
 struct AirDataReference {
     number: usize,
     is_on: bool,
@@ -722,6 +705,7 @@ impl From<f64> for AlignTime {
     }
 }
 
+#[derive(NestedElement)]
 struct InertialReference {
     number: usize,
     is_on: bool,
@@ -1021,7 +1005,7 @@ mod tests {
         shared::arinc429::Arinc429Word,
         simulation::{
             test::{SimulationTestBed, TestBed},
-            Aircraft, SimulationElementVisitor, SimulatorWriter, UpdateContext,
+            Aircraft, SimulatorWriter, UpdateContext,
         },
     };
     use ntest::{assert_about_eq, timeout};
@@ -1034,6 +1018,7 @@ mod tests {
         velocity::{foot_per_minute, knot},
     };
 
+    #[derive(NestedElement)]
     struct TestAircraft {
         adirs: AirDataInertialReferenceSystem,
         overhead: AirDataInertialReferenceSystemOverheadPanel,
@@ -1053,13 +1038,6 @@ mod tests {
         }
     }
     impl SimulationElement for TestAircraft {
-        fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-            self.adirs.accept(visitor);
-            self.overhead.accept(visitor);
-
-            visitor.visit(self);
-        }
-
         fn read(&mut self, _reader: &mut SimulatorReader) {}
 
         fn write(&self, _writer: &mut SimulatorWriter) {}

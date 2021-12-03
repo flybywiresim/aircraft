@@ -14,13 +14,13 @@ use std::{
     time::Duration,
 };
 
-use crate::simulation::{InitContext, VariableIdentifier};
 use crate::{
     shared::{
         ConsumePower, ElectricalBusType, ElectricalBuses, PotentialOrigin, PowerConsumptionReport,
     },
     simulation::{
-        SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext, Write,
+        InitContext, NestedElement, SimulationElement, SimulationElementVisitor, SimulatorWriter,
+        UpdateContext, VariableIdentifier, Write,
     },
 };
 pub use battery::Battery;
@@ -52,7 +52,7 @@ pub trait BatteryPushButtons {
 
 /// Represents a contactor in an electrical power circuit.
 /// When closed a contactor conducts the potential towards other targets.
-#[derive(Debug)]
+#[derive(Debug, NestedElement)]
 pub struct Contactor {
     identifier: ElectricalElementIdentifier,
     closed_id: VariableIdentifier,
@@ -98,6 +98,7 @@ impl SimulationElement for Contactor {
     }
 }
 
+#[derive(NestedElement)]
 pub struct ElectricalBus {
     identifier: ElectricalElementIdentifier,
     bus_powered_id: VariableIdentifier,
@@ -1001,6 +1002,7 @@ mod tests {
             }
         }
 
+        #[derive(NestedElement)]
         struct ElectricalBusTestAircraft {
             bus: ElectricalBus,
             battery: BatteryStub,
@@ -1027,12 +1029,7 @@ mod tests {
                 electricity.flow(&self.battery, &self.bus);
             }
         }
-        impl SimulationElement for ElectricalBusTestAircraft {
-            fn accept<T: crate::simulation::SimulationElementVisitor>(&mut self, visitor: &mut T) {
-                self.bus.accept(visitor);
-                visitor.visit(self);
-            }
-        }
+        impl SimulationElement for ElectricalBusTestAircraft {}
 
         #[test]
         fn bat_bus_at_25_volt_is_abnormal() {
@@ -1108,6 +1105,7 @@ mod tests {
             simulation::test::{SimulationTestBed, TestBed},
         };
 
+        #[derive(NestedElement)]
         struct ContactorTestAircraft {
             contactor: Contactor,
             power_source: TestElectricitySource,
@@ -1167,12 +1165,7 @@ mod tests {
                 electricity.flow(&self.power_source, &self.contactor);
             }
         }
-        impl SimulationElement for ContactorTestAircraft {
-            fn accept<T: crate::simulation::SimulationElementVisitor>(&mut self, visitor: &mut T) {
-                self.contactor.accept(visitor);
-                visitor.visit(self);
-            }
-        }
+        impl SimulationElement for ContactorTestAircraft {}
 
         #[test]
         fn open_contactor_when_toggled_open_stays_open() {
@@ -1266,6 +1259,7 @@ mod tests {
             AlternatingCurrentWithLoad,
         }
 
+        #[derive(NestedElement)]
         struct CurrentStateWriterTestAircraft {
             write_type: WriteType,
             writer: ElectricalStateWriter,

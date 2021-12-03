@@ -17,7 +17,7 @@ use crate::{
 };
 
 use super::{
-    Aircraft, Read, Reader, Simulation, SimulationElement, SimulationElementVisitor,
+    Aircraft, NestedElement, Read, Reader, Simulation, SimulationElement,
     SimulationToSimulatorVisitor, SimulatorReaderWriter, SimulatorWriter, UpdateContext, Write,
     Writer,
 };
@@ -445,6 +445,7 @@ impl<T: SimulationElement> From<T> for SimulationTestBed<TestAircraft<T>> {
     }
 }
 
+#[derive(NestedElement)]
 pub struct TestAircraft<T: SimulationElement> {
     element: T,
     update_before_power_distribution_fn:
@@ -497,13 +498,7 @@ impl<T: SimulationElement> Aircraft for TestAircraft<T> {
         (self.update_after_power_distribution_fn)(&mut self.element, context);
     }
 }
-impl<T: SimulationElement> SimulationElement for TestAircraft<T> {
-    fn accept<W: SimulationElementVisitor>(&mut self, visitor: &mut W) {
-        self.element.accept(visitor);
-
-        visitor.visit(self);
-    }
-}
+impl<T: SimulationElement> SimulationElement for TestAircraft<T> {}
 
 struct TestReaderWriter {
     variables: FxHashMap<VariableIdentifier, f64>,
@@ -585,7 +580,7 @@ mod tests {
         After,
     }
 
-    #[derive(Default)]
+    #[derive(Default, NestedElement)]
     struct ElementUnderTest {
         update_called: bool,
         read_called: bool,

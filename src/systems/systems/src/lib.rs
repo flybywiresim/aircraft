@@ -4,6 +4,8 @@
 //! Throughout type names and documentation:
 //! - **Simulator** refers to the simulator you integrate with, such as MSFS.
 //! - **Simulation** refers to the system simulation you create by using this crate.
+extern crate self as systems;
+
 #[macro_use]
 pub mod macros;
 

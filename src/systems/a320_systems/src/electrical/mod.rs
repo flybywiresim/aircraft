@@ -13,7 +13,6 @@ use systems::electrical::Battery;
 
 use systems::simulation::VariableIdentifier;
 use systems::{
-    accept_iterable,
     electrical::{
         AlternatingCurrentElectricalSystem, BatteryPushButtons, Electricity, EmergencyElectrical,
         EmergencyGenerator, EngineGeneratorPushButtons, ExternalPowerSource, StaticInverter,
@@ -29,11 +28,11 @@ use systems::{
         LandingGearRealPosition, RamAirTurbineHydraulicCircuitPressurised,
     },
     simulation::{
-        InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
-        Write,
+        InitContext, NestedElement, SimulationElement, SimulatorWriter, UpdateContext, Write,
     },
 };
 
+#[derive(NestedElement)]
 pub(super) struct A320Electrical {
     galley_is_shed_id: VariableIdentifier,
 
@@ -193,14 +192,6 @@ impl A320Electrical {
     }
 }
 impl SimulationElement for A320Electrical {
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        self.alternating_current.accept(visitor);
-        self.direct_current.accept(visitor);
-        self.emergency_gen.accept(visitor);
-
-        visitor.visit(self);
-    }
-
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.galley_is_shed_id, self.galley_is_shed())
     }
@@ -223,6 +214,7 @@ trait A320AlternatingCurrentElectricalSystem: AlternatingCurrentElectricalSystem
     fn tr_ess(&self) -> &TransformerRectifier;
 }
 
+#[derive(NestedElement)]
 pub(super) struct A320ElectricalOverheadPanel {
     batteries: [AutoOffFaultPushButton; 2],
     idgs: [FaultReleasePushButton; 2],
@@ -324,23 +316,9 @@ impl BatteryPushButtons for A320ElectricalOverheadPanel {
         self.batteries[number - 1].is_auto()
     }
 }
-impl SimulationElement for A320ElectricalOverheadPanel {
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        accept_iterable!(self.batteries, visitor);
-        accept_iterable!(self.idgs, visitor);
-        accept_iterable!(self.generators, visitor);
+impl SimulationElement for A320ElectricalOverheadPanel {}
 
-        self.apu_gen.accept(visitor);
-        self.bus_tie.accept(visitor);
-        self.ac_ess_feed.accept(visitor);
-        self.galy_and_cab.accept(visitor);
-        self.ext_pwr.accept(visitor);
-        self.commercial.accept(visitor);
-
-        visitor.visit(self);
-    }
-}
-
+#[derive(NestedElement)]
 pub(super) struct A320EmergencyElectricalOverheadPanel {
     // The GEN 1 line fault represents the SMOKE light illumination state.
     gen_1_line: OnOffFaultPushButton,
@@ -382,15 +360,7 @@ impl A320EmergencyElectricalOverheadPanel {
         self.rat_and_emer_gen_man_on.is_pressed()
     }
 }
-impl SimulationElement for A320EmergencyElectricalOverheadPanel {
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        self.gen_1_line.accept(visitor);
-        self.rat_and_emergency_gen_fault.accept(visitor);
-        self.rat_and_emer_gen_man_on.accept(visitor);
-
-        visitor.visit(self);
-    }
-}
+impl SimulationElement for A320EmergencyElectricalOverheadPanel {}
 impl EmergencyElectricalRatPushButton for A320EmergencyElectricalOverheadPanel {
     fn is_pressed(&self) -> bool {
         self.rat_and_emer_gen_man_on()
@@ -2039,6 +2009,7 @@ mod a320_electrical_circuit_tests {
         A320ElectricalTestBed::new()
     }
 
+    #[derive(NestedElement)]
     struct TestApu {
         identifier: ElectricalElementIdentifier,
         is_available: bool,
@@ -2222,6 +2193,7 @@ mod a320_electrical_circuit_tests {
         }
     }
 
+    #[derive(NestedElement)]
     struct A320ElectricalTestAircraft {
         engines: [TestEngine; 2],
         ext_pwr: ExternalPowerSource,
@@ -2341,17 +2313,7 @@ mod a320_electrical_circuit_tests {
                 .update_after_electrical(context, &self.elec);
         }
     }
-    impl SimulationElement for A320ElectricalTestAircraft {
-        fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-            self.ext_pwr.accept(visitor);
-            self.elec.accept(visitor);
-            self.overhead.accept(visitor);
-            self.emergency_overhead.accept(visitor);
-            self.apu.accept(visitor);
-
-            visitor.visit(self);
-        }
-    }
+    impl SimulationElement for A320ElectricalTestAircraft {}
 
     struct A320ElectricalTestBed {
         test_bed: SimulationTestBed<A320ElectricalTestAircraft>,

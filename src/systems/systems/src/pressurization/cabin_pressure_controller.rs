@@ -687,7 +687,7 @@ transition!(ClimbInternal, Abort);
 #[cfg(test)]
 mod pressure_schedule_manager_tests {
     use super::*;
-    use crate::simulation::{Aircraft, InitContext, SimulationElement};
+    use crate::simulation::{Aircraft, InitContext, NestedElement, SimulationElement};
     use crate::{
         shared::EngineCorrectedN1,
         simulation::test::{SimulationTestBed, TestBed},
@@ -721,6 +721,7 @@ mod pressure_schedule_manager_tests {
         }
     }
 
+    #[derive(NestedElement)]
     struct TestAircraft {
         cpc: CabinPressureController,
         cabin_simulation: CabinPressureSimulation,

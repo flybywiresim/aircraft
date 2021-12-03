@@ -66,12 +66,3 @@ macro_rules! read_write_enum {
         }
     };
 }
-
-#[macro_export]
-macro_rules! accept_iterable {
-    ($iterable: expr, $visitor: expr) => {
-        $iterable.iter_mut().for_each(|el| {
-            el.accept($visitor);
-        });
-    };
-}

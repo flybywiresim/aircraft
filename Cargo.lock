@@ -927,7 +927,17 @@ dependencies = [
  "num-traits",
  "rand",
  "rstest",
+ "systems_derive",
  "uom",
+]
+
+[[package]]
+name = "systems_derive"
+version = "0.1.0"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
 ]
 
 [[package]]

@@ -2,13 +2,14 @@ use systems::simulation::InitContext;
 use systems::{
     electrical::consumption::{FlightPhasePowerConsumer, PowerConsumerFlightPhase},
     shared::ElectricalBusType,
-    simulation::{SimulationElement, SimulationElementVisitor, UpdateContext},
+    simulation::{NestedElement, SimulationElement, UpdateContext},
 };
 use uom::si::{f64::*, power::watt};
 
 /// This type provides an aggregated form of power consumption.
 /// We haven't yet implemented all power consumers and thus need something to
 /// consume power, as otherwise electrical load is nearly 0.
+#[derive(NestedElement)]
 pub(super) struct A320PowerConsumption {
     ac_bus_1_consumer: FlightPhasePowerConsumer,
     ac_bus_2_consumer: FlightPhasePowerConsumer,
@@ -325,23 +326,4 @@ impl A320PowerConsumption {
         self.dc_gnd_flt_service_consumer.update(context);
     }
 }
-impl SimulationElement for A320PowerConsumption {
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        self.ac_bus_1_consumer.accept(visitor);
-        self.ac_bus_2_consumer.accept(visitor);
-        self.ac_ess_bus_consumer.accept(visitor);
-        self.ac_ess_shed_bus_consumer.accept(visitor);
-        self.ac_stat_inv_bus_consumer.accept(visitor);
-        self.ac_gnd_flt_service_consumer.accept(visitor);
-        self.dc_bus_1_consumer.accept(visitor);
-        self.dc_bus_2_consumer.accept(visitor);
-        self.dc_ess_bus_consumer.accept(visitor);
-        self.dc_ess_shed_bus_consumer.accept(visitor);
-        self.dc_bat_bus_consumer.accept(visitor);
-        self.dc_hot_bus_1_consumer.accept(visitor);
-        self.dc_hot_bus_2_consumer.accept(visitor);
-        self.dc_gnd_flt_service_consumer.accept(visitor);
-
-        visitor.visit(self);
-    }
-}
+impl SimulationElement for A320PowerConsumption {}

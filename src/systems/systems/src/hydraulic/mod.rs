@@ -2,7 +2,7 @@ use self::linear_actuator::Actuator;
 use crate::hydraulic::electrical_pump_physics::ElectricalPumpPhysics;
 use crate::shared::{interpolation, ElectricalBusType, ElectricalBuses};
 use crate::simulation::{
-    InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
+    InitContext, NestedElement, SimulationElement, SimulatorWriter, UpdateContext,
     VariableIdentifier, Write,
 };
 use std::time::Duration;
@@ -102,6 +102,7 @@ pub trait PowerTransferUnitController {
     fn should_enable(&self) -> bool;
 }
 
+#[derive(NestedElement)]
 pub struct PowerTransferUnit {
     active_l2r_id: VariableIdentifier,
     active_r2l_id: VariableIdentifier,
@@ -348,6 +349,7 @@ impl Accumulator {
 /// Pump sections are all connected to system section through a checkvalve (one per pump section)
 /// Each pump section has its own pressure, and so does system section.
 /// Flow is distributed from pump sections to system section according to regulation state and pressure difference.
+#[derive(NestedElement)]
 pub struct HydraulicCircuit {
     pump_sections: Vec<Section>,
     system_section: Section,
@@ -652,22 +654,11 @@ impl HydraulicCircuit {
         &self.pump_sections[pump_index]
     }
 }
-impl SimulationElement for HydraulicCircuit {
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        self.reservoir.accept(visitor);
-
-        for section in &mut self.pump_sections {
-            section.accept(visitor);
-        }
-
-        self.system_section.accept(visitor);
-
-        visitor.visit(self);
-    }
-}
+impl SimulationElement for HydraulicCircuit {}
 
 /// This is an hydraulic section with its own volume of fluid and pressure. It can be connected to another section
 /// through a checkvalve
+#[derive(NestedElement)]
 pub struct Section {
     pressure_id: VariableIdentifier,
 
@@ -947,14 +938,6 @@ impl Section {
     }
 }
 impl SimulationElement for Section {
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        if let Some(fire_valve) = &mut self.fire_valve {
-            fire_valve.accept(visitor);
-        }
-
-        visitor.visit(self);
-    }
-
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.pressure_id, self.pressure());
     }
@@ -969,6 +952,7 @@ impl SectionPressure for Section {
     }
 }
 
+#[derive(NestedElement)]
 pub struct FireValve {
     opened_id: VariableIdentifier,
     is_open: bool,
@@ -1075,6 +1059,7 @@ impl CheckValve {
     }
 }
 
+#[derive(NestedElement)]
 pub struct Reservoir {
     level_id: VariableIdentifier,
     max_capacity: Volume,
@@ -1284,6 +1269,7 @@ impl PressureSource for Pump {
     }
 }
 
+#[derive(NestedElement)]
 pub struct ElectricPump {
     pump: Pump,
     pump_physics: ElectricalPumpPhysics,
@@ -1367,14 +1353,9 @@ impl PressureSource for ElectricPump {
         self.pump.displacement()
     }
 }
-impl SimulationElement for ElectricPump {
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        self.pump_physics.accept(visitor);
+impl SimulationElement for ElectricPump {}
 
-        visitor.visit(self);
-    }
-}
-
+#[derive(NestedElement)]
 pub struct EngineDrivenPump {
     active_id: VariableIdentifier,
 
@@ -1452,6 +1433,7 @@ impl SimulationElement for EngineDrivenPump {
     }
 }
 
+#[derive(NestedElement)]
 struct WindTurbine {
     rpm_id: VariableIdentifier,
 
@@ -1566,6 +1548,7 @@ pub trait RamAirTurbineController {
     fn should_deploy(&self) -> bool;
 }
 
+#[derive(NestedElement)]
 pub struct RamAirTurbine {
     stow_position_id: VariableIdentifier,
 
@@ -1684,12 +1667,6 @@ impl PressureSource for RamAirTurbine {
     }
 }
 impl SimulationElement for RamAirTurbine {
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        self.wind_turbine.accept(visitor);
-
-        visitor.visit(self);
-    }
-
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.stow_position_id, self.position);
     }

@@ -47,6 +47,7 @@ node_modules
 /src/systems/a320_hydraulic_simulation_graphs/*.png
 !igniter.config.mjs
 .igniter
+.idea
 /src/fdr2csv/*.exe
 /src/fbw/obj/
 /src/fdr2csv/build/

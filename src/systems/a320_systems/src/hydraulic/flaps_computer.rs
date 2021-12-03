@@ -1,6 +1,6 @@
 use systems::simulation::{
-    InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
-    SimulatorWriter, UpdateContext, VariableIdentifier, Write,
+    InitContext, NestedElement, Read, SimulationElement, SimulatorReader, SimulatorWriter,
+    UpdateContext, VariableIdentifier, Write,
 };
 
 use std::panic;
@@ -33,6 +33,7 @@ impl From<u8> for FlapsConf {
 }
 
 /// A struct to read the handle position
+#[derive(NestedElement)]
 struct FlapsHandle {
     handle_position_id: VariableIdentifier,
     position: u8,
@@ -64,6 +65,7 @@ impl SimulationElement for FlapsHandle {
     }
 }
 
+#[derive(NestedElement)]
 struct SlatFlapControlComputer {
     left_flaps_target_angle_id: VariableIdentifier,
     right_flaps_target_angle_id: VariableIdentifier,
@@ -219,6 +221,7 @@ impl SimulationElement for SlatFlapControlComputer {
     }
 }
 
+#[derive(NestedElement)]
 struct SlatFlapGear {
     current_angle: Angle,
     speed: AngularVelocity,
@@ -309,6 +312,7 @@ impl SimulationElement for SlatFlapGear {
     }
 }
 
+#[derive(NestedElement)]
 pub struct SlatFlapComplex {
     sfcc: SlatFlapControlComputer,
     flaps_handle: FlapsHandle,
@@ -356,15 +360,7 @@ impl SlatFlapComplex {
     }
 }
 
-impl SimulationElement for SlatFlapComplex {
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        self.flaps_handle.accept(visitor);
-        self.sfcc.accept(visitor);
-        self.flap_gear.accept(visitor);
-        self.slat_gear.accept(visitor);
-        visitor.visit(self);
-    }
-}
+impl SimulationElement for SlatFlapComplex {}
 
 #[cfg(test)]
 mod tests {
@@ -376,6 +372,7 @@ mod tests {
         Aircraft,
     };
 
+    #[derive(NestedElement)]
     struct A320FlapsTestAircraft {
         green_hydraulic_pressure_id: VariableIdentifier,
         blue_hydraulic_pressure_id: VariableIdentifier,
@@ -415,11 +412,6 @@ mod tests {
     }
 
     impl SimulationElement for A320FlapsTestAircraft {
-        fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-            self.slat_flap_complex.accept(visitor);
-            visitor.visit(self);
-        }
-
         fn read(&mut self, reader: &mut SimulatorReader) {
             self.green_pressure = reader.read(&self.green_hydraulic_pressure_id);
             self.blue_pressure = reader.read(&self.blue_hydraulic_pressure_id);

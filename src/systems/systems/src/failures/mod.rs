@@ -1,10 +1,11 @@
-use crate::simulation::SimulationElement;
+use crate::simulation::{NestedElement, SimulationElement};
 
 #[derive(Clone, Copy, PartialEq)]
 pub enum FailureType {
     TransformerRectifier(usize),
 }
 
+#[derive(NestedElement)]
 pub struct Failure {
     failure_type: FailureType,
     is_active: bool,

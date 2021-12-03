@@ -1,9 +1,10 @@
 use systems::simulation::InitContext;
 use systems::{
     overhead::OnOffFaultPushButton,
-    simulation::{SimulationElement, SimulationElementVisitor},
+    simulation::{NestedElement, SimulationElement},
 };
 
+#[derive(NestedElement)]
 pub struct A320PneumaticOverheadPanel {
     apu_bleed: OnOffFaultPushButton,
 }
@@ -18,10 +19,4 @@ impl A320PneumaticOverheadPanel {
         self.apu_bleed.is_on()
     }
 }
-impl SimulationElement for A320PneumaticOverheadPanel {
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        self.apu_bleed.accept(visitor);
-
-        visitor.visit(self);
-    }
-}
+impl SimulationElement for A320PneumaticOverheadPanel {}

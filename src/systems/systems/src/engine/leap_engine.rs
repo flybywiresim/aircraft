@@ -2,12 +2,13 @@ use uom::si::{angular_velocity::revolution_per_minute, f64::*, pressure::psi, ra
 
 use crate::{
     shared::{EngineCorrectedN1, EngineCorrectedN2, EngineUncorrectedN2},
-    simulation::{Read, SimulationElement, SimulatorReader, UpdateContext},
+    simulation::{NestedElement, Read, SimulationElement, SimulatorReader, UpdateContext},
 };
 
 use super::Engine;
 use crate::simulation::{InitContext, VariableIdentifier};
 
+#[derive(NestedElement)]
 pub struct LeapEngine {
     corrected_n1_id: VariableIdentifier,
     corrected_n1: Ratio,

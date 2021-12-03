@@ -5,7 +5,7 @@ use uom::si::{
 
 use crate::{
     shared::{ConsumePower, PowerConsumptionReport},
-    simulation::{InitContext, SimulationElement, SimulatorWriter, UpdateContext},
+    simulation::{InitContext, NestedElement, SimulationElement, SimulatorWriter, UpdateContext},
 };
 
 use super::{
@@ -14,6 +14,7 @@ use super::{
     ProvidePotential,
 };
 
+#[derive(NestedElement)]
 pub struct Battery {
     number: usize,
     identifier: ElectricalElementIdentifier,
@@ -235,7 +236,7 @@ mod tests {
             },
             simulation::{
                 test::{SimulationTestBed, TestBed},
-                Aircraft, SimulationElementVisitor, UpdateContext,
+                Aircraft, UpdateContext,
             },
         };
         use std::time::Duration;
@@ -345,6 +346,7 @@ mod tests {
             }
         }
 
+        #[derive(NestedElement)]
         struct TestAircraft {
             electricity_source: TestElectricitySource,
             bat_bus: ElectricalBus,
@@ -418,17 +420,6 @@ mod tests {
             }
         }
         impl SimulationElement for TestAircraft {
-            fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-                self.bat_bus.accept(visitor);
-                self.battery_1.accept(visitor);
-                self.battery_1_contactor.accept(visitor);
-                self.battery_2.accept(visitor);
-                self.battery_2_contactor.accept(visitor);
-                self.consumer.accept(visitor);
-
-                visitor.visit(self);
-            }
-
             fn process_power_consumption_report<T: PowerConsumptionReport>(
                 &mut self,
                 _: &UpdateContext,

@@ -20,15 +20,14 @@ use super::ElectricalBusType;
 use crate::simulation::{InitContext, VariableIdentifier};
 use crate::{
     shared::{random_number, ConsumePower, ElectricalBuses, FwcFlightPhase},
-    simulation::{
-        Read, SimulationElement, SimulationElementVisitor, SimulatorReader, UpdateContext,
-    },
+    simulation::{NestedElement, Read, SimulationElement, SimulatorReader, UpdateContext},
 };
 use num_traits::FromPrimitive;
 use std::time::Duration;
 use uom::si::{f64::*, power::watt};
 
 /// A generic consumer of power.
+#[derive(NestedElement)]
 pub struct PowerConsumer {
     is_powered: bool,
     demand: Power,
@@ -61,6 +60,7 @@ impl SimulationElement for PowerConsumer {
 
 /// A special type of power consumer which changes its consumption
 /// based on the phase of the flight.
+#[derive(NestedElement)]
 pub struct FlightPhasePowerConsumer {
     fwc_flight_phase_id: VariableIdentifier,
 
@@ -105,12 +105,6 @@ impl FlightPhasePowerConsumer {
     }
 }
 impl SimulationElement for FlightPhasePowerConsumer {
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        self.consumer.accept(visitor);
-
-        visitor.visit(self);
-    }
-
     fn read(&mut self, reader: &mut SimulatorReader) {
         let flight_phase: Option<FwcFlightPhase> =
             FromPrimitive::from_f64(reader.read(&self.fwc_flight_phase_id));
@@ -165,6 +159,7 @@ mod tests {
         use crate::simulation::test::WriteByName;
         use crate::simulation::InitContext;
 
+        #[derive(NestedElement)]
         struct FlightPhasePowerConsumerTestAircraft {
             electricity_source: TestElectricitySource,
             apu_generator_consumption: Option<Power>,
@@ -221,12 +216,6 @@ mod tests {
             }
         }
         impl SimulationElement for FlightPhasePowerConsumerTestAircraft {
-            fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-                self.consumer.accept(visitor);
-
-                visitor.visit(self);
-            }
-
             fn process_power_consumption_report<T: PowerConsumptionReport>(
                 &mut self,
                 _: &UpdateContext,

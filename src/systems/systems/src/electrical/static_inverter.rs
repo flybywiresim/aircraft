@@ -9,9 +9,10 @@ use super::{
 };
 use crate::{
     shared::{ConsumePower, PowerConsumptionReport},
-    simulation::{InitContext, SimulationElement, SimulatorWriter, UpdateContext},
+    simulation::{InitContext, NestedElement, SimulationElement, SimulatorWriter, UpdateContext},
 };
 
+#[derive(NestedElement)]
 pub struct StaticInverter {
     input_identifier: ElectricalElementIdentifier,
     output_identifier: ElectricalElementIdentifier,
@@ -107,7 +108,7 @@ mod static_inverter_tests {
         },
         simulation::{
             test::{SimulationTestBed, TestBed},
-            Aircraft, SimulationElementVisitor, UpdateContext,
+            Aircraft, UpdateContext,
         },
     };
 
@@ -155,6 +156,7 @@ mod static_inverter_tests {
         }
     }
 
+    #[derive(NestedElement)]
     struct TestAircraft {
         electricity_source: TestElectricitySource,
         bus: ElectricalBus,
@@ -211,13 +213,6 @@ mod static_inverter_tests {
         }
     }
     impl SimulationElement for TestAircraft {
-        fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-            self.static_inverter.accept(visitor);
-            self.consumer.accept(visitor);
-
-            visitor.visit(self);
-        }
-
         fn process_power_consumption_report<T: PowerConsumptionReport>(
             &mut self,
             _: &UpdateContext,

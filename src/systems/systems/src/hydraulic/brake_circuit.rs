@@ -2,9 +2,7 @@ use crate::{
     overhead::PressSingleSignalButton,
     shared::low_pass_filter::LowPassFilter,
     shared::pid::PidController,
-    simulation::{
-        SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext, Write,
-    },
+    simulation::{NestedElement, SimulationElement, SimulatorWriter, UpdateContext, Write},
 };
 
 use std::time::Duration;
@@ -113,6 +111,7 @@ impl Actuator for BrakeActuator {
 /// Brakes implementation. This tries to do a simple model with a possibility to have an accumulator (or not)
 /// Brake model is simplified as we just move brake actuator position from 0 to 1 and take corresponding fluid volume (vol = max_displacement * brake_position).
 /// So it's fairly simplified as we just end up with brake pressure = PRESSURE_FOR_MAX_BRAKE_DEFLECTION_PSI * current_position
+#[derive(NestedElement)]
 pub struct BrakeCircuit {
     left_press_id: VariableIdentifier,
     right_press_id: VariableIdentifier,
@@ -334,6 +333,7 @@ impl From<f64> for AutobrakeMode {
     }
 }
 
+#[derive(NestedElement)]
 pub struct AutobrakePanel {
     lo_button: PressSingleSignalButton,
     med_button: PressSingleSignalButton,
@@ -372,15 +372,7 @@ impl AutobrakePanel {
         }
     }
 }
-impl SimulationElement for AutobrakePanel {
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        self.lo_button.accept(visitor);
-        self.med_button.accept(visitor);
-        self.max_button.accept(visitor);
-
-        visitor.visit(self);
-    }
-}
+impl SimulationElement for AutobrakePanel {}
 
 /// Deceleration governor is the PI controller computing the expected brake force to reach the target
 /// it's been given by update caller

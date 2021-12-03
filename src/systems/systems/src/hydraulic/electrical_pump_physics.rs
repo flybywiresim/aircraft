@@ -13,9 +13,11 @@ use uom::si::{
 use crate::hydraulic::SectionPressure;
 use crate::shared::{pid::PidController, ConsumePower, ElectricalBusType, ElectricalBuses};
 use crate::simulation::{
-    InitContext, SimulationElement, SimulatorWriter, UpdateContext, VariableIdentifier, Write,
+    InitContext, NestedElement, SimulationElement, SimulatorWriter, UpdateContext,
+    VariableIdentifier, Write,
 };
 
+#[derive(NestedElement)]
 pub(super) struct ElectricalPumpPhysics {
     active_id: VariableIdentifier,
     rpm_id: VariableIdentifier,
@@ -215,7 +217,7 @@ mod tests {
 
     use crate::hydraulic::update_iterator::FixedStepLoop;
     use crate::shared::PotentialOrigin;
-    use crate::simulation::{Aircraft, SimulationElement, SimulationElementVisitor, UpdateContext};
+    use crate::simulation::{Aircraft, SimulationElement, UpdateContext};
 
     use crate::simulation::test::{SimulationTestBed, TestBed};
     use std::time::Duration;
@@ -244,6 +246,7 @@ mod tests {
             self.current_pressure.get::<psi>() > 2000.
         }
     }
+    #[derive(NestedElement)]
     struct TestAircraft {
         core_hydraulic_updater: FixedStepLoop,
 
@@ -310,13 +313,7 @@ mod tests {
             }
         }
     }
-    impl SimulationElement for TestAircraft {
-        fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-            self.pump.accept(visitor);
-
-            visitor.visit(self);
-        }
-    }
+    impl SimulationElement for TestAircraft {}
 
     #[test]
     fn pump_inactive_at_init() {

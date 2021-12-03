@@ -4,7 +4,7 @@ use crate::simulation::InitContext;
 use crate::{
     overhead::FirePushButton,
     shared::{EngineCorrectedN2, EngineFirePushButtons, EngineUncorrectedN2},
-    simulation::{SimulationElement, SimulationElementVisitor},
+    simulation::{NestedElement, SimulationElement},
 };
 
 pub mod leap_engine;
@@ -15,6 +15,7 @@ pub trait Engine: EngineCorrectedN2 + EngineUncorrectedN2 {
     fn is_above_minimum_idle(&self) -> bool;
 }
 
+#[derive(NestedElement)]
 pub struct EngineFireOverheadPanel {
     // TODO: Once const generics are available in the dev-env rustc version, we can replace
     // this with an array sized by the const.
@@ -35,13 +36,7 @@ impl EngineFirePushButtons for EngineFireOverheadPanel {
         self.engine_fire_push_buttons[engine_number - 1].is_released()
     }
 }
-impl SimulationElement for EngineFireOverheadPanel {
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        accept_iterable!(self.engine_fire_push_buttons, visitor);
-
-        visitor.visit(self);
-    }
-}
+impl SimulationElement for EngineFireOverheadPanel {}
 
 #[cfg(test)]
 mod engine_fire_overhead_panel_tests {

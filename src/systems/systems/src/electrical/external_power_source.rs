@@ -3,8 +3,8 @@ use uom::si::{electric_potential::volt, f64::*, frequency::hertz};
 use crate::{
     shared::PowerConsumptionReport,
     simulation::{
-        InitContext, Read, SimulationElement, SimulatorReader, SimulatorWriter, UpdateContext,
-        VariableIdentifier,
+        InitContext, NestedElement, Read, SimulationElement, SimulatorReader, SimulatorWriter,
+        UpdateContext, VariableIdentifier,
     },
 };
 
@@ -14,6 +14,7 @@ use super::{
     ProvidePotential,
 };
 
+#[derive(NestedElement)]
 pub struct ExternalPowerSource {
     external_power_available_id: VariableIdentifier,
 
@@ -110,7 +111,7 @@ mod external_power_source_tests {
         electrical::Electricity,
         simulation::{
             test::{SimulationTestBed, TestBed},
-            Aircraft, SimulationElementVisitor,
+            Aircraft,
         },
     };
 
@@ -162,6 +163,7 @@ mod external_power_source_tests {
         }
     }
 
+    #[derive(NestedElement)]
     struct TestAircraft {
         ext_pwr: ExternalPowerSource,
         ext_pwr_output_within_normal_parameters_before_processing_power_consumption_report: bool,
@@ -200,12 +202,7 @@ mod external_power_source_tests {
             self.ext_pwr_output_within_normal_parameters_before_processing_power_consumption_report = self.ext_pwr.output_within_normal_parameters();
         }
     }
-    impl SimulationElement for TestAircraft {
-        fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-            self.ext_pwr.accept(visitor);
-            visitor.visit(self);
-        }
-    }
+    impl SimulationElement for TestAircraft {}
 
     #[test]
     fn when_disconnected_provides_no_output() {

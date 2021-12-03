@@ -10,11 +10,10 @@ use super::{
 use crate::{
     failures::{Failure, FailureType},
     shared::{ConsumePower, PowerConsumptionReport},
-    simulation::{
-        InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
-    },
+    simulation::{InitContext, NestedElement, SimulationElement, SimulatorWriter, UpdateContext},
 };
 
+#[derive(NestedElement)]
 pub struct TransformerRectifier {
     writer: ElectricalStateWriter,
     number: usize,
@@ -77,12 +76,6 @@ impl ElectricityTransformer for TransformerRectifier {
     }
 }
 impl SimulationElement for TransformerRectifier {
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        self.failure.accept(visitor);
-
-        visitor.visit(self);
-    }
-
     fn write(&self, writer: &mut SimulatorWriter) {
         self.writer.write_direct(self, writer);
     }
@@ -133,7 +126,7 @@ mod transformer_rectifier_tests {
         },
         simulation::{
             test::{SimulationTestBed, TestBed},
-            Aircraft, SimulationElementVisitor, UpdateContext,
+            Aircraft, UpdateContext,
         },
     };
 
@@ -185,6 +178,7 @@ mod transformer_rectifier_tests {
         }
     }
 
+    #[derive(NestedElement)]
     struct TestAircraft {
         electricity_source: TestElectricitySource,
         transformer_rectifier: TransformerRectifier,
@@ -241,13 +235,6 @@ mod transformer_rectifier_tests {
         }
     }
     impl SimulationElement for TestAircraft {
-        fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-            self.transformer_rectifier.accept(visitor);
-            self.consumer.accept(visitor);
-
-            visitor.visit(self);
-        }
-
         fn process_power_consumption_report<T: PowerConsumptionReport>(
             &mut self,
             _: &UpdateContext,

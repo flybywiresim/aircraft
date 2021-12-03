@@ -12,12 +12,13 @@ use systems::{
         ApuMaster, ApuStart, AuxiliaryPowerUnitElectrical, ContactorSignal, ElectricalBusType,
         LandingGearRealPosition,
     },
-    simulation::{SimulationElement, SimulationElementVisitor, UpdateContext},
+    simulation::{NestedElement, SimulationElement, UpdateContext},
 };
 use uom::si::{f64::*, velocity::knot};
 
 pub(crate) const APU_START_MOTOR_BUS_TYPE: ElectricalBusType = ElectricalBusType::Sub("49-42-00");
 
+#[derive(NestedElement)]
 pub(super) struct A320DirectCurrentElectrical {
     dc_bus_1: ElectricalBus,
     dc_bus_2: ElectricalBus,
@@ -311,43 +312,4 @@ impl A320DirectCurrentElectricalSystem for A320DirectCurrentElectrical {
         &self.static_inverter
     }
 }
-impl SimulationElement for A320DirectCurrentElectrical {
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        self.battery_1.accept(visitor);
-        self.battery_1_charge_limiter.accept(visitor);
-        self.battery_2.accept(visitor);
-        self.battery_2_charge_limiter.accept(visitor);
-        self.static_inverter.accept(visitor);
-
-        self.dc_bus_1_tie_contactor.accept(visitor);
-        self.dc_bus_2_tie_contactor.accept(visitor);
-        self.dc_bat_bus_to_dc_ess_bus_contactor.accept(visitor);
-        self.dc_ess_shed_contactor.accept(visitor);
-        self.battery_1_contactor.accept(visitor);
-        self.battery_2_contactor.accept(visitor);
-        self.hot_bus_2_to_dc_ess_bus_contactor.accept(visitor);
-        self.hot_bus_1_to_static_inv_contactor.accept(visitor);
-        self.tr_1_contactor.accept(visitor);
-        self.tr_2_contactor.accept(visitor);
-        self.tr_ess_contactor.accept(visitor);
-
-        self.dc_bus_1.accept(visitor);
-        self.dc_bus_2.accept(visitor);
-        self.dc_bat_bus.accept(visitor);
-        self.dc_ess_bus.accept(visitor);
-        self.dc_ess_shed_bus.accept(visitor);
-        self.hot_bus_1.accept(visitor);
-        self.hot_bus_2.accept(visitor);
-
-        self.apu_start_contactors.accept(visitor);
-        self.apu_start_motor_bus.accept(visitor);
-
-        self.dc_gnd_flt_service_bus.accept(visitor);
-        self.tr_2_to_dc_gnd_flt_service_bus_contactor
-            .accept(visitor);
-        self.dc_bus_2_to_dc_gnd_flt_service_bus_contactor
-            .accept(visitor);
-
-        visitor.visit(self);
-    }
-}
+impl SimulationElement for A320DirectCurrentElectrical {}

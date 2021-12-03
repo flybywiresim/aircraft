@@ -1,6 +1,6 @@
 use crate::{
     shared::{random_number, ConsumePower, ControllerSignal, ElectricalBusType, ElectricalBuses},
-    simulation::{SimulationElement, UpdateContext},
+    simulation::{NestedElement, SimulationElement, UpdateContext},
 };
 use std::time::Duration;
 use uom::si::{f64::*, power::watt, ratio::percent};
@@ -10,6 +10,7 @@ pub(super) enum AirIntakeFlapSignal {
     Close,
 }
 
+#[derive(NestedElement)]
 pub(super) struct AirIntakeFlap {
     is_powered: bool,
     powered_by: ElectricalBusType,
@@ -113,11 +114,12 @@ mod air_intake_flap_tests {
     use crate::electrical::Electricity;
     use crate::shared::{ElectricalBusType, PotentialOrigin, PowerConsumptionReport};
     use crate::simulation::test::TestBed;
+    use crate::simulation::InitContext;
     use crate::simulation::{test::SimulationTestBed, Aircraft, SimulationElement};
-    use crate::simulation::{InitContext, SimulationElementVisitor};
     use ntest::assert_about_eq;
     use uom::si::power::watt;
 
+    #[derive(NestedElement)]
     struct TestAircraft {
         electricity_source: TestElectricitySource,
         dc_bat_bus: ElectricalBus,
@@ -191,12 +193,6 @@ mod air_intake_flap_tests {
             report: &T,
         ) {
             self.power_consumption = report.total_consumption_of(PotentialOrigin::Battery(1));
-        }
-
-        fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-            self.flap.accept(visitor);
-
-            visitor.visit(self);
         }
     }
 

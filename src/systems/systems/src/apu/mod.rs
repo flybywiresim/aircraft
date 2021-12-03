@@ -13,9 +13,7 @@ use crate::{
         ApuAvailable, ApuMaster, ApuStart, AuxiliaryPowerUnitElectrical, ContactorSignal,
         ControllerSignal, ElectricalBusType, PneumaticValve,
     },
-    simulation::{
-        SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext, Write,
-    },
+    simulation::{NestedElement, SimulationElement, SimulatorWriter, UpdateContext, Write},
 };
 #[cfg(test)]
 use std::time::Duration;
@@ -82,6 +80,7 @@ pub enum TurbineSignal {
     Stop,
 }
 
+#[derive(NestedElement)]
 pub struct AuxiliaryPowerUnit<T: ApuGenerator, U: ApuStartMotor> {
     apu_flap_open_percentage_id: VariableIdentifier,
     apu_bleed_air_valve_open_id: VariableIdentifier,
@@ -226,15 +225,6 @@ impl<T: ApuGenerator, U: ApuStartMotor> ElectricalElement for AuxiliaryPowerUnit
     }
 }
 impl<T: ApuGenerator, U: ApuStartMotor> SimulationElement for AuxiliaryPowerUnit<T, U> {
-    fn accept<V: SimulationElementVisitor>(&mut self, visitor: &mut V) {
-        self.generator.accept(visitor);
-        self.start_motor.accept(visitor);
-        self.air_intake_flap.accept(visitor);
-        self.ecb.accept(visitor);
-
-        visitor.visit(self);
-    }
-
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(
             &self.apu_flap_open_percentage_id,
@@ -280,6 +270,7 @@ pub trait ApuGenerator:
     fn output_within_normal_parameters(&self) -> bool;
 }
 
+#[derive(NestedElement)]
 pub struct AuxiliaryPowerUnitFireOverheadPanel {
     apu_fire_button: FirePushButton,
 }
@@ -294,14 +285,9 @@ impl AuxiliaryPowerUnitFireOverheadPanel {
         self.apu_fire_button.is_released()
     }
 }
-impl SimulationElement for AuxiliaryPowerUnitFireOverheadPanel {
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        self.apu_fire_button.accept(visitor);
+impl SimulationElement for AuxiliaryPowerUnitFireOverheadPanel {}
 
-        visitor.visit(self);
-    }
-}
-
+#[derive(NestedElement)]
 pub struct AuxiliaryPowerUnitOverheadPanel {
     pub master: OnOffFaultPushButton,
     pub start: OnOffAvailablePushButton,
@@ -341,14 +327,7 @@ impl ApuStart for AuxiliaryPowerUnitOverheadPanel {
         self.start.is_on()
     }
 }
-impl SimulationElement for AuxiliaryPowerUnitOverheadPanel {
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        self.master.accept(visitor);
-        self.start.accept(visitor);
-
-        visitor.visit(self);
-    }
-}
+impl SimulationElement for AuxiliaryPowerUnitOverheadPanel {}
 
 #[cfg(test)]
 pub mod tests {
@@ -413,6 +392,7 @@ pub mod tests {
         }
     }
 
+    #[derive(NestedElement)]
     pub struct AuxiliaryPowerUnitTestAircraft {
         dc_bat_bus_electricity_source: TestElectricitySource,
         dc_bat_bus: ElectricalBus,
@@ -546,16 +526,6 @@ pub mod tests {
         }
     }
     impl SimulationElement for AuxiliaryPowerUnitTestAircraft {
-        fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-            self.apu.accept(visitor);
-            self.apu_overhead.accept(visitor);
-            self.apu_fire_overhead.accept(visitor);
-            self.apu_bleed.accept(visitor);
-            self.power_consumer.accept(visitor);
-
-            visitor.visit(self);
-        }
-
         fn process_power_consumption_report<T: PowerConsumptionReport>(
             &mut self,
             _: &UpdateContext,

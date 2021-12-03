@@ -41,7 +41,7 @@ use systems::{
         RamAirTurbineHydraulicCircuitPressurised,
     },
     simulation::{
-        InitContext, Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
+        InitContext, NestedElement, Read, Reader, SimulationElement, SimulatorReader,
         SimulatorWriter, UpdateContext, VariableIdentifier, Write,
     },
 };
@@ -168,6 +168,7 @@ impl A320CargoDoorFactory {
     }
 }
 
+#[derive(NestedElement)]
 pub(super) struct A320Hydraulic {
     hyd_ptu_ecam_memo_id: VariableIdentifier,
     ptu_high_pitch_sound_id: VariableIdentifier,
@@ -752,48 +753,6 @@ impl RamAirTurbineHydraulicCircuitPressurised for A320Hydraulic {
     }
 }
 impl SimulationElement for A320Hydraulic {
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        self.engine_driven_pump_1.accept(visitor);
-        self.engine_driven_pump_1_controller.accept(visitor);
-
-        self.engine_driven_pump_2.accept(visitor);
-        self.engine_driven_pump_2_controller.accept(visitor);
-
-        self.blue_electric_pump.accept(visitor);
-        self.blue_electric_pump_controller.accept(visitor);
-
-        self.yellow_electric_pump.accept(visitor);
-        self.yellow_electric_pump_controller.accept(visitor);
-
-        self.forward_cargo_door_controller.accept(visitor);
-        self.forward_cargo_door.accept(visitor);
-
-        self.aft_cargo_door_controller.accept(visitor);
-        self.aft_cargo_door.accept(visitor);
-
-        self.pushback_tug.accept(visitor);
-
-        self.ram_air_turbine.accept(visitor);
-        self.ram_air_turbine_controller.accept(visitor);
-
-        self.power_transfer_unit.accept(visitor);
-        self.power_transfer_unit_controller.accept(visitor);
-
-        self.blue_circuit.accept(visitor);
-        self.green_circuit.accept(visitor);
-        self.yellow_circuit.accept(visitor);
-
-        self.brake_computer.accept(visitor);
-
-        self.braking_circuit_norm.accept(visitor);
-        self.braking_circuit_altn.accept(visitor);
-        self.braking_force.accept(visitor);
-
-        self.slats_flaps_complex.accept(visitor);
-
-        visitor.visit(self);
-    }
-
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(
             &self.hyd_ptu_ecam_memo_id,
@@ -832,6 +791,7 @@ impl HydraulicCircuitController for A320HydraulicCircuitController {
     }
 }
 
+#[derive(NestedElement)]
 struct A320EngineDrivenPumpController {
     green_pump_low_press_id: VariableIdentifier,
     yellow_pump_low_press_id: VariableIdentifier,
@@ -935,6 +895,7 @@ impl SimulationElement for A320EngineDrivenPumpController {
     }
 }
 
+#[derive(NestedElement)]
 struct A320BlueElectricPumpController {
     low_press_id: VariableIdentifier,
 
@@ -1035,6 +996,7 @@ impl SimulationElement for A320BlueElectricPumpController {
     }
 }
 
+#[derive(NestedElement)]
 struct A320YellowElectricPumpController {
     low_press_id: VariableIdentifier,
 
@@ -1131,6 +1093,7 @@ impl SimulationElement for A320YellowElectricPumpController {
     }
 }
 
+#[derive(NestedElement)]
 struct A320PowerTransferUnitController {
     park_brake_lever_pos_id: VariableIdentifier,
     general_eng_1_starter_active_id: VariableIdentifier,
@@ -1216,6 +1179,7 @@ impl SimulationElement for A320PowerTransferUnitController {
     }
 }
 
+#[derive(NestedElement)]
 struct A320RamAirTurbineController {
     is_solenoid_1_powered: bool,
     solenoid_1_bus: ElectricalBusType,
@@ -1267,6 +1231,7 @@ impl SimulationElement for A320RamAirTurbineController {
     }
 }
 
+#[derive(NestedElement)]
 struct A320HydraulicBrakeComputerUnit {
     park_brake_lever_pos_id: VariableIdentifier,
     gear_handle_position_id: VariableIdentifier,
@@ -1496,11 +1461,6 @@ impl A320HydraulicBrakeComputerUnit {
 }
 
 impl SimulationElement for A320HydraulicBrakeComputerUnit {
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        self.autobrake_controller.accept(visitor);
-        visitor.visit(self);
-    }
-
     fn read(&mut self, reader: &mut SimulatorReader) {
         self.parking_brake_demand = reader.read(&self.park_brake_lever_pos_id);
         self.is_gear_lever_down = reader.read(&self.gear_handle_position_id);
@@ -1512,6 +1472,7 @@ impl SimulationElement for A320HydraulicBrakeComputerUnit {
     }
 }
 
+#[derive(NestedElement)]
 struct A320BrakingForce {
     brake_left_force_factor_id: VariableIdentifier,
     brake_right_force_factor_id: VariableIdentifier,
@@ -1619,6 +1580,7 @@ enum DoorControlState {
     UpLocked = 3,
 }
 
+#[derive(NestedElement)]
 struct A320DoorController {
     requested_position_id: VariableIdentifier,
 
@@ -1767,6 +1729,7 @@ impl SimulationElement for A320DoorController {
     }
 }
 
+#[derive(NestedElement)]
 struct CargoDoor {
     hydraulic_assembly: HydraulicLinearActuatorAssembly,
 
@@ -1824,6 +1787,7 @@ impl SimulationElement for CargoDoor {
     }
 }
 
+#[derive(NestedElement)]
 struct PushbackTug {
     nw_strg_disc_memo_id: VariableIdentifier,
     state_id: VariableIdentifier,
@@ -1883,6 +1847,7 @@ impl SimulationElement for PushbackTug {
 
 /// Autobrake controller computes the state machine of the autobrake logic, and the deceleration target
 /// that we expect for the plane
+#[derive(NestedElement)]
 pub struct A320AutobrakeController {
     armed_mode_id: VariableIdentifier,
     decel_light_id: VariableIdentifier,
@@ -2120,6 +2085,7 @@ impl SimulationElement for A320AutobrakeController {
     }
 }
 
+#[derive(NestedElement)]
 pub(super) struct A320HydraulicOverheadPanel {
     edp1_push_button: AutoOffFaultPushButton,
     edp2_push_button: AutoOffFaultPushButton,
@@ -2198,18 +2164,6 @@ impl A320HydraulicOverheadPanel {
     }
 }
 impl SimulationElement for A320HydraulicOverheadPanel {
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        self.edp1_push_button.accept(visitor);
-        self.edp2_push_button.accept(visitor);
-        self.blue_epump_push_button.accept(visitor);
-        self.ptu_push_button.accept(visitor);
-        self.rat_push_button.accept(visitor);
-        self.yellow_epump_push_button.accept(visitor);
-        self.blue_epump_override_push_button.accept(visitor);
-
-        visitor.visit(self);
-    }
-
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
         if !buses.is_powered(A320Hydraulic::BLUE_ELEC_PUMP_CONTROL_POWER_BUS)
             || !buses.is_powered(A320Hydraulic::BLUE_ELEC_PUMP_SUPPLY_POWER_BUS)
@@ -2243,6 +2197,7 @@ mod tests {
             volume::liter,
         };
 
+        #[derive(NestedElement)]
         struct A320TestEmergencyElectricalOverheadPanel {
             rat_and_emer_gen_man_on: MomentaryPushButton,
         }
@@ -2257,19 +2212,14 @@ mod tests {
                 }
             }
         }
-        impl SimulationElement for A320TestEmergencyElectricalOverheadPanel {
-            fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-                self.rat_and_emer_gen_man_on.accept(visitor);
-
-                visitor.visit(self);
-            }
-        }
+        impl SimulationElement for A320TestEmergencyElectricalOverheadPanel {}
         impl EmergencyElectricalRatPushButton for A320TestEmergencyElectricalOverheadPanel {
             fn is_pressed(&self) -> bool {
                 self.rat_and_emer_gen_man_on.is_pressed()
             }
         }
 
+        #[derive(NestedElement)]
         struct A320TestElectrical {
             airspeed: Velocity,
             all_ac_lost: bool,
@@ -2297,6 +2247,7 @@ mod tests {
                     && !buses.is_powered(ElectricalBusType::AlternatingCurrent(2));
             }
         }
+        #[derive(NestedElement)]
         struct A320HydraulicsTestAircraft {
             engine_1: LeapEngine,
             engine_2: LeapEngine,
@@ -2575,24 +2526,7 @@ mod tests {
                 self.overhead.update(&self.hydraulics);
             }
         }
-        impl SimulationElement for A320HydraulicsTestAircraft {
-            fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-                self.engine_1.accept(visitor);
-                self.engine_2.accept(visitor);
-                self.landing_gear.accept(visitor);
-                self.lgciu1.accept(visitor);
-                self.lgciu2.accept(visitor);
-                self.hydraulics.accept(visitor);
-                self.autobrake_panel.accept(visitor);
-                self.overhead.accept(visitor);
-                self.engine_fire_overhead.accept(visitor);
-                self.emergency_electrical_overhead.accept(visitor);
-                self.electrical.accept(visitor);
-                self.ext_pwr.accept(visitor);
-
-                visitor.visit(self);
-            }
-        }
+        impl SimulationElement for A320HydraulicsTestAircraft {}
 
         struct A320HydraulicsTestBed {
             test_bed: SimulationTestBed<A320HydraulicsTestAircraft>,

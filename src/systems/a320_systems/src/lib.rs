@@ -29,9 +29,10 @@ use systems::{
     },
     pressurization::{Pressurization, PressurizationOverheadPanel},
     shared::ElectricalBusType,
-    simulation::{Aircraft, SimulationElement, SimulationElementVisitor, UpdateContext},
+    simulation::{Aircraft, NestedElement, SimulationElement, UpdateContext},
 };
 
+#[derive(NestedElement)]
 pub struct A320 {
     adirs: AirDataInertialReferenceSystem,
     adirs_overhead: AirDataInertialReferenceSystemOverheadPanel,
@@ -172,32 +173,4 @@ impl Aircraft for A320 {
         self.power_consumption.update(context);
     }
 }
-impl SimulationElement for A320 {
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        self.adirs.accept(visitor);
-        self.adirs_overhead.accept(visitor);
-        self.apu.accept(visitor);
-        self.apu_fire_overhead.accept(visitor);
-        self.apu_overhead.accept(visitor);
-        self.electrical_overhead.accept(visitor);
-        self.emergency_electrical_overhead.accept(visitor);
-        self.fuel.accept(visitor);
-        self.pneumatic_overhead.accept(visitor);
-        self.engine_1.accept(visitor);
-        self.engine_2.accept(visitor);
-        self.engine_fire_overhead.accept(visitor);
-        self.electrical.accept(visitor);
-        self.power_consumption.accept(visitor);
-        self.ext_pwr.accept(visitor);
-        self.lgciu1.accept(visitor);
-        self.lgciu2.accept(visitor);
-        self.autobrake_panel.accept(visitor);
-        self.hydraulic.accept(visitor);
-        self.hydraulic_overhead.accept(visitor);
-        self.landing_gear.accept(visitor);
-        self.pressurization.accept(visitor);
-        self.pressurization_overhead.accept(visitor);
-
-        visitor.visit(self);
-    }
-}
+impl SimulationElement for A320 {}

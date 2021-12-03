@@ -15,7 +15,7 @@ use crate::{
         calculate_towards_target_temperature, random_number, ConsumePower, ControllerSignal,
         ElectricalBusType, ElectricalBuses, PotentialOrigin, PowerConsumptionReport,
     },
-    simulation::{InitContext, SimulationElement, SimulatorWriter, UpdateContext},
+    simulation::{InitContext, NestedElement, SimulationElement, SimulatorWriter, UpdateContext},
 };
 
 use super::{ApuGenerator, ApuStartMotor, Turbine, TurbineSignal, TurbineState};
@@ -542,6 +542,7 @@ fn calculate_towards_ambient_egt(
 }
 
 /// APS3200 APU Generator
+#[derive(NestedElement)]
 pub struct Aps3200ApuGenerator {
     number: usize,
     identifier: ElectricalElementIdentifier,
@@ -691,6 +692,7 @@ impl SimulationElement for Aps3200ApuGenerator {
     }
 }
 
+#[derive(NestedElement)]
 pub struct Aps3200StartMotor {
     /// On the A320, the start motor is powered through the DC BAT BUS.
     /// There are however additional contactors which open and close based on

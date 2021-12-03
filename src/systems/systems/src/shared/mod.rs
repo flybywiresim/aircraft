@@ -443,8 +443,9 @@ mod delayed_true_logic_gate_tests {
     use super::*;
     use crate::electrical::Electricity;
     use crate::simulation::test::{SimulationTestBed, TestBed};
-    use crate::simulation::{Aircraft, SimulationElement};
+    use crate::simulation::{Aircraft, NestedElement, SimulationElement};
 
+    #[derive(NestedElement)]
     struct TestAircraft {
         gate: DelayedTrueLogicGate,
         expression_result: bool,
@@ -540,8 +541,9 @@ mod delayed_false_logic_gate_tests {
     use super::*;
     use crate::electrical::Electricity;
     use crate::simulation::test::{SimulationTestBed, TestBed};
-    use crate::simulation::{Aircraft, SimulationElement};
+    use crate::simulation::{Aircraft, NestedElement, SimulationElement};
 
+    #[derive(NestedElement)]
     struct TestAircraft {
         gate: DelayedFalseLogicGate,
         expression_result: bool,
@@ -650,8 +652,9 @@ mod delayed_pulse_true_logic_gate_tests {
     use super::*;
     use crate::electrical::Electricity;
     use crate::simulation::test::{SimulationTestBed, TestBed};
-    use crate::simulation::{Aircraft, SimulationElement};
+    use crate::simulation::{Aircraft, NestedElement, SimulationElement};
 
+    #[derive(NestedElement)]
     struct TestAircraft {
         gate: DelayedPulseTrueLogicGate,
         expression_result: bool,

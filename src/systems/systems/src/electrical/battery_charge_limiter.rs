@@ -5,7 +5,7 @@ use super::{
 use crate::simulation::{InitContext, VariableIdentifier};
 use crate::{
     shared::{ApuAvailable, ApuMaster, ApuStart, DelayedTrueLogicGate, LandingGearRealPosition},
-    simulation::{SimulationElement, SimulatorWriter, UpdateContext, Write},
+    simulation::{NestedElement, SimulationElement, SimulatorWriter, UpdateContext, Write},
 };
 use std::time::Duration;
 use uom::si::{electric_current::ampere, electric_potential::volt, f64::*, velocity::knot};
@@ -75,6 +75,7 @@ impl State {
     }
 }
 
+#[derive(NestedElement)]
 pub struct BatteryChargeLimiter {
     number: usize,
     should_show_arrow_when_contactor_closed_id: VariableIdentifier,
@@ -573,7 +574,7 @@ mod tests {
             },
             simulation::{
                 test::{ReadByName, SimulationTestBed, TestBed},
-                Aircraft, InitContext, SimulationElementVisitor,
+                Aircraft, InitContext,
             },
         };
 
@@ -932,6 +933,7 @@ mod tests {
             }
         }
 
+        #[derive(NestedElement)]
         struct TestAircraft {
             battery_bus_electricity_source: TestElectricitySource,
             battery: Battery,
@@ -1094,17 +1096,7 @@ mod tests {
                 electricity.flow(&self.battery_contactor, &self.battery);
             }
         }
-        impl SimulationElement for TestAircraft {
-            fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-                self.battery.accept(visitor);
-                self.battery_bus.accept(visitor);
-                self.battery_contactor.accept(visitor);
-                self.battery_charge_limiter.accept(visitor);
-                self.consumer.accept(visitor);
-
-                visitor.visit(self);
-            }
-        }
+        impl SimulationElement for TestAircraft {}
 
         fn test_bed() -> BatteryChargeLimiterTestBed {
             BatteryChargeLimiterTestBed::new()
