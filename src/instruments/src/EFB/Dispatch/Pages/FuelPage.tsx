@@ -73,7 +73,7 @@ export const FuelPage = () => {
     const airplaneCanRefuel = () => {
         if (refuelRate !== '2') {
             if (!isAirplaneCnD()) {
-                return false;
+                setRefuelRate('2');
             }
         }
         return true;

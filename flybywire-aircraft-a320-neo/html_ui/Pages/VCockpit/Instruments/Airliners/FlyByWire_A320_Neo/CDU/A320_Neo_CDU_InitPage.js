@@ -41,9 +41,9 @@ class CDUInitPage {
             requestButton = "REQUEST [color]amber";
         }
 
-        if (mcdu.flightPlanManager.getOrigin() && mcdu.flightPlanManager.getOrigin().ident) {
+        if (mcdu.flightPlanManager.getPersistentOrigin() && mcdu.flightPlanManager.getPersistentOrigin().ident) {
             if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident) {
-                fromTo = mcdu.flightPlanManager.getOrigin().ident + "/" + mcdu.flightPlanManager.getDestination().ident + "[color]cyan";
+                fromTo = mcdu.flightPlanManager.getPersistentOrigin().ident + "/" + mcdu.flightPlanManager.getDestination().ident + "[color]cyan";
                 if (coRoute.includes("__________[color]amber")) {
                     coRoute = "";
                 }
@@ -51,7 +51,7 @@ class CDUInitPage {
                 // If an active SimBrief OFP matches the FP, hide the request option
                 // This allows loading a new OFP via INIT/REVIEW loading a different orig/dest to the current one
                 if (mcdu.simbrief.sendStatus != "DONE" ||
-                    (mcdu.simbrief["originIcao"] === mcdu.flightPlanManager.getOrigin().ident && mcdu.simbrief["destinationIcao"] === mcdu.flightPlanManager.getDestination().ident)) {
+                    (mcdu.simbrief["originIcao"] === mcdu.flightPlanManager.getPersistentOrigin().ident && mcdu.simbrief["destinationIcao"] === mcdu.flightPlanManager.getDestination().ident)) {
                     requestEnable = false;
                     requestButtonLabel = "";
                     requestButton = "";
@@ -98,7 +98,7 @@ class CDUInitPage {
                     }
                 };
 
-                if (mcdu.flightPlanManager.getOrigin()) {
+                if (mcdu.flightPlanManager.getPersistentOrigin()) {
                     alignOption = "IRS INIT>";
                 }
 
@@ -179,7 +179,7 @@ class CDUInitPage {
                         scratchpadCallback();
                     }
                 });
-            } else if (mcdu.flightPlanManager.getOrigin() && mcdu.flightPlanManager.getOrigin().ident) {
+            } else if (mcdu.flightPlanManager.getPersistentOrigin() && mcdu.flightPlanManager.getPersistentOrigin().ident) {
                 if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident) {
                     CDUAvailableFlightPlanPage.ShowPage(mcdu);
                 }
@@ -247,9 +247,13 @@ class CDUInitPage {
         };
 
         mcdu.onUp = () => {};
-        Coherent.trigger("AP_ALT_VAL_SET", 4200);
-        Coherent.trigger("AP_VS_VAL_SET", 300);
-        Coherent.trigger("AP_HDG_VAL_SET", 180);
+        try {
+            Coherent.trigger("AP_ALT_VAL_SET", 4200);
+            Coherent.trigger("AP_VS_VAL_SET", 300);
+            Coherent.trigger("AP_HDG_VAL_SET", 180);
+        } catch (e) {
+            console.error(e);
+        }
     }
     // Does not refresh page so that other things can be performed first as necessary
     static updateTowIfNeeded(mcdu) {
@@ -293,10 +297,10 @@ class CDUInitPage {
                 zfwCell = (NXUnits.kgToUser(mcdu.zeroFuelWeight)).toFixed(1);
                 zfwColor = "[color]cyan";
             }
-            if (isFinite(mcdu.zeroFuelWeightMassCenter)) {
-                zfwCgCell = mcdu.zeroFuelWeightMassCenter.toFixed(1);
+            if (isFinite(getZfwcg())) {
+                zfwCgCell = getZfwcg().toFixed(1);
             }
-            if (isFinite(mcdu.zeroFuelWeight) && isFinite(mcdu.zeroFuelWeightMassCenter)) {
+            if (isFinite(mcdu.zeroFuelWeight) && isFinite(getZfwcg())) {
                 zfwColor = "[color]cyan";
             }
         }
@@ -306,7 +310,7 @@ class CDUInitPage {
                 mcdu.scratchpad.setText(
                     (isFinite(mcdu.zeroFuelWeight) ? (NXUnits.kgToUser(mcdu.zeroFuelWeight)).toFixed(1) : "") +
                     "/" +
-                    (isFinite(mcdu.zeroFuelWeightMassCenter) ? mcdu.zeroFuelWeightMassCenter.toFixed(1) : ""));
+                    (isFinite(getZfwcg()) ? getZfwcg().toFixed(1) : ""));
             } else {
                 if (mcdu.trySetZeroFuelWeightZFWCG(value)) {
                     CDUInitPage.updateTowIfNeeded(mcdu);

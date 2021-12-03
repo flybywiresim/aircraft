@@ -134,7 +134,12 @@ AutopilotStateMachineModelClass::Parameters_AutopilotStateMachine_T AutopilotSta
       false,
       false,
       false,
-      0.0
+      0.0,
+      fm_requested_vertical_mode_NONE,
+      0.0,
+      0.0,
+      false,
+      false
     },
 
     {
@@ -193,10 +198,12 @@ AutopilotStateMachineModelClass::Parameters_AutopilotStateMachine_T AutopilotSta
         false,
         false,
         false,
+        false,
         false
       },
 
       {
+        false,
         false,
         false,
         false,
@@ -238,10 +245,12 @@ AutopilotStateMachineModelClass::Parameters_AutopilotStateMachine_T AutopilotSta
         false,
         false,
         false,
+        false,
         false
       },
 
       {
+        false,
         false,
         false,
         false,
@@ -350,31 +359,31 @@ AutopilotStateMachineModelClass::Parameters_AutopilotStateMachine_T AutopilotSta
 
   0.0,
 
-  0,
+  false,
 
-  0,
+  false,
 
-  0,
+  false,
 
-  0,
+  false,
 
-  0,
+  false,
 
-  0,
+  false,
 
-  0,
+  false,
 
-  0,
+  false,
 
-  0,
+  false,
 
-  0,
+  false,
 
-  0,
+  false,
 
-  0,
+  false,
 
-  0,
+  false,
 
 
   {
@@ -383,10 +392,12 @@ AutopilotStateMachineModelClass::Parameters_AutopilotStateMachine_T AutopilotSta
       false,
       false,
       false,
+      false,
       false
     },
 
     {
+      false,
       false,
       false,
       false,

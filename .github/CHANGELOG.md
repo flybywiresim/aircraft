@@ -8,6 +8,7 @@
 
 1. [FBW] Improved speed dependent roll law model - @IbrahimK42 (IbrahimK42)
 1. [SOUND] Pack sounds use new APU model variables - @tracernz (Mike)
+1. [HYD] Hydraulic system updated. Multiple sections. Better regulation - @Crocket63 (crocket)
 1. [EFB] Added in-flight refueling capabilities - @Taz5150 (TazX [Z+2]#0405)
 1. [EFB] Moved setting for MCDU keyboard input into the EFB - @2hwk (2Cas#1022)
 1. [HYD] Placeholder simvar to trigger ptu high pitch sound - @crocket6 (crocket)
@@ -38,8 +39,6 @@
 1. [LIGHTS] Add TO/TAXI LT logic, ambience to TAXI/TO/LDG LT + min. changes to strobe/beacon/nav - @bouveng (Johan Bouveng)
 1. [FMGC] Fixed issue with TO flight phase transition when no V2 is entered and airport is near sea level - @aguther (Andreas Guther)
 1. [MISC] Fix for incrementing ISIS pressure values - @RichardPilbery (tricky_dicky#3571)
-<<<<<<< HEAD
-=======
 1. [MCDU] Fix GPS ground speed on IRS status page to show ground speed in knots rather than meters/second - @donstim (donbikes#4084)
 1. [MCDU] Fixed length limitation for system messages - @derl30n (Leon)
 1. [FMGC] Use correct variable to determine lateral AP mode for APPROACH phase switch - @aguther (Andreas Guther)
@@ -67,7 +66,22 @@
 1. [AP] Added support for event AUTOPILOT_DISENGAGE_SET to disengage AP - @aguther (Andreas Guther)
 1. [AP] Reduced speed margin of speed protection to 5 kn - @aguther (Andreas Guther)
 1. [MODEL] Removed glass due to issues with brightness in clouds since SU6 - @aguther (Andreas Guther)
->>>>>>> d3b39374d923c4c2d3a45680b765096788b37613
+1. [FBW] Reduced rotation law maximum pitch rate from 12°/s to 8°/s - @aguther (Andreas Guther)
+1. [AP] Added support for events AP_MACH_INC/DEC and AP_ALT_INC/DEC - @aguther (Andreas Guther)
+1. [SOUND] Added ALT increment selector and fixed ISIS sounds - @ImenesFBW (Imenes)
+1. [AP] Added support for other default events to basically push/pull all FCU buttons - @aguther (Andreas Guther)
+1. [MCDU] Fix backlight, brightness - @tracernz (Mike)
+1. [MODEL] Adjust heat effect on ENG1+2 - @bouveng (Johan Bouveng)
+1. [PFD] Fixed speed tape outline at low speeds - @beheh (Benedict Etzel)
+1. [FM] Fetch transition alt and level from SimBrief - @tracernz (Mike)
+1. [FBW] Intermediate support for aileron keyboard events - @aguther (Andreas Guther)
+1. [FLIGHT MODEL] Fixed station locations and loads consistent with real A320 W&B manual - @ghosh9691
+1. [MCDU] Boarding and W/B AOC Pages update with Simbrief Integration - @viniciusfont
+1. [MCDU] Updated boarding logic, separate loading for pax and baggage - @sidnov (Sid)
+1. [FLIGHT MODEL] Updated OEW/dry operating weight, max payload, station weights - @sidnov (Sid)
+1. [EFB/UI] Override in-game fuel UI and fuel initialization - @Taz5150 (TazX [Z+2]#0405)
+1. [FCU] FCU backlight is fed from proper bus - @tracernz (Mike)
+1. [CLK/ND] Fixed/Improved chrono & ET behavior on time shift - @vkrizan (Viliam)
 
 ## 0.7.0
 
@@ -249,8 +263,6 @@
 1. [MISC] Sync settings across instruments - @tracernz (Mike)
 1. [MCDU] Remove some settings from MCDU the are now in the FlyPad - @tracernz (Mike)
 1. [EFB] Persist sound and EFB settings correctly - @tracernz (Mike)
-1. [FLIGHT MODEL] Fixed station locations and loads consistent with real A320 W&B manual - @ghosh9691
-1. [MCDU] Boarding and W/B AOC Pages update with Simbrief Integration - @viniciusfont
 
 ## 0.6.0
 

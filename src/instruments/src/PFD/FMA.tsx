@@ -3,7 +3,8 @@ import { createDeltaTimeCalculator, getSimVar, renderTarget } from '../util.js';
 
 export const FMA = ({ isAttExcessive }) => {
     const activeLateralMode = getSimVar('L:A32NX_FMA_LATERAL_MODE', 'number');
-    const sharedModeActive = activeLateralMode === 32 || activeLateralMode === 33 || activeLateralMode === 34;
+    const activeVerticalMode = getSimVar('L:A32NX_FMA_VERTICAL_MODE', 'enum');
+    const sharedModeActive = activeLateralMode === 32 || activeLateralMode === 33 || activeLateralMode === 34 || (activeLateralMode === 20 && activeVerticalMode === 24);
     const engineMessage = getSimVar('L:A32NX_AUTOTHRUST_MODE_MESSAGE', 'enum');
     const BC3Message = getSimVar('L:A32NX_BC3Message', 'enum');
     const AB3Message = (getSimVar('L:A32NX_MachPreselVal', 'mach') !== -1
@@ -361,6 +362,7 @@ const B2Cell = () => {
     const clbArmed = (armedVerticalBitmask >> 2) & 1;
     const desArmed = (armedVerticalBitmask >> 3) & 1;
     const gsArmed = (armedVerticalBitmask >> 4) & 1;
+    const finalArmed = (armedVerticalBitmask >> 5) & 1;
 
     let text1: string | null;
     let color1 = 'Cyan';
@@ -383,10 +385,9 @@ const B2Cell = () => {
     //     break;
     if (gsArmed) {
         text2 = 'G/S';
+    } else if (finalArmed) {
+        text2 = 'FINAL';
     } else {
-    // case 3:
-    //     text2 = 'FINAL';
-    //     break;
         text2 = null;
     }
 
@@ -403,54 +404,67 @@ const B2Cell = () => {
 const C1Cell = () => {
     const activeLateralMode = getSimVar('L:A32NX_FMA_LATERAL_MODE', 'number');
 
+    const armedVerticalBitmask = getSimVar('L:A32NX_FMA_VERTICAL_ARMED', 'number');
+    const finalArmed = (armedVerticalBitmask >> 5) & 1;
+
+    const activeVerticalMode = getSimVar('L:A32NX_FMA_VERTICAL_MODE', 'enum');
+
     let text: string;
-    switch (activeLateralMode) {
-    case 50:
+    let id = 0;
+    if (activeLateralMode === 50) {
         text = 'GA TRK';
-        break;
+        id = 1;
+    } else if (activeLateralMode === 30) {
+        text = 'LOC *';
+        id = 3;
+    } else if (activeLateralMode === 10) {
+        text = 'HDG';
+        id = 5;
+    } else if (activeLateralMode === 40) {
+        text = 'RWY';
+        id = 6;
+    } else if (activeLateralMode === 41) {
+        text = 'RWY TRK';
+        id = 7;
+    } else if (activeLateralMode === 11) {
+        text = 'TRACK';
+        id = 8;
+    } else if (activeLateralMode === 31) {
+        text = 'LOC';
+        id = 10;
+    } else if (activeLateralMode === 20 && !finalArmed && activeVerticalMode !== 24) {
+        text = 'NAV';
+        id = 13;
+    } else if (activeLateralMode === 20 && finalArmed && activeVerticalMode !== 24) {
+        text = 'APP NAV';
+        id = 12;
+    } else {
+        return null;
+    }
     // case 2:
     //     text = 'LOC B/C*';
+    //     id = 2;
     //     break;
-    case 30:
-        text = 'LOC *';
-        break;
     // case 4:
     //     text = 'F-LOC*';
+    //     id = 4;
     //     break;
-    case 10:
-        text = 'HDG';
-        break;
-    case 40:
-        text = 'RWY';
-        break;
-    case 41:
-        text = 'RWY TRK';
-        break;
-    case 11:
-        text = 'TRACK';
-        break;
     // case 9:
     //     text = 'LOC B/C';
+    //     id = 9;
     //     break;
-    case 31:
-        text = 'LOC';
-        break;
     // case 11:
     //     text = 'F-LOC';
+    //     id = 11;
     //     break;
     // case 12:
     //     text = 'APP NAV';
+    //     id = 12;
     //     break;
-    case 20:
-        text = 'NAV';
-        break;
-    default:
-        return null;
-    }
 
     return (
         <g>
-            <ShowForSeconds timer={10} id={activeLateralMode}>
+            <ShowForSeconds timer={10} id={id}>
                 <path className="NormalStroke White" d="m100.87 1.8143v6.0476h-33.075l1e-6 -6.0476z" />
             </ShowForSeconds>
             <text className="FontMedium MiddleAlign Green" x="84.490074" y="6.9027362">{text}</text>
@@ -464,6 +478,11 @@ const C2Cell = () => {
     const navArmed = (armedLateralBitmask >> 0) & 1;
     const locArmed = (armedLateralBitmask >> 1) & 1;
 
+    const armedVerticalBitmask = getSimVar('L:A32NX_FMA_VERTICAL_ARMED', 'number');
+    const finalArmed = (armedVerticalBitmask >> 5) & 1;
+
+    const activeVerticalMode = getSimVar('L:A32NX_FMA_VERTICAL_MODE', 'enum');
+
     let text: string;
     if (locArmed) {
         // case 1:
@@ -473,9 +492,8 @@ const C2Cell = () => {
         // case 3:
         //     text = 'F-LOC';
         //     break;
-        // case 4:
-        //     text = 'APP NAV';
-        //     break;
+    } else if (navArmed && (finalArmed || activeVerticalMode === 24)) {
+        text = 'APP NAV';
     } else if (navArmed) {
         text = 'NAV';
     } else {
@@ -488,29 +506,30 @@ const C2Cell = () => {
 };
 
 const BC1Cell = () => {
-    const SharedAPMode = getSimVar('L:A32NX_FMA_LATERAL_MODE', 'number');
+    const activeVerticalMode = getSimVar('L:A32NX_FMA_VERTICAL_MODE', 'enum');
+    const activeLateralMode = getSimVar('L:A32NX_FMA_LATERAL_MODE', 'number');
 
     let text: string;
-    switch (SharedAPMode) {
-    case 34:
+    let id = 0;
+    if (activeVerticalMode === 34) {
         text = 'ROLL OUT';
-        break;
-    case 33:
+        id = 1;
+    } else if (activeVerticalMode === 33) {
         text = 'FLARE';
-        break;
-    case 32:
+        id = 2;
+    } else if (activeVerticalMode === 32) {
         text = 'LAND';
-        break;
-    // case 4:
-    //     text = 'FINAL APP';
-    //     break;
-    default:
+        id = 3;
+    } else if (activeVerticalMode === 24 && activeLateralMode === 20) {
+        text = 'FINAL APP';
+        id = 4;
+    } else {
         return null;
     }
 
     return (
         <g>
-            <ShowForSeconds timer={9} id={SharedAPMode}>
+            <ShowForSeconds timer={9} id={id}>
                 <path className="NormalStroke White" d="m50.178 1.8143h35.174v6.0476h-35.174z" />
             </ShowForSeconds>
             <text className="FontMedium MiddleAlign Green" x="67.9795" y="6.8893085">{text}</text>
