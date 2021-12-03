@@ -63,6 +63,11 @@ impl PidController {
         self.reset_error();
     }
 
+    pub fn reset_with_output(&mut self, output: f64) {
+        self.output = output;
+        self.reset_error();
+    }
+
     pub fn next_control_output(&mut self, measurement: f64, delta_time: Option<Duration>) -> f64 {
         let mut dt = 1.;
         if let Some(delta) = delta_time {

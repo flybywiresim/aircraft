@@ -98,7 +98,7 @@ struct CoreHydraulicForce {
     pid_controller: PidController,
 }
 impl CoreHydraulicForce {
-    const DEFAULT_I_GAIN: f64 = 6.;
+    const DEFAULT_I_GAIN: f64 = 5.;
     const DEFAULT_P_GAIN: f64 = 0.05;
     const DEFAULT_FORCE_GAIN: f64 = 200000.;
     const OPEN_LOOP_GAIN: f64 = 1.;
@@ -140,7 +140,7 @@ impl CoreHydraulicForce {
             rod_side_area,
             last_control_force: Force::new::<newton>(0.),
             force_raw: Force::new::<newton>(0.),
-            force_filtered: LowPassFilter::<Force>::new(Duration::from_millis(50)),
+            force_filtered: LowPassFilter::<Force>::new(Duration::from_millis(80)),
 
             max_force: max_force,
             ki_gain: Self::DEFAULT_I_GAIN,
@@ -276,7 +276,8 @@ impl CoreHydraulicForce {
     }
 
     fn go_to_position_control(&mut self) {
-        self.pid_controller.reset();
+        self.pid_controller
+            .reset_with_output(self.force_raw.get::<newton>());
         self.current_mode = LinearActuatorMode::PositionControl;
     }
 
@@ -1490,7 +1491,7 @@ mod tests {
             800000.,
             15000.,
             50000.,
-            500000.,
+            2000000.,
             [1., 1., 1., 1., 1., 1.],
             [0., 0.2, 0.21, 0.79, 0.8, 1.],
         )
