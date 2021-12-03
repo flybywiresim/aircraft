@@ -1713,6 +1713,10 @@
         <Sound WwiseEvent="gmain" WwiseData="true" Continuous="false" NodeName="PEDALS_LEFT" SimVar="GEAR TOTAL PCT EXTENDED" Units="PERCENT">
             <Range LowerBound="0.05" UpperBound="0.95" />
         </Sound>
+        
+        <Sound WwiseEvent="gmain" WwiseData="true" Continuous="false" NodeName="WHEELS_L" SimVar="GEAR TOTAL PCT EXTENDED" Units="PERCENT">
+            <Range LowerBound="0.05" UpperBound="0.95" />
+        </Sound>
 
         <!-- INSTRUMENTS FOLEYS  =========================================================================  -->
 

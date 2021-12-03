@@ -93,6 +93,20 @@ struct ap_raw_data
 
 #endif
 
+#ifndef DEFINED_TYPEDEF_FOR_fm_requested_vertical_mode_
+#define DEFINED_TYPEDEF_FOR_fm_requested_vertical_mode_
+
+typedef enum {
+  fm_requested_vertical_mode_NONE = 0,
+  fm_requested_vertical_mode_SPEED_THRUST,
+  fm_requested_vertical_mode_VPATH_THRUST,
+  fm_requested_vertical_mode_VPATH_SPEED,
+  fm_requested_vertical_mode_FPA_SPEED,
+  fm_requested_vertical_mode_VS_SPEED
+} fm_requested_vertical_mode;
+
+#endif
+
 #ifndef DEFINED_TYPEDEF_FOR_ap_raw_sm_input_
 #define DEFINED_TYPEDEF_FOR_ap_raw_sm_input_
 
@@ -127,6 +141,11 @@ struct ap_raw_sm_input
   boolean_T is_SPEED_managed;
   boolean_T FDR_event;
   real_T Phi_loc_c;
+  fm_requested_vertical_mode FM_requested_vertical_mode;
+  real_T FM_H_c_ft;
+  real_T FM_H_dot_c_fpm;
+  boolean_T FM_rnav_appr_selected;
+  boolean_T FM_final_des_can_engage;
 };
 
 #endif
@@ -327,6 +346,7 @@ typedef enum {
   vertical_mode_ALT_CST_CPT = 21,
   vertical_mode_CLB = 22,
   vertical_mode_DES = 23,
+  vertical_mode_FINAL_DES = 24,
   vertical_mode_GS_CPT = 30,
   vertical_mode_GS_TRACK = 31,
   vertical_mode_LAND = 32,
@@ -362,7 +382,8 @@ typedef enum {
   vertical_law_FPA,
   vertical_law_GS,
   vertical_law_FLARE,
-  vertical_law_SRS
+  vertical_law_SRS,
+  vertical_law_VPATH
 } vertical_law;
 
 #endif
@@ -388,6 +409,7 @@ struct ap_vertical_armed
   boolean_T ALT_CST;
   boolean_T CLB;
   boolean_T DES;
+  boolean_T FINAL_DES;
   boolean_T GS;
 };
 
@@ -404,6 +426,7 @@ struct ap_vertical_condition
   boolean_T ALT_CST_CPT;
   boolean_T CLB;
   boolean_T DES;
+  boolean_T FINAL_DES;
   boolean_T GS_CPT;
   boolean_T GS_TRACK;
   boolean_T LAND;

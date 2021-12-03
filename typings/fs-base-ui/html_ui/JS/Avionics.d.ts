@@ -1,8 +1,6 @@
 /// <reference path="../../../types.d.ts" />
 /// <reference path="./Types.d.ts" />
 
-import {Heading, Latitude, NauticalMiles, Longitude} from "../../../types";
-
 declare global {
     namespace Avionics {
         class Utils {
@@ -31,23 +29,25 @@ declare global {
             /**
              * Computes the distance in nautical miles between two locations.
              */
-            static computeDistance(x: LatLong | LatLongAlt, y: LatLong | LatLongAlt): NauticalMiles;
+            static computeDistance(x: LatLongData, y: LatLongData): NauticalMiles;
 
             /**
              * Computes the great circle heading between two locations.
              */
-            static computeGreatCircleHeading(from: LatLong | LatLongAlt, to: LatLong | LatLongAlt): Heading;
+            static computeGreatCircleHeading(from: LatLongData, to: LatLongData): Heading;
 
             /**
              * Computes the great circle distance in nautical miles between two locations.
              */
-            static computeGreatCircleDistance(x: LatLong | LatLongAlt, y: LatLong | LatLongAlt): NauticalMiles;
+            static computeGreatCircleDistance(x: LatLongData, y: LatLongData): NauticalMiles;
 
             static lerpAngle(from: number, to: number, d: number): number;
 
             static meanAngle(a: number, b: number): number;
 
             static diffAngle(a: number, b: number): number;
+
+            static clampAngle(a: number): number;
 
             static fmod(a: number, b: number): number;
 
@@ -194,6 +194,14 @@ declare global {
             remove(key: any): void;
             exists(key: any): boolean;
         }
+    }
+
+    declare class BaseInstrument {
+        addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+
+        facilityLoader: FacilityLoader;
+
+        instrumentIdentifier: string;
     }
 }
 
