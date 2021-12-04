@@ -39,8 +39,8 @@ use systems::{
     shared::{
         interpolation, DelayedFalseLogicGate, DelayedPulseTrueLogicGate, DelayedTrueLogicGate,
         ElectricalBusType, ElectricalBuses, EmergencyElectricalRatPushButton,
-        EmergencyElectricalState, EngineFirePushButtons, LgciuInterface,
-        RamAirTurbineHydraulicCircuitPressurised,
+        EmergencyElectricalState, EngineFirePushButtons, FeedbackPositionPickoffUnit,
+        LgciuInterface, RamAirTurbineHydraulicCircuitPressurised,
     },
     simulation::{
         InitContext, Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -113,9 +113,6 @@ impl A320HydraulicCircuitFactory {
         )
     }
 }
-
-mod flaps_computer;
-use flaps_computer::SlatFlapComplex;
 
 struct A320CargoDoorFactory {}
 impl A320CargoDoorFactory {
@@ -221,8 +218,6 @@ pub(super) struct A320Hydraulic {
     forward_cargo_door_controller: A320DoorController,
     aft_cargo_door: CargoDoor,
     aft_cargo_door_controller: A320DoorController,
-
-    slats_flaps_complex: SlatFlapComplex,
 }
 impl A320Hydraulic {
     const FLAP_FFPU_TO_SURFACE_ANGLE_BREAKPTS: [f64; 12] = [
@@ -365,7 +360,8 @@ impl A320Hydraulic {
 
             braking_force: A320BrakingForce::new(context),
 
-            flap_system: FlapSlatAssembly::new(context,
+            flap_system: FlapSlatAssembly::new(
+                context,
                 "FLAPS",
                 Volume::new::<cubic_inch>(0.32),
                 AngularVelocity::new::<radian_per_second>(0.13),
@@ -376,7 +372,8 @@ impl A320Hydraulic {
                 Self::FLAP_FFPU_TO_SURFACE_ANGLE_BREAKPTS,
                 Self::FLAP_FFPU_TO_SURFACE_ANGLE_DEGREES,
             ),
-            slat_system: FlapSlatAssembly::new(context,
+            slat_system: FlapSlatAssembly::new(
+                context,
                 "SLATS",
                 Volume::new::<cubic_inch>(0.32),
                 AngularVelocity::new::<radian_per_second>(0.08),
@@ -387,7 +384,7 @@ impl A320Hydraulic {
                 Self::SLAT_FFPU_TO_SURFACE_ANGLE_BREAKPTS,
                 Self::SLAT_FFPU_TO_SURFACE_ANGLE_DEGREES,
             ),
-            slats_flaps_complex: SlatFlapComplex::new(),
+            slats_flaps_complex: SlatFlapComplex::new(context),
 
             forward_cargo_door: A320CargoDoorFactory::new_a320_cargo_door(
                 context,
@@ -403,8 +400,6 @@ impl A320Hydraulic {
                 Self::AFT_CARGO_DOOR_ID,
             ),
             aft_cargo_door_controller: A320DoorController::new(context, Self::AFT_CARGO_DOOR_ID),
-
-            slats_flaps_complex: SlatFlapComplex::new(context),
         }
     }
 
@@ -551,22 +546,21 @@ impl A320Hydraulic {
             &self.braking_circuit_altn,
         );
 
-
         self.slats_flaps_complex
             .update(context, &self.flap_system, &self.slat_system);
 
         self.flap_system.update(
             self.slats_flaps_complex.flap_demand(),
             self.slats_flaps_complex.flap_demand(),
-            self.green_loop.pressure(),
-            self.yellow_loop.pressure(),
+            self.green_circuit.system_pressure(),
+            self.yellow_circuit.system_pressure(),
             context,
         );
         self.slat_system.update(
             self.slats_flaps_complex.slat_demand(),
             self.slats_flaps_complex.slat_demand(),
-            self.blue_loop.pressure(),
-            self.green_loop.pressure(),
+            self.blue_circuit.system_pressure(),
+            self.green_circuit.system_pressure(),
             context,
         );
         println!(
@@ -576,8 +570,8 @@ impl A320Hydraulic {
                 .unwrap_or(Angle::new::<degree>(0.))
                 .get::<degree>(),
             self.flap_system.position_feedback().get::<degree>(),
-            self.green_loop.pressure().get::<psi>(),
-            self.yellow_loop.pressure().get::<psi>(),
+            self.green_circuit.system_pressure().get::<psi>(),
+            self.yellow_circuit.system_pressure().get::<psi>(),
         );
         println!(
             "->FlapGreenRPM {:.1} FlapYellowRPM {:.1} ",
@@ -592,8 +586,8 @@ impl A320Hydraulic {
                 .unwrap_or(Angle::new::<degree>(0.))
                 .get::<degree>(),
             self.slat_system.position_feedback().get::<degree>(),
-            self.blue_loop.pressure().get::<psi>(),
-            self.green_loop.pressure().get::<psi>(),
+            self.blue_circuit.system_pressure().get::<psi>(),
+            self.green_circuit.system_pressure().get::<psi>(),
         );
 
         println!(
@@ -611,13 +605,6 @@ impl A320Hydraulic {
         self.aft_cargo_door_controller.update(
             context,
             &self.aft_cargo_door,
-            self.yellow_circuit.system_pressure(),
-        );
-
-        self.slats_flaps_complex.update(
-            context,
-            self.green_circuit.system_pressure(),
-            self.blue_circuit.system_pressure(),
             self.yellow_circuit.system_pressure(),
         );
 
@@ -3072,24 +3059,24 @@ mod tests {
             }
 
             fn set_flaps_handle_position(mut self, pos: u8) -> Self {
-                self.write("FLAPS_HANDLE_INDEX", pos as f64);
+                self.write_by_name("FLAPS_HANDLE_INDEX", pos as f64);
                 self
             }
 
             fn get_flaps_left_position_percent(&mut self) -> f64 {
-                self.read("LEFT_FLAPS_POSITION_PERCENT")
+                self.read_by_name("LEFT_FLAPS_POSITION_PERCENT")
             }
 
             fn get_flaps_right_position_percent(&mut self) -> f64 {
-                self.read("RIGHT_FLAPS_POSITION_PERCENT")
+                self.read_by_name("RIGHT_FLAPS_POSITION_PERCENT")
             }
 
             fn get_slats_left_position_percent(&mut self) -> f64 {
-                self.read("LEFT_SLATS_POSITION_PERCENT")
+                self.read_by_name("LEFT_SLATS_POSITION_PERCENT")
             }
 
             fn get_slats_right_position_percent(&mut self) -> f64 {
-                self.read("RIGHT_SLATS_POSITION_PERCENT")
+                self.read_by_name("RIGHT_SLATS_POSITION_PERCENT")
             }
 
             fn ac_bus_1_lost(mut self) -> Self {

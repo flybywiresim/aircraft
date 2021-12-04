@@ -1,3 +1,5 @@
+use systems::shared::FeedbackPositionPickoffUnit;
+
 use systems::simulation::{
     InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
     SimulatorWriter, UpdateContext, VariableIdentifier, Write,
@@ -229,11 +231,6 @@ struct SlatFlapGear {
     right_position_angle_id: VariableIdentifier,
     surface_type: String,
 }
-
-pub trait FeedbackPositionPickoffUnit {
-    fn angle(&self) -> Angle;
-}
-
 impl FeedbackPositionPickoffUnit for SlatFlapGear {
     fn angle(&self) -> Angle {
         self.current_angle
@@ -312,8 +309,6 @@ impl SimulationElement for SlatFlapGear {
 pub struct SlatFlapComplex {
     sfcc: SlatFlapControlComputer,
     flaps_handle: FlapsHandle,
-    flap_gear: SlatFlapGear,
-    slat_gear: SlatFlapGear,
 }
 
 impl SlatFlapComplex {
@@ -321,47 +316,31 @@ impl SlatFlapComplex {
         Self {
             sfcc: SlatFlapControlComputer::new(context),
             flaps_handle: FlapsHandle::new(context),
-            flap_gear: SlatFlapGear::new(
-                context,
-                AngularVelocity::new::<degree_per_second>(2.),
-                Angle::new::<degree>(40.),
-                "FLAPS",
-            ),
-            slat_gear: SlatFlapGear::new(
-                context,
-                AngularVelocity::new::<degree_per_second>(1.5),
-                Angle::new::<degree>(27.),
-                "SLATS",
-            ),
         }
     }
 
     pub fn update(
         &mut self,
         context: &UpdateContext,
-        hyd_green_pressure: Pressure,
-        hyd_blue_pressure: Pressure,
-        hyd_yellow_pressure: Pressure,
+        flaps_feedback: &impl FeedbackPositionPickoffUnit,
+        slats_feedback: &impl FeedbackPositionPickoffUnit,
     ) {
-        self.sfcc.update(
-            context,
-            &self.flaps_handle,
-            &self.flap_gear,
-            &self.slat_gear,
-        );
-        self.flap_gear
-            .update(context, &self.sfcc, hyd_green_pressure, hyd_yellow_pressure);
-        self.slat_gear
-            .update(context, &self.sfcc, hyd_green_pressure, hyd_blue_pressure);
+        self.sfcc
+            .update(context, &self.flaps_handle, flaps_feedback, slats_feedback);
+    }
+
+    pub fn flap_demand(&self) -> Option<Angle> {
+        self.sfcc.signal_demanded_angle("FLAPS")
+    }
+
+    pub fn slat_demand(&self) -> Option<Angle> {
+        self.sfcc.signal_demanded_angle("SLATS")
     }
 }
-
 impl SimulationElement for SlatFlapComplex {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.flaps_handle.accept(visitor);
         self.sfcc.accept(visitor);
-        self.flap_gear.accept(visitor);
-        self.slat_gear.accept(visitor);
         visitor.visit(self);
     }
 }
@@ -381,7 +360,10 @@ mod tests {
         blue_hydraulic_pressure_id: VariableIdentifier,
         yellow_hydraulic_pressure_id: VariableIdentifier,
 
+        flap_gear: SlatFlapGear,
+        slat_gear: SlatFlapGear,
         slat_flap_complex: SlatFlapComplex,
+
         green_pressure: Pressure,
         blue_pressure: Pressure,
         yellow_pressure: Pressure,
@@ -395,7 +377,22 @@ mod tests {
                 blue_hydraulic_pressure_id: context.get_identifier("HYD_BLUE_PRESSURE".to_owned()),
                 yellow_hydraulic_pressure_id: context
                     .get_identifier("HYD_YELLOW_PRESSURE".to_owned()),
+
+                flap_gear: SlatFlapGear::new(
+                    context,
+                    AngularVelocity::new::<degree_per_second>(2.),
+                    Angle::new::<degree>(40.),
+                    "FLAPS",
+                ),
+                slat_gear: SlatFlapGear::new(
+                    context,
+                    AngularVelocity::new::<degree_per_second>(1.5),
+                    Angle::new::<degree>(27.),
+                    "SLATS",
+                ),
+
                 slat_flap_complex: SlatFlapComplex::new(context),
+
                 green_pressure: Pressure::new::<psi>(0.),
                 blue_pressure: Pressure::new::<psi>(0.),
                 yellow_pressure: Pressure::new::<psi>(0.),
@@ -405,11 +402,19 @@ mod tests {
 
     impl Aircraft for A320FlapsTestAircraft {
         fn update_after_power_distribution(&mut self, context: &UpdateContext) {
-            self.slat_flap_complex.update(
+            self.slat_flap_complex
+                .update(context, &self.flap_gear, &self.slat_gear);
+            self.flap_gear.update(
                 context,
+                &self.slat_flap_complex.sfcc,
                 self.green_pressure,
-                self.blue_pressure,
                 self.yellow_pressure,
+            );
+            self.slat_gear.update(
+                context,
+                &self.slat_flap_complex.sfcc,
+                self.blue_pressure,
+                self.green_pressure,
             );
         }
     }
@@ -417,6 +422,8 @@ mod tests {
     impl SimulationElement for A320FlapsTestAircraft {
         fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
             self.slat_flap_complex.accept(visitor);
+            self.flap_gear.accept(visitor);
+            self.slat_gear.accept(visitor);
             visitor.visit(self);
         }
 
@@ -432,7 +439,7 @@ mod tests {
     }
 
     impl A320FlapsTestBed {
-        const HYD_TIME_STEP_MILLIS: u64 = 100;
+        const HYD_TIME_STEP_MILLIS: u64 = 33;
 
         fn new() -> Self {
             Self {
@@ -503,11 +510,11 @@ mod tests {
         }
 
         fn get_flaps_angle(&self) -> f64 {
-            self.query(|a| a.slat_flap_complex.flap_gear.current_angle.get::<degree>())
+            self.query(|a| a.flap_gear.current_angle.get::<degree>())
         }
 
         fn get_slats_angle(&self) -> f64 {
-            self.query(|a| a.slat_flap_complex.slat_gear.current_angle.get::<degree>())
+            self.query(|a| a.slat_gear.current_angle.get::<degree>())
         }
 
         fn test_flap_conf(
