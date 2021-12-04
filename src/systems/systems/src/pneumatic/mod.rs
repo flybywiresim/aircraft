@@ -295,10 +295,10 @@ read_write_enum!(EngineState);
 impl From<f64> for EngineState {
     fn from(value: f64) -> Self {
         match value as u8 {
-            0 => EngineState::Off,
-            1 => EngineState::On,
-            2 => EngineState::Starting,
-            3 => EngineState::Shutting,
+            0 | 10 => EngineState::Off,
+            1 | 11 => EngineState::On,
+            2 | 12 => EngineState::Starting,
+            3 | 13 => EngineState::Shutting,
             _ => panic!("EngineState value does not correspond to any enum member"),
         }
     }
