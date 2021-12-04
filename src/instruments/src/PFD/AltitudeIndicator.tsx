@@ -1,5 +1,5 @@
 import React from 'react';
-import { Arinc429Word } from '@instruments/common/arinc429';
+import { Arinc429Word } from '@shared/arinc429';
 import { VerticalTape } from './PFDUtils';
 import { DigitalAltitudeReadout } from './DigitalAltitudeReadout';
 import { getSimVar } from '../util.js';

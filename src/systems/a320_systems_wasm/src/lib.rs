@@ -1,6 +1,11 @@
 #![cfg(any(target_arch = "wasm32", doc))]
-use std::time::{Duration, Instant};
+use std::{
+    error::Error,
+    time::{Duration, Instant},
+};
 
+use a320_systems::A320;
+use msfs::sim_connect;
 use msfs::{
     legacy::{AircraftVariable, NamedVariable},
     sim_connect::SimConnect,
@@ -8,7 +13,6 @@ use msfs::{
     sys,
 };
 
-use a320_systems::A320;
 use systems::{
     failures::FailureType,
     simulation::{VariableIdentifier, VariableRegistry},
@@ -19,11 +23,11 @@ use systems_wasm::{
 };
 
 #[msfs::gauge(name=systems)]
-async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn std::error::Error>> {
+async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     let mut sim_connect = gauge.open_simconnect("systems")?;
 
     let (mut simulation, mut handler) =
-        MsfsSimulationBuilder::new("A32NX_".to_owned(), sim_connect.as_mut())
+        MsfsSimulationBuilder::new("A32NX_".to_owned(), sim_connect.as_mut().get_mut())
             .with_electrical_buses(vec![
                 ("AC_1", 2),
                 ("AC_1", 2),
@@ -44,6 +48,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn std::error::Error
             .with_auxiliary_power_unit("OVHD_APU_START_PB_IS_AVAILABLE".to_owned(), 8)?
             .with::<Brakes>()?
             .with::<Autobrakes>()?
+            .with::<Flaps>()?
             .with::<CargoDoors>()?
             .with_failures(vec![
                 (24_000, FailureType::TransformerRectifier(1)),
@@ -107,7 +112,6 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn std::error::Error
             .provides_aircraft_variable("PLANE HEADING DEGREES MAGNETIC", "Degrees", 0)?
             .provides_aircraft_variable("PLANE LATITUDE", "degree latitude", 0)?
             .provides_aircraft_variable("PLANE LONGITUDE", "degree longitude", 0)?
-            .provides_aircraft_variable("PUSHBACK ANGLE", "Radian", 0)?
             .provides_aircraft_variable("PUSHBACK STATE", "Enum", 0)?
             .provides_aircraft_variable("SEA LEVEL PRESSURE", "Millibars", 0)?
             .provides_aircraft_variable("SIM ON GROUND", "Bool", 0)?
@@ -120,13 +124,294 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn std::error::Error
             .provides_aircraft_variable("TURB ENG CORRECTED N2", "Percent", 2)?
             .provides_aircraft_variable("UNLIMITED FUEL", "Bool", 0)?
             .provides_aircraft_variable("VELOCITY WORLD Y", "feet per minute", 0)?
-            .build(A320::new);
+            .build(A320::new)?;
 
     while let Some(event) = gauge.next_event().await {
-        handler.handle(event, &mut simulation, sim_connect.as_mut())?;
+        handler.handle(event, &mut simulation, sim_connect.as_mut().get_mut())?;
     }
 
     Ok(())
+}
+
+#[sim_connect::data_definition]
+struct FlapsSurface {
+    #[name = "TRAILING EDGE FLAPS LEFT PERCENT"]
+    #[unit = "Percent"]
+    left_flap: f64,
+
+    #[name = "TRAILING EDGE FLAPS RIGHT PERCENT"]
+    #[unit = "Percent"]
+    right_flap: f64,
+}
+
+#[sim_connect::data_definition]
+struct SlatsSurface {
+    #[name = "LEADING EDGE FLAPS LEFT PERCENT"]
+    #[unit = "Percent"]
+    left_slat: f64,
+
+    #[name = "LEADING EDGE FLAPS RIGHT PERCENT"]
+    #[unit = "Percent"]
+    right_slat: f64,
+}
+
+#[sim_connect::data_definition]
+struct FlapsHandleIndex {
+    #[name = "FLAPS HANDLE INDEX"]
+    #[unit = "Number"]
+    index: f64,
+}
+
+struct Flaps {
+    flaps_left_position_id: VariableIdentifier,
+    flaps_right_position_id: VariableIdentifier,
+    slats_left_position_id: VariableIdentifier,
+    slats_right_position_id: VariableIdentifier,
+
+    //IDs of the flaps handle events
+    id_flaps_incr: sys::DWORD,
+    id_flaps_decr: sys::DWORD,
+    id_flaps_1: sys::DWORD,
+    id_flaps_2: sys::DWORD,
+    id_flaps_3: sys::DWORD,
+    id_flaps_set: sys::DWORD,
+    id_axis_flaps_set: sys::DWORD,
+    id_flaps_down: sys::DWORD,
+    id_flaps_up: sys::DWORD,
+
+    //LVars to communicate between the flap movement logic
+    //and the simulation animation
+    flaps_handle_index_sim_var: NamedVariable,
+    flaps_handle_percent_sim_var: NamedVariable,
+    left_flaps_position_sim_var: NamedVariable,
+    right_flaps_position_sim_var: NamedVariable,
+    left_slats_position_sim_var: NamedVariable,
+    right_slats_position_sim_var: NamedVariable,
+
+    msfs_flaps_handle_index: FlapsHandleIndex,
+    flaps_surface_sim_object: FlapsSurface,
+    slats_surface_sim_object: SlatsSurface,
+    flaps_handle_position: u8,
+    left_flaps_position: f64,
+    right_flaps_position: f64,
+
+    left_slats_position: f64,
+    right_slats_position: f64,
+}
+impl MsfsAspectCtor for Flaps {
+    fn new(
+        registry: &mut MsfsVariableRegistry,
+        sim_connect: &mut SimConnect,
+    ) -> Result<Self, Box<dyn Error>> {
+        Ok(Self {
+            flaps_left_position_id: registry.get("LEFT_FLAPS_POSITION_PERCENT".to_owned()),
+            flaps_right_position_id: registry.get("RIGHT_FLAPS_POSITION_PERCENT".to_owned()),
+            slats_left_position_id: registry.get("LEFT_SLATS_POSITION_PERCENT".to_owned()),
+            slats_right_position_id: registry.get("RIGHT_SLATS_POSITION_PERCENT".to_owned()),
+
+            id_flaps_incr: sim_connect.map_client_event_to_sim_event("FLAPS_INCR", true)?,
+            id_flaps_decr: sim_connect.map_client_event_to_sim_event("FLAPS_DECR", true)?,
+            id_flaps_1: sim_connect.map_client_event_to_sim_event("FLAPS_1", true)?,
+            id_flaps_2: sim_connect.map_client_event_to_sim_event("FLAPS_2", true)?,
+            id_flaps_3: sim_connect.map_client_event_to_sim_event("FLAPS_3", true)?,
+            id_flaps_set: sim_connect.map_client_event_to_sim_event("FLAPS_SET", true)?,
+            id_axis_flaps_set: sim_connect.map_client_event_to_sim_event("AXIS_FLAPS_SET", true)?,
+            id_flaps_down: sim_connect.map_client_event_to_sim_event("FLAPS_DOWN", true)?,
+            id_flaps_up: sim_connect.map_client_event_to_sim_event("FLAPS_UP", true)?,
+
+            flaps_handle_index_sim_var: NamedVariable::from("A32NX_FLAPS_HANDLE_INDEX"),
+            flaps_handle_percent_sim_var: NamedVariable::from("A32NX_FLAPS_HANDLE_PERCENT"),
+            left_flaps_position_sim_var: NamedVariable::from("A32NX_LEFT_FLAPS_POSITION_PERCENT"),
+            right_flaps_position_sim_var: NamedVariable::from("A32NX_RIGHT_FLAPS_POSITION_PERCENT"),
+            left_slats_position_sim_var: NamedVariable::from("A32NX_LEFT_SLATS_POSITION_PERCENT"),
+            right_slats_position_sim_var: NamedVariable::from("A32NX_RIGHT_SLATS_POSITION_PERCENT"),
+
+            msfs_flaps_handle_index: FlapsHandleIndex { index: 0. },
+            flaps_surface_sim_object: FlapsSurface {
+                left_flap: 0.,
+                right_flap: 0.,
+            },
+            slats_surface_sim_object: SlatsSurface {
+                left_slat: 0.,
+                right_slat: 0.,
+            },
+
+            flaps_handle_position: 0,
+            left_flaps_position: 0.,
+            right_flaps_position: 0.,
+
+            left_slats_position: 0.,
+            right_slats_position: 0.,
+        })
+    }
+}
+
+impl Flaps {
+    fn flaps_handle_position_f64(&self) -> f64 {
+        self.flaps_handle_position as f64
+    }
+
+    /// Tries to take actual surfaces position PERCENTS and convert it into flight model FLAP HANDLE INDEX
+    /// This index is used by MSFS to select correct aerodynamic properties
+    /// There is no index available for flaps but no slats configurations (possible plane failure case)
+    /// The percent thresholds can be tuned to change the timing of aerodynamic impact versus surface actual position
+    fn msfs_flap_index_from_surfaces_positions_percent(&self) -> u8 {
+        let flap_mean_position = (self.left_flaps_position + self.right_flaps_position) / 2.;
+        let slat_mean_position = (self.left_slats_position + self.right_slats_position) / 2.;
+
+        // Clean configuration no flaps no slats
+        if flap_mean_position < 2. && slat_mean_position < 2. {
+            return 0;
+        }
+
+        // Almost no flaps but some slats -> CONF 1
+        if flap_mean_position < 12. && slat_mean_position > 15. {
+            return 1;
+        }
+
+        if flap_mean_position > 80. {
+            5
+        } else if flap_mean_position > 49. {
+            4
+        } else if flap_mean_position > 30. {
+            3
+        } else if flap_mean_position > 12. {
+            2
+        } else {
+            0
+        }
+    }
+
+    fn get_handle_pos_from_0_1(&self, input: f64) -> u8 {
+        if input < -0.8 {
+            0
+        } else if input > -0.7 && input < -0.3 {
+            1
+        } else if input > -0.2 && input < 0.2 {
+            2
+        } else if input > 0.3 && input < 0.7 {
+            3
+        } else if input > 0.8 {
+            4
+        } else {
+            self.flaps_handle_position
+        }
+    }
+
+    fn get_handle_pos_flaps_set(&self, input: i32) -> u8 {
+        let normalized_input: f64 = (input as f64) / 8192. - 1.;
+        return self.get_handle_pos_from_0_1(normalized_input);
+    }
+
+    fn get_handle_pos_axis_flaps_set(&self, input: i32) -> u8 {
+        let normalized_input: f64 = (input as f64) / 16384.;
+        return self.get_handle_pos_from_0_1(normalized_input);
+    }
+
+    fn catch_event(&mut self, event_id: sys::DWORD, event_data: u32) -> bool {
+        if event_id == self.id_flaps_incr {
+            self.flaps_handle_position += 1;
+            self.flaps_handle_position = self.flaps_handle_position.min(4);
+        } else if event_id == self.id_flaps_decr {
+            if self.flaps_handle_position > 0 {
+                self.flaps_handle_position -= 1;
+            }
+        } else if event_id == self.id_flaps_1 {
+            self.flaps_handle_position = 1;
+        } else if event_id == self.id_flaps_2 {
+            self.flaps_handle_position = 2;
+        } else if event_id == self.id_flaps_3 {
+            self.flaps_handle_position = 3;
+        } else if event_id == self.id_flaps_set {
+            self.flaps_handle_position = self.get_handle_pos_flaps_set(event_data as i32);
+        } else if event_id == self.id_axis_flaps_set {
+            self.flaps_handle_position = self.get_handle_pos_axis_flaps_set(event_data as i32);
+        } else if event_id == self.id_flaps_down {
+            self.flaps_handle_position = 4;
+        } else if event_id == self.id_flaps_up {
+            self.flaps_handle_position = 0;
+        } else {
+            return false;
+        }
+        self.flaps_handle_index_sim_var
+            .set_value(self.flaps_handle_position_f64());
+        self.flaps_handle_percent_sim_var
+            .set_value(self.flaps_handle_position_f64() / 4.);
+        true
+    }
+
+    fn write_sim_vars(&mut self) {
+        self.left_flaps_position_sim_var
+            .set_value(self.left_flaps_position);
+        self.right_flaps_position_sim_var
+            .set_value(self.right_flaps_position);
+        self.left_slats_position_sim_var
+            .set_value(self.left_slats_position);
+        self.right_slats_position_sim_var
+            .set_value(self.right_slats_position);
+    }
+}
+
+impl SimulatorAspect for Flaps {
+    fn read(&mut self, identifier: &VariableIdentifier) -> Option<f64> {
+        if identifier == &self.flaps_left_position_id {
+            Some(self.left_flaps_position)
+        } else if identifier == &self.flaps_right_position_id {
+            Some(self.right_flaps_position)
+        } else if identifier == &self.slats_left_position_id {
+            Some(self.left_slats_position)
+        } else if identifier == &self.slats_right_position_id {
+            Some(self.right_slats_position)
+        } else {
+            None
+        }
+    }
+
+    fn write(&mut self, identifier: &VariableIdentifier, value: f64) -> bool {
+        if identifier == &self.flaps_left_position_id {
+            self.left_flaps_position = value;
+            true
+        } else if identifier == &self.flaps_right_position_id {
+            self.right_flaps_position = value;
+            true
+        } else if identifier == &self.slats_left_position_id {
+            self.left_slats_position = value;
+            true
+        } else if identifier == &self.slats_right_position_id {
+            self.right_slats_position = value;
+            true
+        } else {
+            false
+        }
+    }
+
+    fn handle_message(&mut self, message: &SimConnectRecv) -> bool {
+        if let SimConnectRecv::Event(e) = message {
+            self.catch_event(e.id(), e.data())
+        } else {
+            false
+        }
+    }
+
+    fn post_tick(&mut self, sim_connect: &mut SimConnect) -> Result<(), Box<dyn Error>> {
+        self.flaps_surface_sim_object.left_flap = self.left_flaps_position;
+        self.flaps_surface_sim_object.right_flap = self.right_flaps_position;
+        self.slats_surface_sim_object.left_slat = self.left_slats_position;
+        self.slats_surface_sim_object.right_slat = self.right_slats_position;
+        self.msfs_flaps_handle_index.index =
+            self.msfs_flap_index_from_surfaces_positions_percent() as f64;
+
+        self.write_sim_vars();
+
+        sim_connect
+            .set_data_on_sim_object(SIMCONNECT_OBJECT_ID_USER, &self.msfs_flaps_handle_index);
+        sim_connect
+            .set_data_on_sim_object(SIMCONNECT_OBJECT_ID_USER, &self.flaps_surface_sim_object);
+        sim_connect
+            .set_data_on_sim_object(SIMCONNECT_OBJECT_ID_USER, &self.slats_surface_sim_object);
+
+        Ok(())
+    }
 }
 
 struct Autobrakes {
@@ -156,7 +441,7 @@ impl MsfsAspectCtor for Autobrakes {
     fn new(
         registry: &mut MsfsVariableRegistry,
         sim_connect: &mut SimConnect,
-    ) -> Result<Self, Box<dyn std::error::Error>> {
+    ) -> Result<Self, Box<dyn Error>> {
         Ok(Self {
             autobrake_disarm_id: registry.get("AUTOBRAKE_DISARM".to_owned()),
             ovhd_autobrk_low_on_is_pressed_id: registry
@@ -283,7 +568,7 @@ impl SimulatorAspect for Autobrakes {
         self.synchronise_with_sim();
     }
 
-    fn post_tick(&mut self, _: &mut SimConnect) -> Result<(), Box<dyn std::error::Error>> {
+    fn post_tick(&mut self, _: &mut SimConnect) -> Result<(), Box<dyn Error>> {
         self.reset_events();
 
         Ok(())
@@ -327,7 +612,7 @@ impl MsfsAspectCtor for Brakes {
     fn new(
         registry: &mut MsfsVariableRegistry,
         sim_connect: &mut SimConnect,
-    ) -> Result<Self, Box<dyn std::error::Error>> {
+    ) -> Result<Self, Box<dyn Error>> {
         Ok(Self {
             park_brak_lever_pos_id: registry.get("PARK_BRAKE_LEVER_POS".to_owned()),
             left_brake_pedal_input_id: registry.get("LEFT_BRAKE_PEDAL_INPUT".to_owned()),
@@ -435,7 +720,7 @@ impl Brakes {
     fn transmit_client_events(
         &mut self,
         sim_connect: &mut SimConnect,
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    ) -> Result<(), Box<dyn Error>> {
         // We want to send our brake commands once per refresh event, thus doing it after a draw event
         sim_connect.transmit_client_event(
             SIMCONNECT_OBJECT_ID_USER,
@@ -561,10 +846,7 @@ impl SimulatorAspect for Brakes {
         self.update_keyboard_inputs(delta);
     }
 
-    fn post_tick(
-        &mut self,
-        sim_connect: &mut SimConnect,
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    fn post_tick(&mut self, sim_connect: &mut SimConnect) -> Result<(), Box<dyn Error>> {
         self.reset_keyboard_events();
         self.transmit_client_events(sim_connect)?;
         self.transmit_masked_inputs();
@@ -586,7 +868,7 @@ impl MsfsAspectCtor for CargoDoors {
     fn new(
         registry: &mut MsfsVariableRegistry,
         _: &mut SimConnect,
-    ) -> Result<Self, Box<dyn std::error::Error>> {
+    ) -> Result<Self, Box<dyn Error>> {
         Ok(Self {
             fwd_door_cargo_position_id: registry.get("FWD_DOOR_CARGO_POSITION".to_owned()),
             fwd_door_cargo_open_req_id: registry.get("FWD_DOOR_CARGO_OPEN_REQ".to_owned()),
@@ -641,7 +923,7 @@ impl SimulatorAspect for CargoDoors {
         self.set_in_sim_position_request(read_val);
     }
 
-    fn post_tick(&mut self, _: &mut SimConnect) -> Result<(), Box<dyn std::error::Error>> {
+    fn post_tick(&mut self, _: &mut SimConnect) -> Result<(), Box<dyn Error>> {
         self.forward_cargo_door_position
             .set_value(self.fwd_position);
 

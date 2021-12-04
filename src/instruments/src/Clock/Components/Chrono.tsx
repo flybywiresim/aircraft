@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useInteractionEvent } from '../../Common/hooks';
 import { useSimVar } from '../../Common/simVars';
+import { debouncedTimeDelta } from '../../Common';
 
 const getDisplayString = (seconds: number | null, running: boolean) : string => (seconds == null ? ''
     : `${Math.floor(Math.min(seconds, 5999) / 60).toString().padStart(2, '0')}${running ? ':' : ' '}${(Math.floor(Math.min(seconds, 5999) % 60)).toString().padStart(2, '0')}`);
@@ -16,7 +17,7 @@ export const Chrono = () => {
 
     useEffect(() => {
         if (running) {
-            setElapsedTime(Math.max((elapsedTime || 0) + absTime - prevTime, 0));
+            setElapsedTime((elapsedTime || 0) + debouncedTimeDelta(absTime, prevTime));
         }
         setPrevTime(absTime);
     }, [absTime]);

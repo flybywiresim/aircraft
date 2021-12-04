@@ -19,12 +19,6 @@
   font-family: "Ecam", monospace !important;
 }
 
-/* pixels for screen */
-@import "../Common/pixels";
-.LcdOverlayISIS {
-  @include pixels($bleed: false);
-}
-
 .sky {
   fill: #0698ff;
 }

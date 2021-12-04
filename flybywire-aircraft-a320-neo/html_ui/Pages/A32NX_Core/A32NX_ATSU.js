@@ -131,7 +131,7 @@ const lbsToKg = (value) => {
  * @param {FMCMainDisplay} mcdu FMCMainDisplay
  * @param {() => void} updateView
  */
-const getSimBriefOfp = (mcdu, updateView, callback) => {
+const getSimBriefOfp = (mcdu, updateView, callback = () => {}) => {
     const simBriefUserId = NXDataStore.get("CONFIG_SIMBRIEF_USERID", "");
 
     if (!simBriefUserId) {
@@ -141,13 +141,19 @@ const getSimBriefOfp = (mcdu, updateView, callback) => {
 
     mcdu.simbrief["sendStatus"] = "REQUESTING";
 
+    updateView();
+
     return SimBriefApi.getSimBriefOfp(simBriefUserId)
         .then(data => {
             mcdu.simbrief["units"] = data.params.units;
             mcdu.simbrief["route"] = data.general.route;
             mcdu.simbrief["cruiseAltitude"] = data.general.initial_altitude;
             mcdu.simbrief["originIcao"] = data.origin.icao_code;
+            mcdu.simbrief["originTransAlt"] = parseInt(data.origin.trans_alt, 10);
+            mcdu.simbrief["originTransLevel"] = parseInt(data.origin.trans_level, 10);
             mcdu.simbrief["destinationIcao"] = data.destination.icao_code;
+            mcdu.simbrief["destinationTransAlt"] = parseInt(data.destination.trans_alt, 10);
+            mcdu.simbrief["destinationTransLevel"] = parseInt(data.destination.trans_level, 10);
             mcdu.simbrief["blockFuel"] = mcdu.simbrief["units"] === 'kgs' ? data.fuel.plan_ramp : lbsToKg(data.fuel.plan_ramp);
             mcdu.simbrief["payload"] = mcdu.simbrief["units"] === 'kgs' ? data.weights.payload : lbsToKg(data.weights.payload);
             mcdu.simbrief["estZfw"] = mcdu.simbrief["units"] === 'kgs' ? data.weights.est_zfw : lbsToKg(data.weights.est_zfw);
@@ -159,6 +165,8 @@ const getSimBriefOfp = (mcdu, updateView, callback) => {
             mcdu.simbrief["icao_airline"] = typeof data.general.icao_airline === 'string' ? data.general.icao_airline : "";
             mcdu.simbrief["flight_number"] = data.general.flight_number;
             mcdu.simbrief["alternateIcao"] = data.alternate.icao_code;
+            mcdu.simbrief["alternateTransAlt"] = parseInt(data.alternate.trans_alt, 10);
+            mcdu.simbrief["alternateTransLevel"] = parseInt(data.alternate.trans_level, 10);
             mcdu.simbrief["avgTropopause"] = data.general.avg_tropopause;
             mcdu.simbrief["ete"] = data.times.est_time_enroute;
             mcdu.simbrief["blockTime"] = data.times.est_block;
@@ -182,28 +190,6 @@ const getSimBriefOfp = (mcdu, updateView, callback) => {
         });
 };
 
-const getSimBriefUser = (value, mcdu, updateView) => {
-    if (!value) {
-        throw new Error("No SimBrief username/pilot ID provided");
-    }
-
-    SimBriefApi.getSimBriefUser(value)
-        .then(data => {
-            if (data.fetch.status === "Error: Unknown UserID") {
-                mcdu.sendDataToScratchpad(value);
-                mcdu.addNewMessage(NXFictionalMessages.noSimBriefUser);
-            } else {
-                NXDataStore.set("CONFIG_SIMBRIEF_USERID", data.fetch.userid);
-            }
-
-            updateView();
-        })
-        .catch(_err => {
-            console.log(_err.message);
-            updateView();
-        });
-};
-
 /**
  * There are two uplink requests that are made at the same time:
  * - AOC ACT F-PLN
@@ -212,7 +198,9 @@ const getSimBriefUser = (value, mcdu, updateView) => {
 const insertUplink = (mcdu) => {
     const {
         originIcao,
+        originTransAlt,
         destinationIcao,
+        destinationTransLevel,
         cruiseAltitude,
         costIndex,
         alternateIcao,
@@ -233,6 +221,13 @@ const insertUplink = (mcdu) => {
         if (result) {
             CDUPerformancePage.UpdateThrRedAccFromOrigin(mcdu);
             CDUPerformancePage.UpdateEngOutAccFromOrigin(mcdu);
+
+            if (originTransAlt > 0) {
+                mcdu.flightPlanManager.setOriginTransitionAltitude(originTransAlt, true);
+            }
+            if (destinationTransLevel > 0) {
+                mcdu.flightPlanManager.setDestinationTransitionLevel(destinationTransLevel / 100, true);
+            }
 
             await mcdu.tryUpdateAltDestination(alternateIcao);
 
@@ -293,7 +288,7 @@ const addWaypointAsync = (fix, mcdu, routeIdent, via) => {
                     mcdu.flightPlanManager.addWaypoint(waypoint.icao, wpIndex, () => {
                         console.log("Inserted waypoint: " + routeIdent);
                         res(true);
-                    });
+                    }).catch(console.error);
                 } else {
                     console.log('NOT IN DATABASE ' + routeIdent);
                     mcdu.addNewMessage(NXSystemMessages.notInDatabase);
@@ -416,5 +411,5 @@ function getWaypointByIdentAndCoords(mcdu, ident, coords, callback) {
         }
 
         return callback(undefined);
-    });
+    }).catch(console.error);
 }

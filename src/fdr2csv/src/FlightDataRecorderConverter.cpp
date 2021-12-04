@@ -103,6 +103,11 @@ void FlightDataRecorderConverter::writeHeader(ofstream& out, const string& delim
   out << "ap_sm.input.ATHR_engaged" << delimiter;
   out << "ap_sm.input.is_SPEED_managed" << delimiter;
   out << "ap_sm.input.FDR_event" << delimiter;
+  out << "ap_sm.input.FM_requested_vertical_mode" << delimiter;
+  out << "ap_sm.input.FM_H_c_ft" << delimiter;
+  out << "ap_sm.input.FM_H_dot_c_fpm" << delimiter;
+  out << "ap_sm.input.FM_rnav_appr_selected" << delimiter;
+  out << "ap_sm.input.FM_final_des_can_engage" << delimiter;
   out << "ap_sm.lateral.armed.NAV" << delimiter;
   out << "ap_sm.lateral.armed.LOC" << delimiter;
   out << "ap_sm.lateral.condition.NAV" << delimiter;
@@ -135,6 +140,7 @@ void FlightDataRecorderConverter::writeHeader(ofstream& out, const string& delim
   out << "ap_sm.vertical.armed.ALT_CST" << delimiter;
   out << "ap_sm.vertical.armed.CLB" << delimiter;
   out << "ap_sm.vertical.armed.DES" << delimiter;
+  out << "ap_sm.vertical.armed.FINAL_DES" << delimiter;
   out << "ap_sm.vertical.armed.GS" << delimiter;
   out << "ap_sm.vertical.condition.ALT" << delimiter;
   out << "ap_sm.vertical.condition.ALT_CPT" << delimiter;
@@ -142,6 +148,7 @@ void FlightDataRecorderConverter::writeHeader(ofstream& out, const string& delim
   out << "ap_sm.vertical.condition.ALT_CST_CPT" << delimiter;
   out << "ap_sm.vertical.condition.CLB" << delimiter;
   out << "ap_sm.vertical.condition.DES" << delimiter;
+  out << "ap_sm.vertical.condition.FINAL_DES" << delimiter;
   out << "ap_sm.vertical.condition.GS_CPT" << delimiter;
   out << "ap_sm.vertical.condition.GS_TRACK" << delimiter;
   out << "ap_sm.vertical.condition.LAND" << delimiter;
@@ -166,6 +173,7 @@ void FlightDataRecorderConverter::writeHeader(ofstream& out, const string& delim
   out << "ap_sm.vertical_previous.armed.ALT_CST" << delimiter;
   out << "ap_sm.vertical_previous.armed.CLB" << delimiter;
   out << "ap_sm.vertical_previous.armed.DES" << delimiter;
+  out << "ap_sm.vertical_previous.armed.FINAL_DES" << delimiter;
   out << "ap_sm.vertical_previous.armed.GS" << delimiter;
   out << "ap_sm.vertical_previous.condition.ALT" << delimiter;
   out << "ap_sm.vertical_previous.condition.ALT_CPT" << delimiter;
@@ -173,6 +181,7 @@ void FlightDataRecorderConverter::writeHeader(ofstream& out, const string& delim
   out << "ap_sm.vertical_previous.condition.ALT_CST_CPT" << delimiter;
   out << "ap_sm.vertical_previous.condition.CLB" << delimiter;
   out << "ap_sm.vertical_previous.condition.DES" << delimiter;
+  out << "ap_sm.vertical_previous.condition.FINAL_DES" << delimiter;
   out << "ap_sm.vertical_previous.condition.GS_CPT" << delimiter;
   out << "ap_sm.vertical_previous.condition.GS_TRACK" << delimiter;
   out << "ap_sm.vertical_previous.condition.LAND" << delimiter;
@@ -598,6 +607,11 @@ void FlightDataRecorderConverter::writeStruct(ofstream& out,
   out << static_cast<unsigned int>(ap_sm.input.ATHR_engaged) << delimiter;
   out << static_cast<unsigned int>(ap_sm.input.is_SPEED_managed) << delimiter;
   out << static_cast<unsigned int>(ap_sm.input.FDR_event) << delimiter;
+  out << static_cast<unsigned int>(ap_sm.input.FM_requested_vertical_mode) << delimiter;
+  out << ap_sm.input.FM_H_c_ft << delimiter;
+  out << ap_sm.input.FM_H_dot_c_fpm << delimiter;
+  out << ap_sm.input.FM_rnav_appr_selected << delimiter;
+  out << ap_sm.input.FM_final_des_can_engage << delimiter;
   out << static_cast<unsigned int>(ap_sm.lateral.armed.NAV) << delimiter;
   out << static_cast<unsigned int>(ap_sm.lateral.armed.LOC) << delimiter;
   out << static_cast<unsigned int>(ap_sm.lateral.condition.NAV) << delimiter;
@@ -630,6 +644,7 @@ void FlightDataRecorderConverter::writeStruct(ofstream& out,
   out << static_cast<unsigned int>(ap_sm.vertical.armed.ALT_CST) << delimiter;
   out << static_cast<unsigned int>(ap_sm.vertical.armed.CLB) << delimiter;
   out << static_cast<unsigned int>(ap_sm.vertical.armed.DES) << delimiter;
+  out << static_cast<unsigned int>(ap_sm.vertical.armed.FINAL_DES) << delimiter;
   out << static_cast<unsigned int>(ap_sm.vertical.armed.GS) << delimiter;
   out << static_cast<unsigned int>(ap_sm.vertical.condition.ALT) << delimiter;
   out << static_cast<unsigned int>(ap_sm.vertical.condition.ALT_CPT) << delimiter;
@@ -637,6 +652,7 @@ void FlightDataRecorderConverter::writeStruct(ofstream& out,
   out << static_cast<unsigned int>(ap_sm.vertical.condition.ALT_CST_CPT) << delimiter;
   out << static_cast<unsigned int>(ap_sm.vertical.condition.CLB) << delimiter;
   out << static_cast<unsigned int>(ap_sm.vertical.condition.DES) << delimiter;
+  out << static_cast<unsigned int>(ap_sm.vertical.condition.FINAL_DES) << delimiter;
   out << static_cast<unsigned int>(ap_sm.vertical.condition.GS_CPT) << delimiter;
   out << static_cast<unsigned int>(ap_sm.vertical.condition.GS_TRACK) << delimiter;
   out << static_cast<unsigned int>(ap_sm.vertical.condition.LAND) << delimiter;
@@ -661,6 +677,7 @@ void FlightDataRecorderConverter::writeStruct(ofstream& out,
   out << static_cast<unsigned int>(ap_sm.vertical_previous.armed.ALT_CST) << delimiter;
   out << static_cast<unsigned int>(ap_sm.vertical_previous.armed.CLB) << delimiter;
   out << static_cast<unsigned int>(ap_sm.vertical_previous.armed.DES) << delimiter;
+  out << static_cast<unsigned int>(ap_sm.vertical_previous.armed.FINAL_DES) << delimiter;
   out << static_cast<unsigned int>(ap_sm.vertical_previous.armed.GS) << delimiter;
   out << static_cast<unsigned int>(ap_sm.vertical_previous.condition.ALT) << delimiter;
   out << static_cast<unsigned int>(ap_sm.vertical_previous.condition.ALT_CPT) << delimiter;
@@ -668,6 +685,7 @@ void FlightDataRecorderConverter::writeStruct(ofstream& out,
   out << static_cast<unsigned int>(ap_sm.vertical_previous.condition.ALT_CST_CPT) << delimiter;
   out << static_cast<unsigned int>(ap_sm.vertical_previous.condition.CLB) << delimiter;
   out << static_cast<unsigned int>(ap_sm.vertical_previous.condition.DES) << delimiter;
+  out << static_cast<unsigned int>(ap_sm.vertical_previous.condition.FINAL_DES) << delimiter;
   out << static_cast<unsigned int>(ap_sm.vertical_previous.condition.GS_CPT) << delimiter;
   out << static_cast<unsigned int>(ap_sm.vertical_previous.condition.GS_TRACK) << delimiter;
   out << static_cast<unsigned int>(ap_sm.vertical_previous.condition.LAND) << delimiter;

@@ -63,7 +63,6 @@ function Idle() {
 }
 function DCDU() {
     const [state, setState] = useState('DEFAULT');
-    const [opacity, setOpacity] = useState('0');
 
     useUpdate((_deltaTime) => {
         if (state === 'OFF') {
@@ -73,7 +72,6 @@ function DCDU() {
         } else if (!powerAvailable()) {
             setState('OFF');
         }
-        setOpacity(getSimVar('L:A32NX_MFD_MASK_OPACITY', 'number'));
     });
 
     switch (state) {
@@ -96,7 +94,6 @@ function DCDU() {
         return (
             <>
                 <div className="BacklightBleed" />
-                <div className="LcdOverlayDcdu" style={{ opacity }} />
                 <SelfTest />
             </>
         );
@@ -110,7 +107,6 @@ function DCDU() {
         return (
             <>
                 <div className="BacklightBleed" />
-                <div className="LcdOverlayDcdu" style={{ opacity }} />
                 <WaitingForData />
             </>
         );
@@ -118,7 +114,6 @@ function DCDU() {
         return (
             <>
                 <div className="BacklightBleed" />
-                <div className="LcdOverlayDcdu" style={{ opacity }} />
                 <Idle />
             </>
         );

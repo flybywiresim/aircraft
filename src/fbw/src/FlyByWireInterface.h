@@ -9,7 +9,6 @@
 #include "Autothrust.h"
 #include "ElevatorTrimHandler.h"
 #include "EngineData.h"
-#include "FlapsHandler.h"
 #include "FlightDataRecorder.h"
 #include "FlyByWire.h"
 #include "InterpolatingLookupTable.h"
@@ -80,6 +79,8 @@ class FlyByWireInterface {
 
   bool disableXboxCompatibilityRudderAxisPlusMinus = false;
 
+  bool clientDataEnabled = false;
+
   FlightDataRecorder flightDataRecorder;
 
   SimConnectInterface simConnectInterface;
@@ -101,6 +102,9 @@ class FlyByWireInterface {
   athr_output autoThrustOutput;
 
   InterpolatingLookupTable throttleLookupTable;
+
+  std::unique_ptr<LocalVariable> idLoggingFlightControlsEnabled;
+  std::unique_ptr<LocalVariable> idLoggingThrottlesEnabled;
 
   std::unique_ptr<LocalVariable> idPerformanceWarningActive;
 
@@ -158,6 +162,12 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idFlightGuidanceCrossTrackError;
   std::unique_ptr<LocalVariable> idFlightGuidanceTrackAngleError;
   std::unique_ptr<LocalVariable> idFlightGuidancePhiCommand;
+  std::unique_ptr<LocalVariable> idFlightGuidanceRequestedVerticalMode;
+  std::unique_ptr<LocalVariable> idFlightGuidanceTargetAltitude;
+  std::unique_ptr<LocalVariable> idFlightGuidanceTargetVerticalSpeed;
+  std::unique_ptr<LocalVariable> idFmRnavAppSelected;
+  std::unique_ptr<LocalVariable> idFmFinalCanEngage;
+
 
   std::unique_ptr<LocalVariable> idFwcFlightPhase;
   std::unique_ptr<LocalVariable> idFmgcFlightPhase;
@@ -187,6 +197,11 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idAutothrustReverse_2;
   std::unique_ptr<LocalVariable> idAutothrustThrustLimitType;
   std::unique_ptr<LocalVariable> idAutothrustThrustLimit;
+  std::unique_ptr<LocalVariable> idAutothrustThrustLimitIDLE;
+  std::unique_ptr<LocalVariable> idAutothrustThrustLimitCLB;
+  std::unique_ptr<LocalVariable> idAutothrustThrustLimitMCT;
+  std::unique_ptr<LocalVariable> idAutothrustThrustLimitFLX;
+  std::unique_ptr<LocalVariable> idAutothrustThrustLimitTOGA;
   std::unique_ptr<LocalVariable> idAutothrustN1_c_1;
   std::unique_ptr<LocalVariable> idAutothrustN1_c_2;
   std::unique_ptr<LocalVariable> idAutothrustStatus;
@@ -237,7 +252,9 @@ class FlyByWireInterface {
 
   std::unique_ptr<LocalVariable> idFlapsHandleIndex;
   std::unique_ptr<LocalVariable> idFlapsHandlePercent;
-  std::shared_ptr<FlapsHandler> flapsHandler;
+
+  std::unique_ptr<LocalVariable> flapsHandleIndexFlapConf;
+  std::unique_ptr<LocalVariable> flapsPosition;
 
   std::unique_ptr<LocalVariable> idSpoilersArmed;
   std::unique_ptr<LocalVariable> idSpoilersHandlePosition;
@@ -272,7 +289,7 @@ class FlyByWireInterface {
   bool updateFlyByWire(double sampleTime);
   bool updateAutothrust(double sampleTime);
 
-  bool updateFlapsSpoilers(double sampleTime);
+  bool updateSpoilers(double sampleTime);
 
   bool updateAltimeterSetting(double sampleTime);
 

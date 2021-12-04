@@ -16,7 +16,6 @@ type ISISDisplayUnitProps = {
 export const ISISDisplayUnit: React.FC<ISISDisplayUnitProps> = ({ indicatedAirspeed, children }) => {
     const powerUpTime = 90;
     const [isColdAndDark] = useSimVar('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool', 200);
-    const [opacity] = useSimVar('L:A32NX_MFD_MASK_OPACITY', 'number', 200);
 
     const [state, setState] = useState(isColdAndDark ? DisplayUnitState.Off : DisplayUnitState.Standby);
     const [timer, setTimer] = useState<number | null>(null);
@@ -59,7 +58,6 @@ export const ISISDisplayUnit: React.FC<ISISDisplayUnitProps> = ({ indicatedAirsp
     if (state === DisplayUnitState.Selftest) {
         return (
             <>
-                <div className="LcdOverlayISIS" style={{ opacity }} />
                 <svg id="SelfTest" className="SelfTest" version="1.1" viewBox="0 0 512 512">
                     <g id="AttFlag">
                         <rect id="AttTest" className="FillYellow" width="84" height="40" x="214" y="174" />
@@ -94,7 +92,6 @@ export const ISISDisplayUnit: React.FC<ISISDisplayUnitProps> = ({ indicatedAirsp
 
     return (
         <>
-            <div className="LcdOverlay" style={{ opacity }} />
             {children}
         </>
     );
