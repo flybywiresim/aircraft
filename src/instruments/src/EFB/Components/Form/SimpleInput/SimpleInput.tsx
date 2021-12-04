@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 type SimpleInputProps = {
     label?: string,
     placeholder?: string,
+    labelPosition?: 'col' | 'row';
     value?: any,
     onChange?: (value: string) => void,
     onFocus?: (value: string) => void,
@@ -104,6 +105,9 @@ const SimpleInput = (props: SimpleInputProps) => {
                 Coherent.trigger('UNFOCUS_INPUT_FIELD');
             }
         }
+        return () => {
+            Coherent.trigger('UNFOCUS_INPUT_FIELD');
+        };
     }, [focused]);
 
     return (
@@ -126,7 +130,7 @@ const SimpleInput = (props: SimpleInputProps) => {
                 )
                 : (
                     <>
-                        <div className={`flex ${props.reverse ? 'flex-row-reverse' : 'flex-row'}`}>
+                        <div className={`flex ${props.reverse && props.labelPosition === 'row' ? 'flex-row-reverse' : `flex-${props.labelPosition ?? 'row'}`}`}>
                             <div className={`text-lg flex flex-grow ${props.noLeftMargin ? '' : 'm-2.5'} items-center ${props.reverse ? 'justify-start' : 'justify-end'}`}>{props.label}</div>
                             <div className="flex items-center">
                                 <input

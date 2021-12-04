@@ -6,6 +6,7 @@ use num_derive::FromPrimitive;
 use std::{cell::Ref, fmt::Display, time::Duration};
 use uom::si::{f64::*, pressure::hectopascal, thermodynamic_temperature::degree_celsius};
 
+pub mod low_pass_filter;
 pub mod pid;
 
 mod random;
@@ -42,8 +43,8 @@ pub trait ApuStart {
     fn start_is_on(&self) -> bool;
 }
 
-pub trait RamAirTurbineHydraulicLoopPressurised {
-    fn is_rat_hydraulic_loop_pressurised(&self) -> bool;
+pub trait RamAirTurbineHydraulicCircuitPressurised {
+    fn is_rat_hydraulic_circuit_pressurised(&self) -> bool;
 }
 
 pub trait FeedbackPositionPickoffUnit {

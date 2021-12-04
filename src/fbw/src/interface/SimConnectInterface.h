@@ -6,7 +6,6 @@
 #include <vector>
 
 #include "../ElevatorTrimHandler.h"
-#include "../FlapsHandler.h"
 #include "../LocalVariable.h"
 #include "../RudderTrimHandler.h"
 #include "../SpoilersHandler.h"
@@ -44,6 +43,7 @@ class SimConnectInterface {
     AP_MASTER,
     AUTOPILOT_OFF,
     AUTOPILOT_ON,
+    AUTOPILOT_DISENGAGE_SET,
     AUTOPILOT_DISENGAGE_TOGGLE,
     TOGGLE_FLIGHT_DIRECTOR,
     A32NX_FCU_AP_1_PUSH,
@@ -83,18 +83,34 @@ class SimConnectInterface {
     A32NX_FCU_APPR_PUSH,
     A32NX_FCU_EXPED_PUSH,
     A32NX_FMGC_DIR_TO_TRIGGER,
+    AP_AIRSPEED_ON,
+    AP_AIRSPEED_OFF,
+    AP_HDG_HOLD_ON,
+    AP_HDG_HOLD_OFF,
+    AP_ALT_HOLD_ON,
+    AP_ALT_HOLD_OFF,
+    AP_VS_ON,
+    AP_VS_OFF,
     AP_SPEED_SLOT_INDEX_SET,
     AP_SPD_VAR_INC,
     AP_SPD_VAR_DEC,
+    AP_MACH_VAR_INC,
+    AP_MACH_VAR_DEC,
     AP_HEADING_SLOT_INDEX_SET,
     HEADING_BUG_INC,
     HEADING_BUG_DEC,
     AP_ALTITUDE_SLOT_INDEX_SET,
+    AP_ALT_VAR_INC,
+    AP_ALT_VAR_DEC,
     AP_VS_SLOT_INDEX_SET,
     AP_VS_VAR_INC,
     AP_VS_VAR_DEC,
     AP_APR_HOLD,
     AP_LOC_HOLD,
+    AP_ALT_HOLD,
+    AP_VS_HOLD,
+    AP_ATT_HOLD,
+    AP_MACH_HOLD,
     AUTO_THROTTLE_ARM,
     AUTO_THROTTLE_DISCONNECT,
     AUTO_THROTTLE_TO_GA,
@@ -164,11 +180,11 @@ class SimConnectInterface {
 
   ~SimConnectInterface() = default;
 
-  bool connect(bool autopilotStateMachineEnabled,
+  bool connect(bool clientDataEnabled,
+               bool autopilotStateMachineEnabled,
                bool autopilotLawsEnabled,
                bool flyByWireEnabled,
                const std::vector<std::shared_ptr<ThrottleAxisMapping>>& throttleAxis,
-               std::shared_ptr<FlapsHandler> flapsHandler,
                std::shared_ptr<SpoilersHandler> spoilersHandler,
                std::shared_ptr<ElevatorTrimHandler> elevatorTrimHandler,
                std::shared_ptr<RudderTrimHandler> rudderTrimHandler,
@@ -233,14 +249,26 @@ class SimConnectInterface {
 
   ClientDataAutothrust getClientDataAutothrust();
 
+  bool setClientDataFlyByWireInput(ClientDataFlyByWireInput output);
+
   bool setClientDataFlyByWire(ClientDataFlyByWire output);
   ClientDataFlyByWire getClientDataFlyByWire();
+
+  void setLoggingFlightControlsEnabled(bool enabled);
+  bool getLoggingFlightControlsEnabled();
+
+  void setLoggingThrottlesEnabled(bool enabled);
+  bool getLoggingThrottlesEnabled();
+
+  // remove when aileron events can be processed via SimConnect
+  static void processKeyEvent(ID32 event, UINT32 evdata, PVOID userdata);
 
  private:
   enum ClientData {
     AUTOPILOT_STATE_MACHINE,
     AUTOPILOT_LAWS,
     AUTOTHRUST,
+    FLY_BY_WIRE_INPUT,
     FLY_BY_WIRE,
     LOCAL_VARIABLES,
     LOCAL_VARIABLES_AUTOTHRUST,
@@ -253,15 +281,20 @@ class SimConnectInterface {
 
   double maxSimulationRate = 0;
   bool limitSimulationRateByPerformance = true;
+  bool clientDataEnabled = false;
+
+  // change to non-static when aileron events can be processed via SimConnect
+  static bool loggingFlightControlsEnabled;
+  bool loggingThrottlesEnabled = false;
 
   SimData simData = {};
-  SimInput simInput = {};
+  // change to non-static when aileron events can be processed via SimConnect
+  static SimInput simInput;
   SimInputAutopilot simInputAutopilot = {};
 
   SimInputThrottles simInputThrottles = {};
   std::vector<std::shared_ptr<ThrottleAxisMapping>> throttleAxis;
 
-  std::shared_ptr<FlapsHandler> flapsHandler;
   std::shared_ptr<SpoilersHandler> spoilersHandler;
   std::shared_ptr<ElevatorTrimHandler> elevatorTrimHandler;
   std::shared_ptr<RudderTrimHandler> rudderTrimHandler;
@@ -271,7 +304,8 @@ class SimConnectInterface {
   ClientDataAutothrust clientDataAutothrust = {};
   ClientDataFlyByWire clientDataFlyByWire = {};
 
-  double flightControlsKeyChangeAileron = 0.0;
+  // change to non-static when aileron events can be processed via SimConnect
+  static double flightControlsKeyChangeAileron;
   double flightControlsKeyChangeElevator = 0.0;
   double flightControlsKeyChangeRudder = 0.0;
   bool disableXboxCompatibilityRudderPlusMinus = false;
@@ -282,7 +316,7 @@ class SimConnectInterface {
 
   bool prepareSimDataSimConnectDataDefinitions();
 
-  bool prepareSimInputSimConnectDataDefinitions(bool autopilotStateMachineEnabled, bool autopilotLawsEnabled, bool flyByWireEnabled);
+  bool prepareSimInputSimConnectDataDefinitions();
 
   bool prepareSimOutputSimConnectDataDefinitions();
 
