@@ -243,26 +243,22 @@ impl PneumaticContainerConnector {
     ) {
         self.heat_conduction(context, container_one, container_two);
 
-        let equalization_volume: Volume = (container_one
+        let container_one_pressure_with_power = container_one
             .pressure()
             .get::<pascal>()
-            .powf(1. / Self::HEAT_CAPACITY_RATIO)
-            - container_two
-                .pressure()
-                .get::<pascal>()
-                .powf(1. / Self::HEAT_CAPACITY_RATIO))
+            .powf(1. / Self::HEAT_CAPACITY_RATIO);
+
+        let container_two_pressure_with_power = container_two
+            .pressure()
+            .get::<pascal>()
+            .powf(1. / Self::HEAT_CAPACITY_RATIO);
+
+        let equalization_volume = (container_one_pressure_with_power
+            - container_two_pressure_with_power)
             * container_one.volume()
             * container_two.volume()
-            / (container_two
-                .pressure()
-                .get::<pascal>()
-                .powf(1. / Self::HEAT_CAPACITY_RATIO)
-                * container_one.volume()
-                + container_one
-                    .pressure()
-                    .get::<pascal>()
-                    .powf(1. / Self::HEAT_CAPACITY_RATIO)
-                    * container_two.volume());
+            / (container_two_pressure_with_power * container_one.volume()
+                + container_one_pressure_with_power * container_two.volume());
 
         let fluid_to_move = (self.transfer_speed_factor
             * equalization_volume
