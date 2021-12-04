@@ -269,6 +269,24 @@ class FMCDataManager {
         return position;
     }
 
+    _createWaypoint(ident, index, coordinates, additionalData, stored) {
+        additionalData.storedIndex = index;
+        additionalData.temporary = !stored;
+
+        const wp = Fmgc.WaypointBuilder.fromCoordinates(ident, coordinates, this.fmc.instrument, additionalData);
+
+        if (stored) {
+            // we add the index to ensure the icao is unique, so it doesn't get de-duplicated on dup names page etc.
+            const icao = wp.icao + index.toString().padStart(2, '0');
+            wp.icao = icao;
+            wp.infos.icao = icao;
+
+            this.storeWaypoint(wp, index);
+        }
+
+        return wp;
+    }
+
     /**
      *
      * @param {LatLong|LatLongAlt} coordinates
@@ -282,22 +300,20 @@ class FMCDataManager {
         }
 
         if (ident === undefined) {
-            // what Table A1 says...
-            //const latDeg = Math.abs(Math.trunc(coordinates.lat)).toFixed(0).padStart(2, '0');
-            //const lonDeg = Math.abs(Math.trunc(coordinates.long)).toFixed(0).padStart(3, '0');
-            //ident = `${coordinates.lat >= 0 ? 'N' : 'S'}${latDeg}${coordinates.long >= 0 ? 'E' : 'W'}${lonDeg}${(index + 1).toFixed(0).padStart(2, '0')}`;
-            // what the other pages say
-            ident = `LL${(index + 1).toFixed(0).padStart(2, '0')}`;
+            if (false) { // opc or ami option... common on A330...
+                const latDeg = Math.abs(Math.trunc(coordinates.lat)).toFixed(0).padStart(2, '0');
+                const lonDeg = Math.abs(Math.trunc(coordinates.long)).toFixed(0).padStart(3, '0');
+                ident = `${coordinates.lat >= 0 ? 'N' : 'S'}${latDeg}${coordinates.long >= 0 ? 'E' : 'W'}${lonDeg}${(index + 1).toFixed(0).padStart(2, '0')}`;
+            } else {
+                ident = `LL${(index + 1).toFixed(0).padStart(2, '0')}`;
+            }
         }
 
-        const wp = Fmgc.WaypointBuilder.fromCoordinates(ident, coordinates, this.fmc.instrument);
-        wp.additionalData.storedIndex = index;
-        wp.additionalData.storedType = StoredWaypointType.LatLon;
-        wp.additionalData.temporary = !stored;
-        if (stored) {
-            this.storeWaypoint(wp, index);
-        }
-        return wp;
+        const additionalData = {
+            storedType: StoredWaypointType.LatLon,
+        };
+
+        return this._createWaypoint(ident, index, coordinates, additionalData, stored);
     }
 
     /**
@@ -318,18 +334,15 @@ class FMCDataManager {
             ident = `PBX${(index + 1).toFixed(0).padStart(2, '0')}`;
         }
 
-        const wp = Fmgc.WaypointBuilder.fromCoordinates(ident, coordinates, this.fmc.instrument);
-        wp.additionalData.storedIndex = index;
-        wp.additionalData.storedType = StoredWaypointType.Pbx;
-        wp.additionalData.temporary = !stored;
-        wp.additionalData.pbxPlace1 = place1.ident.substring(0, 5);
-        wp.additionalData.pbxBearing1 = bearing1;
-        wp.additionalData.pbxPlace2 = place2.ident.substring(0, 5);
-        wp.additionalData.pbxBearing2 = bearing2;
-        if (stored) {
-            this.storeWaypoint(wp, index);
-        }
-        return wp;
+        const additionalData = {
+            storedType: StoredWaypointType.Pbx,
+            pbxPlace1: place1.ident.substring(0, 5),
+            pbxBearing1: bearing1,
+            pbxPlace2: place2.ident.substring(0, 5),
+            pbxBearing2: bearing2,
+        };
+
+        return this._createWaypoint(ident, index, coordinates, additionalData, stored);
     }
 
     /**
@@ -352,17 +365,14 @@ class FMCDataManager {
             ident = `PBD${(index + 1).toFixed(0).padStart(2, '0')}`;
         }
 
-        const wp = Fmgc.WaypointBuilder.fromCoordinates(ident, coordinates, this.fmc.instrument);
-        wp.additionalData.storedIndex = index;
-        wp.additionalData.storedType = StoredWaypointType.Pbd;
-        wp.additionalData.temporary = !stored;
-        wp.additionalData.pbdPlace = origin.ident;
-        wp.additionalData.pbdBearing = bearing;
-        wp.additionalData.pbdDistance = distance;
-        if (stored) {
-            this.storeWaypoint(wp, index);
-        }
-        return wp;
+        const additionalData = {
+            storedType: StoredWaypointType.Pbd,
+            pbdPlace: origin.ident,
+            pbdBearing: bearing,
+            pbdDistance: distance,
+        };
+
+        return this._createWaypoint(ident, index, coordinates, additionalData, stored);
     }
 
     /**
