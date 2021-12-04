@@ -4,6 +4,7 @@ use std::time::Duration;
 use uom::si::{
     acceleration::meter_per_second_squared,
     angle::degree,
+    angular_velocity::revolution_per_minute,
     electric_current::ampere,
     f64::*,
     length::meter,
@@ -390,9 +391,13 @@ impl A320Hydraulic {
         self.physics_updater.update(context);
 
         for cur_time_step in self.physics_updater {
-            self.update_fast_physics(&context.with_delta(cur_time_step), emergency_generator,
-            rat_and_emer_gen_man_on,
-            emergency_elec_state);
+            self.update_fast_physics(
+                &context.with_delta(cur_time_step),
+                emergency_generator,
+                rat_and_emer_gen_man_on,
+                emergency_elec_state,
+                lgciu1,
+            );
         }
 
         self.update_with_sim_rate(
@@ -491,13 +496,13 @@ impl A320Hydraulic {
         self.ram_air_turbine.update_physics(
             &context.delta(),
             context.indicated_airspeed(),
-            self.blue_loop.pressure(),
+            self.blue_circuit.system_pressure(),
         );
 
         self.gcu.update(
             context,
             self.emergency_gen.speed(),
-            self.blue_loop.pressure(),
+            self.blue_circuit.system_pressure(),
             emergency_elec_state,
             rat_and_emer_gen_man_on,
             lgciu1,
@@ -505,7 +510,7 @@ impl A320Hydraulic {
 
         self.emergency_gen.update(
             context,
-            self.blue_loop.pressure(),
+            self.blue_circuit.system_pressure(),
             &self.gcu,
             emergency_generator,
         );
@@ -593,7 +598,7 @@ impl A320Hydraulic {
     }
 
     fn update_blue_actuators_volume(&mut self) {
-        self.blue_loop
+        self.blue_circuit
             .update_actuator_volumes(&mut self.emergency_gen);
     }
 

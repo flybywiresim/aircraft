@@ -1509,12 +1509,14 @@ impl WindTurbine {
 
     fn update_friction_torque(&mut self, displacement: f64, pressure: Pressure) {
         let mut pump_torque = 0.;
-        if self.rpm < Self::LOW_SPEED_PHYSICS_ACTIVATION {
+        if self.speed.get::<revolution_per_minute>() < Self::LOW_SPEED_PHYSICS_ACTIVATION {
             pump_torque += (self.position * 4.).cos() * displacement.max(0.35) * 2.;
-            pump_torque -= self.speed * 0.25;
+            pump_torque -= self.speed.get::<radian_per_second>() * 0.25;
         } else {
             pump_torque -= pressure.get::<psi>() * displacement / (2. * std::f64::consts::PI);
-            pump_torque -= 20. + (self.speed * self.speed) * Self::FRICTION_COEFFICIENT;
+            pump_torque -= 20.
+                + (self.speed.get::<radian_per_second>() * self.speed.get::<radian_per_second>())
+                    * Self::FRICTION_COEFFICIENT;
         }
 
         self.torque_sum += pump_torque;

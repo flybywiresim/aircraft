@@ -293,7 +293,7 @@ impl Actuator for HydraulicGeneratorMotor {
         self.volume_to_res_accumulator
     }
 
-    fn reset_accumulators(&mut self) {
+    fn reset_volumes(&mut self) {
         self.volume_to_res_accumulator = Volume::new::<gallon>(0.);
         self.volume_to_actuator_accumulator = Volume::new::<gallon>(0.);
     }
@@ -368,8 +368,6 @@ mod tests {
     use crate::simulation::test::{SimulationTestBed, TestBed};
     use crate::simulation::{Aircraft, SimulationElement, SimulationElementVisitor};
     use std::time::Duration;
-
-
 
     struct TestEmergencyState {
         is_emergency: bool,
