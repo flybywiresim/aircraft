@@ -339,10 +339,6 @@ impl Precooler {
         self.internal_connector
             .update_move_fluid(context, container_one, container_two);
     }
-
-    pub fn exhaust_flow(&self) -> VolumeRate {
-        self.exhaust.fluid_flow()
-    }
 }
 
 pub struct VariableVolumeContainer {
