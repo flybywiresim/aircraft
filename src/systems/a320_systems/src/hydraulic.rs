@@ -1525,7 +1525,7 @@ struct A320BrakingForce {
 
     flap_position: f64,
 
-    is_chocks_on_wheels: bool,
+    is_chocks_removed: bool,
 }
 impl A320BrakingForce {
     const REFERENCE_PRESSURE_FOR_MAX_FORCE: f64 = 2538.;
@@ -1551,7 +1551,7 @@ impl A320BrakingForce {
 
             flap_position: 0.,
 
-            is_chocks_on_wheels: false,
+            is_chocks_removed: false,
         }
     }
 
@@ -1607,7 +1607,7 @@ impl A320BrakingForce {
     }
 
     fn apply_chocks_braking(&mut self) {
-        if self.is_chocks_on_wheels {
+        if !self.is_chocks_removed {
             self.left_braking_force = 1.;
             self.right_braking_force = 1.;
         }
@@ -1626,8 +1626,7 @@ impl SimulationElement for A320BrakingForce {
         let right_flap: f64 = reader.read(&self.trailing_edge_flaps_right_percent_id);
         self.flap_position = (left_flap + right_flap) / 2.;
 
-        let chocks_hidden: f64 = reader.read(&self.hidden_chocks_id);
-        self.is_chocks_on_wheels = chocks_hidden < 1.;
+        self.is_chocks_removed = reader.read(&self.hidden_chocks_id);
     }
 }
 
