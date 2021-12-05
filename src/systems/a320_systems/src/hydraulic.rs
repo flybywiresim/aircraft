@@ -550,18 +550,18 @@ impl A320Hydraulic {
             .update(context, &self.flap_system, &self.slat_system);
 
         self.flap_system.update(
+            context,
             self.slats_flaps_complex.flap_demand(),
             self.slats_flaps_complex.flap_demand(),
             self.green_circuit.system_pressure(),
             self.yellow_circuit.system_pressure(),
-            context,
         );
         self.slat_system.update(
+            context,
             self.slats_flaps_complex.slat_demand(),
             self.slats_flaps_complex.slat_demand(),
             self.blue_circuit.system_pressure(),
             self.green_circuit.system_pressure(),
-            context,
         );
         println!(
             "->FlapReq {:.1} PosFlap {:.1} Gpress {:.0} Ypress {:.0}",

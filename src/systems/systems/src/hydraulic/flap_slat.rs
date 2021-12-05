@@ -1,7 +1,8 @@
 use super::linear_actuator::Actuator;
 use crate::shared::{interpolation, FeedbackPositionPickoffUnit};
 use crate::simulation::{
-    SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext, Write,InitContext, VariableIdentifier
+    InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
+    VariableIdentifier, Write,
 };
 
 use uom::si::{
@@ -35,7 +36,7 @@ impl FlapSlatHydraulicMotor {
     // Corrective factor to adjust final flow consumption to tune the model
     const FLOW_CORRECTION_FACTOR: f64 = 0.9;
 
-    fn new(context: &mut InitContext,id: &str, displacement: Volume) -> Self {
+    fn new(context: &mut InitContext, id: &str, displacement: Volume) -> Self {
         Self {
             rpm_id: context.get_identifier(format!("HYD_{}_MOTOR_RPM", id)),
             speed: AngularVelocity::new::<radian_per_second>(0.),
@@ -104,10 +105,7 @@ impl Actuator for FlapSlatHydraulicMotor {
 }
 impl SimulationElement for FlapSlatHydraulicMotor {
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write(
-            &self.rpm_id,
-            self.speed.get::<revolution_per_minute>(),
-        );
+        writer.write(&self.rpm_id, self.speed.get::<revolution_per_minute>());
     }
 }
 
@@ -155,22 +153,26 @@ impl FlapSlatAssembly {
         synchro_gear_breakpoints: [f64; 12],
         final_flap_angle_carac: [f64; 12],
     ) -> Self {
-        let left_motor= FlapSlatHydraulicMotor::new(context,
+        let left_motor = FlapSlatHydraulicMotor::new(
+            context,
             format!("LEFT_{}", id).as_str(),
             motor_displacement,
         );
 
-        let right_motor= FlapSlatHydraulicMotor::new(context,
+        let right_motor = FlapSlatHydraulicMotor::new(
+            context,
             format!("RIGHT_{}", id).as_str(),
             motor_displacement,
         );
 
         Self {
-            position_left_percent_id: context.get_identifier(format!("LEFT_{}_POSITION_PERCENT", id)),
-            position_right_percent_id: context.get_identifier(format!("RIGHT_{}_POSITION_PERCENT", id)),
+            position_left_percent_id: context
+                .get_identifier(format!("LEFT_{}_POSITION_PERCENT", id)),
+            position_right_percent_id: context
+                .get_identifier(format!("RIGHT_{}_POSITION_PERCENT", id)),
 
             angle_left_id: context.get_identifier(format!("LEFT_{}_ANGLE", id)),
-            angle_right_id:  context.get_identifier(format!("RIGHT_{}_ANGLE", id)),
+            angle_right_id: context.get_identifier(format!("RIGHT_{}_ANGLE", id)),
 
             flap_control_arm_position: Angle::new::<radian>(0.),
             max_synchro_gear_position,
@@ -194,11 +196,11 @@ impl FlapSlatAssembly {
 
     pub fn update(
         &mut self,
+        context: &UpdateContext,
         sfcc1_flap_position_request: Option<Angle>,
         sfcc2_flap_position_request: Option<Angle>,
         left_pressure: Pressure,
         right_pressure: Pressure,
-        context: &UpdateContext,
     ) {
         self.update_final_ffpu_angle_request(
             sfcc1_flap_position_request,
@@ -477,17 +479,119 @@ mod tests {
         thermodynamic_temperature::degree_celsius, velocity::knot,
     };
 
+    use crate::hydraulic::update_iterator::FixedStepLoop;
+
+    use crate::simulation::{Aircraft, SimulationElement, SimulationElementVisitor, UpdateContext};
+
+    use crate::simulation::test::{SimulationTestBed, TestBed};
+
+    struct TestAircraft {
+        core_hydraulic_updater: FixedStepLoop,
+
+        flaps_slats: FlapSlatAssembly,
+
+        left_motor_angle_request: Option<Angle>,
+        right_motor_angle_request: Option<Angle>,
+
+        left_motor_pressure: Pressure,
+        right_motor_pressure: Pressure,
+    }
+    impl TestAircraft {
+        fn new(context: &mut InitContext, max_speed: AngularVelocity) -> Self {
+            Self {
+                core_hydraulic_updater: FixedStepLoop::new(Duration::from_millis(33)),
+                flaps_slats: flap_system(context, max_speed),
+                left_motor_angle_request: None,
+                right_motor_angle_request: None,
+                left_motor_pressure: Pressure::new::<psi>(0.),
+                right_motor_pressure: Pressure::new::<psi>(0.),
+            }
+        }
+
+        fn set_current_pressure(
+            &mut self,
+            left_motor_pressure: Pressure,
+            right_motor_pressure: Pressure,
+        ) {
+            self.left_motor_pressure = left_motor_pressure;
+            self.right_motor_pressure = right_motor_pressure;
+        }
+
+        fn set_angle_request(&mut self, angle_request: Option<Angle>) {
+            self.left_motor_angle_request = angle_request;
+            self.right_motor_angle_request = angle_request;
+        }
+
+        fn set_angle_per_sfcc(
+            &mut self,
+            angle_request_sfcc1: Option<Angle>,
+            angle_request_sfcc2: Option<Angle>,
+        ) {
+            self.left_motor_angle_request = angle_request_sfcc1;
+            self.right_motor_angle_request = angle_request_sfcc2;
+        }
+    }
+    impl Aircraft for TestAircraft {
+        fn update_after_power_distribution(&mut self, context: &UpdateContext) {
+            self.core_hydraulic_updater.update(context);
+
+            for cur_time_step in &mut self.core_hydraulic_updater {
+                self.flaps_slats.update(
+                    context,
+                    self.left_motor_angle_request,
+                    self.right_motor_angle_request,
+                    self.left_motor_pressure,
+                    self.right_motor_pressure,
+                );
+            }
+        }
+    }
+    impl SimulationElement for TestAircraft {
+        fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+            self.flaps_slats.accept(visitor);
+
+            visitor.visit(self);
+        }
+    }
+
     #[test]
     fn flap_slat_assembly_init() {
         let max_speed = AngularVelocity::new::<radian_per_second>(0.11);
-        let flap_system = flap_system(max_speed);
+        let test_bed = SimulationTestBed::new(|context| TestAircraft::new(context, max_speed));
 
-        assert!(flap_system.position_feedback().get::<degree>() == 0.);
-        assert!(flap_system.left_motor.current_flow == VolumeRate::new::<gallon_per_minute>(0.));
-        assert!(flap_system.right_motor.current_flow == VolumeRate::new::<gallon_per_minute>(0.));
-
-        assert!(flap_system.left_motor.speed == AngularVelocity::new::<revolution_per_minute>(0.));
-        assert!(flap_system.right_motor.speed == AngularVelocity::new::<revolution_per_minute>(0.));
+        assert!(
+            test_bed.query(|a| a
+                .flaps_slats
+                .left_motor
+                .speed
+                .get::<revolution_per_minute>())
+                == 0.
+        );
+        assert!(
+            test_bed.query(|a| a
+                .flaps_slats
+                .right_motor
+                .speed
+                .get::<revolution_per_minute>())
+                == 0.
+        );
+        assert!(
+            test_bed.query(|a| a
+                .flaps_slats
+                .left_motor
+                .current_flow
+                .get::<gallon_per_minute>())
+                == 0.
+        );
+        assert!(
+            test_bed.query(|a| a
+                .flaps_slats
+                .right_motor
+                .current_flow
+                .get::<gallon_per_minute>())
+                == 0.
+        );
+        assert!(test_bed.query(|a| a.flaps_slats.position_feedback().get::<degree>()) == 0.);
     }
 
     #[test]
@@ -1016,8 +1120,9 @@ mod tests {
         )
     }
 
-    fn flap_system(max_speed: AngularVelocity) -> FlapSlatAssembly {
+    fn flap_system(context: &mut InitContext, max_speed: AngularVelocity) -> FlapSlatAssembly {
         FlapSlatAssembly::new(
+            context,
             "FLAPS",
             Volume::new::<cubic_inch>(0.32),
             max_speed,
