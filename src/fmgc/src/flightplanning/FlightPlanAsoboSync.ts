@@ -1,5 +1,3 @@
-/* eslint-disable no-underscore-dangle */
-/* eslint-disable require-yield */
 /*
  * MIT License
  *
@@ -191,8 +189,7 @@ export class FlightPlanAsoboSync {
 
     public static async SaveToGame(fpln) {
         return __awaiter(this, 0, 0, function* () {
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            return new Promise((resolve, reject) => __awaiter(this, 0, 0, function* () {
+            return new Promise(() => __awaiter(this, 0, 0, function* () {
                 FlightPlanAsoboSync.init();
                 const plan = fpln.getCurrentFlightPlan();
                 if ((plan.checksum !== this.fpChecksum)) {
@@ -302,7 +299,6 @@ function __awaiter(thisArg, _arguments, P, generator) {
             }
         }
         function step(result) {
-            // eslint-disable-next-line no-unused-expressions
             result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
         }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
