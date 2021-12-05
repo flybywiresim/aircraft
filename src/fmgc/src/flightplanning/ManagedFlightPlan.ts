@@ -832,7 +832,6 @@ export class ManagedFlightPlan {
 
             let waypointIndex = segment.offset;
             while (procedure.hasNext()) {
-                // eslint-disable-next-line no-await-in-loop
                 const waypoint = await procedure.getNext().catch(console.error);
 
                 if (waypoint !== undefined) {
@@ -890,7 +889,6 @@ export class ManagedFlightPlan {
             let waypointIndex = segment.offset;
             // console.log('MFP: buildArrival - ADDING WAYPOINTS ------------------------');
             while (procedure.hasNext()) {
-                // eslint-disable-next-line no-await-in-loop
                 const waypoint = await procedure.getNext().catch(console.error);
 
                 if (waypoint !== undefined) {
@@ -980,7 +978,6 @@ export class ManagedFlightPlan {
             let waypointIndex = _startIndex;
             // console.log('MFP: buildApproach - ADDING WAYPOINTS ------------------------');
             while (procedure.hasNext()) {
-                // eslint-disable-next-line no-await-in-loop
                 const waypoint = await procedure.getNext().catch(console.error);
 
                 if (waypoint !== undefined) {
