@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars,@typescript-eslint/no-empty-function,no-restricted-globals,no-underscore-dangle */
 /*
  * MIT License
  *
@@ -30,6 +29,7 @@ import { FlightPlanSegment } from './FlightPlanSegment';
 import { FlightPlanAsoboSync } from './FlightPlanAsoboSync';
 import { FixInfo } from './FixInfo';
 import { OneWayRunway } from '@fmgc/types/fstypes/FSTypes';
+import { FlightLevel } from '@fmgc/guidance/vnav/verticalFlightPlan/VerticalFlightPlan';
 
 export enum WaypointConstraintType {
     CLB = 1,
@@ -312,6 +312,7 @@ export class FlightPlanManager {
      * @param callback A callback to call when the operation has completed.
      */
     public async setOrigin(icao: string, callback = () => { }): Promise<void> {
+        const sameAirport = this.getOrigin()?.ident === icao;
         const currentFlightPlan = this._flightPlans[this._currentFlightPlanIndex];
         const airport = await this._parentInstrument.facilityLoader.getFacilityRaw(icao).catch(console.error);
         if (airport) {
@@ -320,7 +321,10 @@ export class FlightPlanManager {
             // clear pilot trans alt
             this.setOriginTransitionAltitude(undefined, false);
             // TODO get origin trans alt from database
-            this.setOriginTransitionAltitude(undefined, true);
+            // until then, don't erase the database value from ATSU if same airport as before
+            if (!sameAirport) {
+                this.setOriginTransitionAltitude(undefined, true);
+            }
             this.updateFlightPlanVersion().catch(console.error);
         }
         callback();
@@ -730,6 +734,7 @@ export class FlightPlanManager {
      * @param callback A callback to call once the operation completes.
      */
     public async setDestination(icao: string, callback = () => { }): Promise<void> {
+        const sameAirport = this.getDestination()?.ident === icao;
         const waypoint = await this._parentInstrument.facilityLoader.getFacilityRaw(icao);
         const currentFlightPlan = this._flightPlans[this._currentFlightPlanIndex];
         const destinationIndex = currentFlightPlan.length - 1;
@@ -755,7 +760,10 @@ export class FlightPlanManager {
         // clear pilot trans level
         this.setDestinationTransitionLevel(undefined, false);
         // TODO get destination trans level from database
-        this.setDestinationTransitionLevel(undefined, true);
+        // until then, don't erase the database value from ATSU if same airport as before
+        if (!sameAirport) {
+            this.setDestinationTransitionLevel(undefined, true);
+        }
 
         this.updateFlightPlanVersion().catch(console.error);
         callback();
@@ -1766,18 +1774,38 @@ export class FlightPlanManager {
         return this._currentFlightPlanVersion;
     }
 
-    get originTransitionAltitude(): number | undefined {
-        const currentFlightPlan = this._flightPlans[this._currentFlightPlanIndex];
+    public getOriginTransitionAltitude(flightPlanIndex: number = this._currentFlightPlanIndex): Feet | undefined {
+        const currentFlightPlan = this._flightPlans[flightPlanIndex];
         return currentFlightPlan.originTransitionAltitudePilot ?? currentFlightPlan.originTransitionAltitudeDb;
     }
 
-    get originTransitionAltitudeFromDb(): boolean {
-        const currentFlightPlan = this._flightPlans[this._currentFlightPlanIndex];
+    /**
+     * The transition altitude for the origin in the *active* flight plan
+     */
+    get originTransitionAltitude(): number | undefined {
+        return this.getOriginTransitionAltitude(0);
+    }
+
+    public getOriginTransitionAltitudeIsFromDb(flightPlanIndex: number = 0): boolean {
+        const currentFlightPlan = this._flightPlans[flightPlanIndex];
         return currentFlightPlan.originTransitionAltitudePilot === undefined;
     }
 
-    public setOriginTransitionAltitude(altitude?: number, database: boolean = false) {
-        const currentFlightPlan = this._flightPlans[this._currentFlightPlanIndex];
+    /**
+     * Is the transition altitude for the origin in the *active* flight plan from the database?
+     */
+    get originTransitionAltitudeIsFromDb(): boolean {
+        return this.getOriginTransitionAltitudeIsFromDb(0);
+    }
+
+    /**
+     * Set the transition altitude for the origin
+     * @param altitude transition altitude
+     * @param database is this value from the database, or pilot?
+     * @param flightPlanIndex index of flight plan to be edited, defaults to current plan being edited (not active!)
+     */
+    public setOriginTransitionAltitude(altitude?: number, database: boolean = false, flightPlanIndex = this._currentFlightPlanIndex) {
+        const currentFlightPlan = this._flightPlans[flightPlanIndex];
         if (database) {
             currentFlightPlan.originTransitionAltitudeDb = altitude;
         } else {
@@ -1786,18 +1814,38 @@ export class FlightPlanManager {
         this.updateFlightPlanVersion();
     }
 
-    get destinationTransitionLevel(): number | undefined {
-        const currentFlightPlan = this._flightPlans[this._currentFlightPlanIndex];
+    public getDestinationTransitionLevel(flightPlanIndex: number = this._currentFlightPlanIndex): FlightLevel | undefined {
+        const currentFlightPlan = this._flightPlans[flightPlanIndex];
         return currentFlightPlan.destinationTransitionLevelPilot ?? currentFlightPlan.destinationTransitionLevelDb;
     }
 
-    get destinationTransitionLevelFromDb(): boolean {
-        const currentFlightPlan = this._flightPlans[this._currentFlightPlanIndex];
+    /**
+     * The transition level for the destination in the *active* flight plan
+     */
+    get destinationTransitionLevel(): FlightLevel | undefined {
+        return this.getDestinationTransitionLevel(0);
+    }
+
+    public getDestinationTransitionLevelIsFromDb(flightPlanIndex: number = this._currentFlightPlanIndex): boolean {
+        const currentFlightPlan = this._flightPlans[flightPlanIndex];
         return currentFlightPlan.destinationTransitionLevelPilot === undefined;
     }
 
-    public setDestinationTransitionLevel(flightLevel?: number, database: boolean = false) {
-        const currentFlightPlan = this._flightPlans[this._currentFlightPlanIndex];
+    /**
+     * Is the transition level for the destination in the *active* flight plan from the database?
+     */
+    get destinationTransitionLevelIsFromDb(): boolean {
+        return this.getDestinationTransitionLevelIsFromDb(0);
+    }
+
+    /**
+     * Set the transition level for the destination
+     * @param flightLevel transition level
+     * @param database is this value from the database, or pilot?
+     * @param flightPlanIndex index of flight plan to be edited, defaults to current plan being edited (not active!)
+     */
+    public setDestinationTransitionLevel(flightLevel?: FlightLevel, database: boolean = false, flightPlanIndex = this._currentFlightPlanIndex) {
+        const currentFlightPlan = this._flightPlans[flightPlanIndex];
         if (database) {
             currentFlightPlan.destinationTransitionLevelDb = flightLevel;
         } else {

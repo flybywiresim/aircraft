@@ -409,10 +409,10 @@
                 <CURSOR>Hand</CURSOR>
                 <ANIM_NAME>#ANIM_NAME_BRT_DIM#</ANIM_NAME>
                 <CODE_POS_0>
-                (L:A32NX_MCDU_#SIDE#_BRIGHTNESS) 0.03 + 1 min (&gt;L:A32NX_MCDU_#SIDE#_BRIGHTNESS)
+                (L:A32NX_MCDU_#SIDE#_BRIGHTNESS) (L:A32NX_MCDU_#SIDE#_BRIGHTNESS) 0.2 * + 1 min (&gt;L:A32NX_MCDU_#SIDE#_BRIGHTNESS)
                 </CODE_POS_0>
                 <CODE_POS_2>
-                (L:A32NX_MCDU_#SIDE#_BRIGHTNESS) 0.03 - 0.05 max (&gt;L:A32NX_MCDU_#SIDE#_BRIGHTNESS)
+                (L:A32NX_MCDU_#SIDE#_BRIGHTNESS) (L:A32NX_MCDU_#SIDE#_BRIGHTNESS) 0.2 * - 0.02 max (&gt;L:A32NX_MCDU_#SIDE#_BRIGHTNESS)
                 </CODE_POS_2>
                 <STATE_MAX_TIMER>0.01</STATE_MAX_TIMER>
                 <STATE0_TIMER>0.01</STATE0_TIMER>
@@ -449,7 +449,7 @@
                 <EMISSIVE_CODE>
                     #DISPLAY_POWERED# sp0
                     l0 if{
-                        3 (L:A32NX_MCDU_#SIDE#_BRIGHTNESS, number) *
+                        (L:A32NX_MCDU_#SIDE#_BRIGHTNESS, number)
                     } els{
                         0
                     }

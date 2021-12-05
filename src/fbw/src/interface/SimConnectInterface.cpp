@@ -6,12 +6,18 @@
 
 using namespace std;
 
+// remove when aileron events can be processed via SimConnect
+bool SimConnectInterface::loggingFlightControlsEnabled = false;
+// remove when aileron events can be processed via SimConnect
+SimInput SimConnectInterface::simInput = {};
+// remove when aileron events can be processed via SimConnect
+double SimConnectInterface::flightControlsKeyChangeAileron = 0.0;
+
 bool SimConnectInterface::connect(bool clientDataEnabled,
                                   bool autopilotStateMachineEnabled,
                                   bool autopilotLawsEnabled,
                                   bool flyByWireEnabled,
                                   const std::vector<std::shared_ptr<ThrottleAxisMapping>>& throttleAxis,
-                                  std::shared_ptr<FlapsHandler> flapsHandler,
                                   std::shared_ptr<SpoilersHandler> spoilersHandler,
                                   std::shared_ptr<ElevatorTrimHandler> elevatorTrimHandler,
                                   std::shared_ptr<RudderTrimHandler> rudderTrimHandler,
@@ -19,6 +25,7 @@ bool SimConnectInterface::connect(bool clientDataEnabled,
                                   double keyChangeElevator,
                                   double keyChangeRudder,
                                   bool disableXboxCompatibilityRudderPlusMinus,
+                                  double minSimulationRate,
                                   double maxSimulationRate,
                                   bool limitSimulationRateByPerformance) {
   // info message
@@ -33,8 +40,6 @@ bool SimConnectInterface::connect(bool clientDataEnabled,
     cout << "WASM: Connected" << endl;
     // store throttle axis handler
     this->throttleAxis = throttleAxis;
-    // store flaps handler
-    this->flapsHandler = flapsHandler;
     // store spoilers handler
     this->spoilersHandler = spoilersHandler;
     // store elevator trim handler
@@ -42,6 +47,7 @@ bool SimConnectInterface::connect(bool clientDataEnabled,
     // store rudder trim handler
     this->rudderTrimHandler = rudderTrimHandler;
     // store maximum allowed simulation rate
+    this->minSimulationRate = minSimulationRate;
     this->maxSimulationRate = maxSimulationRate;
     this->limitSimulationRateByPerformance = limitSimulationRateByPerformance;
     // store is client data is enabled
@@ -71,6 +77,9 @@ bool SimConnectInterface::connect(bool clientDataEnabled,
       // failed to connect
       return false;
     }
+    // register key event handler
+    // remove when aileron events can be processed via SimConnect
+    register_key_event_handler(static_cast<GAUGE_KEY_EVENT_HANDLER>(processKeyEvent), NULL);
     // send initial event to FCU to force HDG mode
     execute_calculator_code("(>H:A320_Neo_FCU_HDG_PULL)", nullptr, nullptr, nullptr);
     // success
@@ -82,6 +91,9 @@ bool SimConnectInterface::connect(bool clientDataEnabled,
 
 void SimConnectInterface::disconnect() {
   if (isConnected) {
+    // unregister key event handler
+    // remove when aileron events can be processed via SimConnect
+    unregister_key_event_handler(static_cast<GAUGE_KEY_EVENT_HANDLER>(processKeyEvent), NULL);
     // info message
     cout << "WASM: Disconnecting..." << endl;
     // close connection
@@ -97,6 +109,11 @@ void SimConnectInterface::disconnect() {
 
 void SimConnectInterface::setSampleTime(double sampleTime) {
   this->sampleTime = sampleTime;
+}
+
+void SimConnectInterface::updateSimulationRateLimits(double minSimulationRate, double maxSimulationRate) {
+  this->minSimulationRate = minSimulationRate;
+  this->maxSimulationRate = maxSimulationRate;
 }
 
 bool SimConnectInterface::prepareSimDataSimConnectDataDefinitions() {
@@ -135,8 +152,6 @@ bool SimConnectInterface::prepareSimDataSimConnectDataDefinitions() {
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "GEAR ANIMATION POSITION:0", "NUMBER");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "GEAR ANIMATION POSITION:1", "NUMBER");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "GEAR ANIMATION POSITION:2", "NUMBER");
-  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "FLAPS HANDLE INDEX", "NUMBER");
-  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "TRAILING EDGE FLAPS LEFT ANGLE", "DEGREES");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "SPOILERS HANDLE POSITION", "POSITION");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "SPOILERS LEFT POSITION", "PERCENT OVER 100");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "SPOILERS RIGHT POSITION", "PERCENT OVER 100");
@@ -220,6 +235,11 @@ bool SimConnectInterface::prepareSimDataSimConnectDataDefinitions() {
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "NAV MAGVAR:3", "DEGREES");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_LATLONALT, "NAV VOR LATLONALT:3", "STRUCT");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_LATLONALT, "NAV GS LATLONALT:3", "STRUCT");
+  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "BRAKE LEFT POSITION", "POSITION");
+  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "BRAKE RIGHT POSITION", "POSITION");
+  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "SPOILER HANDLE POSITION", "POSITION");
+  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "FLAPS HANDLE INDEX", "NUMBER");
+  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "GEAR HANDLE POSITION", "POSITION");
 
   return result;
 }
@@ -386,16 +406,6 @@ bool SimConnectInterface::prepareSimInputSimConnectDataDefinitions() {
   result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE_REVERSE_THRUST_TOGGLE, "THROTTLE_REVERSE_THRUST_TOGGLE", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE_REVERSE_THRUST_HOLD, "THROTTLE_REVERSE_THRUST_HOLD", true);
 
-  result &= addInputDataDefinition(hSimConnect, 0, Events::FLAPS_UP, "FLAPS_UP", true);
-  result &= addInputDataDefinition(hSimConnect, 0, Events::FLAPS_1, "FLAPS_1", true);
-  result &= addInputDataDefinition(hSimConnect, 0, Events::FLAPS_2, "FLAPS_2", true);
-  result &= addInputDataDefinition(hSimConnect, 0, Events::FLAPS_3, "FLAPS_3", true);
-  result &= addInputDataDefinition(hSimConnect, 0, Events::FLAPS_DOWN, "FLAPS_DOWN", true);
-  result &= addInputDataDefinition(hSimConnect, 0, Events::FLAPS_INCR, "FLAPS_INCR", true);
-  result &= addInputDataDefinition(hSimConnect, 0, Events::FLAPS_DECR, "FLAPS_DECR", true);
-  result &= addInputDataDefinition(hSimConnect, 0, Events::FLAPS_SET, "FLAPS_SET", true);
-  result &= addInputDataDefinition(hSimConnect, 0, Events::AXIS_FLAPS_SET, "AXIS_FLAPS_SET", true);
-
   result &= addInputDataDefinition(hSimConnect, 0, Events::SPOILERS_ON, "SPOILERS_ON", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::SPOILERS_OFF, "SPOILERS_OFF", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::SPOILERS_TOGGLE, "SPOILERS_TOGGLE", true);
@@ -428,8 +438,6 @@ bool SimConnectInterface::prepareSimOutputSimConnectDataDefinitions() {
   result &= addDataDefinition(hSimConnect, 4, SIMCONNECT_DATATYPE_FLOAT64, "GENERAL ENG THROTTLE LEVER POSITION:2", "PERCENT");
   result &= addDataDefinition(hSimConnect, 4, SIMCONNECT_DATATYPE_FLOAT64, "GENERAL ENG THROTTLE MANAGED MODE:1", "NUMBER");
   result &= addDataDefinition(hSimConnect, 4, SIMCONNECT_DATATYPE_FLOAT64, "GENERAL ENG THROTTLE MANAGED MODE:2", "NUMBER");
-
-  result &= addDataDefinition(hSimConnect, 5, SIMCONNECT_DATATYPE_FLOAT64, "FLAPS HANDLE INDEX", "NUMBER");
 
   result &= addDataDefinition(hSimConnect, 6, SIMCONNECT_DATATYPE_FLOAT64, "SPOILERS HANDLE POSITION", "POSITION");
 
@@ -508,6 +516,14 @@ bool SimConnectInterface::prepareClientDataDefinitions() {
                                                  SIMCONNECT_CLIENTDATATYPE_FLOAT64);
   result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
                                                  SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_INT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_INT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_INT64);
 
   // request data to be updated when set
   result &= SimConnect_RequestClientData(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, ClientData::AUTOPILOT_STATE_MACHINE,
@@ -686,6 +702,20 @@ bool SimConnectInterface::prepareClientDataDefinitions() {
   result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
                                                  SIMCONNECT_CLIENTDATATYPE_FLOAT64);
   result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_INT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_INT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_INT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_INT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
                                                  SIMCONNECT_CLIENTDATATYPE_FLOAT64);
   result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
                                                  SIMCONNECT_CLIENTDATATYPE_FLOAT64);
@@ -699,6 +729,10 @@ bool SimConnectInterface::prepareClientDataDefinitions() {
   result &= SimConnect_CreateClientData(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST, sizeof(ClientDataLocalVariablesAutothrust),
                                         SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
   // add data definitions
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
   result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
                                                  SIMCONNECT_CLIENTDATATYPE_FLOAT64);
   result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
@@ -832,11 +866,6 @@ bool SimConnectInterface::sendData(SimOutputThrottles output) {
   return sendData(4, sizeof(output), &output);
 }
 
-bool SimConnectInterface::sendData(SimOutputFlaps output) {
-  // write data and return result
-  return sendData(5, sizeof(output), &output);
-}
-
 bool SimConnectInterface::sendData(SimOutputSpoilers output) {
   // write data and return result
   return sendData(6, sizeof(output), &output);
@@ -852,7 +881,7 @@ bool SimConnectInterface::sendEvent(Events eventId) {
 }
 
 bool SimConnectInterface::sendEvent(Events eventId, DWORD data) {
-  return sendEvent(eventId, eventId, SIMCONNECT_GROUP_PRIORITY_HIGHEST);
+  return sendEvent(eventId, data, SIMCONNECT_GROUP_PRIORITY_HIGHEST);
 }
 
 bool SimConnectInterface::sendEvent(Events eventId, DWORD data, DWORD priority) {
@@ -973,6 +1002,37 @@ void SimConnectInterface::setLoggingThrottlesEnabled(bool enabled) {
 
 bool SimConnectInterface::getLoggingThrottlesEnabled() {
   return loggingThrottlesEnabled;
+}
+
+// remove when aileron events can be processed via SimConnect (which also allows to mask the events)
+void SimConnectInterface::processKeyEvent(ID32 event, UINT32 evdata, PVOID userdata) {
+  switch (event) {
+    case KEY_AILERON_LEFT: {
+      simInput.inputs[AXIS_AILERONS_SET] = fmin(1.0, simInput.inputs[AXIS_AILERONS_SET] + flightControlsKeyChangeAileron);
+      if (loggingFlightControlsEnabled) {
+        cout << "WASM: AILERONS_LEFT: ";
+        cout << "(no data)";
+        cout << " -> ";
+        cout << simInput.inputs[AXIS_AILERONS_SET];
+        cout << endl;
+      }
+      break;
+    }
+    case KEY_AILERON_RIGHT: {
+      simInput.inputs[AXIS_AILERONS_SET] = fmax(-1.0, simInput.inputs[AXIS_AILERONS_SET] - flightControlsKeyChangeAileron);
+      if (loggingFlightControlsEnabled) {
+        cout << "WASM: AILERONS_RIGHT: ";
+        cout << "(no data)";
+        cout << " -> ";
+        cout << simInput.inputs[AXIS_AILERONS_SET];
+        cout << endl;
+      }
+      break;
+    }
+    default: {
+      return;
+    }
+  }
 }
 
 void SimConnectInterface::simConnectProcessDispatchMessage(SIMCONNECT_RECV* pData, DWORD* cbData) {
@@ -2146,114 +2206,6 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
       break;
     }
 
-    case Events::FLAPS_UP: {
-      flapsHandler->onEventFlapsUp();
-      if (loggingFlightControlsEnabled) {
-        cout << "WASM: FLAPS_UP: : ";
-        cout << "(no data)";
-        cout << " -> ";
-        cout << flapsHandler->getHandlePosition();
-        cout << endl;
-      }
-      break;
-    }
-
-    case Events::FLAPS_1: {
-      flapsHandler->onEventFlapsSet_1();
-      if (loggingFlightControlsEnabled) {
-        cout << "WASM: FLAPS_1: ";
-        cout << "(no data)";
-        cout << " -> ";
-        cout << flapsHandler->getHandlePosition();
-        cout << endl;
-      }
-      break;
-    }
-
-    case Events::FLAPS_2: {
-      flapsHandler->onEventFlapsSet_2();
-      if (loggingFlightControlsEnabled) {
-        cout << "WASM: FLAPS_2: ";
-        cout << "(no data)";
-        cout << " -> ";
-        cout << flapsHandler->getHandlePosition();
-        cout << endl;
-      }
-      break;
-    }
-
-    case Events::FLAPS_3: {
-      flapsHandler->onEventFlapsSet_3();
-      if (loggingFlightControlsEnabled) {
-        cout << "WASM: FLAPS_3: ";
-        cout << "(no data)";
-        cout << " -> ";
-        cout << flapsHandler->getHandlePosition();
-        cout << endl;
-      }
-      break;
-    }
-
-    case Events::FLAPS_DOWN: {
-      flapsHandler->onEventFlapsDown();
-      if (loggingFlightControlsEnabled) {
-        cout << "WASM: FLAPS_DOWN: ";
-        cout << "(no data)";
-        cout << " -> ";
-        cout << flapsHandler->getHandlePosition();
-        cout << endl;
-      }
-      break;
-    }
-
-    case Events::FLAPS_INCR: {
-      flapsHandler->onEventFlapsIncrease();
-      if (loggingFlightControlsEnabled) {
-        cout << "WASM: FLAPS_INCR: ";
-        cout << "(no data)";
-        cout << " -> ";
-        cout << flapsHandler->getHandlePosition();
-        cout << endl;
-      }
-      break;
-    }
-
-    case Events::FLAPS_DECR: {
-      flapsHandler->onEventFlapsDecrease();
-      if (loggingFlightControlsEnabled) {
-        cout << "WASM: FLAPS_DECR: ";
-        cout << "(no data)";
-        cout << " -> ";
-        cout << flapsHandler->getHandlePosition();
-        cout << endl;
-      }
-      break;
-    }
-
-    case Events::FLAPS_SET: {
-      flapsHandler->onEventFlapsSet(static_cast<long>(event->dwData));
-      if (loggingFlightControlsEnabled) {
-        cout << "WASM: FLAPS_SET: ";
-        cout << static_cast<long>(event->dwData);
-        cout << " -> ";
-        cout << flapsHandler->getHandlePosition();
-        cout << endl;
-      }
-      break;
-    }
-
-    case Events::AXIS_FLAPS_SET: {
-      flapsHandler->onEventFlapsAxisSet(static_cast<long>(event->dwData));
-      if (loggingFlightControlsEnabled) {
-        cout << "WASM: AXIS_FLAPS_SET: ";
-        cout << static_cast<long>(event->dwData);
-        cout << " -> ";
-        cout << flapsHandler->getHandlePosition();
-        cout << endl;
-      }
-      break;
-    }
-
     case Events::SPOILERS_ON: {
       spoilersHandler->onEventSpoilersOn();
       if (loggingFlightControlsEnabled) {
@@ -2399,7 +2351,7 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
     }
 
     case Events::SIM_RATE_DECR: {
-      if (simData.simulation_rate > 1) {
+      if (simData.simulation_rate > minSimulationRate) {
         sendEvent(Events::SIM_RATE_DECR, 0, SIMCONNECT_GROUP_PRIORITY_DEFAULT);
         cout << "WASM: Simulation rate " << simData.simulation_rate;
         cout << " -> " << simData.simulation_rate / 2;

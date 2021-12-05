@@ -127,7 +127,22 @@ export const SettingsPage: FC<SettingsPageProps> = ({ name, children }) => {
                     <div className={`divide-y-2 divide-theme-accent ${contentOverflows && 'mr-6'}`} ref={contentRef}>
                         {children}
                     </div>
-                </div>
+<div className="py-4 flex flex-row justify-between items-center">
+                        <span className="text-lg text-gray-300">Boarding Time</span>
+                        <SelectGroup>
+                            {boardingRateButtons.map((button) => (
+                                <SelectItem
+                                    enabled
+                                    onSelect={() => setBoardingRate(button.setting)}
+                                    selected={boardingRate === button.setting}
+                                >
+                                    {button.name}
+                                </SelectItem>
+                            ))}
+                        </SelectGroup>
+                    </div>
+
+                    </div>
             </div>
         </div>
     );

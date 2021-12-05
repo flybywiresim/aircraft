@@ -80,8 +80,6 @@ class FMCMainDisplay extends BaseAirliners {
         this.engineOutAccelerationAltitude = undefined;
         this.engineOutAccelerationAltitudeGoaround = undefined;
         this.engineOutAccelerationAltitudeIsPilotEntered = undefined;
-        this.transitionAltitude = undefined;
-        this.transitionAltitudeIsPilotEntered = undefined;
         this._windDirections = undefined;
         this._fuelPlanningPhases = undefined;
         this._zeroFuelWeightZFWCGEntered = undefined;
@@ -296,7 +294,6 @@ class FMCMainDisplay extends BaseAirliners {
         this.routeIndex = 0;
         this.coRoute = "";
         this.tmpOrigin = "";
-        this.transitionAltitude = undefined;
         this.perfTOTemp = NaN;
         this._overridenFlapApproachSpeed = NaN;
         this._overridenSlatApproachSpeed = NaN;
@@ -348,7 +345,6 @@ class FMCMainDisplay extends BaseAirliners {
         this.engineOutAccelerationAltitude = NaN;
         this.engineOutAccelerationAltitudeGoaround = NaN;
         this.engineOutAccelerationAltitudeIsPilotEntered = false;
-        this.transitionAltitudeIsPilotEntered = false;
 
         this._windDirections = {
             TAILWIND : "TL",
@@ -392,6 +388,8 @@ class FMCMainDisplay extends BaseAirliners {
             originIcao: "",
             destinationIcao: "",
             blockFuel: "",
+            paxCount: "",
+            cargo: undefined,
             payload: undefined,
             estZfw: "",
             sendStatus: "READY",
@@ -493,8 +491,6 @@ class FMCMainDisplay extends BaseAirliners {
         SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", NaN);
         SimVar.SetSimVarValue("L:AIRLINER_V2_SPEED", "Knots", NaN);
         SimVar.SetSimVarValue("L:AIRLINER_VR_SPEED", "Knots", NaN);
-        SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", this.transitionAltitude);
-        SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", this.perfApprTransAlt);
 
         CDUPerformancePage.UpdateThrRedAccFromOrigin(this, true, true);
         CDUPerformancePage.UpdateEngOutAccFromOrigin(this);
@@ -2220,10 +2216,7 @@ class FMCMainDisplay extends BaseAirliners {
     trySetTakeOffTransAltitude(s) {
         if (s === FMCMainDisplay.clrValue) {
             // TODO when possible fetch default from database
-            this.transitionAltitude = this.transitionAltitudeIsPilotEntered ? 10000 : NaN;
-            this.transitionAltitudeIsPilotEntered = false;
             this.flightPlanManager.setOriginTransitionAltitude();
-            SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", 0);
             return true;
         }
 
@@ -2239,10 +2232,7 @@ class FMCMainDisplay extends BaseAirliners {
             return false;
         }
 
-        this.transitionAltitude = value;
-        this.transitionAltitudeIsPilotEntered = true;
         this.flightPlanManager.setOriginTransitionAltitude(value);
-        SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", value);
         return true;
     }
 
@@ -3007,7 +2997,6 @@ class FMCMainDisplay extends BaseAirliners {
     setPerfApprTransAlt(s) {
         if (s === FMCMainDisplay.clrValue) {
             this.flightPlanManager.setDestinationTransitionLevel();
-            SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", 0);
             return true;
         }
 
@@ -3022,7 +3011,6 @@ class FMCMainDisplay extends BaseAirliners {
         }
 
         this.flightPlanManager.setDestinationTransitionLevel(Math.round(value / 100));
-        SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", value);
         return true;
     }
 
@@ -3406,7 +3394,7 @@ class FMCMainDisplay extends BaseAirliners {
         const totalWeight = SimVar.GetSimVarValue("TOTAL WEIGHT", "kilograms") / 1000;
         const blockFuel = SimVar.GetSimVarValue("FUEL TOTAL QUANTITY", "gallons") * SimVar.GetSimVarValue("FUEL WEIGHT PER GALLON", "kilograms") / 1000;
         this.zeroFuelWeight = totalWeight - blockFuel;
-        this.zeroFuelWeightMassCenter = SimVar.GetSimVarValue("CG PERCENT", "percent");
+        this.zeroFuelWeightMassCenter = getZfwcg().toFixed(1);
     }
 
     updateFuelVars() {
