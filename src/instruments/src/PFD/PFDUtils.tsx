@@ -1,4 +1,3 @@
-/* eslint-disable max-classes-per-file */
 import { Arinc429Word } from '@shared/arinc429';
 import { getSmallestAngle } from '@instruments/common/utils';
 import React from 'react';

@@ -1,4 +1,3 @@
-/* eslint-disable max-classes-per-file */
 type SignStatusMatrixRange = (typeof Arinc429Word.SignStatusMatrix)[keyof typeof Arinc429Word.SignStatusMatrix];
 
 export class Arinc429WordSsmParseError extends Error {
@@ -28,7 +27,6 @@ export class Arinc429Word {
     constructor(word: number) {
         Arinc429Word.f64View[0] = word;
 
-        // eslint-disable-next-line prefer-destructuring
         const ssm = Arinc429Word.u32View[0];
         if (ssm >= 0b00 && ssm <= 0b11) {
             this.ssm = ssm as SignStatusMatrixRange;
@@ -36,7 +34,6 @@ export class Arinc429Word {
             throw new Arinc429WordSsmParseError(ssm);
         }
 
-        // eslint-disable-next-line prefer-destructuring
         this.value = Arinc429Word.f32View[1];
     }
 
