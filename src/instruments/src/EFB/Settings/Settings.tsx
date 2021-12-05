@@ -136,7 +136,7 @@ export const SettingsPage: FC<SettingsPageProps> = ({ name, children }) => {
 type SettingItemProps = {
     name: string,
     unrealistic?: boolean,
-    disabled?: boolean
+    disabled?: boolean,
 }
 
 export const SettingItem: FC<SettingItemProps> = ({ name, unrealistic, disabled, children }) => (
