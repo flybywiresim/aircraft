@@ -128,15 +128,15 @@ void AutothrustModelClass::Autothrust_RateLimiterwithThreshold(real_T rtu_U, rea
 real_T AutothrustModelClass::Autothrust_timeSinceConditionArmedActive(real_T in_time_simulation_time, athr_status status)
 {
   if (!Autothrust_DWork.eventTime_not_empty_hl) {
-    Autothrust_DWork.eventTime_cc = in_time_simulation_time;
+    Autothrust_DWork.eventTime_c = in_time_simulation_time;
     Autothrust_DWork.eventTime_not_empty_hl = true;
   }
 
-  if ((!(status != athr_status_DISENGAGED)) || (Autothrust_DWork.eventTime_cc == 0.0)) {
-    Autothrust_DWork.eventTime_cc = in_time_simulation_time;
+  if ((!(status != athr_status_DISENGAGED)) || (Autothrust_DWork.eventTime_c == 0.0)) {
+    Autothrust_DWork.eventTime_c = in_time_simulation_time;
   }
 
-  return in_time_simulation_time - Autothrust_DWork.eventTime_cc;
+  return in_time_simulation_time - Autothrust_DWork.eventTime_c;
 }
 
 void AutothrustModelClass::step()
@@ -167,7 +167,7 @@ void AutothrustModelClass::step()
   int32_T rtb_on_ground;
   boolean_T ATHR_ENGAGED_tmp;
   boolean_T ATHR_ENGAGED_tmp_0;
-  boolean_T ATHR_PB;
+  boolean_T ATHR_ENGAGED_tmp_1;
   boolean_T condition02;
   boolean_T condition_AP_FD_ATHR_Specific;
   boolean_T condition_AlphaFloor;
@@ -380,9 +380,9 @@ void AutothrustModelClass::step()
   Autothrust_DWork.Memory_PreviousInput = Autothrust_P.Logic_table[(((static_cast<uint32_T>(rtb_y_e >=
     Autothrust_P.CompareToConstant_const_k) << 1) + Autothrust_U.in.input.ATHR_reset_disable) << 1) +
     Autothrust_DWork.Memory_PreviousInput];
-  if (!Autothrust_DWork.eventTime_not_empty_g) {
+  if (!Autothrust_DWork.eventTime_not_empty_gf) {
     Autothrust_DWork.eventTime_i = Autothrust_U.in.time.simulation_time;
-    Autothrust_DWork.eventTime_not_empty_g = true;
+    Autothrust_DWork.eventTime_not_empty_gf = true;
   }
 
   if ((Autothrust_U.in.input.ATHR_push != Autothrust_P.CompareToConstant1_const) || (Autothrust_DWork.eventTime_i == 0.0))
@@ -528,41 +528,39 @@ void AutothrustModelClass::step()
   }
 
   condition_AP_FD_ATHR_Specific = !Autothrust_DWork.Memory_PreviousInput;
-  condition02 = !Autothrust_DWork.ATHR_ENGAGED;
-  ATHR_PB = ((rtb_on_ground == 0) && condition02 && rtb_BusAssignment_n.data_computed.ATHR_push);
-  if ((rtb_BusAssignment_n.data_computed.time_since_touchdown < 30.0) && (Autothrust_U.in.input.TLA_1_deg == 45.0) &&
-      (Autothrust_U.in.input.TLA_2_deg == 45.0)) {
+  condition02 = (Autothrust_U.in.input.is_SRS_TO_mode_active || Autothrust_U.in.input.is_SRS_GA_mode_active);
+  Autothrust_DWork.condition_TOGA_latch = (((!Autothrust_DWork.prev_SRS_TO_GA_mode_active) && condition02) ||
+    Autothrust_DWork.condition_TOGA_latch);
+  if (!Autothrust_DWork.eventTime_not_empty_g) {
+    Autothrust_DWork.eventTime_o = Autothrust_U.in.time.simulation_time;
+    Autothrust_DWork.eventTime_not_empty_g = true;
+  }
+
+  if ((!Autothrust_DWork.condition_TOGA_latch) || (Autothrust_DWork.eventTime_o == 0.0)) {
+    Autothrust_DWork.eventTime_o = Autothrust_U.in.time.simulation_time;
+  }
+
+  if (Autothrust_U.in.time.simulation_time - Autothrust_DWork.eventTime_o >= 0.3) {
     condition_TOGA = true;
+    Autothrust_DWork.condition_TOGA_latch = false;
   } else {
-    if (!Autothrust_DWork.eventTime_not_empty_p) {
-      Autothrust_DWork.eventTime_c = Autothrust_U.in.time.simulation_time;
-      Autothrust_DWork.eventTime_not_empty_p = true;
-    }
-
-    if ((rtb_BusAssignment_n.data_computed.time_since_touchdown < 30.0) || (Autothrust_U.in.input.TLA_1_deg < 35.0) ||
-        (Autothrust_U.in.input.TLA_2_deg < 35.0) || (Autothrust_DWork.eventTime_c == 0.0)) {
-      Autothrust_DWork.eventTime_c = Autothrust_U.in.time.simulation_time;
-    }
-
-    condition_TOGA = (Autothrust_U.in.time.simulation_time - Autothrust_DWork.eventTime_c >= 0.8);
+    condition_TOGA = false;
   }
 
   condition_AlphaFloor_tmp = !Autothrust_DWork.sInhibit;
   condition_AlphaFloor = (condition_AlphaFloor_tmp && Autothrust_U.in.input.alpha_floor_condition &&
     (!Autothrust_DWork.prev_condition_AlphaFloor));
-  Autothrust_DWork.flightDirectorOffTakeOff = (((!Autothrust_U.in.input.FD_active) && (rtb_on_ground != 0) &&
-    condition_TOGA && ((Autothrust_U.in.input.flight_phase <= 1.0) ||
-                       (rtb_BusAssignment_n.data_computed.time_since_touchdown >= 30.0))) || ((!ATHR_PB) && (!rtb_out) &&
-    (!condition_AlphaFloor) && Autothrust_DWork.flightDirectorOffTakeOff));
-  ATHR_ENGAGED_tmp = ((Autothrust_DWork.prev_TLA_1 <= 0.0) || (Autothrust_U.in.input.TLA_1_deg != 0.0));
-  ATHR_ENGAGED_tmp_0 = ((Autothrust_DWork.prev_TLA_2 <= 0.0) || (Autothrust_U.in.input.TLA_2_deg != 0.0));
+  ATHR_ENGAGED_tmp = !Autothrust_DWork.ATHR_ENGAGED;
+  ATHR_ENGAGED_tmp_0 = ((Autothrust_DWork.prev_TLA_1 <= 0.0) || (Autothrust_U.in.input.TLA_1_deg != 0.0));
+  ATHR_ENGAGED_tmp_1 = ((Autothrust_DWork.prev_TLA_2 <= 0.0) || (Autothrust_U.in.input.TLA_2_deg != 0.0));
   rtb_NOT = !Autothrust_U.in.input.ATHR_disconnect;
-  Autothrust_DWork.ATHR_ENGAGED = ((condition_AP_FD_ATHR_Specific && (!Autothrust_DWork.flightDirectorOffTakeOff) &&
-    (ATHR_PB || condition_TOGA || condition_AlphaFloor || (Autothrust_U.in.input.is_TCAS_active &&
-    (!Autothrust_DWork.prev_condition_TCAS)))) || (condition_AP_FD_ATHR_Specific &&
-    ((!rtb_BusAssignment_n.data_computed.ATHR_push) || condition02 || Autothrust_U.in.input.is_LAND_mode_active) &&
-    rtb_NOT && ((ATHR_ENGAGED_tmp || ATHR_ENGAGED_tmp_0) && (ATHR_ENGAGED_tmp || (Autothrust_U.in.input.TLA_2_deg != 0.0))
-                && (ATHR_ENGAGED_tmp_0 || (Autothrust_U.in.input.TLA_1_deg != 0.0))) && Autothrust_DWork.ATHR_ENGAGED));
+  Autothrust_DWork.ATHR_ENGAGED = ((condition_AP_FD_ATHR_Specific && (((rtb_on_ground == 0) && ATHR_ENGAGED_tmp &&
+    rtb_BusAssignment_n.data_computed.ATHR_push) || condition_TOGA || condition_AlphaFloor ||
+    (Autothrust_U.in.input.is_TCAS_active && (!Autothrust_DWork.prev_condition_TCAS)))) ||
+    (condition_AP_FD_ATHR_Specific && ((!rtb_BusAssignment_n.data_computed.ATHR_push) || ATHR_ENGAGED_tmp ||
+    Autothrust_U.in.input.is_LAND_mode_active) && rtb_NOT && ((ATHR_ENGAGED_tmp_0 || ATHR_ENGAGED_tmp_1) &&
+    (ATHR_ENGAGED_tmp_0 || (Autothrust_U.in.input.TLA_2_deg != 0.0)) && (ATHR_ENGAGED_tmp_1 ||
+    (Autothrust_U.in.input.TLA_1_deg != 0.0))) && Autothrust_DWork.ATHR_ENGAGED));
   condition_AP_FD_ATHR_Specific = (Autothrust_DWork.ATHR_ENGAGED && (rtb_out || condition_AlphaFloor));
   if (Autothrust_DWork.ATHR_ENGAGED && condition_AP_FD_ATHR_Specific) {
     status = athr_status_ENGAGED_ACTIVE;
@@ -576,6 +574,7 @@ void AutothrustModelClass::step()
   Autothrust_DWork.prev_TLA_2 = Autothrust_U.in.input.TLA_2_deg;
   Autothrust_DWork.prev_condition_AlphaFloor = (Autothrust_U.in.input.alpha_floor_condition && condition_AlphaFloor_tmp);
   Autothrust_DWork.prev_condition_TCAS = Autothrust_U.in.input.is_TCAS_active;
+  Autothrust_DWork.prev_SRS_TO_GA_mode_active = condition02;
   if (Autothrust_U.in.input.TLA_1_deg > Autothrust_U.in.input.TLA_2_deg) {
     rtb_OATCornerPoint = Autothrust_U.in.input.TLA_1_deg;
   } else {
@@ -599,27 +598,27 @@ void AutothrustModelClass::step()
               (Autothrust_U.in.input.TLA_2_deg == 35.0))) {
     Autothrust_DWork.pMode = athr_mode_MAN_MCT;
   } else {
-    condition_AlphaFloor_tmp = (Autothrust_U.in.data.is_engine_operative_1 &&
+    condition_AP_FD_ATHR_Specific = (Autothrust_U.in.data.is_engine_operative_1 &&
       (!Autothrust_U.in.data.is_engine_operative_2));
-    condition_AP_FD_ATHR_Specific = (Autothrust_U.in.data.is_engine_operative_2 &&
+    condition_AlphaFloor_tmp = (Autothrust_U.in.data.is_engine_operative_2 &&
       (!Autothrust_U.in.data.is_engine_operative_1));
     if ((status == athr_status_ENGAGED_ACTIVE) && (Autothrust_U.in.input.mode_requested == 3.0) &&
-        ((condition_AlphaFloor_tmp && (Autothrust_U.in.input.TLA_1_deg == 35.0) && (Autothrust_U.in.input.TLA_2_deg <=
-           35.0)) || (condition_AP_FD_ATHR_Specific && (Autothrust_U.in.input.TLA_2_deg == 35.0) &&
-                      (Autothrust_U.in.input.TLA_1_deg <= 35.0)))) {
+        ((condition_AP_FD_ATHR_Specific && (Autothrust_U.in.input.TLA_1_deg == 35.0) && (Autothrust_U.in.input.TLA_2_deg
+           <= 35.0)) || (condition_AlphaFloor_tmp && (Autothrust_U.in.input.TLA_2_deg == 35.0) &&
+                         (Autothrust_U.in.input.TLA_1_deg <= 35.0)))) {
       Autothrust_DWork.pMode = athr_mode_THR_MCT;
     } else if ((status == athr_status_ENGAGED_ACTIVE) && (Autothrust_U.in.input.mode_requested == 3.0) &&
                Autothrust_U.in.data.is_engine_operative_1 && Autothrust_U.in.data.is_engine_operative_2 &&
                (rtb_OATCornerPoint == 25.0)) {
       Autothrust_DWork.pMode = athr_mode_THR_CLB;
     } else {
-      ATHR_PB = (Autothrust_U.in.data.is_engine_operative_1 && Autothrust_U.in.data.is_engine_operative_2);
-      if ((status == athr_status_ENGAGED_ACTIVE) && (Autothrust_U.in.input.mode_requested == 3.0) && ((ATHR_PB &&
+      condition_TOGA = (Autothrust_U.in.data.is_engine_operative_1 && Autothrust_U.in.data.is_engine_operative_2);
+      if ((status == athr_status_ENGAGED_ACTIVE) && (Autothrust_U.in.input.mode_requested == 3.0) && ((condition_TOGA &&
             (Autothrust_U.in.input.TLA_1_deg < 25.0) && (Autothrust_U.in.input.TLA_2_deg < 25.0)) ||
-           (condition_AlphaFloor_tmp && (Autothrust_U.in.input.TLA_1_deg < 35.0)) || (condition_AP_FD_ATHR_Specific &&
+           (condition_AP_FD_ATHR_Specific && (Autothrust_U.in.input.TLA_1_deg < 35.0)) || (condition_AlphaFloor_tmp &&
             (Autothrust_U.in.input.TLA_2_deg < 35.0)))) {
         Autothrust_DWork.pMode = athr_mode_THR_LVR;
-      } else if ((status == athr_status_ENGAGED_ARMED) && ((ATHR_PB && (rtb_OATCornerPoint > 25.0) &&
+      } else if ((status == athr_status_ENGAGED_ARMED) && ((condition_TOGA && (rtb_OATCornerPoint > 25.0) &&
                    (rtb_OATCornerPoint < 35.0)) || ((rtb_OATCornerPoint > 35.0) && (rtb_OATCornerPoint < 45.0)))) {
         Autothrust_DWork.pMode = athr_mode_MAN_THR;
       } else if ((status == athr_status_ENGAGED_ACTIVE) && (Autothrust_U.in.input.mode_requested == 2.0)) {
@@ -644,15 +643,15 @@ void AutothrustModelClass::step()
     (!Autothrust_DWork.was_SRS_TO_active) && (Autothrust_U.in.data.H_ind_ft >
     Autothrust_U.in.input.thrust_reduction_altitude)) || (Autothrust_U.in.input.is_SRS_GA_mode_active &&
     (!Autothrust_DWork.was_SRS_GA_active) && (Autothrust_U.in.data.H_ind_ft >
-    Autothrust_U.in.input.thrust_reduction_altitude_go_around)) || ((Autothrust_U.in.input.is_SRS_TO_mode_active ||
-    Autothrust_U.in.input.is_SRS_GA_mode_active) && Autothrust_DWork.inhibitAboveThrustReductionAltitude));
-  ATHR_PB = (Autothrust_U.in.data.is_engine_operative_1 && Autothrust_U.in.data.is_engine_operative_2);
-  condition_TOGA = (Autothrust_U.in.data.is_engine_operative_1 && (!Autothrust_U.in.data.is_engine_operative_2));
-  condition_AlphaFloor = (Autothrust_U.in.data.is_engine_operative_2 && (!Autothrust_U.in.data.is_engine_operative_1));
+    Autothrust_U.in.input.thrust_reduction_altitude_go_around)) || (condition02 &&
+    Autothrust_DWork.inhibitAboveThrustReductionAltitude));
+  condition_TOGA = (Autothrust_U.in.data.is_engine_operative_1 && Autothrust_U.in.data.is_engine_operative_2);
+  condition_AlphaFloor = (Autothrust_U.in.data.is_engine_operative_1 && (!Autothrust_U.in.data.is_engine_operative_2));
+  ATHR_ENGAGED_tmp = (Autothrust_U.in.data.is_engine_operative_2 && (!Autothrust_U.in.data.is_engine_operative_1));
   Autothrust_DWork.condition_THR_LK = (((status == athr_status_DISENGAGED) && (Autothrust_DWork.pStatus !=
-    athr_status_DISENGAGED) && rtb_NOT && ((ATHR_PB && (Autothrust_U.in.input.TLA_1_deg == 25.0) &&
-    (Autothrust_U.in.input.TLA_2_deg == 25.0)) || (condition_TOGA && (Autothrust_U.in.input.TLA_1_deg == 35.0) &&
-    (Autothrust_U.in.input.TLA_2_deg <= 35.0)) || (condition_AlphaFloor && (Autothrust_U.in.input.TLA_2_deg == 35.0) &&
+    athr_status_DISENGAGED) && rtb_NOT && ((condition_TOGA && (Autothrust_U.in.input.TLA_1_deg == 25.0) &&
+    (Autothrust_U.in.input.TLA_2_deg == 25.0)) || (condition_AlphaFloor && (Autothrust_U.in.input.TLA_1_deg == 35.0) &&
+    (Autothrust_U.in.input.TLA_2_deg <= 35.0)) || (ATHR_ENGAGED_tmp && (Autothrust_U.in.input.TLA_2_deg == 35.0) &&
     (Autothrust_U.in.input.TLA_1_deg <= 35.0)))) || (((!Autothrust_DWork.condition_THR_LK) || ((!(status !=
     athr_status_DISENGAGED)) && ((Autothrust_U.in.input.TLA_1_deg == 25.0) || (Autothrust_U.in.input.TLA_2_deg == 25.0) ||
     (Autothrust_U.in.input.TLA_1_deg == 35.0) || (Autothrust_U.in.input.TLA_2_deg == 35.0)))) &&
@@ -664,9 +663,9 @@ void AutothrustModelClass::step()
     rtb_OATCornerPoint = 0.0;
   }
 
-  condition_AlphaFloor_tmp = !Autothrust_U.in.data.is_engine_operative_1;
-  condition_AP_FD_ATHR_Specific = !Autothrust_U.in.data.is_engine_operative_2;
-  if ((rtb_on_ground == 0) || (condition_AlphaFloor_tmp && condition_AP_FD_ATHR_Specific)) {
+  condition_AP_FD_ATHR_Specific = !Autothrust_U.in.data.is_engine_operative_1;
+  condition_AlphaFloor_tmp = !Autothrust_U.in.data.is_engine_operative_2;
+  if ((rtb_on_ground == 0) || (condition_AP_FD_ATHR_Specific && condition_AlphaFloor_tmp)) {
     if ((mode == athr_mode_A_FLOOR) || (mode == athr_mode_TOGA_LK)) {
       Autothrust_Y.out.output.thrust_limit_type = athr_thrust_limit_type_TOGA;
       Autothrust_Y.out.output.thrust_limit_percent = rtb_Switch1_k;
@@ -729,18 +728,18 @@ void AutothrustModelClass::step()
   }
 
   condition02 = (Autothrust_U.in.time.simulation_time - Autothrust_DWork.eventTime_p >= 4.0);
-  ATHR_ENGAGED_tmp = ((status == athr_status_ENGAGED_ACTIVE) && (((Autothrust_U.in.input.TLA_1_deg <= 35.0) &&
+  ATHR_ENGAGED_tmp_0 = ((status == athr_status_ENGAGED_ACTIVE) && (((Autothrust_U.in.input.TLA_1_deg <= 35.0) &&
     (Autothrust_U.in.input.TLA_2_deg <= 35.0)) || Autothrust_U.in.input.alpha_floor_condition));
-  ATHR_ENGAGED_tmp_0 = !ATHR_ENGAGED_tmp;
+  ATHR_ENGAGED_tmp_1 = !ATHR_ENGAGED_tmp_0;
   Autothrust_DWork.pThrustMemoActive = ((((Autothrust_U.in.input.ATHR_push && (status != athr_status_DISENGAGED)) ||
-    (ATHR_ENGAGED_tmp_0 && Autothrust_DWork.pUseAutoThrustControl && rtb_NOT)) && ((ATHR_PB &&
-    (Autothrust_U.in.input.TLA_1_deg == 25.0) && (Autothrust_U.in.input.TLA_2_deg == 25.0)) || (condition_TOGA &&
-    (Autothrust_U.in.input.TLA_1_deg == 35.0) && (Autothrust_U.in.input.TLA_2_deg <= 35.0)) || (condition_AlphaFloor &&
-    (Autothrust_U.in.input.TLA_2_deg == 35.0) && (Autothrust_U.in.input.TLA_1_deg <= 35.0)))) || (ATHR_ENGAGED_tmp_0 &&
+    (ATHR_ENGAGED_tmp_1 && Autothrust_DWork.pUseAutoThrustControl && rtb_NOT)) && ((condition_TOGA &&
+    (Autothrust_U.in.input.TLA_1_deg == 25.0) && (Autothrust_U.in.input.TLA_2_deg == 25.0)) || (condition_AlphaFloor &&
+    (Autothrust_U.in.input.TLA_1_deg == 35.0) && (Autothrust_U.in.input.TLA_2_deg <= 35.0)) || (ATHR_ENGAGED_tmp &&
+    (Autothrust_U.in.input.TLA_2_deg == 35.0) && (Autothrust_U.in.input.TLA_1_deg <= 35.0)))) || (ATHR_ENGAGED_tmp_1 &&
     ((Autothrust_U.in.input.TLA_1_deg == 25.0) || (Autothrust_U.in.input.TLA_1_deg == 35.0) ||
      (Autothrust_U.in.input.TLA_2_deg == 25.0) || (Autothrust_U.in.input.TLA_2_deg == 35.0)) &&
     Autothrust_DWork.pThrustMemoActive));
-  Autothrust_DWork.pUseAutoThrustControl = ATHR_ENGAGED_tmp;
+  Autothrust_DWork.pUseAutoThrustControl = ATHR_ENGAGED_tmp_0;
   rtb_NOT = ((!(status == Autothrust_P.CompareToConstant_const_d)) || ((mode == Autothrust_P.CompareToConstant2_const_c)
               || (mode == Autothrust_P.CompareToConstant3_const_k)));
   if (Autothrust_U.in.data.is_engine_operative_1 && Autothrust_U.in.data.is_engine_operative_2) {
@@ -786,15 +785,15 @@ void AutothrustModelClass::step()
     Autothrust_DWork.pU * ca);
   Autothrust_DWork.pU = rtb_Divide;
   if (!Autothrust_DWork.eventTime_not_empty_a) {
-    Autothrust_DWork.eventTime_o = Autothrust_U.in.time.simulation_time;
+    Autothrust_DWork.eventTime_op = Autothrust_U.in.time.simulation_time;
     Autothrust_DWork.eventTime_not_empty_a = true;
   }
 
   rtb_Divide = std::abs(rtb_Sum_h);
   if (rtb_Divide > 5.0) {
-    Autothrust_DWork.eventTime_o = Autothrust_U.in.time.simulation_time;
-  } else if (Autothrust_DWork.eventTime_o == 0.0) {
-    Autothrust_DWork.eventTime_o = Autothrust_U.in.time.simulation_time;
+    Autothrust_DWork.eventTime_op = Autothrust_U.in.time.simulation_time;
+  } else if (Autothrust_DWork.eventTime_op == 0.0) {
+    Autothrust_DWork.eventTime_op = Autothrust_U.in.time.simulation_time;
   }
 
   if (Autothrust_U.in.input.mode_requested > Autothrust_P.Saturation_UpperSat_l) {
@@ -815,7 +814,7 @@ void AutothrustModelClass::step()
       rtb_Divide = 10.0;
     }
 
-    denom_tmp = Autothrust_U.in.time.simulation_time - Autothrust_DWork.eventTime_o;
+    denom_tmp = Autothrust_U.in.time.simulation_time - Autothrust_DWork.eventTime_op;
     if (0.0 > denom_tmp) {
       denom_tmp = 0.0;
     }
@@ -1078,14 +1077,14 @@ void AutothrustModelClass::step()
   Autothrust_Y.out.output.status = status;
   Autothrust_Y.out.output.mode = mode;
   rtb_out = !Autothrust_DWork.inhibitAboveThrustReductionAltitude;
-  ATHR_PB = (((!Autothrust_U.in.input.is_SRS_TO_mode_active) || ((Autothrust_U.in.data.H_ind_ft >=
+  condition_TOGA = (((!Autothrust_U.in.input.is_SRS_TO_mode_active) || ((Autothrust_U.in.data.H_ind_ft >=
     Autothrust_U.in.input.thrust_reduction_altitude) && rtb_out)) && ((!Autothrust_U.in.input.is_SRS_GA_mode_active) ||
-              ((Autothrust_U.in.data.H_ind_ft >= Autothrust_U.in.input.thrust_reduction_altitude_go_around) && rtb_out))
-             && ((Autothrust_U.in.data.H_radio_ft > 400.0) || (Autothrust_U.in.input.flight_phase > 2.0)) && (tmp ||
-              (Autothrust_U.in.input.target_TCAS_RA_rate_fpm <= 500.0) || (Autothrust_U.in.input.TLA_1_deg <= 25.0) ||
-              (Autothrust_U.in.input.TLA_2_deg <= 25.0)));
+    ((Autothrust_U.in.data.H_ind_ft >= Autothrust_U.in.input.thrust_reduction_altitude_go_around) && rtb_out)) &&
+                    ((Autothrust_U.in.data.H_radio_ft > 400.0) || (Autothrust_U.in.input.flight_phase > 2.0)) && (tmp ||
+    (Autothrust_U.in.input.target_TCAS_RA_rate_fpm <= 500.0) || (Autothrust_U.in.input.TLA_1_deg <= 25.0) ||
+    (Autothrust_U.in.input.TLA_2_deg <= 25.0)));
   if ((status != athr_status_DISENGAGED) && (Autothrust_DWork.pMode != athr_mode_A_FLOOR) && (Autothrust_DWork.pMode !=
-       athr_mode_TOGA_LK) && (rtb_on_ground == 0) && (ATHR_PB || (Autothrust_U.in.input.is_TCAS_active &&
+       athr_mode_TOGA_LK) && (rtb_on_ground == 0) && (condition_TOGA || (Autothrust_U.in.input.is_TCAS_active &&
         (Autothrust_U.in.data.H_ind_ft < Autothrust_U.in.input.thrust_reduction_altitude) &&
         ((Autothrust_U.in.data.V_ias_kn > Autothrust_U.in.input.V_MAX_kn - 20.0) ||
          (Autothrust_U.in.input.target_TCAS_RA_rate_fpm <= 500.0)))) && Autothrust_U.in.data.is_engine_operative_1 &&
@@ -1094,8 +1093,8 @@ void AutothrustModelClass::step()
        (Autothrust_U.in.input.TLA_2_deg > 25.0))) {
     Autothrust_Y.out.output.mode_message = athr_mode_message_LVR_CLB;
   } else if ((status != athr_status_DISENGAGED) && (Autothrust_DWork.pMode != athr_mode_A_FLOOR) &&
-             (Autothrust_DWork.pMode != athr_mode_TOGA_LK) && (rtb_on_ground == 0) && ATHR_PB &&
-             (condition_AlphaFloor_tmp || condition_AP_FD_ATHR_Specific) && (Autothrust_U.in.input.TLA_1_deg != 35.0) &&
+             (Autothrust_DWork.pMode != athr_mode_TOGA_LK) && (rtb_on_ground == 0) && condition_TOGA &&
+             (condition_AP_FD_ATHR_Specific || condition_AlphaFloor_tmp) && (Autothrust_U.in.input.TLA_1_deg != 35.0) &&
              (Autothrust_U.in.input.TLA_2_deg != 35.0)) {
     Autothrust_Y.out.output.mode_message = athr_mode_message_LVR_MCT;
   } else if ((status == athr_status_ENGAGED_ACTIVE) && Autothrust_U.in.data.is_engine_operative_1 &&

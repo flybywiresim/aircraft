@@ -28,11 +28,11 @@ class AutothrustModelClass {
     real_T eventTime_p;
     real_T prev_TLA_1;
     real_T prev_TLA_2;
+    real_T eventTime_o;
     real_T eventTime_c;
-    real_T eventTime_cc;
     real_T pY;
     real_T pU;
-    real_T eventTime_o;
+    real_T eventTime_op;
     real_T eventTime_b;
     real_T eventTime_i;
     athr_mode pMode;
@@ -49,10 +49,11 @@ class AutothrustModelClass {
     boolean_T ATHR_ENGAGED;
     boolean_T prev_TLA_1_not_empty;
     boolean_T prev_TLA_2_not_empty;
-    boolean_T flightDirectorOffTakeOff;
     boolean_T prev_condition_AlphaFloor;
     boolean_T prev_condition_TCAS;
-    boolean_T eventTime_not_empty_p;
+    boolean_T prev_SRS_TO_GA_mode_active;
+    boolean_T condition_TOGA_latch;
+    boolean_T eventTime_not_empty_g;
     boolean_T pConditionAlphaFloor;
     boolean_T was_SRS_TO_active;
     boolean_T was_SRS_GA_active;
@@ -68,7 +69,7 @@ class AutothrustModelClass {
     boolean_T sInhibit;
     boolean_T prev_TCAS_active;
     boolean_T eventTime_not_empty_f;
-    boolean_T eventTime_not_empty_g;
+    boolean_T eventTime_not_empty_gf;
     rtDW_RateLimiterwithThreshold_Autothrust_T sf_RateLimiterwithThreshold_n;
     rtDW_RateLimiterwithThreshold_Autothrust_T sf_RateLimiterwithThreshold_k;
     rtDW_RateLimiterwithThreshold_Autothrust_T sf_RateLimiterwithThreshold_ma;
