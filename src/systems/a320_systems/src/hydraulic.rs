@@ -1518,10 +1518,14 @@ struct A320BrakingForce {
     trailing_edge_flaps_left_percent_id: VariableIdentifier,
     trailing_edge_flaps_right_percent_id: VariableIdentifier,
 
+    hidden_chocks_id: VariableIdentifier,
+
     left_braking_force: f64,
     right_braking_force: f64,
 
     flap_position: f64,
+
+    is_chocks_on_wheels: bool,
 }
 impl A320BrakingForce {
     const REFERENCE_PRESSURE_FOR_MAX_FORCE: f64 = 2538.;
@@ -1540,10 +1544,14 @@ impl A320BrakingForce {
             trailing_edge_flaps_right_percent_id: context
                 .get_identifier("RIGHT_FLAPS_POSITION_PERCENT".to_owned()),
 
+            hidden_chocks_id: context.get_identifier("MODEL_WHEELCHOCKS_HIDDEN".to_owned()),
+
             left_braking_force: 0.,
             right_braking_force: 0.,
 
             flap_position: 0.,
+
+            is_chocks_on_wheels: false,
         }
     }
 
@@ -1572,6 +1580,8 @@ impl A320BrakingForce {
         self.right_braking_force = self.right_braking_force.max(0.).min(1.);
 
         self.correct_with_flaps_state(context);
+
+        self.apply_chocks_braking();
     }
 
     fn correct_with_flaps_state(&mut self, context: &UpdateContext) {
@@ -1595,6 +1605,13 @@ impl A320BrakingForce {
         self.right_braking_force = self.right_braking_force
             - (self.right_braking_force * final_flaps_correction_with_speed.get::<ratio>());
     }
+
+    fn apply_chocks_braking(&mut self) {
+        if self.is_chocks_on_wheels {
+            self.left_braking_force = 1.;
+            self.right_braking_force = 1.;
+        }
+    }
 }
 
 impl SimulationElement for A320BrakingForce {
@@ -1608,6 +1625,9 @@ impl SimulationElement for A320BrakingForce {
         let left_flap: f64 = reader.read(&self.trailing_edge_flaps_left_percent_id);
         let right_flap: f64 = reader.read(&self.trailing_edge_flaps_right_percent_id);
         self.flap_position = (left_flap + right_flap) / 2.;
+
+        let chocks_hidden: f64 = reader.read(&self.hidden_chocks_id);
+        self.is_chocks_on_wheels = chocks_hidden < 1.;
     }
 }
 
