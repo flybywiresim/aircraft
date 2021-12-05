@@ -1,4 +1,3 @@
-/* eslint-disable max-classes-per-file */
 import { Arinc429Word, Arinc429WordSsmParseError } from '@shared/arinc429';
 import { useSimVar } from './simVars';
 
