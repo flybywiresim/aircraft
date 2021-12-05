@@ -1,6 +1,6 @@
 import { connect } from 'react-redux';
 import React, { useEffect, useState } from 'react';
-import { IconCornerDownLeft, IconCornerDownRight, IconArrowDown, IconHandStop, IconTruck, IconBriefcase, IconBuildingArch, IconArchive, IconPlug, IconTir } from '@tabler/icons';
+import { IconCornerDownLeft, IconCornerDownRight, IconArrowDown, IconHandStop, IconTruck, IconBriefcase, IconBuildingArch, IconArchive, IconPlug, IconTir, IconTrafficCone, IconTriangle, IconCircle } from '@tabler/icons';
 import './Ground.scss';
 import fuselage from '../Assets/320neo-outline-upright.svg';
 import { useSimVar, useSplitSimVar } from '../../Common/simVars';
@@ -12,6 +12,7 @@ import {
     setActiveButtons, addDisabledButton, removeDisabledButton,
     setPushBackWaitTimerHandle,
 } from '../Store/action-creator/ground-state';
+import { usePersistentNumberProperty } from '@instruments/common/persistence';
 
 type StatefulButton = {
     id: string,
@@ -37,6 +38,9 @@ export const Ground = ({
 
     const [tugDirection, setTugDirection] = useState(0);
     const [tugActive, setTugActive] = useState(false);
+
+    const [wheelChocksEnabled, setWheelChocksEnabled] = usePersistentNumberProperty('MODEL_WHEELCHOCKS_ENABLED', 0);
+    const [conesEnabled, setWheelConesEnabled] = usePersistentNumberProperty('MODEL_CONES_ENABLED', 0);
 
     const buttonBlue = ' border-blue-500 bg-blue-500 hover:bg-blue-600 hover:border-blue-600 text-blue-darkest disabled:bg-grey-600';
     const buttonActive = ' text-white bg-green-600 border-green-600';
@@ -65,6 +69,14 @@ export const Ground = ({
             setPushBackWaitTimerHandle(-1);
         }
     }, [pushBack, tugDirection, activeButtons, pushBackWaitTimerHandle, tugRequestOnly, pushBack, tugDirection]);
+
+    const handleWheelChockClick = () => {
+        setWheelChocksEnabled(wheelChocksEnabled ? 0 : 1);
+    }
+
+    const handleConeClick = () => {
+        setWheelConesEnabled(conesEnabled ? 0 : 1);
+    }
 
     const getTugHeading = (value: number): number => (tugHeading + value) % 360;
 
@@ -259,6 +271,35 @@ export const Ground = ({
                         id="catering"
                     >
                         <IconArchive size="2.825rem" stroke="1.5" />
+                    </Button>
+                </div>
+            </div>
+
+            <div className="left-0 grid grid-cols-2 control-grid absolute top-80">
+                <div>
+                    <h1 className="text-white font-medium text-lg text-center pb-1">Wheel Chocks</h1>
+                    <Button
+                        onClick={handleWheelChockClick}
+                        className={applySelectedWithSync('w-32', 'wheel-chocks', wheelChocksEnabled, 'door-aft-right')}
+                        type={BUTTON_TYPE.NONE}
+                        id="wheel-chocks"
+                    >
+                        <div className="flex justify-center items-end">
+                            <IconTriangle size="1.125rem" stroke="4" />
+                            <IconCircle size="2.825rem" stroke="5" className="-mx-0.5"/>
+                            <IconTriangle size="1.125rem" stroke="4" />
+                        </div>
+                    </Button>
+                </div>
+                <div>
+                    <h1 className="text-white font-medium text-lg text-center pb-1">Safety Cones</h1>
+                    <Button
+                        onClick={handleConeClick}
+                        className={applySelectedWithSync('w-32', 'safety-cones', conesEnabled, 'door-aft-right')}
+                        type={BUTTON_TYPE.NONE}
+                        id="safety-cones"
+                    >
+                        <IconTrafficCone size="2.825rem" stroke="1.5" />
                     </Button>
                 </div>
             </div>

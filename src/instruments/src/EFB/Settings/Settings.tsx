@@ -926,28 +926,6 @@ const FlyPadPage = () => {
     );
 };
 
-const MiscPage = () => {
-    const [wheelChocksHidden, setWheelChocksHidden] = usePersistentNumberProperty('MODEL_WHEELCHOCKS_HIDDEN', 1);
-    const [conesHidden, setWheelConesHidden] = usePersistentNumberProperty('MODEL_CONES_HIDDEN', 1);
-
-    return (
-        <div className="bg-navy-lighter rounded-xl px-6 shadow-lg divide-y divide-gray-700 flex flex-col">
-            <div className="py-4 flex flex-row justify-between items-center">
-                <span className="text-lg text-gray-300">Disable Wheel Chocks</span>
-                <div className="flex flex-row items-center py-1.5">
-                    <Toggle value={wheelChocksHidden === 1} onToggle={(value) => setWheelChocksHidden(value ? 1 : 0)} />
-                </div>
-            </div>
-            <div className="py-4 flex flex-row justify-between items-center">
-                <span className="text-lg text-gray-300">Disable GSE Safety Cones</span>
-                <div className="flex flex-row items-center py-1.5">
-                    <Toggle value={conesHidden === 1} onToggle={(value) => setWheelConesHidden(value ? 1 : 0)} />
-                </div>
-            </div>
-        </div>
-    );
-};
-
 interface SettingsNavbarContextInterface {
     showNavbar: boolean,
     setShowNavbar: (newValue: boolean) => void
@@ -986,7 +964,6 @@ const Settings = () => {
                             'ATSU/AOC',
                             'Audio',
                             'flyPad',
-                            'Misc',
                         ]}
                         onSelected={(indexNumber) => {
                             setSelectedTabIndex(indexNumber);
