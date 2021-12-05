@@ -1,4 +1,6 @@
+import { FlightPlanManager } from '@fmgc/wtsdk';
+
 export interface FmgcComponent {
-    init(): void;
+    init(flightPlanManager: FlightPlanManager): void;
     update(deltaTime: number): void;
 }
