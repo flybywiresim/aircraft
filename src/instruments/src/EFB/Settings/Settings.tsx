@@ -17,7 +17,7 @@ type ButtonType = {
     setting: string,
 }
 
-type AdirsButton = {
+type SimVarButton = {
     simVarValue: number,
 }
 
@@ -250,7 +250,9 @@ const SimOptionsPage = () => {
 
     const [dynamicRegistration, setDynamicRegistration] = usePersistentProperty('DYNAMIC_REGISTRATION_DECAL', '0');
 
-    const adirsAlignTimeButtons: (ButtonType & AdirsButton)[] = [
+    const [realisticTiller, setRealisticTiller] = usePersistentProperty('REALISTIC_TILLER_ENABLED', '0');
+
+    const adirsAlignTimeButtons: (ButtonType & SimVarButton)[] = [
         { name: 'Instant', setting: 'INSTANT', simVarValue: 1 },
         { name: 'Fast', setting: 'FAST', simVarValue: 2 },
         { name: 'Real', setting: 'REAL', simVarValue: 0 },
@@ -283,6 +285,11 @@ const SimOptionsPage = () => {
     const dynamicRegistrationButtons: ButtonType[] = [
         { name: 'Disabled', setting: '0' },
         { name: 'Enabled', setting: '1' },
+    ];
+
+    const steeringSeparationButtons: (ButtonType & SimVarButton)[] = [
+        { name: 'Disabled', setting: '0', simVarValue: 0 },
+        { name: 'Enabled', setting: '1', simVarValue: 1 },
     ];
 
     useEffect(() => {
@@ -414,6 +421,20 @@ const SimOptionsPage = () => {
                                     enabled
                                     onSelect={() => setDynamicRegistration(button.setting)}
                                     selected={dynamicRegistration === button.setting}
+                                >
+                                    {button.name}
+                                </SelectItem>
+                            ))}
+                        </SelectGroup>
+                    </div>
+                    <div className="py-4 flex flex-row justify-between items-center">
+                        <span className="text-lg text-gray-300 mr-1">Separate Tiller from Rudder Inputs</span>
+                        <SelectGroup>
+                            {steeringSeparationButtons.map((button) => (
+                                <SelectItem
+                                    enabled
+                                    onSelect={() => setRealisticTiller(button.setting)}
+                                    selected={realisticTiller === button.setting}
                                 >
                                     {button.name}
                                 </SelectItem>
