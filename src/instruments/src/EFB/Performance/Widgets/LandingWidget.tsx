@@ -314,7 +314,7 @@ export const LandingWidget = () => {
     const handleClearInputs = (): void => {
         performanceDispatch({
             type: EPerformanceActions.SET_LANDING,
-            payload: { ...performanceInitialState },
+            payload: { ...performanceInitialState.landing },
         });
     };
 
