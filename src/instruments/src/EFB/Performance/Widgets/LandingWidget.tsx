@@ -151,15 +151,15 @@ export const LandingWidget = () => {
     };
 
     const handleWindMagnitudeChange = (value: string): void => {
-        let magnitude: number | undefined = parseInt(value);
+        let windMagnitude: number | undefined = parseInt(value);
 
-        if (Number.isNaN(magnitude)) {
-            magnitude = undefined;
+        if (Number.isNaN(windMagnitude)) {
+            windMagnitude = undefined;
         }
 
         performanceDispatch({
             type: EPerformanceActions.SET_LANDING,
-            payload: { magnitude },
+            payload: { windMagnitude },
         });
     };
 
