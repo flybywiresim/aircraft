@@ -512,6 +512,7 @@ export const LandingWidget = () => {
                                 onClick={handleCalculateLanding}
                                 className={calculateButtonClass}
                                 type="button"
+                                disabled={!areInputsValid()}
                             >
                                 Calculate
                             </button>
