@@ -1,5 +1,3 @@
-/* eslint-disable camelcase */
-
 let nxNotificationsListener: ViewListener.ViewListener;
 
 /**

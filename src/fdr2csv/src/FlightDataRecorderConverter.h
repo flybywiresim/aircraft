@@ -2,6 +2,7 @@
 
 #include <fstream>
 
+#include "AdditionalData.h"
 #include "AutopilotLaws_types.h"
 #include "AutopilotStateMachine_types.h"
 #include "Autothrust_types.h"
@@ -20,5 +21,6 @@ class FlightDataRecorderConverter {
                           const ap_raw_output& ap_law,
                           const athr_out& athr,
                           const fbw_output& fbw,
-                          const EngineData& engine);
+                          const EngineData& engine,
+                          const AdditionalData& data);
 };
