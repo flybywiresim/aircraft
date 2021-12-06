@@ -346,6 +346,7 @@ export const LandingWidget = () => {
                                     className="w-56 my-1.5"
                                     label="Wind Direction"
                                     value={windDirection}
+                                    placeholder="°"
                                     min={0}
                                     max={360}
                                     padding={3}
@@ -357,7 +358,7 @@ export const LandingWidget = () => {
                                     className="w-56 my-1.5"
                                     label="Wind Magnitude"
                                     value={windMagnitude}
-                                    placeholder="KTS"
+                                    placeholder="kts"
                                     min={0}
                                     decimalPrecision={1}
                                     onChange={handleWindMagnitudeChange}
@@ -378,7 +379,7 @@ export const LandingWidget = () => {
                                     className="w-56 my-1.5"
                                     label="QNH"
                                     value={pressure}
-                                    placeholder="mb"
+                                    placeholder="hPa"
                                     min={800}
                                     max={1200}
                                     decimalPrecision={2}
@@ -389,7 +390,7 @@ export const LandingWidget = () => {
                                     className="w-56 my-1.5"
                                     label="Rwy Altitude"
                                     value={altitude}
-                                    placeholder='" ASL'
+                                    placeholder="ft ASL"
                                     min={-2000}
                                     max={20000}
                                     decimalPrecision={0}
@@ -400,6 +401,7 @@ export const LandingWidget = () => {
                                     className="w-56 my-1.5"
                                     label="Rwy Heading"
                                     value={runwayHeading}
+                                    placeholder="°"
                                     min={0}
                                     max={360}
                                     padding={3}
@@ -452,7 +454,7 @@ export const LandingWidget = () => {
                                     className="w-56 my-1.5"
                                     label="Approach Speed"
                                     value={approachSpeed}
-                                    placeholder="KTS"
+                                    placeholder="kts"
                                     min={90}
                                     max={350}
                                     decimalPrecision={0}
@@ -464,7 +466,7 @@ export const LandingWidget = () => {
                                     className="w-56 my-1.5"
                                     label="Weight"
                                     value={weight}
-                                    placeholder="KG"
+                                    placeholder="kg"
                                     min={41000}
                                     max={100000}
                                     decimalPrecision={0}
