@@ -1,6 +1,3 @@
-// This is WIP
-/* eslint-disable @typescript-eslint/no-unused-vars */
-
 /*
  * MIT License
  *

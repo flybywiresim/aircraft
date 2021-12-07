@@ -8,8 +8,13 @@ export const Text = (props) => {
         children,
     } = props;
 
-    // eslint-disable-next-line no-nested-ternary
-    const produceTextWithClass = (className) => <text x={x} y={y} textAnchor={alignEnd ? 'end' : (alignStart ? 'start' : 'middle')} className={`text-${className}`}>{children}</text>;
+    let textAnchor = 'middle';
+    if (alignEnd) {
+        textAnchor = 'end';
+    } else if (alignStart) {
+        textAnchor = 'start';
+    }
+    const produceTextWithClass = (className) => <text x={x} y={y} textAnchor={textAnchor} className={`text-${className}`}>{children}</text>;
 
     if (unit) {
         return produceTextWithClass('unit');

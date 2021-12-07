@@ -1,4 +1,3 @@
-/* eslint-disable no-underscore-dangle */
 /// <reference path="../../../typings/fs-base-ui/html_ui/JS/common.d.ts" />
 
 /**
@@ -56,6 +55,7 @@ export class PopUp {
      * Pass Popup display data to Coherent
      * @param params
      */
+    /* eslint-disable no-underscore-dangle */
     _showPopUp(params: any = {}): void {
         Coherent.trigger('SHOW_POP_UP', params);
     }
