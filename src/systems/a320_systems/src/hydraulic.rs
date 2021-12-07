@@ -30,8 +30,8 @@ use systems::{
         },
         update_iterator::{FixedStepLoop, MaxFixedStepLoop},
         ElectricPump, EngineDrivenPump, HydraulicCircuit, HydraulicCircuitController,
-        PowerTransferUnit, PowerTransferUnitController, PressureSwitchState, PumpController,
-        RamAirTurbine, RamAirTurbineController, SectionPressure,
+        PowerTransferUnit, PowerTransferUnitController, PumpController, RamAirTurbine,
+        RamAirTurbineController, SectionPressure,
     },
     overhead::{
         AutoOffFaultPushButton, AutoOnFaultPushButton, MomentaryOnPushButton, MomentaryPushButton,
@@ -47,6 +47,9 @@ use systems::{
         SimulatorWriter, UpdateContext, VariableIdentifier, Write,
     },
 };
+
+#[cfg(test)]
+use systems::hydraulic::PressureSwitchState;
 
 mod flaps_computer;
 use flaps_computer::SlatFlapComplex;
@@ -2274,18 +2277,24 @@ mod tests {
 
     mod a320_hydraulics {
         use super::*;
-        use ::systems::hydraulic::electrical_generator::TestGenerator;
+        use systems::hydraulic::electrical_generator::TestGenerator;
+
         use systems::electrical::test::TestElectricitySource;
         use systems::electrical::ElectricalBus;
         use systems::electrical::Electricity;
         use systems::electrical::ElectricitySource;
         use systems::electrical::ExternalPowerSource;
+
         use systems::engine::{leap_engine::LeapEngine, EngineFireOverheadPanel};
+
         use systems::landing_gear::{LandingGear, LandingGearControlInterfaceUnit};
+
         use systems::shared::PotentialOrigin;
         use systems::shared::{EmergencyElectricalState, GeneratorControlUnitInterface};
+
         use systems::simulation::test::{ReadByName, TestBed, WriteByName};
         use systems::simulation::{test::SimulationTestBed, Aircraft, InitContext};
+
         use uom::si::{
             electric_potential::volt,
             length::foot,
