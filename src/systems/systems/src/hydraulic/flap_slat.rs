@@ -127,8 +127,8 @@ pub struct FlapSlatAssembly {
     max_synchro_gear_position: Angle,
     final_requested_synchro_gear_position: Angle,
 
-    current_speed: AngularVelocity,
-    current_max_speed: AngularVelocity,
+    speed: AngularVelocity,
+    current_max_speed: LowPassFilter<AngularVelocity>,
     full_pressure_max_speed: AngularVelocity,
 
     gearbox_ratio: Ratio,
@@ -142,7 +142,8 @@ pub struct FlapSlatAssembly {
     final_flap_angle_carac: [f64; 12],
 }
 impl FlapSlatAssembly {
-    const LOW_PASS_FILTER_FLAP_POSITION_TRANSIENT_TIME_CONSTANT_S: f64 = 0.3;
+    const LOW_PASS_FILTER_FLAP_POSITION_TRANSIENT_TIME_CONSTANT: Duration =
+        Duration::from_millis(300);
     const BRAKE_PRESSURE_MIN_TO_ALLOW_MOVEMENT_PSI: f64 = 500.;
     const MAX_CIRCUIT_PRESSURE_PSI: f64 = 3000.;
     const ANGLE_THRESHOLD_FOR_REDUCED_SPEED_DEGREES: f64 = 6.69;
@@ -184,8 +185,10 @@ impl FlapSlatAssembly {
             flap_control_arm_position: Angle::new::<radian>(0.),
             max_synchro_gear_position,
             final_requested_synchro_gear_position: Angle::new::<radian>(0.),
-            current_speed: AngularVelocity::new::<radian_per_second>(0.),
-            current_max_speed: AngularVelocity::new::<radian_per_second>(0.),
+            speed: AngularVelocity::new::<radian_per_second>(0.),
+            current_max_speed: LowPassFilter::<AngularVelocity>::new(
+                Self::LOW_PASS_FILTER_FLAP_POSITION_TRANSIENT_TIME_CONSTANT,
+            ),
             full_pressure_max_speed,
             gearbox_ratio,
             flap_to_synchro_gear_ratio: flap_gear_ratio / synchro_gear_ratio,
@@ -230,21 +233,21 @@ impl FlapSlatAssembly {
     fn update_speed_and_position(&mut self, context: &UpdateContext) {
         if self.final_requested_synchro_gear_position > self.position_feedback() {
             self.flap_control_arm_position += Angle::new::<radian>(
-                self.current_max_speed.get::<radian_per_second>() * context.delta_as_secs_f64(),
+                self.max_speed().get::<radian_per_second>() * context.delta_as_secs_f64(),
             );
-            self.current_speed = self.current_max_speed;
+            self.speed = self.max_speed();
         } else if self.final_requested_synchro_gear_position < self.position_feedback() {
             self.flap_control_arm_position -= Angle::new::<radian>(
-                self.current_max_speed.get::<radian_per_second>() * context.delta_as_secs_f64(),
+                self.max_speed().get::<radian_per_second>() * context.delta_as_secs_f64(),
             );
-            self.current_speed = -self.current_max_speed;
+            self.speed = -self.max_speed();
         } else {
-            self.current_speed = AngularVelocity::new::<radian_per_second>(0.);
+            self.speed = AngularVelocity::new::<radian_per_second>(0.);
         }
 
-        if self.current_speed > AngularVelocity::new::<radian_per_second>(0.)
+        if self.speed > AngularVelocity::new::<radian_per_second>(0.)
             && self.final_requested_synchro_gear_position < self.position_feedback()
-            || self.current_speed < AngularVelocity::new::<radian_per_second>(0.)
+            || self.speed < AngularVelocity::new::<radian_per_second>(0.)
                 && self.final_requested_synchro_gear_position > self.position_feedback()
         {
             self.flap_control_arm_position =
@@ -309,13 +312,8 @@ impl FlapSlatAssembly {
         }
 
         // Final max speed filtered to simulate smooth movements
-        self.current_max_speed = self.current_max_speed
-            + (new_theoretical_max_speed - self.current_max_speed)
-                * (1.
-                    - std::f64::consts::E.powf(
-                        -context.delta_as_secs_f64()
-                            / Self::LOW_PASS_FILTER_FLAP_POSITION_TRANSIENT_TIME_CONSTANT_S,
-                    ));
+        self.current_max_speed
+            .update(context.delta(), new_theoretical_max_speed);
     }
 
     fn max_speed_factor_from_pressure(current_pressure: Pressure) -> f64 {
@@ -338,7 +336,7 @@ impl FlapSlatAssembly {
         context: &UpdateContext,
     ) {
         let torque_shaft_speed = AngularVelocity::new::<radian_per_second>(
-            self.current_speed.get::<radian_per_second>() * self.flap_gear_ratio.get::<ratio>(),
+            self.speed.get::<radian_per_second>() * self.flap_gear_ratio.get::<ratio>(),
         );
 
         let left_torque =
@@ -387,10 +385,10 @@ impl FlapSlatAssembly {
     }
 
     fn is_approaching_requested_position(&self, synchro_gear_angle_request: Angle) -> bool {
-        self.current_speed.get::<radian_per_second>() > 0.
+        self.speed.get::<radian_per_second>() > 0.
             && synchro_gear_angle_request - self.position_feedback()
                 < Angle::new::<degree>(Self::ANGLE_THRESHOLD_FOR_REDUCED_SPEED_DEGREES)
-            || self.current_speed.get::<radian_per_second>() < 0.
+            || self.speed.get::<radian_per_second>() < 0.
                 && self.position_feedback() - synchro_gear_angle_request
                     < Angle::new::<degree>(Self::ANGLE_THRESHOLD_FOR_REDUCED_SPEED_DEGREES)
     }
@@ -413,6 +411,10 @@ impl FlapSlatAssembly {
 
     pub fn right_motor_rpm(&mut self) -> f64 {
         self.right_motor.speed().get::<revolution_per_minute>()
+    }
+
+    pub fn max_speed(&self) -> AngularVelocity {
+        self.current_max_speed.output()
     }
 
     /// Gets flap surface angle from current Feedback Position Pickup Unit (FPPU) position
@@ -605,7 +607,7 @@ mod tests {
         let mut test_bed = SimulationTestBed::new(|context| TestAircraft::new(context, max_speed));
 
         assert!(test_bed.query(|a| a.flaps_slats.position_feedback().get::<degree>()) == 0.);
-        assert!(test_bed.query(|a| a.flaps_slats.current_speed.get::<radian_per_second>()) == 0.);
+        assert!(test_bed.query(|a| a.flaps_slats.speed.get::<radian_per_second>()) == 0.);
 
         test_bed.command(|a| a.set_angle_request(Some(Angle::new::<degree>(20.))));
         test_bed.command(|a| {
@@ -617,7 +619,7 @@ mod tests {
 
         test_bed.run_with_delta(Duration::from_millis(2000));
 
-        let current_speed = test_bed.query(|a| a.flaps_slats.current_speed);
+        let current_speed = test_bed.query(|a| a.flaps_slats.speed);
         assert!(
             (current_speed - max_speed).abs() <= AngularVelocity::new::<radian_per_second>(0.01)
         );
@@ -665,7 +667,7 @@ mod tests {
         test_bed.run_with_delta(Duration::from_millis(20000));
 
         assert!(
-            test_bed.query(|a| a.flaps_slats.current_speed)
+            test_bed.query(|a| a.flaps_slats.speed)
                 == AngularVelocity::new::<radian_per_second>(0.)
         );
 
@@ -715,7 +717,7 @@ mod tests {
 
         test_bed.run_with_delta(Duration::from_millis(1500));
 
-        let current_speed = test_bed.query(|a| a.flaps_slats.current_speed);
+        let current_speed = test_bed.query(|a| a.flaps_slats.speed);
         assert!(
             (current_speed - max_speed / 2.).abs()
                 <= AngularVelocity::new::<radian_per_second>(0.01)
@@ -759,7 +761,7 @@ mod tests {
 
         test_bed.run_with_delta(Duration::from_millis(1500));
 
-        let current_speed = test_bed.query(|a| a.flaps_slats.current_speed);
+        let current_speed = test_bed.query(|a| a.flaps_slats.speed);
         assert!(
             (current_speed - max_speed / 2.).abs()
                 <= AngularVelocity::new::<radian_per_second>(0.01)
@@ -896,7 +898,7 @@ mod tests {
 
         test_bed.run_multiple_frames(Duration::from_millis(1000));
 
-        let current_speed = test_bed.query(|a| a.flaps_slats.current_speed);
+        let current_speed = test_bed.query(|a| a.flaps_slats.speed);
         assert!(
             (current_speed - max_speed / 2.).abs()
                 <= AngularVelocity::new::<radian_per_second>(0.01)
@@ -926,7 +928,7 @@ mod tests {
 
         test_bed.run_multiple_frames(Duration::from_millis(5000));
 
-        let current_speed = test_bed.query(|a| a.flaps_slats.current_speed);
+        let current_speed = test_bed.query(|a| a.flaps_slats.speed);
         assert!(
             (current_speed - max_speed).abs() <= AngularVelocity::new::<radian_per_second>(0.01)
         );
@@ -934,7 +936,7 @@ mod tests {
         test_bed.command(|a| a.set_angle_request(None));
 
         test_bed.run_multiple_frames(Duration::from_millis(5000));
-        let current_speed = test_bed.query(|a| a.flaps_slats.current_speed);
+        let current_speed = test_bed.query(|a| a.flaps_slats.speed);
         assert!((current_speed).abs() <= AngularVelocity::new::<radian_per_second>(0.01));
     }
 
@@ -952,7 +954,7 @@ mod tests {
             )
         });
 
-        let mut flap_speed_snapshot = test_bed.query(|a| a.flaps_slats.current_speed);
+        let mut flap_speed_snapshot = test_bed.query(|a| a.flaps_slats.speed);
         for _ in 0..150 {
             test_bed.run_with_delta(Duration::from_millis(100));
 
@@ -963,14 +965,14 @@ mod tests {
                 .get::<degree>()
                 < 0.5
             {
-                assert!(test_bed.query(|a| a.flaps_slats.current_speed) < flap_speed_snapshot)
+                assert!(test_bed.query(|a| a.flaps_slats.speed) < flap_speed_snapshot)
             } else {
-                flap_speed_snapshot = test_bed.query(|a| a.flaps_slats.current_speed);
+                flap_speed_snapshot = test_bed.query(|a| a.flaps_slats.speed);
             }
 
             println!(
                 "Speed {:.2}-> Surface angle {:.2}",
-                test_bed.query(|a| a.flaps_slats.current_speed.get::<radian_per_second>()),
+                test_bed.query(|a| a.flaps_slats.speed.get::<radian_per_second>()),
                 test_bed.query(|a| a.flaps_slats.flap_surface_angle().get::<degree>())
             );
         }
@@ -996,7 +998,7 @@ mod tests {
             a.set_angle_request(Some(flap_position_request - Angle::new::<degree>(10.)))
         });
 
-        let mut flap_speed_snapshot = test_bed.query(|a| a.flaps_slats.current_speed);
+        let mut flap_speed_snapshot = test_bed.query(|a| a.flaps_slats.speed);
 
         for _ in 0..150 {
             test_bed.run_with_delta(Duration::from_millis(100));
@@ -1008,14 +1010,14 @@ mod tests {
                 .get::<degree>()
                 < 0.5
             {
-                assert!(test_bed.query(|a| a.flaps_slats.current_speed) < flap_speed_snapshot)
+                assert!(test_bed.query(|a| a.flaps_slats.speed) < flap_speed_snapshot)
             } else {
-                flap_speed_snapshot = test_bed.query(|a| a.flaps_slats.current_speed);
+                flap_speed_snapshot = test_bed.query(|a| a.flaps_slats.speed);
             }
 
             println!(
                 "Speed {:.2}-> Surface angle {:.2}",
-                test_bed.query(|a| a.flaps_slats.current_speed.get::<radian_per_second>()),
+                test_bed.query(|a| a.flaps_slats.speed.get::<radian_per_second>()),
                 test_bed.query(|a| a.flaps_slats.flap_surface_angle().get::<degree>())
             );
         }
