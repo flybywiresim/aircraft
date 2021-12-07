@@ -2,6 +2,7 @@ import { connect } from 'react-redux';
 import React, { useEffect, useState } from 'react';
 import { IconCornerDownLeft, IconCornerDownRight, IconArrowDown, IconHandStop, IconTruck, IconBriefcase, IconBuildingArch, IconArchive, IconPlug, IconTir, IconTrafficCone, IconTriangle, IconCircle } from '@tabler/icons';
 import './Ground.scss';
+import { usePersistentNumberProperty } from '@instruments/common/persistence';
 import fuselage from '../Assets/320neo-outline-upright.svg';
 import { useSimVar, useSplitSimVar } from '../../Common/simVars';
 import Button, { BUTTON_TYPE } from '../Components/Button/Button';
@@ -12,7 +13,6 @@ import {
     setActiveButtons, addDisabledButton, removeDisabledButton,
     setPushBackWaitTimerHandle,
 } from '../Store/action-creator/ground-state';
-import { usePersistentNumberProperty } from '@instruments/common/persistence';
 
 type StatefulButton = {
     id: string,
@@ -40,7 +40,7 @@ export const Ground = ({
     const [tugActive, setTugActive] = useState(false);
 
     const [wheelChocksEnabled, setWheelChocksEnabled] = usePersistentNumberProperty('MODEL_WHEELCHOCKS_ENABLED', 0);
-    const [conesEnabled, setWheelConesEnabled] = usePersistentNumberProperty('MODEL_CONES_ENABLED', 0);
+    const [conesEnabled, setConesEnabled] = usePersistentNumberProperty('MODEL_CONES_ENABLED', 0);
 
     const buttonBlue = ' border-blue-500 bg-blue-500 hover:bg-blue-600 hover:border-blue-600 text-blue-darkest disabled:bg-grey-600';
     const buttonActive = ' text-white bg-green-600 border-green-600';
@@ -69,14 +69,6 @@ export const Ground = ({
             setPushBackWaitTimerHandle(-1);
         }
     }, [pushBack, tugDirection, activeButtons, pushBackWaitTimerHandle, tugRequestOnly, pushBack, tugDirection]);
-
-    const handleWheelChockClick = () => {
-        setWheelChocksEnabled(wheelChocksEnabled ? 0 : 1);
-    }
-
-    const handleConeClick = () => {
-        setWheelConesEnabled(conesEnabled ? 0 : 1);
-    }
 
     const getTugHeading = (value: number): number => (tugHeading + value) % 360;
 
@@ -177,6 +169,8 @@ export const Ground = ({
         return className + (activeButtons.map((b: StatefulButton) => b.id).includes(id) ? ' text-white bg-gray-600'
             : buttonBlue);
     };
+
+    const applyWithSync = (className: string, syncValue: number) => `${className} ${syncValue !== 0 ? buttonActive : buttonBlue}`;
 
     return (
         <div className="relative h-full flex-grow flex flex-col">
@@ -279,14 +273,14 @@ export const Ground = ({
                 <div>
                     <h1 className="text-white font-medium text-lg text-center pb-1">Wheel Chocks</h1>
                     <Button
-                        onClick={handleWheelChockClick}
-                        className={applySelectedWithSync('w-32', 'wheel-chocks', wheelChocksEnabled, 'door-aft-right')}
+                        onClick={(e) => handleClick(() => setWheelChocksEnabled(wheelChocksEnabled ? 0 : 1), e)}
+                        className={applyWithSync('w-32', wheelChocksEnabled)}
                         type={BUTTON_TYPE.NONE}
                         id="wheel-chocks"
                     >
                         <div className="flex justify-center items-end">
                             <IconTriangle size="1.125rem" stroke="4" />
-                            <IconCircle size="2.825rem" stroke="5" className="-mx-0.5"/>
+                            <IconCircle size="2.825rem" stroke="5" className="-mx-0.5" />
                             <IconTriangle size="1.125rem" stroke="4" />
                         </div>
                     </Button>
@@ -294,8 +288,8 @@ export const Ground = ({
                 <div>
                     <h1 className="text-white font-medium text-lg text-center pb-1">Safety Cones</h1>
                     <Button
-                        onClick={handleConeClick}
-                        className={applySelectedWithSync('w-32', 'safety-cones', conesEnabled, 'door-aft-right')}
+                        onClick={(e) => handleClick(() => setConesEnabled(conesEnabled ? 0 : 1), e)}
+                        className={applyWithSync('w-32', conesEnabled)}
                         type={BUTTON_TYPE.NONE}
                         id="safety-cones"
                     >
