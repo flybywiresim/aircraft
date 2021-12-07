@@ -265,7 +265,6 @@ function replaceAccessorData(buffer, gltf, accessor, data) {
     for (let i = 0; i < data.length; i += 1) {
         const item = data[i];
         for (let j = 0; j < AccessorType[accessor.type]; j += 1) {
-            // eslint-disable-next-line max-len
             const index = byteOffset + (j * ComponentTypeSize[accessor.componentType]) + (i * byteStride);
             byteData.packTo(item[j], {
                 bits: (ComponentTypeSize[accessor.componentType] * 8),
@@ -302,9 +301,10 @@ function applyNodeModifications(gltfPath, outputPath, modifications) {
         }
         for (let i = 0; i < gltf.nodes.length; i++) {
             if (mod.node === gltf.nodes[i].name) {
-                // eslint-disable-next-line guard-for-in
                 for (const prop in mod.mods) {
-                    gltf.nodes[i][prop] = mod.mods[prop];
+                    if (Object.prototype.hasOwnProperty.call(mod.mods, prop)) {
+                        gltf.nodes[i][prop] = mod.mods[prop];
+                    }
                 }
             }
         }
