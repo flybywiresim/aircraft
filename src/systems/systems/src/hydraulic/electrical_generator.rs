@@ -169,6 +169,7 @@ pub struct HydraulicGeneratorMotor {
 impl HydraulicGeneratorMotor {
     const MOTOR_INERTIA: f64 = 0.01;
     const STATIC_RESISTANT_TORQUE_WHEN_UNPOWERED_NM: f64 = 2.;
+    const DYNAMIC_FRICTION_TORQUE_CONSTANT: f64 = 0.00018;
     const EFFICIENCY: f64 = 0.95;
 
     pub fn new(context: &mut InitContext, displacement: Volume) -> Self {
@@ -249,8 +250,9 @@ impl HydraulicGeneratorMotor {
     }
 
     fn update_speed(&mut self, context: &UpdateContext) {
-        let friction_torque =
-            Torque::new::<newton_meter>(-0.00018 * self.speed.get::<revolution_per_minute>());
+        let friction_torque = Torque::new::<newton_meter>(
+            Self::DYNAMIC_FRICTION_TORQUE_CONSTANT * -self.speed.get::<revolution_per_minute>(),
+        );
 
         self.total_torque += friction_torque;
         self.total_torque += self.generated_torque;
