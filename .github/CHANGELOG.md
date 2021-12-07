@@ -86,7 +86,7 @@
 1. [PFD] Added new messages and modes for TCAS - @lukecologne (lukecologne#1156)
 1. [FDR] Added additional data to the FDR - @aguther (Andreas Guther)
 1. [ATHR] Fixed ATHR being armed in flight when TOGA applied without GA condition - @aguther (Andreas Guther)
-1. [ENGINE/MODEL] Implement engine shutdown and realistic engine animation - @Taz5150 (TazX [Z+2]#0405)
+1. [ENGINE/ MODEL] Implement engine shutdown and realistic engine animation - @Taz5150 (TazX [Z+2]#0405)
 
 ## 0.7.0
 
