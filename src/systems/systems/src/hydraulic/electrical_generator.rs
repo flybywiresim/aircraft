@@ -11,13 +11,15 @@ use uom::si::{
 };
 
 use crate::shared::{
-    interpolation, pid::PidController, ControlValveCommand, EmergencyElectricalRatPushButton,
-    EmergencyElectricalState, EmergencyGeneratorInterface, GeneratorControlUnitInterface,
-    LgciuWeightOnWheels,
+    interpolation, low_pass_filter::LowPassFilter, pid::PidController, ControlValveCommand,
+    EmergencyElectricalRatPushButton, EmergencyElectricalState, EmergencyGeneratorInterface,
+    GeneratorControlUnitInterface, LgciuWeightOnWheels,
 };
 
 use crate::simulation::{InitContext, VariableIdentifier};
 use crate::simulation::{SimulationElement, SimulatorWriter, UpdateContext, Write};
+
+use std::time::Duration;
 
 use super::linear_actuator::Actuator;
 
@@ -44,7 +46,7 @@ impl GeneratorControlUnit {
         Self {
             pid_controller: PidController::new(
                 0.003,
-                0.012,
+                0.01,
                 0.,
                 0.,
                 1.,
@@ -161,8 +163,8 @@ pub struct HydraulicGeneratorMotor {
 
     valve: MeteringValve,
 
-    volume_to_actuator_accumulator: Volume,
-    volume_to_res_accumulator: Volume,
+    total_volume_to_actuator: Volume,
+    total_volume_to_reservoir: Volume,
 }
 impl HydraulicGeneratorMotor {
     const MOTOR_INERTIA: f64 = 0.01;
@@ -185,8 +187,8 @@ impl HydraulicGeneratorMotor {
 
             valve: MeteringValve::new(),
 
-            volume_to_actuator_accumulator: Volume::new::<gallon>(0.),
-            volume_to_res_accumulator: Volume::new::<gallon>(0.),
+            total_volume_to_actuator: Volume::new::<gallon>(0.),
+            total_volume_to_reservoir: Volume::new::<gallon>(0.),
         }
     }
 
@@ -272,8 +274,8 @@ impl HydraulicGeneratorMotor {
         self.current_flow = self.flow();
 
         let total_volume = self.current_flow * context.delta_as_time();
-        self.volume_to_actuator_accumulator += total_volume;
-        self.volume_to_res_accumulator = self.volume_to_actuator_accumulator;
+        self.total_volume_to_actuator += total_volume;
+        self.total_volume_to_reservoir = self.total_volume_to_actuator;
     }
 
     fn flow(&self) -> VolumeRate {
@@ -286,16 +288,16 @@ impl HydraulicGeneratorMotor {
 }
 impl Actuator for HydraulicGeneratorMotor {
     fn used_volume(&self) -> Volume {
-        self.volume_to_actuator_accumulator
+        self.total_volume_to_actuator
     }
 
     fn reservoir_return(&self) -> Volume {
-        self.volume_to_res_accumulator
+        self.total_volume_to_reservoir
     }
 
     fn reset_volumes(&mut self) {
-        self.volume_to_res_accumulator = Volume::new::<gallon>(0.);
-        self.volume_to_actuator_accumulator = Volume::new::<gallon>(0.);
+        self.total_volume_to_reservoir = Volume::new::<gallon>(0.);
+        self.total_volume_to_actuator = Volume::new::<gallon>(0.);
     }
 }
 impl SimulationElement for HydraulicGeneratorMotor {
@@ -308,28 +310,23 @@ impl SimulationElement for HydraulicGeneratorMotor {
 }
 
 struct MeteringValve {
-    position: Ratio,
+    position: LowPassFilter<Ratio>,
 }
 impl MeteringValve {
-    const POSITION_RESPONSE_TIME_CONSTANT_S: f64 = 0.1;
+    const POSITION_RESPONSE_TIME_CONSTANT: Duration = Duration::from_millis(50);
 
     fn new() -> Self {
         Self {
-            position: Ratio::new::<ratio>(0.),
+            position: LowPassFilter::<Ratio>::new(Self::POSITION_RESPONSE_TIME_CONSTANT),
         }
     }
 
     fn update(&mut self, context: &UpdateContext, commanded_position: Ratio) {
-        self.position = self.position
-            + (commanded_position - self.position)
-                * (1.
-                    - std::f64::consts::E.powf(
-                        -context.delta_as_secs_f64() / Self::POSITION_RESPONSE_TIME_CONSTANT_S,
-                    ));
+        self.position.update(context.delta(), commanded_position);
     }
 
     fn position(&self) -> Ratio {
-        self.position
+        self.position.output()
     }
 }
 
