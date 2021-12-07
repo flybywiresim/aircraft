@@ -220,18 +220,16 @@ impl HydraulicGeneratorMotor {
     }
 
     fn update_resistant_torque(&mut self, emergency_generator: &impl EmergencyGeneratorInterface) {
-        let mut resistant_torque;
-        if self.speed().get::<radian_per_second>() < 1.
+        let resistant_torque = if self.speed().get::<radian_per_second>() < 1.
             || self.virtual_displacement < Volume::new::<cubic_inch>(0.001)
         {
-            resistant_torque =
-                Torque::new::<newton_meter>(Self::STATIC_RESISTANT_TORQUE_WHEN_UNPOWERED_NM);
+            Torque::new::<newton_meter>(Self::STATIC_RESISTANT_TORQUE_WHEN_UNPOWERED_NM)
         } else {
-            resistant_torque = Torque::new::<newton_meter>(
+            let theoretical_torque = Torque::new::<newton_meter>(
                 emergency_generator.generated_power().get::<watt>()
                     / self.speed().get::<radian_per_second>(),
             );
-            resistant_torque = resistant_torque + (1. - Self::EFFICIENCY) * resistant_torque;
+            theoretical_torque + (1. - Self::EFFICIENCY) * theoretical_torque
         };
 
         self.total_torque -= resistant_torque;
