@@ -69,7 +69,7 @@ class EngineControl {
     idleCN1 = iCN1(pressAltitude, ambientTemp);
     idleN1 = idleCN1 * sqrt(ratios->theta2(0, ambientTemp));
     idleN2 = iCN2(pressAltitude) * sqrt(ratios->theta(ambientTemp));
-    idleCFF = poly->correctedFuelFlow(idleCN1, 0, pressAltitude);                                           // lbs/hr
+    idleCFF = poly->correctedFuelFlow(idleCN1, 0, pressAltitude);                                               // lbs/hr
     idleFF = idleCFF * LBS_TO_KGS * ratios->delta2(0, ambientPressure) * sqrt(ratios->theta2(0, ambientTemp));  // Kg/hr
     idleEGT = poly->correctedEGT(idleCN1, idleCFF, 0, pressAltitude) * ratios->theta2(0, ambientTemp);
 
@@ -136,7 +136,7 @@ class EngineControl {
 
   /// <summary>
   /// Engine State Machine
-  /// 0 - Engine OFF, 1 - Engine ON, 2 - Engine Starting & 3 - Engine Shutting
+  /// 0 - Engine OFF, 1 - Engine ON, 2 - Engine Starting, 3 - Engine Re-starting & 4 - Engine Shutting
   /// </summary>
   void engineStateMachine(int engine,
                           double engineIgniter,
@@ -185,7 +185,7 @@ class EngineControl {
         if (engineStarter == 1) {
           engineState = 1;
         } else {
-          engineState = 3;
+          engineState = 4;
         }
       }
 
@@ -195,25 +195,38 @@ class EngineControl {
           engineState = 1;
           resetTimer = 1;
         } else if (engineStarter == 0) {
-          engineState = 3;
+          engineState = 4;
           resetTimer = 1;
         } else {
           engineState = 2;
         }
       }
 
-      // Present State Shutting
+      // Present State Re-Starting.
       if (engineState == 3 || engineState == 13) {
+        if (engineStarter == 1 && simN2 >= (idleN2 - 0.1)) {
+          engineState = 1;
+          resetTimer = 1;
+        } else if (engineStarter == 0) {
+          engineState = 4;
+          resetTimer = 1;
+        } else {
+          engineState = 3;
+        }
+      }
+
+      // Present State Shutting
+      if (engineState == 4 || engineState == 14) {
         if (engineIgniter == 2 && engineStarter == 1) {
-          engineState = 2;
+          engineState = 3;
         } else if (engineStarter == 0 && simN2 < 0.05 && egtFbw <= ambientTemp) {
           engineState = 0;
           resetTimer = 1;
         } else if (engineStarter == 1 && simN2 > 50) {
-          engineState = 2;
+          engineState = 3;
           resetTimer = 1;
         } else {
-          engineState = 3;
+          engineState = 4;
         }
       }
     }
@@ -238,6 +251,7 @@ class EngineControl {
   /// Engine Start Procedure
   /// </summary>TIT
   void engineStartProcedure(int engine,
+                            double engineState,
                             double imbalance,
                             double deltaTime,
                             double timer,
@@ -247,8 +261,10 @@ class EngineControl {
     double startCN2Left;
     double startCN2Right;
     double preN2Fbw;
-    double preEgtFbw;
     double newN2Fbw;
+    double preEgtFbw;
+    double startEgtFbw;
+    double shutdownEgtFbw;
 
     n2Imbalance = 0;
     ffImbalance = 0;
@@ -282,10 +298,26 @@ class EngineControl {
         preN2Fbw = simVars->getEngine1N2();
         preEgtFbw = simVars->getEngine1EGT();
         newN2Fbw = poly->startN2(simN2, preN2Fbw, idleN2 - n2Imbalance);
+        startEgtFbw = poly->startEGT(newN2Fbw, idleN2 - n2Imbalance, ambientTemp, idleEGT - egtImbalance);
+        shutdownEgtFbw = poly->shutdownEGT(preEgtFbw, ambientTemp, deltaTime);
+
         simVars->setEngine1N2(newN2Fbw);
         simVars->setEngine1N1(poly->startN1(newN2Fbw, idleN2 - n2Imbalance, idleN1));
         simVars->setEngine1FF(poly->startFF(newN2Fbw, idleN2 - n2Imbalance, idleFF - ffImbalance));
-        simVars->setEngine1EGT(poly->startEGT(newN2Fbw, preEgtFbw, idleN2 - n2Imbalance, ambientTemp, idleEGT - egtImbalance));
+
+        if (engineState == 3) {
+          if (abs(startEgtFbw - preEgtFbw) <= 1.5) {
+            simVars->setEngine1EGT(startEgtFbw);
+            simVars->setEngine1State(2);
+          } else if (startEgtFbw > preEgtFbw) {
+            simVars->setEngine1EGT(preEgtFbw + (0.75 * deltaTime * (idleN2 - newN2Fbw)));
+          } else {
+            simVars->setEngine1EGT(shutdownEgtFbw);
+          }
+        } else {
+          simVars->setEngine1EGT(startEgtFbw);
+        }
+
         oilTemperature = poly->startOilTemp(newN2Fbw, idleN2, ambientTemp);
         oilTemperatureLeftPre = oilTemperature;
         SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::OilTempLeft, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
@@ -304,10 +336,26 @@ class EngineControl {
         preN2Fbw = simVars->getEngine2N2();
         preEgtFbw = simVars->getEngine2EGT();
         newN2Fbw = poly->startN2(simN2, preN2Fbw, idleN2 - n2Imbalance);
+        startEgtFbw = poly->startEGT(newN2Fbw, idleN2 - n2Imbalance, ambientTemp, idleEGT - egtImbalance);
+        shutdownEgtFbw = poly->shutdownEGT(preEgtFbw, ambientTemp, deltaTime);
+
         simVars->setEngine2N2(newN2Fbw);
         simVars->setEngine2N1(poly->startN1(newN2Fbw, idleN2 - n2Imbalance, idleN1));
         simVars->setEngine2FF(poly->startFF(newN2Fbw, idleN2 - n2Imbalance, idleFF - ffImbalance));
-        simVars->setEngine2EGT(poly->startEGT(newN2Fbw, preEgtFbw, idleN2 - n2Imbalance, ambientTemp, idleEGT - egtImbalance));
+
+        if (engineState == 3) {
+          if (abs(startEgtFbw - preEgtFbw) <= 1.5) {
+            simVars->setEngine2EGT(startEgtFbw);
+            simVars->setEngine2State(2);
+          } else if (startEgtFbw > preEgtFbw) {
+            simVars->setEngine2EGT(preEgtFbw + (0.75 * deltaTime * (idleN2 - newN2Fbw)));
+          } else {
+            simVars->setEngine2EGT(shutdownEgtFbw);
+          }
+        } else {
+          simVars->setEngine2EGT(startEgtFbw);
+        }
+
         oilTemperature = poly->startOilTemp(newN2Fbw, idleN2, ambientTemp);
         oilTemperatureRightPre = oilTemperature;
         SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::OilTempRight, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
@@ -442,7 +490,8 @@ class EngineControl {
   /// FBW Fuel FLow (in Kg/h)
   /// Updates Fuel Flow with realistic values
   /// </summary>
-  double updateFF(int engine, double imbalance, double simCN1, double mach, double pressAltitude, double ambientTemp, double ambientPressure) {
+  double
+  updateFF(int engine, double imbalance, double simCN1, double mach, double pressAltitude, double ambientTemp, double ambientPressure) {
     double outFlow = 0;
 
     // Engine imbalance
@@ -987,9 +1036,10 @@ class EngineControl {
 
       switch (int(engineState)) {
         case 2:
-          engineStartProcedure(engine, imbalance, deltaTime, timer, simN2, pressAltitude, ambientTemp);
-          break;
         case 3:
+          engineStartProcedure(engine, engineState, imbalance, deltaTime, timer, simN2, pressAltitude, ambientTemp);
+          break;
+        case 4:
           engineShutdownProcedure(engine, ambientTemp, simN1, deltaTime, timer);
           cFbwFF = updateFF(engine, imbalance, simCN1, mach, pressAltitude, ambientTemp, ambientPressure);
           break;

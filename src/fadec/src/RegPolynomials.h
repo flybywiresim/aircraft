@@ -142,7 +142,7 @@ class Polynomial {
   /// <summary>
   /// Start-up polynomials - EGT (Celsius)
   /// </summary>
-  double startEGT(double fbwN2, double preEGT, double idleN2, double ambientTemp, double idleEGT) {
+  double startEGT(double fbwN2, double idleN2, double ambientTemp, double idleEGT) {
     double normalEGT = 0;
     double outEGT = 0;
     double normalN2 = fbwN2 / idleN2;
