@@ -160,14 +160,14 @@
             "name": "CONE_B"
         },
         {
-            "translation": [18, -2.4, -8],
+            "translation": [18, -2.35, -8],
             "rotation": [0, 0.993, 0, 0.117],
             "scale": [0.4, 0.4, 0.4],
             "mesh": 0,
             "name": "CONE_L"
         },
         {
-            "translation": [-18, -2.4, -8],
+            "translation": [-18, -2.35, -8],
             "rotation": [0, 0, 0, 0],
             "scale": [0.4, 0.4, 0.4],
             "mesh": 0,
