@@ -411,6 +411,7 @@ impl<T: PneumaticContainer> PneumaticContainerWithConnector<T> {
         self.container.pressure()
     }
 
+    #[cfg(test)]
     pub fn temperature(&self) -> ThermodynamicTemperature {
         self.container.temperature()
     }
