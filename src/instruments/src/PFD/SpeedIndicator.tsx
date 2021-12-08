@@ -147,8 +147,16 @@ export const AirspeedIndicator = ({ airspeed, airspeedAcc, FWCFlightPhase, altit
         <g id="SpeedTapeElementsGroup">
             <path id="SpeedTapeBackground" className="TapeBackground" d="m1.9058 123.56v-85.473h17.125v85.473z" />
             <SpeedTapeOutline airspeed={airspeed} />
-            {/* eslint-disable-next-line max-len */}
-            <VerticalTape tapeValue={clampedSpeed} bugs={bugs} graduationElementFunction={GraduationElement} lowerLimit={30} upperLimit={660} valueSpacing={ValueSpacing} displayRange={DisplayRange + 6} distanceSpacing={DistanceSpacing} />
+            <VerticalTape
+                tapeValue={clampedSpeed}
+                bugs={bugs}
+                graduationElementFunction={GraduationElement}
+                lowerLimit={30}
+                upperLimit={660}
+                valueSpacing={ValueSpacing}
+                displayRange={DisplayRange + 6}
+                distanceSpacing={DistanceSpacing}
+            />
             <SpeedTrendArrow airspeedAcc={airspeedAcc} />
             {FWCFlightPhase <= 4
             && <V1Offtape airspeed={clampedSpeed} v1={v1} />}

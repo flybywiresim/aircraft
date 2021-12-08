@@ -86,6 +86,7 @@ clang++ \
   "${DIR}/src/model/MultiWordIor.cpp" \
   "${DIR}/src/model/rt_modd.cpp" \
   "${DIR}/src/model/rt_remd.cpp" \
+  "${DIR}/src/model/rt_roundd.cpp" \
   "${DIR}/src/model/uMultiWord2Double.cpp" \
   -I "${DIR}/src/zlib" \
   "${DIR}/src/zlib/zfstream.cc" \
