@@ -33,7 +33,7 @@ export class VnavDriver implements GuidanceComponent {
 
     lastCruiseAltitude: Feet = 0;
 
-    update(_deltaTime: number): void {
+    update(_: number): void {
         const newCruiseAltitude = SimVar.GetSimVarValue('L:AIRLINER_CRUISE_ALTITUDE', 'number');
         if (newCruiseAltitude !== this.lastCruiseAltitude) {
             this.lastCruiseAltitude = newCruiseAltitude;

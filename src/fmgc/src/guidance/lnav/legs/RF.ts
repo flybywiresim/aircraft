@@ -12,19 +12,19 @@ import { arcDistanceToGo } from '../CommonGeometry';
 
 export class RFLeg extends Leg {
     // termination fix of the previous leg
-    public from: WayPoint;
+    from: WayPoint;
 
     // to fix for the RF leg, most params referenced off this
-    public to: WayPoint;
+    to: WayPoint;
 
     // location of the centre fix of the arc
-    public center: LatLongData;
+    center: LatLongData;
 
-    public radius: NauticalMiles;
+    radius: NauticalMiles;
 
-    public angle: Degrees;
+    angle: Degrees;
 
-    public clockwise: boolean;
+    clockwise: boolean;
 
     private mDistance: NauticalMiles;
 
@@ -66,11 +66,11 @@ export class RFLeg extends Leg {
     }
 
     // this is used for transitions... which are not allowed for RF
-    public get bearing(): Degrees {
+    get bearing(): Degrees {
         return -1;
     }
 
-    public get distance(): NauticalMiles {
+    get distance(): NauticalMiles {
         return this.mDistance;
     }
 
