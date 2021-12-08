@@ -168,7 +168,7 @@ class EICASCommonDisplay extends Airliners.EICASTemplateElement {
             } else {
                 this.gwValue.classList.remove("Value");
                 this.gwValue.classList.add("Cyan");
-                this.gwValue.textContent = "--"
+                this.gwValue.textContent = "--";
             }
         }
         if (gwUnit != this.currentGwUnit) {
