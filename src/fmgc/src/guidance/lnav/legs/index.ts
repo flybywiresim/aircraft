@@ -30,19 +30,19 @@ export abstract class Leg implements Guidable {
 
     indexInFullPath: number;
 
-    get isCircularArc(): boolean;
+    abstract get isCircularArc(): boolean;
 
-    get bearing(): Degrees;
+    abstract get bearing(): Degrees;
 
-    get distance(): NauticalMiles;
+    abstract get distance(): NauticalMiles;
 
-    get speedConstraint(): SpeedConstraint | undefined;
+    abstract get speedConstraint(): SpeedConstraint | undefined;
 
-    get altitudeConstraint(): AltitudeConstraint | undefined;
+    abstract get altitudeConstraint(): AltitudeConstraint | undefined;
 
-    get initialLocation(): LatLongData | undefined;
+    abstract get initialLocation(): LatLongData | undefined;
 
-    get terminatorLocation(): LatLongData | undefined;
+    abstract get terminatorLocation(): LatLongData | undefined;
 
     abstract getPseudoWaypointLocation(distanceBeforeTerminator: NauticalMiles): LatLongData | undefined;
 

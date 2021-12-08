@@ -14,11 +14,11 @@ import { GeoMath } from '@fmgc/flightplanning/GeoMath';
 import { WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
 
 export class TFLeg extends Leg {
-    public from: WayPoint;
+    from: WayPoint;
 
-    public to: WayPoint;
+    to: WayPoint;
 
-    public constraintType: WaypointConstraintType;
+    constraintType: WaypointConstraintType;
 
     private mDistance: NauticalMiles;
 
