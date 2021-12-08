@@ -481,6 +481,7 @@ struct ap_vertical_output
   boolean_T FD_disconnect;
   boolean_T FD_connect;
   tcas_sub_mode TCAS_sub_mode;
+  boolean_T TCAS_sub_mode_compatible;
   boolean_T TCAS_message_disarm;
   boolean_T TCAS_message_RA_inhibit;
   boolean_T TCAS_message_TRK_FPA_deselection;

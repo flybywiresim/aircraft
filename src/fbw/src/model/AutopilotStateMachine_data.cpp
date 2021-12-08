@@ -248,6 +248,7 @@ AutopilotStateMachineModelClass::Parameters_AutopilotStateMachine_T AutopilotSta
         NONE,
         false,
         false,
+        false,
         false
       }
     },
@@ -301,6 +302,7 @@ AutopilotStateMachineModelClass::Parameters_AutopilotStateMachine_T AutopilotSta
         false,
         false,
         NONE,
+        false,
         false,
         false,
         false
@@ -482,6 +484,7 @@ AutopilotStateMachineModelClass::Parameters_AutopilotStateMachine_T AutopilotSta
       false,
       false,
       NONE,
+      false,
       false,
       false,
       false
