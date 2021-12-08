@@ -14,9 +14,7 @@ import { FlightPlanManager } from '../flightplanning/FlightPlanManager';
  * calculating the autopilot inputs to follow the predicted flight path.
  */
 export class GuidanceManager {
-    private lastTransition?: number;
-
-    public flightPlanManager: FlightPlanManager;
+    flightPlanManager: FlightPlanManager;
 
     constructor(flightPlanManager: FlightPlanManager) {
         this.flightPlanManager = flightPlanManager;

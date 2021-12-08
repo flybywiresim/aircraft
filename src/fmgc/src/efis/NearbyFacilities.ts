@@ -6,19 +6,19 @@ import { NearestSearchType } from '../types/fstypes/FSEnums';
 // WARNING: this is a temporary implementation until the new nav database is complete
 // Do not write any code which depends on it
 export class NearbyFacilities {
-    private listener;
+    nearbyAirports: Map<string, RawAirport> = new Map();
+
+    nearbyNdbNavaids: Map<string, RawNdb> = new Map();
+
+    nearbyVhfNavaids: Map<string, RawVor> = new Map();
+
+    nearbyWaypoints: Map<string, RawIntersection> = new Map();
+
+    version: number = 0;
+
+    private listener: ViewListener.ViewListener;
 
     private initDone = false;
-
-    public nearbyAirports: Map<string, RawAirport> = new Map();
-
-    public nearbyNdbNavaids: Map<string, RawNdb> = new Map();
-
-    public nearbyVhfNavaids: Map<string, RawVor> = new Map();
-
-    public nearbyWaypoints: Map<string, RawIntersection> = new Map();
-
-    public version: number = 0;
 
     private airportSessionId: number;
 
