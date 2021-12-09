@@ -846,16 +846,16 @@ impl LinearActuatedRigidBodyOnHingeAxis {
     }
 
     /// Indicates correct direction of the rigid body when an actuator would be extending or compressing.
-    /// If extending actuator would give a rising rigid body angle, sets TRUE
-    /// If extending actuator would give a lowering rigid body angle, sets FALSE
+    /// If extending actuator would give an increasing rigid body angle, sets TRUE
+    /// If extending actuator would give a decreasing rigid body angle, sets FALSE
     fn initialize_actuator_force_direction(&mut self) {
         self.actuator_extension_gives_positive_angle = self
             .absolute_length_to_anchor_at_angle(self.min_angle)
             < self.absolute_length_to_anchor_at_angle(self.max_angle)
     }
 
-    // If compressing actuator would give a rising rigid body angle, returns TRUE
-    // If extending actuator would give a lowering rigid body angle, returns FALSE
+    /// If extending actuator would give an increasing rigid body angle, returns TRUE
+    /// If extending actuator would give a decreasing rigid body angle, returns FALSE
     pub fn actuator_extension_gives_positive_angle(&self) -> bool {
         self.actuator_extension_gives_positive_angle
     }
