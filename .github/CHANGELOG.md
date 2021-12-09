@@ -87,6 +87,7 @@
 1. [FDR] Added additional data to the FDR - @aguther (Andreas Guther)
 1. [ATHR] Fixed ATHR being armed in flight when TOGA applied without GA condition - @aguther (Andreas Guther)
 1. [EFB] Fixed landing performance calculator clear button and wind magnitude, made small ui improvements - @ghitier (Guillaume H.)
+1. [ECAM] Fixed gross weight being shown without engines running - @BlueberryKing (BlueberryKing)
 
 ## 0.7.0
 
