@@ -993,6 +993,14 @@
     - Degrees
     - The actual angle of the right slats
 
+- A32NX_IS_FLAPS_MOVING
+    - Boolean
+    - The flap surface is moving
+
+- A32NX_IS_SLAPS_MOVING
+    - Boolean
+    - The slat surface is moving
+
 - A32NX_HYD_LEFT_SLATS_MOTOR_RPM
     - Rpm
     - The slat hydraulic motor speed connected to blue system

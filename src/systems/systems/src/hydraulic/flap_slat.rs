@@ -121,6 +121,7 @@ pub struct FlapSlatAssembly {
     position_right_percent_id: VariableIdentifier,
     angle_left_id: VariableIdentifier,
     angle_right_id: VariableIdentifier,
+    is_moving_id: VariableIdentifier,
 
     flap_control_arm_position: Angle,
 
@@ -148,6 +149,7 @@ impl FlapSlatAssembly {
     const MAX_CIRCUIT_PRESSURE_PSI: f64 = 3000.;
     const ANGLE_THRESHOLD_FOR_REDUCED_SPEED_DEGREES: f64 = 6.69;
     const ANGULAR_SPEED_LIMIT_FACTOR_WHEN_APROACHING_POSITION: f64 = 0.5;
+    const MIN_TOTAL_MOTOR_RPM_TO_REPORT_MOVING: f64 = 20.;
 
     pub fn new(
         context: &mut InitContext,
@@ -181,6 +183,8 @@ impl FlapSlatAssembly {
 
             angle_left_id: context.get_identifier(format!("LEFT_{}_ANGLE", id)),
             angle_right_id: context.get_identifier(format!("RIGHT_{}_ANGLE", id)),
+
+            is_moving_id: context.get_identifier(format!("IS_{}_MOVING", id)),
 
             flap_control_arm_position: Angle::new::<radian>(0.),
             max_synchro_gear_position,
@@ -265,12 +269,12 @@ impl FlapSlatAssembly {
         sfcc1_angle_request: Option<Angle>,
         sfcc2_angle_request: Option<Angle>,
     ) {
-        if sfcc1_angle_request.is_some() {
+        if let Some(sfcc1_angle) = sfcc1_angle_request {
             self.final_requested_synchro_gear_position =
-                self.feedback_angle_from_flap_surface_angle(sfcc1_angle_request.unwrap());
-        } else if sfcc2_angle_request.is_some() {
+                self.feedback_angle_from_flap_surface_angle(sfcc1_angle);
+        } else if let Some(sfcc2_angle) = sfcc2_angle_request {
             self.final_requested_synchro_gear_position =
-                self.feedback_angle_from_flap_surface_angle(sfcc2_angle_request.unwrap());
+                self.feedback_angle_from_flap_surface_angle(sfcc2_angle);
         }
     }
 
@@ -405,11 +409,11 @@ impl FlapSlatAssembly {
         &mut self.right_motor
     }
 
-    pub fn left_motor_rpm(&mut self) -> f64 {
+    pub fn left_motor_rpm(&self) -> f64 {
         self.left_motor.speed().get::<revolution_per_minute>()
     }
 
-    pub fn right_motor_rpm(&mut self) -> f64 {
+    pub fn right_motor_rpm(&self) -> f64 {
         self.right_motor.speed().get::<revolution_per_minute>()
     }
 
@@ -443,6 +447,10 @@ impl FlapSlatAssembly {
     pub fn reset_right_accumulators(&mut self) {
         self.right_motor.reset_accumulators();
     }
+
+    fn is_surface_moving(&self) -> bool {
+        self.left_motor_rpm() + self.right_motor_rpm() > Self::MIN_TOTAL_MOTOR_RPM_TO_REPORT_MOVING
+    }
 }
 impl SimulationElement for FlapSlatAssembly {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
@@ -469,6 +477,8 @@ impl SimulationElement for FlapSlatAssembly {
         let flaps_surface_angle = self.flap_surface_angle();
         writer.write(&self.angle_left_id, flaps_surface_angle.get::<degree>());
         writer.write(&self.angle_right_id, flaps_surface_angle.get::<degree>());
+
+        writer.write(&self.is_moving_id, self.is_surface_moving());
     }
 }
 impl FeedbackPositionPickoffUnit for FlapSlatAssembly {

@@ -4,7 +4,7 @@ use std::time::Duration;
 use uom::si::{
     acceleration::meter_per_second_squared,
     angle::degree,
-    angular_velocity::{radian_per_second, revolution_per_minute},
+    angular_velocity::radian_per_second,
     electric_current::ampere,
     f64::*,
     length::meter,
@@ -39,8 +39,8 @@ use systems::{
     shared::{
         interpolation, DelayedFalseLogicGate, DelayedPulseTrueLogicGate, DelayedTrueLogicGate,
         ElectricalBusType, ElectricalBuses, EmergencyElectricalRatPushButton,
-        EmergencyElectricalState, EngineFirePushButtons, FeedbackPositionPickoffUnit,
-        LgciuInterface, RamAirTurbineHydraulicCircuitPressurised,
+        EmergencyElectricalState, EngineFirePushButtons, LgciuInterface,
+        RamAirTurbineHydraulicCircuitPressurised,
     },
     simulation::{
         InitContext, Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -2738,6 +2738,14 @@ mod tests {
 
             fn is_yellow_pressurised(&self) -> bool {
                 self.query(|a| a.is_yellow_pressurised())
+            }
+
+            fn is_flaps_moving(&mut self) -> bool {
+                self.read_by_name("IS_FLAPS_MOVING")
+            }
+
+            fn is_slats_moving(&mut self) -> bool {
+                self.read_by_name("IS_SLATS_MOVING")
             }
 
             fn is_cargo_fwd_door_locked_down(&mut self) -> bool {
@@ -5744,6 +5752,33 @@ mod tests {
         }
 
         #[test]
+        fn flaps_and_slats_declare_moving() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_one_tick();
+
+            test_bed = test_bed
+                .set_yellow_e_pump(false)
+                .set_ptu_state(false)
+                .set_flaps_handle_position(4)
+                .run_waiting_for(Duration::from_secs(5));
+
+            // Only yellow press so only flaps can move
+            assert!(test_bed.is_flaps_moving());
+            assert!(!test_bed.is_slats_moving());
+
+            // Now slats can move through ptu
+            test_bed = test_bed
+                .set_ptu_state(true)
+                .run_waiting_for(Duration::from_secs(5));
+
+            assert!(test_bed.is_flaps_moving());
+            assert!(test_bed.is_slats_moving());
+        }
+
+        #[test]
         fn yellow_epump_can_deploy_flaps_and_slats() {
             let mut test_bed = test_bed_with()
                 .engines_off()
@@ -5876,6 +5911,9 @@ mod tests {
             assert!(test_bed.get_flaps_right_position_percent() <= 1.);
             assert!(test_bed.get_slats_left_position_percent() <= 1.);
             assert!(test_bed.get_slats_right_position_percent() <= 1.);
+
+            assert!(!test_bed.is_slats_moving());
+            assert!(!test_bed.is_flaps_moving());
         }
 
         #[test]
