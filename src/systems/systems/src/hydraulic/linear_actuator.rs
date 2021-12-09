@@ -816,8 +816,7 @@ impl LinearActuatedRigidBodyOnHingeAxis {
             axis_direction,
         };
         // Make sure the new object has coherent structure by updating internal roations and positions once
-        new_body.actuator_extension_gives_positive_angle =
-            Self::initialize_actuator_force_direction(new_body);
+        new_body.initialize_actuator_force_direction();
         new_body.update_all_rotations();
         new_body.init_position_normalized();
         new_body
@@ -849,9 +848,10 @@ impl LinearActuatedRigidBodyOnHingeAxis {
     /// Indicates correct direction of the rigid body when an actuator would be extending or compressing.
     /// If extending actuator would give a rising rigid body angle, sets TRUE
     /// If extending actuator would give a lowering rigid body angle, sets FALSE
-    fn initialize_actuator_force_direction(rigid_body: LinearActuatedRigidBodyOnHingeAxis) -> bool {
-        rigid_body.absolute_length_to_anchor_at_angle(rigid_body.min_angle)
-            < rigid_body.absolute_length_to_anchor_at_angle(rigid_body.max_angle)
+    fn initialize_actuator_force_direction(&mut self) {
+        self.actuator_extension_gives_positive_angle = self
+            .absolute_length_to_anchor_at_angle(self.min_angle)
+            < self.absolute_length_to_anchor_at_angle(self.max_angle)
     }
 
     // If compressing actuator would give a rising rigid body angle, returns TRUE
