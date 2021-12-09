@@ -500,8 +500,9 @@ impl LinearActuator {
         flow_open_loop_modifier_map: [f64; 6],
         flow_open_loop_position_breakpoints: [f64; 6],
     ) -> Self {
-        let total_travel = bounded_linear_length.max_absolute_length_to_anchor()
-            - bounded_linear_length.min_absolute_length_to_anchor();
+        let total_travel = (bounded_linear_length.max_absolute_length_to_anchor()
+            - bounded_linear_length.min_absolute_length_to_anchor())
+        .abs();
 
         let bore_side_area_single_actuator = Area::new::<square_meter>(
             std::f64::consts::PI * (bore_side_diameter.get::<meter>() / 2.).powi(2),
@@ -866,7 +867,7 @@ impl LinearActuatedRigidBodyOnHingeAxis {
         // Actuator local force convention is positive in extension / negative in compression. We reverse direction depending on
         // rigid body configuration so we get an absolute force in the rigid body frame of reference
         let mut absolute_actuator_force = actuator_local_force;
-        if !self.actuator_extension_gives_positive_angle() {
+        if self.actuator_extension_gives_positive_angle() {
             absolute_actuator_force = -actuator_local_force;
         }
 
@@ -891,10 +892,11 @@ impl LinearActuatedRigidBodyOnHingeAxis {
     }
 
     /// Indicates correct direction of the rigid body when an actuator would be extending or compressing.
-    /// If compressing actuator would give a rising rigid body angle, sets TRUE
+    /// If extending actuator would give a rising rigid body angle, sets TRUE
     /// If extending actuator would give a lowering rigid body angle, sets FALSE
     fn initialize_actuator_force_direction(rigid_body: LinearActuatedRigidBodyOnHingeAxis) -> bool {
-        rigid_body.max_absolute_length_to_anchor() < rigid_body.min_absolute_length_to_anchor()
+        rigid_body.absolute_length_to_anchor_at_angle(rigid_body.min_angle)
+            < rigid_body.absolute_length_to_anchor_at_angle(rigid_body.max_angle)
     }
 
     // If compressing actuator would give a rising rigid body angle, returns TRUE
@@ -1035,13 +1037,18 @@ impl LinearActuatedRigidBodyOnHingeAxis {
 }
 impl BoundedLinearLength for LinearActuatedRigidBodyOnHingeAxis {
     fn min_absolute_length_to_anchor(&self) -> Length {
-        self.absolute_length_to_anchor_at_angle(self.min_angle)
+        let length_at_min_angle = self.absolute_length_to_anchor_at_angle(self.min_angle);
+        let length_at_max_angle = self.absolute_length_to_anchor_at_angle(self.max_angle);
+        length_at_min_angle.min(length_at_max_angle)
     }
 
     fn max_absolute_length_to_anchor(&self) -> Length {
-        self.absolute_length_to_anchor_at_angle(self.max_angle)
+        let length_at_min_angle = self.absolute_length_to_anchor_at_angle(self.min_angle);
+        let length_at_max_angle = self.absolute_length_to_anchor_at_angle(self.max_angle);
+        length_at_min_angle.max(length_at_max_angle)
     }
 }
+
 #[cfg(test)]
 mod tests {
     use nalgebra::Vector3;
