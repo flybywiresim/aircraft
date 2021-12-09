@@ -140,7 +140,7 @@ impl CoreHydraulicForce {
             rod_side_area,
             last_control_force: Force::new::<newton>(0.),
             force_raw: Force::new::<newton>(0.),
-            force_filtered: LowPassFilter::<Force>::new(Duration::from_millis(80)),
+            force_filtered: LowPassFilter::<Force>::new(Duration::from_millis(100)),
 
             max_force: max_force,
             ki_gain: Self::DEFAULT_I_GAIN,
@@ -1174,7 +1174,8 @@ mod tests {
                 .update(context, &self.controller, self.pressure);
 
             println!(
-                "Body pos {:.3}, Actuator pos {:.3}, Actuator force {:.1}",
+                "Body abs angle {:.2} Body Npos {:.3}, Actuator Npos {:.3}, Actuator force {:.1}",
+                self.actuator_assembly.rigid_body.position.get::<degree>(),
                 self.actuator_assembly
                     .rigid_body
                     .position_normalized()
@@ -1477,6 +1478,27 @@ mod tests {
         assert!(test_bed.query(|a| a.actuator_position()) < Ratio::new::<ratio>(0.22));
     }
 
+    #[test]
+    fn right_main_gear_door_drops_when_unlocked() {
+        let mut test_bed = SimulationTestBed::new(|context| {
+            let rigid_body = main_gear_door_right_body(true);
+            let actuator = main_gear_door_actuator(context, &rigid_body);
+            TestAircraft::new(actuator, rigid_body)
+        });
+
+        let actuator_position_init = test_bed.query(|a| a.body_position());
+
+        test_bed.run_with_delta(Duration::from_secs(1));
+
+        assert!(test_bed.query(|a| a.body_position()) == actuator_position_init);
+
+        test_bed.command(|a| a.command_slow_damping_mode());
+        test_bed.command(|a| a.command_unlock());
+        test_bed.run_with_delta(Duration::from_secs(10));
+
+        assert!(test_bed.query(|a| a.body_position()) > actuator_position_init);
+    }
+
     fn cargo_door_actuator(
         context: &mut InitContext,
         bounded_linear_length: &impl BoundedLinearLength,
@@ -1491,7 +1513,7 @@ mod tests {
             800000.,
             15000.,
             50000.,
-            2000000.,
+            1200000.,
             [1., 1., 1., 1., 1., 1.],
             [0., 0.2, 0.21, 0.79, 0.8, 1.],
         )
@@ -1526,14 +1548,14 @@ mod tests {
             context,
             bounded_linear_length,
             1,
-            Length::new::<meter>(0.014),
-            Length::new::<meter>(0.0112),
+            Length::new::<meter>(0.055),
+            Length::new::<meter>(0.03),
             VolumeRate::new::<gallon_per_second>(0.004),
             20000.,
             5000.,
             2000.,
-            20000.,
-            [1., 1., 1., 1., 1., 1.],
+            500000.,
+            [0.5, 1., 1., 1., 1., 0.5],
             [0., 0.2, 0.21, 0.79, 0.8, 1.],
         )
     }
