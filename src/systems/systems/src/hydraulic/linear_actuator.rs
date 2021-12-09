@@ -98,9 +98,6 @@ struct CoreHydraulicForce {
     pid_controller: PidController,
 }
 impl CoreHydraulicForce {
-    const DEFAULT_I_GAIN: f64 = 5.;
-    const DEFAULT_P_GAIN: f64 = 0.05;
-    const DEFAULT_FORCE_GAIN: f64 = 200000.;
     const OPEN_LOOP_GAIN: f64 = 1.;
 
     const MIN_PRESSURE_TO_EXIT_POSITION_CONTROL_PSI: f64 = 500.;
@@ -119,6 +116,9 @@ impl CoreHydraulicForce {
         rod_side_area: Area,
         flow_open_loop_modifier_map: [f64; 6],
         flow_open_loop_position_breakpoints: [f64; 6],
+        flow_control_proportionnal_gain: f64,
+        flow_control_integral_gain: f64,
+        flow_control_force_gain: f64,
     ) -> Self {
         let max_force = Pressure::new::<psi>(3000.) * bore_side_area;
         Self {
@@ -143,19 +143,19 @@ impl CoreHydraulicForce {
             force_filtered: LowPassFilter::<Force>::new(Duration::from_millis(100)),
 
             max_force: max_force,
-            ki_gain: Self::DEFAULT_I_GAIN,
-            kp_gain: Self::DEFAULT_P_GAIN,
+            ki_gain: flow_control_integral_gain,
+            kp_gain: flow_control_proportionnal_gain,
             pi_id: context.get_identifier("TEST_GAIN_PI".to_owned()),
             pd_id: context.get_identifier("TEST_GAIN_PD".to_owned()),
 
             pid_controller: PidController::new(
-                Self::DEFAULT_P_GAIN,
-                Self::DEFAULT_I_GAIN,
+                flow_control_proportionnal_gain,
+                flow_control_integral_gain,
                 0.,
                 -max_force.get::<newton>(),
                 max_force.get::<newton>(),
                 0.,
-                Self::DEFAULT_FORCE_GAIN,
+                flow_control_force_gain,
             ),
         }
     }
@@ -499,6 +499,9 @@ impl LinearActuator {
         slow_hydraulic_damping_constant: f64,
         flow_open_loop_modifier_map: [f64; 6],
         flow_open_loop_position_breakpoints: [f64; 6],
+        flow_control_proportionnal_gain: f64,
+        flow_control_integral_gain: f64,
+        flow_control_force_gain: f64,
     ) -> Self {
         let total_travel = (bounded_linear_length.max_absolute_length_to_anchor()
             - bounded_linear_length.min_absolute_length_to_anchor())
@@ -574,6 +577,9 @@ impl LinearActuator {
                 total_rod_side_area,
                 flow_open_loop_modifier_map,
                 flow_open_loop_position_breakpoints,
+                flow_control_proportionnal_gain,
+                flow_control_integral_gain,
+                flow_control_force_gain,
             ),
         }
     }
@@ -1617,6 +1623,10 @@ mod tests {
         context: &mut InitContext,
         bounded_linear_length: &impl BoundedLinearLength,
     ) -> LinearActuator {
+        const DEFAULT_I_GAIN: f64 = 5.;
+        const DEFAULT_P_GAIN: f64 = 0.05;
+        const DEFAULT_FORCE_GAIN: f64 = 200000.;
+
         LinearActuator::new(
             context,
             bounded_linear_length,
@@ -1630,6 +1640,9 @@ mod tests {
             1200000.,
             [1., 1., 1., 1., 1., 1.],
             [0., 0.2, 0.21, 0.79, 0.8, 1.],
+            DEFAULT_P_GAIN,
+            DEFAULT_I_GAIN,
+            DEFAULT_FORCE_GAIN,
         )
     }
 
@@ -1659,6 +1672,10 @@ mod tests {
         context: &mut InitContext,
         bounded_linear_length: &impl BoundedLinearLength,
     ) -> LinearActuator {
+        const DEFAULT_I_GAIN: f64 = 5.;
+        const DEFAULT_P_GAIN: f64 = 0.05;
+        const DEFAULT_FORCE_GAIN: f64 = 200000.;
+
         LinearActuator::new(
             context,
             bounded_linear_length,
@@ -1672,6 +1689,9 @@ mod tests {
             28000.,
             [0.5, 1., 1., 1., 1., 0.5],
             [0., 0.2, 0.21, 0.79, 0.8, 1.],
+            DEFAULT_P_GAIN,
+            DEFAULT_I_GAIN,
+            DEFAULT_FORCE_GAIN,
         )
     }
 
@@ -1692,6 +1712,9 @@ mod tests {
             0.,
             [0.5, 1., 1., 1., 1., 0.5],
             [0., 0.2, 0.21, 0.79, 0.8, 1.],
+            0.,
+            0.,
+            0.,
         )
     }
 
