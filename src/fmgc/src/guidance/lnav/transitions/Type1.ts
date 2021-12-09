@@ -11,15 +11,15 @@ const mod = (x: number, n: number) => x - Math.floor(x / n) * n;
  * A type I transition uses a fixed turn radius between two fix-referenced legs.
  */
 export class Type1Transition extends Transition {
-    public previousLeg: TFLeg;
+    previousLeg: TFLeg;
 
-    public nextLeg: TFLeg | VMLeg;
+    nextLeg: TFLeg | VMLeg;
 
-    public radius: NauticalMiles;
+    radius: NauticalMiles;
 
-    public clockwise: boolean;
+    clockwise: boolean;
 
-    public isFrozen: boolean = false;
+    isFrozen: boolean = false;
 
     constructor(
         previousLeg: TFLeg,

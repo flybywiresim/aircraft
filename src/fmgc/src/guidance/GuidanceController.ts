@@ -13,29 +13,29 @@ import { VnavDriver } from './vnav/VnavDriver';
 const GEOMETRY_RECOMPUTATION_TIMER = 5_000;
 
 export class GuidanceController {
-    public flightPlanManager: FlightPlanManager;
+    flightPlanManager: FlightPlanManager;
 
-    public guidanceManager: GuidanceManager;
+    guidanceManager: GuidanceManager;
 
-    public lnavDriver: LnavDriver;
+    lnavDriver: LnavDriver;
 
-    public vnavDriver: VnavDriver;
+    vnavDriver: VnavDriver;
 
-    public pseudoWaypoints: PseudoWaypoints;
+    pseudoWaypoints: PseudoWaypoints;
 
-    public currentActiveLegPathGeometry: Geometry | null;
+    currentActiveLegPathGeometry: Geometry | null;
 
-    public currentMultipleLegGeometry: Geometry | null;
+    currentMultipleLegGeometry: Geometry | null;
 
-    public activeLegIndex: number;
+    activeLegIndex: number;
 
-    public activeLegDtg: NauticalMiles;
+    activeLegDtg: NauticalMiles;
 
-    public activeLegCompleteLegPathDtg: NauticalMiles;
+    activeLegCompleteLegPathDtg: NauticalMiles;
 
-    public displayActiveLegCompleteLegPathDtg: NauticalMiles;
+    displayActiveLegCompleteLegPathDtg: NauticalMiles;
 
-    public currentPseudoWaypoints: PseudoWaypoint[] = [];
+    currentPseudoWaypoints: PseudoWaypoint[] = [];
 
     constructor(flightPlanManager: FlightPlanManager, guidanceManager: GuidanceManager) {
         this.flightPlanManager = flightPlanManager;
@@ -115,7 +115,7 @@ export class GuidanceController {
      *
      * @param pseudoWaypoint the {@link PseudoWaypoint} to sequence.
      */
-    public sequencePseudoWaypoint(pseudoWaypoint: PseudoWaypoint): void {
+    sequencePseudoWaypoint(pseudoWaypoint: PseudoWaypoint): void {
         this.pseudoWaypoints.sequencePseudoWaypoint(pseudoWaypoint);
     }
 }
