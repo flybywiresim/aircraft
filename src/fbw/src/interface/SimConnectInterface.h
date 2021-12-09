@@ -192,6 +192,7 @@ class SimConnectInterface {
                double keyChangeElevator,
                double keyChangeRudder,
                bool disableXboxCompatibilityRudderPlusMinus,
+               double minSimulationRate,
                double maxSimulationRate,
                bool limitSimulationRateByPerformance);
 
@@ -263,6 +264,8 @@ class SimConnectInterface {
   // remove when aileron events can be processed via SimConnect
   static void processKeyEvent(ID32 event, UINT32 evdata, PVOID userdata);
 
+  void updateSimulationRateLimits(double minSimulationRate, double maxSimulationRate);
+
  private:
   enum ClientData {
     AUTOPILOT_STATE_MACHINE,
@@ -279,6 +282,7 @@ class SimConnectInterface {
 
   double sampleTime = 0;
 
+  double minSimulationRate = 0;
   double maxSimulationRate = 0;
   bool limitSimulationRateByPerformance = true;
   bool clientDataEnabled = false;

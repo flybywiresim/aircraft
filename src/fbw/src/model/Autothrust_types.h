@@ -121,6 +121,8 @@ struct athr_input
   boolean_T is_air_conditioning_2_active;
   boolean_T FD_active;
   boolean_T ATHR_reset_disable;
+  boolean_T is_TCAS_active;
+  real_T target_TCAS_RA_rate_fpm;
 };
 
 #endif
@@ -213,6 +215,7 @@ struct athr_data_computed
   boolean_T ATHR_push;
   boolean_T ATHR_disabled;
   real_T time_since_touchdown;
+  boolean_T alpha_floor_inhibited;
 };
 
 #endif

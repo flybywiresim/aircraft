@@ -34,13 +34,13 @@ export class Geometry {
      * The list of transitions between legs.
      * - entry n: transition after leg n
      */
-    public transitions: Map<number, Transition>;
+    transitions: Map<number, Transition>;
 
     /**
      * The list of legs in this geometry, possibly connected through transitions:
      * - entry n: nth leg, before transition n
      */
-    public legs: Map<number, Leg>;
+    legs: Map<number, Leg>;
 
     constructor(transitions: Map<number, Transition>, legs: Map<number, Leg>) {
         this.transitions = transitions;
