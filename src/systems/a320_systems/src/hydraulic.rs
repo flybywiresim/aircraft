@@ -119,11 +119,9 @@ impl A320CargoDoorFactory {
     const FLOW_CONTROL_FORCE_GAIN: f64 = 200000.;
 
     fn a320_cargo_door_actuator(
-        context: &mut InitContext,
         bounded_linear_length: &impl BoundedLinearLength,
     ) -> LinearActuator {
         LinearActuator::new(
-            context,
             bounded_linear_length,
             2,
             Length::new::<meter>(0.04422),
@@ -166,15 +164,14 @@ impl A320CargoDoorFactory {
 
     /// Builds a cargo door assembly consisting of the door physical rigid body and the hydraulic actuator connected
     /// to it
-    fn a320_cargo_door_assembly(context: &mut InitContext) -> HydraulicLinearActuatorAssembly {
+    fn a320_cargo_door_assembly() -> HydraulicLinearActuatorAssembly {
         let cargo_door_body = A320CargoDoorFactory::a320_cargo_door_body(true);
-        let cargo_door_actuator =
-            A320CargoDoorFactory::a320_cargo_door_actuator(context, &cargo_door_body);
+        let cargo_door_actuator = A320CargoDoorFactory::a320_cargo_door_actuator(&cargo_door_body);
         HydraulicLinearActuatorAssembly::new(cargo_door_actuator, cargo_door_body)
     }
 
     fn new_a320_cargo_door(context: &mut InitContext, id: &str) -> CargoDoor {
-        let assembly = A320CargoDoorFactory::a320_cargo_door_assembly(context);
+        let assembly = A320CargoDoorFactory::a320_cargo_door_assembly();
         CargoDoor::new(context, id, assembly)
     }
 }
