@@ -109,7 +109,7 @@ impl CoreHydraulicForce {
         rod_side_area: Area,
         flow_open_loop_modifier_map: [f64; 6],
         flow_open_loop_position_breakpoints: [f64; 6],
-        flow_control_proportionnal_gain: f64,
+        flow_control_proportional_gain: f64,
         flow_control_integral_gain: f64,
         flow_control_force_gain: f64,
     ) -> Self {
@@ -138,7 +138,7 @@ impl CoreHydraulicForce {
             max_force,
 
             pid_controller: PidController::new(
-                flow_control_proportionnal_gain,
+                flow_control_proportional_gain,
                 flow_control_integral_gain,
                 0.,
                 -max_force.get::<newton>(),
@@ -210,7 +210,9 @@ impl CoreHydraulicForce {
                 }
             }
             LinearActuatorMode::ActiveDamping => self.actions_from_current_to_active_damping(),
-            LinearActuatorMode::ClosedCircuitDamping => self.actions_from_current_to_closed_circuit_damping(),
+            LinearActuatorMode::ClosedCircuitDamping => {
+                self.actions_from_current_to_closed_circuit_damping()
+            }
         }
     }
 
@@ -462,7 +464,7 @@ impl LinearActuator {
         slow_hydraulic_damping_constant: f64,
         flow_open_loop_modifier_map: [f64; 6],
         flow_open_loop_position_breakpoints: [f64; 6],
-        flow_control_proportionnal_gain: f64,
+        flow_control_proportional_gain: f64,
         flow_control_integral_gain: f64,
         flow_control_force_gain: f64,
     ) -> Self {
@@ -540,7 +542,7 @@ impl LinearActuator {
                 total_rod_side_area,
                 flow_open_loop_modifier_map,
                 flow_open_loop_position_breakpoints,
-                flow_control_proportionnal_gain,
+                flow_control_proportional_gain,
                 flow_control_integral_gain,
                 flow_control_force_gain,
             ),
@@ -1115,7 +1117,8 @@ mod tests {
         }
 
         fn command_closed_circuit_damping_mode(&mut self) {
-            self.controller.set_mode(LinearActuatorMode::ClosedCircuitDamping);
+            self.controller
+                .set_mode(LinearActuatorMode::ClosedCircuitDamping);
         }
 
         fn command_closed_valve_mode(&mut self) {
@@ -1574,6 +1577,22 @@ mod tests {
         assert!(test_bed.query(|a| a.body_position()) <= Ratio::new::<ratio>(0.001));
     }
 
+    #[test]
+    fn right_main_gear_retracts_with_pressure() {
+        let mut test_bed = SimulationTestBed::new(|context| {
+            let rigid_body = main_gear_right_body(true);
+            let actuator = main_gear_actuator(context, &rigid_body);
+            TestAircraft::new(actuator, rigid_body)
+        });
+
+        test_bed.command(|a| a.set_pressure(Pressure::new::<psi>(3000.)));
+        test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(1.5)));
+        test_bed.command(|a| a.command_unlock());
+        test_bed.run_with_delta(Duration::from_secs(10));
+
+        assert!(test_bed.query(|a| a.body_position()) >= Ratio::new::<ratio>(0.98));
+    }
+
     fn cargo_door_actuator(
         context: &mut InitContext,
         bounded_linear_length: &impl BoundedLinearLength,
@@ -1710,6 +1729,55 @@ mod tests {
             anchor,
             Angle::new::<degree>(0.),
             Angle::new::<degree>(85.),
+            Angle::new::<degree>(0.),
+            150.,
+            is_locked,
+            Vector3::new(0., 0., 1.),
+        )
+    }
+
+    fn main_gear_actuator(
+        context: &mut InitContext,
+        bounded_linear_length: &impl BoundedLinearLength,
+    ) -> LinearActuator {
+        const DEFAULT_I_GAIN: f64 = 5.;
+        const DEFAULT_P_GAIN: f64 = 0.05;
+        const DEFAULT_FORCE_GAIN: f64 = 200000.;
+
+        LinearActuator::new(
+            context,
+            bounded_linear_length,
+            1,
+            Length::new::<meter>(0.145),
+            Length::new::<meter>(0.105),
+            VolumeRate::new::<gallon_per_second>(0.15),
+            800000.,
+            15000.,
+            50000.,
+            1200000.,
+            [1., 1., 1., 1., 1., 1.],
+            [0., 0.2, 0.21, 0.79, 0.8, 1.],
+            DEFAULT_P_GAIN,
+            DEFAULT_I_GAIN,
+            DEFAULT_FORCE_GAIN,
+        )
+    }
+
+    fn main_gear_right_body(is_locked: bool) -> LinearActuatedRigidBodyOnHingeAxis {
+        let size = Vector3::new(0.3, 3.453, 0.3);
+        let cg_offset = Vector3::new(0., -3. / 4. * size[1], 0.);
+
+        let control_arm = Vector3::new(-0.1815, 0.15, 0.);
+        let anchor = Vector3::new(-0.26, 0.15, 0.);
+
+        LinearActuatedRigidBodyOnHingeAxis::new(
+            Mass::new::<kilogram>(700.),
+            size,
+            cg_offset,
+            control_arm,
+            anchor,
+            Angle::new::<degree>(-80.),
+            Angle::new::<degree>(80.),
             Angle::new::<degree>(0.),
             150.,
             is_locked,

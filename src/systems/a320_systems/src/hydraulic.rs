@@ -114,7 +114,7 @@ impl A320HydraulicCircuitFactory {
 
 struct A320CargoDoorFactory {}
 impl A320CargoDoorFactory {
-    const FLOW_CONTROL_PROPORTIONNAL_GAIN: f64 = 0.05;
+    const FLOW_CONTROL_PROPORTIONAL_GAIN: f64 = 0.05;
     const FLOW_CONTROL_INTEGRAL_GAIN: f64 = 5.;
     const FLOW_CONTROL_FORCE_GAIN: f64 = 200000.;
 
@@ -135,7 +135,7 @@ impl A320CargoDoorFactory {
             1000000.,
             [1., 1., 1., 1., 1., 1.],
             [0., 0.2, 0.21, 0.79, 0.8, 1.],
-            Self::FLOW_CONTROL_PROPORTIONNAL_GAIN,
+            Self::FLOW_CONTROL_PROPORTIONAL_GAIN,
             Self::FLOW_CONTROL_INTEGRAL_GAIN,
             Self::FLOW_CONTROL_FORCE_GAIN,
         )
