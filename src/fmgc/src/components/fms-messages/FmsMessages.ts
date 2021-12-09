@@ -1,6 +1,8 @@
-import { FmgcComponent } from '@fmgc/lib/FmgcComponent';
-import { FMMessage, FMMessageTriggers, FMMessageTypes } from '@shared/FmMessages';
-import { ConfirmationNode, Trigger } from '@shared/logic';
+import { FMMessage, FMMessageTriggers } from '@shared/FmMessages';
+import { FmgcComponent } from '../FmgcComponent';
+import { GpsPrimary } from './GpsPrimary';
+import { GpsPrimaryLost } from './GpsPrimaryLost';
+import { MapPartlyDisplayedLeft, MapPartlyDisplayedRight } from './MapPartlyDisplayed';
 
 /**
  * This class manages Type II messages sent from the FMGC.
@@ -15,8 +17,6 @@ import { ConfirmationNode, Trigger } from '@shared/logic';
  * -Benjamin
  */
 export class FmsMessages implements FmgcComponent {
-    private static mInstance?: FmsMessages;
-
     private listener = RegisterViewListener('JS_LISTENER_SIMVARS');
 
     private ndMessageFlags: Record<'L' | 'R', number> = {
@@ -29,29 +29,16 @@ export class FmsMessages implements FmgcComponent {
         new GpsPrimaryLost(),
         new MapPartlyDisplayedLeft(),
         new MapPartlyDisplayedRight(),
-    ]
-
-    // singleton
-    /* eslint-disable no-useless-constructor,no-empty-function */
-    private constructor() {
-    }
-    /* eslint-enable no-useless-constructor,no-empty-function */
-
-    public static get instance(): FmsMessages {
-        if (!this.mInstance) {
-            this.mInstance = new FmsMessages();
-        }
-        return this.mInstance;
-    }
+    ];
 
     init(): void {
         // Do nothing
     }
 
-    update(_deltaTime: number): void {
+    update(deltaTime: number): void {
         let didMutateNd = false;
         for (const selector of this.messageSelectors) {
-            const newState = selector.process(_deltaTime);
+            const newState = selector.process(deltaTime);
             const message = selector.message;
 
             switch (newState) {
@@ -106,7 +93,7 @@ export class FmsMessages implements FmgcComponent {
         }
     }
 
-    public send(messageClass: { new(): FMMessageSelector }): void {
+    send(messageClass: { new(): FMMessageSelector }): void {
         const message = this.messageSelectors.find((it) => it instanceof messageClass).message;
 
         this.listener.triggerToAllSubscribers(FMMessageTriggers.SEND_TO_MCDU, message);
@@ -121,7 +108,7 @@ export class FmsMessages implements FmgcComponent {
         }
     }
 
-    public recall(messageClass: { new(): FMMessageSelector }): void {
+    recall(messageClass: { new(): FMMessageSelector }): void {
         const message = this.messageSelectors.find((it) => it instanceof messageClass).message;
 
         this.listener.triggerToAllSubscribers(FMMessageTriggers.RECALL_FROM_MCDU_WITH_ID, message.text); // TODO id
@@ -136,7 +123,7 @@ export class FmsMessages implements FmgcComponent {
         }
     }
 
-    public recallId(id: number) {
+    recallId(id: number) {
         const message = this.messageSelectors.find((it) => it.message.id === id).message;
 
         this.listener.triggerToAllSubscribers(FMMessageTriggers.RECALL_FROM_MCDU_WITH_ID, message.text); // TODO id
@@ -157,7 +144,7 @@ export class FmsMessages implements FmgcComponent {
  *
  * Used when a message selector implements the {@link FMMessageSelector.process `process`} method.
  */
-enum FMMessageUpdate {
+export enum FMMessageUpdate {
     /**
      * Self-explanatory
      */
@@ -175,112 +162,15 @@ enum FMMessageUpdate {
 }
 
 /**
- * This class defines a selector for a Type II message.
- *
- * It can optionally implement a {@link FMMessageSelector.process `process`} method that runs on every FMGC tick, if the
- * message is not manually triggered by any system or Redux update.
+ * Defines a selector for a Type II message.
  */
-abstract class FMMessageSelector {
-    abstract message: FMMessage;
+export interface FMMessageSelector {
+    message: FMMessage;
 
-    abstract efisSide?: 'L' | 'R';
+    efisSide?: 'L' | 'R';
 
     /**
-     * This function allows per-tick processing of a message if implemented
+     * Optionally triggers a message when there isn't any other system or Redux update triggering it.
      */
-    process(_deltaTime: number): FMMessageUpdate {
-        return FMMessageUpdate.NO_ACTION;
-    }
-}
-
-class GpsPrimary implements FMMessageSelector {
-    message: FMMessage = FMMessageTypes.GpsPrimary;
-
-    lastState = false;
-
-    process(_deltaTime: number): FMMessageUpdate {
-        const newState = SimVar.GetSimVarValue('L:A32NX_ADIRS_USES_GPS_AS_PRIMARY', 'Bool') === 1;
-
-        if (newState !== this.lastState) {
-            this.lastState = newState;
-
-            return newState ? FMMessageUpdate.SEND : FMMessageUpdate.RECALL;
-        }
-
-        return FMMessageUpdate.NO_ACTION;
-    }
-}
-
-/**
- * Since this happens when the simvar goes to zero, we need to use some CONF nodes to make sure we do not count the initial
- * first-frame value, as the ADIRS module might not have run yet.
- */
-class GpsPrimaryLost implements FMMessageSelector {
-    message: FMMessage = FMMessageTypes.GpsPrimaryLost;
-
-    confLost = new ConfirmationNode(1_000);
-
-    trigLost = new Trigger(true);
-
-    confRegained = new ConfirmationNode(1_000);
-
-    trigRegained = new Trigger(true);
-
-    process(deltaTime: number): FMMessageUpdate {
-        const lostNow = SimVar.GetSimVarValue('L:A32NX_ADIRS_USES_GPS_AS_PRIMARY', 'Bool') === 0;
-
-        this.confLost.input = lostNow;
-        this.confLost.update(deltaTime);
-        this.trigLost.input = this.confLost.output;
-        this.trigLost.update(deltaTime);
-
-        this.confRegained.input = !lostNow;
-        this.confRegained.update(deltaTime);
-        this.trigRegained.input = this.confRegained.output;
-        this.trigRegained.update(deltaTime);
-
-        if (this.trigLost.output) {
-            return FMMessageUpdate.SEND;
-        }
-
-        if (this.trigRegained.output) {
-            return FMMessageUpdate.RECALL;
-        }
-
-        return FMMessageUpdate.NO_ACTION;
-    }
-}
-
-// TODO right side
-abstract class MapPartlyDisplayed implements FMMessageSelector {
-    message: FMMessage = FMMessageTypes.MapPartlyDisplayed;
-
-    abstract efisSide: 'L' | 'R';
-
-    trigRising = new Trigger(true);
-
-    trigFalling = new Trigger(true);
-
-    process(deltaTime: number): FMMessageUpdate {
-        const partlyDisplayed = SimVar.GetSimVarValue(`L:A32NX_EFIS_${this.efisSide}_MAP_PARTLY_DISPLAYED`, 'boolean');
-        this.trigRising.input = partlyDisplayed === 1;
-        this.trigRising.update(deltaTime);
-        this.trigFalling.input = partlyDisplayed === 0;
-        this.trigFalling.update(deltaTime);
-        if (this.trigRising.output) {
-            return FMMessageUpdate.SEND;
-        }
-        if (this.trigFalling.output) {
-            return FMMessageUpdate.RECALL;
-        }
-        return FMMessageUpdate.NO_ACTION;
-    }
-}
-
-class MapPartlyDisplayedLeft extends MapPartlyDisplayed {
-    efisSide: 'L' | 'R' = 'L';
-}
-
-class MapPartlyDisplayedRight extends MapPartlyDisplayed {
-    efisSide: 'L' | 'R' = 'R';
+    process(deltaTime: number): FMMessageUpdate;
 }
