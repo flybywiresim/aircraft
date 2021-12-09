@@ -445,8 +445,8 @@ pub struct LinearActuator {
 
     delta_displacement: Length,
 
-    volume_to_actuator_accumulator: Volume,
-    volume_to_res_accumulator: Volume,
+    total_volume_to_actuator: Volume,
+    total_volume_to_reservoir: Volume,
 
     requested_position: Ratio,
 
@@ -526,8 +526,8 @@ impl LinearActuator {
 
             delta_displacement: Length::new::<meter>(0.),
 
-            volume_to_actuator_accumulator: Volume::new::<gallon>(0.),
-            volume_to_res_accumulator: Volume::new::<gallon>(0.),
+            total_volume_to_actuator: Volume::new::<gallon>(0.),
+            total_volume_to_reservoir: Volume::new::<gallon>(0.),
 
             requested_position: Ratio::new::<ratio>(0.),
 
@@ -613,8 +613,8 @@ impl LinearActuator {
             -volume_to_actuator
         } / context.delta_as_time();
 
-        self.volume_to_actuator_accumulator += volume_to_actuator;
-        self.volume_to_res_accumulator += volume_to_reservoir;
+        self.total_volume_to_actuator += volume_to_actuator;
+        self.total_volume_to_reservoir += volume_to_reservoir;
     }
 
     fn set_position_target(&mut self, target_position: Ratio) {
@@ -632,16 +632,16 @@ impl LinearActuator {
 }
 impl Actuator for LinearActuator {
     fn used_volume(&self) -> Volume {
-        self.volume_to_actuator_accumulator
+        self.total_volume_to_actuator
     }
 
     fn reservoir_return(&self) -> Volume {
-        self.volume_to_res_accumulator
+        self.total_volume_to_reservoir
     }
 
     fn reset_volumes(&mut self) {
-        self.volume_to_res_accumulator = Volume::new::<gallon>(0.);
-        self.volume_to_actuator_accumulator = Volume::new::<gallon>(0.);
+        self.total_volume_to_reservoir = Volume::new::<gallon>(0.);
+        self.total_volume_to_actuator = Volume::new::<gallon>(0.);
     }
 }
 
