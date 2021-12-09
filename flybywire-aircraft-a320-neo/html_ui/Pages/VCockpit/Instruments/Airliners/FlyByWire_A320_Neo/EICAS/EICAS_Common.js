@@ -153,13 +153,22 @@ class EICASCommonDisplay extends Airliners.EICASTemplateElement {
         const fuelWeight = SimVar.GetSimVarValue("FUEL TOTAL QUANTITY WEIGHT", "kg");
         const emptyWeight = SimVar.GetSimVarValue("EMPTY WEIGHT", "kg");
         const payloadWeight = this.getPayloadWeight("kg");
+        const isOneEngineRunning = SimVar.GetSimVarValue("ENG COMBUSTION:1", "bool") || SimVar.GetSimVarValue("ENG COMBUSTION:2", "bool");
         const gw = Math.round(NXUnits.kgToUser(emptyWeight + fuelWeight + payloadWeight));
         const gwUnit = NXUnits.userWeightUnit();
-        if ((gw != this.currentGW) || _force) {
+        if ((gw != this.currentGW) || (this.isOneEngineRunning != isOneEngineRunning) || _force) {
             this.currentGW = gw;
-            if (this.gwValue != null) {
+            this.isOneEngineRunning = isOneEngineRunning;
+
+            if (isOneEngineRunning && this.gwValue != null) {
                 // Lower EICAS displays GW in increments of 100
+                this.gwValue.classList.add("Value");
+                this.gwValue.classList.remove("Cyan");
                 this.gwValue.textContent = (Math.floor(this.currentGW / 100) * 100).toString();
+            } else {
+                this.gwValue.classList.remove("Value");
+                this.gwValue.classList.add("Cyan");
+                this.gwValue.textContent = "--";
             }
         }
         if (gwUnit != this.currentGwUnit) {
