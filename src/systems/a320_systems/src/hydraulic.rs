@@ -1829,12 +1829,6 @@ impl CargoDoor {
     }
 }
 impl SimulationElement for CargoDoor {
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        self.hydraulic_assembly.accept(visitor);
-
-        visitor.visit(self);
-    }
-
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.position_id, self.position());
         writer.write(&self.locked_id, self.is_locked());

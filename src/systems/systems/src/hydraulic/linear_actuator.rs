@@ -22,10 +22,7 @@ use crate::{
     simulation::UpdateContext,
 };
 
-use crate::simulation::{
-    InitContext, Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
-    SimulatorWriter, VariableIdentifier, Write,
-};
+use crate::simulation::InitContext;
 
 use std::time::Duration;
 
@@ -91,10 +88,6 @@ struct CoreHydraulicForce {
     force_filtered: LowPassFilter<Force>,
     max_force: Force,
 
-    ki_gain: f64,
-    kp_gain: f64,
-    pi_id: VariableIdentifier,
-    pd_id: VariableIdentifier,
     pid_controller: PidController,
 }
 impl CoreHydraulicForce {
@@ -104,7 +97,7 @@ impl CoreHydraulicForce {
     const MIN_PRESSURE_TO_ALLOW_POSITION_CONTROL_PSI: f64 = 700.;
 
     fn new(
-        context: &mut InitContext,
+        _: &mut InitContext,
         init_position: Ratio,
         active_hydraulic_damping_constant: f64,
         slow_hydraulic_damping_constant: f64,
@@ -142,11 +135,7 @@ impl CoreHydraulicForce {
             force_raw: Force::new::<newton>(0.),
             force_filtered: LowPassFilter::<Force>::new(Duration::from_millis(100)),
 
-            max_force: max_force,
-            ki_gain: flow_control_integral_gain,
-            kp_gain: flow_control_proportionnal_gain,
-            pi_id: context.get_identifier("TEST_GAIN_PI".to_owned()),
-            pd_id: context.get_identifier("TEST_GAIN_PD".to_owned()),
+            max_force,
 
             pid_controller: PidController::new(
                 flow_control_proportionnal_gain,
@@ -406,8 +395,6 @@ impl CoreHydraulicForce {
         self.pid_controller
             .change_setpoint(open_loop_flow_target.get::<gallon_per_second>());
 
-        self.pid_controller.set_p_i_gain(self.kp_gain, self.ki_gain);
-
         self.update_force_min_max(current_pressure, speed);
 
         self.last_control_force = Force::new::<newton>(self.pid_controller.next_control_output(
@@ -415,31 +402,7 @@ impl CoreHydraulicForce {
             Some(context.delta()),
         ));
 
-        println!(
-            "HYDctl:  TargetFlow {:.3} CurrentFlow {:.3} Force {:.0} Speed {:.5}",
-            open_loop_flow_target.get::<gallon_per_second>(),
-            signed_flow.get::<gallon_per_second>(),
-            self.last_control_force.get::<newton>(),
-            speed.get::<meter_per_second>()
-        );
-
         self.last_control_force
-    }
-}
-impl SimulationElement for CoreHydraulicForce {
-    fn read(&mut self, reader: &mut SimulatorReader) {
-        let new_pi = reader.read(&self.pi_id);
-        let new_pd = reader.read(&self.pd_id);
-
-        if new_pi != 0. {
-            self.ki_gain = new_pi;
-            println!("pi {:.4}, pd {:.4}", self.ki_gain, self.kp_gain);
-        }
-
-        if new_pd != 0. {
-            self.kp_gain = new_pd;
-            println!("pi {:.4}, pd {:.4}", self.ki_gain, self.kp_gain);
-        }
     }
 }
 
@@ -677,13 +640,6 @@ impl Actuator for LinearActuator {
         self.volume_to_actuator_accumulator = Volume::new::<gallon>(0.);
     }
 }
-impl SimulationElement for LinearActuator {
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        self.core_hydraulics.accept(visitor);
-
-        visitor.visit(self);
-    }
-}
 
 pub trait HydraulicAssemblyController {
     fn requested_mode(&self) -> LinearActuatorMode;
@@ -754,13 +710,6 @@ impl HydraulicLinearActuatorAssembly {
 
     pub fn actuator_position_normalized(&self) -> Ratio {
         self.linear_actuator.position_normalized()
-    }
-}
-impl SimulationElement for HydraulicLinearActuatorAssembly {
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        self.linear_actuator.accept(visitor);
-
-        visitor.visit(self);
     }
 }
 
@@ -1001,16 +950,15 @@ impl LinearActuatedRigidBodyOnHingeAxis {
             );
 
             // We check if lock is requested and if we crossed the lock position since last update
-            if self.is_lock_requested {
-                if self.position_normalized >= self.lock_position_request
+            if self.is_lock_requested
+                && (self.position_normalized >= self.lock_position_request
                     && self.position_normalized_prev <= self.lock_position_request
                     || self.position_normalized <= self.lock_position_request
-                        && self.position_normalized_prev >= self.lock_position_request
-                {
-                    self.is_locked = true;
-                    self.position = self.lock_requested_position_in_absolute_reference();
-                    self.speed = AngularVelocity::new::<radian_per_second>(0.);
-                }
+                        && self.position_normalized_prev >= self.lock_position_request)
+            {
+                self.is_locked = true;
+                self.position = self.lock_requested_position_in_absolute_reference();
+                self.speed = AngularVelocity::new::<radian_per_second>(0.);
             }
 
             if self.position >= self.max_angle {
