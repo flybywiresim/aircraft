@@ -109,11 +109,6 @@ impl PidController {
         self.error_k_1 = None;
     }
 
-    pub fn set_p_i_gain(&mut self, kp: f64, ki: f64) {
-        self.ki = ki;
-        self.kp = kp;
-    }
-
     pub fn set_min(&mut self, min: f64) {
         self.min_output = min;
     }
