@@ -779,8 +779,8 @@ impl SimulationElement for A320Hydraulic {
         self.forward_cargo_door_controller.accept(visitor);
         self.forward_cargo_door.accept(visitor);
 
-        // self.aft_cargo_door_controller.accept(visitor);
-        // self.aft_cargo_door.accept(visitor);
+        self.aft_cargo_door_controller.accept(visitor);
+        self.aft_cargo_door.accept(visitor);
 
         self.pushback_tug.accept(visitor);
 
