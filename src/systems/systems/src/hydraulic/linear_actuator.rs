@@ -46,7 +46,7 @@ pub enum LinearActuatorMode {
     ClosedValves,
     PositionControl,
     ActiveDamping,
-    SlowDamping,
+    ClosedCircuitDamping,
 }
 
 /// Represents an abstraction of the low level hydraulic actuator control system that would in real life consist of a lot of
@@ -183,13 +183,13 @@ impl CoreHydraulicForce {
             LinearActuatorMode::ClosedValves => requested_mode,
             LinearActuatorMode::PositionControl => {
                 if current_pressure.get::<psi>() < Self::MIN_PRESSURE_TO_EXIT_POSITION_CONTROL_PSI {
-                    LinearActuatorMode::SlowDamping
+                    LinearActuatorMode::ClosedCircuitDamping
                 } else {
                     requested_mode
                 }
             }
             LinearActuatorMode::ActiveDamping => requested_mode,
-            LinearActuatorMode::SlowDamping => requested_mode,
+            LinearActuatorMode::ClosedCircuitDamping => requested_mode,
         }
     }
 
@@ -210,7 +210,7 @@ impl CoreHydraulicForce {
                 }
             }
             LinearActuatorMode::ActiveDamping => self.actions_from_current_to_active_damping(),
-            LinearActuatorMode::SlowDamping => self.actions_from_current_to_slow_damping(),
+            LinearActuatorMode::ClosedCircuitDamping => self.actions_from_current_to_closed_circuit_damping(),
         }
     }
 
@@ -219,7 +219,7 @@ impl CoreHydraulicForce {
             LinearActuatorMode::ClosedValves => {}
             LinearActuatorMode::PositionControl
             | LinearActuatorMode::ActiveDamping
-            | LinearActuatorMode::SlowDamping => {
+            | LinearActuatorMode::ClosedCircuitDamping => {
                 self.go_to_close_control_valves(position_normalized);
             }
         }
@@ -230,7 +230,7 @@ impl CoreHydraulicForce {
             LinearActuatorMode::PositionControl => {}
             LinearActuatorMode::ClosedValves
             | LinearActuatorMode::ActiveDamping
-            | LinearActuatorMode::SlowDamping => {
+            | LinearActuatorMode::ClosedCircuitDamping => {
                 self.go_to_position_control();
             }
         }
@@ -241,19 +241,19 @@ impl CoreHydraulicForce {
             LinearActuatorMode::ActiveDamping => {}
             LinearActuatorMode::ClosedValves
             | LinearActuatorMode::PositionControl
-            | LinearActuatorMode::SlowDamping => {
+            | LinearActuatorMode::ClosedCircuitDamping => {
                 self.go_to_active_damping();
             }
         }
     }
 
-    fn actions_from_current_to_slow_damping(&mut self) {
+    fn actions_from_current_to_closed_circuit_damping(&mut self) {
         match self.current_mode {
-            LinearActuatorMode::SlowDamping => {}
+            LinearActuatorMode::ClosedCircuitDamping => {}
             LinearActuatorMode::ClosedValves
             | LinearActuatorMode::PositionControl
             | LinearActuatorMode::ActiveDamping => {
-                self.go_to_slow_damping();
+                self.go_to_closed_circuit_damping();
             }
         }
     }
@@ -275,9 +275,9 @@ impl CoreHydraulicForce {
         self.current_mode = LinearActuatorMode::ActiveDamping;
     }
 
-    fn go_to_slow_damping(&mut self) {
+    fn go_to_closed_circuit_damping(&mut self) {
         self.force_filtered.reset(self.force_raw);
-        self.current_mode = LinearActuatorMode::SlowDamping;
+        self.current_mode = LinearActuatorMode::ClosedCircuitDamping;
     }
 
     fn update_force_from_current_mode(
@@ -298,9 +298,9 @@ impl CoreHydraulicForce {
                     .update(context.delta(), self.force_active_damping(speed));
                 self.force_raw = self.force_filtered.output();
             }
-            LinearActuatorMode::SlowDamping => {
+            LinearActuatorMode::ClosedCircuitDamping => {
                 self.force_filtered
-                    .update(context.delta(), self.force_slow_damping(speed));
+                    .update(context.delta(), self.force_closed_circuit_damping(speed));
                 self.force_raw = self.force_filtered.output();
             }
             LinearActuatorMode::PositionControl => {
@@ -326,7 +326,7 @@ impl CoreHydraulicForce {
         )
     }
 
-    fn force_slow_damping(&self, speed: Velocity) -> Force {
+    fn force_closed_circuit_damping(&self, speed: Velocity) -> Force {
         Force::new::<newton>(
             -speed.get::<meter_per_second>() * self.slow_hydraulic_damping_constant,
         )
@@ -1114,8 +1114,8 @@ mod tests {
             self.controller.set_mode(LinearActuatorMode::ActiveDamping);
         }
 
-        fn command_slow_damping_mode(&mut self) {
-            self.controller.set_mode(LinearActuatorMode::SlowDamping);
+        fn command_closed_circuit_damping_mode(&mut self) {
+            self.controller.set_mode(LinearActuatorMode::ClosedCircuitDamping);
         }
 
         fn command_closed_valve_mode(&mut self) {
@@ -1306,7 +1306,7 @@ mod tests {
 
         assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.9));
 
-        test_bed.command(|a| a.command_slow_damping_mode());
+        test_bed.command(|a| a.command_closed_circuit_damping_mode());
 
         test_bed.run_with_delta(Duration::from_secs(10));
 
@@ -1465,7 +1465,7 @@ mod tests {
             TestAircraft::new(actuator, rigid_body)
         });
 
-        test_bed.command(|a| a.command_slow_damping_mode());
+        test_bed.command(|a| a.command_closed_circuit_damping_mode());
         test_bed.command(|a| a.command_unlock());
         test_bed.run_with_delta(Duration::from_secs(20));
 
@@ -1480,7 +1480,7 @@ mod tests {
             TestAircraft::new(actuator, rigid_body)
         });
 
-        test_bed.command(|a| a.command_slow_damping_mode());
+        test_bed.command(|a| a.command_closed_circuit_damping_mode());
         test_bed.command(|a| a.command_unlock());
         test_bed.run_with_delta(Duration::from_secs_f64(1.));
 
@@ -1495,7 +1495,7 @@ mod tests {
             TestAircraft::new(actuator, rigid_body)
         });
 
-        test_bed.command(|a| a.command_slow_damping_mode());
+        test_bed.command(|a| a.command_closed_circuit_damping_mode());
         test_bed.command(|a| a.command_unlock());
         test_bed.run_with_delta(Duration::from_secs(20));
 
@@ -1513,7 +1513,7 @@ mod tests {
         test_bed.run_with_delta(Duration::from_secs(1));
 
         test_bed.write_by_name(UpdateContext::PLANE_BANK_KEY, -45.);
-        test_bed.command(|a| a.command_slow_damping_mode());
+        test_bed.command(|a| a.command_closed_circuit_damping_mode());
         test_bed.command(|a| a.command_unlock());
         test_bed.run_with_delta(Duration::from_secs(20));
 
@@ -1529,7 +1529,7 @@ mod tests {
         });
 
         test_bed.write_by_name(UpdateContext::PLANE_BANK_KEY, -45.);
-        test_bed.command(|a| a.command_slow_damping_mode());
+        test_bed.command(|a| a.command_closed_circuit_damping_mode());
         test_bed.command(|a| a.command_unlock());
         test_bed.run_with_delta(Duration::from_secs(20));
 
