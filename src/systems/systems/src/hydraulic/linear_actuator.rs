@@ -949,31 +949,38 @@ impl LinearActuatedRigidBodyOnHingeAxis {
                 self.speed.get::<radian_per_second>() * context.delta_as_secs_f64(),
             );
 
-            // We check if lock is requested and if we crossed the lock position since last update
-            if self.is_lock_requested
-                && (self.position_normalized >= self.lock_position_request
-                    && self.position_normalized_prev <= self.lock_position_request
-                    || self.position_normalized <= self.lock_position_request
-                        && self.position_normalized_prev >= self.lock_position_request)
-            {
-                self.is_locked = true;
-                self.position = self.lock_requested_position_in_absolute_reference();
-                self.speed = AngularVelocity::new::<radian_per_second>(0.);
-            }
-
-            if self.position >= self.max_angle {
-                self.position = self.max_angle;
-                self.speed = -self.speed * Self::DEFAULT_MAX_MIN_POSITION_REBOUND_FACTOR;
-            } else if self.position <= self.min_angle {
-                self.position = self.min_angle;
-                self.speed = -self.speed * Self::DEFAULT_MAX_MIN_POSITION_REBOUND_FACTOR;
-            }
+            self.update_lock_state();
+            self.limit_position_to_range();
 
             self.update_position_normalized();
             self.update_all_rotations();
         }
 
         self.sum_of_torques = Torque::new::<newton_meter>(0.);
+    }
+
+    fn update_lock_state(&mut self) {
+        // We check if lock is requested and if we crossed the lock position since last update
+        if self.is_lock_requested
+            && (self.position_normalized >= self.lock_position_request
+                && self.position_normalized_prev <= self.lock_position_request
+                || self.position_normalized <= self.lock_position_request
+                    && self.position_normalized_prev >= self.lock_position_request)
+        {
+            self.is_locked = true;
+            self.position = self.lock_requested_position_in_absolute_reference();
+            self.speed = AngularVelocity::new::<radian_per_second>(0.);
+        }
+    }
+
+    fn limit_position_to_range(&mut self) {
+        if self.position >= self.max_angle {
+            self.position = self.max_angle;
+            self.speed = -self.speed * Self::DEFAULT_MAX_MIN_POSITION_REBOUND_FACTOR;
+        } else if self.position <= self.min_angle {
+            self.position = self.min_angle;
+            self.speed = -self.speed * Self::DEFAULT_MAX_MIN_POSITION_REBOUND_FACTOR;
+        }
     }
 
     pub fn unlock(&mut self) {
