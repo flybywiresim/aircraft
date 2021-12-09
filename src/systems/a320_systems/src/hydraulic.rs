@@ -150,6 +150,7 @@ impl A320CargoDoorFactory {
             anchor,
             Angle::new::<degree>(-23.),
             Angle::new::<degree>(136.),
+            Angle::new::<degree>(-23.),
             100.,
             is_locked,
             axis_direction,

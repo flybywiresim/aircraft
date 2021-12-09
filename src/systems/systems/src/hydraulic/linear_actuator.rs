@@ -369,9 +369,8 @@ impl CoreHydraulicForce {
             position_normalized.get::<ratio>(),
         );
 
-        (open_loop_modifier_from_position * open_loop_flow_target)
-            .min(self.max_flow)
-            .max(self.min_flow)
+        (open_loop_flow_target.min(self.max_flow).max(self.min_flow))
+            * open_loop_modifier_from_position
     }
 
     fn update_force_min_max(&mut self, current_pressure: Pressure, speed: Velocity) {
@@ -417,10 +416,11 @@ impl CoreHydraulicForce {
         ));
 
         println!(
-            "HYDctl:  TargetFlow {:.3} CurrentFlow {:.3} Force {:.0}",
+            "HYDctl:  TargetFlow {:.3} CurrentFlow {:.3} Force {:.0} Speed {:.5}",
             open_loop_flow_target.get::<gallon_per_second>(),
             signed_flow.get::<gallon_per_second>(),
-            self.last_control_force.get::<newton>()
+            self.last_control_force.get::<newton>(),
+            speed.get::<meter_per_second>()
         );
 
         self.last_control_force
@@ -817,6 +817,7 @@ impl LinearActuatedRigidBodyOnHingeAxis {
         anchor_point: Vector3<f64>,
         min_angle: Angle,
         total_travel: Angle,
+        init_angle: Angle,
         natural_damping_constant: f64,
         locked: bool,
         axis_direction: Vector3<f64>,
@@ -841,7 +842,7 @@ impl LinearActuatedRigidBodyOnHingeAxis {
             control_arm_actual: control_arm,
             actuator_extension_gives_positive_angle: false,
             anchor_point,
-            position: min_angle,
+            position: init_angle,
             speed: AngularVelocity::new::<radian_per_second>(0.),
             acceleration: AngularAcceleration::new::<radian_per_second_squared>(0.),
             sum_of_torques: Torque::new::<newton_meter>(0.),
@@ -859,17 +860,12 @@ impl LinearActuatedRigidBodyOnHingeAxis {
         new_body.actuator_extension_gives_positive_angle =
             Self::initialize_actuator_force_direction(new_body);
         new_body.update_all_rotations();
-        new_body.update_position_normalized();
+        new_body.init_position_normalized();
         new_body
     }
 
     pub fn apply_control_arm_force(&mut self, actuator_local_force: Force) {
-        // Actuator local force convention is positive in extension / negative in compression. We reverse direction depending on
-        // rigid body configuration so we get an absolute force in the rigid body frame of reference
-        let mut absolute_actuator_force = actuator_local_force;
-        if self.actuator_extension_gives_positive_angle() {
-            absolute_actuator_force = -actuator_local_force;
-        }
+        let absolute_actuator_force = -actuator_local_force;
 
         // Computing the normalized vector on which force is applied. This is the vector from anchor point of actuator to where
         // it is connected to the rigid body
@@ -906,17 +902,30 @@ impl LinearActuatedRigidBodyOnHingeAxis {
     }
 
     fn lock_requested_position_in_absolute_reference(&self) -> Angle {
-        self.lock_position_request.get::<ratio>() * self.total_travel + self.min_angle
+        if self.actuator_extension_gives_positive_angle() {
+            self.lock_position_request.get::<ratio>() * self.total_travel + self.min_angle
+        } else {
+            self.lock_position_request.get::<ratio>() * self.total_travel + self.max_angle
+        }
     }
 
     pub fn position_normalized(&self) -> Ratio {
         self.position_normalized
     }
 
+    fn init_position_normalized(&mut self) {
+        self.update_position_normalized();
+        self.position_normalized_prev = self.position_normalized;
+    }
+
     fn update_position_normalized(&mut self) {
         self.position_normalized_prev = self.position_normalized;
 
         self.position_normalized = (self.position - self.min_angle) / self.total_travel;
+
+        if !self.actuator_extension_gives_positive_angle() {
+            self.position_normalized = Ratio::new::<ratio>(1.) - self.position_normalized;
+        };
     }
 
     // Rotates the static coordinates of the body according to its current angle to get the actual coordinates
@@ -996,7 +1005,9 @@ impl LinearActuatedRigidBodyOnHingeAxis {
                     self.position = self.lock_requested_position_in_absolute_reference();
                     self.speed = AngularVelocity::new::<radian_per_second>(0.);
                 }
-            } else if self.position >= self.max_angle {
+            }
+
+            if self.position >= self.max_angle {
                 self.position = self.max_angle;
                 self.speed = -self.speed * Self::DEFAULT_MAX_MIN_POSITION_REBOUND_FACTOR;
             } else if self.position <= self.min_angle {
@@ -1493,17 +1504,113 @@ mod tests {
             TestAircraft::new(actuator, rigid_body)
         });
 
-        let actuator_position_init = test_bed.query(|a| a.body_position());
+        test_bed.command(|a| a.command_slow_damping_mode());
+        test_bed.command(|a| a.command_unlock());
+        test_bed.run_with_delta(Duration::from_secs(20));
 
-        test_bed.run_with_delta(Duration::from_secs(1));
+        assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.98));
+    }
 
-        assert!(test_bed.query(|a| a.body_position()) == actuator_position_init);
+    #[test]
+    fn right_main_gear_door_drops_freefall_when_unlocked_with_broken_actuator() {
+        let mut test_bed = SimulationTestBed::new(|context| {
+            let rigid_body = main_gear_door_right_body(true);
+            let actuator = disconnected_actuator(context, &rigid_body);
+            TestAircraft::new(actuator, rigid_body)
+        });
 
         test_bed.command(|a| a.command_slow_damping_mode());
         test_bed.command(|a| a.command_unlock());
+        test_bed.run_with_delta(Duration::from_secs_f64(1.));
+
+        assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.9));
+    }
+
+    #[test]
+    fn left_main_gear_door_drops_when_unlocked() {
+        let mut test_bed = SimulationTestBed::new(|context| {
+            let rigid_body = main_gear_door_left_body(true);
+            let actuator = main_gear_door_actuator(context, &rigid_body);
+            TestAircraft::new(actuator, rigid_body)
+        });
+
+        test_bed.command(|a| a.command_slow_damping_mode());
+        test_bed.command(|a| a.command_unlock());
+        test_bed.run_with_delta(Duration::from_secs(20));
+
+        assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.98));
+    }
+
+    #[test]
+    fn right_main_gear_door_cant_open_fully_if_banking_right() {
+        let mut test_bed = SimulationTestBed::new(|context| {
+            let rigid_body = main_gear_door_right_body(true);
+            let actuator = main_gear_door_actuator(context, &rigid_body);
+            TestAircraft::new(actuator, rigid_body)
+        });
+
+        test_bed.run_with_delta(Duration::from_secs(1));
+
+        test_bed.write_by_name(UpdateContext::PLANE_BANK_KEY, -45.);
+        test_bed.command(|a| a.command_slow_damping_mode());
+        test_bed.command(|a| a.command_unlock());
+        test_bed.run_with_delta(Duration::from_secs(20));
+
+        assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.8));
+    }
+
+    #[test]
+    fn left_main_gear_door_can_open_fully_if_banking_right() {
+        let mut test_bed = SimulationTestBed::new(|context| {
+            let rigid_body = main_gear_door_left_body(true);
+            let actuator = main_gear_door_actuator(context, &rigid_body);
+            TestAircraft::new(actuator, rigid_body)
+        });
+
+        test_bed.write_by_name(UpdateContext::PLANE_BANK_KEY, -45.);
+        test_bed.command(|a| a.command_slow_damping_mode());
+        test_bed.command(|a| a.command_unlock());
+        test_bed.run_with_delta(Duration::from_secs(20));
+
+        assert!(test_bed.query(|a| a.body_position()) >= Ratio::new::<ratio>(0.98));
+    }
+
+    #[test]
+    fn left_main_gear_door_opens_with_pressure() {
+        let mut test_bed = SimulationTestBed::new(|context| {
+            let rigid_body = main_gear_door_left_body(true);
+            let actuator = main_gear_door_actuator(context, &rigid_body);
+            TestAircraft::new(actuator, rigid_body)
+        });
+
+        test_bed.command(|a| a.set_pressure(Pressure::new::<psi>(3000.)));
+        test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(1.5)));
+        test_bed.command(|a| a.command_unlock());
+        test_bed.run_with_delta(Duration::from_secs(4));
+
+        assert!(test_bed.query(|a| a.body_position()) >= Ratio::new::<ratio>(0.98));
+    }
+
+    #[test]
+    fn right_main_gear_door_closes_after_opening_with_pressure() {
+        let mut test_bed = SimulationTestBed::new(|context| {
+            let rigid_body = main_gear_door_right_body(true);
+            let actuator = main_gear_door_actuator(context, &rigid_body);
+            TestAircraft::new(actuator, rigid_body)
+        });
+
+        test_bed.command(|a| a.set_pressure(Pressure::new::<psi>(3000.)));
+        test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(1.5)));
+        test_bed.command(|a| a.command_unlock());
         test_bed.run_with_delta(Duration::from_secs(10));
 
-        assert!(test_bed.query(|a| a.body_position()) > actuator_position_init);
+        assert!(test_bed.query(|a| a.body_position()) >= Ratio::new::<ratio>(0.98));
+
+        test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(-0.5)));
+        test_bed.command(|a| a.command_lock(Ratio::new::<ratio>(0.)));
+
+        test_bed.run_with_delta(Duration::from_secs(6));
+        assert!(test_bed.query(|a| a.body_position()) <= Ratio::new::<ratio>(0.001));
     }
 
     fn cargo_door_actuator(
@@ -1541,6 +1648,7 @@ mod tests {
             anchor,
             Angle::new::<degree>(-23.),
             Angle::new::<degree>(136.),
+            Angle::new::<degree>(-23.),
             100.,
             is_locked,
             Vector3::new(0., 0., 1.),
@@ -1557,53 +1665,75 @@ mod tests {
             1,
             Length::new::<meter>(0.055),
             Length::new::<meter>(0.03),
-            VolumeRate::new::<gallon_per_second>(0.004),
+            VolumeRate::new::<gallon_per_second>(0.08),
             20000.,
             5000.,
             2000.,
-            500000.,
+            28000.,
+            [0.5, 1., 1., 1., 1., 0.5],
+            [0., 0.2, 0.21, 0.79, 0.8, 1.],
+        )
+    }
+
+    fn disconnected_actuator(
+        context: &mut InitContext,
+        bounded_linear_length: &impl BoundedLinearLength,
+    ) -> LinearActuator {
+        LinearActuator::new(
+            context,
+            bounded_linear_length,
+            1,
+            Length::new::<meter>(0.055),
+            Length::new::<meter>(0.03),
+            VolumeRate::new::<gallon_per_second>(0.004),
+            0.,
+            0.,
+            0.,
+            0.,
             [0.5, 1., 1., 1., 1., 0.5],
             [0., 0.2, 0.21, 0.79, 0.8, 1.],
         )
     }
 
     fn main_gear_door_right_body(is_locked: bool) -> LinearActuatedRigidBodyOnHingeAxis {
-        let size = Vector3::new(1.73, 0.03, 1.7);
-        let cg_offset = Vector3::new(2. / 3. * size[1], 0.2, 0.);
+        let size = Vector3::new(1.73, 0.02, 1.7);
+        let cg_offset = Vector3::new(2. / 3. * size[0], 0.1, 0.);
 
-        let control_arm = Vector3::new(0.5, 0., 0.);
-        let anchor = Vector3::new(0.2, 0.2, 0.);
+        let control_arm = Vector3::new(0.76, 0., 0.);
+        let anchor = Vector3::new(0.19, 0.23, 0.);
 
         LinearActuatedRigidBodyOnHingeAxis::new(
-            Mass::new::<kilogram>(40.),
+            Mass::new::<kilogram>(50.),
             size,
             cg_offset,
             control_arm,
             anchor,
             Angle::new::<degree>(-85.),
             Angle::new::<degree>(85.),
-            100.,
+            Angle::new::<degree>(0.),
+            150.,
             is_locked,
             Vector3::new(0., 0., 1.),
         )
     }
 
     fn main_gear_door_left_body(is_locked: bool) -> LinearActuatedRigidBodyOnHingeAxis {
-        let size = Vector3::new(-1.73, 0.03, 1.7);
-        let cg_offset = Vector3::new(-2. / 3. * size[1], 0.2, 0.);
+        let size = Vector3::new(-1.73, 0.02, 1.7);
+        let cg_offset = Vector3::new(2. / 3. * size[0], 0.1, 0.);
 
-        let control_arm = Vector3::new(-0.5, 0., 0.);
-        let anchor = Vector3::new(-0.2, 0.2, 0.);
+        let control_arm = Vector3::new(-0.76, 0., 0.);
+        let anchor = Vector3::new(-0.19, 0.23, 0.);
 
         LinearActuatedRigidBodyOnHingeAxis::new(
-            Mass::new::<kilogram>(40.),
+            Mass::new::<kilogram>(50.),
             size,
             cg_offset,
             control_arm,
             anchor,
             Angle::new::<degree>(0.),
             Angle::new::<degree>(85.),
-            100.,
+            Angle::new::<degree>(0.),
+            150.,
             is_locked,
             Vector3::new(0., 0., 1.),
         )
