@@ -367,7 +367,8 @@ class A32NX_FWC {
         const verticalMode = SimVar.GetSimVarValue("L:A32NX_FMA_VERTICAL_MODE", "Number");
         const glideSlopeCaptured = verticalMode >= 30 && verticalMode <= 34;
         const landingGearIsLockedDown = SimVar.GetSimVarValue("GEAR POSITION:0", "Enum") > 0.9;
-        if (landingGearIsDown || glideSlopeCaptured || landingGearIsLockedDown) {
+        const isTcasResolutionAdvisoryActive = SimVar.GetSimVarValue("L:A32NX_TCAS_STATE", "Enum") > 1;
+        if (landingGearIsDown || glideSlopeCaptured || landingGearIsLockedDown || isTcasResolutionAdvisoryActive) {
             this._wasBellowThreshold = false;
             this._wasAboveThreshold = false;
             this._wasInRange = false;

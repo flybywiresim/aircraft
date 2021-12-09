@@ -108,6 +108,7 @@ struct ap_raw_laws_input
   real_T vertical_mode_armed;
   real_T mode_reversion_lateral;
   real_T mode_reversion_vertical;
+  real_T mode_reversion_vertical_target_fpm;
   boolean_T mode_reversion_TRK_FPA;
   boolean_T mode_reversion_triple_click;
   boolean_T mode_reversion_fma;
@@ -123,6 +124,9 @@ struct ap_raw_laws_input
   boolean_T EXPED_mode_active;
   boolean_T FD_disconnect;
   boolean_T FD_connect;
+  boolean_T TCAS_message_disarm;
+  boolean_T TCAS_message_RA_inhibit;
+  boolean_T TCAS_message_TRK_FPA_deselection;
 };
 
 #endif
@@ -259,6 +263,34 @@ struct ap_output_law
   real_T flight_director;
   real_T autopilot;
 };
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_vertical_mode_
+#define DEFINED_TYPEDEF_FOR_vertical_mode_
+
+typedef enum {
+  vertical_mode_NONE = 0,
+  vertical_mode_ALT = 10,
+  vertical_mode_ALT_CPT = 11,
+  vertical_mode_OP_CLB = 12,
+  vertical_mode_OP_DES = 13,
+  vertical_mode_VS = 14,
+  vertical_mode_FPA = 15,
+  vertical_mode_ALT_CST = 20,
+  vertical_mode_ALT_CST_CPT = 21,
+  vertical_mode_CLB = 22,
+  vertical_mode_DES = 23,
+  vertical_mode_FINAL_DES = 24,
+  vertical_mode_GS_CPT = 30,
+  vertical_mode_GS_TRACK = 31,
+  vertical_mode_LAND = 32,
+  vertical_mode_FLARE = 33,
+  vertical_mode_ROLL_OUT = 34,
+  vertical_mode_SRS = 40,
+  vertical_mode_SRS_GA = 41,
+  vertical_mode_TCAS = 50
+} vertical_mode;
 
 #endif
 #endif

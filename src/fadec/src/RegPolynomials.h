@@ -114,6 +114,23 @@ class Polynomial {
   }
 
   /// <summary>
+  /// Start-up polynomials - Oil Temperature (Celsius)
+  /// </summary>
+  double startOilTemp(double fbwN2, double idleN2, double ambientTemp) {
+    double outOilTemp = 0;
+
+    if (fbwN2 < 0.79 * idleN2) {
+      outOilTemp = ambientTemp;
+    } else if (fbwN2 < 0.98 * idleN2) {
+      outOilTemp = ambientTemp + 5;
+    } else {
+      outOilTemp = ambientTemp + 10;
+    }
+
+    return outOilTemp;
+  }
+
+  /// <summary>
   /// Real-life modeled polynomials - Corrected EGT (Celsius)
   /// </summary>
   double correctedEGT(double cn1, double cff, double mach, double alt) {
@@ -149,6 +166,30 @@ class Polynomial {
              (c_Flow[19] * mach * powFBW(alt, 2)) + (c_Flow[20] * powFBW(alt, 3));
 
     return outCFF;
+  }
+
+  double oilTemperature(double energy, double preOilTemp, double maxOilTemp, double deltaTime) {
+    double t_steady = 0;
+    double k = 0.001;
+    double dt = 0;
+    double oilTemp_out;
+
+    dt = energy * deltaTime * 0.002;
+
+    t_steady = ((maxOilTemp * k * deltaTime) + preOilTemp) / (1 + (k * deltaTime));
+
+    if (t_steady - dt >= maxOilTemp) {
+      oilTemp_out = maxOilTemp;
+    } else if (t_steady - dt >= maxOilTemp - 10) {
+      oilTemp_out = (t_steady - dt) * 0.999997;
+    } else {
+      oilTemp_out = (t_steady - dt);
+    }
+
+    // std::cout << "FADEC: Max= " << maxOilTemp << " Energy = " << energy << " dt = " << dt << " preT= " << preOilTemp
+    //          << " Tss = " << t_steady << " To = " << oilTemp_out << std::flush;
+
+    return oilTemp_out;
   }
 
   /// <summary>

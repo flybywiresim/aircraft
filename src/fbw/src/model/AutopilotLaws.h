@@ -774,6 +774,8 @@ class AutopilotLawsModelClass {
     real_T Saturation_UpperSat_jt;
     real_T Saturation_LowerSat_ih;
     real_T Gain_Gain_o1;
+    real_T Gain_Gain_pe;
+    real_T Gain1_Gain_f2;
     real_T Gain_Gain_jx;
     real_T Constant2_Value_h1;
     real_T Gain1_Gain_i0l;
@@ -828,7 +830,6 @@ class AutopilotLawsModelClass {
   static void AutopilotLaws_SpeedProtectionSignalSelection(const ap_laws_output *rtu_in, real_T rtu_VS_FD, real_T
     rtu_VS_AP, real_T rtu_VLS_FD, real_T rtu_VLS_AP, real_T rtu_VMAX_FD, real_T rtu_VMAX_AP, real_T rtu_margin, real_T
     *rty_FD, real_T *rty_AP);
-  static void AutopilotLaws_VSLimiter(real_T rtu_u, real_T rtu_V_tas_kn, real_T *rty_y);
   static void AutopilotLaws_SignalEnablerGSTrack(real_T rtu_u, boolean_T rtu_e, real_T *rty_y);
   static void AutopilotLaws_Voter1(real_T rtu_u1, real_T rtu_u2, real_T rtu_u3, real_T *rty_Y);
 };

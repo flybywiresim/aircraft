@@ -28,6 +28,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             Dyn: 1500
         };
         this.fmgcMesssagesListener = RegisterViewListener('JS_LISTENER_SIMVARS');
+        this.setupFmgcTriggers();
         this.page = {
             SelfPtr: false,
             Current: 0,
@@ -81,8 +82,24 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             ClimbWind: 47,
             CruiseWind: 48,
             DescentWind: 49,
+            FixInfoPage: 50,
         };
     }
+
+    setupFmgcTriggers() {
+        Coherent.on('A32NX_FMGC_SEND_MESSAGE_TO_MCDU', (message) => {
+            this.addNewMessage(new McduMessage(message.text, message.color === 'Amber', true), () => false , () => {
+                if (message.clearable) {
+                    Fmgc.recallMessageById(message.id);
+                }
+            });
+        });
+
+        Coherent.on('A32NX_FMGC_RECALL_MESSAGE_FROM_MCDU_WITH_ID', (text) => {
+            this.tryRemoveMessage(text);
+        });
+    }
+
     get templateID() {
         return "A320_Neo_CDU";
     }
@@ -107,7 +124,11 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
     Init() {
         super.Init();
-        Coherent.trigger('UNFOCUS_INPUT_FIELD');// note: without this, resetting mcdu kills camera
+        try {
+            Coherent.trigger('UNFOCUS_INPUT_FIELD');// note: without this, resetting mcdu kills camera
+        } catch (e) {
+            console.error(e);
+        }
 
         this.minPageUpdateThrottler = new UpdateThrottler(100);
 
@@ -763,7 +784,11 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     clearFocus() {
         this.inFocus = false;
         this.allSelected = false;
-        Coherent.trigger('UNFOCUS_INPUT_FIELD');
+        try {
+            Coherent.trigger('UNFOCUS_INPUT_FIELD');
+        } catch (e) {
+            console.error(e);
+        }
         this.scratchpad.setDisplayStyle(null);
         this.getChildById("header").style = null;
         if (this.check_focus) {
@@ -785,7 +810,11 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 if (this.inFocus && (isPoweredL || isPoweredR)) {
                     this.getChildById("header").style = "background: linear-gradient(180deg, rgba(2,182,217,1.0) 65%, rgba(255,255,255,0.0) 65%);";
                     this.scratchpad.setDisplayStyle("display: inline-block; width:87%; background: rgba(255,255,255,0.2);");
-                    Coherent.trigger('FOCUS_INPUT_FIELD');
+                    try {
+                        Coherent.trigger('FOCUS_INPUT_FIELD');
+                    } catch (e) {
+                        console.error(e);
+                    }
                     this.lastInput = new Date();
                     if (mcduTimeout) {
                         this.check_focus = setInterval(() => {

@@ -36,8 +36,6 @@ struct SimData {
   double gear_animation_pos_0;
   double gear_animation_pos_1;
   double gear_animation_pos_2;
-  double flaps_handle_index;
-  double flaps_position;
   double spoilers_handle_position;
   double spoilers_left_pos;
   double spoilers_right_pos;
@@ -121,6 +119,11 @@ struct SimData {
   double nav_loc_magvar_deg;
   SIMCONNECT_DATA_LATLONALT nav_loc_pos;
   SIMCONNECT_DATA_LATLONALT nav_gs_pos;
+  double brakeLeftPosition;
+  double brakeRightPosition;
+  double spoilerHandlePosition;
+  double flapsHandleIndex;
+  double gearHandlePosition;
 };
 
 struct SimInput {
@@ -203,6 +206,7 @@ struct ClientDataAutopilotStateMachine {
   double vertical_mode_armed;
   double mode_reversion_lateral;
   double mode_reversion_vertical;
+  double mode_reversion_vertical_target_fpm;
   double mode_reversion_TRK_FPA;
   double mode_reversion_triple_click;
   double mode_reversion_fma;
@@ -222,6 +226,9 @@ struct ClientDataAutopilotStateMachine {
   double nav_e_loc_error_deg;
   double nav_e_gs_valid;
   double nav_e_gs_error_deg;
+  unsigned long long TCAS_message_disarm;
+  unsigned long long TCAS_message_RA_inhibit;
+  unsigned long long TCAS_message_TRK_FPA_deselection;
 };
 
 struct ClientDataAutopilotLaws {
@@ -292,8 +299,18 @@ struct ClientDataLocalVariables {
   double flightManagementCrossTrackError;
   double flightManagementTrackAngleError;
   double flightManagementPhiCommand;
+  unsigned long long flightManagementRequestedVerticalMode;
+  double flightManagement_H_c_ft;
+  double flightManagement_H_dot_c_fpm;
+  unsigned long long flightManagement_rnav_app_selected;
+  unsigned long long flightManagement_final_can_engage;
   double is_SPEED_managed;
   double locPhiCommand;
+  unsigned long long TCAS_mode_fail;
+  unsigned long long TCAS_mode_available;
+  double TCAS_advisory_state;
+  double TCAS_advisory_target_min_fpm;
+  double TCAS_advisory_target_max_fpm;
 };
 
 struct ClientDataLocalVariablesAutothrust {
@@ -322,4 +339,6 @@ struct ClientDataLocalVariablesAutothrust {
   double thrust_reduction_altitude_go_around;
   double flight_phase;
   double is_soft_alt_mode_active;
+  double is_TCAS_active;
+  double target_TCAS_RA_rate_fpm;
 };

@@ -2,11 +2,9 @@
 
 /* global Airliners */
 
-// eslint-disable-next-line camelcase
 class A32NX_PAGE_NAME_Logic extends Airliners.EICASTemplateElement {
     constructor() {
         super();
-        // eslint-disable-next-line no-underscore-dangle
         let lastTime = this._lastTime;
         this.getDeltaTime = () => {
             const nowTime = Date.now();
