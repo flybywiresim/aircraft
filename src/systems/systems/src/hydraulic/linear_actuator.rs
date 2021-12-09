@@ -944,7 +944,8 @@ impl LinearActuatedRigidBodyOnHingeAxis {
             );
 
             self.angular_speed += AngularVelocity::new::<radian_per_second>(
-                self.angular_acceleration.get::<radian_per_second_squared>() * context.delta_as_secs_f64(),
+                self.angular_acceleration.get::<radian_per_second_squared>()
+                    * context.delta_as_secs_f64(),
             );
 
             self.angular_position += Angle::new::<radian>(
@@ -978,10 +979,12 @@ impl LinearActuatedRigidBodyOnHingeAxis {
     fn limit_position_to_range(&mut self) {
         if self.angular_position >= self.max_angle {
             self.angular_position = self.max_angle;
-            self.angular_speed = -self.angular_speed * Self::DEFAULT_MAX_MIN_POSITION_REBOUND_FACTOR;
+            self.angular_speed =
+                -self.angular_speed * Self::DEFAULT_MAX_MIN_POSITION_REBOUND_FACTOR;
         } else if self.angular_position <= self.min_angle {
             self.angular_position = self.min_angle;
-            self.angular_speed = -self.angular_speed * Self::DEFAULT_MAX_MIN_POSITION_REBOUND_FACTOR;
+            self.angular_speed =
+                -self.angular_speed * Self::DEFAULT_MAX_MIN_POSITION_REBOUND_FACTOR;
         }
     }
 
@@ -1157,7 +1160,10 @@ mod tests {
 
             println!(
                 "Body abs angle {:.2} Body Npos {:.3}, Actuator Npos {:.3}, Actuator force {:.1}",
-                self.actuator_assembly.rigid_body.angular_position.get::<degree>(),
+                self.actuator_assembly
+                    .rigid_body
+                    .angular_position
+                    .get::<degree>(),
                 self.actuator_assembly
                     .rigid_body
                     .position_normalized()
