@@ -61,6 +61,8 @@ pub enum LinearActuatorMode {
 /// the piece movements it's connected to.
 /// - [LinearActuatorMode.PositionControl]: -> Actuator will try to use hydraulic pressure to move to a requested position, while
 /// maintaining flow limitations.
+/// - [LinearActuatorMode.ClosedCircuitDamping]: -> Actuator will connect retract and extend port in closed loop. This provide a dampened
+/// free moving mode, usable for gravity extension, or for aileron droop.
 #[derive(PartialEq, Clone, Copy)]
 struct CoreHydraulicForce {
     current_mode: LinearActuatorMode,
