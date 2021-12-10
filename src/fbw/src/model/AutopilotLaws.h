@@ -449,8 +449,6 @@ class AutopilotLawsModelClass {
     real_T zeta_Value_h;
     real_T Gain3_Gain_i;
     real_T Constant1_Value_fk;
-    real_T ROLLLIM1_tableData[5];
-    real_T ROLLLIM1_bp01Data[5];
     real_T Gain_Gain_lu;
     real_T Gain5_Gain_o;
     real_T Gain_Gain_b;

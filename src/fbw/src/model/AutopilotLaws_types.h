@@ -67,6 +67,7 @@ struct ap_raw_data
   real_T flight_guidance_xtk_nmi;
   real_T flight_guidance_tae_deg;
   real_T flight_guidance_phi_deg;
+  real_T flight_guidance_phi_limit_deg;
   real_T flight_phase;
   real_T V2_kn;
   real_T VAPP_kn;
@@ -192,6 +193,7 @@ struct ap_data
   real_T flight_guidance_xtk_nmi;
   real_T flight_guidance_tae_deg;
   real_T flight_guidance_phi_deg;
+  real_T flight_guidance_phi_limit_deg;
   real_T flight_phase;
   real_T V2_kn;
   real_T VAPP_kn;

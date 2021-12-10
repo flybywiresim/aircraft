@@ -73,6 +73,7 @@ AutopilotLawsModelClass::Parameters_AutopilotLaws_T AutopilotLawsModelClass::Aut
       0.0,
       0.0,
       0.0,
+      0.0,
       false,
       0.0,
       0.0,
@@ -767,12 +768,6 @@ AutopilotLawsModelClass::Parameters_AutopilotLaws_T AutopilotLawsModelClass::Aut
   10.0,
 
   0.0,
-
-
-  { 15.0, 30.0, 30.0, 19.0, 19.0 },
-
-
-  { 0.0, 150.0, 300.0, 450.0, 600.0 },
 
   -1.0,
 

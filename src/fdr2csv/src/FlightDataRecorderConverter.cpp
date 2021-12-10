@@ -50,6 +50,8 @@ void FlightDataRecorderConverter::writeHeader(ofstream& out, const string& delim
   out << "ap_sm.data.nav_e_gs_error_deg" << delimiter;
   out << "ap_sm.data.flight_guidance_xtk_nmi" << delimiter;
   out << "ap_sm.data.flight_guidance_tae_deg" << delimiter;
+  out << "ap_sm.data.flight_guidance_phi_deg" << delimiter;
+  out << "ap_sm.data.flight_guidance_phi_limit_deg" << delimiter;
   out << "ap_sm.data.flight_phase" << delimiter;
   out << "ap_sm.data.V2_kn" << delimiter;
   out << "ap_sm.data.VAPP_kn" << delimiter;
@@ -607,6 +609,8 @@ void FlightDataRecorderConverter::writeStruct(ofstream& out,
   out << ap_sm.data.nav_e_gs_error_deg << delimiter;
   out << ap_sm.data.flight_guidance_xtk_nmi << delimiter;
   out << ap_sm.data.flight_guidance_tae_deg << delimiter;
+  out << ap_sm.data.flight_guidance_phi_deg << delimiter;
+  out << ap_sm.data.flight_guidance_phi_limit_deg << delimiter;
   out << ap_sm.data.flight_phase << delimiter;
   out << ap_sm.data.V2_kn << delimiter;
   out << ap_sm.data.VAPP_kn << delimiter;

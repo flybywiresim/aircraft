@@ -3797,6 +3797,8 @@ void AutopilotStateMachineModelClass::step()
     AutopilotStateMachine_U.in.data.flight_guidance_tae_deg;
   AutopilotStateMachine_B.BusAssignment_g.data.flight_guidance_phi_deg =
     AutopilotStateMachine_U.in.data.flight_guidance_phi_deg;
+  AutopilotStateMachine_B.BusAssignment_g.data.flight_guidance_phi_limit_deg =
+    AutopilotStateMachine_U.in.data.flight_guidance_phi_limit_deg;
   AutopilotStateMachine_B.BusAssignment_g.data.flight_phase = AutopilotStateMachine_U.in.data.flight_phase;
   AutopilotStateMachine_B.BusAssignment_g.data.V2_kn = AutopilotStateMachine_U.in.data.V2_kn;
   AutopilotStateMachine_B.BusAssignment_g.data.VAPP_kn = AutopilotStateMachine_U.in.data.VAPP_kn;
