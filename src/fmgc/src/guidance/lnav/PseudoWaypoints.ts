@@ -16,12 +16,9 @@ const PWP_IDENT_FLAP1 = '(FLAP1)';
 const PWP_IDENT_FLAP2 = '(FLAP2)';
 
 export class PseudoWaypoints implements GuidanceComponent {
-    public pseudoWaypoints: PseudoWaypoint[] = [];
+    pseudoWaypoints: PseudoWaypoint[] = [];
 
-    constructor(
-        private guidanceController: GuidanceController,
-    ) {
-    }
+    constructor(private guidanceController: GuidanceController) { }
 
     acceptVerticalProfile() {
         if (DEBUG) {
@@ -126,7 +123,7 @@ export class PseudoWaypoints implements GuidanceComponent {
         console.log('[FMGC/Guidance] PseudoWaypoints initialized!');
     }
 
-    update(_deltaTime: number) {
+    update(_: number) {
         // Pass our pseudo waypoints to the GuidanceController
         this.guidanceController.currentPseudoWaypoints.length = 0;
 
@@ -159,7 +156,7 @@ export class PseudoWaypoints implements GuidanceComponent {
      *
      * @param pseudoWaypoint the {@link PseudoWaypoint} to sequence.
      */
-    public sequencePseudoWaypoint(pseudoWaypoint: PseudoWaypoint): void {
+    sequencePseudoWaypoint(pseudoWaypoint: PseudoWaypoint): void {
         if (true) {
             console.log(`[FMS/PseudoWaypoints] Pseudo-waypoint '${pseudoWaypoint.ident}' sequenced.`);
         }

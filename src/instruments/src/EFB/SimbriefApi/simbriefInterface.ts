@@ -1,5 +1,3 @@
-/* eslint-disable camelcase */
-
 export interface ISimbriefData {
     origin: IAirportInfo,
     destination: IAirportInfo,

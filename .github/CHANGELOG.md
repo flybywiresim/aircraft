@@ -82,6 +82,11 @@
 1. [EFB/UI] Override in-game fuel UI and fuel initialization - @Taz5150 (TazX [Z+2]#0405)
 1. [FCU] FCU backlight is fed from proper bus - @tracernz (Mike)
 1. [CLK/ND] Fixed/Improved chrono & ET behavior on time shift - @vkrizan (Viliam)
+1. [AP] Added TCAS modes for Autopilot and Flight Director guidance - @aguther (Andreas Guther)
+1. [PFD] Added new messages and modes for TCAS - @lukecologne (lukecologne#1156)
+1. [FDR] Added additional data to the FDR - @aguther (Andreas Guther)
+1. [ATHR] Fixed ATHR being armed in flight when TOGA applied without GA condition - @aguther (Andreas Guther)
+1. [ECAM] Fixed gross weight being shown without engines running - @BlueberryKing (BlueberryKing)
 
 ## 0.7.0
 
