@@ -693,8 +693,8 @@ impl SimulationElement for HydraulicCircuit {
 /// This is an hydraulic section with its own volume of fluid and pressure. It can be connected to another section
 /// through a checkvalve
 pub struct Section {
-    loop_id_debug: String,
     pressure_id: VariableIdentifier,
+    pressure_switch_id: VariableIdentifier,
 
     section_id_number: usize,
 
@@ -744,9 +744,11 @@ impl Section {
         let section_name: String = format!("HYD_{}_{}_{}_SECTION", loop_id, section_id, pump_id);
 
         Self {
-            loop_id_debug: loop_id.to_string(),
             pressure_id: context
                 .get_identifier(format!("{}_PRESSURE", section_name))
+                .to_owned(),
+            pressure_switch_id: context
+                .get_identifier(format!("{}_PRESSURE_SWITCH", section_name))
                 .to_owned(),
             section_id_number: pump_id,
             static_leak_at_max_press,
@@ -803,12 +805,6 @@ impl Section {
         let pressure = self.pressure();
         if let Some(valve) = &mut self.leak_measurement_valve {
             valve.update(context, pressure, controller);
-            println!(
-                "{} loop meas valve pos {:.2} downstream p {:.1}",
-                self.loop_id_debug,
-                valve.open_ratio.output().get::<ratio>(),
-                valve.downstream_pressure().get::<psi>()
-            );
         }
     }
 
@@ -1012,6 +1008,13 @@ impl SimulationElement for Section {
 
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.pressure_id, self.pressure());
+
+        if self.leak_measurement_valve.is_some() {
+            writer.write(
+                &self.pressure_switch_id,
+                self.pressure_switch_state() == PressureSwitchState::Pressurised,
+            );
+        }
     }
 }
 impl SectionPressure for Section {
@@ -1128,10 +1131,6 @@ impl CheckValve {
 
         self.max_virtual_volume = available_volume_from_upstream.max(Volume::new::<gallon>(0.));
     }
-}
-
-pub trait ValveController {
-    fn open_request(&self) -> Ratio;
 }
 
 pub struct LeakMeasurementValve {
@@ -1890,6 +1889,7 @@ mod tests {
         test_bed.run();
 
         assert!(test_bed.contains_variable_with_name("HYD_BROWN_PUMP_2_SECTION_PRESSURE"));
+        assert!(test_bed.contains_variable_with_name("HYD_BROWN_PUMP_2_SECTION_PRESSURE_SWITCH"));
         assert!(test_bed.contains_variable_with_name("HYD_BROWN_PUMP_2_FIRE_VALVE_OPENED"));
     }
 
@@ -1902,12 +1902,15 @@ mod tests {
         test_bed.run();
 
         assert!(test_bed.contains_variable_with_name("HYD_BROWN_SYSTEM_1_SECTION_PRESSURE"));
+        assert!(test_bed.contains_variable_with_name("HYD_BROWN_SYSTEM_1_SECTION_PRESSURE_SWITCH"));
         assert!(!test_bed.contains_variable_with_name("HYD_BROWN_SYSTEM_1_FIRE_VALVE_OPENED"));
 
         assert!(test_bed.contains_variable_with_name("HYD_BROWN_PUMP_1_SECTION_PRESSURE"));
+        assert!(!test_bed.contains_variable_with_name("HYD_BROWN_PUMP_1_SECTION_PRESSURE_SWITCH"));
         assert!(test_bed.contains_variable_with_name("HYD_BROWN_PUMP_1_FIRE_VALVE_OPENED"));
 
         assert!(test_bed.contains_variable_with_name("HYD_BROWN_PUMP_2_SECTION_PRESSURE"));
+        assert!(!test_bed.contains_variable_with_name("HYD_BROWN_PUMP_2_SECTION_PRESSURE_SWITCH"));
         assert!(test_bed.contains_variable_with_name("HYD_BROWN_PUMP_2_FIRE_VALVE_OPENED"));
 
         assert!(!test_bed.contains_variable_with_name("HYD_BROWN_PUMP_0_SECTION_PRESSURE"));
@@ -1945,6 +1948,9 @@ mod tests {
             fire_valve,
             false,
             false,
+            Some(LeakMeasurementValve::new(
+                HydraulicCircuit::DEFAULT_LEAK_MEASUREMENT_VALVE_POWERING_BUS,
+            )),
         )
     }
 

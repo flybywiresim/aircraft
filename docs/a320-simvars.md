@@ -753,6 +753,14 @@
         - BLUE
         - YELLOW
 
+- A32NX_HYD_{loop_name}_SYSTEM_1_SECTION_PRESSURE_SWITCH
+    - Boolean
+    - Current pressure switch state in {loop_name} hydraulic circuit downstream of leak valve
+    - {loop_name}
+        - GREEN
+        - BLUE
+        - YELLOW
+
 - A32NX_HYD_{loop_name}_PUMP_1_SECTION_PRESSURE
     - Psi
     - Current pressure in the pump section of the {loop_name} hydraulic circuit
