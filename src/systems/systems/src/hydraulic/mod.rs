@@ -1,10 +1,16 @@
 use self::linear_actuator::Actuator;
+
 use crate::hydraulic::electrical_pump_physics::ElectricalPumpPhysics;
+
+use crate::shared::low_pass_filter::LowPassFilter;
 use crate::shared::{interpolation, ElectricalBusType, ElectricalBuses};
+
 use crate::simulation::{
     InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
     VariableIdentifier, Write,
 };
+
+use num_traits::Float;
 use std::time::Duration;
 use uom::si::angular_velocity::radian_per_second;
 use uom::si::{
@@ -698,7 +704,6 @@ pub struct Section {
     total_actuator_returned_volume: Volume,
 }
 impl Section {
-    #[allow(clippy::too_many_arguments)]
     pub fn new(
         context: &mut InitContext,
         loop_id: &str,
@@ -1072,6 +1077,71 @@ impl CheckValve {
         }
 
         self.max_virtual_volume = available_volume_from_upstream.max(Volume::new::<gallon>(0.));
+    }
+}
+
+pub trait ValveController {
+    fn open_request(&self) -> Ratio;
+}
+
+pub struct LeakMeasurementValve {
+    open_ratio: LowPassFilter<Ratio>,
+
+    is_powered: bool,
+    powered_by: ElectricalBusType,
+
+    upstream_pressure: Pressure,
+    downstream_pressure: Pressure,
+}
+impl LeakMeasurementValve {
+    const VALVE_RESPONSE_TIME_CONSTANT: Duration = Duration::from_millis(1500);
+
+    fn new(powered_by: ElectricalBusType) -> Self {
+        Self {
+            open_ratio: LowPassFilter::<Ratio>::new(Self::VALVE_RESPONSE_TIME_CONSTANT),
+            is_powered: false,
+            powered_by,
+            upstream_pressure: Pressure::default(),
+            downstream_pressure: Pressure::default(),
+        }
+    }
+
+    fn update(
+        &mut self,
+        context: &UpdateContext,
+        upstream_section: &Section,
+        valve_controller: &impl ValveController,
+    ) {
+        self.upstream_pressure = upstream_section.pressure();
+
+        self.update_open_state(context, valve_controller);
+
+        self.update_downstream_pressure();
+    }
+
+    fn update_open_state(
+        &mut self,
+        context: &UpdateContext,
+        valve_controller: &impl ValveController,
+    ) {
+        if self.is_powered {
+            self.open_ratio
+                .update(context.delta(), valve_controller.open_request());
+        } else {
+            self.open_ratio
+                .update(context.delta(), Ratio::new::<ratio>(0.));
+        }
+    }
+
+    fn update_downstream_pressure(&mut self) {
+        let current_open_state = self.open_ratio.output();
+
+        self.downstream_pressure = self.upstream_pressure * current_open_state * current_open_state;
+    }
+}
+impl SimulationElement for LeakMeasurementValve {
+    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
+        self.is_powered = buses.is_powered(self.powered_by);
     }
 }
 
