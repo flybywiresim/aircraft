@@ -231,6 +231,7 @@ impl SimulationElement for PowerTransferUnit {
 
 pub trait HydraulicCircuitController {
     fn should_open_fire_shutoff_valve(&self, pump_index: usize) -> bool;
+    fn should_open_leak_measurement_valve(&self) -> bool;
 }
 
 pub struct Accumulator {
@@ -380,6 +381,9 @@ impl HydraulicCircuit {
     const DEFAULT_FIRE_VALVE_POWERING_BUS: ElectricalBusType =
         ElectricalBusType::DirectCurrentEssential;
 
+    const DEFAULT_LEAK_MEASUREMENT_VALVE_POWERING_BUS: ElectricalBusType =
+        ElectricalBusType::DirectCurrentEssential;
+
     pub fn new(
         context: &mut InitContext,
         id: &str,
@@ -425,6 +429,7 @@ impl HydraulicCircuit {
                 fire_valve,
                 false,
                 false,
+                None,
             ));
 
             pump_to_system_check_valves.push(CheckValve::default());
@@ -455,6 +460,9 @@ impl HydraulicCircuit {
                 None,
                 connected_to_ptu_left_side,
                 connected_to_ptu_right_side,
+                Some(LeakMeasurementValve::new(
+                    Self::DEFAULT_LEAK_MEASUREMENT_VALVE_POWERING_BUS,
+                )),
             ),
             pump_to_system_check_valves,
             fluid: Fluid::new(Pressure::new::<pascal>(Self::FLUID_BULK_MODULUS_PASCAL)),
@@ -484,6 +492,7 @@ impl HydraulicCircuit {
         controller: &impl HydraulicCircuitController,
     ) {
         self.update_shutoff_valves(controller);
+        self.update_leak_measurement_valves(context, controller);
 
         // Taking care of leaks / consumers / actuators volumes
         self.update_flows(context, ptu);
@@ -595,6 +604,15 @@ impl HydraulicCircuit {
             .for_each(|section| section.update_shutoff_valve(controller));
     }
 
+    fn update_leak_measurement_valves(
+        &mut self,
+        context: &UpdateContext,
+        controller: &impl HydraulicCircuitController,
+    ) {
+        self.system_section
+            .update_leak_measurement_valve(context, controller);
+    }
+
     fn update_final_valves_flows(&mut self) {
         let mut total_max_valves_volume = Volume::new::<gallon>(0.);
 
@@ -699,6 +717,8 @@ pub struct Section {
 
     pressure_switch: PressureSwitch,
 
+    leak_measurement_valve: Option<LeakMeasurementValve>,
+
     total_actuator_consumed_volume: Volume,
     total_actuator_returned_volume: Volume,
 }
@@ -717,6 +737,7 @@ impl Section {
         fire_valve: Option<FireValve>,
         connected_to_ptu_left_side: bool,
         connected_to_ptu_right_side: bool,
+        leak_measurement_valve: Option<LeakMeasurementValve>,
     ) -> Self {
         let section_name: String = format!("HYD_{}_{}_{}_SECTION", loop_id, section_id, pump_id);
 
@@ -742,6 +763,8 @@ impl Section {
 
             pressure_switch: PressureSwitch::new(pressure_switch_hi_hyst, pressure_switch_lo_hyst),
 
+            leak_measurement_valve,
+
             total_actuator_consumed_volume: Volume::new::<gallon>(0.),
             total_actuator_returned_volume: Volume::new::<gallon>(0.),
         }
@@ -766,6 +789,17 @@ impl Section {
     fn update_shutoff_valve(&mut self, controller: &impl HydraulicCircuitController) {
         if let Some(valve) = &mut self.fire_valve {
             valve.update(controller.should_open_fire_shutoff_valve(self.section_id_number));
+        }
+    }
+
+    fn update_leak_measurement_valve(
+        &mut self,
+        context: &UpdateContext,
+        controller: &impl HydraulicCircuitController,
+    ) {
+        let pressure = self.pressure();
+        if let Some(valve) = &mut self.leak_measurement_valve {
+            valve.update(context, pressure, controller);
         }
     }
 
@@ -895,7 +929,11 @@ impl Section {
             + self.delta_pressure_from_delta_volume(fluid_volume_compressed, fluid);
         self.current_pressure = self.current_pressure.max(Pressure::new::<psi>(14.7));
 
-        self.pressure_switch.update(self.current_pressure);
+        if let Some(valve) = &self.leak_measurement_valve {
+            self.pressure_switch.update(valve.downstream_pressure());
+        } else {
+            self.pressure_switch.update(self.current_pressure);
+        }
     }
 
     fn delta_pressure_from_delta_volume(&self, delta_vol: Volume, fluid: &Fluid) -> Pressure {
@@ -954,6 +992,10 @@ impl SimulationElement for Section {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         if let Some(fire_valve) = &mut self.fire_valve {
             fire_valve.accept(visitor);
+        }
+
+        if let Some(leak_meas_valve) = &mut self.leak_measurement_valve {
+            leak_meas_valve.accept(visitor);
         }
 
         visitor.visit(self);
@@ -1109,7 +1151,7 @@ impl LeakMeasurementValve {
         &mut self,
         context: &UpdateContext,
         upstream_pressure: Pressure,
-        valve_controller: &impl ValveController,
+        valve_controller: &impl HydraulicCircuitController,
     ) {
         self.upstream_pressure = upstream_pressure;
 
@@ -1121,21 +1163,29 @@ impl LeakMeasurementValve {
     fn update_open_state(
         &mut self,
         context: &UpdateContext,
-        valve_controller: &impl ValveController,
+        valve_controller: &impl HydraulicCircuitController,
     ) {
-        if self.is_powered {
-            self.open_ratio
-                .update(context.delta(), valve_controller.open_request());
+        let opening_ratio = if self.is_powered {
+            if valve_controller.should_open_leak_measurement_valve() {
+                Ratio::new::<ratio>(1.)
+            } else {
+                Ratio::new::<ratio>(0.)
+            }
         } else {
-            self.open_ratio
-                .update(context.delta(), Ratio::new::<ratio>(0.));
-        }
+            Ratio::new::<ratio>(0.)
+        };
+
+        self.open_ratio.update(context.delta(), opening_ratio);
     }
 
     fn update_downstream_pressure(&mut self) {
         let current_open_state = self.open_ratio.output();
 
         self.downstream_pressure = self.upstream_pressure * current_open_state * current_open_state;
+    }
+
+    fn downstream_pressure(&self) -> Pressure {
+        self.downstream_pressure
     }
 }
 impl SimulationElement for LeakMeasurementValve {

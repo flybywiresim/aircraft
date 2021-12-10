@@ -830,6 +830,10 @@ impl HydraulicCircuitController for A320HydraulicCircuitController {
         // A320 only has one main pump per pump section thus index not useful
         self.should_open_fire_shutoff_valve
     }
+
+    fn should_open_leak_measurement_valve(&self) -> bool {
+        true
+    }
 }
 
 struct A320EngineDrivenPumpController {
@@ -985,10 +989,10 @@ impl A320BlueElectricPumpController {
 
         self.should_pressurise = self.is_powered && should_pressurise_if_powered;
 
-        self.update_low_section(overhead_panel, section, engine1, engine2, lgciu1, lgciu2);
+        self.update_low_pressure(overhead_panel, section, engine1, engine2, lgciu1, lgciu2);
     }
 
-    fn update_low_section(
+    fn update_low_pressure(
         &mut self,
         overhead_panel: &A320HydraulicOverheadPanel,
         section: &impl SectionPressure,
