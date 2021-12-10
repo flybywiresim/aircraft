@@ -33,6 +33,10 @@ impl HydraulicCircuitController for TestHydraulicCircuitController {
     fn should_open_fire_shutoff_valve(&self, pump_index: usize) -> bool {
         self.should_open_fire_shutoff_valve[pump_index]
     }
+
+    fn should_open_leak_measurement_valve(&self) -> bool {
+        true
+    }
 }
 
 struct TestPumpController {

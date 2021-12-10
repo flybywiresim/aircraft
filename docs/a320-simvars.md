@@ -198,7 +198,7 @@
     - Bool
     - True if "BLUE PUMP OVRD" switch is off
 
-- A32NX_OVHD_HYD_LEAK_MEASUREMENT_G
+- A32NX_OVHD_HYD_LEAK_MEASUREMENT_G_PB_IS_AUTO
     - Bool
     - True if "HYD LEAK MEASUREMENT G" switch is on
 
@@ -206,7 +206,7 @@
     - Bool
     - True if "HYD LEAK MEASUREMENT G" switch lock is down
 
-- A32NX_OVHD_HYD_LEAK_MEASUREMENT_B
+- A32NX_OVHD_HYD_LEAK_MEASUREMENT_B_PB_IS_AUTO
     - Bool
     - True if "HYD LEAK MEASUREMENT B" switch is on
 
@@ -214,7 +214,7 @@
     - Bool
     - True if "HYD LEAK MEASUREMENT B" switch lock is down
 
-- A32NX_OVHD_HYD_LEAK_MEASUREMENT_Y
+- A32NX_OVHD_HYD_LEAK_MEASUREMENT_Y_PB_IS_AUTO
     - Bool
     - True if "HYD LEAK MEASUREMENT Y" switch is on
 

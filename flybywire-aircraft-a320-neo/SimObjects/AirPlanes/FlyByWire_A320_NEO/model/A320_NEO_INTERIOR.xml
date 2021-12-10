@@ -2896,7 +2896,7 @@
                     <UseTemplate Name="FBW_Covered_Push_Toggle">
                         <NODE_ID>PUSH_OVHD_HYD_G</NODE_ID>
                         <LOCK_NODE_ID>LOCK_OVHD_HYD_G</LOCK_NODE_ID>
-                        <TOGGLE_SIMVAR>L:A32NX_OVHD_HYD_LEAK_MEASUREMENT_G</TOGGLE_SIMVAR>
+                        <TOGGLE_SIMVAR>L:A32NX_OVHD_HYD_LEAK_MEASUREMENT_G_PB_IS_AUTO</TOGGLE_SIMVAR>
                         <SEQ_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                         <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
                         <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
@@ -2910,7 +2910,7 @@
                     <UseTemplate Name="FBW_Covered_Push_Toggle">
                         <NODE_ID>PUSH_OVHD_HYD_B</NODE_ID>
                         <LOCK_NODE_ID>LOCK_OVHD_HYD_B</LOCK_NODE_ID>
-                        <TOGGLE_SIMVAR>L:A32NX_OVHD_HYD_LEAK_MEASUREMENT_B</TOGGLE_SIMVAR>
+                        <TOGGLE_SIMVAR>L:A32NX_OVHD_HYD_LEAK_MEASUREMENT_B_PB_IS_AUTO</TOGGLE_SIMVAR>
                         <SEQ_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                         <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
                         <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
@@ -2924,7 +2924,7 @@
                     <UseTemplate Name="FBW_Covered_Push_Toggle">
                         <NODE_ID>PUSH_OVHD_HYD_Y</NODE_ID>
                         <LOCK_NODE_ID>LOCK_OVHD_HYD_Y</LOCK_NODE_ID>
-                        <TOGGLE_SIMVAR>L:A32NX_OVHD_HYD_LEAK_MEASUREMENT_Y</TOGGLE_SIMVAR>
+                        <TOGGLE_SIMVAR>L:A32NX_OVHD_HYD_LEAK_MEASUREMENT_Y_PB_IS_AUTO</TOGGLE_SIMVAR>
                         <SEQ_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                         <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
                         <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>

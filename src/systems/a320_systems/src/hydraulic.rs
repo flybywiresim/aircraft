@@ -434,17 +434,17 @@ impl A320Hydraulic {
         self.pushback_tug.is_nose_wheel_steering_pin_inserted()
     }
 
-    fn is_blue_pressurised(&self) -> bool {
+    fn is_blue_pressure_switch_pressurised(&self) -> bool {
         self.blue_circuit.system_section_pressure_switch() == PressureSwitchState::Pressurised
     }
 
     #[cfg(test)]
-    fn is_green_pressurised(&self) -> bool {
+    fn is_green_pressure_switch_pressurised(&self) -> bool {
         self.green_circuit.system_section_pressure_switch() == PressureSwitchState::Pressurised
     }
 
     #[cfg(test)]
-    fn is_yellow_pressurised(&self) -> bool {
+    fn is_yellow_pressure_switch_pressurised(&self) -> bool {
         self.yellow_circuit.system_section_pressure_switch() == PressureSwitchState::Pressurised
     }
 
@@ -657,8 +657,10 @@ impl A320Hydraulic {
             &self.ram_air_turbine_controller,
         );
 
-        self.green_circuit_controller
-            .update(engine_fire_push_buttons);
+        self.green_circuit_controller.update(
+            engine_fire_push_buttons,
+            overhead_panel.green_leak_measurement_valve_is_on(),
+        );
         self.green_circuit.update(
             context,
             &mut vec![&mut self.engine_driven_pump_1],
@@ -667,8 +669,17 @@ impl A320Hydraulic {
             &self.green_circuit_controller,
         );
 
-        self.yellow_circuit_controller
-            .update(engine_fire_push_buttons);
+        let cargo_door_operation = self
+            .forward_cargo_door_controller
+            .should_pressurise_hydraulics()
+            || self
+                .aft_cargo_door_controller
+                .should_pressurise_hydraulics();
+
+        self.yellow_circuit_controller.update(
+            engine_fire_push_buttons,
+            overhead_panel.yellow_leak_measurement_valve_is_on() && !cargo_door_operation,
+        );
         self.yellow_circuit.update(
             context,
             &mut vec![&mut self.engine_driven_pump_2],
@@ -677,8 +688,10 @@ impl A320Hydraulic {
             &self.yellow_circuit_controller,
         );
 
-        self.blue_circuit_controller
-            .update(engine_fire_push_buttons);
+        self.blue_circuit_controller.update(
+            engine_fire_push_buttons,
+            overhead_panel.blue_leak_measurement_valve_is_on(),
+        );
         self.blue_circuit.update(
             context,
             &mut vec![&mut self.blue_electric_pump],
@@ -748,7 +761,7 @@ impl A320Hydraulic {
 }
 impl RamAirTurbineHydraulicCircuitPressurised for A320Hydraulic {
     fn is_rat_hydraulic_circuit_pressurised(&self) -> bool {
-        self.is_blue_pressurised()
+        self.is_blue_pressure_switch_pressurised()
     }
 }
 impl SimulationElement for A320Hydraulic {
@@ -810,19 +823,27 @@ impl SimulationElement for A320Hydraulic {
 struct A320HydraulicCircuitController {
     engine_number: Option<usize>,
     should_open_fire_shutoff_valve: bool,
+    should_open_leak_measurement_valve: bool,
 }
 impl A320HydraulicCircuitController {
     fn new(engine_number: Option<usize>) -> Self {
         Self {
             engine_number,
             should_open_fire_shutoff_valve: true,
+            should_open_leak_measurement_valve: true,
         }
     }
 
-    fn update<T: EngineFirePushButtons>(&mut self, engine_fire_push_buttons: &T) {
+    fn update(
+        &mut self,
+        engine_fire_push_buttons: &impl EngineFirePushButtons,
+        measurement_valve_button_on: bool,
+    ) {
         if let Some(eng_number) = self.engine_number {
             self.should_open_fire_shutoff_valve = !engine_fire_push_buttons.is_released(eng_number);
         }
+
+        self.should_open_leak_measurement_valve = measurement_valve_button_on;
     }
 }
 impl HydraulicCircuitController for A320HydraulicCircuitController {
@@ -832,7 +853,7 @@ impl HydraulicCircuitController for A320HydraulicCircuitController {
     }
 
     fn should_open_leak_measurement_valve(&self) -> bool {
-        true
+        self.should_open_leak_measurement_valve
     }
 }
 
@@ -2132,6 +2153,10 @@ pub(super) struct A320HydraulicOverheadPanel {
     rat_push_button: MomentaryPushButton,
     yellow_epump_push_button: AutoOnFaultPushButton,
     blue_epump_override_push_button: MomentaryOnPushButton,
+
+    green_leak_measurement_push_button: AutoOffFaultPushButton,
+    blue_leak_measurement_push_button: AutoOffFaultPushButton,
+    yellow_leak_measurement_push_button: AutoOffFaultPushButton,
 }
 impl A320HydraulicOverheadPanel {
     pub(super) fn new(context: &mut InitContext) -> A320HydraulicOverheadPanel {
@@ -2143,6 +2168,19 @@ impl A320HydraulicOverheadPanel {
             rat_push_button: MomentaryPushButton::new(context, "HYD_RAT_MAN_ON"),
             yellow_epump_push_button: AutoOnFaultPushButton::new_auto(context, "HYD_EPUMPY"),
             blue_epump_override_push_button: MomentaryOnPushButton::new(context, "HYD_EPUMPY_OVRD"),
+
+            green_leak_measurement_push_button: AutoOffFaultPushButton::new_auto(
+                context,
+                "HYD_LEAK_MEASUREMENT_G",
+            ),
+            blue_leak_measurement_push_button: AutoOffFaultPushButton::new_auto(
+                context,
+                "HYD_LEAK_MEASUREMENT_B",
+            ),
+            yellow_leak_measurement_push_button: AutoOffFaultPushButton::new_auto(
+                context,
+                "HYD_LEAK_MEASUREMENT_Y",
+            ),
         }
     }
 
@@ -2200,6 +2238,18 @@ impl A320HydraulicOverheadPanel {
     fn rat_man_on_push_button_is_pressed(&self) -> bool {
         self.rat_push_button.is_pressed()
     }
+
+    fn blue_leak_measurement_valve_is_on(&self) -> bool {
+        self.blue_leak_measurement_push_button.is_auto()
+    }
+
+    fn green_leak_measurement_valve_is_on(&self) -> bool {
+        self.green_leak_measurement_push_button.is_auto()
+    }
+
+    fn yellow_leak_measurement_valve_is_on(&self) -> bool {
+        self.yellow_leak_measurement_push_button.is_auto()
+    }
 }
 impl SimulationElement for A320HydraulicOverheadPanel {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
@@ -2210,6 +2260,10 @@ impl SimulationElement for A320HydraulicOverheadPanel {
         self.rat_push_button.accept(visitor);
         self.yellow_epump_push_button.accept(visitor);
         self.blue_epump_override_push_button.accept(visitor);
+
+        self.green_leak_measurement_push_button.accept(visitor);
+        self.blue_leak_measurement_push_button.accept(visitor);
+        self.yellow_leak_measurement_push_button.accept(visitor);
 
         visitor.visit(self);
     }
@@ -2463,16 +2517,16 @@ mod tests {
                 self.hydraulics.power_transfer_unit.is_enabled()
             }
 
-            fn is_blue_pressurised(&self) -> bool {
-                self.hydraulics.is_blue_pressurised()
+            fn is_blue_pressure_switch_pressurised(&self) -> bool {
+                self.hydraulics.is_blue_pressure_switch_pressurised()
             }
 
-            fn is_green_pressurised(&self) -> bool {
-                self.hydraulics.is_green_pressurised()
+            fn is_green_pressure_switch_pressurised(&self) -> bool {
+                self.hydraulics.is_green_pressure_switch_pressurised()
             }
 
-            fn is_yellow_pressurised(&self) -> bool {
-                self.hydraulics.is_yellow_pressurised()
+            fn is_yellow_pressure_switch_pressurised(&self) -> bool {
+                self.hydraulics.is_yellow_pressure_switch_pressurised()
             }
 
             fn is_cargo_fwd_door_locked_up(&self) -> bool {
@@ -2631,15 +2685,15 @@ mod tests {
             }
 
             fn is_blue_pressurised(&self) -> bool {
-                self.query(|a| a.is_blue_pressurised())
+                self.query(|a| a.is_blue_pressure_switch_pressurised())
             }
 
             fn is_green_pressurised(&self) -> bool {
-                self.query(|a| a.is_green_pressurised())
+                self.query(|a| a.is_green_pressure_switch_pressurised())
             }
 
             fn is_yellow_pressurised(&self) -> bool {
-                self.query(|a| a.is_yellow_pressurised())
+                self.query(|a| a.is_yellow_pressure_switch_pressurised())
             }
 
             fn is_cargo_fwd_door_locked_down(&mut self) -> bool {

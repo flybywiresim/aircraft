@@ -381,8 +381,9 @@ impl HydraulicCircuit {
     const DEFAULT_FIRE_VALVE_POWERING_BUS: ElectricalBusType =
         ElectricalBusType::DirectCurrentEssential;
 
+    // TODO leak meas valves are actually powered by a sub-bus (Bus 601PP)
     const DEFAULT_LEAK_MEASUREMENT_VALVE_POWERING_BUS: ElectricalBusType =
-        ElectricalBusType::DirectCurrentEssential;
+        ElectricalBusType::DirectCurrentGndFltService;
 
     pub fn new(
         context: &mut InitContext,
@@ -692,6 +693,7 @@ impl SimulationElement for HydraulicCircuit {
 /// This is an hydraulic section with its own volume of fluid and pressure. It can be connected to another section
 /// through a checkvalve
 pub struct Section {
+    loop_id_debug: String,
     pressure_id: VariableIdentifier,
 
     section_id_number: usize,
@@ -742,6 +744,7 @@ impl Section {
         let section_name: String = format!("HYD_{}_{}_{}_SECTION", loop_id, section_id, pump_id);
 
         Self {
+            loop_id_debug: loop_id.to_string(),
             pressure_id: context
                 .get_identifier(format!("{}_PRESSURE", section_name))
                 .to_owned(),
@@ -800,6 +803,12 @@ impl Section {
         let pressure = self.pressure();
         if let Some(valve) = &mut self.leak_measurement_valve {
             valve.update(context, pressure, controller);
+            println!(
+                "{} loop meas valve pos {:.2} downstream p {:.1}",
+                self.loop_id_debug,
+                valve.open_ratio.output().get::<ratio>(),
+                valve.downstream_pressure().get::<psi>()
+            );
         }
     }
 
@@ -1172,7 +1181,7 @@ impl LeakMeasurementValve {
                 Ratio::new::<ratio>(0.)
             }
         } else {
-            Ratio::new::<ratio>(0.)
+            Ratio::new::<ratio>(1.)
         };
 
         self.open_ratio.update(context.delta(), opening_ratio);
