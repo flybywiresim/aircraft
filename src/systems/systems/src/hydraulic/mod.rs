@@ -10,7 +10,6 @@ use crate::simulation::{
     VariableIdentifier, Write,
 };
 
-use num_traits::Float;
 use std::time::Duration;
 use uom::si::angular_velocity::radian_per_second;
 use uom::si::{
@@ -1767,8 +1766,6 @@ impl SimulationElement for RamAirTurbine {
 
 #[cfg(test)]
 mod tests {
-    use crate::electrical::Electricity;
-    use crate::simulation::test::TestVariableRegistry;
     use crate::simulation::test::{ElementCtorFn, SimulationTestBed, TestBed};
     use crate::simulation::InitContext;
 
@@ -1778,39 +1775,51 @@ mod tests {
 
     #[test]
     fn reservoir_gives_desired_flow() {
-        let mut electricity = Electricity::new();
-        let mut registry: TestVariableRegistry = Default::default();
-        let mut init_context = InitContext::new(&mut electricity, &mut registry);
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            Reservoir::new(
+                context,
+                "GREEN",
+                Volume::new::<gallon>(5.),
+                Volume::new::<gallon>(5.),
+            )
+        }));
 
-        let mut reservoir = Reservoir::new(
-            &mut init_context,
-            "GREEN",
-            Volume::new::<gallon>(5.),
-            Volume::new::<gallon>(5.),
-        );
+        let volume_taken =
+            test_bed.command_element(|e| e.try_take_volume(Volume::new::<gallon>(1.)));
+        assert!(Volume::new::<gallon>(1.) == volume_taken);
 
-        assert!(Volume::new::<gallon>(1.) == reservoir.try_take_volume(Volume::new::<gallon>(1.)));
+        let current_level = test_bed.query_element(|e| e.current_level);
         assert!(
-            reservoir.current_level > Volume::new::<gallon>(3.99)
-                && reservoir.current_level < Volume::new::<gallon>(4.01)
+            current_level > Volume::new::<gallon>(3.99)
+                && current_level < Volume::new::<gallon>(4.01)
         );
     }
 
     #[test]
     fn reservoir_gives_only_volume_available() {
-        let mut electricity = Electricity::new();
-        let mut registry: TestVariableRegistry = Default::default();
-        let mut init_context = InitContext::new(&mut electricity, &mut registry);
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            Reservoir::new(
+                context,
+                "GREEN",
+                Volume::new::<gallon>(5.),
+                Volume::new::<gallon>(5.),
+            )
+        }));
 
-        let mut reservoir = Reservoir::new(
-            &mut init_context,
-            "GREEN",
-            Volume::new::<gallon>(5.),
-            Volume::new::<gallon>(5.),
-        );
+        let volume_taken =
+            test_bed.command_element(|e| e.try_take_volume(Volume::new::<gallon>(10.)));
 
-        let drawn_volume = reservoir.try_take_volume(Volume::new::<gallon>(10.));
-        assert!(drawn_volume.get::<gallon>() == 5. - Reservoir::MIN_USABLE_VOLUME);
+        assert!(volume_taken.get::<gallon>() == 5. - Reservoir::MIN_USABLE_VOLUME);
+    }
+
+    #[test]
+    fn leak_measurement_valve_init_with_zero_pressures() {
+        let test_bed = SimulationTestBed::from(ElementCtorFn(|_| {
+            LeakMeasurementValve::new(ElectricalBusType::DirectCurrentEssential)
+        }));
+
+        assert!(test_bed.query_element(|e| e.downstream_pressure == Pressure::new::<psi>(0.)));
+        assert!(test_bed.query_element(|e| e.upstream_pressure == Pressure::new::<psi>(0.)));
     }
 
     #[test]
