@@ -1108,10 +1108,10 @@ impl LeakMeasurementValve {
     fn update(
         &mut self,
         context: &UpdateContext,
-        upstream_section: &Section,
+        upstream_pressure: Pressure,
         valve_controller: &impl ValveController,
     ) {
-        self.upstream_pressure = upstream_section.pressure();
+        self.upstream_pressure = upstream_pressure;
 
         self.update_open_state(context, valve_controller);
 
