@@ -12,12 +12,6 @@
   font-style: normal;
 }
 
-/* pixels for screen */
-@import "../Common/pixels";
-.LcdOverlayDcdu {
-  @include pixels($checkered: true);
-}
-
 .dcdu-lines {
   position: absolute;
   left: 10px !important;

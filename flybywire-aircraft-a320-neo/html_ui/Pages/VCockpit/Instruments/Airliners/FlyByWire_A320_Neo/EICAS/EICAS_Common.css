@@ -47,6 +47,9 @@ eicas-common-display text {
   font-size: 20px;
   font-family: "ECAMFontRegular";
 }
+eicas-common-display text.Cyan {
+  fill: var(--displayCyan) !important;
+}
 eicas-common-display text.Title {
   fill: var(--displayWhite) !important;
 }

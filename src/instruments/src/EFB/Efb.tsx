@@ -136,8 +136,7 @@ const Efb = () => {
         if (usingAutobrightness) {
             const localTime = currentLocalTime / 3600;
             // the below code defines a semicircular function.
-            // eslint-disable-next-line no-restricted-properties
-            setBrightness(((Math.sqrt(48 - Math.pow((localTime - 14), 2))) * 14.431) || 0);
+            setBrightness(((Math.sqrt(48 - ((localTime - 14) ** 2))) * 14.431) || 0);
         } else {
             setBrightness(brightnessSetting);
         }

@@ -1,0 +1,3 @@
+[toolchain]
+channel = "1.55"
+targets = [ "wasm32-wasi" ]

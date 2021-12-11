@@ -43,5 +43,10 @@
     "editor.formatOnSave": true,
     "editor.formatOnPaste": false
   },
-  "cmake.configureOnOpen": false
+  "cmake.configureOnOpen": false,
+  "files.associations": {
+    "memory": "cpp"
+  },
+  "typescript.preferences.quoteStyle": "single",
+  "typescript.preferences.importModuleSpecifier": "non-relative"
 }

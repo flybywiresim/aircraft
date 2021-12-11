@@ -9,7 +9,8 @@ class CDUProgressPage {
         const flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string");
         const flMax = mcdu.getMaxFlCorrected();
         const flOpt = (mcdu._zeroFuelWeightZFWCGEntered && mcdu._blockFuelEntered && (mcdu.isAllEngineOn() || Simplane.getIsGrounded())) ? "{green}FL" + (Math.floor(flMax / 5) * 5).toString() + "{end}" : "-----";
-        const gpsPrimaryStatus = SimVar.GetSimVarValue("L:A32NX_ADIRS_USES_GPS_AS_PRIMARY", "Bool") ? "{green}GPS PRIMARY{end}" : "";
+        const adirsUsesGpsAsPrimary = SimVar.GetSimVarValue("L:A32NX_ADIRS_USES_GPS_AS_PRIMARY", "Bool");
+        const gpsPrimaryStatus = adirsUsesGpsAsPrimary ? "{green}GPS PRIMARY{end}" : "";
         let flCrz = "-----";
         switch (mcdu.currentFlightPhase) {
             case FmgcFlightPhases.PREFLIGHT:
@@ -60,9 +61,11 @@ class CDUProgressPage {
                 break;
         }
 
-        mcdu.onLeftInput[0] = (value) => {
+        mcdu.onLeftInput[0] = (value, scratchpadCallback) => {
             if (mcdu.trySetCruiseFlCheckInput(value)) {
                 CDUProgressPage.ShowPage(mcdu);
+            } else {
+                scratchpadCallback();
             }
         };
         mcdu.leftInputDelay[1] = () => {
@@ -87,9 +90,13 @@ class CDUProgressPage {
                 progBearingDist = `{small}{green}\xa0${mcdu.progBearing.toFixed(0).padStart(3, "0")}°\xa0/${mcdu.progDistance.toFixed(distDigits).padStart(3)}{end}{end}`;
             }
         }
-        mcdu.onRightInput[3] = (input) => {
-            mcdu.trySetProgWaypoint(input, () => {
-                CDUProgressPage.ShowPage(mcdu);
+        mcdu.onRightInput[3] = (input, scratchpadCallback) => {
+            mcdu.trySetProgWaypoint(input, (success) => {
+                if (success) {
+                    CDUProgressPage.ShowPage(mcdu);
+                } else {
+                    scratchpadCallback(input);
+                }
             });
         };
         mcdu.setTemplate([
@@ -98,8 +105,8 @@ class CDUProgressPage {
             [flCrz, flOpt + "\xa0\xa0\xa0\xa0" + "{magenta}FL" + flMax.toString() + "\xa0{end}"],
             [""],
             ["<REPORT", ""],
-            ["\xa0POSITION UPDATE AT"],
-            ["{small}*{end}[\xa0\xa0\xa0\xa0][color]cyan"],
+            [adirsUsesGpsAsPrimary ? "" : "\xa0POSITION UPDATE AT"],
+            [adirsUsesGpsAsPrimary ? "" : "{small}*{end}[\xa0\xa0\xa0\xa0][color]cyan"],
             ["\xa0\xa0BRG / DIST"],
             [progBearingDist, `{small}{white}TO{end}{end}\xa0{cyan}${progWaypoint}{end}`],
             ["\xa0PREDICTIVE"],
@@ -120,9 +127,11 @@ class CDUProgressPage {
         if (isFinite(mcdu.cruiseFlightLevel)) {
             altCell = mcdu.cruiseFlightLevel.toFixed(0);
         }
-        mcdu.onRightInput[0] = (value) => {
+        mcdu.onRightInput[0] = (value, scratchpadCallback) => {
             if (mcdu.setCruiseFlightLevelAndTemperature(value)) {
                 CDUProgressPage.ShowReportPage(mcdu);
+            } else {
+                scratchpadCallback();
             }
         };
         let toWaypoint;

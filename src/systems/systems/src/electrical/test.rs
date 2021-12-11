@@ -1,9 +1,8 @@
 use crate::shared::PotentialOrigin;
 
-use super::{
-    ElectricalElement, ElectricalElementIdentifier, ElectricalElementIdentifierProvider,
-    ElectricitySource, Potential,
-};
+use super::{ElectricalElement, ElectricalElementIdentifier, ElectricitySource, Potential};
+use crate::electrical::ElectricalElementIdentifierProvider;
+
 use uom::si::{electric_potential::volt, f64::*};
 
 pub struct TestElectricitySource {
@@ -13,22 +12,22 @@ pub struct TestElectricitySource {
 }
 impl TestElectricitySource {
     pub fn unpowered(
-        origin: PotentialOrigin,
         identifier_provider: &mut impl ElectricalElementIdentifierProvider,
+        origin: PotentialOrigin,
     ) -> Self {
         Self {
-            identifier: identifier_provider.next(),
+            identifier: identifier_provider.next_electrical_identifier(),
             origin,
             potential: ElectricPotential::new::<volt>(0.),
         }
     }
 
     pub fn powered(
-        origin: PotentialOrigin,
         identifier_provider: &mut impl ElectricalElementIdentifierProvider,
+        origin: PotentialOrigin,
     ) -> Self {
         Self {
-            identifier: identifier_provider.next(),
+            identifier: identifier_provider.next_electrical_identifier(),
             origin,
             potential: ElectricPotential::new::<volt>(28.),
         }
@@ -36,6 +35,10 @@ impl TestElectricitySource {
 
     pub fn power(&mut self) {
         self.potential = ElectricPotential::new::<volt>(28.);
+    }
+
+    pub fn power_with_potential(&mut self, potential: ElectricPotential) {
+        self.potential = potential;
     }
 
     pub fn unpower(&mut self) {

@@ -1,8 +1,12 @@
+use uom::si::{electric_potential::volt, f64::*, frequency::hertz};
+
 use crate::{
     shared::PowerConsumptionReport,
-    simulation::{Read, SimulationElement, SimulatorReader, SimulatorWriter, UpdateContext},
+    simulation::{
+        InitContext, Read, SimulationElement, SimulatorReader, SimulatorWriter, UpdateContext,
+        VariableIdentifier,
+    },
 };
-use uom::si::{electric_potential::volt, f64::*, frequency::hertz};
 
 use super::{
     ElectricalElement, ElectricalElementIdentifier, ElectricalElementIdentifierProvider,
@@ -11,6 +15,8 @@ use super::{
 };
 
 pub struct ExternalPowerSource {
+    external_power_available_id: VariableIdentifier,
+
     identifier: ElectricalElementIdentifier,
     writer: ElectricalStateWriter,
     is_connected: bool,
@@ -18,12 +24,12 @@ pub struct ExternalPowerSource {
     output_potential: ElectricPotential,
 }
 impl ExternalPowerSource {
-    pub fn new(
-        identifier_provider: &mut impl ElectricalElementIdentifierProvider,
-    ) -> ExternalPowerSource {
+    pub fn new(context: &mut InitContext) -> ExternalPowerSource {
         ExternalPowerSource {
-            identifier: identifier_provider.next(),
-            writer: ElectricalStateWriter::new("EXT_PWR"),
+            external_power_available_id: context
+                .get_identifier("EXTERNAL POWER AVAILABLE:1".to_owned()),
+            identifier: context.next_electrical_identifier(),
+            writer: ElectricalStateWriter::new(context, "EXT_PWR"),
             is_connected: false,
             output_frequency: Frequency::new::<hertz>(0.),
             output_potential: ElectricPotential::new::<volt>(0.),
@@ -69,7 +75,7 @@ provide_potential!(ExternalPowerSource, (110.0..=120.0));
 provide_frequency!(ExternalPowerSource, (390.0..=410.0));
 impl SimulationElement for ExternalPowerSource {
     fn read(&mut self, reader: &mut SimulatorReader) {
-        self.is_connected = reader.read("EXTERNAL POWER AVAILABLE:1");
+        self.is_connected = reader.read(&self.external_power_available_id);
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
@@ -98,11 +104,13 @@ impl SimulationElement for ExternalPowerSource {
 #[cfg(test)]
 mod external_power_source_tests {
     use super::*;
+    use crate::simulation::test::{ReadByName, WriteByName};
+    use crate::simulation::InitContext;
     use crate::{
         electrical::Electricity,
         simulation::{
             test::{SimulationTestBed, TestBed},
-            Aircraft, SimulationElementVisitor, Write,
+            Aircraft, SimulationElementVisitor,
         },
     };
 
@@ -112,7 +120,7 @@ mod external_power_source_tests {
     impl ExternalPowerTestBed {
         fn new() -> Self {
             Self {
-                test_bed: SimulationTestBed::new(|electricity| TestAircraft::new(electricity)),
+                test_bed: SimulationTestBed::new(TestAircraft::new),
             }
         }
 
@@ -122,20 +130,20 @@ mod external_power_source_tests {
         }
 
         fn with_connected_external_power(mut self) -> Self {
-            self.write("EXTERNAL POWER AVAILABLE:1", true);
+            self.write_by_name("EXTERNAL POWER AVAILABLE:1", true);
             self
         }
 
         fn disconnect_external_power(&mut self) {
-            self.write("EXTERNAL POWER AVAILABLE:1", false);
+            self.write_by_name("EXTERNAL POWER AVAILABLE:1", false);
         }
 
         fn frequency_is_normal(&mut self) -> bool {
-            self.read("ELEC_EXT_PWR_FREQUENCY_NORMAL")
+            self.read_by_name("ELEC_EXT_PWR_FREQUENCY_NORMAL")
         }
 
         fn potential_is_normal(&mut self) -> bool {
-            self.read("ELEC_EXT_PWR_POTENTIAL_NORMAL")
+            self.read_by_name("ELEC_EXT_PWR_POTENTIAL_NORMAL")
         }
 
         fn ext_pwr_is_powered(&self) -> bool {
@@ -159,9 +167,9 @@ mod external_power_source_tests {
         ext_pwr_output_within_normal_parameters_before_processing_power_consumption_report: bool,
     }
     impl TestAircraft {
-        fn new(electricity: &mut Electricity) -> Self {
+        fn new(context: &mut InitContext) -> Self {
             Self {
-                ext_pwr: ExternalPowerSource::new(electricity),
+                ext_pwr: ExternalPowerSource::new(context),
                 ext_pwr_output_within_normal_parameters_before_processing_power_consumption_report: false,
             }
         }
@@ -294,13 +302,13 @@ mod external_power_source_tests {
 
     #[test]
     fn writes_its_state() {
-        let mut test_bed = SimulationTestBed::new(|electricity| TestAircraft::new(electricity));
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
         test_bed.run();
 
-        assert!(test_bed.contains_key("ELEC_EXT_PWR_POTENTIAL"));
-        assert!(test_bed.contains_key("ELEC_EXT_PWR_POTENTIAL_NORMAL"));
-        assert!(test_bed.contains_key("ELEC_EXT_PWR_FREQUENCY"));
-        assert!(test_bed.contains_key("ELEC_EXT_PWR_FREQUENCY_NORMAL"));
+        assert!(test_bed.contains_variable_with_name("ELEC_EXT_PWR_POTENTIAL"));
+        assert!(test_bed.contains_variable_with_name("ELEC_EXT_PWR_POTENTIAL_NORMAL"));
+        assert!(test_bed.contains_variable_with_name("ELEC_EXT_PWR_FREQUENCY"));
+        assert!(test_bed.contains_variable_with_name("ELEC_EXT_PWR_FREQUENCY_NORMAL"));
     }
 }

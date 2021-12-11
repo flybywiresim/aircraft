@@ -79,7 +79,7 @@ class CDUMenuPage {
             setTimeout(() => {
                 mcdu.addNewMessage(NXFictionalMessages.emptyMessage);
                 CDUIdentPage.ShowPage(mcdu);
-            }, Math.floor(Math.random() * 400) + 100);
+            }, Math.floor(Math.random() * 400) + 200);
         };
 
         mcdu.onLeftInput[1] = () => {
@@ -115,6 +115,7 @@ class CDUMenuPage {
         mcdu.onDir = () => {
             const cur = mcdu.page.Current;
             setTimeout(() => {
+                mcdu.eraseTemporaryFlightPlan();
                 if (mcdu.page.Current === cur) {
                     CDUDirectToPage.ShowPage(mcdu);
                 }

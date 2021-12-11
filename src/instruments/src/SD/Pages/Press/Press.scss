@@ -1,0 +1,135 @@
+@import "../../../Common/definitions";
+@import "../../../Common/gauges";
+
+@mixin GenericPulsingFill($color) {
+    @keyframes pulsing {
+        0%, 100% {
+            fill: $color;
+        }
+        50% {
+            fill: scale-color($color, $lightness: -50%);
+        }
+    }
+    animation: pulsing 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+@mixin GenericPulsingStroke($color) {
+@keyframes pulsingS {
+    0%, 100% {
+        stroke: $color;
+    }
+    50% {
+        stroke: scale-color($color, $lightness: -50%);
+    }
+}
+animation: pulsingS 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+
+
+#main-press {
+
+    text {
+        fill: $display-white;
+
+        &.Standard {
+            font-size: 17px;
+        }
+
+        &.Medium {
+            font-size: 16px;
+        }
+
+        &.Large {
+            font-size: 20px;
+        }
+
+        &.Huge {
+            font-size: 24px;
+        }
+
+        &.Cyan {
+            fill: $display-cyan !important;
+        }
+
+        &.Green {
+            fill: $display-green !important;
+        }
+
+        &.Amber {
+            fill: $display-amber;
+        }
+
+        &.Red {
+            fill: $display-red;
+        }
+
+        &.Center {
+            text-anchor: middle !important;
+        }
+
+        &.End {
+            text-anchor: end !important;
+        }
+
+        &.GreenTextPulse {
+            @include GenericPulsingFill($display-green);
+        }
+    }
+
+    .Red {
+        stroke: $display-red !important;
+    }
+
+    .Amber {
+        stroke: $display-amber !important;
+    }
+
+    .AmberLine {
+        stroke: $display-amber !important;
+        stroke-width: 2;
+    }
+
+    .GreenLine {
+        stroke: $display-green !important;
+        stroke-width: 2;
+    }
+
+    .BackgroundLine {
+        stroke: $display-background !important;
+        stroke-width: 2;
+        fill: $display-background;
+    }
+
+    .Show {
+        display:block;
+    }
+
+    .Hide {
+        display: none;
+    }
+
+    .VsIndicator {
+        stroke: $display-green;
+        stroke-width: 2;
+        fill: none;
+    }
+
+    .AirPressureShape {
+        stroke: $display-grey;
+        stroke-width: 2;
+        fill: none;
+    }
+
+    .WhiteCircle {
+        fill: $display-background;
+        stroke: $display-white;
+        stroke-width: 2;
+    }
+
+    .GreenIndicatorPulse {
+        @include GenericPulsingStroke($display-green);
+        stroke-width: 3;
+    }
+
+}
