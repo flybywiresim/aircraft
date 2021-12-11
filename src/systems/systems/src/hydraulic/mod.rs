@@ -27,6 +27,18 @@ pub mod electrical_pump_physics;
 pub mod linear_actuator;
 pub mod update_iterator;
 
+/// Indicates the pressure state of an hydraulic circuit at different locations
+pub trait HydraulicPressure {
+    /// Pressure switch state in pump section
+    fn pump_section_switch_pressurised(&self, pump_index: usize) -> bool;
+
+    /// Pressure switch state in system section downstream leak measurement valve
+    fn system_section_switch_pressurised(&self) -> bool;
+
+    /// Pressure transducer value in system section upstream leak measurement valve
+    fn system_section_pressure(&self) -> Pressure;
+}
+
 pub trait SectionPressure {
     fn pressure(&self) -> Pressure;
     fn is_pressure_switch_pressurised(&self) -> bool;
@@ -687,6 +699,20 @@ impl SimulationElement for HydraulicCircuit {
         self.system_section.accept(visitor);
 
         visitor.visit(self);
+    }
+}
+impl HydraulicPressure for HydraulicCircuit {
+    fn pump_section_switch_pressurised(&self, pump_index: usize) -> bool {
+        self.pump_section(pump_index)
+            .is_pressure_switch_pressurised()
+    }
+
+    fn system_section_switch_pressurised(&self) -> bool {
+        self.system_section().is_pressure_switch_pressurised()
+    }
+
+    fn system_section_pressure(&self) -> Pressure {
+        self.system_section().pressure()
     }
 }
 
