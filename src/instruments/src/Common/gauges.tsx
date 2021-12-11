@@ -1,5 +1,7 @@
 import React, { FC, memo } from 'react';
 
+import './gauges.scss';
+
 /**
  * Calculates the rotation needed to position an item at a certain value mark on a half-circle gauge
  *
@@ -43,11 +45,22 @@ function polarToCartesian(centerX: number, centerY: number, radius: number, angl
     };
 }
 
-function describeArc(x: number, y: number, radius: number, startAngle: number, endAngle: number) {
+/**
+ * Draws an arc between startAngle and endAngle. This can start and finish anywhere on a circle
+ * Note all arcs are drawn in a clockwise fashion
+ *
+ * @param x             x coordinate of arc centre
+ * @param y             y coordinate of arc centre
+ * @param radius        radius of arc
+ * @param startAngle    value between 0 and 360 degrees where arc starts
+ * @param endAngle      value between 0 and 360 degrees where arc finishes
+ */
+export function describeArc(x: number, y: number, radius: number, startAngle: number, endAngle: number) {
     const start = polarToCartesian(x, y, radius, endAngle);
     const end = polarToCartesian(x, y, radius, startAngle);
 
-    const largeArcFlag = endAngle - startAngle <= 180 ? '0' : '1';
+    const arcSize = startAngle > endAngle ? 360 - endAngle + startAngle : endAngle - startAngle;
+    const largeArcFlag = arcSize <= 180 ? '0' : '1';
 
     return [
         'M', start.x, start.y,
@@ -171,3 +184,126 @@ export const VerticalSegment: FC<VerticalSegmentProps> = ({ x, y, height, rangeS
         />
     );
 };
+
+export const splitDecimals = (value: number) => (value.toFixed(1).split('.', 2));
+
+type valueRadianAngleConverterType = {
+    value: number,
+    min: number,
+    max: number,
+    endAngle: number,
+    startAngle: number,
+}
+
+export const valueRadianAngleConverter = ({ value, min, max, endAngle, startAngle } : valueRadianAngleConverterType) => {
+    const valuePercentage = (value - min) / (max - min);
+    let angleInRadians = startAngle > endAngle
+        ? startAngle + (valuePercentage * (360 - startAngle + endAngle)) - 90
+        : startAngle + (valuePercentage * (endAngle - startAngle)) - 90;
+    angleInRadians *= (Math.PI / 180.0);
+    return ({
+        x: Math.cos(angleInRadians),
+        y: Math.sin(angleInRadians),
+    });
+};
+
+type GaugeMarkerComponentType = {
+    value: number,
+    x: number,
+    y: number,
+    min: number,
+    max: number,
+    radius: number,
+    startAngle: number,
+    endAngle: number,
+    className: string,
+    showValue?: boolean,
+    indicator?: boolean,
+    outer?: boolean,
+    multiplierOuter?: number,
+    multiplierInner?: number,
+    textNudgeX?: number,
+    textNudgeY?: number
+};
+
+export const GaugeMarkerComponent: FC<GaugeMarkerComponentType> = memo(({
+    value, x, y, min, max, radius, startAngle, endAngle, className, showValue,
+    indicator, outer, multiplierOuter, multiplierInner, textNudgeX, textNudgeY,
+}) => {
+    const dir = valueRadianAngleConverter({ value, min, max, endAngle, startAngle });
+    if (typeof multiplierOuter === 'undefined') multiplierOuter = 1.15;
+    if (typeof multiplierInner === 'undefined') multiplierInner = 0.9;
+    if (typeof textNudgeX === 'undefined') textNudgeX = 0;
+    if (typeof textNudgeY === 'undefined') textNudgeY = 0;
+
+    let start = {
+        x: x + (dir.x * radius * multiplierInner),
+        y: y + (dir.y * radius * multiplierInner),
+    };
+    let end = {
+        x: x + (dir.x * radius),
+        y: y + (dir.y * radius),
+    };
+
+    if (outer) {
+        start = {
+            x: x + (dir.x * radius),
+            y: y + (dir.y * radius),
+        };
+        end = {
+            x: x + (dir.x * radius * multiplierOuter),
+            y: y + (dir.y * radius * multiplierOuter),
+        };
+    }
+
+    if (indicator) {
+        start = { x, y };
+
+        end = {
+            x: x + (dir.x * radius * multiplierOuter),
+            y: y + (dir.y * radius * multiplierOuter),
+        };
+    }
+
+    // Text
+    const pos = {
+        x: x + (dir.x * radius * multiplierInner) + textNudgeX,
+        y: y + (dir.y * radius * multiplierInner) + textNudgeY,
+    };
+
+    const textValue = !showValue ? '' : Math.abs(value).toString();
+
+    return (
+        <>
+            <line x1={start.x} y1={start.y} x2={end.x} y2={end.y} className={className} />
+            <text x={pos.x} y={pos.y} className={className} alignmentBaseline="central" textAnchor="middle">{textValue}</text>
+        </>
+    );
+});
+
+type GaugeComponentProps = {
+    x: number,
+    y: number,
+    radius: number,
+    startAngle: number,
+    endAngle: number,
+    className: string,
+    visible?: boolean,
+}
+
+export const GaugeComponent: FC<GaugeComponentProps> = memo(({ x, y, radius, startAngle, endAngle, className, children, visible }) => {
+    const d = describeArc(x, y, radius, startAngle, endAngle);
+
+    if (typeof visible === 'undefined') visible = false;
+
+    return (
+        <>
+            <g className="GaugeComponent">
+                <g className={visible ? 'Show' : 'Hide'}>
+                    <path d={d} className={className} />
+                    <>{children}</>
+                </g>
+            </g>
+        </>
+    );
+});
