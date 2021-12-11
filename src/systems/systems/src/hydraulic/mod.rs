@@ -1557,13 +1557,13 @@ impl EngineDrivenPump {
         }
     }
 
-    pub fn update<T: PumpController>(
+    pub fn update(
         &mut self,
         context: &UpdateContext,
         section: &impl SectionPressure,
         reservoir: &Reservoir,
         pump_speed: AngularVelocity,
-        controller: &T,
+        controller: &impl PumpController,
     ) {
         self.speed = pump_speed;
         self.pump
@@ -1765,12 +1765,12 @@ impl RamAirTurbine {
         }
     }
 
-    pub fn update<T: RamAirTurbineController>(
+    pub fn update(
         &mut self,
         context: &UpdateContext,
         section: &impl SectionPressure,
         reservoir: &Reservoir,
-        controller: &T,
+        controller: &impl RamAirTurbineController,
     ) {
         // Once commanded, stays commanded forever
         self.deployment_commanded = controller.should_deploy() || self.deployment_commanded;

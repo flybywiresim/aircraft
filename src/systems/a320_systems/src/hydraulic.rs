@@ -704,31 +704,23 @@ impl A320Hydraulic {
     // Actual logic of HYD PTU memo computed here until done within FWS
     fn should_show_hyd_ptu_message_on_ecam(&self) -> bool {
         let ptu_valve_ctrol_off = !self.power_transfer_unit_controller.should_enable();
-        let green_eng_pump_lo_pr = !self
-            .green_circuit
-            .pump_section(A320HydraulicCircuitFactory::YELLOW_GREEN_BLUE_PUMPS_INDEXES)
-            .is_pressure_switch_pressurised();
+        let green_eng_pump_lo_pr = !self.green_circuit.pump_section_switch_pressurised(
+            A320HydraulicCircuitFactory::YELLOW_GREEN_BLUE_PUMPS_INDEXES,
+        );
 
-        let yellow_sys_lo_pr = !self
-            .yellow_circuit
-            .pump_section(A320HydraulicCircuitFactory::YELLOW_GREEN_BLUE_PUMPS_INDEXES)
-            .is_pressure_switch_pressurised();
+        let yellow_sys_lo_pr = !self.yellow_circuit.system_section_switch_pressurised();
 
         let yellow_sys_press_above_1450 =
-            self.yellow_circuit.system_pressure() > Pressure::new::<psi>(1450.);
+            self.yellow_circuit.system_section_pressure() > Pressure::new::<psi>(1450.);
 
         let green_sys_press_above_1450 =
-            self.green_circuit.system_pressure() > Pressure::new::<psi>(1450.);
+            self.green_circuit.system_section_pressure() > Pressure::new::<psi>(1450.);
 
-        let green_sys_lo_pr = !self
-            .green_circuit
-            .pump_section(A320HydraulicCircuitFactory::YELLOW_GREEN_BLUE_PUMPS_INDEXES)
-            .is_pressure_switch_pressurised();
+        let green_sys_lo_pr = !self.green_circuit.system_section_switch_pressurised();
 
-        let yellow_eng_pump_lo_pr = !self
-            .yellow_circuit
-            .pump_section(A320HydraulicCircuitFactory::YELLOW_GREEN_BLUE_PUMPS_INDEXES)
-            .is_pressure_switch_pressurised();
+        let yellow_eng_pump_lo_pr = !self.yellow_circuit.pump_section_switch_pressurised(
+            A320HydraulicCircuitFactory::YELLOW_GREEN_BLUE_PUMPS_INDEXES,
+        );
 
         let yellow_elec_pump_on = self.yellow_electric_pump_controller.should_pressurise();
 
