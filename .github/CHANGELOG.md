@@ -66,6 +66,7 @@
 1. [AP] Added support for event AUTOPILOT_DISENGAGE_SET to disengage AP - @aguther (Andreas Guther)
 1. [AP] Reduced speed margin of speed protection to 5 kn - @aguther (Andreas Guther)
 1. [MODEL] Removed glass due to issues with brightness in clouds since SU6 - @aguther (Andreas Guther)
+1. [ECAM] Converted ECAM SD cabin pressure page to React - @RichardPilbery (tricky_dicky#3571)
 1. [FBW] Reduced rotation law maximum pitch rate from 12°/s to 8°/s - @aguther (Andreas Guther)
 1. [AP] Added support for events AP_MACH_INC/DEC and AP_ALT_INC/DEC - @aguther (Andreas Guther)
 1. [SOUND] Added ALT increment selector and fixed ISIS sounds - @ImenesFBW (Imenes)
@@ -88,6 +89,7 @@
 1. [ATHR] Fixed ATHR being armed in flight when TOGA applied without GA condition - @aguther (Andreas Guther)
 1. [EFB] Fixed landing performance calculator clear button and wind magnitude, made small ui improvements - @ghitier (Guillaume H.)
 1. [ECAM] Fixed gross weight being shown without engines running - @BlueberryKing (BlueberryKing)
+1. [FLIGHT MODEL] Fixes co-pilot not being shown in external view -  @donstim (donbikes#4084)
 
 ## 0.7.0
 
