@@ -677,7 +677,7 @@ export default class LandingCalculator {
         }
 
         const speedCorrection = (speedDifference / 5) * landingData.speedCorrection;
-        const windCorrection = (tailWind/5) * landingData.windCorrection;
+        const windCorrection = (tailWind / 5) * landingData.windCorrection;
         let reverserCorrection;
         if (reverseThrust) {
             reverserCorrection = landingData.reverserCorrection * 2;
