@@ -116,7 +116,7 @@ export const PressPage: FC = () => {
                     x={cax + 85}
                     y={y + 25}
                 >
-                    {Math.round(cabinAlt / 50) * 50 > 0 ? Math.round(cabinAlt / 50) * 50 : 0}
+                    {Math.round(cabinAlt / 50) * 50}
                 </text>
                 <GaugeComponent
                     x={cax}
@@ -178,7 +178,7 @@ export const PressPage: FC = () => {
                         textNudgeX={5}
                     />
                     <GaugeMarkerComponent
-                        value={Math.round(cabinAlt / 50) * 50 > 0 ? Math.round(cabinAlt / 50) * 50 / 1000 : 0}
+                        value={Math.round(cabinAlt / 25) * 25 / 1000 > -0.625 ? Math.round(cabinAlt / 25) * 25 / 1000 : -0.625}
                         x={cax}
                         y={y}
                         min={-0.625}
