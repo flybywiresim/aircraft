@@ -90,6 +90,8 @@ struct ap_raw_data
   real_T flaps_handle_index;
   boolean_T is_engine_operative_1;
   boolean_T is_engine_operative_2;
+  real_T altimeter_setting_left_mbar;
+  real_T altimeter_setting_right_mbar;
 };
 
 #endif
@@ -266,6 +268,7 @@ struct ap_data
   real_T flaps_handle_index;
   boolean_T is_engine_operative_1;
   boolean_T is_engine_operative_2;
+  boolean_T altimeter_setting_changed;
 };
 
 #endif

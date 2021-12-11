@@ -52,6 +52,8 @@ class AutopilotLawsModelClass {
   };
 
   struct D_Work_AutopilotLaws_T {
+    real_T DelayInput1_DSTATE;
+    real_T DelayInput1_DSTATE_g;
     real_T Delay_DSTATE;
     real_T Delay_DSTATE_e;
     real_T Delay_DSTATE_h;
@@ -292,6 +294,8 @@ class AutopilotLawsModelClass {
     real_T RateLimiterVariableTs_up_n;
     real_T RateLimiterVariableTs_up_b;
     real_T RateLimiterVariableTs_up_i;
+    real_T DetectChange_vinit;
+    real_T DetectChange1_vinit;
     boolean_T CompareToConstant_const_hx;
     boolean_T CompareToConstant_const_e;
     real_T Gain1_Gain;

@@ -31,9 +31,11 @@ class AutopilotStateMachineModelClass {
   struct D_Work_AutopilotStateMachine_T {
     ap_vertical Delay1_DSTATE;
     ap_lateral Delay_DSTATE;
+    real_T DelayInput1_DSTATE;
+    real_T DelayInput1_DSTATE_i;
     real_T Delay_DSTATE_d[100];
     real_T Delay_DSTATE_c[100];
-    real_T DelayInput1_DSTATE;
+    real_T DelayInput1_DSTATE_b;
     real_T Delay_DSTATE_l;
     real_T Delay_DSTATE_d2[100];
     real_T Delay_DSTATE_e;
@@ -47,6 +49,7 @@ class AutopilotStateMachineModelClass {
     real_T local_H_constraint_ft;
     real_T local_H_GA_init_ft;
     real_T local_TCAS_target_fpm;
+    real_T prevNumberofAutopilotsEngaged;
     real_T eventTimeTC;
     real_T eventTimeMR;
     real_T lastVsTarget;
@@ -68,12 +71,12 @@ class AutopilotStateMachineModelClass {
     real_T newFcuAltitudeSelected_k;
     boolean_T DelayInput1_DSTATE_a;
     boolean_T DelayInput1_DSTATE_p;
-    boolean_T DelayInput1_DSTATE_b;
+    boolean_T DelayInput1_DSTATE_bo;
     boolean_T DelayInput1_DSTATE_d;
     boolean_T DelayInput1_DSTATE_e;
     boolean_T DelayInput1_DSTATE_g;
     boolean_T DelayInput1_DSTATE_f;
-    boolean_T DelayInput1_DSTATE_i;
+    boolean_T DelayInput1_DSTATE_ib;
     boolean_T DelayInput1_DSTATE_bd;
     boolean_T DelayInput1_DSTATE_ah;
     boolean_T DelayInput1_DSTATE_fn;
@@ -97,6 +100,7 @@ class AutopilotStateMachineModelClass {
     boolean_T wereAllEnginesOperative_not_empty;
     boolean_T wereAllEnginesOperative_e;
     boolean_T wereAllEnginesOperative_not_empty_h;
+    boolean_T prevNumberofAutopilotsEngaged_not_empty;
     boolean_T verticalSpeedCancelMode;
     boolean_T eventTimeTC_not_empty;
     boolean_T eventTimeMR_not_empty;
@@ -188,6 +192,8 @@ class AutopilotStateMachineModelClass {
     real_T CompareToConstant_const_i;
     real_T CompareToConstant_const_h;
     real_T CompareToConstant_const_c;
+    real_T DetectChange_vinit;
+    real_T DetectChange1_vinit;
     real_T DetectDecrease_vinit;
     boolean_T DetectIncrease12_vinit;
     boolean_T DetectIncrease_vinit;

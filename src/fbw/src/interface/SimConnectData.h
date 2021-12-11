@@ -113,6 +113,8 @@ struct SimData {
   double fuelTankQuantityCenter;
   double fuelTankQuantityTotal;
   double fuelWeightPerGallon;
+  double kohlsmanSetting_0;
+  double kohlsmanSetting_1;
   unsigned long long kohlsmanSettingStd_3;
   double cameraState;
   double altitude_m;
