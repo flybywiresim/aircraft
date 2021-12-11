@@ -677,7 +677,7 @@ export default class LandingCalculator {
         }
 
         const speedCorrection = (speedDifference / 5) * landingData.speedCorrection;
-        const windCorrection = tailWind * landingData.windCorrection;
+        const windCorrection = (tailWind/5) * landingData.windCorrection;
         let reverserCorrection;
         if (reverseThrust) {
             reverserCorrection = landingData.reverserCorrection * 2;
@@ -708,7 +708,7 @@ export default class LandingCalculator {
      * @returns Pressure altitude in feet
      */
     private getPressureAltitude(pressure: number): number {
-        // See https://en.wikipedia.org/wiki/Pressure_altitude
-        return 145366.45 * (1 - ((pressure / 1013.25) ** 0.190284));
+        // Equation from Boeing Jet Transport Performance Methods document
+        return 145442.15 * (1 - ((pressure / 1013.25) ** 0.190263));
     }
 }
