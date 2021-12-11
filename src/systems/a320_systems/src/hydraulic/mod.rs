@@ -3479,7 +3479,7 @@ impl A320BrakingForce {
 
         self.correct_with_flaps_state(context);
 
-        self.apply_chocks_braking();
+        self.update_chocks_braking();
     }
 
     fn correct_with_flaps_state(&mut self, context: &UpdateContext) {
@@ -3504,7 +3504,7 @@ impl A320BrakingForce {
             - (self.right_braking_force * final_flaps_correction_with_speed.get::<ratio>());
     }
 
-    fn apply_chocks_braking(&mut self) {
+    fn update_chocks_braking(&mut self) {
         if self.is_chocks_enabled {
             self.left_braking_force = 1.;
             self.right_braking_force = 1.;
