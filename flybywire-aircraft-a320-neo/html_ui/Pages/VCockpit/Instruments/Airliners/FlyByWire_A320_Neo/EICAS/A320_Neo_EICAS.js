@@ -47,17 +47,6 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         SimVar.SetSimVarValue("L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX", "number", this.currentPage);
     }
 
-    createUpperScreenPage() {
-        this.upperTopScreen = new Airliners.EICASScreen("TopScreen", "TopScreen", "a320-neo-upper-ecam");
-        this.annunciations = new Cabin_Annunciations();
-        this.annunciations.offStart = true;
-        this.upperTopScreen.addIndependentElement(this.annunciations);
-        this.warnings = new Cabin_Warnings();
-        this.upperTopScreen.addIndependentElement(this.warnings);
-        this.addIndependentElementContainer(this.upperTopScreen);
-        this.addIndependentElementContainer(new Airliners.EICASScreen("BottomScreenCommon", "BottomScreen", "eicas-common-display"));
-    }
-
     createLowerScreenPages() {
         this.createLowerScreenPage("ENG", "BottomScreen", "a32nx-eng-page-element");
         this.createLowerScreenPage("BLEED", "BottomScreen", "a320-neo-lower-ecam-bleed");
@@ -99,9 +88,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
 
         this.doorVideoWrapper = this.querySelector("#door-video-wrapper");
 
-        this.upperEngTestDiv = this.querySelector("#Eicas1EngTest");
         this.lowerEngTestDiv = this.querySelector("#Eicas2EngTest");
-        this.upperEngMaintDiv = this.querySelector("#Eicas1MaintMode");
         this.lowerEngMaintDiv = this.querySelector("#Eicas2MaintMode");
 
         this.doorVideoPressed = false;
@@ -130,11 +117,10 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         this.displayUnit = new DisplayUnit(
             this.querySelector("#Electricity"),
             () => {
-                return SimVar.GetSimVarValue(`L:A32NX_ELEC_${this.isTopScreen ? "AC_ESS" : "AC_2"}_BUS_IS_POWERED`, "Bool");
+                return SimVar.GetSimVarValue("L:A32NX_ELEC_AC_2_BUS_IS_POWERED", "Bool");
             },
             () => parseInt(NXDataStore.get("CONFIG_SELF_TEST_TIME", "15")),
-            this.isTopScreen ? 92 : 93,
-            this.querySelector(`#${this.isTopScreen ? "Top" : "Bottom"}SelfTest`)
+            this.querySelector("#BottomSelfTest")
         );
     }
 
@@ -156,7 +142,6 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         this.updateAnnunciations();
 
         // Engineering self-tests
-        updateDisplayDMC("EICAS1", this.upperEngTestDiv, this.upperEngMaintDiv);
         updateDisplayDMC("EICAS2", this.lowerEngTestDiv, this.lowerEngMaintDiv);
 
         //Determine displayed page when no button is selected
