@@ -703,7 +703,7 @@ export default class LandingCalculator {
     }
 
     /**
-     * Converts a given pressure to equivilant pressure altitude
+     * Converts a given pressure to equivalent pressure altitude
      * @param pressure Pressure in mb
      * @returns Pressure altitude in feet
      */
