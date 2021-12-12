@@ -3,7 +3,7 @@ import { useArinc429Var } from '@instruments/common/arinc429';
 import { render } from '@instruments/common/index';
 import { setIsEcamPage } from '@instruments/common/defaults';
 import { useSimVar } from '@instruments/common/simVars';
-import { Arc, GaugeComponent, GaugeMarkerComponent, Needle } from '@instruments/common/gauges';
+import { GaugeComponent, GaugeMarkerComponent } from '@instruments/common/gauges';
 import { PageTitle } from '../../Common/PageTitle';
 
 import './Apu.scss';
