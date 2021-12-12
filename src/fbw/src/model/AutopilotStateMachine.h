@@ -82,6 +82,7 @@ class AutopilotStateMachineModelClass {
     boolean_T DelayInput1_DSTATE_fn;
     boolean_T DelayInput1_DSTATE_h;
     boolean_T DelayInput1_DSTATE_o;
+    boolean_T Delay_DSTATE_j[100];
     boolean_T DelayInput1_DSTATE_c;
     boolean_T DelayInput1_DSTATE_og;
     uint8_T is_active_c6_AutopilotStateMachine;
@@ -237,6 +238,7 @@ class AutopilotStateMachineModelClass {
     real_T Gain2_Gain_d;
     real_T Constant_Value_m;
     real_T Delay_InitialCondition_i4;
+    real_T Constant_Value_g;
     real_T Raising_Value;
     real_T Falling_Value;
     real_T Raising_Value_f;
@@ -251,6 +253,7 @@ class AutopilotStateMachineModelClass {
     real_T Falling_Value_c;
     real_T Raising_Value_d;
     real_T Falling_Value_as;
+    boolean_T Delay_InitialCondition_d;
   };
 
   void initialize();
