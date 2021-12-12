@@ -3,7 +3,7 @@
 const reactComponentsClasses = require('../../../../node_modules/@flybywiresim/react-components/build/usedCSSClasses.json');
 
 module.exports = {
-    mode: 'jit',
+    // mode: 'jit',
     purge: {
         content: [
             './**/*.{jsx,tsx}',

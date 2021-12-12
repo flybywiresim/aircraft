@@ -3,7 +3,7 @@ import { useArinc429Var } from '@instruments/common/arinc429';
 import { render } from '@instruments/common/index';
 import { setIsEcamPage } from '@instruments/common/defaults';
 import { useSimVar } from '@instruments/common/simVars';
-import { Arc, Needle } from '@instruments/common/gauges';
+import { Arc, GaugeComponent, GaugeMarkerComponent, Needle } from '@instruments/common/gauges';
 import { PageTitle } from '../../Common/PageTitle';
 
 import './Apu.scss';
@@ -38,9 +38,9 @@ export const ApuPage = () => {
                 <line className="Line Grey" x1={455} y1={0} x2={455} y2={26} />
             </SvgGroup>
 
-            <NGauge x={145} y={295} />
+            <NGauge x={155} y={295} />
 
-            <EgtGauge x={145} y={410} />
+            <EgtGauge x={155} y={410} />
 
             <ApuMemos x={370} y={335} />
         </EcamPage>
@@ -112,7 +112,6 @@ const ApuGen = ({ x, y } : ComponentPositionProps) => {
                     && (
                         <>
                             <SvgGroup x={60} y={55}>
-                                {/* FIXME - in amber when the generator is within overload; double check overload range, for now its > 100 */}
                                 {/* FIXME: replaced by amber crosses when information is not available */}
                                 <text
                                     x={0}
@@ -229,67 +228,84 @@ const NGauge = ({ x, y } : ComponentPositionProps) => {
     return (
         <>
             <SvgGroup x={x} y={y}>
-                {/* Mark Annotations */}
-                <text x={-29} y={63} className="FontSmall White">0</text>
-                <text x={22} y={24} className="FontSmall White">10</text>
-
-                <SvgGroup x={-10} y={0} rotation={-29}>
-                    {/* 0 */}
-                    <Needle
-                        x={-1}
-                        y={50}
-                        length={50}
-                        scaleMax={120}
-                        value={0}
-                        className="GaugeMarking"
-                        dashOffset={-44}
-                    />
-                    {/* 50 */}
-                    <Needle
-                        x={-1}
-                        y={50}
-                        length={50}
-                        scaleMax={120}
-                        value={50}
-                        className="GaugeMarking"
-                        dashOffset={-44}
-                    />
-                    {/* 100 */}
-                    <Needle
-                        x={-1}
-                        y={50}
-                        length={50}
-                        scaleMax={120}
-                        value={100}
-                        className="GaugeMarking"
-                        dashOffset={-44}
-                    />
-                    {/* 102 AMBER */}
-                    <Needle
-                        x={-1}
-                        y={50}
-                        length={60}
-                        scaleMax={120}
-                        value={102}
-                        className="NoFill AmberHeavy"
-                        dashOffset={-50}
-                    />
-
-                    <Arc x={0} y={50} radius={50} toValue={120} scaleMax={120} className="Line Red NoFill" />
-                    <Arc x={0} y={50} radius={50} toValue={107} scaleMax={120} className="Line White NoFill" />
-
-                    {apuN.isNormalOperation()
+                <SvgGroup x={0} y={0}>
+                    <GaugeComponent x={0} y={50} radius={50} startAngle={240} endAngle={60} visible className="Line White NoFill">
+                        <GaugeComponent x={0} y={50} radius={50} startAngle={40} endAngle={60} visible className="Line Red NoFill">
+                            {/* 0 */}
+                            <GaugeMarkerComponent
+                                x={-1}
+                                y={50}
+                                min={0}
+                                max={120}
+                                value={0}
+                                radius={50}
+                                startAngle={240}
+                                endAngle={60}
+                                className="GaugeText"
+                                textNudgeX={3}
+                                textNudgeY={-8}
+                                showValue
+                                bold
+                            />
+                            {/* 50 */}
+                            <GaugeMarkerComponent
+                                x={-1}
+                                y={50}
+                                min={0}
+                                max={120}
+                                value={50}
+                                radius={50}
+                                startAngle={240}
+                                endAngle={60}
+                                className="GaugeText"
+                                bold
+                            />
+                            {/* 100 */}
+                            <GaugeMarkerComponent
+                                x={-1}
+                                y={50}
+                                min={0}
+                                max={12}
+                                value={10}
+                                radius={50}
+                                startAngle={240}
+                                endAngle={60}
+                                className="GaugeText"
+                                showValue
+                                textNudgeY={10}
+                                bold
+                            />
+                            {/* 102 AMBER */}
+                            <GaugeMarkerComponent
+                                x={-1}
+                                y={50}
+                                min={0}
+                                max={120}
+                                value={102}
+                                radius={50}
+                                startAngle={240}
+                                multiplierOuter={1.2}
+                                endAngle={60}
+                                className="NoFill AmberHeavy"
+                                outer
+                            />
+                            {apuN.isNormalOperation()
                         && (
-                            <Needle
+                            <GaugeMarkerComponent
                                 x={0}
                                 y={50}
-                                length={55}
-                                scaleMax={120}
-                                value={apuN.value.toFixed()}
+                                min={0}
+                                radius={50}
+                                max={120}
+                                startAngle={240}
+                                endAngle={60}
+                                value={Number.parseFloat(apuN.value.toFixed())}
                                 className={`Line ${apuNIndicationColor}`}
-                                strokeWidth={3}
+                                indicator
                             />
                         )}
+                        </GaugeComponent>
+                    </GaugeComponent>
                 </SvgGroup>
 
                 <SvgGroup x={100} y={13}>
@@ -339,79 +355,108 @@ const EgtGauge = ({ x, y } : ComponentPositionProps) => {
     return (
         <>
             <SvgGroup x={x} y={y}>
-                {/* Mark Annotations */}
-                <text x={-30} y={59} className="FontSmall White">3</text>
-                <text x={-4} y={22} className="FontSmall White">7</text>
-                <text x={24} y={27} className="FontSmall White">10</text>
-
-                <SvgGroup x={0} y={0} rotation={-18}>
+                <GaugeComponent x={0} y={50} radius={50} startAngle={240} endAngle={90} visible className="Line White NoFill">
                     {/* 300 */}
-                    <Needle
+                    <GaugeMarkerComponent
                         x={-1}
                         y={50}
-                        length={50}
-                        scaleMin={300}
-                        scaleMax={1100}
-                        value={300}
-                        className="GaugeMarking"
-                        dashOffset={-44}
+                        min={3}
+                        max={11}
+                        value={3}
+                        radius={50}
+                        startAngle={240}
+                        endAngle={90}
+                        className="GaugeText"
+                        textNudgeX={3}
+                        textNudgeY={-8}
+                        showValue
+                        bold
                     />
                     {/* 700 */}
-                    <Needle
+                    <GaugeMarkerComponent
                         x={-1}
                         y={50}
-                        length={50}
-                        scaleMin={300}
-                        scaleMax={1100}
-                        value={700}
-                        className="GaugeMarking"
-                        dashOffset={-44}
+                        min={3}
+                        max={11}
+                        value={7}
+                        radius={50}
+                        startAngle={240}
+                        endAngle={90}
+                        className="GaugeText"
+                        textNudgeX={1}
+                        textNudgeY={10}
+                        showValue
+                        bold
                     />
                     {/* 1000 */}
-                    <Needle
+                    <GaugeMarkerComponent
                         x={-1}
                         y={50}
-                        length={50}
-                        scaleMin={300}
-                        scaleMax={1100}
-                        value={1000}
-                        className="GaugeMarking"
-                        dashOffset={-44}
+                        min={3}
+                        max={11}
+                        value={10}
+                        radius={50}
+                        startAngle={240}
+                        endAngle={90}
+                        className="GaugeText"
+                        textNudgeX={-12}
+                        textNudgeY={3}
+                        showValue
+                        bold
                     />
                     {/* AMBER BAR */}
                     {apuEgt.isNormalOperation() && apuEgtWarning.isNormalOperation()
                         && (
-                            <Needle
+                            <GaugeMarkerComponent
                                 x={-1}
                                 y={50}
-                                length={60}
-                                scaleMin={300}
-                                scaleMax={1100}
+                                min={300}
+                                max={1100}
                                 value={apuEgtWarning.value - 33}
+                                radius={50}
+                                startAngle={240}
+                                multiplierOuter={1.2}
+                                endAngle={90}
                                 className="NoFill AmberHeavy"
-                                dashOffset={-50}
+                                outer
                             />
                         )}
 
-                    {redLineShown
-                    && <Arc x={0} y={50} radius={50} toValue={1100} scaleMin={300} scaleMax={1100} className="Line Red NoFill" />}
-
-                    <Arc x={0} y={50} radius={50} toValue={redLineShown ? apuEgtWarning.value : 1100} scaleMin={300} scaleMax={1100} className="Line White NoFill" />
+                    <GaugeComponent
+                        x={0}
+                        y={50}
+                        radius={50}
+                        startAngle={240}
+                        endAngle={90}
+                        visible={redLineShown}
+                        className="Line Red NoFill"
+                    />
+                    <GaugeComponent
+                        x={0}
+                        y={50}
+                        radius={50}
+                        startAngle={240}
+                        endAngle={240 + (((Math.max(300, apuEgtWarning.value - 300)) / 800) * 210)}
+                        visible={redLineShown}
+                        className="Line White NoFill"
+                    />
 
                     {apuEgt.isNormalOperation()
                         && (
-                            <Needle
+                            <GaugeMarkerComponent
                                 x={0}
                                 y={50}
-                                length={55}
-                                scaleMin={300}
-                                scaleMax={1100}
+                                min={300}
+                                max={1100}
+                                radius={50}
+                                startAngle={240}
+                                endAngle={90}
                                 value={apuEgt.value < 300 ? 300 : displayedEgtValue}
                                 className={`Line ${apuEgtIndicationColor === 'Pulse' ? 'LinePulse' : apuEgtIndicationColor}`}
-                                strokeWidth={3}
+                                indicator
                             />
                         )}
-                </SvgGroup>
+                </GaugeComponent>
 
                 <SvgGroup x={100} y={13}>
                     <text x={0} y={0} className="White Center FontNormal">EGT</text>
@@ -440,6 +485,7 @@ const ApuMemos = ({ x, y } : ComponentPositionProps) => {
     const [apuMasterPbOn] = useSimVar('L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON', 'Bool', 1000);
 
     const intakeApuMismatch = apuFlapOpenPercentage !== 0 && !apuMasterPbOn;
+
     useEffect(() => {
         if (intakeApuMismatch) {
             const timeout = setTimeout(() => {
