@@ -867,7 +867,7 @@ impl A320HydraulicCircuitController {
         };
 
         self.should_open_leak_measurement_valve = measurement_valve_open_demand_raw
-            && !self.plane_state_disables_leak_valve_closing(context);
+            || self.plane_state_disables_leak_valve_closing(context);
     }
 
     fn plane_state_disables_leak_valve_closing(&self, context: &UpdateContext) -> bool {
@@ -2601,6 +2601,24 @@ mod tests {
                 self.hydraulics.is_yellow_pressure_switch_pressurised()
             }
 
+            fn is_yellow_leak_meas_valve_commanded_open(&self) -> bool {
+                self.hydraulics
+                    .yellow_circuit_controller
+                    .should_open_leak_measurement_valve()
+            }
+
+            fn is_blue_leak_meas_valve_commanded_open(&self) -> bool {
+                self.hydraulics
+                    .blue_circuit_controller
+                    .should_open_leak_measurement_valve()
+            }
+
+            fn is_green_leak_meas_valve_commanded_open(&self) -> bool {
+                self.hydraulics
+                    .green_circuit_controller
+                    .should_open_leak_measurement_valve()
+            }
+
             fn is_cargo_fwd_door_locked_up(&self) -> bool {
                 self.hydraulics.forward_cargo_door_controller.control_state
                     == DoorControlState::UpLocked
@@ -2756,15 +2774,15 @@ mod tests {
                 self.query(|a| a.is_ptu_enabled())
             }
 
-            fn is_blue_pressurised(&self) -> bool {
+            fn is_blue_pressure_switch_pressurised(&self) -> bool {
                 self.query(|a| a.is_blue_pressure_switch_pressurised())
             }
 
-            fn is_green_pressurised(&self) -> bool {
+            fn is_green_pressure_switch_pressurised(&self) -> bool {
                 self.query(|a| a.is_green_pressure_switch_pressurised())
             }
 
-            fn is_yellow_pressurised(&self) -> bool {
+            fn is_yellow_pressure_switch_pressurised(&self) -> bool {
                 self.query(|a| a.is_yellow_pressure_switch_pressurised())
             }
 
@@ -2904,6 +2922,33 @@ mod tests {
                         A320HydraulicCircuitFactory::YELLOW_GREEN_BLUE_PUMPS_INDEXES,
                     )
                 })
+            }
+
+            fn is_yellow_leak_meas_valve_commanded_open(&mut self) -> bool {
+                self.query(|a| a.is_yellow_leak_meas_valve_commanded_open())
+            }
+
+            fn is_green_leak_meas_valve_commanded_open(&mut self) -> bool {
+                self.query(|a| a.is_green_leak_meas_valve_commanded_open())
+            }
+
+            fn is_blue_leak_meas_valve_commanded_open(&mut self) -> bool {
+                self.query(|a| a.is_blue_leak_meas_valve_commanded_open())
+            }
+
+            fn green_leak_meas_valve_closed(mut self) -> Self {
+                self.write_by_name("OVHD_HYD_LEAK_MEASUREMENT_G_PB_IS_AUTO", false);
+                self
+            }
+
+            fn blue_leak_meas_valve_closed(mut self) -> Self {
+                self.write_by_name("OVHD_HYD_LEAK_MEASUREMENT_B_PB_IS_AUTO", false);
+                self
+            }
+
+            fn yellow_leak_meas_valve_closed(mut self) -> Self {
+                self.write_by_name("OVHD_HYD_LEAK_MEASUREMENT_Y_PB_IS_AUTO", false);
+                self
             }
 
             fn engines_off(self) -> Self {
@@ -3281,11 +3326,11 @@ mod tests {
 
             assert!(test_bed.is_ptu_enabled());
 
-            assert!(!test_bed.is_green_pressurised());
+            assert!(!test_bed.is_green_pressure_switch_pressurised());
             assert!(test_bed.green_pressure() < Pressure::new::<psi>(50.));
-            assert!(!test_bed.is_blue_pressurised());
+            assert!(!test_bed.is_blue_pressure_switch_pressurised());
             assert!(test_bed.blue_pressure() < Pressure::new::<psi>(50.));
-            assert!(!test_bed.is_yellow_pressurised());
+            assert!(!test_bed.is_yellow_pressure_switch_pressurised());
             assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(50.));
         }
 
@@ -3299,11 +3344,11 @@ mod tests {
 
             assert!(test_bed.is_ptu_enabled());
 
-            assert!(!test_bed.is_green_pressurised());
+            assert!(!test_bed.is_green_pressure_switch_pressurised());
             assert!(test_bed.green_pressure() < Pressure::new::<psi>(50.));
-            assert!(!test_bed.is_blue_pressurised());
+            assert!(!test_bed.is_blue_pressure_switch_pressurised());
             assert!(test_bed.blue_pressure() < Pressure::new::<psi>(50.));
-            assert!(!test_bed.is_yellow_pressurised());
+            assert!(!test_bed.is_yellow_pressure_switch_pressurised());
             assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(50.));
         }
 
@@ -3479,15 +3524,15 @@ mod tests {
             assert!(test_bed.is_ptu_enabled());
 
             // Now we should have pressure in yellow and green
-            assert!(test_bed.is_green_pressurised());
+            assert!(test_bed.is_green_pressure_switch_pressurised());
             assert!(test_bed.green_pressure() > Pressure::new::<psi>(2000.));
             assert!(test_bed.green_pressure() < Pressure::new::<psi>(3100.));
 
-            assert!(!test_bed.is_blue_pressurised());
+            assert!(!test_bed.is_blue_pressure_switch_pressurised());
             assert!(test_bed.blue_pressure() < Pressure::new::<psi>(50.));
             assert!(test_bed.blue_pressure() > Pressure::new::<psi>(-50.));
 
-            assert!(test_bed.is_yellow_pressurised());
+            assert!(test_bed.is_yellow_pressure_switch_pressurised());
             assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(2000.));
             assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(3100.));
 
@@ -3498,11 +3543,11 @@ mod tests {
             assert!(!test_bed.is_ptu_enabled());
 
             // Now we should have pressure in yellow only
-            assert!(!test_bed.is_green_pressurised());
+            assert!(!test_bed.is_green_pressure_switch_pressurised());
             assert!(test_bed.green_pressure() < Pressure::new::<psi>(500.));
-            assert!(!test_bed.is_blue_pressurised());
+            assert!(!test_bed.is_blue_pressure_switch_pressurised());
             assert!(test_bed.blue_pressure() < Pressure::new::<psi>(50.));
-            assert!(test_bed.is_yellow_pressurised());
+            assert!(test_bed.is_yellow_pressure_switch_pressurised());
             assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(2000.));
         }
 
@@ -3520,11 +3565,11 @@ mod tests {
             assert!(test_bed.is_ptu_enabled());
 
             // Now we should have pressure in yellow and green
-            assert!(test_bed.is_green_pressurised());
+            assert!(test_bed.is_green_pressure_switch_pressurised());
             assert!(test_bed.green_pressure() > Pressure::new::<psi>(2000.));
             assert!(test_bed.green_pressure() < Pressure::new::<psi>(3100.));
 
-            assert!(test_bed.is_yellow_pressurised());
+            assert!(test_bed.is_yellow_pressure_switch_pressurised());
             assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(2000.));
             assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(3100.));
         }
@@ -3543,13 +3588,13 @@ mod tests {
                 .run_one_tick();
 
             // ALMOST No pressure
-            assert!(!test_bed.is_green_pressurised());
+            assert!(!test_bed.is_green_pressure_switch_pressurised());
             assert!(test_bed.green_pressure() < Pressure::new::<psi>(1000.));
 
             // Blue is auto run from engine master switches logic
-            assert!(!test_bed.is_blue_pressurised());
+            assert!(!test_bed.is_blue_pressure_switch_pressurised());
             assert!(test_bed.blue_pressure() < Pressure::new::<psi>(1000.));
-            assert!(!test_bed.is_yellow_pressurised());
+            assert!(!test_bed.is_yellow_pressure_switch_pressurised());
             assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(1000.));
 
             // Waiting for 5s pressure should be at 3000 psi
@@ -3557,11 +3602,11 @@ mod tests {
                 .start_eng1(Ratio::new::<percent>(80.))
                 .run_waiting_for(Duration::from_secs(5));
 
-            assert!(test_bed.is_green_pressurised());
+            assert!(test_bed.is_green_pressure_switch_pressurised());
             assert!(test_bed.green_pressure() > Pressure::new::<psi>(2900.));
-            assert!(test_bed.is_blue_pressurised());
+            assert!(test_bed.is_blue_pressure_switch_pressurised());
             assert!(test_bed.blue_pressure() > Pressure::new::<psi>(2500.));
-            assert!(!test_bed.is_yellow_pressurised());
+            assert!(!test_bed.is_yellow_pressure_switch_pressurised());
             assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(50.));
 
             // Stoping engine, pressure should fall in 20s
@@ -3569,11 +3614,11 @@ mod tests {
                 .stop_eng1()
                 .run_waiting_for(Duration::from_secs(20));
 
-            assert!(!test_bed.is_green_pressurised());
+            assert!(!test_bed.is_green_pressure_switch_pressurised());
             assert!(test_bed.green_pressure() < Pressure::new::<psi>(500.));
-            assert!(!test_bed.is_blue_pressurised());
+            assert!(!test_bed.is_blue_pressure_switch_pressurised());
             assert!(test_bed.blue_pressure() < Pressure::new::<psi>(200.));
-            assert!(!test_bed.is_yellow_pressurised());
+            assert!(!test_bed.is_yellow_pressure_switch_pressurised());
             assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(50.));
         }
 
@@ -3602,8 +3647,8 @@ mod tests {
             // EDP should be commanded on even without engine running
             assert!(test_bed.is_green_edp_commanded_on());
 
-            assert!(!test_bed.is_green_pressurised());
-            assert!(!test_bed.is_yellow_pressurised());
+            assert!(!test_bed.is_green_pressure_switch_pressurised());
+            assert!(!test_bed.is_yellow_pressure_switch_pressurised());
             // EDP should have a fault as we are in flight
             assert!(test_bed.is_green_edp_press_low_fault());
         }
@@ -3631,13 +3676,13 @@ mod tests {
                 .start_eng1(Ratio::new::<percent>(80.))
                 .run_one_tick();
 
-            assert!(!test_bed.is_green_pressurised());
+            assert!(!test_bed.is_green_pressure_switch_pressurised());
             assert!(test_bed.is_green_edp_press_low_fault());
 
             test_bed = test_bed.run_waiting_for(Duration::from_secs(10));
 
             // When finally pressurised no fault
-            assert!(test_bed.is_green_pressurised());
+            assert!(test_bed.is_green_pressure_switch_pressurised());
             assert!(!test_bed.is_green_edp_press_low_fault());
         }
 
@@ -3666,8 +3711,8 @@ mod tests {
             // EDP should be commanded on even without engine running
             assert!(test_bed.is_yellow_edp_commanded_on());
 
-            assert!(!test_bed.is_green_pressurised());
-            assert!(!test_bed.is_yellow_pressurised());
+            assert!(!test_bed.is_green_pressure_switch_pressurised());
+            assert!(!test_bed.is_yellow_pressure_switch_pressurised());
             // EDP should have a fault as we are in flight
             assert!(test_bed.is_yellow_edp_press_low_fault());
         }
@@ -3695,13 +3740,13 @@ mod tests {
                 .start_eng2(Ratio::new::<percent>(80.))
                 .run_one_tick();
 
-            assert!(!test_bed.is_yellow_pressurised());
+            assert!(!test_bed.is_yellow_pressure_switch_pressurised());
             assert!(test_bed.is_yellow_edp_press_low_fault());
 
             test_bed = test_bed.run_waiting_for(Duration::from_secs(10));
 
             // When finally pressurised no fault
-            assert!(test_bed.is_yellow_pressurised());
+            assert!(test_bed.is_yellow_pressure_switch_pressurised());
             assert!(!test_bed.is_yellow_edp_press_low_fault());
         }
 
@@ -3726,13 +3771,13 @@ mod tests {
                 .start_eng2(Ratio::new::<percent>(80.))
                 .run_one_tick();
 
-            assert!(!test_bed.is_blue_pressurised());
+            assert!(!test_bed.is_blue_pressure_switch_pressurised());
             assert!(test_bed.is_blue_epump_press_low_fault());
 
             test_bed = test_bed.run_waiting_for(Duration::from_secs(10));
 
             // When finally pressurised no fault
-            assert!(test_bed.is_blue_pressurised());
+            assert!(test_bed.is_blue_pressure_switch_pressurised());
             assert!(!test_bed.is_blue_epump_press_low_fault());
         }
 
@@ -3756,7 +3801,7 @@ mod tests {
             test_bed = test_bed.run_waiting_for(Duration::from_secs(10));
 
             // When finally pressurised no fault
-            assert!(test_bed.is_blue_pressurised());
+            assert!(test_bed.is_blue_pressure_switch_pressurised());
             assert!(!test_bed.is_blue_epump_press_low_fault());
         }
 
@@ -3788,7 +3833,7 @@ mod tests {
                 .run_waiting_for(Duration::from_secs(25));
 
             // No more fault LOW expected
-            assert!(test_bed.is_green_pressurised());
+            assert!(test_bed.is_green_pressure_switch_pressurised());
             assert!(test_bed.green_pressure() > Pressure::new::<psi>(2900.));
             assert!(!test_bed.is_green_edp_press_low());
 
@@ -3809,7 +3854,7 @@ mod tests {
 
             // EDP should be commanded on even without engine running
             assert!(test_bed.is_green_edp_commanded_on());
-            assert!(test_bed.is_green_pressurised());
+            assert!(test_bed.is_green_pressure_switch_pressurised());
             // EDP should not be in fault low when engine running and pressure is ok
             assert!(!test_bed.is_green_edp_press_low());
 
@@ -3825,7 +3870,7 @@ mod tests {
                 .stop_eng1()
                 .run_waiting_for(Duration::from_secs(25));
 
-            assert!(!test_bed.is_green_pressurised());
+            assert!(!test_bed.is_green_pressure_switch_pressurised());
             assert!(test_bed.green_pressure() < Pressure::new::<psi>(500.));
             assert!(test_bed.is_green_edp_press_low());
         }
@@ -3840,7 +3885,7 @@ mod tests {
 
             // EDP should be commanded on even without engine running
             assert!(test_bed.is_yellow_edp_commanded_on());
-            assert!(test_bed.is_yellow_pressurised());
+            assert!(test_bed.is_yellow_pressure_switch_pressurised());
             // EDP should not be in fault low when engine running and pressure is ok
             assert!(!test_bed.is_yellow_edp_press_low());
 
@@ -3856,7 +3901,7 @@ mod tests {
                 .stop_eng2()
                 .run_waiting_for(Duration::from_secs(25));
 
-            assert!(!test_bed.is_yellow_pressurised());
+            assert!(!test_bed.is_yellow_pressure_switch_pressurised());
             assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(500.));
             assert!(test_bed.is_yellow_edp_press_low());
         }
@@ -3889,7 +3934,7 @@ mod tests {
                 .run_waiting_for(Duration::from_secs(5));
 
             // No more fault LOW expected
-            assert!(test_bed.is_yellow_pressurised());
+            assert!(test_bed.is_yellow_pressure_switch_pressurised());
             assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(2900.));
             assert!(!test_bed.is_yellow_edp_press_low());
 
@@ -3920,7 +3965,7 @@ mod tests {
             test_bed = test_bed.run_waiting_for(Duration::from_secs(20));
 
             // Yellow pressurised but edp still off, we expect fault LOW press
-            assert!(test_bed.is_yellow_pressurised());
+            assert!(test_bed.is_yellow_pressure_switch_pressurised());
             assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(2900.));
             assert!(test_bed.is_yellow_edp_press_low());
 
@@ -3938,7 +3983,7 @@ mod tests {
                 .run_waiting_for(Duration::from_secs(5));
 
             // No more fault LOW expected
-            assert!(test_bed.is_yellow_pressurised());
+            assert!(test_bed.is_yellow_pressure_switch_pressurised());
             assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(2900.));
             assert!(!test_bed.is_yellow_edp_press_low());
         }
@@ -3959,9 +4004,9 @@ mod tests {
             test_bed = test_bed.run_waiting_for(Duration::from_secs(20));
 
             // Yellow pressurised by engine2, green presurised from ptu we expect fault LOW press on EDP1
-            assert!(test_bed.is_yellow_pressurised());
+            assert!(test_bed.is_yellow_pressure_switch_pressurised());
             assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(2800.));
-            assert!(test_bed.is_green_pressurised());
+            assert!(test_bed.is_green_pressure_switch_pressurised());
             assert!(test_bed.green_pressure() > Pressure::new::<psi>(2300.));
             assert!(test_bed.is_green_edp_press_low());
 
@@ -3979,7 +4024,7 @@ mod tests {
                 .run_waiting_for(Duration::from_secs(5));
 
             // No more fault LOW expected
-            assert!(test_bed.is_green_pressurised());
+            assert!(test_bed.is_green_pressure_switch_pressurised());
             assert!(test_bed.green_pressure() > Pressure::new::<psi>(2900.));
             assert!(!test_bed.is_green_edp_press_low());
         }
@@ -4005,7 +4050,7 @@ mod tests {
             test_bed = test_bed.run_waiting_for(Duration::from_secs(20));
 
             // No more fault LOW expected
-            assert!(test_bed.is_yellow_pressurised());
+            assert!(test_bed.is_yellow_pressure_switch_pressurised());
             assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(2500.));
             assert!(!test_bed.is_yellow_epump_press_low());
 
@@ -4038,7 +4083,7 @@ mod tests {
             test_bed = test_bed.run_waiting_for(Duration::from_secs(10));
 
             // No more fault LOW expected
-            assert!(test_bed.is_blue_pressurised());
+            assert!(test_bed.is_blue_pressure_switch_pressurised());
             assert!(test_bed.blue_pressure() > Pressure::new::<psi>(2900.));
             assert!(!test_bed.is_blue_epump_press_low());
 
@@ -4063,7 +4108,7 @@ mod tests {
                 .press_blue_epump_override_button_once()
                 .run_waiting_for(Duration::from_secs(10));
             assert!(test_bed.blue_epump_override_is_on());
-            assert!(test_bed.is_blue_pressurised());
+            assert!(test_bed.is_blue_pressure_switch_pressurised());
 
             // Killing the bus corresponding to the latching relay of blue pump override push button
             // It should set the override state back to off without touching the push button
@@ -4075,7 +4120,7 @@ mod tests {
             assert!(!test_bed.blue_epump_override_is_on());
 
             test_bed = test_bed.run_waiting_for(Duration::from_secs(10));
-            assert!(!test_bed.is_blue_pressurised());
+            assert!(!test_bed.is_blue_pressure_switch_pressurised());
         }
 
         #[test]
@@ -4091,7 +4136,7 @@ mod tests {
                 .press_blue_epump_override_button_once()
                 .run_waiting_for(Duration::from_secs(10));
             assert!(test_bed.blue_epump_override_is_on());
-            assert!(test_bed.is_blue_pressurised());
+            assert!(test_bed.is_blue_pressure_switch_pressurised());
 
             test_bed = test_bed.set_blue_e_pump(false).run_one_tick();
             assert!(!test_bed.blue_epump_override_is_on());
@@ -4152,13 +4197,13 @@ mod tests {
                 .start_eng2(Ratio::new::<percent>(80.))
                 .run_one_tick();
             // ALMOST No pressure
-            assert!(!test_bed.is_green_pressurised());
+            assert!(!test_bed.is_green_pressure_switch_pressurised());
             assert!(test_bed.green_pressure() < Pressure::new::<psi>(50.));
-            assert!(!test_bed.is_blue_pressurised());
+            assert!(!test_bed.is_blue_pressure_switch_pressurised());
 
             // Blue is auto run
             assert!(test_bed.blue_pressure() < Pressure::new::<psi>(1000.));
-            assert!(!test_bed.is_yellow_pressurised());
+            assert!(!test_bed.is_yellow_pressure_switch_pressurised());
             assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(1000.));
 
             // Waiting for 5s pressure should be at 3000 psi
@@ -4166,11 +4211,11 @@ mod tests {
                 .start_eng2(Ratio::new::<percent>(80.))
                 .run_waiting_for(Duration::from_secs(5));
 
-            assert!(!test_bed.is_green_pressurised());
+            assert!(!test_bed.is_green_pressure_switch_pressurised());
             assert!(test_bed.green_pressure() < Pressure::new::<psi>(50.));
-            assert!(test_bed.is_blue_pressurised());
+            assert!(test_bed.is_blue_pressure_switch_pressurised());
             assert!(test_bed.blue_pressure() > Pressure::new::<psi>(2500.));
-            assert!(test_bed.is_yellow_pressurised());
+            assert!(test_bed.is_yellow_pressure_switch_pressurised());
             assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(2800.));
 
             // Stoping engine, pressure should fall in 20s
@@ -4178,11 +4223,11 @@ mod tests {
                 .stop_eng2()
                 .run_waiting_for(Duration::from_secs(20));
 
-            assert!(!test_bed.is_green_pressurised());
+            assert!(!test_bed.is_green_pressure_switch_pressurised());
             assert!(test_bed.green_pressure() < Pressure::new::<psi>(50.));
-            assert!(!test_bed.is_blue_pressurised());
+            assert!(!test_bed.is_blue_pressure_switch_pressurised());
             assert!(test_bed.blue_pressure() < Pressure::new::<psi>(200.));
-            assert!(!test_bed.is_yellow_pressurised());
+            assert!(!test_bed.is_yellow_pressure_switch_pressurised());
             assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(500.));
         }
 
@@ -4199,21 +4244,21 @@ mod tests {
                 .start_eng2(Ratio::new::<percent>(80.))
                 .run_waiting_for(Duration::from_secs(15));
 
-            assert!(test_bed.is_yellow_pressurised());
+            assert!(test_bed.is_yellow_pressure_switch_pressurised());
 
             // Stoping EDP manually
             test_bed = test_bed
                 .set_yellow_ed_pump(false)
                 .run_waiting_for(Duration::from_secs(15));
 
-            assert!(!test_bed.is_yellow_pressurised());
+            assert!(!test_bed.is_yellow_pressure_switch_pressurised());
 
             test_bed = test_bed
                 .dc_bus_2_lost()
                 .run_waiting_for(Duration::from_secs(15));
 
             // Yellow solenoid has backup power from DC ESS BUS
-            assert!(!test_bed.is_yellow_pressurised());
+            assert!(!test_bed.is_yellow_pressure_switch_pressurised());
         }
 
         #[test]
@@ -4228,14 +4273,14 @@ mod tests {
                 .start_eng2(Ratio::new::<percent>(80.))
                 .run_waiting_for(Duration::from_secs(15));
 
-            assert!(test_bed.is_yellow_pressurised());
+            assert!(test_bed.is_yellow_pressure_switch_pressurised());
 
             // Stoping EDP manually
             test_bed = test_bed
                 .set_yellow_ed_pump(false)
                 .run_waiting_for(Duration::from_secs(15));
 
-            assert!(!test_bed.is_yellow_pressurised());
+            assert!(!test_bed.is_yellow_pressure_switch_pressurised());
 
             test_bed = test_bed
                 .dc_ess_lost()
@@ -4243,7 +4288,7 @@ mod tests {
                 .run_waiting_for(Duration::from_secs(15));
 
             // Now solenoid defaults to pressurised without power
-            assert!(test_bed.is_yellow_pressurised());
+            assert!(test_bed.is_yellow_pressure_switch_pressurised());
         }
 
         #[test]
@@ -4258,21 +4303,21 @@ mod tests {
                 .start_eng1(Ratio::new::<percent>(80.))
                 .run_waiting_for(Duration::from_secs(15));
 
-            assert!(test_bed.is_green_pressurised());
+            assert!(test_bed.is_green_pressure_switch_pressurised());
 
             // Stoping EDP manually
             test_bed = test_bed
                 .set_green_ed_pump(false)
                 .run_waiting_for(Duration::from_secs(15));
 
-            assert!(!test_bed.is_green_pressurised());
+            assert!(!test_bed.is_green_pressure_switch_pressurised());
 
             test_bed = test_bed
                 .dc_ess_lost()
                 .run_waiting_for(Duration::from_secs(15));
 
             // Now solenoid defaults to pressurised
-            assert!(test_bed.is_green_pressurised());
+            assert!(test_bed.is_green_pressure_switch_pressurised());
         }
 
         #[test]
@@ -4291,7 +4336,7 @@ mod tests {
             test_bed = test_bed
                 .set_yellow_e_pump(false)
                 .run_waiting_for(Duration::from_secs(20));
-            assert!(test_bed.is_yellow_pressurised());
+            assert!(test_bed.is_yellow_pressure_switch_pressurised());
             assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(3500.));
             assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(2500.));
 
@@ -4299,7 +4344,7 @@ mod tests {
             test_bed = test_bed
                 .set_yellow_e_pump(true)
                 .run_waiting_for(Duration::from_secs(50));
-            assert!(!test_bed.is_yellow_pressurised());
+            assert!(!test_bed.is_yellow_pressure_switch_pressurised());
             assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(50.));
             assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(-50.));
 
@@ -4367,7 +4412,7 @@ mod tests {
             test_bed = test_bed
                 .start_eng1(Ratio::new::<percent>(80.))
                 .run_waiting_for(Duration::from_secs(20));
-            assert!(test_bed.is_green_pressurised());
+            assert!(test_bed.is_green_pressure_switch_pressurised());
             assert!(test_bed.green_pressure() < Pressure::new::<psi>(3500.));
             assert!(test_bed.green_pressure() > Pressure::new::<psi>(2500.));
 
@@ -4375,7 +4420,7 @@ mod tests {
             test_bed = test_bed
                 .stop_eng1()
                 .run_waiting_for(Duration::from_secs(50));
-            assert!(!test_bed.is_green_pressurised());
+            assert!(!test_bed.is_green_pressure_switch_pressurised());
             assert!(test_bed.green_pressure() < Pressure::new::<psi>(50.));
             assert!(test_bed.green_pressure() > Pressure::new::<psi>(-50.));
 
@@ -4421,7 +4466,7 @@ mod tests {
             assert!(test_bed.blue_epump_override_is_on());
 
             test_bed = test_bed.run_waiting_for(Duration::from_secs(20));
-            assert!(test_bed.is_blue_pressurised());
+            assert!(test_bed.is_blue_pressure_switch_pressurised());
             assert!(test_bed.blue_pressure() < Pressure::new::<psi>(3500.));
             assert!(test_bed.blue_pressure() > Pressure::new::<psi>(2500.));
 
@@ -4431,7 +4476,7 @@ mod tests {
 
             test_bed = test_bed.run_waiting_for(Duration::from_secs(50));
 
-            assert!(!test_bed.is_blue_pressurised());
+            assert!(!test_bed.is_blue_pressure_switch_pressurised());
             assert!(test_bed.blue_pressure() < Pressure::new::<psi>(50.));
             assert!(test_bed.blue_pressure() > Pressure::new::<psi>(-50.));
 
@@ -4502,11 +4547,11 @@ mod tests {
                 .run_waiting_for(Duration::from_secs(5));
 
             // Waiting for 5s pressure should be at 3000 psi
-            assert!(test_bed.is_green_pressurised());
+            assert!(test_bed.is_green_pressure_switch_pressurised());
             assert!(test_bed.green_pressure() > Pressure::new::<psi>(2900.));
-            assert!(test_bed.is_blue_pressurised());
+            assert!(test_bed.is_blue_pressure_switch_pressurised());
             assert!(test_bed.blue_pressure() > Pressure::new::<psi>(2500.));
-            assert!(test_bed.is_yellow_pressurised());
+            assert!(test_bed.is_yellow_pressure_switch_pressurised());
             assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(2800.));
 
             assert!(!test_bed.is_fire_valve_eng1_closed());
@@ -4520,11 +4565,11 @@ mod tests {
             assert!(test_bed.is_fire_valve_eng1_closed());
             assert!(!test_bed.is_fire_valve_eng2_closed());
 
-            assert!(!test_bed.is_green_pressurised());
+            assert!(!test_bed.is_green_pressure_switch_pressurised());
             assert!(test_bed.green_pressure() < Pressure::new::<psi>(500.));
-            assert!(test_bed.is_blue_pressurised());
+            assert!(test_bed.is_blue_pressure_switch_pressurised());
             assert!(test_bed.blue_pressure() > Pressure::new::<psi>(2500.));
-            assert!(test_bed.is_yellow_pressurised());
+            assert!(test_bed.is_yellow_pressure_switch_pressurised());
             assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(2900.));
 
             // Yellow shutoff valve
@@ -4535,11 +4580,11 @@ mod tests {
             assert!(test_bed.is_fire_valve_eng1_closed());
             assert!(test_bed.is_fire_valve_eng2_closed());
 
-            assert!(!test_bed.is_green_pressurised());
+            assert!(!test_bed.is_green_pressure_switch_pressurised());
             assert!(test_bed.green_pressure() < Pressure::new::<psi>(500.));
-            assert!(test_bed.is_blue_pressurised());
+            assert!(test_bed.is_blue_pressure_switch_pressurised());
             assert!(test_bed.blue_pressure() > Pressure::new::<psi>(2500.));
-            assert!(!test_bed.is_yellow_pressurised());
+            assert!(!test_bed.is_yellow_pressure_switch_pressurised());
             assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(500.));
         }
 
@@ -4597,7 +4642,7 @@ mod tests {
                 .set_yellow_e_pump(false)
                 .run_waiting_for(Duration::from_secs(30));
 
-            assert!(test_bed.is_yellow_pressurised());
+            assert!(test_bed.is_yellow_pressure_switch_pressurised());
             assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(2500.));
             assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(3500.));
 
@@ -4650,8 +4695,8 @@ mod tests {
                 .set_park_brake(false)
                 .run_waiting_for(Duration::from_secs(5));
 
-            assert!(test_bed.is_green_pressurised());
-            assert!(test_bed.is_yellow_pressurised());
+            assert!(test_bed.is_green_pressure_switch_pressurised());
+            assert!(test_bed.is_yellow_pressure_switch_pressurised());
             // No brakes if we don't brake
             test_bed = test_bed
                 .set_left_brake(Ratio::new::<percent>(0.))
@@ -4703,8 +4748,8 @@ mod tests {
                 .set_park_brake(false)
                 .run_waiting_for(Duration::from_secs(5));
 
-            assert!(test_bed.is_green_pressurised());
-            assert!(test_bed.is_yellow_pressurised());
+            assert!(test_bed.is_green_pressure_switch_pressurised());
+            assert!(test_bed.is_yellow_pressure_switch_pressurised());
             // Braking left
             test_bed = test_bed
                 .set_left_brake(Ratio::new::<percent>(100.))
@@ -5649,7 +5694,7 @@ mod tests {
                 .start_eng2(Ratio::new::<percent>(80.))
                 .run_waiting_for(Duration::from_secs(10));
 
-            assert!(test_bed.is_blue_pressurised());
+            assert!(test_bed.is_blue_pressure_switch_pressurised());
             assert!(test_bed.get_rat_position() <= 0.);
             assert!(test_bed.get_rat_rpm() <= 1.);
 
@@ -5702,21 +5747,21 @@ mod tests {
                 .run_waiting_for(Duration::from_secs(10));
 
             // Blue epump working
-            assert!(test_bed.is_blue_pressurised());
+            assert!(test_bed.is_blue_pressure_switch_pressurised());
 
             test_bed = test_bed
                 .ac_bus_2_lost()
                 .run_waiting_for(Duration::from_secs(25));
 
             // Blue epump still working as it's not plugged on AC2
-            assert!(test_bed.is_blue_pressurised());
+            assert!(test_bed.is_blue_pressure_switch_pressurised());
 
             test_bed = test_bed
                 .ac_bus_1_lost()
                 .run_waiting_for(Duration::from_secs(25));
 
             // Blue epump has stopped
-            assert!(!test_bed.is_blue_pressurised());
+            assert!(!test_bed.is_blue_pressure_switch_pressurised());
         }
 
         #[test]
@@ -5732,7 +5777,7 @@ mod tests {
                 .run_waiting_for(Duration::from_secs(10));
 
             // Yellow epump working
-            assert!(test_bed.is_yellow_pressurised());
+            assert!(test_bed.is_yellow_pressure_switch_pressurised());
 
             test_bed = test_bed
                 .ac_bus_2_lost()
@@ -5740,14 +5785,14 @@ mod tests {
                 .run_waiting_for(Duration::from_secs(25));
 
             // Yellow epump still working as not plugged on AC2 or AC1
-            assert!(test_bed.is_yellow_pressurised());
+            assert!(test_bed.is_yellow_pressure_switch_pressurised());
 
             test_bed = test_bed
                 .ac_ground_service_lost()
                 .run_waiting_for(Duration::from_secs(25));
 
             // Yellow epump has stopped
-            assert!(!test_bed.is_yellow_pressurised());
+            assert!(!test_bed.is_yellow_pressure_switch_pressurised());
         }
 
         #[test]
@@ -5854,7 +5899,7 @@ mod tests {
                 .run_waiting_for(Duration::from_secs_f64(20.));
 
             assert!(test_bed.is_cargo_fwd_door_locked_down());
-            assert!(test_bed.is_yellow_pressurised());
+            assert!(test_bed.is_yellow_pressure_switch_pressurised());
 
             let pressurised_yellow_level_door_closed = test_bed.get_yellow_reservoir_volume();
 
@@ -5915,7 +5960,7 @@ mod tests {
 
             test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(30.));
 
-            assert!(!test_bed.is_yellow_pressurised());
+            assert!(!test_bed.is_yellow_pressure_switch_pressurised());
 
             test_bed = test_bed
                 .close_fwd_cargo_door()
@@ -5923,6 +5968,80 @@ mod tests {
 
             assert!(test_bed.is_cargo_fwd_door_locked_down());
             assert!(test_bed.cargo_fwd_door_position() <= 0.);
+        }
+
+        #[test]
+        fn cargo_door_operation_closes_yellow_leak_meas_valve() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_one_tick();
+
+            test_bed = test_bed
+                .open_fwd_cargo_door()
+                .run_waiting_for(Duration::from_secs_f64(10.));
+
+            assert!(test_bed.yellow_pressure().get::<psi>() > 500.);
+            assert!(!test_bed.is_yellow_leak_meas_valve_commanded_open());
+            assert!(!test_bed.is_yellow_pressure_switch_pressurised());
+        }
+
+        #[test]
+        fn cargo_door_operation_but_yellow_epump_on_opens_yellow_leak_meas_valve() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_one_tick();
+
+            test_bed = test_bed
+                .open_fwd_cargo_door()
+                .set_yellow_e_pump(false)
+                .run_waiting_for(Duration::from_secs_f64(10.));
+
+            assert!(test_bed.yellow_pressure().get::<psi>() > 500.);
+            assert!(test_bed.is_yellow_leak_meas_valve_commanded_open());
+            assert!(test_bed.is_yellow_pressure_switch_pressurised());
+        }
+
+        #[test]
+        fn leak_meas_valve_cant_be_closed_in_flight() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_one_tick();
+
+            test_bed = test_bed
+                .in_flight()
+                .green_leak_meas_valve_closed()
+                .blue_leak_meas_valve_closed()
+                .yellow_leak_meas_valve_closed()
+                .run_waiting_for(Duration::from_secs_f64(1.));
+
+            assert!(test_bed.is_yellow_leak_meas_valve_commanded_open());
+            assert!(test_bed.is_blue_leak_meas_valve_commanded_open());
+            assert!(test_bed.is_green_leak_meas_valve_commanded_open());
+        }
+
+        #[test]
+        fn leak_meas_valve_can_be_closed_on_ground() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_one_tick();
+
+            test_bed = test_bed
+                .green_leak_meas_valve_closed()
+                .blue_leak_meas_valve_closed()
+                .yellow_leak_meas_valve_closed()
+                .run_waiting_for(Duration::from_secs_f64(1.));
+
+            assert!(!test_bed.is_yellow_leak_meas_valve_commanded_open());
+            assert!(!test_bed.is_blue_leak_meas_valve_commanded_open());
+            assert!(!test_bed.is_green_leak_meas_valve_commanded_open());
         }
     }
 }
