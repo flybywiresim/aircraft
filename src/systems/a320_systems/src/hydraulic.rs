@@ -29,7 +29,7 @@ use systems::{
         update_iterator::{FixedStepLoop, MaxFixedStepLoop},
         ElectricPump, EngineDrivenPump, HydraulicCircuit, HydraulicCircuitController,
         HydraulicPressure, PowerTransferUnit, PowerTransferUnitController, PressureSwitchState,
-        PumpController, RamAirTurbine, RamAirTurbineController, SectionPressure,
+        PumpController, RamAirTurbine, RamAirTurbineController,
     },
     overhead::{
         AutoOffFaultPushButton, AutoOnFaultPushButton, MomentaryOnPushButton, MomentaryPushButton,
@@ -48,6 +48,12 @@ use systems::{
 
 mod flaps_computer;
 use flaps_computer::SlatFlapComplex;
+
+enum HydraulicCircuitId {
+    GREEN,
+    BLUE,
+    YELLOW,
+}
 
 struct A320HydraulicCircuitFactory {}
 impl A320HydraulicCircuitFactory {
@@ -259,11 +265,20 @@ impl A320Hydraulic {
             brake_computer: A320HydraulicBrakeComputerUnit::new(context),
 
             blue_circuit: A320HydraulicCircuitFactory::new_blue_circuit(context),
-            blue_circuit_controller: A320HydraulicCircuitController::new(None),
+            blue_circuit_controller: A320HydraulicCircuitController::new(
+                None,
+                HydraulicCircuitId::BLUE,
+            ),
             green_circuit: A320HydraulicCircuitFactory::new_green_circuit(context),
-            green_circuit_controller: A320HydraulicCircuitController::new(Some(1)),
+            green_circuit_controller: A320HydraulicCircuitController::new(
+                Some(1),
+                HydraulicCircuitId::GREEN,
+            ),
             yellow_circuit: A320HydraulicCircuitFactory::new_yellow_circuit(context),
-            yellow_circuit_controller: A320HydraulicCircuitController::new(Some(2)),
+            yellow_circuit_controller: A320HydraulicCircuitController::new(
+                Some(2),
+                HydraulicCircuitId::YELLOW,
+            ),
 
             engine_driven_pump_1: EngineDrivenPump::new(context, "GREEN"),
             engine_driven_pump_1_controller: A320EngineDrivenPumpController::new(
@@ -653,8 +668,10 @@ impl A320Hydraulic {
         );
 
         self.green_circuit_controller.update(
+            context,
             engine_fire_push_buttons,
-            overhead_panel.green_leak_measurement_valve_is_on(),
+            overhead_panel,
+            &self.yellow_electric_pump_controller,
         );
         self.green_circuit.update(
             context,
@@ -664,16 +681,11 @@ impl A320Hydraulic {
             &self.green_circuit_controller,
         );
 
-        let cargo_door_operation = self
-            .forward_cargo_door_controller
-            .should_pressurise_hydraulics()
-            || self
-                .aft_cargo_door_controller
-                .should_pressurise_hydraulics();
-
         self.yellow_circuit_controller.update(
+            context,
             engine_fire_push_buttons,
-            overhead_panel.yellow_leak_measurement_valve_is_on() && !cargo_door_operation,
+            &overhead_panel,
+            &self.yellow_electric_pump_controller,
         );
         self.yellow_circuit.update(
             context,
@@ -684,8 +696,10 @@ impl A320Hydraulic {
         );
 
         self.blue_circuit_controller.update(
+            context,
             engine_fire_push_buttons,
-            overhead_panel.blue_leak_measurement_valve_is_on(),
+            overhead_panel,
+            &self.yellow_electric_pump_controller,
         );
         self.blue_circuit.update(
             context,
@@ -808,13 +822,15 @@ impl SimulationElement for A320Hydraulic {
 }
 
 struct A320HydraulicCircuitController {
+    circuit_id: HydraulicCircuitId,
     engine_number: Option<usize>,
     should_open_fire_shutoff_valve: bool,
     should_open_leak_measurement_valve: bool,
 }
 impl A320HydraulicCircuitController {
-    fn new(engine_number: Option<usize>) -> Self {
+    fn new(engine_number: Option<usize>, circuit_id: HydraulicCircuitId) -> Self {
         Self {
+            circuit_id,
             engine_number,
             should_open_fire_shutoff_valve: true,
             should_open_leak_measurement_valve: true,
@@ -823,14 +839,39 @@ impl A320HydraulicCircuitController {
 
     fn update(
         &mut self,
+        context: &UpdateContext,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
-        measurement_valve_button_on: bool,
+        overhead_panel: &A320HydraulicOverheadPanel,
+        yellow_epump_controller: &A320YellowElectricPumpController,
     ) {
         if let Some(eng_number) = self.engine_number {
             self.should_open_fire_shutoff_valve = !engine_fire_push_buttons.is_released(eng_number);
         }
 
-        self.should_open_leak_measurement_valve = measurement_valve_button_on;
+        self.update_leak_measurement_valve(context, overhead_panel, yellow_epump_controller);
+    }
+
+    fn update_leak_measurement_valve(
+        &mut self,
+        context: &UpdateContext,
+        overhead_panel: &A320HydraulicOverheadPanel,
+        yellow_epump_controller: &A320YellowElectricPumpController,
+    ) {
+        let measurement_valve_open_demand_raw = match &mut self.circuit_id {
+            HydraulicCircuitId::GREEN => overhead_panel.green_leak_measurement_valve_is_on(),
+            HydraulicCircuitId::YELLOW => {
+                overhead_panel.yellow_leak_measurement_valve_is_on()
+                    && !yellow_epump_controller.should_pressurise_for_cargo_door_operation()
+            }
+            HydraulicCircuitId::BLUE => overhead_panel.blue_leak_measurement_valve_is_on(),
+        };
+
+        self.should_open_leak_measurement_valve = measurement_valve_open_demand_raw
+            && !self.plane_state_disables_leak_valve_closing(context);
+    }
+
+    fn plane_state_disables_leak_valve_closing(&self, context: &UpdateContext) -> bool {
+        context.indicated_airspeed() >= Velocity::new::<knot>(100.)
     }
 }
 impl HydraulicCircuitController for A320HydraulicCircuitController {
@@ -1065,7 +1106,9 @@ struct A320YellowElectricPumpController {
     should_pressurise: bool,
     has_pressure_low_fault: bool,
     is_pressure_low: bool,
-    should_activate_yellow_pump_for_cargo_door_operation: DelayedFalseLogicGate,
+
+    is_required_for_cargo_door_operation: DelayedFalseLogicGate,
+    should_pressurise_for_cargo_door_operation: bool,
 
     low_pressure_hystereris: bool,
 }
@@ -1090,9 +1133,11 @@ impl A320YellowElectricPumpController {
             should_pressurise: false,
             has_pressure_low_fault: false,
             is_pressure_low: true,
-            should_activate_yellow_pump_for_cargo_door_operation: DelayedFalseLogicGate::new(
+            is_required_for_cargo_door_operation: DelayedFalseLogicGate::new(
                 Self::DURATION_OF_YELLOW_PUMP_ACTIVATION_AFTER_CARGO_DOOR_OPERATION,
             ),
+            should_pressurise_for_cargo_door_operation: false,
+
             low_pressure_hystereris: false,
         }
     }
@@ -1105,20 +1150,36 @@ impl A320YellowElectricPumpController {
         aft_cargo_door_controller: &A320DoorController,
         hydraulic_circuit: &impl HydraulicPressure,
     ) {
-        self.should_activate_yellow_pump_for_cargo_door_operation
-            .update(
-                context,
-                forward_cargo_door_controller.should_pressurise_hydraulics()
-                    || aft_cargo_door_controller.should_pressurise_hydraulics(),
-            );
+        self.update_cargo_door_logic(
+            context,
+            overhead_panel,
+            forward_cargo_door_controller,
+            aft_cargo_door_controller,
+        );
 
         self.should_pressurise = (overhead_panel.yellow_epump_push_button.is_on()
-            || self
-                .should_activate_yellow_pump_for_cargo_door_operation
-                .output())
+            || self.is_required_for_cargo_door_operation.output())
             && self.is_powered;
 
         self.update_low_pressure(hydraulic_circuit);
+    }
+
+    fn update_cargo_door_logic(
+        &mut self,
+        context: &UpdateContext,
+        overhead_panel: &A320HydraulicOverheadPanel,
+        forward_cargo_door_controller: &A320DoorController,
+        aft_cargo_door_controller: &A320DoorController,
+    ) {
+        self.is_required_for_cargo_door_operation.update(
+            context,
+            forward_cargo_door_controller.should_pressurise_hydraulics()
+                || aft_cargo_door_controller.should_pressurise_hydraulics(),
+        );
+
+        self.should_pressurise_for_cargo_door_operation =
+            self.is_required_for_cargo_door_operation.output()
+                && !overhead_panel.yellow_epump_push_button.is_on();
     }
 
     fn update_low_pressure(&mut self, hydraulic_circuit: &impl HydraulicPressure) {
@@ -1145,10 +1206,8 @@ impl A320YellowElectricPumpController {
         self.has_pressure_low_fault
     }
 
-    #[cfg(test)]
     fn should_pressurise_for_cargo_door_operation(&self) -> bool {
-        self.should_activate_yellow_pump_for_cargo_door_operation
-            .output()
+        self.should_pressurise_for_cargo_door_operation
     }
 }
 impl PumpController for A320YellowElectricPumpController {
@@ -1164,9 +1223,7 @@ impl SimulationElement for A320YellowElectricPumpController {
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
         // Control of the pump is powered by dedicated bus OR manual operation of cargo door through another bus
         self.is_powered = buses.is_powered(self.powered_by)
-            || (self
-                .should_activate_yellow_pump_for_cargo_door_operation
-                .output()
+            || (self.is_required_for_cargo_door_operation.output()
                 && buses.is_powered(self.powered_by_when_cargo_door_operation))
     }
 }
