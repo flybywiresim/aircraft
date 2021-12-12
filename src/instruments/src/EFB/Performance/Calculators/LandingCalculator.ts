@@ -690,7 +690,7 @@ export default class LandingCalculator {
             ? Math.abs(slope) * landingData.slopeCorrection
             : 0;
         const temperatureCorrection = temperature > 15
-            ? ((temperature - 15) / 10) * landingData.tempCorrection
+            ? ((temperature - this.getISATemperature(pressureAltitude)) / 10) * landingData.tempCorrection
             : 0;
         const overweightProcCorrection = overweightProcedure
             ? landingData.overweightProcedureCorrection
@@ -710,5 +710,14 @@ export default class LandingCalculator {
     private getPressureAltitude(pressure: number): number {
         // Equation from Boeing Jet Transport Performance Methods document
         return 145442.15 * (1 - ((pressure / 1013.25) ** 0.190263));
+    }
+
+    /**
+     * Calculates ISA temperature for a given pressure altitude
+     * @param PressureAltitude is pressure altitude in feet
+     * @returns ISA temperature in degrees C
+     */
+    private getISATemperature(pressureAltitude: number): number {
+        return 15 - (0.0019812 * pressureAltitude);
     }
 }
