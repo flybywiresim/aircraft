@@ -326,7 +326,7 @@ class EngineControl {
     } else {
       if (timer < 1.7) {
         if (simOnGround == 1) {
-          simVars->setFuelUsedLeft(0);
+          simVars->setFuelUsedRight(0);
         }
         simVars->setEngine2Timer(timer + deltaTime);
         startCN2Right = 0;
