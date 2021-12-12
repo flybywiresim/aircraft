@@ -647,6 +647,7 @@ export default class LandingCalculator {
         approachSpeed: number, windDirection: number, windMagnitude: number, runwayHeading: number, reverseThrust: boolean, altitude: number,
         temperature: number, slope: number, overweightProcedure: boolean, pressure: number): number {
         const pressureAltitude = altitude + this.getPressureAltitude(pressure);
+        const isaTemperature = this.getISATemperature(pressureAltitude);
 
         let targetApproachSpeed: number;
         const vlsTableIndex = getVlsTableIndex(weight / 1000);
@@ -689,8 +690,8 @@ export default class LandingCalculator {
         const slopeCorrection = slope < 0
             ? Math.abs(slope) * landingData.slopeCorrection
             : 0;
-        const temperatureCorrection = temperature > 15
-            ? ((temperature - this.getISATemperature(pressureAltitude)) / 10) * landingData.tempCorrection
+        const temperatureCorrection = temperature > isaTemperature
+            ? ((temperature - isaTemperature) / 10) * landingData.tempCorrection
             : 0;
         const overweightProcCorrection = overweightProcedure
             ? landingData.overweightProcedureCorrection
