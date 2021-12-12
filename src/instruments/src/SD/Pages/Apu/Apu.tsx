@@ -308,15 +308,15 @@ const NGauge = ({ x, y } : ComponentPositionProps) => {
                     </GaugeComponent>
                 </SvgGroup>
 
-                <SvgGroup x={100} y={13}>
+                <SvgGroup x={80} y={13}>
                     <text x={0} y={0} className="White Center FontNormal">N</text>
                     <text x={0} y={30} className="Cyan Center FontNormal">%</text>
                 </SvgGroup>
 
                 <text
-                    x={51}
-                    y={70}
-                    className={`FontLarger Right ${apuN.isNormalOperation() ? apuNIndicationColor : 'Amber'}`}
+                    x={10}
+                    y={80}
+                    className={`FontLarger Left ${apuN.isNormalOperation() ? apuNIndicationColor : 'Amber'}`}
                 >
                     {apuN.isNormalOperation() ? apuN.value.toFixed() : 'XX'}
                 </text>
@@ -404,6 +404,7 @@ const EgtGauge = ({ x, y } : ComponentPositionProps) => {
                         showValue
                         bold
                     />
+
                     {/* AMBER BAR */}
                     {apuEgt.isNormalOperation() && apuEgtWarning.isNormalOperation()
                         && (
@@ -458,16 +459,16 @@ const EgtGauge = ({ x, y } : ComponentPositionProps) => {
                         )}
                 </GaugeComponent>
 
-                <SvgGroup x={100} y={13}>
+                <SvgGroup x={80} y={13}>
                     <text x={0} y={0} className="White Center FontNormal">EGT</text>
                     <text x={0} y={30} className="Cyan Center FontNormal" style={{ letterSpacing: -2 }}>&deg;C</text>
                 </SvgGroup>
 
                 <text
-                    x={apuEgt.isNormalOperation() ? 66 : 51}
-                    y={70}
+                    x={10}
+                    y={80}
                     // eslint-disable-next-line no-nested-ternary
-                    className={`FontLarger Right ${!apuEgt.isNormalOperation() ? 'Amber' : apuEgtIndicationColor === 'Pulse' ? 'FillPulse' : apuEgtIndicationColor}`}
+                    className={`FontLarger Left ${!apuEgt.isNormalOperation() ? 'Amber' : apuEgtIndicationColor === 'Pulse' ? 'FillPulse' : apuEgtIndicationColor}`}
                 >
                     {apuEgt.isNormalOperation() ? displayedEgtValue : 'XX' }
                 </text>

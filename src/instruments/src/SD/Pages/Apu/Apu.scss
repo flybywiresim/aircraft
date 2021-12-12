@@ -7,11 +7,6 @@
         stroke-width: 2.5px;
     }
 
-    .GaugeText {
-        stroke: $display-white;
-        font-size: 15px;
-    }
-
     .NoFill {
         fill: none;
     }
@@ -30,6 +25,11 @@
 
         &.FontNormal {
             font-size: 19px;
+        }
+
+        &.Left {
+            text-anchor: start;
+            text-align: start;
         }
 
         &.Center {
