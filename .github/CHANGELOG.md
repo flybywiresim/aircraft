@@ -7,6 +7,8 @@
 1. [FBW] Intermediate support for aileron keyboard events - @aguther (Andreas Guther)
 1. [MODEL] Adjust heat effect on ENG1+2 - @bouveng (Johan Bouveng)
 1. [PFD] Fixed speed tape outline at low speeds - @beheh (Benedict Etzel)
+1. [WASM] Compatibility with 1.21.18 - @Saschl (saschl#9432)
+1. [EFB] Fixed key events not being correctly masked for some controls - @Saschl (saschl#9432)
 
 ## 0.7.3
 
