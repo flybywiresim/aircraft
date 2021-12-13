@@ -56,7 +56,7 @@
 
     <Template Name="A32NX_ENGINE_Turbine_Rotation_Template">
         <UseTemplate Name="ASOBO_GT_Anim">
-            <!-- 3894 is the max rated N1 of the LEAP, times 6 is from RPM to deg/s, times 0.01 because percentages -->
+            <!-- 3856 is the rated 100% N1 of the LEAP, times 6 is from RPM to deg/s, times 0.01 because percentages -->
             <ANIM_CODE>0.01 6 3856 (L:A32NX_ENGINE_N1:#ID#, Percent) (A:ANIMATION DELTA TIME, seconds) * * * *</ANIM_CODE>
             <ANIM_LENGTH>360</ANIM_LENGTH>
             <ANIM_WRAP>1</ANIM_WRAP>
