@@ -1,105 +1,65 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { IconAccessPoint, IconBattery4, IconPower } from '@tabler/icons';
-import { connect } from 'react-redux';
-import { efbClearState } from '../Store/action-creator/efb';
+import React from 'react';
+import { Wifi2, BatteryFull, Power } from 'react-bootstrap-icons';
+import { useSimVar } from '@instruments/common/simVars';
+import { usePersistentProperty } from '@instruments/common/persistence';
+import { usePower, PowerStates } from '../Efb';
 
-import { PowerContext, ContentState } from '../index';
+export const StatusBar = () => {
+    const [currentUTC] = useSimVar('E:ZULU TIME', 'seconds');
+    const [currentLocalTime] = useSimVar('E:LOCAL TIME', 'seconds');
+    const [dayOfWeek] = useSimVar('E:ZULU DAY OF WEEK', 'number');
+    const [monthOfYear] = useSimVar('E:ZULU MONTH OF YEAR', 'number');
+    const [dayOfMonth] = useSimVar('E:ZULU DAY OF MONTH', 'number');
 
-type StatusBarProps = {
-    initTime: Date,
-    updateTimeSinceStart: (newTimeSinceStart: string) => void,
-    updateCurrentTime: (newCurrentTime: Date) => void,
-    efbClearState: () => {}
-}
+    const [timeDisplayed] = usePersistentProperty('EFB_TIME_DISPLAYED', 'utc');
+    const [timeFormat] = usePersistentProperty('EFB_TIME_FORMAT');
 
-export function formatTime(numbers: number[]) {
-    if (numbers.length === 2) {
-        return `${(numbers[0] <= 9 ? '0' : '') + numbers[0]}:${numbers[1] <= 9 ? '0' : ''}${numbers[1]}`;
-    } if (numbers.length === 3) {
-        return `${(numbers[0] <= 9 ? '0' : '') + numbers[0]}:${numbers[1] <= 9 ? '0' : ''}${numbers[1]}:${numbers[2] <= 9 ? '0' : ''}${numbers[2]}`;
-    }
-    return 'N/A';
-}
+    const power = usePower();
 
-export function dateFormat(date: number): string {
-    let numberWithSuffix;
-    const dateRemOf10 = date % 10;
-    const dateRemOf100 = date % 100;
+    const getDayName = (day: number) => ['Mon', 'Tue', 'Wed', 'Thurs', 'Fri', 'Sat', 'Sun'][day];
 
-    if ((dateRemOf10 === 1) && (dateRemOf100 !== 11)) {
-        numberWithSuffix = `${date}st`;
-    } else if ((dateRemOf10 === 2) && (dateRemOf100 !== 12)) {
-        numberWithSuffix = `${date}nd`;
-    } else if ((dateRemOf10 === 3) && (dateRemOf100 !== 13)) {
-        numberWithSuffix = `${date}rd`;
-    } else {
-        numberWithSuffix = `${date}th`;
-    }
+    const getMonthName = (month: number) => ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][month - 1];
 
-    return numberWithSuffix;
-}
-
-const StatusBar = (props: StatusBarProps) => {
-    const [currentTime, setCurrentTime] = useState(props.initTime);
-
-    const Power = useContext(PowerContext);
-
-    function calculateTimeSinceStart(currentTime: Date) {
-        const diff = currentTime.getTime() - props.initTime.getTime();
-        const minutes = Math.floor(diff / 1000 / 60);
-        const diffMinusMinutes = diff - (minutes * 1000 * 60);
-        const seconds = Math.floor(diffMinusMinutes / 1000);
-
-        return formatTime(([minutes, seconds]));
-    }
-
-    useEffect(() => {
-        setInterval(() => {
-            const date = new Date();
-            const timeSinceStart = calculateTimeSinceStart(date);
-            props.updateCurrentTime(date);
-            props.updateTimeSinceStart(timeSinceStart);
-            setCurrentTime(date);
-        }, 1000);
-
-        return () => clearInterval();
-    }, []);
-
-    const { efbClearState } = props;
+    const getZuluFormattedTime = (seconds: number) => `${Math.floor(seconds / 3600).toString().padStart(2, '0')}:${Math.floor((seconds % 3600) / 60).toString().padStart(2, '0')}z`;
+    const getLocalFormattedTime = (seconds: number) => {
+        if (timeFormat === '24') {
+            return `${Math.floor(seconds / 3600).toString().padStart(2, '0')}:${Math.floor((seconds % 3600) / 60).toString().padStart(2, '0')}`;
+        }
+        const hours = Math.floor(seconds / 3600) % 12;
+        const minutes = Math.floor((seconds % 3600) / 60);
+        const ampm = Math.floor(seconds / 3600) >= 12 ? 'pm' : 'am';
+        return `${hours === 0 ? 12 : hours}:${minutes.toString().padStart(2, '0')}${ampm}`;
+    };
 
     return (
-        <div className="fixed w-full py-2 px-8 flex items-center justify-between bg-navy-medium text-white font-medium leading-none text-lg">
-            <div className="flex items-center">
-                <IconAccessPoint className="mr-2 animate-pulse" size={30} stroke={1.5} strokeLinejoin="miter" />
-                flyPad
+        <div className="flex fixed justify-between items-center px-6 w-full h-10 text-lg font-medium leading-none text-theme-text bg-theme-statusbar">
+            <p>{`${getDayName(dayOfWeek)} ${getMonthName(monthOfYear)} ${dayOfMonth}`}</p>
+            <div className="flex absolute inset-x-0 flex-row justify-center items-center mx-auto space-x-4 w-min">
+                {(timeDisplayed === 'utc' || timeDisplayed === 'both') && (
+                    <p>{getZuluFormattedTime(currentUTC)}</p>
+                )}
+                {timeDisplayed === 'both' && (
+                    <p>/</p>
+                )}
+                {(timeDisplayed === 'local' || timeDisplayed === 'both') && (
+                    <p>{getLocalFormattedTime(currentLocalTime)}</p>
+                )}
             </div>
-            <div>{`${formatTime(([currentTime.getUTCHours(), currentTime.getUTCMinutes()]))}z`}</div>
-            <div className="flex items-center">
-                100%
+            <div className="flex items-center space-x-8">
+                <div className="mb-1.5">
+                    <Wifi2 size={32} />
+                </div>
 
-                {/* TODO find a way to use `setSimVar` here */}
-                <IconBattery4
-                    className="ml-2"
-                    size={30}
-                    stroke={1.5}
-                    strokeLinejoin="miter"
-                />
-                <IconPower
-                    onClick={() => {
-                        efbClearState();
-                        Power.setContent(ContentState.OFF);
-                    }}
-                    className="ml-6"
-                    size={25}
-                    stroke={1.5}
-                    strokeLinejoin="miter"
-                />
+                <div className="flex items-center space-x-4">
+                    <p>100%</p>
+
+                    {/* TODO find a way to use `setSimVar` here */}
+                    <BatteryFull size={28} />
+                </div>
+
+                {/* Show overlay to either power down or restart when this is held down, set to standby mode otherwise */}
+                <Power size={26} onClick={() => power.setPowerState(PowerStates.SHUTOFF)} />
             </div>
         </div>
     );
 };
-
-export default connect(
-    () => {},
-    { efbClearState },
-)(StatusBar);

@@ -10,18 +10,18 @@ const tabs = [
     { name: 'Landing', renderComponent: () => <LandingWidget /> },
 ];
 
-const Performance = () => {
+export const Performance = () => {
     const [activeIndex, setActiveIndex] = useState(0);
 
     return (
         <div className="w-full">
-            <h1 className="text-3xl pt-6 text-white">Performance</h1>
-            <Navbar tabs={map(tabs, 'name')} onSelected={(activeIndex) => setActiveIndex(activeIndex)} />
+            <div className="relative">
+                <h1 className="font-bold ">Performance</h1>
+                <Navbar className="absolute top-0 right-0" tabs={map(tabs, 'name')} onSelected={(activeIndex) => setActiveIndex(activeIndex)} />
+            </div>
             <div className="mt-6">
                 {tabs[activeIndex].renderComponent()}
             </div>
         </div>
     );
 };
-
-export default Performance;

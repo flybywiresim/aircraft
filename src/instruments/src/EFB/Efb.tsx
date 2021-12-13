@@ -1,293 +1,168 @@
-import React, { useEffect, useState, useReducer } from 'react';
+import React, { useEffect, useState } from 'react';
 
-import { Provider } from 'react-redux';
-import { Route, Switch, useHistory } from 'react-router-dom';
+import { Redirect, Route, Switch } from 'react-router-dom';
 import { useSimVar } from '@instruments/common/simVars';
+import { useInteractionEvent } from '@instruments/common/hooks';
+import { UIMessagesProvider, useUIMessages } from './UIMessages/Provider';
 import { usePersistentNumberProperty, usePersistentProperty } from '../Common/persistence';
 import NavigraphClient, { NavigraphContext } from './ChartsApi/Navigraph';
-import { getSimbriefData, IFuel, IWeights } from './SimbriefApi';
-import StatusBar from './StatusBar/StatusBar';
-import ToolBar from './ToolBar/ToolBar';
-import Dashboard from './Dashboard/Dashboard';
-import Dispatch from './Dispatch/Dispatch';
-import Ground from './Ground/Ground';
-import Performance from './Performance/Performance';
-import Navigation from './Navigation/Navigation';
-import Settings from './Settings/Settings';
 
-import { PerformanceContext, PerformanceReducer, performanceInitialState } from './Store/performance-context';
-import store from './Store';
-import ATC from './ATC/ATC';
+import { StatusBar } from './StatusBar/StatusBar';
+import { ToolBar } from './ToolBar/ToolBar';
+
+import { Dashboard } from './Dashboard/Dashboard';
+import { Dispatch } from './Dispatch/Dispatch';
+import { Ground } from './Ground/Ground';
+import { Performance } from './Performance/Performance';
+import { Navigation } from './Navigation/Navigation';
+import { ATC } from './ATC/ATC';
+import { Settings } from './Settings/Settings';
 import { Failures } from './Failures/Failures';
 
-type TimeState = {
-    currentTime: Date,
-    initTime: Date,
-    timeSinceStart: string,
-}
+import { clearEfbState, useAppDispatch, useAppSelector } from './Store/store';
 
-export type SimbriefData = {
-    departingAirport: string,
-    departingIata: string,
-    arrivingAirport: string,
-    arrivingIata: string,
-    flightDistance: string,
-    flightETAInSeconds: string,
-    cruiseAltitude: number,
-    weights: IWeights,
-    fuels: IFuel,
-    weather: {
-        avgWindDir: string,
-        avgWindSpeed: string,
-    }
-    units: string,
-    altIcao: string,
-    altIata: string,
-    altBurn: number,
-    tripTime: number,
-    contFuelTime: number,
-    resFuelTime: number,
-    taxiOutTime: number,
-    schedOut: string,
-    schedIn: string,
-    airline: string,
-    flightNum: string,
-    aircraftReg: string,
-    route: string,
-    loadsheet: string,
-    costInd: string
-};
+import { fetchSimbriefDataAction, initialState as simbriefInitialState } from './Store/features/simbrief';
 
-const emptySimbriefData: SimbriefData = {
-    airline: '---',
-    flightNum: '----',
-    departingAirport: '----',
-    departingIata: '---',
-    arrivingAirport: '----',
-    arrivingIata: '---',
-    aircraftReg: '-----',
-    flightDistance: '---NM',
-    route: '---------------------',
-    flightETAInSeconds: 'N/A',
-    cruiseAltitude: 0,
-    weights: {
-        cargo: 0,
-        estLandingWeight: 0,
-        estTakeOffWeight: 0,
-        estZeroFuelWeight: 0,
-        maxLandingWeight: 0,
-        maxTakeOffWeight: 0,
-        maxZeroFuelWeight: 0,
-        passengerCount: 0,
-        passengerWeight: 0,
-        payload: 0,
-    },
-    fuels: {
-        avgFuelFlow: 0,
-        contingency: 0,
-        enrouteBurn: 0,
-        etops: 0,
-        extra: 0,
-        maxTanks: 0,
-        minTakeOff: 0,
-        planLanding: 0,
-        planRamp: 0,
-        planTakeOff: 0,
-        reserve: 0,
-        taxi: 0,
-    },
-    weather: {
-        avgWindDir: '---',
-        avgWindSpeed: '---',
-    },
-    units: 'kgs',
-    altIcao: '----',
-    altIata: '---',
-    altBurn: 0,
-    tripTime: 0,
-    contFuelTime: 0,
-    resFuelTime: 0,
-    taxiOutTime: 0,
-    schedIn: '--:--',
-    schedOut: '--:--',
-    loadsheet: 'N/A',
-    costInd: '--',
-};
+import { NotificationsContainer, NotificationTypes, Notification } from './UIMessages/Notification';
+import { FbwLogo } from './Assets/FbwLogo';
 
 const navigraph = new NavigraphClient();
 
-type SimbriefUserIdContextType = {
-    simbriefUserId: string | undefined,
-    setSimbriefUserId: (newValue: string) => void
+const ApplicationNotifications = () => {
+    const firstNotification = useUIMessages().notifications[0];
+
+    return (
+        <NotificationsContainer>
+            {firstNotification}
+        </NotificationsContainer>
+    );
+};
+
+const ScreenLoading = () => (
+    <div className="flex justify-center items-center w-screen h-screen bg-theme-statusbar">
+        <FbwLogo width={128} height={120} className="text-theme-text" />
+    </div>
+);
+
+export enum PowerStates {
+    SHUTOFF,
+    STANDBY,
+    LOADING,
+    LOADED,
 }
 
-export const SimbriefUserIdContext = React.createContext<SimbriefUserIdContextType>(undefined!);
+interface PowerContextInterface {
+    powerState: PowerStates,
+    setPowerState: (PowerState) => void
+}
+
+export const PowerContext = React.createContext<PowerContextInterface>(undefined as any);
+export const usePower = () => React.useContext(PowerContext);
 
 const Efb = () => {
-    const history = useHistory();
+    const uiMessages = useUIMessages();
+
+    const [powerState, setPowerState] = useState<PowerStates>(PowerStates.SHUTOFF);
 
     const [currentLocalTime] = useSimVar('E:LOCAL TIME', 'seconds', 3000);
     const [, setBrightness] = useSimVar('L:A32NX_EFB_BRIGHTNESS', 'number');
     const [brightnessSetting] = usePersistentNumberProperty('EFB_BRIGHTNESS', 0);
-    const [usingAutobrightness] = useSimVar('L:A32NX_EFB_USING_AUTOBRIGHTNESS', 'bool', 5000);
+    const [usingAutobrightness] = useSimVar('L:A32NX_EFB_USING_AUTOBRIGHTNESS', 'bool', 300);
+    const [dayOfYear] = useSimVar('E:ZULU DAY OF YEAR', 'number');
+    const [latitude] = useSimVar('PLANE LATITUDE', 'degree latitude');
+
+    const dispatch = useAppDispatch();
+    const simbriefData = useAppSelector((state) => state.simbrief.data);
+    const [simbriefUserId] = usePersistentProperty('CONFIG_SIMBRIEF_USERID');
+    const [autoSimbriefImport] = usePersistentProperty('CONFIG_AUTO_SIMBRIEF_IMPORT');
+
+    useEffect(() => {
+        if (powerState === PowerStates.SHUTOFF) {
+            dispatch(clearEfbState());
+        } else if (powerState === PowerStates.LOADED) {
+            if ((!simbriefData || simbriefData === simbriefInitialState.data) && autoSimbriefImport === 'ENABLED') {
+                fetchSimbriefDataAction(simbriefUserId ?? '').then((action) => {
+                    dispatch(action);
+                }).catch(() => {
+                    uiMessages.pushNotification(
+                        <Notification
+                            type={NotificationTypes.ERROR}
+                            title="SimBrief Error"
+                            message="An error occurred when trying to fetch your SimBrief data."
+                        />,
+                    );
+                });
+            }
+        }
+    }, [powerState]);
+
+    const offToLoaded = () => {
+        setPowerState(PowerStates.LOADING);
+        setTimeout(() => {
+            setPowerState(PowerStates.LOADED);
+        }, 2500);
+    };
+
+    useInteractionEvent('A32NX_EFB_POWER', () => {
+        if (powerState === PowerStates.SHUTOFF) {
+            offToLoaded();
+        } else {
+            setPowerState(PowerStates.SHUTOFF);
+        }
+    });
+
+    /**
+     * Returns a brightness value between 0 and 100 inclusive based on the ratio of the solar altitude to the solar zenith
+     * @param {number} latitude - The latitude of the location (-90 to 90)
+     * @param {number} dayOfYear - The day of the year (0 to 365)
+     * @param {number} timeOfDay - The time of day in hours (0 to 24)
+     */
+    const calculateBrightness = (latitude: number, dayOfYear: number, timeOfDay: number) => {
+        const solarTime = timeOfDay + (dayOfYear - 1) * 24;
+        const solarDeclination = 0.409 * Math.sin(2 * Math.PI * (284 + dayOfYear) / 365);
+        const solarAltitude = Math.asin(
+            Math.sin(latitude * Math.PI / 180) * Math.sin(solarDeclination) + Math.cos(latitude * Math.PI / 180) * Math.cos(solarDeclination) * Math.cos(2 * Math.PI * solarTime / 24),
+        );
+        const solarZenith = 90 - (latitude - solarDeclination);
+
+        return Math.min(Math.max((-solarAltitude * (180 / Math.PI)) / solarZenith * 100, 0), 100);
+    };
 
     // handle setting brightness if user is using autobrightness
     useEffect(() => {
         if (usingAutobrightness) {
             const localTime = currentLocalTime / 3600;
-            // the below code defines a semicircular function.
-            setBrightness(((Math.sqrt(48 - ((localTime - 14) ** 2))) * 14.431) || 0);
+            setBrightness((calculateBrightness(latitude, dayOfYear, localTime)));
         } else {
             setBrightness(brightnessSetting);
         }
     }, [currentLocalTime, usingAutobrightness]);
 
-    const [performanceState, performanceDispatch] = useReducer(PerformanceReducer, performanceInitialState);
-    const [simbriefData, setSimbriefData] = useState<SimbriefData>(emptySimbriefData);
-    const [simbriefUserId, setSimbriefUserId] = usePersistentProperty('CONFIG_SIMBRIEF_USERID');
-
-    const [timeState, setTimeState] = useState<TimeState>({
-        currentTime: new Date(),
-        initTime: new Date(),
-        timeSinceStart: '00:00',
-    });
-    const [currentPageIndex, setCurrentPageIndex] = useState<0 | 1 | 2 | 3 | 4 | 5 | 6 | 7>(0);
-
-    useEffect(() => {
-        switch (currentPageIndex) {
-        case 1:
-            history.push('/dispatch');
-            break;
-        case 2:
-            history.push('/ground');
-            break;
-        case 3:
-            history.push('/performance');
-            break;
-        case 4:
-            history.push('/navigation');
-            break;
-        case 5:
-            history.push('/atc');
-            break;
-        case 6:
-            history.push('/settings');
-            break;
-        case 7:
-            history.push('/failures');
-            break;
-        default:
-            history.push('/dashboard');
-            break;
-        }
-    }, [currentPageIndex]);
-
-    const fetchSimbriefData = async () => {
-        if (!simbriefUserId) {
-            return;
-        }
-
-        const returnedSimbriefData = await getSimbriefData(simbriefUserId);
-        setSimbriefData({
-            airline: returnedSimbriefData.airline,
-            flightNum: returnedSimbriefData.flightNumber,
-            departingAirport: returnedSimbriefData.origin.icao,
-            departingIata: returnedSimbriefData.origin.iata,
-            arrivingAirport: returnedSimbriefData.destination.icao,
-            arrivingIata: returnedSimbriefData.destination.iata,
-            aircraftReg: returnedSimbriefData.aircraftReg,
-            flightDistance: returnedSimbriefData.distance,
-            flightETAInSeconds: returnedSimbriefData.flightETAInSeconds,
-            cruiseAltitude: returnedSimbriefData.cruiseAltitude,
-            route: returnedSimbriefData.route,
-            weights: {
-                cargo: returnedSimbriefData.weights.cargo,
-                estLandingWeight: returnedSimbriefData.weights.estLandingWeight,
-                estTakeOffWeight: returnedSimbriefData.weights.estTakeOffWeight,
-                estZeroFuelWeight: returnedSimbriefData.weights.estZeroFuelWeight,
-                maxLandingWeight: returnedSimbriefData.weights.maxLandingWeight,
-                maxTakeOffWeight: returnedSimbriefData.weights.maxTakeOffWeight,
-                maxZeroFuelWeight: returnedSimbriefData.weights.maxZeroFuelWeight,
-                passengerCount: returnedSimbriefData.weights.passengerCount,
-                passengerWeight: returnedSimbriefData.weights.passengerWeight,
-                payload: returnedSimbriefData.weights.payload,
-            },
-            fuels: {
-                avgFuelFlow: returnedSimbriefData.fuel.avgFuelFlow,
-                contingency: returnedSimbriefData.fuel.contingency,
-                enrouteBurn: returnedSimbriefData.fuel.enrouteBurn,
-                etops: returnedSimbriefData.fuel.etops,
-                extra: returnedSimbriefData.fuel.extra,
-                maxTanks: returnedSimbriefData.fuel.maxTanks,
-                minTakeOff: returnedSimbriefData.fuel.minTakeOff,
-                planLanding: returnedSimbriefData.fuel.planLanding,
-                planRamp: returnedSimbriefData.fuel.planRamp,
-                planTakeOff: returnedSimbriefData.fuel.planTakeOff,
-                reserve: returnedSimbriefData.fuel.reserve,
-                taxi: returnedSimbriefData.fuel.taxi,
-            },
-            weather: {
-                avgWindDir: returnedSimbriefData.weather.avgWindDir.toString(),
-                avgWindSpeed: returnedSimbriefData.weather.avgWindSpeed.toString(),
-            },
-            units: returnedSimbriefData.units,
-            altIcao: returnedSimbriefData.alternate.icao,
-            altIata: returnedSimbriefData.alternate.iata,
-            altBurn: returnedSimbriefData.alternate.burn,
-            tripTime: returnedSimbriefData.times.estTimeEnroute,
-            contFuelTime: returnedSimbriefData.times.contFuelTime,
-            resFuelTime: returnedSimbriefData.times.reserveTime,
-            taxiOutTime: returnedSimbriefData.times.taxiOut,
-            schedOut: returnedSimbriefData.times.schedOut,
-            schedIn: returnedSimbriefData.times.schedIn,
-            loadsheet: returnedSimbriefData.text,
-            costInd: returnedSimbriefData.costIndex,
-        });
-    };
-
-    const updateCurrentTime = (currentTime: Date) => {
-        setTimeState({ ...timeState, currentTime });
-    };
-
-    const updateTimeSinceStart = (timeSinceStart: string) => {
-        setTimeState({ ...timeState, timeSinceStart });
-    };
-
-    return (
-        <Provider store={store}>
-            <PerformanceContext.Provider value={{ performanceState, performanceDispatch }}>
-                <NavigraphContext.Provider value={navigraph}>
-                    <SimbriefUserIdContext.Provider value={{ simbriefUserId, setSimbriefUserId }}>
-                        <div className="flex flex-col">
-                            <StatusBar initTime={timeState.initTime} updateCurrentTime={updateCurrentTime} updateTimeSinceStart={updateTimeSinceStart} />
+    switch (powerState) {
+    case PowerStates.SHUTOFF:
+        return <div className="w-screen h-screen" onClick={() => offToLoaded()} />;
+    case PowerStates.LOADING:
+        return <ScreenLoading />;
+    case PowerStates.LOADED:
+        return (
+            <NavigraphContext.Provider value={navigraph}>
+                <PowerContext.Provider value={{ powerState, setPowerState }}>
+                    <UIMessagesProvider>
+                        <div className="bg-theme-body">
+                            <ApplicationNotifications />
+                            <StatusBar />
                             <div className="flex flex-row">
-                                <ToolBar setPageIndex={(index) => setCurrentPageIndex(index)} />
-                                <div className="py-16 px-8 text-gray-700 bg-navy-regular h-screen w-screen">
+                                <ToolBar />
+                                <div className="pt-14 pr-6 w-screen h-screen text-gray-700">
                                     <Switch>
+                                        <Route exact path="/">
+                                            <Redirect to="/dashboard" />
+                                        </Route>
                                         <Route path="/dashboard">
-                                            <Dashboard
-                                                simbriefData={simbriefData}
-                                                fetchSimbrief={fetchSimbriefData}
-                                            />
+                                            <Dashboard />
                                         </Route>
                                         <Route path="/dispatch">
-                                            <Dispatch
-                                                loadsheet={simbriefData.loadsheet}
-                                                weights={simbriefData.weights}
-                                                fuels={simbriefData.fuels}
-                                                units={simbriefData.units}
-                                                arrivingAirport={simbriefData.arrivingAirport}
-                                                arrivingIata={simbriefData.arrivingIata}
-                                                departingAirport={simbriefData.departingAirport}
-                                                departingIata={simbriefData.departingIata}
-                                                altBurn={simbriefData.altBurn}
-                                                altIcao={simbriefData.altIcao}
-                                                altIata={simbriefData.altIata}
-                                                tripTime={simbriefData.tripTime}
-                                                contFuelTime={simbriefData.contFuelTime}
-                                                resFuelTime={simbriefData.resFuelTime}
-                                                taxiOutTime={simbriefData.taxiOutTime}
-                                            />
+                                            <Dispatch />
                                         </Route>
                                         <Route path="/ground">
                                             <Ground />
@@ -311,11 +186,13 @@ const Efb = () => {
                                 </div>
                             </div>
                         </div>
-                    </SimbriefUserIdContext.Provider>
-                </NavigraphContext.Provider>
-            </PerformanceContext.Provider>
-        </Provider>
-    );
+                    </UIMessagesProvider>
+                </PowerContext.Provider>
+            </NavigraphContext.Provider>
+        );
+    default:
+        throw new Error('Invalid content state provided');
+    }
 };
 
 export default Efb;

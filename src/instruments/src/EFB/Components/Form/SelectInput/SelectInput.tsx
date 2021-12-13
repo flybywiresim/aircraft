@@ -43,7 +43,7 @@ const SelectInput = (props: SelectInputProps) => {
 
         for (const option of props.options) {
             optionElements.push((
-                <div className="text-white hover:bg-white hover:bg-opacity-5 transition duration-300 rounded-lg px-5 py-1.5" onClick={() => onOptionClicked(option)}>
+                <div className="py-1.5 px-5 hover:bg-white hover:bg-opacity-5 rounded-lg transition duration-300" onClick={() => onOptionClicked(option)}>
                     {option.displayValue}
                 </div>
             ));
@@ -58,12 +58,12 @@ const SelectInput = (props: SelectInputProps) => {
     return (
         <div className={`flex ${props.reverse ? 'flex-row-reverse' : 'flex-row'}`}>
             <div className={`text-lg flex flex-grow m-2.5 items-center ${props.reverse ? 'justify-start' : 'justify-end'}`}>{props.label}</div>
-            <div className="flex items-center cursor-pointer relative" onClick={handleToggleDropdown}>
-                <div className={`relative flex px-5 py-1.5 text-lg text-white rounded-lg bg-navy-light border-2 border-navy-light
+            <div className="flex relative items-center cursor-pointer" onClick={handleToggleDropdown}>
+                <div className={`relative flex px-5 py-1.5 text-lg  rounded-lg bg-navy-light border-2 border-navy-light
                         focus-within:outline-none focus-within:border-teal-light-contrast ${props.className}`}
                 >
                     {value}
-                    <IconChevronDown className="text-white absolute right-4 top-2.5" size={20} />
+                    <IconChevronDown className="absolute top-2.5 right-4" size={20} />
                 </div>
                 {showDropdown && (
                     <div className={`p-3 text-lg w-full border-none bg-navy-medium rounded-lg z-10 absolute transform
