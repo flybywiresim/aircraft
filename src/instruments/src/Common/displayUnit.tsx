@@ -58,7 +58,7 @@ export const DisplayUnit: React.FC<DisplayUnitProps> = (props) => {
             setState(DisplayUnitState.Off);
             setTimer(null);
         }
-    }, [state, potentiometer, electricityState]);
+    });
 
     if (state === DisplayUnitState.Selftest) {
         return (

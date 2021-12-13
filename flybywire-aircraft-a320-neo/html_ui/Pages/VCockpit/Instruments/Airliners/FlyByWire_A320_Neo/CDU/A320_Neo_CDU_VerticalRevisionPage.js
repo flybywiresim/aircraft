@@ -65,19 +65,20 @@ class CDUVerticalRevisionPage {
             mcdu.onLeftInput[1] = () => {}; // CLB SPD LIM
             mcdu.onRightInput[1] = () => {}; // RTA
             mcdu.onLeftInput[2] = async (value) => {
-                const speed = (value !== FMCMainDisplay.clrValue) ? parseInt(value) : 0;
-                if (isFinite(speed)) {
-                    if (speed >= 0) {
-                        mcdu.flightPlanManager.setWaypointSpeed(speed, mcdu.flightPlanManager.indexOfWaypoint(waypoint), () => {
-                            mcdu.updateConstraints();
-                            this.ShowPage(mcdu, waypoint);
-                        });
+                if (isFinite(value)) {
+                    if (value >= 0) {
+                        // NYI
                     }
-                } else {
-                    mcdu.addNewMessage(NXSystemMessages.notAllowed);
                 }
+                mcdu.addNewMessage(NXFictionalMessages.notYetImplemented);
             }; // SPD CSTR
             mcdu.onRightInput[2] = (value) => {
+                if (value === FMCMainDisplay.clrValue) {
+                    mcdu.removeWaypoint(fpIndex, () => {
+                        mcdu.updateConstraints();
+                        CDUFlightPlanPage.ShowPage(mcdu, offset);
+                    });
+                }
 
                 const PLUS_REGEX = /\+\d+/g;
                 const MINUS_REGEX = /\-\d+/g;
@@ -85,27 +86,21 @@ class CDUVerticalRevisionPage {
                 let altitude;
                 let code;
 
-                if (value !== FMCMainDisplay.clrValue) {
-                    if (value.match(MINUS_REGEX)) {
-                        code = 3;
-                        altitude = value.split('-')[1];
-                    } else if ((value.match(PLUS_REGEX))) {
-                        code = 2;
-                        altitude = value.split('+')[1];
-                    } else {
-                        code = 1;
-                        altitude = value;
-                    }
-                    altitude = parseInt(altitude);
+                if (value.match(MINUS_REGEX)) {
+                    code = 3;
+                    altitude = value.split('-')[1];
+                } else if ((value.match(PLUS_REGEX))) {
+                    code = 2;
+                    altitude = value.split('+')[1];
                 } else {
-                    altitude = 0;
-                    code = 0;
+                    code = 1;
+                    altitude = value;
                 }
+                altitude = parseInt(altitude);
                 if (isFinite(altitude)) {
                     if (altitude >= 0) {
-                        // TODO Proper altitude constraints implementation - currently only cosmetic
                         mcdu.flightPlanManager.setLegAltitudeDescription(waypoint, code);
-                        mcdu.flightPlanManager.setWaypointAltitude(altitude, mcdu.flightPlanManager.indexOfWaypoint(waypoint), () => {
+                        mcdu.flightPlanManager.setWaypointAltitude((altitude < 1000 ? altitude * 100 : altitude) / 3.28084, mcdu.flightPlanManager.indexOfWaypoint(waypoint), () => {
                             mcdu.updateConstraints();
                             this.ShowPage(mcdu, waypoint);
                         });

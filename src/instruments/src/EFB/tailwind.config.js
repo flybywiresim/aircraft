@@ -5,7 +5,7 @@ const reactComponentsClasses = require('../../../../node_modules/@flybywiresim/r
 module.exports = {
     // mode: 'jit',
     purge: {
-        enabled: true,
+        enabled: process.env.A32NX_PRODUCTION_BUILD === '1',
         content: [
             './**/*.{jsx,tsx}',
         ],

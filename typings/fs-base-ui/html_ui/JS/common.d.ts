@@ -914,31 +914,31 @@ declare global {
 
     /**
      * The component manager among other things handles the importing of scripts and templates.
-     *
+     * 
      * The first two examples are for basic usage scenarios. These examples are insufficient for
      * situations where a script or template depends on another script, e.g. when it depends on a
      * class defined in that script. The following attributes are available to handle these cases:
-     *
+     * 
      * `import-async`: when set to false, **all** scripts imported from that moment onward are loaded
      * synchronously. I.e. they are loaded in the order they are listed. Initial loading times will
      * increase when using this attribute.
-     *
+     * 
      * `import-after`: any resource listed in this attribute will be imported after the script
      * declared in the `import-script` attribute was imported. `import-after` supports
      * declaring multiple values by using a `,` separator. Note that `import-after` is not supported
      * for `import-template`.
-     *
+     * 
      * Note that a template imported with `import-template` might itself contain references to
      * other resources. Managing the import sequence of resources across multiple templates is
      * unsupported. Thus, if you need to manage the import order of resources within a template,
      * move the resources referenced by these templates to the importer of said template.
-     *
+     * 
      * @example
      * <script type="text/html" import-script="path/to/script.js"></script>
      * @example
      * <script type="text/html" import-template="path/to/template.html"></script>
      * @example
-     * <script type="text/html" import-script="path/to/script.js"
+     * <script type="text/html" import-script="path/to/script.js" 
      *   import-after="path/to/template.html,path/to/template.html"></script>
      */
     class ComponentMgr {
@@ -1106,7 +1106,6 @@ declare global {
 
     class EmptyCallback {
         static Void: () => void;
-
         static Boolean: (value: boolean) => void;
     }
 

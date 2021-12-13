@@ -1,7 +1,6 @@
 import React from 'react';
 import { Arinc429Word } from '@instruments/common/arinc429';
-import { getSmallestAngle } from '@instruments/common/utils';
-import { HorizontalTape } from './PFDUtils';
+import { HorizontalTape, getSmallestAngle } from './PFDUtils';
 import { getSimVar } from '../util.js';
 
 const DisplayRange = 24;

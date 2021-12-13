@@ -1,21 +1,3 @@
-/*
- * A32NX
- * Copyright (C) 2020 FlyByWire Simulations and its contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-
 class CDUDirectToPage {
     static ShowPage(mcdu, directWaypoint, wptsListIndex = 0) {
         mcdu.clearDisplay();
@@ -55,19 +37,14 @@ class CDUDirectToPage {
             });
         };
         let i = 0;
-        let cellIter = 0;
         wptsListIndex = Math.max(wptsListIndex, mcdu.flightPlanManager.getActiveWaypointIndex());
-        const totalWaypointsCount = mcdu.flightPlanManager.getWaypointsCount() + mcdu.flightPlanManager.getArrivalWaypointsCount() + mcdu.flightPlanManager.getApproachWaypoints().length;
-        while (i < totalWaypointsCount && i + wptsListIndex < totalWaypointsCount && cellIter < iMax) {
+        const totalWaypointsCount = mcdu.flightPlanManager.getWaypointsCount() + mcdu.flightPlanManager.getArrivalWaypointsCount() + mcdu.flightPlanManager.getApproachWaypointsCount();
+        while (i < totalWaypointsCount && i + wptsListIndex < totalWaypointsCount && i < iMax) {
             const waypoint = mcdu.flightPlanManager.getWaypoint(i + wptsListIndex, NaN, true);
             if (waypoint) {
-                if (waypoint.isVectors) {
-                    i++;
-                    continue;
-                }
-                waypointsCell[cellIter] = "{" + waypoint.ident + "[color]cyan";
-                if (waypointsCell[cellIter]) {
-                    mcdu.onLeftInput[cellIter + 1] = () => {
+                waypointsCell[i] = "{" + waypoint.ident + "[color]cyan";
+                if (waypointsCell[i]) {
+                    mcdu.onLeftInput[i + 1] = () => {
                         SimVar.SetSimVarValue("L:A320_NEO_PREVIEW_DIRECT_TO", "number", 1);
                         SimVar.SetSimVarValue("L:A320_NEO_PREVIEW_DIRECT_TO_LAT_0", "number", SimVar.GetSimVarValue("PLANE LATITUDE", "degree latitude"));
                         SimVar.SetSimVarValue("L:A320_NEO_PREVIEW_DIRECT_TO_LONG_0", "number", SimVar.GetSimVarValue("PLANE LONGITUDE", "degree longitude"));
@@ -77,13 +54,12 @@ class CDUDirectToPage {
                     };
                 }
             } else {
-                waypointsCell[cellIter] = "----";
+                waypointsCell[i] = "----";
             }
             i++;
-            cellIter++;
         }
-        if (cellIter < iMax) {
-            waypointsCell[cellIter] = "--END--";
+        if (i < iMax) {
+            waypointsCell[i] = "--END--";
         }
         let insertLabel = "";
         let insertLine = "";

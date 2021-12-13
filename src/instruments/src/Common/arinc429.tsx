@@ -1,5 +1,5 @@
 /* eslint-disable max-classes-per-file */
-import { useSimVar } from './simVars';
+import { useSimVarValue } from './simVars';
 
 type SignStatusMatrixRange = (typeof Arinc429Word.SignStatusMatrix)[keyof typeof Arinc429Word.SignStatusMatrix];
 
@@ -64,21 +64,13 @@ export class Arinc429Word {
     valueOr(defaultValue: number) {
         return this.isNormalOperation() ? this.value : defaultValue;
     }
-
-    static fromSimVarValue(name): Arinc429Word | null {
-        const value: number | null = SimVar.GetSimVarValue(name, 'number');
-        if (value) {
-            return new Arinc429Word(value);
-        }
-        return null;
-    }
 }
 
 export const useArinc429Var = (
     name: string,
     maxStaleness = 0,
 ): Arinc429Word => {
-    const [value] = useSimVar(name, 'number', maxStaleness);
+    const value = useSimVarValue(name, 'number', maxStaleness);
     try {
         return new Arinc429Word(value);
     } catch (e) {
