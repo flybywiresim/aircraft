@@ -1,13 +1,9 @@
-@font-face {
-  font-family: "Roboto";
-  src: url("/Fonts/RobotoMono-Medium.ttf") format("truetype");
-  font-weight: normal;
-  font-style: normal;
-}
+@import "../Common/definitions";
 
 @font-face {
-  font-family: "Roboto-Light";
-  src: url("/Fonts/RobotoMono-Light.ttf") format("truetype");
+  font-family: "Ecam";
+  //noinspection CssUnknownTarget
+  src: url("/fonts/ECAMFontRegular.ttf") format("truetype");
   font-weight: normal;
   font-style: normal;
 }
@@ -16,19 +12,6 @@
   position: absolute;
   width: 768px;
   height: 768px;
-
-  background: radial-gradient(
-      ellipse at center,
-      rgba(13, 20, 35, 1) 0%,
-      rgb(13, 20, 35) 100%
-  );
-
-  visibility: visible !important;
-
-  font-family: Roboto;
-
-  path {
-    stroke: white;
-    stroke-width: 3;
-  }
+  background: $display-background;
+  font-family: "Ecam", monospace !important;
 }
