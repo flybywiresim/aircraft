@@ -2,7 +2,7 @@
 #include "AutopilotStateMachine_private.h"
 
 AutopilotStateMachineModelClass::Parameters_AutopilotStateMachine_T AutopilotStateMachineModelClass::
-  AutopilotStateMachine_P = {
+  AutopilotStateMachine_P{
 
   {
     {
@@ -416,35 +416,35 @@ AutopilotStateMachineModelClass::Parameters_AutopilotStateMachine_T AutopilotSta
 
   0.0,
 
-  0,
+  false,
 
-  0,
+  false,
 
-  0,
+  false,
 
-  0,
+  false,
 
-  0,
+  false,
 
-  0,
+  false,
 
-  0,
+  false,
 
-  0,
+  false,
 
-  0,
+  false,
 
-  0,
+  false,
 
-  0,
+  false,
 
-  0,
+  false,
 
-  0,
+  false,
 
-  0,
+  false,
 
-  0,
+  false,
 
 
   {

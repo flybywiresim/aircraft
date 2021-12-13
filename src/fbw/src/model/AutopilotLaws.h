@@ -4,7 +4,8 @@
 #include "rtwtypes.h"
 #include "AutopilotLaws_types.h"
 
-class AutopilotLawsModelClass {
+class AutopilotLawsModelClass
+{
  public:
   struct rtDW_LagFilter_AutopilotLaws_T {
     real_T pY;
@@ -77,8 +78,8 @@ class AutopilotLawsModelClass {
     boolean_T icLoad_f;
     boolean_T wasActive;
     boolean_T wasActive_not_empty;
-    boolean_T wasActive_l;
-    boolean_T wasActive_not_empty_a;
+    boolean_T wasActive_c;
+    boolean_T wasActive_not_empty_p;
     boolean_T nav_gs_deg_not_empty;
     boolean_T pY_not_empty;
     boolean_T limit_not_empty;
@@ -803,27 +804,29 @@ class AutopilotLawsModelClass {
     uint8_T ManualSwitch_CurrentSetting_b;
   };
 
-  void initialize();
-  void step();
-  void terminate();
-  AutopilotLawsModelClass();
-  ~AutopilotLawsModelClass();
-  void setExternalInputs(const ExternalInputs_AutopilotLaws_T* pExternalInputs_AutopilotLaws_T)
+  AutopilotLawsModelClass(AutopilotLawsModelClass const&) =delete;
+  AutopilotLawsModelClass& operator= (AutopilotLawsModelClass const&) & = delete;
+  void setExternalInputs(const ExternalInputs_AutopilotLaws_T *pExternalInputs_AutopilotLaws_T)
   {
     AutopilotLaws_U = *pExternalInputs_AutopilotLaws_T;
   }
 
-  const AutopilotLawsModelClass::ExternalOutputs_AutopilotLaws_T & getExternalOutputs() const
+  const ExternalOutputs_AutopilotLaws_T &getExternalOutputs() const
   {
     return AutopilotLaws_Y;
   }
 
+  void initialize();
+  void step();
+  static void terminate();
+  AutopilotLawsModelClass();
+  ~AutopilotLawsModelClass();
  private:
-  static Parameters_AutopilotLaws_T AutopilotLaws_P;
-  BlockIO_AutopilotLaws_T AutopilotLaws_B;
-  D_Work_AutopilotLaws_T AutopilotLaws_DWork;
   ExternalInputs_AutopilotLaws_T AutopilotLaws_U;
   ExternalOutputs_AutopilotLaws_T AutopilotLaws_Y;
+  BlockIO_AutopilotLaws_T AutopilotLaws_B;
+  D_Work_AutopilotLaws_T AutopilotLaws_DWork;
+  static Parameters_AutopilotLaws_T AutopilotLaws_P;
   static void AutopilotLaws_MATLABFunction(real_T rtu_tau, real_T rtu_zeta, real_T *rty_k2, real_T *rty_k1);
   static void AutopilotLaws_LagFilter(real_T rtu_U, real_T rtu_C1, real_T rtu_dt, real_T *rty_Y,
     rtDW_LagFilter_AutopilotLaws_T *localDW);

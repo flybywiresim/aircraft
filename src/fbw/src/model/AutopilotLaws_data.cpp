@@ -1,7 +1,7 @@
 #include "AutopilotLaws.h"
 #include "AutopilotLaws_private.h"
 
-AutopilotLawsModelClass::Parameters_AutopilotLaws_T AutopilotLawsModelClass::AutopilotLaws_P = {
+AutopilotLawsModelClass::Parameters_AutopilotLaws_T AutopilotLawsModelClass::AutopilotLaws_P{
 
   {
     {
@@ -460,9 +460,9 @@ AutopilotLawsModelClass::Parameters_AutopilotLaws_T AutopilotLawsModelClass::Aut
 
   0.0,
 
-  1,
+  true,
 
-  1,
+  true,
 
   -1.0,
 
@@ -1462,9 +1462,9 @@ AutopilotLawsModelClass::Parameters_AutopilotLaws_T AutopilotLawsModelClass::Aut
 
   1.0,
 
-  0,
+  false,
 
-  0,
+  false,
 
   0U,
 
