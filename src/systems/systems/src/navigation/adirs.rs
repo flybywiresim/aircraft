@@ -1,3 +1,4 @@
+use crate::simulation::{InitContext, VariableIdentifier};
 use crate::{
     overhead::{IndicationLight, OnOffFaultPushButton},
     shared::{
@@ -29,24 +30,24 @@ impl AirDataInertialReferenceSystemOverheadPanel {
     const DURATION_AFTER_WHICH_ON_BAT_ILLUMINATES: Duration = Duration::from_millis(10500);
     const ON_BAT_ILLUMINATION_DURATION: Duration = Duration::from_millis(5500);
 
-    pub fn new() -> Self {
+    pub fn new(context: &mut InitContext) -> Self {
         Self {
             ir: [
-                OnOffFaultPushButton::new_on("ADIRS_IR_1"),
-                OnOffFaultPushButton::new_on("ADIRS_IR_2"),
-                OnOffFaultPushButton::new_on("ADIRS_IR_3"),
+                OnOffFaultPushButton::new_on(context, "ADIRS_IR_1"),
+                OnOffFaultPushButton::new_on(context, "ADIRS_IR_2"),
+                OnOffFaultPushButton::new_on(context, "ADIRS_IR_3"),
             ],
             mode_selectors: [
-                InertialReferenceModeSelector::new(1),
-                InertialReferenceModeSelector::new(2),
-                InertialReferenceModeSelector::new(3),
+                InertialReferenceModeSelector::new(context, 1),
+                InertialReferenceModeSelector::new(context, 2),
+                InertialReferenceModeSelector::new(context, 3),
             ],
             adr: [
-                OnOffFaultPushButton::new_on("ADIRS_ADR_1"),
-                OnOffFaultPushButton::new_on("ADIRS_ADR_2"),
-                OnOffFaultPushButton::new_on("ADIRS_ADR_3"),
+                OnOffFaultPushButton::new_on(context, "ADIRS_ADR_1"),
+                OnOffFaultPushButton::new_on(context, "ADIRS_ADR_2"),
+                OnOffFaultPushButton::new_on(context, "ADIRS_ADR_3"),
             ],
-            on_bat: IndicationLight::new(Self::ADIRS_ON_BAT_NAME),
+            on_bat: IndicationLight::new(context, Self::ADIRS_ON_BAT_NAME),
         }
     }
 
@@ -96,11 +97,6 @@ impl SimulationElement for AirDataInertialReferenceSystemOverheadPanel {
         visitor.visit(self);
     }
 }
-impl Default for AirDataInertialReferenceSystemOverheadPanel {
-    fn default() -> Self {
-        Self::new()
-    }
-}
 
 #[derive(Clone, Copy, PartialEq)]
 enum InertialReferenceMode {
@@ -122,14 +118,14 @@ impl From<f64> for InertialReferenceMode {
 }
 
 struct InertialReferenceModeSelector {
-    mode_id: String,
+    mode_id: VariableIdentifier,
     mode: InertialReferenceMode,
     not_off_duration: Duration,
 }
 impl InertialReferenceModeSelector {
-    fn new(number: usize) -> Self {
+    fn new(context: &mut InitContext, number: usize) -> Self {
         Self {
-            mode_id: Self::mode_id(number),
+            mode_id: context.get_identifier(Self::mode_id(number)),
             // We start in an aligned state to support starting on the
             // runway or in the air.
             mode: InertialReferenceMode::Navigation,
@@ -182,28 +178,53 @@ impl From<f64> for AlignState {
     }
 }
 
-#[derive(Clone, Copy, Default)]
+#[derive(Clone, Copy)]
 struct AdirsSimulatorData {
+    mach_id: VariableIdentifier,
     mach: MachNumber,
+
+    vertical_speed_id: VariableIdentifier,
     vertical_speed: Velocity,
+
+    true_airspeed_id: VariableIdentifier,
     true_airspeed: Velocity,
+
+    latitude_id: VariableIdentifier,
     latitude: Angle,
+
+    longitude_id: VariableIdentifier,
     longitude: Angle,
+
+    pitch_id: VariableIdentifier,
     pitch: Angle,
+
+    roll_id: VariableIdentifier,
     roll: Angle,
+
+    heading_id: VariableIdentifier,
     heading: Angle,
+
+    track_id: VariableIdentifier,
     track: Angle,
+
+    ground_speed_id: VariableIdentifier,
     ground_speed: Velocity,
+
+    wind_direction_id: VariableIdentifier,
     wind_direction: Angle,
+
+    wind_velocity_id: VariableIdentifier,
     wind_velocity: Velocity,
+
+    total_air_temperature_id: VariableIdentifier,
     total_air_temperature: ThermodynamicTemperature,
 }
 impl AdirsSimulatorData {
-    const LATITUDE: &'static str = "PLANE LATITUDE";
-    const LONGITUDE: &'static str = "PLANE LONGITUDE";
     const MACH: &'static str = "AIRSPEED MACH";
     const VERTICAL_SPEED: &'static str = "VELOCITY WORLD Y";
     const TRUE_AIRSPEED: &'static str = "AIRSPEED TRUE";
+    const LATITUDE: &'static str = "PLANE LATITUDE";
+    const LONGITUDE: &'static str = "PLANE LONGITUDE";
     const PITCH: &'static str = "PLANE PITCH DEGREES";
     const ROLL: &'static str = "PLANE BANK DEGREES";
     const HEADING: &'static str = "PLANE HEADING DEGREES MAGNETIC";
@@ -212,28 +233,76 @@ impl AdirsSimulatorData {
     const WIND_DIRECTION: &'static str = "AMBIENT WIND DIRECTION";
     const WIND_VELOCITY: &'static str = "AMBIENT WIND VELOCITY";
     const TOTAL_AIR_TEMPERATURE: &'static str = "TOTAL AIR TEMPERATURE";
+
+    fn new(context: &mut InitContext) -> Self {
+        Self {
+            mach_id: context.get_identifier(Self::MACH.to_owned()),
+            mach: Default::default(),
+
+            vertical_speed_id: context.get_identifier(Self::VERTICAL_SPEED.to_owned()),
+            vertical_speed: Default::default(),
+
+            true_airspeed_id: context.get_identifier(Self::TRUE_AIRSPEED.to_owned()),
+            true_airspeed: Default::default(),
+
+            latitude_id: context.get_identifier(Self::LATITUDE.to_owned()),
+            latitude: Default::default(),
+
+            longitude_id: context.get_identifier(Self::LONGITUDE.to_owned()),
+            longitude: Default::default(),
+
+            pitch_id: context.get_identifier(Self::PITCH.to_owned()),
+            pitch: Default::default(),
+
+            roll_id: context.get_identifier(Self::ROLL.to_owned()),
+            roll: Default::default(),
+
+            heading_id: context.get_identifier(Self::HEADING.to_owned()),
+            heading: Default::default(),
+
+            track_id: context.get_identifier(Self::TRACK.to_owned()),
+            track: Default::default(),
+
+            ground_speed_id: context.get_identifier(Self::GROUND_SPEED.to_owned()),
+            ground_speed: Default::default(),
+
+            wind_direction_id: context.get_identifier(Self::WIND_DIRECTION.to_owned()),
+            wind_direction: Default::default(),
+
+            wind_velocity_id: context.get_identifier(Self::WIND_VELOCITY.to_owned()),
+            wind_velocity: Default::default(),
+
+            total_air_temperature_id: context
+                .get_identifier(Self::TOTAL_AIR_TEMPERATURE.to_owned()),
+            total_air_temperature: Default::default(),
+        }
+    }
 }
 impl SimulationElement for AdirsSimulatorData {
     fn read(&mut self, reader: &mut SimulatorReader) {
         // To reduce reads, we only read these values once and then share it with the underlying ADRs and IRs.
-        self.mach = reader.read(Self::MACH);
-        let vertical_speed: f64 = reader.read(Self::VERTICAL_SPEED);
+        self.mach = reader.read(&self.mach_id);
+        let vertical_speed: f64 = reader.read(&self.vertical_speed_id);
         self.vertical_speed = Velocity::new::<foot_per_minute>(vertical_speed);
-        self.true_airspeed = reader.read(Self::TRUE_AIRSPEED);
-        self.latitude = reader.read(Self::LATITUDE);
-        self.longitude = reader.read(Self::LONGITUDE);
-        self.pitch = reader.read(Self::PITCH);
-        self.roll = reader.read(Self::ROLL);
-        self.heading = reader.read(Self::HEADING);
-        self.track = reader.read(Self::TRACK);
-        self.ground_speed = reader.read(Self::GROUND_SPEED);
-        self.wind_direction = reader.read(Self::WIND_DIRECTION);
-        self.wind_velocity = reader.read(Self::WIND_VELOCITY);
-        self.total_air_temperature = reader.read(Self::TOTAL_AIR_TEMPERATURE);
+        self.true_airspeed = reader.read(&self.true_airspeed_id);
+        self.latitude = reader.read(&self.latitude_id);
+        self.longitude = reader.read(&self.longitude_id);
+        self.pitch = reader.read(&self.pitch_id);
+        self.roll = reader.read(&self.roll_id);
+        self.heading = reader.read(&self.heading_id);
+        self.track = reader.read(&self.track_id);
+        self.ground_speed = reader.read(&self.ground_speed_id);
+        self.wind_direction = reader.read(&self.wind_direction_id);
+        self.wind_velocity = reader.read(&self.wind_velocity_id);
+        self.total_air_temperature = reader.read(&self.total_air_temperature_id);
     }
 }
 
 pub struct AirDataInertialReferenceSystem {
+    remaining_alignment_time_id: VariableIdentifier,
+    configured_align_time_id: VariableIdentifier,
+    uses_gps_as_primary_id: VariableIdentifier,
+
     adirus: [AirDataInertialReferenceUnit; 3],
     configured_align_time: AlignTime,
     simulator_data: AdirsSimulatorData,
@@ -243,15 +312,22 @@ impl AirDataInertialReferenceSystem {
     const CONFIGURED_ALIGN_TIME_KEY: &'static str = "CONFIG_ADIRS_IR_ALIGN_TIME";
     const USES_GPS_AS_PRIMARY_KEY: &'static str = "ADIRS_USES_GPS_AS_PRIMARY";
 
-    pub fn new() -> Self {
+    pub fn new(context: &mut InitContext) -> Self {
         Self {
+            remaining_alignment_time_id: context
+                .get_identifier(Self::REMAINING_ALIGNMENT_TIME_KEY.to_owned()),
+            configured_align_time_id: context
+                .get_identifier(Self::CONFIGURED_ALIGN_TIME_KEY.to_owned()),
+            uses_gps_as_primary_id: context
+                .get_identifier(Self::USES_GPS_AS_PRIMARY_KEY.to_owned()),
+
             adirus: [
-                AirDataInertialReferenceUnit::new(1, true),
-                AirDataInertialReferenceUnit::new(2, false),
-                AirDataInertialReferenceUnit::new(3, true),
+                AirDataInertialReferenceUnit::new(context, 1, true),
+                AirDataInertialReferenceUnit::new(context, 2, false),
+                AirDataInertialReferenceUnit::new(context, 3, true),
             ],
             configured_align_time: AlignTime::Realistic,
-            simulator_data: Default::default(),
+            simulator_data: AdirsSimulatorData::new(context),
         }
     }
 
@@ -298,38 +374,33 @@ impl SimulationElement for AirDataInertialReferenceSystem {
     }
 
     fn read(&mut self, reader: &mut SimulatorReader) {
-        self.configured_align_time = reader.read(Self::CONFIGURED_ALIGN_TIME_KEY);
+        self.configured_align_time = reader.read(&self.configured_align_time_id);
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(
-            Self::REMAINING_ALIGNMENT_TIME_KEY,
+            &self.remaining_alignment_time_id,
             self.remaining_align_duration(),
         );
         writer.write(
-            Self::USES_GPS_AS_PRIMARY_KEY,
+            &self.uses_gps_as_primary_id,
             self.any_adiru_fully_aligned_with_ir_on(),
         )
     }
 }
-impl Default for AirDataInertialReferenceSystem {
-    fn default() -> Self {
-        Self::new()
-    }
-}
 
 struct AirDataInertialReferenceUnit {
-    state_id: String,
+    state_id: VariableIdentifier,
 
     adr: AirDataReference,
     ir: InertialReference,
 }
 impl AirDataInertialReferenceUnit {
-    fn new(number: usize, outputs_temperatures: bool) -> Self {
+    fn new(context: &mut InitContext, number: usize, outputs_temperatures: bool) -> Self {
         Self {
-            state_id: Self::state_id(number),
-            adr: AirDataReference::new(number, outputs_temperatures),
-            ir: InertialReference::new(number),
+            state_id: context.get_identifier(Self::state_id(number)),
+            adr: AirDataReference::new(context, number, outputs_temperatures),
+            ir: InertialReference::new(context, number),
         }
     }
 
@@ -389,22 +460,27 @@ impl SimulationElement for AirDataInertialReferenceUnit {
 }
 
 struct AdirsData<T> {
-    id: String,
+    id: VariableIdentifier,
     value: T,
     ssm: SignStatus,
 }
 impl<T: Copy + Default> AdirsData<T> {
-    fn new_adr(number: usize, name: &str) -> Self {
-        Self::new(OutputDataType::ADR, number, name)
+    fn new_adr(context: &mut InitContext, number: usize, name: &str) -> Self {
+        Self::new(context, OutputDataType::Adr, number, name)
     }
 
-    fn new_ir(number: usize, name: &str) -> Self {
-        Self::new(OutputDataType::IR, number, name)
+    fn new_ir(context: &mut InitContext, number: usize, name: &str) -> Self {
+        Self::new(context, OutputDataType::Ir, number, name)
     }
 
-    fn new(data_type: OutputDataType, number: usize, name: &str) -> Self {
+    fn new(
+        context: &mut InitContext,
+        data_type: OutputDataType,
+        number: usize,
+        name: &str,
+    ) -> Self {
         Self {
-            id: output_data_id(data_type, number, name),
+            id: context.get_identifier(output_data_id(data_type, number, name)),
             value: Default::default(),
             ssm: SignStatus::NoComputedData,
         }
@@ -430,14 +506,14 @@ impl<T: Copy + Default> AdirsData<T> {
 
 #[derive(Clone, Copy)]
 enum OutputDataType {
-    ADR,
-    IR,
+    Adr,
+    Ir,
 }
 impl Display for OutputDataType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            OutputDataType::ADR => write!(f, "ADR"),
-            OutputDataType::IR => write!(f, "IR"),
+            OutputDataType::Adr => write!(f, "ADR"),
+            OutputDataType::Ir => write!(f, "IR"),
         }
     }
 }
@@ -479,20 +555,29 @@ impl AirDataReference {
         "INTERNATIONAL_STANDARD_ATMOSPHERE_DELTA";
     const MINIMUM_COMPUTED_AIRSPEED_FOR_TRUE_AIRSPEED_DETERMINATION_KNOTS: f64 = 60.;
 
-    fn new(number: usize, outputs_temperatures: bool) -> Self {
+    fn new(context: &mut InitContext, number: usize, outputs_temperatures: bool) -> Self {
         Self {
             number,
             is_on: true,
             outputs_temperatures,
 
-            altitude: AdirsData::new_adr(number, Self::ALTITUDE),
-            computed_airspeed: AdirsData::new_adr(number, Self::COMPUTED_AIRSPEED),
-            mach: AdirsData::new_adr(number, Self::MACH),
-            barometric_vertical_speed: AdirsData::new_adr(number, Self::BAROMETRIC_VERTICAL_SPEED),
-            true_airspeed: AdirsData::new_adr(number, Self::TRUE_AIRSPEED),
-            static_air_temperature: AdirsData::new_adr(number, Self::STATIC_AIR_TEMPERATURE),
-            total_air_temperature: AdirsData::new_adr(number, Self::TOTAL_AIR_TEMPERATURE),
+            altitude: AdirsData::new_adr(context, number, Self::ALTITUDE),
+            computed_airspeed: AdirsData::new_adr(context, number, Self::COMPUTED_AIRSPEED),
+            mach: AdirsData::new_adr(context, number, Self::MACH),
+            barometric_vertical_speed: AdirsData::new_adr(
+                context,
+                number,
+                Self::BAROMETRIC_VERTICAL_SPEED,
+            ),
+            true_airspeed: AdirsData::new_adr(context, number, Self::TRUE_AIRSPEED),
+            static_air_temperature: AdirsData::new_adr(
+                context,
+                number,
+                Self::STATIC_AIR_TEMPERATURE,
+            ),
+            total_air_temperature: AdirsData::new_adr(context, number, Self::TOTAL_AIR_TEMPERATURE),
             international_standard_atmosphere_delta: AdirsData::new_adr(
+                context,
                 number,
                 Self::INTERNATIONAL_STANDARD_ATMOSPHERE_DELTA,
             ),
@@ -674,7 +759,7 @@ impl InertialReference {
     const MINIMUM_TRUE_AIRSPEED_FOR_WIND_DETERMINATION_KNOTS: f64 = 100.;
     const MINIMUM_GROUND_SPEED_FOR_TRACK_KNOTS: f64 = 50.;
 
-    fn new(number: usize) -> Self {
+    fn new(context: &mut InitContext, number: usize) -> Self {
         Self {
             number,
             is_on: true,
@@ -684,16 +769,16 @@ impl InertialReference {
             ir_fault_flash_duration: None,
             // Start fully initialised.
             remaining_attitude_initialisation_duration: Some(Duration::from_secs(0)),
-            pitch: AdirsData::new_ir(number, Self::PITCH),
-            roll: AdirsData::new_ir(number, Self::ROLL),
-            heading: AdirsData::new_ir(number, Self::HEADING),
-            track: AdirsData::new_ir(number, Self::TRACK),
-            vertical_speed: AdirsData::new_ir(number, Self::VERTICAL_SPEED),
-            ground_speed: AdirsData::new_ir(number, Self::GROUND_SPEED),
-            wind_direction: AdirsData::new_ir(number, Self::WIND_DIRECTION),
-            wind_velocity: AdirsData::new_ir(number, Self::WIND_VELOCITY),
-            latitude: AdirsData::new_ir(number, Self::LATITUDE),
-            longitude: AdirsData::new_ir(number, Self::LONGITUDE),
+            pitch: AdirsData::new_ir(context, number, Self::PITCH),
+            roll: AdirsData::new_ir(context, number, Self::ROLL),
+            heading: AdirsData::new_ir(context, number, Self::HEADING),
+            track: AdirsData::new_ir(context, number, Self::TRACK),
+            vertical_speed: AdirsData::new_ir(context, number, Self::VERTICAL_SPEED),
+            ground_speed: AdirsData::new_ir(context, number, Self::GROUND_SPEED),
+            wind_direction: AdirsData::new_ir(context, number, Self::WIND_DIRECTION),
+            wind_velocity: AdirsData::new_ir(context, number, Self::WIND_VELOCITY),
+            latitude: AdirsData::new_ir(context, number, Self::LATITUDE),
+            longitude: AdirsData::new_ir(context, number, Self::LONGITUDE),
         }
     }
 
@@ -931,11 +1016,12 @@ fn subtract_delta_from_duration(context: &UpdateContext, duration: Duration) -> 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::simulation::test::{ReadByName, WriteByName};
     use crate::{
         shared::arinc429::Arinc429Word,
         simulation::{
             test::{SimulationTestBed, TestBed},
-            Aircraft, SimulationElementVisitor, SimulatorWriter, UpdateContext, Write,
+            Aircraft, SimulationElementVisitor, SimulatorWriter, UpdateContext,
         },
     };
     use ntest::{assert_about_eq, timeout};
@@ -953,10 +1039,10 @@ mod tests {
         overhead: AirDataInertialReferenceSystemOverheadPanel,
     }
     impl TestAircraft {
-        fn new() -> Self {
+        fn new(context: &mut InitContext) -> Self {
             Self {
-                adirs: AirDataInertialReferenceSystem::new(),
-                overhead: AirDataInertialReferenceSystemOverheadPanel::new(),
+                adirs: AirDataInertialReferenceSystem::new(context),
+                overhead: AirDataInertialReferenceSystemOverheadPanel::new(context),
             }
         }
     }
@@ -985,7 +1071,7 @@ mod tests {
     impl AdirsTestBed {
         fn new() -> Self {
             let mut adirs_test_bed = Self {
-                test_bed: SimulationTestBed::new(|_| TestAircraft::new()),
+                test_bed: SimulationTestBed::new(TestAircraft::new),
             };
             adirs_test_bed.move_all_mode_selectors_to(InertialReferenceMode::Navigation);
 
@@ -1009,22 +1095,22 @@ mod tests {
         }
 
         fn latitude_of(mut self, latitude: Angle) -> Self {
-            self.write(AdirsSimulatorData::LATITUDE, latitude);
+            self.write_by_name(AdirsSimulatorData::LATITUDE, latitude);
             self
         }
 
         fn longitude_of(mut self, longitude: Angle) -> Self {
-            self.write(AdirsSimulatorData::LONGITUDE, longitude);
+            self.write_by_name(AdirsSimulatorData::LONGITUDE, longitude);
             self
         }
 
         fn mach_of(mut self, mach: MachNumber) -> Self {
-            self.write(AdirsSimulatorData::MACH, mach);
+            self.write_by_name(AdirsSimulatorData::MACH, mach);
             self
         }
 
         fn vertical_speed_of(mut self, velocity: Velocity) -> Self {
-            self.write(
+            self.write_by_name(
                 AdirsSimulatorData::VERTICAL_SPEED,
                 velocity.get::<foot_per_minute>(),
             );
@@ -1032,48 +1118,48 @@ mod tests {
         }
 
         fn true_airspeed_of(mut self, velocity: Velocity) -> Self {
-            self.write(AdirsSimulatorData::TRUE_AIRSPEED, velocity);
+            self.write_by_name(AdirsSimulatorData::TRUE_AIRSPEED, velocity);
             self
         }
 
         fn total_air_temperature_of(mut self, temperature: ThermodynamicTemperature) -> Self {
-            self.write(AdirsSimulatorData::TOTAL_AIR_TEMPERATURE, temperature);
+            self.write_by_name(AdirsSimulatorData::TOTAL_AIR_TEMPERATURE, temperature);
             self
         }
 
         fn pitch_of(mut self, angle: Angle) -> Self {
-            self.write(AdirsSimulatorData::PITCH, angle);
+            self.write_by_name(AdirsSimulatorData::PITCH, angle);
             self
         }
 
         fn roll_of(mut self, angle: Angle) -> Self {
-            self.write(AdirsSimulatorData::ROLL, angle);
+            self.write_by_name(AdirsSimulatorData::ROLL, angle);
             self
         }
 
         fn heading_of(mut self, angle: Angle) -> Self {
-            self.write(AdirsSimulatorData::HEADING, angle);
+            self.write_by_name(AdirsSimulatorData::HEADING, angle);
             self
         }
 
         fn track_of(mut self, angle: Angle) -> Self {
-            self.write(AdirsSimulatorData::TRACK, angle);
+            self.write_by_name(AdirsSimulatorData::TRACK, angle);
             self
         }
 
         fn ground_speed_of(mut self, velocity: Velocity) -> Self {
-            self.write(AdirsSimulatorData::GROUND_SPEED, velocity);
+            self.write_by_name(AdirsSimulatorData::GROUND_SPEED, velocity);
             self
         }
 
         fn wind_of(mut self, angle: Angle, velocity: Velocity) -> Self {
-            self.write(AdirsSimulatorData::WIND_DIRECTION, angle);
-            self.write(AdirsSimulatorData::WIND_VELOCITY, velocity);
+            self.write_by_name(AdirsSimulatorData::WIND_DIRECTION, angle);
+            self.write_by_name(AdirsSimulatorData::WIND_VELOCITY, velocity);
             self
         }
 
         fn align_time_configured_as(mut self, align_time: AlignTime) -> Self {
-            Write::<f64>::write(
+            WriteByName::<AdirsTestBed, f64>::write_by_name(
                 &mut self,
                 AirDataInertialReferenceSystem::CONFIGURED_ALIGN_TIME_KEY,
                 align_time.into(),
@@ -1082,7 +1168,7 @@ mod tests {
         }
 
         fn ir_mode_selector_set_to(mut self, number: usize, mode: InertialReferenceMode) -> Self {
-            Write::<f64>::write(
+            WriteByName::<AdirsTestBed, f64>::write_by_name(
                 &mut self,
                 &InertialReferenceModeSelector::mode_id(number),
                 mode.into(),
@@ -1091,7 +1177,7 @@ mod tests {
         }
 
         fn adr_push_button_off(mut self, number: usize) -> Self {
-            self.write(
+            self.write_by_name(
                 &OnOffFaultPushButton::is_on_id(&format!("ADIRS_ADR_{}", number)),
                 false,
             );
@@ -1100,7 +1186,7 @@ mod tests {
         }
 
         fn ir_push_button_off(mut self, number: usize) -> Self {
-            self.write(
+            self.write_by_name(
                 &OnOffFaultPushButton::is_on_id(&format!("ADIRS_IR_{}", number)),
                 false,
             );
@@ -1109,7 +1195,7 @@ mod tests {
         }
 
         fn ir_fault_light_illuminated(&mut self, number: usize) -> bool {
-            self.read(&OnOffFaultPushButton::has_fault_id(&format!(
+            self.read_by_name(&OnOffFaultPushButton::has_fault_id(&format!(
                 "ADIRS_IR_{}",
                 number
             )))
@@ -1124,11 +1210,11 @@ mod tests {
         }
 
         fn align_state(&mut self, adiru_number: usize) -> AlignState {
-            self.read(&AirDataInertialReferenceUnit::state_id(adiru_number))
+            self.read_by_name(&AirDataInertialReferenceUnit::state_id(adiru_number))
         }
 
         fn remaining_alignment_time(&mut self) -> Duration {
-            self.read(AirDataInertialReferenceSystem::REMAINING_ALIGNMENT_TIME_KEY)
+            self.read_by_name(AirDataInertialReferenceSystem::REMAINING_ALIGNMENT_TIME_KEY)
         }
 
         fn all_mode_selectors_off(mut self) -> Self {
@@ -1139,43 +1225,43 @@ mod tests {
 
         fn move_all_mode_selectors_to(&mut self, mode: InertialReferenceMode) {
             for number in 1..=3 {
-                self.write(&InertialReferenceModeSelector::mode_id(number), mode);
+                self.write_by_name(&InertialReferenceModeSelector::mode_id(number), mode);
             }
         }
 
         fn on_bat_light_illuminated(&mut self) -> bool {
-            self.read(&IndicationLight::is_illuminated_id(
+            self.read_by_name(&IndicationLight::is_illuminated_id(
                 AirDataInertialReferenceSystemOverheadPanel::ADIRS_ON_BAT_NAME,
             ))
         }
 
         fn altitude(&mut self, adiru_number: usize) -> Arinc429Word<Length> {
-            self.read_arinc429(&output_data_id(
-                OutputDataType::ADR,
+            self.read_arinc429_by_name(&output_data_id(
+                OutputDataType::Adr,
                 adiru_number,
                 AirDataReference::ALTITUDE,
             ))
         }
 
         fn computed_airspeed(&mut self, adiru_number: usize) -> Arinc429Word<Velocity> {
-            self.read_arinc429(&output_data_id(
-                OutputDataType::ADR,
+            self.read_arinc429_by_name(&output_data_id(
+                OutputDataType::Adr,
                 adiru_number,
                 AirDataReference::COMPUTED_AIRSPEED,
             ))
         }
 
         fn mach(&mut self, adiru_number: usize) -> Arinc429Word<MachNumber> {
-            self.read_arinc429(&output_data_id(
-                OutputDataType::ADR,
+            self.read_arinc429_by_name(&output_data_id(
+                OutputDataType::Adr,
                 adiru_number,
                 AirDataReference::MACH,
             ))
         }
 
         fn barometric_vertical_speed(&mut self, adiru_number: usize) -> Arinc429Word<Velocity> {
-            let vertical_speed: Arinc429Word<f64> = self.read_arinc429(&output_data_id(
-                OutputDataType::ADR,
+            let vertical_speed: Arinc429Word<f64> = self.read_arinc429_by_name(&output_data_id(
+                OutputDataType::Adr,
                 adiru_number,
                 AirDataReference::BAROMETRIC_VERTICAL_SPEED,
             ));
@@ -1186,8 +1272,8 @@ mod tests {
         }
 
         fn true_airspeed(&mut self, adiru_number: usize) -> Arinc429Word<Velocity> {
-            self.read_arinc429(&output_data_id(
-                OutputDataType::ADR,
+            self.read_arinc429_by_name(&output_data_id(
+                OutputDataType::Adr,
                 adiru_number,
                 AirDataReference::TRUE_AIRSPEED,
             ))
@@ -1197,8 +1283,8 @@ mod tests {
             &mut self,
             adiru_number: usize,
         ) -> Arinc429Word<ThermodynamicTemperature> {
-            self.read_arinc429(&output_data_id(
-                OutputDataType::ADR,
+            self.read_arinc429_by_name(&output_data_id(
+                OutputDataType::Adr,
                 adiru_number,
                 AirDataReference::STATIC_AIR_TEMPERATURE,
             ))
@@ -1208,8 +1294,8 @@ mod tests {
             &mut self,
             adiru_number: usize,
         ) -> Arinc429Word<ThermodynamicTemperature> {
-            self.read_arinc429(&output_data_id(
-                OutputDataType::ADR,
+            self.read_arinc429_by_name(&output_data_id(
+                OutputDataType::Adr,
                 adiru_number,
                 AirDataReference::TOTAL_AIR_TEMPERATURE,
             ))
@@ -1219,72 +1305,72 @@ mod tests {
             &mut self,
             adiru_number: usize,
         ) -> Arinc429Word<ThermodynamicTemperature> {
-            self.read_arinc429(&output_data_id(
-                OutputDataType::ADR,
+            self.read_arinc429_by_name(&output_data_id(
+                OutputDataType::Adr,
                 adiru_number,
                 AirDataReference::INTERNATIONAL_STANDARD_ATMOSPHERE_DELTA,
             ))
         }
 
         fn pitch(&mut self, adiru_number: usize) -> Arinc429Word<Angle> {
-            self.read_arinc429(&output_data_id(
-                OutputDataType::IR,
+            self.read_arinc429_by_name(&output_data_id(
+                OutputDataType::Ir,
                 adiru_number,
                 InertialReference::PITCH,
             ))
         }
 
         fn roll(&mut self, adiru_number: usize) -> Arinc429Word<Angle> {
-            self.read_arinc429(&output_data_id(
-                OutputDataType::IR,
+            self.read_arinc429_by_name(&output_data_id(
+                OutputDataType::Ir,
                 adiru_number,
                 InertialReference::ROLL,
             ))
         }
 
         fn heading(&mut self, adiru_number: usize) -> Arinc429Word<Angle> {
-            self.read_arinc429(&output_data_id(
-                OutputDataType::IR,
+            self.read_arinc429_by_name(&output_data_id(
+                OutputDataType::Ir,
                 adiru_number,
                 InertialReference::HEADING,
             ))
         }
 
         fn track(&mut self, adiru_number: usize) -> Arinc429Word<Angle> {
-            self.read_arinc429(&output_data_id(
-                OutputDataType::IR,
+            self.read_arinc429_by_name(&output_data_id(
+                OutputDataType::Ir,
                 adiru_number,
                 InertialReference::TRACK,
             ))
         }
 
         fn ground_speed(&mut self, adiru_number: usize) -> Arinc429Word<Velocity> {
-            self.read_arinc429(&output_data_id(
-                OutputDataType::IR,
+            self.read_arinc429_by_name(&output_data_id(
+                OutputDataType::Ir,
                 adiru_number,
                 InertialReference::GROUND_SPEED,
             ))
         }
 
         fn wind_direction(&mut self, adiru_number: usize) -> Arinc429Word<Angle> {
-            self.read_arinc429(&output_data_id(
-                OutputDataType::IR,
+            self.read_arinc429_by_name(&output_data_id(
+                OutputDataType::Ir,
                 adiru_number,
                 InertialReference::WIND_DIRECTION,
             ))
         }
 
         fn wind_velocity(&mut self, adiru_number: usize) -> Arinc429Word<Velocity> {
-            self.read_arinc429(&output_data_id(
-                OutputDataType::IR,
+            self.read_arinc429_by_name(&output_data_id(
+                OutputDataType::Ir,
                 adiru_number,
                 InertialReference::WIND_VELOCITY,
             ))
         }
 
         fn inertial_vertical_speed(&mut self, adiru_number: usize) -> Arinc429Word<Velocity> {
-            let vertical_speed: Arinc429Word<f64> = self.read_arinc429(&output_data_id(
-                OutputDataType::IR,
+            let vertical_speed: Arinc429Word<f64> = self.read_arinc429_by_name(&output_data_id(
+                OutputDataType::Ir,
                 adiru_number,
                 InertialReference::VERTICAL_SPEED,
             ));
@@ -1295,23 +1381,23 @@ mod tests {
         }
 
         fn longitude(&mut self, adiru_number: usize) -> Arinc429Word<Angle> {
-            self.read_arinc429(&output_data_id(
-                OutputDataType::IR,
+            self.read_arinc429_by_name(&output_data_id(
+                OutputDataType::Ir,
                 adiru_number,
                 InertialReference::LONGITUDE,
             ))
         }
 
         fn latitude(&mut self, adiru_number: usize) -> Arinc429Word<Angle> {
-            self.read_arinc429(&output_data_id(
-                OutputDataType::IR,
+            self.read_arinc429_by_name(&output_data_id(
+                OutputDataType::Ir,
                 adiru_number,
                 InertialReference::LATITUDE,
             ))
         }
 
         fn uses_gps_as_primary(&mut self) -> bool {
-            self.read(AirDataInertialReferenceSystem::USES_GPS_AS_PRIMARY_KEY)
+            self.read_by_name(AirDataInertialReferenceSystem::USES_GPS_AS_PRIMARY_KEY)
         }
 
         fn assert_adr_data_available(&mut self, available: bool, adiru_number: usize) {

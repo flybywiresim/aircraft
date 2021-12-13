@@ -1,9 +1,9 @@
 import ReactDOM from 'react-dom';
 import React, { useEffect, useState } from 'react';
+import { GaugeComponent, GaugeMarkerComponent, splitDecimals } from '@instruments/common/gauges';
 import { getRenderTarget, setIsEcamPage } from '../../../Common/defaults';
 import { SimVarProvider, useSimVar } from '../../../Common/simVars';
 import { usePersistentProperty } from '../../../Common/persistence';
-import { splitDecimals, valueRadianAngleConverter, polarToCartesian } from './common';
 import { fuelForDisplay } from '../../Common/FuelFunctions';
 
 import './Crz.scss';
@@ -54,14 +54,14 @@ export const OilComponent = () => {
     const [oilQuantLeft] = useSimVar('ENG OIL QUANTITY:1', 'percent', 1000);
     const [oilQuantRight] = useSimVar('ENG OIL QUANTITY:2', 'percent', 1000);
 
-    const oilLeft = splitDecimals(oilQuantLeft, 'oil');
-    const oilRight = splitDecimals(oilQuantRight, 'oil');
+    const oilLeft = splitDecimals(oilQuantLeft * 0.01 * 25);
+    const oilRight = splitDecimals(oilQuantRight * 0.01 * 25);
 
     const [leftVIBN1] = useSimVar('TURB ENG VIBRATION:1', 'Number', 1000);
     const [rightVIBN1] = useSimVar('TURB ENG VIBRATION:2', 'Number', 1000);
 
-    const leftVN1 = splitDecimals(leftVIBN1, 'vib');
-    const rightVN1 = splitDecimals(rightVIBN1, 'vib');
+    const leftVN1 = splitDecimals(leftVIBN1 < 0 ? 0.0 : leftVIBN1);
+    const rightVN1 = splitDecimals(rightVIBN1 < 0 ? 0.0 : rightVIBN1);
 
     return (
         <>
@@ -121,16 +121,20 @@ export const OilComponent = () => {
 export const PressureComponent = () => {
     const [landingElevDialPosition] = useSimVar('L:XMLVAR_KNOB_OVHD_CABINPRESS_LDGELEV', 'Number', 100);
     const [landingRunwayElevation] = useSimVar('L:A32NX_PRESS_AUTO_LANDING_ELEVATION', 'feet', 1000);
-    const [manMode] = useSimVar('L:A32NX_CAB_PRESS_MODE_MAN', 'Bool', 1000);
+    const [autoMode] = useSimVar('L:A32NX_OVHD_PRESS_MODE_SEL_PB_IS_AUTO', 'Bool', 1000);
     const [ldgElevMode, setLdgElevMode] = useState('AUTO');
     const [ldgElevValue, setLdgElevValue] = useState('XX');
     const [cssLdgElevName, setCssLdgElevName] = useState('green');
-    const [landingElev] = useSimVar('L:A32NX_LANDING_ELEVATION', 'feet', 100);
+    const [landingElev] = useSimVar('L:A32NX_OVHD_PRESS_LDG_ELEV_KNOB', 'feet', 100);
     const [cabinAlt] = useSimVar('L:A32NX_PRESS_CABIN_ALTITUDE', 'feet', 500);
     const [cabinVs] = useSimVar('L:A32NX_PRESS_CABIN_VS', 'feet per minute', 500);
     const [deltaPsi] = useSimVar('L:A32NX_PRESS_CABIN_DELTA_PRESSURE', 'psi', 1000);
 
-    const deltaPress = splitDecimals(deltaPsi, '');
+    const vsx = 440;
+    const y = 385;
+    const radius = 50;
+
+    const deltaPress = splitDecimals(deltaPsi);
 
     useEffect(() => {
         setLdgElevMode(landingElevDialPosition === 0 ? 'AUTO' : 'MAN');
@@ -149,15 +153,35 @@ export const PressureComponent = () => {
 
     return (
         <>
-            <g id="LandingElevation" className={!manMode ? 'show' : 'hide'}>
+            <g id="LandingElevation" className={autoMode ? 'show' : 'hide'}>
                 <text className="Standard Center" x="330" y="335">LDG ELEV</text>
                 <text id="LandingElevationMode" className="Standard Green" x="385" y="335">{ldgElevMode}</text>
 
                 <text id="LandingElevation" className={`Large ${cssLdgElevName}`} x="525" y="335" textAnchor="end">{ldgElevValue}</text>
                 <text className="Standard Cyan" x="530" y="335">FT</text>
             </g>
-            <g id="ManualVSIndicator" className={manMode ? 'show' : 'hide'}>
-                <GaugeComponentMemo x={440} y={385} radius={50} startAngle={10} endAngle={-190} verticalSpeed={cabinVs * 60 / 1000} className="Gauge" />
+
+            {/* Vertical speed gauge */}
+            <g id="VsIndicator">
+                <GaugeComponent x={vsx} y={y} radius={radius} startAngle={170} endAngle={10} visible={!autoMode} className="Gauge">
+                    <GaugeMarkerComponent value={2} x={vsx} y={y} min={-2} max={2} radius={radius} startAngle={180} endAngle={0} className="GaugeText" showValue textNudgeY={10} />
+                    <GaugeMarkerComponent value={1} x={vsx} y={y} min={-2} max={2} radius={radius} startAngle={180} endAngle={0} className="GaugeText" />
+                    <GaugeMarkerComponent value={0} x={vsx} y={y} min={-2} max={2} radius={radius} startAngle={180} endAngle={0} className="GaugeText" showValue textNudgeX={10} />
+                    <GaugeMarkerComponent value={-1} x={vsx} y={y} min={-2} max={2} radius={radius} startAngle={180} endAngle={0} className="GaugeText" />
+                    <GaugeMarkerComponent value={-2} x={vsx} y={y} min={-2} max={2} radius={radius} startAngle={180} endAngle={0} className="GaugeText" showValue textNudgeY={-10} />
+                    <GaugeMarkerComponent
+                        value={Math.abs((cabinVs / 50 * 50) / 1000) <= 2.25 ? (cabinVs / 50 * 50) / 1000 : 2.250}
+                        x={vsx}
+                        y={y}
+                        min={-2}
+                        max={2}
+                        radius={radius}
+                        startAngle={180}
+                        endAngle={0}
+                        className="GaugeIndicator"
+                        indicator
+                    />
+                </GaugeComponent>
             </g>
 
             <text className="Standard" x="218" y="370">@P</text>
@@ -169,7 +193,7 @@ export const PressureComponent = () => {
             <text className="Standard Cyan" x="320" y="370">PSI</text>
 
             <text className="Standard" x="480" y="380">CAB V/S</text>
-            <text id="CabinVerticalSpeed" className="Large Green" x="515" y="405" textAnchor="end">{Math.abs(Math.round(cabinVs / 50) * 50)}</text>
+            <text id="CabinVerticalSpeed" className="Large Green" x="515" y="405" textAnchor="end">{!autoMode ? Math.round(cabinVs / 50) * 50 : Math.abs(Math.round(cabinVs / 50) * 50)}</text>
             <text className="Medium Cyan" x="525" y="405">FT/MIN</text>
 
             <text className="Standard" x="480" y="450">CAB ALT</text>
@@ -178,7 +202,7 @@ export const PressureComponent = () => {
 
             <g
                 id="vsArrow"
-                className={(cabinVs * 60 <= -50 || cabinVs * 60 >= 50) && !manMode ? '' : 'Hide'}
+                className={(cabinVs * 60 <= -50 || cabinVs * 60 >= 50) && autoMode ? '' : 'Hide'}
                 transform={cabinVs * 60 <= -50 ? 'translate(0, 795) scale(1, -1)' : 'scale(1, 1)'}
             >
                 <path d="M433,405 h7 L446,395" className="VsIndicator" strokeLinejoin="miter" />
@@ -187,94 +211,6 @@ export const PressureComponent = () => {
         </>
     );
 };
-
-type GaugeComponentType = {
-    x: number,
-    y: number,
-    radius: number,
-    startAngle: number,
-    endAngle: number,
-    verticalSpeed: number,
-    className: string,
-}
-
-export const GaugeComponent = ({ x, y, radius, startAngle, endAngle, verticalSpeed, className } : GaugeComponentType) => {
-    const startPos = polarToCartesian(x, y, radius, startAngle);
-    const endPos = polarToCartesian(x, y, radius, endAngle);
-    const largeArcFlag = ((startAngle - endAngle) <= 180) ? '0' : '1';
-    const d = ['M', startPos.x, startPos.y, 'A', radius, radius, 0, largeArcFlag, 0, endPos.x, endPos.y].join(' ');
-
-    return (
-        <>
-            <path d={d} className={className} />
-            <GaugeMarkerComponentMemo value={2} x={x} y={y} min={-2} max={2} radius={radius} startAngle={0} endAngle={180} className="GaugeText" showValue indicator={false} />
-            <GaugeMarkerComponentMemo value={1} x={x} y={y} min={-2} max={2} radius={radius} startAngle={0} endAngle={180} className="GaugeText" showValue={false} indicator={false} />
-            <GaugeMarkerComponentMemo value={0} x={x} y={y} min={-2} max={2} radius={radius} startAngle={0} endAngle={180} className="GaugeText" showValue indicator={false} />
-            <GaugeMarkerComponentMemo value={-1} x={x} y={y} min={-2} max={2} radius={radius} startAngle={0} endAngle={180} className="GaugeText" showValue={false} indicator={false} />
-            <GaugeMarkerComponentMemo value={-2} x={x} y={y} min={-2} max={2} radius={radius} startAngle={0} endAngle={180} className="GaugeText" showValue indicator={false} />
-
-            <GaugeMarkerComponentMemo value={verticalSpeed} x={x} y={y} min={-2} max={2} radius={radius} startAngle={0} endAngle={180} className="GaugeIndicator" showValue={false} indicator />
-
-        </>
-    );
-};
-
-export const GaugeComponentMemo = React.memo(GaugeComponent);
-
-type GaugeMarkerComponentType = {
-    value: number,
-    x: number,
-    y: number,
-    min: number,
-    max: number,
-    radius: number,
-    startAngle: number,
-    endAngle: number,
-    className: string,
-    showValue: boolean,
-    indicator: boolean,
-};
-
-export const GaugeMarkerComponent = ({ value, x, y, min, max, radius, startAngle, endAngle, className, showValue, indicator } : GaugeMarkerComponentType) => {
-    let textValue = value.toString();
-    const dir = valueRadianAngleConverter(value, min, max, endAngle, startAngle);
-
-    let start = {
-        x: x + (dir.x * radius * 0.9),
-        y: y + (dir.y * radius * 0.9),
-    };
-    let end = {
-        x: x + (dir.x * radius),
-        y: y + (dir.y * radius),
-    };
-
-    if (indicator) {
-        start = { x, y };
-
-        end = {
-            x: x + (dir.x * radius * 1.1),
-            y: y + (dir.y * radius * 1.1),
-        };
-    }
-
-    // Text
-
-    const pos = {
-        x: x + (dir.x * (radius * 0.7)),
-        y: y + (dir.y * (radius * 0.7)),
-    };
-
-    textValue = !showValue ? '' : Math.abs(value).toString();
-
-    return (
-        <>
-            <line x1={start.x} y1={start.y} x2={end.x} y2={end.y} className={className} />
-            <text x={pos.x} y={pos.y} className={className} alignmentBaseline="central" textAnchor="middle">{textValue}</text>
-        </>
-    );
-};
-
-export const GaugeMarkerComponentMemo = React.memo(GaugeMarkerComponent);
 
 export const CondComponent = () => {
     const [cockpitCabinTemp] = useSimVar('L:A32NX_CKPT_TEMP', 'celsius', 1000);

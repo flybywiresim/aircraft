@@ -5,27 +5,23 @@
   100% {opacity: 1;}
 }
 
-@mixin GenericPulsingStroke($color) {
-  @keyframes pulsing {
+@mixin GenericPulsingStroke($color, $name) {
+  @keyframes #{$name} {
     0% {stroke: scale-color($color, $lightness: -30%);}
     50% {stroke: scale-color($color, $lightness: -30%);}
     51% {stroke: scale-color($color, $lightness: 30%);}
     100% {stroke: scale-color($color, $lightness: 30%);}
   }
-  animation-name: pulsing;
-  animation-duration: 1s;
-  animation-iteration-count: infinite;
+  animation-name: $name;
 }
-@mixin GenericPulsingFill($color) {
-  @keyframes pulsing {
+@mixin GenericPulsingFill($color, $name) {
+  @keyframes #{$name} {
     0% {fill: scale-color($color, $lightness: -30%);}
     50% {fill: scale-color($color, $lightness: -30%);}
     51% {fill: scale-color($color, $lightness: 30%);}
     100% {fill: scale-color($color, $lightness: 30%);}
   }
-  animation-name: pulsing;
-  animation-duration: 1s;
-  animation-iteration-count: infinite;
+  animation-name: $name;
 }
 
 @keyframes OuterMarkerAnim {

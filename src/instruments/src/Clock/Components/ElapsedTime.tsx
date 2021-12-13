@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useInteractionSimVar, useSimVar } from '@instruments/common/simVars';
+import { debouncedTimeDelta } from '../../Common';
 
 const getDisplayString = (seconds: number, running: boolean) : string => (seconds === 0 && !running ? ''
     : `${Math.floor(Math.min(seconds, 359940) / 3600).toString().padStart(2, '0')}${running ? ':' : ' '}${(Math.floor((Math.min(seconds, 359940) % 3600) / 60)).toString().padStart(2, '0')}`);
@@ -16,7 +17,7 @@ export const ElapsedTime = () => {
     useEffect(() => {
         if (dcEssIsPowered) {
             if (elapsedKnobPos === 0) {
-                setElapsedTime(Math.max(elapsedTime + absTime - prevTime, 0));
+                setElapsedTime(elapsedTime + debouncedTimeDelta(absTime, prevTime));
             } else if (elapsedKnobPos === 2) {
                 setElapsedTime(0);
             }

@@ -8,8 +8,8 @@
 
 .sd-svg {
   position: absolute;
-  width: 1280px;
-  height: 1280px;
+  width: 768px;
+  height: 768px;
 
   background: radial-gradient(
       ellipse at center,
@@ -20,4 +20,8 @@
   visibility: visible !important;
 
   font-family: "Ecam", monospace !important;
+}
+
+text {
+  stroke-width: 0;
 }

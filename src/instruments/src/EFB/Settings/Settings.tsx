@@ -123,6 +123,9 @@ const DefaultsPage = () => {
 const AircraftConfigurationPage = () => {
     const [weightUnit, setWeightUnit] = usePersistentProperty('CONFIG_USING_METRIC_UNIT', '1');
     const [paxSigns, setPaxSigns] = usePersistentProperty('CONFIG_USING_PORTABLE_DEVICES', '0');
+    const [isisBaro, setIsisBaro] = usePersistentProperty('ISIS_BARO_UNIT_INHG', '0');
+    const [isisMetricAltitude, setIsisMetricAltitude] = usePersistentProperty('ISIS_METRIC_ALTITUDE', '0');
+    const [vhfSpacing, setVhfSpacing] = usePersistentProperty('RMP_VHF_SPACING_25KHZ', '0');
 
     const paxSignsButtons: ButtonType[] = [
         { name: 'No Smoking', setting: '0' },
@@ -132,6 +135,21 @@ const AircraftConfigurationPage = () => {
     const weightUnitButtons: ButtonType[] = [
         { name: 'kg', setting: '1' },
         { name: 'lbs', setting: '0' },
+    ];
+
+    const isisBaroButtons: ButtonType[] = [
+        { name: 'hPa', setting: '0' },
+        { name: 'hPa/inHg', setting: '1' },
+    ];
+
+    const isisMetricAltitudeButtons: ButtonType[] = [
+        { name: 'Disabled', setting: '0' },
+        { name: 'Enabled', setting: '1' },
+    ];
+
+    const vhfSpacingButtons: ButtonType[] = [
+        { name: '8.33 kHz', setting: '0' },
+        { name: '25 kHz', setting: '1' },
     ];
 
     return (
@@ -165,6 +183,51 @@ const AircraftConfigurationPage = () => {
                     ))}
                 </SelectGroup>
             </div>
+
+            <div className="py-4 flex flex-row justify-between items-center">
+                <span className="text-lg text-gray-300">ISIS Baro Unit</span>
+                <SelectGroup>
+                    {isisBaroButtons.map((button) => (
+                        <SelectItem
+                            enabled
+                            onSelect={() => setIsisBaro(button.setting)}
+                            selected={isisBaro === button.setting}
+                        >
+                            {button.name}
+                        </SelectItem>
+                    ))}
+                </SelectGroup>
+            </div>
+
+            <div className="py-4 flex flex-row justify-between items-center">
+                <span className="text-lg text-gray-300">ISIS Metric Altitude</span>
+                <SelectGroup>
+                    {isisMetricAltitudeButtons.map((button) => (
+                        <SelectItem
+                            enabled
+                            onSelect={() => setIsisMetricAltitude(button.setting)}
+                            selected={isisMetricAltitude === button.setting}
+                        >
+                            {button.name}
+                        </SelectItem>
+                    ))}
+                </SelectGroup>
+            </div>
+
+            <div className="py-4 flex flex-row justify-between items-center">
+                <span className="text-lg text-gray-300">RMP VHF Spacing</span>
+                <SelectGroup>
+                    {vhfSpacingButtons.map((button) => (
+                        <SelectItem
+                            enabled
+                            onSelect={() => setVhfSpacing(button.setting)}
+                            selected={vhfSpacing === button.setting}
+                        >
+                            {button.name}
+                        </SelectItem>
+                    ))}
+                </SelectGroup>
+            </div>
         </div>
     );
 };
@@ -176,11 +239,15 @@ const SimOptionsPage = () => {
     const [adirsAlignTime, setAdirsAlignTime] = usePersistentProperty('CONFIG_ALIGN_TIME', 'REAL');
     const [, setAdirsAlignTimeSimVar] = useSimVar('L:A32NX_CONFIG_ADIRS_IR_ALIGN_TIME', 'Enum', Number.MAX_SAFE_INTEGER);
     const [dmcSelfTestTime, setDmcSelfTestTime] = usePersistentProperty('CONFIG_SELF_TEST_TIME', '12');
+    const [boardingRate, setBoardingRate] = usePersistentProperty('CONFIG_BOARDING_RATE', 'REAL');
 
     const [defaultBaro, setDefaultBaro] = usePersistentProperty('CONFIG_INIT_BARO_UNIT', 'AUTO');
 
+    const [fpSync, setFpSync] = usePersistentProperty('FP_SYNC', 'LOAD');
     const [mcduInput, setMcduInput] = usePersistentProperty('MCDU_KB_INPUT', 'DISABLED');
     const [mcduTimeout, setMcduTimeout] = usePersistentProperty('CONFIG_MCDU_KB_TIMEOUT', '60');
+
+    const [dynamicRegistration, setDynamicRegistration] = usePersistentProperty('DYNAMIC_REGISTRATION_DECAL', '0');
 
     const adirsAlignTimeButtons: (ButtonType & AdirsButton)[] = [
         { name: 'Instant', setting: 'INSTANT', simVarValue: 1 },
@@ -194,10 +261,27 @@ const SimOptionsPage = () => {
         { name: 'Real', setting: '12' },
     ];
 
+    const boardingRateButtons: ButtonType[] = [
+        { name: 'Instant', setting: 'INSTANT' },
+        { name: 'Fast', setting: 'FAST' },
+        { name: 'Real', setting: 'REAL' },
+    ];
+
     const defaultBaroButtons: ButtonType[] = [
         { name: 'Auto', setting: 'AUTO' },
         { name: 'in Hg', setting: 'IN HG' },
         { name: 'hPa', setting: 'HPA' },
+    ];
+
+    const fpSyncButtons: ButtonType[] = [
+        { name: 'None', setting: 'NONE' },
+        { name: 'Load Only', setting: 'LOAD' },
+        { name: 'Save', setting: 'SAVE' },
+    ];
+
+    const dynamicRegistrationButtons: ButtonType[] = [
+        { name: 'Disabled', setting: '0' },
+        { name: 'Enabled', setting: '1' },
     ];
 
     useEffect(() => {
@@ -244,6 +328,21 @@ const SimOptionsPage = () => {
                     </div>
 
                     <div className="py-4 flex flex-row justify-between items-center">
+                        <span className="text-lg text-gray-300">Boarding Time</span>
+                        <SelectGroup>
+                            {boardingRateButtons.map((button) => (
+                                <SelectItem
+                                    enabled
+                                    onSelect={() => setBoardingRate(button.setting)}
+                                    selected={boardingRate === button.setting}
+                                >
+                                    {button.name}
+                                </SelectItem>
+                            ))}
+                        </SelectGroup>
+                    </div>
+
+                    <div className="py-4 flex flex-row justify-between items-center">
                         <span className="text-lg text-gray-300 mr-1">Default Baro</span>
                         <SelectGroup>
                             {defaultBaroButtons.map((button) => (
@@ -251,6 +350,21 @@ const SimOptionsPage = () => {
                                     enabled
                                     onSelect={() => setDefaultBaro(button.setting)}
                                     selected={defaultBaro === button.setting}
+                                >
+                                    {button.name}
+                                </SelectItem>
+                            ))}
+                        </SelectGroup>
+                    </div>
+
+                    <div className="py-4 flex flex-row justify-between items-center">
+                        <span className="text-lg text-gray-300 mr-1">Sync MSFS Flight Plan</span>
+                        <SelectGroup>
+                            {fpSyncButtons.map((button) => (
+                                <SelectItem
+                                    enabled
+                                    onSelect={() => setFpSync(button.setting)}
+                                    selected={fpSync === button.setting}
                                 >
                                     {button.name}
                                 </SelectItem>
@@ -282,6 +396,21 @@ const SimOptionsPage = () => {
                                 }
                             }}
                         />
+                    </div>
+
+                    <div className="py-4 flex flex-row justify-between items-center">
+                        <span className="text-lg text-gray-300 mr-1">Dynamic Registration Decal</span>
+                        <SelectGroup>
+                            {dynamicRegistrationButtons.map((button) => (
+                                <SelectItem
+                                    enabled
+                                    onSelect={() => setDynamicRegistration(button.setting)}
+                                    selected={dynamicRegistration === button.setting}
+                                >
+                                    {button.name}
+                                </SelectItem>
+                            ))}
+                        </SelectGroup>
                     </div>
                 </div>
                 <ControlSettings setShowSettings={setShowThrottleSettings} />

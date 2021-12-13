@@ -1,16 +1,14 @@
 import React, { useState } from 'react';
-import { Arinc429Word } from '@instruments/common/arinc429';
+import { Arinc429Word } from '@shared/arinc429';
 import { useUpdate } from '@instruments/common/hooks';
+import { getSmallestAngle } from '@instruments/common/utils';
 import {
     calculateHorizonOffsetFromPitch,
     calculateVerticalOffsetFromRoll,
-    getSmallestAngle,
     HorizontalTape,
     LagFilter,
 } from './PFDUtils';
 import { getSimVar } from '../util.js';
-
-/* eslint-disable max-len */
 
 const DisplayRange = 35;
 const DistanceSpacing = 15;
@@ -143,7 +141,17 @@ export const Horizon = ({ pitch, roll, heading, isOnGround, radioAlt, decisionHe
             <SideslipIndicator isOnGround={isOnGround} roll={roll} />
             <RisingGround radioAlt={radioAlt} pitch={pitch} />
             {heading.isNormalOperation()
-            && <HorizontalTape graduationElementFunction={TickFunction} bugs={bugs} yOffset={yOffset} displayRange={DisplayRange} distanceSpacing={DistanceSpacing} valueSpacing={ValueSpacing} heading={heading} />}
+            && (
+                <HorizontalTape
+                    graduationElementFunction={TickFunction}
+                    bugs={bugs}
+                    yOffset={yOffset}
+                    displayRange={DisplayRange}
+                    distanceSpacing={DistanceSpacing}
+                    valueSpacing={ValueSpacing}
+                    heading={heading}
+                />
+            )}
             {!isAttExcessive
             && <RadioAltAndDH radioAlt={radioAlt} decisionHeight={decisionHeight} roll={roll} />}
             <FlightPathVector />
@@ -171,9 +179,17 @@ const FlightPathVector = () => {
         <g transform={`translate(${xOffset} ${yOffset})`}>
             <svg x="53.4" y="65.3" width="31px" height="31px" version="1.1" viewBox="0 0 31 31" xmlns="http://www.w3.org/2000/svg">
                 <g transform={`rotate(${-roll} 15.5 15.5)`}>
-                    <path className="NormalOutline" d="m17.766 15.501c8.59e-4 -1.2531-1.0142-2.2694-2.2665-2.2694-1.2524 0-2.2674 1.0163-2.2665 2.2694-8.57e-4 1.2531 1.0142 2.2694 2.2665 2.2694 1.2524 0 2.2674-1.0163 2.2665-2.2694z" />
+                    <path
+                        className="NormalOutline"
+                        // eslint-disable-next-line max-len
+                        d="m17.766 15.501c8.59e-4 -1.2531-1.0142-2.2694-2.2665-2.2694-1.2524 0-2.2674 1.0163-2.2665 2.2694-8.57e-4 1.2531 1.0142 2.2694 2.2665 2.2694 1.2524 0 2.2674-1.0163 2.2665-2.2694z"
+                    />
                     <path className="ThickOutline" d="m17.766 15.501h5.0367m-9.5698 0h-5.0367m7.3033-2.2678v-2.5199" />
-                    <path className="NormalStroke Green" d="m17.766 15.501c8.59e-4 -1.2531-1.0142-2.2694-2.2665-2.2694-1.2524 0-2.2674 1.0163-2.2665 2.2694-8.57e-4 1.2531 1.0142 2.2694 2.2665 2.2694 1.2524 0 2.2674-1.0163 2.2665-2.2694z" />
+                    <path
+                        className="NormalStroke Green"
+                        // eslint-disable-next-line max-len
+                        d="m17.766 15.501c8.59e-4 -1.2531-1.0142-2.2694-2.2665-2.2694-1.2524 0-2.2674 1.0163-2.2665 2.2694-8.57e-4 1.2531 1.0142 2.2694 2.2665 2.2694 1.2524 0 2.2674-1.0163 2.2665-2.2694z"
+                    />
                     <path className="ThickStroke Green" d="m17.766 15.501h5.0367m-9.5698 0h-5.0367m7.3033-2.2678v-2.5199" />
                 </g>
             </svg>
@@ -214,8 +230,16 @@ const FlightPathDirector = ({ FDActive }) => {
         <g transform={`translate(${xOffset} ${yOffset})`}>
             <svg x="53.4" y="65.3" width="31px" height="31px" version="1.1" viewBox="0 0 31 31" xmlns="http://www.w3.org/2000/svg">
                 <g transform={`rotate(${FDRollOffset} 15.5 15.5)`} className="CornerRound">
-                    <path className="NormalOutline" d="m16.507 15.501a1.0074 1.008 0 1 0-2.0147 0 1.0074 1.008 0 1 0 2.0147 0zm7.5551 0 6.5478-1.5119v3.0238l-6.5478-1.5119m-17.125 0-6.5478-1.5119v3.0238l6.5478-1.5119h17.125" />
-                    <path className="NormalStroke Green" d="m16.507 15.501a1.0074 1.008 0 1 0-2.0147 0 1.0074 1.008 0 1 0 2.0147 0zm7.5551 0 6.5478-1.5119v3.0238l-6.5478-1.5119m-17.125 0-6.5478-1.5119v3.0238l6.5478-1.5119h17.125" />
+                    <path
+                        className="NormalOutline"
+                        // eslint-disable-next-line max-len
+                        d="m16.507 15.501a1.0074 1.008 0 1 0-2.0147 0 1.0074 1.008 0 1 0 2.0147 0zm7.5551 0 6.5478-1.5119v3.0238l-6.5478-1.5119m-17.125 0-6.5478-1.5119v3.0238l6.5478-1.5119h17.125"
+                    />
+                    <path
+                        className="NormalStroke Green"
+                        // eslint-disable-next-line max-len
+                        d="m16.507 15.501a1.0074 1.008 0 1 0-2.0147 0 1.0074 1.008 0 1 0 2.0147 0zm7.5551 0 6.5478-1.5119v3.0238l-6.5478-1.5119m-17.125 0-6.5478-1.5119v3.0238l6.5478-1.5119h17.125"
+                    />
                 </g>
             </svg>
         </g>
@@ -277,6 +301,7 @@ interface SideslipIndicatorProps {
 
 const SideslipIndicator = ({ isOnGround, roll }: SideslipIndicatorProps) => {
     const [SIIndexOffset, setSIIndexOffset] = useState(0);
+    const [betaTargetActive, setBetaTargetActive] = useState(false);
     const [sideslipIndicatorFilter] = useState(() => new LagFilter(0.8));
 
     const verticalOffset = calculateVerticalOffsetFromRoll(roll.value);
@@ -289,16 +314,24 @@ const SideslipIndicator = ({ isOnGround, roll }: SideslipIndicatorProps) => {
             const accInG = Math.min(0.3, Math.max(-0.3, latAcc));
             offset = -accInG * 15 / 0.3;
         } else {
-            offset = Math.max(Math.min(getSimVar('INCIDENCE BETA', 'degrees'), 15), -15);
+            const beta = getSimVar('INCIDENCE BETA', 'degrees');
+            const betaTarget = getSimVar('L:A32NX_BETA_TARGET', 'Number');
+            offset = Math.max(Math.min(beta - betaTarget, 15), -15);
         }
 
+        setBetaTargetActive(getSimVar('L:A32NX_BETA_TARGET_ACTIVE', 'Number') === 1);
         setSIIndexOffset(sideslipIndicatorFilter.step(offset, deltaTime / 1000));
     });
 
     return (
         <g id="RollTriangleGroup" transform={`translate(0 ${verticalOffset})`} className="NormalStroke Yellow CornerRound">
             <path d="m66.074 43.983 2.8604-4.2333 2.8604 4.2333z" />
-            <path id="SideSlipIndicator" transform={`translate(${SIIndexOffset} 0)`} d="m73.974 47.208-1.4983-2.2175h-7.0828l-1.4983 2.2175z" />
+            <path
+                id="SideSlipIndicator"
+                transform={`translate(${SIIndexOffset} 0)`}
+                d="m73.974 47.208-1.4983-2.2175h-7.0828l-1.4983 2.2175z"
+                className={`${betaTargetActive ? 'Cyan' : 'Yellow'}`}
+            />
         </g>
     );
 };

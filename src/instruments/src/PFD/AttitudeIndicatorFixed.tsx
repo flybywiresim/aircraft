@@ -1,4 +1,4 @@
-import { Arinc429Word } from '@instruments/common/arinc429.js';
+import { Arinc429Word } from '@shared/arinc429';
 import React from 'react';
 import { getSimVar } from '../util.js';
 
@@ -147,8 +147,11 @@ const SidestickIndicator = ({ isOnGround }) => {
     return (
         <g id="GroundCursorGroup" className="NormalStroke White">
             <path id="GroundCursorBorders" d="m92.327 103.75h6.0441v-6.0476m-58.93 0v6.0476h6.0441m46.842-45.861h6.0441v6.0476m-58.93 0v-6.0476h6.0441" />
-            {/* eslint-disable-next-line max-len */}
-            <path id="GroundCursorCrosshair" transform={`translate(${SidestickPosX} ${SidestickPosY})`} d="m73.994 81.579h-4.3316v4.3341m-5.8426-4.3341h4.3316v4.3341m5.8426-5.846h-4.3316v-4.3341m-5.8426 4.3341h4.3316v-4.3341" />
+            <path
+                id="GroundCursorCrosshair"
+                transform={`translate(${SidestickPosX} ${SidestickPosY})`}
+                d="m73.994 81.579h-4.3316v4.3341m-5.8426-4.3341h4.3316v4.3341m5.8426-5.846h-4.3316v-4.3341m-5.8426 4.3341h4.3316v-4.3341"
+            />
         </g>
     );
 };

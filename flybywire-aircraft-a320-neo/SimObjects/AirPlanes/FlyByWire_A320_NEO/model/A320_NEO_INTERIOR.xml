@@ -42,12 +42,16 @@
             <UseTemplate Name="FBW_MULTI_FUNCTION_CONTROL_DISPLAY_UNIT_Template">
                 <SIDE>L</SIDE>
                 <DISPLAY_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</DISPLAY_POWERED>
+                <!-- annunciators powered by transformer 37LP via C/B 26LP -->
+                <ANNUNC_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</ANNUNC_POWERED>
                 <!-- TODO: to be removed when MCDU is refactored. -->
                 <SIDE_NUMERIC>1</SIDE_NUMERIC>
             </UseTemplate>
             <UseTemplate Name="FBW_MULTI_FUNCTION_CONTROL_DISPLAY_UNIT_Template">
                 <SIDE>R</SIDE>
                 <DISPLAY_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</DISPLAY_POWERED>
+                <!-- annunciators powered by transformer 36LP via C/B 27LP -->
+                <ANNUNC_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</ANNUNC_POWERED>
                 <!-- TODO: to be removed when MCDU is refactored. -->
                 <SIDE_NUMERIC>2</SIDE_NUMERIC>
             </UseTemplate>
@@ -173,6 +177,7 @@
                 <NODE_ID>LIGHTS_AUTOPILOT</NODE_ID>
                 <SIMVAR_INDEX>2</SIMVAR_INDEX>
                 <POTENTIOMETER>84</POTENTIOMETER>
+                <!-- ref FBW-22-06 C/B 5LF -->
                 <EMISSIVE_CODE>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
             </UseTemplate>
 
@@ -187,6 +192,8 @@
             <UseTemplate Name="ASOBO_LIGHTING_Potentiometer_Emissive_Template">
                 <NODE_ID>SCREEN_AUTOPILOT</NODE_ID>
                 <POTENTIOMETER>87</POTENTIOMETER>
+                <!-- ref FBW-22-06 C/B 5LF -->
+                <EMISSIVE_CODE>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
             </UseTemplate>
             <CameraTitle>PA</CameraTitle>
 
@@ -295,8 +302,6 @@
                     <POTENTIOMETER>9999</POTENTIOMETER>
                 </UseTemplate>
 
-                <UseTemplate Name="FBW_AIRBUS_Update_PTU_Template">
-                </UseTemplate>
 
                 <!-- Mixture Lever does not exist in A320 but can be set to 0 by Auto Shutdown. Ensure it is always >0.9 -->
                 <Update Frequency="1">
@@ -513,7 +518,7 @@
                     <PART_ID>SCREEN_PFD1</PART_ID>
                     <CAMERA_TITLE>PFD</CAMERA_TITLE>
                     <!-- Effects such as pixels and glass reflections require the screen brightness to be increased -->
-                    <EMISSIVE_CODE>3</EMISSIVE_CODE>
+                    <EMISSIVE_CODE>1</EMISSIVE_CODE>
                 </UseTemplate>
 
                 <UseTemplate Name="FBW_Airbus_Push_EFIS_GPWS">
@@ -614,7 +619,7 @@
                     <PART_ID>SCREEN_MFD1</PART_ID>
                     <CAMERA_TITLE>MFD</CAMERA_TITLE>
                     <!-- Effects such as pixels and glass reflections require the screen brightness to be increased -->
-                    <EMISSIVE_CODE>3</EMISSIVE_CODE>
+                    <EMISSIVE_CODE>1</EMISSIVE_CODE>
                 </UseTemplate>
 
                 <!-- DCDU -->
@@ -623,7 +628,7 @@
                     <!-- Effects such as pixels and glass reflections require the screen brightness to be increased -->
                     <EMISSIVE_CODE>
                         (L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool) if{
-                            3 (L:#PLANE_NAME#_PANEL_DCDU_L_BRIGHTNESS, percent over 100) *
+                            1 (L:#PLANE_NAME#_PANEL_DCDU_L_BRIGHTNESS, percent over 100) *
                         } els{
                             0
                         }
@@ -658,7 +663,7 @@
                     <POTENTIOMETER>90</POTENTIOMETER>
                     <PART_ID>SCREEN_PFD2</PART_ID>
                     <!-- Effects such as pixels and glass reflections require the screen brightness to be increased -->
-                    <EMISSIVE_CODE>3</EMISSIVE_CODE>
+                    <EMISSIVE_CODE>1</EMISSIVE_CODE>
                 </UseTemplate>
 
                 <!-- F/O ND SCREEN -->
@@ -675,7 +680,7 @@
                     <POTENTIOMETER>91</POTENTIOMETER>
                     <PART_ID>SCREEN_MFD2</PART_ID>
                     <!-- Effects such as pixels and glass reflections require the screen brightness to be increased -->
-                    <EMISSIVE_CODE>3</EMISSIVE_CODE>
+                    <EMISSIVE_CODE>1</EMISSIVE_CODE>
                 </UseTemplate>
 
                 <!-- F/O WX SCREEN -->
@@ -693,7 +698,7 @@
                     <!-- Effects such as pixels and glass reflections require the screen brightness to be increased -->
                     <EMISSIVE_CODE>
                         (L:A32NX_ELEC_DC_2_BUS_IS_POWERED, Bool) if{
-                            3 (L:#PLANE_NAME#_PANEL_DCDU_R_BRIGHTNESS, percent over 100) *
+                            1 (L:#PLANE_NAME#_PANEL_DCDU_R_BRIGHTNESS, percent over 100) *
                         } els{
                             0
                         }
@@ -803,7 +808,7 @@
                 <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
                     <NODE_ID>DYN_SCREEN</NODE_ID>
                     <!-- Effects such as pixels and glass reflections require the screen brightness to be increased -->
-                    <EMISSIVE_CODE>3</EMISSIVE_CODE>
+                    <EMISSIVE_CODE>1</EMISSIVE_CODE>
                 </UseTemplate>
                 <CameraTitle>PA</CameraTitle>
 
@@ -878,7 +883,7 @@
                     <PART_ID>SCREEN_EICAS1</PART_ID>
                     <CAMERA_TITLE>ECAM</CAMERA_TITLE>
                     <!-- Effects such as pixels and glass reflections require the screen brightness to be increased -->
-                    <EMISSIVE_CODE>3</EMISSIVE_CODE>
+                    <EMISSIVE_CODE>1</EMISSIVE_CODE>
                 </UseTemplate>
 
                 <!-- LOWER ECAM SCREEN -->
@@ -895,7 +900,7 @@
                     <PART_ID>SCREEN_EICAS2</PART_ID>
                     <CAMERA_TITLE>ECAM</CAMERA_TITLE>
                     <!-- Effects such as pixels and glass reflections require the screen brightness to be increased -->
-                    <EMISSIVE_CODE>3</EMISSIVE_CODE>
+                    <EMISSIVE_CODE>1</EMISSIVE_CODE>
                 </UseTemplate>
             </Component>
 
@@ -1558,7 +1563,7 @@
                     <POTENTIOMETER>7</POTENTIOMETER>
                     <FAILURE>1</FAILURE>
                     <SIMVAR_INDEX>1</SIMVAR_INDEX>
-                    <EMISSIVE_CODE>(L:A32NX_ELEC_DC_2_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
+                    <EMISSIVE_CODE>(L:A32NX_ELEC_DC_GND_FLT_SVC_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
                 </UseTemplate>
 
                 <!-- F/O dome light -->
@@ -2446,12 +2451,14 @@
                 <Component ID="Overhead_Handling">
                     <UseTemplate Name="FBW_Push_Held">
                         <NODE_ID>PUSH_OVHD_RAINRPLNTL</NODE_ID>
-                        <HOLD_SIMVAR>L:A32NX_RAIN_REPELLENT_LEFT_ON</HOLD_SIMVAR>
+                        <!-- Model has buttons exchanged -->
+                        <HOLD_SIMVAR>L:A32NX_RAIN_REPELLENT_RIGHT_ON</HOLD_SIMVAR>
                         <TOOLTIPID>Dispense rain repellent (Inop.)</TOOLTIPID>
                     </UseTemplate>
                     <UseTemplate Name="FBW_Push_Held">
                         <NODE_ID>PUSH_OVHD_RAINRPNLTR</NODE_ID>
-                        <HOLD_SIMVAR>L:A32NX_RAIN_REPELLENT_RIGHT_ON</HOLD_SIMVAR>
+                        <!-- Model has buttons exchanged -->
+                        <HOLD_SIMVAR>L:A32NX_RAIN_REPELLENT_LEFT_ON</HOLD_SIMVAR>
                         <TOOLTIPID>Dispense rain repellent (Inop.)</TOOLTIPID>
                     </UseTemplate>
                     <UseTemplate Name="FBW_Airbus_Wiper_Knob">
@@ -2983,7 +2990,7 @@
                         <UseTemplate Name="FBW_Continuous_Knob_Limited_From_Simvar">
                             <NODE_ID>KNOB_OVHD_CABINPRESS_LDGELEV</NODE_ID>
                             <ANIM_SIMVAR_MAX>88</ANIM_SIMVAR_MAX>
-                            <LOCAL_SIMVAR>L:A32NX_LANDING_ELEVATION</LOCAL_SIMVAR>
+                            <LOCAL_SIMVAR>L:A32NX_OVHD_PRESS_LDG_ELEV_KNOB</LOCAL_SIMVAR>
                             <LOCAL_SIMVAR_UNITS>feet</LOCAL_SIMVAR_UNITS>
                             <INCREMENT>0.5</INCREMENT>
                             <CONVERSION_FORMULA>193.182 * 2000 -</CONVERSION_FORMULA>
@@ -2993,17 +3000,18 @@
 
                     <UseTemplate Name="FBW_3State_Springloaded_Switch">
                         <NODE_ID>SWITCH_OVHD_CABINPRESS_MANVSCTL</NODE_ID>
-                        <ANIM_SIMVAR>L:A32NX_MAN_VS_CONTROL</ANIM_SIMVAR>
+                        <ANIM_SIMVAR>L:A32NX_OVHD_PRESS_MAN_VS_CTL_SWITCH</ANIM_SIMVAR>
                         <INVERT_ANIM>1</INVERT_ANIM>
                     </UseTemplate>
 
                     <!-- MODE SEL -->
                     <UseTemplate Name="FBW_Push_Toggle">
                         <NODE_ID>PUSH_OVHD_CABINPRESS_MODESEL</NODE_ID>
-                        <TOGGLE_SIMVAR>L:A32NX_CAB_PRESS_MODE_MAN</TOGGLE_SIMVAR>
+                        <TOGGLE_SIMVAR>L:A32NX_OVHD_PRESS_MODE_SEL_PB_IS_AUTO</TOGGLE_SIMVAR>
+                        <DOWN_CODE>(L:A32NX_OVHD_PRESS_MODE_SEL_PB_IS_AUTO, Bool) !</DOWN_CODE>
                         <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_STAT_INV_BUS_IS_POWERED, Bool) or</SEQ_POWERED>
-                        <SEQ1_CODE>(L:A32NX_CAB_PRESS_SYS_FAULT)</SEQ1_CODE>
-                        <SEQ2_CODE>(L:A32NX_CAB_PRESS_MODE_MAN)</SEQ2_CODE>
+                        <SEQ1_CODE>(L:A32NX_OVHD_PRESS_MODE_SEL_PB_HAS_FAULT)</SEQ1_CODE>
+                        <SEQ2_CODE>(L:A32NX_OVHD_PRESS_MODE_SEL_PB_IS_AUTO) !</SEQ2_CODE>
                         <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                         <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
                         <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
@@ -3012,9 +3020,9 @@
                     <UseTemplate Name="FBW_Covered_Push_Toggle">
                         <NODE_ID>PUSH_OVHD_CABINPRESS_DITCHING</NODE_ID>
                         <LOCK_NODE_ID>LOCK_OVHD_CABINPRESS_DITCHING</LOCK_NODE_ID>
-                        <TOGGLE_SIMVAR>L:A32NX_DITCHING</TOGGLE_SIMVAR>
+                        <TOGGLE_SIMVAR>L:A32NX_OVHD_PRESS_DITCHING_PB_IS_ON</TOGGLE_SIMVAR>
                         <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_STAT_INV_BUS_IS_POWERED, Bool) or</SEQ_POWERED>
-                        <SEQ2_CODE>(L:A32NX_DITCHING)</SEQ2_CODE>
+                        <SEQ2_CODE>(L:A32NX_OVHD_PRESS_DITCHING_PB_IS_ON)</SEQ2_CODE>
                         <NO_SEQ1 />
                     </UseTemplate>
                 </Component>
@@ -3043,190 +3051,6 @@
                 <SIDE>R</SIDE>
                 <BUS_TOP>AC_2</BUS_TOP>
                 <BUS_BOTTOM>AC_ESS_SHED</BUS_BOTTOM>
-            </UseTemplate>
-
-            <UseTemplate Name="FBW_AIRLINER_Switch_Baro_Selector_Template">
-                <NODE_ID>KNOB_AUTOPILOT_SELECTOR_L1</NODE_ID>
-                <ANIM_NAME>KNOB_AUTOPILOT_SELECTOR_L1</ANIM_NAME>
-            </UseTemplate>
-            <UseTemplate Name="FBW_AIRLINER_Switch_Baro_Selector_Template">
-                <NODE_ID>KNOB_AUTOPILOT_SELECTOR_R1</NODE_ID>
-                <ANIM_NAME>KNOB_AUTOPILOT_SELECTOR_R1</ANIM_NAME>
-            </UseTemplate>
-
-            <UseTemplate Name="FBW_Airbus_FCU_Baro_Knob">
-                <NODE_ID>KNOB_AUTOPILOT_KNOB1_L</NODE_ID>
-                <ANIM_NAME_KNOB>KNOB_AUTOPILOT_KNOB1_L</ANIM_NAME_KNOB>
-                <ANIM_NAME_PUSHPULL>PUSH_AUTOPILOT_KNOB1_L</ANIM_NAME_PUSHPULL>
-                <AIRLINER_TYPE>A320</AIRLINER_TYPE>
-            </UseTemplate>
-            <UseTemplate Name="FBW_Airbus_FCU_Baro_Knob">
-                <NODE_ID>KNOB_AUTOPILOT_KNOB1_R</NODE_ID>
-                <ANIM_NAME_KNOB>KNOB_AUTOPILOT_KNOB1_R</ANIM_NAME_KNOB>
-                <ANIM_NAME_PUSHPULL>PUSH_AUTOPILOT_KNOB1_R</ANIM_NAME_PUSHPULL>
-                <AIRLINER_TYPE>A320</AIRLINER_TYPE>
-            </UseTemplate>
-
-            <UseTemplate Name="A32NX_AUTOPILOT_Push_FlightDirector_Template">
-                <NODE_ID>PUSH_AUTOPILOT_FD_L</NODE_ID>
-                <ANIM_NAME>PUSH_AUTOPILOT_FD_L</ANIM_NAME>
-                <ACTIVE_NODE_ID>PUSH_AUTOPILOT_FD_L_SEQ1</ACTIVE_NODE_ID>
-                <EMISSIVE_NODE_ID>PUSH_AUTOPILOT_FD_L_SEQ2</EMISSIVE_NODE_ID>
-                <POTENTIOMETER>84</POTENTIOMETER>
-                <ID>1</ID>
-                <SEQ1_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
-                <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
-            </UseTemplate>
-
-            <UseTemplate Name="A32NX_AUTOPILOT_Push_FlightDirector_Template">
-                <NODE_ID>PUSH_AUTOPILOT_FD_R</NODE_ID>
-                <ANIM_NAME>PUSH_AUTOPILOT_FD_R</ANIM_NAME>
-                <ACTIVE_NODE_ID>PUSH_AUTOPILOT_FD_R_SEQ1</ACTIVE_NODE_ID>
-                <EMISSIVE_NODE_ID>PUSH_AUTOPILOT_FD_R_SEQ2</EMISSIVE_NODE_ID>
-                <POTENTIOMETER>84</POTENTIOMETER>
-                <ID>2</ID>
-                <SEQ1_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
-                <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
-            </UseTemplate>
-
-            <UseTemplate Name="FBW_AIRBUS_Push_ILS_Template">
-                <NODE_ID>PUSH_AUTOPILOT_LS_L</NODE_ID>
-                <ANIM_NAME>PUSH_AUTOPILOT_LS_L</ANIM_NAME>
-                <POTENTIOMETER_SEQ2>84</POTENTIOMETER_SEQ2>
-                <ID>1</ID>
-                <SEQ1_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
-                <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
-            </UseTemplate>
-
-            <UseTemplate Name="FBW_AIRBUS_Push_ILS_Template">
-                <NODE_ID>PUSH_AUTOPILOT_LS_R</NODE_ID>
-                <ANIM_NAME>PUSH_AUTOPILOT_LS_R</ANIM_NAME>
-                <POTENTIOMETER_SEQ2>84</POTENTIOMETER_SEQ2>
-                <ID>2</ID>
-                <SEQ1_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
-                <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
-            </UseTemplate>
-
-            <UseTemplate Name="FBW_AIRLINER_Knob_ND_Template">
-                <TYPE>AIRBUS</TYPE>
-                <NODE_ID>KNOB_AUTOPILOT_ROSE_L</NODE_ID>
-                <PART_ID>KNOB_AUTOPILOT_ROSE_L</PART_ID>
-                <ANIM_NAME>KNOB_AUTOPILOT_ROSE_L_</ANIM_NAME>
-                <KNOB_POSITION_VAR>A320_Neo_MFD_NAV_MODE_1</KNOB_POSITION_VAR>
-            </UseTemplate>
-
-            <UseTemplate Name="FBW_AIRLINER_Knob_ND_Range_Template">
-                <TYPE>AIRBUS</TYPE>
-                <NODE_ID>KNOB_AUTOPILOT_L1</NODE_ID>
-                <ANIM_NAME>KNOB_AUTOPILOT_L1</ANIM_NAME>
-                <KNOB_POSITION_VAR>A320_Neo_MFD_Range_1</KNOB_POSITION_VAR>
-            </UseTemplate>
-
-            <UseTemplate Name="FBW_AIRLINER_Knob_ND_Template">
-                <TYPE>AIRBUS</TYPE>
-                <NODE_ID>KNOB_AUTOPILOT_ROSE_R</NODE_ID>
-                <PART_ID>KNOB_AUTOPILOT_ROSE_R</PART_ID>
-                <ANIM_NAME>KNOB_AUTOPILOT_ROSE_R</ANIM_NAME>
-                <KNOB_POSITION_VAR>A320_Neo_MFD_NAV_MODE_2</KNOB_POSITION_VAR>
-            </UseTemplate>
-
-            <UseTemplate Name="FBW_AIRLINER_Knob_ND_Range_Template">
-                <TYPE>AIRBUS</TYPE>
-                <NODE_ID>KNOB_AUTOPILOT_R1</NODE_ID>
-                <ANIM_NAME>KNOB_AUTOPILOT_R1</ANIM_NAME>
-                <KNOB_POSITION_VAR>A320_Neo_MFD_Range_2</KNOB_POSITION_VAR>
-            </UseTemplate>
-
-            <UseTemplate Name="FBW_AIRBUS_Push_CSTR_Template">
-                <NODE_ID>PUSH_AUTOPILOT_CSTR_L</NODE_ID>
-                <ANIM_NAME>PUSH_AUTOPILOT_CSTR_L</ANIM_NAME>
-                <POTENTIOMETER_SEQ2>84</POTENTIOMETER_SEQ2>
-                <BTN_ID>CSTR_1</BTN_ID>
-                <SEQ1_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
-                <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
-            </UseTemplate>
-
-            <UseTemplate Name="FBW_AIRBUS_Push_VORD_Template">
-                <NODE_ID>PUSH_AUTOPILOT_VORD_L</NODE_ID>
-                <ANIM_NAME>PUSH_AUTOPILOT_VORD_L</ANIM_NAME>
-                <POTENTIOMETER_SEQ2>84</POTENTIOMETER_SEQ2>
-                <BTN_ID>VORD_1</BTN_ID>
-                <SEQ1_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
-                <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
-            </UseTemplate>
-
-            <UseTemplate Name="FBW_AIRBUS_Push_WPT_Template">
-                <NODE_ID>PUSH_AUTOPILOT_WPT_L</NODE_ID>
-                <ANIM_NAME>PUSH_AUTOPILOT_WPT_L</ANIM_NAME>
-                <POTENTIOMETER_SEQ2>84</POTENTIOMETER_SEQ2>
-                <BTN_ID>WPT_1</BTN_ID>
-                <SEQ1_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
-                <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
-            </UseTemplate>
-
-            <UseTemplate Name="FBW_AIRBUS_Push_NDB_Template">
-                <NODE_ID>PUSH_AUTOPILOT_NDB_L</NODE_ID>
-                <ANIM_NAME>PUSH_AUTOPILOT_NDB_L</ANIM_NAME>
-                <POTENTIOMETER_SEQ2>84</POTENTIOMETER_SEQ2>
-                <BTN_ID>NDB_1</BTN_ID>
-                <SEQ1_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
-                <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
-            </UseTemplate>
-
-            <UseTemplate Name="FBW_AIRBUS_Push_ARPT_Template">
-                <NODE_ID>PUSH_AUTOPILOT_ARPT_L</NODE_ID>
-                <PART_ID>ARPT_L</PART_ID>
-                <ANIM_NAME>PUSH_AUTOPILOT_ARPT_L</ANIM_NAME>
-                <POTENTIOMETER_SEQ2>84</POTENTIOMETER_SEQ2>
-                <BTN_ID>ARPT_1</BTN_ID>
-                <SEQ1_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
-                <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
-            </UseTemplate>
-
-            <UseTemplate Name="FBW_AIRBUS_Push_CSTR_Template">
-                <NODE_ID>PUSH_AUTOPILOT_CSTR_R</NODE_ID>
-                <ANIM_NAME>PUSH_AUTOPILOT_CSTR_R</ANIM_NAME>
-                <POTENTIOMETER_SEQ2>84</POTENTIOMETER_SEQ2>
-                <BTN_ID>CSTR_2</BTN_ID>
-                <SEQ1_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
-                <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
-            </UseTemplate>
-
-            <UseTemplate Name="FBW_AIRBUS_Push_VORD_Template">
-                <NODE_ID>PUSH_AUTOPILOT_VORD_R</NODE_ID>
-                <ANIM_NAME>PUSH_AUTOPILOT_VORD_R</ANIM_NAME>
-                <POTENTIOMETER_SEQ2>84</POTENTIOMETER_SEQ2>
-                <BTN_ID>VORD_2</BTN_ID>
-                <SEQ1_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
-                <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
-            </UseTemplate>
-
-            <UseTemplate Name="FBW_AIRBUS_Push_WPT_Template">
-                <NODE_ID>PUSH_AUTOPILOT_WPT_R</NODE_ID>
-                <ANIM_NAME>PUSH_AUTOPILOT_WPT_R</ANIM_NAME>
-                <POTENTIOMETER_SEQ2>84</POTENTIOMETER_SEQ2>
-                <BTN_ID>WPT_2</BTN_ID>
-                <SEQ1_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
-                <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
-            </UseTemplate>
-
-            <UseTemplate Name="FBW_AIRBUS_Push_NDB_Template">
-                <NODE_ID>PUSH_AUTOPILOT_NDB_R</NODE_ID>
-                <ANIM_NAME>PUSH_AUTOPILOT_NDB_R</ANIM_NAME>
-                <POTENTIOMETER_SEQ2>84</POTENTIOMETER_SEQ2>
-                <BTN_ID>NDB_2</BTN_ID>
-                <SEQ1_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
-                <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
-            </UseTemplate>
-
-            <UseTemplate Name="FBW_AIRBUS_Push_ARPT_Template">
-                <NODE_ID>PUSH_AUTOPILOT_ARPT_R</NODE_ID>
-                <PART_ID>ARPT_R</PART_ID>
-                <ANIM_NAME>PUSH_AUTOPILOT_ARPT_R</ANIM_NAME>
-                <POTENTIOMETER_SEQ2>84</POTENTIOMETER_SEQ2>
-                <BTN_ID>ARPT_2</BTN_ID>
-                <SEQ1_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
-                <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
             </UseTemplate>
 
             <UseTemplate Name="FBW_AUTOPILOT_Push_SpeedToggle_Template">
@@ -3338,18 +3162,9 @@
                 <ANIM_NAME>PUSH_AUTOPILOT_METRICALT</ANIM_NAME>
             </UseTemplate>
 
-            <UseTemplate Name="ASOBO_AUTOPILOT_Switch_Altitude_Increment_Template">
+            <UseTemplate Name="FBW_AUTOPILOT_Switch_Altitude_Increment_Template">
                 <NODE_ID>KNOB_AUTOPILOT_SELECTOR_ALT</NODE_ID>
                 <ANIM_NAME>KNOB_AUTOPILOT_SELECTOR_ALT</ANIM_NAME>
-                <WWISE_EVENT_1>lswitch</WWISE_EVENT_1>
-                <WWISE_EVENT_2>lswitch</WWISE_EVENT_2>
-            </UseTemplate>
-
-            <UseTemplate Name="ASOBO_LIGHTING_Potentiometer_Emissive_Template">
-                <NODE_ID>KNOB_AUTOPILOT_SELECTOR_ALT</NODE_ID>
-                <POTENTIOMETER>84</POTENTIOMETER>
-                <DONT_OVERRIDE_BASE_EMISSIVE>True</DONT_OVERRIDE_BASE_EMISSIVE>
-                <EMISSIVE_CODE>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
             </UseTemplate>
 
             <UseTemplate Name="FBW_Airbus_FCU_Altitude_Knob">
@@ -3380,36 +3195,174 @@
 
             <UseTemplate Name="FBW_AIRBUS_NAV_AID_SWITCH_Template">
                 <BASE_NAME>SWITCH_AUTOPILOT_ADF1_L</BASE_NAME>
-                <STATE_VAR_NAME>XMLVAR_NAV_AID_SWITCH_L1_State</STATE_VAR_NAME>
-                <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.EFIS_PANEL_ADFSWITCH_ADF1</ANIMTIP_0>
-                <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.EFIS_PANEL_ADFSWITCH_OFF1</ANIMTIP_1>
-                <ANIMTIP_2>TT:COCKPIT.TOOLTIPS.EFIS_PANEL_ADFSWITCH_VOR1</ANIMTIP_2>
+                <SIDE>L</SIDE>
+                <INDEX>1</INDEX>
             </UseTemplate>
 
             <UseTemplate Name="FBW_AIRBUS_NAV_AID_SWITCH_Template">
                 <BASE_NAME>SWITCH_AUTOPILOT_ADF2_L</BASE_NAME>
-                <STATE_VAR_NAME>XMLVAR_NAV_AID_SWITCH_L2_State</STATE_VAR_NAME>
-                <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.EFIS_PANEL_ADFSWITCH_ADF2</ANIMTIP_0>
-                <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.EFIS_PANEL_ADFSWITCH_OFF2</ANIMTIP_1>
-                <ANIMTIP_2>TT:COCKPIT.TOOLTIPS.EFIS_PANEL_ADFSWITCH_VOR2</ANIMTIP_2>
+                <SIDE>L</SIDE>
+                <INDEX>2</INDEX>
             </UseTemplate>
 
             <UseTemplate Name="FBW_AIRBUS_NAV_AID_SWITCH_Template">
                 <BASE_NAME>SWITCH_AUTOPILOT_ADF1_R</BASE_NAME>
-                <STATE_VAR_NAME>XMLVAR_NAV_AID_SWITCH_R1_State</STATE_VAR_NAME>
-                <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.EFIS_PANEL_ADFSWITCH_ADF1</ANIMTIP_0>
-                <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.EFIS_PANEL_ADFSWITCH_OFF1</ANIMTIP_1>
-                <ANIMTIP_2>TT:COCKPIT.TOOLTIPS.EFIS_PANEL_ADFSWITCH_VOR1</ANIMTIP_2>
+                <SIDE>R</SIDE>
+                <INDEX>1</INDEX>
             </UseTemplate>
 
             <UseTemplate Name="FBW_AIRBUS_NAV_AID_SWITCH_Template">
                 <BASE_NAME>SWITCH_AUTOPILOT_ADF2_R</BASE_NAME>
-                <STATE_VAR_NAME>XMLVAR_NAV_AID_SWITCH_R2_State</STATE_VAR_NAME>
-                <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.EFIS_PANEL_ADFSWITCH_ADF2</ANIMTIP_0>
-                <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.EFIS_PANEL_ADFSWITCH_OFF2</ANIMTIP_1>
-                <ANIMTIP_2>TT:COCKPIT.TOOLTIPS.EFIS_PANEL_ADFSWITCH_VOR2</ANIMTIP_2>
+                <SIDE>R</SIDE>
+                <INDEX>2</INDEX>
             </UseTemplate>
             <CameraTitle>PA</CameraTitle>
+        </Component>
+
+        <Component ID="EFIS_L">
+            <DefaultTemplateParameters>
+                <SIDE>L</SIDE>
+            </DefaultTemplateParameters>
+
+            <UseTemplate Name="FBW_AIRLINER_Switch_Baro_Selector_Template">
+                <NODE_ID>KNOB_AUTOPILOT_SELECTOR_L1</NODE_ID>
+                <ANIM_NAME>KNOB_AUTOPILOT_SELECTOR_L1</ANIM_NAME>
+            </UseTemplate>
+
+            <UseTemplate Name="FBW_Airbus_FCU_Baro_Knob">
+                <NODE_ID>KNOB_AUTOPILOT_KNOB1_L</NODE_ID>
+                <ANIM_NAME_KNOB>KNOB_AUTOPILOT_KNOB1_L</ANIM_NAME_KNOB>
+                <ANIM_NAME_PUSHPULL>PUSH_AUTOPILOT_KNOB1_L</ANIM_NAME_PUSHPULL>
+                <AIRLINER_TYPE>A320</AIRLINER_TYPE>
+            </UseTemplate>
+
+            <UseTemplate Name="A32NX_AUTOPILOT_Push_FlightDirector_Template">
+                <SIDE>L</SIDE>
+                <ID>1</ID>
+            </UseTemplate>
+
+            <UseTemplate Name="FBW_AIRBUS_Push_ILS_Template">
+                <SIDE>L</SIDE>
+                <ID>1</ID>
+            </UseTemplate>
+
+            <UseTemplate Name="FBW_AIRLINER_Knob_ND_Template">
+                <TYPE>AIRBUS</TYPE>
+                <NODE_ID>KNOB_AUTOPILOT_ROSE_L</NODE_ID>
+                <PART_ID>KNOB_AUTOPILOT_ROSE_L</PART_ID>
+                <ANIM_NAME>KNOB_AUTOPILOT_ROSE_L_</ANIM_NAME>
+                <KNOB_POSITION_VAR>A32NX_EFIS_L_ND_MODE</KNOB_POSITION_VAR>
+            </UseTemplate>
+
+            <UseTemplate Name="FBW_AIRLINER_Knob_ND_Range_Template">
+                <TYPE>AIRBUS</TYPE>
+                <NODE_ID>KNOB_AUTOPILOT_L1</NODE_ID>
+                <ANIM_NAME>KNOB_AUTOPILOT_L1</ANIM_NAME>
+                <KNOB_POSITION_VAR>A32NX_EFIS_L_ND_RANGE</KNOB_POSITION_VAR>
+            </UseTemplate>
+
+            <UseTemplate Name="FBW_AIRBUS_Push_EFIS_Option">
+                <SIDE>L</SIDE>
+                <BASE_NAME>CSTR</BASE_NAME>
+                <OPTION_ID>1</OPTION_ID>
+            </UseTemplate>
+
+            <UseTemplate Name="FBW_AIRBUS_Push_EFIS_Option">
+                <SIDE>L</SIDE>
+                <BASE_NAME>VORD</BASE_NAME>
+                <OPTION_ID>2</OPTION_ID>
+            </UseTemplate>
+
+            <UseTemplate Name="FBW_AIRBUS_Push_EFIS_Option">
+                <SIDE>L</SIDE>
+                <BASE_NAME>WPT</BASE_NAME>
+                <OPTION_ID>3</OPTION_ID>
+            </UseTemplate>
+
+            <UseTemplate Name="FBW_AIRBUS_Push_EFIS_Option">
+                <SIDE>L</SIDE>
+                <BASE_NAME>NDB</BASE_NAME>
+                <OPTION_ID>4</OPTION_ID>
+            </UseTemplate>
+
+            <UseTemplate Name="FBW_AIRBUS_Push_EFIS_Option">
+                <SIDE>L</SIDE>
+                <BASE_NAME>ARPT</BASE_NAME>
+                <OPTION_ID>5</OPTION_ID>
+            </UseTemplate>
+        </Component>
+
+        <Component ID="EFIS_R">
+            <DefaultTemplateParameters>
+                <SIDE>R</SIDE>
+            </DefaultTemplateParameters>
+
+            <UseTemplate Name="FBW_AIRLINER_Switch_Baro_Selector_Template">
+                <NODE_ID>KNOB_AUTOPILOT_SELECTOR_R1</NODE_ID>
+                <ANIM_NAME>KNOB_AUTOPILOT_SELECTOR_R1</ANIM_NAME>
+            </UseTemplate>
+
+            <UseTemplate Name="FBW_Airbus_FCU_Baro_Knob">
+                <NODE_ID>KNOB_AUTOPILOT_KNOB1_R</NODE_ID>
+                <ANIM_NAME_KNOB>KNOB_AUTOPILOT_KNOB1_R</ANIM_NAME_KNOB>
+                <ANIM_NAME_PUSHPULL>PUSH_AUTOPILOT_KNOB1_R</ANIM_NAME_PUSHPULL>
+                <AIRLINER_TYPE>A320</AIRLINER_TYPE>
+            </UseTemplate>
+
+            <UseTemplate Name="A32NX_AUTOPILOT_Push_FlightDirector_Template">
+                <SIDE>R</SIDE>
+                <ID>2</ID>
+            </UseTemplate>
+
+            <UseTemplate Name="FBW_AIRBUS_Push_ILS_Template">
+                <SIDE>R</SIDE>
+                <ID>2</ID>
+            </UseTemplate>
+
+            <UseTemplate Name="FBW_AIRLINER_Knob_ND_Template">
+                <TYPE>AIRBUS</TYPE>
+                <NODE_ID>KNOB_AUTOPILOT_ROSE_R</NODE_ID>
+                <PART_ID>KNOB_AUTOPILOT_ROSE_R</PART_ID>
+                <ANIM_NAME>KNOB_AUTOPILOT_ROSE_R</ANIM_NAME>
+                <KNOB_POSITION_VAR>A32NX_EFIS_R_ND_MODE</KNOB_POSITION_VAR>
+            </UseTemplate>
+
+            <UseTemplate Name="FBW_AIRLINER_Knob_ND_Range_Template">
+                <TYPE>AIRBUS</TYPE>
+                <NODE_ID>KNOB_AUTOPILOT_R1</NODE_ID>
+                <ANIM_NAME>KNOB_AUTOPILOT_R1</ANIM_NAME>
+                <KNOB_POSITION_VAR>A32NX_EFIS_R_ND_RANGE</KNOB_POSITION_VAR>
+            </UseTemplate>
+
+            <UseTemplate Name="FBW_AIRBUS_Push_EFIS_Option">
+                <SIDE>R</SIDE>
+                <BASE_NAME>CSTR</BASE_NAME>
+                <OPTION_ID>1</OPTION_ID>
+            </UseTemplate>
+
+            <UseTemplate Name="FBW_AIRBUS_Push_EFIS_Option">
+                <SIDE>R</SIDE>
+                <BASE_NAME>VORD</BASE_NAME>
+                <OPTION_ID>2</OPTION_ID>
+            </UseTemplate>
+
+            <UseTemplate Name="FBW_AIRBUS_Push_EFIS_Option">
+                <SIDE>R</SIDE>
+                <BASE_NAME>WPT</BASE_NAME>
+                <OPTION_ID>3</OPTION_ID>
+            </UseTemplate>
+
+            <UseTemplate Name="FBW_AIRBUS_Push_EFIS_Option">
+                <SIDE>R</SIDE>
+                <BASE_NAME>NDB</BASE_NAME>
+                <OPTION_ID>4</OPTION_ID>
+            </UseTemplate>
+
+            <UseTemplate Name="FBW_AIRBUS_Push_EFIS_Option">
+                <SIDE>R</SIDE>
+                <BASE_NAME>ARPT</BASE_NAME>
+                <OPTION_ID>5</OPTION_ID>
+            </UseTemplate>
         </Component>
 
         <Component ID="Airbus_EICAS">
@@ -3961,10 +3914,12 @@
             <UseTemplate Name="FBW_AIRBUS_Chronometer_Button">
                 <NODE_ID>PUSH_AUTOPILOT_CHRONO_L</NODE_ID>
                 <ANIM_NAME>PUSH_AUTOPILOT_CHRONO_L</ANIM_NAME>
+                <SIDE>L</SIDE>
             </UseTemplate>
             <UseTemplate Name="FBW_AIRBUS_Chronometer_Button">
                 <NODE_ID>PUSH_AUTOPILOT_CHRONO_R</NODE_ID>
                 <ANIM_NAME>PUSH_AUTOPILOT_CHRONO_R</ANIM_NAME>
+                <SIDE>R</SIDE>
             </UseTemplate>
 
             <UseTemplate Name="FBW_Chrono_Push_Toggle">

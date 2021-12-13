@@ -1,5 +1,5 @@
 import React from 'react';
-import { Arinc429Word } from '@instruments/common/arinc429';
+import { Arinc429Word } from '@shared/arinc429';
 import { VerticalTape } from './PFDUtils';
 import { DigitalAltitudeReadout } from './DigitalAltitudeReadout';
 import { getSimVar } from '../util.js';
@@ -77,8 +77,16 @@ export const AltitudeIndicator = ({ altitude, FWCFlightPhase }: AltitudeIndicato
         <g>
             <AltTapeBackground />
             <LandingElevationIndicator altitude={altitude} FWCFlightPhase={FWCFlightPhase} />
-            {/* eslint-disable-next-line max-len */}
-            <VerticalTape tapeValue={altitude.value} graduationElementFunction={GraduationElement} bugs={bugs} displayRange={DisplayRange + 30} valueSpacing={ValueSpacing} distanceSpacing={DistanceSpacing} lowerLimit={-1500} upperLimit={50000} />
+            <VerticalTape
+                tapeValue={altitude.value}
+                graduationElementFunction={GraduationElement}
+                bugs={bugs}
+                displayRange={DisplayRange + 30}
+                valueSpacing={ValueSpacing}
+                distanceSpacing={DistanceSpacing}
+                lowerLimit={-1500}
+                upperLimit={50000}
+            />
         </g>
     );
 };

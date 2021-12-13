@@ -13,3 +13,4 @@ doc = false
 uom = "0.30.0"
 systems = { path = "../systems" }
 msfs = { git = "https://github.com/flybywiresim/msfs-rs", branch = "main" }
+fxhash = "0.2.1"

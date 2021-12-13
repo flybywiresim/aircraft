@@ -21,7 +21,7 @@ use crate::simulation::UpdateContext;
 pub trait Actuator {
     fn used_volume(&self) -> Volume;
     fn reservoir_return(&self) -> Volume;
-    fn reset_accumulators(&mut self);
+    fn reset_volumes(&mut self);
 }
 
 /// Trait linked to anything moving bounded between a minimum and maximum position.
@@ -409,18 +409,18 @@ impl LinearActuator {
 
     fn update_after_rigid_body(
         &mut self,
-        connected_body: &LinearActuatedRigidBodyOnHingeAxis,
         context: &UpdateContext,
+        connected_body: &LinearActuatedRigidBodyOnHingeAxis,
     ) {
-        self.update_speed_position(connected_body, context);
+        self.update_speed_position(context, connected_body);
 
         self.update_fluid_displacements(context);
     }
 
     fn update_speed_position(
         &mut self,
-        connected_body: &LinearActuatedRigidBodyOnHingeAxis,
         context: &UpdateContext,
+        connected_body: &LinearActuatedRigidBodyOnHingeAxis,
     ) {
         self.last_position = self.position;
         self.position = connected_body.linear_extension_to_anchor();
@@ -472,7 +472,7 @@ impl Actuator for LinearActuator {
         self.volume_to_res_accumulator
     }
 
-    fn reset_accumulators(&mut self) {
+    fn reset_volumes(&mut self) {
         self.volume_to_res_accumulator = Volume::new::<gallon>(0.);
         self.volume_to_actuator_accumulator = Volume::new::<gallon>(0.);
     }
@@ -506,8 +506,8 @@ impl HydraulicLinearActuatorAssembly {
 
     pub fn update(
         &mut self,
-        assembly_controller: &impl HydraulicAssemblyController,
         context: &UpdateContext,
+        assembly_controller: &impl HydraulicAssemblyController,
         current_pressure: Pressure,
     ) {
         self.linear_actuator
@@ -523,7 +523,7 @@ impl HydraulicLinearActuatorAssembly {
             );
             self.rigid_body.update(context);
             self.linear_actuator
-                .update_after_rigid_body(&self.rigid_body, context);
+                .update_after_rigid_body(context, &self.rigid_body);
         }
     }
 
@@ -836,6 +836,9 @@ mod tests {
 
     use super::*;
 
+    use crate::electrical::Electricity;
+    use crate::simulation::test::TestVariableRegistry;
+    use crate::simulation::InitContext;
     use std::time::Duration;
     use uom::si::{
         acceleration::meter_per_second_squared, angle::degree, length::foot, mass::kilogram,
@@ -844,6 +847,10 @@ mod tests {
 
     #[test]
     fn linear_actuator_not_moving_on_locked_rigid_body() {
+        let mut electricity = Electricity::new();
+        let mut registry: TestVariableRegistry = Default::default();
+        let mut init_context = InitContext::new(&mut electricity, &mut registry);
+
         let mut rigid_body = cargo_door_body(true);
 
         let mut actuator = cargo_door_actuator(&rigid_body);
@@ -859,17 +866,19 @@ mod tests {
                 Pressure::new::<psi>(1500.),
             );
             rigid_body.update(&context(
+                &mut init_context,
                 Duration::from_secs_f64(dt),
                 Angle::new::<degree>(0.),
                 Angle::new::<degree>(0.),
             ));
             actuator.update_after_rigid_body(
-                &rigid_body,
                 &context(
+                    &mut init_context,
                     Duration::from_secs_f64(dt),
                     Angle::new::<degree>(0.),
                     Angle::new::<degree>(0.),
                 ),
+                &rigid_body,
             );
 
             assert!(actuator.position_normalized == actuator_position_init);
@@ -884,6 +893,10 @@ mod tests {
 
     #[test]
     fn linear_actuator_moving_on_unlocked_rigid_body() {
+        let mut electricity = Electricity::new();
+        let mut registry: TestVariableRegistry = Default::default();
+        let mut init_context = InitContext::new(&mut electricity, &mut registry);
+
         let mut rigid_body = cargo_door_body(true);
 
         let mut actuator = cargo_door_actuator(&rigid_body);
@@ -901,17 +914,19 @@ mod tests {
                 Pressure::new::<psi>(1500.),
             );
             rigid_body.update(&context(
+                &mut init_context,
                 Duration::from_secs_f64(dt),
                 Angle::new::<degree>(0.),
                 Angle::new::<degree>(0.),
             ));
             actuator.update_after_rigid_body(
-                &rigid_body,
                 &context(
+                    &mut init_context,
                     Duration::from_secs_f64(dt),
                     Angle::new::<degree>(0.),
                     Angle::new::<degree>(0.),
                 ),
+                &rigid_body,
             );
 
             if time <= 0.1 {
@@ -940,6 +955,10 @@ mod tests {
 
     #[test]
     fn linear_actuator_can_move_rigid_body_up() {
+        let mut electricity = Electricity::new();
+        let mut registry: TestVariableRegistry = Default::default();
+        let mut init_context = InitContext::new(&mut electricity, &mut registry);
+
         let mut rigid_body = cargo_door_body(true);
 
         let mut actuator = cargo_door_actuator(&rigid_body);
@@ -959,17 +978,19 @@ mod tests {
                 Pressure::new::<psi>(1500.),
             );
             rigid_body.update(&context(
+                &mut init_context,
                 Duration::from_secs_f64(dt),
                 Angle::new::<degree>(0.),
                 Angle::new::<degree>(0.),
             ));
             actuator.update_after_rigid_body(
-                &rigid_body,
                 &context(
+                    &mut init_context,
                     Duration::from_secs_f64(dt),
                     Angle::new::<degree>(0.),
                     Angle::new::<degree>(0.),
                 ),
+                &rigid_body,
             );
 
             if time > 0.2 {
@@ -994,6 +1015,10 @@ mod tests {
 
     #[test]
     fn linear_actuator_resists_body_drop_when_valves_closed() {
+        let mut electricity = Electricity::new();
+        let mut registry: TestVariableRegistry = Default::default();
+        let mut init_context = InitContext::new(&mut electricity, &mut registry);
+
         let mut rigid_body = cargo_door_body(true);
 
         let mut actuator = cargo_door_actuator(&rigid_body);
@@ -1015,17 +1040,19 @@ mod tests {
                 Pressure::new::<psi>(1500.),
             );
             rigid_body.update(&context(
+                &mut init_context,
                 Duration::from_secs_f64(dt),
                 Angle::new::<degree>(0.),
                 Angle::new::<degree>(0.),
             ));
             actuator.update_after_rigid_body(
-                &rigid_body,
                 &context(
+                    &mut init_context,
                     Duration::from_secs_f64(dt),
                     Angle::new::<degree>(0.),
                     Angle::new::<degree>(0.),
                 ),
+                &rigid_body,
             );
 
             if time > 0.2 {
@@ -1055,6 +1082,10 @@ mod tests {
 
     #[test]
     fn linear_actuator_dampens_body_drop_when_damping_mode() {
+        let mut electricity = Electricity::new();
+        let mut registry: TestVariableRegistry = Default::default();
+        let mut init_context = InitContext::new(&mut electricity, &mut registry);
+
         let mut rigid_body = cargo_door_body(true);
 
         let mut actuator = cargo_door_actuator(&rigid_body);
@@ -1073,17 +1104,19 @@ mod tests {
                 Pressure::new::<psi>(1500.),
             );
             rigid_body.update(&context(
+                &mut init_context,
                 Duration::from_secs_f64(dt),
                 Angle::new::<degree>(0.),
                 Angle::new::<degree>(0.),
             ));
             actuator.update_after_rigid_body(
-                &rigid_body,
                 &context(
+                    &mut init_context,
                     Duration::from_secs_f64(dt),
                     Angle::new::<degree>(0.),
                     Angle::new::<degree>(0.),
                 ),
+                &rigid_body,
             );
 
             if time > 25. && time < 25. + dt {
@@ -1109,6 +1142,10 @@ mod tests {
 
     #[test]
     fn linear_actuator_without_hyd_pressure_cant_move_body_up() {
+        let mut electricity = Electricity::new();
+        let mut registry: TestVariableRegistry = Default::default();
+        let mut init_context = InitContext::new(&mut electricity, &mut registry);
+
         let mut rigid_body = cargo_door_body(true);
 
         let mut actuator = cargo_door_actuator(&rigid_body);
@@ -1116,6 +1153,7 @@ mod tests {
         let dt = 0.05;
 
         let context = &context(
+            &mut init_context,
             Duration::from_secs_f64(dt),
             Angle::new::<degree>(0.),
             Angle::new::<degree>(0.),
@@ -1131,7 +1169,7 @@ mod tests {
         for _ in 0..500 {
             actuator.update_before_rigid_body(&mut rigid_body, requested_mode, current_pressure);
             rigid_body.update(context);
-            actuator.update_after_rigid_body(&rigid_body, context);
+            actuator.update_after_rigid_body(context, &rigid_body);
 
             assert!(actuator.position_normalized < Ratio::new::<ratio>(0.3));
 
@@ -1149,6 +1187,10 @@ mod tests {
 
     #[test]
     fn linear_actuator_losing_hyd_pressure_half_way_cant_move_body_up() {
+        let mut electricity = Electricity::new();
+        let mut registry: TestVariableRegistry = Default::default();
+        let mut init_context = InitContext::new(&mut electricity, &mut registry);
+
         let mut rigid_body = cargo_door_body(true);
 
         let mut actuator = cargo_door_actuator(&rigid_body);
@@ -1156,6 +1198,7 @@ mod tests {
         let dt = 0.05;
 
         let context = &context(
+            &mut init_context,
             Duration::from_secs_f64(dt),
             Angle::new::<degree>(0.),
             Angle::new::<degree>(0.),
@@ -1173,7 +1216,7 @@ mod tests {
         for _ in 0..500 {
             actuator.update_before_rigid_body(&mut rigid_body, requested_mode, current_pressure);
             rigid_body.update(context);
-            actuator.update_after_rigid_body(&rigid_body, context);
+            actuator.update_after_rigid_body(context, &rigid_body);
 
             if actuator.position_normalized > Ratio::new::<ratio>(0.95)
                 && time_when_pressure_off == 0.
@@ -1198,8 +1241,14 @@ mod tests {
         }
     }
 
-    fn context(delta_time: Duration, pitch: Angle, bank: Angle) -> UpdateContext {
+    fn context(
+        context: &mut InitContext,
+        delta_time: Duration,
+        pitch: Angle,
+        bank: Angle,
+    ) -> UpdateContext {
         UpdateContext::new(
+            context,
             delta_time,
             Velocity::new::<knot>(250.),
             Length::new::<foot>(5000.),
@@ -1228,6 +1277,10 @@ mod tests {
 
     #[test]
     fn body_gravity_movement() {
+        let mut electricity = Electricity::new();
+        let mut registry: TestVariableRegistry = Default::default();
+        let mut init_context = InitContext::new(&mut electricity, &mut registry);
+
         let mut rigid_body = cargo_door_body(false);
 
         let dt = 0.05;
@@ -1235,6 +1288,7 @@ mod tests {
         let mut time = 0.;
         for _ in 0..100 {
             rigid_body.update(&context(
+                &mut init_context,
                 Duration::from_secs_f64(dt),
                 Angle::new::<degree>(0.),
                 Angle::new::<degree>(-45.),
@@ -1246,6 +1300,10 @@ mod tests {
 
     #[test]
     fn not_locked_at_init_will_move() {
+        let mut electricity = Electricity::new();
+        let mut registry: TestVariableRegistry = Default::default();
+        let mut init_context = InitContext::new(&mut electricity, &mut registry);
+
         let mut rigid_body = cargo_door_body(false);
         let init_pos = rigid_body.position;
 
@@ -1254,6 +1312,7 @@ mod tests {
         let mut time = 0.;
         for _ in 0..100 {
             rigid_body.update(&context(
+                &mut init_context,
                 Duration::from_secs_f64(dt),
                 Angle::new::<degree>(0.),
                 Angle::new::<degree>(-45.),
@@ -1269,6 +1328,10 @@ mod tests {
 
     #[test]
     fn locked_at_init_wont_move() {
+        let mut electricity = Electricity::new();
+        let mut registry: TestVariableRegistry = Default::default();
+        let mut init_context = InitContext::new(&mut electricity, &mut registry);
+
         let mut rigid_body = cargo_door_body(true);
 
         let dt = 0.05;
@@ -1278,6 +1341,7 @@ mod tests {
         let mut time = 0.;
         for _ in 0..100 {
             rigid_body.update(&context(
+                &mut init_context,
                 Duration::from_secs_f64(dt),
                 Angle::new::<degree>(0.),
                 Angle::new::<degree>(-45.),
@@ -1293,6 +1357,10 @@ mod tests {
 
     #[test]
     fn start_moving_once_unlocked() {
+        let mut electricity = Electricity::new();
+        let mut registry: TestVariableRegistry = Default::default();
+        let mut init_context = InitContext::new(&mut electricity, &mut registry);
+
         let mut rigid_body = cargo_door_body(true);
 
         let dt = 0.05;
@@ -1302,6 +1370,7 @@ mod tests {
         let mut time = 0.;
         for _ in 0..100 {
             rigid_body.update(&context(
+                &mut init_context,
                 Duration::from_secs_f64(dt),
                 Angle::new::<degree>(0.),
                 Angle::new::<degree>(-45.),
@@ -1337,6 +1406,10 @@ mod tests {
 
     #[test]
     fn locks_at_required_position() {
+        let mut electricity = Electricity::new();
+        let mut registry: TestVariableRegistry = Default::default();
+        let mut init_context = InitContext::new(&mut electricity, &mut registry);
+
         let mut rigid_body = cargo_door_body(false);
 
         let dt = 0.05;
@@ -1351,6 +1424,7 @@ mod tests {
 
         for _ in 0..100 {
             rigid_body.update(&context(
+                &mut init_context,
                 Duration::from_secs_f64(dt),
                 Angle::new::<degree>(0.),
                 Angle::new::<degree>(-45.),

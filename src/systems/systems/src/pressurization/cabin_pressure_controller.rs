@@ -1,197 +1,175 @@
-use crate::{shared::EngineCorrectedN1, simulation::UpdateContext};
+use crate::{
+    shared::{ControllerSignal, EngineCorrectedN1},
+    simulation::UpdateContext,
+};
 
-use super::PressureValveActuator;
+use super::{
+    CabinPressure, CabinPressureSimulation, OutflowValveActuator, PressureValve,
+    PressureValveSignal, PressurizationOverheadPanel,
+};
 
 use std::time::Duration;
 use uom::si::{
     f64::*,
     length::{foot, meter},
-    pressure::{hectopascal, inch_of_mercury, pascal, psi},
+    pressure::{hectopascal, pascal, psi},
     ratio::{percent, ratio},
-    velocity::{foot_per_minute, foot_per_second, knot, meter_per_second},
+    velocity::{foot_per_minute, knot, meter_per_second},
+    volume_rate::cubic_meter_per_second,
 };
 
-#[derive(Copy, Clone)]
 pub(super) struct CabinPressureController {
-    pressure_schedule_manager: PressureScheduleManager,
+    pressure_schedule_manager: Option<PressureScheduleManager>,
     exterior_pressure: Pressure,
+    exterior_vertical_speed: Velocity,
     cabin_pressure: Pressure,
     cabin_alt: Length,
     departure_elev: Length,
     landing_elev: Length,
     cabin_target_vs: Velocity,
-    cabin_vs: Velocity,
+    outflow_valve_open_amount: Ratio,
+    safety_valve_open_amount: Ratio,
 }
 
 impl CabinPressureController {
-    pub fn new() -> Self {
+    // Atmospheric constants
+    const R: f64 = 287.058; // Specific gas constant for air - m2/s2/K
+    const GAMMA: f64 = 1.4; // Rate of specific heats for air
+    const G: f64 = 9.80665; // Gravity - m/s2
+    const T_0: f64 = 288.2; // ISA standard temperature - K
+    const L: f64 = -0.00651; // Adiabatic lapse rate - K/m
+
+    // Aircraft constants
+    const RHO: f64 = 1.225; // Cabin air density - Kg/m3
+    const CABIN_VOLUME: f64 = 400.; // m3
+    const OFV_SIZE: f64 = 0.03; // m2
+
+    // Vertical speed constraints
+    const MAX_CLIMB_RATE: f64 = 750.;
+    const MAX_CLIMB_RATE_IN_DESCENT: f64 = 500.;
+    const MAX_DESCENT_RATE: f64 = -750.;
+    const MAX_ABORT_DESCENT_RATE: f64 = -500.;
+    const TAKEOFF_RATE: f64 = -400.;
+    const DEPRESS_RATE: f64 = 500.;
+
+    pub(super) fn new() -> Self {
         Self {
-            pressure_schedule_manager: PressureScheduleManager::new(),
-            exterior_pressure: Pressure::new::<inch_of_mercury>(29.92),
-            cabin_pressure: Pressure::new::<inch_of_mercury>(29.92),
+            pressure_schedule_manager: Some(PressureScheduleManager::new()),
+            exterior_pressure: Pressure::new::<hectopascal>(1013.25),
+            exterior_vertical_speed: Velocity::new::<foot_per_minute>(0.),
+            cabin_pressure: Pressure::new::<hectopascal>(1013.25),
             cabin_alt: Length::new::<meter>(0.),
             departure_elev: Length::new::<foot>(-5000.),
             landing_elev: Length::new::<meter>(0.),
             cabin_target_vs: Velocity::new::<meter_per_second>(0.),
-            cabin_vs: Velocity::new::<meter_per_second>(0.),
+            outflow_valve_open_amount: Ratio::new::<percent>(100.),
+            safety_valve_open_amount: Ratio::new::<percent>(0.),
         }
     }
 
-    pub fn update(
+    pub(super) fn update(
         &mut self,
         context: &UpdateContext,
         engines: [&impl EngineCorrectedN1; 2],
         landing_elevation: Length,
+        departure_elevation: Length,
         sea_level_pressure: Pressure,
         destination_qnh: Pressure,
+        lgciu_gears_compressed: bool,
+        cabin_simulation: &impl CabinPressure,
+        outflow_valve: &PressureValve,
+        safety_valve: &PressureValve,
     ) {
-        self.pressure_schedule_manager = self.pressure_schedule_manager.update(context, engines);
-        self.exterior_pressure = context.ambient_pressure();
-        self.cabin_pressure = self.calculate_cabin_pressure(context);
-        self.cabin_alt = self.calculate_cabin_altitude(sea_level_pressure, destination_qnh);
-        self.departure_elev = self.calculate_departure_elev(context);
+        self.exterior_pressure = cabin_simulation.exterior_pressure();
+        self.exterior_vertical_speed = context.vertical_speed();
+        self.cabin_pressure = cabin_simulation.cabin_pressure();
         self.landing_elev = landing_elevation;
-        self.cabin_target_vs = self.calculate_cabin_vs(context);
-        self.cabin_vs = self.set_cabin_vs(context);
-    }
+        self.departure_elev = departure_elevation;
 
-    fn calculate_cabin_pressure(&self, context: &UpdateContext) -> Pressure {
-        if self.is_ground() && context.is_on_ground() {
-            context.ambient_pressure()
-        } else if self.is_ground() && !context.is_on_ground() {
-            // Formula to simulate pressure start state if starting in flight
-            let ambient_pressure: f64 = context.ambient_pressure().get::<hectopascal>();
-            Pressure::new::<hectopascal>(
-                -0.0002 * ambient_pressure.powf(2.) + 0.5463 * ambient_pressure + 658.85,
-            )
-        } else {
-            // Convert cabin V/S to pressure/delta
-            const KPA_FT: f64 = 0.0366; //KPa/ft ASL
-            self.cabin_pressure
-                + Pressure::new::<hectopascal>(
-                    -self.cabin_vs.get::<foot_per_second>() * KPA_FT * context.delta_as_secs_f64(),
-                )
+        if let Some(manager) = self.pressure_schedule_manager.take() {
+            self.pressure_schedule_manager =
+                Some(manager.update(context, engines, lgciu_gears_compressed));
         }
+
+        self.cabin_target_vs = self.calculate_cabin_target_vs(context);
+        self.cabin_alt = self.calculate_cabin_altitude(sea_level_pressure, destination_qnh);
+
+        self.outflow_valve_open_amount = outflow_valve.open_amount();
+        self.safety_valve_open_amount = safety_valve.open_amount();
     }
 
-    fn calculate_cabin_altitude(
-        &self,
-        sea_level_pressure: Pressure,
-        destination_qnh: Pressure,
-    ) -> Length {
-        let p = self.cabin_pressure();
-
-        // Based on local QNH when below 5000ft from departure or arrival airport, ISA when above
-        let p_0 = if matches!(
-            self.pressure_schedule_manager,
-            PressureScheduleManager::DescentInternal(_)
-        ) && (self.cabin_altitude() - self.landing_elev)
-            .get::<foot>()
-            .abs()
-            < 5000.
-        {
-            if destination_qnh > Pressure::new::<hectopascal>(0.) {
-                destination_qnh
-            } else {
-                sea_level_pressure
-            }
-        } else if (self.cabin_altitude() - self.departure_elev)
-            .get::<foot>()
-            .abs()
-            < 5000.
-        {
-            sea_level_pressure
-        } else {
-            Pressure::new::<hectopascal>(1013.25)
-        };
-
-        let pressure_ratio = (p / p_0).get::<ratio>();
-
-        // ISA constants for calculating cabin altitude
-        const T_0: f64 = 288.2; // ISA standard temperature - K
-        const R: f64 = 287.058; // Specific gas constant for air - m2/s2/K
-        const L: f64 = -0.00651; // Adiabatic lapse rate - K/m
-        const G: f64 = 9.80665; // Gravity - m/s2
-
-        // Hydrostatic equation with linear temp changes and constant R, g
-        let altitude: f64 = ((T_0 / pressure_ratio.powf((L * R) / G)) - T_0) / L;
-        Length::new::<meter>(altitude)
-    }
-
-    fn calculate_departure_elev(&self, context: &UpdateContext) -> Length {
-        if self.is_ground() && self.departure_elev != context.indicated_altitude() {
-            context.indicated_altitude()
-        } else {
-            self.departure_elev
-        }
-    }
-
-    fn calculate_cabin_vs(&mut self, context: &UpdateContext) -> Velocity {
-        const MAX_CLIMB_RATE: f64 = 750.;
-        const MAX_CLIMB_RATE_IN_DESCENT: f64 = 500.;
-        const MAX_DESCENT_RATE: f64 = -750.;
-        const MAX_ABORT_DESCENT_RATE: f64 = -500.;
+    fn calculate_cabin_target_vs(&mut self, context: &UpdateContext) -> Velocity {
+        let error_margin = Pressure::new::<hectopascal>(1.);
 
         match self.pressure_schedule_manager {
-            PressureScheduleManager::Ground(_) => Velocity::new::<foot_per_minute>(0.),
-            PressureScheduleManager::TakeOff(_) => {
-                if self.cabin_delta_p() < Pressure::new::<psi>(0.1) {
-                    Velocity::new::<foot_per_minute>(-400.)
+            Some(PressureScheduleManager::Ground(_)) => {
+                if self.cabin_delta_p() > error_margin {
+                    Velocity::new::<foot_per_minute>(Self::DEPRESS_RATE)
+                } else if self.cabin_delta_p() < -error_margin {
+                    Velocity::new::<foot_per_minute>(-Self::DEPRESS_RATE)
                 } else {
                     Velocity::new::<foot_per_minute>(0.)
                 }
             }
-            PressureScheduleManager::ClimbInternal(_) => {
+            Some(PressureScheduleManager::TakeOff(_)) => {
+                if self.cabin_delta_p() < Pressure::new::<psi>(0.1) {
+                    Velocity::new::<foot_per_minute>(Self::TAKEOFF_RATE)
+                } else {
+                    Velocity::new::<foot_per_minute>(0.)
+                }
+            }
+            Some(PressureScheduleManager::ClimbInternal(_)) => {
                 const DELTA_PRESSURE_LIMIT: f64 = 8.06; // PSI
                 const CABIN_ALTITUDE_LIMIT: f64 = 8050.; // Feet
 
                 // Formula based on empirical graphs and tables to simulate climb schedule as per the real aircraft
                 let target_vs = Velocity::new::<foot_per_minute>(
-                    context.vertical_speed().get::<foot_per_minute>()
+                    self.exterior_vertical_speed.get::<foot_per_minute>()
                         * (0.00000525 * context.indicated_altitude().get::<foot>() + 0.09),
                 );
-
                 if self.cabin_delta_p() >= Pressure::new::<psi>(DELTA_PRESSURE_LIMIT) {
-                    Velocity::new::<foot_per_minute>(MAX_CLIMB_RATE)
+                    Velocity::new::<foot_per_minute>(Self::MAX_CLIMB_RATE)
                 } else if self.cabin_altitude() >= Length::new::<foot>(CABIN_ALTITUDE_LIMIT) {
                     Velocity::new::<foot_per_minute>(0.)
-                } else if target_vs <= Velocity::new::<foot_per_minute>(MAX_DESCENT_RATE) {
-                    Velocity::new::<foot_per_minute>(MAX_DESCENT_RATE)
+                } else if target_vs <= Velocity::new::<foot_per_minute>(Self::MAX_DESCENT_RATE) {
+                    Velocity::new::<foot_per_minute>(Self::MAX_DESCENT_RATE)
                 } else {
                     target_vs
                 }
             }
-            PressureScheduleManager::Cruise(_) => Velocity::new::<foot_per_minute>(0.),
-            PressureScheduleManager::DescentInternal(_) => {
+            Some(PressureScheduleManager::Cruise(_)) => Velocity::new::<foot_per_minute>(0.),
+            Some(PressureScheduleManager::DescentInternal(_)) => {
+                let ext_diff_with_ldg_elev = self.get_ext_diff_with_ldg_elev(context).get::<foot>();
                 let target_vs = Velocity::new::<foot_per_minute>(
                     self.get_int_diff_with_ldg_elev().get::<foot>()
-                        * context.vertical_speed().get::<foot_per_minute>()
-                        / self.get_ext_diff_with_ldg_elev(context).get::<foot>(),
+                        * self.exterior_vertical_speed.get::<foot_per_minute>()
+                        / ext_diff_with_ldg_elev,
                 );
-                if target_vs <= Velocity::new::<foot_per_minute>(MAX_DESCENT_RATE) {
-                    Velocity::new::<foot_per_minute>(MAX_DESCENT_RATE)
-                } else if target_vs >= Velocity::new::<foot_per_minute>(MAX_CLIMB_RATE_IN_DESCENT) {
-                    Velocity::new::<foot_per_minute>(MAX_CLIMB_RATE_IN_DESCENT)
+                if ext_diff_with_ldg_elev <= 0. {
+                    Velocity::new::<foot_per_minute>(0.)
+                } else if target_vs <= Velocity::new::<foot_per_minute>(Self::MAX_DESCENT_RATE) {
+                    Velocity::new::<foot_per_minute>(Self::MAX_DESCENT_RATE)
+                } else if target_vs
+                    >= Velocity::new::<foot_per_minute>(Self::MAX_CLIMB_RATE_IN_DESCENT)
+                {
+                    Velocity::new::<foot_per_minute>(Self::MAX_CLIMB_RATE_IN_DESCENT)
                 } else {
                     target_vs
                 }
             }
-            PressureScheduleManager::Abort(_) => {
+            Some(PressureScheduleManager::Abort(_)) => {
                 // Altitude in ft equivalent to 0.1 PSI delta P at sea level
                 const TARGET_LANDING_ALT_DIFF: f64 = 187.818;
 
                 if self.cabin_altitude()
-                    < self.departure_elev - Length::new::<foot>(TARGET_LANDING_ALT_DIFF)
-                {
-                    Velocity::new::<foot_per_minute>(MAX_CLIMB_RATE_IN_DESCENT)
-                } else if self.cabin_altitude()
                     > self.departure_elev - Length::new::<foot>(TARGET_LANDING_ALT_DIFF)
                 {
-                    Velocity::new::<foot_per_minute>(MAX_ABORT_DESCENT_RATE)
+                    Velocity::new::<foot_per_minute>(Self::MAX_ABORT_DESCENT_RATE)
                 } else {
                     Velocity::new::<foot_per_minute>(0.)
                 }
             }
+            None => Velocity::new::<foot_per_minute>(0.),
         }
     }
 
@@ -205,115 +183,150 @@ impl CabinPressureController {
     }
 
     fn get_int_diff_with_ldg_elev(&self) -> Length {
-        self.cabin_altitude() - self.landing_elev
+        self.cabin_alt - self.landing_elev
     }
 
-    fn set_cabin_vs(&self, context: &UpdateContext) -> Velocity {
-        // Rate of change of 100fpm per second
-        const INTERNAL_VS_RATE_CHANGE: f64 = 100.;
+    fn calculate_cabin_altitude(
+        &self,
+        sea_level_pressure: Pressure,
+        destination_qnh: Pressure,
+    ) -> Length {
+        let p = self.cabin_pressure;
 
-        let rate_of_change_for_delta = INTERNAL_VS_RATE_CHANGE * context.delta_as_secs_f64();
-        if self.cabin_target_vs > self.cabin_vs() {
-            self.cabin_vs
-                + Velocity::new::<foot_per_minute>(rate_of_change_for_delta.min(
-                    self.cabin_target_vs.get::<foot_per_minute>()
-                        - self.cabin_vs().get::<foot_per_minute>(),
-                ))
-        } else if self.cabin_target_vs < self.cabin_vs() {
-            self.cabin_vs
-                - Velocity::new::<foot_per_minute>(rate_of_change_for_delta.min(
-                    self.cabin_vs().get::<foot_per_minute>()
-                        - self.cabin_target_vs.get::<foot_per_minute>(),
-                ))
+        // Based on local QNH when below 5000ft from departure or arrival airport, ISA when above
+        let p_0 = if matches!(
+            self.pressure_schedule_manager,
+            Some(PressureScheduleManager::DescentInternal(_))
+        ) && (self.cabin_altitude() - self.landing_elev)
+            .get::<foot>()
+            .abs()
+            < 5000.
+        {
+            if destination_qnh > Pressure::new::<hectopascal>(0.) {
+                destination_qnh
+            } else if sea_level_pressure > Pressure::new::<hectopascal>(0.) {
+                sea_level_pressure
+            } else {
+                Pressure::new::<hectopascal>(1013.25)
+            }
+        } else if (self.cabin_altitude() - self.departure_elev)
+            .get::<foot>()
+            .abs()
+            < 5000.
+            && sea_level_pressure > Pressure::new::<hectopascal>(0.)
+        {
+            sea_level_pressure
         } else {
-            self.cabin_target_vs
-        }
+            Pressure::new::<hectopascal>(1013.25)
+        };
+
+        let pressure_ratio = (p / p_0).get::<ratio>();
+
+        // Hydrostatic equation with linear temp changes and constant R, g
+        let altitude: f64 = ((CabinPressureController::T_0
+            / pressure_ratio.powf(
+                (CabinPressureController::L * CabinPressureController::R)
+                    / CabinPressureController::G,
+            ))
+            - CabinPressureController::T_0)
+            / CabinPressureController::L;
+        Length::new::<meter>(altitude)
     }
 
-    pub fn cabin_pressure(&self) -> Pressure {
-        self.cabin_pressure
-    }
-
-    pub fn cabin_altitude(&self) -> Length {
-        self.cabin_alt
-    }
-
-    pub fn cabin_vs(&self) -> Velocity {
-        self.cabin_vs
-    }
-
-    pub fn cabin_delta_p(&self) -> Pressure {
+    fn cabin_delta_p(&self) -> Pressure {
         self.cabin_pressure - self.exterior_pressure
     }
 
-    pub fn should_switch_cpc(&self) -> bool {
-        self.pressure_schedule_manager.should_switch_cpc()
+    pub(super) fn cabin_altitude(&self) -> Length {
+        self.cabin_alt
     }
 
-    pub fn reset_cpc_switch(&mut self) {
-        self.pressure_schedule_manager.reset_cpc_switch();
+    pub(super) fn should_switch_cpc(&self) -> bool {
+        self.pressure_schedule_manager
+            .as_ref()
+            .map_or(false, |manager| manager.should_switch_cpc())
+    }
+
+    pub(super) fn should_open_outflow_valve(&self) -> bool {
+        self.pressure_schedule_manager
+            .as_ref()
+            .map_or(false, |manager| manager.should_open_outflow_valve())
+    }
+
+    pub(super) fn reset_cpc_switch(&mut self) {
+        if let Some(manager) = self.pressure_schedule_manager.as_mut() {
+            manager.reset_cpc_switch();
+        }
     }
 
     fn is_ground(&self) -> bool {
         matches!(
             self.pressure_schedule_manager,
-            PressureScheduleManager::Ground(_)
+            Some(PressureScheduleManager::Ground(_))
         )
+    }
+
+    // FWC warning signals
+    pub(super) fn is_excessive_alt(&self) -> bool {
+        self.cabin_alt > Length::new::<foot>(9550.)
+            && self.cabin_alt > (self.departure_elev + Length::new::<foot>(1000.))
+            && self.cabin_alt > (self.landing_elev + Length::new::<foot>(1000.))
+    }
+
+    pub(super) fn is_excessive_residual_pressure(&self) -> bool {
+        self.cabin_delta_p() > Pressure::new::<psi>(0.03)
+    }
+
+    pub(super) fn is_low_diff_pressure(&self) -> bool {
+        self.cabin_delta_p() < Pressure::new::<psi>(1.45)
+            && self.cabin_alt > (self.landing_elev + Length::new::<foot>(1500.))
+            && self.exterior_vertical_speed < Velocity::new::<foot_per_minute>(-500.)
     }
 }
 
-impl PressureValveActuator for CabinPressureController {
-    fn target_valve_position(&self) -> Ratio {
+impl OutflowValveActuator for CabinPressureController {
+    fn target_valve_position(
+        &self,
+        press_overhead: &PressurizationOverheadPanel,
+        cabin_pressure_simulation: &CabinPressureSimulation,
+    ) -> Ratio {
         // Calculation extracted from:
         // F. Y. Kurokawa, C. Regina de Andrade and E. L. Zaparoli
         // DETERMINATION OF THE OUTFLOW VALVE OPENING AREA OF THE AIRCRAFT CABIN PRESSURIZATION SYSTEM
         // 18th International Congress of Mechanical Engineering
         // November 6-11, 2005, Ouro Preto, MG
 
-        let pressure_ratio = (self.exterior_pressure / self.cabin_pressure).get::<ratio>();
-
-        // Atmospheric constants
-        const R: f64 = 287.058; // Specific gas constant for air - m2/s2/K
-        const GAMMA: f64 = 1.4; // Rate of specific heats for air
-        const G: f64 = 9.80665; // Gravity - m/s2
-
-        // Aircraft constants
-        const RHO: f64 = 1.225; // Cabin air density - Kg/m3
-        const T_0: f64 = 288.; // Cabin temperature - K TODO: Replace with real interior temperature
-        const W_I: f64 = 0.9; // Inflow of air from packs, equivalent to 5 liters / minute / pax
-        const AREA_LEAKAGE: f64 = 0.0003; // m2
-        const CABIN_VOLUME: f64 = 400.; // m3
-        const OFV_SIZE: f64 = 0.06; // m2
-        const C: f64 = 1.; // Flow coefficient
-
-        let margin = 0.05;
-        let z = if (0.53..1.).contains(&pressure_ratio) {
-            pressure_ratio.powf(2. / GAMMA) - pressure_ratio.powf((GAMMA + 1.) / GAMMA)
-        } else if (pressure_ratio - 1.).abs() < margin {
-            0.001
-        } else {
-            0.256
-        };
-
-        // Fuselage leakage flow
-        let w_leakage = C
-            * AREA_LEAKAGE
-            * (2. * (GAMMA / (GAMMA - 1.)) * RHO * self.cabin_pressure.get::<pascal>() * z).sqrt();
-
-        // Ouflow valve target open area
-        let ofv_area = (W_I - w_leakage
-            + ((RHO * G * CABIN_VOLUME) / (R * T_0)
-                * self.cabin_target_vs.get::<meter_per_second>()))
-            / (C * (2. * (GAMMA / (GAMMA - 1.)) * RHO * self.cabin_pressure.get::<pascal>() * z)
+        // Outflow valve target open area
+        let ofv_area = (cabin_pressure_simulation.cabin_flow_properties()[0]
+            .get::<cubic_meter_per_second>()
+            - cabin_pressure_simulation.cabin_flow_properties()[1].get::<cubic_meter_per_second>()
+            + ((CabinPressureController::RHO
+                * CabinPressureController::G
+                * CabinPressureController::CABIN_VOLUME)
+                / (CabinPressureController::R * CabinPressureController::T_0))
+                * self.cabin_target_vs.get::<meter_per_second>())
+            / (cabin_pressure_simulation.flow_coefficient()
+                * ((2.
+                    * (CabinPressureController::GAMMA / (CabinPressureController::GAMMA - 1.))
+                    * CabinPressureController::RHO
+                    * self.cabin_pressure.get::<pascal>()
+                    * cabin_pressure_simulation.z_coefficient())
+                .abs())
                 .sqrt());
 
-        let ofv_open_ratio = Ratio::new::<ratio>(ofv_area / OFV_SIZE);
+        let ofv_open_ratio = Ratio::new::<ratio>(ofv_area / CabinPressureController::OFV_SIZE);
 
-        if ofv_open_ratio >= Ratio::new::<percent>(100.)
-            || (self.is_ground() && self.pressure_schedule_manager.should_open_outflow_valve())
+        if press_overhead.is_in_man_mode() {
+            self.outflow_valve_open_amount
+        } else if press_overhead.ditching.is_on() {
+            Ratio::new::<percent>(0.)
+        } else if ofv_open_ratio >= Ratio::new::<percent>(100.)
+            || (self.is_ground() && self.should_open_outflow_valve())
         {
             Ratio::new::<percent>(100.)
-        } else if ofv_open_ratio <= Ratio::new::<percent>(0.) {
+        } else if ofv_open_ratio <= Ratio::new::<percent>(0.)
+            || self.cabin_altitude() > Length::new::<foot>(15000.)
+        {
             Ratio::new::<percent>(0.)
         } else {
             ofv_open_ratio
@@ -321,7 +334,29 @@ impl PressureValveActuator for CabinPressureController {
     }
 }
 
-#[derive(Copy, Clone)]
+// Safety valve signal
+impl ControllerSignal<PressureValveSignal> for CabinPressureController {
+    fn signal(&self) -> Option<PressureValveSignal> {
+        if self.cabin_delta_p() > Pressure::new::<psi>(8.1) {
+            if self.cabin_delta_p() > Pressure::new::<psi>(8.6) {
+                Some(PressureValveSignal::Open)
+            } else {
+                Some(PressureValveSignal::Neutral)
+            }
+        } else if self.cabin_delta_p() < Pressure::new::<psi>(-0.5) {
+            if self.cabin_delta_p() < Pressure::new::<psi>(-1.) {
+                Some(PressureValveSignal::Open)
+            } else {
+                Some(PressureValveSignal::Neutral)
+            }
+        } else if self.safety_valve_open_amount > Ratio::new::<percent>(0.) {
+            Some(PressureValveSignal::Close)
+        } else {
+            Some(PressureValveSignal::Neutral)
+        }
+    }
+}
+
 enum PressureScheduleManager {
     Ground(PressureSchedule<Ground>),
     TakeOff(PressureSchedule<TakeOff>),
@@ -336,14 +371,25 @@ impl PressureScheduleManager {
         PressureScheduleManager::Ground(PressureSchedule::with_open_outflow_valve())
     }
 
-    fn update(mut self, context: &UpdateContext, engines: [&impl EngineCorrectedN1; 2]) -> Self {
+    fn update(
+        mut self,
+        context: &UpdateContext,
+        engines: [&impl EngineCorrectedN1; 2],
+        lgciu_gears_compressed: bool,
+    ) -> Self {
         self = match self {
-            PressureScheduleManager::Ground(val) => val.step(context, engines),
-            PressureScheduleManager::TakeOff(val) => val.step(context, engines),
+            PressureScheduleManager::Ground(val) => {
+                val.step(context, engines, lgciu_gears_compressed)
+            }
+            PressureScheduleManager::TakeOff(val) => {
+                val.step(context, engines, lgciu_gears_compressed)
+            }
             PressureScheduleManager::ClimbInternal(val) => val.step(context),
             PressureScheduleManager::Cruise(val) => val.step(context),
-            PressureScheduleManager::DescentInternal(val) => val.step(context),
-            PressureScheduleManager::Abort(val) => val.step(context),
+            PressureScheduleManager::DescentInternal(val) => {
+                val.step(context, lgciu_gears_compressed)
+            }
+            PressureScheduleManager::Abort(val) => val.step(context, lgciu_gears_compressed),
         };
         self
     }
@@ -393,7 +439,6 @@ macro_rules! transition_with_ctor {
 
 #[derive(Copy, Clone)]
 struct PressureSchedule<S> {
-    vertical_speed: Velocity, // Placeholder
     timer: Duration,
     pressure_schedule: S,
 }
@@ -409,9 +454,8 @@ impl<S> PressureSchedule<S> {
         self
     }
 
-    fn new<T, U: Fn() -> S>(from: PressureSchedule<T>, ctor_fn: U) -> Self {
+    fn new<T, U: Fn() -> S>(_: PressureSchedule<T>, ctor_fn: U) -> Self {
         Self {
-            vertical_speed: from.vertical_speed,
             timer: Duration::from_secs(0),
             pressure_schedule: (ctor_fn)(),
         }
@@ -436,7 +480,6 @@ impl PressureSchedule<Ground> {
 
     fn with_open_outflow_valve() -> Self {
         Self {
-            vertical_speed: Velocity::new::<foot_per_minute>(0.),
             timer: Duration::from_secs(Self::OUTFLOW_VALVE_OPENS_AFTER_SECS),
             pressure_schedule: Ground {
                 cpc_switch_reset: false,
@@ -448,14 +491,15 @@ impl PressureSchedule<Ground> {
         self: PressureSchedule<Ground>,
         context: &UpdateContext,
         engines: [&impl EngineCorrectedN1; 2],
+        lgciu_gears_compressed: bool,
     ) -> PressureScheduleManager {
         if engines
             .iter()
             .all(|&x| x.corrected_n1() > Ratio::new::<percent>(70.))
-            && context.is_on_ground()
+            && lgciu_gears_compressed
         {
             PressureScheduleManager::TakeOff(self.into())
-        } else if !context.is_on_ground()
+        } else if !lgciu_gears_compressed
             && context.indicated_airspeed().get::<knot>() > 100.
             && context.ambient_pressure().get::<hectopascal>() > 0.
         {
@@ -490,14 +534,15 @@ impl PressureSchedule<TakeOff> {
         self: PressureSchedule<TakeOff>,
         context: &UpdateContext,
         engines: [&impl EngineCorrectedN1; 2],
+        lgciu_gears_compressed: bool,
     ) -> PressureScheduleManager {
         if engines
             .iter()
             .all(|&x| x.corrected_n1() < Ratio::new::<percent>(70.))
-            && context.is_on_ground()
+            && lgciu_gears_compressed
         {
             PressureScheduleManager::Ground(self.into())
-        } else if !context.is_on_ground()
+        } else if !lgciu_gears_compressed
             && context.indicated_airspeed().get::<knot>() > 100.
             && context.ambient_pressure().get::<hectopascal>() > 0.
         {
@@ -591,6 +636,7 @@ impl PressureSchedule<DescentInternal> {
     fn step(
         self: PressureSchedule<DescentInternal>,
         context: &UpdateContext,
+        lgciu_gears_compressed: bool,
     ) -> PressureScheduleManager {
         const DURATION_UNTIL_CLIMB: u64 = 60;
 
@@ -600,7 +646,7 @@ impl PressureSchedule<DescentInternal> {
             } else {
                 PressureScheduleManager::DescentInternal(self.increase_timer(context))
             }
-        } else if context.is_on_ground() && context.indicated_airspeed().get::<knot>() < 100. {
+        } else if lgciu_gears_compressed && context.indicated_airspeed().get::<knot>() < 100. {
             PressureScheduleManager::Ground(self.into())
         } else {
             PressureScheduleManager::DescentInternal(self.reset_timer())
@@ -615,10 +661,14 @@ transition!(Cruise, DescentInternal);
 struct Abort;
 
 impl PressureSchedule<Abort> {
-    fn step(self: PressureSchedule<Abort>, context: &UpdateContext) -> PressureScheduleManager {
+    fn step(
+        self: PressureSchedule<Abort>,
+        context: &UpdateContext,
+        lgciu_gears_compressed: bool,
+    ) -> PressureScheduleManager {
         const DURATION_UNTIL_CLIMB: u64 = 60;
 
-        if context.is_on_ground() && context.indicated_airspeed().get::<knot>() < 100. {
+        if lgciu_gears_compressed && context.indicated_airspeed().get::<knot>() < 100. {
             PressureScheduleManager::Ground(self.into())
         } else if context.vertical_speed() > Velocity::new::<foot_per_minute>(30.) {
             if self.timer > Duration::from_secs(DURATION_UNTIL_CLIMB) {
@@ -637,7 +687,7 @@ transition!(ClimbInternal, Abort);
 #[cfg(test)]
 mod pressure_schedule_manager_tests {
     use super::*;
-    use crate::simulation::{Aircraft, SimulationElement};
+    use crate::simulation::{Aircraft, InitContext, SimulationElement};
     use crate::{
         shared::EngineCorrectedN1,
         simulation::test::{SimulationTestBed, TestBed},
@@ -646,7 +696,7 @@ mod pressure_schedule_manager_tests {
     use std::time::Duration;
     use uom::si::{
         length::foot,
-        pressure::{hectopascal, psi},
+        pressure::hectopascal,
         ratio::percent,
         velocity::{foot_per_minute, knot},
     };
@@ -673,16 +723,28 @@ mod pressure_schedule_manager_tests {
 
     struct TestAircraft {
         cpc: CabinPressureController,
+        cabin_simulation: CabinPressureSimulation,
+        outflow_valve: PressureValve,
+        safety_valve: PressureValve,
+        press_overhead: PressurizationOverheadPanel,
         engine_1: TestEngine,
         engine_2: TestEngine,
+        lgciu_gears_compressed: bool,
     }
     impl TestAircraft {
-        fn new() -> Self {
-            Self {
+        fn new(context: &mut InitContext) -> Self {
+            let mut test_aircraft = Self {
                 cpc: CabinPressureController::new(),
+                cabin_simulation: CabinPressureSimulation::new(),
+                outflow_valve: PressureValve::new_outflow_valve(),
+                safety_valve: PressureValve::new_safety_valve(),
+                press_overhead: PressurizationOverheadPanel::new(context),
                 engine_1: TestEngine::new(Ratio::new::<percent>(0.)),
                 engine_2: TestEngine::new(Ratio::new::<percent>(0.)),
-            }
+                lgciu_gears_compressed: false,
+            };
+            test_aircraft.cpc.outflow_valve_open_amount = Ratio::new::<percent>(50.);
+            test_aircraft
         }
 
         fn set_engine_n1(&mut self, n: Ratio) {
@@ -693,43 +755,47 @@ mod pressure_schedule_manager_tests {
         fn is_ground(&self) -> bool {
             matches!(
                 self.cpc.pressure_schedule_manager,
-                PressureScheduleManager::Ground(_)
+                Some(PressureScheduleManager::Ground(_))
             )
         }
 
         fn is_takeoff(&self) -> bool {
             matches!(
                 self.cpc.pressure_schedule_manager,
-                PressureScheduleManager::TakeOff(_)
+                Some(PressureScheduleManager::TakeOff(_))
             )
         }
 
         fn is_climb(&self) -> bool {
             matches!(
                 self.cpc.pressure_schedule_manager,
-                PressureScheduleManager::ClimbInternal(_)
+                Some(PressureScheduleManager::ClimbInternal(_))
             )
         }
 
         fn is_cruise(&self) -> bool {
             matches!(
                 self.cpc.pressure_schedule_manager,
-                PressureScheduleManager::Cruise(_)
+                Some(PressureScheduleManager::Cruise(_))
             )
         }
 
         fn is_descent(&self) -> bool {
             matches!(
                 self.cpc.pressure_schedule_manager,
-                PressureScheduleManager::DescentInternal(_)
+                Some(PressureScheduleManager::DescentInternal(_))
             )
         }
 
         fn is_abort(&self) -> bool {
             matches!(
                 self.cpc.pressure_schedule_manager,
-                PressureScheduleManager::Abort(_)
+                Some(PressureScheduleManager::Abort(_))
             )
+        }
+
+        fn set_on_ground(&mut self, on_ground: bool) {
+            self.lgciu_gears_compressed = on_ground;
         }
     }
     impl Aircraft for TestAircraft {
@@ -738,159 +804,66 @@ mod pressure_schedule_manager_tests {
                 context,
                 [&self.engine_1, &self.engine_2],
                 Length::new::<meter>(0.),
+                Length::new::<meter>(0.),
                 Pressure::new::<hectopascal>(1013.),
                 Pressure::new::<hectopascal>(1013.),
+                self.lgciu_gears_compressed,
+                &self.cabin_simulation,
+                &self.outflow_valve,
+                &self.safety_valve,
             );
+            self.outflow_valve.update(context, &self.press_overhead);
         }
     }
     impl SimulationElement for TestAircraft {}
 
     #[test]
     fn schedule_starts_on_ground() {
-        let test_bed = SimulationTestBed::new(|_| TestAircraft::new());
+        let test_bed = SimulationTestBed::new(TestAircraft::new);
 
         assert!(test_bed.query(|a| a.is_ground()));
     }
 
     #[test]
-    fn aircraft_vs_starts_at_0() {
-        let test_bed = SimulationTestBed::new(|_| TestAircraft::new());
-
-        assert_eq!(
-            test_bed.query(|a| a.cpc.cabin_vs()),
-            Velocity::new::<foot_per_minute>(0.)
-        );
-    }
-
-    #[test]
     fn schedule_changes_from_ground_to_takeoff() {
-        let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
         test_bed.command(|a| a.set_engine_n1(Ratio::new::<percent>(95.)));
 
-        test_bed.set_on_ground(true);
+        test_bed.command(|a| a.set_on_ground(true));
         test_bed.set_indicated_airspeed(Velocity::new::<knot>(0.));
 
         test_bed.run();
 
         assert!(test_bed.query(|a| a.is_takeoff()));
-    }
-
-    #[test]
-    fn cabin_vs_changes_to_takeoff() {
-        let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
-
-        test_bed.command(|a| a.set_engine_n1(Ratio::new::<percent>(95.)));
-
-        test_bed.set_on_ground(true);
-        test_bed.set_indicated_airspeed(Velocity::new::<knot>(0.));
-
-        test_bed.run();
-        assert!(test_bed.query(|a| a.is_takeoff()));
-        test_bed.run_with_delta(Duration::from_secs(10));
-
-        assert_eq!(
-            test_bed.query(|a| a.cpc.cabin_vs()),
-            Velocity::new::<foot_per_minute>(-400.)
-        );
-    }
-
-    #[test]
-    fn cabin_delta_p_does_not_exceed_0_1_during_takeoff() {
-        let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
-
-        test_bed.command(|a| a.set_engine_n1(Ratio::new::<percent>(95.)));
-
-        test_bed.set_on_ground(true);
-        test_bed.set_indicated_airspeed(Velocity::new::<knot>(0.));
-        test_bed.set_ambient_pressure(Pressure::new::<hectopascal>(1005.));
-        test_bed.run_with_delta(Duration::from_secs(10));
-
-        assert!(test_bed.query(|a| a.cpc.cabin_delta_p()) > Pressure::new::<psi>(0.1));
-        assert_eq!(
-            test_bed.query(|a| a.cpc.cabin_vs()),
-            Velocity::new::<foot_per_minute>(0.)
-        );
     }
 
     #[test]
     fn schedule_changes_from_ground_to_climb() {
-        let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
-        test_bed.set_on_ground(true);
+        test_bed.command(|a| a.set_on_ground(true));
         test_bed.set_indicated_airspeed(Velocity::new::<knot>(101.));
 
         test_bed.run();
 
-        test_bed.set_on_ground(false);
+        test_bed.command(|a| a.set_on_ground(false));
         test_bed.run();
 
         assert!(test_bed.query(|a| a.is_climb()));
     }
 
     #[test]
-    fn cabin_vs_changes_to_climb() {
-        let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
-
-        test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(1000.));
-
-        test_bed.run();
-        test_bed.run_with_delta(Duration::from_secs(10));
-
-        assert!(test_bed.query(|a| a.cpc.cabin_vs()) > Velocity::new::<foot_per_minute>(0.));
-    }
-
-    #[test]
-    fn cabin_vs_increases_with_altitude() {
-        let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
-        test_bed.run_with_delta(Duration::from_secs(10));
-
-        test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(2000.));
-        test_bed.run_with_delta(Duration::from_secs(10));
-        let first_vs = test_bed.query(|a| a.cpc.cabin_vs());
-
-        test_bed.set_indicated_altitude(Length::new::<foot>(20000.));
-        test_bed.run_with_delta(Duration::from_secs(10));
-
-        test_bed.set_indicated_altitude(Length::new::<foot>(30000.));
-        test_bed.run_with_delta(Duration::from_secs(10));
-        test_bed.set_indicated_altitude(Length::new::<foot>(39000.));
-        test_bed.run_with_delta(Duration::from_secs(10));
-
-        assert!(test_bed.query(|a| a.cpc.cabin_vs()) > first_vs);
-    }
-
-    #[test]
-    fn cabin_delta_p_does_not_exceed_8_06_psi_in_climb() {
-        let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
-
-        test_bed.run();
-
-        test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(1000.));
-
-        for i in 1..39 {
-            test_bed.run_with_delta(Duration::from_secs(60));
-            test_bed.set_indicated_altitude(Length::new::<foot>((i * 1000) as f64));
-        }
-        test_bed.set_ambient_pressure(Pressure::new::<hectopascal>(196.41));
-
-        test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(0.));
-        test_bed.run_with_delta(Duration::from_secs(60));
-
-        assert!(test_bed.query(|a| a.cpc.cabin_delta_p()) < Pressure::new::<psi>(8.06));
-    }
-
-    #[test]
     fn schedule_changes_from_takeoff_to_climb() {
-        let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
         test_bed.command(|a| a.set_engine_n1(Ratio::new::<percent>(95.)));
 
-        test_bed.set_on_ground(true);
+        test_bed.command(|a| a.set_on_ground(true));
         test_bed.set_indicated_airspeed(Velocity::new::<knot>(0.));
         test_bed.run();
 
-        test_bed.set_on_ground(false);
+        test_bed.command(|a| a.set_on_ground(false));
         test_bed.set_indicated_airspeed(Velocity::new::<knot>(101.));
         test_bed.run();
 
@@ -899,17 +872,17 @@ mod pressure_schedule_manager_tests {
 
     #[test]
     fn schedule_changes_from_takeoff_to_ground() {
-        let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
         test_bed.command(|a| a.set_engine_n1(Ratio::new::<percent>(95.)));
-        test_bed.set_on_ground(true);
+        test_bed.command(|a| a.set_on_ground(true));
         test_bed.set_indicated_airspeed(Velocity::new::<knot>(0.));
         test_bed.run();
 
         assert!(test_bed.query(|a| a.is_takeoff()));
 
         test_bed.command(|a| a.set_engine_n1(Ratio::new::<percent>(50.)));
-        test_bed.set_on_ground(true);
+        test_bed.command(|a| a.set_on_ground(true));
         test_bed.run();
 
         assert!(test_bed.query(|a| a.is_ground()));
@@ -917,7 +890,7 @@ mod pressure_schedule_manager_tests {
 
     #[test]
     fn schedule_does_not_instantly_change_from_climb_to_abort() {
-        let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
         test_bed.run();
 
@@ -932,7 +905,7 @@ mod pressure_schedule_manager_tests {
 
     #[test]
     fn schedule_changes_from_climb_to_abort() {
-        let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
         test_bed.run();
 
@@ -948,7 +921,7 @@ mod pressure_schedule_manager_tests {
 
     #[test]
     fn schedule_does_not_instantly_change_from_climb_to_cruise() {
-        let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
         test_bed.run();
 
@@ -963,7 +936,7 @@ mod pressure_schedule_manager_tests {
 
     #[test]
     fn schedule_changes_from_climb_to_cruise() {
-        let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
         test_bed.run();
 
@@ -975,31 +948,11 @@ mod pressure_schedule_manager_tests {
         test_bed.run();
 
         assert!(test_bed.query(|a| a.is_cruise()));
-    }
-
-    #[test]
-    fn cabin_vs_changes_to_cruise() {
-        let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
-
-        test_bed.run();
-
-        assert!(test_bed.query(|a| a.is_climb()));
-
-        test_bed.set_indicated_altitude(Length::new::<foot>(7900.));
-        test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(99.));
-        test_bed.run_with_delta(Duration::from_secs(31));
-        test_bed.run();
-
-        assert!(test_bed.query(|a| a.is_cruise()));
-        assert_eq!(
-            test_bed.query(|a| a.cpc.cabin_vs()),
-            Velocity::new::<foot_per_minute>(0.)
-        );
     }
 
     #[test]
     fn schedule_does_not_instantly_change_from_cruise_to_climb_and_descent() {
-        let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
         test_bed.run();
         test_bed.run_with_delta(Duration::from_secs(31));
@@ -1020,7 +973,7 @@ mod pressure_schedule_manager_tests {
 
     #[test]
     fn schedule_changes_from_cruise_to_climb() {
-        let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
         test_bed.run();
         test_bed.run_with_delta(Duration::from_secs(31));
@@ -1037,7 +990,7 @@ mod pressure_schedule_manager_tests {
 
     #[test]
     fn schedule_changes_from_cruise_to_descent() {
-        let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
         test_bed.run();
         test_bed.run_with_delta(Duration::from_secs(31));
@@ -1053,35 +1006,8 @@ mod pressure_schedule_manager_tests {
     }
 
     #[test]
-    fn cabin_vs_changes_to_descent() {
-        let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
-
-        test_bed.run();
-        test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(1000.));
-        test_bed.run();
-
-        for i in 1..39 {
-            test_bed.run_with_delta(Duration::from_secs(60));
-            test_bed.set_indicated_altitude(Length::new::<foot>((i * 1000) as f64));
-        }
-        test_bed.set_ambient_pressure(Pressure::new::<hectopascal>(196.41));
-
-        test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(0.));
-        test_bed.run_with_delta(Duration::from_secs(60));
-
-        test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(-260.));
-        test_bed.run_with_delta(Duration::from_secs(31));
-        test_bed.run();
-
-        assert!(test_bed.query(|a| a.is_descent()));
-
-        assert!(test_bed.query(|a| a.cpc.cabin_vs()) > Velocity::new::<foot_per_minute>(-260.));
-        assert!(test_bed.query(|a| a.cpc.cabin_vs()) < Velocity::new::<foot_per_minute>(0.));
-    }
-
-    #[test]
     fn schedule_changes_from_descent_to_climb() {
-        let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
         test_bed.run();
         test_bed.run_with_delta(Duration::from_secs(31));
@@ -1102,7 +1028,7 @@ mod pressure_schedule_manager_tests {
 
     #[test]
     fn schedule_changes_from_descent_to_ground() {
-        let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
         test_bed.run();
         test_bed.run_with_delta(Duration::from_secs(31));
@@ -1115,39 +1041,15 @@ mod pressure_schedule_manager_tests {
         assert!(test_bed.query(|a| a.is_descent()));
 
         test_bed.set_indicated_airspeed(Velocity::new::<knot>(99.));
-        test_bed.set_on_ground(true);
+        test_bed.command(|a| a.set_on_ground(true));
         test_bed.run();
 
         assert!(test_bed.query(|a| a.is_ground()));
-    }
-
-    #[test]
-    fn cabin_vs_changes_to_ground() {
-        let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
-
-        test_bed.run();
-        test_bed.run_with_delta(Duration::from_secs(31));
-        test_bed.run();
-
-        test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(-260.));
-        test_bed.run_with_delta(Duration::from_secs(31));
-        test_bed.run();
-
-        assert!(test_bed.query(|a| a.is_descent()));
-
-        test_bed.set_indicated_airspeed(Velocity::new::<knot>(99.));
-        test_bed.set_on_ground(true);
-        test_bed.run();
-
-        assert!(test_bed.query(|a| a.is_ground()));
-
-        test_bed.run();
-        assert!(test_bed.query(|a| a.cpc.cabin_vs()) > Velocity::new::<foot_per_minute>(-1.));
     }
 
     #[test]
     fn schedule_changes_from_abort_to_climb() {
-        let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
         test_bed.set_indicated_altitude(Length::new::<foot>(7900.));
         test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(-201.));
@@ -1166,7 +1068,7 @@ mod pressure_schedule_manager_tests {
 
     #[test]
     fn schedule_changes_from_abort_to_ground() {
-        let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
         test_bed.set_indicated_altitude(Length::new::<foot>(7900.));
         test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(-201.));
@@ -1177,7 +1079,7 @@ mod pressure_schedule_manager_tests {
         assert!(test_bed.query(|a| a.is_abort()));
 
         test_bed.set_indicated_airspeed(Velocity::new::<knot>(99.));
-        test_bed.set_on_ground(true);
+        test_bed.command(|a| a.set_on_ground(true));
         test_bed.run();
 
         assert!(test_bed.query(|a| a.is_ground()));
@@ -1185,7 +1087,7 @@ mod pressure_schedule_manager_tests {
 
     #[test]
     fn schedule_timer_resets_after_climb_condition_is_not_met() {
-        let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
         test_bed.run();
         assert!(test_bed.query(|a| a.is_climb()));
@@ -1216,7 +1118,7 @@ mod pressure_schedule_manager_tests {
 
     #[test]
     fn schedule_timer_resets_after_cruise_condition_is_not_met() {
-        let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
         test_bed.run();
         test_bed.run_with_delta(Duration::from_secs(31));
@@ -1249,7 +1151,7 @@ mod pressure_schedule_manager_tests {
 
     #[test]
     fn schedule_timer_resets_after_descent_condition_is_not_met() {
-        let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
         test_bed.run();
         test_bed.run_with_delta(Duration::from_secs(31));
@@ -1288,7 +1190,7 @@ mod pressure_schedule_manager_tests {
 
     #[test]
     fn schedule_timer_resets_after_abort_condition_is_not_met() {
-        let mut test_bed = SimulationTestBed::new(|_| TestAircraft::new());
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
         test_bed.set_indicated_altitude(Length::new::<foot>(7900.));
         test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(-201.));

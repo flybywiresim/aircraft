@@ -1,3 +1,4 @@
+@import "../../style";
 @import "../../../Common/definitions";
 
 #main-elec {
@@ -33,6 +34,11 @@
 
     &.ExtraLarge {
       font-size: 26px;
+    }
+
+    // Seriously, we need to fix this at some point ^^
+    &.QuiteLarge {
+      font-size: 24px;
     }
 
     &.Large {

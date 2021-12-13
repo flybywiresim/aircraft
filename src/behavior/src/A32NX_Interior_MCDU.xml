@@ -12,6 +12,7 @@
         <UseTemplate Name="FBW_MCDU_NUMPAD_KEYS_Template" />
         <UseTemplate Name="FBW_MCDU_ALPHABET_KEYS_Template" />
         <UseTemplate Name="FBW_MCDU_BRIGHTNESS_KEYS_Template" />
+        <UseTemplate Name="FBW_MCDU_ANNUNCIATORS_Template" />
     </Template>
 
     <Template Name="FBW_MCDU_LINE_SELECT_KEYS_Template">
@@ -408,10 +409,10 @@
                 <CURSOR>Hand</CURSOR>
                 <ANIM_NAME>#ANIM_NAME_BRT_DIM#</ANIM_NAME>
                 <CODE_POS_0>
-                (L:A32NX_MCDU_#SIDE#_BRIGHTNESS) 0.03 + 1 min (&gt;L:A32NX_MCDU_#SIDE#_BRIGHTNESS)
+                (L:A32NX_MCDU_#SIDE#_BRIGHTNESS) (L:A32NX_MCDU_#SIDE#_BRIGHTNESS) 0.2 * + 1 min (&gt;L:A32NX_MCDU_#SIDE#_BRIGHTNESS)
                 </CODE_POS_0>
                 <CODE_POS_2>
-                (L:A32NX_MCDU_#SIDE#_BRIGHTNESS) 0.03 - 0.05 max (&gt;L:A32NX_MCDU_#SIDE#_BRIGHTNESS)
+                (L:A32NX_MCDU_#SIDE#_BRIGHTNESS) (L:A32NX_MCDU_#SIDE#_BRIGHTNESS) 0.2 * - 0.02 max (&gt;L:A32NX_MCDU_#SIDE#_BRIGHTNESS)
                 </CODE_POS_2>
                 <STATE_MAX_TIMER>0.01</STATE_MAX_TIMER>
                 <STATE0_TIMER>0.01</STATE0_TIMER>
@@ -448,11 +449,70 @@
                 <EMISSIVE_CODE>
                     #DISPLAY_POWERED# sp0
                     l0 if{
-                        3 (L:A32NX_MCDU_#SIDE#_BRIGHTNESS, number) *
+                        (L:A32NX_MCDU_#SIDE#_BRIGHTNESS, number)
                     } els{
                         0
                     }
                 </EMISSIVE_CODE>
+            </UseTemplate>
+        </Component>
+    </Template>
+
+    <Template Name="FBW_MCDU_ANNUNCIATORS_Template">
+        <Component ID="MCDU_#SIDE#_ANNUNC">
+            <UseTemplate Name="FBW_MCDU_ANNUNCIATOR_Template">
+                <BASE_NAME>FAIL</BASE_NAME>
+            </UseTemplate>
+            <UseTemplate Name="FBW_MCDU_ANNUNCIATOR_Template">
+                <BASE_NAME>FMGC</BASE_NAME>
+            </UseTemplate>
+            <UseTemplate Name="FBW_MCDU_ANNUNCIATOR_Template">
+                <BASE_NAME>MCDU_MENU</BASE_NAME>
+            </UseTemplate>
+            <UseTemplate Name="FBW_MCDU_ANNUNCIATOR_Template">
+                <BASE_NAME>FM1</BASE_NAME>
+            </UseTemplate>
+            <UseTemplate Name="FBW_MCDU_ANNUNCIATOR_Template">
+                <BASE_NAME>IND</BASE_NAME>
+            </UseTemplate>
+            <UseTemplate Name="FBW_MCDU_ANNUNCIATOR_Template">
+                <BASE_NAME>RDY</BASE_NAME>
+            </UseTemplate>
+            <UseTemplate Name="FBW_MCDU_ANNUNCIATOR_Template">
+                <BASE_NAME>BLANK</BASE_NAME>
+                <ANNUNC_LIT>0</ANNUNC_LIT>
+            </UseTemplate>
+            <UseTemplate Name="FBW_MCDU_ANNUNCIATOR_Template">
+                <BASE_NAME>FM2</BASE_NAME>
+            </UseTemplate>
+        </Component>
+    </Template>
+
+    <Template Name="FBW_MCDU_ANNUNCIATOR_Template">
+        <DefaultTemplateParameters>
+            <NODE_ID_ANNUNC>MCDU_#SIDE#_ANNUNC_#BASE_NAME#</NODE_ID_ANNUNC>
+            <ANNUNC_POWERED>1</ANNUNC_POWERED>
+            <ANNUNC_LIT>(L:A32NX_MCDU_#SIDE#_ANNUNC_#BASE_NAME#, Bool)</ANNUNC_LIT>
+        </DefaultTemplateParameters>
+
+        <Component ID="#NODE_ID_ANNUNC#" Node="#NODE_ID_ANNUNC#">
+            <UseTemplate Name="ASOBO_GT_Emissive_Gauge">
+                <NODE_ID>#NODE_ID_ANNUNC#</NODE_ID>
+                <EMISSIVE_CODE type="rnp" return="number">
+                    let lit = #ANNUNC_LIT, boolean#;
+                    let annSwitch = (L:A32NX_OVHD_INTLT_ANN, number);
+
+                    let brightness = if annSwitch == 2 { 0.1 } else { 1 };
+                    let emissive = if (annSwitch == 0 or lit) {
+                        brightness
+                    } else {
+                        0
+                    };
+
+                    emissive
+                </EMISSIVE_CODE>
+                <EMISSIVE_DRIVES_VISIBILITY>True</EMISSIVE_DRIVES_VISIBILITY>
+                <FAILURE>#ANNUNC_POWERED#</FAILURE>
             </UseTemplate>
         </Component>
     </Template>

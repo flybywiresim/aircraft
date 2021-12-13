@@ -263,7 +263,7 @@ class A32NX_FlightPhase_Cruise {
         // This checks against the pilot defined cruise altitude and the automatically populated cruise altitude
         if (_fmc.cruiseFlightLevel !== _fmc._cruiseFlightLevel) {
             _fmc._cruiseFlightLevel = _fmc.cruiseFlightLevel;
-            _fmc.addNewMessage(NXSystemMessages.newCrzAlt.getSetMessage(_fmc._cruiseFlightLevel * 100));
+            _fmc.addNewMessage(NXSystemMessages.newCrzAlt.modifyMessage(_fmc._cruiseFlightLevel * 100));
         }
         _fmc.updateManagedSpeed();
     }
@@ -287,6 +287,7 @@ class A32NX_FlightPhase_Descent {
     check(_deltaTime, _fmc) {
         const fl = Math.round(Simplane.getAltitude() / 100);
         const fcuSelFl = Simplane.getAutoPilotDisplayedAltitudeLockValue("feet") / 100;
+
         if (fl === _fmc.cruiseFlightLevel && fcuSelFl === fl) {
             this.nextFmgcFlightPhase = FmgcFlightPhases.CRUISE;
             return true;
@@ -297,28 +298,8 @@ class A32NX_FlightPhase_Descent {
             return true;
         }
 
-        // TODO: move this somewhere else (inside fmgc) and call flightPhaseManager.changeFlightPhase(FmgcFlightPhases.APPROACH)
-        if (!_fmc.flightPlanManager._decelReached && _fmc.flightPlanManager.decelWaypoint) {
-            const lat = SimVar.GetSimVarValue("PLANE LATITUDE", "degree latitude");
-            const long = SimVar.GetSimVarValue("PLANE LONGITUDE", "degree longitude");
-            const planeLla = new LatLongAlt(lat, long);
-            const dist = Avionics.Utils.computeGreatCircleDistance(_fmc.flightPlanManager.decelWaypoint.infos.coordinates, planeLla);
-            if (dist < 3) {
-                _fmc.flightPlanManager._decelReached = true;
-                _fmc._waypointReachedAt = SimVar.GetGlobalVarValue("ZULU TIME", "seconds");
-            }
-        }
-
-        return _fmc.flightPlanManager._decelReached &&
-            (
-                Simplane.getAltitudeAboveGround() < 9500 &&
-                (
-                    Simplane.getAutoPilotHeadingManaged() ||
-                    (
-                        Simplane.getAutoPilotApproachType() !== 10 && Simplane.getAutoPilotAPPRActive()
-                    )
-                )
-            );
+        // APPROACH phase from DECEL pseudo waypoint case. This is decided by the new TS FMS.
+        return SimVar.GetSimVarValue('L:A32NX_FM_ENABLE_APPROACH_PHASE', 'Bool');
     }
 }
 
@@ -364,10 +345,10 @@ class A32NX_FlightPhase_Done {
 
     init(_fmc) {
         CDUIdentPage.ShowPage(_fmc);
-        _fmc.flightPlanManager.clearFlightPlan();
+        _fmc.flightPlanManager.clearFlightPlan().catch(console.error);
         _fmc.initVariables();
         _fmc.initMcduVariables();
-        _fmc.forceClearScratchpad();
+        _fmc.scratchpad.setText("");
         SimVar.SetSimVarValue("L:A32NX_COLD_AND_DARK_SPAWN", "Bool", true);
         CDUIdentPage.ShowPage(_fmc);
     }
