@@ -76,7 +76,7 @@ const ApuGen = ({ x, y } : ComponentPositionProps) => {
     useEffect(() => {
         if (!apuMasterPbOn && !apuAvail /* FIXME: and apu master switch is valid and apu gen push buttion is valid */) {
             setCurrentApuGenState(apuGenState.STANDBY);
-        } else if (!(currentApuGenState === apuGenState.STANDBY) && !apuGenPbOn /* FIXME: and apu master switch valid and apu gen pb valid */) {
+        } else if (currentApuGenState !== apuGenState.STANDBY && !apuGenPbOn /* FIXME: and apu master switch valid and apu gen pb valid */) {
             setCurrentApuGenState(apuGenState.OFF);
         } else {
             setCurrentApuGenState(apuGenState.ON);
