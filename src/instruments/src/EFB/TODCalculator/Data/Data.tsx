@@ -22,7 +22,7 @@ const Data = ({
     ...props
 }) => {
     let [altitude] = useSimVar('INDICATED ALTITUDE', 'feet', 1_000);
-    let [distance] = useSimVar('L:A32NX_GPS_WP_DISTANCE', 'nautical miles', 1_000);
+    let [distance] = useSimVar('GPS WP DISTANCE', 'nautical miles', 1_000);
     let [verticalSpeed] = useSimVar('VERTICAL SPEED', 'feet per minute', 1_000);
     let [pitchAngle] = useSimVar('L:A32NX_AUTOPILOT_FPA_SELECTED', 'degree', 1_000);
     const [trkModeActive] = useSimVar('L:A32NX_TRK_FPA_MODE_ACTIVE', 'bool', 1_000);

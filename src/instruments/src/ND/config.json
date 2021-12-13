@@ -1,5 +1,0 @@
-{
-  "index": "./index.tsx",
-  "isInteractive": false,
-  "additionalImports": ["/JS/fmgc/LzUtf8.js"]
-}

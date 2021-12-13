@@ -1,0 +1,127 @@
+{
+  "waypointLabelFontSize": 18,
+  "waypointLabelFontFamily": "ECAMFontRegular",
+  "waypointLabelColor": "black",
+  "waypointLabelStrokeColor": "#black",
+  "waypointLabelStrokeWidth": 10,
+  "waypointLabelUseBackground": false,
+  "waypointLabelBackgroundColor": "#ffffff",
+  "waypointLabelBackgroundStrokeColor": "black",
+  "waypointLabelBackgroundStrokeWidth": 0,
+  "waypointLabelBackgroundPadding": "5 5 5 5",
+  "waypointLabelDistanceX": 33,
+  "waypointLabelDistance": 10,
+  "waypointIconSize": 22,
+
+  "intersectionLabelColor": "#00ff00",
+  "vorLabelColor": "#00ff00",
+  "ndbLabelColor": "#00ff00",
+  "airportLabelColor": "#00ff00",
+
+  "preventLabelOverlap": false,
+
+  "cityLabelFontSize": 24,
+  "cityLabelFontFamily": "ECAMFontRegular",
+  "cityLabelColor": "#black",
+  "cityLabelStrokeColor": "#3f3f3f",
+  "cityLabelStrokeWidth": 0,
+  "cityLabelUseBackground": false,
+  "cityLabelBackgroundColor": "white",
+  "cityLabelBackgroundStrokeColor": "red",
+  "cityLabelBackgroundStrokeWidth": 10,
+  "cityLabelBackgroundPadding": "7 12 0 12",
+  "cityLabelDistance": 0.45,
+  "cityIconSize": 90,
+
+  "airplaneIconSize": 30,
+  "airplaneIcon1": "ICON_MAP_PLANE_A320",
+  "airplaneIcon2": "ICON_MAP_PLANE_A320",
+
+  "imagesDir": "/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/MFD/Images/",
+
+  "runwayFillColor": "white",
+  "runwayStrokeColor": "gray",
+  "runwayStrokeWidth": 3,
+  "runwayCornerRadius": 8,
+  "runwayMinimalWidth": 16,
+
+  "latLonStrokeColor": "gray",
+  "latLonStrokeWidth": 1,
+  "latLonLabelFontFamily": "ECAMFontRegular",
+  "latLonLabelFontSize": 14,
+  "latLonLabelColor": "white",
+  "latLonLabelStrokeColor": "none",
+  "latLonLabelStrokeWidth": 0,
+
+  "flightPlanActiveLegColor": "#00ff00",
+  "flightPlanActiveLegWidth": 2,
+  "flightPlanActiveLegStrokeColor": "white",
+  "flightPlanActiveLegStrokeWidth": 0,
+  "flightPlanNonActiveLegColor": "#00ff00",
+  "flightPlanNonActiveLegWidth": 2,
+  "flightPlanNonActiveLegStrokeColor": "white",
+  "flightPlanNonActiveLegStrokeWidth": 0,
+  "flightPlanDirectLegColor": "#00ff00",
+  "flightPlanDirectLegWidth": 2,
+  "flightPlanDirectLegStrokeColor": "white",
+  "flightPlanDirectLegStrokeWidth": 0,
+
+  "roadMotorWayColor": "#7a7a7a",
+  "roadMotorWayWidth": 2,
+  "roadTrunkColor": "#7a7a7a",
+  "roadTrunkWidth": 1.5,
+  "roadPrimaryColor": "#7a7a7a",
+  "roadPrimaryWidth": 1,
+
+  "railwayStrokeColor": "gray",
+  "railwayWidth": 2,
+  "railwayDashLength": 6,
+
+  "netBingTextureResolution": 1024,
+
+  "netBingAltitudeColors1": [],
+  "netBingWaterColor1": "#000000",
+  "netBingHeightColor1": [
+    {
+      "alt": 0,
+      "color": "#000000"
+    },
+    {
+      "alt": 9000,
+      "color": "#000000"
+    }
+  ],
+
+  "netBingAltitudeColors2": [],
+  "netBingWaterColor2": "#000000",
+  "netBingHeightColor2": [
+    {
+      "alt": 0,
+      "color": "#E53F37"
+    },
+    {
+      "alt": 100,
+      "color": "#E53F37"
+    },
+    {
+      "alt": 500,
+      "color": "#FF6A00"
+    },
+    {
+      "alt": 1000,
+      "color": "#FF6A00"
+    },
+    {
+      "alt": 2000,
+      "color": "#37A238"
+    },
+    {
+      "alt": 2500,
+      "color": "#37A238"
+    },
+    {
+      "alt": 3500,
+      "color": "#000000"
+    }
+  ]
+}

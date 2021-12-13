@@ -1,6 +1,7 @@
 class CDUAvailableDeparturesPage {
     static ShowPage(mcdu, airport, pageCurrent = 0, sidSelection = false) {
         const airportInfo = airport.infos;
+        console.log(airportInfo);
         if (airportInfo instanceof AirportInfo) {
             mcdu.clearDisplay();
             mcdu.page.Current = mcdu.page.AvailableDeparturesPage;
@@ -118,7 +119,7 @@ class CDUAvailableDeparturesPage {
                             mcdu.onRightInput[i + 1] = () => {
                                 mcdu.flightPlanManager.setDepartureEnRouteTransitionIndex(enRouteTransitionIndex, () => {
                                     CDUAvailableDeparturesPage.ShowPage(mcdu, airport, 0, true);
-                                }).catch(console.error);
+                                });
                             };
                         }
                     }
@@ -153,9 +154,6 @@ class CDUAvailableDeparturesPage {
                     maxPage -= 3;
                 } else {
                     maxPage = airportInfo.departures.length - 3;
-                }
-                if (selectedDeparture) {
-                    maxPage = Math.max(maxPage, selectedDeparture.enRouteTransitions.length - 4);
                 }
             } else {
                 maxPage = airportInfo.oneWayRunways.length - 4;

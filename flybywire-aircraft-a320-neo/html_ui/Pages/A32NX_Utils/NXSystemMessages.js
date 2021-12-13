@@ -1,46 +1,29 @@
 class McduMessage {
-    constructor(_text, _isTypeTwo = false, _isAmber = false, _id = -1, _replace = "", _isResolved = () => false, _onClear = () => {}) {
-        this.id = _id;
-        this.text = _text;
+    constructor(_text, _isAmber = false, _isTypeTwo = false, _replace = "") {
+        this.cText = _text;
         this.isAmber = _isAmber;
-        this.color = _isAmber ? "amber" : "white";
         this.isTypeTwo = _isTypeTwo;
         this.replace = _replace;
+    }
 
-        if (_isTypeTwo) {
-            this.isResolved = _isResolved;
-            this.onClear = _onClear;
-        }
+    /**
+     * `set text(_t) {}` is not allowed to ensure thread safety, editing the original definition should never be allowed
+     * Both NXSystemMessages and NXFictionalMessages messages shall always be readable ONLY
+     */
+
+    get text() {
+        return this.cText;
     }
 
     /**
      * Only returning a "copy" of the object to ensure thread safety when trying to edit the original message
-     * t {string} replaces defined elements, see this.replace
-     * _isResolved {function} overrides present function
-     * _onClear {function} overrides present function
      */
-    modifyMessage(t, _isResolved = undefined, _onClear = undefined) {
-        const isResolved = _isResolved === undefined ? this.isResolved : _isResolved;
-        const onClear = _onClear === undefined ? this.isResolved : _onClear;
-        return new McduMessage(!!t ? this.text.replace(this.replace, "" + t) : this.text, this.isTypeTwo, this.isAmber, this.id, this.replace, isResolved, onClear);
-    }
-}
-
-class TypeIMessage extends McduMessage {
-    constructor(_text, _isAmber = false, _replace = "") {
-        super(_text, false, _isAmber, -1, _replace);
-    }
-}
-
-class TypeIIMessage extends McduMessage {
-    constructor(_text, _isAmber = false, _replace = "", _isResolved = () => false, _onClear = () => {}) {
-        super(_text, true, _isAmber, -1, _replace, _isResolved, _onClear);
-    }
-}
-
-class EFISMessage extends McduMessage {
-    constructor(_text, _id, _isAmber = false, _replace = "", _isResolved = () => false, _onClear = () => {}) {
-        super(_text, true, _isAmber, _id, _replace, _isResolved, _onClear);
+    getSetMessage(t) {
+        return {
+            text: !!t ? this.cText.replace(this.replace, "" + t) : this.cText,
+            isAmber: this.isAmber,
+            isTypeTwo: this.isTypeTwo
+        };
     }
 }
 
@@ -48,52 +31,46 @@ class EFISMessage extends McduMessage {
  NXSystemMessages only holds real messages
  */
 const NXSystemMessages = {
-    aocActFplnUplink:       new TypeIIMessage("AOC ACT F-PLN UPLINK", false),
-    awyWptMismatch:         new TypeIMessage("AWY/WPT MISMATCH"),
-    checkMinDestFob:        new TypeIIMessage("CHECK MIN DEST FOB", false),
-    checkToData:            new TypeIIMessage("CHECK TAKE OFF DATA", false),
-    destEfobBelowMin:       new TypeIIMessage("DEST EFOB BELOW MIN", true, "", (mcdu) => mcdu._EfobBelowMinClr, (mcdu) => mcdu._EfobBelowMinClr = true),
-    enterDestData:          new TypeIIMessage("ENTER DEST DATA", true, "", (mcdu) => () => isFinite(mcdu.perfApprQNH) && isFinite(mcdu.perfApprTemp) && isFinite(mcdu.perfApprWindHeading) && isFinite(mcdu.perfApprWindSpeed)),
-    entryOutOfRange:        new TypeIMessage("ENTRY OUT OF RANGE"),
-    formatError:            new TypeIMessage("FORMAT ERROR"),
-    gpsPrimary:             new EFISMessage("GPS PRIMARY", 0, false),
-    gpsPrimaryLost:         new EFISMessage("GPS PRIMARY LOST", 1, true),
-    initializeWeightOrCg:   new TypeIIMessage("INITIALIZE WEIGHT/CG", true),
-    newCrzAlt:              new TypeIIMessage("NEW CRZ ALT - HHHHH", false, "HHHHH"),
-    noIntersectionFound:    new TypeIMessage("NO INTERSECTION FOUND"),
-    notAllowed:             new TypeIMessage("NOT ALLOWED"),
-    notAllowedInNav:        new TypeIMessage("NOT ALLOWED IN NAV"),
-    acPositionInvalid:      new TypeIMessage("A/C POSITION INVALID"),
-    notInDatabase:          new TypeIMessage("NOT IN DATABASE"),
-    selectDesiredSystem:    new TypeIMessage("SELECT DESIRED SYSTEM"),
-    uplinkInsertInProg:     new TypeIIMessage("UPLINK INSERT IN PROG", false),
-    vToDisagree:            new TypeIIMessage("V1/VR/V2 DISAGREE", true, "", (mcdu) => mcdu._v1Checked && mcdu._vRChecked && mcdu._v2Checked ? (
-        (!!mcdu.v1Speed && !!mcdu.vRSpeed ? mcdu.v1Speed <= mcdu.vRSpeed : true)
-        && (!!mcdu.vRSpeed && !!mcdu.v2Speed ? mcdu.vRSpeed <= mcdu.v2Speed : true)
-        && (!!mcdu.v1Speed && !!mcdu.v2Speed ? mcdu.v1Speed <= mcdu.v2Speed : true)
-    ) : true),
-    waitForSystemResponse:  new TypeIMessage("WAIT FOR SYSTEM RESPONSE")
+    aocActFplnUplink:       new McduMessage("AOC ACT F-PLN UPLINK", false, true),
+    awyWptMismatch:         new McduMessage("AWY/WPT MISMATCH", false, false),
+    checkMinDestFob:        new McduMessage("CHECK MIN DEST FOB", false, true),
+    checkToData:            new McduMessage("CHECK TAKE OFF DATA", true, true),
+    destEfobBelowMin:       new McduMessage("DEST EFOB BELOW MIN", true, true),
+    enterDestData:          new McduMessage("ENTER DEST DATA", true, true),
+    entryOutOfRange:        new McduMessage("ENTRY OUT OF RANGE", false, false),
+    formatError:            new McduMessage("FORMAT ERROR", false, false),
+    gpsPrimary:             new McduMessage("GPS PRIMARY", false, true),
+    gpsPrimaryLost:         new McduMessage("GPS PRIMARY LOST", true, true),
+    initializeWeightOrCg:   new McduMessage("INITIALIZE WEIGHT/CG", true, true),
+    newCrzAlt:              new McduMessage("NEW CRZ ALT - HHHHH", false, true, "HHHHH"),
+    noIntersectionFound:    new McduMessage("NO INTERSECTION FOUND", false, false),
+    notAllowed:             new McduMessage("NOT ALLOWED", false, false),
+    notInDatabase:          new McduMessage("NOT IN DATABASE", false, false),
+    selectDesiredSystem:    new McduMessage("SELECT DESIRED SYSTEM", false, false),
+    uplinkInsertInProg:     new McduMessage("UPLINK INSERT IN PROG", false, true),
+    vToDisagree:            new McduMessage("V1/VR/V2 DISAGREE", true, true),
+    waitForSystemResponse:  new McduMessage("WAIT FOR SYSTEM RESPONSE", false, false)
 };
 
 const NXFictionalMessages = {
-    noSimBriefUser:         new TypeIMessage("NO SIMBRIEF USER"),
-    noAirportSpecified:     new TypeIMessage("NO AIRPORT SPECIFIED"),
-    fltNbrInUse:            new TypeIMessage("FLT NBR IN USE"),
-    notYetImplemented:      new TypeIMessage("NOT YET IMPLEMENTED"),
-    recipientNotFound:      new TypeIMessage("RECIPIENT NOT FOUND"),
-    authErr:                new TypeIMessage("AUTH ERR"),
-    invalidMsg:             new TypeIMessage("INVALID MSG"),
-    unknownDownlinkErr:     new TypeIMessage("UNKNOWN DOWNLINK ERR"),
-    telexNotEnabled:        new TypeIMessage("TELEX NOT ENABLED"),
-    freeTextDisabled:       new TypeIMessage("FREE TEXT DISABLED"),
-    freetextEnabled:        new TypeIMessage("FREE TEXT ENABLED"),
-    enabledFltNbrInUse:     new TypeIMessage("ENABLED. FLT NBR IN USE"),
-    noOriginApt:            new TypeIMessage("NO ORIGIN AIRPORT"),
-    noOriginSet:            new TypeIMessage("NO ORIGIN SET"),
-    secondIndexNotFound:    new TypeIMessage("2ND INDEX NOT FOUND"),
-    firstIndexNotFound:     new TypeIMessage("1ST INDEX NOT FOUND"),
-    noRefWpt:               new TypeIMessage("NO REF WAYPOINT"),
-    noWptInfos:             new TypeIMessage("NO WAYPOINT INFOS"),
-    emptyMessage:           new TypeIMessage(""),
-    reloadPlaneApply:       new TypeIMessage("RELOAD A/C TO APPLY", true)
+    noSimBriefUser:         new McduMessage("NO SIMBRIEF USER", false, false),
+    noAirportSpecified:     new McduMessage("NO AIRPORT SPECIFIED", false, false),
+    fltNbrInUse:            new McduMessage("FLT NBR IN USE", false, false),
+    notYetImplemented:      new McduMessage("NOT YET IMPLEMENTED", false, false),
+    recipientNotFound:      new McduMessage("RECIPIENT NOT FOUND", false, false),
+    authErr:                new McduMessage("AUTH ERR", false, false),
+    invalidMsg:             new McduMessage("INVALID MSG", false, false),
+    unknownDownlinkErr:     new McduMessage("UNKNOWN DOWNLINK ERR", false, false),
+    telexNotEnabled:        new McduMessage("TELEX NOT ENABLED", false, false),
+    freeTextDisabled:       new McduMessage("FREE TEXT DISABLED", false, false),
+    freetextEnabled:        new McduMessage("FREE TEXT ENABLED", false, false),
+    enabledFltNbrInUse:     new McduMessage("ENABLED. FLT NBR IN USE", false, false),
+    noOriginApt:            new McduMessage("NO ORIGIN AIRPORT", false, false),
+    noOriginSet:            new McduMessage("NO ORIGIN SET", false, false),
+    secondIndexNotFound:    new McduMessage("2ND INDEX NOT FOUND", false, false),
+    firstIndexNotFound:     new McduMessage("1ST INDEX NOT FOUND", false, false),
+    noRefWpt:               new McduMessage("NO REF WAYPOINT", false, false),
+    noWptInfos:             new McduMessage("NO WAYPOINT INFOS", false, false),
+    emptyMessage:           new McduMessage(""),
+    reloadPlaneApply:       new McduMessage("RELOAD A/C TO APPLY", true, true)
 };

@@ -361,7 +361,7 @@ function _addWindComponent(vw) {
  * @returns {number} angle diff
  * @private
  */
-function _getdiffAngle(a, b) {
+function _getAngleDiff(a, b) {
     return 180 - Math.abs(Math.abs(a - b) - 180);
 }
 
@@ -528,7 +528,7 @@ class NXSpeedsUtils {
      * @returns {number} velocity headwind
      */
     static getHeadwind(v, a, b) {
-        return v * Math.cos(_getdiffAngle(a, b) * (Math.PI / 180));
+        return v * Math.cos(_getAngleDiff(a, b) * (Math.PI / 180));
     }
 
     /**

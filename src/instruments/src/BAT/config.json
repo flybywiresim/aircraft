@@ -1,10 +1,4 @@
 {
   "index": "./index.tsx",
-  "isInteractive": false,
-  "dimensions": {
-    "px": {
-      "width": 256,
-      "height": 128
-    }
-  }
+  "isInteractive": false
 }

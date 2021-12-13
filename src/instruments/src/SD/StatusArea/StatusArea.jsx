@@ -21,11 +21,7 @@ export const StatusArea = () => {
     if (sat > 99 || sat < -99) {
         sat = sat > 99 ? 99 : -99;
     }
-
-    // TODO FIXME improve this
-    // const adirsAlign = !ADIRS.mapNotAvailable(1) || !ADIRS.mapNotAvailable(2);
-    const adirsAlign = true;
-
+    const adirsState = getSimVar('L:A32NX_ADIRS_STATE', 'Enum');
     const satPrefix = sat > 0 ? '+' : '';
     const tatPrefix = tat > 0 ? '+' : '';
     const seconds = Math.floor(zulu);
@@ -45,7 +41,7 @@ export const StatusArea = () => {
             <Text title x={35} y={534} alignStart>
                 TAT
             </Text>
-            { adirsAlign
+            { adirsState !== 2
                 ? (
                     <Text warning x={125} y={534} alignEnd>
                         XX
@@ -64,7 +60,7 @@ export const StatusArea = () => {
             <Text title x={35} y={560} alignStart>
                 SAT
             </Text>
-            { adirsAlign
+            { adirsState !== 2
                 ? (
                     <Text warning x={125} y={560} alignEnd>
                         XX

@@ -43,7 +43,7 @@ class FMCDataManager {
         });
     }
     async GetAirportByIdent(ident) {
-        if (!(await this.IsAirportValid(ident).catch(console.error))) {
+        if (!(await this.IsAirportValid(ident))) {
             return undefined;
         }
         const icao = "A      " + ident.toLocaleUpperCase();
@@ -57,25 +57,25 @@ class FMCDataManager {
 
     async GetWaypointsByIdent(ident) {
         const waypoints = [];
-        const intersections = await this.GetWaypointsByIdentAndType(ident, "W").catch(console.error);
+        const intersections = await this.GetWaypointsByIdentAndType(ident, "W");
         waypoints.push(...intersections);
-        const vors = await this.GetWaypointsByIdentAndType(ident, "V").catch(console.error);
+        const vors = await this.GetWaypointsByIdentAndType(ident, "V");
         waypoints.push(...vors);
-        const ndbs = await this.GetWaypointsByIdentAndType(ident, "N").catch(console.error);
+        const ndbs = await this.GetWaypointsByIdentAndType(ident, "N");
         waypoints.push(...ndbs);
-        const airports = await this.GetWaypointsByIdentAndType(ident, "A").catch(console.error);
+        const airports = await this.GetWaypointsByIdentAndType(ident, "A");
         waypoints.push(...airports);
         return this._filterDuplicateWaypoints(waypoints);
     }
     async GetVORsByIdent(ident) {
         const navaids = [];
-        const vors = await this.GetWaypointsByIdentAndType(ident, "V").catch(console.error);
+        const vors = await this.GetWaypointsByIdentAndType(ident, "V");
         navaids.push(...vors);
         return navaids;
     }
     async GetNDBsByIdent(ident) {
         const navaids = [];
-        const ndbs = await this.GetWaypointsByIdentAndType(ident, "N").catch(console.error);
+        const ndbs = await this.GetWaypointsByIdentAndType(ident, "N");
         navaids.push(...ndbs);
         return navaids;
     }

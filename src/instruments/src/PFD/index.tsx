@@ -2,7 +2,6 @@ import React, { useReducer, useState } from 'react';
 import { A320Failure, FailuresConsumer } from '@flybywiresim/failures';
 import { useArinc429Var } from '@instruments/common/arinc429';
 import { useInteractionEvent, useUpdate } from '@instruments/common/hooks';
-import { getSupplier, isCaptainSide } from '@instruments/common/utils';
 import { Horizon } from './AttitudeIndicatorHorizon';
 import { AttitudeIndicatorFixedUpper, AttitudeIndicatorFixedCenter } from './AttitudeIndicatorFixed';
 import { LandingSystem } from './LandingSystemIndicator';
@@ -206,6 +205,18 @@ export const PFD: React.FC = () => {
             </svg>
         </DisplayUnit>
     );
+};
+
+const isCaptainSide = (displayIndex: number | undefined) => displayIndex === 1;
+
+const getSupplier = (displayIndex: number | undefined, knobValue: number) => {
+    const adirs3ToCaptain = 0;
+    const adirs3ToFO = 2;
+
+    if (isCaptainSide(displayIndex)) {
+        return knobValue === adirs3ToCaptain ? 3 : 1;
+    }
+    return knobValue === adirs3ToFO ? 3 : 2;
 };
 
 const smoothSpeeds = (deltaTime: number, vlsOrigin: number, vlsDestination: number) => {
