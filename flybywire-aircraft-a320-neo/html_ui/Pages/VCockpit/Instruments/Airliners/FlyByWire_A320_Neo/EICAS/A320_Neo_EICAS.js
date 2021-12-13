@@ -48,6 +48,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
     }
 
     createLowerScreenPages() {
+        this.addIndependentElementContainer(new Airliners.EICASScreen("BottomScreenCommon", "BottomScreen", "eicas-common-display"));
         this.createLowerScreenPage("ENG", "BottomScreen", "a32nx-eng-page-element");
         this.createLowerScreenPage("BLEED", "BottomScreen", "a320-neo-lower-ecam-bleed");
         this.createLowerScreenPage("PRESS", "BottomScreen", "a32nx-press-page-element");
@@ -120,6 +121,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
                 return SimVar.GetSimVarValue("L:A32NX_ELEC_AC_2_BUS_IS_POWERED", "Bool");
             },
             () => parseInt(NXDataStore.get("CONFIG_SELF_TEST_TIME", "15")),
+            93,
             this.querySelector("#BottomSelfTest")
         );
     }
@@ -138,8 +140,6 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         this.displayUnit.update(deltaTime);
 
         this.updateDoorVideoState();
-
-        this.updateAnnunciations();
 
         // Engineering self-tests
         updateDisplayDMC("EICAS2", this.lowerEngTestDiv, this.lowerEngMaintDiv);
@@ -294,49 +294,6 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         this.doorVideoWrapper.style.visibility = this.doorVideoPressed ? "visible" : "hidden";
     }
 
-    updateAnnunciations() {
-        const infoPanelManager = this.upperTopScreen.getInfoPanelManager();
-        if (infoPanelManager) {
-            infoPanelManager.clearScreen(Airliners.EICAS_INFO_PANEL_ID.PRIMARY);
-
-            if (this.warnings) {
-                const text = this.warnings.getCurrentWarningText();
-                if (text && text != "") {
-                    const level = this.warnings.getCurrentWarningLevel();
-                    switch (level) {
-                        case 0:
-                            infoPanelManager.addMessage(Airliners.EICAS_INFO_PANEL_ID.PRIMARY, text, Airliners.EICAS_INFO_PANEL_MESSAGE_STYLE.INDICATION);
-                            break;
-                        case 1:
-                            infoPanelManager.addMessage(Airliners.EICAS_INFO_PANEL_ID.PRIMARY, text, Airliners.EICAS_INFO_PANEL_MESSAGE_STYLE.CAUTION);
-                            break;
-                        case 2:
-                            infoPanelManager.addMessage(Airliners.EICAS_INFO_PANEL_ID.PRIMARY, text, Airliners.EICAS_INFO_PANEL_MESSAGE_STYLE.WARNING);
-                            break;
-                    }
-                }
-            }
-
-            if (this.annunciations) {
-                const onGround = Simplane.getIsGrounded();
-                for (let i = this.annunciations.displayWarning.length - 1; i >= 0; i--) {
-                    if (!this.annunciations.displayWarning[i].Acknowledged) {
-                        infoPanelManager.addMessage(Airliners.EICAS_INFO_PANEL_ID.PRIMARY, this.annunciations.displayWarning[i].Text, Airliners.EICAS_INFO_PANEL_MESSAGE_STYLE.WARNING);
-                    }
-                }
-                for (let i = this.annunciations.displayCaution.length - 1; i >= 0; i--) {
-                    if (!this.annunciations.displayCaution[i].Acknowledged) {
-                        infoPanelManager.addMessage(Airliners.EICAS_INFO_PANEL_ID.PRIMARY, this.annunciations.displayCaution[i].Text, Airliners.EICAS_INFO_PANEL_MESSAGE_STYLE.CAUTION);
-                    }
-                }
-                for (let i = this.annunciations.displayAdvisory.length - 1; i >= 0; i--) {
-                    if (!this.annunciations.displayAdvisory[i].Acknowledged) {
-                        infoPanelManager.addMessage(Airliners.EICAS_INFO_PANEL_ID.PRIMARY, this.annunciations.displayAdvisory[i].Text, Airliners.EICAS_INFO_PANEL_MESSAGE_STYLE.INDICATION);
-                    }
-                }
-            }
-        }
-    }
 }
 
 registerInstrument("a320-neo-eicas-element", A320_Neo_EICAS);

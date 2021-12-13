@@ -16,33 +16,6 @@
                     </defs>
                 </svg>
             </div>
-            <div id="TopScreen">
-                <!-- <a320-neo-upper-ecam id="UpperECAM"></a320-neo-upper-ecam> -->
-                <!-- <a32nx-ewd></a32nx-ewd> -->
-
-                <div class="SelfTestWrapper" id="TopSelfTest">
-                    <svg class="SelfTest" viewBox="0 0 600 600">
-                        <rect fill="url(#ECAMBacklight)" x="0" y="0" width="100%" height="100%"></rect>
-
-                        <!-- Disgusting hack, but we are rewriting this anyway :') -->
-                        <text style="font-size: 24px !important;" class="self_test_text valueText" text-anchor="middle" x="50%" y="50%" font-size="24px">SELF TEST IN PROGRESS</text>
-                        <text style="font-size: 24px !important;" class="self_test_text2 valueText" text-anchor="middle" x="50%" y="56%" font-size="24px">(MAX 40 SECONDS)</text>
-                    </svg>
-                </div>
-
-                <svg id="Eicas1EngTest" class="engineering-mode-overlay" viewBox="0 0 600 600">
-                    <text class="start" x="9" y="250">P/N : C19755BA01</text>
-                    <text class="start" x="10" y="270">S/N : C1975517332</text>
-                    <text class="start" x="10" y="344">EIS SW</text>
-                    <text class="start" x="10" y="366">P/N : C1975517332</text>
-                    <text x="445" y="250">THALES AVIONICS</text>
-                    <text x="538" y="366">LCDU 725</text>
-                </svg>
-                <svg id="Eicas1MaintMode" class="maintenance-mode-overlay" viewBox="0 0 600 600">
-                    <rect fill="url(#ECAMBacklight)" x="0" y="0" width="100%" height="100%"></rect>
-                    <text class="valueText" text-anchor="middle" x="50%" y="35%" font-size="24px">MAINTENANCE MODE</text>
-                </svg>
-            </div>
 
             <div id="BottomScreen">
                 <a32nx-fuel-page-element style="display: none"></a32nx-fuel-page-element>
@@ -120,8 +93,6 @@
 <script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/A320_Neo/A32NX_NavSystem.js"></script>
 
 <script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/A32NX_BaseAirliners.js"></script>
-
-<!-- <script type="text/html" import-template="/Pages/VCockpit/Instruments/A32NX/EWD/template.html"></script> -->
 
 <script type="text/html" import-template="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/EICAS/EICAS_Common.html"></script>
 <script type="text/html" import-template="/Pages/VCockpit/Instruments/A32NX/EcamPages/eng-page/template.html"></script>
