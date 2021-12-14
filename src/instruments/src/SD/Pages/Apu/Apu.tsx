@@ -66,7 +66,7 @@ const ApuGen = ({ x, y } : ComponentPositionProps) => {
     const [apuGenFreq] = useSimVar('L:A32NX_ELEC_APU_GEN_1_FREQUENCY', 'Hertz', 500);
     const [apuGenFreqNormalRange] = useSimVar('L:A32NX_ELEC_APU_GEN_1_FREQUENCY_NORMAL', 'Bool', 750);
 
-    enum apuGenState {STANDBY, OFF, ON}
+    enum apuGenState { STANDBY, OFF, ON }
     const [currentApuGenState, setCurrentApuGenState] = useState(apuGenState.STANDBY);
 
     const [apuMasterPbOn] = useSimVar('L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON', 'Bool', 500);
@@ -74,14 +74,16 @@ const ApuGen = ({ x, y } : ComponentPositionProps) => {
     const [apuAvail] = useSimVar('L:A32NX_OVHD_APU_START_PB_IS_AVAILABLE', 'Bool', 1000);
 
     useEffect(() => {
-        if (!apuMasterPbOn && !apuAvail /* FIXME: and apu master switch is valid and apu gen push buttion is valid */) {
-            setCurrentApuGenState(apuGenState.STANDBY);
-        } else if (!(currentApuGenState === apuGenState.STANDBY) && !apuGenPbOn /* FIXME: and apu master switch valid and apu gen pb valid */) {
-            setCurrentApuGenState(apuGenState.OFF);
-        } else {
-            setCurrentApuGenState(apuGenState.ON);
-        }
-    }, [apuMasterPbOn, apuAvail]);
+        // FBW-31-06
+        setCurrentApuGenState((old) => {
+            if (!apuMasterPbOn && !apuAvail) {
+                return apuGenState.STANDBY;
+            } if (old !== apuGenState.STANDBY && !apuGenPbOn) {
+                return apuGenState.OFF;
+            }
+            return apuGenState.ON;
+        });
+    }, [apuMasterPbOn, apuAvail, apuGenPbOn]);
 
     return (
         <>
@@ -99,8 +101,8 @@ const ApuGen = ({ x, y } : ComponentPositionProps) => {
                     x={50}
                     y={20}
                     className={`Center FontNormal
-                    ${currentApuGenState === apuGenState.OFF
-                         || (!(apuGenPotentialNormalRange && apuGenLoadNormalRange && apuGenFreqNormalRange) && currentApuGenState === apuGenState.ON) && ' Amber'}`}
+                    ${(currentApuGenState !== apuGenState.STANDBY
+                         && (!(apuGenPotentialNormalRange && apuGenLoadNormalRange && apuGenFreqNormalRange)) || currentApuGenState === apuGenState.OFF) && ' Amber'}`}
                 >
                     APU GEN
                 </text>
@@ -112,7 +114,7 @@ const ApuGen = ({ x, y } : ComponentPositionProps) => {
                     && (
                         <>
                             <SvgGroup x={60} y={55}>
-                                {/* FIXME: replaced by amber crosses when information is not available */}
+                                {/* FBW-31-07 */}
                                 <text
                                     x={0}
                                     y={0}
@@ -120,7 +122,6 @@ const ApuGen = ({ x, y } : ComponentPositionProps) => {
                                 >
                                     {apuGenLoad.toFixed()}
                                 </text>
-                                {/* FIXME: replaced by amber crosses when information is not available */}
                                 <text
                                     x={0}
                                     y={25}
@@ -128,7 +129,6 @@ const ApuGen = ({ x, y } : ComponentPositionProps) => {
                                 >
                                     {apuGenVoltage.toFixed()}
                                 </text>
-                                {/* FIXME: replaced by amber crosses when information is not available */}
                                 <text
                                     x={0}
                                     y={50}
@@ -173,7 +173,7 @@ const ApuBleed = ({ x, y } : ComponentPositionProps) => {
 
     return (
         <>
-            {/* TODO: There should be XX in amber in center of circle if air valve status info is not available */}
+            {/* FBW-31-07 */}
             <SvgGroup x={x} y={y}>
                 <rect className="Box" width={100} height={57} />
 
@@ -346,11 +346,18 @@ const EgtGauge = ({ x, y } : ComponentPositionProps) => {
         if (apuEgt.value > apuEgtWarning.value) {
             setApuEgtIndicationColor('Red');
         }
-        // TODO FIXME: ecbAdvisoryDetected must be defined in a system later on.
-        // if (apuEgt.value <= apuEgtCaution.value && apuAvail && ecbAdvisoryDetected) {
-        //     setApuEgtIndicationColor('Pulse');
-        // }
+        // FBW-31-05
     }, [apuEgt, apuEgtCaution, apuEgtWarning]);
+
+    let egtValueStyle;
+
+    if (!apuEgt.isNormalOperation()) {
+        egtValueStyle = 'Amber';
+    } else if (apuEgtIndicationColor === 'Pulse') {
+        egtValueStyle = 'FillPulse';
+    } else {
+        egtValueStyle = apuEgtIndicationColor;
+    }
 
     return (
         <>
@@ -467,8 +474,7 @@ const EgtGauge = ({ x, y } : ComponentPositionProps) => {
                 <text
                     x={10}
                     y={80}
-                    // eslint-disable-next-line no-nested-ternary
-                    className={`FontLarger Left ${!apuEgt.isNormalOperation() ? 'Amber' : apuEgtIndicationColor === 'Pulse' ? 'FillPulse' : apuEgtIndicationColor}`}
+                    className={`FontLarger Left ${egtValueStyle}`}
                 >
                     {apuEgt.isNormalOperation() ? displayedEgtValue : 'XX' }
                 </text>
@@ -509,10 +515,7 @@ const ApuMemos = ({ x, y } : ComponentPositionProps) => {
 
                 {apuFlapOpenPercentage === 100
                     && <text className={`Green FontNormal ${isIntakeIndicationFlashing && 'FillPulse'}`} x={0} y={60}>FLAP OPEN</text>}
-
-                {/* FIXME: APU LOW OIL IS CURRENTLY NOT A VALUE */}
-                {/* { apuLowOil
- && <text className="Green FillPulse" x={0} y={120}>LOW OIL LEVEL</text> } */}
+                {/* FBW-31-07 */}
             </SvgGroup>
         </>
     );
