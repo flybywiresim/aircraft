@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { DisplayUnit } from '@instruments/common/displayUnit';
 import { render } from '../Common';
+import UpperDisplay from './elements/UpperDisplay';
 import './style.scss';
 
 export const EWD: React.FC = () => {
@@ -14,14 +15,11 @@ export const EWD: React.FC = () => {
             electricitySimvar="L:A32NX_ELEC_AC_2_BUS_IS_POWERED"
             potentiometerIndex={displayIndex}
         >
-            <svg className="ewd-svg" version="1.1" viewBox="0 0 158.75 158.75" xmlns="http://www.w3.org/2000/svg">
-                <text
-                    className="SelfTestText"
-                    x="50%"
-                    y="50%"
-                >
-                    EWD
-                </text>
+            <svg className="ewd-svg" version="1.1" viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg">
+                <UpperDisplay />
+                <line className="Separator" x1="4" y1="410" x2="350" y2="410" strokeLinecap="round" />
+                <line className="Separator" x1="400" y1="410" x2="596" y2="410" strokeLinecap="round" />
+                <line className="Separator" x1="377" y1="424" x2="377" y2="566" strokeLinecap="round" />
             </svg>
         </DisplayUnit>
     );
