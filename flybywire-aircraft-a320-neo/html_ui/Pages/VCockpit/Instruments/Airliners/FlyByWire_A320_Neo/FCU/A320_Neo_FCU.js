@@ -956,7 +956,7 @@ class A320_Neo_FCU_VerticalSpeed extends A320_Neo_FCU_Component {
 
     onPush() {
         const mode = SimVar.GetSimVarValue("L:A32NX_FMA_VERTICAL_MODE", "Number");
-        if (mode >= 32 && _mode <= 34) {
+        if (mode >= 32 && mode <= 34) {
             return;
         }
         clearTimeout(this._resetSelectionTimeout);

@@ -4,7 +4,8 @@
 #include "rtwtypes.h"
 #include "FlyByWire_types.h"
 
-class FlyByWireModelClass {
+class FlyByWireModelClass
+{
  public:
   struct rtDW_LagFilter_FlyByWire_T {
     real_T pY;
@@ -71,9 +72,9 @@ class FlyByWireModelClass {
     real_T eventTime;
     real_T on_ground_time;
     real_T sProtActive;
-    real_T eventTime_o;
+    real_T eventTime_b;
     real_T resetEventTime;
-    real_T sProtActive_k;
+    real_T sProtActive_c;
     real_T sAlphaFloor;
     uint8_T is_active_c5_FlyByWire;
     uint8_T is_c5_FlyByWire;
@@ -100,7 +101,7 @@ class FlyByWireModelClass {
     boolean_T icLoad_id;
     boolean_T icLoad_c;
     boolean_T eventTime_not_empty;
-    boolean_T eventTime_not_empty_l;
+    boolean_T eventTime_not_empty_c;
     boolean_T resetEventTime_not_empty;
     rtDW_RateLimiter_FlyByWire_T sf_RateLimiter_b5;
     rtDW_RateLimiter_FlyByWire_T sf_RateLimiter_pr;
@@ -554,27 +555,29 @@ class FlyByWireModelClass {
     uint8_T ManualSwitch1_CurrentSetting;
   };
 
-  void initialize();
-  void step();
-  void terminate();
-  FlyByWireModelClass();
-  ~FlyByWireModelClass();
-  void setExternalInputs(const ExternalInputs_FlyByWire_T* pExternalInputs_FlyByWire_T)
+  FlyByWireModelClass(FlyByWireModelClass const&) =delete;
+  FlyByWireModelClass& operator= (FlyByWireModelClass const&) & = delete;
+  void setExternalInputs(const ExternalInputs_FlyByWire_T *pExternalInputs_FlyByWire_T)
   {
     FlyByWire_U = *pExternalInputs_FlyByWire_T;
   }
 
-  const FlyByWireModelClass::ExternalOutputs_FlyByWire_T & getExternalOutputs() const
+  const ExternalOutputs_FlyByWire_T &getExternalOutputs() const
   {
     return FlyByWire_Y;
   }
 
+  void initialize();
+  void step();
+  static void terminate();
+  FlyByWireModelClass();
+  ~FlyByWireModelClass();
  private:
-  static Parameters_FlyByWire_T FlyByWire_P;
-  BlockIO_FlyByWire_T FlyByWire_B;
-  D_Work_FlyByWire_T FlyByWire_DWork;
   ExternalInputs_FlyByWire_T FlyByWire_U;
   ExternalOutputs_FlyByWire_T FlyByWire_Y;
+  BlockIO_FlyByWire_T FlyByWire_B;
+  D_Work_FlyByWire_T FlyByWire_DWork;
+  static Parameters_FlyByWire_T FlyByWire_P;
   static void FlyByWire_GetIASforMach4(real_T rtu_m, real_T rtu_m_t, real_T rtu_v, real_T *rty_v_t);
   static void FlyByWire_LagFilter(real_T rtu_U, real_T rtu_C1, real_T rtu_dt, real_T *rty_Y, rtDW_LagFilter_FlyByWire_T *
     localDW);
