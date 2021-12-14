@@ -124,53 +124,7 @@ export class EfisSymbols {
 
             const [editAhead, editBehind, editBeside] = this.calculateEditArea(range, mode);
 
-            // eslint-disable-next-line no-loop-func
-            const withinEditArea = (ll): boolean => {
-                const dist = Avionics.Utils.computeGreatCircleDistance(mode === Mode.PLAN ? planCentre : ppos, ll);
-                let bearing = Avionics.Utils.computeGreatCircleHeading(mode === Mode.PLAN ? planCentre : ppos, ll);
-                if (mode !== Mode.PLAN) {
-                    bearing = Avionics.Utils.clampAngle(bearing - trueHeading);
-                }
-                bearing = bearing * Math.PI / 180;
-                const dx = dist * Math.sin(bearing);
-                const dy = dist * Math.cos(bearing);
-                return Math.abs(dx) < editBeside && dy > -editBehind && dy < editAhead;
-            };
-
             const symbols: NdSymbol[] = [];
-
-            // symbols most recently inserted always end up at the end of the array
-            // we reverse the array at the end to make sure symbols are drawn in the correct order
-            // eslint-disable-next-line no-loop-func
-            const upsertSymbol = (symbol: NdSymbol): void => {
-                if (DEBUG) {
-                    console.time(`upsert symbol ${symbol.databaseId}`);
-                }
-                const symbolIdx = symbols.findIndex((s) => s.databaseId === symbol.databaseId);
-                if (symbolIdx !== -1) {
-                    const oldSymbol = symbols.splice(symbolIdx, 1)[0];
-                    symbol.constraints = symbol.constraints ?? oldSymbol.constraints;
-                    symbol.direction = symbol.direction ?? oldSymbol.direction;
-                    symbol.length = symbol.length ?? oldSymbol.length;
-                    symbol.location = symbol.location ?? oldSymbol.location;
-                    symbol.type |= oldSymbol.type;
-                    if (oldSymbol.radials) {
-                        if (symbol.radials) {
-                            symbol.radials.push(...oldSymbol.radials);
-                        } else {
-                            symbol.radials = oldSymbol.radials;
-                        }
-                    }
-                    if (oldSymbol.radii) {
-                        if (symbol.radii) {
-                            symbol.radii.push(...oldSymbol.radii);
-                        } else {
-                            symbol.radii = oldSymbol.radii;
-                        }
-                    }
-                }
-                symbols.push(symbol);
-            };
 
             // TODO ADIRs aligned (except in plan mode...?)
             if (efisOption === EfisOption.VorDmes) {
@@ -179,8 +133,8 @@ export class EfisSymbols {
                         continue;
                     }
                     const ll = { lat: vor.lat, long: vor.lon };
-                    if (withinEditArea(ll)) {
-                        upsertSymbol({
+                    if (this.withinEditArea(ll, mode, planCentre, ppos, editAhead, editBehind, editBeside, trueHeading)) {
+                        this.upsertSymbol(symbols, {
                             databaseId: vor.icao,
                             ident: vor.icao.substring(7, 12),
                             location: ll,
@@ -191,8 +145,8 @@ export class EfisSymbols {
             } else if (efisOption === EfisOption.Ndbs) {
                 for (const ndb of this.nearby.nearbyNdbNavaids.values()) {
                     const ll = { lat: ndb.lat, long: ndb.lon };
-                    if (withinEditArea(ll)) {
-                        upsertSymbol({
+                    if (this.withinEditArea(ll, mode, planCentre, ppos, editAhead, editBehind, editBeside, trueHeading)) {
+                        this.upsertSymbol(symbols, {
                             databaseId: ndb.icao,
                             ident: ndb.icao.substring(7, 12),
                             location: ll,
@@ -203,8 +157,8 @@ export class EfisSymbols {
             } else if (efisOption === EfisOption.Airports) {
                 for (const ap of this.nearby.nearbyAirports.values()) {
                     const ll = { lat: ap.lat, long: ap.lon };
-                    if (withinEditArea(ll) && hasSuitableRunway(ap)) {
-                        upsertSymbol({
+                    if (this.withinEditArea(ll, mode, planCentre, ppos, editAhead, editBehind, editBeside, trueHeading) && hasSuitableRunway(ap)) {
+                        this.upsertSymbol(symbols, {
                             databaseId: ap.icao,
                             ident: ap.icao.substring(7, 12),
                             location: ll,
@@ -215,8 +169,8 @@ export class EfisSymbols {
             } else if (efisOption === EfisOption.Waypoints) {
                 for (const wp of this.nearby.nearbyWaypoints.values()) {
                     const ll = { lat: wp.lat, long: wp.lon };
-                    if (withinEditArea(ll)) {
-                        upsertSymbol({
+                    if (this.withinEditArea(ll, mode, planCentre, ppos, editAhead, editBehind, editBeside, trueHeading)) {
+                        this.upsertSymbol(symbols, {
                             databaseId: wp.icao,
                             ident: wp.icao.substring(7, 12),
                             location: ll,
@@ -230,7 +184,7 @@ export class EfisSymbols {
                 const fixInfo = this.flightPlanManager.getFixInfo(i as 0 | 1 | 2 | 3);
                 const refFix = fixInfo?.getRefFix();
                 if (refFix !== undefined) {
-                    upsertSymbol({
+                    this.upsertSymbol(symbols, {
                         databaseId: refFix.icao,
                         ident: refFix.ident,
                         location: refFix.infos.coordinates,
@@ -270,7 +224,7 @@ export class EfisSymbols {
                     continue;
                 }
 
-                if (!withinEditArea(wp.infos.coordinates)) {
+                if (!this.withinEditArea(wp.infos.coordinates, mode, planCentre, ppos, editAhead, editBehind, editBeside, trueHeading)) {
                     continue;
                 }
 
@@ -311,7 +265,7 @@ export class EfisSymbols {
                     }
                 }
 
-                upsertSymbol({
+                this.upsertSymbol(symbols, {
                     databaseId: wp.icao,
                     ident: wp.ident,
                     location: wp.infos.coordinates,
@@ -329,8 +283,8 @@ export class EfisSymbols {
                     continue;
                 }
                 if (runway) {
-                    if (withinEditArea(runway.beginningCoordinates)) {
-                        upsertSymbol({
+                    if (this.withinEditArea(runway.beginningCoordinates, mode, planCentre, ppos, editAhead, editBehind, editBeside, trueHeading)) {
+                        this.upsertSymbol(symbols, {
                             databaseId: airport.icao,
                             ident: `${airport.ident}${Avionics.Utils.formatRunway(runway.designation)}`,
                             location: runway.beginningCoordinates,
@@ -339,8 +293,8 @@ export class EfisSymbols {
                             type: NdSymbolTypeFlags.Runway,
                         });
                     }
-                } else if (withinEditArea(airport.infos.coordinates)) {
-                    upsertSymbol({
+                } else if (this.withinEditArea(airport.infos.coordinates, mode, planCentre, ppos, editAhead, editBehind, editBeside, trueHeading)) {
+                    this.upsertSymbol(symbols, {
                         databaseId: airport.icao,
                         ident: airport.ident,
                         location: airport.infos.coordinates,
@@ -352,7 +306,7 @@ export class EfisSymbols {
             // Pseudo waypoints
 
             for (const pwp of this.guidanceController.currentPseudoWaypoints.filter((it) => it)) {
-                upsertSymbol({
+                this.upsertSymbol(symbols, {
                     databaseId: `W      ${pwp.ident}`,
                     ident: pwp.ident,
                     location: pwp.efisSymbolLla,
@@ -377,6 +331,51 @@ export class EfisSymbols {
                 this.blockUpdate = false;
             }, 200);
         }
+    }
+
+    private withinEditArea(ll: LatLongData, mode: Mode, planCentre: LatLongAlt, ppos: LatLongData,
+        editAhead: number, editBehind: number, editBeside: number, trueHeading: number): boolean {
+        const dist = Avionics.Utils.computeGreatCircleDistance(mode === Mode.PLAN ? planCentre : ppos, ll);
+        let bearing = Avionics.Utils.computeGreatCircleHeading(mode === Mode.PLAN ? planCentre : ppos, ll);
+        if (mode !== Mode.PLAN) {
+            bearing = Avionics.Utils.clampAngle(bearing - trueHeading);
+        }
+        bearing = bearing * Math.PI / 180;
+        const dx = dist * Math.sin(bearing);
+        const dy = dist * Math.cos(bearing);
+        return Math.abs(dx) < editBeside && dy > -editBehind && dy < editAhead;
+    }
+
+    // symbols most recently inserted always end up at the end of the array
+    // we reverse the array at the end to make sure symbols are drawn in the correct order
+    private upsertSymbol(symbols: NdSymbol[], symbol: NdSymbol): void {
+        if (DEBUG) {
+            console.time(`upsert symbol ${symbol.databaseId}`);
+        }
+        const symbolIdx = symbols.findIndex((s) => s.databaseId === symbol.databaseId);
+        if (symbolIdx !== -1) {
+            const oldSymbol = symbols.splice(symbolIdx, 1)[0];
+            symbol.constraints = symbol.constraints ?? oldSymbol.constraints;
+            symbol.direction = symbol.direction ?? oldSymbol.direction;
+            symbol.length = symbol.length ?? oldSymbol.length;
+            symbol.location = symbol.location ?? oldSymbol.location;
+            symbol.type |= oldSymbol.type;
+            if (oldSymbol.radials) {
+                if (symbol.radials) {
+                    symbol.radials.push(...oldSymbol.radials);
+                } else {
+                    symbol.radials = oldSymbol.radials;
+                }
+            }
+            if (oldSymbol.radii) {
+                if (symbol.radii) {
+                    symbol.radii.push(...oldSymbol.radii);
+                } else {
+                    symbol.radii = oldSymbol.radii;
+                }
+            }
+        }
+        symbols.push(symbol);
     }
 
     private vorDmeTypeFlag(type: VorType): NdSymbolTypeFlags {

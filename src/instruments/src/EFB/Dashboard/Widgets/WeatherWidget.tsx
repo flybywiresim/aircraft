@@ -1,5 +1,3 @@
-/* eslint-disable camelcase */
-
 import React, { useEffect, useState } from 'react';
 import metarParser from 'aewx-metar-parser';
 import { Metar } from '@flybywiresim/api-client';

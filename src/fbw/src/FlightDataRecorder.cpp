@@ -42,7 +42,8 @@ void FlightDataRecorder::update(AutopilotStateMachineModelClass* autopilotStateM
                                 AutopilotLawsModelClass* autopilotLaws,
                                 AutothrustModelClass* autoThrust,
                                 FlyByWireModelClass* flyByWire,
-                                const EngineData& engineData) {
+                                const EngineData& engineData,
+                                const AdditionalData& additionalData) {
   // check if enabled
   if (!isEnabled) {
     return;
@@ -57,6 +58,7 @@ void FlightDataRecorder::update(AutopilotStateMachineModelClass* autopilotStateM
   fileStream->write((char*)(&autoThrust->getExternalOutputs().out), sizeof(autoThrust->getExternalOutputs().out));
   fileStream->write((char*)(&flyByWire->getExternalOutputs().out), sizeof(flyByWire->getExternalOutputs().out));
   fileStream->write((char*)(&engineData), sizeof(engineData));
+  fileStream->write((char*)(&additionalData), sizeof(additionalData));
 }
 
 void FlightDataRecorder::terminate() {

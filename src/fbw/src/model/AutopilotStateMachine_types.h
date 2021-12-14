@@ -144,6 +144,13 @@ struct ap_raw_sm_input
   fm_requested_vertical_mode FM_requested_vertical_mode;
   real_T FM_H_c_ft;
   real_T FM_H_dot_c_fpm;
+  boolean_T FM_rnav_appr_selected;
+  boolean_T FM_final_des_can_engage;
+  boolean_T TCAS_mode_fail;
+  boolean_T TCAS_mode_available;
+  real_T TCAS_advisory_state;
+  real_T TCAS_advisory_target_min_fpm;
+  real_T TCAS_advisory_target_max_fpm;
 };
 
 #endif
@@ -344,13 +351,15 @@ typedef enum {
   vertical_mode_ALT_CST_CPT = 21,
   vertical_mode_CLB = 22,
   vertical_mode_DES = 23,
+  vertical_mode_FINAL_DES = 24,
   vertical_mode_GS_CPT = 30,
   vertical_mode_GS_TRACK = 31,
   vertical_mode_LAND = 32,
   vertical_mode_FLARE = 33,
   vertical_mode_ROLL_OUT = 34,
   vertical_mode_SRS = 40,
-  vertical_mode_SRS_GA = 41
+  vertical_mode_SRS_GA = 41,
+  vertical_mode_TCAS = 50
 } vertical_mode;
 
 #endif
@@ -385,6 +394,17 @@ typedef enum {
 
 #endif
 
+#ifndef DEFINED_TYPEDEF_FOR_tcas_sub_mode_
+#define DEFINED_TYPEDEF_FOR_tcas_sub_mode_
+
+typedef enum {
+  NONE = 0,
+  ALT,
+  ALT_CPT
+} tcas_sub_mode;
+
+#endif
+
 #ifndef DEFINED_TYPEDEF_FOR_ap_lateral_
 #define DEFINED_TYPEDEF_FOR_ap_lateral_
 
@@ -406,7 +426,9 @@ struct ap_vertical_armed
   boolean_T ALT_CST;
   boolean_T CLB;
   boolean_T DES;
+  boolean_T FINAL_DES;
   boolean_T GS;
+  boolean_T TCAS;
 };
 
 #endif
@@ -422,6 +444,7 @@ struct ap_vertical_condition
   boolean_T ALT_CST_CPT;
   boolean_T CLB;
   boolean_T DES;
+  boolean_T FINAL_DES;
   boolean_T GS_CPT;
   boolean_T GS_TRACK;
   boolean_T LAND;
@@ -431,6 +454,7 @@ struct ap_vertical_condition
   boolean_T SRS_GA;
   boolean_T THR_RED;
   boolean_T H_fcu_active;
+  boolean_T TCAS;
 };
 
 #endif
@@ -443,6 +467,8 @@ struct ap_vertical_output
   vertical_mode mode;
   athr_requested_mode mode_autothrust;
   boolean_T mode_reversion;
+  real_T mode_reversion_target_fpm;
+  boolean_T mode_reversion_TRK_FPA;
   vertical_law law;
   real_T H_c_ft;
   real_T H_dot_c_fpm;
@@ -454,6 +480,10 @@ struct ap_vertical_output
   boolean_T speed_protection_mode;
   boolean_T FD_disconnect;
   boolean_T FD_connect;
+  tcas_sub_mode TCAS_sub_mode;
+  boolean_T TCAS_message_disarm;
+  boolean_T TCAS_message_RA_inhibit;
+  boolean_T TCAS_message_TRK_FPA_deselection;
 };
 
 #endif
@@ -485,6 +515,7 @@ struct ap_raw_laws_input
   real_T vertical_mode_armed;
   real_T mode_reversion_lateral;
   real_T mode_reversion_vertical;
+  real_T mode_reversion_vertical_target_fpm;
   boolean_T mode_reversion_TRK_FPA;
   boolean_T mode_reversion_triple_click;
   boolean_T mode_reversion_fma;
@@ -500,6 +531,9 @@ struct ap_raw_laws_input
   boolean_T EXPED_mode_active;
   boolean_T FD_disconnect;
   boolean_T FD_connect;
+  boolean_T TCAS_message_disarm;
+  boolean_T TCAS_message_RA_inhibit;
+  boolean_T TCAS_message_TRK_FPA_deselection;
 };
 
 #endif

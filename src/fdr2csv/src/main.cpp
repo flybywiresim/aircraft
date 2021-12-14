@@ -1,6 +1,7 @@
 #include <filesystem>
 #include <iostream>
 
+#include "AdditionalData.h"
 #include "AutopilotLaws_types.h"
 #include "AutopilotStateMachine_types.h"
 #include "Autothrust_types.h"
@@ -14,7 +15,7 @@
 using namespace std;
 
 // IMPORTANT: this constant needs to increased with every interface change
-const uint64_t INTERFACE_VERSION = 11;
+const uint64_t INTERFACE_VERSION = 13;
 
 int main(int argc, char* argv[]) {
   // variables for command line parameters
@@ -128,6 +129,7 @@ int main(int argc, char* argv[]) {
   athr_out data_athr = {};
   fbw_output data_fbw = {};
   EngineData data_engine = {};
+  AdditionalData data_additional = {};
 
   // read one struct from the file
   while (!in->eof()) {
@@ -137,8 +139,9 @@ int main(int argc, char* argv[]) {
     in->read(reinterpret_cast<char*>(&data_athr), sizeof(athr_out));
     in->read(reinterpret_cast<char*>(&data_fbw), sizeof(fbw_output));
     in->read(reinterpret_cast<char*>(&data_engine), sizeof(EngineData));
+    in->read(reinterpret_cast<char*>(&data_additional), sizeof(AdditionalData));
     // write struct to csv file
-    FlightDataRecorderConverter::writeStruct(out, delimiter, data_ap_sm, data_ap_laws, data_athr, data_fbw, data_engine);
+    FlightDataRecorderConverter::writeStruct(out, delimiter, data_ap_sm, data_ap_laws, data_athr, data_fbw, data_engine, data_additional);
     // print progress
     if (++counter % 500 == 0) {
       cout << "Processed " << counter << " entries...";

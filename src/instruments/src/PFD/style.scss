@@ -18,9 +18,15 @@
 }
 
 .PulseCyanFill {
-  @include GenericPulsingFill($display-cyan);
-  animation-name: pulsing;
+  @include GenericPulsingFill($display-cyan, pulse-cyan-fill);
   animation-duration: 1s;
+  animation-iteration-count: infinite;
+}
+
+.PulseAmber9Seconds {
+  @include GenericPulsingFill($display-amber, pulse-amber-fill);
+  animation-duration: 1s;
+  animation-iteration-count: 9;
 }
 
 .BarAmber {

@@ -58,7 +58,15 @@ const Input = ({
         if (previousValue !== propsValue) {
             onChange(propsValue);
         }
-    }, [propsValue]);
+        if (focusActive) {
+            Coherent.trigger('FOCUS_INPUT_FIELD');
+        } else {
+            Coherent.trigger('UNFOCUS_INPUT_FIELD');
+        }
+        return () => {
+            Coherent.trigger('UNFOCUS_INPUT_FIELD');
+        };
+    }, [propsValue, focusActive]);
 
     const emptyValue = value === '' || (isNumber(value) && Number.isNaN(value));
 
