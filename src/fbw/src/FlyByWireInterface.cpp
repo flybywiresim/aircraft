@@ -236,6 +236,8 @@ void FlyByWireInterface::setupLocalVariables() {
   idSideStickPositionX = make_unique<LocalVariable>("A32NX_SIDESTICK_POSITION_X");
   idSideStickPositionY = make_unique<LocalVariable>("A32NX_SIDESTICK_POSITION_Y");
   idRudderPedalPosition = make_unique<LocalVariable>("A32NX_RUDDER_PEDAL_POSITION");
+  idRudderPedalAnimationPosition = make_unique<LocalVariable>("A32NX_RUDDER_PEDAL_ANIMATION_POSITION");
+  idAutopilotNosewheelDemand = make_unique<LocalVariable>("A32NX_AUTOPILOT_NOSEWHEEL_DEMAND");
 
   // register L variable for custom fly-by-wire interface
   idFmaLateralMode = make_unique<LocalVariable>("A32NX_FMA_LATERAL_MODE");
@@ -300,6 +302,7 @@ void FlyByWireInterface::setupLocalVariables() {
   idFlightGuidanceCrossTrackError = make_unique<LocalVariable>("A32NX_FG_CROSS_TRACK_ERROR");
   idFlightGuidanceTrackAngleError = make_unique<LocalVariable>("A32NX_FG_TRACK_ANGLE_ERROR");
   idFlightGuidancePhiCommand = make_unique<LocalVariable>("A32NX_FG_PHI_COMMAND");
+  idFlightGuidancePhiLimit = make_unique<LocalVariable>("A32NX_FG_PHI_LIMIT");
   idFlightGuidanceRequestedVerticalMode = make_unique<LocalVariable>("A32NX_FG_REQUESTED_VERTICAL_MODE");
   idFlightGuidanceTargetAltitude = make_unique<LocalVariable>("A32NX_FG_TARGET_ALTITUDE");
   idFlightGuidanceTargetVerticalSpeed = make_unique<LocalVariable>("A32NX_FG_TARGET_VERTICAL_SPEED");
@@ -493,6 +496,7 @@ bool FlyByWireInterface::readDataAndLocalVariables(double sampleTime) {
                                                          flightGuidanceCrossTrackError,
                                                          flightGuidanceTrackAngleError,
                                                          flightGuidancePhiPreCommand,
+                                                         idFlightGuidancePhiLimit->get(),
                                                          static_cast<unsigned long long>(idFlightGuidanceRequestedVerticalMode->get()),
                                                          idFlightGuidanceTargetAltitude->get(),
                                                          idFlightGuidanceTargetVerticalSpeed->get(),
@@ -755,6 +759,7 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
     autopilotStateMachineInput.in.data.flight_guidance_xtk_nmi = flightGuidanceCrossTrackError;
     autopilotStateMachineInput.in.data.flight_guidance_tae_deg = flightGuidanceTrackAngleError;
     autopilotStateMachineInput.in.data.flight_guidance_phi_deg = flightGuidancePhiPreCommand;
+    autopilotStateMachineInput.in.data.flight_guidance_phi_limit_deg = idFlightGuidancePhiLimit->get();
     autopilotStateMachineInput.in.data.flight_phase = idFmgcFlightPhase->get();
     autopilotStateMachineInput.in.data.V2_kn = idFmgcV2->get();
     autopilotStateMachineInput.in.data.VAPP_kn = idFmgcV_APP->get();
@@ -778,6 +783,8 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
     autopilotStateMachineInput.in.data.flaps_handle_index = flapsHandleIndexFlapConf->get();
     autopilotStateMachineInput.in.data.is_engine_operative_1 = simData.engine_combustion_1;
     autopilotStateMachineInput.in.data.is_engine_operative_2 = simData.engine_combustion_2;
+    autopilotStateMachineInput.in.data.altimeter_setting_left_mbar = simData.kohlsmanSetting_0;
+    autopilotStateMachineInput.in.data.altimeter_setting_right_mbar = simData.kohlsmanSetting_1;
 
     // input ----------------------------------------------------------------------------------------------------------
     autopilotStateMachineInput.in.input.FD_active = simData.ap_fd_1_active || simData.ap_fd_2_active;
@@ -1104,6 +1111,7 @@ bool FlyByWireInterface::updateAutopilotLaws(double sampleTime) {
     autopilotLawsInput.in.data.flight_guidance_xtk_nmi = flightGuidanceCrossTrackError;
     autopilotLawsInput.in.data.flight_guidance_tae_deg = flightGuidanceTrackAngleError;
     autopilotLawsInput.in.data.flight_guidance_phi_deg = flightGuidancePhiPreCommand;
+    autopilotLawsInput.in.data.flight_guidance_phi_limit_deg = idFlightGuidancePhiLimit->get();
     autopilotLawsInput.in.data.flight_phase = idFmgcFlightPhase->get();
     autopilotLawsInput.in.data.V2_kn = idFmgcV2->get();
     autopilotLawsInput.in.data.VAPP_kn = idFmgcV_APP->get();
@@ -1126,6 +1134,8 @@ bool FlyByWireInterface::updateAutopilotLaws(double sampleTime) {
     autopilotLawsInput.in.data.flaps_handle_index = flapsHandleIndexFlapConf->get();
     autopilotLawsInput.in.data.is_engine_operative_1 = simData.engine_combustion_1;
     autopilotLawsInput.in.data.is_engine_operative_2 = simData.engine_combustion_2;
+    autopilotLawsInput.in.data.altimeter_setting_left_mbar = simData.kohlsmanSetting_0;
+    autopilotLawsInput.in.data.altimeter_setting_right_mbar = simData.kohlsmanSetting_1;
 
     // input ----------------------------------------------------------------------------------------------------------
     autopilotLawsInput.in.input = autopilotStateMachineOutput;
@@ -1186,6 +1196,7 @@ bool FlyByWireInterface::updateAutopilotLaws(double sampleTime) {
     autopilotLawsOutput.flight_director.Beta_c_deg = clientDataLaws.autopilotBeta;
     autopilotLawsOutput.autopilot.Beta_c_deg = clientDataLaws.autopilotBeta;
     autopilotLawsOutput.Phi_loc_c = clientDataLaws.locPhiCommand;
+    autopilotLawsOutput.Nosewheel_c = clientDataLaws.nosewheelCommand;
   }
 
   // update flight director -------------------------------------------------------------------------------------------
@@ -1352,7 +1363,8 @@ bool FlyByWireInterface::updateFlyByWire(double sampleTime) {
   idSideStickPositionY->set(-1.0 * simInput.inputs[0]);
 
   // set rudder pedals position
-  idRudderPedalPosition->set(max(-100, min(100, (-100.0 * simInput.inputs[2]) + (100.0 * simData.zeta_trim_pos))));
+  idRudderPedalPosition->set(max(-100, min(100, (-100.0 * simInput.inputs[2]))));
+  idRudderPedalAnimationPosition->set(max(-100, min(100, (-100.0 * simInput.inputs[2]) + (100.0 * simData.zeta_trim_pos))));
 
   // set outputs
   if (!flyByWireOutput.sim.data_computed.tracking_mode_on) {
@@ -1364,6 +1376,13 @@ bool FlyByWireInterface::updateFlyByWire(double sampleTime) {
       cout << "WASM: Write data failed!" << endl;
       return false;
     }
+  }
+
+  // determine if nosewheel demand shall be set
+  if (!flyByWireOutput.sim.data_computed.tracking_mode_on) {
+    idAutopilotNosewheelDemand->set(autopilotLawsOutput.Nosewheel_c);
+  } else {
+    idAutopilotNosewheelDemand->set(0);
   }
 
   // set trim values
