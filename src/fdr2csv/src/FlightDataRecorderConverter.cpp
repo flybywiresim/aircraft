@@ -50,6 +50,8 @@ void FlightDataRecorderConverter::writeHeader(ofstream& out, const string& delim
   out << "ap_sm.data.nav_e_gs_error_deg" << delimiter;
   out << "ap_sm.data.flight_guidance_xtk_nmi" << delimiter;
   out << "ap_sm.data.flight_guidance_tae_deg" << delimiter;
+  out << "ap_sm.data.flight_guidance_phi_deg" << delimiter;
+  out << "ap_sm.data.flight_guidance_phi_limit_deg" << delimiter;
   out << "ap_sm.data.flight_phase" << delimiter;
   out << "ap_sm.data.V2_kn" << delimiter;
   out << "ap_sm.data.VAPP_kn" << delimiter;
@@ -178,6 +180,7 @@ void FlightDataRecorderConverter::writeHeader(ofstream& out, const string& delim
   out << "ap_sm.vertical.output.EXPED_mode_active" << delimiter;
   out << "ap_sm.vertical.output.FD_disconnect" << delimiter;
   out << "ap_sm.vertical.output.TCAS_sub_mode" << delimiter;
+  out << "ap_sm.vertical.output.TCAS_sub_mode_compatible" << delimiter;
   out << "ap_sm.vertical.output.TCAS_message_disarm" << delimiter;
   out << "ap_sm.vertical.output.TCAS_message_RA_inhibit" << delimiter;
   out << "ap_sm.vertical.output.TCAS_message_TRK_FPA_deselection" << delimiter;
@@ -219,6 +222,7 @@ void FlightDataRecorderConverter::writeHeader(ofstream& out, const string& delim
   out << "ap_sm.vertical_previous.output.EXPED_mode_active" << delimiter;
   out << "ap_sm.vertical_previous.output.FD_disconnect" << delimiter;
   out << "ap_sm.vertical_previous.output.TCAS_sub_mode" << delimiter;
+  out << "ap_sm.vertical_previous.output.TCAS_sub_mode_compatible" << delimiter;
   out << "ap_sm.vertical_previous.output.TCAS_message_disarm" << delimiter;
   out << "ap_sm.vertical_previous.output.TCAS_message_RA_inhibit" << delimiter;
   out << "ap_sm.vertical_previous.output.TCAS_message_TRK_FPA_deselection" << delimiter;
@@ -250,6 +254,8 @@ void FlightDataRecorderConverter::writeHeader(ofstream& out, const string& delim
   out << "ap_sm.output.TCAS_message_RA_inhibit)" << delimiter;
   out << "ap_sm.output.TCAS_message_TRK_FPA_deselection)" << delimiter;
   out << "ap_law.ap_on" << delimiter;
+  out << "ap_law.Phi_loc_c" << delimiter;
+  out << "ap_law.Nosewheel_c" << delimiter;
   out << "ap_law.flight_director.Theta_c_deg" << delimiter;
   out << "ap_law.flight_director.Phi_c_deg" << delimiter;
   out << "ap_law.flight_director.Beta_c_deg" << delimiter;
@@ -603,6 +609,8 @@ void FlightDataRecorderConverter::writeStruct(ofstream& out,
   out << ap_sm.data.nav_e_gs_error_deg << delimiter;
   out << ap_sm.data.flight_guidance_xtk_nmi << delimiter;
   out << ap_sm.data.flight_guidance_tae_deg << delimiter;
+  out << ap_sm.data.flight_guidance_phi_deg << delimiter;
+  out << ap_sm.data.flight_guidance_phi_limit_deg << delimiter;
   out << ap_sm.data.flight_phase << delimiter;
   out << ap_sm.data.V2_kn << delimiter;
   out << ap_sm.data.VAPP_kn << delimiter;
@@ -731,6 +739,7 @@ void FlightDataRecorderConverter::writeStruct(ofstream& out,
   out << static_cast<unsigned int>(ap_sm.vertical.output.EXPED_mode_active) << delimiter;
   out << static_cast<unsigned int>(ap_sm.vertical.output.FD_disconnect) << delimiter;
   out << static_cast<unsigned int>(ap_sm.vertical.output.TCAS_sub_mode) << delimiter;
+  out << static_cast<unsigned int>(ap_sm.vertical.output.TCAS_sub_mode_compatible) << delimiter;
   out << static_cast<unsigned int>(ap_sm.vertical.output.TCAS_message_disarm) << delimiter;
   out << static_cast<unsigned int>(ap_sm.vertical.output.TCAS_message_RA_inhibit) << delimiter;
   out << static_cast<unsigned int>(ap_sm.vertical.output.TCAS_message_TRK_FPA_deselection) << delimiter;
@@ -772,6 +781,7 @@ void FlightDataRecorderConverter::writeStruct(ofstream& out,
   out << static_cast<unsigned int>(ap_sm.vertical_previous.output.EXPED_mode_active) << delimiter;
   out << static_cast<unsigned int>(ap_sm.vertical_previous.output.FD_disconnect) << delimiter;
   out << static_cast<unsigned int>(ap_sm.vertical_previous.output.TCAS_sub_mode) << delimiter;
+  out << static_cast<unsigned int>(ap_sm.vertical_previous.output.TCAS_sub_mode_compatible) << delimiter;
   out << static_cast<unsigned int>(ap_sm.vertical_previous.output.TCAS_message_disarm) << delimiter;
   out << static_cast<unsigned int>(ap_sm.vertical_previous.output.TCAS_message_RA_inhibit) << delimiter;
   out << static_cast<unsigned int>(ap_sm.vertical_previous.output.TCAS_message_TRK_FPA_deselection) << delimiter;
@@ -803,6 +813,8 @@ void FlightDataRecorderConverter::writeStruct(ofstream& out,
   out << static_cast<unsigned int>(ap_sm.output.TCAS_message_RA_inhibit) << delimiter;
   out << static_cast<unsigned int>(ap_sm.output.TCAS_message_TRK_FPA_deselection) << delimiter;
   out << ap_law.ap_on << delimiter;
+  out << ap_law.Phi_loc_c << delimiter;
+  out << ap_law.Nosewheel_c << delimiter;
   out << ap_law.flight_director.Theta_c_deg << delimiter;
   out << ap_law.flight_director.Phi_c_deg << delimiter;
   out << ap_law.flight_director.Beta_c_deg << delimiter;

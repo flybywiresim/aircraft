@@ -2,7 +2,7 @@
 #include "AutopilotStateMachine_private.h"
 
 AutopilotStateMachineModelClass::Parameters_AutopilotStateMachine_T AutopilotStateMachineModelClass::
-  AutopilotStateMachine_P = {
+  AutopilotStateMachine_P{
 
   {
     {
@@ -74,6 +74,7 @@ AutopilotStateMachineModelClass::Parameters_AutopilotStateMachine_T AutopilotSta
       0.0,
       0.0,
       0.0,
+      0.0,
       false,
       0.0,
       0.0,
@@ -88,6 +89,7 @@ AutopilotStateMachineModelClass::Parameters_AutopilotStateMachine_T AutopilotSta
       0.0,
       0.0,
       0.0,
+      false,
       false,
       false
     },
@@ -248,6 +250,7 @@ AutopilotStateMachineModelClass::Parameters_AutopilotStateMachine_T AutopilotSta
         NONE,
         false,
         false,
+        false,
         false
       }
     },
@@ -301,6 +304,7 @@ AutopilotStateMachineModelClass::Parameters_AutopilotStateMachine_T AutopilotSta
         false,
         false,
         NONE,
+        false,
         false,
         false,
         false
@@ -368,6 +372,10 @@ AutopilotStateMachineModelClass::Parameters_AutopilotStateMachine_T AutopilotSta
 
   0.0,
 
+  0.0,
+
+  3.0,
+
   1.0,
 
   1.0,
@@ -402,35 +410,41 @@ AutopilotStateMachineModelClass::Parameters_AutopilotStateMachine_T AutopilotSta
 
   0.0,
 
-  0,
+  0.0,
 
-  0,
+  0.0,
 
-  0,
+  0.0,
 
-  0,
+  false,
 
-  0,
+  false,
 
-  0,
+  false,
 
-  0,
+  false,
 
-  0,
+  false,
 
-  0,
+  false,
 
-  0,
+  false,
 
-  0,
+  false,
 
-  0,
+  false,
 
-  0,
+  false,
 
-  0,
+  false,
 
-  0,
+  false,
+
+  false,
+
+  false,
+
+  false,
 
 
   {
@@ -482,6 +496,7 @@ AutopilotStateMachineModelClass::Parameters_AutopilotStateMachine_T AutopilotSta
       false,
       false,
       NONE,
+      false,
       false,
       false,
       false
@@ -563,6 +578,10 @@ AutopilotStateMachineModelClass::Parameters_AutopilotStateMachine_T AutopilotSta
   0.5,
 
   0.0,
+
+  1000.0,
+
+  -1.0,
 
   1000.0,
 
