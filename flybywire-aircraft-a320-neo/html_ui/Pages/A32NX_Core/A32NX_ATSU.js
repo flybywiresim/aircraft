@@ -149,7 +149,11 @@ const getSimBriefOfp = (mcdu, updateView, callback = () => {}) => {
             mcdu.simbrief["route"] = data.general.route;
             mcdu.simbrief["cruiseAltitude"] = data.general.initial_altitude;
             mcdu.simbrief["originIcao"] = data.origin.icao_code;
+            mcdu.simbrief["originTransAlt"] = parseInt(data.origin.trans_alt, 10);
+            mcdu.simbrief["originTransLevel"] = parseInt(data.origin.trans_level, 10);
             mcdu.simbrief["destinationIcao"] = data.destination.icao_code;
+            mcdu.simbrief["destinationTransAlt"] = parseInt(data.destination.trans_alt, 10);
+            mcdu.simbrief["destinationTransLevel"] = parseInt(data.destination.trans_level, 10);
             mcdu.simbrief["blockFuel"] = mcdu.simbrief["units"] === 'kgs' ? data.fuel.plan_ramp : lbsToKg(data.fuel.plan_ramp);
             mcdu.simbrief["payload"] = mcdu.simbrief["units"] === 'kgs' ? data.weights.payload : lbsToKg(data.weights.payload);
             mcdu.simbrief["estZfw"] = mcdu.simbrief["units"] === 'kgs' ? data.weights.est_zfw : lbsToKg(data.weights.est_zfw);
@@ -161,6 +165,8 @@ const getSimBriefOfp = (mcdu, updateView, callback = () => {}) => {
             mcdu.simbrief["icao_airline"] = typeof data.general.icao_airline === 'string' ? data.general.icao_airline : "";
             mcdu.simbrief["flight_number"] = data.general.flight_number;
             mcdu.simbrief["alternateIcao"] = data.alternate.icao_code;
+            mcdu.simbrief["alternateTransAlt"] = parseInt(data.alternate.trans_alt, 10);
+            mcdu.simbrief["alternateTransLevel"] = parseInt(data.alternate.trans_level, 10);
             mcdu.simbrief["avgTropopause"] = data.general.avg_tropopause;
             mcdu.simbrief["ete"] = data.times.est_time_enroute;
             mcdu.simbrief["blockTime"] = data.times.est_block;
@@ -192,7 +198,9 @@ const getSimBriefOfp = (mcdu, updateView, callback = () => {}) => {
 const insertUplink = (mcdu) => {
     const {
         originIcao,
+        originTransAlt,
         destinationIcao,
+        destinationTransLevel,
         cruiseAltitude,
         costIndex,
         alternateIcao,
@@ -213,6 +221,13 @@ const insertUplink = (mcdu) => {
         if (result) {
             CDUPerformancePage.UpdateThrRedAccFromOrigin(mcdu);
             CDUPerformancePage.UpdateEngOutAccFromOrigin(mcdu);
+
+            if (originTransAlt > 0) {
+                mcdu.flightPlanManager.setOriginTransitionAltitude(originTransAlt, true);
+            }
+            if (destinationTransLevel > 0) {
+                mcdu.flightPlanManager.setDestinationTransitionLevel(destinationTransLevel / 100, true);
+            }
 
             await mcdu.tryUpdateAltDestination(alternateIcao);
 
