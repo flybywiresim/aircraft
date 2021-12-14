@@ -1,7 +1,7 @@
 import { useSimVar } from '@instruments/common/simVars';
 
 export const approachChecklist = {
-    name: 'APPROACH',
+    name: 'APPR',
     items: [
         {
             item: 'BRIEFING',
@@ -15,12 +15,9 @@ export const approachChecklist = {
         },
         {
             item: 'SEAT BELTS',
-            result: 'ON',
+            result: 'ON', // simvar no value
             condition: () => {
-                const [v1] = useSimVar(
-                    'CABIN SEATBELTS ALERT SWITCH',
-                    'Number',
-                );
+                const [v1] = useSimVar('A:CABIN SEATBELTS ALERT SWITCH', 'Bool');
                 return v1 === 1;
             },
         },

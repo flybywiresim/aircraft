@@ -1,7 +1,7 @@
 import { useSimVar } from '@instruments/common/simVars';
 
 export const beforeTakeoffChecklist = {
-    name: 'BEFORE TAKEOFF',
+    name: 'BEFORE T/O',
     items: [
         {
             item: 'FLIGHT CONTROLS',
@@ -52,10 +52,7 @@ export const beforeTakeoffChecklist = {
             item: 'TCAS',
             result: 'TA OR TA/RA',
             condition: () => {
-                const [v1] = useSimVar(
-                    'L:A32NX_SWITCH_TCAS_POSITION',
-                    'Number',
-                );
+                const [v1] = useSimVar('L:A32NX_SWITCH_TCAS_POSITION', 'Number');
                 return v1 === 1 || v1 === 2;
             },
         },

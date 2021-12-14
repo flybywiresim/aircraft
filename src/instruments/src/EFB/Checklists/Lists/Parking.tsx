@@ -1,16 +1,13 @@
 import { useSimVar } from '@instruments/common/simVars';
 
 export const parkingChecklist = {
-    name: 'PARKING',
+    name: 'PARK',
     items: [
         {
             item: 'APU BLEED',
             result: 'ON',
             condition: () => {
-                const [v1] = useSimVar(
-                    'L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON',
-                    'Number',
-                );
+                const [v1] = useSimVar('L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON', 'Number');
                 return v1 === 1;
             },
         },
@@ -23,10 +20,7 @@ export const parkingChecklist = {
             item: 'SEAT BELTS',
             result: 'OFF',
             condition: () => {
-                const [v1] = useSimVar(
-                    'CABIN SEATBELTS ALERT SWITCH',
-                    'Number',
-                );
+                const [v1] = useSimVar('A:CABIN SEATBELTS ALERT SWITCH', 'Bool');
                 return v1 === 0;
             },
         },
@@ -39,12 +33,12 @@ export const parkingChecklist = {
             item: 'FUEL PUMPS',
             result: 'OFF',
             condition: () => {
-                const [v1] = useSimVar('FUELSYSTEM PUMP ACTIVE:1', 'Number');
-                const [v2] = useSimVar('FUELSYSTEM PUMP ACTIVE:2', 'Number');
-                const [v3] = useSimVar('FUELSYSTEM PUMP ACTIVE:3', 'Number');
-                const [v4] = useSimVar('FUELSYSTEM PUMP ACTIVE:4', 'Number');
-                const [v5] = useSimVar('FUELSYSTEM PUMP ACTIVE:5', 'Number');
-                const [v6] = useSimVar('FUELSYSTEM PUMP ACTIVE:6', 'Number');
+                const [v1] = useSimVar('L:XMLVAR_Momentary_PUSH_OVHD_FUEL_PUMP1_Pressed', 'Number');
+                const [v2] = useSimVar('L:XMLVAR_Momentary_PUSH_OVHD_FUEL_PUMP2_Pressed', 'Number');
+                const [v3] = useSimVar('L:XMLVAR_Momentary_PUSH_OVHD_FUEL_LTKPUMPS1_Pressed', 'Number');
+                const [v4] = useSimVar('L:XMLVAR_Momentary_PUSH_OVHD_FUEL_LTKPUMPS2_Pressed', 'Number');
+                const [v5] = useSimVar('L:XMLVAR_Momentary_PUSH_OVHD_FUEL_RTKPUMPS1_Pressed', 'Number');
+                const [v6] = useSimVar('L:XMLVAR_Momentary_PUSH_OVHD_FUEL_RTKPUMPS2_Pressed', 'Number');
                 return (
                     v1 === 0
                     && v2 === 0

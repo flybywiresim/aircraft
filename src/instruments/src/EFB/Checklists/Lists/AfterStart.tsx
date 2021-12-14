@@ -1,7 +1,7 @@
 import { useSimVar } from '@instruments/common/simVars';
 
 export const afterStartChecklist = {
-    name: 'AFTER START',
+    name: 'AFTER STRT',
     items: [
         {
             item: 'ANTI ICE',
@@ -20,7 +20,7 @@ export const afterStartChecklist = {
         },
         {
             item: 'RUDDER TRIM',
-            result: 'ZERO',
+            result: 'ZERO', // NOK - 0.01 too less
             condition: () => {
                 const [v1] = useSimVar('RUDDER TRIM PCT', 'Number');
                 return Math.abs(v1) < 0.01;
