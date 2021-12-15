@@ -13,7 +13,7 @@ use uom::si::{
 use crate::shared::{
     interpolation, low_pass_filter::LowPassFilter, pid::PidController, ControlValveCommand,
     EmergencyElectricalRatPushButton, EmergencyElectricalState, EmergencyGeneratorInterface,
-    GeneratorControlUnitInterface, LgciuWeightOnWheels,
+    HydraulicGeneratorControlUnit, LgciuWeightOnWheels,
 };
 
 use crate::simulation::{InitContext, VariableIdentifier};
@@ -23,25 +23,25 @@ use std::time::Duration;
 
 use super::linear_actuator::Actuator;
 
-pub struct GeneratorControlUnit {
+pub struct GeneratorControlUnit<const N: usize> {
     pid_controller: PidController,
     nominal_rpm: AngularVelocity,
 
     is_active: bool,
-    max_allowed_power_rpm_breakpoints: [f64; 9],
-    max_allowed_power_vs_rpm: [f64; 9],
+    max_allowed_power_rpm_breakpoints: [f64; N],
+    max_allowed_power_vs_rpm: [f64; N],
     current_speed: AngularVelocity,
 
     manual_generator_on_was_pressed: bool,
 }
-impl GeneratorControlUnit {
+impl<const N: usize> GeneratorControlUnit<N> {
     const NOMINAL_SPEED_MARGIN_RPM: f64 = 500.;
     const MIN_ACTIVATION_PRESSURE_PSI: f64 = 1000.;
 
     pub fn new(
         nominal_rpm: AngularVelocity,
-        max_allowed_power_rpm_breakpoints: [f64; 9],
-        max_allowed_power_vs_rpm: [f64; 9],
+        max_allowed_power_rpm_breakpoints: [f64; N],
+        max_allowed_power_vs_rpm: [f64; N],
     ) -> Self {
         Self {
             pid_controller: PidController::new(
@@ -133,7 +133,7 @@ impl GeneratorControlUnit {
             <= Self::NOMINAL_SPEED_MARGIN_RPM
     }
 }
-impl GeneratorControlUnitInterface for GeneratorControlUnit {
+impl<const N: usize> HydraulicGeneratorControlUnit for GeneratorControlUnit<N> {
     fn max_allowed_power(&self) -> Power {
         self.max_allowed_power()
     }
@@ -142,7 +142,7 @@ impl GeneratorControlUnitInterface for GeneratorControlUnit {
         self.current_speed
     }
 }
-impl ControlValveCommand for GeneratorControlUnit {
+impl<const N: usize> ControlValveCommand for GeneratorControlUnit<N> {
     fn valve_position_command(&self) -> Ratio {
         Ratio::new::<ratio>(self.pid_controller.output())
     }
@@ -334,7 +334,7 @@ pub struct TestGenerator {
 }
 impl TestGenerator {
     #[cfg(test)]
-    fn from_gcu(gcu: &impl GeneratorControlUnitInterface) -> Self {
+    fn from_gcu(gcu: &impl HydraulicGeneratorControlUnit) -> Self {
         let mut g = TestGenerator {
             speed: gcu.hydraulic_motor_speed(),
             generated_power: Power::new::<watt>(0.),
@@ -344,7 +344,7 @@ impl TestGenerator {
         g
     }
 
-    pub fn update(&mut self, gcu: &impl GeneratorControlUnitInterface) {
+    pub fn update(&mut self, gcu: &impl HydraulicGeneratorControlUnit) {
         self.speed = gcu.hydraulic_motor_speed();
         self.generated_power = gcu.max_allowed_power();
     }
@@ -448,7 +448,7 @@ mod tests {
     struct TestAircraft {
         updater_fixed_step: FixedStepLoop,
 
-        gcu: GeneratorControlUnit,
+        gcu: GeneratorControlUnit<9>,
         lgciu: TestLgciuInterface,
         rat_man_on: TestRatManOn,
         emergency_state: TestEmergencyState,
@@ -655,7 +655,7 @@ mod tests {
     }
 
     #[cfg(test)]
-    fn gen_control_unit() -> GeneratorControlUnit {
+    fn gen_control_unit() -> GeneratorControlUnit<9> {
         GeneratorControlUnit::new(
             AngularVelocity::new::<revolution_per_minute>(12000.),
             [

@@ -40,7 +40,7 @@ use systems::{
         interpolation, DelayedFalseLogicGate, DelayedPulseTrueLogicGate, DelayedTrueLogicGate,
         ElectricalBusType, ElectricalBuses, EmergencyElectricalRatPushButton,
         EmergencyElectricalState, EmergencyGeneratorInterface, EngineFirePushButtons,
-        GeneratorControlUnitInterface, LgciuInterface,
+        HydraulicGeneratorControlUnit, LgciuInterface,
     },
     simulation::{
         InitContext, Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -212,7 +212,7 @@ pub(super) struct A320Hydraulic {
     braking_circuit_norm: BrakeCircuit,
     braking_circuit_altn: BrakeCircuit,
     braking_force: A320BrakingForce,
-    gcu: GeneratorControlUnit,
+    gcu: GeneratorControlUnit<9>,
     emergency_gen: HydraulicGeneratorMotor,
     forward_cargo_door: CargoDoor,
     forward_cargo_door_controller: A320DoorController,
@@ -445,7 +445,7 @@ impl A320Hydraulic {
         self.blue_electric_pump_controller.has_pressure_low_fault()
     }
 
-    pub fn generator_control_unit(&self) -> &impl GeneratorControlUnitInterface {
+    pub fn generator_control_unit(&self) -> &impl HydraulicGeneratorControlUnit {
         &self.gcu
     }
 
@@ -2290,7 +2290,7 @@ mod tests {
         use systems::landing_gear::{LandingGear, LandingGearControlInterfaceUnit};
 
         use systems::shared::PotentialOrigin;
-        use systems::shared::{EmergencyElectricalState, GeneratorControlUnitInterface};
+        use systems::shared::{EmergencyElectricalState, HydraulicGeneratorControlUnit};
 
         use systems::simulation::test::{ReadByName, TestBed, WriteByName};
         use systems::simulation::{test::SimulationTestBed, Aircraft, InitContext};
@@ -2345,7 +2345,7 @@ mod tests {
 
             fn update(
                 &mut self,
-                gcu: &impl GeneratorControlUnitInterface,
+                gcu: &impl HydraulicGeneratorControlUnit,
                 context: &UpdateContext,
             ) {
                 self.airspeed = context.indicated_airspeed();

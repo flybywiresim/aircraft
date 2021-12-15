@@ -29,7 +29,7 @@ use systems::{
     shared::{
         ApuMaster, ApuStart, AuxiliaryPowerUnitElectrical, EmergencyElectricalRatPushButton,
         EmergencyElectricalState, EmergencyGeneratorInterface, EngineCorrectedN2,
-        EngineFirePushButtons, GeneratorControlUnitInterface, LandingGearRealPosition,
+        EngineFirePushButtons, HydraulicGeneratorControlUnit, LandingGearRealPosition,
     },
     simulation::{
         InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
@@ -71,7 +71,7 @@ impl A320Electrical {
         apu_overhead: &(impl ApuMaster + ApuStart),
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         engines: [&impl EngineCorrectedN2; 2],
-        gcu: &impl GeneratorControlUnitInterface,
+        gcu: &impl HydraulicGeneratorControlUnit,
         landing_gear: &impl LandingGearRealPosition,
     ) {
         self.alternating_current.update_main_power_sources(
@@ -2228,7 +2228,7 @@ mod a320_electrical_circuit_tests {
             }
         }
     }
-    impl GeneratorControlUnitInterface for TestHydraulicSystem {
+    impl HydraulicGeneratorControlUnit for TestHydraulicSystem {
         fn max_allowed_power(&self) -> Power {
             if self.emergency_motor_speed.get::<revolution_per_minute>() > 10000. {
                 Power::new::<watt>(5000.)

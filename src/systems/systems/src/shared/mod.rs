@@ -43,7 +43,7 @@ pub trait ApuStart {
     fn start_is_on(&self) -> bool;
 }
 
-pub trait GeneratorControlUnitInterface {
+pub trait HydraulicGeneratorControlUnit {
     fn max_allowed_power(&self) -> Power;
     fn hydraulic_motor_speed(&self) -> AngularVelocity;
 }
