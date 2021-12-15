@@ -1,7 +1,7 @@
 class CDUPilotsWaypoint {
     static ShowPage(mcdu, index = 0, confirmDeleteAll = false) {
         if (mcdu.dataManager.numberOfStoredWaypoints() < 1) {
-            return CDUNewWaypoint.ShowPage(mcdu);
+            return CDUNewWaypoint.ShowPage(mcdu, () => CDUDataIndexPage.ShowPage2(mcdu));
         }
         if (mcdu.dataManager.storedWaypoints[index] === undefined) {
             index = mcdu.dataManager.prevStoredWaypointIndex(index);
@@ -58,7 +58,7 @@ class CDUPilotsWaypoint {
                 if (!deleted) {
                     mcdu.addNewMessage(NXSystemMessages.fplnElementRetained);
                 } else if (mcdu.dataManager.numberOfStoredWaypoints() < 1) {
-                    CDUNewWaypoint.ShowPage(mcdu);
+                    CDUNewWaypoint.ShowPage(mcdu, () => CDUDataIndexPage.ShowPage2(mcdu));
                 } else {
                     CDUPilotsWaypoint.ShowPage(mcdu, mcdu.dataManager.nextStoredWaypointIndex());
                 }
