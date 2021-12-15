@@ -11,7 +11,8 @@
     "build:fbw": "cd src/fbw && ./build.sh",
     "build:fadec": "cd src/fadec && ./build.sh",
     "build:failures": "rollup -c src/failures/rollup.config.js",
-    "build:fmgc": "rollup -c src/fmgc/rollup.config.js"
+    "build:fmgc": "rollup -c src/fmgc/rollup.config.js",
+    "build:ace": "node --max-old-space-size=8192 node_modules/rollup/dist/bin/rollup -wc .\\src\\instruments\\buildSrc\\aceBuild.mjs"
   },
   "lint-staged": {
     "*.{js,mjs,jsx}": "eslint --cache --fix",
