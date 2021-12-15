@@ -153,8 +153,6 @@ pub struct HydraulicGeneratorMotor {
 
     speed: AngularVelocity,
 
-    generated_torque: Torque,
-    total_torque: Torque,
     displacement: Volume,
     virtual_displacement: Volume,
     current_flow: VolumeRate,
@@ -176,8 +174,6 @@ impl HydraulicGeneratorMotor {
 
             speed: AngularVelocity::new::<radian_per_second>(0.),
 
-            generated_torque: Torque::new::<newton_meter>(0.),
-            total_torque: Torque::new::<newton_meter>(0.),
             displacement,
             virtual_displacement: Volume::new::<gallon>(0.),
             current_flow: VolumeRate::new::<gallon_per_second>(0.),
@@ -201,9 +197,8 @@ impl HydraulicGeneratorMotor {
         emergency_generator: &impl EmergencyGeneratorPower,
     ) {
         self.update_valve_position(context, gcu);
-        self.update_resistant_torque(emergency_generator);
-        self.update_generated_torque(pressure);
-        self.update_speed(context);
+        self.update_virtual_displacement();
+        self.update_speed(context, emergency_generator, pressure);
         self.update_flow(context);
     }
 
@@ -216,45 +211,54 @@ impl HydraulicGeneratorMotor {
             .update(context, gcu_interface.valve_position_command());
     }
 
-    fn update_resistant_torque(&mut self, emergency_generator: &impl EmergencyGeneratorPower) {
-        let resistant_torque = if self.speed().get::<radian_per_second>() < 1.
+    fn resistant_torque(&mut self, emergency_generator: &impl EmergencyGeneratorPower) -> Torque {
+        if self.speed().get::<radian_per_second>() < 1.
             || self.virtual_displacement < Volume::new::<cubic_inch>(0.001)
         {
-            Torque::new::<newton_meter>(Self::STATIC_RESISTANT_TORQUE_WHEN_UNPOWERED_NM)
+            -Torque::new::<newton_meter>(Self::STATIC_RESISTANT_TORQUE_WHEN_UNPOWERED_NM)
         } else {
             let theoretical_torque = Torque::new::<newton_meter>(
                 emergency_generator.generated_power().get::<watt>()
                     / self.speed().get::<radian_per_second>(),
             );
-            theoretical_torque + (1. - Self::EFFICIENCY) * theoretical_torque
-        };
-
-        self.total_torque -= resistant_torque;
+            -(theoretical_torque + (1. - Self::EFFICIENCY) * theoretical_torque)
+        }
     }
 
-    fn update_generated_torque(&mut self, pressure: Pressure) {
-        self.virtual_displacement = self.virtual_displacement_after_valve_inlet();
+    fn friction_torque(&self) -> Torque {
+        Torque::new::<newton_meter>(
+            Self::DYNAMIC_FRICTION_TORQUE_CONSTANT * -self.speed.get::<revolution_per_minute>(),
+        )
+    }
 
-        self.generated_torque = Torque::new::<pound_force_inch>(
+    fn generated_torque(&self, pressure: Pressure) -> Torque {
+        Torque::new::<pound_force_inch>(
             pressure.get::<psi>() * self.virtual_displacement.get::<cubic_inch>()
                 / (2. * std::f64::consts::PI),
-        );
+        )
+    }
+
+    fn update_virtual_displacement(&mut self) {
+        self.virtual_displacement = self.virtual_displacement_after_valve_inlet();
     }
 
     fn virtual_displacement_after_valve_inlet(&mut self) -> Volume {
         self.displacement * self.valve.position()
     }
 
-    fn update_speed(&mut self, context: &UpdateContext) {
-        let friction_torque = Torque::new::<newton_meter>(
-            Self::DYNAMIC_FRICTION_TORQUE_CONSTANT * -self.speed.get::<revolution_per_minute>(),
-        );
-
-        self.total_torque += friction_torque;
-        self.total_torque += self.generated_torque;
+    fn update_speed(
+        &mut self,
+        context: &UpdateContext,
+        emergency_generator: &impl EmergencyGeneratorPower,
+        pressure: Pressure,
+    ) {
+        let mut total_torque: Torque;
+        total_torque = self.resistant_torque(emergency_generator);
+        total_torque += self.friction_torque();
+        total_torque += self.generated_torque(pressure);
 
         let acceleration = AngularAcceleration::new::<radian_per_second_squared>(
-            self.total_torque.get::<newton_meter>() / Self::MOTOR_INERTIA,
+            total_torque.get::<newton_meter>() / Self::MOTOR_INERTIA,
         );
         self.speed += AngularVelocity::new::<radian_per_second>(
             acceleration.get::<radian_per_second_squared>() * context.delta_as_secs_f64(),
@@ -262,8 +266,6 @@ impl HydraulicGeneratorMotor {
         self.speed = self
             .speed
             .max(AngularVelocity::new::<revolution_per_minute>(0.));
-
-        self.total_torque = Torque::new::<newton_meter>(0.);
     }
 
     fn update_flow(&mut self, context: &UpdateContext) {
