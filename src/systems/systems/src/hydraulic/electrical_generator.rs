@@ -12,7 +12,7 @@ use uom::si::{
 
 use crate::shared::{
     interpolation, low_pass_filter::LowPassFilter, pid::PidController, ControlValveCommand,
-    EmergencyElectricalRatPushButton, EmergencyElectricalState, EmergencyGeneratorInterface,
+    EmergencyElectricalRatPushButton, EmergencyElectricalState, EmergencyGeneratorPower,
     HydraulicGeneratorControlUnit, LgciuWeightOnWheels,
 };
 
@@ -22,6 +22,10 @@ use crate::simulation::{SimulationElement, SimulatorWriter, UpdateContext, Write
 use std::time::Duration;
 
 use super::linear_actuator::Actuator;
+
+pub trait AngularSpeedSensor {
+    fn speed(&self) -> AngularVelocity;
+}
 
 pub struct GeneratorControlUnit<const N: usize> {
     pid_controller: PidController,
@@ -81,13 +85,13 @@ impl<const N: usize> GeneratorControlUnit<N> {
     pub fn update(
         &mut self,
         context: &UpdateContext,
-        generator_speed_feedback: AngularVelocity,
+        generator_feedback: &impl AngularSpeedSensor,
         pressure_feedback: Pressure,
         elec_emergency_state: &impl EmergencyElectricalState,
         rat_and_emer_gen_man_on: &impl EmergencyElectricalRatPushButton,
         lgciu: &impl LgciuWeightOnWheels,
     ) {
-        self.current_speed = generator_speed_feedback;
+        self.current_speed = generator_feedback.speed();
 
         self.update_active_state(
             elec_emergency_state,
@@ -194,7 +198,7 @@ impl HydraulicGeneratorMotor {
         context: &UpdateContext,
         pressure: Pressure,
         gcu: &impl ControlValveCommand,
-        emergency_generator: &impl EmergencyGeneratorInterface,
+        emergency_generator: &impl EmergencyGeneratorPower,
     ) {
         self.update_valve_position(context, gcu);
         self.update_resistant_torque(emergency_generator);
@@ -212,7 +216,7 @@ impl HydraulicGeneratorMotor {
             .update(context, gcu_interface.valve_position_command());
     }
 
-    fn update_resistant_torque(&mut self, emergency_generator: &impl EmergencyGeneratorInterface) {
+    fn update_resistant_torque(&mut self, emergency_generator: &impl EmergencyGeneratorPower) {
         let resistant_torque = if self.speed().get::<radian_per_second>() < 1.
             || self.virtual_displacement < Volume::new::<cubic_inch>(0.001)
         {
@@ -297,6 +301,11 @@ impl SimulationElement for HydraulicGeneratorMotor {
         writer.write(&self.generator_rpm_id, self.speed());
     }
 }
+impl AngularSpeedSensor for HydraulicGeneratorMotor {
+    fn speed(&self) -> AngularVelocity {
+        self.speed()
+    }
+}
 
 struct MeteringValve {
     position: LowPassFilter<Ratio>,
@@ -341,7 +350,7 @@ impl TestGenerator {
         self.generated_power = gcu.max_allowed_power();
     }
 }
-impl EmergencyGeneratorInterface for TestGenerator {
+impl EmergencyGeneratorPower for TestGenerator {
     fn generated_power(&self) -> Power {
         self.generated_power
     }
@@ -393,10 +402,10 @@ mod tests {
         }
     }
 
-    struct TestLgciuInterface {
+    struct TestLgciuSensors {
         main_gear_compressed: bool,
     }
-    impl TestLgciuInterface {
+    impl TestLgciuSensors {
         fn compressed() -> Self {
             Self {
                 main_gear_compressed: true,
@@ -407,7 +416,7 @@ mod tests {
             self.main_gear_compressed = is_compressed;
         }
     }
-    impl LgciuWeightOnWheels for TestLgciuInterface {
+    impl LgciuWeightOnWheels for TestLgciuSensors {
         fn right_gear_compressed(&self, _: bool) -> bool {
             self.main_gear_compressed
         }
@@ -441,7 +450,7 @@ mod tests {
         updater_fixed_step: FixedStepLoop,
 
         gcu: GeneratorControlUnit<9>,
-        lgciu: TestLgciuInterface,
+        lgciu: TestLgciuSensors,
         rat_man_on: TestRatManOn,
         emergency_state: TestEmergencyState,
         current_pressure: Pressure,
@@ -453,7 +462,7 @@ mod tests {
             Self {
                 updater_fixed_step: FixedStepLoop::new(Duration::from_millis(33)),
                 gcu: gen_control_unit(),
-                lgciu: TestLgciuInterface::compressed(),
+                lgciu: TestLgciuSensors::compressed(),
                 rat_man_on: TestRatManOn::not_pressed(),
                 emergency_state: TestEmergencyState::not_in_emergency(),
 
@@ -489,7 +498,7 @@ mod tests {
             for cur_time_step in &mut self.updater_fixed_step {
                 self.gcu.update(
                     &context.with_delta(cur_time_step),
-                    self.emergency_gen.speed(),
+                    &self.emergency_gen,
                     self.current_pressure,
                     &self.emergency_state,
                     &self.rat_man_on,

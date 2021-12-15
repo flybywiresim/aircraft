@@ -52,7 +52,7 @@ pub trait ControlValveCommand {
     fn valve_position_command(&self) -> Ratio;
 }
 
-pub trait EmergencyGeneratorInterface {
+pub trait EmergencyGeneratorPower {
     fn generated_power(&self) -> Power;
 }
 
@@ -79,7 +79,7 @@ pub trait LgciuGearExtension {
     fn all_up_and_locked(&self) -> bool;
 }
 
-pub trait LgciuInterface: LgciuWeightOnWheels + LgciuGearExtension {}
+pub trait LgciuSensors: LgciuWeightOnWheels + LgciuGearExtension {}
 pub trait EngineCorrectedN1 {
     fn corrected_n1(&self) -> Ratio;
 }

@@ -6,7 +6,7 @@ use super::{
     ProvidePotential,
 };
 use crate::shared::{
-    EmergencyGeneratorInterface, HydraulicGeneratorControlUnit, PowerConsumptionReport,
+    EmergencyGeneratorPower, HydraulicGeneratorControlUnit, PowerConsumptionReport,
 };
 use uom::si::{
     angular_velocity::revolution_per_minute, electric_potential::volt, f64::*, frequency::hertz,
@@ -90,7 +90,7 @@ impl ElectricitySource for EmergencyGenerator {
         }
     }
 }
-impl EmergencyGeneratorInterface for EmergencyGenerator {
+impl EmergencyGeneratorPower for EmergencyGenerator {
     fn generated_power(&self) -> Power {
         self.generated_power
     }

@@ -39,8 +39,8 @@ use systems::{
     shared::{
         interpolation, DelayedFalseLogicGate, DelayedPulseTrueLogicGate, DelayedTrueLogicGate,
         ElectricalBusType, ElectricalBuses, EmergencyElectricalRatPushButton,
-        EmergencyElectricalState, EmergencyGeneratorInterface, EngineFirePushButtons,
-        HydraulicGeneratorControlUnit, LgciuInterface,
+        EmergencyElectricalState, EmergencyGeneratorPower, EngineFirePushButtons,
+        HydraulicGeneratorControlUnit, LgciuSensors,
     },
     simulation::{
         InitContext, Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -384,11 +384,11 @@ impl A320Hydraulic {
         overhead_panel: &A320HydraulicOverheadPanel,
         autobrake_panel: &AutobrakePanel,
         engine_fire_push_buttons: &U,
-        lgciu1: &impl LgciuInterface,
-        lgciu2: &impl LgciuInterface,
+        lgciu1: &impl LgciuSensors,
+        lgciu2: &impl LgciuSensors,
         rat_and_emer_gen_man_on: &impl EmergencyElectricalRatPushButton,
         emergency_elec_state: &impl EmergencyElectricalState,
-        emergency_generator: &impl EmergencyGeneratorInterface,
+        emergency_generator: &impl EmergencyGeneratorPower,
     ) {
         self.core_hydraulic_updater.update(context);
         self.physics_updater.update(context);
@@ -479,10 +479,10 @@ impl A320Hydraulic {
     fn update_fast_physics(
         &mut self,
         context: &UpdateContext,
-        emergency_generator: &impl EmergencyGeneratorInterface,
+        emergency_generator: &impl EmergencyGeneratorPower,
         rat_and_emer_gen_man_on: &impl EmergencyElectricalRatPushButton,
         emergency_elec_state: &impl EmergencyElectricalState,
-        lgciu1: &impl LgciuInterface,
+        lgciu1: &impl LgciuSensors,
     ) {
         self.forward_cargo_door.update(
             context,
@@ -504,7 +504,7 @@ impl A320Hydraulic {
 
         self.gcu.update(
             context,
-            self.emergency_gen.speed(),
+            &self.emergency_gen,
             self.blue_circuit.system_pressure(),
             emergency_elec_state,
             rat_and_emer_gen_man_on,
@@ -526,8 +526,8 @@ impl A320Hydraulic {
         autobrake_panel: &AutobrakePanel,
         rat_and_emer_gen_man_on: &impl EmergencyElectricalRatPushButton,
         emergency_elec_state: &impl EmergencyElectricalState,
-        lgciu1: &impl LgciuInterface,
-        lgciu2: &impl LgciuInterface,
+        lgciu1: &impl LgciuSensors,
+        lgciu2: &impl LgciuSensors,
     ) {
         // Process brake logic (which circuit brakes) and send brake demands (how much)
         self.brake_computer.update_brake_demands(
@@ -613,8 +613,8 @@ impl A320Hydraulic {
         engine2: &T,
         overhead_panel: &A320HydraulicOverheadPanel,
         engine_fire_push_buttons: &U,
-        lgciu1: &impl LgciuInterface,
-        lgciu2: &impl LgciuInterface,
+        lgciu1: &impl LgciuSensors,
+        lgciu2: &impl LgciuSensors,
     ) {
         // First update what is currently consumed and given back by each actuator
         // Todo: might have to split the actuator volumes by expected number of loops
@@ -922,7 +922,7 @@ impl A320EngineDrivenPumpController {
         &mut self,
         engine: &impl Engine,
         section: &impl SectionPressure,
-        lgciu: &impl LgciuInterface,
+        lgciu: &impl LgciuSensors,
     ) {
         // Engine off state uses oil pressure threshold (treshold is 18psi)
         let is_engine_low_oil_pressure = engine.oil_pressure().get::<psi>()
@@ -943,7 +943,7 @@ impl A320EngineDrivenPumpController {
         engine_fire_push_buttons: &T,
         engine: &impl Engine,
         section: &impl SectionPressure,
-        lgciu: &impl LgciuInterface,
+        lgciu: &impl LgciuSensors,
     ) {
         let mut should_pressurise_if_powered = false;
         if overhead_panel.edp_push_button_is_auto(self.engine_number)
@@ -1017,8 +1017,8 @@ impl A320BlueElectricPumpController {
         section: &impl SectionPressure,
         engine1: &impl Engine,
         engine2: &impl Engine,
-        lgciu1: &impl LgciuInterface,
-        lgciu2: &impl LgciuInterface,
+        lgciu1: &impl LgciuSensors,
+        lgciu2: &impl LgciuSensors,
     ) {
         let mut should_pressurise_if_powered = false;
         if overhead_panel.blue_epump_push_button.is_auto() {
@@ -1046,8 +1046,8 @@ impl A320BlueElectricPumpController {
         section: &impl SectionPressure,
         engine1: &impl Engine,
         engine2: &impl Engine,
-        lgciu1: &impl LgciuInterface,
-        lgciu2: &impl LgciuInterface,
+        lgciu1: &impl LgciuSensors,
+        lgciu2: &impl LgciuSensors,
     ) {
         // Low engine oil pressure inhibits fault under 18psi level
         let is_engine_low_oil_pressure = engine1.oil_pressure().get::<psi>()
@@ -1228,7 +1228,7 @@ impl A320PowerTransferUnitController {
         forward_cargo_door_controller: &A320DoorController,
         aft_cargo_door_controller: &A320DoorController,
         pushback_tug: &PushbackTug,
-        lgciu2: &impl LgciuInterface,
+        lgciu2: &impl LgciuSensors,
     ) {
         self.should_inhibit_ptu_after_cargo_door_operation.update(
             context,
@@ -1439,8 +1439,8 @@ impl A320HydraulicBrakeComputerUnit {
         context: &UpdateContext,
         green_circuit: &HydraulicCircuit,
         alternate_circuit: &BrakeCircuit,
-        lgciu1: &impl LgciuInterface,
-        lgciu2: &impl LgciuInterface,
+        lgciu1: &impl LgciuSensors,
+        lgciu2: &impl LgciuSensors,
         autobrake_panel: &AutobrakePanel,
     ) {
         self.update_normal_braking_availability(&green_circuit.system_pressure());
@@ -2111,8 +2111,8 @@ impl A320AutobrakeController {
         allow_arming: bool,
         pedal_input_left: Ratio,
         pedal_input_right: Ratio,
-        lgciu1: &impl LgciuInterface,
-        lgciu2: &impl LgciuInterface,
+        lgciu1: &impl LgciuSensors,
+        lgciu2: &impl LgciuSensors,
     ) {
         let in_flight_lgciu1 =
             !lgciu1.right_gear_compressed(false) && !lgciu1.left_gear_compressed(false);
@@ -2136,8 +2136,8 @@ impl A320AutobrakeController {
         allow_arming: bool,
         pedal_input_left: Ratio,
         pedal_input_right: Ratio,
-        lgciu1: &impl LgciuInterface,
-        lgciu2: &impl LgciuInterface,
+        lgciu1: &impl LgciuSensors,
+        lgciu2: &impl LgciuSensors,
     ) {
         self.update_input_conditions(
             context,
@@ -2357,7 +2357,7 @@ mod tests {
                 self.all_ac_lost && self.airspeed >= Velocity::new::<knot>(100.)
             }
         }
-        impl EmergencyGeneratorInterface for A320TestElectrical {
+        impl EmergencyGeneratorPower for A320TestElectrical {
             fn generated_power(&self) -> Power {
                 self.emergency_generator.generated_power()
             }

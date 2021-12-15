@@ -28,7 +28,7 @@ use systems::{
     },
     shared::{
         ApuMaster, ApuStart, AuxiliaryPowerUnitElectrical, EmergencyElectricalRatPushButton,
-        EmergencyElectricalState, EmergencyGeneratorInterface, EngineCorrectedN2,
+        EmergencyElectricalState, EmergencyGeneratorPower, EngineCorrectedN2,
         EngineFirePushButtons, HydraulicGeneratorControlUnit, LandingGearRealPosition,
     },
     simulation::{
@@ -204,7 +204,7 @@ impl EmergencyElectricalState for A320Electrical {
         self.in_emergency_elec()
     }
 }
-impl EmergencyGeneratorInterface for A320Electrical {
+impl EmergencyGeneratorPower for A320Electrical {
     fn generated_power(&self) -> Power {
         self.emergency_gen.generated_power()
     }
