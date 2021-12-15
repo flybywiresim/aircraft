@@ -20,11 +20,11 @@ pub struct EmergencyGenerator {
     output_frequency: Frequency,
     output_potential: ElectricPotential,
     generated_power: Power,
+    demand: Power,
 }
 impl EmergencyGenerator {
     const MIN_RPM_TO_SUPPLY_POWER: f64 = 10000.;
     const MIN_POWER_TO_DECLARE_SUPPLYING_WATT: f64 = 100.;
-    const DEFAULT_POWER_DEMAND_WATT: f64 = 3500.;
 
     pub fn new(context: &mut InitContext) -> EmergencyGenerator {
         EmergencyGenerator {
@@ -34,6 +34,7 @@ impl EmergencyGenerator {
             output_frequency: Frequency::new::<hertz>(0.),
             output_potential: ElectricPotential::new::<volt>(0.),
             generated_power: Power::new::<watt>(0.),
+            demand: Power::new::<watt>(0.),
         }
     }
 
@@ -56,14 +57,13 @@ impl EmergencyGenerator {
     }
 
     fn update_generated_power(&mut self, gcu: &impl HydraulicGeneratorControlUnit) {
-        if gcu.hydraulic_motor_speed().get::<revolution_per_minute>()
+        self.generated_power = if gcu.hydraulic_motor_speed().get::<revolution_per_minute>()
             > Self::MIN_RPM_TO_SUPPLY_POWER
         {
-            self.generated_power =
-                Power::new::<watt>(Self::DEFAULT_POWER_DEMAND_WATT).min(gcu.max_allowed_power());
+            self.demand.min(gcu.max_allowed_power())
         } else {
-            self.generated_power = Power::new::<watt>(0.)
-        }
+            Power::new::<watt>(0.)
+        };
     }
 }
 provide_frequency!(EmergencyGenerator, (390.0..=410.0));
@@ -99,8 +99,10 @@ impl SimulationElement for EmergencyGenerator {
     fn process_power_consumption_report<T: PowerConsumptionReport>(
         &mut self,
         _: &UpdateContext,
-        _report: &T,
+        report: &T,
     ) {
+        self.demand = report.total_consumption_of(PotentialOrigin::EmergencyGenerator);
+
         self.output_frequency = if self.should_provide_output() {
             Frequency::new::<hertz>(400.)
         } else {
