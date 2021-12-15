@@ -66,24 +66,14 @@ const ApuGen = ({ x, y } : ComponentPositionProps) => {
     const [apuGenFreq] = useSimVar('L:A32NX_ELEC_APU_GEN_1_FREQUENCY', 'Hertz', 500);
     const [apuGenFreqNormalRange] = useSimVar('L:A32NX_ELEC_APU_GEN_1_FREQUENCY_NORMAL', 'Bool', 750);
 
-    enum apuGenState { STANDBY, OFF, ON }
-    const [currentApuGenState, setCurrentApuGenState] = useState(apuGenState.STANDBY);
-
     const [apuMasterPbOn] = useSimVar('L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON', 'Bool', 500);
     const [apuGenPbOn] = useSimVar('A:APU GENERATOR SWITCH', 'Boolean', 750);
     const [apuAvail] = useSimVar('L:A32NX_OVHD_APU_START_PB_IS_AVAILABLE', 'Bool', 1000);
 
-    useEffect(() => {
-        // FBW-31-06
-        setCurrentApuGenState((old) => {
-            if (!apuMasterPbOn && !apuAvail) {
-                return apuGenState.STANDBY;
-            } if (old !== apuGenState.STANDBY && !apuGenPbOn) {
-                return apuGenState.OFF;
-            }
-            return apuGenState.ON;
-        });
-    }, [apuMasterPbOn, apuAvail, apuGenPbOn]);
+    // FBW-31-06
+    const inModeStandby = !apuMasterPbOn && !apuAvail;
+    const inModeOff = !inModeStandby && !apuGenPbOn;
+    const inModeOn = !inModeStandby && !inModeOff;
 
     return (
         <>
@@ -94,23 +84,23 @@ const ApuGen = ({ x, y } : ComponentPositionProps) => {
                             <polygon points="0,20 8,5 16,20" className="Circle" />
                         </SvgGroup>
                     )}
-                {currentApuGenState !== apuGenState.STANDBY
+                {!inModeStandby
                 && <rect className="Box" width={100} height={111} />}
 
                 <text
                     x={50}
                     y={20}
                     className={`Center FontNormal
-                    ${(currentApuGenState !== apuGenState.STANDBY
-                         && (!(apuGenPotentialNormalRange && apuGenLoadNormalRange && apuGenFreqNormalRange)) || currentApuGenState === apuGenState.OFF) && ' Amber'}`}
+                    ${(!inModeStandby && (!(apuGenPotentialNormalRange && apuGenLoadNormalRange && apuGenFreqNormalRange))
+                        || inModeOff) && ' Amber'}`}
                 >
                     APU GEN
                 </text>
 
-                {currentApuGenState === apuGenState.OFF
+                {inModeOff
                     && <text x={50} y={70} className="Center FontNormal">OFF</text>}
 
-                {currentApuGenState === apuGenState.ON
+                {inModeOn
                     && (
                         <>
                             <SvgGroup x={60} y={55}>
