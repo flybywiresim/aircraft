@@ -444,29 +444,18 @@
         </Component>
 
         <Component ID="GND_EQUIPMENT">
+
             <!-- GND CHOCKS -->
             <UseTemplate Name="FBW_Gnd_Equipment">
-                <NODE_ID>CHOCK_NOSEGEAR_FRONT</NODE_ID>
+                <NODE_ID>CHOCKS_NOSE_GEAR</NODE_ID>
                 <GND_ENABLE_OVRD>(L:A32NX_MODEL_WHEELCHOCKS_ENABLED)</GND_ENABLE_OVRD>
             </UseTemplate>
             <UseTemplate Name="FBW_Gnd_Equipment">
-                <NODE_ID>CHOCK_NOSEGEAR_BACK</NODE_ID>
+                <NODE_ID>CHOCKS_MAIN_GEAR_RIGHT</NODE_ID>
                 <GND_ENABLE_OVRD>(L:A32NX_MODEL_WHEELCHOCKS_ENABLED)</GND_ENABLE_OVRD>
             </UseTemplate>
             <UseTemplate Name="FBW_Gnd_Equipment">
-                <NODE_ID>CHOCK_MAINGEAR_RIGHT_FRONT</NODE_ID>
-                <GND_ENABLE_OVRD>(L:A32NX_MODEL_WHEELCHOCKS_ENABLED)</GND_ENABLE_OVRD>
-            </UseTemplate>
-            <UseTemplate Name="FBW_Gnd_Equipment">
-                <NODE_ID>CHOCK_MAINGEAR_RIGHT_BACK</NODE_ID>
-                <GND_ENABLE_OVRD>(L:A32NX_MODEL_WHEELCHOCKS_ENABLED)</GND_ENABLE_OVRD>
-            </UseTemplate>
-            <UseTemplate Name="FBW_Gnd_Equipment">
-                <NODE_ID>CHOCK_MAINGEAR_LEFT_FRONT</NODE_ID>
-                <GND_ENABLE_OVRD>(L:A32NX_MODEL_WHEELCHOCKS_ENABLED)</GND_ENABLE_OVRD>
-            </UseTemplate>
-            <UseTemplate Name="FBW_Gnd_Equipment">
-                <NODE_ID>CHOCK_MAINGEAR_LEFT_BACK</NODE_ID>
+                <NODE_ID>CHOCKS_MAIN_GEAR_LEFT</NODE_ID>
                 <GND_ENABLE_OVRD>(L:A32NX_MODEL_WHEELCHOCKS_ENABLED)</GND_ENABLE_OVRD>
             </UseTemplate>
 
@@ -491,6 +480,7 @@
                 <NODE_ID>CONE_ENG2</NODE_ID>
                 <GND_ENABLE_OVRD>(L:A32NX_MODEL_CONES_ENABLED)</GND_ENABLE_OVRD>
             </UseTemplate>
+
         </Component>
 
     </Behaviors>

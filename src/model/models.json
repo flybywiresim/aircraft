@@ -954,6 +954,10 @@
         "bin": "./chock/chock.bin"
       },
       {
+        "gltf": "./chocks/chocks.gltf",
+        "bin": "./chocks/chocks.bin"
+      },
+      {
         "gltf": "./cone/cone.gltf",
         "bin": "./cone/cone.bin"
       },
