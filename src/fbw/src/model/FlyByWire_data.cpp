@@ -1,7 +1,7 @@
 #include "FlyByWire.h"
 #include "FlyByWire_private.h"
 
-FlyByWireModelClass::Parameters_FlyByWire_T FlyByWireModelClass::FlyByWire_P = {
+FlyByWireModelClass::Parameters_FlyByWire_T FlyByWireModelClass::FlyByWire_P{
 
   {
     {
@@ -475,7 +475,7 @@ FlyByWireModelClass::Parameters_FlyByWire_T FlyByWireModelClass::FlyByWire_P = {
 
   45.0,
 
-  1,
+  true,
 
   0.0,
 
