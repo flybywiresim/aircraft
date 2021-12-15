@@ -31,7 +31,7 @@ use systems::{
         update_iterator::{FixedStepLoop, MaxFixedStepLoop},
         ElectricPump, EngineDrivenPump, HydraulicCircuit, HydraulicCircuitController,
         PowerTransferUnit, PowerTransferUnitController, PumpController, RamAirTurbine,
-        RamAirTurbineController, SectionPressure,
+        RamAirTurbineController, Reservoir, SectionPressure,
     },
     overhead::{
         AutoOffFaultPushButton, AutoOnFaultPushButton, MomentaryOnPushButton, MomentaryPushButton,
@@ -447,6 +447,18 @@ impl A320Hydraulic {
 
     pub fn generator_control_unit(&self) -> &impl HydraulicGeneratorControlUnit {
         &self.gcu
+    }
+
+    pub fn green_reservoir(&self) -> &Reservoir {
+        self.green_circuit.reservoir()
+    }
+
+    pub fn blue_reservoir(&self) -> &Reservoir {
+        self.blue_circuit.reservoir()
+    }
+
+    pub fn yellow_reservoir(&self) -> &Reservoir {
+        self.yellow_circuit.reservoir()
     }
 
     #[cfg(test)]

@@ -11,6 +11,7 @@
 1. [Throttle Mapping System](#throttle-mapping-system)
 1. [Engine and FADEC System](#engine-and-fadec-system)
 1. [Air Conditioning / Pressurisation / Ventilation](#air-conditioning--pressurisation--ventilation)
+1. [Pneumatic](#pneumatic)
 
 ## Uncategorized
 
@@ -2095,3 +2096,140 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - {number}
         - 1
         - 2
+
+## Pneumatic
+
+- A32NX_PNEU_ENG_{number}_IP_PRESSURE:
+    - Pressure in intermediate pressure compression chamber
+    - PSI
+    - {number}
+        - 1
+        - 2
+
+- A32NX_PNEU_ENG_{number}_HP_PRESSURE:
+    - Pressure in high pressure compression chamber
+    - PSI
+    - {number}
+        - 1
+        - 2
+
+- A32NX_PNEU_ENG_{number}_TRANSFER_PRESSURE:
+    - Pressure between IP/HP valves but before the pressure regulating valve
+    - PSI
+    - {number}
+        - 1
+        - 2
+
+- A32NX_PNEU_ENG_{number}_PRECOOLER_INLET_PRESSURE:
+    - Pressure at the precooler inlet for engine bleed system
+    - PSI
+    - {number}
+        - 1
+        - 2
+
+- A32NX_PNEU_ENG_{number}_PRECOOLER_OUTLET_PRESSURE:
+    - Pressure at theh precooler outlet for engine bleed system
+    - PSI
+    - {number}
+        - 1
+        - 2
+
+- A32NX_PNEU_ENG_{number}_STARTER_CONTAINER_PRESSURE:
+    - Pressure behind the starter valve of the engine
+    - PSI
+    - {number}
+        - 1
+        - 2
+
+- A32NX_PNEU_ENG_{number}_IP_TEMPERATURE:
+    - Temperature in intermediate pressure compression chamber
+    - Degree celsius
+    - {number}
+        - 1
+        - 2
+
+- A32NX_PNEU_ENG_{number}_HP_TEMPERATURE:
+    - Temperature in high pressure compression chamber
+    - Degree celsius
+    - {number}
+        - 1
+        - 2
+
+- A32NX_PNEU_ENG_{number}_TRANSFER_TEMPERATURE:
+    - Temperature between IP/HP valves but before the pressure regulating valve
+    - Degree celsius
+    - {number}
+        - 1
+        - 2
+
+- A32NX_PNEU_ENG_{number}_PRECOOLER_INLET_TEMPERATURE:
+    - Temperature at the precooler inlet for engine bleed system
+    - Degree celsius
+    - {number}
+        - 1
+        - 2
+
+- A32NX_PNEU_ENG_{number}_PRECOOLER_OUTLET_TEMPERATURE:
+    - Temperature at the precooler outlet for engine bleed system
+    - Degree celsius
+    - {number}
+        - 1
+        - 2
+
+- A32NX_PNEU_ENG_{number}_STARTER_CONTAINER_TEMPERATURE:
+    - Temperature behind the starter valve of the engine
+    - Degree celsius
+    - {number}
+        - 1
+        - 2
+
+- A32NX_PNEU_ENG_{number}_IP_VALVE_OPEN:
+    - Indicates whether the intermediate pressure bleed air valve is open
+    - Bool
+    - {number}
+        - 1
+        - 2
+
+- A32NX_PNEU_ENG_{number}_HP_VALVE_OPEN:
+    - Indicates whether the high pressure bleed air valve is open
+    - Bool
+    - {number}
+        - 1
+        - 2
+
+- A32NX_PNEU_ENG_{number}_PR_VALVE_OPEN:
+    - Indicates whether the pressure regulating valve is open
+    - Bool
+    - {number}
+        - 1
+        - 2
+
+- A32NX_PNEU_ENG_{number}_STARTER_VALVE_OPEN:
+    - Indicates whether the starter valve is open.
+    - Bool
+    - {number}
+        - 1
+        - 2
+
+- A32NX_PNEU_XBLEED_VALVE_OPEN:
+    - Indicates whether the cross bleed air valve is open
+    - Bool
+
+- A32NX_PNEU_PACK_{number}_FLOW_VALVE_FLOW_RATE:
+    - Indicates the flow rate through the pack flow valve
+    - Gallon per second
+    - {number}
+        - 1
+        - 2
+
+- A32NX_OVHD_PNEU_ENG_{number}_BLEED_PB_IS_AUTO:
+    - Indicates whether the engine bleed air is on
+    - Is aliased from aircraft variable A:BLEED AIR ENGINE
+    - Bool
+    - {number}
+        - 1
+        - 2
+
+- A32NX_OVHD_PNEU_ENG_{number}_BLEED_PB_HAS_FAULT:
+    - Indicates whether the fault light is on for the engine bleed push button
+    - Bool
