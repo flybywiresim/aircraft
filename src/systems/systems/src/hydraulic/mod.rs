@@ -1550,7 +1550,7 @@ impl WindTurbine {
 }
 impl SimulationElement for WindTurbine {
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write(&self.rpm_id, self.speed().get::<revolution_per_minute>());
+        writer.write(&self.rpm_id, self.speed());
     }
 }
 

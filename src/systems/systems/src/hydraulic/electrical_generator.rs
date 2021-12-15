@@ -302,10 +302,7 @@ impl Actuator for HydraulicGeneratorMotor {
 }
 impl SimulationElement for HydraulicGeneratorMotor {
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write(
-            &self.generator_rpm_id,
-            self.speed().get::<revolution_per_minute>(),
-        );
+        writer.write(&self.generator_rpm_id, self.speed());
     }
 }
 
