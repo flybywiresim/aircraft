@@ -57,13 +57,12 @@ impl EmergencyGenerator {
     }
 
     fn update_generated_power(&mut self, gcu: &impl HydraulicGeneratorControlUnit) {
-        self.generated_power = if gcu.hydraulic_motor_speed().get::<revolution_per_minute>()
-            > Self::MIN_RPM_TO_SUPPLY_POWER
-        {
-            self.demand.min(gcu.max_allowed_power())
-        } else {
-            Power::new::<watt>(0.)
-        };
+        self.generated_power =
+            if gcu.motor_speed().get::<revolution_per_minute>() > Self::MIN_RPM_TO_SUPPLY_POWER {
+                self.demand.min(gcu.max_allowed_power())
+            } else {
+                Power::new::<watt>(0.)
+            };
     }
 }
 provide_frequency!(EmergencyGenerator, (390.0..=410.0));
@@ -180,7 +179,7 @@ mod emergency_generator_tests {
             }
         }
 
-        fn set_hydraulic_motor_speed(&mut self, speed: AngularVelocity) {
+        fn set_motor_speed(&mut self, speed: AngularVelocity) {
             self.motor_speed = speed;
         }
     }
@@ -192,7 +191,7 @@ mod emergency_generator_tests {
                 Power::new::<watt>(0.)
             }
         }
-        fn hydraulic_motor_speed(&self) -> AngularVelocity {
+        fn motor_speed(&self) -> AngularVelocity {
             self.motor_speed
         }
     }
@@ -217,12 +216,12 @@ mod emergency_generator_tests {
 
         fn attempt_emer_gen_start(&mut self) {
             self.hydraulic
-                .set_hydraulic_motor_speed(AngularVelocity::new::<revolution_per_minute>(12000.));
+                .set_motor_speed(AngularVelocity::new::<revolution_per_minute>(12000.));
         }
 
         fn stop_emer_gen(&mut self) {
             self.hydraulic
-                .set_hydraulic_motor_speed(AngularVelocity::new::<revolution_per_minute>(0.));
+                .set_motor_speed(AngularVelocity::new::<revolution_per_minute>(0.));
         }
 
         fn generator_output_within_normal_parameters_before_processing_power_consumption_report(

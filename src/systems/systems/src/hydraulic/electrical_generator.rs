@@ -138,7 +138,7 @@ impl<const N: usize> HydraulicGeneratorControlUnit for GeneratorControlUnit<N> {
         self.max_allowed_power()
     }
 
-    fn hydraulic_motor_speed(&self) -> AngularVelocity {
+    fn motor_speed(&self) -> AngularVelocity {
         self.current_speed
     }
 }
@@ -337,7 +337,7 @@ impl TestGenerator {
     #[cfg(test)]
     fn from_gcu(gcu: &impl HydraulicGeneratorControlUnit) -> Self {
         let mut g = TestGenerator {
-            speed: gcu.hydraulic_motor_speed(),
+            speed: gcu.motor_speed(),
             generated_power: Power::new::<watt>(0.),
         };
 
@@ -346,7 +346,7 @@ impl TestGenerator {
     }
 
     pub fn update(&mut self, gcu: &impl HydraulicGeneratorControlUnit) {
-        self.speed = gcu.hydraulic_motor_speed();
+        self.speed = gcu.motor_speed();
         self.generated_power = gcu.max_allowed_power();
     }
 }

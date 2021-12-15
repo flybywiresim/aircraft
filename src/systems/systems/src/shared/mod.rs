@@ -45,7 +45,7 @@ pub trait ApuStart {
 
 pub trait HydraulicGeneratorControlUnit {
     fn max_allowed_power(&self) -> Power;
-    fn hydraulic_motor_speed(&self) -> AngularVelocity;
+    fn motor_speed(&self) -> AngularVelocity;
 }
 
 pub trait ControlValveCommand {

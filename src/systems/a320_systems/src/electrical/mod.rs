@@ -2236,7 +2236,7 @@ mod a320_electrical_circuit_tests {
                 Power::new::<watt>(0.)
             }
         }
-        fn hydraulic_motor_speed(&self) -> AngularVelocity {
+        fn motor_speed(&self) -> AngularVelocity {
             self.emergency_motor_speed
         }
     }
