@@ -1726,6 +1726,11 @@ In the variables below, {number} should be replaced with one item in the set: { 
       FPA_SPEED | 4
       VS_SPEED | 5
 
+- A32NX_FG_ALTITUDE_CONSTRAINT
+    - Number in ft
+    - Used for managed climb/descend
+    - Indicates an altitude constraint to follow
+
 - A32NX_FG_TARGET_ALTITUDE
     - Number in ft
     - Used for vertical guidance in mode DES
