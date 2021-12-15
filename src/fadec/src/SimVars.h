@@ -46,6 +46,7 @@ class Units {
   ENUM FeetMin = get_units_enum("Feet per minute");
   ENUM Number = get_units_enum("Number");
   ENUM Mach = get_units_enum("Mach");
+  ENUM Millibars = get_units_enum("Millibars");
   ENUM SluggerSlugs = get_units_enum("Slug per cubic feet");
   ENUM Celsius = get_units_enum("Celsius");
   ENUM Bool = get_units_enum("Bool");
@@ -76,6 +77,7 @@ class SimVars {
   ENUM PressureAltitude = get_aircraft_var_enum("PRESSURE ALTITUDE");
   ENUM AirSpeedMach = get_aircraft_var_enum("AIRSPEED MACH");
   ENUM AmbientTemp = get_aircraft_var_enum("AMBIENT TEMPERATURE");
+  ENUM AmbientPressure = get_aircraft_var_enum("AMBIENT PRESSURE");
   ENUM VerticalSpeed = get_aircraft_var_enum("VERTICAL SPEED");
   ENUM StdTemp = get_aircraft_var_enum("STANDARD ATM TEMPERATURE");
   ENUM SimOnGround = get_aircraft_var_enum("SIM ON GROUND");
@@ -352,6 +354,7 @@ class SimVars {
   FLOAT64 getPressureAltitude() { return aircraft_varget(PressureAltitude, m_Units->Feet, 0); }
   FLOAT64 getVerticalSpeed() { return aircraft_varget(VerticalSpeed, m_Units->FeetMin, 0); }
   FLOAT64 getAmbientTemperature() { return aircraft_varget(AmbientTemp, m_Units->Celsius, 0); }
+  FLOAT64 getAmbientPressure() { return aircraft_varget(AmbientPressure, m_Units->Millibars, 0); }
   FLOAT64 getStdTemperature() { return aircraft_varget(StdTemp, m_Units->Celsius, 0); }
   FLOAT64 getSimOnGround() { return aircraft_varget(SimOnGround, m_Units->Bool, 0); }
   FLOAT64 getTankLeftAuxCapacity() { return aircraft_varget(TankLeftAuxCapacity, m_Units->Gallons, 0); }
