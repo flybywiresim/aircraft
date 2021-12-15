@@ -201,19 +201,14 @@ const ApuBleed = ({ x, y } : ComponentPositionProps) => {
 
 const NGauge = ({ x, y } : ComponentPositionProps) => {
     const apuN = useArinc429Var('L:A32NX_APU_N', 100);
-    const [apuNIndicationColor, setApuIndicationColor] = useState('Green');
-
-    useEffect(() => {
-        if (apuN.value >= 0 && apuN.value < 102) {
-            setApuIndicationColor('Green');
-        }
-        if (apuN.value >= 102 && apuN.value < 107) {
-            setApuIndicationColor('Amber');
-        }
-        if (apuN.value >= 107) {
-            setApuIndicationColor('Red');
-        }
-    }, [apuN]);
+    let apuNIndicationColor;
+    if (apuN.value < 102) {
+        apuNIndicationColor = 'Green';
+    } else if (apuN.value < 107) {
+        apuNIndicationColor = 'Amber';
+    } else {
+        apuNIndicationColor = 'Red';
+    }
 
     return (
         <>
