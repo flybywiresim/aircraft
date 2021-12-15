@@ -449,7 +449,8 @@ impl FlapSlatAssembly {
     }
 
     fn is_surface_moving(&self) -> bool {
-        self.left_motor_rpm() + self.right_motor_rpm() > Self::MIN_TOTAL_MOTOR_RPM_TO_REPORT_MOVING
+        (self.left_motor_rpm() + self.right_motor_rpm()).abs()
+            > Self::MIN_TOTAL_MOTOR_RPM_TO_REPORT_MOVING
     }
 }
 impl SimulationElement for FlapSlatAssembly {
