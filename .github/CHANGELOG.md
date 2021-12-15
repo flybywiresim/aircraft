@@ -90,6 +90,7 @@
 1. [ECAM] Fixed gross weight being shown without engines running - @BlueberryKing (BlueberryKing)
 1. [FLIGHT MODEL] Fixes co-pilot not being shown in external view -  @donstim (donbikes#4084)
 1. [BLEED] Replace default bleed system - @BlueberryKing (BlueberryKing)
+1. [ENGINE/ MODEL] Implement engine shutdown and realistic engine animation - @Taz5150 (TazX [Z+2]#0405)
 
 ## 0.7.0
 
