@@ -2277,23 +2277,20 @@ mod tests {
 
     mod a320_hydraulics {
         use super::*;
-        use systems::hydraulic::electrical_generator::TestGenerator;
-
-        use systems::electrical::test::TestElectricitySource;
-        use systems::electrical::ElectricalBus;
-        use systems::electrical::Electricity;
-        use systems::electrical::ElectricitySource;
-        use systems::electrical::ExternalPowerSource;
-
-        use systems::engine::{leap_engine::LeapEngine, EngineFireOverheadPanel};
-
-        use systems::landing_gear::{LandingGear, LandingGearControlInterfaceUnit};
-
-        use systems::shared::PotentialOrigin;
-        use systems::shared::{EmergencyElectricalState, HydraulicGeneratorControlUnit};
-
-        use systems::simulation::test::{ReadByName, TestBed, WriteByName};
-        use systems::simulation::{test::SimulationTestBed, Aircraft, InitContext};
+        use systems::{
+            electrical::{
+                test::TestElectricitySource, ElectricalBus, Electricity, ElectricitySource,
+                ExternalPowerSource,
+            },
+            engine::{leap_engine::LeapEngine, EngineFireOverheadPanel},
+            hydraulic::electrical_generator::TestGenerator,
+            landing_gear::{LandingGear, LandingGearControlInterfaceUnit},
+            shared::{EmergencyElectricalState, HydraulicGeneratorControlUnit, PotentialOrigin},
+            simulation::{
+                test::{ReadByName, SimulationTestBed, TestBed, WriteByName},
+                Aircraft, InitContext,
+            },
+        };
 
         use uom::si::{
             electric_potential::volt,
