@@ -326,18 +326,15 @@ const EgtGauge = ({ x, y } : ComponentPositionProps) => {
 
     const redLineShown = apuEgtCaution.isNormalOperation() && apuEgtWarning.isNormalOperation();
 
-    useEffect(() => {
-        if (apuEgt.value <= apuEgtCaution.value) {
-            setApuEgtIndicationColor('Green');
-        }
-        if (apuEgt.value > apuEgtCaution.value && apuEgt.value <= apuEgtWarning.value) {
-            setApuEgtIndicationColor('Amber');
-        }
-        if (apuEgt.value > apuEgtWarning.value) {
-            setApuEgtIndicationColor('Red');
-        }
-        // FBW-31-05
-    }, [apuEgt, apuEgtCaution, apuEgtWarning]);
+    // FBW-31-05
+    let apuEgtIndicationColor;
+    if (apuEgt.value >= apuEgtWarning.value) {
+        apuEgtIndicationColor = 'Red';
+    } else if (apuEgt.value >= apuEgtCaution.value) {
+        apuEgtIndicationColor = 'Amber';
+    } else {
+        apuEgtIndicationColor = 'Green';
+    }
 
     let egtValueStyle;
 
