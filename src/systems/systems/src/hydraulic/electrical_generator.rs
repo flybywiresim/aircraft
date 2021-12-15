@@ -78,10 +78,6 @@ impl<const N: usize> GeneratorControlUnit<N> {
                 && pressure_feedback.get::<psi>() > Self::MIN_ACTIVATION_PRESSURE_PSI);
     }
 
-    fn is_active(&self) -> bool {
-        self.is_active
-    }
-
     pub fn update(
         &mut self,
         context: &UpdateContext,
@@ -104,7 +100,7 @@ impl<const N: usize> GeneratorControlUnit<N> {
     }
 
     fn max_allowed_power(&self) -> Power {
-        if self.is_active() {
+        if self.is_active {
             Power::new::<watt>(interpolation(
                 &self.max_allowed_power_rpm_breakpoints,
                 &self.max_allowed_power_vs_rpm,
@@ -116,7 +112,7 @@ impl<const N: usize> GeneratorControlUnit<N> {
     }
 
     fn update_valve_control(&mut self, context: &UpdateContext) {
-        if self.is_active() {
+        if self.is_active {
             self.pid_controller.next_control_output(
                 self.current_speed.get::<revolution_per_minute>(),
                 Some(context.delta()),
@@ -151,10 +147,8 @@ impl<const N: usize> ControlValveCommand for GeneratorControlUnit<N> {
 pub struct HydraulicGeneratorMotor {
     generator_rpm_id: VariableIdentifier,
 
-    acceleration: AngularAcceleration,
     speed: AngularVelocity,
 
-    inertia: f64,
     generated_torque: Torque,
     total_torque: Torque,
     displacement: Volume,
@@ -176,10 +170,8 @@ impl HydraulicGeneratorMotor {
         Self {
             generator_rpm_id: context.get_identifier("HYD_EMERGENCY_GEN_RPM".to_owned()),
 
-            acceleration: AngularAcceleration::new::<radian_per_second_squared>(0.),
             speed: AngularVelocity::new::<radian_per_second>(0.),
 
-            inertia: Self::MOTOR_INERTIA,
             generated_torque: Torque::new::<newton_meter>(0.),
             total_torque: Torque::new::<newton_meter>(0.),
             displacement,
@@ -257,11 +249,11 @@ impl HydraulicGeneratorMotor {
         self.total_torque += friction_torque;
         self.total_torque += self.generated_torque;
 
-        self.acceleration = AngularAcceleration::new::<radian_per_second_squared>(
-            self.total_torque.get::<newton_meter>() / self.inertia,
+        let acceleration = AngularAcceleration::new::<radian_per_second_squared>(
+            self.total_torque.get::<newton_meter>() / Self::MOTOR_INERTIA,
         );
         self.speed += AngularVelocity::new::<radian_per_second>(
-            self.acceleration.get::<radian_per_second_squared>() * context.delta_as_secs_f64(),
+            acceleration.get::<radian_per_second_squared>() * context.delta_as_secs_f64(),
         );
         self.speed = self
             .speed
