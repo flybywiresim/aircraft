@@ -798,6 +798,13 @@
         - BLUE
         - YELLOW
 
+- A32NX_HYD_{loop_name}_EPUMP_CAVITATION
+    - Percent over 100
+    - Current {loop_name} electric pump cavitation efficiency. 0 running dry to 1 full efficiency
+    - {loop_name}
+        - BLUE
+        - YELLOW
+
 - A32NX_HYD_PTU_ON_ECAM_MEMO
     - Bool
     - HYD PTU memo indication should show on ecam if true

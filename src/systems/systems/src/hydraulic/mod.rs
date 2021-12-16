@@ -1084,7 +1084,7 @@ pub struct Reservoir {
     air_pressure: Pressure,
 }
 impl Reservoir {
-    const MIN_USABLE_VOLUME: f64 = 0.2; // Gallons
+    const MIN_USABLE_VOLUME_GAL: f64 = 0.2;
 
     pub fn new(
         context: &mut InitContext,
@@ -1098,7 +1098,7 @@ impl Reservoir {
             max_capacity,
             max_gaugeable,
             current_level,
-            min_usable: Volume::new::<gallon>(Self::MIN_USABLE_VOLUME),
+            min_usable: Volume::new::<gallon>(Self::MIN_USABLE_VOLUME_GAL),
             air_pressure: Pressure::new::<psi>(50.),
         }
     }
@@ -1145,6 +1145,14 @@ impl Reservoir {
     fn fluid_level_from_gauge(&self) -> Volume {
         self.current_level.min(self.max_gaugeable)
     }
+
+    pub fn air_pressure(&self) -> Pressure {
+        self.air_pressure
+    }
+
+    fn is_empty(&self) -> bool {
+        self.fluid_level_real() <= Volume::new::<gallon>(Self::MIN_USABLE_VOLUME_GAL)
+    }
 }
 impl SimulationElement for Reservoir {
     fn write(&self, writer: &mut SimulatorWriter) {
@@ -1168,16 +1176,16 @@ pub struct Pump {
     current_max_displacement: Volume,
     press_breakpoints: [f64; 9],
     displacement_carac: [f64; 9],
-    // Displacement low pass filter. [0:1], 0 frozen -> 1 instantaneous dynamic
-    displacement_dynamic: f64,
+
     speed: AngularVelocity,
+
+    cavitation_efficiency: Ratio,
 }
 impl Pump {
-    fn new(
-        press_breakpoints: [f64; 9],
-        displacement_carac: [f64; 9],
-        displacement_dynamic: f64,
-    ) -> Self {
+    const AIR_PRESSURE_BREAKPTS_PSI: [f64; 9] = [0., 5., 10., 15., 20., 30., 50., 70., 100.];
+    const AIR_PRESSURE_CARAC_RATIO: [f64; 9] = [0.0, 0.1, 0.6, 0.8, 0.9, 1., 1., 1., 1.];
+
+    fn new(press_breakpoints: [f64; 9], displacement_carac: [f64; 9]) -> Self {
         Self {
             delta_vol_max: Volume::new::<gallon>(0.),
             current_displacement: Volume::new::<gallon>(0.),
@@ -1185,8 +1193,10 @@ impl Pump {
             current_max_displacement: Volume::new::<gallon>(0.),
             press_breakpoints,
             displacement_carac,
-            displacement_dynamic,
+
             speed: AngularVelocity::new::<revolution_per_minute>(0.),
+
+            cavitation_efficiency: Ratio::new::<ratio>(1.),
         }
     }
 
@@ -1200,12 +1210,11 @@ impl Pump {
     ) {
         self.speed = speed;
 
+        self.update_cavitation(reservoir);
+
         let theoretical_displacement = self.calculate_displacement(section, controller);
 
-        // Actual displacement is the calculated one with a low pass filter applied to mimic displacement transients dynamic
-        // Note this is applied on "max" delta vol, so any regulation within pump capacity will remain "instantaneous'
-        self.current_max_displacement = self.displacement_dynamic * theoretical_displacement
-            + (1.0 - self.displacement_dynamic) * self.current_max_displacement;
+        self.current_max_displacement = self.cavitation_efficiency * theoretical_displacement;
 
         let max_flow = Self::calculate_flow(speed, self.current_max_displacement)
             .max(VolumeRate::new::<gallon_per_second>(0.));
@@ -1214,6 +1223,18 @@ impl Pump {
             reservoir.request_flow_availability(context, max_flow);
 
         self.delta_vol_max = max_flow_available_from_reservoir * context.delta_as_time();
+    }
+
+    fn update_cavitation(&mut self, reservoir: &Reservoir) {
+        self.cavitation_efficiency = Ratio::new::<ratio>(interpolation(
+            &Self::AIR_PRESSURE_BREAKPTS_PSI,
+            &Self::AIR_PRESSURE_CARAC_RATIO,
+            reservoir.air_pressure().get::<psi>(),
+        ));
+
+        if reservoir.is_empty() {
+            self.cavitation_efficiency = Ratio::new::<ratio>(0.);
+        }
     }
 
     fn calculate_displacement<T: PumpController>(
@@ -1269,6 +1290,10 @@ impl Pump {
             VolumeRate::new::<gallon_per_second>(0.)
         }
     }
+
+    fn cavitation_efficiency(&self) -> Ratio {
+        self.cavitation_efficiency
+    }
 }
 impl PressureSource for Pump {
     fn delta_vol_max(&self) -> Volume {
@@ -1303,6 +1328,7 @@ impl PressureSource for Pump {
 }
 
 pub struct ElectricPump {
+    cavitation_id: VariableIdentifier,
     pump: Pump,
     pump_physics: ElectricalPumpPhysics,
 }
@@ -1312,8 +1338,6 @@ impl ElectricPump {
         0.0, 500.0, 1000.0, 1500.0, 2175.0, 2850.0, 3080.0, 3100.0, 3500.0,
     ];
     const DISPLACEMENT_MAP: [f64; 9] = [0.263, 0.263, 0.263, 0.263, 0.263, 0.2, 0.0, 0.0, 0.0];
-    // 1 == No filtering
-    const DISPLACEMENT_DYNAMICS: f64 = 0.4;
 
     pub fn new(
         context: &mut InitContext,
@@ -1322,11 +1346,8 @@ impl ElectricPump {
         max_current: ElectricCurrent,
     ) -> Self {
         Self {
-            pump: Pump::new(
-                Self::DISPLACEMENT_BREAKPTS,
-                Self::DISPLACEMENT_MAP,
-                Self::DISPLACEMENT_DYNAMICS,
-            ),
+            cavitation_id: context.get_identifier(format!("HYD_{}_EPUMP_CAVITATION", id)),
+            pump: Pump::new(Self::DISPLACEMENT_BREAKPTS, Self::DISPLACEMENT_MAP),
             pump_physics: ElectricalPumpPhysics::new(
                 context,
                 id,
@@ -1355,6 +1376,14 @@ impl ElectricPump {
             self.pump_physics.speed(),
             controller,
         );
+    }
+
+    pub fn cavitation_efficiency(&self) -> Ratio {
+        self.pump.cavitation_efficiency()
+    }
+
+    pub fn flow(&self) -> VolumeRate {
+        self.pump.flow()
     }
 }
 impl PressureSource for ElectricPump {
@@ -1391,6 +1420,13 @@ impl SimulationElement for ElectricPump {
 
         visitor.visit(self);
     }
+
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(
+            &self.cavitation_id,
+            self.cavitation_efficiency().get::<ratio>(),
+        );
+    }
 }
 
 pub struct EngineDrivenPump {
@@ -1406,19 +1442,12 @@ impl EngineDrivenPump {
     ];
     const DISPLACEMENT_MAP: [f64; 9] = [2.4, 2.4, 2.4, 2.4, 2.4, 2.4, 2.2, 1.0, 0.0];
 
-    // 0.1 == 90% filtering on max displacement transient
-    const DISPLACEMENT_DYNAMICS: f64 = 0.1;
-
     pub fn new(context: &mut InitContext, id: &str) -> Self {
         Self {
             active_id: context.get_identifier(format!("HYD_{}_EDPUMP_ACTIVE", id)),
             is_active: false,
             speed: AngularVelocity::new::<revolution_per_minute>(0.),
-            pump: Pump::new(
-                Self::DISPLACEMENT_BREAKPTS,
-                Self::DISPLACEMENT_MAP,
-                Self::DISPLACEMENT_DYNAMICS,
-            ),
+            pump: Pump::new(Self::DISPLACEMENT_BREAKPTS, Self::DISPLACEMENT_MAP),
         }
     }
 
@@ -1600,9 +1629,6 @@ impl RamAirTurbine {
     ];
     const DISPLACEMENT_MAP: [f64; 9] = [1.15, 1.15, 1.15, 1.15, 1.15, 0.5, 0.0, 0.0, 0.0];
 
-    // 1 == no filtering. 0.1 == 90% filtering. 0.2==80%... !!Warning, filter frequency is time delta dependant.
-    const DISPLACEMENT_DYNAMICS: f64 = 0.2;
-
     // Speed to go from 0 to 1 stow position per sec. 1 means full deploying in 1s
     const STOWING_SPEED: f64 = 1.;
 
@@ -1618,11 +1644,7 @@ impl RamAirTurbine {
             stow_position_id: context.get_identifier("HYD_RAT_STOW_POSITION".to_owned()),
 
             deployment_commanded: false,
-            pump: Pump::new(
-                Self::DISPLACEMENT_BREAKPTS,
-                Self::DISPLACEMENT_MAP,
-                Self::DISPLACEMENT_DYNAMICS,
-            ),
+            pump: Pump::new(Self::DISPLACEMENT_BREAKPTS, Self::DISPLACEMENT_MAP),
             pump_controller: AlwaysPressurisePumpController::new(),
             wind_turbine: WindTurbine::new(context),
             position: 0.,
@@ -1802,7 +1824,7 @@ mod tests {
 
         let drawn_volume =
             test_bed.command_element(|r| r.try_take_volume(Volume::new::<gallon>(10.)));
-        assert!(drawn_volume.get::<gallon>() == 5. - Reservoir::MIN_USABLE_VOLUME);
+        assert!(drawn_volume.get::<gallon>() == 5. - Reservoir::MIN_USABLE_VOLUME_GAL);
     }
 
     #[test]

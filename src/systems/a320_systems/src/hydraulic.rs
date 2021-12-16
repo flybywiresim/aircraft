@@ -2333,6 +2333,18 @@ mod tests {
                     pressure: Pressure::new::<psi>(50.),
                 }
             }
+
+            fn set_pressure(&mut self, pressure: Pressure) {
+                self.pressure = pressure;
+            }
+
+            fn set_nominal_pressure(&mut self) {
+                self.pressure = Pressure::new::<psi>(50.);
+            }
+
+            fn set_low_pressure(&mut self) {
+                self.pressure = Pressure::new::<psi>(1.);
+            }
         }
         impl ReservoirPressure for A320TestPneumatics {
             fn green_reservoir_pressure(&self) -> Pressure {
@@ -2874,6 +2886,16 @@ mod tests {
                 self.set_indicated_altitude(Length::new::<foot>(0.));
                 self.set_on_ground(true);
                 self.set_indicated_airspeed(Velocity::new::<knot>(5.));
+                self
+            }
+
+            fn air_press_low(mut self) -> Self {
+                self.command(|a| a.pneumatics.set_low_pressure());
+                self
+            }
+
+            fn air_press_nominal(mut self) -> Self {
+                self.command(|a| a.pneumatics.set_nominal_pressure());
                 self
             }
 
@@ -5874,6 +5896,29 @@ mod tests {
 
             assert!(test_bed.is_cargo_fwd_door_locked_down());
             assert!(test_bed.cargo_fwd_door_position() <= 0.);
+        }
+
+        #[test]
+        fn yellow_epump_has_cavitation_at_low_air_press() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .set_ptu_state(false)
+                .run_one_tick();
+
+            test_bed = test_bed
+                .air_press_nominal()
+                .set_yellow_e_pump(false)
+                .run_waiting_for(Duration::from_secs_f64(10.));
+
+            assert!(test_bed.yellow_pressure().get::<psi>() > 2900.);
+
+            test_bed = test_bed
+                .air_press_low()
+                .run_waiting_for(Duration::from_secs_f64(10.));
+
+            assert!(test_bed.yellow_pressure().get::<psi>() < 2000.);
         }
     }
 }
