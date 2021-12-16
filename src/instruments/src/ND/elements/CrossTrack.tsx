@@ -15,8 +15,8 @@ export const CrossTrack: React.FC<CrossTrackProps> = memo(({ x, y, isPlanMode })
     let crossTrackX = x;
     const crossTrackAbs = Math.abs(crossTrackError);
 
-    if (crossTrackAbs > 0.02) {
-        crossTrackText = crossTrackAbs.toFixed(crossTrackAbs < 0.3 ? 2 : 1);
+    if (crossTrackAbs >= 0.1) {
+        crossTrackText = crossTrackAbs.toFixed(1);
         if (crossTrackError < 0) {
             crossTrackText += 'R';
             crossTrackAnchor = 'start';
