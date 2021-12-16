@@ -166,9 +166,9 @@ var A320_Neo_LowerECAM_BLEED;
             const currentLeftPackState = SimVar.GetSimVarValue("L:A32NX_COND_PACK_FLOW_VALVE_1_IS_OPEN", "bool");
             const currentRightPackState = SimVar.GetSimVarValue("L:A32NX_COND_PACK_FLOW_VALVE_2_IS_OPEN", "bool");
             let currentPackFlow = SimVar.GetSimVarValue("L:A32NX_COND_PACK_FLOW", "number");
-            if (currentPackFlow == 80) {
+            if (currentPackFlow === 80) {
                 currentPackFlow = 0;
-            } else if (currentPackFlow == 120) {
+            } else if (currentPackFlow === 120) {
                 currentPackFlow = 2;
             } else {
                 currentPackFlow = 1;
