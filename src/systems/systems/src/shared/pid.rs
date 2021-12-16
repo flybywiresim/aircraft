@@ -40,11 +40,11 @@ impl PidController {
         self.setpoint = new_setpoint;
     }
 
-    pub fn change_min_output(&mut self, new_min: f64) {
+    pub fn set_min_output(&mut self, new_min: f64) {
         self.min_output = new_min;
     }
 
-    pub fn change_max_output(&mut self, new_max: f64) {
+    pub fn set_max_output(&mut self, new_max: f64) {
         self.max_output = new_max;
     }
 

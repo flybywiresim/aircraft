@@ -346,11 +346,11 @@ struct ZoneController {
 }
 
 impl ZoneController {
-    const K_ALTITUDE_CORRECTION: f64 = 0.0000375; // deg/feet
-    const UPPER_DUCT_TEMP_LIMIT_LOW: f64 = 323.15; // K
-    const UPPER_DUCT_TEMP_LIMIT_HIGH: f64 = 343.15; // K
-    const LOWER_DUCT_TEMP_LIMIT_LOW: f64 = 275.15; // K
-    const LOWER_DUCT_TEMP_LIMIT_HIGH: f64 = 281.15; // K
+    const K_ALTITUDE_CORRECTION_DEG_PER_FEET: f64 = 0.0000375; // deg/feet
+    const UPPER_DUCT_TEMP_LIMIT_LOW_KELVIN: f64 = 323.15; // K
+    const UPPER_DUCT_TEMP_LIMIT_HIGH_KELVIN: f64 = 343.15; // K
+    const LOWER_DUCT_TEMP_LIMIT_LOW_KELVIN: f64 = 275.15; // K
+    const LOWER_DUCT_TEMP_LIMIT_HIGH_KELVIN: f64 = 281.15; // K
     const KI_DUCT_DEMAND_CABIN: f64 = 0.05;
     const KI_DUCT_DEMAND_COCKPIT: f64 = 0.04;
     const KP_DUCT_DEMAND_CABIN: f64 = 3.5;
@@ -362,8 +362,8 @@ impl ZoneController {
                 Self::KP_DUCT_DEMAND_COCKPIT,
                 Self::KI_DUCT_DEMAND_COCKPIT,
                 0.,
-                Self::LOWER_DUCT_TEMP_LIMIT_HIGH,
-                Self::UPPER_DUCT_TEMP_LIMIT_LOW,
+                Self::LOWER_DUCT_TEMP_LIMIT_HIGH_KELVIN,
+                Self::UPPER_DUCT_TEMP_LIMIT_LOW_KELVIN,
                 297.15,
             )
         } else {
@@ -371,8 +371,8 @@ impl ZoneController {
                 Self::KP_DUCT_DEMAND_CABIN,
                 Self::KI_DUCT_DEMAND_CABIN,
                 0.,
-                Self::LOWER_DUCT_TEMP_LIMIT_HIGH,
-                Self::UPPER_DUCT_TEMP_LIMIT_LOW,
+                Self::LOWER_DUCT_TEMP_LIMIT_HIGH_KELVIN,
+                Self::UPPER_DUCT_TEMP_LIMIT_LOW_KELVIN,
                 297.15,
             )
         };
@@ -420,15 +420,15 @@ impl ZoneController {
         context: &UpdateContext,
         pressurization: &impl CabinAltitude,
     ) -> ThermodynamicTemperature {
-        let altitude_correction: f64 =
-            pressurization.cabin_altitude().get::<foot>() * Self::K_ALTITUDE_CORRECTION;
+        let altitude_correction: f64 = pressurization.cabin_altitude().get::<foot>()
+            * Self::K_ALTITUDE_CORRECTION_DEG_PER_FEET;
         let corrected_selected_temp: f64 =
             self.zone_selected_temperature.get::<kelvin>() + altitude_correction;
 
         self.pid_controller
-            .change_max_output(self.calculate_duct_temp_upper_limit().get::<kelvin>());
+            .set_max_output(self.calculate_duct_temp_upper_limit().get::<kelvin>());
         self.pid_controller
-            .change_min_output(self.calculate_duct_temp_lower_limit().get::<kelvin>());
+            .set_min_output(self.calculate_duct_temp_lower_limit().get::<kelvin>());
         self.pid_controller.change_setpoint(corrected_selected_temp);
 
         let duct_demand_limited: f64 = self.pid_controller.next_control_output(
@@ -440,32 +440,34 @@ impl ZoneController {
 
     fn calculate_duct_temp_upper_limit(&self) -> ThermodynamicTemperature {
         if self.zone_measured_temperature > ThermodynamicTemperature::new::<degree_celsius>(19.) {
-            ThermodynamicTemperature::new::<kelvin>(Self::UPPER_DUCT_TEMP_LIMIT_LOW)
+            ThermodynamicTemperature::new::<kelvin>(Self::UPPER_DUCT_TEMP_LIMIT_LOW_KELVIN)
         } else if self.zone_measured_temperature
             < ThermodynamicTemperature::new::<degree_celsius>(17.)
         {
-            ThermodynamicTemperature::new::<kelvin>(Self::UPPER_DUCT_TEMP_LIMIT_HIGH)
+            ThermodynamicTemperature::new::<kelvin>(Self::UPPER_DUCT_TEMP_LIMIT_HIGH_KELVIN)
         } else {
-            let interpolation =
-                (Self::UPPER_DUCT_TEMP_LIMIT_LOW - Self::UPPER_DUCT_TEMP_LIMIT_HIGH) / (19. - 17.)
-                    * (self.zone_measured_temperature.get::<kelvin>() - 290.15)
-                    + Self::UPPER_DUCT_TEMP_LIMIT_HIGH;
+            let interpolation = (Self::UPPER_DUCT_TEMP_LIMIT_LOW_KELVIN
+                - Self::UPPER_DUCT_TEMP_LIMIT_HIGH_KELVIN)
+                / (19. - 17.)
+                * (self.zone_measured_temperature.get::<kelvin>() - 290.15)
+                + Self::UPPER_DUCT_TEMP_LIMIT_HIGH_KELVIN;
             ThermodynamicTemperature::new::<kelvin>(interpolation)
         }
     }
 
     fn calculate_duct_temp_lower_limit(&self) -> ThermodynamicTemperature {
         if self.zone_measured_temperature > ThermodynamicTemperature::new::<degree_celsius>(28.) {
-            ThermodynamicTemperature::new::<kelvin>(Self::LOWER_DUCT_TEMP_LIMIT_LOW)
+            ThermodynamicTemperature::new::<kelvin>(Self::LOWER_DUCT_TEMP_LIMIT_LOW_KELVIN)
         } else if self.zone_measured_temperature
             < ThermodynamicTemperature::new::<degree_celsius>(26.)
         {
-            ThermodynamicTemperature::new::<kelvin>(Self::LOWER_DUCT_TEMP_LIMIT_HIGH)
+            ThermodynamicTemperature::new::<kelvin>(Self::LOWER_DUCT_TEMP_LIMIT_HIGH_KELVIN)
         } else {
-            let interpolation =
-                (Self::LOWER_DUCT_TEMP_LIMIT_LOW - Self::LOWER_DUCT_TEMP_LIMIT_HIGH) / (28. - 26.)
-                    * (self.zone_measured_temperature.get::<kelvin>() - 299.15)
-                    + Self::LOWER_DUCT_TEMP_LIMIT_HIGH;
+            let interpolation = (Self::LOWER_DUCT_TEMP_LIMIT_LOW_KELVIN
+                - Self::LOWER_DUCT_TEMP_LIMIT_HIGH_KELVIN)
+                / (28. - 26.)
+                * (self.zone_measured_temperature.get::<kelvin>() - 299.15)
+                + Self::LOWER_DUCT_TEMP_LIMIT_HIGH_KELVIN;
             ThermodynamicTemperature::new::<kelvin>(interpolation)
         }
     }
@@ -495,20 +497,20 @@ impl SimulationElement for ZoneController {
 }
 
 #[derive(Clone, Copy)]
-enum OvhdFlowSelector {
+enum OverheadFlowSelector {
     Lo = 80,
     Norm = 100,
     Hi = 120,
 }
 
-read_write_enum!(OvhdFlowSelector);
+read_write_enum!(OverheadFlowSelector);
 
-impl From<f64> for OvhdFlowSelector {
+impl From<f64> for OverheadFlowSelector {
     fn from(value: f64) -> Self {
         match value as u8 {
-            0 => OvhdFlowSelector::Lo,
-            1 => OvhdFlowSelector::Norm,
-            2 => OvhdFlowSelector::Hi,
+            0 => OverheadFlowSelector::Lo,
+            1 => OverheadFlowSelector::Norm,
+            2 => OverheadFlowSelector::Hi,
             _ => panic!("Overhead flow selector position not recognized."),
         }
     }
@@ -541,13 +543,13 @@ struct PackFlowController {
     engine_1_on_fire: bool,
     engine_2_on_fire: bool,
     flow_control_valve_open: bool,
-    flow_selector_position: OvhdFlowSelector,
+    flow_selector_position: OverheadFlowSelector,
     pack_in_start_condition: bool,
     single_pack_operation: bool,
 }
 
 impl PackFlowController {
-    const PACK_START_TIME: f64 = 30.;
+    const PACK_START_TIME_SECOND: f64 = 30.;
     const PACK_START_FLOW_LIMIT: f64 = 100.;
     const APU_SUPPLY_FLOW_LIMIT: f64 = 120.;
     const ONE_PACK_FLOW_LIMIT: f64 = 120.;
@@ -586,7 +588,7 @@ impl PackFlowController {
             engine_1_on_fire: false,
             engine_2_on_fire: false,
             flow_control_valve_open: false,
-            flow_selector_position: OvhdFlowSelector::Norm,
+            flow_selector_position: OverheadFlowSelector::Norm,
             pack_in_start_condition: false,
             single_pack_operation: false,
         }
@@ -615,7 +617,7 @@ impl PackFlowController {
         // Returns true when one of the packs is in start condition
         pack_flow_valve
             .iter()
-            .any(|fcv| fcv.fcv_timer() <= Duration::from_secs_f64(Self::PACK_START_TIME))
+            .any(|fcv| fcv.fcv_timer() <= Duration::from_secs_f64(Self::PACK_START_TIME_SECOND))
     }
 
     fn flow_demand_determination(&self, aircraft_state: &AcStateManager) -> Ratio {
@@ -738,7 +740,7 @@ impl SimulationElement for PackFlowController {
         } else {
             writer.write(
                 &self.pack_flow_id,
-                Ratio::new::<percent>((OvhdFlowSelector::Lo as u32) as f64),
+                Ratio::new::<percent>((OverheadFlowSelector::Lo as u32) as f64),
             );
         }
     }

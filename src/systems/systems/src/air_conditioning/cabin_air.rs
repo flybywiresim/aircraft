@@ -40,9 +40,9 @@ impl CabinZone {
     const REAR_DOOR: &'static str = "INTERACTIVE POINT OPEN:3";
 
     const FIBER_GLASS_BLANKET_THERMAL_CONDUCTIVITY: f64 = 35.; // m*W/m*C
-    const FIBER_GLASS_BLANKET_THICKNESS: f64 = 0.06; //m
+    const FIBER_GLASS_BLANKET_THICKNESS_METER: f64 = 0.06; //m
     const ALUMINIUM_ALLOY_THERMAL_CONDUCTIVITY: f64 = 177.; // m*W/m*C
-    const ALUMINIUM_ALLOW_THICKNESS: f64 = 0.005;
+    const ALUMINIUM_ALLOW_THICKNESS_METER: f64 = 0.005; //m
 
     pub fn new(
         context: &mut InitContext,
@@ -73,13 +73,13 @@ impl CabinZone {
         pack_flow_per_cubic_meter: MassRate,
         pressurization: &impl CabinAltitude,
     ) {
-        let mut flow_in = Air::new();
-        flow_in.set_temperature(duct_temperature.duct_demand_temperature()[&self.zone_id as &str]);
-        flow_in.set_flow_rate(pack_flow_per_cubic_meter * self.zone_volume.get::<cubic_meter>());
+        let mut air_in = Air::new();
+        air_in.set_temperature(duct_temperature.duct_demand_temperature()[&self.zone_id as &str]);
+        air_in.set_flow_rate(pack_flow_per_cubic_meter * self.zone_volume.get::<cubic_meter>());
 
         self.zone_air.update(
             context,
-            &flow_in,
+            &air_in,
             self.true_airspeed,
             self.zone_volume,
             self.passengers,
@@ -119,9 +119,9 @@ struct ZoneAir {
 }
 
 impl ZoneAir {
-    const PASSENGER_HEAT_RELEASE: f64 = 0.1; // kW - from Thermodynamics: An Engineering Approach (Cengel and Boles)
-    const A320_CABIN_DIAMETER: f64 = 4.14; // m
-    const FLOW_RATE_THROUGH_OPEN_DOOR: f64 = 0.6; // kg/s
+    const PASSENGER_HEAT_RELEASE_KILOWATT: f64 = 0.1; // kW - from Thermodynamics: An Engineering Approach (Cengel and Boles)
+    const A320_CABIN_DIAMETER_METER: f64 = 4.14; // m
+    const FLOW_RATE_THROUGH_OPEN_DOOR_KG_PER_SECOND: f64 = 0.6; // kg/s
     const CONVECTION_COEFFICIENT_CONSTANT_FOR_NATURAL_CONVECTION: f64 = 1.32;
 
     fn new() -> Self {
@@ -135,7 +135,7 @@ impl ZoneAir {
     fn update(
         &mut self,
         context: &UpdateContext,
-        flow_in: &Air,
+        air_in: &Air,
         true_airspeed: Velocity,
         zone_volume: Volume,
         zone_passengers: u8,
@@ -155,7 +155,7 @@ impl ZoneAir {
         let new_equilibrium_temperature = self.equilibrium_temperature_calculation(
             context,
             number_of_open_doors,
-            flow_in,
+            air_in,
             true_airspeed,
             zone_volume,
             zone_passengers,
@@ -163,38 +163,39 @@ impl ZoneAir {
         self.internal_air
             .set_temperature(new_equilibrium_temperature);
         self.flow_out.set_temperature(new_equilibrium_temperature);
-        self.flow_out.set_flow_rate(flow_in.flow_rate());
+        self.flow_out.set_flow_rate(air_in.flow_rate());
     }
 
     fn equilibrium_temperature_calculation(
         &self,
         context: &UpdateContext,
         number_of_open_doors: u8,
-        flow_in: &Air,
+        air_in: &Air,
         true_airspeed: Velocity,
         zone_volume: Volume,
         zone_passengers: u8,
     ) -> ThermodynamicTemperature {
         // Energy balance calculation to determine equilibrium temperature in the cabin
-        let inlet_air_energy = flow_in.flow_rate().get::<kilogram_per_second>()
+        let inlet_air_energy = air_in.flow_rate().get::<kilogram_per_second>()
             * Air::SPECIFIC_HEAT_CAPACITY_PRESSURE
-            * flow_in.temperature().get::<kelvin>();
+            * air_in.temperature().get::<kelvin>();
         let mut inlet_door_air_energy = number_of_open_doors as f64
-            * (Self::FLOW_RATE_THROUGH_OPEN_DOOR)
+            * (Self::FLOW_RATE_THROUGH_OPEN_DOOR_KG_PER_SECOND)
             * Air::SPECIFIC_HEAT_CAPACITY_PRESSURE
             * context.ambient_temperature().get::<kelvin>();
         let outlet_air_energy = self.flow_out.flow_rate().get::<kilogram_per_second>()
             * Air::SPECIFIC_HEAT_CAPACITY_PRESSURE
             * self.flow_out.temperature().get::<kelvin>();
         let mut outlet_door_air_energy = number_of_open_doors as f64
-            * (Self::FLOW_RATE_THROUGH_OPEN_DOOR)
+            * (Self::FLOW_RATE_THROUGH_OPEN_DOOR_KG_PER_SECOND)
             * Air::SPECIFIC_HEAT_CAPACITY_PRESSURE
             * self.internal_air.temperature().get::<kelvin>();
-        let passenger_heat_energy = Self::PASSENGER_HEAT_RELEASE * (zone_passengers as f64);
+        let passenger_heat_energy =
+            Self::PASSENGER_HEAT_RELEASE_KILOWATT * (zone_passengers as f64);
         let wall_transfer_heat_energy = self
             .heat_transfer_through_wall_calculation(context, true_airspeed, zone_volume)
             .get::<kilowatt>();
-        // For the cocklpit we reduce the effect of opening doors
+        // For the cockpit we reduce the effect of opening doors
         if zone_volume < Volume::new::<cubic_meter>(100.) {
             inlet_door_air_energy *= 0.2;
             outlet_door_air_energy *= 0.2;
@@ -235,9 +236,9 @@ impl ZoneAir {
         let wall_specific_heat_transfer: f64 = (self.internal_air.temperature().get::<kelvin>()
             - context.ambient_temperature().get::<kelvin>())
             / (1. / internal_convection_coefficient
-                + CabinZone::FIBER_GLASS_BLANKET_THICKNESS
+                + CabinZone::FIBER_GLASS_BLANKET_THICKNESS_METER
                     / CabinZone::FIBER_GLASS_BLANKET_THERMAL_CONDUCTIVITY
-                + CabinZone::ALUMINIUM_ALLOW_THICKNESS
+                + CabinZone::ALUMINIUM_ALLOW_THICKNESS_METER
                     / CabinZone::ALUMINIUM_ALLOY_THERMAL_CONDUCTIVITY
                 + 1. / external_convection_coefficient);
         let zone_surface_area: f64 = 2.
@@ -256,7 +257,7 @@ impl ZoneAir {
         // Convection coefficient for horizontal cylinder in air
         let convection_coefficient: f64 =
             Self::CONVECTION_COEFFICIENT_CONSTANT_FOR_NATURAL_CONVECTION
-                * (temperature_differential.abs() / Self::A320_CABIN_DIAMETER).powf(1. / 4.);
+                * (temperature_differential.abs() / Self::A320_CABIN_DIAMETER_METER).powf(1. / 4.);
         convection_coefficient
     }
 
@@ -305,7 +306,7 @@ impl ZoneAir {
 
     fn characteristic_length_calculation(&self, zone_volume: Volume) -> Length {
         let characteristic_length: f64 = zone_volume.get::<cubic_meter>()
-            / (std::f64::consts::PI * (Self::A320_CABIN_DIAMETER / 2.).powf(2.));
+            / (std::f64::consts::PI * (Self::A320_CABIN_DIAMETER_METER / 2.).powf(2.));
         Length::new::<meter>(characteristic_length)
     }
 
@@ -405,12 +406,12 @@ mod cabin_air_tests {
             }
         }
 
-        fn set_flow_in_temperature(&mut self, temperature: ThermodynamicTemperature) {
+        fn set_air_in_temperature(&mut self, temperature: ThermodynamicTemperature) {
             self.air_conditioning_system
                 .set_duct_demand_temperature(temperature);
         }
 
-        fn set_flow_in_flow_rate(&mut self, flow_rate: MassRate) {
+        fn set_air_in_flow_rate(&mut self, flow_rate: MassRate) {
             self.air_conditioning_system.set_pack_flow(flow_rate);
         }
 
@@ -457,16 +458,16 @@ mod cabin_air_tests {
         }
 
         fn with_flow(mut self) -> Self {
-            self.command(|a| a.set_flow_in_flow_rate(MassRate::new::<kilogram_per_second>(1.3)));
+            self.command(|a| a.set_air_in_flow_rate(MassRate::new::<kilogram_per_second>(1.3)));
             self
         }
 
-        fn set_flow_in_temperature(&mut self, temperature: ThermodynamicTemperature) {
-            self.command(|a| a.set_flow_in_temperature(temperature));
+        fn set_air_in_temperature(&mut self, temperature: ThermodynamicTemperature) {
+            self.command(|a| a.set_air_in_temperature(temperature));
         }
 
-        fn set_flow_in_flow_rate(&mut self, flow_rate: MassRate) {
-            self.command(|a| a.set_flow_in_flow_rate(flow_rate));
+        fn set_air_in_flow_rate(&mut self, flow_rate: MassRate) {
+            self.command(|a| a.set_air_in_flow_rate(flow_rate));
         }
 
         fn set_passengers(&mut self, passengers: u8) {
@@ -538,7 +539,7 @@ mod cabin_air_tests {
         let mut test_bed = test_bed().with_flow();
 
         let initial_temp = test_bed.cabin_temperature();
-        test_bed.set_flow_in_temperature(ThermodynamicTemperature::new::<degree_celsius>(4.));
+        test_bed.set_air_in_temperature(ThermodynamicTemperature::new::<degree_celsius>(4.));
         test_bed = test_bed.iterate(80);
 
         assert!(initial_temp > test_bed.cabin_temperature());
@@ -565,7 +566,7 @@ mod cabin_air_tests {
     fn reducing_passengers_reduces_cabin_temperature() {
         let mut test_bed = test_bed().with_flow();
 
-        test_bed.set_flow_in_temperature(ThermodynamicTemperature::new::<degree_celsius>(8.));
+        test_bed.set_air_in_temperature(ThermodynamicTemperature::new::<degree_celsius>(8.));
         test_bed = test_bed.iterate_with_delta(100, Duration::from_secs(10));
         let initial_temp = test_bed.cabin_temperature();
 
@@ -579,7 +580,7 @@ mod cabin_air_tests {
     fn temperature_stays_stable_with_no_flow_and_no_passengers() {
         let mut test_bed = test_bed();
         test_bed.set_passengers(0);
-        test_bed.set_flow_in_flow_rate(MassRate::new::<kilogram_per_second>(0.));
+        test_bed.set_air_in_flow_rate(MassRate::new::<kilogram_per_second>(0.));
 
         let initial_temp = test_bed.cabin_temperature();
 
@@ -597,7 +598,7 @@ mod cabin_air_tests {
     fn reducing_ambient_temperature_reduces_cabin_temperature() {
         let mut test_bed = test_bed();
         test_bed.set_passengers(0);
-        test_bed.set_flow_in_flow_rate(MassRate::new::<kilogram_per_second>(0.));
+        test_bed.set_air_in_flow_rate(MassRate::new::<kilogram_per_second>(0.));
         let initial_temp = test_bed.cabin_temperature();
 
         test_bed.set_ambient_temperature(ThermodynamicTemperature::new::<degree_celsius>(0.));
@@ -610,7 +611,7 @@ mod cabin_air_tests {
     fn increasing_ambient_temperature_increases_cabin_temperature() {
         let mut test_bed = test_bed();
         test_bed.set_passengers(0);
-        test_bed.set_flow_in_flow_rate(MassRate::new::<kilogram_per_second>(0.));
+        test_bed.set_air_in_flow_rate(MassRate::new::<kilogram_per_second>(0.));
 
         let initial_temp = test_bed.cabin_temperature();
 
@@ -624,7 +625,7 @@ mod cabin_air_tests {
     fn more_heat_is_dissipated_in_flight() {
         let mut test_bed = test_bed();
         test_bed.set_passengers(0);
-        test_bed.set_flow_in_flow_rate(MassRate::new::<kilogram_per_second>(0.));
+        test_bed.set_air_in_flow_rate(MassRate::new::<kilogram_per_second>(0.));
         test_bed.run();
         test_bed.set_ambient_temperature(ThermodynamicTemperature::new::<degree_celsius>(0.));
         let initial_temp = test_bed.cabin_temperature();
@@ -634,7 +635,7 @@ mod cabin_air_tests {
 
         let mut test_bed2 = CabinZoneTestBed::new();
         test_bed2.set_passengers(0);
-        test_bed2.set_flow_in_flow_rate(MassRate::new::<kilogram_per_second>(0.));
+        test_bed2.set_air_in_flow_rate(MassRate::new::<kilogram_per_second>(0.));
         test_bed2.set_ambient_temperature(ThermodynamicTemperature::new::<degree_celsius>(0.));
         test_bed2.set_true_airspeed(Velocity::new::<meter_per_second>(130.));
         let initial_temp2 = test_bed2.cabin_temperature();
@@ -649,7 +650,7 @@ mod cabin_air_tests {
     fn increasing_altitude_reduces_heat_transfer() {
         let mut test_bed = test_bed();
         test_bed.set_passengers(0);
-        test_bed.set_flow_in_flow_rate(MassRate::new::<kilogram_per_second>(0.));
+        test_bed.set_air_in_flow_rate(MassRate::new::<kilogram_per_second>(0.));
         test_bed.set_ambient_temperature(ThermodynamicTemperature::new::<degree_celsius>(24.));
         test_bed.run();
         test_bed.set_ambient_temperature(ThermodynamicTemperature::new::<degree_celsius>(0.));
@@ -661,7 +662,7 @@ mod cabin_air_tests {
 
         let mut test_bed2 = CabinZoneTestBed::new();
         test_bed2.set_passengers(0);
-        test_bed2.set_flow_in_flow_rate(MassRate::new::<kilogram_per_second>(0.));
+        test_bed2.set_air_in_flow_rate(MassRate::new::<kilogram_per_second>(0.));
         test_bed2.set_ambient_temperature(ThermodynamicTemperature::new::<degree_celsius>(24.));
         test_bed2.run();
         test_bed2.set_ambient_temperature(ThermodynamicTemperature::new::<degree_celsius>(0.));
@@ -679,7 +680,7 @@ mod cabin_air_tests {
     fn opening_doors_affects_cabin_temp() {
         let mut test_bed = test_bed();
         test_bed.set_passengers(0);
-        test_bed.set_flow_in_flow_rate(MassRate::new::<kilogram_per_second>(0.));
+        test_bed.set_air_in_flow_rate(MassRate::new::<kilogram_per_second>(0.));
         test_bed.set_ambient_temperature(ThermodynamicTemperature::new::<degree_celsius>(24.));
 
         test_bed.run();

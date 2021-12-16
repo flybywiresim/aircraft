@@ -34,7 +34,7 @@ pub trait PackFlow {
 pub struct AirConditioningSystem {
     acs_overhead: AirConditioningSystemOverhead,
     acsc: ACSController,
-    pack_flow_valve: [PackFlowValve; 2],
+    pack_flow_valves: [PackFlowValve; 2],
     // TODO: pack: [AirConditioningPack; 2],
     // TODO: mixer_unit: MixerUnit,
     // TODO: trim_air_system: TrimAirSystem,
@@ -45,7 +45,7 @@ impl AirConditioningSystem {
         Self {
             acs_overhead: AirConditioningSystemOverhead::new(context, &cabin_zone_ids),
             acsc: ACSController::new(context, cabin_zone_ids),
-            pack_flow_valve: [
+            pack_flow_valves: [
                 PackFlowValve::new(context, 1),
                 PackFlowValve::new(context, 2),
             ],
@@ -62,14 +62,14 @@ impl AirConditioningSystem {
         self.acsc.update(
             context,
             &self.acs_overhead,
-            &self.pack_flow_valve,
+            &self.pack_flow_valves,
             engines,
             pressurization,
             lgciu,
         );
 
-        for fcv in self.pack_flow_valve.iter_mut() {
-            fcv.update(context, &self.acsc);
+        for pack_fv in self.pack_flow_valves.iter_mut() {
+            pack_fv.update(context, &self.acsc);
         }
     }
 }
@@ -78,7 +78,7 @@ impl SimulationElement for AirConditioningSystem {
     fn accept<V: SimulationElementVisitor>(&mut self, visitor: &mut V) {
         self.acs_overhead.accept(visitor);
         self.acsc.accept(visitor);
-        accept_iterable!(self.pack_flow_valve, visitor);
+        accept_iterable!(self.pack_flow_valves, visitor);
 
         visitor.visit(self);
     }

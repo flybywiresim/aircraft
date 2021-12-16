@@ -62,8 +62,8 @@ struct A320Cabin {
 
 impl A320Cabin {
     // TODO: Improve volume according to specs
-    const A320_CABIN_VOLUME: f64 = 400.; // m3
-    const A320_COCKPIT_VOLUME: f64 = 20.; // m3
+    const A320_CABIN_VOLUME_CUBIC_METER: f64 = 400.; // m3
+    const A320_COCKPIT_VOLUME_CUBIC_METER: f64 = 20.; // m3
 
     fn new(context: &mut InitContext) -> Self {
         Self {
@@ -76,19 +76,19 @@ impl A320Cabin {
                 CabinZone::new(
                     context,
                     "CKPT",
-                    Volume::new::<cubic_meter>(Self::A320_COCKPIT_VOLUME),
+                    Volume::new::<cubic_meter>(Self::A320_COCKPIT_VOLUME_CUBIC_METER),
                     2,
                 ),
                 CabinZone::new(
                     context,
                     "FWD",
-                    Volume::new::<cubic_meter>(Self::A320_CABIN_VOLUME / 2.),
+                    Volume::new::<cubic_meter>(Self::A320_CABIN_VOLUME_CUBIC_METER / 2.),
                     0,
                 ),
                 CabinZone::new(
                     context,
                     "AFT",
-                    Volume::new::<cubic_meter>(Self::A320_CABIN_VOLUME / 2.),
+                    Volume::new::<cubic_meter>(Self::A320_CABIN_VOLUME_CUBIC_METER / 2.),
                     0,
                 ),
             ],
@@ -104,7 +104,7 @@ impl A320Cabin {
     ) {
         let flow_rate_per_cubic_meter: MassRate = MassRate::new::<kilogram_per_second>(
             pack_flow.pack_flow().get::<kilogram_per_second>()
-                / (Self::A320_CABIN_VOLUME + Self::A320_COCKPIT_VOLUME),
+                / (Self::A320_CABIN_VOLUME_CUBIC_METER + Self::A320_COCKPIT_VOLUME_CUBIC_METER),
         );
         for zone in self.cabin_zone.iter_mut() {
             zone.update(
