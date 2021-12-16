@@ -150,9 +150,11 @@ var A320_Neo_LowerECAM_BLEED;
             const fadecStatus = [SimVar.GetSimVarValue("L:A32NX_FADEC_POWERED_ENG1", "bool"), SimVar.GetSimVarValue("L:A32NX_FADEC_POWERED_ENG1", "bool")];
             const groundSpeed = SimVar.GetSimVarValue("GPS GROUND SPEED", "Meters per second");
             const wingAntiInceState = SimVar.GetSimVarValue("STRUCTURAL DEICE SWITCH", "bool");
-            const packRequestedlvl = Math.min(...[SimVar.GetSimVarValue("L:A32NX_OVHD_COND_CKPT_SELECTOR_KNOB", "number"),
+            const packRequestedlvl = Math.min(
+                SimVar.GetSimVarValue("L:A32NX_OVHD_COND_CKPT_SELECTOR_KNOB", "number"),
                 SimVar.GetSimVarValue("L:A32NX_OVHD_COND_FWD_SELECTOR_KNOB", "number"),
-                SimVar.GetSimVarValue("L:A32NX_OVHD_COND_AFT_SELECTOR_KNOB", "number")]);
+                SimVar.GetSimVarValue("L:A32NX_OVHD_COND_AFT_SELECTOR_KNOB", "number")
+            );
             const outsidePressureINHG = SimVar.GetSimVarValue("AMBIENT PRESSURE", "inHg");
             const cabinAltFeet = SimVar.GetSimVarValue("PRESSURIZATION CABIN ALTITUDE", "feet");
             const cabinAltMeters = cabinAltFeet * this.feetToMeters;
@@ -164,9 +166,9 @@ var A320_Neo_LowerECAM_BLEED;
             const currentLeftPackState = SimVar.GetSimVarValue("L:A32NX_COND_PACK_FLOW_VALVE_1_IS_OPEN", "bool");
             const currentRightPackState = SimVar.GetSimVarValue("L:A32NX_COND_PACK_FLOW_VALVE_2_IS_OPEN", "bool");
             let currentPackFlow = SimVar.GetSimVarValue("L:A32NX_COND_PACK_FLOW", "number");
-            if (currentPackFlow == 80) {
+            if (currentPackFlow === 80) {
                 currentPackFlow = 0;
-            } else if (currentPackFlow == 120) {
+            } else if (currentPackFlow === 120) {
                 currentPackFlow = 2;
             } else {
                 currentPackFlow = 1;
