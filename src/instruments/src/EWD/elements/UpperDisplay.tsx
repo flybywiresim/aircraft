@@ -6,7 +6,8 @@ const UpperDisplay: React.FC = () => {
 
     return (
         <>
-            <N1 engine={1} x={184} y={72} />
+            <N1 engine={1} x={182} y={72} />
+            <N1 engine={2} x={412} y={72} />
             <text className="Large Center" x={300} y={90}>N1</text>
             <text className="Medium Center Cyan" x={300} y={105}>%</text>
         </>

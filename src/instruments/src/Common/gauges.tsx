@@ -223,7 +223,7 @@ type GaugeMarkerComponentType = {
     multiplierOuter?: number,
     multiplierInner?: number,
     textNudgeX?: number,
-    textNudgeY?: number
+    textNudgeY?: number,
 };
 
 export const GaugeMarkerComponent: FC<GaugeMarkerComponentType> = memo(({
