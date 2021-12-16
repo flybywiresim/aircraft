@@ -716,15 +716,15 @@ impl SimulationElement for PackFlowController {
         let apu_rpm_read: Ratio = reader.read(&self.apu_rpm_id);
         self.apu_bleed_on = apu_bleed_read && (apu_rpm_read > Ratio::new::<percent>(95.));
         self.ditching_is_on = reader.read(&self.ditching_id);
-        let crossbleed_position: usize = reader.read(&self.crossbleed_id);
+        let crossbleed_position: u8 = reader.read(&self.crossbleed_id);
         if self.apu_bleed_on {
             self.crossbleed_is_on = crossbleed_position != 0;
         } else {
             self.crossbleed_is_on = crossbleed_position == 2;
         }
-        let engine_1_state: usize = reader.read(&self.engine_1_state_id);
+        let engine_1_state: u8 = reader.read(&self.engine_1_state_id);
         self.engine_1_in_start_mode = engine_1_state == 2;
-        let engine_2_state: usize = reader.read(&self.engine_2_state_id);
+        let engine_2_state: u8 = reader.read(&self.engine_2_state_id);
         self.engine_2_in_start_mode = engine_2_state == 2;
         self.engine_1_on_fire = reader.read(&self.eng_1_fire_id);
         self.engine_2_on_fire = reader.read(&self.eng_2_fire_id);
@@ -883,7 +883,7 @@ mod acs_controller_tests {
             );
         }
 
-        fn update_number_of_passengers(&mut self, number_of_passengers: usize) {
+        fn update_number_of_passengers(&mut self, number_of_passengers: u8) {
             self.passenger_cabin
                 .update_number_of_passengers(number_of_passengers);
         }
@@ -1124,7 +1124,7 @@ mod acs_controller_tests {
             }
         }
 
-        fn command_pax_quantity(&mut self, pax_quantity: usize) {
+        fn command_pax_quantity(&mut self, pax_quantity: u8) {
             self.command(|a| a.test_cabin.update_number_of_passengers(pax_quantity));
         }
 
@@ -1132,7 +1132,7 @@ mod acs_controller_tests {
             self.command(|a| a.pressurization.set_cabin_altitude(altitude));
         }
 
-        fn command_pack_flow_selector_position(&mut self, value: usize) {
+        fn command_pack_flow_selector_position(&mut self, value: u8) {
             self.write_by_name("KNOB_OVHD_AIRCOND_PACKFLOW_Position", value);
         }
 

@@ -127,12 +127,12 @@ impl SimulationElement for A320Cabin {
     fn read(&mut self, reader: &mut SimulatorReader) {
         for zone in self.cabin_zone.iter_mut() {
             if zone.zone_id() == "FWD" {
-                let zone_passengers_1: usize = reader.read(&self.pax_rows_1_6_id);
-                let zone_passengers_2: usize = reader.read(&self.pax_rows_7_13_id);
+                let zone_passengers_1: u8 = reader.read(&self.pax_rows_1_6_id);
+                let zone_passengers_2: u8 = reader.read(&self.pax_rows_7_13_id);
                 zone.update_number_of_passengers(zone_passengers_1 + zone_passengers_2);
             } else if zone.zone_id() == "AFT" {
-                let zone_passengers_1: usize = reader.read(&self.pax_rows_14_21_id);
-                let zone_passengers_2: usize = reader.read(&self.pax_rows_22_29_id);
+                let zone_passengers_1: u8 = reader.read(&self.pax_rows_14_21_id);
+                let zone_passengers_2: u8 = reader.read(&self.pax_rows_22_29_id);
                 zone.update_number_of_passengers(zone_passengers_1 + zone_passengers_2);
             }
         }

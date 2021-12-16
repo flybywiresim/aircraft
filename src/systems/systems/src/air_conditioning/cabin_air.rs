@@ -28,7 +28,7 @@ pub struct CabinZone {
     zone_id: String,
     zone_air: ZoneAir,
     zone_volume: Volume,
-    passengers: usize,
+    passengers: u8,
     true_airspeed: Velocity,
     fwd_door_is_open: bool,
     rear_door_is_open: bool,
@@ -48,7 +48,7 @@ impl CabinZone {
         context: &mut InitContext,
         zone_id: &str,
         zone_volume: Volume,
-        passengers: usize,
+        passengers: u8,
     ) -> Self {
         Self {
             zone_identifier: context.get_identifier(format!("COND_{}_TEMP", zone_id)),
@@ -89,7 +89,7 @@ impl CabinZone {
         );
     }
 
-    pub fn update_number_of_passengers(&mut self, passengers: usize) {
+    pub fn update_number_of_passengers(&mut self, passengers: u8) {
         self.passengers = passengers;
     }
 
@@ -138,7 +138,7 @@ impl ZoneAir {
         flow_in: &Air,
         true_airspeed: Velocity,
         zone_volume: Volume,
-        zone_passengers: usize,
+        zone_passengers: u8,
         fwd_door_is_open: bool,
         rear_door_is_open: bool,
         pressurization: &impl CabinAltitude,
@@ -151,7 +151,7 @@ impl ZoneAir {
         }
         self.internal_air
             .set_pressure(pressurization.cabin_pressure());
-        let number_of_open_doors: usize = fwd_door_is_open as usize + rear_door_is_open as usize;
+        let number_of_open_doors: u8 = fwd_door_is_open as u8 + rear_door_is_open as u8;
         let new_equilibrium_temperature = self.equilibrium_temperature_calculation(
             context,
             number_of_open_doors,
@@ -169,11 +169,11 @@ impl ZoneAir {
     fn equilibrium_temperature_calculation(
         &self,
         context: &UpdateContext,
-        number_of_open_doors: usize,
+        number_of_open_doors: u8,
         flow_in: &Air,
         true_airspeed: Velocity,
         zone_volume: Volume,
-        zone_passengers: usize,
+        zone_passengers: u8,
     ) -> ThermodynamicTemperature {
         // Energy balance calculation to determine equilibrium temperature in the cabin
         let inlet_air_energy = flow_in.flow_rate().get::<kilogram_per_second>()
@@ -414,7 +414,7 @@ mod cabin_air_tests {
             self.air_conditioning_system.set_pack_flow(flow_rate);
         }
 
-        fn set_passengers(&mut self, passengers: usize) {
+        fn set_passengers(&mut self, passengers: u8) {
             self.cabin_zone.update_number_of_passengers(passengers);
         }
     }
@@ -469,7 +469,7 @@ mod cabin_air_tests {
             self.command(|a| a.set_flow_in_flow_rate(flow_rate));
         }
 
-        fn set_passengers(&mut self, passengers: usize) {
+        fn set_passengers(&mut self, passengers: u8) {
             self.command(|a| a.set_passengers(passengers));
         }
 
