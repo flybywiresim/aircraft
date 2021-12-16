@@ -460,6 +460,18 @@ impl A320Hydraulic {
         self.blue_electric_pump_controller.has_pressure_low_fault()
     }
 
+    pub fn green_reservoir(&self) -> &Reservoir {
+        self.green_circuit.reservoir()
+    }
+
+    pub fn blue_reservoir(&self) -> &Reservoir {
+        self.blue_circuit.reservoir()
+    }
+
+    pub fn yellow_reservoir(&self) -> &Reservoir {
+        self.yellow_circuit.reservoir()
+    }
+
     #[cfg(test)]
     fn should_pressurise_yellow_pump_for_cargo_door_operation(&self) -> bool {
         self.yellow_electric_pump_controller

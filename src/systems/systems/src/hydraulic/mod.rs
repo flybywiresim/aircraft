@@ -1,5 +1,6 @@
 use self::linear_actuator::Actuator;
 use crate::hydraulic::electrical_pump_physics::ElectricalPumpPhysics;
+use crate::pneumatic::PressurizeableReservoir;
 use crate::shared::{interpolation, ElectricalBusType, ElectricalBuses};
 use crate::simulation::{
     InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
@@ -1138,6 +1139,11 @@ impl Reservoir {
 impl SimulationElement for Reservoir {
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.level_id, self.fluid_level_from_gauge());
+    }
+}
+impl PressurizeableReservoir for Reservoir {
+    fn available_volume(&self) -> Volume {
+        self.max_capacity - self.current_level
     }
 }
 

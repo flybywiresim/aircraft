@@ -8,7 +8,7 @@ pub use systems::hydraulic::*;
 
 use systems::{
     electrical::Electricity,
-    shared::ElectricalBusType,
+    shared::{ElectricalBusType, MachNumber},
     simulation::{test::TestVariableRegistry, InitContext, UpdateContext},
 };
 use uom::si::{
@@ -440,5 +440,6 @@ fn context(context: &mut InitContext, delta_time: Duration) -> UpdateContext {
         Acceleration::new::<foot_per_second_squared>(0.),
         Angle::new::<radian>(0.),
         Angle::new::<radian>(0.),
+        MachNumber(0.),
     )
 }

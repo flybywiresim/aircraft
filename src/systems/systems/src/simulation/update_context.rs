@@ -5,7 +5,10 @@ use uom::si::{
 };
 
 use super::{Read, SimulatorReader};
-use crate::simulation::{InitContext, VariableIdentifier};
+use crate::{
+    shared::MachNumber,
+    simulation::{InitContext, VariableIdentifier},
+};
 use nalgebra::{Rotation3, Vector3};
 
 #[derive(Clone, Copy, Debug, Default)]
@@ -92,6 +95,7 @@ pub struct UpdateContext {
     accel_body_z_id: VariableIdentifier,
     plane_pitch_id: VariableIdentifier,
     plane_bank_id: VariableIdentifier,
+    mach_number_id: VariableIdentifier,
 
     delta: Duration,
     indicated_airspeed: Velocity,
@@ -102,6 +106,7 @@ pub struct UpdateContext {
     vertical_speed: Velocity,
     local_acceleration: LocalAcceleration,
     attitude: Attitude,
+    mach_number: MachNumber,
 }
 impl UpdateContext {
     pub(crate) const AMBIENT_TEMPERATURE_KEY: &'static str = "AMBIENT TEMPERATURE";
@@ -115,6 +120,7 @@ impl UpdateContext {
     pub(crate) const ACCEL_BODY_Z_KEY: &'static str = "ACCELERATION BODY Z";
     pub(crate) const PLANE_PITCH_KEY: &'static str = "PLANE PITCH DEGREES";
     pub(crate) const PLANE_BANK_KEY: &'static str = "PLANE BANK DEGREES";
+    pub(crate) const MACH_NUMBER_KEY: &'static str = "AIRSPEED MACH";
 
     #[deprecated(
         note = "Do not create UpdateContext directly. Instead use the SimulationTestBed or your own custom test bed."
@@ -131,6 +137,7 @@ impl UpdateContext {
         vertical_acceleration: Acceleration,
         pitch: Angle,
         bank: Angle,
+        mach_number: MachNumber,
     ) -> UpdateContext {
         UpdateContext {
             ambient_temperature_id: context
@@ -145,6 +152,7 @@ impl UpdateContext {
             accel_body_z_id: context.get_identifier(Self::ACCEL_BODY_Z_KEY.to_owned()),
             plane_pitch_id: context.get_identifier(Self::PLANE_PITCH_KEY.to_owned()),
             plane_bank_id: context.get_identifier(Self::PLANE_BANK_KEY.to_owned()),
+            mach_number_id: context.get_identifier(Self::MACH_NUMBER_KEY.to_owned()),
 
             delta,
             indicated_airspeed,
@@ -159,6 +167,7 @@ impl UpdateContext {
                 longitudinal_acceleration,
             ),
             attitude: Attitude::new(pitch, bank),
+            mach_number,
         }
     }
 
@@ -175,6 +184,7 @@ impl UpdateContext {
             accel_body_z_id: context.get_identifier("ACCELERATION BODY Z".to_owned()),
             plane_pitch_id: context.get_identifier("PLANE PITCH DEGREES".to_owned()),
             plane_bank_id: context.get_identifier("PLANE BANK DEGREES".to_owned()),
+            mach_number_id: context.get_identifier("AIRSPEED MACH".to_owned()),
 
             delta: Default::default(),
             indicated_airspeed: Default::default(),
@@ -185,6 +195,7 @@ impl UpdateContext {
             vertical_speed: Default::default(),
             local_acceleration: Default::default(),
             attitude: Default::default(),
+            mach_number: Default::default(),
         }
     }
 
@@ -209,6 +220,8 @@ impl UpdateContext {
             reader.read(&self.plane_pitch_id),
             reader.read(&self.plane_bank_id),
         );
+
+        self.mach_number = reader.read(&self.mach_number_id);
     }
 
     pub fn is_in_flight(&self) -> bool {
@@ -277,6 +290,10 @@ impl UpdateContext {
 
     pub fn attitude(&self) -> Attitude {
         self.attitude
+    }
+
+    pub fn mach_number(&self) -> MachNumber {
+        self.mach_number
     }
 
     pub fn with_delta(&self, delta: Duration) -> Self {
