@@ -164,10 +164,6 @@ fmc-main-display::before {
   left: 5%;
 }
 
-.b-text {
-  letter-spacing: normal;
-}
-
 .s-text,
 text .s-text,
 div .s-text,
@@ -177,7 +173,9 @@ span .s-text {
 }
 
 .b-text {
+  font-family: HoneywellMCDU !important;
   letter-spacing: normal;
+  line-height: normal;
 }
 
 .msg-text {

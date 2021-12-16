@@ -27,13 +27,13 @@ class A320_Neo_CDU_SelectWptPage {
             const w = orderedWaypoints[i + 5 * page];
             if (w) {
                 let t = "";
-                let freq = 0;
+                let freq = "";
                 if (w.icao[0] === "V") {
                     t = " VOR";
-                    freq = (w.infos.frequencyMHz) ? fastToFixed(w.infos.frequencyMHz, 3).toString() : " ";
+                    freq = (w.infos.frequencyMHz) ? fastToFixed(w.infos.frequencyMHz, 2).toString() : " ";
                 } else if (w.icao[0] === "N") {
                     t = " NDB";
-                    freq = (w.infos.frequencyMHz) ? fastToFixed(w.infos.frequencyMHz, 3).toString() : " ";
+                    freq = (w.infos.frequencyMHz) ? fastToFixed(w.infos.frequencyMHz, 2).toString() : " ";
                 } else if (w.icao[0] === "A") {
                     t = " AIRPORT";
                     freq = " ";
