@@ -387,8 +387,7 @@ impl A320Hydraulic {
         lgciu1: &impl LgciuSensors,
         lgciu2: &impl LgciuSensors,
         rat_and_emer_gen_man_on: &impl EmergencyElectricalRatPushButton,
-        emergency_elec_state: &impl EmergencyElectricalState,
-        emergency_generator: &impl EmergencyGeneratorPower,
+        emergency_elec: &(impl EmergencyElectricalState + EmergencyGeneratorPower),
     ) {
         self.core_hydraulic_updater.update(context);
         self.physics_updater.update(context);
@@ -396,9 +395,8 @@ impl A320Hydraulic {
         for cur_time_step in self.physics_updater {
             self.update_fast_physics(
                 &context.with_delta(cur_time_step),
-                emergency_generator,
                 rat_and_emer_gen_man_on,
-                emergency_elec_state,
+                emergency_elec,
                 lgciu1,
             );
         }
@@ -408,7 +406,7 @@ impl A320Hydraulic {
             overhead_panel,
             autobrake_panel,
             rat_and_emer_gen_man_on,
-            emergency_elec_state,
+            emergency_elec,
             lgciu1,
             lgciu2,
         );
@@ -487,9 +485,8 @@ impl A320Hydraulic {
     fn update_fast_physics(
         &mut self,
         context: &UpdateContext,
-        emergency_generator: &impl EmergencyGeneratorPower,
         rat_and_emer_gen_man_on: &impl EmergencyElectricalRatPushButton,
-        emergency_elec_state: &impl EmergencyElectricalState,
+        emergency_elec: &(impl EmergencyElectricalState + EmergencyGeneratorPower),
         lgciu1: &impl LgciuSensors,
     ) {
         self.forward_cargo_door.update(
@@ -514,7 +511,7 @@ impl A320Hydraulic {
             context,
             &self.emergency_gen,
             self.blue_circuit.system_pressure(),
-            emergency_elec_state,
+            emergency_elec,
             rat_and_emer_gen_man_on,
             lgciu1,
         );
@@ -523,7 +520,7 @@ impl A320Hydraulic {
             context,
             self.blue_circuit.system_pressure(),
             &self.gcu,
-            emergency_generator,
+            emergency_elec,
         );
     }
 
@@ -2658,7 +2655,6 @@ mod tests {
                     &self.lgciu1,
                     &self.lgciu2,
                     &self.emergency_electrical_overhead,
-                    &self.electrical,
                     &self.electrical,
                 );
 
