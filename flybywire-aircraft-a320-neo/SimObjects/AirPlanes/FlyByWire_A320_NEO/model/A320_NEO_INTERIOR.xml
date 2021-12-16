@@ -1555,6 +1555,13 @@
                     </UseTemplate>
                 </Component>
 
+                 <!--   88 15 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)-->
+                 <!-- PARK BRK EXT LT -->
+                <Update Frequency="0.5">
+                    100 99 (&gt;K:2:LIGHT_POTENTIOMETER_SET)
+                    (A:LIGHT POTENTIOMETER:99, Percent) (&gt;L:DEBUG_POT_99, Percent)
+                </Update>
+
                 <!-- Captain dome light -->
                 <UseTemplate Name="ASOBO_LIGHTING_Cabin_Emissive_Template">
                     <NODE_ID>LIGHTS_Overhead_L</NODE_ID>
