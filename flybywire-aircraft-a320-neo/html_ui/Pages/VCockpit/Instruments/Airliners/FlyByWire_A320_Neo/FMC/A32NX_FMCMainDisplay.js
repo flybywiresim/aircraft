@@ -61,7 +61,10 @@ class FMCMainDisplay extends BaseAirliners {
         this._vor2Frequency = undefined;
         this._vor2Course = undefined;
         this._ilsFrequency = undefined;
+        this._ilsIcao = undefined;
+        this._ilsIdent = undefined;
         this._ilsFrequencyPilotEntered = undefined;
+        this._ilsIdentPilotEntered = undefined;
         this._ilsCourse = undefined;
         this._adf1Frequency = undefined;
         this._adf2Frequency = undefined;
@@ -155,9 +158,12 @@ class FMCMainDisplay extends BaseAirliners {
         this.cruiseFlightLevelTimeOut = undefined;
         this.flaps = undefined;
         this.ths = undefined;
+        this.ilsAutoFrequency = undefined;
+        this.ilsAutoIcao = undefined;
         this.ilsAutoIdent = undefined;
         this.ilsAutoCourse = undefined;
         this.ilsAutoTuned = undefined;
+        this.tempFpPendingAutoTune = undefined;
         this.ilsTakeoffAutoTuned = undefined;
         this.ilsApproachAutoTuned = undefined;
         this.climbTransitionGroundAltitude = undefined;
@@ -284,6 +290,8 @@ class FMCMainDisplay extends BaseAirliners {
                 }
             }
         }, 15000);
+
+        SimVar.SetSimVarValue('L:A32NX_FM_LS_COURSE', 'number', -1);
     }
 
     initVariables() {
@@ -330,8 +338,11 @@ class FMCMainDisplay extends BaseAirliners {
         this._vor2Frequency = 0;
         this._vor2Course = 0;
         this._ilsFrequency = 0;
+        this._ilsIcao = undefined;
+        this._ilsIdent = undefined;
         this._ilsFrequencyPilotEntered = false;
-        this._ilsCourse = 0;
+        this._ilsIdentPilotEntered = false;
+        this._ilsCourse = undefined;
         this._adf1Frequency = 0;
         this._adf2Frequency = 0;
         this._debug = 0;
@@ -473,11 +484,14 @@ class FMCMainDisplay extends BaseAirliners {
         this.cruiseFlightLevelTimeOut = undefined;
         this.flaps = NaN;
         this.ths = NaN;
-        this.ilsAutoIdent = '';
-        this.ilsAutoCourse = 0;
+        this.ilsAutoFrequency = undefined;
+        this.ilsAutoIcao = undefined;
+        this.ilsAutoIdent = undefined;
+        this.ilsAutoCourse = undefined;
         this.ilsAutoTuned = false;
         this.ilsTakeoffAutoTuned = false;
         this.ilsApproachAutoTuned = false;
+        this.tempFpPendingAutoTune = false;
         this.climbTransitionGroundAltitude = null;
         this.altDestination = undefined;
         this.flightNumber = undefined;
@@ -1424,6 +1438,7 @@ class FMCMainDisplay extends BaseAirliners {
                     if (airportTo) {
                         this.eraseTemporaryFlightPlan(() => {
                             this.flightPlanManager.clearFlightPlan(() => {
+                                this.tempFpPendingAutoTune = true;
                                 this.flightPlanManager.setOrigin(airportFrom.icao, () => {
                                     this.tmpOrigin = airportFrom.ident;
                                     this.flightPlanManager.setDestination(airportTo.icao, () => {
@@ -1647,7 +1662,7 @@ class FMCMainDisplay extends BaseAirliners {
 
     setOriginRunwayIndex(runwayIndex, callback = EmptyCallback.Boolean) {
         this.ensureCurrentFlightPlanIsTemporary(() => {
-            this.clearAutotunedIls();
+            this.tempFpPendingAutoTune = true;
             this.flightPlanManager.setDepartureProcIndex(-1, () => {
                 this.flightPlanManager.setOriginRunwayIndex(runwayIndex, () => {
                     return callback(true);
@@ -1659,7 +1674,7 @@ class FMCMainDisplay extends BaseAirliners {
     setRunwayIndex(runwayIndex, callback = EmptyCallback.Boolean) {
         this.ensureCurrentFlightPlanIsTemporary(() => {
             const routeOriginInfo = this.flightPlanManager.getOrigin().infos;
-            this.clearAutotunedIls();
+            this.tempFpPendingAutoTune = true;
             if (!this.flightPlanManager.getOrigin()) {
                 this.addNewMessage(NXFictionalMessages.noOriginSet);
                 return callback(false);
@@ -1746,7 +1761,7 @@ class FMCMainDisplay extends BaseAirliners {
                         SimVar.SetSimVarValue("L:A32NX_PRESS_AUTO_LANDING_ELEVATION", "feet", A32NX_Util.meterToFeet(runway.elevation));
                     }
                 }
-                this.clearAutotunedIls();
+                this.tempFpPendingAutoTune = true;
                 callback(true);
             }).catch(console.error);
         });
@@ -1759,20 +1774,29 @@ class FMCMainDisplay extends BaseAirliners {
             try {
                 const ils = await this.facilityLoader.getFacility(ilsIcao).catch(console.error);
                 if (ils.infos.frequencyMHz > 1) {
-                    console.log('Auto-tuning ILS', ils);
-                    this.connectIlsFrequency(ils.infos.frequencyMHz);
+                    this.ilsAutoFrequency = ils.infos.frequencyMHz;
+                    this.ilsAutoIcao = ils.infos.icao;
                     this.ilsAutoIdent = ils.infos.ident;
-                    this.ilsAutoCourse = finalLeg.course;
+                    this.ilsAutoCourse = Math.round(finalLeg.course) % 360;
                     this.ilsAutoTuned = true;
+                    if (!this._ilsFrequencyPilotEntered && !this._ilsIdentPilotEntered) {
+                        this.connectIlsFrequency(this.ilsAutoFrequency);
+                    }
+                    if (this.ilsCourse) {
+                        this.checkRunwayLsCourseMismatch();
+                    } else {
+                        await this.updateIlsCourse();
+                    }
                     if (this.currentFlightPhase > FmgcFlightPhases.TAKEOFF) {
                         this.ilsApproachAutoTuned = true;
                     } else {
                         this.ilsTakeoffAutoTuned = true;
                     }
+                    this.checkRunwayLsMismatch();
                     return true;
                 }
             } catch (error) {
-                console.log('tuneIlsFromApproach', error);
+                console.error('tuneIlsFromApproach', error);
                 return false;
             }
         }
@@ -1783,20 +1807,20 @@ class FMCMainDisplay extends BaseAirliners {
         this.ilsAutoTuned = false;
         this.ilsApproachAutoTuned = false;
         this.ilsTakeoffAutoTuned = false;
-        this.ilsAutoIdent = "";
-        this.ilsAutoCourse = 0;
+        this.ilsAutoFrequency = undefined;
+        this.ilsAutoIdent = undefined;
+        this.ilsAutoCourse = undefined;
+        this.updateIlsCourse();
     }
 
     async updateIls() {
-        if (this._ilsFrequencyPilotEntered) {
-            return;
-        }
+        await this.updateIlsCourse();
 
         let airport;
         let runway;
 
         if (this.currentFlightPhase > FmgcFlightPhases.TAKEOFF) {
-            if (this.ilsApproachAutoTuned) {
+            if (this.ilsApproachAutoTuned || this.flightPlanManager.getCurrentFlightPlanIndex() !== 0) {
                 return;
             }
             this.ilsAutoTuned = false;
@@ -1821,7 +1845,7 @@ class FMCMainDisplay extends BaseAirliners {
                 }
             }
         } else {
-            if (this.ilsTakeoffAutoTuned) {
+            if (this.ilsTakeoffAutoTuned || this.flightPlanManager.getCurrentFlightPlanIndex() !== 0) {
                 return;
             }
             this.ilsAutoTuned = false;
@@ -1831,7 +1855,7 @@ class FMCMainDisplay extends BaseAirliners {
 
         // If the airport has correct navdata, the ILS will be listed as the reference navaid (originIcao in MSFS land) on at least the last leg of the
         // ILS approach procedure(s). Tuning this way gives us the ident, and the course
-        if (airport && airport.infos && runway) {
+        if (airport && airport.infos && airport.infos.icao.charAt(0) === 'A' && runway) {
             for (let i = 0; i < airport.infos.approaches.length && !this.ilsAutoTuned; i++) {
                 const appr = airport.infos.approaches[i];
                 // L(eft), C(entre), R(ight), T(true North) are the possible runway designators (ARINC424)
@@ -1848,6 +1872,48 @@ class FMCMainDisplay extends BaseAirliners {
                     }
                 }
             }
+        }
+    }
+
+    async updateIlsCourse() {
+        let course = -1;
+        if (this.ilsCourse !== undefined) {
+            course = this.ilsCourse;
+        } else if (this.ilsAutoTuned && (!this._ilsIdentPilotEntered || this._ilsIcao === this.ilsAutoIcao) && !this._ilsFrequencyPilotEntered) {
+            course = this.ilsAutoCourse;
+        } else if (this.ilsFrequency > 0 && SimVar.GetSimVarValue('NAV HAS LOCALIZER:3', 'boolean') === 1) {
+            course = SimVar.GetSimVarValue('NAV LOCALIZER:3', 'degrees');
+        }
+        return SimVar.SetSimVarValue('L:A32NX_FM_LS_COURSE', 'number', course);
+    }
+
+    isRunwayLsMismatched() {
+        if (!this.ilsAutoTuned || this.currentFlightPhase === FmgcFlightPhases.DONE) {
+            return false;
+        }
+
+        return (this._ilsFrequencyPilotEntered && Math.abs(this.ilsFrequency - this.ilsAutoFrequency) >= 0.05) || (this._ilsIdentPilotEntered && this._ilsIcao !== this.ilsAutoIcao);
+    }
+
+    isRunwayLsCourseMismatched() {
+        if (!this.ilsAutoTuned || this.ilsCourse === undefined) {
+            return false;
+        }
+
+        return Math.abs(Avionics.Utils.diffAngle(this.ilsCourse, this.ilsAutoCourse)) > 3;
+    }
+
+    checkRunwayLsMismatch() {
+        if (this.isRunwayLsMismatched()) {
+            this.addNewMessage(NXSystemMessages.rwyLsMismatch, () => !(this.isRunwayLsMismatched() || this.isRunwayLsCourseMismatched()));
+        }
+
+        // manually entered course mismatch is handled separately to avoid unwanted messages
+    }
+
+    checkRunwayLsCourseMismatch() {
+        if (this.isRunwayLsCourseMismatched()) {
+            this.addNewMessage(NXSystemMessages.rwyLsMismatch, () => !(this.isRunwayLsMismatched() || this.isRunwayLsCourseMismatched()));
         }
     }
 
@@ -1910,6 +1976,9 @@ class FMCMainDisplay extends BaseAirliners {
         });
     }
 
+    getOrSelectILSsByIdent(ident, callback) {
+        this._getOrSelectWaypoints(this.dataManager.GetILSsByIdent.bind(this.dataManager), ident, callback);
+    }
     getOrSelectVORsByIdent(ident, callback) {
         this._getOrSelectWaypoints(this.dataManager.GetVORsByIdent.bind(this.dataManager), ident, callback);
     }
@@ -2140,6 +2209,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.flightPlanManager.setCurrentFlightPlanIndex(0, () => {
             SimVar.SetSimVarValue("L:FMC_FLIGHT_PLAN_IS_TEMPORARY", "number", 0);
             SimVar.SetSimVarValue("L:MAP_SHOW_TEMPORARY_FLIGHT_PLAN", "number", 0);
+            this.tempFpPendingAutoTune = false;
             callback();
         });
     }
@@ -2150,6 +2220,10 @@ class FMCMainDisplay extends BaseAirliners {
                 this.flightPlanManager.setCurrentFlightPlanIndex(0, () => {
                     SimVar.SetSimVarValue("L:FMC_FLIGHT_PLAN_IS_TEMPORARY", "number", 0);
                     SimVar.SetSimVarValue("L:MAP_SHOW_TEMPORARY_FLIGHT_PLAN", "number", 0);
+                    if (this.tempFpPendingAutoTune) {
+                        this.clearAutotunedIls();
+                        this.tempFpPendingAutoTune = false;
+                    }
                     callback();
                 });
             }).catch(console.error);
@@ -3168,16 +3242,7 @@ class FMCMainDisplay extends BaseAirliners {
 
     connectIlsFrequency(_freq) {
         if (_freq >= 108 && _freq <= 111.95 && RadioNav.isHz50Compliant(_freq)) {
-            switch (this.radioNav.mode) {
-                case NavMode.FOUR_SLOTS: {
-                    this.ilsFrequency = _freq;
-                    break;
-                }
-                case NavMode.TWO_SLOTS: {
-                    this.vor1Frequency = _freq;
-                    break;
-                }
-            }
+            this.ilsFrequency = _freq;
             this.connectIls();
             return true;
         }
@@ -3195,45 +3260,130 @@ class FMCMainDisplay extends BaseAirliners {
         setTimeout(() => {
             this._lockConnectIls = false;
         }, 1000);
-        switch (this.radioNav.mode) {
-            case NavMode.FOUR_SLOTS: {
-                if (Math.abs(this.radioNav.getILSActiveFrequency(1) - this.ilsFrequency) > 0.005) {
-                    this.radioNav.setILSActiveFrequency(1, this.ilsFrequency);
-                }
-                break;
-            }
-            case NavMode.TWO_SLOTS: {
-                if (Math.abs(this.radioNav.getVORActiveFrequency(1) - this.vor1Frequency) > 0.005) {
-                    this.radioNav.setVORActiveFrequency(1, this.vor1Frequency);
-                }
-                break;
-            }
-            default:
-                console.error("Unknown RadioNav operating mode");
-                break;
+
+        if (Math.abs(this.radioNav.getILSActiveFrequency(1) - this.ilsFrequency) > 0.005) {
+            this.radioNav.setILSActiveFrequency(1, this.ilsFrequency);
         }
     }
 
-    setIlsFrequency(s) {
+    setIlsFrequency(s, callback) {
         if (s === FMCMainDisplay.clrValue) {
-            this.ilsFrequency = 0;
-            this.radioNav.setILSActiveFrequency(1, 0);
-            this._ilsFrequencyPilotEntered = false;
-            return true;
-        }
-        const v = parseFloat(s);
-        if (isFinite(v)) {
-            const freq = Math.round(v * 100) / 100;
-            if (this.connectIlsFrequency(freq)) {
-                this._ilsFrequencyPilotEntered = true;
-                this.clearAutotunedIls();
-                return true;
+            if (!this._ilsIdentPilotEntered && !this._ilsFrequencyPilotEntered) {
+                this.addNewMessage(NXSystemMessages.notAllowed);
+                return callback(false);
             }
-            this.addNewMessage(NXSystemMessages.entryOutOfRange);
-            return false;
+
+            this._ilsFrequencyPilotEntered = false;
+            this._ilsIdentPilotEntered = false;
+            this._ilsIcao = undefined;
+            if (this.ilsAutoTuned) {
+                this.connectIlsFrequency(this.ilsAutoFrequency);
+                this.checkRunwayLsCourseMismatch();
+            } else {
+                this.ilsCourse = undefined;
+                this.ilsFrequency = 0;
+                this.radioNav.setILSActiveFrequency(1, 0);
+            }
+            this.updateIlsCourse().then(() => {
+                callback(true);
+            });
+            return;
         }
-        this.addNewMessage(NXSystemMessages.notAllowed);
-        return false;
+        if (s.match(/^[0-9]{3}(\.[0-9]{1,2})$/) !== null) {
+            const v = parseFloat(s);
+            const freq = Math.round(v * 100) / 100;
+
+            if (this.connectIlsFrequency(freq)) {
+                this._ilsIcao = undefined;
+                this._ilsIdent = undefined;
+                this._ilsFrequencyPilotEntered = true;
+                this._ilsIdentPilotEntered = false;
+                this.ilsCourse = undefined;
+                this.checkRunwayLsMismatch();
+                this.updateIlsCourse().then(() => {
+                    callback(true);
+                });
+                return;
+            } else {
+                this.addNewMessage(NXSystemMessages.entryOutOfRange);
+                return callback(false);
+            }
+        } else if (s.match(/^[A-Z0-9]{1,4}$/) !== null) {
+            this.getOrSelectILSsByIdent(s, (navaid) => {
+                if (navaid) {
+                    if (this.connectIlsFrequency(Math.round(navaid.infos.frequencyMHz * 100) / 100)) {
+                        this._ilsIcao = navaid.infos.icao;
+                        this._ilsIdent = s;
+                        this._ilsFrequencyPilotEntered = false;
+                        this._ilsIdentPilotEntered = true;
+                        if (!this.ilsAutoTuned || this.ilsAutoIcao !== this._ilsIcao) {
+                            this.ilsCourse = undefined;
+                        }
+                        this.checkRunwayLsMismatch();
+                        this.updateIlsCourse().then(() => {
+                            callback(true);
+                        });
+                        return;
+                    } else {
+                        this.addNewMessage(NXSystemMessages.databaseCodingError);
+                        return callback(false);
+                    }
+                } else {
+                    // TODO should show new navaid page
+                    this.addNewMessage(NXSystemMessages.notInDatabase);
+                    return callback(false);
+                }
+            });
+        } else {
+            this.addNewMessage(NXSystemMessages.formatError);
+            return callback(false);
+        }
+    }
+
+    setLsCourse(s, callback) {
+        if (!this.ilsAutoTuned && !this._ilsFrequencyPilotEntered && !this._ilsIdentPilotEntered) {
+            this.addNewMessage(NXSystemMessages.notAllowed);
+            return callback(false);
+        }
+
+        if (s === FMCMainDisplay.clrValue) {
+            if (this.ilsCourse !== undefined) {
+                this.ilsCourse = undefined;
+                this.updateIlsCourse().then(() => {
+                    callback(true);
+                });
+                return;
+            } else {
+                this.addNewMessage(NXSystemMessages.notAllowed);
+                return callback(false);
+            }
+        }
+
+        const m = s.match(/^(F|B)?([0-9]{1,3})(F|B)?$/);
+        const direction = m[1] || m[3];
+        const course = parseInt(m[2]);
+        if (m !== null && direction !== undefined && (m[1] === undefined || m[3] === undefined)) {
+            if (course > 360) {
+                this.addNewMessage(NXSystemMessages.entryOutOfRange);
+                return callback(false);
+            }
+            if (direction === 'B') {
+                this.addNewMessage(NXFictionalMessages.notYetImplemented);
+                return callback(false);
+            }
+
+            this.ilsCourse = course % 360;
+
+            this.checkRunwayLsCourseMismatch();
+
+            this.updateIlsCourse().then(() => {
+                callback(true);
+            });
+            return;
+        }
+
+        this.addNewMessage(NXSystemMessages.formatError);
+        return callback(false);
     }
 
     initRadioNav(_boot) {
@@ -3393,8 +3543,8 @@ class FMCMainDisplay extends BaseAirliners {
         this._ilsFrequency = _frq;
     }
 
-    set ilsCourse(_crs) {
-        this._ilsCourse = _crs;
+    set ilsCourse(crs) {
+        this._ilsCourse = crs;
     }
 
     set adf1Frequency(_frq) {

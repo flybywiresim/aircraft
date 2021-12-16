@@ -13,7 +13,7 @@ class CDUNavRadioPage {
         let vor1FrequencyCell = "";
         let vor1CourseCell = "";
         let ilsFrequencyCell = "";
-        let ilsCourseCell = "";
+        let ilsCourseCell = "[  ]";
         let adf1FrequencyCell = "";
         let adf1BfoOption = "";
         let vor2FrequencyCell = "";
@@ -118,23 +118,44 @@ class CDUNavRadioPage {
                 }
             };
             ilsFrequencyCell = "[\xa0\xa0]/[\xa0\xa0.\xa0]";
-            ilsCourseCell = "";
             if (mcdu.ilsFrequency != 0) {
                 if (mcdu._ilsFrequencyPilotEntered) {
                     const ilsIdent = mcdu.radioNav.getILSBeacon(1);
                     ilsFrequencyCell = `{small}${ilsIdent.ident.trim().padStart(4, "\xa0")}{end}/${mcdu.ilsFrequency.toFixed(2)}`;
-                    ilsCourseCell = "{small}F" + ilsIdent.course.toFixed(0).padStart(3, "0") + "{end}";
+                } else if (mcdu._ilsIdentPilotEntered) {
+                    ilsFrequencyCell = `${mcdu._ilsIdent.trim().padStart(4, "\xa0")}/{small}${mcdu.ilsFrequency.toFixed(2)}{end}`;
                 } else if (mcdu.ilsAutoTuned) {
                     ilsFrequencyCell = `{small}${mcdu.ilsAutoIdent.padStart(4, "\xa0")}/${mcdu.ilsFrequency.toFixed(2)}{end}`;
-                    ilsCourseCell = `{small}F${mcdu.ilsAutoCourse.toFixed(0).padStart(3, "0")}{end}`;
+                }
+
+                const lsCourse = SimVar.GetSimVarValue('L:A32NX_FM_LS_COURSE', 'number');
+                if (lsCourse >= 0) {
+                    ilsCourseCell = `{${mcdu.ilsCourse !== undefined ? 'big' : 'small'}}F${lsCourse.toFixed(0).padStart(3, "0")}{end}`;
+                } else {
+                    ilsCourseCell = "{amber}____{end}";
                 }
             }
             mcdu.onLeftInput[2] = (value, scratchpadCallback) => {
-                if (mcdu.setIlsFrequency(value)) {
-                    CDUNavRadioPage.ShowPage(mcdu);
-                } else {
-                    scratchpadCallback();
-                }
+                mcdu.setIlsFrequency(value, (result) => {
+                    if (result) {
+                        mcdu.requestCall(() => {
+                            CDUNavRadioPage.ShowPage(mcdu);
+                        });
+                    } else {
+                        scratchpadCallback();
+                    }
+                });
+            };
+            mcdu.onLeftInput[3] = (value, scratchpadCallback) => {
+                mcdu.setLsCourse(value, (result) => {
+                    if (result) {
+                        mcdu.requestCall(() => {
+                            CDUNavRadioPage.ShowPage(mcdu);
+                        });
+                    } else {
+                        scratchpadCallback();
+                    }
+                });
             };
             adf1FrequencyCell = "[\xa0]/[\xa0\xa0\xa0.]";
             const adf1Ident = SimVar.GetSimVarValue(`ADF IDENT:1`, "string");
