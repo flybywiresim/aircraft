@@ -72,6 +72,7 @@ type WeatherWidgetProps = { name: string, editIcao: string, icao: string};
 const WeatherWidget = (props: WeatherWidgetProps) => {
     const [metar, setMetar] = useState<MetarParserType>(MetarParserTypeProp);
 
+    let [baroType] = usePersistentProperty('CONFIG_INIT_BARO_UNIT', 'HPA');
     let [metarSource] = usePersistentProperty('CONFIG_METAR_SRC', 'MSFS');
 
     if (metarSource === 'MSFS') {
@@ -133,13 +134,20 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
                                 <div className="flex justify-center">
                                     <IconGauge className="mb-2" size={35} stroke={1.5} strokeLinejoin="miter" />
                                 </div>
-                                {metar.barometer ? (
+                                {metar.barometer ? baroType === 'IN HG'? (
+                                    <>
+                                        {metar.barometer.hg.toFixed(2)}
+                                        {' '}
+                                        inHg
+                                    </>
+                                ) : (
                                     <>
                                         {metar.barometer.mb.toFixed(0)}
                                         {' '}
                                         mb
                                     </>
-                                ) : 'N/A'}
+                                )
+                                : 'N/A'}
                             </div>
                             <div className="text-lg text-center">
                                 <div className="flex justify-center">
