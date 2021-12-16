@@ -5,15 +5,17 @@ use super::{
 };
 use crate::simulation::{InitContext, VariableIdentifier};
 use crate::{
+    pneumatic::PneumaticValveSignal,
     shared::{
-        arinc429::SignStatus, ApuMaster, ApuStart, ConsumePower, ContactorSignal, ControllerSignal,
-        ElectricalBusType, ElectricalBuses, PneumaticValve, PneumaticValveSignal,
+        arinc429::SignStatus, ApuBleedAirValveSignal, ApuMaster, ApuStart, ConsumePower,
+        ContactorSignal, ControllerSignal, ElectricalBusType, ElectricalBuses, PneumaticValve,
     },
     simulation::{SimulationElement, SimulatorWriter, UpdateContext, Write},
 };
 use std::time::Duration;
 use uom::si::{
-    f64::*, length::foot, power::watt, ratio::percent, thermodynamic_temperature::degree_celsius,
+    f64::*, length::foot, power::watt, pressure::psi, ratio::percent,
+    thermodynamic_temperature::degree_celsius,
 };
 
 pub(super) struct ElectronicControlBox {
@@ -27,6 +29,7 @@ pub(super) struct ElectronicControlBox {
     ecam_inop_sys_apu_id: VariableIdentifier,
     apu_is_auto_shutdown_id: VariableIdentifier,
     apu_is_emergency_shutdown_id: VariableIdentifier,
+    apu_bleed_air_pressure_id: VariableIdentifier,
 
     powered_by: ElectricalBusType,
     is_powered: bool,
@@ -37,6 +40,7 @@ pub(super) struct ElectronicControlBox {
     n: Ratio,
     bleed_is_on: bool,
     bleed_air_valve_last_open_time_ago: Duration,
+    bleed_air_pressure: Pressure,
     fault: Option<ApuFault>,
     air_intake_flap_open_amount: Ratio,
     egt: ThermodynamicTemperature,
@@ -63,6 +67,7 @@ impl ElectronicControlBox {
             apu_is_auto_shutdown_id: context.get_identifier("APU_IS_AUTO_SHUTDOWN".to_owned()),
             apu_is_emergency_shutdown_id: context
                 .get_identifier("APU_IS_EMERGENCY_SHUTDOWN".to_owned()),
+            apu_bleed_air_pressure_id: context.get_identifier("APU_BLEED_AIR_PRESSURE".to_owned()),
 
             powered_by,
             is_powered: false,
@@ -73,6 +78,7 @@ impl ElectronicControlBox {
             n: Ratio::new::<percent>(0.),
             bleed_is_on: false,
             bleed_air_valve_last_open_time_ago: Duration::from_secs(1000),
+            bleed_air_pressure: Pressure::new::<psi>(0.),
             fault: None,
             air_intake_flap_open_amount: Ratio::new::<percent>(0.),
             egt: ThermodynamicTemperature::new::<degree_celsius>(0.),
@@ -130,6 +136,7 @@ impl ElectronicControlBox {
         self.n = turbine.n();
         self.egt = turbine.egt();
         self.turbine_state = turbine.state();
+        self.bleed_air_pressure = turbine.bleed_air_pressure();
         self.egt_warning_temperature =
             ElectronicControlBox::calculate_egt_warning_temperature(context, &self.turbine_state);
 
@@ -323,8 +330,8 @@ impl ControllerSignal<TurbineSignal> for ElectronicControlBox {
     }
 }
 /// Bleed air valve controller
-impl ControllerSignal<PneumaticValveSignal> for ElectronicControlBox {
-    fn signal(&self) -> Option<PneumaticValveSignal> {
+impl ControllerSignal<ApuBleedAirValveSignal> for ElectronicControlBox {
+    fn signal(&self) -> Option<ApuBleedAirValveSignal> {
         if !self.is_on() {
             None
         } else if self.fault != Some(ApuFault::ApuFire)
@@ -332,9 +339,9 @@ impl ControllerSignal<PneumaticValveSignal> for ElectronicControlBox {
             && self.n.get::<percent>() > 95.
             && self.bleed_is_on
         {
-            Some(PneumaticValveSignal::Open)
+            Some(ApuBleedAirValveSignal::new_open())
         } else {
-            Some(PneumaticValveSignal::Close)
+            Some(ApuBleedAirValveSignal::new_closed())
         }
     }
 }
@@ -365,6 +372,11 @@ impl SimulationElement for ElectronicControlBox {
         writer.write_arinc429(
             &self.apu_flap_fully_open_id,
             self.air_intake_flap_is_fully_open(),
+            ssm,
+        );
+        writer.write_arinc429(
+            &self.apu_bleed_air_pressure_id,
+            self.bleed_air_pressure,
             ssm,
         );
 
