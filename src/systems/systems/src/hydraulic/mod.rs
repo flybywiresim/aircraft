@@ -1143,7 +1143,7 @@ impl SimulationElement for Reservoir {
 }
 impl PressurizeableReservoir for Reservoir {
     fn available_volume(&self) -> Volume {
-        self.max_capacity - self.current_level
+        self.max_capacity - self.fluid_level_real()
     }
 }
 
