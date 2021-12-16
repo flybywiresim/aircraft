@@ -1854,4 +1854,20 @@ export class FlightPlanManager {
     public getFixInfo(index: 0 | 1 | 2 | 3): FixInfo {
         return this._fixInfos[index];
     }
+
+    public isWaypointInUse(icao: string): boolean {
+        for (const fp of this._flightPlans) {
+            for (let i = 0; i < fp.waypoints.length; i++) {
+                if (fp.getWaypoint(i).icao === icao) {
+                    return true;
+                }
+            }
+        }
+        for (const fixInfo of this._fixInfos) {
+            if (fixInfo.getRefFix()?.infos.icao === icao) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

@@ -36,7 +36,7 @@ export class WaypointBuilder {
    * @param instrument The base instrument instance.
    * @returns The built waypoint.
    */
-    public static fromCoordinates(ident: string, coordinates: LatLongAlt, instrument: BaseInstrument): WayPoint {
+    public static fromCoordinates(ident: string, coordinates: LatLongAlt, instrument: BaseInstrument, additionalData?: Record<string, unknown>): WayPoint {
         const waypoint = new WayPoint(instrument);
         waypoint.type = 'W';
 
@@ -48,6 +48,8 @@ export class WaypointBuilder {
 
         waypoint.icao = `W      ${ident}`;
         waypoint.infos.icao = waypoint.icao;
+
+        waypoint.additionalData = additionalData ?? {};
 
         return waypoint;
     }

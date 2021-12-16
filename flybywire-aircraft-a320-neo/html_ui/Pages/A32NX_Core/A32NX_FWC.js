@@ -342,7 +342,7 @@ class A32NX_FWC {
         }
 
         // Use FCU displayed value
-        const currentAltitudeConstraint = SimVar.GetSimVarValue("L:A32NX_AP_CSTN_ALT", "feet");
+        const currentAltitudeConstraint = SimVar.GetSimVarValue("L:A32NX_FG_ALTITUDE_CONSTRAINT", "feet");
         const currentFCUAltitude = SimVar.GetSimVarValue("AUTOPILOT ALTITUDE LOCK VAR:3", "feet");
         const targetAltitude = currentAltitudeConstraint && !this.hasAltitudeConstraint() ? currentAltitudeConstraint : currentFCUAltitude;
 

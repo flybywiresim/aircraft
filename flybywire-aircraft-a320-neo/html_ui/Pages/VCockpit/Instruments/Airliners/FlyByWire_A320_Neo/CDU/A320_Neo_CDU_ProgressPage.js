@@ -90,6 +90,8 @@ class CDUProgressPage {
                 progBearingDist = `{small}{green}\xa0${mcdu.progBearing.toFixed(0).padStart(3, "0")}°\xa0/${mcdu.progDistance.toFixed(distDigits).padStart(3)}{end}{end}`;
             }
         }
+        // the actual query takes long enough...
+        mcdu.rightInputDelay[3] = () => 0;
         mcdu.onRightInput[3] = (input, scratchpadCallback) => {
             mcdu.trySetProgWaypoint(input, (success) => {
                 if (success) {

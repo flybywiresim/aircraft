@@ -345,12 +345,15 @@ class A32NX_FlightPhase_Done {
 
     init(_fmc) {
         CDUIdentPage.ShowPage(_fmc);
-        _fmc.flightPlanManager.clearFlightPlan().catch(console.error);
-        _fmc.initVariables();
-        _fmc.initMcduVariables();
-        _fmc.scratchpad.setText("");
-        SimVar.SetSimVarValue("L:A32NX_COLD_AND_DARK_SPAWN", "Bool", true);
-        CDUIdentPage.ShowPage(_fmc);
+        _fmc.flightPlanManager.clearFlightPlan().then(() => {
+            _fmc.initVariables();
+            _fmc.initMcduVariables();
+            _fmc.dataManager.deleteAllStoredWaypoints();
+            _fmc.scratchpad.setText("");
+            SimVar.SetSimVarValue("L:A32NX_COLD_AND_DARK_SPAWN", "Bool", true).then(() => {
+                CDUIdentPage.ShowPage(_fmc);
+            });
+        }).catch(console.error);
     }
 
     check(_deltaTime, _fmc) {
