@@ -37,7 +37,7 @@ pub struct CabinZone {
 impl CabinZone {
     const TRUE_AIRSPEED: &'static str = "AIRSPEED TRUE";
     const FWD_DOOR: &'static str = "INTERACTIVE POINT OPEN:0";
-    const READ_DOOR: &'static str = "INTERACTIVE POINT OPEN:3";
+    const REAR_DOOR: &'static str = "INTERACTIVE POINT OPEN:3";
 
     const FIBER_GLASS_BLANKET_THERMAL_CONDUCTIVITY: f64 = 35.; // m*W/m*C
     const FIBER_GLASS_BLANKET_THICKNESS: f64 = 0.06; //m
@@ -54,7 +54,7 @@ impl CabinZone {
             zone_identifier: context.get_identifier(format!("COND_{}_TEMP", zone_id)),
             true_airspeed_id: context.get_identifier(Self::TRUE_AIRSPEED.to_owned()),
             fwd_door_id: context.get_identifier(Self::FWD_DOOR.to_owned()),
-            rear_door_id: context.get_identifier(Self::READ_DOOR.to_owned()),
+            rear_door_id: context.get_identifier(Self::REAR_DOOR.to_owned()),
 
             zone_id: zone_id.to_owned(),
             zone_air: ZoneAir::new(),
