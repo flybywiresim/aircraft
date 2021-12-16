@@ -472,7 +472,10 @@ impl HydraulicCircuit {
         system_section_pump: Option<&mut impl PressureSource>,
         ptu: Option<&PowerTransferUnit>,
         controller: &impl HydraulicCircuitController,
+        reservoir_pressure: Pressure,
     ) {
+        self.reservoir.update(reservoir_pressure);
+
         self.update_shutoff_valves(controller);
 
         // Taking care of leaks / consumers / actuators volumes
@@ -1077,6 +1080,8 @@ pub struct Reservoir {
     max_gaugeable: Volume,
     current_level: Volume,
     min_usable: Volume,
+
+    air_pressure: Pressure,
 }
 impl Reservoir {
     const MIN_USABLE_VOLUME: f64 = 0.2; // Gallons
@@ -1094,7 +1099,12 @@ impl Reservoir {
             max_gaugeable,
             current_level,
             min_usable: Volume::new::<gallon>(Self::MIN_USABLE_VOLUME),
+            air_pressure: Pressure::new::<psi>(50.),
         }
+    }
+
+    fn update(&mut self, air_pressure: Pressure) {
+        self.air_pressure = air_pressure;
     }
 
     // Try to take volume from reservoir. Will return only what's currently available

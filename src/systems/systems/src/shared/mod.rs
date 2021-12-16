@@ -19,6 +19,12 @@ mod random;
 pub use random::*;
 pub mod arinc429;
 
+pub trait ReservoirPressure {
+    fn green_reservoir_pressure(&self) -> Pressure;
+    fn blue_reservoir_pressure(&self) -> Pressure;
+    fn yellow_reservoir_pressure(&self) -> Pressure;
+}
+
 pub trait AuxiliaryPowerUnitElectrical:
     ControllerSignal<ContactorSignal> + ApuAvailable + ElectricalElement + ElectricitySource
 {

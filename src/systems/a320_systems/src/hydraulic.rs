@@ -38,7 +38,7 @@ use systems::{
         interpolation, DelayedFalseLogicGate, DelayedPulseTrueLogicGate, DelayedTrueLogicGate,
         ElectricalBusType, ElectricalBuses, EmergencyElectricalRatPushButton,
         EmergencyElectricalState, EngineFirePushButtons, LgciuInterface,
-        RamAirTurbineHydraulicCircuitPressurised,
+        RamAirTurbineHydraulicCircuitPressurised, ReservoirPressure,
     },
     simulation::{
         InitContext, Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -81,7 +81,6 @@ impl A320HydraulicReservoirFactory {
         )
     }
 }
-
 
 struct A320HydraulicCircuitFactory {}
 impl A320HydraulicCircuitFactory {
@@ -410,6 +409,7 @@ impl A320Hydraulic {
         lgciu2: &impl LgciuInterface,
         rat_and_emer_gen_man_on: &impl EmergencyElectricalRatPushButton,
         emergency_elec_state: &impl EmergencyElectricalState,
+        reservoir_pneumatics: &impl ReservoirPressure,
     ) {
         self.core_hydraulic_updater.update(context);
         self.physics_updater.update(context);
@@ -437,6 +437,7 @@ impl A320Hydraulic {
                 engine_fire_push_buttons,
                 lgciu1,
                 lgciu2,
+                reservoir_pneumatics,
             );
         }
     }
@@ -608,6 +609,7 @@ impl A320Hydraulic {
         engine_fire_push_buttons: &U,
         lgciu1: &impl LgciuInterface,
         lgciu2: &impl LgciuInterface,
+        reservoir_pneumatics: &impl ReservoirPressure,
     ) {
         // First update what is currently consumed and given back by each actuator
         // Todo: might have to split the actuator volumes by expected number of loops
@@ -714,6 +716,7 @@ impl A320Hydraulic {
             None::<&mut ElectricPump>,
             Some(&self.power_transfer_unit),
             &self.green_circuit_controller,
+            reservoir_pneumatics.green_reservoir_pressure(),
         );
 
         self.yellow_circuit_controller
@@ -724,6 +727,7 @@ impl A320Hydraulic {
             Some(&mut self.yellow_electric_pump),
             Some(&self.power_transfer_unit),
             &self.yellow_circuit_controller,
+            reservoir_pneumatics.yellow_reservoir_pressure(),
         );
 
         self.blue_circuit_controller
@@ -734,6 +738,7 @@ impl A320Hydraulic {
             Some(&mut self.ram_air_turbine),
             None,
             &self.blue_circuit_controller,
+            reservoir_pneumatics.blue_reservoir_pressure(),
         );
 
         self.braking_circuit_norm
@@ -2319,6 +2324,30 @@ mod tests {
             }
         }
 
+        struct A320TestPneumatics {
+            pressure: Pressure,
+        }
+        impl A320TestPneumatics {
+            pub fn new() -> Self {
+                Self {
+                    pressure: Pressure::new::<psi>(50.),
+                }
+            }
+        }
+        impl ReservoirPressure for A320TestPneumatics {
+            fn green_reservoir_pressure(&self) -> Pressure {
+                self.pressure
+            }
+
+            fn blue_reservoir_pressure(&self) -> Pressure {
+                self.pressure
+            }
+
+            fn yellow_reservoir_pressure(&self) -> Pressure {
+                self.pressure
+            }
+        }
+
         struct A320TestElectrical {
             airspeed: Velocity,
             all_ac_lost: bool,
@@ -2347,6 +2376,7 @@ mod tests {
             }
         }
         struct A320HydraulicsTestAircraft {
+            pneumatics: A320TestPneumatics,
             engine_1: LeapEngine,
             engine_2: LeapEngine,
             hydraulics: A320Hydraulic,
@@ -2385,6 +2415,7 @@ mod tests {
         impl A320HydraulicsTestAircraft {
             fn new(context: &mut InitContext) -> Self {
                 Self {
+                    pneumatics: A320TestPneumatics::new(),
                     engine_1: LeapEngine::new(context, 1),
                     engine_2: LeapEngine::new(context, 2),
                     hydraulics: A320Hydraulic::new(context),
@@ -2619,6 +2650,7 @@ mod tests {
                     &self.lgciu2,
                     &self.emergency_electrical_overhead,
                     &self.electrical,
+                    &self.pneumatics,
                 );
 
                 self.overhead.update(&self.hydraulics);

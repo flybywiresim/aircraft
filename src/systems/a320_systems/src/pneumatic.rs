@@ -24,7 +24,7 @@ use systems::{
     shared::{
         pid::PidController, ControllerSignal, DelayedTrueLogicGate, ElectricalBusType,
         ElectricalBuses, EngineCorrectedN1, EngineCorrectedN2, EngineFirePushButtons,
-        PneumaticValve,
+        PneumaticValve, ReservoirPressure,
     },
     simulation::{
         InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -303,6 +303,19 @@ impl SimulationElement for A320Pneumatic {
             &self.apu_bleed_air_valve_open_id,
             self.apu_bleed_air_valve.is_open(),
         );
+    }
+}
+impl ReservoirPressure for A320Pneumatic {
+    fn green_reservoir_pressure(&self) -> Pressure {
+        self.green_hydraulic_reservoir_with_valve.pressure()
+    }
+
+    fn blue_reservoir_pressure(&self) -> Pressure {
+        self.blue_hydraulic_reservoir_with_valve.pressure()
+    }
+
+    fn yellow_reservoir_pressure(&self) -> Pressure {
+        self.yellow_hydraulic_reservoir_with_valve.pressure()
     }
 }
 
