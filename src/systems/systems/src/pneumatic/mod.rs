@@ -287,7 +287,8 @@ pub enum EngineState {
     Off = 0,
     On = 1,
     Starting = 2,
-    Shutting = 3,
+    Restarting = 3,
+    Shutting = 4,
 }
 
 read_write_enum!(EngineState);
@@ -298,7 +299,8 @@ impl From<f64> for EngineState {
             0 | 10 => EngineState::Off,
             1 | 11 => EngineState::On,
             2 | 12 => EngineState::Starting,
-            3 | 13 => EngineState::Shutting,
+            3 | 13 => EngineState::Restarting,
+            4 | 14 => EngineState::Shutting,
             _ => panic!("EngineState value does not correspond to any enum member"),
         }
     }

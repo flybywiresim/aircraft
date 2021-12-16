@@ -120,7 +120,7 @@ export const PFD: React.FC = () => {
     const activeVerticalMode = getSimVar('L:A32NX_FMA_VERTICAL_MODE', 'enum');
     const armedLateralBitmask = getSimVar('L:A32NX_FMA_LATERAL_ARMED', 'number');
     const fmgcFlightPhase = getSimVar('L:A32NX_FMGC_FLIGHT_PHASE', 'enum');
-    const cstnAlt = getSimVar('L:A32NX_AP_CSTN_ALT', 'feet');
+    const cstnAlt = getSimVar('L:A32NX_FG_ALTITUDE_CONSTRAINT', 'feet');
     const altArmed = (armedVerticalBitmask >> 1) & 1;
     const clbArmed = (armedVerticalBitmask >> 2) & 1;
     const navArmed = (armedLateralBitmask >> 0) & 1;
@@ -148,9 +148,9 @@ export const PFD: React.FC = () => {
         selectedHeading = Simplane.getAutoPilotSelectedHeadingLockValue(false) || 0;
     }
 
-    let ILSCourse = NaN;
+    let ILSCourse = -1;
     if (lsButtonPressed) {
-        ILSCourse = getSimVar('NAV LOCALIZER:3', 'degrees');
+        ILSCourse = getSimVar('L:A32NX_FM_LS_COURSE', 'number');
     }
 
     return (

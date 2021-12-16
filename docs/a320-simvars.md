@@ -912,6 +912,14 @@
     - Bool
     - Auto brake panel push button for MAX mode is pressed
 
+- A32NX_FM_LS_COURSE
+    - Number<Degrees | -1>
+    - Landing system course. Values, in priority order:
+        - Pilot entered course
+        - Database course
+        - Course received from LOC when LOC available
+        - -1 when invalid
+
 - A32NX_FMGC_FLIGHT_PHASE
     - Enum
     - Holds the FMGCs current flight phase
@@ -1729,6 +1737,11 @@ In the variables below, {number} should be replaced with one item in the set: { 
       VPATH_SPEED | 3
       FPA_SPEED | 4
       VS_SPEED | 5
+
+- A32NX_FG_ALTITUDE_CONSTRAINT
+    - Number in ft
+    - Used for managed climb/descend
+    - Indicates an altitude constraint to follow
 
 - A32NX_FG_TARGET_ALTITUDE
     - Number in ft
