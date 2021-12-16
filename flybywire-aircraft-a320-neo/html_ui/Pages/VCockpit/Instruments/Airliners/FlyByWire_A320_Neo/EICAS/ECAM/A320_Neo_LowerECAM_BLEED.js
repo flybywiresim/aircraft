@@ -150,9 +150,11 @@ var A320_Neo_LowerECAM_BLEED;
             const fadecStatus = [SimVar.GetSimVarValue("L:A32NX_FADEC_POWERED_ENG1", "bool"), SimVar.GetSimVarValue("L:A32NX_FADEC_POWERED_ENG1", "bool")];
             const groundSpeed = SimVar.GetSimVarValue("GPS GROUND SPEED", "Meters per second");
             const wingAntiInceState = SimVar.GetSimVarValue("STRUCTURAL DEICE SWITCH", "bool");
-            const packRequestedlvl = Math.min(...[SimVar.GetSimVarValue("L:A32NX_OVHD_COND_CKPT_SELECTOR_KNOB", "number"),
+            const packRequestedlvl = Math.min(
+                SimVar.GetSimVarValue("L:A32NX_OVHD_COND_CKPT_SELECTOR_KNOB", "number"),
                 SimVar.GetSimVarValue("L:A32NX_OVHD_COND_FWD_SELECTOR_KNOB", "number"),
-                SimVar.GetSimVarValue("L:A32NX_OVHD_COND_AFT_SELECTOR_KNOB", "number")]);
+                SimVar.GetSimVarValue("L:A32NX_OVHD_COND_AFT_SELECTOR_KNOB", "number")
+            );
             const outsidePressureINHG = SimVar.GetSimVarValue("AMBIENT PRESSURE", "inHg");
             const cabinAltFeet = SimVar.GetSimVarValue("PRESSURIZATION CABIN ALTITUDE", "feet");
             const cabinAltMeters = cabinAltFeet * this.feetToMeters;
