@@ -69,6 +69,11 @@ const MetarParserTypeProp: MetarParserType = {
 
 type WeatherWidgetProps = { name: string, editIcao: string, icao: string};
 
+function getBaroTypeForAirport(icao) {
+    const inchOfMercuryRegions = ["K", "C", "M", "P", "RJ", "RO", "TI", "TJ"];
+    return inchOfMercuryRegions.some(r => icao.startsWith(r)) ? "IN HG" : "HPA";
+}
+
 const WeatherWidget = (props: WeatherWidgetProps) => {
     const [metar, setMetar] = useState<MetarParserType>(MetarParserTypeProp);
 
@@ -103,6 +108,10 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
             .catch(() => {
                 setMetar(MetarParserTypeProp);
             });
+    }
+
+    if(baroType === "AUTO") {
+        baroType = getBaroTypeForAirport(props.icao);
     }
 
     useEffect(() => {
