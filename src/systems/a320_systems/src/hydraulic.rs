@@ -445,10 +445,6 @@ impl A320Hydraulic {
         self.blue_electric_pump_controller.has_pressure_low_fault()
     }
 
-    pub fn generator_control_unit(&self) -> &impl HydraulicGeneratorControlUnit {
-        &self.gcu
-    }
-
     pub fn green_reservoir(&self) -> &Reservoir {
         self.green_circuit.reservoir()
     }
@@ -868,6 +864,15 @@ impl SimulationElement for A320Hydraulic {
             &self.ptu_high_pitch_sound_id,
             self.is_ptu_running_high_pitch_sound(),
         );
+    }
+}
+impl HydraulicGeneratorControlUnit for A320Hydraulic {
+    fn max_allowed_power(&self) -> Power {
+        self.gcu.max_allowed_power()
+    }
+
+    fn motor_speed(&self) -> AngularVelocity {
+        self.gcu.motor_speed()
     }
 }
 
@@ -5730,7 +5735,7 @@ mod tests {
             test_bed = test_bed
                 .ac_bus_1_lost()
                 .ac_bus_2_lost()
-                .run_waiting_for(Duration::from_secs(20));
+                .run_waiting_for(Duration::from_secs(8));
 
             assert!(test_bed.is_emergency_gen_at_nominal_speed());
         }

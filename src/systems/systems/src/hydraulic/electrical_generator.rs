@@ -167,6 +167,7 @@ impl HydraulicGeneratorMotor {
     const STATIC_RESISTANT_TORQUE_WHEN_UNPOWERED_NM: f64 = 2.;
     const DYNAMIC_FRICTION_TORQUE_CONSTANT: f64 = 0.00018;
     const EFFICIENCY: f64 = 0.95;
+    const FLOW_CONSTANT_RPM_CUBIC_INCH_TO_GPM: f64 = 231.;
 
     pub fn new(context: &mut InitContext, displacement: Volume) -> Self {
         Self {
@@ -280,7 +281,7 @@ impl HydraulicGeneratorMotor {
         VolumeRate::new::<gallon_per_minute>(
             self.speed.get::<revolution_per_minute>()
                 * self.virtual_displacement.get::<cubic_inch>()
-                / 231.,
+                / Self::FLOW_CONSTANT_RPM_CUBIC_INCH_TO_GPM,
         )
     }
 }

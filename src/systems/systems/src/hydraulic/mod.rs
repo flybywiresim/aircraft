@@ -700,7 +700,6 @@ pub struct Section {
     total_actuator_returned_volume: Volume,
 }
 impl Section {
-    #[allow(clippy::too_many_arguments)]
     pub fn new(
         context: &mut InitContext,
         loop_id: &str,
@@ -1162,6 +1161,8 @@ pub struct Pump {
     speed: AngularVelocity,
 }
 impl Pump {
+    const FLOW_CONSTANT_RPM_CUBIC_INCH_TO_GPM: f64 = 231.;
+
     fn new(
         press_breakpoints: [f64; 9],
         displacement_carac: [f64; 9],
@@ -1224,7 +1225,9 @@ impl Pump {
     fn calculate_displacement_from_required_flow(&self, required_flow: VolumeRate) -> Volume {
         if self.speed.get::<revolution_per_minute>() > 0. {
             let displacement = Volume::new::<cubic_inch>(
-                required_flow.get::<gallon_per_second>() * 231.0 * 60.0
+                required_flow.get::<gallon_per_second>()
+                    * Self::FLOW_CONSTANT_RPM_CUBIC_INCH_TO_GPM
+                    * 60.0
                     / self.speed.get::<revolution_per_minute>(),
             );
             self.current_max_displacement
@@ -1239,7 +1242,7 @@ impl Pump {
         if speed.get::<revolution_per_minute>() > 0. {
             VolumeRate::new::<gallon_per_second>(
                 speed.get::<revolution_per_minute>() * displacement.get::<cubic_inch>()
-                    / 231.00
+                    / Self::FLOW_CONSTANT_RPM_CUBIC_INCH_TO_GPM
                     / 60.0,
             )
         } else {
@@ -1252,7 +1255,7 @@ impl Pump {
             VolumeRate::new::<gallon_per_minute>(
                 self.speed.get::<revolution_per_minute>()
                     * self.current_displacement.get::<cubic_inch>()
-                    / 231.0,
+                    / Self::FLOW_CONSTANT_RPM_CUBIC_INCH_TO_GPM,
             )
         } else {
             VolumeRate::new::<gallon_per_second>(0.)

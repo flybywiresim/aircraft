@@ -128,7 +128,7 @@ impl Aircraft for A320 {
             &self.apu_overhead,
             &self.engine_fire_overhead,
             [&self.engine_1, &self.engine_2],
-            self.hydraulic.generator_control_unit(),
+            &self.hydraulic,
             &self.landing_gear,
         );
 
