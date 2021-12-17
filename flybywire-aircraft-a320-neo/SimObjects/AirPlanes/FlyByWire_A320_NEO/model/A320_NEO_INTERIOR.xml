@@ -1555,12 +1555,12 @@
                     </UseTemplate>
                 </Component>
 
-                 <!--   88 15 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE)-->
-                 <!-- PARK BRK EXT LT -->
-                <Update Frequency="0.5">
-                    100 99 (&gt;K:2:LIGHT_POTENTIOMETER_SET)
-                    (A:LIGHT POTENTIOMETER:99, Percent) (&gt;L:DEBUG_POT_99, Percent)
-                </Update>
+                <!-- PARK BRK EXT LT -->
+                <UseTemplate Name="FBW_Potentiometer_Toggle">
+                    <TOGGLE_CONDITION>(A:GEAR HANDLE POSITION, Bool) (L:A32NX_PARK_BRAKE_LEVER_POS, bool) and</TOGGLE_CONDITION>
+                    <TOGGLE_REQUISITE>(L:A32NX_ELEC_DC_GND_FLT_SVC_BUS_IS_POWERED, Bool)</TOGGLE_REQUISITE>
+                    <POTENTIOMETER>99</POTENTIOMETER>
+                </UseTemplate>
 
                 <!-- Captain dome light -->
                 <UseTemplate Name="ASOBO_LIGHTING_Cabin_Emissive_Template">
