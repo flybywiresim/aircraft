@@ -98,6 +98,7 @@
 1. [MCDU] Added manual ILS tuning by ident on RAD NAV page - @tracernz (Mike)
 1. [MCDU] Support manual entry of forward LS course - @tracernz (Mike)
 1. [MCDU] Increase timeout for airport loading - @tracernz (Mike)
+1. [LIGHTS] Add external PARK BRK LT - @bouveng (Johan Bouveng)
 
 ## 0.7.0
 
