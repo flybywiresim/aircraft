@@ -588,7 +588,7 @@
             <UseTemplate Name="ASOBO_GT_Anim_Code">
                 <ID>1</ID>
                 <ANIM_LENGTH>200</ANIM_LENGTH>
-                <ANIM_CODE>(L:A32NX_RUDDER_PEDAL_POSITION, number) 100 +</ANIM_CODE>
+                <ANIM_CODE>(L:A32NX_RUDDER_PEDAL_ANIMATION_POSITION, number) 100 +</ANIM_CODE>
                 <!-- [-100, 100] + 100 => [0, 200] -->
             </UseTemplate>
             <Condition Check="USE_BRAKE">
