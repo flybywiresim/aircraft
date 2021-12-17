@@ -1,7 +1,7 @@
 use std::time::Duration;
 
 use uom::si::{
-    electric_potential::volt, f64::*, frequency::hertz, power::watt, ratio::percent,
+    electric_potential::volt, f64::*, frequency::hertz, power::watt, pressure::psi, ratio::percent,
     temperature_interval, thermodynamic_temperature::degree_celsius,
 };
 
@@ -60,6 +60,10 @@ impl Turbine for ShutdownAps3200Turbine {
 
     fn state(&self) -> TurbineState {
         TurbineState::Shutdown
+    }
+
+    fn bleed_air_pressure(&self) -> Pressure {
+        Pressure::new::<psi>(14.7)
     }
 }
 
@@ -210,6 +214,10 @@ impl Turbine for Starting {
 
     fn state(&self) -> TurbineState {
         TurbineState::Starting
+    }
+
+    fn bleed_air_pressure(&self) -> Pressure {
+        Pressure::new::<psi>(14.7)
     }
 }
 
@@ -394,6 +402,10 @@ impl Turbine for Running {
     fn state(&self) -> TurbineState {
         TurbineState::Running
     }
+
+    fn bleed_air_pressure(&self) -> Pressure {
+        Pressure::new::<psi>(42.)
+    }
 }
 
 struct Stopping {
@@ -525,6 +537,10 @@ impl Turbine for Stopping {
 
     fn state(&self) -> TurbineState {
         TurbineState::Stopping
+    }
+
+    fn bleed_air_pressure(&self) -> Pressure {
+        Pressure::new::<psi>(14.7)
     }
 }
 

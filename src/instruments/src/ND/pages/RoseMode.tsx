@@ -33,7 +33,7 @@ export const RoseMode: FC<RoseModeProps> = ({ symbols, adirsAlign, rangeSetting,
     const [tcasMode] = useSimVar('L:A32NX_SWITCH_TCAS_Position', 'number');
     const [fmgcFlightPhase] = useSimVar('L:A32NX_FMGC_FLIGHT_PHASE', 'enum');
     const [selectedHeading] = useSimVar('L:A32NX_AUTOPILOT_HEADING_SELECTED', 'degrees');
-    const [ilsCourse] = useSimVar('NAV LOCALIZER:3', 'degrees');
+    const [lsCourse] = useSimVar('L:A32NX_FM_LS_COURSE', 'number');
     const [lsDisplayed] = useSimVar(`L:BTN_LS_${side === 'L' ? 1 : 2}_FILTER_ACTIVE`, 'bool'); // TODO rename simvar
     const [showTmpFplan] = useSimVar('L:MAP_SHOW_TEMPORARY_FLIGHT_PLAN', 'bool');
     const [fmaLatMode] = useSimVar('L:A32NX_FMA_LATERAL_MODE', 'enum', 200);
@@ -124,7 +124,7 @@ export const RoseMode: FC<RoseModeProps> = ({ symbols, adirsAlign, rangeSetting,
 
                 <ApproachMessage info={flightPlanManager.getAirportApproach()} flightPhase={fmgcFlightPhase} />
                 <TrackBug heading={heading} track={track} />
-                { mode === Mode.ROSE_NAV && lsDisplayed && <IlsCourseBug heading={heading} ilsCourse={ilsCourse} /> }
+                { mode === Mode.ROSE_NAV && lsDisplayed && <LsCourseBug heading={heading} lsCourse={lsCourse} /> }
                 <SelectedHeadingBug heading={heading} selected={selectedHeading} />
                 { mode === Mode.ROSE_ILS && <GlideSlope /> }
                 <Plane />
@@ -735,25 +735,25 @@ const TrackBug: React.FC<{heading: number, track: number}> = memo(({ heading, tr
     );
 });
 
-const IlsCourseBug: React.FC<{heading: number, ilsCourse: number}> = ({ heading, ilsCourse }) => {
-    if (ilsCourse < 0) {
+const LsCourseBug: React.FC<{heading: number, lsCourse: number}> = ({ heading, lsCourse }) => {
+    if (lsCourse < 0) {
         return null;
     }
 
-    const diff = getSmallestAngle(ilsCourse, heading);
+    const diff = getSmallestAngle(lsCourse, heading);
     return (
         <>
             <path
                 d="M384,128 L384,96 M376,120 L392,120"
                 transform={`rotate(${diff} 384 384)`}
                 className="shadow rounded"
-                strokeWidth={1.5}
+                strokeWidth={2.5}
             />
             <path
                 d="M384,128 L384,96 M376,120 L392,120"
                 transform={`rotate(${diff} 384 384)`}
                 className="Magenta rounded"
-                strokeWidth={1}
+                strokeWidth={2}
             />
         </>
     );

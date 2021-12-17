@@ -113,6 +113,8 @@ struct SimData {
   double fuelTankQuantityCenter;
   double fuelTankQuantityTotal;
   double fuelWeightPerGallon;
+  double kohlsmanSetting_0;
+  double kohlsmanSetting_1;
   unsigned long long kohlsmanSettingStd_3;
   double cameraState;
   double altitude_m;
@@ -239,6 +241,7 @@ struct ClientDataAutopilotLaws {
   double autopilotPhi;
   double autopilotBeta;
   double locPhiCommand;
+  double nosewheelCommand;
 };
 
 struct ClientDataAutothrust {
@@ -299,6 +302,7 @@ struct ClientDataLocalVariables {
   double flightManagementCrossTrackError;
   double flightManagementTrackAngleError;
   double flightManagementPhiCommand;
+  double flightManagementPhiLimit;
   unsigned long long flightManagementRequestedVerticalMode;
   double flightManagement_H_c_ft;
   double flightManagement_H_dot_c_fpm;

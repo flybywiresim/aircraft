@@ -2,7 +2,6 @@ import React from 'react';
 import { Arinc429Word } from '@shared/arinc429';
 import { getSmallestAngle } from '@instruments/common/utils';
 import { HorizontalTape } from './PFDUtils';
-import { getSimVar } from '../util.js';
 
 const DisplayRange = 24;
 const DistanceSpacing = 7.555;
@@ -144,7 +143,7 @@ interface QFUIndicatorProps {
 }
 
 const QFUIndicator = ({ ILSCourse, heading }: QFUIndicatorProps) => {
-    if (Number.isNaN(ILSCourse) || !getSimVar('NAV HAS LOCALIZER:3', 'Bool')) {
+    if (ILSCourse < 0) {
         return null;
     }
 
