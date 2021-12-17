@@ -1086,11 +1086,15 @@ pub struct Reservoir {
     air_pressure: Pressure,
 
     leak_failure: Failure,
+    return_failure: Failure,
 }
 impl Reservoir {
     const MIN_USABLE_VOLUME_GAL: f64 = 0.2;
 
     const LEAK_FAILURE_FLOW_GAL_PER_S: f64 = 0.1;
+
+    // Part of the fluid lost instead of returning to reservoir
+    const RETURN_FAILURE_LEAK_RATIO: f64 = 0.1;
 
     pub fn new(
         context: &mut InitContext,
@@ -1106,6 +1110,13 @@ impl Reservoir {
             _ => Failure::new(FailureType::YellowReservoirLeak),
         };
 
+        let return_failure = match hyd_loop_id {
+            "GREEN" => Failure::new(FailureType::GreenReservoirReturnLeak),
+            "BLUE" => Failure::new(FailureType::BlueReservoirReturnLeak),
+            "YELLOW" => Failure::new(FailureType::YellowReservoirReturnLeak),
+            _ => Failure::new(FailureType::YellowReservoirLeak),
+        };
+
         Self {
             level_id: context.get_identifier(format!("HYD_{}_RESERVOIR_LEVEL", hyd_loop_id)),
             max_capacity,
@@ -1114,6 +1125,7 @@ impl Reservoir {
             min_usable: Volume::new::<gallon>(Self::MIN_USABLE_VOLUME_GAL),
             air_pressure: Pressure::new::<psi>(50.),
             leak_failure,
+            return_failure,
         }
     }
 
@@ -1161,7 +1173,13 @@ impl Reservoir {
     }
 
     fn add_return_volume(&mut self, volume: Volume) {
-        self.current_level = (self.current_level + volume).min(self.max_capacity);
+        let volume_actually_returned = if !self.return_failure.is_active() {
+            volume
+        } else {
+            volume - (Self::RETURN_FAILURE_LEAK_RATIO * volume)
+        };
+
+        self.current_level = (self.current_level + volume_actually_returned).min(self.max_capacity);
     }
 
     fn fluid_level_real(&self) -> Volume {
@@ -1183,6 +1201,7 @@ impl Reservoir {
 impl SimulationElement for Reservoir {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.leak_failure.accept(visitor);
+        self.return_failure.accept(visitor);
 
         visitor.visit(self);
     }

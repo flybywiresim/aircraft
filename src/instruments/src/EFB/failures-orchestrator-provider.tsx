@@ -22,6 +22,9 @@ const createOrchestrator = () => new FailuresOrchestrator('A32NX', [
     [A320Failure.GreenReservoirAirLeak, 'Green rsrv air leak'],
     [A320Failure.BlueReservoirAirLeak, 'Blue rsrv air leak'],
     [A320Failure.YellowReservoirAirLeak, 'Yellow rsrv air leak'],
+    [A320Failure.GreenReservoirReturnLeak, 'Green rsrv return leak'],
+    [A320Failure.BlueReservoirReturnLeak, 'Blue rsrv return leak'],
+    [A320Failure.YellowReservoirReturnLeak, 'Yellow return leak'],
 ]);
 
 const Context = React.createContext<FailuresOrchestratorContext>({

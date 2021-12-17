@@ -9,6 +9,9 @@ pub enum FailureType {
     GreenReservoirAirLeak,
     BlueReservoirAirLeak,
     YellowReservoirAirLeak,
+    GreenReservoirReturnLeak,
+    BlueReservoirReturnLeak,
+    YellowReservoirReturnLeak,
 }
 
 pub struct Failure {
