@@ -1557,7 +1557,7 @@
 
                 <!-- PARK BRK EXT LT -->
                 <UseTemplate Name="FBW_Potentiometer_Toggle">
-                    <TOGGLE_CONDITION>(A:GEAR HANDLE POSITION, Bool) (L:A32NX_PARK_BRAKE_LEVER_POS, bool) and</TOGGLE_CONDITION>
+                    <TOGGLE_CONDITION>(A:GEAR CENTER POSITION, Percent over 100) 1 == (L:A32NX_PARK_BRAKE_LEVER_POS, bool) 1 == and</TOGGLE_CONDITION>
                     <TOGGLE_REQUISITE>(L:A32NX_ELEC_DC_GND_FLT_SVC_BUS_IS_POWERED, Bool)</TOGGLE_REQUISITE>
                     <POTENTIOMETER>99</POTENTIOMETER>
                 </UseTemplate>
