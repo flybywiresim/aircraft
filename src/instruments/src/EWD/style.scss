@@ -144,4 +144,10 @@ animation: pulsingS 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
         stroke-width: 3;
     }
 
+    .darkGreyBox {
+        stroke: $display-grey;
+        fill: none;
+        stroke-width: 2;
+    }
+
 }

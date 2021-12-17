@@ -19,11 +19,11 @@ const N1: React.FC<N1Props> = ({ x, y, engine }) => {
     return (
         <>
             <g id={`N1-indicator-${engine}`}>
-                <text className="Large End Green" x={x + 33} y={y + 35}>0</text>
+                <text className="Large End Green" x={x + 33} y={y + 35}>19</text>
                 <text className="Large End Green" x={x + 42} y={y + 35}>.</text>
-                <text className="Medium End Green" x={x + 55} y={y + 35}>0</text>
+                <text className="Medium End Green" x={x + 55} y={y + 35}>5</text>
                 <GaugeComponent x={x} y={y} radius={radius} startAngle={startAngle} endAngle={endAngle} visible className="GaugeComponent Gauge">
-                    <GaugeComponent x={x} y={y} radius={radius} startAngle={50} endAngle={endAngle} visible className="GaugeComponent Gauge Red" />
+                    <GaugeComponent x={x} y={y} radius={radius} startAngle={endAngle - 20} endAngle={endAngle} visible className="GaugeComponent Gauge Red" />
                     <GaugeMarkerComponent
                         value={5}
                         x={x}
@@ -57,8 +57,9 @@ const N1: React.FC<N1Props> = ({ x, y, engine }) => {
                         textNudgeX={-10}
                     />
                     <GaugeMarkerComponent value={11} x={x} y={y} min={min} max={max} radius={radius} startAngle={startAngle} endAngle={endAngle} className="GaugeText Red" />
+                    <rect x={x - 15} y={y + 15} width={75} height={25} className="darkGreyBox" />
                     <GaugeMarkerComponent
-                        value={4}
+                        value={1.9}
                         x={x}
                         y={y}
                         min={min}
@@ -70,6 +71,7 @@ const N1: React.FC<N1Props> = ({ x, y, engine }) => {
                         indicator
                     />
                 </GaugeComponent>
+
             </g>
         </>
     );

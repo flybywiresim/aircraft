@@ -224,17 +224,14 @@ type GaugeMarkerComponentType = {
     multiplierInner?: number,
     textNudgeX?: number,
     textNudgeY?: number,
+    halfIndicator?: boolean
 };
 
 export const GaugeMarkerComponent: FC<GaugeMarkerComponentType> = memo(({
     value, x, y, min, max, radius, startAngle, endAngle, className, showValue,
-    indicator, outer, multiplierOuter, multiplierInner, textNudgeX, textNudgeY,
+    indicator = false, outer, multiplierOuter = 1.15, multiplierInner = 0.9, textNudgeX = 0, textNudgeY = 0, halfIndicator = false,
 }) => {
     const dir = valueRadianAngleConverter({ value, min, max, endAngle, startAngle });
-    if (typeof multiplierOuter === 'undefined') multiplierOuter = 1.15;
-    if (typeof multiplierInner === 'undefined') multiplierInner = 0.9;
-    if (typeof textNudgeX === 'undefined') textNudgeX = 0;
-    if (typeof textNudgeY === 'undefined') textNudgeY = 0;
 
     let start = {
         x: x + (dir.x * radius * multiplierInner),
@@ -257,7 +254,11 @@ export const GaugeMarkerComponent: FC<GaugeMarkerComponentType> = memo(({
     }
 
     if (indicator) {
-        start = { x, y };
+        // Need case for EGT and other gauges which do not originate from the centre of the arc
+        // In this case use original start definition
+        if (!halfIndicator) {
+            start = { x, y };
+        }
 
         end = {
             x: x + (dir.x * radius * multiplierOuter),
