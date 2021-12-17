@@ -153,21 +153,21 @@ impl A320Pneumatic {
             green_hydraulic_reservoir_with_valve: PneumaticContainerWithConnector::new(
                 VariableVolumeContainer::new(
                     Volume::new::<gallon>(2.5),
-                    Pressure::new::<psi>(14.7),
+                    Pressure::new::<psi>(43.5.),
                     ThermodynamicTemperature::new::<degree_celsius>(15.),
                 ),
             ),
             blue_hydraulic_reservoir_with_valve: PneumaticContainerWithConnector::new(
                 VariableVolumeContainer::new(
                     Volume::new::<gallon>(1.1),
-                    Pressure::new::<psi>(14.7),
+                    Pressure::new::<psi>(42.1),
                     ThermodynamicTemperature::new::<degree_celsius>(15.),
                 ),
             ),
             yellow_hydraulic_reservoir_with_valve: PneumaticContainerWithConnector::new(
                 VariableVolumeContainer::new(
                     Volume::new::<gallon>(1.7),
-                    Pressure::new::<psi>(14.7),
+                    Pressure::new::<psi>(45.4),
                     ThermodynamicTemperature::new::<degree_celsius>(15.),
                 ),
             ),
