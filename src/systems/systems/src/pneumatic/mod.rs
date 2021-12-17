@@ -1,9 +1,10 @@
 use crate::{
+    failures::{Failure, FailureType},
     pneumatic::valve::*,
     shared::{ControllerSignal, EngineCorrectedN1, EngineCorrectedN2, PneumaticValve},
     simulation::{
-        InitContext, Read, Reader, SimulationElement, SimulatorReader, SimulatorWriter,
-        UpdateContext, VariableIdentifier, Write, Writer,
+        InitContext, Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
+        SimulatorWriter, UpdateContext, VariableIdentifier, Write, Writer,
     },
 };
 
@@ -14,6 +15,7 @@ use uom::si::{
     temperature_interval,
     thermodynamic_temperature::{degree_celsius, kelvin},
     volume::cubic_meter,
+    volume_rate::gallon_per_second,
 };
 
 pub mod valve;
@@ -316,7 +318,7 @@ impl Precooler {
         Self {
             coefficient,
             internal_connector: PneumaticContainerConnector::new(),
-            exhaust: PneumaticExhaust::new(1.),
+            exhaust: PneumaticExhaust::new(1., 1., Pressure::new::<psi>(0.)),
         }
     }
 
@@ -387,12 +389,31 @@ impl PneumaticContainer for VariableVolumeContainer {
 pub struct PneumaticContainerWithConnector<T: PneumaticContainer> {
     container: T,
     connector: PurelyPneumaticValve,
+    preloaded_relief_valve: PneumaticExhaust,
+
+    leak_failure: Failure,
 }
 impl<T: PneumaticContainer> PneumaticContainerWithConnector<T> {
-    pub fn new(container: T) -> Self {
+    const LEAK_FAILURE_MULTIPLIER: f64 = 1000.;
+
+    pub fn new(hyd_loop_id: &str, container: T, preload: Pressure, valve_speed: f64) -> Self {
+        let leak_failure = match hyd_loop_id {
+            "GREEN" => Failure::new(FailureType::GreenReservoirAirLeak),
+            "BLUE" => Failure::new(FailureType::BlueReservoirAirLeak),
+            "YELLOW" => Failure::new(FailureType::YellowReservoirAirLeak),
+            _ => Failure::new(FailureType::YellowReservoirAirLeak),
+        };
+
         Self {
             container,
             connector: PurelyPneumaticValve::new(),
+            preloaded_relief_valve: PneumaticExhaust::new(
+                valve_speed,
+                valve_speed * Self::LEAK_FAILURE_MULTIPLIER,
+                preload,
+            ),
+
+            leak_failure,
         }
     }
 
@@ -403,6 +424,19 @@ impl<T: PneumaticContainer> PneumaticContainerWithConnector<T> {
     ) {
         self.connector
             .update_move_fluid(context, connected_container, &mut self.container);
+
+        self.preloaded_relief_valve
+            .update_move_fluid(context, &mut self.container);
+
+        self.update_leak_failure();
+    }
+
+    fn update_leak_failure(&mut self) {
+        if !self.leak_failure.is_active() {
+            self.preloaded_relief_valve.set_leaking(false);
+        } else {
+            self.preloaded_relief_valve.set_leaking(true);
+        }
     }
 
     pub fn container(&mut self) -> &mut T {
@@ -421,6 +455,13 @@ impl<T: PneumaticContainer> PneumaticContainerWithConnector<T> {
 impl PneumaticContainerWithConnector<VariableVolumeContainer> {
     pub fn change_spatial_volume(&mut self, new_volume: Volume) {
         self.container.change_spatial_volume(new_volume);
+    }
+}
+impl SimulationElement for PneumaticContainerWithConnector<VariableVolumeContainer> {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.leak_failure.accept(visitor);
+
+        visitor.visit(self);
     }
 }
 
@@ -816,8 +857,12 @@ mod tests {
     #[test]
     fn container_with_valve_behaves_like_open_valve() {
         let mut source = quick_container(1., 20., 15.);
-        let mut container_with_valve =
-            PneumaticContainerWithConnector::new(quick_container(1., 10., 15.));
+        let mut container_with_valve = PneumaticContainerWithConnector::new(
+            "GREEN",
+            quick_container(1., 10., 15.),
+            Pressure::new::<psi>(0.),
+            1e-2,
+        );
 
         let context = context(Duration::from_secs(1), Length::new::<foot>(0.));
 

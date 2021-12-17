@@ -11,6 +11,7 @@ use uom::si::{
     ratio::{percent, ratio},
     temperature_interval,
     thermodynamic_temperature::kelvin,
+    volume::gallon,
     volume_rate::cubic_meter_per_second,
 };
 
@@ -319,16 +320,25 @@ impl Default for PneumaticContainerConnector {
 
 pub struct PneumaticExhaust {
     exhaust_speed: f64,
+    leaking_exhaust_speed: f64,
+    nominal_exhaust_speed: f64,
     fluid_flow: VolumeRate,
+
+    pressure_preload: Pressure,
+    nominal_preload: Pressure,
 }
 impl PneumaticExhaust {
     const TRANSFER_SPEED: f64 = 3.;
     const HEAT_CAPACITY_RATIO: f64 = 1.4;
 
-    pub fn new(exhaust_speed: f64) -> Self {
+    pub fn new(exhaust_speed: f64, leaking_exhaust_speed: f64, pressure_preload: Pressure) -> Self {
         Self {
             exhaust_speed,
+            leaking_exhaust_speed,
+            nominal_exhaust_speed: exhaust_speed,
             fluid_flow: VolumeRate::new::<cubic_meter_per_second>(0.),
+            pressure_preload,
+            nominal_preload: pressure_preload,
         }
     }
 
@@ -337,8 +347,11 @@ impl PneumaticExhaust {
         context: &UpdateContext,
         from: &mut impl PneumaticContainer,
     ) {
-        let equalization_volume =
-            self.calculate_required_volume_for_target_pressure(from, context.ambient_pressure());
+        let equalization_volume = if from.pressure() > self.pressure_preload {
+            self.calculate_required_volume_for_target_pressure(from, context.ambient_pressure())
+        } else {
+            Volume::new::<gallon>(0.)
+        };
 
         let fluid_to_move = (self.exhaust_speed
             * equalization_volume
@@ -356,13 +369,24 @@ impl PneumaticExhaust {
         target_pressure: Pressure,
     ) -> Volume {
         from.volume()
-            * ((target_pressure.get::<psi>() / from.pressure().get::<psi>())
-                .powf(1. / Self::HEAT_CAPACITY_RATIO)
+            * ((target_pressure.get::<psi>()
+                / (from.pressure().get::<psi>() + self.pressure_preload.get::<psi>()))
+            .powf(1. / Self::HEAT_CAPACITY_RATIO)
                 - 1.)
     }
 
     pub fn fluid_flow(&self) -> VolumeRate {
         self.fluid_flow
+    }
+
+    pub fn set_leaking(&mut self, is_leaking: bool) {
+        if !is_leaking {
+            self.exhaust_speed = self.nominal_exhaust_speed;
+            self.pressure_preload = self.nominal_preload;
+        } else {
+            self.exhaust_speed = self.leaking_exhaust_speed;
+            self.pressure_preload = Pressure::new::<psi>(0.);
+        }
     }
 }
 
@@ -666,7 +690,7 @@ mod tests {
     #[test]
     fn exhaust_makes_pressure_go_to_ambient_pressure() {
         let mut container = quick_container(1., 20., 15.);
-        let mut exhaust = PneumaticExhaust::new(1.);
+        let mut exhaust = PneumaticExhaust::new(1., 1., Pressure::new::<psi>(0.));
 
         let context = context(Duration::from_millis(16), Length::new::<foot>(0.));
 
@@ -681,5 +705,31 @@ mod tests {
             container.pressure().get::<psi>(),
             context.ambient_pressure().get::<psi>()
         );
+    }
+
+    #[test]
+    fn preloaded_exhaust_makes_pressure_go_to_preload() {
+        let mut container = quick_container(1., 20., 15.);
+        let mut exhaust = PneumaticExhaust::new(1., 1., Pressure::new::<psi>(70.));
+
+        let context = context(Duration::from_millis(16), Length::new::<foot>(0.));
+
+        exhaust.update_move_fluid(&context, &mut container);
+        assert!(exhaust.fluid_flow().get::<cubic_meter_per_second>() == 0.);
+
+        for _ in 1..100 {
+            exhaust.update_move_fluid(&context, &mut container);
+            assert!(exhaust.fluid_flow().get::<cubic_meter_per_second>() == 0.);
+            println!("PressNom {:.1}", container.pressure.get::<psi>());
+        }
+
+        container.pressure = Pressure::new::<psi>(90.);
+
+        for _ in 1..100 {
+            exhaust.update_move_fluid(&context, &mut container);
+            println!("PressNom {:.1}", container.pressure.get::<psi>());
+        }
+
+        assert!(container.pressure <= Pressure::new::<psi>(70.));
     }
 }

@@ -7,6 +7,9 @@ export const A320Failure = Object.freeze({
     GreenReservoirLeak: 29000,
     BlueReservoirLeak:29001,
     YellowReservoirLeak:29002,
+    GreenReservoirAirLeak: 29003,
+    BlueReservoirAirLeak:29004,
+    YellowReservoirAirLeak:29005,
     LeftPfdDisplay: 31000,
     RightPfdDisplay: 31001,
 });

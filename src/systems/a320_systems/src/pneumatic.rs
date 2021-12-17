@@ -151,25 +151,34 @@ impl A320Pneumatic {
             apu_compression_chamber: CompressionChamber::new(Volume::new::<cubic_meter>(5.)),
             apu_bleed_air_valve: DefaultValve::new_closed(),
             green_hydraulic_reservoir_with_valve: PneumaticContainerWithConnector::new(
+                "GREEN",
                 VariableVolumeContainer::new(
                     Volume::new::<gallon>(2.5),
-                    Pressure::new::<psi>(43.5.),
+                    Pressure::new::<psi>(43.5),
                     ThermodynamicTemperature::new::<degree_celsius>(15.),
                 ),
+                Pressure::new::<psi>(70.),
+                2e-2,
             ),
             blue_hydraulic_reservoir_with_valve: PneumaticContainerWithConnector::new(
+                "BLUE",
                 VariableVolumeContainer::new(
                     Volume::new::<gallon>(1.1),
                     Pressure::new::<psi>(42.1),
                     ThermodynamicTemperature::new::<degree_celsius>(15.),
                 ),
+                Pressure::new::<psi>(70.),
+                2e-2,
             ),
             yellow_hydraulic_reservoir_with_valve: PneumaticContainerWithConnector::new(
+                "YELLOW",
                 VariableVolumeContainer::new(
                     Volume::new::<gallon>(1.7),
                     Pressure::new::<psi>(45.4),
                     ThermodynamicTemperature::new::<degree_celsius>(15.),
                 ),
+                Pressure::new::<psi>(70.),
+                2e-2,
             ),
             packs: [PackComplex::new(context, 1), PackComplex::new(context, 2)],
         }
@@ -290,6 +299,10 @@ impl SimulationElement for A320Pneumatic {
         accept_iterable!(self.bleed_monitoring_computers, visitor);
         accept_iterable!(self.engine_systems, visitor);
         accept_iterable!(self.packs, visitor);
+
+        self.blue_hydraulic_reservoir_with_valve.accept(visitor);
+        self.yellow_hydraulic_reservoir_with_valve.accept(visitor);
+        self.green_hydraulic_reservoir_with_valve.accept(visitor);
 
         visitor.visit(self);
     }
@@ -865,7 +878,7 @@ impl EngineBleedAirSystem {
                 Pressure::new::<psi>(14.7),
                 ThermodynamicTemperature::new::<degree_celsius>(15.),
             ),
-            engine_starter_exhaust: PneumaticExhaust::new(1e-2),
+            engine_starter_exhaust: PneumaticExhaust::new(1e-2, 1e-2, Pressure::new::<psi>(0.)),
             engine_starter_valve: DefaultValve::new_closed(),
             precooler: Precooler::new(5.),
         }
@@ -1175,7 +1188,7 @@ impl PackComplex {
                 Pressure::new::<psi>(14.7),
                 ThermodynamicTemperature::new::<degree_celsius>(15.),
             ),
-            exhaust: PneumaticExhaust::new(0.1),
+            exhaust: PneumaticExhaust::new(0.1, 0.1, Pressure::new::<psi>(0.)),
             pack_flow_valve: DefaultValve::new_closed(),
             pack_flow_valve_controller: PackFlowValveController::new(context, engine_number),
         }
