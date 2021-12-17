@@ -54,6 +54,9 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
                 (24_000, FailureType::TransformerRectifier(1)),
                 (24_001, FailureType::TransformerRectifier(2)),
                 (24_002, FailureType::TransformerRectifier(3)),
+                (29_000, FailureType::GreenReservoirLeak),
+                (29_001, FailureType::BlueReservoirLeak),
+                (29_002, FailureType::YellowReservoirLeak),
             ])
             .provides_aircraft_variable("ACCELERATION BODY X", "feet per second squared", 0)?
             .provides_aircraft_variable("ACCELERATION BODY Y", "feet per second squared", 0)?

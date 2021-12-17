@@ -745,6 +745,13 @@ impl A320Hydraulic {
             .update(context, self.green_circuit.system_section());
         self.braking_circuit_altn
             .update(context, self.yellow_circuit.system_section());
+
+        println!(
+            "HYD AIR PRESS: G{:.1}, B{:.1}, Y{:.1}",
+            self.green_circuit.reservoir().air_pressure().get::<psi>(),
+            self.blue_circuit.reservoir().air_pressure().get::<psi>(),
+            self.yellow_circuit.reservoir().air_pressure().get::<psi>()
+        );
     }
 
     // Actual logic of HYD PTU memo computed here until done within FWS

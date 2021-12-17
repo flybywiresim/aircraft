@@ -311,6 +311,7 @@ fn hyd_circuit_basic(path: &str) {
             Some(&mut epump),
             None,
             &TestHydraulicCircuitController::commanding_open_fire_shutoff_valve(1),
+            Pressure::new::<psi>(50.),
         );
 
         hyd_circuit_history.update(

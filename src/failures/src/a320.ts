@@ -4,6 +4,9 @@ export const A320Failure = Object.freeze({
     TransformerRectifier1: 24000,
     TransformerRectifier2: 24001,
     TransformerRectifierEssential: 24002,
+    GreenReservoirLeak: 29000,
+    BlueReservoirLeak:29001,
+    YellowReservoirLeak:29002,
     LeftPfdDisplay: 31000,
     RightPfdDisplay: 31001,
 });

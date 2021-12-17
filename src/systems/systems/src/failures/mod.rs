@@ -3,6 +3,9 @@ use crate::simulation::SimulationElement;
 #[derive(Clone, Copy, PartialEq)]
 pub enum FailureType {
     TransformerRectifier(usize),
+    GreenReservoirLeak,
+    BlueReservoirLeak,
+    YellowReservoirLeak,
 }
 
 pub struct Failure {

@@ -1,4 +1,5 @@
 use self::linear_actuator::Actuator;
+use crate::failures::{Failure, FailureType};
 use crate::hydraulic::electrical_pump_physics::ElectricalPumpPhysics;
 use crate::pneumatic::PressurizeableReservoir;
 use crate::shared::{interpolation, ElectricalBusType, ElectricalBuses};
@@ -6,6 +7,7 @@ use crate::simulation::{
     InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
     VariableIdentifier, Write,
 };
+
 use std::time::Duration;
 use uom::si::angular_velocity::radian_per_second;
 use uom::si::{
@@ -474,7 +476,7 @@ impl HydraulicCircuit {
         controller: &impl HydraulicCircuitController,
         reservoir_pressure: Pressure,
     ) {
-        self.reservoir.update(reservoir_pressure);
+        self.reservoir.update(context, reservoir_pressure);
 
         self.update_shutoff_valves(controller);
 
@@ -1082,9 +1084,13 @@ pub struct Reservoir {
     min_usable: Volume,
 
     air_pressure: Pressure,
+
+    leak_failure: Failure,
 }
 impl Reservoir {
     const MIN_USABLE_VOLUME_GAL: f64 = 0.2;
+
+    const LEAK_FAILURE_FLOW_GAL_PER_S: f64 = 0.1;
 
     pub fn new(
         context: &mut InitContext,
@@ -1093,6 +1099,13 @@ impl Reservoir {
         max_gaugeable: Volume,
         current_level: Volume,
     ) -> Self {
+        let leak_failure = match hyd_loop_id {
+            "GREEN" => Failure::new(FailureType::GreenReservoirLeak),
+            "BLUE" => Failure::new(FailureType::BlueReservoirLeak),
+            "YELLOW" => Failure::new(FailureType::YellowReservoirLeak),
+            _ => Failure::new(FailureType::YellowReservoirLeak),
+        };
+
         Self {
             level_id: context.get_identifier(format!("HYD_{}_RESERVOIR_LEVEL", hyd_loop_id)),
             max_capacity,
@@ -1100,11 +1113,24 @@ impl Reservoir {
             current_level,
             min_usable: Volume::new::<gallon>(Self::MIN_USABLE_VOLUME_GAL),
             air_pressure: Pressure::new::<psi>(50.),
+            leak_failure,
         }
     }
 
-    fn update(&mut self, air_pressure: Pressure) {
+    fn update(&mut self, context: &UpdateContext, air_pressure: Pressure) {
         self.air_pressure = air_pressure;
+
+        self.update_leak_failure(context);
+    }
+
+    fn update_leak_failure(&mut self, context: &UpdateContext) {
+        if self.leak_failure.is_active() {
+            self.current_level -=
+                VolumeRate::new::<gallon_per_second>(Self::LEAK_FAILURE_FLOW_GAL_PER_S)
+                    * context.delta_as_time();
+
+            self.current_level = self.current_level.max(Volume::new::<gallon>(0.));
+        }
     }
 
     // Try to take volume from reservoir. Will return only what's currently available
@@ -1155,6 +1181,12 @@ impl Reservoir {
     }
 }
 impl SimulationElement for Reservoir {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.leak_failure.accept(visitor);
+
+        visitor.visit(self);
+    }
+
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.level_id, self.fluid_level_from_gauge());
     }
@@ -1844,6 +1876,52 @@ mod tests {
         let volume_gallon: f64 = test_bed.read_by_name("HYD_GREEN_RESERVOIR_LEVEL");
 
         assert_about_eq!(volume_gallon, 2.);
+    }
+
+    #[test]
+    fn reservoir_leaking_loses_fluid() {
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            reservoir(
+                context,
+                "GREEN",
+                Volume::new::<gallon>(5.),
+                Volume::new::<gallon>(2.),
+                Volume::new::<gallon>(5.),
+            )
+        }));
+
+        test_bed.set_update_after_power_distribution(|reservoir, context| {
+            reservoir.update(context, Pressure::new::<psi>(50.))
+        });
+
+        test_bed.fail(FailureType::GreenReservoirLeak);
+        test_bed.run_multiple_frames(Duration::from_secs(10));
+
+        let volume_after_leak_gallon: f64 = test_bed.read_by_name("HYD_GREEN_RESERVOIR_LEVEL");
+        assert!(volume_after_leak_gallon < 4.5);
+    }
+
+    #[test]
+    fn reservoir_leaking_cant_go_lower_then_0() {
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            reservoir(
+                context,
+                "GREEN",
+                Volume::new::<gallon>(5.),
+                Volume::new::<gallon>(2.),
+                Volume::new::<gallon>(0.5),
+            )
+        }));
+
+        test_bed.set_update_after_power_distribution(|reservoir, context| {
+            reservoir.update(context, Pressure::new::<psi>(50.))
+        });
+
+        test_bed.fail(FailureType::GreenReservoirLeak);
+        test_bed.run_multiple_frames(Duration::from_secs(10));
+
+        let volume_after_leak_gallon: f64 = test_bed.read_by_name("HYD_GREEN_RESERVOIR_LEVEL");
+        assert!(volume_after_leak_gallon == 0.);
     }
 
     fn section(
