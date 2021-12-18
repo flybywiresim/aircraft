@@ -394,7 +394,7 @@ pub struct PneumaticContainerWithConnector<T: PneumaticContainer> {
     leak_failure: Failure,
 }
 impl<T: PneumaticContainer> PneumaticContainerWithConnector<T> {
-    const LEAK_FAILURE_MULTIPLIER: f64 = 80.;
+    const LEAK_FAILURE_MULTIPLIER: f64 = 500.;
 
     pub fn new(hyd_loop_id: &str, container: T, preload: Pressure, valve_speed: f64) -> Self {
         let leak_failure = match hyd_loop_id {

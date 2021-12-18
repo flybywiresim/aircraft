@@ -1,7 +1,11 @@
 use std::f64::consts::PI;
+use std::time::Duration;
 
 use crate::{
-    shared::{ControllerSignal, ElectricalBusType, ElectricalBuses, PneumaticValve},
+    shared::{
+        low_pass_filter::LowPassFilter, ControllerSignal, ElectricalBusType, ElectricalBuses,
+        PneumaticValve,
+    },
     simulation::{SimulationElement, SimulationElementVisitor, UpdateContext},
 };
 
@@ -326,6 +330,7 @@ pub struct PneumaticExhaust {
 
     pressure_preload: Pressure,
     nominal_preload: Pressure,
+    fluid_volume_filtered: LowPassFilter<Volume>,
 }
 impl PneumaticExhaust {
     const TRANSFER_SPEED: f64 = 3.;
@@ -339,6 +344,7 @@ impl PneumaticExhaust {
             fluid_flow: VolumeRate::new::<cubic_meter_per_second>(0.),
             pressure_preload,
             nominal_preload: pressure_preload,
+            fluid_volume_filtered: LowPassFilter::<Volume>::new(Duration::from_millis(100)),
         }
     }
 
@@ -350,6 +356,7 @@ impl PneumaticExhaust {
         let equalization_volume = if from.pressure() > self.pressure_preload {
             self.calculate_required_volume_for_target_pressure(from, context.ambient_pressure())
         } else {
+            self.fluid_volume_filtered.reset(Volume::new::<gallon>(0.));
             Volume::new::<gallon>(0.)
         };
 
@@ -358,7 +365,10 @@ impl PneumaticExhaust {
             * (1. - (-Self::TRANSFER_SPEED * context.delta_as_secs_f64()).exp()))
         .max(-from.volume());
 
-        from.change_fluid_amount(fluid_to_move);
+        from.change_fluid_amount(
+            self.fluid_volume_filtered
+                .update(context.delta(), fluid_to_move),
+        );
 
         self.fluid_flow = -fluid_to_move / context.delta_as_time();
     }
@@ -369,9 +379,8 @@ impl PneumaticExhaust {
         target_pressure: Pressure,
     ) -> Volume {
         from.volume()
-            * ((target_pressure.get::<psi>()
-                / (from.pressure().get::<psi>() + self.pressure_preload.get::<psi>()))
-            .powf(1. / Self::HEAT_CAPACITY_RATIO)
+            * ((target_pressure.get::<psi>() / (from.pressure().get::<psi>()))
+                .powf(1. / Self::HEAT_CAPACITY_RATIO)
                 - 1.)
     }
 
@@ -710,7 +719,7 @@ mod tests {
     #[test]
     fn preloaded_exhaust_makes_pressure_go_to_preload() {
         let mut container = quick_container(1., 20., 15.);
-        let mut exhaust = PneumaticExhaust::new(1., 1., Pressure::new::<psi>(70.));
+        let mut exhaust = PneumaticExhaust::new(10., 1., Pressure::new::<psi>(70.));
 
         let context = context(Duration::from_millis(16), Length::new::<foot>(0.));
 
@@ -720,14 +729,14 @@ mod tests {
         for _ in 1..100 {
             exhaust.update_move_fluid(&context, &mut container);
             assert!(exhaust.fluid_flow().get::<cubic_meter_per_second>() == 0.);
-            println!("PressNom {:.1}", container.pressure.get::<psi>());
+            println!("Press Nominal {:.1}", container.pressure.get::<psi>());
         }
 
         container.pressure = Pressure::new::<psi>(90.);
 
         for _ in 1..100 {
             exhaust.update_move_fluid(&context, &mut container);
-            println!("PressNom {:.1}", container.pressure.get::<psi>());
+            println!("Press Above Preload {:.1}", container.pressure.get::<psi>());
         }
 
         assert!(container.pressure <= Pressure::new::<psi>(70.));
