@@ -1073,7 +1073,6 @@ class CDUPerformancePage {
             const engOutAccAltitude = Math.round((elevation + engOutAccAltOffset) / 10) * 10;
 
             mcdu.engineOutAccelerationAltitude = engOutAccAltitude;
-            mcdu.engineOutAccelerationAltitudeIsPilotEntered = false;
             SimVar.SetSimVarValue("L:A32NX_ENG_OUT_ACC_ALT", "feet", engOutAccAltitude);
         }
     }
