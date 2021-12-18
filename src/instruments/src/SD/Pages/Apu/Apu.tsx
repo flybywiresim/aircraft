@@ -317,28 +317,25 @@ const EgtGauge = ({ x, y } : ComponentPositionProps) => {
     const apuEgtCaution = useArinc429Var('L:A32NX_APU_EGT_CAUTION', 500);
     const apuEgtWarning = useArinc429Var('L:A32NX_APU_EGT_WARNING', 500);
 
-    const [apuEgtIndicationColor, setApuEgtIndicationColor] = useState('Green');
-
     const redLineShown = apuEgtCaution.isNormalOperation() && apuEgtWarning.isNormalOperation();
 
     // FBW-31-05
-    let apuEgtIndicationColor;
-    if (apuEgt.value >= apuEgtWarning.value) {
-        apuEgtIndicationColor = 'Red';
-    } else if (apuEgt.value >= apuEgtCaution.value) {
-        apuEgtIndicationColor = 'Amber';
+    let egtNeedleStyle: string;
+
+    if (apuEgt.value > apuEgtWarning.value) {
+        egtNeedleStyle = 'Red';
+    } else if (apuEgt.value > apuEgtCaution.value) {
+        egtNeedleStyle = 'Amber';
     } else {
-        apuEgtIndicationColor = 'Green';
+        egtNeedleStyle = 'Green';
     }
 
-    let egtValueStyle;
+    let egtNumericalStyle: string;
 
     if (!apuEgt.isNormalOperation()) {
-        egtValueStyle = 'Amber';
-    } else if (apuEgtIndicationColor === 'Pulse') {
-        egtValueStyle = 'FillPulse';
+        egtNumericalStyle = 'Amber';
     } else {
-        egtValueStyle = apuEgtIndicationColor;
+        egtNumericalStyle = egtNeedleStyle;
     }
 
     return (
@@ -442,7 +439,7 @@ const EgtGauge = ({ x, y } : ComponentPositionProps) => {
                                 startAngle={240}
                                 endAngle={90}
                                 value={apuEgt.value < 300 ? 300 : displayedEgtValue}
-                                className={`Line ${apuEgtIndicationColor === 'Pulse' ? 'LinePulse' : apuEgtIndicationColor}`}
+                                className={`Line ${egtNeedleStyle === 'Pulse' ? 'LinePulse' : egtNeedleStyle}`}
                                 indicator
                             />
                         )}
@@ -456,7 +453,7 @@ const EgtGauge = ({ x, y } : ComponentPositionProps) => {
                 <text
                     x={10}
                     y={80}
-                    className={`FontLarger Left ${egtValueStyle}`}
+                    className={`FontLarger Left ${egtNumericalStyle}`}
                 >
                     {apuEgt.isNormalOperation() ? displayedEgtValue : 'XX' }
                 </text>
