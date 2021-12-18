@@ -8,7 +8,7 @@ mod pneumatic;
 mod power_consumption;
 
 use self::{
-    air_conditioning::A320AirConditioning;
+    air_conditioning::A320AirConditioning,
     fuel::A320Fuel,
     pneumatic::{A320Pneumatic, A320PneumaticOverheadPanel},
 };
@@ -143,12 +143,6 @@ impl Aircraft for A320 {
     }
 
     fn update_after_power_distribution(&mut self, context: &UpdateContext) {
-        self.air_conditioning.update(
-            context,
-            [&self.engine_1, &self.engine_2],
-            &self.pressurization,
-            [&self.lgciu1, &self.lgciu2],
-        );
         self.apu.update_after_power_distribution();
         self.apu_overhead.update_after_apu(&self.apu);
 
@@ -199,6 +193,12 @@ impl Aircraft for A320 {
             &self.pneumatic_overhead,
             &self.engine_fire_overhead,
             &self.apu,
+        );
+        self.air_conditioning.update(
+            context,
+            [&self.engine_1, &self.engine_2],
+            &self.pressurization,
+            [&self.lgciu1, &self.lgciu2],
         );
     }
 }

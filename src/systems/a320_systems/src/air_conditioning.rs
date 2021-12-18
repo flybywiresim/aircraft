@@ -31,14 +31,14 @@ impl A320AirConditioning {
         pressurization: &impl CabinAltitude,
         lgciu: [&impl LgciuWeightOnWheels; 2],
     ) {
+        self.air_conditioning_system
+            .update(context, engines, pressurization, lgciu);
         self.a320cabin.update(
             context,
             &self.air_conditioning_system,
             &self.air_conditioning_system,
             pressurization,
         );
-        self.air_conditioning_system
-            .update(context, engines, pressurization, lgciu);
     }
 }
 

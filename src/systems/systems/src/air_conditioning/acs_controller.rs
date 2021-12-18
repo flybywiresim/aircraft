@@ -52,6 +52,13 @@ impl ACSController {
         lgciu: [&impl LgciuWeightOnWheels; 2],
     ) {
         self.aircraft_state = self.aircraft_state.update(context, engines, lgciu);
+        self.pack_flow_controller.update(
+            &self.aircraft_state,
+            acs_overhead,
+            engines,
+            pressurization,
+            pack_flow_valve,
+        );
         for zone in self.zone_controller.iter_mut() {
             zone.update(
                 context,
@@ -60,13 +67,6 @@ impl ACSController {
                 pressurization,
             )
         }
-        self.pack_flow_controller.update(
-            &self.aircraft_state,
-            acs_overhead,
-            engines,
-            pressurization,
-            pack_flow_valve,
-        );
     }
 }
 
