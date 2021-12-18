@@ -337,6 +337,9 @@ function applyOutputSamplerModifications(buffer, gltfPath, modifications) {
                 const samplers = findSamplersForNode(gltf, i);
                 if (samplers.length === mod.outputSamplers.length) {
                     for (let j = 0; j < samplers.length; j++) {
+                        if (mod.outputSamplers[j] === null) {
+                            continue;
+                        }
                         buffer = replaceAccessorData(
                             buffer,
                             gltf,

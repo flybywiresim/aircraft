@@ -191,8 +191,6 @@ impl Aircraft for A320 {
             &self.engine_fire_overhead,
             &self.apu,
         );
-
-        self.pneumatic_overhead.update_fault_lights(&self.pneumatic);
     }
 }
 impl SimulationElement for A320 {
