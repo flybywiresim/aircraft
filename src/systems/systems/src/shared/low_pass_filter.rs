@@ -36,6 +36,10 @@ where
     pub fn output(&self) -> T {
         self.filtered_output
     }
+
+    pub fn reset(&mut self, reset_value: T) {
+        self.filtered_output = reset_value;
+    }
 }
 
 #[cfg(test)]

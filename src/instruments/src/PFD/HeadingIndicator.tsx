@@ -2,7 +2,6 @@ import React from 'react';
 import { Arinc429Word } from '@shared/arinc429';
 import { getSmallestAngle } from '@instruments/common/utils';
 import { HorizontalTape } from './PFDUtils';
-import { getSimVar } from '../util.js';
 
 const DisplayRange = 24;
 const DistanceSpacing = 7.555;
@@ -54,8 +53,14 @@ export const HeadingTape = ({ heading }: HeadingTapeProps) => {
     return (
         <g>
             <path id="HeadingTapeBackground" d="m32.138 145.34h73.536v10.382h-73.536z" className="TapeBackground" />
-            {/* eslint-disable-next-line max-len */}
-            <HorizontalTape heading={heading} graduationElementFunction={GraduationElement} bugs={bugs} displayRange={DisplayRange + 3} valueSpacing={ValueSpacing} distanceSpacing={DistanceSpacing} />
+            <HorizontalTape
+                heading={heading}
+                graduationElementFunction={GraduationElement}
+                bugs={bugs}
+                displayRange={DisplayRange + 3}
+                valueSpacing={ValueSpacing}
+                distanceSpacing={DistanceSpacing}
+            />
         </g>
     );
 };
@@ -138,7 +143,7 @@ interface QFUIndicatorProps {
 }
 
 const QFUIndicator = ({ ILSCourse, heading }: QFUIndicatorProps) => {
-    if (Number.isNaN(ILSCourse) || !getSimVar('NAV HAS LOCALIZER:3', 'Bool')) {
+    if (ILSCourse < 0) {
         return null;
     }
 

@@ -1,7 +1,7 @@
 #include "Autothrust.h"
 #include "Autothrust_private.h"
 
-AutothrustModelClass::Parameters_Autothrust_T AutothrustModelClass::Autothrust_P = {
+AutothrustModelClass::Parameters_Autothrust_T AutothrustModelClass::Autothrust_P{
   {
     {
       0.0,
@@ -45,7 +45,8 @@ AutothrustModelClass::Parameters_Autothrust_T AutothrustModelClass::Autothrust_P
       false,
       false,
       false,
-      0.0
+      0.0,
+      false
     },
 
     {
@@ -80,7 +81,9 @@ AutothrustModelClass::Parameters_Autothrust_T AutothrustModelClass::Autothrust_P
       false,
       false,
       false,
-      false
+      false,
+      false,
+      0.0
     },
 
     {
@@ -104,7 +107,7 @@ AutothrustModelClass::Parameters_Autothrust_T AutothrustModelClass::Autothrust_P
     }
   },
 
-  { 0.0, 0.26, 0.4, 0.5 },
+  { 0.0, 0.4, 0.5 },
 
   { 0.0, 1.0 },
 
@@ -138,7 +141,7 @@ AutothrustModelClass::Parameters_Autothrust_T AutothrustModelClass::Autothrust_P
   0.0,
   -20.0,
 
-  { 0.92, 0.92, 1.0, 1.0 },
+  { 0.92, 1.0, 1.0 },
 
   { -4.0, -4.0 },
 
@@ -183,10 +186,10 @@ AutothrustModelClass::Parameters_Autothrust_T AutothrustModelClass::Autothrust_P
   athr_mode_A_FLOOR,
   athr_mode_TOGA_LK,
   athr_status_ENGAGED_ACTIVE,
-  0,
-  0,
-  0,
-  0,
+  false,
+  false,
+  false,
+  false,
   0.0,
   0.4,
   0.4,
@@ -549,8 +552,8 @@ AutothrustModelClass::Parameters_Autothrust_T AutothrustModelClass::Autothrust_P
 
   { 35U, 28U },
 
-  { 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0 },
-  0,
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
+  false,
 
-  { 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0 }
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false }
 };

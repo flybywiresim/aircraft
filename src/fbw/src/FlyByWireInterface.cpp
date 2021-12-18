@@ -36,7 +36,8 @@ bool FlyByWireInterface::connect() {
   return simConnectInterface.connect(clientDataEnabled, autopilotStateMachineEnabled, autopilotLawsEnabled, flyByWireEnabled, throttleAxis,
                                      spoilersHandler, elevatorTrimHandler, rudderTrimHandler, flightControlsKeyChangeAileron,
                                      flightControlsKeyChangeElevator, flightControlsKeyChangeRudder,
-                                     disableXboxCompatibilityRudderAxisPlusMinus, maxSimulationRate, limitSimulationRateByPerformance);
+                                     disableXboxCompatibilityRudderAxisPlusMinus, idMinimumSimulationRate->get(),
+                                     idMaximumSimulationRate->get(), limitSimulationRateByPerformance);
 }
 
 void FlyByWireInterface::disconnect() {
@@ -93,6 +94,9 @@ bool FlyByWireInterface::update(double sampleTime) {
   // get throttle data and process it
   result &= updateAutothrust(calculatedSampleTime);
 
+  // update additional recording data
+  result &= updateAdditionalData(calculatedSampleTime);
+
   // update engine data
   result &= updateEngineData(calculatedSampleTime);
 
@@ -100,7 +104,7 @@ bool FlyByWireInterface::update(double sampleTime) {
   result &= updateSpoilers(calculatedSampleTime);
 
   // update flight data recorder
-  flightDataRecorder.update(&autopilotStateMachine, &autopilotLaws, &autoThrust, &flyByWire, engineData);
+  flightDataRecorder.update(&autopilotStateMachine, &autopilotLaws, &autoThrust, &flyByWire, engineData, additionalData);
 
   // if default AP is on -> disconnect it
   if (simConnectInterface.getSimData().autopilot_master_on) {
@@ -146,7 +150,8 @@ void FlyByWireInterface::loadConfiguration() {
   flightDirectorSmoothingEnabled = INITypeConversion::getBoolean(iniStructure, "AUTOPILOT", "FLIGHT_DIRECTOR_SMOOTHING_ENABLED", true);
   flightDirectorSmoothingFactor = INITypeConversion::getDouble(iniStructure, "AUTOPILOT", "FLIGHT_DIRECTOR_SMOOTHING_FACTOR", 2.5);
   flightDirectorSmoothingLimit = INITypeConversion::getDouble(iniStructure, "AUTOPILOT", "FLIGHT_DIRECTOR_SMOOTHING_LIMIT", 20);
-  maxSimulationRate = INITypeConversion::getDouble(iniStructure, "AUTOPILOT", "MAXIMUM_SIMULATION_RATE", 4);
+  idMinimumSimulationRate->set(INITypeConversion::getDouble(iniStructure, "AUTOPILOT", "MINIMUM_SIMULATION_RATE", 1));
+  idMaximumSimulationRate->set(INITypeConversion::getDouble(iniStructure, "AUTOPILOT", "MAXIMUM_SIMULATION_RATE", 4));
   limitSimulationRateByPerformance = INITypeConversion::getBoolean(iniStructure, "AUTOPILOT", "LIMIT_SIMULATION_RATE_BY_PERFORMANCE", true);
   simulationRateReductionEnabled = INITypeConversion::getBoolean(iniStructure, "AUTOPILOT", "SIMULATION_RATE_REDUCTION_ENABLED", true);
 
@@ -156,7 +161,8 @@ void FlyByWireInterface::loadConfiguration() {
   cout << "WASM: AUTOPILOT : FLIGHT_DIRECTOR_SMOOTHING_ENABLED    = " << flightDirectorSmoothingEnabled << endl;
   cout << "WASM: AUTOPILOT : FLIGHT_DIRECTOR_SMOOTHING_FACTOR     = " << flightDirectorSmoothingFactor << endl;
   cout << "WASM: AUTOPILOT : FLIGHT_DIRECTOR_SMOOTHING_LIMIT      = " << flightDirectorSmoothingLimit << endl;
-  cout << "WASM: AUTOPILOT : MAXIMUM_SIMULATION_RATE              = " << maxSimulationRate << endl;
+  cout << "WASM: AUTOPILOT : MINIMUM_SIMULATION_RATE              = " << idMinimumSimulationRate->get() << endl;
+  cout << "WASM: AUTOPILOT : MAXIMUM_SIMULATION_RATE              = " << idMaximumSimulationRate->get() << endl;
   cout << "WASM: AUTOPILOT : LIMIT_SIMULATION_RATE_BY_PERFORMANCE = " << limitSimulationRateByPerformance << endl;
   cout << "WASM: AUTOPILOT : SIMULATION_RATE_REDUCTION_ENABLED    = " << simulationRateReductionEnabled << endl;
 
@@ -213,6 +219,10 @@ void FlyByWireInterface::setupLocalVariables() {
   idLoggingFlightControlsEnabled = make_unique<LocalVariable>("A32NX_LOGGING_FLIGHT_CONTROLS_ENABLED");
   idLoggingThrottlesEnabled = make_unique<LocalVariable>("A32NX_LOGGING_THROTTLES_ENABLED");
 
+  // register L variable for simulation rate limits
+  idMinimumSimulationRate = make_unique<LocalVariable>("A32NX_SIMULATION_RATE_LIMIT_MINIMUM");
+  idMaximumSimulationRate = make_unique<LocalVariable>("A32NX_SIMULATION_RATE_LIMIT_MAXIMUM");
+
   // register L variable for performance warning
   idPerformanceWarningActive = make_unique<LocalVariable>("A32NX_PERFORMANCE_WARNING_ACTIVE");
 
@@ -226,6 +236,8 @@ void FlyByWireInterface::setupLocalVariables() {
   idSideStickPositionX = make_unique<LocalVariable>("A32NX_SIDESTICK_POSITION_X");
   idSideStickPositionY = make_unique<LocalVariable>("A32NX_SIDESTICK_POSITION_Y");
   idRudderPedalPosition = make_unique<LocalVariable>("A32NX_RUDDER_PEDAL_POSITION");
+  idRudderPedalAnimationPosition = make_unique<LocalVariable>("A32NX_RUDDER_PEDAL_ANIMATION_POSITION");
+  idAutopilotNosewheelDemand = make_unique<LocalVariable>("A32NX_AUTOPILOT_NOSEWHEEL_DEMAND");
 
   // register L variable for custom fly-by-wire interface
   idFmaLateralMode = make_unique<LocalVariable>("A32NX_FMA_LATERAL_MODE");
@@ -239,6 +251,10 @@ void FlyByWireInterface::setupLocalVariables() {
   idFmaApproachCapability = make_unique<LocalVariable>("A32NX_ApproachCapability");
   idFmaTripleClick = make_unique<LocalVariable>("A32NX_FMA_TRIPLE_CLICK");
   idFmaModeReversion = make_unique<LocalVariable>("A32NX_FMA_MODE_REVERSION");
+
+  idAutopilotTcasMessageDisarm = make_unique<LocalVariable>("A32NX_AUTOPILOT_TCAS_MESSAGE_DISARM");
+  idAutopilotTcasMessageRaInhibited = make_unique<LocalVariable>("A32NX_AUTOPILOT_TCAS_MESSAGE_RA_INHIBITED");
+  idAutopilotTcasMessageTrkFpaDeselection = make_unique<LocalVariable>("A32NX_AUTOPILOT_TCAS_MESSAGE_TRK_FPA_DESELECTION");
 
   // register L variable for flight director
   idFlightDirectorBank = make_unique<LocalVariable>("A32NX_FLIGHT_DIRECTOR_BANK");
@@ -272,7 +288,7 @@ void FlyByWireInterface::setupLocalVariables() {
   idFmgcV_LS = make_unique<LocalVariable>("A32NX_SPEEDS_VLS");
   idFmgcV_MAX = make_unique<LocalVariable>("A32NX_SPEEDS_VMAX");
 
-  idFmgcAltitudeConstraint = make_unique<LocalVariable>("A32NX_AP_CSTN_ALT");
+  idFmgcAltitudeConstraint = make_unique<LocalVariable>("A32NX_FG_ALTITUDE_CONSTRAINT");
   idFmgcThrustReductionAltitude = make_unique<LocalVariable>("AIRLINER_THR_RED_ALT");
   idFmgcThrustReductionAltitudeGoAround = make_unique<LocalVariable>("AIRLINER_THR_RED_ALT_GOAROUND");
   idFmgcAccelerationAltitude = make_unique<LocalVariable>("AIRLINER_ACC_ALT");
@@ -286,11 +302,22 @@ void FlyByWireInterface::setupLocalVariables() {
   idFlightGuidanceCrossTrackError = make_unique<LocalVariable>("A32NX_FG_CROSS_TRACK_ERROR");
   idFlightGuidanceTrackAngleError = make_unique<LocalVariable>("A32NX_FG_TRACK_ANGLE_ERROR");
   idFlightGuidancePhiCommand = make_unique<LocalVariable>("A32NX_FG_PHI_COMMAND");
+  idFlightGuidancePhiLimit = make_unique<LocalVariable>("A32NX_FG_PHI_LIMIT");
   idFlightGuidanceRequestedVerticalMode = make_unique<LocalVariable>("A32NX_FG_REQUESTED_VERTICAL_MODE");
   idFlightGuidanceTargetAltitude = make_unique<LocalVariable>("A32NX_FG_TARGET_ALTITUDE");
   idFlightGuidanceTargetVerticalSpeed = make_unique<LocalVariable>("A32NX_FG_TARGET_VERTICAL_SPEED");
   idFmRnavAppSelected = make_unique<LocalVariable>("A32NX_FG_RNAV_APP_SELECTED");
   idFmFinalCanEngage = make_unique<LocalVariable>("A32NX_FG_FINAL_CAN_ENGAGE");
+
+  idTcasFault = make_unique<LocalVariable>("A32NX_TCAS_FAULT");
+  idTcasMode = make_unique<LocalVariable>("A32NX_TCAS_MODE");
+  idTcasTaOnly = make_unique<LocalVariable>("A32NX_TCAS_TA_ONLY");
+  idTcasState = make_unique<LocalVariable>("A32NX_TCAS_STATE");
+  idTcasRaCorrective = make_unique<LocalVariable>("A32NX_TCAS_RA_CORRECTIVE");
+  idTcasTargetGreenMin = make_unique<LocalVariable>("A32NX_TCAS_VSPEED_GREEN:1");
+  idTcasTargetGreenMax = make_unique<LocalVariable>("A32NX_TCAS_VSPEED_GREEN:2");
+  idTcasTargetRedMin = make_unique<LocalVariable>("A32NX_TCAS_VSPEED_RED:1");
+  idTcasTargetRedMax = make_unique<LocalVariable>("A32NX_TCAS_VSPEED_RED:2");
 
   idFcuTrkFpaModeActive = make_unique<LocalVariable>("A32NX_TRK_FPA_MODE_ACTIVE");
   idFcuSelectedFpa = make_unique<LocalVariable>("A32NX_AUTOPILOT_FPA_SELECTED");
@@ -301,6 +328,7 @@ void FlyByWireInterface::setupLocalVariables() {
   idFcuApprModeActive = make_unique<LocalVariable>("A32NX_FCU_APPR_MODE_ACTIVE");
   idFcuModeReversionActive = make_unique<LocalVariable>("A32NX_FCU_MODE_REVERSION_ACTIVE");
   idFcuModeReversionTrkFpaActive = make_unique<LocalVariable>("A32NX_FCU_MODE_REVERSION_TRK_FPA_ACTIVE");
+  idFcuModeReversionTargetFpm = make_unique<LocalVariable>("A32NX_FCU_MODE_REVERSION_TARGET_FPM");
 
   idThrottlePosition3d_1 = make_unique<LocalVariable>("A32NX_3D_THROTTLE_LEVER_POSITION_1");
   idThrottlePosition3d_2 = make_unique<LocalVariable>("A32NX_3D_THROTTLE_LEVER_POSITION_2");
@@ -331,6 +359,19 @@ void FlyByWireInterface::setupLocalVariables() {
   idAutothrustReverse_2 = make_unique<LocalVariable>("A32NX_AUTOTHRUST_REVERSE:2");
   idAutothrustN1_c_1 = make_unique<LocalVariable>("A32NX_AUTOTHRUST_N1_COMMANDED:1");
   idAutothrustN1_c_2 = make_unique<LocalVariable>("A32NX_AUTOTHRUST_N1_COMMANDED:2");
+
+  idMasterWarning = make_unique<LocalVariable>("A32NX_MASTER_WARNING");
+  idMasterCaution = make_unique<LocalVariable>("A32NX_MASTER_CAUTION");
+  idParkBrakeLeverPos = make_unique<LocalVariable>("A32NX_PARK_BRAKE_LEVER_POS");
+  idBrakePedalLeftPos = make_unique<LocalVariable>("A32NX_LEFT_BRAKE_PEDAL_INPUT");
+  idBrakePedalRightPos = make_unique<LocalVariable>("A32NX_RIGHT_BRAKE_PEDAL_INPUT");
+  idAutobrakeArmedMode = make_unique<LocalVariable>("A32NX_AUTOBRAKES_ARMED_MODE");
+  idAutobrakeDecelLight = make_unique<LocalVariable>("A32NX_AUTOBRAKES_DECEL_LIGHT");
+  idFlapsHandlePercent = make_unique<LocalVariable>("A32NX_FLAPS_HANDLE_PERCENT");
+  idFlapsHandleIndex = make_unique<LocalVariable>("A32NX_FLAPS_HANDLE_INDEX");
+  idHydraulicGreenPressure = make_unique<LocalVariable>("A32NX_HYD_GREEN_SYSTEM_1_SECTION_PRESSURE");
+  idHydraulicBluePressure = make_unique<LocalVariable>("A32NX_HYD_BLUE_SYSTEM_1_SECTION_PRESSURE");
+  idHydraulicYellowPressure = make_unique<LocalVariable>("A32NX_HYD_YELLOW_SYSTEM_1_SECTION_PRESSURE");
 
   engineEngine1N2 = make_unique<LocalVariable>("A32NX_ENGINE_N2:1");
   engineEngine2N2 = make_unique<LocalVariable>("A32NX_ENGINE_N2:2");
@@ -410,6 +451,9 @@ bool FlyByWireInterface::readDataAndLocalVariables(double sampleTime) {
   // update all local variables
   LocalVariable::readAll();
 
+  // update simulation rate limits
+  simConnectInterface.updateSimulationRateLimits(idMinimumSimulationRate->get(), idMaximumSimulationRate->get());
+
   // get or calculate XTK and TAE
   if (customFlightGuidanceEnabled) {
     flightGuidanceCrossTrackError = idFlightGuidanceCrossTrackError->get();
@@ -452,13 +496,19 @@ bool FlyByWireInterface::readDataAndLocalVariables(double sampleTime) {
                                                          flightGuidanceCrossTrackError,
                                                          flightGuidanceTrackAngleError,
                                                          flightGuidancePhiPreCommand,
+                                                         idFlightGuidancePhiLimit->get(),
                                                          static_cast<unsigned long long>(idFlightGuidanceRequestedVerticalMode->get()),
                                                          idFlightGuidanceTargetAltitude->get(),
                                                          idFlightGuidanceTargetVerticalSpeed->get(),
                                                          static_cast<unsigned long long>(idFmRnavAppSelected->get()),
                                                          static_cast<unsigned long long>(idFmFinalCanEngage->get()),
                                                          simData.speed_slot_index == 2,
-                                                         autopilotLawsOutput.Phi_loc_c};
+                                                         autopilotLawsOutput.Phi_loc_c,
+                                                         static_cast<unsigned long long>(idTcasFault->get()),
+                                                         static_cast<unsigned long long>(getTcasModeAvailable()),
+                                                         getTcasAdvisoryState(),
+                                                         idTcasTargetGreenMin->get(),
+                                                         idTcasTargetGreenMax->get()};
     simConnectInterface.setClientDataLocalVariables(clientDataLocalVariables);
   }
 
@@ -526,7 +576,7 @@ bool FlyByWireInterface::handleSimulationRate(double sampleTime) {
   }
 
   // check if allowed simulation rate is exceeded
-  if (simData.simulation_rate > maxSimulationRate) {
+  if (simData.simulation_rate > idMaximumSimulationRate->get()) {
     // set target simulation rate
     targetSimulationRateModified = true;
     targetSimulationRate = max(1, simData.simulation_rate / 2);
@@ -534,7 +584,7 @@ bool FlyByWireInterface::handleSimulationRate(double sampleTime) {
     simConnectInterface.sendEvent(SimConnectInterface::Events::SIM_RATE_DECR, 0, SIMCONNECT_GROUP_PRIORITY_DEFAULT);
     // log event of reduction
     cout << "WASM: WARNING Reducing simulation rate to " << simData.simulation_rate / 2;
-    cout << " (maximum allowed is " << maxSimulationRate << ")!" << endl;
+    cout << " (maximum allowed is " << idMaximumSimulationRate->get() << ")!" << endl;
   }
 
   // check if simulation rate reduction is enabled
@@ -561,6 +611,33 @@ bool FlyByWireInterface::handleSimulationRate(double sampleTime) {
   }
 
   // success
+  return true;
+}
+
+bool FlyByWireInterface::updateAdditionalData(double sampleTime) {
+  auto simData = simConnectInterface.getSimData();
+  additionalData.master_warning_active = idMasterWarning->get();
+  additionalData.master_caution_active = idMasterCaution->get();
+  additionalData.park_brake_lever_pos = idParkBrakeLeverPos->get();
+  additionalData.brake_pedal_left_pos = idBrakePedalLeftPos->get();
+  additionalData.brake_pedal_right_pos = idBrakePedalRightPos->get();
+  additionalData.brake_left_sim_pos = simData.brakeLeftPosition;
+  additionalData.brake_right_sim_pos = simData.brakeRightPosition;
+  additionalData.autobrake_armed_mode = idAutobrakeArmedMode->get();
+  additionalData.autobrake_decel_light = idAutobrakeDecelLight->get();
+  additionalData.spoilers_handle_pos = idSpoilersHandlePosition->get();
+  additionalData.spoilers_armed = idSpoilersArmed->get();
+  additionalData.spoilers_handle_sim_pos = simData.spoilerHandlePosition;
+  additionalData.ground_spoilers_active = idSpoilersGroundSpoilersActive->get();
+  additionalData.flaps_handle_percent = idFlapsHandlePercent->get();
+  additionalData.flaps_handle_index = idFlapsHandleIndex->get();
+  additionalData.flaps_handle_configuration_index = flapsHandleIndexFlapConf->get();
+  additionalData.flaps_handle_sim_index = simData.flapsHandleIndex;
+  additionalData.gear_handle_pos = simData.gearHandlePosition;
+  additionalData.hydraulic_green_pressure = idHydraulicGreenPressure->get();
+  additionalData.hydraulic_blue_pressure = idHydraulicBluePressure->get();
+  additionalData.hydraulic_yellow_pressure = idHydraulicYellowPressure->get();
+
   return true;
 }
 
@@ -682,6 +759,7 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
     autopilotStateMachineInput.in.data.flight_guidance_xtk_nmi = flightGuidanceCrossTrackError;
     autopilotStateMachineInput.in.data.flight_guidance_tae_deg = flightGuidanceTrackAngleError;
     autopilotStateMachineInput.in.data.flight_guidance_phi_deg = flightGuidancePhiPreCommand;
+    autopilotStateMachineInput.in.data.flight_guidance_phi_limit_deg = idFlightGuidancePhiLimit->get();
     autopilotStateMachineInput.in.data.flight_phase = idFmgcFlightPhase->get();
     autopilotStateMachineInput.in.data.V2_kn = idFmgcV2->get();
     autopilotStateMachineInput.in.data.VAPP_kn = idFmgcV_APP->get();
@@ -705,6 +783,8 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
     autopilotStateMachineInput.in.data.flaps_handle_index = flapsHandleIndexFlapConf->get();
     autopilotStateMachineInput.in.data.is_engine_operative_1 = simData.engine_combustion_1;
     autopilotStateMachineInput.in.data.is_engine_operative_2 = simData.engine_combustion_2;
+    autopilotStateMachineInput.in.data.altimeter_setting_left_mbar = simData.kohlsmanSetting_0;
+    autopilotStateMachineInput.in.data.altimeter_setting_right_mbar = simData.kohlsmanSetting_1;
 
     // input ----------------------------------------------------------------------------------------------------------
     autopilotStateMachineInput.in.input.FD_active = simData.ap_fd_1_active || simData.ap_fd_2_active;
@@ -742,6 +822,10 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
     autopilotStateMachineInput.in.input.FM_H_dot_c_fpm = idFlightGuidanceTargetVerticalSpeed->get();
     autopilotStateMachineInput.in.input.FM_rnav_appr_selected = static_cast<bool>(idFmRnavAppSelected->get());
     autopilotStateMachineInput.in.input.FM_final_des_can_engage = static_cast<bool>(idFmFinalCanEngage->get());
+    autopilotStateMachineInput.in.input.TCAS_mode_available = getTcasModeAvailable();
+    autopilotStateMachineInput.in.input.TCAS_advisory_state = getTcasAdvisoryState();
+    autopilotStateMachineInput.in.input.TCAS_advisory_target_min_fpm = idTcasTargetGreenMin->get();
+    autopilotStateMachineInput.in.input.TCAS_advisory_target_max_fpm = idTcasTargetGreenMax->get();
 
     // step the model -------------------------------------------------------------------------------------------------
     autopilotStateMachine.setExternalInputs(&autopilotStateMachineInput);
@@ -769,6 +853,7 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
     autopilotStateMachineOutput.vertical_mode_armed = clientData.vertical_mode_armed;
     autopilotStateMachineOutput.mode_reversion_lateral = clientData.mode_reversion_lateral;
     autopilotStateMachineOutput.mode_reversion_vertical = clientData.mode_reversion_vertical;
+    autopilotStateMachineOutput.mode_reversion_vertical_target_fpm = clientData.mode_reversion_vertical_target_fpm;
     autopilotStateMachineOutput.mode_reversion_TRK_FPA = clientData.mode_reversion_TRK_FPA;
     autopilotStateMachineOutput.mode_reversion_triple_click = clientData.mode_reversion_triple_click;
     autopilotStateMachineOutput.mode_reversion_fma = clientData.mode_reversion_fma;
@@ -784,6 +869,9 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
     autopilotStateMachineOutput.EXPED_mode_active = clientData.EXPED_mode_active;
     autopilotStateMachineOutput.FD_disconnect = clientData.FD_disconnect;
     autopilotStateMachineOutput.FD_connect = clientData.FD_connect;
+    autopilotStateMachineOutput.TCAS_message_disarm = clientData.TCAS_message_disarm;
+    autopilotStateMachineOutput.TCAS_message_RA_inhibit = clientData.TCAS_message_RA_inhibit;
+    autopilotStateMachineOutput.TCAS_message_TRK_FPA_deselection = clientData.TCAS_message_TRK_FPA_deselection;
 
     // update radio
     idRadioReceiverLocalizerValid->set(clientData.nav_e_loc_valid);
@@ -807,7 +895,17 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
   idFcuLocModeActive->set((isLocArmed || isLocEngaged) && !(isGsArmed || isGsEngaged));
   idFcuApprModeActive->set(((isLocArmed || isLocEngaged) && (isGsArmed || isGsEngaged)) || isFinalArmed || isFinalEngaged);
   idFcuModeReversionActive->set(autopilotStateMachineOutput.mode_reversion_lateral || autopilotStateMachineOutput.mode_reversion_vertical);
+  idFcuModeReversionTargetFpm->set(autopilotStateMachineOutput.mode_reversion_vertical_target_fpm);
   idFcuModeReversionTrkFpaActive->set(autopilotStateMachineOutput.mode_reversion_TRK_FPA);
+  idAutopilotTcasMessageDisarm->set(autopilotStateMachineOutput.TCAS_message_disarm);
+  idAutopilotTcasMessageRaInhibited->set(autopilotStateMachineOutput.TCAS_message_RA_inhibit);
+  idAutopilotTcasMessageTrkFpaDeselection->set(autopilotStateMachineOutput.TCAS_message_TRK_FPA_deselection);
+
+  bool isTcasEngaged = autopilotStateMachineOutput.vertical_mode == 50;
+  if (!wasTcasEngaged && isTcasEngaged) {
+    execute_calculator_code("(>H:A320_Neo_FCU_SPEED_TCAS)", nullptr, nullptr, nullptr);
+  }
+  wasTcasEngaged = isTcasEngaged;
 
   // update autothrust mode -------------------------------------------------------------------------------------------
   idAutopilotAutothrustMode->set(autopilotStateMachineOutput.autothrust_mode);
@@ -1013,6 +1111,7 @@ bool FlyByWireInterface::updateAutopilotLaws(double sampleTime) {
     autopilotLawsInput.in.data.flight_guidance_xtk_nmi = flightGuidanceCrossTrackError;
     autopilotLawsInput.in.data.flight_guidance_tae_deg = flightGuidanceTrackAngleError;
     autopilotLawsInput.in.data.flight_guidance_phi_deg = flightGuidancePhiPreCommand;
+    autopilotLawsInput.in.data.flight_guidance_phi_limit_deg = idFlightGuidancePhiLimit->get();
     autopilotLawsInput.in.data.flight_phase = idFmgcFlightPhase->get();
     autopilotLawsInput.in.data.V2_kn = idFmgcV2->get();
     autopilotLawsInput.in.data.VAPP_kn = idFmgcV_APP->get();
@@ -1035,6 +1134,8 @@ bool FlyByWireInterface::updateAutopilotLaws(double sampleTime) {
     autopilotLawsInput.in.data.flaps_handle_index = flapsHandleIndexFlapConf->get();
     autopilotLawsInput.in.data.is_engine_operative_1 = simData.engine_combustion_1;
     autopilotLawsInput.in.data.is_engine_operative_2 = simData.engine_combustion_2;
+    autopilotLawsInput.in.data.altimeter_setting_left_mbar = simData.kohlsmanSetting_0;
+    autopilotLawsInput.in.data.altimeter_setting_right_mbar = simData.kohlsmanSetting_1;
 
     // input ----------------------------------------------------------------------------------------------------------
     autopilotLawsInput.in.input = autopilotStateMachineOutput;
@@ -1059,6 +1160,7 @@ bool FlyByWireInterface::updateAutopilotLaws(double sampleTime) {
           autopilotStateMachineOutput.vertical_mode_armed,
           autopilotStateMachineOutput.mode_reversion_lateral,
           autopilotStateMachineOutput.mode_reversion_vertical,
+          autopilotStateMachineOutput.mode_reversion_vertical_target_fpm,
           autopilotStateMachineOutput.mode_reversion_TRK_FPA,
           autopilotStateMachineOutput.mode_reversion_triple_click,
           autopilotStateMachineOutput.mode_reversion_fma,
@@ -1074,6 +1176,13 @@ bool FlyByWireInterface::updateAutopilotLaws(double sampleTime) {
           autopilotStateMachineOutput.EXPED_mode_active,
           autopilotStateMachineOutput.FD_disconnect,
           autopilotStateMachineOutput.FD_connect,
+          idRadioReceiverLocalizerValid->get(),
+          idRadioReceiverLocalizerDeviation->get(),
+          idRadioReceiverGlideSlopeValid->get(),
+          idRadioReceiverGlideSlopeDeviation->get(),
+          autopilotStateMachineOutput.TCAS_message_disarm,
+          autopilotStateMachineOutput.TCAS_message_RA_inhibit,
+          autopilotStateMachineOutput.TCAS_message_TRK_FPA_deselection,
       };
       simConnectInterface.setClientDataAutopilotStateMachine(clientDataStateMachine);
     }
@@ -1087,6 +1196,7 @@ bool FlyByWireInterface::updateAutopilotLaws(double sampleTime) {
     autopilotLawsOutput.flight_director.Beta_c_deg = clientDataLaws.autopilotBeta;
     autopilotLawsOutput.autopilot.Beta_c_deg = clientDataLaws.autopilotBeta;
     autopilotLawsOutput.Phi_loc_c = clientDataLaws.locPhiCommand;
+    autopilotLawsOutput.Nosewheel_c = clientDataLaws.nosewheelCommand;
   }
 
   // update flight director -------------------------------------------------------------------------------------------
@@ -1253,7 +1363,8 @@ bool FlyByWireInterface::updateFlyByWire(double sampleTime) {
   idSideStickPositionY->set(-1.0 * simInput.inputs[0]);
 
   // set rudder pedals position
-  idRudderPedalPosition->set(max(-100, min(100, (-100.0 * simInput.inputs[2]) + (100.0 * simData.zeta_trim_pos))));
+  idRudderPedalPosition->set(max(-100, min(100, (-100.0 * simInput.inputs[2]))));
+  idRudderPedalAnimationPosition->set(max(-100, min(100, (-100.0 * simInput.inputs[2]) + (100.0 * simData.zeta_trim_pos))));
 
   // set outputs
   if (!flyByWireOutput.sim.data_computed.tracking_mode_on) {
@@ -1265,6 +1376,13 @@ bool FlyByWireInterface::updateFlyByWire(double sampleTime) {
       cout << "WASM: Write data failed!" << endl;
       return false;
     }
+  }
+
+  // determine if nosewheel demand shall be set
+  if (!flyByWireOutput.sim.data_computed.tracking_mode_on) {
+    idAutopilotNosewheelDemand->set(autopilotLawsOutput.Nosewheel_c);
+  } else {
+    idAutopilotNosewheelDemand->set(0);
   }
 
   // set trim values
@@ -1381,6 +1499,8 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
         idFmgcThrustReductionAltitudeGoAround->get(),
         idFmgcFlightPhase->get(),
         autopilotStateMachineOutput.ALT_soft_mode_active,
+        getTcasAdvisoryState() > 1,
+        autopilotStateMachineOutput.H_dot_c_fpm,
     };
     simConnectInterface.setClientDataLocalVariablesAutothrust(ClientDataLocalVariablesAutothrust);
   }
@@ -1452,6 +1572,8 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
     autoThrustInput.in.input.is_air_conditioning_2_active = idAirConditioningPack_2->get();
     autoThrustInput.in.input.FD_active = simData.ap_fd_1_active || simData.ap_fd_2_active;
     autoThrustInput.in.input.ATHR_reset_disable = simConnectInterface.getSimInputThrottles().ATHR_reset_disable == 1;
+    autoThrustInput.in.input.is_TCAS_active = getTcasAdvisoryState() > 1;
+    autoThrustInput.in.input.target_TCAS_RA_rate_fpm = autopilotStateMachineOutput.H_dot_c_fpm;
 
     // step the model -------------------------------------------------------------------------------------------------
     autoThrust.setExternalInputs(&autoThrustInput);
@@ -1598,4 +1720,23 @@ double FlyByWireInterface::getHeadingAngleError(double u1, double u2) {
   } else {
     return dPsi_2;
   }
+}
+
+double FlyByWireInterface::getTcasModeAvailable() {
+  auto state = idTcasMode->get();
+  auto isTaOnly = idTcasTaOnly->get();
+
+  // TA/RA active and TCAS not in TA only mode
+  return state == 2 && !isTaOnly;
+}
+
+double FlyByWireInterface::getTcasAdvisoryState() {
+  auto state = idTcasState->get();
+  auto isCorrective = idTcasRaCorrective->get();
+
+  if (state == 2 && isCorrective) {
+    state = 3;
+  }
+
+  return state;
 }

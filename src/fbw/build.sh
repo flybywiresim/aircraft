@@ -74,15 +74,13 @@ clang++ \
   "${DIR}/src/model/AutopilotStateMachine.cpp" \
   "${DIR}/src/model/Autothrust_data.cpp" \
   "${DIR}/src/model/Autothrust.cpp" \
-  "${DIR}/src/model/div_s32.cpp" \
   "${DIR}/src/model/Double2MultiWord.cpp" \
   "${DIR}/src/model/FlyByWire_data.cpp" \
   "${DIR}/src/model/FlyByWire.cpp" \
   "${DIR}/src/model/look1_binlxpw.cpp" \
   "${DIR}/src/model/look2_binlcpw.cpp" \
   "${DIR}/src/model/look2_binlxpw.cpp" \
-  "${DIR}/src/model/mod_tnBo173x.cpp" \
-  "${DIR}/src/model/mod_lHmooAo5.cpp" \
+  "${DIR}/src/model/mod_mvZvttxs.cpp" \
   "${DIR}/src/model/MultiWordIor.cpp" \
   "${DIR}/src/model/rt_modd.cpp" \
   "${DIR}/src/model/rt_remd.cpp" \

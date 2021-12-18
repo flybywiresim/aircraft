@@ -25,6 +25,7 @@ bool SimConnectInterface::connect(bool clientDataEnabled,
                                   double keyChangeElevator,
                                   double keyChangeRudder,
                                   bool disableXboxCompatibilityRudderPlusMinus,
+                                  double minSimulationRate,
                                   double maxSimulationRate,
                                   bool limitSimulationRateByPerformance) {
   // info message
@@ -46,6 +47,7 @@ bool SimConnectInterface::connect(bool clientDataEnabled,
     // store rudder trim handler
     this->rudderTrimHandler = rudderTrimHandler;
     // store maximum allowed simulation rate
+    this->minSimulationRate = minSimulationRate;
     this->maxSimulationRate = maxSimulationRate;
     this->limitSimulationRateByPerformance = limitSimulationRateByPerformance;
     // store is client data is enabled
@@ -107,6 +109,11 @@ void SimConnectInterface::disconnect() {
 
 void SimConnectInterface::setSampleTime(double sampleTime) {
   this->sampleTime = sampleTime;
+}
+
+void SimConnectInterface::updateSimulationRateLimits(double minSimulationRate, double maxSimulationRate) {
+  this->minSimulationRate = minSimulationRate;
+  this->maxSimulationRate = maxSimulationRate;
 }
 
 bool SimConnectInterface::prepareSimDataSimConnectDataDefinitions() {
@@ -222,12 +229,19 @@ bool SimConnectInterface::prepareSimDataSimConnectDataDefinitions() {
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "FUEL TANK CENTER QUANTITY", "GALLONS");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "FUEL TOTAL QUANTITY", "GALLONS");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "FUEL WEIGHT PER GALLON", "POUNDS");
+  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "KOHLSMAN SETTING MB:0", "MBAR");
+  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "KOHLSMAN SETTING MB:1", "MBAR");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_INT64, "KOHLSMAN SETTING STD:3", "BOOL");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_INT64, "CAMERA STATE", "NUMBER");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "PLANE ALTITUDE", "METERS");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "NAV MAGVAR:3", "DEGREES");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_LATLONALT, "NAV VOR LATLONALT:3", "STRUCT");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_LATLONALT, "NAV GS LATLONALT:3", "STRUCT");
+  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "BRAKE LEFT POSITION", "POSITION");
+  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "BRAKE RIGHT POSITION", "POSITION");
+  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "SPOILERS HANDLE POSITION", "POSITION");
+  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "FLAPS HANDLE INDEX", "NUMBER");
+  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "GEAR HANDLE POSITION", "POSITION");
 
   return result;
 }
@@ -427,7 +441,6 @@ bool SimConnectInterface::prepareSimOutputSimConnectDataDefinitions() {
   result &= addDataDefinition(hSimConnect, 4, SIMCONNECT_DATATYPE_FLOAT64, "GENERAL ENG THROTTLE MANAGED MODE:1", "NUMBER");
   result &= addDataDefinition(hSimConnect, 4, SIMCONNECT_DATATYPE_FLOAT64, "GENERAL ENG THROTTLE MANAGED MODE:2", "NUMBER");
 
-
   result &= addDataDefinition(hSimConnect, 6, SIMCONNECT_DATATYPE_FLOAT64, "SPOILERS HANDLE POSITION", "POSITION");
 
   result &= addDataDefinition(hSimConnect, 7, SIMCONNECT_DATATYPE_INT64, "KOHLSMAN SETTING STD:3", "BOOL");
@@ -505,6 +518,14 @@ bool SimConnectInterface::prepareClientDataDefinitions() {
                                                  SIMCONNECT_CLIENTDATATYPE_FLOAT64);
   result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
                                                  SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_INT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_INT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_INT64);
 
   // request data to be updated when set
   result &= SimConnect_RequestClientData(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, ClientData::AUTOPILOT_STATE_MACHINE,
@@ -520,6 +541,8 @@ bool SimConnectInterface::prepareClientDataDefinitions() {
   // add data definitions
   result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_LAWS, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
                                                  SIMCONNECT_CLIENTDATATYPE_INT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_LAWS, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
   result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_LAWS, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
                                                  SIMCONNECT_CLIENTDATATYPE_FLOAT64);
   result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_LAWS, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
@@ -677,6 +700,8 @@ bool SimConnectInterface::prepareClientDataDefinitions() {
   result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
                                                  SIMCONNECT_CLIENTDATATYPE_FLOAT64);
   result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
                                                  SIMCONNECT_CLIENTDATATYPE_INT64);
   result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
                                                  SIMCONNECT_CLIENTDATATYPE_FLOAT64);
@@ -686,6 +711,16 @@ bool SimConnectInterface::prepareClientDataDefinitions() {
                                                  SIMCONNECT_CLIENTDATATYPE_INT64);
   result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
                                                  SIMCONNECT_CLIENTDATATYPE_INT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_INT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_INT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
   result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
                                                  SIMCONNECT_CLIENTDATATYPE_FLOAT64);
   result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
@@ -700,6 +735,10 @@ bool SimConnectInterface::prepareClientDataDefinitions() {
   result &= SimConnect_CreateClientData(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST, sizeof(ClientDataLocalVariablesAutothrust),
                                         SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
   // add data definitions
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
   result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
                                                  SIMCONNECT_CLIENTDATATYPE_FLOAT64);
   result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
@@ -848,7 +887,7 @@ bool SimConnectInterface::sendEvent(Events eventId) {
 }
 
 bool SimConnectInterface::sendEvent(Events eventId, DWORD data) {
-  return sendEvent(eventId, eventId, SIMCONNECT_GROUP_PRIORITY_HIGHEST);
+  return sendEvent(eventId, data, SIMCONNECT_GROUP_PRIORITY_HIGHEST);
 }
 
 bool SimConnectInterface::sendEvent(Events eventId, DWORD data, DWORD priority) {
@@ -2318,7 +2357,7 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
     }
 
     case Events::SIM_RATE_DECR: {
-      if (simData.simulation_rate > 1) {
+      if (simData.simulation_rate > minSimulationRate) {
         sendEvent(Events::SIM_RATE_DECR, 0, SIMCONNECT_GROUP_PRIORITY_DEFAULT);
         cout << "WASM: Simulation rate " << simData.simulation_rate;
         cout << " -> " << simData.simulation_rate / 2;

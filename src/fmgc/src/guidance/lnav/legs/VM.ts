@@ -6,11 +6,11 @@ import { Coordinates } from '@fmgc/flightplanning/data/geo';
 // TODO needs updated with wind prediction, and maybe local magvar if following for longer distances
 export class VMLeg extends Leg {
     // FIXME this is not really a thing, but it's temporary, ok ? I promise !
-    public initialPosition: Coordinates;
+    initialPosition: Coordinates;
 
-    public heading: Degrees;
+    heading: Degrees;
 
-    public initialCourse: Degrees;
+    initialCourse: Degrees;
 
     constructor(heading: Degrees, initialPosition: Coordinates, initialCourse: Degrees, segment: SegmentType, indexInFullPath: number) {
         super();
