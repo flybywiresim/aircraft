@@ -746,6 +746,7 @@
             - SYNC_FREQUENCY        Default: 1          Speed of update loop, N per second.
             - TOGGLE_CONDITION      <Boolean>           The condition to trigger a toggle.
             - TOGGLE_REQUISITE      <Boolean>           The required powered BUS for potentiometer.
+            - POTENTIOMETER         <Number>            The potentiometer index # to toggle.
     -->
     <Template Name="FBW_Potentiometer_Toggle">
         <DefaultTemplateParameters>
@@ -757,9 +758,7 @@
         <UseTemplate Name="ASOBO_GT_Update">
             <FREQUENCY>#SYNC_FREQUENCY#</FREQUENCY>
             <UPDATE_CODE>
-                #TOGGLE_REQUISITE# if{
-                    #TOGGLE_CONDITION# 100 * #POTENTIOMETER# (&gt;K:2:LIGHT_POTENTIOMETER_SET)
-                }
+                #TOGGLE_REQUISITE# #TOGGLE_CONDITION# and 100 * #POTENTIOMETER# (&gt;K:2:LIGHT_POTENTIOMETER_SET)
             </UPDATE_CODE>
         </UseTemplate>
     </Template>
