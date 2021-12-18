@@ -4,7 +4,8 @@
 #include "rtwtypes.h"
 #include "Autothrust_types.h"
 
-class AutothrustModelClass {
+class AutothrustModelClass
+{
  public:
   struct rtDW_TimeSinceCondition_Autothrust_T {
     real_T eventTime;
@@ -25,16 +26,16 @@ class AutothrustModelClass {
     real_T Delay_DSTATE_lz;
     real_T Delay_DSTATE_h;
     real_T eventTime;
-    real_T eventTime_p;
+    real_T eventTime_h;
     real_T prev_TLA_1;
     real_T prev_TLA_2;
+    real_T eventTime_b;
     real_T eventTime_o;
-    real_T eventTime_c;
     real_T pY;
     real_T pU;
-    real_T eventTime_op;
-    real_T eventTime_b;
-    real_T eventTime_i;
+    real_T eventTime_j;
+    real_T eventTime_g;
+    real_T eventTime_p;
     athr_mode pMode;
     athr_status pStatus;
     boolean_T Delay_DSTATE_a;
@@ -45,7 +46,7 @@ class AutothrustModelClass {
     boolean_T icLoad;
     boolean_T icLoad_c;
     boolean_T eventTime_not_empty;
-    boolean_T eventTime_not_empty_h;
+    boolean_T eventTime_not_empty_n;
     boolean_T ATHR_ENGAGED;
     boolean_T prev_TLA_1_not_empty;
     boolean_T prev_TLA_2_not_empty;
@@ -53,23 +54,23 @@ class AutothrustModelClass {
     boolean_T prev_condition_TCAS;
     boolean_T prev_SRS_TO_GA_mode_active;
     boolean_T condition_TOGA_latch;
-    boolean_T eventTime_not_empty_g;
+    boolean_T eventTime_not_empty_m;
     boolean_T pConditionAlphaFloor;
     boolean_T was_SRS_TO_active;
     boolean_T was_SRS_GA_active;
     boolean_T inhibitAboveThrustReductionAltitude;
     boolean_T condition_THR_LK;
-    boolean_T eventTime_not_empty_hl;
+    boolean_T eventTime_not_empty_mr;
     boolean_T pThrustMemoActive;
     boolean_T pUseAutoThrustControl;
     boolean_T pY_not_empty;
     boolean_T pU_not_empty;
-    boolean_T eventTime_not_empty_a;
+    boolean_T eventTime_not_empty_e;
     boolean_T latch;
     boolean_T sInhibit;
     boolean_T prev_TCAS_active;
-    boolean_T eventTime_not_empty_f;
-    boolean_T eventTime_not_empty_gf;
+    boolean_T eventTime_not_empty_i;
+    boolean_T eventTime_not_empty_mc;
     rtDW_RateLimiterwithThreshold_Autothrust_T sf_RateLimiterwithThreshold_n;
     rtDW_RateLimiterwithThreshold_Autothrust_T sf_RateLimiterwithThreshold_k;
     rtDW_RateLimiterwithThreshold_Autothrust_T sf_RateLimiterwithThreshold_ma;
@@ -284,26 +285,28 @@ class AutothrustModelClass {
     boolean_T Logic_table_m[16];
   };
 
-  void initialize();
-  void step();
-  void terminate();
-  AutothrustModelClass();
-  ~AutothrustModelClass();
-  void setExternalInputs(const ExternalInputs_Autothrust_T* pExternalInputs_Autothrust_T)
+  AutothrustModelClass(AutothrustModelClass const&) =delete;
+  AutothrustModelClass& operator= (AutothrustModelClass const&) & = delete;
+  void setExternalInputs(const ExternalInputs_Autothrust_T *pExternalInputs_Autothrust_T)
   {
     Autothrust_U = *pExternalInputs_Autothrust_T;
   }
 
-  const AutothrustModelClass::ExternalOutputs_Autothrust_T & getExternalOutputs() const
+  const ExternalOutputs_Autothrust_T &getExternalOutputs() const
   {
     return Autothrust_Y;
   }
 
+  void initialize();
+  void step();
+  static void terminate();
+  AutothrustModelClass();
+  ~AutothrustModelClass();
  private:
-  static Parameters_Autothrust_T Autothrust_P;
-  D_Work_Autothrust_T Autothrust_DWork;
   ExternalInputs_Autothrust_T Autothrust_U;
   ExternalOutputs_Autothrust_T Autothrust_Y;
+  D_Work_Autothrust_T Autothrust_DWork;
+  static Parameters_Autothrust_T Autothrust_P;
   static void Autothrust_TimeSinceCondition(real_T rtu_time, boolean_T rtu_condition, real_T *rty_y,
     rtDW_TimeSinceCondition_Autothrust_T *localDW);
   static void Autothrust_ThrustMode1(real_T rtu_u, real_T *rty_y);
