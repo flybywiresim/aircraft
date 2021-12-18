@@ -97,6 +97,7 @@
 1. [ATSU] Import lat/lon waypoints correctly from SimBrief - @tracernz (Mike)
 1. [MCDU] Added manual ILS tuning by ident on RAD NAV page - @tracernz (Mike)
 1. [MCDU] Support manual entry of forward LS course - @tracernz (Mike)
+1. [MCDU] Increase timeout for airport loading - @tracernz (Mike)
 
 ## 0.7.0
 
