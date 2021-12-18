@@ -168,7 +168,7 @@ impl PackFlowValve {
         }
     }
 
-    fn pack_flow_valve_id(number: &usize) -> String {
+    fn pack_flow_valve_id(number: usize) -> String {
         format!("COND_PACK_FLOW_VALVE_{}_IS_OPEN", number)
     }
 
