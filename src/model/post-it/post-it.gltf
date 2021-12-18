@@ -1,0 +1,198 @@
+{
+    "accessors": [
+        {
+            "bufferView": 0,
+            "componentType": 5126,
+            "count": 184,
+            "min": [
+                -0.02346637472510338,
+                -0.023237967863678932,
+                -0.011221601627767086
+            ],
+            "max": [
+                0.024760566651821136,
+                0.02398921176791191,
+                0.006837617140263319
+            ],
+            "type": "VEC3",
+            "name": "POST-IT_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 12,
+            "componentType": 5120,
+            "count": 184,
+            "type": "VEC4",
+            "name": "POST-IT_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 16,
+            "componentType": 5120,
+            "count": 184,
+            "type": "VEC4",
+            "name": "POST-IT_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 20,
+            "componentType": 5122,
+            "count": 184,
+            "type": "VEC2",
+            "name": "POST-IT_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 24,
+            "componentType": 5122,
+            "count": 184,
+            "type": "VEC2",
+            "name": "POST-IT_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 28,
+            "componentType": 5123,
+            "count": 184,
+            "type": "VEC4",
+            "name": "POST-IT_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "componentType": 5123,
+            "count": 756,
+            "type": "SCALAR",
+            "name": "POST-IT_indices#0"
+        }
+    ],
+    "asset": {
+        "generator": "Khronos glTF Blender I/O v1.6.16",
+        "version": "2.0",
+        "extensions": {
+            "ASOBO_asset_optimized": {
+                "BoundingBoxMax": [
+                    0.024760566651821136,
+                    0.02398921176791191,
+                    0.006837617140263319
+                ],
+                "BoundingBoxMin": [
+                    -0.02346637472510338,
+                    -0.023237967863678932,
+                    -0.011221601627767086
+                ],
+                "MajorVersion": 4,
+                "MinorVersion": 3,
+                "UseCheckerboardMaterialForMissingTextures": true
+            }
+        }
+    },
+    "bufferViews": [
+        {
+            "buffer": 0,
+            "byteLength": 6624,
+            "byteStride": 36,
+            "target": 34962,
+            "name": "BufferViewVertexND"
+        },
+        {
+            "buffer": 0,
+            "byteLength": 1512,
+            "byteOffset": 6624,
+            "target": 34963,
+            "name": "BufferViewIndex"
+        }
+    ],
+    "extensionsRequired": [
+        "MSFT_texture_dds"
+    ],
+    "materials": [
+        {
+            "name": "POST-IT",
+            "doubleSided": true,
+            "pbrMetallicRoughness": {
+                "metallicFactor": 0,
+                "roughnessFactor": 0.8222222328186035,
+                "baseColorTexture": {
+                    "index": 0
+                }
+            }
+        }
+    ],
+    "meshes": [
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 5,
+                        "NORMAL": 2,
+                        "POSITION": 0,
+                        "TANGENT": 1,
+                        "TEXCOORD_0": 3,
+                        "TEXCOORD_1": 4
+                    },
+                    "indices": 6,
+                    "material": 0,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 252,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "POST-IT"
+        }
+    ],
+    "nodes": [
+        {
+            "mesh": 0,
+            "name": "POST-IT",
+            "translation": [0.22, 1.68, 11.88897]
+        }
+    ],
+    "scene": 0,
+    "scenes": [
+        {
+            "nodes": [
+                0
+            ],
+            "name": "Scene"
+        }
+    ],
+    "textures": [
+        {
+            "extensions": {
+                "MSFT_texture_dds": {
+                    "source": 0
+                }
+            }
+        }
+    ],
+    "samplers": [
+        {
+            "magFilter": 9729,
+            "minFilter": 9987,
+            "wrapS": 10497,
+            "wrapT": 10497
+        }
+    ],
+    "extensionsUsed": [
+        "MSFT_texture_dds",
+        "ASOBO_asset_optimized"
+    ],
+    "buffers": [
+        {
+            "byteLength": 8136,
+            "uri": "post-it.bin"
+        }
+    ],
+    "images": [
+        {
+            "uri": "POST-IT-ALBD.PNG.DDS",
+            "name": "post-it-albd",
+            "extras": "ASOBO_image_converted_meta"
+        }
+    ]
+}
