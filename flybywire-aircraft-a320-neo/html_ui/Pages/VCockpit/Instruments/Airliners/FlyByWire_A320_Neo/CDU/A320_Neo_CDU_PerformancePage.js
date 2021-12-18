@@ -1058,6 +1058,9 @@ class CDUPerformancePage {
         }
     }
     static async UpdateEngOutAccFromOrigin(mcdu, updateEngOutAccAlt = true) {
+        if (mcdu.engineOutAccelerationAltitudeIsPilotEntered) {
+            return;
+        }
         const origin = mcdu.flightPlanManager.getOrigin();
 
         let elevation = SimVar.GetSimVarValue("GROUND ALTITUDE", "feet");
