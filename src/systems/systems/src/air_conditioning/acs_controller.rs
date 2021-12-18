@@ -844,19 +844,20 @@ mod acs_controller_tests {
     }
 
     struct TestCabin {
-        cockpit: CabinZone,
-        passenger_cabin: CabinZone,
+        cockpit: CabinZone<2>,
+        passenger_cabin: CabinZone<2>,
     }
 
     impl TestCabin {
         fn new(context: &mut InitContext) -> Self {
             Self {
-                cockpit: CabinZone::new(context, "CKPT", Volume::new::<cubic_meter>(60.), 2),
+                cockpit: CabinZone::new(context, "CKPT", Volume::new::<cubic_meter>(60.), 2, None),
                 passenger_cabin: CabinZone::new(
                     context,
                     "FWD",
                     Volume::new::<cubic_meter>(400.),
                     0,
+                    Some([(1, 6), (7, 13)]),
                 ),
             }
         }

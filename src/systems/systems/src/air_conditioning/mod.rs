@@ -161,7 +161,7 @@ struct PackFlowValve {
 impl PackFlowValve {
     fn new(context: &mut InitContext, number: usize) -> Self {
         Self {
-            pack_flow_valve_id: context.get_identifier(Self::pack_flow_valve_id(&number)),
+            pack_flow_valve_id: context.get_identifier(Self::pack_flow_valve_id(number)),
             number,
             is_open: false,
             timer_open: Duration::from_secs(0),
