@@ -1,5 +1,5 @@
 use core::panic;
-use std::{f64::consts::PI, time::Duration};
+use std::f64::consts::PI;
 
 use uom::si::{
     f64::*,
@@ -22,9 +22,8 @@ use systems::{
         PressurizeableReservoir, TargetPressureSignal, VariableVolumeContainer,
     },
     shared::{
-        pid::PidController, ControllerSignal, DelayedTrueLogicGate, ElectricalBusType,
-        ElectricalBuses, EngineCorrectedN1, EngineCorrectedN2, EngineFirePushButtons,
-        PneumaticValve,
+        pid::PidController, ControllerSignal, ElectricalBusType, ElectricalBuses,
+        EngineCorrectedN1, EngineCorrectedN2, EngineFirePushButtons, PneumaticValve,
     },
     simulation::{
         InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -275,12 +274,6 @@ impl A320Pneumatic {
         self.yellow_hydraulic_reservoir_with_valve
             .change_spatial_volume(yellow_hydraulic_reservoir.available_volume());
     }
-
-    pub fn should_engine_bleed_pushbutton_fault_light_be_on(&self, engine_number: usize) -> bool {
-        self.bleed_monitoring_computers
-            .iter()
-            .any(|bmc| bmc.should_fault_light_be_on(engine_number))
-    }
 }
 impl SimulationElement for A320Pneumatic {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
@@ -436,14 +429,6 @@ impl BleedMonitoringComputer {
     fn is_powered(&self) -> bool {
         self.is_powered
     }
-
-    pub fn should_fault_light_be_on(&self, engine_number: usize) -> bool {
-        if let Some(channel) = self.channel_for_engine(engine_number) {
-            channel.should_fault_light_be_on()
-        } else {
-            false
-        }
-    }
 }
 impl SimulationElement for BleedMonitoringComputer {
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
@@ -476,7 +461,6 @@ struct BleedMonitoringComputerChannel {
     fan_air_valve_pid: PidController,
     cross_bleed_valve_selector: CrossBleedValveSelectorMode,
     cross_bleed_valve_is_open: bool,
-    engine_bleed_fault_light_monitor: EngineBleedFaultLightMonitor,
 }
 impl BleedMonitoringComputerChannel {
     const PRESSURE_REGULATING_VALVE_SINGLE_BLEED_CONFIG_TARGET_PSI: f64 = 52.;
@@ -502,7 +486,6 @@ impl BleedMonitoringComputerChannel {
             fan_air_valve_pid: PidController::new(-0.005, -0.001, 0., 0., 1., 200.),
             cross_bleed_valve_selector: CrossBleedValveSelectorMode::Auto,
             cross_bleed_valve_is_open: false,
-            engine_bleed_fault_light_monitor: EngineBleedFaultLightMonitor::new(engine_number),
         }
     }
 
@@ -553,18 +536,6 @@ impl BleedMonitoringComputerChannel {
 
         self.cross_bleed_valve_selector = overhead_panel.cross_bleed_mode();
         self.cross_bleed_valve_is_open = cross_bleed_valve.is_open();
-
-        self.engine_bleed_fault_light_monitor.update(
-            context,
-            !sensors.pressure_regulating_valve_is_open(),
-            !sensors.engine_starter_valve_is_open(),
-            !apu_bleed_valve.is_open(),
-            overhead_panel.apu_bleed_is_on(),
-            overhead_panel.cross_bleed_mode() == CrossBleedValveSelectorMode::Shut,
-            !cross_bleed_valve.is_open(),
-            sensors.precooler_inlet_pressure(),
-            sensors.precooler_outlet_temperature(),
-        );
     }
 
     fn operation_mode(&self) -> BleedMonitoringComputerChannelOperationMode {
@@ -586,11 +557,6 @@ impl BleedMonitoringComputerChannel {
         self.is_apu_bleed_on
             && self.is_apu_bleed_valve_open
             && (self.engine_number == 1 || self.cross_bleed_valve_is_open)
-    }
-
-    fn should_fault_light_be_on(&self) -> bool {
-        self.engine_bleed_fault_light_monitor
-            .should_fault_light_be_on()
     }
 }
 impl ControllerSignal<HighPressureValveSignal> for BleedMonitoringComputerChannel {
@@ -649,91 +615,6 @@ impl ControllerSignal<CrossBleedValveSignal> for BleedMonitoringComputerChannel 
                 }
             }
         }
-    }
-}
-
-// Such a monitor does not exist in the real aircraft, I am only putting this in for code separation concerns
-struct EngineBleedFaultLightMonitor {
-    engine_number: usize,
-    pressure_regulating_valve_not_in_commanded_position_for_eight_seconds: DelayedTrueLogicGate,
-    overtemperature_for_55_seconds: DelayedTrueLogicGate,
-    overpressure_for_15_seconds: DelayedTrueLogicGate,
-}
-impl EngineBleedFaultLightMonitor {
-    fn new(engine_number: usize) -> Self {
-        Self {
-            engine_number,
-            pressure_regulating_valve_not_in_commanded_position_for_eight_seconds:
-                DelayedTrueLogicGate::new(Duration::from_secs(8)),
-            overtemperature_for_55_seconds: DelayedTrueLogicGate::new(Duration::from_secs(55)),
-            overpressure_for_15_seconds: DelayedTrueLogicGate::new(Duration::from_secs(15)),
-        }
-    }
-
-    fn update(
-        &mut self,
-        context: &UpdateContext,
-        is_pressure_regulating_valve_fully_closed: bool,
-        is_engine_starter_valve_fully_closed: bool,
-        is_apu_bleed_valve_fully_closed: bool,
-        is_apu_bleed_pb_on: bool,
-        is_cross_bleed_selector_shut: bool,
-        is_cross_bleed_valve_fully_closed: bool,
-        precooler_inlet_pressure: Pressure,
-        precooler_outlet_temperature: ThermodynamicTemperature,
-    ) {
-        self.overtemperature_for_55_seconds.update(
-            context,
-            precooler_outlet_temperature > ThermodynamicTemperature::new::<degree_celsius>(257.),
-        );
-
-        self.overpressure_for_15_seconds.update(
-            context,
-            precooler_inlet_pressure > Pressure::new::<psi>(57.),
-        );
-
-        let should_prv_be_closed = self.should_prv_be_closed(
-            is_engine_starter_valve_fully_closed,
-            is_apu_bleed_valve_fully_closed,
-            is_apu_bleed_pb_on,
-            is_cross_bleed_selector_shut,
-            is_cross_bleed_valve_fully_closed,
-        );
-
-        self.pressure_regulating_valve_not_in_commanded_position_for_eight_seconds
-            .update(
-                context,
-                !is_pressure_regulating_valve_fully_closed && should_prv_be_closed,
-            );
-    }
-
-    fn should_prv_be_closed(
-        &self,
-        is_engine_starter_valve_fully_closed: bool,
-        is_apu_bleed_valve_fully_closed: bool,
-        is_apu_bleed_pb_on: bool,
-        is_cross_bleed_selector_shut: bool,
-        is_cross_bleed_valve_fully_closed: bool,
-    ) -> bool {
-        let is_apu_providing_air = !is_apu_bleed_valve_fully_closed && is_apu_bleed_pb_on;
-        let apu_bleed_closure_condition = !is_cross_bleed_selector_shut && is_apu_providing_air;
-
-        let is_engine_one = self.engine_number == 1;
-        let cross_bleed_closure_condition = is_apu_providing_air
-            && is_engine_one
-            && is_cross_bleed_selector_shut
-            && is_cross_bleed_valve_fully_closed;
-
-        !is_engine_starter_valve_fully_closed
-            || apu_bleed_closure_condition
-            || cross_bleed_closure_condition
-    }
-
-    pub fn should_fault_light_be_on(&self) -> bool {
-        self.pressure_regulating_valve_not_in_commanded_position_for_eight_seconds
-            .output()
-            || self.overpressure_for_15_seconds.output()
-            || self.overtemperature_for_55_seconds.output()
     }
 }
 
@@ -1087,13 +968,6 @@ impl A320PneumaticOverheadPanel {
             2 => self.engine_2_bleed.is_auto(),
             _ => panic!("Invalid engine number"),
         }
-    }
-
-    pub fn update_fault_lights(&mut self, pneumatic: &A320Pneumatic) {
-        self.engine_1_bleed
-            .set_fault(pneumatic.should_engine_bleed_pushbutton_fault_light_be_on(1));
-        self.engine_2_bleed
-            .set_fault(pneumatic.should_engine_bleed_pushbutton_fault_light_be_on(2));
     }
 }
 impl SimulationElement for A320PneumaticOverheadPanel {
@@ -1532,9 +1406,6 @@ mod tests {
                 &self.fire_pushbuttons,
                 &self.apu,
             );
-
-            self.pneumatic_overhead_panel
-                .update_fault_lights(&self.pneumatic);
         }
     }
     impl SimulationElement for PneumaticTestAircraft {

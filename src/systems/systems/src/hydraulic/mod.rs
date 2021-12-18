@@ -21,6 +21,7 @@ use uom::si::{
 pub mod brake_circuit;
 pub mod electrical_pump_physics;
 pub mod linear_actuator;
+pub mod nose_steering;
 pub mod update_iterator;
 
 pub trait SectionPressure {
