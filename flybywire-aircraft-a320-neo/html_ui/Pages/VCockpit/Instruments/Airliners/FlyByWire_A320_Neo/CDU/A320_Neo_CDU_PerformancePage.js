@@ -1057,7 +1057,7 @@ class CDUPerformancePage {
             SimVar.SetSimVarValue("L:AIRLINER_ACC_ALT", "Number", accAlt);
         }
     }
-    static async UpdateEngOutAccFromOrigin(mcdu, updateEngOutAccAlt = true) {
+    static async UpdateEngOutAccFromOrigin(mcdu) {
         if (mcdu.engineOutAccelerationAltitudeIsPilotEntered) {
             return;
         }
@@ -1068,7 +1068,7 @@ class CDUPerformancePage {
             elevation = await mcdu.facilityLoader.GetAirportFieldElevation(origin.icao);
         }
 
-        if (updateEngOutAccAlt && !mcdu.engineOutAccelerationAltitudeIsPilotEntered) {
+        if (!mcdu.engineOutAccelerationAltitudeIsPilotEntered) {
             const engOutAccAltOffset = +NXDataStore.get("CONFIG_ENG_OUT_ACCEL_ALT", "1500");
             const engOutAccAltitude = Math.round((elevation + engOutAccAltOffset) / 10) * 10;
 
