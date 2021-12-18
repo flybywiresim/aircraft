@@ -104,7 +104,7 @@ const ApuGen = ({ x, y } : ComponentPositionProps) => {
                     && (
                         <>
                             <SvgGroup x={60} y={55}>
-                                {/* FBW-31-07 */}
+                                {/* FBW-31-08 */}
                                 <text
                                     x={0}
                                     y={0}
@@ -163,7 +163,7 @@ const ApuBleed = ({ x, y } : ComponentPositionProps) => {
 
     return (
         <>
-            {/* FBW-31-07 */}
+            {/* FBW-31-08 */}
             <SvgGroup x={x} y={y}>
                 <rect className="Box" width={100} height={57} />
 
