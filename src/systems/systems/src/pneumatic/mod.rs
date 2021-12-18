@@ -15,7 +15,6 @@ use uom::si::{
     temperature_interval,
     thermodynamic_temperature::{degree_celsius, kelvin},
     volume::cubic_meter,
-    volume_rate::gallon_per_second,
 };
 
 pub mod valve;

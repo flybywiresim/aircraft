@@ -2341,10 +2341,6 @@ mod tests {
                 }
             }
 
-            fn set_pressure(&mut self, pressure: Pressure) {
-                self.pressure = pressure;
-            }
-
             fn set_nominal_pressure(&mut self) {
                 self.pressure = Pressure::new::<psi>(50.);
             }
