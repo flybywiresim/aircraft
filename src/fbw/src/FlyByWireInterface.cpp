@@ -288,7 +288,7 @@ void FlyByWireInterface::setupLocalVariables() {
   idFmgcV_LS = make_unique<LocalVariable>("A32NX_SPEEDS_VLS");
   idFmgcV_MAX = make_unique<LocalVariable>("A32NX_SPEEDS_VMAX");
 
-  idFmgcAltitudeConstraint = make_unique<LocalVariable>("A32NX_AP_CSTN_ALT");
+  idFmgcAltitudeConstraint = make_unique<LocalVariable>("A32NX_FG_ALTITUDE_CONSTRAINT");
   idFmgcThrustReductionAltitude = make_unique<LocalVariable>("AIRLINER_THR_RED_ALT");
   idFmgcThrustReductionAltitudeGoAround = make_unique<LocalVariable>("AIRLINER_THR_RED_ALT_GOAROUND");
   idFmgcAccelerationAltitude = make_unique<LocalVariable>("AIRLINER_ACC_ALT");

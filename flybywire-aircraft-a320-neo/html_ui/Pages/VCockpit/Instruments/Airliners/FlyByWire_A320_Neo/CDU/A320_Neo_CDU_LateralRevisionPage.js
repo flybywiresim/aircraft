@@ -82,12 +82,11 @@ class CDULateralRevisionPage {
                 nextWptLabel = "NEXT WPT{sp}";
                 nextWpt = "[{sp}{sp}{sp}{sp}][color]cyan";
                 mcdu.onRightInput[2] = async (value, scratchpadCallback) => {
-                    mcdu.insertWaypoint(value, waypointIndexFP + 1, (result) => {
-                        if (result) {
-                            CDUFlightPlanPage.ShowPage(mcdu);
-                        } else {
+                    mcdu.insertWaypoint(value, waypointIndexFP + 1, (success) => {
+                        if (!success) {
                             scratchpadCallback();
                         }
+                        CDUFlightPlanPage.ShowPage(mcdu);
                     });
                 };
             }

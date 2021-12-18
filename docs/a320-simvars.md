@@ -806,6 +806,28 @@
     - Bool
     - NW STRG DISC memo indication should show on ecam if true
 
+- A32NX_TILLER_PEDAL_DISCONNECT
+    - Bool
+    - True when tiller disconnect button is pressed
+        Tiller button to be binded on "TOGGLE WATER RUDDER"
+
+- A32NX_NOSE_WHEEL_POSITION
+    - Percent over 100
+    - Position of nose steering wheel animation [0;1] 0 left, 0.5 middle
+
+- A32NX_TILLER_HANDLE_POSITION
+    - Percent over 100
+    - Position of tiller steering handle animation [0;1] 0 left, 0.5 middle
+
+- A32NX_AUTOPILOT_NOSEWHEEL_DEMAND
+    - Percent over 100
+    - Steering demand from autopilot to BSCU [-1;1] -1 left, 0 middle
+
+- A32NX_REALISTIC_TILLER_ENABLED
+    - Bool
+    - 0 for legacy mode (steering with rudder). 1 for realistic mode with tiller axis
+        Tiller axis to be binded on "ENGINE 4 MIXTURE AXIS"
+
 - A32NX_HYD_{loop_name}_EPUMP_LOW_PRESS
     - Bool
     - Electric pump of {loop_name} hydraulic circuit is active but pressure is too low
@@ -907,6 +929,14 @@
 - A32NX_OVHD_AUTOBRK_MAX_ON_IS_PRESSED
     - Bool
     - Auto brake panel push button for MAX mode is pressed
+
+- A32NX_FM_LS_COURSE
+    - Number<Degrees | -1>
+    - Landing system course. Values, in priority order:
+        - Pilot entered course
+        - Database course
+        - Course received from LOC when LOC available
+        - -1 when invalid
 
 - A32NX_FMGC_FLIGHT_PHASE
     - Enum
@@ -1231,6 +1261,15 @@
 - A32NX_RUDDER_PEDAL_POSITION
     - Number
     - Provides the rudder pedal position
+      Value | Meaning
+      --- | ---
+      -100 | full left
+      0 | neutral
+      100 | full right
+
+- A32NX_RUDDER_PEDAL_ANIMATION_POSITION
+    - Number
+    - Provides the rudder pedal position including rudder trim for animation
       Value | Meaning
       --- | ---
       -100 | full left
@@ -1725,6 +1764,11 @@ In the variables below, {number} should be replaced with one item in the set: { 
       VPATH_SPEED | 3
       FPA_SPEED | 4
       VS_SPEED | 5
+
+- A32NX_FG_ALTITUDE_CONSTRAINT
+    - Number in ft
+    - Used for managed climb/descend
+    - Indicates an altitude constraint to follow
 
 - A32NX_FG_TARGET_ALTITUDE
     - Number in ft
