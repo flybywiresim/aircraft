@@ -92,10 +92,12 @@
 1. [FLIGHT MODEL] Fixes co-pilot not being shown in external view -  @donstim (donbikes#4084)
 1. [BLEED] Replace default bleed system - @BlueberryKing (BlueberryKing)
 1. [ENGINE/ MODEL] Implement engine shutdown and realistic engine animation - @Taz5150 (TazX [Z+2]#0405)
+1. [ATSU] Use https for SimBrief - @tracernz (Mike)
 1. [FM] Stored waypoints - @tracernz (Mike)
 1. [ATSU] Import lat/lon waypoints correctly from SimBrief - @tracernz (Mike)
 1. [MCDU] Added manual ILS tuning by ident on RAD NAV page - @tracernz (Mike)
 1. [MCDU] Support manual entry of forward LS course - @tracernz (Mike)
+1. [MCDU] Increase timeout for airport loading - @tracernz (Mike)
 
 ## 0.7.0
 

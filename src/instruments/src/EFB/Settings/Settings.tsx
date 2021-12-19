@@ -453,7 +453,7 @@ const ATSUAOCPage = () => {
     const [simbriefDisplay, setSimbriefDisplay] = useState(simbriefUserId);
 
     function getSimbriefUserData(value: string): Promise<any> {
-        const SIMBRIEF_URL = 'http://www.simbrief.com/api/xml.fetcher.php?json=1';
+        const SIMBRIEF_URL = 'https://www.simbrief.com/api/xml.fetcher.php?json=1';
 
         if (!value) {
             throw new Error('No SimBrief username/pilot ID provided');
