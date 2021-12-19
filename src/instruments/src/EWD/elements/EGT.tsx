@@ -19,7 +19,7 @@ const EGT: React.FC<EGTProps> = ({ x, y, engine }) => {
     return (
         <>
             <g id={`EGT-indicator-${engine}`}>
-                <text className="Large End Green" x={x + 26} y={y + 6}>544</text>
+                <text className="Large End Green" x={x + 26} y={y + 6}>101</text>
                 <GaugeComponent x={x} y={y} radius={radius} startAngle={startAngle} endAngle={endAngle} visible className="GaugeComponent Gauge">
                     <GaugeComponent x={x} y={y} radius={radius} startAngle={endAngle - 20} endAngle={endAngle} visible className="GaugeComponent Gauge Red" />
                     <GaugeMarkerComponent
