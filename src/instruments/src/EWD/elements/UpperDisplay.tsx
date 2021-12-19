@@ -1,10 +1,13 @@
 import React from 'react';
+import { usePersistentProperty } from '@instruments/common/persistence';
+import FOB from './FOB';
 import N2 from './N2';
 import EGT from './EGT';
 import N1 from './N1';
 
 const UpperDisplay: React.FC = () => {
     console.log('Upper Display');
+    const [unit] = usePersistentProperty('CONFIG_USING_METRIC_UNIT', '1');
 
     return (
         <>
@@ -24,6 +27,8 @@ const UpperDisplay: React.FC = () => {
             <text className="Medium Center Cyan" x={298} y={250}>%</text>
             <line className="Separator" x1="240" y1="237" x2="265" y2="230" strokeLinecap="round" />
             <line className="Separator" x1="328" y1="230" x2="353" y2="237" strokeLinecap="round" />
+
+            <FOB unit={unit} x={14} y={370} />
         </>
     );
 };

@@ -156,4 +156,26 @@ animation: pulsingS 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
         opacity: 0.1
     }
 
+    #FobLabel {
+        font-size: 22px;
+        stroke: $display-white;
+        fill: $display-white;
+    }
+
+    #FobColon {
+        font-size: 22px;
+        fill: $display-white;
+    }
+
+    #FobValue {
+        fill: $display-green;
+        font-size: 22px;
+        text-anchor: end;
+    }
+
+    #FobUnit {
+        fill: $display-cyan;
+        font-size: 16px;
+    }
+
 }
