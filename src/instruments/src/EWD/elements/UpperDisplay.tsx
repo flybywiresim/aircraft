@@ -4,6 +4,7 @@ import FOB from './FOB';
 import N2 from './N2';
 import EGT from './EGT';
 import N1 from './N1';
+import FF from './FF';
 
 const UpperDisplay: React.FC = () => {
     console.log('Upper Display');
@@ -27,6 +28,16 @@ const UpperDisplay: React.FC = () => {
             <text className="Medium Center Cyan" x={298} y={250}>%</text>
             <line className="Separator" x1="240" y1="237" x2="265" y2="230" strokeLinecap="round" />
             <line className="Separator" x1="328" y1="230" x2="353" y2="237" strokeLinecap="round" />
+
+            <FF engine={1} x={210} y={290} unit={unit} />
+            <FF engine={2} x={440} y={290} unit={unit} />
+            <text className="Large Center" x={298} y={282}>FF</text>
+            <text className="Medium Center Cyan" x={294} y={297}>
+                {unit === '1' ? 'KG' : 'LBS'}
+                /H
+            </text>
+            <line className="Separator" x1="240" y1="282" x2="265" y2="275" strokeLinecap="round" />
+            <line className="Separator" x1="328" y1="275" x2="353" y2="282" strokeLinecap="round" />
 
             <FOB unit={unit} x={14} y={370} />
         </>
