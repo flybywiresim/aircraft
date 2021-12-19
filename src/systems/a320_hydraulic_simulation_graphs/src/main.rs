@@ -412,6 +412,11 @@ fn reservoir(
         max_capacity,
         max_gaugeable,
         current_level,
+        vec![PressureSwitch::new(
+            Pressure::new::<psi>(23.45),
+            Pressure::new::<psi>(20.55),
+            PressureSwitchType::Relative,
+        )],
     )
 }
 

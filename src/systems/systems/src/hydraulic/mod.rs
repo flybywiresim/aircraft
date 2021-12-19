@@ -69,26 +69,43 @@ pub enum PressureSwitchState {
     NotPressurised,
 }
 
+pub enum PressureSwitchType {
+    Relative,
+    Absolute,
+}
+
 /// Physical pressure switch.
 /// It's a physical switch reacting to pressure.
-struct PressureSwitch {
+pub struct PressureSwitch {
     state_is_pressurised: bool,
     high_hysteresis_threshold: Pressure,
     low_hysteresis_threshold: Pressure,
+
+    sensor_type: PressureSwitchType,
 }
 impl PressureSwitch {
-    pub fn new(high_threshold: Pressure, low_threshold: Pressure) -> Self {
+    pub fn new(
+        high_threshold: Pressure,
+        low_threshold: Pressure,
+        sensor_type: PressureSwitchType,
+    ) -> Self {
         Self {
             state_is_pressurised: false,
             high_hysteresis_threshold: high_threshold,
             low_hysteresis_threshold: low_threshold,
+            sensor_type,
         }
     }
 
-    pub fn update(&mut self, current_pressure: Pressure) {
-        if current_pressure <= self.low_hysteresis_threshold {
+    pub fn update(&mut self, context: &UpdateContext, current_pressure: Pressure) {
+        let pressure_measured = match self.sensor_type {
+            PressureSwitchType::Relative => current_pressure - context.ambient_pressure(),
+            PressureSwitchType::Absolute => current_pressure,
+        };
+
+        if pressure_measured <= self.low_hysteresis_threshold {
             self.state_is_pressurised = false;
-        } else if current_pressure >= self.high_hysteresis_threshold {
+        } else if pressure_measured >= self.high_hysteresis_threshold {
             self.state_is_pressurised = true;
         }
     }
@@ -737,7 +754,11 @@ impl Section {
             delta_vol_from_valves: Volume::new::<gallon>(0.),
             total_volume_pumped: Volume::new::<gallon>(0.),
 
-            pressure_switch: PressureSwitch::new(pressure_switch_hi_hyst, pressure_switch_lo_hyst),
+            pressure_switch: PressureSwitch::new(
+                pressure_switch_hi_hyst,
+                pressure_switch_lo_hyst,
+                PressureSwitchType::Relative,
+            ),
 
             total_actuator_consumed_volume: Volume::new::<gallon>(0.),
             total_actuator_returned_volume: Volume::new::<gallon>(0.),
@@ -877,7 +898,7 @@ impl Section {
 
         self.current_volume += final_delta_volume;
 
-        self.update_pressure(fluid);
+        self.update_pressure(context, fluid);
 
         self.current_flow = final_delta_volume / context.delta_as_time();
 
@@ -885,14 +906,14 @@ impl Section {
         self.total_volume_pumped = Volume::new::<gallon>(0.);
     }
 
-    fn update_pressure(&mut self, fluid: &Fluid) {
+    fn update_pressure(&mut self, context: &UpdateContext, fluid: &Fluid) {
         let fluid_volume_compressed = self.current_volume - self.max_high_press_volume;
 
         self.current_pressure = Pressure::new::<psi>(14.7)
             + self.delta_pressure_from_delta_volume(fluid_volume_compressed, fluid);
         self.current_pressure = self.current_pressure.max(Pressure::new::<psi>(14.7));
 
-        self.pressure_switch.update(self.current_pressure);
+        self.pressure_switch.update(context, self.current_pressure);
     }
 
     fn delta_pressure_from_delta_volume(&self, delta_vol: Volume, fluid: &Fluid) -> Pressure {
@@ -1086,6 +1107,8 @@ pub struct Reservoir {
 
     air_pressure: Pressure,
 
+    air_pressure_switches: Vec<PressureSwitch>,
+
     leak_failure: Failure,
     return_failure: Failure,
 }
@@ -1103,6 +1126,7 @@ impl Reservoir {
         max_capacity: Volume,
         max_gaugeable: Volume,
         current_level: Volume,
+        air_pressure_switches: Vec<PressureSwitch>,
     ) -> Self {
         let leak_failure = match hyd_loop_id {
             "GREEN" => Failure::new(FailureType::GreenReservoirLeak),
@@ -1127,11 +1151,14 @@ impl Reservoir {
             air_pressure: Pressure::new::<psi>(50.),
             leak_failure,
             return_failure,
+            air_pressure_switches,
         }
     }
 
     fn update(&mut self, context: &UpdateContext, air_pressure: Pressure) {
         self.air_pressure = air_pressure;
+
+        self.update_pressure_switches(context);
 
         self.update_leak_failure(context);
     }
@@ -1143,6 +1170,12 @@ impl Reservoir {
                     * context.delta_as_time();
 
             self.current_level = self.current_level.max(Volume::new::<gallon>(0.));
+        }
+    }
+
+    fn update_pressure_switches(&mut self, context: &UpdateContext) {
+        for switch in &mut self.air_pressure_switches {
+            switch.update(context, self.air_pressure)
         }
     }
 
@@ -1197,6 +1230,16 @@ impl Reservoir {
 
     fn is_empty(&self) -> bool {
         self.fluid_level_real() <= Volume::new::<gallon>(Self::MIN_USABLE_VOLUME_GAL)
+    }
+
+    pub fn is_low_air_pressure(&self) -> bool {
+        for switch in &self.air_pressure_switches {
+            if switch.state() == PressureSwitchState::NotPressurised {
+                return true;
+            }
+        }
+
+        false
     }
 }
 impl SimulationElement for Reservoir {
@@ -1988,6 +2031,11 @@ mod tests {
             max_capacity,
             max_gaugeable,
             current_level,
+            vec![PressureSwitch::new(
+                Pressure::new::<psi>(23.45),
+                Pressure::new::<psi>(20.55),
+                PressureSwitchType::Relative,
+            )],
         )
     }
 
