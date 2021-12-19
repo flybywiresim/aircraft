@@ -1,0 +1,24 @@
+@font-face {
+  font-family: 'Permanent Marker';
+  src: url("/Fonts/PermanentMarker-Regular.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+livery-postit-element  {
+  *background: #fff128;
+}
+
+#text {
+  padding: 4rem;
+  font-family: 'Permanent Marker';
+  line-height: 1.1;
+  background: #fff128;
+  font-size: 85px;
+  color: #000;
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+}
