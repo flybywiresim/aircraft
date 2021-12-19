@@ -959,7 +959,7 @@ impl A320EngineDrivenPumpController {
         }
     }
 
-    fn update_low_section(
+    fn update_low_pressure(
         &mut self,
         engine: &impl Engine,
         section: &impl SectionPressure,
@@ -996,7 +996,7 @@ impl A320EngineDrivenPumpController {
         // Inverted logic, no power means solenoid valve always leave pump in pressurise mode
         self.should_pressurise = !self.is_powered || should_pressurise_if_powered;
 
-        self.update_low_section(engine, section, lgciu);
+        self.update_low_pressure(engine, section, lgciu);
     }
 
     fn has_pressure_low_fault(&self) -> bool {
@@ -1072,10 +1072,10 @@ impl A320BlueElectricPumpController {
 
         self.should_pressurise = self.is_powered && should_pressurise_if_powered;
 
-        self.update_low_section(overhead_panel, section, engine1, engine2, lgciu1, lgciu2);
+        self.update_low_pressure(overhead_panel, section, engine1, engine2, lgciu1, lgciu2);
     }
 
-    fn update_low_section(
+    fn update_low_pressure(
         &mut self,
         overhead_panel: &A320HydraulicOverheadPanel,
         section: &impl SectionPressure,
@@ -1175,10 +1175,10 @@ impl A320YellowElectricPumpController {
                 .output())
             && self.is_powered;
 
-        self.update_low_section(section);
+        self.update_low_pressure(section);
     }
 
-    fn update_low_section(&mut self, section: &impl SectionPressure) {
+    fn update_low_pressure(&mut self, section: &impl SectionPressure) {
         self.is_pressure_low =
             self.should_pressurise() && !section.is_pressure_switch_pressurised();
 
@@ -2556,11 +2556,11 @@ mod tests {
                 }
             }
 
-            fn set_nominal_pressure(&mut self) {
+            fn set_nominal_air_pressure(&mut self) {
                 self.pressure = Pressure::new::<psi>(50.);
             }
 
-            fn set_low_pressure(&mut self) {
+            fn set_low_air_pressure(&mut self) {
                 self.pressure = Pressure::new::<psi>(1.);
             }
         }
@@ -3116,12 +3116,12 @@ mod tests {
             }
 
             fn air_press_low(mut self) -> Self {
-                self.command(|a| a.pneumatics.set_low_pressure());
+                self.command(|a| a.pneumatics.set_low_air_pressure());
                 self
             }
 
             fn air_press_nominal(mut self) -> Self {
-                self.command(|a| a.pneumatics.set_nominal_pressure());
+                self.command(|a| a.pneumatics.set_nominal_air_pressure());
                 self
             }
 
