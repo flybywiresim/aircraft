@@ -617,6 +617,7 @@ impl A320Hydraulic {
             lgciu2,
         );
         self.power_transfer_unit.update(
+            context,
             self.green_circuit.system_section(),
             self.yellow_circuit.system_section(),
             &self.power_transfer_unit_controller,
