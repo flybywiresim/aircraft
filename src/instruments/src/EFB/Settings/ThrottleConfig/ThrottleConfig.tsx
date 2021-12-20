@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Toggle } from '@flybywiresim/react-components';
 import { usePersistentProperty } from '../../../Common/persistence';
 import { useSimVar } from '../../../Common/simVars';
@@ -17,6 +17,8 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
     const [isDualAxis, setDualAxis] = usePersistentProperty('THROTTLE_DUAL_AXIS', '1');
 
     const [selectedIndex, setSelectedIndex] = useState(0);
+    const [validConfig, setValidConfig] = useState(true);
+    const [validationErrors, setValidationErrors] = useState<string>();
 
     const [initialize, setInitialize] = useState(false);
 
@@ -46,26 +48,17 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
     ];
 
     useEffect(() => {
+        // setValidConfig(validationErrors.length === 0);
         if (reverserOnAxis1 === 0 && selectedIndex < 2) {
             setSelectedIndex(2);
         }
     }, [reverserOnAxis1, selectedIndex]);
 
-    const setReversersOnAxis = (reverserOnAxis: number) => {
-        setReverserOnAxis1(reverserOnAxis);
-        setReverserOnAxis2(reverserOnAxis);
-        if (reverserOnAxis === 0 && selectedIndex < 2) {
-            setSelectedIndex(2);
-        }
-    };
+    useEffect(() => {
+        // setValidConfig(validationErrors.length === 0);
+    });
 
-    const switchDetent = (index: number) => {
-        if (index >= 0 && index <= 5) {
-            setSelectedIndex(index);
-        }
-    };
-
-    function isConfigValid() {
+    useEffect(() => {
         const errors: string[] = [];
         for (let index = reverserOnAxis1 ? 0 : 2; index < mappingsAxisOne.length; index++) {
             const element = mappingsAxisOne[index];
@@ -85,8 +78,23 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
                 }
             }
         }
-        return errors;
-    }
+        setValidationErrors(errors[0]);
+        setValidConfig(errors.length === 0);
+    }, [mappingsAxisOne, mappingsAxisTwo]);
+
+    const setReversersOnAxis = (reverserOnAxis: number) => {
+        setReverserOnAxis1(reverserOnAxis);
+        setReverserOnAxis2(reverserOnAxis);
+        if (reverserOnAxis === 0 && selectedIndex < 2) {
+            setSelectedIndex(2);
+        }
+    };
+
+    const switchDetent = (index: number) => {
+        if (index >= 0 && index <= 5) {
+            setSelectedIndex(index);
+        }
+    };
 
     const navigationBar = (
         <div className="h-80 flex flex-row">
@@ -195,7 +203,7 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
                 </div>
             )}
                 </div>
-                <h1 className="text-xl h-4 text-red-600">{isConfigValid().length > 0 ? isConfigValid()[0] : ' '}</h1>
+                <h1 className="text-xl h-4 text-red-600">{validConfig ? ' ' : validationErrors}</h1>
 
                 <div className="bg-navy-lighter flex flex-row-reverse h-16 p-2 w-full mt-40 mb-2 rounded-lg">
 
@@ -203,19 +211,19 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
                         text="Save &amp; Apply"
                         type={BUTTON_TYPE.GREEN}
                         onClick={() => {
-                            if (isConfigValid()) {
+                            if (validConfig) {
                                 syncToDisk(1);
                                 applyLocalVar(1);
                             }
                         }}
-                        disabled={!isConfigValid()}
-                        className={`ml-2 mr-4 ${isConfigValid().length === 0 ? 'bg-green-500 border-green-500 hover:bg-green-600 hover:border-green-600' : 'opacity-30'}`}
+                        disabled={!validConfig}
+                        className={`ml-2 mr-4 ${validConfig ? 'bg-green-500 border-green-500 hover:bg-green-600 hover:border-green-600' : 'opacity-30'}`}
                     />
                     <Button
                         text="Apply"
-                        type={BUTTON_TYPE.BLUE}
+                        type={validConfig ? BUTTON_TYPE.BLUE : BUTTON_TYPE.NONE}
                         onClick={() => applyLocalVar(1)}
-                        className={`ml-2 ${isConfigValid().length === 0 ? 'bg-blue-500 border-blue-500 hover:bg-blue-600 hover:border-blue-600' : 'bg-gray-500 opacity-30'}`}
+                        className={`ml-2 ${validConfig ? 'hover:bg-blue-600 hover:border-blue-600' : 'bg-gray-500 border-gray-500 opacity-30'}`}
                     />
                     <Button
                         text="Load From File"
