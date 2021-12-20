@@ -25,14 +25,7 @@ export type ChecklistPageProps = {
 };
 
 export const ChecklistPage = (props: ChecklistPageProps) => {
-    const {
-        items,
-        itemStates,
-        setItemState,
-        isChecklistComplete,
-        setChecklistComplete,
-        resetChecklist,
-    } = props;
+    const { items, itemStates, setItemState, isChecklistComplete, setChecklistComplete, resetChecklist } = props;
 
     const toggleItemCheckState = (idx: number) => {
         const newState = itemStates[idx];

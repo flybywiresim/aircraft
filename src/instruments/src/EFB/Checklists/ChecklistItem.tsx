@@ -24,10 +24,6 @@ export const CheckListItem = (props: CheckListItemProps) => {
     const { isChecklistComplete, clItem, itemState, toggleItemCheckStatus, toggleItemOverwriteStatus } = props;
     const [automaticChecklistChecks] = usePersistentProperty('EFB_CHECKLISTS_AUTOMATIC', 'ENABLED');
 
-    useEffect(() => {
-        console.log(`CheckListItem: automaticChecklistChecks=${automaticChecklistChecks}`);
-    }, [automaticChecklistChecks]);
-
     const onClick = () => {
         if (isChecklistComplete === false) toggleItemCheckStatus();
     };

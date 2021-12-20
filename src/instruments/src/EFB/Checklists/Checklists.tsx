@@ -17,17 +17,11 @@ const INITIAL_CHECKLIST_STATES: boolean[] = Array.from({ length: CHECKLISTS.leng
 
 export const Checklists = () => {
     const [simFlightPhase] = useSimVar('L:A32NX_FMGC_FLIGHT_PHASE', 'number', 0);
-    const [currentChecklistIdx, setCurrentChecklistIdx] = useState<number>(
-        mapFlightPhaseToChecklist(simFlightPhase) === -1 ? 0 : mapFlightPhaseToChecklist(simFlightPhase),
-    );
+    const [currentChecklistIdx, setCurrentChecklistIdx] = useState<number>(mapFlightPhaseToChecklist(simFlightPhase) === -1 ? 0 : mapFlightPhaseToChecklist(simFlightPhase));
     const [flightPhase, setFlightPhase] = useState(simFlightPhase);
     const [checklistItemState, setChecklistItemState] = useState<ChecklistState[]>(INITIAL_ITEM_STATES);
     const [checklistState, setChecklistState] = useState<boolean[]>(INITIAL_CHECKLIST_STATES);
     const [automaticChecklistChecks] = usePersistentProperty('EFB_CHECKLISTS_AUTOMATIC', 'ENABLED');
-
-    useEffect(() => {
-        console.log(`Checklists - automaticChecklistChecks=${automaticChecklistChecks}`);
-    }, [automaticChecklistChecks]);
 
     useEffect(() => {
         if (simFlightPhase !== flightPhase) {
@@ -46,8 +40,7 @@ export const Checklists = () => {
             cl.items.forEach((it, itIdx) => {
                 if (it.condition !== undefined) {
                     const condEval = it.condition();
-                    if (
-                        automaticChecklistChecks === 'ENABLED'
+                    if (automaticChecklistChecks === 'ENABLED'
                         && checklistState[clIdx] === false
                         && checklistItemState[clIdx].itemStates[itIdx].overwritten === false
                     ) {
