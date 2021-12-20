@@ -385,6 +385,15 @@ pub fn interpolation(xs: &[f64], ys: &[f64], intermediate_x: f64) -> f64 {
     }
 }
 
+/// Converts a given `bool` value into an `f64` representing that boolean value in the simulator.
+pub fn from_bool(value: bool) -> f64 {
+    if value {
+        1.0
+    } else {
+        0.0
+    }
+}
+
 pub fn to_bool(value: f64) -> bool {
     (value - 1.).abs() < f64::EPSILON
 }

@@ -1,4 +1,5 @@
-#![cfg(any(target_arch = "wasm32", doc))]
+//#![cfg(any(target_arch = "wasm32", doc))]
+pub mod aspects;
 mod electrical;
 mod failures;
 
@@ -18,6 +19,7 @@ use systems::{
     },
 };
 
+use crate::aspects::MsfsAspectBuilder;
 use electrical::{MsfsAuxiliaryPowerUnit, MsfsElectricalBuses};
 use failures::Failures;
 use systems::simulation::InitContext;
@@ -118,6 +120,22 @@ impl<'a, 'b> MsfsSimulationBuilder<'a, 'b> {
             self.additional_aspects
                 .push(Box::new(T::new(registry, self.sim_connect)?));
         }
+
+        Ok(self)
+    }
+
+    pub fn with_aspect<T: FnOnce(&mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>>>(
+        mut self,
+        builder_func: T,
+    ) -> Result<Self, Box<dyn Error>> {
+        let variable_registry = &mut self.variable_registry.as_mut().unwrap();
+        let mut builder = MsfsAspectBuilder::new(
+            self.key_prefix.to_owned(),
+            &mut self.sim_connect,
+            variable_registry,
+        );
+        (builder_func)(&mut builder)?;
+        self.additional_aspects.push(Box::new(builder.build()));
 
         Ok(self)
     }
@@ -318,11 +336,13 @@ pub struct MsfsVariableRegistry {
     named_variable_prefix: String,
     next_aircraft_variable_identifier: VariableIdentifier,
     next_named_variable_identifier: VariableIdentifier,
+    next_aspect_variable_identifier: VariableIdentifier,
 }
 
 impl MsfsVariableRegistry {
     const AIRCRAFT_VARIABLE_IDENTIFIER_TYPE: u8 = 0;
     const NAMED_VARIABLE_IDENTIFIER_TYPE: u8 = 1;
+    const ASPECT_VARIABLE_IDENTIFIER_TYPE: u8 = 2;
 
     pub fn new(named_variable_prefix: String) -> Self {
         Self {
@@ -335,6 +355,9 @@ impl MsfsVariableRegistry {
             ),
             next_named_variable_identifier: VariableIdentifier::new(
                 Self::NAMED_VARIABLE_IDENTIFIER_TYPE,
+            ),
+            next_aspect_variable_identifier: VariableIdentifier::new(
+                Self::ASPECT_VARIABLE_IDENTIFIER_TYPE,
             ),
         }
     }
@@ -400,6 +423,19 @@ impl MsfsVariableRegistry {
         self.next_named_variable_identifier = identifier.next();
 
         identifier
+    }
+
+    fn add_aspect_variable(&mut self, name: String) -> VariableIdentifier {
+        match self.name_to_identifier.get(&name) {
+            Some(identifier) => *identifier,
+            None => {
+                let identifier = self.next_aspect_variable_identifier;
+                self.name_to_identifier.insert(name, identifier);
+                self.next_aspect_variable_identifier = identifier.next();
+
+                identifier
+            }
+        }
     }
 }
 

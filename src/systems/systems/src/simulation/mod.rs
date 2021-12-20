@@ -2,7 +2,7 @@ use std::time::Duration;
 
 mod update_context;
 use crate::electrical::{ElectricalElementIdentifier, ElectricalElementIdentifierProvider};
-use crate::shared::ElectricalBusType;
+use crate::shared::{from_bool, ElectricalBusType};
 use crate::{
     electrical::Electricity,
     failures::FailureType,
@@ -497,15 +497,6 @@ impl<'a> SimulatorWriter<'a> {
 impl<'a> Writer for SimulatorWriter<'a> {
     fn write_f64(&mut self, identifier: &VariableIdentifier, value: f64) {
         self.simulator_read_writer.write(identifier, value);
-    }
-}
-
-/// Converts a given `bool` value into an `f64` representing that boolean value in the simulator.
-fn from_bool(value: bool) -> f64 {
-    if value {
-        1.0
-    } else {
-        0.0
     }
 }
 

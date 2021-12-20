@@ -1,4 +1,4 @@
-#![cfg(any(target_arch = "wasm32", doc))]
+//#![cfg(any(target_arch = "wasm32", doc))]
 use std::{
     error::Error,
     time::{Duration, Instant},
@@ -13,11 +13,14 @@ use msfs::{
     sys,
 };
 
+use systems::shared::{from_bool, to_bool};
 use systems::{
     failures::FailureType,
     simulation::{VariableIdentifier, VariableRegistry},
 };
+use systems_wasm::aspects::{EventToVariableOptions, MsfsAspectBuilder};
 use systems_wasm::{
+    aspects::{EventToVariableMapping, Variable},
     f64_to_sim_connect_32k_pos, sim_connect_32k_pos_to_f64, MsfsAspectCtor, MsfsSimulationBuilder,
     MsfsVariableRegistry, SimulatorAspect,
 };
@@ -46,6 +49,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
                 ("DC_GND_FLT_SVC", 15),
             ])
             .with_auxiliary_power_unit("OVHD_APU_START_PB_IS_AVAILABLE".to_owned(), 8)?
+            .with_aspect(brakes)?
             .with::<Brakes>()?
             .with::<NoseWheelSteering>()?
             .with::<Autobrakes>()?
@@ -143,6 +147,23 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     while let Some(event) = gauge.next_event().await {
         handler.handle(event, &mut simulation, sim_connect.as_mut().get_mut())?;
     }
+
+    Ok(())
+}
+
+fn brakes(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>> {
+    builder.event_to_variable(
+        "PARKING_BRAKES",
+        EventToVariableMapping::VariableValueFn(|current_value| from_bool(!to_bool(current_value))),
+        Variable::Named("PARK_BRAKE_LEVER_POS".to_owned()),
+        EventToVariableOptions::default().mask(),
+    )?;
+    builder.event_to_variable(
+        "PARKING_BRAKE_SET",
+        EventToVariableMapping::EventDataToValue(|event_data| from_bool(event_data == 1)),
+        Variable::Named("PARK_BRAKE_LEVER_POS".to_owned()),
+        EventToVariableOptions::default().mask(),
+    )?;
 
     Ok(())
 }
@@ -418,11 +439,11 @@ impl SimulatorAspect for Flaps {
         self.write_sim_vars();
 
         sim_connect
-            .set_data_on_sim_object(SIMCONNECT_OBJECT_ID_USER, &self.msfs_flaps_handle_index);
+            .set_data_on_sim_object(SIMCONNECT_OBJECT_ID_USER, &self.msfs_flaps_handle_index)?;
         sim_connect
-            .set_data_on_sim_object(SIMCONNECT_OBJECT_ID_USER, &self.flaps_surface_sim_object);
+            .set_data_on_sim_object(SIMCONNECT_OBJECT_ID_USER, &self.flaps_surface_sim_object)?;
         sim_connect
-            .set_data_on_sim_object(SIMCONNECT_OBJECT_ID_USER, &self.slats_surface_sim_object);
+            .set_data_on_sim_object(SIMCONNECT_OBJECT_ID_USER, &self.slats_surface_sim_object)?;
 
         Ok(())
     }
@@ -590,13 +611,11 @@ impl SimulatorAspect for Autobrakes {
 }
 
 struct Brakes {
-    park_brak_lever_pos_id: VariableIdentifier,
     left_brake_pedal_input_id: VariableIdentifier,
     right_brake_pedal_input_id: VariableIdentifier,
     brake_left_force_factor_id: VariableIdentifier,
     brake_right_force_factor_id: VariableIdentifier,
 
-    park_brake_lever_masked_input: NamedVariable,
     left_pedal_brake_masked_input: NamedVariable,
     right_pedal_brake_masked_input: NamedVariable,
 
@@ -605,8 +624,6 @@ struct Brakes {
     id_brake_keyboard: sys::DWORD,
     id_brake_left_keyboard: sys::DWORD,
     id_brake_right_keyboard: sys::DWORD,
-    id_parking_brake: sys::DWORD,
-    id_parking_brake_set: sys::DWORD,
 
     brake_left_sim_input: f64,
     brake_right_sim_input: f64,
@@ -617,9 +634,6 @@ struct Brakes {
 
     brake_left_output_to_sim: f64,
     brake_right_output_to_sim: f64,
-
-    parking_brake_lever_is_set: bool,
-    last_transmitted_park_brake_lever_position: f64,
 }
 
 impl MsfsAspectCtor for Brakes {
@@ -628,13 +642,11 @@ impl MsfsAspectCtor for Brakes {
         sim_connect: &mut SimConnect,
     ) -> Result<Self, Box<dyn Error>> {
         Ok(Self {
-            park_brak_lever_pos_id: registry.get("PARK_BRAKE_LEVER_POS".to_owned()),
             left_brake_pedal_input_id: registry.get("LEFT_BRAKE_PEDAL_INPUT".to_owned()),
             right_brake_pedal_input_id: registry.get("RIGHT_BRAKE_PEDAL_INPUT".to_owned()),
             brake_left_force_factor_id: registry.get("BRAKE LEFT FORCE FACTOR".to_owned()),
             brake_right_force_factor_id: registry.get("BRAKE RIGHT FORCE FACTOR".to_owned()),
 
-            park_brake_lever_masked_input: NamedVariable::from("A32NX_PARK_BRAKE_LEVER_POS"),
             left_pedal_brake_masked_input: NamedVariable::from("A32NX_LEFT_BRAKE_PEDAL_INPUT"),
             right_pedal_brake_masked_input: NamedVariable::from("A32NX_RIGHT_BRAKE_PEDAL_INPUT"),
 
@@ -650,10 +662,6 @@ impl MsfsAspectCtor for Brakes {
             id_brake_right_keyboard: sim_connect
                 .map_client_event_to_sim_event("BRAKES_RIGHT", true)?,
 
-            id_parking_brake: sim_connect.map_client_event_to_sim_event("PARKING_BRAKES", true)?,
-            id_parking_brake_set: sim_connect
-                .map_client_event_to_sim_event("PARKING_BRAKE_SET", true)?,
-
             brake_left_sim_input: 0.,
             brake_right_sim_input: 0.,
             brake_left_sim_input_keyboard: 0.,
@@ -663,10 +671,6 @@ impl MsfsAspectCtor for Brakes {
 
             brake_left_output_to_sim: 0.,
             brake_right_output_to_sim: 0.,
-
-            parking_brake_lever_is_set: true,
-
-            last_transmitted_park_brake_lever_position: 1.,
         })
     }
 }
@@ -685,15 +689,6 @@ impl Brakes {
 
     fn set_brake_right_key_pressed(&mut self) {
         self.right_key_pressed = true;
-    }
-
-    fn synchronise_with_sim(&mut self) {
-        // Synchronising WASM park brake state with simulator park brake lever variable
-        let current_in_sim_park_brake: f64 = self.park_brake_lever_masked_input.get_value();
-
-        if current_in_sim_park_brake != self.last_transmitted_park_brake_lever_position {
-            self.receive_a_park_brake_set_event(current_in_sim_park_brake as u32);
-        }
     }
 
     fn update_keyboard_inputs(&mut self, delta: Duration) {
@@ -721,10 +716,6 @@ impl Brakes {
     }
 
     fn transmit_masked_inputs(&mut self) {
-        let park_is_set = self.parking_brake_lever_is_set as u32 as f64;
-        self.last_transmitted_park_brake_lever_position = park_is_set;
-        self.park_brake_lever_masked_input.set_value(park_is_set);
-
         let brake_right = self.brake_right() * 100.;
         let brake_left = self.brake_left() * 100.;
         self.right_pedal_brake_masked_input.set_value(brake_right);
@@ -773,14 +764,6 @@ impl Brakes {
         self.brake_left_output_to_sim = brake_force_factor;
     }
 
-    fn receive_a_park_brake_event(&mut self) {
-        self.parking_brake_lever_is_set = !self.parking_brake_lever_is_set;
-    }
-
-    fn receive_a_park_brake_set_event(&mut self, data: u32) {
-        self.parking_brake_lever_is_set = data == 1;
-    }
-
     fn get_brake_right_output_converted_in_simconnect_format(&mut self) -> u32 {
         f64_to_sim_connect_32k_pos(self.brake_right_output_to_sim)
     }
@@ -788,20 +771,10 @@ impl Brakes {
     fn get_brake_left_output_converted_in_simconnect_format(&mut self) -> u32 {
         f64_to_sim_connect_32k_pos(self.brake_left_output_to_sim)
     }
-
-    fn is_park_brake_set(&self) -> f64 {
-        if self.parking_brake_lever_is_set {
-            1.
-        } else {
-            0.
-        }
-    }
 }
 impl SimulatorAspect for Brakes {
     fn read(&mut self, identifier: &VariableIdentifier) -> Option<f64> {
-        if identifier == &self.park_brak_lever_pos_id {
-            Some(self.is_park_brake_set())
-        } else if identifier == &self.left_brake_pedal_input_id {
+        if identifier == &self.left_brake_pedal_input_id {
             Some(self.brake_left())
         } else if identifier == &self.right_brake_pedal_input_id {
             Some(self.brake_right())
@@ -831,12 +804,6 @@ impl SimulatorAspect for Brakes {
                 } else if e.id() == self.id_brake_right {
                     self.set_brake_right(e.data());
                     true
-                } else if e.id() == self.id_parking_brake {
-                    self.receive_a_park_brake_event();
-                    true
-                } else if e.id() == self.id_parking_brake_set {
-                    self.receive_a_park_brake_set_event(e.data());
-                    true
                 } else if e.id() == self.id_brake_keyboard {
                     self.set_brake_left_key_pressed();
                     self.set_brake_right_key_pressed();
@@ -856,7 +823,6 @@ impl SimulatorAspect for Brakes {
     }
 
     fn pre_tick(&mut self, delta: Duration) {
-        self.synchronise_with_sim();
         self.update_keyboard_inputs(delta);
     }
 
@@ -1116,7 +1082,7 @@ impl SimulatorAspect for NoseWheelSteering {
         }
     }
 
-    fn pre_tick(&mut self, delta: Duration) {
+    fn pre_tick(&mut self, _: Duration) {
         self.synchronise_with_sim();
     }
 
