@@ -231,6 +231,7 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
                         text="Reset to Defaults"
                         type={BUTTON_TYPE.BLUE}
                         onClick={() => {
+                            setDualAxis("1");
                             defaultsToThrottle(1);
                             setTimeout(() => {
                                 setInitialize(true);
