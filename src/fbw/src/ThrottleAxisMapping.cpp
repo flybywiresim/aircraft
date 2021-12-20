@@ -77,6 +77,22 @@ bool ThrottleAxisMapping::loadFromLocalVariables() {
   return true;
 }
 
+bool ThrottleAxisMapping::setDefaults() {
+  // read configuration from file or use default
+  Configuration configuration;
+  cout << "WASM: Throttle configuration set to use default" << endl;
+  configuration = getDefaultConfiguration();
+
+  // save values to local variables
+  storeConfigurationInLocalVariables(configuration);
+
+  // update configuration
+  updateMappingFromConfiguration(configuration);
+
+  // success
+  return true;
+}
+
 bool ThrottleAxisMapping::loadFromFile() {
   // create ini file and data structure
   INIStructure iniStructure;

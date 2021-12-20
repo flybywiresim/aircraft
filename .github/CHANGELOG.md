@@ -100,6 +100,7 @@
 1. [MCDU] Increase timeout for airport loading - @tracernz (Mike)
 1. [AP] Fixed CLB not engaging correctly on take-off - @aguther (Andreas Guther)
 1. [AP] Added time delay to ALT condition - @aguther (Andreas Guther)
+1. [EFB] Added Reset to Defaults button to EFB throttle calibration page - @frankkopp (Cdr_Maverick#6475)
 
 ## 0.7.0
 

@@ -24,6 +24,7 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
     const [, setReverserOnAxis2] = useSimVar('L:A32NX_THROTTLE_MAPPING_USE_REVERSE_ON_AXIS:2', 'number', 1000);
 
     const [, syncToDisk] = useSimVar('K:A32NX.THROTTLE_MAPPING_SAVE_TO_FILE', 'number', 1000);
+    const [, defaultsToThrottle] = useSimVar('K:A32NX.THROTTLE_MAPPING_SET_DEFAULTS', 'number', 100);
     const [, syncToThrottle] = useSimVar('K:A32NX.THROTTLE_MAPPING_LOAD_FROM_FILE', 'number', 100);
     const [, applyLocalVar] = useSimVar('K:A32NX.THROTTLE_MAPPING_LOAD_FROM_LOCAL_VARIABLES', 'number', 1000);
 
@@ -220,6 +221,17 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
                         type={BUTTON_TYPE.BLUE}
                         onClick={() => {
                             syncToThrottle(1);
+                            setTimeout(() => {
+                                setInitialize(true);
+                            }, 1000);
+                        }}
+                        className="ml-2 hover:bg-blue-600 hover:border-blue-600"
+                    />
+                    <Button
+                        text="Reset to Defaults"
+                        type={BUTTON_TYPE.BLUE}
+                        onClick={() => {
+                            defaultsToThrottle(1);
                             setTimeout(() => {
                                 setInitialize(true);
                             }, 1000);

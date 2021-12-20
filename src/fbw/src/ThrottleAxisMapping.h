@@ -24,6 +24,7 @@ class ThrottleAxisMapping {
 
   bool loadFromLocalVariables();
 
+  bool setDefaults();
   bool loadFromFile();
   bool saveToFile();
 
