@@ -11,8 +11,8 @@ type FFProps = {
 };
 
 const FF: React.FC<FFProps> = ({ unit, x, y, engine }) => {
-    // const [fuelFlow] = useSimVar(`{L:A32NX_ENGINE_FF:${engine}}`, 'number', 1000); // KG/HR
-    const fuelFlow = 320;
+    const [fuelFlow] = useSimVar(`L:A32NX_ENGINE_FF:${engine}`, 'number', 1000); // KG/HR
+    // const fuelFlow = 320;
 
     return (
         <>

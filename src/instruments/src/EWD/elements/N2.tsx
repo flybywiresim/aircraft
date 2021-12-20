@@ -1,3 +1,5 @@
+import { splitDecimals } from '@instruments/common/gauges';
+import { useSimVar } from '@instruments/common/simVars';
 import React from 'react';
 
 type N2Props = {
@@ -8,15 +10,16 @@ type N2Props = {
 };
 
 const N2: React.FC<N2Props> = ({ x, y, engine }) => {
-    console.log('N2');
+    const [N2percent] = useSimVar(`L:A32NX_ENGINE_N2:${engine}`, 'percent', 100);
+    const N2percentSplit = splitDecimals(N2percent);
 
     return (
         <>
             <g id={`N2-indicator-${engine}`}>
-                <rect x={x - 6} y={y + 19} width={62} height={17} className="lightGreyBox" />
-                <text className="Large End Green" x={x + 33} y={y + 35}>28</text>
+                <rect x={x - 6} y={y + 19} width={62} height={17} className="lightGreyBox Hide" />
+                <text className="Large End Green" x={x + 33} y={y + 35}>{N2percentSplit[0]}</text>
                 <text className="Large End Green" x={x + 42} y={y + 35}>.</text>
-                <text className="Medium End Green" x={x + 55} y={y + 35}>8</text>
+                <text className="Medium End Green" x={x + 55} y={y + 35}>{N2percentSplit[1]}</text>
             </g>
         </>
     );

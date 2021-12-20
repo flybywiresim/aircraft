@@ -1,5 +1,5 @@
-import { GaugeComponent, GaugeMarkerComponent } from '@instruments/common/gauges';
-// import { useSimVar } from '@instruments/common/simVars';
+import { GaugeComponent, GaugeMarkerComponent, splitDecimals } from '@instruments/common/gauges';
+import { useSimVar } from '@instruments/common/simVars';
 import React from 'react';
 
 type N1Props = {
@@ -10,6 +10,9 @@ type N1Props = {
 };
 
 const N1: React.FC<N1Props> = ({ x, y, engine }) => {
+    const [N1percent] = useSimVar(`L:A32NX_ENGINE_N1:${engine}`, 'percent', 100);
+    const N1percentSplit = splitDecimals(N1percent);
+
     const radius = 50;
     const startAngle = 220;
     const endAngle = 70;
@@ -19,9 +22,9 @@ const N1: React.FC<N1Props> = ({ x, y, engine }) => {
     return (
         <>
             <g id={`N1-indicator-${engine}`}>
-                <text className="Large End Green" x={x + 33} y={y + 35}>19</text>
+                <text className="Large End Green" x={x + 33} y={y + 35}>{N1percentSplit[0]}</text>
                 <text className="Large End Green" x={x + 42} y={y + 35}>.</text>
-                <text className="Medium End Green" x={x + 55} y={y + 35}>5</text>
+                <text className="Medium End Green" x={x + 55} y={y + 35}>{N1percentSplit[1]}</text>
                 <GaugeComponent x={x} y={y} radius={radius} startAngle={startAngle} endAngle={endAngle} visible className="GaugeComponent Gauge">
                     <GaugeComponent x={x} y={y} radius={radius} startAngle={endAngle - 20} endAngle={endAngle} visible className="GaugeComponent Gauge Red" />
                     <GaugeMarkerComponent
@@ -59,7 +62,7 @@ const N1: React.FC<N1Props> = ({ x, y, engine }) => {
                     <GaugeMarkerComponent value={11} x={x} y={y} min={min} max={max} radius={radius} startAngle={startAngle} endAngle={endAngle} className="GaugeText Red" />
                     <rect x={x - 15} y={y + 15} width={75} height={25} className="darkGreyBox" />
                     <GaugeMarkerComponent
-                        value={1.9}
+                        value={N1percent / 10}
                         x={x}
                         y={y}
                         min={min}
