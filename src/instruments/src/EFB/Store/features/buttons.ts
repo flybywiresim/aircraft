@@ -1,7 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { TypedAction } from '../store';
 
-type ActiveButton = { id: string, state: string };
+type ActiveButton = { id: string, state: string, callBack, value };
 
 type ButtonSelectionState = {
     activeButtons:ActiveButton[];
@@ -26,7 +26,15 @@ export const buttonsSlice = createSlice({
         },
         removeActiveButton: (state, action: TypedAction<number>) => {
             if (action.payload !== -1) {
-                state.activeButtons = state.activeButtons.splice(action.payload, 1);
+                state.activeButtons.splice(action.payload, 1);
+            }
+            console.log(state.activeButtons);
+        },
+        updateButton: (state, action: TypedAction<ActiveButton>) => {
+            const button = state.activeButtons.findIndex((b) => action.payload.id === b.id);
+            const updatedButton: ActiveButton = { id: action.payload.id, value: action.payload.value, state: 'ACTIVE', callBack: action.payload.callBack };
+            if (button !== -1) {
+                state.activeButtons[button] = updatedButton;
             }
         },
         setActiveButtons: (state, action: TypedAction<ActiveButton[]>) => {
@@ -37,7 +45,7 @@ export const buttonsSlice = createSlice({
         },
         removeDisabledButton: (state, action: TypedAction<number>) => {
             if (action.payload !== -1) {
-                state.disabledButtons = state.disabledButtons.splice(action.payload, 1);
+                state.disabledButtons.splice(action.payload, 1);
             }
         },
         setTugRequestOnly: (state, action: TypedAction<boolean>) => {
@@ -49,6 +57,9 @@ export const buttonsSlice = createSlice({
     },
 });
 
-export const { addActiveButton, addDisabledButton, removeActiveButton, removeDisabledButton, setActiveButtons, setPushbackWaitTimerHandle, setTugRequestOnly } = buttonsSlice.actions;
+export const {
+    addActiveButton, addDisabledButton, removeActiveButton, removeDisabledButton,
+    setActiveButtons, setPushbackWaitTimerHandle, setTugRequestOnly, updateButton,
+} = buttonsSlice.actions;
 
 export default buttonsSlice.reducer;
