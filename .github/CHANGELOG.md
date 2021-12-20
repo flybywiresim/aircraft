@@ -98,6 +98,8 @@
 1. [MCDU] Added manual ILS tuning by ident on RAD NAV page - @tracernz (Mike)
 1. [MCDU] Support manual entry of forward LS course - @tracernz (Mike)
 1. [MCDU] Increase timeout for airport loading - @tracernz (Mike)
+1. [AP] Fixed CLB not engaging correctly on take-off - @aguther (Andreas Guther)
+1. [AP] Added time delay to ALT condition - @aguther (Andreas Guther)
 
 ## 0.7.0
 
