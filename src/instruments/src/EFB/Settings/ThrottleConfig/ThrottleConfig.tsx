@@ -195,7 +195,8 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
                 </div>
             )}
                 </div>
-                <div className="text-xl text-red-600">{isConfigValid().length > 0 ? isConfigValid()[0] : ''}</div>
+                <h1 className="text-xl h-4 text-red-600">{isConfigValid().length > 0 ? isConfigValid()[0] : ' '}</h1>
+
                 <div className="bg-navy-lighter flex flex-row-reverse h-16 p-2 w-full mt-40 mb-2 rounded-lg">
 
                     <Button
@@ -207,7 +208,7 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
                                 applyLocalVar(1);
                             }
                         }}
-                        disabled={!isConfigValid}
+                        disabled={!isConfigValid()}
                         className={`ml-2 mr-4 ${isConfigValid().length === 0 ? 'bg-green-500 border-green-500 hover:bg-green-600 hover:border-green-600' : 'opacity-30'}`}
                     />
                     <Button

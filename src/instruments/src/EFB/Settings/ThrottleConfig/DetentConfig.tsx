@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { usePersistentProperty } from '../../../Common/persistence';
 
 import Button, { BUTTON_TYPE } from '../../Components/Button/Button';
 import SimpleInput from '../../Components/Form/SimpleInput/SimpleInput';
@@ -23,15 +22,13 @@ interface Props {
 const DetentConfig: React.FC<Props> = (props: Props) => {
     const [showWarning, setShowWarning] = useState(false);
 
-    const [deadZone, setDeadZone] = usePersistentProperty(`THROTTLE_${props.throttleNumber}DETENT_${props.index}_RANGE`, '0.05');
+    const [deadZone, setDeadZone] = useState(Math.abs(props.upperBoundDetentGetter - props.lowerBoundDetentGetter));
 
     const [previousMode, setPreviousMode] = useState(props.expertMode);
-    const [axisValue, setAxisValue] = usePersistentProperty(`THROTTLE_${props.throttleNumber}AXIS_${props.index}_VALUE`, '0');
 
     const setFromTo = (throttle1Position, settingLower, settingUpper, deadZone: number, overrideValue?: string) => {
         const newSetting = overrideValue || throttle1Position;
 
-        setAxisValue(newSetting.toFixed(2));
         if (deadZone) {
             settingLower.forEach((f) => f(newSetting - deadZone < -1 ? -1 : newSetting - deadZone));
             settingUpper.forEach((f) => f(newSetting + deadZone > 1 ? 1 : newSetting + deadZone));
@@ -44,22 +41,11 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
     };
 
     useEffect(() => {
-        // initialize persistent values from previous configurations
-        if (!axisValue || props.initialize) {
-            const axisValue = (props.lowerBoundDetentGetter + props.upperBoundDetentGetter) / 2;
-            const dz = Math.abs((Math.abs(props.upperBoundDetentGetter) - Math.abs(props.lowerBoundDetentGetter))) / 2;
-            setAxisValue(axisValue.toFixed(2));
-            if (dz > 0) {
-                setDeadZone(dz.toFixed(2));
-            }
-            applyDeadzone(props.lowerBoundDetentSetter, props.upperBoundDetentSetter, axisValue, parseFloat(deadZone));
-            props.setInitialize(false);
-        }
         setPreviousMode(props.expertMode);
-    }, [axisValue, props, deadZone]);
+    }, [props.expertMode]);
 
     return (
-        <div className="mb-2w-full h-96 justify-between items-center p-2 flex flex-row flex-shrink-0 text-white overflow-hidden">
+        <div className="flex overflow-hidden flex-row flex-shrink-0 justify-between items-center p-2 h-96 text-white mb-2w-full">
             {props.barPosition === 'left'
                 && (
                     <div className="mr-8 h-full">
@@ -89,17 +75,17 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
                         <div className="flex flex-col w-full">
                             <SimpleInput
                                 label="Deadband +/-"
-                                className="w-52 mb-4"
-                                value={deadZone}
+                                className="mb-4 w-52"
+                                value={deadZone.toFixed(2)}
                                 labelPosition="col"
                                 reverse
                                 noLeftMargin
                                 onChange={(deadZone) => {
                                     if (parseFloat(deadZone) >= 0.01) {
                                         if (previousMode === props.expertMode) {
-                                            applyDeadzone(props.lowerBoundDetentSetter, props.upperBoundDetentSetter, parseFloat(axisValue), parseFloat(deadZone));
+                                            applyDeadzone(props.lowerBoundDetentSetter, props.upperBoundDetentSetter, parseFloat(props.throttlePosition), parseFloat(deadZone));
                                             setShowWarning(false);
-                                            setDeadZone(parseFloat(deadZone).toFixed(2));
+                                            setDeadZone(parseFloat(deadZone));
                                         }
                                     } else {
                                         setShowWarning(true);
@@ -107,10 +93,10 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
                                 }}
                             />
                             <Button
-                                className="border-blue-500 bg-blue-500 hover:bg-blue-600 hover:border-blue-600"
+                                className="bg-blue-500 hover:bg-blue-600 border-blue-500 hover:border-blue-600"
                                 text="Set From Throttle"
                                 onClick={() => {
-                                    setFromTo(props.throttlePosition, props.lowerBoundDetentSetter, props.upperBoundDetentSetter, parseFloat(deadZone));
+                                    setFromTo(props.throttlePosition, props.lowerBoundDetentSetter, props.upperBoundDetentSetter, deadZone);
                                 }}
                                 type={BUTTON_TYPE.NONE}
                             />
@@ -123,14 +109,11 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
                                 label="Configure End"
                                 labelPosition="col"
                                 reverse
-                                className="dark-option w-36 mr-0"
+                                className="mr-0 w-36 dark-option"
                                 value={!props.expertMode ? deadZone : props.upperBoundDetentGetter.toFixed(2)}
                                 noLeftMargin
                                 onChange={(deadZone) => {
                                     if (previousMode === props.expertMode && deadZone.length > 1 && !Number.isNaN(Number(deadZone))) {
-                                        const dz = Math.abs((Math.abs(props.upperBoundDetentGetter) - Math.abs(props.lowerBoundDetentGetter)));
-                                        setAxisValue((dz / 2).toFixed(2));
-                                        setDeadZone(dz.toFixed(2));
                                         props.upperBoundDetentSetter.forEach((f) => f(parseFloat(deadZone)));
                                         setShowWarning(false);
                                     }
@@ -138,16 +121,13 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
                             />
                             <SimpleInput
                                 label={props.expertMode ? 'Configure Start' : 'Configure Range'}
-                                className="dark-option mt-2 w-36"
+                                className="mt-2 w-36 dark-option"
                                 labelPosition="col"
                                 reverse
                                 value={!props.expertMode ? deadZone : props.lowerBoundDetentGetter.toFixed(2)}
                                 noLeftMargin
                                 onChange={(deadZone) => {
                                     if (previousMode === props.expertMode && deadZone.length > 1 && !Number.isNaN(Number(deadZone))) {
-                                        const dz = Math.abs((Math.abs(props.upperBoundDetentGetter) - Math.abs(props.lowerBoundDetentGetter)));
-                                        setAxisValue((dz / 2).toFixed(2));
-                                        setDeadZone(dz.toFixed(2));
                                         props.lowerBoundDetentSetter.forEach((f) => f(parseFloat(deadZone)));
                                         setShowWarning(false);
                                     }
@@ -155,9 +135,11 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
                             />
                         </div>
                     )}
-                {showWarning && (
-                    <h1 className="mt-4 text-red-600 text-xl">Please enter a valid deadzone (min. 0.1)</h1>
-                )}
+
+                <h2 style={{ visibility: showWarning ? 'visible' : 'hidden' }} className="mt-4  w-48 h-12 text-xl text-red-600">
+                    Please enter a
+                    valid deadzone (&gt; 0.05)
+                </h2>
 
             </div>
             {props.barPosition === 'right'
