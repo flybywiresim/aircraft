@@ -27,8 +27,8 @@ import { fetchSimbriefDataAction, initialState as simbriefInitialState } from '.
 import { NotificationsContainer, NotificationTypes, Notification } from './UIMessages/Notification';
 import { FbwLogo } from './Assets/FbwLogo';
 
-const BATTERY_DURATION_CHARGE_MIN = 1; // 180;
-const BATTERY_DURATION_DISCHARGE_MIN = 1; // 240;
+const BATTERY_DURATION_CHARGE_MIN = 180;
+const BATTERY_DURATION_DISCHARGE_MIN = 240;
 
 const navigraph = new NavigraphClient();
 
