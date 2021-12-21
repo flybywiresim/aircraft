@@ -88,9 +88,16 @@
     }
 
     .Circle {
-        stroke: #00FF00;
         fill: none;
         stroke-width: 2.5px;
+
+        &.Green {
+            stroke: $display-green;
+        }
+
+        &.Amber {
+            stroke: $display-amber;
+        }
     }
 
     .FillPulse {

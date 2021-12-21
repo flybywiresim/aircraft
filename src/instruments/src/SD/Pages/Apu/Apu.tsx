@@ -179,7 +179,7 @@ const ApuBleed = ({ x, y } : ComponentPositionProps) => {
                 <text x={90} y={48} className="Cyan FontNormal Right">PSI</text>
 
                 <line className="Line Green" x1={50} y1={-1} x2={50} y2={-22} />
-                <circle className="Circle" cx={50} r={18} cy={-40} />
+                <circle className={`Circle ${(!apuBleedOpen && apuBleedPbOnConfirmed) ? 'Amber' : 'Green'}`} cx={50} r={18} cy={-40} />
 
                 <line
                     className={`Line ${(!apuBleedOpen && apuBleedPbOnConfirmed) ? 'Amber' : 'Green'}`}
