@@ -1,8 +1,5 @@
 //#![cfg(any(target_arch = "wasm32", doc))]
-use std::{
-    error::Error,
-    time::{Duration, Instant},
-};
+use std::{error::Error, time::Duration};
 
 use a320_systems::A320;
 use msfs::sim_connect;
@@ -50,9 +47,9 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
             ])
             .with_auxiliary_power_unit("OVHD_APU_START_PB_IS_AVAILABLE".to_owned(), 8)?
             .with_aspect(brakes)?
+            .with_aspect(autobrakes)?
             .with::<Brakes>()?
             .with::<NoseWheelSteering>()?
-            .with::<Autobrakes>()?
             .with::<Flaps>()?
             .with_failures(vec![
                 (24_000, FailureType::TransformerRectifier(1)),
@@ -168,7 +165,9 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
 fn brakes(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>> {
     builder.event_to_variable(
         "PARKING_BRAKES",
-        EventToVariableMapping::VariableValueFn(|current_value| from_bool(!to_bool(current_value))),
+        EventToVariableMapping::CurrentValueToValue(|current_value| {
+            from_bool(!to_bool(current_value))
+        }),
         Variable::Named("PARK_BRAKE_LEVER_POS".to_owned()),
         EventToVariableOptions::default().mask(),
     )?;
@@ -177,6 +176,39 @@ fn brakes(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>> {
         EventToVariableMapping::EventDataToValue(|event_data| from_bool(event_data == 1)),
         Variable::Named("PARK_BRAKE_LEVER_POS".to_owned()),
         EventToVariableOptions::default().mask(),
+    )?;
+
+    Ok(())
+}
+
+fn autobrakes(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>> {
+    let options = EventToVariableOptions::default()
+        .ignore_repeats_for(Duration::from_millis(1500))
+        .after_tick_set_to(0.);
+
+    builder.event_to_variable(
+        "AUTOBRAKE_LO_SET",
+        EventToVariableMapping::Value(1.),
+        Variable::Named("OVHD_AUTOBRK_LOW_ON_IS_PRESSED".to_owned()),
+        options,
+    )?;
+    builder.event_to_variable(
+        "AUTOBRAKE_MED_SET",
+        EventToVariableMapping::Value(1.),
+        Variable::Named("OVHD_AUTOBRK_MED_ON_IS_PRESSED".to_owned()),
+        options,
+    )?;
+    builder.event_to_variable(
+        "AUTOBRAKE_HI_SET",
+        EventToVariableMapping::Value(1.),
+        Variable::Named("OVHD_AUTOBRK_MAX_ON_IS_PRESSED".to_owned()),
+        options,
+    )?;
+    builder.event_to_variable(
+        "AUTOBRAKE_DISARM",
+        EventToVariableMapping::Value(1.),
+        Variable::Named("AUTOBRAKE_DISARM".to_owned()),
+        EventToVariableOptions::default().after_tick_set_to(0.),
     )?;
 
     Ok(())
@@ -458,167 +490,6 @@ impl SimulatorAspect for Flaps {
             .set_data_on_sim_object(SIMCONNECT_OBJECT_ID_USER, &self.flaps_surface_sim_object)?;
         sim_connect
             .set_data_on_sim_object(SIMCONNECT_OBJECT_ID_USER, &self.slats_surface_sim_object)?;
-
-        Ok(())
-    }
-}
-
-struct Autobrakes {
-    autobrake_disarm_id: VariableIdentifier,
-    ovhd_autobrk_low_on_is_pressed_id: VariableIdentifier,
-    ovhd_autobrk_med_on_is_pressed_id: VariableIdentifier,
-    ovhd_autobrk_max_on_is_pressed_id: VariableIdentifier,
-
-    id_mode_max: sys::DWORD,
-    id_mode_med: sys::DWORD,
-    id_mode_low: sys::DWORD,
-    id_disarm: sys::DWORD,
-
-    low_mode_panel_pushbutton: NamedVariable,
-    med_mode_panel_pushbutton: NamedVariable,
-    max_mode_panel_pushbutton: NamedVariable,
-
-    low_mode_requested: bool,
-    med_mode_requested: bool,
-    max_mode_requested: bool,
-    disarm_requested: bool,
-
-    last_button_press: Instant,
-}
-
-impl MsfsAspectCtor for Autobrakes {
-    fn new(
-        registry: &mut MsfsVariableRegistry,
-        sim_connect: &mut SimConnect,
-    ) -> Result<Self, Box<dyn Error>> {
-        Ok(Self {
-            autobrake_disarm_id: registry.get("AUTOBRAKE_DISARM".to_owned()),
-            ovhd_autobrk_low_on_is_pressed_id: registry
-                .get("OVHD_AUTOBRK_LOW_ON_IS_PRESSED".to_owned()),
-            ovhd_autobrk_med_on_is_pressed_id: registry
-                .get("OVHD_AUTOBRK_MED_ON_IS_PRESSED".to_owned()),
-            ovhd_autobrk_max_on_is_pressed_id: registry
-                .get("OVHD_AUTOBRK_MAX_ON_IS_PRESSED".to_owned()),
-
-            // SimConnect inputs masking
-            id_mode_max: sim_connect.map_client_event_to_sim_event("AUTOBRAKE_HI_SET", false)?,
-            id_mode_med: sim_connect.map_client_event_to_sim_event("AUTOBRAKE_MED_SET", false)?,
-            id_mode_low: sim_connect.map_client_event_to_sim_event("AUTOBRAKE_LO_SET", false)?,
-            id_disarm: sim_connect.map_client_event_to_sim_event("AUTOBRAKE_DISARM", false)?,
-
-            low_mode_panel_pushbutton: NamedVariable::from("A32NX_OVHD_AUTOBRK_LOW_ON_IS_PRESSED"),
-            med_mode_panel_pushbutton: NamedVariable::from("A32NX_OVHD_AUTOBRK_MED_ON_IS_PRESSED"),
-            max_mode_panel_pushbutton: NamedVariable::from("A32NX_OVHD_AUTOBRK_MAX_ON_IS_PRESSED"),
-
-            low_mode_requested: false,
-            med_mode_requested: false,
-            max_mode_requested: false,
-            disarm_requested: false,
-
-            last_button_press: Instant::now(),
-        })
-    }
-}
-
-impl Autobrakes {
-    // Time to freeze keyboard events once key is released. This will keep key_pressed to TRUE internally when key is actually staying pressed
-    // but keyboard events wrongly goes to false then back to true for a short period of time due to poor key event handling
-    const DEFAULT_REARMING_DURATION: Duration = Duration::from_millis(1500);
-
-    fn synchronise_with_sim(&mut self) {
-        if self.low_mode_panel_pushbutton.get_value() {
-            self.set_mode_low();
-        }
-        if self.med_mode_panel_pushbutton.get_value() {
-            self.set_mode_med();
-        }
-        if self.max_mode_panel_pushbutton.get_value() {
-            self.set_mode_max();
-        }
-    }
-
-    fn reset_events(&mut self) {
-        if self.last_button_press.elapsed() > Self::DEFAULT_REARMING_DURATION {
-            self.max_mode_requested = false;
-            self.med_mode_requested = false;
-            self.low_mode_requested = false;
-        }
-        self.disarm_requested = false;
-    }
-
-    fn on_receive_pushbutton_event(&mut self) {
-        self.last_button_press = Instant::now();
-    }
-
-    fn set_mode_max(&mut self) {
-        self.max_mode_requested = true;
-        self.med_mode_requested = false;
-        self.low_mode_requested = false;
-        self.on_receive_pushbutton_event();
-    }
-
-    fn set_mode_med(&mut self) {
-        self.med_mode_requested = true;
-        self.max_mode_requested = false;
-        self.low_mode_requested = false;
-        self.on_receive_pushbutton_event();
-    }
-
-    fn set_mode_low(&mut self) {
-        self.low_mode_requested = true;
-        self.med_mode_requested = false;
-        self.max_mode_requested = false;
-        self.on_receive_pushbutton_event();
-    }
-
-    fn set_disarm(&mut self) {
-        self.disarm_requested = true;
-    }
-}
-impl SimulatorAspect for Autobrakes {
-    fn read(&mut self, identifier: &VariableIdentifier) -> Option<f64> {
-        if identifier == &self.autobrake_disarm_id {
-            Some(self.disarm_requested as u8 as f64)
-        } else if identifier == &self.ovhd_autobrk_low_on_is_pressed_id {
-            Some(self.low_mode_requested as u8 as f64)
-        } else if identifier == &self.ovhd_autobrk_med_on_is_pressed_id {
-            Some(self.med_mode_requested as u8 as f64)
-        } else if identifier == &self.ovhd_autobrk_max_on_is_pressed_id {
-            Some(self.max_mode_requested as u8 as f64)
-        } else {
-            None
-        }
-    }
-
-    fn handle_message(&mut self, message: &SimConnectRecv) -> bool {
-        match message {
-            SimConnectRecv::Event(e) => {
-                if e.id() == self.id_mode_low {
-                    self.set_mode_low();
-                    true
-                } else if e.id() == self.id_mode_med {
-                    self.set_mode_med();
-                    true
-                } else if e.id() == self.id_mode_max {
-                    self.set_mode_max();
-                    true
-                } else if e.id() == self.id_disarm {
-                    self.set_disarm();
-                    true
-                } else {
-                    false
-                }
-            }
-            _ => false,
-        }
-    }
-
-    fn pre_tick(&mut self, _: Duration) {
-        self.synchronise_with_sim();
-    }
-
-    fn post_tick(&mut self, _: &mut SimConnect) -> Result<(), Box<dyn Error>> {
-        self.reset_events();
 
         Ok(())
     }
