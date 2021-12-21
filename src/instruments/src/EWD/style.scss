@@ -45,19 +45,19 @@ animation: pulsingS 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
         fill: $display-white;
 
         &.Standard {
-            font-size: 17px;
+            font-size: 22px;
         }
 
         &.Medium {
-            font-size: 16px;
-        }
-
-        &.Large {
             font-size: 20px;
         }
 
+        &.Large {
+            font-size: 26px;
+        }
+
         &.Huge {
-            font-size: 24px;
+            font-size: 31px;
         }
 
         &.Cyan {
@@ -154,25 +154,25 @@ animation: pulsingS 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
     }
 
     #FobLabel {
-        font-size: 22px;
+        font-size: 28px;
         stroke: $display-white;
         fill: $display-white;
     }
 
     #FobColon {
-        font-size: 22px;
+        font-size: 28px;
         fill: $display-white;
     }
 
     #FobValue {
         fill: $display-green;
-        font-size: 22px;
+        font-size: 28px;
         text-anchor: end;
     }
 
     #FobUnit {
         fill: $display-cyan;
-        font-size: 16px;
+        font-size: 20px;
     }
 
 }

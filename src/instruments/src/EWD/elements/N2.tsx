@@ -16,10 +16,10 @@ const N2: React.FC<N2Props> = ({ x, y, engine }) => {
     return (
         <>
             <g id={`N2-indicator-${engine}`}>
-                <rect x={x - 6} y={y + 19} width={62} height={17} className="LightGreyBox Hide" />
-                <text className="Large End Green" x={x + 33} y={y + 35}>{N2percentSplit[0]}</text>
-                <text className="Large End Green" x={x + 42} y={y + 35}>.</text>
-                <text className="Medium End Green" x={x + 55} y={y + 35}>{N2percentSplit[1]}</text>
+                <rect x={x - 10} y={y + 31} width={101} height={28} className="LightGreyBox Hide" />
+                <text className="Large End Green" x={x + 42} y={y + 45}>{N2percentSplit[0]}</text>
+                <text className="Large End Green" x={x + 54} y={y + 45}>.</text>
+                <text className="Medium End Green" x={x + 70} y={y + 45}>{N2percentSplit[1]}</text>
             </g>
         </>
     );

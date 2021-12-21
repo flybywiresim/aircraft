@@ -11,7 +11,7 @@ type EGTProps = {
 
 const EGT: React.FC<EGTProps> = ({ x, y, engine }) => {
     const [EGTemperature] = useSimVar(`L:A32NX_ENGINE_EGT:${engine}`, 'celsius', 100);
-    const radius = 48;
+    const radius = 61;
     const startAngle = 270;
     const endAngle = 90;
     const min = 0;
@@ -20,7 +20,7 @@ const EGT: React.FC<EGTProps> = ({ x, y, engine }) => {
     return (
         <>
             <g id={`EGT-indicator-${engine}`}>
-                <text className="Large End Green" x={x + 26} y={y + 6}>{Math.round(EGTemperature)}</text>
+                <text className="Large End Green" x={x + 33} y={y + 7.7}>{Math.round(EGTemperature)}</text>
                 <GaugeComponent x={x} y={y} radius={radius} startAngle={startAngle} endAngle={endAngle} visible className="GaugeComponent Gauge">
                     <GaugeComponent x={x} y={y} radius={radius} startAngle={endAngle - 20} endAngle={endAngle} visible className="GaugeComponent Gauge Red" />
                     <GaugeMarkerComponent
@@ -36,7 +36,7 @@ const EGT: React.FC<EGTProps> = ({ x, y, engine }) => {
                     />
                     <GaugeMarkerComponent value={600} x={x} y={y} min={min} max={max} radius={radius} startAngle={startAngle} endAngle={endAngle} className="GaugeText Gauge" />
                     <GaugeMarkerComponent value={max} x={x} y={y} min={min} max={max} radius={radius} startAngle={startAngle} endAngle={endAngle} className="GaugeText Gauge Red" />
-                    <rect x={x - 28} y={y - 12} width={56} height={20} className="DarkGreyBox" />
+                    <rect x={x - 36} y={y - 15} width={72} height={26} className="DarkGreyBox" />
                     <GaugeMarkerComponent
                         value={EGTemperature}
                         x={x}
