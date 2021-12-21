@@ -437,7 +437,6 @@ const RealismPage = () => {
                         />
                     </div>
 
-
                     <div className="py-4 flex flex-row justify-between items-center">
                         <span className="text-lg text-gray-300 mr-1">Separate Tiller from Rudder Inputs</span>
                         <SelectGroup>
