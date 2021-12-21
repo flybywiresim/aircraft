@@ -119,6 +119,10 @@ animation: pulsingS 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
         fill: $display-background;
     }
 
+    .BackgroundFill {
+        fill: $display-background !important;
+    }
+
     .Show {
         display:block;
     }
@@ -127,30 +131,23 @@ animation: pulsingS 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
         display: none;
     }
 
-    .AirPressureShape {
-        stroke: $display-grey;
-        stroke-width: 2;
-        fill: none;
+    .Spread {
+        letter-spacing: 2px;
     }
 
-    .WhiteCircle {
-        fill: $display-background;
-        stroke: $display-white;
-        stroke-width: 2;
-    }
 
     .GreenIndicatorPulse {
         @include GenericPulsingStroke($display-green);
         stroke-width: 3;
     }
 
-    .darkGreyBox {
+    .DarkGreyBox {
         stroke: $display-grey;
         fill: none;
         stroke-width: 2;
     }
 
-    .lightGreyBox {
+    .LightGreyBox {
         stroke: none;
         fill: $display-light-grey;
         opacity: 0.1

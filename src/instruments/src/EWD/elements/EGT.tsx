@@ -36,7 +36,7 @@ const EGT: React.FC<EGTProps> = ({ x, y, engine }) => {
                     />
                     <GaugeMarkerComponent value={600} x={x} y={y} min={min} max={max} radius={radius} startAngle={startAngle} endAngle={endAngle} className="GaugeText Gauge" />
                     <GaugeMarkerComponent value={max} x={x} y={y} min={min} max={max} radius={radius} startAngle={startAngle} endAngle={endAngle} className="GaugeText Gauge Red" />
-                    <rect x={x - 28} y={y - 12} width={56} height={20} className="darkGreyBox" />
+                    <rect x={x - 28} y={y - 12} width={56} height={20} className="DarkGreyBox" />
                     <GaugeMarkerComponent
                         value={EGTemperature}
                         x={x}

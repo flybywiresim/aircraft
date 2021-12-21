@@ -15,7 +15,7 @@ export const EWD: React.FC = () => {
             electricitySimvar="L:A32NX_ELEC_AC_2_BUS_IS_POWERED"
             potentiometerIndex={displayIndex}
         >
-            <svg className="ewd-svg" version="1.1" viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg">
+            <svg className="ewd-svg" version="1.1" viewBox="0 0 768 768" xmlns="http://www.w3.org/2000/svg">
                 <UpperDisplay />
                 <line className="Separator" x1="4" y1="395" x2="345" y2="395" strokeLinecap="round" />
                 <line className="Separator" x1="400" y1="395" x2="596" y2="395" strokeLinecap="round" />
