@@ -205,20 +205,15 @@ impl<'a, 'b> MsfsSimulationBuilder<'a, 'b> {
         Ok(self)
     }
 
-    pub fn provides_aircraft_variable_with_additional_names(
+    pub fn provides_aircraft_variable_with_options(
         mut self,
         name: &str,
         units: &str,
         index: usize,
-        additional_names: Vec<String>,
+        options: AircraftVariableOptions,
     ) -> Result<Self, Box<dyn Error>> {
         if let Some(registry) = &mut self.variable_registry {
-            registry.add_aircraft_variable_with_additional_names(
-                name,
-                units,
-                index,
-                Some(additional_names),
-            )?;
+            registry.add_aircraft_variable_with_options(name, units, index, options)?;
         }
 
         Ok(self)
@@ -329,9 +324,27 @@ impl SimulatorReaderWriter for MsfsHandler {
     }
 }
 
+#[derive(Default)]
+pub struct AircraftVariableOptions {
+    additional_names: Vec<String>,
+    mapping_func: Option<fn(f64) -> f64>,
+}
+
+impl AircraftVariableOptions {
+    pub fn additional_name(mut self, name: String) -> Self {
+        self.additional_names.push(name);
+        self
+    }
+
+    pub fn mapping(mut self, mapping_func: fn(f64) -> f64) -> Self {
+        self.mapping_func = Some(mapping_func);
+        self
+    }
+}
+
 pub struct MsfsVariableRegistry {
     name_to_identifier: FxHashMap<String, VariableIdentifier>,
-    aircraft_variables: Vec<AircraftVariable>,
+    aircraft_variables: Vec<(AircraftVariable, Option<fn(f64) -> f64>)>,
     named_variables: Vec<NamedVariable>,
     named_variable_prefix: String,
     next_aircraft_variable_identifier: VariableIdentifier,
@@ -370,19 +383,24 @@ impl MsfsVariableRegistry {
         units: &str,
         index: usize,
     ) -> Result<(), Box<dyn Error>> {
-        self.add_aircraft_variable_with_additional_names(name, units, index, None)
+        self.add_aircraft_variable_with_options(
+            name,
+            units,
+            index,
+            AircraftVariableOptions::default(),
+        )
     }
 
     /// Add an aircraft variable definition. Once added, the aircraft variable
     /// can be read through the `MsfsVariableRegistry.read` function.
     ///
     /// The additional names map to the same variable.
-    pub fn add_aircraft_variable_with_additional_names(
+    pub fn add_aircraft_variable_with_options(
         &mut self,
         name: &str,
         units: &str,
         index: usize,
-        additional_names: Option<Vec<String>>,
+        options: AircraftVariableOptions,
     ) -> Result<(), Box<dyn Error>> {
         match AircraftVariable::from(&name, units, index) {
             Ok(var) => {
@@ -395,14 +413,12 @@ impl MsfsVariableRegistry {
                 let identifier = self.next_aircraft_variable_identifier;
 
                 self.aircraft_variables
-                    .insert(identifier.identifier_index(), var);
+                    .insert(identifier.identifier_index(), (var, options.mapping_func));
                 self.name_to_identifier.insert(name, identifier);
 
-                if let Some(additional_names) = additional_names {
-                    additional_names.into_iter().for_each(|el| {
-                        self.name_to_identifier.insert(el, identifier);
-                    });
-                }
+                options.additional_names.iter().for_each(|el| {
+                    self.name_to_identifier.insert(el.to_owned(), identifier);
+                });
 
                 self.next_aircraft_variable_identifier = identifier.next();
 
@@ -452,7 +468,10 @@ impl SimulatorAspect for MsfsVariableRegistry {
     fn read(&mut self, identifier: &VariableIdentifier) -> Option<f64> {
         match identifier.identifier_type() {
             Self::AIRCRAFT_VARIABLE_IDENTIFIER_TYPE => {
-                Some(self.aircraft_variables[identifier.identifier_index()].get())
+                match &self.aircraft_variables[identifier.identifier_index()] {
+                    (variable, None) => Some(variable.get()),
+                    (variable, Some(mapping_func)) => Some(mapping_func(variable.get())),
+                }
             }
             Self::NAMED_VARIABLE_IDENTIFIER_TYPE => {
                 Some(self.named_variables[identifier.identifier_index()].get_value())

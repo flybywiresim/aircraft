@@ -21,8 +21,8 @@ use systems::{
 use systems_wasm::aspects::{EventToVariableOptions, MsfsAspectBuilder};
 use systems_wasm::{
     aspects::{EventToVariableMapping, Variable},
-    f64_to_sim_connect_32k_pos, sim_connect_32k_pos_to_f64, MsfsAspectCtor, MsfsSimulationBuilder,
-    MsfsVariableRegistry, SimulatorAspect,
+    f64_to_sim_connect_32k_pos, sim_connect_32k_pos_to_f64, AircraftVariableOptions,
+    MsfsAspectCtor, MsfsSimulationBuilder, MsfsVariableRegistry, SimulatorAspect,
 };
 
 #[msfs::gauge(name=systems)]
@@ -54,7 +54,6 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
             .with::<NoseWheelSteering>()?
             .with::<Autobrakes>()?
             .with::<Flaps>()?
-            .with::<CargoDoors>()?
             .with_failures(vec![
                 (24_000, FailureType::TransformerRectifier(1)),
                 (24_001, FailureType::TransformerRectifier(2)),
@@ -71,35 +70,40 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
             .provides_aircraft_variable("AMBIENT WIND DIRECTION", "Degrees", 0)?
             .provides_aircraft_variable("AMBIENT WIND VELOCITY", "Knots", 0)?
             .provides_aircraft_variable("ANTISKID BRAKES ACTIVE", "Bool", 0)?
-            .provides_aircraft_variable_with_additional_names(
+            .provides_aircraft_variable_with_options(
                 "APU GENERATOR SWITCH",
                 "Bool",
                 0,
-                vec!["OVHD_ELEC_APU_GEN_PB_IS_ON".to_owned()],
+                AircraftVariableOptions::default()
+                    .additional_name("OVHD_ELEC_APU_GEN_PB_IS_ON".to_owned()),
             )?
-            .provides_aircraft_variable_with_additional_names(
+            .provides_aircraft_variable_with_options(
                 "BLEED AIR ENGINE",
                 "Bool",
                 1,
-                vec!["OVHD_PNEU_ENG_1_BLEED_PB_IS_AUTO".to_owned()],
+                AircraftVariableOptions::default()
+                    .additional_name("OVHD_PNEU_ENG_1_BLEED_PB_IS_AUTO".to_owned()),
             )?
-            .provides_aircraft_variable_with_additional_names(
+            .provides_aircraft_variable_with_options(
                 "BLEED AIR ENGINE",
                 "Bool",
                 2,
-                vec!["OVHD_PNEU_ENG_2_BLEED_PB_IS_AUTO".to_owned()],
+                AircraftVariableOptions::default()
+                    .additional_name("OVHD_PNEU_ENG_2_BLEED_PB_IS_AUTO".to_owned()),
             )?
-            .provides_aircraft_variable_with_additional_names(
+            .provides_aircraft_variable_with_options(
                 "EXTERNAL POWER AVAILABLE",
                 "Bool",
                 1,
-                vec!["OVHD_ELEC_EXT_PWR_PB_IS_AVAILABLE".to_owned()],
+                AircraftVariableOptions::default()
+                    .additional_name("OVHD_ELEC_EXT_PWR_PB_IS_AVAILABLE".to_owned()),
             )?
-            .provides_aircraft_variable_with_additional_names(
+            .provides_aircraft_variable_with_options(
                 "EXTERNAL POWER ON",
                 "Bool",
                 1,
-                vec!["OVHD_ELEC_EXT_PWR_PB_IS_ON".to_owned()],
+                AircraftVariableOptions::default()
+                    .additional_name("OVHD_ELEC_EXT_PWR_PB_IS_ON".to_owned()),
             )?
             .provides_aircraft_variable("FUEL TANK LEFT MAIN QUANTITY", "Pounds", 0)?
             .provides_aircraft_variable("GEAR ANIMATION POSITION", "Percent", 0)?
@@ -107,23 +111,33 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
             .provides_aircraft_variable("GEAR ANIMATION POSITION", "Percent", 2)?
             .provides_aircraft_variable("GEAR CENTER POSITION", "Percent", 0)?
             .provides_aircraft_variable("GEAR HANDLE POSITION", "Bool", 0)?
-            .provides_aircraft_variable_with_additional_names(
+            .provides_aircraft_variable_with_options(
                 "GENERAL ENG MASTER ALTERNATOR",
                 "Bool",
                 1,
-                vec!["OVHD_ELEC_ENG_GEN_1_PB_IS_ON".to_owned()],
+                AircraftVariableOptions::default()
+                    .additional_name("OVHD_ELEC_ENG_GEN_1_PB_IS_ON".to_owned()),
             )?
-            .provides_aircraft_variable_with_additional_names(
+            .provides_aircraft_variable_with_options(
                 "GENERAL ENG MASTER ALTERNATOR",
                 "Bool",
                 2,
-                vec!["OVHD_ELEC_ENG_GEN_2_PB_IS_ON".to_owned()],
+                AircraftVariableOptions::default()
+                    .additional_name("OVHD_ELEC_ENG_GEN_2_PB_IS_ON".to_owned()),
             )?
             .provides_aircraft_variable("GENERAL ENG STARTER ACTIVE", "Bool", 1)?
             .provides_aircraft_variable("GENERAL ENG STARTER ACTIVE", "Bool", 2)?
             .provides_aircraft_variable("GPS GROUND SPEED", "Knots", 0)?
             .provides_aircraft_variable("GPS GROUND MAGNETIC TRACK", "Degrees", 0)?
             .provides_aircraft_variable("INDICATED ALTITUDE", "Feet", 0)?
+            .provides_aircraft_variable_with_options(
+                "INTERACTIVE POINT OPEN",
+                "Position",
+                5,
+                AircraftVariableOptions::default()
+                    .mapping(|value| if value > 0. { 1. } else { 0. })
+                    .additional_name("FWD_DOOR_CARGO_OPEN_REQ".to_owned()),
+            )?
             .provides_aircraft_variable("PLANE PITCH DEGREES", "Degrees", 0)?
             .provides_aircraft_variable("PLANE BANK DEGREES", "Degrees", 0)?
             .provides_aircraft_variable("PLANE HEADING DEGREES MAGNETIC", "Degrees", 0)?
@@ -1090,82 +1104,6 @@ impl SimulatorAspect for NoseWheelSteering {
         self.transmit_client_events(sim_connect)?;
         self.write_animation_position_to_sim();
         self.set_pedal_disconnect(false);
-
-        Ok(())
-    }
-}
-
-struct CargoDoors {
-    fwd_door_cargo_position_id: VariableIdentifier,
-    fwd_door_cargo_open_req_id: VariableIdentifier,
-
-    forward_cargo_door_position: NamedVariable,
-    forward_cargo_door_sim_position_request: AircraftVariable,
-    fwd_position: f64,
-    forward_cargo_door_open_req: f64,
-}
-impl MsfsAspectCtor for CargoDoors {
-    fn new(
-        registry: &mut MsfsVariableRegistry,
-        _: &mut SimConnect,
-    ) -> Result<Self, Box<dyn Error>> {
-        Ok(Self {
-            fwd_door_cargo_position_id: registry.get("FWD_DOOR_CARGO_POSITION".to_owned()),
-            fwd_door_cargo_open_req_id: registry.get("FWD_DOOR_CARGO_OPEN_REQ".to_owned()),
-
-            forward_cargo_door_position: NamedVariable::from("A32NX_FWD_DOOR_CARGO_POSITION"),
-            forward_cargo_door_sim_position_request: AircraftVariable::from(
-                "INTERACTIVE POINT OPEN",
-                "Position",
-                5,
-            )?,
-            fwd_position: 0.,
-            forward_cargo_door_open_req: 0.,
-        })
-    }
-}
-
-impl CargoDoors {
-    fn set_forward_door_postition(&mut self, value: f64) {
-        self.fwd_position = value;
-    }
-
-    fn set_in_sim_position_request(&mut self, position_requested: f64) {
-        if position_requested > 0. {
-            self.forward_cargo_door_open_req = 1.;
-        } else {
-            self.forward_cargo_door_open_req = 0.;
-        }
-    }
-}
-impl SimulatorAspect for CargoDoors {
-    fn write(&mut self, identifier: &VariableIdentifier, value: f64) -> bool {
-        if identifier == &self.fwd_door_cargo_position_id {
-            self.set_forward_door_postition(value);
-            true
-        } else {
-            false
-        }
-    }
-
-    fn read(&mut self, identifier: &VariableIdentifier) -> Option<f64> {
-        if identifier == &self.fwd_door_cargo_open_req_id {
-            Some(self.forward_cargo_door_open_req)
-        } else if identifier == &self.fwd_door_cargo_position_id {
-            Some(self.fwd_position)
-        } else {
-            None
-        }
-    }
-
-    fn pre_tick(&mut self, _: Duration) {
-        let read_val = self.forward_cargo_door_sim_position_request.get();
-        self.set_in_sim_position_request(read_val);
-    }
-
-    fn post_tick(&mut self, _: &mut SimConnect) -> Result<(), Box<dyn Error>> {
-        self.forward_cargo_door_position
-            .set_value(self.fwd_position);
 
         Ok(())
     }
