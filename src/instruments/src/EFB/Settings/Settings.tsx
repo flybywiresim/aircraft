@@ -328,6 +328,8 @@ const RealismPage = () => {
     const [, setAdirsAlignTimeSimVar] = useSimVar('L:A32NX_CONFIG_ADIRS_IR_ALIGN_TIME', 'Enum', Number.MAX_SAFE_INTEGER);
     const [dmcSelfTestTime, setDmcSelfTestTime] = usePersistentProperty('CONFIG_SELF_TEST_TIME', '12');
     const [boardingRate, setBoardingRate] = usePersistentProperty('CONFIG_BOARDING_RATE', 'REAL');
+    const [mcduInput, setMcduInput] = usePersistentProperty('MCDU_KB_INPUT', 'DISABLED');
+    const [mcduTimeout, setMcduTimeout] = usePersistentProperty('CONFIG_MCDU_KB_TIMEOUT', '60');
     const [realisticTiller, setRealisticTiller] = usePersistentProperty('REALISTIC_TILLER_ENABLED', '0');
 
     const adirsAlignTimeButtons: (ButtonType & SimVarButton)[] = [
@@ -406,6 +408,35 @@ const RealismPage = () => {
                             ))}
                         </SelectGroup>
                     </div>
+
+                    <div className="py-4 flex flex-row justify-between items-center">
+                        <span>
+                            <span className="text-lg text-gray-300">MCDU Keyboard Input</span>
+                            <span className="text-lg text-gray-500 ml-2">(unrealistic)</span>
+                        </span>
+                        <Toggle value={mcduInput === 'ENABLED'} onToggle={(value) => setMcduInput(value ? 'ENABLED' : 'DISABLED')} />
+                    </div>
+
+                    <div className="py-4 flex flex-row justify-between items-center">
+                        <span>
+                            <span className="text-lg text-gray-300">MCDU Focus Timeout (s)</span>
+                        </span>
+                        <SimpleInput
+                            className="w-30 ml-1.5 px-5 py-1.5 text-lg text-gray-300 rounded-lg bg-navy-light
+                            border-2 border-navy-light focus-within:outline-none focus-within:border-teal-light-contrast text-center disabled"
+                            value={mcduTimeout}
+                            noLabel
+                            min={5}
+                            max={120}
+                            disabled={(mcduInput !== 'ENABLED')}
+                            onChange={(event) => {
+                                if (!Number.isNaN(event) && parseInt(event) >= 5 && parseInt(event) <= 120) {
+                                    setMcduTimeout(event.trim());
+                                }
+                            }}
+                        />
+                    </div>
+
 
                     <div className="py-4 flex flex-row justify-between items-center">
                         <span className="text-lg text-gray-300 mr-1">Separate Tiller from Rudder Inputs</span>
