@@ -15,7 +15,7 @@
                 0.006837617140263319
             ],
             "type": "VEC3",
-            "name": "POST-IT_vertices#0_POSITION"
+            "name": "$POSTIT_vertices#0_POSITION"
         },
         {
             "bufferView": 0,
@@ -23,7 +23,7 @@
             "componentType": 5120,
             "count": 252,
             "type": "VEC4",
-            "name": "POST-IT_vertices#0_TANGENT"
+            "name": "$POSTIT_vertices#0_TANGENT"
         },
         {
             "bufferView": 0,
@@ -31,7 +31,7 @@
             "componentType": 5120,
             "count": 252,
             "type": "VEC4",
-            "name": "POST-IT_vertices#0_NORMAL"
+            "name": "$POSTIT_vertices#0_NORMAL"
         },
         {
             "bufferView": 0,
@@ -39,7 +39,7 @@
             "componentType": 5122,
             "count": 252,
             "type": "VEC2",
-            "name": "POST-IT_vertices#0_TEXCOORD_0"
+            "name": "$POSTIT_vertices#0_TEXCOORD_0"
         },
         {
             "bufferView": 0,
@@ -47,7 +47,7 @@
             "componentType": 5122,
             "count": 252,
             "type": "VEC2",
-            "name": "POST-IT_vertices#0_TEXCOORD_1"
+            "name": "$POSTIT_vertices#0_TEXCOORD_1"
         },
         {
             "bufferView": 0,
@@ -55,14 +55,14 @@
             "componentType": 5123,
             "count": 252,
             "type": "VEC4",
-            "name": "POST-IT_vertices#0_COLOR_0"
+            "name": "$POSTIT_vertices#0_COLOR_0"
         },
         {
             "bufferView": 1,
             "componentType": 5123,
             "count": 1050,
             "type": "SCALAR",
-            "name": "POST-IT_indices#0"
+            "name": "$POSTIT_indices#0"
         }
     ],
     "asset": {
@@ -104,7 +104,7 @@
     ],
     "materials": [
         {
-            "name": "POST-IT",
+            "name": "$POSTIT",
             "doubleSided": true,
             "pbrMetallicRoughness": {
                 "baseColorFactor": [
@@ -142,28 +142,24 @@
                     }
                 }
             ],
-            "name": "POST-IT"
+            "name": "$POSTIT"
         }
     ],
     "nodes": [
         {
             "mesh": 0,
-            "name": "POST-IT",
-            "translation": [0.22, 1.68, 11.88897]
+            "name": "$POSTIT",
+            "translation": [0.22, 1.68, 11.88885]
         }
     ],
     "scene": 0,
     "scenes": [
         {
-            "nodes": [
-                0
-            ],
+            "nodes": [0],
             "name": "Scene"
         }
     ],
-    "extensionsUsed": [
-        "ASOBO_asset_optimized"
-    ],
+    "extensionsUsed": ["ASOBO_asset_optimized"],
     "buffers": [
         {
             "byteLength": 11172,
