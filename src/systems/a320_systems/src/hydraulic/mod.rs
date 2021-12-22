@@ -4,7 +4,7 @@ use std::time::Duration;
 use uom::si::{
     acceleration::meter_per_second_squared,
     angle::degree,
-    angular_velocity::{revolution_per_minute,radian_per_second},
+    angular_velocity::{radian_per_second, revolution_per_minute},
     electric_current::ampere,
     f64::*,
     length::meter,
@@ -398,7 +398,7 @@ impl A320Hydraulic {
         engine2: &impl Engine,
         overhead_panel: &A320HydraulicOverheadPanel,
         autobrake_panel: &AutobrakePanel,
-        engine_fire_push_buttons: &U,
+        engine_fire_push_buttons: &impl EngineFirePushButtons,
         lgciu1: &impl LgciuSensors,
         lgciu2: &impl LgciuSensors,
         rat_and_emer_gen_man_on: &impl EmergencyElectricalRatPushButton,
@@ -648,7 +648,7 @@ impl A320Hydraulic {
         engine1: &impl Engine,
         engine2: &impl Engine,
         overhead_panel: &A320HydraulicOverheadPanel,
-        engine_fire_push_buttons: &U,
+        engine_fire_push_buttons: &impl EngineFirePushButtons,
         lgciu1: &impl LgciuSensors,
         lgciu2: &impl LgciuSensors,
     ) {
@@ -1687,7 +1687,7 @@ impl A320HydraulicBrakeSteerComputerUnit {
 
     fn update_steering_demands(
         &mut self,
-        lgciu1: &impl LgciuInterface,
+        lgciu1: &impl LgciuSensors,
         engine1: &impl Engine,
         engine2: &impl Engine,
     ) {
