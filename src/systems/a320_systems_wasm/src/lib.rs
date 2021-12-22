@@ -15,6 +15,7 @@ use msfs::{
 
 use systems::{
     failures::FailureType,
+    shared::HydraulicColor,
     simulation::{VariableIdentifier, VariableRegistry},
 };
 use systems_wasm::{
@@ -55,15 +56,27 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
                 (24_000, FailureType::TransformerRectifier(1)),
                 (24_001, FailureType::TransformerRectifier(2)),
                 (24_002, FailureType::TransformerRectifier(3)),
-                (29_000, FailureType::GreenReservoirLeak),
-                (29_001, FailureType::BlueReservoirLeak),
-                (29_002, FailureType::YellowReservoirLeak),
-                (29_003, FailureType::GreenReservoirAirLeak),
-                (29_004, FailureType::BlueReservoirAirLeak),
-                (29_005, FailureType::YellowReservoirAirLeak),
-                (29_006, FailureType::GreenReservoirReturnLeak),
-                (29_007, FailureType::BlueReservoirReturnLeak),
-                (29_008, FailureType::YellowReservoirReturnLeak),
+                (29_000, FailureType::ReservoirLeak(HydraulicColor::Green)),
+                (29_001, FailureType::ReservoirLeak(HydraulicColor::Blue)),
+                (29_002, FailureType::ReservoirLeak(HydraulicColor::Yellow)),
+                (29_003, FailureType::ReservoirAirLeak(HydraulicColor::Green)),
+                (29_004, FailureType::ReservoirAirLeak(HydraulicColor::Blue)),
+                (
+                    29_005,
+                    FailureType::ReservoirAirLeak(HydraulicColor::Yellow),
+                ),
+                (
+                    29_006,
+                    FailureType::ReservoirReturnLeak(HydraulicColor::Green),
+                ),
+                (
+                    29_007,
+                    FailureType::ReservoirReturnLeak(HydraulicColor::Blue),
+                ),
+                (
+                    29_008,
+                    FailureType::ReservoirReturnLeak(HydraulicColor::Yellow),
+                ),
             ])
             .provides_aircraft_variable("ACCELERATION BODY X", "feet per second squared", 0)?
             .provides_aircraft_variable("ACCELERATION BODY Y", "feet per second squared", 0)?

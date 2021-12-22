@@ -1,7 +1,9 @@
 use crate::{
     failures::{Failure, FailureType},
     pneumatic::valve::*,
-    shared::{ControllerSignal, EngineCorrectedN1, EngineCorrectedN2, PneumaticValve},
+    shared::{
+        ControllerSignal, EngineCorrectedN1, EngineCorrectedN2, HydraulicColor, PneumaticValve,
+    },
     simulation::{
         InitContext, Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
         SimulatorWriter, UpdateContext, VariableIdentifier, Write, Writer,
@@ -395,14 +397,12 @@ pub struct PneumaticContainerWithConnector<T: PneumaticContainer> {
 impl<T: PneumaticContainer> PneumaticContainerWithConnector<T> {
     const LEAK_FAILURE_MULTIPLIER: f64 = 500.;
 
-    pub fn new(hyd_loop_id: &str, container: T, preload: Pressure, valve_speed: f64) -> Self {
-        let leak_failure = match hyd_loop_id {
-            "GREEN" => Failure::new(FailureType::GreenReservoirAirLeak),
-            "BLUE" => Failure::new(FailureType::BlueReservoirAirLeak),
-            "YELLOW" => Failure::new(FailureType::YellowReservoirAirLeak),
-            _ => Failure::new(FailureType::YellowReservoirAirLeak),
-        };
-
+    pub fn new(
+        hyd_loop_id: HydraulicColor,
+        container: T,
+        preload: Pressure,
+        valve_speed: f64,
+    ) -> Self {
         Self {
             container,
             connector: PurelyPneumaticValve::new(),
@@ -412,7 +412,7 @@ impl<T: PneumaticContainer> PneumaticContainerWithConnector<T> {
                 preload,
             ),
 
-            leak_failure,
+            leak_failure: Failure::new(FailureType::ReservoirAirLeak(hyd_loop_id)),
         }
     }
 
@@ -857,7 +857,7 @@ mod tests {
     fn container_with_valve_behaves_like_open_valve() {
         let mut source = quick_container(1., 20., 15.);
         let mut container_with_valve = PneumaticContainerWithConnector::new(
-            "GREEN",
+            HydraulicColor::Green,
             quick_container(1., 10., 15.),
             Pressure::new::<psi>(0.),
             1e-2,

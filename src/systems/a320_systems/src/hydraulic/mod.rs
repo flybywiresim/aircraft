@@ -44,7 +44,7 @@ use systems::{
     shared::{
         interpolation, DelayedFalseLogicGate, DelayedPulseTrueLogicGate, DelayedTrueLogicGate,
         ElectricalBusType, ElectricalBuses, EmergencyElectricalRatPushButton,
-        EmergencyElectricalState, EngineFirePushButtons, LgciuInterface,
+        EmergencyElectricalState, EngineFirePushButtons, HydraulicColor, LgciuInterface,
         RamAirTurbineHydraulicCircuitPressurised, ReservoirPressure,
     },
     simulation::{
@@ -61,7 +61,7 @@ impl A320HydraulicReservoirFactory {
     fn new_green_reservoir(context: &mut InitContext) -> Reservoir {
         Reservoir::new(
             context,
-            "GREEN",
+            HydraulicColor::Green,
             Volume::new::<liter>(23.),
             Volume::new::<liter>(18.),
             Volume::new::<gallon>(3.6),
@@ -77,7 +77,7 @@ impl A320HydraulicReservoirFactory {
     fn new_blue_reservoir(context: &mut InitContext) -> Reservoir {
         Reservoir::new(
             context,
-            "BLUE",
+            HydraulicColor::Blue,
             Volume::new::<liter>(10.),
             Volume::new::<liter>(8.),
             Volume::new::<gallon>(1.56),
@@ -100,7 +100,7 @@ impl A320HydraulicReservoirFactory {
     fn new_yellow_reservoir(context: &mut InitContext) -> Reservoir {
         Reservoir::new(
             context,
-            "YELLOW",
+            HydraulicColor::Yellow,
             Volume::new::<liter>(20.),
             Volume::new::<liter>(18.),
             Volume::new::<gallon>(3.6),
@@ -129,7 +129,7 @@ impl A320HydraulicCircuitFactory {
         let reservoir = A320HydraulicReservoirFactory::new_green_reservoir(context);
         HydraulicCircuit::new(
             context,
-            "GREEN",
+            HydraulicColor::Green,
             1,
             Ratio::new::<percent>(100.),
             Volume::new::<gallon>(10.),
@@ -147,7 +147,7 @@ impl A320HydraulicCircuitFactory {
         let reservoir = A320HydraulicReservoirFactory::new_blue_reservoir(context);
         HydraulicCircuit::new(
             context,
-            "BLUE",
+            HydraulicColor::Blue,
             1,
             Ratio::new::<percent>(100.),
             Volume::new::<gallon>(8.),
@@ -165,7 +165,7 @@ impl A320HydraulicCircuitFactory {
         let reservoir = A320HydraulicReservoirFactory::new_yellow_reservoir(context);
         HydraulicCircuit::new(
             context,
-            "YELLOW",
+            HydraulicColor::Yellow,
             1,
             Ratio::new::<percent>(100.),
             Volume::new::<gallon>(10.),

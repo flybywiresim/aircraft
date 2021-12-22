@@ -2,16 +2,16 @@ use self::linear_actuator::Actuator;
 use crate::failures::{Failure, FailureType};
 use crate::hydraulic::electrical_pump_physics::ElectricalPumpPhysics;
 use crate::pneumatic::PressurizeableReservoir;
-use crate::shared::{interpolation, ElectricalBusType, ElectricalBuses};
+use crate::shared::{interpolation, ElectricalBusType, ElectricalBuses, HydraulicColor};
 use crate::simulation::{
     InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
     VariableIdentifier, Write,
 };
 
 use std::time::Duration;
-use uom::si::angular_velocity::radian_per_second;
+
 use uom::si::{
-    angular_velocity::revolution_per_minute,
+    angular_velocity::{radian_per_second, revolution_per_minute},
     f64::*,
     pressure::{pascal, psi},
     ratio::ratio,
@@ -429,7 +429,7 @@ impl HydraulicCircuit {
 
     pub fn new(
         context: &mut InitContext,
-        id: &str,
+        id: HydraulicColor,
 
         number_of_pump_sections: usize,
         priming_volume: Ratio,
@@ -751,7 +751,7 @@ impl Section {
     #[allow(clippy::too_many_arguments)]
     pub fn new(
         context: &mut InitContext,
-        loop_id: &str,
+        loop_id: HydraulicColor,
         section_id: &str,
         pump_id: usize,
         static_leak_at_max_press: VolumeRate,
@@ -1032,7 +1032,7 @@ pub struct FireValve {
 impl FireValve {
     fn new(
         context: &mut InitContext,
-        hyd_loop_id: &str,
+        hyd_loop_id: HydraulicColor,
         pump_id: usize,
         bus_type: ElectricalBusType,
     ) -> Self {
@@ -1157,27 +1157,13 @@ impl Reservoir {
 
     pub fn new(
         context: &mut InitContext,
-        hyd_loop_id: &str,
+        hyd_loop_id: HydraulicColor,
         max_capacity: Volume,
         max_gaugeable: Volume,
         current_level: Volume,
         air_pressure_switches: Vec<PressureSwitch>,
         low_level_threshold: Volume,
     ) -> Self {
-        let leak_failure = match hyd_loop_id {
-            "GREEN" => Failure::new(FailureType::GreenReservoirLeak),
-            "BLUE" => Failure::new(FailureType::BlueReservoirLeak),
-            "YELLOW" => Failure::new(FailureType::YellowReservoirLeak),
-            _ => Failure::new(FailureType::YellowReservoirLeak),
-        };
-
-        let return_failure = match hyd_loop_id {
-            "GREEN" => Failure::new(FailureType::GreenReservoirReturnLeak),
-            "BLUE" => Failure::new(FailureType::BlueReservoirReturnLeak),
-            "YELLOW" => Failure::new(FailureType::YellowReservoirReturnLeak),
-            _ => Failure::new(FailureType::YellowReservoirLeak),
-        };
-
         Self {
             level_id: context.get_identifier(format!("HYD_{}_RESERVOIR_LEVEL", hyd_loop_id)),
             low_level_id: context
@@ -1187,8 +1173,8 @@ impl Reservoir {
             current_level,
             min_usable: Volume::new::<gallon>(Self::MIN_USABLE_VOLUME_GAL),
             air_pressure: Pressure::new::<psi>(50.),
-            leak_failure,
-            return_failure,
+            leak_failure: Failure::new(FailureType::ReservoirLeak(hyd_loop_id)),
+            return_failure: Failure::new(FailureType::ReservoirReturnLeak(hyd_loop_id)),
             air_pressure_switches,
             level_switch: LevelSwitch::new(low_level_threshold),
         }
@@ -1889,37 +1875,37 @@ mod tests {
     #[test]
     fn section_writes_its_state() {
         let mut test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
-            section(context, "BROWN", "PUMP", 2)
+            section(context, HydraulicColor::Green, "PUMP", 2)
         }));
 
         test_bed.run();
 
-        assert!(test_bed.contains_variable_with_name("HYD_BROWN_PUMP_2_SECTION_PRESSURE"));
-        assert!(test_bed.contains_variable_with_name("HYD_BROWN_PUMP_2_FIRE_VALVE_OPENED"));
+        assert!(test_bed.contains_variable_with_name("HYD_GREEN_PUMP_2_SECTION_PRESSURE"));
+        assert!(test_bed.contains_variable_with_name("HYD_GREEN_PUMP_2_FIRE_VALVE_OPENED"));
     }
 
     #[test]
     fn hyd_circuit_writes_its_state() {
         let mut test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
-            hydraulic_circuit(context, "BROWN", 2)
+            hydraulic_circuit(context, HydraulicColor::Green, 2)
         }));
 
         test_bed.run();
 
-        assert!(test_bed.contains_variable_with_name("HYD_BROWN_SYSTEM_1_SECTION_PRESSURE"));
-        assert!(!test_bed.contains_variable_with_name("HYD_BROWN_SYSTEM_1_FIRE_VALVE_OPENED"));
+        assert!(test_bed.contains_variable_with_name("HYD_GREEN_SYSTEM_1_SECTION_PRESSURE"));
+        assert!(!test_bed.contains_variable_with_name("HYD_GREEN_SYSTEM_1_FIRE_VALVE_OPENED"));
 
-        assert!(test_bed.contains_variable_with_name("HYD_BROWN_PUMP_1_SECTION_PRESSURE"));
-        assert!(test_bed.contains_variable_with_name("HYD_BROWN_PUMP_1_FIRE_VALVE_OPENED"));
+        assert!(test_bed.contains_variable_with_name("HYD_GREEN_PUMP_1_SECTION_PRESSURE"));
+        assert!(test_bed.contains_variable_with_name("HYD_GREEN_PUMP_1_FIRE_VALVE_OPENED"));
 
-        assert!(test_bed.contains_variable_with_name("HYD_BROWN_PUMP_2_SECTION_PRESSURE"));
-        assert!(test_bed.contains_variable_with_name("HYD_BROWN_PUMP_2_FIRE_VALVE_OPENED"));
+        assert!(test_bed.contains_variable_with_name("HYD_GREEN_PUMP_2_SECTION_PRESSURE"));
+        assert!(test_bed.contains_variable_with_name("HYD_GREEN_PUMP_2_FIRE_VALVE_OPENED"));
 
-        assert!(!test_bed.contains_variable_with_name("HYD_BROWN_PUMP_0_SECTION_PRESSURE"));
-        assert!(!test_bed.contains_variable_with_name("HYD_BROWN_PUMP_0_FIRE_VALVE_OPENED"));
+        assert!(!test_bed.contains_variable_with_name("HYD_GREEN_PUMP_0_SECTION_PRESSURE"));
+        assert!(!test_bed.contains_variable_with_name("HYD_GREEN_PUMP_0_FIRE_VALVE_OPENED"));
 
-        assert!(!test_bed.contains_variable_with_name("HYD_BROWN_PUMP_3_SECTION_PRESSURE"));
-        assert!(!test_bed.contains_variable_with_name("HYD_BROWN_PUMP_3_FIRE_VALVE_OPENED"));
+        assert!(!test_bed.contains_variable_with_name("HYD_GREEN_PUMP_3_SECTION_PRESSURE"));
+        assert!(!test_bed.contains_variable_with_name("HYD_GREEN_PUMP_3_FIRE_VALVE_OPENED"));
     }
 
     #[test]
@@ -1927,7 +1913,7 @@ mod tests {
         let mut test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
             reservoir(
                 context,
-                "GREEN",
+                HydraulicColor::Green,
                 Volume::new::<gallon>(5.),
                 Volume::new::<gallon>(5.),
                 Volume::new::<gallon>(5.),
@@ -1956,7 +1942,7 @@ mod tests {
         let mut test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
             reservoir(
                 context,
-                "GREEN",
+                HydraulicColor::Green,
                 Volume::new::<gallon>(5.),
                 Volume::new::<gallon>(5.),
                 Volume::new::<gallon>(5.),
@@ -1973,7 +1959,7 @@ mod tests {
         let mut test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
             reservoir(
                 context,
-                "GREEN",
+                HydraulicColor::Green,
                 Volume::new::<gallon>(5.),
                 Volume::new::<gallon>(2.),
                 Volume::new::<gallon>(5.),
@@ -1992,7 +1978,7 @@ mod tests {
         let mut test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
             reservoir(
                 context,
-                "GREEN",
+                HydraulicColor::Green,
                 Volume::new::<gallon>(5.),
                 Volume::new::<gallon>(2.),
                 Volume::new::<gallon>(5.),
@@ -2003,7 +1989,7 @@ mod tests {
             reservoir.update(context, Pressure::new::<psi>(50.))
         });
 
-        test_bed.fail(FailureType::GreenReservoirLeak);
+        test_bed.fail(FailureType::ReservoirLeak(HydraulicColor::Green));
         test_bed.run_multiple_frames(Duration::from_secs(10));
 
         let volume_after_leak_gallon: f64 = test_bed.read_by_name("HYD_GREEN_RESERVOIR_LEVEL");
@@ -2015,7 +2001,7 @@ mod tests {
         let mut test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
             reservoir(
                 context,
-                "GREEN",
+                HydraulicColor::Green,
                 Volume::new::<gallon>(5.),
                 Volume::new::<gallon>(2.),
                 Volume::new::<gallon>(0.5),
@@ -2026,7 +2012,7 @@ mod tests {
             reservoir.update(context, Pressure::new::<psi>(50.))
         });
 
-        test_bed.fail(FailureType::GreenReservoirLeak);
+        test_bed.fail(FailureType::ReservoirLeak(HydraulicColor::Green));
         test_bed.run_multiple_frames(Duration::from_secs(10));
 
         let volume_after_leak_gallon: f64 = test_bed.read_by_name("HYD_GREEN_RESERVOIR_LEVEL");
@@ -2038,7 +2024,7 @@ mod tests {
         let mut test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
             reservoir(
                 context,
-                "GREEN",
+                HydraulicColor::Green,
                 Volume::new::<gallon>(5.),
                 Volume::new::<gallon>(2.),
                 Volume::new::<gallon>(0.5),
@@ -2052,7 +2038,7 @@ mod tests {
         let is_low: bool = test_bed.read_by_name("HYD_GREEN_RESERVOIR_LEVEL_IS_LOW");
         assert!(!is_low);
 
-        test_bed.fail(FailureType::GreenReservoirLeak);
+        test_bed.fail(FailureType::ReservoirLeak(HydraulicColor::Green));
         test_bed.run_multiple_frames(Duration::from_secs(10));
 
         let is_low: bool = test_bed.read_by_name("HYD_GREEN_RESERVOIR_LEVEL_IS_LOW");
@@ -2061,7 +2047,7 @@ mod tests {
 
     fn section(
         context: &mut InitContext,
-        loop_id: &str,
+        loop_id: HydraulicColor,
         section_id: &str,
         pump_id: usize,
     ) -> Section {
@@ -2092,7 +2078,7 @@ mod tests {
 
     fn reservoir(
         context: &mut InitContext,
-        hyd_loop_id: &str,
+        hyd_loop_id: HydraulicColor,
         max_capacity: Volume,
         max_gaugeable: Volume,
         current_level: Volume,
@@ -2114,7 +2100,7 @@ mod tests {
 
     fn hydraulic_circuit(
         context: &mut InitContext,
-        loop_color: &str,
+        loop_color: HydraulicColor,
         main_pump_number: usize,
     ) -> HydraulicCircuit {
         let reservoir = reservoir(

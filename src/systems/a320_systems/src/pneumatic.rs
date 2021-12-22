@@ -23,8 +23,8 @@ use systems::{
     },
     shared::{
         pid::PidController, ControllerSignal, ElectricalBusType, ElectricalBuses,
-        EngineCorrectedN1, EngineCorrectedN2, EngineFirePushButtons, PneumaticValve,
-        ReservoirPressure,
+        EngineCorrectedN1, EngineCorrectedN2, EngineFirePushButtons, HydraulicColor,
+        PneumaticValve, ReservoirPressure,
     },
     simulation::{
         InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -151,7 +151,7 @@ impl A320Pneumatic {
             apu_compression_chamber: CompressionChamber::new(Volume::new::<cubic_meter>(5.)),
             apu_bleed_air_valve: DefaultValve::new_closed(),
             green_hydraulic_reservoir_with_valve: PneumaticContainerWithConnector::new(
-                "GREEN",
+                HydraulicColor::Green,
                 VariableVolumeContainer::new(
                     Volume::new::<gallon>(2.5),
                     Pressure::new::<psi>(43.5),
@@ -161,7 +161,7 @@ impl A320Pneumatic {
                 2e-2,
             ),
             blue_hydraulic_reservoir_with_valve: PneumaticContainerWithConnector::new(
-                "BLUE",
+                HydraulicColor::Blue,
                 VariableVolumeContainer::new(
                     Volume::new::<gallon>(1.1),
                     Pressure::new::<psi>(42.1),
@@ -171,7 +171,7 @@ impl A320Pneumatic {
                 2e-2,
             ),
             yellow_hydraulic_reservoir_with_valve: PneumaticContainerWithConnector::new(
-                "YELLOW",
+                HydraulicColor::Yellow,
                 VariableVolumeContainer::new(
                     Volume::new::<gallon>(1.7),
                     Pressure::new::<psi>(45.4),
