@@ -508,9 +508,9 @@ impl BleedMonitoringComputerChannel {
             is_engine_fire_pushbutton_released: false,
             is_apu_bleed_valve_open: false,
             is_apu_bleed_on: false,
-            high_pressure_valve_pid: PidController::new(0.05, 0.003, 0., 0., 1., 65.),
-            pressure_regulating_valve_pid: PidController::new(0.05, 0.01, 0., 0., 1., 46.),
-            fan_air_valve_pid: PidController::new(-0.005, -0.001, 0., 0., 1., 200.),
+            high_pressure_valve_pid: PidController::new(0.05, 0.003, 0., 0., 1., 65., 1.),
+            pressure_regulating_valve_pid: PidController::new(0.05, 0.01, 0., 0., 1., 46., 1.),
+            fan_air_valve_pid: PidController::new(-0.005, -0.001, 0., 0., 1., 200., 1.),
             cross_bleed_valve_selector: CrossBleedValveSelectorMode::Auto,
             cross_bleed_valve_is_open: false,
         }
@@ -1131,7 +1131,7 @@ impl PackFlowValveController {
             pack_toggle_pb_id: context
                 .get_identifier(format!("AIRCOND_PACK{}_TOGGLE", engine_number)),
             pack_pb_is_auto: true,
-            pid: PidController::new(0., 0.05, 0., 0., 1., 0.75),
+            pid: PidController::new(0., 0.05, 0., 0., 1., 0.75, 1.),
         }
     }
 

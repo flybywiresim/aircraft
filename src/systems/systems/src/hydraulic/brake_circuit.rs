@@ -418,7 +418,7 @@ impl AutobrakeDecelerationGovernor {
 
     pub fn new() -> AutobrakeDecelerationGovernor {
         Self {
-            pid_controller: PidController::new(0.3, 0.25, 0., -1., 0., 0.),
+            pid_controller: PidController::new(0.3, 0.25, 0., -1., 0., 0., 1.),
 
             current_output: 0.,
             acceleration_filter: LowPassFilter::<Acceleration>::new(
