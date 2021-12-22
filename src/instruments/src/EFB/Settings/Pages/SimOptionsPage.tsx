@@ -168,7 +168,7 @@ export const SimOptionsPage = () => {
                     </SettingItem>
 
                     <SettingItem name="Separate Tiller from Rudder Inputs">
-                    <SelectGroup>
+                        <SelectGroup>
                             {steeringSeparationButtons.map((button) => (
                                 <SelectItem
                                     enabled

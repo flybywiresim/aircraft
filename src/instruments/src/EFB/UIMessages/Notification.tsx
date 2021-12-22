@@ -1,17 +1,10 @@
-import React, { FC, useRef, useState } from 'react';
+import React, { FC, useRef } from 'react';
 
 import { InfoCircle, CheckCircle, ExclamationCircle, ExclamationOctagon } from 'react-bootstrap-icons';
 import { useUIMessages } from './Provider';
 
-export enum NotificationTypes {
-    INFO = 'INFO',
-    SUCCESS = 'SUCCESS',
-    WARNING = 'WARNING',
-    ERROR = 'ERROR'
-}
-
 type NotificationProps = {
-    type: NotificationTypes,
+    type: 'INFO' | 'SUCCESS' | 'WARNING' | 'ERROR',
     title: string,
     message?: string
 }
@@ -24,16 +17,16 @@ export const Notification: FC<NotificationProps> = ({ type, title, message, chil
     let icon: JSX.Element;
 
     switch (type) {
-    case NotificationTypes.INFO:
+    case 'INFO':
         icon = <InfoCircle size={40} />;
         break;
-    case NotificationTypes.SUCCESS:
+    case 'SUCCESS':
         icon = <CheckCircle size={40} />;
         break;
-    case NotificationTypes.WARNING:
+    case 'WARNING':
         icon = <ExclamationCircle size={40} />;
         break;
-    case NotificationTypes.ERROR:
+    case 'ERROR':
         icon = <ExclamationOctagon size={40} />;
         break;
     default:

@@ -9,7 +9,7 @@ import { SelectGroup, SelectItem } from '../../Components/Form/Select';
 import SimpleInput from '../../Components/Form/SimpleInput/SimpleInput';
 import { ButtonType, SettingItem, SettingsPage } from '../Settings';
 import { useUIMessages } from '../../UIMessages/Provider';
-import { Notification, NotificationTypes } from '../../UIMessages/Notification';
+import { Notification } from '../../UIMessages/Notification';
 
 export const AtsuAocPage = () => {
     const uiMessages = useUIMessages();
@@ -69,7 +69,7 @@ export const AtsuAocPage = () => {
         getSimbriefUserId(value).then((response) => {
             uiMessages.pushNotification(
                 <Notification
-                    type={NotificationTypes.SUCCESS}
+                    type="SUCCESS"
                     title="SimBrief Information Updated Successfully"
                     message="Your SimBrief information has been validated and updated."
                 />,
@@ -81,7 +81,7 @@ export const AtsuAocPage = () => {
             setSimbriefDisplay(simbriefUserId);
             uiMessages.pushNotification(
                 <Notification
-                    type={NotificationTypes.ERROR}
+                    type="ERROR"
                     title="SimBrief Error"
                     message="Please check that you have correctly entered your SimBrief username or pilot ID."
                 />,
