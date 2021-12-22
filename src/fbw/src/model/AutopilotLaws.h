@@ -89,10 +89,11 @@ class AutopilotLawsModelClass
     rtDW_WashoutFilter_AutopilotLaws_T sf_WashoutFilter_fs;
     rtDW_LeadLagFilter_AutopilotLaws_T sf_LeadLagFilter_kq;
     rtDW_LeadLagFilter_AutopilotLaws_T sf_LeadLagFilter_b;
-    rtDW_RateLimiter_AutopilotLaws_T sf_RateLimiter_a;
+    rtDW_RateLimiter_AutopilotLaws_T sf_RateLimiter_h;
     rtDW_RateLimiter_AutopilotLaws_T sf_RateLimiter_eb;
     rtDW_WashoutFilter_AutopilotLaws_T sf_WashoutFilter_fo;
     rtDW_LagFilter_AutopilotLaws_T sf_LagFilter_gn;
+    rtDW_LagFilter_AutopilotLaws_T sf_LagFilter_p;
     rtDW_WashoutFilter_AutopilotLaws_T sf_WashoutFilter_l;
     rtDW_LeadLagFilter_AutopilotLaws_T sf_LeadLagFilter_j0;
     rtDW_LeadLagFilter_AutopilotLaws_T sf_LeadLagFilter_oi;
@@ -194,6 +195,7 @@ class AutopilotLawsModelClass
     real_T WashoutFilter_C1_d;
     real_T HighPassFilter_C1_i0;
     real_T LowPassFilter_C1_g;
+    real_T LagFilter_C1_g;
     real_T LagFilter_C1_i;
     real_T HighPassFilter_C2;
     real_T LowPassFilter_C2;
