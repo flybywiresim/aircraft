@@ -123,6 +123,10 @@ pub enum EventToVariableMapping {
     /// When the event occurs, calls the function with event data and the current
     /// variable value and sets the variable to the returned value.
     EventDataAndCurrentValueToValue(fn(u32, f64) -> f64),
+
+    /// Converts the event occurrence to a value which increases and decreases
+    /// by the given factors.
+    SmoothPress(f64, f64),
 }
 
 #[derive(Clone, Copy)]
@@ -188,7 +192,7 @@ struct EventToVariable {
     event_handled_before_tick: bool,
     variable_identifier: Option<VariableIdentifier>,
     named_variable: Option<NamedVariable>,
-    value: f64,
+    aspect_value: f64,
     last_written_value: Option<f64>,
     mapping: EventToVariableMapping,
     target: Variable,
@@ -222,7 +226,7 @@ impl EventToVariable {
             } else {
                 None
             },
-            value: 0.,
+            aspect_value: 0.,
             last_written_value: None,
             mapping,
             target,
@@ -233,14 +237,14 @@ impl EventToVariable {
     fn value(&self) -> f64 {
         match self.target {
             Variable::Named(_) => self.named_variable.as_ref().unwrap().get_value(),
-            Variable::Aspect(_) => self.value,
+            Variable::Aspect(_) => self.aspect_value,
         }
     }
 
     fn set_value(&mut self, value: f64) {
         match self.target {
             Variable::Named(_) => self.named_variable.as_mut().unwrap().set_value(value),
-            Variable::Aspect(_) => self.value = value,
+            Variable::Aspect(_) => self.aspect_value = value,
         }
     }
 
@@ -261,8 +265,6 @@ impl EventToVariable {
                 Some(value) => self.set_value(value),
                 None => (),
             }
-
-            self.event_handled_before_tick = false;
         }
     }
 
@@ -271,8 +273,9 @@ impl EventToVariable {
         sim_connect: &mut SimConnect,
     ) -> Result<(), Box<dyn Error>> {
         if self.options.is_bidirectional() {
+            let value = self.value();
             let should_write = match self.last_written_value {
-                Some(value) => self.value != value,
+                Some(last_written_value) => value != last_written_value,
                 None => true,
             };
 
@@ -281,13 +284,13 @@ impl EventToVariable {
                     SIMCONNECT_OBJECT_ID_USER,
                     self.event_id,
                     match self.options.bidirectional_mapping {
-                        Some(VariableToEventMapping::EventDataRaw) | None => self.value as u32,
+                        Some(VariableToEventMapping::EventDataRaw) | None => value as u32,
                         Some(VariableToEventMapping::EventData32kPosition) => {
-                            f64_to_sim_connect_32k_pos(self.value)
+                            f64_to_sim_connect_32k_pos(value)
                         }
                     },
                 )?;
-                self.last_written_value = Some(self.value);
+                self.last_written_value = Some(value);
             }
         }
 
@@ -304,6 +307,20 @@ impl EventToVariable {
             EventToVariableMapping::EventDataAndCurrentValueToValue(func) => {
                 func(e.data(), self.value())
             }
+            EventToVariableMapping::SmoothPress(_, _) => self.value(),
+        }
+    }
+
+    fn adjust_smooth_pressed_value(&mut self, delta: Duration) {
+        if let EventToVariableMapping::SmoothPress(press_factor, release_factor) = self.mapping {
+            let mut value = self.value();
+            if self.event_handled_before_tick {
+                value += delta.as_secs_f64() * press_factor;
+            } else {
+                value -= delta.as_secs_f64() * release_factor;
+            }
+
+            self.set_value(value.min(1.).max(0.));
         }
     }
 }
@@ -311,7 +328,7 @@ impl EventToVariable {
 impl SimulatorAspect for EventToVariable {
     fn read(&mut self, identifier: &VariableIdentifier) -> Option<f64> {
         match self.target {
-            Variable::Aspect(_) if self.handles_identifier(identifier) => Some(self.value),
+            Variable::Aspect(_) if self.handles_identifier(identifier) => Some(self.value()),
             // Named variable reading is handled by the VariableRegistry.
             _ => None,
         }
@@ -320,7 +337,7 @@ impl SimulatorAspect for EventToVariable {
     fn write(&mut self, identifier: &VariableIdentifier, value: f64) -> bool {
         match self.target {
             Variable::Aspect(_) if self.handles_identifier(identifier) => {
-                self.value = value;
+                self.set_value(value);
                 true
             }
             // Named variable writing is handled by the VariableRegistry.
@@ -345,9 +362,15 @@ impl SimulatorAspect for EventToVariable {
         }
     }
 
+    fn pre_tick(&mut self, delta: Duration) {
+        self.adjust_smooth_pressed_value(delta);
+    }
+
     fn post_tick(&mut self, sim_connect: &mut SimConnect) -> Result<(), Box<dyn Error>> {
         self.write_variable_to_event(sim_connect)?;
         self.set_variable_after_tick();
+
+        self.event_handled_before_tick = false;
         Ok(())
     }
 }

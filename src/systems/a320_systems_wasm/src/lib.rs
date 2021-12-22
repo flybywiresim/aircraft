@@ -195,6 +195,25 @@ fn brakes(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>> {
             .bidirectional(VariableToEventMapping::EventData32kPosition),
     )?;
 
+    builder.event_to_variable(
+        "BRAKES_PRESSED",
+        EventToVariableMapping::SmoothPress(0.6, 0.3),
+        Variable::Aspect("BRAKES".to_owned()),
+        EventToVariableOptions::default().mask(),
+    )?;
+    builder.event_to_variable(
+        "BRAKES_LEFT_PRESSED",
+        EventToVariableMapping::SmoothPress(0.6, 0.3),
+        Variable::Aspect("BRAKES_LEFT".to_owned()),
+        EventToVariableOptions::default().mask(),
+    )?;
+    builder.event_to_variable(
+        "BRAKES_RIGHT_PRESSED",
+        EventToVariableMapping::SmoothPress(0.6, 0.3),
+        Variable::Aspect("BRAKES_RIGHT".to_owned()),
+        EventToVariableOptions::default().mask(),
+    )?;
+
     Ok(())
 }
 
