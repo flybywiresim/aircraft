@@ -770,6 +770,14 @@
         - BLUE
         - YELLOW
 
+- A32NX_HYD_{loop_name}_RESERVOIR_LEVEL_IS_LOW
+    - Boolean
+    - Low level switch of {loop_name} hydraulic circuit reservoir indicates low state
+    - {loop_name}
+        - GREEN
+        - BLUE
+        - YELLOW
+
 - A32NX_HYD_{loop_name}_EDPUMP_ACTIVE
     - Bool
     - Engine driven pump of {loop_name} hydraulic circuit is active

@@ -119,6 +119,38 @@ impl PressureSwitch {
     }
 }
 
+/// Physical pressure switch.
+/// It's a physical switch reacting to pressure.
+pub struct LevelSwitch {
+    state_is_low: bool,
+    high_hysteresis_threshold: Volume,
+    low_hysteresis_threshold: Volume,
+}
+impl LevelSwitch {
+    const HYSTERESIS_VALUE_GAL: f64 = 0.1;
+
+    pub fn new(threshold: Volume) -> Self {
+        Self {
+            state_is_low: false,
+            high_hysteresis_threshold: threshold
+                + Volume::new::<gallon>(Self::HYSTERESIS_VALUE_GAL),
+            low_hysteresis_threshold: threshold,
+        }
+    }
+
+    pub fn update(&mut self, current_volume: Volume) {
+        if current_volume <= self.low_hysteresis_threshold {
+            self.state_is_low = true;
+        } else if current_volume >= self.high_hysteresis_threshold {
+            self.state_is_low = false;
+        }
+    }
+
+    pub fn is_low_level(&self) -> bool {
+        self.state_is_low
+    }
+}
+
 pub trait PowerTransferUnitController {
     fn should_enable(&self) -> bool;
 }
@@ -1099,6 +1131,7 @@ impl CheckValve {
 
 pub struct Reservoir {
     level_id: VariableIdentifier,
+    low_level_id: VariableIdentifier,
 
     max_capacity: Volume,
     max_gaugeable: Volume,
@@ -1108,6 +1141,8 @@ pub struct Reservoir {
     air_pressure: Pressure,
 
     air_pressure_switches: Vec<PressureSwitch>,
+
+    level_switch: LevelSwitch,
 
     leak_failure: Failure,
     return_failure: Failure,
@@ -1127,6 +1162,7 @@ impl Reservoir {
         max_gaugeable: Volume,
         current_level: Volume,
         air_pressure_switches: Vec<PressureSwitch>,
+        low_level_threshold: Volume,
     ) -> Self {
         let leak_failure = match hyd_loop_id {
             "GREEN" => Failure::new(FailureType::GreenReservoirLeak),
@@ -1144,6 +1180,8 @@ impl Reservoir {
 
         Self {
             level_id: context.get_identifier(format!("HYD_{}_RESERVOIR_LEVEL", hyd_loop_id)),
+            low_level_id: context
+                .get_identifier(format!("HYD_{}_RESERVOIR_LEVEL_IS_LOW", hyd_loop_id)),
             max_capacity,
             max_gaugeable,
             current_level,
@@ -1152,11 +1190,14 @@ impl Reservoir {
             leak_failure,
             return_failure,
             air_pressure_switches,
+            level_switch: LevelSwitch::new(low_level_threshold),
         }
     }
 
     fn update(&mut self, context: &UpdateContext, air_pressure: Pressure) {
         self.air_pressure = air_pressure;
+
+        self.level_switch.update(self.current_level);
 
         self.update_pressure_switches(context);
 
@@ -1241,6 +1282,10 @@ impl Reservoir {
 
         false
     }
+
+    pub fn is_low_level(&self) -> bool {
+        self.level_switch.is_low_level()
+    }
 }
 impl SimulationElement for Reservoir {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
@@ -1252,6 +1297,7 @@ impl SimulationElement for Reservoir {
 
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.level_id, self.fluid_level_from_gauge());
+        writer.write(&self.low_level_id, self.is_low_level());
     }
 }
 impl PressurizeableReservoir for Reservoir {
@@ -1987,6 +2033,32 @@ mod tests {
         assert!(volume_after_leak_gallon == 0.);
     }
 
+    #[test]
+    fn reservoir_empty_has_level_switch_reporting_empty() {
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            reservoir(
+                context,
+                "GREEN",
+                Volume::new::<gallon>(5.),
+                Volume::new::<gallon>(2.),
+                Volume::new::<gallon>(0.5),
+            )
+        }));
+
+        test_bed.set_update_after_power_distribution(|reservoir, context| {
+            reservoir.update(context, Pressure::new::<psi>(50.))
+        });
+
+        let is_low: bool = test_bed.read_by_name("HYD_GREEN_RESERVOIR_LEVEL_IS_LOW");
+        assert!(!is_low);
+
+        test_bed.fail(FailureType::GreenReservoirLeak);
+        test_bed.run_multiple_frames(Duration::from_secs(10));
+
+        let is_low: bool = test_bed.read_by_name("HYD_GREEN_RESERVOIR_LEVEL_IS_LOW");
+        assert!(is_low);
+    }
+
     fn section(
         context: &mut InitContext,
         loop_id: &str,
@@ -2036,6 +2108,7 @@ mod tests {
                 Pressure::new::<psi>(20.55),
                 PressureSwitchType::Relative,
             )],
+            max_capacity * 0.1,
         )
     }
 
