@@ -703,14 +703,6 @@ impl A320Hydraulic {
         // Todo: might have to split the actuator volumes by expected number of loops
         self.update_actuators_volume();
 
-        // println!(
-        //     "HYD AIR PRESS: G{:.1}, B{:.1}, Y{:.1}, islow {}",
-        //     self.green_circuit.reservoir().air_pressure().get::<psi>(),
-        //     self.blue_circuit.reservoir().air_pressure().get::<psi>(),
-        //     self.yellow_circuit.reservoir().air_pressure().get::<psi>(),
-        //     self.blue_circuit.reservoir().is_low_air_pressure(),
-        // );
-
         self.power_transfer_unit_controller.update(
             context,
             overhead_panel,
