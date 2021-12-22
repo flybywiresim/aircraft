@@ -3,6 +3,7 @@ use std::ops::Mul;
 use std::ops::Sub;
 use std::time::Duration;
 
+#[derive(PartialEq, Copy, Clone)]
 /// First order low pass filter
 /// y(k) = y(k-1)  +  (1-a)*( x(k) - y(k-1) ) with a = exp (-T/tau)
 /// See https://gregstanleyandassociates.com/whitepapers/FaultDiagnosis/Filtering/Exponential-Filter/exponential-filter.htm
