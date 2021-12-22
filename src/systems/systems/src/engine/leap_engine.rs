@@ -31,6 +31,8 @@ impl LeapEngine {
 
     const MIN_IDLE_N2_UNCORRECTED_THRESHOLD_PERCENT: f64 = 55.;
 
+    const LOW_OIL_PRESSURE_THRESHOLD_PSI: f64 = 18.;
+
     pub fn new(context: &mut InitContext, number: usize) -> LeapEngine {
         LeapEngine {
             corrected_n1_id: context.get_identifier(format!("TURB ENG CORRECTED N1:{}", number)),
@@ -85,8 +87,8 @@ impl Engine for LeapEngine {
         self.hydraulic_pump_output_speed
     }
 
-    fn oil_pressure(&self) -> Pressure {
-        self.oil_pressure
+    fn oil_pressure_is_low(&self) -> bool {
+        self.oil_pressure.get::<psi>() < LeapEngine::LOW_OIL_PRESSURE_THRESHOLD_PSI
     }
 
     fn is_above_minimum_idle(&self) -> bool {
