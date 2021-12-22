@@ -111,3 +111,11 @@ const Avail: React.FC<AvailProps> = ({ x, y, visible }) => (
         </g>
     </>
 );
+
+// getModeN1Max() {
+//     switch (this.throttleMode) {
+//         case 4: return ((this.timerTOGA > 0) ? 101.5 : 100);
+//         case 5: return 66.7;
+//         default: return 100;
+//     }
+// }

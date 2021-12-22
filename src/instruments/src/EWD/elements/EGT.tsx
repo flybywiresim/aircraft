@@ -59,3 +59,19 @@ const EGT: React.FC<EGTProps> = ({ x, y, engine }) => {
 };
 
 export default EGT;
+
+// getModeEGTMax() {
+//     switch (this.throttleMode) {
+//         case 4:
+//             return this.timerTOGA > 0 ? 1060 : 1025;
+
+//         case 1:
+//         case 2:
+//         case 3:
+//         case 5:
+//             return 1025;
+
+//         default:
+//             return 750;
+//     }
+// }
