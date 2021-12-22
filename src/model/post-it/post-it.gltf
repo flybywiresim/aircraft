@@ -148,7 +148,7 @@
     "nodes": [
         {
             "mesh": 0,
-            "name": "$POSTIT",
+            "name": "POSTIT",
             "translation": [0.22, 1.68, 11.88885]
         }
     ],

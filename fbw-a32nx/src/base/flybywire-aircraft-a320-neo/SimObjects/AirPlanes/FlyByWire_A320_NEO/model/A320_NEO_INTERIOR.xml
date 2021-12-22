@@ -70,6 +70,16 @@
             </Component>
         </Component>
 
+        <!-- Post-It® / Sticky note -->
+
+        <Component ID="POSTIT" Node="POSTIT">
+            <UseTemplate Name="ASOBO_GT_Visibility_Code">
+                <VISIBILITY_CODE>(L:A32NX_MODEL_POSTIT_ENABLED, bool)</VISIBILITY_CODE>
+            </UseTemplate>
+        </Component>
+
+        <!-- MCDU -->
+
         <Component ID="MCDU">
             <DefaultTemplateParameters>
                 <!-- disable lock mode blue highlight -->
