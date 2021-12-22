@@ -719,7 +719,7 @@ mod tests {
     #[test]
     fn preloaded_exhaust_makes_pressure_go_to_preload() {
         let mut container = quick_container(1., 20., 15.);
-        let mut exhaust = PneumaticExhaust::new(10., 1., Pressure::new::<psi>(70.));
+        let mut exhaust = PneumaticExhaust::new(1., 1., Pressure::new::<psi>(70.));
 
         let context = context(Duration::from_millis(16), Length::new::<foot>(0.));
 
@@ -729,16 +729,15 @@ mod tests {
         for _ in 1..100 {
             exhaust.update_move_fluid(&context, &mut container);
             assert!(exhaust.fluid_flow().get::<cubic_meter_per_second>() == 0.);
-            println!("Press Nominal {:.1}", container.pressure.get::<psi>());
         }
 
         container.pressure = Pressure::new::<psi>(90.);
 
         for _ in 1..100 {
             exhaust.update_move_fluid(&context, &mut container);
-            println!("Press Above Preload {:.1}", container.pressure.get::<psi>());
         }
 
         assert!(container.pressure <= Pressure::new::<psi>(70.));
+        assert!(container.pressure >= Pressure::new::<psi>(69.));
     }
 }
