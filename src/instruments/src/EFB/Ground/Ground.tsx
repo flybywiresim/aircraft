@@ -1,8 +1,19 @@
-import React, { FC, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
-import { IconCornerDownLeft, IconCornerDownRight, IconArrowDown, IconHandStop, IconTruck, IconBriefcase, IconBuildingArch, IconArchive, IconPlug, IconTir, IconLayoutSidebar } from '@tabler/icons';
+import {
+    IconCornerDownLeft,
+    IconCornerDownRight,
+    IconArrowDown,
+    IconHandStop,
+    IconTruck,
+    IconBriefcase,
+    IconBuildingArch,
+    IconArchive,
+    IconPlug,
+    IconTir,
+    IconLayoutSidebar,
+} from '@tabler/icons';
 
-import { MathUtils } from '@shared/MathUtils';
 import useInterval from '@instruments/common/useInterval';
 import fuselage from '../Assets/320neo-outline-upright.svg';
 
@@ -18,7 +29,6 @@ import {
     setActiveButtons,
     addDisabledButton,
     removeDisabledButton,
-    setPushbackWaitTimerHandle,
     updateButton,
 } from '../Store/features/buttons';
 
@@ -31,23 +41,10 @@ interface StatefulButton {
     value: number,
 }
 
-type GroundServiceButtonProps = {
-    name: string,
-    onClick?: (e: React.MouseEvent) => void,
-}
-
-const GroundServiceButton: FC<GroundServiceButtonProps> = ({ children, name, onClick }) => (
-    <div className="flex flex-row items-center p-8 space-x-8" onClick={onClick}>
-        <h1>{name}</h1>
-        {children}
-    </div>
-);
-
 export const Ground = () => {
     const dispatch = useAppDispatch();
 
     const activeButtons = useAppSelector((state) => state.buttons.activeButtons);
-    const pushBackWaitTimerHandle = useAppSelector((state) => state.buttons.pushBackWaitTimerHandle);
     const tugRequestOnly = useAppSelector((state) => state.buttons.tugRequestOnly);
     const disabledButtons = useAppSelector((state) => state.buttons.disabledButtons);
 
