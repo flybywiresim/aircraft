@@ -3,7 +3,7 @@ import { usePersistentProperty } from '@instruments/common/persistence';
 import { FileEarmarkArrowDown, ZoomIn, ZoomOut } from 'react-bootstrap-icons';
 import { fetchSimbriefDataAction } from '../../Store/features/simbrief';
 import { useAppDispatch, useAppSelector } from '../../Store/store';
-import { NotificationTypes, Notification } from '../../UIMessages/Notification';
+import { Notification } from '../../UIMessages/Notification';
 import { useUIMessages } from '../../UIMessages/Provider';
 
 export const LoadSheetWidget = () => {
@@ -125,7 +125,7 @@ export const LoadSheetWidget = () => {
                             }).catch(() => {
                                 uiMessages.pushNotification(
                                     <Notification
-                                        type={NotificationTypes.ERROR}
+                                        type="ERROR"
                                         title="SimBrief Error"
                                         message="An error occurred when trying to fetch your SimBrief data."
                                     />,
