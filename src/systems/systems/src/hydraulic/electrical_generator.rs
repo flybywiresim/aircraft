@@ -55,6 +55,7 @@ impl<const N: usize> GeneratorControlUnit<N> {
                 0.,
                 1.,
                 nominal_rpm.get::<revolution_per_minute>(),
+                1.,
             ),
 
             nominal_rpm,
