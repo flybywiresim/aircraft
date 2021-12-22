@@ -101,6 +101,9 @@
 1. [AP] Fixed CLB not engaging correctly on take-off - @aguther (Andreas Guther)
 1. [AP] Added time delay to ALT condition - @aguther (Andreas Guther)
 1. [LIGHTS] Add external PARK BRK LT - @bouveng (Johan Bouveng)
+1. [AP] Fixed missing HDG sync on FD/AP engagement when FD and AP have been off - @aguther (Andreas Guther)
+1. [FDR] Added additional values to help debug in some cases - @aguther (Andreas Guther)
+1. [ATHR] Added switch to use externally defined thrust limits and separated thrust limits into own model - @aguther (Andreas Guther)
 
 ## 0.7.0
 

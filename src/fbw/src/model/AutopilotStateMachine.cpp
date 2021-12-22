@@ -173,6 +173,7 @@ boolean_T AutopilotStateMachineModelClass::AutopilotStateMachine_ON_TO_LOC(const
 
 void AutopilotStateMachineModelClass::AutopilotStateMachine_HDG_during(const ap_sm_output *BusAssignment)
 {
+  AutopilotStateMachine_B.out_n.mode_reversion = false;
   AutopilotStateMachine_B.out_n.Psi_c_deg = BusAssignment->input.Psi_fcu_deg;
   if (BusAssignment->input.TRK_FPA_mode) {
     AutopilotStateMachine_B.out_n.mode = lateral_mode_TRACK;
@@ -4105,6 +4106,7 @@ void AutopilotStateMachineModelClass::step()
 
      case AutopilotStateMachine_IN_OFF:
       if (AutopilotStateMachine_OFF_TO_HDG(&AutopilotStateMachine_B.BusAssignment_g)) {
+        AutopilotStateMachine_B.out_n.mode_reversion = true;
         AutopilotStateMachine_DWork.is_c1_AutopilotStateMachine = AutopilotStateMachine_IN_ON;
         AutopilotStateMachine_DWork.is_ON_l = AutopilotStateMachine_IN_HDG;
         AutopilotStateMachine_HDG_entry(&AutopilotStateMachine_B.BusAssignment_g);
