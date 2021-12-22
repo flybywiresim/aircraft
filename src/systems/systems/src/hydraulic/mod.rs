@@ -1,5 +1,6 @@
 use self::linear_actuator::Actuator;
 use crate::hydraulic::electrical_pump_physics::ElectricalPumpPhysics;
+use crate::pneumatic::PressurizeableReservoir;
 use crate::shared::{interpolation, ElectricalBusType, ElectricalBuses};
 use crate::simulation::{
     InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
@@ -20,6 +21,7 @@ use uom::si::{
 pub mod brake_circuit;
 pub mod electrical_pump_physics;
 pub mod linear_actuator;
+pub mod nose_steering;
 pub mod update_iterator;
 
 pub trait SectionPressure {
@@ -1136,6 +1138,11 @@ impl Reservoir {
 impl SimulationElement for Reservoir {
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.level_id, self.level());
+    }
+}
+impl PressurizeableReservoir for Reservoir {
+    fn available_volume(&self) -> Volume {
+        self.max_capacity - self.current_level
     }
 }
 

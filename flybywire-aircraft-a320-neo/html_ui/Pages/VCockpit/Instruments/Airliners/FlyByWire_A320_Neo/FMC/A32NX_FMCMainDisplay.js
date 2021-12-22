@@ -61,7 +61,10 @@ class FMCMainDisplay extends BaseAirliners {
         this._vor2Frequency = undefined;
         this._vor2Course = undefined;
         this._ilsFrequency = undefined;
+        this._ilsIcao = undefined;
+        this._ilsIdent = undefined;
         this._ilsFrequencyPilotEntered = undefined;
+        this._ilsIdentPilotEntered = undefined;
         this._ilsCourse = undefined;
         this._adf1Frequency = undefined;
         this._adf2Frequency = undefined;
@@ -155,9 +158,12 @@ class FMCMainDisplay extends BaseAirliners {
         this.cruiseFlightLevelTimeOut = undefined;
         this.flaps = undefined;
         this.ths = undefined;
+        this.ilsAutoFrequency = undefined;
+        this.ilsAutoIcao = undefined;
         this.ilsAutoIdent = undefined;
         this.ilsAutoCourse = undefined;
         this.ilsAutoTuned = undefined;
+        this.tempFpPendingAutoTune = undefined;
         this.ilsTakeoffAutoTuned = undefined;
         this.ilsApproachAutoTuned = undefined;
         this.climbTransitionGroundAltitude = undefined;
@@ -284,6 +290,8 @@ class FMCMainDisplay extends BaseAirliners {
                 }
             }
         }, 15000);
+
+        SimVar.SetSimVarValue('L:A32NX_FM_LS_COURSE', 'number', -1);
     }
 
     initVariables() {
@@ -330,8 +338,11 @@ class FMCMainDisplay extends BaseAirliners {
         this._vor2Frequency = 0;
         this._vor2Course = 0;
         this._ilsFrequency = 0;
+        this._ilsIcao = undefined;
+        this._ilsIdent = undefined;
         this._ilsFrequencyPilotEntered = false;
-        this._ilsCourse = 0;
+        this._ilsIdentPilotEntered = false;
+        this._ilsCourse = undefined;
         this._adf1Frequency = 0;
         this._adf2Frequency = 0;
         this._debug = 0;
@@ -473,11 +484,14 @@ class FMCMainDisplay extends BaseAirliners {
         this.cruiseFlightLevelTimeOut = undefined;
         this.flaps = NaN;
         this.ths = NaN;
-        this.ilsAutoIdent = '';
-        this.ilsAutoCourse = 0;
+        this.ilsAutoFrequency = undefined;
+        this.ilsAutoIcao = undefined;
+        this.ilsAutoIdent = undefined;
+        this.ilsAutoCourse = undefined;
         this.ilsAutoTuned = false;
         this.ilsTakeoffAutoTuned = false;
         this.ilsApproachAutoTuned = false;
+        this.tempFpPendingAutoTune = false;
         this.climbTransitionGroundAltitude = null;
         this.altDestination = undefined;
         this.flightNumber = undefined;
@@ -505,7 +519,7 @@ class FMCMainDisplay extends BaseAirliners {
         SimVar.SetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "feet", -1);
         SimVar.SetSimVarValue("L:AIRLINER_MINIMUM_DESCENT_ALTITUDE", "feet", 0);
 
-        SimVar.SetSimVarValue("L:A32NX_AP_CSTN_ALT", "feet", this.constraintAlt);
+        SimVar.SetSimVarValue("L:A32NX_FG_ALTITUDE_CONSTRAINT", "feet", this.constraintAlt);
         SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_NORMAL", "Bool", 0);
         SimVar.SetSimVarValue("L:A32NX_CABIN_READY", "Bool", 0);
 
@@ -1000,7 +1014,7 @@ class FMCMainDisplay extends BaseAirliners {
                 } else {
                     const altitude = Simplane.getAutoPilotSelectedAltitudeLockValue("feet");
                     if (isFinite(altitude)) {
-                        SimVar.SetSimVarValue("L:A32NX_AP_CSTN_ALT", "feet", 0);
+                        SimVar.SetSimVarValue("L:A32NX_FG_ALTITUDE_CONSTRAINT", "feet", 0);
                         Coherent.call("AP_ALT_VAR_SET_ENGLISH", 2, altitude, this._forceNextAltitudeUpdate).catch(console.error);
                         this._forceNextAltitudeUpdate = false;
                     }
@@ -1067,7 +1081,7 @@ class FMCMainDisplay extends BaseAirliners {
             this.fcuSelAlt,
             this.constraintAltCached
         );
-        SimVar.SetSimVarValue("L:A32NX_AP_CSTN_ALT", "feet", this.constraintAlt);
+        SimVar.SetSimVarValue("L:A32NX_FG_ALTITUDE_CONSTRAINT", "feet", this.constraintAlt);
     }
 
     updateConstraints() {
@@ -1424,6 +1438,7 @@ class FMCMainDisplay extends BaseAirliners {
                     if (airportTo) {
                         this.eraseTemporaryFlightPlan(() => {
                             this.flightPlanManager.clearFlightPlan(() => {
+                                this.tempFpPendingAutoTune = true;
                                 this.flightPlanManager.setOrigin(airportFrom.icao, () => {
                                     this.tmpOrigin = airportFrom.ident;
                                     this.flightPlanManager.setDestination(airportTo.icao, () => {
@@ -1647,7 +1662,7 @@ class FMCMainDisplay extends BaseAirliners {
 
     setOriginRunwayIndex(runwayIndex, callback = EmptyCallback.Boolean) {
         this.ensureCurrentFlightPlanIsTemporary(() => {
-            this.clearAutotunedIls();
+            this.tempFpPendingAutoTune = true;
             this.flightPlanManager.setDepartureProcIndex(-1, () => {
                 this.flightPlanManager.setOriginRunwayIndex(runwayIndex, () => {
                     return callback(true);
@@ -1659,7 +1674,7 @@ class FMCMainDisplay extends BaseAirliners {
     setRunwayIndex(runwayIndex, callback = EmptyCallback.Boolean) {
         this.ensureCurrentFlightPlanIsTemporary(() => {
             const routeOriginInfo = this.flightPlanManager.getOrigin().infos;
-            this.clearAutotunedIls();
+            this.tempFpPendingAutoTune = true;
             if (!this.flightPlanManager.getOrigin()) {
                 this.addNewMessage(NXFictionalMessages.noOriginSet);
                 return callback(false);
@@ -1746,7 +1761,7 @@ class FMCMainDisplay extends BaseAirliners {
                         SimVar.SetSimVarValue("L:A32NX_PRESS_AUTO_LANDING_ELEVATION", "feet", A32NX_Util.meterToFeet(runway.elevation));
                     }
                 }
-                this.clearAutotunedIls();
+                this.tempFpPendingAutoTune = true;
                 callback(true);
             }).catch(console.error);
         });
@@ -1759,20 +1774,29 @@ class FMCMainDisplay extends BaseAirliners {
             try {
                 const ils = await this.facilityLoader.getFacility(ilsIcao).catch(console.error);
                 if (ils.infos.frequencyMHz > 1) {
-                    console.log('Auto-tuning ILS', ils);
-                    this.connectIlsFrequency(ils.infos.frequencyMHz);
+                    this.ilsAutoFrequency = ils.infos.frequencyMHz;
+                    this.ilsAutoIcao = ils.infos.icao;
                     this.ilsAutoIdent = ils.infos.ident;
-                    this.ilsAutoCourse = finalLeg.course;
+                    this.ilsAutoCourse = Math.round(finalLeg.course) % 360;
                     this.ilsAutoTuned = true;
+                    if (!this._ilsFrequencyPilotEntered && !this._ilsIdentPilotEntered) {
+                        this.connectIlsFrequency(this.ilsAutoFrequency);
+                    }
+                    if (this.ilsCourse) {
+                        this.checkRunwayLsCourseMismatch();
+                    } else {
+                        await this.updateIlsCourse();
+                    }
                     if (this.currentFlightPhase > FmgcFlightPhases.TAKEOFF) {
                         this.ilsApproachAutoTuned = true;
                     } else {
                         this.ilsTakeoffAutoTuned = true;
                     }
+                    this.checkRunwayLsMismatch();
                     return true;
                 }
             } catch (error) {
-                console.log('tuneIlsFromApproach', error);
+                console.error('tuneIlsFromApproach', error);
                 return false;
             }
         }
@@ -1783,20 +1807,20 @@ class FMCMainDisplay extends BaseAirliners {
         this.ilsAutoTuned = false;
         this.ilsApproachAutoTuned = false;
         this.ilsTakeoffAutoTuned = false;
-        this.ilsAutoIdent = "";
-        this.ilsAutoCourse = 0;
+        this.ilsAutoFrequency = undefined;
+        this.ilsAutoIdent = undefined;
+        this.ilsAutoCourse = undefined;
+        this.updateIlsCourse();
     }
 
     async updateIls() {
-        if (this._ilsFrequencyPilotEntered) {
-            return;
-        }
+        await this.updateIlsCourse();
 
         let airport;
         let runway;
 
         if (this.currentFlightPhase > FmgcFlightPhases.TAKEOFF) {
-            if (this.ilsApproachAutoTuned) {
+            if (this.ilsApproachAutoTuned || this.flightPlanManager.getCurrentFlightPlanIndex() !== 0) {
                 return;
             }
             this.ilsAutoTuned = false;
@@ -1821,7 +1845,7 @@ class FMCMainDisplay extends BaseAirliners {
                 }
             }
         } else {
-            if (this.ilsTakeoffAutoTuned) {
+            if (this.ilsTakeoffAutoTuned || this.flightPlanManager.getCurrentFlightPlanIndex() !== 0) {
                 return;
             }
             this.ilsAutoTuned = false;
@@ -1831,7 +1855,7 @@ class FMCMainDisplay extends BaseAirliners {
 
         // If the airport has correct navdata, the ILS will be listed as the reference navaid (originIcao in MSFS land) on at least the last leg of the
         // ILS approach procedure(s). Tuning this way gives us the ident, and the course
-        if (airport && airport.infos && runway) {
+        if (airport && airport.infos && airport.infos.icao.charAt(0) === 'A' && runway) {
             for (let i = 0; i < airport.infos.approaches.length && !this.ilsAutoTuned; i++) {
                 const appr = airport.infos.approaches[i];
                 // L(eft), C(entre), R(ight), T(true North) are the possible runway designators (ARINC424)
@@ -1848,6 +1872,48 @@ class FMCMainDisplay extends BaseAirliners {
                     }
                 }
             }
+        }
+    }
+
+    async updateIlsCourse() {
+        let course = -1;
+        if (this.ilsCourse !== undefined) {
+            course = this.ilsCourse;
+        } else if (this.ilsAutoTuned && (!this._ilsIdentPilotEntered || this._ilsIcao === this.ilsAutoIcao) && !this._ilsFrequencyPilotEntered) {
+            course = this.ilsAutoCourse;
+        } else if (this.ilsFrequency > 0 && SimVar.GetSimVarValue('NAV HAS LOCALIZER:3', 'boolean') === 1) {
+            course = SimVar.GetSimVarValue('NAV LOCALIZER:3', 'degrees');
+        }
+        return SimVar.SetSimVarValue('L:A32NX_FM_LS_COURSE', 'number', course);
+    }
+
+    isRunwayLsMismatched() {
+        if (!this.ilsAutoTuned || this.currentFlightPhase === FmgcFlightPhases.DONE) {
+            return false;
+        }
+
+        return (this._ilsFrequencyPilotEntered && Math.abs(this.ilsFrequency - this.ilsAutoFrequency) >= 0.05) || (this._ilsIdentPilotEntered && this._ilsIcao !== this.ilsAutoIcao);
+    }
+
+    isRunwayLsCourseMismatched() {
+        if (!this.ilsAutoTuned || this.ilsCourse === undefined) {
+            return false;
+        }
+
+        return Math.abs(Avionics.Utils.diffAngle(this.ilsCourse, this.ilsAutoCourse)) > 3;
+    }
+
+    checkRunwayLsMismatch() {
+        if (this.isRunwayLsMismatched()) {
+            this.addNewMessage(NXSystemMessages.rwyLsMismatch, () => !(this.isRunwayLsMismatched() || this.isRunwayLsCourseMismatched()));
+        }
+
+        // manually entered course mismatch is handled separately to avoid unwanted messages
+    }
+
+    checkRunwayLsCourseMismatch() {
+        if (this.isRunwayLsCourseMismatched()) {
+            this.addNewMessage(NXSystemMessages.rwyLsMismatch, () => !(this.isRunwayLsMismatched() || this.isRunwayLsCourseMismatched()));
         }
     }
 
@@ -1910,6 +1976,9 @@ class FMCMainDisplay extends BaseAirliners {
         });
     }
 
+    getOrSelectILSsByIdent(ident, callback) {
+        this._getOrSelectWaypoints(this.dataManager.GetILSsByIdent.bind(this.dataManager), ident, callback);
+    }
     getOrSelectVORsByIdent(ident, callback) {
         this._getOrSelectWaypoints(this.dataManager.GetVORsByIdent.bind(this.dataManager), ident, callback);
     }
@@ -1925,27 +1994,54 @@ class FMCMainDisplay extends BaseAirliners {
         if (newWaypointTo === "" || newWaypointTo === FMCMainDisplay.clrValue) {
             return callback(false);
         }
-        this.getOrSelectWaypointByIdent(newWaypointTo, (waypoint) => {
-            if (!waypoint) {
-                this.addNewMessage(NXSystemMessages.notInDatabase);
-                return callback(false);
-            }
-            if (immediately) {
-                if (this.flightPlanManager.isCurrentFlightPlanTemporary()) {
-                    this.addNewMessage(NXSystemMessages.notAllowed);
+        try {
+            this.getOrCreateWaypoint(newWaypointTo, true).then((waypoint) => {
+                if (!waypoint) {
                     return callback(false);
                 }
-                this.flightPlanManager.addWaypoint(waypoint.icao, index, () => {
-                    return callback(true);
-                }).catch(console.error);
+                if (immediately) {
+                    if (this.flightPlanManager.isCurrentFlightPlanTemporary()) {
+                        this.addNewMessage(NXSystemMessages.notAllowed);
+                        return callback(false);
+                    }
+                    if (waypoint.additionalData && waypoint.additionalData.storedType !== undefined) {
+                        this.flightPlanManager.addUserWaypoint(waypoint, index, () => {
+                            return callback(true);
+                        }).catch(console.error);
+                    } else {
+                        this.flightPlanManager.addWaypoint(waypoint.icao, index, () => {
+                            return callback(true);
+                        }).catch(console.error);
+                    }
+                } else {
+                    this.ensureCurrentFlightPlanIsTemporary(async () => {
+                        if (waypoint.additionalData && waypoint.additionalData.storedType !== undefined) {
+                            this.flightPlanManager.addUserWaypoint(waypoint, index, () => {
+                                return callback(true);
+                            }).catch(console.error);
+                        } else {
+                            this.flightPlanManager.addWaypoint(waypoint.icao, index, () => {
+                                return callback(true);
+                            }).catch(console.error);
+                        }
+                    });
+                }
+            }).catch((err) => {
+                if (err instanceof McduMessage) {
+                    this.addNewMessage(err);
+                } else {
+                    console.error(err);
+                }
+                return callback(false);
+            });
+        } catch (err) {
+            if (err instanceof McduMessage) {
+                this.addNewMessage(err);
             } else {
-                this.ensureCurrentFlightPlanIsTemporary(async () => {
-                    this.flightPlanManager.addWaypoint(waypoint.icao, index, () => {
-                        return callback(true);
-                    }).catch(console.error);
-                });
+                console.error(err);
             }
-        });
+            return callback(false);
+        }
     }
 
     activateDirectToWaypoint(waypoint, callback = EmptyCallback.Void) {
@@ -2113,6 +2209,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.flightPlanManager.setCurrentFlightPlanIndex(0, () => {
             SimVar.SetSimVarValue("L:FMC_FLIGHT_PLAN_IS_TEMPORARY", "number", 0);
             SimVar.SetSimVarValue("L:MAP_SHOW_TEMPORARY_FLIGHT_PLAN", "number", 0);
+            this.tempFpPendingAutoTune = false;
             callback();
         });
     }
@@ -2123,6 +2220,10 @@ class FMCMainDisplay extends BaseAirliners {
                 this.flightPlanManager.setCurrentFlightPlanIndex(0, () => {
                     SimVar.SetSimVarValue("L:FMC_FLIGHT_PLAN_IS_TEMPORARY", "number", 0);
                     SimVar.SetSimVarValue("L:MAP_SHOW_TEMPORARY_FLIGHT_PLAN", "number", 0);
+                    if (this.tempFpPendingAutoTune) {
+                        this.clearAutotunedIls();
+                        this.tempFpPendingAutoTune = false;
+                    }
                     callback();
                 });
             }).catch(console.error);
@@ -3141,16 +3242,7 @@ class FMCMainDisplay extends BaseAirliners {
 
     connectIlsFrequency(_freq) {
         if (_freq >= 108 && _freq <= 111.95 && RadioNav.isHz50Compliant(_freq)) {
-            switch (this.radioNav.mode) {
-                case NavMode.FOUR_SLOTS: {
-                    this.ilsFrequency = _freq;
-                    break;
-                }
-                case NavMode.TWO_SLOTS: {
-                    this.vor1Frequency = _freq;
-                    break;
-                }
-            }
+            this.ilsFrequency = _freq;
             this.connectIls();
             return true;
         }
@@ -3168,45 +3260,130 @@ class FMCMainDisplay extends BaseAirliners {
         setTimeout(() => {
             this._lockConnectIls = false;
         }, 1000);
-        switch (this.radioNav.mode) {
-            case NavMode.FOUR_SLOTS: {
-                if (Math.abs(this.radioNav.getILSActiveFrequency(1) - this.ilsFrequency) > 0.005) {
-                    this.radioNav.setILSActiveFrequency(1, this.ilsFrequency);
-                }
-                break;
-            }
-            case NavMode.TWO_SLOTS: {
-                if (Math.abs(this.radioNav.getVORActiveFrequency(1) - this.vor1Frequency) > 0.005) {
-                    this.radioNav.setVORActiveFrequency(1, this.vor1Frequency);
-                }
-                break;
-            }
-            default:
-                console.error("Unknown RadioNav operating mode");
-                break;
+
+        if (Math.abs(this.radioNav.getILSActiveFrequency(1) - this.ilsFrequency) > 0.005) {
+            this.radioNav.setILSActiveFrequency(1, this.ilsFrequency);
         }
     }
 
-    setIlsFrequency(s) {
+    setIlsFrequency(s, callback) {
         if (s === FMCMainDisplay.clrValue) {
-            this.ilsFrequency = 0;
-            this.radioNav.setILSActiveFrequency(1, 0);
-            this._ilsFrequencyPilotEntered = false;
-            return true;
-        }
-        const v = parseFloat(s);
-        if (isFinite(v)) {
-            const freq = Math.round(v * 100) / 100;
-            if (this.connectIlsFrequency(freq)) {
-                this._ilsFrequencyPilotEntered = true;
-                this.clearAutotunedIls();
-                return true;
+            if (!this._ilsIdentPilotEntered && !this._ilsFrequencyPilotEntered) {
+                this.addNewMessage(NXSystemMessages.notAllowed);
+                return callback(false);
             }
-            this.addNewMessage(NXSystemMessages.entryOutOfRange);
-            return false;
+
+            this._ilsFrequencyPilotEntered = false;
+            this._ilsIdentPilotEntered = false;
+            this._ilsIcao = undefined;
+            if (this.ilsAutoTuned) {
+                this.connectIlsFrequency(this.ilsAutoFrequency);
+                this.checkRunwayLsCourseMismatch();
+            } else {
+                this.ilsCourse = undefined;
+                this.ilsFrequency = 0;
+                this.radioNav.setILSActiveFrequency(1, 0);
+            }
+            this.updateIlsCourse().then(() => {
+                callback(true);
+            });
+            return;
         }
-        this.addNewMessage(NXSystemMessages.notAllowed);
-        return false;
+        if (s.match(/^[0-9]{3}(\.[0-9]{1,2})$/) !== null) {
+            const v = parseFloat(s);
+            const freq = Math.round(v * 100) / 100;
+
+            if (this.connectIlsFrequency(freq)) {
+                this._ilsIcao = undefined;
+                this._ilsIdent = undefined;
+                this._ilsFrequencyPilotEntered = true;
+                this._ilsIdentPilotEntered = false;
+                this.ilsCourse = undefined;
+                this.checkRunwayLsMismatch();
+                this.updateIlsCourse().then(() => {
+                    callback(true);
+                });
+                return;
+            } else {
+                this.addNewMessage(NXSystemMessages.entryOutOfRange);
+                return callback(false);
+            }
+        } else if (s.match(/^[A-Z0-9]{1,4}$/) !== null) {
+            this.getOrSelectILSsByIdent(s, (navaid) => {
+                if (navaid) {
+                    if (this.connectIlsFrequency(Math.round(navaid.infos.frequencyMHz * 100) / 100)) {
+                        this._ilsIcao = navaid.infos.icao;
+                        this._ilsIdent = s;
+                        this._ilsFrequencyPilotEntered = false;
+                        this._ilsIdentPilotEntered = true;
+                        if (!this.ilsAutoTuned || this.ilsAutoIcao !== this._ilsIcao) {
+                            this.ilsCourse = undefined;
+                        }
+                        this.checkRunwayLsMismatch();
+                        this.updateIlsCourse().then(() => {
+                            callback(true);
+                        });
+                        return;
+                    } else {
+                        this.addNewMessage(NXSystemMessages.databaseCodingError);
+                        return callback(false);
+                    }
+                } else {
+                    // TODO should show new navaid page
+                    this.addNewMessage(NXSystemMessages.notInDatabase);
+                    return callback(false);
+                }
+            });
+        } else {
+            this.addNewMessage(NXSystemMessages.formatError);
+            return callback(false);
+        }
+    }
+
+    setLsCourse(s, callback) {
+        if (!this.ilsAutoTuned && !this._ilsFrequencyPilotEntered && !this._ilsIdentPilotEntered) {
+            this.addNewMessage(NXSystemMessages.notAllowed);
+            return callback(false);
+        }
+
+        if (s === FMCMainDisplay.clrValue) {
+            if (this.ilsCourse !== undefined) {
+                this.ilsCourse = undefined;
+                this.updateIlsCourse().then(() => {
+                    callback(true);
+                });
+                return;
+            } else {
+                this.addNewMessage(NXSystemMessages.notAllowed);
+                return callback(false);
+            }
+        }
+
+        const m = s.match(/^(F|B)?([0-9]{1,3})(F|B)?$/);
+        const direction = m[1] || m[3];
+        const course = parseInt(m[2]);
+        if (m !== null && direction !== undefined && (m[1] === undefined || m[3] === undefined)) {
+            if (course > 360) {
+                this.addNewMessage(NXSystemMessages.entryOutOfRange);
+                return callback(false);
+            }
+            if (direction === 'B') {
+                this.addNewMessage(NXFictionalMessages.notYetImplemented);
+                return callback(false);
+            }
+
+            this.ilsCourse = course % 360;
+
+            this.checkRunwayLsCourseMismatch();
+
+            this.updateIlsCourse().then(() => {
+                callback(true);
+            });
+            return;
+        }
+
+        this.addNewMessage(NXSystemMessages.formatError);
+        return callback(false);
     }
 
     initRadioNav(_boot) {
@@ -3366,8 +3543,8 @@ class FMCMainDisplay extends BaseAirliners {
         this._ilsFrequency = _frq;
     }
 
-    set ilsCourse(_crs) {
-        this._ilsCourse = _crs;
+    set ilsCourse(crs) {
+        this._ilsCourse = crs;
     }
 
     set adf1Frequency(_frq) {
@@ -3610,20 +3787,6 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     /**
-     * LatLongAltCallback
-     *
-     * @callback LatLongAltCallback
-     * @param {LatLongAlt} result
-     * @param {number=} magVar magnetic variation if available
-     */
-    /**
-     * McduMessageCallback
-     *
-     * @callback McduMessageCallback
-     * @param {McduMessage} message
-     */
-
-    /**
      * Check if a place is the correct format for a runway
      * @param {string} s
      * @returns true if valid runway format
@@ -3636,31 +3799,23 @@ class FMCMainDisplay extends BaseAirliners {
      * Parse a runway string and return the location of the threshold
      * Returns undefined if invalid format or not in database
      * @param {string} place
-     * @param {LatLongAltCallback} onSuccess location of runway threshold
-     * @param {McduMessageCallback} onError suggested error message
+     * @throws {McduMessage}
+     * @returns {WayPoint}
      */
-    parseRunway(place, onSuccess, onError) {
+    async parseRunway(place) {
         const rwy = place.match(/^([A-Z]{4})([0-9]{2}[RCL]?)$/);
         if (rwy !== null) {
-            this.dataManager.GetAirportByIdent(rwy[1]).then((airport) => {
-                if (airport) {
-                    for (let i = 0; i < airport.infos.oneWayRunways.length; i++) {
-                        if (Avionics.Utils.formatRunway(airport.infos.oneWayRunways[i].designation) === rwy[2]) {
-                            const runway = airport.infos.oneWayRunways[i];
-                            // this should be to the treshold but we don't have that, so we just use half the length
-                            const adjustedCoordinates = Avionics.Utils.bearingDistanceToCoordinates(
-                                (runway.direction + 180) % 360,
-                                runway.length / 2 / 1852, // TODO unit conversion lib
-                                runway.latitude, runway.longitude
-                            );
-                            return onSuccess(adjustedCoordinates, Facilities.getMagVar(adjustedCoordinates.lat, adjustedCoordinates.long));
-                        }
+            const airport = await this.dataManager.GetAirportByIdent(rwy[1]);
+            if (airport) {
+                for (let i = 0; i < airport.infos.oneWayRunways.length; i++) {
+                    if (Avionics.Utils.formatRunway(airport.infos.oneWayRunways[i].designation) === rwy[2]) {
+                        return this.dataManager.createRunwayWaypoint(airport, airport.infos.oneWayRunways[i]);
                     }
-                    return onError(NXSystemMessages.notInDatabase);
                 }
-            }).catch(console.error);
+                throw NXSystemMessages.notInDatabase;
+            }
         } else {
-            return onError(NXSystemMessages.notInDatabase);
+            throw NXSystemMessages.notInDatabase;
         }
     }
 
@@ -3676,10 +3831,10 @@ class FMCMainDisplay extends BaseAirliners {
     /**
      * Parse a lat/lon string into a position
      * @param {string} place
-     * @param {LatLongAltCallback} onSuccess location
-     * @param {McduMessageCallback} onError suggested error message
+     * @throws {McduMessage}
+     * @returns {LatLongAlt}
      */
-    parseLatLon(place, onSuccess, onError) {
+    parseLatLon(place) {
         const latlon = place.match(/^(N|S)?([0-9]{2,4}\.[0-9])(N|S)?\/(E|W)?([0-9]{2,5}\.[0-9])(E|W)?$/);
         if (latlon !== null) {
             const latB = (latlon[1] || "") + (latlon[3] || "");
@@ -3691,17 +3846,16 @@ class FMCMainDisplay extends BaseAirliners {
             const lonD = parseInt(latlon[5].substring(0, latlon[5].length - lonDdigits));
             const lonM = parseFloat(latlon[5].substring(latlon[5].length - lonDdigits));
             if (latB.length !== 1 || lonB.length !== 1 || !isFinite(latM) || !isFinite(lonM)) {
-                return onError(NXSystemMessages.formatError);
+                throw NXSystemMessages.formatError;
             }
             if (latD > 90 || latM > 59.9 || lonD > 180 || lonM > 59.9) {
-                return onError(NXSystemMessages.entryOutOfRange);
+                throw NXSystemMessages.entryOutOfRange;
             }
             const lat = (latD + latM / 60) * (latB === "S" ? -1 : 1);
             const lon = (lonD + lonM / 60) * (lonB === "W" ? -1 : 1);
-            const ll = new LatLongAlt(lat, lon);
-            return onSuccess(ll, Facilities.getMagVar(ll.lat, ll.long));
+            return new LatLongAlt(lat, lon);
         }
-        return onError(NXSystemMessages.formatError);
+        throw NXSystemMessages.formatError;
     }
 
     /**
@@ -3710,27 +3864,29 @@ class FMCMainDisplay extends BaseAirliners {
      * @returns true if valid place format
      */
     isPlaceFormat(s) {
-        return s.match(/^[A-Z0-9]{2,6}$/) !== null || this.isRunwayFormat(s);
+        return s.match(/^[A-Z0-9]{2,7}$/) !== null || this.isRunwayFormat(s);
     }
 
     /**
      * Parse a place string into a position
      * @param {string} place
-     * @param {LatLongAltCallback} onSuccess location
-     * @param {McduMessageCallback} onError suggested error message
+     * @throws {McduMessage}
+     * @returns {WayPoint}
      */
-    parsePlace(place, onSuccess, onError) {
+    async parsePlace(place) {
         if (this.isRunwayFormat(place)) {
-            this.parseRunway(place, onSuccess, onError);
-        } else {
+            return this.parseRunway(place);
+        }
+
+        return new Promise((resolve, reject) => {
             this.getOrSelectWaypointByIdent(place, (waypoint) => {
                 if (waypoint) {
-                    return onSuccess(waypoint.infos.coordinates, waypoint.infos.magneticVariation || Facilities.getMagVar(waypoint.infos.coordinates.lat, waypoint.infos.coordinates.long));
+                    return resolve(waypoint);
                 } else {
-                    return onError(NXSystemMessages.notInDatabase);
+                    return reject(NXSystemMessages.notInDatabase);
                 }
             });
-        }
+        });
     }
 
     /**
@@ -3738,36 +3894,33 @@ class FMCMainDisplay extends BaseAirliners {
      * @param {string} s
      * @returns true if valid place format
      */
-    isPbPbFormat(s) {
-        const pbpb = s.match(/^([^\-\/]+)\-([0-9]{1,3})\/([^\-\/]+)\-([0-9]{1,3})$/);
-        return pbpb !== null && this.isPlaceFormat(pbpb[1]) && this.isPlaceFormat(pbpb[3]);
+    isPbxFormat(s) {
+        const pbx = s.match(/^([^\-\/]+)\-([0-9]{1,3})\/([^\-\/]+)\-([0-9]{1,3})$/);
+        return pbx !== null && this.isPlaceFormat(pbx[1]) && this.isPlaceFormat(pbx[3]);
     }
 
     /**
-     * Parse a p-b/p-b string into a position
+     * Parse a place-bearing/place-bearing string
      * @param {string} s place-bearing/place-bearing
-     * @param {LatLongAltCallback} onSuccess location
-     * @param {McduMessageCallback} onError suggested error message
+     * @throws {McduMessage}
+     * @returns {[WayPoint, number, WayPoint, number]} place and true bearing * 2
      */
-    parsePbPb(s, onSuccess, onError) {
-        const pbpb = s.match(/^([^\-\/]+)\-([0-9]{1,3})\/([^\-\/]+)\-([0-9]{1,3})$/);
-        if (pbpb === null) {
-            return onError(NXSystemMessages.formatError);
+    async parsePbx(s) {
+        const pbx = s.match(/^([^\-\/]+)\-([0-9]{1,3})\/([^\-\/]+)\-([0-9]{1,3})$/);
+        if (pbx === null) {
+            throw NXSystemMessages.formatError;
         }
-        const brg1 = parseInt(pbpb[2]);
-        const brg2 = parseInt(pbpb[4]);
+        const brg1 = parseInt(pbx[2]);
+        const brg2 = parseInt(pbx[4]);
         if (brg1 > 360 || brg2 > 360) {
-            return onError(NXSystemMessages.entryOutOfRange);
+            throw NXSystemMessages.entryOutOfRange;
         }
-        this.parsePlace(pbpb[1], (loc1, magVar1) => {
-            this.parsePlace(pbpb[3], (loc2, magVar2) => {
-                onSuccess(A32NX_Util.greatCircleIntersection(loc1, A32NX_Util.magneticToTrue(brg1, magVar1), loc2, A32NX_Util.magneticToTrue(brg2, magVar2)));
-            }, (err2) => {
-                onError(err2);
-            });
-        }, (err1) => {
-            onError(err1);
-        });
+        const place1 = await this.parsePlace(pbx[1]);
+        const magVar1 = Facilities.getMagVar(place1.infos.coordinates.lat, place1.infos.coordinates.long);
+        const place2 = await this.parsePlace(pbx[3]);
+        const magVar2 = Facilities.getMagVar(place2.infos.coordinates.lat, place2.infos.coordinates.long);
+
+        return [place1, A32NX_Util.magneticToTrue(brg1, magVar1), place2, A32NX_Util.magneticToTrue(brg2, magVar2)];
     }
 
     /**
@@ -3793,27 +3946,95 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     /**
+     *
+     * @param {string} s
+     * @returns [wp: WayPoint, trueBearing: number, dist: number]
+     */
+    async parsePbd(s) {
+        const [place, brg, dist] = this.splitPbd(s);
+        if (brg > 360 || dist > 999.9) {
+            throw NXSystemMessages.entryOutOfRange;
+        }
+        if (this.isPlaceFormat(place)) {
+            const wp = await this.parsePlace(place);
+            const magVar = Facilities.getMagVar(wp.infos.coordinates.lat, wp.infos.coordinates.long);
+            return [wp, A32NX_Util.magneticToTrue(brg, magVar), dist];
+        }
+        throw NXSystemMessages.formatError;
+    }
+
+    isPdFormat(s) {
+        const pd = s.match(/^([^\/]+)\/([0-9]{1,3}(\.[0-9])?)$/);
+        return pd !== null && this.isPlaceFormat(pd[1]);
+    }
+
+    parsePlaceDist(s) {
+        let [place, dist] = s.split('/');
+        dist = parseInt(dist);
+        // TODO get waypoint in flightplan
+        //Fmgc.WaypointBuilder.fromPlaceAlongFlightPlan(ident: string, placeIndex: number, distance: number, instrument: BaseInstrument, fpm: FlightPlanManager);
+        throw NXFictionalMessages.notYetImplemented;
+    }
+
+    /**
      * Set the progress page bearing/dist location
      * @param {string} ident ident of the waypoint or runway, will be replaced by "ENTRY" if brg/dist offset are specified
      * @param {LatLongAlt} coordinates co-ordinates of the waypoint/navaid/runway, without brg/dist offset
-     * @param {(number|undefined)} brg undefined or (true) bearing for offset
-     * @param {(number|undefined)} dist undefined or dist for offset
+     * @param {string?} icao icao database id of the waypoint if applicable
      */
-    _setProgLocation(ident, coordinates, brg, dist) {
-        console.log(`progLocation: ${ident} ${coordinates} ${brg} ${dist}`);
-        const displayIdent = (brg !== undefined && dist !== undefined) ? "ENTRY" : ident;
-        let adjustedCoordinates = coordinates;
-        if (brg !== undefined && dist !== undefined) {
-            adjustedCoordinates = Avionics.Utils.bearingDistanceToCoordinates(brg % 360, dist, coordinates.lat, coordinates.long);
-        }
+    _setProgLocation(ident, coordinates, icao) {
+        console.log(`progLocation: ${ident} ${coordinates}`);
         this._progBrgDist = {
-            ident: displayIdent,
-            coordinates: adjustedCoordinates,
+            icao,
+            ident,
+            coordinates,
             bearing: -1,
             distance: -1
         };
 
         this.updateProgDistance();
+    }
+
+    /**
+     *
+     * @param {string} s value to search for or create a waypoint from
+     * @param {boolean} stored if a waypoint is created, should it be a stored waypoint?
+     * @returns
+     */
+    async getOrCreateWaypoint(s, stored = true) {
+        if (this.isLatLonFormat(s)) {
+            const coordinates = this.parseLatLon(s);
+            return this.dataManager.createLatLonWaypoint(coordinates, stored);
+        } else if (this.isPbxFormat(s)) {
+            const [place1, bearing1, place2, bearing2] = await this.parsePbx(s);
+            return this.dataManager.createPlaceBearingPlaceBearingWaypoint(place1, bearing1, place2, bearing2, stored);
+        } else if (this.isPdFormat(s)) {
+            throw NXFictionalMessages.notYetImplemented;
+        } else if (this.isPbdFormat(s)) {
+            const [wp, bearing, dist] = await this.parsePbd(s);
+            return this.dataManager.createPlaceBearingDistWaypoint(wp, bearing, dist, stored);
+        } else if (this.isPlaceFormat(s)) {
+            try {
+                return await this.parsePlace(s);
+            } catch (err) {
+                if (err === NXSystemMessages.notInDatabase) {
+                    this.addNewMessage(err);
+                    return new Promise((resolve, reject) => {
+                        CDUNewWaypoint.ShowPage(this, (waypoint) => {
+                            if (waypoint) {
+                                resolve(waypoint);
+                            } else {
+                                reject('User aborted');
+                            }
+                        }, { ident: s });
+                    });
+                } else {
+                    throw err;
+                }
+            }
+        } else {
+            throw NXSystemMessages.formatError;
+        }
     }
 
     /**
@@ -3827,45 +4048,25 @@ class FMCMainDisplay extends BaseAirliners {
             return callback(true);
         }
 
-        if (this.isLatLonFormat(s)) {
-            this.parseLatLon(s, (loc) => {
-                this._setProgLocation("ENTRY", loc);
+        try {
+            this.getOrCreateWaypoint(s, false).then((wp) => {
+                this._setProgLocation(wp.additionalData.temporary ? "ENTRY" : wp.ident, wp.infos.coordinates, wp.infos.icao);
                 return callback(true);
-            }, (err) => {
-                this.addNewMessage(err);
-                return callback(false);
-            });
-        } else if (this.isPbPbFormat(s)) {
-            this.parsePbPb(s, (loc) => {
-                this._setProgLocation("ENTRY", loc);
-                return callback(true);
-            }, (err) => {
-                this.addNewMessage(err);
-                return callback(false);
-            });
-        } else { // place or PBD
-            let place, brg, dist;
-            if (this.isPbdFormat(s)) {
-                [place, brg, dist] = this.splitPbd(s);
-                if (brg > 360 || dist > 999.9) {
-                    this.addNewMessage(NXSystemMessages.entryOutOfRange);
-                    return callback(false);
-                }
-            } else {
-                place = s;
-            }
-            if (this.isPlaceFormat(place)) {
-                this.parsePlace(place, (loc, magVar) => {
-                    this._setProgLocation(place, loc, brg ? A32NX_Util.magneticToTrue(brg, magVar) : undefined, dist);
-                    return callback(true);
-                }, (err) => {
+            }).catch((err) => {
+                if (err instanceof McduMessage) {
                     this.addNewMessage(err);
-                    return callback(false);
-                });
-            } else {
-                this.addNewMessage(NXSystemMessages.formatError);
+                } else {
+                    console.error(err);
+                }
                 return callback(false);
+            });
+        } catch (err) {
+            if (err instanceof McduMessage) {
+                this.addNewMessage(err);
+            } else {
+                console.error(err);
             }
+            return callback(false);
         }
     }
 
@@ -3901,6 +4102,17 @@ class FMCMainDisplay extends BaseAirliners {
 
     get progWaypointIdent() {
         return this._progBrgDist ? this._progBrgDist.ident : undefined;
+    }
+
+    isWaypointInUse(icao) {
+        if (this.flightPlanManager.isWaypointInUse(icao)) {
+            return true;
+        }
+        // TODO check tuned navaids
+        if (this._progBrgDist && this._progBrgDist.icao === icao) {
+            return true;
+        }
+        return false;
     }
 
     /* END OF MCDU GET/SET METHODS */

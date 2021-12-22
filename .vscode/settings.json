@@ -46,5 +46,7 @@
   "cmake.configureOnOpen": false,
   "files.associations": {
     "memory": "cpp"
-  }
+  },
+  "typescript.preferences.quoteStyle": "single",
+  "typescript.preferences.importModuleSpecifier": "non-relative"
 }
