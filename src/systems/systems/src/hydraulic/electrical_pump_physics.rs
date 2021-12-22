@@ -78,6 +78,7 @@ impl ElectricalPumpPhysics {
                 0.,
                 max_current.get::<ampere>(),
                 regulated_speed.get::<revolution_per_minute>(),
+                1.,
             ),
         }
     }
