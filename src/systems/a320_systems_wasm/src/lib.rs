@@ -15,7 +15,7 @@ use systems::{
     failures::FailureType,
     simulation::{VariableIdentifier, VariableRegistry},
 };
-use systems_wasm::aspects::{EventToVariableOptions, MsfsAspectBuilder};
+use systems_wasm::aspects::{EventToVariableOptions, MsfsAspectBuilder, VariableToEventMapping};
 use systems_wasm::{
     aspects::{EventToVariableMapping, Variable},
     f64_to_sim_connect_32k_pos, sim_connect_32k_pos_to_f64, AircraftVariableOptions,
@@ -176,6 +176,23 @@ fn brakes(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>> {
         EventToVariableMapping::EventDataToValue(|event_data| from_bool(event_data == 1)),
         Variable::Named("PARK_BRAKE_LEVER_POS".to_owned()),
         EventToVariableOptions::default().mask(),
+    )?;
+
+    builder.event_to_variable(
+        "AXIS_LEFT_BRAKE_SET",
+        EventToVariableMapping::EventData32kPosition,
+        Variable::Aspect("BRAKE LEFT FORCE FACTOR".to_owned()),
+        EventToVariableOptions::default()
+            .mask()
+            .bidirectional(VariableToEventMapping::EventData32kPosition),
+    )?;
+    builder.event_to_variable(
+        "AXIS_RIGHT_BRAKE_SET",
+        EventToVariableMapping::EventData32kPosition,
+        Variable::Aspect("BRAKE RIGHT FORCE FACTOR".to_owned()),
+        EventToVariableOptions::default()
+            .mask()
+            .bidirectional(VariableToEventMapping::EventData32kPosition),
     )?;
 
     Ok(())

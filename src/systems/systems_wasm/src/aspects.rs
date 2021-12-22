@@ -1,7 +1,9 @@
-use crate::{MsfsVariableRegistry, SimulatorAspect};
+use crate::{
+    f64_to_sim_connect_32k_pos, sim_connect_32k_pos_to_f64, MsfsVariableRegistry, SimulatorAspect,
+};
 use msfs::{
     legacy::NamedVariable,
-    sim_connect::{SimConnect, SimConnectRecv},
+    sim_connect::{SimConnect, SimConnectRecv, SIMCONNECT_OBJECT_ID_USER},
 };
 use std::error::Error;
 use std::time::{Duration, Instant};
@@ -104,6 +106,12 @@ pub enum EventToVariableMapping {
     /// When the event occurs, sets the variable to the given value.
     Value(f64),
 
+    /// Maps the event data from a u32 to an f64 without any further processing.
+    EventDataRaw,
+
+    /// Maps the event data from a 32k position to an f64.
+    EventData32kPosition,
+
     /// When the event occurs, calls the function with event data and sets
     /// the variable to the returned value.
     EventDataToValue(fn(u32) -> f64),
@@ -115,6 +123,15 @@ pub enum EventToVariableMapping {
     /// When the event occurs, calls the function with event data and the current
     /// variable value and sets the variable to the returned value.
     EventDataAndCurrentValueToValue(fn(u32, f64) -> f64),
+}
+
+#[derive(Clone, Copy)]
+pub enum VariableToEventMapping {
+    /// Maps the variable from an f64 to a u32 without any further processing.
+    EventDataRaw,
+
+    /// Maps the variable from an f64 to a 32k position.
+    EventData32kPosition,
 }
 
 /// Declares a variable of a given type with a given name.
@@ -131,6 +148,7 @@ pub struct EventToVariableOptions {
     mask: bool,
     ignore_repeats_for: Duration,
     after_tick_set_to: Option<f64>,
+    bidirectional_mapping: Option<VariableToEventMapping>,
 }
 
 impl EventToVariableOptions {
@@ -153,6 +171,15 @@ impl EventToVariableOptions {
         self.after_tick_set_to = Some(value);
         self
     }
+
+    pub fn bidirectional(mut self, mapping: VariableToEventMapping) -> Self {
+        self.bidirectional_mapping = Some(mapping);
+        self
+    }
+
+    fn is_bidirectional(&self) -> bool {
+        self.bidirectional_mapping.is_some()
+    }
 }
 
 struct EventToVariable {
@@ -162,6 +189,7 @@ struct EventToVariable {
     variable_identifier: Option<VariableIdentifier>,
     named_variable: Option<NamedVariable>,
     value: f64,
+    last_written_value: Option<f64>,
     mapping: EventToVariableMapping,
     target: Variable,
     options: EventToVariableOptions,
@@ -195,6 +223,7 @@ impl EventToVariable {
                 None
             },
             value: 0.,
+            last_written_value: None,
             mapping,
             target,
             options,
@@ -237,9 +266,39 @@ impl EventToVariable {
         }
     }
 
+    fn write_variable_to_event(
+        &mut self,
+        sim_connect: &mut SimConnect,
+    ) -> Result<(), Box<dyn Error>> {
+        if self.options.is_bidirectional() {
+            let should_write = match self.last_written_value {
+                Some(value) => self.value != value,
+                None => true,
+            };
+
+            if should_write {
+                sim_connect.transmit_client_event(
+                    SIMCONNECT_OBJECT_ID_USER,
+                    self.event_id,
+                    match self.options.bidirectional_mapping {
+                        Some(VariableToEventMapping::EventDataRaw) | None => self.value as u32,
+                        Some(VariableToEventMapping::EventData32kPosition) => {
+                            f64_to_sim_connect_32k_pos(self.value)
+                        }
+                    },
+                )?;
+                self.last_written_value = Some(self.value);
+            }
+        }
+
+        Ok(())
+    }
+
     fn map_to_value(&self, e: &msfs::sys::SIMCONNECT_RECV_EVENT) -> f64 {
         match self.mapping {
             EventToVariableMapping::Value(value) => value,
+            EventToVariableMapping::EventDataRaw => e.data() as f64,
+            EventToVariableMapping::EventData32kPosition => sim_connect_32k_pos_to_f64(e.data()),
             EventToVariableMapping::EventDataToValue(func) => func(e.data()),
             EventToVariableMapping::CurrentValueToValue(func) => func(self.value()),
             EventToVariableMapping::EventDataAndCurrentValueToValue(func) => {
@@ -286,7 +345,8 @@ impl SimulatorAspect for EventToVariable {
         }
     }
 
-    fn post_tick(&mut self, _: &mut SimConnect) -> Result<(), Box<dyn Error>> {
+    fn post_tick(&mut self, sim_connect: &mut SimConnect) -> Result<(), Box<dyn Error>> {
+        self.write_variable_to_event(sim_connect)?;
         self.set_variable_after_tick();
         Ok(())
     }
