@@ -191,7 +191,7 @@ const ApuBleed = ({ x, y } : ComponentPositionProps) => {
                 {apuBleedOpen && (
                     <>
                         <line className="Line Green" x1={50} y1={-57} x2={50} y2={-72} />
-                        <polygon className="Circle" points="40,-72 50,-92 60,-72" />
+                        <polygon className="Circle Green" points="40,-72 50,-92 60,-72" />
                     </>
                 )}
             </SvgGroup>
