@@ -417,6 +417,7 @@ fn reservoir(
             Pressure::new::<psi>(20.55),
             PressureSwitchType::Relative,
         )],
+        max_capacity * 0.1,
     )
 }
 

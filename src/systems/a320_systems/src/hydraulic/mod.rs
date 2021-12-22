@@ -1352,7 +1352,7 @@ impl A320YellowElectricPumpController {
     }
 
     fn has_low_level_fault(&self) -> bool {
-        self.has_air_pressure_low_fault
+        self.has_low_level_fault
     }
 
     #[cfg(test)]
@@ -1488,7 +1488,7 @@ impl A320PowerTransferUnitController {
     }
 
     fn has_low_level_fault(&self) -> bool {
-        self.has_air_pressure_low_fault
+        self.has_low_level_fault
     }
 }
 impl PowerTransferUnitController for A320PowerTransferUnitController {
@@ -3200,11 +3200,11 @@ mod tests {
                 self.read_by_name("HYD_GREEN_EDPUMP_LOW_PRESS")
             }
 
-            fn is_green_edp_press_low_fault(&mut self) -> bool {
+            fn green_edp_has_fault(&mut self) -> bool {
                 self.read_by_name("OVHD_HYD_ENG_1_PUMP_PB_HAS_FAULT")
             }
 
-            fn is_yellow_edp_press_low_fault(&mut self) -> bool {
+            fn yellow_edp_has_fault(&mut self) -> bool {
                 self.read_by_name("OVHD_HYD_ENG_2_PUMP_PB_HAS_FAULT")
             }
 
@@ -3220,8 +3220,16 @@ mod tests {
                 self.read_by_name("HYD_BLUE_EPUMP_LOW_PRESS")
             }
 
-            fn is_blue_epump_press_low_fault(&mut self) -> bool {
+            fn blue_epump_has_fault(&mut self) -> bool {
                 self.read_by_name("OVHD_HYD_EPUMPB_PB_HAS_FAULT")
+            }
+
+            fn yellow_epump_has_fault(&mut self) -> bool {
+                self.read_by_name("OVHD_HYD_EPUMPY_PB_HAS_FAULT")
+            }
+
+            fn ptu_has_fault(&mut self) -> bool {
+                self.read_by_name("OVHD_HYD_PTU_PB_HAS_FAULT")
             }
 
             fn blue_epump_override_is_on(&mut self) -> bool {
@@ -4005,7 +4013,7 @@ mod tests {
             // EDP should be commanded on even without engine running
             assert!(test_bed.is_green_edp_commanded_on());
             // EDP should have no fault
-            assert!(!test_bed.is_green_edp_press_low_fault());
+            assert!(!test_bed.green_edp_has_fault());
         }
 
         #[test]
@@ -4022,7 +4030,7 @@ mod tests {
             assert!(!test_bed.is_green_pressurised());
             assert!(!test_bed.is_yellow_pressurised());
             // EDP should have a fault as we are in flight
-            assert!(test_bed.is_green_edp_press_low_fault());
+            assert!(test_bed.green_edp_has_fault());
         }
 
         #[test]
@@ -4036,26 +4044,26 @@ mod tests {
             // EDP should be commanded on even without engine running
             assert!(test_bed.is_green_edp_commanded_on());
             // EDP should have no fault
-            assert!(!test_bed.is_green_edp_press_low_fault());
+            assert!(!test_bed.green_edp_has_fault());
 
             test_bed = test_bed
                 .start_eng1(Ratio::new::<percent>(3.))
                 .run_one_tick();
 
-            assert!(!test_bed.is_green_edp_press_low_fault());
+            assert!(!test_bed.green_edp_has_fault());
 
             test_bed = test_bed
                 .start_eng1(Ratio::new::<percent>(80.))
                 .run_one_tick();
 
             assert!(!test_bed.is_green_pressurised());
-            assert!(test_bed.is_green_edp_press_low_fault());
+            assert!(test_bed.green_edp_has_fault());
 
             test_bed = test_bed.run_waiting_for(Duration::from_secs(10));
 
             // When finally pressurised no fault
             assert!(test_bed.is_green_pressurised());
-            assert!(!test_bed.is_green_edp_press_low_fault());
+            assert!(!test_bed.green_edp_has_fault());
         }
 
         #[test]
@@ -4069,7 +4077,7 @@ mod tests {
             // EDP should be commanded on even without engine running
             assert!(test_bed.is_yellow_edp_commanded_on());
             // EDP should have no fault
-            assert!(!test_bed.is_yellow_edp_press_low_fault());
+            assert!(!test_bed.yellow_edp_has_fault());
         }
 
         #[test]
@@ -4086,7 +4094,7 @@ mod tests {
             assert!(!test_bed.is_green_pressurised());
             assert!(!test_bed.is_yellow_pressurised());
             // EDP should have a fault as we are in flight
-            assert!(test_bed.is_yellow_edp_press_low_fault());
+            assert!(test_bed.yellow_edp_has_fault());
         }
 
         #[test]
@@ -4100,26 +4108,26 @@ mod tests {
             // EDP should be commanded on even without engine running
             assert!(test_bed.is_yellow_edp_commanded_on());
             // EDP should have no fault
-            assert!(!test_bed.is_yellow_edp_press_low_fault());
+            assert!(!test_bed.yellow_edp_has_fault());
 
             test_bed = test_bed
                 .start_eng2(Ratio::new::<percent>(3.))
                 .run_one_tick();
 
-            assert!(!test_bed.is_yellow_edp_press_low_fault());
+            assert!(!test_bed.yellow_edp_has_fault());
 
             test_bed = test_bed
                 .start_eng2(Ratio::new::<percent>(80.))
                 .run_one_tick();
 
             assert!(!test_bed.is_yellow_pressurised());
-            assert!(test_bed.is_yellow_edp_press_low_fault());
+            assert!(test_bed.yellow_edp_has_fault());
 
             test_bed = test_bed.run_waiting_for(Duration::from_secs(10));
 
             // When finally pressurised no fault
             assert!(test_bed.is_yellow_pressurised());
-            assert!(!test_bed.is_yellow_edp_press_low_fault());
+            assert!(!test_bed.yellow_edp_has_fault());
         }
 
         #[test]
@@ -4131,26 +4139,26 @@ mod tests {
                 .run_waiting_for(Duration::from_millis(500));
 
             // Blue epump should have no fault
-            assert!(!test_bed.is_blue_epump_press_low_fault());
+            assert!(!test_bed.blue_epump_has_fault());
 
             test_bed = test_bed
                 .start_eng2(Ratio::new::<percent>(3.))
                 .run_one_tick();
 
-            assert!(!test_bed.is_blue_epump_press_low_fault());
+            assert!(!test_bed.blue_epump_has_fault());
 
             test_bed = test_bed
                 .start_eng2(Ratio::new::<percent>(80.))
                 .run_one_tick();
 
             assert!(!test_bed.is_blue_pressurised());
-            assert!(test_bed.is_blue_epump_press_low_fault());
+            assert!(test_bed.blue_epump_has_fault());
 
             test_bed = test_bed.run_waiting_for(Duration::from_secs(10));
 
             // When finally pressurised no fault
             assert!(test_bed.is_blue_pressurised());
-            assert!(!test_bed.is_blue_epump_press_low_fault());
+            assert!(!test_bed.blue_epump_has_fault());
         }
 
         #[test]
@@ -4162,19 +4170,19 @@ mod tests {
                 .run_waiting_for(Duration::from_millis(500));
 
             // Blue epump should have no fault
-            assert!(!test_bed.is_blue_epump_press_low_fault());
+            assert!(!test_bed.blue_epump_has_fault());
 
             test_bed = test_bed.press_blue_epump_override_button_once();
             assert!(test_bed.blue_epump_override_is_on());
 
             // As we use override, this bypasses eng off fault inhibit so we have a fault
-            assert!(test_bed.is_blue_epump_press_low_fault());
+            assert!(test_bed.blue_epump_has_fault());
 
             test_bed = test_bed.run_waiting_for(Duration::from_secs(10));
 
             // When finally pressurised no fault
             assert!(test_bed.is_blue_pressurised());
-            assert!(!test_bed.is_blue_epump_press_low_fault());
+            assert!(!test_bed.blue_epump_has_fault());
         }
 
         #[test]
@@ -6485,6 +6493,57 @@ mod tests {
                 .run_waiting_for(Duration::from_secs_f64(10.));
 
             assert!(test_bed.yellow_pressure().get::<psi>() < 2000.);
+        }
+
+        #[test]
+        fn low_air_press_fault_causes_ptu_fault() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .start_eng1(Ratio::new::<percent>(80.))
+                .start_eng2(Ratio::new::<percent>(80.))
+                .run_waiting_for(Duration::from_millis(500));
+
+            assert!(!test_bed.ptu_has_fault());
+            assert!(!test_bed.green_edp_has_fault());
+            assert!(!test_bed.yellow_edp_has_fault());
+
+            test_bed = test_bed
+                .air_press_low()
+                .run_waiting_for(Duration::from_secs_f64(10.));
+
+            assert!(test_bed.green_edp_has_fault());
+            assert!(test_bed.yellow_edp_has_fault());
+            assert!(test_bed.ptu_has_fault());
+        }
+
+        #[test]
+        fn low_air_press_fault_causes_yellow_blue_epump_fault() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .start_eng1(Ratio::new::<percent>(80.))
+                .start_eng2(Ratio::new::<percent>(80.))
+                .run_waiting_for(Duration::from_millis(5000));
+
+            assert!(!test_bed.blue_epump_has_fault());
+            assert!(!test_bed.yellow_epump_has_fault());
+
+            test_bed = test_bed
+                .air_press_low()
+                .run_waiting_for(Duration::from_secs_f64(10.));
+
+            // Blue pump is on but yellow is off: only blue fault expected
+            assert!(test_bed.blue_epump_has_fault());
+            assert!(!test_bed.yellow_epump_has_fault());
+
+            test_bed = test_bed
+                .set_yellow_e_pump(false)
+                .run_waiting_for(Duration::from_secs_f64(10.));
+
+            assert!(test_bed.yellow_epump_has_fault());
         }
     }
 }

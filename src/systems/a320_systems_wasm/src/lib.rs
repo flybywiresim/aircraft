@@ -427,11 +427,11 @@ impl SimulatorAspect for Flaps {
         self.write_sim_vars();
 
         sim_connect
-            .set_data_on_sim_object(SIMCONNECT_OBJECT_ID_USER, &self.msfs_flaps_handle_index);
+            .set_data_on_sim_object(SIMCONNECT_OBJECT_ID_USER, &self.msfs_flaps_handle_index)?;
         sim_connect
-            .set_data_on_sim_object(SIMCONNECT_OBJECT_ID_USER, &self.flaps_surface_sim_object);
+            .set_data_on_sim_object(SIMCONNECT_OBJECT_ID_USER, &self.flaps_surface_sim_object)?;
         sim_connect
-            .set_data_on_sim_object(SIMCONNECT_OBJECT_ID_USER, &self.slats_surface_sim_object);
+            .set_data_on_sim_object(SIMCONNECT_OBJECT_ID_USER, &self.slats_surface_sim_object)?;
 
         Ok(())
     }
@@ -1125,7 +1125,7 @@ impl SimulatorAspect for NoseWheelSteering {
         }
     }
 
-    fn pre_tick(&mut self, delta: Duration) {
+    fn pre_tick(&mut self, _: Duration) {
         self.synchronise_with_sim();
     }
 

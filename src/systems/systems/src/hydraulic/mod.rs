@@ -119,8 +119,8 @@ impl PressureSwitch {
     }
 }
 
-/// Physical pressure switch.
-/// It's a physical switch reacting to pressure.
+/// Physical low level sitch.
+/// It's a physical switch that changes state when crossing a fluid level threshold.
 pub struct LevelSwitch {
     state_is_low: bool,
     high_hysteresis_threshold: Volume,
