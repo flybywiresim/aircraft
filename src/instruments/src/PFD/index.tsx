@@ -159,6 +159,7 @@ export const PFD: React.FC = () => {
             potentiometerIndex={isCaptainSide(displayIndex) ? 88 : 90}
             failed={failuresConsumer.isActive(isCaptainSide(displayIndex) ? A320Failure.LeftPfdDisplay : A320Failure.RightPfdDisplay)}
         >
+            <div className="BacklightBleed" />
             <svg className="pfd-svg" version="1.1" viewBox="0 0 158.75 158.75" xmlns="http://www.w3.org/2000/svg">
                 <Horizon
                     pitch={pitch}
