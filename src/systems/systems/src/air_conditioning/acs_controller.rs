@@ -512,6 +512,12 @@ impl From<f64> for OverheadFlowSelector {
     }
 }
 
+impl From<OverheadFlowSelector> for Ratio {
+    fn from(value: OverheadFlowSelector) -> Self {
+        Ratio::new::<percent>((value as u8) as f64)
+    }
+}
+
 struct PackFlowController {
     apu_bleed_valve_open_id: VariableIdentifier,
     apu_rpm_id: VariableIdentifier,
@@ -617,8 +623,7 @@ impl PackFlowController {
     }
 
     fn flow_demand_determination(&self, aircraft_state: &AirConditioningStateManager) -> Ratio {
-        let mut intermediate_flow =
-            Ratio::new::<percent>((self.flow_selector_position as u32) as f64);
+        let mut intermediate_flow: Ratio = self.flow_selector_position.into();
         // TODO: Add "insufficient performance" based on Pack Mixer Temperature Demand
         if self.pack_in_start_condition {
             intermediate_flow =
