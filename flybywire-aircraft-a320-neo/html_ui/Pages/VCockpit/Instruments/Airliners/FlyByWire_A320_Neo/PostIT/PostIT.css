@@ -80,19 +80,7 @@
     z-index: 120;
 }
 
-#typography {
-  width: 75px;
-  height: 75px;
-  stroke: black;
-}
-
-#palette {
-  width: 75px;
-  height: 75px;
-  stroke: black;
-}
-
-#pencil {
+#typography, #palette, #pencil {
   width: 75px;
   height: 75px;
   stroke: black;
