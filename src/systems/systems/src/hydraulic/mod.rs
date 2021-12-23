@@ -129,13 +129,13 @@ pub struct PowerTransferUnit {
     shaft_speed: AngularVelocity,
 }
 impl PowerTransferUnit {
-    const EFFICIENCY_LEFT_TO_RIGHT: f64 = 0.8;
-    const EFFICIENCY_RIGHT_TO_LEFT: f64 = 0.8;
+    const EFFICIENCY_LEFT_TO_RIGHT: f64 = 0.85;
+    const EFFICIENCY_RIGHT_TO_LEFT: f64 = 0.85;
 
     const DEFAULT_RIGHT_DISPLACEMENT: f64 = 0.92; // 15 cm3/rev
     const DEFAULT_LEFT_DISPLACEMENT: f64 = 0.92; // 12.5 cm3/rev
 
-    const DISPLACEMENT_TIME_CONSTANT: Duration = Duration::from_millis(80);
+    const DISPLACEMENT_TIME_CONSTANT: Duration = Duration::from_millis(150);
 
     const PRESSURE_BREAKPOINTS: [f64; 10] =
         [-500., -250., -100., -50., -10., 0., 50., 80., 250., 500.];
@@ -146,7 +146,7 @@ impl PowerTransferUnit {
         0.65,
         0.65,
         Self::DEFAULT_LEFT_DISPLACEMENT,
-        1.1,
+        1.21,
         1.21,
         1.21,
         1.21,
@@ -154,7 +154,7 @@ impl PowerTransferUnit {
 
     const SHAFT_FRICTION: f64 = 0.15;
     const BREAKOUT_TORQUE_NM: f64 = 2.;
-    const SHAFT_INERTIA: f64 = 0.012;
+    const SHAFT_INERTIA: f64 = 0.009;
 
     pub fn new(context: &mut InitContext) -> Self {
         Self {
@@ -227,7 +227,7 @@ impl PowerTransferUnit {
 
         if delta_p.abs().get::<psi>() > 500. {
             self.control_valve_opened = true;
-        } else if delta_p.abs().get::<psi>() < 10. {
+        } else if delta_p.abs().get::<psi>() < 5. {
             self.control_valve_opened = false;
         }
 
