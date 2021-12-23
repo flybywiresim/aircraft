@@ -105,6 +105,7 @@
 1. [FDR] Added additional values to help debug in some cases - @aguther (Andreas Guther)
 1. [ATHR] Added switch to use externally defined thrust limits and separated thrust limits into own model - @aguther (Andreas Guther)
 1. [FBW] Improved sideslip controller - @IbrahimK42 (IbrahimK42)
+1. [API] DOME light switch did not move when set to "dim" via SimConnect - @pre-martin (Martin)
 
 ## 0.7.0
 
