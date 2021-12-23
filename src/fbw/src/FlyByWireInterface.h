@@ -47,9 +47,6 @@ class FlyByWireInterface {
   double targetSimulationRate = 1;
   bool targetSimulationRateModified = false;
 
-  bool flightDirectorSmoothingEnabled = false;
-  double flightDirectorSmoothingFactor = 0;
-  double flightDirectorSmoothingLimit = 0;
   bool customFlightGuidanceEnabled = false;
   bool gpsCourseToSteerEnabled = false;
   bool autopilotStateMachineEnabled = false;
@@ -327,8 +324,6 @@ class FlyByWireInterface {
   bool updateSpoilers(double sampleTime);
 
   bool updateAltimeterSetting(double sampleTime);
-
-  double smoothFlightDirector(double sampleTime, double factor, double limit, double currentValue, double targetValue);
 
   double getHeadingAngleError(double u1, double u2);
 

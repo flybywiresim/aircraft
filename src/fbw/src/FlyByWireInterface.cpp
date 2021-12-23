@@ -147,9 +147,6 @@ void FlyByWireInterface::loadConfiguration() {
   // load values - autopilot
   customFlightGuidanceEnabled = INITypeConversion::getBoolean(iniStructure, "AUTOPILOT", "CUSTOM_FLIGHT_GUIDANCE_ENABLED", true);
   gpsCourseToSteerEnabled = INITypeConversion::getBoolean(iniStructure, "AUTOPILOT", "GPS_COURSE_TO_STEER_ENABLED", true);
-  flightDirectorSmoothingEnabled = INITypeConversion::getBoolean(iniStructure, "AUTOPILOT", "FLIGHT_DIRECTOR_SMOOTHING_ENABLED", true);
-  flightDirectorSmoothingFactor = INITypeConversion::getDouble(iniStructure, "AUTOPILOT", "FLIGHT_DIRECTOR_SMOOTHING_FACTOR", 2.5);
-  flightDirectorSmoothingLimit = INITypeConversion::getDouble(iniStructure, "AUTOPILOT", "FLIGHT_DIRECTOR_SMOOTHING_LIMIT", 20);
   idMinimumSimulationRate->set(INITypeConversion::getDouble(iniStructure, "AUTOPILOT", "MINIMUM_SIMULATION_RATE", 1));
   idMaximumSimulationRate->set(INITypeConversion::getDouble(iniStructure, "AUTOPILOT", "MAXIMUM_SIMULATION_RATE", 4));
   limitSimulationRateByPerformance = INITypeConversion::getBoolean(iniStructure, "AUTOPILOT", "LIMIT_SIMULATION_RATE_BY_PERFORMANCE", true);
@@ -158,9 +155,6 @@ void FlyByWireInterface::loadConfiguration() {
   // print configuration into console
   cout << "WASM: AUTOPILOT : CUSTOM_FLIGHT_GUIDANCE_ENABLED       = " << customFlightGuidanceEnabled << endl;
   cout << "WASM: AUTOPILOT : GPS_COURSE_TO_STEER_ENABLED          = " << gpsCourseToSteerEnabled << endl;
-  cout << "WASM: AUTOPILOT : FLIGHT_DIRECTOR_SMOOTHING_ENABLED    = " << flightDirectorSmoothingEnabled << endl;
-  cout << "WASM: AUTOPILOT : FLIGHT_DIRECTOR_SMOOTHING_FACTOR     = " << flightDirectorSmoothingFactor << endl;
-  cout << "WASM: AUTOPILOT : FLIGHT_DIRECTOR_SMOOTHING_LIMIT      = " << flightDirectorSmoothingLimit << endl;
   cout << "WASM: AUTOPILOT : MINIMUM_SIMULATION_RATE              = " << idMinimumSimulationRate->get() << endl;
   cout << "WASM: AUTOPILOT : MAXIMUM_SIMULATION_RATE              = " << idMaximumSimulationRate->get() << endl;
   cout << "WASM: AUTOPILOT : LIMIT_SIMULATION_RATE_BY_PERFORMANCE = " << limitSimulationRateByPerformance << endl;
@@ -1200,20 +1194,9 @@ bool FlyByWireInterface::updateAutopilotLaws(double sampleTime) {
   }
 
   // update flight director -------------------------------------------------------------------------------------------
-  double fdPitch = -1.0 * autopilotLawsOutput.flight_director.Theta_c_deg;
-  double fdBank = -1.0 * autopilotLawsOutput.flight_director.Phi_c_deg;
-  double fdYaw = autopilotLawsOutput.flight_director.Beta_c_deg;
-  if (flightDirectorSmoothingEnabled) {
-    fdPitch = smoothFlightDirector(sampleTime, flightDirectorSmoothingFactor, flightDirectorSmoothingLimit, idFlightDirectorPitch->get(),
-                                   fdPitch);
-    fdBank =
-        smoothFlightDirector(sampleTime, flightDirectorSmoothingFactor, flightDirectorSmoothingLimit, idFlightDirectorBank->get(), fdBank);
-    fdYaw =
-        smoothFlightDirector(sampleTime, flightDirectorSmoothingFactor, flightDirectorSmoothingLimit, idFlightDirectorYaw->get(), fdYaw);
-  }
-  idFlightDirectorPitch->set(fdPitch);
-  idFlightDirectorBank->set(fdBank);
-  idFlightDirectorYaw->set(fdYaw);
+  idFlightDirectorPitch->set(-autopilotLawsOutput.flight_director.Theta_c_deg);
+  idFlightDirectorBank->set(-autopilotLawsOutput.flight_director.Phi_c_deg);
+  idFlightDirectorYaw->set(autopilotLawsOutput.flight_director.Beta_c_deg);
 
   // return result ----------------------------------------------------------------------------------------------------
   return true;
@@ -1700,16 +1683,6 @@ bool FlyByWireInterface::updateAltimeterSetting(double sampleTime) {
 
   // result
   return true;
-}
-
-double FlyByWireInterface::smoothFlightDirector(double sampleTime, double factor, double limit, double currentValue, double targetValue) {
-  double difference = (targetValue - currentValue);
-  if (difference >= 0) {
-    difference = fmin(+1.0 * limit, difference);
-  } else {
-    difference = fmax(-1.0 * limit, difference);
-  }
-  return currentValue + (difference * fmin(1.0, sampleTime * factor));
 }
 
 double FlyByWireInterface::getHeadingAngleError(double u1, double u2) {
