@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Toggle } from '@flybywiresim/react-components';
 import { usePersistentProperty } from '../../../Common/persistence';
 import { useSimVar } from '../../../Common/simVars';
