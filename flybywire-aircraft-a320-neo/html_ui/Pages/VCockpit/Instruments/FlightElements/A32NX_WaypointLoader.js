@@ -320,7 +320,7 @@ class FacilityLoader {
                         }
                         resolve(undefined);
                     } else {
-                        this.instrument.requestCall(loadedAirportCallback);
+                        setTimeout(loadedAirportCallback, 100);
                     }
                 }
             };
