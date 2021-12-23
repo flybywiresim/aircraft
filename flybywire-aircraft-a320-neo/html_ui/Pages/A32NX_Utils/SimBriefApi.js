@@ -15,4 +15,4 @@ class SimBriefApi {
     }
 }
 
-SimBriefApi.url = "http://www.simbrief.com/api/xml.fetcher.php?json=1";
+SimBriefApi.url = "https://www.simbrief.com/api/xml.fetcher.php?json=1";

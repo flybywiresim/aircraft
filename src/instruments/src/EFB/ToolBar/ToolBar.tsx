@@ -1,6 +1,6 @@
-import { IconCheckbox } from '@tabler/icons';
 import React, { FC } from 'react';
 import { HouseDoor, Clipboard, Truck, Compass, BroadcastPin, ExclamationDiamond, Gear, Calculator, Check } from 'react-bootstrap-icons';
+
 import { Link, useHistory } from 'react-router-dom';
 
 export const ToolBar = () => (

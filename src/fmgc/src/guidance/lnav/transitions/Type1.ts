@@ -11,15 +11,15 @@ const mod = (x: number, n: number) => x - Math.floor(x / n) * n;
  * A type I transition uses a fixed turn radius between two fix-referenced legs.
  */
 export class Type1Transition extends Transition {
-    public previousLeg: TFLeg;
+    previousLeg: TFLeg;
 
-    public nextLeg: TFLeg | VMLeg;
+    nextLeg: TFLeg | VMLeg;
 
-    public radius: NauticalMiles;
+    radius: NauticalMiles;
 
-    public clockwise: boolean;
+    clockwise: boolean;
 
-    public isFrozen: boolean = false;
+    isFrozen: boolean = false;
 
     constructor(
         previousLeg: TFLeg,
@@ -95,7 +95,7 @@ export class Type1Transition extends Transition {
         const bisecting = (180 - this.angle) / 2;
         const distanceCenterToWaypoint = this.radius / Math.sin(bisecting * Avionics.Utils.DEG2RAD);
 
-        const { lat, long } = this.previousLeg.to.infos.coordinates.toLatLong();
+        const { lat, long } = this.previousLeg.to.infos.coordinates;
 
         const inboundReciprocal = mod(this.previousLeg.bearing + 180, 360);
 
@@ -140,7 +140,7 @@ export class Type1Transition extends Transition {
         const bisecting = (180 - this.angle) / 2;
         const distanceTurningPointToWaypoint = this.radius / Math.tan(bisecting * Avionics.Utils.DEG2RAD);
 
-        const { lat, long } = this.previousLeg.to.infos.coordinates.toLatLong();
+        const { lat, long } = this.previousLeg.to.infos.coordinates;
 
         const inbound = Avionics.Utils.bearingDistanceToCoordinates(
             mod(this.previousLeg.bearing + 180, 360),

@@ -28,11 +28,7 @@ export const Navbar = ({ tabs, onSelected, className, selectedTabIndex }: Navbar
         <nav className={`flex justify-between ${className}`}>
             <div className="flex overflow-hidden rounded-md border divide-x divide-theme-accent border-theme-accent">
                 {tabs.map((tab, index) => (
-                    <a
-                        className={index === activeIndex ? c.active : c.inactive}
-                        key={tab}
-                        onClick={() => handleClick(index)}
-                    >
+                    <a className={index === activeIndex ? c.active : c.inactive} key={tab} onClick={() => handleClick(index)}>
                         {tab}
                     </a>
                 ))}

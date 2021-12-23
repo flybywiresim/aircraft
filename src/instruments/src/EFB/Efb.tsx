@@ -23,8 +23,9 @@ import { clearEfbState, useAppDispatch, useAppSelector } from './Store/store';
 
 import { fetchSimbriefDataAction, initialState as simbriefInitialState } from './Store/features/simbrief';
 
-import { NotificationsContainer, NotificationTypes, Notification } from './UIMessages/Notification';
+import { NotificationsContainer, Notification } from './UIMessages/Notification';
 import { FbwLogo } from './Assets/FbwLogo';
+
 import { Checklists } from './Checklists/Checklists';
 
 const navigraph = new NavigraphClient();
@@ -87,7 +88,7 @@ const Efb = () => {
                 }).catch(() => {
                     uiMessages.pushNotification(
                         <Notification
-                            type={NotificationTypes.ERROR}
+                            type="ERROR"
                             title="SimBrief Error"
                             message="An error occurred when trying to fetch your SimBrief data."
                         />,
