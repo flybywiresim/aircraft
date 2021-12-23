@@ -1,4 +1,4 @@
-use self::acs_controller::ACSController;
+use self::acs_controller::AirConditioningSystemController;
 
 use crate::{
     overhead::{OnOffFaultPushButton, ValueKnob},
@@ -33,7 +33,7 @@ pub trait PackFlow {
 
 pub struct AirConditioningSystem {
     acs_overhead: AirConditioningSystemOverhead,
-    acsc: ACSController,
+    acsc: AirConditioningSystemController,
     pack_flow_valves: [PackFlowValve; 2],
     // TODO: pack: [AirConditioningPack; 2],
     // TODO: mixer_unit: MixerUnit,
@@ -44,7 +44,7 @@ impl AirConditioningSystem {
     pub fn new(context: &mut InitContext, cabin_zone_ids: Vec<&'static str>) -> Self {
         Self {
             acs_overhead: AirConditioningSystemOverhead::new(context, &cabin_zone_ids),
-            acsc: ACSController::new(context, cabin_zone_ids),
+            acsc: AirConditioningSystemController::new(context, cabin_zone_ids),
             pack_flow_valves: [
                 PackFlowValve::new(context, 1),
                 PackFlowValve::new(context, 2),

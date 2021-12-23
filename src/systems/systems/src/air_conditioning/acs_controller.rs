@@ -21,21 +21,21 @@ use uom::si::{
     velocity::knot,
 };
 
-pub(super) struct ACSController {
-    aircraft_state: AcStateManager,
+pub(super) struct AirConditioningSystemController {
+    aircraft_state: AirConditioningStateManager,
     cabin_zone_ids: Vec<&'static str>,
     zone_controller: Vec<ZoneController>,
     pack_flow_controller: PackFlowController,
 }
 
-impl ACSController {
+impl AirConditioningSystemController {
     pub fn new(context: &mut InitContext, cabin_zone_ids: Vec<&'static str>) -> Self {
         let zone_controller = cabin_zone_ids
             .iter()
             .map(|id| ZoneController::new(context, id))
             .collect::<Vec<ZoneController>>();
         Self {
-            aircraft_state: AcStateManager::new(),
+            aircraft_state: AirConditioningStateManager::new(),
             cabin_zone_ids,
             zone_controller,
             pack_flow_controller: PackFlowController::new(context),
@@ -70,7 +70,7 @@ impl ACSController {
     }
 }
 
-impl DuctTemperature for ACSController {
+impl DuctTemperature for AirConditioningSystemController {
     fn duct_demand_temperature(&self) -> HashMap<&'static str, ThermodynamicTemperature> {
         let mut duct_temperature: HashMap<&str, ThermodynamicTemperature> = HashMap::new();
         for (id, zone) in self.cabin_zone_ids.iter().zip(&self.zone_controller) {
@@ -80,19 +80,19 @@ impl DuctTemperature for ACSController {
     }
 }
 
-impl PackFlow for ACSController {
+impl PackFlow for AirConditioningSystemController {
     fn pack_flow(&self) -> MassRate {
         self.pack_flow_controller.pack_flow()
     }
 }
 
-impl FlowControlValveSignal for ACSController {
+impl FlowControlValveSignal for AirConditioningSystemController {
     fn should_open_fcv(&self) -> [bool; 2] {
         self.pack_flow_controller.should_open_fcv()
     }
 }
 
-impl SimulationElement for ACSController {
+impl SimulationElement for AirConditioningSystemController {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         accept_iterable!(self.zone_controller, visitor);
         self.pack_flow_controller.accept(visitor);
@@ -102,7 +102,7 @@ impl SimulationElement for ACSController {
 }
 
 #[derive(Copy, Clone)]
-enum AcStateManager {
+enum AirConditioningStateManager {
     Initialisation(AcState<Initialisation>),
     OnGround(AcState<OnGround>),
     BeginTakeOff(AcState<BeginTakeOff>),
@@ -112,9 +112,9 @@ enum AcStateManager {
     EndLanding(AcState<EndLanding>),
 }
 
-impl AcStateManager {
+impl AirConditioningStateManager {
     fn new() -> Self {
-        AcStateManager::Initialisation(AcState::init())
+        AirConditioningStateManager::Initialisation(AcState::init())
     }
 
     fn update(
@@ -124,13 +124,13 @@ impl AcStateManager {
         lgciu: [&impl LgciuWeightOnWheels; 2],
     ) -> Self {
         self = match self {
-            AcStateManager::Initialisation(val) => val.step(lgciu),
-            AcStateManager::OnGround(val) => val.step(engines, lgciu),
-            AcStateManager::BeginTakeOff(val) => val.step(context, engines),
-            AcStateManager::EndTakeOff(val) => val.step(context, lgciu),
-            AcStateManager::InFlight(val) => val.step(engines, lgciu),
-            AcStateManager::BeginLanding(val) => val.step(context, engines),
-            AcStateManager::EndLanding(val) => val.step(context),
+            AirConditioningStateManager::Initialisation(val) => val.step(lgciu),
+            AirConditioningStateManager::OnGround(val) => val.step(engines, lgciu),
+            AirConditioningStateManager::BeginTakeOff(val) => val.step(context, engines),
+            AirConditioningStateManager::EndTakeOff(val) => val.step(context, lgciu),
+            AirConditioningStateManager::InFlight(val) => val.step(engines, lgciu),
+            AirConditioningStateManager::BeginLanding(val) => val.step(context, engines),
+            AirConditioningStateManager::EndLanding(val) => val.step(context),
         };
         self
     }
@@ -176,14 +176,14 @@ impl AcState<Initialisation> {
     fn step(
         self: AcState<Initialisation>,
         lgciu: [&impl LgciuWeightOnWheels; 2],
-    ) -> AcStateManager {
+    ) -> AirConditioningStateManager {
         if lgciu
             .iter()
             .all(|&a| a.left_and_right_gear_compressed(true))
         {
-            AcStateManager::OnGround(self.into())
+            AirConditioningStateManager::OnGround(self.into())
         } else {
-            AcStateManager::InFlight(self.into())
+            AirConditioningStateManager::InFlight(self.into())
         }
     }
 }
@@ -199,12 +199,12 @@ impl AcState<OnGround> {
         self: AcState<OnGround>,
         engines: [&impl EngineCorrectedN1; 2],
         lgciu: [&impl LgciuWeightOnWheels; 2],
-    ) -> AcStateManager {
+    ) -> AirConditioningStateManager {
         if !lgciu
             .iter()
             .all(|&a| a.left_and_right_gear_compressed(true))
         {
-            AcStateManager::InFlight(self.into())
+            AirConditioningStateManager::InFlight(self.into())
         } else if engines
             .iter()
             .all(|&x| x.corrected_n1() > Ratio::new::<percent>(70.))
@@ -212,9 +212,9 @@ impl AcState<OnGround> {
                 .iter()
                 .all(|&a| a.left_and_right_gear_compressed(true))
         {
-            AcStateManager::BeginTakeOff(self.into())
+            AirConditioningStateManager::BeginTakeOff(self.into())
         } else {
-            AcStateManager::OnGround(self)
+            AirConditioningStateManager::OnGround(self)
         }
     }
 }
@@ -230,16 +230,16 @@ impl AcState<BeginTakeOff> {
         self: AcState<BeginTakeOff>,
         context: &UpdateContext,
         engines: [&impl EngineCorrectedN1; 2],
-    ) -> AcStateManager {
+    ) -> AirConditioningStateManager {
         if (engines
             .iter()
             .all(|&x| x.corrected_n1() > Ratio::new::<percent>(70.))
             && context.indicated_airspeed().get::<knot>() > 70.)
             || self.timer > Duration::from_secs(35)
         {
-            AcStateManager::EndTakeOff(self.into())
+            AirConditioningStateManager::EndTakeOff(self.into())
         } else {
-            AcStateManager::BeginTakeOff(self.increase_timer(context))
+            AirConditioningStateManager::BeginTakeOff(self.increase_timer(context))
         }
     }
 }
@@ -254,15 +254,15 @@ impl AcState<EndTakeOff> {
         self: AcState<EndTakeOff>,
         context: &UpdateContext,
         lgciu: [&impl LgciuWeightOnWheels; 2],
-    ) -> AcStateManager {
+    ) -> AirConditioningStateManager {
         if !lgciu
             .iter()
             .all(|&a| a.left_and_right_gear_compressed(true))
             || self.timer > Duration::from_secs(10)
         {
-            AcStateManager::InFlight(self.into())
+            AirConditioningStateManager::InFlight(self.into())
         } else {
-            AcStateManager::EndTakeOff(self.increase_timer(context))
+            AirConditioningStateManager::EndTakeOff(self.increase_timer(context))
         }
     }
 }
@@ -277,7 +277,7 @@ impl AcState<InFlight> {
         self: AcState<InFlight>,
         engines: [&impl EngineCorrectedN1; 2],
         lgciu: [&impl LgciuWeightOnWheels; 2],
-    ) -> AcStateManager {
+    ) -> AirConditioningStateManager {
         if engines
             .iter()
             .all(|&x| x.corrected_n1() < Ratio::new::<percent>(70.))
@@ -285,9 +285,9 @@ impl AcState<InFlight> {
                 .iter()
                 .all(|&a| a.left_and_right_gear_compressed(true))
         {
-            AcStateManager::BeginLanding(self.into())
+            AirConditioningStateManager::BeginLanding(self.into())
         } else {
-            AcStateManager::InFlight(self)
+            AirConditioningStateManager::InFlight(self)
         }
     }
 }
@@ -302,16 +302,16 @@ impl AcState<BeginLanding> {
         self: AcState<BeginLanding>,
         context: &UpdateContext,
         engines: [&impl EngineCorrectedN1; 2],
-    ) -> AcStateManager {
+    ) -> AirConditioningStateManager {
         if (engines
             .iter()
             .all(|&x| x.corrected_n1() < Ratio::new::<percent>(70.))
             && context.indicated_airspeed().get::<knot>() < 70.)
             || self.timer > Duration::from_secs(35)
         {
-            AcStateManager::EndLanding(self.into())
+            AirConditioningStateManager::EndLanding(self.into())
         } else {
-            AcStateManager::BeginLanding(self.increase_timer(context))
+            AirConditioningStateManager::BeginLanding(self.increase_timer(context))
         }
     }
 }
@@ -322,11 +322,11 @@ transition!(BeginLanding, EndLanding);
 struct EndLanding;
 
 impl AcState<EndLanding> {
-    fn step(self: AcState<EndLanding>, context: &UpdateContext) -> AcStateManager {
+    fn step(self: AcState<EndLanding>, context: &UpdateContext) -> AirConditioningStateManager {
         if self.timer > Duration::from_secs(10) {
-            AcStateManager::OnGround(self.into())
+            AirConditioningStateManager::OnGround(self.into())
         } else {
-            AcStateManager::EndLanding(self.increase_timer(context))
+            AirConditioningStateManager::EndLanding(self.increase_timer(context))
         }
     }
 }
@@ -596,7 +596,7 @@ impl PackFlowController {
 
     fn update(
         &mut self,
-        aircraft_state: &AcStateManager,
+        aircraft_state: &AirConditioningStateManager,
         acs_overhead: &AirConditioningSystemOverhead,
         engines: [&impl EngineCorrectedN1; 2],
         pressurization: &impl CabinAltitude,
@@ -620,7 +620,7 @@ impl PackFlowController {
             .any(|fcv| fcv.fcv_timer() <= Duration::from_secs_f64(Self::PACK_START_TIME_SECOND))
     }
 
-    fn flow_demand_determination(&self, aircraft_state: &AcStateManager) -> Ratio {
+    fn flow_demand_determination(&self, aircraft_state: &AirConditioningStateManager) -> Ratio {
         let mut intermediate_flow =
             Ratio::new::<percent>((self.flow_selector_position as u32) as f64);
         // TODO: Add "insufficient performance" based on Pack Mixer Temperature Demand
@@ -638,10 +638,10 @@ impl PackFlowController {
         }
         if matches!(
             aircraft_state,
-            AcStateManager::BeginTakeOff(_)
-                | AcStateManager::EndTakeOff(_)
-                | AcStateManager::BeginLanding(_)
-                | AcStateManager::EndLanding(_)
+            AirConditioningStateManager::BeginTakeOff(_)
+                | AirConditioningStateManager::EndTakeOff(_)
+                | AirConditioningStateManager::BeginLanding(_)
+                | AirConditioningStateManager::EndLanding(_)
         ) {
             intermediate_flow =
                 intermediate_flow.min(Ratio::new::<percent>(Self::FLOW_REDUCTION_LIMIT));
@@ -902,7 +902,7 @@ mod acs_controller_tests {
     }
 
     struct TestAircraft {
-        acsc: ACSController,
+        acsc: AirConditioningSystemController,
         acs_overhead: AirConditioningSystemOverhead,
         pack_flow_valve: [PackFlowValve; 2],
         engine_1: TestEngine,
@@ -915,7 +915,7 @@ mod acs_controller_tests {
     impl TestAircraft {
         fn new(context: &mut InitContext) -> Self {
             Self {
-                acsc: ACSController::new(context, vec!["CKPT", "FWD"]),
+                acsc: AirConditioningSystemController::new(context, vec!["CKPT", "FWD"]),
                 acs_overhead: AirConditioningSystemOverhead::new(context, &["CKPT", "FWD"]),
                 pack_flow_valve: [
                     PackFlowValve::new(context, 1),
@@ -1060,49 +1060,49 @@ mod acs_controller_tests {
         fn ac_state_is_initialisation(&self) -> bool {
             matches!(
                 self.query(|a| a.acsc.aircraft_state),
-                AcStateManager::Initialisation(_)
+                AirConditioningStateManager::Initialisation(_)
             )
         }
 
         fn ac_state_is_on_ground(&self) -> bool {
             matches!(
                 self.query(|a| a.acsc.aircraft_state),
-                AcStateManager::OnGround(_)
+                AirConditioningStateManager::OnGround(_)
             )
         }
 
         fn ac_state_is_begin_takeoff(&self) -> bool {
             matches!(
                 self.query(|a| a.acsc.aircraft_state),
-                AcStateManager::BeginTakeOff(_)
+                AirConditioningStateManager::BeginTakeOff(_)
             )
         }
 
         fn ac_state_is_end_takeoff(&self) -> bool {
             matches!(
                 self.query(|a| a.acsc.aircraft_state),
-                AcStateManager::EndTakeOff(_)
+                AirConditioningStateManager::EndTakeOff(_)
             )
         }
 
         fn ac_state_is_in_flight(&self) -> bool {
             matches!(
                 self.query(|a| a.acsc.aircraft_state),
-                AcStateManager::InFlight(_)
+                AirConditioningStateManager::InFlight(_)
             )
         }
 
         fn ac_state_is_begin_landing(&self) -> bool {
             matches!(
                 self.query(|a| a.acsc.aircraft_state),
-                AcStateManager::BeginLanding(_)
+                AirConditioningStateManager::BeginLanding(_)
             )
         }
 
         fn ac_state_is_end_landing(&self) -> bool {
             matches!(
                 self.query(|a| a.acsc.aircraft_state),
-                AcStateManager::EndLanding(_)
+                AirConditioningStateManager::EndLanding(_)
             )
         }
 
