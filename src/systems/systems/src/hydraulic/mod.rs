@@ -127,13 +127,13 @@ pub struct PowerTransferUnit {
     shaft_speed: AngularVelocity,
 }
 impl PowerTransferUnit {
-    const EFFICIENCY_LEFT_TO_RIGHT: f64 = 0.8;
-    const EFFICIENCY_RIGHT_TO_LEFT: f64 = 0.8;
+    const EFFICIENCY_LEFT_TO_RIGHT: f64 = 0.9;
+    const EFFICIENCY_RIGHT_TO_LEFT: f64 = 0.9;
 
     const DEFAULT_RIGHT_DISPLACEMENT: f64 = 0.92; // 15 cm3/rev
     const DEFAULT_LEFT_DISPLACEMENT: f64 = 0.92; // 12.5 cm3/rev
 
-    const DISPLACEMENT_TIME_CONSTANT: Duration = Duration::from_millis(200);
+    const DISPLACEMENT_TIME_CONSTANT: Duration = Duration::from_millis(150);
 
     const PRESSURE_BREAKPOINTS: [f64; 10] =
         [-500., -250., -100., -50., -20., 0., 20., 100., 250., 500.];
@@ -142,16 +142,16 @@ impl PowerTransferUnit {
         0.65,
         0.65,
         0.65,
-        0.65,
         Self::DEFAULT_LEFT_DISPLACEMENT,
         Self::DEFAULT_LEFT_DISPLACEMENT,
-        1.10,
-        1.21,
+        Self::DEFAULT_LEFT_DISPLACEMENT,
+        1.,
+        1.1,
         1.21,
     ];
 
-    const SHAFT_FRICTION: f64 = 0.05;
-    const SHAFT_STATIC_FRICTION: f64 = 15.;
+    const SHAFT_FRICTION: f64 = 0.11;
+    const SHAFT_STATIC_FRICTION: f64 = 9.;
     const SHAFT_INERTIA: f64 = 0.013;
 
     pub fn new(context: &mut InitContext) -> Self {
@@ -230,13 +230,6 @@ impl PowerTransferUnit {
             )),
         );
 
-        println!(
-            "RPM: {:.0} L{:.0} R{:.0}",
-            self.shaft_speed.get::<revolution_per_minute>(),
-            loop_left_section.pressure().get::<psi>(),
-            loop_right_section.pressure().get::<psi>()
-        );
-
         let is_rotating = self.shaft_speed.get::<revolution_per_minute>().abs() > 1.;
         // -1 = active left, 0 = no active, 1 = active right
         let active_direction = (self.right_displacement.output() > self.left_displacement) as i8
@@ -281,6 +274,14 @@ impl PowerTransferUnit {
             self.right_displacement
                 .reset(Volume::new::<cubic_inch>(Self::DEFAULT_RIGHT_DISPLACEMENT));
         }
+
+        println!(
+            "RPM: {:.0} L{:.0} R{:.0} TRQ {:.1}",
+            self.shaft_speed.get::<revolution_per_minute>(),
+            loop_left_section.pressure().get::<psi>(),
+            loop_right_section.pressure().get::<psi>(),
+            total_torque.get::<newton_meter>()
+        );
     }
 
     fn calc_generated_torque(pressure: Pressure, displacement: Volume) -> Torque {
