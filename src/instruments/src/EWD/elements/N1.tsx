@@ -1,4 +1,4 @@
-import { GaugeComponent, GaugeMarkerComponent, splitDecimals } from '@instruments/common/gauges';
+import { GaugeComponent, GaugeMarkerComponent, splitDecimals, ThrottlePositionDonutComponent } from '@instruments/common/gauges';
 import { useSimVar } from '@instruments/common/simVars';
 import React, { useEffect } from 'react';
 
@@ -15,16 +15,9 @@ const N1: React.FC<N1Props> = ({ x, y, engine }) => {
     const N1PercentSplit = splitDecimals(N1Percent);
 
     const [engineState] = useSimVar(`L:A32NX_ENGINE_STATE:${engine}`, 'bool', 500);
-    const [engineStarter] = useSimVar(`GENERAL ENG STARTER:${engine}`, 'bool', 500);
-    const [ignitionStarter] = useSimVar(`TURB ENG IS IGNITING:${engine}`, 'bool', 500);
+    const [throttlePosition] = useSimVar(`L:A32NX_AUTOTHRUST_TLA_N1:${engine}`, 'number', 100);
 
     const availVisible = !!(N1Percent > Math.floor(N1Idle) && engineState === 2); // N1Percent sometimes does not reach N1Idle by .005 or so
-
-    useEffect(() => {
-        console.log(`Engine ${engine} Engine Starter is ${engineStarter}`);
-        console.log(`Engine ${engine} Ignition starter si ${ignitionStarter}`);
-        console.log(`Engine ${engine} Ignition starter si ${engineState}`);
-    }, [engineStarter, ignitionStarter, engineState]);
 
     const radius = 64;
     const startAngle = 220;
@@ -88,7 +81,18 @@ const N1: React.FC<N1Props> = ({ x, y, engine }) => {
                     />
                     <Avail x={x} y={y} visible={availVisible} />
                 </GaugeComponent>
-
+                {/* Throttle */}
+                <ThrottlePositionDonutComponent
+                    value={throttlePosition / 10}
+                    x={x}
+                    y={y}
+                    min={min}
+                    max={max}
+                    radius={radius}
+                    startAngle={startAngle}
+                    endAngle={endAngle}
+                    className="DonutThrottleIndicator"
+                />
             </g>
         </>
     );

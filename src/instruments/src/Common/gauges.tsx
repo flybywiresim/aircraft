@@ -308,3 +308,28 @@ export const GaugeComponent: FC<GaugeComponentProps> = memo(({ x, y, radius, sta
         </>
     );
 });
+
+type ThrottlePositionDonutComponentType = {
+    value: number,
+    x: number,
+    y: number,
+    min: number,
+    max: number,
+    radius: number,
+    startAngle: number,
+    endAngle: number,
+    className: string
+};
+
+export const ThrottlePositionDonutComponent: FC<ThrottlePositionDonutComponentType> = memo(({ value, x, y, min, max, radius, startAngle, endAngle, className }) => {
+    const dir = valueRadianAngleConverter({ value, min, max, endAngle, startAngle });
+
+    x += (dir.x * radius * 1.12);
+    y += (dir.y * radius * 1.12);
+
+    return (
+        <>
+            <circle cx={x} cy={y} r={4} className={className} />
+        </>
+    );
+});
