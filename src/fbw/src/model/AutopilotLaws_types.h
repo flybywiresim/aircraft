@@ -67,6 +67,7 @@ struct ap_raw_data
   real_T flight_guidance_xtk_nmi;
   real_T flight_guidance_tae_deg;
   real_T flight_guidance_phi_deg;
+  real_T flight_guidance_phi_limit_deg;
   real_T flight_phase;
   real_T V2_kn;
   real_T VAPP_kn;
@@ -89,6 +90,8 @@ struct ap_raw_data
   real_T flaps_handle_index;
   boolean_T is_engine_operative_1;
   boolean_T is_engine_operative_2;
+  real_T altimeter_setting_left_mbar;
+  real_T altimeter_setting_right_mbar;
 };
 
 #endif
@@ -192,6 +195,7 @@ struct ap_data
   real_T flight_guidance_xtk_nmi;
   real_T flight_guidance_tae_deg;
   real_T flight_guidance_phi_deg;
+  real_T flight_guidance_phi_limit_deg;
   real_T flight_phase;
   real_T V2_kn;
   real_T VAPP_kn;
@@ -213,6 +217,7 @@ struct ap_data
   real_T flaps_handle_index;
   boolean_T is_engine_operative_1;
   boolean_T is_engine_operative_2;
+  boolean_T altimeter_setting_changed;
 };
 
 #endif
@@ -236,6 +241,7 @@ struct ap_raw_output
 {
   real_T ap_on;
   real_T Phi_loc_c;
+  real_T Nosewheel_c;
   ap_raw_output_command flight_director;
   ap_raw_output_command autopilot;
 };

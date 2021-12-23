@@ -126,9 +126,9 @@ mod fixed_tests {
 
     use std::time::Duration;
 
-    use crate::electrical::Electricity;
     use crate::simulation::test::TestVariableRegistry;
     use crate::simulation::InitContext;
+    use crate::{electrical::Electricity, shared::MachNumber};
     use uom::si::{
         acceleration::foot_per_second_squared, angle::radian, f64::*, length::foot,
         thermodynamic_temperature::degree_celsius, velocity::knot,
@@ -210,6 +210,7 @@ mod fixed_tests {
             Acceleration::new::<foot_per_second_squared>(0.),
             Angle::new::<radian>(0.),
             Angle::new::<radian>(0.),
+            MachNumber(0.),
         )
     }
 }
@@ -220,9 +221,9 @@ mod max_step_tests {
 
     use std::time::Duration;
 
-    use crate::electrical::Electricity;
     use crate::simulation::test::TestVariableRegistry;
     use crate::simulation::InitContext;
+    use crate::{electrical::Electricity, shared::MachNumber};
     use uom::si::{
         acceleration::foot_per_second_squared, angle::radian, f64::*, length::foot,
         thermodynamic_temperature::degree_celsius, velocity::knot,
@@ -303,6 +304,7 @@ mod max_step_tests {
             Acceleration::new::<foot_per_second_squared>(0.),
             Angle::new::<radian>(0.),
             Angle::new::<radian>(0.),
+            MachNumber(0.),
         )
     }
 }

@@ -31,7 +31,7 @@ export const ArcMode: React.FC<ArcModeProps> = ({ symbols, adirsAlign, rangeSett
     const [tcasMode] = useSimVar('L:A32NX_SWITCH_TCAS_Position', 'number');
     const [fmgcFlightPhase] = useSimVar('L:A32NX_FMGC_FLIGHT_PHASE', 'enum');
     const [selectedHeading] = useSimVar('L:A32NX_AUTOPILOT_HEADING_SELECTED', 'degrees');
-    const [ilsCourse] = useSimVar('NAV LOCALIZER:3', 'degrees');
+    const [lsCourse] = useSimVar('L:A32NX_FM_LS_COURSE', 'number');
     const [lsDisplayed] = useSimVar(`L:BTN_LS_${side === 'L' ? 1 : 2}_FILTER_ACTIVE`, 'bool'); // TODO rename simvar
     const [showTmpFplan] = useSimVar('L:MAP_SHOW_TEMPORARY_FLIGHT_PLAN', 'bool');
     const [fmaLatMode] = useSimVar('L:A32NX_FMA_LATERAL_MODE', 'enum', 200);
@@ -112,7 +112,7 @@ export const ArcMode: React.FC<ArcModeProps> = ({ symbols, adirsAlign, rangeSett
                 <ToWaypointIndicator info={flightPlanManager.getCurrentFlightPlan().computeActiveWaypointStatistics(ppos)} />
                 <ApproachMessage info={flightPlanManager.getAirportApproach()} flightPhase={fmgcFlightPhase} />
                 <TrackBug heading={heading} track={track} />
-                { lsDisplayed && <IlsCourseBug heading={heading} ilsCourse={ilsCourse} /> }
+                { lsDisplayed && <LsCourseBug heading={heading} lsCourse={lsCourse} /> }
                 <SelectedHeadingBug heading={heading} selected={selectedHeading} />
                 <Plane />
                 <CrossTrack x={390} y={646} />
@@ -637,9 +637,9 @@ const TrackBug: React.FC<{heading: number, track: number}> = memo(({ heading, tr
     );
 });
 
-const IlsCourseBug: React.FC<{heading: number, ilsCourse: number}> = ({ heading, ilsCourse }) => {
-    const diff = getSmallestAngle(ilsCourse, heading);
-    if (ilsCourse < 0 || Math.abs(diff) > 48) {
+const LsCourseBug: React.FC<{heading: number, lsCourse: number}> = ({ heading, lsCourse }) => {
+    const diff = getSmallestAngle(lsCourse, heading);
+    if (lsCourse < 0 || Math.abs(diff) > 48) {
         return null;
     }
 
@@ -649,13 +649,13 @@ const IlsCourseBug: React.FC<{heading: number, ilsCourse: number}> = ({ heading,
                 d="M384,122 L384,74 M376,114 L392,114"
                 transform={`rotate(${diff} 384 620)`}
                 className="shadow rounded"
-                strokeWidth={1.5}
+                strokeWidth={2.5}
             />
             <path
                 d="M384,122 L384,74 M376,114 L392,114"
                 transform={`rotate(${diff} 384 620)`}
                 className="Magenta rounded"
-                strokeWidth={1}
+                strokeWidth={2}
             />
         </>
     );
