@@ -26,7 +26,7 @@ class PostIT extends BaseInstrument {
         this.penColors = ['rgb(0, 0, 0)', 'rgb(255, 0, 0)', 'rgb(22, 38, 76)', 'rgb(124, 51, 161)', 'rgb(212, 212, 212)'];
         this.pageColors = ['rgb(255, 255, 151)', 'rgb(251, 174, 74)', 'rgb(234, 236, 64)', 'rgb(242, 117, 173)', 'rgb(121, 203, 197)', 'rgb(177, 177, 177)'];
 
-        this.textElem.innerText = NXDataStore.get("POSTIT_CONTENT", "Put your favorite text here : )");
+        this.splitIndex = 0;
 
         if (this.textElem) {
             this.initMainLoop();
@@ -71,9 +71,12 @@ class PostIT extends BaseInstrument {
             this.invisElem.style.fontFamily = this.textElem.style.fontFamily;
         });
 
-        this.textElem.addEventListener("input", () => {
+        this.textElem.addEventListener("input", (e) => {
             // The character being replaced is U+007f (DELETE Character)
             this.textElem.value = this.textElem.value.replace(/\u007f/g, '');
+            if (e.target.value.length < this.splitIndex) {
+                this.splitIndex = e.target.value.length;
+            }
         });
 
         this.textElem.addEventListener("keypress", (e) => {
@@ -102,13 +105,76 @@ class PostIT extends BaseInstrument {
                     this.textFocused = false;
                 }, 30000);
 
-                NXDataStore.set("POSTIT_CONTENT", this.textElem.value);
-            }
+                NXDataStore.set("POSTIT_CONTENT", this.textElem.value.substring(this.splitIndex));
+
+            };
         });
     }
 
     get isInteractive() {
         return true;
+    }
+
+    fetchSimbriefData() {
+        const useSimbrief = SimVar.GetSimVarValue("L:A32NX_MODEL_POSTIT_SIMBRIEF", "Bool");
+        const useBaro = NXDataStore.get("CONFIG_INIT_BARO_UNIT", "HPA");
+        const simBriefUserId = NXDataStore.get("CONFIG_SIMBRIEF_USERID", "");
+        const simBriefAPI = `https://www.simbrief.com/api/xml.fetcher.php?json=1&userid=${simBriefUserId}`;
+
+        if (useSimbrief && simBriefUserId) {
+
+            fetch(simBriefAPI)
+                .then(response => response.json())
+                .then(data => {
+
+                    const {
+                        origin: {
+                            icao_code: data_origin
+                        },
+                        destination: {
+                            icao_code: data_dest
+                        },
+                        general: {
+                            passengers: data_pax,
+                            initial_altitude: data_fl,
+                            icao_airline: data_airline,
+                            flight_number: data_flt_nr
+                        }
+                    } = data;
+
+                    let data_qnh;
+
+                    if (useBaro == "HPA") {
+                        data_qnh = Math.trunc(SimVar.GetSimVarValue("AMBIENT PRESSURE", "millibar"));
+                    } else {
+                        data_qnh = SimVar.GetSimVarValue("AMBIENT PRESSURE", "inhg").toFixed(2);
+                    }
+
+                    const data_vitals = `FLT: ${data_airline}${data_flt_nr}\n${data_origin}/${data_dest}\nFL${data_fl.slice(0,-2)} QNH ${data_qnh}\nPAX ${data_pax}\n`;
+                    this.splitIndex = data_vitals.length;
+
+                    this.textElem.value = data_vitals + NXDataStore.get("POSTIT_CONTENT", "\nCLICK TO ADD!");
+                    console.log("FETCHED AND INSERTED SIMBRIEF");
+                });
+
+        } else {
+
+            this.textElem.value = NXDataStore.get("POSTIT_CONTENT", "\nCLICK TO ADD!");
+
+        }
+    }
+
+    onFlightStart() {
+        this.fetchSimbriefData();
+    }
+
+    onEvent(_event) {
+        console.log("GOT EVENT:", _event);
+        if (_event === "A32NX_POSTIT_RESET") {
+            console.log("TRYING RELOAD POSTIT");
+            console.log(_event);
+            this.fetchSimbriefData();
+        }
     }
 
     initMainLoop() {
