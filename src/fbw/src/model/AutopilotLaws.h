@@ -89,9 +89,11 @@ class AutopilotLawsModelClass
     rtDW_WashoutFilter_AutopilotLaws_T sf_WashoutFilter_fs;
     rtDW_LeadLagFilter_AutopilotLaws_T sf_LeadLagFilter_kq;
     rtDW_LeadLagFilter_AutopilotLaws_T sf_LeadLagFilter_b;
+    rtDW_RateLimiter_AutopilotLaws_T sf_RateLimiter_h;
     rtDW_RateLimiter_AutopilotLaws_T sf_RateLimiter_eb;
     rtDW_WashoutFilter_AutopilotLaws_T sf_WashoutFilter_fo;
     rtDW_LagFilter_AutopilotLaws_T sf_LagFilter_gn;
+    rtDW_LagFilter_AutopilotLaws_T sf_LagFilter_p;
     rtDW_WashoutFilter_AutopilotLaws_T sf_WashoutFilter_l;
     rtDW_LeadLagFilter_AutopilotLaws_T sf_LeadLagFilter_j0;
     rtDW_LeadLagFilter_AutopilotLaws_T sf_LeadLagFilter_oi;
@@ -124,6 +126,7 @@ class AutopilotLawsModelClass
     rtDW_Chart_AutopilotLaws_T sf_Chart_ba;
     rtDW_RateLimiter_AutopilotLaws_T sf_RateLimiter_d;
     rtDW_LagFilter_AutopilotLaws_T sf_LagFilter_o;
+    rtDW_LagFilter_AutopilotLaws_T sf_LagFilter_mp;
     rtDW_storevalue_AutopilotLaws_T sf_storevalue;
     rtDW_Chart_AutopilotLaws_m_T sf_Chart_b;
     rtDW_Chart_AutopilotLaws_m_T sf_Chart_h;
@@ -154,10 +157,11 @@ class AutopilotLawsModelClass
     real_T LagFilter_C1;
     real_T LagFilter2_C1;
     real_T LagFilter_C1_n;
+    real_T LagFilter_C1_a;
     real_T LagFilter1_C1;
     real_T LagFilter_C1_l;
     real_T WashoutFilter_C1;
-    real_T LagFilter_C1_a;
+    real_T LagFilter_C1_ai;
     real_T WashoutFilter_C1_e;
     real_T HighPassFilter_C1;
     real_T LowPassFilter_C1;
@@ -191,6 +195,7 @@ class AutopilotLawsModelClass
     real_T WashoutFilter_C1_d;
     real_T HighPassFilter_C1_i0;
     real_T LowPassFilter_C1_g;
+    real_T LagFilter_C1_g;
     real_T LagFilter_C1_i;
     real_T HighPassFilter_C2;
     real_T LowPassFilter_C2;
@@ -258,6 +263,7 @@ class AutopilotLawsModelClass
     real_T DiscreteDerivativeVariableTs1_InitialCondition;
     real_T DiscreteDerivativeVariableTs_InitialCondition_c;
     real_T DiscreteDerivativeVariableTs2_InitialCondition;
+    real_T RateLimiterVariableTs1_InitialCondition;
     real_T RateLimiterVariableTs_InitialCondition_p;
     real_T DiscreteTimeIntegratorVariableTs_LowerLimit;
     real_T ScheduledGain_Table[3];
@@ -290,10 +296,12 @@ class AutopilotLawsModelClass
     real_T RateLimiterVariableTs_lo;
     real_T RateLimiterVariableTs_lo_k;
     real_T RateLimiterVariableTs_lo_b;
+    real_T RateLimiterVariableTs1_lo;
     real_T RateLimiterVariableTs_lo_o;
     real_T RateLimiterVariableTs_up;
     real_T RateLimiterVariableTs_up_n;
     real_T RateLimiterVariableTs_up_b;
+    real_T RateLimiterVariableTs1_up;
     real_T RateLimiterVariableTs_up_i;
     real_T DetectChange_vinit;
     real_T DetectChange1_vinit;
