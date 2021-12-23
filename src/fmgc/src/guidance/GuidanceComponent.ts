@@ -1,7 +1,6 @@
 import { Geometry } from '@fmgc/guidance/Geometry';
 
 export interface GuidanceComponent {
-
     init(): void;
 
     update(deltaTime: number): void;
@@ -12,5 +11,4 @@ export interface GuidanceComponent {
      * @param geometry the new multiple leg geometry
      */
     acceptMultipleLegGeometry?(geometry: Geometry): void;
-
 }

@@ -12,7 +12,7 @@ import { useAppSelector, useAppDispatch } from '../../Store/store';
 
 import { fetchSimbriefDataAction } from '../../Store/features/simBrief';
 import { useUIMessages } from '../../UIMessages/Provider';
-import { Notification, NotificationTypes } from '../../UIMessages/Notification';
+import { Notification } from '../../UIMessages/Notification';
 
 const FlightWidget = () => {
     const uiMessages = useUIMessages();
@@ -135,7 +135,7 @@ const FlightWidget = () => {
                             }).catch(() => {
                                 uiMessages.pushNotification(
                                     <Notification
-                                        type={NotificationTypes.ERROR}
+                                        type="ERROR"
                                         title="SimBrief Error"
                                         message="An error occurred when trying to fetch your SimBrief data."
                                     />,

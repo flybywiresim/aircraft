@@ -457,16 +457,14 @@
                 <ID>2</ID>
             </UseTemplate>
 
-            <UseTemplate Name="ASOBO_HANDLING_Steering_Tiller_Template">
-                <NODE_ID>HANDLE_LEFT_YOKE</NODE_ID>
-                <ANIM_NAME>HANDLE_LEFT_YOKE</ANIM_NAME>
-                <MAX_STEERING_VELOCITY>30</MAX_STEERING_VELOCITY>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_HANDLING_Steering_Tiller_Template">
-                <NODE_ID>HANDLE_RIGHT_YOKE</NODE_ID>
-                <ANIM_NAME>HANDLE_RIGHT_YOKE</ANIM_NAME>
-                <MAX_STEERING_VELOCITY>30</MAX_STEERING_VELOCITY>
-            </UseTemplate>
+            <Component ID="HANDLING_Steering_Tiller_1" Node="HANDLING_Steering_Tiller_1">
+                <UseTemplate Name="ASOBO_GT_Anim_Code">
+                    <NODE_ID>HANDLE_LEFT_YOKE</NODE_ID>
+                    <ANIM_NAME>HANDLE_LEFT_YOKE</ANIM_NAME>
+                    <ANIM_CODE>(L:A32NX_TILLER_HANDLE_POSITION)</ANIM_CODE>
+                    <ANIM_LENGTH>1</ANIM_LENGTH>
+                </UseTemplate>
+            </Component>
 
 
             <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
@@ -1556,6 +1554,13 @@
                         <VISIBILITY_CODE>0</VISIBILITY_CODE>
                     </UseTemplate>
                 </Component>
+
+                <!-- PARK BRK EXT LT -->
+                <UseTemplate Name="FBW_Potentiometer_Toggle">
+                    <TOGGLE_CONDITION>(A:GEAR CENTER POSITION, Percent over 100) 1 == (L:A32NX_PARK_BRAKE_LEVER_POS, bool) 1 == and</TOGGLE_CONDITION>
+                    <TOGGLE_REQUISITE>(L:A32NX_ELEC_DC_GND_FLT_SVC_BUS_IS_POWERED, Bool)</TOGGLE_REQUISITE>
+                    <POTENTIOMETER>99</POTENTIOMETER>
+                </UseTemplate>
 
                 <!-- Captain dome light -->
                 <UseTemplate Name="ASOBO_LIGHTING_Cabin_Emissive_Template">

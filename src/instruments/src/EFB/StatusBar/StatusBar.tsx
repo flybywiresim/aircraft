@@ -3,6 +3,7 @@ import { Wifi2, Power } from 'react-bootstrap-icons';
 import { useSimVar } from '@instruments/common/simVars';
 import { usePersistentProperty } from '@instruments/common/persistence';
 import { usePower, PowerStates } from '../Efb';
+
 import { BatteryStatus } from './BatteryStatus';
 
 type StatusBarProps = {
@@ -12,7 +13,6 @@ type StatusBarProps = {
 
 export const StatusBar = (props: StatusBarProps) => {
     const { batteryLevel, isCharging } = props;
-
     const [currentUTC] = useSimVar('E:ZULU TIME', 'seconds');
     const [currentLocalTime] = useSimVar('E:LOCAL TIME', 'seconds');
     const [dayOfWeek] = useSimVar('E:ZULU DAY OF WEEK', 'number');

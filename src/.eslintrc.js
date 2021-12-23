@@ -56,7 +56,6 @@ module.exports = {
 
         'no-case-declarations': 'off',
 
-        // just... why
         'no-plusplus': 'off',
         'no-shadow': 'off',
         'no-continue': 'off',
@@ -64,6 +63,7 @@ module.exports = {
         'radix': 'off',
         'max-classes-per-file': 'off',
         'no-useless-constructor': 'off',
+        '@typescript-eslint/no-useless-constructor': ['error'],
         'no-empty-function': ['error', { allow: ['constructors', 'arrowFunctions'] }],
         '@typescript-eslint/no-empty-function': 'off',
 

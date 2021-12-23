@@ -5,6 +5,7 @@ import { useSimVar } from '@instruments/common/simVars';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { NdSymbol } from '@shared/NavigationDisplay';
 import { LateralMode } from '@shared/autopilot';
+import { CrossTrack } from '../elements/CrossTrack';
 import { ToWaypointIndicator } from '../elements/ToWaypointIndicator';
 import { FlightPlan, FlightPlanType } from '../elements/FlightPlan';
 import { MapParameters } from '../utils/MapParameters';
@@ -89,6 +90,8 @@ export const PlanMode: FC<PlanModeProps> = ({ symbols, adirsAlign, rangeSetting,
             )}
 
             <ToWaypointIndicator info={flightPlanManager.getCurrentFlightPlan().computeActiveWaypointStatistics(ppos)} />
+
+            <CrossTrack x={44} y={690} isPlanMode />
         </>
     );
 };

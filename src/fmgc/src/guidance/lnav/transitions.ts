@@ -11,11 +11,11 @@ export abstract class Transition implements Guidable {
 
     abstract getPseudoWaypointLocation(distanceBeforeTerminator: NauticalMiles): LatLongData | undefined;
 
-    abstract getNominalRollAngle(gs): Degrees;
+    abstract getNominalRollAngle(gs: number): Degrees;
 
     abstract get isCircularArc(): boolean;
 
-    abstract getDistanceToGo(ppos: LatLongData);
+    abstract getDistanceToGo(ppos: LatLongData): NauticalMiles;
 
     abstract getTurningPoints(): [LatLongData, LatLongData];
 
