@@ -69,6 +69,7 @@ class AutopilotStateMachineModelClass
     real_T eventTime_n4;
     real_T eventTime_i;
     real_T eventTime_p;
+    real_T eventTime_k;
     real_T eventTime_b;
     real_T newFcuAltitudeSelected;
     real_T newFcuAltitudeSelected_f;
@@ -138,6 +139,7 @@ class AutopilotStateMachineModelClass
     boolean_T eventTime_not_empty_j;
     boolean_T eventTime_not_empty_m;
     boolean_T sThrottleCondition;
+    boolean_T eventTime_not_empty_i;
     boolean_T eventTime_not_empty_kh;
     boolean_T sTCAS_g;
     boolean_T wasFlightPlanAvailable;
