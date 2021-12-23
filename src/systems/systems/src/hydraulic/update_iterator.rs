@@ -202,6 +202,7 @@ mod fixed_tests {
             context,
             delta_time,
             Velocity::new::<knot>(250.),
+            Velocity::new::<knot>(250.),
             Length::new::<foot>(5000.),
             ThermodynamicTemperature::new::<degree_celsius>(25.0),
             true,
@@ -295,6 +296,7 @@ mod max_step_tests {
         UpdateContext::new(
             context,
             delta_time,
+            Velocity::new::<knot>(250.),
             Velocity::new::<knot>(250.),
             Length::new::<foot>(5000.),
             ThermodynamicTemperature::new::<degree_celsius>(25.0),

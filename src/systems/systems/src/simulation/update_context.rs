@@ -86,6 +86,7 @@ impl LocalAcceleration {
 pub struct UpdateContext {
     ambient_temperature_id: VariableIdentifier,
     indicated_airspeed_id: VariableIdentifier,
+    true_airspeed_id: VariableIdentifier,
     indicated_altitude_id: VariableIdentifier,
     is_on_ground_id: VariableIdentifier,
     ambient_pressure_id: VariableIdentifier,
@@ -99,6 +100,7 @@ pub struct UpdateContext {
 
     delta: Duration,
     indicated_airspeed: Velocity,
+    true_airspeed: Velocity,
     indicated_altitude: Length,
     ambient_temperature: ThermodynamicTemperature,
     ambient_pressure: Pressure,
@@ -111,6 +113,7 @@ pub struct UpdateContext {
 impl UpdateContext {
     pub(crate) const AMBIENT_TEMPERATURE_KEY: &'static str = "AMBIENT TEMPERATURE";
     pub(crate) const INDICATED_AIRSPEED_KEY: &'static str = "AIRSPEED INDICATED";
+    pub(crate) const TRUE_AIRSPEED_KEY: &'static str = "AIRSPEED TRUE";
     pub(crate) const INDICATED_ALTITUDE_KEY: &'static str = "INDICATED ALTITUDE";
     pub(crate) const IS_ON_GROUND_KEY: &'static str = "SIM ON GROUND";
     pub(crate) const AMBIENT_PRESSURE_KEY: &'static str = "AMBIENT PRESSURE";
@@ -129,6 +132,7 @@ impl UpdateContext {
         context: &mut InitContext,
         delta: Duration,
         indicated_airspeed: Velocity,
+        true_airspeed: Velocity,
         indicated_altitude: Length,
         ambient_temperature: ThermodynamicTemperature,
         is_on_ground: bool,
@@ -143,6 +147,7 @@ impl UpdateContext {
             ambient_temperature_id: context
                 .get_identifier(Self::AMBIENT_TEMPERATURE_KEY.to_owned()),
             indicated_airspeed_id: context.get_identifier(Self::INDICATED_AIRSPEED_KEY.to_owned()),
+            true_airspeed_id: context.get_identifier(Self::TRUE_AIRSPEED_KEY.to_owned()),
             indicated_altitude_id: context.get_identifier(Self::INDICATED_ALTITUDE_KEY.to_owned()),
             is_on_ground_id: context.get_identifier(Self::IS_ON_GROUND_KEY.to_owned()),
             ambient_pressure_id: context.get_identifier(Self::AMBIENT_PRESSURE_KEY.to_owned()),
@@ -156,6 +161,7 @@ impl UpdateContext {
 
             delta,
             indicated_airspeed,
+            true_airspeed,
             indicated_altitude,
             ambient_temperature,
             ambient_pressure: Pressure::new::<inch_of_mercury>(29.92),
@@ -175,6 +181,7 @@ impl UpdateContext {
         UpdateContext {
             ambient_temperature_id: context.get_identifier("AMBIENT TEMPERATURE".to_owned()),
             indicated_airspeed_id: context.get_identifier("AIRSPEED INDICATED".to_owned()),
+            true_airspeed_id: context.get_identifier("AIRSPEED TRUE".to_owned()),
             indicated_altitude_id: context.get_identifier("INDICATED ALTITUDE".to_owned()),
             is_on_ground_id: context.get_identifier("SIM ON GROUND".to_owned()),
             ambient_pressure_id: context.get_identifier("AMBIENT PRESSURE".to_owned()),
@@ -188,6 +195,7 @@ impl UpdateContext {
 
             delta: Default::default(),
             indicated_airspeed: Default::default(),
+            true_airspeed: Default::default(),
             indicated_altitude: Default::default(),
             ambient_temperature: Default::default(),
             ambient_pressure: Default::default(),
@@ -203,6 +211,7 @@ impl UpdateContext {
     pub(super) fn update(&mut self, reader: &mut SimulatorReader, delta_time: Duration) {
         self.ambient_temperature = reader.read(&self.ambient_temperature_id);
         self.indicated_airspeed = reader.read(&self.indicated_airspeed_id);
+        self.true_airspeed = reader.read(&self.true_airspeed_id);
         self.indicated_altitude = reader.read(&self.indicated_altitude_id);
         self.is_on_ground = reader.read(&self.is_on_ground_id);
         self.ambient_pressure =
@@ -242,6 +251,10 @@ impl UpdateContext {
 
     pub fn indicated_airspeed(&self) -> Velocity {
         self.indicated_airspeed
+    }
+
+    pub fn true_airspeed(&self) -> Velocity {
+        self.true_airspeed
     }
 
     pub fn indicated_altitude(&self) -> Length {

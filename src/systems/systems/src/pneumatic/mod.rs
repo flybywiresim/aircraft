@@ -525,6 +525,7 @@ mod tests {
             &mut init_context,
             delta_time,
             Velocity::new::<knot>(0.),
+            Velocity::new::<knot>(0.),
             altitude,
             InternationalStandardAtmosphere::temperature_at_altitude(altitude),
             true,

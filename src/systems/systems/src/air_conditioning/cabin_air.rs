@@ -21,7 +21,6 @@ use uom::si::{
 
 pub struct CabinZone<const ROWS: usize> {
     zone_identifier: VariableIdentifier,
-    true_airspeed_id: VariableIdentifier,
     fwd_door_id: VariableIdentifier,
     rear_door_id: VariableIdentifier,
     passenger_rows_id: Option<Vec<VariableIdentifier>>,
@@ -30,13 +29,11 @@ pub struct CabinZone<const ROWS: usize> {
     zone_air: ZoneAir,
     zone_volume: Volume,
     passengers: u8,
-    true_airspeed: Velocity,
     fwd_door_is_open: bool,
     rear_door_is_open: bool,
 }
 
 impl<const ROWS: usize> CabinZone<ROWS> {
-    const TRUE_AIRSPEED: &'static str = "AIRSPEED TRUE";
     const FWD_DOOR: &'static str = "INTERACTIVE POINT OPEN:0";
     const REAR_DOOR: &'static str = "INTERACTIVE POINT OPEN:3";
 
@@ -58,7 +55,6 @@ impl<const ROWS: usize> CabinZone<ROWS> {
         };
         Self {
             zone_identifier: context.get_identifier(format!("COND_{}_TEMP", zone_id)),
-            true_airspeed_id: context.get_identifier(Self::TRUE_AIRSPEED.to_owned()),
             fwd_door_id: context.get_identifier(Self::FWD_DOOR.to_owned()),
             rear_door_id: context.get_identifier(Self::REAR_DOOR.to_owned()),
             passenger_rows_id,
@@ -67,7 +63,6 @@ impl<const ROWS: usize> CabinZone<ROWS> {
             zone_air: ZoneAir::new(),
             zone_volume,
             passengers,
-            true_airspeed: Velocity::new::<meter_per_second>(0.),
             fwd_door_is_open: false,
             rear_door_is_open: false,
         }
@@ -87,7 +82,6 @@ impl<const ROWS: usize> CabinZone<ROWS> {
         self.zone_air.update(
             context,
             &air_in,
-            self.true_airspeed,
             self.zone_volume,
             self.passengers,
             self.fwd_door_is_open,
@@ -107,7 +101,6 @@ impl<const ROWS: usize> CabinZone<ROWS> {
 
 impl<const ROWS: usize> SimulationElement for CabinZone<ROWS> {
     fn read(&mut self, reader: &mut SimulatorReader) {
-        self.true_airspeed = reader.read(&self.true_airspeed_id);
         let rear_door_read: Ratio = reader.read(&self.rear_door_id);
         self.rear_door_is_open = rear_door_read > Ratio::new::<percent>(0.);
         let fwd_door_read: Ratio = reader.read(&self.fwd_door_id);
@@ -159,7 +152,6 @@ impl ZoneAir {
         &mut self,
         context: &UpdateContext,
         air_in: &Air,
-        true_airspeed: Velocity,
         zone_volume: Volume,
         zone_passengers: u8,
         fwd_door_is_open: bool,
@@ -179,7 +171,6 @@ impl ZoneAir {
             context,
             number_of_open_doors,
             air_in,
-            true_airspeed,
             zone_volume,
             zone_passengers,
         );
@@ -194,7 +185,6 @@ impl ZoneAir {
         context: &UpdateContext,
         number_of_open_doors: u8,
         air_in: &Air,
-        true_airspeed: Velocity,
         zone_volume: Volume,
         zone_passengers: u8,
     ) -> ThermodynamicTemperature {
@@ -216,7 +206,7 @@ impl ZoneAir {
         let passenger_heat_energy =
             Self::PASSENGER_HEAT_RELEASE_KILOWATT * (zone_passengers as f64);
         let wall_transfer_heat_energy = self
-            .heat_transfer_through_wall_calculation(context, true_airspeed, zone_volume)
+            .heat_transfer_through_wall_calculation(context, zone_volume)
             .get::<kilowatt>();
         // For the cockpit we reduce the effect of opening doors
         if zone_volume < Volume::new::<cubic_meter>(100.) {
@@ -245,14 +235,13 @@ impl ZoneAir {
     fn heat_transfer_through_wall_calculation(
         &self,
         context: &UpdateContext,
-        true_airspeed: Velocity,
         zone_volume: Volume,
     ) -> Power {
         let external_convection_coefficient: f64 =
-            if true_airspeed < Velocity::new::<meter_per_second>(15.) {
+            if context.true_airspeed() < Velocity::new::<meter_per_second>(15.) {
                 self.natural_convection_coefficient_calculation(context)
             } else {
-                self.forced_convection_coefficient_calculation(context, true_airspeed, zone_volume)
+                self.forced_convection_coefficient_calculation(context, zone_volume)
             };
         let internal_convection_coefficient: f64 =
             self.natural_convection_coefficient_calculation(context);
@@ -287,13 +276,12 @@ impl ZoneAir {
     fn forced_convection_coefficient_calculation(
         &self,
         context: &UpdateContext,
-        true_airspeed: Velocity,
         zone_volume: Volume,
     ) -> f64 {
         let characteristic_length = self
             .characteristic_length_calculation(zone_volume)
             .get::<meter>();
-        let reynolds_number = self.reynolds_number_calculation(context, true_airspeed, zone_volume);
+        let reynolds_number = self.reynolds_number_calculation(context, zone_volume);
         // Nusselt calculation for turbulent flow
         let nusselt_number: f64 =
             Air::PRANDT_NUMBER.powf(1. / 3.) * (0.037 * reynolds_number.powf(0.8) - 850.);
@@ -302,19 +290,14 @@ impl ZoneAir {
         convection_coefficient
     }
 
-    fn reynolds_number_calculation(
-        &self,
-        context: &UpdateContext,
-        true_airspeed: Velocity,
-        zone_volume: Volume,
-    ) -> f64 {
+    fn reynolds_number_calculation(&self, context: &UpdateContext, zone_volume: Volume) -> f64 {
         let characteristic_length = self
             .characteristic_length_calculation(zone_volume)
             .get::<meter>();
         let reynolds_number: f64 = (self
             .external_density_calculation(context)
             .get::<kilogram_per_cubic_meter>()
-            * true_airspeed.get::<meter_per_second>()
+            * context.true_airspeed().get::<meter_per_second>()
             * characteristic_length)
             / Air::MU;
         reynolds_number
