@@ -1,7 +1,9 @@
 use self::linear_actuator::Actuator;
 use crate::hydraulic::electrical_pump_physics::ElectricalPumpPhysics;
 use crate::pneumatic::PressurizeableReservoir;
-use crate::shared::{interpolation, ElectricalBusType, ElectricalBuses};
+use crate::shared::{
+    interpolation, low_pass_filter::LowPassFilter, ElectricalBusType, ElectricalBuses,
+};
 use crate::simulation::{
     InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
     VariableIdentifier, Write,
@@ -119,9 +121,8 @@ pub struct PowerTransferUnit {
     flow_to_right: VolumeRate,
     flow_to_left: VolumeRate,
     left_displacement: Volume,
-    right_displacement: Volume,
+    right_displacement: LowPassFilter<Volume>,
     last_flow: VolumeRate,
-    last_delta_p: Pressure,
 
     shaft_speed: AngularVelocity,
 }
@@ -131,6 +132,8 @@ impl PowerTransferUnit {
 
     const DEFAULT_RIGHT_DISPLACEMENT: f64 = 0.92; // 15 cm3/rev
     const DEFAULT_LEFT_DISPLACEMENT: f64 = 0.92; // 12.5 cm3/rev
+
+    const DISPLACEMENT_TIME_CONSTANT: Duration = Duration::from_millis(200);
 
     const PRESSURE_BREAKPOINTS: [f64; 10] =
         [-500., -250., -100., -50., -20., 0., 20., 100., 250., 500.];
@@ -149,7 +152,7 @@ impl PowerTransferUnit {
 
     const SHAFT_FRICTION: f64 = 0.05;
     const SHAFT_STATIC_FRICTION: f64 = 15.;
-    const SHAFT_INERTIA: f64 = 0.015;
+    const SHAFT_INERTIA: f64 = 0.013;
 
     pub fn new(context: &mut InitContext) -> Self {
         Self {
@@ -165,9 +168,8 @@ impl PowerTransferUnit {
             flow_to_right: VolumeRate::new::<gallon_per_second>(0.0),
             flow_to_left: VolumeRate::new::<gallon_per_second>(0.0),
             left_displacement: Volume::new::<cubic_inch>(Self::DEFAULT_LEFT_DISPLACEMENT),
-            right_displacement: Volume::new::<cubic_inch>(Self::DEFAULT_RIGHT_DISPLACEMENT),
+            right_displacement: LowPassFilter::<Volume>::new(Self::DISPLACEMENT_TIME_CONSTANT), //::<cubic_inch>(Self::DEFAULT_RIGHT_DISPLACEMENT),
             last_flow: VolumeRate::new::<gallon_per_second>(0.0),
-            last_delta_p: Pressure::new::<psi>(0.),
 
             shaft_speed: AngularVelocity::new::<radian_per_second>(0.),
         }
@@ -193,47 +195,54 @@ impl PowerTransferUnit {
         self.shaft_speed
     }
 
-    pub fn update<T: PowerTransferUnitController>(
+    pub fn update(
         &mut self,
         context: &UpdateContext,
         loop_left_section: &impl SectionPressure,
         loop_right_section: &impl SectionPressure,
-        controller: &T,
+        controller: &impl PowerTransferUnitController,
     ) {
         self.is_enabled = controller.should_enable();
 
-        self.update_displacement(loop_left_section, loop_right_section);
+        self.update_displacement(context, loop_left_section, loop_right_section);
         self.update_shaft_physics(context, loop_left_section, loop_right_section);
         self.update_flows();
     }
 
     fn update_displacement(
         &mut self,
+        context: &UpdateContext,
         loop_left_section: &impl SectionPressure,
         loop_right_section: &impl SectionPressure,
     ) {
-        let delta_p_raw = if self.is_enabled {
+        let delta_p = if self.is_enabled {
             loop_left_section.pressure() - loop_right_section.pressure()
         } else {
             Pressure::new::<psi>(0.)
         };
-        let delta_p_filt = delta_p_raw * 0.99 + (1. - 0.99) * self.last_delta_p;
-        self.last_delta_p = delta_p_filt;
 
-        self.right_displacement = Volume::new::<cubic_inch>(interpolation(
-            &Self::PRESSURE_BREAKPOINTS,
-            &Self::DISPLACEMENT_CARAC,
-            -delta_p_filt
-                .get::<psi>() // TODO: correct unit?
-                .min(*Self::PRESSURE_BREAKPOINTS.last().unwrap())
-                .max(*Self::PRESSURE_BREAKPOINTS.first().unwrap()),
-        ));
+        self.right_displacement.update(
+            context.delta(),
+            Volume::new::<cubic_inch>(interpolation(
+                &Self::PRESSURE_BREAKPOINTS,
+                &Self::DISPLACEMENT_CARAC,
+                -delta_p.get::<psi>(),
+            )),
+        );
 
+        println!(
+            "RPM: {:.0} L{:.0} R{:.0}",
+            self.shaft_speed.get::<revolution_per_minute>(),
+            loop_left_section.pressure().get::<psi>(),
+            loop_right_section.pressure().get::<psi>()
+        );
+
+        let is_rotating = self.shaft_speed.get::<revolution_per_minute>().abs() > 1.;
         // -1 = active left, 0 = no active, 1 = active right
-        let active_direction = (self.right_displacement > self.left_displacement) as i8
-            - (self.right_displacement < self.left_displacement) as i8;
-        self.is_active_left = active_direction == -1;
-        self.is_active_right = active_direction == 1;
+        let active_direction = (self.right_displacement.output() > self.left_displacement) as i8
+            - (self.right_displacement.output() < self.left_displacement) as i8;
+        self.is_active_left = is_rotating && active_direction == -1;
+        self.is_active_right = is_rotating && active_direction == 1;
     }
 
     fn update_shaft_physics(
@@ -255,13 +264,13 @@ impl PowerTransferUnit {
 
         let left_side_torque = -Self::calc_generated_torque(left_pressure, self.left_displacement);
         let right_side_torque =
-            Self::calc_generated_torque(right_pressure, self.right_displacement);
+            Self::calc_generated_torque(right_pressure, self.right_displacement.output());
         let friction_torque = Torque::new::<newton_meter>(
             Self::SHAFT_FRICTION * -self.shaft_speed.get::<radian_per_second>(),
         );
         let total_torque = friction_torque + left_side_torque + right_side_torque;
 
-        if self.shaft_speed.abs().get::<revolution_per_minute>() > 500.
+        if self.shaft_speed.abs().get::<revolution_per_minute>() > 350.
             || total_torque.abs().get::<newton_meter>() > Self::SHAFT_STATIC_FRICTION
         {
             let acc = total_torque.get::<newton_meter>() / Self::SHAFT_INERTIA;
@@ -269,6 +278,8 @@ impl PowerTransferUnit {
                 AngularVelocity::new::<radian_per_second>(acc * context.delta_as_secs_f64());
         } else {
             self.shaft_speed = AngularVelocity::new::<radian_per_second>(0.);
+            self.right_displacement
+                .reset(Volume::new::<cubic_inch>(Self::DEFAULT_RIGHT_DISPLACEMENT));
         }
     }
 
@@ -289,7 +300,7 @@ impl PowerTransferUnit {
             self.last_flow = flow;
         } else if shaft_rpm > 0.1 {
             // Right sends flow to left
-            let flow = Self::calc_flow(self.shaft_speed.abs(), self.right_displacement);
+            let flow = Self::calc_flow(self.shaft_speed.abs(), self.right_displacement.output());
             self.flow_to_left = flow * Self::EFFICIENCY_RIGHT_TO_LEFT;
             self.flow_to_right = -flow;
             self.last_flow = flow;
