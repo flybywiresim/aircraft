@@ -2,7 +2,7 @@ use self::acs_controller::AirConditioningSystemController;
 
 use crate::{
     overhead::{OnOffFaultPushButton, ValueKnob},
-    shared::{CabinAltitude, EngineCorrectedN1, LgciuWeightOnWheels},
+    shared::{Cabin, EngineCorrectedN1, LgciuWeightOnWheels},
     simulation::{
         InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
         VariableIdentifier, Write,
@@ -56,7 +56,7 @@ impl AirConditioningSystem {
         &mut self,
         context: &UpdateContext,
         engines: [&impl EngineCorrectedN1; 2],
-        pressurization: &impl CabinAltitude,
+        pressurization: &impl Cabin,
         lgciu: [&impl LgciuWeightOnWheels; 2],
     ) {
         self.acsc.update(

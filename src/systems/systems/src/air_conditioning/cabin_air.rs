@@ -1,6 +1,6 @@
 use super::{Air, DuctTemperature};
 use crate::{
-    shared::CabinAltitude,
+    shared::Cabin,
     simulation::{
         InitContext, Read, SimulationElement, SimulatorReader, SimulatorWriter, UpdateContext,
         VariableIdentifier, Write,
@@ -73,7 +73,7 @@ impl<const ROWS: usize> CabinZone<ROWS> {
         context: &UpdateContext,
         duct_temperature: &impl DuctTemperature,
         pack_flow_per_cubic_meter: MassRate,
-        pressurization: &impl CabinAltitude,
+        pressurization: &impl Cabin,
     ) {
         let mut air_in = Air::new();
         air_in.set_temperature(duct_temperature.duct_demand_temperature()[&self.zone_id as &str]);
@@ -156,7 +156,7 @@ impl ZoneAir {
         zone_passengers: u8,
         fwd_door_is_open: bool,
         rear_door_is_open: bool,
-        pressurization: &impl CabinAltitude,
+        pressurization: &impl Cabin,
     ) {
         if !self.is_initialised {
             self.internal_air
@@ -164,8 +164,7 @@ impl ZoneAir {
             self.flow_out.set_temperature(context.ambient_temperature());
             self.is_initialised = true;
         }
-        self.internal_air
-            .set_pressure(pressurization.cabin_pressure());
+        self.internal_air.set_pressure(pressurization.pressure());
         let number_of_open_doors: u8 = fwd_door_is_open as u8 + rear_door_is_open as u8;
         let new_equilibrium_temperature = self.equilibrium_temperature_calculation(
             context,
@@ -382,12 +381,12 @@ mod cabin_air_tests {
         }
     }
 
-    impl CabinAltitude for TestPressurization {
-        fn cabin_altitude(&self) -> Length {
+    impl Cabin for TestPressurization {
+        fn altitude(&self) -> Length {
             Length::new::<foot>(0.)
         }
 
-        fn cabin_pressure(&self) -> Pressure {
+        fn pressure(&self) -> Pressure {
             self.cabin_pressure
         }
     }

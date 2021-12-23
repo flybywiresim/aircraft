@@ -1,5 +1,5 @@
 use crate::{
-    shared::{pid::PidController, CabinAltitude, EngineCorrectedN1, LgciuWeightOnWheels},
+    shared::{pid::PidController, Cabin, EngineCorrectedN1, LgciuWeightOnWheels},
     simulation::{
         InitContext, Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
         SimulatorWriter, UpdateContext, VariableIdentifier, Write, Writer,
@@ -48,7 +48,7 @@ impl AirConditioningSystemController {
         acs_overhead: &AirConditioningSystemOverhead,
         pack_flow_valve: &[PackFlowValve; 2],
         engines: [&impl EngineCorrectedN1; 2],
-        pressurization: &impl CabinAltitude,
+        pressurization: &impl Cabin,
         lgciu: [&impl LgciuWeightOnWheels; 2],
     ) {
         self.aircraft_state = self.aircraft_state.update(context, engines, lgciu);
@@ -177,10 +177,7 @@ impl AcState<Initialisation> {
         self: AcState<Initialisation>,
         lgciu: [&impl LgciuWeightOnWheels; 2],
     ) -> AirConditioningStateManager {
-        if lgciu
-            .iter()
-            .all(|&a| a.left_and_right_gear_compressed(true))
-        {
+        if lgciu.iter().all(|a| a.left_and_right_gear_compressed(true)) {
             AirConditioningStateManager::OnGround(self.into())
         } else {
             AirConditioningStateManager::InFlight(self.into())
@@ -333,7 +330,6 @@ impl AcState<EndLanding> {
 
 transition!(EndLanding, OnGround);
 
-#[derive(Clone)]
 struct ZoneController {
     zone_temp_id: VariableIdentifier,
     zone_duct_temp_id: VariableIdentifier,
@@ -394,7 +390,7 @@ impl ZoneController {
         context: &UpdateContext,
         acs_overhead: &AirConditioningSystemOverhead,
         pack_flow: &impl PackFlow,
-        pressurization: &impl CabinAltitude,
+        pressurization: &impl Cabin,
     ) {
         if acs_overhead
             .selected_cabin_temperatures()
@@ -418,10 +414,10 @@ impl ZoneController {
     fn calculate_duct_temp_demand(
         &mut self,
         context: &UpdateContext,
-        pressurization: &impl CabinAltitude,
+        pressurization: &impl Cabin,
     ) -> ThermodynamicTemperature {
-        let altitude_correction: f64 = pressurization.cabin_altitude().get::<foot>()
-            * Self::K_ALTITUDE_CORRECTION_DEG_PER_FEET;
+        let altitude_correction: f64 =
+            pressurization.altitude().get::<foot>() * Self::K_ALTITUDE_CORRECTION_DEG_PER_FEET;
         let corrected_selected_temp: f64 =
             self.zone_selected_temperature.get::<kelvin>() + altitude_correction;
 
@@ -599,7 +595,7 @@ impl PackFlowController {
         aircraft_state: &AirConditioningStateManager,
         acs_overhead: &AirConditioningSystemOverhead,
         engines: [&impl EngineCorrectedN1; 2],
-        pressurization: &impl CabinAltitude,
+        pressurization: &impl Cabin,
         pack_flow_valve: &[PackFlowValve; 2],
     ) {
         self.flow_control_valve_open = pack_flow_valve.iter().any(|fcv| fcv.fcv_is_open());
@@ -651,9 +647,9 @@ impl PackFlowController {
 
     // This calculates the flow based on the demand, when the packs are modelled this needs to be changed
     // so the demand actuates the valve, and then the flow is calculated based on that
-    fn absolute_flow_calculation(&self, pressurization: &impl CabinAltitude) -> MassRate {
+    fn absolute_flow_calculation(&self, pressurization: &impl Cabin) -> MassRate {
         let absolute_flow = self.flow_demand.get::<ratio>()
-            * (Self::FLOW_CONSTANT_XCAB * pressurization.cabin_altitude().get::<foot>()
+            * (Self::FLOW_CONSTANT_XCAB * pressurization.altitude().get::<foot>()
                 + Self::FLOW_CONSTANT_C);
         MassRate::new::<kilogram_per_second>(absolute_flow)
     }
@@ -794,12 +790,12 @@ mod acs_controller_tests {
             self.cabin_altitude = altitude;
         }
     }
-    impl CabinAltitude for TestPressurization {
-        fn cabin_altitude(&self) -> Length {
+    impl Cabin for TestPressurization {
+        fn altitude(&self) -> Length {
             self.cabin_altitude
         }
 
-        fn cabin_pressure(&self) -> Pressure {
+        fn pressure(&self) -> Pressure {
             Pressure::new::<hectopascal>(1013.15)
         }
     }
@@ -867,7 +863,7 @@ mod acs_controller_tests {
             context: &UpdateContext,
             duct_temperature: &impl DuctTemperature,
             pack_flow: &impl PackFlow,
-            pressurization: &impl CabinAltitude,
+            pressurization: &impl Cabin,
         ) {
             let flow_rate_per_cubic_meter: MassRate = MassRate::new::<kilogram_per_second>(
                 pack_flow.pack_flow().get::<kilogram_per_second>() / (460.),

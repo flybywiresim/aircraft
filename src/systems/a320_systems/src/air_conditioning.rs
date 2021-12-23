@@ -1,7 +1,7 @@
 use systems::{
     accept_iterable,
     air_conditioning::{cabin_air::CabinZone, AirConditioningSystem, DuctTemperature, PackFlow},
-    shared::{CabinAltitude, EngineCorrectedN1, LgciuWeightOnWheels},
+    shared::{Cabin, EngineCorrectedN1, LgciuWeightOnWheels},
     simulation::{InitContext, SimulationElement, SimulationElementVisitor, UpdateContext},
 };
 use uom::si::{f64::*, mass_rate::kilogram_per_second, volume::cubic_meter};
@@ -25,7 +25,7 @@ impl A320AirConditioning {
         &mut self,
         context: &UpdateContext,
         engines: [&impl EngineCorrectedN1; 2],
-        pressurization: &impl CabinAltitude,
+        pressurization: &impl Cabin,
         lgciu: [&impl LgciuWeightOnWheels; 2],
     ) {
         self.air_conditioning_system
@@ -90,7 +90,7 @@ impl A320Cabin {
         context: &UpdateContext,
         duct_temperature: &impl DuctTemperature,
         pack_flow: &impl PackFlow,
-        pressurization: &impl CabinAltitude,
+        pressurization: &impl Cabin,
     ) {
         let flow_rate_per_cubic_meter: MassRate = MassRate::new::<kilogram_per_second>(
             pack_flow.pack_flow().get::<kilogram_per_second>()

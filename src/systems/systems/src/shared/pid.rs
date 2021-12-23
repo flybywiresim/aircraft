@@ -4,7 +4,6 @@ use std::time::Duration;
 /// Implementation in a recursive form
 /// u(k+1) = u(k) + (e(k) - e(k-1)) * Kp + e(k) * Ki * dt + (e(k) - 2 * e(k-1) + e(k-2)) * Kd / dt
 /// For variable dt add dt duration as argument, if fixed dt or scheduled synchronously with controlled system input None as dt
-#[derive(Clone)]
 pub struct PidController {
     kp: f64,
     ki: f64,

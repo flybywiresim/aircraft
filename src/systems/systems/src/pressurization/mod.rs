@@ -5,9 +5,7 @@ use self::{
 };
 use crate::{
     overhead::{AutoManFaultPushButton, NormalOnPushButton, SpringLoadedSwitch, ValueKnob},
-    shared::{
-        random_number, CabinAltitude, ControllerSignal, EngineCorrectedN1, LgciuWeightOnWheels,
-    },
+    shared::{random_number, Cabin, ControllerSignal, EngineCorrectedN1, LgciuWeightOnWheels},
     simulation::{
         InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
         SimulatorWriter, UpdateContext, VariableIdentifier, Write,
@@ -213,12 +211,12 @@ impl Pressurization {
     }
 }
 
-impl CabinAltitude for Pressurization {
-    fn cabin_altitude(&self) -> Length {
+impl Cabin for Pressurization {
+    fn altitude(&self) -> Length {
         self.cpc[self.active_system - 1].cabin_altitude()
     }
 
-    fn cabin_pressure(&self) -> Pressure {
+    fn pressure(&self) -> Pressure {
         self.cabin_pressure_simulation.cabin_pressure()
     }
 }
