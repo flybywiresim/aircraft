@@ -1,6 +1,25 @@
-import { GaugeComponent, GaugeMarkerComponent } from '@instruments/common/gauges';
+import { GaugeComponent, GaugeMarkerComponent, GaugeMaxComponent } from '@instruments/common/gauges';
 import { useSimVar } from '@instruments/common/simVars';
 import React from 'react';
+
+const getModeEGTMax = () => {
+    const [throttleMode] = useSimVar('L:A32NX_AUTOTHRUST_LIMIT_TYPE', 'number', 500);
+    const [togaWarning] = useSimVar('L:A32NX_AUTOTHRUST_THRUST_LEVER_WARNING_TOGA', 'boolean', 500);
+
+    switch (throttleMode) {
+    case 4:
+        return togaWarning ? 1060 : 1025;
+
+    case 1:
+    case 2:
+    case 3:
+    case 5:
+        return 1025;
+
+    default:
+        return 750;
+    }
+};
 
 type EGTProps = {
     engine: 1 | 2,
@@ -36,6 +55,29 @@ const EGT: React.FC<EGTProps> = ({ x, y, engine }) => {
                     />
                     <GaugeMarkerComponent value={600} x={x} y={y} min={min} max={max} radius={radius} startAngle={startAngle} endAngle={endAngle} className="GaugeText Gauge" />
                     <GaugeMarkerComponent value={max} x={x} y={y} min={min} max={max} radius={radius} startAngle={startAngle} endAngle={endAngle} className="GaugeText Gauge Red" />
+                    {/* EGT warning indicator  */}
+                    <GaugeMarkerComponent
+                        value={getModeEGTMax()}
+                        x={x}
+                        y={y}
+                        min={min}
+                        max={max}
+                        radius={radius}
+                        startAngle={startAngle}
+                        endAngle={endAngle}
+                        className="GaugeThrustLimitIndicator Gauge"
+                    />
+                    <GaugeMaxComponent
+                        value={getModeEGTMax()}
+                        x={x}
+                        y={y}
+                        min={min}
+                        max={max}
+                        radius={radius}
+                        startAngle={startAngle}
+                        endAngle={endAngle}
+                        className="GaugeThrustLimitIndicatorFill Gauge"
+                    />
                     <rect x={x - 36} y={y - 15} width={72} height={26} className="DarkGreyBox" />
                     <GaugeMarkerComponent
                         value={EGTemperature}
