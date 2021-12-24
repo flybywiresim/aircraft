@@ -139,7 +139,7 @@ class CDUInitPage {
         }
 
         if (mcdu.coRoute) {
-            coRoute = mcdu.coRoute + "[color]cyan";
+            coRoute = mcdu.coRoute.number + "[color]cyan";
         }
         mcdu.onLeftInput[0] = (value, scratchpadCallback) => {
             mcdu.updateCoRoute(value, (result) => {

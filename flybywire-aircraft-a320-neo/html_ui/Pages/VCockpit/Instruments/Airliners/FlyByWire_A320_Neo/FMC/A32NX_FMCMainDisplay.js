@@ -300,7 +300,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.costIndexSet = false;
         this.maxCruiseFL = 390;
         this.routeIndex = 0;
-        this.coRoute = "";
+        this.coRoute = undefined;
         this.tmpOrigin = "";
         this.perfTOTemp = NaN;
         this._overridenFlapApproachSpeed = NaN;
@@ -1947,7 +1947,14 @@ class FMCMainDisplay extends BaseAirliners {
                 if (coRoute === "NONE") {
                     this.coRoute = undefined;
                 } else {
-                    this.coRoute = coRoute;
+                    getCoRoute(mcdu, coRoute, () => {
+                        if (mcdu.page.Current === mcdu.page.InitPageA) {
+                            CDUInitPage.ShowPage1(mcdu);
+                        }
+                    }).then(() => {
+                        insertCoRoute(mcdu);
+                        this.coRoute["number"] = coRoute;
+                    });
                 }
                 return callback(true);
             }

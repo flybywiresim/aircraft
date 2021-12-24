@@ -312,8 +312,8 @@ const addLatLonWaypoint = async (mcdu, lat, lon) => {
     }
 };
 
-const uplinkRoute = async (mcdu) => {
-    const {navlog} = mcdu.simbrief;
+const uplinkRoute = async (mcdu, coroute = false) => {
+    const {navlog} = coroute ? mcdu.coRoute : mcdu.simbrief;
 
     const procedures = new Set(navlog.filter(fix => fix.is_sid_star === "1").map(fix => fix.via_airway));
 
