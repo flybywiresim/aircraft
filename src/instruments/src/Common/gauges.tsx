@@ -197,13 +197,14 @@ type valueRadianAngleConverterType = {
 
 export const valueRadianAngleConverter = ({ value, min, max, endAngle, startAngle } : valueRadianAngleConverterType) => {
     const valuePercentage = (value - min) / (max - min);
-    let angleInRadians = startAngle > endAngle
+    const angleInDegress = startAngle > endAngle
         ? startAngle + (valuePercentage * (360 - startAngle + endAngle)) - 90
         : startAngle + (valuePercentage * (endAngle - startAngle)) - 90;
-    angleInRadians *= (Math.PI / 180.0);
+    const angleInRadians = angleInDegress * (Math.PI / 180.0);
     return ({
         x: Math.cos(angleInRadians),
         y: Math.sin(angleInRadians),
+        angle: angleInDegress,
     });
 };
 
@@ -330,6 +331,35 @@ export const ThrottlePositionDonutComponent: FC<ThrottlePositionDonutComponentTy
     return (
         <>
             <circle cx={x} cy={y} r={4} className={className} />
+        </>
+    );
+});
+
+type GaugeMaxComponentType = {
+    value: number,
+    x: number,
+    y: number,
+    min: number,
+    max: number,
+    radius: number,
+    startAngle: number,
+    endAngle: number,
+    className: string,
+};
+
+export const GaugeMaxComponent: FC<GaugeMaxComponentType> = memo(({ value, x, y, min, max, radius, startAngle, endAngle, className }) => {
+    const dir = valueRadianAngleConverter({ value, min, max, endAngle, startAngle });
+
+    const xy = {
+        x: x + (dir.x * radius),
+        y: y + (dir.y * radius),
+    };
+
+    // console.log(`ANgle is ${dir.angle}`);
+
+    return (
+        <>
+            <rect x={xy.x} y={xy.y} width={6} height={4} className={className} transform={`rotate(${dir.angle} ${xy.x} ${xy.y})`} />
         </>
     );
 });

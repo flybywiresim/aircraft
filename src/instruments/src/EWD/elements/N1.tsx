@@ -1,6 +1,6 @@
-import { GaugeComponent, GaugeMarkerComponent, splitDecimals, ThrottlePositionDonutComponent } from '@instruments/common/gauges';
+import { GaugeComponent, GaugeMarkerComponent, splitDecimals, GaugeMaxComponent, ThrottlePositionDonutComponent } from '@instruments/common/gauges';
 import { useSimVar } from '@instruments/common/simVars';
-import React, { useEffect } from 'react';
+import React from 'react';
 
 type N1Props = {
     engine: 1 | 2,
@@ -16,6 +16,7 @@ const N1: React.FC<N1Props> = ({ x, y, engine }) => {
 
     const [engineState] = useSimVar(`L:A32NX_ENGINE_STATE:${engine}`, 'bool', 500);
     const [throttlePosition] = useSimVar(`L:A32NX_AUTOTHRUST_TLA_N1:${engine}`, 'number', 100);
+    const [N1ThrustLimit] = useSimVar('L:A32NX_AUTOTHRUST_THRUST_LIMIT', 'number', 100);
 
     const availVisible = !!(N1Percent > Math.floor(N1Idle) && engineState === 2); // N1Percent sometimes does not reach N1Idle by .005 or so
 
@@ -42,15 +43,15 @@ const N1: React.FC<N1Props> = ({ x, y, engine }) => {
                         radius={radius}
                         startAngle={startAngle}
                         endAngle={endAngle}
-                        className="GaugeText Medium"
+                        className="GaugeText Gauge Medium"
                         showValue
                         textNudgeY={6}
                         textNudgeX={13}
                     />
-                    <GaugeMarkerComponent value={6} x={x} y={y} min={min} max={max} radius={radius} startAngle={startAngle} endAngle={endAngle} className="GaugeText" />
-                    <GaugeMarkerComponent value={7} x={x} y={y} min={min} max={max} radius={radius} startAngle={startAngle} endAngle={endAngle} className="GaugeText" />
-                    <GaugeMarkerComponent value={8} x={x} y={y} min={min} max={max} radius={radius} startAngle={startAngle} endAngle={endAngle} className="GaugeText" />
-                    <GaugeMarkerComponent value={9} x={x} y={y} min={min} max={max} radius={radius} startAngle={startAngle} endAngle={endAngle} className="GaugeText" />
+                    <GaugeMarkerComponent value={6} x={x} y={y} min={min} max={max} radius={radius} startAngle={startAngle} endAngle={endAngle} className="GaugeText Gauge" />
+                    <GaugeMarkerComponent value={7} x={x} y={y} min={min} max={max} radius={radius} startAngle={startAngle} endAngle={endAngle} className="GaugeText Gauge" />
+                    <GaugeMarkerComponent value={8} x={x} y={y} min={min} max={max} radius={radius} startAngle={startAngle} endAngle={endAngle} className="GaugeText Gauge" />
+                    <GaugeMarkerComponent value={9} x={x} y={y} min={min} max={max} radius={radius} startAngle={startAngle} endAngle={endAngle} className="GaugeText Gauge" />
                     <GaugeMarkerComponent
                         value={10}
                         x={x}
@@ -60,12 +61,12 @@ const N1: React.FC<N1Props> = ({ x, y, engine }) => {
                         radius={radius}
                         startAngle={startAngle}
                         endAngle={endAngle}
-                        className="GaugeText Medium"
+                        className="GaugeText Gauge Medium"
                         showValue
                         textNudgeY={6}
                         textNudgeX={-13}
                     />
-                    <GaugeMarkerComponent value={11} x={x} y={y} min={min} max={max} radius={radius} startAngle={startAngle} endAngle={endAngle} className="GaugeText Red" />
+                    <GaugeMarkerComponent value={11} x={x} y={y} min={min} max={max} radius={radius} startAngle={startAngle} endAngle={endAngle} className="GaugeText Gauge Red" />
                     <rect x={x - 19} y={y + 19} width={96} height={30} className="DarkGreyBox" />
                     <GaugeMarkerComponent
                         value={N1Percent <= N1Idle ? N1Idle / 10 : N1Percent / 10}
@@ -76,8 +77,31 @@ const N1: React.FC<N1Props> = ({ x, y, engine }) => {
                         radius={radius}
                         startAngle={startAngle}
                         endAngle={endAngle}
-                        className="GaugeIndicator"
+                        className="GaugeIndicator Gauge"
                         indicator
+                    />
+                    {/* N1 max limit  */}
+                    <GaugeMarkerComponent
+                        value={N1ThrustLimit / 10}
+                        x={x}
+                        y={y}
+                        min={min}
+                        max={max}
+                        radius={radius}
+                        startAngle={startAngle}
+                        endAngle={endAngle}
+                        className="GaugeThrustLimitIndicator Gauge"
+                    />
+                    <GaugeMaxComponent
+                        value={N1ThrustLimit / 10}
+                        x={x}
+                        y={y}
+                        min={min}
+                        max={max}
+                        radius={radius}
+                        startAngle={startAngle}
+                        endAngle={endAngle}
+                        className="GaugeThrustLimitIndicatorFill Gauge"
                     />
                     <Avail x={x} y={y} visible={availVisible} />
                 </GaugeComponent>
@@ -115,11 +139,3 @@ const Avail: React.FC<AvailProps> = ({ x, y, visible }) => (
         </g>
     </>
 );
-
-// getModeN1Max() {
-//     switch (this.throttleMode) {
-//         case 4: return ((this.timerTOGA > 0) ? 101.5 : 100);
-//         case 5: return 66.7;
-//         default: return 100;
-//     }
-// }

@@ -25,4 +25,16 @@
         stroke-width: 3;
         fill: none;
     }
+
+    .GaugeThrustLimitIndicator {
+        stroke: $display-amber;
+        stroke-width: 3;
+        fill: none;
+    }
+
+    .GaugeThrustLimitIndicatorFill {
+        stroke: $display-amber;
+        stroke-width: 3;
+        fill: $display-amber;
+    }
 }
