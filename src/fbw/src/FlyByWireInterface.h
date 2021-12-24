@@ -19,6 +19,7 @@
 #include "SimConnectInterface.h"
 #include "SpoilersHandler.h"
 #include "ThrottleAxisMapping.h"
+#include "ThrustLimits.h"
 
 class FlyByWireInterface {
  public:
@@ -47,9 +48,6 @@ class FlyByWireInterface {
   double targetSimulationRate = 1;
   bool targetSimulationRateModified = false;
 
-  bool flightDirectorSmoothingEnabled = false;
-  double flightDirectorSmoothingFactor = 0;
-  double flightDirectorSmoothingLimit = 0;
   bool customFlightGuidanceEnabled = false;
   bool gpsCourseToSteerEnabled = false;
   bool autopilotStateMachineEnabled = false;
@@ -62,6 +60,10 @@ class FlyByWireInterface {
 
   bool pauseDetected = false;
   bool wasInSlew = false;
+
+  double autothrustThrustLimitReverse = -45;
+  bool autothrustThrustLimitUseExternal = false;
+  bool autothrustThrustLimitUseExternalFlex = false;
 
   bool flightDirectorConnectLatch_1 = false;
   bool flightDirectorConnectLatch_2 = false;
@@ -102,6 +104,9 @@ class FlyByWireInterface {
   AutothrustModelClass autoThrust;
   AutothrustModelClass::ExternalInputs_Autothrust_T autoThrustInput = {};
   athr_output autoThrustOutput;
+
+  ThrustLimitsModelClass thrustLimits;
+  ThrustLimitsModelClass::ExternalInputs_ThrustLimits_T thrustLimitsInput = {};
 
   InterpolatingLookupTable throttleLookupTable;
 
@@ -166,6 +171,7 @@ class FlyByWireInterface {
 
   std::unique_ptr<LocalVariable> idFcuLocModeActive;
   std::unique_ptr<LocalVariable> idFcuApprModeActive;
+  std::unique_ptr<LocalVariable> idFcuHeadingSync;
   std::unique_ptr<LocalVariable> idFcuModeReversionActive;
   std::unique_ptr<LocalVariable> idFcuModeReversionTrkFpaActive;
   std::unique_ptr<LocalVariable> idFcuModeReversionTargetFpm;
@@ -219,6 +225,7 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idAutothrustReverse_2;
   std::unique_ptr<LocalVariable> idAutothrustThrustLimitType;
   std::unique_ptr<LocalVariable> idAutothrustThrustLimit;
+  std::unique_ptr<LocalVariable> idAutothrustThrustLimitREV;
   std::unique_ptr<LocalVariable> idAutothrustThrustLimitIDLE;
   std::unique_ptr<LocalVariable> idAutothrustThrustLimitCLB;
   std::unique_ptr<LocalVariable> idAutothrustThrustLimitMCT;
@@ -322,13 +329,12 @@ class FlyByWireInterface {
   bool updateAutopilotStateMachine(double sampleTime);
   bool updateAutopilotLaws(double sampleTime);
   bool updateFlyByWire(double sampleTime);
+  bool updateThrustLimits(double sampleTime);
   bool updateAutothrust(double sampleTime);
 
   bool updateSpoilers(double sampleTime);
 
   bool updateAltimeterSetting(double sampleTime);
-
-  double smoothFlightDirector(double sampleTime, double factor, double limit, double currentValue, double targetValue);
 
   double getHeadingAngleError(double u1, double u2);
 
