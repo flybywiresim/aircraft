@@ -103,18 +103,18 @@ impl SimulationElement for AirConditioningSystemController {
 
 #[derive(Copy, Clone)]
 enum AirConditioningStateManager {
-    Initialisation(AcState<Initialisation>),
-    OnGround(AcState<OnGround>),
-    BeginTakeOff(AcState<BeginTakeOff>),
-    EndTakeOff(AcState<EndTakeOff>),
-    InFlight(AcState<InFlight>),
-    BeginLanding(AcState<BeginLanding>),
-    EndLanding(AcState<EndLanding>),
+    Initialisation(AirConditioningState<Initialisation>),
+    OnGround(AirConditioningState<OnGround>),
+    BeginTakeOff(AirConditioningState<BeginTakeOff>),
+    EndTakeOff(AirConditioningState<EndTakeOff>),
+    InFlight(AirConditioningState<InFlight>),
+    BeginLanding(AirConditioningState<BeginLanding>),
+    EndLanding(AirConditioningState<EndLanding>),
 }
 
 impl AirConditioningStateManager {
     fn new() -> Self {
-        AirConditioningStateManager::Initialisation(AcState::init())
+        AirConditioningStateManager::Initialisation(AirConditioningState::init())
     }
 
     fn update(
@@ -134,13 +134,23 @@ impl AirConditioningStateManager {
         };
         self
     }
+
+    fn landing_gear_is_compressed(lgciu: [&impl LgciuWeightOnWheels; 2]) -> bool {
+        lgciu.iter().all(|a| a.left_and_right_gear_compressed(true))
+    }
+
+    fn engines_are_in_takeoff(engines: [&impl EngineCorrectedN1; 2]) -> bool {
+        engines
+            .iter()
+            .all(|x| x.corrected_n1() > Ratio::new::<percent>(70.))
+    }
 }
 
 macro_rules! transition {
     ($from: ty, $to: tt) => {
-        impl From<AcState<$from>> for AcState<$to> {
-            fn from(_: AcState<$from>) -> AcState<$to> {
-                AcState {
+        impl From<AirConditioningState<$from>> for AirConditioningState<$to> {
+            fn from(_: AirConditioningState<$from>) -> AirConditioningState<$to> {
+                AirConditioningState {
                     aircraft_state: $to,
                     timer: Duration::from_secs(0),
                 }
@@ -150,12 +160,12 @@ macro_rules! transition {
 }
 
 #[derive(Copy, Clone)]
-struct AcState<S> {
+struct AirConditioningState<S> {
     aircraft_state: S,
     timer: Duration,
 }
 
-impl<S> AcState<S> {
+impl<S> AirConditioningState<S> {
     fn increase_timer(mut self, context: &UpdateContext) -> Self {
         self.timer += context.delta();
         self
@@ -165,7 +175,7 @@ impl<S> AcState<S> {
 #[derive(Copy, Clone)]
 struct Initialisation;
 
-impl AcState<Initialisation> {
+impl AirConditioningState<Initialisation> {
     fn init() -> Self {
         Self {
             aircraft_state: Initialisation,
@@ -174,10 +184,10 @@ impl AcState<Initialisation> {
     }
 
     fn step(
-        self: AcState<Initialisation>,
+        self: AirConditioningState<Initialisation>,
         lgciu: [&impl LgciuWeightOnWheels; 2],
     ) -> AirConditioningStateManager {
-        if lgciu.iter().all(|a| a.left_and_right_gear_compressed(true)) {
+        if AirConditioningStateManager::landing_gear_is_compressed(lgciu) {
             AirConditioningStateManager::OnGround(self.into())
         } else {
             AirConditioningStateManager::InFlight(self.into())
@@ -191,23 +201,16 @@ transition!(Initialisation, InFlight);
 #[derive(Copy, Clone)]
 struct OnGround;
 
-impl AcState<OnGround> {
+impl AirConditioningState<OnGround> {
     fn step(
-        self: AcState<OnGround>,
+        self: AirConditioningState<OnGround>,
         engines: [&impl EngineCorrectedN1; 2],
         lgciu: [&impl LgciuWeightOnWheels; 2],
     ) -> AirConditioningStateManager {
-        if !lgciu
-            .iter()
-            .all(|&a| a.left_and_right_gear_compressed(true))
-        {
+        if !AirConditioningStateManager::landing_gear_is_compressed(lgciu) {
             AirConditioningStateManager::InFlight(self.into())
-        } else if engines
-            .iter()
-            .all(|&x| x.corrected_n1() > Ratio::new::<percent>(70.))
-            && lgciu
-                .iter()
-                .all(|&a| a.left_and_right_gear_compressed(true))
+        } else if AirConditioningStateManager::engines_are_in_takeoff(engines)
+            && AirConditioningStateManager::landing_gear_is_compressed(lgciu)
         {
             AirConditioningStateManager::BeginTakeOff(self.into())
         } else {
@@ -222,15 +225,13 @@ transition!(OnGround, BeginTakeOff);
 #[derive(Copy, Clone)]
 struct BeginTakeOff;
 
-impl AcState<BeginTakeOff> {
+impl AirConditioningState<BeginTakeOff> {
     fn step(
-        self: AcState<BeginTakeOff>,
+        self: AirConditioningState<BeginTakeOff>,
         context: &UpdateContext,
         engines: [&impl EngineCorrectedN1; 2],
     ) -> AirConditioningStateManager {
-        if (engines
-            .iter()
-            .all(|&x| x.corrected_n1() > Ratio::new::<percent>(70.))
+        if (AirConditioningStateManager::engines_are_in_takeoff(engines)
             && context.indicated_airspeed().get::<knot>() > 70.)
             || self.timer > Duration::from_secs(35)
         {
@@ -246,15 +247,13 @@ transition!(BeginTakeOff, EndTakeOff);
 #[derive(Copy, Clone)]
 struct EndTakeOff;
 
-impl AcState<EndTakeOff> {
+impl AirConditioningState<EndTakeOff> {
     fn step(
-        self: AcState<EndTakeOff>,
+        self: AirConditioningState<EndTakeOff>,
         context: &UpdateContext,
         lgciu: [&impl LgciuWeightOnWheels; 2],
     ) -> AirConditioningStateManager {
-        if !lgciu
-            .iter()
-            .all(|&a| a.left_and_right_gear_compressed(true))
+        if !AirConditioningStateManager::landing_gear_is_compressed(lgciu)
             || self.timer > Duration::from_secs(10)
         {
             AirConditioningStateManager::InFlight(self.into())
@@ -269,18 +268,14 @@ transition!(EndTakeOff, InFlight);
 #[derive(Copy, Clone)]
 struct InFlight;
 
-impl AcState<InFlight> {
+impl AirConditioningState<InFlight> {
     fn step(
-        self: AcState<InFlight>,
+        self: AirConditioningState<InFlight>,
         engines: [&impl EngineCorrectedN1; 2],
         lgciu: [&impl LgciuWeightOnWheels; 2],
     ) -> AirConditioningStateManager {
-        if engines
-            .iter()
-            .all(|&x| x.corrected_n1() < Ratio::new::<percent>(70.))
-            && lgciu
-                .iter()
-                .all(|&a| a.left_and_right_gear_compressed(true))
+        if !AirConditioningStateManager::engines_are_in_takeoff(engines)
+            && AirConditioningStateManager::landing_gear_is_compressed(lgciu)
         {
             AirConditioningStateManager::BeginLanding(self.into())
         } else {
@@ -294,15 +289,13 @@ transition!(InFlight, BeginLanding);
 #[derive(Copy, Clone)]
 struct BeginLanding;
 
-impl AcState<BeginLanding> {
+impl AirConditioningState<BeginLanding> {
     fn step(
-        self: AcState<BeginLanding>,
+        self: AirConditioningState<BeginLanding>,
         context: &UpdateContext,
         engines: [&impl EngineCorrectedN1; 2],
     ) -> AirConditioningStateManager {
-        if (engines
-            .iter()
-            .all(|&x| x.corrected_n1() < Ratio::new::<percent>(70.))
+        if (!AirConditioningStateManager::engines_are_in_takeoff(engines)
             && context.indicated_airspeed().get::<knot>() < 70.)
             || self.timer > Duration::from_secs(35)
         {
@@ -318,8 +311,11 @@ transition!(BeginLanding, EndLanding);
 #[derive(Copy, Clone)]
 struct EndLanding;
 
-impl AcState<EndLanding> {
-    fn step(self: AcState<EndLanding>, context: &UpdateContext) -> AirConditioningStateManager {
+impl AirConditioningState<EndLanding> {
+    fn step(
+        self: AirConditioningState<EndLanding>,
+        context: &UpdateContext,
+    ) -> AirConditioningStateManager {
         if self.timer > Duration::from_secs(10) {
             AirConditioningStateManager::OnGround(self.into())
         } else {
@@ -347,6 +343,7 @@ impl ZoneController {
     const UPPER_DUCT_TEMP_LIMIT_HIGH_KELVIN: f64 = 343.15; // K
     const LOWER_DUCT_TEMP_LIMIT_LOW_KELVIN: f64 = 275.15; // K
     const LOWER_DUCT_TEMP_LIMIT_HIGH_KELVIN: f64 = 281.15; // K
+    const SETPOINT_TEMP_KELVIN: f64 = 297.15; // K
     const KI_DUCT_DEMAND_CABIN: f64 = 0.05;
     const KI_DUCT_DEMAND_COCKPIT: f64 = 0.04;
     const KP_DUCT_DEMAND_CABIN: f64 = 3.5;
@@ -360,7 +357,8 @@ impl ZoneController {
                 0.,
                 Self::LOWER_DUCT_TEMP_LIMIT_HIGH_KELVIN,
                 Self::UPPER_DUCT_TEMP_LIMIT_LOW_KELVIN,
-                297.15,
+                Self::SETPOINT_TEMP_KELVIN,
+                1., // Output gain
             )
         } else {
             PidController::new(
@@ -369,7 +367,8 @@ impl ZoneController {
                 0.,
                 Self::LOWER_DUCT_TEMP_LIMIT_HIGH_KELVIN,
                 Self::UPPER_DUCT_TEMP_LIMIT_LOW_KELVIN,
-                297.15,
+                Self::SETPOINT_TEMP_KELVIN,
+                1.,
             )
         };
         Self {
@@ -532,10 +531,10 @@ struct PackFlowController {
     pack_flow_id: VariableIdentifier,
 
     flow_demand: Ratio,
-    absolute_flow: MassRate,
     fcv_1_open_allowed: bool,
     fcv_2_open_allowed: bool,
     should_open_fcv: [bool; 2],
+    pack_flow: MassRate,
 
     apu_bleed_on: bool,
     crossbleed_is_on: bool,
@@ -544,10 +543,7 @@ struct PackFlowController {
     engine_2_in_start_mode: bool,
     engine_1_on_fire: bool,
     engine_2_on_fire: bool,
-    flow_control_valve_open: bool,
     flow_selector_position: OverheadFlowSelector,
-    pack_in_start_condition: bool,
-    single_pack_operation: bool,
 }
 
 impl PackFlowController {
@@ -577,10 +573,10 @@ impl PackFlowController {
             pack_flow_id: context.get_identifier("COND_PACK_FLOW".to_owned()),
 
             flow_demand: Ratio::new::<percent>(0.),
-            absolute_flow: MassRate::new::<kilogram_per_second>(0.),
             fcv_1_open_allowed: false,
             fcv_2_open_allowed: false,
             should_open_fcv: [false, false],
+            pack_flow: MassRate::new::<kilogram_per_second>(0.),
 
             apu_bleed_on: false,
             crossbleed_is_on: false,
@@ -589,10 +585,7 @@ impl PackFlowController {
             engine_2_in_start_mode: false,
             engine_1_on_fire: false,
             engine_2_on_fire: false,
-            flow_control_valve_open: false,
             flow_selector_position: OverheadFlowSelector::Norm,
-            pack_in_start_condition: false,
-            single_pack_operation: false,
         }
     }
 
@@ -604,28 +597,29 @@ impl PackFlowController {
         pressurization: &impl Cabin,
         pack_flow_valve: &[PackFlowValve; 2],
     ) {
-        self.flow_control_valve_open = pack_flow_valve.iter().any(|fcv| fcv.fcv_is_open());
-        self.single_pack_operation =
-            pack_flow_valve[0].fcv_is_open() != pack_flow_valve[1].fcv_is_open();
-        self.pack_in_start_condition = self.pack_start_condition_determination(pack_flow_valve);
         // TODO: Add overheat protection
-        self.flow_demand = self.flow_demand_determination(aircraft_state);
-        self.absolute_flow = self.absolute_flow_calculation(pressurization);
+        self.flow_demand = self.flow_demand_determination(aircraft_state, pack_flow_valve);
         self.fcv_open_allowed_determination(acs_overhead);
         self.should_open_fcv = self.should_open_fcv_determination(engines);
+        self.pack_flow = self.pack_flow_calculation(pack_flow_valve, pressurization)
     }
 
-    fn pack_start_condition_determination(&mut self, pack_flow_valve: &[PackFlowValve; 2]) -> bool {
+    fn pack_start_condition_determination(&self, pack_flow_valve: &[PackFlowValve; 2]) -> bool {
         // Returns true when one of the packs is in start condition
         pack_flow_valve
             .iter()
             .any(|fcv| fcv.fcv_timer() <= Duration::from_secs_f64(Self::PACK_START_TIME_SECOND))
     }
 
-    fn flow_demand_determination(&self, aircraft_state: &AirConditioningStateManager) -> Ratio {
+    fn flow_demand_determination(
+        &self,
+        aircraft_state: &AirConditioningStateManager,
+        pack_flow_valve: &[PackFlowValve; 2],
+    ) -> Ratio {
         let mut intermediate_flow: Ratio = self.flow_selector_position.into();
+        let pack_in_start_condition = self.pack_start_condition_determination(pack_flow_valve);
         // TODO: Add "insufficient performance" based on Pack Mixer Temperature Demand
-        if self.pack_in_start_condition {
+        if pack_in_start_condition {
             intermediate_flow =
                 intermediate_flow.max(Ratio::new::<percent>(Self::PACK_START_FLOW_LIMIT));
         }
@@ -633,7 +627,8 @@ impl PackFlowController {
             intermediate_flow =
                 intermediate_flow.max(Ratio::new::<percent>(Self::APU_SUPPLY_FLOW_LIMIT));
         }
-        if self.single_pack_operation {
+        // Single pack operation determination
+        if pack_flow_valve[0].fcv_is_open() != pack_flow_valve[1].fcv_is_open() {
             intermediate_flow =
                 intermediate_flow.max(Ratio::new::<percent>(Self::ONE_PACK_FLOW_LIMIT));
         }
@@ -691,19 +686,29 @@ impl PackFlowController {
                     || self.apu_bleed_on),
         ]
     }
-}
 
-impl PackFlow for PackFlowController {
-    fn pack_flow(&self) -> MassRate {
-        if self.flow_control_valve_open {
-            if self.single_pack_operation {
-                self.absolute_flow
+    fn pack_flow_calculation(
+        &self,
+        pack_flow_valve: &[PackFlowValve; 2],
+        pressurization: &impl Cabin,
+    ) -> MassRate {
+        let absolute_flow: MassRate = self.absolute_flow_calculation(pressurization);
+        if pack_flow_valve.iter().any(|fcv| fcv.fcv_is_open()) {
+            // Single pack operation determination
+            if pack_flow_valve[0].fcv_is_open() != pack_flow_valve[1].fcv_is_open() {
+                absolute_flow
             } else {
-                self.absolute_flow * 2.
+                absolute_flow * 2.
             }
         } else {
             MassRate::new::<kilogram_per_second>(0.)
         }
+    }
+}
+
+impl PackFlow for PackFlowController {
+    fn pack_flow(&self) -> MassRate {
+        self.pack_flow
     }
 }
 
@@ -739,10 +744,8 @@ impl SimulationElement for PackFlowController {
         if self.should_open_fcv.iter().any(|&x| x) {
             writer.write(&self.pack_flow_id, self.flow_demand);
         } else {
-            writer.write(
-                &self.pack_flow_id,
-                Ratio::new::<percent>((OverheadFlowSelector::Lo as u32) as f64),
-            );
+            let flow_selected: Ratio = OverheadFlowSelector::Lo.into();
+            writer.write(&self.pack_flow_id, flow_selected);
         }
     }
 }
