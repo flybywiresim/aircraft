@@ -3,7 +3,7 @@ import { useSimVar } from '@instruments/common/simVars';
 import React from 'react';
 
 const getModeEGTMax = () => {
-    const [throttleMode] = useSimVar('L:A32NX_AUTOTHRUST_LIMIT_TYPE', 'number', 500);
+    const [throttleMode] = useSimVar('L:A32NX_AUTOTHRUST_THRUST_LIMIT_TYPE', 'number', 500);
     const [togaWarning] = useSimVar('L:A32NX_AUTOTHRUST_THRUST_LEVER_WARNING_TOGA', 'boolean', 500);
 
     switch (throttleMode) {

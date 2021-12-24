@@ -111,6 +111,7 @@ animation: pulsingS 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
     .GreenLine {
         stroke: $display-green !important;
         stroke-width: 2;
+        fill: none;
     }
 
     .BackgroundLine {

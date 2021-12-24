@@ -193,13 +193,15 @@ type valueRadianAngleConverterType = {
     max: number,
     endAngle: number,
     startAngle: number,
+    perpendicular?: boolean
 }
 
-export const valueRadianAngleConverter = ({ value, min, max, endAngle, startAngle } : valueRadianAngleConverterType) => {
+export const valueRadianAngleConverter = ({ value, min, max, endAngle, startAngle, perpendicular = false } : valueRadianAngleConverterType) => {
     const valuePercentage = (value - min) / (max - min);
+    const angle = perpendicular ? 0 : 90;
     const angleInDegress = startAngle > endAngle
-        ? startAngle + (valuePercentage * (360 - startAngle + endAngle)) - 90
-        : startAngle + (valuePercentage * (endAngle - startAngle)) - 90;
+        ? startAngle + (valuePercentage * (360 - startAngle + endAngle)) - angle
+        : startAngle + (valuePercentage * (endAngle - startAngle)) - angle;
     const angleInRadians = angleInDegress * (Math.PI / 180.0);
     return ({
         x: Math.cos(angleInRadians),
@@ -283,7 +285,7 @@ export const GaugeMarkerComponent: FC<GaugeMarkerComponentType> = memo(({
     );
 });
 
-type GaugeComponentProps = {
+export type GaugeComponentProps = {
     x: number,
     y: number,
     radius: number,
@@ -354,8 +356,6 @@ export const GaugeMaxComponent: FC<GaugeMaxComponentType> = memo(({ value, x, y,
         x: x + (dir.x * radius),
         y: y + (dir.y * radius),
     };
-
-    // console.log(`ANgle is ${dir.angle}`);
 
     return (
         <>
