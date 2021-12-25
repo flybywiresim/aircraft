@@ -92,6 +92,15 @@
     white-space: pre;
 }
 
+
+/* Fixes cut-off text in Safari */
+/* https://stackoverflow.com/questions/36294234/safari-cuts-off-fonts-with-characters-that-go-outside-of-font-file-bounding-box */
+
+.fmc-block > span {
+  padding: 20px;
+  margin: -20px;
+}
+
 .line-left {
     position: absolute;
     left: 4.2%;
