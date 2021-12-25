@@ -223,19 +223,15 @@ type GaugeMarkerComponentType = {
     multiplierOuter?: number,
     multiplierInner?: number,
     textNudgeX?: number,
-    textNudgeY?: number
+    textNudgeY?: number,
+    bold?: boolean,
 };
 
 export const GaugeMarkerComponent: FC<GaugeMarkerComponentType> = memo(({
     value, x, y, min, max, radius, startAngle, endAngle, className, showValue,
-    indicator, outer, multiplierOuter, multiplierInner, textNudgeX, textNudgeY,
+    indicator, outer, multiplierOuter = 1.15, multiplierInner = 0.85, textNudgeX = 0, textNudgeY = 0, bold,
 }) => {
     const dir = valueRadianAngleConverter({ value, min, max, endAngle, startAngle });
-    if (typeof multiplierOuter === 'undefined') multiplierOuter = 1.15;
-    if (typeof multiplierInner === 'undefined') multiplierInner = 0.9;
-    if (typeof textNudgeX === 'undefined') textNudgeX = 0;
-    if (typeof textNudgeY === 'undefined') textNudgeY = 0;
-
     let start = {
         x: x + (dir.x * radius * multiplierInner),
         y: y + (dir.y * radius * multiplierInner),
@@ -275,7 +271,7 @@ export const GaugeMarkerComponent: FC<GaugeMarkerComponentType> = memo(({
 
     return (
         <>
-            <line x1={start.x} y1={start.y} x2={end.x} y2={end.y} className={className} />
+            <line x1={start.x} y1={start.y} x2={end.x} y2={end.y} strokeWidth={bold ? 2 : undefined} className={className} />
             <text x={pos.x} y={pos.y} className={className} alignmentBaseline="central" textAnchor="middle">{textValue}</text>
         </>
     );
@@ -293,8 +289,6 @@ type GaugeComponentProps = {
 
 export const GaugeComponent: FC<GaugeComponentProps> = memo(({ x, y, radius, startAngle, endAngle, className, children, visible }) => {
     const d = describeArc(x, y, radius, startAngle, endAngle);
-
-    if (typeof visible === 'undefined') visible = false;
 
     return (
         <>

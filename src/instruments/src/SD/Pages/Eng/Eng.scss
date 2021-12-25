@@ -65,26 +65,26 @@
       display: none;
     }
     .FillPulse {
-        animation: fill-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        animation: fill-pulse 1s step-end infinite;
 
         @keyframes fill-pulse {
             0%, 100% {
               fill: $display-green;
             }
             50% {
-                fill: hsl(126, 93%, 17%);
+                fill: hsl(120, 100%, 20%);
             }
         }
     }
     .LinePulse {
-        animation: line-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        animation: line-pulse 1s step-end infinite;
 
         @keyframes line-pulse {
             0%, 100% {
               stroke: $display-green;
             }
             50% {
-              stroke: hsl(126, 93%, 17%);
+              stroke: hsl(120, 100%, 20%);
             }
         }
     }
