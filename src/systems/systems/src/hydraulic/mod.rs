@@ -132,8 +132,7 @@ impl PowerTransferUnit {
     const EFFICIENCY_LEFT_TO_RIGHT: f64 = 0.85;
     const EFFICIENCY_RIGHT_TO_LEFT: f64 = 0.85;
 
-    const DEFAULT_RIGHT_DISPLACEMENT: f64 = 0.92; // 15 cm3/rev
-    const DEFAULT_LEFT_DISPLACEMENT: f64 = 0.92; // 12.5 cm3/rev
+    const DEFAULT_LEFT_DISPLACEMENT: f64 = 0.92;
 
     const DISPLACEMENT_TIME_CONSTANT: Duration = Duration::from_millis(150);
 
@@ -252,6 +251,7 @@ impl PowerTransferUnit {
         // -1 = active left, 0 = no active, 1 = active right
         let active_direction = (self.right_displacement.output() > self.left_displacement) as i8
             - (self.right_displacement.output() < self.left_displacement) as i8;
+
         self.is_active_left = is_rotating && active_direction == -1;
         self.is_active_right = is_rotating && active_direction == 1;
     }
