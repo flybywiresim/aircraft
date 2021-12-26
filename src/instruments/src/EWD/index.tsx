@@ -16,6 +16,16 @@ export const EWD: React.FC = () => {
             potentiometerIndex={displayIndex}
         >
             <svg className="ewd-svg" version="1.1" viewBox="0 0 768 768" xmlns="http://www.w3.org/2000/svg">
+                <line className="Separator" x1="0" y1="0" x2="20" y2="0" strokeLinecap="round" />
+                <line className="Separator" x1="0" y1="0" x2="0" y2="20" strokeLinecap="round" />
+                <line className="Separator" x1="0" y1="768" x2="20" y2="768" strokeLinecap="round" />
+                <line className="Separator" x1="0" y1="748" x2="0" y2="768" strokeLinecap="round" />
+                <line className="Separator" x1="748" y1="0" x2="768" y2="0" strokeLinecap="round" />
+                <line className="Separator" x1="768" y1="0" x2="768" y2="20" strokeLinecap="round" />
+                <line className="Separator" x1="768" y1="768" x2="768" y2="748" strokeLinecap="round" />
+                <line className="Separator" x1="374" y1="0" x2="394" y2="0" strokeLinecap="round" />
+                <line className="Separator" x1="384" y1="0" x2="384" y2="20" strokeLinecap="round" />
+
                 <UpperDisplay />
                 <line className="Separator" x1="4" y1="506" x2="442" y2="506" strokeLinecap="round" />
                 <line className="Separator" x1="512" y1="506" x2="763" y2="506" strokeLinecap="round" />

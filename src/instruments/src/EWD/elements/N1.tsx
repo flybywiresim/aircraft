@@ -31,7 +31,7 @@ const N1: React.FC<N1Props> = ({ x, y, engine }) => {
             <g id={`N1-indicator-${engine}`}>
                 <text className="Large End Green" x={x + 40} y={y + 45}>{N1PercentSplit[0]}</text>
                 <text className="Large End Green" x={x + 54} y={y + 45}>.</text>
-                <text className="Medium End Green" x={x + 66} y={y + 45}>{N1PercentSplit[1]}</text>
+                <text className="Medium End Green" x={x + 70} y={y + 45}>{N1PercentSplit[1]}</text>
                 <GaugeComponent x={x} y={y} radius={radius} startAngle={startAngle} endAngle={endAngle} visible className="GaugeComponent Gauge">
                     <GaugeComponent x={x} y={y} radius={radius} startAngle={endAngle - 20} endAngle={endAngle} visible className="GaugeComponent Gauge Red" />
                     <GaugeMarkerComponent
@@ -47,11 +47,56 @@ const N1: React.FC<N1Props> = ({ x, y, engine }) => {
                         showValue
                         textNudgeY={6}
                         textNudgeX={13}
+                        multiplierInner={0.9}
                     />
-                    <GaugeMarkerComponent value={6} x={x} y={y} min={min} max={max} radius={radius} startAngle={startAngle} endAngle={endAngle} className="GaugeText Gauge" />
-                    <GaugeMarkerComponent value={7} x={x} y={y} min={min} max={max} radius={radius} startAngle={startAngle} endAngle={endAngle} className="GaugeText Gauge" />
-                    <GaugeMarkerComponent value={8} x={x} y={y} min={min} max={max} radius={radius} startAngle={startAngle} endAngle={endAngle} className="GaugeText Gauge" />
-                    <GaugeMarkerComponent value={9} x={x} y={y} min={min} max={max} radius={radius} startAngle={startAngle} endAngle={endAngle} className="GaugeText Gauge" />
+                    <GaugeMarkerComponent
+                        value={6}
+                        x={x}
+                        y={y}
+                        min={min}
+                        max={max}
+                        radius={radius}
+                        startAngle={startAngle}
+                        endAngle={endAngle}
+                        className="GaugeText Gauge"
+                        multiplierInner={0.9}
+                    />
+                    <GaugeMarkerComponent
+                        value={7}
+                        x={x}
+                        y={y}
+                        min={min}
+                        max={max}
+                        radius={radius}
+                        startAngle={startAngle}
+                        endAngle={endAngle}
+                        className="GaugeText Gauge"
+                        multiplierInner={0.9}
+                    />
+                    <GaugeMarkerComponent
+                        value={8}
+                        x={x}
+                        y={y}
+                        min={min}
+                        max={max}
+                        radius={radius}
+                        startAngle={startAngle}
+                        endAngle={endAngle}
+                        className="GaugeText Gauge"
+                        multiplierInner={0.9}
+                    />
+                    <GaugeMarkerComponent
+                        value={9}
+                        x={x}
+                        y={y}
+                        min={min}
+                        max={max}
+                        radius={radius}
+                        startAngle={startAngle}
+                        endAngle={endAngle}
+                        className="GaugeText Gauge"
+                        multiplierInner={0.9}
+                    />
                     <GaugeMarkerComponent
                         value={10}
                         x={x}
@@ -65,8 +110,20 @@ const N1: React.FC<N1Props> = ({ x, y, engine }) => {
                         showValue
                         textNudgeY={6}
                         textNudgeX={-13}
+                        multiplierInner={0.9}
                     />
-                    <GaugeMarkerComponent value={11} x={x} y={y} min={min} max={max} radius={radius} startAngle={startAngle} endAngle={endAngle} className="GaugeText Gauge Red" />
+                    <GaugeMarkerComponent
+                        value={11}
+                        x={x}
+                        y={y}
+                        min={min}
+                        max={max}
+                        radius={radius}
+                        startAngle={startAngle}
+                        endAngle={endAngle}
+                        className="GaugeText Gauge Red"
+                        multiplierInner={0.9}
+                    />
                     <rect x={x - 19} y={y + 19} width={96} height={30} className="DarkGreyBox" />
                     <GaugeMarkerComponent
                         value={N1Percent <= N1Idle ? N1Idle / 10 : N1Percent / 10}
@@ -188,6 +245,19 @@ const N1CommandAndTrend: React.FC<N1CommandAndTrendProps> = ({ x, y, radius, sta
                     startAngle={startAngle}
                     endAngle={endAngle}
                     multiplierOuter={0.8}
+                    className={`GreenLine ${autothrustStatus === 2 && Math.abs(N1Actual - (N1Commanded / 10)) > 0.3 ? 'Show' : 'Hide'}`}
+                    indicator
+                />
+                <GaugeMarkerComponent
+                    value={N1Commanded / 10}
+                    x={x}
+                    y={y}
+                    min={min}
+                    max={max}
+                    radius={radius}
+                    startAngle={N1Actual > (N1Commanded / 10) ? n1CommandXY.angle - 20 : n1CommandXY.angle}
+                    endAngle={N1Actual > (N1Commanded / 10) ? n1CommandXY.angle : n1CommandXY.angle + 20}
+                    multiplierOuter={0.5}
                     className={`GreenLine ${autothrustStatus === 2 && Math.abs(N1Actual - (N1Commanded / 10)) > 0.3 ? 'Show' : 'Hide'}`}
                     indicator
                 />
