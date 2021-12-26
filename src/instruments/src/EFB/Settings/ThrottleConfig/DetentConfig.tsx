@@ -15,8 +15,6 @@ interface Props {
     index,
     barPosition: string,
     expertMode: boolean,
-    initialize: boolean,
-    setInitialize,
 }
 
 const DetentConfig: React.FC<Props> = (props: Props) => {

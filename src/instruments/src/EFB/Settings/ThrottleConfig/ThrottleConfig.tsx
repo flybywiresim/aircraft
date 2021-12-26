@@ -20,8 +20,6 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
     const [validConfig, setValidConfig] = useState(true);
     const [validationErrors, setValidationErrors] = useState<string>();
 
-    const [initialize, setInitialize] = useState(false);
-
     const [reverserOnAxis1, setReverserOnAxis1] = useSimVar('L:A32NX_THROTTLE_MAPPING_USE_REVERSE_ON_AXIS:1', 'number', 1000);
     const [, setReverserOnAxis2] = useSimVar('L:A32NX_THROTTLE_MAPPING_USE_REVERSE_ON_AXIS:2', 'number', 1000);
 
@@ -160,8 +158,6 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
                                 throttleNumber={1}
                                 throttleCount={parseInt(isDualAxis) === 0 ? 2 : 1}
                                 activeIndex={selectedIndex}
-                                initialize={initialize}
-                                setInitialize={setInitialize}
                             />
                             <div className="mr-8 ml-8 mt-auto mb-auto">
                                 {navigationBar}
@@ -172,8 +168,6 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
                                 throttleNumber={2}
                                 throttleCount={1}
                                 activeIndex={selectedIndex}
-                                initialize={initialize}
-                                setInitialize={setInitialize}
                             />
                             <div className="mr-4" />
                         </div>
@@ -189,8 +183,6 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
                         throttleNumber={1}
                         throttleCount={2}
                         activeIndex={selectedIndex}
-                        initialize={initialize}
-                        setInitialize={setInitialize}
                     />
                     <div className="ml-8 mt-auto mb-auto">
                         {navigationBar}
@@ -225,9 +217,6 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
                         type={BUTTON_TYPE.BLUE}
                         onClick={() => {
                             syncToThrottle(1);
-                            setTimeout(() => {
-                                setInitialize(true);
-                            }, 1000);
                         }}
                         className="ml-2 hover:bg-blue-600 hover:border-blue-600"
                     />
@@ -237,9 +226,6 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
                         onClick={() => {
                             setDualAxis('1');
                             defaultsToThrottle(1);
-                            setTimeout(() => {
-                                setInitialize(true);
-                            }, 1000);
                         }}
                         className="ml-2 hover:bg-blue-600 hover:border-blue-600"
                     />
