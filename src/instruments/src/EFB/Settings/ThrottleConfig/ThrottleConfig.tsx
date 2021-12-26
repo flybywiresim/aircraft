@@ -48,15 +48,10 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
     ];
 
     useEffect(() => {
-        // setValidConfig(validationErrors.length === 0);
         if (reverserOnAxis1 === 0 && selectedIndex < 2) {
             setSelectedIndex(2);
         }
     }, [reverserOnAxis1, selectedIndex]);
-
-    useEffect(() => {
-        // setValidConfig(validationErrors.length === 0);
-    });
 
     useEffect(() => {
         const errors: string[] = [];
