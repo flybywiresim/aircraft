@@ -254,12 +254,10 @@ impl PowerTransferUnit {
         let is_rotating =
             self.shaft_speed.get::<revolution_per_minute>().abs() > Self::MIN_SPEED_SIMULATION_RPM;
 
-        // -1 = active left, 0 = no active, 1 = active right
-        let active_direction = (self.right_displacement.output() > self.left_displacement) as i8
-            - (self.right_displacement.output() < self.left_displacement) as i8;
+        let active_direction = self.shaft_speed.get::<revolution_per_minute>().signum();
 
-        self.is_active_left = is_rotating && active_direction == -1;
-        self.is_active_right = is_rotating && active_direction == 1;
+        self.is_active_left = is_rotating && active_direction == -1.;
+        self.is_active_right = is_rotating && active_direction == 1.;
     }
 
     fn update_shaft_physics(
