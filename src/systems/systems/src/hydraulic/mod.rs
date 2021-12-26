@@ -119,7 +119,7 @@ impl PressureSwitch {
     }
 }
 
-/// Physical low level sitch.
+/// Physical low level switch.
 /// It's a physical switch that changes state when crossing a fluid level threshold.
 pub struct LevelSwitch {
     state_is_low: bool,
@@ -1260,13 +1260,7 @@ impl Reservoir {
     }
 
     pub fn is_low_air_pressure(&self) -> bool {
-        for switch in &self.air_pressure_switches {
-            if switch.state() == PressureSwitchState::NotPressurised {
-                return true;
-            }
-        }
-
-        false
+        self.air_pressure_switches.iter().any(|s| s.state() == PressureSwitchState::NotPressurised)
     }
 
     pub fn is_low_level(&self) -> bool {
