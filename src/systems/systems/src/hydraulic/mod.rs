@@ -119,7 +119,7 @@ impl PressureSwitch {
     }
 }
 
-/// Physical low level sitch.
+/// Physical low level switch.
 /// It's a physical switch that changes state when crossing a fluid level threshold.
 pub struct LevelSwitch {
     state_is_low: bool,
