@@ -129,6 +129,7 @@ pub struct PowerTransferUnit {
     shaft_speed: AngularVelocity,
 }
 impl PowerTransferUnit {
+    const MIN_SPEED_SIMULATION_RPM: f64 = 50.;
     const EFFICIENCY_LEFT_TO_RIGHT: f64 = 0.85;
     const EFFICIENCY_RIGHT_TO_LEFT: f64 = 0.85;
 
@@ -206,6 +207,7 @@ impl PowerTransferUnit {
         self.is_enabled = controller.should_enable();
 
         self.update_displacement(context, loop_left_section, loop_right_section);
+        self.update_active_state();
         self.update_shaft_physics(context, loop_left_section, loop_right_section);
         self.update_flows();
     }
@@ -243,8 +245,11 @@ impl PowerTransferUnit {
 
         self.right_displacement
             .update(context.delta(), new_displacement);
+    }
 
-        let is_rotating = self.shaft_speed.get::<revolution_per_minute>().abs() > 1.;
+    fn update_active_state(&mut self) {
+        let is_rotating =
+            self.shaft_speed.get::<revolution_per_minute>().abs() > Self::MIN_SPEED_SIMULATION_RPM;
 
         // -1 = active left, 0 = no active, 1 = active right
         let active_direction = (self.right_displacement.output() > self.left_displacement) as i8
@@ -279,7 +284,7 @@ impl PowerTransferUnit {
         );
         let total_torque = friction_torque + left_side_torque + right_side_torque;
 
-        if self.shaft_speed.abs().get::<revolution_per_minute>() > 50.
+        if self.shaft_speed.abs().get::<revolution_per_minute>() > Self::MIN_SPEED_SIMULATION_RPM
             || total_torque.abs().get::<newton_meter>() > Self::BREAKOUT_TORQUE_NM
         {
             let acc = total_torque.get::<newton_meter>() / Self::SHAFT_INERTIA;
@@ -324,13 +329,14 @@ impl PowerTransferUnit {
 
     fn update_flows(&mut self) {
         let shaft_rpm = self.shaft_speed.get::<revolution_per_minute>();
-        if shaft_rpm < -0.1 {
+
+        if shaft_rpm < -Self::MIN_SPEED_SIMULATION_RPM {
             // Left sends flow to right
             let flow = Self::calc_flow(self.shaft_speed.abs(), self.left_displacement);
             self.flow_to_left = -flow;
             self.flow_to_right = flow * Self::EFFICIENCY_LEFT_TO_RIGHT;
             self.last_flow = flow;
-        } else if shaft_rpm > 0.1 {
+        } else if shaft_rpm > Self::MIN_SPEED_SIMULATION_RPM {
             // Right sends flow to left
             let flow = Self::calc_flow(self.shaft_speed.abs(), self.right_displacement.output());
             self.flow_to_left = flow * Self::EFFICIENCY_RIGHT_TO_LEFT;
@@ -344,7 +350,6 @@ impl PowerTransferUnit {
     }
 
     fn calc_flow(speed: AngularVelocity, displacement: Volume) -> VolumeRate {
-        // TODO: correct unit for displacement and result?
         VolumeRate::new::<gallon_per_second>(
             speed.get::<revolution_per_minute>() * displacement.get::<cubic_inch>() / 231. / 60.,
         )
