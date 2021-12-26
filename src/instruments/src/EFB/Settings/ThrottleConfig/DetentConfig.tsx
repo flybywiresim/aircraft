@@ -29,15 +29,8 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
     const setFromTo = (throttle1Position, settingLower, settingUpper, deadZone: number, overrideValue?: string) => {
         const newSetting = overrideValue || throttle1Position;
 
-        if (deadZone) {
-            settingLower.forEach((f) => f(newSetting - deadZone < -1 ? -1 : newSetting - deadZone));
-            settingUpper.forEach((f) => f(newSetting + deadZone > 1 ? 1 : newSetting + deadZone));
-        }
-    };
-
-    const applyDeadzone = (settingLower, settingUpper, axisValue: number, deadZone: number) => {
-        settingLower.forEach((f) => f(axisValue - deadZone < -1 ? -1 : axisValue - deadZone));
-        settingUpper.forEach((f) => f(axisValue + deadZone > 1 ? 1 : axisValue + deadZone));
+        settingLower.forEach((f) => f(newSetting - deadZone < -1 ? -1 : newSetting - deadZone));
+        settingUpper.forEach((f) => f(newSetting + deadZone > 1 ? 1 : newSetting + deadZone));
     };
 
     useEffect(() => {
@@ -83,7 +76,6 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
                                 onChange={(deadZone) => {
                                     if (parseFloat(deadZone) >= 0.01) {
                                         if (previousMode === props.expertMode) {
-                                            applyDeadzone(props.lowerBoundDetentSetter, props.upperBoundDetentSetter, parseFloat(props.throttlePosition), parseFloat(deadZone));
                                             setShowWarning(false);
                                             setDeadZone(parseFloat(deadZone));
                                         }
