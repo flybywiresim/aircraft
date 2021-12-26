@@ -1260,7 +1260,9 @@ impl Reservoir {
     }
 
     pub fn is_low_air_pressure(&self) -> bool {
-        self.air_pressure_switches.iter().any(|s| s.state() == PressureSwitchState::NotPressurised)
+        self.air_pressure_switches
+            .iter()
+            .any(|s| s.state() == PressureSwitchState::NotPressurised)
     }
 
     pub fn is_low_level(&self) -> bool {
