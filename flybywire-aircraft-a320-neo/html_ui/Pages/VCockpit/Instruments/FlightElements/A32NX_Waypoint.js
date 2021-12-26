@@ -32,6 +32,7 @@ class WayPoint {
         this.liveETATo = 0;
         this.liveUTCTo = 0;
         this.waypointReachedAt = 0;
+        this.additionalData = {};
     }
     getSvgElement(index) {
         if (this.infos) {

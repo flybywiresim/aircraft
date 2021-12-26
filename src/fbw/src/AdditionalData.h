@@ -22,4 +22,8 @@ struct AdditionalData {
   double hydraulic_green_pressure;
   double hydraulic_blue_pressure;
   double hydraulic_yellow_pressure;
+  double throttle_lever_1_pos;
+  double throttle_lever_2_pos;
+  double corrected_engine_N1_1_percent;
+  double corrected_engine_N1_2_percent;
 };

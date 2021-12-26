@@ -17,7 +17,7 @@ type ButtonType = {
     setting: string,
 }
 
-type AdirsButton = {
+type SimVarButton = {
     simVarValue: number,
 }
 
@@ -235,21 +235,104 @@ const AircraftConfigurationPage = () => {
 const SimOptionsPage = () => {
     const [showThrottleSettings, setShowThrottleSettings] = useState(false);
     const { setShowNavbar } = useContext(SettingsNavbarContext);
+    const [fpSync, setFpSync] = usePersistentProperty('FP_SYNC', 'LOAD');
+    const [dynamicRegistration, setDynamicRegistration] = usePersistentProperty('DYNAMIC_REGISTRATION_DECAL', '0');
+    const [defaultBaro, setDefaultBaro] = usePersistentProperty('CONFIG_INIT_BARO_UNIT', 'AUTO');
+
+    const fpSyncButtons: ButtonType[] = [
+        { name: 'None', setting: 'NONE' },
+        { name: 'Load Only', setting: 'LOAD' },
+        { name: 'Save', setting: 'SAVE' },
+    ];
+
+    const dynamicRegistrationButtons: ButtonType[] = [
+        { name: 'Disabled', setting: '0' },
+        { name: 'Enabled', setting: '1' },
+    ];
+
+    const defaultBaroButtons: ButtonType[] = [
+        { name: 'Auto', setting: 'AUTO' },
+        { name: 'in Hg', setting: 'IN HG' },
+        { name: 'hPa', setting: 'HPA' },
+    ];
+
+    useEffect(() => {
+        setShowNavbar(!showThrottleSettings);
+    }, [showThrottleSettings]);
+
+    return (
+        <div>
+            {!showThrottleSettings
+        && (
+            <>
+                <div className="bg-navy-lighter rounded-xl px-6 shadow-lg divide-y divide-gray-700 flex flex-col">
+
+                    <div className="py-4 flex flex-row justify-between items-center">
+                        <span className="text-lg text-gray-300 mr-1">Default Baro</span>
+                        <SelectGroup>
+                            {defaultBaroButtons.map((button) => (
+                                <SelectItem
+                                    enabled
+                                    onSelect={() => setDefaultBaro(button.setting)}
+                                    selected={defaultBaro === button.setting}
+                                >
+                                    {button.name}
+                                </SelectItem>
+                            ))}
+                        </SelectGroup>
+                    </div>
+
+                    <div className="py-4 flex flex-row justify-between items-center">
+                        <span className="text-lg text-gray-300 mr-1">Sync MSFS Flight Plan</span>
+                        <SelectGroup>
+                            {fpSyncButtons.map((button) => (
+                                <SelectItem
+                                    enabled
+                                    onSelect={() => setFpSync(button.setting)}
+                                    selected={fpSync === button.setting}
+                                >
+                                    {button.name}
+                                </SelectItem>
+                            ))}
+                        </SelectGroup>
+                    </div>
+
+                    <div className="py-4 flex flex-row justify-between items-center">
+                        <span className="text-lg text-gray-300 mr-1">Dynamic Registration Decal</span>
+                        <SelectGroup>
+                            {dynamicRegistrationButtons.map((button) => (
+                                <SelectItem
+                                    enabled
+                                    onSelect={() => setDynamicRegistration(button.setting)}
+                                    selected={dynamicRegistration === button.setting}
+                                >
+                                    {button.name}
+                                </SelectItem>
+                            ))}
+                        </SelectGroup>
+                    </div>
+
+                </div>
+                <ControlSettings setShowSettings={setShowThrottleSettings} />
+            </>
+        )}
+            <ThrottleConfig isShown={showThrottleSettings} onClose={() => setShowThrottleSettings(false)} />
+        </div>
+    );
+};
+
+const RealismPage = () => {
+    const [showThrottleSettings, setShowThrottleSettings] = useState(false);
 
     const [adirsAlignTime, setAdirsAlignTime] = usePersistentProperty('CONFIG_ALIGN_TIME', 'REAL');
     const [, setAdirsAlignTimeSimVar] = useSimVar('L:A32NX_CONFIG_ADIRS_IR_ALIGN_TIME', 'Enum', Number.MAX_SAFE_INTEGER);
     const [dmcSelfTestTime, setDmcSelfTestTime] = usePersistentProperty('CONFIG_SELF_TEST_TIME', '12');
     const [boardingRate, setBoardingRate] = usePersistentProperty('CONFIG_BOARDING_RATE', 'REAL');
-
-    const [defaultBaro, setDefaultBaro] = usePersistentProperty('CONFIG_INIT_BARO_UNIT', 'AUTO');
-
-    const [fpSync, setFpSync] = usePersistentProperty('FP_SYNC', 'LOAD');
     const [mcduInput, setMcduInput] = usePersistentProperty('MCDU_KB_INPUT', 'DISABLED');
     const [mcduTimeout, setMcduTimeout] = usePersistentProperty('CONFIG_MCDU_KB_TIMEOUT', '60');
+    const [realisticTiller, setRealisticTiller] = usePersistentProperty('REALISTIC_TILLER_ENABLED', '0');
 
-    const [dynamicRegistration, setDynamicRegistration] = usePersistentProperty('DYNAMIC_REGISTRATION_DECAL', '0');
-
-    const adirsAlignTimeButtons: (ButtonType & AdirsButton)[] = [
+    const adirsAlignTimeButtons: (ButtonType & SimVarButton)[] = [
         { name: 'Instant', setting: 'INSTANT', simVarValue: 1 },
         { name: 'Fast', setting: 'FAST', simVarValue: 2 },
         { name: 'Real', setting: 'REAL', simVarValue: 0 },
@@ -267,26 +350,10 @@ const SimOptionsPage = () => {
         { name: 'Real', setting: 'REAL' },
     ];
 
-    const defaultBaroButtons: ButtonType[] = [
-        { name: 'Auto', setting: 'AUTO' },
-        { name: 'in Hg', setting: 'IN HG' },
-        { name: 'hPa', setting: 'HPA' },
+    const steeringSeparationButtons: (ButtonType & SimVarButton)[] = [
+        { name: 'Disabled', setting: '0', simVarValue: 0 },
+        { name: 'Enabled', setting: '1', simVarValue: 1 },
     ];
-
-    const fpSyncButtons: ButtonType[] = [
-        { name: 'None', setting: 'NONE' },
-        { name: 'Load Only', setting: 'LOAD' },
-        { name: 'Save', setting: 'SAVE' },
-    ];
-
-    const dynamicRegistrationButtons: ButtonType[] = [
-        { name: 'Disabled', setting: '0' },
-        { name: 'Enabled', setting: '1' },
-    ];
-
-    useEffect(() => {
-        setShowNavbar(!showThrottleSettings);
-    }, [showThrottleSettings]);
 
     return (
         <div>
@@ -343,41 +410,13 @@ const SimOptionsPage = () => {
                     </div>
 
                     <div className="py-4 flex flex-row justify-between items-center">
-                        <span className="text-lg text-gray-300 mr-1">Default Baro</span>
-                        <SelectGroup>
-                            {defaultBaroButtons.map((button) => (
-                                <SelectItem
-                                    enabled
-                                    onSelect={() => setDefaultBaro(button.setting)}
-                                    selected={defaultBaro === button.setting}
-                                >
-                                    {button.name}
-                                </SelectItem>
-                            ))}
-                        </SelectGroup>
-                    </div>
-
-                    <div className="py-4 flex flex-row justify-between items-center">
-                        <span className="text-lg text-gray-300 mr-1">Sync MSFS Flight Plan</span>
-                        <SelectGroup>
-                            {fpSyncButtons.map((button) => (
-                                <SelectItem
-                                    enabled
-                                    onSelect={() => setFpSync(button.setting)}
-                                    selected={fpSync === button.setting}
-                                >
-                                    {button.name}
-                                </SelectItem>
-                            ))}
-                        </SelectGroup>
-                    </div>
-                    <div className="py-4 flex flex-row justify-between items-center">
                         <span>
                             <span className="text-lg text-gray-300">MCDU Keyboard Input</span>
                             <span className="text-lg text-gray-500 ml-2">(unrealistic)</span>
                         </span>
                         <Toggle value={mcduInput === 'ENABLED'} onToggle={(value) => setMcduInput(value ? 'ENABLED' : 'DISABLED')} />
                     </div>
+
                     <div className="py-4 flex flex-row justify-between items-center">
                         <span>
                             <span className="text-lg text-gray-300">MCDU Focus Timeout (s)</span>
@@ -399,13 +438,13 @@ const SimOptionsPage = () => {
                     </div>
 
                     <div className="py-4 flex flex-row justify-between items-center">
-                        <span className="text-lg text-gray-300 mr-1">Dynamic Registration Decal</span>
+                        <span className="text-lg text-gray-300 mr-1">Separate Tiller from Rudder Inputs</span>
                         <SelectGroup>
-                            {dynamicRegistrationButtons.map((button) => (
+                            {steeringSeparationButtons.map((button) => (
                                 <SelectItem
                                     enabled
-                                    onSelect={() => setDynamicRegistration(button.setting)}
-                                    selected={dynamicRegistration === button.setting}
+                                    onSelect={() => setRealisticTiller(button.setting)}
+                                    selected={realisticTiller === button.setting}
                                 >
                                     {button.name}
                                 </SelectItem>
@@ -413,7 +452,6 @@ const SimOptionsPage = () => {
                         </SelectGroup>
                     </div>
                 </div>
-                <ControlSettings setShowSettings={setShowThrottleSettings} />
             </>
         )}
             <ThrottleConfig isShown={showThrottleSettings} onClose={() => setShowThrottleSettings(false)} />
@@ -432,7 +470,7 @@ const ATSUAOCPage = () => {
     const [simbriefDisplay, setSimbriefDisplay] = useState(simbriefUserId);
 
     function getSimbriefUserData(value: string): Promise<any> {
-        const SIMBRIEF_URL = 'http://www.simbrief.com/api/xml.fetcher.php?json=1';
+        const SIMBRIEF_URL = 'https://www.simbrief.com/api/xml.fetcher.php?json=1';
 
         if (!value) {
             throw new Error('No SimBrief username/pilot ID provided');
@@ -671,9 +709,10 @@ const Settings = () => {
         case 0: return [<DefaultsPage />];
         case 1: return [<AircraftConfigurationPage />];
         case 2: return [<SimOptionsPage />];
-        case 3: return [<ATSUAOCPage />];
-        case 4: return [<AudioPage />];
-        case 5: return [<FlyPadPage />];
+        case 3: return [<RealismPage />];
+        case 4: return [<ATSUAOCPage />];
+        case 5: return [<AudioPage />];
+        case 6: return [<FlyPadPage />];
         default: return [<AircraftConfigurationPage />];
         }
     }
@@ -687,6 +726,7 @@ const Settings = () => {
                             'Defaults',
                             'Aircraft Configuration',
                             'Sim Options',
+                            'Realism',
                             'ATSU/AOC',
                             'Audio',
                             'flyPad',

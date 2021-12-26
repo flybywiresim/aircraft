@@ -42,8 +42,8 @@ class EngineRatios {
     return t;
   }
 
-  FLOAT64 delta(double ambientTemp) {
-    double d = pow(this->theta(ambientTemp), 5.256);
+  FLOAT64 delta(double ambientPressure) {
+    double d = ambientPressure/1013;
     return d;
   }
 
@@ -52,8 +52,8 @@ class EngineRatios {
     return t2;
   }
 
-  FLOAT64 delta2(double mach, double ambientTemp) {
-    double d2 = this->delta(ambientTemp) * pow((1 + 0.2 * powFBW(mach, 2)), 3.5);
+  FLOAT64 delta2(double mach, double ambientPressure) {
+    double d2 = this->delta(ambientPressure) * pow((1 + 0.2 * powFBW(mach, 2)), 3.5);
     return d2;
   }
 };

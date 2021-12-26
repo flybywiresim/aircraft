@@ -1,9 +1,10 @@
 use self::linear_actuator::Actuator;
 
 use crate::hydraulic::electrical_pump_physics::ElectricalPumpPhysics;
-
-use crate::shared::low_pass_filter::LowPassFilter;
-use crate::shared::{interpolation, ElectricalBusType, ElectricalBuses};
+use crate::pneumatic::PressurizeableReservoir;
+use crate::shared::{
+    interpolation, low_pass_filter::LowPassFilter, ElectricalBusType, ElectricalBuses,
+};
 
 use crate::simulation::{
     InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
@@ -25,6 +26,7 @@ use uom::si::{
 pub mod brake_circuit;
 pub mod electrical_pump_physics;
 pub mod linear_actuator;
+pub mod nose_steering;
 pub mod update_iterator;
 
 /// Indicates the pressure state of an hydraulic circuit at different locations
@@ -1289,6 +1291,11 @@ impl Reservoir {
 impl SimulationElement for Reservoir {
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.level_id, self.level());
+    }
+}
+impl PressurizeableReservoir for Reservoir {
+    fn available_volume(&self) -> Volume {
+        self.max_capacity - self.current_level
     }
 }
 

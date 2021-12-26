@@ -66,8 +66,9 @@ function calculateSecDate(date) {
 }
 
 class CDUIdentPage {
-    static ShowPage(mcdu) {
+    static ShowPage(mcdu, confirmDeleteAll = false) {
         const date = mcdu.getNavDataDateRange();
+        const stored = mcdu.dataManager.numberOfStoredElements();
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.IdentPage;
         mcdu.activeSystem = 'FMGC';
@@ -79,12 +80,25 @@ class CDUIdentPage {
             ["\xa0" + calculateActiveDate(date) + "[color]cyan", "AIRAC[color]green"],
             ["\xa0SECOND NAV DATA BASE"],
             ["{small}{" + calculateSecDate(date) + "{end}[color]inop"],
-            ["", ""],
-            ["", ""],
-            ["CHG CODE", ""],
-            ["{small}[  ]{end}[color]inop", ""],
+            ["", "STORED\xa0\xa0\xa0\xa0"],
+            ["", `{green}${stored.routes.toFixed(0).padStart(2, '0')}{end}{small}RTES{end}\xa0{green}${stored.runways.toFixed(0).padStart(2, '0')}{end}{small}RWYS{end}`],
+            ["CHG CODE", `{green}{big}${stored.waypoints.toFixed(0).padStart(2, '0')}{end}{end}{small}WPTS{end}\xa0{green}{big}${stored.navaids.toFixed(0).padStart(2, '0')}{end}{end}{small}NAVS{end}`],
+            ["{small}[  ]{end}[color]inop", confirmDeleteAll ? '{amber}CONFIRM DEL*{end}' : '{cyan}DELETE ALL}{end}'],
             ["IDLE/PERF", "SOFTWARE"],
             ["+0.0/+0.0[color]green", "STATUS/XLOAD>[color]inop"]
         ]);
+
+        // DELETE ALL
+        mcdu.onRightInput[4] = () => {
+            if (confirmDeleteAll) {
+                const allDeleted = mcdu.dataManager.deleteAllStoredWaypoints();
+                if (!allDeleted) {
+                    mcdu.addNewMessage(NXSystemMessages.fplnElementRetained);
+                }
+                CDUIdentPage.ShowPage(mcdu);
+            } else {
+                CDUIdentPage.ShowPage(mcdu, true);
+            }
+        };
     }
 }
