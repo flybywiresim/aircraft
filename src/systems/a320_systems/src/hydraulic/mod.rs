@@ -120,6 +120,10 @@ impl A320HydraulicCircuitFactory {
 
 struct A320CargoDoorFactory {}
 impl A320CargoDoorFactory {
+    const FLOW_CONTROL_PROPORTIONAL_GAIN: f64 = 0.05;
+    const FLOW_CONTROL_INTEGRAL_GAIN: f64 = 5.;
+    const FLOW_CONTROL_FORCE_GAIN: f64 = 200000.;
+
     fn a320_cargo_door_actuator(
         bounded_linear_length: &impl BoundedLinearLength,
     ) -> LinearActuator {
@@ -132,6 +136,12 @@ impl A320CargoDoorFactory {
             600000.,
             15000.,
             500.,
+            1000000.,
+            [1., 1., 1., 1., 1., 1.],
+            [0., 0.2, 0.21, 0.79, 0.8, 1.],
+            Self::FLOW_CONTROL_PROPORTIONAL_GAIN,
+            Self::FLOW_CONTROL_INTEGRAL_GAIN,
+            Self::FLOW_CONTROL_FORCE_GAIN,
         )
     }
 
@@ -151,6 +161,7 @@ impl A320CargoDoorFactory {
             anchor,
             Angle::new::<degree>(-23.),
             Angle::new::<degree>(136.),
+            Angle::new::<degree>(-23.),
             100.,
             is_locked,
             axis_direction,
@@ -166,11 +177,8 @@ impl A320CargoDoorFactory {
     }
 
     fn new_a320_cargo_door(context: &mut InitContext, id: &str) -> CargoDoor {
-        CargoDoor::new(
-            context,
-            id,
-            A320CargoDoorFactory::a320_cargo_door_assembly(),
-        )
+        let assembly = A320CargoDoorFactory::a320_cargo_door_assembly();
+        CargoDoor::new(context, id, assembly)
     }
 }
 
@@ -1900,9 +1908,9 @@ impl A320DoorController {
                 self.control_position_request = if self.position_requested > Ratio::new::<ratio>(0.)
                     || self.duration_in_hyd_control < Self::UP_CONTROL_TIME_BEFORE_DOWN_CONTROL
                 {
-                    Ratio::new::<ratio>(1.)
+                    Ratio::new::<ratio>(1.0)
                 } else {
-                    Ratio::new::<ratio>(0.)
+                    Ratio::new::<ratio>(-0.1)
                 }
             }
             DoorControlState::UpLocked => {
