@@ -231,11 +231,11 @@ const N1CommandAndTrend: React.FC<N1CommandAndTrendProps> = ({ x, y, radius, sta
     const n1CommandXY = valueRadianAngleConverter({ value: N1Commanded / 10, min, max, endAngle, startAngle, perpendicular: true });
 
     const n1CommandPlusArrow = valueRadianAngleConverter({
-        value: N1Actual,
+        value: N1Commanded / 10,
         min,
         max,
         endAngle: (N1Actual > (N1Commanded / 10) ? n1CommandXY.angle : n1CommandXY.angle + 20),
-        startAngle: (N1Actual > (N1Commanded / 10) ? n1CommandXY.angle - 20 : n1CommandXY.angle),
+        startAngle: (N1Actual > (N1Commanded / 10) ? n1CommandXY.angle - 24 : n1CommandXY.angle),
         perpendicular: false,
     });
 
@@ -245,8 +245,8 @@ const N1CommandAndTrend: React.FC<N1CommandAndTrendProps> = ({ x, y, radius, sta
         y: y + (n1CommandPlusArrow.y * radius * 0.50),
     };
     const n1CommandArrowXY = {
-        x: x + (n1CommandArrow.x * radius * 0.47), // Based on 20 degree angle and hypotenuse of 0.5
-        y: y + (n1CommandArrow.y * radius * 0.47),
+        x: x + (n1CommandArrow.x * radius * 0.50), // Based on 20 degree angle and hypotenuse of 0.5
+        y: y + (n1CommandArrow.y * radius * 0.50),
     };
 
     // console.log(Math.abs(N1Actual - (N1Commanded / 10)));
