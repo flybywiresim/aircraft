@@ -138,10 +138,10 @@ impl PowerTransferUnit {
 
     const DEFAULT_LEFT_DISPLACEMENT_CUBIC_INCH: f64 = 0.92;
 
-    const DISPLACEMENT_TIME_CONSTANT: Duration = Duration::from_millis(130);
+    const DISPLACEMENT_TIME_CONSTANT: Duration = Duration::from_millis(80);
 
     const PRESSURE_BREAKPOINTS_PSI: [f64; 10] =
-        [-500., -250., -100., -50., -10., 0., 50., 80., 250., 500.];
+        [-500., -250., -100., -50., -10., 0., 100., 220., 250., 500.];
     const DISPLACEMENT_CARAC_CUBIC_INCH: [f64; 10] = [
         0.65,
         0.65,
