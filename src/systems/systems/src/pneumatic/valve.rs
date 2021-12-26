@@ -336,11 +336,15 @@ impl PneumaticExhaust {
     const TRANSFER_SPEED: f64 = 3.;
     const HEAT_CAPACITY_RATIO: f64 = 1.4;
 
-    pub fn new(exhaust_speed: f64, leaking_exhaust_speed: f64, pressure_preload: Pressure) -> Self {
+    pub fn new(
+        nominal_exhaust_speed: f64,
+        leaking_exhaust_speed: f64,
+        pressure_preload: Pressure,
+    ) -> Self {
         Self {
-            exhaust_speed,
+            exhaust_speed: nominal_exhaust_speed,
             leaking_exhaust_speed,
-            nominal_exhaust_speed: exhaust_speed,
+            nominal_exhaust_speed,
             fluid_flow: VolumeRate::new::<cubic_meter_per_second>(0.),
             pressure_preload,
             nominal_preload: pressure_preload,
