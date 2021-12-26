@@ -1,4 +1,7 @@
-import { GaugeComponent, GaugeMarkerComponent, splitDecimals, GaugeMaxComponent, ThrottlePositionDonutComponent, valueRadianAngleConverter } from '@instruments/common/gauges';
+import {
+    GaugeComponent,
+    GaugeMarkerComponent, GaugeMarkerComponentType, splitDecimals, GaugeMaxComponent, ThrottlePositionDonutComponent, valueRadianAngleConverter,
+} from '@instruments/common/gauges';
 import { useSimVar } from '@instruments/common/simVars';
 import React from 'react';
 
@@ -125,18 +128,6 @@ const N1: React.FC<N1Props> = ({ x, y, engine }) => {
                         multiplierInner={0.9}
                     />
                     <rect x={x - 19} y={y + 19} width={96} height={30} className="DarkGreyBox" />
-                    <GaugeMarkerComponent
-                        value={N1Percent <= N1Idle ? N1Idle / 10 : N1Percent / 10}
-                        x={x}
-                        y={y}
-                        min={min}
-                        max={max}
-                        radius={radius}
-                        startAngle={startAngle}
-                        endAngle={endAngle}
-                        className="GaugeIndicator Gauge"
-                        indicator
-                    />
                     {/* N1 max limit  */}
                     <GaugeMarkerComponent
                         value={N1ThrustLimit / 10}
@@ -159,6 +150,18 @@ const N1: React.FC<N1Props> = ({ x, y, engine }) => {
                         startAngle={startAngle}
                         endAngle={endAngle}
                         className="GaugeThrustLimitIndicatorFill Gauge"
+                    />
+                    <GaugeMarkerComponent
+                        value={N1Percent <= N1Idle ? N1Idle / 10 : N1Percent / 10}
+                        x={x}
+                        y={y}
+                        min={min}
+                        max={max}
+                        radius={radius}
+                        startAngle={startAngle}
+                        endAngle={endAngle}
+                        className="GaugeIndicator Gauge"
+                        indicator
                     />
                     <Avail x={x} y={y} visible={availVisible} />
                     <N1CommandAndTrend
@@ -227,10 +230,39 @@ const N1CommandAndTrend: React.FC<N1CommandAndTrendProps> = ({ x, y, radius, sta
     const n1ActualXY = valueRadianAngleConverter({ value: N1Actual, min, max, endAngle, startAngle, perpendicular: true });
     const n1CommandXY = valueRadianAngleConverter({ value: N1Commanded / 10, min, max, endAngle, startAngle, perpendicular: true });
 
+    const n1CommandPlusArrow = valueRadianAngleConverter({
+        value: N1Actual,
+        min,
+        max,
+        endAngle: (N1Actual > (N1Commanded / 10) ? n1CommandXY.angle : n1CommandXY.angle + 20),
+        startAngle: (N1Actual > (N1Commanded / 10) ? n1CommandXY.angle - 20 : n1CommandXY.angle),
+        perpendicular: false,
+    });
+
+    const n1CommandArrow = valueRadianAngleConverter({ value: N1Commanded / 10, min, max, endAngle, startAngle, perpendicular: false });
+    const n1ActualArrowXY = {
+        x: x + (n1CommandPlusArrow.x * radius * 0.50),
+        y: y + (n1CommandPlusArrow.y * radius * 0.50),
+    };
+    const n1CommandArrowXY = {
+        x: x + (n1CommandArrow.x * radius * 0.47), // Based on 20 degree angle and hypotenuse of 0.5
+        y: y + (n1CommandArrow.y * radius * 0.47),
+    };
+
     // console.log(Math.abs(N1Actual - (N1Commanded / 10)));
 
     const radiusDivide = radius / 5;
     const commandAndTrendRadius = [radius - radiusDivide, radius - (2 * radiusDivide), radius - (3 * radiusDivide), radius - (4 * radiusDivide)];
+    const N1CommandArray : any[] = [];
+    commandAndTrendRadius.forEach((commandradius) => N1CommandArray.push(<GaugeComponent
+        x={x}
+        y={y}
+        radius={radius - commandradius}
+        startAngle={N1Actual > (N1Commanded / 10) ? n1CommandXY.angle : n1ActualXY.angle}
+        endAngle={N1Actual > (N1Commanded / 10) ? n1ActualXY.angle : n1CommandXY.angle}
+        visible={autothrustStatus === 2 && Math.abs(N1Actual - (N1Commanded / 10)) > 0.3}
+        className="GreenLine"
+    />));
 
     return (
         <>
@@ -257,46 +289,18 @@ const N1CommandAndTrend: React.FC<N1CommandAndTrendProps> = ({ x, y, radius, sta
                     radius={radius}
                     startAngle={N1Actual > (N1Commanded / 10) ? n1CommandXY.angle - 20 : n1CommandXY.angle}
                     endAngle={N1Actual > (N1Commanded / 10) ? n1CommandXY.angle : n1CommandXY.angle + 20}
-                    multiplierOuter={0.5}
+                    multiplierOuter={0.51}
                     className={`GreenLine ${autothrustStatus === 2 && Math.abs(N1Actual - (N1Commanded / 10)) > 0.3 ? 'Show' : 'Hide'}`}
                     indicator
                 />
-                <GaugeComponent
-                    x={x}
-                    y={y}
-                    radius={radius - commandAndTrendRadius[0]}
-                    startAngle={N1Actual > (N1Commanded / 10) ? n1CommandXY.angle : n1ActualXY.angle}
-                    endAngle={N1Actual > (N1Commanded / 10) ? n1ActualXY.angle : n1CommandXY.angle}
-                    visible={autothrustStatus === 2 && Math.abs(N1Actual - (N1Commanded / 10)) > 0.3}
-                    className="GreenLine"
+                <line
+                    x2={n1ActualArrowXY.x}
+                    y2={n1ActualArrowXY.y}
+                    x1={n1CommandArrowXY.x}
+                    y1={n1CommandArrowXY.y}
+                    className={`GreenLine ${autothrustStatus === 2 && Math.abs(N1Actual - (N1Commanded / 10)) > 0.3 ? 'Show' : 'Hide'}`}
                 />
-                <GaugeComponent
-                    x={x}
-                    y={y}
-                    radius={radius - commandAndTrendRadius[1]}
-                    startAngle={N1Actual > (N1Commanded / 10) ? n1CommandXY.angle : n1ActualXY.angle}
-                    endAngle={N1Actual > (N1Commanded / 10) ? n1ActualXY.angle : n1CommandXY.angle}
-                    visible={autothrustStatus === 2 && Math.abs(N1Actual - (N1Commanded / 10)) > 0.3}
-                    className="GreenLine"
-                />
-                <GaugeComponent
-                    x={x}
-                    y={y}
-                    radius={radius - commandAndTrendRadius[2]}
-                    startAngle={N1Actual > (N1Commanded / 10) ? n1CommandXY.angle : n1ActualXY.angle}
-                    endAngle={N1Actual > (N1Commanded / 10) ? n1ActualXY.angle : n1CommandXY.angle}
-                    visible={autothrustStatus === 2 && Math.abs(N1Actual - (N1Commanded / 10)) > 0.3}
-                    className="GreenLine"
-                />
-                <GaugeComponent
-                    x={x}
-                    y={y}
-                    radius={radius - commandAndTrendRadius[3]}
-                    startAngle={N1Actual > (N1Commanded / 10) ? n1CommandXY.angle : n1ActualXY.angle}
-                    endAngle={N1Actual > (N1Commanded / 10) ? n1ActualXY.angle : n1CommandXY.angle}
-                    visible={autothrustStatus === 2 && Math.abs(N1Actual - (N1Commanded / 10)) > 0.3}
-                    className="GreenLine"
-                />
+                {N1CommandArray}
             </g>
         </>
     );

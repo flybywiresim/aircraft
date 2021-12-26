@@ -210,7 +210,7 @@ export const valueRadianAngleConverter = ({ value, min, max, endAngle, startAngl
     });
 };
 
-type GaugeMarkerComponentType = {
+export type GaugeMarkerComponentType = {
     value: number,
     x: number,
     y: number,
