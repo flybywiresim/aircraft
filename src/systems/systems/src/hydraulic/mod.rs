@@ -137,6 +137,8 @@ impl PowerTransferUnit {
     const EFFICIENCY_RIGHT_TO_LEFT: f64 = 0.85;
 
     const DEFAULT_LEFT_DISPLACEMENT_CUBIC_INCH: f64 = 0.92;
+    const MIN_RIGHT_DISPLACEMENT_CUBIC_INCH: f64 = 0.65;
+    const MAX_RIGHT_DISPLACEMENT_CUBIC_INCH: f64 = 1.21;
 
     const DISPLACEMENT_TIME_CONSTANT: Duration = Duration::from_millis(80);
 
@@ -294,18 +296,6 @@ impl PowerTransferUnit {
         } else {
             self.shaft_speed = AngularVelocity::new::<radian_per_second>(0.);
         }
-
-        println!(
-            "RPM: {:.0} L{:.0} R{:.0} TRQ {:.1} DISP{:.2} PreloadOpened {}  TL{:.1} TR{:.1}",
-            self.shaft_speed.get::<revolution_per_minute>(),
-            loop_left_section.pressure().get::<psi>(),
-            loop_right_section.pressure().get::<psi>(),
-            total_torque.get::<newton_meter>(),
-            self.right_displacement.output().get::<cubic_inch>(),
-            self.control_valve_opened,
-            left_side_torque.get::<newton_meter>(),
-            right_side_torque.get::<newton_meter>(),
-        );
     }
 
     fn calc_generated_torque(pressure: Pressure, displacement: Volume) -> Torque {
@@ -315,6 +305,7 @@ impl PowerTransferUnit {
         )
     }
 
+    /// Computes the displacement that equalizes torque on both sides
     fn calc_equilibrium_displacement(
         &self,
         pressure_left: Pressure,
@@ -324,8 +315,12 @@ impl PowerTransferUnit {
             pressure_left.get::<pascal>() * self.left_displacement.get::<cubic_meter>()
                 / pressure_right.get::<pascal>(),
         )
-        .max(Volume::new::<cubic_inch>(0.65))
-        .min(Volume::new::<cubic_inch>(1.21))
+        .max(Volume::new::<cubic_inch>(
+            Self::MIN_RIGHT_DISPLACEMENT_CUBIC_INCH,
+        ))
+        .min(Volume::new::<cubic_inch>(
+            Self::MAX_RIGHT_DISPLACEMENT_CUBIC_INCH,
+        ))
     }
 
     fn update_flows(&mut self) {

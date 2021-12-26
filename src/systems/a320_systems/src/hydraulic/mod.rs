@@ -6164,27 +6164,7 @@ mod tests {
         }
 
         #[test]
-        fn new_ptu_pressurise_green_from_yellow_epump() {
-            let mut test_bed = test_bed_with()
-                .set_cold_dark_inputs()
-                .on_the_ground()
-                .set_yellow_e_pump(false) // Else Ptu inhibited by parking brake
-                .run_waiting_for(Duration::from_secs(25));
-
-            assert!(test_bed.is_ptu_enabled());
-
-            // Now we should have pressure in yellow and green
-            assert!(test_bed.is_green_pressurised());
-            assert!(test_bed.green_pressure() > Pressure::new::<psi>(2000.));
-            assert!(test_bed.green_pressure() < Pressure::new::<psi>(3100.));
-
-            assert!(test_bed.is_yellow_pressurised());
-            assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(2000.));
-            assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(3100.));
-        }
-
-        #[test]
-        fn new_ptu_pressurise_green_from_yellow_edp() {
+        fn ptu_pressurise_green_from_yellow_edp() {
             let mut test_bed = test_bed_with()
                 .set_cold_dark_inputs()
                 .on_the_ground()
@@ -6210,7 +6190,7 @@ mod tests {
         }
 
         #[test]
-        fn new_ptu_pressurise_yellow_from_green_edp() {
+        fn ptu_pressurise_yellow_from_green_edp() {
             let mut test_bed = test_bed_with()
                 .set_cold_dark_inputs()
                 .on_the_ground()
