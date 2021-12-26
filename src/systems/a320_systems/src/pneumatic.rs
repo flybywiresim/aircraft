@@ -24,7 +24,7 @@ use systems::{
     shared::{
         pid::PidController, ControllerSignal, ElectricalBusType, ElectricalBuses,
         EngineCorrectedN1, EngineCorrectedN2, EngineFirePushButtons, HydraulicColor,
-        PneumaticValve, ReservoirPressure,
+        PneumaticValve, ReservoirAirPressure,
     },
     simulation::{
         InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -312,7 +312,7 @@ impl SimulationElement for A320Pneumatic {
         );
     }
 }
-impl ReservoirPressure for A320Pneumatic {
+impl ReservoirAirPressure for A320Pneumatic {
     fn green_reservoir_pressure(&self) -> Pressure {
         self.green_hydraulic_reservoir_with_valve.pressure()
     }

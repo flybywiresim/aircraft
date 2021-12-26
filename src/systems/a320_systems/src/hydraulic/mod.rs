@@ -45,7 +45,7 @@ use systems::{
         interpolation, DelayedFalseLogicGate, DelayedPulseTrueLogicGate, DelayedTrueLogicGate,
         ElectricalBusType, ElectricalBuses, EmergencyElectricalRatPushButton,
         EmergencyElectricalState, EngineFirePushButtons, HydraulicColor, LgciuInterface,
-        RamAirTurbineHydraulicCircuitPressurised, ReservoirPressure,
+        RamAirTurbineHydraulicCircuitPressurised, ReservoirAirPressure,
     },
     simulation::{
         InitContext, Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -459,7 +459,7 @@ impl A320Hydraulic {
         lgciu2: &impl LgciuInterface,
         rat_and_emer_gen_man_on: &impl EmergencyElectricalRatPushButton,
         emergency_elec_state: &impl EmergencyElectricalState,
-        reservoir_pneumatics: &impl ReservoirPressure,
+        reservoir_pneumatics: &impl ReservoirAirPressure,
     ) {
         self.core_hydraulic_updater.update(context);
         self.physics_updater.update(context);
@@ -697,7 +697,7 @@ impl A320Hydraulic {
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         lgciu1: &impl LgciuInterface,
         lgciu2: &impl LgciuInterface,
-        reservoir_pneumatics: &impl ReservoirPressure,
+        reservoir_pneumatics: &impl ReservoirAirPressure,
     ) {
         // First update what is currently consumed and given back by each actuator
         // Todo: might have to split the actuator volumes by expected number of loops
@@ -2771,7 +2771,7 @@ mod tests {
                 self.pressure = Pressure::new::<psi>(1.);
             }
         }
-        impl ReservoirPressure for A320TestPneumatics {
+        impl ReservoirAirPressure for A320TestPneumatics {
             fn green_reservoir_pressure(&self) -> Pressure {
                 self.pressure
             }

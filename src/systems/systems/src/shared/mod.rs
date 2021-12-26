@@ -20,7 +20,7 @@ mod random;
 pub use random::*;
 pub mod arinc429;
 
-pub trait ReservoirPressure {
+pub trait ReservoirAirPressure {
     fn green_reservoir_pressure(&self) -> Pressure;
     fn blue_reservoir_pressure(&self) -> Pressure;
     fn yellow_reservoir_pressure(&self) -> Pressure;
