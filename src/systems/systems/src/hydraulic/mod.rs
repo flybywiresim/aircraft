@@ -132,19 +132,19 @@ impl PowerTransferUnit {
     const EFFICIENCY_LEFT_TO_RIGHT: f64 = 0.85;
     const EFFICIENCY_RIGHT_TO_LEFT: f64 = 0.85;
 
-    const DEFAULT_LEFT_DISPLACEMENT: f64 = 0.92;
+    const DEFAULT_LEFT_DISPLACEMENT_CUBIC_INCH: f64 = 0.92;
 
     const DISPLACEMENT_TIME_CONSTANT: Duration = Duration::from_millis(150);
 
-    const PRESSURE_BREAKPOINTS: [f64; 10] =
+    const PRESSURE_BREAKPOINTS_PSI: [f64; 10] =
         [-500., -250., -100., -50., -10., 0., 50., 80., 250., 500.];
-    const DISPLACEMENT_CARAC: [f64; 10] = [
+    const DISPLACEMENT_CARAC_CUBIC_INCH: [f64; 10] = [
         0.65,
         0.65,
         0.65,
         0.65,
         0.65,
-        Self::DEFAULT_LEFT_DISPLACEMENT,
+        Self::DEFAULT_LEFT_DISPLACEMENT_CUBIC_INCH,
         1.21,
         1.21,
         1.21,
@@ -168,7 +168,9 @@ impl PowerTransferUnit {
             is_active_left: false,
             flow_to_right: VolumeRate::new::<gallon_per_second>(0.0),
             flow_to_left: VolumeRate::new::<gallon_per_second>(0.0),
-            left_displacement: Volume::new::<cubic_inch>(Self::DEFAULT_LEFT_DISPLACEMENT),
+            left_displacement: Volume::new::<cubic_inch>(
+                Self::DEFAULT_LEFT_DISPLACEMENT_CUBIC_INCH,
+            ),
             right_displacement: LowPassFilter::<Volume>::new(Self::DISPLACEMENT_TIME_CONSTANT), //::<cubic_inch>(Self::DEFAULT_RIGHT_DISPLACEMENT),
             last_flow: VolumeRate::new::<gallon_per_second>(0.0),
 
@@ -192,10 +194,6 @@ impl PowerTransferUnit {
 
     pub fn is_active_right_to_left(&self) -> bool {
         self.is_active_right
-    }
-
-    pub fn shaft_rpm(&self) -> AngularVelocity {
-        self.shaft_speed
     }
 
     pub fn update(
@@ -237,8 +235,8 @@ impl PowerTransferUnit {
             )
         } else {
             Volume::new::<cubic_inch>(interpolation(
-                &Self::PRESSURE_BREAKPOINTS,
-                &Self::DISPLACEMENT_CARAC,
+                &Self::PRESSURE_BREAKPOINTS_PSI,
+                &Self::DISPLACEMENT_CARAC_CUBIC_INCH,
                 -delta_p.get::<psi>(),
             ))
         };
