@@ -1,4 +1,4 @@
-use super::{Air, DuctTemperature};
+use super::{Air, DuctTemperature, ZoneType};
 use crate::{
     shared::Cabin,
     simulation::{
@@ -25,7 +25,7 @@ pub struct CabinZone<const ROWS: usize> {
     rear_door_id: VariableIdentifier,
     passenger_rows_id: Option<Vec<VariableIdentifier>>,
 
-    zone_id: String,
+    zone_id: ZoneType,
     zone_air: ZoneAir,
     zone_volume: Volume,
     passengers: u8,
@@ -39,7 +39,7 @@ impl<const ROWS: usize> CabinZone<ROWS> {
 
     pub fn new(
         context: &mut InitContext,
-        zone_id: &str,
+        zone_id: ZoneType,
         zone_volume: Volume,
         passengers: u8,
         passenger_rows: Option<[(u8, u8); ROWS]>,
@@ -59,7 +59,7 @@ impl<const ROWS: usize> CabinZone<ROWS> {
             rear_door_id: context.get_identifier(Self::REAR_DOOR.to_owned()),
             passenger_rows_id,
 
-            zone_id: zone_id.to_owned(),
+            zone_id,
             zone_air: ZoneAir::new(),
             zone_volume,
             passengers,
@@ -76,7 +76,7 @@ impl<const ROWS: usize> CabinZone<ROWS> {
         pressurization: &impl Cabin,
     ) {
         let mut air_in = Air::new();
-        air_in.set_temperature(duct_temperature.duct_demand_temperature()[&self.zone_id as &str]);
+        air_in.set_temperature(duct_temperature.duct_demand_temperature()[self.zone_id.id()]);
         air_in.set_flow_rate(pack_flow_per_cubic_meter * self.zone_volume.get::<cubic_meter>());
 
         self.zone_air.update(
@@ -92,10 +92,6 @@ impl<const ROWS: usize> CabinZone<ROWS> {
 
     pub fn update_number_of_passengers(&mut self, passengers: u8) {
         self.passengers = passengers;
-    }
-
-    pub fn zone_id(&self) -> &str {
-        self.zone_id.as_ref()
     }
 }
 
@@ -330,7 +326,7 @@ mod cabin_air_tests {
             Aircraft, SimulationElement, SimulationElementVisitor, UpdateContext,
         },
     };
-    use std::{collections::HashMap, time::Duration};
+    use std::time::Duration;
     use uom::si::{length::foot, thermodynamic_temperature::degree_celsius};
 
     struct TestAirConditioningSystem {
@@ -356,9 +352,14 @@ mod cabin_air_tests {
     }
 
     impl DuctTemperature for TestAirConditioningSystem {
-        fn duct_demand_temperature(&self) -> HashMap<&'static str, ThermodynamicTemperature> {
-            let mut duct_temperature: HashMap<&str, ThermodynamicTemperature> = HashMap::new();
-            duct_temperature.insert("FWD", self.duct_demand_temperature);
+        fn duct_demand_temperature(&self) -> Vec<ThermodynamicTemperature> {
+            let mut duct_temperature: Vec<ThermodynamicTemperature> = Vec::new();
+            // We push a 2 len element to simulate the cockpit so the indices match the final model
+            let mut cabin_duct_temperatures = vec![
+                ThermodynamicTemperature::new::<degree_celsius>(24.),
+                self.duct_demand_temperature,
+            ];
+            duct_temperature.append(&mut cabin_duct_temperatures);
             duct_temperature
         }
     }
@@ -402,7 +403,7 @@ mod cabin_air_tests {
             Self {
                 cabin_zone: CabinZone::new(
                     context,
-                    "FWD",
+                    ZoneType::Cabin(1),
                     Volume::new::<cubic_meter>(400. / 2.),
                     0,
                     Some([(1, 6), (7, 13)]),

@@ -1,23 +1,26 @@
 use systems::{
     accept_iterable,
-    air_conditioning::{cabin_air::CabinZone, AirConditioningSystem, DuctTemperature, PackFlow},
+    air_conditioning::{
+        cabin_air::CabinZone, AirConditioningSystem, DuctTemperature, PackFlow, ZoneType,
+    },
     shared::{Cabin, EngineCorrectedN1, LgciuWeightOnWheels},
     simulation::{InitContext, SimulationElement, SimulationElementVisitor, UpdateContext},
 };
 use uom::si::{f64::*, mass_rate::kilogram_per_second, volume::cubic_meter};
 
 pub(super) struct A320AirConditioning {
-    a320cabin: A320Cabin,
-    air_conditioning_system: AirConditioningSystem,
+    a320_cabin: A320Cabin,
+    a320_air_conditioning_system: AirConditioningSystem<3>,
 }
 
 impl A320AirConditioning {
     pub fn new(context: &mut InitContext) -> Self {
-        let cabin_zone_ids: Vec<&str> = vec!["CKPT", "FWD", "AFT"];
+        let cabin_zones: [ZoneType; 3] =
+            [ZoneType::Cockpit, ZoneType::Cabin(1), ZoneType::Cabin(2)];
 
         Self {
-            a320cabin: A320Cabin::new(context),
-            air_conditioning_system: AirConditioningSystem::new(context, cabin_zone_ids),
+            a320_cabin: A320Cabin::new(context),
+            a320_air_conditioning_system: AirConditioningSystem::new(context, cabin_zones),
         }
     }
 
@@ -28,12 +31,12 @@ impl A320AirConditioning {
         pressurization: &impl Cabin,
         lgciu: [&impl LgciuWeightOnWheels; 2],
     ) {
-        self.air_conditioning_system
+        self.a320_air_conditioning_system
             .update(context, engines, pressurization, lgciu);
-        self.a320cabin.update(
+        self.a320_cabin.update(
             context,
-            &self.air_conditioning_system,
-            &self.air_conditioning_system,
+            &self.a320_air_conditioning_system,
+            &self.a320_air_conditioning_system,
             pressurization,
         );
     }
@@ -41,8 +44,8 @@ impl A320AirConditioning {
 
 impl SimulationElement for A320AirConditioning {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        self.a320cabin.accept(visitor);
-        self.air_conditioning_system.accept(visitor);
+        self.a320_cabin.accept(visitor);
+        self.a320_air_conditioning_system.accept(visitor);
 
         visitor.visit(self);
     }
@@ -62,21 +65,21 @@ impl A320Cabin {
             cabin_zone: [
                 CabinZone::new(
                     context,
-                    "CKPT",
+                    ZoneType::Cockpit,
                     Volume::new::<cubic_meter>(Self::A320_COCKPIT_VOLUME_CUBIC_METER),
                     2,
                     None,
                 ),
                 CabinZone::new(
                     context,
-                    "FWD",
+                    ZoneType::Cabin(1),
                     Volume::new::<cubic_meter>(Self::A320_CABIN_VOLUME_CUBIC_METER / 2.),
                     0,
                     Some([(1, 6), (7, 13)]),
                 ),
                 CabinZone::new(
                     context,
-                    "AFT",
+                    ZoneType::Cabin(2),
                     Volume::new::<cubic_meter>(Self::A320_CABIN_VOLUME_CUBIC_METER / 2.),
                     0,
                     Some([(14, 21), (22, 29)]),

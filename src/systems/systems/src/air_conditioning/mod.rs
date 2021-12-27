@@ -9,7 +9,7 @@ use crate::{
     },
 };
 
-use std::{collections::HashMap, time::Duration};
+use std::{fmt::Display, time::Duration};
 
 use uom::si::{
     f64::*, mass_rate::kilogram_per_second, pressure::hectopascal,
@@ -20,7 +20,7 @@ pub mod acs_controller;
 pub mod cabin_air;
 
 pub trait DuctTemperature {
-    fn duct_demand_temperature(&self) -> HashMap<&'static str, ThermodynamicTemperature>;
+    fn duct_demand_temperature(&self) -> Vec<ThermodynamicTemperature>;
 }
 
 pub trait FlowControlValveSignal {
@@ -31,20 +31,48 @@ pub trait PackFlow {
     fn pack_flow(&self) -> MassRate;
 }
 
-pub struct AirConditioningSystem {
-    acs_overhead: AirConditioningSystemOverhead,
-    acsc: AirConditioningSystemController,
+pub enum ZoneType {
+    Cockpit,
+    Cabin(u8),
+}
+
+impl ZoneType {
+    fn id(&self) -> usize {
+        match self {
+            ZoneType::Cockpit => 0,
+            ZoneType::Cabin(number) => *number as usize,
+        }
+    }
+}
+
+// TODO: At the moment this lives here but it's specific to the A320.
+impl Display for ZoneType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            ZoneType::Cockpit => write!(f, "CKPT"),
+            ZoneType::Cabin(number) => match number {
+                1 => write!(f, "FWD"),
+                2 => write!(f, "AFT"),
+                _ => panic!("Not implemented for the A320 aircraft."),
+            },
+        }
+    }
+}
+
+pub struct AirConditioningSystem<const ZONES: usize> {
+    acs_overhead: AirConditioningSystemOverhead<ZONES>,
+    acsc: AirConditioningSystemController<ZONES>,
     pack_flow_valves: [PackFlowValve; 2],
     // TODO: pack: [AirConditioningPack; 2],
     // TODO: mixer_unit: MixerUnit,
     // TODO: trim_air_system: TrimAirSystem,
 }
 
-impl AirConditioningSystem {
-    pub fn new(context: &mut InitContext, cabin_zone_ids: Vec<&'static str>) -> Self {
+impl<const ZONES: usize> AirConditioningSystem<ZONES> {
+    pub fn new(context: &mut InitContext, cabin_zones: [ZoneType; ZONES]) -> Self {
         Self {
-            acs_overhead: AirConditioningSystemOverhead::new(context, &cabin_zone_ids),
-            acsc: AirConditioningSystemController::new(context, cabin_zone_ids),
+            acs_overhead: AirConditioningSystemOverhead::new(context, &cabin_zones),
+            acsc: AirConditioningSystemController::new(context, &cabin_zones),
             pack_flow_valves: [
                 PackFlowValve::new(context, 1),
                 PackFlowValve::new(context, 2),
@@ -74,7 +102,19 @@ impl AirConditioningSystem {
     }
 }
 
-impl SimulationElement for AirConditioningSystem {
+impl<const ZONES: usize> DuctTemperature for AirConditioningSystem<ZONES> {
+    fn duct_demand_temperature(&self) -> Vec<ThermodynamicTemperature> {
+        self.acsc.duct_demand_temperature()
+    }
+}
+
+impl<const ZONES: usize> PackFlow for AirConditioningSystem<ZONES> {
+    fn pack_flow(&self) -> MassRate {
+        self.acsc.pack_flow()
+    }
+}
+
+impl<const ZONES: usize> SimulationElement for AirConditioningSystem<ZONES> {
     fn accept<V: SimulationElementVisitor>(&mut self, visitor: &mut V) {
         self.acs_overhead.accept(visitor);
         self.acsc.accept(visitor);
@@ -84,69 +124,46 @@ impl SimulationElement for AirConditioningSystem {
     }
 }
 
-pub struct AirConditioningSystemOverhead {
+pub struct AirConditioningSystemOverhead<const ZONES: usize> {
     pack_1_pb: OnOffFaultPushButton,
     pack_2_pb: OnOffFaultPushButton,
-    temperature_selectors: HashMap<&'static str, ValueKnob>,
+    temperature_selectors: Vec<ValueKnob>,
 }
 
-impl AirConditioningSystemOverhead {
-    fn new(context: &mut InitContext, cabin_zone_ids: &[&'static str]) -> Self {
-        let mut temperature_selectors: HashMap<&'static str, ValueKnob> = HashMap::new();
-        for id in cabin_zone_ids.iter() {
-            let knob_id = format!("COND_{}_SELECTOR", id);
-            temperature_selectors.insert(id, ValueKnob::new_with_value(context, &knob_id, 24.));
-        }
-        Self {
+impl<const ZONES: usize> AirConditioningSystemOverhead<ZONES> {
+    fn new(context: &mut InitContext, cabin_zone_ids: &[ZoneType; ZONES]) -> Self {
+        let mut overhead = Self {
             pack_1_pb: OnOffFaultPushButton::new_on(context, "COND_PACK_1"),
             pack_2_pb: OnOffFaultPushButton::new_on(context, "COND_PACK_2"),
-            temperature_selectors,
+            temperature_selectors: Vec::new(),
+        };
+        for id in cabin_zone_ids {
+            let knob_id = format!("COND_{}_SELECTOR", id);
+            overhead
+                .temperature_selectors
+                .push(ValueKnob::new_with_value(context, &knob_id, 24.));
         }
+        overhead
     }
 
-    fn selected_cabin_temperatures(&self) -> HashMap<&'static str, ThermodynamicTemperature> {
-        let mut temperature_selectors_values: HashMap<&'static str, ThermodynamicTemperature> =
-            HashMap::new();
-        for (id, knob) in &self.temperature_selectors {
-            temperature_selectors_values.insert(
-                id,
-                // Map from knob range 0-100 to 18-30 degrees C
-                ThermodynamicTemperature::new::<degree_celsius>(knob.value() * 0.12 + 18.),
-            );
-        }
-        temperature_selectors_values
+    fn selected_cabin_temperature(&self, zone_id: usize) -> ThermodynamicTemperature {
+        let knob = &self.temperature_selectors[zone_id];
+        // Map from knob range 0-100 to 18-30 degrees C
+        ThermodynamicTemperature::new::<degree_celsius>(knob.value() * 0.12 + 18.)
     }
 
-    fn pack_1_pb_is_on(&self) -> bool {
-        self.pack_1_pb.is_on()
-    }
-
-    fn pack_2_pb_is_on(&self) -> bool {
-        self.pack_2_pb.is_on()
+    fn pack_pushbuttons_state(&self) -> [bool; 2] {
+        [self.pack_1_pb.is_on(), self.pack_2_pb.is_on()]
     }
 }
 
-impl SimulationElement for AirConditioningSystemOverhead {
+impl<const ZONES: usize> SimulationElement for AirConditioningSystemOverhead<ZONES> {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        for selector in self.temperature_selectors.values_mut() {
-            selector.accept(visitor);
-        }
+        accept_iterable!(self.temperature_selectors, visitor);
         self.pack_1_pb.accept(visitor);
         self.pack_2_pb.accept(visitor);
 
         visitor.visit(self);
-    }
-}
-
-impl DuctTemperature for AirConditioningSystem {
-    fn duct_demand_temperature(&self) -> HashMap<&'static str, ThermodynamicTemperature> {
-        self.acsc.duct_demand_temperature()
-    }
-}
-
-impl PackFlow for AirConditioningSystem {
-    fn pack_flow(&self) -> MassRate {
-        self.acsc.pack_flow()
     }
 }
 
