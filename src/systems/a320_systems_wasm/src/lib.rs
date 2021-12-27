@@ -51,7 +51,6 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
             .with_auxiliary_power_unit("OVHD_APU_START_PB_IS_AVAILABLE".to_owned(), 8)?
             .with_aspect(brakes)?
             .with_aspect(autobrakes)?
-            .with::<Brakes>()?
             .with::<NoseWheelSteering>()?
             .with::<Flaps>()?
             .with_failures(vec![
@@ -183,6 +182,8 @@ fn brakes(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>> {
 
     // Controller inputs for the left and right brakes are captured and translated
     // to a named variable so that it can be used by the simulation.
+    // After running the simulation, the variable value is written back to the simulator
+    // through the event.
     builder.event_to_variable(
         "AXIS_LEFT_BRAKE_SET",
         EventToVariableMapping::EventData32kPosition,
@@ -202,21 +203,23 @@ fn brakes(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>> {
 
     // Keyboard inputs for both brakes, left brake, and right brake are captured and
     // translated via a smooth press function into a ratio which is written to variables.
+    const KEYBOARD_PRESS_SPEED: f64 = 0.6;
+    const KEYBOARD_RELEASE_SPEED: f64 = 0.3;
     builder.event_to_variable(
         "BRAKES",
-        EventToVariableMapping::SmoothPress(0.6, 0.3),
+        EventToVariableMapping::SmoothPress(KEYBOARD_PRESS_SPEED, KEYBOARD_RELEASE_SPEED),
         Variable::Aspect("BRAKES".to_owned()),
         EventToVariableOptions::default().mask(),
     )?;
     builder.event_to_variable(
         "BRAKES_LEFT",
-        EventToVariableMapping::SmoothPress(0.6, 0.3),
+        EventToVariableMapping::SmoothPress(KEYBOARD_PRESS_SPEED, KEYBOARD_RELEASE_SPEED),
         Variable::Aspect("BRAKES_LEFT".to_owned()),
         EventToVariableOptions::default().mask(),
     )?;
     builder.event_to_variable(
         "BRAKES_RIGHT",
-        EventToVariableMapping::SmoothPress(0.6, 0.3),
+        EventToVariableMapping::SmoothPress(KEYBOARD_PRESS_SPEED, KEYBOARD_RELEASE_SPEED),
         Variable::Aspect("BRAKES_RIGHT".to_owned()),
         EventToVariableOptions::default().mask(),
     )?;
@@ -558,233 +561,6 @@ impl SimulatorAspect for Flaps {
             .set_data_on_sim_object(SIMCONNECT_OBJECT_ID_USER, &self.flaps_surface_sim_object)?;
         sim_connect
             .set_data_on_sim_object(SIMCONNECT_OBJECT_ID_USER, &self.slats_surface_sim_object)?;
-
-        Ok(())
-    }
-}
-
-struct Brakes {
-    left_brake_pedal_input_id: VariableIdentifier,
-    right_brake_pedal_input_id: VariableIdentifier,
-    brake_left_force_factor_id: VariableIdentifier,
-    brake_right_force_factor_id: VariableIdentifier,
-
-    left_pedal_brake_masked_input: NamedVariable,
-    right_pedal_brake_masked_input: NamedVariable,
-
-    id_brake_left: sys::DWORD,
-    id_brake_right: sys::DWORD,
-    id_brake_keyboard: sys::DWORD,
-    id_brake_left_keyboard: sys::DWORD,
-    id_brake_right_keyboard: sys::DWORD,
-
-    brake_left_sim_input: f64,
-    brake_right_sim_input: f64,
-    brake_left_sim_input_keyboard: f64,
-    brake_right_sim_input_keyboard: f64,
-    left_key_pressed: bool,
-    right_key_pressed: bool,
-
-    brake_left_output_to_sim: f64,
-    brake_right_output_to_sim: f64,
-}
-
-impl MsfsAspectCtor for Brakes {
-    fn new(
-        registry: &mut MsfsVariableRegistry,
-        sim_connect: &mut SimConnect,
-    ) -> Result<Self, Box<dyn Error>> {
-        Ok(Self {
-            left_brake_pedal_input_id: registry.get("LEFT_BRAKE_PEDAL_INPUT".to_owned()),
-            right_brake_pedal_input_id: registry.get("RIGHT_BRAKE_PEDAL_INPUT".to_owned()),
-            brake_left_force_factor_id: registry.get("BRAKE LEFT FORCE FACTOR".to_owned()),
-            brake_right_force_factor_id: registry.get("BRAKE RIGHT FORCE FACTOR".to_owned()),
-
-            left_pedal_brake_masked_input: NamedVariable::from("A32NX_LEFT_BRAKE_PEDAL_INPUT"),
-            right_pedal_brake_masked_input: NamedVariable::from("A32NX_RIGHT_BRAKE_PEDAL_INPUT"),
-
-            // SimConnect inputs masking
-            id_brake_left: sim_connect
-                .map_client_event_to_sim_event("AXIS_LEFT_BRAKE_SET", true)?,
-            id_brake_right: sim_connect
-                .map_client_event_to_sim_event("AXIS_RIGHT_BRAKE_SET", true)?,
-
-            id_brake_keyboard: sim_connect.map_client_event_to_sim_event("BRAKES", true)?,
-            id_brake_left_keyboard: sim_connect
-                .map_client_event_to_sim_event("BRAKES_LEFT", true)?,
-            id_brake_right_keyboard: sim_connect
-                .map_client_event_to_sim_event("BRAKES_RIGHT", true)?,
-
-            brake_left_sim_input: 0.,
-            brake_right_sim_input: 0.,
-            brake_left_sim_input_keyboard: 0.,
-            brake_right_sim_input_keyboard: 0.,
-            left_key_pressed: false,
-            right_key_pressed: false,
-
-            brake_left_output_to_sim: 0.,
-            brake_right_output_to_sim: 0.,
-        })
-    }
-}
-
-impl Brakes {
-    const KEYBOARD_PRESS_SPEED: f64 = 0.6;
-    const KEYBOARD_RELEASE_SPEED: f64 = 0.3;
-
-    fn set_brake_left(&mut self, simconnect_value: u32) {
-        self.brake_left_sim_input = sim_connect_32k_pos_to_f64(simconnect_value);
-    }
-
-    fn set_brake_left_key_pressed(&mut self) {
-        self.left_key_pressed = true;
-    }
-
-    fn set_brake_right_key_pressed(&mut self) {
-        self.right_key_pressed = true;
-    }
-
-    fn update_keyboard_inputs(&mut self, delta: Duration) {
-        if self.left_key_pressed {
-            self.brake_left_sim_input_keyboard += delta.as_secs_f64() * Self::KEYBOARD_PRESS_SPEED;
-        } else {
-            self.brake_left_sim_input_keyboard -=
-                delta.as_secs_f64() * Self::KEYBOARD_RELEASE_SPEED;
-        }
-
-        if self.right_key_pressed {
-            self.brake_right_sim_input_keyboard += delta.as_secs_f64() * Self::KEYBOARD_PRESS_SPEED;
-        } else {
-            self.brake_right_sim_input_keyboard -=
-                delta.as_secs_f64() * Self::KEYBOARD_RELEASE_SPEED;
-        }
-
-        self.brake_right_sim_input_keyboard = self.brake_right_sim_input_keyboard.min(1.).max(0.);
-        self.brake_left_sim_input_keyboard = self.brake_left_sim_input_keyboard.min(1.).max(0.);
-    }
-
-    fn reset_keyboard_events(&mut self) {
-        self.left_key_pressed = false;
-        self.right_key_pressed = false;
-    }
-
-    fn transmit_masked_inputs(&mut self) {
-        let brake_right = self.brake_right();
-        self.right_pedal_brake_masked_input.set_value(brake_right);
-        let brake_left = self.brake_left();
-        self.left_pedal_brake_masked_input.set_value(brake_left);
-    }
-
-    fn transmit_client_events(
-        &mut self,
-        sim_connect: &mut SimConnect,
-    ) -> Result<(), Box<dyn Error>> {
-        // We want to send our brake commands once per refresh event, thus doing it after a draw event
-        sim_connect.transmit_client_event(
-            SIMCONNECT_OBJECT_ID_USER,
-            self.id_brake_left,
-            self.get_brake_left_output_converted_in_simconnect_format(),
-        )?;
-
-        sim_connect.transmit_client_event(
-            SIMCONNECT_OBJECT_ID_USER,
-            self.id_brake_right,
-            self.get_brake_right_output_converted_in_simconnect_format(),
-        )?;
-
-        Ok(())
-    }
-
-    fn set_brake_right(&mut self, simconnect_value: u32) {
-        self.brake_right_sim_input = sim_connect_32k_pos_to_f64(simconnect_value);
-    }
-
-    fn brake_left(&mut self) -> f64 {
-        self.brake_left_sim_input
-            .max(self.brake_left_sim_input_keyboard)
-            * 100.
-    }
-
-    fn brake_right(&mut self) -> f64 {
-        self.brake_right_sim_input
-            .max(self.brake_right_sim_input_keyboard)
-            * 100.
-    }
-
-    fn set_brake_right_output(&mut self, brake_force_factor: f64) {
-        self.brake_right_output_to_sim = brake_force_factor;
-    }
-
-    fn set_brake_left_output(&mut self, brake_force_factor: f64) {
-        self.brake_left_output_to_sim = brake_force_factor;
-    }
-
-    fn get_brake_right_output_converted_in_simconnect_format(&mut self) -> u32 {
-        f64_to_sim_connect_32k_pos(self.brake_right_output_to_sim)
-    }
-
-    fn get_brake_left_output_converted_in_simconnect_format(&mut self) -> u32 {
-        f64_to_sim_connect_32k_pos(self.brake_left_output_to_sim)
-    }
-}
-impl SimulatorAspect for Brakes {
-    fn read(&mut self, identifier: &VariableIdentifier) -> Option<f64> {
-        if identifier == &self.left_brake_pedal_input_id {
-            Some(self.brake_left())
-        } else if identifier == &self.right_brake_pedal_input_id {
-            Some(self.brake_right())
-        } else {
-            None
-        }
-    }
-
-    fn write(&mut self, identifier: &VariableIdentifier, value: f64) -> bool {
-        if identifier == &self.brake_left_force_factor_id {
-            self.set_brake_left_output(value);
-            true
-        } else if identifier == &self.brake_right_force_factor_id {
-            self.set_brake_right_output(value);
-            true
-        } else {
-            false
-        }
-    }
-
-    fn handle_message(&mut self, message: &SimConnectRecv) -> bool {
-        match message {
-            SimConnectRecv::Event(e) => {
-                if e.id() == self.id_brake_left {
-                    self.set_brake_left(e.data());
-                    true
-                } else if e.id() == self.id_brake_right {
-                    self.set_brake_right(e.data());
-                    true
-                } else if e.id() == self.id_brake_keyboard {
-                    self.set_brake_left_key_pressed();
-                    self.set_brake_right_key_pressed();
-                    true
-                } else if e.id() == self.id_brake_left_keyboard {
-                    self.set_brake_left_key_pressed();
-                    true
-                } else if e.id() == self.id_brake_right_keyboard {
-                    self.set_brake_right_key_pressed();
-                    true
-                } else {
-                    false
-                }
-            }
-            _ => false,
-        }
-    }
-
-    fn pre_tick(&mut self, delta: Duration) {
-        self.update_keyboard_inputs(delta);
-    }
-
-    fn post_tick(&mut self, sim_connect: &mut SimConnect) -> Result<(), Box<dyn Error>> {
-        self.reset_keyboard_events();
-        self.transmit_client_events(sim_connect)?;
-        self.transmit_masked_inputs();
 
         Ok(())
     }
