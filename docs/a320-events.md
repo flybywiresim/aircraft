@@ -146,8 +146,8 @@
 - A32NX.THROTTLE_MAPPING_SET_DEFAULTS
     - When triggered the throttle mapping configuration resets to default values
 
-  - A32NX.THROTTLE_MAPPING_LOAD_FROM_FILE
-    - When triggered the throttle mapping configuration is loaded from **file**
+ - A32NX.THROTTLE_MAPPING_LOAD_FROM_FILE
+     - When triggered the throttle mapping configuration is loaded from **file**
 
 - A32NX.THROTTLE_MAPPING_LOAD_FROM_LOCAL_VARIABLES
     - When triggered the throttle mapping configuration is **loaded** from **local variables** (to test them)
