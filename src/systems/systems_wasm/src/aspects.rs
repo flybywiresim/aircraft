@@ -72,6 +72,7 @@ impl<'a, 'b> MsfsAspectBuilder<'a, 'b> {
         input: Vec<Variable>,
         func: AggregateVariableFunction,
         output: Variable,
+        options: AggregateVariablesOptions,
     ) {
         self.aggregate_variable.push(AggregateVariables::new(
             self.variable_registry,
@@ -80,23 +81,24 @@ impl<'a, 'b> MsfsAspectBuilder<'a, 'b> {
             input,
             func,
             output,
+            options,
         ));
     }
 }
 
 pub struct MsfsAspect {
     event_to_variable: Vec<EventToVariable>,
-    aggregate_variable: Vec<AggregateVariables>,
+    aggregate_variables: Vec<AggregateVariables>,
 }
 
 impl MsfsAspect {
     fn new(
         event_to_variable: Vec<EventToVariable>,
-        aggregate_variable: Vec<AggregateVariables>,
+        aggregate_variables: Vec<AggregateVariables>,
     ) -> Self {
         Self {
             event_to_variable,
-            aggregate_variable,
+            aggregate_variables,
         }
     }
 
@@ -107,7 +109,7 @@ impl MsfsAspect {
             .map(|ev| ev.value_tuple())
             .collect();
 
-        self.aggregate_variable.iter_mut().for_each(|av| {
+        self.aggregate_variables.iter_mut().for_each(|av| {
             av.update_value(&aspect_variables, update_moment);
             aspect_variables.insert(av.output_identifier(), av.value());
         });
@@ -165,6 +167,19 @@ pub enum AggregateVariableFunction {
 
     /// Takes the maximum value of all variables.
     Max,
+}
+
+#[derive(Clone, Copy, Default)]
+pub struct AggregateVariablesOptions {
+    map_func: Option<fn(f64) -> f64>,
+}
+
+impl AggregateVariablesOptions {
+    /// Map the resulting aggregated value by applying the given function.
+    pub fn map(mut self, map_func: fn(f64) -> f64) -> Self {
+        self.map_func = Some(map_func);
+        self
+    }
 }
 
 /// Declares how to map the given event to a variable value.
@@ -463,6 +478,7 @@ struct AggregateVariables {
     output_named_variable: Option<NamedVariable>,
     output_variable_identifier: VariableIdentifier,
     value: f64,
+    options: AggregateVariablesOptions,
 }
 
 impl AggregateVariables {
@@ -473,6 +489,7 @@ impl AggregateVariables {
         input: Vec<Variable>,
         func: AggregateVariableFunction,
         output: Variable,
+        options: AggregateVariablesOptions,
     ) -> Self {
         assert!(
             input.len() >= 2,
@@ -493,6 +510,7 @@ impl AggregateVariables {
             output_named_variable: output.to_named_variable(key_prefix),
             output_variable_identifier: output.to_identifier(variable_registry),
             value: 0.,
+            options,
         }
     }
 
@@ -532,10 +550,14 @@ impl AggregateVariables {
                 },
             );
 
-            let value = match self.func {
+            let mut value = match self.func {
                 AggregateVariableFunction::Min => values.reduce(f64::min).unwrap_or(0.),
                 AggregateVariableFunction::Max => values.reduce(f64::max).unwrap_or(0.),
             };
+
+            if let Some(map_func) = self.options.map_func {
+                value = map_func(value);
+            }
 
             self.set_value(value);
         }

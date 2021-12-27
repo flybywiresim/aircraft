@@ -16,8 +16,8 @@ use systems::{
     simulation::{VariableIdentifier, VariableRegistry},
 };
 use systems_wasm::aspects::{
-    AggregateVariableFunction, EventToVariableOptions, MsfsAspectBuilder, UpdateOn,
-    VariableToEventMapping,
+    AggregateVariableFunction, AggregateVariablesOptions, EventToVariableOptions,
+    MsfsAspectBuilder, UpdateOn, VariableToEventMapping,
 };
 use systems_wasm::{
     aspects::{EventToVariableMapping, Variable},
@@ -181,10 +181,12 @@ fn brakes(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>> {
         EventToVariableOptions::default().mask(),
     )?;
 
+    // Controller inputs for the left and right brakes are captured and translated
+    // to a named variable so that it can be used by the simulation.
     builder.event_to_variable(
         "AXIS_LEFT_BRAKE_SET",
         EventToVariableMapping::EventData32kPosition,
-        Variable::Named("BRAKE LEFT FORCE FACTOR".to_owned()),
+        Variable::Aspect("BRAKE LEFT FORCE FACTOR".to_owned()),
         EventToVariableOptions::default()
             .mask()
             .bidirectional(VariableToEventMapping::EventData32kPosition),
@@ -192,50 +194,56 @@ fn brakes(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>> {
     builder.event_to_variable(
         "AXIS_RIGHT_BRAKE_SET",
         EventToVariableMapping::EventData32kPosition,
-        Variable::Named("BRAKE RIGHT FORCE FACTOR".to_owned()),
+        Variable::Aspect("BRAKE RIGHT FORCE FACTOR".to_owned()),
         EventToVariableOptions::default()
             .mask()
             .bidirectional(VariableToEventMapping::EventData32kPosition),
     )?;
 
+    // Keyboard inputs for both brakes, left brake, and right brake are captured and
+    // translated via a smooth press function into a ratio which is written to variables.
     builder.event_to_variable(
-        "BRAKES_PRESSED",
+        "BRAKES",
         EventToVariableMapping::SmoothPress(0.6, 0.3),
         Variable::Aspect("BRAKES".to_owned()),
         EventToVariableOptions::default().mask(),
     )?;
     builder.event_to_variable(
-        "BRAKES_LEFT_PRESSED",
+        "BRAKES_LEFT",
         EventToVariableMapping::SmoothPress(0.6, 0.3),
         Variable::Aspect("BRAKES_LEFT".to_owned()),
         EventToVariableOptions::default().mask(),
     )?;
     builder.event_to_variable(
-        "BRAKES_RIGHT_PRESSED",
+        "BRAKES_RIGHT",
         EventToVariableMapping::SmoothPress(0.6, 0.3),
         Variable::Aspect("BRAKES_RIGHT".to_owned()),
         EventToVariableOptions::default().mask(),
     )?;
 
+    // The maximum braking demand of all keyboard and controller inputs
+    // is calculated and made available as a percentage.
     builder.aggregate_variables(
         UpdateOn::PreTick,
         vec![
             Variable::Aspect("BRAKES".to_owned()),
             Variable::Aspect("BRAKES_LEFT".to_owned()),
-            Variable::Named("BRAKE LEFT FORCE FACTOR".to_owned()),
+            Variable::Aspect("BRAKE LEFT FORCE FACTOR".to_owned()),
         ],
         AggregateVariableFunction::Max,
         Variable::Named("LEFT_BRAKE_PEDAL_INPUT".to_owned()),
+        AggregateVariablesOptions::default().map(|value| value * 100.),
     );
     builder.aggregate_variables(
         UpdateOn::PreTick,
         vec![
             Variable::Aspect("BRAKES".to_owned()),
             Variable::Aspect("BRAKES_RIGHT".to_owned()),
-            Variable::Named("BRAKE RIGHT FORCE FACTOR".to_owned()),
+            Variable::Aspect("BRAKE RIGHT FORCE FACTOR".to_owned()),
         ],
         AggregateVariableFunction::Max,
         Variable::Named("RIGHT_BRAKE_PEDAL_INPUT".to_owned()),
+        AggregateVariablesOptions::default().map(|value| value * 100.),
     );
 
     Ok(())
