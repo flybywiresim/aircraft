@@ -661,9 +661,9 @@ impl Brakes {
     }
 
     fn transmit_masked_inputs(&mut self) {
-        let brake_right = self.brake_right() * 100.;
-        let brake_left = self.brake_left() * 100.;
+        let brake_right = self.brake_right();
         self.right_pedal_brake_masked_input.set_value(brake_right);
+        let brake_left = self.brake_left();
         self.left_pedal_brake_masked_input.set_value(brake_left);
     }
 
@@ -694,11 +694,13 @@ impl Brakes {
     fn brake_left(&mut self) -> f64 {
         self.brake_left_sim_input
             .max(self.brake_left_sim_input_keyboard)
+            * 100.
     }
 
     fn brake_right(&mut self) -> f64 {
         self.brake_right_sim_input
             .max(self.brake_right_sim_input_keyboard)
+            * 100.
     }
 
     fn set_brake_right_output(&mut self, brake_force_factor: f64) {

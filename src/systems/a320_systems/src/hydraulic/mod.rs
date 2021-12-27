@@ -1705,9 +1705,9 @@ impl SimulationElement for A320HydraulicBrakeSteerComputerUnit {
         self.is_gear_lever_down = reader.read(&self.gear_handle_position_id);
         self.anti_skid_activated = reader.read(&self.antiskid_brakes_active_id);
         self.left_brake_pilot_input =
-            Ratio::new::<ratio>(reader.read(&self.left_brake_pedal_input_id));
+            Ratio::new::<percent>(reader.read(&self.left_brake_pedal_input_id));
         self.right_brake_pilot_input =
-            Ratio::new::<ratio>(reader.read(&self.right_brake_pedal_input_id));
+            Ratio::new::<percent>(reader.read(&self.right_brake_pedal_input_id));
 
         self.tiller_handle_position =
             Ratio::new::<ratio>(reader.read(&self.tiller_handle_input_id));
