@@ -16,7 +16,7 @@ pub struct MsfsAspectBuilder<'a, 'b> {
     sim_connect: &'a mut SimConnect<'b>,
     variable_registry: &'a mut MsfsVariableRegistry,
     event_to_variable: Vec<EventToVariable>,
-    aggregate_variable: Vec<AggregateVariables>,
+    variable_functions: Vec<VariableFunction>,
     variables: MsfsAspectVariableCollection,
 }
 
@@ -31,7 +31,7 @@ impl<'a, 'b> MsfsAspectBuilder<'a, 'b> {
             sim_connect,
             variable_registry,
             event_to_variable: Default::default(),
-            aggregate_variable: Default::default(),
+            variable_functions: Default::default(),
             variables: Default::default(),
         }
     }
@@ -39,7 +39,7 @@ impl<'a, 'b> MsfsAspectBuilder<'a, 'b> {
     pub fn build(self) -> MsfsAspect {
         let aspect = MsfsAspect::new(
             self.event_to_variable,
-            self.aggregate_variable,
+            self.variable_functions,
             self.variables,
         );
 
@@ -70,38 +70,49 @@ impl<'a, 'b> MsfsAspectBuilder<'a, 'b> {
         Ok(())
     }
 
-    /// Aggregates a collection of variable values into one output value.
+    /// Reduces variable values into one output value.
     ///
     /// Note that this function:
     /// 1. Cannot access aspect variables defined in other aspects.
     /// 2. Can only access input aspect variables which are declared prior to calling this function.
-    pub fn aggregate_variables(
+    pub fn reduce(
         &mut self,
         update_on: UpdateOn,
         input: Vec<Variable>,
-        func: AggregateVariableFunction,
+        func: fn(f64, f64) -> f64,
         output: Variable,
-        options: AggregateVariablesOptions,
     ) {
-        let input_variable_identifiers: Vec<VariableIdentifier> = input
-            .iter()
-            .map(|input_variable| {
-                self.variables
-                    .register(&self.key_prefix, self.variable_registry, &input_variable)
-            })
+        let inputs: Vec<VariableIdentifier> = input
+            .into_iter()
+            .map(|input_variable| self.register_variable(input_variable))
             .collect();
+        let output = self.register_variable(output);
 
-        let output_variable_identifier =
-            self.variables
-                .register(&self.key_prefix, self.variable_registry, &output);
-
-        self.aggregate_variable.push(AggregateVariables::new(
+        self.variable_functions.push(VariableFunction::Reduce(
+            Reduce::new(inputs, func, output),
             update_on,
-            input_variable_identifiers,
-            func,
-            output_variable_identifier,
-            options,
         ));
+    }
+
+    pub fn map(
+        &mut self,
+        update_on: UpdateOn,
+        input: Variable,
+        func: fn(f64) -> f64,
+        output: Variable,
+    ) {
+        let input = self.register_variable(input);
+        let output = self.register_variable(output);
+
+        self.variable_functions.push(VariableFunction::Map(
+            Map::new(input, func, output),
+            update_on,
+        ));
+    }
+
+    fn register_variable(&mut self, variable: Variable) -> VariableIdentifier {
+        self.variables
+            .register(&self.key_prefix, self.variable_registry, &variable)
     }
 }
 
@@ -181,31 +192,31 @@ impl MsfsAspectVariableCollection {
 
 pub struct MsfsAspect {
     event_to_variable: Vec<EventToVariable>,
-    aggregate_variables: Vec<AggregateVariables>,
+    variable_functions: Vec<VariableFunction>,
     variables: Option<MsfsAspectVariableCollection>,
 }
 
 impl MsfsAspect {
     fn new(
         event_to_variable: Vec<EventToVariable>,
-        aggregate_variables: Vec<AggregateVariables>,
+        variable_functions: Vec<VariableFunction>,
         variables: MsfsAspectVariableCollection,
     ) -> Self {
         Self {
             event_to_variable,
-            aggregate_variables,
+            variable_functions,
             variables: Some(variables),
         }
     }
 
-    fn update_aggregate_variables(
+    fn apply_variable_functions(
         &mut self,
         update_moment: UpdateOn,
         variables: &mut MsfsAspectVariableCollection,
     ) {
-        self.aggregate_variables.iter_mut().for_each(|av| {
-            av.update_value(variables, update_moment);
-        });
+        self.variable_functions
+            .iter_mut()
+            .for_each(|func| func.update_value(variables, update_moment));
     }
 }
 
@@ -238,7 +249,7 @@ impl SimulatorAspect for MsfsAspect {
                 .iter_mut()
                 .for_each(|ev| ev.pre_tick(delta, &mut variables));
 
-            self.update_aggregate_variables(UpdateOn::PreTick, &mut variables);
+            self.apply_variable_functions(UpdateOn::PreTick, &mut variables);
 
             self.variables = Some(variables);
         }
@@ -250,7 +261,7 @@ impl SimulatorAspect for MsfsAspect {
                 .iter_mut()
                 .try_for_each(|ev| ev.post_tick(sim_connect, &mut variables))?;
 
-            self.update_aggregate_variables(UpdateOn::PostTick, &mut variables);
+            self.apply_variable_functions(UpdateOn::PostTick, &mut variables);
 
             self.variables = Some(variables);
         }
@@ -259,32 +270,33 @@ impl SimulatorAspect for MsfsAspect {
     }
 }
 
+enum VariableFunction {
+    Map(Map, UpdateOn),
+    Reduce(Reduce, UpdateOn),
+}
+
+impl VariableFunction {
+    fn update_value(
+        &mut self,
+        variables: &mut MsfsAspectVariableCollection,
+        update_moment: UpdateOn,
+    ) {
+        match self {
+            VariableFunction::Map(map, update_on) if *update_on == update_moment => {
+                map.update_value(variables);
+            }
+            VariableFunction::Reduce(reduce, update_on) if *update_on == update_moment => {
+                reduce.update_value(variables);
+            }
+            _ => (),
+        }
+    }
+}
+
 #[derive(Clone, Copy, PartialEq)]
 pub enum UpdateOn {
     PreTick,
     PostTick,
-}
-
-/// Declares how to aggregate the variables.
-pub enum AggregateVariableFunction {
-    /// Takes the minimum value of all variables.
-    Min,
-
-    /// Takes the maximum value of all variables.
-    Max,
-}
-
-#[derive(Clone, Copy, Default)]
-pub struct AggregateVariablesOptions {
-    map_func: Option<fn(f64) -> f64>,
-}
-
-impl AggregateVariablesOptions {
-    /// Map the resulting aggregated value by applying the given function.
-    pub fn map(mut self, map_func: fn(f64) -> f64) -> Self {
-        self.map_func = Some(map_func);
-        self
-    }
 }
 
 /// Declares how to map the given event to a variable value.
@@ -527,21 +539,17 @@ impl EventToVariable {
     }
 }
 
-struct AggregateVariables {
-    update_on: UpdateOn,
+struct Reduce {
     input_variable_identifiers: Vec<VariableIdentifier>,
-    func: AggregateVariableFunction,
+    func: fn(f64, f64) -> f64,
     output_variable_identifier: VariableIdentifier,
-    options: AggregateVariablesOptions,
 }
 
-impl AggregateVariables {
+impl Reduce {
     fn new(
-        update_on: UpdateOn,
         input_variable_identifiers: Vec<VariableIdentifier>,
-        func: AggregateVariableFunction,
+        func: fn(f64, f64) -> f64,
         output_variable_identifier: VariableIdentifier,
-        options: AggregateVariablesOptions,
     ) -> Self {
         assert!(
             input_variable_identifiers.len() >= 2,
@@ -549,42 +557,63 @@ impl AggregateVariables {
         );
 
         Self {
-            update_on,
             input_variable_identifiers,
             func,
             output_variable_identifier,
-            options,
         }
     }
 
-    fn update_value(
-        &mut self,
-        variables: &mut MsfsAspectVariableCollection,
-        update_moment: UpdateOn,
-    ) {
-        if self.update_on == update_moment {
-            let values = self
-                .input_variable_identifiers
-                .iter()
-                .map(
-                    |variable_identifier| match variables.read(variable_identifier) {
-                        Some(value) => value,
-                        None => {
-                            panic!("Attempted to aggregate variables which were unavailable.")
-                        }
-                    },
-                );
+    fn update_value(&mut self, variables: &mut MsfsAspectVariableCollection) {
+        let values = self
+            .input_variable_identifiers
+            .iter()
+            .map(
+                |variable_identifier| match variables.read(variable_identifier) {
+                    Some(value) => value,
+                    None => {
+                        panic!("Attempted to reduce variables which are unavailable.")
+                    }
+                },
+            );
 
-            let mut value = match self.func {
-                AggregateVariableFunction::Min => values.reduce(f64::min).unwrap_or(0.),
-                AggregateVariableFunction::Max => values.reduce(f64::max).unwrap_or(0.),
-            };
+        let value = values.reduce(self.func).unwrap_or(0.);
+        variables.write(&self.output_variable_identifier, value);
+    }
+}
 
-            if let Some(map_func) = self.options.map_func {
-                value = map_func(value);
-            }
+pub fn max(accumulator: f64, item: f64) -> f64 {
+    accumulator.max(item)
+}
 
-            variables.write(&self.output_variable_identifier, value);
+pub fn min(accumulator: f64, item: f64) -> f64 {
+    accumulator.min(item)
+}
+
+struct Map {
+    input_variable_identifier: VariableIdentifier,
+    func: fn(f64) -> f64,
+    output_variable_identifier: VariableIdentifier,
+}
+
+impl Map {
+    fn new(
+        input_variable_identifier: VariableIdentifier,
+        func: fn(f64) -> f64,
+        output_variable_identifier: VariableIdentifier,
+    ) -> Self {
+        Self {
+            input_variable_identifier,
+            func,
+            output_variable_identifier,
         }
+    }
+
+    fn update_value(&mut self, variables: &mut MsfsAspectVariableCollection) {
+        let value = match variables.read(&self.input_variable_identifier) {
+            Some(value) => value,
+            None => panic!("Attempted to map a variable which is unavailable."),
+        };
+
+        variables.write(&self.output_variable_identifier, (self.func)(value));
     }
 }

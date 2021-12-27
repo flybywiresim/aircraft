@@ -16,8 +16,7 @@ use systems::{
     simulation::{VariableIdentifier, VariableRegistry},
 };
 use systems_wasm::aspects::{
-    AggregateVariableFunction, AggregateVariablesOptions, EventToVariableOptions,
-    MsfsAspectBuilder, UpdateOn, VariableToEventMapping,
+    max, EventToVariableOptions, MsfsAspectBuilder, UpdateOn, VariableToEventMapping,
 };
 use systems_wasm::{
     aspects::{EventToVariableMapping, Variable},
@@ -52,7 +51,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
             .with_aspect(brakes)?
             .with_aspect(autobrakes)?
             .with::<NoseWheelSteering>()?
-            .with::<Flaps>()?
+            .with_aspect(flaps)?
             .with_failures(vec![
                 (24_000, FailureType::TransformerRectifier(1)),
                 (24_001, FailureType::TransformerRectifier(2)),
@@ -226,30 +225,32 @@ fn brakes(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>> {
 
     // The maximum braking demand of all keyboard and controller inputs
     // is calculated and made available as a percentage.
-    builder.aggregate_variables(
+    builder.reduce(
         UpdateOn::PreTick,
         vec![
             Variable::Aspect("BRAKES".to_owned()),
             Variable::Aspect("BRAKES_LEFT".to_owned()),
             Variable::Aspect("BRAKE LEFT FORCE FACTOR".to_owned()),
         ],
-        AggregateVariableFunction::Max,
+        to_percent_max,
         Variable::Named("LEFT_BRAKE_PEDAL_INPUT".to_owned()),
-        AggregateVariablesOptions::default().map(|value| value * 100.),
     );
-    builder.aggregate_variables(
+    builder.reduce(
         UpdateOn::PreTick,
         vec![
             Variable::Aspect("BRAKES".to_owned()),
             Variable::Aspect("BRAKES_RIGHT".to_owned()),
             Variable::Aspect("BRAKE RIGHT FORCE FACTOR".to_owned()),
         ],
-        AggregateVariableFunction::Max,
+        to_percent_max,
         Variable::Named("RIGHT_BRAKE_PEDAL_INPUT".to_owned()),
-        AggregateVariablesOptions::default().map(|value| value * 100.),
     );
 
     Ok(())
+}
+
+fn to_percent_max(accumulator: f64, item: f64) -> f64 {
+    max(accumulator, item * 100.)
 }
 
 fn autobrakes(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>> {
@@ -283,6 +284,82 @@ fn autobrakes(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>> {
     )?;
 
     Ok(())
+}
+
+fn flaps(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>> {
+    builder.event_to_variable(
+        "FLAPS_INCR",
+        EventToVariableMapping::CurrentValueToValue(|current_value| (current_value + 1.).min(4.)),
+        Variable::Named("FLAPS_HANDLE_INDEX".to_owned()),
+        EventToVariableOptions::default().mask(),
+    )?;
+    builder.event_to_variable(
+        "FLAPS_DECR",
+        EventToVariableMapping::CurrentValueToValue(|current_value| (current_value - 1.).max(0.)),
+        Variable::Named("FLAPS_HANDLE_INDEX".to_owned()),
+        EventToVariableOptions::default().mask(),
+    )?;
+    flaps_event_to_value(builder, "FLAPS_UP", 0.)?;
+    flaps_event_to_value(builder, "FLAPS_1", 1.)?;
+    flaps_event_to_value(builder, "FLAPS_2", 2.)?;
+    flaps_event_to_value(builder, "FLAPS_3", 3.)?;
+    flaps_event_to_value(builder, "FLAPS_DOWN", 4.)?;
+    builder.event_to_variable(
+        "FLAPS_SET",
+        EventToVariableMapping::EventDataAndCurrentValueToValue(|event_data, current_value| {
+            let normalized_input: f64 = (event_data as i32 as f64) / 8192. - 1.;
+            get_handle_pos_from_0_1(normalized_input, current_value)
+        }),
+        Variable::Named("FLAPS_HANDLE_INDEX".to_owned()),
+        EventToVariableOptions::default().mask(),
+    )?;
+    builder.event_to_variable(
+        "AXIS_FLAPS_SET",
+        EventToVariableMapping::EventDataAndCurrentValueToValue(|event_data, current_value| {
+            let normalized_input: f64 = (event_data as i32 as f64) / 16384.;
+            get_handle_pos_from_0_1(normalized_input, current_value)
+        }),
+        Variable::Named("FLAPS_HANDLE_INDEX".to_owned()),
+        EventToVariableOptions::default().mask(),
+    )?;
+
+    builder.map(
+        UpdateOn::PreTick,
+        Variable::Named("FLAPS_HANDLE_INDEX".to_owned()),
+        |value| value / 4.,
+        Variable::Named("FLAPS_HANDLE_PERCENT".to_owned()),
+    );
+
+    Ok(())
+}
+
+fn flaps_event_to_value(
+    builder: &mut MsfsAspectBuilder,
+    event_name: &str,
+    value: f64,
+) -> Result<(), Box<dyn Error>> {
+    builder.event_to_variable(
+        event_name,
+        EventToVariableMapping::Value(value),
+        Variable::Named("FLAPS_HANDLE_INDEX".to_owned()),
+        EventToVariableOptions::default().mask(),
+    )
+}
+
+fn get_handle_pos_from_0_1(input: f64, current_value: f64) -> f64 {
+    if input < -0.8 {
+        0.
+    } else if input > -0.7 && input < -0.3 {
+        1.
+    } else if input > -0.2 && input < 0.2 {
+        2.
+    } else if input > 0.3 && input < 0.7 {
+        3.
+    } else if input > 0.8 {
+        4.
+    } else {
+        current_value
+    }
 }
 
 #[sim_connect::data_definition]
@@ -320,21 +397,8 @@ struct Flaps {
     slats_left_position_id: VariableIdentifier,
     slats_right_position_id: VariableIdentifier,
 
-    //IDs of the flaps handle events
-    id_flaps_incr: sys::DWORD,
-    id_flaps_decr: sys::DWORD,
-    id_flaps_1: sys::DWORD,
-    id_flaps_2: sys::DWORD,
-    id_flaps_3: sys::DWORD,
-    id_flaps_set: sys::DWORD,
-    id_axis_flaps_set: sys::DWORD,
-    id_flaps_down: sys::DWORD,
-    id_flaps_up: sys::DWORD,
-
     //LVars to communicate between the flap movement logic
     //and the simulation animation
-    flaps_handle_index_sim_var: NamedVariable,
-    flaps_handle_percent_sim_var: NamedVariable,
     left_flaps_position_sim_var: NamedVariable,
     right_flaps_position_sim_var: NamedVariable,
     left_slats_position_sim_var: NamedVariable,
@@ -343,7 +407,6 @@ struct Flaps {
     msfs_flaps_handle_index: FlapsHandleIndex,
     flaps_surface_sim_object: FlapsSurface,
     slats_surface_sim_object: SlatsSurface,
-    flaps_handle_position: u8,
     left_flaps_position: f64,
     right_flaps_position: f64,
 
@@ -353,7 +416,7 @@ struct Flaps {
 impl MsfsAspectCtor for Flaps {
     fn new(
         registry: &mut MsfsVariableRegistry,
-        sim_connect: &mut SimConnect,
+        _: &mut SimConnect,
     ) -> Result<Self, Box<dyn Error>> {
         Ok(Self {
             flaps_left_position_id: registry.get("LEFT_FLAPS_POSITION_PERCENT".to_owned()),
@@ -361,18 +424,6 @@ impl MsfsAspectCtor for Flaps {
             slats_left_position_id: registry.get("LEFT_SLATS_POSITION_PERCENT".to_owned()),
             slats_right_position_id: registry.get("RIGHT_SLATS_POSITION_PERCENT".to_owned()),
 
-            id_flaps_incr: sim_connect.map_client_event_to_sim_event("FLAPS_INCR", true)?,
-            id_flaps_decr: sim_connect.map_client_event_to_sim_event("FLAPS_DECR", true)?,
-            id_flaps_1: sim_connect.map_client_event_to_sim_event("FLAPS_1", true)?,
-            id_flaps_2: sim_connect.map_client_event_to_sim_event("FLAPS_2", true)?,
-            id_flaps_3: sim_connect.map_client_event_to_sim_event("FLAPS_3", true)?,
-            id_flaps_set: sim_connect.map_client_event_to_sim_event("FLAPS_SET", true)?,
-            id_axis_flaps_set: sim_connect.map_client_event_to_sim_event("AXIS_FLAPS_SET", true)?,
-            id_flaps_down: sim_connect.map_client_event_to_sim_event("FLAPS_DOWN", true)?,
-            id_flaps_up: sim_connect.map_client_event_to_sim_event("FLAPS_UP", true)?,
-
-            flaps_handle_index_sim_var: NamedVariable::from("A32NX_FLAPS_HANDLE_INDEX"),
-            flaps_handle_percent_sim_var: NamedVariable::from("A32NX_FLAPS_HANDLE_PERCENT"),
             left_flaps_position_sim_var: NamedVariable::from("A32NX_LEFT_FLAPS_POSITION_PERCENT"),
             right_flaps_position_sim_var: NamedVariable::from("A32NX_RIGHT_FLAPS_POSITION_PERCENT"),
             left_slats_position_sim_var: NamedVariable::from("A32NX_LEFT_SLATS_POSITION_PERCENT"),
@@ -388,7 +439,6 @@ impl MsfsAspectCtor for Flaps {
                 right_slat: 0.,
             },
 
-            flaps_handle_position: 0,
             left_flaps_position: 0.,
             right_flaps_position: 0.,
 
@@ -399,10 +449,6 @@ impl MsfsAspectCtor for Flaps {
 }
 
 impl Flaps {
-    fn flaps_handle_position_f64(&self) -> f64 {
-        self.flaps_handle_position as f64
-    }
-
     /// Tries to take actual surfaces position PERCENTS and convert it into flight model FLAP HANDLE INDEX
     /// This index is used by MSFS to select correct aerodynamic properties
     /// There is no index available for flaps but no slats configurations (possible plane failure case)
@@ -432,64 +478,6 @@ impl Flaps {
         } else {
             0
         }
-    }
-
-    fn get_handle_pos_from_0_1(&self, input: f64) -> u8 {
-        if input < -0.8 {
-            0
-        } else if input > -0.7 && input < -0.3 {
-            1
-        } else if input > -0.2 && input < 0.2 {
-            2
-        } else if input > 0.3 && input < 0.7 {
-            3
-        } else if input > 0.8 {
-            4
-        } else {
-            self.flaps_handle_position
-        }
-    }
-
-    fn get_handle_pos_flaps_set(&self, input: i32) -> u8 {
-        let normalized_input: f64 = (input as f64) / 8192. - 1.;
-        return self.get_handle_pos_from_0_1(normalized_input);
-    }
-
-    fn get_handle_pos_axis_flaps_set(&self, input: i32) -> u8 {
-        let normalized_input: f64 = (input as f64) / 16384.;
-        return self.get_handle_pos_from_0_1(normalized_input);
-    }
-
-    fn catch_event(&mut self, event_id: sys::DWORD, event_data: u32) -> bool {
-        if event_id == self.id_flaps_incr {
-            self.flaps_handle_position += 1;
-            self.flaps_handle_position = self.flaps_handle_position.min(4);
-        } else if event_id == self.id_flaps_decr {
-            if self.flaps_handle_position > 0 {
-                self.flaps_handle_position -= 1;
-            }
-        } else if event_id == self.id_flaps_1 {
-            self.flaps_handle_position = 1;
-        } else if event_id == self.id_flaps_2 {
-            self.flaps_handle_position = 2;
-        } else if event_id == self.id_flaps_3 {
-            self.flaps_handle_position = 3;
-        } else if event_id == self.id_flaps_set {
-            self.flaps_handle_position = self.get_handle_pos_flaps_set(event_data as i32);
-        } else if event_id == self.id_axis_flaps_set {
-            self.flaps_handle_position = self.get_handle_pos_axis_flaps_set(event_data as i32);
-        } else if event_id == self.id_flaps_down {
-            self.flaps_handle_position = 4;
-        } else if event_id == self.id_flaps_up {
-            self.flaps_handle_position = 0;
-        } else {
-            return false;
-        }
-        self.flaps_handle_index_sim_var
-            .set_value(self.flaps_handle_position_f64());
-        self.flaps_handle_percent_sim_var
-            .set_value(self.flaps_handle_position_f64() / 4.);
-        true
     }
 
     fn write_sim_vars(&mut self) {
@@ -532,14 +520,6 @@ impl SimulatorAspect for Flaps {
         } else if identifier == &self.slats_right_position_id {
             self.right_slats_position = value;
             true
-        } else {
-            false
-        }
-    }
-
-    fn handle_message(&mut self, message: &SimConnectRecv) -> bool {
-        if let SimConnectRecv::Event(e) = message {
-            self.catch_event(e.id(), e.data())
         } else {
             false
         }
