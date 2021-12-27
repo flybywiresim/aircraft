@@ -1893,8 +1893,8 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
 
     case Events::A32NX_THROTTLE_MAPPING_SET_DEFAULTS: {
       cout << "WASM: event triggered: THROTTLE_MAPPING_SET_DEFAULTS" << endl;
-      throttleAxis[0]->setDefaults();
-      throttleAxis[1]->setDefaults();
+      throttleAxis[0]->applyDefaults();
+      throttleAxis[1]->applyDefaults();
       break;
     }
     case Events::A32NX_THROTTLE_MAPPING_LOAD_FROM_FILE: {

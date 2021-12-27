@@ -77,8 +77,7 @@ bool ThrottleAxisMapping::loadFromLocalVariables() {
   return true;
 }
 
-bool ThrottleAxisMapping::setDefaults() {
-  // read configuration from file or use default
+bool ThrottleAxisMapping::applyDefaults() {
   Configuration configuration;
   cout << "WASM: Throttle configuration set to use default" << endl;
   configuration = getDefaultConfiguration();
