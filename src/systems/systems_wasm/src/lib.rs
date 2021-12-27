@@ -342,6 +342,10 @@ impl AircraftVariableOptions {
     }
 }
 
+const AIRCRAFT_VARIABLE_IDENTIFIER_TYPE: u8 = 0;
+pub const NAMED_VARIABLE_IDENTIFIER_TYPE: u8 = 1;
+pub const ASPECT_VARIABLE_IDENTIFIER_TYPE: u8 = 2;
+
 pub struct MsfsVariableRegistry {
     name_to_identifier: FxHashMap<String, VariableIdentifier>,
     aircraft_variables: Vec<(AircraftVariable, Option<fn(f64) -> f64>)>,
@@ -353,10 +357,6 @@ pub struct MsfsVariableRegistry {
 }
 
 impl MsfsVariableRegistry {
-    const AIRCRAFT_VARIABLE_IDENTIFIER_TYPE: u8 = 0;
-    const NAMED_VARIABLE_IDENTIFIER_TYPE: u8 = 1;
-    const ASPECT_VARIABLE_IDENTIFIER_TYPE: u8 = 2;
-
     pub fn new(named_variable_prefix: String) -> Self {
         Self {
             name_to_identifier: FxHashMap::default(),
@@ -364,13 +364,11 @@ impl MsfsVariableRegistry {
             named_variables: Default::default(),
             named_variable_prefix,
             next_aircraft_variable_identifier: VariableIdentifier::new(
-                Self::AIRCRAFT_VARIABLE_IDENTIFIER_TYPE,
+                AIRCRAFT_VARIABLE_IDENTIFIER_TYPE,
             ),
-            next_named_variable_identifier: VariableIdentifier::new(
-                Self::NAMED_VARIABLE_IDENTIFIER_TYPE,
-            ),
+            next_named_variable_identifier: VariableIdentifier::new(NAMED_VARIABLE_IDENTIFIER_TYPE),
             next_aspect_variable_identifier: VariableIdentifier::new(
-                Self::ASPECT_VARIABLE_IDENTIFIER_TYPE,
+                ASPECT_VARIABLE_IDENTIFIER_TYPE,
             ),
         }
     }
@@ -469,13 +467,13 @@ impl VariableRegistry for MsfsVariableRegistry {
 impl SimulatorAspect for MsfsVariableRegistry {
     fn read(&mut self, identifier: &VariableIdentifier) -> Option<f64> {
         match identifier.identifier_type() {
-            Self::AIRCRAFT_VARIABLE_IDENTIFIER_TYPE => {
+            AIRCRAFT_VARIABLE_IDENTIFIER_TYPE => {
                 match &self.aircraft_variables[identifier.identifier_index()] {
                     (variable, None) => Some(variable.get()),
                     (variable, Some(mapping_func)) => Some(mapping_func(variable.get())),
                 }
             }
-            Self::NAMED_VARIABLE_IDENTIFIER_TYPE => {
+            NAMED_VARIABLE_IDENTIFIER_TYPE => {
                 Some(self.named_variables[identifier.identifier_index()].get_value())
             }
             _ => None,
@@ -484,7 +482,7 @@ impl SimulatorAspect for MsfsVariableRegistry {
 
     fn write(&mut self, identifier: &VariableIdentifier, value: f64) -> bool {
         match identifier.identifier_type() {
-            Self::NAMED_VARIABLE_IDENTIFIER_TYPE => {
+            NAMED_VARIABLE_IDENTIFIER_TYPE => {
                 self.named_variables[identifier.identifier_index()].set_value(value);
                 true
             }

@@ -1,3 +1,4 @@
+use super::{ASPECT_VARIABLE_IDENTIFIER_TYPE, NAMED_VARIABLE_IDENTIFIER_TYPE};
 use crate::{
     f64_to_sim_connect_32k_pos, sim_connect_32k_pos_to_f64, MsfsVariableRegistry, SimulatorAspect,
 };
@@ -16,6 +17,7 @@ pub struct MsfsAspectBuilder<'a, 'b> {
     variable_registry: &'a mut MsfsVariableRegistry,
     event_to_variable: Vec<EventToVariable>,
     aggregate_variable: Vec<AggregateVariables>,
+    variables: MsfsAspectVariableCollection,
 }
 
 impl<'a, 'b> MsfsAspectBuilder<'a, 'b> {
@@ -30,11 +32,16 @@ impl<'a, 'b> MsfsAspectBuilder<'a, 'b> {
             variable_registry,
             event_to_variable: Default::default(),
             aggregate_variable: Default::default(),
+            variables: Default::default(),
         }
     }
 
     pub fn build(self) -> MsfsAspect {
-        let aspect = MsfsAspect::new(self.event_to_variable, self.aggregate_variable);
+        let aspect = MsfsAspect::new(
+            self.event_to_variable,
+            self.aggregate_variable,
+            self.variables,
+        );
 
         aspect
     }
@@ -48,13 +55,15 @@ impl<'a, 'b> MsfsAspectBuilder<'a, 'b> {
         target: Variable,
         options: EventToVariableOptions,
     ) -> Result<(), Box<dyn Error>> {
+        let target_identifier =
+            self.variables
+                .register(&self.key_prefix, self.variable_registry, &target);
+
         self.event_to_variable.push(EventToVariable::new(
             &mut self.sim_connect,
-            self.variable_registry,
-            &self.key_prefix,
             event_name,
             mapping,
-            target,
+            target_identifier,
             options,
         )?);
 
@@ -74,81 +83,177 @@ impl<'a, 'b> MsfsAspectBuilder<'a, 'b> {
         output: Variable,
         options: AggregateVariablesOptions,
     ) {
+        let input_variable_identifiers: Vec<VariableIdentifier> = input
+            .iter()
+            .map(|input_variable| {
+                self.variables
+                    .register(&self.key_prefix, self.variable_registry, &input_variable)
+            })
+            .collect();
+
+        let output_variable_identifier =
+            self.variables
+                .register(&self.key_prefix, self.variable_registry, &output);
+
         self.aggregate_variable.push(AggregateVariables::new(
-            self.variable_registry,
-            &self.key_prefix,
             update_on,
-            input,
+            input_variable_identifiers,
             func,
-            output,
+            output_variable_identifier,
             options,
         ));
+    }
+}
+
+#[derive(Default)]
+struct MsfsAspectVariableCollection {
+    aspect_variables: FxHashMap<VariableIdentifier, f64>,
+    named_variables: FxHashMap<VariableIdentifier, NamedVariable>,
+}
+
+impl MsfsAspectVariableCollection {
+    fn register(
+        &mut self,
+        key_prefix: &str,
+        variable_registry: &mut MsfsVariableRegistry,
+        target: &Variable,
+    ) -> VariableIdentifier {
+        match target {
+            Variable::Aspect(name) => {
+                let identifier =
+                    variable_registry.get_identifier_or_create_aspect_variable(name.to_owned());
+                if !self.aspect_variables.contains_key(&identifier) {
+                    self.aspect_variables.insert(identifier, 0.);
+                }
+
+                identifier
+            }
+            Variable::Named(name) => {
+                let identifier =
+                    variable_registry.get_identifier_or_create_named_variable(name.to_owned());
+                if !self.named_variables.contains_key(&identifier) {
+                    self.named_variables.insert(
+                        identifier,
+                        NamedVariable::from(&format!("{}{}", key_prefix, name)),
+                    );
+                }
+
+                identifier
+            }
+        }
+    }
+
+    fn read(&mut self, identifier: &VariableIdentifier) -> Option<f64> {
+        match identifier.identifier_type() {
+            ASPECT_VARIABLE_IDENTIFIER_TYPE => match self.aspect_variables.get(identifier) {
+                Some(value) => Some(*value),
+                None => None,
+            },
+            NAMED_VARIABLE_IDENTIFIER_TYPE => match self.named_variables.get(identifier) {
+                Some(named_variable) => Some(named_variable.get_value()),
+                None => None,
+            },
+            _ => None,
+        }
+    }
+
+    fn write(&mut self, identifier: &VariableIdentifier, value: f64) -> bool {
+        match identifier.identifier_type() {
+            ASPECT_VARIABLE_IDENTIFIER_TYPE => {
+                if self.aspect_variables.contains_key(identifier) {
+                    self.aspect_variables.insert(*identifier, value);
+                    true
+                } else {
+                    false
+                }
+            }
+            NAMED_VARIABLE_IDENTIFIER_TYPE => match self.named_variables.get(identifier) {
+                Some(named_variable) => {
+                    named_variable.set_value(value);
+                    true
+                }
+                None => false,
+            },
+            _ => false,
+        }
     }
 }
 
 pub struct MsfsAspect {
     event_to_variable: Vec<EventToVariable>,
     aggregate_variables: Vec<AggregateVariables>,
+    variables: Option<MsfsAspectVariableCollection>,
 }
 
 impl MsfsAspect {
     fn new(
         event_to_variable: Vec<EventToVariable>,
         aggregate_variables: Vec<AggregateVariables>,
+        variables: MsfsAspectVariableCollection,
     ) -> Self {
         Self {
             event_to_variable,
             aggregate_variables,
+            variables: Some(variables),
         }
     }
 
-    fn update_aggregate_variables(&mut self, update_moment: UpdateOn) {
-        let mut aspect_variables: FxHashMap<VariableIdentifier, f64> = self
-            .event_to_variable
-            .iter()
-            .map(|ev| ev.value_tuple())
-            .collect();
-
+    fn update_aggregate_variables(
+        &mut self,
+        update_moment: UpdateOn,
+        variables: &mut MsfsAspectVariableCollection,
+    ) {
         self.aggregate_variables.iter_mut().for_each(|av| {
-            av.update_value(&aspect_variables, update_moment);
-            aspect_variables.insert(av.output_identifier(), av.value());
+            av.update_value(variables, update_moment);
         });
     }
 }
 
 impl SimulatorAspect for MsfsAspect {
     fn read(&mut self, identifier: &VariableIdentifier) -> Option<f64> {
-        self.event_to_variable
-            .iter_mut()
-            .find_map(|ev| ev.read(identifier))
+        self.variables.as_mut().unwrap().read(identifier)
     }
 
     fn write(&mut self, identifier: &VariableIdentifier, value: f64) -> bool {
-        self.event_to_variable
-            .iter_mut()
-            .any(|ev| ev.write(identifier, value))
+        self.variables.as_mut().unwrap().write(identifier, value)
     }
 
     fn handle_message(&mut self, message: &SimConnectRecv) -> bool {
-        self.event_to_variable
-            .iter_mut()
-            .any(|ev| ev.handle_message(message))
+        if let Some(mut variables) = self.variables.take() {
+            let result = self
+                .event_to_variable
+                .iter_mut()
+                .any(|ev| ev.handle_message(message, &mut variables));
+
+            self.variables = Some(variables);
+            result
+        } else {
+            false
+        }
     }
 
     fn pre_tick(&mut self, delta: Duration) {
-        self.event_to_variable
-            .iter_mut()
-            .for_each(|ev| ev.pre_tick(delta));
+        if let Some(mut variables) = self.variables.take() {
+            self.event_to_variable
+                .iter_mut()
+                .for_each(|ev| ev.pre_tick(delta, &mut variables));
 
-        self.update_aggregate_variables(UpdateOn::PreTick);
+            self.update_aggregate_variables(UpdateOn::PreTick, &mut variables);
+
+            self.variables = Some(variables);
+        }
     }
 
     fn post_tick(&mut self, sim_connect: &mut SimConnect) -> Result<(), Box<dyn Error>> {
-        self.event_to_variable
-            .iter_mut()
-            .try_for_each(|ev| ev.post_tick(sim_connect))?;
+        if let Some(mut variables) = self.variables.take() {
+            self.event_to_variable
+                .iter_mut()
+                .try_for_each(|ev| ev.post_tick(sim_connect, &mut variables))?;
 
-        self.update_aggregate_variables(UpdateOn::PostTick);
+            self.update_aggregate_variables(UpdateOn::PostTick, &mut variables);
+
+            self.variables = Some(variables);
+        }
 
         Ok(())
     }
@@ -228,27 +333,6 @@ pub enum Variable {
     Named(String),
 }
 
-impl Variable {
-    fn to_named_variable(&self, key_prefix: &str) -> Option<NamedVariable> {
-        if let Variable::Named(name) = self {
-            Some(NamedVariable::from(&format!("{}{}", key_prefix, name)))
-        } else {
-            None
-        }
-    }
-
-    fn to_identifier(&self, variable_registry: &mut MsfsVariableRegistry) -> VariableIdentifier {
-        match self {
-            Variable::Aspect(name) => {
-                variable_registry.get_identifier_or_create_aspect_variable(name.to_owned())
-            }
-            Variable::Named(name) => {
-                variable_registry.get_identifier_or_create_named_variable(name.to_owned())
-            }
-        }
-    }
-}
-
 #[derive(Clone, Copy, Default)]
 pub struct EventToVariableOptions {
     mask: bool,
@@ -292,59 +376,29 @@ struct EventToVariable {
     event_id: u32,
     event_last_handled: Option<Instant>,
     event_handled_before_tick: bool,
-    variable_identifier: VariableIdentifier,
-    named_variable: Option<NamedVariable>,
-    aspect_value: f64,
+    target_identifier: VariableIdentifier,
     last_written_value: Option<f64>,
     mapping: EventToVariableMapping,
-    target: Variable,
     options: EventToVariableOptions,
 }
 
 impl EventToVariable {
     fn new(
         sim_connect: &mut SimConnect,
-        variable_registry: &mut MsfsVariableRegistry,
-        key_prefix: &str,
         event_name: &str,
         mapping: EventToVariableMapping,
-        target: Variable,
+        target_identifier: VariableIdentifier,
         options: EventToVariableOptions,
     ) -> Result<Self, Box<dyn Error>> {
         Ok(Self {
             event_id: sim_connect.map_client_event_to_sim_event(event_name, options.mask)?,
             event_last_handled: None,
             event_handled_before_tick: false,
-            variable_identifier: target.to_identifier(variable_registry),
-            named_variable: target.to_named_variable(key_prefix),
-            aspect_value: 0.,
+            target_identifier,
             last_written_value: None,
             mapping,
-            target,
             options,
         })
-    }
-
-    fn value(&self) -> f64 {
-        match self.target {
-            Variable::Named(_) => self.named_variable.as_ref().unwrap().get_value(),
-            Variable::Aspect(_) => self.aspect_value,
-        }
-    }
-
-    fn value_tuple(&self) -> (VariableIdentifier, f64) {
-        (self.variable_identifier, self.value())
-    }
-
-    fn set_value(&mut self, value: f64) {
-        match self.target {
-            Variable::Named(_) => self.named_variable.as_mut().unwrap().set_value(value),
-            Variable::Aspect(_) => self.aspect_value = value,
-        }
-    }
-
-    fn handles_identifier(&self, identifier: &VariableIdentifier) -> bool {
-        self.variable_identifier == *identifier
     }
 
     fn should_handle_event(&self) -> bool {
@@ -354,10 +408,12 @@ impl EventToVariable {
         }
     }
 
-    fn set_variable_after_tick(&mut self) {
+    fn set_variable_after_tick(&mut self, variables: &mut MsfsAspectVariableCollection) {
         if self.event_handled_before_tick {
             match self.options.after_tick_set_to {
-                Some(value) => self.set_value(value),
+                Some(value) => {
+                    variables.write(&self.target_identifier, value);
+                }
                 None => (),
             }
         }
@@ -366,9 +422,10 @@ impl EventToVariable {
     fn write_variable_to_event(
         &mut self,
         sim_connect: &mut SimConnect,
+        variables: &mut MsfsAspectVariableCollection,
     ) -> Result<(), Box<dyn Error>> {
         if self.options.is_bidirectional() {
-            let value = self.value();
+            let value = variables.read(&self.target_identifier).unwrap_or(0.);
             let should_write = match self.last_written_value {
                 Some(last_written_value) => value != last_written_value,
                 None => true,
@@ -392,60 +449,56 @@ impl EventToVariable {
         Ok(())
     }
 
-    fn map_to_value(&self, e: &msfs::sys::SIMCONNECT_RECV_EVENT) -> f64 {
+    fn map_to_value(
+        &self,
+        e: &msfs::sys::SIMCONNECT_RECV_EVENT,
+        variables: &mut MsfsAspectVariableCollection,
+    ) -> f64 {
         match self.mapping {
             EventToVariableMapping::Value(value) => value,
             EventToVariableMapping::EventDataRaw => e.data() as f64,
             EventToVariableMapping::EventData32kPosition => sim_connect_32k_pos_to_f64(e.data()),
             EventToVariableMapping::EventDataToValue(func) => func(e.data()),
-            EventToVariableMapping::CurrentValueToValue(func) => func(self.value()),
-            EventToVariableMapping::EventDataAndCurrentValueToValue(func) => {
-                func(e.data(), self.value())
+            EventToVariableMapping::CurrentValueToValue(func) => {
+                func(variables.read(&self.target_identifier).unwrap_or(0.))
             }
-            EventToVariableMapping::SmoothPress(_, _) => self.value(),
+            EventToVariableMapping::EventDataAndCurrentValueToValue(func) => func(
+                e.data(),
+                variables.read(&self.target_identifier).unwrap_or(0.),
+            ),
+            EventToVariableMapping::SmoothPress(_, _) => {
+                variables.read(&self.target_identifier).unwrap_or(0.)
+            }
         }
     }
 
-    fn adjust_smooth_pressed_value(&mut self, delta: Duration) {
+    fn adjust_smooth_pressed_value(
+        &mut self,
+        delta: Duration,
+        variables: &mut MsfsAspectVariableCollection,
+    ) {
         if let EventToVariableMapping::SmoothPress(press_factor, release_factor) = self.mapping {
-            let mut value = self.value();
+            let mut value = variables.read(&self.target_identifier).unwrap_or(0.);
             if self.event_handled_before_tick {
                 value += delta.as_secs_f64() * press_factor;
             } else {
                 value -= delta.as_secs_f64() * release_factor;
             }
 
-            self.set_value(value.min(1.).max(0.));
-        }
-    }
-}
-
-impl SimulatorAspect for EventToVariable {
-    fn read(&mut self, identifier: &VariableIdentifier) -> Option<f64> {
-        match self.target {
-            Variable::Aspect(_) if self.handles_identifier(identifier) => Some(self.value()),
-            // Named variable reading is handled by the VariableRegistry.
-            _ => None,
+            variables.write(&self.target_identifier, value.min(1.).max(0.));
         }
     }
 
-    fn write(&mut self, identifier: &VariableIdentifier, value: f64) -> bool {
-        match self.target {
-            Variable::Aspect(_) if self.handles_identifier(identifier) => {
-                self.set_value(value);
-                true
-            }
-            // Named variable writing is handled by the VariableRegistry.
-            _ => false,
-        }
-    }
-
-    fn handle_message(&mut self, message: &SimConnectRecv) -> bool {
+    fn handle_message(
+        &mut self,
+        message: &SimConnectRecv,
+        variables: &mut MsfsAspectVariableCollection,
+    ) -> bool {
         match message {
             SimConnectRecv::Event(e) if e.id() == self.event_id => {
                 if self.should_handle_event() {
-                    let mapped_value = self.map_to_value(e);
-                    self.set_value(mapped_value);
+                    let mapped_value = self.map_to_value(e, variables);
+                    variables.write(&self.target_identifier, mapped_value);
 
                     self.event_last_handled = Some(Instant::now());
                     self.event_handled_before_tick = true;
@@ -457,13 +510,17 @@ impl SimulatorAspect for EventToVariable {
         }
     }
 
-    fn pre_tick(&mut self, delta: Duration) {
-        self.adjust_smooth_pressed_value(delta);
+    fn pre_tick(&mut self, delta: Duration, variables: &mut MsfsAspectVariableCollection) {
+        self.adjust_smooth_pressed_value(delta, variables);
     }
 
-    fn post_tick(&mut self, sim_connect: &mut SimConnect) -> Result<(), Box<dyn Error>> {
-        self.write_variable_to_event(sim_connect)?;
-        self.set_variable_after_tick();
+    fn post_tick(
+        &mut self,
+        sim_connect: &mut SimConnect,
+        variables: &mut MsfsAspectVariableCollection,
+    ) -> Result<(), Box<dyn Error>> {
+        self.write_variable_to_event(sim_connect, variables)?;
+        self.set_variable_after_tick(variables);
 
         self.event_handled_before_tick = false;
         Ok(())
@@ -472,83 +529,51 @@ impl SimulatorAspect for EventToVariable {
 
 struct AggregateVariables {
     update_on: UpdateOn,
-    input_named_variables: Vec<Option<NamedVariable>>,
     input_variable_identifiers: Vec<VariableIdentifier>,
     func: AggregateVariableFunction,
-    output_named_variable: Option<NamedVariable>,
     output_variable_identifier: VariableIdentifier,
-    value: f64,
     options: AggregateVariablesOptions,
 }
 
 impl AggregateVariables {
     fn new(
-        variable_registry: &mut MsfsVariableRegistry,
-        key_prefix: &str,
         update_on: UpdateOn,
-        input: Vec<Variable>,
+        input_variable_identifiers: Vec<VariableIdentifier>,
         func: AggregateVariableFunction,
-        output: Variable,
+        output_variable_identifier: VariableIdentifier,
         options: AggregateVariablesOptions,
     ) -> Self {
         assert!(
-            input.len() >= 2,
+            input_variable_identifiers.len() >= 2,
             "Aggregation requires at least two input variables."
         );
 
         Self {
             update_on,
-            input_named_variables: input
-                .iter()
-                .map(|input_variable| input_variable.to_named_variable(key_prefix))
-                .collect(),
-            input_variable_identifiers: input
-                .iter()
-                .map(|input_variable| input_variable.to_identifier(variable_registry))
-                .collect(),
+            input_variable_identifiers,
             func,
-            output_named_variable: output.to_named_variable(key_prefix),
-            output_variable_identifier: output.to_identifier(variable_registry),
-            value: 0.,
+            output_variable_identifier,
             options,
         }
     }
 
-    fn value(&self) -> f64 {
-        match &self.output_named_variable {
-            Some(named_variable) => named_variable.get_value(),
-            None => self.value,
-        }
-    }
-
-    fn set_value(&mut self, value: f64) {
-        match &self.output_named_variable {
-            Some(named_variable) => named_variable.set_value(value),
-            None => self.value = value,
-        };
-    }
-
-    fn output_identifier(&self) -> VariableIdentifier {
-        self.output_variable_identifier
-    }
-
     fn update_value(
         &mut self,
-        aspect_variables: &FxHashMap<VariableIdentifier, f64>,
+        variables: &mut MsfsAspectVariableCollection,
         update_moment: UpdateOn,
     ) {
         if self.update_on == update_moment {
-            let values = self.input_variable_identifiers.iter().enumerate().map(
-                |(index, variable_identifier)| match aspect_variables.get(variable_identifier) {
-                    Some(value) => *value,
-                    None => match &self.input_named_variables[index] {
-                        Some(named_variable) => named_variable.get_value(),
+            let values = self
+                .input_variable_identifiers
+                .iter()
+                .map(
+                    |variable_identifier| match variables.read(variable_identifier) {
+                        Some(value) => value,
                         None => {
-                            panic!("Attempted to aggregate variables which were unavailable.");
+                            panic!("Attempted to aggregate variables which were unavailable.")
                         }
                     },
-                },
-            );
+                );
 
             let mut value = match self.func {
                 AggregateVariableFunction::Min => values.reduce(f64::min).unwrap_or(0.),
@@ -559,20 +584,7 @@ impl AggregateVariables {
                 value = map_func(value);
             }
 
-            self.set_value(value);
+            variables.write(&self.output_variable_identifier, value);
         }
     }
-}
-
-impl SimulatorAspect for AggregateVariables {
-    fn read(&mut self, identifier: &VariableIdentifier) -> Option<f64> {
-        // Named variable reading is handled by the VariableRegistry.
-        if self.output_variable_identifier == *identifier && self.output_named_variable.is_none() {
-            Some(self.value())
-        } else {
-            None
-        }
-    }
-
-    fn pre_tick(&mut self, _: Duration) {}
 }
