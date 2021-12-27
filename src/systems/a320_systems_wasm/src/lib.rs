@@ -15,7 +15,10 @@ use systems::{
     failures::FailureType,
     simulation::{VariableIdentifier, VariableRegistry},
 };
-use systems_wasm::aspects::{EventToVariableOptions, MsfsAspectBuilder, VariableToEventMapping};
+use systems_wasm::aspects::{
+    AggregateVariableFunction, EventToVariableOptions, MsfsAspectBuilder, UpdateOn,
+    VariableToEventMapping,
+};
 use systems_wasm::{
     aspects::{EventToVariableMapping, Variable},
     f64_to_sim_connect_32k_pos, sim_connect_32k_pos_to_f64, AircraftVariableOptions,
@@ -181,7 +184,7 @@ fn brakes(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>> {
     builder.event_to_variable(
         "AXIS_LEFT_BRAKE_SET",
         EventToVariableMapping::EventData32kPosition,
-        Variable::Aspect("BRAKE LEFT FORCE FACTOR".to_owned()),
+        Variable::Named("BRAKE LEFT FORCE FACTOR".to_owned()),
         EventToVariableOptions::default()
             .mask()
             .bidirectional(VariableToEventMapping::EventData32kPosition),
@@ -189,7 +192,7 @@ fn brakes(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>> {
     builder.event_to_variable(
         "AXIS_RIGHT_BRAKE_SET",
         EventToVariableMapping::EventData32kPosition,
-        Variable::Aspect("BRAKE RIGHT FORCE FACTOR".to_owned()),
+        Variable::Named("BRAKE RIGHT FORCE FACTOR".to_owned()),
         EventToVariableOptions::default()
             .mask()
             .bidirectional(VariableToEventMapping::EventData32kPosition),
@@ -213,6 +216,27 @@ fn brakes(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>> {
         Variable::Aspect("BRAKES_RIGHT".to_owned()),
         EventToVariableOptions::default().mask(),
     )?;
+
+    builder.aggregate_variables(
+        UpdateOn::PreTick,
+        vec![
+            Variable::Aspect("BRAKES".to_owned()),
+            Variable::Aspect("BRAKES_LEFT".to_owned()),
+            Variable::Named("BRAKE LEFT FORCE FACTOR".to_owned()),
+        ],
+        AggregateVariableFunction::Max,
+        Variable::Named("LEFT_BRAKE_PEDAL_INPUT".to_owned()),
+    );
+    builder.aggregate_variables(
+        UpdateOn::PreTick,
+        vec![
+            Variable::Aspect("BRAKES".to_owned()),
+            Variable::Aspect("BRAKES_RIGHT".to_owned()),
+            Variable::Named("BRAKE RIGHT FORCE FACTOR".to_owned()),
+        ],
+        AggregateVariableFunction::Max,
+        Variable::Named("RIGHT_BRAKE_PEDAL_INPUT".to_owned()),
+    );
 
     Ok(())
 }

@@ -428,20 +428,25 @@ impl MsfsVariableRegistry {
         }
     }
 
-    fn add_named_variable(&mut self, name: String) -> VariableIdentifier {
-        let identifier = self.next_named_variable_identifier;
-        self.named_variables.insert(
-            identifier.identifier_index(),
-            NamedVariable::from(&format!("{}{}", self.named_variable_prefix, name)),
-        );
-        self.name_to_identifier.insert(name, identifier);
+    fn get_identifier_or_create_named_variable(&mut self, name: String) -> VariableIdentifier {
+        match self.name_to_identifier.get(&name) {
+            Some(identifier) => *identifier,
+            None => {
+                let identifier = self.next_named_variable_identifier;
+                self.named_variables.insert(
+                    identifier.identifier_index(),
+                    NamedVariable::from(&format!("{}{}", self.named_variable_prefix, name)),
+                );
+                self.name_to_identifier.insert(name, identifier);
 
-        self.next_named_variable_identifier = identifier.next();
+                self.next_named_variable_identifier = identifier.next();
 
-        identifier
+                identifier
+            }
+        }
     }
 
-    fn add_aspect_variable(&mut self, name: String) -> VariableIdentifier {
+    fn get_identifier_or_create_aspect_variable(&mut self, name: String) -> VariableIdentifier {
         match self.name_to_identifier.get(&name) {
             Some(identifier) => *identifier,
             None => {
@@ -457,10 +462,7 @@ impl MsfsVariableRegistry {
 
 impl VariableRegistry for MsfsVariableRegistry {
     fn get(&mut self, name: String) -> VariableIdentifier {
-        match self.name_to_identifier.get(&name) {
-            Some(identifier) => *identifier,
-            None => self.add_named_variable(name),
-        }
+        self.get_identifier_or_create_named_variable(name)
     }
 }
 
