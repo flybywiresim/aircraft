@@ -172,34 +172,35 @@ fn brakes(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>> {
             from_bool(!to_bool(current_value))
         }),
         Variable::Named("PARK_BRAKE_LEVER_POS".to_owned()),
-        EventToVariableOptions::default().mask(),
+        |options| options.mask(),
     )?;
     builder.event_to_variable(
         "PARKING_BRAKE_SET",
         EventToVariableMapping::EventDataToValue(|event_data| from_bool(event_data == 1)),
         Variable::Named("PARK_BRAKE_LEVER_POS".to_owned()),
-        EventToVariableOptions::default().mask(),
+        |options| options.mask(),
     )?;
 
     // Controller inputs for the left and right brakes are captured and translated
     // to a named variable so that it can be used by the simulation.
     // After running the simulation, the variable value is written back to the simulator
     // through the event.
+    let options = |options: EventToVariableOptions| {
+        options
+            .mask()
+            .bidirectional(VariableToEventMapping::EventData32kPosition)
+    };
     builder.event_to_variable(
         "AXIS_LEFT_BRAKE_SET",
         EventToVariableMapping::EventData32kPosition,
         Variable::Aspect("BRAKE LEFT FORCE FACTOR".to_owned()),
-        EventToVariableOptions::default()
-            .mask()
-            .bidirectional(VariableToEventMapping::EventData32kPosition),
+        options,
     )?;
     builder.event_to_variable(
         "AXIS_RIGHT_BRAKE_SET",
         EventToVariableMapping::EventData32kPosition,
         Variable::Aspect("BRAKE RIGHT FORCE FACTOR".to_owned()),
-        EventToVariableOptions::default()
-            .mask()
-            .bidirectional(VariableToEventMapping::EventData32kPosition),
+        options,
     )?;
 
     // Keyboard inputs for both brakes, left brake, and right brake are captured and
@@ -210,19 +211,19 @@ fn brakes(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>> {
         "BRAKES",
         EventToVariableMapping::SmoothPress(KEYBOARD_PRESS_SPEED, KEYBOARD_RELEASE_SPEED),
         Variable::Aspect("BRAKES".to_owned()),
-        EventToVariableOptions::default().mask(),
+        |options| options.mask(),
     )?;
     builder.event_to_variable(
         "BRAKES_LEFT",
         EventToVariableMapping::SmoothPress(KEYBOARD_PRESS_SPEED, KEYBOARD_RELEASE_SPEED),
         Variable::Aspect("BRAKES_LEFT".to_owned()),
-        EventToVariableOptions::default().mask(),
+        |options| options.mask(),
     )?;
     builder.event_to_variable(
         "BRAKES_RIGHT",
         EventToVariableMapping::SmoothPress(KEYBOARD_PRESS_SPEED, KEYBOARD_RELEASE_SPEED),
         Variable::Aspect("BRAKES_RIGHT".to_owned()),
-        EventToVariableOptions::default().mask(),
+        |options| options.mask(),
     )?;
 
     // The maximum braking demand of all keyboard and controller inputs
@@ -256,9 +257,11 @@ fn to_percent_max(accumulator: f64, item: f64) -> f64 {
 }
 
 fn autobrakes(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>> {
-    let options = EventToVariableOptions::default()
-        .ignore_repeats_for(Duration::from_millis(1500))
-        .after_tick_set_to(0.);
+    let options = |options: EventToVariableOptions| {
+        options
+            .ignore_repeats_for(Duration::from_millis(1500))
+            .after_tick_set_to(0.)
+    };
 
     builder.event_to_variable(
         "AUTOBRAKE_LO_SET",
@@ -282,7 +285,7 @@ fn autobrakes(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>> {
         "AUTOBRAKE_DISARM",
         EventToVariableMapping::Value(1.),
         Variable::Named("AUTOBRAKE_DISARM".to_owned()),
-        EventToVariableOptions::default().after_tick_set_to(0.),
+        |options| options.after_tick_set_to(0.),
     )?;
 
     Ok(())
@@ -293,13 +296,13 @@ fn flaps(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>> {
         "FLAPS_INCR",
         EventToVariableMapping::CurrentValueToValue(|current_value| (current_value + 1.).min(4.)),
         Variable::Named("FLAPS_HANDLE_INDEX".to_owned()),
-        EventToVariableOptions::default().mask(),
+        |options| options.mask(),
     )?;
     builder.event_to_variable(
         "FLAPS_DECR",
         EventToVariableMapping::CurrentValueToValue(|current_value| (current_value - 1.).max(0.)),
         Variable::Named("FLAPS_HANDLE_INDEX".to_owned()),
-        EventToVariableOptions::default().mask(),
+        |options| options.mask(),
     )?;
     flaps_event_to_value(builder, "FLAPS_UP", 0.)?;
     flaps_event_to_value(builder, "FLAPS_1", 1.)?;
@@ -313,7 +316,7 @@ fn flaps(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>> {
             get_handle_pos_from_0_1(normalized_input, current_value)
         }),
         Variable::Named("FLAPS_HANDLE_INDEX".to_owned()),
-        EventToVariableOptions::default().mask(),
+        |options| options.mask(),
     )?;
     builder.event_to_variable(
         "AXIS_FLAPS_SET",
@@ -322,7 +325,7 @@ fn flaps(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>> {
             get_handle_pos_from_0_1(normalized_input, current_value)
         }),
         Variable::Named("FLAPS_HANDLE_INDEX".to_owned()),
-        EventToVariableOptions::default().mask(),
+        |options| options.mask(),
     )?;
 
     builder.map(
@@ -354,7 +357,7 @@ fn flaps_event_to_value(
         event_name,
         EventToVariableMapping::Value(value),
         Variable::Named("FLAPS_HANDLE_INDEX".to_owned()),
-        EventToVariableOptions::default().mask(),
+        |options| options.mask(),
     )
 }
 

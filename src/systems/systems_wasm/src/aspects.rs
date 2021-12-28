@@ -53,7 +53,7 @@ impl<'a, 'b> MsfsAspectBuilder<'a, 'b> {
         event_name: &str,
         mapping: EventToVariableMapping,
         target: Variable,
-        options: EventToVariableOptions,
+        configure_options: fn(EventToVariableOptions) -> EventToVariableOptions,
     ) -> Result<(), Box<dyn Error>> {
         let target = self.register_variable(target);
 
@@ -62,7 +62,7 @@ impl<'a, 'b> MsfsAspectBuilder<'a, 'b> {
             event_name,
             mapping,
             target,
-            options,
+            configure_options(EventToVariableOptions::default()),
         )?);
 
         Ok(())
