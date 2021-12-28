@@ -17,11 +17,13 @@ use systems::{
 };
 use systems_wasm::aspects::{
     max, EventToVariableOptions, MsfsAspectBuilder, UpdateOn, VariableToEventMapping,
+    VariablesToObject,
 };
 use systems_wasm::{
     aspects::{EventToVariableMapping, Variable},
-    f64_to_sim_connect_32k_pos, sim_connect_32k_pos_to_f64, AircraftVariableOptions,
-    MsfsAspectCtor, MsfsSimulationBuilder, MsfsVariableRegistry, SimulatorAspect,
+    f64_to_sim_connect_32k_pos, set_data_on_sim_object, sim_connect_32k_pos_to_f64,
+    AircraftVariableOptions, MsfsAspectCtor, MsfsSimulationBuilder, MsfsVariableRegistry,
+    SimulatorAspect,
 };
 
 #[msfs::gauge(name=systems)]
@@ -330,6 +332,16 @@ fn flaps(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>> {
         Variable::Named("FLAPS_HANDLE_PERCENT".to_owned()),
     );
 
+    builder.variables_to_object(Box::new(FlapsSurface {
+        left_flap: 0.,
+        right_flap: 0.,
+    }));
+    builder.variables_to_object(Box::new(SlatsSurface {
+        left_slat: 0.,
+        right_slat: 0.,
+    }));
+    builder.variables_to_object(Box::new(FlapsHandleIndex { index: 0. }));
+
     Ok(())
 }
 
@@ -373,6 +385,22 @@ struct FlapsSurface {
     right_flap: f64,
 }
 
+impl VariablesToObject for FlapsSurface {
+    fn variables(&self) -> Vec<Variable> {
+        vec![
+            Variable::Named("LEFT_FLAPS_POSITION_PERCENT".to_owned()),
+            Variable::Named("RIGHT_FLAPS_POSITION_PERCENT".to_owned()),
+        ]
+    }
+
+    fn write(&mut self, values: Vec<f64>) {
+        self.left_flap = values[0];
+        self.right_flap = values[1];
+    }
+
+    set_data_on_sim_object!();
+}
+
 #[sim_connect::data_definition]
 struct SlatsSurface {
     #[name = "LEADING EDGE FLAPS LEFT PERCENT"]
@@ -384,6 +412,22 @@ struct SlatsSurface {
     right_slat: f64,
 }
 
+impl VariablesToObject for SlatsSurface {
+    fn variables(&self) -> Vec<Variable> {
+        vec![
+            Variable::Named("LEFT_SLATS_POSITION_PERCENT".to_owned()),
+            Variable::Named("RIGHT_SLATS_POSITION_PERCENT".to_owned()),
+        ]
+    }
+
+    fn write(&mut self, values: Vec<f64>) {
+        self.left_slat = values[0];
+        self.right_slat = values[1];
+    }
+
+    set_data_on_sim_object!();
+}
+
 #[sim_connect::data_definition]
 struct FlapsHandleIndex {
     #[name = "FLAPS HANDLE INDEX"]
@@ -391,158 +435,53 @@ struct FlapsHandleIndex {
     index: f64,
 }
 
-struct Flaps {
-    flaps_left_position_id: VariableIdentifier,
-    flaps_right_position_id: VariableIdentifier,
-    slats_left_position_id: VariableIdentifier,
-    slats_right_position_id: VariableIdentifier,
-
-    //LVars to communicate between the flap movement logic
-    //and the simulation animation
-    left_flaps_position_sim_var: NamedVariable,
-    right_flaps_position_sim_var: NamedVariable,
-    left_slats_position_sim_var: NamedVariable,
-    right_slats_position_sim_var: NamedVariable,
-
-    msfs_flaps_handle_index: FlapsHandleIndex,
-    flaps_surface_sim_object: FlapsSurface,
-    slats_surface_sim_object: SlatsSurface,
-    left_flaps_position: f64,
-    right_flaps_position: f64,
-
-    left_slats_position: f64,
-    right_slats_position: f64,
-}
-impl MsfsAspectCtor for Flaps {
-    fn new(
-        registry: &mut MsfsVariableRegistry,
-        _: &mut SimConnect,
-    ) -> Result<Self, Box<dyn Error>> {
-        Ok(Self {
-            flaps_left_position_id: registry.get("LEFT_FLAPS_POSITION_PERCENT".to_owned()),
-            flaps_right_position_id: registry.get("RIGHT_FLAPS_POSITION_PERCENT".to_owned()),
-            slats_left_position_id: registry.get("LEFT_SLATS_POSITION_PERCENT".to_owned()),
-            slats_right_position_id: registry.get("RIGHT_SLATS_POSITION_PERCENT".to_owned()),
-
-            left_flaps_position_sim_var: NamedVariable::from("A32NX_LEFT_FLAPS_POSITION_PERCENT"),
-            right_flaps_position_sim_var: NamedVariable::from("A32NX_RIGHT_FLAPS_POSITION_PERCENT"),
-            left_slats_position_sim_var: NamedVariable::from("A32NX_LEFT_SLATS_POSITION_PERCENT"),
-            right_slats_position_sim_var: NamedVariable::from("A32NX_RIGHT_SLATS_POSITION_PERCENT"),
-
-            msfs_flaps_handle_index: FlapsHandleIndex { index: 0. },
-            flaps_surface_sim_object: FlapsSurface {
-                left_flap: 0.,
-                right_flap: 0.,
-            },
-            slats_surface_sim_object: SlatsSurface {
-                left_slat: 0.,
-                right_slat: 0.,
-            },
-
-            left_flaps_position: 0.,
-            right_flaps_position: 0.,
-
-            left_slats_position: 0.,
-            right_slats_position: 0.,
-        })
+impl VariablesToObject for FlapsHandleIndex {
+    fn variables(&self) -> Vec<Variable> {
+        vec![
+            Variable::Named("LEFT_FLAPS_POSITION_PERCENT".to_owned()),
+            Variable::Named("RIGHT_FLAPS_POSITION_PERCENT".to_owned()),
+            Variable::Named("LEFT_SLATS_POSITION_PERCENT".to_owned()),
+            Variable::Named("RIGHT_SLATS_POSITION_PERCENT".to_owned()),
+        ]
     }
+
+    fn write(&mut self, values: Vec<f64>) {
+        self.index = Self::msfs_flap_index_from_surfaces_positions_percent(values);
+    }
+
+    set_data_on_sim_object!();
 }
 
-impl Flaps {
+impl FlapsHandleIndex {
     /// Tries to take actual surfaces position PERCENTS and convert it into flight model FLAP HANDLE INDEX
     /// This index is used by MSFS to select correct aerodynamic properties
     /// There is no index available for flaps but no slats configurations (possible plane failure case)
     /// The percent thresholds can be tuned to change the timing of aerodynamic impact versus surface actual position
-    fn msfs_flap_index_from_surfaces_positions_percent(&self) -> u8 {
-        let flap_mean_position = (self.left_flaps_position + self.right_flaps_position) / 2.;
-        let slat_mean_position = (self.left_slats_position + self.right_slats_position) / 2.;
+    fn msfs_flap_index_from_surfaces_positions_percent(values: Vec<f64>) -> f64 {
+        let left_flaps_position = values[0];
+        let right_flaps_position = values[1];
+        let left_slats_position = values[2];
+        let right_slats_position = values[3];
+        let flap_mean_position = (left_flaps_position + right_flaps_position) / 2.;
+        let slat_mean_position = (left_slats_position + right_slats_position) / 2.;
 
-        // Clean configuration no flaps no slats
         if flap_mean_position < 2. && slat_mean_position < 2. {
-            return 0;
-        }
-
-        // Almost no flaps but some slats -> CONF 1
-        if flap_mean_position < 12. && slat_mean_position > 15. {
-            return 1;
-        }
-
-        if flap_mean_position > 80. {
-            5
+            // Clean configuration no flaps no slats
+            0.
+        } else if flap_mean_position < 12. && slat_mean_position > 15. {
+            // Almost no flaps but some slats -> CONF 1
+            1.
+        } else if flap_mean_position > 80. {
+            5.
         } else if flap_mean_position > 49. {
-            4
+            4.
         } else if flap_mean_position > 30. {
-            3
+            3.
         } else if flap_mean_position > 12. {
-            2
+            2.
         } else {
-            0
+            0.
         }
-    }
-
-    fn write_sim_vars(&mut self) {
-        self.left_flaps_position_sim_var
-            .set_value(self.left_flaps_position);
-        self.right_flaps_position_sim_var
-            .set_value(self.right_flaps_position);
-        self.left_slats_position_sim_var
-            .set_value(self.left_slats_position);
-        self.right_slats_position_sim_var
-            .set_value(self.right_slats_position);
-    }
-}
-
-impl SimulatorAspect for Flaps {
-    fn read(&mut self, identifier: &VariableIdentifier) -> Option<f64> {
-        if identifier == &self.flaps_left_position_id {
-            Some(self.left_flaps_position)
-        } else if identifier == &self.flaps_right_position_id {
-            Some(self.right_flaps_position)
-        } else if identifier == &self.slats_left_position_id {
-            Some(self.left_slats_position)
-        } else if identifier == &self.slats_right_position_id {
-            Some(self.right_slats_position)
-        } else {
-            None
-        }
-    }
-
-    fn write(&mut self, identifier: &VariableIdentifier, value: f64) -> bool {
-        if identifier == &self.flaps_left_position_id {
-            self.left_flaps_position = value;
-            true
-        } else if identifier == &self.flaps_right_position_id {
-            self.right_flaps_position = value;
-            true
-        } else if identifier == &self.slats_left_position_id {
-            self.left_slats_position = value;
-            true
-        } else if identifier == &self.slats_right_position_id {
-            self.right_slats_position = value;
-            true
-        } else {
-            false
-        }
-    }
-
-    fn post_tick(&mut self, sim_connect: &mut SimConnect) -> Result<(), Box<dyn Error>> {
-        self.flaps_surface_sim_object.left_flap = self.left_flaps_position;
-        self.flaps_surface_sim_object.right_flap = self.right_flaps_position;
-        self.slats_surface_sim_object.left_slat = self.left_slats_position;
-        self.slats_surface_sim_object.right_slat = self.right_slats_position;
-        self.msfs_flaps_handle_index.index =
-            self.msfs_flap_index_from_surfaces_positions_percent() as f64;
-
-        self.write_sim_vars();
-
-        sim_connect
-            .set_data_on_sim_object(SIMCONNECT_OBJECT_ID_USER, &self.msfs_flaps_handle_index)?;
-        sim_connect
-            .set_data_on_sim_object(SIMCONNECT_OBJECT_ID_USER, &self.flaps_surface_sim_object)?;
-        sim_connect
-            .set_data_on_sim_object(SIMCONNECT_OBJECT_ID_USER, &self.slats_surface_sim_object)?;
-
-        Ok(())
     }
 }
 
@@ -793,8 +732,9 @@ impl SimulatorAspect for NoseWheelSteering {
         }
     }
 
-    fn pre_tick(&mut self, _: Duration) {
+    fn pre_tick(&mut self, _: &mut SimConnect, _: Duration) -> Result<(), Box<dyn Error>> {
         self.synchronise_with_sim();
+        Ok(())
     }
 
     fn post_tick(&mut self, sim_connect: &mut SimConnect) -> Result<(), Box<dyn Error>> {

@@ -1,4 +1,5 @@
 //#![cfg(any(target_arch = "wasm32", doc))]
+#[macro_use]
 pub mod aspects;
 mod electrical;
 mod failures;
@@ -49,7 +50,13 @@ pub trait SimulatorAspect {
     }
 
     /// Executes before a simulation tick runs.
-    fn pre_tick(&mut self, _delta: Duration) {}
+    fn pre_tick(
+        &mut self,
+        _sim_connect: &mut SimConnect,
+        _delta: Duration,
+    ) -> Result<(), Box<dyn Error>> {
+        Ok(())
+    }
 
     /// Executes after a simulation tick ran.
     fn post_tick(&mut self, _sim_connect: &mut SimConnect) -> Result<(), Box<dyn Error>> {
@@ -249,7 +256,7 @@ impl MsfsHandler {
             MSFSEvent::PreDraw(_) => {
                 if !self.time.is_pausing() {
                     let delta_time = self.time.take();
-                    self.pre_tick(delta_time);
+                    self.pre_tick(sim_connect, delta_time)?;
                     if let Some(failures) = &self.failures {
                         Self::read_failures_into_simulation(failures, simulation);
                     }
@@ -280,10 +287,14 @@ impl MsfsHandler {
         }
     }
 
-    fn pre_tick(&mut self, delta: Duration) {
-        self.aspects.iter_mut().for_each(|aspect| {
-            aspect.pre_tick(delta);
-        });
+    fn pre_tick(
+        &mut self,
+        sim_connect: &mut SimConnect,
+        delta: Duration,
+    ) -> Result<(), Box<dyn Error>> {
+        self.aspects
+            .iter_mut()
+            .try_for_each(|aspect| aspect.pre_tick(sim_connect, delta))
     }
 
     fn post_tick(&mut self, sim_connect: &mut SimConnect) -> Result<(), Box<dyn Error>> {
