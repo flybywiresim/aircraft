@@ -48,12 +48,12 @@ const ScreenLoading = () => (
     </div>
 );
 
-const ScreenEmpty = (props: { charging: boolean }) => (
+const ScreenEmpty = (isCharging: { isCharging: boolean }) => (
     <div className="flex justify-center items-center w-screen h-screen bg-theme-statusbar">
-        {props.charging === false && (
+        {!isCharging && (
             <IconBatteryOff size={128} className="text-red-500" />
         )}
-        {props.charging === true && (
+        {isCharging && (
             <IconBatteryCharging size={128} className="text-red-500" />
         )}
     </div>
@@ -205,7 +205,7 @@ const Efb = () => {
     case PowerStates.LOADING:
         return <ScreenLoading />;
     case PowerStates.EMPTY:
-        return <ScreenEmpty charging={dc2BusIsPowered === 1} />;
+        return <ScreenEmpty isCharging={dc2BusIsPowered === 1} />;
     case PowerStates.LOADED:
         return (
             <NavigraphContext.Provider value={navigraph}>

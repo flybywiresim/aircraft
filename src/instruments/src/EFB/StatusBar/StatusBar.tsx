@@ -11,8 +11,7 @@ type StatusBarProps = {
     isCharging: boolean;
 };
 
-export const StatusBar = (props: StatusBarProps) => {
-    const { batteryLevel, isCharging } = props;
+export const StatusBar = ({ batteryLevel, isCharging }: StatusBarProps) => {
     const [currentUTC] = useSimVar('E:ZULU TIME', 'seconds');
     const [currentLocalTime] = useSimVar('E:LOCAL TIME', 'seconds');
     const [dayOfWeek] = useSimVar('E:ZULU DAY OF WEEK', 'number');
