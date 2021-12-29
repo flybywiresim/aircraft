@@ -20,6 +20,10 @@ export default new TaskOfTasks('a32nx', [
             'src/fadec/build.sh',
             'wasm-opt -O1 -o flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/fadec.wasm flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/fadec.wasm'
         ], ['src/fadec', 'flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/fadec.wasm']),
+        new TaskOfTasks('mcdu-server', [
+            new ExecTask('client', ['npm run build:mcdu-client'], ['src/mcdu-server/client', 'src/mcdu-server/client/build']),
+            new ExecTask('server', ['npm run build:mcdu-server'], ['src/mcdu-server', 'flybywire-aircraft-a320-neo/MCDU SERVER/server.exe']),
+        ]),
     ], true),
 
     new TaskOfTasks('dist', [
