@@ -1,0 +1,28 @@
+.App {
+    --app-width: min(100vw, calc(var(--vh) * var(--aspect-ratio)));
+    --app-height: calc(min(var(--vh), calc(100vw * calc(1 / var(--aspect-ratio)))) - calc(var(--app-width) * var(--top-padding)));
+    height: var(--app-height);
+    padding-top: calc(var(--app-width) * var(--top-padding));
+    left: calc(50vw - calc(var(--app-width) / 2));
+    width: var(--app-width);
+    position: relative;
+}
+
+.normal {
+  --aspect-ratio: calc(1061/1650);
+  --top-padding: .146;
+  --screen-scale: .69;
+}
+
+.normal .App {
+  background-image: url("mcdu-r2-c.png");
+  background-size: contain;
+  background-repeat: no-repeat;
+}
+
+.fullscreen {
+  --aspect-ratio: 1.21234964;
+  --top-padding: 0;
+  --screen-scale: 1;
+  cursor: pointer;
+}
