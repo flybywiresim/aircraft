@@ -1,0 +1,21 @@
+.button-grid {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+}
+
+.button-row {
+    flex-grow: 1;
+    display: flex;
+}
+
+.button {
+    flex-grow: 1;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: 0.25s;
+}
+
+.dummy {
+    flex-grow: 1;
+}
