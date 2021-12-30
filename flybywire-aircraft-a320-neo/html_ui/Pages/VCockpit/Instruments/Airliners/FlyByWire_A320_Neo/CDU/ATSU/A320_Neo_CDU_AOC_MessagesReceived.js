@@ -28,6 +28,21 @@ class CDUAocMessagesReceived {
             msgTimeHeaders[i] = header;
         }
 
+        let left = false, right = false;
+        if (messages.length > ((page + 1) * 5)) {
+            mcdu.onNextPage = () => {
+                CDUAocMessagesReceived.ShowPage(mcdu, messages, page + 1);
+            };
+            right = true;
+        }
+        if (page > 0) {
+            mcdu.onPrevPage = () => {
+                CDUAocMessagesReceived.ShowPage(mcdu, messages, page - 1);
+            };
+            left = true;
+        }
+        mcdu.setArrows(false, false, left, right);
+
         mcdu.setTemplate([
             ["AOC RCVD MSGS"],
             [msgTimeHeaders[5]],
@@ -43,21 +58,6 @@ class CDUAocMessagesReceived {
             [""],
             ["<RETURN"]
         ]);
-
-        let left = false, right = false;
-        if (messages.length > ((page + 1) * 5)) {
-            mcdu.onNextPage = () => {
-                CDUAocMessagesReceived.ShowPage(mcdu, messages, page + 1);
-            };
-            right = true;
-        }
-        if (page > 0) {
-            mcdu.onPrevPage = () => {
-                CDUAocMessagesReceived.ShowPage(mcdu, messages, page - 1);
-            };
-            left = true;
-        }
-        mcdu.setArrows(false, false, left, right);
 
         for (let i = 0; i < 5; i++) {
             mcdu.leftInputDelay[i] = () => {

@@ -112,6 +112,7 @@ class ScratchpadDataLink {
     _display(value, color = "white") {
         this._displayUnit.write(value, color);
         this._updateStatus(value);
+        this._mcdu.sendUpdate();
     }
 
     _updateStatus(scratchpadText) {
