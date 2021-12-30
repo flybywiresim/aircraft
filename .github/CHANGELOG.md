@@ -107,6 +107,7 @@
 1. [ATHR] Added switch to use externally defined thrust limits and separated thrust limits into own model - @aguther (Andreas Guther)
 1. [FBW] Improved sideslip controller - @IbrahimK42 (IbrahimK42)
 1. [AP] Further improved ALT CST* and ALT CST conditions - @aguther (Andreas Guther)
+1. [MCDU] Added support for connecting MCDU to external devices - @tyler58546 (tyler58546)
 
 ## 0.7.0
 

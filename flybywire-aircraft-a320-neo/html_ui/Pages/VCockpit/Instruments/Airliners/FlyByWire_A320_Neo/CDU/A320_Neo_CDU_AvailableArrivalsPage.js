@@ -232,21 +232,6 @@ class CDUAvailableArrivalsPage {
                     CDUFlightPlanPage.ShowPage(mcdu);
                 };
             }
-            mcdu.setTemplate([
-                ["ARRIVAL {small}TO{end} {green}" + airport.ident + "{end}"],
-                ["{sp}APPR", "STAR{sp}", "{sp}VIA"],
-                [selectedApproachCell + "[color]" + selectedApproachCellColor, selectedStarCell + "[color]" + selectedStarCellColor, "{sp}" + selectedViasCell + "[color]" + selectedViasCellColor],
-                [viasPageLabel, "TRANS{sp}"],
-                [viasPageLine, selectedTransitionCell + "[color]" + selectedTransitionCellColor],
-                [starSelection ? "STARS" : "APPR", starSelection ? "TRANS" : "", "AVAILABLE"],
-                rows[0],
-                rows[1],
-                rows[2],
-                rows[3],
-                rows[4],
-                rows[5],
-                bottomLine
-            ]);
             let up = false;
             let down = false;
             const maxPage = starSelection ? (selectedArrival ? Math.max(selectedArrival.enRouteTransitions.length - 2, matchingArrivals.length - 2) : matchingArrivals.length - 2) : (pageCurrent, airportInfo.approaches.length - 3);
@@ -271,6 +256,21 @@ class CDUAvailableArrivalsPage {
                 down = true;
             }
             mcdu.setArrows(up, down, true, true);
+            mcdu.setTemplate([
+                ["ARRIVAL {small}TO{end} {green}" + airport.ident + "{end}"],
+                ["{sp}APPR", "STAR{sp}", "{sp}VIA"],
+                [selectedApproachCell + "[color]" + selectedApproachCellColor, selectedStarCell + "[color]" + selectedStarCellColor, "{sp}" + selectedViasCell + "[color]" + selectedViasCellColor],
+                [viasPageLabel, "TRANS{sp}"],
+                [viasPageLine, selectedTransitionCell + "[color]" + selectedTransitionCellColor],
+                [starSelection ? "STARS" : "APPR", starSelection ? "TRANS" : "", "AVAILABLE"],
+                rows[0],
+                rows[1],
+                rows[2],
+                rows[3],
+                rows[4],
+                rows[5],
+                bottomLine
+            ]);
             mcdu.onPrevPage = () => {
                 CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, !starSelection);
             };
