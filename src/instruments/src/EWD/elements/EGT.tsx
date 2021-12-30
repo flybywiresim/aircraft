@@ -21,6 +21,16 @@ const getModeEGTMax = () => {
     }
 };
 
+const warningEGTColor = (EGTemperature: number) => {
+    if (EGTemperature > 1060) {
+        return 'Red';
+    }
+    if (EGTemperature > getModeEGTMax()) {
+        return 'Amber';
+    }
+    return 'Green';
+};
+
 type EGTProps = {
     engine: 1 | 2,
     x: number,
@@ -39,7 +49,7 @@ const EGT: React.FC<EGTProps> = ({ x, y, engine }) => {
     return (
         <>
             <g id={`EGT-indicator-${engine}`}>
-                <text className="Large End Green" x={x + 33} y={y + 7.7}>{Math.round(EGTemperature)}</text>
+                <text className={`Large End ${warningEGTColor(EGTemperature)}`} x={x + 33} y={y + 7.7}>{Math.round(EGTemperature)}</text>
                 <GaugeComponent x={x} y={y} radius={radius} startAngle={startAngle} endAngle={endAngle} visible className="GaugeComponent Gauge">
                     <GaugeComponent x={x} y={y} radius={radius} startAngle={endAngle - 20} endAngle={endAngle} visible className="GaugeComponent Gauge Red" />
                     <GaugeMarkerComponent
@@ -88,7 +98,7 @@ const EGT: React.FC<EGTProps> = ({ x, y, engine }) => {
                         radius={radius}
                         startAngle={startAngle}
                         endAngle={endAngle}
-                        className="GaugeIndicator Gauge"
+                        className={`GaugeIndicator Gauge ${warningEGTColor(EGTemperature)}`}
                         multiplierInner={0.6}
                         indicator
                         halfIndicator
@@ -101,19 +111,3 @@ const EGT: React.FC<EGTProps> = ({ x, y, engine }) => {
 };
 
 export default EGT;
-
-// getModeEGTMax() {
-//     switch (this.throttleMode) {
-//         case 4:
-//             return this.timerTOGA > 0 ? 1060 : 1025;
-
-//         case 1:
-//         case 2:
-//         case 3:
-//         case 5:
-//             return 1025;
-
-//         default:
-//             return 750;
-//     }
-// }
