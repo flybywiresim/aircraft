@@ -6,6 +6,7 @@ import EGT from './EGT';
 import N1 from './N1';
 import FF from './FF';
 import N1Limit from './N1Limit';
+import Idle from './Idle';
 
 const UpperDisplay: React.FC = () => {
     console.log('Upper Display');
@@ -14,6 +15,8 @@ const UpperDisplay: React.FC = () => {
     return (
         <>
             {/*  */}
+            <Idle x={374} y={55} />
+
             <N1Limit x={690} y={30} />
 
             <N1 engine={1} x={233} y={97} />

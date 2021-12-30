@@ -141,11 +141,17 @@ animation: pulsingS 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
         stroke-width: 2px;
         stroke: $display-cyan;
     }
+    .GreenPulse {
+        animation: green-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 
-
-    .GreenIndicatorPulse {
-        @include GenericPulsingStroke($display-green);
-        stroke-width: 3;
+        @keyframes green-pulse {
+            0%, 100% {
+              fill: $display-green;
+            }
+            50% {
+                fill: hsl(120, 100%, 20%)
+            }
+        }
     }
 
     .DarkGreyBox {
