@@ -44,7 +44,6 @@ export class NDTcasTraffic {
 
     constructor(traffic: TcasTraffic) {
         this.ID = traffic.ID;
-        // this.name = traffic.name;
         this.lat = traffic.lat;
         this.lon = traffic.lon;
         this.alt = traffic.alt;
@@ -88,7 +87,7 @@ export class TcasTraffic {
 
     ID: string;
 
-    // name: string;
+    implausible: boolean;
 
     seen: number;
 
@@ -134,7 +133,7 @@ export class TcasTraffic {
         this.alive = true;
         this.seen = 0;
         this.ID = tf.uId.toFixed(0);
-        // this.name = `npc-airplane-${tf.uId.toFixed(0)}`;
+        this.implausible = false;
         this.lat = tf.lat;
         this.lon = tf.lon;
         this.alt = tf.alt * 3.281;
@@ -147,7 +146,6 @@ export class TcasTraffic {
         this.isDisplayed = false;
         this.vertSpeed = 0;
         this.closureRate = 0;
-        // this.closureAccel = 0;
         this.intrusionLevel = TaRaIntrusion.TRAFFIC;
         this.taTau = Infinity;
         this.raTau = Infinity;
@@ -379,16 +377,20 @@ export class TcasComputer implements TcasComponent {
                 traffic.vertSpeed = (newAlt - traffic.alt) / (_deltaTime / 1000) * 60; // feet per minute
                 traffic.groundSpeed = Math.abs(MathUtils.computeGreatCircleDistance(tf.lat, tf.lon, traffic.lat, traffic.lon) / (_deltaTime / 1000) * 3600);
                 const newSlantDist = MathUtils.computeDistance3D(traffic.lat, traffic.lon, traffic.alt, this.ppos.lat, this.ppos.long, this.pressureAlt);
-                const newClosureRate = (traffic.slantDistance - newSlantDist) / (_deltaTime / 1000) * 3600; // knots per hour
+                const newClosureRate = (traffic.slantDistance - newSlantDist) / (_deltaTime / 1000) * 3600; // knots = nautical miles per hour
                 traffic.closureAccel = (newClosureRate - traffic.closureRate) / (_deltaTime / 1000);
                 traffic.closureRate = newClosureRate;
-                // traffic.closureRate = (traffic.slantDistance - newSlantDist) / (_deltaTime / 1000) * 3600; // knots per hour
                 traffic.slantDistance = newSlantDist;
                 traffic.lat = tf.lat;
                 traffic.lon = tf.lon;
                 traffic.alt = tf.alt * 3.281;
                 traffic.heading = tf.heading;
                 traffic.relativeAlt = newAlt - this.pressureAlt;
+
+                traffic.implausible = (
+                    Math.abs(traffic.vertSpeed) > 6000
+                    || traffic.groundSpeed > 600
+                );
 
                 let taTau = (traffic.slantDistance - TCAS.DMOD[this.sensitivity.getVar()][TaRaIndex.TA] ** 2 / traffic.slantDistance) / traffic.closureRate * 3600;
                 let raTau = (traffic.slantDistance - TCAS.DMOD[this.sensitivity.getVar()][TaRaIndex.RA] ** 2 / traffic.slantDistance) / traffic.closureRate * 3600;
@@ -443,6 +445,9 @@ export class TcasComputer implements TcasComponent {
                         }
                     }
                 }
+                if (traffic.implausible) {
+                    isDisplayed = false;
+                }
             }
 
             if (isDisplayed) {
@@ -460,6 +465,14 @@ export class TcasComputer implements TcasComponent {
                 }
             }
             traffic.isDisplayed = isDisplayed;
+
+            // if traffic is implausible ignore it
+            if (traffic.implausible) {
+                traffic.taExpiring = false;
+                traffic.secondsSinceLastTa = 0;
+                traffic.intrusionLevel = TaRaIntrusion.TRAFFIC;
+                return;
+            }
 
             const intrusionLevel: TaRaIntrusion[] = [0, 0, 0];
 
@@ -539,12 +552,12 @@ export class TcasComputer implements TcasComponent {
         accel = targetVS < this.verticalSpeed ? -1 * accel : accel;
         const timeToAccelerate = Math.min(traffic.raTau - delay, ((targetVS - this.verticalSpeed) / 60) / accel); // raTau can be infinity?
         const remainingTime = traffic.raTau - (delay + timeToAccelerate);
-        const predicted_elevation = this.pressureAlt
-                                    + Math.round(this.verticalSpeed / 60) * (delay + timeToAccelerate)
-                                    + 0.5 * accel * timeToAccelerate ** 2
-                                    + (targetVS / 60) * remainingTime;
-
-        return predicted_elevation;
+        return (
+            this.pressureAlt
+            + Math.round(this.verticalSpeed / 60) * (delay + timeToAccelerate)
+            + 0.5 * accel * timeToAccelerate ** 2
+            + (targetVS / 60) * remainingTime
+        );
     }
 
     /**
@@ -760,16 +773,9 @@ export class TcasComputer implements TcasComponent {
             }
         } else {
             // There is a previous RA, so revise it if necessary
-
-            // let alreadyAchievedALIM = true;
             let alreadyAchievedTaZTHR = true;
             let minTimeToCPA = TCAS.REALLY_BIG_NUMBER;
             this.raTraffic.forEach((traffic) => {
-                /*
-                if (Math.abs(this.pressureAlt - traffic.alt) < ALIM) {
-                    alreadyAchievedALIM = false;
-                }
-                */
                 if (Math.abs(this.pressureAlt - traffic.alt) < TCAS.ZTHR[this.sensitivity.getVar()][TaRaIndex.TA]) {
                     alreadyAchievedTaZTHR = false;
                 }
@@ -809,11 +815,9 @@ export class TcasComputer implements TcasComponent {
                     const mul = (sense === RaSense.UP) ? 1 : -1;
                     let increaseSep = null;
                     let increaseCross = null;
-                    // let strength = 0;
                     switch (previousRa.info.callout.id) {
                     case TCAS.CALLOUTS.level_off.id:
                     case TCAS.CALLOUTS.monitor_vs.id:
-                        // strength = 1;
                         [increaseSep, increaseCross] = this.getVerticalSep(
                             sense,
                             mul * 1500,
@@ -835,7 +839,6 @@ export class TcasComputer implements TcasComponent {
                     case TCAS.CALLOUTS.maintain_vs.id:
                     case TCAS.CALLOUTS.maintain_vs_cross.id:
                         if ((previousRa.info.sense === RaSense.UP && this.verticalSpeed >= 1500) || (previousRa.info.sense === RaSense.DOWN && this.verticalSpeed <= -1500)) {
-                            // strength = 2;
                             [increaseSep, increaseCross] = this.getVerticalSep(
                                 sense,
                                 mul * 2500,
@@ -939,7 +942,6 @@ export class TcasComputer implements TcasComponent {
             } else if (taThreatCount === 0) {
                 this.advisoryState = TcasState.NONE;
                 this.tcasState.setVar(TcasState.NONE);
-                // console.log('TCAS: TA RESOLVED');
             }
             break;
         case TcasState.RA:
@@ -963,9 +965,7 @@ export class TcasComputer implements TcasComponent {
             } else if (taThreatCount > 0) {
                 this.advisoryState = TcasState.TA;
                 this.tcasState.setVar(TcasState.TA);
-                // console.log('TCAS: TA GENERATED');
                 if (this.inhibitions !== Inhibit.ALL_RA_AURAL_TA) {
-                    // console.log('TCAS: TA GENERATED SOUND');
                     this.soundManager.tryPlaySound(TCAS.SOUNDS.traffic_traffic, true);
                 }
             }
