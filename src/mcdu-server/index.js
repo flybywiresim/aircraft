@@ -106,6 +106,7 @@ if (printerName != null) {
         start();
     }).catch((error) => {
         showError('Failed to load printers.\nMake sure the "Print Spooler" Windows service is running.', error);
+        console.error('\nSee the documentation for more information:\n\x1b[47m\x1b[30mhttps://docs.flybywiresim.com/fbw-a32nx/feature-guides/web-mcdu/#printer-issues\x1b[0m');
         pressAnyKey(1);
     });
 } else if (!skipPrinter) {
@@ -127,6 +128,7 @@ if (printerName != null) {
                 }
             }).catch((error) => {
                 showError('Failed to load printers.\nMake sure the "Print Spooler" Windows service is running.', error);
+                console.error('\nSee the documentation for more information:\n\x1b[47m\x1b[30mhttps://docs.flybywiresim.com/fbw-a32nx/feature-guides/web-mcdu/#printer-issues\x1b[0m');
                 pressAnyKey(1);
             });
         } else {
@@ -201,6 +203,7 @@ function start() {
     httpServer.on('error', (error) => {
         if (error.code === 'EADDRINUSE') {
             console.error(`Error: Port ${httpPort} is already in use`);
+            console.error('\nSee the documentation for more information:\n\x1b[47m\x1b[30mhttps://docs.flybywiresim.com/fbw-a32nx/feature-guides/web-mcdu/#occupied-port\x1b[0m');
             pressAnyKey(1);
         } else if (!httpServerStarted) {
             showError('Failed to start HTTP server', error);
@@ -227,6 +230,7 @@ function start() {
             wss.on('error', (error) => {
                 if (error.code === 'EADDRINUSE') {
                     console.error(`Error: Port ${websocketPort} is already in use`);
+                    console.error('\nSee the documentation for more information:\n\x1b[47m\x1b[30mhttps://docs.flybywiresim.com/fbw-a32nx/feature-guides/web-mcdu/#occupied-port\x1b[0m');
                     pressAnyKey(1);
                 } else if (!serverRunning) {
                     showError('Failed to start websocket server', error);
@@ -252,6 +256,8 @@ function start() {
                             console.log(`To control the MCDU from this device, open \x1b[47m\x1b[30mhttp://localhost:${httpPort}\x1b[0m in your browser.`);
                         }
                         console.log(`\nCan't connect? You may need to open TCP ports ${httpPort} and ${websocketPort} on your firewall.`);
+                        console.log('See the documentation for more information:');
+                        console.log('\x1b[47m\x1b[30mhttps://docs.flybywiresim.com/fbw-a32nx/feature-guides/web-mcdu/#troubleshooting-and-advanced-configuration\x1b[0m');
                         isMcdu = true;
                         return;
                     }
@@ -303,6 +309,8 @@ function printUsage() {
     console.log('--no-printer         skips prompt to select printer');
     console.log('--printer=...        enables printing to the specified printer');
     console.log('--websocket-port=... sets port for websocket server (default: 8080)');
+
+    console.log('\nSee the documentation for more information:\n\x1b[47m\x1b[30mhttps://docs.flybywiresim.com/fbw-a32nx/feature-guides/web-mcdu/\x1b[0m');
 }
 
 /**
