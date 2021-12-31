@@ -461,7 +461,7 @@ mod cabin_air_tests {
                 stored_temperature: None,
             };
             test_bed.set_ambient_temperature(ThermodynamicTemperature::new::<degree_celsius>(24.));
-            test_bed.set_true_airspeed(Velocity::new::<meter_per_second>(0.));
+            test_bed = test_bed.true_airspeed_of(Velocity::new::<meter_per_second>(0.));
 
             test_bed
         }
@@ -479,9 +479,8 @@ mod cabin_air_tests {
             self
         }
 
-        // Deprecated
         fn with_passengers(mut self) -> Self {
-            self.set_passengers(174 / 2);
+            self = self.passengers(174 / 2);
             self
         }
 
@@ -515,18 +514,6 @@ mod cabin_air_tests {
         fn ambient_pressure_of(mut self, pressure: Pressure) -> Self {
             self.set_ambient_pressure(pressure);
             self
-        }
-
-        // Deprecated
-        fn set_passengers(&mut self, passengers: u8) {
-            self.write_by_name(&format!("PAX_TOTAL_ROWS_{}_{}", 1, 6), passengers / 2);
-            self.write_by_name(&format!("PAX_TOTAL_ROWS_{}_{}", 7, 13), passengers / 2);
-            self.command(|a| a.set_passengers(passengers));
-        }
-
-        // Deprecated
-        fn set_true_airspeed(&mut self, speed: Velocity) {
-            self.write_by_name("AIRSPEED TRUE", speed);
         }
 
         fn command_open_door(mut self) -> Self {
