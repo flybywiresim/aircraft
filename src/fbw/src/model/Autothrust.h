@@ -12,6 +12,27 @@ class AutothrustModelClass
     boolean_T eventTime_not_empty;
   };
 
+  struct rtDW_LeadLagFilter_Autothrust_T {
+    real_T pY;
+    real_T pU;
+    boolean_T pY_not_empty;
+    boolean_T pU_not_empty;
+  };
+
+  struct rtDW_WashoutFilter_Autothrust_T {
+    real_T pY;
+    real_T pU;
+    boolean_T pY_not_empty;
+    boolean_T pU_not_empty;
+  };
+
+  struct rtDW_LagFilter_Autothrust_T {
+    real_T pY;
+    real_T pU;
+    boolean_T pY_not_empty;
+    boolean_T pU_not_empty;
+  };
+
   struct D_Work_Autothrust_T {
     real_T Delay_DSTATE;
     real_T Delay_DSTATE_k;
@@ -26,16 +47,13 @@ class AutothrustModelClass
     real_T prev_TLA_2;
     real_T eventTime_b;
     real_T eventTime_o;
-    real_T pY;
-    real_T pU;
-    real_T eventTime_j;
     real_T eventTime_g;
     real_T eventTime_p;
     athr_mode pMode;
     athr_status pStatus;
     boolean_T Delay_DSTATE_a;
-    uint8_T is_active_c5_Autothrust;
-    uint8_T is_c5_Autothrust;
+    uint8_T is_active_c9_Autothrust;
+    uint8_T is_c9_Autothrust;
     boolean_T Memory_PreviousInput;
     boolean_T Memory_PreviousInput_m;
     boolean_T icLoad;
@@ -58,14 +76,17 @@ class AutothrustModelClass
     boolean_T eventTime_not_empty_mr;
     boolean_T pThrustMemoActive;
     boolean_T pUseAutoThrustControl;
-    boolean_T pY_not_empty;
-    boolean_T pU_not_empty;
-    boolean_T eventTime_not_empty_e;
     boolean_T latch;
     boolean_T sInhibit;
     boolean_T prev_TCAS_active;
     boolean_T eventTime_not_empty_i;
     boolean_T eventTime_not_empty_mc;
+    rtDW_WashoutFilter_Autothrust_T sf_WashoutFilter_h;
+    rtDW_LagFilter_Autothrust_T sf_LagFilter_k;
+    rtDW_LagFilter_Autothrust_T sf_LagFilter;
+    rtDW_WashoutFilter_Autothrust_T sf_WashoutFilter;
+    rtDW_LeadLagFilter_Autothrust_T sf_LeadLagFilter_h;
+    rtDW_LeadLagFilter_Autothrust_T sf_LeadLagFilter;
     rtDW_TimeSinceCondition_Autothrust_T sf_TimeSinceCondition1;
     rtDW_TimeSinceCondition_Autothrust_T sf_TimeSinceCondition_o;
   };
@@ -80,11 +101,21 @@ class AutothrustModelClass
 
   struct Parameters_Autothrust_T {
     athr_out athr_out_MATLABStruct;
-    real_T ScheduledGain2_BreakpointsForDimension1[2];
-    real_T ScheduledGain1_BreakpointsForDimension1[2];
-    real_T ScheduledGain_BreakpointsForDimension1[2];
-    real_T ScheduledGain4_BreakpointsForDimension1[2];
+    real_T ScheduledGain1_BreakpointsForDimension1[5];
+    real_T ScheduledGain2_BreakpointsForDimension1[4];
+    real_T ScheduledGain5_BreakpointsForDimension1[2];
+    real_T WashoutFilter_C1;
+    real_T HighPassFilter_C1;
+    real_T LowPassFilter_C1;
     real_T LagFilter_C1;
+    real_T LagFilter1_C1;
+    real_T WashoutFilter_C1_c;
+    real_T HighPassFilter_C2;
+    real_T LowPassFilter_C2;
+    real_T HighPassFilter_C3;
+    real_T LowPassFilter_C3;
+    real_T HighPassFilter_C4;
+    real_T LowPassFilter_C4;
     real_T DiscreteDerivativeVariableTs_Gain;
     real_T DiscreteTimeIntegratorVariableTsLimit_Gain;
     real_T DiscreteTimeIntegratorVariableTs_Gain;
@@ -100,10 +131,9 @@ class AutothrustModelClass
     real_T DiscreteTimeIntegratorVariableTs1_LowerLimit;
     real_T DiscreteTimeIntegratorVariableTs_LowerLimit_e;
     real_T DiscreteTimeIntegratorVariableTs1_LowerLimit_h;
-    real_T ScheduledGain2_Table[2];
-    real_T ScheduledGain1_Table[2];
-    real_T ScheduledGain_Table[2];
-    real_T ScheduledGain4_Table[2];
+    real_T ScheduledGain1_Table[5];
+    real_T ScheduledGain2_Table[4];
+    real_T ScheduledGain5_Table[2];
     real_T DiscreteTimeIntegratorVariableTs_UpperLimit;
     real_T DiscreteTimeIntegratorVariableTs1_UpperLimit;
     real_T DiscreteTimeIntegratorVariableTs_UpperLimit_p;
@@ -120,27 +150,55 @@ class AutothrustModelClass
     boolean_T SRFlipFlop_initial_condition;
     boolean_T SRFlipFlop_initial_condition_g;
     real_T Constant1_Value;
-    real_T Gain_Gain;
-    real_T Gain_Gain_m;
-    real_T Gain2_Gain;
     real_T Gain3_Gain;
-    real_T Gain_Gain_p;
-    real_T Constant1_Value_d;
+    real_T Gain1_Gain;
+    real_T Gain_Gain;
+    real_T THRIDLE_Value;
+    real_T THRCLBMCT_Value;
+    real_T RETARD_Value;
+    real_T Gain2_Gain;
+    real_T Gain3_Gain_c;
+    real_T Gain_Gain_d;
+    real_T Constant1_Value_l;
     real_T Saturation_UpperSat;
     real_T Saturation_LowerSat;
-    real_T Gain1_Gain;
+    real_T Gain1_Gain_n;
     real_T Saturation1_UpperSat;
     real_T Saturation1_LowerSat;
     real_T Saturation_UpperSat_l;
     real_T Saturation_LowerSat_i;
+    real_T Gain1_Gain_n0;
+    real_T fpmtoms_Gain;
+    real_T kntoms_Gain;
+    real_T Saturation_UpperSat_d;
+    real_T Saturation_LowerSat_e;
+    real_T Gain_Gain_c;
+    real_T Gain1_Gain_j;
+    real_T Constant_Value;
+    real_T Gain1_Gain_o;
+    real_T Gain1_Gain_f;
+    real_T Gain1_Gain_d;
+    real_T Gain_Gain_j;
     real_T Gain1_Gain_c;
-    real_T Gain_Gain_h;
-    real_T Gain_Gain_b;
-    real_T Constant2_Value;
-    real_T Constant3_Value;
-    real_T Gain_Gain_d;
+    real_T g_Gain;
+    real_T Saturation2_UpperSat;
+    real_T Saturation2_LowerSat;
+    real_T Saturation_UpperSat_f;
+    real_T Saturation_LowerSat_ev;
+    real_T ktstomps_Gain;
+    real_T GStoGS_CAS_Gain;
+    real_T _Gain;
+    real_T Saturation1_UpperSat_c;
+    real_T Saturation1_LowerSat_g;
+    real_T ktstomps_Gain_h;
+    real_T ktstomps1_Gain;
+    real_T Gain4_Gain;
+    real_T Gain1_Gain_p;
+    real_T Gain1_Gain_di;
+    real_T Gain2_Gain_c;
+    real_T Gain_Gain_d3;
     real_T Gain1_Gain_h;
-    real_T Gain_Gain_bf;
+    real_T Gain_Gain_b;
     real_T Gain1_Gain_g;
     boolean_T Logic_table[16];
     boolean_T Delay_InitialCondition;
@@ -171,6 +229,12 @@ class AutothrustModelClass
   static Parameters_Autothrust_T Autothrust_P;
   static void Autothrust_TimeSinceCondition(real_T rtu_time, boolean_T rtu_condition, real_T *rty_y,
     rtDW_TimeSinceCondition_Autothrust_T *localDW);
+  static void Autothrust_LeadLagFilter(real_T rtu_U, real_T rtu_C1, real_T rtu_C2, real_T rtu_C3, real_T rtu_C4, real_T
+    rtu_dt, real_T *rty_Y, rtDW_LeadLagFilter_Autothrust_T *localDW);
+  static void Autothrust_WashoutFilter(real_T rtu_U, real_T rtu_C1, real_T rtu_dt, real_T *rty_Y,
+    rtDW_WashoutFilter_Autothrust_T *localDW);
+  static void Autothrust_LagFilter(real_T rtu_U, real_T rtu_C1, real_T rtu_dt, real_T *rty_Y,
+    rtDW_LagFilter_Autothrust_T *localDW);
   static void Autothrust_ThrustMode1(real_T rtu_u, real_T *rty_y);
   static void Autothrust_TLAComputation1(const athr_out *rtu_in, real_T rtu_TLA, real_T *rty_N1c, boolean_T
     *rty_inReverse);

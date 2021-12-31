@@ -124,21 +124,8 @@ class CDUAvailableDeparturesPage {
                     }
                 }
             }
-            mcdu.setTemplate([
-                ["DEPARTURES {small}FROM{end} {green}" + airport.ident + "{end}"],
-                ["{sp}RWY", "TRANS{sp}", "{sp}SID"],
-                [selectedRunwayCell + "[color]" + selectedRunwayCellColor, selectedTransCell + "[color]" + selectedTransCellColor, selectedSidCell + "[color]" + selectedSidCellColor],
-                sidSelection ? ["SIDS", "TRANS", "AVAILABLE"] : ["", "", "RUNWAYS AVAILABLE"],
-                rows[0],
-                rows[1],
-                rows[2],
-                rows[3],
-                rows[4],
-                rows[5],
-                rows[6],
-                rows[7],
-                insertRow
-            ]);
+            let up = false;
+            let down = false;
             let maxPage = 0;
             if (sidSelection) {
                 if (selectedRunway) {
@@ -160,8 +147,6 @@ class CDUAvailableDeparturesPage {
             } else {
                 maxPage = airportInfo.oneWayRunways.length - 4;
             }
-            let up = false;
-            let down = false;
             if (pageCurrent < maxPage) {
                 mcdu.onUp = () => {
                     pageCurrent++;
@@ -183,6 +168,21 @@ class CDUAvailableDeparturesPage {
                 down = true;
             }
             mcdu.setArrows(up, down, true, true);
+            mcdu.setTemplate([
+                ["DEPARTURES {small}FROM{end} {green}" + airport.ident + "{end}"],
+                ["{sp}RWY", "TRANS{sp}", "{sp}SID"],
+                [selectedRunwayCell + "[color]" + selectedRunwayCellColor, selectedTransCell + "[color]" + selectedTransCellColor, selectedSidCell + "[color]" + selectedSidCellColor],
+                sidSelection ? ["SIDS", "TRANS", "AVAILABLE"] : ["", "", "RUNWAYS AVAILABLE"],
+                rows[0],
+                rows[1],
+                rows[2],
+                rows[3],
+                rows[4],
+                rows[5],
+                rows[6],
+                rows[7],
+                insertRow
+            ]);
             mcdu.onPrevPage = () => {
                 CDUAvailableDeparturesPage.ShowPage(mcdu, airport, 0, !sidSelection);
             };
