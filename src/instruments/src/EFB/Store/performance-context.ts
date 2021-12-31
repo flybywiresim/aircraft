@@ -11,7 +11,7 @@ export const performanceInitialState: TPerformanceState = {
         weight: undefined,
         runwayHeading: undefined,
         approachSpeed: undefined,
-        flaps: LandingFlapsConfig.Conf3,
+        flaps: LandingFlapsConfig.Full,
         runwayCondition: LandingRunwayConditions.Dry,
         reverseThrust: false,
         altitude: undefined,
