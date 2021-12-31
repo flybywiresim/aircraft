@@ -417,12 +417,12 @@ export const LandingWidget = () => {
                                     onChange={handleRunwayConditionChange}
                                     dropdownOnTop
                                     options={[
-                                        { value: 0, displayValue: 'Dry' },
-                                        { value: 1, displayValue: 'Good' },
-                                        { value: 2, displayValue: 'Good-Medium' },
-                                        { value: 3, displayValue: 'Medium' },
-                                        { value: 4, displayValue: 'Medium-Poor' },
-                                        { value: 5, displayValue: 'Poor' },
+                                        { value: 0, displayValue: 'Dry (6)' },
+                                        { value: 1, displayValue: 'Good (5)' },
+                                        { value: 2, displayValue: 'Good-Medium (4)' },
+                                        { value: 3, displayValue: 'Medium (3)' },
+                                        { value: 4, displayValue: 'Medium-Poor (2)' },
+                                        { value: 5, displayValue: 'Poor (1)' },
                                     ]}
                                 />
                             </div>
