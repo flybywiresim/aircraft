@@ -224,7 +224,6 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
                         text="Reset to Defaults"
                         type={BUTTON_TYPE.BLUE}
                         onClick={() => {
-                            setDualAxis('1');
                             defaultsToThrottle(1);
                         }}
                         className="ml-2 hover:bg-blue-600 hover:border-blue-600"
