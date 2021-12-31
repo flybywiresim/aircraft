@@ -171,7 +171,7 @@ const goodRunwayLandingData: AutobrakeConfigLandingData = {
             altitudeCorrection: 80,
             windCorrection: 230,
             tempCorrection: 70,
-            slopeCorrection: 50,
+            slopeCorrection: 60,
             reverserCorrection: -30,
             overweightProcedureCorrection: 810,
         },
@@ -246,7 +246,7 @@ const goodMediumRunwayLandingData: AutobrakeConfigLandingData = {
         },
         [LandingFlapsConfig.Conf3]: {
             refDistance: 1820,
-            weightCorrectionAbove: 40,
+            weightCorrectionAbove: 50,
             weightCorrectionBelow: -20,
             speedCorrection: 100,
             altitudeCorrection: 70,
@@ -334,7 +334,7 @@ const mediumRunwayLandingData: AutobrakeConfigLandingData = {
             windCorrection: 240,
             tempCorrection: 70,
             slopeCorrection: 120,
-            reverserCorrection: -120,
+            reverserCorrection: -130,
             overweightProcedureCorrection: 880,
         },
     },
@@ -409,7 +409,7 @@ const mediumPoorRunwayLandingData: AutobrakeConfigLandingData = {
         [LandingFlapsConfig.Conf3]: {
             refDistance: 2380,
             weightCorrectionAbove: 80,
-            weightCorrectionBelow: -20,
+            weightCorrectionBelow: -30,
             speedCorrection: 170,
             altitudeCorrection: 140,
             windCorrection: 410,
@@ -435,7 +435,7 @@ const mediumPoorRunwayLandingData: AutobrakeConfigLandingData = {
         [LandingFlapsConfig.Conf3]: {
             refDistance: 2400,
             weightCorrectionAbove: 80,
-            weightCorrectionBelow: -20,
+            weightCorrectionBelow: -30,
             speedCorrection: 170,
             altitudeCorrection: 140,
             windCorrection: 410,
@@ -461,7 +461,7 @@ const mediumPoorRunwayLandingData: AutobrakeConfigLandingData = {
         [LandingFlapsConfig.Conf3]: {
             refDistance: 2430,
             weightCorrectionAbove: 80,
-            weightCorrectionBelow: -20,
+            weightCorrectionBelow: -30,
             speedCorrection: 180,
             altitudeCorrection: 140,
             windCorrection: 400,
@@ -514,7 +514,7 @@ const poorRunwayLandingData: AutobrakeConfigLandingData = {
             overweightProcedureCorrection: 230,
         },
         [LandingFlapsConfig.Conf3]: {
-            refDistance: 2280,
+            refDistance: 3280,
             weightCorrectionAbove: 70,
             weightCorrectionBelow: -30,
             speedCorrection: 150,
