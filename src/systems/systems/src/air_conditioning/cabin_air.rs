@@ -452,11 +452,13 @@ mod cabin_air_tests {
 
     struct CabinZoneTestBed {
         test_bed: SimulationTestBed<TestAircraft>,
+        stored_temperature: Option<ThermodynamicTemperature>,
     }
     impl CabinZoneTestBed {
         fn new() -> Self {
             let mut test_bed = CabinZoneTestBed {
                 test_bed: SimulationTestBed::new(TestAircraft::new),
+                stored_temperature: None,
             };
             test_bed.set_ambient_temperature(ThermodynamicTemperature::new::<degree_celsius>(24.));
             test_bed.set_true_airspeed(Velocity::new::<meter_per_second>(0.));
@@ -468,40 +470,81 @@ mod cabin_air_tests {
             self
         }
 
+        fn then(self) -> Self {
+            self
+        }
+
         fn with_flow(mut self) -> Self {
             self.command(|a| a.set_air_in_flow_rate(MassRate::new::<kilogram_per_second>(1.3)));
             self
         }
 
+        // Deprecated
         fn with_passengers(mut self) -> Self {
             self.set_passengers(174 / 2);
             self
         }
 
-        fn set_air_in_temperature(&mut self, temperature: ThermodynamicTemperature) {
+        fn passengers(mut self, passengers: u8) -> Self {
+            self.write_by_name(&format!("PAX_TOTAL_ROWS_{}_{}", 1, 6), passengers / 2);
+            self.write_by_name(&format!("PAX_TOTAL_ROWS_{}_{}", 7, 13), passengers / 2);
+            self.command(|a| a.set_passengers(passengers));
+            self
+        }
+
+        fn air_in_temperature_of(mut self, temperature: ThermodynamicTemperature) -> Self {
             self.command(|a| a.set_air_in_temperature(temperature));
+            self
         }
 
-        fn set_air_in_flow_rate(&mut self, flow_rate: MassRate) {
+        fn air_in_flow_rate_of(mut self, flow_rate: MassRate) -> Self {
             self.command(|a| a.set_air_in_flow_rate(flow_rate));
+            self
         }
 
+        fn true_airspeed_of(mut self, speed: Velocity) -> Self {
+            self.write_by_name("AIRSPEED TRUE", speed);
+            self
+        }
+
+        fn ambient_temperature_of(mut self, temperature: ThermodynamicTemperature) -> Self {
+            self.set_ambient_temperature(temperature);
+            self
+        }
+
+        fn ambient_pressure_of(mut self, pressure: Pressure) -> Self {
+            self.set_ambient_pressure(pressure);
+            self
+        }
+
+        // Deprecated
         fn set_passengers(&mut self, passengers: u8) {
             self.write_by_name(&format!("PAX_TOTAL_ROWS_{}_{}", 1, 6), passengers / 2);
             self.write_by_name(&format!("PAX_TOTAL_ROWS_{}_{}", 7, 13), passengers / 2);
             self.command(|a| a.set_passengers(passengers));
         }
 
+        // Deprecated
         fn set_true_airspeed(&mut self, speed: Velocity) {
             self.write_by_name("AIRSPEED TRUE", speed);
         }
 
-        fn command_open_door(&mut self) {
+        fn command_open_door(mut self) -> Self {
             self.write_by_name("INTERACTIVE POINT OPEN:0", Ratio::new::<percent>(100.));
+            self
         }
 
         fn cabin_temperature(&self) -> ThermodynamicTemperature {
             self.query(|a| a.cabin_zone.zone_air.zone_air_temperature())
+        }
+
+        fn memorize_cabin_temperature(mut self) -> Self {
+            self.stored_temperature = Some(self.cabin_temperature());
+            self
+        }
+
+        fn initial_temperature(&self) -> ThermodynamicTemperature {
+            self.stored_temperature.unwrap()
         }
 
         fn iterate(mut self, iterations: usize) -> Self {
@@ -534,77 +577,95 @@ mod cabin_air_tests {
         CabinZoneTestBed::new()
     }
 
+    fn test_bed_with() -> CabinZoneTestBed {
+        CabinZoneTestBed::new()
+    }
+
     #[test]
     fn cabin_air_starts_at_exterior_temperature() {
-        let mut test_bed = test_bed();
-        test_bed.set_ambient_temperature(ThermodynamicTemperature::new::<degree_celsius>(10.));
-        test_bed.run();
+        let test_bed = test_bed_with()
+            .ambient_temperature_of(ThermodynamicTemperature::new::<degree_celsius>(10.))
+            .iterate(1);
+
         assert!((test_bed.cabin_temperature().get::<degree_celsius>() - 10.) < 1.);
     }
 
     #[test]
     fn cabin_air_warms_up_with_pax_and_no_ac() {
-        let mut test_bed = test_bed().with_passengers();
+        let test_bed = test_bed_with()
+            .passengers(174 / 2)
+            .then()
+            .memorize_cabin_temperature()
+            .iterate(20);
 
-        let initial_temp = test_bed.cabin_temperature();
-        test_bed = test_bed.iterate(20);
-
-        assert!(initial_temp < test_bed.cabin_temperature());
+        assert!(test_bed.initial_temperature() < test_bed.cabin_temperature());
     }
 
     #[test]
     fn cabin_air_cools_with_ac_low() {
-        let mut test_bed = test_bed().with_flow();
+        let test_bed = test_bed()
+            .with_flow()
+            .memorize_cabin_temperature()
+            .then()
+            .air_in_temperature_of(ThermodynamicTemperature::new::<degree_celsius>(4.))
+            .iterate(80);
 
-        let initial_temp = test_bed.cabin_temperature();
-        test_bed.set_air_in_temperature(ThermodynamicTemperature::new::<degree_celsius>(4.));
-        test_bed = test_bed.iterate(80);
-
-        assert!(initial_temp > test_bed.cabin_temperature());
+        assert!(test_bed.initial_temperature() > test_bed.cabin_temperature());
     }
 
     #[test]
     fn cabin_air_reaches_equilibrium_temperature() {
-        let mut test_bed = test_bed().with_flow().and().with_passengers();
+        let mut test_bed = test_bed()
+            .with_flow()
+            .and()
+            .with_passengers()
+            .then()
+            .memorize_cabin_temperature()
+            .and()
+            .iterate(1);
 
-        let mut previous_temp = test_bed.cabin_temperature();
-        test_bed.run();
         let initial_temp_diff = test_bed.cabin_temperature().get::<degree_celsius>()
-            - previous_temp.get::<degree_celsius>();
-        test_bed = test_bed.iterate_with_delta(100, Duration::from_secs(10));
-        previous_temp = test_bed.cabin_temperature();
-        test_bed.run();
+            - test_bed.initial_temperature().get::<degree_celsius>();
+
+        test_bed = test_bed
+            .iterate_with_delta(100, Duration::from_secs(10))
+            .memorize_cabin_temperature()
+            .and()
+            .iterate(1);
+
         let final_temp_diff = test_bed.cabin_temperature().get::<degree_celsius>()
-            - previous_temp.get::<degree_celsius>();
+            - test_bed.initial_temperature().get::<degree_celsius>();
 
         assert!(initial_temp_diff > final_temp_diff);
     }
 
     #[test]
     fn reducing_passengers_reduces_cabin_temperature() {
-        let mut test_bed = test_bed().with_flow().and().with_passengers();
+        let test_bed = test_bed()
+            .with_flow()
+            .and()
+            .with_passengers()
+            .and()
+            .air_in_temperature_of(ThermodynamicTemperature::new::<degree_celsius>(8.))
+            .iterate_with_delta(100, Duration::from_secs(10))
+            .memorize_cabin_temperature()
+            .then()
+            .passengers(10)
+            .iterate_with_delta(100, Duration::from_secs(10));
 
-        test_bed.set_air_in_temperature(ThermodynamicTemperature::new::<degree_celsius>(8.));
-        test_bed = test_bed.iterate_with_delta(100, Duration::from_secs(10));
-        let initial_temp = test_bed.cabin_temperature();
-
-        test_bed.set_passengers(10);
-        test_bed = test_bed.iterate_with_delta(100, Duration::from_secs(10));
-
-        assert!(initial_temp > test_bed.cabin_temperature());
+        assert!(test_bed.initial_temperature() > test_bed.cabin_temperature());
     }
 
     #[test]
     fn temperature_stays_stable_with_no_flow_and_no_passengers() {
-        let mut test_bed = test_bed();
-        test_bed.set_air_in_flow_rate(MassRate::new::<kilogram_per_second>(0.));
-
-        let initial_temp = test_bed.cabin_temperature();
-
-        test_bed = test_bed.iterate_with_delta(100, Duration::from_secs(10));
+        let test_bed = test_bed_with()
+            .air_in_flow_rate_of(MassRate::new::<kilogram_per_second>(0.))
+            .memorize_cabin_temperature()
+            .then()
+            .iterate_with_delta(100, Duration::from_secs(10));
 
         assert!(
-            (initial_temp.get::<degree_celsius>()
+            (test_bed.initial_temperature().get::<degree_celsius>()
                 - test_bed.cabin_temperature().get::<degree_celsius>())
             .abs()
                 < 1.
@@ -613,90 +674,108 @@ mod cabin_air_tests {
 
     #[test]
     fn reducing_ambient_temperature_reduces_cabin_temperature() {
-        let mut test_bed = test_bed();
-        test_bed.set_air_in_flow_rate(MassRate::new::<kilogram_per_second>(0.));
-        let initial_temp = test_bed.cabin_temperature();
+        let test_bed = test_bed_with()
+            .air_in_flow_rate_of(MassRate::new::<kilogram_per_second>(0.))
+            .memorize_cabin_temperature()
+            .then()
+            .ambient_temperature_of(ThermodynamicTemperature::new::<degree_celsius>(0.))
+            .iterate_with_delta(100, Duration::from_secs(10));
 
-        test_bed.set_ambient_temperature(ThermodynamicTemperature::new::<degree_celsius>(0.));
-        test_bed = test_bed.iterate_with_delta(100, Duration::from_secs(10));
-
-        assert!(initial_temp > test_bed.cabin_temperature());
+        assert!(test_bed.initial_temperature() > test_bed.cabin_temperature());
     }
 
     #[test]
     fn increasing_ambient_temperature_increases_cabin_temperature() {
-        let mut test_bed = test_bed();
-        test_bed.set_air_in_flow_rate(MassRate::new::<kilogram_per_second>(0.));
+        let test_bed = test_bed_with()
+            .air_in_flow_rate_of(MassRate::new::<kilogram_per_second>(0.))
+            .memorize_cabin_temperature()
+            .then()
+            .ambient_temperature_of(ThermodynamicTemperature::new::<degree_celsius>(45.))
+            .iterate_with_delta(100, Duration::from_secs(10));
 
-        let initial_temp = test_bed.cabin_temperature();
-
-        test_bed.set_ambient_temperature(ThermodynamicTemperature::new::<degree_celsius>(45.));
-        test_bed = test_bed.iterate_with_delta(100, Duration::from_secs(10));
-
-        assert!(initial_temp < test_bed.cabin_temperature());
+        assert!(test_bed.initial_temperature() < test_bed.cabin_temperature());
     }
 
     #[test]
     fn more_heat_is_dissipated_in_flight() {
-        let mut test_bed = test_bed();
-        test_bed.set_air_in_flow_rate(MassRate::new::<kilogram_per_second>(0.));
-        test_bed.run();
-        test_bed.set_ambient_temperature(ThermodynamicTemperature::new::<degree_celsius>(0.));
-        let initial_temp = test_bed.cabin_temperature();
-        test_bed = test_bed.iterate_with_delta(100, Duration::from_secs(10));
-        let first_temperature_differential = initial_temp.get::<degree_celsius>()
+        let test_bed = test_bed_with()
+            .air_in_flow_rate_of(MassRate::new::<kilogram_per_second>(0.))
+            .iterate(1)
+            .then()
+            .ambient_temperature_of(ThermodynamicTemperature::new::<degree_celsius>(0.))
+            .memorize_cabin_temperature()
+            .and()
+            .iterate_with_delta(100, Duration::from_secs(10));
+
+        let first_temperature_differential = test_bed.initial_temperature().get::<degree_celsius>()
             - test_bed.cabin_temperature().get::<degree_celsius>();
 
-        let mut test_bed2 = CabinZoneTestBed::new();
-        test_bed2.set_air_in_flow_rate(MassRate::new::<kilogram_per_second>(0.));
-        test_bed2.set_ambient_temperature(ThermodynamicTemperature::new::<degree_celsius>(0.));
-        test_bed2.set_true_airspeed(Velocity::new::<meter_per_second>(130.));
-        let initial_temp2 = test_bed2.cabin_temperature();
-        test_bed2 = test_bed2.iterate_with_delta(100, Duration::from_secs(10));
-        let second_temperature_differential = initial_temp2.get::<degree_celsius>()
-            - test_bed2.cabin_temperature().get::<degree_celsius>();
+        let test_bed = test_bed_with()
+            .air_in_flow_rate_of(MassRate::new::<kilogram_per_second>(0.))
+            .ambient_temperature_of(ThermodynamicTemperature::new::<degree_celsius>(0.))
+            .and()
+            .true_airspeed_of(Velocity::new::<meter_per_second>(130.))
+            .memorize_cabin_temperature()
+            .and()
+            .iterate_with_delta(100, Duration::from_secs(10));
+
+        let second_temperature_differential =
+            test_bed.initial_temperature().get::<degree_celsius>()
+                - test_bed.cabin_temperature().get::<degree_celsius>();
 
         assert!(first_temperature_differential < second_temperature_differential);
     }
 
     #[test]
     fn increasing_altitude_reduces_heat_transfer() {
-        let mut test_bed = test_bed();
-        test_bed.set_air_in_flow_rate(MassRate::new::<kilogram_per_second>(0.));
-        test_bed.set_ambient_temperature(ThermodynamicTemperature::new::<degree_celsius>(24.));
-        test_bed.run();
-        test_bed.set_ambient_temperature(ThermodynamicTemperature::new::<degree_celsius>(0.));
-        test_bed.set_true_airspeed(Velocity::new::<meter_per_second>(130.));
-        let initial_temp = test_bed.cabin_temperature();
-        test_bed = test_bed.iterate_with_delta(100, Duration::from_secs(10));
-        let first_temperature_differential = initial_temp.get::<degree_celsius>()
+        let test_bed = test_bed_with()
+            .air_in_flow_rate_of(MassRate::new::<kilogram_per_second>(0.))
+            .and()
+            .ambient_temperature_of(ThermodynamicTemperature::new::<degree_celsius>(24.))
+            .iterate(1)
+            .then()
+            .ambient_temperature_of(ThermodynamicTemperature::new::<degree_celsius>(0.))
+            .and()
+            .true_airspeed_of(Velocity::new::<meter_per_second>(130.))
+            .memorize_cabin_temperature()
+            .and()
+            .iterate_with_delta(100, Duration::from_secs(10));
+
+        let first_temperature_differential = test_bed.initial_temperature().get::<degree_celsius>()
             - test_bed.cabin_temperature().get::<degree_celsius>();
 
-        let mut test_bed2 = CabinZoneTestBed::new();
-        test_bed2.set_air_in_flow_rate(MassRate::new::<kilogram_per_second>(0.));
-        test_bed2.set_ambient_temperature(ThermodynamicTemperature::new::<degree_celsius>(24.));
-        test_bed2.run();
-        test_bed2.set_ambient_temperature(ThermodynamicTemperature::new::<degree_celsius>(0.));
-        test_bed2.set_true_airspeed(Velocity::new::<meter_per_second>(130.));
-        test_bed2.set_ambient_pressure(Pressure::new::<pascal>(45000.));
-        let initial_temp2 = test_bed2.cabin_temperature();
-        test_bed2 = test_bed2.iterate_with_delta(100, Duration::from_secs(10));
-        let second_temperature_differential = initial_temp2.get::<degree_celsius>()
-            - test_bed2.cabin_temperature().get::<degree_celsius>();
+        let test_bed = test_bed_with()
+            .air_in_flow_rate_of(MassRate::new::<kilogram_per_second>(0.))
+            .and()
+            .ambient_temperature_of(ThermodynamicTemperature::new::<degree_celsius>(24.))
+            .iterate(1)
+            .then()
+            .ambient_temperature_of(ThermodynamicTemperature::new::<degree_celsius>(0.))
+            .true_airspeed_of(Velocity::new::<meter_per_second>(130.))
+            .and()
+            .ambient_pressure_of(Pressure::new::<pascal>(45000.))
+            .memorize_cabin_temperature()
+            .and()
+            .iterate_with_delta(100, Duration::from_secs(10));
+
+        let second_temperature_differential =
+            test_bed.initial_temperature().get::<degree_celsius>()
+                - test_bed.cabin_temperature().get::<degree_celsius>();
 
         assert!(first_temperature_differential > second_temperature_differential);
     }
 
     #[test]
     fn opening_doors_affects_cabin_temp() {
-        let mut test_bed = test_bed();
-        test_bed.set_air_in_flow_rate(MassRate::new::<kilogram_per_second>(0.));
-        test_bed.set_ambient_temperature(ThermodynamicTemperature::new::<degree_celsius>(24.));
-
-        test_bed.run();
-        test_bed.set_ambient_temperature(ThermodynamicTemperature::new::<degree_celsius>(0.));
-        test_bed.command_open_door();
-        test_bed = test_bed.iterate_with_delta(100, Duration::from_secs(10));
+        let mut test_bed = test_bed_with()
+            .air_in_flow_rate_of(MassRate::new::<kilogram_per_second>(0.))
+            .ambient_temperature_of(ThermodynamicTemperature::new::<degree_celsius>(24.))
+            .iterate(1)
+            .then()
+            .ambient_temperature_of(ThermodynamicTemperature::new::<degree_celsius>(0.))
+            .command_open_door()
+            .and()
+            .iterate_with_delta(100, Duration::from_secs(10));
 
         assert!(
             (test_bed.cabin_temperature().get::<degree_celsius>()

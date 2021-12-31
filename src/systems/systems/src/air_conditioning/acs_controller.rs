@@ -1003,7 +1003,19 @@ mod acs_controller_tests {
             self
         }
 
+        fn and_run(mut self) -> Self {
+            self.run();
+            self
+        }
+
         fn with(self) -> Self {
+            self
+        }
+
+        fn iterate(mut self, iterations: usize) -> Self {
+            for _ in 0..iterations {
+                self.run();
+            }
             self
         }
 
@@ -1249,9 +1261,8 @@ mod acs_controller_tests {
                 .with()
                 .landing_gear_compressed()
                 .and()
-                .engine_in_take_off();
-
-            test_bed.run();
+                .engine_in_take_off()
+                .and_run();
 
             test_bed.set_indicated_airspeed(Velocity::new::<knot>(71.));
             test_bed.run();
@@ -1266,9 +1277,8 @@ mod acs_controller_tests {
                 .with()
                 .landing_gear_compressed()
                 .and()
-                .engine_in_take_off();
-
-            test_bed.run();
+                .engine_in_take_off()
+                .and_run();
 
             test_bed.run_with_delta(Duration::from_secs(36));
             test_bed.run();
@@ -1283,9 +1293,8 @@ mod acs_controller_tests {
                 .with()
                 .landing_gear_compressed()
                 .and()
-                .engine_in_take_off();
-
-            test_bed.run();
+                .engine_in_take_off()
+                .and_run();
 
             test_bed.run_with_delta(Duration::from_secs(33));
             test_bed.run();
@@ -1300,9 +1309,8 @@ mod acs_controller_tests {
                 .with()
                 .landing_gear_compressed()
                 .and()
-                .engine_in_take_off();
-
-            test_bed.run();
+                .engine_in_take_off()
+                .and_run();
 
             test_bed.set_indicated_airspeed(Velocity::new::<knot>(71.));
             test_bed.run();
@@ -1320,9 +1328,8 @@ mod acs_controller_tests {
                 .with()
                 .landing_gear_compressed()
                 .and()
-                .engine_in_take_off();
-
-            test_bed.run();
+                .engine_in_take_off()
+                .and_run();
 
             test_bed.set_indicated_airspeed(Velocity::new::<knot>(71.));
             test_bed.run();
@@ -1340,9 +1347,8 @@ mod acs_controller_tests {
                 .with()
                 .landing_gear_compressed()
                 .and()
-                .engine_in_take_off();
-
-            test_bed.run();
+                .engine_in_take_off()
+                .and_run();
 
             test_bed.set_indicated_airspeed(Velocity::new::<knot>(71.));
             test_bed.run();
@@ -1355,14 +1361,13 @@ mod acs_controller_tests {
 
         #[test]
         fn acstate_changes_to_begin_landing_from_in_flight() {
-            let mut test_bed = test_bed()
+            let test_bed = test_bed()
                 .in_flight()
                 .with()
                 .landing_gear_compressed()
                 .and()
-                .engine_idle();
-
-            test_bed.run();
+                .engine_idle()
+                .and_run();
 
             assert!(test_bed.ac_state_is_begin_landing());
         }
@@ -1374,9 +1379,8 @@ mod acs_controller_tests {
                 .with()
                 .landing_gear_compressed()
                 .and()
-                .engine_idle();
-
-            test_bed.run();
+                .engine_idle()
+                .and_run();
 
             test_bed.set_indicated_airspeed(Velocity::new::<knot>(69.));
             test_bed.run();
@@ -1391,9 +1395,8 @@ mod acs_controller_tests {
                 .with()
                 .landing_gear_compressed()
                 .and()
-                .engine_idle();
-
-            test_bed.run();
+                .engine_idle()
+                .and_run();
 
             test_bed.run_with_delta(Duration::from_secs(36));
             test_bed.run();
@@ -1408,9 +1411,8 @@ mod acs_controller_tests {
                 .with()
                 .landing_gear_compressed()
                 .and()
-                .engine_idle();
-
-            test_bed.run();
+                .engine_idle()
+                .and_run();
 
             test_bed.run_with_delta(Duration::from_secs(33));
             test_bed.run();
@@ -1425,9 +1427,8 @@ mod acs_controller_tests {
                 .with()
                 .landing_gear_compressed()
                 .and()
-                .engine_idle();
-
-            test_bed.run();
+                .engine_idle()
+                .and_run();
 
             test_bed.set_indicated_airspeed(Velocity::new::<knot>(69.));
             test_bed.run();
@@ -1445,9 +1446,8 @@ mod acs_controller_tests {
                 .with()
                 .landing_gear_compressed()
                 .and()
-                .engine_idle();
-
-            test_bed.run();
+                .engine_idle()
+                .and_run();
 
             test_bed.set_indicated_airspeed(Velocity::new::<knot>(69.));
             test_bed.run();
@@ -1478,7 +1478,7 @@ mod acs_controller_tests {
 
         #[test]
         fn duct_demand_temperature_stays_at_24_with_no_inputs() {
-            let mut test_bed = test_bed()
+            let test_bed = test_bed()
                 .with()
                 .both_packs_on()
                 .and()
@@ -1486,8 +1486,9 @@ mod acs_controller_tests {
                 .and()
                 .command_selected_temperature(
                     [ThermodynamicTemperature::new::<degree_celsius>(24.); 2],
-                );
-            test_bed = test_bed.iterate_with_delta(100, Duration::from_secs(10));
+                )
+                .iterate_with_delta(100, Duration::from_secs(10));
+
             assert!(
                 (test_bed.duct_demand_temperature()[1].get::<degree_celsius>() - 24.).abs() < 1.
             );
@@ -1502,6 +1503,7 @@ mod acs_controller_tests {
                 .command_selected_temperature(
                     [ThermodynamicTemperature::new::<degree_celsius>(18.); 2],
                 );
+
             test_bed.command_pack_1_pb_position(false);
             test_bed.command_pack_2_pb_position(false);
             test_bed = test_bed.iterate_with_delta(100, Duration::from_secs(10));
@@ -1541,9 +1543,8 @@ mod acs_controller_tests {
                 .run_and()
                 .command_selected_temperature(
                     [ThermodynamicTemperature::new::<degree_celsius>(24.); 2],
-                );
-
-            test_bed = test_bed.iterate_with_delta(100, Duration::from_secs(10));
+                )
+                .iterate_with_delta(100, Duration::from_secs(10));
 
             test_bed.command_measured_temperature(
                 [ThermodynamicTemperature::new::<degree_celsius>(30.); 2],
@@ -1567,8 +1568,8 @@ mod acs_controller_tests {
                 .run_and()
                 .command_selected_temperature(
                     [ThermodynamicTemperature::new::<degree_celsius>(30.); 2],
-                );
-            test_bed = test_bed.iterate_with_delta(3, Duration::from_secs(1));
+                )
+                .iterate_with_delta(3, Duration::from_secs(1));
 
             let mut previous_temp = test_bed.duct_demand_temperature()[1];
             test_bed.run();
@@ -1596,9 +1597,9 @@ mod acs_controller_tests {
                 .and()
                 .command_selected_temperature(
                     [ThermodynamicTemperature::new::<degree_celsius>(24.); 2],
-                );
+                )
+                .iterate_with_delta(100, Duration::from_secs(10));
 
-            test_bed = test_bed.iterate_with_delta(100, Duration::from_secs(10));
             let initial_temperature = test_bed.duct_demand_temperature()[1];
 
             test_bed.command_cabin_altitude(Length::new::<foot>(30000.));
@@ -1657,17 +1658,25 @@ mod acs_controller_tests {
 
         #[test]
         fn pack_flow_is_not_zero_when_conditions_are_met() {
-            let mut test_bed = test_bed().with().both_packs_on().and().engine_idle();
-            test_bed.run();
-            test_bed.run();
+            let test_bed = test_bed()
+                .with()
+                .both_packs_on()
+                .and()
+                .engine_idle()
+                .iterate(2);
 
             assert!(test_bed.pack_flow() > MassRate::new::<kilogram_per_second>(0.));
         }
 
         #[test]
         fn pack_flow_increases_when_knob_on_hi_setting() {
-            let mut test_bed = test_bed().with().both_packs_on().and().engine_idle();
-            test_bed.run();
+            let mut test_bed = test_bed()
+                .with()
+                .both_packs_on()
+                .and()
+                .engine_idle()
+                .and_run();
+
             test_bed.run_with_delta(Duration::from_secs(31));
             test_bed.run();
             let initial_flow = test_bed.pack_flow();
@@ -1681,8 +1690,13 @@ mod acs_controller_tests {
 
         #[test]
         fn pack_flow_decreases_when_knob_on_lo_setting() {
-            let mut test_bed = test_bed().with().both_packs_on().and().engine_idle();
-            test_bed.run();
+            let mut test_bed = test_bed()
+                .with()
+                .both_packs_on()
+                .and()
+                .engine_idle()
+                .and_run();
+
             test_bed.run_with_delta(Duration::from_secs(31));
             test_bed.run();
             let initial_flow = test_bed.pack_flow();
@@ -1696,9 +1710,13 @@ mod acs_controller_tests {
 
         #[test]
         fn pack_flow_increases_when_opposite_engine_and_xbleed() {
-            let mut test_bed = test_bed().with().both_packs_on().and().one_engine_on();
-            test_bed.run();
-            test_bed.run();
+            let mut test_bed = test_bed()
+                .with()
+                .both_packs_on()
+                .and()
+                .one_engine_on()
+                .iterate(2);
+
             let initial_flow = test_bed.pack_flow();
 
             test_bed.command_crossbleed_on();
@@ -1710,9 +1728,13 @@ mod acs_controller_tests {
 
         #[test]
         fn pack_flow_increases_if_apu_bleed_is_on() {
-            let mut test_bed = test_bed().with().both_packs_on().and().engine_idle();
-            test_bed.run();
-            test_bed.run();
+            let mut test_bed = test_bed()
+                .with()
+                .both_packs_on()
+                .and()
+                .engine_idle()
+                .iterate(2);
+
             let initial_flow = test_bed.pack_flow();
             test_bed.command_apu_bleed_on();
             test_bed.run();
@@ -1722,14 +1744,17 @@ mod acs_controller_tests {
 
         #[test]
         fn pack_flow_reduces_when_single_pack_operation() {
-            let mut test_bed = test_bed().with().both_packs_on().and().engine_idle();
-            test_bed.run();
-            test_bed.run();
+            let mut test_bed = test_bed()
+                .with()
+                .both_packs_on()
+                .and()
+                .engine_idle()
+                .iterate(2);
+
             let initial_flow = test_bed.pack_flow();
             test_bed.command_pack_1_pb_position(true);
             test_bed.command_pack_2_pb_position(false);
-            test_bed.run();
-            test_bed.run();
+            test_bed = test_bed.iterate(2);
 
             assert!(test_bed.pack_flow() < initial_flow);
         }
@@ -1743,9 +1768,9 @@ mod acs_controller_tests {
                 .and()
                 .both_packs_on()
                 .and()
-                .engine_idle();
-            test_bed.run();
-            test_bed.run();
+                .engine_idle()
+                .iterate(2);
+
             let initial_flow = test_bed.pack_flow();
             assert!(test_bed.ac_state_is_on_ground());
 
@@ -1762,13 +1787,15 @@ mod acs_controller_tests {
 
         #[test]
         fn pack_flow_stops_when_engine_in_start_mode() {
-            let mut test_bed = test_bed().with().both_packs_on().and().engine_idle();
-            test_bed.run();
-            test_bed.run();
+            let mut test_bed = test_bed()
+                .with()
+                .both_packs_on()
+                .and()
+                .engine_idle()
+                .iterate(2);
 
             test_bed.command_engine_in_start_mode();
-            test_bed.run();
-            test_bed.run();
+            test_bed = test_bed.iterate(2);
 
             assert_eq!(
                 test_bed.pack_flow(),
@@ -1778,13 +1805,15 @@ mod acs_controller_tests {
 
         #[test]
         fn pack_flow_stops_when_engine_on_fire() {
-            let mut test_bed = test_bed().with().both_packs_on().and().engine_idle();
-            test_bed.run();
-            test_bed.run();
+            let mut test_bed = test_bed()
+                .with()
+                .both_packs_on()
+                .and()
+                .engine_idle()
+                .iterate(2);
 
             test_bed.command_engine_on_fire();
-            test_bed.run();
-            test_bed.run();
+            test_bed = test_bed.iterate(2);
 
             assert_eq!(
                 test_bed.pack_flow(),
@@ -1794,13 +1823,15 @@ mod acs_controller_tests {
 
         #[test]
         fn pack_flow_stops_when_ditching_on() {
-            let mut test_bed = test_bed().with().both_packs_on().and().engine_idle();
-            test_bed.run();
-            test_bed.run();
+            let mut test_bed = test_bed()
+                .with()
+                .both_packs_on()
+                .and()
+                .engine_idle()
+                .iterate(2);
 
             test_bed.command_ditching_on();
-            test_bed.run();
-            test_bed.run();
+            test_bed = test_bed.iterate(2);
 
             assert_eq!(
                 test_bed.pack_flow(),
