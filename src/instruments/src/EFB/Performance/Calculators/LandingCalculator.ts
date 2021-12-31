@@ -582,7 +582,7 @@ const confFullVls = [116, 116, 116, 120, 125, 130, 135, 139, 143];
  * VLS speed (kts) for conf 3 flaps
  * Index 0 = 40T, Index 8 = 80T, 5T increment
  */
-const conf3Vls = [116, 116, 124, 130, 136, 141, 146, 151, 155];
+const conf3Vls = [116, 118, 124, 130, 136, 141, 146, 151, 155];
 
 /**
  * Converts mass into an index from 0-8 for use with VLS tables
