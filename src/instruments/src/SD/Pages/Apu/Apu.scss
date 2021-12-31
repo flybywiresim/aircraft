@@ -1,0 +1,127 @@
+@import "../../../Common/definitions";
+
+#main-apu {
+    .Box {
+        stroke: $display-light-grey;
+        fill: none;
+        stroke-width: 2.5px;
+    }
+
+    .NoFill {
+        fill: none;
+    }
+
+    .AmberHeavy  {
+        stroke: $display-amber;
+        stroke-width: 4;
+    }
+
+    text {
+        fill: #EEEEEE;
+
+        &.FontSmall {
+            font-size: 15px;
+        }
+
+        &.FontNormal {
+            font-size: 19px;
+        }
+
+        &.Left {
+            text-anchor: start;
+            text-align: start;
+        }
+
+        &.Center {
+            text-anchor: middle;
+            text-align: center;
+        }
+
+        &.Right {
+            text-anchor: end;
+            text-align: end;
+        }
+
+        &.Green {
+            fill: $display-green;
+        }
+
+        &.Amber {
+            fill: $display-amber;
+        }
+
+        &.Cyan {
+            fill: $display-cyan;
+        }
+
+        &.FontLarger {
+            font-size: $font-size-huge;
+        }
+
+        &.FontTitle {
+            font-size: $font-size-title;
+        }
+    }
+
+    .Line {
+        stroke-width: 2px;
+
+        &.White {
+            stroke: $display-white;
+        }
+
+        &.Grey {
+            stroke: $display-light-grey;
+        }
+
+        &.Amber {
+            stroke: $display-amber;
+        }
+
+        &.Red {
+            stroke: $display-red;
+        }
+
+        &.Green {
+            stroke: $display-green;
+        }
+    }
+
+    .Circle {
+        fill: none;
+        stroke-width: 2.5px;
+
+        &.Green {
+            stroke: $display-green;
+        }
+
+        &.Amber {
+            stroke: $display-amber;
+        }
+    }
+
+    .FillPulse {
+        animation: fill-pulse 1s step-end infinite;
+
+        @keyframes fill-pulse {
+            0%, 100% {
+              fill: $display-green;
+            }
+            50% {
+                fill: hsl(120, 100%, 20%);
+            }
+        }
+    }
+    .LinePulse {
+        animation: line-pulse 1s step-end infinite;
+
+        @keyframes line-pulse {
+            0%, 100% {
+              stroke: $display-green;
+            }
+            50% {
+              stroke: hsl(120, 100%, 20%);
+            }
+        }
+    }
+}

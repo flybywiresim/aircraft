@@ -67,6 +67,9 @@ const SimpleInput = (props: SimpleInputProps) => {
     };
 
     const getConstrainedValue = (value: string): string => {
+        if (!props.number) {
+            return value;
+        }
         let constrainedValue = value;
         let numericValue = parseFloat(value);
 

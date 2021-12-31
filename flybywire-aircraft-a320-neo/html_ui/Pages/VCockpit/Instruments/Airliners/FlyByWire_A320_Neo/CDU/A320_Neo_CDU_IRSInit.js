@@ -201,7 +201,7 @@ class CDUIRSInit {
         autoRefresh();
         function autoRefresh() {
             setTimeout(() => {
-                if (mcdu.getTitle() === 'IRS INIT') {
+                if (mcdu.page.Current === mcdu.page.IRSInit) {
                     CDUIRSInit.ShowPage(mcdu, lon = lon,
                         originAirportLat = originAirportLat, originAirportLon = originAirportLon,
                         referenceName = referenceName, originAirportCoordinates = originAirportCoordinates,
