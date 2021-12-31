@@ -133,6 +133,7 @@ class CDUFixInfoPage {
             mcdu.onLeftInput[4] = () => mcdu.addNewMessage(NXFictionalMessages.notYetImplemented);
         }
 
+        mcdu.setArrows(false, false, true, true);
         mcdu.setTemplate(template);
         mcdu.onPrevPage = () => {
             if (page > 0) {
@@ -148,6 +149,5 @@ class CDUFixInfoPage {
                 CDUFixInfoPage.ShowPage(mcdu, 0);
             }
         };
-        mcdu.setArrows(false, false, true, true);
     }
 }

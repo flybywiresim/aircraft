@@ -551,6 +551,10 @@ void FlightDataRecorderConverter::writeHeader(ofstream& out, const string& delim
   out << "data.hydraulic_green_pressure" << delimiter;
   out << "data.hydraulic_blue_pressure" << delimiter;
   out << "data.hydraulic_yellow_pressure" << delimiter;
+  out << "data.throttle_lever_1_pos" << delimiter;
+  out << "data.throttle_lever_2_pos" << delimiter;
+  out << "data.corrected_engine_N1_1_percent" << delimiter;
+  out << "data.corrected_engine_N1_2_percent" << delimiter;
   out << endl;
 }
 
@@ -1110,5 +1114,9 @@ void FlightDataRecorderConverter::writeStruct(ofstream& out,
   out << data.hydraulic_green_pressure << delimiter;
   out << data.hydraulic_blue_pressure << delimiter;
   out << data.hydraulic_yellow_pressure << delimiter;
+  out << data.throttle_lever_1_pos << delimiter;
+  out << data.throttle_lever_2_pos << delimiter;
+  out << data.corrected_engine_N1_1_percent << delimiter;
+  out << data.corrected_engine_N1_2_percent << delimiter;
   out << endl;
 }
