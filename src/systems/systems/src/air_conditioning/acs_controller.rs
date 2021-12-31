@@ -112,6 +112,8 @@ enum AirConditioningStateManager {
 }
 
 impl AirConditioningStateManager {
+    const TAKEOFF_THRESHOLD_SPEED_KNOTS: f64 = 70.;
+
     fn new() -> Self {
         AirConditioningStateManager::Initialisation(AirConditioningState::init())
     }
@@ -231,7 +233,8 @@ impl AirConditioningState<BeginTakeOff> {
         engines: [&impl EngineCorrectedN1; 2],
     ) -> AirConditioningStateManager {
         if (AirConditioningStateManager::engines_are_in_takeoff(engines)
-            && context.indicated_airspeed().get::<knot>() > 70.)
+            && context.indicated_airspeed().get::<knot>()
+                > AirConditioningStateManager::TAKEOFF_THRESHOLD_SPEED_KNOTS)
             || self.timer > Duration::from_secs(35)
         {
             AirConditioningStateManager::EndTakeOff(self.into())
@@ -295,7 +298,8 @@ impl AirConditioningState<BeginLanding> {
         engines: [&impl EngineCorrectedN1; 2],
     ) -> AirConditioningStateManager {
         if (!AirConditioningStateManager::engines_are_in_takeoff(engines)
-            && context.indicated_airspeed().get::<knot>() < 70.)
+            && context.indicated_airspeed().get::<knot>()
+                < AirConditioningStateManager::TAKEOFF_THRESHOLD_SPEED_KNOTS)
             || self.timer > Duration::from_secs(35)
         {
             AirConditioningStateManager::EndLanding(self.into())
@@ -338,8 +342,12 @@ struct ZoneController<const ZONES: usize> {
 
 impl<const ZONES: usize> ZoneController<ZONES> {
     const K_ALTITUDE_CORRECTION_DEG_PER_FEET: f64 = 0.0000375; // deg/feet
+    const UPPER_DUCT_TEMP_TRIGGER_HIGH_CELSIUS: f64 = 19.; // C
+    const UPPER_DUCT_TEMP_TRIGGER_LOW_CELSIUS: f64 = 17.; // C
     const UPPER_DUCT_TEMP_LIMIT_LOW_KELVIN: f64 = 323.15; // K
     const UPPER_DUCT_TEMP_LIMIT_HIGH_KELVIN: f64 = 343.15; // K
+    const LOWER_DUCT_TEMP_TRIGGER_HIGH_CELSIUS: f64 = 28.; // C
+    const LOWER_DUCT_TEMP_TRIGGER_LOW_CELSIUS: f64 = 26.; // C
     const LOWER_DUCT_TEMP_LIMIT_LOW_KELVIN: f64 = 275.15; // K
     const LOWER_DUCT_TEMP_LIMIT_HIGH_KELVIN: f64 = 281.15; // K
     const SETPOINT_TEMP_KELVIN: f64 = 297.15; // K
@@ -427,34 +435,56 @@ impl<const ZONES: usize> ZoneController<ZONES> {
     }
 
     fn calculate_duct_temp_upper_limit(&self) -> ThermodynamicTemperature {
-        if self.zone_measured_temperature > ThermodynamicTemperature::new::<degree_celsius>(19.) {
+        if self.zone_measured_temperature
+            > ThermodynamicTemperature::new::<degree_celsius>(
+                Self::UPPER_DUCT_TEMP_TRIGGER_HIGH_CELSIUS,
+            )
+        {
             ThermodynamicTemperature::new::<kelvin>(Self::UPPER_DUCT_TEMP_LIMIT_LOW_KELVIN)
         } else if self.zone_measured_temperature
-            < ThermodynamicTemperature::new::<degree_celsius>(17.)
+            < ThermodynamicTemperature::new::<degree_celsius>(
+                Self::UPPER_DUCT_TEMP_TRIGGER_LOW_CELSIUS,
+            )
         {
             ThermodynamicTemperature::new::<kelvin>(Self::UPPER_DUCT_TEMP_LIMIT_HIGH_KELVIN)
         } else {
             let interpolation = (Self::UPPER_DUCT_TEMP_LIMIT_LOW_KELVIN
                 - Self::UPPER_DUCT_TEMP_LIMIT_HIGH_KELVIN)
-                / (19. - 17.)
-                * (self.zone_measured_temperature.get::<kelvin>() - 290.15)
+                / (Self::UPPER_DUCT_TEMP_TRIGGER_HIGH_CELSIUS
+                    - Self::UPPER_DUCT_TEMP_TRIGGER_LOW_CELSIUS)
+                * (self.zone_measured_temperature.get::<kelvin>()
+                    - ThermodynamicTemperature::new::<degree_celsius>(
+                        Self::UPPER_DUCT_TEMP_TRIGGER_LOW_CELSIUS,
+                    )
+                    .get::<kelvin>())
                 + Self::UPPER_DUCT_TEMP_LIMIT_HIGH_KELVIN;
             ThermodynamicTemperature::new::<kelvin>(interpolation)
         }
     }
 
     fn calculate_duct_temp_lower_limit(&self) -> ThermodynamicTemperature {
-        if self.zone_measured_temperature > ThermodynamicTemperature::new::<degree_celsius>(28.) {
+        if self.zone_measured_temperature
+            > ThermodynamicTemperature::new::<degree_celsius>(
+                Self::LOWER_DUCT_TEMP_TRIGGER_HIGH_CELSIUS,
+            )
+        {
             ThermodynamicTemperature::new::<kelvin>(Self::LOWER_DUCT_TEMP_LIMIT_LOW_KELVIN)
         } else if self.zone_measured_temperature
-            < ThermodynamicTemperature::new::<degree_celsius>(26.)
+            < ThermodynamicTemperature::new::<degree_celsius>(
+                Self::LOWER_DUCT_TEMP_TRIGGER_LOW_CELSIUS,
+            )
         {
             ThermodynamicTemperature::new::<kelvin>(Self::LOWER_DUCT_TEMP_LIMIT_HIGH_KELVIN)
         } else {
             let interpolation = (Self::LOWER_DUCT_TEMP_LIMIT_LOW_KELVIN
                 - Self::LOWER_DUCT_TEMP_LIMIT_HIGH_KELVIN)
-                / (28. - 26.)
-                * (self.zone_measured_temperature.get::<kelvin>() - 299.15)
+                / (Self::LOWER_DUCT_TEMP_TRIGGER_HIGH_CELSIUS
+                    - Self::LOWER_DUCT_TEMP_TRIGGER_LOW_CELSIUS)
+                * (self.zone_measured_temperature.get::<kelvin>()
+                    - ThermodynamicTemperature::new::<degree_celsius>(
+                        Self::LOWER_DUCT_TEMP_TRIGGER_LOW_CELSIUS,
+                    )
+                    .get::<kelvin>())
                 + Self::LOWER_DUCT_TEMP_LIMIT_HIGH_KELVIN;
             ThermodynamicTemperature::new::<kelvin>(interpolation)
         }

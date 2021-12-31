@@ -203,7 +203,7 @@ impl ZoneAir {
         let wall_transfer_heat_energy = self
             .heat_transfer_through_wall_calculation(context, zone_volume)
             .get::<kilowatt>();
-        // For the cockpit we reduce the effect of opening doors
+        // For the cockpit we reduce the effect of opening doors to 20%
         if zone_volume < Volume::new::<cubic_meter>(100.) {
             inlet_door_air_energy *= 0.2;
             outlet_door_air_energy *= 0.2;
