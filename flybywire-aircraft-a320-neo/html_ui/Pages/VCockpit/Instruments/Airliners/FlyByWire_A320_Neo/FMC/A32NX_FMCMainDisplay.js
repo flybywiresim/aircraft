@@ -2360,9 +2360,6 @@ class FMCMainDisplay extends BaseAirliners {
         let checkThrRedAlt = this.thrustReductionAltitude;
         let checkAccAlt = this.accelerationAltitude;
 
-        //  let newThrRedAlt = 0;
-        //  let newAccAlt = 0;
-
         let [thrRedAlt, accAlt] = s.split("/");
 
         if (thrRedAlt && thrRedAlt.length > 0 || accAlt && accAlt.length > 0) {
