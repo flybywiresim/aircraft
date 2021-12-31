@@ -376,7 +376,8 @@ typedef enum {
   athr_requested_mode_NONE = 0,
   athr_requested_mode_SPEED,
   athr_requested_mode_THRUST_IDLE,
-  athr_requested_mode_THRUST_CLB
+  athr_requested_mode_THRUST_CLB,
+  athr_requested_mode_RETARD
 } athr_requested_mode;
 
 #endif
