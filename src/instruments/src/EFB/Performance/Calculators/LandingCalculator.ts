@@ -686,7 +686,9 @@ export default class LandingCalculator {
             reverserCorrection = 0;
         }
 
-        const altitudeCorrection = (pressureAltitude / 1000) * landingData.altitudeCorrection;
+        const altitudeCorrection = pressureAltitude > 0
+            ? (pressureAltitude / 1000) * landingData.altitudeCorrection
+            : 0;
         const slopeCorrection = slope < 0
             ? Math.abs(slope) * landingData.slopeCorrection
             : 0;
