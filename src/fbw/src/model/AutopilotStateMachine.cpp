@@ -1781,7 +1781,7 @@ void AutopilotStateMachineModelClass::AutopilotStateMachine_FLARE_during(void)
   if ((AutopilotStateMachine_B.BusAssignment_g.data.H_radio_ft <= 40.0) &&
       ((AutopilotStateMachine_B.BusAssignment_g.output.enabled_AP1 != 0.0) ||
        (AutopilotStateMachine_B.BusAssignment_g.output.enabled_AP2 != 0.0))) {
-    AutopilotStateMachine_B.out.mode_autothrust = athr_requested_mode_THRUST_IDLE;
+    AutopilotStateMachine_B.out.mode_autothrust = athr_requested_mode_RETARD;
   } else {
     AutopilotStateMachine_B.out.mode_autothrust = athr_requested_mode_SPEED;
   }
