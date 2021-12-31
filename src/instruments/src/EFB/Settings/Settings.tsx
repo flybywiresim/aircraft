@@ -528,7 +528,7 @@ const ATSUAOCPage = () => {
         });
     }
 
-    function handleUsernameInput(value: string) {
+    function handleSimbriefUsernameInput(value: string) {
         getSimbriefUserId(value).then((response) => {
             setSimbriefUserId(response);
             setSimbriefDisplay(response);
@@ -636,7 +636,7 @@ const ATSUAOCPage = () => {
                         className="w-30"
                         value={simbriefDisplay}
                         noLabel
-                        onBlur={(value) => handleUsernameInput(value.replace(/\s/g, ''))}
+                        onBlur={(value) => handleSimbriefUsernameInput(value.replace(/\s/g, ''))}
                         onChange={(value) => setSimbriefDisplay(value)}
                     />
                 </div>
