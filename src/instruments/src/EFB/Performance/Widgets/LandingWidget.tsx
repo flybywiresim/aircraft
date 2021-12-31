@@ -412,7 +412,8 @@ export const LandingWidget = () => {
                                 <SelectInput
                                     className="w-56 my-1.5"
                                     label="Rwy Condition"
-                                    defaultValue={runwayCondition}
+                                    defaultValue={performanceInitialState.landing.runwayCondition}
+                                    value={runwayCondition}
                                     onChange={handleRunwayConditionChange}
                                     dropdownOnTop
                                     options={[
@@ -477,7 +478,8 @@ export const LandingWidget = () => {
                                 <SelectInput
                                     className="w-56 my-1.5"
                                     label="Flaps"
-                                    defaultValue={flaps}
+                                    defaultValue={performanceInitialState.landing.flaps}
+                                    value={flaps}
                                     onChange={handleFlapsChange}
                                     reverse
                                     options={[
@@ -488,7 +490,8 @@ export const LandingWidget = () => {
                                 <SelectInput
                                     className="w-56 my-1.5"
                                     label="Overweight Proc"
-                                    defaultValue={overweightProcedure}
+                                    defaultValue={performanceInitialState.landing.overweightProcedure}
+                                    value={overweightProcedure}
                                     onChange={handleOverweightProcedureChange}
                                     reverse
                                     options={[
@@ -499,7 +502,8 @@ export const LandingWidget = () => {
                                 <SelectInput
                                     className="w-56 my-1.5"
                                     label="Reverse Thrust"
-                                    defaultValue={reverseThrust}
+                                    defaultValue={performanceInitialState.landing.reverseThrust}
+                                    value={reverseThrust}
                                     onChange={handleReverseThrustChange}
                                     reverse
                                     options={[
