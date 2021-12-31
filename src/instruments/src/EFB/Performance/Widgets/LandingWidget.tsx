@@ -483,7 +483,7 @@ export const LandingWidget = () => {
                                     onChange={handleFlapsChange}
                                     reverse
                                     options={[
-                                        { value: 1, displayValue: 'Full' },
+                                        { value: 1, displayValue: 'FULL' },
                                         { value: 0, displayValue: 'CONF 3' },
                                     ]}
                                 />
