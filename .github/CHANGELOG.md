@@ -107,6 +107,7 @@
 1. [FBW] Improved sideslip controller - @IbrahimK42 (IbrahimK42)
 1. [AP] Further improved ALT CST* and ALT CST conditions - @aguther (Andreas Guther)
 1. [MCDU] Added support for connecting MCDU to external devices - @tyler58546 (tyler58546)
+1. [EFB] Added Hoppie configuration to ATSU/ATC page - @svengcz (Sven Czarnian)
 
 ## 0.7.0
 
