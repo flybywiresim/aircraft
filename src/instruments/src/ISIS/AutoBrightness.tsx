@@ -89,7 +89,7 @@ export const AutoBrightness: React.FC<AutoBrightnessProps> = ({ bugsActive, chil
         { additionalDeps: [currentBrightness, targetBrightness], runOnStart: false },
     );
 
-    if (homeCockpit === 1) {
+    if (homeCockpit) {
         return (
             <g style={{ opacity: 1.0 }}>
                 {children}
