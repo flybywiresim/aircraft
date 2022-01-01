@@ -347,6 +347,7 @@ const RealismPage = () => {
     const [mcduInput, setMcduInput] = usePersistentProperty('MCDU_KB_INPUT', 'DISABLED');
     const [mcduTimeout, setMcduTimeout] = usePersistentProperty('CONFIG_MCDU_KB_TIMEOUT', '60');
     const [realisticTiller, setRealisticTiller] = usePersistentProperty('REALISTIC_TILLER_ENABLED', '0');
+    const [homeCockpit, setHomeCockpit] = usePersistentProperty('HOME_COCKPIT_ENABLED', '0');
 
     const adirsAlignTimeButtons: (ButtonType & SimVarButton)[] = [
         { name: 'Instant', setting: 'INSTANT', simVarValue: 1 },
@@ -367,6 +368,11 @@ const RealismPage = () => {
     ];
 
     const steeringSeparationButtons: (ButtonType & SimVarButton)[] = [
+        { name: 'Disabled', setting: '0', simVarValue: 0 },
+        { name: 'Enabled', setting: '1', simVarValue: 1 },
+    ];
+
+    const homeCockpitButtons: (ButtonType & SimVarButton)[] = [
         { name: 'Disabled', setting: '0', simVarValue: 0 },
         { name: 'Enabled', setting: '1', simVarValue: 1 },
     ];
@@ -461,6 +467,21 @@ const RealismPage = () => {
                                     enabled
                                     onSelect={() => setRealisticTiller(button.setting)}
                                     selected={realisticTiller === button.setting}
+                                >
+                                    {button.name}
+                                </SelectItem>
+                            ))}
+                        </SelectGroup>
+                    </div>
+
+                    <div className="py-4 flex flex-row justify-between items-center">
+                        <span className="text-lg text-gray-300 mr-1">Home Cockpit Mode</span>
+                        <SelectGroup>
+                            {homeCockpitButtons.map((button) => (
+                                <SelectItem
+                                    enabled
+                                    onSelect={() => setHomeCockpit(button.setting)}
+                                    selected={homeCockpit === button.setting}
                                 >
                                     {button.name}
                                 </SelectItem>
