@@ -88,13 +88,16 @@ export const DisplayUnit: React.FC<DisplayUnitProps> = (props) => {
         return (
             <></>
         );
-    } if (homeCockpit) {
+    }
+
+    if (homeCockpit) {
         return (
             <>
                 <div style={{ display: state === DisplayUnitState.On ? 'block' : 'none' }}>{props.children}</div>
             </>
         );
     }
+
     return (
         <>
             <div className="BacklightBleed" />
