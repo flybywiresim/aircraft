@@ -191,7 +191,7 @@ class EICASCommonDisplay extends Airliners.EICASTemplateElement {
     }
     refreshHomeCockpitMode() {
         const isHomeCockpit = SimVar.GetSimVarValue("L:A32NX_HOME_COCKPIT_ENABLED", "bool");
-        this.backlightBleed.style.visibility = (isHomeCockpit === 1) ? "hidden" : "visible";
+        this.backlightBleed.style.visibility = isHomeCockpit ? "hidden" : "visible";
     }
 }
 customElements.define("eicas-common-display", EICASCommonDisplay);
