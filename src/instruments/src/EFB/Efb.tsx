@@ -48,7 +48,7 @@ const ScreenLoading = () => (
     </div>
 );
 
-const ScreenEmpty = (isCharging: { isCharging: boolean }) => (
+const ScreenEmpty = ({ isCharging }: { isCharging: boolean }) => (
     <div className="flex justify-center items-center w-screen h-screen bg-theme-statusbar">
         {!isCharging && (
             <IconBatteryOff size={128} className="text-red-500" />

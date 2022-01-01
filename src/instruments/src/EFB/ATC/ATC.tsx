@@ -13,7 +13,7 @@ export declare class ATCInfoExtended extends apiClient.ATCInfo {
 export const ATC = () => {
     const [controllers, setControllers] = useState<ATCInfoExtended[]>();
     const [activeFrequency, setActiveFrequency] = useSplitSimVar('COM ACTIVE FREQUENCY:1', 'Hz', 'K:COM_RADIO_SET_HZ', 'Hz', 500);
-    const [stanbdyFrequency, setStandbyFrequency] = useSplitSimVar('COM STANDBY FREQUENCY:1', 'Hz', 'K:COM_RADIO_SET_HZ', 'Hz', 500);
+    const [stanbdyFrequency, setStandbyFrequency] = useSplitSimVar('COM STANDBY FREQUENCY:1', 'Hz', 'K:COM_STBY_RADIO_SET_HZ', 'Hz', 500);
     const [displayedActiveFrequency, setDisplayedActiveFrequency] = useState<string>();
     const [displayedStandbyFrequency, setDisplayedStandbyFrequency] = useState<string>();
     const [currentAtc, setCurrentAtc] = useState<ATCInfoExtended>();
