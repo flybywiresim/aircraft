@@ -1896,6 +1896,7 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
       throttleAxis[1]->applyDefaults();
       break;
     }
+
     case Events::A32NX_THROTTLE_MAPPING_LOAD_FROM_FILE: {
       cout << "WASM: event triggered: THROTTLE_MAPPING_LOAD_FROM_FILE" << endl;
       throttleAxis[0]->loadFromFile();
