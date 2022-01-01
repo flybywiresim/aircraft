@@ -123,7 +123,6 @@ struct SimData {
   SIMCONNECT_DATA_LATLONALT nav_gs_pos;
   double brakeLeftPosition;
   double brakeRightPosition;
-  double spoilerHandlePosition;
   double flapsHandleIndex;
   double gearHandlePosition;
 };
