@@ -20,6 +20,7 @@ export const AutoBrightness: React.FC<AutoBrightnessProps> = ({ bugsActive, chil
 
     const [targetBrightness, setTargetBrightness] = useState(isDaytimeRef.current ? dayBrightness : nightBrightness);
     const [currentBrightness, setCurrentBrightness] = useSimVar('L:A32NX_BARO_BRIGHTNESS', 'number', 10000);
+    const [homeCockpit] = useSimVar('L:A32NX_HOME_COCKPIT_ENABLED', 'bool', 200);
 
     const isBrightnessUpPressed = useRef(false);
     const isBrightnessDownPressed = useRef(false);
@@ -87,6 +88,14 @@ export const AutoBrightness: React.FC<AutoBrightnessProps> = ({ bugsActive, chil
         targetBrightness === currentBrightness ? null : 150,
         { additionalDeps: [currentBrightness, targetBrightness], runOnStart: false },
     );
+
+    if (homeCockpit === 1) {
+        return (
+            <g style={{ opacity: 1.0 }}>
+                {children}
+            </g>
+        );
+    }
 
     return (
         <g style={{ opacity: currentBrightness }}>
