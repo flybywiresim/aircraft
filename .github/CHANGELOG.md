@@ -4,6 +4,7 @@
 <!-- Use the following format below -->
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 ## 0.7.4
+1. [EFB] Added Reset to Defaults button to EFB throttle calibration page - @frankkopp (Cdr_Maverick#6475)
 1. [FBW] Intermediate support for aileron keyboard events - @aguther (Andreas Guther)
 1. [MODEL] Adjust heat effect on ENG1+2 - @bouveng (Johan Bouveng)
 1. [PFD] Fixed speed tape outline at low speeds - @beheh (Benedict Etzel)

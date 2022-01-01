@@ -4,7 +4,7 @@ import { useSimVar } from '@instruments/common/simVars';
 import { IconArrowLeft, IconArrowRight } from '@tabler/icons';
 import { SelectGroup, SelectItem } from '../Components/Form/Select';
 import { usePersistentNumberProperty, usePersistentProperty } from '../../Common/persistence';
-import Button from '../Components/Button/Button';
+import Button, { BUTTON_TYPE } from '../Components/Button/Button';
 import ThrottleConfig from './ThrottleConfig/ThrottleConfig';
 import SimpleInput from '../Components/Form/SimpleInput/SimpleInput';
 import { Navbar } from '../Components/Navbar';
@@ -22,7 +22,7 @@ const ControlSettings = ({ setShowSettings }) => (
     <div className="bg-navy-lighter divide-y my-4 divide-gray-700 flex flex-col rounded-xl p-6 shadow-lg">
         <div className="flex flex-row justify-between items-center">
             <span className="text-lg text-gray-300">Detents</span>
-            <Button className="bg-teal-light-contrast border-teal-light-contrast" text="Calibrate" onClick={() => setShowSettings(true)} />
+            <Button type={BUTTON_TYPE.NONE} className="bg-teal-light-contrast border-teal-light-contrast" text="Calibrate" onClick={() => setShowSettings(true)} />
         </div>
     </div>
 );
