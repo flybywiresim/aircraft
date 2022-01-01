@@ -1,18 +1,18 @@
-import React, { useEffect, useState } from 'react';
+import React, { FC, useEffect, useState } from 'react';
 
 import {
-    IconCornerDownLeft,
-    IconCornerDownRight,
-    IconArrowDown,
-    IconHandStop,
-    IconTruck,
-    IconBriefcase,
-    IconBuildingArch,
-    IconArchive,
-    IconPlug,
-    IconTir,
-    IconLayoutSidebar,
-} from '@tabler/icons';
+    DoorOpenFill,
+    Truck,
+    PersonPlusFill,
+    PlugFill,
+    HandbagFill,
+    ArchiveFill,
+    StopCircleFill,
+    TruckFlatbed,
+    ArrowReturnLeft,
+    ArrowReturnRight,
+    ArrowUp,
+} from 'react-bootstrap-icons';
 
 import useInterval from '@instruments/common/useInterval';
 import fuselage from '../Assets/320neo-outline-upright.svg';
@@ -32,14 +32,48 @@ import {
     updateButton,
 } from '../Store/features/buttons';
 
-import './Ground.scss';
-
 interface StatefulButton {
     id: string,
     state: string,
     callBack,
     value: number,
 }
+
+interface ServiceButtonWrapperProps {
+    className?: string,
+    x: number,
+    y: number
+}
+
+const ServiceButtonWrapper: FC<ServiceButtonWrapperProps> = ({ children, className, x, y }) => (
+    <div
+        className={`flex flex-col rounded-xl border-2 border-theme-accent divide-y-2 divide-theme-accent overflow-hidden ${className}`}
+        style={{ position: 'absolute', left: x, top: y }}
+    >
+        {children}
+    </div>
+);
+
+interface GroundServiceButtonProps {
+    className?: string,
+    name: string,
+    onClick: (e: React.MouseEvent<HTMLButtonElement>) => void,
+    disabled?: boolean,
+    id: string,
+}
+
+const GroundServiceButton: FC<GroundServiceButtonProps> = ({ children, className, name, onClick, disabled, id }) => (
+    <button
+        type="button"
+        id={id}
+        className={`flex flex-row items-center space-x-6 py-6 px-6 cursor-pointer ${className}`}
+        onClick={onClick}
+        disabled={disabled}
+    >
+        {children}
+        <h1 className="flex-shrink-0 text-2xl font-medium text-white">{name}</h1>
+    </button>
+);
 
 export const Ground = () => {
     const dispatch = useAppDispatch();
@@ -58,6 +92,7 @@ export const Ground = () => {
     const [pushBack, setPushBack] = useSplitSimVar('PUSHBACK STATE', 'enum', 'K:TOGGLE_PUSHBACK', 'bool', 1000);
     const [powerActive, setPowerActive] = useSplitSimVar('A:INTERACTIVE POINT OPEN:8', 'Percent over 100', 'K:REQUEST_POWER_SUPPLY', 'bool', 1000);
     const [rudderPosition] = useSimVar('A:RUDDER POSITION', 'number', 50);
+    const [brakeLeverPos, setBrakeLeverPos] = useSimVar('L:A32NX_PARK_BRAKE_LEVER_POS', 'Bool', 1000);
 
     const [pushBackWait, setPushbackWait] = useSimVar('Pushback Wait', 'bool', 100);
     const [pushBackAttached] = useSimVar('Pushback Attached', 'bool', 1000);
@@ -65,7 +100,7 @@ export const Ground = () => {
     const [tugDirection, setTugDirection] = useState(0);
     const [tugActive, setTugActive] = useState(false);
 
-    const buttonBlue = ' border-blue-500 bg-blue-500 hover:bg-blue-600 hover:border-blue-600 text-blue-darkest disabled:bg-grey-600';
+    const buttonBlue = ' hover:bg-blue-600 transition duration-200 disabled:bg-grey-600';
     const buttonActive = ' text-white bg-green-600 border-green-600';
 
     const STATE_WAITING = 'WAITING';
@@ -198,157 +233,147 @@ export const Ground = () => {
 
     return (
         <div className="flex relative flex-col flex-grow h-full">
-            <div>
-                <h1 className="font-bold">Ground</h1>
-            </div>
+            <h1 className="font-bold">Ground</h1>
 
             {/* TODO: Replace with JIT value */}
             <img className="inset-x-0 mx-auto h-full" style={{ width: '51rem' }} src={fuselage} alt="fuselage" />
 
-            <div className="grid absolute top-16 left-72 grid-cols-2 control-grid">
-                <div>
-                    <h1 className="pb-1 text-xl font-medium text-center text-white">Pax</h1>
-                    <Button
-                        onClick={(e) => handleClick(() => {
-                            setJetWayActive(1);
-                            setRampActive(1);
-                        }, e, jetWayActive, 'door-fwd-left')}
-                        className={applySelectedWithSync('w-32 ', 'jetway', jetWayActive, 'door-fwd-left')}
-                        type={BUTTON_TYPE.NONE}
-                        id="jetway"
-                    >
-                        <IconBuildingArch size="2.825rem" stroke="1.5" />
-                    </Button>
-                </div>
-                <div>
-                    <h1 className="pb-1 text-xl font-medium text-center text-white">Door Fwd</h1>
-                    <DoorToggle
-                        index={0}
-                        tugActive={tugActive}
-                        onClick={handleClick}
-                        selectionCallback={applySelectedWithSync}
-                        id="door-fwd-left"
-                        disabled={disabledButtons.includes('door-fwd-left')}
-                    />
-                </div>
-            </div>
-
-            <div className="grid absolute top-48 left-72 grid-cols-1 control-grid">
-                <div>
-                    <h1 className="pb-1 text-xl font-medium text-center text-white">Fuel</h1>
-                    <Button
-                        onClick={(e) => handleClick(() => setFuelingActive(1), e)}
-                        className={applySelectedWithSync('w-32', 'fuel', fuelingActive)}
-                        type={BUTTON_TYPE.NONE}
-                        id="fuel"
-                    >
-                        <IconTruck size="2.825rem" stroke="1.5" />
-                    </Button>
-                </div>
-            </div>
-
-            <div className="grid absolute top-16 right-72 grid-cols-2 control-grid">
-                <div>
-                    <h1 className="pb-1 text-xl font-medium text-center text-white">Baggage</h1>
-                    <Button
-                        onClick={(e) => handleClick(() => setCargoActive(1), e)}
-                        className={applySelectedWithSync('w-32', 'baggage', cargoActive)}
-                        type={BUTTON_TYPE.NONE}
-                        id="baggage"
-                    >
-                        <IconBriefcase size="2.825rem" stroke="1.5" />
-                    </Button>
-                </div>
-                <div>
-                    <h1 className="pb-1 text-xl font-medium text-center text-white">Ext. Power</h1>
-                    <Button
-                        onClick={(e) => handleClick(() => setPowerActive(1), e)}
-                        className={applySelectedWithSync('w-32', 'power', powerActive)}
-                        type={BUTTON_TYPE.NONE}
-                        id="power"
-                    >
-                        <IconPlug size="2.825rem" stroke="1.5" />
-                    </Button>
-                </div>
-            </div>
-
-            <div className="grid absolute right-72 bottom-36 grid-cols-2 control-grid">
-                <div>
-                    <h1 className="pb-1 text-xl font-medium text-center text-white">Door Aft</h1>
-                    <DoorToggle
-                        tugActive={tugActive}
-                        index={3}
-                        onClick={handleClick}
-                        selectionCallback={applySelectedWithSync}
-                        id="door-aft-right"
-                        disabled={disabledButtons.includes('door-aft-right')}
-                    />
-                </div>
-                <div>
-                    <h1 className="pb-1 text-xl font-medium text-center text-white">Catering</h1>
-                    <Button
-                        onClick={(e) => handleClick(() => setCateringActive(1), e, 'door-aft-right')}
-                        className={applySelectedWithSync('w-32', 'catering', cateringActive, 'door-aft-right')}
-                        type={BUTTON_TYPE.NONE}
-                        id="catering"
-                    >
-                        <IconArchive size="2.825rem" stroke="1.5" />
-                    </Button>
-                </div>
-            </div>
-
-            <div className="grid absolute bottom-2 left-0 grid-cols-3 ml-4 control-grid">
-                <div>
-                    <h1 className="pb-1 text-xl font-medium text-center text-white">Call Tug</h1>
-                    <Button
-                        id="tug-request"
-                        onClick={(e) => handlePushBackClick(() => togglePushback(true), e)}
-                        className={applySelectedWithSync('w-32', 'tug-request', pushBackAttached)}
-                        type={BUTTON_TYPE.NONE}
-                    >
-                        <IconTir size="2.825rem" stroke="1.5" />
-                    </Button>
-                </div>
-
-                <div className="stop">
-                    <h1 className="pb-1 text-xl font-medium text-center text-white">Pushback</h1>
-                    <Button
-                        id="stop"
-                        onClick={(e) => handlePushBackClick(() => {
-                            computeAndSetTugHeading(0);
-                            dispatch(setTugRequestOnly(true));
-                        }, e)}
-                        className={applySelected('w-32 stop bg-red-500 border-red-500 hover:bg-red-600 hover:border-red-600 text-blue-darkest')}
-                        type={BUTTON_TYPE.NONE}
-                    >
-                        <IconHandStop size="2.825rem" stroke="1.5" />
-                    </Button>
-                </div>
-
-                <Button
-                    id="down-left"
-                    type={BUTTON_TYPE.NONE}
-                    onClick={(e) => handlePushBackClick(() => computeAndSetTugHeading(90), e)}
-                    className={applySelected('w-32 down-left', 'down-left')}
+            <ServiceButtonWrapper x={64} y={64} className="">
+                <GroundServiceButton
+                    name="Connect Jet Bridge"
+                    onClick={(e) => handleClick(() => {
+                        setJetWayActive(1);
+                        setRampActive(1);
+                    }, e, jetWayActive, 'door-fwd-left')}
+                    className={applySelectedWithSync('', 'jetway', jetWayActive, 'door-fwd-left')}
+                    id="jetway"
                 >
-                    <IconCornerDownLeft size="2.825rem" stroke="1.5" />
-                </Button>
-                <Button
-                    id="down"
-                    type={BUTTON_TYPE.NONE}
-                    onClick={(e) => handlePushBackClick(() => computeAndSetTugHeading(0), e)}
-                    className={applySelected('down w-32', 'down')}
+                    <PersonPlusFill size={36} />
+                </GroundServiceButton>
+                <DoorToggle
+                    name="Door Fwd"
+                    index={0}
+                    tugActive={tugActive}
+                    onClick={handleClick}
+                    selectionCallback={applySelectedWithSync}
+                    id="door-fwd-left"
+                    disabled={disabledButtons.includes('door-fwd-left')}
+                />
+                <GroundServiceButton
+                    name="Call Fuel Truck"
+                    onClick={(e) => handleClick(() => setFuelingActive(1), e)}
+                    className={applySelectedWithSync('', 'fuel', fuelingActive)}
+                    id="fuel"
                 >
-                    <IconArrowDown size="2.825rem" stroke="1.5" />
-                </Button>
-                <Button
-                    id="down-right"
-                    type={BUTTON_TYPE.NONE}
-                    onClick={(e) => handlePushBackClick(() => computeAndSetTugHeading(270), e)}
-                    className={applySelected('w-32 down-right', 'down-right')}
+                    <Truck size={36} />
+                </GroundServiceButton>
+            </ServiceButtonWrapper>
+
+            <ServiceButtonWrapper x={750} y={64} className="">
+                <GroundServiceButton
+                    name={`${powerActive ? 'Disconnect' : 'Connect'} External Power`}
+                    onClick={(e) => handleClick(() => setPowerActive(1), e)}
+                    className={applySelectedWithSync('', 'power', powerActive)}
+                    id="power"
                 >
-                    <IconCornerDownRight size="2.825rem" stroke="1.5" />
-                </Button>
+                    <PlugFill size={36} />
+                </GroundServiceButton>
+                <GroundServiceButton
+                    name="Call Baggage Truck"
+                    onClick={(e) => handleClick(() => setCargoActive(1), e)}
+                    className={applySelectedWithSync('', 'baggage', cargoActive)}
+                    id="baggage"
+                >
+                    <HandbagFill size={36} />
+                </GroundServiceButton>
+            </ServiceButtonWrapper>
+
+            <ServiceButtonWrapper x={750} y={600} className="">
+                <DoorToggle
+                    tugActive={tugActive}
+                    name="Door Aft"
+                    index={3}
+                    onClick={handleClick}
+                    selectionCallback={applySelectedWithSync}
+                    id="door-aft-right"
+                    disabled={disabledButtons.includes('door-aft-right')}
+                />
+                <GroundServiceButton
+                    name="Call Catering Truck"
+                    onClick={(e) => handleClick(() => setCateringActive(1), e, 'door-aft-right')}
+                    className={applySelectedWithSync('', 'catering', cateringActive, 'door-aft-right')}
+                    id="catering"
+                >
+                    <ArchiveFill size={36} />
+                </GroundServiceButton>
+            </ServiceButtonWrapper>
+
+            <div className="flex absolute bottom-2 left-0 flex-col ml-4 space-y-4">
+                <div className="flex flex-row space-x-4">
+                    <div>
+                        <h1 className="pb-1 text-xl font-medium text-center text-white">Call Tug</h1>
+                        <Button
+                            id="tug-request"
+                            onClick={(e) => handlePushBackClick(() => togglePushback(true), e)}
+                            className={applySelectedWithSync('w-32 h-20 bg-blue-500 hover:bg-blue-600 transition duration-200 border-none', 'tug-request', pushBackAttached)}
+                            type={BUTTON_TYPE.NONE}
+                        >
+                            <TruckFlatbed size="2.825rem" />
+                        </Button>
+                    </div>
+                    <div>
+                        <h1 className="pb-1 text-xl font-medium text-center text-white">Pushback</h1>
+                        <Button
+                            id="stop"
+                            onClick={(e) => handlePushBackClick(() => {
+                                computeAndSetTugHeading(0);
+                                dispatch(setTugRequestOnly(true));
+                            }, e)}
+                            className={applySelected('w-32 h-20 border-none bg-red-500 border-red-500 hover:bg-red-600 hover:border-red-600')}
+                            type={BUTTON_TYPE.NONE}
+                        >
+                            <StopCircleFill size="2.825rem" />
+                        </Button>
+                    </div>
+                    <div>
+                        <h1 className="pb-1 text-xl font-medium text-center text-white">Parking Brake</h1>
+                        <Button
+                            id="parking-brake"
+                            onClick={() => setBrakeLeverPos((old) => !old)}
+                            className={applySelected(`w-32 h-20 border-none ${brakeLeverPos ? 'bg-white text-red-500' : 'bg-red-500 hover:bg-red-600 transition duration-200 text-white'}`)}
+                            type={BUTTON_TYPE.NONE}
+                        >
+                            <h1 className="font-bold text-current">P</h1>
+                        </Button>
+                    </div>
+                </div>
+
+                <div className="flex flex-row space-x-4">
+                    <Button
+                        id="down-left"
+                        type={BUTTON_TYPE.NONE}
+                        onClick={(e) => handlePushBackClick(() => computeAndSetTugHeading(90), e)}
+                        className={applySelected('w-32 h-20 bg-blue-500 hover:bg-blue-600 transition duration-200 border-none', 'down-left')}
+                    >
+                        <ArrowReturnLeft size="2.825rem" />
+                    </Button>
+                    <Button
+                        id="down"
+                        type={BUTTON_TYPE.NONE}
+                        onClick={(e) => handlePushBackClick(() => computeAndSetTugHeading(0), e)}
+                        className={applySelected('w-32 h-20 bg-blue-500 hover:bg-blue-600 transition duration-200 border-none', 'down')}
+                    >
+                        <ArrowUp size="2.825rem" />
+                    </Button>
+                    <Button
+                        id="down-right"
+                        type={BUTTON_TYPE.NONE}
+                        onClick={(e) => handlePushBackClick(() => computeAndSetTugHeading(270), e)}
+                        className={applySelected('w-32 h-20 bg-blue-500 hover:bg-blue-600 transition duration-200 border-none', 'down-right')}
+                    >
+                        <ArrowReturnRight size="2.825rem" />
+                    </Button>
+                </div>
             </div>
         </div>
     );
@@ -360,36 +385,44 @@ type DoorToggleProps = {
     selectionCallback: (className: string, id: string, doorState: any, disabledId: string) => string,
     id: string,
     tugActive: boolean,
-    disabled?: boolean
+    disabled?: boolean,
+    name: string,
 }
 
-const DoorToggle = (props: DoorToggleProps) => {
-    const [doorState, setDoorState] = useSplitSimVar(`A:INTERACTIVE POINT OPEN:${props.index}`, 'Percent over 100', 'K:TOGGLE_AIRCRAFT_EXIT', 'Enum', 500);
+const DoorToggle = ({ index, onClick, selectionCallback, id, tugActive, disabled, name }: DoorToggleProps) => {
+    const [doorState, setDoorState] = useSplitSimVar(
+        `A:INTERACTIVE POINT OPEN:${index}`,
+        'Percent over 100',
+        'K:TOGGLE_AIRCRAFT_EXIT',
+        'Enum',
+        500,
+    );
     const [previousDoorState, setPreviousDoorState] = useState(doorState);
 
     useEffect(() => {
-        if (props.tugActive && previousDoorState) {
-            setDoorState(props.index + 1);
+        if (tugActive && previousDoorState) {
+            setDoorState(index + 1);
             setPreviousDoorState(!previousDoorState);
-        } else if (props.tugActive) {
+        } else if (tugActive) {
             setPreviousDoorState(false);
         } else {
             setPreviousDoorState(doorState);
         }
-    }, [props.tugActive, props.index, previousDoorState, setDoorState, doorState]);
+    }, [tugActive, index, previousDoorState, setDoorState, doorState]);
 
     return (
-        <Button
-            onClick={(e) => props.onClick(() => {
-                setDoorState(props.index + 1);
+        // FIXME
+        <GroundServiceButton
+            name={name}
+            onClick={(e) => onClick(() => {
+                setDoorState(index + 1);
                 setPreviousDoorState(true);
             }, e)}
-            className={props.selectionCallback('w-32', props.id, doorState, props.id)}
-            type={BUTTON_TYPE.NONE}
-            id={props.id}
-            disabled={props.disabled}
+            className={selectionCallback('', id, doorState, id)}
+            disabled={disabled}
+            id={id}
         >
-            <IconLayoutSidebar size="2.825rem" stroke="1.5" />
-        </Button>
+            <DoorOpenFill size={36} />
+        </GroundServiceButton>
     );
 };
