@@ -1058,7 +1058,6 @@ class CDUPerformancePage {
             mcdu.accelerationAltitude = accAlt;
             mcdu.accelerationAltitudeIsPilotEntered = false;
             SimVar.SetSimVarValue("L:AIRLINER_ACC_ALT", "Number", accAlt);
-
         }
     }
     static async UpdateEngOutAccFromOrigin(mcdu) {
