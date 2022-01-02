@@ -956,7 +956,6 @@ class CDUPerformancePage {
             } else {
                 scratchpadCallback();
             }
-
         };
         let flpRetrCell = "---";
         const flapSpeed = mcdu.computedVfs;
