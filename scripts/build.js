@@ -82,3 +82,28 @@ fs.writeFileSync(path.join(A32NX, 'manifest.json'), JSON.stringify({
     package_version: require('../package.json').version + `-${GIT_COMMIT_SHA}`,
     total_package_size: totalPackageSize.toString().padStart(20, '0'),
 }, null, 2));
+
+const SRC_FOLDER = path.resolve(__dirname, '..', 'src');
+const TARGET_DSS = '/SimObjects/AirPlanes/FlyByWire_A320_NEO/TEXTURE/A320NEO_COCKPIT_DECALSTEXT_ALBD.TIF.dds';
+
+if (edition !== 'stable' && GIT_BRANCH !== 'master') {
+    const RED_DDS = '/Textures/decals 4k/A320NEO_COCKPIT_DECALSTEXT_ALBD.TIF-red.dds';
+    // destination will be created or overwritten by default.
+    fs.copyFile(path.join(SRC_FOLDER, RED_DDS), path.join(A32NX, TARGET_DSS),
+        (err) => {
+            if (err) {
+                throw err;
+            }
+            console.log('copying ' + RED_DDS + ` TO ` + TARGET_DSS + "failed: " + err);
+        });
+} else {
+    const YELLOW_DDS = '/Textures/decals 4k/A320NEO_COCKPIT_DECALSTEXT_ALBD.TIF-yellow.dds';
+    // destination will be created or overwritten by default.
+    fs.copyFile(path.join(SRC_FOLDER, YELLOW_DDS), path.join(A32NX, TARGET_DSS),
+        (err) => {
+            if (err) {
+                throw err;
+            }
+            console.log('copying ' + YELLOW_DDS + ` TO ` + TARGET_DSS + "failed: " + err);
+        });
+}
