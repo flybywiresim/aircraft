@@ -485,6 +485,10 @@ const ATSUAOCPage = () => {
     const { simbriefUserId, setSimbriefUserId } = useContext(SimbriefUserIdContext);
     const [simbriefDisplay, setSimbriefDisplay] = useState(simbriefUserId);
 
+    const [hoppieSystem, setHoppieSystem] = usePersistentProperty('CONFIG_HOPPIE_SYSTEM', 'NONE');
+    const [hoppieUserId, setHoppieUserId] = usePersistentProperty('CONFIG_HOPPIE_USERID');
+    const [hoppieError, setHoppieError] = useState(false);
+
     function getSimbriefUserData(value: string): Promise<any> {
         const SIMBRIEF_URL = 'https://www.simbrief.com/api/xml.fetcher.php?json=1';
 
