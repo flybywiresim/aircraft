@@ -696,6 +696,20 @@ const ATSUAOCPage = () => {
                     />
                 </div>
             </div>
+            <div className="py-4 flex flex-row justify-between items-center">
+                <span className="text-lg text-gray-300">Hoppie Online Network</span>
+                <SelectGroup>
+                    {hoppieSystemButtons.map((button) => (
+                        <SelectItem
+                            enabled
+                            onSelect={() => setHoppieSystem(button.setting)}
+                            selected={hoppieSystem === button.setting}
+                        >
+                            {button.name}
+                        </SelectItem>
+                    ))}
+                </SelectGroup>
+            </div>
         </div>
     );
 };
