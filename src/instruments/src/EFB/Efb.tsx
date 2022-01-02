@@ -22,7 +22,7 @@ import { Failures } from './Failures/Failures';
 
 import { clearEfbState, useAppDispatch, useAppSelector } from './Store/store';
 
-import { fetchSimbriefDataAction, initialState as simbriefInitialState } from './Store/features/simbrief';
+import { fetchSimbriefDataAction, initialState as simbriefInitialState } from './Store/features/simBrief';
 
 import { NotificationsContainer, Notification } from './UIMessages/Notification';
 import { FbwLogo } from './Assets/FbwLogo';
