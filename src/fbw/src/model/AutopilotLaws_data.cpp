@@ -154,10 +154,10 @@ AutopilotLawsModelClass::Parameters_AutopilotLaws_T AutopilotLawsModelClass::Aut
   { 100.0, 150.0, 200.0, 250.0, 300.0, 400.0, 500.0 },
 
 
-  { 0.0, 50.0, 100.0, 1000.0, 2500.0 },
-
-
   { 100.0, 150.0, 200.0, 250.0, 300.0, 400.0, 500.0 },
+
+
+  { 0.0, 50.0, 100.0, 1000.0, 2500.0 },
 
 
   { 0.0, 50.0, 100.0, 200.0, 1000.0, 2500.0 },
@@ -167,6 +167,8 @@ AutopilotLawsModelClass::Parameters_AutopilotLaws_T AutopilotLawsModelClass::Aut
   1.0,
 
   1.0,
+
+  2.0,
 
   2.0,
 
@@ -396,10 +398,10 @@ AutopilotLawsModelClass::Parameters_AutopilotLaws_T AutopilotLawsModelClass::Aut
   { 1.6, 1.6, 2.0, 2.8, 3.2, 4.2, 4.5 },
 
 
-  { 3.3, 3.3, 3.5, 7.8, 15.0 },
-
-
   { 1.6, 1.6, 2.0, 2.8, 3.2, 4.2, 4.5 },
+
+
+  { 3.6, 3.6, 4.1, 7.8, 15.0 },
 
 
   { 0.0, -0.02, -0.25, -0.5, -1.6, -3.0 },
@@ -508,6 +510,26 @@ AutopilotLawsModelClass::Parameters_AutopilotLaws_T AutopilotLawsModelClass::Aut
 
   0.4,
 
+  -1.0,
+
+  -1.0,
+
+  1.0,
+
+  1.0,
+
+  360.0,
+
+  360.0,
+
+  360.0,
+
+  1.1,
+
+  0.017453292519943295,
+
+  0.05,
+
   0.0,
 
   0.0,
@@ -524,7 +546,7 @@ AutopilotLawsModelClass::Parameters_AutopilotLaws_T AutopilotLawsModelClass::Aut
 
   -15.0,
 
-  1.2,
+  1.8,
 
   -1.0,
 
@@ -742,9 +764,9 @@ AutopilotLawsModelClass::Parameters_AutopilotLaws_T AutopilotLawsModelClass::Aut
 
   1200.0,
 
-  60.0,
+  70.0,
 
-  -60.0,
+  -70.0,
 
   0.1,
 
@@ -754,7 +776,7 @@ AutopilotLawsModelClass::Parameters_AutopilotLaws_T AutopilotLawsModelClass::Aut
 
   360.0,
 
-  1.5,
+  2.5,
 
   -1.0,
 
