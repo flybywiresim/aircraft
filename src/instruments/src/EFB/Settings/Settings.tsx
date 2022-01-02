@@ -710,6 +710,24 @@ const ATSUAOCPage = () => {
                     ))}
                 </SelectGroup>
             </div>
+            <div className="py-4 flex flex-row justify-between items-center">
+                <span className="text-lg text-gray-300">
+                    Hoppie User ID
+                    <span className={`${!hoppieError && 'hidden'} text-red-600`}>
+                        <span className="text-white"> | </span>
+                        Hoppie Error
+                    </span>
+                </span>
+                <div className="flex flex-row items-center">
+                    <SimpleInput
+                        className="w-30"
+                        value={hoppieUserId}
+                        noLabel
+                        onBlur={(value) => handleHoppieUsernameInput(value.replace(/\s/g, ''))}
+                        onChange={(value) => setHoppieUserId(value)}
+                    />
+                </div>
+            </div>
         </div>
     );
 };
