@@ -545,6 +545,21 @@ const ATSUAOCPage = () => {
         });
     }
 
+    function getHoppieResponse(value: string): Promise<any> {
+        // cors-anywhere is needed to extend the the HTTP headers with additional entries that are required by the Browser-API
+        const CORS_PROXY_URL = 'http://127.0.0.1:65512/';
+        const HOPPIE_URL = 'http://www.hoppie.nl/acars/system/connect.html?from=test&to=ALL-CALLSIGNS&type=ping';
+
+        if (!value) {
+            throw new Error('No Hoppie user ID provided');
+        }
+
+        const apiUrl = `${CORS_PROXY_URL}${HOPPIE_URL}&logon=${value}`;
+
+        return fetch(apiUrl)
+            .then((response) => response.text());
+    }
+
     const atisSourceButtons: ButtonType[] = [
         { name: 'FAA (US)', setting: 'FAA' },
         { name: 'PilotEdge', setting: 'PILOTEDGE' },
