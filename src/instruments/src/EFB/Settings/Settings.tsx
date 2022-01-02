@@ -560,6 +560,24 @@ const ATSUAOCPage = () => {
             .then((response) => response.text());
     }
 
+    function validateHoppieUserId(value: string):Promise<any> {
+        return new Promise((resolve, reject) => {
+            if (!value) {
+                reject(new Error('No Hoppie user ID provided'));
+            }
+            getHoppieResponse(value)
+                .then((response) => {
+                    if (response !== 'ok') {
+                        reject(new Error(`Error: Unknown user ID: ${response}`));
+                    }
+                    resolve(value);
+                })
+                .catch((_error) => {
+                    reject(_error);
+                });
+        });
+    }
+
     const atisSourceButtons: ButtonType[] = [
         { name: 'FAA (US)', setting: 'FAA' },
         { name: 'PilotEdge', setting: 'PILOTEDGE' },
