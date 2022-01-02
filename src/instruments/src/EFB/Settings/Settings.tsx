@@ -578,6 +578,18 @@ const ATSUAOCPage = () => {
         });
     }
 
+    function handleHoppieUsernameInput(value: string) {
+        validateHoppieUserId(value).then((response) => {
+            setHoppieUserId(response);
+            setHoppieError(false);
+        }).catch(() => {
+            setHoppieError(true);
+            setTimeout(() => {
+                setHoppieError(false);
+            }, 4000);
+        });
+    }
+
     const atisSourceButtons: ButtonType[] = [
         { name: 'FAA (US)', setting: 'FAA' },
         { name: 'PilotEdge', setting: 'PILOTEDGE' },
