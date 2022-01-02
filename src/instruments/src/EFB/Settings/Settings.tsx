@@ -564,6 +564,12 @@ const ATSUAOCPage = () => {
         { name: 'NOAA', setting: 'NOAA' },
     ];
 
+    const hoppieSystemButtons: ButtonType[] = [
+        { name: 'NONE', setting: 'NONE' },
+        { name: 'IVAO', setting: 'IVAO' },
+        { name: 'VATSIM', setting: 'VATSIM' },
+    ];
+
     function handleTelexToggle(toggleValue: boolean) {
         if (toggleValue) {
             new PopUp().showPopUp(
