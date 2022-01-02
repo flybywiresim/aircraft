@@ -5,7 +5,7 @@ import thunk from 'redux-thunk';
 import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
 import todCalculatorReducer from './features/todCalculator';
 import buttonsReducer from './features/buttons';
-import simbriefReducer from './features/simbrief';
+import simbriefReducer from './features/simBrief';
 import performanceReducer from './features/performance';
 
 export type TypedAction<T> = { type: string, payload: T };
