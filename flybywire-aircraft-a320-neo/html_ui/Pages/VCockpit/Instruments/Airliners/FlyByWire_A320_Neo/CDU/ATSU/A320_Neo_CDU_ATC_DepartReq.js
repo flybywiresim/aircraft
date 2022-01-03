@@ -1,18 +1,55 @@
 class CDUAtcDepartReq {
-    static ShowPage(mcdu, store = {"gate": "", "atis": "", "freeText": ""}) {
+    static ShowPage(mcdu) {
         mcdu.clearDisplay();
 
         let flightNo = "______[color]amber";
         let fromTo = "____|____[color]amber";
-        if (store["gate"] == "") {
-            store["gate"] = "___[color]amber";
+        const atis = new CDU_SingleValueField(mcdu,
+            "string",
+            mcdu.preDepartureClearance.atis,
+            {
+                clearable: true,
+                emptyValue: "_[color]amber",
+                suffix: "[color]cyan",
+                maxLength: 1,
+                isValid: ((value) => {
+                    return true === isNaN(value) && "+" !== value && "-" !== value && "/" !== value;
+                })
+            },
+            (value) => {
+                mcdu.preDepartureClearance.atis = value;
+                CDUAtcDepartReq.ShowPage1(mcdu);
         }
-        if (store["atis"] == "") {
-            store["atis"] = "_[color]amber";
+        );
+        const gate = new CDU_SingleValueField(mcdu,
+            "string",
+            mcdu.preDepartureClearance.gate,
+            {
+                clearable: true,
+                emptyValue: "[\xa0\xa0\xa0\xa0][color]cyan",
+                suffix: "[color]cyan",
+                maxLength: 4
+            },
+            (value) => {
+                mcdu.preDepartureClearance.gate = value;
+                CDUAtcDepartReq.ShowPage1(mcdu);
         }
-        if (store["freeText"] == "") {
-            store["freeText"] = "[\xa0\xa0\xa0][color]cyan";
+        );
+        const freetext = new CDU_SingleValueField(mcdu,
+            "string",
+            mcdu.preDepartureClearance.freetext,
+            {
+                clearable: true,
+                emptyValue: "[\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0][color]cyan",
+                suffix: "[color]white",
+                maxLength: 22
+            },
+            (value) => {
+                mcdu.preDepartureClearance.freetext = value;
+                CDUAtcDepartReq.ShowPage1(mcdu);
         }
+        );
+
         if (SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC")) {
             flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC") + "[color]green";
         }
@@ -27,43 +64,15 @@ class CDUAtcDepartReq {
             ["FROM/TO"],
             [fromTo],
             ["GATE", "ATIS"],
-            [store["gate"], store["atis"]],
+            [gate, atis],
             ["---------FREE TEXT---------"],
-            [store["freeText"]],
-            [""],
-            [""],
-            ["\xa0ATC MENU", "ATC DEPART\xa0[color]inop"],
-            ["<RETURN", "REQ DISPL\xa0[color]inop"]
+            [freetext],
         ]);
 
-        mcdu.leftInputDelay[2] = () => {
+        mcdu.rightInputDelay[4] = () => {
             return mcdu.getDelaySwitchPage();
         };
-        mcdu.onLeftInput[2] = (value) => {
-            if (value != "") {
-                store["gate"] = value + "[color]cyan";
-            }
-            CDUAtcDepartReq.ShowPage(mcdu, store);
-        };
-
-        mcdu.rightInputDelay[2] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
-        mcdu.onRightInput[2] = (value) => {
-            if (value != "") {
-                store["atis"] = value + "[color]cyan";
-            }
-            CDUAtcDepartReq.ShowPage(mcdu, store);
-        };
-
-        mcdu.leftInputDelay[3] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
-        mcdu.onLeftInput[3] = (value) => {
-            if (value != "") {
-                store["freeText"] = "[" + value + "][color]cyan";
-            }
-            CDUAtcDepartReq.ShowPage(mcdu, store);
+        mcdu.onRightInput[4] = () => {
         };
 
         mcdu.leftInputDelay[5] = () => {
