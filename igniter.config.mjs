@@ -4,6 +4,7 @@ import { getInstrumentsIgniterTasks } from './src/instruments/buildSrc/igniter/t
 export default new TaskOfTasks('a32nx', [
     new TaskOfTasks('build', [
         new TaskOfTasks('instruments', getInstrumentsIgniterTasks(), true),
+        new ExecTask('atsu','npm run build:atsu', ['src/atsu', 'flybywire-aircraft-a320-neo/html_ui/JS/atsu']),
         new ExecTask('failures','npm run build:failures', ['src/failures', 'flybywire-aircraft-a320-neo/html_ui/JS/generated/failures.js']),
         new ExecTask('behavior','node src/behavior/build.js', ['src/behavior', 'flybywire-aircraft-a320-neo/ModelBehaviorDefs/A32NX/generated']),
         new ExecTask('model','node src/model/build.js', ['src/model', 'flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/model']),

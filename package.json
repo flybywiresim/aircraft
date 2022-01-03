@@ -8,6 +8,7 @@
     "prettier": "prettier --write **/*.json **/*.yml src/instruments/**/*.css",
     "serve:efb": "cd src/instruments/src/EFB/ && rollup -wc ./rollup.development.config.js",
     "watch:instruments": "rollup -wc src/instruments/buildSrc/simulatorBuild.mjs",
+    "build:atsu": "rollup -c src/atsu/rollup.config.js",
     "build:fbw": "cd src/fbw && ./build.sh",
     "build:fadec": "cd src/fadec && ./build.sh",
     "build:failures": "rollup -c src/failures/rollup.config.js",
