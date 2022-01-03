@@ -45,15 +45,6 @@ export class HoppieConnector {
         return `${HoppieConnector.corsProxyUrl + HoppieConnector.hoppieUrl}logon=${logon}&type${type}&from=${from}&to=${to}`;
     }
 
-    public getAllAtcStations() {
-        const url = HoppieConnector.createBaseUrl('ping', this.callsign, 'ALL-CALLSIGNS');
-        if (url.length === 0) {
-            return [];
-        }
-
-        return [];
-    }
-
     public setCallsign(callsign: string) {
         this.callsign = callsign;
     }
