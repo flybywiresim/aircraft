@@ -53,6 +53,8 @@ let skipPrinter = false;
 let httpPort = 8125;
 let websocketPort = 8080;
 let debug = false;
+let fontSize = 19;
+let paperSize = 'A4';
 
 const args = [...process.argv];
 args.splice(0, 2);
@@ -69,7 +71,7 @@ for (const arg of args) {
     if (arg.startsWith('--http-port=')) {
         httpPort = parseInt(arg.split('=')[1], 10);
         if (!httpPort || httpPort < 0 || httpPort > 65353) {
-            console.error(`Invalid http port: ${arg}`);
+            console.error(`Invalid http port: ${arg.split('=')[1]}`);
             process.exit(1);
         }
         continue;
@@ -77,7 +79,23 @@ for (const arg of args) {
     if (arg.startsWith('--websocket-port=')) {
         websocketPort = parseInt(arg.split('=')[1], 10);
         if (!websocketPort || websocketPort < 0 || websocketPort > 65353) {
-            console.error(`Invalid websocket port: ${arg}`);
+            console.error(`Invalid websocket port: ${arg.split('=')[1]}`);
+            process.exit(1);
+        }
+        continue;
+    }
+    if (arg.startsWith('--font-size=')) {
+        fontSize = parseInt(arg.split('=')[1], 10);
+        if (!fontSize || fontSize < 1) {
+            console.error(`Invalid font size: ${arg.split('=')[1]}`);
+            process.exit(1);
+        }
+        continue;
+    }
+    if (arg.startsWith('--paper-size=')) {
+        paperSize = arg.split('=')[1].toUpperCase();
+        if (!validPaperSize(paperSize)) {
+            console.error(`Invalid paper size: ${arg.split('=')[1]}`);
             process.exit(1);
         }
         continue;
@@ -94,6 +112,8 @@ for (const arg of args) {
     printUsage();
     process.exit(1);
 }
+
+const margin = paperSize === 'A4' ? 30 : 10;
 
 if (printerName != null) {
     print.getPrinters().then((printers) => {
@@ -257,7 +277,14 @@ function start() {
                         }
                         console.log(`\nCan't connect? You may need to open TCP ports ${httpPort} and ${websocketPort} on your firewall.`);
                         console.log('See the documentation for more information:');
-                        console.log('\x1b[47m\x1b[30mhttps://docs.flybywiresim.com/fbw-a32nx/feature-guides/web-mcdu/#firewall-configuration\x1b[0m');
+                        console.log('\x1b[47m\x1b[30mhttps://docs.flybywiresim.com/fbw-a32nx/feature-guides/web-mcdu/#firewall-configuration\x1b[0m\n');
+
+                        if (selectedPrinter) {
+                            console.log(`Printer: ${selectedPrinter.name}`);
+                            console.log(`Font size: ${fontSize}`);
+                            console.log(`Paper size: ${paperSize}`);
+                        }
+
                         isMcdu = true;
                         return;
                     }
@@ -272,13 +299,14 @@ function start() {
                     if (message.startsWith('print:')) {
                         const { lines } = JSON.parse(message.substring(6));
                         if (selectedPrinter) {
-                            const doc = new PDFDocument();
+                            const doc = new PDFDocument({ size: paperSize, margin });
                             const pdfPath = path.join(os.tmpdir(), 'a32nxPrint.pdf');
                             doc.pipe(fs.createWriteStream(pdfPath));
-                            doc.font(path.join(__dirname, 'client/build/ECAMFontRegular.ttf'));
-                            doc.fontSize(19);
+                            doc.font(path.join(__dirname, 'client/build/RobotoMono-Bold.ttf'));
+                            doc.fontSize(fontSize);
                             for (let i = 0; i < lines.length; i++) {
-                                doc.text(lines[i], 36, 36 + (19 * i));
+                                doc.text(lines[i], { align: 'left' });
+                                doc.moveDown();
                             }
                             doc.end();
                             print.print(pdfPath, { printer: selectedPrinter.name, sumatraPdfPath });
@@ -304,9 +332,11 @@ function printUsage() {
     console.log('server [options]');
     console.log('\nOptions:');
     console.log('--debug              shows full error details and logs websocket traffic');
+    console.log('--font-size=...      sets font size for printing (default: 19)');
     console.log('-h, --help           print command line options');
     console.log('--http-port=...      sets port for http server (default: 8125)');
     console.log('--no-printer         skips prompt to select printer');
+    console.log('--paper-size=...     sets paper size for printing (default: A4)');
     console.log('--printer=...        enables printing to the specified printer');
     console.log('--websocket-port=... sets port for websocket server (default: 8080)');
 
@@ -342,4 +372,21 @@ function pressAnyKey(exitCode) {
     process.stdin.once('data', () => {
         process.exit(exitCode);
     });
+}
+
+/**
+ * Checks the paper size against valid paper sizes of the pdfkit library.
+ * @param {string} size
+ * @returns {boolean}
+ */
+function validPaperSize(size) {
+    return !!(size.match(/^[ABC]\d\d?$/)
+                || size.match(/^S?RA\d\d?$/)
+                || size === 'EXECUTIVE'
+                || size === 'LEGAL'
+                || size === 'LETTER'
+                || size === 'TABLOID'
+                || size === '4A0'
+                || size === '2A0'
+                || size === 'FOLIO');
 }
