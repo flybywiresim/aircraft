@@ -528,7 +528,11 @@ AutopilotLawsModelClass::Parameters_AutopilotLaws_T AutopilotLawsModelClass::Aut
 
   0.017453292519943295,
 
-  0.05,
+  0.2,
+
+  15.0,
+
+  -15.0,
 
   0.0,
 

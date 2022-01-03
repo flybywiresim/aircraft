@@ -336,6 +336,8 @@ class AutopilotLawsModelClass
     real_T Gain4_Gain;
     real_T Gain1_Gain_b;
     real_T Gain2_Gain_g;
+    real_T Saturation1_UpperSat;
+    real_T Saturation1_LowerSat;
     real_T Constant3_Value_h;
     real_T beta_Value;
     real_T beta_Value_e;
@@ -369,8 +371,8 @@ class AutopilotLawsModelClass
     real_T Gain5_Gain_l;
     real_T Y_Y0;
     real_T Gain1_Gain_bs;
-    real_T Saturation1_UpperSat;
-    real_T Saturation1_LowerSat;
+    real_T Saturation1_UpperSat_a;
+    real_T Saturation1_LowerSat_i;
     real_T Constant1_Value_h;
     real_T Constant_Value_p0;
     real_T Gain6_Gain_n;

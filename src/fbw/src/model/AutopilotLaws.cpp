@@ -1025,9 +1025,14 @@ void AutopilotLawsModelClass::step()
     AutopilotLaws_DWork.DelayInput1_DSTATE = (std::sin(AutopilotLaws_P.Gain1_Gain_b * rtb_GainTheta) *
       AutopilotLaws_U.in.data.V_gnd_kn * AutopilotLaws_P.Gain2_Gain_g + b_L * look1_binlxpw
       (AutopilotLaws_U.in.data.V_tas_kn, AutopilotLaws_P.ScheduledGain2_BreakpointsForDimension1,
-       AutopilotLaws_P.ScheduledGain2_Table, 6U) * AutopilotLaws_P.Gain4_Gain) * look1_binlxpw
+       AutopilotLaws_P.ScheduledGain2_Table, 6U) * AutopilotLaws_P.Gain4_Gain * look1_binlxpw
       (AutopilotLaws_U.in.data.H_radio_ft, AutopilotLaws_P.ScheduledGain_BreakpointsForDimension1_e,
-       AutopilotLaws_P.ScheduledGain_Table_p, 4U) + distance_m;
+       AutopilotLaws_P.ScheduledGain_Table_p, 4U)) + distance_m;
+    if (AutopilotLaws_DWork.DelayInput1_DSTATE > AutopilotLaws_P.Saturation1_UpperSat) {
+      AutopilotLaws_DWork.DelayInput1_DSTATE = AutopilotLaws_P.Saturation1_UpperSat;
+    } else if (AutopilotLaws_DWork.DelayInput1_DSTATE < AutopilotLaws_P.Saturation1_LowerSat) {
+      AutopilotLaws_DWork.DelayInput1_DSTATE = AutopilotLaws_P.Saturation1_LowerSat;
+    }
     break;
 
    default:
@@ -1217,10 +1222,10 @@ void AutopilotLawsModelClass::step()
   if (AutopilotLaws_Y.out.input.ALT_soft_mode_active) {
     AutopilotLaws_DWork.DelayInput1_DSTATE = (AutopilotLaws_Y.out.input.V_c_kn - AutopilotLaws_Y.out.data.V_ias_kn) *
       AutopilotLaws_P.Gain1_Gain_bs;
-    if (AutopilotLaws_DWork.DelayInput1_DSTATE > AutopilotLaws_P.Saturation1_UpperSat) {
-      AutopilotLaws_DWork.DelayInput1_DSTATE = AutopilotLaws_P.Saturation1_UpperSat;
-    } else if (AutopilotLaws_DWork.DelayInput1_DSTATE < AutopilotLaws_P.Saturation1_LowerSat) {
-      AutopilotLaws_DWork.DelayInput1_DSTATE = AutopilotLaws_P.Saturation1_LowerSat;
+    if (AutopilotLaws_DWork.DelayInput1_DSTATE > AutopilotLaws_P.Saturation1_UpperSat_a) {
+      AutopilotLaws_DWork.DelayInput1_DSTATE = AutopilotLaws_P.Saturation1_UpperSat_a;
+    } else if (AutopilotLaws_DWork.DelayInput1_DSTATE < AutopilotLaws_P.Saturation1_LowerSat_i) {
+      AutopilotLaws_DWork.DelayInput1_DSTATE = AutopilotLaws_P.Saturation1_LowerSat_i;
     }
   } else {
     AutopilotLaws_DWork.DelayInput1_DSTATE = AutopilotLaws_P.Constant1_Value_h;
