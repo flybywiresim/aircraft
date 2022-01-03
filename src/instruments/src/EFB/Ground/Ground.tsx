@@ -11,7 +11,7 @@ import {
     TruckFlatbed,
     ArrowReturnLeft,
     ArrowReturnRight,
-    ArrowUp,
+    ArrowDown,
 } from 'react-bootstrap-icons';
 
 import useInterval from '@instruments/common/useInterval';
@@ -363,7 +363,7 @@ export const Ground = () => {
                         onClick={(e) => handlePushBackClick(() => computeAndSetTugHeading(0), e)}
                         className={applySelected('w-32 h-20 bg-blue-500 hover:bg-blue-600 transition duration-200 border-none', 'down')}
                     >
-                        <ArrowUp size="2.825rem" />
+                        <ArrowDown size="2.825rem" />
                     </Button>
                     <Button
                         id="down-right"
@@ -411,7 +411,6 @@ const DoorToggle = ({ index, onClick, selectionCallback, id, tugActive, disabled
     }, [tugActive, index, previousDoorState, setDoorState, doorState]);
 
     return (
-        // FIXME
         <GroundServiceButton
             name={name}
             onClick={(e) => onClick(() => {

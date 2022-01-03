@@ -14,11 +14,12 @@ export function getSimbriefData(simbriefUserId: string): Promise<ISimbriefData> 
     simbriefApiUrl.search = simbriefApiParams.toString();
 
     return fetch(simbriefApiUrl.toString(), getRequestData)
-        .then((res) => res.json())
-        .then(
-            (result: any) => simbriefDataParser(result),
-            () => EmptyISimbriefData,
-        );
+        .then((res) => {
+            if (!res.ok) {
+                return res.json().then((json) => Promise.reject(new Error(json.fetch.status)));
+            }
+            return res.json().then((json) => simbriefDataParser(json));
+        });
 }
 
 function simbriefDataParser(simbriefJson: any): ISimbriefData {

@@ -122,12 +122,12 @@ export const LoadSheetWidget = () => {
                         onClick={() => {
                             fetchSimbriefDataAction(simbriefUserId ?? '').then((action) => {
                                 dispatch(action);
-                            }).catch(() => {
+                            }).catch((e) => {
                                 uiMessages.pushNotification(
                                     <Notification
                                         type="ERROR"
                                         title="SimBrief Error"
-                                        message="An error occurred when trying to fetch your SimBrief data."
+                                        message={e.message}
                                     />,
                                 );
                             });
