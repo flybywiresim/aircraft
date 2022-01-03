@@ -37,7 +37,7 @@ class CDUAtcDepartReq {
         );
         const freetext = new CDU_SingleValueField(mcdu,
             "string",
-            mcdu.preDepartureClearance.freetext,
+            mcdu.preDepartureClearance.freetext0,
             {
                 clearable: true,
                 emptyValue: "[\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0][color]cyan",
@@ -45,7 +45,7 @@ class CDUAtcDepartReq {
                 maxLength: 22
             },
             (value) => {
-                mcdu.preDepartureClearance.freetext = value;
+                mcdu.preDepartureClearance.freetext0 = value;
                 CDUAtcDepartReq.ShowPage1(mcdu);
         }
         );
