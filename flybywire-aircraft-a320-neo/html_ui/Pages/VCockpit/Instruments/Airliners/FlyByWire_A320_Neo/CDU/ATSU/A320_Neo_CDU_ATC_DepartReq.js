@@ -57,6 +57,12 @@ class CDUAtcDepartReq {
             fromTo = mcdu.flightPlanManager.getOrigin().ident + "/" + mcdu.flightPlanManager.getDestination().ident + "[color]cyan";
         }
 
+        // check if all required information are available to prepare the PDC message
+        let reqDisplButton = "REQ DISPL\xa0[color]cyan";
+        if ("______[color]amber" !== flightNo && "____|____[color]amber" !== fromTo && 0 !== mcdu.preDepartureClearance.atis.length) {
+            reqDisplButton = "REQ DISPL*[color]cyan";
+        }
+
         mcdu.setTemplate([
             ["DEPART REQUEST"],
             ["ATC FLT NBR", "A/C TYPE"],
@@ -67,6 +73,10 @@ class CDUAtcDepartReq {
             [gate, atis],
             ["---------FREE TEXT---------"],
             [freetext],
+            ["", "MORE\xa0"],
+            ["", "FREE TEXT>[color]white"],
+            ["\xa0ATC MENU", "ATC DEPART\xa0[color]cyan"],
+            ["<RETURN", reqDisplButton]
         ]);
 
         mcdu.rightInputDelay[4] = () => {
