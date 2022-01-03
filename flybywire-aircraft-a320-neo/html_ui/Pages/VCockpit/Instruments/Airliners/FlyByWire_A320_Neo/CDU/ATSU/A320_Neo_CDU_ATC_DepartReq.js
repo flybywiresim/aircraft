@@ -83,6 +83,7 @@ class CDUAtcDepartReq {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onRightInput[4] = () => {
+            CDUAtcDepartReq.ShowPage2(mcdu);
         };
 
         mcdu.leftInputDelay[5] = () => {
