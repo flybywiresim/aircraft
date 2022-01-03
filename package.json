@@ -14,7 +14,8 @@
     "build:failures": "rollup -c src/failures/rollup.config.js",
     "build:fmgc": "rollup -c src/fmgc/rollup.config.js",
     "build:mcdu-client": "rollup -c src/mcdu-server/client/rollup.config.js",
-    "build:mcdu-server": "pkg src/mcdu-server/index.js --target node12-win-x64 --no-bytecode --public-packages \"*\" --public --output \"flybywire-aircraft-a320-neo/MCDU SERVER/server.exe\""
+    "build:mcdu-server": "pkg src/mcdu-server/index.js --target node12-win-x64 --no-bytecode --public-packages \"*\" --public --output \"flybywire-aircraft-a320-neo/MCDU SERVER/server.exe\"",
+    "build:ace": "node --max-old-space-size=8192 node_modules/rollup/dist/bin/rollup -wc .\\src\\instruments\\buildSrc\\aceBuild.mjs"
   },
   "lint-staged": {
     "*.{js,mjs,jsx}": "eslint --cache --fix",

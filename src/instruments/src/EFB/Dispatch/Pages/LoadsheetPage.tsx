@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { usePersistentProperty } from '@instruments/common/persistence';
 import { FileEarmarkArrowDown, ZoomIn, ZoomOut } from 'react-bootstrap-icons';
-import { fetchSimbriefDataAction } from '../../Store/features/simbrief';
+import { fetchSimbriefDataAction } from '../../Store/features/simBrief';
 import { useAppDispatch, useAppSelector } from '../../Store/store';
 import { Notification } from '../../UIMessages/Notification';
 import { useUIMessages } from '../../UIMessages/Provider';

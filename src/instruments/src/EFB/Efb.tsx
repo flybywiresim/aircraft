@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { Redirect, Route, Switch } from 'react-router-dom';
 import { useSimVar } from '@instruments/common/simVars';
 import { useInteractionEvent } from '@instruments/common/hooks';
+import { IconBatteryCharging, IconBatteryOff } from '@tabler/icons';
 import { UIMessagesProvider, useUIMessages } from './UIMessages/Provider';
 import { usePersistentNumberProperty, usePersistentProperty } from '../Common/persistence';
 import NavigraphClient, { NavigraphContext } from './ChartsApi/Navigraph';
@@ -21,10 +22,13 @@ import { Failures } from './Failures/Failures';
 
 import { clearEfbState, useAppDispatch, useAppSelector } from './Store/store';
 
-import { fetchSimbriefDataAction, initialState as simbriefInitialState } from './Store/features/simbrief';
+import { fetchSimbriefDataAction, initialState as simbriefInitialState } from './Store/features/simBrief';
 
 import { NotificationsContainer, Notification } from './UIMessages/Notification';
 import { FbwLogo } from './Assets/FbwLogo';
+
+const BATTERY_DURATION_CHARGE_MIN = 180;
+const BATTERY_DURATION_DISCHARGE_MIN = 240;
 
 const navigraph = new NavigraphClient();
 
@@ -44,11 +48,23 @@ const ScreenLoading = () => (
     </div>
 );
 
+const ScreenEmpty = ({ isCharging }: { isCharging: boolean }) => (
+    <div className="flex justify-center items-center w-screen h-screen bg-theme-statusbar">
+        {!isCharging && (
+            <IconBatteryOff size={128} className="text-red-500" />
+        )}
+        {isCharging && (
+            <IconBatteryCharging size={128} className="text-red-500" />
+        )}
+    </div>
+);
+
 export enum PowerStates {
     SHUTOFF,
     STANDBY,
     LOADING,
     LOADED,
+    EMPTY,
 }
 
 interface PowerContextInterface {
@@ -57,6 +73,13 @@ interface PowerContextInterface {
 }
 
 export const PowerContext = React.createContext<PowerContextInterface>(undefined as any);
+
+type BatteryLevel = {
+    level: number;
+    lastChangeTimestamp: number;
+    isCharging: boolean;
+};
+
 export const usePower = () => React.useContext(PowerContext);
 
 const Efb = () => {
@@ -65,6 +88,7 @@ const Efb = () => {
     const [powerState, setPowerState] = useState<PowerStates>(PowerStates.SHUTOFF);
 
     const [currentLocalTime] = useSimVar('E:LOCAL TIME', 'seconds', 3000);
+    const [absoluteTime] = useSimVar('E:ABSOLUTE TIME', 'seconds', 3000);
     const [, setBrightness] = useSimVar('L:A32NX_EFB_BRIGHTNESS', 'number');
     const [brightnessSetting] = usePersistentNumberProperty('EFB_BRIGHTNESS', 0);
     const [usingAutobrightness] = useSimVar('L:A32NX_EFB_USING_AUTOBRIGHTNESS', 'bool', 300);
@@ -75,6 +99,43 @@ const Efb = () => {
     const simbriefData = useAppSelector((state) => state.simbrief.data);
     const [simbriefUserId] = usePersistentProperty('CONFIG_SIMBRIEF_USERID');
     const [autoSimbriefImport] = usePersistentProperty('CONFIG_AUTO_SIMBRIEF_IMPORT');
+
+    const [dc2BusIsPowered] = useSimVar('L:A32NX_ELEC_DC_2_BUS_IS_POWERED', 'bool');
+    const [batteryLevel, setBatteryLevel] = useState<BatteryLevel>({ level: 100, lastChangeTimestamp: absoluteTime, isCharging: dc2BusIsPowered });
+
+    useEffect(() => {
+        setBatteryLevel((oldLevel:BatteryLevel) => {
+            const deltaTs = absoluteTime - oldLevel.lastChangeTimestamp;
+            const batteryDurationSec = oldLevel.isCharging ? BATTERY_DURATION_CHARGE_MIN * 60 : -BATTERY_DURATION_DISCHARGE_MIN * 60;
+
+            let level = oldLevel.level + 100 * deltaTs / batteryDurationSec;
+            if (level > 100) level = 100;
+            if (level < 0) level = 0;
+            const lastChangeTimestamp = absoluteTime;
+            const isCharging = oldLevel.isCharging;
+
+            return { level, lastChangeTimestamp, isCharging };
+        });
+    }, [absoluteTime]);
+
+    useEffect(() => {
+        setBatteryLevel((oldLevel) => {
+            if (oldLevel.isCharging !== dc2BusIsPowered) {
+                return { level: oldLevel.level, lastChangeTimestamp: absoluteTime, isCharging: dc2BusIsPowered };
+            }
+            return oldLevel;
+        });
+    }, [absoluteTime, dc2BusIsPowered]);
+
+    useEffect(() => {
+        if (batteryLevel.level <= 0) {
+            setPowerState(PowerStates.EMPTY);
+        }
+
+        if (batteryLevel.level > 2 && powerState === PowerStates.EMPTY) {
+            offToLoaded();
+        }
+    }, [batteryLevel, powerState]);
 
     useEffect(() => {
         if (powerState === PowerStates.SHUTOFF) {
@@ -143,6 +204,8 @@ const Efb = () => {
         return <div className="w-screen h-screen" onClick={() => offToLoaded()} />;
     case PowerStates.LOADING:
         return <ScreenLoading />;
+    case PowerStates.EMPTY:
+        return <ScreenEmpty isCharging={dc2BusIsPowered === 1} />;
     case PowerStates.LOADED:
         return (
             <NavigraphContext.Provider value={navigraph}>
@@ -150,7 +213,10 @@ const Efb = () => {
                     <UIMessagesProvider>
                         <div className="bg-theme-body">
                             <ApplicationNotifications />
-                            <StatusBar />
+                            <StatusBar
+                                batteryLevel={batteryLevel.level}
+                                isCharging={dc2BusIsPowered === 1}
+                            />
                             <div className="flex flex-row">
                                 <ToolBar />
                                 <div className="pt-14 pr-6 w-screen h-screen text-gray-700">

@@ -1,10 +1,17 @@
 import React from 'react';
-import { Wifi2, BatteryFull, Power } from 'react-bootstrap-icons';
+import { Wifi2, Power } from 'react-bootstrap-icons';
 import { useSimVar } from '@instruments/common/simVars';
 import { usePersistentProperty } from '@instruments/common/persistence';
 import { usePower, PowerStates } from '../Efb';
 
-export const StatusBar = () => {
+import { BatteryStatus } from './BatteryStatus';
+
+type StatusBarProps = {
+    batteryLevel: number;
+    isCharging: boolean;
+};
+
+export const StatusBar = ({ batteryLevel, isCharging }: StatusBarProps) => {
     const [currentUTC] = useSimVar('E:ZULU TIME', 'seconds');
     const [currentLocalTime] = useSimVar('E:LOCAL TIME', 'seconds');
     const [dayOfWeek] = useSimVar('E:ZULU DAY OF WEEK', 'number');
@@ -50,12 +57,7 @@ export const StatusBar = () => {
                     <Wifi2 size={32} />
                 </div>
 
-                <div className="flex items-center space-x-4">
-                    <p>100%</p>
-
-                    {/* TODO find a way to use `setSimVar` here */}
-                    <BatteryFull size={28} />
-                </div>
+                <BatteryStatus batteryLevel={batteryLevel} isCharging={isCharging} />
 
                 {/* Show overlay to either power down or restart when this is held down, set to standby mode otherwise */}
                 <Power size={26} onClick={() => power.setPowerState(PowerStates.SHUTOFF)} />
