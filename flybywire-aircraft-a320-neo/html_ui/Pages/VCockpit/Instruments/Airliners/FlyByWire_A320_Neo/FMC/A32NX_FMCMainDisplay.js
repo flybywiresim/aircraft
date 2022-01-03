@@ -176,6 +176,8 @@ class FMCMainDisplay extends BaseAirliners {
         this.zeroFuelWeightMassCenter = undefined;
         this.activeWpIdx = undefined;
         this.efisSymbols = undefined;
+        /* PDC fields */
+        this.preDepartureClearance = undefined;
     }
 
     Init() {
@@ -500,6 +502,18 @@ class FMCMainDisplay extends BaseAirliners {
         this.blockFuel = undefined;
         this.zeroFuelWeight = undefined;
         this.zeroFuelWeightMassCenter = undefined;
+
+        /* PDC fields */
+        this.preDepartureClearance = {
+            gate: "",
+            atis: "",
+            freetext0: "",
+            freetext1: "",
+            freetext2: "",
+            freetext3: "",
+            freetext4: "",
+            freetext5: ""
+        };
 
         // Reset SimVars
         SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", NaN);
