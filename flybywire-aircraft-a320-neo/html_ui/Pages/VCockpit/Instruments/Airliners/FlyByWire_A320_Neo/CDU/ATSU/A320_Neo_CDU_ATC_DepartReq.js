@@ -19,7 +19,7 @@ class CDUAtcDepartReq {
             (value) => {
                 mcdu.preDepartureClearance.atis = value;
                 CDUAtcDepartReq.ShowPage1(mcdu);
-        }
+            }
         );
         const gate = new CDU_SingleValueField(mcdu,
             "string",
@@ -33,7 +33,7 @@ class CDUAtcDepartReq {
             (value) => {
                 mcdu.preDepartureClearance.gate = value;
                 CDUAtcDepartReq.ShowPage1(mcdu);
-        }
+            }
         );
         const freetext = new CDU_SingleValueField(mcdu,
             "string",
@@ -47,7 +47,7 @@ class CDUAtcDepartReq {
             (value) => {
                 mcdu.preDepartureClearance.freetext0 = value;
                 CDUAtcDepartReq.ShowPage1(mcdu);
-        }
+            }
         );
 
         if (SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC")) {
