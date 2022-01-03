@@ -107,7 +107,7 @@ if (GIT_BRANCH === 'master') {
             if (err) {
                 throw err;
             }
-            console.log('copying ' + YELLOW_DDS + ` TO ` + TARGET_DSS + "failed: " + err);
+            console.log('copying ' + YELLOW_DDS + ` to ` + TARGET_DSS + "failed: " + err);
         });
 } else if (edition !== 'stable') {
     const RED_DDS = '/Textures/decals 4k/A320NEO_COCKPIT_DECALSTEXT_ALBD.TIF-red.dds';
@@ -117,6 +117,6 @@ if (GIT_BRANCH === 'master') {
             if (err) {
                 throw err;
             }
-            console.log('copying ' + RED_DDS + ` TO ` + TARGET_DSS + "failed: " + err);
+            console.log('copying ' + RED_DDS + ` to ` + TARGET_DSS + "failed: " + err);
         });
 }
