@@ -106,7 +106,7 @@ if (printerName != null) {
         start();
     }).catch((error) => {
         showError('Failed to load printers.\nMake sure the "Print Spooler" Windows service is running.', error);
-        console.error('\nSee the documentation for more information:\n\x1b[47m\x1b[30mhttps://docs.flybywiresim.com/fbw-a32nx/feature-guides/web-mcdu/#printer-issues\x1b[0m');
+        console.error('\nSee the documentation for more information:\n\x1b[47m\x1b[30mhttps://docs.flybywiresim.com/fbw-a32nx/feature-guides/web-mcdu/#troubleshooting\x1b[0m');
         pressAnyKey(1);
     });
 } else if (!skipPrinter) {
@@ -128,7 +128,7 @@ if (printerName != null) {
                 }
             }).catch((error) => {
                 showError('Failed to load printers.\nMake sure the "Print Spooler" Windows service is running.', error);
-                console.error('\nSee the documentation for more information:\n\x1b[47m\x1b[30mhttps://docs.flybywiresim.com/fbw-a32nx/feature-guides/web-mcdu/#printer-issues\x1b[0m');
+                console.error('\nSee the documentation for more information:\n\x1b[47m\x1b[30mhttps://docs.flybywiresim.com/fbw-a32nx/feature-guides/web-mcdu/#troubleshooting\x1b[0m');
                 pressAnyKey(1);
             });
         } else {
@@ -257,7 +257,7 @@ function start() {
                         }
                         console.log(`\nCan't connect? You may need to open TCP ports ${httpPort} and ${websocketPort} on your firewall.`);
                         console.log('See the documentation for more information:');
-                        console.log('\x1b[47m\x1b[30mhttps://docs.flybywiresim.com/fbw-a32nx/feature-guides/web-mcdu/#troubleshooting-and-advanced-configuration\x1b[0m');
+                        console.log('\x1b[47m\x1b[30mhttps://docs.flybywiresim.com/fbw-a32nx/feature-guides/web-mcdu/#firewall-configuration\x1b[0m');
                         isMcdu = true;
                         return;
                     }
