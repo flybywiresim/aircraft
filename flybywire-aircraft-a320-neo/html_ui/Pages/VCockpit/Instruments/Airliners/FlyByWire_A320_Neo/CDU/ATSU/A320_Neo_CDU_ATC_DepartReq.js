@@ -90,8 +90,13 @@ class CDUAtcDepartReq {
         mcdu.rightInputDelay[4] = () => {
             return mcdu.getDelaySwitchPage();
         };
-        mcdu.onRightInput[4] = () => {
-            CDUAtcDepartReq.ShowPage2(mcdu);
+        mcdu.onRightInput[4] = (value, scratchpadCallback) => {
+            if (0 !== mcdu.pdcMessage.Freetext0.length) {
+                CDUAtcDepartReq.ShowPage2(mcdu);
+            } else {
+                mcdu.scratchpad.setText("ENTER MANDATORY FIELDS");
+                scratchpadCallback();
+            }
         };
 
         mcdu.leftInputDelay[5] = () => {
