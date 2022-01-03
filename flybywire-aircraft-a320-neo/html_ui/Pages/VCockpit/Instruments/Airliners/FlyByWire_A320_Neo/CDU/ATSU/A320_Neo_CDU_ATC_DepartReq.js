@@ -105,6 +105,34 @@ class CDUAtcDepartReq {
         mcdu.onLeftInput[5] = () => {
             CDUAtcMenu.ShowPage2(mcdu);
         };
+
+        mcdu.rightInputDelay[5] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+        mcdu.onRightInput[5] = (value, scratchpadCallback) => {
+            if (mcdu.currentFlightPhase !== FmgcFlightPhases.PREFLIGHT) {
+                mcdu.scratchpad.setText("COM UNAVAILABLE");
+                scratchpadCallback();
+                return;
+            }
+
+            if ("" === mcdu.pdcMessage.Callsign || "" === mcdu.pdcMessage.Origin || "" === mcdu.pdcMessage.Destination || 1 !== mcdu.pdcMessage.Atis.length) {
+                mcdu.scratchpad.setText("ENTER MANDATORY FIELDS");
+                scratchpadCallback();
+                return;
+            }
+
+            // publish the message
+            const errorMsg = mcdu.atsuManager.registerPdcMessage(mcdu.pdcMessage);
+            if (0 !== errorMsg.length) {
+                mcdu.scratchpad.setText(errorMsg);
+                scratchpadCallback();
+                return;
+            }
+            mcdu.pdcMessage = undefined;
+
+            CDUAtcDepartReq.ShowPage1(mcdu);
+        };
     }
 
     static ShowPage2(mcdu) {
