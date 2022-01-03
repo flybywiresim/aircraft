@@ -1,5 +1,5 @@
 class CDUAtcDepartReq {
-    static ShowPage(mcdu) {
+    static ShowPage1(mcdu) {
         mcdu.clearDisplay();
 
         let flightNo = "______[color]amber";
