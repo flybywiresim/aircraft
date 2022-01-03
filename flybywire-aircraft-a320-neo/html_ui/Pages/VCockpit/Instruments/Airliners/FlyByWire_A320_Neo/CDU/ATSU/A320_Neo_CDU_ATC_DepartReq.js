@@ -92,4 +92,34 @@ class CDUAtcDepartReq {
             CDUAtcMenu.ShowPage2(mcdu);
         };
     }
+
+    static ShowPage2(mcdu) {
+        mcdu.clearDisplay();
+
+        const addionalLineTemplate = [
+            ["FREE TEXT"],
+            [""],
+            [""],
+            [""],
+            [""],
+            [""],
+            [""],
+            [""],
+            [""],
+            [""],
+            [""],
+            ["\xa0DEPART REQUEST"],
+            ["<RETURN"]
+        ];
+
+        // define the template
+        mcdu.setTemplate(addionalLineTemplate);
+
+        mcdu.leftInputDelay[5] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+        mcdu.onLeftInput[5] = () => {
+            CDUAtcDepartReq.ShowPage1(mcdu);
+        };
+    }
 }
