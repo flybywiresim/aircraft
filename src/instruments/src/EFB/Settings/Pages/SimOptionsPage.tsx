@@ -28,6 +28,7 @@ export const SimOptionsPage = () => {
     const [fpSync, setFpSync] = usePersistentProperty('FP_SYNC', 'LOAD');
     const [boardingRate, setBoardingRate] = usePersistentProperty('CONFIG_BOARDING_RATE', 'REAL');
     const [realisticTiller, setRealisticTiller] = usePersistentProperty('REALISTIC_TILLER_ENABLED', '0');
+    const [mcduServerPort, setMcduServerPort] = usePersistentProperty('CONFIG_EXTERNAL_MCDU_PORT', '8080');
 
     const adirsAlignTimeButtons: (ButtonType & SimVarButton)[] = [
         { name: 'Instant', setting: 'INSTANT', simVarValue: 1 },
@@ -179,6 +180,17 @@ export const SimOptionsPage = () => {
                                 </SelectItem>
                             ))}
                         </SelectGroup>
+                    </SettingItem>
+                    <SettingItem name="External MCDU Server Port">
+                        <SimpleInput
+                            className="w-30 ml-1.5 px-5 py-1.5 text-lg text-gray-300 rounded-lg bg-navy-light
+                            border-2 border-navy-light focus-within:outline-none focus-within:border-teal-light-contrast text-center disabled"
+                            value={mcduServerPort}
+                            noLabel
+                            onChange={(event) => {
+                                setMcduServerPort(event);
+                            }}
+                        />
                     </SettingItem>
 
                     <SettingItem name="Throttle Detents">
