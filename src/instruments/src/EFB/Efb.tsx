@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { Redirect, Route, Switch } from 'react-router-dom';
 import { useSimVar } from '@instruments/common/simVars';
 import { useInteractionEvent } from '@instruments/common/hooks';
-import { IconBatteryCharging, IconBatteryOff } from '@tabler/icons';
+import { Battery, BatteryCharging } from 'react-bootstrap-icons';
 import { UIMessagesProvider, useUIMessages } from './UIMessages/Provider';
 import { usePersistentNumberProperty, usePersistentProperty } from '../Common/persistence';
 import NavigraphClient, { NavigraphContext } from './ChartsApi/Navigraph';
@@ -51,10 +51,10 @@ const ScreenLoading = () => (
 const ScreenEmpty = ({ isCharging }: { isCharging: boolean }) => (
     <div className="flex justify-center items-center w-screen h-screen bg-theme-statusbar">
         {!isCharging && (
-            <IconBatteryOff size={128} className="text-red-500" />
+            <Battery size={128} className="text-red-500" />
         )}
         {isCharging && (
-            <IconBatteryCharging size={128} className="text-red-500" />
+            <BatteryCharging size={128} className="text-red-500" />
         )}
     </div>
 );
@@ -74,11 +74,11 @@ interface PowerContextInterface {
 
 export const PowerContext = React.createContext<PowerContextInterface>(undefined as any);
 
-type BatteryLevel = {
+interface BatteryStatus {
     level: number;
     lastChangeTimestamp: number;
     isCharging: boolean;
-};
+}
 
 export const usePower = () => React.useContext(PowerContext);
 
@@ -101,10 +101,10 @@ const Efb = () => {
     const [autoSimbriefImport] = usePersistentProperty('CONFIG_AUTO_SIMBRIEF_IMPORT');
 
     const [dc2BusIsPowered] = useSimVar('L:A32NX_ELEC_DC_2_BUS_IS_POWERED', 'bool');
-    const [batteryLevel, setBatteryLevel] = useState<BatteryLevel>({ level: 100, lastChangeTimestamp: absoluteTime, isCharging: dc2BusIsPowered });
+    const [batteryLevel, setBatteryLevel] = useState<BatteryStatus>({ level: 100, lastChangeTimestamp: absoluteTime, isCharging: dc2BusIsPowered });
 
     useEffect(() => {
-        setBatteryLevel((oldLevel:BatteryLevel) => {
+        setBatteryLevel((oldLevel:BatteryStatus) => {
             const deltaTs = absoluteTime - oldLevel.lastChangeTimestamp;
             const batteryDurationSec = oldLevel.isCharging ? BATTERY_DURATION_CHARGE_MIN * 60 : -BATTERY_DURATION_DISCHARGE_MIN * 60;
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { IconBattery, IconBattery1, IconBattery2, IconBattery3, IconBattery4, IconBatteryCharging } from '@tabler/icons';
+import { Battery, BatteryCharging, BatteryFull, BatteryHalf } from 'react-bootstrap-icons';
 
 type BatteryStatusProps = {
     batteryLevel: number;
@@ -27,24 +27,24 @@ export const BatteryStatus = ({ batteryLevel, isCharging }: BatteryStatusProps) 
 
 const BatteryStatusIcon = ({ batteryLevel, isCharging }: BatteryStatusProps) => {
     if (isCharging) {
-        return <IconBatteryCharging size={BATTERY_ICON_SIZE} color="green" />;
+        return <BatteryCharging size={BATTERY_ICON_SIZE} color="green" />;
     }
 
     if (batteryLevel < BATTERY_LEVEL_0) {
-        return <IconBattery size={BATTERY_ICON_SIZE} color={batteryLevel < BATTERY_LEVEL_WARNING ? 'red' : 'white'} />;
+        return <Battery size={BATTERY_ICON_SIZE} color={batteryLevel < BATTERY_LEVEL_WARNING ? 'red' : 'white'} />;
     }
 
     if (batteryLevel < BATTERY_LEVEL_1) {
-        return <IconBattery1 size={BATTERY_ICON_SIZE} />;
+        return <Battery size={BATTERY_ICON_SIZE} />;
     }
 
     if (batteryLevel < BATTERY_LEVEL_2) {
-        return <IconBattery2 size={BATTERY_ICON_SIZE} />;
+        return <BatteryHalf size={BATTERY_ICON_SIZE} />;
     }
 
     if (batteryLevel < BATTERY_LEVEL_3) {
-        return <IconBattery3 size={BATTERY_ICON_SIZE} />;
+        return <BatteryHalf size={BATTERY_ICON_SIZE} />;
     }
 
-    return <IconBattery4 size={BATTERY_ICON_SIZE} />;
+    return <BatteryFull size={BATTERY_ICON_SIZE} />;
 };
