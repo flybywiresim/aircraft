@@ -1,17 +1,17 @@
 class NXLocalApi {
     static getCoRoute(route) {
-        if (!route) {
+        if (route) {
+            return fetch(`${NXLocalApi.url}/coroute?rteNum=${route}`)
+                .then((response) => {
+                    if (!response.ok) {
+                        throw new HttpError(response.statusText);
+                    }
+                    return response.json();
+                });
+        } else {
             throw ("No Company Route provided");
         }
 
-        return fetch(`${NXLocalApi.url}/coroute?rteNum=${route}`)
-            .then((response) => {
-                if (!response.ok) {
-                    throw (response);
-                }
-                response.json();
-            });
-
     }
 }
-NXLocalApi.url = "localhost:3838";
+NXLocalApi.url = "http://localhost:3838";

@@ -11,13 +11,15 @@ const getCoRoute = (mcdu, coRoute, updateView) => {
             mcdu.coRoute["originIcao"] = data.origin.icao_code;
             mcdu.coRoute["destinationIcao"] = data.destination.icao_code;
             mcdu.coRoute["route"] = data.general.route;
-            mcdu.coRoute["alternateIcao"] = data.alternate.icao_code;
+            if (data.alternate) {
+                mcdu.coRoute["alternateIcao"] = data.alternate.icao_code;
+            }
+
             mcdu.coRoute["navlog"] = data.navlog.fix;
             return mcdu.coRoute;
-
         })
         .catch(_err => {
-            console.log(_err.message);
+            console.error(_err);
             mcdu.addNewMessage(NXSystemMessages.notInDatabase);
             updateView();
         });
@@ -41,10 +43,11 @@ const insertCoRoute = (mcdu) => {
             CDUPerformancePage.UpdateThrRedAccFromOrigin(mcdu);
             CDUPerformancePage.UpdateEngOutAccFromOrigin(mcdu);
 
-            await mcdu.tryUpdateAltDestination(alternateIcao);
-            setTimeout(async () => {
-                await uplinkRoute(mcdu, true);
-            });
+            if (alternateIcao) {
+                await mcdu.tryUpdateAltDestination(alternateIcao);
+            }
+
+            await uplinkRoute(mcdu, true);
             if (mcdu.page.Current === mcdu.page.InitPageA) {
                 CDUInitPage.ShowPage1(mcdu);
             }

@@ -6,7 +6,7 @@ class CDUInitPage {
         mcdu.activeSystem = 'FMGC';
 
         let fromTo = "____|____[color]amber";
-        let coRoute = "__________[color]amber";
+        let coRoute = mcdu.coRoute.routeNumber === undefined ? "__________[color]amber" : `${mcdu.coRoute.routeNumber}[color]cyan`;
         const flightNo = new CDU_SingleValueField(mcdu,
             "string",
             mcdu.flightNumber,
@@ -138,9 +138,6 @@ class CDUInitPage {
             }
         }
 
-        if (mcdu.coRoute) {
-            coRoute = mcdu.coRoute.number + "[color]cyan";
-        }
         mcdu.onLeftInput[0] = (value, scratchpadCallback) => {
             mcdu.updateCoRoute(value, (result) => {
                 if (result) {
