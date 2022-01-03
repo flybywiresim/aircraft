@@ -40,6 +40,14 @@ const ecamPages = [
         name: 'fuel-page',
         path: 'SD/Pages/Fuel',
     },
+    {
+        name: 'apu-page',
+        path: 'SD/Pages/Apu',
+    },
+    {
+        name: 'press-page',
+        path: 'SD/Pages/Press',
+    },
 ];
 
 export function getInputs() {

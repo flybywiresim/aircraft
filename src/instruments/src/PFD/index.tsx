@@ -2,6 +2,7 @@ import React, { useReducer, useState } from 'react';
 import { A320Failure, FailuresConsumer } from '@flybywiresim/failures';
 import { useArinc429Var } from '@instruments/common/arinc429';
 import { useInteractionEvent, useUpdate } from '@instruments/common/hooks';
+import { getSupplier, isCaptainSide } from '@instruments/common/utils';
 import { Horizon } from './AttitudeIndicatorHorizon';
 import { AttitudeIndicatorFixedUpper, AttitudeIndicatorFixedCenter } from './AttitudeIndicatorFixed';
 import { LandingSystem } from './LandingSystemIndicator';
@@ -119,7 +120,7 @@ export const PFD: React.FC = () => {
     const activeVerticalMode = getSimVar('L:A32NX_FMA_VERTICAL_MODE', 'enum');
     const armedLateralBitmask = getSimVar('L:A32NX_FMA_LATERAL_ARMED', 'number');
     const fmgcFlightPhase = getSimVar('L:A32NX_FMGC_FLIGHT_PHASE', 'enum');
-    const cstnAlt = getSimVar('L:A32NX_AP_CSTN_ALT', 'feet');
+    const cstnAlt = getSimVar('L:A32NX_FG_ALTITUDE_CONSTRAINT', 'feet');
     const altArmed = (armedVerticalBitmask >> 1) & 1;
     const clbArmed = (armedVerticalBitmask >> 2) & 1;
     const navArmed = (armedLateralBitmask >> 0) & 1;
@@ -147,9 +148,9 @@ export const PFD: React.FC = () => {
         selectedHeading = Simplane.getAutoPilotSelectedHeadingLockValue(false) || 0;
     }
 
-    let ILSCourse = NaN;
+    let ILSCourse = -1;
     if (lsButtonPressed) {
-        ILSCourse = getSimVar('NAV LOCALIZER:3', 'degrees');
+        ILSCourse = getSimVar('L:A32NX_FM_LS_COURSE', 'number');
     }
 
     return (
@@ -205,18 +206,6 @@ export const PFD: React.FC = () => {
             </svg>
         </DisplayUnit>
     );
-};
-
-const isCaptainSide = (displayIndex: number | undefined) => displayIndex === 1;
-
-const getSupplier = (displayIndex: number | undefined, knobValue: number) => {
-    const adirs3ToCaptain = 0;
-    const adirs3ToFO = 2;
-
-    if (isCaptainSide(displayIndex)) {
-        return knobValue === adirs3ToCaptain ? 3 : 1;
-    }
-    return knobValue === adirs3ToFO ? 3 : 2;
 };
 
 const smoothSpeeds = (deltaTime: number, vlsOrigin: number, vlsDestination: number) => {

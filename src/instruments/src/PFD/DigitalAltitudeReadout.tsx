@@ -1,4 +1,4 @@
-import { Arinc429Word } from '@instruments/common/arinc429';
+import { Arinc429Word } from '@shared/arinc429';
 import React from 'react';
 
 const TensDigits = (value: number, offset: number, color: string) => {
@@ -90,10 +90,26 @@ export const DigitalAltitudeReadout = ({ altitude, MDA }: DigitalAltitudeReadout
         <g id="AltReadoutGroup">
             <g>
                 <svg x="117.754" y="76.3374" width="13.5" height="8.9706" viewBox="0 0 13.5 8.9706">
-                    {/* eslint-disable-next-line max-len */}
-                    <Drum position={TenThousandsPosition} value={TenThousandsValue} color={color} showZero={false} elementFunction={TenThousandsDigit} valueSpacing={1} distanceSpacing={7} displayRange={1} />
-                    {/* eslint-disable-next-line max-len */}
-                    <Drum position={ThousandsPosition} value={ThousandsValue} color={color} showZero={showThousandsZero} elementFunction={ThousandsDigit} valueSpacing={1} distanceSpacing={7} displayRange={1} />
+                    <Drum
+                        position={TenThousandsPosition}
+                        value={TenThousandsValue}
+                        color={color}
+                        showZero={false}
+                        elementFunction={TenThousandsDigit}
+                        valueSpacing={1}
+                        distanceSpacing={7}
+                        displayRange={1}
+                    />
+                    <Drum
+                        position={ThousandsPosition}
+                        value={ThousandsValue}
+                        color={color}
+                        showZero={showThousandsZero}
+                        elementFunction={ThousandsDigit}
+                        valueSpacing={1}
+                        distanceSpacing={7}
+                        displayRange={1}
+                    />
                     <Drum position={HundredsPosition} value={HundredsValue} color={color} elementFunction={HundredsDigit} valueSpacing={1} distanceSpacing={7} displayRange={1} />
                 </svg>
                 <svg x="130.85" y="73.6664" width="8.8647" height="14.313" viewBox="0 0 8.8647 14.313">

@@ -11,7 +11,7 @@ pub mod leap_engine;
 
 pub trait Engine: EngineCorrectedN2 + EngineUncorrectedN2 {
     fn hydraulic_pump_output_speed(&self) -> AngularVelocity;
-    fn oil_pressure(&self) -> Pressure;
+    fn oil_pressure_is_low(&self) -> bool;
     fn is_above_minimum_idle(&self) -> bool;
 }
 

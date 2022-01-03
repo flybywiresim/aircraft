@@ -130,13 +130,13 @@ class CDUAirportsMonitor {
                 this.user_ap_line = [
                     `${this.user_ap.infos.ident}[color]green`,
                     `---[color]green`,
-                    `${this.efob5.toString().padStart(3, "_")}[color]green`
+                    `${this.efob5.toString().padStart(3, "\xa0")}[color]green`
                 ];
             } else {
                 this.user_ap_line = [
                     `${this.user_ap.infos.ident}[color]green`,
                     `${this.eta5}[color]green`,
-                    `${this.brng5.toString().padStart(3, "0")}°_${this.dist5.toString().padStart(5, "_")}[color]green`
+                    `${this.brng5.toString().padStart(3, "0")}°_${this.dist5.toString().padStart(5, "\xa0")}[color]green`
                 ];
             }
         }
@@ -151,19 +151,19 @@ class CDUAirportsMonitor {
                     ["", "EFF WIND\xa0", "EFOB"],
                     [`${this.icao1}[color]green`,
                         `{small}[KTS]{end}{cyan}[\xa0\xa0\xa0]{end}`,
-                        `${this.efob1.toString().padStart(3, "_")}[color]green`],
+                        `${this.efob1.toString().padStart(3, "\xa0")}[color]green`],
                     [""],
                     [`${this.icao2}[color]green`,
                         `[\xa0\xa0\xa0][color]cyan`,
-                        `${this.efob2.toString().padStart(3, "_")}[color]green`],
+                        `${this.efob2.toString().padStart(3, "\xa0")}[color]green`],
                     [""],
                     [`${this.icao3}[color]green`,
                         `[\xa0\xa0\xa0][color]cyan`,
-                        `${this.efob3.toString().padStart(3, "_")}[color]green`],
+                        `${this.efob3.toString().padStart(3, "\xa0")}[color]green`],
                     [""],
                     [`${this.icao4}[color]green`,
                         `[\xa0\xa0\xa0][color]cyan`,
-                        `${this.efob4.toString().padStart(3, "_")}[color]green`],
+                        `${this.efob4.toString().padStart(3, "\xa0")}[color]green`],
                     [""],
                     this.user_ap_line,
                     ["", "", this.frozen ? "LIST FROZEN" : ""],
@@ -175,19 +175,19 @@ class CDUAirportsMonitor {
                     ["", "BRG\xa0\xa0\xa0\xa0DIST\xa0\xa0\xa0UTC\xa0"],
                     [`${this.icao1}[color]green`,
                         `${this.eta1}[color]green`,
-                        `${this.brng1.toString().padStart(3, "0")}°_${this.dist1.toString().padStart(5, "_")}[color]green`],
+                        `${this.brng1.toString().padStart(3, "0")}°\xa0${this.dist1.toString().padStart(5, "\xa0")}[color]green`],
                     [""],
                     [`${this.icao2}[color]green`,
                         `${this.eta2}[color]green`,
-                        `${this.brng2.toString().padStart(3, "0")}°_${this.dist2.toString().padStart(5, "_")}[color]green`],
+                        `${this.brng2.toString().padStart(3, "0")}°\xa0${this.dist2.toString().padStart(5, "\xa0")}[color]green`],
                     [""],
                     [`${this.icao3}[color]green`,
                         `${this.eta3}[color]green`,
-                        `${this.brng3.toString().padStart(3, "0")}°_${this.dist3.toString().padStart(5, "_")}[color]green`],
+                        `${this.brng3.toString().padStart(3, "0")}°\xa0${this.dist3.toString().padStart(5, "\xa0")}[color]green`],
                     [""],
                     [`${this.icao4}[color]green`,
                         `${this.eta4}[color]green`,
-                        `${this.brng4.toString().padStart(3, "0")}°_${this.dist4.toString().padStart(5, "_")}[color]green`],
+                        `${this.brng4.toString().padStart(3, "0")}°\xa0${this.dist4.toString().padStart(5, "\xa0")}[color]green`],
                     [""],
                     this.user_ap_line,
                     ["", "", this.frozen ? "LIST FROZEN" : ""],
@@ -234,7 +234,7 @@ class CDUAirportsMonitor {
                             mcdu.addNewMessage(NXSystemMessages.notInDatabase);
                             scratchpadCallback();
                         }
-                    });
+                    }).catch(console.error);
                 }
             };
         }

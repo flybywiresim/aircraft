@@ -11,14 +11,13 @@ using namespace std;
 using namespace mINI;
 
 bool FlyByWireInterface::connect() {
-  // load configuration
-  loadConfiguration();
-
   // setup local variables
   setupLocalVariables();
 
+  // load configuration
+  loadConfiguration();
+
   // setup handlers
-  flapsHandler = make_shared<FlapsHandler>();
   spoilersHandler = make_shared<SpoilersHandler>();
   elevatorTrimHandler = make_shared<ElevatorTrimHandler>();
   rudderTrimHandler = make_shared<RudderTrimHandler>();
@@ -34,10 +33,11 @@ bool FlyByWireInterface::connect() {
   flightDataRecorder.initialize();
 
   // connect to sim connect
-  return simConnectInterface.connect(autopilotStateMachineEnabled, autopilotLawsEnabled, flyByWireEnabled, throttleAxis, flapsHandler,
+  return simConnectInterface.connect(clientDataEnabled, autopilotStateMachineEnabled, autopilotLawsEnabled, flyByWireEnabled, throttleAxis,
                                      spoilersHandler, elevatorTrimHandler, rudderTrimHandler, flightControlsKeyChangeAileron,
                                      flightControlsKeyChangeElevator, flightControlsKeyChangeRudder,
-                                     disableXboxCompatibilityRudderAxisPlusMinus, maxSimulationRate, limitSimulationRateByPerformance);
+                                     disableXboxCompatibilityRudderAxisPlusMinus, idMinimumSimulationRate->get(),
+                                     idMaximumSimulationRate->get(), limitSimulationRateByPerformance);
 }
 
 void FlyByWireInterface::disconnect() {
@@ -92,16 +92,22 @@ bool FlyByWireInterface::update(double sampleTime) {
   result &= updateFlyByWire(calculatedSampleTime);
 
   // get throttle data and process it
+  result &= updateThrustLimits(calculatedSampleTime);
+
+  // get throttle data and process it
   result &= updateAutothrust(calculatedSampleTime);
+
+  // update additional recording data
+  result &= updateAdditionalData(calculatedSampleTime);
 
   // update engine data
   result &= updateEngineData(calculatedSampleTime);
 
-  // update flaps and spoilers
-  result &= updateFlapsSpoilers(calculatedSampleTime);
+  // update spoilers
+  result &= updateSpoilers(calculatedSampleTime);
 
   // update flight data recorder
-  flightDataRecorder.update(&autopilotStateMachine, &autopilotLaws, &autoThrust, &flyByWire, engineData);
+  flightDataRecorder.update(&autopilotStateMachine, &autopilotLaws, &autoThrust, &flyByWire, engineData, additionalData);
 
   // if default AP is on -> disconnect it
   if (simConnectInterface.getSimData().autopilot_master_on) {
@@ -121,21 +127,58 @@ void FlyByWireInterface::loadConfiguration() {
   INIFile iniFile(CONFIGURATION_FILEPATH);
   iniFile.read(iniStructure);
 
-  // load values
+  // --------------------------------------------------------------------------
+  // load values - model
   autopilotStateMachineEnabled = INITypeConversion::getBoolean(iniStructure, "MODEL", "AUTOPILOT_STATE_MACHINE_ENABLED", true);
   autopilotLawsEnabled = INITypeConversion::getBoolean(iniStructure, "MODEL", "AUTOPILOT_LAWS_ENABLED", true);
   autoThrustEnabled = INITypeConversion::getBoolean(iniStructure, "MODEL", "AUTOTHRUST_ENABLED", true);
   flyByWireEnabled = INITypeConversion::getBoolean(iniStructure, "MODEL", "FLY_BY_WIRE_ENABLED", true);
   tailstrikeProtectionEnabled = INITypeConversion::getBoolean(iniStructure, "MODEL", "TAILSTRIKE_PROTECTION_ENABLED", false);
-  customFlightGuidanceEnabled = INITypeConversion::getBoolean(iniStructure, "AUTOPILOT", "CUSTOM_FLIGHT_GUIDANCE_ENABLED", false);
+
+  // if any model is deactivated we need to enable client data
+  clientDataEnabled = (!autopilotStateMachineEnabled || !autopilotLawsEnabled || !autoThrustEnabled || !flyByWireEnabled);
+
+  // print configuration into console
+  cout << "WASM: MODEL     : CLIENT_DATA_ENABLED (auto)           = " << clientDataEnabled << endl;
+  cout << "WASM: MODEL     : AUTOPILOT_STATE_MACHINE_ENABLED      = " << autopilotStateMachineEnabled << endl;
+  cout << "WASM: MODEL     : AUTOPILOT_LAWS_ENABLED               = " << autopilotLawsEnabled << endl;
+  cout << "WASM: MODEL     : AUTOTHRUST_ENABLED                   = " << autoThrustEnabled << endl;
+  cout << "WASM: MODEL     : FLY_BY_WIRE_ENABLED                  = " << flyByWireEnabled << endl;
+  cout << "WASM: MODEL     : TAILSTRIKE_PROTECTION_ENABLED        = " << tailstrikeProtectionEnabled << endl;
+
+  // --------------------------------------------------------------------------
+  // load values - autopilot
+  customFlightGuidanceEnabled = INITypeConversion::getBoolean(iniStructure, "AUTOPILOT", "CUSTOM_FLIGHT_GUIDANCE_ENABLED", true);
   gpsCourseToSteerEnabled = INITypeConversion::getBoolean(iniStructure, "AUTOPILOT", "GPS_COURSE_TO_STEER_ENABLED", true);
-  flightDirectorSmoothingEnabled = INITypeConversion::getBoolean(iniStructure, "AUTOPILOT", "FLIGHT_DIRECTOR_SMOOTHING_ENABLED", true);
-  flightDirectorSmoothingFactor = INITypeConversion::getDouble(iniStructure, "AUTOPILOT", "FLIGHT_DIRECTOR_SMOOTHING_FACTOR", 2.5);
-  flightDirectorSmoothingLimit = INITypeConversion::getDouble(iniStructure, "AUTOPILOT", "FLIGHT_DIRECTOR_SMOOTHING_LIMIT", 20);
-  maxSimulationRate = INITypeConversion::getDouble(iniStructure, "AUTOPILOT", "MAXIMUM_SIMULATION_RATE", 4);
+  idMinimumSimulationRate->set(INITypeConversion::getDouble(iniStructure, "AUTOPILOT", "MINIMUM_SIMULATION_RATE", 1));
+  idMaximumSimulationRate->set(INITypeConversion::getDouble(iniStructure, "AUTOPILOT", "MAXIMUM_SIMULATION_RATE", 4));
   limitSimulationRateByPerformance = INITypeConversion::getBoolean(iniStructure, "AUTOPILOT", "LIMIT_SIMULATION_RATE_BY_PERFORMANCE", true);
   simulationRateReductionEnabled = INITypeConversion::getBoolean(iniStructure, "AUTOPILOT", "SIMULATION_RATE_REDUCTION_ENABLED", true);
 
+  // print configuration into console
+  cout << "WASM: AUTOPILOT : CUSTOM_FLIGHT_GUIDANCE_ENABLED       = " << customFlightGuidanceEnabled << endl;
+  cout << "WASM: AUTOPILOT : GPS_COURSE_TO_STEER_ENABLED          = " << gpsCourseToSteerEnabled << endl;
+  cout << "WASM: AUTOPILOT : MINIMUM_SIMULATION_RATE              = " << idMinimumSimulationRate->get() << endl;
+  cout << "WASM: AUTOPILOT : MAXIMUM_SIMULATION_RATE              = " << idMaximumSimulationRate->get() << endl;
+  cout << "WASM: AUTOPILOT : LIMIT_SIMULATION_RATE_BY_PERFORMANCE = " << limitSimulationRateByPerformance << endl;
+  cout << "WASM: AUTOPILOT : SIMULATION_RATE_REDUCTION_ENABLED    = " << simulationRateReductionEnabled << endl;
+
+  // --------------------------------------------------------------------------
+  // load values - autothrust
+  autothrustThrustLimitReverse = INITypeConversion::getDouble(iniStructure, "AUTOTHRUST", "THRUST_LIMIT_REVERSE", -45.0);
+  autothrustThrustLimitUseExternal = INITypeConversion::getBoolean(iniStructure, "AUTOTHRUST", "USE_EXTERNAL_LIMIT", false);
+  autothrustThrustLimitUseExternalFlex = INITypeConversion::getBoolean(iniStructure, "AUTOTHRUST", "USE_EXTERNAL_LIMIT_FLEX", false);
+
+  // initialize local variable for reverse
+  idAutothrustThrustLimitREV->set(autothrustThrustLimitReverse);
+
+  // print configuration into console
+  cout << "WASM: AUTOTHRUST : THRUST_LIMIT_REVERSE    = " << autothrustThrustLimitReverse << endl;
+  cout << "WASM: AUTOTHRUST : USE_EXTERNAL_LIMIT      = " << autothrustThrustLimitUseExternal << endl;
+  cout << "WASM: AUTOTHRUST : USE_EXTERNAL_LIMIT_FLEX = " << autothrustThrustLimitUseExternalFlex << endl;
+
+  // --------------------------------------------------------------------------
+  // load values - flight controls
   flightControlsKeyChangeAileron = INITypeConversion::getDouble(iniStructure, "FLIGHT_CONTROLS", "KEY_CHANGE_AILERON", 0.02);
   flightControlsKeyChangeAileron = abs(flightControlsKeyChangeAileron);
   flightControlsKeyChangeElevator = INITypeConversion::getDouble(iniStructure, "FLIGHT_CONTROLS", "KEY_CHANGE_ELEVATOR", 0.02);
@@ -146,25 +189,22 @@ void FlyByWireInterface::loadConfiguration() {
       INITypeConversion::getBoolean(iniStructure, "FLIGHT_CONTROLS", "DISABLE_XBOX_COMPATIBILITY_RUDDER_AXIS_PLUS_MINUS", false);
 
   // print configuration into console
-  std::cout << "WASM: MODEL     : AUTOPILOT_STATE_MACHINE_ENABLED      = " << autopilotStateMachineEnabled << endl;
-  std::cout << "WASM: MODEL     : AUTOPILOT_LAWS_ENABLED               = " << autopilotLawsEnabled << endl;
-  std::cout << "WASM: MODEL     : AUTOTHRUST_ENABLED                   = " << autoThrustEnabled << endl;
-  std::cout << "WASM: MODEL     : FLY_BY_WIRE_ENABLED                  = " << flyByWireEnabled << endl;
-  std::cout << "WASM: MODEL     : TAILSTRIKE_PROTECTION_ENABLED        = " << tailstrikeProtectionEnabled << endl;
-  std::cout << "WASM: AUTOPILOT : CUSTOM_FLIGHT_GUIDANCE_ENABLED       = " << customFlightGuidanceEnabled << endl;
-  std::cout << "WASM: AUTOPILOT : GPS_COURSE_TO_STEER_ENABLED          = " << gpsCourseToSteerEnabled << endl;
-  std::cout << "WASM: AUTOPILOT : FLIGHT_DIRECTOR_SMOOTHING_ENABLED    = " << flightDirectorSmoothingEnabled << endl;
-  std::cout << "WASM: AUTOPILOT : FLIGHT_DIRECTOR_SMOOTHING_FACTOR     = " << flightDirectorSmoothingFactor << endl;
-  std::cout << "WASM: AUTOPILOT : FLIGHT_DIRECTOR_SMOOTHING_LIMIT      = " << flightDirectorSmoothingLimit << endl;
-  std::cout << "WASM: AUTOPILOT : MAXIMUM_SIMULATION_RATE              = " << maxSimulationRate << endl;
-  std::cout << "WASM: AUTOPILOT : LIMIT_SIMULATION_RATE_BY_PERFORMANCE = " << limitSimulationRateByPerformance << endl;
-  std::cout << "WASM: AUTOPILOT : SIMULATION_RATE_REDUCTION_ENABLED    = " << simulationRateReductionEnabled << endl;
-  std::cout << "WASM: FLIGHT_CONTROLS : KEY_CHANGE_AILERON = " << flightControlsKeyChangeAileron << endl;
-  std::cout << "WASM: FLIGHT_CONTROLS : KEY_CHANGE_ELEVATOR = " << flightControlsKeyChangeElevator << endl;
-  std::cout << "WASM: FLIGHT_CONTROLS : KEY_CHANGE_RUDDER = " << flightControlsKeyChangeRudder << endl;
-  std::cout << "WASM: FLIGHT_CONTROLS : DISABLE_XBOX_COMPATIBILITY_RUDDER_AXIS_PLUS_MINUS = " << disableXboxCompatibilityRudderAxisPlusMinus
-            << endl;
+  cout << "WASM: FLIGHT_CONTROLS : KEY_CHANGE_AILERON = " << flightControlsKeyChangeAileron << endl;
+  cout << "WASM: FLIGHT_CONTROLS : KEY_CHANGE_ELEVATOR = " << flightControlsKeyChangeElevator << endl;
+  cout << "WASM: FLIGHT_CONTROLS : KEY_CHANGE_RUDDER = " << flightControlsKeyChangeRudder << endl;
+  cout << "WASM: FLIGHT_CONTROLS : DISABLE_XBOX_COMPATIBILITY_RUDDER_AXIS_PLUS_MINUS = " << disableXboxCompatibilityRudderAxisPlusMinus
+       << endl;
 
+  // --------------------------------------------------------------------------
+  // load values - logging
+  idLoggingFlightControlsEnabled->set(INITypeConversion::getBoolean(iniStructure, "LOGGING", "FLIGHT_CONTROLS_ENABLED", false));
+  idLoggingThrottlesEnabled->set(INITypeConversion::getBoolean(iniStructure, "LOGGING", "THROTTLES_ENABLED", false));
+
+  // print configuration into console
+  cout << "WASM: LOGGING : FLIGHT_CONTROLS_ENABLED = " << idLoggingFlightControlsEnabled->get() << endl;
+  cout << "WASM: LOGGING : THROTTLES_ENABLED = " << idLoggingThrottlesEnabled->get() << endl;
+
+  // --------------------------------------------------------------------------
   // create axis and load configuration
   for (size_t i = 1; i <= 2; i++) {
     // create new mapping
@@ -186,6 +226,14 @@ void FlyByWireInterface::loadConfiguration() {
 }
 
 void FlyByWireInterface::setupLocalVariables() {
+  // regsiter L variable for logging
+  idLoggingFlightControlsEnabled = make_unique<LocalVariable>("A32NX_LOGGING_FLIGHT_CONTROLS_ENABLED");
+  idLoggingThrottlesEnabled = make_unique<LocalVariable>("A32NX_LOGGING_THROTTLES_ENABLED");
+
+  // register L variable for simulation rate limits
+  idMinimumSimulationRate = make_unique<LocalVariable>("A32NX_SIMULATION_RATE_LIMIT_MINIMUM");
+  idMaximumSimulationRate = make_unique<LocalVariable>("A32NX_SIMULATION_RATE_LIMIT_MAXIMUM");
+
   // register L variable for performance warning
   idPerformanceWarningActive = make_unique<LocalVariable>("A32NX_PERFORMANCE_WARNING_ACTIVE");
 
@@ -199,6 +247,8 @@ void FlyByWireInterface::setupLocalVariables() {
   idSideStickPositionX = make_unique<LocalVariable>("A32NX_SIDESTICK_POSITION_X");
   idSideStickPositionY = make_unique<LocalVariable>("A32NX_SIDESTICK_POSITION_Y");
   idRudderPedalPosition = make_unique<LocalVariable>("A32NX_RUDDER_PEDAL_POSITION");
+  idRudderPedalAnimationPosition = make_unique<LocalVariable>("A32NX_RUDDER_PEDAL_ANIMATION_POSITION");
+  idAutopilotNosewheelDemand = make_unique<LocalVariable>("A32NX_AUTOPILOT_NOSEWHEEL_DEMAND");
 
   // register L variable for custom fly-by-wire interface
   idFmaLateralMode = make_unique<LocalVariable>("A32NX_FMA_LATERAL_MODE");
@@ -212,6 +262,10 @@ void FlyByWireInterface::setupLocalVariables() {
   idFmaApproachCapability = make_unique<LocalVariable>("A32NX_ApproachCapability");
   idFmaTripleClick = make_unique<LocalVariable>("A32NX_FMA_TRIPLE_CLICK");
   idFmaModeReversion = make_unique<LocalVariable>("A32NX_FMA_MODE_REVERSION");
+
+  idAutopilotTcasMessageDisarm = make_unique<LocalVariable>("A32NX_AUTOPILOT_TCAS_MESSAGE_DISARM");
+  idAutopilotTcasMessageRaInhibited = make_unique<LocalVariable>("A32NX_AUTOPILOT_TCAS_MESSAGE_RA_INHIBITED");
+  idAutopilotTcasMessageTrkFpaDeselection = make_unique<LocalVariable>("A32NX_AUTOPILOT_TCAS_MESSAGE_TRK_FPA_DESELECTION");
 
   // register L variable for flight director
   idFlightDirectorBank = make_unique<LocalVariable>("A32NX_FLIGHT_DIRECTOR_BANK");
@@ -245,7 +299,7 @@ void FlyByWireInterface::setupLocalVariables() {
   idFmgcV_LS = make_unique<LocalVariable>("A32NX_SPEEDS_VLS");
   idFmgcV_MAX = make_unique<LocalVariable>("A32NX_SPEEDS_VMAX");
 
-  idFmgcAltitudeConstraint = make_unique<LocalVariable>("A32NX_AP_CSTN_ALT");
+  idFmgcAltitudeConstraint = make_unique<LocalVariable>("A32NX_FG_ALTITUDE_CONSTRAINT");
   idFmgcThrustReductionAltitude = make_unique<LocalVariable>("AIRLINER_THR_RED_ALT");
   idFmgcThrustReductionAltitudeGoAround = make_unique<LocalVariable>("AIRLINER_THR_RED_ALT_GOAROUND");
   idFmgcAccelerationAltitude = make_unique<LocalVariable>("AIRLINER_ACC_ALT");
@@ -259,6 +313,22 @@ void FlyByWireInterface::setupLocalVariables() {
   idFlightGuidanceCrossTrackError = make_unique<LocalVariable>("A32NX_FG_CROSS_TRACK_ERROR");
   idFlightGuidanceTrackAngleError = make_unique<LocalVariable>("A32NX_FG_TRACK_ANGLE_ERROR");
   idFlightGuidancePhiCommand = make_unique<LocalVariable>("A32NX_FG_PHI_COMMAND");
+  idFlightGuidancePhiLimit = make_unique<LocalVariable>("A32NX_FG_PHI_LIMIT");
+  idFlightGuidanceRequestedVerticalMode = make_unique<LocalVariable>("A32NX_FG_REQUESTED_VERTICAL_MODE");
+  idFlightGuidanceTargetAltitude = make_unique<LocalVariable>("A32NX_FG_TARGET_ALTITUDE");
+  idFlightGuidanceTargetVerticalSpeed = make_unique<LocalVariable>("A32NX_FG_TARGET_VERTICAL_SPEED");
+  idFmRnavAppSelected = make_unique<LocalVariable>("A32NX_FG_RNAV_APP_SELECTED");
+  idFmFinalCanEngage = make_unique<LocalVariable>("A32NX_FG_FINAL_CAN_ENGAGE");
+
+  idTcasFault = make_unique<LocalVariable>("A32NX_TCAS_FAULT");
+  idTcasMode = make_unique<LocalVariable>("A32NX_TCAS_MODE");
+  idTcasTaOnly = make_unique<LocalVariable>("A32NX_TCAS_TA_ONLY");
+  idTcasState = make_unique<LocalVariable>("A32NX_TCAS_STATE");
+  idTcasRaCorrective = make_unique<LocalVariable>("A32NX_TCAS_RA_CORRECTIVE");
+  idTcasTargetGreenMin = make_unique<LocalVariable>("A32NX_TCAS_VSPEED_GREEN:1");
+  idTcasTargetGreenMax = make_unique<LocalVariable>("A32NX_TCAS_VSPEED_GREEN:2");
+  idTcasTargetRedMin = make_unique<LocalVariable>("A32NX_TCAS_VSPEED_RED:1");
+  idTcasTargetRedMax = make_unique<LocalVariable>("A32NX_TCAS_VSPEED_RED:2");
 
   idFcuTrkFpaModeActive = make_unique<LocalVariable>("A32NX_TRK_FPA_MODE_ACTIVE");
   idFcuSelectedFpa = make_unique<LocalVariable>("A32NX_AUTOPILOT_FPA_SELECTED");
@@ -267,8 +337,10 @@ void FlyByWireInterface::setupLocalVariables() {
 
   idFcuLocModeActive = make_unique<LocalVariable>("A32NX_FCU_LOC_MODE_ACTIVE");
   idFcuApprModeActive = make_unique<LocalVariable>("A32NX_FCU_APPR_MODE_ACTIVE");
+  idFcuHeadingSync = make_unique<LocalVariable>("A32NX_FCU_HEADING_SYNC");
   idFcuModeReversionActive = make_unique<LocalVariable>("A32NX_FCU_MODE_REVERSION_ACTIVE");
   idFcuModeReversionTrkFpaActive = make_unique<LocalVariable>("A32NX_FCU_MODE_REVERSION_TRK_FPA_ACTIVE");
+  idFcuModeReversionTargetFpm = make_unique<LocalVariable>("A32NX_FCU_MODE_REVERSION_TARGET_FPM");
 
   idThrottlePosition3d_1 = make_unique<LocalVariable>("A32NX_3D_THROTTLE_LEVER_POSITION_1");
   idThrottlePosition3d_2 = make_unique<LocalVariable>("A32NX_3D_THROTTLE_LEVER_POSITION_2");
@@ -286,6 +358,12 @@ void FlyByWireInterface::setupLocalVariables() {
 
   idAutothrustThrustLimitType = make_unique<LocalVariable>("A32NX_AUTOTHRUST_THRUST_LIMIT_TYPE");
   idAutothrustThrustLimit = make_unique<LocalVariable>("A32NX_AUTOTHRUST_THRUST_LIMIT");
+  idAutothrustThrustLimitREV = make_unique<LocalVariable>("A32NX_AUTOTHRUST_THRUST_LIMIT_REV");
+  idAutothrustThrustLimitIDLE = make_unique<LocalVariable>("A32NX_AUTOTHRUST_THRUST_LIMIT_IDLE");
+  idAutothrustThrustLimitCLB = make_unique<LocalVariable>("A32NX_AUTOTHRUST_THRUST_LIMIT_CLB");
+  idAutothrustThrustLimitMCT = make_unique<LocalVariable>("A32NX_AUTOTHRUST_THRUST_LIMIT_MCT");
+  idAutothrustThrustLimitFLX = make_unique<LocalVariable>("A32NX_AUTOTHRUST_THRUST_LIMIT_FLX");
+  idAutothrustThrustLimitTOGA = make_unique<LocalVariable>("A32NX_AUTOTHRUST_THRUST_LIMIT_TOGA");
   thrustLeverAngle_1 = make_unique<LocalVariable>("A32NX_AUTOTHRUST_TLA:1");
   thrustLeverAngle_2 = make_unique<LocalVariable>("A32NX_AUTOTHRUST_TLA:2");
   idAutothrustN1_TLA_1 = make_unique<LocalVariable>("A32NX_AUTOTHRUST_TLA_N1:1");
@@ -294,6 +372,19 @@ void FlyByWireInterface::setupLocalVariables() {
   idAutothrustReverse_2 = make_unique<LocalVariable>("A32NX_AUTOTHRUST_REVERSE:2");
   idAutothrustN1_c_1 = make_unique<LocalVariable>("A32NX_AUTOTHRUST_N1_COMMANDED:1");
   idAutothrustN1_c_2 = make_unique<LocalVariable>("A32NX_AUTOTHRUST_N1_COMMANDED:2");
+
+  idMasterWarning = make_unique<LocalVariable>("A32NX_MASTER_WARNING");
+  idMasterCaution = make_unique<LocalVariable>("A32NX_MASTER_CAUTION");
+  idParkBrakeLeverPos = make_unique<LocalVariable>("A32NX_PARK_BRAKE_LEVER_POS");
+  idBrakePedalLeftPos = make_unique<LocalVariable>("A32NX_LEFT_BRAKE_PEDAL_INPUT");
+  idBrakePedalRightPos = make_unique<LocalVariable>("A32NX_RIGHT_BRAKE_PEDAL_INPUT");
+  idAutobrakeArmedMode = make_unique<LocalVariable>("A32NX_AUTOBRAKES_ARMED_MODE");
+  idAutobrakeDecelLight = make_unique<LocalVariable>("A32NX_AUTOBRAKES_DECEL_LIGHT");
+  idFlapsHandlePercent = make_unique<LocalVariable>("A32NX_FLAPS_HANDLE_PERCENT");
+  idFlapsHandleIndex = make_unique<LocalVariable>("A32NX_FLAPS_HANDLE_INDEX");
+  idHydraulicGreenPressure = make_unique<LocalVariable>("A32NX_HYD_GREEN_SYSTEM_1_SECTION_PRESSURE");
+  idHydraulicBluePressure = make_unique<LocalVariable>("A32NX_HYD_BLUE_SYSTEM_1_SECTION_PRESSURE");
+  idHydraulicYellowPressure = make_unique<LocalVariable>("A32NX_HYD_YELLOW_SYSTEM_1_SECTION_PRESSURE");
 
   engineEngine1N2 = make_unique<LocalVariable>("A32NX_ENGINE_N2:1");
   engineEngine2N2 = make_unique<LocalVariable>("A32NX_ENGINE_N2:2");
@@ -327,8 +418,8 @@ void FlyByWireInterface::setupLocalVariables() {
   engineEngine1Timer = make_unique<LocalVariable>("A32NX_ENGINE_TIMER:1");
   engineEngine2Timer = make_unique<LocalVariable>("A32NX_ENGINE_TIMER:2");
 
-  idFlapsHandleIndex = make_unique<LocalVariable>("A32NX_FLAPS_HANDLE_INDEX");
-  idFlapsHandlePercent = make_unique<LocalVariable>("A32NX_FLAPS_HANDLE_PERCENT");
+  flapsHandleIndexFlapConf = make_unique<LocalVariable>("A32NX_FLAPS_CONF_INDEX");
+  flapsPosition = make_unique<LocalVariable>("A32NX_LEFT_FLAPS_ANGLE");
 
   idSpoilersArmed = make_unique<LocalVariable>("A32NX_SPOILERS_ARMED");
   idSpoilersHandlePosition = make_unique<LocalVariable>("A32NX_SPOILERS_HANDLE_POSITION");
@@ -351,15 +442,19 @@ bool FlyByWireInterface::readDataAndLocalVariables(double sampleTime) {
   // reset input
   simConnectInterface.resetSimInputAutopilot();
 
+  // set logging options
+  simConnectInterface.setLoggingFlightControlsEnabled(idLoggingFlightControlsEnabled->get() == 1);
+  simConnectInterface.setLoggingThrottlesEnabled(idLoggingThrottlesEnabled->get() == 1);
+
   // request data
   if (!simConnectInterface.requestData()) {
-    std::cout << "WASM: Request data failed!" << endl;
+    cout << "WASM: Request data failed!" << endl;
     return false;
   }
 
   // read data
   if (!simConnectInterface.readData()) {
-    std::cout << "WASM: Read data failed!" << endl;
+    cout << "WASM: Read data failed!" << endl;
     return false;
   }
 
@@ -368,6 +463,9 @@ bool FlyByWireInterface::readDataAndLocalVariables(double sampleTime) {
 
   // update all local variables
   LocalVariable::readAll();
+
+  // update simulation rate limits
+  simConnectInterface.updateSimulationRateLimits(idMinimumSimulationRate->get(), idMaximumSimulationRate->get());
 
   // get or calculate XTK and TAE
   if (customFlightGuidanceEnabled) {
@@ -411,8 +509,19 @@ bool FlyByWireInterface::readDataAndLocalVariables(double sampleTime) {
                                                          flightGuidanceCrossTrackError,
                                                          flightGuidanceTrackAngleError,
                                                          flightGuidancePhiPreCommand,
+                                                         idFlightGuidancePhiLimit->get(),
+                                                         static_cast<unsigned long long>(idFlightGuidanceRequestedVerticalMode->get()),
+                                                         idFlightGuidanceTargetAltitude->get(),
+                                                         idFlightGuidanceTargetVerticalSpeed->get(),
+                                                         static_cast<unsigned long long>(idFmRnavAppSelected->get()),
+                                                         static_cast<unsigned long long>(idFmFinalCanEngage->get()),
                                                          simData.speed_slot_index == 2,
-                                                         autopilotLawsOutput.Phi_loc_c};
+                                                         autopilotLawsOutput.Phi_loc_c,
+                                                         static_cast<unsigned long long>(idTcasFault->get()),
+                                                         static_cast<unsigned long long>(getTcasModeAvailable()),
+                                                         getTcasAdvisoryState(),
+                                                         idTcasTargetGreenMin->get(),
+                                                         idTcasTargetGreenMax->get()};
     simConnectInterface.setClientDataLocalVariables(clientDataLocalVariables);
   }
 
@@ -480,7 +589,7 @@ bool FlyByWireInterface::handleSimulationRate(double sampleTime) {
   }
 
   // check if allowed simulation rate is exceeded
-  if (simData.simulation_rate > maxSimulationRate) {
+  if (simData.simulation_rate > idMaximumSimulationRate->get()) {
     // set target simulation rate
     targetSimulationRateModified = true;
     targetSimulationRate = max(1, simData.simulation_rate / 2);
@@ -488,7 +597,7 @@ bool FlyByWireInterface::handleSimulationRate(double sampleTime) {
     simConnectInterface.sendEvent(SimConnectInterface::Events::SIM_RATE_DECR, 0, SIMCONNECT_GROUP_PRIORITY_DEFAULT);
     // log event of reduction
     cout << "WASM: WARNING Reducing simulation rate to " << simData.simulation_rate / 2;
-    cout << " (maximum allowed is " << maxSimulationRate << ")!" << endl;
+    cout << " (maximum allowed is " << idMaximumSimulationRate->get() << ")!" << endl;
   }
 
   // check if simulation rate reduction is enabled
@@ -515,6 +624,37 @@ bool FlyByWireInterface::handleSimulationRate(double sampleTime) {
   }
 
   // success
+  return true;
+}
+
+bool FlyByWireInterface::updateAdditionalData(double sampleTime) {
+  auto simData = simConnectInterface.getSimData();
+  additionalData.master_warning_active = idMasterWarning->get();
+  additionalData.master_caution_active = idMasterCaution->get();
+  additionalData.park_brake_lever_pos = idParkBrakeLeverPos->get();
+  additionalData.brake_pedal_left_pos = idBrakePedalLeftPos->get();
+  additionalData.brake_pedal_right_pos = idBrakePedalRightPos->get();
+  additionalData.brake_left_sim_pos = simData.brakeLeftPosition;
+  additionalData.brake_right_sim_pos = simData.brakeRightPosition;
+  additionalData.autobrake_armed_mode = idAutobrakeArmedMode->get();
+  additionalData.autobrake_decel_light = idAutobrakeDecelLight->get();
+  additionalData.spoilers_handle_pos = idSpoilersHandlePosition->get();
+  additionalData.spoilers_armed = idSpoilersArmed->get();
+  additionalData.spoilers_handle_sim_pos = simData.spoilers_handle_position;
+  additionalData.ground_spoilers_active = idSpoilersGroundSpoilersActive->get();
+  additionalData.flaps_handle_percent = idFlapsHandlePercent->get();
+  additionalData.flaps_handle_index = idFlapsHandleIndex->get();
+  additionalData.flaps_handle_configuration_index = flapsHandleIndexFlapConf->get();
+  additionalData.flaps_handle_sim_index = simData.flapsHandleIndex;
+  additionalData.gear_handle_pos = simData.gearHandlePosition;
+  additionalData.hydraulic_green_pressure = idHydraulicGreenPressure->get();
+  additionalData.hydraulic_blue_pressure = idHydraulicBluePressure->get();
+  additionalData.hydraulic_yellow_pressure = idHydraulicYellowPressure->get();
+  additionalData.throttle_lever_1_pos = simData.throttle_lever_1_pos;
+  additionalData.throttle_lever_2_pos = simData.throttle_lever_2_pos;
+  additionalData.corrected_engine_N1_1_percent = simData.corrected_engine_N1_1_percent;
+  additionalData.corrected_engine_N1_2_percent = simData.corrected_engine_N1_2_percent;
+
   return true;
 }
 
@@ -636,6 +776,7 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
     autopilotStateMachineInput.in.data.flight_guidance_xtk_nmi = flightGuidanceCrossTrackError;
     autopilotStateMachineInput.in.data.flight_guidance_tae_deg = flightGuidanceTrackAngleError;
     autopilotStateMachineInput.in.data.flight_guidance_phi_deg = flightGuidancePhiPreCommand;
+    autopilotStateMachineInput.in.data.flight_guidance_phi_limit_deg = idFlightGuidancePhiLimit->get();
     autopilotStateMachineInput.in.data.flight_phase = idFmgcFlightPhase->get();
     autopilotStateMachineInput.in.data.V2_kn = idFmgcV2->get();
     autopilotStateMachineInput.in.data.VAPP_kn = idFmgcV_APP->get();
@@ -656,9 +797,11 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
     autopilotStateMachineInput.in.data.gear_strut_compression_1 = simData.gear_animation_pos_1;
     autopilotStateMachineInput.in.data.gear_strut_compression_2 = simData.gear_animation_pos_2;
     autopilotStateMachineInput.in.data.zeta_pos = simData.zeta_pos;
-    autopilotStateMachineInput.in.data.flaps_handle_index = simData.flaps_handle_index;
+    autopilotStateMachineInput.in.data.flaps_handle_index = flapsHandleIndexFlapConf->get();
     autopilotStateMachineInput.in.data.is_engine_operative_1 = simData.engine_combustion_1;
     autopilotStateMachineInput.in.data.is_engine_operative_2 = simData.engine_combustion_2;
+    autopilotStateMachineInput.in.data.altimeter_setting_left_mbar = simData.kohlsmanSetting_0;
+    autopilotStateMachineInput.in.data.altimeter_setting_right_mbar = simData.kohlsmanSetting_1;
 
     // input ----------------------------------------------------------------------------------------------------------
     autopilotStateMachineInput.in.input.FD_active = simData.ap_fd_1_active || simData.ap_fd_2_active;
@@ -690,6 +833,16 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
     autopilotStateMachineInput.in.input.is_SPEED_managed = (simData.speed_slot_index == 2);
     autopilotStateMachineInput.in.input.FDR_event = idFdrEvent->get();
     autopilotStateMachineInput.in.input.Phi_loc_c = autopilotLawsOutput.Phi_loc_c;
+    autopilotStateMachineInput.in.input.FM_requested_vertical_mode =
+        static_cast<fm_requested_vertical_mode>(idFlightGuidanceRequestedVerticalMode->get());
+    autopilotStateMachineInput.in.input.FM_H_c_ft = idFlightGuidanceTargetAltitude->get();
+    autopilotStateMachineInput.in.input.FM_H_dot_c_fpm = idFlightGuidanceTargetVerticalSpeed->get();
+    autopilotStateMachineInput.in.input.FM_rnav_appr_selected = static_cast<bool>(idFmRnavAppSelected->get());
+    autopilotStateMachineInput.in.input.FM_final_des_can_engage = static_cast<bool>(idFmFinalCanEngage->get());
+    autopilotStateMachineInput.in.input.TCAS_mode_available = getTcasModeAvailable();
+    autopilotStateMachineInput.in.input.TCAS_advisory_state = getTcasAdvisoryState();
+    autopilotStateMachineInput.in.input.TCAS_advisory_target_min_fpm = idTcasTargetGreenMin->get();
+    autopilotStateMachineInput.in.input.TCAS_advisory_target_max_fpm = idTcasTargetGreenMax->get();
 
     // step the model -------------------------------------------------------------------------------------------------
     autopilotStateMachine.setExternalInputs(&autopilotStateMachineInput);
@@ -717,6 +870,7 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
     autopilotStateMachineOutput.vertical_mode_armed = clientData.vertical_mode_armed;
     autopilotStateMachineOutput.mode_reversion_lateral = clientData.mode_reversion_lateral;
     autopilotStateMachineOutput.mode_reversion_vertical = clientData.mode_reversion_vertical;
+    autopilotStateMachineOutput.mode_reversion_vertical_target_fpm = clientData.mode_reversion_vertical_target_fpm;
     autopilotStateMachineOutput.mode_reversion_TRK_FPA = clientData.mode_reversion_TRK_FPA;
     autopilotStateMachineOutput.mode_reversion_triple_click = clientData.mode_reversion_triple_click;
     autopilotStateMachineOutput.mode_reversion_fma = clientData.mode_reversion_fma;
@@ -732,6 +886,9 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
     autopilotStateMachineOutput.EXPED_mode_active = clientData.EXPED_mode_active;
     autopilotStateMachineOutput.FD_disconnect = clientData.FD_disconnect;
     autopilotStateMachineOutput.FD_connect = clientData.FD_connect;
+    autopilotStateMachineOutput.TCAS_message_disarm = clientData.TCAS_message_disarm;
+    autopilotStateMachineOutput.TCAS_message_RA_inhibit = clientData.TCAS_message_RA_inhibit;
+    autopilotStateMachineOutput.TCAS_message_TRK_FPA_deselection = clientData.TCAS_message_TRK_FPA_deselection;
 
     // update radio
     idRadioReceiverLocalizerValid->set(clientData.nav_e_loc_valid);
@@ -750,15 +907,28 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
   bool isLocEngaged = autopilotStateMachineOutput.lateral_mode >= 30 && autopilotStateMachineOutput.lateral_mode <= 34;
   bool isGsArmed = static_cast<unsigned long long>(autopilotStateMachineOutput.vertical_mode_armed) >> 4 & 0x01;
   bool isGsEngaged = autopilotStateMachineOutput.vertical_mode >= 30 && autopilotStateMachineOutput.vertical_mode <= 34;
+  bool isFinalArmed = static_cast<unsigned long long>(autopilotStateMachineOutput.vertical_mode_armed) >> 5 & 0x01;
+  bool isFinalEngaged = autopilotStateMachineOutput.vertical_mode == 24;
   idFcuLocModeActive->set((isLocArmed || isLocEngaged) && !(isGsArmed || isGsEngaged));
-  idFcuApprModeActive->set((isLocArmed || isLocEngaged) && (isGsArmed || isGsEngaged));
-  idFcuModeReversionActive->set(autopilotStateMachineOutput.mode_reversion_lateral || autopilotStateMachineOutput.mode_reversion_vertical);
+  idFcuApprModeActive->set(((isLocArmed || isLocEngaged) && (isGsArmed || isGsEngaged)) || isFinalArmed || isFinalEngaged);
+  idFcuHeadingSync->set(autopilotStateMachineOutput.mode_reversion_lateral);
+  idFcuModeReversionActive->set(autopilotStateMachineOutput.mode_reversion_vertical);
+  idFcuModeReversionTargetFpm->set(autopilotStateMachineOutput.mode_reversion_vertical_target_fpm);
   idFcuModeReversionTrkFpaActive->set(autopilotStateMachineOutput.mode_reversion_TRK_FPA);
+  idAutopilotTcasMessageDisarm->set(autopilotStateMachineOutput.TCAS_message_disarm);
+  idAutopilotTcasMessageRaInhibited->set(autopilotStateMachineOutput.TCAS_message_RA_inhibit);
+  idAutopilotTcasMessageTrkFpaDeselection->set(autopilotStateMachineOutput.TCAS_message_TRK_FPA_deselection);
+
+  bool isTcasEngaged = autopilotStateMachineOutput.vertical_mode == 50;
+  if (!wasTcasEngaged && isTcasEngaged) {
+    execute_calculator_code("(>H:A320_Neo_FCU_SPEED_TCAS)", nullptr, nullptr, nullptr);
+  }
+  wasTcasEngaged = isTcasEngaged;
 
   // update autothrust mode -------------------------------------------------------------------------------------------
   idAutopilotAutothrustMode->set(autopilotStateMachineOutput.autothrust_mode);
 
-  // connect FD if requested ---------------------------------------------------------------------------------------
+  // connect FD if requested ------------------------------------------------------------------------------------------
   if (simData.ap_fd_1_active) {
     flightDirectorConnectLatch_1 = false;
   }
@@ -959,6 +1129,7 @@ bool FlyByWireInterface::updateAutopilotLaws(double sampleTime) {
     autopilotLawsInput.in.data.flight_guidance_xtk_nmi = flightGuidanceCrossTrackError;
     autopilotLawsInput.in.data.flight_guidance_tae_deg = flightGuidanceTrackAngleError;
     autopilotLawsInput.in.data.flight_guidance_phi_deg = flightGuidancePhiPreCommand;
+    autopilotLawsInput.in.data.flight_guidance_phi_limit_deg = idFlightGuidancePhiLimit->get();
     autopilotLawsInput.in.data.flight_phase = idFmgcFlightPhase->get();
     autopilotLawsInput.in.data.V2_kn = idFmgcV2->get();
     autopilotLawsInput.in.data.VAPP_kn = idFmgcV_APP->get();
@@ -978,9 +1149,11 @@ bool FlyByWireInterface::updateAutopilotLaws(double sampleTime) {
     autopilotLawsInput.in.data.gear_strut_compression_1 = simData.gear_animation_pos_1;
     autopilotLawsInput.in.data.gear_strut_compression_2 = simData.gear_animation_pos_2;
     autopilotLawsInput.in.data.zeta_pos = simData.zeta_pos;
-    autopilotLawsInput.in.data.flaps_handle_index = simData.flaps_handle_index;
+    autopilotLawsInput.in.data.flaps_handle_index = flapsHandleIndexFlapConf->get();
     autopilotLawsInput.in.data.is_engine_operative_1 = simData.engine_combustion_1;
     autopilotLawsInput.in.data.is_engine_operative_2 = simData.engine_combustion_2;
+    autopilotLawsInput.in.data.altimeter_setting_left_mbar = simData.kohlsmanSetting_0;
+    autopilotLawsInput.in.data.altimeter_setting_right_mbar = simData.kohlsmanSetting_1;
 
     // input ----------------------------------------------------------------------------------------------------------
     autopilotLawsInput.in.input = autopilotStateMachineOutput;
@@ -1005,6 +1178,7 @@ bool FlyByWireInterface::updateAutopilotLaws(double sampleTime) {
           autopilotStateMachineOutput.vertical_mode_armed,
           autopilotStateMachineOutput.mode_reversion_lateral,
           autopilotStateMachineOutput.mode_reversion_vertical,
+          autopilotStateMachineOutput.mode_reversion_vertical_target_fpm,
           autopilotStateMachineOutput.mode_reversion_TRK_FPA,
           autopilotStateMachineOutput.mode_reversion_triple_click,
           autopilotStateMachineOutput.mode_reversion_fma,
@@ -1020,6 +1194,13 @@ bool FlyByWireInterface::updateAutopilotLaws(double sampleTime) {
           autopilotStateMachineOutput.EXPED_mode_active,
           autopilotStateMachineOutput.FD_disconnect,
           autopilotStateMachineOutput.FD_connect,
+          idRadioReceiverLocalizerValid->get(),
+          idRadioReceiverLocalizerDeviation->get(),
+          idRadioReceiverGlideSlopeValid->get(),
+          idRadioReceiverGlideSlopeDeviation->get(),
+          autopilotStateMachineOutput.TCAS_message_disarm,
+          autopilotStateMachineOutput.TCAS_message_RA_inhibit,
+          autopilotStateMachineOutput.TCAS_message_TRK_FPA_deselection,
       };
       simConnectInterface.setClientDataAutopilotStateMachine(clientDataStateMachine);
     }
@@ -1033,23 +1214,13 @@ bool FlyByWireInterface::updateAutopilotLaws(double sampleTime) {
     autopilotLawsOutput.flight_director.Beta_c_deg = clientDataLaws.autopilotBeta;
     autopilotLawsOutput.autopilot.Beta_c_deg = clientDataLaws.autopilotBeta;
     autopilotLawsOutput.Phi_loc_c = clientDataLaws.locPhiCommand;
+    autopilotLawsOutput.Nosewheel_c = clientDataLaws.nosewheelCommand;
   }
 
   // update flight director -------------------------------------------------------------------------------------------
-  double fdPitch = -1.0 * autopilotLawsOutput.flight_director.Theta_c_deg;
-  double fdBank = -1.0 * autopilotLawsOutput.flight_director.Phi_c_deg;
-  double fdYaw = autopilotLawsOutput.flight_director.Beta_c_deg;
-  if (flightDirectorSmoothingEnabled) {
-    fdPitch = smoothFlightDirector(sampleTime, flightDirectorSmoothingFactor, flightDirectorSmoothingLimit, idFlightDirectorPitch->get(),
-                                   fdPitch);
-    fdBank =
-        smoothFlightDirector(sampleTime, flightDirectorSmoothingFactor, flightDirectorSmoothingLimit, idFlightDirectorBank->get(), fdBank);
-    fdYaw =
-        smoothFlightDirector(sampleTime, flightDirectorSmoothingFactor, flightDirectorSmoothingLimit, idFlightDirectorYaw->get(), fdYaw);
-  }
-  idFlightDirectorPitch->set(fdPitch);
-  idFlightDirectorBank->set(fdBank);
-  idFlightDirectorYaw->set(fdYaw);
+  idFlightDirectorPitch->set(-autopilotLawsOutput.flight_director.Theta_c_deg);
+  idFlightDirectorBank->set(-autopilotLawsOutput.flight_director.Phi_c_deg);
+  idFlightDirectorYaw->set(autopilotLawsOutput.flight_director.Beta_c_deg);
 
   // return result ----------------------------------------------------------------------------------------------------
   return true;
@@ -1097,7 +1268,7 @@ bool FlyByWireInterface::updateFlyByWire(double sampleTime) {
     flyByWireInput.in.data.gear_animation_pos_0 = simData.gear_animation_pos_0;
     flyByWireInput.in.data.gear_animation_pos_1 = simData.gear_animation_pos_1;
     flyByWireInput.in.data.gear_animation_pos_2 = simData.gear_animation_pos_2;
-    flyByWireInput.in.data.flaps_handle_index = simData.flaps_handle_index;
+    flyByWireInput.in.data.flaps_handle_index = flapsHandleIndexFlapConf->get();
     flyByWireInput.in.data.spoilers_left_pos = simData.spoilers_left_pos;
     flyByWireInput.in.data.spoilers_right_pos = simData.spoilers_right_pos;
     flyByWireInput.in.data.autopilot_master_on = simData.autopilot_master_on;
@@ -1130,16 +1301,10 @@ bool FlyByWireInterface::updateFlyByWire(double sampleTime) {
     flyByWireInput.in.data.thrust_lever_2_pos = thrustLeverAngle_2->get();
     flyByWireInput.in.data.tailstrike_protection_on = tailstrikeProtectionEnabled;
 
-    // process the sidestick handling ---------------------------------------------------------------------------------
-    // write sidestick position
-    idSideStickPositionX->set(-1.0 * simInput.inputs[1]);
-    idSideStickPositionY->set(-1.0 * simInput.inputs[0]);
-    // fill inputs into model
+    // set inputs -----------------------------------------------------------------------------------------------------
     flyByWireInput.in.input.delta_eta_pos = simInput.inputs[0];
     flyByWireInput.in.input.delta_xi_pos = simInput.inputs[1];
     flyByWireInput.in.input.delta_zeta_pos = simInput.inputs[2];
-    // set rudder pedals position
-    idRudderPedalPosition->set(max(-100, min(100, (-100.0 * simInput.inputs[2]) + (100.0 * simData.zeta_trim_pos))));
 
     // step the model -------------------------------------------------------------------------------------------------
     flyByWire.setExternalInputs(&flyByWireInput);
@@ -1151,26 +1316,30 @@ bool FlyByWireInterface::updateFlyByWire(double sampleTime) {
     // write client data if necessary
     if (!autopilotStateMachineEnabled) {
       ClientDataFlyByWire clientDataFlyByWire = {
-          flyByWireOutput.output.eta_trim_deg_should_write,      flyByWireOutput.output.zeta_trim_pos_should_write,
-          flyByWireOutput.sim.data_computed.alpha_floor_command, flyByWireOutput.sim.data_computed.protection_ap_disc,
-          flyByWireOutput.sim.data_speeds_aoa.v_alpha_prot_kn,   flyByWireOutput.sim.data_speeds_aoa.v_alpha_max_kn,
+          flyByWireOutput.output.eta_pos,
+          flyByWireOutput.output.xi_pos,
+          flyByWireOutput.output.zeta_pos,
+          flyByWireOutput.output.eta_trim_deg_should_write,
+          flyByWireOutput.output.eta_trim_deg,
+          flyByWireOutput.output.zeta_trim_pos_should_write,
+          flyByWireOutput.output.zeta_trim_pos,
+          flyByWireOutput.sim.data_computed.alpha_floor_command,
+          flyByWireOutput.sim.data_computed.protection_ap_disc,
+          flyByWireOutput.sim.data_speeds_aoa.v_alpha_prot_kn,
+          flyByWireOutput.sim.data_speeds_aoa.v_alpha_max_kn,
           flyByWireOutput.roll.data_computed.beta_target_deg,
       };
       simConnectInterface.setClientDataFlyByWire(clientDataFlyByWire);
     }
-
-    if (!flyByWireOutput.sim.data_computed.tracking_mode_on) {
-      // object to write with trim
-      SimOutput output = {flyByWireOutput.output.eta_pos, flyByWireOutput.output.xi_pos, flyByWireOutput.output.zeta_pos};
-
-      // send data via sim connect
-      if (!simConnectInterface.sendData(output)) {
-        std::cout << "WASM: Write data failed!" << endl;
-        return false;
-      }
-    }
   } else {
     // send data to client data to be read by simulink
+    ClientDataFlyByWireInput clientDataFlyByWireInput = {
+        simInput.inputs[0],
+        simInput.inputs[1],
+        simInput.inputs[2],
+    };
+    simConnectInterface.setClientDataFlyByWireInput(clientDataFlyByWireInput);
+
     ClientDataAutopilotLaws clientDataLaws = {autopilotLawsOutput.ap_on,
                                               autopilotLawsOutput.flight_director.Theta_c_deg,
                                               autopilotLawsOutput.autopilot.Theta_c_deg,
@@ -1178,16 +1347,49 @@ bool FlyByWireInterface::updateFlyByWire(double sampleTime) {
                                               autopilotLawsOutput.autopilot.Phi_c_deg,
                                               autopilotLawsOutput.autopilot.Beta_c_deg};
     simConnectInterface.setClientDataAutopilotLaws(clientDataLaws);
+
     // read data
     auto clientDataFlyByWire = simConnectInterface.getClientDataFlyByWire();
+    flyByWireOutput.output.eta_pos = clientDataFlyByWire.eta_pos;
+    flyByWireOutput.output.xi_pos = clientDataFlyByWire.xi_pos;
+    flyByWireOutput.output.zeta_pos = clientDataFlyByWire.zeta_pos;
     flyByWireOutput.output.eta_trim_deg_should_write = clientDataFlyByWire.eta_trim_deg_should_write;
+    flyByWireOutput.output.eta_trim_deg = clientDataFlyByWire.eta_trim_deg;
     flyByWireOutput.output.zeta_trim_pos_should_write = clientDataFlyByWire.zeta_trim_pos_should_write;
+    flyByWireOutput.output.zeta_trim_pos = clientDataFlyByWire.zeta_trim_pos;
     flyByWireOutput.sim.data_computed.tracking_mode_on = simData.slew_on || pauseDetected || idExternalOverride->get() == 1;
     flyByWireOutput.sim.data_computed.alpha_floor_command = clientDataFlyByWire.alpha_floor_command;
     flyByWireOutput.sim.data_computed.protection_ap_disc = clientDataFlyByWire.protection_ap_disc;
     flyByWireOutput.sim.data_speeds_aoa.v_alpha_prot_kn = clientDataFlyByWire.v_alpha_prot_kn;
     flyByWireOutput.sim.data_speeds_aoa.v_alpha_max_kn = clientDataFlyByWire.v_alpha_max_kn;
     flyByWireOutput.roll.data_computed.beta_target_deg = clientDataFlyByWire.beta_target_deg;
+  }
+
+  // write sidestick position
+  idSideStickPositionX->set(-1.0 * simInput.inputs[1]);
+  idSideStickPositionY->set(-1.0 * simInput.inputs[0]);
+
+  // set rudder pedals position
+  idRudderPedalPosition->set(max(-100, min(100, (-100.0 * simInput.inputs[2]))));
+  idRudderPedalAnimationPosition->set(max(-100, min(100, (-100.0 * simInput.inputs[2]) + (100.0 * simData.zeta_trim_pos))));
+
+  // set outputs
+  if (!flyByWireOutput.sim.data_computed.tracking_mode_on) {
+    // object to write with trim
+    SimOutput output = {flyByWireOutput.output.eta_pos, flyByWireOutput.output.xi_pos, flyByWireOutput.output.zeta_pos};
+
+    // send data via sim connect
+    if (!simConnectInterface.sendData(output)) {
+      cout << "WASM: Write data failed!" << endl;
+      return false;
+    }
+  }
+
+  // determine if nosewheel demand shall be set
+  if (!flyByWireOutput.sim.data_computed.tracking_mode_on) {
+    idAutopilotNosewheelDemand->set(autopilotLawsOutput.Nosewheel_c);
+  } else {
+    idAutopilotNosewheelDemand->set(0);
   }
 
   // set trim values
@@ -1200,7 +1402,7 @@ bool FlyByWireInterface::updateFlyByWire(double sampleTime) {
   }
   if (!flyByWireOutput.sim.data_computed.tracking_mode_on && (flyByWireEnabled || !flyByWireOutput.output.eta_trim_deg_should_write)) {
     if (!simConnectInterface.sendData(outputEtaTrim)) {
-      std::cout << "WASM: Write data failed!" << endl;
+      cout << "WASM: Write data failed!" << endl;
       return false;
     }
   }
@@ -1215,7 +1417,7 @@ bool FlyByWireInterface::updateFlyByWire(double sampleTime) {
   }
   if (!flyByWireOutput.sim.data_computed.tracking_mode_on && (flyByWireEnabled || !flyByWireOutput.output.zeta_trim_pos_should_write)) {
     if (!simConnectInterface.sendData(outputZetaTrim)) {
-      std::cout << "WASM: Write data failed!" << endl;
+      cout << "WASM: Write data failed!" << endl;
       return false;
     }
   }
@@ -1233,14 +1435,14 @@ bool FlyByWireInterface::updateFlyByWire(double sampleTime) {
 
   // update aileron positions
   animationAileronHandler->update(idAutopilotActiveAny->get(), spoilersHandler->getIsGroundSpoilersActive(), simData.simulationTime,
-                                  simData.Theta_deg, simData.flaps_handle_index, simData.flaps_position,
+                                  simData.Theta_deg, flapsHandleIndexFlapConf->get(), flapsPosition->get(),
                                   idExternalOverride->get() == 1 ? simData.xi_pos : flyByWireOutput.output.xi_pos, sampleTime);
   idAileronPositionLeft->set(animationAileronHandler->getPositionLeft());
   idAileronPositionRight->set(animationAileronHandler->getPositionRight());
 
   // determine if beta target needs to be active (blue)
   bool conditionDifferenceEngineN1Larger35 = (abs(simData.engine_N1_1_percent - simData.engine_N1_2_percent) > 35);
-  bool conditionConfigruation123 = (flapsHandler->getHandlePosition() > 0 && flapsHandler->getHandlePosition() < 4);
+  bool conditionConfigruation123 = (flapsHandleIndexFlapConf->get() > 0 && flapsHandleIndexFlapConf->get() < 4);
   bool conditionAnyEngineN1Above80 = (simData.engine_N1_1_percent > 80 || simData.engine_N1_2_percent > 80);
   bool conditionAnyThrustLeverAboveMct = (thrustLeverAngle_1->get() > 35 || thrustLeverAngle_2->get() > 35);
   bool conditionAnyThrustLeverInFlex = ((thrustLeverAngle_1->get() >= 35 || thrustLeverAngle_2->get() >= 35) &&
@@ -1256,6 +1458,59 @@ bool FlyByWireInterface::updateFlyByWire(double sampleTime) {
   }
 
   // success ----------------------------------------------------------------------------------------------------------
+  return true;
+}
+
+bool FlyByWireInterface::updateThrustLimits(double sampleTime) {
+  // if only external limits are used we can skip processing
+  if (autothrustThrustLimitUseExternal && autothrustThrustLimitUseExternalFlex) {
+    return true;
+  }
+
+  // get sim data
+  SimData simData = simConnectInterface.getSimData();
+
+  // fill input data
+  thrustLimitsInput.in.dt = sampleTime;
+  thrustLimitsInput.in.H_ft = simData.H_ft;
+  thrustLimitsInput.in.V_mach = simData.V_mach;
+  thrustLimitsInput.in.OAT_degC = simData.ambient_temperature_celsius;
+  thrustLimitsInput.in.TAT_degC = simData.total_air_temperature_celsius;
+  thrustLimitsInput.in.ISA_degC = 0;  // this is ignored, ISA is calculated inside the model
+  thrustLimitsInput.in.is_anti_ice_wing_active = simData.wingAntiIce == 1;
+  thrustLimitsInput.in.is_anti_ice_engine_1_active = simData.engineAntiIce_1 == 1;
+  thrustLimitsInput.in.is_anti_ice_engine_2_active = simData.engineAntiIce_2 == 1;
+  thrustLimitsInput.in.is_air_conditioning_1_active = idAirConditioningPack_1->get();
+  thrustLimitsInput.in.is_air_conditioning_2_active = idAirConditioningPack_2->get();
+  thrustLimitsInput.in.thrust_limit_IDLE_percent = engineEngineIdleN1->get();
+  thrustLimitsInput.in.flex_temperature_degC = idFmgcFlexTemperature->get();
+  if (!autothrustThrustLimitUseExternalFlex) {
+    thrustLimitsInput.in.use_external_CLB_limit = true;
+    thrustLimitsInput.in.thrust_limit_CLB_percent = idAutothrustThrustLimitCLB->get();
+  } else {
+    thrustLimitsInput.in.use_external_CLB_limit = false;
+    thrustLimitsInput.in.thrust_limit_CLB_percent = 0;
+  }
+
+  // set input data
+  thrustLimits.setExternalInputs(&thrustLimitsInput);
+  thrustLimits.step();
+
+  // get results
+  auto output = thrustLimits.getExternalOutputs().out;
+
+  // update local variables
+  if (!autothrustThrustLimitUseExternal) {
+    idAutothrustThrustLimitIDLE->set(output.thrust_limit_IDLE_percent);
+    idAutothrustThrustLimitCLB->set(output.thrust_limit_CLB_percent);
+    idAutothrustThrustLimitMCT->set(output.thrust_limit_MCT_percent);
+    idAutothrustThrustLimitTOGA->set(output.thrust_limit_TOGA_percent);
+  }
+  if (!autothrustThrustLimitUseExternalFlex) {
+    idAutothrustThrustLimitFLX->set(output.thrust_limit_FLEX_percent);
+  }
+
+  // success
   return true;
 }
 
@@ -1286,12 +1541,12 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
         simData.ap_V_c_kn,
         idFmgcV_LS->get(),
         idFmgcV_MAX->get(),
-        -45,                        // REV
-        engineEngineIdleN1->get(),  // IDLE
-        80,                         // CLB
-        81,                         // FLX
-        81,                         // MCT
-        85,                         // TOGA
+        idAutothrustThrustLimitREV->get(),   // REV
+        idAutothrustThrustLimitIDLE->get(),  // IDLE
+        idAutothrustThrustLimitCLB->get(),   // CLB
+        idAutothrustThrustLimitFLX->get(),   // FLX
+        idAutothrustThrustLimitMCT->get(),   // MCT
+        idAutothrustThrustLimitTOGA->get(),  // TOGA
         idFmgcFlexTemperature->get(),
         autopilotStateMachineOutput.autothrust_mode,
         simData.is_mach_mode_active,
@@ -1304,6 +1559,8 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
         idFmgcThrustReductionAltitudeGoAround->get(),
         idFmgcFlightPhase->get(),
         autopilotStateMachineOutput.ALT_soft_mode_active,
+        getTcasAdvisoryState() > 1,
+        autopilotStateMachineOutput.H_dot_c_fpm,
     };
     simConnectInterface.setClientDataLocalVariablesAutothrust(ClientDataLocalVariablesAutothrust);
   }
@@ -1329,7 +1586,7 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
     autoThrustInput.in.data.bz_m_s2 = simData.bz_m_s2;
     autoThrustInput.in.data.gear_strut_compression_1 = simData.gear_animation_pos_1;
     autoThrustInput.in.data.gear_strut_compression_2 = simData.gear_animation_pos_2;
-    autoThrustInput.in.data.flap_handle_index = simData.flaps_handle_index;
+    autoThrustInput.in.data.flap_handle_index = flapsHandleIndexFlapConf->get();
     autoThrustInput.in.data.is_engine_operative_1 = simData.engine_combustion_1;
     autoThrustInput.in.data.is_engine_operative_2 = simData.engine_combustion_2;
     autoThrustInput.in.data.commanded_engine_N1_1_percent = simData.commanded_engine_N1_1_percent;
@@ -1349,18 +1606,19 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
     autoThrustInput.in.input.V_c_kn = simData.ap_V_c_kn;
     autoThrustInput.in.input.V_LS_kn = idFmgcV_LS->get();
     autoThrustInput.in.input.V_MAX_kn = idFmgcV_MAX->get();
-    autoThrustInput.in.input.thrust_limit_REV_percent = -45;
-    autoThrustInput.in.input.thrust_limit_IDLE_percent = engineEngineIdleN1->get();
-    autoThrustInput.in.input.thrust_limit_CLB_percent = 80.0;
-    autoThrustInput.in.input.thrust_limit_MCT_percent = 81.0;
-    autoThrustInput.in.input.thrust_limit_FLEX_percent = 81.0;
-    autoThrustInput.in.input.thrust_limit_TOGA_percent = 85.0;
+    autoThrustInput.in.input.thrust_limit_REV_percent = idAutothrustThrustLimitREV->get();
+    autoThrustInput.in.input.thrust_limit_IDLE_percent = idAutothrustThrustLimitIDLE->get();
+    autoThrustInput.in.input.thrust_limit_CLB_percent = idAutothrustThrustLimitCLB->get();
+    autoThrustInput.in.input.thrust_limit_MCT_percent = idAutothrustThrustLimitMCT->get();
+    autoThrustInput.in.input.thrust_limit_FLEX_percent = idAutothrustThrustLimitFLX->get();
+    autoThrustInput.in.input.thrust_limit_TOGA_percent = idAutothrustThrustLimitTOGA->get();
     autoThrustInput.in.input.flex_temperature_degC = idFmgcFlexTemperature->get();
     autoThrustInput.in.input.mode_requested = autopilotStateMachineOutput.autothrust_mode;
     autoThrustInput.in.input.is_mach_mode_active = simData.is_mach_mode_active;
     autoThrustInput.in.input.alpha_floor_condition = flyByWireOutput.sim.data_computed.alpha_floor_command;
     autoThrustInput.in.input.is_approach_mode_active =
-        autopilotStateMachineOutput.vertical_mode >= 30 && autopilotStateMachineOutput.vertical_mode <= 34;
+        (autopilotStateMachineOutput.vertical_mode >= 30 && autopilotStateMachineOutput.vertical_mode <= 34) ||
+        autopilotStateMachineOutput.vertical_mode == 24;
     autoThrustInput.in.input.is_SRS_TO_mode_active = autopilotStateMachineOutput.vertical_mode == 40;
     autoThrustInput.in.input.is_SRS_GA_mode_active = autopilotStateMachineOutput.vertical_mode == 41;
     autoThrustInput.in.input.is_LAND_mode_active = autopilotStateMachineOutput.vertical_mode == 32;
@@ -1375,6 +1633,8 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
     autoThrustInput.in.input.is_air_conditioning_2_active = idAirConditioningPack_2->get();
     autoThrustInput.in.input.FD_active = simData.ap_fd_1_active || simData.ap_fd_2_active;
     autoThrustInput.in.input.ATHR_reset_disable = simConnectInterface.getSimInputThrottles().ATHR_reset_disable == 1;
+    autoThrustInput.in.input.is_TCAS_active = getTcasAdvisoryState() > 1;
+    autoThrustInput.in.input.target_TCAS_RA_rate_fpm = autopilotStateMachineOutput.H_dot_c_fpm;
 
     // step the model -------------------------------------------------------------------------------------------------
     autoThrust.setExternalInputs(&autoThrustInput);
@@ -1386,11 +1646,24 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
     // set autothrust disabled state (when ATHR disconnect is pressed longer than 15s)
     idAutothrustDisabled->set(autoThrust.getExternalOutputs().out.data_computed.ATHR_disabled);
 
+    // write thrust limits
+    auto autoThrustInput = autoThrust.getExternalOutputs().out.input;
+    auto autoThrustDataComputed = autoThrust.getExternalOutputs().out.data_computed;
+    idAutothrustThrustLimitIDLE->set(autoThrustInput.thrust_limit_IDLE_percent);
+    idAutothrustThrustLimitCLB->set(autoThrustInput.thrust_limit_CLB_percent);
+    idAutothrustThrustLimitMCT->set(autoThrustInput.thrust_limit_MCT_percent);
+    if (autoThrustDataComputed.is_FLX_active) {
+      idAutothrustThrustLimitFLX->set(autoThrustInput.thrust_limit_FLEX_percent);
+    } else {
+      idAutothrustThrustLimitFLX->set(0);
+    }
+    idAutothrustThrustLimitTOGA->set(autoThrustInput.thrust_limit_TOGA_percent);
+
     // write output to sim --------------------------------------------------------------------------------------------
     SimOutputThrottles simOutputThrottles = {autoThrustOutput.sim_throttle_lever_1_pos, autoThrustOutput.sim_throttle_lever_2_pos,
                                              autoThrustOutput.sim_thrust_mode_1, autoThrustOutput.sim_thrust_mode_2};
     if (!simConnectInterface.sendData(simOutputThrottles)) {
-      std::cout << "WASM: Write data failed!" << endl;
+      cout << "WASM: Write data failed!" << endl;
       return false;
     }
   } else {
@@ -1407,6 +1680,13 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
     autoThrustOutput.status = static_cast<athr_status>(clientData.status);
     autoThrustOutput.mode = static_cast<athr_mode>(clientData.mode);
     autoThrustOutput.mode_message = static_cast<athr_mode_message>(clientData.mode_message);
+
+    // TODO: thrust limits are currently not available when model is running externally
+    idAutothrustThrustLimitIDLE->set(0);
+    idAutothrustThrustLimitCLB->set(0);
+    idAutothrustThrustLimitMCT->set(0);
+    idAutothrustThrustLimitFLX->set(0);
+    idAutothrustThrustLimitTOGA->set(0);
   }
 
   // update local variables
@@ -1439,52 +1719,20 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
   return true;
 }
 
-bool FlyByWireInterface::updateFlapsSpoilers(double sampleTime) {
+bool FlyByWireInterface::updateSpoilers(double sampleTime) {
   // get sim data
   auto simData = simConnectInterface.getSimData();
 
-  // falps ------------------------------------------------------------------------------------------------------------
-
-  // initialize position if needed
-  if (!flapsHandler->getIsInitialized()) {
-    if (simData.flaps_handle_index == 0) {
-      flapsHandler->setInitialPosition(FlapsHandler::HANDLE_POSITION_FLAPS_0);
-    } else if (simData.flaps_handle_index == 1 || simData.flaps_handle_index == 2) {
-      flapsHandler->setInitialPosition(FlapsHandler::HANDLE_POSITION_FLAPS_1);
-    } else if (simData.flaps_handle_index == 3) {
-      flapsHandler->setInitialPosition(FlapsHandler::HANDLE_POSITION_FLAPS_2);
-    } else if (simData.flaps_handle_index == 4) {
-      flapsHandler->setInitialPosition(FlapsHandler::HANDLE_POSITION_FLAPS_3);
-    } else if (simData.flaps_handle_index == 5) {
-      flapsHandler->setInitialPosition(FlapsHandler::HANDLE_POSITION_FLAPS_4);
-    }
-  }
-
-  // update airspeed on flaps logic
-  flapsHandler->setAirspeed(simData.V_ias_kn);
-
-  // determine if flaps setting has changed
-  if (flapsHandler->getSimPosition() != simData.flaps_handle_index) {
-    SimOutputFlaps out = {flapsHandler->getSimPosition()};
-    simConnectInterface.sendData(out);
-  }
-
-  // set 3D handle position
-  idFlapsHandleIndex->set(flapsHandler->getHandlePosition());
-  idFlapsHandlePercent->set(flapsHandler->getHandlePositionPercent());
-
-  // spoilers ---------------------------------------------------------------------------------------------------------
-
   // initialize position if needed
   if (!spoilersHandler->getIsInitialized()) {
-    spoilersHandler->setInitialPosition(simData.spoilers_handle_position);
+    spoilersHandler->setInitialPosition(idSpoilersArmed->get(), simData.spoilers_handle_position);
   }
 
   // update simulation variables
   spoilersHandler->setSimulationVariables(
       simData.simulationTime, autopilotStateMachineOutput.enabled_AP1 == 1 || autopilotStateMachineOutput.enabled_AP2 == 1,
       simData.V_gnd_kn, thrustLeverAngle_1->get(), thrustLeverAngle_2->get(), simData.gear_animation_pos_1, simData.gear_animation_pos_2,
-      simData.flaps_handle_index, flyByWireOutput.sim.data_computed.high_aoa_prot_active == 1);
+      flapsHandleIndexFlapConf->get(), flyByWireOutput.sim.data_computed.high_aoa_prot_active == 1);
 
   // check state of spoilers and adapt if necessary
   if (spoilersHandler->getSimPosition() != simData.spoilers_handle_position) {
@@ -1515,16 +1763,6 @@ bool FlyByWireInterface::updateAltimeterSetting(double sampleTime) {
   return true;
 }
 
-double FlyByWireInterface::smoothFlightDirector(double sampleTime, double factor, double limit, double currentValue, double targetValue) {
-  double difference = (targetValue - currentValue);
-  if (difference >= 0) {
-    difference = fmin(+1.0 * limit, difference);
-  } else {
-    difference = fmax(-1.0 * limit, difference);
-  }
-  return currentValue + (difference * fmin(1.0, sampleTime * factor));
-}
-
 double FlyByWireInterface::getHeadingAngleError(double u1, double u2) {
   double dPsi_1 = fmod(u1 - u2 + 360.0, 360.0);
   double dPsi_2 = fmod(360.0 - dPsi_1, 360.0);
@@ -1533,4 +1771,23 @@ double FlyByWireInterface::getHeadingAngleError(double u1, double u2) {
   } else {
     return dPsi_2;
   }
+}
+
+double FlyByWireInterface::getTcasModeAvailable() {
+  auto state = idTcasMode->get();
+  auto isTaOnly = idTcasTaOnly->get();
+
+  // TA/RA active and TCAS not in TA only mode
+  return state == 2 && !isTaOnly;
+}
+
+double FlyByWireInterface::getTcasAdvisoryState() {
+  auto state = idTcasState->get();
+  auto isCorrective = idTcasRaCorrective->get();
+
+  if (state == 2 && isCorrective) {
+    state = 3;
+  }
+
+  return state;
 }

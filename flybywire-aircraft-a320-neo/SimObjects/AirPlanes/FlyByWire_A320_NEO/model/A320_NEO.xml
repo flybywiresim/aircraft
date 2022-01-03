@@ -154,8 +154,11 @@
                 <NODE_ID_STILL>WHEEL_RIGHT</NODE_ID_STILL>
                 <NODE_ID_BLURRED>WHEEL_RIGHT_BLURRED</NODE_ID_BLURRED>
             </UseTemplate>
-            <UseTemplate Name="ASOBO_GEAR_Steering_Template">
+            <UseTemplate Name="ASOBO_GT_Anim_Code">
+                <NODE_ID>c_wheel</NODE_ID>
                 <ANIM_NAME>c_wheel</ANIM_NAME>
+                <ANIM_CODE>(L:A32NX_NOSE_WHEEL_POSITION)</ANIM_CODE>
+                <ANIM_LENGTH>1</ANIM_LENGTH>
             </UseTemplate>
         </Component>
         <Component ID="ENGINE">

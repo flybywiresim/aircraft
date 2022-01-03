@@ -3,8 +3,6 @@ import { IconAlignRight, IconBox, IconPlane, IconSwitchHorizontal, IconUsers, Ic
 import fuselage from '../../Assets/320neo-outline-nose.svg';
 import { useSimVar } from '../../../Common/simVars';
 
-/* eslint-disable react/no-unused-prop-types */
-
 type OverviewPageProps = {
     weights: {
         cargo: number,

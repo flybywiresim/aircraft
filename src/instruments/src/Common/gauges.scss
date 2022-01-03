@@ -1,0 +1,28 @@
+@import "./definitions.scss";
+
+.GaugeComponent {
+    .Show {
+        display:block;
+    }
+
+    .Hide {
+        display: none;
+    }
+
+    .Gauge {
+        stroke: $display-white;
+        stroke-width: 2;
+        fill: none;
+    }
+
+    .GaugeText {
+        stroke: $display-white;
+        font-size: 17px;
+    }
+
+    .GaugeIndicator {
+        stroke: $display-green;
+        stroke-width: 3;
+        fill: none;
+    }
+}

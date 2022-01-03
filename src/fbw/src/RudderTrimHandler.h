@@ -15,6 +15,7 @@ class RudderTrimHandler {
 
   void update(double dt);
   double getPosition();
+  double getTargetPosition();
 
  private:
   static constexpr double SET_EVENT_DIVIDER = 16384.0;

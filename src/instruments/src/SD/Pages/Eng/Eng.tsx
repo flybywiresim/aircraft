@@ -1,4 +1,3 @@
-/* eslint-disable no-nested-ternary */
 import React, { FC, useState, useEffect } from 'react';
 import { render } from '@instruments/common/index';
 import { setIsEcamPage } from '@instruments/common/defaults';
@@ -72,7 +71,7 @@ interface ComponentPositionProps {
 }
 
 const PressureGauge = ({ x, y, engineNumber }: ComponentPositionProps) => {
-    const [engineOilPressure] = useSimVar(`ENG OIL PRESSURE:${engineNumber}`, 'psi', 200);
+    const [engineOilPressure] = useSimVar(`ENG OIL PRESSURE:${engineNumber}`, 'psi', 100);
     const displayedEngineOilPressure = Math.round(engineOilPressure / 2) * 2; // Engine oil pressure has a step of 2
     const OIL_PSI_MAX = 130;
     const OIL_PSI_HIGH_LIMIT = 130;
@@ -117,6 +116,16 @@ const PressureGauge = ({ x, y, engineNumber }: ComponentPositionProps) => {
         }
     }, [engineOilPressure]);
 
+    let needleClassName = 'GreenLine';
+    let textClassName = 'FillGreen';
+    if (shouldPressurePulse) {
+        needleClassName = 'LinePulse';
+        textClassName = 'FillPulse';
+    } else if (psiNeedleRed) {
+        needleClassName = 'RedLine';
+        textClassName = 'FillRed';
+    }
+
     return (
         <SvgGroup x={0} y={0}>
             <line className="GaugeMarking" x1={x} y1={y} x2={x} y2={y + 5} />
@@ -129,13 +138,13 @@ const PressureGauge = ({ x, y, engineNumber }: ComponentPositionProps) => {
                 length={60}
                 scaleMax={100}
                 value={getNeedleValue(engineOilPressure, OIL_PSI_MAX)}
-                className={`NoFill ${shouldPressurePulse ? 'LinePulse' : psiNeedleRed ? 'RedLine' : 'GreenLine'}`}
+                className={`NoFill ${needleClassName}`}
                 dashOffset={-40}
             />
             <text
                 x={x}
                 y={y + 45}
-                className={`FontLarge TextCenter ${shouldPressurePulse ? 'FillPulse' : psiNeedleRed ? 'FillRed' : 'FillGreen'}`}
+                className={`FontLarge TextCenter ${textClassName}`}
             >
                 {displayedEngineOilPressure}
             </text>
@@ -309,6 +318,13 @@ const EngineColumn = ({ x, y, engineNumber }: ComponentPositionProps) => {
         }
     }, [tempBeenAboveAdvisory]);
 
+    let textClassName = 'FillGreen';
+    if (tempAmber) {
+        textClassName = 'FillAmber';
+    } else if (shouldTemperaturePulse) {
+        textClassName = 'FillPulse';
+    }
+
     return (
         <SvgGroup x={x} y={y}>
             <text x={x} y={y} className="FillGreen FontLarge TextCenter">{displayedFuelUsed}</text>
@@ -317,7 +333,7 @@ const EngineColumn = ({ x, y, engineNumber }: ComponentPositionProps) => {
 
             <PressureGauge x={x} y={y + 110} engineNumber={engineNumber} />
 
-            <text x={x} y={y + 220} className={`FontLarge TextCenter ${tempAmber ? 'FillAmber' : shouldTemperaturePulse ? 'FillPulse' : 'FillGreen'}`}>{displayedEngineOilTemperature}</text>
+            <text x={x} y={y + 220} className={`FontLarge TextCenter ${textClassName}`}>{displayedEngineOilTemperature}</text>
 
             <text x={x} y={y + 270} className="FillGreen TextCenter">
                 <tspan className="FontLarge">{n1Vibration.toFixed(1).toString().split('.')[0]}</tspan>
