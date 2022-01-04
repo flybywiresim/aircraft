@@ -956,7 +956,6 @@ class CDUPerformancePage {
             } else {
                 scratchpadCallback();
             }
-
         };
         let flpRetrCell = "---";
         const flapSpeed = mcdu.computedVfs;
@@ -1059,7 +1058,6 @@ class CDUPerformancePage {
             mcdu.accelerationAltitude = accAlt;
             mcdu.accelerationAltitudeIsPilotEntered = false;
             SimVar.SetSimVarValue("L:AIRLINER_ACC_ALT", "Number", accAlt);
-
         }
     }
     static async UpdateEngOutAccFromOrigin(mcdu) {
@@ -1078,7 +1076,6 @@ class CDUPerformancePage {
         mcdu.engineOutAccelerationAltitude = alt;
         mcdu.engineOutAccelerationAltitudeIsPilotEntered = false;
         SimVar.SetSimVarValue("L:A32NX_ENG_OUT_ACC_ALT", "feet", alt);
-
     }
     static async UpdateThrRedAccFromDestination(mcdu) {
         const destination = mcdu.flightPlanManager.getDestination();

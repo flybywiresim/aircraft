@@ -2371,6 +2371,7 @@ class FMCMainDisplay extends BaseAirliners {
             return false;
         }
 
+<<<<<<< HEAD
         if (thrRedAlt > 45000 || accAlt > 45000) {
             this.addNewMessage(NXSystemMessages.entryOutOfRange);
             return false;
@@ -2380,6 +2381,9 @@ class FMCMainDisplay extends BaseAirliners {
             this.addNewMessage(NXSystemMessages.formatError);
             return false;
         }
+=======
+        let [thrRedAlt, accAlt] = s.split("/");
+>>>>>>> a573e91ba8edc8fca310ba342a9f5d5544775889
 
         if (accAlt > 0 && !/^\d{3,5}$/.test(accAlt)) {
             this.addNewMessage(NXSystemMessages.formatError);
@@ -3991,7 +3995,7 @@ class FMCMainDisplay extends BaseAirliners {
     splitPbd(s) {
         let [place, brg, dist] = s.split("/");
         brg = parseInt(brg);
-        dist = parseInt(dist);
+        dist = parseFloat(dist);
         return [place, brg, dist];
     }
 
