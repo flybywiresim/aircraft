@@ -151,15 +151,15 @@ export const LandingWidget = () => {
     };
 
     const handleWindMagnitudeChange = (value: string): void => {
-        let magnitude: number | undefined = parseInt(value);
+        let windMagnitude: number | undefined = parseInt(value);
 
-        if (Number.isNaN(magnitude)) {
-            magnitude = undefined;
+        if (Number.isNaN(windMagnitude)) {
+            windMagnitude = undefined;
         }
 
         performanceDispatch({
             type: EPerformanceActions.SET_LANDING,
-            payload: { magnitude },
+            payload: { windMagnitude },
         });
     };
 
@@ -314,7 +314,7 @@ export const LandingWidget = () => {
     const handleClearInputs = (): void => {
         performanceDispatch({
             type: EPerformanceActions.SET_LANDING,
-            payload: { ...performanceInitialState },
+            payload: { ...performanceInitialState.landing },
         });
     };
 
@@ -346,6 +346,7 @@ export const LandingWidget = () => {
                                     className="w-56 my-1.5"
                                     label="Wind Direction"
                                     value={windDirection}
+                                    placeholder="°"
                                     min={0}
                                     max={360}
                                     padding={3}
@@ -357,7 +358,7 @@ export const LandingWidget = () => {
                                     className="w-56 my-1.5"
                                     label="Wind Magnitude"
                                     value={windMagnitude}
-                                    placeholder="KTS"
+                                    placeholder="kts"
                                     min={0}
                                     decimalPrecision={1}
                                     onChange={handleWindMagnitudeChange}
@@ -378,7 +379,7 @@ export const LandingWidget = () => {
                                     className="w-56 my-1.5"
                                     label="QNH"
                                     value={pressure}
-                                    placeholder="mb"
+                                    placeholder="hPa"
                                     min={800}
                                     max={1200}
                                     decimalPrecision={2}
@@ -389,7 +390,7 @@ export const LandingWidget = () => {
                                     className="w-56 my-1.5"
                                     label="Rwy Altitude"
                                     value={altitude}
-                                    placeholder='" ASL'
+                                    placeholder="ft ASL"
                                     min={-2000}
                                     max={20000}
                                     decimalPrecision={0}
@@ -400,6 +401,7 @@ export const LandingWidget = () => {
                                     className="w-56 my-1.5"
                                     label="Rwy Heading"
                                     value={runwayHeading}
+                                    placeholder="°"
                                     min={0}
                                     max={360}
                                     padding={3}
@@ -410,16 +412,17 @@ export const LandingWidget = () => {
                                 <SelectInput
                                     className="w-56 my-1.5"
                                     label="Rwy Condition"
-                                    defaultValue={runwayCondition}
+                                    defaultValue={performanceInitialState.landing.runwayCondition}
+                                    value={runwayCondition}
                                     onChange={handleRunwayConditionChange}
                                     dropdownOnTop
                                     options={[
-                                        { value: 0, displayValue: 'Dry' },
-                                        { value: 1, displayValue: 'Good' },
-                                        { value: 2, displayValue: 'Good-Medium' },
-                                        { value: 3, displayValue: 'Medium' },
-                                        { value: 4, displayValue: 'Medium-Poor' },
-                                        { value: 5, displayValue: 'Poor' },
+                                        { value: 0, displayValue: 'Dry (6)' },
+                                        { value: 1, displayValue: 'Good (5)' },
+                                        { value: 2, displayValue: 'Good-Medium (4)' },
+                                        { value: 3, displayValue: 'Medium (3)' },
+                                        { value: 4, displayValue: 'Medium-Poor (2)' },
+                                        { value: 5, displayValue: 'Poor (1)' },
                                     ]}
                                 />
                             </div>
@@ -452,7 +455,7 @@ export const LandingWidget = () => {
                                     className="w-56 my-1.5"
                                     label="Approach Speed"
                                     value={approachSpeed}
-                                    placeholder="KTS"
+                                    placeholder="kts"
                                     min={90}
                                     max={350}
                                     decimalPrecision={0}
@@ -464,7 +467,7 @@ export const LandingWidget = () => {
                                     className="w-56 my-1.5"
                                     label="Weight"
                                     value={weight}
-                                    placeholder="KG"
+                                    placeholder="kg"
                                     min={41000}
                                     max={100000}
                                     decimalPrecision={0}
@@ -475,18 +478,20 @@ export const LandingWidget = () => {
                                 <SelectInput
                                     className="w-56 my-1.5"
                                     label="Flaps"
-                                    defaultValue={flaps}
+                                    defaultValue={performanceInitialState.landing.flaps}
+                                    value={flaps}
                                     onChange={handleFlapsChange}
                                     reverse
                                     options={[
-                                        { value: 1, displayValue: 'Full' },
+                                        { value: 1, displayValue: 'FULL' },
                                         { value: 0, displayValue: 'CONF 3' },
                                     ]}
                                 />
                                 <SelectInput
                                     className="w-56 my-1.5"
                                     label="Overweight Proc"
-                                    defaultValue={overweightProcedure}
+                                    defaultValue={performanceInitialState.landing.overweightProcedure}
+                                    value={overweightProcedure}
                                     onChange={handleOverweightProcedureChange}
                                     reverse
                                     options={[
@@ -497,7 +502,8 @@ export const LandingWidget = () => {
                                 <SelectInput
                                     className="w-56 my-1.5"
                                     label="Reverse Thrust"
-                                    defaultValue={reverseThrust}
+                                    defaultValue={performanceInitialState.landing.reverseThrust}
+                                    value={reverseThrust}
                                     onChange={handleReverseThrustChange}
                                     reverse
                                     options={[
@@ -512,6 +518,7 @@ export const LandingWidget = () => {
                                 onClick={handleCalculateLanding}
                                 className={calculateButtonClass}
                                 type="button"
+                                disabled={!areInputsValid()}
                             >
                                 Calculate
                             </button>
