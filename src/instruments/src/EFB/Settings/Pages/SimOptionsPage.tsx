@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { usePersistentProperty } from '@instruments/common/persistence';
 import { useSimVar } from '@instruments/common/simVars';
 
-import { Toggle } from '@flybywiresim/react-components';
+import { Toggle } from '../../Components/Form/Toggle';
 import { ButtonType, SettingItem, SettingsPage } from '../Settings';
 
 import Button from '../../Components/Button/Button';
@@ -121,8 +121,7 @@ export const SimOptionsPage = () => {
 
                     <SettingItem name="MCDU Focus Timeout (seconds)">
                         <SimpleInput
-                            className="w-30 ml-1.5 px-5 py-1.5 text-lg text-gray-300 rounded-lg bg-navy-light
-                            border-2 border-navy-light focus-within:outline-none focus-within:border-teal-light-contrast text-center disabled"
+                            className="text-center w-30"
                             value={mcduTimeout}
                             noLabel
                             min={5}
@@ -183,8 +182,7 @@ export const SimOptionsPage = () => {
                     </SettingItem>
                     <SettingItem name="External MCDU Server Port">
                         <SimpleInput
-                            className="w-30 ml-1.5 px-5 py-1.5 text-lg text-gray-300 rounded-lg bg-navy-light
-                            border-2 border-navy-light focus-within:outline-none focus-within:border-teal-light-contrast text-center disabled"
+                            className="text-center w-30"
                             value={mcduServerPort}
                             noLabel
                             onChange={(event) => {
@@ -194,7 +192,7 @@ export const SimOptionsPage = () => {
                     </SettingItem>
 
                     <SettingItem name="Throttle Detents">
-                        <Button className="bg-teal-light-contrast border-teal-light-contrast" text="Calibrate" onClick={() => setShowThrottleSettings(true)} />
+                        <Button className="bg-theme-highlight" text="Calibrate" onClick={() => setShowThrottleSettings(true)} />
                     </SettingItem>
                 </SettingsPage>
             )}

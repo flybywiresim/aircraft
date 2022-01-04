@@ -1,7 +1,8 @@
 import React from 'react';
 
 import { usePersistentNumberProperty } from '@instruments/common/persistence';
-import { Slider, Toggle } from '@flybywiresim/react-components';
+import { Toggle } from '../../Components/Form/Toggle';
+import { Slider } from '../../Components/Form/Slider';
 import { SettingItem, SettingsPage } from '../Settings';
 
 export const AudioPage = () => {

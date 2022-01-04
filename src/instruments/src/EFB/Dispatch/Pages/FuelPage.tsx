@@ -266,7 +266,7 @@ export const FuelPage = () => {
                         currentUnit={currentUnit()}
                         tankValue={totalFuel()}
                         convertedFuelValue={totalCurrent()}
-                        className="overflow-hidden rounded-2xl border shadow-lg border-theme-accent"
+                        className="overflow-hidden rounded-2xl border-2 shadow-lg border-theme-accent"
                     />
                     <TankReadoutWidget
                         title="Center Tank"
@@ -276,11 +276,11 @@ export const FuelPage = () => {
                         currentUnit={currentUnit()}
                         tankValue={centerTank()}
                         convertedFuelValue={convertFuelValueCenter(centerCurrent)}
-                        className="overflow-hidden rounded-2xl border shadow-lg border-theme-accent"
+                        className="overflow-hidden rounded-2xl border-2 shadow-lg border-theme-accent"
                     />
                 </div>
                 <div className="flex absolute inset-x-0 top-52 flex-row justify-between items-center">
-                    <div className="overflow-hidden w-min rounded-2xl border divide-y shadow-lg divide-theme-accent border-theme-accent">
+                    <div className="overflow-hidden w-min rounded-2xl border-2 divide-y shadow-lg divide-theme-accent border-theme-accent">
                         <TankReadoutWidget
                             title="Left Inner Tank"
                             current={LInnCurrent}
@@ -300,7 +300,7 @@ export const FuelPage = () => {
                             convertedFuelValue={convertFuelValueCenter(LOutCurrent)}
                         />
                     </div>
-                    <div className="overflow-hidden w-min rounded-2xl border divide-y shadow-lg divide-theme-accent border-theme-accent">
+                    <div className="overflow-hidden w-min rounded-2xl border-2 divide-y shadow-lg divide-theme-accent border-theme-accent">
                         <TankReadoutWidget
                             title="Right Inner Tank"
                             current={RInnCurrent}

@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 
 import { usePersistentProperty } from '@instruments/common/persistence';
 
-import { Toggle } from '@flybywiresim/react-components';
 import { PopUp } from '@shared/popup';
 import { HttpError } from '@flybywiresim/api-client';
+import { Toggle } from '../../Components/Form/Toggle';
 import { SelectGroup, SelectItem } from '../../Components/Form/Select';
 import SimpleInput from '../../Components/Form/SimpleInput/SimpleInput';
 import { ButtonType, SettingItem, SettingsPage } from '../Settings';
@@ -173,7 +173,7 @@ export const AtsuAocPage = () => {
 
             <SettingItem name="SimBrief Username/Pilot ID">
                 <SimpleInput
-                    className="w-30"
+                    className="text-center w-30"
                     value={simbriefDisplay}
                     noLabel
                     onBlur={(value) => handleUsernameInput(value.replace(/\s/g, ''))}

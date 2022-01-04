@@ -76,10 +76,8 @@ export const AircraftOptionsPinProgramsPage = () => {
     return (
         <SettingsPage name="Aircraft Options / Pin Programs">
             <SettingItem name="Thrust Reduction Height (ft)">
-                {/* TODO: HANDLE THIS CLASSNAME SOME OTHER WAY */}
                 <SimpleInput
-                    className="w-30 px-5 py-1.5 text-lg text-gray-300 rounded-lg bg-navy-light
-                            border-2 border-navy-light focus-within:outline-none focus-within:border-teal-light-contrast text-center"
+                    className="text-center w-30"
                     placeholder={thrustReductionHeight}
                     noLabel
                     value={thrustReductionHeightSetting}
@@ -90,8 +88,7 @@ export const AircraftOptionsPinProgramsPage = () => {
             </SettingItem>
             <SettingItem name="Acceleration Height (ft)">
                 <SimpleInput
-                    className="w-30 px-5 py-1.5 text-lg text-gray-300 rounded-lg bg-navy-light
-                            border-2 border-navy-light focus-within:outline-none focus-within:border-teal-light-contrast text-center"
+                    className="text-center w-30"
                     placeholder={accelerationHeight}
                     noLabel
                     value={accelerationHeightSetting}
@@ -102,8 +99,7 @@ export const AircraftOptionsPinProgramsPage = () => {
             </SettingItem>
             <SettingItem name="Engine-Out Acceleration Height (ft)">
                 <SimpleInput
-                    className="w-30 px-5 py-1.5 text-lg text-gray-300 rounded-lg bg-navy-light
-                            border-2 border-navy-light focus-within:outline-none focus-within:border-teal-light-contrast text-center"
+                    className="text-center w-30"
                     placeholder={accelerationOutHeight}
                     noLabel
                     value={accelerationOutHeightSetting}

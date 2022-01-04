@@ -27,7 +27,7 @@ const Button = ({ text, type = BUTTON_TYPE.BLUE, onClick, className, ...props }:
                 'border-red-500 text-red-500': type === BUTTON_TYPE.RED_OUTLINE,
                 '': type === BUTTON_TYPE.NONE,
             },
-            'py-2 px-4 flex items-center justify-center rounded-lg focus:outline-none border-4',
+            'py-2 px-4 flex items-center justify-center rounded-md focus:outline-none border-4',
             className,
         ])}
         {...props}

@@ -12,7 +12,7 @@ export const Dashboard = () => {
             <div className="flex mt-4 w-full h-efb">
                 <FlightWidget />
                 <div className="flex flex-col w-3/5">
-                    <div className="p-6 mb-3 ml-3 h-2/5 rounded-lg bg-navy-lighter">
+                    <div className="p-6 mb-3 ml-3 h-2/5 rounded-lg bg-theme-accent">
                         <div className="flex items-center h-full">
                             <div className="w-1/2">
                                 <WeatherWidget name="origin" editIcao="yes" icao={simbriefData.departingAirport} />

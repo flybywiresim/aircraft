@@ -139,22 +139,26 @@ const SimpleInput = (props: SimpleInputProps) => {
         setDisplayValue(newInput.default);
     }
 
+    const Input = (
+        <input
+            className={`px-5 py-1.5 text-lg text-white rounded-lg bg-theme-accent
+            border-2 border-theme-accent focus-within:outline-none focus-within:border-theme-highlight ${props.className}`}
+            value={displayValue}
+            placeholder={props.placeholder ?? ''}
+            onChange={onChange}
+            onFocus={onFocus}
+            onBlur={onFocusOut}
+            maxLength={props.maxLength}
+            disabled={props.disabled}
+        />
+    );
+
     return (
         <>
             {props.noLabel
                 ? (
                     <>
-                        <input
-                            className={`px-5 py-1.5 text-lg text-gray-300 rounded-lg bg-navy-light border-2 border-navy-light focus-within:outline-none
-                            focus-within:border-teal-light-contrast ${props.className}`}
-                            value={displayValue}
-                            placeholder={props.placeholder ?? ''}
-                            onChange={onChange}
-                            onFocus={onFocus}
-                            onBlur={onFocusOut}
-                            maxLength={props.maxLength}
-                            disabled={props.disabled}
-                        />
+                        {Input}
                     </>
                 )
                 : (
@@ -162,17 +166,7 @@ const SimpleInput = (props: SimpleInputProps) => {
                         <div className={`flex ${props.reverse && props.labelPosition === 'row' ? 'flex-row-reverse' : `flex-${props.labelPosition ?? 'row'}`}`}>
                             <div className={`text-lg flex flex-grow ${props.noLeftMargin ? '' : 'm-2.5'} items-center ${props.reverse ? 'justify-start' : 'justify-end'}`}>{props.label}</div>
                             <div className="flex items-center">
-                                <input
-                                    className={`px-5 py-1.5 text-lg  rounded-lg bg-navy-light border-2 border-navy-light focus-within:outline-none
-                                    focus-within:border-teal-light-contrast ${props.className}`}
-                                    value={displayValue}
-                                    placeholder={props.placeholder ?? ''}
-                                    onChange={onChange}
-                                    onFocus={onFocus}
-                                    onBlur={onFocusOut}
-                                    maxLength={props.maxLength}
-                                    disabled={props.disabled}
-                                />
+                                {Input}
                             </div>
                         </div>
                     </>

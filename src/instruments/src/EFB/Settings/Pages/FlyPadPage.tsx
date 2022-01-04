@@ -3,7 +3,8 @@ import React from 'react';
 import { usePersistentNumberProperty, usePersistentProperty } from '@instruments/common/persistence';
 import { useSimVar } from '@instruments/common/simVars';
 
-import { Slider, Toggle } from '@flybywiresim/react-components';
+import { Toggle } from '../../Components/Form/Toggle';
+import { Slider } from '../../Components/Form/Slider';
 import { ButtonType, SettingItem, SettingsPage } from '../Settings';
 import { SelectGroup, SelectItem } from '../../Components/Form/Select';
 
