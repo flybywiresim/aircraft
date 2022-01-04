@@ -387,14 +387,13 @@ impl PneumaticContainer for VariableVolumeContainer {
     }
 }
 
-pub struct PneumaticContainerWithConnector<T: PneumaticContainer> {
-    container: T,
-    connector: PurelyPneumaticValve,
+pub struct PressurisedReservoirWithExhaustValve<T: PneumaticContainer> {
+    reservoir: PneumaticContainerWithConnector<T>,
     preloaded_relief_valve: PneumaticExhaust,
 
     leak_failure: Failure,
 }
-impl<T: PneumaticContainer> PneumaticContainerWithConnector<T> {
+impl<T: PneumaticContainer> PressurisedReservoirWithExhaustValve<T> {
     const LEAK_FAILURE_MULTIPLIER: f64 = 500.;
 
     pub fn new(
@@ -404,8 +403,7 @@ impl<T: PneumaticContainer> PneumaticContainerWithConnector<T> {
         valve_speed: f64,
     ) -> Self {
         Self {
-            container,
-            connector: PurelyPneumaticValve::new(),
+            reservoir: PneumaticContainerWithConnector::<T>::new(container),
             preloaded_relief_valve: PneumaticExhaust::new(
                 valve_speed,
                 valve_speed * Self::LEAK_FAILURE_MULTIPLIER,
@@ -421,11 +419,11 @@ impl<T: PneumaticContainer> PneumaticContainerWithConnector<T> {
         context: &UpdateContext,
         connected_container: &mut impl PneumaticContainer,
     ) {
-        self.connector
-            .update_move_fluid(context, connected_container, &mut self.container);
+        self.reservoir
+            .update_flow_through_valve(context, connected_container);
 
         self.preloaded_relief_valve
-            .update_move_fluid(context, &mut self.container);
+            .update_move_fluid(context, self.reservoir.container());
 
         self.update_leak_failure();
     }
@@ -436,6 +434,53 @@ impl<T: PneumaticContainer> PneumaticContainerWithConnector<T> {
         } else {
             self.preloaded_relief_valve.set_leaking(true);
         }
+    }
+
+    pub fn container(&mut self) -> &mut T {
+        self.reservoir.container()
+    }
+
+    pub fn pressure(&self) -> Pressure {
+        self.reservoir.pressure()
+    }
+
+    #[cfg(test)]
+    pub fn temperature(&self) -> ThermodynamicTemperature {
+        self.reservoir.temperature()
+    }
+}
+impl PressurisedReservoirWithExhaustValve<VariableVolumeContainer> {
+    pub fn change_spatial_volume(&mut self, new_volume: Volume) {
+        self.reservoir.change_spatial_volume(new_volume);
+    }
+}
+impl SimulationElement for PressurisedReservoirWithExhaustValve<VariableVolumeContainer> {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.leak_failure.accept(visitor);
+
+        visitor.visit(self);
+    }
+}
+
+struct PneumaticContainerWithConnector<T: PneumaticContainer> {
+    container: T,
+    connector: PurelyPneumaticValve,
+}
+impl<T: PneumaticContainer> PneumaticContainerWithConnector<T> {
+    pub fn new(container: T) -> Self {
+        Self {
+            container,
+            connector: PurelyPneumaticValve::new(),
+        }
+    }
+
+    pub fn update_flow_through_valve(
+        &mut self,
+        context: &UpdateContext,
+        connected_container: &mut impl PneumaticContainer,
+    ) {
+        self.connector
+            .update_move_fluid(context, connected_container, &mut self.container);
     }
 
     pub fn container(&mut self) -> &mut T {
@@ -454,13 +499,6 @@ impl<T: PneumaticContainer> PneumaticContainerWithConnector<T> {
 impl PneumaticContainerWithConnector<VariableVolumeContainer> {
     pub fn change_spatial_volume(&mut self, new_volume: Volume) {
         self.container.change_spatial_volume(new_volume);
-    }
-}
-impl SimulationElement for PneumaticContainerWithConnector<VariableVolumeContainer> {
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        self.leak_failure.accept(visitor);
-
-        visitor.visit(self);
     }
 }
 
@@ -854,14 +892,31 @@ mod tests {
     }
 
     #[test]
-    fn container_with_valve_behaves_like_open_valve() {
+    fn pressurised_reservoir_behaves_like_open_valve() {
         let mut source = quick_container(1., 20., 15.);
-        let mut container_with_valve = PneumaticContainerWithConnector::new(
+        let mut container_with_valve = PressurisedReservoirWithExhaustValve::new(
             HydraulicColor::Green,
             quick_container(1., 10., 15.),
             Pressure::new::<psi>(0.),
             1e-2,
         );
+
+        let context = context(Duration::from_secs(1), Length::new::<foot>(0.));
+
+        container_with_valve.update_flow_through_valve(&context, &mut source);
+
+        assert!(source.pressure().get::<psi>() < 20.);
+        assert!(source.temperature().get::<degree_celsius>() < 15.);
+
+        assert!(container_with_valve.pressure().get::<psi>() > 10.);
+        assert!(container_with_valve.temperature().get::<degree_celsius>() > 15.);
+    }
+
+    #[test]
+    fn container_with_valve_behaves_like_open_valve() {
+        let mut source = quick_container(1., 20., 15.);
+        let mut container_with_valve =
+            PneumaticContainerWithConnector::new(quick_container(1., 10., 15.));
 
         let context = context(Duration::from_secs(1), Length::new::<foot>(0.));
 

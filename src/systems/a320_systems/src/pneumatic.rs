@@ -17,8 +17,8 @@ use systems::{
         valve::*, BleedMonitoringComputerChannelOperationMode,
         BleedMonitoringComputerIsAliveSignal, CompressionChamber, ControllablePneumaticValve,
         CrossBleedValveSelectorKnob, CrossBleedValveSelectorMode,
-        EngineCompressionChamberController, EngineState, PneumaticContainer,
-        PneumaticContainerWithConnector, PneumaticPipe, PneumaticValveSignal, Precooler,
+        EngineCompressionChamberController, EngineState, PneumaticContainer, PneumaticPipe,
+        PneumaticValveSignal, Precooler, PressurisedReservoirWithExhaustValve,
         PressurizeableReservoir, TargetPressureSignal, VariableVolumeContainer,
     },
     shared::{
@@ -118,9 +118,12 @@ pub struct A320Pneumatic {
     apu_compression_chamber: CompressionChamber,
     apu_bleed_air_valve: DefaultValve,
 
-    green_hydraulic_reservoir_with_valve: PneumaticContainerWithConnector<VariableVolumeContainer>,
-    blue_hydraulic_reservoir_with_valve: PneumaticContainerWithConnector<VariableVolumeContainer>,
-    yellow_hydraulic_reservoir_with_valve: PneumaticContainerWithConnector<VariableVolumeContainer>,
+    green_hydraulic_reservoir_with_valve:
+        PressurisedReservoirWithExhaustValve<VariableVolumeContainer>,
+    blue_hydraulic_reservoir_with_valve:
+        PressurisedReservoirWithExhaustValve<VariableVolumeContainer>,
+    yellow_hydraulic_reservoir_with_valve:
+        PressurisedReservoirWithExhaustValve<VariableVolumeContainer>,
 
     packs: [PackComplex; 2],
 }
@@ -150,7 +153,7 @@ impl A320Pneumatic {
             ],
             apu_compression_chamber: CompressionChamber::new(Volume::new::<cubic_meter>(5.)),
             apu_bleed_air_valve: DefaultValve::new_closed(),
-            green_hydraulic_reservoir_with_valve: PneumaticContainerWithConnector::new(
+            green_hydraulic_reservoir_with_valve: PressurisedReservoirWithExhaustValve::new(
                 HydraulicColor::Green,
                 VariableVolumeContainer::new(
                     Volume::new::<gallon>(2.5),
@@ -160,7 +163,7 @@ impl A320Pneumatic {
                 Pressure::new::<psi>(70.),
                 2e-2,
             ),
-            blue_hydraulic_reservoir_with_valve: PneumaticContainerWithConnector::new(
+            blue_hydraulic_reservoir_with_valve: PressurisedReservoirWithExhaustValve::new(
                 HydraulicColor::Blue,
                 VariableVolumeContainer::new(
                     Volume::new::<gallon>(1.1),
@@ -170,7 +173,7 @@ impl A320Pneumatic {
                 Pressure::new::<psi>(70.),
                 2e-2,
             ),
-            yellow_hydraulic_reservoir_with_valve: PneumaticContainerWithConnector::new(
+            yellow_hydraulic_reservoir_with_valve: PressurisedReservoirWithExhaustValve::new(
                 HydraulicColor::Yellow,
                 VariableVolumeContainer::new(
                     Volume::new::<gallon>(1.7),
