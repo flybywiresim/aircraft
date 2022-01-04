@@ -107,7 +107,6 @@
 1. [FBW] Improved sideslip controller - @IbrahimK42 (IbrahimK42)
 1. [AP] Further improved ALT CST* and ALT CST conditions - @aguther (Andreas Guther)
 1. [MCDU] Added support for connecting MCDU to external devices - @tyler58546 (tyler58546)
-1. [MCDU] Fix Take off page THR RED ACC and ENG OUT ACC caluculations - @John-UK (John-UK)
 
 ## 0.7.0
 
