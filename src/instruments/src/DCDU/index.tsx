@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
+import { useCoherentEvent } from '@instruments/common/hooks';
 import { render } from '../Common';
 import { SelfTest } from './pages/SelfTest';
 import { Standby } from './pages/Standby';
@@ -30,6 +31,12 @@ const DCDU: React.FC = () => {
     const [messageType, setMessageType] = useState('NONE');
     const [messageOut, setMessageOut] = useState(false);
     const [message, setMessage] = useState('');
+
+    useCoherentEvent('A32NX_DCDU_MSG', (message: string, messageOut: boolean, type: string) => {
+        setMessage(message);
+        setMessageOut(messageOut);
+        setMessageType(type);
+    });
 
     useUpdate((_deltaTime) => {
         if (state === DcduState.Off) {
