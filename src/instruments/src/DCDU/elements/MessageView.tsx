@@ -46,6 +46,18 @@ export const MessageView: React.FC<MessageViewProps> = memo(({ message }) => {
                 <tspan x="28" y="90">{startLine}</tspan>
                 {lines.map((line) => (<tspan x="28" dy="30">{line}</tspan>))}
             </text>
+            {pageCount > 1 && (
+                <>
+                    <text className="status-atsu" x="65%" y="310">PG</text>
+                    <text className="status-atsu" x="65%" y="340">
+                        {pageIndex + 1}
+                        {' '}
+                        /
+                        {' '}
+                        {pageCount}
+                    </text>
+                </>
+            )}
         </g>
     );
 });
