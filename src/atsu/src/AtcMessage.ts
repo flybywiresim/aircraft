@@ -23,7 +23,8 @@
  */
 
 export enum AtcMessageType {
-    Telex
+    Telex,
+    PDC
 }
 
 export enum AtcMessageStatus {
