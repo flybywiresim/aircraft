@@ -79,6 +79,24 @@ export class PreDepartureClearance extends AtcMessage {
 
         return pdcMessage;
     }
+
+    // used to deserialize event data
+    public deserialize(jsonData: any): void {
+        super.deserialize(jsonData);
+
+        this.Callsign = jsonData.Callsign;
+        this.Origin = jsonData.Origin;
+        this.Destination = jsonData.Destination;
+        this.Gate = jsonData.Gate;
+        this.Atis = jsonData.Atis;
+
+        this.Freetext0 = jsonData.Freetext0;
+        this.Freetext1 = jsonData.Freetext1;
+        this.Freetext2 = jsonData.Freetext2;
+        this.Freetext3 = jsonData.Freetext3;
+        this.Freetext4 = jsonData.Freetext4;
+        this.Freetext5 = jsonData.Freetext5;
+    }
 }
 
 export { AtcMessageType, AtcMessageDirection, AtcMessageStatus, AtcMessage };

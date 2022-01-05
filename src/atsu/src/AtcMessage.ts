@@ -55,4 +55,12 @@ export class AtcMessage {
     public serialize() {
         throw new Error('No valid implementation');
     }
+
+    // used to deserialize event data
+    public deserialize(jsonData) {
+        this.Timestamp = jsonData.Timestamp;
+        this.Type = jsonData.Type;
+        this.Direction = jsonData.Direction;
+        this.Status = jsonData.Status;
+    }
 }
