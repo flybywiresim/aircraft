@@ -34,7 +34,7 @@ export const MessageView: React.FC<MessageViewProps> = memo(({ message, lineOffs
 
     return (
         <g>
-            <rect className={backgroundClass} height={contentHeight} />
+            <rect className={backgroundClass} height={contentHeight} x="21" y="59" />
             <text className="message-content">
                 <tspan x="28" y="90">{startLine}</tspan>
                 {lines.map((line) => (<tspan x="28" dy="30">{line}</tspan>))}

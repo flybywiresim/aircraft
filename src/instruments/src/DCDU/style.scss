@@ -41,13 +41,11 @@ path.dcdu-line {
 .status-open {
   fill: rgb(0,255,255);
   font-size: 18px;
-  font-family: Roboto-Light;
+  font-family: Roboto;
   font-weight: bold;
 }
 
 .message-background {
-  x: 21px;
-  y: 59px;
   width: 450px;
 }
 
@@ -61,10 +59,8 @@ path.dcdu-line {
 
 .message-content {
   fill: rgb(0,0,0);
-  x: 21px;
-  y: 59px;
   font-size: 22px;
-  font-family: Roboto-Light;
+  font-family: Roboto;
   font-weight: bold;
 }
 
@@ -96,6 +92,6 @@ path.dcdu-line {
     fill: white;
     font-size: 36px;
     text-anchor: middle;
-    font-family: Roboto-Light;
+    font-family: Roboto;
   }
 }
