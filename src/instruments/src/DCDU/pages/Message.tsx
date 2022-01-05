@@ -27,7 +27,7 @@ export const Message: React.FC<MessageProps> = memo(({ message }) => {
         return (
             <>
                 <svg className="dcdu">
-                    <MessageView message={message.serialize()} lineOffset={lineOffset} />
+                    <MessageView message={message} lineOffset={lineOffset} />
                     <BaseView />
                 </svg>
             </>

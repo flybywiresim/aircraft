@@ -1,13 +1,16 @@
 import React, { memo } from 'react';
+import { AtcMessage, AtcMessageDirection } from '@atsu/AtcMessage';
 
 type MessageViewProps = {
-    message: string,
+    message: AtcMessage,
     lineOffset: number,
 }
 
 export const MessageView: React.FC<MessageViewProps> = memo(({ message, lineOffset }) => {
+    const serializedMessage = message.serialize();
+
     // get the start and end index
-    let lines = message.split(/\r?\n/);
+    let lines = serializedMessage.split(/\r?\n/);
     let startIndex = lineOffset;
     const maxLines = 5;
     if (lines.length - lineOffset < maxLines) {
