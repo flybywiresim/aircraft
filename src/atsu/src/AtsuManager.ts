@@ -64,7 +64,7 @@ export class AtsuManager {
 
         this.pdcMessage = message;
         this.pdcMessage.Timestamp = SimVar.GetGlobalVarValue('ZULU TIME', 'seconds');
-        this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', this.pdcMessage.serialize(), true, 'TELEX');
+        this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', this.pdcMessage);
 
         return '';
     }

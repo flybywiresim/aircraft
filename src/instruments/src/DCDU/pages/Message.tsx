@@ -1,15 +1,14 @@
 import { useState, memo } from 'react';
+import { AtcMessage, AtcMessageType } from '@atsu/AtcMessage';
 import { useInteractionEvent } from '../../util.js';
 import { BaseView } from '../elements/BaseView';
 import { MessageView } from '../elements/MessageView';
 
 type MessageProps = {
-    out: boolean,
-    type: string,
-    message: string,
+    message: AtcMessage,
 }
 
-export const Message: React.FC<MessageProps> = memo(({ out, type, message }) => {
+export const Message: React.FC<MessageProps> = memo(({ message }) => {
     const [inop, setInop] = useState(false);
     const [lineOffset, setLineOffset] = useState(0);
 
@@ -22,12 +21,13 @@ export const Message: React.FC<MessageProps> = memo(({ out, type, message }) => 
         }
     });
 
-    switch (type) {
-    case 'TELEX':
+    switch (message.Type) {
+    case AtcMessageType.Telex:
+    case AtcMessageType.PDC:
         return (
             <>
                 <svg className="dcdu">
-                    <MessageView message={message} lineOffset={lineOffset} />
+                    <MessageView message={message.serialize()} lineOffset={lineOffset} />
                     <BaseView />
                 </svg>
             </>

@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import { useCoherentEvent } from '@instruments/common/hooks';
+import { AtcMessageType, AtcMessage } from '@atsu/AtcMessage';
+import { PreDepartureClearance } from '@atsu/PreDepartureClearance';
 import { render } from '../Common';
 import { SelfTest } from './pages/SelfTest';
 import { Standby } from './pages/Standby';
@@ -28,14 +30,14 @@ function powerAvailable() {
 const DCDU: React.FC = () => {
     const [isColdAndDark] = useSimVar('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool', 200);
     const [state, setState] = useState(isColdAndDark ? DcduState.Off : DcduState.Standby);
-    const [messageType, setMessageType] = useState('NONE');
-    const [messageOut, setMessageOut] = useState(false);
-    const [message, setMessage] = useState('');
+    const [message, setMessage] = useState(new AtcMessage());
 
-    useCoherentEvent('A32NX_DCDU_MSG', (message: string, messageOut: boolean, type: string) => {
-        setMessage(message);
-        setMessageOut(messageOut);
-        setMessageType(type);
+    useCoherentEvent('A32NX_DCDU_MSG', (serialized: any) => {
+        if (AtcMessageType.PDC === serialized.Type) {
+            const newMessage = new PreDepartureClearance();
+            newMessage.deserialize(serialized);
+            setMessage(newMessage);
+        }
     });
 
     useUpdate((_deltaTime) => {
@@ -45,9 +47,9 @@ const DCDU: React.FC = () => {
             }
         } else if (!powerAvailable()) {
             setState(DcduState.Off);
-        } else if (state === DcduState.Standby && messageType !== 'NONE' && message.length !== 0) {
+        } else if (state === DcduState.Standby && message.Type !== undefined) {
             setState(DcduState.Message);
-        } else if (state === DcduState.Message && (messageType === 'NONE' || message.length === 0)) {
+        } else if (state === DcduState.Message && message.Type === undefined) {
             setState(DcduState.Standby);
         }
     });
@@ -90,7 +92,7 @@ const DCDU: React.FC = () => {
         return (
             <>
                 <div className="BacklightBleed" />
-                <Message out={messageOut} type={messageType} message={message} />
+                <Message message={message} />
             </>
         );
     default:
