@@ -30,7 +30,7 @@ function powerAvailable() {
 const DCDU: React.FC = () => {
     const [isColdAndDark] = useSimVar('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool', 200);
     const [state, setState] = useState(isColdAndDark ? DcduState.Off : DcduState.Standby);
-    const [message, setMessage] = useState(new AtcMessage());
+    const [message, setMessage] = useState<AtcMessage | null>(null);
 
     useCoherentEvent('A32NX_DCDU_MSG', (serialized: any) => {
         if (AtcMessageType.PDC === serialized.Type) {
@@ -47,9 +47,9 @@ const DCDU: React.FC = () => {
             }
         } else if (!powerAvailable()) {
             setState(DcduState.Off);
-        } else if (state === DcduState.Standby && message.Type !== undefined) {
+        } else if (state === DcduState.Standby && message !== null && message.Type !== undefined) {
             setState(DcduState.Message);
-        } else if (state === DcduState.Message && message.Type === undefined) {
+        } else if (state === DcduState.Message && (message === null || message.Type === undefined)) {
             setState(DcduState.Standby);
         }
     });
