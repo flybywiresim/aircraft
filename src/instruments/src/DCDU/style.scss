@@ -45,11 +45,18 @@ path.dcdu-line {
   font-weight: bold;
 }
 
-.message-out {
-  fill: rgb(0,255,255);
+.message-background {
   x: 21px;
   y: 59px;
   width: 450px;
+}
+
+.message-out {
+  fill: rgb(0,255,255);
+}
+
+.message-in {
+  fill: green;
 }
 
 .message-content {

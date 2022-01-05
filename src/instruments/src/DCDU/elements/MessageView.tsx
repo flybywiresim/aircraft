@@ -24,9 +24,17 @@ export const MessageView: React.FC<MessageViewProps> = memo(({ message, lineOffs
     // one line has 32px and the minimum height is 2px
     const contentHeight = 32 * (endIndex - startIndex) + 2;
 
+    // define the correct background color
+    let backgroundClass = 'message-background ';
+    if (message.Direction === AtcMessageDirection.Output) {
+        backgroundClass += 'message-out';
+    } else {
+        backgroundClass += 'message-in';
+    }
+
     return (
         <g>
-            <rect className="message-out" height={contentHeight} />
+            <rect className={backgroundClass} height={contentHeight} />
             <text className="message-content">
                 <tspan x="28" y="90">{startLine}</tspan>
                 {lines.map((line) => (<tspan x="28" dy="30">{line}</tspan>))}
