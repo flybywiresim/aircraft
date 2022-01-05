@@ -1,11 +1,9 @@
 export const BaseView: React.FC = () => (
     <>
-        <svg className="dcdu-lines">
-            <g>
-                <path d="m 21 236 h 450" />
-                <path d="m 130 246 v 124" />
-                <path d="m 362 246 v 124" />
-            </g>
-        </svg>
+        <g>
+            <path className="dcdu-line" d="m 21 236 h 450" />
+            <path className="dcdu-line" d="m 130 250 v 102" />
+            <path className="dcdu-line" d="m 362 250 v 102" />
+        </g>
     </>
 );

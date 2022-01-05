@@ -16,10 +16,8 @@ export const Standby: React.FC = () => {
 
     return (
         <>
-            <BaseView />
-
-            <svg className="inop-wrapper" style={{ visibility: inop ? 'visible' : 'hidden' }}>
-                <text x="246" y="170">INOP.</text>
+            <svg className="dcdu">
+                <BaseView />
             </svg>
         </>
     );

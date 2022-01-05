@@ -12,7 +12,7 @@
   font-style: normal;
 }
 
-.dcdu-lines {
+.dcdu {
   position: absolute;
   left: 10px !important;
   top: 10px !important;
@@ -20,33 +20,53 @@
   height: 364px;
 
   background: radial-gradient(
-      ellipse at center,
-      rgba(4, 4, 5, 1) 0%,
-      rgb(4, 4, 5) 100%
+    ellipse at center,
+    rgba(4, 4, 5, 1) 0%,
+    rgb(4, 4, 5) 100%
   );
-
-  visibility: visible !important;
-
-  font-family: Roboto;
-
-  path {
-    stroke: white;
-    stroke-width: 3;
-  }
 }
 
-.text-wrapper {
+path.dcdu-line {
+  stroke: white;
+  stroke-width: 2;
+}
+
+.station {
+  fill: rgb(0,255,0);
+  font-size: 18px;
+  font-family: arial;
+  font-weight: bold;
+}
+
+.status-open {
+  fill: rgb(0,255,255);
+  font-size: 18px;
+  font-family: Roboto-Light;
+  font-weight: bold;
+}
+
+.message-out {
+  fill: rgb(0,255,255);
+  x: 21px;
+  y: 59px;
+  width: 450px;
+}
+
+.message-content {
+  fill: rgb(0,0,0);
+  x: 21px;
+  y: 59px;
+  font-size: 22px;
+  font-family: Roboto-Light;
+  font-weight: bold;
+}
+
+.startup-text {
   position: absolute;
   left: 10px !important;
   top: 10px !important;
   width: 492px;
   height: 364px;
-
-  background: radial-gradient(
-      ellipse at center,
-      rgba(4, 4, 5, 1) 0%,
-      rgba(4, 4, 5, 1) 100%
-  );
 
   text {
     fill: green;
