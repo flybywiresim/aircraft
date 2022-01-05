@@ -6,10 +6,6 @@ type MessageViewProps = {
 }
 
 export const MessageView: React.FC<MessageViewProps> = memo(({ message, lineOffset }) => {
-    if (!message || message.length === 0) {
-        return null;
-    }
-
     // get the start and end index
     let lines = message.split(/\r?\n/);
     let startIndex = lineOffset;
