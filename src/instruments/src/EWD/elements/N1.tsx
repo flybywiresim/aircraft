@@ -1,6 +1,6 @@
 import {
     GaugeComponent,
-    GaugeMarkerComponent, GaugeMarkerComponentType, splitDecimals, GaugeMaxComponent, ThrottlePositionDonutComponent, valueRadianAngleConverter,
+    GaugeMarkerComponent, splitDecimals, GaugeMaxComponent, ThrottlePositionDonutComponent, valueRadianAngleConverter,
 } from '@instruments/common/gauges';
 import { useSimVar } from '@instruments/common/simVars';
 import React from 'react';
@@ -130,7 +130,7 @@ const N1: React.FC<N1Props> = ({ x, y, engine }) => {
                     <rect x={x - 19} y={y + 19} width={96} height={30} className="DarkGreyBox" />
                     {/* N1 max limit  */}
                     <GaugeMarkerComponent
-                        value={N1ThrustLimit / 10}
+                        value={Math.abs(N1ThrustLimit / 10)}
                         x={x}
                         y={y}
                         min={min}
@@ -141,7 +141,7 @@ const N1: React.FC<N1Props> = ({ x, y, engine }) => {
                         className="GaugeThrustLimitIndicator Gauge"
                     />
                     <GaugeMaxComponent
-                        value={N1ThrustLimit / 10}
+                        value={Math.abs(N1ThrustLimit / 10)}
                         x={x}
                         y={y}
                         min={min}
