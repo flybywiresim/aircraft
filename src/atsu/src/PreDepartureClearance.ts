@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-import { AtcMessage } from './AtcMessage';
+import { AtcMessageType, AtcMessageStatus, AtcMessage } from './AtcMessage';
 
 /**
  * Defines the general PDC message format
@@ -50,6 +50,12 @@ export class PreDepartureClearance extends AtcMessage {
 
     public Freetext5 = '';
 
+    constructor() {
+        super();
+        this.Type = AtcMessageType.Telex;
+        this.Status = AtcMessageStatus.Open;
+    }
+
     public serialize() {
         // create the generic PDC message
         let pdcMessage = 'REQUEST PREDEP CLEARANCE\n';
@@ -74,4 +80,4 @@ export class PreDepartureClearance extends AtcMessage {
     }
 }
 
-export { AtcMessage };
+export { AtcMessageType, AtcMessageStatus, AtcMessage };
