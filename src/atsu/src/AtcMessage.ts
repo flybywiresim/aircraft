@@ -22,11 +22,27 @@
  * SOFTWARE.
  */
 
+export enum AtcMessageType {
+    Telex
+}
+
+export enum AtcMessageStatus {
+    Open,
+    Closed,
+    Wilco,
+    Modify,
+    Cannot
+}
+
 /**
  * Defines the generic ATC message
  */
 export class AtcMessage {
     public Timestamp = undefined;
+
+    public Type = undefined;
+
+    public Status = undefined;
 
     public serialize() {
         throw new Error('No valid implementation');
