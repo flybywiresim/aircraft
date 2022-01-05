@@ -2349,7 +2349,7 @@ class FMCMainDisplay extends BaseAirliners {
             this.addNewMessage(NXSystemMessages.formatError);
             return false;
         }
-        if (s.length > 6 && !/^\d{3,5}\/\d{3,5}$/.test(s)) {
+        if (s.length > 6 && !/^\d{4,5}\/\d{4,5}$/.test(s)) {
             this.addNewMessage(NXSystemMessages.formatError);
             return false;
         }
@@ -2374,12 +2374,12 @@ class FMCMainDisplay extends BaseAirliners {
             return false;
         }
 
-        if (thrRedAlt > 0 && !/^\d{3,5}$/.test(thrRedAlt)) {
+        if (thrRedAlt > 0 && !/^\d{4,5}$/.test(thrRedAlt)) {
             this.addNewMessage(NXSystemMessages.formatError);
             return false;
         }
 
-        if (accAlt > 0 && !/^\d{3,5}$/.test(accAlt)) {
+        if (accAlt > 0 && !/^\d{4,5}$/.test(accAlt)) {
             this.addNewMessage(NXSystemMessages.formatError);
             return false;
         }
@@ -2449,7 +2449,7 @@ class FMCMainDisplay extends BaseAirliners {
             return true;
         }
 
-        if (!/^\d{3,5}$/.test(s)) {
+        if (!/^\d{4,5}$/.test(s)) {
             this.addNewMessage(NXSystemMessages.formatError);
             return false;
         }
