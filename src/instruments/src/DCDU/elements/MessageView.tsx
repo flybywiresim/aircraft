@@ -1,28 +1,35 @@
-import React, { memo } from 'react';
+import React, { memo, useState } from 'react';
 import { AtcMessage, AtcMessageDirection } from '@atsu/AtcMessage';
 
 type MessageViewProps = {
-    message: AtcMessage,
-    lineOffset: number,
+    message: AtcMessage
 }
 
-export const MessageView: React.FC<MessageViewProps> = memo(({ message, lineOffset }) => {
+export const MessageView: React.FC<MessageViewProps> = memo(({ message }) => {
+    const [pageIndex, setPageIndex] = useState(0);
+    const [pageCount, setPageCount] = useState(0);
     const serializedMessage = message.serialize();
-
-    // get the start and end index
-    let lines = serializedMessage.split(/\r?\n/);
-    let startIndex = lineOffset;
     const maxLines = 5;
-    if (lines.length - lineOffset < maxLines) {
-        startIndex = Math.max(lines.length - maxLines, 0);
+
+    // get the number of pages
+    let lines = serializedMessage.split(/\r?\n/);
+    lines = lines.filter((e) => e);
+    const messagePageCount = Math.ceil(lines.length / maxLines);
+    if (messagePageCount !== pageCount) {
+        setPageCount(messagePageCount);
     }
-    const endIndex = (lines.length - startIndex >= maxLines) ? maxLines : lines.length - startIndex;
+
+    // get the indices
+    const startIndex = pageIndex * maxLines;
+    const endIndex = Math.min(startIndex + maxLines, lines.length - startIndex);
+
+    // get the start line and the other lines
     const startLine = lines[startIndex];
-    lines = lines.slice(startIndex + 1, endIndex + 1);
+    lines = lines.slice(startIndex + 1, endIndex);
 
     // calculate the height used by the required lines
     // one line has 32px and the minimum height is 2px
-    const contentHeight = 32 * (endIndex - startIndex) + 2;
+    const contentHeight = 32 * (lines.length + 1) + 2;
 
     // define the correct background color
     let backgroundClass = 'message-background ';
