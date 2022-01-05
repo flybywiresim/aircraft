@@ -1430,10 +1430,10 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
         const formattedValues = lines.map((l) => {
             return l.replace(/\[color]cyan/g, "<br/>")
-                .replace(/{end}/, "<br/>")
+                .replace(/{white}[-]{3,}{end}/g, "<br/>")
+                .replace(/{end}/g, "<br/>")
                 .replace(/(\[color][a-z]*)/g, "")
-                .replace(/{[a-z]*}/g, "")
-                .replace(/-{3,}/g, "<br/><br/>");
+                .replace(/{[a-z]*}/g, "");
         });
 
         const websocketLines = formattedValues.map((l) => {
