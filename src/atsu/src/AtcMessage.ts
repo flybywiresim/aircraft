@@ -22,6 +22,11 @@
  * SOFTWARE.
  */
 
+export enum AtcMessageDirection {
+    Input,
+    Output
+}
+
 export enum AtcMessageType {
     Telex,
     PDC
@@ -42,6 +47,8 @@ export class AtcMessage {
     public Timestamp = undefined;
 
     public Type = undefined;
+
+    public Direction = undefined;
 
     public Status = undefined;
 
