@@ -45,6 +45,10 @@ const DCDU: React.FC = () => {
             }
         } else if (!powerAvailable()) {
             setState(DcduState.Off);
+        } else if (state === DcduState.Standby && messageType !== 'NONE' && message.length !== 0) {
+            setState(DcduState.Message);
+        } else if (state === DcduState.Message && (messageType === 'NONE' || message.length === 0)) {
+            setState(DcduState.Standby);
         }
     });
 
