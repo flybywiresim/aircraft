@@ -748,9 +748,32 @@ const E2Cell = () => {
         return null;
     }
 
-    const text = `${FD1Active ? '1' : '-'} FD ${FD2Active ? '2' : '-'}`;
+    let leftString;
+    let id = 0;
+    if (FD1Active) {
+        leftString = '1';
+        id |= (1 << 0);
+    } else {
+        leftString = '-';
+        id |= (1 << 1);
+    }
+    let rightString;
+    if (FD2Active) {
+        rightString = '2';
+        id |= (1 << 2);
+    } else {
+        rightString = '-';
+        id |= (1 << 3);
+    }
+
+    const text = `${leftString} FD ${rightString}`;
     return (
-        <text className="FontMedium MiddleAlign White" x="145.8961" y="14.218581">{text}</text>
+        <g>
+            <ShowForSeconds timer={9} id={id}>
+                <path d="m156.13 9.0715v6.0476h-20.81v-6.0476z" className="NormalStroke White" />
+            </ShowForSeconds>
+            <text className="FontMedium MiddleAlign White" style={{ wordSpacing: '-1.7462px' }} x="145.51254" y="14.218353">{text}</text>
+        </g>
     );
 };
 
