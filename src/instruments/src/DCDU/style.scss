@@ -38,8 +38,20 @@ path.dcdu-line {
   font-weight: bold;
 }
 
+.status-message {
+  text-anchor: end;
+  font-size: 18px;
+  font-family: Roboto;
+  font-weight: bold;
+}
+
 .status-open {
   fill: rgb(0,255,255);
+}
+
+.status-atsu {
+  text-anchor: middle;
+  fill: rgb(255,255,255);
   font-size: 18px;
   font-family: Roboto;
   font-weight: bold;
