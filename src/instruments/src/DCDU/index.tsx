@@ -13,7 +13,8 @@ enum DcduState {
     Off,
     On,
     Waiting,
-    Standby
+    Standby,
+    Message
 }
 
 function powerAvailable() {
@@ -25,6 +26,9 @@ function powerAvailable() {
 const DCDU: React.FC = () => {
     const [isColdAndDark] = useSimVar('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool', 200);
     const [state, setState] = useState(isColdAndDark ? DcduState.Off : DcduState.Standby);
+    const [messageType, setMessageType] = useState('NONE');
+    const [messageOut, setMessageOut] = useState(false);
+    const [message, setMessage] = useState('');
 
     useUpdate((_deltaTime) => {
         if (state === DcduState.Off) {
@@ -68,6 +72,13 @@ const DCDU: React.FC = () => {
             <>
                 <div className="BacklightBleed" />
                 <Standby />
+            </>
+        );
+    case DcduState.Message:
+        return (
+            <>
+                <div className="BacklightBleed" />
+                <Message out={messageOut} type={messageType} message={message} />
             </>
         );
     default:
