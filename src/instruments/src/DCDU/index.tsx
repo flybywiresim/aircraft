@@ -4,6 +4,7 @@ import { render } from '../Common';
 import { SelfTest } from './pages/SelfTest';
 import { Standby } from './pages/Standby';
 import { WaitingForData } from './pages/WaitingForData';
+import { Message } from './pages/Message';
 import { getSimVar, useUpdate } from '../util.js';
 
 import './style.scss';
