@@ -5,7 +5,10 @@ use systems::{
         cabin_air::CabinZone, AirConditioningSystem, DuctTemperature, PackFlow, ZoneType,
     },
     pressurization::PressurizationOverheadPanel,
-    shared::{Cabin, EngineCorrectedN1, EngineStartState, LgciuWeightOnWheels, PneumaticBleed},
+    shared::{
+        Cabin, EngineCorrectedN1, EngineFirePushButtons, EngineStartState, LgciuWeightOnWheels,
+        PneumaticBleed,
+    },
     simulation::{InitContext, SimulationElement, SimulationElementVisitor, UpdateContext},
 };
 use uom::si::{f64::*, mass_rate::kilogram_per_second, volume::cubic_meter};
@@ -30,6 +33,7 @@ impl A320AirConditioning {
         &mut self,
         context: &UpdateContext,
         engines: [&impl EngineCorrectedN1; 2],
+        engine_fire_push_buttons: &impl EngineFirePushButtons,
         pneumatic: &(impl PneumaticBleed + EngineStartState),
         pneumatic_overhead: &A320PneumaticOverheadPanel,
         pressurization: &impl Cabin,
@@ -39,6 +43,7 @@ impl A320AirConditioning {
         self.a320_air_conditioning_system.update(
             context,
             engines,
+            engine_fire_push_buttons,
             pneumatic,
             [
                 pneumatic_overhead.engine_bleed_pb_is_auto(1),

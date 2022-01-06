@@ -2,8 +2,8 @@ use crate::{
     pneumatic::EngineState,
     pressurization::PressurizationOverheadPanel,
     shared::{
-        pid::PidController, Cabin, EngineCorrectedN1, EngineStartState, LgciuWeightOnWheels,
-        PneumaticBleed,
+        pid::PidController, Cabin, EngineCorrectedN1, EngineFirePushButtons, EngineStartState,
+        LgciuWeightOnWheels, PneumaticBleed,
     },
     simulation::{
         InitContext, Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -52,6 +52,7 @@ impl<const ZONES: usize> AirConditioningSystemController<ZONES> {
         acs_overhead: &AirConditioningSystemOverhead<ZONES>,
         pack_flow_valve: &[PackFlowValve; 2],
         engines: [&impl EngineCorrectedN1; 2],
+        engine_fire_push_buttons: &impl EngineFirePushButtons,
         pneumatic: &(impl PneumaticBleed + EngineStartState),
         pneumatic_overhead: [bool; 2],
         pressurization: &impl Cabin,
@@ -63,6 +64,7 @@ impl<const ZONES: usize> AirConditioningSystemController<ZONES> {
             &self.aircraft_state,
             acs_overhead.pack_pushbuttons_state(),
             engines,
+            engine_fire_push_buttons,
             pneumatic,
             pneumatic_overhead,
             pressurization,
@@ -546,8 +548,6 @@ impl From<OverheadFlowSelector> for Ratio {
 }
 
 struct PackFlowController {
-    eng_1_fire_id: VariableIdentifier,
-    eng_2_fire_id: VariableIdentifier,
     ovhd_flow_selector_id: VariableIdentifier,
 
     pack_flow_id: VariableIdentifier,
@@ -581,8 +581,6 @@ impl PackFlowController {
 
     fn new(context: &mut InitContext) -> Self {
         Self {
-            eng_1_fire_id: context.get_identifier("Fire_ENG1_Agent1_Discharge".to_owned()),
-            eng_2_fire_id: context.get_identifier("Fire_ENG2_Agent1_Discharge".to_owned()),
             ovhd_flow_selector_id: context
                 .get_identifier("KNOB_OVHD_AIRCOND_PACKFLOW_Position".to_owned()),
 
@@ -610,6 +608,7 @@ impl PackFlowController {
         aircraft_state: &AirConditioningStateManager,
         pack_pushbuttons_state: [bool; 2],
         engines: [&impl EngineCorrectedN1; 2],
+        engine_fire_push_buttons: &impl EngineFirePushButtons,
         pneumatic: &(impl PneumaticBleed + EngineStartState),
         _pneumatic_overhead: [bool; 2],
         pressurization: &impl Cabin,
@@ -621,6 +620,8 @@ impl PackFlowController {
         self.crossbleed_is_on = pneumatic.engine_crossbleed_is_on();
         self.engine_1_in_start_mode = pneumatic.left_engine_state() == EngineState::Starting;
         self.engine_2_in_start_mode = pneumatic.right_engine_state() == EngineState::Starting;
+        self.engine_1_on_fire = engine_fire_push_buttons.is_released(1);
+        self.engine_2_on_fire = engine_fire_push_buttons.is_released(2);
 
         // TODO: Add overheat protection
         self.flow_demand = self.flow_demand_determination(aircraft_state, pack_flow_valve);
@@ -745,8 +746,6 @@ impl FlowControlValveSignal for PackFlowController {
 
 impl SimulationElement for PackFlowController {
     fn read(&mut self, reader: &mut SimulatorReader) {
-        self.engine_1_on_fire = reader.read(&self.eng_1_fire_id);
-        self.engine_2_on_fire = reader.read(&self.eng_2_fire_id);
         self.flow_selector_position = reader.read(&self.ovhd_flow_selector_id);
     }
 
@@ -858,6 +857,26 @@ mod acs_controller_tests {
         }
         fn nose_gear_extended(&self, _treat_ext_pwr_as_ground: bool) -> bool {
             false
+        }
+    }
+
+    struct TestEngineFirePushButtons {
+        is_released: [bool; 2],
+    }
+    impl TestEngineFirePushButtons {
+        fn new() -> Self {
+            Self {
+                is_released: [false, false],
+            }
+        }
+
+        fn release(&mut self, engine_number: usize) {
+            self.is_released[engine_number - 1] = true;
+        }
+    }
+    impl EngineFirePushButtons for TestEngineFirePushButtons {
+        fn is_released(&self, engine_number: usize) -> bool {
+            self.is_released[engine_number - 1]
         }
     }
 
@@ -1042,6 +1061,7 @@ mod acs_controller_tests {
         pack_flow_valve: [PackFlowValve; 2],
         engine_1: TestEngine,
         engine_2: TestEngine,
+        engine_fire_push_buttons: TestEngineFirePushButtons,
         pneumatic: TestPneumatic,
         pneumatic_overhead: TestPneumaticOverhead,
         pressurization: TestPressurization,
@@ -1067,6 +1087,7 @@ mod acs_controller_tests {
                 ],
                 engine_1: TestEngine::new(Ratio::new::<percent>(0.)),
                 engine_2: TestEngine::new(Ratio::new::<percent>(0.)),
+                engine_fire_push_buttons: TestEngineFirePushButtons::new(),
                 pneumatic: TestPneumatic::new(context),
                 pneumatic_overhead: TestPneumaticOverhead::new(context),
                 pressurization: TestPressurization::new(),
@@ -1106,6 +1127,7 @@ mod acs_controller_tests {
                 &self.acs_overhead,
                 &self.pack_flow_valve,
                 [&self.engine_1, &self.engine_2],
+                &self.engine_fire_push_buttons,
                 &self.pneumatic,
                 [
                     self.pneumatic_overhead.engine_bleed_pb_is_auto(1),
@@ -1334,8 +1356,8 @@ mod acs_controller_tests {
         }
 
         fn command_engine_on_fire(&mut self) {
-            self.write_by_name("Fire_ENG1_Agent1_Discharge", true);
-            self.write_by_name("Fire_ENG2_Agent1_Discharge", true);
+            self.command(|a| a.engine_fire_push_buttons.release(1));
+            self.command(|a| a.engine_fire_push_buttons.release(2));
         }
 
         fn command_ditching_on(&mut self) {
