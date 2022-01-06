@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import { useCoherentEvent } from '@instruments/common/hooks';
-import { AtcMessageDirection } from '@atsu/AtcMessage';
+import { AtcMessage, AtcMessageDirection, AtcMessageType } from '@atsu/AtcMessage';
 import { PreDepartureClearance } from '@atsu/PreDepartureClearance';
 import { render } from '../Common';
 import { SelfTest } from './pages/SelfTest';
@@ -30,28 +30,32 @@ const DCDU: React.FC = () => {
     const [isColdAndDark] = useSimVar('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool', 200);
     const [state, setState] = useState(isColdAndDark ? DcduState.Off : DcduState.Active);
     const [messageUid, setMessageUid] = useState('');
-    const [messages, setMessages] = useState([]);
+    const [messages, setMessages] = useState(new Map());
     const maxMessageCount = 5;
 
     useCoherentEvent('A32NX_DCDU_MSG', (serialized: any) => {
-        // both DCDUs are triggered
-        const duplicate = messages.find((element) => element.UniqueMessageID === serialized.UniqueMessageID);
+        let atsuMessage : AtcMessage | undefined = undefined;
+        if (serialized.Type === AtcMessageType.PDC) {
+            atsuMessage = new PreDepartureClearance();
+            atsuMessage.deserialize(serialized);
+        }
 
-        if (duplicate === undefined) {
-            const newMessage = new PreDepartureClearance();
-            newMessage.deserialize(serialized);
-            setMessages((messages) => [...messages, newMessage]);
-
-            SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_MAX_REACHED', 'bool', messages.length >= maxMessageCount);
+        if (atsuMessage !== undefined) {
+            if (messages.get(atsuMessage.UniqueMessageID) === undefined) {
+                atsuMessage.DcduTimestamp = new Date().getTime();
+            }
+            setMessages(messages.set(atsuMessage.UniqueMessageID, atsuMessage));
+            SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_MAX_REACHED', 'boolean', messages.size >= maxMessageCount ? 1 : 0);
         }
     });
     useCoherentEvent('A32NX_DCDU_MSG_REMOVE', (uid: string) => {
-        messages.forEach((element, index) => {
-            if (element.UniqueMessageID === uid) {
-                messages.slice(index, 1);
-                SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_MAX_REACHED', 'bool', messages.length >= maxMessageCount);
-            }
-        });
+        const entry = messages.get(uid);
+        if (entry !== undefined) {
+            const updatedMap = messages;
+            updatedMap.delete(uid);
+            setMessages(updatedMap);
+            SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_MAX_REACHED', 'boolean', messages.size >= maxMessageCount ? 1 : 0);
+        }
     });
 
     useUpdate((_deltaTime) => {
@@ -68,16 +72,19 @@ const DCDU: React.FC = () => {
     let messageIndex = -1;
     let serializedMessage = '';
     let messageDirection = AtcMessageDirection.Output;
-    if (state === DcduState.Active) {
+    if (state === DcduState.Active && messages.size !== 0) {
+        const arrMessages: AtcMessage[] = Array.from(messages.values());
+        arrMessages.sort((a, b) => a.DcduTimestamp - b.DcduTimestamp);
+
         if (messageUid !== '') {
-            messageIndex = messages.findIndex((element) => messageUid === element.UniqueMessageID);
+            messageIndex = arrMessages.findIndex((element) => messageUid === element.UniqueMessageID);
             if (messageIndex !== -1) {
                 serializedMessage = messages[messageIndex].serialize();
                 messageDirection = messages[messageIndex].Direction;
             }
-        } else if (messages.length !== 0) {
-            serializedMessage = messages[0].serialize();
-            messageDirection = messages[0].Direction;
+        } else {
+            serializedMessage = arrMessages[0].serialize();
+            messageDirection = arrMessages[0].Direction;
             messageIndex = 0;
         }
     }
@@ -117,7 +124,7 @@ const DCDU: React.FC = () => {
                     <DatalinkMessage message={serializedMessage} direction={messageDirection} />
                     <BaseView />
                     {
-                        (messages.length > 1
+                        (messages.size > 1
                         && (
                             <>
                                 <g>
@@ -127,7 +134,7 @@ const DCDU: React.FC = () => {
                                         {' '}
                                         /
                                         {' '}
-                                        {messages.length}
+                                        {messages.size}
                                     </text>
                                 </g>
                             </>

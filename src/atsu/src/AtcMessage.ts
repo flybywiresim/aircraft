@@ -27,6 +27,8 @@ export class AtcMessage {
 
     public Timestamp = undefined;
 
+    public DcduTimestamp : number = undefined;
+
     public Type : AtcMessageType = undefined;
 
     public Direction : AtcMessageDirection = undefined;
