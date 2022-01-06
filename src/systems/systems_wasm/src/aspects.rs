@@ -46,6 +46,11 @@ impl<'a, 'b> MsfsAspectBuilder<'a, 'b> {
         aspect
     }
 
+    pub fn init_variable(&mut self, variable: Variable, value: f64) {
+        let identifier = self.register_variable(&variable);
+        self.variables.write(&identifier, value);
+    }
+
     /// Converts events to a value which is written to a variable.
     /// Optionally writes the variable's value back to the event.
     pub fn event_to_variable(
@@ -55,7 +60,7 @@ impl<'a, 'b> MsfsAspectBuilder<'a, 'b> {
         target: Variable,
         configure_options: fn(EventToVariableOptions) -> EventToVariableOptions,
     ) -> Result<(), Box<dyn Error>> {
-        let target = self.register_variable(target);
+        let target = self.register_variable(&target);
 
         self.event_to_variable.push(EventToVariable::new(
             &mut self.sim_connect,
@@ -76,12 +81,12 @@ impl<'a, 'b> MsfsAspectBuilder<'a, 'b> {
     pub fn reduce(
         &mut self,
         update_on: UpdateOn,
-        inputs: Vec<Variable>,
+        inputs: &[Variable],
         func: fn(f64, f64) -> f64,
         output: Variable,
     ) {
         let inputs = self.register_variables(inputs);
-        let output = self.register_variable(output);
+        let output = self.register_variable(&output);
 
         self.variable_functions.push(VariableFunction::Reduce(
             Reduce::new(inputs, func, output),
@@ -96,17 +101,33 @@ impl<'a, 'b> MsfsAspectBuilder<'a, 'b> {
         func: fn(f64) -> f64,
         output: Variable,
     ) {
-        let input = self.register_variable(input);
-        let output = self.register_variable(output);
+        let inputs = self.register_variable(&input);
+        let output = self.register_variable(&output);
 
         self.variable_functions.push(VariableFunction::Map(
-            Map::new(input, func, output),
+            Map::new(inputs, func, output),
+            update_on,
+        ));
+    }
+
+    pub fn map_many(
+        &mut self,
+        update_on: UpdateOn,
+        inputs: &[Variable],
+        func: fn(&[f64]) -> f64,
+        output: Variable,
+    ) {
+        let inputs = self.register_variables(&inputs);
+        let output = self.register_variable(&output);
+
+        self.variable_functions.push(VariableFunction::MapMany(
+            MapMany::new(inputs, func, output),
             update_on,
         ));
     }
 
     pub fn variables_to_object(&mut self, instance: Box<dyn VariablesToObject>) {
-        let variables = self.register_variables(instance.variables());
+        let variables = self.register_variables(&instance.variables());
 
         self.variable_functions.push(VariableFunction::ToObject(
             ToObject::new(instance, variables),
@@ -114,16 +135,16 @@ impl<'a, 'b> MsfsAspectBuilder<'a, 'b> {
         ));
     }
 
-    fn register_variables(&mut self, variables: Vec<Variable>) -> Vec<VariableIdentifier> {
+    fn register_variables(&mut self, variables: &[Variable]) -> Vec<VariableIdentifier> {
         variables
             .into_iter()
             .map(|variable| self.register_variable(variable))
             .collect()
     }
 
-    fn register_variable(&mut self, variable: Variable) -> VariableIdentifier {
+    fn register_variable(&mut self, variable: &Variable) -> VariableIdentifier {
         self.variables
-            .register(&self.key_prefix, self.variable_registry, &variable)
+            .register(&self.key_prefix, self.variable_registry, variable)
     }
 }
 
@@ -275,11 +296,11 @@ impl SimulatorAspect for MsfsAspect {
 
     fn post_tick(&mut self, sim_connect: &mut SimConnect) -> Result<(), Box<dyn Error>> {
         if let Some(mut variables) = self.variables.take() {
+            self.apply_variable_functions(sim_connect, UpdateOn::PostTick, &mut variables)?;
+
             self.event_to_variable
                 .iter_mut()
                 .try_for_each(|ev| ev.post_tick(sim_connect, &mut variables))?;
-
-            self.apply_variable_functions(sim_connect, UpdateOn::PostTick, &mut variables)?;
 
             self.variables = Some(variables);
         }
@@ -290,6 +311,7 @@ impl SimulatorAspect for MsfsAspect {
 
 enum VariableFunction {
     Map(Map, UpdateOn),
+    MapMany(MapMany, UpdateOn),
     Reduce(Reduce, UpdateOn),
     ToObject(ToObject, UpdateOn),
 }
@@ -304,6 +326,9 @@ impl VariableFunction {
         match self {
             VariableFunction::Map(map, update_on) if *update_on == update_moment => {
                 map.update(variables);
+            }
+            VariableFunction::MapMany(map_many, update_on) if *update_on == update_moment => {
+                map_many.update(variables);
             }
             VariableFunction::Reduce(reduce, update_on) if *update_on == update_moment => {
                 reduce.update(variables);
@@ -586,20 +611,9 @@ impl Reduce {
     }
 
     fn update(&mut self, variables: &mut MsfsAspectVariableCollection) {
-        let values = self
-            .input_variable_identifiers
-            .iter()
-            .map(
-                |variable_identifier| match variables.read(variable_identifier) {
-                    Some(value) => value,
-                    None => {
-                        panic!("Attempted to reduce variables which are unavailable.")
-                    }
-                },
-            );
-
-        let value = values.reduce(self.func).unwrap_or(0.);
-        variables.write(&self.output_variable_identifier, value);
+        let values = identifiers_to_values(&self.input_variable_identifiers, variables);
+        let result = values.into_iter().reduce(self.func).unwrap_or(0.);
+        variables.write(&self.output_variable_identifier, result);
     }
 }
 
@@ -637,6 +651,32 @@ impl Map {
         };
 
         variables.write(&self.output_variable_identifier, (self.func)(value));
+    }
+}
+
+struct MapMany {
+    input_variable_identifiers: Vec<VariableIdentifier>,
+    func: fn(&[f64]) -> f64,
+    output_variable_identifier: VariableIdentifier,
+}
+
+impl MapMany {
+    fn new(
+        input_variable_identifiers: Vec<VariableIdentifier>,
+        func: fn(&[f64]) -> f64,
+        output_variable_identifier: VariableIdentifier,
+    ) -> Self {
+        Self {
+            input_variable_identifiers,
+            func,
+            output_variable_identifier,
+        }
+    }
+
+    fn update(&mut self, variables: &mut MsfsAspectVariableCollection) {
+        let values = identifiers_to_values(&self.input_variable_identifiers, variables);
+        let result = (self.func)(&values);
+        variables.write(&self.output_variable_identifier, result);
     }
 }
 
@@ -682,6 +722,23 @@ impl ToObject {
 
         Ok(())
     }
+}
+
+fn identifiers_to_values(
+    identifiers: &[VariableIdentifier],
+    variables: &mut MsfsAspectVariableCollection,
+) -> Vec<f64> {
+    identifiers
+        .iter()
+        .map(
+            |variable_identifier| match variables.read(variable_identifier) {
+                Some(value) => value,
+                None => {
+                    panic!("Attempted to access variables which are unavailable.")
+                }
+            },
+        )
+        .collect()
 }
 
 #[macro_export]
