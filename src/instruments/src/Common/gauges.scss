@@ -15,6 +15,12 @@
         fill: none;
     }
 
+    .GaugeInactive {
+        stroke: $display-amber;
+        stroke-width: 2;
+        fill: none;
+    }
+
     .GaugeText {
         stroke: $display-white;
         font-size: 17px;

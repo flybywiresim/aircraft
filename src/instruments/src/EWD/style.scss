@@ -160,6 +160,12 @@ animation: pulsingS 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
         stroke-width: 2;
     }
 
+    .AmberBox {
+        stroke: $display-amber;
+        fill: none;
+        stroke-width: 2;
+    }
+
     .LightGreyBox {
         stroke: none;
         fill: $display-light-grey;

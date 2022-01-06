@@ -1,5 +1,6 @@
 import React from 'react';
 import { usePersistentProperty } from '@instruments/common/persistence';
+import { useSimVar } from '@instruments/common/simVars';
 import FOB from './FOB';
 import N2 from './N2';
 import EGT from './EGT';
@@ -11,16 +12,20 @@ import Idle from './Idle';
 const UpperDisplay: React.FC = () => {
     console.log('Upper Display');
     const [unit] = usePersistentProperty('CONFIG_USING_METRIC_UNIT', '1');
+    const [engSelectorPosition] = useSimVar('L:XMLVAR_ENG_MODE_SEL', 'enum', 1000);
+    const [flightPhase] = useSimVar('L:A32NX_FWC_FLIGHT_PHASE', 'enum', 1000);
+
+    const isActive = engSelectorPosition === 2 && flightPhase === 1;
 
     return (
         <>
             {/*  */}
             <Idle x={374} y={55} />
 
-            <N1Limit x={690} y={30} />
+            <N1Limit x={690} y={30} active={isActive} />
 
-            <N1 engine={1} x={233} y={97} />
-            <N1 engine={2} x={527} y={97} />
+            <N1 engine={1} x={233} y={97} active={isActive} />
+            <N1 engine={2} x={527} y={97} active={isActive} />
             <text className="Large Center" x={384} y={120}>N1</text>
             <text className="Medium Center Cyan" x={381} y={139}>%</text>
 

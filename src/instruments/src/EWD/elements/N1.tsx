@@ -9,10 +9,10 @@ type N1Props = {
     engine: 1 | 2,
     x: number,
     y: number,
-
+    active: boolean,
 };
 
-const N1: React.FC<N1Props> = ({ x, y, engine }) => {
+const N1: React.FC<N1Props> = ({ x, y, engine, active }) => {
     const [N1Percent] = useSimVar(`L:A32NX_ENGINE_N1:${engine}`, 'percent', 100);
     const [N1Idle] = useSimVar('L:A32NX_ENGINE_IDLE_N1', 'percent', 1000);
     const N1PercentSplit = splitDecimals(N1Percent);
@@ -32,162 +32,175 @@ const N1: React.FC<N1Props> = ({ x, y, engine }) => {
     return (
         <>
             <g id={`N1-indicator-${engine}`}>
-                <text className="Large End Green" x={x + 40} y={y + 45}>{N1PercentSplit[0]}</text>
-                <text className="Large End Green" x={x + 54} y={y + 45}>.</text>
-                <text className="Medium End Green" x={x + 70} y={y + 45}>{N1PercentSplit[1]}</text>
-                <GaugeComponent x={x} y={y} radius={radius} startAngle={startAngle} endAngle={endAngle} visible className="GaugeComponent Gauge">
-                    <GaugeComponent x={x} y={y} radius={radius} startAngle={endAngle - 20} endAngle={endAngle} visible className="GaugeComponent Gauge Red" />
-                    <GaugeMarkerComponent
-                        value={5}
-                        x={x}
-                        y={y}
-                        min={min}
-                        max={max}
-                        radius={radius}
-                        startAngle={startAngle}
-                        endAngle={endAngle}
-                        className="GaugeText Gauge Medium"
-                        showValue
-                        textNudgeY={6}
-                        textNudgeX={13}
-                        multiplierInner={0.9}
-                    />
-                    <GaugeMarkerComponent
-                        value={6}
-                        x={x}
-                        y={y}
-                        min={min}
-                        max={max}
-                        radius={radius}
-                        startAngle={startAngle}
-                        endAngle={endAngle}
-                        className="GaugeText Gauge"
-                        multiplierInner={0.9}
-                    />
-                    <GaugeMarkerComponent
-                        value={7}
-                        x={x}
-                        y={y}
-                        min={min}
-                        max={max}
-                        radius={radius}
-                        startAngle={startAngle}
-                        endAngle={endAngle}
-                        className="GaugeText Gauge"
-                        multiplierInner={0.9}
-                    />
-                    <GaugeMarkerComponent
-                        value={8}
-                        x={x}
-                        y={y}
-                        min={min}
-                        max={max}
-                        radius={radius}
-                        startAngle={startAngle}
-                        endAngle={endAngle}
-                        className="GaugeText Gauge"
-                        multiplierInner={0.9}
-                    />
-                    <GaugeMarkerComponent
-                        value={9}
-                        x={x}
-                        y={y}
-                        min={min}
-                        max={max}
-                        radius={radius}
-                        startAngle={startAngle}
-                        endAngle={endAngle}
-                        className="GaugeText Gauge"
-                        multiplierInner={0.9}
-                    />
-                    <GaugeMarkerComponent
-                        value={10}
-                        x={x}
-                        y={y}
-                        min={min}
-                        max={max}
-                        radius={radius}
-                        startAngle={startAngle}
-                        endAngle={endAngle}
-                        className="GaugeText Gauge Medium"
-                        showValue
-                        textNudgeY={6}
-                        textNudgeX={-13}
-                        multiplierInner={0.9}
-                    />
-                    <GaugeMarkerComponent
-                        value={11}
-                        x={x}
-                        y={y}
-                        min={min}
-                        max={max}
-                        radius={radius}
-                        startAngle={startAngle}
-                        endAngle={endAngle}
-                        className="GaugeText Gauge Red"
-                        multiplierInner={0.9}
-                    />
-                    <rect x={x - 19} y={y + 19} width={96} height={30} className="DarkGreyBox" />
-                    {/* N1 max limit  */}
-                    <GaugeMarkerComponent
-                        value={Math.abs(N1ThrustLimit / 10)}
-                        x={x}
-                        y={y}
-                        min={min}
-                        max={max}
-                        radius={radius}
-                        startAngle={startAngle}
-                        endAngle={endAngle}
-                        className="GaugeThrustLimitIndicator Gauge"
-                    />
-                    <GaugeMaxComponent
-                        value={Math.abs(N1ThrustLimit / 10)}
-                        x={x}
-                        y={y}
-                        min={min}
-                        max={max}
-                        radius={radius}
-                        startAngle={startAngle}
-                        endAngle={endAngle}
-                        className="GaugeThrustLimitIndicatorFill Gauge"
-                    />
-                    <GaugeMarkerComponent
-                        value={N1Percent <= N1Idle ? N1Idle / 10 : N1Percent / 10}
-                        x={x}
-                        y={y}
-                        min={min}
-                        max={max}
-                        radius={radius}
-                        startAngle={startAngle}
-                        endAngle={endAngle}
-                        className="GaugeIndicator Gauge"
-                        indicator
-                    />
-                    <Avail x={x} y={y} visible={availVisible} />
-                    <N1CommandAndTrend
-                        N1Actual={N1Percent <= N1Idle ? N1Idle / 10 : N1Percent / 10}
-                        x={x}
-                        y={y}
-                        min={min}
-                        max={max}
-                        radius={radius}
-                        startAngle={startAngle}
-                        endAngle={endAngle}
-                        engine={engine}
-                    />
-                </GaugeComponent>
-                {/* Throttle */}
-                <ThrottlePositionDonutComponent
-                    value={throttlePosition / 10}
-                    x={x}
-                    y={y}
-                    min={min}
-                    max={max}
-                    radius={radius}
-                    startAngle={startAngle}
-                    endAngle={endAngle}
-                    className="DonutThrottleIndicator"
-                />
+                {!active
+                    && (
+                        <>
+                            <GaugeComponent x={x} y={y} radius={radius} startAngle={startAngle} endAngle={endAngle} visible className="GaugeComponent GaugeInactive" />
+                            <Avail x={x} y={y} visible={availVisible} active={active} />
+                            <text className="Medium End Amber Spread" x={x + 45} y={y + 45}>XX</text>
+                        </>
+                    )}
+                {active
+                && (
+                    <>
+                        <text className="Large End Green" x={x + 40} y={y + 45}>{N1PercentSplit[0]}</text>
+                        <text className="Large End Green" x={x + 54} y={y + 45}>.</text>
+                        <text className="Medium End Green" x={x + 70} y={y + 45}>{N1PercentSplit[1]}</text>
+                        <GaugeComponent x={x} y={y} radius={radius} startAngle={startAngle} endAngle={endAngle} visible className="GaugeComponent Gauge">
+                            <GaugeComponent x={x} y={y} radius={radius} startAngle={endAngle - 20} endAngle={endAngle} visible className="GaugeComponent Gauge Red" />
+                            <GaugeMarkerComponent
+                                value={5}
+                                x={x}
+                                y={y}
+                                min={min}
+                                max={max}
+                                radius={radius}
+                                startAngle={startAngle}
+                                endAngle={endAngle}
+                                className="GaugeText Gauge Medium"
+                                showValue
+                                textNudgeY={6}
+                                textNudgeX={13}
+                                multiplierInner={0.9}
+                            />
+                            <GaugeMarkerComponent
+                                value={6}
+                                x={x}
+                                y={y}
+                                min={min}
+                                max={max}
+                                radius={radius}
+                                startAngle={startAngle}
+                                endAngle={endAngle}
+                                className="GaugeText Gauge"
+                                multiplierInner={0.9}
+                            />
+                            <GaugeMarkerComponent
+                                value={7}
+                                x={x}
+                                y={y}
+                                min={min}
+                                max={max}
+                                radius={radius}
+                                startAngle={startAngle}
+                                endAngle={endAngle}
+                                className="GaugeText Gauge"
+                                multiplierInner={0.9}
+                            />
+                            <GaugeMarkerComponent
+                                value={8}
+                                x={x}
+                                y={y}
+                                min={min}
+                                max={max}
+                                radius={radius}
+                                startAngle={startAngle}
+                                endAngle={endAngle}
+                                className="GaugeText Gauge"
+                                multiplierInner={0.9}
+                            />
+                            <GaugeMarkerComponent
+                                value={9}
+                                x={x}
+                                y={y}
+                                min={min}
+                                max={max}
+                                radius={radius}
+                                startAngle={startAngle}
+                                endAngle={endAngle}
+                                className="GaugeText Gauge"
+                                multiplierInner={0.9}
+                            />
+                            <GaugeMarkerComponent
+                                value={10}
+                                x={x}
+                                y={y}
+                                min={min}
+                                max={max}
+                                radius={radius}
+                                startAngle={startAngle}
+                                endAngle={endAngle}
+                                className="GaugeText Gauge Medium"
+                                showValue
+                                textNudgeY={6}
+                                textNudgeX={-13}
+                                multiplierInner={0.9}
+                            />
+                            <GaugeMarkerComponent
+                                value={11}
+                                x={x}
+                                y={y}
+                                min={min}
+                                max={max}
+                                radius={radius}
+                                startAngle={startAngle}
+                                endAngle={endAngle}
+                                className="GaugeText Gauge Red"
+                                multiplierInner={0.9}
+                            />
+                            <rect x={x - 19} y={y + 19} width={96} height={30} className="DarkGreyBox" />
+                            {/* N1 max limit  */}
+                            <GaugeMarkerComponent
+                                value={Math.abs(N1ThrustLimit / 10)}
+                                x={x}
+                                y={y}
+                                min={min}
+                                max={max}
+                                radius={radius}
+                                startAngle={startAngle}
+                                endAngle={endAngle}
+                                className="GaugeThrustLimitIndicator Gauge"
+                            />
+                            <GaugeMaxComponent
+                                value={Math.abs(N1ThrustLimit / 10)}
+                                x={x}
+                                y={y}
+                                min={min}
+                                max={max}
+                                radius={radius}
+                                startAngle={startAngle}
+                                endAngle={endAngle}
+                                className="GaugeThrustLimitIndicatorFill Gauge"
+                            />
+                            <GaugeMarkerComponent
+                                value={N1Percent <= N1Idle ? N1Idle / 10 : N1Percent / 10}
+                                x={x}
+                                y={y}
+                                min={min}
+                                max={max}
+                                radius={radius}
+                                startAngle={startAngle}
+                                endAngle={endAngle}
+                                className="GaugeIndicator Gauge"
+                                indicator
+                            />
+                            <Avail x={x} y={y} visible={availVisible} active={active} />
+                            <N1CommandAndTrend
+                                N1Actual={N1Percent <= N1Idle ? N1Idle / 10 : N1Percent / 10}
+                                x={x}
+                                y={y}
+                                min={min}
+                                max={max}
+                                radius={radius}
+                                startAngle={startAngle}
+                                endAngle={endAngle}
+                                engine={engine}
+                            />
+                        </GaugeComponent>
+                        <ThrottlePositionDonutComponent
+                            value={throttlePosition / 10}
+                            x={x}
+                            y={y}
+                            min={min}
+                            max={max}
+                            radius={radius}
+                            startAngle={startAngle}
+                            endAngle={endAngle}
+                            className="DonutThrottleIndicator"
+                        />
+
+                    </>
+                )}
             </g>
         </>
     );
@@ -199,14 +212,14 @@ type AvailProps = {
     x: number,
     y: number,
     visible: boolean,
-
+    active: boolean,
 };
 
-const Avail: React.FC<AvailProps> = ({ x, y, visible }) => (
+const Avail: React.FC<AvailProps> = ({ x, y, visible, active }) => (
     <>
-        <g className={visible ? 'Show' : 'Hide'}>
-            <rect x={x - 19} y={y - 13} width={96} height={32} className="DarkGreyBox BackgroundFill" />
-            <text className="Large End Green Spread" x={x + 74} y={y + 13}>AVAIL</text>
+        <g className={visible || !active ? 'Show' : 'Hide'}>
+            <rect x={x - 19} y={y - 13} width={96} height={32} className={`${active ? 'DarkGreyBox' : 'AmberBox'} BackgroundFill`} />
+            <text className={`Large End Spread ${active ? 'Green' : 'Amber'}`} x={active ? x + 74 : x + 50} y={y + 13}>{active ? 'AVAIL' : 'XX'}</text>
         </g>
     </>
 );
