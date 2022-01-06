@@ -88,6 +88,7 @@
 1. [PFD] Added new messages and modes for TCAS - @lukecologne (lukecologne#1156)
 1. [FDR] Added additional data to the FDR - @aguther (Andreas Guther)
 1. [ATHR] Fixed ATHR being armed in flight when TOGA applied without GA condition - @aguther (Andreas Guther)
+1. [EFB] Fixed landing performance calculator clear button and wind magnitude, made small ui improvements - @ghitier (Guillaume H.)
 1. [ECAM] Fixed gross weight being shown without engines running - @BlueberryKing (BlueberryKing)
 1. [FLIGHT MODEL] Fixes co-pilot not being shown in external view -  @donstim (donbikes#4084)
 1. [BLEED] Replace default bleed system - @BlueberryKing (BlueberryKing)
@@ -108,6 +109,8 @@
 1. [AP] Further improved ALT CST* and ALT CST conditions - @aguther (Andreas Guther)
 1. [MCDU] Added support for connecting MCDU to external devices - @tyler58546 (tyler58546)
 1. [ATHR] Improvement of ATHR laws - @IbrahimK42(IbrahimK42), @aguther (Andreas Guther)
+1. [MISC] Fixed flap configuration in final.flt and runway.flt files -  @donstim (donbikes#4084)
+1. [EFB] Added Reset to Defaults button to EFB throttle calibration page - @frankkopp (Cdr_Maverick#6475)
 1. [COND] Add cabin temperature simulation and control - @mjuhe (Miquel Juhe)
 1. [COND] Improve air conditioning pack flow model - @mjuhe (Miquel Juhe)
 

@@ -640,7 +640,7 @@ bool FlyByWireInterface::updateAdditionalData(double sampleTime) {
   additionalData.autobrake_decel_light = idAutobrakeDecelLight->get();
   additionalData.spoilers_handle_pos = idSpoilersHandlePosition->get();
   additionalData.spoilers_armed = idSpoilersArmed->get();
-  additionalData.spoilers_handle_sim_pos = simData.spoilerHandlePosition;
+  additionalData.spoilers_handle_sim_pos = simData.spoilers_handle_position;
   additionalData.ground_spoilers_active = idSpoilersGroundSpoilersActive->get();
   additionalData.flaps_handle_percent = idFlapsHandlePercent->get();
   additionalData.flaps_handle_index = idFlapsHandleIndex->get();
@@ -1725,7 +1725,7 @@ bool FlyByWireInterface::updateSpoilers(double sampleTime) {
 
   // initialize position if needed
   if (!spoilersHandler->getIsInitialized()) {
-    spoilersHandler->setInitialPosition(simData.spoilers_handle_position);
+    spoilersHandler->setInitialPosition(idSpoilersArmed->get(), simData.spoilers_handle_position);
   }
 
   // update simulation variables
