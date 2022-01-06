@@ -79,13 +79,11 @@ const DCDU: React.FC = () => {
         if (messageUid !== '') {
             messageIndex = arrMessages.findIndex((element) => messageUid === element.UniqueMessageID);
             if (messageIndex !== -1) {
-                serializedMessage = messages[messageIndex].serialize();
-                messageDirection = messages[messageIndex].Direction;
+                serializedMessage = arrMessages[messageIndex].serialize();
+                messageDirection = arrMessages[messageIndex].Direction;
             }
         } else {
-            serializedMessage = arrMessages[0].serialize();
-            messageDirection = arrMessages[0].Direction;
-            messageIndex = 0;
+            setMessageUid(arrMessages[0].UniqueMessageID);
         }
     }
 
