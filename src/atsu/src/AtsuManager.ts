@@ -32,45 +32,35 @@ import { PreDepartureClearance } from './PreDepartureClearance';
 export class AtsuManager {
     private connector = new HoppieConnector();
 
-    private pdcMessage = null;
+    private messageQueue = [];
 
     private listener = RegisterViewListener('JS_LISTENER_SIMVARS');
 
     public registerPdcMessage(message: PreDepartureClearance) {
-        if (this.pdcMessage !== null) {
-            let entriesEqual = true;
+        if (SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_MAX_REACHED', 'bool', false) === true) {
+            return 'DCDU FILE FULL';
+        }
 
-            if (this.pdcMessage.Callsign !== message.Callsign || this.pdcMessage.Origin !== message.Origin || this.pdcMessage.Destination !== message.Destination) {
-                entriesEqual = false;
-            }
-            if (this.pdcMessage.Atis !== message.Atis || this.pdcMessage.Gate !== message.Gate) {
-                entriesEqual = false;
-            }
-            if (this.pdcMessage.Freetext0 !== message.Freetext0 || this.pdcMessage.Freetext1 !== message.Freetext1) {
-                entriesEqual = false;
-            }
-            if (this.pdcMessage.Freetext2 !== message.Freetext2 || this.pdcMessage.Freetext3 !== message.Freetext3) {
-                entriesEqual = false;
-            }
-            if (this.pdcMessage.Freetext4 !== message.Freetext4 || this.pdcMessage.Freetext5 !== message.Freetext5) {
-                entriesEqual = false;
-            }
-
-            if (entriesEqual === false) {
-                return 'DCDU FILE FULL';
-            }
+        const serialized = message.serialize();
+        const duplicate = this.messageQueue.find((element) => element.serialize() === serialized);
+        if (duplicate !== undefined) {
             return 'MSG ALREADY DISPLAYED';
         }
 
-        this.pdcMessage = message;
-        this.pdcMessage.Timestamp = SimVar.GetGlobalVarValue('ZULU TIME', 'seconds');
-        this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', this.pdcMessage);
+        message.Timestamp = SimVar.GetGlobalVarValue('ZULU TIME', 'seconds');
+        this.messageQueue.unshift(message);
+        this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', message);
 
         return '';
     }
 
-    public removePdcMessage() {
-        this.pdcMessage = null;
+    public removeMessage(uid: string) {
+        this.messageQueue.forEach((item, index) => {
+            if (item.UniqueMessageID === uid) {
+                this.messageQueue.slice(index, 1);
+                this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG_REMOVE', uid);
+            }
+        });
     }
 
     public getConnector() {
