@@ -16,14 +16,14 @@ export class AtsuManager {
     private listener = RegisterViewListener('JS_LISTENER_SIMVARS');
 
     public registerPdcMessage(message: PreDepartureClearance) {
-        if (SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_MAX_REACHED', 'bool', false) === true) {
-            return 'DCDU FILE FULL';
-        }
-
         const serialized = message.serialize();
         const duplicate = this.atcMessageQueue.find((element) => element.serialize() === serialized);
         if (duplicate !== undefined) {
             return 'MSG ALREADY DISPLAYED';
+        }
+
+        if (SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_MAX_REACHED', 'boolean') === 1) {
+            return 'DCDU FILE FULL';
         }
 
         message.Timestamp = SimVar.GetGlobalVarValue('ZULU TIME', 'seconds');
