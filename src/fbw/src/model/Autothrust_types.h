@@ -67,6 +67,8 @@ struct athr_raw_data
   real_T bx_m_s2;
   real_T by_m_s2;
   real_T bz_m_s2;
+  real_T Psi_magnetic_deg;
+  real_T Psi_magnetic_track_deg;
   real_T gear_strut_compression_1;
   real_T gear_strut_compression_2;
   real_T flap_handle_index;
@@ -80,6 +82,7 @@ struct athr_raw_data
   real_T corrected_engine_N1_2_percent;
   real_T TAT_degC;
   real_T OAT_degC;
+  real_T ambient_density_kg_per_m3;
 };
 
 #endif
@@ -190,6 +193,8 @@ struct athr_data
   real_T bx_m_s2;
   real_T by_m_s2;
   real_T bz_m_s2;
+  real_T Psi_magnetic_deg;
+  real_T Psi_magnetic_track_deg;
   boolean_T on_ground;
   real_T flap_handle_index;
   boolean_T is_engine_operative_1;
@@ -201,6 +206,7 @@ struct athr_data
   real_T TAT_degC;
   real_T OAT_degC;
   real_T ISA_degC;
+  real_T ambient_density_kg_per_m3;
 };
 
 #endif

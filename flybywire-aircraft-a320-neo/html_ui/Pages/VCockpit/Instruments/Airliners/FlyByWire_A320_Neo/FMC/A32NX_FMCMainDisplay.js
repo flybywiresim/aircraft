@@ -3949,7 +3949,7 @@ class FMCMainDisplay extends BaseAirliners {
     splitPbd(s) {
         let [place, brg, dist] = s.split("/");
         brg = parseInt(brg);
-        dist = parseInt(dist);
+        dist = parseFloat(dist);
         return [place, brg, dist];
     }
 
