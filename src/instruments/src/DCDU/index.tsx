@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import { useCoherentEvent } from '@instruments/common/hooks';
-import { AtcMessageType, AtcMessage } from '@atsu/AtcMessage';
+import { AtcMessageDirection, AtcMessageType } from '@atsu/AtcMessage';
 import { PreDepartureClearance } from '@atsu/PreDepartureClearance';
 import { render } from '../Common';
 import { SelfTest } from './pages/SelfTest';
-import { Standby } from './pages/Standby';
 import { WaitingForData } from './pages/WaitingForData';
-import { Message } from './pages/Message';
+import { BaseView } from './elements/BaseView';
+import { DatalinkMessage } from './elements/DatalinkMessage';
 import { getSimVar, useUpdate } from '../util.js';
 
 import './style.scss';
@@ -17,8 +17,7 @@ enum DcduState {
     Off,
     On,
     Waiting,
-    Standby,
-    Message
+    Active,
 }
 
 function powerAvailable() {
@@ -29,15 +28,30 @@ function powerAvailable() {
 
 const DCDU: React.FC = () => {
     const [isColdAndDark] = useSimVar('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool', 200);
-    const [state, setState] = useState(isColdAndDark ? DcduState.Off : DcduState.Standby);
-    const [message, setMessage] = useState<AtcMessage | null>(null);
+    const [state, setState] = useState(isColdAndDark ? DcduState.Off : DcduState.Active);
+    const [messageUid, setMessageUid] = useState('');
+    const [messages, setMessages] = useState([]);
+    const maxMessageCount = 5;
 
     useCoherentEvent('A32NX_DCDU_MSG', (serialized: any) => {
-        if (AtcMessageType.PDC === serialized.Type) {
+        // both DCDUs are triggered
+        const duplicate = messages.find((element) => element.UniqueMessageID === serialized.UniqueMessageID);
+
+        if (duplicate === undefined && AtcMessageType.PDC === serialized.Type) {
             const newMessage = new PreDepartureClearance();
             newMessage.deserialize(serialized);
-            setMessage(newMessage);
+            setMessages((messages) => [...messages, newMessage]);
+
+            SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_MAX_REACHED', 'bool', messages.length >= maxMessageCount);
         }
+    });
+    useCoherentEvent('A32NX_DCDU_MSG_REMOVE', (uid: string) => {
+        messages.forEach((element, index) => {
+            if (element.UniqueMessageID === uid) {
+                messages.slice(index, 1);
+                SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_MAX_REACHED', 'bool', messages.length >= maxMessageCount);
+            }
+        });
     });
 
     useUpdate((_deltaTime) => {
@@ -47,12 +61,24 @@ const DCDU: React.FC = () => {
             }
         } else if (!powerAvailable()) {
             setState(DcduState.Off);
-        } else if (state === DcduState.Standby && message !== null && message.Type !== undefined) {
-            setState(DcduState.Message);
-        } else if (state === DcduState.Message && (message === null || message.Type === undefined)) {
-            setState(DcduState.Standby);
         }
     });
+
+    // prepare the data
+    let serializedMessage = '';
+    let messageDirection = AtcMessageDirection.Output;
+    if (state === DcduState.Active) {
+        if (messageUid !== '') {
+            const messageIndex = messages.findIndex((element) => messageUid === element.UniqueMessageID);
+            if (messageIndex !== -1) {
+                serializedMessage = messages[messageIndex].serialize();
+                messageDirection = messages[messageIndex].Direction;
+            }
+        } else if (messages.length !== 0) {
+            serializedMessage = messages[0].serialize();
+            messageDirection = messages[0].Direction;
+        }
+    }
 
     switch (state) {
     case DcduState.Off:
@@ -72,7 +98,7 @@ const DCDU: React.FC = () => {
     case DcduState.Waiting:
         setTimeout(() => {
             if (powerAvailable()) {
-                setState(DcduState.Standby);
+                setState(DcduState.Active);
             }
         }, 12000);
         return (
@@ -81,18 +107,14 @@ const DCDU: React.FC = () => {
                 <WaitingForData />
             </>
         );
-    case DcduState.Standby:
+    case DcduState.Active:
         return (
             <>
                 <div className="BacklightBleed" />
-                <Standby />
-            </>
-        );
-    case DcduState.Message:
-        return (
-            <>
-                <div className="BacklightBleed" />
-                <Message message={message} />
+                <svg className="dcdu">
+                    <DatalinkMessage message={serializedMessage} direction={messageDirection} />
+                    <BaseView />
+                </svg>
             </>
         );
     default:

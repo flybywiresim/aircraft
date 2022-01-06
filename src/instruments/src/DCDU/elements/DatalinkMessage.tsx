@@ -1,22 +1,65 @@
-import React, { memo, useState } from 'react';
-import { AtcMessage, AtcMessageDirection } from '@atsu/AtcMessage';
+import React, { useState } from 'react';
+import { AtcMessageDirection } from '@atsu/AtcMessage';
+import { useInteractionEvent } from '../../util.js';
 
 type MessageViewProps = {
-    message: AtcMessage
+    message: string,
+    direction: AtcMessageDirection
 }
 
-export const MessageView: React.FC<MessageViewProps> = memo(({ message }) => {
+export const DatalinkMessage: React.FC<MessageViewProps> = (({ message, direction }) => {
+    const [messageViewError, setMessageViewError] = useState('');
     const [pageIndex, setPageIndex] = useState(0);
     const [pageCount, setPageCount] = useState(0);
-    const serializedMessage = message.serialize();
     const maxLines = 5;
 
+    useInteractionEvent('A32NX_DCDU_BTN_PUSH_MPL_POEMINUS', () => {
+        console.log('MINUS');
+
+        if (pageCount === 0) {
+            return;
+        }
+
+        if (pageIndex > 0) {
+            setPageIndex(pageIndex - 1);
+        } else {
+            setMessageViewError('NO MORE PGE');
+
+            setTimeout(() => {
+                setMessageViewError('');
+            }, 3000);
+        }
+    });
+    useInteractionEvent('A32NX_DCDU_BTN_PUSH_MPL_POEPLUS', () => {
+        console.log('PLUS');
+
+        if (pageCount === 0) {
+            return;
+        }
+
+        if (pageCount > pageIndex + 1) {
+            setPageIndex(pageIndex + 1);
+        } else {
+            setMessageViewError('NO MORE PGE');
+
+            setTimeout(() => {
+                setMessageViewError('');
+            }, 3000);
+        }
+    });
+
+    console.log(message);
     // get the number of pages
-    let lines = serializedMessage.split(/\r?\n/);
+    let lines = message.split(/\r?\n/);
     lines = lines.filter((e) => e);
     const messagePageCount = Math.ceil(lines.length / maxLines);
     if (messagePageCount !== pageCount) {
         setPageCount(messagePageCount);
+    }
+
+    // no text defined
+    if (pageCount === 0) {
+        return <></>;
     }
 
     // get the indices
@@ -33,7 +76,7 @@ export const MessageView: React.FC<MessageViewProps> = memo(({ message }) => {
 
     // define the correct background color
     let backgroundClass = 'message-background ';
-    if (message.Direction === AtcMessageDirection.Output) {
+    if (direction === AtcMessageDirection.Output) {
         backgroundClass += 'message-out';
     } else {
         backgroundClass += 'message-in';
@@ -46,6 +89,11 @@ export const MessageView: React.FC<MessageViewProps> = memo(({ message }) => {
                 <tspan x="28" y="90">{startLine}</tspan>
                 {lines.map((line) => (<tspan x="28" dy="30">{line}</tspan>))}
             </text>
+            {messageViewError !== '' && (
+                <>
+                    <text className="status-atsu" x="50%" y="270">messageViewError</text>
+                </>
+            )}
             {pageCount > 1 && (
                 <>
                     <text className="status-atsu" x="65%" y="310">PG</text>
