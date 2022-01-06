@@ -23,7 +23,8 @@ use systems::{
     },
     shared::{
         pid::PidController, ControllerSignal, ElectricalBusType, ElectricalBuses,
-        EngineCorrectedN1, EngineCorrectedN2, EngineFirePushButtons, PneumaticValve,
+        EngineCorrectedN1, EngineCorrectedN2, EngineFirePushButtons, EngineStartState,
+        PneumaticBleed, PneumaticValve,
     },
     simulation::{
         InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -273,6 +274,22 @@ impl A320Pneumatic {
             .change_spatial_volume(blue_hydraulic_reservoir.available_volume());
         self.yellow_hydraulic_reservoir_with_valve
             .change_spatial_volume(yellow_hydraulic_reservoir.available_volume());
+    }
+}
+impl PneumaticBleed for A320Pneumatic {
+    fn apu_bleed_is_on(&self) -> bool {
+        self.apu_bleed_air_valve.is_open()
+    }
+    fn engine_crossbleed_is_on(&self) -> bool {
+        self.cross_bleed_valve.is_open()
+    }
+}
+impl EngineStartState for A320Pneumatic {
+    fn left_engine_state(&self) -> EngineState {
+        self.fadec.engine_state(1)
+    }
+    fn right_engine_state(&self) -> EngineState {
+        self.fadec.engine_state(2)
     }
 }
 impl SimulationElement for A320Pneumatic {

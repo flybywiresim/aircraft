@@ -308,6 +308,10 @@ impl PressurizationOverheadPanel {
     fn man_vs_switch_position(&self) -> usize {
         self.man_vs_ctl_switch.position()
     }
+
+    pub fn ditching_is_on(&self) -> bool {
+        self.ditching.is_on()
+    }
 }
 
 impl SimulationElement for PressurizationOverheadPanel {

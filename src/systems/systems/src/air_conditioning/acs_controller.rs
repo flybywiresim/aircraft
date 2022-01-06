@@ -1,5 +1,10 @@
 use crate::{
-    shared::{pid::PidController, Cabin, EngineCorrectedN1, LgciuWeightOnWheels},
+    pneumatic::EngineState,
+    pressurization::PressurizationOverheadPanel,
+    shared::{
+        pid::PidController, Cabin, EngineCorrectedN1, EngineStartState, LgciuWeightOnWheels,
+        PneumaticBleed,
+    },
     simulation::{
         InitContext, Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
         SimulatorWriter, UpdateContext, VariableIdentifier, Write, Writer,
@@ -47,7 +52,10 @@ impl<const ZONES: usize> AirConditioningSystemController<ZONES> {
         acs_overhead: &AirConditioningSystemOverhead<ZONES>,
         pack_flow_valve: &[PackFlowValve; 2],
         engines: [&impl EngineCorrectedN1; 2],
+        pneumatic: &(impl PneumaticBleed + EngineStartState),
+        pneumatic_overhead: [bool; 2],
         pressurization: &impl Cabin,
+        pressurization_overhead: &PressurizationOverheadPanel,
         lgciu: [&impl LgciuWeightOnWheels; 2],
     ) {
         self.aircraft_state = self.aircraft_state.update(context, engines, lgciu);
@@ -55,7 +63,10 @@ impl<const ZONES: usize> AirConditioningSystemController<ZONES> {
             &self.aircraft_state,
             acs_overhead.pack_pushbuttons_state(),
             engines,
+            pneumatic,
+            pneumatic_overhead,
             pressurization,
+            pressurization_overhead,
             pack_flow_valve,
         );
         for zone in self.zone_controller.iter_mut() {
@@ -535,12 +546,6 @@ impl From<OverheadFlowSelector> for Ratio {
 }
 
 struct PackFlowController {
-    apu_bleed_valve_open_id: VariableIdentifier,
-    apu_rpm_id: VariableIdentifier,
-    crossbleed_id: VariableIdentifier,
-    ditching_id: VariableIdentifier,
-    engine_1_state_id: VariableIdentifier,
-    engine_2_state_id: VariableIdentifier,
     eng_1_fire_id: VariableIdentifier,
     eng_2_fire_id: VariableIdentifier,
     ovhd_flow_selector_id: VariableIdentifier,
@@ -576,12 +581,6 @@ impl PackFlowController {
 
     fn new(context: &mut InitContext) -> Self {
         Self {
-            apu_bleed_valve_open_id: context.get_identifier("APU_BLEED_AIR_VALVE_OPEN".to_owned()),
-            apu_rpm_id: context.get_identifier("APU_N_RAW".to_owned()),
-            crossbleed_id: context.get_identifier("KNOB_OVHD_AIRCOND_XBLEED_Position".to_owned()),
-            ditching_id: context.get_identifier("OVHD_PRESS_DITCHING_PB_IS_ON".to_owned()),
-            engine_1_state_id: context.get_identifier("ENGINE_STATE:1".to_owned()),
-            engine_2_state_id: context.get_identifier("ENGINE_STATE:2".to_owned()),
             eng_1_fire_id: context.get_identifier("Fire_ENG1_Agent1_Discharge".to_owned()),
             eng_2_fire_id: context.get_identifier("Fire_ENG2_Agent1_Discharge".to_owned()),
             ovhd_flow_selector_id: context
@@ -611,9 +610,18 @@ impl PackFlowController {
         aircraft_state: &AirConditioningStateManager,
         pack_pushbuttons_state: [bool; 2],
         engines: [&impl EngineCorrectedN1; 2],
+        pneumatic: &(impl PneumaticBleed + EngineStartState),
+        _pneumatic_overhead: [bool; 2],
         pressurization: &impl Cabin,
+        pressurization_overhead: &PressurizationOverheadPanel,
         pack_flow_valve: &[PackFlowValve; 2],
     ) {
+        self.apu_bleed_on = pneumatic.apu_bleed_is_on();
+        self.ditching_is_on = pressurization_overhead.ditching_is_on();
+        self.crossbleed_is_on = pneumatic.engine_crossbleed_is_on();
+        self.engine_1_in_start_mode = pneumatic.left_engine_state() == EngineState::Starting;
+        self.engine_2_in_start_mode = pneumatic.right_engine_state() == EngineState::Starting;
+
         // TODO: Add overheat protection
         self.flow_demand = self.flow_demand_determination(aircraft_state, pack_flow_valve);
         self.fcv_open_allowed_determination(pack_pushbuttons_state);
@@ -737,20 +745,6 @@ impl FlowControlValveSignal for PackFlowController {
 
 impl SimulationElement for PackFlowController {
     fn read(&mut self, reader: &mut SimulatorReader) {
-        let apu_bleed_read = reader.read(&self.apu_bleed_valve_open_id);
-        let apu_rpm_read: Ratio = reader.read(&self.apu_rpm_id);
-        self.apu_bleed_on = apu_bleed_read && (apu_rpm_read > Ratio::new::<percent>(95.));
-        self.ditching_is_on = reader.read(&self.ditching_id);
-        let crossbleed_position: u8 = reader.read(&self.crossbleed_id);
-        if self.apu_bleed_on {
-            self.crossbleed_is_on = crossbleed_position != 0;
-        } else {
-            self.crossbleed_is_on = crossbleed_position == 2;
-        }
-        let engine_1_state: u8 = reader.read(&self.engine_1_state_id);
-        self.engine_1_in_start_mode = engine_1_state == 2;
-        let engine_2_state: u8 = reader.read(&self.engine_2_state_id);
-        self.engine_2_in_start_mode = engine_2_state == 2;
         self.engine_1_on_fire = reader.read(&self.eng_1_fire_id);
         self.engine_2_on_fire = reader.read(&self.eng_2_fire_id);
         self.flow_selector_position = reader.read(&self.ovhd_flow_selector_id);
@@ -772,6 +766,9 @@ mod acs_controller_tests {
     use super::*;
     use crate::{
         air_conditioning::cabin_air::CabinZone,
+        overhead::AutoOffFaultPushButton,
+        pneumatic::valve::DefaultValve,
+        shared::PneumaticValve,
         simulation::{
             test::{ReadByName, SimulationTestBed, TestBed, WriteByName},
             Aircraft, SimulationElement, SimulationElementVisitor, UpdateContext,
@@ -864,6 +861,117 @@ mod acs_controller_tests {
         }
     }
 
+    struct TestPneumaticOverhead {
+        engine_1_bleed: AutoOffFaultPushButton,
+        engine_2_bleed: AutoOffFaultPushButton,
+    }
+
+    impl TestPneumaticOverhead {
+        fn new(context: &mut InitContext) -> Self {
+            Self {
+                engine_1_bleed: AutoOffFaultPushButton::new_auto(context, "PNEU_ENG_1_BLEED"),
+                engine_2_bleed: AutoOffFaultPushButton::new_auto(context, "PNEU_ENG_2_BLEED"),
+            }
+        }
+
+        fn engine_bleed_pb_is_auto(&self, engine_number: usize) -> bool {
+            match engine_number {
+                1 => self.engine_1_bleed.is_auto(),
+                2 => self.engine_2_bleed.is_auto(),
+                _ => panic!("Invalid engine number"),
+            }
+        }
+    }
+
+    impl SimulationElement for TestPneumaticOverhead {
+        fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+            self.engine_1_bleed.accept(visitor);
+            self.engine_2_bleed.accept(visitor);
+
+            visitor.visit(self);
+        }
+    }
+
+    struct TestFadec {
+        engine_1_state_id: VariableIdentifier,
+        engine_2_state_id: VariableIdentifier,
+
+        engine_1_state: EngineState,
+        engine_2_state: EngineState,
+    }
+    impl TestFadec {
+        fn new(context: &mut InitContext) -> Self {
+            Self {
+                engine_1_state_id: context.get_identifier("ENGINE_STATE:1".to_owned()),
+                engine_2_state_id: context.get_identifier("ENGINE_STATE:2".to_owned()),
+                engine_1_state: EngineState::Off,
+                engine_2_state: EngineState::Off,
+            }
+        }
+
+        fn engine_state(&self, number: usize) -> EngineState {
+            match number {
+                1 => self.engine_1_state,
+                2 => self.engine_2_state,
+                _ => panic!("Invalid engine number"),
+            }
+        }
+    }
+    impl SimulationElement for TestFadec {
+        fn read(&mut self, reader: &mut SimulatorReader) {
+            self.engine_1_state = reader.read(&self.engine_1_state_id);
+            self.engine_2_state = reader.read(&self.engine_2_state_id);
+        }
+    }
+
+    struct TestPneumatic {
+        apu_bleed_air_valve: DefaultValve,
+        cross_bleed_valve: DefaultValve,
+        fadec: TestFadec,
+    }
+
+    impl TestPneumatic {
+        fn new(context: &mut InitContext) -> Self {
+            Self {
+                apu_bleed_air_valve: DefaultValve::new_closed(),
+                cross_bleed_valve: DefaultValve::new_closed(),
+                fadec: TestFadec::new(context),
+            }
+        }
+
+        fn set_apu_bleed_air_valve_open(&mut self) {
+            self.apu_bleed_air_valve = DefaultValve::new_open();
+        }
+
+        fn set_cross_bleed_valve_open(&mut self) {
+            self.cross_bleed_valve = DefaultValve::new_open();
+        }
+    }
+
+    impl PneumaticBleed for TestPneumatic {
+        fn apu_bleed_is_on(&self) -> bool {
+            self.apu_bleed_air_valve.is_open()
+        }
+        fn engine_crossbleed_is_on(&self) -> bool {
+            self.cross_bleed_valve.is_open()
+        }
+    }
+    impl EngineStartState for TestPneumatic {
+        fn left_engine_state(&self) -> EngineState {
+            self.fadec.engine_state(1)
+        }
+        fn right_engine_state(&self) -> EngineState {
+            self.fadec.engine_state(2)
+        }
+    }
+    impl SimulationElement for TestPneumatic {
+        fn accept<V: SimulationElementVisitor>(&mut self, visitor: &mut V) {
+            self.fadec.accept(visitor);
+
+            visitor.visit(self);
+        }
+    }
+
     struct TestCabin {
         cockpit: CabinZone<2>,
         passenger_cabin: CabinZone<2>,
@@ -934,7 +1042,10 @@ mod acs_controller_tests {
         pack_flow_valve: [PackFlowValve; 2],
         engine_1: TestEngine,
         engine_2: TestEngine,
+        pneumatic: TestPneumatic,
+        pneumatic_overhead: TestPneumaticOverhead,
         pressurization: TestPressurization,
+        pressurization_overhead: PressurizationOverheadPanel,
         lgciu1: TestLgciu,
         lgciu2: TestLgciu,
         test_cabin: TestCabin,
@@ -956,7 +1067,10 @@ mod acs_controller_tests {
                 ],
                 engine_1: TestEngine::new(Ratio::new::<percent>(0.)),
                 engine_2: TestEngine::new(Ratio::new::<percent>(0.)),
+                pneumatic: TestPneumatic::new(context),
+                pneumatic_overhead: TestPneumaticOverhead::new(context),
                 pressurization: TestPressurization::new(),
+                pressurization_overhead: PressurizationOverheadPanel::new(context),
                 lgciu1: TestLgciu::new(false),
                 lgciu2: TestLgciu::new(false),
                 test_cabin: TestCabin::new(context),
@@ -976,6 +1090,14 @@ mod acs_controller_tests {
             self.lgciu1.set_on_ground(on_ground);
             self.lgciu2.set_on_ground(on_ground);
         }
+
+        fn set_apu_bleed_air_valve_open(&mut self) {
+            self.pneumatic.set_apu_bleed_air_valve_open();
+        }
+
+        fn set_cross_bleed_valve_open(&mut self) {
+            self.pneumatic.set_cross_bleed_valve_open();
+        }
     }
     impl Aircraft for TestAircraft {
         fn update_after_power_distribution(&mut self, context: &UpdateContext) {
@@ -984,7 +1106,13 @@ mod acs_controller_tests {
                 &self.acs_overhead,
                 &self.pack_flow_valve,
                 [&self.engine_1, &self.engine_2],
+                &self.pneumatic,
+                [
+                    self.pneumatic_overhead.engine_bleed_pb_is_auto(1),
+                    self.pneumatic_overhead.engine_bleed_pb_is_auto(2),
+                ],
                 &self.pressurization,
+                &self.pressurization_overhead,
                 [&self.lgciu1, &self.lgciu2],
             );
             self.test_cabin
@@ -999,6 +1127,8 @@ mod acs_controller_tests {
             self.acsc.accept(visitor);
             self.acs_overhead.accept(visitor);
             self.test_cabin.accept(visitor);
+            self.pneumatic.accept(visitor);
+            self.pressurization_overhead.accept(visitor);
 
             visitor.visit(self);
         }
@@ -1195,8 +1325,7 @@ mod acs_controller_tests {
         }
 
         fn command_apu_bleed_on(&mut self) {
-            self.write_by_name("APU_BLEED_AIR_VALVE_OPEN", true);
-            self.write_by_name("APU_N_RAW", 100.);
+            self.command(|a| a.set_apu_bleed_air_valve_open());
         }
 
         fn command_engine_in_start_mode(&mut self) {
@@ -1214,7 +1343,7 @@ mod acs_controller_tests {
         }
 
         fn command_crossbleed_on(&mut self) {
-            self.write_by_name("KNOB_OVHD_AIRCOND_XBLEED_Position", 2);
+            self.command(|a| a.set_cross_bleed_valve_open());
         }
 
         fn measured_temperature(&mut self) -> ThermodynamicTemperature {

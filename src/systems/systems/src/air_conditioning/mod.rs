@@ -2,7 +2,8 @@ use self::acs_controller::AirConditioningSystemController;
 
 use crate::{
     overhead::{OnOffFaultPushButton, ValueKnob},
-    shared::{Cabin, EngineCorrectedN1, LgciuWeightOnWheels},
+    pressurization::PressurizationOverheadPanel,
+    shared::{Cabin, EngineCorrectedN1, EngineStartState, LgciuWeightOnWheels, PneumaticBleed},
     simulation::{
         InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
         VariableIdentifier, Write,
@@ -84,7 +85,10 @@ impl<const ZONES: usize> AirConditioningSystem<ZONES> {
         &mut self,
         context: &UpdateContext,
         engines: [&impl EngineCorrectedN1; 2],
+        pneumatic: &(impl PneumaticBleed + EngineStartState),
+        pneumatic_overhead: [bool; 2],
         pressurization: &impl Cabin,
+        pressurization_overhead: &PressurizationOverheadPanel,
         lgciu: [&impl LgciuWeightOnWheels; 2],
     ) {
         self.acsc.update(
@@ -92,7 +96,10 @@ impl<const ZONES: usize> AirConditioningSystem<ZONES> {
             &self.acs_overhead,
             &self.pack_flow_valves,
             engines,
+            pneumatic,
+            pneumatic_overhead,
             pressurization,
+            pressurization_overhead,
             lgciu,
         );
 

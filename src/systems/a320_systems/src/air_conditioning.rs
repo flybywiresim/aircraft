@@ -1,9 +1,11 @@
+use crate::A320PneumaticOverheadPanel;
 use systems::{
     accept_iterable,
     air_conditioning::{
         cabin_air::CabinZone, AirConditioningSystem, DuctTemperature, PackFlow, ZoneType,
     },
-    shared::{Cabin, EngineCorrectedN1, LgciuWeightOnWheels},
+    pressurization::PressurizationOverheadPanel,
+    shared::{Cabin, EngineCorrectedN1, EngineStartState, LgciuWeightOnWheels, PneumaticBleed},
     simulation::{InitContext, SimulationElement, SimulationElementVisitor, UpdateContext},
 };
 use uom::si::{f64::*, mass_rate::kilogram_per_second, volume::cubic_meter};
@@ -28,11 +30,24 @@ impl A320AirConditioning {
         &mut self,
         context: &UpdateContext,
         engines: [&impl EngineCorrectedN1; 2],
+        pneumatic: &(impl PneumaticBleed + EngineStartState),
+        pneumatic_overhead: &A320PneumaticOverheadPanel,
         pressurization: &impl Cabin,
+        pressurization_overhead: &PressurizationOverheadPanel,
         lgciu: [&impl LgciuWeightOnWheels; 2],
     ) {
-        self.a320_air_conditioning_system
-            .update(context, engines, pressurization, lgciu);
+        self.a320_air_conditioning_system.update(
+            context,
+            engines,
+            pneumatic,
+            [
+                pneumatic_overhead.engine_bleed_pb_is_auto(1),
+                pneumatic_overhead.engine_bleed_pb_is_auto(2),
+            ],
+            pressurization,
+            pressurization_overhead,
+            lgciu,
+        );
         self.a320_cabin.update(
             context,
             &self.a320_air_conditioning_system,
