@@ -244,20 +244,20 @@
     ],
     "nodes": [
         {
-            "translation": [0.25, -2.5, 7.84],
-            "rotation": [0, 1, 0, 0],
+            "translation": [-0.25, 0.385, 0.123],
+            "rotation": [0.705, 0, 0, -0.72],
             "mesh": 0,
             "name": "CHOCKS_NOSE_GEAR"
         },
         {
-            "translation": [-4.3, -2.5, -3.067],
+            "translation": [0, 0, 0],
             "rotation": [0, 0, 0, 0],
             "scale": [1.49, 1.49, 1.49],
             "mesh": 1,
             "name": "CHOCKS_MAIN_GEAR_RIGHT"
         },
                 {
-            "translation": [4.3, -2.5, -4.23],
+            "translation": [0, 0, 0],
             "rotation": [0, 1, 0, 0],
             "scale": [1.49, 1.49, 1.49],
             "mesh": 1,
@@ -267,7 +267,7 @@
     "scene": 0,
     "scenes": [
         {
-            "nodes": [0, 1, 2],
+            "nodes": [],
             "name": "GND_EQUIPMENT"
         }
     ],

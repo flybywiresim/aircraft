@@ -43155,6 +43155,20 @@
           }
         ]
       }
+    ],
+    "addParentNodes" : [
+      {
+        "name": "CHOCKS_NOSE_GEAR",
+        "parent": "HYDROLIC_C"
+      },
+      {
+        "name": "CHOCKS_MAIN_GEAR_RIGHT",
+        "parent": "HYDROLIC_RIGHT"
+      },
+      {
+        "name": "CHOCKS_MAIN_GEAR_LEFT",
+        "parent": "HYDROLIC_LEFT"
+      }
     ]
   }
 ]
