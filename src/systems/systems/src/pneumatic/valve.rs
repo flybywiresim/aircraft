@@ -11,7 +11,6 @@ use uom::si::{
     ratio::{percent, ratio},
     temperature_interval,
     thermodynamic_temperature::kelvin,
-    volume::gallon,
     volume_rate::cubic_meter_per_second,
 };
 
