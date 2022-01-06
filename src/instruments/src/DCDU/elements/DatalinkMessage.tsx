@@ -48,7 +48,6 @@ export const DatalinkMessage: React.FC<MessageViewProps> = (({ message, directio
         }
     });
 
-    console.log(message);
     // get the number of pages
     let lines = message.split(/\r?\n/);
     lines = lines.filter((e) => e);
