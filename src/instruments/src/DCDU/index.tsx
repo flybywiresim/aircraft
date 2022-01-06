@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import { useCoherentEvent } from '@instruments/common/hooks';
-import { AtcMessageDirection, AtcMessageType } from '@atsu/AtcMessage';
+import { AtcMessageDirection } from '@atsu/AtcMessage';
 import { PreDepartureClearance } from '@atsu/PreDepartureClearance';
 import { render } from '../Common';
 import { SelfTest } from './pages/SelfTest';
@@ -37,7 +37,7 @@ const DCDU: React.FC = () => {
         // both DCDUs are triggered
         const duplicate = messages.find((element) => element.UniqueMessageID === serialized.UniqueMessageID);
 
-        if (duplicate === undefined && AtcMessageType.PDC === serialized.Type) {
+        if (duplicate === undefined) {
             const newMessage = new PreDepartureClearance();
             newMessage.deserialize(serialized);
             setMessages((messages) => [...messages, newMessage]);
@@ -65,11 +65,12 @@ const DCDU: React.FC = () => {
     });
 
     // prepare the data
+    let messageIndex = -1;
     let serializedMessage = '';
     let messageDirection = AtcMessageDirection.Output;
     if (state === DcduState.Active) {
         if (messageUid !== '') {
-            const messageIndex = messages.findIndex((element) => messageUid === element.UniqueMessageID);
+            messageIndex = messages.findIndex((element) => messageUid === element.UniqueMessageID);
             if (messageIndex !== -1) {
                 serializedMessage = messages[messageIndex].serialize();
                 messageDirection = messages[messageIndex].Direction;
@@ -77,6 +78,7 @@ const DCDU: React.FC = () => {
         } else if (messages.length !== 0) {
             serializedMessage = messages[0].serialize();
             messageDirection = messages[0].Direction;
+            messageIndex = 0;
         }
     }
 
@@ -114,6 +116,23 @@ const DCDU: React.FC = () => {
                 <svg className="dcdu">
                     <DatalinkMessage message={serializedMessage} direction={messageDirection} />
                     <BaseView />
+                    {
+                        (messages.length > 1
+                        && (
+                            <>
+                                <g>
+                                    <text className="status-atsu" x="35%" y="310">MSG</text>
+                                    <text className="status-atsu" x="35%" y="340">
+                                        {messageIndex + 1}
+                                        {' '}
+                                        /
+                                        {' '}
+                                        {messages.length}
+                                    </text>
+                                </g>
+                            </>
+                        ))
+                    }
                 </svg>
             </>
         );
