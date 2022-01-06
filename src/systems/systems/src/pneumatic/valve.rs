@@ -260,12 +260,9 @@ impl PneumaticContainerConnector {
             / (container_two_pressure_with_power * container_one.volume()
                 + container_one_pressure_with_power * container_two.volume());
 
-        let fluid_to_move = (equalization_volume
-            * (1.
-                - (-Self::TRANSFER_SPEED
-                    * self.transfer_speed_factor.get::<ratio>()
-                    * context.delta_as_secs_f64())
-                .exp()))
+        let fluid_to_move = (self.transfer_speed_factor
+            * equalization_volume
+            * (1. - (-Self::TRANSFER_SPEED * context.delta_as_secs_f64()).exp()))
         .min(container_one.volume())
         .max(-container_two.volume());
 
@@ -325,7 +322,6 @@ pub struct PneumaticExhaust {
     fluid_flow: VolumeRate,
 }
 impl PneumaticExhaust {
-    const TRANSFER_SPEED: f64 = 3.;
     const HEAT_CAPACITY_RATIO: f64 = 1.4;
 
     pub fn new(exhaust_speed: f64) -> Self {
@@ -345,7 +341,7 @@ impl PneumaticExhaust {
 
         let fluid_to_move = (equalization_volume
             * (1.
-                - (-Self::TRANSFER_SPEED * self.exhaust_speed * context.delta_as_secs_f64())
+                - (-self.exhaust_speed * context.delta_as_secs_f64())
                     .exp()))
         .max(-from.volume());
 
@@ -691,7 +687,7 @@ mod tests {
     #[test]
     fn exhaust_makes_pressure_go_to_ambient_pressure_stress_test() {
         let mut container = quick_container(1., 20., 15.);
-        let mut exhaust = PneumaticExhaust::new(15.);
+        let mut exhaust = PneumaticExhaust::new(45.);
 
         let context = context(Duration::from_millis(150), Length::new::<foot>(0.));
 
