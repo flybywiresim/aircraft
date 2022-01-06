@@ -2,6 +2,7 @@
 //  SPDX-License-Identifier: GPL-3.0
 
 import { AtcMessage } from './AtcMessage';
+import { AtcTimestamp } from './AtcTimestamp';
 import { HoppieConnector } from './HoppieConnector';
 import { PreDepartureClearance } from './PreDepartureClearance';
 
@@ -26,7 +27,7 @@ export class AtsuManager {
             return 'DCDU FILE FULL';
         }
 
-        message.Timestamp = SimVar.GetGlobalVarValue('ZULU TIME', 'seconds');
+        message.Timestamp = new AtcTimestamp();
         this.atcMessageQueue.unshift(message);
         this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', message);
 
@@ -47,4 +48,4 @@ export class AtsuManager {
     }
 }
 
-export { PreDepartureClearance, AtcMessage };
+export { PreDepartureClearance, AtcMessage, AtcTimestamp };

@@ -1,6 +1,8 @@
 //  Copyright (c) 2022 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
+import { AtcTimestamp } from './AtcTimestamp';
+
 export enum AtcMessageDirection {
     Input,
     Output
@@ -25,7 +27,7 @@ export enum AtcMessageStatus {
 export class AtcMessage {
     public UniqueMessageID : string = undefined;
 
-    public Timestamp = undefined;
+    public Timestamp : AtcTimestamp = undefined;
 
     public DcduTimestamp : number = undefined;
 
@@ -52,9 +54,12 @@ export class AtcMessage {
     // used to deserialize event data
     public deserialize(jsonData) {
         this.UniqueMessageID = jsonData.UniqueMessageID;
-        this.Timestamp = jsonData.Timestamp;
+        this.Timestamp = new AtcTimestamp();
+        this.Timestamp.deserialize(jsonData.Timestamp);
         this.Type = jsonData.Type;
         this.Direction = jsonData.Direction;
         this.Status = jsonData.Status;
     }
 }
+
+export { AtcTimestamp };
