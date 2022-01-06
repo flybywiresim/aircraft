@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, memo } from 'react';
 import { AtcMessageDirection } from '@atsu/AtcMessage';
 import { useInteractionEvent } from '../../util.js';
 
@@ -7,7 +7,7 @@ type MessageViewProps = {
     direction: AtcMessageDirection
 }
 
-export const DatalinkMessage: React.FC<MessageViewProps> = (({ message, direction }) => {
+export const DatalinkMessage: React.FC<MessageViewProps> = memo(({ message, direction }) => {
     const [messageViewError, setMessageViewError] = useState('');
     const [pageIndex, setPageIndex] = useState(0);
     const [pageCount, setPageCount] = useState(0);
