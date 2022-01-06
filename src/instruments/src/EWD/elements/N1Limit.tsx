@@ -25,7 +25,7 @@ const N1Limit: React.FC<N1LimitProps> = ({ x, y, active }) => {
                 {!active
                 && (
                     <>
-                        <text className="Huge Center Amber" x={x} y={y}>XX</text>
+                        <text className="Large Center Amber" x={x} y={y}>XX</text>
                         <text className="Large Center Amber" x={x} y={y + 28}>XX</text>
                     </>
                 )}

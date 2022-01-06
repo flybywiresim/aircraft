@@ -218,7 +218,7 @@ type AvailProps = {
 const Avail: React.FC<AvailProps> = ({ x, y, visible, active }) => (
     <>
         <g className={visible || !active ? 'Show' : 'Hide'}>
-            <rect x={x - 19} y={y - 13} width={96} height={32} className={`${active ? 'DarkGreyBox' : 'AmberBox'} BackgroundFill`} />
+            <rect x={x - 19} y={y - 13} width={96} height={32} className="DarkGreyBox BackgroundFill" />
             <text className={`Large End Spread ${active ? 'Green' : 'Amber'}`} x={active ? x + 74 : x + 50} y={y + 13}>{active ? 'AVAIL' : 'XX'}</text>
         </g>
     </>
