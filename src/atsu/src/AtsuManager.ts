@@ -32,7 +32,7 @@ import { PreDepartureClearance } from './PreDepartureClearance';
 export class AtsuManager {
     private connector = new HoppieConnector();
 
-    private messageQueue = [];
+    private atcMessageQueue = [];
 
     private listener = RegisterViewListener('JS_LISTENER_SIMVARS');
 
@@ -42,22 +42,22 @@ export class AtsuManager {
         }
 
         const serialized = message.serialize();
-        const duplicate = this.messageQueue.find((element) => element.serialize() === serialized);
+        const duplicate = this.atcMessageQueue.find((element) => element.serialize() === serialized);
         if (duplicate !== undefined) {
             return 'MSG ALREADY DISPLAYED';
         }
 
         message.Timestamp = SimVar.GetGlobalVarValue('ZULU TIME', 'seconds');
-        this.messageQueue.unshift(message);
+        this.atcMessageQueue.unshift(message);
         this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', message);
 
         return '';
     }
 
     public removeMessage(uid: string) {
-        this.messageQueue.forEach((item, index) => {
+        this.atcMessageQueue.forEach((item, index) => {
             if (item.UniqueMessageID === uid) {
-                this.messageQueue.slice(index, 1);
+                this.atcMessageQueue.slice(index, 1);
                 this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG_REMOVE', uid);
             }
         });
