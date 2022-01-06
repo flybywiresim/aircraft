@@ -23,15 +23,15 @@ export enum AtcMessageStatus {
  * Defines the generic ATC message
  */
 export class AtcMessage {
-    public UniqueMessageID = undefined;
+    public UniqueMessageID : string = undefined;
 
     public Timestamp = undefined;
 
-    public Type = undefined;
+    public Type : AtcMessageType = undefined;
 
-    public Direction = undefined;
+    public Direction : AtcMessageDirection = undefined;
 
-    public Status = undefined;
+    public Status : AtcMessageStatus = undefined;
 
     constructor() {
         let datetime = new Date().getTime();
