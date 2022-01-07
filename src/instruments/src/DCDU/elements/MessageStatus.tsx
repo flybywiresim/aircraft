@@ -9,7 +9,7 @@ type MessageStatusProps = {
     confirmed: boolean
 }
 
-function translateStatus(status: AtcMessageStatus) {
+const translateStatus = (status: AtcMessageStatus) => {
     switch (status) {
     case AtcMessageStatus.Open:
         return 'OPEN';
@@ -30,7 +30,7 @@ function translateStatus(status: AtcMessageStatus) {
     default:
         return 'UKN';
     }
-}
+};
 
 export const MessageStatus: React.FC<MessageStatusProps> = memo(({ timestamp, direction, status, station, confirmed }) => {
     const [textBBox, setTextBBox] = useState<DOMRect>();
