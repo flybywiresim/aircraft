@@ -216,6 +216,8 @@ export class TcasComputer implements TcasComponent {
 
     private pressureAlt: number | null; // Pressure Altitude
 
+    private planeAlt: number | null; // Plane Altitude
+
     private radioAlt: number | null; // Radio Altitude
 
     private verticalSpeed: number | null; // Vertical Speed
@@ -280,6 +282,7 @@ export class TcasComputer implements TcasComponent {
         this.activeXpdr = SimVar.GetSimVarValue('L:A32NX_SWITCH_ATC', 'number'); // TODO: refactor When XPDR2 is implemented
         // workaround for altitude issues due to MSFS bug, needs to be changed to PRESSURE ALTITUDE again when solved
         this.pressureAlt = SimVar.GetSimVarValue('INDICATED ALTITUDE:3', 'feet');
+        this.planeAlt = SimVar.GetSimVarValue('PLANE ALTITUDE', 'feet');
         this.radioAlt = SimVar.GetSimVarValue('PLANE ALT ABOVE GROUND', 'feet');
         this.altitude = Arinc429Word.fromSimVarValue(`L:A32NX_ADIRS_ADR_${this.activeXpdr + 1}_ALTITUDE`);
         this.altitudeStandby = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_3_ALTITUDE');
@@ -367,7 +370,7 @@ export class TcasComputer implements TcasComponent {
                 }
                 let traffic: TcasTraffic | undefined = this.airTraffic.find((p) => p && p.ID === tf.uId.toFixed(0));
                 if (!traffic) {
-                    traffic = new TcasTraffic(tf, this.ppos, this.pressureAlt);
+                    traffic = new TcasTraffic(tf, this.ppos, this.planeAlt);
                     this.airTraffic.push(traffic);
                 }
 
@@ -385,7 +388,7 @@ export class TcasComputer implements TcasComponent {
                 traffic.lon = tf.lon;
                 traffic.alt = tf.alt * 3.281;
                 traffic.heading = tf.heading;
-                traffic.relativeAlt = newAlt - this.pressureAlt;
+                traffic.relativeAlt = newAlt - this.planeAlt;
 
                 traffic.implausible = (
                     Math.abs(traffic.vertSpeed) > 6000
@@ -426,11 +429,11 @@ export class TcasComputer implements TcasComponent {
             // information, we need to rely on the fallback method
             // this also leads to problems above 1750 ft (the threshold for ground detection), since the aircraft on ground are then shown again.
             // Currently just hide all above currently ground alt (of ppos) + 380, not ideal but works better than other solutions.
-            const groundAlt = this.pressureAlt - this.radioAlt; // altitude of the terrain
-            const onGround = !!((this.pressureAlt < 1750 && traffic.alt < groundAlt + 380));
+            const groundAlt = this.planeAlt - this.radioAlt; // altitude of the terrain
+            const onGround = traffic.alt < (groundAlt + 360) || traffic.groundSpeed < 30;
             traffic.onGround = onGround;
             let isDisplayed = false;
-            if (!onGround) {
+            if (!onGround && !traffic.implausible) {
                 if (traffic.groundSpeed >= 30) { // Workaround for MSFS live traffic, TODO: add option to disable
                     if (this.tcasThreat === TcasThreat.THREAT) {
                         if (traffic.intrusionLevel >= TaRaIntrusion.TA
@@ -444,9 +447,6 @@ export class TcasComputer implements TcasComponent {
                             isDisplayed = true;
                         }
                     }
-                }
-                if (traffic.implausible) {
-                    isDisplayed = false;
                 }
             }
 
@@ -553,7 +553,7 @@ export class TcasComputer implements TcasComponent {
         const timeToAccelerate = Math.min(traffic.raTau - delay, ((targetVS - this.verticalSpeed) / 60) / accel); // raTau can be infinity?
         const remainingTime = traffic.raTau - (delay + timeToAccelerate);
         return (
-            this.pressureAlt
+            this.planeAlt
             + Math.round(this.verticalSpeed / 60) * (delay + timeToAccelerate)
             + 0.5 * accel * timeToAccelerate ** 2
             + (targetVS / 60) * remainingTime
@@ -568,7 +568,7 @@ export class TcasComputer implements TcasComponent {
         let minSeparation = TCAS.REALLY_BIG_NUMBER;
         this.raTraffic.forEach((traffic) => {
             const trafficAltAtCPA = traffic.alt + ((traffic.vertSpeed / 60) * traffic.raTau);
-            const myAltAtCPA = this.pressureAlt + ((this.verticalSpeed / 60) * traffic.raTau);
+            const myAltAtCPA = this.planeAlt + ((this.verticalSpeed / 60) * traffic.raTau);
             const _sep = Math.abs(myAltAtCPA - trafficAltAtCPA);
             if (_sep < minSeparation) {
                 minSeparation = _sep;
@@ -596,13 +596,13 @@ export class TcasComputer implements TcasComponent {
             if (sense === RaSense.UP) {
                 const _delay = this.verticalSpeed < targetVS ? Math.min(traffic.raTau, delay) : 0;
                 _sep = Math.max(this.calculateTrajectory(targetVS, traffic, _delay, accel) - trafficAltAtCPA, 0); // max might not be needed
-                if (!isCrossing && (this.pressureAlt + 100) < traffic.alt) {
+                if (!isCrossing && (this.planeAlt + 100) < traffic.alt) {
                     isCrossing = true;
                 }
             } else if (sense === RaSense.DOWN) {
                 const _delay = this.verticalSpeed > targetVS ? Math.min(traffic.raTau, delay) : 0;
                 _sep = Math.max(trafficAltAtCPA - this.calculateTrajectory(targetVS, traffic, _delay, accel), 0); // max might not be needed
-                if (!isCrossing && (this.pressureAlt - 100) > traffic.alt) {
+                if (!isCrossing && (this.planeAlt - 100) > traffic.alt) {
                     isCrossing = true;
                 }
             }
@@ -776,7 +776,7 @@ export class TcasComputer implements TcasComponent {
             let alreadyAchievedTaZTHR = true;
             let minTimeToCPA = TCAS.REALLY_BIG_NUMBER;
             this.raTraffic.forEach((traffic) => {
-                if (Math.abs(this.pressureAlt - traffic.alt) < TCAS.ZTHR[this.sensitivity.getVar()][TaRaIndex.TA]) {
+                if (Math.abs(this.planeAlt - traffic.alt) < TCAS.ZTHR[this.sensitivity.getVar()][TaRaIndex.TA]) {
                     alreadyAchievedTaZTHR = false;
                 }
                 if (traffic.raTau < minTimeToCPA) {
