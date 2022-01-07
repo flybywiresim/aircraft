@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React, { memo, useEffect, useRef, useState } from 'react';
 import { AtcMessageDirection, AtcMessageStatus, AtcTimestamp } from '@atsu/AtcMessage';
 
 type MessageStatusProps = {
@@ -32,7 +32,19 @@ function translateStatus(status: AtcMessageStatus) {
     }
 }
 
-function renderStatus(status: AtcMessageStatus, confirmed: boolean) {
+export const MessageStatus: React.FC<MessageStatusProps> = memo(({ timestamp, direction, status, station, confirmed }) => {
+    const [textBBox, setTextBBox] = useState<DOMRect>();
+    const textRef = useRef<SVGTSpanElement>(null);
+
+    useEffect(() => setTextBBox(textRef.current?.getBBox()), []);
+
+    if (timestamp === undefined) {
+        return <></>;
+    }
+
+    console.log(textBBox?.width);
+    console.log(textBBox?.height);
+
     let statusClass = 'status-message ';
     if (status === AtcMessageStatus.Open) {
         statusClass += 'status-open';
@@ -45,32 +57,14 @@ function renderStatus(status: AtcMessageStatus, confirmed: boolean) {
     const needsBackground = status !== AtcMessageStatus.Open && status !== AtcMessageStatus.Sent;
     const backgroundColor = confirmed === true ? 'rgb(0,255,0)' : 'rgb(0,255,255)';
 
-    return (
-        <>
-            {needsBackground === true && (
-                <>
-                    <defs>
-                        <filter x="-0.025" y="0" width="1.05" height="1" id="solid">
-                            <feFlood floodColor={backgroundColor} result="bg" />
-                            <feMerge>
-                                <feMergeNode in="bg" />
-                                <feMergeNode in="SourceGraphic" />
-                            </feMerge>
-                        </filter>
-                    </defs>
-                    <text className={statusClass} filter="url(#solid)" x="470" y="35">{translateStatus(status)}</text>
-                </>
-            )}
-            {needsBackground === false && (
-                <text className={statusClass} x="471" y="35">{translateStatus(status)}</text>
-            )}
-        </>
-    );
-}
+    // calculate the position of the background rectangle
+    const background = { x: 0, y: 0, width: 0, height: 0 };
+    if (needsBackground === true && textBBox?.width !== undefined && textBBox?.height !== undefined) {
+        background.width = textBBox?.width + 4;
+        background.height = textBBox?.height + 2;
 
-export const MessageStatus: React.FC<MessageStatusProps> = memo(({ timestamp, direction, status, station, confirmed }) => {
-    if (timestamp === undefined) {
-        return <></>;
+        background.x = 467 - textBBox?.width;
+        background.y = 37 - textBBox?.height;
     }
 
     return (
@@ -81,7 +75,23 @@ export const MessageStatus: React.FC<MessageStatusProps> = memo(({ timestamp, di
                 {station.length !== 0 && (direction === AtcMessageDirection.Output ? ' TO ' : ' FROM ')}
                 {station}
             </text>
-            {renderStatus(status, confirmed)}
+            <>
+                {needsBackground === true && (
+                    <>
+                        <rect
+                            width={background.width}
+                            height={background.height}
+                            fill={backgroundColor}
+                            x={background.x}
+                            y={background.y}
+                        />
+                        <text className={statusClass} x="467" y="35"><tspan ref={textRef}>{translateStatus(status)}</tspan></text>
+                    </>
+                )}
+                {needsBackground === false && (
+                    <text className={statusClass} x="471" y="35">{translateStatus(status)}</text>
+                )}
+            </>
         </g>
     );
 });
