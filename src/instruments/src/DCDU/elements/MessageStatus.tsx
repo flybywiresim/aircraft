@@ -69,7 +69,7 @@ export const MessageStatus: React.FC<MessageStatusProps> = memo(({ timestamp, di
             <text className="station" x="21" y="35">
                 {timestamp.DcduTimestamp()}
                 {' '}
-                {station.length !== 0 && (direction === AtcMessageDirection.Output ? ' TO ' : ' FROM ')}
+                {direction === AtcMessageDirection.Output ? ' TO ' : ' FROM '}
                 {station}
             </text>
             <>
