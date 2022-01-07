@@ -700,7 +700,6 @@ pub struct Section {
     total_actuator_returned_volume: Volume,
 }
 impl Section {
-    #[allow(clippy::too_many_arguments)]
     pub fn new(
         context: &mut InitContext,
         loop_id: &str,
