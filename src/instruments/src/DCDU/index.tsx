@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
-import { useCoherentEvent } from '@instruments/common/hooks';
+import { useCoherentEvent, useInteractionEvents } from '@instruments/common/hooks';
 import { AtcMessage, AtcMessageType } from '@atsu/AtcMessage';
 import { PreDepartureClearance } from '@atsu/PreDepartureClearance';
 import { render } from '../Common';
@@ -63,6 +63,51 @@ const DCDU: React.FC = () => {
         state.message = message;
         setStatusMessage(state);
     };
+
+    useInteractionEvents(['A32NX_DCDU_BTN_MPL_MS0MINUS', 'A32NX_DCDU_BTN_MPR_MS0MINUS'], () => {
+        if (messages.size === 0) {
+            return;
+        }
+
+        const sortedMessages = sortedMessageArray(messages);
+        let index = 0;
+        if (messageUid !== '') {
+            index = sortedMessages.findIndex((element) => messageUid === element.UniqueMessageID);
+        }
+
+        if (index === 0) {
+            if (isStatusAvailable() === true) {
+                setStatus('Mainpage', 'NO MORE MSG');
+            }
+        } else {
+            resetStatus('');
+            index -= 1;
+        }
+
+        setMessageUid(sortedMessages[index].UniqueMessageID);
+    });
+    useInteractionEvents(['A32NX_DCDU_BTN_MPL_MS0PLUS', 'A32NX_DCDU_BTN_MPR_MS0PLUS'], () => {
+        if (messages.size === 0) {
+            return;
+        }
+
+        const sortedMessages = sortedMessageArray(messages);
+        let index = 0;
+        if (messageUid !== '') {
+            index = sortedMessages.findIndex((element) => messageUid === element.UniqueMessageID);
+        }
+
+        if (index + 1 >= sortedMessages.length) {
+            if (isStatusAvailable() === true) {
+                setStatus('Mainpage', 'NO MORE MSG');
+            }
+        } else {
+            resetStatus('');
+            index += 1;
+        }
+
+        setMessageUid(sortedMessages[index].UniqueMessageID);
+    });
 
     useCoherentEvent('A32NX_DCDU_MSG', (serialized: any) => {
         let atsuMessage : AtcMessage | undefined = undefined;
