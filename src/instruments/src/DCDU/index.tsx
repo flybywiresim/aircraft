@@ -27,6 +27,12 @@ function powerAvailable() {
     return getSimVar('L:A32NX_ELEC_DC_1_BUS_IS_POWERED', 'Bool') || getSimVar('L:A32NX_ELEC_DC_2_BUS_IS_POWERED', 'Bool');
 }
 
+const sortedMessageArray = (messages: Map<string, AtcMessage>) => {
+    const arrMessages = Array.from(messages.values());
+    arrMessages.sort((a, b) => a.DcduTimestamp - b.DcduTimestamp);
+    return arrMessages;
+};
+
 const DCDU: React.FC = () => {
     const [isColdAndDark] = useSimVar('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool', 200);
     const [state, setState] = useState(isColdAndDark ? DcduState.Off : DcduState.Active);
@@ -97,8 +103,7 @@ const DCDU: React.FC = () => {
     let messageIndex = -1;
     let message : AtcMessage | undefined = undefined;
     if (state === DcduState.Active && messages.size !== 0) {
-        const arrMessages: AtcMessage[] = Array.from(messages.values());
-        arrMessages.sort((a, b) => a.DcduTimestamp - b.DcduTimestamp);
+        const arrMessages = sortedMessageArray(messages);
 
         if (messageUid !== '') {
             messageIndex = arrMessages.findIndex((element) => messageUid === element.UniqueMessageID);
