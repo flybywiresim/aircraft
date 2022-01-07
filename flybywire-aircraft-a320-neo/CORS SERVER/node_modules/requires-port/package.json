@@ -1,0 +1,47 @@
+{
+  "name": "requires-port",
+  "version": "0.0.1",
+  "description": "Check if a protocol requires a certain port number to be added to an URL.",
+  "main": "index.js",
+  "scripts": {
+    "100%": "istanbul check-coverage --statements 100 --functions 100 --lines 100 --branches 100",
+    "test": "mocha test.js",
+    "watch": "mocha --watch test.js",
+    "coverage": "istanbul cover ./node_modules/.bin/_mocha -- test.js",
+    "test-travis": "istanbul cover node_modules/.bin/_mocha --report lcovonly -- test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/unshiftio/requires-port"
+  },
+  "keywords": [
+    "port",
+    "require",
+    "http",
+    "https",
+    "ws",
+    "wss",
+    "gopher",
+    "file",
+    "ftp",
+    "requires",
+    "requried",
+    "portnumber",
+    "url",
+    "parsing",
+    "validation",
+    "cows"
+  ],
+  "author": "Arnout Kazemier",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/unshiftio/requires-port/issues"
+  },
+  "homepage": "https://github.com/unshiftio/requires-port",
+  "devDependencies": {
+    "assume": "1.1.x",
+    "istanbul": "0.3.x",
+    "mocha": "2.1.x",
+    "pre-commit": "1.0.x"
+  }
+}
