@@ -112,6 +112,7 @@
 1. [MISC] Fixed flap configuration in final.flt and runway.flt files -  @donstim (donbikes#4084)
 1. [EFB] Added Reset to Defaults button to EFB throttle calibration page - @frankkopp (Cdr_Maverick#6475)
 1. [BLEED] Fix potential NaN calculations for fast flows - @Crocket63
+1. [MCDU] Fixed scratchpad colors showing incorrectly on remote MCDU - @Stemis
 
 ## 0.7.0
 
