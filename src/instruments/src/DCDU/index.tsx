@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import { useCoherentEvent } from '@instruments/common/hooks';
-import { AtcMessage, AtcMessageStatus, AtcMessageType } from '@atsu/AtcMessage';
+import { AtcMessage, AtcMessageType } from '@atsu/AtcMessage';
 import { PreDepartureClearance } from '@atsu/PreDepartureClearance';
 import { render } from '../Common';
 import { SelfTest } from './pages/SelfTest';
