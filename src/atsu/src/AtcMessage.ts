@@ -52,7 +52,7 @@ export class AtcMessage {
         });
     }
 
-    public serialize() {
+    public serialize() : string {
         throw new Error('No valid implementation');
     }
 
