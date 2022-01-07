@@ -1,15 +1,15 @@
 import React, { useState, memo } from 'react';
-import { AtcMessageDirection } from '@atsu/AtcMessage';
+import { AtcMessage, AtcMessageDirection } from '@atsu/AtcMessage';
 import { useInteractionEvents } from '@instruments/common/hooks.js';
 
 type DatalinkMessageProps = {
-    message: string,
-    direction: AtcMessageDirection,
-    errorLogAvailable: boolean
+    message: AtcMessage,
+    isStatusAvailable: () => boolean,
+    setStatus: (sender: string, message: string) => void,
+    resetStatus: (sender: string) => void
 }
 
-export const DatalinkMessage: React.FC<DatalinkMessageProps> = memo(({ message, direction, errorLogAvailable }) => {
-    const [messageViewError, setMessageViewError] = useState('');
+export const DatalinkMessage: React.FC<DatalinkMessageProps> = memo(({ message, isStatusAvailable, setStatus, resetStatus }) => {
     const [pageIndex, setPageIndex] = useState(0);
     const [pageCount, setPageCount] = useState(0);
     const maxLines = 5;
@@ -20,13 +20,10 @@ export const DatalinkMessage: React.FC<DatalinkMessageProps> = memo(({ message, 
         }
 
         if (pageIndex > 0) {
+            resetStatus('DatalinkMessage');
             setPageIndex(pageIndex - 1);
-        } else if (errorLogAvailable === true && messageViewError.length === 0) {
-            setMessageViewError('NO MORE PGE');
-
-            setTimeout(() => {
-                setMessageViewError('');
-            }, 5000);
+        } else if (isStatusAvailable() === true) {
+            setStatus('DatalinkMessage', 'NO MORE PGE');
         }
     });
     useInteractionEvents(['A32NX_DCDU_BTN_MPL_POEPLUS', 'A32NX_DCDU_BTN_MPR_POEPLUS'], () => {
@@ -35,22 +32,20 @@ export const DatalinkMessage: React.FC<DatalinkMessageProps> = memo(({ message, 
         }
 
         if (pageCount > pageIndex + 1) {
+            resetStatus('DatalinkMessage');
             setPageIndex(pageIndex + 1);
-        } else if (errorLogAvailable === true && messageViewError.length === 0) {
-            setMessageViewError('NO MORE PGE');
-
-            setTimeout(() => {
-                setMessageViewError('');
-            }, 5000);
+        } else if (isStatusAvailable() === true) {
+            setStatus('DatalinkMessage', 'NO MORE PGE');
         }
     });
 
     // get the number of pages
-    let lines = message.split(/\r?\n/);
+    let lines = message.serialize().split(/\r?\n/);
     lines = lines.filter((e) => e);
     const messagePageCount = Math.ceil(lines.length / maxLines);
     if (messagePageCount !== pageCount) {
         setPageCount(messagePageCount);
+        setPageIndex(0);
     }
 
     // no text defined
@@ -72,7 +67,7 @@ export const DatalinkMessage: React.FC<DatalinkMessageProps> = memo(({ message, 
 
     // define the correct background color
     let backgroundClass = 'message-background ';
-    if (direction === AtcMessageDirection.Output) {
+    if (message.Direction === AtcMessageDirection.Output) {
         backgroundClass += 'message-out';
     } else {
         backgroundClass += 'message-in';
@@ -85,11 +80,6 @@ export const DatalinkMessage: React.FC<DatalinkMessageProps> = memo(({ message, 
                 <tspan x="28" y="90">{startLine}</tspan>
                 {lines.map((line) => (<tspan x="28" dy="30">{line}</tspan>))}
             </text>
-            {messageViewError !== '' && (
-                <>
-                    <text className="status-atsu" x="50%" y="270">{messageViewError}</text>
-                </>
-            )}
             {pageCount > 1 && (
                 <>
                     <text className="status-atsu" x="65%" y="310">PG</text>

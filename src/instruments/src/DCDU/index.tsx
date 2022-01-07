@@ -30,9 +30,33 @@ function powerAvailable() {
 const DCDU: React.FC = () => {
     const [isColdAndDark] = useSimVar('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool', 200);
     const [state, setState] = useState(isColdAndDark ? DcduState.Off : DcduState.Active);
-    const [messages, setMessages] = useState(new Map());
+    const [messages, setMessages] = useState(new Map<string, AtcMessage>());
+    const [statusMessage, setStatusMessage] = useState({ sender: '', message: '' });
     const [messageUid, setMessageUid] = useState('');
     const maxMessageCount = 5;
+
+    const isStatusAvailable = () => statusMessage.message.length === 0;
+    const resetStatus = (sender: string) => {
+        const state = statusMessage;
+
+        if (sender.length === 0 || sender === statusMessage.sender) {
+            state.sender = '';
+            state.message = '';
+            setStatusMessage(state);
+        }
+    };
+    const setStatus = (sender: string, message: string) => {
+        setTimeout((sender) => {
+            if (sender === statusMessage.sender) {
+                resetStatus('');
+            }
+        }, 5000);
+
+        const state = statusMessage;
+        state.sender = sender;
+        state.message = message;
+        setStatusMessage(state);
+    };
 
     useCoherentEvent('A32NX_DCDU_MSG', (serialized: any) => {
         let atsuMessage : AtcMessage | undefined = undefined;
@@ -127,9 +151,21 @@ const DCDU: React.FC = () => {
                                 station={message.Station}
                                 confirmed={message.Confirmed}
                             />
-                            <DatalinkMessage message={message.serialize()} direction={message.Direction} />
+                            <DatalinkMessage
+                                message={message}
+                                isStatusAvailable={isStatusAvailable}
+                                setStatus={setStatus}
+                                resetStatus={resetStatus}
+                            />
                         </>
                     ))}
+                    {statusMessage.message.length !== 0 && (
+                        <>
+                            <g>
+                                <text className="status-atsu" x="50%" y="270">{statusMessage.message}</text>
+                            </g>
+                        </>
+                    )}
                     <DcduLines />
                     {
                         (messages.size > 1
