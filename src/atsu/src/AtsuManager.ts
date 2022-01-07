@@ -12,6 +12,8 @@ import { PreDepartureClearance } from './PreDepartureClearance';
 export class AtsuManager {
     private connector = new HoppieConnector();
 
+    private station = '';
+
     private atcMessageQueue = [];
 
     private listener = RegisterViewListener('JS_LISTENER_SIMVARS');
@@ -28,6 +30,7 @@ export class AtsuManager {
         }
 
         message.Timestamp = new AtcTimestamp();
+        message.Station = this.station;
         this.atcMessageQueue.unshift(message);
         this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', message);
 

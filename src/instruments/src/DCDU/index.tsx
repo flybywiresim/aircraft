@@ -32,7 +32,6 @@ const DCDU: React.FC = () => {
     const [state, setState] = useState(isColdAndDark ? DcduState.Off : DcduState.Active);
     const [messages, setMessages] = useState(new Map());
     const [messageUid, setMessageUid] = useState('');
-    const [station, setStation] = useState('');
     const maxMessageCount = 5;
 
     useCoherentEvent('A32NX_DCDU_MSG', (serialized: any) => {
@@ -125,7 +124,7 @@ const DCDU: React.FC = () => {
                                 timestamp={message.Timestamp}
                                 direction={message.Direction}
                                 status={message.Status}
-                                station={station}
+                                station={message.Station}
                                 confirmed={message.Confirmed}
                             />
                             <DatalinkMessage message={message.serialize()} direction={message.Direction} />

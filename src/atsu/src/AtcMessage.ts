@@ -34,6 +34,8 @@ export class AtcMessage {
 
     public DcduTimestamp : number = undefined;
 
+    public Station = '';
+
     public Type : AtcMessageType = undefined;
 
     public Direction : AtcMessageDirection = undefined;
@@ -61,6 +63,7 @@ export class AtcMessage {
         this.UniqueMessageID = jsonData.UniqueMessageID;
         this.Timestamp = new AtcTimestamp();
         this.Timestamp.deserialize(jsonData.Timestamp);
+        this.Station = jsonData.Station;
         this.Type = jsonData.Type;
         this.Direction = jsonData.Direction;
         this.Status = jsonData.Status;
