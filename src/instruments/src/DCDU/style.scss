@@ -99,19 +99,18 @@ path.dcdu-line {
   }
 }
 
-.inop-wrapper {
-  position: absolute;
-  left: 10px !important;
-  top: 10px !important;
-  width: 492px;
-  height: 364px;
+.button {
+  font-size: 20px;
+  font-family: arial;
+  font-weight: bold;
+  font-family: Roboto;
+  fill: rgb(0,255,255);
+}
 
-  visibility: hidden;
+.button-left {
+  text-anchor: start;
+}
 
-  text {
-    fill: white;
-    font-size: 36px;
-    text-anchor: middle;
-    font-family: Roboto;
-  }
+.button-right {
+  text-anchor: end;
 }
