@@ -37,30 +37,26 @@ const DCDU: React.FC = () => {
     const [isColdAndDark] = useSimVar('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool', 200);
     const [state, setState] = useState(isColdAndDark ? DcduState.Off : DcduState.Active);
     const [messages, setMessages] = useState(new Map<string, AtcMessage>());
-    const [statusMessage, setStatusMessage] = useState({ sender: '', message: '' });
+    const [statusMessage, setStatusMessage] = useState({ sender: '', message: '', remainingMilliseconds: 0 });
     const [messageUid, setMessageUid] = useState('');
     const maxMessageCount = 5;
 
-    const isStatusAvailable = () => statusMessage.message.length === 0;
+    const isStatusAvailable = (sender: string) => statusMessage.sender === sender || statusMessage.message.length === 0;
     const resetStatus = (sender: string) => {
         const state = statusMessage;
 
         if (sender.length === 0 || sender === statusMessage.sender) {
             state.sender = '';
             state.message = '';
+            state.remainingMilliseconds = 0;
             setStatusMessage(state);
         }
     };
     const setStatus = (sender: string, message: string) => {
-        setTimeout((sender) => {
-            if (sender === statusMessage.sender) {
-                resetStatus('');
-            }
-        }, 5000);
-
         const state = statusMessage;
         state.sender = sender;
         state.message = message;
+        state.remainingMilliseconds = 5000;
         setStatusMessage(state);
     };
 
@@ -76,7 +72,7 @@ const DCDU: React.FC = () => {
         }
 
         if (index === 0) {
-            if (isStatusAvailable() === true) {
+            if (isStatusAvailable('Mainpage') === true) {
                 setStatus('Mainpage', 'NO MORE MSG');
             }
         } else {
@@ -98,7 +94,7 @@ const DCDU: React.FC = () => {
         }
 
         if (index + 1 >= sortedMessages.length) {
-            if (isStatusAvailable() === true) {
+            if (isStatusAvailable('Mainpage') === true) {
                 setStatus('Mainpage', 'NO MORE MSG');
             }
         } else {
@@ -141,6 +137,14 @@ const DCDU: React.FC = () => {
             }
         } else if (!powerAvailable()) {
             setState(DcduState.Off);
+        }
+
+        const status = statusMessage;
+        if (status.message !== '') {
+            status.remainingMilliseconds -= _deltaTime;
+            if (status.remainingMilliseconds <= 0) {
+                resetStatus('');
+            }
         }
     });
 

@@ -4,7 +4,7 @@ import { useInteractionEvents } from '@instruments/common/hooks.js';
 
 type DatalinkMessageProps = {
     message: AtcMessage,
-    isStatusAvailable: () => boolean,
+    isStatusAvailable: (sender: string) => boolean,
     setStatus: (sender: string, message: string) => void,
     resetStatus: (sender: string) => void
 }
@@ -22,7 +22,7 @@ export const DatalinkMessage: React.FC<DatalinkMessageProps> = memo(({ message, 
         if (pageIndex > 0) {
             resetStatus('DatalinkMessage');
             setPageIndex(pageIndex - 1);
-        } else if (isStatusAvailable() === true) {
+        } else if (isStatusAvailable('DatalinkMessage') === true) {
             setStatus('DatalinkMessage', 'NO MORE PGE');
         }
     });
@@ -34,7 +34,7 @@ export const DatalinkMessage: React.FC<DatalinkMessageProps> = memo(({ message, 
         if (pageCount > pageIndex + 1) {
             resetStatus('DatalinkMessage');
             setPageIndex(pageIndex + 1);
-        } else if (isStatusAvailable() === true) {
+        } else if (isStatusAvailable('DatalinkMessage') === true) {
             setStatus('DatalinkMessage', 'NO MORE PGE');
         }
     });
