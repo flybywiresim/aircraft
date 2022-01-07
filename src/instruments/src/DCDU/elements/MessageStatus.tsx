@@ -13,8 +13,6 @@ const translateStatus = (status: AtcMessageStatus) => {
     switch (status) {
     case AtcMessageStatus.Open:
         return 'OPEN';
-    case AtcMessageStatus.Sent:
-        return 'SENT';
     case AtcMessageStatus.Wilco:
         return 'WILCO';
     case AtcMessageStatus.Roger:
@@ -45,13 +43,11 @@ export const MessageStatus: React.FC<MessageStatusProps> = memo(({ timestamp, di
     let statusClass = 'status-message ';
     if (status === AtcMessageStatus.Open) {
         statusClass += 'status-open';
-    } else if (status === AtcMessageStatus.Sent) {
-        statusClass += 'status-sent';
     } else {
         statusClass += 'status-other';
     }
 
-    const needsBackground = status !== AtcMessageStatus.Open && status !== AtcMessageStatus.Sent;
+    const needsBackground = status !== AtcMessageStatus.Open;
     const backgroundColor = confirmed === true ? 'rgb(0,255,0)' : 'rgb(0,255,255)';
 
     // calculate the position of the background rectangle

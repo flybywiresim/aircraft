@@ -15,13 +15,17 @@ export enum AtcMessageType {
 
 export enum AtcMessageStatus {
     Open,
-    Sent,
     Wilco,
     Roger,
     Negative,
     Unable,
     Acknowledge,
     Refuse
+}
+
+export enum AtcMessageComStatus {
+    Sending,
+    Sent
 }
 
 /**
@@ -35,6 +39,8 @@ export class AtcMessage {
     public DcduTimestamp : number = undefined;
 
     public Station = '';
+
+    public ComStatus : AtcMessageComStatus = undefined;
 
     public Type : AtcMessageType = undefined;
 
@@ -64,6 +70,7 @@ export class AtcMessage {
         this.Timestamp = new AtcTimestamp();
         this.Timestamp.deserialize(jsonData.Timestamp);
         this.Station = jsonData.Station;
+        this.ComStatus = jsonData.ComStatus;
         this.Type = jsonData.Type;
         this.Direction = jsonData.Direction;
         this.Status = jsonData.Status;
