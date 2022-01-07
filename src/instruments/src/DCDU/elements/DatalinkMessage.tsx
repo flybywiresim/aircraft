@@ -1,50 +1,47 @@
 import React, { useState, memo } from 'react';
 import { AtcMessageDirection } from '@atsu/AtcMessage';
-import { useInteractionEvent } from '../../util.js';
+import { useInteractionEvents } from '@instruments/common/hooks.js';
 
 type DatalinkMessageProps = {
     message: string,
-    direction: AtcMessageDirection
+    direction: AtcMessageDirection,
+    errorLogAvailable: boolean
 }
 
-export const DatalinkMessage: React.FC<DatalinkMessageProps> = memo(({ message, direction }) => {
+export const DatalinkMessage: React.FC<DatalinkMessageProps> = memo(({ message, direction, errorLogAvailable }) => {
     const [messageViewError, setMessageViewError] = useState('');
     const [pageIndex, setPageIndex] = useState(0);
     const [pageCount, setPageCount] = useState(0);
     const maxLines = 5;
 
-    useInteractionEvent('A32NX_DCDU_BTN_PUSH_MPL_POEMINUS', () => {
-        console.log('MINUS');
-
+    useInteractionEvents(['A32NX_DCDU_BTN_MPL_POEMINUS', 'A32NX_DCDU_BTN_MPR_POEMINUS'], () => {
         if (pageCount === 0) {
             return;
         }
 
         if (pageIndex > 0) {
             setPageIndex(pageIndex - 1);
-        } else {
+        } else if (errorLogAvailable === true && messageViewError.length === 0) {
             setMessageViewError('NO MORE PGE');
 
             setTimeout(() => {
                 setMessageViewError('');
-            }, 3000);
+            }, 5000);
         }
     });
-    useInteractionEvent('A32NX_DCDU_BTN_PUSH_MPL_POEPLUS', () => {
-        console.log('PLUS');
-
+    useInteractionEvents(['A32NX_DCDU_BTN_MPL_POEPLUS', 'A32NX_DCDU_BTN_MPR_POEPLUS'], () => {
         if (pageCount === 0) {
             return;
         }
 
         if (pageCount > pageIndex + 1) {
             setPageIndex(pageIndex + 1);
-        } else {
+        } else if (errorLogAvailable === true && messageViewError.length === 0) {
             setMessageViewError('NO MORE PGE');
 
             setTimeout(() => {
                 setMessageViewError('');
-            }, 3000);
+            }, 5000);
         }
     });
 
@@ -90,7 +87,7 @@ export const DatalinkMessage: React.FC<DatalinkMessageProps> = memo(({ message, 
             </text>
             {messageViewError !== '' && (
                 <>
-                    <text className="status-atsu" x="50%" y="270">messageViewError</text>
+                    <text className="status-atsu" x="50%" y="270">{messageViewError}</text>
                 </>
             )}
             {pageCount > 1 && (

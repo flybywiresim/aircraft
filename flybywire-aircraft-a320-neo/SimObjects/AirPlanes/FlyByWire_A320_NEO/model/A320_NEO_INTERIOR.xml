@@ -942,14 +942,17 @@
                         <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
                     </UseTemplate>
 
-                    <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
+                    <UseTemplate Name="FBW_Airbus_DCDU_Generic_Switch">
                         <NODE_ID>PUSH_MPL_POEMINUS</NODE_ID>
+                        <HTML_EVENT_ID>MPL_POEMINUS</HTML_EVENT_ID>
                         <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
                     </UseTemplate>
 
-                    <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
+                    <UseTemplate Name="FBW_Airbus_DCDU_Generic_Switch">
                         <NODE_ID>PUSH_MPL_POEPLUS</NODE_ID>
+                        <HTML_EVENT_ID>MPL_POEPLUS</HTML_EVENT_ID>
                         <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
+                        <NO_SEQ2 />
                     </UseTemplate>
 
                     <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
@@ -1000,13 +1003,15 @@
                         <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
                     </UseTemplate>
 
-                    <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
+                    <UseTemplate Name="FBW_Airbus_DCDU_Generic_Switch">
                         <NODE_ID>PUSH_MPR_POEMINUS</NODE_ID>
+                        <HTML_EVENT_ID>MPR_POEMINUS</HTML_EVENT_ID>
                         <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
                     </UseTemplate>
 
-                    <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
+                    <UseTemplate Name="FBW_Airbus_DCDU_Generic_Switch">
                         <NODE_ID>PUSH_MPR_POEPLUS</NODE_ID>
+                        <HTML_EVENT_ID>MPR_POEPLUS</HTML_EVENT_ID>
                         <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
                     </UseTemplate>
 
