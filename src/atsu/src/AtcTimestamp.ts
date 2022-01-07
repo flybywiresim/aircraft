@@ -19,4 +19,10 @@ export class AtcTimestamp {
         this.Day = jsonData.Day;
         this.Seconds = jsonData.Seconds;
     }
+
+    public DcduTimestamp() {
+        const hours = Math.floor(this.Seconds / 3600);
+        const minutes = Math.floor(this.Seconds / 60) % 60;
+        return `${hours.toString().padStart(2, '0')}${minutes.toString().padStart(2, '0')}Z`;
+    }
 }

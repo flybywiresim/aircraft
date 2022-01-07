@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import { useCoherentEvent } from '@instruments/common/hooks';
-import { AtcMessage, AtcMessageDirection, AtcMessageType } from '@atsu/AtcMessage';
+import { AtcMessage, AtcMessageStatus, AtcMessageType } from '@atsu/AtcMessage';
 import { PreDepartureClearance } from '@atsu/PreDepartureClearance';
 import { render } from '../Common';
 import { SelfTest } from './pages/SelfTest';
 import { WaitingForData } from './pages/WaitingForData';
 import { BaseView } from './elements/BaseView';
 import { DatalinkMessage } from './elements/DatalinkMessage';
+import { MessageStatus } from './elements/MessageStatus';
 import { getSimVar, useUpdate } from '../util.js';
 
 import './style.scss';
@@ -29,8 +30,9 @@ function powerAvailable() {
 const DCDU: React.FC = () => {
     const [isColdAndDark] = useSimVar('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool', 200);
     const [state, setState] = useState(isColdAndDark ? DcduState.Off : DcduState.Active);
-    const [messageUid, setMessageUid] = useState('');
     const [messages, setMessages] = useState(new Map());
+    const [messageUid, setMessageUid] = useState('');
+    const [station, setStation] = useState('');
     const maxMessageCount = 5;
 
     useCoherentEvent('A32NX_DCDU_MSG', (serialized: any) => {
@@ -70,8 +72,7 @@ const DCDU: React.FC = () => {
 
     // prepare the data
     let messageIndex = -1;
-    let serializedMessage = '';
-    let messageDirection = AtcMessageDirection.Output;
+    let message : AtcMessage | undefined = undefined;
     if (state === DcduState.Active && messages.size !== 0) {
         const arrMessages: AtcMessage[] = Array.from(messages.values());
         arrMessages.sort((a, b) => a.DcduTimestamp - b.DcduTimestamp);
@@ -79,8 +80,7 @@ const DCDU: React.FC = () => {
         if (messageUid !== '') {
             messageIndex = arrMessages.findIndex((element) => messageUid === element.UniqueMessageID);
             if (messageIndex !== -1) {
-                serializedMessage = arrMessages[messageIndex].serialize();
-                messageDirection = arrMessages[messageIndex].Direction;
+                message = arrMessages[messageIndex];
             }
         } else {
             setMessageUid(arrMessages[0].UniqueMessageID);
@@ -119,7 +119,18 @@ const DCDU: React.FC = () => {
             <>
                 <div className="BacklightBleed" />
                 <svg className="dcdu">
-                    <DatalinkMessage message={serializedMessage} direction={messageDirection} />
+                    {(message !== undefined && (
+                        <>
+                            <MessageStatus
+                                timestamp={message.Timestamp}
+                                direction={message.Direction}
+                                status={message.Status}
+                                station={station}
+                                confirmed={message.Confirmed}
+                            />
+                            <DatalinkMessage message={message.serialize()} direction={message.Direction} />
+                        </>
+                    ))}
                     <BaseView />
                     {
                         (messages.size > 1

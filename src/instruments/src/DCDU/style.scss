@@ -33,14 +33,14 @@ path.dcdu-line {
 
 .station {
   fill: rgb(0,255,0);
-  font-size: 18px;
+  font-size: 20px;
   font-family: arial;
   font-weight: bold;
 }
 
 .status-message {
   text-anchor: end;
-  font-size: 18px;
+  font-size: 20px;
   font-family: Roboto;
   font-weight: bold;
 }
@@ -49,10 +49,18 @@ path.dcdu-line {
   fill: rgb(0,255,255);
 }
 
+.status-sent {
+  fill: green;
+}
+
+.status-other {
+  fill: black;
+}
+
 .status-atsu {
   text-anchor: middle;
   fill: rgb(255,255,255);
-  font-size: 18px;
+  font-size: 20px;
   font-family: Roboto;
   font-weight: bold;
 }

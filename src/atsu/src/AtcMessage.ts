@@ -15,10 +15,13 @@ export enum AtcMessageType {
 
 export enum AtcMessageStatus {
     Open,
-    Closed,
+    Sent,
     Wilco,
-    Modify,
-    Cannot
+    Roger,
+    Negative,
+    Unable,
+    Acknowledge,
+    Refuse
 }
 
 /**
@@ -36,6 +39,8 @@ export class AtcMessage {
     public Direction : AtcMessageDirection = undefined;
 
     public Status : AtcMessageStatus = undefined;
+
+    public Confirmed = false;
 
     constructor() {
         let datetime = new Date().getTime();
@@ -59,6 +64,7 @@ export class AtcMessage {
         this.Type = jsonData.Type;
         this.Direction = jsonData.Direction;
         this.Status = jsonData.Status;
+        this.Confirmed = jsonData.Confirmed;
     }
 }
 
