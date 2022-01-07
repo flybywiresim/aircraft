@@ -42,9 +42,6 @@ export const MessageStatus: React.FC<MessageStatusProps> = memo(({ timestamp, di
         return <></>;
     }
 
-    console.log(textBBox?.width);
-    console.log(textBBox?.height);
-
     let statusClass = 'status-message ';
     if (status === AtcMessageStatus.Open) {
         statusClass += 'status-open';
