@@ -6,7 +6,7 @@ import { PreDepartureClearance } from '@atsu/PreDepartureClearance';
 import { render } from '../Common';
 import { SelfTest } from './pages/SelfTest';
 import { WaitingForData } from './pages/WaitingForData';
-import { BaseView } from './elements/BaseView';
+import { DcduLines } from './elements/DcduLines';
 import { DatalinkMessage } from './elements/DatalinkMessage';
 import { MessageStatus } from './elements/MessageStatus';
 import { getSimVar, useUpdate } from '../util.js';
@@ -131,7 +131,7 @@ const DCDU: React.FC = () => {
                             <DatalinkMessage message={message.serialize()} direction={message.Direction} />
                         </>
                     ))}
-                    <BaseView />
+                    <DcduLines />
                     {
                         (messages.size > 1
                         && (

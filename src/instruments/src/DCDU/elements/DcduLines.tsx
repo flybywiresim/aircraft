@@ -1,4 +1,4 @@
-export const BaseView: React.FC = () => (
+export const DcduLines: React.FC = () => (
     <>
         <g>
             <path className="dcdu-line" d="m 21 236 h 450" />
