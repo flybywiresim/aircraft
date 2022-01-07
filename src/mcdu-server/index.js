@@ -50,7 +50,7 @@ let selectedPrinter = null;
 // Parse command line args
 let printerName = null;
 let skipPrinter = false;
-let httpPort = 8320;
+let httpPort = 8125;
 let websocketPort = 8380;
 let debug = false;
 let fontSize = 19;
@@ -334,7 +334,7 @@ function printUsage() {
     console.log('--debug              shows full error details and logs websocket traffic');
     console.log('--font-size=...      sets font size for printing (default: 19)');
     console.log('-h, --help           print command line options');
-    console.log('--http-port=...      sets port for http server (default: 8320)');
+    console.log('--http-port=...      sets port for http server (default: 8125)');
     console.log('--no-printer         skips prompt to select printer');
     console.log('--paper-size=...     sets paper size for printing (default: A4)');
     console.log('--printer=...        enables printing to the specified printer');
