@@ -1,7 +1,7 @@
 //  Copyright (c) 2022 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import { AtcMessage } from './AtcMessage';
+import { AtcMessage, AtcMessageComStatus } from './AtcMessage';
 import { AtcTimestamp } from './AtcTimestamp';
 import { HoppieConnector } from './HoppieConnector';
 import { PreDepartureClearance } from './PreDepartureClearance';
@@ -19,6 +19,22 @@ export class AtsuManager {
     private atcMessageQueue : AtcMessage[] = [];
 
     private listener = RegisterViewListener('JS_LISTENER_SIMVARS');
+
+    constructor() {
+        SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_DELETE', 'number', -1);
+        SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_SEND', 'number', -1);
+
+        setInterval(() => {
+            if (SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_DELETE', 'number') !== -1) {
+                this.removeMessage(SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_DELETE', 'number'));
+                SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_DELETE', 'number', -1);
+            }
+            if (SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_SEND', 'number') !== -1) {
+                this.sendMessage(SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_SEND', 'number'));
+                SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_SEND', 'number', -1);
+            }
+        }, 500);
+    }
 
     public registerPdcMessage(message: PreDepartureClearance) {
         const serialized = message.serialize();
@@ -40,13 +56,24 @@ export class AtsuManager {
         return '';
     }
 
-    public removeMessage(uid: string) {
-        this.atcMessageQueue.forEach((item, index) => {
-            if (item.UniqueMessageID === uid) {
-                this.atcMessageQueue.slice(index, 1);
-                this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG_REMOVE', uid);
-            }
-        });
+    private sendMessage(uid: number) {
+        const index = this.atcMessageQueue.findIndex((element) => element.UniqueMessageID === uid);
+        if (index !== -1) {
+            this.atcMessageQueue[index].ComStatus = AtcMessageComStatus.Sending;
+            this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', this.atcMessageQueue[index]);
+        }
+    }
+
+    private removeMessage(uid: number) {
+        const index = this.atcMessageQueue.findIndex((element) => element.UniqueMessageID === uid);
+        if (index !== -1) {
+            this.atcMessageQueue.splice(index, 1);
+            this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG_REMOVE', uid);
+        }
+    }
+
+    public AtcMessageQueue() {
+        return this.atcMessageQueue;
     }
 
     public getConnector() {
