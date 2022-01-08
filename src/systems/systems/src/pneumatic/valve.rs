@@ -322,7 +322,6 @@ pub struct PneumaticExhaust {
     fluid_flow: VolumeRate,
 }
 impl PneumaticExhaust {
-    const TRANSFER_SPEED: f64 = 3.;
     const HEAT_CAPACITY_RATIO: f64 = 1.4;
 
     pub fn new(exhaust_speed: f64) -> Self {
@@ -340,9 +339,8 @@ impl PneumaticExhaust {
         let equalization_volume =
             self.calculate_required_volume_for_target_pressure(from, context.ambient_pressure());
 
-        let fluid_to_move = (self.exhaust_speed
-            * equalization_volume
-            * (1. - (-Self::TRANSFER_SPEED * context.delta_as_secs_f64()).exp()))
+        let fluid_to_move = (equalization_volume
+            * (1. - (-self.exhaust_speed * context.delta_as_secs_f64()).exp()))
         .max(-from.volume());
 
         from.change_fluid_amount(fluid_to_move);
@@ -676,6 +674,28 @@ mod tests {
 
         for _ in 1..1000 {
             exhaust.update_move_fluid(&context, &mut container);
+            println!("Press {:.1}", container.pressure().get::<psi>());
+        }
+
+        assert_about_eq!(
+            container.pressure().get::<psi>(),
+            context.ambient_pressure().get::<psi>()
+        );
+    }
+
+    #[test]
+    fn exhaust_makes_pressure_go_to_ambient_pressure_stress_test() {
+        let mut container = quick_container(1., 20., 15.);
+        let mut exhaust = PneumaticExhaust::new(45.);
+
+        let context = context(Duration::from_millis(150), Length::new::<foot>(0.));
+
+        exhaust.update_move_fluid(&context, &mut container);
+        assert!(exhaust.fluid_flow().get::<cubic_meter_per_second>() > 0.);
+
+        for _ in 1..50 {
+            exhaust.update_move_fluid(&context, &mut container);
+            println!("Press {:.1}", container.pressure().get::<psi>());
         }
 
         assert_about_eq!(
