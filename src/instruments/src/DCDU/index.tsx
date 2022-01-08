@@ -143,6 +143,10 @@ const DCDU: React.FC = () => {
             }
             setMessages(messages.set(atsuMessage.UniqueMessageID, atsuMessage));
             SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_MAX_REACHED', 'boolean', messages.size >= maxMessageCount ? 1 : 0);
+
+            if (messageUid === -1) {
+                setMessageUid(atsuMessage.UniqueMessageID);
+            }
         }
     });
     useCoherentEvent('A32NX_DCDU_MSG_REMOVE', (uid: number) => {
