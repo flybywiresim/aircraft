@@ -110,12 +110,6 @@ class CDUAtcDepartReq {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onRightInput[5] = (value, scratchpadCallback) => {
-            if (mcdu.currentFlightPhase !== FmgcFlightPhases.PREFLIGHT) {
-                mcdu.scratchpad.setText("COM UNAVAILABLE");
-                scratchpadCallback();
-                return;
-            }
-
             if ("" === mcdu.pdcMessage.Callsign || "" === mcdu.pdcMessage.Origin || "" === mcdu.pdcMessage.Destination || 1 !== mcdu.pdcMessage.Atis.length) {
                 mcdu.scratchpad.setText("ENTER MANDATORY FIELDS");
                 scratchpadCallback();
