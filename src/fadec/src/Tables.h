@@ -6,18 +6,6 @@
 EngineRatios* ratios;
 
 /// <summary>
-/// Interpolation function being used by MSFS for the engine tables
-/// </summary>
-/// <returns>Interpolated 'y' for a given 'x'.</returns>
-double interpolate(double x, double x0, double x1, double y0, double y1) {
-  double y = 0;
-
-  y = ((y0 * (x1 - x)) + (y1 * (x - x0))) / (x1 - x0);
-
-  return y;
-}
-
-/// <summary>
 /// Table 1502 (CN2 vs correctedN1) representations with FSX nomenclature
 /// </summary>
 /// <returns>Returns CN2 - correctedN1 pair.</returns>

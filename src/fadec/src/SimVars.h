@@ -103,6 +103,9 @@ class SimVars {
   ENUM TotalWeight = get_aircraft_var_enum("TOTAL WEIGHT");
   ENUM FuelWeightGallon = get_aircraft_var_enum("FUEL WEIGHT PER GALLON");
 
+  ENUM NacelleAntiIce = get_aircraft_var_enum("ENG ANTI ICE");
+  ENUM WingAntiIce = get_aircraft_var_enum("STRUCTURAL DEICE SWITCH");
+
   /// <summary>
   /// Collection of LVars for the A32NX
   /// </summary>
@@ -160,6 +163,13 @@ class SimVars {
   ID CargoAftContainerDesired;
   ID CargoAftBaggageDesired;
   ID CargoAftBulkDesired;
+  ID ThrustLimitIdle;
+  ID ThrustLimitToga;
+  ID ThrustLimitFlex;
+  ID ThrustLimitClimb;
+  ID ThrustLimitMct;
+  ID PacksState1;
+  ID PacksState2;
 
   SimVars() { this->initializeVars(); }
 
@@ -216,6 +226,15 @@ class SimVars {
     CargoAftBaggageDesired = register_named_variable("A32NX_CARGO_AFT_BAGGAGE_DESIRED");
     CargoAftBulkDesired = register_named_variable("A32NX_CARGO_AFT_BULK_LOOSE_DESIRED");
 
+    ThrustLimitIdle = register_named_variable("A32NX_AUTOTHRUST_THRUST_LIMIT_IDLE");
+    ThrustLimitToga = register_named_variable("A32NX_AUTOTHRUST_THRUST_LIMIT_TOGA");
+    ThrustLimitFlex = register_named_variable("A32NX_AUTOTHRUST_THRUST_LIMIT_FLX");
+    ThrustLimitClimb = register_named_variable("A32NX_AUTOTHRUST_THRUST_LIMIT_CLB");
+    ThrustLimitMct = register_named_variable("A32NX_AUTOTHRUST_THRUST_LIMIT_MCT");
+
+    PacksState1 = register_named_variable("A32NX_PACKS_1_IS_SUPPLYING");
+    PacksState2 = register_named_variable("A32NX_PACKS_2_IS_SUPPLYING");
+
     this->setDeveloperState(0);
     this->setEngine1N2(0);
     this->setEngine2N2(0);
@@ -249,6 +268,11 @@ class SimVars {
     this->setEngine2Timer(0);
     this->setPumpStateLeft(0);
     this->setPumpStateRight(0);
+    this->setThrustLimitIdle(0);
+    this->setThrustLimitToga(0);
+    this->setThrustLimitFlex(0);
+    this->setThrustLimitClimb(0);
+    this->setThrustLimitMct(0);
 
     m_Units = new Units();
   }
@@ -287,6 +311,11 @@ class SimVars {
   void setEngine2Timer(FLOAT64 value) { set_named_variable_value(Engine2Timer, value); }
   void setPumpStateLeft(FLOAT64 value) { set_named_variable_value(PumpStateLeft, value); }
   void setPumpStateRight(FLOAT64 value) { set_named_variable_value(PumpStateRight, value); }
+  void setThrustLimitIdle(FLOAT64 value) { set_named_variable_value(ThrustLimitIdle, value); }
+  void setThrustLimitToga(FLOAT64 value) { set_named_variable_value(ThrustLimitToga, value); }
+  void setThrustLimitFlex(FLOAT64 value) { set_named_variable_value(ThrustLimitFlex, value); }
+  void setThrustLimitClimb(FLOAT64 value) { set_named_variable_value(ThrustLimitClimb, value); }
+  void setThrustLimitMct(FLOAT64 value) { set_named_variable_value(ThrustLimitMct, value); }
 
   // Collection of SimVar/LVar 'get' Functions
   FLOAT64 getDeveloperState() { return get_named_variable_value(DevVar); }
@@ -336,6 +365,9 @@ class SimVars {
   FLOAT64 getCargoAftContainerDesired() { return get_named_variable_value(CargoAftContainerDesired); }
   FLOAT64 getCargoAftBaggageDesired() { return get_named_variable_value(CargoAftBaggageDesired); }
   FLOAT64 getCargoAftBulkDesired() { return get_named_variable_value(CargoAftBulkDesired); }
+  FLOAT64 getPacksState1() { return get_named_variable_value(PacksState1); }
+  FLOAT64 getPacksState2() { return get_named_variable_value(PacksState2); }
+
   FLOAT64 getCN1(int index) { return aircraft_varget(CorrectedN1, m_Units->Percent, index); }
   FLOAT64 getCN2(int index) { return aircraft_varget(CorrectedN2, m_Units->Percent, index); }
   FLOAT64 getN1(int index) { return aircraft_varget(N1, m_Units->Percent, index); }
@@ -376,4 +408,6 @@ class SimVars {
   FLOAT64 getEngineIgniter(int index) { return aircraft_varget(EngineIgniter, m_Units->Number, index); }
   FLOAT64 getEngineCombustion(int index) { return aircraft_varget(EngineCombustion, m_Units->Bool, index); }
   FLOAT64 getAnimDeltaTime() { return aircraft_varget(animDeltaTime, m_Units->Seconds, 0); }
+  FLOAT64 getNAI(int index) { return aircraft_varget(NacelleAntiIce, m_Units->Bool, index); }
+  FLOAT64 getWAI() { return aircraft_varget(WingAntiIce, m_Units->Bool, 0); }
 };

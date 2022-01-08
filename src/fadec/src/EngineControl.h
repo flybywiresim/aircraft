@@ -3,6 +3,7 @@
 #include "RegPolynomials.h"
 #include "SimVars.h"
 #include "Tables.h"
+#include "ThrustLimits.h"
 #include "common.h"
 
 class EngineControl {
@@ -27,6 +28,10 @@ class EngineControl {
   double engineState;
   double engineStarter;
   double engineIgniter;
+
+  double packs;
+  double nai;
+  double wai;
 
   double simCN1;
   double simN1;
@@ -891,6 +896,42 @@ class EngineControl {
     }
   }
 
+  void updateThrustLimits(double altitude, double ambientTemp, double ambientPressure, double simN1highest, int packs, int nai, int wai) {
+    double idle = simVars->getEngineIdleN1();
+    double to;
+    double ga;
+    double toga;
+    double clb;
+    double mct;
+
+    // Write all N1 Limits
+    to = limitN1(0, pressAltitude, ambientTemp, ambientPressure, packs, nai, wai);
+    ga = limitN1(1, pressAltitude, ambientTemp, ambientPressure, packs, nai, wai);
+    if (simN1highest < to) {
+      toga = to;
+    } else if (simN1highest > ga) {
+      toga = ga;
+    } else {
+      toga = simN1highest;
+    }
+    clb = limitN1(2, pressAltitude, ambientTemp, ambientPressure, packs, nai, wai);
+    mct = limitN1(3, pressAltitude, ambientTemp, ambientPressure, packs, nai, wai);
+
+    // Checking for high-altitude TOGA
+    if (pressAltitude > 16600) {
+      toga = clb;
+    }
+
+    // std::cout << "FADEC: Alt= " << pressAltitude << " OAT= " << ambientTemp << " mach= " << mach << " packs= " << packs << " NAI= " <<
+    // nai
+    //          << " WAI= " << wai << " TOGA = " << toga << " CLB = " << clb << " MCT = " << mct << std::endl;
+
+    simVars->setThrustLimitIdle(idle);
+    simVars->setThrustLimitToga(toga);
+    simVars->setThrustLimitClimb(clb);
+    simVars->setThrustLimitMct(mct);
+  }
+
  public:
   /// <summary>
   /// Initialize the FADEC and Fuel model
@@ -988,6 +1029,13 @@ class EngineControl {
     // Initialize Pump State
     simVars->setPumpStateLeft(0);
     simVars->setPumpStateRight(0);
+
+    // Initialize Thrust Limits
+    simVars->setThrustLimitIdle(0);
+    simVars->setThrustLimitToga(0);
+    simVars->setThrustLimitFlex(0);
+    simVars->setThrustLimitClimb(0);
+    simVars->setThrustLimitMct(0);
   }
 
   /// <summary>
@@ -996,6 +1044,7 @@ class EngineControl {
   void update(double deltaTime) {
     double animationDeltaTime;
     double prevAnimationDeltaTime;
+    double simN1highest = 0;
 
     // animationDeltaTimes being used to detect a Paused situation
     prevAnimationDeltaTime = animationDeltaTime;
@@ -1007,6 +1056,18 @@ class EngineControl {
     ambientPressure = simVars->getAmbientPressure();
     simOnGround = simVars->getSimOnGround();
     imbalance = simVars->getEngineImbalance();
+    packs = 0;
+    nai = 0;
+    wai = 0;
+
+    // Obtain Bleed Variables
+    if (simVars->getPacksState1() > 0.5 || simVars->getPacksState2() > 0.5) {
+      packs = 1;
+    }
+    if (simVars->getNAI(1) > 0.5 || simVars->getNAI(2) > 0.5) {
+      nai = 1;
+    }
+    wai = simVars->getWAI();
 
     generateIdleParameters(pressAltitude, ambientTemp, ambientPressure);
 
@@ -1049,12 +1110,18 @@ class EngineControl {
           updateEGT(engine, imbalance, deltaTime, simOnGround, engineState, simCN1, cFbwFF, mach, pressAltitude, ambientTemp);
           // updateOil(engine, imbalance, thrust, simN2, deltaN2, deltaTime, ambientTemp);
       }
+
+      // set highest N1 from either engine
+      simN1highest = max(simN1highest, simN1);
     }
 
     // If Development State is 1, UI Payload will be enabled
     if (simVars->getDeveloperState() == 0)
       checkPayload();
+
     updateFuel(deltaTime);
+
+    updateThrustLimits(pressAltitude, ambientTemp, ambientPressure, simN1highest, packs, nai, wai);
     // timer.elapsed();
   }
 
