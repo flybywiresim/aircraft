@@ -1,11 +1,11 @@
-use self::acs_controller::AirConditioningSystemController;
+use self::acs_controller::{AirConditioningSystemController, PackFlowValveSignal};
 
 use crate::{
     overhead::{OnOffFaultPushButton, ValueKnob},
     pressurization::PressurizationOverheadPanel,
     shared::{
-        Cabin, EngineCorrectedN1, EngineFirePushButtons, EngineStartState, LgciuWeightOnWheels,
-        PneumaticBleed,
+        Cabin, ControllerSignal, EngineCorrectedN1, EngineFirePushButtons, EngineStartState,
+        LgciuWeightOnWheels, PneumaticBleed,
     },
     simulation::{
         InitContext, Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -25,10 +25,6 @@ pub mod cabin_air;
 
 pub trait DuctTemperature {
     fn duct_demand_temperature(&self) -> Vec<ThermodynamicTemperature>;
-}
-
-pub trait FlowControlValveSignal {
-    fn should_open_fcv(&self) -> [bool; 2];
 }
 
 pub trait PackFlow {
@@ -242,8 +238,14 @@ impl PackFlowValve {
         format!("COND_PACK_FLOW_VALVE_{}_IS_OPEN", number)
     }
 
-    fn update(&mut self, context: &UpdateContext, open_fcv: &impl FlowControlValveSignal) {
-        self.is_open = open_fcv.should_open_fcv()[self.number - 1];
+    fn update(
+        &mut self,
+        context: &UpdateContext,
+        open_fcv: &impl ControllerSignal<PackFlowValveSignal>,
+    ) {
+        if let Some(signal) = open_fcv.signal() {
+            self.is_open = signal.target_open_amount(self.number) > Ratio::new::<percent>(0.)
+        }
         if self.is_open {
             self.timer_open += context.delta();
         } else {
@@ -384,9 +386,14 @@ mod air_conditioning_tests {
         }
     }
 
-    impl FlowControlValveSignal for TestActuatorSignal {
-        fn should_open_fcv(&self) -> [bool; 2] {
-            [self.should_open_fcv, self.should_open_fcv]
+    impl ControllerSignal<PackFlowValveSignal> for TestActuatorSignal {
+        fn signal(&self) -> Option<PackFlowValveSignal> {
+            let target_open = if self.should_open_fcv {
+                Ratio::new::<percent>(100.)
+            } else {
+                Ratio::new::<percent>(0.)
+            };
+            Some(PackFlowValveSignal::new([target_open, target_open]))
         }
     }
 

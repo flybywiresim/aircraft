@@ -2,8 +2,8 @@ use crate::{
     pneumatic::EngineState,
     pressurization::PressurizationOverheadPanel,
     shared::{
-        pid::PidController, Cabin, EngineCorrectedN1, EngineFirePushButtons, EngineStartState,
-        LgciuWeightOnWheels, PneumaticBleed,
+        pid::PidController, Cabin, ControllerSignal, EngineCorrectedN1, EngineFirePushButtons,
+        EngineStartState, LgciuWeightOnWheels, PneumaticBleed,
     },
     simulation::{
         InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -12,8 +12,8 @@ use crate::{
 };
 
 use super::{
-    AirConditioningSystemOverhead, DuctTemperature, FlowControlValveSignal, OverheadFlowSelector,
-    PackFlow, PackFlowValve, ZoneType,
+    AirConditioningSystemOverhead, DuctTemperature, OverheadFlowSelector, PackFlow, PackFlowValve,
+    ZoneType,
 };
 
 use std::time::Duration;
@@ -98,9 +98,11 @@ impl<const ZONES: usize> PackFlow for AirConditioningSystemController<ZONES> {
     }
 }
 
-impl<const ZONES: usize> FlowControlValveSignal for AirConditioningSystemController<ZONES> {
-    fn should_open_fcv(&self) -> [bool; 2] {
-        self.pack_flow_controller.should_open_fcv()
+impl<const ZONES: usize> ControllerSignal<PackFlowValveSignal>
+    for AirConditioningSystemController<ZONES>
+{
+    fn signal(&self) -> Option<PackFlowValveSignal> {
+        self.pack_flow_controller.signal()
     }
 }
 
@@ -521,6 +523,20 @@ impl<const ZONES: usize> SimulationElement for ZoneController<ZONES> {
     }
 }
 
+pub struct PackFlowValveSignal {
+    target_open_amount: [Ratio; 2],
+}
+
+impl PackFlowValveSignal {
+    pub fn new(target_open_amount: [Ratio; 2]) -> Self {
+        Self { target_open_amount }
+    }
+
+    pub fn target_open_amount(&self, pack_id: usize) -> Ratio {
+        self.target_open_amount[pack_id - 1]
+    }
+}
+
 struct PackFlowController<const ZONES: usize> {
     pack_flow_id: VariableIdentifier,
 
@@ -711,9 +727,20 @@ impl<const ZONES: usize> PackFlow for PackFlowController<ZONES> {
     }
 }
 
-impl<const ZONES: usize> FlowControlValveSignal for PackFlowController<ZONES> {
-    fn should_open_fcv(&self) -> [bool; 2] {
-        self.should_open_fcv
+impl<const ZONES: usize> ControllerSignal<PackFlowValveSignal> for PackFlowController<ZONES> {
+    fn signal(&self) -> Option<PackFlowValveSignal> {
+        let target_open: Vec<Ratio> = self
+            .should_open_fcv
+            .iter()
+            .map(|&fcv| {
+                if fcv {
+                    Ratio::new::<percent>(100.)
+                } else {
+                    Ratio::new::<percent>(0.)
+                }
+            })
+            .collect();
+        Some(PackFlowValveSignal::new([target_open[0], target_open[1]]))
     }
 }
 
