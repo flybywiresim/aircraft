@@ -5,12 +5,12 @@ class CDUAocMenu {
             ["AOC MENU"],
             [""],
             ["<INIT/PRES", "FREE TEXT>"],
+            ["", ""],
+            ["<WX REQUEST", "DEPART REQ>"],
             ["", "RECEIVED"],
-            ["<WX REQUEST", "MESSAGES>"],
-            ["", "SENT"],
             ["<ATIS", "MESSAGES>"],
-            [""],
-            ["<W/B[color]white", ""],
+            ["", "SENT"],
+            ["<W/B[color]white", "MESSAGES>"],
             [""],
             ["", "DIVERSION>[color]inop"],
             ["ATSU DLK"],
@@ -51,12 +51,18 @@ class CDUAocMenu {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onRightInput[1] = () => {
-            CDUAocMessagesReceived.ShowPage(mcdu);
+            CDUAocDepartReq.ShowPage1(mcdu);
         };
         mcdu.rightInputDelay[2] = () => {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onRightInput[2] = () => {
+            CDUAocMessagesReceived.ShowPage(mcdu);
+        };
+        mcdu.rightInputDelay[3] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+        mcdu.onRightInput[3] = () => {
             CDUAocMessagesSent.ShowPage(mcdu);
         };
         mcdu.onLeftInput[0] = () => {

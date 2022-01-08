@@ -16,6 +16,8 @@ export class AtsuManager {
 
     private messageCounter = 0;
 
+    private aocMessageQueue : AtcMessage[] = [];
+
     private atcMessageQueue : AtcMessage[] = [];
 
     private listener = RegisterViewListener('JS_LISTENER_SIMVARS');
@@ -49,18 +51,24 @@ export class AtsuManager {
 
         message.UniqueMessageID = ++this.messageCounter;
         message.Timestamp = new AtcTimestamp();
-        message.Station = this.station;
-        this.atcMessageQueue.unshift(message);
+        this.aocMessageQueue.unshift(message);
         this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', message);
 
         return '';
     }
 
     private sendMessage(uid: number) {
-        const index = this.atcMessageQueue.findIndex((element) => element.UniqueMessageID === uid);
+        let index = this.atcMessageQueue.findIndex((element) => element.UniqueMessageID === uid);
         if (index !== -1) {
             this.atcMessageQueue[index].ComStatus = AtcMessageComStatus.Sending;
             this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', this.atcMessageQueue[index]);
+            return;
+        }
+
+        index = this.aocMessageQueue.findIndex((element) => element.UniqueMessageID === uid);
+        if (index !== -1) {
+            this.aocMessageQueue[index].ComStatus = AtcMessageComStatus.Sending;
+            this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', this.aocMessageQueue[index]);
         }
     }
 
