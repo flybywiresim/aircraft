@@ -3,6 +3,7 @@ import { useSimVar } from '@instruments/common/simVars';
 import { useCoherentEvent, useInteractionEvents } from '@instruments/common/hooks';
 import { AtcMessage, AtcMessageType } from '@atsu/AtcMessage';
 import { PreDepartureClearance } from '@atsu/PreDepartureClearance';
+import { PdcButtons } from './elements/PdcButtons';
 import { render } from '../Common';
 import { SelfTest } from './pages/SelfTest';
 import { WaitingForData } from './pages/WaitingForData';
@@ -234,6 +235,14 @@ const DCDU: React.FC = () => {
                                 resetStatus={resetStatus}
                             />
                         </>
+                    ))}
+                    {(message !== undefined && message.Type === AtcMessageType.PDC && (
+                        <PdcButtons
+                            message={message}
+                            setStatus={setStatus}
+                            resetStatus={resetStatus}
+                            closeMessage={closeMessage}
+                        />
                     ))}
                     {statusMessage.message.length !== 0 && (
                         <>
