@@ -69,13 +69,10 @@ const DCDU: React.FC = () => {
             // define the next visible message
             if (index + 1 < sortedMessages.length) {
                 setMessageUid(sortedMessages[index + 1].UniqueMessageID);
-                console.log('NEXT');
             } else if (index !== 0) {
                 setMessageUid(sortedMessages[index - 1].UniqueMessageID);
-                console.log('PREV');
             } else {
                 setMessageUid(-1);
-                console.log('NONE');
             }
 
             // update the map
@@ -146,7 +143,6 @@ const DCDU: React.FC = () => {
         }
     });
     useCoherentEvent('A32NX_DCDU_MSG_REMOVE', (uid: number) => {
-        console.log(`DELETE ${uid}`);
         closeMessage(uid);
     });
 
@@ -179,8 +175,6 @@ const DCDU: React.FC = () => {
             if (messageIndex !== -1) {
                 message = arrMessages[messageIndex];
             }
-        } else {
-            setMessageUid(arrMessages[0].UniqueMessageID);
         }
     }
 
