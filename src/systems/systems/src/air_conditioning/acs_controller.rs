@@ -529,15 +529,6 @@ struct PackFlowController<const ZONES: usize> {
     fcv_2_open_allowed: bool,
     should_open_fcv: [bool; 2],
     pack_flow: MassRate,
-
-    apu_bleed_on: bool,
-    crossbleed_is_on: bool,
-    ditching_is_on: bool,
-    engine_1_in_start_mode: bool,
-    engine_2_in_start_mode: bool,
-    engine_1_on_fire: bool,
-    engine_2_on_fire: bool,
-    flow_selector_position: OverheadFlowSelector,
 }
 
 impl<const ZONES: usize> PackFlowController<ZONES> {
@@ -560,15 +551,6 @@ impl<const ZONES: usize> PackFlowController<ZONES> {
             fcv_2_open_allowed: false,
             should_open_fcv: [false, false],
             pack_flow: MassRate::new::<kilogram_per_second>(0.),
-
-            apu_bleed_on: false,
-            crossbleed_is_on: false,
-            ditching_is_on: false,
-            engine_1_in_start_mode: false,
-            engine_2_in_start_mode: false,
-            engine_1_on_fire: false,
-            engine_2_on_fire: false,
-            flow_selector_position: OverheadFlowSelector::Norm,
         }
     }
 
@@ -579,25 +561,27 @@ impl<const ZONES: usize> PackFlowController<ZONES> {
         engines: [&impl EngineCorrectedN1; 2],
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         pneumatic: &(impl PneumaticBleed + EngineStartState),
-        _pneumatic_overhead: [bool; 2],
+        pneumatic_overhead: [bool; 2],
         pressurization: &impl Cabin,
         pressurization_overhead: &PressurizationOverheadPanel,
         pack_flow_valve: &[PackFlowValve; 2],
     ) {
-        self.apu_bleed_on = pneumatic.apu_bleed_is_on();
-        self.ditching_is_on = pressurization_overhead.ditching_is_on();
-        self.crossbleed_is_on = pneumatic.engine_crossbleed_is_on();
-        self.engine_1_in_start_mode = pneumatic.left_engine_state() == EngineState::Starting;
-        self.engine_2_in_start_mode = pneumatic.right_engine_state() == EngineState::Starting;
-        self.engine_1_on_fire = engine_fire_push_buttons.is_released(1);
-        self.engine_2_on_fire = engine_fire_push_buttons.is_released(2);
-        self.flow_selector_position = acs_overhead.flow_selector_position();
-
         // TODO: Add overheat protection
-        self.flow_demand = self.flow_demand_determination(aircraft_state, pack_flow_valve);
-        self.fcv_open_allowed_determination(acs_overhead);
-        self.should_open_fcv = self.should_open_fcv_determination(engines);
-        self.pack_flow = self.pack_flow_calculation(pack_flow_valve, pressurization)
+        self.flow_demand = self.flow_demand_determination(
+            aircraft_state,
+            pack_flow_valve,
+            acs_overhead,
+            pneumatic,
+        );
+        self.fcv_open_allowed_determination(
+            acs_overhead,
+            engine_fire_push_buttons,
+            pressurization_overhead,
+            pneumatic,
+        );
+        self.should_open_fcv =
+            self.should_open_fcv_determination(engines, pneumatic, pneumatic_overhead);
+        self.pack_flow = self.pack_flow_calculation(pack_flow_valve, pressurization);
     }
 
     fn pack_start_condition_determination(&self, pack_flow_valve: &[PackFlowValve; 2]) -> bool {
@@ -611,15 +595,17 @@ impl<const ZONES: usize> PackFlowController<ZONES> {
         &self,
         aircraft_state: &AirConditioningStateManager,
         pack_flow_valve: &[PackFlowValve; 2],
+        acs_overhead: &AirConditioningSystemOverhead<ZONES>,
+        pneumatic: &(impl PneumaticBleed + EngineStartState),
     ) -> Ratio {
-        let mut intermediate_flow: Ratio = self.flow_selector_position.into();
+        let mut intermediate_flow: Ratio = acs_overhead.flow_selector_position().into();
         let pack_in_start_condition = self.pack_start_condition_determination(pack_flow_valve);
         // TODO: Add "insufficient performance" based on Pack Mixer Temperature Demand
         if pack_in_start_condition {
             intermediate_flow =
                 intermediate_flow.max(Ratio::new::<percent>(Self::PACK_START_FLOW_LIMIT));
         }
-        if self.apu_bleed_on {
+        if pneumatic.apu_bleed_is_on() {
             intermediate_flow =
                 intermediate_flow.max(Ratio::new::<percent>(Self::APU_SUPPLY_FLOW_LIMIT));
         }
@@ -653,36 +639,50 @@ impl<const ZONES: usize> PackFlowController<ZONES> {
     fn fcv_open_allowed_determination(
         &mut self,
         acs_overhead: &AirConditioningSystemOverhead<ZONES>,
+        engine_fire_push_buttons: &impl EngineFirePushButtons,
+        pressurization_overhead: &PressurizationOverheadPanel,
+        pneumatic: &(impl PneumaticBleed + EngineStartState),
     ) {
         // Flow Control Valve 1
         self.fcv_1_open_allowed = acs_overhead.pack_pushbuttons_state()[0]
-            && !self.engine_1_in_start_mode
-            && (!self.engine_2_in_start_mode || !self.crossbleed_is_on)
-            && !self.engine_1_on_fire
-            && !self.ditching_is_on;
+            && !(pneumatic.left_engine_state() == EngineState::Starting)
+            && (!(pneumatic.right_engine_state() == EngineState::Starting)
+                || !pneumatic.engine_crossbleed_is_on())
+            && !engine_fire_push_buttons.is_released(1)
+            && !pressurization_overhead.ditching_is_on();
         // && ! pack 1 overheat
         // Flow Control Valve 2
         self.fcv_2_open_allowed = acs_overhead.pack_pushbuttons_state()[1]
-            && !self.engine_2_in_start_mode
-            && (!self.engine_1_in_start_mode || !self.crossbleed_is_on)
-            && !self.engine_2_on_fire
-            && !self.ditching_is_on;
+            && !(pneumatic.right_engine_state() == EngineState::Starting)
+            && (!(pneumatic.left_engine_state() == EngineState::Starting)
+                || !pneumatic.engine_crossbleed_is_on())
+            && !engine_fire_push_buttons.is_released(2)
+            && !pressurization_overhead.ditching_is_on();
         // && ! pack 2 overheat
     }
 
-    fn should_open_fcv_determination(&self, engines: [&impl EngineCorrectedN1; 2]) -> [bool; 2] {
-        // Engine bleed pushbuttons not yet integrated. TODO after Bleed PR is merged
+    fn should_open_fcv_determination(
+        &self,
+        engines: [&impl EngineCorrectedN1; 2],
+        pneumatic: &(impl PneumaticBleed + EngineStartState),
+        pneumatic_overhead: [bool; 2],
+    ) -> [bool; 2] {
+        // Pneumatic overhead represents engine bleed pushbutton for left and right engine(s)
         [
             self.fcv_1_open_allowed
-                && ((engines[0].corrected_n1() >= Ratio::new::<percent>(15.)
+                && (((engines[0].corrected_n1() >= Ratio::new::<percent>(15.)
+                    && pneumatic_overhead[0])
                     || (engines[1].corrected_n1() >= Ratio::new::<percent>(15.)
-                        && self.crossbleed_is_on))
-                    || self.apu_bleed_on),
+                        && pneumatic_overhead[1]
+                        && pneumatic.engine_crossbleed_is_on()))
+                    || pneumatic.apu_bleed_is_on()),
             self.fcv_2_open_allowed
-                && ((engines[1].corrected_n1() >= Ratio::new::<percent>(15.)
+                && (((engines[1].corrected_n1() >= Ratio::new::<percent>(15.)
+                    && pneumatic_overhead[1])
                     || (engines[0].corrected_n1() >= Ratio::new::<percent>(15.)
-                        && self.crossbleed_is_on))
-                    || self.apu_bleed_on),
+                        && pneumatic_overhead[0]
+                        && pneumatic.engine_crossbleed_is_on()))
+                    || pneumatic.apu_bleed_is_on()),
         ]
     }
 
