@@ -9,6 +9,58 @@
 class Polynomial {
  public:
   /// <summary>
+  /// Shutdown polynomials - N2 (%)
+  /// </summary>
+  double shutdownN2(double preN2, double deltaTime) {
+    double outN2 = 0;
+    double k = -0.08183;
+
+    if (preN2 < 30)
+      k = -0.0515;
+
+    outN2 = preN2 * expFBW(k * deltaTime);
+
+    return outN2;
+  }
+
+  /// <summary>
+  /// Shutdown polynomials - N1 (%)
+  /// </summary>
+  double shutdownN1(double preN1, double deltaTime) {
+    double outN1 = 0;
+    double k = -0.164;
+
+    if (preN1 < 4)
+      k = -0.08;
+
+    outN1 = preN1 * expFBW(k * deltaTime);
+
+    return outN1;
+  }
+
+  /// <summary>
+  /// Shutdown polynomials - EGT (degrees C)
+  /// </summary>
+  double shutdownEGT(double preEGT, double ambientTemp, double deltaTime) {
+    double outEGT = 0;
+    double threshold = ambientTemp + 140;
+    double k = 0;
+    double ts = 0;
+
+    if (preEGT > threshold) {
+      k = 0.0257743;
+      ts = 135 + ambientTemp;
+    } else {
+      k = 0.00072756;
+      ts = 30 + ambientTemp;
+    }
+
+    outEGT = ts + (preEGT - ts) * expFBW(-k * deltaTime);
+
+    return outEGT;
+  }
+
+  /// <summary>
   /// Start-up polynomials - N2 (%)
   /// </summary>
   double startN2(double n2, double preN2, double idleN2) {
@@ -43,22 +95,22 @@ class Polynomial {
   /// Start-up polynomials - N1 (%)
   /// </summary>
   double startN1(double fbwN2, double idleN2, double idleN1) {
-    double normalN1 = 0;
-    double outN1 = 0;
+    double normalN1pre = 0;
+    double normalN1post = 0;
     double normalN2 = fbwN2 / idleN2;
+    double c_N1[9] = {-2.2812156e-12, -5.9830374e+01, 7.0629094e+02,  -3.4580361e+03, 9.1428923e+03,
+                      -1.4097740e+04, 1.2704110e+04,  -6.2099935e+03, 1.2733071e+03};
 
-    if (normalN2 <= 0.29) {
-      normalN1 = 0;
-    } else {
-      double c_N1[9] = {-2.2812156e-12, -5.9830374e+01, 7.0629094e+02,  -3.4580361e+03, 9.1428923e+03,
-                        -1.4097740e+04, 1.2704110e+04,  -6.2099935e+03, 1.2733071e+03};
+    normalN1pre = (-2.4698087 * powFBW(normalN2, 3)) + (0.9662026 * powFBW(normalN2, 2)) + (0.0701367 * normalN2);
 
-      normalN1 = c_N1[0] + (c_N1[1] * normalN2) + (c_N1[2] * powFBW(normalN2, 2)) + (c_N1[3] * powFBW(normalN2, 3)) +
-                 (c_N1[4] * powFBW(normalN2, 4)) + (c_N1[5] * powFBW(normalN2, 5)) + (c_N1[6] * powFBW(normalN2, 6)) +
-                 (c_N1[7] * powFBW(normalN2, 7)) + (c_N1[8] * powFBW(normalN2, 8));
-    }
+    normalN1post = c_N1[0] + (c_N1[1] * normalN2) + (c_N1[2] * powFBW(normalN2, 2)) + (c_N1[3] * powFBW(normalN2, 3)) +
+                   (c_N1[4] * powFBW(normalN2, 4)) + (c_N1[5] * powFBW(normalN2, 5)) + (c_N1[6] * powFBW(normalN2, 6)) +
+                   (c_N1[7] * powFBW(normalN2, 7)) + (c_N1[8] * powFBW(normalN2, 8));
 
-    return normalN1 * idleN1;
+    if (normalN1post >= normalN1pre)
+      return normalN1post * idleN1;
+    else
+      return normalN1pre * idleN1;
   }
 
   /// <summary>
@@ -90,7 +142,7 @@ class Polynomial {
   /// <summary>
   /// Start-up polynomials - EGT (Celsius)
   /// </summary>
-  double startEGT(double fbwN2, double preEGT, double idleN2, double ambientTemp, double idleEGT) {
+  double startEGT(double fbwN2, double idleN2, double ambientTemp, double idleEGT) {
     double normalEGT = 0;
     double outEGT = 0;
     double normalN2 = fbwN2 / idleN2;
@@ -111,6 +163,23 @@ class Polynomial {
     outEGT = (normalEGT * (idleEGT - (ambientTemp))) + (ambientTemp);
 
     return outEGT;
+  }
+
+  /// <summary>
+  /// Start-up polynomials - Oil Temperature (Celsius)
+  /// </summary>
+  double startOilTemp(double fbwN2, double idleN2, double ambientTemp) {
+    double outOilTemp = 0;
+
+    if (fbwN2 < 0.79 * idleN2) {
+      outOilTemp = ambientTemp;
+    } else if (fbwN2 < 0.98 * idleN2) {
+      outOilTemp = ambientTemp + 5;
+    } else {
+      outOilTemp = ambientTemp + 10;
+    }
+
+    return outOilTemp;
   }
 
   /// <summary>
@@ -149,6 +218,30 @@ class Polynomial {
              (c_Flow[19] * mach * powFBW(alt, 2)) + (c_Flow[20] * powFBW(alt, 3));
 
     return outCFF;
+  }
+
+  double oilTemperature(double energy, double preOilTemp, double maxOilTemp, double deltaTime) {
+    double t_steady = 0;
+    double k = 0.001;
+    double dt = 0;
+    double oilTemp_out;
+
+    dt = energy * deltaTime * 0.002;
+
+    t_steady = ((maxOilTemp * k * deltaTime) + preOilTemp) / (1 + (k * deltaTime));
+
+    if (t_steady - dt >= maxOilTemp) {
+      oilTemp_out = maxOilTemp;
+    } else if (t_steady - dt >= maxOilTemp - 10) {
+      oilTemp_out = (t_steady - dt) * 0.999997;
+    } else {
+      oilTemp_out = (t_steady - dt);
+    }
+
+    // std::cout << "FADEC: Max= " << maxOilTemp << " Energy = " << energy << " dt = " << dt << " preT= " << preOilTemp
+    //          << " Tss = " << t_steady << " To = " << oilTemp_out << std::flush;
+
+    return oilTemp_out;
   }
 
   /// <summary>

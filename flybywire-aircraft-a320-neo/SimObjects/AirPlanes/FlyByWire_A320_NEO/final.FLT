@@ -1,6 +1,6 @@
 [SimVarForSpawningInTheAir.0]
 IAS=248
-FlapsDegree=0035.00
+FlapsDegree=0040.00
 
 [Avionics.0]
 Comm1Active=122.800
@@ -101,11 +101,7 @@ AutoFeatherSwitch=False
 FlightDirector=True
 PanelLights=False
 LaunchBarSwitch=False
-LaunchBarState=0
-TailhookHandle=False
-TailhookState=0
-FoldingWingsHandle=False
-FoldingWingsState=0, 0
+SeatBeltsSwitch = True
 
 [LocalVars.0]
 A32NX_RMP_L_TOGGLE_SWITCH=1
@@ -240,6 +236,14 @@ A32NX_FBW_FAC_SWITCH:1=1
 A32NX_FBW_FAC_SWITCH:2=1
 A32NX_AUTOBRAKES_ARMED_MODE=2
 A32NX_PARK_BRAKE_LEVER_POS=0
+A32NX_EFIS_L_ND_MODE=3
+A32NX_EFIS_R_ND_MODE=3
+A32NX_EFIS_L_ND_RANGE=0
+A32NX_EFIS_R_ND_RANGE=0
+A32NX_EFIS_L_NAVAID_1_MODE=2
+A32NX_EFIS_L_NAVAID_2_MODE=2
+A32NX_EFIS_R_NAVAID_1_MODE=2
+A32NX_EFIS_R_NAVAID_2_MODE=2
 A32NX_ISIS_BUGS_ALT_VALUE:0=100
 A32NX_ISIS_BUGS_ALT_VALUE:1=100
 A32NX_ISIS_BUGS_ALT_ACTIVE:0=0
@@ -254,6 +258,9 @@ A32NX_ISIS_BUGS_SPD_ACTIVE:2=0
 A32NX_ISIS_BUGS_SPD_ACTIVE:3=0
 A32NX_OVHD_PRESS_MODE_SEL_PB_IS_AUTO = 1
 A32NX_OVHD_PRESS_MAN_VS_CTL_SWITCH = 1
+A32NX_FLAPS_HANDLE_PERCENT = 1
+A32NX_FLAPS_HANDLE_INDEX = 4
+A32NX_SPOILERS_ARMED = 1
 
 [Gauges.0]
 KollsmanSetting=29.921342849731445313
@@ -287,8 +294,8 @@ Potentiometer.8=0
 Potentiometer.9=0
 Potentiometer.10=0
 Potentiometer.11=0
-Potentiometer.76=0
-Potentiometer.83=0
+Potentiometer.76=0.5
+Potentiometer.83=0.5
 Potentiometer.84=0.5
 Potentiometer.85=0.5
 Potentiometer.87=0.5

@@ -2,6 +2,7 @@
 
 #include <fstream>
 
+#include "AdditionalData.h"
 #include "AutopilotLaws.h"
 #include "AutopilotStateMachine.h"
 #include "Autothrust.h"
@@ -12,7 +13,7 @@
 class FlightDataRecorder {
  public:
   // IMPORTANT: this constant needs to increased with every interface change
-  const uint64_t INTERFACE_VERSION = 10;
+  const uint64_t INTERFACE_VERSION = 17;
 
   void initialize();
 
@@ -20,7 +21,8 @@ class FlightDataRecorder {
               AutopilotLawsModelClass* autopilotLaws,
               AutothrustModelClass* autoThrust,
               FlyByWireModelClass* flyByWire,
-              const EngineData& engineData);
+              const EngineData& engineData,
+              const AdditionalData& additionalData);
 
   void terminate();
 

@@ -1,4 +1,3 @@
-/* eslint-disable no-nested-ternary */
 import './Fuel.scss';
 import ReactDOM from 'react-dom';
 import React, { useEffect, useState } from 'react';
@@ -152,7 +151,12 @@ const Apu = () => {
     // White APU and triangle only if APU off
     // If APU on and powered green line and triangle
     const apuNAtOrBelow20 = apuN.valueOr(0) <= 20;
-    const color = apuFirePB ? 'Amber' : apuNAtOrBelow20 ? 'White' : 'Green';
+    let color = 'Green';
+    if (apuFirePB) {
+        color = 'Amber';
+    } else if (apuNAtOrBelow20) {
+        color = 'White';
+    }
     const fill = apuFirePB ? 1 : 0;
 
     return (
@@ -337,13 +341,8 @@ const Pump = ({ x, y, onBus = 'DC_ESS', pumpNumber, centreTank, tankQuantity }: 
     return (
         <g className={(active && busIsPowered) || centreTankGreen ? 'ThickShape PumpActive' : 'ThickShape PumpInactive'}>
             <rect x={x} y={y} width="30" height="30" />
-            {active
-                ? (busIsPowered
-                    ? <line x1={x + 15} y1={y} x2={x + 15} y2={y + 30} />
-                    : null)
-                : (busIsPowered
-                    ? <line x1={x + 5} y1={y + 15} x2={x + 25} y2={y + 15} />
-                    : null)}
+            {active && busIsPowered ? <line x1={x + 15} y1={y} x2={x + 15} y2={y + 30} /> : null}
+            {!active && busIsPowered ? <line x1={x + 5} y1={y + 15} x2={x + 25} y2={y + 15} /> : null}
             {busIsPowered
                 ? null
                 : <text className="LoIndication" x={x + 15} y={y + 20}>LO</text>}

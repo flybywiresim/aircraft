@@ -3,11 +3,13 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         super(...arguments);
         this._registered = false;
         this._title = undefined;
+        this._titleLeft = '';
         this._pageCurrent = undefined;
         this._pageCount = undefined;
         this._labels = [];
         this._lines = [];
         this.scratchpad = null;
+        this._arrows = [false, false, false, false];
         this.onLeftInput = [];
         this.onRightInput = [];
         this.leftInputDelay = [];
@@ -27,6 +29,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             Prog: 2000,
             Dyn: 1500
         };
+        this.fmgcMesssagesListener = RegisterViewListener('JS_LISTENER_SIMVARS');
+        this.setupFmgcTriggers();
         this.page = {
             SelfPtr: false,
             Current: 0,
@@ -80,8 +84,24 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             ClimbWind: 47,
             CruiseWind: 48,
             DescentWind: 49,
+            FixInfoPage: 50,
         };
     }
+
+    setupFmgcTriggers() {
+        Coherent.on('A32NX_FMGC_SEND_MESSAGE_TO_MCDU', (message) => {
+            this.addNewMessage(new McduMessage(message.text, message.color === 'Amber', true), () => false , () => {
+                if (message.clearable) {
+                    Fmgc.recallMessageById(message.id);
+                }
+            });
+        });
+
+        Coherent.on('A32NX_FMGC_RECALL_MESSAGE_FROM_MCDU_WITH_ID', (text) => {
+            this.tryRemoveMessage(text);
+        });
+    }
+
     get templateID() {
         return "A320_Neo_CDU";
     }
@@ -106,7 +126,11 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
     Init() {
         super.Init();
-        Coherent.trigger('UNFOCUS_INPUT_FIELD');// note: without this, resetting mcdu kills camera
+        try {
+            Coherent.trigger('UNFOCUS_INPUT_FIELD');// note: without this, resetting mcdu kills camera
+        } catch (e) {
+            console.error(e);
+        }
 
         this.minPageUpdateThrottler = new UpdateThrottler(100);
 
@@ -234,10 +258,10 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                         const sender = msg["from"]["flight"];
 
                         const lines = [];
-                        lines.push("FROM " + sender + "[color]cyan");
+                        lines.push("{cyan}FROM " + sender + "{end}");
                         const incLines = msg["message"].split(";");
-                        incLines.forEach(l => lines.push(l.concat("[color]green")));
-                        lines.push('---------------------------[color]white');
+                        incLines.forEach(l => lines.push(`{green}${l}{end}`));
+                        lines.push('{white}------------------------{end}');
 
                         const newMessage = { "id": Date.now(), "type": "FREE TEXT (" + sender + ")", "time": '00:00', "opened": null, "content": lines, };
                         let timeValue = SimVar.GetGlobalVarValue("ZULU TIME", "seconds");
@@ -267,6 +291,15 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         NXDataStore.subscribe('*', () => {
             this.requestUpdate();
         });
+
+        setInterval(() => {
+            if (!this.socket || this.socket.readyState !== 1) {
+                this.connectWebsocket(NXDataStore.get("CONFIG_EXTERNAL_MCDU_PORT", "8080"));
+            }
+        }, 5000);
+        setInterval(() => {
+            this.sendUpdate();
+        }, 500);
     }
 
     requestUpdate() {
@@ -402,13 +435,13 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             color = "white";
         }
         this._title = content.split("[color]")[0];
-        this._titleElement.classList.remove("white", "cyan", "yellow", "green", "amber", "red", "magenta", "inop");
-        this._titleElement.classList.add(color);
+        this._title = `{${color}}${this._title}{end}`;
         this._titleElement.textContent = this._title;
     }
 
     setTitleLeft(content) {
         if (!content) {
+            this._titleLeft = "";
             this._titleLeftElement.textContent = "";
             return;
         }
@@ -417,8 +450,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             color = "white";
         }
         this._titleLeft = content.split("[color]")[0];
-        this._titleLeftElement.classList.remove("white", "blue", "yellow", "green", "red", "magenta", "inop");
-        this._titleLeftElement.classList.add(color);
+        this._titleLeft = `{${color}}${this._titleLeft}{end}`;
         this._titleLeftElement.textContent = this._titleLeft;
     }
 
@@ -445,7 +477,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         }
     }
 
-    setLabel(label, row, col = -1) {
+    setLabel(label, row, col = -1, websocketDraw = true) {
         if (col >= this._labelElements[row].length) {
             return;
         }
@@ -479,20 +511,24 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 color = "white";
             }
             const e = this._labelElements[row][col];
-            e.classList.remove("white", "cyan", "yellow", "green", "amber", "red", "magenta", "inop");
-            e.classList.add(color);
             label = label.split("[color]")[0];
+            label = `{${color}}${label}{end}`;
         }
         this._labels[row][col] = label;
         this._labelElements[row][col].textContent = label;
+
+        if (websocketDraw) {
+            this.sendUpdate();
+        }
     }
 
     /**
      * @param {string|CDU_Field} content
      * @param {number} row
      * @param {number} col
+     * @param {boolean} websocketDraw
      */
-    setLine(content, row, col = -1) {
+    setLine(content, row, col = -1, websocketDraw = true) {
 
         if (content instanceof CDU_Field) {
             const field = content;
@@ -522,23 +558,24 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             content = "------------------------";
         }
         if (content !== "") {
-            if (content.indexOf("[s-text]") !== -1) {
-                content = content.replace("[s-text]", "");
-                this._lineElements[row][col].classList.add("s-text");
-            } else {
-                this._lineElements[row][col].classList.remove("s-text");
-            }
             let color = content.split("[color]")[1];
             if (!color) {
                 color = "white";
             }
             const e = this._lineElements[row][col];
-            e.classList.remove("white", "cyan", "yellow", "green", "amber", "red", "magenta", "inop");
-            e.classList.add(color);
             content = content.split("[color]")[0];
+            content = `{${color}}${content}{end}`;
+            if (content.indexOf("[s-text]") !== -1) {
+                content = content.replace("[s-text]", "");
+                content = `{small}${content}{end}`;
+            }
         }
         this._lines[row][col] = content;
         this._lineElements[row][col].textContent = this._lines[row][col];
+
+        if (websocketDraw) {
+            this.sendUpdate();
+        }
     }
 
     setTemplate(template, large = false) {
@@ -553,33 +590,33 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             if (template[tIndex]) {
                 if (large) {
                     if (template[tIndex][1] !== undefined) {
-                        this.setLine(template[tIndex][0], i, 0);
-                        this.setLine(template[tIndex][1], i, 1);
-                        this.setLine(template[tIndex][2], i, 2);
-                        this.setLine(template[tIndex][3], i, 3);
+                        this.setLine(template[tIndex][0], i, 0, false);
+                        this.setLine(template[tIndex][1], i, 1, false);
+                        this.setLine(template[tIndex][2], i, 2, false);
+                        this.setLine(template[tIndex][3], i, 3, false);
                     } else {
-                        this.setLine(template[tIndex][0], i, -1);
+                        this.setLine(template[tIndex][0], i, -1, false);
                     }
                 } else {
                     if (template[tIndex][1] !== undefined) {
-                        this.setLabel(template[tIndex][0], i, 0);
-                        this.setLabel(template[tIndex][1], i, 1);
-                        this.setLabel(template[tIndex][2], i, 2);
-                        this.setLabel(template[tIndex][3], i, 3);
+                        this.setLabel(template[tIndex][0], i, 0, false);
+                        this.setLabel(template[tIndex][1], i, 1, false);
+                        this.setLabel(template[tIndex][2], i, 2, false);
+                        this.setLabel(template[tIndex][3], i, 3, false);
                     } else {
-                        this.setLabel(template[tIndex][0], i, -1);
+                        this.setLabel(template[tIndex][0], i, -1, false);
                     }
                 }
             }
             tIndex = 2 * i + 2;
             if (template[tIndex]) {
                 if (template[tIndex][1] !== undefined) {
-                    this.setLine(template[tIndex][0], i, 0);
-                    this.setLine(template[tIndex][1], i, 1);
-                    this.setLine(template[tIndex][2], i, 2);
-                    this.setLine(template[tIndex][3], i, 3);
+                    this.setLine(template[tIndex][0], i, 0, false);
+                    this.setLine(template[tIndex][1], i, 1, false);
+                    this.setLine(template[tIndex][2], i, 2, false);
+                    this.setLine(template[tIndex][3], i, 3, false);
                 } else {
-                    this.setLine(template[tIndex][0], i, -1);
+                    this.setLine(template[tIndex][0], i, -1, false);
                 }
             }
         }
@@ -590,6 +627,9 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         // Apply formatting helper to title page, lines and labels
         if (this._titleElement !== null) {
             this._titleElement.innerHTML = this._formatCell(this._titleElement.innerHTML);
+        }
+        if (this._titleLeftElement !== null) {
+            this._titleLeftElement.innerHTML = this._formatCell(this._titleLeftElement.innerHTML);
         }
         this._lineElements.forEach((row) => {
             row.forEach((column) => {
@@ -605,6 +645,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 }
             });
         });
+        this.sendUpdate();
     }
 
     /**
@@ -615,6 +656,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
      * @param {boolean} right - whether the right arrow will be displayed
      */
     setArrows(up, down, left, right) {
+        this._arrows = [up, down, left, right];
         this.arrowHorizontal.style.opacity = (left || right) ? "1" : "0";
         this.arrowVertical.style.opacity = (up || down) ? "1" : "0";
         if (up && down) {
@@ -633,15 +675,16 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         }
     }
 
-    clearDisplay() {
-        this.setTitle("UNTITLED");
+    clearDisplay(webSocketDraw = false) {
+        this.setTitle("");
+        this.setTitleLeft("");
         this.setPageCurrent(0);
         this.setPageCount(0);
         for (let i = 0; i < 6; i++) {
-            this.setLabel("", i, -1);
+            this.setLabel("", i, -1, webSocketDraw);
         }
         for (let i = 0; i < 6; i++) {
-            this.setLine("", i, -1);
+            this.setLine("", i, -1, webSocketDraw);
         }
         this.onLeftInput = [];
         this.onRightInput = [];
@@ -656,7 +699,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             this.scratchpad.setText("");
         }
         this.page.Current = this.page.Clear;
-        this.setArrows(false, false);
+        this.setArrows(false, false, false, false);
         this.tryDeleteTimeout();
         this.onUp = undefined;
         this.onDown = undefined;
@@ -762,7 +805,11 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     clearFocus() {
         this.inFocus = false;
         this.allSelected = false;
-        Coherent.trigger('UNFOCUS_INPUT_FIELD');
+        try {
+            Coherent.trigger('UNFOCUS_INPUT_FIELD');
+        } catch (e) {
+            console.error(e);
+        }
         this.scratchpad.setDisplayStyle(null);
         this.getChildById("header").style = null;
         if (this.check_focus) {
@@ -784,7 +831,11 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 if (this.inFocus && (isPoweredL || isPoweredR)) {
                     this.getChildById("header").style = "background: linear-gradient(180deg, rgba(2,182,217,1.0) 65%, rgba(255,255,255,0.0) 65%);";
                     this.scratchpad.setDisplayStyle("display: inline-block; width:87%; background: rgba(255,255,255,0.2);");
-                    Coherent.trigger('FOCUS_INPUT_FIELD');
+                    try {
+                        Coherent.trigger('FOCUS_INPUT_FIELD');
+                    } catch (e) {
+                        console.error(e);
+                    }
                     this.lastInput = new Date();
                     if (mcduTimeout) {
                         this.check_focus = setInterval(() => {
@@ -1376,29 +1427,135 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             return;
         }
         this.printing = true;
-        for (let i = 0; i < lines.length; i++) {
-            let value = lines[i];
-            value = value.replace(/\[color]cyan/g, "<br/>");
-            value = value.replace(/(\[color][a-z]*)/g, "");
-            value = value.replace(/-{3,}/g, "<br/><br/>");
-            for (let j = 0; j < value.length; j++) {
-                SimVar.SetSimVarValue(`L:A32NX_PRINT_${i}_${j}`, "number", value.charCodeAt(j));
-            }
-            SimVar.SetSimVarValue(`L:A32NX_PRINT_LINE_LENGTH_${i}`, "number", value.length);
-        }
+
+        const formattedValues = lines.map((l) => {
+            return l.replace(/\[color]cyan/g, "<br/>")
+                .replace(/{end}/, "<br/>")
+                .replace(/(\[color][a-z]*)/g, "")
+                .replace(/{[a-z]*}/g, "")
+                .replace(/-{3,}/g, "<br/><br/>");
+        });
+
+        const websocketLines = formattedValues.map((l) => {
+            return l.replace(/<br\/>[ ]*/g, '\n');
+        });
+
         if (SimVar.GetSimVarValue("L:A32NX_PRINTER_PRINTING", "bool") === 1) {
             SimVar.SetSimVarValue("L:A32NX_PAGES_PRINTED", "number", SimVar.GetSimVarValue("L:A32NX_PAGES_PRINTED", "number") + 1);
             SimVar.SetSimVarValue("L:A32NX_PRINT_PAGE_OFFSET", "number", 0);
         }
         SimVar.SetSimVarValue("L:A32NX_PRINT_LINES", "number", lines.length);
         SimVar.SetSimVarValue("L:A32NX_PAGE_ID", "number", SimVar.GetSimVarValue("L:A32NX_PAGE_ID", "number") + 1);
-        SimVar.SetSimVarValue("L:A32NX_PRINTER_PRINTING", "bool", 0);
-        setTimeout(() => {
-            SimVar.SetSimVarValue("L:A32NX_PRINTER_PRINTING", "bool", 1);
-            this.printing = false;
-        }, 2500);
+        SimVar.SetSimVarValue("L:A32NX_PRINTER_PRINTING", "bool", 0).then(v => {
+            this.fmgcMesssagesListener.triggerToAllSubscribers('A32NX_PRINT', formattedValues);
+            this.sendToSocket(`print:${JSON.stringify({lines: websocketLines})}`);
+            setTimeout(() => {
+                SimVar.SetSimVarValue("L:A32NX_PRINTER_PRINTING", "bool", 1);
+                this.printing = false;
+            }, 2500);
+        });
     }
 
     /* END OF MCDU AOC MESSAGE SYSTEM */
+    /* WEBSOCKET */
+
+    /**
+     * Attempts to connect to a websocket server on 127.0.0.1:8080
+     */
+    connectWebsocket(port) {
+        if (this.socket) {
+            this.socket.close();
+            this.socket = undefined;
+        }
+
+        if (this.socketTimeout) {
+            clearTimeout(this.socketTimeout);
+        }
+
+        this.socket = new WebSocket(`ws://127.0.0.1:${port}`);
+        this.socket.onopen = () => {
+            (new NXNotif).showNotification({title: "MCDU CONNECTED", message: "Successfully connected to MCDU server.", timeout: 5000});
+            this.sendToSocket("mcduConnected");
+            this.sendUpdate();
+        };
+
+        this.socket.addEventListener('message', (event) => {
+            const message = event.data;
+            if (message.startsWith("event:")) {
+                this.onEvent(`1_BTN_${message.substring(6)}`);
+            }
+            if (message === "requestUpdate") {
+                this.sendUpdate();
+            }
+        });
+    }
+
+    /**
+     * Sends a message to the websocket server (if connected)
+     * @param {string} message
+     */
+    sendToSocket(message) {
+        if (this.socket && this.socket.readyState) {
+            this.socket.send(message);
+        }
+    }
+
+    /**
+     * Sends an update to the websocket server (if connected) with the current state of the MCDU
+     */
+    sendUpdate() {
+        let left = {
+            lines: [
+                ['', '', ''],
+                ['', '', ''],
+                ['', '', ''],
+                ['', '', ''],
+                ['', '', ''],
+                ['', '', ''],
+                ['', '', ''],
+                ['', '', ''],
+                ['', '', ''],
+                ['', '', ''],
+                ['', '', ''],
+                ['', '', ''],
+            ],
+            scratchpad: '',
+            title: '',
+            titleLeft: '',
+            page: '',
+            arrows: [false, false, false, false]
+        };
+        let right = left;
+        if (SimVar.GetSimVarValue("L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED", "bool")) {
+            left = {
+                lines: [
+                    this._labels[0],
+                    this._lines[0],
+                    this._labels[1],
+                    this._lines[1],
+                    this._labels[2],
+                    this._lines[2],
+                    this._labels[3],
+                    this._lines[3],
+                    this._labels[4],
+                    this._lines[4],
+                    this._labels[5],
+                    this._lines[5],
+                ],
+                scratchpad: this.scratchpad._displayUnit._scratchpadElement.textContent,
+                title: this._title,
+                titleLeft: `{small}${this._titleLeft}{end}`,
+                page: this._pageCount > 0 ? `{small}${this._pageCurrent}/${this._pageCount}{end}` : '',
+                arrows: this._arrows
+            };
+        }
+
+        if (SimVar.GetSimVarValue("L:A32NX_ELEC_AC_2_BUS_IS_POWERED", "bool")) {
+            right = left;
+        }
+        const content = {right, left};
+        this.sendToSocket(`update:${JSON.stringify(content)}`);
+    }
+    /* END OF WEBSOCKET */
 }
 registerInstrument("a320-neo-cdu-main-display", A320_Neo_CDU_MainDisplay);

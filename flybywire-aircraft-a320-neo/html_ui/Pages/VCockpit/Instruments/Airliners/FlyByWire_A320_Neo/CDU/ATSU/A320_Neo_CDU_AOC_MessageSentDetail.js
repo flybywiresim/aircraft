@@ -7,22 +7,6 @@ class CDUAocMessageSentDetail {
         const currentMesssageCount = currentMesssageIndex + 1;
         const msgArrows = mcdu.sentMessages.length > 1 ? " {}" : "";
 
-        mcdu.setTemplate([
-            ["AOC SENT MSG"],
-            [`[b-text]${message["time"]} SENT[color]green`, `${currentMesssageCount}/${mcdu.sentMessages.length}${msgArrows}`],
-            [`[s-text]${lines[offset] ? lines[offset] : ""}`],
-            [`[b-text]${lines[offset + 1] ? lines[offset + 1] : ""}`],
-            [`[s-text]${lines[offset + 2] ? lines[offset + 2] : ""}`],
-            [`[b-text]${lines[offset + 3] ? lines[offset + 3] : ""}`],
-            [`[s-text]${lines[offset + 4] ? lines[offset + 4] : ""}`],
-            [`[b-text]${lines[offset + 5] ? lines[offset + 5] : ""}`],
-            [`[s-text]${lines[offset + 6] ? lines[offset + 6] : ""}`],
-            [`[b-text]${lines[offset + 7] ? lines[offset + 7] : ""}`],
-            [`[s-text]${lines[offset + 8] ? lines[offset + 8] : ""}`],
-            ["RETURN TO"],
-            ["<SENT MSGS", "PRINT*[color]cyan"]
-        ]);
-
         if (lines.length > 8) {
             let up = false;
             let down = false;
@@ -42,6 +26,22 @@ class CDUAocMessageSentDetail {
             }
             mcdu.setArrows(up, down, false, false);
         }
+
+        mcdu.setTemplate([
+            ["AOC SENT MSG"],
+            [`[b-text]${message["time"]} SENT[color]green`, `${currentMesssageCount}/${mcdu.sentMessages.length}${msgArrows}`],
+            [`[s-text]${lines[offset] ? lines[offset] : ""}`],
+            [`[b-text]${lines[offset + 1] ? lines[offset + 1] : ""}`],
+            [`[s-text]${lines[offset + 2] ? lines[offset + 2] : ""}`],
+            [`[b-text]${lines[offset + 3] ? lines[offset + 3] : ""}`],
+            [`[s-text]${lines[offset + 4] ? lines[offset + 4] : ""}`],
+            [`[b-text]${lines[offset + 5] ? lines[offset + 5] : ""}`],
+            [`[s-text]${lines[offset + 6] ? lines[offset + 6] : ""}`],
+            [`[b-text]${lines[offset + 7] ? lines[offset + 7] : ""}`],
+            [`[s-text]${lines[offset + 8] ? lines[offset + 8] : ""}`],
+            ["RETURN TO"],
+            ["<SENT MSGS", "PRINT*[color]cyan"]
+        ]);
 
         mcdu.onNextPage = () => {
             const nextMessage = mcdu.getSentMessage(message["id"], 'next');

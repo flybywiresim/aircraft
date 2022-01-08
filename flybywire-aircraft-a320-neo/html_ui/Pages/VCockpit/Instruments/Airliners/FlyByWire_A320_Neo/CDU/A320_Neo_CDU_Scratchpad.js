@@ -45,10 +45,9 @@ class ScratchpadDataLink {
     }
 
     addChar(char) {
-        if (this._status === SpDisplayStatus.clrValue) {
-            this.setText("");
-        }
-        if (this._text.length + 1 < 23) {
+        if (this._status !== SpDisplayStatus.userContent) {
+            this.setText(char);
+        } else if (this._text.length + 1 < 23) {
             this.setText(this._text + char);
         }
     }
@@ -83,15 +82,10 @@ class ScratchpadDataLink {
     };
 
     plusMinus(char) {
-        if (this._status === SpDisplayStatus.empty) {
+        if (this._status === SpDisplayStatus.userContent && this._text.slice(-1) === "-") {
+            this.setText(this._text.slice(0, -1) + "+");
+        } else {
             this.addChar(char);
-        } else if (this._status === SpDisplayStatus.userContent) {
-            if (this._text.slice(-1) === "-") {
-                this.delChar();
-                this.addChar("+");
-            } else {
-                this.addChar(char);
-            }
         }
     }
 
@@ -118,6 +112,7 @@ class ScratchpadDataLink {
     _display(value, color = "white") {
         this._displayUnit.write(value, color);
         this._updateStatus(value);
+        this._mcdu.sendUpdate();
     }
 
     _updateStatus(scratchpadText) {

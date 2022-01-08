@@ -1,13 +1,12 @@
 class CDUAvailableDeparturesPage {
     static ShowPage(mcdu, airport, pageCurrent = 0, sidSelection = false) {
         const airportInfo = airport.infos;
-        console.log(airportInfo);
         if (airportInfo instanceof AirportInfo) {
             mcdu.clearDisplay();
             mcdu.page.Current = mcdu.page.AvailableDeparturesPage;
             let selectedRunwayCell = "---";
             let selectedRunwayCellColor = "white";
-            const selectedRunway = mcdu.flightPlanManager.getDepartureRunway();
+            const selectedRunway = mcdu.flightPlanManager.getOriginRunway();
             if (selectedRunway) {
                 selectedRunwayCell = Avionics.Utils.formatRunway(selectedRunway.designation);
                 selectedRunwayCellColor = mcdu.flightPlanManager.getCurrentFlightPlanIndex() === 1 ? "yellow" : "green";
@@ -119,27 +118,14 @@ class CDUAvailableDeparturesPage {
                             mcdu.onRightInput[i + 1] = () => {
                                 mcdu.flightPlanManager.setDepartureEnRouteTransitionIndex(enRouteTransitionIndex, () => {
                                     CDUAvailableDeparturesPage.ShowPage(mcdu, airport, 0, true);
-                                });
+                                }).catch(console.error);
                             };
                         }
                     }
                 }
             }
-            mcdu.setTemplate([
-                ["DEPARTURES {small}FROM{end} {green}" + airport.ident + "{end}"],
-                ["{sp}RWY", "TRANS{sp}", "{sp}SID"],
-                [selectedRunwayCell + "[color]" + selectedRunwayCellColor, selectedTransCell + "[color]" + selectedTransCellColor, selectedSidCell + "[color]" + selectedSidCellColor],
-                sidSelection ? ["SIDS", "TRANS", "AVAILABLE"] : ["", "", "RUNWAYS AVAILABLE"],
-                rows[0],
-                rows[1],
-                rows[2],
-                rows[3],
-                rows[4],
-                rows[5],
-                rows[6],
-                rows[7],
-                insertRow
-            ]);
+            let up = false;
+            let down = false;
             let maxPage = 0;
             if (sidSelection) {
                 if (selectedRunway) {
@@ -155,11 +141,12 @@ class CDUAvailableDeparturesPage {
                 } else {
                     maxPage = airportInfo.departures.length - 3;
                 }
+                if (selectedDeparture) {
+                    maxPage = Math.max(maxPage, selectedDeparture.enRouteTransitions.length - 4);
+                }
             } else {
                 maxPage = airportInfo.oneWayRunways.length - 4;
             }
-            let up = false;
-            let down = false;
             if (pageCurrent < maxPage) {
                 mcdu.onUp = () => {
                     pageCurrent++;
@@ -181,6 +168,21 @@ class CDUAvailableDeparturesPage {
                 down = true;
             }
             mcdu.setArrows(up, down, true, true);
+            mcdu.setTemplate([
+                ["DEPARTURES {small}FROM{end} {green}" + airport.ident + "{end}"],
+                ["{sp}RWY", "TRANS{sp}", "{sp}SID"],
+                [selectedRunwayCell + "[color]" + selectedRunwayCellColor, selectedTransCell + "[color]" + selectedTransCellColor, selectedSidCell + "[color]" + selectedSidCellColor],
+                sidSelection ? ["SIDS", "TRANS", "AVAILABLE"] : ["", "", "RUNWAYS AVAILABLE"],
+                rows[0],
+                rows[1],
+                rows[2],
+                rows[3],
+                rows[4],
+                rows[5],
+                rows[6],
+                rows[7],
+                insertRow
+            ]);
             mcdu.onPrevPage = () => {
                 CDUAvailableDeparturesPage.ShowPage(mcdu, airport, 0, !sidSelection);
             };
