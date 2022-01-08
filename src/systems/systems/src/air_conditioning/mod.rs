@@ -8,15 +8,15 @@ use crate::{
         PneumaticBleed,
     },
     simulation::{
-        InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
-        VariableIdentifier, Write,
+        InitContext, Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
+        SimulatorWriter, UpdateContext, VariableIdentifier, Write, Writer,
     },
 };
 
 use std::{fmt::Display, time::Duration};
 
 use uom::si::{
-    f64::*, mass_rate::kilogram_per_second, pressure::hectopascal,
+    f64::*, mass_rate::kilogram_per_second, pressure::hectopascal, ratio::percent,
     thermodynamic_temperature::degree_celsius,
 };
 
@@ -137,17 +137,24 @@ impl<const ZONES: usize> SimulationElement for AirConditioningSystem<ZONES> {
 }
 
 pub struct AirConditioningSystemOverhead<const ZONES: usize> {
+    flow_selector_id: VariableIdentifier,
+
     pack_1_pb: OnOffFaultPushButton,
     pack_2_pb: OnOffFaultPushButton,
     temperature_selectors: Vec<ValueKnob>,
+    flow_selector: OverheadFlowSelector,
 }
 
 impl<const ZONES: usize> AirConditioningSystemOverhead<ZONES> {
     fn new(context: &mut InitContext, cabin_zone_ids: &[ZoneType; ZONES]) -> Self {
         let mut overhead = Self {
+            flow_selector_id: context
+                .get_identifier("KNOB_OVHD_AIRCOND_PACKFLOW_Position".to_owned()),
+
             pack_1_pb: OnOffFaultPushButton::new_on(context, "COND_PACK_1"),
             pack_2_pb: OnOffFaultPushButton::new_on(context, "COND_PACK_2"),
             temperature_selectors: Vec::new(),
+            flow_selector: OverheadFlowSelector::Norm,
         };
         for id in cabin_zone_ids {
             let knob_id = format!("COND_{}_SELECTOR", id);
@@ -167,15 +174,49 @@ impl<const ZONES: usize> AirConditioningSystemOverhead<ZONES> {
     fn pack_pushbuttons_state(&self) -> [bool; 2] {
         [self.pack_1_pb.is_on(), self.pack_2_pb.is_on()]
     }
+
+    fn flow_selector_position(&self) -> OverheadFlowSelector {
+        self.flow_selector
+    }
 }
 
 impl<const ZONES: usize> SimulationElement for AirConditioningSystemOverhead<ZONES> {
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        self.flow_selector = reader.read(&self.flow_selector_id);
+    }
+
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         accept_iterable!(self.temperature_selectors, visitor);
         self.pack_1_pb.accept(visitor);
         self.pack_2_pb.accept(visitor);
 
         visitor.visit(self);
+    }
+}
+
+#[derive(Clone, Copy)]
+enum OverheadFlowSelector {
+    Lo = 80,
+    Norm = 100,
+    Hi = 120,
+}
+
+read_write_enum!(OverheadFlowSelector);
+
+impl From<f64> for OverheadFlowSelector {
+    fn from(value: f64) -> Self {
+        match value as u8 {
+            0 => OverheadFlowSelector::Lo,
+            1 => OverheadFlowSelector::Norm,
+            2 => OverheadFlowSelector::Hi,
+            _ => panic!("Overhead flow selector position not recognized."),
+        }
+    }
+}
+
+impl From<OverheadFlowSelector> for Ratio {
+    fn from(value: OverheadFlowSelector) -> Self {
+        Ratio::new::<percent>((value as u8) as f64)
     }
 }
 

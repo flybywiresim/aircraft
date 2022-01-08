@@ -6,14 +6,14 @@ use crate::{
         LgciuWeightOnWheels, PneumaticBleed,
     },
     simulation::{
-        InitContext, Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
-        SimulatorWriter, UpdateContext, VariableIdentifier, Write, Writer,
+        InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
+        SimulatorWriter, UpdateContext, VariableIdentifier, Write,
     },
 };
 
 use super::{
-    AirConditioningSystemOverhead, DuctTemperature, FlowControlValveSignal, PackFlow,
-    PackFlowValve, ZoneType,
+    AirConditioningSystemOverhead, DuctTemperature, FlowControlValveSignal, OverheadFlowSelector,
+    PackFlow, PackFlowValve, ZoneType,
 };
 
 use std::time::Duration;
@@ -30,7 +30,7 @@ use uom::si::{
 pub(super) struct AirConditioningSystemController<const ZONES: usize> {
     aircraft_state: AirConditioningStateManager,
     zone_controller: Vec<ZoneController<ZONES>>,
-    pack_flow_controller: PackFlowController,
+    pack_flow_controller: PackFlowController<ZONES>,
 }
 
 impl<const ZONES: usize> AirConditioningSystemController<ZONES> {
@@ -62,7 +62,7 @@ impl<const ZONES: usize> AirConditioningSystemController<ZONES> {
         self.aircraft_state = self.aircraft_state.update(context, engines, lgciu);
         self.pack_flow_controller.update(
             &self.aircraft_state,
-            acs_overhead.pack_pushbuttons_state(),
+            acs_overhead,
             engines,
             engine_fire_push_buttons,
             pneumatic,
@@ -521,35 +521,7 @@ impl<const ZONES: usize> SimulationElement for ZoneController<ZONES> {
     }
 }
 
-#[derive(Clone, Copy)]
-enum OverheadFlowSelector {
-    Lo = 80,
-    Norm = 100,
-    Hi = 120,
-}
-
-read_write_enum!(OverheadFlowSelector);
-
-impl From<f64> for OverheadFlowSelector {
-    fn from(value: f64) -> Self {
-        match value as u8 {
-            0 => OverheadFlowSelector::Lo,
-            1 => OverheadFlowSelector::Norm,
-            2 => OverheadFlowSelector::Hi,
-            _ => panic!("Overhead flow selector position not recognized."),
-        }
-    }
-}
-
-impl From<OverheadFlowSelector> for Ratio {
-    fn from(value: OverheadFlowSelector) -> Self {
-        Ratio::new::<percent>((value as u8) as f64)
-    }
-}
-
-struct PackFlowController {
-    ovhd_flow_selector_id: VariableIdentifier,
-
+struct PackFlowController<const ZONES: usize> {
     pack_flow_id: VariableIdentifier,
 
     flow_demand: Ratio,
@@ -568,7 +540,7 @@ struct PackFlowController {
     flow_selector_position: OverheadFlowSelector,
 }
 
-impl PackFlowController {
+impl<const ZONES: usize> PackFlowController<ZONES> {
     const PACK_START_TIME_SECOND: f64 = 30.;
     const PACK_START_FLOW_LIMIT: f64 = 100.;
     const APU_SUPPLY_FLOW_LIMIT: f64 = 120.;
@@ -581,9 +553,6 @@ impl PackFlowController {
 
     fn new(context: &mut InitContext) -> Self {
         Self {
-            ovhd_flow_selector_id: context
-                .get_identifier("KNOB_OVHD_AIRCOND_PACKFLOW_Position".to_owned()),
-
             pack_flow_id: context.get_identifier("COND_PACK_FLOW".to_owned()),
 
             flow_demand: Ratio::new::<percent>(0.),
@@ -606,7 +575,7 @@ impl PackFlowController {
     fn update(
         &mut self,
         aircraft_state: &AirConditioningStateManager,
-        pack_pushbuttons_state: [bool; 2],
+        acs_overhead: &AirConditioningSystemOverhead<ZONES>,
         engines: [&impl EngineCorrectedN1; 2],
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         pneumatic: &(impl PneumaticBleed + EngineStartState),
@@ -622,10 +591,11 @@ impl PackFlowController {
         self.engine_2_in_start_mode = pneumatic.right_engine_state() == EngineState::Starting;
         self.engine_1_on_fire = engine_fire_push_buttons.is_released(1);
         self.engine_2_on_fire = engine_fire_push_buttons.is_released(2);
+        self.flow_selector_position = acs_overhead.flow_selector_position();
 
         // TODO: Add overheat protection
         self.flow_demand = self.flow_demand_determination(aircraft_state, pack_flow_valve);
-        self.fcv_open_allowed_determination(pack_pushbuttons_state);
+        self.fcv_open_allowed_determination(acs_overhead);
         self.should_open_fcv = self.should_open_fcv_determination(engines);
         self.pack_flow = self.pack_flow_calculation(pack_flow_valve, pressurization)
     }
@@ -680,16 +650,19 @@ impl PackFlowController {
         MassRate::new::<kilogram_per_second>(absolute_flow)
     }
 
-    fn fcv_open_allowed_determination(&mut self, pack_pushbuttons_state: [bool; 2]) {
+    fn fcv_open_allowed_determination(
+        &mut self,
+        acs_overhead: &AirConditioningSystemOverhead<ZONES>,
+    ) {
         // Flow Control Valve 1
-        self.fcv_1_open_allowed = pack_pushbuttons_state[0]
+        self.fcv_1_open_allowed = acs_overhead.pack_pushbuttons_state()[0]
             && !self.engine_1_in_start_mode
             && (!self.engine_2_in_start_mode || !self.crossbleed_is_on)
             && !self.engine_1_on_fire
             && !self.ditching_is_on;
         // && ! pack 1 overheat
         // Flow Control Valve 2
-        self.fcv_2_open_allowed = pack_pushbuttons_state[1]
+        self.fcv_2_open_allowed = acs_overhead.pack_pushbuttons_state()[1]
             && !self.engine_2_in_start_mode
             && (!self.engine_1_in_start_mode || !self.crossbleed_is_on)
             && !self.engine_2_on_fire
@@ -732,23 +705,19 @@ impl PackFlowController {
     }
 }
 
-impl PackFlow for PackFlowController {
+impl<const ZONES: usize> PackFlow for PackFlowController<ZONES> {
     fn pack_flow(&self) -> MassRate {
         self.pack_flow
     }
 }
 
-impl FlowControlValveSignal for PackFlowController {
+impl<const ZONES: usize> FlowControlValveSignal for PackFlowController<ZONES> {
     fn should_open_fcv(&self) -> [bool; 2] {
         self.should_open_fcv
     }
 }
 
-impl SimulationElement for PackFlowController {
-    fn read(&mut self, reader: &mut SimulatorReader) {
-        self.flow_selector_position = reader.read(&self.ovhd_flow_selector_id);
-    }
-
+impl<const ZONES: usize> SimulationElement for PackFlowController<ZONES> {
     fn write(&self, writer: &mut SimulatorWriter) {
         // If both flow control valves are closed, the flow indication is in the Lo position
         if self.should_open_fcv.iter().any(|&x| x) {
