@@ -27,7 +27,7 @@ function powerAvailable() {
     return getSimVar('L:A32NX_ELEC_DC_1_BUS_IS_POWERED', 'Bool') || getSimVar('L:A32NX_ELEC_DC_2_BUS_IS_POWERED', 'Bool');
 }
 
-const sortedMessageArray = (messages: Map<string, AtcMessage>) => {
+const sortedMessageArray = (messages: Map<number, AtcMessage>) => {
     const arrMessages = Array.from(messages.values());
     arrMessages.sort((a, b) => a.DcduTimestamp - b.DcduTimestamp);
     return arrMessages;
@@ -36,9 +36,9 @@ const sortedMessageArray = (messages: Map<string, AtcMessage>) => {
 const DCDU: React.FC = () => {
     const [isColdAndDark] = useSimVar('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool', 200);
     const [state, setState] = useState(isColdAndDark ? DcduState.Off : DcduState.Active);
-    const [messages, setMessages] = useState(new Map<string, AtcMessage>());
+    const [messages, setMessages] = useState(new Map<number, AtcMessage>());
     const [statusMessage, setStatusMessage] = useState({ sender: '', message: '', remainingMilliseconds: 0 });
-    const [messageUid, setMessageUid] = useState('');
+    const [messageUid, setMessageUid] = useState(-1);
     const maxMessageCount = 5;
 
     const isStatusAvailable = (sender: string) => statusMessage.sender === sender || statusMessage.message.length === 0;
@@ -60,6 +60,31 @@ const DCDU: React.FC = () => {
         setStatusMessage(state);
     };
 
+    // functions to handle the internal queue
+    const closeMessage = (uid: number) => {
+        const sortedMessages = sortedMessageArray(messages);
+        const index = sortedMessages.findIndex((element) => element.UniqueMessageID === uid);
+
+        if (index !== -1) {
+            // define the next visible message
+            if (index + 1 < sortedMessages.length) {
+                setMessageUid(sortedMessages[index + 1].UniqueMessageID);
+                console.log('NEXT');
+            } else if (index !== 0) {
+                setMessageUid(sortedMessages[index - 1].UniqueMessageID);
+                console.log('PREV');
+            } else {
+                setMessageUid(-1);
+                console.log('NONE');
+            }
+
+            // update the map
+            const updatedMap = messages;
+            updatedMap.delete(uid);
+            setMessages(updatedMap);
+        }
+    };
+
     useInteractionEvents(['A32NX_DCDU_BTN_MPL_MS0MINUS', 'A32NX_DCDU_BTN_MPR_MS0MINUS'], () => {
         if (messages.size === 0) {
             return;
@@ -67,7 +92,7 @@ const DCDU: React.FC = () => {
 
         const sortedMessages = sortedMessageArray(messages);
         let index = 0;
-        if (messageUid !== '') {
+        if (messageUid !== -1) {
             index = sortedMessages.findIndex((element) => messageUid === element.UniqueMessageID);
         }
 
@@ -89,7 +114,7 @@ const DCDU: React.FC = () => {
 
         const sortedMessages = sortedMessageArray(messages);
         let index = 0;
-        if (messageUid !== '') {
+        if (messageUid !== -1) {
             index = sortedMessages.findIndex((element) => messageUid === element.UniqueMessageID);
         }
 
@@ -120,14 +145,9 @@ const DCDU: React.FC = () => {
             SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_MAX_REACHED', 'boolean', messages.size >= maxMessageCount ? 1 : 0);
         }
     });
-    useCoherentEvent('A32NX_DCDU_MSG_REMOVE', (uid: string) => {
-        const entry = messages.get(uid);
-        if (entry !== undefined) {
-            const updatedMap = messages;
-            updatedMap.delete(uid);
-            setMessages(updatedMap);
-            SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_MAX_REACHED', 'boolean', messages.size >= maxMessageCount ? 1 : 0);
-        }
+    useCoherentEvent('A32NX_DCDU_MSG_REMOVE', (uid: number) => {
+        console.log(`DELETE ${uid}`);
+        closeMessage(uid);
     });
 
     useUpdate((_deltaTime) => {
@@ -154,7 +174,7 @@ const DCDU: React.FC = () => {
     if (state === DcduState.Active && messages.size !== 0) {
         const arrMessages = sortedMessageArray(messages);
 
-        if (messageUid !== '') {
+        if (messageUid !== -1) {
             messageIndex = arrMessages.findIndex((element) => messageUid === element.UniqueMessageID);
             if (messageIndex !== -1) {
                 message = arrMessages[messageIndex];

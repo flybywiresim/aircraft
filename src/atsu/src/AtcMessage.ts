@@ -32,7 +32,7 @@ export enum AtcMessageComStatus {
  * Defines the generic ATC message
  */
 export class AtcMessage {
-    public UniqueMessageID : string = undefined;
+    public UniqueMessageID : number = undefined;
 
     public Timestamp : AtcTimestamp = undefined;
 
@@ -49,16 +49,6 @@ export class AtcMessage {
     public Status : AtcMessageStatus = undefined;
 
     public Confirmed = false;
-
-    constructor() {
-        let datetime = new Date().getTime();
-
-        this.UniqueMessageID = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-            const r = (datetime + Math.random() * 16) % 16 | 0;
-            datetime = Math.floor(datetime / 16);
-            return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
-        });
-    }
 
     public serialize() : string {
         throw new Error('No valid implementation');

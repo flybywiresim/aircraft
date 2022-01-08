@@ -14,7 +14,9 @@ export class AtsuManager {
 
     private station = '';
 
-    private atcMessageQueue = [];
+    private messageCounter = 0;
+
+    private atcMessageQueue : AtcMessage[] = [];
 
     private listener = RegisterViewListener('JS_LISTENER_SIMVARS');
 
@@ -29,6 +31,7 @@ export class AtsuManager {
             return 'DCDU FILE FULL';
         }
 
+        message.UniqueMessageID = ++this.messageCounter;
         message.Timestamp = new AtcTimestamp();
         message.Station = this.station;
         this.atcMessageQueue.unshift(message);
