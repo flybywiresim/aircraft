@@ -41,6 +41,7 @@ const DCDU: React.FC = () => {
     const [messageUid, setMessageUid] = useState(-1);
     const maxMessageCount = 5;
 
+    // functions to handle the status area
     const isStatusAvailable = (sender: string) => statusMessage.sender === sender || statusMessage.message.length === 0;
     const resetStatus = (sender: string) => {
         const state = statusMessage;
@@ -82,6 +83,7 @@ const DCDU: React.FC = () => {
         }
     };
 
+    // the message scroll button handling
     useInteractionEvents(['A32NX_DCDU_BTN_MPL_MS0MINUS', 'A32NX_DCDU_BTN_MPR_MS0MINUS'], () => {
         if (messages.size === 0) {
             return;
@@ -127,6 +129,7 @@ const DCDU: React.FC = () => {
         setMessageUid(sortedMessages[index].UniqueMessageID);
     });
 
+    // resynchronization with AtsuManager
     useCoherentEvent('A32NX_DCDU_MSG', (serialized: any) => {
         let atsuMessage : AtcMessage | undefined = undefined;
         if (serialized.Type === AtcMessageType.PDC) {
@@ -155,6 +158,7 @@ const DCDU: React.FC = () => {
             setState(DcduState.Off);
         }
 
+        // check if the status is outdated
         const status = statusMessage;
         if (status.message !== '') {
             status.remainingMilliseconds -= _deltaTime;
