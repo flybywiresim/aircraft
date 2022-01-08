@@ -17,6 +17,7 @@ mod wasm {
             RAND = MaybeUninit::new(SmallRng::from_entropy());
         });
 
+        // SAFETY: `RAND` was initialized above.
         unsafe { (*RAND.as_mut_ptr()).gen() }
     }
 }
