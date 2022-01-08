@@ -733,7 +733,7 @@ impl EngineBleedAirSystem {
                 Pressure::new::<psi>(14.7),
                 ThermodynamicTemperature::new::<degree_celsius>(15.),
             ),
-            engine_starter_exhaust: PneumaticExhaust::new(1e-2),
+            engine_starter_exhaust: PneumaticExhaust::new(3e-2),
             engine_starter_valve: DefaultValve::new_closed(),
             precooler: Precooler::new(5.),
         }
@@ -1036,7 +1036,7 @@ impl PackComplex {
                 Pressure::new::<psi>(14.7),
                 ThermodynamicTemperature::new::<degree_celsius>(15.),
             ),
-            exhaust: PneumaticExhaust::new(0.1),
+            exhaust: PneumaticExhaust::new(0.3),
             pack_flow_valve: DefaultValve::new_closed(),
             pack_flow_valve_controller: PackFlowValveController::new(context, engine_number),
         }
