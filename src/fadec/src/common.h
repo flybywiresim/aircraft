@@ -5,6 +5,22 @@ class SimVars;
 HANDLE hSimConnect;
 
 /// <summary>
+/// Interpolation function being used by MSFS for the engine tables
+/// </summary>
+/// <returns>Interpolated 'y' for a given 'x'.</returns>
+double interpolate(double x, double x0, double x1, double y0, double y1) {
+  double y = 0;
+
+  if (x0 == x1) {
+    y = y0;
+  } else {
+    y = ((y0 * (x1 - x)) + (y1 * (x - x0))) / (x1 - x0);
+  }
+
+  return y;
+}
+
+/// <summary>
 /// Custom POW function
 /// </summary>
 double powFBW(double base, size_t exponent) {
@@ -43,7 +59,7 @@ class EngineRatios {
   }
 
   FLOAT64 delta(double ambientPressure) {
-    double d = ambientPressure/1013;
+    double d = ambientPressure / 1013;
     return d;
   }
 
