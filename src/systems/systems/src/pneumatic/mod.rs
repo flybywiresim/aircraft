@@ -316,7 +316,7 @@ impl Precooler {
         Self {
             coefficient,
             internal_connector: PneumaticContainerConnector::new(),
-            exhaust: PneumaticExhaust::new(1.),
+            exhaust: PneumaticExhaust::new(3.),
         }
     }
 
