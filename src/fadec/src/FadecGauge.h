@@ -21,6 +21,7 @@
 #include <string>
 
 #include "EngineControl.h"
+//#include "ThrustLimits.h"
 #include "RegPolynomials.h"
 #include "SimVars.h"
 #include "Tables.h"
@@ -96,6 +97,7 @@ class FadecGauge {
     }
 
     EngineControlInstance.initialize();
+
     isConnected = true;
 
     return true;
@@ -120,7 +122,7 @@ class FadecGauge {
       // store previous simulation time
       previousSimulationTime = simulationData.simulationTime;
       // update engines
-      EngineControlInstance.update(calculatedSampleTime);
+      EngineControlInstance.update(calculatedSampleTime, simulationData.simulationTime);
     }
 
     return true;
@@ -216,6 +218,7 @@ class FadecGauge {
   bool killFADEC() {
     std::cout << "FADEC: Disconnecting ..." << std::endl;
     EngineControlInstance.terminate();
+
     isConnected = false;
     unregister_all_named_vars();
 

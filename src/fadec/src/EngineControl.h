@@ -3,6 +3,7 @@
 #include "RegPolynomials.h"
 #include "SimVars.h"
 #include "Tables.h"
+#include "ThrustLimits.h"
 #include "common.h"
 
 class EngineControl {
@@ -27,6 +28,10 @@ class EngineControl {
   double engineState;
   double engineStarter;
   double engineIgniter;
+
+  double packs;
+  double nai;
+  double wai;
 
   double simCN1;
   double simN1;
@@ -58,6 +63,9 @@ class EngineControl {
   const double LBS_TO_KGS = 0.453592;
   const double KGS_TO_LBS = 2.20462;
   const double FUEL_THRESHOLD = 661;  // lbs/sec
+
+  const double TOGA_STATIC_TRANSITION_LOW = 0.04;
+  const double TOGA_STATIC_TRANSITION_HIGH = 0.08;
 
   /// <summary>
   /// Generate Idle/ Initial Engine Parameters (non-imbalanced)
@@ -891,6 +899,51 @@ class EngineControl {
     }
   }
 
+  void updateThrustLimits(double simulationTime,
+                          double altitude,
+                          double ambientTemp,
+                          double ambientPressure,
+                          double mach,
+                          double simN1highest,
+                          int packs,
+                          int nai,
+                          int wai) {
+    double idle = simVars->getEngineIdleN1();
+    double to;
+    double ga;
+    double toga;
+    double clb;
+    double mct;
+
+    // Write all N1 Limits
+    to = limitN1(0, min(16600.0, pressAltitude), ambientTemp, ambientPressure, packs, nai, wai);
+    ga = limitN1(1, min(16600.0, pressAltitude), ambientTemp, ambientPressure, packs, nai, wai);
+    clb = limitN1(2, pressAltitude, ambientTemp, ambientPressure, packs, nai, wai);
+    mct = limitN1(3, pressAltitude, ambientTemp, ambientPressure, packs, nai, wai);
+
+    // transition between TO and GA limit
+    if (mach > TOGA_STATIC_TRANSITION_HIGH) {
+      toga = ga;
+    } else if (mach < TOGA_STATIC_TRANSITION_LOW) {
+      toga = to;
+    } else {
+      toga = to + ((mach - TOGA_STATIC_TRANSITION_LOW) * ((ga - to) / (TOGA_STATIC_TRANSITION_HIGH - TOGA_STATIC_TRANSITION_LOW)));
+      toga = max(to, min(ga, toga));
+    }
+
+    // ensure TOGA is never smaller than MCT
+    // basically use MCT above ~ 16600 ft
+    // depending on environment MCT might be larger than TOGA before 16600,
+    // so to ensure small transition we use the max of both
+    toga = max(mct, toga);
+
+    // write limits
+    simVars->setThrustLimitIdle(idle);
+    simVars->setThrustLimitToga(toga);
+    simVars->setThrustLimitClimb(clb);
+    simVars->setThrustLimitMct(mct);
+  }
+
  public:
   /// <summary>
   /// Initialize the FADEC and Fuel model
@@ -988,14 +1041,22 @@ class EngineControl {
     // Initialize Pump State
     simVars->setPumpStateLeft(0);
     simVars->setPumpStateRight(0);
+
+    // Initialize Thrust Limits
+    simVars->setThrustLimitIdle(0);
+    simVars->setThrustLimitToga(0);
+    simVars->setThrustLimitFlex(0);
+    simVars->setThrustLimitClimb(0);
+    simVars->setThrustLimitMct(0);
   }
 
   /// <summary>
   /// Update cycle at deltaTime
   /// </summary>
-  void update(double deltaTime) {
+  void update(double deltaTime, double simulationTime) {
     double animationDeltaTime;
     double prevAnimationDeltaTime;
+    double simN1highest = 0;
 
     // animationDeltaTimes being used to detect a Paused situation
     prevAnimationDeltaTime = animationDeltaTime;
@@ -1007,6 +1068,18 @@ class EngineControl {
     ambientPressure = simVars->getAmbientPressure();
     simOnGround = simVars->getSimOnGround();
     imbalance = simVars->getEngineImbalance();
+    packs = 0;
+    nai = 0;
+    wai = 0;
+
+    // Obtain Bleed Variables
+    if (simVars->getPacksState1() > 0.5 || simVars->getPacksState2() > 0.5) {
+      packs = 1;
+    }
+    if (simVars->getNAI(1) > 0.5 || simVars->getNAI(2) > 0.5) {
+      nai = 1;
+    }
+    wai = simVars->getWAI();
 
     generateIdleParameters(pressAltitude, ambientTemp, ambientPressure);
 
@@ -1049,12 +1122,18 @@ class EngineControl {
           updateEGT(engine, imbalance, deltaTime, simOnGround, engineState, simCN1, cFbwFF, mach, pressAltitude, ambientTemp);
           // updateOil(engine, imbalance, thrust, simN2, deltaN2, deltaTime, ambientTemp);
       }
+
+      // set highest N1 from either engine
+      simN1highest = max(simN1highest, simN1);
     }
 
     // If Development State is 1, UI Payload will be enabled
     if (simVars->getDeveloperState() == 0)
       checkPayload();
+
     updateFuel(deltaTime);
+
+    updateThrustLimits(simulationTime, pressAltitude, ambientTemp, ambientPressure, mach, simN1highest, packs, nai, wai);
     // timer.elapsed();
   }
 

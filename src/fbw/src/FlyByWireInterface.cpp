@@ -166,7 +166,7 @@ void FlyByWireInterface::loadConfiguration() {
   // --------------------------------------------------------------------------
   // load values - autothrust
   autothrustThrustLimitReverse = INITypeConversion::getDouble(iniStructure, "AUTOTHRUST", "THRUST_LIMIT_REVERSE", -45.0);
-  autothrustThrustLimitUseExternal = INITypeConversion::getBoolean(iniStructure, "AUTOTHRUST", "USE_EXTERNAL_LIMIT", false);
+  autothrustThrustLimitUseExternal = INITypeConversion::getBoolean(iniStructure, "AUTOTHRUST", "USE_EXTERNAL_LIMIT", true);
   autothrustThrustLimitUseExternalFlex = INITypeConversion::getBoolean(iniStructure, "AUTOTHRUST", "USE_EXTERNAL_LIMIT_FLEX", false);
 
   // initialize local variable for reverse
@@ -1545,10 +1545,12 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
         idFmgcV_MAX->get(),
         idAutothrustThrustLimitREV->get(),   // REV
         idAutothrustThrustLimitIDLE->get(),  // IDLE
-        idAutothrustThrustLimitCLB->get(),   // CLB
-        idAutothrustThrustLimitFLX->get(),   // FLX
-        idAutothrustThrustLimitMCT->get(),   // MCT
-        idAutothrustThrustLimitTOGA->get(),  // TOGA
+        autothrustThrustLimitUseExternal && !autothrustThrustLimitUseExternalFlex
+            ? thrustLimits.getExternalOutputs().out.thrust_limit_CLB_percent
+            : idAutothrustThrustLimitCLB->get(),  // CLB
+        idAutothrustThrustLimitFLX->get(),        // FLX
+        idAutothrustThrustLimitMCT->get(),        // MCT
+        idAutothrustThrustLimitTOGA->get(),       // TOGA
         idFmgcFlexTemperature->get(),
         autopilotStateMachineOutput.autothrust_mode,
         simData.is_mach_mode_active,
@@ -1610,7 +1612,9 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
     autoThrustInput.in.input.V_MAX_kn = idFmgcV_MAX->get();
     autoThrustInput.in.input.thrust_limit_REV_percent = idAutothrustThrustLimitREV->get();
     autoThrustInput.in.input.thrust_limit_IDLE_percent = idAutothrustThrustLimitIDLE->get();
-    autoThrustInput.in.input.thrust_limit_CLB_percent = idAutothrustThrustLimitCLB->get();
+    autoThrustInput.in.input.thrust_limit_CLB_percent = autothrustThrustLimitUseExternal && !autothrustThrustLimitUseExternalFlex
+                                                            ? thrustLimits.getExternalOutputs().out.thrust_limit_CLB_percent
+                                                            : idAutothrustThrustLimitCLB->get();
     autoThrustInput.in.input.thrust_limit_MCT_percent = idAutothrustThrustLimitMCT->get();
     autoThrustInput.in.input.thrust_limit_FLEX_percent = idAutothrustThrustLimitFLX->get();
     autoThrustInput.in.input.thrust_limit_TOGA_percent = idAutothrustThrustLimitTOGA->get();
