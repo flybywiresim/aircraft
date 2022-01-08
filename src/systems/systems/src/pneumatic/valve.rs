@@ -722,7 +722,7 @@ mod tests {
     #[test]
     fn exhaust_makes_pressure_go_to_ambient_pressure_stress_test() {
         let mut container = quick_container(1., 20., 15.);
-        let mut exhaust = PneumaticExhaust::new(45.);
+        let mut exhaust = PneumaticExhaust::new(45.,45.,Pressure::new::<psi>(0.));
 
         let context = context(Duration::from_millis(150), Length::new::<foot>(0.));
 
