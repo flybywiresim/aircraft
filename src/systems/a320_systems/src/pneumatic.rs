@@ -161,7 +161,7 @@ impl A320Pneumatic {
                     ThermodynamicTemperature::new::<degree_celsius>(15.),
                 ),
                 Pressure::new::<psi>(70.),
-                2e-2,
+                6e-2,
             ),
             blue_hydraulic_reservoir_with_valve: PressurisedReservoirWithExhaustValve::new(
                 HydraulicColor::Blue,
@@ -171,7 +171,7 @@ impl A320Pneumatic {
                     ThermodynamicTemperature::new::<degree_celsius>(15.),
                 ),
                 Pressure::new::<psi>(70.),
-                2e-2,
+                6e-2,
             ),
             yellow_hydraulic_reservoir_with_valve: PressurisedReservoirWithExhaustValve::new(
                 HydraulicColor::Yellow,
@@ -181,7 +181,7 @@ impl A320Pneumatic {
                     ThermodynamicTemperature::new::<degree_celsius>(15.),
                 ),
                 Pressure::new::<psi>(70.),
-                2e-2,
+                6e-2,
             ),
             packs: [PackComplex::new(context, 1), PackComplex::new(context, 2)],
         }
