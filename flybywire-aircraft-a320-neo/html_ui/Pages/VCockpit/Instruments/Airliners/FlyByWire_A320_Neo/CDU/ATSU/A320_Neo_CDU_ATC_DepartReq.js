@@ -17,7 +17,7 @@ class CDUAtcDepartReq {
                 suffix: "[color]cyan",
                 maxLength: 1,
                 isValid: ((value) => {
-                    return true === isNaN(value) && "+" !== value && "-" !== value && "/" !== value;
+                    return /^[A-Z()]*$/.test(value) === true;
                 })
             },
             (value) => {
