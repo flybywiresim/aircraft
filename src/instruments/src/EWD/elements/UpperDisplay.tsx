@@ -8,13 +8,14 @@ import N1 from './N1';
 import FF from './FF';
 import N1Limit from './N1Limit';
 import Idle from './Idle';
+import Slats from './Slats';
 
 const UpperDisplay: React.FC = () => {
     const [unit] = usePersistentProperty('CONFIG_USING_METRIC_UNIT', '1');
     const [engSelectorPosition] = useSimVar('L:XMLVAR_ENG_MODE_SEL', 'enum', 1000);
     const [flightPhase] = useSimVar('L:A32NX_FWC_FLIGHT_PHASE', 'enum', 1000);
 
-    const isActive = engSelectorPosition === 2 && flightPhase === 1;
+    const isActive = (engSelectorPosition === 2 && flightPhase === 1) || flightPhase > 1;
 
     return (
         <>
@@ -49,6 +50,8 @@ const UpperDisplay: React.FC = () => {
             </text>
             <line className="Separator" x1="307" y1="366" x2="339" y2="357" strokeLinecap="round" />
             <line className="Separator" x1="420" y1="357" x2="452" y2="366" strokeLinecap="round" />
+
+            <Slats x={630} y={500} />
 
             <FOB unit={unit} x={18} y={479} />
         </>
