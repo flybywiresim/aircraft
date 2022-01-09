@@ -1949,9 +1949,11 @@ class FMCMainDisplay extends BaseAirliners {
                 if (coRoute === "NONE") {
                     this.coRoute = { routeNumber: undefined};
                 } else {
-                    getCoRoute(this, coRoute, () => {}).then(() => {
-                        insertCoRoute(this);
-                        this.coRoute["routeNumber"] = coRoute;
+                    getCoRoute(this, coRoute, () => {}).then((success) => {
+                        if (success) {
+                            insertCoRoute(this);
+                            this.coRoute["routeNumber"] = coRoute;
+                        }
                     });
                 }
                 return callback(true);

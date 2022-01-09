@@ -5,23 +5,40 @@
  * @param {() => void} updateView
  * @returns
  */
-const getCoRoute = (mcdu, coRoute, updateView) => {
+const getCoRoute = async (mcdu, coRoute, updateView) => {
     return NXLocalApi.getCoRoute(coRoute)
-        .then(data => {
-            mcdu.coRoute["originIcao"] = data.origin.icao_code;
-            mcdu.coRoute["destinationIcao"] = data.destination.icao_code;
-            mcdu.coRoute["route"] = data.general.route;
-            if (data.alternate) {
-                mcdu.coRoute["alternateIcao"] = data.alternate.icao_code;
+        .then(response => {
+            switch (response.status) {
+                case 422:
+                    mcdu.addNewMessage(NXFictionalMessages.authErr);
+                    return false;
+                case 404:
+                    mcdu.addNewMessage(NXSystemMessages.notInDatabase);
+                    return false;
+                case 500:
+                    mcdu.addNewMessage(NXFictionalMessages.unknownDownlinkErr);
+                    return false;
+                case 200:
+                    return response.json().then(data => {
+                        mcdu.coRoute["originIcao"] = data.origin.icao_code;
+                        mcdu.coRoute["destinationIcao"] = data.destination.icao_code;
+                        mcdu.coRoute["route"] = data.general.route;
+                        if (data.alternate) {
+                            mcdu.coRoute["alternateIcao"] = data.alternate.icao_code;
+                        }
+                        mcdu.coRoute["navlog"] = data.navlog.fix;
+                        return true;
+                    });
+                default:
+                    mcdu.addNewMessage(NXSystemMessages.notInDatabase);
+                    return false;
             }
-
-            mcdu.coRoute["navlog"] = data.navlog.fix;
-            return mcdu.coRoute;
         })
         .catch(_err => {
             console.error(_err);
-            mcdu.addNewMessage(NXSystemMessages.notInDatabase);
+            mcdu.addNewMessage(NXFictionalMessages.noResponse);
             updateView();
+            return false;
         });
 };
 

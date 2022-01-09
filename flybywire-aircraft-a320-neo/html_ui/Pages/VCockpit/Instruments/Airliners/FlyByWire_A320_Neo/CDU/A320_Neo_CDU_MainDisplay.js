@@ -327,12 +327,21 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             }
         }
 
+        this.checkFplanModified();
+
         this.checkAocTimes();
 
         this.updateMCDU();
     }
 
     /* MCDU UPDATE */
+
+    /**
+     * Checks if the flight plan manager has been modified to then clear the coRoute field in INIT A
+     */
+    checkFplanModified() {
+        //TODO
+    }
 
     /**
      * Checks whether INIT page B is open and an engine is being started, if so:
