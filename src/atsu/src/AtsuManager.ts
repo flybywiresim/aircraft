@@ -12,13 +12,13 @@ import { PreDepartureClearance } from './PreDepartureClearance';
 export class AtsuManager {
     private connector = new HoppieConnector();
 
-    private station = '';
-
     private messageCounter = 0;
 
     private aocMessageQueue : AtcMessage[] = [];
 
     private atcMessageQueue : AtcMessage[] = [];
+
+    private messageSendQueue : { type: string, uid: number }[] = [];
 
     private listener = RegisterViewListener('JS_LISTENER_SIMVARS');
 
@@ -36,6 +36,37 @@ export class AtsuManager {
                 SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_SEND', 'number', -1);
             }
         }, 500);
+
+        setInterval(() => {
+            this.messageSendQueue.forEach((entry) => {
+                if (entry.type === 'AOC') {
+                    const message = this.aocMessageQueue.find((element) => element.UniqueMessageID === entry.uid);
+                    if (message !== undefined) {
+                        this.connector.sendTelexMessage(message.Station, message.UniqueMessageID, message.serialize(), this.aocMessageSentSuccessful.bind(this),
+                            this.aocMmessageSentFailed.bind(this));
+                    }
+                }
+            });
+
+            this.messageSendQueue = [];
+        }, 10000);
+    }
+
+    private aocMessageSentSuccessful(uid: number) {
+        const index = this.aocMessageQueue.findIndex((element) => element.UniqueMessageID === uid);
+        console.log(`SENT ${index}`);
+        if (index !== -1) {
+            this.aocMessageQueue[index].ComStatus = AtcMessageComStatus.Sent;
+            this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', this.aocMessageQueue[index]);
+        }
+    }
+
+    private aocMmessageSentFailed(uid: number) {
+        const index = this.aocMessageQueue.findIndex((element) => element.UniqueMessageID === uid);
+        if (index !== -1) {
+            this.aocMessageQueue[index].ComStatus = AtcMessageComStatus.Failed;
+            this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', this.aocMessageQueue[index]);
+        }
     }
 
     public registerPdcMessage(message: PreDepartureClearance) {
@@ -55,6 +86,7 @@ export class AtsuManager {
         let index = this.atcMessageQueue.findIndex((element) => element.UniqueMessageID === uid);
         if (index !== -1) {
             this.atcMessageQueue[index].ComStatus = AtcMessageComStatus.Sending;
+            this.messageSendQueue.push({ type: 'ATC', uid: this.atcMessageQueue[index].UniqueMessageID });
             this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', this.atcMessageQueue[index]);
             return;
         }
@@ -62,6 +94,7 @@ export class AtsuManager {
         index = this.aocMessageQueue.findIndex((element) => element.UniqueMessageID === uid);
         if (index !== -1) {
             this.aocMessageQueue[index].ComStatus = AtcMessageComStatus.Sending;
+            this.messageSendQueue.push({ type: 'AOC', uid: this.aocMessageQueue[index].UniqueMessageID });
             this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', this.aocMessageQueue[index]);
         }
     }
