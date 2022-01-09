@@ -67,9 +67,15 @@ export class AtsuManager {
     }
 
     private removeMessage(uid: number) {
-        const index = this.atcMessageQueue.findIndex((element) => element.UniqueMessageID === uid);
+        let index = this.atcMessageQueue.findIndex((element) => element.UniqueMessageID === uid);
         if (index !== -1) {
             this.atcMessageQueue.splice(index, 1);
+            this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG_REMOVE', uid);
+        }
+
+        index = this.aocMessageQueue.findIndex((element) => element.UniqueMessageID === uid);
+        if (index !== -1) {
+            this.aocMessageQueue.splice(index, 1);
             this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG_REMOVE', uid);
         }
     }
