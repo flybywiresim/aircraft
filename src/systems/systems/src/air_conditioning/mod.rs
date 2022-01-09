@@ -5,7 +5,7 @@ use crate::{
     pressurization::PressurizationOverheadPanel,
     shared::{
         Cabin, ControllerSignal, EngineCorrectedN1, EngineFirePushButtons, EngineStartState,
-        LgciuWeightOnWheels, PneumaticBleed,
+        GroundSpeed, LgciuWeightOnWheels, PneumaticBleed,
     },
     simulation::{
         InitContext, Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -83,6 +83,7 @@ impl<const ZONES: usize> AirConditioningSystem<ZONES> {
     pub fn update(
         &mut self,
         context: &UpdateContext,
+        adirs: &impl GroundSpeed,
         engines: [&impl EngineCorrectedN1; 2],
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         pneumatic: &(impl PneumaticBleed + EngineStartState),
@@ -93,6 +94,7 @@ impl<const ZONES: usize> AirConditioningSystem<ZONES> {
     ) {
         self.acsc.update(
             context,
+            adirs,
             &self.acs_overhead,
             &self.pack_flow_valves,
             engines,

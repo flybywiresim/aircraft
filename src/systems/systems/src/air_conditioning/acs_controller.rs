@@ -3,7 +3,7 @@ use crate::{
     pressurization::PressurizationOverheadPanel,
     shared::{
         pid::PidController, Cabin, ControllerSignal, EngineCorrectedN1, EngineFirePushButtons,
-        EngineStartState, LgciuWeightOnWheels, PneumaticBleed,
+        EngineStartState, GroundSpeed, LgciuWeightOnWheels, PneumaticBleed,
     },
     simulation::{
         InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -49,6 +49,7 @@ impl<const ZONES: usize> AirConditioningSystemController<ZONES> {
     pub fn update(
         &mut self,
         context: &UpdateContext,
+        adirs: &impl GroundSpeed,
         acs_overhead: &AirConditioningSystemOverhead<ZONES>,
         pack_flow_valve: &[PackFlowValve; 2],
         engines: [&impl EngineCorrectedN1; 2],
@@ -59,7 +60,7 @@ impl<const ZONES: usize> AirConditioningSystemController<ZONES> {
         pressurization_overhead: &PressurizationOverheadPanel,
         lgciu: [&impl LgciuWeightOnWheels; 2],
     ) {
-        self.aircraft_state = self.aircraft_state.update(context, engines, lgciu);
+        self.aircraft_state = self.aircraft_state.update(context, adirs, engines, lgciu);
         self.pack_flow_controller.update(
             &self.aircraft_state,
             acs_overhead,
@@ -136,16 +137,17 @@ impl AirConditioningStateManager {
     fn update(
         mut self,
         context: &UpdateContext,
+        adirs: &impl GroundSpeed,
         engines: [&impl EngineCorrectedN1; 2],
         lgciu: [&impl LgciuWeightOnWheels; 2],
     ) -> Self {
         self = match self {
             AirConditioningStateManager::Initialisation(val) => val.step(lgciu),
             AirConditioningStateManager::OnGround(val) => val.step(engines, lgciu),
-            AirConditioningStateManager::BeginTakeOff(val) => val.step(context, engines),
+            AirConditioningStateManager::BeginTakeOff(val) => val.step(context, adirs, engines),
             AirConditioningStateManager::EndTakeOff(val) => val.step(context, lgciu),
             AirConditioningStateManager::InFlight(val) => val.step(engines, lgciu),
-            AirConditioningStateManager::BeginLanding(val) => val.step(context, engines),
+            AirConditioningStateManager::BeginLanding(val) => val.step(context, adirs, engines),
             AirConditioningStateManager::EndLanding(val) => val.step(context),
         };
         self
@@ -245,10 +247,11 @@ impl AirConditioningState<BeginTakeOff> {
     fn step(
         self: AirConditioningState<BeginTakeOff>,
         context: &UpdateContext,
+        adirs: &impl GroundSpeed,
         engines: [&impl EngineCorrectedN1; 2],
     ) -> AirConditioningStateManager {
         if (AirConditioningStateManager::engines_are_in_takeoff(engines)
-            && context.indicated_airspeed().get::<knot>()
+            && adirs.ground_speed().get::<knot>()
                 > AirConditioningStateManager::TAKEOFF_THRESHOLD_SPEED_KNOTS)
             || self.timer > Duration::from_secs(35)
         {
@@ -310,10 +313,11 @@ impl AirConditioningState<BeginLanding> {
     fn step(
         self: AirConditioningState<BeginLanding>,
         context: &UpdateContext,
+        adirs: &impl GroundSpeed,
         engines: [&impl EngineCorrectedN1; 2],
     ) -> AirConditioningStateManager {
         if (!AirConditioningStateManager::engines_are_in_takeoff(engines)
-            && context.indicated_airspeed().get::<knot>()
+            && adirs.ground_speed().get::<knot>()
                 < AirConditioningStateManager::TAKEOFF_THRESHOLD_SPEED_KNOTS)
             || self.timer > Duration::from_secs(35)
         {
@@ -774,6 +778,26 @@ mod acs_controller_tests {
         velocity::knot, volume::cubic_meter,
     };
 
+    struct TestAdirs {
+        ground_speed: Velocity,
+    }
+    impl TestAdirs {
+        fn new() -> Self {
+            Self {
+                ground_speed: Velocity::new::<knot>(0.),
+            }
+        }
+
+        fn set_ground_speed(&mut self, ground_speed: Velocity) {
+            self.ground_speed = ground_speed;
+        }
+    }
+    impl GroundSpeed for TestAdirs {
+        fn ground_speed(&self) -> Velocity {
+            self.ground_speed
+        }
+    }
+
     struct TestEngine {
         corrected_n1: Ratio,
     }
@@ -1055,6 +1079,7 @@ mod acs_controller_tests {
         acsc: AirConditioningSystemController<2>,
         acs_overhead: AirConditioningSystemOverhead<2>,
         pack_flow_valve: [PackFlowValve; 2],
+        adirs: TestAdirs,
         engine_1: TestEngine,
         engine_2: TestEngine,
         engine_fire_push_buttons: TestEngineFirePushButtons,
@@ -1081,6 +1106,7 @@ mod acs_controller_tests {
                     PackFlowValve::new(context, 1),
                     PackFlowValve::new(context, 2),
                 ],
+                adirs: TestAdirs::new(),
                 engine_1: TestEngine::new(Ratio::new::<percent>(0.)),
                 engine_2: TestEngine::new(Ratio::new::<percent>(0.)),
                 engine_fire_push_buttons: TestEngineFirePushButtons::new(),
@@ -1092,6 +1118,10 @@ mod acs_controller_tests {
                 lgciu2: TestLgciu::new(false),
                 test_cabin: TestCabin::new(context),
             }
+        }
+
+        fn set_ground_speed(&mut self, ground_speed: Velocity) {
+            self.adirs.set_ground_speed(ground_speed);
         }
 
         fn set_engine_n1(&mut self, n: Ratio) {
@@ -1120,6 +1150,7 @@ mod acs_controller_tests {
         fn update_after_power_distribution(&mut self, context: &UpdateContext) {
             self.acsc.update(
                 context,
+                &self.adirs,
                 &self.acs_overhead,
                 &self.pack_flow_valve,
                 [&self.engine_1, &self.engine_2],
@@ -1160,7 +1191,7 @@ mod acs_controller_tests {
             let mut test_bed = ACSCTestBed {
                 test_bed: SimulationTestBed::new(TestAircraft::new),
             };
-            test_bed.set_indicated_airspeed(Velocity::new::<knot>(0.));
+            test_bed.command_ground_speed(Velocity::new::<knot>(0.));
             test_bed.set_indicated_altitude(Length::new::<foot>(0.));
             test_bed.set_ambient_temperature(ThermodynamicTemperature::new::<degree_celsius>(24.));
             test_bed.command_measured_temperature(
@@ -1214,7 +1245,7 @@ mod acs_controller_tests {
         fn in_flight(mut self) -> Self {
             self.command(|a| a.set_engine_n1(Ratio::new::<percent>(60.)));
             self.command(|a| a.set_on_ground(false));
-            self.set_indicated_airspeed(Velocity::new::<knot>(250.));
+            self.command_ground_speed(Velocity::new::<knot>(250.));
             self.run();
             self
         }
@@ -1364,6 +1395,10 @@ mod acs_controller_tests {
             self.command(|a| a.set_cross_bleed_valve_open());
         }
 
+        fn command_ground_speed(&mut self, ground_speed: Velocity) {
+            self.command(|a| a.set_ground_speed(ground_speed));
+        }
+
         fn measured_temperature(&mut self) -> ThermodynamicTemperature {
             self.read_by_name("COND_FWD_TEMP")
         }
@@ -1441,7 +1476,7 @@ mod acs_controller_tests {
                 .engine_in_take_off()
                 .and_run();
 
-            test_bed.set_indicated_airspeed(Velocity::new::<knot>(71.));
+            test_bed.command_ground_speed(Velocity::new::<knot>(71.));
             test_bed.run();
 
             assert!(test_bed.ac_state_is_end_takeoff());
@@ -1489,7 +1524,7 @@ mod acs_controller_tests {
                 .engine_in_take_off()
                 .and_run();
 
-            test_bed.set_indicated_airspeed(Velocity::new::<knot>(71.));
+            test_bed.command_ground_speed(Velocity::new::<knot>(71.));
             test_bed.run();
 
             test_bed = test_bed.landing_gear_not_compressed();
@@ -1508,7 +1543,7 @@ mod acs_controller_tests {
                 .engine_in_take_off()
                 .and_run();
 
-            test_bed.set_indicated_airspeed(Velocity::new::<knot>(71.));
+            test_bed.command_ground_speed(Velocity::new::<knot>(71.));
             test_bed.run();
 
             test_bed.run_with_delta(Duration::from_secs(11));
@@ -1527,7 +1562,7 @@ mod acs_controller_tests {
                 .engine_in_take_off()
                 .and_run();
 
-            test_bed.set_indicated_airspeed(Velocity::new::<knot>(71.));
+            test_bed.command_ground_speed(Velocity::new::<knot>(71.));
             test_bed.run();
 
             test_bed.run_with_delta(Duration::from_secs(9));
@@ -1559,7 +1594,7 @@ mod acs_controller_tests {
                 .engine_idle()
                 .and_run();
 
-            test_bed.set_indicated_airspeed(Velocity::new::<knot>(69.));
+            test_bed.command_ground_speed(Velocity::new::<knot>(69.));
             test_bed.run();
 
             assert!(test_bed.ac_state_is_end_landing());
@@ -1607,7 +1642,7 @@ mod acs_controller_tests {
                 .engine_idle()
                 .and_run();
 
-            test_bed.set_indicated_airspeed(Velocity::new::<knot>(69.));
+            test_bed.command_ground_speed(Velocity::new::<knot>(69.));
             test_bed.run();
 
             test_bed.run_with_delta(Duration::from_secs(11));
@@ -1626,7 +1661,7 @@ mod acs_controller_tests {
                 .engine_idle()
                 .and_run();
 
-            test_bed.set_indicated_airspeed(Velocity::new::<knot>(69.));
+            test_bed.command_ground_speed(Velocity::new::<knot>(69.));
             test_bed.run();
 
             test_bed.run_with_delta(Duration::from_secs(9));

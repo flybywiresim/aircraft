@@ -6,8 +6,8 @@ use systems::{
     },
     pressurization::PressurizationOverheadPanel,
     shared::{
-        Cabin, EngineCorrectedN1, EngineFirePushButtons, EngineStartState, LgciuWeightOnWheels,
-        PneumaticBleed,
+        Cabin, EngineCorrectedN1, EngineFirePushButtons, EngineStartState, GroundSpeed,
+        LgciuWeightOnWheels, PneumaticBleed,
     },
     simulation::{InitContext, SimulationElement, SimulationElementVisitor, UpdateContext},
 };
@@ -32,6 +32,7 @@ impl A320AirConditioning {
     pub fn update(
         &mut self,
         context: &UpdateContext,
+        adirs: &impl GroundSpeed,
         engines: [&impl EngineCorrectedN1; 2],
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         pneumatic: &(impl PneumaticBleed + EngineStartState),
@@ -42,6 +43,7 @@ impl A320AirConditioning {
     ) {
         self.a320_air_conditioning_system.update(
             context,
+            adirs,
             engines,
             engine_fire_push_buttons,
             pneumatic,

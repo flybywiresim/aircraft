@@ -104,6 +104,10 @@ pub trait EngineStartState {
     fn right_engine_state(&self) -> EngineState;
 }
 
+pub trait GroundSpeed {
+    fn ground_speed(&self) -> Velocity;
+}
+
 /// The common types of electrical buses within Airbus aircraft.
 /// These include types such as AC, DC, AC ESS, etc.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
