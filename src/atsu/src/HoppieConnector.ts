@@ -13,7 +13,7 @@ export class HoppieConnector {
 
     private callsign = '';
 
-    private static createBaseUrl(type: string, from: string, to: string) {
+    private createBaseUrl(type: string, to: string) {
         // validate the configuration
         const system = NXDataStore.get('CONFIG_HOPPIE_SYSTEM', 'NONE');
         const logon = NXDataStore.get('CONFIG_HOPPIE_USERID', '');
@@ -21,12 +21,12 @@ export class HoppieConnector {
             return '';
         }
 
-        return `${HoppieConnector.corsProxyUrl + HoppieConnector.hoppieUrl}logon=${logon}&type=${type}&from=${from}&to=${to}`;
+        return `${HoppieConnector.corsProxyUrl + HoppieConnector.hoppieUrl}logon=${logon}&type=${type}&from=${this.callsign}&to=${to}`;
     }
 
     public async isStationAvailable(station: string, mcdu: any, scratchCallback: any, resetFunction: (mcdu: any, scratchCallback: any) => void,
         errorFunction: (mcdu: any, scratchCallback: any) => void) {
-        let url = HoppieConnector.createBaseUrl('ping', 'TEST', 'ALL-CALLSIGNS');
+        let url = this.createBaseUrl('ping', 'ALL-CALLSIGNS');
         url += `&packet=${station}`;
 
         fetch(url)
