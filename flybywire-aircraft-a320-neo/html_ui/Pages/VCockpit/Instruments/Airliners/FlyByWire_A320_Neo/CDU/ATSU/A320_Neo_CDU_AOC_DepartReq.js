@@ -22,6 +22,7 @@ class CDUAocDepartReq {
 
         let flightNo = "______[color]amber";
         let fromTo = "____|____[color]amber";
+        let station = "____[color]amber";
         const atis = new CDU_SingleValueField(mcdu,
             "string",
             mcdu.pdcMessage.Atis,
@@ -36,30 +37,6 @@ class CDUAocDepartReq {
             },
             (value) => {
                 mcdu.pdcMessage.Atis = value;
-                CDUAocDepartReq.ShowPage1(mcdu);
-            }
-        );
-        const station = new CDU_SingleValueField(mcdu,
-            "string",
-            mcdu.pdcMessage.Station,
-            {
-                clearable: true,
-                emptyValue: "____[color]amber",
-                suffix: "[color]cyan",
-                length: 4,
-                isValid: ((value) => {
-                    if (value.length !== 4) {
-                        return false;
-                    }
-
-                    return /^[A-Z()]*$/.test(value);
-                })
-            },
-            (value) => {
-                if (value.length === 4 && /^[A-Z()]*$/.test(value) === true) {
-                    mcdu.atsuManager.getConnector().isStationAvailable(value, mcdu, CDUAocDepartReq.resetStation, CDUAocDepartReq.errorStation);
-                    mcdu.pdcMessage.Station = value;
-                }
                 CDUAocDepartReq.ShowPage1(mcdu);
             }
         );
@@ -99,8 +76,10 @@ class CDUAocDepartReq {
         if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident) {
             mcdu.pdcMessage.Origin = mcdu.flightPlanManager.getOrigin().ident;
             mcdu.pdcMessage.Destination = mcdu.flightPlanManager.getDestination().ident;
-
             fromTo = mcdu.pdcMessage.Origin + "/" + mcdu.pdcMessage.Destination + "[color]cyan";
+        }
+        if (mcdu.pdcMessage.Station !== "") {
+            station = `${mcdu.pdcMessage.Station}[color]cyan`;
         }
 
         // check if all required information are available to prepare the PDC message
@@ -125,6 +104,19 @@ class CDUAocDepartReq {
             ["<RETURN", reqDisplButton]
         ]);
 
+        mcdu.rightInputDelay[2] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+        mcdu.onRightInput[2] = (value, scratchpadCallback) => {
+            if (value.length !== 4 || /^[A-Z()]*$/.test(value) === false) {
+                mcdu.scratchpad.setText("FORMAT ERROR");
+                scratchpadCallback();
+            } else {
+                mcdu.atsuManager.getConnector().isStationAvailable(value, mcdu, CDUAocDepartReq.resetStation, CDUAocDepartReq.errorStation);
+                mcdu.pdcMessage.Station = value;
+            }
+            CDUAocDepartReq.ShowPage1(mcdu);
+        };
         mcdu.rightInputDelay[4] = () => {
             return mcdu.getDelaySwitchPage();
         };
