@@ -239,8 +239,8 @@ const DCDU: React.FC = () => {
                             />
                             <DatalinkMessage
                                 message={message}
-                                isStatusAvailable={isStatusAvailable}
                                 setStatus={setStatus}
+                                isStatusAvailable={isStatusAvailable}
                                 resetStatus={resetStatus}
                             />
                         </>
@@ -249,7 +249,7 @@ const DCDU: React.FC = () => {
                         <PdcButtons
                             message={message}
                             setStatus={setStatus}
-                            resetStatus={resetStatus}
+                            isStatusAvailable={isStatusAvailable}
                             closeMessage={closeMessage}
                         />
                     ))}

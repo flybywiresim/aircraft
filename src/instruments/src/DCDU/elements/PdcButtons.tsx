@@ -6,15 +6,16 @@ import { Button } from './Button';
 type PdcButtonsProps = {
     message: AtsuMessage,
     setStatus: (sender: string, message: string) => void,
-    resetStatus: (sender: string) => void,
+    isStatusAvailable: (sender: string) => boolean,
     closeMessage: (message: number) => void
 }
 
-export const PdcButtons: React.FC<PdcButtonsProps> = memo(({ message, setStatus, resetStatus, closeMessage }) => {
+export const PdcButtons: React.FC<PdcButtonsProps> = memo(({ message, setStatus, isStatusAvailable, closeMessage }) => {
     useUpdate(() => {
-        if (message.ComStatus === AtcMessageComStatus.Sending) {
-            resetStatus('');
-            setStatus('Buttons', 'SENDING');
+        if (message.ComStatus === AtsuMessageComStatus.Sending) {
+            if (isStatusAvailable('Buttons') === true) {
+                setStatus('Buttons', 'SENDING');
+            }
         }
     });
 
