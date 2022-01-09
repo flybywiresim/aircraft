@@ -68,7 +68,7 @@ export const DatalinkMessage: React.FC<DatalinkMessageProps> = memo(({ message, 
     // define the correct background color
     let backgroundClass = 'message-background';
     if (message.Direction === AtcMessageDirection.Output) {
-        if (message.ComStatus === AtcMessageComStatus.Sent) {
+        if (message.ComStatus === AtcMessageComStatus.Sent || message.ComStatus === AtcMessageComStatus.Sending) {
             backgroundClass += ' message-sent';
         } else {
             backgroundClass += ' message-out';

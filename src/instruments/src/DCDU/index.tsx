@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import { useCoherentEvent, useInteractionEvents } from '@instruments/common/hooks';
-import { AtcMessage, AtcMessageType } from '@atsu/AtcMessage';
+import { AtcMessage, AtcMessageComStatus, AtcMessageType } from '@atsu/AtcMessage';
 import { PreDepartureClearance } from '@atsu/PreDepartureClearance';
 import { PdcButtons } from './elements/PdcButtons';
 import { render } from '../Common';
@@ -139,9 +139,17 @@ const DCDU: React.FC = () => {
         }
 
         if (atsuMessage !== undefined) {
-            if (messages.get(atsuMessage.UniqueMessageID) === undefined) {
+            const oldMessage = messages.get(atsuMessage.UniqueMessageID);
+            if (oldMessage === undefined) {
                 atsuMessage.DcduTimestamp = new Date().getTime();
+            } else if (oldMessage.ComStatus !== atsuMessage.ComStatus) {
+                if (atsuMessage.ComStatus === AtcMessageComStatus.Failed) {
+                    setStatus('Mainpage', 'COM FAILED');
+                } else if (atsuMessage.ComStatus === AtcMessageComStatus.Sent) {
+                    setStatus('Mainpage', 'SENT');
+                }
             }
+
             setMessages(messages.set(atsuMessage.UniqueMessageID, atsuMessage));
             SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_MAX_REACHED', 'boolean', messages.size >= maxMessageCount ? 1 : 0);
 
@@ -225,6 +233,7 @@ const DCDU: React.FC = () => {
                                 timestamp={message.Timestamp}
                                 direction={message.Direction}
                                 status={message.Status}
+                                comStatus={message.ComStatus}
                                 station={message.Station}
                                 confirmed={message.Confirmed}
                             />

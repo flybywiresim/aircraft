@@ -1,17 +1,21 @@
 import React, { memo, useEffect, useRef, useState } from 'react';
-import { AtcMessageDirection, AtcMessageStatus, AtcTimestamp } from '@atsu/AtcMessage';
+import { AtcMessageComStatus, AtcMessageDirection, AtcMessageStatus, AtcTimestamp } from '@atsu/AtcMessage';
 
 type MessageStatusProps = {
     timestamp: AtcTimestamp | undefined,
     direction: AtcMessageDirection,
     status: AtcMessageStatus,
+    comStatus: AtcMessageComStatus,
     station: string,
     confirmed: boolean
 }
 
-const translateStatus = (status: AtcMessageStatus) => {
+const translateStatus = (status: AtcMessageStatus, comStatus: AtcMessageComStatus) => {
     switch (status) {
     case AtcMessageStatus.Open:
+        if (comStatus === AtcMessageComStatus.Sending || comStatus === AtcMessageComStatus.Sent) {
+            return '';
+        }
         return 'OPEN';
     case AtcMessageStatus.Wilco:
         return 'WILCO';
@@ -30,7 +34,7 @@ const translateStatus = (status: AtcMessageStatus) => {
     }
 };
 
-export const MessageStatus: React.FC<MessageStatusProps> = memo(({ timestamp, direction, status, station, confirmed }) => {
+export const MessageStatus: React.FC<MessageStatusProps> = memo(({ timestamp, direction, status, comStatus, station, confirmed }) => {
     const [textBBox, setTextBBox] = useState<DOMRect>();
     const textRef = useRef<SVGTSpanElement>(null);
 
@@ -78,11 +82,11 @@ export const MessageStatus: React.FC<MessageStatusProps> = memo(({ timestamp, di
                             x={background.x}
                             y={background.y}
                         />
-                        <text className={statusClass} x="467" y="35"><tspan ref={textRef}>{translateStatus(status)}</tspan></text>
+                        <text className={statusClass} x="467" y="35"><tspan ref={textRef}>{translateStatus(status, comStatus)}</tspan></text>
                     </>
                 )}
                 {needsBackground === false && (
-                    <text className={statusClass} x="471" y="35">{translateStatus(status)}</text>
+                    <text className={statusClass} x="471" y="35">{translateStatus(status, comStatus)}</text>
                 )}
             </>
         </g>
