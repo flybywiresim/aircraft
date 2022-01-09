@@ -63,16 +63,16 @@ const LandingSystemInfo = ({ displayed }) => {
 
     return (
         <g id="LSInfoGroup">
-            <text id="ILSIdent" className="Magenta FontLarge AlignLeft" x="1.5204413" y="145.11539">{identText}</text>
-            <text id="ILSFreqLeading" className="Magenta FontLarge AlignLeft" x="1.0791086" y="151.14395">{freqTextLeading}</text>
-            <text id="ILSFreqTrailing" className="Magenta FontSmallest AlignLeft" x="14.297637" y="151.26903">{`.${freqTextTrailing}`}</text>
+            <text id="ILSIdent" className="Magenta FontLarge AlignLeft" x="2.0842726" y="145.11539">{identText}</text>
+            <text id="ILSFreqLeading" className="Magenta FontLarge AlignLeft" x="1.3610243" y="151.11575">{freqTextLeading}</text>
+            <text id="ILSFreqTrailing" className="Magenta FontSmallest AlignLeft" x="13.564656" y="151.24084">{`.${freqTextTrailing}`}</text>
             {hasDME && (
                 <g id="ILSDistGroup">
-                    <text className="Magenta AlignLeft" x="0.69199055" y="157.26602">
+                    <text className="Magenta AlignLeft" x="1.3685881" y="157.26602">
                         <tspan id="ILSDistLeading" className="FontLarge">{distLeading}</tspan>
                         <tspan id="ILSDistTrailing" className="FontSmallest">{distTrailing}</tspan>
                     </text>
-                    <text className="Cyan FontSmallest AlignLeft" x="17.303238" y="157.2491">NM</text>
+                    <text className="Cyan FontSmallest AlignLeft" x="18.459091" y="156.82623">NM</text>
                 </g>
             )}
         </g>

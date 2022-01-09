@@ -93,16 +93,16 @@ const A1A2Cell = () => {
         return (
             <g>
                 <path className="NormalStroke White" d="m24.023 1.8143v13.506h-15.048v-13.506z" />
-                <text className="FontMedium MiddleAlign White" x="16.558302" y="6.8888531">MAN</text>
-                <text className="FontMedium MiddleAlign White" x="16.511532" y="14.232082">TOGA</text>
+                <text className="FontMedium MiddleAlign White" x="16.782249" y="7.1280665">MAN</text>
+                <text className="FontMedium MiddleAlign White" x="16.869141" y="14.351689">TOGA</text>
             </g>
         );
     case 2:
         return (
             <g>
                 <path className="NormalStroke White" d="m29.776 1.8143v13.506h-26.414v-13.506z" />
-                <text className="FontMedium MiddleAlign White" x="16.558302" y="6.8888531">MAN</text>
-                <text className="FontMedium MiddleAlign White" x="16.511532" y="14.232082">GA SOFT</text>
+                <text className="FontMedium MiddleAlign White" x="16.782249" y="7.1280665">MAN</text>
+                <text className="FontMedium MiddleAlign White" x="16.869141" y="14.351689">GA SOFT</text>
             </g>
         );
     case 3: {
@@ -111,8 +111,8 @@ const A1A2Cell = () => {
         return (
             <g>
                 <path className="NormalStroke White" d="m31.521 1.8143v13.506h-30.217v-13.506z" />
-                <text className="FontMedium MiddleAlign White" x="16.558302" y="6.8888531">MAN</text>
-                <text className="FontMedium MiddleAlign White" x="16.511532" y="14.232082">
+                <text className="FontMedium MiddleAlign White" x="16.782249" y="7.1280665">MAN</text>
+                <text className="FontMedium MiddleAlign White" x="16.869141" y="14.351689">
                     <tspan xmlSpace="preserve">FLX  </tspan>
                     <tspan className="Cyan">{FlexText}</tspan>
                 </text>
@@ -123,24 +123,24 @@ const A1A2Cell = () => {
         return (
             <g>
                 <path className="NormalStroke White" d="m23.172 1.8143v13.506h-12.99v-13.506z" />
-                <text className="FontMedium MiddleAlign White" x="16.558302" y="6.8888531">MAN</text>
-                <text className="FontMedium MiddleAlign White" x="16.511532" y="14.232082">DTO</text>
+                <text className="FontMedium MiddleAlign White" x="16.782249" y="7.1280665">MAN</text>
+                <text className="FontMedium MiddleAlign White" x="16.869141" y="14.351689">DTO</text>
             </g>
         );
     case 5:
         return (
             <g>
                 <path className="NormalStroke White" d="m23.172 1.8143v13.506h-12.99v-13.506z" />
-                <text className="FontMedium MiddleAlign White" x="16.558302" y="6.8888531">MAN</text>
-                <text className="FontMedium MiddleAlign White" x="16.511532" y="14.232082">MCT</text>
+                <text className="FontMedium MiddleAlign White" x="16.782249" y="7.1280665">MAN</text>
+                <text className="FontMedium MiddleAlign White" x="16.869141" y="14.351689">MCT</text>
             </g>
         );
     case 6:
         return (
             <g>
                 <path className="NormalStroke Amber" d="m23.172 1.8143v13.506h-12.99v-13.506z" />
-                <text className="FontMedium MiddleAlign White" x="16.558302" y="6.8888531">MAN</text>
-                <text className="FontMedium MiddleAlign White" x="16.511532" y="14.232082">THR</text>
+                <text className="FontMedium MiddleAlign White" x="16.782249" y="7.1280665">MAN</text>
+                <text className="FontMedium MiddleAlign White" x="16.869141" y="14.351689">THR</text>
             </g>
         );
     case 7:
@@ -165,14 +165,14 @@ const A1A2Cell = () => {
         return (
             <g>
                 <path className="NormalStroke Amber BlinkInfinite" d="m0.70556 1.8143h30.927v6.0476h-30.927z" />
-                <text className="FontMedium MiddleAlign Green" x="16.158028" y="6.8888531">A.FLOOR</text>
+                <text className="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">A.FLOOR</text>
             </g>
         );
     case 14:
         return (
             <g>
                 <path className="NormalStroke Amber BlinkInfinite" d="m0.70556 1.8143h30.927v6.0476h-30.927z" />
-                <text className="FontMedium MiddleAlign Green" x="16.158028" y="6.8888531">TOGA LK</text>
+                <text className="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">TOGA LK</text>
             </g>
         );
     default:
@@ -184,7 +184,7 @@ const A1A2Cell = () => {
             <ShowForSeconds timer={9} id={AThrMode}>
                 <path className="NormalStroke White" d="m0.70556 1.8143h30.927v6.0476h-30.927z" />
             </ShowForSeconds>
-            <text className="FontMedium MiddleAlign Green" x="16.158028" y="6.8888531">{text}</text>
+            <text className="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">{text}</text>
         </g>
     );
 };
@@ -220,7 +220,7 @@ const A3Cell = () => {
     }
 
     return (
-        <text className={`FontMedium MiddleAlign ${className}`} x="16.511532" y="21.481768">{text}</text>
+        <text className={`FontMedium MiddleAlign ${className}`} x="16.989958" y="21.641243">{text}</text>
     );
 };
 
@@ -232,14 +232,14 @@ const AB3Cell = () => {
     if (machPresel !== -1) {
         const text = machPresel.toFixed(2);
         return (
-            <text className="FontMedium MiddleAlign Cyan" x="35.275196" y="21.616354">{`MACH SEL ${text}`}</text>
+            <text className="FontMedium MiddleAlign Cyan" x="35.434673" y="21.656223">{`MACH SEL ${text}`}</text>
         );
     }
     const spdPresel = getSimVar('L:A32NX_SpeedPreselVal', 'knots');
     if (spdPresel !== -1) {
         const text = Math.round(spdPresel);
         return (
-            <text className="FontMedium MiddleAlign Cyan" x="35.275196" y="21.616354">{`SPEED SEL ${text}`}</text>
+            <text className="FontMedium MiddleAlign Cyan" x="35.434673" y="21.656223">{`SPEED SEL ${text}`}</text>
         );
     }
     return null;
@@ -358,7 +358,7 @@ const B1Cell = () => {
             </ShowForSeconds>
             {inSpeedProtection && <path className="NormalStroke Amber BlinkInfinite" d="m34.656 1.8143h29.918v6.0476h-29.918z" />}
             {inModeReversion && <path className="NormalStroke White BlinkInfinite" d="m34.656 1.8143h29.918v6.0476h-29.918z" />}
-            <text className="FontMedium MiddleAlign Green" x="49.498924" y="6.8785663" xmlSpace="preserve">{text}</text>
+            <text className="FontMedium MiddleAlign Green" x="49.921795" y="7.1040988" xmlSpace="preserve">{text}</text>
         </g>
     );
 };
@@ -403,9 +403,9 @@ const B2Cell = () => {
     return (
         <g>
             {text1
-                && <text className={`FontMedium MiddleAlign ${color1}`} x="40.520622" y="14.130308">{text1}</text>}
+                && <text className={`FontMedium MiddleAlign ${color1}`} x="41.477474" y="14.329653">{text1}</text>}
             {text2
-                && <text className="FontMedium MiddleAlign Cyan" x="55.275803" y="14.143736">{text2}</text>}
+                && <text className="FontMedium MiddleAlign Cyan" x="54.59803" y="14.382949">{text2}</text>}
         </g>
     );
 };
@@ -476,7 +476,7 @@ const C1Cell = () => {
             <ShowForSeconds timer={10} id={id}>
                 <path className="NormalStroke White" d="m100.87 1.8143v6.0476h-33.075l1e-6 -6.0476z" />
             </ShowForSeconds>
-            <text className="FontMedium MiddleAlign Green" x="84.490074" y="6.9027362">{text}</text>
+            <text className="FontMedium MiddleAlign Green" x="84.856567" y="6.9873109">{text}</text>
         </g>
     );
 };
@@ -510,7 +510,7 @@ const C2Cell = () => {
     }
 
     return (
-        <text className="FontMedium MiddleAlign Cyan" x="84.536842" y="14.130308">{text}</text>
+        <text className="FontMedium MiddleAlign Cyan" x="84.734184" y="14.440415">{text}</text>
     );
 };
 
@@ -541,7 +541,7 @@ const BC1Cell = () => {
             <ShowForSeconds timer={9} id={id}>
                 <path className="NormalStroke White" d="m50.178 1.8143h35.174v6.0476h-35.174z" />
             </ShowForSeconds>
-            <text className="FontMedium MiddleAlign Green" x="67.9795" y="6.8893085">{text}</text>
+            <text className="FontMedium MiddleAlign Green" x="67.923119" y="7.0302663">{text}</text>
         </g>
     );
 };
@@ -616,7 +616,7 @@ const BC3Cell = ({ isAttExcessive }) => {
 
     if (text !== null) {
         return (
-            <text className={`FontMedium MiddleAlign ${className}`} x="67.801949" y="21.481308" xmlSpace="preserve">{text}</text>
+            <text className={`FontMedium MiddleAlign ${className}`} x="68.087875" y="21.627102" xmlSpace="preserve">{text}</text>
         );
     }
     return null;
@@ -666,9 +666,9 @@ const D1D2Cell = () => {
 
     return (
         <g>
-            <text className="FontMedium MiddleAlign White" x="118.09216" y="7.0131598">{text1}</text>
+            <text className="FontMedium MiddleAlign White" x="118.45866" y="7.125926">{text1}</text>
             {text2
-            && <text className="FontMedium MiddleAlign White" x="118.15831" y="14.130308">{text2}</text>}
+            && <text className="FontMedium MiddleAlign White" x="118.39752" y="14.289783">{text2}</text>}
             <ShowForSeconds id={approachCapability} timer={9}>
                 {box}
             </ShowForSeconds>
@@ -705,7 +705,7 @@ const D3Cell = () => {
     }
 
     return (
-        <text className={`${fontSize} MiddleAlign White`} x="118.1583" y="21.188744">{text}</text>
+        <text className={`${fontSize} MiddleAlign White`} x="118.38384" y="21.104172">{text}</text>
     );
 };
 
@@ -735,7 +735,7 @@ const E1Cell = () => {
             <ShowForSeconds timer={9} id={id}>
                 <path className="NormalStroke White" d="m156.13 1.8143v6.0476h-20.81v-6.0476z" />
             </ShowForSeconds>
-            <text className="FontMedium MiddleAlign White" x="145.61546" y="6.9559975">{text}</text>
+            <text className="FontMedium MiddleAlign White" x="146.05305" y="7.1154728">{text}</text>
         </g>
     );
 };
@@ -772,7 +772,7 @@ const E2Cell = () => {
             <ShowForSeconds timer={9} id={id}>
                 <path d="m156.13 9.0715v6.0476h-20.81v-6.0476z" className="NormalStroke White" />
             </ShowForSeconds>
-            <text className="FontMedium MiddleAlign White" style={{ wordSpacing: '-1.7462px' }} x="145.51254" y="14.218353">{text}</text>
+            <text className="FontMedium MiddleAlign White" style={{ wordSpacing: '-1.9844px' }} x="146.15018" y="14.417698">{text}</text>
         </g>
     );
 };
@@ -800,7 +800,7 @@ const E3Cell = () => {
             <ShowForSeconds timer={9} id={id}>
                 <path className="NormalStroke White" d="m135.32 16.329h20.81v6.0476h-20.81z" />
             </ShowForSeconds>
-            <text className={`FontMedium MiddleAlign ${color}`} x="145.75578" y="21.434536">A/THR</text>
+            <text className={`FontMedium MiddleAlign ${color}`} x="145.87538" y="21.753487">A/THR</text>
         </g>
     );
 };
