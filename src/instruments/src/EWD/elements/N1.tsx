@@ -22,6 +22,11 @@ const N1: React.FC<N1Props> = ({ x, y, engine, active }) => {
     const [N1ThrustLimit] = useSimVar('L:A32NX_AUTOTHRUST_THRUST_LIMIT', 'number', 100);
 
     const availVisible = !!(N1Percent > Math.floor(N1Idle) && engineState === 2); // N1Percent sometimes does not reach N1Idle by .005 or so
+    const [revVisible] = useSimVar(`L:A32NX_AUTOTHRUST_REVERSE:${engine}`, 'bool', 500);
+    // Reverse cowl > 5% is treated like fully open, otherwise REV will not turn green for idle reverse
+    const [revDoorOpenPercentage] = useSimVar(`A:TURB ENG REVERSE NOZZLE PERCENT:${engine}`, 'percent', 100);
+    const availRevVisible = availVisible || revVisible;
+    const availRevText = availVisible ? 'AVAIL' : 'REV';
 
     const radius = 64;
     const startAngle = 220;
@@ -36,7 +41,7 @@ const N1: React.FC<N1Props> = ({ x, y, engine, active }) => {
                     && (
                         <>
                             <GaugeComponent x={x} y={y} radius={radius} startAngle={startAngle} endAngle={endAngle} visible className="GaugeComponent GaugeInactive" />
-                            <Avail x={x} y={y} visible={availVisible} active={active} />
+                            <AvailRev x={x} y={y} mesg={availRevText} visible={availRevVisible} active={active} revDoorOpen={revDoorOpenPercentage} />
                             <text className="Medium End Amber Spread" x={x + 45} y={y + 45}>XX</text>
                         </>
                     )}
@@ -174,7 +179,7 @@ const N1: React.FC<N1Props> = ({ x, y, engine, active }) => {
                                 className="GaugeIndicator Gauge"
                                 indicator
                             />
-                            <Avail x={x} y={y} visible={availVisible} active={active} />
+                            <AvailRev x={x} y={y} mesg={availRevText} visible={availRevVisible} active={active} revDoorOpen={revDoorOpenPercentage} />
                             <N1CommandAndTrend
                                 N1Actual={N1Percent <= N1Idle ? N1Idle / 10 : N1Percent / 10}
                                 x={x}
@@ -208,18 +213,23 @@ const N1: React.FC<N1Props> = ({ x, y, engine, active }) => {
 
 export default N1;
 
-type AvailProps = {
+type AvailRevProps = {
     x: number,
     y: number,
+    mesg: string,
     visible: boolean,
     active: boolean,
+    revDoorOpen: number,
 };
 
-const Avail: React.FC<AvailProps> = ({ x, y, visible, active }) => (
+const AvailRev: React.FC<AvailRevProps> = ({ x, y, mesg, visible, active, revDoorOpen }) => (
     <>
         <g className={visible || !active ? 'Show' : 'Hide'}>
             <rect x={x - 19} y={y - 13} width={96} height={32} className="DarkGreyBox BackgroundFill" />
-            <text className={`Large End Spread ${active ? 'Green' : 'Amber'}`} x={active ? x + 74 : x + 50} y={y + 13}>{active ? 'AVAIL' : 'XX'}</text>
+            {mesg === 'REV'
+            && <text className={`Large End Spread ${active && Math.round(revDoorOpen) > 5 ? 'Green' : 'Amber'}`} x={active ? x + 60 : x + 50} y={y + 13}>{active ? 'REV' : 'XX'}</text>}
+            {mesg === 'AVAIL'
+            && <text className="Large End Spread Green" x={x + 74} y={y + 13}>AVAIL</text>}
         </g>
     </>
 );
