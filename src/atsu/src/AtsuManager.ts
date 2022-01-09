@@ -80,8 +80,12 @@ export class AtsuManager {
         }
     }
 
-    public AtcMessageQueue() {
+    public atcMessages() {
         return this.atcMessageQueue;
+    }
+
+    public aocMessages() {
+        return this.aocMessageQueue;
     }
 
     public getConnector() {
