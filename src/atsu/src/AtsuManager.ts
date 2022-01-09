@@ -39,12 +39,6 @@ export class AtsuManager {
     }
 
     public registerPdcMessage(message: PreDepartureClearance) {
-        const serialized = message.serialize();
-        const duplicate = this.atcMessageQueue.find((element) => element.serialize() === serialized);
-        if (duplicate !== undefined) {
-            return 'MSG ALREADY DISPLAYED';
-        }
-
         if (SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_MAX_REACHED', 'boolean') === 1) {
             return 'DCDU FILE FULL';
         }
