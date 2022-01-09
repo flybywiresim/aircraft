@@ -25,7 +25,8 @@ export enum AtcMessageStatus {
 
 export enum AtcMessageComStatus {
     Sending,
-    Sent
+    Sent,
+    Failed
 }
 
 /**
