@@ -9,7 +9,7 @@ import { NXDataStore } from '@shared/persistence';
 export class HoppieConnector {
     private static corsProxyUrl = 'http://127.0.0.1:65512/';
 
-    private static hoppieUrl = 'http://www.hoppie.nl/acars/system/connect.html?';
+    private static hoppieUrl = 'http://www.hoppie.nl/acars/system/connect.html';
 
     private callsign = '';
 
@@ -21,7 +21,7 @@ export class HoppieConnector {
             return '';
         }
 
-        return `${HoppieConnector.corsProxyUrl + HoppieConnector.hoppieUrl}logon=${logon}&type=${type}&from=${this.callsign}&to=${to}`;
+        return `${HoppieConnector.corsProxyUrl + HoppieConnector.hoppieUrl}?logon=${logon}&type=${type}&from=${this.callsign}&to=${to}`;
     }
 
     public async isStationAvailable(station: string, mcdu: any, scratchCallback: any, resetFunction: (mcdu: any, scratchCallback: any) => void,
@@ -42,5 +42,29 @@ export class HoppieConnector {
 
     public setCallsign(callsign: string) {
         this.callsign = callsign;
+    }
+
+    public async sendTelexMessage(station: string, uid: number, message: string, sent: (uid: number) => void, failed: (uid: number) => void) {
+        const data = [
+            `logon=${NXDataStore.get('CONFIG_HOPPIE_USERID', '')}`,
+            `from=${this.callsign}`,
+            `to=${station}`,
+            'type=TELEX',
+            `packet=${encodeURIComponent(message)}`,
+        ];
+        const postData = data.join('&');
+
+        fetch(HoppieConnector.corsProxyUrl + HoppieConnector.hoppieUrl,
+            {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: postData,
+            }).then((response) => response.text().then((content) => {
+            if (content === 'ok') {
+                sent(uid);
+            } else {
+                failed(uid);
+            }
+        }));
     }
 }
