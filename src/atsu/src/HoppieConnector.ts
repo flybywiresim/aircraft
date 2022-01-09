@@ -24,19 +24,20 @@ export class HoppieConnector {
         return `${HoppieConnector.corsProxyUrl + HoppieConnector.hoppieUrl}logon=${logon}&type=${type}&from=${from}&to=${to}`;
     }
 
-    public async isStationAvailable(station: string, mcdu: any, resetFunction: (mcdu: any) => void, errorFunction: (mcdu: any) => void) {
+    public async isStationAvailable(station: string, mcdu: any, scratchCallback: any, resetFunction: (mcdu: any, scratchCallback: any) => void,
+        errorFunction: (mcdu: any, scratchCallback: any) => void) {
         let url = HoppieConnector.createBaseUrl('ping', 'TEST', 'ALL-CALLSIGNS');
         url += `&packet=${station}`;
 
         fetch(url)
             .then((response) => response.text().then(((content) => {
                 if (content.startsWith('ok') !== true) {
-                    errorFunction(mcdu);
+                    errorFunction(mcdu, scratchCallback);
                 } else if (content !== `ok {${station}}`) {
-                    resetFunction(mcdu);
+                    resetFunction(mcdu, scratchCallback);
                 }
             })))
-            .catch(() => errorFunction(mcdu));
+            .catch(() => errorFunction(mcdu, scratchCallback));
     }
 
     public setCallsign(callsign: string) {

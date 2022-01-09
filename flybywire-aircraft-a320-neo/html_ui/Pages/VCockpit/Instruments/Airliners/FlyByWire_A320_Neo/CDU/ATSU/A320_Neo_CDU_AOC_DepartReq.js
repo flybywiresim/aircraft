@@ -1,16 +1,18 @@
 class CDUAocDepartReq {
-    static resetStation(mcdu) {
+    static resetStation(mcdu, scratchpadCallback) {
         console.log('RESET');
         mcdu.pdcMessage.Station = "";
         mcdu.scratchpad.setText("NO ACTIVE ATC");
         CDUAocDepartReq.ShowPage1(mcdu);
+        scratchpadCallback();
     }
 
-    static errorStation(mcdu) {
+    static errorStation(mcdu, scratchpadCallback) {
         console.log('ERROR');
         mcdu.pdcMessage.Station = "";
         mcdu.scratchpad.setText("COM UNAVAILABLE");
         CDUAocDepartReq.ShowPage1(mcdu);
+        scratchpadCallback();
     }
 
     static ShowPage1(mcdu) {
@@ -112,7 +114,7 @@ class CDUAocDepartReq {
                 mcdu.scratchpad.setText("FORMAT ERROR");
                 scratchpadCallback();
             } else {
-                mcdu.atsuManager.getConnector().isStationAvailable(value, mcdu, CDUAocDepartReq.resetStation, CDUAocDepartReq.errorStation);
+                mcdu.atsuManager.getConnector().isStationAvailable(value, mcdu, scratchpadCallback, CDUAocDepartReq.resetStation, CDUAocDepartReq.errorStation);
                 mcdu.pdcMessage.Station = value;
             }
             CDUAocDepartReq.ShowPage1(mcdu);
