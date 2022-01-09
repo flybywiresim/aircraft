@@ -21,14 +21,25 @@ export class HoppieConnector {
             return '';
         }
 
-        return `${HoppieConnector.corsProxyUrl + HoppieConnector.hoppieUrl}logon=${logon}&type${type}&from=${from}&to=${to}`;
+        return `${HoppieConnector.corsProxyUrl + HoppieConnector.hoppieUrl}logon=${logon}&type=${type}&from=${from}&to=${to}`;
+    }
+
+    public async isStationAvailable(station: string, mcdu: any, resetFunction: (mcdu: any) => void, errorFunction: (mcdu: any) => void) {
+        let url = HoppieConnector.createBaseUrl('ping', 'TEST', 'ALL-CALLSIGNS');
+        url += `&packet=${station}`;
+
+        fetch(url)
+            .then((response) => response.text().then(((content) => {
+                if (content.startsWith('ok') !== true) {
+                    errorFunction(mcdu);
+                } else if (content !== `ok {${station}}`) {
+                    resetFunction(mcdu);
+                }
+            })))
+            .catch(() => errorFunction(mcdu));
     }
 
     public setCallsign(callsign: string) {
         this.callsign = callsign;
-    }
-
-    public getCallsign() {
-        return this.callsign;
     }
 }
