@@ -112,7 +112,11 @@ class CDUAocDepartReq {
             if (value.length !== 4 || /^[A-Z()]*$/.test(value) === false) {
                 mcdu.scratchpad.setText("FORMAT ERROR");
                 scratchpadCallback();
+            } else if (SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC") === "1123") {
+                mcdu.scratchpad.setText("ENTER ATC FLT NBR");
+                scratchpadCallback();
             } else {
+                mcdu.atsuManager.getConnector().setCallsign(SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC"));
                 mcdu.atsuManager.getConnector().isStationAvailable(value, mcdu, scratchpadCallback, CDUAocDepartReq.resetStation, CDUAocDepartReq.errorStation);
                 mcdu.pdcMessage.Station = value;
             }
