@@ -33,7 +33,7 @@ export class HoppieConnector {
             .then((response) => response.text().then(((content) => {
                 if (content.startsWith('ok') !== true) {
                     errorFunction(mcdu, scratchCallback);
-                } else if (content !== `ok {${station}}`) {
+                } else if (station === this.callsign || content !== `ok {${station}}`) {
                     resetFunction(mcdu, scratchCallback);
                 }
             })))
