@@ -54,7 +54,8 @@ class CDUAtcDepartReq {
             }
         );
 
-        if (SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC")) {
+        // "1123" is the default ATC flight number
+        if (SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC") !== "1123") {
             mcdu.pdcMessage.Callsign = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC");
             flightNo = mcdu.pdcMessage.Callsign + "[color]green";
         }
