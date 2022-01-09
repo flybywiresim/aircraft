@@ -1,6 +1,5 @@
 class CDUAocDepartReq {
     static resetStation(mcdu, scratchpadCallback) {
-        console.log('RESET');
         mcdu.pdcMessage.Station = "";
         mcdu.scratchpad.setText("NO ACTIVE ATC");
         CDUAocDepartReq.ShowPage1(mcdu);
@@ -8,7 +7,6 @@ class CDUAocDepartReq {
     }
 
     static errorStation(mcdu, scratchpadCallback) {
-        console.log('ERROR');
         mcdu.pdcMessage.Station = "";
         mcdu.scratchpad.setText("COM UNAVAILABLE");
         CDUAocDepartReq.ShowPage1(mcdu);
