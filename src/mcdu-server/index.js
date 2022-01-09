@@ -55,6 +55,7 @@ let websocketPort = 8380;
 let debug = false;
 let fontSize = 19;
 let paperSize = 'A4';
+let margin;
 
 const args = [...process.argv];
 args.splice(0, 2);
@@ -100,6 +101,14 @@ for (const arg of args) {
         }
         continue;
     }
+    if (arg.startsWith('--margin=')) {
+        margin = parseInt(arg.split('=')[1], 10);
+        if (!margin || margin < 1) {
+            console.error(`Invalid margin: ${arg.split('=')[1]}`);
+            process.exit(1);
+        }
+        continue;
+    }
     if (arg === '--debug') {
         debug = true;
         continue;
@@ -112,8 +121,9 @@ for (const arg of args) {
     printUsage();
     process.exit(1);
 }
-
-const margin = paperSize === 'A4' ? 30 : 10;
+if (!margin) {
+    margin = paperSize === 'A4' ? 30 : 10;
+}
 
 if (printerName != null) {
     print.getPrinters().then((printers) => {
@@ -335,6 +345,7 @@ function printUsage() {
     console.log('--font-size=...      sets font size for printing (default: 19)');
     console.log('-h, --help           print command line options');
     console.log('--http-port=...      sets port for http server (default: 8125)');
+    console.log('--margin=...         sets margin for printing in points');
     console.log('--no-printer         skips prompt to select printer');
     console.log('--paper-size=...     sets paper size for printing (default: A4)');
     console.log('--printer=...        enables printing to the specified printer');
