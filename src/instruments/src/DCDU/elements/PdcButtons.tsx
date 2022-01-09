@@ -1,10 +1,10 @@
 import React, { memo } from 'react';
-import { AtcMessage, AtcMessageComStatus } from '@atsu/AtcMessage';
+import { AtsuMessage, AtsuMessageComStatus } from '@atsu/AtsuMessage';
 import { useUpdate } from '@instruments/common/hooks.js';
 import { Button } from './Button';
 
 type PdcButtonsProps = {
-    message: AtcMessage,
+    message: AtsuMessage,
     setStatus: (sender: string, message: string) => void,
     resetStatus: (sender: string) => void,
     closeMessage: (message: number) => void
@@ -25,14 +25,14 @@ export const PdcButtons: React.FC<PdcButtonsProps> = memo(({ message, setStatus,
             } else if (index === 'R2') {
                 SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_SEND', 'number', message.UniqueMessageID);
             }
-        } else if (message.ComStatus === AtcMessageComStatus.Sent && index === 'R2') {
+        } else if (message.ComStatus === AtsuMessageComStatus.Sent && index === 'R2') {
             closeMessage(message.UniqueMessageID);
         }
     };
 
     return (
         <>
-            {message.ComStatus !== AtcMessageComStatus.Sent && (
+            {message.ComStatus !== AtsuMessageComStatus.Sent && (
                 <>
                     <Button
                         messageId={message.UniqueMessageID}
@@ -48,7 +48,7 @@ export const PdcButtons: React.FC<PdcButtonsProps> = memo(({ message, setStatus,
                     />
                 </>
             )}
-            {message.ComStatus === AtcMessageComStatus.Sent && (
+            {message.ComStatus === AtsuMessageComStatus.Sent && (
                 <Button
                     messageId={message.UniqueMessageID}
                     index="R2"

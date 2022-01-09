@@ -1,19 +1,19 @@
 //  Copyright (c) 2022 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import { AtcTimestamp } from './AtcTimestamp';
+import { AtsuTimestamp } from './AtsuTimestamp';
 
-export enum AtcMessageDirection {
+export enum AtsuMessageDirection {
     Input,
     Output
 }
 
-export enum AtcMessageType {
+export enum AtsuMessageType {
     Telex,
     PDC
 }
 
-export enum AtcMessageStatus {
+export enum AtsuMessageResponseStatus {
     Open,
     Wilco,
     Roger,
@@ -23,31 +23,33 @@ export enum AtcMessageStatus {
     Refuse
 }
 
-export enum AtcMessageComStatus {
+export enum AtsuMessageComStatus {
+    Open,
     Sending,
     Sent,
+    Received,
     Failed
 }
 
 /**
  * Defines the generic ATC message
  */
-export class AtcMessage {
+export class AtsuMessage {
     public UniqueMessageID : number = undefined;
 
-    public Timestamp : AtcTimestamp = undefined;
+    public Timestamp : AtsuTimestamp = undefined;
 
     public DcduTimestamp : number = undefined;
 
     public Station = '';
 
-    public ComStatus : AtcMessageComStatus = undefined;
+    public ComStatus : AtsuMessageComStatus = undefined;
 
-    public Type : AtcMessageType = undefined;
+    public Type : AtsuMessageType = undefined;
 
-    public Direction : AtcMessageDirection = undefined;
+    public Direction : AtsuMessageDirection = undefined;
 
-    public Status : AtcMessageStatus = undefined;
+    public Status : AtsuMessageResponseStatus = undefined;
 
     public Confirmed = false;
 
@@ -58,7 +60,7 @@ export class AtcMessage {
     // used to deserialize event data
     public deserialize(jsonData) {
         this.UniqueMessageID = jsonData.UniqueMessageID;
-        this.Timestamp = new AtcTimestamp();
+        this.Timestamp = new AtsuTimestamp();
         this.Timestamp.deserialize(jsonData.Timestamp);
         this.Station = jsonData.Station;
         this.ComStatus = jsonData.ComStatus;
@@ -69,4 +71,4 @@ export class AtcMessage {
     }
 }
 
-export { AtcTimestamp };
+export { AtsuTimestamp };

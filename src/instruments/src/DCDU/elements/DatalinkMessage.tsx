@@ -1,9 +1,9 @@
 import React, { useState, memo } from 'react';
-import { AtcMessage, AtcMessageComStatus, AtcMessageDirection } from '@atsu/AtcMessage';
+import { AtsuMessage, AtsuMessageComStatus, AtsuMessageDirection } from '@atsu/AtsuMessage';
 import { useInteractionEvents } from '@instruments/common/hooks.js';
 
 type DatalinkMessageProps = {
-    message: AtcMessage,
+    message: AtsuMessage,
     isStatusAvailable: (sender: string) => boolean,
     setStatus: (sender: string, message: string) => void,
     resetStatus: (sender: string) => void
@@ -67,8 +67,8 @@ export const DatalinkMessage: React.FC<DatalinkMessageProps> = memo(({ message, 
 
     // define the correct background color
     let backgroundClass = 'message-background';
-    if (message.Direction === AtcMessageDirection.Output) {
-        if (message.ComStatus === AtcMessageComStatus.Sent || message.ComStatus === AtcMessageComStatus.Sending) {
+    if (message.Direction === AtsuMessageDirection.Output) {
+        if (message.ComStatus === AtsuMessageComStatus.Sent || message.ComStatus === AtsuMessageComStatus.Sending) {
             backgroundClass += ' message-sent';
         } else {
             backgroundClass += ' message-out';

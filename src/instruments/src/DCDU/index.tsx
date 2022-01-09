@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import { useCoherentEvent, useInteractionEvents } from '@instruments/common/hooks';
-import { AtcMessage, AtcMessageComStatus, AtcMessageType } from '@atsu/AtcMessage';
+import { AtsuMessage, AtsuMessageComStatus, AtsuMessageType } from '@atsu/AtsuMessage';
 import { PreDepartureClearance } from '@atsu/PreDepartureClearance';
 import { PdcButtons } from './elements/PdcButtons';
 import { render } from '../Common';
@@ -28,7 +28,7 @@ function powerAvailable() {
     return getSimVar('L:A32NX_ELEC_DC_1_BUS_IS_POWERED', 'Bool') || getSimVar('L:A32NX_ELEC_DC_2_BUS_IS_POWERED', 'Bool');
 }
 
-const sortedMessageArray = (messages: Map<number, AtcMessage>) => {
+const sortedMessageArray = (messages: Map<number, AtsuMessage>) => {
     const arrMessages = Array.from(messages.values());
     arrMessages.sort((a, b) => a.DcduTimestamp - b.DcduTimestamp);
     return arrMessages;
@@ -37,7 +37,7 @@ const sortedMessageArray = (messages: Map<number, AtcMessage>) => {
 const DCDU: React.FC = () => {
     const [isColdAndDark] = useSimVar('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool', 200);
     const [state, setState] = useState(isColdAndDark ? DcduState.Off : DcduState.Active);
-    const [messages, setMessages] = useState(new Map<number, AtcMessage>());
+    const [messages, setMessages] = useState(new Map<number, AtsuMessage>());
     const [statusMessage, setStatusMessage] = useState({ sender: '', message: '', remainingMilliseconds: 0 });
     const [messageUid, setMessageUid] = useState(-1);
     const maxMessageCount = 5;
@@ -132,8 +132,8 @@ const DCDU: React.FC = () => {
 
     // resynchronization with AtsuManager
     useCoherentEvent('A32NX_DCDU_MSG', (serialized: any) => {
-        let atsuMessage : AtcMessage | undefined = undefined;
-        if (serialized.Type === AtcMessageType.PDC) {
+        let atsuMessage : AtsuMessage | undefined = undefined;
+        if (serialized.Type === AtsuMessageType.PDC) {
             atsuMessage = new PreDepartureClearance();
             atsuMessage.deserialize(serialized);
         }
@@ -143,9 +143,9 @@ const DCDU: React.FC = () => {
             if (oldMessage === undefined) {
                 atsuMessage.DcduTimestamp = new Date().getTime();
             } else if (oldMessage.ComStatus !== atsuMessage.ComStatus) {
-                if (atsuMessage.ComStatus === AtcMessageComStatus.Failed) {
+                if (atsuMessage.ComStatus === AtsuMessageComStatus.Failed) {
                     setStatus('Mainpage', 'COM FAILED');
-                } else if (atsuMessage.ComStatus === AtcMessageComStatus.Sent) {
+                } else if (atsuMessage.ComStatus === AtsuMessageComStatus.Sent) {
                     setStatus('Mainpage', 'SENT');
                 }
             }
@@ -183,7 +183,7 @@ const DCDU: React.FC = () => {
 
     // prepare the data
     let messageIndex = -1;
-    let message : AtcMessage | undefined = undefined;
+    let message : AtsuMessage | undefined = undefined;
     if (state === DcduState.Active && messages.size !== 0) {
         const arrMessages = sortedMessageArray(messages);
 
@@ -245,7 +245,7 @@ const DCDU: React.FC = () => {
                             />
                         </>
                     ))}
-                    {(message !== undefined && message.Type === AtcMessageType.PDC && (
+                    {(message !== undefined && message.Type === AtsuMessageType.PDC && (
                         <PdcButtons
                             message={message}
                             setStatus={setStatus}

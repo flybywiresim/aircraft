@@ -1,12 +1,12 @@
 //  Copyright (c) 2021 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import { AtcMessageType, AtcMessageDirection, AtcMessageStatus, AtcMessage } from './AtcMessage';
+import { AtsuMessageType, AtsuMessageDirection, AtsuMessageResponseStatus, AtsuMessage } from './AtsuMessage';
 
 /**
  * Defines the general PDC message format
  */
-export class PreDepartureClearance extends AtcMessage {
+export class PreDepartureClearance extends AtsuMessage {
     public Callsign = '';
 
     public Origin = '';
@@ -31,9 +31,9 @@ export class PreDepartureClearance extends AtcMessage {
 
     constructor() {
         super();
-        this.Type = AtcMessageType.PDC;
-        this.Direction = AtcMessageDirection.Output;
-        this.Status = AtcMessageStatus.Open;
+        this.Type = AtsuMessageType.PDC;
+        this.Direction = AtsuMessageDirection.Output;
+        this.Status = AtsuMessageResponseStatus.Open;
     }
 
     public serialize() {
@@ -78,4 +78,4 @@ export class PreDepartureClearance extends AtcMessage {
     }
 }
 
-export { AtcMessageType, AtcMessageDirection, AtcMessageStatus, AtcMessage };
+export { AtsuMessageType, AtsuMessageDirection, AtsuMessageResponseStatus, AtsuMessage };

@@ -1,8 +1,8 @@
 //  Copyright (c) 2022 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import { AtcMessage, AtcMessageComStatus } from './AtcMessage';
-import { AtcTimestamp } from './AtcTimestamp';
+import { AtsuMessage, AtsuMessageComStatus } from './AtsuMessage';
+import { AtsuTimestamp } from './AtsuTimestamp';
 import { HoppieConnector } from './HoppieConnector';
 import { PreDepartureClearance } from './PreDepartureClearance';
 
@@ -14,9 +14,9 @@ export class AtsuManager {
 
     private messageCounter = 0;
 
-    private aocMessageQueue : AtcMessage[] = [];
+    private aocMessageQueue : AtsuMessage[] = [];
 
-    private atcMessageQueue : AtcMessage[] = [];
+    private atcMessageQueue : AtsuMessage[] = [];
 
     private messageSendQueue : { type: string, uid: number }[] = [];
 
@@ -54,9 +54,8 @@ export class AtsuManager {
 
     private aocMessageSentSuccessful(uid: number) {
         const index = this.aocMessageQueue.findIndex((element) => element.UniqueMessageID === uid);
-        console.log(`SENT ${index}`);
         if (index !== -1) {
-            this.aocMessageQueue[index].ComStatus = AtcMessageComStatus.Sent;
+            this.aocMessageQueue[index].ComStatus = AtsuMessageComStatus.Sent;
             this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', this.aocMessageQueue[index]);
         }
     }
@@ -64,7 +63,7 @@ export class AtsuManager {
     private aocMmessageSentFailed(uid: number) {
         const index = this.aocMessageQueue.findIndex((element) => element.UniqueMessageID === uid);
         if (index !== -1) {
-            this.aocMessageQueue[index].ComStatus = AtcMessageComStatus.Failed;
+            this.aocMessageQueue[index].ComStatus = AtsuMessageComStatus.Failed;
             this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', this.aocMessageQueue[index]);
         }
     }
@@ -75,7 +74,7 @@ export class AtsuManager {
         }
 
         message.UniqueMessageID = ++this.messageCounter;
-        message.Timestamp = new AtcTimestamp();
+        message.Timestamp = new AtsuTimestamp();
         this.aocMessageQueue.unshift(message);
         this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', message);
 
@@ -85,15 +84,14 @@ export class AtsuManager {
     private sendMessage(uid: number) {
         let index = this.atcMessageQueue.findIndex((element) => element.UniqueMessageID === uid);
         if (index !== -1) {
-            this.atcMessageQueue[index].ComStatus = AtcMessageComStatus.Sending;
+            this.atcMessageQueue[index].ComStatus = AtsuMessageComStatus.Sending;
             this.messageSendQueue.push({ type: 'ATC', uid: this.atcMessageQueue[index].UniqueMessageID });
             this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', this.atcMessageQueue[index]);
-            return;
         }
 
         index = this.aocMessageQueue.findIndex((element) => element.UniqueMessageID === uid);
         if (index !== -1) {
-            this.aocMessageQueue[index].ComStatus = AtcMessageComStatus.Sending;
+            this.aocMessageQueue[index].ComStatus = AtsuMessageComStatus.Sending;
             this.messageSendQueue.push({ type: 'AOC', uid: this.aocMessageQueue[index].UniqueMessageID });
             this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', this.aocMessageQueue[index]);
         }
@@ -126,4 +124,4 @@ export class AtsuManager {
     }
 }
 
-export { PreDepartureClearance, AtcMessage, AtcTimestamp };
+export { PreDepartureClearance, AtsuMessage, AtsuTimestamp };

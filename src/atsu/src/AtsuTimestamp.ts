@@ -4,7 +4,7 @@
 /**
  * Defines the decoded UTC timestamp
  */
-export class AtcTimestamp {
+export class AtsuTimestamp {
     public Year : number = SimVar.GetSimVarValue('E:ZULU YEAR', 'number');
 
     public Month : number = SimVar.GetSimVarValue('E:ZULU MONTH OF YEAR', 'number');
@@ -20,7 +20,7 @@ export class AtcTimestamp {
         this.Seconds = jsonData.Seconds;
     }
 
-    public DcduTimestamp() {
+    public dcduTimestamp() {
         const hours = Math.floor(this.Seconds / 3600);
         const minutes = Math.floor(this.Seconds / 60) % 60;
         return `${hours.toString().padStart(2, '0')}${minutes.toString().padStart(2, '0')}Z`;

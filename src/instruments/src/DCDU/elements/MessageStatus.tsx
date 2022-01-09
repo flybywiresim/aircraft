@@ -1,33 +1,33 @@
 import React, { memo, useEffect, useRef, useState } from 'react';
-import { AtcMessageComStatus, AtcMessageDirection, AtcMessageStatus, AtcTimestamp } from '@atsu/AtcMessage';
+import { AtsuMessageComStatus, AtsuMessageDirection, AtsuMessageResponseStatus, AtsuTimestamp } from '@atsu/AtsuMessage';
 
 type MessageStatusProps = {
-    timestamp: AtcTimestamp | undefined,
-    direction: AtcMessageDirection,
-    status: AtcMessageStatus,
-    comStatus: AtcMessageComStatus,
+    timestamp: AtsuTimestamp | undefined,
+    direction: AtsuMessageDirection,
+    status: AtsuMessageResponseStatus,
+    comStatus: AtsuMessageComStatus,
     station: string,
     confirmed: boolean
 }
 
-const translateStatus = (status: AtcMessageStatus, comStatus: AtcMessageComStatus) => {
+const translateStatus = (status: AtsuMessageResponseStatus, comStatus: AtsuMessageComStatus) => {
     switch (status) {
-    case AtcMessageStatus.Open:
-        if (comStatus === AtcMessageComStatus.Sending || comStatus === AtcMessageComStatus.Sent) {
+    case AtsuMessageResponseStatus.Open:
+        if (comStatus !== AtsuMessageComStatus.Open && comStatus !== AtsuMessageComStatus.Failed) {
             return '';
         }
         return 'OPEN';
-    case AtcMessageStatus.Wilco:
+    case AtsuMessageResponseStatus.Wilco:
         return 'WILCO';
-    case AtcMessageStatus.Roger:
+    case AtsuMessageResponseStatus.Roger:
         return 'ROGER';
-    case AtcMessageStatus.Negative:
+    case AtsuMessageResponseStatus.Negative:
         return 'NEGATV';
-    case AtcMessageStatus.Unable:
+    case AtsuMessageResponseStatus.Unable:
         return 'UNABLE';
-    case AtcMessageStatus.Acknowledge:
+    case AtsuMessageResponseStatus.Acknowledge:
         return 'ACK';
-    case AtcMessageStatus.Refuse:
+    case AtsuMessageResponseStatus.Refuse:
         return 'REFUSE';
     default:
         return 'UKN';
@@ -45,13 +45,13 @@ export const MessageStatus: React.FC<MessageStatusProps> = memo(({ timestamp, di
     }
 
     let statusClass = 'status-message ';
-    if (status === AtcMessageStatus.Open) {
+    if (status === AtsuMessageResponseStatus.Open) {
         statusClass += 'status-open';
     } else {
         statusClass += 'status-other';
     }
 
-    const needsBackground = status !== AtcMessageStatus.Open;
+    const needsBackground = status !== AtsuMessageResponseStatus.Open;
     const backgroundColor = confirmed === true ? 'rgb(0,255,0)' : 'rgb(0,255,255)';
 
     // calculate the position of the background rectangle
@@ -67,9 +67,9 @@ export const MessageStatus: React.FC<MessageStatusProps> = memo(({ timestamp, di
     return (
         <g>
             <text className="station" x="21" y="35">
-                {timestamp.DcduTimestamp()}
+                {timestamp.dcduTimestamp()}
                 {' '}
-                {direction === AtcMessageDirection.Output ? ' TO ' : ' FROM '}
+                {direction === AtsuMessageDirection.Output ? ' TO ' : ' FROM '}
                 {station}
             </text>
             <>
