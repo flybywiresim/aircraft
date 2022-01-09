@@ -12,7 +12,7 @@ use uom::si::{
     pressure::psi,
     ratio::{percent, ratio},
     velocity::knot,
-    volume::gallon,
+    volume::{gallon, liter},
     volume_rate::gallon_per_second,
 };
 
@@ -34,8 +34,9 @@ use systems::{
         },
         update_iterator::{FixedStepLoop, MaxFixedStepLoop},
         ElectricPump, EngineDrivenPump, HydraulicCircuit, HydraulicCircuitController,
-        PowerTransferUnit, PowerTransferUnitController, PressureSwitchState, PumpController,
-        RamAirTurbine, RamAirTurbineController, Reservoir, SectionPressure,
+        PowerTransferUnit, PowerTransferUnitController, PressureSwitch, PressureSwitchState,
+        PressureSwitchType, PumpController, RamAirTurbine, RamAirTurbineController, Reservoir,
+        SectionPressure,
     },
     overhead::{
         AutoOffFaultPushButton, AutoOnFaultPushButton, MomentaryOnPushButton, MomentaryPushButton,
@@ -43,8 +44,8 @@ use systems::{
     shared::{
         interpolation, DelayedFalseLogicGate, DelayedPulseTrueLogicGate, DelayedTrueLogicGate,
         ElectricalBusType, ElectricalBuses, EmergencyElectricalRatPushButton,
-        EmergencyElectricalState, EngineFirePushButtons, LgciuInterface,
-        RamAirTurbineHydraulicCircuitPressurised,
+        EmergencyElectricalState, EngineFirePushButtons, HydraulicColor, LgciuInterface,
+        RamAirTurbineHydraulicCircuitPressurised, ReservoirAirPressure,
     },
     simulation::{
         InitContext, Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -54,6 +55,64 @@ use systems::{
 
 mod flaps_computer;
 use flaps_computer::SlatFlapComplex;
+
+struct A320HydraulicReservoirFactory {}
+impl A320HydraulicReservoirFactory {
+    fn new_green_reservoir(context: &mut InitContext) -> Reservoir {
+        Reservoir::new(
+            context,
+            HydraulicColor::Green,
+            Volume::new::<liter>(23.),
+            Volume::new::<liter>(18.),
+            Volume::new::<gallon>(3.6),
+            vec![PressureSwitch::new(
+                Pressure::new::<psi>(25.),
+                Pressure::new::<psi>(22.),
+                PressureSwitchType::Relative,
+            )],
+            Volume::new::<liter>(3.),
+        )
+    }
+
+    fn new_blue_reservoir(context: &mut InitContext) -> Reservoir {
+        Reservoir::new(
+            context,
+            HydraulicColor::Blue,
+            Volume::new::<liter>(10.),
+            Volume::new::<liter>(8.),
+            Volume::new::<gallon>(1.56),
+            vec![
+                PressureSwitch::new(
+                    Pressure::new::<psi>(25.),
+                    Pressure::new::<psi>(22.),
+                    PressureSwitchType::Relative,
+                ),
+                PressureSwitch::new(
+                    Pressure::new::<psi>(48.),
+                    Pressure::new::<psi>(45.),
+                    PressureSwitchType::Absolute,
+                ),
+            ],
+            Volume::new::<liter>(2.),
+        )
+    }
+
+    fn new_yellow_reservoir(context: &mut InitContext) -> Reservoir {
+        Reservoir::new(
+            context,
+            HydraulicColor::Yellow,
+            Volume::new::<liter>(20.),
+            Volume::new::<liter>(18.),
+            Volume::new::<gallon>(3.6),
+            vec![PressureSwitch::new(
+                Pressure::new::<psi>(25.),
+                Pressure::new::<psi>(22.),
+                PressureSwitchType::Relative,
+            )],
+            Volume::new::<liter>(3.),
+        )
+    }
+}
 
 struct A320HydraulicCircuitFactory {}
 impl A320HydraulicCircuitFactory {
@@ -67,13 +126,14 @@ impl A320HydraulicCircuitFactory {
     const BLUE_ELECTRIC_PUMP_INDEX: usize = 0;
 
     fn new_green_circuit(context: &mut InitContext) -> HydraulicCircuit {
+        let reservoir = A320HydraulicReservoirFactory::new_green_reservoir(context);
         HydraulicCircuit::new(
             context,
-            "GREEN",
+            HydraulicColor::Green,
             1,
             Ratio::new::<percent>(100.),
             Volume::new::<gallon>(10.),
-            Volume::new::<gallon>(3.6),
+            reservoir,
             Pressure::new::<psi>(Self::MIN_PRESS_PRESSURISED_LO_HYST),
             Pressure::new::<psi>(Self::MIN_PRESS_PRESSURISED_HI_HYST),
             Pressure::new::<psi>(Self::MIN_PRESS_EDP_SECTION_LO_HYST),
@@ -84,13 +144,14 @@ impl A320HydraulicCircuitFactory {
     }
 
     fn new_blue_circuit(context: &mut InitContext) -> HydraulicCircuit {
+        let reservoir = A320HydraulicReservoirFactory::new_blue_reservoir(context);
         HydraulicCircuit::new(
             context,
-            "BLUE",
+            HydraulicColor::Blue,
             1,
             Ratio::new::<percent>(100.),
             Volume::new::<gallon>(8.),
-            Volume::new::<gallon>(1.56),
+            reservoir,
             Pressure::new::<psi>(Self::MIN_PRESS_PRESSURISED_LO_HYST),
             Pressure::new::<psi>(Self::MIN_PRESS_PRESSURISED_HI_HYST),
             Pressure::new::<psi>(Self::MIN_PRESS_EDP_SECTION_LO_HYST),
@@ -101,13 +162,14 @@ impl A320HydraulicCircuitFactory {
     }
 
     fn new_yellow_circuit(context: &mut InitContext) -> HydraulicCircuit {
+        let reservoir = A320HydraulicReservoirFactory::new_yellow_reservoir(context);
         HydraulicCircuit::new(
             context,
-            "YELLOW",
+            HydraulicColor::Yellow,
             1,
             Ratio::new::<percent>(100.),
             Volume::new::<gallon>(10.),
-            Volume::new::<gallon>(3.6),
+            reservoir,
             Pressure::new::<psi>(Self::MIN_PRESS_PRESSURISED_LO_HYST),
             Pressure::new::<psi>(Self::MIN_PRESS_PRESSURISED_HI_HYST),
             Pressure::new::<psi>(Self::MIN_PRESS_EDP_SECTION_LO_HYST),
@@ -397,6 +459,7 @@ impl A320Hydraulic {
         lgciu2: &impl LgciuInterface,
         rat_and_emer_gen_man_on: &impl EmergencyElectricalRatPushButton,
         emergency_elec_state: &impl EmergencyElectricalState,
+        reservoir_pneumatics: &impl ReservoirAirPressure,
     ) {
         self.core_hydraulic_updater.update(context);
         self.physics_updater.update(context);
@@ -426,27 +489,50 @@ impl A320Hydraulic {
                 engine_fire_push_buttons,
                 lgciu1,
                 lgciu2,
+                reservoir_pneumatics,
             );
         }
     }
 
-    fn green_edp_has_low_press_fault(&self) -> bool {
+    fn ptu_has_fault(&self) -> bool {
+        self.power_transfer_unit_controller
+            .has_air_pressure_low_fault()
+            || self.power_transfer_unit_controller.has_low_level_fault()
+    }
+
+    fn green_edp_has_fault(&self) -> bool {
         self.engine_driven_pump_1_controller
             .has_pressure_low_fault()
+            || self
+                .engine_driven_pump_1_controller
+                .has_air_pressure_low_fault()
+            || self.engine_driven_pump_1_controller.has_low_level_fault()
     }
 
-    fn yellow_epump_has_low_press_fault(&self) -> bool {
+    fn yellow_epump_has_fault(&self) -> bool {
         self.yellow_electric_pump_controller
             .has_pressure_low_fault()
+            || self
+                .yellow_electric_pump_controller
+                .has_air_pressure_low_fault()
+            || self.yellow_electric_pump_controller.has_low_level_fault()
     }
 
-    fn yellow_edp_has_low_press_fault(&self) -> bool {
+    fn yellow_edp_has_fault(&self) -> bool {
         self.engine_driven_pump_2_controller
             .has_pressure_low_fault()
+            || self
+                .engine_driven_pump_2_controller
+                .has_air_pressure_low_fault()
+            || self.engine_driven_pump_2_controller.has_low_level_fault()
     }
 
     fn blue_epump_has_fault(&self) -> bool {
         self.blue_electric_pump_controller.has_pressure_low_fault()
+            || self
+                .blue_electric_pump_controller
+                .has_air_pressure_low_fault()
+            || self.blue_electric_pump_controller.has_low_level_fault()
     }
 
     pub fn green_reservoir(&self) -> &Reservoir {
@@ -611,6 +697,7 @@ impl A320Hydraulic {
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         lgciu1: &impl LgciuInterface,
         lgciu2: &impl LgciuInterface,
+        reservoir_pneumatics: &impl ReservoirAirPressure,
     ) {
         // First update what is currently consumed and given back by each actuator
         // Todo: might have to split the actuator volumes by expected number of loops
@@ -623,6 +710,8 @@ impl A320Hydraulic {
             &self.aft_cargo_door_controller,
             &self.pushback_tug,
             lgciu2,
+            self.green_circuit.reservoir(),
+            self.yellow_circuit.reservoir(),
         );
         self.power_transfer_unit.update(
             self.green_circuit.system_section(),
@@ -637,6 +726,7 @@ impl A320Hydraulic {
             self.green_circuit
                 .pump_section(A320HydraulicCircuitFactory::GREEN_ENGINE_PUMP_INDEX),
             lgciu1,
+            self.green_circuit.reservoir(),
         );
 
         self.engine_driven_pump_1.update(
@@ -655,6 +745,7 @@ impl A320Hydraulic {
             self.yellow_circuit
                 .pump_section(A320HydraulicCircuitFactory::YELLOW_ENGINE_PUMP_INDEX),
             lgciu2,
+            self.yellow_circuit.reservoir(),
         );
 
         self.engine_driven_pump_2.update(
@@ -674,6 +765,7 @@ impl A320Hydraulic {
             engine2,
             lgciu1,
             lgciu2,
+            self.blue_circuit.reservoir(),
         );
         self.blue_electric_pump.update(
             context,
@@ -689,6 +781,7 @@ impl A320Hydraulic {
             &self.forward_cargo_door_controller,
             &self.aft_cargo_door_controller,
             self.yellow_circuit.system_section(),
+            self.yellow_circuit.reservoir(),
         );
         self.yellow_electric_pump.update(
             context,
@@ -712,6 +805,7 @@ impl A320Hydraulic {
             None::<&mut ElectricPump>,
             Some(&self.power_transfer_unit),
             &self.green_circuit_controller,
+            reservoir_pneumatics.green_reservoir_pressure(),
         );
 
         self.yellow_circuit_controller
@@ -722,6 +816,7 @@ impl A320Hydraulic {
             Some(&mut self.yellow_electric_pump),
             Some(&self.power_transfer_unit),
             &self.yellow_circuit_controller,
+            reservoir_pneumatics.yellow_reservoir_pressure(),
         );
 
         self.blue_circuit_controller
@@ -732,6 +827,7 @@ impl A320Hydraulic {
             Some(&mut self.ram_air_turbine),
             None,
             &self.blue_circuit_controller,
+            reservoir_pneumatics.blue_reservoir_pressure(),
         );
 
         self.braking_circuit_norm.update(
@@ -895,6 +991,8 @@ struct A320EngineDrivenPumpController {
     engine_number: usize,
     should_pressurise: bool,
     has_pressure_low_fault: bool,
+    has_air_pressure_low_fault: bool,
+    has_low_level_fault: bool,
     is_pressure_low: bool,
 }
 impl A320EngineDrivenPumpController {
@@ -913,12 +1011,16 @@ impl A320EngineDrivenPumpController {
             powered_by,
             engine_number,
             should_pressurise: true,
+
             has_pressure_low_fault: false,
+            has_air_pressure_low_fault: false,
+            has_low_level_fault: false,
+
             is_pressure_low: true,
         }
     }
 
-    fn update_low_section(
+    fn update_low_pressure(
         &mut self,
         engine: &impl Engine,
         section: &impl SectionPressure,
@@ -933,6 +1035,24 @@ impl A320EngineDrivenPumpController {
                 || !(lgciu.right_gear_compressed(false) && lgciu.left_gear_compressed(false)));
     }
 
+    fn update_low_air_pressure(
+        &mut self,
+        reservoir: &Reservoir,
+        overhead_panel: &A320HydraulicOverheadPanel,
+    ) {
+        self.has_air_pressure_low_fault = reservoir.is_low_air_pressure()
+            && overhead_panel.edp_push_button_is_auto(self.engine_number);
+    }
+
+    fn update_low_level(
+        &mut self,
+        reservoir: &Reservoir,
+        overhead_panel: &A320HydraulicOverheadPanel,
+    ) {
+        self.has_low_level_fault =
+            reservoir.is_low_level() && overhead_panel.edp_push_button_is_auto(self.engine_number);
+    }
+
     fn update<T: EngineFirePushButtons>(
         &mut self,
         overhead_panel: &A320HydraulicOverheadPanel,
@@ -940,6 +1060,7 @@ impl A320EngineDrivenPumpController {
         engine: &impl Engine,
         section: &impl SectionPressure,
         lgciu: &impl LgciuInterface,
+        reservoir: &Reservoir,
     ) {
         let mut should_pressurise_if_powered = false;
         if overhead_panel.edp_push_button_is_auto(self.engine_number)
@@ -955,11 +1076,23 @@ impl A320EngineDrivenPumpController {
         // Inverted logic, no power means solenoid valve always leave pump in pressurise mode
         self.should_pressurise = !self.is_powered || should_pressurise_if_powered;
 
-        self.update_low_section(engine, section, lgciu);
+        self.update_low_pressure(engine, section, lgciu);
+
+        self.update_low_air_pressure(reservoir, overhead_panel);
+
+        self.update_low_level(reservoir, overhead_panel);
     }
 
     fn has_pressure_low_fault(&self) -> bool {
         self.has_pressure_low_fault
+    }
+
+    fn has_air_pressure_low_fault(&self) -> bool {
+        self.has_air_pressure_low_fault
+    }
+
+    fn has_low_level_fault(&self) -> bool {
+        self.has_low_level_fault
     }
 }
 impl PumpController for A320EngineDrivenPumpController {
@@ -990,6 +1123,8 @@ struct A320BlueElectricPumpController {
     powered_by: ElectricalBusType,
     should_pressurise: bool,
     has_pressure_low_fault: bool,
+    has_air_pressure_low_fault: bool,
+    has_low_level_fault: bool,
     is_pressure_low: bool,
 }
 impl A320BlueElectricPumpController {
@@ -1000,7 +1135,11 @@ impl A320BlueElectricPumpController {
             is_powered: false,
             powered_by,
             should_pressurise: false,
+
             has_pressure_low_fault: false,
+            has_air_pressure_low_fault: false,
+            has_low_level_fault: false,
+
             is_pressure_low: true,
         }
     }
@@ -1013,6 +1152,7 @@ impl A320BlueElectricPumpController {
         engine2: &impl Engine,
         lgciu1: &impl LgciuInterface,
         lgciu2: &impl LgciuInterface,
+        reservoir: &Reservoir,
     ) {
         let mut should_pressurise_if_powered = false;
         if overhead_panel.blue_epump_push_button.is_auto() {
@@ -1031,10 +1171,14 @@ impl A320BlueElectricPumpController {
 
         self.should_pressurise = self.is_powered && should_pressurise_if_powered;
 
-        self.update_low_section(overhead_panel, section, engine1, engine2, lgciu1, lgciu2);
+        self.update_low_pressure(overhead_panel, section, engine1, engine2, lgciu1, lgciu2);
+
+        self.update_low_air_pressure(reservoir, overhead_panel);
+
+        self.update_low_level(reservoir, overhead_panel);
     }
 
-    fn update_low_section(
+    fn update_low_pressure(
         &mut self,
         overhead_panel: &A320HydraulicOverheadPanel,
         section: &impl SectionPressure,
@@ -1057,8 +1201,34 @@ impl A320BlueElectricPumpController {
                 || overhead_panel.blue_epump_override_push_button_is_on());
     }
 
+    fn update_low_air_pressure(
+        &mut self,
+        reservoir: &Reservoir,
+        overhead_panel: &A320HydraulicOverheadPanel,
+    ) {
+        self.has_air_pressure_low_fault =
+            reservoir.is_low_air_pressure() && !overhead_panel.blue_epump_push_button_is_off();
+    }
+
+    fn update_low_level(
+        &mut self,
+        reservoir: &Reservoir,
+        overhead_panel: &A320HydraulicOverheadPanel,
+    ) {
+        self.has_low_level_fault =
+            reservoir.is_low_level() && !overhead_panel.blue_epump_push_button_is_off();
+    }
+
     fn has_pressure_low_fault(&self) -> bool {
         self.has_pressure_low_fault
+    }
+
+    fn has_air_pressure_low_fault(&self) -> bool {
+        self.has_air_pressure_low_fault
+    }
+
+    fn has_low_level_fault(&self) -> bool {
+        self.has_low_level_fault
     }
 }
 
@@ -1086,6 +1256,8 @@ struct A320YellowElectricPumpController {
     powered_by_when_cargo_door_operation: ElectricalBusType,
     should_pressurise: bool,
     has_pressure_low_fault: bool,
+    has_air_pressure_low_fault: bool,
+    has_low_level_fault: bool,
     is_pressure_low: bool,
     should_activate_yellow_pump_for_cargo_door_operation: DelayedFalseLogicGate,
 }
@@ -1105,7 +1277,11 @@ impl A320YellowElectricPumpController {
             powered_by,
             powered_by_when_cargo_door_operation,
             should_pressurise: false,
+
             has_pressure_low_fault: false,
+            has_air_pressure_low_fault: false,
+            has_low_level_fault: false,
+
             is_pressure_low: true,
             should_activate_yellow_pump_for_cargo_door_operation: DelayedFalseLogicGate::new(
                 Self::DURATION_OF_YELLOW_PUMP_ACTIVATION_AFTER_CARGO_DOOR_OPERATION,
@@ -1120,6 +1296,7 @@ impl A320YellowElectricPumpController {
         forward_cargo_door_controller: &A320DoorController,
         aft_cargo_door_controller: &A320DoorController,
         section: &impl SectionPressure,
+        reservoir: &Reservoir,
     ) {
         self.should_activate_yellow_pump_for_cargo_door_operation
             .update(
@@ -1134,18 +1311,48 @@ impl A320YellowElectricPumpController {
                 .output())
             && self.is_powered;
 
-        self.update_low_section(section);
+        self.update_low_pressure(section);
+
+        self.update_low_air_pressure(reservoir, overhead_panel);
+
+        self.update_low_level(reservoir, overhead_panel);
     }
 
-    fn update_low_section(&mut self, section: &impl SectionPressure) {
+    fn update_low_pressure(&mut self, section: &impl SectionPressure) {
         self.is_pressure_low =
             self.should_pressurise() && !section.is_pressure_switch_pressurised();
 
         self.has_pressure_low_fault = self.is_pressure_low;
     }
 
+    fn update_low_air_pressure(
+        &mut self,
+        reservoir: &Reservoir,
+        overhead_panel: &A320HydraulicOverheadPanel,
+    ) {
+        self.has_air_pressure_low_fault =
+            reservoir.is_low_air_pressure() && !overhead_panel.yellow_epump_push_button_is_auto();
+    }
+
+    fn update_low_level(
+        &mut self,
+        reservoir: &Reservoir,
+        overhead_panel: &A320HydraulicOverheadPanel,
+    ) {
+        self.has_low_level_fault =
+            reservoir.is_low_level() && !overhead_panel.yellow_epump_push_button_is_auto();
+    }
+
     fn has_pressure_low_fault(&self) -> bool {
         self.has_pressure_low_fault
+    }
+
+    fn has_air_pressure_low_fault(&self) -> bool {
+        self.has_air_pressure_low_fault
+    }
+
+    fn has_low_level_fault(&self) -> bool {
+        self.has_low_level_fault
     }
 
     #[cfg(test)]
@@ -1187,6 +1394,9 @@ struct A320PowerTransferUnitController {
     parking_brake_lever_pos: bool,
     eng_1_master_on: bool,
     eng_2_master_on: bool,
+
+    has_air_pressure_low_fault: bool,
+    has_low_level_fault: bool,
 }
 impl A320PowerTransferUnitController {
     const DURATION_OF_PTU_INHIBIT_AFTER_CARGO_DOOR_OPERATION: Duration = Duration::from_secs(40);
@@ -1209,6 +1419,9 @@ impl A320PowerTransferUnitController {
             parking_brake_lever_pos: false,
             eng_1_master_on: false,
             eng_2_master_on: false,
+
+            has_air_pressure_low_fault: false,
+            has_low_level_fault: false,
         }
     }
 
@@ -1220,6 +1433,8 @@ impl A320PowerTransferUnitController {
         aft_cargo_door_controller: &A320DoorController,
         pushback_tug: &PushbackTug,
         lgciu2: &impl LgciuInterface,
+        reservoir_left_side: &Reservoir,
+        reservoir_right_side: &Reservoir,
     ) {
         self.should_inhibit_ptu_after_cargo_door_operation.update(
             context,
@@ -1240,6 +1455,40 @@ impl A320PowerTransferUnitController {
 
         // When there is no power, the PTU is always ON.
         self.should_enable = !self.is_powered || should_enable_if_powered;
+
+        self.update_low_air_pressure(reservoir_left_side, reservoir_right_side, overhead_panel);
+
+        self.update_low_level(reservoir_left_side, reservoir_right_side, overhead_panel);
+    }
+
+    fn update_low_air_pressure(
+        &mut self,
+        reservoir_left_side: &Reservoir,
+        reservoir_right_side: &Reservoir,
+        overhead_panel: &A320HydraulicOverheadPanel,
+    ) {
+        self.has_air_pressure_low_fault = (reservoir_left_side.is_low_air_pressure()
+            || reservoir_right_side.is_low_air_pressure())
+            && overhead_panel.ptu_push_button_is_auto();
+    }
+
+    fn update_low_level(
+        &mut self,
+        reservoir_left_side: &Reservoir,
+        reservoir_right_side: &Reservoir,
+        overhead_panel: &A320HydraulicOverheadPanel,
+    ) {
+        self.has_low_level_fault = (reservoir_left_side.is_low_level()
+            || reservoir_right_side.is_low_level())
+            && overhead_panel.ptu_push_button_is_auto();
+    }
+
+    fn has_air_pressure_low_fault(&self) -> bool {
+        self.has_air_pressure_low_fault
+    }
+
+    fn has_low_level_fault(&self) -> bool {
+        self.has_low_level_fault
     }
 }
 impl PowerTransferUnitController for A320PowerTransferUnitController {
@@ -2383,14 +2632,13 @@ impl A320HydraulicOverheadPanel {
     }
 
     pub(super) fn update(&mut self, hyd: &A320Hydraulic) {
-        self.edp1_push_button
-            .set_fault(hyd.green_edp_has_low_press_fault());
-        self.edp2_push_button
-            .set_fault(hyd.yellow_edp_has_low_press_fault());
+        self.edp1_push_button.set_fault(hyd.green_edp_has_fault());
+        self.edp2_push_button.set_fault(hyd.yellow_edp_has_fault());
         self.blue_epump_push_button
             .set_fault(hyd.blue_epump_has_fault());
         self.yellow_epump_push_button
-            .set_fault(hyd.yellow_epump_has_low_press_fault());
+            .set_fault(hyd.yellow_epump_has_fault());
+        self.ptu_push_button.set_fault(hyd.ptu_has_fault());
 
         self.update_blue_override_state();
     }
@@ -2505,6 +2753,38 @@ mod tests {
             }
         }
 
+        struct A320TestPneumatics {
+            pressure: Pressure,
+        }
+        impl A320TestPneumatics {
+            pub fn new() -> Self {
+                Self {
+                    pressure: Pressure::new::<psi>(50.),
+                }
+            }
+
+            fn set_nominal_air_pressure(&mut self) {
+                self.pressure = Pressure::new::<psi>(50.);
+            }
+
+            fn set_low_air_pressure(&mut self) {
+                self.pressure = Pressure::new::<psi>(1.);
+            }
+        }
+        impl ReservoirAirPressure for A320TestPneumatics {
+            fn green_reservoir_pressure(&self) -> Pressure {
+                self.pressure
+            }
+
+            fn blue_reservoir_pressure(&self) -> Pressure {
+                self.pressure
+            }
+
+            fn yellow_reservoir_pressure(&self) -> Pressure {
+                self.pressure
+            }
+        }
+
         struct A320TestElectrical {
             airspeed: Velocity,
             all_ac_lost: bool,
@@ -2533,6 +2813,7 @@ mod tests {
             }
         }
         struct A320HydraulicsTestAircraft {
+            pneumatics: A320TestPneumatics,
             engine_1: LeapEngine,
             engine_2: LeapEngine,
             hydraulics: A320Hydraulic,
@@ -2571,6 +2852,7 @@ mod tests {
         impl A320HydraulicsTestAircraft {
             fn new(context: &mut InitContext) -> Self {
                 Self {
+                    pneumatics: A320TestPneumatics::new(),
                     engine_1: LeapEngine::new(context, 1),
                     engine_2: LeapEngine::new(context, 2),
                     hydraulics: A320Hydraulic::new(context),
@@ -2809,6 +3091,7 @@ mod tests {
                     &self.lgciu2,
                     &self.emergency_electrical_overhead,
                     &self.electrical,
+                    &self.pneumatics,
                 );
 
                 self.overhead.update(&self.hydraulics);
@@ -2917,11 +3200,11 @@ mod tests {
                 self.read_by_name("HYD_GREEN_EDPUMP_LOW_PRESS")
             }
 
-            fn is_green_edp_press_low_fault(&mut self) -> bool {
+            fn green_edp_has_fault(&mut self) -> bool {
                 self.read_by_name("OVHD_HYD_ENG_1_PUMP_PB_HAS_FAULT")
             }
 
-            fn is_yellow_edp_press_low_fault(&mut self) -> bool {
+            fn yellow_edp_has_fault(&mut self) -> bool {
                 self.read_by_name("OVHD_HYD_ENG_2_PUMP_PB_HAS_FAULT")
             }
 
@@ -2937,8 +3220,16 @@ mod tests {
                 self.read_by_name("HYD_BLUE_EPUMP_LOW_PRESS")
             }
 
-            fn is_blue_epump_press_low_fault(&mut self) -> bool {
+            fn blue_epump_has_fault(&mut self) -> bool {
                 self.read_by_name("OVHD_HYD_EPUMPB_PB_HAS_FAULT")
+            }
+
+            fn yellow_epump_has_fault(&mut self) -> bool {
+                self.read_by_name("OVHD_HYD_EPUMPY_PB_HAS_FAULT")
+            }
+
+            fn ptu_has_fault(&mut self) -> bool {
+                self.read_by_name("OVHD_HYD_PTU_PB_HAS_FAULT")
             }
 
             fn blue_epump_override_is_on(&mut self) -> bool {
@@ -3036,6 +3327,16 @@ mod tests {
                 self.set_indicated_altitude(Length::new::<foot>(0.));
                 self.set_on_ground(true);
                 self.set_indicated_airspeed(Velocity::new::<knot>(5.));
+                self
+            }
+
+            fn air_press_low(mut self) -> Self {
+                self.command(|a| a.pneumatics.set_low_air_pressure());
+                self
+            }
+
+            fn air_press_nominal(mut self) -> Self {
+                self.command(|a| a.pneumatics.set_nominal_air_pressure());
                 self
             }
 
@@ -3262,6 +3563,7 @@ mod tests {
                     .set_right_brake(Ratio::new::<percent>(0.))
                     .set_gear_down()
                     .set_pushback_state(false)
+                    .air_press_nominal()
             }
 
             fn set_left_brake(self, position_percent: Ratio) -> Self {
@@ -3706,12 +4008,12 @@ mod tests {
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
-                .run_one_tick();
+                .run_waiting_for(Duration::from_millis(500));
 
             // EDP should be commanded on even without engine running
             assert!(test_bed.is_green_edp_commanded_on());
             // EDP should have no fault
-            assert!(!test_bed.is_green_edp_press_low_fault());
+            assert!(!test_bed.green_edp_has_fault());
         }
 
         #[test]
@@ -3728,7 +4030,7 @@ mod tests {
             assert!(!test_bed.is_green_pressurised());
             assert!(!test_bed.is_yellow_pressurised());
             // EDP should have a fault as we are in flight
-            assert!(test_bed.is_green_edp_press_low_fault());
+            assert!(test_bed.green_edp_has_fault());
         }
 
         #[test]
@@ -3737,31 +4039,31 @@ mod tests {
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
-                .run_one_tick();
+                .run_waiting_for(Duration::from_millis(500));
 
             // EDP should be commanded on even without engine running
             assert!(test_bed.is_green_edp_commanded_on());
             // EDP should have no fault
-            assert!(!test_bed.is_green_edp_press_low_fault());
+            assert!(!test_bed.green_edp_has_fault());
 
             test_bed = test_bed
                 .start_eng1(Ratio::new::<percent>(3.))
                 .run_one_tick();
 
-            assert!(!test_bed.is_green_edp_press_low_fault());
+            assert!(!test_bed.green_edp_has_fault());
 
             test_bed = test_bed
                 .start_eng1(Ratio::new::<percent>(80.))
                 .run_one_tick();
 
             assert!(!test_bed.is_green_pressurised());
-            assert!(test_bed.is_green_edp_press_low_fault());
+            assert!(test_bed.green_edp_has_fault());
 
             test_bed = test_bed.run_waiting_for(Duration::from_secs(10));
 
             // When finally pressurised no fault
             assert!(test_bed.is_green_pressurised());
-            assert!(!test_bed.is_green_edp_press_low_fault());
+            assert!(!test_bed.green_edp_has_fault());
         }
 
         #[test]
@@ -3770,12 +4072,12 @@ mod tests {
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
-                .run_one_tick();
+                .run_waiting_for(Duration::from_millis(500));
 
             // EDP should be commanded on even without engine running
             assert!(test_bed.is_yellow_edp_commanded_on());
             // EDP should have no fault
-            assert!(!test_bed.is_yellow_edp_press_low_fault());
+            assert!(!test_bed.yellow_edp_has_fault());
         }
 
         #[test]
@@ -3792,7 +4094,7 @@ mod tests {
             assert!(!test_bed.is_green_pressurised());
             assert!(!test_bed.is_yellow_pressurised());
             // EDP should have a fault as we are in flight
-            assert!(test_bed.is_yellow_edp_press_low_fault());
+            assert!(test_bed.yellow_edp_has_fault());
         }
 
         #[test]
@@ -3801,31 +4103,31 @@ mod tests {
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
-                .run_one_tick();
+                .run_waiting_for(Duration::from_millis(500));
 
             // EDP should be commanded on even without engine running
             assert!(test_bed.is_yellow_edp_commanded_on());
             // EDP should have no fault
-            assert!(!test_bed.is_yellow_edp_press_low_fault());
+            assert!(!test_bed.yellow_edp_has_fault());
 
             test_bed = test_bed
                 .start_eng2(Ratio::new::<percent>(3.))
                 .run_one_tick();
 
-            assert!(!test_bed.is_yellow_edp_press_low_fault());
+            assert!(!test_bed.yellow_edp_has_fault());
 
             test_bed = test_bed
                 .start_eng2(Ratio::new::<percent>(80.))
                 .run_one_tick();
 
             assert!(!test_bed.is_yellow_pressurised());
-            assert!(test_bed.is_yellow_edp_press_low_fault());
+            assert!(test_bed.yellow_edp_has_fault());
 
             test_bed = test_bed.run_waiting_for(Duration::from_secs(10));
 
             // When finally pressurised no fault
             assert!(test_bed.is_yellow_pressurised());
-            assert!(!test_bed.is_yellow_edp_press_low_fault());
+            assert!(!test_bed.yellow_edp_has_fault());
         }
 
         #[test]
@@ -3834,29 +4136,29 @@ mod tests {
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
-                .run_one_tick();
+                .run_waiting_for(Duration::from_millis(500));
 
             // Blue epump should have no fault
-            assert!(!test_bed.is_blue_epump_press_low_fault());
+            assert!(!test_bed.blue_epump_has_fault());
 
             test_bed = test_bed
                 .start_eng2(Ratio::new::<percent>(3.))
                 .run_one_tick();
 
-            assert!(!test_bed.is_blue_epump_press_low_fault());
+            assert!(!test_bed.blue_epump_has_fault());
 
             test_bed = test_bed
                 .start_eng2(Ratio::new::<percent>(80.))
                 .run_one_tick();
 
             assert!(!test_bed.is_blue_pressurised());
-            assert!(test_bed.is_blue_epump_press_low_fault());
+            assert!(test_bed.blue_epump_has_fault());
 
             test_bed = test_bed.run_waiting_for(Duration::from_secs(10));
 
             // When finally pressurised no fault
             assert!(test_bed.is_blue_pressurised());
-            assert!(!test_bed.is_blue_epump_press_low_fault());
+            assert!(!test_bed.blue_epump_has_fault());
         }
 
         #[test]
@@ -3865,22 +4167,22 @@ mod tests {
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
-                .run_one_tick();
+                .run_waiting_for(Duration::from_millis(500));
 
             // Blue epump should have no fault
-            assert!(!test_bed.is_blue_epump_press_low_fault());
+            assert!(!test_bed.blue_epump_has_fault());
 
             test_bed = test_bed.press_blue_epump_override_button_once();
             assert!(test_bed.blue_epump_override_is_on());
 
             // As we use override, this bypasses eng off fault inhibit so we have a fault
-            assert!(test_bed.is_blue_epump_press_low_fault());
+            assert!(test_bed.blue_epump_has_fault());
 
             test_bed = test_bed.run_waiting_for(Duration::from_secs(10));
 
             // When finally pressurised no fault
             assert!(test_bed.is_blue_pressurised());
-            assert!(!test_bed.is_blue_epump_press_low_fault());
+            assert!(!test_bed.blue_epump_has_fault());
         }
 
         #[test]
@@ -3889,7 +4191,7 @@ mod tests {
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
-                .run_one_tick();
+                .run_waiting_for(Duration::from_millis(500));
 
             // EDP should be commanded on even without engine running
             assert!(test_bed.is_green_edp_commanded_on());
@@ -6168,6 +6470,80 @@ mod tests {
 
             assert!(test_bed.nose_steering_position().get::<degree>() <= -5.9);
             assert!(test_bed.nose_steering_position().get::<degree>() >= -6.1);
+        }
+
+        #[test]
+        fn yellow_epump_has_cavitation_at_low_air_press() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .set_ptu_state(false)
+                .run_one_tick();
+
+            test_bed = test_bed
+                .air_press_nominal()
+                .set_yellow_e_pump(false)
+                .run_waiting_for(Duration::from_secs_f64(10.));
+
+            assert!(test_bed.yellow_pressure().get::<psi>() > 2900.);
+
+            test_bed = test_bed
+                .air_press_low()
+                .run_waiting_for(Duration::from_secs_f64(10.));
+
+            assert!(test_bed.yellow_pressure().get::<psi>() < 2000.);
+        }
+
+        #[test]
+        fn low_air_press_fault_causes_ptu_fault() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .start_eng1(Ratio::new::<percent>(80.))
+                .start_eng2(Ratio::new::<percent>(80.))
+                .run_waiting_for(Duration::from_millis(500));
+
+            assert!(!test_bed.ptu_has_fault());
+            assert!(!test_bed.green_edp_has_fault());
+            assert!(!test_bed.yellow_edp_has_fault());
+
+            test_bed = test_bed
+                .air_press_low()
+                .run_waiting_for(Duration::from_secs_f64(10.));
+
+            assert!(test_bed.green_edp_has_fault());
+            assert!(test_bed.yellow_edp_has_fault());
+            assert!(test_bed.ptu_has_fault());
+        }
+
+        #[test]
+        fn low_air_press_fault_causes_yellow_blue_epump_fault() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .start_eng1(Ratio::new::<percent>(80.))
+                .start_eng2(Ratio::new::<percent>(80.))
+                .run_waiting_for(Duration::from_millis(5000));
+
+            assert!(!test_bed.blue_epump_has_fault());
+            assert!(!test_bed.yellow_epump_has_fault());
+
+            test_bed = test_bed
+                .air_press_low()
+                .run_waiting_for(Duration::from_secs_f64(10.));
+
+            // Blue pump is on but yellow is off: only blue fault expected
+            assert!(test_bed.blue_epump_has_fault());
+            assert!(!test_bed.yellow_epump_has_fault());
+
+            test_bed = test_bed
+                .set_yellow_e_pump(false)
+                .run_waiting_for(Duration::from_secs_f64(10.));
+
+            assert!(test_bed.yellow_epump_has_fault());
         }
     }
 }
