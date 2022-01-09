@@ -68,6 +68,8 @@ const DCDU: React.FC = () => {
         const index = sortedMessages.findIndex((element) => element.UniqueMessageID === uid);
 
         if (index !== -1) {
+            resetStatus('');
+
             // define the next visible message
             if (index + 1 < sortedMessages.length) {
                 setMessageUid(sortedMessages[index + 1].UniqueMessageID);
