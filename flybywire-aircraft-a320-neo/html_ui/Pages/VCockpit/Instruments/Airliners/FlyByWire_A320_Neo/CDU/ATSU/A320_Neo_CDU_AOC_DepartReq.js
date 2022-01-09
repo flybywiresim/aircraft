@@ -128,7 +128,7 @@ class CDUAocDepartReq {
         mcdu.rightInputDelay[4] = () => {
             return mcdu.getDelaySwitchPage();
         };
-        mcdu.onRightInput[4] = (value, scratchpadCallback) => {
+        mcdu.onRightInput[4] = (_value, scratchpadCallback) => {
             if (0 !== mcdu.pdcMessage.Freetext0.length) {
                 CDUAocDepartReq.ShowPage2(mcdu);
             } else {
