@@ -16,7 +16,7 @@ class CDUAocDepartReq {
     static ShowPage1(mcdu) {
         mcdu.clearDisplay();
 
-        if (undefined === mcdu.pdcMessage) {
+        if (mcdu.pdcMessage === undefined) {
             mcdu.pdcMessage = new Atsu.PreDepartureClearance();
         }
 
