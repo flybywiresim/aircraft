@@ -82,3 +82,41 @@ fs.writeFileSync(path.join(A32NX, 'manifest.json'), JSON.stringify({
     package_version: require('../package.json').version + `-${GIT_COMMIT_SHA}`,
     total_package_size: totalPackageSize.toString().padStart(20, '0'),
 }, null, 2));
+
+// This copies one of two prepared DDS files from the src folder
+// (src/Textures/decals 4k/) to the aircraft folder
+// (flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/TEXTURE/)
+// based on the current branch the build is executed from.
+// Stable and Master will get the DDS with the yellow INOP label.
+// All other branches get the DDS with the red INOP label.
+// Stable will not show the label (encoded in the src/model build.js)
+// Development will show a yellow label
+// All other branches show a red label
+//
+// This assumes that Stable uses the DDS already in the aircraft folder, while
+// the other cases will overwrite this file.
+
+const SRC_FOLDER = path.resolve(__dirname, '..', 'src');
+const TARGET_DSS = '/SimObjects/AirPlanes/FlyByWire_A320_NEO/TEXTURE/A320NEO_COCKPIT_DECALSTEXT_ALBD.TIF.dds';
+
+if (GIT_BRANCH === 'master') {
+    const YELLOW_DDS = '/Textures/decals 4k/A320NEO_COCKPIT_DECALSTEXT_ALBD.TIF-yellow.dds';
+    // destination will be created or overwritten by default.
+    fs.copyFile(path.join(SRC_FOLDER, YELLOW_DDS), path.join(A32NX, TARGET_DSS),
+        (err) => {
+            if (err) {
+                throw err;
+            }
+            console.log('copying ' + YELLOW_DDS + ` to ` + TARGET_DSS + "failed: " + err);
+        });
+} else if (edition !== 'stable') {
+    const RED_DDS = '/Textures/decals 4k/A320NEO_COCKPIT_DECALSTEXT_ALBD.TIF-red.dds';
+    // destination will be created or overwritten by default.
+    fs.copyFile(path.join(SRC_FOLDER, RED_DDS), path.join(A32NX, TARGET_DSS),
+        (err) => {
+            if (err) {
+                throw err;
+            }
+            console.log('copying ' + RED_DDS + ` to ` + TARGET_DSS + "failed: " + err);
+        });
+}
