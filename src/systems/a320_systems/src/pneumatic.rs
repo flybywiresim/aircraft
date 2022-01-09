@@ -17,14 +17,14 @@ use systems::{
         valve::*, BleedMonitoringComputerChannelOperationMode,
         BleedMonitoringComputerIsAliveSignal, CompressionChamber, ControllablePneumaticValve,
         CrossBleedValveSelectorKnob, CrossBleedValveSelectorMode,
-        EngineCompressionChamberController, EngineState, PneumaticContainer,
-        PneumaticContainerWithConnector, PneumaticPipe, PneumaticValveSignal, Precooler,
+        EngineCompressionChamberController, EngineState, PneumaticContainer, PneumaticPipe,
+        PneumaticValveSignal, Precooler, PressurisedReservoirWithExhaustValve,
         PressurizeableReservoir, TargetPressureSignal, VariableVolumeContainer,
     },
     shared::{
         pid::PidController, ControllerSignal, ElectricalBusType, ElectricalBuses,
         EngineCorrectedN1, EngineCorrectedN2, EngineFirePushButtons, EngineStartState,
-        PneumaticBleed, PneumaticValve,
+        HydraulicColor, PneumaticBleed, PneumaticValve, ReservoirAirPressure,
     },
     simulation::{
         InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -118,9 +118,12 @@ pub struct A320Pneumatic {
     apu_compression_chamber: CompressionChamber,
     apu_bleed_air_valve: DefaultValve,
 
-    green_hydraulic_reservoir_with_valve: PneumaticContainerWithConnector<VariableVolumeContainer>,
-    blue_hydraulic_reservoir_with_valve: PneumaticContainerWithConnector<VariableVolumeContainer>,
-    yellow_hydraulic_reservoir_with_valve: PneumaticContainerWithConnector<VariableVolumeContainer>,
+    green_hydraulic_reservoir_with_valve:
+        PressurisedReservoirWithExhaustValve<VariableVolumeContainer>,
+    blue_hydraulic_reservoir_with_valve:
+        PressurisedReservoirWithExhaustValve<VariableVolumeContainer>,
+    yellow_hydraulic_reservoir_with_valve:
+        PressurisedReservoirWithExhaustValve<VariableVolumeContainer>,
 
     packs: [PackComplex; 2],
 }
@@ -150,26 +153,35 @@ impl A320Pneumatic {
             ],
             apu_compression_chamber: CompressionChamber::new(Volume::new::<cubic_meter>(5.)),
             apu_bleed_air_valve: DefaultValve::new_closed(),
-            green_hydraulic_reservoir_with_valve: PneumaticContainerWithConnector::new(
+            green_hydraulic_reservoir_with_valve: PressurisedReservoirWithExhaustValve::new(
+                HydraulicColor::Green,
                 VariableVolumeContainer::new(
-                    Volume::new::<gallon>(8.),
-                    Pressure::new::<psi>(14.7),
+                    Volume::new::<gallon>(2.5),
+                    Pressure::new::<psi>(43.5),
                     ThermodynamicTemperature::new::<degree_celsius>(15.),
                 ),
+                Pressure::new::<psi>(70.),
+                6e-2,
             ),
-            blue_hydraulic_reservoir_with_valve: PneumaticContainerWithConnector::new(
+            blue_hydraulic_reservoir_with_valve: PressurisedReservoirWithExhaustValve::new(
+                HydraulicColor::Blue,
                 VariableVolumeContainer::new(
-                    Volume::new::<gallon>(15.),
-                    Pressure::new::<psi>(14.7),
+                    Volume::new::<gallon>(1.1),
+                    Pressure::new::<psi>(42.1),
                     ThermodynamicTemperature::new::<degree_celsius>(15.),
                 ),
+                Pressure::new::<psi>(70.),
+                6e-2,
             ),
-            yellow_hydraulic_reservoir_with_valve: PneumaticContainerWithConnector::new(
+            yellow_hydraulic_reservoir_with_valve: PressurisedReservoirWithExhaustValve::new(
+                HydraulicColor::Yellow,
                 VariableVolumeContainer::new(
-                    Volume::new::<gallon>(10.),
-                    Pressure::new::<psi>(14.7),
+                    Volume::new::<gallon>(1.7),
+                    Pressure::new::<psi>(45.4),
                     ThermodynamicTemperature::new::<degree_celsius>(15.),
                 ),
+                Pressure::new::<psi>(70.),
+                6e-2,
             ),
             packs: [PackComplex::new(context, 1), PackComplex::new(context, 2)],
         }
@@ -301,6 +313,10 @@ impl SimulationElement for A320Pneumatic {
         accept_iterable!(self.engine_systems, visitor);
         accept_iterable!(self.packs, visitor);
 
+        self.blue_hydraulic_reservoir_with_valve.accept(visitor);
+        self.yellow_hydraulic_reservoir_with_valve.accept(visitor);
+        self.green_hydraulic_reservoir_with_valve.accept(visitor);
+
         visitor.visit(self);
     }
 
@@ -313,6 +329,19 @@ impl SimulationElement for A320Pneumatic {
             &self.apu_bleed_air_valve_open_id,
             self.apu_bleed_air_valve.is_open(),
         );
+    }
+}
+impl ReservoirAirPressure for A320Pneumatic {
+    fn green_reservoir_pressure(&self) -> Pressure {
+        self.green_hydraulic_reservoir_with_valve.pressure()
+    }
+
+    fn blue_reservoir_pressure(&self) -> Pressure {
+        self.blue_hydraulic_reservoir_with_valve.pressure()
+    }
+
+    fn yellow_reservoir_pressure(&self) -> Pressure {
+        self.yellow_hydraulic_reservoir_with_valve.pressure()
     }
 }
 
@@ -750,7 +779,7 @@ impl EngineBleedAirSystem {
                 Pressure::new::<psi>(14.7),
                 ThermodynamicTemperature::new::<degree_celsius>(15.),
             ),
-            engine_starter_exhaust: PneumaticExhaust::new(3e-2),
+            engine_starter_exhaust: PneumaticExhaust::new(3e-2, 3e-2, Pressure::new::<psi>(0.)),
             engine_starter_valve: DefaultValve::new_closed(),
             precooler: Precooler::new(5.),
         }
@@ -1053,7 +1082,7 @@ impl PackComplex {
                 Pressure::new::<psi>(14.7),
                 ThermodynamicTemperature::new::<degree_celsius>(15.),
             ),
-            exhaust: PneumaticExhaust::new(0.3),
+            exhaust: PneumaticExhaust::new(0.3, 0.3, Pressure::new::<psi>(0.)),
             pack_flow_valve: DefaultValve::new_closed(),
             pack_flow_valve_controller: PackFlowValveController::new(context, engine_number),
         }

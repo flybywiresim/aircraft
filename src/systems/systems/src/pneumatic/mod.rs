@@ -1,9 +1,12 @@
 use crate::{
+    failures::{Failure, FailureType},
     pneumatic::valve::*,
-    shared::{ControllerSignal, EngineCorrectedN1, EngineCorrectedN2, PneumaticValve},
+    shared::{
+        ControllerSignal, EngineCorrectedN1, EngineCorrectedN2, HydraulicColor, PneumaticValve,
+    },
     simulation::{
-        InitContext, Read, Reader, SimulationElement, SimulatorReader, SimulatorWriter,
-        UpdateContext, VariableIdentifier, Write, Writer,
+        InitContext, Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
+        SimulatorWriter, UpdateContext, VariableIdentifier, Write, Writer,
     },
 };
 
@@ -316,7 +319,7 @@ impl Precooler {
         Self {
             coefficient,
             internal_connector: PneumaticContainerConnector::new(),
-            exhaust: PneumaticExhaust::new(3.),
+            exhaust: PneumaticExhaust::new(3., 3., Pressure::new::<psi>(0.)),
         }
     }
 
@@ -384,7 +387,82 @@ impl PneumaticContainer for VariableVolumeContainer {
     }
 }
 
-pub struct PneumaticContainerWithConnector<T: PneumaticContainer> {
+pub struct PressurisedReservoirWithExhaustValve<T: PneumaticContainer> {
+    reservoir: PneumaticContainerWithConnector<T>,
+    preloaded_relief_valve: PneumaticExhaust,
+
+    leak_failure: Failure,
+}
+impl<T: PneumaticContainer> PressurisedReservoirWithExhaustValve<T> {
+    const LEAK_FAILURE_MULTIPLIER: f64 = 500.;
+
+    pub fn new(
+        hyd_loop_id: HydraulicColor,
+        container: T,
+        preload: Pressure,
+        valve_speed: f64,
+    ) -> Self {
+        Self {
+            reservoir: PneumaticContainerWithConnector::<T>::new(container),
+            preloaded_relief_valve: PneumaticExhaust::new(
+                valve_speed,
+                valve_speed * Self::LEAK_FAILURE_MULTIPLIER,
+                preload,
+            ),
+
+            leak_failure: Failure::new(FailureType::ReservoirAirLeak(hyd_loop_id)),
+        }
+    }
+
+    pub fn update_flow_through_valve(
+        &mut self,
+        context: &UpdateContext,
+        connected_container: &mut impl PneumaticContainer,
+    ) {
+        self.reservoir
+            .update_flow_through_valve(context, connected_container);
+
+        self.preloaded_relief_valve
+            .update_move_fluid(context, self.reservoir.container());
+
+        self.update_leak_failure();
+    }
+
+    fn update_leak_failure(&mut self) {
+        if !self.leak_failure.is_active() {
+            self.preloaded_relief_valve.set_leaking(false);
+        } else {
+            self.preloaded_relief_valve.set_leaking(true);
+        }
+    }
+
+    pub fn container(&mut self) -> &mut T {
+        self.reservoir.container()
+    }
+
+    pub fn pressure(&self) -> Pressure {
+        self.reservoir.pressure()
+    }
+
+    #[cfg(test)]
+    pub fn temperature(&self) -> ThermodynamicTemperature {
+        self.reservoir.temperature()
+    }
+}
+impl PressurisedReservoirWithExhaustValve<VariableVolumeContainer> {
+    pub fn change_spatial_volume(&mut self, new_volume: Volume) {
+        self.reservoir.change_spatial_volume(new_volume);
+    }
+}
+impl SimulationElement for PressurisedReservoirWithExhaustValve<VariableVolumeContainer> {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.leak_failure.accept(visitor);
+
+        visitor.visit(self);
+    }
+}
+
+struct PneumaticContainerWithConnector<T: PneumaticContainer> {
     container: T,
     connector: PurelyPneumaticValve,
 }
@@ -812,6 +890,27 @@ mod tests {
 
         assert_eq!(container.volume(), Volume::new::<gallon>(8.));
         assert!(container.pressure() > Pressure::new::<psi>(14.7));
+    }
+
+    #[test]
+    fn pressurised_reservoir_behaves_like_open_valve() {
+        let mut source = quick_container(1., 20., 15.);
+        let mut container_with_valve = PressurisedReservoirWithExhaustValve::new(
+            HydraulicColor::Green,
+            quick_container(1., 10., 15.),
+            Pressure::new::<psi>(0.),
+            1e-2,
+        );
+
+        let context = context(Duration::from_secs(1), Length::new::<foot>(0.));
+
+        container_with_valve.update_flow_through_valve(&context, &mut source);
+
+        assert!(source.pressure().get::<psi>() < 20.);
+        assert!(source.temperature().get::<degree_celsius>() < 15.);
+
+        assert!(container_with_valve.pressure().get::<psi>() > 10.);
+        assert!(container_with_valve.temperature().get::<degree_celsius>() > 15.);
     }
 
     #[test]

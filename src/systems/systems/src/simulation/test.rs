@@ -384,7 +384,7 @@ impl<T: Aircraft> TestBed for SimulationTestBed<T> {
     }
 }
 impl<T: SimulationElement> SimulationTestBed<TestAircraft<T>> {
-    pub fn command_element<V: FnOnce(&mut T)>(&mut self, func: V) {
+    pub fn command_element<V: FnOnce(&mut T) -> W, W>(&mut self, func: V) -> W {
         (func)(self.aircraft_mut().element_mut())
     }
 

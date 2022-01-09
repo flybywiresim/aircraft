@@ -77,30 +77,22 @@ impl PidController {
     }
 
     pub fn next_control_output(&mut self, measurement: f64, delta_time: Option<Duration>) -> f64 {
-        let mut dt = 1.;
-        if let Some(delta) = delta_time {
-            dt = delta.as_secs_f64();
-        }
+        let dt = delta_time.map(|d| d.as_secs_f64()).unwrap_or(1.);
 
         let error = self.setpoint - measurement;
-
-        let mut p_term = error * self.kp;
-        if let Some(error_k_1) = self.error_k_1 {
-            p_term -= error_k_1 * self.kp;
-        }
-
+        let p_term = (error - self.error_k_1.unwrap_or(0.)) * self.kp;
         let i_term = error * self.ki * dt;
 
-        let mut d_term = 0.;
-        if self.error_k_2.is_some() && self.error_k_1.is_some() {
-            d_term =
-                (error - 2. * self.error_k_1.unwrap() + self.error_k_2.unwrap()) * self.kd / dt;
-        }
+        let d_term = self
+            .error_k_1
+            .zip(self.error_k_2)
+            .map(|(error_k_1, error_k_2)| (error - 2. * error_k_1 + error_k_2) * self.kd / dt)
+            .unwrap_or(0.);
 
         let unbound_output = self.output + (p_term + i_term + d_term) * self.output_gain;
 
         // Limiting output to configured bounds
-        self.output = unbound_output.max(self.min_output).min(self.max_output);
+        self.output = unbound_output.clamp(self.min_output, self.max_output);
 
         self.update_error(error);
 
@@ -108,8 +100,7 @@ impl PidController {
     }
 
     fn update_error(&mut self, error: f64) {
-        self.error_k_2 = self.error_k_1;
-        self.error_k_1 = Some(error);
+        self.error_k_2 = self.error_k_1.replace(error);
     }
 
     fn reset_error(&mut self) {

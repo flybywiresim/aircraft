@@ -15,6 +15,7 @@ use msfs::{
 
 use systems::{
     failures::FailureType,
+    shared::HydraulicColor,
     simulation::{VariableIdentifier, VariableRegistry},
 };
 use systems_wasm::{
@@ -55,6 +56,27 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
                 (24_000, FailureType::TransformerRectifier(1)),
                 (24_001, FailureType::TransformerRectifier(2)),
                 (24_002, FailureType::TransformerRectifier(3)),
+                (29_000, FailureType::ReservoirLeak(HydraulicColor::Green)),
+                (29_001, FailureType::ReservoirLeak(HydraulicColor::Blue)),
+                (29_002, FailureType::ReservoirLeak(HydraulicColor::Yellow)),
+                (29_003, FailureType::ReservoirAirLeak(HydraulicColor::Green)),
+                (29_004, FailureType::ReservoirAirLeak(HydraulicColor::Blue)),
+                (
+                    29_005,
+                    FailureType::ReservoirAirLeak(HydraulicColor::Yellow),
+                ),
+                (
+                    29_006,
+                    FailureType::ReservoirReturnLeak(HydraulicColor::Green),
+                ),
+                (
+                    29_007,
+                    FailureType::ReservoirReturnLeak(HydraulicColor::Blue),
+                ),
+                (
+                    29_008,
+                    FailureType::ReservoirReturnLeak(HydraulicColor::Yellow),
+                ),
             ])
             .provides_aircraft_variable("ACCELERATION BODY X", "feet per second squared", 0)?
             .provides_aircraft_variable("ACCELERATION BODY Y", "feet per second squared", 0)?
@@ -421,11 +443,11 @@ impl SimulatorAspect for Flaps {
         self.write_sim_vars();
 
         sim_connect
-            .set_data_on_sim_object(SIMCONNECT_OBJECT_ID_USER, &self.msfs_flaps_handle_index);
+            .set_data_on_sim_object(SIMCONNECT_OBJECT_ID_USER, &self.msfs_flaps_handle_index)?;
         sim_connect
-            .set_data_on_sim_object(SIMCONNECT_OBJECT_ID_USER, &self.flaps_surface_sim_object);
+            .set_data_on_sim_object(SIMCONNECT_OBJECT_ID_USER, &self.flaps_surface_sim_object)?;
         sim_connect
-            .set_data_on_sim_object(SIMCONNECT_OBJECT_ID_USER, &self.slats_surface_sim_object);
+            .set_data_on_sim_object(SIMCONNECT_OBJECT_ID_USER, &self.slats_surface_sim_object)?;
 
         Ok(())
     }
@@ -1119,7 +1141,7 @@ impl SimulatorAspect for NoseWheelSteering {
         }
     }
 
-    fn pre_tick(&mut self, delta: Duration) {
+    fn pre_tick(&mut self, _: Duration) {
         self.synchronise_with_sim();
     }
 
