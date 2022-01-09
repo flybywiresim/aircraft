@@ -61,7 +61,6 @@ class CDUAtcDepartReq {
         if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident) {
             mcdu.pdcMessage.Origin = mcdu.flightPlanManager.getOrigin().ident;
             mcdu.pdcMessage.Destination = mcdu.flightPlanManager.getDestination().ident;
-
             fromTo = mcdu.pdcMessage.Origin + "/" + mcdu.pdcMessage.Destination + "[color]cyan";
         }
 
