@@ -92,7 +92,7 @@ const A1A2Cell = () => {
     case 1:
         return (
             <g>
-                <path className="NormalStroke White" d="m24.023 1.8143v13.506h-15.048v-13.506z" />
+                <path className="NormalStroke White" d="m25.114 1.8143v13.506h-16.952v-13.506z" />
                 <text className="FontMedium MiddleAlign White" x="16.782249" y="7.1280665">MAN</text>
                 <text className="FontMedium MiddleAlign White" x="16.869141" y="14.351689">TOGA</text>
             </g>
@@ -100,7 +100,7 @@ const A1A2Cell = () => {
     case 2:
         return (
             <g>
-                <path className="NormalStroke White" d="m29.776 1.8143v13.506h-26.414v-13.506z" />
+                <path className="NormalStroke White" d="m31.521 1.8143v13.506h-30.217v-13.506z" />
                 <text className="FontMedium MiddleAlign White" x="16.782249" y="7.1280665">MAN</text>
                 <text className="FontMedium MiddleAlign White" x="16.869141" y="14.351689">GA SOFT</text>
             </g>
@@ -122,7 +122,7 @@ const A1A2Cell = () => {
     case 4:
         return (
             <g>
-                <path className="NormalStroke White" d="m23.172 1.8143v13.506h-12.99v-13.506z" />
+                <path className="NormalStroke White" d="m25.114 1.8143v13.506h-16.952v-13.506z" />
                 <text className="FontMedium MiddleAlign White" x="16.782249" y="7.1280665">MAN</text>
                 <text className="FontMedium MiddleAlign White" x="16.869141" y="14.351689">DTO</text>
             </g>
@@ -130,7 +130,7 @@ const A1A2Cell = () => {
     case 5:
         return (
             <g>
-                <path className="NormalStroke White" d="m23.172 1.8143v13.506h-12.99v-13.506z" />
+                <path className="NormalStroke White" d="m25.114 1.8143v13.506h-16.952v-13.506z" />
                 <text className="FontMedium MiddleAlign White" x="16.782249" y="7.1280665">MAN</text>
                 <text className="FontMedium MiddleAlign White" x="16.869141" y="14.351689">MCT</text>
             </g>
@@ -138,7 +138,7 @@ const A1A2Cell = () => {
     case 6:
         return (
             <g>
-                <path className="NormalStroke Amber" d="m23.172 1.8143v13.506h-12.99v-13.506z" />
+                <path className="NormalStroke Amber" d="m25.114 1.8143v13.506h-16.952v-13.506z" />
                 <text className="FontMedium MiddleAlign White" x="16.782249" y="7.1280665">MAN</text>
                 <text className="FontMedium MiddleAlign White" x="16.869141" y="14.351689">THR</text>
             </g>
