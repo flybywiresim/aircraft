@@ -1,4 +1,18 @@
 class CDUAocDepartReq {
+    static resetStation(mcdu) {
+        console.log('RESET');
+        mcdu.pdcMessage.Station = "";
+        mcdu.scratchpad.setText("NO ACTIVE ATC");
+        CDUAocDepartReq.ShowPage1(mcdu);
+    }
+
+    static errorStation(mcdu) {
+        console.log('ERROR');
+        mcdu.pdcMessage.Station = "";
+        mcdu.scratchpad.setText("COM UNAVAILABLE");
+        CDUAocDepartReq.ShowPage1(mcdu);
+    }
+
     static ShowPage1(mcdu) {
         mcdu.clearDisplay();
 
@@ -39,11 +53,13 @@ class CDUAocDepartReq {
                     }
 
                     return /^[A-Z()]*$/.test(value);
-                    //return true === isNaN(value) && "+" !== value && "-" !== value && "/" !== value;
                 })
             },
             (value) => {
-                mcdu.pdcMessage.Station = value;
+                if (value.length === 4 && /^[A-Z()]*$/.test(value) === true) {
+                    mcdu.atsuManager.getConnector().isStationAvailable(value, mcdu, CDUAocDepartReq.resetStation, CDUAocDepartReq.errorStation);
+                    mcdu.pdcMessage.Station = value;
+                }
                 CDUAocDepartReq.ShowPage1(mcdu);
             }
         );
@@ -132,7 +148,7 @@ class CDUAocDepartReq {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onRightInput[5] = (value, scratchpadCallback) => {
-            if ("" === mcdu.pdcMessage.Callsign || "" === mcdu.pdcMessage.Origin || "" === mcdu.pdcMessage.Destination || 1 !== mcdu.pdcMessage.Atis.length) {
+            if (mcdu.pdcMessage.Callsign === "" || mcdu.pdcMessage.Origin === "" || mcdu.pdcMessage.Destination === "" || mcdu.pdcMessage.Atis === "" || mcdu.pdcMessage.Station === "") {
                 mcdu.scratchpad.setText("ENTER MANDATORY FIELDS");
                 scratchpadCallback();
                 return;
