@@ -12,8 +12,6 @@ export class AocSystem {
 
     private messageQueue : AtsuMessage[] = [];
 
-    private messageSendQueue : number[] = [];
-
     private listener = RegisterViewListener('JS_LISTENER_SIMVARS');
 
     constructor(connector: HoppieConnector) {
@@ -32,18 +30,62 @@ export class AocSystem {
         this.messageQueue.unshift(message);
     }
 
-    public sendMessage(uid: number): AtsuMessage {
-        let message : AtsuMessage = undefined;
+    private async sendFbwTelexMessage(index: number) {
+        const content = this.messageQueue[index].Lines.join(';');
+        NXApi.sendTelexMessage(this.messageQueue[index].Station, content).then(() => {
+            this.messageQueue[index].ComStatus = AtsuMessageComStatus.Sent;
+            return Promise.resolve();
+        }).catch(() => {
+            this.messageQueue[index].ComStatus = AtsuMessageComStatus.Failed;
+            return Promise.reject(Error('COM UNAVAILABLE'));
+        });
+    }
 
+    private async sendHoppieTelexMessage(index: number) {
+        this.connector.sendTelexMessage(this.messageQueue[index]).then(() => {
+            this.messageQueue[index].ComStatus = AtsuMessageComStatus.Sent;
+            if (this.messageQueue[index].Type === AtsuMessageType.PDC) {
+                this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', this.messageQueue[index]);
+            }
+            return Promise.resolve();
+        }).catch((err) => {
+            this.messageQueue[index].ComStatus = AtsuMessageComStatus.Failed;
+            return Promise.reject(Error(err.message));
+        });
+    }
+
+    private async sendTelexMessage(index: number) {
+        if (SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') === 1) {
+            return this.sendHoppieTelexMessage(index);
+        }
+        if (NXApi.hasTelexConnection() === true && NXDataStore.get('CONFIG_ONLINE_FEATURES_STATUS', 'DISABLED') === 'ENABLED') {
+            return this.sendFbwTelexMessage(index);
+        }
+        this.messageQueue[index].ComStatus = AtsuMessageComStatus.Failed;
+        return Promise.reject(Error('COM UNAVAILABLE'));
+    }
+
+    private async sendPdcMessage(index: number) {
+        this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', this.messageQueue[index]);
+        if (SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') === 1) {
+            return this.sendHoppieTelexMessage(index);
+        }
+        this.messageQueue[index].ComStatus = AtsuMessageComStatus.Failed;
+        return Promise.reject(Error('COM UNAVAILABLE'));
+    }
+
+    public async sendMessage(uid: number) {
         const index = this.messageQueue.findIndex((element) => element.UniqueMessageID === uid);
         if (index !== -1) {
             this.messageQueue[index].ComStatus = AtsuMessageComStatus.Sending;
-            this.messageSendQueue.push(this.messageQueue[index].UniqueMessageID);
-            this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', this.messageQueue[index]);
-            message = this.messageQueue[index];
+            if (this.messageQueue[index].Type === AtsuMessageType.Freetext) {
+                return this.sendTelexMessage(index);
+            }
+            if (this.messageQueue[index].Type === AtsuMessageType.PDC) {
+                return this.sendPdcMessage(index);
+            }
         }
-
-        return message;
+        return Promise.reject(Error('INVALID MSG'));
     }
 
     public removeMessage(uid: number): boolean {
@@ -55,43 +97,12 @@ export class AocSystem {
         return index !== -1;
     }
 
-    public publishOutputMessages() {
-        this.messageSendQueue.forEach((uid) => {
-            const message = this.messageQueue.find((element) => element.UniqueMessageID === uid);
-            if (message !== undefined) {
-                this.connector.sendTelexMessage(message).then(() => {
-                    const index = this.messageQueue.findIndex((element) => element.UniqueMessageID === uid);
-                    if (index !== -1) {
-                        this.messageQueue[index].ComStatus = AtsuMessageComStatus.Sent;
-                        if (AocSystem.isDcduMessage(this.messageQueue[index]) === true) {
-                            this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', this.messageQueue[index]);
-                        }
-                    }
-                }).catch(() => {
-                    const index = this.messageQueue.findIndex((element) => element.UniqueMessageID === uid);
-                    if (index !== -1) {
-                        this.messageQueue[index].ComStatus = AtsuMessageComStatus.Failed;
-                        if (AocSystem.isDcduMessage(this.messageQueue[index]) === true) {
-                            this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', this.messageQueue[index]);
-                        }
-                    }
-                });
-            }
-        });
-
-        this.messageSendQueue = [];
-    }
-
     public messages() {
         return this.messageQueue;
     }
 
     public setOwnCallsign(callsign: string) {
         this.connector.setCallsign(callsign);
-    }
-
-    public async isRemoteStationAvailable(callsign: string) {
-        return this.connector.isStationAvailable(callsign);
     }
 }
 

@@ -24,20 +24,16 @@ export class AtsuManager {
         SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_DELETE', 'number', -1);
         SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_SEND', 'number', -1);
 
-        setInterval(() => {
+        setInterval(async () => {
             if (SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_DELETE', 'number') !== -1) {
                 this.removeMessage(SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_DELETE', 'number'));
                 SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_DELETE', 'number', -1);
             }
             if (SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_SEND', 'number') !== -1) {
-                this.sendMessage(SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_SEND', 'number'));
+                this.sendMessage(SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_SEND', 'number')).catch(() => {});
                 SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_SEND', 'number', -1);
             }
         }, 500);
-
-        setInterval(() => {
-            this.aocSystem.publishOutputMessages();
-        }, 10000);
     }
 
     public registerMessage(message: AtsuMessage) {
@@ -58,7 +54,7 @@ export class AtsuManager {
         return '';
     }
 
-    private sendMessage(uid: number) {
+    public async sendMessage(uid: number) {
         const message = this.aocSystem.sendMessage(uid);
         if (message !== undefined) {
             this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', message);
