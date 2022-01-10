@@ -485,9 +485,9 @@ const ATSUAOCPage = () => {
     const { simbriefUserId, setSimbriefUserId } = useContext(SimbriefUserIdContext);
     const [simbriefDisplay, setSimbriefDisplay] = useState(simbriefUserId);
 
-    const [hoppieSystem, setHoppieSystem] = usePersistentProperty('CONFIG_HOPPIE_SYSTEM', 'NONE');
     const [hoppieUserId, setHoppieUserId] = usePersistentProperty('CONFIG_HOPPIE_USERID');
     const [hoppieError, setHoppieError] = useState(false);
+    const [hoppieEnabled, setHoppieEnabled] = useState(SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') === 1 ? 'ENABLED' : 'DISABLED');
 
     function getSimbriefUserData(value: string): Promise<any> {
         const SIMBRIEF_URL = 'https://www.simbrief.com/api/xml.fetcher.php?json=1';
@@ -609,12 +609,6 @@ const ATSUAOCPage = () => {
         { name: 'NOAA', setting: 'NOAA' },
     ];
 
-    const hoppieSystemButtons: ButtonType[] = [
-        { name: 'NONE', setting: 'NONE' },
-        { name: 'IVAO', setting: 'IVAO' },
-        { name: 'VATSIM', setting: 'VATSIM' },
-    ];
-
     function handleTelexToggle(toggleValue: boolean) {
         if (toggleValue) {
             new PopUp().showPopUp(
@@ -627,6 +621,28 @@ const ATSUAOCPage = () => {
             );
         } else {
             setTelexEnabled('DISABLED');
+        }
+    }
+
+    function handleHoppieToggle(toggleValue: boolean) {
+        if (toggleValue) {
+            if (hoppieUserId === '') {
+                new PopUp().showPopUp(
+                    'HOPPIE WARNING',
+                    'Hoppie system requires a user ID which can be requested. Please go to http://www.hoppie.nl/acars/ for further information',
+                    'small',
+                    () => {
+                        SimVar.SetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number', 1); setHoppieEnabled('ENABLED');
+                    },
+                    () => {},
+                );
+            } else {
+                SimVar.SetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number', 1);
+                setHoppieEnabled('ENABLED');
+            }
+        } else {
+            SimVar.SetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number', 0);
+            setHoppieEnabled('DISABLED');
         }
     }
 
@@ -697,20 +713,6 @@ const ATSUAOCPage = () => {
                 </div>
             </div>
             <div className="py-4 flex flex-row justify-between items-center">
-                <span className="text-lg text-gray-300">Hoppie Online Network</span>
-                <SelectGroup>
-                    {hoppieSystemButtons.map((button) => (
-                        <SelectItem
-                            enabled
-                            onSelect={() => setHoppieSystem(button.setting)}
-                            selected={hoppieSystem === button.setting}
-                        >
-                            {button.name}
-                        </SelectItem>
-                    ))}
-                </SelectGroup>
-            </div>
-            <div className="py-4 flex flex-row justify-between items-center">
                 <span className="text-lg text-gray-300">
                     Hoppie User ID
                     <span className={`${!hoppieError && 'hidden'} text-red-600`}>
@@ -727,6 +729,10 @@ const ATSUAOCPage = () => {
                         onChange={(value) => setHoppieUserId(value)}
                     />
                 </div>
+            </div>
+            <div className="py-4 flex flex-row justify-between items-center">
+                <span className="text-lg text-gray-300">Use Hoppie system</span>
+                <Toggle value={hoppieEnabled === 'ENABLED'} onToggle={(toggleValue) => handleHoppieToggle(toggleValue)} />
             </div>
         </div>
     );

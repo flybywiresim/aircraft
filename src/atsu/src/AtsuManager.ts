@@ -25,6 +25,7 @@ export class AtsuManager {
     constructor() {
         SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_DELETE', 'number', -1);
         SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_SEND', 'number', -1);
+        SimVar.SetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number', 0);
 
         setInterval(() => {
             if (SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_DELETE', 'number') !== -1) {
