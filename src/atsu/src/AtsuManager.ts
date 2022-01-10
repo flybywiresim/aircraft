@@ -119,8 +119,12 @@ export class AtsuManager {
         return this.aocMessageQueue;
     }
 
-    public getConnector() {
-        return this.connector;
+    public setOwnCallsign(callsign: string) {
+        this.connector.setCallsign(callsign);
+    }
+
+    public async isRemoteStationAvailable(callsign: string) {
+        return this.connector.isStationAvailable(callsign);
     }
 }
 

@@ -102,10 +102,10 @@ class CDUAocDepartReq {
                 mcdu.scratchpad.setText("ENTER ATC FLT NBR");
                 scratchpadCallback();
             } else {
-                mcdu.atsuManager.getConnector().setCallsign(SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC"));
+                mcdu.atsuManager.setOwnCallsign(SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC"));
                 mcdu.pdcMessage.Station = value;
 
-                mcdu.atsuManager.getConnector().isStationAvailable(value).then(
+                mcdu.atsuManager.isRemoteStationAvailable(value).then(
                     (_resolve) => { },
                     (reject) => {
                         mcdu.scratchpad.setText('COM UNAVAILABLE');
