@@ -579,15 +579,17 @@ const ATSUAOCPage = () => {
     }
 
     function handleHoppieUsernameInput(value: string) {
-        validateHoppieUserId(value).then((response) => {
-            setHoppieUserId(response);
-            setHoppieError(false);
-        }).catch(() => {
-            setHoppieError(true);
-            setTimeout(() => {
+        if (value !== '') {
+            validateHoppieUserId(value).then((response) => {
+                setHoppieUserId(response);
                 setHoppieError(false);
-            }, 4000);
-        });
+            }).catch(() => {
+                setHoppieError(true);
+                setTimeout(() => {
+                    setHoppieError(false);
+                }, 4000);
+            });
+        }
     }
 
     const atisSourceButtons: ButtonType[] = [
