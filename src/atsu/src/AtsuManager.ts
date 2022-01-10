@@ -42,30 +42,28 @@ export class AtsuManager {
                 if (entry.type === 'AOC') {
                     const message = this.aocMessageQueue.find((element) => element.UniqueMessageID === entry.uid);
                     if (message !== undefined) {
-                        this.connector.sendTelexMessage(message.Station, message.UniqueMessageID, message.serialize(), this.aocMessageSentSuccessful.bind(this),
-                            this.aocMmessageSentFailed.bind(this));
+                        this.connector.sendTelexMessage(message).then(
+                            (_resolve) => {
+                                const index = this.aocMessageQueue.findIndex((element) => element.UniqueMessageID === entry.uid);
+                                if (index !== -1) {
+                                    this.aocMessageQueue[index].ComStatus = AtsuMessageComStatus.Sent;
+                                    this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', this.aocMessageQueue[index]);
+                                }
+                            },
+                            (_reject) => {
+                                const index = this.aocMessageQueue.findIndex((element) => element.UniqueMessageID === entry.uid);
+                                if (index !== -1) {
+                                    this.aocMessageQueue[index].ComStatus = AtsuMessageComStatus.Failed;
+                                    this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', this.aocMessageQueue[index]);
+                                }
+                            },
+                        );
                     }
                 }
             });
 
             this.messageSendQueue = [];
         }, 10000);
-    }
-
-    private aocMessageSentSuccessful(uid: number) {
-        const index = this.aocMessageQueue.findIndex((element) => element.UniqueMessageID === uid);
-        if (index !== -1) {
-            this.aocMessageQueue[index].ComStatus = AtsuMessageComStatus.Sent;
-            this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', this.aocMessageQueue[index]);
-        }
-    }
-
-    private aocMmessageSentFailed(uid: number) {
-        const index = this.aocMessageQueue.findIndex((element) => element.UniqueMessageID === uid);
-        if (index !== -1) {
-            this.aocMessageQueue[index].ComStatus = AtsuMessageComStatus.Failed;
-            this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', this.aocMessageQueue[index]);
-        }
     }
 
     public registerPdcMessage(message: PreDepartureClearance) {

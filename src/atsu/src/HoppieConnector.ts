@@ -2,6 +2,7 @@
 //  SPDX-License-Identifier: GPL-3.0
 
 import { NXDataStore } from '@shared/persistence';
+import { AtsuMessage } from './AtsuMessage';
 
 /**
  * Defines the connector to the hoppies network
@@ -48,27 +49,31 @@ export class HoppieConnector {
         this.callsign = callsign;
     }
 
-    public async sendTelexMessage(station: string, uid: number, message: string, sent: (uid: number) => void, failed: (uid: number) => void) {
+    public async sendTelexMessage(message: AtsuMessage) {
         const data = [
             `logon=${NXDataStore.get('CONFIG_HOPPIE_USERID', '')}`,
             `from=${this.callsign}`,
-            `to=${station}`,
+            `to=${message.Station}`,
             'type=TELEX',
-            `packet=${encodeURIComponent(message)}`,
+            `packet=${encodeURIComponent(message.serialize())}`,
         ];
         const postData = data.join('&');
 
-        fetch(HoppieConnector.corsProxyUrl + HoppieConnector.hoppieUrl,
+        return fetch(HoppieConnector.corsProxyUrl + HoppieConnector.hoppieUrl,
             {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: postData,
-            }).then((response) => response.text().then((content) => {
-            if (content === 'ok') {
-                sent(uid);
-            } else {
-                failed(uid);
+            }).then((response) => {
+            if (response.ok === true) {
+                return response.text().then((content) => {
+                    if (content === 'ok') {
+                        return Promise.resolve('');
+                    }
+                    return Promise.reject(Error('COM UNAVAILABLE'));
+                });
             }
-        }));
+            return Promise.reject(Error('COM UNAVAILABLE'));
+        }).catch(() => Promise.reject(Error('COM UNAVAILABLE')));
     }
 }
