@@ -9,7 +9,7 @@ export enum AtsuMessageDirection {
 }
 
 export enum AtsuMessageType {
-    Telex,
+    Freetext,
     PDC
 }
 
