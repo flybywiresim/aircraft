@@ -108,7 +108,7 @@ class CDUAocDepartReq {
                 mcdu.atsuManager.isRemoteStationAvailable(value).then(
                     (_resolve) => { },
                     (reject) => {
-                        mcdu.scratchpad.setText('COM UNAVAILABLE');
+                        mcdu.scratchpad.setText(reject.message);
                         mcdu.pdcMessage.Station = "";
                         CDUAocDepartReq.ShowPage1(mcdu);
                         scratchpadCallback();
