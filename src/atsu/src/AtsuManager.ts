@@ -72,6 +72,9 @@ export class AtsuManager {
     }
 
     public async isRemoteStationAvailable(callsign: string) {
+        if (SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') !== 1) {
+            return Promise.reject(Error('HOPPIE DISABLED'));
+        }
         return this.connector.isStationAvailable(callsign);
     }
 }
