@@ -632,11 +632,20 @@ const ATSUAOCPage = () => {
                     'Hoppie system requires a user ID which can be requested. Please go to http://www.hoppie.nl/acars/ for further information',
                     'small',
                     () => {
-                        SimVar.SetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number', 1); setHoppieEnabled('ENABLED');
+                        SimVar.SetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number', 0); setHoppieEnabled('DISABLED');
                     },
                     () => {},
                 );
             } else {
+                if (telexEnabled === 'ENABLED') {
+                    new PopUp().showPopUp(
+                        'HOPPIE WARNING',
+                        'Telex is enabled. The activation of Hoppies sends Telex messages only via the Hoppie system.',
+                        'small',
+                        () => {},
+                        () => {},
+                    );
+                }
                 SimVar.SetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number', 1);
                 setHoppieEnabled('ENABLED');
             }
