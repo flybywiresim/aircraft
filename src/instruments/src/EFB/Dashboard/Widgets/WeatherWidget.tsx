@@ -75,6 +75,26 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
         const getBaroTypeForAirport = (icao: string) => (['K', 'C', 'M', 'P', 'RJ', 'RO', 'TI', 'TJ'].some((r) => icao.startsWith(r)) ? 'IN HG' : 'HPA');
 
 
+    const getBaroValue = () => {
+        if (baroType === 'IN HG') {
+            return (
+                <>
+                    {metar.barometer.hg.toFixed(2)}
+                    {' '}
+                    inHg
+                </>
+            );
+        }
+
+        return (
+            <>
+                {metar.barometer.mb.toFixed(0)}
+                {' '}
+                mb
+            </>
+        );
+    };
+
     let [baroType] = usePersistentProperty('CONFIG_INIT_BARO_UNIT', 'HPA');
     let [metarSource] = usePersistentProperty('CONFIG_METAR_SRC', 'MSFS');
 
@@ -141,20 +161,7 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
                                 <div className="flex justify-center">
                                     <IconGauge className="mb-2" size={35} stroke={1.5} strokeLinejoin="miter" />
                                 </div>
-                                {metar.barometer ? baroType === 'IN HG'? (
-                                    <>
-                                        {metar.barometer.hg.toFixed(2)}
-                                        {' '}
-                                        inHg
-                                    </>
-                                ) : (
-                                    <>
-                                        {metar.barometer.mb.toFixed(0)}
-                                        {' '}
-                                        mb
-                                    </>
-                                )
-                                : 'N/A'}
+                                {metar.barometer ? (getBaroValue(baroType)) : 'N/A'}
                             </div>
                             <div className="text-lg text-center">
                                 <div className="flex justify-center">
