@@ -780,15 +780,18 @@ const E2Cell = () => {
 const E3Cell = () => {
     const status = getSimVar('L:A32NX_AUTOTHRUST_STATUS', 'enum');
 
-    let color: string;
+    let style: string;
+    let yPos: number;
     let id = 0;
     switch (status) {
     case 1:
-        color = 'Cyan';
+        style = 'FontSmall Cyan';
+        yPos = 21.253048;
         id = 1;
         break;
     case 2:
-        color = 'White';
+        style = 'FontMedium White';
+        yPos = 21.753487;
         id = 2;
         break;
     default:
@@ -800,7 +803,7 @@ const E3Cell = () => {
             <ShowForSeconds timer={9} id={id}>
                 <path className="NormalStroke White" d="m135.32 16.329h20.81v6.0476h-20.81z" />
             </ShowForSeconds>
-            <text className={`FontMedium MiddleAlign ${color}`} x="145.87538" y="21.753487">A/THR</text>
+            <text className={`MiddleAlign ${style}`} x="145.87538" y={yPos}>A/THR</text>
         </g>
     );
 };
