@@ -72,9 +72,8 @@ type WeatherWidgetProps = { name: string, editIcao: string, icao: string};
 const WeatherWidget = (props: WeatherWidgetProps) => {
     const [metar, setMetar] = useState<MetarParserType>(MetarParserTypeProp);
 
-    const getBaroTypeForAirport = (icao: string) => {
-        return ["K", "C", "M", "P", "RJ", "RO", "TI", "TJ"].some(r => icao.startsWith(r)) ? "IN HG" : "HPA"
-    };
+        const getBaroTypeForAirport = (icao: string) => (['K', 'C', 'M', 'P', 'RJ', 'RO', 'TI', 'TJ'].some((r) => icao.startsWith(r)) ? 'IN HG' : 'HPA');
+
 
     let [baroType] = usePersistentProperty('CONFIG_INIT_BARO_UNIT', 'HPA');
     let [metarSource] = usePersistentProperty('CONFIG_METAR_SRC', 'MSFS');
