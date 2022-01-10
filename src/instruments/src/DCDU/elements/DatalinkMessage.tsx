@@ -1,5 +1,5 @@
 import React, { useState, memo } from 'react';
-import { AtsuMessage, AtsuMessageComStatus, AtsuMessageDirection } from '@atsu/AtsuMessage';
+import { AtsuMessage, AtsuMessageComStatus, AtsuMessageDirection } from '@atsu/messages/AtsuMessage';
 import { useInteractionEvents } from '@instruments/common/hooks.js';
 
 type DatalinkMessageProps = {

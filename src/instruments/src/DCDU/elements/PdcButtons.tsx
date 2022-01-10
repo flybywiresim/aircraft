@@ -1,5 +1,5 @@
 import React, { memo } from 'react';
-import { AtsuMessage, AtsuMessageComStatus } from '@atsu/AtsuMessage';
+import { AtsuMessage, AtsuMessageComStatus } from '@atsu/messages/AtsuMessage';
 import { useUpdate } from '@instruments/common/hooks.js';
 import { Button } from './Button';
 
@@ -20,7 +20,7 @@ export const PdcButtons: React.FC<PdcButtonsProps> = memo(({ message, setStatus,
     });
 
     const clicked = (index: string) : void => {
-        if (message.ComStatus === undefined) {
+        if (message.ComStatus === AtsuMessageComStatus.Open || message.ComStatus === AtsuMessageComStatus.Failed) {
             if (index === 'L1') {
                 SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_DELETE', 'number', message.UniqueMessageID);
             } else if (index === 'R2') {

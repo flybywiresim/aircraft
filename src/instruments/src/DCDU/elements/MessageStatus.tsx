@@ -1,5 +1,5 @@
 import React, { memo, useEffect, useRef, useState } from 'react';
-import { AtsuMessageComStatus, AtsuMessageDirection, AtsuMessageResponseStatus, AtsuTimestamp } from '@atsu/AtsuMessage';
+import { AtsuMessageComStatus, AtsuMessageDirection, AtsuMessageResponseStatus, AtsuTimestamp } from '@atsu/messages/AtsuMessage';
 
 type MessageStatusProps = {
     timestamp: AtsuTimestamp | undefined,

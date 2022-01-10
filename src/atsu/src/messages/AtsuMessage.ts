@@ -43,7 +43,7 @@ export class AtsuMessage {
 
     public Station = '';
 
-    public ComStatus : AtsuMessageComStatus = undefined;
+    public ComStatus : AtsuMessageComStatus = AtsuMessageComStatus.Open;
 
     public Type : AtsuMessageType = undefined;
 

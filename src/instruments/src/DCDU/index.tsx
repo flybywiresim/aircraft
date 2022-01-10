@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import { useCoherentEvent, useInteractionEvents } from '@instruments/common/hooks';
-import { AtsuMessage, AtsuMessageComStatus, AtsuMessageType } from '@atsu/AtsuMessage';
-import { PdcMessage } from '@atsu/PdcMessage';
+import { AtsuMessage, AtsuMessageComStatus, AtsuMessageType } from '@atsu/messages/AtsuMessage';
+import { PdcMessage } from '@atsu/messages/PdcMessage';
 import { PdcButtons } from './elements/PdcButtons';
 import { render } from '../Common';
 import { SelfTest } from './pages/SelfTest';
