@@ -101,6 +101,10 @@ export class AocSystem {
         return this.messageQueue;
     }
 
+    public uidRegistered(uid: number) {
+        return this.messageQueue.findIndex((element) => uid === element.UniqueMessageID) !== -1;
+    }
+
     public setOwnCallsign(callsign: string) {
         this.connector.setCallsign(callsign);
     }

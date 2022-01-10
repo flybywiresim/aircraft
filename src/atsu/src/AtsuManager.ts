@@ -37,8 +37,8 @@ export class AtsuManager {
     }
 
     public registerMessage(message: AtsuMessage) {
-        if (SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_MAX_REACHED', 'boolean') === 1) {
-            return 'DCDU FILE FULL';
+        if (AocSystem.isDcduMessage(message) === true && SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_MAX_REACHED', 'boolean') === 1) {
+            return { msg: 'DCDU FILE FULL', uid: -1 };
         }
 
         message.UniqueMessageID = ++this.messageCounter;
@@ -47,18 +47,18 @@ export class AtsuManager {
         if (AocSystem.isRelevantMessage(message)) {
             this.aocSystem.registerMessage(message);
         } else {
-            return 'INVALID MSG';
+            return { msg: 'INVALID MSG', uid: -1 };
         }
 
         this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', message);
-        return '';
+        return { msg: '', uid: message.UniqueMessageID };
     }
 
     public async sendMessage(uid: number) {
-        const message = this.aocSystem.sendMessage(uid);
-        if (message !== undefined) {
-            this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', message);
+        if (this.aocSystem.uidRegistered(uid)) {
+            return this.aocSystem.sendMessage(uid);
         }
+        return Promise.reject(Error('UNKNOWN MSG'));
     }
 
     private removeMessage(uid: number) {

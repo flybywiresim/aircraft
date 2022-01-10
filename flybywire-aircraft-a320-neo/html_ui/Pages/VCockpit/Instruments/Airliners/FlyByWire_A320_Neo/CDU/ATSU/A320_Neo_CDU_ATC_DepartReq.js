@@ -117,9 +117,9 @@ class CDUAtcDepartReq {
             }
 
             // publish the message
-            const errorMsg = mcdu.atsuManager.registerMessage(mcdu.pdcMessage);
-            if (0 !== errorMsg.length) {
-                mcdu.scratchpad.setText(errorMsg);
+            const retval = mcdu.atsuManager.registerMessage(mcdu.pdcMessage);
+            if (retval.msg.length !== 0) {
+                mcdu.scratchpad.setText(retval.msg);
                 scratchpadCallback();
                 return;
             }
