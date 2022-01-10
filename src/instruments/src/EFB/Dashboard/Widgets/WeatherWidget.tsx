@@ -108,7 +108,7 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
             });
     }
 
-    if(baroType === "AUTO") {
+    if (baroType === 'AUTO') {
         baroType = getBaroTypeForAirport(props.icao);
     }
 
