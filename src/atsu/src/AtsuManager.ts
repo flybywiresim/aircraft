@@ -1,7 +1,8 @@
 //  Copyright (c) 2022 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import { AtsuMessage, AtsuMessageComStatus } from './messages/AtsuMessage';
+import { AocSystem } from './AocSystem';
+import { AtsuMessage } from './messages/AtsuMessage';
 import { AtsuTimestamp } from './messages/AtsuTimestamp';
 import { FreetextMessage } from './messages/FreetextMessage';
 import { HoppieConnector } from './HoppieConnector';
@@ -15,18 +16,13 @@ export class AtsuManager {
 
     private messageCounter = 0;
 
-    private aocMessageQueue : AtsuMessage[] = [];
-
-    private atcMessageQueue : AtsuMessage[] = [];
-
-    private messageSendQueue : { type: string, uid: number }[] = [];
+    private aocSystem = new AocSystem(this.connector);
 
     private listener = RegisterViewListener('JS_LISTENER_SIMVARS');
 
     constructor() {
         SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_DELETE', 'number', -1);
         SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_SEND', 'number', -1);
-        SimVar.SetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number', 0);
 
         setInterval(() => {
             if (SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_DELETE', 'number') !== -1) {
@@ -40,83 +36,39 @@ export class AtsuManager {
         }, 500);
 
         setInterval(() => {
-            this.messageSendQueue.forEach((entry) => {
-                if (entry.type === 'AOC') {
-                    const message = this.aocMessageQueue.find((element) => element.UniqueMessageID === entry.uid);
-                    if (message !== undefined) {
-                        this.connector.sendTelexMessage(message).then(
-                            (_resolve) => {
-                                const index = this.aocMessageQueue.findIndex((element) => element.UniqueMessageID === entry.uid);
-                                if (index !== -1) {
-                                    this.aocMessageQueue[index].ComStatus = AtsuMessageComStatus.Sent;
-                                    this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', this.aocMessageQueue[index]);
-                                }
-                            },
-                            (_reject) => {
-                                const index = this.aocMessageQueue.findIndex((element) => element.UniqueMessageID === entry.uid);
-                                if (index !== -1) {
-                                    this.aocMessageQueue[index].ComStatus = AtsuMessageComStatus.Failed;
-                                    this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', this.aocMessageQueue[index]);
-                                }
-                            },
-                        );
-                    }
-                }
-            });
-
-            this.messageSendQueue = [];
+            this.aocSystem.publishOutputMessages();
         }, 10000);
     }
 
-    public registerPdcMessage(message: PdcMessage) {
+    public registerMessage(message: AtsuMessage) {
         if (SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_MAX_REACHED', 'boolean') === 1) {
             return 'DCDU FILE FULL';
         }
 
         message.UniqueMessageID = ++this.messageCounter;
         message.Timestamp = new AtsuTimestamp();
-        this.aocMessageQueue.unshift(message);
-        this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', message);
 
+        if (AocSystem.isRelevantMessage(message)) {
+            this.aocSystem.registerMessage(message);
+        } else {
+            return 'INVALID MSG';
+        }
+
+        this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', message);
         return '';
     }
 
     private sendMessage(uid: number) {
-        let index = this.atcMessageQueue.findIndex((element) => element.UniqueMessageID === uid);
-        if (index !== -1) {
-            this.atcMessageQueue[index].ComStatus = AtsuMessageComStatus.Sending;
-            this.messageSendQueue.push({ type: 'ATC', uid: this.atcMessageQueue[index].UniqueMessageID });
-            this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', this.atcMessageQueue[index]);
-        }
-
-        index = this.aocMessageQueue.findIndex((element) => element.UniqueMessageID === uid);
-        if (index !== -1) {
-            this.aocMessageQueue[index].ComStatus = AtsuMessageComStatus.Sending;
-            this.messageSendQueue.push({ type: 'AOC', uid: this.aocMessageQueue[index].UniqueMessageID });
-            this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', this.aocMessageQueue[index]);
+        const message = this.aocSystem.sendMessage(uid);
+        if (message !== undefined) {
+            this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', message);
         }
     }
 
     private removeMessage(uid: number) {
-        let index = this.atcMessageQueue.findIndex((element) => element.UniqueMessageID === uid);
-        if (index !== -1) {
-            this.atcMessageQueue.splice(index, 1);
+        if (this.aocSystem.removeMessage(uid) === true) {
             this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG_REMOVE', uid);
         }
-
-        index = this.aocMessageQueue.findIndex((element) => element.UniqueMessageID === uid);
-        if (index !== -1) {
-            this.aocMessageQueue.splice(index, 1);
-            this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG_REMOVE', uid);
-        }
-    }
-
-    public atcMessages() {
-        return this.atcMessageQueue;
-    }
-
-    public aocMessages() {
-        return this.aocMessageQueue;
     }
 
     public setOwnCallsign(callsign: string) {
@@ -128,4 +80,4 @@ export class AtsuManager {
     }
 }
 
-export { AtsuMessage, AtsuTimestamp, FreetextMessage, PdcMessage };
+export { AtsuMessage, AtsuTimestamp, AocSystem, FreetextMessage, PdcMessage };

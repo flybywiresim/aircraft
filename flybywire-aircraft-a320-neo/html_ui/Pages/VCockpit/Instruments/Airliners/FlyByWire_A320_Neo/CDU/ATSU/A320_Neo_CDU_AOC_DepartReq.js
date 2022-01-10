@@ -147,7 +147,7 @@ class CDUAocDepartReq {
             }
 
             // publish the message
-            const errorMsg = mcdu.atsuManager.registerPdcMessage(mcdu.pdcMessage);
+            const errorMsg = mcdu.atsuManager.registerMessage(mcdu.pdcMessage);
             if (0 !== errorMsg.length) {
                 mcdu.scratchpad.setText(errorMsg);
                 scratchpadCallback();
