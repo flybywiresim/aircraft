@@ -4,7 +4,7 @@
 import { AtsuMessage, AtsuMessageComStatus } from './AtsuMessage';
 import { AtsuTimestamp } from './AtsuTimestamp';
 import { HoppieConnector } from './HoppieConnector';
-import { PreDepartureClearance } from './PreDepartureClearance';
+import { PdcMessage } from './PdcMessage';
 
 /**
  * Defines the ATSU manager
@@ -67,7 +67,7 @@ export class AtsuManager {
         }, 10000);
     }
 
-    public registerPdcMessage(message: PreDepartureClearance) {
+    public registerPdcMessage(message: PdcMessage) {
         if (SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_MAX_REACHED', 'boolean') === 1) {
             return 'DCDU FILE FULL';
         }
@@ -123,4 +123,4 @@ export class AtsuManager {
     }
 }
 
-export { PreDepartureClearance, AtsuMessage, AtsuTimestamp };
+export { PdcMessage, AtsuMessage, AtsuTimestamp };

@@ -1,6 +1,6 @@
-import { AtsuManager, PreDepartureClearance } from './AtsuManager';
+import { AtsuManager, PdcMessage } from './AtsuManager';
 
 export {
     AtsuManager,
-    PreDepartureClearance,
+    PdcMessage,
 };

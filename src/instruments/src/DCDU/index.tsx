@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import { useCoherentEvent, useInteractionEvents } from '@instruments/common/hooks';
 import { AtsuMessage, AtsuMessageComStatus, AtsuMessageType } from '@atsu/AtsuMessage';
-import { PreDepartureClearance } from '@atsu/PreDepartureClearance';
+import { PdcMessage } from '@atsu/PdcMessage';
 import { PdcButtons } from './elements/PdcButtons';
 import { render } from '../Common';
 import { SelfTest } from './pages/SelfTest';
@@ -136,7 +136,7 @@ const DCDU: React.FC = () => {
     useCoherentEvent('A32NX_DCDU_MSG', (serialized: any) => {
         let atsuMessage : AtsuMessage | undefined = undefined;
         if (serialized.Type === AtsuMessageType.PDC) {
-            atsuMessage = new PreDepartureClearance();
+            atsuMessage = new PdcMessage();
             atsuMessage.deserialize(serialized);
         }
 

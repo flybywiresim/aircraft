@@ -6,7 +6,7 @@ import { AtsuMessageType, AtsuMessageDirection, AtsuMessageResponseStatus, AtsuM
 /**
  * Defines the general PDC message format
  */
-export class PreDepartureClearance extends AtsuMessage {
+export class PdcMessage extends AtsuMessage {
     public Callsign = '';
 
     public Origin = '';

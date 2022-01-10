@@ -3,7 +3,7 @@ class CDUAocDepartReq {
         mcdu.clearDisplay();
 
         if (mcdu.pdcMessage === undefined) {
-            mcdu.pdcMessage = new Atsu.PreDepartureClearance();
+            mcdu.pdcMessage = new Atsu.PdcMessage();
         }
 
         let flightNo = "______[color]amber";
