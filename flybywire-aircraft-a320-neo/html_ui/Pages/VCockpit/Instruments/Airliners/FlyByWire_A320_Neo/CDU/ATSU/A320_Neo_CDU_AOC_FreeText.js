@@ -3,20 +3,29 @@ class CDUAocFreeText {
         mcdu.clearDisplay();
 
         const updateView = () => {
+            let oneLineFilled = false;
+            if (store["msg_line1"] !== "" || store["msg_line2"] !== "" || store["msg_line3"] !== "" || store["msg_line4"] !== "") {
+                oneLineFilled = true;
+            }
+            let sendValid = oneLineFilled === true && store["msg_to"] !== "";
+            if (store["sendStatus"] === "SENDING" || store["sendStatus"] === "SENT") {
+                sendValid = false;
+            }
+
             mcdu.setTemplate([
                 ["AOC FREE TEXT"],
                 ["TO:"],
-                [`${store["msg_to"] != "" ? store["msg_to"] : "________"}[color]cyan`],
+                [`${store["msg_to"] !== "" ? store["msg_to"] + "[color]cyan" : "________[color]amber"}`],
                 [""],
-                [`${store["msg_line1"] != "" ? store["msg_line1"] : "["}[color]cyan`, `${store["msg_line1"] != "" ? "" : "]"}[color]cyan`],
+                [`${store["msg_line1"] !== "" ? store["msg_line1"] : "["}[color]cyan`, `${store["msg_line1"] != "" ? "" : "]"}[color]cyan`],
                 [""],
-                [`${store["msg_line2"] != "" ? store["msg_line2"] : "["}[color]cyan`, `${store["msg_line2"] != "" ? "" : "]"}[color]cyan`],
+                [`${store["msg_line2"] !== "" ? store["msg_line2"] : "["}[color]cyan`, `${store["msg_line2"] != "" ? "" : "]"}[color]cyan`],
                 [""],
-                [`${store["msg_line3"] != "" ? store["msg_line3"] : "["}[color]cyan`, `${store["msg_line3"] != "" ? "" : "]"}[color]cyan`],
+                [`${store["msg_line3"] !== "" ? store["msg_line3"] : "["}[color]cyan`, `${store["msg_line3"] != "" ? "" : "]"}[color]cyan`],
                 [""],
-                [`${store["msg_line4"] != "" ? store["msg_line4"] : "["}[color]cyan`, `${store["msg_line4"] != "" ? "" : "]"}[color]cyan`],
+                [`${store["msg_line4"] !== "" ? store["msg_line4"] : "["}[color]cyan`, `${store["msg_line4"] != "" ? "" : "]"}[color]cyan`],
                 ["RETURN TO", `${store["sendStatus"]}`],
-                ["<AOC MENU", "SEND*[color]cyan"]
+                ["<AOC MENU", (sendValid === true ? "SEND*" : "SEND") + "[color]cyan"]
             ]);
         };
         updateView();
@@ -69,69 +78,62 @@ class CDUAocFreeText {
         mcdu.rightInputDelay[5] = () => {
             return mcdu.getDelaySwitchPage();
         };
-        mcdu.onRightInput[5] = async () => {
-            const storedTelexStatus = NXDataStore.get("CONFIG_ONLINE_FEATURES_STATUS", "DISABLED");
+        mcdu.onRightInput[5] = async (_value, scratchpadCallback) => {
+            // do not send two times
+            if (store["sendStatus"] === "SENDING" || store["sendStatus"] === "SENT") {
+                return;
+            }
 
-            if (NXApi.hasTelexConnection() && storedTelexStatus === "ENABLED") {
-                store["sendStatus"] = "QUEUED";
-                updateView();
-                const recipient = store["msg_to"];
-                const msgLines = [store["msg_line1"], store["msg_line2"], store["msg_line3"], store["msg_line4"]].join(";");
-                let errors = 0;
+            let oneLineFilled = false;
+            if (store["msg_line1"] !== "" || store["msg_line2"] !== "" || store["msg_line3"] !== "" || store["msg_line4"] !== "") {
+                oneLineFilled = true;
+            }
+            const sendValid = oneLineFilled === true && store["msg_to"] !== "";
 
-                const getData = async () => {
-                    if (recipient !== "" && msgLines !== ";;;") {
-                        await NXApi.sendTelexMessage(recipient, msgLines)
-                            .catch(err => {
-                                errors += 1;
-                                switch (err.status) {
-                                    case 404:
-                                        mcdu.addNewMessage(NXFictionalMessages.recipientNotFound);
-                                        break;
-                                    case 401:
-                                    case 403:
-                                        mcdu.addNewMessage(NXFictionalMessages.authErr);
-                                        break;
-                                    case 400:
-                                        mcdu.addNewMessage(NXFictionalMessages.invalidMsg);
-                                        break;
-                                    default:
-                                        mcdu.addNewMessage(NXFictionalMessages.unknownDownlinkErr);
-                                }
-                            });
-                    }
+            if (sendValid === false) {
+                mcdu.scratchpad.setText("ENTER MANDATORY FIELDS");
+                scratchpadCallback();
+                return;
+            }
 
-                    if (errors === 0) {
-                        store["sendStatus"] = "SENT";
-                    } else {
-                        store["sendStatus"] = "FAILED";
-                    }
-                    store["msg_to"] = "";
-                    store["msg_line1"] = "";
-                    store["msg_line2"] = "";
-                    store["msg_line3"] = "";
-                    store["msg_line4"] = "";
+            if (SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC") === "1123") {
+                mcdu.scratchpad.setText("ENTER ATC FLT NBR");
+                scratchpadCallback();
+                return;
+            }
+
+            store["sendStatus"] = "SENDING";
+            updateView();
+
+            // create the message
+            const message = new Atsu.FreetextMessage();
+            message.Station = store["msg_to"];
+            if (store["msg_line1"] !== "") {
+                message.Lines.push(store["msg_line1"]);
+            }
+            if (store["msg_line2"] !== "") {
+                message.Lines.push(store["msg_line2"]);
+            }
+            if (store["msg_line3"] !== "") {
+                message.Lines.push(store["msg_line3"]);
+            }
+            if (store["msg_line4"] !== "") {
+                message.Lines.push(store["msg_line4"]);
+            }
+
+            // send the message
+            mcdu.atsuManager.setOwnCallsign(SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC"));
+            const retval = mcdu.atsuManager.registerMessage(message);
+            if (retval.msg.length === 0) {
+                mcdu.atsuManager.sendMessage(retval.uid).then(() => {
+                    store["sendStatus"] = "SENT";
                     updateView();
-                };
-
-                getData().then(() => {
-                    setTimeout(() => {
-                        const fMsgLines = msgLines.split(";");
-                        fMsgLines.forEach((line) => {
-                            line += "[color]green";
-                        });
-                        fMsgLines.unshift("TO " + store["msg_to"] + "[color]cyan");
-                        fMsgLines.push("---------------------------[color]white");
-
-                        const sentMessage = { "id": Date.now(), "type": "FREE TEXT", "time": '00:00', "content": fMsgLines, };
-                        sentMessage["time"] = fetchTimeValue();
-                        mcdu.addSentMessage(sentMessage);
-                        store["sendStatus"] = "";
-                        updateView();
-                    }, 1000);
+                }).catch((err) => {
+                    mcdu.scratchpad.setText(err.message);
+                    scratchpadCallback();
+                    store["sendStatus"] = "FAILED";
+                    updateView();
                 });
-            } else {
-                mcdu.addNewMessage(NXFictionalMessages.telexNotEnabled);
             }
         };
 
