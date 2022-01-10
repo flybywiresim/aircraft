@@ -1,6 +1,7 @@
-import { AtsuManager, PdcMessage } from './AtsuManager';
+import { AtsuManager, FreetextMessage, PdcMessage } from './AtsuManager';
 
 export {
     AtsuManager,
+    FreetextMessage,
     PdcMessage,
 };

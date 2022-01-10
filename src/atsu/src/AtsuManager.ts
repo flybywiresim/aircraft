@@ -1,10 +1,11 @@
 //  Copyright (c) 2022 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import { AtsuMessage, AtsuMessageComStatus } from './AtsuMessage';
-import { AtsuTimestamp } from './AtsuTimestamp';
+import { AtsuMessage, AtsuMessageComStatus } from './messages/AtsuMessage';
+import { AtsuTimestamp } from './messages/AtsuTimestamp';
+import { FreetextMessage } from './messages/FreetextMessage';
 import { HoppieConnector } from './HoppieConnector';
-import { PdcMessage } from './PdcMessage';
+import { PdcMessage } from './messages/PdcMessage';
 
 /**
  * Defines the ATSU manager
@@ -123,4 +124,4 @@ export class AtsuManager {
     }
 }
 
-export { PdcMessage, AtsuMessage, AtsuTimestamp };
+export { AtsuMessage, AtsuTimestamp, FreetextMessage, PdcMessage };

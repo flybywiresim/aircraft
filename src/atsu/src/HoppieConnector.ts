@@ -2,7 +2,7 @@
 //  SPDX-License-Identifier: GPL-3.0
 
 import { NXDataStore } from '@shared/persistence';
-import { AtsuMessage } from './AtsuMessage';
+import { AtsuMessage } from './messages/AtsuMessage';
 
 /**
  * Defines the connector to the hoppies network
