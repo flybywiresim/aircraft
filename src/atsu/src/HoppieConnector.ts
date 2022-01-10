@@ -24,20 +24,24 @@ export class HoppieConnector {
         return `${HoppieConnector.corsProxyUrl + HoppieConnector.hoppieUrl}?logon=${logon}&type=${type}&from=${this.callsign}&to=${to}`;
     }
 
-    public async isStationAvailable(station: string, mcdu: any, scratchCallback: any, resetFunction: (mcdu: any, scratchCallback: any) => void,
-        errorFunction: (mcdu: any, scratchCallback: any) => void) {
+    public async isStationAvailable(station: string) {
         let url = this.createBaseUrl('ping', 'ALL-CALLSIGNS');
         url += `&packet=${station}`;
 
-        fetch(url)
-            .then((response) => response.text().then(((content) => {
-                if (content.startsWith('ok') !== true) {
-                    errorFunction(mcdu, scratchCallback);
-                } else if (station === this.callsign || content !== `ok {${station}}`) {
-                    resetFunction(mcdu, scratchCallback);
-                }
-            })))
-            .catch(() => errorFunction(mcdu, scratchCallback));
+        return fetch(url).then((response) => {
+            if (response.ok === true) {
+                return response.text().then((content) => {
+                    if (content.startsWith('ok') !== true) {
+                        return Promise.reject(Error('COM UNAVAILABLE'));
+                    }
+                    if (station === this.callsign || content !== `ok {${station}}`) {
+                        return Promise.reject(Error('NO ACTIVE ATC'));
+                    }
+                    return Promise.resolve('');
+                });
+            }
+            return Promise.reject(Error('COM UNAVAILABLE'));
+        }).catch(() => Promise.reject(Error('COM UNAVAILABLE')));
     }
 
     public setCallsign(callsign: string) {

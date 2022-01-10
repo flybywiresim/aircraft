@@ -1,18 +1,4 @@
 class CDUAocDepartReq {
-    static resetStation(mcdu, scratchpadCallback) {
-        mcdu.pdcMessage.Station = "";
-        mcdu.scratchpad.setText("NO ACTIVE ATC");
-        CDUAocDepartReq.ShowPage1(mcdu);
-        scratchpadCallback();
-    }
-
-    static errorStation(mcdu, scratchpadCallback) {
-        mcdu.pdcMessage.Station = "";
-        mcdu.scratchpad.setText("COM UNAVAILABLE");
-        CDUAocDepartReq.ShowPage1(mcdu);
-        scratchpadCallback();
-    }
-
     static ShowPage1(mcdu) {
         mcdu.clearDisplay();
 
@@ -117,8 +103,17 @@ class CDUAocDepartReq {
                 scratchpadCallback();
             } else {
                 mcdu.atsuManager.getConnector().setCallsign(SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC"));
-                mcdu.atsuManager.getConnector().isStationAvailable(value, mcdu, scratchpadCallback, CDUAocDepartReq.resetStation, CDUAocDepartReq.errorStation);
                 mcdu.pdcMessage.Station = value;
+
+                mcdu.atsuManager.getConnector().isStationAvailable(value).then(
+                    (_resolve) => { },
+                    (reject) => {
+                        mcdu.scratchpad.setText('COM UNAVAILABLE');
+                        mcdu.pdcMessage.Station = "";
+                        CDUAocDepartReq.ShowPage1(mcdu);
+                        scratchpadCallback();
+                    }
+                );
             }
             CDUAocDepartReq.ShowPage1(mcdu);
         };
