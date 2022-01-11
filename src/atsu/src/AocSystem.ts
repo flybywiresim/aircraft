@@ -191,7 +191,7 @@ export class AocSystem {
 
     public messageRead(uid: number) {
         const index = this.messageQueue.findIndex((element) => element.UniqueMessageID === uid);
-        if (index !== -1 && this.messageQueue[index].Direction === AtsuMessageDirection.Output) {
+        if (index !== -1 && this.messageQueue[index].Direction === AtsuMessageDirection.Input) {
             if (this.messageQueue[index].Confirmed === false) {
                 const cMsgCnt = SimVar.GetSimVarValue('L:A32NX_COMPANY_MSG_COUNT', 'Number');
                 SimVar.SetSimVarValue('L:A32NX_COMPANY_MSG_COUNT', 'Number', cMsgCnt <= 1 ? 0 : cMsgCnt - 1);
