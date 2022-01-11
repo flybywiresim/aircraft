@@ -29,7 +29,11 @@ class CDUAocRequestsWeather {
 
         for (let i = 0; i < 4; i++) {
             mcdu.onRightInput[i] = (value) => {
-                mcdu.aocAirportList.set(i, value);
+                if (value.length !== 4 || /^[A-Z()]*$/.test(value) === false) {
+                    mcdu.addNewMessage(NXSystemMessages.formatError);
+                } else {
+                    mcdu.aocAirportList.set(i, value);
+                }
                 CDUAocRequestsWeather.ShowPage(mcdu, reqID, sendStatus);
             };
         }

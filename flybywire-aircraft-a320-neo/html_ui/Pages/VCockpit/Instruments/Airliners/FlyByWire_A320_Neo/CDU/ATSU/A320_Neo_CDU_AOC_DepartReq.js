@@ -96,8 +96,7 @@ class CDUAocDepartReq {
         };
         mcdu.onRightInput[2] = (value, scratchpadCallback) => {
             if (value.length !== 4 || /^[A-Z()]*$/.test(value) === false) {
-                mcdu.scratchpad.setText("FORMAT ERROR");
-                scratchpadCallback();
+                mcdu.addNewMessage(NXSystemMessages.formatError);
             } else if (SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC") === "1123") {
                 mcdu.scratchpad.setText("ENTER ATC FLT NBR");
                 scratchpadCallback();
