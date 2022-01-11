@@ -1,29 +1,18 @@
-const msgSep = "{white}------------------------{end}";
-const srcMap = {
-    "FAA": "faa",
-    "IVAO": "ivao",
-    "MSFS": "ms",
-    "NOAA": "aviationweather",
-    "PILOTEDGE": "pilotedge",
-    "VATSIM": "vatsim"
-};
-
-function wordWrapToStringList(text, maxLength) {
-    const result = [];
-    let line = [];
-    let length = 0;
-    text.split(" ").forEach(function (word) {
-        if ((length + word.length) >= maxLength) {
-            result.push(line.join(" "));
-            line = []; length = 0;
-        }
-        length += word.length + 1;
-        line.push(word);
-    });
-    if (line.length > 0) {
-        result.push(line.join(" "));
+function translateAtsuMessageType(type) {
+    switch (type) {
+    case Atsu.AtsuMessageType.Freetext:
+        return "FREETEXT";
+    case Atsu.AtsuMessageType.PDC:
+        return "PDC";
+    case Atsu.AtsuMessageType.METAR:
+        return "METAR";
+    case Atsu.AtsuMessageType.TAF:
+        return "TAF";
+    case Atsu.AtsuMessageType.ATIS:
+        return "ATIS";
+    default:
+        return "UNKNOWN";
     }
-    return result;
 }
 
 function fetchTimeValue() {
@@ -36,87 +25,6 @@ function fetchTimeValue() {
     }
     return null;
 }
-
-const getMETAR = async (icaos, lines, updateView) => {
-    const storedMetarSrc = NXDataStore.get("CONFIG_METAR_SRC", "MSFS");
-    for (const icao of icaos) {
-        if (icao !== "") {
-            await NXApi.getMetar(icao, srcMap[storedMetarSrc])
-                .then((data) => {
-                    lines.push(`{cyan}METAR ${icao}{end}`);
-                    const newLines = wordWrapToStringList(data.metar, 25);
-                    newLines.forEach(l => lines.push(`{green}${l}{end}`));
-                    lines.push(msgSep);
-                })
-                .catch(() => {
-                    lines.push(`{cyan}METAR ${icao}{end}`);
-                    lines.push('{amber}STATION NOT AVAILABLE{end}');
-                    lines.push(msgSep);
-                });
-        }
-    }
-    updateView();
-};
-
-const getTAF = async (icaos, lines, updateView) => {
-    const storedTafSrc = NXDataStore.get("CONFIG_TAF_SRC", "NOAA");
-    for (const icao of icaos) {
-        if (icao !== "") {
-            await NXApi.getTaf(icao, srcMap[storedTafSrc])
-                .then((data) => {
-                    lines.push(`{cyan}TAF ${icao}{end}`);
-                    const newLines = wordWrapToStringList(data.taf, 25);
-                    newLines.forEach(l => lines.push(`{green}${l}{end}`));
-                    lines.push(msgSep);
-                })
-                .catch(() => {
-                    lines.push(`{cyan}TAF ${icao}{end}`);
-                    lines.push('{amber}STATION NOT AVAILABLE{end}');
-                    lines.push(msgSep);
-                });
-        }
-    }
-    updateView();
-};
-
-const getATIS = async (icao, lines, type, store, updateView) => {
-    const storedAtisSrc = NXDataStore.get("CONFIG_ATIS_SRC", "FAA");
-    if (icao !== "") {
-        await NXApi.getAtis(icao, srcMap[storedAtisSrc])
-            .then((data) => {
-                let atisData;
-                switch (type) {
-                    case 0:
-                        if ("arr" in data) {
-                            atisData = data.arr;
-                        } else {
-                            atisData = data.combined;
-                        }
-                        break;
-                    case 1:
-                        if ("dep" in data) {
-                            atisData = data.dep;
-                        } else {
-                            atisData = data.combined;
-                        }
-                        break;
-                    default:
-                        atisData = data.combined;
-                }
-                lines.push(`{cyan}ATIS ${icao}{end}`);
-                const newLines = wordWrapToStringList(atisData, 25);
-                newLines.forEach(l => lines.push(`{green}${l}{end}`));
-                lines.push(msgSep);
-            })
-            .catch(() => {
-                lines.push(`{cyan}ATIS ${icao}{end}`);
-                lines.push('{amber}D-ATIS NOT AVAILABLE{end}');
-                lines.push(msgSep);
-            });
-    }
-    store["sendStatus"] = "SENT";
-    updateView();
-};
 
 /**
  *  Converts lbs to kg
