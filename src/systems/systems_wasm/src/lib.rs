@@ -45,13 +45,18 @@ pub trait SimulatorAspect {
 
     /// Attempts to handle the given SimConnect message, returning true
     /// when the message was handled and false otherwise.
-    fn handle_message(&mut self, _message: &SimConnectRecv) -> bool {
+    fn handle_message(
+        &mut self,
+        _variables: &mut MsfsVariableRegistry,
+        _message: &SimConnectRecv,
+    ) -> bool {
         false
     }
 
     /// Executes before a simulation tick runs.
     fn pre_tick(
         &mut self,
+        _variables: &mut MsfsVariableRegistry,
         _sim_connect: &mut SimConnect,
         _delta: Duration,
     ) -> Result<(), Box<dyn Error>> {
@@ -59,7 +64,11 @@ pub trait SimulatorAspect {
     }
 
     /// Executes after a simulation tick ran.
-    fn post_tick(&mut self, _sim_connect: &mut SimConnect) -> Result<(), Box<dyn Error>> {
+    fn post_tick(
+        &mut self,
+        _variables: &mut MsfsVariableRegistry,
+        _sim_connect: &mut SimConnect,
+    ) -> Result<(), Box<dyn Error>> {
         Ok(())
     }
 }
@@ -112,11 +121,10 @@ impl<'a, 'b> MsfsSimulationBuilder<'a, 'b> {
 
         let mut registry = self.variable_registry.unwrap();
         let simulation = Simulation::new(aircraft_ctor_fn, &mut registry);
-        aspects.push(Box::new(registry));
 
         Ok((
             simulation,
-            MsfsHandler::new(aspects, self.failures, self.sim_connect)?,
+            MsfsHandler::new(registry, aspects, self.failures, self.sim_connect)?,
         ))
     }
 
@@ -136,11 +144,7 @@ impl<'a, 'b> MsfsSimulationBuilder<'a, 'b> {
         builder_func: T,
     ) -> Result<Self, Box<dyn Error>> {
         let variable_registry = &mut self.variable_registry.as_mut().unwrap();
-        let mut builder = MsfsAspectBuilder::new(
-            self.key_prefix.to_owned(),
-            &mut self.sim_connect,
-            variable_registry,
-        );
+        let mut builder = MsfsAspectBuilder::new(&mut self.sim_connect, variable_registry);
         (builder_func)(&mut builder)?;
         self.additional_aspects.push(Box::new(builder.build()));
 
@@ -206,21 +210,11 @@ impl<'a, 'b> MsfsSimulationBuilder<'a, 'b> {
         index: usize,
     ) -> Result<Self, Box<dyn Error>> {
         if let Some(registry) = &mut self.variable_registry {
-            registry.add_aircraft_variable(name, units, index)?;
-        }
-
-        Ok(self)
-    }
-
-    pub fn provides_aircraft_variable_with_options(
-        mut self,
-        name: &str,
-        units: &str,
-        index: usize,
-        options: AircraftVariableOptions,
-    ) -> Result<Self, Box<dyn Error>> {
-        if let Some(registry) = &mut self.variable_registry {
-            registry.add_aircraft_variable_with_options(name, units, index, options)?;
+            registry.register(&Variable::Aircraft(
+                name.to_owned(),
+                units.to_owned(),
+                index,
+            ));
         }
 
         Ok(self)
@@ -229,17 +223,20 @@ impl<'a, 'b> MsfsSimulationBuilder<'a, 'b> {
 
 /// Used to orchestrate the simulation combined with Microsoft Flight Simulator.
 pub struct MsfsHandler {
+    variables: Option<MsfsVariableRegistry>,
     aspects: Vec<Box<dyn SimulatorAspect>>,
     failures: Option<Failures>,
     time: Time,
 }
 impl MsfsHandler {
     fn new(
+        variables: MsfsVariableRegistry,
         aspects: Vec<Box<dyn SimulatorAspect>>,
         failures: Option<Failures>,
         sim_connect: &mut SimConnect,
     ) -> Result<Self, Box<dyn Error>> {
         Ok(Self {
+            variables: Some(variables),
             aspects,
             failures,
             time: Time::new(sim_connect)?,
@@ -280,10 +277,14 @@ impl MsfsHandler {
     }
 
     fn handle_message(&mut self, message: &SimConnectRecv) {
-        for aspect in self.aspects.iter_mut() {
-            if aspect.handle_message(message) {
-                break;
+        if let Some(mut variables) = self.variables.take() {
+            for aspect in self.aspects.iter_mut() {
+                if aspect.handle_message(&mut variables, message) {
+                    break;
+                }
             }
+
+            self.variables = Some(variables);
         }
     }
 
@@ -292,14 +293,27 @@ impl MsfsHandler {
         sim_connect: &mut SimConnect,
         delta: Duration,
     ) -> Result<(), Box<dyn Error>> {
-        self.aspects
-            .iter_mut()
-            .try_for_each(|aspect| aspect.pre_tick(sim_connect, delta))
+        if let Some(mut variables) = self.variables.take() {
+            let result = self
+                .aspects
+                .iter_mut()
+                .try_for_each(|aspect| aspect.pre_tick(&mut variables, sim_connect, delta));
+
+            self.variables = Some(variables);
+
+            result
+        } else {
+            Ok(())
+        }
     }
 
     fn post_tick(&mut self, sim_connect: &mut SimConnect) -> Result<(), Box<dyn Error>> {
-        for aspect in self.aspects.iter_mut() {
-            aspect.post_tick(sim_connect)?;
+        if let Some(mut variables) = self.variables.take() {
+            for aspect in self.aspects.iter_mut() {
+                aspect.post_tick(&mut variables, sim_connect)?;
+            }
+
+            self.variables = Some(variables);
         }
 
         Ok(())
@@ -323,37 +337,29 @@ impl SimulatorReaderWriter for MsfsHandler {
         self.aspects
             .iter_mut()
             .find_map(|aspect| aspect.read(identifier))
-            .unwrap_or(0.)
+            .unwrap_or_else(|| {
+                self.variables
+                    .as_ref()
+                    .map(|registry| registry.read(identifier).unwrap_or(0.))
+                    .unwrap_or(0.)
+            })
     }
 
     fn write(&mut self, identifier: &VariableIdentifier, value: f64) {
         for aspect in self.aspects.iter_mut() {
             if aspect.write(identifier, value) {
-                break;
+                return;
             }
+        }
+
+        if let Some(variable_registry) = &mut self.variables {
+            variable_registry.write(identifier, value);
         }
     }
 }
 
-#[derive(Default)]
-pub struct AircraftVariableOptions {
-    additional_names: Vec<String>,
-    mapping_func: Option<fn(f64) -> f64>,
-}
-
-impl AircraftVariableOptions {
-    pub fn additional_name(mut self, name: String) -> Self {
-        self.additional_names.push(name);
-        self
-    }
-
-    pub fn mapping(mut self, mapping_func: fn(f64) -> f64) -> Self {
-        self.mapping_func = Some(mapping_func);
-        self
-    }
-}
-
 /// Declares a variable of a given type with a given name.
+#[derive(Clone)]
 pub enum Variable {
     /// An aircraft variable accessible within the aspect, simulation and simulator.
     Aircraft(String, String, usize),
@@ -361,7 +367,11 @@ pub enum Variable {
     /// A named variable accessible within the aspect, simulation and simulator.
     Named(String),
 
-    /// A variable accessible within the aspect and simulation.
+    /// A variable accessible within all aspects and the simulation.
+    ///
+    /// Note that even though aspect variables are accessible from all aspects, no assumptions
+    /// should be made about their update order outside of a single aspect. Thus it is best not
+    /// to use the same aspect variable within different aspects.
     Aspect(String),
 }
 
@@ -374,9 +384,11 @@ impl Variable {
         }
     }
 
-    fn add_named_variable_prefix(&mut self, prefix: &str) {
-        if let Variable::Named(name) = self {
-            *name = format!("{}{}", prefix, name);
+    fn add_prefix(&mut self, prefix: &str) {
+        match self {
+            Variable::Aircraft(name, _, _) => *name = format!("{}{}", prefix, name),
+            Variable::Named(name) => *name = format!("{}{}", prefix, name),
+            Variable::Aspect(name) => *name = format!("{}{}", prefix, name),
         }
     }
 }
@@ -410,7 +422,7 @@ impl From<&Variable> for VariableType {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Eq, Hash, PartialEq)]
 pub enum VariableType {
     Aircraft = 0,
     Named = 1,
@@ -418,8 +430,8 @@ pub enum VariableType {
 }
 
 impl From<VariableType> for u8 {
-    fn from(identifier_type: VariableType) -> Self {
-        identifier_type as u8
+    fn from(value: VariableType) -> Self {
+        value as u8
     }
 }
 
@@ -465,103 +477,32 @@ impl VariableValue {
 }
 
 pub struct MsfsVariableRegistry {
-    name_to_identifier: FxHashMap<String, VariableIdentifier>,
-    aircraft_variables: Vec<(AircraftVariable, Option<fn(f64) -> f64>)>,
-    named_variables: Vec<NamedVariable>,
     named_variable_prefix: String,
-    next_aircraft_variable_identifier: VariableIdentifier,
-    next_named_variable_identifier: VariableIdentifier,
-    next_aspect_variable_identifier: VariableIdentifier,
+    name_to_identifier: FxHashMap<String, VariableIdentifier>,
+    next_variable_identifier: FxHashMap<VariableType, VariableIdentifier>,
+    variables: FxHashMap<VariableIdentifier, VariableValue>,
 }
 
 impl MsfsVariableRegistry {
     pub fn new(named_variable_prefix: String) -> Self {
         Self {
-            name_to_identifier: FxHashMap::default(),
-            aircraft_variables: Default::default(),
-            named_variables: Default::default(),
             named_variable_prefix,
-            next_aircraft_variable_identifier: VariableIdentifier::new(VariableType::Aircraft),
-            next_named_variable_identifier: VariableIdentifier::new(VariableType::Named),
-            next_aspect_variable_identifier: VariableIdentifier::new(VariableType::Aspect),
+            name_to_identifier: FxHashMap::default(),
+            next_variable_identifier: FxHashMap::default(),
+            variables: FxHashMap::default(),
         }
     }
 
-    /// Add an aircraft variable definition. Once added, the aircraft variable
+    /// Registers a variable definition. Once added, the variable
     /// can be read through the `MsfsVariableRegistry.read` function.
-    pub fn add_aircraft_variable(
-        &mut self,
-        name: &str,
-        units: &str,
-        index: usize,
-    ) -> Result<VariableIdentifier, Box<dyn Error>> {
-        self.add_aircraft_variable_with_options(
-            name,
-            units,
-            index,
-            AircraftVariableOptions::default(),
-        )
-    }
+    pub fn register(&mut self, variable: &Variable) -> VariableIdentifier {
+        let identifier = self.get_identifier_or_create_variable(variable);
 
-    /// Add an aircraft variable definition. Once added, the aircraft variable
-    /// can be read through the `MsfsVariableRegistry.read` function.
-    ///
-    /// The additional names map to the same variable.
-    pub fn add_aircraft_variable_with_options(
-        &mut self,
-        name: &str,
-        units: &str,
-        index: usize,
-        options: AircraftVariableOptions,
-    ) -> Result<VariableIdentifier, Box<dyn Error>> {
-        match AircraftVariable::from(name, units, index) {
-            Ok(var) => {
-                let name = if index > 0 {
-                    format!("{}:{}", name, index)
-                } else {
-                    name.to_owned()
-                };
-
-                let identifier = self.next_aircraft_variable_identifier;
-
-                self.aircraft_variables
-                    .insert(identifier.identifier_index(), (var, options.mapping_func));
-                self.name_to_identifier.insert(name, identifier);
-
-                options.additional_names.iter().for_each(|el| {
-                    self.name_to_identifier.insert(el.to_owned(), identifier);
-                });
-
-                self.next_aircraft_variable_identifier = identifier.next();
-
-                Ok(identifier)
-            }
-            Err(x) => Err(x),
-        }
-    }
-
-    fn create_named_variable(&mut self, name: String) -> VariableIdentifier {
-        match self.name_to_identifier.get(&name) {
-            Some(identifier) => *identifier,
-            None => {
-                let identifier = self.next_named_variable_identifier;
-                self.named_variables.insert(
-                    identifier.identifier_index(),
-                    NamedVariable::from(&format!("{}{}", self.named_variable_prefix, name)),
-                );
-                self.name_to_identifier.insert(name, identifier);
-
-                self.next_named_variable_identifier = identifier.next();
-
-                identifier
-            }
-        }
-    }
-
-    fn create_aspect_variable(&mut self, name: String) -> VariableIdentifier {
-        let identifier = self.next_aspect_variable_identifier;
-        self.name_to_identifier.insert(name.to_owned(), identifier);
-        self.next_aspect_variable_identifier = identifier.next();
+        assert_eq!(
+            VariableType::from(&identifier),
+            variable.into(),
+            "Attempted to register a variable called {} which was already defined as another type of variable.", variable.name()
+        );
 
         identifier
     }
@@ -569,57 +510,51 @@ impl MsfsVariableRegistry {
     fn get_identifier_or_create_variable(&mut self, variable: &Variable) -> VariableIdentifier {
         match self.name_to_identifier.get(variable.name()) {
             Some(identifier) => *identifier,
-            None => match variable {
-                Variable::Aircraft(name, units, index) => {
-                    match self.add_aircraft_variable(name, units, *index) {
-                        Ok(identifier) => identifier,
-                        Err(error) => panic!(
-                            "Error while trying to register aircraft variable named '{}': {}",
-                            variable.name(),
-                            error
-                        ),
-                    }
+            None => {
+                let identifier = *self
+                    .next_variable_identifier
+                    .entry(variable.into())
+                    .or_insert_with(|| VariableIdentifier::new::<VariableType>(variable.into()));
+
+                self.next_variable_identifier
+                    .insert(variable.into(), identifier.next());
+
+                self.name_to_identifier
+                    .insert(variable.name().to_owned(), identifier);
+
+                let mut variable = variable.clone();
+                if matches!(variable, Variable::Named(_)) {
+                    variable.add_prefix(&self.named_variable_prefix);
                 }
-                Variable::Named(name) => self.create_named_variable(name.to_owned()),
-                Variable::Aspect(name) => self.create_aspect_variable(name.to_owned()),
-            },
+
+                let value: VariableValue = (&variable).into();
+                self.variables.insert(identifier, value);
+
+                identifier
+            }
+        }
+    }
+
+    fn read(&self, identifier: &VariableIdentifier) -> Option<f64> {
+        match self.variables.get(identifier) {
+            Some(variable_value) => Some(variable_value.read()),
+            None => None,
+        }
+    }
+
+    fn write(&mut self, identifier: &VariableIdentifier, value: f64) {
+        match self.variables.get_mut(identifier) {
+            Some(variable_value) => variable_value.write(value),
+            None => (),
         }
     }
 }
 
 impl VariableRegistry for MsfsVariableRegistry {
     fn get(&mut self, name: String) -> VariableIdentifier {
-        match self.name_to_identifier.get(&name) {
-            Some(identifier) => *identifier,
-            None => self.create_named_variable(name),
-        }
-    }
-}
-
-impl SimulatorAspect for MsfsVariableRegistry {
-    fn read(&mut self, identifier: &VariableIdentifier) -> Option<f64> {
-        match VariableType::from(identifier) {
-            VariableType::Aircraft => {
-                match &self.aircraft_variables[identifier.identifier_index()] {
-                    (variable, None) => Some(variable.get()),
-                    (variable, Some(mapping_func)) => Some(mapping_func(variable.get())),
-                }
-            }
-            VariableType::Named => {
-                Some(self.named_variables[identifier.identifier_index()].get_value())
-            }
-            VariableType::Aspect => None,
-        }
-    }
-
-    fn write(&mut self, identifier: &VariableIdentifier, value: f64) -> bool {
-        match VariableType::from(identifier) {
-            VariableType::Named => {
-                self.named_variables[identifier.identifier_index()].set_value(value);
-                true
-            }
-            VariableType::Aircraft | VariableType::Aspect => false,
-        }
+        // By the time this function is called, only named variables are to be created.
+        // Other variable types have been instantiated through the MsfsSimulationBuilder.
+        self.register(&Variable::Named(name))
     }
 }
 
