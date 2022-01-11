@@ -1,7 +1,7 @@
 class CDUAocMessagesReceived {
     static ShowPage(mcdu, messages = null, page = 0) {
         if (!messages) {
-            messages = mcdu.getMessages();
+            messages = mcdu.atsuManager.aoc().inputMessages();
         }
         mcdu.clearDisplay();
 
@@ -18,8 +18,8 @@ class CDUAocMessagesReceived {
         for (let i = 5; i > 0; i--) {
             let header = "";
             if (messages[offset - i]) {
-                header += messages[offset - i]["time"];
-                if (messages[offset - i]["opened"]) {
+                header += messages[offset - i].Timestamp.mcduTimestamp();
+                if (messages[offset - i].Confirmed === true) {
                     header += " - VIEWED[color]green";
                 } else {
                     header += " - NEW[color]green";
@@ -46,15 +46,15 @@ class CDUAocMessagesReceived {
         mcdu.setTemplate([
             ["AOC RCVD MSGS"],
             [msgTimeHeaders[5]],
-            [`${messages[offset - 5] ? "<" + messages[offset - 5]["type"] : "NO MESSAGES"}`],
+            [`${messages[offset - 5] ? "<" + translateAtsuMessageType(messages[offset - 5].Type) : "NO MESSAGES"}`],
             [msgTimeHeaders[4]],
-            [`${messages[offset - 4] ? "<" + messages[offset - 4]["type"] : ""}`],
+            [`${messages[offset - 4] ? "<" + translateAtsuMessageType(messages[offset - 4].Type) : ""}`],
             [msgTimeHeaders[3]],
-            [`${messages[offset - 3] ? "<" + messages[offset - 3]["type"] : ""}`],
+            [`${messages[offset - 3] ? "<" + translateAtsuMessageType(messages[offset - 3].Type) : ""}`],
             [msgTimeHeaders[2]],
-            [`${messages[offset - 2] ? "<" + messages[offset - 2]["type"] : ""}`],
+            [`${messages[offset - 2] ? "<" + translateAtsuMessageType(messages[offset - 2].Type) : ""}`],
             [msgTimeHeaders[1]],
-            [`${messages[offset - 1] ? "<" + messages[offset - 1]["type"] : ""}`],
+            [`${messages[offset - 1] ? "<" + translateAtsuMessageType(messages[offset - 1].Type) : ""}`],
             [""],
             ["<RETURN"]
         ]);

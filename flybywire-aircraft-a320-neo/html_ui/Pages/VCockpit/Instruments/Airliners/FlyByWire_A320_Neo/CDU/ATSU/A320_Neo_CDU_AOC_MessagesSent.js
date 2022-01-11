@@ -1,7 +1,7 @@
 class CDUAocMessagesSent {
     static ShowPage(mcdu, messages = null, offset = 5) {
         if (!messages) {
-            messages = mcdu.getSentMessages();
+            messages = mcdu.atsuManager.aoc().outputMessages();
         }
         mcdu.clearDisplay();
 
@@ -10,7 +10,7 @@ class CDUAocMessagesSent {
         for (let i = 5; i > 0; i--) {
             let header = "";
             if (messages[offset - i]) {
-                header += messages[offset - i]["time"] + " - SENT[color]green";
+                header += messages[offset - i].Timestamp.mcduTimestamp() + " - SENT[color]green";
             }
             msgTimeHeaders[i] = header;
         }
@@ -18,15 +18,15 @@ class CDUAocMessagesSent {
         mcdu.setTemplate([
             ["AOC SENT MSGS"],
             [msgTimeHeaders[5]],
-            [`${messages[offset - 5] ? "<" + messages[offset - 5]["type"] : "NO MESSAGES"}`],
+            [`${messages[offset - 5] ? "<" + translateAtsuMessageType(messages[offset - 5].Type) : "NO MESSAGES"}`],
             [msgTimeHeaders[4]],
-            [`${messages[offset - 4] ? "<" + messages[offset - 4]["type"] : ""}`],
+            [`${messages[offset - 4] ? "<" + translateAtsuMessageType(messages[offset - 4].Type) : ""}`],
             [msgTimeHeaders[3]],
-            [`${messages[offset - 3] ? "<" + messages[offset - 3]["type"] : ""}`],
+            [`${messages[offset - 3] ? "<" + translateAtsuMessageType(messages[offset - 3].Type) : ""}`],
             [msgTimeHeaders[2]],
-            [`${messages[offset - 2] ? "<" + messages[offset - 2]["type"] : ""}`],
+            [`${messages[offset - 2] ? "<" + translateAtsuMessageType(messages[offset - 2].Type) : ""}`],
             [msgTimeHeaders[1]],
-            [`${messages[offset - 1] ? "<" + messages[offset - 1]["type"] : ""}`],
+            [`${messages[offset - 1] ? "<" + translateAtsuMessageType(messages[offset - 1].Type) : ""}`],
             [""],
             ["<RETURN"]
         ]);
