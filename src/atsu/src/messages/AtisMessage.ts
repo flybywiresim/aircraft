@@ -1,0 +1,17 @@
+//  Copyright (c) 2021 FlyByWire Simulations
+//  SPDX-License-Identifier: GPL-3.0
+
+import { AtsuMessageType } from './AtsuMessage';
+import { WeatherMessage } from './WeatherMessage';
+
+/**
+ * Defines the general ATIS message format
+ */
+export class AtisMessage extends WeatherMessage {
+    constructor() {
+        super();
+        this.Type = AtsuMessageType.ATIS;
+    }
+}
+
+export { WeatherMessage };
