@@ -43,16 +43,16 @@ export class WeatherMessage extends AtsuMessage {
                     }
                 });
 
-                message += '{white}------------------------{end}';
+                message += '{white}------------------------{end}\n';
             });
         } else {
             this.Reports.forEach((report) => {
                 message += `${type} ${report.airport}\n`;
 
                 // eslint-disable-next-line no-loop-func
-                report.report.forEach((line) => message += `${line}`);
+                report.report.forEach((line) => message += `${line}\n`);
 
-                message += '{white}------------------------{end}';
+                message += '{white}------------------------{end}\n';
             });
         }
 
