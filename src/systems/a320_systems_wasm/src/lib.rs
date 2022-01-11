@@ -437,7 +437,7 @@ fn nose_wheel_steering(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Er
         Variable::Aspect("STEERING_ANGLE".into()),
         VariableToEventMapping::EventData32kPosition,
         "STEERING_SET",
-    );
+    )?;
 
     Ok(())
 }

@@ -65,8 +65,15 @@ impl<'a, 'b> MsfsAspectBuilder<'a, 'b> {
         input: Variable,
         mapping: VariableToEventMapping,
         event_name: &str,
-    ) {
-        todo!();
+    ) -> Result<(), Box<dyn Error>> {
+        let input = self.variables.register(&input);
+
+        self.variable_functions.push(VariableFunction::ToEvent(
+            ToEvent::new(&mut self.sim_connect, input, mapping, event_name)?,
+            UpdateOn::PostTick,
+        ));
+
+        Ok(())
     }
 
     /// Reduces variable values into one output value.
@@ -216,6 +223,7 @@ enum VariableFunction {
     MapMany(MapMany, UpdateOn),
     Reduce(Reduce, UpdateOn),
     ToObject(ToObject, UpdateOn),
+    ToEvent(ToEvent, UpdateOn),
 }
 
 impl VariableFunction {
@@ -225,24 +233,28 @@ impl VariableFunction {
         variables: &mut MsfsVariableRegistry,
         update_moment: UpdateOn,
     ) -> Result<(), Box<dyn Error>> {
-        match self {
-            VariableFunction::Map(map, update_on) if *update_on == update_moment => {
-                map.update(variables);
-            }
-            VariableFunction::MapMany(map_many, update_on) if *update_on == update_moment => {
-                map_many.update(variables);
-            }
-            VariableFunction::Reduce(reduce, update_on) if *update_on == update_moment => {
-                reduce.update(variables);
-            }
-            VariableFunction::ToObject(to_object, update_on) if *update_on == update_moment => {
-                to_object.update(sim_connect, variables)?;
-            }
-            _ => (),
+        let updatable: (&mut dyn Updatable, UpdateOn) = match self {
+            VariableFunction::Map(func, update_on, ..) => (func, *update_on),
+            VariableFunction::MapMany(func, update_on, ..) => (func, *update_on),
+            VariableFunction::Reduce(func, update_on, ..) => (func, *update_on),
+            VariableFunction::ToObject(func, update_on, ..) => (func, *update_on),
+            VariableFunction::ToEvent(func, update_on, ..) => (func, *update_on),
+        };
+
+        if updatable.1 == update_moment {
+            updatable.0.update(sim_connect, variables)?;
         }
 
         Ok(())
     }
+}
+
+trait Updatable {
+    fn update(
+        &mut self,
+        sim_connect: &mut SimConnect,
+        variables: &mut MsfsVariableRegistry,
+    ) -> Result<(), Box<dyn Error>>;
 }
 
 #[derive(Clone, Copy, PartialEq)]
@@ -332,9 +344,9 @@ struct EventToVariable {
     event_last_handled: Option<Instant>,
     event_handled_before_tick: bool,
     target: VariableIdentifier,
-    last_written_value: Option<f64>,
     mapping: EventToVariableMapping,
     options: EventToVariableOptions,
+    to_event: Option<ToEvent>,
 }
 
 impl EventToVariable {
@@ -345,13 +357,25 @@ impl EventToVariable {
         target: VariableIdentifier,
         options: EventToVariableOptions,
     ) -> Result<Self, Box<dyn Error>> {
+        let event_id = sim_connect.map_client_event_to_sim_event(event_name, options.mask)?;
+
         Ok(Self {
-            event_id: sim_connect.map_client_event_to_sim_event(event_name, options.mask)?,
+            event_id,
             event_last_handled: None,
             event_handled_before_tick: false,
             target,
-            last_written_value: None,
             mapping,
+            to_event: if options.is_bidirectional() {
+                Some(ToEvent::new_with_event_id(
+                    target,
+                    options
+                        .bidirectional_mapping
+                        .unwrap_or(VariableToEventMapping::EventDataRaw),
+                    event_id,
+                ))
+            } else {
+                None
+            },
             options,
         })
     }
@@ -379,26 +403,8 @@ impl EventToVariable {
         sim_connect: &mut SimConnect,
         variables: &mut MsfsVariableRegistry,
     ) -> Result<(), Box<dyn Error>> {
-        if self.options.is_bidirectional() {
-            let value = variables.read(&self.target).unwrap_or(0.);
-            let should_write = match self.last_written_value {
-                Some(last_written_value) => value != last_written_value,
-                None => true,
-            };
-
-            if should_write {
-                sim_connect.transmit_client_event(
-                    SIMCONNECT_OBJECT_ID_USER,
-                    self.event_id,
-                    match self.options.bidirectional_mapping {
-                        Some(VariableToEventMapping::EventDataRaw) | None => value as u32,
-                        Some(VariableToEventMapping::EventData32kPosition) => {
-                            f64_to_sim_connect_32k_pos(value)
-                        }
-                    },
-                )?;
-                self.last_written_value = Some(value);
-            }
+        if let Some(to_event) = &mut self.to_event {
+            to_event.update(sim_connect, variables)?;
         }
 
         Ok(())
@@ -420,7 +426,7 @@ impl EventToVariable {
             EventToVariableMapping::EventDataAndCurrentValueToValue(func) => {
                 func(e.data(), variables.read(&self.target).unwrap_or(0.))
             }
-            EventToVariableMapping::SmoothPress(_, _) => variables.read(&self.target).unwrap_or(0.),
+            EventToVariableMapping::SmoothPress(..) => variables.read(&self.target).unwrap_or(0.),
         }
     }
 
@@ -502,11 +508,19 @@ impl Reduce {
             output_variable_identifier,
         }
     }
+}
 
-    fn update(&mut self, variables: &mut MsfsVariableRegistry) {
+impl Updatable for Reduce {
+    fn update(
+        &mut self,
+        _: &mut SimConnect,
+        variables: &mut MsfsVariableRegistry,
+    ) -> Result<(), Box<dyn Error>> {
         let values = identifiers_to_values(&self.input_variable_identifiers, variables);
         let result = values.into_iter().reduce(self.func).unwrap_or(0.);
         variables.write(&self.output_variable_identifier, result);
+
+        Ok(())
     }
 }
 
@@ -536,14 +550,22 @@ impl Map {
             output_variable_identifier,
         }
     }
+}
 
-    fn update(&mut self, variables: &mut MsfsVariableRegistry) {
+impl Updatable for Map {
+    fn update(
+        &mut self,
+        _: &mut SimConnect,
+        variables: &mut MsfsVariableRegistry,
+    ) -> Result<(), Box<dyn Error>> {
         let value = match variables.read(&self.input_variable_identifier) {
             Some(value) => value,
             None => panic!("Attempted to map a variable which is unavailable."),
         };
 
         variables.write(&self.output_variable_identifier, (self.func)(value));
+
+        Ok(())
     }
 }
 
@@ -565,11 +587,19 @@ impl MapMany {
             output_variable_identifier,
         }
     }
+}
 
-    fn update(&mut self, variables: &mut MsfsVariableRegistry) {
+impl Updatable for MapMany {
+    fn update(
+        &mut self,
+        _: &mut SimConnect,
+        variables: &mut MsfsVariableRegistry,
+    ) -> Result<(), Box<dyn Error>> {
         let values = identifiers_to_values(&self.input_variable_identifiers, variables);
         let result = (self.func)(&values);
         variables.write(&self.output_variable_identifier, result);
+
+        Ok(())
     }
 }
 
@@ -591,7 +621,9 @@ impl ToObject {
             variables,
         }
     }
+}
 
+impl Updatable for ToObject {
     fn update(
         &mut self,
         sim_connect: &mut SimConnect,
@@ -612,6 +644,72 @@ impl ToObject {
 
         self.target_object.write(values);
         self.target_object.set_data_on_sim_object(sim_connect)?;
+
+        Ok(())
+    }
+}
+
+struct ToEvent {
+    input: VariableIdentifier,
+    mapping: VariableToEventMapping,
+    event_id: u32,
+    last_written_value: Option<f64>,
+}
+
+impl ToEvent {
+    fn new(
+        sim_connect: &mut SimConnect,
+        input: VariableIdentifier,
+        mapping: VariableToEventMapping,
+        event_name: &str,
+    ) -> Result<Self, Box<dyn Error>> {
+        Ok(Self {
+            input,
+            mapping,
+            event_id: sim_connect.map_client_event_to_sim_event(event_name, false)?,
+            last_written_value: None,
+        })
+    }
+
+    fn new_with_event_id(
+        input: VariableIdentifier,
+        mapping: VariableToEventMapping,
+        event_id: u32,
+    ) -> Self {
+        Self {
+            input,
+            mapping,
+            event_id,
+            last_written_value: None,
+        }
+    }
+}
+
+impl Updatable for ToEvent {
+    fn update(
+        &mut self,
+        sim_connect: &mut SimConnect,
+        variables: &mut MsfsVariableRegistry,
+    ) -> Result<(), Box<dyn Error>> {
+        let value = variables.read(&self.input).unwrap_or(0.);
+        let should_write = match self.last_written_value {
+            Some(last_written_value) => value != last_written_value,
+            None => true,
+        };
+
+        if should_write {
+            sim_connect.transmit_client_event(
+                SIMCONNECT_OBJECT_ID_USER,
+                self.event_id,
+                match self.mapping {
+                    VariableToEventMapping::EventDataRaw => value as u32,
+                    VariableToEventMapping::EventData32kPosition => {
+                        f64_to_sim_connect_32k_pos(value)
+                    }
+                },
+            )?;
+            self.last_written_value = Some(value);
+        }
 
         Ok(())
     }
