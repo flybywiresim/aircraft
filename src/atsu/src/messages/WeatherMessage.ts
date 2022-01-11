@@ -7,7 +7,7 @@ import { AtsuMessageType, AtsuMessageDirection, AtsuMessageResponseStatus, AtsuM
  * Defines the general weather message format
  */
 export class WeatherMessage extends AtsuMessage {
-    public Airports = new Map<string, string[]>();
+    public Reports = [];
 
     constructor() {
         super();
@@ -31,11 +31,11 @@ export class WeatherMessage extends AtsuMessage {
         let message = '';
 
         if (format === AtsuMessageSerializationFormat.MCDU) {
-            for (const airport of this.Airports.entries()) {
-                message += `{cyan}${type} ${airport[0]}{end}\n`;
+            this.Reports.forEach((report) => {
+                message += `{cyan}${type} ${report.airport}{end}\n`;
 
                 // eslint-disable-next-line no-loop-func
-                airport[1].forEach((line) => {
+                report.report.forEach((line) => {
                     if (line.startsWith('D-ATIS')) {
                         message += `{amber}${line}{end}\n`;
                     } else {
@@ -44,16 +44,16 @@ export class WeatherMessage extends AtsuMessage {
                 });
 
                 message += '{white}------------------------{end}';
-            }
+            });
         } else {
-            for (const airport of this.Airports.entries()) {
-                message += `${type} ${airport[0]}\n`;
+            this.Reports.forEach((report) => {
+                message += `${type} ${report.airport}\n`;
 
                 // eslint-disable-next-line no-loop-func
-                airport[1].forEach((line) => message += `${line}`);
+                report.report.forEach((line) => message += `${line}`);
 
                 message += '{white}------------------------{end}';
-            }
+            });
         }
 
         return message;

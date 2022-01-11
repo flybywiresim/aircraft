@@ -4,6 +4,10 @@
 import { AocSystem } from './AocSystem';
 import { AtsuMessage } from './messages/AtsuMessage';
 import { AtsuTimestamp } from './messages/AtsuTimestamp';
+import { WeatherMessage } from './messages/WeatherMessage';
+import { AtisMessage } from './messages/AtisMessage';
+import { MetarMessage } from './messages/MetarMessage';
+import { TafMessage } from './messages/TafMessage';
 import { FreetextMessage } from './messages/FreetextMessage';
 import { HoppieConnector } from './HoppieConnector';
 import { PdcMessage } from './messages/PdcMessage';
@@ -73,6 +77,10 @@ export class AtsuManager {
         }
     }
 
+    public messageRead(uid: number) {
+        this.aocSystem.messageRead(uid);
+    }
+
     public setOwnCallsign(callsign: string) {
         this.connector.setCallsign(callsign);
     }
@@ -89,4 +97,4 @@ export class AtsuManager {
     }
 }
 
-export { AtsuMessage, AtsuTimestamp, AocSystem, FreetextMessage, PdcMessage };
+export { AtsuMessage, AtsuTimestamp, AocSystem, FreetextMessage, WeatherMessage, MetarMessage, TafMessage, AtisMessage, PdcMessage };

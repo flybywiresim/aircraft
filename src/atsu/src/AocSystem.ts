@@ -1,11 +1,12 @@
 //  Copyright (c) 2022 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
+import { AtsuMessageDirection, AtsuMessage, AtsuMessageComStatus, AtsuMessageType } from './messages/AtsuMessage';
+import { AtisMessage } from './messages/AtisMessage';
 import { MetarMessage } from './messages/MetarMessage';
 import { TafMessage } from './messages/TafMessage';
 import { WeatherMessage } from './messages/WeatherMessage';
 import { AtsuTimestamp } from './messages/AtsuTimestamp';
-import { AtsuMessage, AtsuMessageComStatus, AtsuMessageType } from './messages/AtsuMessage';
 import { HoppieConnector } from './HoppieConnector';
 
 const WeatherMap = {
@@ -134,53 +135,72 @@ export class AocSystem {
     private static async receiveMetar(icao: string, message: WeatherMessage) {
         const storedMetarSrc = NXDataStore.get('CONFIG_METAR_SRC', 'MSFS');
 
-        if (icao !== '') {
-            return NXApi.getMetar(icao, WeatherMap[storedMetarSrc])
-                .then((data) => {
-                    const newLines = AocSystem.wordWrap(data.metar, 25);
-                    message.Airports[icao] = newLines;
-                    return Promise.resolve();
-                }).catch(() => Promise.reject(Error('COM UNAVAILABLE')));
-        }
-
-        return Promise.reject(Error('INVALID ICAO'));
+        await NXApi.getMetar(icao, WeatherMap[storedMetarSrc])
+            .then((data) => {
+                const newLines = AocSystem.wordWrap(data.metar, 25);
+                message.Reports.push({ airport: icao, report: newLines });
+            }).catch(() => Promise.reject(Error('COM UNAVAILABLE')));
     }
 
     private static async receiveTaf(icao: string, message: WeatherMessage) {
         const storedTafSrc = NXDataStore.get('CONFIG_TAF_SRC', 'NOAA');
 
-        if (icao !== '') {
-            return NXApi.getTaf(icao, WeatherMap[storedTafSrc])
-                .then((data) => {
-                    const newLines = AocSystem.wordWrap(data.metar, 25);
-                    message.Airports[icao] = newLines;
-                    return Promise.resolve();
-                }).catch(() => Promise.reject(Error('COM UNAVAILABLE')));
-        }
-
-        return Promise.reject(Error('INVALID ICAO'));
+        await NXApi.getTaf(icao, WeatherMap[storedTafSrc])
+            .then((data) => {
+                const newLines = AocSystem.wordWrap(data.taf, 25);
+                message.Reports.push({ airport: icao, report: newLines });
+            }).catch(() => Promise.reject(Error('COM UNAVAILABLE')));
     }
 
-    private static async receiveWeatherData(requestMetar: boolean, icaos: string[], index: number, message: WeatherMessage): Promise<WeatherMessage> {
-        if (index >= icaos.length) {
-            return Promise.resolve(message);
+    private static async receiveWeatherData(requestMetar: boolean, icaos: string[], index: number, message: WeatherMessage) {
+        if (index < icaos.length) {
+            if (requestMetar === true) {
+                await AocSystem.receiveMetar(icaos[index], message).then(() => AocSystem.receiveWeatherData(requestMetar, icaos, index + 1, message));
+            } else {
+                await AocSystem.receiveTaf(icaos[index], message).then(() => AocSystem.receiveWeatherData(requestMetar, icaos, index + 1, message));
+            }
         }
-
-        if (requestMetar === true) {
-            return AocSystem.receiveMetar(icaos[index], message).then(() => AocSystem.receiveWeatherData(requestMetar, icaos, index + 1, message));
-        }
-        return AocSystem.receiveTaf(icaos[index], message).then(() => AocSystem.receiveWeatherData(requestMetar, icaos, index + 1, message));
     }
 
-    public async receiveWeather(requestMetar: boolean, icaos: string[]) : Promise<WeatherMessage> {
+    public async receiveWeather(requestMetar: boolean, icaos: string[]) {
         let message = undefined;
-        if (requestMetar) {
+        if (requestMetar === true) {
             message = new MetarMessage();
         } else {
             message = new TafMessage();
         }
 
-        return AocSystem.receiveWeatherData(requestMetar, icaos, 0, message);
+        return AocSystem.receiveWeatherData(requestMetar, icaos, 0, message).then(() => message);
+    }
+
+    public async receiveAtis(icao: string) {
+        const storedAtisSrc = NXDataStore.get('CONFIG_ATIS_SRC', 'FAA');
+
+        return NXApi.getAtis(icao, WeatherMap[storedAtisSrc])
+            .then((data) => {
+                const message = new AtisMessage();
+                const newLines = AocSystem.wordWrap(data.combined, 25);
+                message.Reports.push({ airport: icao, report: newLines });
+                return message;
+            }).catch(() => {
+                const message = new AtisMessage();
+                message.Reports.push({ airport: icao, report: ['D-ATIS NOT AVAILABLE'] });
+                return message;
+            });
+    }
+
+    public messageRead(uid: number) {
+        const index = this.messageQueue.findIndex((element) => element.UniqueMessageID === uid);
+        if (index !== -1 && this.messageQueue[index].Direction === AtsuMessageDirection.Output) {
+            if (this.messageQueue[index].Confirmed === false) {
+                const cMsgCnt = SimVar.GetSimVarValue('L:A32NX_COMPANY_MSG_COUNT', 'Number');
+                SimVar.SetSimVarValue('L:A32NX_COMPANY_MSG_COUNT', 'Number', cMsgCnt <= 1 ? 0 : cMsgCnt - 1);
+            }
+
+            this.messageQueue[index].Confirmed = true;
+        }
+
+        return index !== -1;
     }
 
     public messages() {

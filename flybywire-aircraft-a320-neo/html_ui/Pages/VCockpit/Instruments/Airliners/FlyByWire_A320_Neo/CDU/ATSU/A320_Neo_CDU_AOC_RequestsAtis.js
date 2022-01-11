@@ -15,7 +15,8 @@ class CDUAocRequestsAtis {
         let enrouteText = "ENROUTE}[color]cyan";
 
         if (mcdu.flightPlanManager.getOrigin() && mcdu.flightPlanManager.getDestination()) {
-            store['arrIcao'] = mcdu.flightPlanManager.getDestination().ident;
+            store["depIcao"] = mcdu.flightPlanManager.getOrigin().ident;
+            store["arrIcao"] = mcdu.flightPlanManager.getDestination().ident;
         }
 
         if (store.reqID === 0) {
@@ -69,6 +70,7 @@ class CDUAocRequestsAtis {
         };
         mcdu.onLeftInput[1] = () => {
             if (store.reqID !== 0) {
+                store["arpt1"] = store["arrIcao"];
                 store["reqID"] = 0;
             }
             CDUAocRequestsAtis.ShowPage(mcdu, store);
@@ -78,6 +80,7 @@ class CDUAocRequestsAtis {
         };
         mcdu.onLeftInput[2] = () => {
             if (store.reqID !== 1) {
+                store["arpt1"] = store["depIcao"];
                 store["reqID"] = 1;
             }
             CDUAocRequestsAtis.ShowPage(mcdu, store);
@@ -110,40 +113,27 @@ class CDUAocRequestsAtis {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onRightInput[5] = async () => {
-            const icao = store["arpt1"] || store["arrIcao"];
-            if (icao === "") {
+            const icao = store["arpt1"] !== "" ? store["arpt1"] : store["arrIcao"];
+            if (icao.length !== 4 || /^[A-Z()]*$/.test(icao) === false) {
                 mcdu.addNewMessage(NXFictionalMessages.noAirportSpecified);
                 return;
             }
-            store["sendStatus"] = "QUEUED";
+            store["sendStatus"] = "SENDING";
             updateView();
 
-            const lines = [];
-            const newMessage = { "id": Date.now(), "type": "ATIS", "time": '00:00', "opened": null, "content": lines, };
-
-            getATIS(icao, lines, store.reqID, store, updateView).then(() => {
+            mcdu.atsuManager.aoc().receiveAtis(icao).then((message) => {
                 store["sendStatus"] = "SENT";
+                updateView();
+
                 setTimeout(() => {
-                    const time = fetchTimeValue();
-                    newMessage["time"] = time;
-                    // Messages go straight to the printer if FORMAT FOR PRINTER is selected.
+                    mcdu.atsuManager.receiveMessage(message);
+
+                    // print the message
                     if (store.formatID === 0) {
-                        newMessage["opened"] = time;
-                        mcdu.addMessage(newMessage);
-                        mcdu.printPage([lines.join(' ')]);
-                        setTimeout(() => {
-                            const cMsgCnt = SimVar.GetSimVarValue("L:A32NX_COMPANY_MSG_COUNT", "Number");
-                            SimVar.SetSimVarValue("L:A32NX_COMPANY_MSG_COUNT", "Number", cMsgCnt <= 1 ? 0 : cMsgCnt - 1);
-                        }, 20000);
-                    } else {
-                        mcdu.addMessage(newMessage);
+                        mcdu.atsuManager.messageRead(message.UniqueMessageID);
+                        mcdu.printPage([ message.serialize(AtsuMessageSerializationFormat.Printer) ]);
                     }
                 }, Math.floor(Math.random() * 10000) + 10000);
-                labelTimeout = setTimeout(() => {
-                    store["sendStatus"] = "";
-                    store["arpt1"] = "";
-                    CDUAocRequestsAtis.ShowPage(mcdu, store);
-                }, 3000);
             });
         };
 

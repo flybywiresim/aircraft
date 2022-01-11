@@ -48,12 +48,13 @@ class CDUAocRequestsWeather {
                 mcdu.addNewMessage(NXFictionalMessages.noAirportSpecified);
                 return;
             }
-            sendStatus = "QUEUED";
+            sendStatus = "SENDING";
             updateView();
 
             mcdu.atsuManager.aoc().receiveWeather(reqID === 0, icaos).then((message) => {
                 sendStatus = "SENT";
                 updateView();
+
                 setTimeout(() => {
                     mcdu.atsuManager.receiveMessage(message);
                 }, Math.floor(Math.random() * 10000) + 10000);
