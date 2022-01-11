@@ -1,8 +1,20 @@
 //  Copyright (c) 2022 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
+import { MetarMessage } from './messages/MetarMessage';
+import { TafMessage } from './messages/TafMessage';
+import { WeatherMessage } from './messages/WeatherMessage';
 import { AtsuMessage, AtsuMessageComStatus, AtsuMessageType } from './messages/AtsuMessage';
 import { HoppieConnector } from './HoppieConnector';
+
+const WeatherMap = {
+    FAA: 'faa',
+    IVAO: 'ivao',
+    MSFS: 'ms',
+    NOAA: 'aviationweather',
+    PILOTEDGE: 'pilotedge',
+    VATSIM: 'vatsim',
+};
 
 /**
  * Defines the AOC manager
@@ -95,6 +107,79 @@ export class AocSystem {
             this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG_REMOVE', uid);
         }
         return index !== -1;
+    }
+
+    private static wordWrap(text: string, maxLength: number) {
+        const result = [];
+        let line = [];
+        let length = 0;
+
+        text.split(' ').forEach((word) => {
+            if ((length + word.length) >= maxLength) {
+                result.push(line.join(' '));
+                line = []; length = 0;
+            }
+            length += word.length + 1;
+            line.push(word);
+        });
+
+        if (line.length > 0) {
+            result.push(line.join(' '));
+        }
+
+        return result;
+    }
+
+    private static async receiveMetar(icao: string, message: WeatherMessage) {
+        const storedMetarSrc = NXDataStore.get('CONFIG_METAR_SRC', 'MSFS');
+
+        if (icao !== '') {
+            return NXApi.getMetar(icao, WeatherMap[storedMetarSrc])
+                .then((data) => {
+                    const newLines = AocSystem.wordWrap(data.metar, 25);
+                    message.Airports[icao] = newLines;
+                    return Promise.resolve();
+                }).catch(() => Promise.reject(Error('COM UNAVAILABLE')));
+        }
+
+        return Promise.reject(Error('INVALID ICAO'));
+    }
+
+    private static async receiveTaf(icao: string, message: WeatherMessage) {
+        const storedTafSrc = NXDataStore.get('CONFIG_TAF_SRC', 'NOAA');
+
+        if (icao !== '') {
+            return NXApi.getTaf(icao, WeatherMap[storedTafSrc])
+                .then((data) => {
+                    const newLines = AocSystem.wordWrap(data.metar, 25);
+                    message.Airports[icao] = newLines;
+                    return Promise.resolve();
+                }).catch(() => Promise.reject(Error('COM UNAVAILABLE')));
+        }
+
+        return Promise.reject(Error('INVALID ICAO'));
+    }
+
+    private static async receiveWeatherData(requestMetar: boolean, icaos: string[], index: number, message: WeatherMessage): Promise<WeatherMessage> {
+        if (index >= icaos.length) {
+            return Promise.resolve(message);
+        }
+
+        if (requestMetar === true) {
+            return AocSystem.receiveMetar(icaos[index], message).then(() => AocSystem.receiveWeatherData(requestMetar, icaos, index + 1, message));
+        }
+        return AocSystem.receiveTaf(icaos[index], message).then(() => AocSystem.receiveWeatherData(requestMetar, icaos, index + 1, message));
+    }
+
+    public async receiveWeather(requestMetar: boolean, icaos: string[]) : Promise<WeatherMessage> {
+        let message = undefined;
+        if (requestMetar) {
+            message = new MetarMessage();
+        } else {
+            message = new TafMessage();
+        }
+
+        return AocSystem.receiveWeatherData(requestMetar, icaos, 0, message);
     }
 
     public messages() {
