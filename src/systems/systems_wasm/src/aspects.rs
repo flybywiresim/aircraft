@@ -106,8 +106,14 @@ impl<'a, 'b> MsfsAspectBuilder<'a, 'b> {
         ));
     }
 
-    pub fn copy(&mut self, mut input: Variable, mut output: Variable) {
-        todo!();
+    pub fn copy(&mut self, input: Variable, output: Variable) {
+        let input = self.variables.register(&input);
+        let output = self.variables.register(&output);
+
+        self.variable_functions.push(VariableFunction::Map(
+            Map::new(input, |value| value, output),
+            UpdateOn::PreTick,
+        ));
     }
 
     pub fn map_many(
