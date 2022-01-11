@@ -52,7 +52,7 @@ export class WeatherMessage extends AtsuMessage {
                 // eslint-disable-next-line no-loop-func
                 report.report.forEach((line) => message += `${line}\n`);
 
-                message += '{white}------------------------{end}\n';
+                message += '------------------------\n';
             });
         }
 
