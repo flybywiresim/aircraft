@@ -207,6 +207,14 @@ export class AocSystem {
         return this.messageQueue;
     }
 
+    public outputMessages() {
+        return this.messageQueue.filter((entry) => entry.Direction === AtsuMessageDirection.Output);
+    }
+
+    public inputMessages() {
+        return this.messageQueue.filter((entry) => entry.Direction === AtsuMessageDirection.Input);
+    }
+
     public uidRegistered(uid: number) {
         return this.messageQueue.findIndex((element) => uid === element.UniqueMessageID) !== -1;
     }
