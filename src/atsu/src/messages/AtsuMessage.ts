@@ -31,6 +31,12 @@ export enum AtsuMessageComStatus {
     Failed
 }
 
+export enum AtsuMessageSerializationFormat {
+    MCDU,
+    DCDU,
+    Printer
+}
+
 /**
  * Defines the generic ATC message
  */
@@ -53,7 +59,7 @@ export class AtsuMessage {
 
     public Confirmed = false;
 
-    public serialize() : string {
+    public serialize(_format: AtsuMessageSerializationFormat) : string {
         throw new Error('No valid implementation');
     }
 

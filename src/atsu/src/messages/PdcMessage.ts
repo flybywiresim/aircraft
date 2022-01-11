@@ -1,7 +1,7 @@
 //  Copyright (c) 2021 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import { AtsuMessageType, AtsuMessageDirection, AtsuMessageResponseStatus, AtsuMessage } from './AtsuMessage';
+import { AtsuMessageType, AtsuMessageDirection, AtsuMessageResponseStatus, AtsuMessageSerializationFormat, AtsuMessage } from './AtsuMessage';
 
 /**
  * Defines the general PDC message format
@@ -36,7 +36,7 @@ export class PdcMessage extends AtsuMessage {
         this.Status = AtsuMessageResponseStatus.Open;
     }
 
-    public serialize() {
+    public serialize(_format: AtsuMessageSerializationFormat) {
         // create the generic PDC message
         let pdcMessage = 'REQUEST PREDEP CLEARANCE\n';
         pdcMessage += `${this.Callsign} A20N TO ${this.Destination}\n`;
@@ -78,4 +78,4 @@ export class PdcMessage extends AtsuMessage {
     }
 }
 
-export { AtsuMessageType, AtsuMessageDirection, AtsuMessageResponseStatus, AtsuMessage };
+export { AtsuMessageType, AtsuMessageDirection, AtsuMessageResponseStatus, AtsuMessageSerializationFormat, AtsuMessage };

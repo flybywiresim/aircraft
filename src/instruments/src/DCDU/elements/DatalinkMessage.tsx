@@ -1,5 +1,5 @@
 import React, { useState, memo } from 'react';
-import { AtsuMessage, AtsuMessageComStatus, AtsuMessageDirection } from '@atsu/messages/AtsuMessage';
+import { AtsuMessage, AtsuMessageComStatus, AtsuMessageDirection, AtsuMessageSerializationFormat } from '@atsu/messages/AtsuMessage';
 import { useInteractionEvents } from '@instruments/common/hooks.js';
 
 type DatalinkMessageProps = {
@@ -40,7 +40,7 @@ export const DatalinkMessage: React.FC<DatalinkMessageProps> = memo(({ message, 
     });
 
     // get the number of pages
-    let lines = message.serialize().split(/\r?\n/);
+    let lines = message.serialize(AtsuMessageSerializationFormat.DCDU).split(/\r?\n/);
     lines = lines.filter((e) => e);
     const messagePageCount = Math.ceil(lines.length / maxLines);
     if (messagePageCount !== pageCount) {
