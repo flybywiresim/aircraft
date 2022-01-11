@@ -46,22 +46,12 @@ class CDUAocRequestsWeather {
             }
             sendStatus = "QUEUED";
             updateView();
-            const lines = [];
-            const newMessage = { "id": Date.now(), "type": reqTypes[reqID], "time": '00:00', "opened": null, "content": lines, };
 
-            const getInfo = async () => {
-                if (reqID === 0) {
-                    getMETAR(icaos, lines, updateView);
-                } else {
-                    getTAF(icaos, lines, updateView);
-                }
-            };
-
-            getInfo().then(() => {
+            mcdu.atsuManager.aoc().receiveWeather(reqID === 0, icaos).then((message) => {
                 sendStatus = "SENT";
+                updateView();
                 setTimeout(() => {
-                    newMessage["time"] = fetchTimeValue();
-                    mcdu.addMessage(newMessage);
+                    mcdu.atsuManager.receiveMessage(message);
                 }, Math.floor(Math.random() * 10000) + 10000);
                 labelTimeout = setTimeout(() => {
                     sendStatus = "";
