@@ -378,17 +378,19 @@ pub enum Variable {
 impl Variable {
     fn name(&self) -> &str {
         match self {
-            Variable::Aircraft(name, _, _) => name,
-            Variable::Named(name) => name,
-            Variable::Aspect(name) => name,
+            Variable::Aircraft(name, ..)
+            | Variable::Named(name, ..)
+            | Variable::Aspect(name, ..) => name,
         }
     }
 
     fn add_prefix(&mut self, prefix: &str) {
         match self {
-            Variable::Aircraft(name, _, _) => *name = format!("{}{}", prefix, name),
-            Variable::Named(name) => *name = format!("{}{}", prefix, name),
-            Variable::Aspect(name) => *name = format!("{}{}", prefix, name),
+            Variable::Aircraft(name, ..)
+            | Variable::Named(name, ..)
+            | Variable::Aspect(name, ..) => {
+                *name = format!("{}{}", prefix, name);
+            }
         }
     }
 }
@@ -396,7 +398,7 @@ impl Variable {
 impl From<&Variable> for VariableValue {
     fn from(value: &Variable) -> Self {
         match value {
-            Variable::Aircraft(name, units, index) => {
+            Variable::Aircraft(name, units, index, ..) => {
                 VariableValue::Aircraft(match AircraftVariable::from(name, units, *index) {
                     Ok(aircraft_variable) => aircraft_variable,
                     Err(error) => panic!(
@@ -406,8 +408,8 @@ impl From<&Variable> for VariableValue {
                     ),
                 })
             }
-            Variable::Named(name) => VariableValue::Named(NamedVariable::from(name)),
-            Variable::Aspect(_) => VariableValue::Aspect(0.),
+            Variable::Named(name, ..) => VariableValue::Named(NamedVariable::from(name)),
+            Variable::Aspect(..) => VariableValue::Aspect(0.),
         }
     }
 }
@@ -415,9 +417,9 @@ impl From<&Variable> for VariableValue {
 impl From<&Variable> for VariableType {
     fn from(value: &Variable) -> Self {
         match value {
-            Variable::Aircraft(_, _, _) => Self::Aircraft,
-            Variable::Named(_) => Self::Named,
-            Variable::Aspect(_) => Self::Aspect,
+            Variable::Aircraft(..) => Self::Aircraft,
+            Variable::Named(..) => Self::Named,
+            Variable::Aspect(..) => Self::Aspect,
         }
     }
 }
@@ -523,7 +525,7 @@ impl MsfsVariableRegistry {
                     .insert(variable.name().to_owned(), identifier);
 
                 let mut variable = variable.clone();
-                if matches!(variable, Variable::Named(_)) {
+                if matches!(variable, Variable::Named(..)) {
                     variable.add_prefix(&self.named_variable_prefix);
                 }
 
