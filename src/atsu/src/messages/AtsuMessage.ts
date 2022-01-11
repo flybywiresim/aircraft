@@ -9,8 +9,12 @@ export enum AtsuMessageDirection {
 }
 
 export enum AtsuMessageType {
-    Freetext,
-    PDC
+    Freetext = 0,
+    PDC = 1,
+    METAR = 2,
+    TAF = 3,
+    ATIS = 4,
+    AOC = 5
 }
 
 export enum AtsuMessageResponseStatus {

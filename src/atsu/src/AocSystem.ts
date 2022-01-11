@@ -19,7 +19,7 @@ export class AocSystem {
     }
 
     public static isRelevantMessage(message: AtsuMessage) {
-        return message.Type === AtsuMessageType.Freetext || message.Type === AtsuMessageType.PDC;
+        return message.Type < AtsuMessageType.AOC;
     }
 
     public static isDcduMessage(message: AtsuMessage) {
