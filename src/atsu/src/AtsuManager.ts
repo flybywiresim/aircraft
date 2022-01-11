@@ -65,7 +65,7 @@ export class AtsuManager {
         return Promise.reject(Error('UNKNOWN MSG'));
     }
 
-    private removeMessage(uid: number) {
+    public removeMessage(uid: number) {
         if (this.aocSystem.removeMessage(uid) === true) {
             this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG_REMOVE', uid);
         }
