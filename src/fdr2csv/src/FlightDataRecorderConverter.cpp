@@ -280,6 +280,8 @@ void FlightDataRecorderConverter::writeHeader(ofstream& out, const string& delim
   out << "athr.data.bx_m_s2" << delimiter;
   out << "athr.data.by_m_s2" << delimiter;
   out << "athr.data.bz_m_s2" << delimiter;
+  out << "athr.data.Psi_magnetic_deg" << delimiter;
+  out << "athr.data.Psi_magnetic_track_deg" << delimiter;
   out << "athr.data.on_ground" << delimiter;
   out << "athr.data.flap_handle_index" << delimiter;
   out << "athr.data.is_engine_operative_1" << delimiter;
@@ -291,6 +293,7 @@ void FlightDataRecorderConverter::writeHeader(ofstream& out, const string& delim
   out << "athr.data.TAT_degC" << delimiter;
   out << "athr.data.OAT_degC" << delimiter;
   out << "athr.data.ISA_degC" << delimiter;
+  out << "athr.data.ambient_density_kg_per_m3" << delimiter;
   out << "athr.data_computed.TLA_in_active_range" << delimiter;
   out << "athr.data_computed.is_FLX_active" << delimiter;
   out << "athr.data_computed.ATHR_push" << delimiter;
@@ -551,6 +554,10 @@ void FlightDataRecorderConverter::writeHeader(ofstream& out, const string& delim
   out << "data.hydraulic_green_pressure" << delimiter;
   out << "data.hydraulic_blue_pressure" << delimiter;
   out << "data.hydraulic_yellow_pressure" << delimiter;
+  out << "data.throttle_lever_1_pos" << delimiter;
+  out << "data.throttle_lever_2_pos" << delimiter;
+  out << "data.corrected_engine_N1_1_percent" << delimiter;
+  out << "data.corrected_engine_N1_2_percent" << delimiter;
   out << endl;
 }
 
@@ -839,6 +846,8 @@ void FlightDataRecorderConverter::writeStruct(ofstream& out,
   out << athr.data.bx_m_s2 << delimiter;
   out << athr.data.by_m_s2 << delimiter;
   out << athr.data.bz_m_s2 << delimiter;
+  out << athr.data.Psi_magnetic_deg << delimiter;
+  out << athr.data.Psi_magnetic_track_deg << delimiter;
   out << static_cast<unsigned int>(athr.data.on_ground) << delimiter;
   out << athr.data.flap_handle_index << delimiter;
   out << static_cast<unsigned int>(athr.data.is_engine_operative_1) << delimiter;
@@ -850,6 +859,7 @@ void FlightDataRecorderConverter::writeStruct(ofstream& out,
   out << athr.data.TAT_degC << delimiter;
   out << athr.data.OAT_degC << delimiter;
   out << athr.data.ISA_degC << delimiter;
+  out << athr.data.ambient_density_kg_per_m3 << delimiter;
   out << static_cast<unsigned int>(athr.data_computed.TLA_in_active_range) << delimiter;
   out << static_cast<unsigned int>(athr.data_computed.is_FLX_active) << delimiter;
   out << static_cast<unsigned int>(athr.data_computed.ATHR_push) << delimiter;
@@ -1110,5 +1120,9 @@ void FlightDataRecorderConverter::writeStruct(ofstream& out,
   out << data.hydraulic_green_pressure << delimiter;
   out << data.hydraulic_blue_pressure << delimiter;
   out << data.hydraulic_yellow_pressure << delimiter;
+  out << data.throttle_lever_1_pos << delimiter;
+  out << data.throttle_lever_2_pos << delimiter;
+  out << data.corrected_engine_N1_1_percent << delimiter;
+  out << data.corrected_engine_N1_2_percent << delimiter;
   out << endl;
 }

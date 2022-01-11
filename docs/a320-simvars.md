@@ -764,7 +764,15 @@
 
 - A32NX_HYD_{loop_name}_RESERVOIR_LEVEL
     - Gallon
-    - Current fluid level in the {loop_name} hydraulic circuit reservoir
+    - Current gaugeable fluid level in the {loop_name} hydraulic circuit reservoir
+    - {loop_name}
+        - GREEN
+        - BLUE
+        - YELLOW
+
+- A32NX_HYD_{loop_name}_RESERVOIR_LEVEL_IS_LOW
+    - Boolean
+    - Low level switch of {loop_name} hydraulic circuit reservoir indicates low state
     - {loop_name}
         - GREEN
         - BLUE
@@ -794,6 +802,13 @@
 - A32NX_HYD_{loop_name}_EPUMP_RPM
     - Rpm
     - Current {loop_name} electric pump speed
+    - {loop_name}
+        - BLUE
+        - YELLOW
+
+- A32NX_HYD_{loop_name}_EPUMP_CAVITATION
+    - Percent over 100
+    - Current {loop_name} electric pump cavitation efficiency. 0 running dry to 1 full efficiency
     - {loop_name}
         - BLUE
         - YELLOW
@@ -1704,6 +1719,14 @@ In the variables below, {number} should be replaced with one item in the set: { 
       OFF | 0
       ON | 1
 
+- A32NX_FCU_HEADING_SYNC
+    - Boolean
+    - Triggers the FCU to synchronize to current heading or track
+      State | Value
+      --- | ---
+      Inactive | 0
+      Revert | 1
+
 - A32NX_FCU_MODE_REVERSION_ACTIVE
     - Boolean
     - Triggers the FCU to synchronize to current V/S
@@ -1863,6 +1886,10 @@ In the variables below, {number} should be replaced with one item in the set: { 
 - A32NX_AUTOTHRUST_THRUST_LIMIT
     - Number (% N1)
     - Indicates the thrust limit N1
+
+- A32NX_AUTOTHRUST_THRUST_LIMIT_REV
+    - Number (% N1)
+    - Indicates the thrust limit N1 for REV
 
 - A32NX_AUTOTHRUST_THRUST_LIMIT_IDLE
     - Number (% N1)

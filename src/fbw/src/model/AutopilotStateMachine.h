@@ -69,6 +69,8 @@ class AutopilotStateMachineModelClass
     real_T eventTime_n4;
     real_T eventTime_i;
     real_T eventTime_p;
+    real_T eventTime_k;
+    real_T eventTime_b;
     real_T newFcuAltitudeSelected;
     real_T newFcuAltitudeSelected_f;
     boolean_T DelayInput1_DSTATE_a;
@@ -130,12 +132,15 @@ class AutopilotStateMachineModelClass
     boolean_T newFcuAltitudeSelected_c;
     boolean_T sTCAS;
     boolean_T latch;
-    boolean_T eventTime_not_empty_p0;
+    boolean_T sSRS;
+    boolean_T eventTime_not_empty_k;
     boolean_T state;
     boolean_T eventTime_not_empty_f;
     boolean_T eventTime_not_empty_j;
     boolean_T eventTime_not_empty_m;
     boolean_T sThrottleCondition;
+    boolean_T eventTime_not_empty_i;
+    boolean_T eventTime_not_empty_kh;
     boolean_T sTCAS_g;
     boolean_T wasFlightPlanAvailable;
     boolean_T wasFlightPlanAvailable_not_empty;

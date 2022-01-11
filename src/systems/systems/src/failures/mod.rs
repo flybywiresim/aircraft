@@ -1,8 +1,12 @@
+use crate::shared::HydraulicColor;
 use crate::simulation::SimulationElement;
 
 #[derive(Clone, Copy, PartialEq)]
 pub enum FailureType {
     TransformerRectifier(usize),
+    ReservoirLeak(HydraulicColor),
+    ReservoirAirLeak(HydraulicColor),
+    ReservoirReturnLeak(HydraulicColor),
 }
 
 pub struct Failure {

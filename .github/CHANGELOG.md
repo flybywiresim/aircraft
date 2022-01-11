@@ -88,14 +88,31 @@
 1. [PFD] Added new messages and modes for TCAS - @lukecologne (lukecologne#1156)
 1. [FDR] Added additional data to the FDR - @aguther (Andreas Guther)
 1. [ATHR] Fixed ATHR being armed in flight when TOGA applied without GA condition - @aguther (Andreas Guther)
+1. [EFB] Fixed landing performance calculator clear button and wind magnitude, made small ui improvements - @ghitier (Guillaume H.)
 1. [ECAM] Fixed gross weight being shown without engines running - @BlueberryKing (BlueberryKing)
 1. [FLIGHT MODEL] Fixes co-pilot not being shown in external view -  @donstim (donbikes#4084)
 1. [BLEED] Replace default bleed system - @BlueberryKing (BlueberryKing)
 1. [ENGINE/ MODEL] Implement engine shutdown and realistic engine animation - @Taz5150 (TazX [Z+2]#0405)
+1. [ATSU] Use https for SimBrief - @tracernz (Mike)
 1. [FM] Stored waypoints - @tracernz (Mike)
 1. [ATSU] Import lat/lon waypoints correctly from SimBrief - @tracernz (Mike)
 1. [MCDU] Added manual ILS tuning by ident on RAD NAV page - @tracernz (Mike)
 1. [MCDU] Support manual entry of forward LS course - @tracernz (Mike)
+1. [MCDU] Increase timeout for airport loading - @tracernz (Mike)
+1. [AP] Fixed CLB not engaging correctly on take-off - @aguther (Andreas Guther)
+1. [AP] Added time delay to ALT condition - @aguther (Andreas Guther)
+1. [LIGHTS] Add external PARK BRK LT - @bouveng (Johan Bouveng)
+1. [AP] Fixed missing HDG sync on FD/AP engagement when FD and AP have been off - @aguther (Andreas Guther)
+1. [FDR] Added additional values to help debug in some cases - @aguther (Andreas Guther)
+1. [ATHR] Added switch to use externally defined thrust limits and separated thrust limits into own model - @aguther (Andreas Guther)
+1. [FBW] Improved sideslip controller - @IbrahimK42 (IbrahimK42)
+1. [AP] Further improved ALT CST* and ALT CST conditions - @aguther (Andreas Guther)
+1. [MCDU] Added support for connecting MCDU to external devices - @tyler58546 (tyler58546)
+1. [ATHR] Improvement of ATHR laws - @IbrahimK42(IbrahimK42), @aguther (Andreas Guther)
+1. [MISC] Fixed flap configuration in final.flt and runway.flt files -  @donstim (donbikes#4084)
+1. [EFB] Added Reset to Defaults button to EFB throttle calibration page - @frankkopp (Cdr_Maverick#6475)
+1. [BLEED] Fix potential NaN calculations for fast flows - @Crocket63
+1. [Hyd] Reservoirs connected to pneumatics and first failures - @Crocket63
 
 ## 0.7.0
 
