@@ -30,7 +30,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     let mut sim_connect = gauge.open_simconnect("systems")?;
 
     let (mut simulation, mut handler) =
-        MsfsSimulationBuilder::new("A32NX_".to_owned(), sim_connect.as_mut().get_mut())
+        MsfsSimulationBuilder::new("A32NX_".into(), sim_connect.as_mut().get_mut())
             .with_electrical_buses(vec![
                 ("AC_1", 2),
                 ("AC_1", 2),
@@ -48,7 +48,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
                 ("DC_HOT_2", 13),
                 ("DC_GND_FLT_SVC", 15),
             ])
-            .with_auxiliary_power_unit("OVHD_APU_START_PB_IS_AVAILABLE".to_owned(), 8)?
+            .with_auxiliary_power_unit("OVHD_APU_START_PB_IS_AVAILABLE".into(), 8)?
             .with_failures(vec![
                 (24_000, FailureType::TransformerRectifier(1)),
                 (24_001, FailureType::TransformerRectifier(2)),
@@ -132,53 +132,41 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
 
 fn aircraft_variable_mapping(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>> {
     builder.copy(
-        Variable::Aircraft("APU GENERATOR SWITCH".to_owned(), "Bool".to_owned(), 0),
-        Variable::Aspect("OVHD_ELEC_APU_GEN_PB_IS_ON".to_owned()),
+        Variable::Aircraft("APU GENERATOR SWITCH".into(), "Bool".into(), 0),
+        Variable::Aspect("OVHD_ELEC_APU_GEN_PB_IS_ON".into()),
     );
     builder.copy(
-        Variable::Aircraft("BLEED AIR ENGINE".to_owned(), "Bool".to_owned(), 1),
-        Variable::Aspect("OVHD_PNEU_ENG_1_BLEED_PB_IS_AUTO".to_owned()),
+        Variable::Aircraft("BLEED AIR ENGINE".into(), "Bool".into(), 1),
+        Variable::Aspect("OVHD_PNEU_ENG_1_BLEED_PB_IS_AUTO".into()),
     );
     builder.copy(
-        Variable::Aircraft("BLEED AIR ENGINE".to_owned(), "Bool".to_owned(), 2),
-        Variable::Aspect("OVHD_PNEU_ENG_2_BLEED_PB_IS_AUTO".to_owned()),
+        Variable::Aircraft("BLEED AIR ENGINE".into(), "Bool".into(), 2),
+        Variable::Aspect("OVHD_PNEU_ENG_2_BLEED_PB_IS_AUTO".into()),
     );
     builder.copy(
-        Variable::Aircraft("EXTERNAL POWER AVAILABLE".to_owned(), "Bool".to_owned(), 1),
-        Variable::Aspect("OVHD_ELEC_EXT_PWR_PB_IS_AVAILABLE".to_owned()),
+        Variable::Aircraft("EXTERNAL POWER AVAILABLE".into(), "Bool".into(), 1),
+        Variable::Aspect("OVHD_ELEC_EXT_PWR_PB_IS_AVAILABLE".into()),
     );
     builder.copy(
-        Variable::Aircraft("EXTERNAL POWER ON".to_owned(), "Bool".to_owned(), 1),
-        Variable::Aspect("OVHD_ELEC_EXT_PWR_PB_IS_ON".to_owned()),
-    );
-
-    builder.copy(
-        Variable::Aircraft(
-            "GENERAL ENG MASTER ALTERNATOR".to_owned(),
-            "Bool".to_owned(),
-            1,
-        ),
-        Variable::Aspect("OVHD_ELEC_ENG_GEN_1_PB_IS_ON".to_owned()),
+        Variable::Aircraft("EXTERNAL POWER ON".into(), "Bool".into(), 1),
+        Variable::Aspect("OVHD_ELEC_EXT_PWR_PB_IS_ON".into()),
     );
 
     builder.copy(
-        Variable::Aircraft(
-            "GENERAL ENG MASTER ALTERNATOR".to_owned(),
-            "Bool".to_owned(),
-            2,
-        ),
-        Variable::Aspect("OVHD_ELEC_ENG_GEN_2_PB_IS_ON".to_owned()),
+        Variable::Aircraft("GENERAL ENG MASTER ALTERNATOR".into(), "Bool".into(), 1),
+        Variable::Aspect("OVHD_ELEC_ENG_GEN_1_PB_IS_ON".into()),
+    );
+
+    builder.copy(
+        Variable::Aircraft("GENERAL ENG MASTER ALTERNATOR".into(), "Bool".into(), 2),
+        Variable::Aspect("OVHD_ELEC_ENG_GEN_2_PB_IS_ON".into()),
     );
 
     builder.map(
         UpdateOn::PreTick,
-        Variable::Aircraft(
-            "INTERACTIVE POINT OPEN".to_owned(),
-            "Position".to_owned(),
-            5,
-        ),
+        Variable::Aircraft("INTERACTIVE POINT OPEN".into(), "Position".into(), 5),
         |value| if value > 0. { 1. } else { 0. },
-        Variable::Aspect("FWD_DOOR_CARGO_OPEN_REQ".to_owned()),
+        Variable::Aspect("FWD_DOOR_CARGO_OPEN_REQ".into()),
     );
 
     Ok(())
@@ -190,13 +178,13 @@ fn brakes(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>> {
         EventToVariableMapping::CurrentValueToValue(|current_value| {
             from_bool(!to_bool(current_value))
         }),
-        Variable::Named("PARK_BRAKE_LEVER_POS".to_owned()),
+        Variable::Named("PARK_BRAKE_LEVER_POS".into()),
         |options| options.mask(),
     )?;
     builder.event_to_variable(
         "PARKING_BRAKE_SET",
         EventToVariableMapping::EventDataToValue(|event_data| from_bool(event_data == 1)),
-        Variable::Named("PARK_BRAKE_LEVER_POS".to_owned()),
+        Variable::Named("PARK_BRAKE_LEVER_POS".into()),
         |options| options.mask(),
     )?;
 
@@ -212,13 +200,13 @@ fn brakes(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>> {
     builder.event_to_variable(
         "AXIS_LEFT_BRAKE_SET",
         EventToVariableMapping::EventData32kPosition,
-        Variable::Aspect("BRAKE LEFT FORCE FACTOR".to_owned()),
+        Variable::Aspect("BRAKE LEFT FORCE FACTOR".into()),
         options,
     )?;
     builder.event_to_variable(
         "AXIS_RIGHT_BRAKE_SET",
         EventToVariableMapping::EventData32kPosition,
-        Variable::Aspect("BRAKE RIGHT FORCE FACTOR".to_owned()),
+        Variable::Aspect("BRAKE RIGHT FORCE FACTOR".into()),
         options,
     )?;
 
@@ -229,19 +217,19 @@ fn brakes(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>> {
     builder.event_to_variable(
         "BRAKES",
         EventToVariableMapping::SmoothPress(KEYBOARD_PRESS_SPEED, KEYBOARD_RELEASE_SPEED),
-        Variable::Aspect("BRAKES".to_owned()),
+        Variable::Aspect("BRAKES".into()),
         |options| options.mask(),
     )?;
     builder.event_to_variable(
         "BRAKES_LEFT",
         EventToVariableMapping::SmoothPress(KEYBOARD_PRESS_SPEED, KEYBOARD_RELEASE_SPEED),
-        Variable::Aspect("BRAKES_LEFT".to_owned()),
+        Variable::Aspect("BRAKES_LEFT".into()),
         |options| options.mask(),
     )?;
     builder.event_to_variable(
         "BRAKES_RIGHT",
         EventToVariableMapping::SmoothPress(KEYBOARD_PRESS_SPEED, KEYBOARD_RELEASE_SPEED),
-        Variable::Aspect("BRAKES_RIGHT".to_owned()),
+        Variable::Aspect("BRAKES_RIGHT".into()),
         |options| options.mask(),
     )?;
 
@@ -250,22 +238,22 @@ fn brakes(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>> {
     builder.reduce(
         UpdateOn::PreTick,
         vec![
-            Variable::Aspect("BRAKES".to_owned()),
-            Variable::Aspect("BRAKES_LEFT".to_owned()),
-            Variable::Aspect("BRAKE LEFT FORCE FACTOR".to_owned()),
+            Variable::Aspect("BRAKES".into()),
+            Variable::Aspect("BRAKES_LEFT".into()),
+            Variable::Aspect("BRAKE LEFT FORCE FACTOR".into()),
         ],
         to_percent_max,
-        Variable::Named("LEFT_BRAKE_PEDAL_INPUT".to_owned()),
+        Variable::Named("LEFT_BRAKE_PEDAL_INPUT".into()),
     );
     builder.reduce(
         UpdateOn::PreTick,
         vec![
-            Variable::Aspect("BRAKES".to_owned()),
-            Variable::Aspect("BRAKES_RIGHT".to_owned()),
-            Variable::Aspect("BRAKE RIGHT FORCE FACTOR".to_owned()),
+            Variable::Aspect("BRAKES".into()),
+            Variable::Aspect("BRAKES_RIGHT".into()),
+            Variable::Aspect("BRAKE RIGHT FORCE FACTOR".into()),
         ],
         to_percent_max,
-        Variable::Named("RIGHT_BRAKE_PEDAL_INPUT".to_owned()),
+        Variable::Named("RIGHT_BRAKE_PEDAL_INPUT".into()),
     );
 
     Ok(())
@@ -285,25 +273,25 @@ fn autobrakes(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>> {
     builder.event_to_variable(
         "AUTOBRAKE_LO_SET",
         EventToVariableMapping::Value(1.),
-        Variable::Named("OVHD_AUTOBRK_LOW_ON_IS_PRESSED".to_owned()),
+        Variable::Named("OVHD_AUTOBRK_LOW_ON_IS_PRESSED".into()),
         options,
     )?;
     builder.event_to_variable(
         "AUTOBRAKE_MED_SET",
         EventToVariableMapping::Value(1.),
-        Variable::Named("OVHD_AUTOBRK_MED_ON_IS_PRESSED".to_owned()),
+        Variable::Named("OVHD_AUTOBRK_MED_ON_IS_PRESSED".into()),
         options,
     )?;
     builder.event_to_variable(
         "AUTOBRAKE_HI_SET",
         EventToVariableMapping::Value(1.),
-        Variable::Named("OVHD_AUTOBRK_MAX_ON_IS_PRESSED".to_owned()),
+        Variable::Named("OVHD_AUTOBRK_MAX_ON_IS_PRESSED".into()),
         options,
     )?;
     builder.event_to_variable(
         "AUTOBRAKE_DISARM",
         EventToVariableMapping::Value(1.),
-        Variable::Named("AUTOBRAKE_DISARM".to_owned()),
+        Variable::Named("AUTOBRAKE_DISARM".into()),
         |options| options.after_tick_set_to(0.),
     )?;
 
@@ -312,23 +300,20 @@ fn autobrakes(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>> {
 
 fn nose_wheel_steering(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>> {
     // The rudder pedals should start in a centered position.
-    builder.init_variable(
-        Variable::Aspect("RAW_RUDDER_PEDAL_POSITION".to_owned()),
-        0.5,
-    );
+    builder.init_variable(Variable::Aspect("RAW_RUDDER_PEDAL_POSITION".into()), 0.5);
 
     builder.map(
         UpdateOn::PreTick,
-        Variable::Named("RUDDER_PEDAL_POSITION".to_owned()),
+        Variable::Named("RUDDER_PEDAL_POSITION".into()),
         |value| ((value + 100.) / 200.),
-        Variable::Aspect("RAW_RUDDER_PEDAL_POSITION".to_owned()),
+        Variable::Aspect("RAW_RUDDER_PEDAL_POSITION".into()),
     );
 
     builder.map_many(
         UpdateOn::PostTick,
         vec![
-            Variable::Named("REALISTIC_TILLER_ENABLED".to_owned()),
-            Variable::Aspect("RAW_RUDDER_PEDAL_POSITION".to_owned()),
+            Variable::Named("REALISTIC_TILLER_ENABLED".into()),
+            Variable::Aspect("RAW_RUDDER_PEDAL_POSITION".into()),
         ],
         |values| {
             let realistic_tiller_enabled = to_bool(values[0]);
@@ -340,21 +325,18 @@ fn nose_wheel_steering(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Er
                 0.
             }
         },
-        Variable::Named("RUDDER_PEDAL_POSITION".to_owned()),
+        Variable::Named("RUDDER_PEDAL_POSITION".into()),
     );
 
     // The tiller handle should start in a centered position.
-    builder.init_variable(
-        Variable::Aspect("RAW_TILLER_HANDLE_POSITION".to_owned()),
-        0.5,
-    );
+    builder.init_variable(Variable::Aspect("RAW_TILLER_HANDLE_POSITION".into()), 0.5);
 
     // Lacking a better event to bind to, we've picked a mixture axis for setting the
     // tiller handle position.
     builder.event_to_variable(
         "AXIS_MIXTURE4_SET",
         EventToVariableMapping::EventData32kPosition,
-        Variable::Aspect("RAW_TILLER_HANDLE_POSITION".to_owned()),
+        Variable::Aspect("RAW_TILLER_HANDLE_POSITION".into()),
         |options| options.mask(),
     )?;
 
@@ -367,7 +349,7 @@ fn nose_wheel_steering(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Er
                 TILLER_KEYBOARD_INCREMENTS,
             )
         }),
-        Variable::Aspect("RAW_TILLER_HANDLE_POSITION".to_owned()),
+        Variable::Aspect("RAW_TILLER_HANDLE_POSITION".into()),
         |options| options.mask(),
     )?;
     builder.event_to_variable(
@@ -378,17 +360,17 @@ fn nose_wheel_steering(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Er
                 TILLER_KEYBOARD_INCREMENTS,
             )
         }),
-        Variable::Aspect("RAW_TILLER_HANDLE_POSITION".to_owned()),
+        Variable::Aspect("RAW_TILLER_HANDLE_POSITION".into()),
         |options| options.mask(),
     )?;
 
     builder.map_many(
         UpdateOn::PostTick,
         vec![
-            Variable::Named("REALISTIC_TILLER_ENABLED".to_owned()),
-            Variable::Aspect("RAW_RUDDER_PEDAL_POSITION".to_owned()),
-            Variable::Aspect("RAW_TILLER_HANDLE_POSITION".to_owned()),
-            Variable::Aspect("TILLER_PEDAL_DISCONNECT".to_owned()),
+            Variable::Named("REALISTIC_TILLER_ENABLED".into()),
+            Variable::Aspect("RAW_RUDDER_PEDAL_POSITION".into()),
+            Variable::Aspect("RAW_TILLER_HANDLE_POSITION".into()),
+            Variable::Aspect("TILLER_PEDAL_DISCONNECT".into()),
         ],
         |values| {
             let realistic_tiller_enabled = to_bool(values[0]);
@@ -408,7 +390,7 @@ fn nose_wheel_steering(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Er
                 }
             }
         },
-        Variable::Named("TILLER_HANDLE_POSITION".to_owned()),
+        Variable::Named("TILLER_HANDLE_POSITION".into()),
     );
 
     // Lacking a better event to bind to, we've picked the toggle water rudder event for
@@ -416,31 +398,31 @@ fn nose_wheel_steering(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Er
     builder.event_to_variable(
         "TOGGLE_WATER_RUDDER",
         EventToVariableMapping::Value(1.),
-        Variable::Aspect("TILLER_PEDAL_DISCONNECT".to_owned()),
+        Variable::Aspect("TILLER_PEDAL_DISCONNECT".into()),
         |options| options.mask().after_tick_set_to(0.),
     )?;
 
-    builder.init_variable(Variable::Aspect("RUDDER_POSITION_RAW".to_owned()), 0.5);
+    builder.init_variable(Variable::Aspect("RUDDER_POSITION_RAW".into()), 0.5);
 
     builder.map(
         UpdateOn::PreTick,
-        Variable::Aircraft("RUDDER POSITION".to_owned(), "Position".to_owned(), 0),
+        Variable::Aircraft("RUDDER POSITION".into(), "Position".into(), 0),
         |value| value + 1. / 2.,
-        Variable::Aspect("RUDDER_POSITION_RAW".to_owned()),
+        Variable::Aspect("RUDDER_POSITION_RAW".into()),
     );
 
     builder.map(
         UpdateOn::PostTick,
-        Variable::Aspect("NOSE_WHEEL_POSITION_RAW".to_owned()),
+        Variable::Aspect("NOSE_WHEEL_POSITION_RAW".into()),
         steering_animation_to_msfs_from_steering_angle,
-        Variable::Named("NOSE_WHEEL_POSITION".to_owned()),
+        Variable::Named("NOSE_WHEEL_POSITION".into()),
     );
 
     builder.map_many(
         UpdateOn::PostTick,
         vec![
-            Variable::Aspect("NOSE_WHEEL_POSITION_RAW".to_owned()),
-            Variable::Aspect("RUDDER_POSITION_RAW".to_owned()),
+            Variable::Aspect("NOSE_WHEEL_POSITION_RAW".into()),
+            Variable::Aspect("RUDDER_POSITION_RAW".into()),
         ],
         |values| {
             let nose_wheel_position = values[0];
@@ -448,11 +430,11 @@ fn nose_wheel_steering(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Er
 
             steering_demand_to_msfs_from_steering_angle(nose_wheel_position, rudder_position)
         },
-        Variable::Aspect("STEERING_ANGLE".to_owned()),
+        Variable::Aspect("STEERING_ANGLE".into()),
     );
 
     builder.variable_to_event(
-        Variable::Aspect("STEERING_ANGLE".to_owned()),
+        Variable::Aspect("STEERING_ANGLE".into()),
         VariableToEventMapping::EventData32kPosition,
         "STEERING_SET",
     );
@@ -501,13 +483,13 @@ fn flaps(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>> {
     builder.event_to_variable(
         "FLAPS_INCR",
         EventToVariableMapping::CurrentValueToValue(|current_value| (current_value + 1.).min(4.)),
-        Variable::Named("FLAPS_HANDLE_INDEX".to_owned()),
+        Variable::Named("FLAPS_HANDLE_INDEX".into()),
         |options| options.mask(),
     )?;
     builder.event_to_variable(
         "FLAPS_DECR",
         EventToVariableMapping::CurrentValueToValue(|current_value| (current_value - 1.).max(0.)),
-        Variable::Named("FLAPS_HANDLE_INDEX".to_owned()),
+        Variable::Named("FLAPS_HANDLE_INDEX".into()),
         |options| options.mask(),
     )?;
     flaps_event_to_value(builder, "FLAPS_UP", 0.)?;
@@ -521,7 +503,7 @@ fn flaps(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>> {
             let normalized_input: f64 = (event_data as i32 as f64) / 8192. - 1.;
             get_handle_pos_from_0_1(normalized_input, current_value)
         }),
-        Variable::Named("FLAPS_HANDLE_INDEX".to_owned()),
+        Variable::Named("FLAPS_HANDLE_INDEX".into()),
         |options| options.mask(),
     )?;
     builder.event_to_variable(
@@ -530,15 +512,15 @@ fn flaps(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>> {
             let normalized_input: f64 = (event_data as i32 as f64) / 16384.;
             get_handle_pos_from_0_1(normalized_input, current_value)
         }),
-        Variable::Named("FLAPS_HANDLE_INDEX".to_owned()),
+        Variable::Named("FLAPS_HANDLE_INDEX".into()),
         |options| options.mask(),
     )?;
 
     builder.map(
         UpdateOn::PreTick,
-        Variable::Named("FLAPS_HANDLE_INDEX".to_owned()),
+        Variable::Named("FLAPS_HANDLE_INDEX".into()),
         |value| value / 4.,
-        Variable::Named("FLAPS_HANDLE_PERCENT".to_owned()),
+        Variable::Named("FLAPS_HANDLE_PERCENT".into()),
     );
 
     builder.variables_to_object(Box::new(FlapsSurface {
@@ -562,7 +544,7 @@ fn flaps_event_to_value(
     builder.event_to_variable(
         event_name,
         EventToVariableMapping::Value(value),
-        Variable::Named("FLAPS_HANDLE_INDEX".to_owned()),
+        Variable::Named("FLAPS_HANDLE_INDEX".into()),
         |options| options.mask(),
     )
 }
@@ -597,8 +579,8 @@ struct FlapsSurface {
 impl VariablesToObject for FlapsSurface {
     fn variables(&self) -> Vec<Variable> {
         vec![
-            Variable::Named("LEFT_FLAPS_POSITION_PERCENT".to_owned()),
-            Variable::Named("RIGHT_FLAPS_POSITION_PERCENT".to_owned()),
+            Variable::Named("LEFT_FLAPS_POSITION_PERCENT".into()),
+            Variable::Named("RIGHT_FLAPS_POSITION_PERCENT".into()),
         ]
     }
 
@@ -624,8 +606,8 @@ struct SlatsSurface {
 impl VariablesToObject for SlatsSurface {
     fn variables(&self) -> Vec<Variable> {
         vec![
-            Variable::Named("LEFT_SLATS_POSITION_PERCENT".to_owned()),
-            Variable::Named("RIGHT_SLATS_POSITION_PERCENT".to_owned()),
+            Variable::Named("LEFT_SLATS_POSITION_PERCENT".into()),
+            Variable::Named("RIGHT_SLATS_POSITION_PERCENT".into()),
         ]
     }
 
@@ -647,10 +629,10 @@ struct FlapsHandleIndex {
 impl VariablesToObject for FlapsHandleIndex {
     fn variables(&self) -> Vec<Variable> {
         vec![
-            Variable::Named("LEFT_FLAPS_POSITION_PERCENT".to_owned()),
-            Variable::Named("RIGHT_FLAPS_POSITION_PERCENT".to_owned()),
-            Variable::Named("LEFT_SLATS_POSITION_PERCENT".to_owned()),
-            Variable::Named("RIGHT_SLATS_POSITION_PERCENT".to_owned()),
+            Variable::Named("LEFT_FLAPS_POSITION_PERCENT".into()),
+            Variable::Named("RIGHT_FLAPS_POSITION_PERCENT".into()),
+            Variable::Named("LEFT_SLATS_POSITION_PERCENT".into()),
+            Variable::Named("RIGHT_SLATS_POSITION_PERCENT".into()),
         ]
     }
 
@@ -714,7 +696,7 @@ impl MsfsAspectCtor for NoseWheelSteering {
             rudder_position_var: AircraftVariable::from("RUDDER POSITION", "Position", 0)?,
             rudder_position: 0.5,
 
-            nose_wheel_position_id: registry.get("NOSE_WHEEL_POSITION_RATIO".to_owned()),
+            nose_wheel_position_id: registry.get("NOSE_WHEEL_POSITION_RATIO".into()),
             nose_wheel_position_var: NamedVariable::from("A32NX_NOSE_WHEEL_POSITION"),
             nose_wheel_position: 0.,
 

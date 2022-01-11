@@ -515,6 +515,13 @@ impl MsfsVariableRegistry {
         identifier
     }
 
+    pub fn register_many(&mut self, variables: &[Variable]) -> Vec<VariableIdentifier> {
+        variables
+            .into_iter()
+            .map(|variable| self.register(variable))
+            .collect()
+    }
+
     fn get_identifier_or_create_variable(&mut self, variable: &Variable) -> VariableIdentifier {
         match self.name_to_identifier.get(&variable.formatted_name()) {
             Some(identifier) => *identifier,
