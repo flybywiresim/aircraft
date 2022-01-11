@@ -3566,17 +3566,13 @@ mod tests {
                     .air_press_nominal()
             }
 
-            fn set_left_brake(self, position_percent: Ratio) -> Self {
-                self.set_brake("LEFT_BRAKE_PEDAL_INPUT", position_percent)
+            fn set_left_brake(mut self, position: Ratio) -> Self {
+                self.write_by_name("LEFT_BRAKE_PEDAL_INPUT", position);
+                self
             }
 
-            fn set_right_brake(self, position_percent: Ratio) -> Self {
-                self.set_brake("RIGHT_BRAKE_PEDAL_INPUT", position_percent)
-            }
-
-            fn set_brake(mut self, name: &str, position_percent: Ratio) -> Self {
-                let scaled_value = position_percent.get::<ratio>();
-                self.write_by_name(name, scaled_value.min(1.).max(0.));
+            fn set_right_brake(mut self, position: Ratio) -> Self {
+                self.write_by_name("RIGHT_BRAKE_PEDAL_INPUT", position);
                 self
             }
 
