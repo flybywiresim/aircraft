@@ -38,9 +38,9 @@ pub trait VariableRegistry {
 pub struct VariableIdentifier(u8, usize);
 
 impl VariableIdentifier {
-    pub fn new(identifier_type: u8) -> Self {
+    pub fn new(variable_type: impl Into<u8>) -> Self {
         Self {
-            0: identifier_type,
+            0: variable_type.into(),
             1: 0,
         }
     }

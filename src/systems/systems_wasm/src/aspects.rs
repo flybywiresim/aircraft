@@ -1,18 +1,15 @@
-use super::{ASPECT_VARIABLE_IDENTIFIER_TYPE, NAMED_VARIABLE_IDENTIFIER_TYPE};
 use crate::{
     f64_to_sim_connect_32k_pos, sim_connect_32k_pos_to_f64, MsfsVariableRegistry, SimulatorAspect,
+    Variable, VariableType, VariableValue,
 };
 use fxhash::FxHashMap;
-use msfs::{
-    legacy::NamedVariable,
-    sim_connect::{SimConnect, SimConnectRecv, SIMCONNECT_OBJECT_ID_USER},
-};
+use msfs::sim_connect::{SimConnect, SimConnectRecv, SIMCONNECT_OBJECT_ID_USER};
 use std::error::Error;
 use std::time::{Duration, Instant};
 use systems::simulation::VariableIdentifier;
 
 pub struct MsfsAspectBuilder<'a, 'b> {
-    key_prefix: String,
+    named_variable_prefix: String,
     sim_connect: &'a mut SimConnect<'b>,
     variable_registry: &'a mut MsfsVariableRegistry,
     event_to_variable: Vec<EventToVariable>,
@@ -27,7 +24,7 @@ impl<'a, 'b> MsfsAspectBuilder<'a, 'b> {
         variable_registry: &'a mut MsfsVariableRegistry,
     ) -> Self {
         Self {
-            key_prefix,
+            named_variable_prefix: key_prefix,
             sim_connect,
             variable_registry,
             event_to_variable: Default::default(),
@@ -46,8 +43,8 @@ impl<'a, 'b> MsfsAspectBuilder<'a, 'b> {
         aspect
     }
 
-    pub fn init_variable(&mut self, variable: Variable, value: f64) {
-        let identifier = self.register_variable(&variable);
+    pub fn init_variable(&mut self, mut variable: Variable, value: f64) {
+        let identifier = self.register_variable(&mut variable);
         self.variables.write(&identifier, value);
     }
 
@@ -57,10 +54,10 @@ impl<'a, 'b> MsfsAspectBuilder<'a, 'b> {
         &mut self,
         event_name: &str,
         mapping: EventToVariableMapping,
-        target: Variable,
+        mut target: Variable,
         configure_options: fn(EventToVariableOptions) -> EventToVariableOptions,
     ) -> Result<(), Box<dyn Error>> {
-        let target = self.register_variable(&target);
+        let target = self.register_variable(&mut target);
 
         self.event_to_variable.push(EventToVariable::new(
             &mut self.sim_connect,
@@ -73,6 +70,15 @@ impl<'a, 'b> MsfsAspectBuilder<'a, 'b> {
         Ok(())
     }
 
+    pub fn variable_to_event(
+        &mut self,
+        input: Variable,
+        mapping: VariableToEventMapping,
+        event_name: &str,
+    ) {
+        todo!();
+    }
+
     /// Reduces variable values into one output value.
     ///
     /// Note that this function:
@@ -81,12 +87,12 @@ impl<'a, 'b> MsfsAspectBuilder<'a, 'b> {
     pub fn reduce(
         &mut self,
         update_on: UpdateOn,
-        inputs: &[Variable],
+        mut inputs: Vec<Variable>,
         func: fn(f64, f64) -> f64,
-        output: Variable,
+        mut output: Variable,
     ) {
-        let inputs = self.register_variables(inputs);
-        let output = self.register_variable(&output);
+        let inputs = self.register_variables(&mut inputs);
+        let output = self.register_variable(&mut output);
 
         self.variable_functions.push(VariableFunction::Reduce(
             Reduce::new(inputs, func, output),
@@ -97,12 +103,12 @@ impl<'a, 'b> MsfsAspectBuilder<'a, 'b> {
     pub fn map(
         &mut self,
         update_on: UpdateOn,
-        input: Variable,
+        mut input: Variable,
         func: fn(f64) -> f64,
-        output: Variable,
+        mut output: Variable,
     ) {
-        let inputs = self.register_variable(&input);
-        let output = self.register_variable(&output);
+        let inputs = self.register_variable(&mut input);
+        let output = self.register_variable(&mut output);
 
         self.variable_functions.push(VariableFunction::Map(
             Map::new(inputs, func, output),
@@ -113,12 +119,12 @@ impl<'a, 'b> MsfsAspectBuilder<'a, 'b> {
     pub fn map_many(
         &mut self,
         update_on: UpdateOn,
-        inputs: &[Variable],
+        mut inputs: Vec<Variable>,
         func: fn(&[f64]) -> f64,
-        output: Variable,
+        mut output: Variable,
     ) {
-        let inputs = self.register_variables(&inputs);
-        let output = self.register_variable(&output);
+        let inputs = self.register_variables(&mut inputs);
+        let output = self.register_variable(&mut output);
 
         self.variable_functions.push(VariableFunction::MapMany(
             MapMany::new(inputs, func, output),
@@ -127,7 +133,7 @@ impl<'a, 'b> MsfsAspectBuilder<'a, 'b> {
     }
 
     pub fn variables_to_object(&mut self, instance: Box<dyn VariablesToObject>) {
-        let variables = self.register_variables(&instance.variables());
+        let variables = self.register_variables(&mut instance.variables());
 
         self.variable_functions.push(VariableFunction::ToObject(
             ToObject::new(instance, variables),
@@ -135,89 +141,59 @@ impl<'a, 'b> MsfsAspectBuilder<'a, 'b> {
         ));
     }
 
-    fn register_variables(&mut self, variables: &[Variable]) -> Vec<VariableIdentifier> {
+    fn register_variables(&mut self, variables: &mut [Variable]) -> Vec<VariableIdentifier> {
         variables
             .into_iter()
             .map(|variable| self.register_variable(variable))
             .collect()
     }
 
-    fn register_variable(&mut self, variable: &Variable) -> VariableIdentifier {
-        self.variables
-            .register(&self.key_prefix, self.variable_registry, variable)
+    fn register_variable(&mut self, variable: &mut Variable) -> VariableIdentifier {
+        variable.add_named_variable_prefix(&self.named_variable_prefix);
+        self.variables.register(self.variable_registry, variable)
     }
 }
 
 #[derive(Default)]
 struct MsfsAspectVariableCollection {
-    aspect_variables: FxHashMap<VariableIdentifier, f64>,
-    named_variables: FxHashMap<VariableIdentifier, NamedVariable>,
+    variables: FxHashMap<VariableIdentifier, VariableValue>,
 }
 
 impl MsfsAspectVariableCollection {
     fn register(
         &mut self,
-        key_prefix: &str,
         variable_registry: &mut MsfsVariableRegistry,
-        target: &Variable,
+        variable: &Variable,
     ) -> VariableIdentifier {
-        match target {
-            Variable::Aspect(name) => {
-                let identifier =
-                    variable_registry.get_identifier_or_create_aspect_variable(name.to_owned());
-                if !self.aspect_variables.contains_key(&identifier) {
-                    self.aspect_variables.insert(identifier, 0.);
-                }
+        let identifier = variable_registry.get_identifier_or_create_variable(variable);
 
-                identifier
-            }
-            Variable::Named(name) => {
-                let identifier =
-                    variable_registry.get_identifier_or_create_named_variable(name.to_owned());
-                if !self.named_variables.contains_key(&identifier) {
-                    self.named_variables.insert(
-                        identifier,
-                        NamedVariable::from(&format!("{}{}", key_prefix, name)),
-                    );
-                }
+        assert_eq!(
+            VariableType::from(&identifier),
+            variable.into(),
+            "Attempted to register a variable called {} which was already defined as another type of variable.", variable.name()
+        );
 
-                identifier
-            }
+        if !self.variables.contains_key(&identifier) {
+            self.variables.insert(identifier, variable.into());
         }
+
+        identifier
     }
 
     fn read(&mut self, identifier: &VariableIdentifier) -> Option<f64> {
-        match identifier.identifier_type() {
-            ASPECT_VARIABLE_IDENTIFIER_TYPE => match self.aspect_variables.get(identifier) {
-                Some(value) => Some(*value),
-                None => None,
-            },
-            NAMED_VARIABLE_IDENTIFIER_TYPE => match self.named_variables.get(identifier) {
-                Some(named_variable) => Some(named_variable.get_value()),
-                None => None,
-            },
-            _ => None,
+        match self.variables.get(identifier) {
+            Some(value) => Some(value.read()),
+            None => None,
         }
     }
 
     fn write(&mut self, identifier: &VariableIdentifier, value: f64) -> bool {
-        match identifier.identifier_type() {
-            ASPECT_VARIABLE_IDENTIFIER_TYPE => {
-                if self.aspect_variables.contains_key(identifier) {
-                    self.aspect_variables.insert(*identifier, value);
-                    true
-                } else {
-                    false
-                }
+        match self.variables.get_mut(identifier) {
+            Some(variable_value) => {
+                variable_value.write(value);
+                true
             }
-            NAMED_VARIABLE_IDENTIFIER_TYPE => match self.named_variables.get(identifier) {
-                Some(named_variable) => {
-                    named_variable.set_value(value);
-                    true
-                }
-                None => false,
-            },
-            _ => false,
+            None => false,
         }
     }
 }
@@ -384,15 +360,6 @@ pub enum VariableToEventMapping {
 
     /// Maps the variable from an f64 to a 32k position.
     EventData32kPosition,
-}
-
-/// Declares a variable of a given type with a given name.
-pub enum Variable {
-    /// A variable accessible within the aspect and simulation.
-    Aspect(String),
-
-    /// A named variable accessible within the aspect, simulation and simulator.
-    Named(String),
 }
 
 #[derive(Clone, Copy, Default)]

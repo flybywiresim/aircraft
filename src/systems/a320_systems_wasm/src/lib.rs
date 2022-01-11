@@ -20,9 +20,9 @@ use systems_wasm::aspects::{
     VariablesToObject,
 };
 use systems_wasm::{
-    aspects::{EventToVariableMapping, Variable},
-    f64_to_sim_connect_32k_pos, set_data_on_sim_object, AircraftVariableOptions, MsfsAspectCtor,
-    MsfsSimulationBuilder, MsfsVariableRegistry, SimulatorAspect,
+    aspects::EventToVariableMapping, f64_to_sim_connect_32k_pos, set_data_on_sim_object,
+    AircraftVariableOptions, MsfsAspectCtor, MsfsSimulationBuilder, MsfsVariableRegistry,
+    SimulatorAspect, Variable,
 };
 
 #[msfs::gauge(name=systems)]
@@ -49,10 +49,6 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
                 ("DC_GND_FLT_SVC", 15),
             ])
             .with_auxiliary_power_unit("OVHD_APU_START_PB_IS_AVAILABLE".to_owned(), 8)?
-            .with_aspect(brakes)?
-            .with_aspect(autobrakes)?
-            .with_aspect(nose_wheel_steering)?
-            .with_aspect(flaps)?
             .with_failures(vec![
                 (24_000, FailureType::TransformerRectifier(1)),
                 (24_001, FailureType::TransformerRectifier(2)),
@@ -155,6 +151,10 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
             .provides_aircraft_variable("TURB ENG CORRECTED N2", "Percent", 2)?
             .provides_aircraft_variable("UNLIMITED FUEL", "Bool", 0)?
             .provides_aircraft_variable("VELOCITY WORLD Y", "feet per minute", 0)?
+            .with_aspect(brakes)?
+            .with_aspect(autobrakes)?
+            .with_aspect(nose_wheel_steering)?
+            .with_aspect(flaps)?
             .build(A320::new)?;
 
     while let Some(event) = gauge.next_event().await {
@@ -229,7 +229,7 @@ fn brakes(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>> {
     // is calculated and made available as a percentage.
     builder.reduce(
         UpdateOn::PreTick,
-        &vec![
+        vec![
             Variable::Aspect("BRAKES".to_owned()),
             Variable::Aspect("BRAKES_LEFT".to_owned()),
             Variable::Aspect("BRAKE LEFT FORCE FACTOR".to_owned()),
@@ -239,7 +239,7 @@ fn brakes(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>> {
     );
     builder.reduce(
         UpdateOn::PreTick,
-        &vec![
+        vec![
             Variable::Aspect("BRAKES".to_owned()),
             Variable::Aspect("BRAKES_RIGHT".to_owned()),
             Variable::Aspect("BRAKE RIGHT FORCE FACTOR".to_owned()),
@@ -306,7 +306,7 @@ fn nose_wheel_steering(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Er
 
     builder.map_many(
         UpdateOn::PostTick,
-        &vec![
+        vec![
             Variable::Named("REALISTIC_TILLER_ENABLED".to_owned()),
             Variable::Aspect("RAW_RUDDER_PEDAL_POSITION".to_owned()),
         ],
@@ -364,7 +364,7 @@ fn nose_wheel_steering(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Er
 
     builder.map_many(
         UpdateOn::PostTick,
-        &vec![
+        vec![
             Variable::Named("REALISTIC_TILLER_ENABLED".to_owned()),
             Variable::Aspect("RAW_RUDDER_PEDAL_POSITION".to_owned()),
             Variable::Aspect("RAW_TILLER_HANDLE_POSITION".to_owned()),
@@ -400,6 +400,43 @@ fn nose_wheel_steering(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Er
         |options| options.mask().after_tick_set_to(0.),
     )?;
 
+    builder.init_variable(Variable::Aspect("RUDDER_POSITION_RAW".to_owned()), 0.5);
+
+    builder.map(
+        UpdateOn::PreTick,
+        Variable::Aircraft("RUDDER POSITION".to_owned(), "Position".to_owned(), 0),
+        |value| value + 1. / 2.,
+        Variable::Aspect("RUDDER_POSITION_RAW".to_owned()),
+    );
+
+    builder.map(
+        UpdateOn::PostTick,
+        Variable::Aspect("NOSE_WHEEL_POSITION_RAW".to_owned()),
+        steering_animation_to_msfs_from_steering_angle,
+        Variable::Named("NOSE_WHEEL_POSITION".to_owned()),
+    );
+
+    builder.map_many(
+        UpdateOn::PostTick,
+        vec![
+            Variable::Aspect("NOSE_WHEEL_POSITION_RAW".to_owned()),
+            Variable::Aspect("RUDDER_POSITION_RAW".to_owned()),
+        ],
+        |values| {
+            let nose_wheel_position = values[0];
+            let rudder_position = values[1];
+
+            steering_demand_to_msfs_from_steering_angle(nose_wheel_position, rudder_position)
+        },
+        Variable::Aspect("STEERING_ANGLE".to_owned()),
+    );
+
+    builder.variable_to_event(
+        Variable::Aspect("STEERING_ANGLE".to_owned()),
+        VariableToEventMapping::EventData32kPosition,
+        "STEERING_SET",
+    );
+
     Ok(())
 }
 
@@ -409,6 +446,35 @@ fn recenter_when_close_to_center(value: f64, increment: f64) -> f64 {
     } else {
         value
     }
+}
+
+const MAX_CONTROLLABLE_STEERING_ANGLE_DEGREES: f64 = 75.;
+
+fn steering_animation_to_msfs_from_steering_angle(nose_wheel_position: f64) -> f64 {
+    const STEERING_ANIMATION_TOTAL_RANGE_DEGREES: f64 = 360.;
+
+    ((nose_wheel_position * MAX_CONTROLLABLE_STEERING_ANGLE_DEGREES
+        / (STEERING_ANIMATION_TOTAL_RANGE_DEGREES / 2.))
+        / 2.)
+        + 0.5
+}
+
+fn steering_demand_to_msfs_from_steering_angle(
+    nose_wheel_position: f64,
+    rudder_position: f64,
+) -> f64 {
+    const MAX_MSFS_STEERING_ANGLE_DEGREES: f64 = 90.;
+
+    // Steering in msfs is the max we want rescaled to the max in msfs
+    let steering_ratio_converted = nose_wheel_position * MAX_CONTROLLABLE_STEERING_ANGLE_DEGREES
+        / MAX_MSFS_STEERING_ANGLE_DEGREES
+        / 2.
+        + 0.5;
+
+    // Steering demand is reverted in msfs so we do 1 - angle.
+    // Then we hack msfs by adding the rudder value that it will always substract internally
+    // This way we end up with actual angle we required
+    (1. - steering_ratio_converted) + (rudder_position - 0.5)
 }
 
 fn flaps(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>> {
@@ -609,18 +675,12 @@ impl FlapsHandleIndex {
 }
 
 struct NoseWheelSteering {
-    realistic_tiller_axis_var: NamedVariable,
-    is_realistic_tiller_mode: bool,
-
     rudder_position_var: AircraftVariable,
     rudder_position: f64,
 
     nose_wheel_position_id: VariableIdentifier,
     nose_wheel_position_var: NamedVariable,
     nose_wheel_position: f64,
-
-    rudder_pedal_position_var: NamedVariable,
-    rudder_pedal_position: f64,
 
     nose_wheel_angle_event: sys::DWORD,
 }
@@ -631,18 +691,12 @@ impl MsfsAspectCtor for NoseWheelSteering {
         sim_connect: &mut SimConnect,
     ) -> Result<Self, Box<dyn Error>> {
         Ok(Self {
-            realistic_tiller_axis_var: NamedVariable::from("A32NX_REALISTIC_TILLER_ENABLED"),
-            is_realistic_tiller_mode: false,
-
             rudder_position_var: AircraftVariable::from("RUDDER POSITION", "Position", 0)?,
             rudder_position: 0.5,
 
-            nose_wheel_position_id: registry.get("NOSE_WHEEL_POSITION".to_owned()),
+            nose_wheel_position_id: registry.get("NOSE_WHEEL_POSITION_RATIO".to_owned()),
             nose_wheel_position_var: NamedVariable::from("A32NX_NOSE_WHEEL_POSITION"),
             nose_wheel_position: 0.,
-
-            rudder_pedal_position_var: NamedVariable::from("A32NX_RUDDER_PEDAL_POSITION"),
-            rudder_pedal_position: 0.5,
 
             nose_wheel_angle_event: sim_connect
                 .map_client_event_to_sim_event("STEERING_SET", true)?,
@@ -655,23 +709,13 @@ impl NoseWheelSteering {
     const STEERING_ANIMATION_TOTAL_RANGE_DEGREES: f64 = 360.;
 
     /// Steering position is [-1;1]  -1 is left, 0 is straight
-    fn set_steering_position(&mut self, steering_position: f64) {
-        self.nose_wheel_position = steering_position;
-    }
-
-    fn set_realistic_tiller_mode(&mut self, is_active: bool) {
-        self.is_realistic_tiller_mode = is_active;
+    fn set_nose_wheel_position(&mut self, nose_wheel_position: f64) {
+        self.nose_wheel_position = nose_wheel_position;
     }
 
     fn synchronise_with_sim(&mut self) {
-        let rudder_percent: f64 = self.rudder_pedal_position_var.get_value();
-        self.rudder_pedal_position = (rudder_percent + 100.) / 200.;
-
         let rudder_position: f64 = self.rudder_position_var.get();
         self.rudder_position = (rudder_position + 1.) / 2.;
-
-        let realistic_mode: f64 = self.realistic_tiller_axis_var.get_value();
-        self.set_realistic_tiller_mode(realistic_mode > 0.);
     }
 
     fn steering_demand_to_msfs_from_steering_angle(&self) -> f64 {
@@ -716,7 +760,7 @@ impl NoseWheelSteering {
 impl SimulatorAspect for NoseWheelSteering {
     fn write(&mut self, identifier: &VariableIdentifier, value: f64) -> bool {
         if identifier == &self.nose_wheel_position_id {
-            self.set_steering_position(value);
+            self.set_nose_wheel_position(value);
             true
         } else {
             false
