@@ -32,7 +32,7 @@ export class AocSystem {
 
     private async sendFbwTelexMessage(index: number) {
         const content = this.messageQueue[index].Lines.join(';');
-        NXApi.sendTelexMessage(this.messageQueue[index].Station, content).then(() => {
+        return NXApi.sendTelexMessage(this.messageQueue[index].Station, content).then(() => {
             this.messageQueue[index].ComStatus = AtsuMessageComStatus.Sent;
             return Promise.resolve();
         }).catch(() => {
