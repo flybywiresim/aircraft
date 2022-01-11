@@ -376,11 +376,17 @@ pub enum Variable {
 }
 
 impl Variable {
-    fn name(&self) -> &str {
+    fn formatted_name(&self) -> String {
         match self {
-            Variable::Aircraft(name, ..)
-            | Variable::Named(name, ..)
-            | Variable::Aspect(name, ..) => name,
+            Variable::Aircraft(name, _, index, ..) => {
+                let index = *index;
+                if index > 0 {
+                    format!("{}:{}", name, index)
+                } else {
+                    name.into()
+                }
+            }
+            Variable::Named(name, ..) | Variable::Aspect(name, ..) => name.into(),
         }
     }
 
@@ -399,12 +405,12 @@ impl From<&Variable> for VariableValue {
     fn from(value: &Variable) -> Self {
         match value {
             Variable::Aircraft(name, units, index, ..) => {
-                VariableValue::Aircraft(match AircraftVariable::from(name, units, *index) {
+                let index = *index;
+                VariableValue::Aircraft(match AircraftVariable::from(&name, units, index) {
                     Ok(aircraft_variable) => aircraft_variable,
                     Err(error) => panic!(
                         "Error while trying to create aircraft variable named '{}': {}",
-                        value.name(),
-                        error
+                        name, error
                     ),
                 })
             }
@@ -503,14 +509,14 @@ impl MsfsVariableRegistry {
         assert_eq!(
             VariableType::from(&identifier),
             variable.into(),
-            "Attempted to register a variable called {} which was already defined as another type of variable.", variable.name()
+            "Attempted to register a variable called {} which was already defined as another type of variable.", variable.formatted_name()
         );
 
         identifier
     }
 
     fn get_identifier_or_create_variable(&mut self, variable: &Variable) -> VariableIdentifier {
-        match self.name_to_identifier.get(variable.name()) {
+        match self.name_to_identifier.get(&variable.formatted_name()) {
             Some(identifier) => *identifier,
             None => {
                 let identifier = *self
@@ -522,7 +528,7 @@ impl MsfsVariableRegistry {
                     .insert(variable.into(), identifier.next());
 
                 self.name_to_identifier
-                    .insert(variable.name().to_owned(), identifier);
+                    .insert(variable.formatted_name(), identifier);
 
                 let mut variable = variable.clone();
                 if matches!(variable, Variable::Named(..)) {
