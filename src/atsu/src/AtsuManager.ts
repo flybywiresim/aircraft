@@ -67,6 +67,12 @@ export class AtsuManager {
         }
     }
 
+    public receiveMessage(message: AtsuMessage) {
+        if (AocSystem.isRelevantMessage(message)) {
+            this.aocSystem.receiveMessage(message);
+        }
+    }
+
     public setOwnCallsign(callsign: string) {
         this.connector.setCallsign(callsign);
     }

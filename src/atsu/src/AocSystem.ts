@@ -4,6 +4,7 @@
 import { MetarMessage } from './messages/MetarMessage';
 import { TafMessage } from './messages/TafMessage';
 import { WeatherMessage } from './messages/WeatherMessage';
+import { AtsuTimestamp } from './messages/AtsuTimestamp';
 import { AtsuMessage, AtsuMessageComStatus, AtsuMessageType } from './messages/AtsuMessage';
 import { HoppieConnector } from './HoppieConnector';
 
@@ -193,6 +194,15 @@ export class AocSystem {
     public setOwnCallsign(callsign: string) {
         this.connector.setCallsign(callsign);
     }
+
+    public receiveMessage(message: AtsuMessage) {
+        message.Timestamp = new AtsuTimestamp();
+        this.messageQueue.unshift(message);
+
+        // increase the company message counter
+        const cMsgCnt = SimVar.GetSimVarValue('L:A32NX_COMPANY_MSG_COUNT', 'Number');
+        SimVar.SetSimVarValue('L:A32NX_COMPANY_MSG_COUNT', 'Number', cMsgCnt + 1);
+    }
 }
 
-export { AtsuMessage };
+export { AtsuMessage, AtsuTimestamp };
