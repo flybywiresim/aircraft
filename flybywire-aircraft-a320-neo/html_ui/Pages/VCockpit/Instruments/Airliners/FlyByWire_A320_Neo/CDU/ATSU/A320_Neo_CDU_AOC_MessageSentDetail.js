@@ -31,7 +31,7 @@ class CDUAocMessageSentDetail {
 
         mcdu.setTemplate([
             ["AOC SENT MSG"],
-            [`[b-text]${message.Timestamp.mcduTimestamp()} SENT[color]green`, `${messageIndex + 1}/${messages.length}${msgArrows}`],
+            [`[b-text]${message.Timestamp.mcduTimestamp()} TO ${message.Station} SENT[color]green`, `${messageIndex + 1}/${messages.length}${msgArrows}`],
             [`[s-text]${lines[offset] ? lines[offset] : ""}`],
             [`[b-text]${lines[offset + 1] ? lines[offset + 1] : ""}`],
             [`[s-text]${lines[offset + 2] ? lines[offset + 2] : ""}`],
