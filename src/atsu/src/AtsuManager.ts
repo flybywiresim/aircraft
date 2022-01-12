@@ -16,7 +16,7 @@ import { PdcMessage } from './messages/PdcMessage';
  * Defines the ATSU manager
  */
 export class AtsuManager {
-    private connector = new HoppieConnector();
+    private connector = new HoppieConnector(this);
 
     private messageCounter = 0;
 

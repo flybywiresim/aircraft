@@ -2,7 +2,8 @@
 //  SPDX-License-Identifier: GPL-3.0
 
 import { NXDataStore } from '@shared/persistence';
-import { AtsuMessage, AtsuMessageSerializationFormat } from './messages/AtsuMessage';
+import { AtsuMessage, AtsuMessageDirection, AtsuMessageComStatus, AtsuMessageSerializationFormat } from './messages/AtsuMessage';
+import { FreetextMessage, AtsuManager } from './AtsuManager';
 
 /**
  * Defines the connector to the hoppies network
@@ -12,7 +13,52 @@ export class HoppieConnector {
 
     private static hoppieUrl = 'http://www.hoppie.nl/acars/system/connect.html';
 
-    private callsign = '';
+    constructor(parent: AtsuManager) {
+        setInterval(() => {
+            if (SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') === 1) {
+                const url = this.createBaseUrl('poll', 'ALL-CALLSIGNS');
+
+                // receive the data from the server
+                // expected format: ok {BLA telex {dfafdsf fdafdafdsd fdafdaf}} {BLA1 telex {fdafdfd fdafds }}
+                fetch(url).then((response) => response.text().then((data) => {
+                    // something went wrong
+                    if (data.startsWith('error')) {
+                        return;
+                    }
+
+                    // split up the received data into multiple messages
+                    let messages = data.split(/({.*?})/gm);
+                    messages = messages.filter((elem) => elem !== 'ok' && elem !== 'ok ' && elem !== '} ' && elem !== '}' && elem !== '');
+
+                    // create the messages
+                    messages.forEach((element) => {
+                        // get the single entries of the message
+                        // example: [BLA telex, {dfafdsf fdafdafdsd fdafdaf}]
+                        const entries = element.substring(1).split(/({.*?})/gm);
+
+                        // get all relevant information
+                        const metadata = entries[0].split(' ');
+                        const sender = metadata[0].toUpperCase();
+                        const type = metadata[1].toLowerCase();
+                        const content = entries[1].replace(/{/, '').replace(/}/, '');
+
+                        switch (type) {
+                        case 'telex':
+                            const message = new FreetextMessage();
+                            message.Station = sender;
+                            message.Direction = AtsuMessageDirection.Input;
+                            message.ComStatus = AtsuMessageComStatus.Received;
+                            message.Lines = content.split('\n');
+                            parent.receiveMessage(message);
+                            break;
+                        default:
+                            break;
+                        }
+                    });
+                }));
+            }
+        }, 20000);
+    }
 
     private createBaseUrl(type: string, to: string) {
         // validate the configuration
