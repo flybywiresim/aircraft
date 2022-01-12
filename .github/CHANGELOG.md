@@ -113,6 +113,7 @@
 1. [EFB] Added Reset to Defaults button to EFB throttle calibration page - @frankkopp (Cdr_Maverick#6475)
 1. [BLEED] Fix potential NaN calculations for fast flows - @Crocket63
 1. [Hyd] Reservoirs connected to pneumatics and first failures - @Crocket63
+1. [ATSU] Don't include airport as a waypoint in route uplink - @tracernz (Mike)
 
 ## 0.7.0
 
