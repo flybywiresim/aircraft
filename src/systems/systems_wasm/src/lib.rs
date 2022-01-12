@@ -486,11 +486,12 @@ impl MsfsVariableRegistry {
     pub fn register(&mut self, variable: &Variable) -> VariableIdentifier {
         let identifier = self.get_identifier_or_create_variable(variable);
 
-        assert_eq!(
-            VariableType::from(&identifier),
-            variable.into(),
-            "Attempted to register a variable called {} which was already defined as another type of variable.", variable.formatted_name()
-        );
+        let registered_type: VariableType = (&identifier).into();
+        let target_type: VariableType = variable.into();
+        if registered_type != target_type {
+            eprintln!("Attempted to re-register a variable \"{}\" with type {:?}, while it was previously registered with type {:?}.", 
+                      variable.formatted_name(), target_type, registered_type);
+        }
 
         identifier
     }
@@ -547,9 +548,12 @@ impl MsfsVariableRegistry {
 
 impl VariableRegistry for MsfsVariableRegistry {
     fn get(&mut self, name: String) -> VariableIdentifier {
-        // By the time this function is called, only named variables are to be created.
-        // Other variable types have been instantiated through the MsfsSimulationBuilder.
-        self.register(&Variable::Named(name))
+        match self.name_to_identifier.get(&name) {
+            Some(identifier) => *identifier,
+            // By the time this function is called, only named variables are to be created.
+            // Other variable types have been instantiated through the MsfsSimulationBuilder.
+            None => self.register(&Variable::Named(name)),
+        }
     }
 }
 
