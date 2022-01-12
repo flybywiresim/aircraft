@@ -209,6 +209,20 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
                                     ) : 'N/A'}
                             </div>
                         </div>
+                        <div className="scrollbar text-left mt-6 mx-4 h-14 text-xl font-light">
+                            {metar.raw_text
+                                ? (
+                                    <>
+                                        {metar.raw_text}
+                                    </>
+                                ) : (
+                                    <>
+                                        N/A
+                                        {' '}
+                                        {' '}
+                                    </>
+                                )}
+                        </div>
                     </>
                 )}
         </div>
