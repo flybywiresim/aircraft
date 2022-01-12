@@ -833,8 +833,7 @@
     - 1 to enable Home Cockpit mode which:
       - Removes backlight bleed from the PFD, ND, and ECAM displays
       - Removes reflection from the ISIS
-    - Useful for home cockpits that use the sim's built-in pop-out feature and do not
-        which to have these effects present on their displays.
+    - Useful for home cockpits that use the sim's built-in pop-out feature and do not wish to have these effects present on their displays.
 
 - A32NX_HYD_{loop_name}_EPUMP_LOW_PRESS
     - Bool
