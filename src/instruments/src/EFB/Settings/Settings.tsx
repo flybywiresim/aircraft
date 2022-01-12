@@ -639,15 +639,6 @@ const ATSUAOCPage = () => {
                     () => {},
                 );
             } else {
-                if (telexEnabled === 'ENABLED') {
-                    new PopUp().showPopUp(
-                        'HOPPIE WARNING',
-                        'Telex is enabled. The activation of Hoppies sends Telex messages only via the Hoppie system.',
-                        'small',
-                        () => {},
-                        () => {},
-                    );
-                }
                 SimVar.SetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number', 1);
                 setHoppieEnabled('ENABLED');
             }
