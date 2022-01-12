@@ -1,7 +1,8 @@
 import { AtsuManager, FreetextMessage, PdcMessage } from './AtsuManager';
-import { AtsuMessageSerializationFormat, AtsuMessageType } from './messages/AtsuMessage';
+import { AtsuMessageSerializationFormat, AtsuMessageNetwork, AtsuMessageType } from './messages/AtsuMessage';
 
 export {
+    AtsuMessageNetwork,
     AtsuMessageSerializationFormat,
     AtsuMessageType,
     AtsuManager,

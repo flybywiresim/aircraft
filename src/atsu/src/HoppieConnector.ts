@@ -2,7 +2,7 @@
 //  SPDX-License-Identifier: GPL-3.0
 
 import { NXDataStore } from '@shared/persistence';
-import { AtsuMessage, AtsuMessageDirection, AtsuMessageComStatus, AtsuMessageSerializationFormat } from './messages/AtsuMessage';
+import { AtsuMessage, AtsuMessageNetwork, AtsuMessageDirection, AtsuMessageComStatus, AtsuMessageSerializationFormat } from './messages/AtsuMessage';
 import { FreetextMessage, AtsuManager } from './AtsuManager';
 
 /**
@@ -45,6 +45,7 @@ export class HoppieConnector {
                         switch (type) {
                         case 'telex':
                             const message = new FreetextMessage();
+                            message.Network = AtsuMessageNetwork.Hoppie;
                             message.Station = sender;
                             message.Direction = AtsuMessageDirection.Input;
                             message.ComStatus = AtsuMessageComStatus.Received;

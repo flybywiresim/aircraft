@@ -2,7 +2,7 @@
 //  SPDX-License-Identifier: GPL-3.0
 
 import { FreetextMessage, AtsuManager } from './AtsuManager';
-import { AtsuMessageDirection, AtsuMessage, AtsuMessageComStatus, AtsuMessageType } from './messages/AtsuMessage';
+import { AtsuMessageDirection, AtsuMessageNetwork, AtsuMessage, AtsuMessageComStatus, AtsuMessageType } from './messages/AtsuMessage';
 import { AtisMessage } from './messages/AtisMessage';
 import { MetarMessage } from './messages/MetarMessage';
 import { TafMessage } from './messages/TafMessage';
@@ -48,6 +48,7 @@ export class AocSystem {
 
                     for (const msg of data) {
                         const message = new FreetextMessage();
+                        message.Network = AtsuMessageNetwork.FBW;
                         message.Direction = AtsuMessageDirection.Input;
                         message.Station = msg.from.flight;
                         message.Lines = msg.message.split(';');
