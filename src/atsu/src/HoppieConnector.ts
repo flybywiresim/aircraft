@@ -2,7 +2,7 @@
 //  SPDX-License-Identifier: GPL-3.0
 
 import { NXDataStore } from '@shared/persistence';
-import { AtsuMessage } from './messages/AtsuMessage';
+import { AtsuMessage, AtsuMessageSerializationFormat } from './messages/AtsuMessage';
 
 /**
  * Defines the connector to the hoppies network
@@ -55,7 +55,7 @@ export class HoppieConnector {
             `from=${this.callsign}`,
             `to=${message.Station}`,
             'type=TELEX',
-            `packet=${encodeURIComponent(message.serialize())}`,
+            `packet=${encodeURIComponent(message.serialize(AtsuMessageSerializationFormat.Printer))}`,
         ];
         const postData = data.join('&');
 
