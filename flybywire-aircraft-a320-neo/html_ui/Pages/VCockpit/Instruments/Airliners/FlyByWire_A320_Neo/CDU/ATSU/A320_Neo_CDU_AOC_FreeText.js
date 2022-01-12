@@ -108,12 +108,6 @@ class CDUAocFreeText {
                 return;
             }
 
-            if (SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC") === "1123") {
-                mcdu.scratchpad.setText("ENTER ATC FLT NBR");
-                scratchpadCallback();
-                return;
-            }
-
             store["sendStatus"] = "SENDING";
             updateView();
 
