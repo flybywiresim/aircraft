@@ -15,7 +15,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.leftInputDelay = [];
         this.rightInputDelay = [];
         this.messages = [];
-        this.sentMessages = [];
         this.activeSystem = 'FMGC';
         this.messageQueue = [];
         this.inFocus = false;
@@ -1344,83 +1343,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
     /* END OF MCDU DELAY SIMULATION */
     /* MCDU AOC MESSAGE SYSTEM */
-
-    // INCOMING AOC MESSAGES
-    getMessages() {
-        return this.messages;
-    }
-
-    getMessage(id, type) {
-        const messages = this.messages;
-        const currentMessageIndex = messages.findIndex(m => m["id"].toString() === id.toString());
-        if (type === 'previous') {
-            if (messages[currentMessageIndex - 1]) {
-                return messages[currentMessageIndex - 1];
-            }
-            return null;
-        } else if (type === 'next') {
-            if (messages[currentMessageIndex + 1]) {
-                return messages[currentMessageIndex + 1];
-            }
-            return null;
-        }
-        return messages[currentMessageIndex];
-    }
-
-    getMessageIndex(id) {
-        return this.messages.findIndex(m => m["id"].toString() === id.toString());
-    }
-
-    addMessage(message) {
-        this.messages.unshift(message);
-        const cMsgCnt = SimVar.GetSimVarValue("L:A32NX_COMPANY_MSG_COUNT", "Number");
-        SimVar.SetSimVarValue("L:A32NX_COMPANY_MSG_COUNT", "Number", cMsgCnt + 1);
-        if (this.refreshPageCallback) {
-            this.refreshPageCallback();
-        }
-    }
-
-    deleteMessage(id) {
-        if (!this.messages[id]["opened"]) {
-            const cMsgCnt = SimVar.GetSimVarValue("L:A32NX_COMPANY_MSG_COUNT", "Number");
-            SimVar.SetSimVarValue("L:A32NX_COMPANY_MSG_COUNT", "Number", cMsgCnt <= 1 ? 0 : cMsgCnt - 1);
-        }
-        this.messages.splice(id, 1);
-    }
-
-    // OUTGOING/SENT AOC MESSAGES
-    getSentMessages() {
-        return this.sentMessages;
-    }
-
-    getSentMessage(id, type) {
-        const messages = this.sentMessages;
-        const currentMessageIndex = messages.findIndex(m => m["id"].toString() === id.toString());
-        if (type === 'previous') {
-            if (messages[currentMessageIndex - 1]) {
-                return messages[currentMessageIndex - 1];
-            }
-            return null;
-        } else if (type === 'next') {
-            if (messages[currentMessageIndex + 1]) {
-                return messages[currentMessageIndex + 1];
-            }
-            return null;
-        }
-        return messages[currentMessageIndex];
-    }
-
-    getSentMessageIndex(id) {
-        return this.sentMessages.findIndex(m => m["id"].toString() === id.toString());
-    }
-
-    addSentMessage(message) {
-        this.sentMessages.unshift(message);
-    }
-
-    deleteSentMessage(id) {
-        this.sentMessages.splice(id, 1);
-    }
 
     printPage(lines) {
         if (this.printing) {
