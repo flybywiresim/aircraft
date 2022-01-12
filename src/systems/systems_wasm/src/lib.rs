@@ -73,15 +73,6 @@ pub trait SimulatorAspect {
     }
 }
 
-pub trait MsfsAspectCtor {
-    fn new(
-        registry: &mut MsfsVariableRegistry,
-        sim_connect: &mut SimConnect,
-    ) -> Result<Self, Box<dyn Error>>
-    where
-        Self: Sized;
-}
-
 pub struct MsfsSimulationBuilder<'a, 'b> {
     variable_registry: Option<MsfsVariableRegistry>,
     key_prefix: String,
@@ -126,17 +117,6 @@ impl<'a, 'b> MsfsSimulationBuilder<'a, 'b> {
             simulation,
             MsfsHandler::new(registry, aspects, self.failures, self.sim_connect)?,
         ))
-    }
-
-    pub fn with<T: 'static + MsfsAspectCtor + SimulatorAspect>(
-        mut self,
-    ) -> Result<Self, Box<dyn Error>> {
-        if let Some(registry) = &mut self.variable_registry {
-            self.additional_aspects
-                .push(Box::new(T::new(registry, self.sim_connect)?));
-        }
-
-        Ok(self)
     }
 
     pub fn with_aspect<T: FnOnce(&mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>>>(
