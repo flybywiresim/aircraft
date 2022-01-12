@@ -10,7 +10,7 @@ class CDUAocMessagesSent {
         for (let i = 5; i > 0; i--) {
             let header = "";
             if (messages[offset - i]) {
-                header += messages[offset - i].Timestamp.mcduTimestamp() + " - SENT[color]green";
+                header += `${messages[offset - i].Timestamp.mcduTimestamp()} TO ${messages[offset - i].Station}[color]green`;
             }
             msgTimeHeaders[i] = header;
         }
