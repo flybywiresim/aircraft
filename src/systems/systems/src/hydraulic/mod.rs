@@ -1,15 +1,17 @@
 use self::linear_actuator::Actuator;
+use crate::failures::{Failure, FailureType};
 use crate::hydraulic::electrical_pump_physics::ElectricalPumpPhysics;
 use crate::pneumatic::PressurizeableReservoir;
-use crate::shared::{interpolation, ElectricalBusType, ElectricalBuses};
+use crate::shared::{interpolation, ElectricalBusType, ElectricalBuses, HydraulicColor};
 use crate::simulation::{
     InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
     VariableIdentifier, Write,
 };
+
 use std::time::Duration;
-use uom::si::angular_velocity::radian_per_second;
+
 use uom::si::{
-    angular_velocity::revolution_per_minute,
+    angular_velocity::{radian_per_second, revolution_per_minute},
     f64::*,
     pressure::{pascal, psi},
     ratio::ratio,
@@ -68,26 +70,43 @@ pub enum PressureSwitchState {
     NotPressurised,
 }
 
+pub enum PressureSwitchType {
+    Relative,
+    Absolute,
+}
+
 /// Physical pressure switch.
 /// It's a physical switch reacting to pressure.
-struct PressureSwitch {
+pub struct PressureSwitch {
     state_is_pressurised: bool,
     high_hysteresis_threshold: Pressure,
     low_hysteresis_threshold: Pressure,
+
+    sensor_type: PressureSwitchType,
 }
 impl PressureSwitch {
-    pub fn new(high_threshold: Pressure, low_threshold: Pressure) -> Self {
+    pub fn new(
+        high_threshold: Pressure,
+        low_threshold: Pressure,
+        sensor_type: PressureSwitchType,
+    ) -> Self {
         Self {
             state_is_pressurised: false,
             high_hysteresis_threshold: high_threshold,
             low_hysteresis_threshold: low_threshold,
+            sensor_type,
         }
     }
 
-    pub fn update(&mut self, current_pressure: Pressure) {
-        if current_pressure <= self.low_hysteresis_threshold {
+    pub fn update(&mut self, context: &UpdateContext, current_pressure: Pressure) {
+        let pressure_measured = match self.sensor_type {
+            PressureSwitchType::Relative => current_pressure - context.ambient_pressure(),
+            PressureSwitchType::Absolute => current_pressure,
+        };
+
+        if pressure_measured <= self.low_hysteresis_threshold {
             self.state_is_pressurised = false;
-        } else if current_pressure >= self.high_hysteresis_threshold {
+        } else if pressure_measured >= self.high_hysteresis_threshold {
             self.state_is_pressurised = true;
         }
     }
@@ -98,6 +117,38 @@ impl PressureSwitch {
         } else {
             PressureSwitchState::NotPressurised
         }
+    }
+}
+
+/// Physical low level switch.
+/// It's a physical switch that changes state when crossing a fluid level threshold.
+pub struct LevelSwitch {
+    state_is_low: bool,
+    high_hysteresis_threshold: Volume,
+    low_hysteresis_threshold: Volume,
+}
+impl LevelSwitch {
+    const HYSTERESIS_VALUE_GAL: f64 = 0.1;
+
+    pub fn new(threshold: Volume) -> Self {
+        Self {
+            state_is_low: false,
+            high_hysteresis_threshold: threshold
+                + Volume::new::<gallon>(Self::HYSTERESIS_VALUE_GAL),
+            low_hysteresis_threshold: threshold,
+        }
+    }
+
+    pub fn update(&mut self, current_volume: Volume) {
+        if current_volume <= self.low_hysteresis_threshold {
+            self.state_is_low = true;
+        } else if current_volume >= self.high_hysteresis_threshold {
+            self.state_is_low = false;
+        }
+    }
+
+    pub fn is_low_level(&self) -> bool {
+        self.state_is_low
     }
 }
 
@@ -366,7 +417,6 @@ impl HydraulicCircuit {
     const SYSTEM_SECTION_STATIC_LEAK_GAL_P_S: f64 = 0.03;
 
     const FLUID_BULK_MODULUS_PASCAL: f64 = 1450000000.0;
-    const RESERVOIR_MAX_VOLUME_GAL: f64 = 10.;
     const TARGET_PRESSURE_PSI: f64 = 3000.;
 
     // Nitrogen PSI precharge pressure
@@ -380,12 +430,12 @@ impl HydraulicCircuit {
 
     pub fn new(
         context: &mut InitContext,
-        id: &str,
+        id: HydraulicColor,
 
         number_of_pump_sections: usize,
         priming_volume: Ratio,
         high_pressure_max_volume: Volume,
-        reservoir_volume: Volume,
+        reservoir: Reservoir,
 
         system_pressure_switch_lo_hyst: Pressure,
         system_pressure_switch_hi_hyst: Pressure,
@@ -456,12 +506,7 @@ impl HydraulicCircuit {
             ),
             pump_to_system_check_valves,
             fluid: Fluid::new(Pressure::new::<pascal>(Self::FLUID_BULK_MODULUS_PASCAL)),
-            reservoir: Reservoir::new(
-                context,
-                id,
-                Volume::new::<gallon>(Self::RESERVOIR_MAX_VOLUME_GAL),
-                reservoir_volume,
-            ),
+            reservoir,
         }
     }
 
@@ -480,7 +525,10 @@ impl HydraulicCircuit {
         system_section_pump: Option<&mut impl PressureSource>,
         ptu: Option<&PowerTransferUnit>,
         controller: &impl HydraulicCircuitController,
+        reservoir_pressure: Pressure,
     ) {
+        self.reservoir.update(context, reservoir_pressure);
+
         self.update_shutoff_valves(controller);
 
         // Taking care of leaks / consumers / actuators volumes
@@ -640,7 +688,7 @@ impl HydraulicCircuit {
     }
 
     pub fn reservoir_level(&self) -> Volume {
-        self.reservoir.level()
+        self.reservoir.fluid_level_real()
     }
 
     pub fn reservoir(&self) -> &Reservoir {
@@ -703,7 +751,7 @@ pub struct Section {
 impl Section {
     pub fn new(
         context: &mut InitContext,
-        loop_id: &str,
+        loop_id: HydraulicColor,
         section_id: &str,
         pump_id: usize,
         static_leak_at_max_press: VolumeRate,
@@ -738,7 +786,11 @@ impl Section {
             delta_vol_from_valves: Volume::new::<gallon>(0.),
             total_volume_pumped: Volume::new::<gallon>(0.),
 
-            pressure_switch: PressureSwitch::new(pressure_switch_hi_hyst, pressure_switch_lo_hyst),
+            pressure_switch: PressureSwitch::new(
+                pressure_switch_hi_hyst,
+                pressure_switch_lo_hyst,
+                PressureSwitchType::Relative,
+            ),
 
             total_actuator_consumed_volume: Volume::new::<gallon>(0.),
             total_actuator_returned_volume: Volume::new::<gallon>(0.),
@@ -878,7 +930,7 @@ impl Section {
 
         self.current_volume += final_delta_volume;
 
-        self.update_pressure(fluid);
+        self.update_pressure(context, fluid);
 
         self.current_flow = final_delta_volume / context.delta_as_time();
 
@@ -886,14 +938,14 @@ impl Section {
         self.total_volume_pumped = Volume::new::<gallon>(0.);
     }
 
-    fn update_pressure(&mut self, fluid: &Fluid) {
+    fn update_pressure(&mut self, context: &UpdateContext, fluid: &Fluid) {
         let fluid_volume_compressed = self.current_volume - self.max_high_press_volume;
 
         self.current_pressure = Pressure::new::<psi>(14.7)
             + self.delta_pressure_from_delta_volume(fluid_volume_compressed, fluid);
         self.current_pressure = self.current_pressure.max(Pressure::new::<psi>(14.7));
 
-        self.pressure_switch.update(self.current_pressure);
+        self.pressure_switch.update(context, self.current_pressure);
     }
 
     fn delta_pressure_from_delta_volume(&self, delta_vol: Volume, fluid: &Fluid) -> Pressure {
@@ -980,7 +1032,7 @@ pub struct FireValve {
 impl FireValve {
     fn new(
         context: &mut InitContext,
-        hyd_loop_id: &str,
+        hyd_loop_id: HydraulicColor,
         pump_id: usize,
         bus_type: ElectricalBusType,
     ) -> Self {
@@ -1079,24 +1131,78 @@ impl CheckValve {
 
 pub struct Reservoir {
     level_id: VariableIdentifier,
+    low_level_id: VariableIdentifier,
+
     max_capacity: Volume,
+    max_gaugeable: Volume,
     current_level: Volume,
     min_usable: Volume,
+
+    air_pressure: Pressure,
+
+    air_pressure_switches: Vec<PressureSwitch>,
+
+    level_switch: LevelSwitch,
+
+    leak_failure: Failure,
+    return_failure: Failure,
 }
 impl Reservoir {
-    const MIN_USABLE_VOLUME: f64 = 0.2; // Gallons
+    const MIN_USABLE_VOLUME_GAL: f64 = 0.2;
+
+    const LEAK_FAILURE_FLOW_GAL_PER_S: f64 = 0.1;
+
+    // Part of the fluid lost instead of returning to reservoir
+    const RETURN_FAILURE_LEAK_RATIO: f64 = 0.1;
 
     pub fn new(
         context: &mut InitContext,
-        hyd_loop_id: &str,
+        hyd_loop_id: HydraulicColor,
         max_capacity: Volume,
+        max_gaugeable: Volume,
         current_level: Volume,
+        air_pressure_switches: Vec<PressureSwitch>,
+        low_level_threshold: Volume,
     ) -> Self {
         Self {
             level_id: context.get_identifier(format!("HYD_{}_RESERVOIR_LEVEL", hyd_loop_id)),
+            low_level_id: context
+                .get_identifier(format!("HYD_{}_RESERVOIR_LEVEL_IS_LOW", hyd_loop_id)),
             max_capacity,
+            max_gaugeable,
             current_level,
-            min_usable: Volume::new::<gallon>(Self::MIN_USABLE_VOLUME),
+            min_usable: Volume::new::<gallon>(Self::MIN_USABLE_VOLUME_GAL),
+            air_pressure: Pressure::new::<psi>(50.),
+            leak_failure: Failure::new(FailureType::ReservoirLeak(hyd_loop_id)),
+            return_failure: Failure::new(FailureType::ReservoirReturnLeak(hyd_loop_id)),
+            air_pressure_switches,
+            level_switch: LevelSwitch::new(low_level_threshold),
+        }
+    }
+
+    fn update(&mut self, context: &UpdateContext, air_pressure: Pressure) {
+        self.air_pressure = air_pressure;
+
+        self.level_switch.update(self.current_level);
+
+        self.update_pressure_switches(context);
+
+        self.update_leak_failure(context);
+    }
+
+    fn update_leak_failure(&mut self, context: &UpdateContext) {
+        if self.leak_failure.is_active() {
+            self.current_level -=
+                VolumeRate::new::<gallon_per_second>(Self::LEAK_FAILURE_FLOW_GAL_PER_S)
+                    * context.delta_as_time();
+
+            self.current_level = self.current_level.max(Volume::new::<gallon>(0.));
+        }
+    }
+
+    fn update_pressure_switches(&mut self, context: &UpdateContext) {
+        for switch in &mut self.air_pressure_switches {
+            switch.update(context, self.air_pressure)
         }
     }
 
@@ -1128,21 +1234,57 @@ impl Reservoir {
     }
 
     fn add_return_volume(&mut self, volume: Volume) {
-        self.current_level = (self.current_level + volume).min(self.max_capacity);
+        let volume_actually_returned = if !self.return_failure.is_active() {
+            volume
+        } else {
+            volume - (Self::RETURN_FAILURE_LEAK_RATIO * volume)
+        };
+
+        self.current_level = (self.current_level + volume_actually_returned).min(self.max_capacity);
     }
 
-    fn level(&self) -> Volume {
+    fn fluid_level_real(&self) -> Volume {
         self.current_level
+    }
+
+    fn fluid_level_from_gauge(&self) -> Volume {
+        self.current_level.min(self.max_gaugeable)
+    }
+
+    pub fn air_pressure(&self) -> Pressure {
+        self.air_pressure
+    }
+
+    fn is_empty(&self) -> bool {
+        self.fluid_level_real() <= Volume::new::<gallon>(Self::MIN_USABLE_VOLUME_GAL)
+    }
+
+    pub fn is_low_air_pressure(&self) -> bool {
+        self.air_pressure_switches
+            .iter()
+            .any(|s| s.state() == PressureSwitchState::NotPressurised)
+    }
+
+    pub fn is_low_level(&self) -> bool {
+        self.level_switch.is_low_level()
     }
 }
 impl SimulationElement for Reservoir {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.leak_failure.accept(visitor);
+        self.return_failure.accept(visitor);
+
+        visitor.visit(self);
+    }
+
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write(&self.level_id, self.level());
+        writer.write(&self.level_id, self.fluid_level_from_gauge());
+        writer.write(&self.low_level_id, self.is_low_level());
     }
 }
 impl PressurizeableReservoir for Reservoir {
     fn available_volume(&self) -> Volume {
-        self.max_capacity - self.current_level
+        self.max_capacity - self.fluid_level_real()
     }
 }
 
@@ -1157,18 +1299,17 @@ pub struct Pump {
     current_max_displacement: Volume,
     press_breakpoints: [f64; 9],
     displacement_carac: [f64; 9],
-    // Displacement low pass filter. [0:1], 0 frozen -> 1 instantaneous dynamic
-    displacement_dynamic: f64,
+
     speed: AngularVelocity,
+
+    cavitation_efficiency: Ratio,
 }
 impl Pump {
     const FLOW_CONSTANT_RPM_CUBIC_INCH_TO_GPM: f64 = 231.;
+    const AIR_PRESSURE_BREAKPTS_PSI: [f64; 9] = [0., 5., 10., 15., 20., 30., 50., 70., 100.];
+    const AIR_PRESSURE_CARAC_RATIO: [f64; 9] = [0.0, 0.1, 0.6, 0.8, 0.9, 1., 1., 1., 1.];
 
-    fn new(
-        press_breakpoints: [f64; 9],
-        displacement_carac: [f64; 9],
-        displacement_dynamic: f64,
-    ) -> Self {
+    fn new(press_breakpoints: [f64; 9], displacement_carac: [f64; 9]) -> Self {
         Self {
             delta_vol_max: Volume::new::<gallon>(0.),
             current_displacement: Volume::new::<gallon>(0.),
@@ -1176,8 +1317,10 @@ impl Pump {
             current_max_displacement: Volume::new::<gallon>(0.),
             press_breakpoints,
             displacement_carac,
-            displacement_dynamic,
+
             speed: AngularVelocity::new::<revolution_per_minute>(0.),
+
+            cavitation_efficiency: Ratio::new::<ratio>(1.),
         }
     }
 
@@ -1191,12 +1334,11 @@ impl Pump {
     ) {
         self.speed = speed;
 
+        self.update_cavitation(reservoir);
+
         let theoretical_displacement = self.calculate_displacement(section, controller);
 
-        // Actual displacement is the calculated one with a low pass filter applied to mimic displacement transients dynamic
-        // Note this is applied on "max" delta vol, so any regulation within pump capacity will remain "instantaneous'
-        self.current_max_displacement = self.displacement_dynamic * theoretical_displacement
-            + (1.0 - self.displacement_dynamic) * self.current_max_displacement;
+        self.current_max_displacement = self.cavitation_efficiency * theoretical_displacement;
 
         let max_flow = Self::calculate_flow(speed, self.current_max_displacement)
             .max(VolumeRate::new::<gallon_per_second>(0.));
@@ -1205,6 +1347,18 @@ impl Pump {
             reservoir.request_flow_availability(context, max_flow);
 
         self.delta_vol_max = max_flow_available_from_reservoir * context.delta_as_time();
+    }
+
+    fn update_cavitation(&mut self, reservoir: &Reservoir) {
+        self.cavitation_efficiency = Ratio::new::<ratio>(interpolation(
+            &Self::AIR_PRESSURE_BREAKPTS_PSI,
+            &Self::AIR_PRESSURE_CARAC_RATIO,
+            reservoir.air_pressure().get::<psi>(),
+        ));
+
+        if reservoir.is_empty() {
+            self.cavitation_efficiency = Ratio::new::<ratio>(0.);
+        }
     }
 
     fn calculate_displacement<T: PumpController>(
@@ -1262,6 +1416,10 @@ impl Pump {
             VolumeRate::new::<gallon_per_second>(0.)
         }
     }
+
+    fn cavitation_efficiency(&self) -> Ratio {
+        self.cavitation_efficiency
+    }
 }
 impl PressureSource for Pump {
     fn delta_vol_max(&self) -> Volume {
@@ -1296,6 +1454,7 @@ impl PressureSource for Pump {
 }
 
 pub struct ElectricPump {
+    cavitation_id: VariableIdentifier,
     pump: Pump,
     pump_physics: ElectricalPumpPhysics,
 }
@@ -1305,8 +1464,6 @@ impl ElectricPump {
         0.0, 500.0, 1000.0, 1500.0, 2175.0, 2850.0, 3080.0, 3100.0, 3500.0,
     ];
     const DISPLACEMENT_MAP: [f64; 9] = [0.263, 0.263, 0.263, 0.263, 0.263, 0.2, 0.0, 0.0, 0.0];
-    // 1 == No filtering
-    const DISPLACEMENT_DYNAMICS: f64 = 0.4;
 
     pub fn new(
         context: &mut InitContext,
@@ -1315,11 +1472,8 @@ impl ElectricPump {
         max_current: ElectricCurrent,
     ) -> Self {
         Self {
-            pump: Pump::new(
-                Self::DISPLACEMENT_BREAKPTS,
-                Self::DISPLACEMENT_MAP,
-                Self::DISPLACEMENT_DYNAMICS,
-            ),
+            cavitation_id: context.get_identifier(format!("HYD_{}_EPUMP_CAVITATION", id)),
+            pump: Pump::new(Self::DISPLACEMENT_BREAKPTS, Self::DISPLACEMENT_MAP),
             pump_physics: ElectricalPumpPhysics::new(
                 context,
                 id,
@@ -1348,6 +1502,14 @@ impl ElectricPump {
             self.pump_physics.speed(),
             controller,
         );
+    }
+
+    pub fn cavitation_efficiency(&self) -> Ratio {
+        self.pump.cavitation_efficiency()
+    }
+
+    pub fn flow(&self) -> VolumeRate {
+        self.pump.flow()
     }
 }
 impl PressureSource for ElectricPump {
@@ -1384,6 +1546,13 @@ impl SimulationElement for ElectricPump {
 
         visitor.visit(self);
     }
+
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(
+            &self.cavitation_id,
+            self.cavitation_efficiency().get::<ratio>(),
+        );
+    }
 }
 
 pub struct EngineDrivenPump {
@@ -1399,19 +1568,12 @@ impl EngineDrivenPump {
     ];
     const DISPLACEMENT_MAP: [f64; 9] = [2.4, 2.4, 2.4, 2.4, 2.4, 2.4, 2.2, 1.0, 0.0];
 
-    // 0.1 == 90% filtering on max displacement transient
-    const DISPLACEMENT_DYNAMICS: f64 = 0.1;
-
     pub fn new(context: &mut InitContext, id: &str) -> Self {
         Self {
             active_id: context.get_identifier(format!("HYD_{}_EDPUMP_ACTIVE", id)),
             is_active: false,
             speed: AngularVelocity::new::<revolution_per_minute>(0.),
-            pump: Pump::new(
-                Self::DISPLACEMENT_BREAKPTS,
-                Self::DISPLACEMENT_MAP,
-                Self::DISPLACEMENT_DYNAMICS,
-            ),
+            pump: Pump::new(Self::DISPLACEMENT_BREAKPTS, Self::DISPLACEMENT_MAP),
         }
     }
 
@@ -1601,9 +1763,6 @@ impl RamAirTurbine {
     ];
     const DISPLACEMENT_MAP: [f64; 9] = [0.5, 0.8, 1.15, 1.15, 1.15, 0.8, 0.3, 0.0, 0.0];
 
-    // 1 == no filtering. 0.1 == 90% filtering. 0.2==80%... !!Warning, filter frequency is time delta dependant.
-    const DISPLACEMENT_DYNAMICS: f64 = 0.2;
-
     // Speed to go from 0 to 1 stow position per sec. 1 means full deploying in 1s
     const STOWING_SPEED: f64 = 1.;
 
@@ -1612,11 +1771,7 @@ impl RamAirTurbine {
             stow_position_id: context.get_identifier("HYD_RAT_STOW_POSITION".to_owned()),
 
             deployment_commanded: false,
-            pump: Pump::new(
-                Self::DISPLACEMENT_BREAKPTS,
-                Self::DISPLACEMENT_MAP,
-                Self::DISPLACEMENT_DYNAMICS,
-            ),
+            pump: Pump::new(Self::DISPLACEMENT_BREAKPTS, Self::DISPLACEMENT_MAP),
             pump_controller: AlwaysPressurisePumpController::new(),
             wind_turbine: WindTurbine::new(context),
             position: 0.,
@@ -1712,91 +1867,190 @@ impl SimulationElement for RamAirTurbine {
 
 #[cfg(test)]
 mod tests {
-    use crate::electrical::Electricity;
-    use crate::simulation::test::TestVariableRegistry;
-    use crate::simulation::test::{ElementCtorFn, SimulationTestBed, TestBed};
+    use crate::simulation::test::{ElementCtorFn, ReadByName, SimulationTestBed, TestBed};
     use crate::simulation::InitContext;
+    use ntest::assert_about_eq;
 
     use uom::si::{f64::*, pressure::psi, ratio::percent, volume::gallon};
 
     use super::*;
 
     #[test]
-    fn reservoir_gives_desired_flow() {
-        let mut electricity = Electricity::new();
-        let mut registry: TestVariableRegistry = Default::default();
-        let mut init_context = InitContext::new(&mut electricity, &mut registry);
-
-        let mut reservoir = Reservoir::new(
-            &mut init_context,
-            "GREEN",
-            Volume::new::<gallon>(5.),
-            Volume::new::<gallon>(5.),
-        );
-
-        assert!(Volume::new::<gallon>(1.) == reservoir.try_take_volume(Volume::new::<gallon>(1.)));
-        assert!(
-            reservoir.current_level > Volume::new::<gallon>(3.99)
-                && reservoir.current_level < Volume::new::<gallon>(4.01)
-        );
-    }
-
-    #[test]
-    fn reservoir_gives_only_volume_available() {
-        let mut electricity = Electricity::new();
-        let mut registry: TestVariableRegistry = Default::default();
-        let mut init_context = InitContext::new(&mut electricity, &mut registry);
-
-        let mut reservoir = Reservoir::new(
-            &mut init_context,
-            "GREEN",
-            Volume::new::<gallon>(5.),
-            Volume::new::<gallon>(5.),
-        );
-
-        let drawn_volume = reservoir.try_take_volume(Volume::new::<gallon>(10.));
-        assert!(drawn_volume.get::<gallon>() == 5. - Reservoir::MIN_USABLE_VOLUME);
-    }
-
-    #[test]
     fn section_writes_its_state() {
         let mut test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
-            section(context, "BROWN", "PUMP", 2)
+            section(context, HydraulicColor::Green, "PUMP", 2)
         }));
 
         test_bed.run();
 
-        assert!(test_bed.contains_variable_with_name("HYD_BROWN_PUMP_2_SECTION_PRESSURE"));
-        assert!(test_bed.contains_variable_with_name("HYD_BROWN_PUMP_2_FIRE_VALVE_OPENED"));
+        assert!(test_bed.contains_variable_with_name("HYD_GREEN_PUMP_2_SECTION_PRESSURE"));
+        assert!(test_bed.contains_variable_with_name("HYD_GREEN_PUMP_2_FIRE_VALVE_OPENED"));
     }
 
     #[test]
     fn hyd_circuit_writes_its_state() {
         let mut test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
-            hydraulic_circuit(context, "BROWN", 2)
+            hydraulic_circuit(context, HydraulicColor::Green, 2)
         }));
 
         test_bed.run();
 
-        assert!(test_bed.contains_variable_with_name("HYD_BROWN_SYSTEM_1_SECTION_PRESSURE"));
-        assert!(!test_bed.contains_variable_with_name("HYD_BROWN_SYSTEM_1_FIRE_VALVE_OPENED"));
+        assert!(test_bed.contains_variable_with_name("HYD_GREEN_SYSTEM_1_SECTION_PRESSURE"));
+        assert!(!test_bed.contains_variable_with_name("HYD_GREEN_SYSTEM_1_FIRE_VALVE_OPENED"));
 
-        assert!(test_bed.contains_variable_with_name("HYD_BROWN_PUMP_1_SECTION_PRESSURE"));
-        assert!(test_bed.contains_variable_with_name("HYD_BROWN_PUMP_1_FIRE_VALVE_OPENED"));
+        assert!(test_bed.contains_variable_with_name("HYD_GREEN_PUMP_1_SECTION_PRESSURE"));
+        assert!(test_bed.contains_variable_with_name("HYD_GREEN_PUMP_1_FIRE_VALVE_OPENED"));
 
-        assert!(test_bed.contains_variable_with_name("HYD_BROWN_PUMP_2_SECTION_PRESSURE"));
-        assert!(test_bed.contains_variable_with_name("HYD_BROWN_PUMP_2_FIRE_VALVE_OPENED"));
+        assert!(test_bed.contains_variable_with_name("HYD_GREEN_PUMP_2_SECTION_PRESSURE"));
+        assert!(test_bed.contains_variable_with_name("HYD_GREEN_PUMP_2_FIRE_VALVE_OPENED"));
 
-        assert!(!test_bed.contains_variable_with_name("HYD_BROWN_PUMP_0_SECTION_PRESSURE"));
-        assert!(!test_bed.contains_variable_with_name("HYD_BROWN_PUMP_0_FIRE_VALVE_OPENED"));
+        assert!(!test_bed.contains_variable_with_name("HYD_GREEN_PUMP_0_SECTION_PRESSURE"));
+        assert!(!test_bed.contains_variable_with_name("HYD_GREEN_PUMP_0_FIRE_VALVE_OPENED"));
 
-        assert!(!test_bed.contains_variable_with_name("HYD_BROWN_PUMP_3_SECTION_PRESSURE"));
-        assert!(!test_bed.contains_variable_with_name("HYD_BROWN_PUMP_3_FIRE_VALVE_OPENED"));
+        assert!(!test_bed.contains_variable_with_name("HYD_GREEN_PUMP_3_SECTION_PRESSURE"));
+        assert!(!test_bed.contains_variable_with_name("HYD_GREEN_PUMP_3_FIRE_VALVE_OPENED"));
+    }
+
+    #[test]
+    fn reservoir_gives_desired_flow() {
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            reservoir(
+                context,
+                HydraulicColor::Green,
+                Volume::new::<gallon>(5.),
+                Volume::new::<gallon>(5.),
+                Volume::new::<gallon>(5.),
+            )
+        }));
+
+        assert_about_eq!(
+            test_bed
+                .command_element(|r| r.try_take_volume(Volume::new::<gallon>(1.)).get::<gallon>()),
+            1.
+        );
+
+        assert_about_eq!(
+            test_bed.query_element(|r| r.fluid_level_real().get::<gallon>()),
+            4.
+        );
+
+        assert_about_eq!(
+            test_bed.query_element(|r| r.fluid_level_from_gauge().get::<gallon>()),
+            4.
+        );
+    }
+
+    #[test]
+    fn reservoir_gives_only_volume_available() {
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            reservoir(
+                context,
+                HydraulicColor::Green,
+                Volume::new::<gallon>(5.),
+                Volume::new::<gallon>(5.),
+                Volume::new::<gallon>(5.),
+            )
+        }));
+
+        let drawn_volume =
+            test_bed.command_element(|r| r.try_take_volume(Volume::new::<gallon>(10.)));
+        assert!(drawn_volume.get::<gallon>() == 5. - Reservoir::MIN_USABLE_VOLUME_GAL);
+    }
+
+    #[test]
+    fn reservoir_reports_only_gaugeable_volume() {
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            reservoir(
+                context,
+                HydraulicColor::Green,
+                Volume::new::<gallon>(5.),
+                Volume::new::<gallon>(2.),
+                Volume::new::<gallon>(5.),
+            )
+        }));
+
+        test_bed.run();
+
+        let volume_gallon: f64 = test_bed.read_by_name("HYD_GREEN_RESERVOIR_LEVEL");
+
+        assert_about_eq!(volume_gallon, 2.);
+    }
+
+    #[test]
+    fn reservoir_leaking_loses_fluid() {
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            reservoir(
+                context,
+                HydraulicColor::Green,
+                Volume::new::<gallon>(5.),
+                Volume::new::<gallon>(2.),
+                Volume::new::<gallon>(5.),
+            )
+        }));
+
+        test_bed.set_update_after_power_distribution(|reservoir, context| {
+            reservoir.update(context, Pressure::new::<psi>(50.))
+        });
+
+        test_bed.fail(FailureType::ReservoirLeak(HydraulicColor::Green));
+        test_bed.run_multiple_frames(Duration::from_secs(10));
+
+        let volume_after_leak_gallon: f64 = test_bed.read_by_name("HYD_GREEN_RESERVOIR_LEVEL");
+        assert!(volume_after_leak_gallon < 4.5);
+    }
+
+    #[test]
+    fn reservoir_leaking_cant_go_lower_then_0() {
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            reservoir(
+                context,
+                HydraulicColor::Green,
+                Volume::new::<gallon>(5.),
+                Volume::new::<gallon>(2.),
+                Volume::new::<gallon>(0.5),
+            )
+        }));
+
+        test_bed.set_update_after_power_distribution(|reservoir, context| {
+            reservoir.update(context, Pressure::new::<psi>(50.))
+        });
+
+        test_bed.fail(FailureType::ReservoirLeak(HydraulicColor::Green));
+        test_bed.run_multiple_frames(Duration::from_secs(10));
+
+        let volume_after_leak_gallon: f64 = test_bed.read_by_name("HYD_GREEN_RESERVOIR_LEVEL");
+        assert!(volume_after_leak_gallon == 0.);
+    }
+
+    #[test]
+    fn reservoir_empty_has_level_switch_reporting_empty() {
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
+            reservoir(
+                context,
+                HydraulicColor::Green,
+                Volume::new::<gallon>(5.),
+                Volume::new::<gallon>(2.),
+                Volume::new::<gallon>(0.5),
+            )
+        }));
+
+        test_bed.set_update_after_power_distribution(|reservoir, context| {
+            reservoir.update(context, Pressure::new::<psi>(50.))
+        });
+
+        let is_low: bool = test_bed.read_by_name("HYD_GREEN_RESERVOIR_LEVEL_IS_LOW");
+        assert!(!is_low);
+
+        test_bed.fail(FailureType::ReservoirLeak(HydraulicColor::Green));
+        test_bed.run_multiple_frames(Duration::from_secs(10));
+
+        let is_low: bool = test_bed.read_by_name("HYD_GREEN_RESERVOIR_LEVEL_IS_LOW");
+        assert!(is_low);
     }
 
     fn section(
         context: &mut InitContext,
-        loop_id: &str,
+        loop_id: HydraulicColor,
         section_id: &str,
         pump_id: usize,
     ) -> Section {
@@ -1825,55 +2079,54 @@ mod tests {
         )
     }
 
+    fn reservoir(
+        context: &mut InitContext,
+        hyd_loop_id: HydraulicColor,
+        max_capacity: Volume,
+        max_gaugeable: Volume,
+        current_level: Volume,
+    ) -> Reservoir {
+        Reservoir::new(
+            context,
+            hyd_loop_id,
+            max_capacity,
+            max_gaugeable,
+            current_level,
+            vec![PressureSwitch::new(
+                Pressure::new::<psi>(23.45),
+                Pressure::new::<psi>(20.55),
+                PressureSwitchType::Relative,
+            )],
+            max_capacity * 0.1,
+        )
+    }
+
     fn hydraulic_circuit(
         context: &mut InitContext,
-        loop_color: &str,
+        loop_color: HydraulicColor,
         main_pump_number: usize,
     ) -> HydraulicCircuit {
-        match loop_color {
-            "GREEN" => HydraulicCircuit::new(
-                context,
-                loop_color,
-                main_pump_number,
-                Ratio::new::<percent>(100.),
-                Volume::new::<gallon>(10.),
-                Volume::new::<gallon>(3.6),
-                Pressure::new::<psi>(1450.),
-                Pressure::new::<psi>(1900.),
-                Pressure::new::<psi>(1300.),
-                Pressure::new::<psi>(1800.),
-                true,
-                false,
-            ),
-            "YELLOW" => HydraulicCircuit::new(
-                context,
-                loop_color,
-                main_pump_number,
-                Ratio::new::<percent>(100.),
-                Volume::new::<gallon>(10.),
-                Volume::new::<gallon>(3.6),
-                Pressure::new::<psi>(1450.),
-                Pressure::new::<psi>(1900.),
-                Pressure::new::<psi>(1300.),
-                Pressure::new::<psi>(1800.),
-                true,
-                false,
-            ),
-            _ => HydraulicCircuit::new(
-                context,
-                loop_color,
-                main_pump_number,
-                Ratio::new::<percent>(100.),
-                Volume::new::<gallon>(10.),
-                Volume::new::<gallon>(3.6),
-                Pressure::new::<psi>(1450.),
-                Pressure::new::<psi>(1900.),
-                Pressure::new::<psi>(1300.),
-                Pressure::new::<psi>(1800.),
-                true,
-                false,
-            ),
-        }
+        let reservoir = reservoir(
+            context,
+            loop_color,
+            Volume::new::<gallon>(5.),
+            Volume::new::<gallon>(4.),
+            Volume::new::<gallon>(3.),
+        );
+        HydraulicCircuit::new(
+            context,
+            loop_color,
+            main_pump_number,
+            Ratio::new::<percent>(100.),
+            Volume::new::<gallon>(10.),
+            reservoir,
+            Pressure::new::<psi>(1450.),
+            Pressure::new::<psi>(1900.),
+            Pressure::new::<psi>(1300.),
+            Pressure::new::<psi>(1800.),
+            true,
+            false,
+        )
     }
 
     fn engine_driven_pump(context: &mut InitContext) -> EngineDrivenPump {

@@ -3,6 +3,7 @@ use crate::{
     pneumatic::PneumaticValveSignal,
     simulation::UpdateContext,
 };
+
 use num_derive::FromPrimitive;
 use std::{cell::Ref, fmt::Display, time::Duration};
 use uom::si::{
@@ -18,6 +19,12 @@ pub mod pid;
 mod random;
 pub use random::*;
 pub mod arinc429;
+
+pub trait ReservoirAirPressure {
+    fn green_reservoir_pressure(&self) -> Pressure;
+    fn blue_reservoir_pressure(&self) -> Pressure;
+    fn yellow_reservoir_pressure(&self) -> Pressure;
+}
 
 pub trait AuxiliaryPowerUnitElectrical:
     ControllerSignal<ContactorSignal> + ApuAvailable + ElectricalElement + ElectricitySource
@@ -96,6 +103,22 @@ pub trait EngineCorrectedN2 {
 
 pub trait EngineUncorrectedN2 {
     fn uncorrected_n2(&self) -> Ratio;
+}
+
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum HydraulicColor {
+    Green,
+    Blue,
+    Yellow,
+}
+impl Display for HydraulicColor {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Green => write!(f, "GREEN"),
+            Self::Blue => write!(f, "BLUE"),
+            Self::Yellow => write!(f, "YELLOW"),
+        }
+    }
 }
 
 /// The common types of electrical buses within Airbus aircraft.

@@ -168,12 +168,13 @@ impl Aircraft for A320 {
             &self.lgciu2,
             &self.emergency_electrical_overhead,
             &self.electrical,
+            &self.pneumatic,
         );
 
         self.pneumatic.update_hydraulic_reservoir_spatial_volumes(
             self.hydraulic.green_reservoir(),
-            self.hydraulic.yellow_reservoir(),
             self.hydraulic.blue_reservoir(),
+            self.hydraulic.yellow_reservoir(),
         );
 
         self.hydraulic_overhead.update(&self.hydraulic);
