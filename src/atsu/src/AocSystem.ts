@@ -224,7 +224,6 @@ export class AocSystem {
     }
 
     public receiveMessage(message: AtsuMessage) {
-        message.Timestamp = new AtsuTimestamp();
         this.messageQueue.unshift(message);
 
         // increase the company message counter

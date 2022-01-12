@@ -84,6 +84,9 @@ export class AtsuManager {
     }
 
     public receiveMessage(message: AtsuMessage) {
+        message.UniqueMessageID = ++this.messageCounter;
+        message.Timestamp = new AtsuTimestamp();
+
         if (AocSystem.isRelevantMessage(message)) {
             this.aocSystem.receiveMessage(message);
         }
