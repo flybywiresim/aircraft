@@ -233,6 +233,10 @@ mod emergency_generator_tests {
                 .set_motor_speed(AngularVelocity::new::<revolution_per_minute>(0.));
         }
 
+        fn set_generator_motor_speed(&mut self, angular_velocity: AngularVelocity) {
+            self.hydraulic.set_motor_speed(angular_velocity);
+        }
+
         fn generator_output_within_normal_parameters_before_processing_power_consumption_report(
             &self,
         ) -> bool {
@@ -346,6 +350,29 @@ mod emergency_generator_tests {
         test_bed.run_with_delta(Duration::from_secs(100));
 
         assert!(test_bed.query(|a| a
+            .generator_output_within_normal_parameters_after_processing_power_consumption_report(
+            )));
+    }
+
+    #[test]
+    fn output_within_normal_parameters_only_above_min_rpm() {
+        let mut test_bed = EmergencyGeneratorTestBed::new();
+
+        test_bed.command(|a| a.attempt_emer_gen_start());
+
+        test_bed.run_with_delta(Duration::from_secs(10));
+
+        assert!(test_bed.query(|a| a
+            .generator_output_within_normal_parameters_after_processing_power_consumption_report(
+            )));
+
+        test_bed.command(|a| {
+            a.set_generator_motor_speed(AngularVelocity::new::<revolution_per_minute>(5000.))
+        });
+
+        test_bed.run_with_delta(Duration::from_secs(1));
+
+        assert!(test_bed.query(|a| !a
             .generator_output_within_normal_parameters_after_processing_power_consumption_report(
             )));
     }
