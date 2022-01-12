@@ -68,7 +68,7 @@ class CDUAocMessageSentDetail {
         };
 
         mcdu.onRightInput[5] = () => {
-            mcdu.printPage([message.serialize(Atsu.AtsuMessageSerializationFormat.Printer)]);
+            mcdu.atsuManager.printMessage(message);
         };
 
     }

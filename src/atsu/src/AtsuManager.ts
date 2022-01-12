@@ -2,7 +2,7 @@
 //  SPDX-License-Identifier: GPL-3.0
 
 import { AocSystem } from './AocSystem';
-import { AtsuMessage } from './messages/AtsuMessage';
+import { AtsuMessage, AtsuMessageSerializationFormat } from './messages/AtsuMessage';
 import { AtsuTimestamp } from './messages/AtsuTimestamp';
 import { WeatherMessage } from './messages/WeatherMessage';
 import { AtisMessage } from './messages/AtisMessage';
@@ -24,9 +24,14 @@ export class AtsuManager {
 
     private listener = RegisterViewListener('JS_LISTENER_SIMVARS');
 
-    constructor() {
+    private mcdu = undefined;
+
+    constructor(mcdu) {
+        this.mcdu = mcdu;
+
         SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_DELETE', 'number', -1);
         SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_SEND', 'number', -1);
+        SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_PRINT', 'number', -1);
 
         setInterval(async () => {
             if (SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_DELETE', 'number') !== -1) {
@@ -36,6 +41,13 @@ export class AtsuManager {
             if (SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_SEND', 'number') !== -1) {
                 this.sendMessage(SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_SEND', 'number')).catch(() => {});
                 SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_SEND', 'number', -1);
+            }
+            if (SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_PRINT', 'number') !== -1) {
+                const message = this.findMessage(SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_PRINT', 'number'));
+                if (message !== undefined) {
+                    this.printMessage(message);
+                }
+                SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_PRINT', 'number', -1);
             }
         }, 500);
     }
@@ -94,6 +106,19 @@ export class AtsuManager {
             return Promise.reject(Error('HOPPIE DISABLED'));
         }
         return this.connector.isStationAvailable(callsign);
+    }
+
+    public findMessage(uid: number) {
+        const message = this.aocSystem.messages().find((element) => element.UniqueMessageID === uid);
+        if (message !== undefined) {
+            return message;
+        }
+        return undefined;
+    }
+
+    public printMessage(message: AtsuMessage) {
+        const text = message.serialize(AtsuMessageSerializationFormat.Printer);
+        this.mcdu.printPage(text.split('\n'));
     }
 }
 

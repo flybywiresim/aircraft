@@ -131,7 +131,7 @@ class CDUAocRequestsAtis {
                     // print the message
                     if (store.formatID === 0) {
                         mcdu.atsuManager.messageRead(message.UniqueMessageID);
-                        mcdu.printPage([ message.serialize(AtsuMessageSerializationFormat.Printer) ]);
+                        mcdu.atsuManager.printMessage(message);
                     }
                 }, Math.floor(Math.random() * 10000) + 10000);
             });

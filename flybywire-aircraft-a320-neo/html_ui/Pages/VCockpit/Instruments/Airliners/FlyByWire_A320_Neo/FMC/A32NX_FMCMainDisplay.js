@@ -506,7 +506,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.zeroFuelWeightMassCenter = undefined;
 
         // ATSU data
-        this.atsuManager = new Atsu.AtsuManager();
+        this.atsuManager = new Atsu.AtsuManager(this);
         this.pdcMessage = undefined;
 
         // Reset SimVars
