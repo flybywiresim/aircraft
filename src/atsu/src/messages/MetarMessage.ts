@@ -11,6 +11,7 @@ export class MetarMessage extends WeatherMessage {
     constructor() {
         super();
         this.Type = AtsuMessageType.METAR;
+        this.Station = NXDataStore.get('CONFIG_METAR_SRC', 'MSFS');
     }
 }
 

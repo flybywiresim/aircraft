@@ -11,6 +11,7 @@ export class AtisMessage extends WeatherMessage {
     constructor() {
         super();
         this.Type = AtsuMessageType.ATIS;
+        this.Station = NXDataStore.get('CONFIG_ATIS_SRC', 'MSFS');
     }
 }
 

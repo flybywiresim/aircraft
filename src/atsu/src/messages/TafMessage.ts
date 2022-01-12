@@ -11,6 +11,7 @@ export class TafMessage extends WeatherMessage {
     constructor() {
         super();
         this.Type = AtsuMessageType.TAF;
+        this.Station = NXDataStore.get('CONFIG_TAF_SRC', 'MSFS');
     }
 }
 
