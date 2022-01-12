@@ -23,7 +23,7 @@ export class CpdlcMessage extends AtsuMessage {
 
     public OutputTransmissionId = -1;
 
-    public Message = '';
+    public Lines: string[] = [];
 
     constructor() {
         super();
@@ -38,9 +38,9 @@ export class CpdlcMessage extends AtsuMessage {
 
         if (format === AtsuMessageSerializationFormat.Network) {
             message = `/data2/${this.OutputTransmissionId}/${this.InputTransmissionId !== -1 ? this.InputTransmissionId : ''}/${cpdlcToString(this.Response)}`;
-            message += `/${this.Message}`;
+            message += `/${this.Lines.join(' ')}`;
         } else {
-            message = this.Message;
+            message = this.Lines.join(' ');
         }
 
         return message;
