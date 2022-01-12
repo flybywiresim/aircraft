@@ -1013,9 +1013,10 @@ impl Section {
         self.current_pressure = self.current_pressure.max(Pressure::new::<psi>(14.7));
 
         if let Some(valve) = &self.leak_measurement_valve {
-            self.pressure_switch.update(valve.downstream_pressure());
+            self.pressure_switch
+                .update(context, valve.downstream_pressure());
         } else {
-            self.pressure_switch.update(self.current_pressure);
+            self.pressure_switch.update(context, self.current_pressure);
         }
     }
 
@@ -2099,7 +2100,7 @@ mod tests {
         let volume_taken =
             test_bed.command_element(|e| e.try_take_volume(Volume::new::<gallon>(10.)));
 
-        assert!(volume_taken.get::<gallon>() == 5. - Reservoir::MIN_USABLE_VOLUME);
+        assert!(volume_taken.get::<gallon>() == 5. - Reservoir::MIN_USABLE_VOLUME_GAL);
     }
 
     #[test]
