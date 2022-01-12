@@ -19,7 +19,9 @@ export enum AtsuMessageType {
     METAR = 2,
     TAF = 3,
     ATIS = 4,
-    AOC = 5
+    AOC = 5,
+    CDPDLC = 6,
+    ATC = 7
 }
 
 export enum AtsuMessageResponseStatus {
@@ -43,7 +45,8 @@ export enum AtsuMessageComStatus {
 export enum AtsuMessageSerializationFormat {
     MCDU,
     DCDU,
-    Printer
+    Printer,
+    Network
 }
 
 /**
