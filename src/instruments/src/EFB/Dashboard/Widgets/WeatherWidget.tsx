@@ -4,6 +4,7 @@ import { Metar } from '@flybywiresim/api-client';
 import { IconWind, IconGauge, IconDroplet, IconTemperature, IconPoint, IconCloud } from '@tabler/icons';
 import { MetarParserType, Wind } from '../../../Common/metarTypes';
 import { usePersistentProperty } from '../../../Common/persistence';
+import SimpleInput from '../../Components/Form/SimpleInput/SimpleInput';
 
 const MetarParserTypeWindState: Wind = {
     degrees: 0,
@@ -80,10 +81,10 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
 
     const source = metarSource;
 
-    const handleIcao = (event: { target: { value: React.SetStateAction<string>; }; }) => {
-        if (event.target.value.length === 4) {
-            getMetar(event.target.value, source);
-        } else if (event.target.value.length === 0) {
+    const handleIcao = (icao: string) => {
+        if (icao.length === 4) {
+            getMetar(icao, source);
+        } else if (icao.length === 0) {
             getMetar(props.icao, source);
         }
     };
@@ -119,11 +120,11 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
                                 <div className="ml-8">
                                     <IconCloud size={35} stroke={1.5} strokeLinejoin="miter" />
                                 </div>
-                                <input
+                                <SimpleInput
+                                    noLabel
                                     className="text-left ml-4 border-none focus:outline-none text-2xl bg-transparent font-medium uppercase"
-                                    type="text"
                                     placeholder={props.icao}
-                                    onChange={handleIcao}
+                                    onChange={(event) => handleIcao(event)}
                                     maxLength={4}
                                 />
                             </div>
