@@ -124,7 +124,7 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
                                     noLabel
                                     className="text-center w-24 ml-4 text-2xl font-medium uppercase"
                                     placeholder={props.icao}
-                                    onChange={(event) => handleIcao(event)}
+                                    onChange={(value) => handleIcao(value)}
                                     maxLength={4}
                                 />
                             </div>
