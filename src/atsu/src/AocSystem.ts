@@ -255,10 +255,6 @@ export class AocSystem {
         return this.messageQueue.findIndex((element) => uid === element.UniqueMessageID) !== -1;
     }
 
-    public setOwnCallsign(callsign: string) {
-        this.connector.setCallsign(callsign);
-    }
-
     public receiveMessage(message: AtsuMessage) {
         this.messageQueue.unshift(message);
 

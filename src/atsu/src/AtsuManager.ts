@@ -96,15 +96,6 @@ export class AtsuManager {
         this.aocSystem.messageRead(uid);
     }
 
-    public setOwnCallsign(callsign: string) {
-        // ignore the standard callsign
-        if (callsign !== '1123') {
-            this.connector.setCallsign(callsign);
-        } else {
-            this.connector.setCallsign('');
-        }
-    }
-
     public aoc() {
         return this.aocSystem;
     }

@@ -16,16 +16,19 @@ export class HoppieConnector {
 
     private createBaseUrl(type: string, to: string) {
         // validate the configuration
+        const flightNo = SimVar.GetSimVarValue('ATC FLIGHT NUMBER', 'string');
         const system = NXDataStore.get('CONFIG_HOPPIE_SYSTEM', 'NONE');
         const logon = NXDataStore.get('CONFIG_HOPPIE_USERID', '');
-        if (system === 'NONE' || logon === '' || SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') !== 1) {
+
+        if (system === 'NONE' || logon === '' || flightNo === '' || flightNo === '1123' || SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') !== 1) {
             return '';
         }
 
-        return `${HoppieConnector.corsProxyUrl + HoppieConnector.hoppieUrl}?logon=${logon}&type=${type}&from=${this.callsign}&to=${to}`;
+        return `${HoppieConnector.corsProxyUrl + HoppieConnector.hoppieUrl}?logon=${logon}&type=${type}&from=${flightNo}&to=${to}`;
     }
 
     public async isStationAvailable(station: string) {
+        const flightNo = SimVar.GetSimVarValue('ATC FLIGHT NUMBER', 'string');
         let url = this.createBaseUrl('ping', 'ALL-CALLSIGNS');
         url += `&packet=${station}`;
 
@@ -35,7 +38,7 @@ export class HoppieConnector {
                     if (content.startsWith('ok') !== true) {
                         return Promise.reject(Error('COM UNAVAILABLE'));
                     }
-                    if (station === this.callsign || content !== `ok {${station}}`) {
+                    if (station === flightNo || content !== `ok {${station}}`) {
                         return Promise.reject(Error('NO ACTIVE ATC'));
                     }
                     return Promise.resolve('');
@@ -45,14 +48,11 @@ export class HoppieConnector {
         }).catch(() => Promise.reject(Error('COM UNAVAILABLE')));
     }
 
-    public setCallsign(callsign: string) {
-        this.callsign = callsign;
-    }
-
     public async sendTelexMessage(message: AtsuMessage) {
+        const flightNo = SimVar.GetSimVarValue('ATC FLIGHT NUMBER', 'string');
         const data = [
             `logon=${NXDataStore.get('CONFIG_HOPPIE_USERID', '')}`,
-            `from=${this.callsign}`,
+            `from=${flightNo}`,
             `to=${message.Station}`,
             'type=TELEX',
             `packet=${encodeURIComponent(message.serialize(AtsuMessageSerializationFormat.Printer))}`,

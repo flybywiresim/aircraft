@@ -122,7 +122,6 @@ class CDUAocFreeText {
             }
 
             // send the message
-            mcdu.atsuManager.setOwnCallsign(SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC"));
             const retval = mcdu.atsuManager.registerMessage(message);
             if (retval.msg.length === 0) {
                 mcdu.atsuManager.sendMessage(retval.uid).then(() => {
