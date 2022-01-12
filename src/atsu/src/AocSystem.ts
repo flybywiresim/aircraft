@@ -9,6 +9,7 @@ import { TafMessage } from './messages/TafMessage';
 import { WeatherMessage } from './messages/WeatherMessage';
 import { AtsuTimestamp } from './messages/AtsuTimestamp';
 import { HoppieConnector } from './HoppieConnector';
+import { wordWrap } from './Common';
 
 const WeatherMap = {
     FAA: 'faa',
@@ -51,7 +52,7 @@ export class AocSystem {
                         message.Network = AtsuMessageNetwork.FBW;
                         message.Direction = AtsuMessageDirection.Input;
                         message.Station = msg.from.flight;
-                        message.Lines = msg.message.split(';');
+                        message.Lines = wordWrap(msg.message.replace(/;/i, ' '), 25);
 
                         parent.receiveMessage(message);
                         msgCounter += 1;
@@ -149,33 +150,12 @@ export class AocSystem {
         return index !== -1;
     }
 
-    private static wordWrap(text: string, maxLength: number) {
-        const result = [];
-        let line = [];
-        let length = 0;
-
-        text.split(' ').forEach((word) => {
-            if ((length + word.length) >= maxLength) {
-                result.push(line.join(' '));
-                line = []; length = 0;
-            }
-            length += word.length + 1;
-            line.push(word);
-        });
-
-        if (line.length > 0) {
-            result.push(line.join(' '));
-        }
-
-        return result;
-    }
-
     private static async receiveMetar(icao: string, message: WeatherMessage) {
         const storedMetarSrc = NXDataStore.get('CONFIG_METAR_SRC', 'MSFS');
 
         await NXApi.getMetar(icao, WeatherMap[storedMetarSrc])
             .then((data) => {
-                const newLines = AocSystem.wordWrap(data.metar, 25);
+                const newLines = wordWrap(data.metar, 25);
                 message.Reports.push({ airport: icao, report: newLines });
             }).catch(() => Promise.reject(Error('COM UNAVAILABLE')));
     }
@@ -185,7 +165,7 @@ export class AocSystem {
 
         await NXApi.getTaf(icao, WeatherMap[storedTafSrc])
             .then((data) => {
-                const newLines = AocSystem.wordWrap(data.taf, 25);
+                const newLines = wordWrap(data.taf, 25);
                 message.Reports.push({ airport: icao, report: newLines });
             }).catch(() => Promise.reject(Error('COM UNAVAILABLE')));
     }
@@ -217,7 +197,7 @@ export class AocSystem {
         return NXApi.getAtis(icao, WeatherMap[storedAtisSrc])
             .then((data) => {
                 const message = new AtisMessage();
-                const newLines = AocSystem.wordWrap(data.combined, 25);
+                const newLines = wordWrap(data.combined, 25);
                 message.Reports.push({ airport: icao, report: newLines });
                 return message;
             }).catch(() => {
