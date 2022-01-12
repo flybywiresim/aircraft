@@ -131,6 +131,20 @@ const DCDU: React.FC = () => {
 
         setMessageUid(sortedMessages[index].UniqueMessageID);
     });
+    useInteractionEvents(['A32NX_DCDU_BTN_MPL_PRINT', 'A32NX_DCDU_BTN_MPR_PRINT'], () => {
+        if (messages.size === 0) {
+            return;
+        }
+
+        if (SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_PRINT', 'number') !== -1) {
+            setStatus('Mainpage', 'PRINTER BUSY');
+            return;
+        }
+
+        if (messageUid !== -1) {
+            SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_PRINT', 'number', messageUid);
+        }
+    });
 
     // resynchronization with AtsuManager
     useCoherentEvent('A32NX_DCDU_MSG', (serialized: any) => {
