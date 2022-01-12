@@ -19,7 +19,7 @@ export class HoppieConnector {
                 const url = this.createBaseUrl('poll', 'ALL-CALLSIGNS');
 
                 // receive the data from the server
-                // expected format: ok {BLA telex {dfafdsf fdafdafdsd fdafdaf}} {BLA1 telex {fdafdfd fdafds }}
+                // expected format: ok {CALLSIGN telex, {Hello world!}} {CALLSIGN telex, {Hello world!}}
                 fetch(url).then((response) => response.text().then((data) => {
                     // something went wrong
                     if (data.startsWith('error')) {
@@ -33,7 +33,7 @@ export class HoppieConnector {
                     // create the messages
                     messages.forEach((element) => {
                         // get the single entries of the message
-                        // example: [BLA telex, {dfafdsf fdafdafdsd fdafdaf}]
+                        // example: [CALLSIGN telex, {Hello world!}]
                         const entries = element.substring(1).split(/({.*?})/gm);
 
                         // get all relevant information
