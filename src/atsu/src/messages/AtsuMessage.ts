@@ -3,6 +3,11 @@
 
 import { AtsuTimestamp } from './AtsuTimestamp';
 
+export enum AtsuMessageNetwork {
+    Hoppie,
+    FBW
+}
+
 export enum AtsuMessageDirection {
     Input,
     Output
@@ -45,6 +50,8 @@ export enum AtsuMessageSerializationFormat {
  * Defines the generic ATC message
  */
 export class AtsuMessage {
+    public Network = AtsuMessageNetwork.Hoppie;
+
     public UniqueMessageID : number = undefined;
 
     public Timestamp : AtsuTimestamp = undefined;
@@ -69,6 +76,7 @@ export class AtsuMessage {
 
     // used to deserialize event data
     public deserialize(jsonData) {
+        this.Network = jsonData.Network;
         this.UniqueMessageID = jsonData.UniqueMessageID;
         this.Timestamp = new AtsuTimestamp();
         this.Timestamp.deserialize(jsonData.Timestamp);

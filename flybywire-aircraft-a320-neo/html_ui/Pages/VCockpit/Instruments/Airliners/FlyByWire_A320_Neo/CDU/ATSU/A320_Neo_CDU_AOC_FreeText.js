@@ -1,6 +1,10 @@
 class CDUAocFreeText {
-    static ShowPage(mcdu, store = { "msg_to": "", "msg_line1": "", "msg_line2": "", "msg_line3": "", "msg_line4": "", "sendStatus": ""}) {
+    static ShowPage(mcdu, store = { "msg_to": "", "reqID": 0, "msg_line1": "", "msg_line2": "", "msg_line3": "", "msg_line4": "", "sendStatus": ""}) {
         mcdu.clearDisplay();
+        const networkTypes = [
+            'HOPPIE',
+            'FBW'
+        ];
 
         const updateView = () => {
             let oneLineFilled = false;
@@ -14,8 +18,8 @@ class CDUAocFreeText {
 
             mcdu.setTemplate([
                 ["AOC FREE TEXT"],
-                ["TO:"],
-                [`${store["msg_to"] !== "" ? store["msg_to"] + "[color]cyan" : "________[color]amber"}`],
+                ["TO", "NETWORK"],
+                [`${store["msg_to"] !== "" ? store["msg_to"] + "[color]cyan" : "________[color]amber"}`, `↓${networkTypes[store["reqID"]]}[color]cyan`],
                 [""],
                 [`${store["msg_line1"] !== "" ? store["msg_line1"] : "["}[color]cyan`, `${store["msg_line1"] != "" ? "" : "]"}[color]cyan`],
                 [""],
@@ -75,6 +79,14 @@ class CDUAocFreeText {
             CDUAocFreeText.ShowPage(mcdu, store);
         };
 
+        mcdu.rightInputDelay[0] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+        mcdu.onRightInput[0] = () => {
+            store["reqID"] = (store["reqID"] + 1) % 2;
+            updateView();
+        };
+
         mcdu.rightInputDelay[5] = () => {
             return mcdu.getDelaySwitchPage();
         };
@@ -107,6 +119,11 @@ class CDUAocFreeText {
 
             // create the message
             const message = new Atsu.FreetextMessage();
+            if (store["reqID"] === 0) {
+                message.Network = Atsu.AtsuMessageNetwork.Hoppie;
+            } else {
+                message.Network = Atsu.AtsuMessageNetwork.FBW;
+            }
             message.Station = store["msg_to"];
             if (store["msg_line1"] !== "") {
                 message.Lines.push(store["msg_line1"]);
