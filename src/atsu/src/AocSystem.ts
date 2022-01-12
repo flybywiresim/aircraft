@@ -1,6 +1,7 @@
 //  Copyright (c) 2022 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
+import { FreetextMessage, AtsuManager } from './AtsuManager';
 import { AtsuMessageDirection, AtsuMessage, AtsuMessageComStatus, AtsuMessageType } from './messages/AtsuMessage';
 import { AtisMessage } from './messages/AtisMessage';
 import { MetarMessage } from './messages/MetarMessage';
@@ -28,8 +29,43 @@ export class AocSystem {
 
     private listener = RegisterViewListener('JS_LISTENER_SIMVARS');
 
-    constructor(connector: HoppieConnector) {
+    constructor(parent: AtsuManager, connector: HoppieConnector) {
         this.connector = connector;
+
+        setInterval(() => {
+            // Update connection
+            NXApi.updateTelex()
+                .catch((err) => {
+                    if (err !== NXApi.disconnectedError && err !== NXApi.disabledError) {
+                        console.log('TELEX PING FAILED');
+                    }
+                });
+
+            // Fetch new messages
+            NXApi.getTelexMessages()
+                .then((data) => {
+                    let msgCounter = 0;
+
+                    for (const msg of data) {
+                        const message = new FreetextMessage();
+                        message.Direction = AtsuMessageDirection.Input;
+                        message.Station = msg.from.flight;
+                        message.Lines = msg.message.split(';');
+
+                        parent.receiveMessage(message);
+                        msgCounter += 1;
+                    }
+
+                    const msgCount = SimVar.GetSimVarValue('L:A32NX_COMPANY_MSG_COUNT', 'Number');
+                    SimVar.SetSimVarValue('L:A32NX_COMPANY_MSG_COUNT', 'Number', msgCount + msgCounter).then();
+                })
+                .catch((err) => {
+                    if (err.status === 404 || err === NXApi.disabledError || err === NXApi.disconnectedError) {
+                        return;
+                    }
+                    console.log('TELEX MSG FETCH FAILED');
+                });
+        }, NXApi.updateRate);
     }
 
     public static isRelevantMessage(message: AtsuMessage) {
