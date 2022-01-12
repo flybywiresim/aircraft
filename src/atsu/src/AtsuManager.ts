@@ -20,7 +20,7 @@ export class AtsuManager {
 
     private messageCounter = 0;
 
-    private aocSystem = new AocSystem(this.connector);
+    private aocSystem = new AocSystem(this, this.connector);
 
     private listener = RegisterViewListener('JS_LISTENER_SIMVARS');
 
