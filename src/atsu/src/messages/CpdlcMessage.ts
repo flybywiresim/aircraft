@@ -33,6 +33,16 @@ export class CpdlcMessage extends AtsuMessage {
         this.Status = AtsuMessageResponseStatus.Open;
     }
 
+    public deserialize(jsonData: any): void {
+        super.deserialize(jsonData);
+
+        this.Type = jsonData.Type;
+        this.Network = jsonData.Network;
+        this.Direction = jsonData.Direction;
+        this.Status = jsonData.Status;
+        this.Lines = jsonData.Lines;
+    }
+
     public serialize(format: AtsuMessageSerializationFormat) {
         let message = '';
 
