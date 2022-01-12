@@ -9,7 +9,7 @@ use systems::shared::{from_bool, to_bool};
 use systems::{failures::FailureType, shared::HydraulicColor};
 use systems_wasm::aspects::{
     max, EventToVariableOptions, MsfsAspectBuilder, UpdateOn, VariableToEventMapping,
-    VariablesToObject,
+    VariableToEventWriteOn, VariablesToObject,
 };
 use systems_wasm::{
     aspects::EventToVariableMapping, set_data_on_sim_object, MsfsSimulationBuilder, Variable,
@@ -183,9 +183,10 @@ fn brakes(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>> {
     // After running the simulation, the variable value is written back to the simulator
     // through the event.
     let options = |options: EventToVariableOptions| {
-        options
-            .mask()
-            .bidirectional(VariableToEventMapping::EventData32kPosition)
+        options.mask().bidirectional(
+            VariableToEventMapping::EventData32kPosition,
+            VariableToEventWriteOn::EveryTick,
+        )
     };
     builder.event_to_variable(
         "AXIS_LEFT_BRAKE_SET",
@@ -426,6 +427,7 @@ fn nose_wheel_steering(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Er
     builder.variable_to_event(
         Variable::Aspect("STEERING_ANGLE".into()),
         VariableToEventMapping::EventData32kPosition,
+        VariableToEventWriteOn::EveryTick,
         "STEERING_SET",
     )?;
 

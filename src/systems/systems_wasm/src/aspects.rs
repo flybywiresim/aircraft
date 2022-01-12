@@ -64,12 +64,13 @@ impl<'a, 'b> MsfsAspectBuilder<'a, 'b> {
         &mut self,
         input: Variable,
         mapping: VariableToEventMapping,
+        write_on: VariableToEventWriteOn,
         event_name: &str,
     ) -> Result<(), Box<dyn Error>> {
         let input = self.variables.register(&input);
 
         self.variable_functions.push(VariableFunction::ToEvent(
-            ToEvent::new(&mut self.sim_connect, input, mapping, event_name)?,
+            ToEvent::new(&mut self.sim_connect, input, mapping, write_on, event_name)?,
             UpdateOn::PostTick,
         ));
 
@@ -300,12 +301,22 @@ pub enum VariableToEventMapping {
     EventData32kPosition,
 }
 
+/// Declares when to write the variable to the event.
+#[derive(Clone, Copy)]
+pub enum VariableToEventWriteOn {
+    /// Writes the variable to the event after every tick.
+    EveryTick,
+
+    /// Writes the variable to the event when the variable's value has changed.
+    Change,
+}
+
 #[derive(Clone, Copy, Default)]
 pub struct EventToVariableOptions {
     mask: bool,
     ignore_repeats_for: Duration,
     after_tick_set_to: Option<f64>,
-    bidirectional_mapping: Option<VariableToEventMapping>,
+    bidirectional: Option<(VariableToEventMapping, VariableToEventWriteOn)>,
 }
 
 impl EventToVariableOptions {
@@ -329,13 +340,17 @@ impl EventToVariableOptions {
         self
     }
 
-    pub fn bidirectional(mut self, mapping: VariableToEventMapping) -> Self {
-        self.bidirectional_mapping = Some(mapping);
+    pub fn bidirectional(
+        mut self,
+        mapping: VariableToEventMapping,
+        write_on: VariableToEventWriteOn,
+    ) -> Self {
+        self.bidirectional = Some((mapping, write_on));
         self
     }
 
     fn is_bidirectional(&self) -> bool {
-        self.bidirectional_mapping.is_some()
+        self.bidirectional.is_some()
     }
 }
 
@@ -366,11 +381,14 @@ impl EventToVariable {
             target,
             mapping,
             to_event: if options.is_bidirectional() {
+                let (to_event_mapping, to_event_write_on) = options.bidirectional.unwrap_or((
+                    VariableToEventMapping::EventDataRaw,
+                    VariableToEventWriteOn::Change,
+                ));
                 Some(ToEvent::new_with_event_id(
                     target,
-                    options
-                        .bidirectional_mapping
-                        .unwrap_or(VariableToEventMapping::EventDataRaw),
+                    to_event_mapping,
+                    to_event_write_on,
                     event_id,
                 ))
             } else {
@@ -652,6 +670,7 @@ impl Updatable for ToObject {
 struct ToEvent {
     input: VariableIdentifier,
     mapping: VariableToEventMapping,
+    write_on: VariableToEventWriteOn,
     event_id: u32,
     last_written_value: Option<f64>,
 }
@@ -661,11 +680,13 @@ impl ToEvent {
         sim_connect: &mut SimConnect,
         input: VariableIdentifier,
         mapping: VariableToEventMapping,
+        write_on: VariableToEventWriteOn,
         event_name: &str,
     ) -> Result<Self, Box<dyn Error>> {
         Ok(Self {
             input,
             mapping,
+            write_on,
             event_id: sim_connect.map_client_event_to_sim_event(event_name, false)?,
             last_written_value: None,
         })
@@ -674,11 +695,13 @@ impl ToEvent {
     fn new_with_event_id(
         input: VariableIdentifier,
         mapping: VariableToEventMapping,
+        write_on: VariableToEventWriteOn,
         event_id: u32,
     ) -> Self {
         Self {
             input,
             mapping,
+            write_on,
             event_id,
             last_written_value: None,
         }
@@ -692,9 +715,12 @@ impl Updatable for ToEvent {
         variables: &mut MsfsVariableRegistry,
     ) -> Result<(), Box<dyn Error>> {
         let value = variables.read(&self.input).unwrap_or(0.);
-        let should_write = match self.last_written_value {
-            Some(last_written_value) => value != last_written_value,
-            None => true,
+        let should_write = match self.write_on {
+            VariableToEventWriteOn::EveryTick => true,
+            VariableToEventWriteOn::Change => match self.last_written_value {
+                Some(last_written_value) => value != last_written_value,
+                None => true,
+            },
         };
 
         if should_write {
