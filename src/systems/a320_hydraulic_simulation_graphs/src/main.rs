@@ -8,7 +8,7 @@ pub use systems::hydraulic::*;
 
 use systems::{
     electrical::Electricity,
-    shared::{ElectricalBusType, MachNumber},
+    shared::{ElectricalBusType, HydraulicColor, MachNumber},
     simulation::{test::TestVariableRegistry, InitContext, UpdateContext},
 };
 use uom::si::{
@@ -244,7 +244,7 @@ fn hyd_circuit_basic(path: &str) {
     let mut epump = electric_pump(&mut init_context);
     let mut epump_controller = TestPumpController::commanding_depressurise();
 
-    let mut hydraulic_loop = hydraulic_loop(&mut init_context, "YELLOW", 1);
+    let mut hydraulic_loop = hydraulic_loop(&mut init_context, HydraulicColor::Yellow, 1);
 
     let context = context(&mut init_context, Duration::from_millis(50));
 
@@ -315,6 +315,7 @@ fn hyd_circuit_basic(path: &str) {
             Some(&mut epump),
             None,
             &TestHydraulicCircuitController::commanding_open_fire_shutoff_valve(1),
+            Pressure::new::<psi>(50.),
         );
 
         hyd_circuit_history.update(
@@ -345,53 +346,53 @@ fn hyd_circuit_basic(path: &str) {
 
 fn hydraulic_loop(
     context: &mut InitContext,
-    loop_color: &str,
+    loop_color: HydraulicColor,
     main_pump_number: usize,
 ) -> HydraulicCircuit {
-    match loop_color {
-        "GREEN" => HydraulicCircuit::new(
-            context,
-            loop_color,
-            main_pump_number,
-            Ratio::new::<percent>(100.),
-            Volume::new::<gallon>(10.),
-            Volume::new::<gallon>(3.6),
-            Pressure::new::<psi>(1450.),
-            Pressure::new::<psi>(1750.),
-            Pressure::new::<psi>(1450.),
-            Pressure::new::<psi>(1750.),
-            true,
-            false,
-        ),
-        "YELLOW" => HydraulicCircuit::new(
-            context,
-            loop_color,
-            main_pump_number,
-            Ratio::new::<percent>(100.),
-            Volume::new::<gallon>(10.),
-            Volume::new::<gallon>(3.6),
-            Pressure::new::<psi>(1450.),
-            Pressure::new::<psi>(1750.),
-            Pressure::new::<psi>(1450.),
-            Pressure::new::<psi>(1750.),
-            true,
-            false,
-        ),
-        _ => HydraulicCircuit::new(
-            context,
-            loop_color,
-            main_pump_number,
-            Ratio::new::<percent>(100.),
-            Volume::new::<gallon>(10.),
-            Volume::new::<gallon>(3.6),
-            Pressure::new::<psi>(1450.),
-            Pressure::new::<psi>(1750.),
-            Pressure::new::<psi>(1450.),
-            Pressure::new::<psi>(1750.),
-            true,
-            false,
-        ),
-    }
+    let reservoir = reservoir(
+        context,
+        loop_color,
+        Volume::new::<gallon>(5.),
+        Volume::new::<gallon>(4.),
+        Volume::new::<gallon>(3.),
+    );
+
+    HydraulicCircuit::new(
+        context,
+        loop_color,
+        main_pump_number,
+        Ratio::new::<percent>(100.),
+        Volume::new::<gallon>(10.),
+        reservoir,
+        Pressure::new::<psi>(1450.),
+        Pressure::new::<psi>(1750.),
+        Pressure::new::<psi>(1450.),
+        Pressure::new::<psi>(1750.),
+        false,
+        false,
+    )
+}
+
+fn reservoir(
+    context: &mut InitContext,
+    hyd_loop_id: HydraulicColor,
+    max_capacity: Volume,
+    max_gaugeable: Volume,
+    current_level: Volume,
+) -> Reservoir {
+    Reservoir::new(
+        context,
+        hyd_loop_id,
+        max_capacity,
+        max_gaugeable,
+        current_level,
+        vec![PressureSwitch::new(
+            Pressure::new::<psi>(23.45),
+            Pressure::new::<psi>(20.55),
+            PressureSwitchType::Relative,
+        )],
+        max_capacity * 0.1,
+    )
 }
 
 fn electric_pump(context: &mut InitContext) -> ElectricPump {
