@@ -97,7 +97,12 @@ export class AtsuManager {
     }
 
     public setOwnCallsign(callsign: string) {
-        this.connector.setCallsign(callsign);
+        // ignore the standard callsign
+        if (callsign !== '1123') {
+            this.connector.setCallsign(callsign);
+        } else {
+            this.connector.setCallsign('');
+        }
     }
 
     public aoc() {
