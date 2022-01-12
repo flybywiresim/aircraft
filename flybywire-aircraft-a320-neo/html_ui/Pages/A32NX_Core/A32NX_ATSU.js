@@ -1,4 +1,4 @@
-const msgSep = "---------------------------[color]white";
+const msgSep = "{white}------------------------{end}";
 const srcMap = {
     "FAA": "faa",
     "IVAO": "ivao",
@@ -43,14 +43,14 @@ const getMETAR = async (icaos, lines, updateView) => {
         if (icao !== "") {
             await NXApi.getMetar(icao, srcMap[storedMetarSrc])
                 .then((data) => {
-                    lines.push(`METAR ${icao}[color]cyan`);
+                    lines.push(`{cyan}METAR ${icao}{end}`);
                     const newLines = wordWrapToStringList(data.metar, 25);
-                    newLines.forEach(l => lines.push(l.concat("[color]green")));
+                    newLines.forEach(l => lines.push(`{green}${l}{end}`));
                     lines.push(msgSep);
                 })
                 .catch(() => {
-                    lines.push(`METAR ${icao}[color]cyan`);
-                    lines.push('STATION NOT AVAILABLE[color]amber');
+                    lines.push(`{cyan}METAR ${icao}{end}`);
+                    lines.push('{amber}STATION NOT AVAILABLE{end}');
                     lines.push(msgSep);
                 });
         }
@@ -64,14 +64,14 @@ const getTAF = async (icaos, lines, updateView) => {
         if (icao !== "") {
             await NXApi.getTaf(icao, srcMap[storedTafSrc])
                 .then((data) => {
-                    lines.push(`TAF ${icao}[color]cyan`);
+                    lines.push(`{cyan}TAF ${icao}{end}`);
                     const newLines = wordWrapToStringList(data.taf, 25);
-                    newLines.forEach(l => lines.push(l.concat("[color]green")));
+                    newLines.forEach(l => lines.push(`{green}${l}{end}`));
                     lines.push(msgSep);
                 })
                 .catch(() => {
-                    lines.push(`TAF ${icao}[color]cyan`);
-                    lines.push('STATION NOT AVAILABLE[color]amber');
+                    lines.push(`{cyan}TAF ${icao}{end}`);
+                    lines.push('{amber}STATION NOT AVAILABLE{end}');
                     lines.push(msgSep);
                 });
         }
@@ -103,14 +103,14 @@ const getATIS = async (icao, lines, type, store, updateView) => {
                     default:
                         atisData = data.combined;
                 }
-                lines.push(`ATIS ${icao}[color]cyan`);
+                lines.push(`{cyan}ATIS ${icao}{end}`);
                 const newLines = wordWrapToStringList(atisData, 25);
-                newLines.forEach(l => lines.push(l.concat("[color]green")));
+                newLines.forEach(l => lines.push(`{green}${l}{end}`));
                 lines.push(msgSep);
             })
             .catch(() => {
-                lines.push(`ATIS ${icao}[color]cyan`);
-                lines.push('D-ATIS NOT AVAILABLE[color]amber');
+                lines.push(`{cyan}ATIS ${icao}{end}`);
+                lines.push('{amber}D-ATIS NOT AVAILABLE{end}');
                 lines.push(msgSep);
             });
     }
@@ -299,6 +299,19 @@ const addWaypointAsync = (fix, mcdu, routeIdent, via) => {
     }
 };
 
+const addLatLonWaypoint = async (mcdu, lat, lon) => {
+    try {
+        const wp = mcdu.dataManager.createLatLonWaypoint(new LatLongAlt(lat, lon), true);
+        await mcdu.flightPlanManager.addUserWaypoint(wp);
+    } catch (err) {
+        if (err instanceof McduMessage) {
+            mcdu.addNewMessage(err);
+        } else {
+            console.error(err);
+        }
+    }
+};
+
 const uplinkRoute = async (mcdu) => {
     const {navlog} = mcdu.simbrief;
 
@@ -316,6 +329,12 @@ const uplinkRoute = async (mcdu) => {
         }
 
         console.log('---- ' + fix.ident + ' ----');
+
+        if (fix.type === 'ltlg') {
+            console.log(`Inserting lat/lon waypoint ${fix.pos_lat}/${fix.pos_long}`);
+            await addLatLonWaypoint(mcdu, parseFloat(fix.pos_lat), parseFloat(fix.pos_long));
+            continue;
+        }
 
         // Last SID fix - either it's airway is in the list of procedures, or
         // this is the very first fix in the route (to deal with procedures
@@ -341,55 +360,6 @@ const uplinkRoute = async (mcdu) => {
 };
 
 /**
- * Convert unsupported coordinate formats in a waypoint ident to supported ones
- * @param {string} ident Waypoint ident
- */
-function convertWaypointIdentCoords(ident) {
-    // SimBrief formats coordinate waypoints differently to MSFS:
-    //  - 60N045W = 60* 00'N 045* 00'W
-    //  - 3050N12022W = 30* 50'N 120* 22'W
-    // We can't represent the second format precisely enough, so leave this
-    // case alone so we don't insert inaccurate waypoints, and rearrange the
-    // first one into the format MSFS needs (6045N).
-    let latDeg;
-    let latDir;
-    let lonDeg;
-    let lonDir;
-
-    if (ident.length == 7) {
-        latDeg = ident.substring(0, 2);
-        latDir = ident.substring(2, 3);
-        lonDeg = ident.substring(3, 6);
-        lonDir = ident.substring(6, 7);
-    } else {
-        return ident;
-    }
-
-    if (isNaN(parseInt(latDeg)) || isNaN(parseInt(lonDeg))) {
-        return ident;
-    }
-
-    // ARINC 424 format is either xxyyZ or xxZyy, where xx is 2 digit lat, yy
-    // is last 2 digits of lon, and Z is N/E/S/W respectively for NW/NE/SE/SW,
-    // and is at the end if lat was less than 100 or in the middle if 100 or
-    // greater.
-    const largeLon = lonDeg.substring(0, 1) == "1";
-    const lonSub = lonDeg.substring(1, 3);
-    switch (latDir + lonDir) {
-        case "NW":
-            return latDeg + (largeLon ? ("N" + lonSub) : (lonSub + "N"));
-        case "NE":
-            return latDeg + (largeLon ? ("E" + lonSub) : (lonSub + "E"));
-        case "SE":
-            return latDeg + (largeLon ? ("S" + lonSub) : (lonSub + "S"));
-        case "SW":
-            return latDeg + (largeLon ? ("W" + lonSub) : (lonSub + "W"));
-        default:
-            return ident;
-    }
-}
-
-/**
  * Get the waypoint by ident and coords within the threshold
  * @param {string} ident Waypoint ident
  * @param {object} coords Waypoint coords
@@ -397,7 +367,6 @@ function convertWaypointIdentCoords(ident) {
  */
 function getWaypointByIdentAndCoords(mcdu, ident, coords, callback) {
     const DISTANCE_THRESHOLD = 1;
-    ident = convertWaypointIdentCoords(ident);
     mcdu.dataManager.GetWaypointsByIdent(ident).then((waypoints) => {
         if (!waypoints || waypoints.length === 0) {
             return callback(undefined);

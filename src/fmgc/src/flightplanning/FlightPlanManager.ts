@@ -28,7 +28,6 @@ import { GPS } from './GPS';
 import { FlightPlanSegment } from './FlightPlanSegment';
 import { FlightPlanAsoboSync } from './FlightPlanAsoboSync';
 import { FixInfo } from './FixInfo';
-import { OneWayRunway } from '@fmgc/types/fstypes/FSTypes';
 import { FlightLevel } from '@fmgc/guidance/vnav/verticalFlightPlan/VerticalFlightPlan';
 
 export enum WaypointConstraintType {
@@ -103,9 +102,7 @@ export class FlightPlanManager {
         this.__currentFlightPlanIndex = value;
     }
 
-    public update(_deltaTime: number): void {
-
-    }
+    public update(_: number): void { }
 
     public onCurrentGameFlightLoaded(_callback: () => any) {
         _callback();
@@ -460,7 +457,7 @@ export class FlightPlanManager {
             fplnIndex = this._currentFlightPlanIndex;
         }
 
-        const destIndex = this.getDestinationIndex(fplnIndex);
+        const destIndex = this.getDestinationIndex();
         if (destIndex < 0) {
             return -1;
         }
@@ -1093,10 +1090,10 @@ export class FlightPlanManager {
             if (runways && runways.length > 0) {
                 const direction = Simplane.getHeadingMagnetic();
                 let bestRunway = runways[0];
-                let bestDeltaAngle = Math.abs(Avionics.Utils.angleDiff(direction, bestRunway.direction));
+                let bestDeltaAngle = Math.abs(Avionics.Utils.diffAngle(direction, bestRunway.direction));
 
                 for (let i = 1; i < runways.length; i++) {
-                    const deltaAngle = Math.abs(Avionics.Utils.angleDiff(direction, runways[i].direction));
+                    const deltaAngle = Math.abs(Avionics.Utils.diffAngle(direction, runways[i].direction));
                     if (deltaAngle < bestDeltaAngle) {
                         bestDeltaAngle = deltaAngle;
                         bestRunway = runways[i];
@@ -1856,5 +1853,21 @@ export class FlightPlanManager {
 
     public getFixInfo(index: 0 | 1 | 2 | 3): FixInfo {
         return this._fixInfos[index];
+    }
+
+    public isWaypointInUse(icao: string): boolean {
+        for (const fp of this._flightPlans) {
+            for (let i = 0; i < fp.waypoints.length; i++) {
+                if (fp.getWaypoint(i).icao === icao) {
+                    return true;
+                }
+            }
+        }
+        for (const fixInfo of this._fixInfos) {
+            if (fixInfo.getRefFix()?.infos.icao === icao) {
+                return true;
+            }
+        }
+        return false;
     }
 }

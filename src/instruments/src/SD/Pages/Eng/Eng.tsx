@@ -71,7 +71,7 @@ interface ComponentPositionProps {
 }
 
 const PressureGauge = ({ x, y, engineNumber }: ComponentPositionProps) => {
-    const [engineOilPressure] = useSimVar(`ENG OIL PRESSURE:${engineNumber}`, 'psi', 200);
+    const [engineOilPressure] = useSimVar(`ENG OIL PRESSURE:${engineNumber}`, 'psi', 100);
     const displayedEngineOilPressure = Math.round(engineOilPressure / 2) * 2; // Engine oil pressure has a step of 2
     const OIL_PSI_MAX = 130;
     const OIL_PSI_HIGH_LIMIT = 130;

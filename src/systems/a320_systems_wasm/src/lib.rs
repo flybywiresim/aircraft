@@ -15,6 +15,7 @@ use msfs::{
 
 use systems::{
     failures::FailureType,
+    shared::HydraulicColor,
     simulation::{VariableIdentifier, VariableRegistry},
 };
 use systems_wasm::{
@@ -47,6 +48,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
             ])
             .with_auxiliary_power_unit("OVHD_APU_START_PB_IS_AVAILABLE".to_owned(), 8)?
             .with::<Brakes>()?
+            .with::<NoseWheelSteering>()?
             .with::<Autobrakes>()?
             .with::<Flaps>()?
             .with::<CargoDoors>()?
@@ -54,6 +56,27 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
                 (24_000, FailureType::TransformerRectifier(1)),
                 (24_001, FailureType::TransformerRectifier(2)),
                 (24_002, FailureType::TransformerRectifier(3)),
+                (29_000, FailureType::ReservoirLeak(HydraulicColor::Green)),
+                (29_001, FailureType::ReservoirLeak(HydraulicColor::Blue)),
+                (29_002, FailureType::ReservoirLeak(HydraulicColor::Yellow)),
+                (29_003, FailureType::ReservoirAirLeak(HydraulicColor::Green)),
+                (29_004, FailureType::ReservoirAirLeak(HydraulicColor::Blue)),
+                (
+                    29_005,
+                    FailureType::ReservoirAirLeak(HydraulicColor::Yellow),
+                ),
+                (
+                    29_006,
+                    FailureType::ReservoirReturnLeak(HydraulicColor::Green),
+                ),
+                (
+                    29_007,
+                    FailureType::ReservoirReturnLeak(HydraulicColor::Blue),
+                ),
+                (
+                    29_008,
+                    FailureType::ReservoirReturnLeak(HydraulicColor::Yellow),
+                ),
             ])
             .provides_aircraft_variable("ACCELERATION BODY X", "feet per second squared", 0)?
             .provides_aircraft_variable("ACCELERATION BODY Y", "feet per second squared", 0)?
@@ -71,6 +94,18 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
                 "Bool",
                 0,
                 vec!["OVHD_ELEC_APU_GEN_PB_IS_ON".to_owned()],
+            )?
+            .provides_aircraft_variable_with_additional_names(
+                "BLEED AIR ENGINE",
+                "Bool",
+                1,
+                vec!["OVHD_PNEU_ENG_1_BLEED_PB_IS_AUTO".to_owned()],
+            )?
+            .provides_aircraft_variable_with_additional_names(
+                "BLEED AIR ENGINE",
+                "Bool",
+                2,
+                vec!["OVHD_PNEU_ENG_2_BLEED_PB_IS_AUTO".to_owned()],
             )?
             .provides_aircraft_variable_with_additional_names(
                 "EXTERNAL POWER AVAILABLE",
@@ -113,6 +148,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
             .provides_aircraft_variable("PLANE LATITUDE", "degree latitude", 0)?
             .provides_aircraft_variable("PLANE LONGITUDE", "degree longitude", 0)?
             .provides_aircraft_variable("PUSHBACK STATE", "Enum", 0)?
+            .provides_aircraft_variable("PUSHBACK ANGLE", "Radians", 0)?
             .provides_aircraft_variable("SEA LEVEL PRESSURE", "Millibars", 0)?
             .provides_aircraft_variable("SIM ON GROUND", "Bool", 0)?
             .provides_aircraft_variable("TOTAL AIR TEMPERATURE", "celsius", 0)?
@@ -404,11 +440,11 @@ impl SimulatorAspect for Flaps {
         self.write_sim_vars();
 
         sim_connect
-            .set_data_on_sim_object(SIMCONNECT_OBJECT_ID_USER, &self.msfs_flaps_handle_index);
+            .set_data_on_sim_object(SIMCONNECT_OBJECT_ID_USER, &self.msfs_flaps_handle_index)?;
         sim_connect
-            .set_data_on_sim_object(SIMCONNECT_OBJECT_ID_USER, &self.flaps_surface_sim_object);
+            .set_data_on_sim_object(SIMCONNECT_OBJECT_ID_USER, &self.flaps_surface_sim_object)?;
         sim_connect
-            .set_data_on_sim_object(SIMCONNECT_OBJECT_ID_USER, &self.slats_surface_sim_object);
+            .set_data_on_sim_object(SIMCONNECT_OBJECT_ID_USER, &self.slats_surface_sim_object)?;
 
         Ok(())
     }
@@ -850,6 +886,266 @@ impl SimulatorAspect for Brakes {
         self.reset_keyboard_events();
         self.transmit_client_events(sim_connect)?;
         self.transmit_masked_inputs();
+
+        Ok(())
+    }
+}
+
+struct NoseWheelSteering {
+    realistic_tiller_axis_var: NamedVariable,
+    is_realistic_tiller_mode: bool,
+
+    tiller_handle_position_id: VariableIdentifier,
+    tiller_handle_position_var: NamedVariable,
+
+    rudder_pedal_position_id: VariableIdentifier,
+
+    rudder_position_var: AircraftVariable,
+    rudder_position: f64,
+
+    nose_wheel_position_id: VariableIdentifier,
+    nose_wheel_position_var: NamedVariable,
+    nose_wheel_position: f64,
+
+    rudder_pedal_position_var: NamedVariable,
+    rudder_pedal_position: f64,
+
+    tiller_handle_position_event: sys::DWORD,
+    tiller_handle_position: f64,
+
+    nose_wheel_angle_event: sys::DWORD,
+    nose_wheel_angle_inc_event: sys::DWORD,
+    nose_wheel_angle_dec_event: sys::DWORD,
+
+    pedal_disconnect_event: sys::DWORD,
+    pedal_disconnect_id: VariableIdentifier,
+    pedal_disconnect: bool,
+}
+
+impl MsfsAspectCtor for NoseWheelSteering {
+    fn new(
+        registry: &mut MsfsVariableRegistry,
+        sim_connect: &mut SimConnect,
+    ) -> Result<Self, Box<dyn Error>> {
+        Ok(Self {
+            realistic_tiller_axis_var: NamedVariable::from("A32NX_REALISTIC_TILLER_ENABLED"),
+            is_realistic_tiller_mode: false,
+
+            tiller_handle_position_id: registry.get("TILLER_HANDLE_POSITION".to_owned()),
+            tiller_handle_position_var: NamedVariable::from("A32NX_TILLER_HANDLE_POSITION"),
+
+            rudder_pedal_position_id: registry.get("RUDDER_PEDAL_POSITION".to_owned()),
+
+            rudder_position_var: AircraftVariable::from("RUDDER POSITION", "Position", 0)?,
+            rudder_position: 0.5,
+
+            nose_wheel_position_id: registry.get("NOSE_WHEEL_POSITION".to_owned()),
+            nose_wheel_position_var: NamedVariable::from("A32NX_NOSE_WHEEL_POSITION"),
+            nose_wheel_position: 0.,
+
+            rudder_pedal_position_var: NamedVariable::from("A32NX_RUDDER_PEDAL_POSITION"),
+            rudder_pedal_position: 0.5,
+
+            tiller_handle_position_event: sim_connect
+                .map_client_event_to_sim_event("AXIS_MIXTURE4_SET", true)?,
+            tiller_handle_position: 0.5,
+
+            nose_wheel_angle_event: sim_connect
+                .map_client_event_to_sim_event("STEERING_SET", true)?,
+            nose_wheel_angle_inc_event: sim_connect
+                .map_client_event_to_sim_event("STEERING_INC", true)?,
+            nose_wheel_angle_dec_event: sim_connect
+                .map_client_event_to_sim_event("STEERING_DEC", true)?,
+
+            pedal_disconnect_event: sim_connect
+                .map_client_event_to_sim_event("TOGGLE_WATER_RUDDER", true)?,
+            pedal_disconnect_id: registry.get("TILLER_PEDAL_DISCONNECT".to_owned()),
+            pedal_disconnect: false,
+        })
+    }
+}
+impl NoseWheelSteering {
+    const MAX_CONTROLLABLE_STEERING_ANGLE_DEGREES: f64 = 75.;
+    const MAX_MSFS_STEERING_ANGLE_DEGREES: f64 = 90.;
+    const STEERING_ANIMATION_TOTAL_RANGE_DEGREES: f64 = 360.;
+
+    const TILLER_KEYBOARD_INCREMENTS: f64 = 0.05;
+
+    fn set_tiller_handle(&mut self, simconnect_value: u32) {
+        self.tiller_handle_position = sim_connect_32k_pos_to_f64(simconnect_value);
+    }
+
+    fn decrement_tiller(&mut self) {
+        self.tiller_handle_position -= Self::TILLER_KEYBOARD_INCREMENTS;
+        self.tiller_handle_position = self.tiller_handle_position.min(1.).max(0.);
+
+        self.tiller_key_event_centering();
+    }
+
+    fn increment_tiller(&mut self) {
+        self.tiller_handle_position += Self::TILLER_KEYBOARD_INCREMENTS;
+        self.tiller_handle_position = self.tiller_handle_position.min(1.).max(0.);
+
+        self.tiller_key_event_centering();
+    }
+
+    fn tiller_key_event_centering(&mut self) {
+        if self.tiller_handle_position < 0.5 + Self::TILLER_KEYBOARD_INCREMENTS
+            && self.tiller_handle_position > 0.5 - Self::TILLER_KEYBOARD_INCREMENTS
+        {
+            self.tiller_handle_position = 0.5;
+        }
+    }
+
+    fn set_pedal_disconnect(&mut self, is_disconnected: bool) {
+        self.pedal_disconnect = is_disconnected;
+    }
+
+    /// Steering position is [-1;1]  -1 is left, 0 is straight
+    fn set_steering_position(&mut self, steering_position: f64) {
+        self.nose_wheel_position = steering_position;
+    }
+
+    /// Tiller position in [-1;1] range, -1 is left
+    fn tiller_handle_position(&self) -> f64 {
+        self.tiller_handle_position * 2. - 1.
+    }
+
+    /// Rudder pedal position in [-1;1] range, -1 is left
+    fn rudder_pedal_position(&self) -> f64 {
+        self.rudder_pedal_position * 2. - 1.
+    }
+
+    fn set_realistic_tiller_mode(&mut self, is_active: bool) {
+        self.is_realistic_tiller_mode = is_active;
+    }
+
+    fn synchronise_with_sim(&mut self) {
+        let rudder_percent: f64 = self.rudder_pedal_position_var.get_value();
+        self.rudder_pedal_position = (rudder_percent + 100.) / 200.;
+
+        let rudder_position: f64 = self.rudder_position_var.get();
+        self.rudder_position = (rudder_position + 1.) / 2.;
+
+        let realistic_mode: f64 = self.realistic_tiller_axis_var.get_value();
+        self.set_realistic_tiller_mode(realistic_mode > 0.);
+    }
+
+    fn final_tiller_position_sent_to_systems(&self) -> f64 {
+        if self.is_realistic_tiller_mode {
+            self.tiller_handle_position()
+        } else {
+            if !self.pedal_disconnect {
+                self.rudder_pedal_position()
+            } else {
+                0.
+            }
+        }
+    }
+
+    fn final_rudder_pedal_position_sent_to_systems(&self) -> f64 {
+        if self.is_realistic_tiller_mode {
+            self.rudder_pedal_position()
+        } else {
+            0.
+        }
+    }
+
+    fn steering_demand_to_msfs_from_steering_angle(&self) -> f64 {
+        // Steering in msfs is the max we want rescaled to the max in msfs
+        let steering_ratio_converted = self.nose_wheel_position
+            * Self::MAX_CONTROLLABLE_STEERING_ANGLE_DEGREES
+            / Self::MAX_MSFS_STEERING_ANGLE_DEGREES
+            / 2.
+            + 0.5;
+
+        // Steering demand is reverted in msfs so we do 1 - angle.
+        // Then we hack msfs by adding the rudder value that it will always substract internally
+        // This way we end up with actual angle we required
+        (1. - steering_ratio_converted) + (self.rudder_position - 0.5)
+    }
+
+    fn steering_animation_to_msfs_from_steering_angle(&self) -> f64 {
+        ((self.nose_wheel_position * Self::MAX_CONTROLLABLE_STEERING_ANGLE_DEGREES
+            / (Self::STEERING_ANIMATION_TOTAL_RANGE_DEGREES / 2.))
+            / 2.)
+            + 0.5
+    }
+
+    fn write_animation_position_to_sim(&self) {
+        self.tiller_handle_position_var
+            .set_value((self.final_tiller_position_sent_to_systems() + 1.) / 2.);
+
+        self.nose_wheel_position_var
+            .set_value(self.steering_animation_to_msfs_from_steering_angle());
+    }
+
+    fn transmit_client_events(
+        &mut self,
+        sim_connect: &mut SimConnect,
+    ) -> Result<(), Box<dyn Error>> {
+        sim_connect.transmit_client_event(
+            SIMCONNECT_OBJECT_ID_USER,
+            self.nose_wheel_angle_event,
+            f64_to_sim_connect_32k_pos(self.steering_demand_to_msfs_from_steering_angle()),
+        )?;
+
+        Ok(())
+    }
+}
+impl SimulatorAspect for NoseWheelSteering {
+    fn read(&mut self, identifier: &VariableIdentifier) -> Option<f64> {
+        if identifier == &self.tiller_handle_position_id {
+            Some(self.final_tiller_position_sent_to_systems())
+        } else if identifier == &self.rudder_pedal_position_id {
+            Some(self.final_rudder_pedal_position_sent_to_systems())
+        } else if identifier == &self.pedal_disconnect_id {
+            Some(self.pedal_disconnect as u8 as f64)
+        } else {
+            None
+        }
+    }
+
+    fn write(&mut self, identifier: &VariableIdentifier, value: f64) -> bool {
+        if identifier == &self.nose_wheel_position_id {
+            self.set_steering_position(value);
+            true
+        } else {
+            false
+        }
+    }
+
+    fn handle_message(&mut self, message: &SimConnectRecv) -> bool {
+        match message {
+            SimConnectRecv::Event(e) => {
+                if e.id() == self.tiller_handle_position_event {
+                    self.set_tiller_handle(e.data());
+                    true
+                } else if e.id() == self.pedal_disconnect_event {
+                    self.set_pedal_disconnect(true);
+                    true
+                } else if e.id() == self.nose_wheel_angle_dec_event {
+                    self.decrement_tiller();
+                    true
+                } else if e.id() == self.nose_wheel_angle_inc_event {
+                    self.increment_tiller();
+                    true
+                } else {
+                    false
+                }
+            }
+            _ => false,
+        }
+    }
+
+    fn pre_tick(&mut self, _: Duration) {
+        self.synchronise_with_sim();
+    }
+
+    fn post_tick(&mut self, sim_connect: &mut SimConnect) -> Result<(), Box<dyn Error>> {
+        self.transmit_client_events(sim_connect)?;
+        self.write_animation_position_to_sim();
+        self.set_pedal_disconnect(false);
 
         Ok(())
     }

@@ -473,7 +473,10 @@ class CDUFlightPlanPage {
                                     break;
                                 default:
                                     if (value.length > 0) {
-                                        mcdu.insertWaypoint(value, fpIndex, () => {
+                                        mcdu.insertWaypoint(value, fpIndex, (success) => {
+                                            if (!success) {
+                                                scratchpadCallback();
+                                            }
                                             CDUFlightPlanPage.ShowPage(mcdu, offset);
                                         }, !fpm.isCurrentFlightPlanTemporary());
                                     }
@@ -482,11 +485,14 @@ class CDUFlightPlanPage {
                         });
                 } else {
                     addLskAt(rowI, () => mcdu.getDelaySwitchPage(),
-                        (value) => {
+                        (value, scratchpadCallback) => {
                             if (value === "") {
                                 CDULateralRevisionPage.ShowPage(mcdu, fpm.getDestination(), fpIndex);
                             } else if (value.length > 0) {
-                                mcdu.insertWaypoint(value, fpIndex, () => {
+                                mcdu.insertWaypoint(value, fpIndex, (success) => {
+                                    if (!success) {
+                                        scratchpadCallback();
+                                    }
                                     CDUFlightPlanPage.ShowPage(mcdu, offset);
                                 }, true);
                             }
@@ -519,7 +525,7 @@ class CDUFlightPlanPage {
 
                 // Marker
                 scrollWindow[rowI] = waypointsAndMarkers[winI];
-                addLskAt(rowI, 0, (value) => {
+                addLskAt(rowI, 0, (value, scratchpadCallback) => {
                     if (value === FMCMainDisplay.clrValue) {
                         mcdu.clearDiscontinuity(fpIndex, () => {
                             CDUFlightPlanPage.ShowPage(mcdu, offset);
@@ -527,7 +533,10 @@ class CDUFlightPlanPage {
                         return;
                     }
 
-                    mcdu.insertWaypoint(value, fpIndex + 1, () => {
+                    mcdu.insertWaypoint(value, fpIndex + 1, (success) => {
+                        if (!success) {
+                            scratchpadCallback();
+                        }
                         CDUFlightPlanPage.ShowPage(mcdu, offset);
                     }, !fpm.isCurrentFlightPlanTemporary());
                 });
@@ -653,13 +662,6 @@ class CDUFlightPlanPage {
         while (scrollText.length < 9) {
             scrollText.push([""]);
         }
-        mcdu.setTemplate([
-            [`{left}{small}{sp}${showFrom ? "FROM" : "{sp}{sp}{sp}{sp}"}{end}{yellow}{sp}${showTMPY ? "TMPY" : ""}{end}{end}{right}{small}${SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC")}{sp}{sp}{sp}{end}{end}`],
-            ["", "SPD/ALT\xa0\xa0\xa0", isFlying ? "\xa0UTC{sp}" : "TIME{sp}{sp}"],
-            ...scrollText,
-            ...destText
-        ]);
-
         const allowScroll = waypointsAndMarkers.length > 4;
         if (allowScroll) {//scroll only if there are more than 5 points
             mcdu.onDown = () => {//on page down decrement the page offset.
@@ -680,6 +682,12 @@ class CDUFlightPlanPage {
             };
         }
         mcdu.setArrows(allowScroll, allowScroll, true, true);
+        mcdu.setTemplate([
+            [`{left}{small}{sp}${showFrom ? "FROM" : "{sp}{sp}{sp}{sp}"}{end}{yellow}{sp}${showTMPY ? "TMPY" : ""}{end}{end}{right}{small}${SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC")}{sp}{sp}{sp}{end}{end}`],
+            ["", "SPD/ALT\xa0\xa0\xa0", isFlying ? "\xa0UTC{sp}" : "TIME{sp}{sp}"],
+            ...scrollText,
+            ...destText
+        ]);
     }
 }
 

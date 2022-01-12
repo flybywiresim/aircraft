@@ -67,6 +67,7 @@ struct ap_raw_data
   real_T flight_guidance_xtk_nmi;
   real_T flight_guidance_tae_deg;
   real_T flight_guidance_phi_deg;
+  real_T flight_guidance_phi_limit_deg;
   real_T flight_phase;
   real_T V2_kn;
   real_T VAPP_kn;
@@ -89,6 +90,8 @@ struct ap_raw_data
   real_T flaps_handle_index;
   boolean_T is_engine_operative_1;
   boolean_T is_engine_operative_2;
+  real_T altimeter_setting_left_mbar;
+  real_T altimeter_setting_right_mbar;
 };
 
 #endif
@@ -243,6 +246,7 @@ struct ap_data
   real_T flight_guidance_xtk_nmi;
   real_T flight_guidance_tae_deg;
   real_T flight_guidance_phi_deg;
+  real_T flight_guidance_phi_limit_deg;
   real_T flight_phase;
   real_T V2_kn;
   real_T VAPP_kn;
@@ -264,6 +268,7 @@ struct ap_data
   real_T flaps_handle_index;
   boolean_T is_engine_operative_1;
   boolean_T is_engine_operative_2;
+  boolean_T altimeter_setting_changed;
 };
 
 #endif
@@ -371,7 +376,8 @@ typedef enum {
   athr_requested_mode_NONE = 0,
   athr_requested_mode_SPEED,
   athr_requested_mode_THRUST_IDLE,
-  athr_requested_mode_THRUST_CLB
+  athr_requested_mode_THRUST_CLB,
+  athr_requested_mode_RETARD
 } athr_requested_mode;
 
 #endif
@@ -481,6 +487,7 @@ struct ap_vertical_output
   boolean_T FD_disconnect;
   boolean_T FD_connect;
   tcas_sub_mode TCAS_sub_mode;
+  boolean_T TCAS_sub_mode_compatible;
   boolean_T TCAS_message_disarm;
   boolean_T TCAS_message_RA_inhibit;
   boolean_T TCAS_message_TRK_FPA_deselection;

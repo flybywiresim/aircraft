@@ -6,7 +6,10 @@ mod hydraulic;
 mod pneumatic;
 mod power_consumption;
 
-use self::{fuel::A320Fuel, pneumatic::A320PneumaticOverheadPanel};
+use self::{
+    fuel::A320Fuel,
+    pneumatic::{A320Pneumatic, A320PneumaticOverheadPanel},
+};
 use electrical::{
     A320Electrical, A320ElectricalOverheadPanel, A320EmergencyElectricalOverheadPanel,
     APU_START_MOTOR_BUS_TYPE,
@@ -56,6 +59,7 @@ pub struct A320 {
     landing_gear: LandingGear,
     pressurization: Pressurization,
     pressurization_overhead: PressurizationOverheadPanel,
+    pneumatic: A320Pneumatic,
 }
 impl A320 {
     pub fn new(context: &mut InitContext) -> A320 {
@@ -89,6 +93,7 @@ impl A320 {
             landing_gear: LandingGear::new(context),
             pressurization: Pressurization::new(context),
             pressurization_overhead: PressurizationOverheadPanel::new(context),
+            pneumatic: A320Pneumatic::new(context),
         }
     }
 }
@@ -109,6 +114,7 @@ impl Aircraft for A320 {
             self.electrical_overhead.apu_generator_is_on()
                 && !(self.electrical_overhead.external_power_is_on()
                     && self.electrical_overhead.external_power_is_available()),
+            self.pneumatic.apu_bleed_air_valve(),
             self.fuel.left_inner_tank_has_fuel_remaining(),
         );
 
@@ -162,6 +168,13 @@ impl Aircraft for A320 {
             &self.lgciu2,
             &self.emergency_electrical_overhead,
             &self.electrical,
+            &self.pneumatic,
+        );
+
+        self.pneumatic.update_hydraulic_reservoir_spatial_volumes(
+            self.hydraulic.green_reservoir(),
+            self.hydraulic.blue_reservoir(),
+            self.hydraulic.yellow_reservoir(),
         );
 
         self.hydraulic_overhead.update(&self.hydraulic);
@@ -170,6 +183,14 @@ impl Aircraft for A320 {
         self.adirs_overhead.update(context, &self.adirs);
 
         self.power_consumption.update(context);
+
+        self.pneumatic.update(
+            context,
+            [&self.engine_1, &self.engine_2],
+            &self.pneumatic_overhead,
+            &self.engine_fire_overhead,
+            &self.apu,
+        );
     }
 }
 impl SimulationElement for A320 {
@@ -197,6 +218,7 @@ impl SimulationElement for A320 {
         self.landing_gear.accept(visitor);
         self.pressurization.accept(visitor);
         self.pressurization_overhead.accept(visitor);
+        self.pneumatic.accept(visitor);
 
         visitor.visit(self);
     }

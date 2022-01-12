@@ -536,6 +536,7 @@ class A320_Neo_FCU_Heading extends A320_Neo_FCU_Component {
         this.selectedValue = Simplane.getAltitudeAboveGround() > 1000 ? this.getCurrentHeading() : 0;
         this.isSelectedValueActive = true;
         this.isPreselectionModeActive = false;
+        this.wasHeadingSync = false;
         this.refresh(true, false, false, false, true, 0, false, true);
     }
 
@@ -614,6 +615,18 @@ class A320_Neo_FCU_Heading extends A320_Neo_FCU_Component {
         const isManagedActive = this.isManagedModeActive(lateralMode);
         const isManagedArmed = this.isManagedModeArmed(lateralArmed);
         const showSelectedValue = (this.isSelectedValueActive || this.inSelection || this.isPreselectionModeActive);
+
+        const isHeadingSync = SimVar.GetSimVarValue("L:A32NX_FCU_HEADING_SYNC", "Number");
+        if (!this.wasHeadingSync && isHeadingSync) {
+            if (isTRKMode) {
+                this.selectedValue = this.getCurrentTrack();
+            } else {
+                this.selectedValue = this.getCurrentHeading();
+            }
+            this.isSelectedValueActive = true;
+            this.onRotate();
+        }
+        this.wasHeadingSync = isHeadingSync;
 
         this.refresh(true, isManagedArmed, isManagedActive, isTRKMode, showSelectedValue, this.selectedValue, lightsTest);
     }
@@ -956,7 +969,7 @@ class A320_Neo_FCU_VerticalSpeed extends A320_Neo_FCU_Component {
 
     onPush() {
         const mode = SimVar.GetSimVarValue("L:A32NX_FMA_VERTICAL_MODE", "Number");
-        if (mode >= 32 && _mode <= 34) {
+        if (mode >= 32 && mode <= 34) {
             return;
         }
         clearTimeout(this._resetSelectionTimeout);
