@@ -1305,6 +1305,7 @@ pub struct Pump {
     cavitation_efficiency: Ratio,
 }
 impl Pump {
+    const SECONDS_PER_MINUTES: f64 = 60.;
     const FLOW_CONSTANT_RPM_CUBIC_INCH_TO_GPM: f64 = 231.;
     const AIR_PRESSURE_BREAKPTS_PSI: [f64; 9] = [0., 5., 10., 15., 20., 30., 50., 70., 100.];
     const AIR_PRESSURE_CARAC_RATIO: [f64; 9] = [0.0, 0.1, 0.6, 0.8, 0.9, 1., 1., 1., 1.];
@@ -1382,7 +1383,7 @@ impl Pump {
             let displacement = Volume::new::<cubic_inch>(
                 required_flow.get::<gallon_per_second>()
                     * Self::FLOW_CONSTANT_RPM_CUBIC_INCH_TO_GPM
-                    * 60.0
+                    * Self::SECONDS_PER_MINUTES
                     / self.speed.get::<revolution_per_minute>(),
             );
             self.current_max_displacement
@@ -1398,7 +1399,7 @@ impl Pump {
             VolumeRate::new::<gallon_per_second>(
                 speed.get::<revolution_per_minute>() * displacement.get::<cubic_inch>()
                     / Self::FLOW_CONSTANT_RPM_CUBIC_INCH_TO_GPM
-                    / 60.0,
+                    / Self::SECONDS_PER_MINUTES,
             )
         } else {
             VolumeRate::new::<gallon_per_second>(0.)
