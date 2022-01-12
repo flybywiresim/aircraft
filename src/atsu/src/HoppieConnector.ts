@@ -3,7 +3,8 @@
 
 import { NXDataStore } from '@shared/persistence';
 import { AtsuMessage, AtsuMessageNetwork, AtsuMessageDirection, AtsuMessageComStatus, AtsuMessageSerializationFormat } from './messages/AtsuMessage';
-import { FreetextMessage, AtsuManager } from './AtsuManager';
+import { FreetextMessage, CpdlcMessage, AtsuManager } from './AtsuManager';
+import { wordWrap, stringToCpdlc } from './Common';
 
 /**
  * Defines the connector to the hoppies network
@@ -44,13 +45,29 @@ export class HoppieConnector {
 
                         switch (type) {
                         case 'telex':
-                            const message = new FreetextMessage();
-                            message.Network = AtsuMessageNetwork.Hoppie;
-                            message.Station = sender;
-                            message.Direction = AtsuMessageDirection.Input;
-                            message.ComStatus = AtsuMessageComStatus.Received;
-                            message.Lines = content.split('\n');
-                            parent.receiveMessage(message);
+                            const freetext = new FreetextMessage();
+                            freetext.Network = AtsuMessageNetwork.Hoppie;
+                            freetext.Station = sender;
+                            freetext.Direction = AtsuMessageDirection.Input;
+                            freetext.ComStatus = AtsuMessageComStatus.Received;
+                            freetext.Lines = wordWrap(content.replace(/\n/i, ' '), 25);
+                            parent.receiveMessage(freetext);
+                            break;
+                        case 'cpdlc':
+                            const cpdlc = new CpdlcMessage();
+                            cpdlc.Station = sender;
+                            cpdlc.Direction = AtsuMessageDirection.Input;
+                            cpdlc.ComStatus = AtsuMessageComStatus.Received;
+
+                            // split up the data
+                            const elements = content.split('/');
+                            cpdlc.OutputTransmissionId = parseInt(elements[1]);
+                            if (elements[2] !== '') {
+                                cpdlc.InputTransmissionId = parseInt(elements[2]);
+                            }
+                            cpdlc.Response = stringToCpdlc(elements[3]);
+                            cpdlc.Lines = wordWrap(elements[4], 25);
+                            parent.receiveMessage(cpdlc);
                             break;
                         default:
                             break;
