@@ -22,7 +22,6 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
         MsfsSimulationBuilder::new("A32NX_".into(), sim_connect.as_mut().get_mut())
             .with_electrical_buses(vec![
                 ("AC_1", 2),
-                ("AC_1", 2),
                 ("AC_2", 3),
                 ("AC_ESS", 4),
                 ("AC_ESS_SHED", 5),
