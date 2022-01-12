@@ -106,10 +106,11 @@ export class AocSystem {
     }
 
     private async sendTelexMessage(index: number) {
-        if (SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') === 1) {
-            return this.sendHoppieTelexMessage(index);
-        }
-        if (NXApi.hasTelexConnection() === true && NXDataStore.get('CONFIG_ONLINE_FEATURES_STATUS', 'DISABLED') === 'ENABLED') {
+        if (this.messageQueue[index].Network === AtsuMessageNetwork.Hoppie) {
+            if (SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') === 1) {
+                return this.sendHoppieTelexMessage(index);
+            }
+        } else if (NXApi.hasTelexConnection() === true && NXDataStore.get('CONFIG_ONLINE_FEATURES_STATUS', 'DISABLED') === 'ENABLED') {
             return this.sendFbwTelexMessage(index);
         }
         this.messageQueue[index].ComStatus = AtsuMessageComStatus.Failed;
