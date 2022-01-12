@@ -1,6 +1,7 @@
 class CDUAocMenu {
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
+        mcdu.page.Current = mcdu.page.AOCMenu;
         mcdu.setTemplate([
             ["AOC MENU"],
             [""],

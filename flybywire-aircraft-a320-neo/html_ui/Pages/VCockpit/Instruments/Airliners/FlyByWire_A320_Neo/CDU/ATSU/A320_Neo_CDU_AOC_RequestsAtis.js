@@ -1,6 +1,7 @@
 class CDUAocRequestsAtis {
     static ShowPage(mcdu, store = {"reqID": 0, "formatID": 1, "arrIcao": "", "arpt1": "", "sendStatus": ""}) {
         mcdu.clearDisplay();
+        mcdu.page.Current = mcdu.page.AOCRequestAtis;
         let labelTimeout;
         let formatString;
 
@@ -36,21 +37,23 @@ class CDUAocRequestsAtis {
             arrText = "[ ]";
         }
         const updateView = () => {
-            mcdu.setTemplate([
-                ["AOC ATIS REQUEST"],
-                ["AIRPORT", "↓FORMAT FOR"],
-                [`${arrText}[color]cyan`, formatString],
-                ["", "", "-------SELECT ONE-------"],
-                [arrivalText, enrouteText],
-                [""],
-                [departureText],
-                [""],
-                ["{ARRIVAL/AUTO UPDATE[color]inop"],
-                [""],
-                ["{TERMINATE AUTO UPDATE[color]inop"],
-                ["RETURN TO", `${store["sendStatus"]}`],
-                ["<AOC MENU", "SEND*[color]cyan"]
-            ]);
+            if (mcdu.page.Current === mcdu.page.AOCRequestAtis) {
+                mcdu.setTemplate([
+                    ["AOC ATIS REQUEST"],
+                    ["AIRPORT", "↓FORMAT FOR"],
+                    [`${arrText}[color]cyan`, formatString],
+                    ["", "", "-------SELECT ONE-------"],
+                    [arrivalText, enrouteText],
+                    [""],
+                    [departureText],
+                    [""],
+                    ["{ARRIVAL/AUTO UPDATE[color]inop"],
+                    [""],
+                    ["{TERMINATE AUTO UPDATE[color]inop"],
+                    ["RETURN TO", `${store["sendStatus"]}`],
+                    ["<AOC MENU", "SEND*[color]cyan"]
+                ]);
+            }
         };
         updateView();
 

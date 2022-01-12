@@ -1,6 +1,7 @@
 class CDUAocRequestsWeather {
     static ShowPage(mcdu, reqID = 0, _sendStatus = "") {
         mcdu.clearDisplay();
+        mcdu.page.Current = mcdu.page.AOCRequestWeather;
         let labelTimeout;
         let sendStatus = _sendStatus;
         const reqTypes = [
@@ -9,21 +10,23 @@ class CDUAocRequestsWeather {
         ];
 
         const updateView = () => {
-            mcdu.setTemplate([
-                ["AOC WEATHER REQUEST"],
-                [`WX TYPE`, "AIRPORTS"],
-                [`↓${reqTypes[reqID]}[color]cyan`, mcdu.aocAirportList.rows[0].output],
-                [""],
-                ["", mcdu.aocAirportList.rows[1].output],
-                [""],
-                ["", mcdu.aocAirportList.rows[2].output],
-                [""],
-                ["", mcdu.aocAirportList.rows[3].output],
-                [""],
-                [""],
-                ["RETURN TO", `${sendStatus}`],
-                ["<AOC MENU", "SEND*[color]cyan"]
-            ]);
+            if (mcdu.page.Current === mcdu.page.AOCRequestWeather) {
+                mcdu.setTemplate([
+                    ["AOC WEATHER REQUEST"],
+                    [`WX TYPE`, "AIRPORTS"],
+                    [`↓${reqTypes[reqID]}[color]cyan`, mcdu.aocAirportList.rows[0].output],
+                    [""],
+                    ["", mcdu.aocAirportList.rows[1].output],
+                    [""],
+                    ["", mcdu.aocAirportList.rows[2].output],
+                    [""],
+                    ["", mcdu.aocAirportList.rows[3].output],
+                    [""],
+                    [""],
+                    ["RETURN TO", `${sendStatus}`],
+                    ["<AOC MENU", "SEND*[color]cyan"]
+                ]);
+            }
         };
         updateView();
 
