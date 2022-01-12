@@ -14,7 +14,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.onRightInput = [];
         this.leftInputDelay = [];
         this.rightInputDelay = [];
-        this.messages = [];
         this.activeSystem = 'FMGC';
         this.messageQueue = [];
         this.inFocus = false;
@@ -237,53 +236,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 () => NXDataStore.set('CONFIG_ONLINE_FEATURES_STATUS', 'DISABLED'),
             );
         }
-
-        // Start the TELEX Ping. API functions check the connection status themself
-        setInterval(() => {
-            const toDelete = [];
-
-            // Update connection
-            NXApi.updateTelex()
-                .catch((err) => {
-                    if (err !== NXApi.disconnectedError && err !== NXApi.disabledError) {
-                        console.log("TELEX PING FAILED");
-                    }
-                });
-
-            // Fetch new messages
-            NXApi.getTelexMessages()
-                .then((data) => {
-                    for (const msg of data) {
-                        const sender = msg["from"]["flight"];
-
-                        const lines = [];
-                        lines.push("{cyan}FROM " + sender + "{end}");
-                        const incLines = msg["message"].split(";");
-                        incLines.forEach(l => lines.push(`{green}${l}{end}`));
-                        lines.push('{white}------------------------{end}');
-
-                        const newMessage = { "id": Date.now(), "type": "FREE TEXT (" + sender + ")", "time": '00:00', "opened": null, "content": lines, };
-                        let timeValue = SimVar.GetGlobalVarValue("ZULU TIME", "seconds");
-                        if (timeValue) {
-                            const seconds = Number.parseInt(timeValue);
-                            const displayTime = Utils.SecondsToDisplayTime(seconds, true, true, false);
-                            timeValue = displayTime.toString();
-                        }
-                        newMessage["time"] = timeValue.substring(0, 5);
-                        this.messages.unshift(newMessage);
-                        toDelete.push(msg["id"]);
-                    }
-
-                    const msgCount = SimVar.GetSimVarValue("L:A32NX_COMPANY_MSG_COUNT", "Number");
-                    SimVar.SetSimVarValue("L:A32NX_COMPANY_MSG_COUNT", "Number", msgCount + toDelete.length).then();
-                })
-                .catch(err => {
-                    if (err.status === 404 || err === NXApi.disabledError || err === NXApi.disconnectedError) {
-                        return;
-                    }
-                    console.log("TELEX MSG FETCH FAILED");
-                });
-        }, NXApi.updateRate);
 
         SimVar.SetSimVarValue("L:A32NX_GPS_PRIMARY_LOST_MSG", "Bool", 0).then();
 
