@@ -100,7 +100,7 @@ class CDUAocOfpData {
 
         async function setTargetCargo(numberOfPax, simbriefCargo) {
             const bagWeight = numberOfPax * 20;
-            const maxLoadInCargoHold = 7185; // from flight_model.cfg
+            const maxLoadInCargoHold = 9435; // from flight_model.cfg
             let loadableCargoWeight = undefined;
 
             if (simbriefCargo == 0) {
@@ -174,7 +174,7 @@ class CDUAocOfpData {
                     suffix: suffix,
                     maxLength: 4,
                     minValue: 0.0,
-                    maxValue: 7.0,
+                    maxValue: 9.4,
                 },
                 async (value) => {
                     await setTargetPax(paxTarget);
