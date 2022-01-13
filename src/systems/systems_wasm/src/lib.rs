@@ -360,14 +360,14 @@ pub enum Variable {
 impl Display for Variable {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         let name = match self {
-            Variable::Aircraft(name, _, index) => Self::indexed_name(name, *index),
-            Variable::Named(name, ..) => format!("L:{}", name),
-            Variable::Aspect(name, ..) => name,
+            Variable::Aircraft(name, _, index) => {
+                format!("Aircraft({})", Self::indexed_name(name, *index))
+            }
+            Variable::Named(name, ..) => format!("Named({})", name),
+            Variable::Aspect(name, ..) => format!("Aspect({})", name),
         };
 
-        write!(f, "{}", name);
-
-        Ok(())
+        write!(f, "{}", name)
     }
 }
 
