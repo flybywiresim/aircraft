@@ -75,7 +75,7 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
         const getBaroTypeForAirport = (icao: string) => (['K', 'C', 'M', 'P', 'RJ', 'RO', 'TI', 'TJ'].some((r) => icao.startsWith(r)) ? 'IN HG' : 'HPA');
 
 
-    const getBaroValue = () => {
+    const BaroValue = () => {
         if (baroType === 'IN HG') {
             return (
                 <>
