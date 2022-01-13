@@ -102,6 +102,7 @@ impl<'a, 'b> MsfsAspectBuilder<'a, 'b> {
         &mut self,
         execute_on: ExecuteOn,
         inputs: Vec<Variable>,
+        init: f64,
         func: fn(f64, f64) -> f64,
         output: Variable,
     ) {
@@ -111,7 +112,7 @@ impl<'a, 'b> MsfsAspectBuilder<'a, 'b> {
         let output = self.variables.register(&output);
 
         self.actions.push(VariableAction::Reduce(
-            Reduce::new(inputs, func, output),
+            Reduce::new(inputs, init, func, output),
             execute_on,
         ));
     }
@@ -127,53 +128,37 @@ impl<'a, 'b> MsfsAspectBuilder<'a, 'b> {
     }
 
     /// Convert event occurrences to a variable.
-    /// Optionally write the variable's value back to the event.
     ///
-    /// If you only care about writing a variable's value to the event,
-    /// then use [Self::variable_to_event].
+    /// If you want to write a variable back to the same event, then use the
+    /// event id returned by this method and pass it to [Self::variable_to_event_id].
     pub fn event_to_variable(
         &mut self,
         event_name: &str,
         mapping: EventToVariableMapping,
         target: Variable,
         configure_options: fn(EventToVariableOptions) -> EventToVariableOptions,
-    ) -> Result<(), Box<dyn Error>> {
+    ) -> Result<u32, Box<dyn Error>> {
         Self::precondition_not_aircraft_variable(&target);
 
         let target = self.variables.register(&target);
 
-        let options = configure_options(EventToVariableOptions::default());
-        let event_to_variable =
-            EventToVariable::new(&mut self.sim_connect, event_name, mapping, target, options)?;
+        let event_to_variable = EventToVariable::new(
+            &mut self.sim_connect,
+            event_name,
+            mapping,
+            target,
+            configure_options(EventToVariableOptions::default()),
+        )?;
 
-        if options.is_bidirectional() {
-            let (to_event_mapping, to_event_write_on) = options.bidirectional.unwrap_or((
-                VariableToEventMapping::EventDataRaw,
-                VariableToEventWriteOn::Change,
-            ));
-
-            self.actions.push(VariableAction::ToEvent(
-                ToEvent::new_with_event_id(
-                    target,
-                    to_event_mapping,
-                    to_event_write_on,
-                    event_to_variable.event_id,
-                ),
-                ExecuteOn::PostTick,
-            ));
-        }
+        let event_id = event_to_variable.event_id;
 
         self.message_handlers
             .push(MessageHandler::EventToVariable(event_to_variable));
 
-        Ok(())
+        Ok(event_id)
     }
 
-    /// Write the variable's value is to an event.
-    ///
-    /// This function should be used when one doesn't care about receiving the event's value through
-    /// [Self::event_to_variable]. If you do, then use [Self::event_to_variable] and the
-    /// [EventToVariableOptions::bidirectional] method.
+    /// Write the variable's value to an event.
     pub fn variable_to_event(
         &mut self,
         input: Variable,
@@ -189,6 +174,22 @@ impl<'a, 'b> MsfsAspectBuilder<'a, 'b> {
         ));
 
         Ok(())
+    }
+
+    /// Write the variable's value to an event with the given event id.
+    pub fn variable_to_event_id(
+        &mut self,
+        input: Variable,
+        mapping: VariableToEventMapping,
+        write_on: VariableToEventWriteOn,
+        event_id: u32,
+    ) {
+        let input = self.variables.register(&input);
+
+        self.actions.push(VariableAction::ToEvent(
+            ToEvent::new_with_event_id(input, mapping, write_on, event_id),
+            ExecuteOn::PostTick,
+        ));
     }
 
     fn precondition_not_aircraft_variable(variable: &Variable) {
@@ -387,6 +388,7 @@ impl ExecutableVariableAction for MapMany {
 
 struct Reduce {
     input_variable_identifiers: Vec<VariableIdentifier>,
+    init: f64,
     func: fn(f64, f64) -> f64,
     output_variable_identifier: VariableIdentifier,
 }
@@ -394,6 +396,7 @@ struct Reduce {
 impl Reduce {
     fn new(
         input_variable_identifiers: Vec<VariableIdentifier>,
+        init: f64,
         func: fn(f64, f64) -> f64,
         output_variable_identifier: VariableIdentifier,
     ) -> Self {
@@ -404,6 +407,7 @@ impl Reduce {
 
         Self {
             input_variable_identifiers,
+            init,
             func,
             output_variable_identifier,
         }
@@ -421,7 +425,7 @@ impl ExecutableVariableAction for Reduce {
             .iter()
             .map(|&x| x.unwrap())
             .collect();
-        let result = values.into_iter().reduce(self.func).unwrap_or(0.);
+        let result = values.into_iter().fold(self.init, self.func);
         variables.write(&self.output_variable_identifier, result);
 
         Ok(())
@@ -521,7 +525,6 @@ pub struct EventToVariableOptions {
     mask: bool,
     ignore_repeats_for: Duration,
     after_tick_set_to: Option<f64>,
-    bidirectional: Option<(VariableToEventMapping, VariableToEventWriteOn)>,
 }
 
 impl EventToVariableOptions {
@@ -544,20 +547,6 @@ impl EventToVariableOptions {
     pub fn after_tick_set_to(mut self, value: f64) -> Self {
         self.after_tick_set_to = Some(value);
         self
-    }
-
-    /// Causes the variable's value to be written back to the event at the configured moment.
-    pub fn bidirectional(
-        mut self,
-        mapping: VariableToEventMapping,
-        write_on: VariableToEventWriteOn,
-    ) -> Self {
-        self.bidirectional = Some((mapping, write_on));
-        self
-    }
-
-    fn is_bidirectional(&self) -> bool {
-        self.bidirectional.is_some()
     }
 }
 

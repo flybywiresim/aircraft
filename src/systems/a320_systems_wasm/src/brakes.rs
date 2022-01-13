@@ -1,8 +1,8 @@
 use std::error::Error;
 use systems::shared::{from_bool, to_bool};
 use systems_wasm::aspects::{
-    max, EventToVariableMapping, EventToVariableOptions, ExecuteOn, MsfsAspectBuilder,
-    VariableToEventMapping, VariableToEventWriteOn,
+    max, EventToVariableMapping, ExecuteOn, MsfsAspectBuilder, VariableToEventMapping,
+    VariableToEventWriteOn,
 };
 use systems_wasm::Variable;
 
@@ -23,29 +23,35 @@ pub(super) fn brakes(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Erro
     )?;
 
     // Controller inputs for the left and right brakes are captured and translated
-    // to a named variable so that it can be used by the simulation.
+    // to a variable so that it can be used by the simulation.
     // After running the simulation, the variable value is written back to the simulator
     // through the event.
-    let options = |options: EventToVariableOptions| {
-        options.mask().bidirectional(
-            VariableToEventMapping::EventData32kPosition,
-            VariableToEventWriteOn::EveryTick,
-        )
-    };
-    builder.event_to_variable(
+    let axis_left_brake_set_event_id = builder.event_to_variable(
         "AXIS_LEFT_BRAKE_SET",
         EventToVariableMapping::EventData32kPosition,
-        Variable::Aspect("BRAKE LEFT FORCE FACTOR".into()),
-        options,
+        Variable::Aspect("BRAKES_LEFT_EVENT".into()),
+        |options| options.mask(),
     )?;
-    builder.event_to_variable(
+    builder.variable_to_event_id(
+        Variable::Aspect("BRAKE LEFT FORCE FACTOR".into()),
+        VariableToEventMapping::EventData32kPosition,
+        VariableToEventWriteOn::EveryTick,
+        axis_left_brake_set_event_id,
+    );
+    let axis_right_brake_set_event_id = builder.event_to_variable(
         "AXIS_RIGHT_BRAKE_SET",
         EventToVariableMapping::EventData32kPosition,
-        Variable::Aspect("BRAKE RIGHT FORCE FACTOR".into()),
-        options,
+        Variable::Aspect("BRAKES_RIGHT_EVENT".into()),
+        |options| options.mask(),
     )?;
+    builder.variable_to_event_id(
+        Variable::Aspect("BRAKE RIGHT FORCE FACTOR".into()),
+        VariableToEventMapping::EventData32kPosition,
+        VariableToEventWriteOn::EveryTick,
+        axis_right_brake_set_event_id,
+    );
 
-    // Keyboard inputs for both brakes, left brake, and right brake are captured and
+    // Inputs for both brakes, left brake, and right brake are captured and
     // translated via a smooth press function into a ratio which is written to variables.
     const KEYBOARD_PRESS_SPEED: f64 = 0.6;
     const KEYBOARD_RELEASE_SPEED: f64 = 0.3;
@@ -68,15 +74,16 @@ pub(super) fn brakes(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Erro
         |options| options.mask(),
     )?;
 
-    // The maximum braking demand of all keyboard and controller inputs
+    // The maximum braking demand of all controller inputs
     // is calculated and made available as a percentage.
     builder.reduce(
         ExecuteOn::PreTick,
         vec![
             Variable::Aspect("BRAKES".into()),
             Variable::Aspect("BRAKES_LEFT".into()),
-            Variable::Aspect("BRAKE LEFT FORCE FACTOR".into()),
+            Variable::Aspect("BRAKES_LEFT_EVENT".into()),
         ],
+        0.,
         to_percent_max,
         Variable::Named("LEFT_BRAKE_PEDAL_INPUT".into()),
     );
@@ -85,8 +92,9 @@ pub(super) fn brakes(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Erro
         vec![
             Variable::Aspect("BRAKES".into()),
             Variable::Aspect("BRAKES_RIGHT".into()),
-            Variable::Aspect("BRAKE RIGHT FORCE FACTOR".into()),
+            Variable::Aspect("BRAKES_RIGHT_EVENT".into()),
         ],
+        0.,
         to_percent_max,
         Variable::Named("RIGHT_BRAKE_PEDAL_INPUT".into()),
     );

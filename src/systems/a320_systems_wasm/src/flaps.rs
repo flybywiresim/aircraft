@@ -73,7 +73,9 @@ fn flaps_event_to_value(
         EventToVariableMapping::Value(value),
         Variable::Named("FLAPS_HANDLE_INDEX".into()),
         |options| options.mask(),
-    )
+    )?;
+
+    Ok(())
 }
 
 fn get_handle_pos_from_0_1(input: f64, current_value: f64) -> f64 {
