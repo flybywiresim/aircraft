@@ -80,10 +80,17 @@ export const VerticalSpeedIndicator = ({ radioAlt, verticalSpeed }: VerticalSpee
 const VSpeedNeedle = ({ yOffset, isAmber }) => {
     const className = `HugeStroke ${isAmber ? 'Amber' : 'Green'}`;
 
+    const dxFull = 12;
+    const dxBorder = 5;
+    const centerX = 162.74;
+    const centerY = 80.822;
+
+    const path = `m${centerX - dxBorder} ${centerY + dxBorder / dxFull * yOffset} l ${dxBorder - dxFull} ${(1 - dxBorder / dxFull) * yOffset}`;
+
     return (
         <>
-            <path className="HugeOutline" d={`m162.74 80.822 l -12 ${yOffset}`} />
-            <path className={className} id="VSpeedIndicator" d={`m162.74 80.822 l -12 ${yOffset}`} />
+            <path className="HugeOutline" d={path} />
+            <path className={className} id="VSpeedIndicator" d={path} />
         </>
     );
 };
