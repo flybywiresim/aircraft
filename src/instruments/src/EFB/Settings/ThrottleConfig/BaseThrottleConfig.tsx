@@ -11,8 +11,6 @@ interface Props {
     mappingsAxisTwo?: ThrottleSimvar[]
     activeIndex: number,
     disabled: boolean,
-    initialize: boolean,
-    setInitialize,
 }
 
 const BaseThrottleConfig: React.FC<Props> = (props: Props) => {
@@ -36,8 +34,6 @@ const BaseThrottleConfig: React.FC<Props> = (props: Props) => {
             detentValue={props.mappingsAxisOne[props.activeIndex].getLowGetter()}
             throttleNumber={props.throttleNumber}
             expertMode={expertMode}
-            initialize={props.initialize}
-            setInitialize={props.setInitialize}
         />
     );
 

@@ -1,6 +1,7 @@
 {
   "name": "a32nx",
-  "version": "0.8.0-dev",
+  "version": "0.8.0",
+  "edition": "development",
   "scripts": {
     "lint": "eslint --cache **/*.{js,mjs,jsx,ts,tsx}",
     "lint-fix": "npm run lint -- --fix",
@@ -11,7 +12,9 @@
     "build:fbw": "cd src/fbw && ./build.sh",
     "build:fadec": "cd src/fadec && ./build.sh",
     "build:failures": "rollup -c src/failures/rollup.config.js",
-    "build:fmgc": "rollup -c src/fmgc/rollup.config.js"
+    "build:fmgc": "rollup -c src/fmgc/rollup.config.js",
+    "build:mcdu-client": "rollup -c src/mcdu-server/client/rollup.config.js",
+    "build:mcdu-server": "pkg src/mcdu-server/index.js --target node12-win-x64 --no-bytecode --public-packages \"*\" --public --output \"flybywire-aircraft-a320-neo/MCDU SERVER/server.exe\""
   },
   "lint-staged": {
     "*.{js,mjs,jsx}": "eslint --cache --fix",
@@ -45,6 +48,7 @@
     "@typescript-eslint/parser": "~4.14.2",
     "babel-plugin-module-resolver": "^4.1.0",
     "dotenv": "^8.2.0",
+    "es5lib": "^0.1.1",
     "eslint": "7.21.0",
     "eslint-plugin-import": "^2.25.3",
     "eslint-plugin-jest": "^24.4.0",
@@ -85,6 +89,10 @@
     "classnames": "^2.2.6",
     "immer": "^9.0.3",
     "lodash": "^4.17.20",
+    "network": "^0.6.0",
+    "pdf-to-printer": "^5.1.1",
+    "pdfkit": "^0.13.0",
+    "pkg": "^5.1.0",
     "qrcode.react": "^1.0.1",
     "react": "^17.0.0",
     "react-dom": "^17.0.0",
@@ -92,11 +100,13 @@
     "react-redux": "^7.2.2",
     "react-router": "~5.2.0",
     "react-router-dom": "~5.2.0",
+    "react-use-websocket": "^2.9.1",
     "redux": "^4.0.5",
     "redux-thunk": "^2.3.0",
     "rollup-plugin-scss": "^2.6.1",
     "sass": "~1.30.0",
     "tailwindcss": "^2.2.2",
-    "type-to-reducer": "^1.2.0"
+    "type-to-reducer": "^1.2.0",
+    "ws": "^7.4.5"
   }
 }

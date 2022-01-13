@@ -1,0 +1,49 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Attach",
+            "type": "cppvsdbg",
+            "request": "attach",
+            "processName": "FlightSimulator.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${fileDirname}",
+            "environment": [],
+            "console": "externalTerminal",
+            "sourceFileMap": {
+                // Yes it's ugly, but it's the only way we could think of to
+                // ensure source mapping works with MSFS installed in different drives
+                "a:/external/src/": "${workspaceFolder}/src/",
+                "b:/external/src/": "${workspaceFolder}/src/",
+                "c:/external/src/": "${workspaceFolder}/src/",
+                "d:/external/src/": "${workspaceFolder}/src/",
+                "e:/external/src/": "${workspaceFolder}/src/",
+                "f:/external/src/": "${workspaceFolder}/src/",
+                "g:/external/src/": "${workspaceFolder}/src/",
+                "h:/external/src/": "${workspaceFolder}/src/",
+                "i:/external/src/": "${workspaceFolder}/src/",
+                "j:/external/src/": "${workspaceFolder}/src/",
+                "k:/external/src/": "${workspaceFolder}/src/",
+                "l:/external/src/": "${workspaceFolder}/src/",
+                "m:/external/src/": "${workspaceFolder}/src/",
+                "n:/external/src/": "${workspaceFolder}/src/",
+                "o:/external/src/": "${workspaceFolder}/src/",
+                "p:/external/src/": "${workspaceFolder}/src/",
+                "q:/external/src/": "${workspaceFolder}/src/",
+                "r:/external/src/": "${workspaceFolder}/src/",
+                "s:/external/src/": "${workspaceFolder}/src/",
+                "t:/external/src/": "${workspaceFolder}/src/",
+                "u:/external/src/": "${workspaceFolder}/src/",
+                "v:/external/src/": "${workspaceFolder}/src/",
+                "w:/external/src/": "${workspaceFolder}/src/",
+                "x:/external/src/": "${workspaceFolder}/src/",
+                "y:/external/src/": "${workspaceFolder}/src/",
+                "z:/external/src/": "${workspaceFolder}/src/",
+            }
+        }
+    ]
+}

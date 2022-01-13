@@ -50,6 +50,8 @@ void FlightDataRecorderConverter::writeHeader(ofstream& out, const string& delim
   out << "ap_sm.data.nav_e_gs_error_deg" << delimiter;
   out << "ap_sm.data.flight_guidance_xtk_nmi" << delimiter;
   out << "ap_sm.data.flight_guidance_tae_deg" << delimiter;
+  out << "ap_sm.data.flight_guidance_phi_deg" << delimiter;
+  out << "ap_sm.data.flight_guidance_phi_limit_deg" << delimiter;
   out << "ap_sm.data.flight_phase" << delimiter;
   out << "ap_sm.data.V2_kn" << delimiter;
   out << "ap_sm.data.VAPP_kn" << delimiter;
@@ -178,6 +180,7 @@ void FlightDataRecorderConverter::writeHeader(ofstream& out, const string& delim
   out << "ap_sm.vertical.output.EXPED_mode_active" << delimiter;
   out << "ap_sm.vertical.output.FD_disconnect" << delimiter;
   out << "ap_sm.vertical.output.TCAS_sub_mode" << delimiter;
+  out << "ap_sm.vertical.output.TCAS_sub_mode_compatible" << delimiter;
   out << "ap_sm.vertical.output.TCAS_message_disarm" << delimiter;
   out << "ap_sm.vertical.output.TCAS_message_RA_inhibit" << delimiter;
   out << "ap_sm.vertical.output.TCAS_message_TRK_FPA_deselection" << delimiter;
@@ -219,6 +222,7 @@ void FlightDataRecorderConverter::writeHeader(ofstream& out, const string& delim
   out << "ap_sm.vertical_previous.output.EXPED_mode_active" << delimiter;
   out << "ap_sm.vertical_previous.output.FD_disconnect" << delimiter;
   out << "ap_sm.vertical_previous.output.TCAS_sub_mode" << delimiter;
+  out << "ap_sm.vertical_previous.output.TCAS_sub_mode_compatible" << delimiter;
   out << "ap_sm.vertical_previous.output.TCAS_message_disarm" << delimiter;
   out << "ap_sm.vertical_previous.output.TCAS_message_RA_inhibit" << delimiter;
   out << "ap_sm.vertical_previous.output.TCAS_message_TRK_FPA_deselection" << delimiter;
@@ -250,6 +254,8 @@ void FlightDataRecorderConverter::writeHeader(ofstream& out, const string& delim
   out << "ap_sm.output.TCAS_message_RA_inhibit)" << delimiter;
   out << "ap_sm.output.TCAS_message_TRK_FPA_deselection)" << delimiter;
   out << "ap_law.ap_on" << delimiter;
+  out << "ap_law.Phi_loc_c" << delimiter;
+  out << "ap_law.Nosewheel_c" << delimiter;
   out << "ap_law.flight_director.Theta_c_deg" << delimiter;
   out << "ap_law.flight_director.Phi_c_deg" << delimiter;
   out << "ap_law.flight_director.Beta_c_deg" << delimiter;
@@ -274,6 +280,8 @@ void FlightDataRecorderConverter::writeHeader(ofstream& out, const string& delim
   out << "athr.data.bx_m_s2" << delimiter;
   out << "athr.data.by_m_s2" << delimiter;
   out << "athr.data.bz_m_s2" << delimiter;
+  out << "athr.data.Psi_magnetic_deg" << delimiter;
+  out << "athr.data.Psi_magnetic_track_deg" << delimiter;
   out << "athr.data.on_ground" << delimiter;
   out << "athr.data.flap_handle_index" << delimiter;
   out << "athr.data.is_engine_operative_1" << delimiter;
@@ -285,6 +293,7 @@ void FlightDataRecorderConverter::writeHeader(ofstream& out, const string& delim
   out << "athr.data.TAT_degC" << delimiter;
   out << "athr.data.OAT_degC" << delimiter;
   out << "athr.data.ISA_degC" << delimiter;
+  out << "athr.data.ambient_density_kg_per_m3" << delimiter;
   out << "athr.data_computed.TLA_in_active_range" << delimiter;
   out << "athr.data_computed.is_FLX_active" << delimiter;
   out << "athr.data_computed.ATHR_push" << delimiter;
@@ -545,6 +554,10 @@ void FlightDataRecorderConverter::writeHeader(ofstream& out, const string& delim
   out << "data.hydraulic_green_pressure" << delimiter;
   out << "data.hydraulic_blue_pressure" << delimiter;
   out << "data.hydraulic_yellow_pressure" << delimiter;
+  out << "data.throttle_lever_1_pos" << delimiter;
+  out << "data.throttle_lever_2_pos" << delimiter;
+  out << "data.corrected_engine_N1_1_percent" << delimiter;
+  out << "data.corrected_engine_N1_2_percent" << delimiter;
   out << endl;
 }
 
@@ -603,6 +616,8 @@ void FlightDataRecorderConverter::writeStruct(ofstream& out,
   out << ap_sm.data.nav_e_gs_error_deg << delimiter;
   out << ap_sm.data.flight_guidance_xtk_nmi << delimiter;
   out << ap_sm.data.flight_guidance_tae_deg << delimiter;
+  out << ap_sm.data.flight_guidance_phi_deg << delimiter;
+  out << ap_sm.data.flight_guidance_phi_limit_deg << delimiter;
   out << ap_sm.data.flight_phase << delimiter;
   out << ap_sm.data.V2_kn << delimiter;
   out << ap_sm.data.VAPP_kn << delimiter;
@@ -731,6 +746,7 @@ void FlightDataRecorderConverter::writeStruct(ofstream& out,
   out << static_cast<unsigned int>(ap_sm.vertical.output.EXPED_mode_active) << delimiter;
   out << static_cast<unsigned int>(ap_sm.vertical.output.FD_disconnect) << delimiter;
   out << static_cast<unsigned int>(ap_sm.vertical.output.TCAS_sub_mode) << delimiter;
+  out << static_cast<unsigned int>(ap_sm.vertical.output.TCAS_sub_mode_compatible) << delimiter;
   out << static_cast<unsigned int>(ap_sm.vertical.output.TCAS_message_disarm) << delimiter;
   out << static_cast<unsigned int>(ap_sm.vertical.output.TCAS_message_RA_inhibit) << delimiter;
   out << static_cast<unsigned int>(ap_sm.vertical.output.TCAS_message_TRK_FPA_deselection) << delimiter;
@@ -772,6 +788,7 @@ void FlightDataRecorderConverter::writeStruct(ofstream& out,
   out << static_cast<unsigned int>(ap_sm.vertical_previous.output.EXPED_mode_active) << delimiter;
   out << static_cast<unsigned int>(ap_sm.vertical_previous.output.FD_disconnect) << delimiter;
   out << static_cast<unsigned int>(ap_sm.vertical_previous.output.TCAS_sub_mode) << delimiter;
+  out << static_cast<unsigned int>(ap_sm.vertical_previous.output.TCAS_sub_mode_compatible) << delimiter;
   out << static_cast<unsigned int>(ap_sm.vertical_previous.output.TCAS_message_disarm) << delimiter;
   out << static_cast<unsigned int>(ap_sm.vertical_previous.output.TCAS_message_RA_inhibit) << delimiter;
   out << static_cast<unsigned int>(ap_sm.vertical_previous.output.TCAS_message_TRK_FPA_deselection) << delimiter;
@@ -803,6 +820,8 @@ void FlightDataRecorderConverter::writeStruct(ofstream& out,
   out << static_cast<unsigned int>(ap_sm.output.TCAS_message_RA_inhibit) << delimiter;
   out << static_cast<unsigned int>(ap_sm.output.TCAS_message_TRK_FPA_deselection) << delimiter;
   out << ap_law.ap_on << delimiter;
+  out << ap_law.Phi_loc_c << delimiter;
+  out << ap_law.Nosewheel_c << delimiter;
   out << ap_law.flight_director.Theta_c_deg << delimiter;
   out << ap_law.flight_director.Phi_c_deg << delimiter;
   out << ap_law.flight_director.Beta_c_deg << delimiter;
@@ -827,6 +846,8 @@ void FlightDataRecorderConverter::writeStruct(ofstream& out,
   out << athr.data.bx_m_s2 << delimiter;
   out << athr.data.by_m_s2 << delimiter;
   out << athr.data.bz_m_s2 << delimiter;
+  out << athr.data.Psi_magnetic_deg << delimiter;
+  out << athr.data.Psi_magnetic_track_deg << delimiter;
   out << static_cast<unsigned int>(athr.data.on_ground) << delimiter;
   out << athr.data.flap_handle_index << delimiter;
   out << static_cast<unsigned int>(athr.data.is_engine_operative_1) << delimiter;
@@ -838,6 +859,7 @@ void FlightDataRecorderConverter::writeStruct(ofstream& out,
   out << athr.data.TAT_degC << delimiter;
   out << athr.data.OAT_degC << delimiter;
   out << athr.data.ISA_degC << delimiter;
+  out << athr.data.ambient_density_kg_per_m3 << delimiter;
   out << static_cast<unsigned int>(athr.data_computed.TLA_in_active_range) << delimiter;
   out << static_cast<unsigned int>(athr.data_computed.is_FLX_active) << delimiter;
   out << static_cast<unsigned int>(athr.data_computed.ATHR_push) << delimiter;
@@ -1098,5 +1120,9 @@ void FlightDataRecorderConverter::writeStruct(ofstream& out,
   out << data.hydraulic_green_pressure << delimiter;
   out << data.hydraulic_blue_pressure << delimiter;
   out << data.hydraulic_yellow_pressure << delimiter;
+  out << data.throttle_lever_1_pos << delimiter;
+  out << data.throttle_lever_2_pos << delimiter;
+  out << data.corrected_engine_N1_1_percent << delimiter;
+  out << data.corrected_engine_N1_2_percent << delimiter;
   out << endl;
 }

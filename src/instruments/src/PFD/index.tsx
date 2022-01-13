@@ -120,7 +120,7 @@ export const PFD: React.FC = () => {
     const activeVerticalMode = getSimVar('L:A32NX_FMA_VERTICAL_MODE', 'enum');
     const armedLateralBitmask = getSimVar('L:A32NX_FMA_LATERAL_ARMED', 'number');
     const fmgcFlightPhase = getSimVar('L:A32NX_FMGC_FLIGHT_PHASE', 'enum');
-    const cstnAlt = getSimVar('L:A32NX_AP_CSTN_ALT', 'feet');
+    const cstnAlt = getSimVar('L:A32NX_FG_ALTITUDE_CONSTRAINT', 'feet');
     const altArmed = (armedVerticalBitmask >> 1) & 1;
     const clbArmed = (armedVerticalBitmask >> 2) & 1;
     const navArmed = (armedLateralBitmask >> 0) & 1;
@@ -148,9 +148,9 @@ export const PFD: React.FC = () => {
         selectedHeading = Simplane.getAutoPilotSelectedHeadingLockValue(false) || 0;
     }
 
-    let ILSCourse = NaN;
+    let ILSCourse = -1;
     if (lsButtonPressed) {
-        ILSCourse = getSimVar('NAV LOCALIZER:3', 'degrees');
+        ILSCourse = getSimVar('L:A32NX_FM_LS_COURSE', 'number');
     }
 
     return (
@@ -192,7 +192,7 @@ export const PFD: React.FC = () => {
                     id="Mask2"
                     className="BackgroundFill"
                     // eslint-disable-next-line max-len
-                    d="m32.138 145.34h73.536v10.382h-73.536zm0-44.092c7.4164 13.363 21.492 21.652 36.768 21.652 15.277 0 29.352-8.2886 36.768-21.652v-40.859c-7.4164-13.363-21.492-21.652-36.768-21.652-15.277 0-29.352 8.2886-36.768 21.652zm-32.046 57.498h158.66v-158.75h-158.66zm115.14-35.191v-85.473h15.609v85.473zm-113.33 0v-85.473h27.548v85.473z"
+                    d="m32.138 145.34h73.536v10.382h-73.536zm0-44.092c7.4164 13.363 21.492 21.652 36.768 21.652 15.277 0 29.352-8.2886 36.768-21.652v-40.859c-7.4164-13.363-21.492-21.652-36.768-21.652-15.277 0-29.352 8.2886-36.768 21.652zm-32.046 57.498h158.66v-158.75h-158.66zm115.14-35.191v-85.473h20.344v85.473zm-113.33 0v-85.473h27.548v85.473z"
                 />
                 <LandingSystem LSButtonPressed={lsButtonPressed} />
                 <AttitudeIndicatorFixedUpper pitch={pitch} roll={roll} />
