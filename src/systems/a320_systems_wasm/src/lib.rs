@@ -124,6 +124,8 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
             .provides_aircraft_variable("GEAR ANIMATION POSITION", "Percent", 1)?
             .provides_aircraft_variable("GEAR ANIMATION POSITION", "Percent", 2)?
             .provides_aircraft_variable("GEAR CENTER POSITION", "Percent", 0)?
+            .provides_aircraft_variable("GEAR LEFT POSITION", "Percent", 0)?
+            .provides_aircraft_variable("GEAR RIGHT POSITION", "Percent", 0)?
             .provides_aircraft_variable("GEAR HANDLE POSITION", "Bool", 0)?
             .provides_aircraft_variable_with_additional_names(
                 "GENERAL ENG MASTER ALTERNATOR",
