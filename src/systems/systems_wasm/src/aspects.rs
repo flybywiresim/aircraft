@@ -15,8 +15,8 @@ use systems::simulation::VariableIdentifier;
 pub struct MsfsAspectBuilder<'a, 'b> {
     sim_connect: &'a mut SimConnect<'b>,
     variables: &'a mut MsfsVariableRegistry,
-    event_to_variable: Vec<EventToVariable>,
-    variable_functions: Vec<VariableFunction>,
+    message_handlers: Vec<MessageHandler>,
+    actions: Vec<VariableAction>,
 }
 
 impl<'a, 'b> MsfsAspectBuilder<'a, 'b> {
@@ -27,13 +27,13 @@ impl<'a, 'b> MsfsAspectBuilder<'a, 'b> {
         Self {
             sim_connect,
             variables,
-            event_to_variable: Default::default(),
-            variable_functions: Default::default(),
+            message_handlers: Default::default(),
+            actions: Default::default(),
         }
     }
 
     pub fn build(self) -> MsfsAspect {
-        let aspect = MsfsAspect::new(self.event_to_variable, self.variable_functions);
+        let aspect = MsfsAspect::new(self.message_handlers, self.actions);
 
         aspect
     }
@@ -53,7 +53,7 @@ impl<'a, 'b> MsfsAspectBuilder<'a, 'b> {
         let input = self.variables.register(&input);
         let output = self.variables.register(&output);
 
-        self.variable_functions.push(VariableFunction::Map(
+        self.actions.push(VariableAction::Map(
             Map::new(input, |value| value, output),
             ExecuteOn::PreTick,
         ));
@@ -72,7 +72,7 @@ impl<'a, 'b> MsfsAspectBuilder<'a, 'b> {
         let inputs = self.variables.register(&input);
         let output = self.variables.register(&output);
 
-        self.variable_functions.push(VariableFunction::Map(
+        self.actions.push(VariableAction::Map(
             Map::new(inputs, func, output),
             execute_on,
         ));
@@ -91,7 +91,7 @@ impl<'a, 'b> MsfsAspectBuilder<'a, 'b> {
         let inputs = self.variables.register_many(&inputs);
         let output = self.variables.register(&output);
 
-        self.variable_functions.push(VariableFunction::MapMany(
+        self.actions.push(VariableAction::MapMany(
             MapMany::new(inputs, func, output),
             execute_on,
         ));
@@ -110,7 +110,7 @@ impl<'a, 'b> MsfsAspectBuilder<'a, 'b> {
         let inputs = self.variables.register_many(&inputs);
         let output = self.variables.register(&output);
 
-        self.variable_functions.push(VariableFunction::Reduce(
+        self.actions.push(VariableAction::Reduce(
             Reduce::new(inputs, func, output),
             execute_on,
         ));
@@ -120,7 +120,7 @@ impl<'a, 'b> MsfsAspectBuilder<'a, 'b> {
     pub fn variables_to_object(&mut self, instance: Box<dyn VariablesToObject>) {
         let variables = self.variables.register_many(&instance.variables());
 
-        self.variable_functions.push(VariableFunction::ToObject(
+        self.actions.push(VariableAction::ToObject(
             ToObject::new(instance, variables),
             ExecuteOn::PostTick,
         ));
@@ -142,13 +142,29 @@ impl<'a, 'b> MsfsAspectBuilder<'a, 'b> {
 
         let target = self.variables.register(&target);
 
-        self.event_to_variable.push(EventToVariable::new(
-            &mut self.sim_connect,
-            event_name,
-            mapping,
-            target,
-            configure_options(EventToVariableOptions::default()),
-        )?);
+        let options = configure_options(EventToVariableOptions::default());
+        let event_to_variable =
+            EventToVariable::new(&mut self.sim_connect, event_name, mapping, target, options)?;
+
+        if options.is_bidirectional() {
+            let (to_event_mapping, to_event_write_on) = options.bidirectional.unwrap_or((
+                VariableToEventMapping::EventDataRaw,
+                VariableToEventWriteOn::Change,
+            ));
+
+            self.actions.push(VariableAction::ToEvent(
+                ToEvent::new_with_event_id(
+                    target,
+                    to_event_mapping,
+                    to_event_write_on,
+                    event_to_variable.event_id,
+                ),
+                ExecuteOn::PostTick,
+            ));
+        }
+
+        self.message_handlers
+            .push(MessageHandler::EventToVariable(event_to_variable));
 
         Ok(())
     }
@@ -167,7 +183,7 @@ impl<'a, 'b> MsfsAspectBuilder<'a, 'b> {
     ) -> Result<(), Box<dyn Error>> {
         let input = self.variables.register(&input);
 
-        self.variable_functions.push(VariableFunction::ToEvent(
+        self.actions.push(VariableAction::ToEvent(
             ToEvent::new(&mut self.sim_connect, input, mapping, write_on, event_name)?,
             ExecuteOn::PostTick,
         ));
@@ -183,42 +199,39 @@ impl<'a, 'b> MsfsAspectBuilder<'a, 'b> {
 }
 
 pub struct MsfsAspect {
-    event_to_variable: Vec<EventToVariable>,
-    variable_functions: Vec<VariableFunction>,
+    message_handlers: Vec<MessageHandler>,
+    actions: Vec<VariableAction>,
 }
 
 impl MsfsAspect {
-    fn new(
-        event_to_variable: Vec<EventToVariable>,
-        variable_functions: Vec<VariableFunction>,
-    ) -> Self {
+    fn new(message_handlers: Vec<MessageHandler>, actions: Vec<VariableAction>) -> Self {
         Self {
-            event_to_variable,
-            variable_functions,
+            message_handlers,
+            actions,
         }
     }
 
-    fn apply_variable_functions(
+    fn execute_actions(
         &mut self,
         sim_connect: &mut SimConnect,
-        update_moment: ExecuteOn,
+        execute_moment: ExecuteOn,
         variables: &mut MsfsVariableRegistry,
     ) -> Result<(), Box<dyn Error>> {
-        self.variable_functions
+        self.actions
             .iter_mut()
-            .try_for_each(|func| func.update(sim_connect, variables, update_moment))
+            .try_for_each(|func| func.execute(sim_connect, variables, execute_moment))
     }
 }
 
 impl Aspect for MsfsAspect {
     fn handle_message(
         &mut self,
-        variables: &mut MsfsVariableRegistry,
         message: &SimConnectRecv,
+        variables: &mut MsfsVariableRegistry,
     ) -> bool {
-        self.event_to_variable
+        self.message_handlers
             .iter_mut()
-            .any(|ev| ev.handle_message(message, variables))
+            .any(|handler| handler.handle(message, variables))
     }
 
     fn pre_tick(
@@ -227,11 +240,11 @@ impl Aspect for MsfsAspect {
         sim_connect: &mut SimConnect,
         delta: Duration,
     ) -> Result<(), Box<dyn Error>> {
-        self.event_to_variable
+        self.message_handlers
             .iter_mut()
-            .for_each(|ev| ev.pre_tick(delta, variables));
+            .for_each(|ev| ev.pre_tick(variables, delta));
 
-        self.apply_variable_functions(sim_connect, ExecuteOn::PreTick, variables)?;
+        self.execute_actions(sim_connect, ExecuteOn::PreTick, variables)?;
 
         Ok(())
     }
@@ -241,53 +254,14 @@ impl Aspect for MsfsAspect {
         variables: &mut MsfsVariableRegistry,
         sim_connect: &mut SimConnect,
     ) -> Result<(), Box<dyn Error>> {
-        self.apply_variable_functions(sim_connect, ExecuteOn::PostTick, variables)?;
+        self.execute_actions(sim_connect, ExecuteOn::PostTick, variables)?;
 
-        self.event_to_variable
+        self.message_handlers
             .iter_mut()
-            .try_for_each(|ev| ev.post_tick(sim_connect, variables))?;
+            .for_each(|ev| ev.post_tick(variables));
 
         Ok(())
     }
-}
-
-enum VariableFunction {
-    Map(Map, ExecuteOn),
-    MapMany(MapMany, ExecuteOn),
-    Reduce(Reduce, ExecuteOn),
-    ToObject(ToObject, ExecuteOn),
-    ToEvent(ToEvent, ExecuteOn),
-}
-
-impl VariableFunction {
-    fn update(
-        &mut self,
-        sim_connect: &mut SimConnect,
-        variables: &mut MsfsVariableRegistry,
-        execute_moment: ExecuteOn,
-    ) -> Result<(), Box<dyn Error>> {
-        let updatable: (&mut dyn Updatable, ExecuteOn) = match self {
-            VariableFunction::Map(func, execute_on, ..) => (func, *execute_on),
-            VariableFunction::MapMany(func, execute_on, ..) => (func, *execute_on),
-            VariableFunction::Reduce(func, execute_on, ..) => (func, *execute_on),
-            VariableFunction::ToObject(func, execute_on, ..) => (func, *execute_on),
-            VariableFunction::ToEvent(func, execute_on, ..) => (func, *execute_on),
-        };
-
-        if updatable.1 == execute_moment {
-            updatable.0.update(sim_connect, variables)?;
-        }
-
-        Ok(())
-    }
-}
-
-trait Updatable {
-    fn update(
-        &mut self,
-        sim_connect: &mut SimConnect,
-        variables: &mut MsfsVariableRegistry,
-    ) -> Result<(), Box<dyn Error>>;
 }
 
 #[derive(Clone, Copy, PartialEq)]
@@ -297,32 +271,228 @@ pub enum ExecuteOn {
     PostTick,
 }
 
-/// Declares how to map the given event to a variable value.
-pub enum EventToVariableMapping {
-    /// When the event occurs, sets the variable to the given value.
-    Value(f64),
+enum VariableAction {
+    Map(Map, ExecuteOn),
+    MapMany(MapMany, ExecuteOn),
+    Reduce(Reduce, ExecuteOn),
+    ToObject(ToObject, ExecuteOn),
+    ToEvent(ToEvent, ExecuteOn),
+}
 
-    /// Maps the event data from a u32 to an f64 without any further processing.
-    EventDataRaw,
+impl VariableAction {
+    fn execute(
+        &mut self,
+        sim_connect: &mut SimConnect,
+        variables: &mut MsfsVariableRegistry,
+        execute_moment: ExecuteOn,
+    ) -> Result<(), Box<dyn Error>> {
+        let updatable: (&mut dyn ExecutableVariableAction, ExecuteOn) = match self {
+            VariableAction::Map(func, execute_on, ..) => (func, *execute_on),
+            VariableAction::MapMany(func, execute_on, ..) => (func, *execute_on),
+            VariableAction::Reduce(func, execute_on, ..) => (func, *execute_on),
+            VariableAction::ToObject(func, execute_on, ..) => (func, *execute_on),
+            VariableAction::ToEvent(func, execute_on, ..) => (func, *execute_on),
+        };
 
-    /// Maps the event data from a 32k position to an f64.
-    EventData32kPosition,
+        if updatable.1 == execute_moment {
+            updatable.0.execute(sim_connect, variables)?;
+        }
 
-    /// When the event occurs, calls the function with event data and sets
-    /// the variable to the returned value.
-    EventDataToValue(fn(u32) -> f64),
+        Ok(())
+    }
+}
 
-    /// When the event occurs, calls the function with the current variable value and
-    /// sets the variable to the returned value.
-    CurrentValueToValue(fn(f64) -> f64),
+trait ExecutableVariableAction {
+    fn execute(
+        &mut self,
+        sim_connect: &mut SimConnect,
+        variables: &mut MsfsVariableRegistry,
+    ) -> Result<(), Box<dyn Error>>;
+}
 
-    /// When the event occurs, calls the function with event data and the current
-    /// variable value and sets the variable to the returned value.
-    EventDataAndCurrentValueToValue(fn(u32, f64) -> f64),
+struct Map {
+    input_variable_identifier: VariableIdentifier,
+    func: fn(f64) -> f64,
+    output_variable_identifier: VariableIdentifier,
+}
 
-    /// Converts the event occurrence to a value which increases and decreases
-    /// by the given factors.
-    SmoothPress(f64, f64),
+impl Map {
+    fn new(
+        input_variable_identifier: VariableIdentifier,
+        func: fn(f64) -> f64,
+        output_variable_identifier: VariableIdentifier,
+    ) -> Self {
+        Self {
+            input_variable_identifier,
+            func,
+            output_variable_identifier,
+        }
+    }
+}
+
+impl ExecutableVariableAction for Map {
+    fn execute(
+        &mut self,
+        _: &mut SimConnect,
+        variables: &mut MsfsVariableRegistry,
+    ) -> Result<(), Box<dyn Error>> {
+        let value = match variables.read(&self.input_variable_identifier) {
+            Some(value) => value,
+            None => panic!("Attempted to map a variable which is unavailable."),
+        };
+
+        variables.write(&self.output_variable_identifier, (self.func)(value));
+
+        Ok(())
+    }
+}
+
+struct MapMany {
+    input_variable_identifiers: Vec<VariableIdentifier>,
+    func: fn(&[f64]) -> f64,
+    output_variable_identifier: VariableIdentifier,
+}
+
+impl MapMany {
+    fn new(
+        input_variable_identifiers: Vec<VariableIdentifier>,
+        func: fn(&[f64]) -> f64,
+        output_variable_identifier: VariableIdentifier,
+    ) -> Self {
+        Self {
+            input_variable_identifiers,
+            func,
+            output_variable_identifier,
+        }
+    }
+}
+
+impl ExecutableVariableAction for MapMany {
+    fn execute(
+        &mut self,
+        _: &mut SimConnect,
+        variables: &mut MsfsVariableRegistry,
+    ) -> Result<(), Box<dyn Error>> {
+        let values: Vec<f64> = variables
+            .read_many(&self.input_variable_identifiers)
+            .iter()
+            .map(|&x| x.unwrap())
+            .collect();
+        let result = (self.func)(&values);
+        variables.write(&self.output_variable_identifier, result);
+
+        Ok(())
+    }
+}
+
+struct Reduce {
+    input_variable_identifiers: Vec<VariableIdentifier>,
+    func: fn(f64, f64) -> f64,
+    output_variable_identifier: VariableIdentifier,
+}
+
+impl Reduce {
+    fn new(
+        input_variable_identifiers: Vec<VariableIdentifier>,
+        func: fn(f64, f64) -> f64,
+        output_variable_identifier: VariableIdentifier,
+    ) -> Self {
+        assert!(
+            input_variable_identifiers.len() >= 2,
+            "Aggregation requires at least two input variables."
+        );
+
+        Self {
+            input_variable_identifiers,
+            func,
+            output_variable_identifier,
+        }
+    }
+}
+
+impl ExecutableVariableAction for Reduce {
+    fn execute(
+        &mut self,
+        _: &mut SimConnect,
+        variables: &mut MsfsVariableRegistry,
+    ) -> Result<(), Box<dyn Error>> {
+        let values: Vec<f64> = variables
+            .read_many(&self.input_variable_identifiers)
+            .iter()
+            .map(|&x| x.unwrap())
+            .collect();
+        let result = values.into_iter().reduce(self.func).unwrap_or(0.);
+        variables.write(&self.output_variable_identifier, result);
+
+        Ok(())
+    }
+}
+
+pub fn max(accumulator: f64, item: f64) -> f64 {
+    accumulator.max(item)
+}
+
+pub fn min(accumulator: f64, item: f64) -> f64 {
+    accumulator.min(item)
+}
+
+pub trait VariablesToObject {
+    fn variables(&self) -> Vec<Variable>;
+    fn write(&mut self, values: Vec<f64>);
+    fn set_data_on_sim_object(&self, sim_connect: &mut SimConnect) -> Result<(), Box<dyn Error>>;
+}
+
+struct ToObject {
+    target_object: Box<dyn VariablesToObject>,
+    variables: Vec<VariableIdentifier>,
+}
+
+impl ToObject {
+    fn new(target_object: Box<dyn VariablesToObject>, variables: Vec<VariableIdentifier>) -> Self {
+        Self {
+            target_object,
+            variables,
+        }
+    }
+}
+
+#[macro_export]
+macro_rules! set_data_on_sim_object {
+    () => {
+        fn set_data_on_sim_object(
+            &self,
+            sim_connect: &mut SimConnect,
+        ) -> Result<(), Box<dyn Error>> {
+            sim_connect.set_data_on_sim_object(SIMCONNECT_OBJECT_ID_USER, self)?;
+            Ok(())
+        }
+    };
+}
+
+impl ExecutableVariableAction for ToObject {
+    fn execute(
+        &mut self,
+        sim_connect: &mut SimConnect,
+        variables: &mut MsfsVariableRegistry,
+    ) -> Result<(), Box<dyn Error>> {
+        let values: Vec<f64> = self
+            .variables
+            .iter()
+            .map(
+                |variable_identifier| match variables.read(variable_identifier) {
+                    Some(value) => value,
+                    None => {
+                        panic!("Attempted to access variables which are unavailable.")
+                    }
+                },
+            )
+            .collect();
+
+        self.target_object.write(values);
+        self.target_object.set_data_on_sim_object(sim_connect)?;
+
+        Ok(())
+    }
 }
 
 #[derive(Clone, Copy)]
@@ -391,6 +561,58 @@ impl EventToVariableOptions {
     }
 }
 
+/// Declares how to map the given event to a variable value.
+pub enum EventToVariableMapping {
+    /// When the event occurs, sets the variable to the given value.
+    Value(f64),
+
+    /// Maps the event data from a u32 to an f64 without any further processing.
+    EventDataRaw,
+
+    /// Maps the event data from a 32k position to an f64.
+    EventData32kPosition,
+
+    /// When the event occurs, calls the function with event data and sets
+    /// the variable to the returned value.
+    EventDataToValue(fn(u32) -> f64),
+
+    /// When the event occurs, calls the function with the current variable value and
+    /// sets the variable to the returned value.
+    CurrentValueToValue(fn(f64) -> f64),
+
+    /// When the event occurs, calls the function with event data and the current
+    /// variable value and sets the variable to the returned value.
+    EventDataAndCurrentValueToValue(fn(u32, f64) -> f64),
+
+    /// Converts the event occurrence to a value which increases and decreases
+    /// by the given factors.
+    SmoothPress(f64, f64),
+}
+
+enum MessageHandler {
+    EventToVariable(EventToVariable),
+}
+
+impl MessageHandler {
+    fn handle(&mut self, message: &SimConnectRecv, variables: &mut MsfsVariableRegistry) -> bool {
+        match self {
+            MessageHandler::EventToVariable(handler) => handler.handle(message, variables),
+        }
+    }
+
+    fn pre_tick(&mut self, variables: &mut MsfsVariableRegistry, delta: Duration) {
+        match self {
+            MessageHandler::EventToVariable(handler) => handler.pre_tick(variables, delta),
+        }
+    }
+
+    fn post_tick(&mut self, variables: &mut MsfsVariableRegistry) {
+        match self {
+            MessageHandler::EventToVariable(handler) => handler.post_tick(variables),
+        }
+    }
+}
+
 struct EventToVariable {
     event_id: u32,
     event_last_handled: Option<Instant>,
@@ -398,7 +620,6 @@ struct EventToVariable {
     target: VariableIdentifier,
     mapping: EventToVariableMapping,
     options: EventToVariableOptions,
-    to_event: Option<ToEvent>,
 }
 
 impl EventToVariable {
@@ -409,28 +630,12 @@ impl EventToVariable {
         target: VariableIdentifier,
         options: EventToVariableOptions,
     ) -> Result<Self, Box<dyn Error>> {
-        let event_id = sim_connect.map_client_event_to_sim_event(event_name, options.mask)?;
-
         Ok(Self {
-            event_id,
+            event_id: sim_connect.map_client_event_to_sim_event(event_name, options.mask)?,
             event_last_handled: None,
             event_handled_before_tick: false,
             target,
             mapping,
-            to_event: if options.is_bidirectional() {
-                let (to_event_mapping, to_event_write_on) = options.bidirectional.unwrap_or((
-                    VariableToEventMapping::EventDataRaw,
-                    VariableToEventWriteOn::Change,
-                ));
-                Some(ToEvent::new_with_event_id(
-                    target,
-                    to_event_mapping,
-                    to_event_write_on,
-                    event_id,
-                ))
-            } else {
-                None
-            },
             options,
         })
     }
@@ -451,18 +656,6 @@ impl EventToVariable {
                 None => (),
             }
         }
-    }
-
-    fn write_variable_to_event(
-        &mut self,
-        sim_connect: &mut SimConnect,
-        variables: &mut MsfsVariableRegistry,
-    ) -> Result<(), Box<dyn Error>> {
-        if let Some(to_event) = &mut self.to_event {
-            to_event.update(sim_connect, variables)?;
-        }
-
-        Ok(())
     }
 
     fn map_to_value(
@@ -502,11 +695,7 @@ impl EventToVariable {
         }
     }
 
-    fn handle_message(
-        &mut self,
-        message: &SimConnectRecv,
-        variables: &mut MsfsVariableRegistry,
-    ) -> bool {
+    fn handle(&mut self, message: &SimConnectRecv, variables: &mut MsfsVariableRegistry) -> bool {
         match message {
             SimConnectRecv::Event(e) if e.id() == self.event_id => {
                 if self.should_handle_event() {
@@ -523,184 +712,14 @@ impl EventToVariable {
         }
     }
 
-    fn pre_tick(&mut self, delta: Duration, variables: &mut MsfsVariableRegistry) {
+    fn pre_tick(&mut self, variables: &mut MsfsVariableRegistry, delta: Duration) {
         self.adjust_smooth_pressed_value(delta, variables);
     }
 
-    fn post_tick(
-        &mut self,
-        sim_connect: &mut SimConnect,
-        variables: &mut MsfsVariableRegistry,
-    ) -> Result<(), Box<dyn Error>> {
-        self.write_variable_to_event(sim_connect, variables)?;
+    fn post_tick(&mut self, variables: &mut MsfsVariableRegistry) {
         self.set_variable_after_tick(variables);
 
         self.event_handled_before_tick = false;
-        Ok(())
-    }
-}
-
-struct Reduce {
-    input_variable_identifiers: Vec<VariableIdentifier>,
-    func: fn(f64, f64) -> f64,
-    output_variable_identifier: VariableIdentifier,
-}
-
-impl Reduce {
-    fn new(
-        input_variable_identifiers: Vec<VariableIdentifier>,
-        func: fn(f64, f64) -> f64,
-        output_variable_identifier: VariableIdentifier,
-    ) -> Self {
-        assert!(
-            input_variable_identifiers.len() >= 2,
-            "Aggregation requires at least two input variables."
-        );
-
-        Self {
-            input_variable_identifiers,
-            func,
-            output_variable_identifier,
-        }
-    }
-}
-
-impl Updatable for Reduce {
-    fn update(
-        &mut self,
-        _: &mut SimConnect,
-        variables: &mut MsfsVariableRegistry,
-    ) -> Result<(), Box<dyn Error>> {
-        let values = identifiers_to_values(&self.input_variable_identifiers, variables);
-        let result = values.into_iter().reduce(self.func).unwrap_or(0.);
-        variables.write(&self.output_variable_identifier, result);
-
-        Ok(())
-    }
-}
-
-pub fn max(accumulator: f64, item: f64) -> f64 {
-    accumulator.max(item)
-}
-
-pub fn min(accumulator: f64, item: f64) -> f64 {
-    accumulator.min(item)
-}
-
-struct Map {
-    input_variable_identifier: VariableIdentifier,
-    func: fn(f64) -> f64,
-    output_variable_identifier: VariableIdentifier,
-}
-
-impl Map {
-    fn new(
-        input_variable_identifier: VariableIdentifier,
-        func: fn(f64) -> f64,
-        output_variable_identifier: VariableIdentifier,
-    ) -> Self {
-        Self {
-            input_variable_identifier,
-            func,
-            output_variable_identifier,
-        }
-    }
-}
-
-impl Updatable for Map {
-    fn update(
-        &mut self,
-        _: &mut SimConnect,
-        variables: &mut MsfsVariableRegistry,
-    ) -> Result<(), Box<dyn Error>> {
-        let value = match variables.read(&self.input_variable_identifier) {
-            Some(value) => value,
-            None => panic!("Attempted to map a variable which is unavailable."),
-        };
-
-        variables.write(&self.output_variable_identifier, (self.func)(value));
-
-        Ok(())
-    }
-}
-
-struct MapMany {
-    input_variable_identifiers: Vec<VariableIdentifier>,
-    func: fn(&[f64]) -> f64,
-    output_variable_identifier: VariableIdentifier,
-}
-
-impl MapMany {
-    fn new(
-        input_variable_identifiers: Vec<VariableIdentifier>,
-        func: fn(&[f64]) -> f64,
-        output_variable_identifier: VariableIdentifier,
-    ) -> Self {
-        Self {
-            input_variable_identifiers,
-            func,
-            output_variable_identifier,
-        }
-    }
-}
-
-impl Updatable for MapMany {
-    fn update(
-        &mut self,
-        _: &mut SimConnect,
-        variables: &mut MsfsVariableRegistry,
-    ) -> Result<(), Box<dyn Error>> {
-        let values = identifiers_to_values(&self.input_variable_identifiers, variables);
-        let result = (self.func)(&values);
-        variables.write(&self.output_variable_identifier, result);
-
-        Ok(())
-    }
-}
-
-pub trait VariablesToObject {
-    fn variables(&self) -> Vec<Variable>;
-    fn write(&mut self, values: Vec<f64>);
-    fn set_data_on_sim_object(&self, sim_connect: &mut SimConnect) -> Result<(), Box<dyn Error>>;
-}
-
-struct ToObject {
-    target_object: Box<dyn VariablesToObject>,
-    variables: Vec<VariableIdentifier>,
-}
-
-impl ToObject {
-    fn new(target_object: Box<dyn VariablesToObject>, variables: Vec<VariableIdentifier>) -> Self {
-        Self {
-            target_object,
-            variables,
-        }
-    }
-}
-
-impl Updatable for ToObject {
-    fn update(
-        &mut self,
-        sim_connect: &mut SimConnect,
-        variables: &mut MsfsVariableRegistry,
-    ) -> Result<(), Box<dyn Error>> {
-        let values: Vec<f64> = self
-            .variables
-            .iter()
-            .map(
-                |variable_identifier| match variables.read(variable_identifier) {
-                    Some(value) => value,
-                    None => {
-                        panic!("Attempted to access variables which are unavailable.")
-                    }
-                },
-            )
-            .collect();
-
-        self.target_object.write(values);
-        self.target_object.set_data_on_sim_object(sim_connect)?;
-
-        Ok(())
     }
 }
 
@@ -745,8 +764,8 @@ impl ToEvent {
     }
 }
 
-impl Updatable for ToEvent {
-    fn update(
+impl ExecutableVariableAction for ToEvent {
+    fn execute(
         &mut self,
         sim_connect: &mut SimConnect,
         variables: &mut MsfsVariableRegistry,
@@ -776,34 +795,4 @@ impl Updatable for ToEvent {
 
         Ok(())
     }
-}
-
-fn identifiers_to_values(
-    identifiers: &[VariableIdentifier],
-    variables: &mut MsfsVariableRegistry,
-) -> Vec<f64> {
-    identifiers
-        .iter()
-        .map(
-            |variable_identifier| match variables.read(variable_identifier) {
-                Some(value) => value,
-                None => {
-                    panic!("Attempted to access variables which are unavailable.")
-                }
-            },
-        )
-        .collect()
-}
-
-#[macro_export]
-macro_rules! set_data_on_sim_object {
-    () => {
-        fn set_data_on_sim_object(
-            &self,
-            sim_connect: &mut SimConnect,
-        ) -> Result<(), Box<dyn Error>> {
-            sim_connect.set_data_on_sim_object(SIMCONNECT_OBJECT_ID_USER, self)?;
-            Ok(())
-        }
-    };
 }

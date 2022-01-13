@@ -46,8 +46,8 @@ pub trait Aspect {
     /// when the message was handled and false otherwise.
     fn handle_message(
         &mut self,
-        _variables: &mut MsfsVariableRegistry,
         _message: &SimConnectRecv,
+        _variables: &mut MsfsVariableRegistry,
     ) -> bool {
         false
     }
@@ -261,7 +261,7 @@ impl MsfsHandler {
     fn handle_message(&mut self, message: &SimConnectRecv) {
         if let Some(mut variables) = self.variables.take() {
             for aspect in self.aspects.iter_mut() {
-                if aspect.handle_message(&mut variables, message) {
+                if aspect.handle_message(message, &mut variables) {
                     break;
                 }
             }
@@ -554,6 +554,13 @@ impl MsfsVariableRegistry {
             Some(variable_value) => Some(variable_value.read()),
             None => None,
         }
+    }
+
+    fn read_many(&self, identifiers: &[VariableIdentifier]) -> Vec<Option<f64>> {
+        identifiers
+            .iter()
+            .map(|identifier| self.read(identifier))
+            .collect()
     }
 
     fn write(&mut self, identifier: &VariableIdentifier, value: f64) {
