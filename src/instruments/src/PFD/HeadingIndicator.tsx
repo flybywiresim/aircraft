@@ -154,14 +154,14 @@ const QFUIndicator = ({ ILSCourse, heading }: QFUIndicatorProps) => {
             return (
                 <g id="ILSCourseRight">
                     <path className="BlackFill NormalStroke White" d="m100.57 149.68h12.088v6.5516h-12.088z" />
-                    <text id="ILSCourseTextRight" className="FontMedium MiddleAlign Magenta" x="106.95047" y="155.12291">{text}</text>
+                    <text id="ILSCourseTextRight" className="FontMedium MiddleAlign Magenta" x="106.95047" y="155.22305">{text}</text>
                 </g>
             );
         }
         return (
             <g id="ILSCourseLeft">
                 <path className="BlackFill NormalStroke White" d="m26.094 156.18v-6.5516h12.088v6.5516z" />
-                <text id="ILSCourseTextLeft" className="FontMedium MiddleAlign Magenta" x="32.406616" y="155.20277">{text}</text>
+                <text id="ILSCourseTextLeft" className="FontMedium MiddleAlign Magenta" x="32.406616" y="155.22305">{text}</text>
             </g>
         );
     }

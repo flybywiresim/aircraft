@@ -63,16 +63,16 @@ const LandingSystemInfo = ({ displayed }) => {
 
     return (
         <g id="LSInfoGroup">
-            <text id="ILSIdent" className="Magenta FontLarge AlignLeft" x="2.0842726" y="145.11539">{identText}</text>
+            <text id="ILSIdent" className="Magenta FontLarge AlignLeft" x="1.184" y="145.11522">{identText}</text>
             <text id="ILSFreqLeading" className="Magenta FontLarge AlignLeft" x="1.3610243" y="151.11575">{freqTextLeading}</text>
-            <text id="ILSFreqTrailing" className="Magenta FontSmallest AlignLeft" x="13.564656" y="151.24084">{`.${freqTextTrailing}`}</text>
+            <text id="ILSFreqTrailing" className="Magenta FontSmallest AlignLeft" x="12.964463" y="151.24084">{`.${freqTextTrailing}`}</text>
             {hasDME && (
                 <g id="ILSDistGroup">
                     <text className="Magenta AlignLeft" x="1.3685881" y="157.26602">
                         <tspan id="ILSDistLeading" className="FontLarge">{distLeading}</tspan>
                         <tspan id="ILSDistTrailing" className="FontSmallest">{distTrailing}</tspan>
                     </text>
-                    <text className="Cyan FontSmallest AlignLeft" x="18.459091" y="156.82623">NM</text>
+                    <text className="Cyan FontSmallest AlignLeft" x="17.159119" y="157.22606">NM</text>
                 </g>
             )}
         </g>
