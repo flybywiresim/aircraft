@@ -39,12 +39,12 @@ const Dashboard: React.FC<DashboardProps> = (props) => {
                 />
 
                 <div className="flex flex-col w-3/5">
-                    <div className="bg-navy-lighter rounded-2xl ml-3 mb-3 shadow-lg p-6">
+                    <div className="bg-navy-lighter rounded-2xl ml-1 mb-3 shadow-lg p-6">
                         <div className="h-full flex items-top">
                             <div className="w-1/2">
                                 <WeatherWidget name="origin" editIcao="yes" icao={props.simbriefData.departingAirport} />
                             </div>
-                            <div className="border border-gray-500 rounded-full h-60" />
+                            <div className="border border-gray-500 rounded-full h-80" />
                             <div className="w-1/2">
                                 <WeatherWidget name="origin" editIcao="yes" icao={props.simbriefData.arrivingAirport} />
                             </div>
