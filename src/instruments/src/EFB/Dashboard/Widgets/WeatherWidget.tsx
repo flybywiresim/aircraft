@@ -161,7 +161,7 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
                                 <div className="flex justify-center">
                                     <IconGauge className="mb-2" size={35} stroke={1.5} strokeLinejoin="miter" />
                                 </div>
-                                {metar.barometer ? (getBaroValue(baroType)) : 'N/A'}
+                                {metar.barometer ? <BaroValue /> : 'N/A'}
                             </div>
                             <div className="text-lg text-center">
                                 <div className="flex justify-center">
