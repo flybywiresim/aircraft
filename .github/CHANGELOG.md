@@ -111,7 +111,6 @@
 1. [ATHR] Improvement of ATHR laws - @IbrahimK42(IbrahimK42), @aguther (Andreas Guther)
 1. [MISC] Fixed flap configuration in final.flt and runway.flt files -  @donstim (donbikes#4084)
 1. [EFB] Added Reset to Defaults button to EFB throttle calibration page - @frankkopp (Cdr_Maverick#6475)
-1. [MCDU] Fix Take off page THR RED ACC and ENG OUT ACC caluculations - @John-UK (John-UK)
 
 ## 0.7.0
 
