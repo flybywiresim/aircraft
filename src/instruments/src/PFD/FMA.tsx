@@ -735,7 +735,7 @@ const E1Cell = () => {
             <ShowForSeconds timer={9} id={id}>
                 <path className="NormalStroke White" d="m156.13 1.8143v6.0476h-20.81v-6.0476z" />
             </ShowForSeconds>
-            <text className="FontMedium MiddleAlign White" x="146.05305" y="7.1154728">{text}</text>
+            <text className="FontMedium MiddleAlign White" x="145.95334" y="7.1154728">{text}</text>
         </g>
     );
 };
@@ -772,7 +772,7 @@ const E2Cell = () => {
             <ShowForSeconds timer={9} id={id}>
                 <path d="m156.13 9.0715v6.0476h-20.81v-6.0476z" className="NormalStroke White" />
             </ShowForSeconds>
-            <text className="FontMedium MiddleAlign White" style={{ wordSpacing: '-1.9844px' }} x="146.15018" y="14.417698">{text}</text>
+            <text className="FontMedium MiddleAlign White" style={{ wordSpacing: '-1.9844px' }} x="145.95045" y="14.417698">{text}</text>
         </g>
     );
 };
