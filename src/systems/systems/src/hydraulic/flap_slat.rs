@@ -61,7 +61,7 @@ impl FlapSlatHydraulicMotor {
         if self.speed.output().get::<revolution_per_minute>() < Self::MIN_MOTOR_RPM
             && self.speed.output().get::<revolution_per_minute>() > -Self::MIN_MOTOR_RPM
         {
-            self.speed.reset();
+            self.speed.reset(AngularVelocity::default());
         }
     }
 
