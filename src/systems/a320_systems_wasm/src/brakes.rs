@@ -1,7 +1,7 @@
 use std::error::Error;
 use systems::shared::{from_bool, to_bool};
 use systems_wasm::aspects::{
-    max, EventToVariableMapping, EventToVariableOptions, MsfsAspectBuilder, UpdateOn,
+    max, EventToVariableMapping, EventToVariableOptions, ExecuteOn, MsfsAspectBuilder,
     VariableToEventMapping, VariableToEventWriteOn,
 };
 use systems_wasm::Variable;
@@ -71,7 +71,7 @@ pub(super) fn brakes(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Erro
     // The maximum braking demand of all keyboard and controller inputs
     // is calculated and made available as a percentage.
     builder.reduce(
-        UpdateOn::PreTick,
+        ExecuteOn::PreTick,
         vec![
             Variable::Aspect("BRAKES".into()),
             Variable::Aspect("BRAKES_LEFT".into()),
@@ -81,7 +81,7 @@ pub(super) fn brakes(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Erro
         Variable::Named("LEFT_BRAKE_PEDAL_INPUT".into()),
     );
     builder.reduce(
-        UpdateOn::PreTick,
+        ExecuteOn::PreTick,
         vec![
             Variable::Aspect("BRAKES".into()),
             Variable::Aspect("BRAKES_RIGHT".into()),

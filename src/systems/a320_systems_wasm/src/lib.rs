@@ -11,7 +11,7 @@ use flaps::flaps;
 use nose_wheel_steering::nose_wheel_steering;
 use std::error::Error;
 use systems::{failures::FailureType, shared::HydraulicColor};
-use systems_wasm::aspects::{MsfsAspectBuilder, UpdateOn};
+use systems_wasm::aspects::{ExecuteOn, MsfsAspectBuilder};
 use systems_wasm::{MsfsSimulationBuilder, Variable};
 
 #[msfs::gauge(name=systems)]
@@ -151,7 +151,7 @@ fn aircraft_variable_mapping(builder: &mut MsfsAspectBuilder) -> Result<(), Box<
     );
 
     builder.map(
-        UpdateOn::PreTick,
+        ExecuteOn::PreTick,
         Variable::Aircraft("INTERACTIVE POINT OPEN".into(), "Position".into(), 5),
         |value| if value > 0. { 1. } else { 0. },
         Variable::Aspect("FWD_DOOR_CARGO_OPEN_REQ".into()),

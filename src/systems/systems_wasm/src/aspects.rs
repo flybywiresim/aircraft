@@ -1,12 +1,17 @@
 use crate::{
-    f64_to_sim_connect_32k_pos, sim_connect_32k_pos_to_f64, MsfsVariableRegistry, SimulatorAspect,
-    Variable,
+    f64_to_sim_connect_32k_pos, sim_connect_32k_pos_to_f64, Aspect, MsfsVariableRegistry, Variable,
 };
 use msfs::sim_connect::{SimConnect, SimConnectRecv, SIMCONNECT_OBJECT_ID_USER};
 use std::error::Error;
 use std::time::{Duration, Instant};
 use systems::simulation::VariableIdentifier;
 
+/// Type used to configure and build an [Aspect].
+///
+/// It should be noted that the resulting [Aspect] executes its tasks in the order in which they
+/// were declared. Declaration order is important when one action depends on another action.
+/// When e.g. a variable that is mapped should then be written to an event, be sure to
+/// declare the mapping before the event writing.
 pub struct MsfsAspectBuilder<'a, 'b> {
     sim_connect: &'a mut SimConnect<'b>,
     variables: &'a mut MsfsVariableRegistry,
@@ -33,13 +38,99 @@ impl<'a, 'b> MsfsAspectBuilder<'a, 'b> {
         aspect
     }
 
+    /// Initialise the variable with the given value.
     pub fn init_variable(&mut self, variable: Variable, value: f64) {
+        Self::precondition_not_aircraft_variable(&variable);
+
         let identifier = self.variables.register(&variable);
         self.variables.write(&identifier, value);
     }
 
-    /// Converts events to a value which is written to a variable.
-    /// Optionally writes the variable's value back to the event.
+    /// Copy a variable's value to another variable.
+    pub fn copy(&mut self, input: Variable, output: Variable) {
+        Self::precondition_not_aircraft_variable(&output);
+
+        let input = self.variables.register(&input);
+        let output = self.variables.register(&output);
+
+        self.variable_functions.push(VariableFunction::Map(
+            Map::new(input, |value| value, output),
+            ExecuteOn::PreTick,
+        ));
+    }
+
+    /// Map a variable's value to another variable, applying the given function in the process.
+    pub fn map(
+        &mut self,
+        execute_on: ExecuteOn,
+        input: Variable,
+        func: fn(f64) -> f64,
+        output: Variable,
+    ) {
+        Self::precondition_not_aircraft_variable(&output);
+
+        let inputs = self.variables.register(&input);
+        let output = self.variables.register(&output);
+
+        self.variable_functions.push(VariableFunction::Map(
+            Map::new(inputs, func, output),
+            execute_on,
+        ));
+    }
+
+    /// Map a set of variable values to another variable.
+    pub fn map_many(
+        &mut self,
+        execute_on: ExecuteOn,
+        inputs: Vec<Variable>,
+        func: fn(&[f64]) -> f64,
+        output: Variable,
+    ) {
+        Self::precondition_not_aircraft_variable(&output);
+
+        let inputs = self.variables.register_many(&inputs);
+        let output = self.variables.register(&output);
+
+        self.variable_functions.push(VariableFunction::MapMany(
+            MapMany::new(inputs, func, output),
+            execute_on,
+        ));
+    }
+
+    /// Reduce a set of variable values into one output value and write it to a variable.
+    pub fn reduce(
+        &mut self,
+        execute_on: ExecuteOn,
+        inputs: Vec<Variable>,
+        func: fn(f64, f64) -> f64,
+        output: Variable,
+    ) {
+        Self::precondition_not_aircraft_variable(&output);
+
+        let inputs = self.variables.register_many(&inputs);
+        let output = self.variables.register(&output);
+
+        self.variable_functions.push(VariableFunction::Reduce(
+            Reduce::new(inputs, func, output),
+            execute_on,
+        ));
+    }
+
+    /// Write a set of variables to an object.
+    pub fn variables_to_object(&mut self, instance: Box<dyn VariablesToObject>) {
+        let variables = self.variables.register_many(&instance.variables());
+
+        self.variable_functions.push(VariableFunction::ToObject(
+            ToObject::new(instance, variables),
+            ExecuteOn::PostTick,
+        ));
+    }
+
+    /// Convert event occurrences to a variable.
+    /// Optionally write the variable's value back to the event.
+    ///
+    /// If you only care about writing a variable's value to the event,
+    /// then use [Self::variable_to_event].
     pub fn event_to_variable(
         &mut self,
         event_name: &str,
@@ -47,6 +138,8 @@ impl<'a, 'b> MsfsAspectBuilder<'a, 'b> {
         target: Variable,
         configure_options: fn(EventToVariableOptions) -> EventToVariableOptions,
     ) -> Result<(), Box<dyn Error>> {
+        Self::precondition_not_aircraft_variable(&target);
+
         let target = self.variables.register(&target);
 
         self.event_to_variable.push(EventToVariable::new(
@@ -60,6 +153,11 @@ impl<'a, 'b> MsfsAspectBuilder<'a, 'b> {
         Ok(())
     }
 
+    /// Write the variable's value is to an event.
+    ///
+    /// This function should be used when one doesn't care about receiving the event's value through
+    /// [Self::event_to_variable]. If you do, then use [Self::event_to_variable] and the
+    /// [EventToVariableOptions::bidirectional] method.
     pub fn variable_to_event(
         &mut self,
         input: Variable,
@@ -71,82 +169,16 @@ impl<'a, 'b> MsfsAspectBuilder<'a, 'b> {
 
         self.variable_functions.push(VariableFunction::ToEvent(
             ToEvent::new(&mut self.sim_connect, input, mapping, write_on, event_name)?,
-            UpdateOn::PostTick,
+            ExecuteOn::PostTick,
         ));
 
         Ok(())
     }
 
-    /// Reduces variable values into one output value.
-    ///
-    /// Note that this function:
-    /// 1. Cannot access aspect variables defined in other aspects.
-    /// 2. Can only access input aspect variables which are declared prior to calling this function.
-    pub fn reduce(
-        &mut self,
-        update_on: UpdateOn,
-        inputs: Vec<Variable>,
-        func: fn(f64, f64) -> f64,
-        output: Variable,
-    ) {
-        let inputs = self.variables.register_many(&inputs);
-        let output = self.variables.register(&output);
-
-        self.variable_functions.push(VariableFunction::Reduce(
-            Reduce::new(inputs, func, output),
-            update_on,
-        ));
-    }
-
-    pub fn map(
-        &mut self,
-        update_on: UpdateOn,
-        input: Variable,
-        func: fn(f64) -> f64,
-        output: Variable,
-    ) {
-        let inputs = self.variables.register(&input);
-        let output = self.variables.register(&output);
-
-        self.variable_functions.push(VariableFunction::Map(
-            Map::new(inputs, func, output),
-            update_on,
-        ));
-    }
-
-    pub fn copy(&mut self, input: Variable, output: Variable) {
-        let input = self.variables.register(&input);
-        let output = self.variables.register(&output);
-
-        self.variable_functions.push(VariableFunction::Map(
-            Map::new(input, |value| value, output),
-            UpdateOn::PreTick,
-        ));
-    }
-
-    pub fn map_many(
-        &mut self,
-        update_on: UpdateOn,
-        inputs: Vec<Variable>,
-        func: fn(&[f64]) -> f64,
-        output: Variable,
-    ) {
-        let inputs = self.variables.register_many(&inputs);
-        let output = self.variables.register(&output);
-
-        self.variable_functions.push(VariableFunction::MapMany(
-            MapMany::new(inputs, func, output),
-            update_on,
-        ));
-    }
-
-    pub fn variables_to_object(&mut self, instance: Box<dyn VariablesToObject>) {
-        let variables = self.variables.register_many(&instance.variables());
-
-        self.variable_functions.push(VariableFunction::ToObject(
-            ToObject::new(instance, variables),
-            UpdateOn::PostTick,
-        ));
+    fn precondition_not_aircraft_variable(variable: &Variable) {
+        if matches!(variable, Variable::Aircraft(..)) {
+            eprintln!("Writing to variable '{}' is unsupported.", variable);
+        }
     }
 }
 
@@ -169,7 +201,7 @@ impl MsfsAspect {
     fn apply_variable_functions(
         &mut self,
         sim_connect: &mut SimConnect,
-        update_moment: UpdateOn,
+        update_moment: ExecuteOn,
         variables: &mut MsfsVariableRegistry,
     ) -> Result<(), Box<dyn Error>> {
         self.variable_functions
@@ -178,7 +210,7 @@ impl MsfsAspect {
     }
 }
 
-impl SimulatorAspect for MsfsAspect {
+impl Aspect for MsfsAspect {
     fn handle_message(
         &mut self,
         variables: &mut MsfsVariableRegistry,
@@ -199,7 +231,7 @@ impl SimulatorAspect for MsfsAspect {
             .iter_mut()
             .for_each(|ev| ev.pre_tick(delta, variables));
 
-        self.apply_variable_functions(sim_connect, UpdateOn::PreTick, variables)?;
+        self.apply_variable_functions(sim_connect, ExecuteOn::PreTick, variables)?;
 
         Ok(())
     }
@@ -209,7 +241,7 @@ impl SimulatorAspect for MsfsAspect {
         variables: &mut MsfsVariableRegistry,
         sim_connect: &mut SimConnect,
     ) -> Result<(), Box<dyn Error>> {
-        self.apply_variable_functions(sim_connect, UpdateOn::PostTick, variables)?;
+        self.apply_variable_functions(sim_connect, ExecuteOn::PostTick, variables)?;
 
         self.event_to_variable
             .iter_mut()
@@ -220,11 +252,11 @@ impl SimulatorAspect for MsfsAspect {
 }
 
 enum VariableFunction {
-    Map(Map, UpdateOn),
-    MapMany(MapMany, UpdateOn),
-    Reduce(Reduce, UpdateOn),
-    ToObject(ToObject, UpdateOn),
-    ToEvent(ToEvent, UpdateOn),
+    Map(Map, ExecuteOn),
+    MapMany(MapMany, ExecuteOn),
+    Reduce(Reduce, ExecuteOn),
+    ToObject(ToObject, ExecuteOn),
+    ToEvent(ToEvent, ExecuteOn),
 }
 
 impl VariableFunction {
@@ -232,17 +264,17 @@ impl VariableFunction {
         &mut self,
         sim_connect: &mut SimConnect,
         variables: &mut MsfsVariableRegistry,
-        update_moment: UpdateOn,
+        execute_moment: ExecuteOn,
     ) -> Result<(), Box<dyn Error>> {
-        let updatable: (&mut dyn Updatable, UpdateOn) = match self {
-            VariableFunction::Map(func, update_on, ..) => (func, *update_on),
-            VariableFunction::MapMany(func, update_on, ..) => (func, *update_on),
-            VariableFunction::Reduce(func, update_on, ..) => (func, *update_on),
-            VariableFunction::ToObject(func, update_on, ..) => (func, *update_on),
-            VariableFunction::ToEvent(func, update_on, ..) => (func, *update_on),
+        let updatable: (&mut dyn Updatable, ExecuteOn) = match self {
+            VariableFunction::Map(func, execute_on, ..) => (func, *execute_on),
+            VariableFunction::MapMany(func, execute_on, ..) => (func, *execute_on),
+            VariableFunction::Reduce(func, execute_on, ..) => (func, *execute_on),
+            VariableFunction::ToObject(func, execute_on, ..) => (func, *execute_on),
+            VariableFunction::ToEvent(func, execute_on, ..) => (func, *execute_on),
         };
 
-        if updatable.1 == update_moment {
+        if updatable.1 == execute_moment {
             updatable.0.update(sim_connect, variables)?;
         }
 
@@ -259,7 +291,8 @@ trait Updatable {
 }
 
 #[derive(Clone, Copy, PartialEq)]
-pub enum UpdateOn {
+/// Declares when to execute the action.
+pub enum ExecuteOn {
     PreTick,
     PostTick,
 }
@@ -293,6 +326,7 @@ pub enum EventToVariableMapping {
 }
 
 #[derive(Clone, Copy)]
+/// Declares how to map the given variable value to an event value.
 pub enum VariableToEventMapping {
     /// Maps the variable from an f64 to a u32 without any further processing.
     EventDataRaw,
@@ -312,6 +346,7 @@ pub enum VariableToEventWriteOn {
 }
 
 #[derive(Clone, Copy, Default)]
+/// Configurable options for event to variable handling.
 pub struct EventToVariableOptions {
     mask: bool,
     ignore_repeats_for: Duration,
@@ -320,6 +355,7 @@ pub struct EventToVariableOptions {
 }
 
 impl EventToVariableOptions {
+    /// Masks the event, causing the simulator to ignore it, and only this module to receive it.
     pub fn mask(mut self) -> Self {
         self.mask = true;
         self
@@ -340,6 +376,7 @@ impl EventToVariableOptions {
         self
     }
 
+    /// Causes the variable's value to be written back to the event at the configured moment.
     pub fn bidirectional(
         mut self,
         mapping: VariableToEventMapping,

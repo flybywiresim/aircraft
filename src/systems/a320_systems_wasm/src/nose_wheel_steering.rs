@@ -1,7 +1,7 @@
 use std::error::Error;
 use systems::shared::to_bool;
 use systems_wasm::aspects::{
-    EventToVariableMapping, MsfsAspectBuilder, UpdateOn, VariableToEventMapping,
+    EventToVariableMapping, ExecuteOn, MsfsAspectBuilder, VariableToEventMapping,
     VariableToEventWriteOn,
 };
 use systems_wasm::Variable;
@@ -11,14 +11,14 @@ pub(super) fn nose_wheel_steering(builder: &mut MsfsAspectBuilder) -> Result<(),
     builder.init_variable(Variable::Aspect("RAW_RUDDER_PEDAL_POSITION".into()), 0.5);
 
     builder.map(
-        UpdateOn::PreTick,
+        ExecuteOn::PreTick,
         Variable::Named("RUDDER_PEDAL_POSITION".into()),
         |value| ((value + 100.) / 200.),
         Variable::Aspect("RAW_RUDDER_PEDAL_POSITION".into()),
     );
 
     builder.map_many(
-        UpdateOn::PostTick,
+        ExecuteOn::PostTick,
         vec![
             Variable::Named("REALISTIC_TILLER_ENABLED".into()),
             Variable::Aspect("RAW_RUDDER_PEDAL_POSITION".into()),
@@ -73,7 +73,7 @@ pub(super) fn nose_wheel_steering(builder: &mut MsfsAspectBuilder) -> Result<(),
     )?;
 
     builder.map_many(
-        UpdateOn::PostTick,
+        ExecuteOn::PostTick,
         vec![
             Variable::Named("REALISTIC_TILLER_ENABLED".into()),
             Variable::Aspect("RAW_RUDDER_PEDAL_POSITION".into()),
@@ -113,21 +113,21 @@ pub(super) fn nose_wheel_steering(builder: &mut MsfsAspectBuilder) -> Result<(),
     builder.init_variable(Variable::Aspect("RUDDER_POSITION_RAW".into()), 0.5);
 
     builder.map(
-        UpdateOn::PreTick,
+        ExecuteOn::PreTick,
         Variable::Aircraft("RUDDER POSITION".into(), "Position".into(), 0),
         |value| value + 1. / 2.,
         Variable::Aspect("RUDDER_POSITION_RAW".into()),
     );
 
     builder.map(
-        UpdateOn::PostTick,
+        ExecuteOn::PostTick,
         Variable::Aspect("NOSE_WHEEL_POSITION_RAW".into()),
         steering_animation_to_msfs_from_steering_angle,
         Variable::Named("NOSE_WHEEL_POSITION".into()),
     );
 
     builder.map_many(
-        UpdateOn::PostTick,
+        ExecuteOn::PostTick,
         vec![
             Variable::Aspect("NOSE_WHEEL_POSITION_RAW".into()),
             Variable::Aspect("RUDDER_POSITION_RAW".into()),

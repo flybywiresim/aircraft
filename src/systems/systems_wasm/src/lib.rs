@@ -4,15 +4,18 @@ pub mod aspects;
 mod electrical;
 mod failures;
 
-use std::{error::Error, time::Duration};
-
+use crate::aspects::MsfsAspectBuilder;
+use electrical::{MsfsAuxiliaryPowerUnit, MsfsElectricalBuses};
+use failures::Failures;
 use fxhash::FxHashMap;
 use msfs::{
     legacy::{AircraftVariable, NamedVariable},
     sim_connect::{data_definition, Period, SimConnect, SimConnectRecv, SIMCONNECT_OBJECT_ID_USER},
     MSFSEvent,
 };
-
+use std::fmt::{Display, Formatter};
+use std::{error::Error, time::Duration};
+use systems::simulation::InitContext;
 use systems::{
     failures::FailureType,
     simulation::{
@@ -20,13 +23,9 @@ use systems::{
     },
 };
 
-use crate::aspects::MsfsAspectBuilder;
-use electrical::{MsfsAuxiliaryPowerUnit, MsfsElectricalBuses};
-use failures::Failures;
-use systems::simulation::InitContext;
-
-/// An aspect to inject into events in the simulation.
-pub trait SimulatorAspect {
+/// A concern that should be handled by the bridging layer. Examples are
+/// the handling of events which move flaps up and down, triggering of brakes, etc.
+pub trait Aspect {
     /// Attempts to read data with the given identifier.
     /// Returns `Some` when reading was successful, `None` otherwise.
     fn read(&mut self, _identifier: &VariableIdentifier) -> Option<f64> {
@@ -43,7 +42,7 @@ pub trait SimulatorAspect {
         false
     }
 
-    /// Attempts to handle the given SimConnect message, returning true
+    /// Attempts to handle the given message, returning true
     /// when the message was handled and false otherwise.
     fn handle_message(
         &mut self,
@@ -73,6 +72,8 @@ pub trait SimulatorAspect {
     }
 }
 
+/// Type used to configure and build a simulation and a handler which acts as a bridging layer
+/// between the simulation and Microsoft Flight Simulator.
 pub struct MsfsSimulationBuilder<'a, 'b> {
     variable_registry: Option<MsfsVariableRegistry>,
     key_prefix: String,
@@ -80,7 +81,7 @@ pub struct MsfsSimulationBuilder<'a, 'b> {
     sim_connect: &'a mut SimConnect<'b>,
     apu: Option<MsfsAuxiliaryPowerUnit>,
     failures: Option<Failures>,
-    additional_aspects: Vec<Box<dyn SimulatorAspect>>,
+    additional_aspects: Vec<Box<dyn Aspect>>,
 }
 
 impl<'a, 'b> MsfsSimulationBuilder<'a, 'b> {
@@ -102,8 +103,7 @@ impl<'a, 'b> MsfsSimulationBuilder<'a, 'b> {
         mut self,
         aircraft_ctor_fn: U,
     ) -> Result<(Simulation<T>, MsfsHandler), Box<dyn Error>> {
-        let mut aspects: Vec<Box<dyn SimulatorAspect>> =
-            vec![Box::new(self.electrical_buses.unwrap())];
+        let mut aspects: Vec<Box<dyn Aspect>> = vec![Box::new(self.electrical_buses.unwrap())];
         if self.apu.is_some() {
             aspects.push(Box::new(self.apu.unwrap()));
         }
@@ -119,6 +119,8 @@ impl<'a, 'b> MsfsSimulationBuilder<'a, 'b> {
         ))
     }
 
+    /// Adds an aspect. An aspect is a concern that should be handled by the bridging layer.
+    /// The function passed to this method is used to configure the aspect.
     pub fn with_aspect<T: FnOnce(&mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>>>(
         mut self,
         builder_func: T,
@@ -201,17 +203,17 @@ impl<'a, 'b> MsfsSimulationBuilder<'a, 'b> {
     }
 }
 
-/// Used to orchestrate the simulation combined with Microsoft Flight Simulator.
+/// Used to bridge between the simulation and Microsoft Flight Simulator.
 pub struct MsfsHandler {
     variables: Option<MsfsVariableRegistry>,
-    aspects: Vec<Box<dyn SimulatorAspect>>,
+    aspects: Vec<Box<dyn Aspect>>,
     failures: Option<Failures>,
     time: Time,
 }
 impl MsfsHandler {
     fn new(
         variables: MsfsVariableRegistry,
-        aspects: Vec<Box<dyn SimulatorAspect>>,
+        aspects: Vec<Box<dyn Aspect>>,
         failures: Option<Failures>,
         sim_connect: &mut SimConnect,
     ) -> Result<Self, Box<dyn Error>> {
@@ -355,17 +357,25 @@ pub enum Variable {
     Aspect(String),
 }
 
+impl Display for Variable {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        let name = match self {
+            Variable::Aircraft(name, _, index) => Self::indexed_name(name, *index),
+            Variable::Named(name, ..) => format!("L:{}", name),
+            Variable::Aspect(name, ..) => name,
+        };
+
+        write!(f, "{}", name);
+
+        Ok(())
+    }
+}
+
 impl Variable {
-    fn formatted_name(&self) -> String {
+    /// Provides the name that should be used for storing and looking up a [VariableIdentifier].
+    fn lookup_name(&self) -> String {
         match self {
-            Variable::Aircraft(name, _, index, ..) => {
-                let index = *index;
-                if index > 0 {
-                    format!("{}:{}", name, index)
-                } else {
-                    name.into()
-                }
-            }
+            Variable::Aircraft(name, _, index, ..) => Self::indexed_name(name, *index),
             Variable::Named(name, ..) | Variable::Aspect(name, ..) => name.into(),
         }
     }
@@ -377,6 +387,14 @@ impl Variable {
             | Variable::Aspect(name, ..) => {
                 *name = format!("{}{}", prefix, name);
             }
+        }
+    }
+
+    fn indexed_name(name: &str, index: usize) -> String {
+        if index > 0 {
+            format!("{}:{}", name, index)
+        } else {
+            name.into()
         }
     }
 }
@@ -489,8 +507,8 @@ impl MsfsVariableRegistry {
         let registered_type: VariableType = (&identifier).into();
         let target_type: VariableType = variable.into();
         if registered_type != target_type {
-            eprintln!("Attempted to re-register a variable \"{}\" with type {:?}, while it was previously registered with type {:?}.", 
-                      variable.formatted_name(), target_type, registered_type);
+            eprintln!("Attempted to re-register a variable \"{}\" which was previously registered with type {:?}.",
+                      variable, registered_type);
         }
 
         identifier
@@ -504,7 +522,7 @@ impl MsfsVariableRegistry {
     }
 
     fn get_identifier_or_create_variable(&mut self, variable: &Variable) -> VariableIdentifier {
-        match self.name_to_identifier.get(&variable.formatted_name()) {
+        match self.name_to_identifier.get(&variable.lookup_name()) {
             Some(identifier) => *identifier,
             None => {
                 let identifier = *self
@@ -516,7 +534,7 @@ impl MsfsVariableRegistry {
                     .insert(variable.into(), identifier.next());
 
                 self.name_to_identifier
-                    .insert(variable.formatted_name(), identifier);
+                    .insert(variable.lookup_name(), identifier);
 
                 let mut variable = variable.clone();
                 if matches!(variable, Variable::Named(..)) {

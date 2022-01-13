@@ -2,7 +2,7 @@ use msfs::sim_connect;
 use msfs::{sim_connect::SimConnect, sim_connect::SIMCONNECT_OBJECT_ID_USER};
 use std::error::Error;
 use systems_wasm::aspects::{
-    EventToVariableMapping, MsfsAspectBuilder, UpdateOn, VariablesToObject,
+    EventToVariableMapping, ExecuteOn, MsfsAspectBuilder, VariablesToObject,
 };
 use systems_wasm::{set_data_on_sim_object, Variable};
 
@@ -44,7 +44,7 @@ pub(super) fn flaps(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error
     )?;
 
     builder.map(
-        UpdateOn::PreTick,
+        ExecuteOn::PreTick,
         Variable::Named("FLAPS_HANDLE_INDEX".into()),
         |value| value / 4.,
         Variable::Named("FLAPS_HANDLE_PERCENT".into()),
