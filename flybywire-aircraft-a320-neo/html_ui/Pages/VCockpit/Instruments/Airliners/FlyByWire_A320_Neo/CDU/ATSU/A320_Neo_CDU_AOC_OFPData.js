@@ -88,11 +88,9 @@ class CDUAocOfpData {
         }
 
         async function setTargetPax(numberOfPax) {
-
             let paxRemaining = parseInt(numberOfPax);
 
             async function fillStation(station, percent, paxToFill) {
-
                 const pax = Math.min(Math.trunc(percent * paxToFill), station.seats);
                 station.pax = pax;
 
@@ -159,7 +157,6 @@ class CDUAocOfpData {
                     updateView();
                 }
             );
-
         }
 
         function buildTotalCargoValue() {
