@@ -4,7 +4,8 @@
 #include "rtwtypes.h"
 #include "AutopilotLaws_types.h"
 
-class AutopilotLawsModelClass {
+class AutopilotLawsModelClass
+{
  public:
   struct rtDW_LagFilter_AutopilotLaws_T {
     real_T pY;
@@ -52,6 +53,8 @@ class AutopilotLawsModelClass {
   };
 
   struct D_Work_AutopilotLaws_T {
+    real_T DelayInput1_DSTATE;
+    real_T DelayInput1_DSTATE_g;
     real_T Delay_DSTATE;
     real_T Delay_DSTATE_e;
     real_T Delay_DSTATE_h;
@@ -75,8 +78,8 @@ class AutopilotLawsModelClass {
     boolean_T icLoad_f;
     boolean_T wasActive;
     boolean_T wasActive_not_empty;
-    boolean_T wasActive_l;
-    boolean_T wasActive_not_empty_a;
+    boolean_T wasActive_c;
+    boolean_T wasActive_not_empty_p;
     boolean_T nav_gs_deg_not_empty;
     boolean_T pY_not_empty;
     boolean_T limit_not_empty;
@@ -86,9 +89,11 @@ class AutopilotLawsModelClass {
     rtDW_WashoutFilter_AutopilotLaws_T sf_WashoutFilter_fs;
     rtDW_LeadLagFilter_AutopilotLaws_T sf_LeadLagFilter_kq;
     rtDW_LeadLagFilter_AutopilotLaws_T sf_LeadLagFilter_b;
+    rtDW_RateLimiter_AutopilotLaws_T sf_RateLimiter_h;
     rtDW_RateLimiter_AutopilotLaws_T sf_RateLimiter_eb;
     rtDW_WashoutFilter_AutopilotLaws_T sf_WashoutFilter_fo;
     rtDW_LagFilter_AutopilotLaws_T sf_LagFilter_gn;
+    rtDW_LagFilter_AutopilotLaws_T sf_LagFilter_p;
     rtDW_WashoutFilter_AutopilotLaws_T sf_WashoutFilter_l;
     rtDW_LeadLagFilter_AutopilotLaws_T sf_LeadLagFilter_j0;
     rtDW_LeadLagFilter_AutopilotLaws_T sf_LeadLagFilter_oi;
@@ -121,8 +126,10 @@ class AutopilotLawsModelClass {
     rtDW_Chart_AutopilotLaws_T sf_Chart_ba;
     rtDW_RateLimiter_AutopilotLaws_T sf_RateLimiter_d;
     rtDW_LagFilter_AutopilotLaws_T sf_LagFilter_o;
+    rtDW_LagFilter_AutopilotLaws_T sf_LagFilter_mp;
     rtDW_storevalue_AutopilotLaws_T sf_storevalue;
     rtDW_Chart_AutopilotLaws_m_T sf_Chart_b;
+    rtDW_LagFilter_AutopilotLaws_T sf_LagFilter_h2;
     rtDW_Chart_AutopilotLaws_m_T sf_Chart_h;
     rtDW_LagFilter_AutopilotLaws_T sf_LagFilter_h;
     rtDW_LagFilter_AutopilotLaws_T sf_LagFilter_c;
@@ -145,16 +152,18 @@ class AutopilotLawsModelClass {
     real_T ScheduledGain_BreakpointsForDimension1[3];
     real_T ScheduledGain_BreakpointsForDimension1_h[7];
     real_T ScheduledGain_BreakpointsForDimension1_o[7];
-    real_T ScheduledGain_BreakpointsForDimension1_e[5];
     real_T ScheduledGain2_BreakpointsForDimension1[7];
+    real_T ScheduledGain_BreakpointsForDimension1_e[5];
     real_T ScheduledGain_BreakpointsForDimension1_ec[6];
     real_T LagFilter_C1;
     real_T LagFilter2_C1;
     real_T LagFilter_C1_n;
+    real_T LagFilter_C1_a;
     real_T LagFilter1_C1;
+    real_T LagFilter_C1_k;
     real_T LagFilter_C1_l;
     real_T WashoutFilter_C1;
-    real_T LagFilter_C1_a;
+    real_T LagFilter_C1_ai;
     real_T WashoutFilter_C1_e;
     real_T HighPassFilter_C1;
     real_T LowPassFilter_C1;
@@ -188,6 +197,7 @@ class AutopilotLawsModelClass {
     real_T WashoutFilter_C1_d;
     real_T HighPassFilter_C1_i0;
     real_T LowPassFilter_C1_g;
+    real_T LagFilter_C1_g;
     real_T LagFilter_C1_i;
     real_T HighPassFilter_C2;
     real_T LowPassFilter_C2;
@@ -255,13 +265,14 @@ class AutopilotLawsModelClass {
     real_T DiscreteDerivativeVariableTs1_InitialCondition;
     real_T DiscreteDerivativeVariableTs_InitialCondition_c;
     real_T DiscreteDerivativeVariableTs2_InitialCondition;
+    real_T RateLimiterVariableTs1_InitialCondition;
     real_T RateLimiterVariableTs_InitialCondition_p;
     real_T DiscreteTimeIntegratorVariableTs_LowerLimit;
     real_T ScheduledGain_Table[3];
     real_T ScheduledGain_Table_o[7];
     real_T ScheduledGain_Table_e[7];
-    real_T ScheduledGain_Table_p[5];
     real_T ScheduledGain2_Table[7];
+    real_T ScheduledGain_Table_p[5];
     real_T ScheduledGain_Table_l[6];
     real_T DiscreteTimeIntegratorVariableTs_UpperLimit;
     real_T Subsystem_Value;
@@ -287,11 +298,15 @@ class AutopilotLawsModelClass {
     real_T RateLimiterVariableTs_lo;
     real_T RateLimiterVariableTs_lo_k;
     real_T RateLimiterVariableTs_lo_b;
+    real_T RateLimiterVariableTs1_lo;
     real_T RateLimiterVariableTs_lo_o;
     real_T RateLimiterVariableTs_up;
     real_T RateLimiterVariableTs_up_n;
     real_T RateLimiterVariableTs_up_b;
+    real_T RateLimiterVariableTs1_up;
     real_T RateLimiterVariableTs_up_i;
+    real_T DetectChange_vinit;
+    real_T DetectChange1_vinit;
     boolean_T CompareToConstant_const_hx;
     boolean_T CompareToConstant_const_e;
     real_T Gain1_Gain;
@@ -311,7 +326,19 @@ class AutopilotLawsModelClass {
     real_T Saturation_UpperSat;
     real_T Saturation_LowerSat;
     real_T k_beta_Phi_Gain;
+    real_T Gain1_Gain_g;
+    real_T Gain1_Gain_l;
+    real_T Gain_Gain_f;
+    real_T Gain_Gain_g;
     real_T Constant3_Value;
+    real_T Constant3_Value_c;
+    real_T Constant3_Value_d;
+    real_T Gain4_Gain;
+    real_T Gain1_Gain_b;
+    real_T Gain2_Gain_g;
+    real_T Saturation1_UpperSat;
+    real_T Saturation1_LowerSat;
+    real_T Constant3_Value_h;
     real_T beta_Value;
     real_T beta_Value_e;
     real_T beta_Value_b;
@@ -319,30 +346,33 @@ class AutopilotLawsModelClass {
     real_T beta_Value_c;
     real_T Saturation_UpperSat_e;
     real_T Saturation_LowerSat_f;
-    real_T Gain4_Gain;
-    real_T Constant_Value;
-    real_T Saturation_UpperSat_k;
-    real_T Saturation_LowerSat_f3;
-    real_T Gain_Gain_b;
-    real_T Gain5_Gain;
+    real_T Gain7_Gain;
     real_T Gain1_Gain_j;
     real_T Gain_Gain_i;
-    real_T Gain1_Gain_l;
-    real_T Constant_Value_d;
+    real_T Gain1_Gain_lt;
+    real_T beta1_Value;
+    real_T beta1_Value_h;
+    real_T beta1_Value_l;
+    real_T beta1_Value_m;
+    real_T beta1_Value_d;
+    real_T beta1_Value_hy;
+    real_T Gain3_Gain;
+    real_T Constant1_Value;
+    real_T Constant_Value;
     real_T Constant_Value_g;
     real_T Gain6_Gain;
     real_T Switch1_Threshold;
-    real_T Constant1_Value;
-    real_T Gain5_Gain_g;
+    real_T Constant1_Value_g;
+    real_T Gain5_Gain;
     real_T Constant_Value_p;
     real_T Gain6_Gain_j;
     real_T Switch1_Threshold_f;
     real_T Constant1_Value_a;
     real_T Gain5_Gain_l;
     real_T Y_Y0;
-    real_T Gain1_Gain_b;
-    real_T Saturation1_UpperSat;
-    real_T Saturation1_LowerSat;
+    real_T Gain1_Gain_bs;
+    real_T Saturation1_UpperSat_a;
+    real_T Saturation1_LowerSat_i;
     real_T Constant1_Value_h;
     real_T Constant_Value_p0;
     real_T Gain6_Gain_n;
@@ -358,12 +388,12 @@ class AutopilotLawsModelClass {
     real_T Gain2_Gain_h;
     real_T Gain1_Gain_ix;
     real_T Switch1_Threshold_j;
-    real_T Gain_Gain_f;
-    real_T Gain3_Gain;
+    real_T Gain_Gain_fo;
+    real_T Gain3_Gain_l;
     real_T Switch_Threshold;
     real_T Constant_Value_c;
     real_T Constant1_Value_mf;
-    real_T Gain1_Gain_lt;
+    real_T Gain1_Gain_lto;
     real_T Constant2_Value;
     real_T Gain6_Gain_l;
     real_T Switch1_Threshold_o;
@@ -389,7 +419,7 @@ class AutopilotLawsModelClass {
     real_T Gain6_Gain_c;
     real_T Switch1_Threshold_b;
     real_T Constant1_Value_mi;
-    real_T Gain5_Gain_gm;
+    real_T Gain5_Gain_g;
     real_T GainTheta_Gain;
     real_T GainTheta1_Gain;
     real_T Gain_Gain_d;
@@ -417,27 +447,27 @@ class AutopilotLawsModelClass {
     real_T Saturation_LowerSat_n;
     real_T Gain_Gain_h;
     real_T Constant3_Value_p;
-    real_T Constant3_Value_c;
+    real_T Constant3_Value_c2;
     real_T Gain2_Gain_i;
-    real_T Constant3_Value_m;
-    real_T Constant3_Value_if;
-    real_T Gain_Gain_fn;
-    real_T Constant2_Value_l;
     real_T Constant3_Value_nr;
-    real_T Constant3_Value_h;
+    real_T Constant3_Value_hr;
     real_T Gain1_Gain_nr;
     real_T Saturation_UpperSat_o;
     real_T Saturation_LowerSat_o;
-    real_T Gain2_Gain_g;
+    real_T Gain2_Gain_gs;
     real_T Saturation1_UpperSat_g;
     real_T Saturation1_LowerSat_k;
     real_T Gain6_Gain_b;
     real_T Constant3_Value_n1;
     real_T Constant3_Value_o;
-    real_T Constant3_Value_d;
+    real_T Constant3_Value_dk;
     real_T Gain1_Gain_fq;
     real_T Gain_Gain_oc;
     real_T Constant1_Value_e;
+    real_T Constant3_Value_m;
+    real_T Constant3_Value_if;
+    real_T Gain_Gain_fn;
+    real_T Constant2_Value_l;
     real_T Constant3_Value_cd;
     real_T Gain_Gain_cy;
     real_T Constant3_Value_k;
@@ -446,19 +476,27 @@ class AutopilotLawsModelClass {
     real_T zeta_Value_h;
     real_T Gain3_Gain_i;
     real_T Constant1_Value_fk;
-    real_T ROLLLIM1_tableData[5];
-    real_T ROLLLIM1_bp01Data[5];
     real_T Gain_Gain_lu;
+    real_T Gain5_Gain_o;
+    real_T Gain_Gain_b;
+    real_T Saturation_UpperSat_k;
+    real_T Saturation_LowerSat_f3;
+    real_T Constant_Value_a;
+    real_T Gain4_Gain_o;
+    real_T Switch_Threshold_n;
+    real_T Gain_Gain_m3;
+    real_T Saturation_UpperSat_c;
+    real_T Saturation_LowerSat_d;
     real_T Constant2_Value_h;
     real_T Gain1_Gain_kf;
     real_T Saturation_UpperSat_m;
     real_T Saturation_LowerSat_fw;
     real_T Constant_Value_ii;
     real_T Constant1_Value_i;
-    real_T Constant_Value_dh;
+    real_T Constant_Value_d;
     real_T Gain_Gain_ft;
     real_T Saturation_UpperSat_n;
-    real_T Saturation_LowerSat_d;
+    real_T Saturation_LowerSat_d4;
     real_T ftmintoms_Gain;
     real_T kntoms_Gain;
     real_T Saturation_UpperSat_a;
@@ -474,7 +512,7 @@ class AutopilotLawsModelClass {
     real_T Saturation_UpperSat_j;
     real_T Saturation_LowerSat_i;
     real_T Gain_Gain_e3;
-    real_T Gain1_Gain_g;
+    real_T Gain1_Gain_go;
     real_T fpmtoms_Gain_g;
     real_T kntoms_Gain_b;
     real_T Saturation_UpperSat_ei;
@@ -641,7 +679,7 @@ class AutopilotLawsModelClass {
     real_T kntoms_Gain_c;
     real_T Saturation_UpperSat_oz;
     real_T Saturation_LowerSat_ou;
-    real_T Gain_Gain_g;
+    real_T Gain_Gain_gt;
     real_T Gain_Gain_c3;
     real_T fpmtoms_Gain_d;
     real_T kntoms_Gain_cv;
@@ -678,7 +716,7 @@ class AutopilotLawsModelClass {
     real_T Gain_Gain_fnw;
     real_T fpmtoms_Gain_o2;
     real_T kntoms_Gain_hi;
-    real_T Saturation_UpperSat_c;
+    real_T Saturation_UpperSat_cv;
     real_T Saturation_LowerSat_hd;
     real_T Gain_Gain_pp;
     real_T Gain1_Gain_iw;
@@ -727,7 +765,7 @@ class AutopilotLawsModelClass {
     real_T Bias1_Bias;
     real_T Gain_Gain_eyl;
     real_T Constant2_Value_f;
-    real_T Gain4_Gain_o;
+    real_T Gain4_Gain_oy;
     real_T Gain5_Gain_c;
     real_T Saturation_UpperSat_e0a;
     real_T Saturation_LowerSat_m;
@@ -788,27 +826,29 @@ class AutopilotLawsModelClass {
     uint8_T ManualSwitch_CurrentSetting_b;
   };
 
-  void initialize();
-  void step();
-  void terminate();
-  AutopilotLawsModelClass();
-  ~AutopilotLawsModelClass();
-  void setExternalInputs(const ExternalInputs_AutopilotLaws_T* pExternalInputs_AutopilotLaws_T)
+  AutopilotLawsModelClass(AutopilotLawsModelClass const&) =delete;
+  AutopilotLawsModelClass& operator= (AutopilotLawsModelClass const&) & = delete;
+  void setExternalInputs(const ExternalInputs_AutopilotLaws_T *pExternalInputs_AutopilotLaws_T)
   {
     AutopilotLaws_U = *pExternalInputs_AutopilotLaws_T;
   }
 
-  const AutopilotLawsModelClass::ExternalOutputs_AutopilotLaws_T & getExternalOutputs() const
+  const ExternalOutputs_AutopilotLaws_T &getExternalOutputs() const
   {
     return AutopilotLaws_Y;
   }
 
+  void initialize();
+  void step();
+  static void terminate();
+  AutopilotLawsModelClass();
+  ~AutopilotLawsModelClass();
  private:
-  static Parameters_AutopilotLaws_T AutopilotLaws_P;
-  BlockIO_AutopilotLaws_T AutopilotLaws_B;
-  D_Work_AutopilotLaws_T AutopilotLaws_DWork;
   ExternalInputs_AutopilotLaws_T AutopilotLaws_U;
   ExternalOutputs_AutopilotLaws_T AutopilotLaws_Y;
+  BlockIO_AutopilotLaws_T AutopilotLaws_B;
+  D_Work_AutopilotLaws_T AutopilotLaws_DWork;
+  static Parameters_AutopilotLaws_T AutopilotLaws_P;
   static void AutopilotLaws_MATLABFunction(real_T rtu_tau, real_T rtu_zeta, real_T *rty_k2, real_T *rty_k1);
   static void AutopilotLaws_LagFilter(real_T rtu_U, real_T rtu_C1, real_T rtu_dt, real_T *rty_Y,
     rtDW_LagFilter_AutopilotLaws_T *localDW);
@@ -830,7 +870,6 @@ class AutopilotLawsModelClass {
   static void AutopilotLaws_SpeedProtectionSignalSelection(const ap_laws_output *rtu_in, real_T rtu_VS_FD, real_T
     rtu_VS_AP, real_T rtu_VLS_FD, real_T rtu_VLS_AP, real_T rtu_VMAX_FD, real_T rtu_VMAX_AP, real_T rtu_margin, real_T
     *rty_FD, real_T *rty_AP);
-  static void AutopilotLaws_VSLimiter(real_T rtu_u, real_T rtu_V_tas_kn, real_T *rty_y);
   static void AutopilotLaws_SignalEnablerGSTrack(real_T rtu_u, boolean_T rtu_e, real_T *rty_y);
   static void AutopilotLaws_Voter1(real_T rtu_u1, real_T rtu_u2, real_T rtu_u3, real_T *rty_Y);
 };

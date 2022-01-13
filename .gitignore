@@ -45,6 +45,7 @@ node_modules
 /src/instruments/src/EFB/web/
 /src/systems/target/
 /src/systems/a320_hydraulic_simulation_graphs/*.png
+/src/systems/a320_pneumatic_simulation_graph_data/*.txt
 !igniter.config.mjs
 .igniter
 /src/fdr2csv/*.exe
@@ -52,3 +53,5 @@ node_modules
 /src/fdr2csv/build/
 .env
 src/instruments/buildSrc/custom/*
+/flybywire-aircraft-a320-neo/MCDU SERVER/
+/src/mcdu-server/client/build

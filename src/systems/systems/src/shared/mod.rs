@@ -1,10 +1,17 @@
 use crate::{
     electrical::{ElectricalElement, ElectricitySource, Potential},
+    pneumatic::PneumaticValveSignal,
     simulation::UpdateContext,
 };
+
 use num_derive::FromPrimitive;
 use std::{cell::Ref, fmt::Display, time::Duration};
-use uom::si::{f64::*, pressure::hectopascal, thermodynamic_temperature::degree_celsius};
+use uom::si::{
+    f64::*,
+    length::meter,
+    pressure::{hectopascal, pascal},
+    thermodynamic_temperature::{degree_celsius, kelvin},
+};
 
 pub mod low_pass_filter;
 pub mod pid;
@@ -12,6 +19,12 @@ pub mod pid;
 mod random;
 pub use random::*;
 pub mod arinc429;
+
+pub trait ReservoirAirPressure {
+    fn green_reservoir_pressure(&self) -> Pressure;
+    fn blue_reservoir_pressure(&self) -> Pressure;
+    fn yellow_reservoir_pressure(&self) -> Pressure;
+}
 
 pub trait AuxiliaryPowerUnitElectrical:
     ControllerSignal<ContactorSignal> + ApuAvailable + ElectricalElement + ElectricitySource
@@ -85,6 +98,22 @@ pub trait EngineCorrectedN2 {
 
 pub trait EngineUncorrectedN2 {
     fn uncorrected_n2(&self) -> Ratio;
+}
+
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum HydraulicColor {
+    Green,
+    Blue,
+    Yellow,
+}
+impl Display for HydraulicColor {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Green => write!(f, "GREEN"),
+            Self::Blue => write!(f, "BLUE"),
+            Self::Yellow => write!(f, "YELLOW"),
+        }
+    }
 }
 
 /// The common types of electrical buses within Airbus aircraft.
@@ -200,9 +229,18 @@ pub trait ControllerSignal<S> {
     fn signal(&self) -> Option<S>;
 }
 
-pub enum PneumaticValveSignal {
-    Open,
-    Close,
+#[derive(Clone, Copy)]
+pub struct ApuBleedAirValveSignal {
+    target_open_amount: Ratio,
+}
+impl PneumaticValveSignal for ApuBleedAirValveSignal {
+    fn new(target_open_amount: Ratio) -> Self {
+        Self { target_open_amount }
+    }
+
+    fn target_open_amount(&self) -> Ratio {
+        self.target_open_amount
+    }
 }
 
 pub trait PneumaticValve {
@@ -376,6 +414,38 @@ pub fn interpolation(xs: &[f64], ys: &[f64], intermediate_x: f64) -> f64 {
 
 pub fn to_bool(value: f64) -> bool {
     (value - 1.).abs() < f64::EPSILON
+}
+
+pub struct InternationalStandardAtmosphere;
+impl InternationalStandardAtmosphere {
+    const TEMPERATURE_LAPSE_RATE: f64 = 0.0065;
+    const GAS_CONSTANT_DRY_AIR: f64 = 287.04;
+    const GRAVITY_ACCELERATION: f64 = 9.807;
+    const GROUND_PRESSURE_PASCAL: f64 = 101325.;
+    const GROUND_TEMPERATURE_KELVIN: f64 = 288.15;
+
+    fn ground_pressure() -> Pressure {
+        Pressure::new::<pascal>(Self::GROUND_PRESSURE_PASCAL)
+    }
+
+    pub fn pressure_at_altitude(altitude: Length) -> Pressure {
+        Self::ground_pressure()
+            * (1.
+                - Self::TEMPERATURE_LAPSE_RATE * altitude.get::<meter>()
+                    / Self::GROUND_TEMPERATURE_KELVIN)
+                .powf(
+                    Self::GRAVITY_ACCELERATION
+                        / Self::GAS_CONSTANT_DRY_AIR
+                        / Self::TEMPERATURE_LAPSE_RATE,
+                )
+    }
+
+    pub fn temperature_at_altitude(altitude: Length) -> ThermodynamicTemperature {
+        ThermodynamicTemperature::new::<kelvin>(
+            Self::GROUND_TEMPERATURE_KELVIN
+                - Self::TEMPERATURE_LAPSE_RATE * altitude.get::<meter>(),
+        )
+    }
 }
 
 /// The ratio of flow velocity past a boundary to the local speed of sound.

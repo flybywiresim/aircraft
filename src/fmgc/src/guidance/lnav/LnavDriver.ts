@@ -36,7 +36,7 @@ export class LnavDriver implements GuidanceComponent {
         console.log('[FMGC/Guidance] LnavDriver initialized!');
     }
 
-    update(_deltaTime: number): void {
+    update(_: number): void {
         let available = false;
 
         this.ppos.lat = SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude');

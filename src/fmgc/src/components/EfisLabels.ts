@@ -1,6 +1,6 @@
 import { FlightLevel } from '@fmgc/guidance/vnav/verticalFlightPlan/VerticalFlightPlan';
-import { FmgcComponent } from '@fmgc/lib/FmgcComponent';
 import { FlightPlanManager } from '@fmgc/wtsdk';
+import { FmgcComponent } from './FmgcComponent';
 
 export class EfisLabels implements FmgcComponent {
     private lastTransitionAltitude: Feet;

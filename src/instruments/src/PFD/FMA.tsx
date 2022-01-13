@@ -6,14 +6,14 @@ export const FMA = ({ isAttExcessive }) => {
     const activeVerticalMode = getSimVar('L:A32NX_FMA_VERTICAL_MODE', 'enum');
     const sharedModeActive = activeLateralMode === 32 || activeLateralMode === 33 || activeLateralMode === 34 || (activeLateralMode === 20 && activeVerticalMode === 24);
     const engineMessage = getSimVar('L:A32NX_AUTOTHRUST_MODE_MESSAGE', 'enum');
-    const BC3Message = getSimVar('L:A32NX_BC3Message', 'enum');
+    const BC3Message = getBC3Message(isAttExcessive)[0] !== null;
     const AB3Message = (getSimVar('L:A32NX_MachPreselVal', 'mach') !== -1
-        || getSimVar('L:A32NX_SpeedPreselVal', 'knots') !== -1) && BC3Message === 0 && engineMessage === 0;
+        || getSimVar('L:A32NX_SpeedPreselVal', 'knots') !== -1) && BC3Message && engineMessage === 0;
 
     let secondBorder: string;
     if (sharedModeActive && !isAttExcessive) {
         secondBorder = '';
-    } else if (BC3Message !== 0) {
+    } else if (BC3Message) {
         secondBorder = 'm66.241 0.33732v15.766';
     } else {
         secondBorder = 'm66.241 0.33732v20.864';
@@ -27,11 +27,14 @@ export const FMA = ({ isAttExcessive }) => {
     }
 
     return (
-        <g id="FMA" className="NormalStroke Grey">
-            <path d={firstBorder} />
-            <path d={secondBorder} />
-            <path d="m102.52 0.33732v20.864" />
-            <path d="m133.72 0.33732v20.864" />
+        <g id="FMA">
+            <g className="NormalStroke Grey">
+                <path d={firstBorder} />
+                <path d={secondBorder} />
+                <path d="m102.52 0.33732v20.864" />
+                <path d="m133.72 0.33732v20.864" />
+            </g>
+
             <Row1 isAttExcessive={isAttExcessive} />
             <Row2 isAttExcessive={isAttExcessive} />
             <Row3 isAttExcessive={isAttExcessive} />
@@ -75,6 +78,7 @@ const Row3 = ({ isAttExcessive }) => (
                 <D3Cell />
             </>
         )}
+        <BC3Cell isAttExcessive={isAttExcessive} />
         <E3Cell />
     </g>
 );
@@ -264,9 +268,9 @@ const B1Cell = () => {
     case 41:
         text = 'SRS';
         break;
-    // case 8:
-    //     text = 'TCAS';
-    //     break;
+    case 50:
+        text = 'TCAS';
+        break;
     // case 9:
     //     text = 'FINAL';
     //     break;
@@ -342,10 +346,15 @@ const B1Cell = () => {
     const inSpeedProtection = inProtection && (activeVerticalMode === 14 || activeVerticalMode === 15);
     const inModeReversion = getSimVar('L:A32NX_FMA_MODE_REVERSION', 'bool');
 
+    const tcasModeDisarmedMessage = getSimVar('L:A32NX_AUTOPILOT_TCAS_MESSAGE_DISARM', 'bool');
+
+    const boxClassName = (inSpeedProtection || inModeReversion) ? 'NormalStroke None' : 'NormalStroke White';
+    const boxPathString = activeVerticalMode === 50 && tcasModeDisarmedMessage ? 'm34.656 1.8143h29.918v13.506h-29.918z' : 'm34.656 1.8143h29.918v6.0476h-29.918z';
+
     return (
         <g>
             <ShowForSeconds timer={10} id={activeVerticalMode}>
-                <path className={`${(inSpeedProtection || inModeReversion) ? 'NormalStroke None' : 'NormalStroke White'}`} d="m34.656 1.8143h29.918v6.0476h-29.918z" />
+                <path className={boxClassName} d={boxPathString} />
             </ShowForSeconds>
             {inSpeedProtection && <path className="NormalStroke Amber BlinkInfinite" d="m34.656 1.8143h29.918v6.0476h-29.918z" />}
             {inModeReversion && <path className="NormalStroke White BlinkInfinite" d="m34.656 1.8143h29.918v6.0476h-29.918z" />}
@@ -535,6 +544,82 @@ const BC1Cell = () => {
             <text className="FontMedium MiddleAlign Green" x="67.9795" y="6.8893085">{text}</text>
         </g>
     );
+};
+
+const getBC3Message = (isAttExcessive: boolean) => {
+    const armedVerticalBitmask = getSimVar('L:A32NX_FMA_VERTICAL_ARMED', 'number');
+    const TCASArmed = (armedVerticalBitmask >> 6) & 1;
+
+    const trkFpaDeselectedTCAS = getSimVar('L:A32NX_AUTOPILOT_TCAS_MESSAGE_TRK_FPA_DESELECTION', 'bool');
+    const tcasRaInhibited = getSimVar('L:A32NX_AUTOPILOT_TCAS_MESSAGE_RA_INHIBITED', 'bool');
+
+    let text: string;
+    let className: string;
+    // All currently unused message are set to false
+    if (false) {
+        text = 'MAN PITCH TRIM ONLY';
+        className = 'Red Blink9Seconds';
+    } else if (false) {
+        text = 'USE MAN PITCH TRIM';
+        className = 'PulseAmber9Seconds Amber';
+    } else if (false) {
+        text = 'FOR GA: SET TOGA';
+        className = 'PulseAmber9Seconds Amber';
+    } else if (TCASArmed && !isAttExcessive) {
+        text = '  TCAS                ';
+        className = 'Cyan';
+    } else if (false) {
+        text = 'DISCONNECT AP FOR LDG';
+        className = 'PulseAmber9Seconds Amber';
+    } else if (tcasRaInhibited && !isAttExcessive) {
+        text = 'TCAS RA INHIBITED';
+        className = 'White';
+    } else if (trkFpaDeselectedTCAS && !isAttExcessive) {
+        text = 'TRK FPA DESELECTED';
+        className = 'White';
+    } else if (false) {
+        text = 'SET GREEN DOT SPEED';
+        className = 'White';
+    } else if (false) {
+        text = 'T/D REACHED';
+        className = 'White';
+    } else if (false) {
+        text = 'MORE DRAG';
+        className = 'White';
+    } else if (false) {
+        text = 'CHECK SPEED MODE';
+        className = 'White';
+    } else if (false) {
+        text = 'CHECK APPR SELECTION';
+        className = 'White';
+    } else if (false) {
+        text = 'TURN AREA EXCEEDANCE';
+        className = 'White';
+    } else if (false) {
+        text = 'SET HOLD SPEED';
+        className = 'White';
+    } else if (false) {
+        text = 'VERT DISCONT AHEAD';
+        className = 'Amber';
+    } else if (false) {
+        text = 'FINAL APP SELECTED';
+        className = 'White';
+    } else {
+        return [null, null];
+    }
+
+    return [text, className];
+};
+
+const BC3Cell = ({ isAttExcessive }) => {
+    const [text, className] = getBC3Message(isAttExcessive);
+
+    if (text !== null) {
+        return (
+            <text className={`FontMedium MiddleAlign ${className}`} x="67.801949" y="21.481308" xmlSpace="preserve">{text}</text>
+        );
+    }
+    return null;
 };
 
 const D1D2Cell = () => {

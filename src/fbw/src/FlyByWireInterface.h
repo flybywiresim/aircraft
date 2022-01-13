@@ -3,6 +3,7 @@
 #include <MSFS/Legacy/gauges.h>
 #include <SimConnect.h>
 
+#include "AdditionalData.h"
 #include "AnimationAileronHandler.h"
 #include "AutopilotLaws.h"
 #include "AutopilotStateMachine.h"
@@ -18,6 +19,7 @@
 #include "SimConnectInterface.h"
 #include "SpoilersHandler.h"
 #include "ThrottleAxisMapping.h"
+#include "ThrustLimits.h"
 
 class FlyByWireInterface {
  public:
@@ -40,16 +42,12 @@ class FlyByWireInterface {
   int currentApproachCapability = 0;
   double previousApproachCapabilityUpdateTime = 0;
 
-  double maxSimulationRate = 4;
   bool simulationRateReductionEnabled = true;
   bool limitSimulationRateByPerformance = true;
 
   double targetSimulationRate = 1;
   bool targetSimulationRateModified = false;
 
-  bool flightDirectorSmoothingEnabled = false;
-  double flightDirectorSmoothingFactor = 0;
-  double flightDirectorSmoothingLimit = 0;
   bool customFlightGuidanceEnabled = false;
   bool gpsCourseToSteerEnabled = false;
   bool autopilotStateMachineEnabled = false;
@@ -58,8 +56,14 @@ class FlyByWireInterface {
   bool autoThrustEnabled = false;
   bool tailstrikeProtectionEnabled = true;
 
+  bool wasTcasEngaged = false;
+
   bool pauseDetected = false;
   bool wasInSlew = false;
+
+  double autothrustThrustLimitReverse = -45;
+  bool autothrustThrustLimitUseExternal = false;
+  bool autothrustThrustLimitUseExternalFlex = false;
 
   bool flightDirectorConnectLatch_1 = false;
   bool flightDirectorConnectLatch_2 = false;
@@ -101,10 +105,16 @@ class FlyByWireInterface {
   AutothrustModelClass::ExternalInputs_Autothrust_T autoThrustInput = {};
   athr_output autoThrustOutput;
 
+  ThrustLimitsModelClass thrustLimits;
+  ThrustLimitsModelClass::ExternalInputs_ThrustLimits_T thrustLimitsInput = {};
+
   InterpolatingLookupTable throttleLookupTable;
 
   std::unique_ptr<LocalVariable> idLoggingFlightControlsEnabled;
   std::unique_ptr<LocalVariable> idLoggingThrottlesEnabled;
+
+  std::unique_ptr<LocalVariable> idMinimumSimulationRate;
+  std::unique_ptr<LocalVariable> idMaximumSimulationRate;
 
   std::unique_ptr<LocalVariable> idPerformanceWarningActive;
 
@@ -115,6 +125,8 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idSideStickPositionX;
   std::unique_ptr<LocalVariable> idSideStickPositionY;
   std::unique_ptr<LocalVariable> idRudderPedalPosition;
+  std::unique_ptr<LocalVariable> idRudderPedalAnimationPosition;
+  std::unique_ptr<LocalVariable> idAutopilotNosewheelDemand;
 
   std::unique_ptr<LocalVariable> idSpeedAlphaProtection;
   std::unique_ptr<LocalVariable> idSpeedAlphaMax;
@@ -132,6 +144,10 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idFmaApproachCapability;
   std::unique_ptr<LocalVariable> idFmaTripleClick;
   std::unique_ptr<LocalVariable> idFmaModeReversion;
+
+  std::unique_ptr<LocalVariable> idAutopilotTcasMessageDisarm;
+  std::unique_ptr<LocalVariable> idAutopilotTcasMessageRaInhibited;
+  std::unique_ptr<LocalVariable> idAutopilotTcasMessageTrkFpaDeselection;
 
   std::unique_ptr<LocalVariable> idFlightDirectorBank;
   std::unique_ptr<LocalVariable> idFlightDirectorPitch;
@@ -155,19 +171,31 @@ class FlyByWireInterface {
 
   std::unique_ptr<LocalVariable> idFcuLocModeActive;
   std::unique_ptr<LocalVariable> idFcuApprModeActive;
+  std::unique_ptr<LocalVariable> idFcuHeadingSync;
   std::unique_ptr<LocalVariable> idFcuModeReversionActive;
   std::unique_ptr<LocalVariable> idFcuModeReversionTrkFpaActive;
+  std::unique_ptr<LocalVariable> idFcuModeReversionTargetFpm;
 
   std::unique_ptr<LocalVariable> idFlightGuidanceAvailable;
   std::unique_ptr<LocalVariable> idFlightGuidanceCrossTrackError;
   std::unique_ptr<LocalVariable> idFlightGuidanceTrackAngleError;
   std::unique_ptr<LocalVariable> idFlightGuidancePhiCommand;
+  std::unique_ptr<LocalVariable> idFlightGuidancePhiLimit;
   std::unique_ptr<LocalVariable> idFlightGuidanceRequestedVerticalMode;
   std::unique_ptr<LocalVariable> idFlightGuidanceTargetAltitude;
   std::unique_ptr<LocalVariable> idFlightGuidanceTargetVerticalSpeed;
   std::unique_ptr<LocalVariable> idFmRnavAppSelected;
   std::unique_ptr<LocalVariable> idFmFinalCanEngage;
 
+  std::unique_ptr<LocalVariable> idTcasFault;
+  std::unique_ptr<LocalVariable> idTcasMode;
+  std::unique_ptr<LocalVariable> idTcasTaOnly;
+  std::unique_ptr<LocalVariable> idTcasState;
+  std::unique_ptr<LocalVariable> idTcasRaCorrective;
+  std::unique_ptr<LocalVariable> idTcasTargetGreenMin;
+  std::unique_ptr<LocalVariable> idTcasTargetGreenMax;
+  std::unique_ptr<LocalVariable> idTcasTargetRedMin;
+  std::unique_ptr<LocalVariable> idTcasTargetRedMax;
 
   std::unique_ptr<LocalVariable> idFwcFlightPhase;
   std::unique_ptr<LocalVariable> idFmgcFlightPhase;
@@ -197,6 +225,7 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idAutothrustReverse_2;
   std::unique_ptr<LocalVariable> idAutothrustThrustLimitType;
   std::unique_ptr<LocalVariable> idAutothrustThrustLimit;
+  std::unique_ptr<LocalVariable> idAutothrustThrustLimitREV;
   std::unique_ptr<LocalVariable> idAutothrustThrustLimitIDLE;
   std::unique_ptr<LocalVariable> idAutothrustThrustLimitCLB;
   std::unique_ptr<LocalVariable> idAutothrustThrustLimitMCT;
@@ -216,6 +245,18 @@ class FlyByWireInterface {
   InterpolatingLookupTable idThrottlePositionLookupTable3d;
 
   std::vector<std::shared_ptr<ThrottleAxisMapping>> throttleAxis;
+
+  AdditionalData additionalData = {};
+  std::unique_ptr<LocalVariable> idParkBrakeLeverPos;
+  std::unique_ptr<LocalVariable> idBrakePedalLeftPos;
+  std::unique_ptr<LocalVariable> idBrakePedalRightPos;
+  std::unique_ptr<LocalVariable> idAutobrakeArmedMode;
+  std::unique_ptr<LocalVariable> idAutobrakeDecelLight;
+  std::unique_ptr<LocalVariable> idHydraulicGreenPressure;
+  std::unique_ptr<LocalVariable> idHydraulicBluePressure;
+  std::unique_ptr<LocalVariable> idHydraulicYellowPressure;
+  std::unique_ptr<LocalVariable> idMasterWarning;
+  std::unique_ptr<LocalVariable> idMasterCaution;
 
   EngineData engineData = {};
   std::unique_ptr<LocalVariable> engineEngine1N2;
@@ -283,17 +324,21 @@ class FlyByWireInterface {
   bool handleSimulationRate(double sampleTime);
 
   bool updateEngineData(double sampleTime);
+  bool updateAdditionalData(double sampleTime);
 
   bool updateAutopilotStateMachine(double sampleTime);
   bool updateAutopilotLaws(double sampleTime);
   bool updateFlyByWire(double sampleTime);
+  bool updateThrustLimits(double sampleTime);
   bool updateAutothrust(double sampleTime);
 
   bool updateSpoilers(double sampleTime);
 
   bool updateAltimeterSetting(double sampleTime);
 
-  double smoothFlightDirector(double sampleTime, double factor, double limit, double currentValue, double targetValue);
-
   double getHeadingAngleError(double u1, double u2);
+
+  double getTcasModeAvailable();
+
+  double getTcasAdvisoryState();
 };
