@@ -158,7 +158,8 @@ impl<'a, 'b> MsfsAspectBuilder<'a, 'b> {
         Ok(event_id)
     }
 
-    /// Write the variable's value to an event.
+    /// Write the variable's value to an event. If you use [Self::event_to_variable] for the same
+    /// event, then you should use [Self::variable_to_event_id] instead.
     pub fn variable_to_event(
         &mut self,
         input: Variable,
@@ -176,7 +177,8 @@ impl<'a, 'b> MsfsAspectBuilder<'a, 'b> {
         Ok(())
     }
 
-    /// Write the variable's value to an event with the given event id.
+    /// Write the variable's value to an event with the given event id. This function should be used
+    /// when you previously acquired an event id using [Self::event_to_variable].
     pub fn variable_to_event_id(
         &mut self,
         input: Variable,
