@@ -88,6 +88,13 @@
   stroke-linejoin: round;
 }
 
+.TextOutline {
+  paint-order: stroke fill markers;
+
+  stroke-width: 0.05mm;
+  stroke: $display-background !important;
+}
+
 .FontLargest {
   font-size: 7px;
 }
