@@ -53,13 +53,13 @@ export const VerticalSpeedIndicator = ({ radioAlt, verticalSpeed }: VerticalSpee
                     <path d="m151.84 117.39h-1.9151v1.4615h1.9151z" />
                     <path d="m151.84 127.59h-1.9151v1.2095h1.9151z" />
                 </g>
-                <g className="NormalStroke White">
-                    <path d="m149.92 67.216h1.7135" />
-                    <path d="m151.84 48.569h-1.9151" />
-                    <path d="m151.84 38.489h-1.9151" />
-                    <path d="m149.92 94.43h1.7135" />
-                    <path d="m151.84 113.08h-1.9151" />
-                    <path d="m151.84 123.16h-1.9151" />
+                <g className="SmallStroke White">
+                    <path d="m149.92 67.216h1.7135h0" />
+                    <path d="m151.84 48.569h-1.9151h0" />
+                    <path d="m151.84 38.489h-1.9151h0" />
+                    <path d="m149.92 94.43h1.7135h0" />
+                    <path d="m151.84 113.08h-1.9151h0" />
+                    <path d="m151.84 123.16h-1.9151h0" />
                 </g>
                 <g className="FontSmallest MiddleAlign Fill White">
                     <text x="148.47067" y="109.72845">1</text>
