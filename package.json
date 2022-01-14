@@ -14,6 +14,7 @@
     "build:failures": "rollup -c src/failures/rollup.config.js",
     "build:fmgc": "rollup -c src/fmgc/rollup.config.js",
     "build:tcas": "rollup -c src/tcas/rollup.config.js",
+    "build:pfd": "cd src/PFDV2 && npx rollup -c",
     "build:mcdu-client": "rollup -c src/mcdu-server/client/rollup.config.js",
     "build:mcdu-server": "pkg src/mcdu-server/index.js --target node12-win-x64 --no-bytecode --public-packages \"*\" --public --output \"flybywire-aircraft-a320-neo/MCDU SERVER/server.exe\""
   },
@@ -50,7 +51,7 @@
     "babel-plugin-module-resolver": "^4.1.0",
     "dotenv": "^8.2.0",
     "es5lib": "^0.1.1",
-    "eslint": "7.21.0",
+    "eslint": "^7.21.0",
     "eslint-plugin-import": "^2.25.3",
     "eslint-plugin-jest": "^24.4.0",
     "eslint-plugin-jsx-a11y": "^6.5.1",
