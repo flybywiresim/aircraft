@@ -1,43 +1,7 @@
 'use strict';
 
 module.exports = {
-    root: true,
-    env: { browser: true },
-    extends: [
-        '@flybywiresim/eslint-config',
-        'plugin:jest/recommended',
-        'plugin:jest/style',
-    ],
-    plugins: ['@typescript-eslint'],
-    parser: '@typescript-eslint/parser',
-    ignorePatterns: [
-        '/flybywire-aircraft-a320-neo/html_ui/JS/fmgc/**',
-        '/flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/**',
-        'typings/**',
-        'PFDV2/node_modules/**',
-        'PFDV2/types/**',
-        'msfs-avionics-mirror/**',
-        'mcdu-server/client/build/**',
-    ],
-    parserOptions: {
-        ecmaVersion: 2021,
-        sourceType: 'script',
-        requireConfigFile: false,
-    },
-    settings: { 'import/resolver': { node: { extensions: ['.js', '.mjs', '.jsx', '.ts', '.tsx'] } } },
-    overrides: [
-        {
-            files: ['*.jsx', '*.tsx'],
-            parserOptions: {
-                sourceType: 'module',
-                ecmaFeatures: { jsx: true },
-            },
-        },
-        {
-            files: ['*.mjs', '*.ts', '*.d.ts'],
-            parserOptions: { sourceType: 'module' },
-        },
-    ],
+
     // overrides airbnb, use sparingly
     rules: {
         'no-bitwise': 'off',
@@ -54,7 +18,7 @@ module.exports = {
         'no-restricted-syntax': 'off',
         'quote-props': ['error', 'consistent-as-needed'],
         'strict': ['error', 'global'],
-
+        'react/style-prop-object': 'off',
         'no-case-declarations': 'off',
 
         'no-plusplus': 'off',
@@ -113,6 +77,7 @@ module.exports = {
         'jsx-a11y/anchor-is-valid': 'off',
         'object-curly-newline': ['error', { multiline: true }],
         'linebreak-style': 'off',
+        'react/no-unknown-property': 'off',
 
         // allow typescript overloads
         'no-redeclare': 'off',
