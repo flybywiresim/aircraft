@@ -101,12 +101,13 @@ class CDUAocOfpData {
         async function setTargetCargo(numberOfPax, simbriefCargo) {
             const bagWeight = numberOfPax * 20;
             const maxLoadInCargoHold = 9435; // from flight_model.cfg
+            const maxTotalPayload = 21800; // from flight_model.cfg
             let loadableCargoWeight = undefined;
 
             if (simbriefCargo == 0) {
                 loadableCargoWeight = bagWeight;
-            } else if ((simbriefCargo + bagWeight) > maxLoadInCargoHold) {
-                loadableCargoWeight = maxLoadInCargoHold;
+            } else if ((simbriefCargo + bagWeight + (numberOfPax * PAX_WEIGHT)) > maxTotalPayload) {
+                loadableCargoWeight = maxTotalPayload - (numberOfPax * PAX_WEIGHT);
             } else {
                 loadableCargoWeight = simbriefCargo + bagWeight;
             }
