@@ -1,6 +1,7 @@
 use crate::{
     f64_to_sim_connect_32k_pos, sim_connect_32k_pos_to_f64, Aspect, MsfsVariableRegistry, Variable,
 };
+use enum_dispatch::enum_dispatch;
 use msfs::sim_connect::{SimConnect, SimConnectRecv, SIMCONNECT_OBJECT_ID_USER};
 use std::error::Error;
 use std::time::{Duration, Instant};
@@ -16,7 +17,7 @@ pub struct MsfsAspectBuilder<'a, 'b> {
     sim_connect: &'a mut SimConnect<'b>,
     variables: &'a mut MsfsVariableRegistry,
     message_handlers: Vec<MessageHandler>,
-    actions: Vec<VariableAction>,
+    actions: Vec<(VariableAction, ExecuteOn)>,
 }
 
 impl<'a, 'b> MsfsAspectBuilder<'a, 'b> {
@@ -53,8 +54,8 @@ impl<'a, 'b> MsfsAspectBuilder<'a, 'b> {
         let input = self.variables.register(&input);
         let output = self.variables.register(&output);
 
-        self.actions.push(VariableAction::Map(
-            Map::new(input, |value| value, output),
+        self.actions.push((
+            Map::new(input, |value| value, output).into(),
             ExecuteOn::PreTick,
         ));
     }
@@ -72,10 +73,8 @@ impl<'a, 'b> MsfsAspectBuilder<'a, 'b> {
         let inputs = self.variables.register(&input);
         let output = self.variables.register(&output);
 
-        self.actions.push(VariableAction::Map(
-            Map::new(inputs, func, output),
-            execute_on,
-        ));
+        self.actions
+            .push((Map::new(inputs, func, output).into(), execute_on));
     }
 
     /// Map a set of variable values to another variable.
@@ -91,10 +90,8 @@ impl<'a, 'b> MsfsAspectBuilder<'a, 'b> {
         let inputs = self.variables.register_many(&inputs);
         let output = self.variables.register(&output);
 
-        self.actions.push(VariableAction::MapMany(
-            MapMany::new(inputs, func, output),
-            execute_on,
-        ));
+        self.actions
+            .push((MapMany::new(inputs, func, output).into(), execute_on));
     }
 
     /// Reduce a set of variable values into one output value and write it to a variable.
@@ -111,18 +108,16 @@ impl<'a, 'b> MsfsAspectBuilder<'a, 'b> {
         let inputs = self.variables.register_many(&inputs);
         let output = self.variables.register(&output);
 
-        self.actions.push(VariableAction::Reduce(
-            Reduce::new(inputs, init, func, output),
-            execute_on,
-        ));
+        self.actions
+            .push((Reduce::new(inputs, init, func, output).into(), execute_on));
     }
 
     /// Write a set of variables to an object.
     pub fn variables_to_object(&mut self, instance: Box<dyn VariablesToObject>) {
         let variables = self.variables.register_many(&instance.variables());
 
-        self.actions.push(VariableAction::ToObject(
-            ToObject::new(instance, variables),
+        self.actions.push((
+            ToObject::new(instance, variables).into(),
             ExecuteOn::PostTick,
         ));
     }
@@ -152,8 +147,7 @@ impl<'a, 'b> MsfsAspectBuilder<'a, 'b> {
 
         let event_id = event_to_variable.event_id;
 
-        self.message_handlers
-            .push(MessageHandler::EventToVariable(event_to_variable));
+        self.message_handlers.push(event_to_variable.into());
 
         Ok(event_id)
     }
@@ -169,8 +163,8 @@ impl<'a, 'b> MsfsAspectBuilder<'a, 'b> {
     ) -> Result<(), Box<dyn Error>> {
         let input = self.variables.register(&input);
 
-        self.actions.push(VariableAction::ToEvent(
-            ToEvent::new(&mut self.sim_connect, input, mapping, write_on, event_name)?,
+        self.actions.push((
+            ToEvent::new(&mut self.sim_connect, input, mapping, write_on, event_name)?.into(),
             ExecuteOn::PostTick,
         ));
 
@@ -188,8 +182,8 @@ impl<'a, 'b> MsfsAspectBuilder<'a, 'b> {
     ) {
         let input = self.variables.register(&input);
 
-        self.actions.push(VariableAction::ToEvent(
-            ToEvent::new_with_event_id(input, mapping, write_on, event_id),
+        self.actions.push((
+            ToEvent::new_with_event_id(input, mapping, write_on, event_id).into(),
             ExecuteOn::PostTick,
         ));
     }
@@ -203,11 +197,14 @@ impl<'a, 'b> MsfsAspectBuilder<'a, 'b> {
 
 pub struct MsfsAspect {
     message_handlers: Vec<MessageHandler>,
-    actions: Vec<VariableAction>,
+    actions: Vec<(VariableAction, ExecuteOn)>,
 }
 
 impl MsfsAspect {
-    fn new(message_handlers: Vec<MessageHandler>, actions: Vec<VariableAction>) -> Self {
+    fn new(
+        message_handlers: Vec<MessageHandler>,
+        actions: Vec<(VariableAction, ExecuteOn)>,
+    ) -> Self {
         Self {
             message_handlers,
             actions,
@@ -222,7 +219,13 @@ impl MsfsAspect {
     ) -> Result<(), Box<dyn Error>> {
         self.actions
             .iter_mut()
-            .try_for_each(|func| func.execute(sim_connect, variables, execute_moment))
+            .try_for_each(|(action, execute_on)| {
+                if *execute_on == execute_moment {
+                    action.execute(sim_connect, variables)?;
+                }
+
+                Ok(())
+            })
     }
 }
 
@@ -274,42 +277,22 @@ pub enum ExecuteOn {
     PostTick,
 }
 
+#[enum_dispatch]
 enum VariableAction {
-    Map(Map, ExecuteOn),
-    MapMany(MapMany, ExecuteOn),
-    Reduce(Reduce, ExecuteOn),
-    ToObject(ToObject, ExecuteOn),
-    ToEvent(ToEvent, ExecuteOn),
+    Map,
+    MapMany,
+    Reduce,
+    ToObject,
+    ToEvent,
 }
 
-impl VariableAction {
+#[enum_dispatch(VariableAction)]
+trait ExecutableVariableAction {
     fn execute(
         &mut self,
         sim_connect: &mut SimConnect,
         variables: &mut MsfsVariableRegistry,
-        execute_moment: ExecuteOn,
-    ) -> Result<(), Box<dyn Error>> {
-        match self {
-            VariableAction::Map(action, execute_on) if *execute_on == execute_moment => {
-                action.execute(sim_connect, variables)?
-            }
-            VariableAction::MapMany(action, execute_on) if *execute_on == execute_moment => {
-                action.execute(sim_connect, variables)?
-            }
-            VariableAction::Reduce(action, execute_on) if *execute_on == execute_moment => {
-                action.execute(sim_connect, variables)?
-            }
-            VariableAction::ToObject(action, execute_on) if *execute_on == execute_moment => {
-                action.execute(sim_connect, variables)?
-            }
-            VariableAction::ToEvent(action, execute_on) if *execute_on == execute_moment => {
-                action.execute(sim_connect, variables)?
-            }
-            _ => (),
-        };
-
-        Ok(())
-    }
+    ) -> Result<(), Box<dyn Error>>;
 }
 
 struct Map {
@@ -330,7 +313,9 @@ impl Map {
             output_variable_identifier,
         }
     }
+}
 
+impl ExecutableVariableAction for Map {
     fn execute(
         &mut self,
         _: &mut SimConnect,
@@ -382,7 +367,9 @@ impl MapMany {
             output_variable_identifier,
         }
     }
+}
 
+impl ExecutableVariableAction for MapMany {
     fn execute(
         &mut self,
         _: &mut SimConnect,
@@ -423,7 +410,9 @@ impl Reduce {
             output_variable_identifier,
         }
     }
+}
 
+impl ExecutableVariableAction for Reduce {
     fn execute(
         &mut self,
         _: &mut SimConnect,
@@ -467,7 +456,9 @@ impl ToObject {
             variables,
         }
     }
+}
 
+impl ExecutableVariableAction for ToObject {
     fn execute(
         &mut self,
         sim_connect: &mut SimConnect,
@@ -506,32 +497,17 @@ macro_rules! set_data_on_sim_object {
     };
 }
 
+#[enum_dispatch]
 enum Debounce {
     None(NoDebounce),
     Leading(LeadingDebounce),
 }
 
-impl Debounce {
-    fn should_handle(&self) -> bool {
-        match self {
-            Debounce::None(debounce) => debounce.should_handle(),
-            Debounce::Leading(debounce) => debounce.should_handle(),
-        }
-    }
-
-    fn notify_handled(&mut self) {
-        match self {
-            Debounce::None(debounce) => debounce.notify_handled(),
-            Debounce::Leading(debounce) => debounce.notify_handled(),
-        }
-    }
-
-    fn post_tick(&mut self, variables: &mut MsfsVariableRegistry) {
-        match self {
-            Debounce::None(debounce) => debounce.post_tick(variables),
-            Debounce::Leading(handler) => handler.post_tick(variables),
-        }
-    }
+#[enum_dispatch(Debounce)]
+trait Debouncer {
+    fn should_handle(&self) -> bool;
+    fn notify_handled(&mut self);
+    fn post_tick(&mut self, variables: &mut MsfsVariableRegistry);
 }
 
 #[derive(Default)]
@@ -547,7 +523,9 @@ impl NoDebounce {
             reset_to,
         }
     }
+}
 
+impl Debouncer for NoDebounce {
     fn should_handle(&self) -> bool {
         true
     }
@@ -580,6 +558,14 @@ impl LeadingDebounce {
         }
     }
 
+    fn exceeded_debounce_duration(&self) -> bool {
+        self.handled_at
+            .map(|instant| instant.elapsed() > self.duration)
+            .unwrap_or(true)
+    }
+}
+
+impl Debouncer for LeadingDebounce {
     fn should_handle(&self) -> bool {
         self.exceeded_debounce_duration()
     }
@@ -596,12 +582,6 @@ impl LeadingDebounce {
 
             self.handled_at = None;
         }
-    }
-
-    fn exceeded_debounce_duration(&self) -> bool {
-        self.handled_at
-            .map(|instant| instant.elapsed() > self.duration)
-            .unwrap_or(true)
     }
 }
 
@@ -667,28 +647,16 @@ pub enum EventToVariableMapping {
     SmoothPress(f64, f64),
 }
 
+#[enum_dispatch]
 enum MessageHandler {
-    EventToVariable(EventToVariable),
+    EventToVariable,
 }
 
-impl MessageHandler {
-    fn handle(&mut self, message: &SimConnectRecv, variables: &mut MsfsVariableRegistry) -> bool {
-        match self {
-            MessageHandler::EventToVariable(handler) => handler.handle(message, variables),
-        }
-    }
-
-    fn pre_tick(&mut self, variables: &mut MsfsVariableRegistry, delta: Duration) {
-        match self {
-            MessageHandler::EventToVariable(handler) => handler.pre_tick(variables, delta),
-        }
-    }
-
-    fn post_tick(&mut self, variables: &mut MsfsVariableRegistry) {
-        match self {
-            MessageHandler::EventToVariable(handler) => handler.post_tick(variables),
-        }
-    }
+#[enum_dispatch(MessageHandler)]
+trait HandleMessages {
+    fn handle(&mut self, message: &SimConnectRecv, variables: &mut MsfsVariableRegistry) -> bool;
+    fn pre_tick(&mut self, variables: &mut MsfsVariableRegistry, delta: Duration);
+    fn post_tick(&mut self, variables: &mut MsfsVariableRegistry);
 }
 
 struct EventToVariable {
@@ -709,9 +677,9 @@ impl EventToVariable {
     ) -> Result<Self, Box<dyn Error>> {
         let reset_to = options.reset_to.map(|value| (target, value));
         let debounce = if let Some(duration) = options.leading_debounce_duration {
-            Debounce::Leading(LeadingDebounce::new(duration, reset_to))
+            LeadingDebounce::new(duration, reset_to).into()
         } else {
-            Debounce::None(NoDebounce::new(reset_to))
+            NoDebounce::new(reset_to).into()
         };
 
         Ok(Self {
@@ -759,7 +727,9 @@ impl EventToVariable {
             variables.write(&self.target, value.min(1.).max(0.));
         }
     }
+}
 
+impl HandleMessages for EventToVariable {
     fn handle(&mut self, message: &SimConnectRecv, variables: &mut MsfsVariableRegistry) -> bool {
         match message {
             SimConnectRecv::Event(e) if e.id() == self.event_id => {
@@ -846,7 +816,9 @@ impl ToEvent {
             last_written_value: None,
         }
     }
+}
 
+impl ExecutableVariableAction for ToEvent {
     fn execute(
         &mut self,
         sim_connect: &mut SimConnect,
