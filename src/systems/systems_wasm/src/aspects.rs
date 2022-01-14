@@ -289,28 +289,27 @@ impl VariableAction {
         variables: &mut MsfsVariableRegistry,
         execute_moment: ExecuteOn,
     ) -> Result<(), Box<dyn Error>> {
-        let updatable: (&mut dyn ExecutableVariableAction, ExecuteOn) = match self {
-            VariableAction::Map(func, execute_on, ..) => (func, *execute_on),
-            VariableAction::MapMany(func, execute_on, ..) => (func, *execute_on),
-            VariableAction::Reduce(func, execute_on, ..) => (func, *execute_on),
-            VariableAction::ToObject(func, execute_on, ..) => (func, *execute_on),
-            VariableAction::ToEvent(func, execute_on, ..) => (func, *execute_on),
+        match self {
+            VariableAction::Map(action, execute_on) if *execute_on == execute_moment => {
+                action.execute(sim_connect, variables)?
+            }
+            VariableAction::MapMany(action, execute_on) if *execute_on == execute_moment => {
+                action.execute(sim_connect, variables)?
+            }
+            VariableAction::Reduce(action, execute_on) if *execute_on == execute_moment => {
+                action.execute(sim_connect, variables)?
+            }
+            VariableAction::ToObject(action, execute_on) if *execute_on == execute_moment => {
+                action.execute(sim_connect, variables)?
+            }
+            VariableAction::ToEvent(action, execute_on) if *execute_on == execute_moment => {
+                action.execute(sim_connect, variables)?
+            }
+            _ => (),
         };
-
-        if updatable.1 == execute_moment {
-            updatable.0.execute(sim_connect, variables)?;
-        }
 
         Ok(())
     }
-}
-
-trait ExecutableVariableAction {
-    fn execute(
-        &mut self,
-        sim_connect: &mut SimConnect,
-        variables: &mut MsfsVariableRegistry,
-    ) -> Result<(), Box<dyn Error>>;
 }
 
 struct Map {
@@ -331,9 +330,7 @@ impl Map {
             output_variable_identifier,
         }
     }
-}
 
-impl ExecutableVariableAction for Map {
     fn execute(
         &mut self,
         _: &mut SimConnect,
@@ -368,9 +365,7 @@ impl MapMany {
             output_variable_identifier,
         }
     }
-}
 
-impl ExecutableVariableAction for MapMany {
     fn execute(
         &mut self,
         _: &mut SimConnect,
@@ -414,9 +409,7 @@ impl Reduce {
             output_variable_identifier,
         }
     }
-}
 
-impl ExecutableVariableAction for Reduce {
     fn execute(
         &mut self,
         _: &mut SimConnect,
@@ -460,22 +453,7 @@ impl ToObject {
             variables,
         }
     }
-}
 
-#[macro_export]
-macro_rules! set_data_on_sim_object {
-    () => {
-        fn set_data_on_sim_object(
-            &self,
-            sim_connect: &mut SimConnect,
-        ) -> Result<(), Box<dyn Error>> {
-            sim_connect.set_data_on_sim_object(SIMCONNECT_OBJECT_ID_USER, self)?;
-            Ok(())
-        }
-    };
-}
-
-impl ExecutableVariableAction for ToObject {
     fn execute(
         &mut self,
         sim_connect: &mut SimConnect,
@@ -499,6 +477,19 @@ impl ExecutableVariableAction for ToObject {
 
         Ok(())
     }
+}
+
+#[macro_export]
+macro_rules! set_data_on_sim_object {
+    () => {
+        fn set_data_on_sim_object(
+            &self,
+            sim_connect: &mut SimConnect,
+        ) -> Result<(), Box<dyn Error>> {
+            sim_connect.set_data_on_sim_object(SIMCONNECT_OBJECT_ID_USER, self)?;
+            Ok(())
+        }
+    };
 }
 
 enum Debounce {
@@ -841,9 +832,7 @@ impl ToEvent {
             last_written_value: None,
         }
     }
-}
 
-impl ExecutableVariableAction for ToEvent {
     fn execute(
         &mut self,
         sim_connect: &mut SimConnect,
