@@ -117,7 +117,7 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
                 ? <p>Loading ...</p>
                 : (
                     <>
-                        <div className="mb-8 inline-flex items-center w-80 overflow-hidden">
+                        <div className="mb-8 inline-flex items-center w-80">
                             <div className="ml-6">
                                 <IconCloud size={35} stroke={1.5} strokeLinejoin="miter" />
                             </div>
