@@ -107,7 +107,7 @@ pub(super) fn nose_wheel_steering(builder: &mut MsfsAspectBuilder) -> Result<(),
         "TOGGLE_WATER_RUDDER",
         EventToVariableMapping::Value(1.),
         Variable::Aspect("TILLER_PEDAL_DISCONNECT".into()),
-        |options| options.mask().after_tick_set_to(0.),
+        |options| options.mask().afterwards_reset_to(0.),
     )?;
 
     builder.init_variable(Variable::Aspect("RUDDER_POSITION_RAW".into()), 0.5);

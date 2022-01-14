@@ -501,32 +501,111 @@ impl ExecutableVariableAction for ToObject {
     }
 }
 
-#[derive(Clone, Copy)]
-/// Declares how to map the given variable value to an event value.
-pub enum VariableToEventMapping {
-    /// Maps the variable from an f64 to a u32 without any further processing.
-    EventDataRaw,
-
-    /// Maps the variable from an f64 to a 32k position.
-    EventData32kPosition,
+enum Debounce {
+    None(NoDebounce),
+    Leading(LeadingDebounce),
 }
 
-/// Declares when to write the variable to the event.
-#[derive(Clone, Copy)]
-pub enum VariableToEventWriteOn {
-    /// Writes the variable to the event after every tick.
-    EveryTick,
+impl Debounce {
+    fn should_handle(&self) -> bool {
+        match self {
+            Debounce::None(debounce) => debounce.should_handle(),
+            Debounce::Leading(debounce) => debounce.should_handle(),
+        }
+    }
 
-    /// Writes the variable to the event when the variable's value has changed.
-    Change,
+    fn notify_handled(&mut self) {
+        match self {
+            Debounce::None(debounce) => debounce.notify_handled(),
+            Debounce::Leading(debounce) => debounce.notify_handled(),
+        }
+    }
+
+    fn post_tick(&mut self, variables: &mut MsfsVariableRegistry) {
+        match self {
+            Debounce::None(debounce) => debounce.post_tick(variables),
+            Debounce::Leading(handler) => handler.post_tick(variables),
+        }
+    }
+}
+
+#[derive(Default)]
+struct NoDebounce {
+    event_handled_before_tick: bool,
+    reset_to: Option<(VariableIdentifier, f64)>,
+}
+
+impl NoDebounce {
+    fn new(reset_to: Option<(VariableIdentifier, f64)>) -> Self {
+        Self {
+            event_handled_before_tick: false,
+            reset_to,
+        }
+    }
+
+    fn should_handle(&self) -> bool {
+        true
+    }
+
+    fn notify_handled(&mut self) {
+        self.event_handled_before_tick = true;
+    }
+
+    fn post_tick(&mut self, variables: &mut MsfsVariableRegistry) {
+        if let Some((variable, value)) = &self.reset_to {
+            variables.write(variable, *value);
+        }
+
+        self.event_handled_before_tick = false;
+    }
+}
+
+struct LeadingDebounce {
+    duration: Duration,
+    handled_at: Option<Instant>,
+    reset_to: Option<(VariableIdentifier, f64)>,
+}
+
+impl LeadingDebounce {
+    fn new(duration: Duration, reset_to: Option<(VariableIdentifier, f64)>) -> Self {
+        Self {
+            duration,
+            handled_at: None,
+            reset_to,
+        }
+    }
+
+    fn should_handle(&self) -> bool {
+        self.exceeded_debounce_duration()
+    }
+
+    fn notify_handled(&mut self) {
+        self.handled_at = Some(Instant::now());
+    }
+
+    fn post_tick(&mut self, variables: &mut MsfsVariableRegistry) {
+        if self.handled_at.is_some() && self.exceeded_debounce_duration() {
+            if let Some((variable, value)) = &self.reset_to {
+                variables.write(variable, *value);
+            }
+
+            self.handled_at = None;
+        }
+    }
+
+    fn exceeded_debounce_duration(&self) -> bool {
+        self.handled_at
+            .map(|instant| instant.elapsed() > self.duration)
+            .unwrap_or(true)
+    }
 }
 
 #[derive(Clone, Copy, Default)]
 /// Configurable options for event to variable handling.
 pub struct EventToVariableOptions {
     mask: bool,
-    ignore_repeats_for: Duration,
-    after_tick_set_to: Option<f64>,
+    leading_debounce_duration: Option<Duration>,
+    reset_to: Option<f64>,
 }
 
 impl EventToVariableOptions {
@@ -536,18 +615,21 @@ impl EventToVariableOptions {
         self
     }
 
-    /// The duration to ignore any repeating occurrences of the event.
-    /// Useful for dealing with poor MSFS event handling, e.g. keyboard events being triggered
+    /// Apply a leading debounce to the event handling. Leading debounce immediately executes
+    /// the action associated with the event, but ignores any subsequent event until no event
+    /// triggered for the given duration.
+    ///
+    /// This is useful to deal with poor MSFS event handling, e.g. events being triggered
     /// repeatedly despite only one press occurring.
-    pub fn ignore_repeats_for(mut self, duration: Duration) -> Self {
-        self.ignore_repeats_for = duration;
+    pub fn leading_debounce(mut self, duration: Duration) -> Self {
+        self.leading_debounce_duration = Some(duration);
         self
     }
 
-    /// Sets the value to which the variable should be reset after the event occurred and
-    /// a single simulation tick finished.
-    pub fn after_tick_set_to(mut self, value: f64) -> Self {
-        self.after_tick_set_to = Some(value);
+    /// Sets the value to which the variable should be reset after the event occurred and any
+    /// debounce duration has passed.
+    pub fn afterwards_reset_to(mut self, value: f64) -> Self {
+        self.reset_to = Some(value);
         self
     }
 }
@@ -606,11 +688,10 @@ impl MessageHandler {
 
 struct EventToVariable {
     event_id: u32,
-    event_last_handled: Option<Instant>,
     event_handled_before_tick: bool,
     target: VariableIdentifier,
     mapping: EventToVariableMapping,
-    options: EventToVariableOptions,
+    debounce: Debounce,
 }
 
 impl EventToVariable {
@@ -621,32 +702,20 @@ impl EventToVariable {
         target: VariableIdentifier,
         options: EventToVariableOptions,
     ) -> Result<Self, Box<dyn Error>> {
+        let reset_to = options.reset_to.map(|value| (target, value));
+        let debounce = if let Some(duration) = options.leading_debounce_duration {
+            Debounce::Leading(LeadingDebounce::new(duration, reset_to))
+        } else {
+            Debounce::None(NoDebounce::new(reset_to))
+        };
+
         Ok(Self {
             event_id: sim_connect.map_client_event_to_sim_event(event_name, options.mask)?,
-            event_last_handled: None,
             event_handled_before_tick: false,
             target,
             mapping,
-            options,
+            debounce,
         })
-    }
-
-    fn should_handle_event(&self) -> bool {
-        match self.event_last_handled {
-            Some(instant) => instant.elapsed() > self.options.ignore_repeats_for,
-            None => true,
-        }
-    }
-
-    fn set_variable_after_tick(&mut self, variables: &mut MsfsVariableRegistry) {
-        if self.event_handled_before_tick {
-            match self.options.after_tick_set_to {
-                Some(value) => {
-                    variables.write(&self.target, value);
-                }
-                None => (),
-            }
-        }
     }
 
     fn map_to_value(
@@ -689,11 +758,11 @@ impl EventToVariable {
     fn handle(&mut self, message: &SimConnectRecv, variables: &mut MsfsVariableRegistry) -> bool {
         match message {
             SimConnectRecv::Event(e) if e.id() == self.event_id => {
-                if self.should_handle_event() {
+                if self.debounce.should_handle() {
                     let mapped_value = self.map_to_value(e, variables);
                     variables.write(&self.target, mapped_value);
 
-                    self.event_last_handled = Some(Instant::now());
+                    self.debounce.notify_handled();
                     self.event_handled_before_tick = true;
                 }
 
@@ -708,10 +777,29 @@ impl EventToVariable {
     }
 
     fn post_tick(&mut self, variables: &mut MsfsVariableRegistry) {
-        self.set_variable_after_tick(variables);
-
+        self.debounce.post_tick(variables);
         self.event_handled_before_tick = false;
     }
+}
+
+#[derive(Clone, Copy)]
+/// Declares how to map the given variable value to an event value.
+pub enum VariableToEventMapping {
+    /// Maps the variable from an f64 to a u32 without any further processing.
+    EventDataRaw,
+
+    /// Maps the variable from an f64 to a 32k position.
+    EventData32kPosition,
+}
+
+/// Declares when to write the variable to the event.
+#[derive(Clone, Copy)]
+pub enum VariableToEventWriteOn {
+    /// Writes the variable to the event after every tick.
+    EveryTick,
+
+    /// Writes the variable to the event when the variable's value has changed.
+    Change,
 }
 
 struct ToEvent {
