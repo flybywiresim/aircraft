@@ -5,7 +5,6 @@ import { IconCloud, IconDroplet, IconGauge, IconPoint, IconTemperature, IconWind
 import { MetarParserType, Wind } from '../../../Common/metarTypes';
 import { usePersistentProperty } from '../../../Common/persistence';
 import SimpleInput from '../../Components/Form/SimpleInput/SimpleInput';
-import Button, { BUTTON_TYPE } from '../../Components/Button/Button';
 
 const MetarParserTypeWindState: Wind = {
     degrees: 0,
@@ -74,7 +73,7 @@ type WeatherWidgetProps = { name: string, editIcao: string, icao: string};
 const WeatherWidget = (props: WeatherWidgetProps) => {
     const [metar, setMetar] = useState<MetarParserType>(MetarParserTypeProp);
 
-    const [showMetar1, setShowMetar1] = useState('DISABLED');
+    const [showMetar, setShowMetar] = useState('DISABLED');
 
     let [metarSource] = usePersistentProperty('CONFIG_METAR_SRC', 'MSFS');
 
@@ -102,7 +101,6 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
             .then((result) => {
                 const metarParse = metarParser(result.metar);
                 setMetar(metarParse);
-                console.log('VALID ICAO');
             })
             .catch(() => {
                 setMetar(MetarParserTypeProp);
@@ -112,7 +110,6 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
 
     useEffect(() => {
         getMetar(props.icao, source);
-        console.log('use effect');
     }, [props.icao, source]);
 
     return (
@@ -128,7 +125,8 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
                             <SimpleInput
                                 noLabel
                                 className="text-center w-24 ml-4 text-2xl font-medium uppercase"
-                                placeholder={props.icao}
+                                placeholder=""
+                                value={props.icao}
                                 onChange={(value) => handleIcao(value)}
                                 maxLength={4}
                             />
@@ -136,33 +134,37 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
                                 <button
                                     type="button"
                                     className="mr-1 w-24 text- bg-gray-600 p-2 flex items-center justify-center rounded-lg focus:outline-none text-lg"
-                                    onClick={() => setShowMetar1(showMetar1 === 'ENABLED' ? 'DISABLED' : 'ENABLED')}
+                                    onClick={() => setShowMetar(showMetar === 'ENABLED' ? 'DISABLED' : 'ENABLED')}
                                 >
-                                    {showMetar1 === 'ENABLED' ? 'TEXT' : 'ICONS'}
+                                    {showMetar === 'ENABLED' ? 'TEXT' : 'ICONS'}
                                 </button>
                             </div>
                         </div>
-                        {showMetar1 === 'DISABLED'
+                        {showMetar === 'DISABLED'
                             ? (
                                 <>
                                     <div className="grid grid-cols-2 h-40">
-                                        <div className="text-center text-lg">
+                                        <div className="justify-left text-center text-lg">
                                             <div className="flex justify-center">
                                                 <IconGauge className="mb-2" size={35} stroke={1.5} strokeLinejoin="miter" />
                                             </div>
-                                            {metar.barometer ? (
+                                            {metar.raw_text ? (
                                                 <>
                                                     {metar.barometer.mb.toFixed(0)}
                                                     {' '}
                                                     mb
                                                 </>
-                                            ) : 'N/A'}
+                                            ) : (
+                                                <>
+                                                    N/A
+                                                </>
+                                            )}
                                         </div>
-                                        <div className="text-center text-lg">
+                                        <div className="justify-left text-center text-lg">
                                             <div className="flex justify-center">
                                                 <IconWind className="mb-2" size={35} stroke={1.5} strokeLinejoin="miter" />
                                             </div>
-                                            {metar.wind
+                                            {metar.raw_text
                                                 ? (
                                                     <>
                                                         {metar.wind.degrees.toFixed(0)}
@@ -186,7 +188,7 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
                                             <div className="flex justify-center">
                                                 <IconTemperature className="mb-2" size={35} stroke={1.5} strokeLinejoin="miter" />
                                             </div>
-                                            {metar.temperature
+                                            {metar.raw_text
                                                 ? (
                                                     <>
                                                         {metar.temperature.celsius.toFixed(0)}
@@ -207,7 +209,7 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
                                             <div className="flex justify-center">
                                                 <IconDroplet className="mb-2" size={35} stroke={1.5} strokeLinejoin="miter" />
                                             </div>
-                                            {metar.dewpoint
+                                            {metar.raw_text
                                                 ? (
                                                     <>
                                                         {metar.dewpoint.celsius.toFixed(0)}
@@ -237,7 +239,7 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
                                                 </>
                                             ) : (
                                                 <>
-                                                    NO ICAO CHOSEN
+                                                    NO VALID ICAO CHOSEN
                                                     {' '}
                                                     {' '}
                                                 </>
