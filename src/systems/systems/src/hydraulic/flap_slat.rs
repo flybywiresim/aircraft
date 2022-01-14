@@ -212,7 +212,7 @@ impl FlapSlatAssembly {
 
         self.update_motors_speed(left_pressure, right_pressure, context);
 
-        self.update_motors_flow(left_pressure, right_pressure, context);
+        self.update_motors_flow(context);
     }
 
     fn update_speed_and_position(&mut self, context: &UpdateContext) {
