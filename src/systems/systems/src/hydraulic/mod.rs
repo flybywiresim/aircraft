@@ -2,21 +2,24 @@ use self::linear_actuator::Actuator;
 use crate::failures::{Failure, FailureType};
 use crate::hydraulic::electrical_pump_physics::ElectricalPumpPhysics;
 use crate::pneumatic::PressurizeableReservoir;
-use crate::shared::{interpolation, ElectricalBusType, ElectricalBuses, HydraulicColor};
+use crate::shared::{
+    interpolation, low_pass_filter::LowPassFilter, ElectricalBusType, ElectricalBuses,
+    HydraulicColor,
+};
 use crate::simulation::{
     InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
     VariableIdentifier, Write,
 };
 
 use std::time::Duration;
-
 use uom::si::{
     angular_velocity::{radian_per_second, revolution_per_minute},
     f64::*,
     pressure::{pascal, psi},
     ratio::ratio,
+    torque::newton_meter,
     velocity::knot,
-    volume::{cubic_inch, gallon},
+    volume::{cubic_inch, cubic_meter, gallon},
     volume_rate::{gallon_per_minute, gallon_per_second},
 };
 
@@ -160,22 +163,53 @@ pub struct PowerTransferUnit {
     active_r2l_id: VariableIdentifier,
     motor_flow_id: VariableIdentifier,
     valve_opened_id: VariableIdentifier,
+    shaft_rpm_id: VariableIdentifier,
 
     is_enabled: bool,
     is_active_right: bool,
     is_active_left: bool,
     flow_to_right: VolumeRate,
     flow_to_left: VolumeRate,
+    left_displacement: Volume,
+    right_displacement: LowPassFilter<Volume>,
     last_flow: VolumeRate,
+
+    control_valve_opened: bool,
+
+    shaft_speed: AngularVelocity,
 }
 impl PowerTransferUnit {
-    // Low pass filter to handle flow dynamic: avoids instantaneous flow transient,
-    // simulating RPM dynamic of PTU
-    const FLOW_DYNAMIC_LOW_PASS_LEFT_SIDE: f64 = 0.05;
-    const FLOW_DYNAMIC_LOW_PASS_RIGHT_SIDE: f64 = 0.05;
+    const ACTIVATION_DELTA_PRESSURE_PSI: f64 = 500.;
+    const DEACTIVATION_DELTA_PRESSURE_PSI: f64 = 5.;
 
-    const EFFICIENCY_LEFT_TO_RIGHT: f64 = 0.8;
-    const EFFICIENCY_RIGHT_TO_LEFT: f64 = 0.8;
+    const MIN_SPEED_SIMULATION_RPM: f64 = 50.;
+    const EFFICIENCY_LEFT_TO_RIGHT: f64 = 0.85;
+    const EFFICIENCY_RIGHT_TO_LEFT: f64 = 0.85;
+
+    const DEFAULT_LEFT_DISPLACEMENT_CUBIC_INCH: f64 = 0.92;
+    const MIN_RIGHT_DISPLACEMENT_CUBIC_INCH: f64 = 0.65;
+    const MAX_RIGHT_DISPLACEMENT_CUBIC_INCH: f64 = 1.21;
+
+    const DISPLACEMENT_TIME_CONSTANT: Duration = Duration::from_millis(80);
+
+    const PRESSURE_BREAKPOINTS_PSI: [f64; 10] =
+        [-500., -250., -100., -50., -10., 0., 100., 220., 250., 500.];
+    const DISPLACEMENT_CARAC_CUBIC_INCH: [f64; 10] = [
+        0.65,
+        0.65,
+        0.65,
+        0.65,
+        0.65,
+        Self::DEFAULT_LEFT_DISPLACEMENT_CUBIC_INCH,
+        1.21,
+        1.21,
+        1.21,
+        1.21,
+    ];
+
+    const SHAFT_FRICTION: f64 = 0.12;
+    const BREAKOUT_TORQUE_NM: f64 = 2.;
+    const SHAFT_INERTIA: f64 = 0.008;
 
     pub fn new(context: &mut InitContext) -> Self {
         Self {
@@ -183,13 +217,22 @@ impl PowerTransferUnit {
             active_r2l_id: context.get_identifier("HYD_PTU_ACTIVE_R2L".to_owned()),
             motor_flow_id: context.get_identifier("HYD_PTU_MOTOR_FLOW".to_owned()),
             valve_opened_id: context.get_identifier("HYD_PTU_VALVE_OPENED".to_owned()),
+            shaft_rpm_id: context.get_identifier("HYD_PTU_SHAFT_RPM".to_owned()),
 
             is_enabled: false,
             is_active_right: false,
             is_active_left: false,
             flow_to_right: VolumeRate::new::<gallon_per_second>(0.0),
             flow_to_left: VolumeRate::new::<gallon_per_second>(0.0),
+            left_displacement: Volume::new::<cubic_inch>(
+                Self::DEFAULT_LEFT_DISPLACEMENT_CUBIC_INCH,
+            ),
+            right_displacement: LowPassFilter::<Volume>::new(Self::DISPLACEMENT_TIME_CONSTANT), //::<cubic_inch>(Self::DEFAULT_RIGHT_DISPLACEMENT),
             last_flow: VolumeRate::new::<gallon_per_second>(0.0),
+
+            control_valve_opened: false,
+
+            shaft_speed: AngularVelocity::new::<radian_per_second>(0.),
         }
     }
 
@@ -209,63 +252,153 @@ impl PowerTransferUnit {
         self.is_active_right
     }
 
-    pub fn update<T: PowerTransferUnitController>(
+    pub fn update(
         &mut self,
+        context: &UpdateContext,
         loop_left_section: &impl SectionPressure,
         loop_right_section: &impl SectionPressure,
-        controller: &T,
+        controller: &impl PowerTransferUnitController,
     ) {
         self.is_enabled = controller.should_enable();
 
-        let delta_p = loop_left_section.pressure() - loop_right_section.pressure();
+        self.update_displacement(context, loop_left_section, loop_right_section);
+        self.update_active_state();
+        self.update_shaft_physics(context, loop_left_section, loop_right_section);
+        self.update_flows();
+    }
 
-        if !self.is_enabled
-            || self.is_active_right && delta_p.get::<psi>() > -5.
-            || self.is_active_left && delta_p.get::<psi>() < 5.
-        {
-            self.flow_to_left = VolumeRate::new::<gallon_per_second>(0.0);
-            self.flow_to_right = VolumeRate::new::<gallon_per_second>(0.0);
-            self.is_active_right = false;
-            self.is_active_left = false;
-            self.last_flow = VolumeRate::new::<gallon_per_second>(0.0);
-        } else if delta_p.get::<psi>() > 500. || (self.is_active_left && delta_p.get::<psi>() > 5.)
-        {
-            // Left sends flow to right
-            // Flow computed as a function of pressure  min(16gal per minute,pressure * 0.0058)
-            let mut new_flow =
-                16.0f64.min(loop_left_section.pressure().get::<psi>() * 0.0058) / 60.0;
+    fn update_displacement(
+        &mut self,
+        context: &UpdateContext,
+        loop_left_section: &impl SectionPressure,
+        loop_right_section: &impl SectionPressure,
+    ) {
+        let delta_p = if self.is_enabled {
+            loop_left_section.pressure() - loop_right_section.pressure()
+        } else {
+            Pressure::new::<psi>(0.)
+        };
 
-            // Low pass on flow
-            new_flow = Self::FLOW_DYNAMIC_LOW_PASS_LEFT_SIDE * new_flow
-                + (1.0 - Self::FLOW_DYNAMIC_LOW_PASS_LEFT_SIDE)
-                    * self.last_flow.get::<gallon_per_second>();
-
-            self.flow_to_left = VolumeRate::new::<gallon_per_second>(-new_flow);
-            self.flow_to_right =
-                VolumeRate::new::<gallon_per_second>(new_flow * Self::EFFICIENCY_LEFT_TO_RIGHT);
-            self.last_flow = VolumeRate::new::<gallon_per_second>(new_flow);
-
-            self.is_active_left = true;
-        } else if delta_p.get::<psi>() < -500.
-            || (self.is_active_right && delta_p.get::<psi>() < -5.)
-        {
-            // Right sends flow to left
-            // Flow computed as a function of pressure  min(34gal per minute,pressure * 0.00125)
-            let mut new_flow =
-                34.0f64.min(loop_right_section.pressure().get::<psi>() * 0.0125) / 60.0;
-
-            // Low pass on flow
-            new_flow = Self::FLOW_DYNAMIC_LOW_PASS_RIGHT_SIDE * new_flow
-                + (1.0 - Self::FLOW_DYNAMIC_LOW_PASS_RIGHT_SIDE)
-                    * self.last_flow.get::<gallon_per_second>();
-
-            self.flow_to_left =
-                VolumeRate::new::<gallon_per_second>(new_flow * Self::EFFICIENCY_RIGHT_TO_LEFT);
-            self.flow_to_right = VolumeRate::new::<gallon_per_second>(-new_flow);
-            self.last_flow = VolumeRate::new::<gallon_per_second>(new_flow);
-
-            self.is_active_right = true;
+        if delta_p.abs().get::<psi>() > Self::ACTIVATION_DELTA_PRESSURE_PSI {
+            self.control_valve_opened = true;
+        } else if delta_p.abs().get::<psi>() < Self::DEACTIVATION_DELTA_PRESSURE_PSI {
+            self.control_valve_opened = false;
         }
+
+        let new_displacement = if !self.control_valve_opened {
+            self.calc_equilibrium_displacement(
+                loop_left_section.pressure(),
+                loop_right_section.pressure(),
+            )
+        } else {
+            Volume::new::<cubic_inch>(interpolation(
+                &Self::PRESSURE_BREAKPOINTS_PSI,
+                &Self::DISPLACEMENT_CARAC_CUBIC_INCH,
+                -delta_p.get::<psi>(),
+            ))
+        };
+
+        self.right_displacement
+            .update(context.delta(), new_displacement);
+    }
+
+    fn update_active_state(&mut self) {
+        let is_rotating =
+            self.shaft_speed.get::<revolution_per_minute>().abs() > Self::MIN_SPEED_SIMULATION_RPM;
+
+        let active_direction = self.shaft_speed.get::<revolution_per_minute>().signum();
+
+        self.is_active_left = is_rotating && active_direction < 0.;
+        self.is_active_right = is_rotating && active_direction > 0.;
+    }
+
+    fn update_shaft_physics(
+        &mut self,
+        context: &UpdateContext,
+        loop_left_section: &impl SectionPressure,
+        loop_right_section: &impl SectionPressure,
+    ) {
+        let left_pressure = if self.is_enabled {
+            loop_left_section.pressure()
+        } else {
+            Pressure::new::<psi>(0.)
+        };
+        let right_pressure = if self.is_enabled {
+            loop_right_section.pressure()
+        } else {
+            Pressure::new::<psi>(0.)
+        };
+
+        let left_side_torque = -Self::calc_generated_torque(left_pressure, self.left_displacement);
+        let right_side_torque =
+            Self::calc_generated_torque(right_pressure, self.right_displacement.output());
+        let friction_torque = Torque::new::<newton_meter>(
+            Self::SHAFT_FRICTION * -self.shaft_speed.get::<radian_per_second>(),
+        );
+        let total_torque = friction_torque + left_side_torque + right_side_torque;
+
+        if self.shaft_speed.abs().get::<revolution_per_minute>() > Self::MIN_SPEED_SIMULATION_RPM
+            || total_torque.abs().get::<newton_meter>() > Self::BREAKOUT_TORQUE_NM
+        {
+            let acc = total_torque.get::<newton_meter>() / Self::SHAFT_INERTIA;
+            self.shaft_speed +=
+                AngularVelocity::new::<radian_per_second>(acc * context.delta_as_secs_f64());
+        } else {
+            self.shaft_speed = AngularVelocity::new::<radian_per_second>(0.);
+        }
+    }
+
+    fn calc_generated_torque(pressure: Pressure, displacement: Volume) -> Torque {
+        Torque::new::<newton_meter>(
+            pressure.get::<pascal>() * displacement.get::<cubic_meter>()
+                / (2. * std::f64::consts::PI),
+        )
+    }
+
+    /// Computes the displacement that equalizes torque on both sides
+    fn calc_equilibrium_displacement(
+        &self,
+        pressure_left: Pressure,
+        pressure_right: Pressure,
+    ) -> Volume {
+        Volume::new::<cubic_meter>(
+            pressure_left.get::<pascal>() * self.left_displacement.get::<cubic_meter>()
+                / pressure_right.get::<pascal>(),
+        )
+        .max(Volume::new::<cubic_inch>(
+            Self::MIN_RIGHT_DISPLACEMENT_CUBIC_INCH,
+        ))
+        .min(Volume::new::<cubic_inch>(
+            Self::MAX_RIGHT_DISPLACEMENT_CUBIC_INCH,
+        ))
+    }
+
+    fn update_flows(&mut self) {
+        let shaft_rpm = self.shaft_speed.get::<revolution_per_minute>();
+
+        if shaft_rpm < -Self::MIN_SPEED_SIMULATION_RPM {
+            // Left sends flow to right
+            let flow = Self::calc_flow(self.shaft_speed.abs(), self.left_displacement);
+            self.flow_to_left = -flow;
+            self.flow_to_right = flow * Self::EFFICIENCY_LEFT_TO_RIGHT;
+            self.last_flow = flow;
+        } else if shaft_rpm > Self::MIN_SPEED_SIMULATION_RPM {
+            // Right sends flow to left
+            let flow = Self::calc_flow(self.shaft_speed.abs(), self.right_displacement.output());
+            self.flow_to_left = flow * Self::EFFICIENCY_RIGHT_TO_LEFT;
+            self.flow_to_right = -flow;
+            self.last_flow = flow;
+        } else {
+            self.flow_to_left = VolumeRate::new::<gallon_per_second>(0.);
+            self.flow_to_right = VolumeRate::new::<gallon_per_second>(0.);
+            self.last_flow = VolumeRate::new::<gallon_per_second>(0.);
+        }
+    }
+
+    fn calc_flow(speed: AngularVelocity, displacement: Volume) -> VolumeRate {
+        VolumeRate::new::<gallon_per_second>(
+            speed.get::<revolution_per_minute>() * displacement.get::<cubic_inch>() / 231. / 60.,
+        )
     }
 }
 impl SimulationElement for PowerTransferUnit {
@@ -274,6 +407,7 @@ impl SimulationElement for PowerTransferUnit {
         writer.write(&self.active_r2l_id, self.is_active_right);
         writer.write(&self.motor_flow_id, self.flow());
         writer.write(&self.valve_opened_id, self.is_enabled());
+        writer.write(&self.shaft_rpm_id, self.shaft_speed);
     }
 }
 
