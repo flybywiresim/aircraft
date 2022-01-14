@@ -104,7 +104,6 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
             })
             .catch(() => {
                 setMetar(MetarParserTypeProp);
-                console.log('INVALID ICAO');
             });
     }
 
@@ -125,8 +124,7 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
                             <SimpleInput
                                 noLabel
                                 className="text-center w-24 ml-4 text-2xl font-medium uppercase"
-                                placeholder=""
-                                value={props.icao}
+                                placeholder={props.icao}
                                 onChange={(value) => handleIcao(value)}
                                 maxLength={4}
                             />
