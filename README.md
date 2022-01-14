@@ -22,7 +22,8 @@ The following aircraft configuration is currently simulated or targeted:
  Model       A320-251N
  Engine      CFM LEAP 1A-26
  APU         APS3200
- FMGS        Honeywell Release H3
+ FMS         Honeywell Release H3
+
  FWC Std.    H2F9C
  TAWS        Honeywell EGPWS
  ACAS        Honeywell TPA-100B
