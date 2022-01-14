@@ -115,6 +115,7 @@
 1. [BLEED] Fix potential NaN calculations for fast flows - @Crocket63
 1. [Hyd] Reservoirs connected to pneumatics and first failures - @Crocket63
 1. [ATSU] Don't include airport as a waypoint in route uplink - @tracernz (Mike)
+1. [Hyd] Increased reservoirs air pressure to avoid low air fault on pumps - @Crocket63
 
 ## 0.7.0
 
