@@ -38,7 +38,7 @@ impl FlapSlatHydraulicMotor {
     // Corrective factor to adjust final flow consumption to tune the model
     const FLOW_CORRECTION_FACTOR: f64 = 0.85;
 
-    fn new(context: &mut InitContext, id: &str, displacement: Volume) -> Self {
+    fn new(displacement: Volume) -> Self {
         Self {
             speed: LowPassFilter::<AngularVelocity>::new(
                 Self::LOW_PASS_RPM_TRANSIENT_TIME_CONSTANT,
@@ -115,7 +115,7 @@ pub struct FlapSlatAssembly {
     angle_right_id: VariableIdentifier,
     is_moving_id: VariableIdentifier,
 
-    flap_control_arm_position: Angle,
+    surface_control_arm_position: Angle,
 
     max_synchro_gear_position: Angle,
     final_requested_synchro_gear_position: Angle,
@@ -125,17 +125,17 @@ pub struct FlapSlatAssembly {
     full_pressure_max_speed: AngularVelocity,
 
     gearbox_ratio: Ratio,
-    flap_to_synchro_gear_ratio: Ratio,
-    flap_gear_ratio: Ratio,
+    surface_to_synchro_gear_ratio: Ratio,
+    surface_gear_ratio: Ratio,
 
     left_motor: FlapSlatHydraulicMotor,
     right_motor: FlapSlatHydraulicMotor,
 
     synchro_gear_breakpoints: [f64; 12],
-    final_flap_angle_carac: [f64; 12],
+    final_surface_angle_carac: [f64; 12],
 }
 impl FlapSlatAssembly {
-    const LOW_PASS_FILTER_FLAP_POSITION_TRANSIENT_TIME_CONSTANT: Duration =
+    const LOW_PASS_FILTER_SURFACE_POSITION_TRANSIENT_TIME_CONSTANT: Duration =
         Duration::from_millis(300);
     const BRAKE_PRESSURE_MIN_TO_ALLOW_MOVEMENT_PSI: f64 = 500.;
     const MAX_CIRCUIT_PRESSURE_PSI: f64 = 3000.;
@@ -151,22 +151,10 @@ impl FlapSlatAssembly {
         max_synchro_gear_position: Angle,
         synchro_gear_ratio: Ratio,
         gearbox_ratio: Ratio,
-        flap_gear_ratio: Ratio,
+        surface_gear_ratio: Ratio,
         synchro_gear_breakpoints: [f64; 12],
-        final_flap_angle_carac: [f64; 12],
+        final_surface_angle_carac: [f64; 12],
     ) -> Self {
-        let left_motor = FlapSlatHydraulicMotor::new(
-            context,
-            format!("LEFT_{}", id).as_str(),
-            motor_displacement,
-        );
-
-        let right_motor = FlapSlatHydraulicMotor::new(
-            context,
-            format!("RIGHT_{}", id).as_str(),
-            motor_displacement,
-        );
-
         Self {
             position_left_percent_id: context
                 .get_identifier(format!("LEFT_{}_POSITION_PERCENT", id)),
@@ -178,44 +166,44 @@ impl FlapSlatAssembly {
 
             is_moving_id: context.get_identifier(format!("IS_{}_MOVING", id)),
 
-            flap_control_arm_position: Angle::new::<radian>(0.),
+            surface_control_arm_position: Angle::new::<radian>(0.),
             max_synchro_gear_position,
             final_requested_synchro_gear_position: Angle::new::<radian>(0.),
             speed: AngularVelocity::new::<radian_per_second>(0.),
             current_max_speed: LowPassFilter::<AngularVelocity>::new(
-                Self::LOW_PASS_FILTER_FLAP_POSITION_TRANSIENT_TIME_CONSTANT,
+                Self::LOW_PASS_FILTER_SURFACE_POSITION_TRANSIENT_TIME_CONSTANT,
             ),
             full_pressure_max_speed,
             gearbox_ratio,
-            flap_to_synchro_gear_ratio: flap_gear_ratio / synchro_gear_ratio,
-            flap_gear_ratio,
-            left_motor,
-            right_motor,
+            surface_to_synchro_gear_ratio: surface_gear_ratio / synchro_gear_ratio,
+            surface_gear_ratio,
+            left_motor: FlapSlatHydraulicMotor::new(motor_displacement),
+            right_motor: FlapSlatHydraulicMotor::new(motor_displacement),
             synchro_gear_breakpoints,
-            final_flap_angle_carac,
+            final_surface_angle_carac,
         }
     }
 
     fn synchro_angle_to_flap_angle(&self, synchro_gear_angle: Angle) -> Angle {
-        synchro_gear_angle / self.flap_to_synchro_gear_ratio.get::<ratio>()
+        synchro_gear_angle / self.surface_to_synchro_gear_ratio.get::<ratio>()
     }
 
     pub fn update(
         &mut self,
         context: &UpdateContext,
-        sfcc1_flap_position_request: Option<Angle>,
-        sfcc2_flap_position_request: Option<Angle>,
+        sfcc1_surface_position_request: Option<Angle>,
+        sfcc2_surface_position_request: Option<Angle>,
         left_pressure: Pressure,
         right_pressure: Pressure,
     ) {
         self.update_final_ffpu_angle_request(
-            sfcc1_flap_position_request,
-            sfcc2_flap_position_request,
+            sfcc1_surface_position_request,
+            sfcc2_surface_position_request,
         );
 
         self.update_current_max_speed(
-            sfcc1_flap_position_request.is_some(),
-            sfcc2_flap_position_request.is_some(),
+            sfcc1_surface_position_request.is_some(),
+            sfcc2_surface_position_request.is_some(),
             left_pressure,
             right_pressure,
             context,
@@ -228,12 +216,12 @@ impl FlapSlatAssembly {
 
     fn update_speed_and_position(&mut self, context: &UpdateContext) {
         if self.final_requested_synchro_gear_position > self.position_feedback() {
-            self.flap_control_arm_position += Angle::new::<radian>(
+            self.surface_control_arm_position += Angle::new::<radian>(
                 self.max_speed().get::<radian_per_second>() * context.delta_as_secs_f64(),
             );
             self.speed = self.max_speed();
         } else if self.final_requested_synchro_gear_position < self.position_feedback() {
-            self.flap_control_arm_position -= Angle::new::<radian>(
+            self.surface_control_arm_position -= Angle::new::<radian>(
                 self.max_speed().get::<radian_per_second>() * context.delta_as_secs_f64(),
             );
             self.speed = -self.max_speed();
@@ -246,12 +234,12 @@ impl FlapSlatAssembly {
             || self.speed < AngularVelocity::new::<radian_per_second>(0.)
                 && self.final_requested_synchro_gear_position > self.position_feedback()
         {
-            self.flap_control_arm_position =
+            self.surface_control_arm_position =
                 self.synchro_angle_to_flap_angle(self.final_requested_synchro_gear_position);
         }
 
-        self.flap_control_arm_position = self
-            .flap_control_arm_position
+        self.surface_control_arm_position = self
+            .surface_control_arm_position
             .max(Angle::new::<radian>(0.))
             .min(self.synchro_angle_to_flap_angle(self.max_synchro_gear_position));
     }
@@ -263,10 +251,10 @@ impl FlapSlatAssembly {
     ) {
         if let Some(sfcc1_angle) = sfcc1_angle_request {
             self.final_requested_synchro_gear_position =
-                self.feedback_angle_from_flap_surface_angle(sfcc1_angle);
+                self.feedback_angle_from_surface_angle(sfcc1_angle);
         } else if let Some(sfcc2_angle) = sfcc2_angle_request {
             self.final_requested_synchro_gear_position =
-                self.feedback_angle_from_flap_surface_angle(sfcc2_angle);
+                self.feedback_angle_from_surface_angle(sfcc2_angle);
         }
     }
 
@@ -332,7 +320,7 @@ impl FlapSlatAssembly {
         context: &UpdateContext,
     ) {
         let torque_shaft_speed = AngularVelocity::new::<radian_per_second>(
-            self.speed.get::<radian_per_second>() * self.flap_gear_ratio.get::<ratio>(),
+            self.speed.get::<radian_per_second>() * self.surface_gear_ratio.get::<ratio>(),
         );
 
         let left_torque =
@@ -390,7 +378,7 @@ impl FlapSlatAssembly {
     }
 
     pub fn position_feedback(&self) -> Angle {
-        self.flap_control_arm_position * self.flap_to_synchro_gear_ratio.get::<ratio>()
+        self.surface_control_arm_position * self.surface_to_synchro_gear_ratio.get::<ratio>()
     }
 
     pub fn left_motor(&mut self) -> &mut impl Actuator {
@@ -417,15 +405,15 @@ impl FlapSlatAssembly {
     fn flap_surface_angle(&self) -> Angle {
         Angle::new::<degree>(interpolation(
             &self.synchro_gear_breakpoints,
-            &self.final_flap_angle_carac,
+            &self.final_surface_angle_carac,
             self.position_feedback().get::<degree>(),
         ))
     }
 
     /// Gets Feedback Position Pickup Unit (FPPU) position from current flap surface angle
-    fn feedback_angle_from_flap_surface_angle(&self, flap_surface_angle: Angle) -> Angle {
+    fn feedback_angle_from_surface_angle(&self, flap_surface_angle: Angle) -> Angle {
         Angle::new::<degree>(interpolation(
-            &self.final_flap_angle_carac,
+            &self.final_surface_angle_carac,
             &self.synchro_gear_breakpoints,
             flap_surface_angle.get::<degree>(),
         ))
@@ -804,7 +792,7 @@ mod tests {
 
         let synchro_gear_angle_request = test_bed.query(|a| {
             a.flaps_slats
-                .feedback_angle_from_flap_surface_angle(flap_position_request)
+                .feedback_angle_from_surface_angle(flap_position_request)
         });
 
         assert!(
