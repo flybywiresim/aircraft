@@ -13,7 +13,8 @@ pub(super) fn nose_wheel_steering(builder: &mut MsfsAspectBuilder) -> Result<(),
     builder.map(
         ExecuteOn::PreTick,
         Variable::Named("RUDDER_PEDAL_POSITION".into()),
-        |value| ((value + 100.) / 200.),
+        // Convert rudder pedal position to [-1;1], -1 is left
+        |value| ((value + 100.) / 200.) * 2. - 1.,
         Variable::Aspect("RAW_RUDDER_PEDAL_POSITION".into()),
     );
 
@@ -27,13 +28,12 @@ pub(super) fn nose_wheel_steering(builder: &mut MsfsAspectBuilder) -> Result<(),
             let realistic_tiller_enabled = to_bool(values[0]);
             let rudder_pedal_position = values[1];
             if realistic_tiller_enabled {
-                // Convert rudder pedal position to [-1;1], -1 is left
-                rudder_pedal_position * 2. - 1.
+                rudder_pedal_position
             } else {
                 0.
             }
         },
-        Variable::Named("RUDDER_PEDAL_POSITION".into()),
+        Variable::Aspect("RUDDER_PEDAL_POSITION_RATIO".into()),
     );
 
     // The tiller handle should start in a centered position.
@@ -72,6 +72,15 @@ pub(super) fn nose_wheel_steering(builder: &mut MsfsAspectBuilder) -> Result<(),
         |options| options.mask(),
     )?;
 
+    // Lacking a better event to bind to, we've picked the toggle water rudder event for
+    // disconnecting the rudder pedals via the PEDALS DISC button on the tiller.
+    builder.event_to_variable(
+        "TOGGLE_WATER_RUDDER",
+        EventToVariableMapping::Value(1.),
+        Variable::Aspect("TILLER_PEDAL_DISCONNECT".into()),
+        |options| options.mask().afterwards_reset_to(0.),
+    )?;
+
     builder.map_many(
         ExecuteOn::PostTick,
         vec![
@@ -91,8 +100,7 @@ pub(super) fn nose_wheel_steering(builder: &mut MsfsAspectBuilder) -> Result<(),
                 tiller_handle_position * 2. - 1.
             } else {
                 if !tiller_pedal_disconnect {
-                    // Convert rudder pedal position to [-1;1], -1 is left
-                    rudder_pedal_position * 2. - 1.
+                    rudder_pedal_position
                 } else {
                     0.
                 }
@@ -101,27 +109,9 @@ pub(super) fn nose_wheel_steering(builder: &mut MsfsAspectBuilder) -> Result<(),
         Variable::Named("TILLER_HANDLE_POSITION".into()),
     );
 
-    // Lacking a better event to bind to, we've picked the toggle water rudder event for
-    // disconnecting the rudder pedals via the PEDALS DISC button on the tiller.
-    builder.event_to_variable(
-        "TOGGLE_WATER_RUDDER",
-        EventToVariableMapping::Value(1.),
-        Variable::Aspect("TILLER_PEDAL_DISCONNECT".into()),
-        |options| options.mask().afterwards_reset_to(0.),
-    )?;
-
-    builder.init_variable(Variable::Aspect("RUDDER_POSITION_RAW".into()), 0.5);
-
-    builder.map(
-        ExecuteOn::PreTick,
-        Variable::Aircraft("RUDDER POSITION".into(), "Position".into(), 0),
-        |value| value + 1. / 2.,
-        Variable::Aspect("RUDDER_POSITION_RAW".into()),
-    );
-
     builder.map(
         ExecuteOn::PostTick,
-        Variable::Aspect("NOSE_WHEEL_POSITION_RAW".into()),
+        Variable::Aspect("NOSE_WHEEL_POSITION_RATIO".into()),
         steering_animation_to_msfs_from_steering_angle,
         Variable::Named("NOSE_WHEEL_POSITION".into()),
     );
@@ -129,12 +119,12 @@ pub(super) fn nose_wheel_steering(builder: &mut MsfsAspectBuilder) -> Result<(),
     builder.map_many(
         ExecuteOn::PostTick,
         vec![
-            Variable::Aspect("NOSE_WHEEL_POSITION_RAW".into()),
-            Variable::Aspect("RUDDER_POSITION_RAW".into()),
+            Variable::Aspect("NOSE_WHEEL_POSITION_RATIO".into()),
+            Variable::Aircraft("RUDDER POSITION".into(), "Position".into(), 0),
         ],
         |values| {
             let nose_wheel_position = values[0];
-            let rudder_position = values[1];
+            let rudder_position = (values[1] + 1.) / 2.;
 
             steering_demand_to_msfs_from_steering_angle(nose_wheel_position, rudder_position)
         },

@@ -1701,7 +1701,7 @@ impl A320HydraulicBrakeSteerComputerUnit {
                 .get_identifier("RIGHT_BRAKE_PEDAL_INPUT".to_owned()),
 
             ground_speed_id: context.get_identifier("GPS GROUND SPEED".to_owned()),
-            rudder_pedal_input_id: context.get_identifier("RUDDER_PEDAL_POSITION".to_owned()),
+            rudder_pedal_input_id: context.get_identifier("RUDDER_PEDAL_POSITION_RATIO".to_owned()),
             tiller_handle_input_id: context.get_identifier("TILLER_HANDLE_POSITION".to_owned()),
             tiller_pedal_disconnect_id: context
                 .get_identifier("TILLER_PEDAL_DISCONNECT".to_owned()),
