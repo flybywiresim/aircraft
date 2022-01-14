@@ -690,6 +690,7 @@ impl A320Hydraulic {
             self.green_circuit.system_pressure(),
             self.yellow_circuit.system_pressure(),
         );
+
         self.slat_system.update(
             context,
             self.slats_flaps_complex.slat_demand(),
@@ -697,38 +698,6 @@ impl A320Hydraulic {
             self.blue_circuit.system_pressure(),
             self.green_circuit.system_pressure(),
         );
-        // println!(
-        //     "->FlapReq {:.1} PosFlap {:.1} Gpress {:.0} Ypress {:.0}",
-        //     self.slats_flaps_complex
-        //         .flap_demand()
-        //         .unwrap_or(Angle::new::<degree>(0.))
-        //         .get::<degree>(),
-        //     self.flap_system.position_feedback().get::<degree>(),
-        //     self.green_circuit.system_pressure().get::<psi>(),
-        //     self.yellow_circuit.system_pressure().get::<psi>(),
-        // );
-        // println!(
-        //     "->FlapGreenRPM {:.1} FlapYellowRPM {:.1} ",
-        //     self.flap_system.left_motor_rpm(),
-        //     self.flap_system.right_motor_rpm(),
-        // );
-
-        // println!(
-        //     "--->SlatReq {:.1} PosSlat {:.1} Bpress {:.0} Gpress {:.0}",
-        //     self.slats_flaps_complex
-        //         .slat_demand()
-        //         .unwrap_or(Angle::new::<degree>(0.))
-        //         .get::<degree>(),
-        //     self.slat_system.position_feedback().get::<degree>(),
-        //     self.blue_circuit.system_pressure().get::<psi>(),
-        //     self.green_circuit.system_pressure().get::<psi>(),
-        // );
-
-        // println!(
-        //     "--->SlatBlueRPM {:.1} SlatGreenRPM {:.1} ",
-        //     self.slat_system.left_motor_rpm(),
-        //     self.slat_system.right_motor_rpm(),
-        // );
 
         self.forward_cargo_door_controller.update(
             context,
