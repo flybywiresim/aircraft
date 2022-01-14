@@ -22,8 +22,6 @@ use std::time::Duration;
 /// Speed is smoothly rising or lowering to simulate transients states
 /// Flow is updated from current motor speed
 pub struct FlapSlatHydraulicMotor {
-    rpm_id: VariableIdentifier,
-
     speed: LowPassFilter<AngularVelocity>,
     displacement: Volume,
     current_flow: VolumeRate,
@@ -42,7 +40,6 @@ impl FlapSlatHydraulicMotor {
 
     fn new(context: &mut InitContext, id: &str, displacement: Volume) -> Self {
         Self {
-            rpm_id: context.get_identifier(format!("HYD_{}_MOTOR_RPM", id)),
             speed: LowPassFilter::<AngularVelocity>::new(
                 Self::LOW_PASS_RPM_TRANSIENT_TIME_CONSTANT,
             ),
@@ -108,11 +105,6 @@ impl Actuator for FlapSlatHydraulicMotor {
     fn reset_volumes(&mut self) {
         self.total_volume_returned_to_reservoir = Volume::new::<gallon>(0.);
         self.total_volume_to_actuator = Volume::new::<gallon>(0.);
-    }
-}
-impl SimulationElement for FlapSlatHydraulicMotor {
-    fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write(&self.rpm_id, self.speed().get::<revolution_per_minute>());
     }
 }
 
@@ -454,13 +446,6 @@ impl FlapSlatAssembly {
     }
 }
 impl SimulationElement for FlapSlatAssembly {
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        self.left_motor.accept(visitor);
-        self.right_motor.accept(visitor);
-
-        visitor.visit(self);
-    }
-
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(
             &self.position_left_percent_id,
