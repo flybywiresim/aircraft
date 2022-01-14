@@ -1,4 +1,3 @@
-import React from 'react';
 import { Arinc429Word } from '@shared/arinc429';
 import { useSimVar } from '@instruments/common/simVars';
 import { VerticalTape } from './PFDUtils';

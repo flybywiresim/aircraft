@@ -1,0 +1,21 @@
+{
+  "name": "msfs-avionics-test",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "npx rollup -c"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@rollup/plugin-node-resolve": "^13.1.1",
+    "@rollup/plugin-typescript": "^8.3.0",
+    "msfssdk": "file:../../msfs-avionics-mirror/msfssdk-0.1.0.tgz",
+    "rollup": "^2.62.0",
+    "rollup-plugin-import-css": "^3.0.2",
+    "rollup-plugin-scss": "^3.0.0",
+    "sass": "^1.45.1",
+    "typescript": "^4.5.4"
+  }
+}

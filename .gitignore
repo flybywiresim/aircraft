@@ -3,6 +3,7 @@
 !/.vscode/**
 !/.github/**
 !/.husky/**
+!/msfs-avionics-mirror/**
 !/flybywire-aircraft-a320-neo/**
 /flybywire-aircraft-a320-neo/layout.json
 /flybywire-aircraft-a320-neo/manifest.json
@@ -62,3 +63,6 @@ src/instruments/buildSrc/custom/*
 /src/mcdu-server/client/build
 !/flybywire-aircraft-a320-neo/CORS SERVER/*
 /flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/TEXTURE/A320NEO_COCKPIT_DECALSTEXT_ALBD.TIF.dds
+/**/.rollup.cache
+tsconfig.tsbuildinfo
+/**/package-lock.json
