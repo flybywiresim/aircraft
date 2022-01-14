@@ -8,21 +8,21 @@ use systems_wasm::Variable;
 
 pub(super) fn nose_wheel_steering(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>> {
     // The rudder pedals should start in a centered position.
-    builder.init_variable(Variable::Aspect("RAW_RUDDER_PEDAL_POSITION".into()), 0.5);
+    builder.init_variable(Variable::aspect("RAW_RUDDER_PEDAL_POSITION"), 0.5);
 
     builder.map(
         ExecuteOn::PreTick,
-        Variable::Named("RUDDER_PEDAL_POSITION".into()),
+        Variable::named("RUDDER_PEDAL_POSITION"),
         // Convert rudder pedal position to [-1;1], -1 is left
         |value| ((value + 100.) / 200.) * 2. - 1.,
-        Variable::Aspect("RAW_RUDDER_PEDAL_POSITION".into()),
+        Variable::aspect("RAW_RUDDER_PEDAL_POSITION"),
     );
 
     builder.map_many(
         ExecuteOn::PostTick,
         vec![
-            Variable::Named("REALISTIC_TILLER_ENABLED".into()),
-            Variable::Aspect("RAW_RUDDER_PEDAL_POSITION".into()),
+            Variable::named("REALISTIC_TILLER_ENABLED"),
+            Variable::aspect("RAW_RUDDER_PEDAL_POSITION"),
         ],
         |values| {
             let realistic_tiller_enabled = to_bool(values[0]);
@@ -33,18 +33,18 @@ pub(super) fn nose_wheel_steering(builder: &mut MsfsAspectBuilder) -> Result<(),
                 0.
             }
         },
-        Variable::Aspect("RUDDER_PEDAL_POSITION_RATIO".into()),
+        Variable::aspect("RUDDER_PEDAL_POSITION_RATIO"),
     );
 
     // The tiller handle should start in a centered position.
-    builder.init_variable(Variable::Aspect("RAW_TILLER_HANDLE_POSITION".into()), 0.5);
+    builder.init_variable(Variable::aspect("RAW_TILLER_HANDLE_POSITION"), 0.5);
 
     // Lacking a better event to bind to, we've picked a mixture axis for setting the
     // tiller handle position.
     builder.event_to_variable(
         "AXIS_MIXTURE4_SET",
         EventToVariableMapping::EventData32kPosition,
-        Variable::Aspect("RAW_TILLER_HANDLE_POSITION".into()),
+        Variable::aspect("RAW_TILLER_HANDLE_POSITION"),
         |options| options.mask(),
     )?;
 
@@ -57,7 +57,7 @@ pub(super) fn nose_wheel_steering(builder: &mut MsfsAspectBuilder) -> Result<(),
                 TILLER_KEYBOARD_INCREMENTS,
             )
         }),
-        Variable::Aspect("RAW_TILLER_HANDLE_POSITION".into()),
+        Variable::aspect("RAW_TILLER_HANDLE_POSITION"),
         |options| options.mask(),
     )?;
     builder.event_to_variable(
@@ -68,7 +68,7 @@ pub(super) fn nose_wheel_steering(builder: &mut MsfsAspectBuilder) -> Result<(),
                 TILLER_KEYBOARD_INCREMENTS,
             )
         }),
-        Variable::Aspect("RAW_TILLER_HANDLE_POSITION".into()),
+        Variable::aspect("RAW_TILLER_HANDLE_POSITION"),
         |options| options.mask(),
     )?;
 
@@ -77,17 +77,17 @@ pub(super) fn nose_wheel_steering(builder: &mut MsfsAspectBuilder) -> Result<(),
     builder.event_to_variable(
         "TOGGLE_WATER_RUDDER",
         EventToVariableMapping::Value(1.),
-        Variable::Aspect("TILLER_PEDAL_DISCONNECT".into()),
+        Variable::aspect("TILLER_PEDAL_DISCONNECT"),
         |options| options.mask().afterwards_reset_to(0.),
     )?;
 
     builder.map_many(
         ExecuteOn::PostTick,
         vec![
-            Variable::Named("REALISTIC_TILLER_ENABLED".into()),
-            Variable::Aspect("RAW_RUDDER_PEDAL_POSITION".into()),
-            Variable::Aspect("RAW_TILLER_HANDLE_POSITION".into()),
-            Variable::Aspect("TILLER_PEDAL_DISCONNECT".into()),
+            Variable::named("REALISTIC_TILLER_ENABLED"),
+            Variable::aspect("RAW_RUDDER_PEDAL_POSITION"),
+            Variable::aspect("RAW_TILLER_HANDLE_POSITION"),
+            Variable::aspect("TILLER_PEDAL_DISCONNECT"),
         ],
         |values| {
             let realistic_tiller_enabled = to_bool(values[0]);
@@ -106,21 +106,21 @@ pub(super) fn nose_wheel_steering(builder: &mut MsfsAspectBuilder) -> Result<(),
                 }
             }
         },
-        Variable::Named("TILLER_HANDLE_POSITION".into()),
+        Variable::named("TILLER_HANDLE_POSITION"),
     );
 
     builder.map(
         ExecuteOn::PostTick,
-        Variable::Aspect("NOSE_WHEEL_POSITION_RATIO".into()),
+        Variable::aspect("NOSE_WHEEL_POSITION_RATIO"),
         steering_animation_to_msfs_from_steering_angle,
-        Variable::Named("NOSE_WHEEL_POSITION".into()),
+        Variable::named("NOSE_WHEEL_POSITION"),
     );
 
     builder.map_many(
         ExecuteOn::PostTick,
         vec![
-            Variable::Aspect("NOSE_WHEEL_POSITION_RATIO".into()),
-            Variable::Aircraft("RUDDER POSITION".into(), "Position".into(), 0),
+            Variable::aspect("NOSE_WHEEL_POSITION_RATIO"),
+            Variable::aircraft("RUDDER POSITION", "Position", 0),
         ],
         |values| {
             let nose_wheel_position = values[0];
@@ -128,11 +128,11 @@ pub(super) fn nose_wheel_steering(builder: &mut MsfsAspectBuilder) -> Result<(),
 
             steering_demand_to_msfs_from_steering_angle(nose_wheel_position, rudder_position)
         },
-        Variable::Aspect("STEERING_ANGLE".into()),
+        Variable::aspect("STEERING_ANGLE"),
     );
 
     builder.variable_to_event(
-        Variable::Aspect("STEERING_ANGLE".into()),
+        Variable::aspect("STEERING_ANGLE"),
         VariableToEventMapping::EventData32kPosition,
         VariableToEventWriteOn::EveryTick,
         "STEERING_SET",

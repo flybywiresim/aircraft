@@ -1,4 +1,4 @@
-//#![cfg(any(target_arch = "wasm32", doc))]
+#![cfg(any(target_arch = "wasm32", doc))]
 mod autobrakes;
 mod brakes;
 mod flaps;
@@ -11,7 +11,7 @@ use flaps::flaps;
 use nose_wheel_steering::nose_wheel_steering;
 use std::error::Error;
 use systems::{failures::FailureType, shared::HydraulicColor};
-use systems_wasm::aspects::{ExecuteOn, MsfsAspectBuilder};
+use systems_wasm::aspects::ExecuteOn;
 use systems_wasm::{MsfsSimulationBuilder, Variable};
 
 #[msfs::gauge(name=systems)]
@@ -19,7 +19,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     let mut sim_connect = gauge.open_simconnect("systems")?;
 
     let (mut simulation, mut handler) =
-        MsfsSimulationBuilder::new("A32NX_".into(), sim_connect.as_mut().get_mut())
+        MsfsSimulationBuilder::new("A32NX_", sim_connect.as_mut().get_mut())
             .with_electrical_buses(vec![
                 ("AC_1", 2),
                 ("AC_2", 3),
@@ -36,7 +36,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
                 ("DC_HOT_2", 13),
                 ("DC_GND_FLT_SVC", 15),
             ])
-            .with_auxiliary_power_unit("OVHD_APU_START_PB_IS_AVAILABLE".into(), 8)?
+            .with_auxiliary_power_unit("OVHD_APU_START_PB_IS_AVAILABLE", 8)?
             .with_failures(vec![
                 (24_000, FailureType::TransformerRectifier(1)),
                 (24_001, FailureType::TransformerRectifier(2)),
@@ -104,7 +104,47 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
             .provides_aircraft_variable("TURB ENG CORRECTED N2", "Percent", 2)?
             .provides_aircraft_variable("UNLIMITED FUEL", "Bool", 0)?
             .provides_aircraft_variable("VELOCITY WORLD Y", "feet per minute", 0)?
-            .with_aspect(aircraft_variable_mapping)?
+            .with_aspect(|builder| {
+                builder.copy(
+                    Variable::aircraft("APU GENERATOR SWITCH", "Bool", 0),
+                    Variable::aspect("OVHD_ELEC_APU_GEN_PB_IS_ON"),
+                );
+                builder.copy(
+                    Variable::aircraft("BLEED AIR ENGINE", "Bool", 1),
+                    Variable::aspect("OVHD_PNEU_ENG_1_BLEED_PB_IS_AUTO"),
+                );
+                builder.copy(
+                    Variable::aircraft("BLEED AIR ENGINE", "Bool", 2),
+                    Variable::aspect("OVHD_PNEU_ENG_2_BLEED_PB_IS_AUTO"),
+                );
+                builder.copy(
+                    Variable::aircraft("EXTERNAL POWER AVAILABLE", "Bool", 1),
+                    Variable::aspect("OVHD_ELEC_EXT_PWR_PB_IS_AVAILABLE"),
+                );
+                builder.copy(
+                    Variable::aircraft("EXTERNAL POWER ON", "Bool", 1),
+                    Variable::aspect("OVHD_ELEC_EXT_PWR_PB_IS_ON"),
+                );
+
+                builder.copy(
+                    Variable::aircraft("GENERAL ENG MASTER ALTERNATOR", "Bool", 1),
+                    Variable::aspect("OVHD_ELEC_ENG_GEN_1_PB_IS_ON"),
+                );
+
+                builder.copy(
+                    Variable::aircraft("GENERAL ENG MASTER ALTERNATOR", "Bool", 2),
+                    Variable::aspect("OVHD_ELEC_ENG_GEN_2_PB_IS_ON"),
+                );
+
+                builder.map(
+                    ExecuteOn::PreTick,
+                    Variable::aircraft("INTERACTIVE POINT OPEN", "Position", 5),
+                    |value| if value > 0. { 1. } else { 0. },
+                    Variable::aspect("FWD_DOOR_CARGO_OPEN_REQ"),
+                );
+
+                Ok(())
+            })?
             .with_aspect(brakes)?
             .with_aspect(autobrakes)?
             .with_aspect(nose_wheel_steering)?
@@ -114,48 +154,6 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     while let Some(event) = gauge.next_event().await {
         handler.handle(event, &mut simulation, sim_connect.as_mut().get_mut())?;
     }
-
-    Ok(())
-}
-
-fn aircraft_variable_mapping(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>> {
-    builder.copy(
-        Variable::Aircraft("APU GENERATOR SWITCH".into(), "Bool".into(), 0),
-        Variable::Aspect("OVHD_ELEC_APU_GEN_PB_IS_ON".into()),
-    );
-    builder.copy(
-        Variable::Aircraft("BLEED AIR ENGINE".into(), "Bool".into(), 1),
-        Variable::Aspect("OVHD_PNEU_ENG_1_BLEED_PB_IS_AUTO".into()),
-    );
-    builder.copy(
-        Variable::Aircraft("BLEED AIR ENGINE".into(), "Bool".into(), 2),
-        Variable::Aspect("OVHD_PNEU_ENG_2_BLEED_PB_IS_AUTO".into()),
-    );
-    builder.copy(
-        Variable::Aircraft("EXTERNAL POWER AVAILABLE".into(), "Bool".into(), 1),
-        Variable::Aspect("OVHD_ELEC_EXT_PWR_PB_IS_AVAILABLE".into()),
-    );
-    builder.copy(
-        Variable::Aircraft("EXTERNAL POWER ON".into(), "Bool".into(), 1),
-        Variable::Aspect("OVHD_ELEC_EXT_PWR_PB_IS_ON".into()),
-    );
-
-    builder.copy(
-        Variable::Aircraft("GENERAL ENG MASTER ALTERNATOR".into(), "Bool".into(), 1),
-        Variable::Aspect("OVHD_ELEC_ENG_GEN_1_PB_IS_ON".into()),
-    );
-
-    builder.copy(
-        Variable::Aircraft("GENERAL ENG MASTER ALTERNATOR".into(), "Bool".into(), 2),
-        Variable::Aspect("OVHD_ELEC_ENG_GEN_2_PB_IS_ON".into()),
-    );
-
-    builder.map(
-        ExecuteOn::PreTick,
-        Variable::Aircraft("INTERACTIVE POINT OPEN".into(), "Position".into(), 5),
-        |value| if value > 0. { 1. } else { 0. },
-        Variable::Aspect("FWD_DOOR_CARGO_OPEN_REQ".into()),
-    );
 
     Ok(())
 }

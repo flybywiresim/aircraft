@@ -12,13 +12,13 @@ pub(super) fn brakes(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Erro
         EventToVariableMapping::CurrentValueToValue(|current_value| {
             from_bool(!to_bool(current_value))
         }),
-        Variable::Named("PARK_BRAKE_LEVER_POS".into()),
+        Variable::named("PARK_BRAKE_LEVER_POS"),
         |options| options.mask(),
     )?;
     builder.event_to_variable(
         "PARKING_BRAKE_SET",
         EventToVariableMapping::EventDataToValue(|event_data| from_bool(event_data == 1)),
-        Variable::Named("PARK_BRAKE_LEVER_POS".into()),
+        Variable::named("PARK_BRAKE_LEVER_POS"),
         |options| options.mask(),
     )?;
 
@@ -29,11 +29,11 @@ pub(super) fn brakes(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Erro
     let axis_left_brake_set_event_id = builder.event_to_variable(
         "AXIS_LEFT_BRAKE_SET",
         EventToVariableMapping::EventData32kPosition,
-        Variable::Aspect("BRAKES_LEFT_EVENT".into()),
+        Variable::aspect("BRAKES_LEFT_EVENT"),
         |options| options.mask(),
     )?;
     builder.variable_to_event_id(
-        Variable::Aspect("BRAKE LEFT FORCE FACTOR".into()),
+        Variable::aspect("BRAKE LEFT FORCE FACTOR"),
         VariableToEventMapping::EventData32kPosition,
         VariableToEventWriteOn::EveryTick,
         axis_left_brake_set_event_id,
@@ -41,11 +41,11 @@ pub(super) fn brakes(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Erro
     let axis_right_brake_set_event_id = builder.event_to_variable(
         "AXIS_RIGHT_BRAKE_SET",
         EventToVariableMapping::EventData32kPosition,
-        Variable::Aspect("BRAKES_RIGHT_EVENT".into()),
+        Variable::aspect("BRAKES_RIGHT_EVENT"),
         |options| options.mask(),
     )?;
     builder.variable_to_event_id(
-        Variable::Aspect("BRAKE RIGHT FORCE FACTOR".into()),
+        Variable::aspect("BRAKE RIGHT FORCE FACTOR"),
         VariableToEventMapping::EventData32kPosition,
         VariableToEventWriteOn::EveryTick,
         axis_right_brake_set_event_id,
@@ -58,19 +58,19 @@ pub(super) fn brakes(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Erro
     builder.event_to_variable(
         "BRAKES",
         EventToVariableMapping::SmoothPress(KEYBOARD_PRESS_SPEED, KEYBOARD_RELEASE_SPEED),
-        Variable::Aspect("BRAKES".into()),
+        Variable::aspect("BRAKES"),
         |options| options.mask(),
     )?;
     builder.event_to_variable(
         "BRAKES_LEFT",
         EventToVariableMapping::SmoothPress(KEYBOARD_PRESS_SPEED, KEYBOARD_RELEASE_SPEED),
-        Variable::Aspect("BRAKES_LEFT".into()),
+        Variable::aspect("BRAKES_LEFT"),
         |options| options.mask(),
     )?;
     builder.event_to_variable(
         "BRAKES_RIGHT",
         EventToVariableMapping::SmoothPress(KEYBOARD_PRESS_SPEED, KEYBOARD_RELEASE_SPEED),
-        Variable::Aspect("BRAKES_RIGHT".into()),
+        Variable::aspect("BRAKES_RIGHT"),
         |options| options.mask(),
     )?;
 
@@ -79,24 +79,24 @@ pub(super) fn brakes(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Erro
     builder.reduce(
         ExecuteOn::PreTick,
         vec![
-            Variable::Aspect("BRAKES".into()),
-            Variable::Aspect("BRAKES_LEFT".into()),
-            Variable::Aspect("BRAKES_LEFT_EVENT".into()),
+            Variable::aspect("BRAKES"),
+            Variable::aspect("BRAKES_LEFT"),
+            Variable::aspect("BRAKES_LEFT_EVENT"),
         ],
         0.,
         to_percent_max,
-        Variable::Named("LEFT_BRAKE_PEDAL_INPUT".into()),
+        Variable::named("LEFT_BRAKE_PEDAL_INPUT"),
     );
     builder.reduce(
         ExecuteOn::PreTick,
         vec![
-            Variable::Aspect("BRAKES".into()),
-            Variable::Aspect("BRAKES_RIGHT".into()),
-            Variable::Aspect("BRAKES_RIGHT_EVENT".into()),
+            Variable::aspect("BRAKES"),
+            Variable::aspect("BRAKES_RIGHT"),
+            Variable::aspect("BRAKES_RIGHT_EVENT"),
         ],
         0.,
         to_percent_max,
-        Variable::Named("RIGHT_BRAKE_PEDAL_INPUT".into()),
+        Variable::named("RIGHT_BRAKE_PEDAL_INPUT"),
     );
 
     Ok(())

@@ -13,25 +13,25 @@ pub(super) fn autobrakes(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn 
     builder.event_to_variable(
         "AUTOBRAKE_LO_SET",
         EventToVariableMapping::Value(1.),
-        Variable::Named("OVHD_AUTOBRK_LOW_ON_IS_PRESSED".into()),
+        Variable::named("OVHD_AUTOBRK_LOW_ON_IS_PRESSED"),
         options,
     )?;
     builder.event_to_variable(
         "AUTOBRAKE_MED_SET",
         EventToVariableMapping::Value(1.),
-        Variable::Named("OVHD_AUTOBRK_MED_ON_IS_PRESSED".into()),
+        Variable::named("OVHD_AUTOBRK_MED_ON_IS_PRESSED"),
         options,
     )?;
     builder.event_to_variable(
         "AUTOBRAKE_HI_SET",
         EventToVariableMapping::Value(1.),
-        Variable::Named("OVHD_AUTOBRK_MAX_ON_IS_PRESSED".into()),
+        Variable::named("OVHD_AUTOBRK_MAX_ON_IS_PRESSED"),
         options,
     )?;
     builder.event_to_variable(
         "AUTOBRAKE_DISARM",
         EventToVariableMapping::Value(1.),
-        Variable::Named("AUTOBRAKE_DISARM".into()),
+        Variable::named("AUTOBRAKE_DISARM"),
         |options| options.afterwards_reset_to(0.),
     )?;
 

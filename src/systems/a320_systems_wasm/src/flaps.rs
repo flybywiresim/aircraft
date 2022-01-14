@@ -10,13 +10,13 @@ pub(super) fn flaps(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error
     builder.event_to_variable(
         "FLAPS_INCR",
         EventToVariableMapping::CurrentValueToValue(|current_value| (current_value + 1.).min(4.)),
-        Variable::Named("FLAPS_HANDLE_INDEX".into()),
+        Variable::named("FLAPS_HANDLE_INDEX"),
         |options| options.mask(),
     )?;
     builder.event_to_variable(
         "FLAPS_DECR",
         EventToVariableMapping::CurrentValueToValue(|current_value| (current_value - 1.).max(0.)),
-        Variable::Named("FLAPS_HANDLE_INDEX".into()),
+        Variable::named("FLAPS_HANDLE_INDEX"),
         |options| options.mask(),
     )?;
     flaps_event_to_value(builder, "FLAPS_UP", 0.)?;
@@ -30,7 +30,7 @@ pub(super) fn flaps(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error
             let normalized_input: f64 = (event_data as i32 as f64) / 8192. - 1.;
             get_handle_pos_from_0_1(normalized_input, current_value)
         }),
-        Variable::Named("FLAPS_HANDLE_INDEX".into()),
+        Variable::named("FLAPS_HANDLE_INDEX"),
         |options| options.mask(),
     )?;
     builder.event_to_variable(
@@ -39,15 +39,15 @@ pub(super) fn flaps(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error
             let normalized_input: f64 = (event_data as i32 as f64) / 16384.;
             get_handle_pos_from_0_1(normalized_input, current_value)
         }),
-        Variable::Named("FLAPS_HANDLE_INDEX".into()),
+        Variable::named("FLAPS_HANDLE_INDEX"),
         |options| options.mask(),
     )?;
 
     builder.map(
         ExecuteOn::PreTick,
-        Variable::Named("FLAPS_HANDLE_INDEX".into()),
+        Variable::named("FLAPS_HANDLE_INDEX"),
         |value| value / 4.,
-        Variable::Named("FLAPS_HANDLE_PERCENT".into()),
+        Variable::named("FLAPS_HANDLE_PERCENT"),
     );
 
     builder.variables_to_object(Box::new(FlapsSurface {
@@ -71,7 +71,7 @@ fn flaps_event_to_value(
     builder.event_to_variable(
         event_name,
         EventToVariableMapping::Value(value),
-        Variable::Named("FLAPS_HANDLE_INDEX".into()),
+        Variable::named("FLAPS_HANDLE_INDEX"),
         |options| options.mask(),
     )?;
 
@@ -108,8 +108,8 @@ struct FlapsSurface {
 impl VariablesToObject for FlapsSurface {
     fn variables(&self) -> Vec<Variable> {
         vec![
-            Variable::Named("LEFT_FLAPS_POSITION_PERCENT".into()),
-            Variable::Named("RIGHT_FLAPS_POSITION_PERCENT".into()),
+            Variable::named("LEFT_FLAPS_POSITION_PERCENT"),
+            Variable::named("RIGHT_FLAPS_POSITION_PERCENT"),
         ]
     }
 
@@ -135,8 +135,8 @@ struct SlatsSurface {
 impl VariablesToObject for SlatsSurface {
     fn variables(&self) -> Vec<Variable> {
         vec![
-            Variable::Named("LEFT_SLATS_POSITION_PERCENT".into()),
-            Variable::Named("RIGHT_SLATS_POSITION_PERCENT".into()),
+            Variable::named("LEFT_SLATS_POSITION_PERCENT"),
+            Variable::named("RIGHT_SLATS_POSITION_PERCENT"),
         ]
     }
 
@@ -158,10 +158,10 @@ struct FlapsHandleIndex {
 impl VariablesToObject for FlapsHandleIndex {
     fn variables(&self) -> Vec<Variable> {
         vec![
-            Variable::Named("LEFT_FLAPS_POSITION_PERCENT".into()),
-            Variable::Named("RIGHT_FLAPS_POSITION_PERCENT".into()),
-            Variable::Named("LEFT_SLATS_POSITION_PERCENT".into()),
-            Variable::Named("RIGHT_SLATS_POSITION_PERCENT".into()),
+            Variable::named("LEFT_FLAPS_POSITION_PERCENT"),
+            Variable::named("RIGHT_FLAPS_POSITION_PERCENT"),
+            Variable::named("LEFT_SLATS_POSITION_PERCENT"),
+            Variable::named("RIGHT_SLATS_POSITION_PERCENT"),
         ]
     }
 

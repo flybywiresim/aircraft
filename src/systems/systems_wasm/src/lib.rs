@@ -1,4 +1,4 @@
-//#![cfg(any(target_arch = "wasm32", doc))]
+#![cfg(any(target_arch = "wasm32", doc))]
 #[macro_use]
 pub mod aspects;
 mod electrical;
@@ -87,10 +87,10 @@ pub struct MsfsSimulationBuilder<'a, 'b> {
 impl<'a, 'b> MsfsSimulationBuilder<'a, 'b> {
     const MSFS_INFINITELY_POWERED_BUS_IDENTIFIER: usize = 1;
 
-    pub fn new(key_prefix: String, sim_connect: &'a mut SimConnect<'b>) -> Self {
+    pub fn new(key_prefix: &str, sim_connect: &'a mut SimConnect<'b>) -> Self {
         Self {
-            variable_registry: Some(MsfsVariableRegistry::new(key_prefix.clone())),
-            key_prefix,
+            variable_registry: Some(MsfsVariableRegistry::new(key_prefix.into())),
+            key_prefix: key_prefix.into(),
             electrical_buses: Some(Default::default()),
             sim_connect,
             apu: None,
@@ -157,13 +157,13 @@ impl<'a, 'b> MsfsSimulationBuilder<'a, 'b> {
 
     pub fn with_auxiliary_power_unit(
         mut self,
-        is_available_variable_name: String,
+        is_available_variable_name: &str,
         fuel_valve_number: u8,
     ) -> Result<Self, Box<dyn Error>> {
         if let Some(registry) = &mut self.variable_registry {
             self.apu = Some(MsfsAuxiliaryPowerUnit::new(
                 registry,
-                is_available_variable_name,
+                is_available_variable_name.into(),
                 fuel_valve_number,
             )?);
         }
@@ -360,11 +360,11 @@ pub enum Variable {
 impl Display for Variable {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         let name = match self {
-            Variable::Aircraft(name, _, index) => {
+            Self::Aircraft(name, _, index) => {
                 format!("Aircraft({})", Self::indexed_name(name, *index))
             }
-            Variable::Named(name, ..) => format!("Named({})", name),
-            Variable::Aspect(name, ..) => format!("Aspect({})", name),
+            Self::Named(name, ..) => format!("Named({})", name),
+            Self::Aspect(name, ..) => format!("Aspect({})", name),
         };
 
         write!(f, "{}", name)
@@ -372,19 +372,29 @@ impl Display for Variable {
 }
 
 impl Variable {
+    pub fn aircraft(name: &str, units: &str, index: usize) -> Self {
+        Self::Aircraft(name.into(), units.into(), index)
+    }
+
+    pub fn named(name: &str) -> Self {
+        Self::Named(name.into())
+    }
+
+    pub fn aspect(name: &str) -> Self {
+        Self::Aspect(name.into())
+    }
+
     /// Provides the name that should be used for storing and looking up a [VariableIdentifier].
     fn lookup_name(&self) -> String {
         match self {
-            Variable::Aircraft(name, _, index, ..) => Self::indexed_name(name, *index),
-            Variable::Named(name, ..) | Variable::Aspect(name, ..) => name.into(),
+            Self::Aircraft(name, _, index, ..) => Self::indexed_name(name, *index),
+            Self::Named(name, ..) | Self::Aspect(name, ..) => name.into(),
         }
     }
 
     fn add_prefix(&mut self, prefix: &str) {
         match self {
-            Variable::Aircraft(name, ..)
-            | Variable::Named(name, ..)
-            | Variable::Aspect(name, ..) => {
+            Self::Aircraft(name, ..) | Self::Named(name, ..) | Self::Aspect(name, ..) => {
                 *name = format!("{}{}", prefix, name);
             }
         }
@@ -444,9 +454,9 @@ impl From<VariableType> for u8 {
 impl From<u8> for VariableType {
     fn from(value: u8) -> Self {
         match value {
-            0 => VariableType::Aircraft,
-            1 => VariableType::Named,
-            2 => VariableType::Aspect,
+            0 => Self::Aircraft,
+            1 => Self::Named,
+            2 => Self::Aspect,
             _ => panic!("Cannot convert {} to identifier type", value),
         }
     }
@@ -467,17 +477,17 @@ pub enum VariableValue {
 impl VariableValue {
     fn read(&self) -> f64 {
         match self {
-            VariableValue::Aircraft(underlying) => underlying.get(),
-            VariableValue::Named(underlying) => underlying.get_value(),
-            VariableValue::Aspect(underlying) => *underlying,
+            Self::Aircraft(underlying) => underlying.get(),
+            Self::Named(underlying) => underlying.get_value(),
+            Self::Aspect(underlying) => *underlying,
         }
     }
 
     fn write(&mut self, value: f64) {
         match self {
-            VariableValue::Aircraft(_) => panic!("Cannot write to an aircraft variable."),
-            VariableValue::Named(underlying) => underlying.set_value(value),
-            VariableValue::Aspect(underlying) => *underlying = value,
+            Self::Aircraft(_) => panic!("Cannot write to an aircraft variable."),
+            Self::Named(underlying) => underlying.set_value(value),
+            Self::Aspect(underlying) => *underlying = value,
         }
     }
 }
