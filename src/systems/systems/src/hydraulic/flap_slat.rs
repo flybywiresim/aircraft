@@ -210,7 +210,9 @@ impl FlapSlatAssembly {
 
         self.update_speed_and_position(context);
 
-        self.update_motor_speed_and_flows(left_pressure, right_pressure, context);
+        self.update_motors_speed(left_pressure, right_pressure, context);
+
+        self.update_motors_flow(left_pressure, right_pressure, context);
     }
 
     fn update_speed_and_position(&mut self, context: &UpdateContext) {
@@ -312,7 +314,7 @@ impl FlapSlatAssembly {
         }
     }
 
-    fn update_motor_speed_and_flows(
+    fn update_motors_speed(
         &mut self,
         left_pressure: Pressure,
         right_pressure: Pressure,
@@ -354,7 +356,6 @@ impl FlapSlatAssembly {
                     * self.gearbox_ratio.get::<ratio>(),
             ),
         );
-        self.left_motor.update_flow(context);
 
         self.right_motor.update_speed(
             context,
@@ -364,7 +365,11 @@ impl FlapSlatAssembly {
                     * self.gearbox_ratio.get::<ratio>(),
             ),
         );
+    }
+
+    fn update_motors_flow(&mut self, context: &UpdateContext) {
         self.right_motor.update_flow(context);
+        self.left_motor.update_flow(context);
     }
 
     fn is_approaching_requested_position(&self, synchro_gear_angle_request: Angle) -> bool {
