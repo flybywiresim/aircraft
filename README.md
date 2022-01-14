@@ -14,7 +14,7 @@
 
 The A32NX Project is a community-driven open source project to create a free Airbus A320neo in Microsoft Flight Simulator that is as close to reality as possible.
 
-The following aircraft configuration is currently simulated:
+The following aircraft configuration is currently simulated or targeted:
 
 ### A320neo
 
@@ -24,6 +24,10 @@ The following aircraft configuration is currently simulated:
  APU         APS3200
  FMGS        Honeywell Release H3
  FWC Std.    H2F9C
+ TAWS        Honeywell EGPWS
+ ACAS        Honeywell TPA-100B
+ MMR         Honeywell iMMR
+ WXR         Honeywell RDR-4000
  ```
 
 Please note that this configuration may change in the future as the A32NX project evolves and changes.
@@ -74,7 +78,7 @@ Chances are, yes! While we do not guarantee every single detail of the aircraft 
 
 ### Why has feature X not been implemented yet?
 
-It's very likely that the feature you are awaiting is already under development! However, we strive for the greatest accuracy possible when producing aircraft, and it is therefore likely that a great deal of time will be spent on developing a proper software design and gathering sufficient references before we are able to offer the feature. 
+It's very likely that the feature you are awaiting is already under development! However, we strive for the greatest accuracy possible when producing aircraft, and it is therefore likely that a great deal of time will be spent on developing a proper software design and gathering sufficient references before we are able to offer the feature.
 
 ### Why is my version not the same as what I see others using?
 
