@@ -6,9 +6,7 @@ use systems::simulation::{
 };
 
 use std::panic;
-use uom::si::{
-    angle::degree, f64::*,  velocity::knot,
-};
+use uom::si::{angle::degree, f64::*, velocity::knot};
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 enum FlapsConf {
@@ -270,9 +268,7 @@ mod tests {
         Aircraft,
     };
 
-    use uom::si::{
-        angular_velocity::degree_per_second, pressure::psi,
-    };
+    use uom::si::{angular_velocity::degree_per_second, pressure::psi};
 
     struct SlatFlapGear {
         current_angle: Angle,
