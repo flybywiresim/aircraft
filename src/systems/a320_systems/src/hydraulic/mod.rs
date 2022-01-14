@@ -761,6 +761,7 @@ impl A320Hydraulic {
             self.yellow_circuit.reservoir(),
         );
         self.power_transfer_unit.update(
+            context,
             self.green_circuit.system_section(),
             self.yellow_circuit.system_section(),
             &self.power_transfer_unit_controller,
@@ -6572,6 +6573,58 @@ mod tests {
 
             assert!(test_bed.nose_steering_position().get::<degree>() <= -5.9);
             assert!(test_bed.nose_steering_position().get::<degree>() >= -6.1);
+        }
+
+        #[test]
+        fn ptu_pressurise_green_from_yellow_edp() {
+            let mut test_bed = test_bed_with()
+                .set_cold_dark_inputs()
+                .on_the_ground()
+                .start_eng2(Ratio::new::<percent>(60.))
+                .set_park_brake(false)
+                .set_ptu_state(false)
+                .run_waiting_for(Duration::from_secs(25));
+
+            assert!(!test_bed.is_ptu_enabled());
+
+            test_bed = test_bed
+                .set_ptu_state(true)
+                .run_waiting_for(Duration::from_secs(10));
+
+            // Now we should have pressure in yellow and green
+            assert!(test_bed.is_green_pressurised());
+            assert!(test_bed.green_pressure() > Pressure::new::<psi>(2000.));
+            assert!(test_bed.green_pressure() < Pressure::new::<psi>(3100.));
+
+            assert!(test_bed.is_yellow_pressurised());
+            assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(2000.));
+            assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(3100.));
+        }
+
+        #[test]
+        fn ptu_pressurise_yellow_from_green_edp() {
+            let mut test_bed = test_bed_with()
+                .set_cold_dark_inputs()
+                .on_the_ground()
+                .start_eng1(Ratio::new::<percent>(60.))
+                .set_park_brake(false)
+                .set_ptu_state(false)
+                .run_waiting_for(Duration::from_secs(25));
+
+            assert!(!test_bed.is_ptu_enabled());
+
+            test_bed = test_bed
+                .set_ptu_state(true)
+                .run_waiting_for(Duration::from_secs(25));
+
+            // Now we should have pressure in yellow and green
+            assert!(test_bed.is_green_pressurised());
+            assert!(test_bed.green_pressure() > Pressure::new::<psi>(2000.));
+            assert!(test_bed.green_pressure() < Pressure::new::<psi>(3100.));
+
+            assert!(test_bed.is_yellow_pressurised());
+            assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(2000.));
+            assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(3100.));
         }
 
         #[test]

@@ -872,6 +872,10 @@
     - Gallon per second
     - Power Transfer Unit instantaneous flow in motor side
 
+- A32NX_HYD_PTU_SHAFT_RPM
+    - Revolutions per minute
+    - Power Transfer Unit shaft rpm
+
 - A32NX_OVHD_HYD_RAT_MAN_ON_IS_PRESSED
     - Bool
     - Deploys the RAT manually
