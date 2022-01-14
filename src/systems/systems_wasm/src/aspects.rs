@@ -347,6 +347,21 @@ impl Map {
     }
 }
 
+fn precondition_multiple_identifiers(action_name: &str, identifiers: &[VariableIdentifier]) {
+    if identifiers.len() < 2 {
+        eprintln!(
+            "{} requires at least 2 input variables. {} {} provided.",
+            action_name,
+            identifiers.len(),
+            if identifiers.len() == 1 {
+                "was"
+            } else {
+                "were"
+            }
+        );
+    }
+}
+
 struct MapMany {
     input_variable_identifiers: Vec<VariableIdentifier>,
     func: fn(&[f64]) -> f64,
@@ -359,6 +374,8 @@ impl MapMany {
         func: fn(&[f64]) -> f64,
         output_variable_identifier: VariableIdentifier,
     ) -> Self {
+        precondition_multiple_identifiers("MapMany", &input_variable_identifiers);
+
         Self {
             input_variable_identifiers,
             func,
@@ -397,10 +414,7 @@ impl Reduce {
         func: fn(f64, f64) -> f64,
         output_variable_identifier: VariableIdentifier,
     ) -> Self {
-        assert!(
-            input_variable_identifiers.len() >= 2,
-            "Aggregation requires at least two input variables."
-        );
+        precondition_multiple_identifiers("Reduce", &input_variable_identifiers);
 
         Self {
             input_variable_identifiers,
