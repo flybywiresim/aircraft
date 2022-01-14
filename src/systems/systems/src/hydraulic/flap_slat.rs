@@ -1,8 +1,7 @@
 use super::linear_actuator::Actuator;
 use crate::shared::{interpolation, low_pass_filter::LowPassFilter, FeedbackPositionPickoffUnit};
 use crate::simulation::{
-    InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
-    VariableIdentifier, Write,
+    InitContext, SimulationElement, SimulatorWriter, UpdateContext, VariableIdentifier, Write,
 };
 
 use uom::si::{
@@ -184,7 +183,7 @@ impl FlapSlatAssembly {
         }
     }
 
-    fn synchro_angle_to_flap_angle(&self, synchro_gear_angle: Angle) -> Angle {
+    fn synchro_angle_to_surface_angle(&self, synchro_gear_angle: Angle) -> Angle {
         synchro_gear_angle / self.surface_to_synchro_gear_ratio.get::<ratio>()
     }
 
@@ -235,13 +234,13 @@ impl FlapSlatAssembly {
                 && self.final_requested_synchro_gear_position > self.position_feedback()
         {
             self.surface_control_arm_position =
-                self.synchro_angle_to_flap_angle(self.final_requested_synchro_gear_position);
+                self.synchro_angle_to_surface_angle(self.final_requested_synchro_gear_position);
         }
 
         self.surface_control_arm_position = self
             .surface_control_arm_position
             .max(Angle::new::<radian>(0.))
-            .min(self.synchro_angle_to_flap_angle(self.max_synchro_gear_position));
+            .min(self.synchro_angle_to_surface_angle(self.max_synchro_gear_position));
     }
 
     fn update_final_ffpu_angle_request(
