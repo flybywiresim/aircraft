@@ -39,19 +39,19 @@ const Dashboard: React.FC<DashboardProps> = (props) => {
                 />
 
                 <div className="flex flex-col w-3/5">
-                    <div className="bg-navy-lighter rounded-2xl ml-1 mb-3 shadow-lg p-6">
-                        <div className="h-full flex items-top">
+                    <div className="h-2/5 bg-navy-lighter rounded-2xl ml-3 mb-3 shadow-lg p-6">
+                        <div className="h-full flex items-center">
                             <div className="w-1/2">
                                 <WeatherWidget name="origin" editIcao="yes" icao={props.simbriefData.departingAirport} />
                             </div>
-                            <div className="border border-gray-500 rounded-full h-80" />
+                            <div className="border border-gray-500 rounded-full h-60" />
                             <div className="w-1/2">
                                 <WeatherWidget name="origin" editIcao="yes" icao={props.simbriefData.arrivingAirport} />
                             </div>
                         </div>
                     </div>
 
-                    <div className="h-full ml-3 mt-3 rounded-2xl shadow-lg">
+                    <div className="h-3/5 ml-3 mt-3 rounded-2xl shadow-lg">
                         <Map currentFlight={getCurrentFlightData} forceTileset="carto-dark" disableMenu hideOthers />
                         <small className="font-mono text-xs text-white opacity-40 block text-right mr-1">Leaflet OpenStreetMap CartoDB &copy;</small>
                     </div>
