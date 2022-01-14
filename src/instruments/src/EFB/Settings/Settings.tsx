@@ -556,7 +556,7 @@ const ATSUAOCPage = () => {
     ];
 
     const tafSourceButtons: ButtonType[] = [
-        { name: 'IVAO', setting: 'IVAO' },
+        { name: 'FAA', setting: 'FAA' },
         { name: 'NOAA', setting: 'NOAA' },
     ];
 
