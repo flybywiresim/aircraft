@@ -1,5 +1,4 @@
 import { Arinc429Word } from '@shared/arinc429';
-import React from 'react';
 import { getSimVar } from '../util.js';
 
 interface AttitudeIndicatorFixedUpperProps {
