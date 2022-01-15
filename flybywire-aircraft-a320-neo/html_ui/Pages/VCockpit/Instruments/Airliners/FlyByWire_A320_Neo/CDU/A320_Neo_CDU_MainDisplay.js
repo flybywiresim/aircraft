@@ -1543,7 +1543,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     this._labels[5],
                     this._lines[5],
                 ],
-                scratchpad: `{${this.scratchpad._displayUnit._scratchpadElement.className}}${this.scratchpad._displayUnit._scratchpadElement.textContent}{end}`,
+                scratchpad: `{${this.scratchpad.getColor()}}${this.scratchpad.getDisplayText()}{end}`,
                 title: this._title,
                 titleLeft: `{small}${this._titleLeft}{end}`,
                 page: this._pageCount > 0 ? `{small}${this._pageCurrent}/${this._pageCount}{end}` : '',
