@@ -17,7 +17,7 @@ export enum CpdlcMessageResponseType {
  * Defines the general freetext message format
  */
 export class CpdlcMessage extends AtsuMessage {
-    public Response : CpdlcMessageResponseType = undefined;
+    public Response: CpdlcMessageResponseType = undefined;
 
     public InputTransmissionId = -1;
 
