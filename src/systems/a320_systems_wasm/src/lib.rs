@@ -82,7 +82,6 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
             .provides_aircraft_variable("ACCELERATION BODY Y", "feet per second squared", 0)?
             .provides_aircraft_variable("ACCELERATION BODY Z", "feet per second squared", 0)?
             .provides_aircraft_variable("AIRSPEED INDICATED", "Knots", 0)?
-            .provides_aircraft_variable("AIRSPEED TRUE", "Knots", 0)?
             .provides_aircraft_variable("AIRSPEED MACH", "Mach", 0)?
             .provides_aircraft_variable("AIRSPEED TRUE", "Knots", 0)?
             .provides_aircraft_variable("AMBIENT PRESSURE", "inHg", 0)?
