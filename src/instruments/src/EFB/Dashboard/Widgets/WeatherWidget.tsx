@@ -73,7 +73,8 @@ type WeatherWidgetProps = { name: string, editIcao: string, icao: string};
 const WeatherWidget = (props: WeatherWidgetProps) => {
     const [metar, setMetar] = useState<MetarParserType>(MetarParserTypeProp);
 
-    const [showMetar, setShowMetar] = useState('DISABLED');
+    // const [showMetar, setShowMetar] = useState('DISABLED');
+    const [showMetar, setShowMetar] = usePersistentProperty(`CONFIG_SHOW_METAR_${props.name}`, 'DISABLED');
 
     let [metarSource] = usePersistentProperty('CONFIG_METAR_SRC', 'MSFS');
 
