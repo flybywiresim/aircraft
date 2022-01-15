@@ -7,7 +7,7 @@ function wordWrap(text: string, maxLength: number) {
 
     text.split(' ').forEach((word) => {
         if ((length + word.length) >= maxLength) {
-            result.push(line.join(' '));
+            result.push(line.join(' ').toUpperCase());
             line = []; length = 0;
         }
         length += word.length + 1;
@@ -15,7 +15,7 @@ function wordWrap(text: string, maxLength: number) {
     });
 
     if (line.length > 0) {
-        result.push(line.join(' '));
+        result.push(line.join(' ').toUpperCase());
     }
 
     return result;
