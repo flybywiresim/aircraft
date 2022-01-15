@@ -25,7 +25,7 @@ const WeatherMap = {
  * Defines the AOC manager
  */
 export class AocSystem {
-    private connector : HoppieConnector = undefined;
+    private connector : HoppieConnector | undefined = undefined;
 
     private messageQueue : AtsuMessage[] = [];
 

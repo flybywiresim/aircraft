@@ -2,14 +2,13 @@ import React, { memo } from 'react';
 import { useInteractionEvents } from '@instruments/common/hooks.js';
 
 type ButtonProps = {
-    messageId : number,
-    index : string,
-    content : string,
-    clicked : (btn: string) => void
+    messageId: number,
+    index: string,
+    content: string,
+    clicked: (btn: string) => void
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const Button: React.FC<ButtonProps> = memo(({ messageId, index, content, clicked }) => {
+export const Button: React.FC<ButtonProps> = memo(({ index, content, clicked }) => {
     if (content.length !== 0) {
         useInteractionEvents([`A32NX_DCDU_BTN_MPL_${index}`, `A32NX_DCDU_BTN_MPR_${index}`], () => {
             clicked(index);

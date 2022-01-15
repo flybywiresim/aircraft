@@ -7,7 +7,7 @@ import { AtsuMessageType, AtsuMessageDirection, AtsuMessageResponseStatus, AtsuM
  * Defines the general freetext message format
  */
 export class FreetextMessage extends AtsuMessage {
-    public Lines : string[] = [];
+    public Lines: string[] = [];
 
     constructor() {
         super();

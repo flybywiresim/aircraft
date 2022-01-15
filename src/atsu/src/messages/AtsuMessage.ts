@@ -55,21 +55,21 @@ export enum AtsuMessageSerializationFormat {
 export class AtsuMessage {
     public Network = AtsuMessageNetwork.Hoppie;
 
-    public UniqueMessageID : number = undefined;
+    public UniqueMessageID : number | undefined = undefined;
 
-    public Timestamp : AtsuTimestamp = undefined;
+    public Timestamp : AtsuTimestamp | undefined = undefined;
 
-    public DcduTimestamp : number = undefined;
+    public DcduTimestamp : number | undefined = undefined;
 
     public Station = '';
 
     public ComStatus : AtsuMessageComStatus = AtsuMessageComStatus.Open;
 
-    public Type : AtsuMessageType = undefined;
+    public Type : AtsuMessageType | undefined = undefined;
 
-    public Direction : AtsuMessageDirection = undefined;
+    public Direction : AtsuMessageDirection | undefined = undefined;
 
-    public Status : AtsuMessageResponseStatus = undefined;
+    public Status : AtsuMessageResponseStatus | undefined = undefined;
 
     public Confirmed = false;
 

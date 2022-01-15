@@ -57,7 +57,7 @@ class CDUAocDepartReq {
         );
 
         // "1123" is the default ATC flight number
-        if (SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC") !== "1123") {
+        if (SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC") !== "1123" && mcdu.flightPlanManager.getOrigin() !== null) {
             mcdu.pdcMessage.Callsign = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC");
             flightNo = mcdu.pdcMessage.Callsign + "[color]green";
         }
@@ -177,7 +177,7 @@ class CDUAocDepartReq {
     static ShowPage2(mcdu) {
         mcdu.clearDisplay();
 
-        const addionalLineTemplate = [
+        const additionalLineTemplate = [
             ["FREE TEXT"],
             [""],
             [""],
@@ -228,7 +228,7 @@ class CDUAocDepartReq {
                         CDUAocDepartReq.ShowPage2(mcdu);
                     }
                 );
-                addionalLineTemplate[10] = [line4];
+                additionalLineTemplate[10] = [line4];
             case 3:
                 const line3 = new CDU_SingleValueField(mcdu,
                     "string",
@@ -244,7 +244,7 @@ class CDUAocDepartReq {
                         CDUAocDepartReq.ShowPage2(mcdu);
                     }
                 );
-                addionalLineTemplate[8] = [line3];
+                additionalLineTemplate[8] = [line3];
             case 2:
                 const line2 = new CDU_SingleValueField(mcdu,
                     "string",
@@ -260,7 +260,7 @@ class CDUAocDepartReq {
                         CDUAocDepartReq.ShowPage2(mcdu);
                     }
                 );
-                addionalLineTemplate[6] = [line2];
+                additionalLineTemplate[6] = [line2];
             case 1:
                 const line1 = new CDU_SingleValueField(mcdu,
                     "string",
@@ -276,7 +276,7 @@ class CDUAocDepartReq {
                         CDUAocDepartReq.ShowPage2(mcdu);
                     }
                 );
-                addionalLineTemplate[4] = [line1];
+                additionalLineTemplate[4] = [line1];
             default:
                 const line0 = new CDU_SingleValueField(mcdu,
                     "string",
@@ -292,12 +292,12 @@ class CDUAocDepartReq {
                         CDUAocDepartReq.ShowPage2(mcdu);
                     }
                 );
-                addionalLineTemplate[2] = [line0];
+                additionalLineTemplate[2] = [line0];
                 break;
         }
 
         // define the template
-        mcdu.setTemplate(addionalLineTemplate);
+        mcdu.setTemplate(additionalLineTemplate);
 
         mcdu.leftInputDelay[5] = () => {
             return mcdu.getDelaySwitchPage();
