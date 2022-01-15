@@ -919,12 +919,8 @@ class EngineControl {
 
     // Checking for high-altitude TOGA
     if (pressAltitude > 16600) {
-      toga = clb;
+      toga = mct;
     }
-
-    // std::cout << "FADEC: Alt= " << pressAltitude << " OAT= " << ambientTemp << " mach= " << mach << " packs= " << packs << " NAI= " <<
-    // nai
-    //          << " WAI= " << wai << " TOGA = " << toga << " CLB = " << clb << " MCT = " << mct << std::endl;
 
     simVars->setThrustLimitIdle(idle);
     simVars->setThrustLimitToga(toga);
