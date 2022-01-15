@@ -21,7 +21,7 @@ export class HoppieConnector {
 
                 // receive the data from the server
                 // expected format: ok {CALLSIGN telex, {Hello world!}} {CALLSIGN telex, {Hello world!}}
-                fetch(url, { headers: { 'Content-Type': 'text/html; charset=UTF-16' } }).then((response) => response.text().then((data) => {
+                fetch(url).then((response) => response.text().then((data) => {
                     // something went wrong
                     if (!data.startsWith('ok')) {
                         return;
