@@ -3,7 +3,7 @@ import { useSimVar } from '@instruments/common/simVars';
 import { useCoherentEvent, useInteractionEvents } from '@instruments/common/hooks';
 import { AtsuMessage, AtsuMessageComStatus, AtsuMessageType } from '@atsu/messages/AtsuMessage';
 import { PdcMessage } from '@atsu/messages/PdcMessage';
-import { PdcButtons } from './elements/PdcButtons';
+import { WilcoUnableButtons } from './elements/WilcoUnableButtons';
 import { render } from '../Common';
 import { SelfTest } from './pages/SelfTest';
 import { WaitingForData } from './pages/WaitingForData';
@@ -262,7 +262,7 @@ const DCDU: React.FC = () => {
                         </>
                     ))}
                     {(message !== undefined && message.Type === AtsuMessageType.PDC && (
-                        <PdcButtons
+                        <WilcoUnableButtons
                             message={message}
                             setStatus={setStatus}
                             isStatusAvailable={isStatusAvailable}

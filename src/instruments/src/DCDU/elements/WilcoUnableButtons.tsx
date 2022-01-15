@@ -3,14 +3,14 @@ import { AtsuMessage, AtsuMessageComStatus } from '@atsu/messages/AtsuMessage';
 import { useUpdate } from '@instruments/common/hooks.js';
 import { Button } from './Button';
 
-type PdcButtonsProps = {
+type WilcoUnableButtonsProps = {
     message: AtsuMessage,
     setStatus: (sender: string, message: string) => void,
     isStatusAvailable: (sender: string) => boolean,
     closeMessage: (message: number) => void
 }
 
-export const PdcButtons: React.FC<PdcButtonsProps> = memo(({ message, setStatus, isStatusAvailable, closeMessage }) => {
+export const WilcoUnableButtons: React.FC<WilcoUnableButtonsProps> = memo(({ message, setStatus, isStatusAvailable, closeMessage }) => {
     useUpdate(() => {
         if (message.ComStatus === AtsuMessageComStatus.Sending) {
             if (isStatusAvailable('Buttons') === true) {
@@ -20,6 +20,10 @@ export const PdcButtons: React.FC<PdcButtonsProps> = memo(({ message, setStatus,
     });
 
     const clicked = (index: string) : void => {
+        if (message.UniqueMessageID === undefined) {
+            return;
+        }
+
         if (message.ComStatus === AtsuMessageComStatus.Open || message.ComStatus === AtsuMessageComStatus.Failed) {
             if (index === 'L1') {
                 SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_DELETE', 'number', message.UniqueMessageID);
