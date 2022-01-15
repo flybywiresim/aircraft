@@ -53,21 +53,21 @@ export const VerticalSpeedIndicator = ({ radioAlt, verticalSpeed }: VerticalSpee
                     <path d="m151.84 117.39h-1.9151v1.4615h1.9151z" />
                     <path d="m151.84 127.59h-1.9151v1.2095h1.9151z" />
                 </g>
-                <g className="NormalStroke White">
-                    <path d="m149.92 67.216h1.7135" />
-                    <path d="m151.84 48.569h-1.9151" />
-                    <path d="m151.84 38.489h-1.9151" />
-                    <path d="m149.92 94.43h1.7135" />
-                    <path d="m151.84 113.08h-1.9151" />
-                    <path d="m151.84 123.16h-1.9151" />
+                <g className="SmallStroke White">
+                    <path d="m149.92 67.216h1.7135h0" />
+                    <path d="m151.84 48.569h-1.9151h0" />
+                    <path d="m151.84 38.489h-1.9151h0" />
+                    <path d="m149.92 94.43h1.7135h0" />
+                    <path d="m151.84 113.08h-1.9151h0" />
+                    <path d="m151.84 123.16h-1.9151h0" />
                 </g>
                 <g className="FontSmallest MiddleAlign Fill White">
-                    <text x="148.07108" y="109.72845">1</text>
-                    <text x="148.14471" y="119.8801">2</text>
-                    <text x="148.07108" y="129.90607">6</text>
-                    <text x="148.09711" y="55.316456">1</text>
-                    <text x="148.06529" y="45.356102">2</text>
-                    <text x="148.11371" y="35.195072">6</text>
+                    <text x="148.47067" y="109.72845">1</text>
+                    <text x="148.24495" y="119.8801">2</text>
+                    <text x="148.27068" y="129.90607">6</text>
+                    <text x="148.49667" y="55.316456">1</text>
+                    <text x="148.26495" y="45.356102">2</text>
+                    <text x="148.21367" y="35.195072">6</text>
                 </g>
                 <path className="Fill Yellow" d="m145.79 80.067h6.0476v1.5119h-6.0476z" />
                 <VSpeedNeedle isAmber={isAmber} yOffset={yOffset} />
@@ -80,10 +80,17 @@ export const VerticalSpeedIndicator = ({ radioAlt, verticalSpeed }: VerticalSpee
 const VSpeedNeedle = ({ yOffset, isAmber }) => {
     const className = `HugeStroke ${isAmber ? 'Amber' : 'Green'}`;
 
+    const dxFull = 12;
+    const dxBorder = 5;
+    const centerX = 162.74;
+    const centerY = 80.822;
+
+    const path = `m${centerX - dxBorder} ${centerY + dxBorder / dxFull * yOffset} l ${dxBorder - dxFull} ${(1 - dxBorder / dxFull) * yOffset}`;
+
     return (
         <>
-            <path className="HugeOutline" d={`m162.74 80.822 l -12 ${yOffset}`} />
-            <path className={className} id="VSpeedIndicator" d={`m162.74 80.822 l -12 ${yOffset}`} />
+            <path className="HugeOutline" d={path} />
+            <path className={className} id="VSpeedIndicator" d={path} />
         </>
     );
 };
@@ -104,7 +111,7 @@ const VSpeedText = ({ VSpeed, yOffset, isAmber }) => {
     return (
         <g id="VSpeedTextGroup" transform={`translate(0 ${textOffset})`}>
             <path className="BackgroundFill" d="m158.4 83.011h-7.0514v-4.3989h7.0514z" />
-            <text id="VSpeedText" className={className} x="154.84036" y="82.554581">{text}</text>
+            <text id="VSpeedText" className={className} x="155.14055" y="82.554756">{text}</text>
         </g>
     );
 };

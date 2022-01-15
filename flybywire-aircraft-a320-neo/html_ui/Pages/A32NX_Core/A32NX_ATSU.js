@@ -253,6 +253,9 @@ const uplinkRoute = async (mcdu) => {
             continue;
         } else {
             if (fix.via_airway === 'DCT') {
+                if (fix.type === 'apt' && nextFix === undefined) {
+                    break;
+                }
                 console.log("Inserting waypoint: " + fix.ident);
                 await addWaypointAsync(fix, mcdu, fix.ident);
                 continue;
