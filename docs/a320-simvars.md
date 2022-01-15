@@ -764,7 +764,15 @@
 
 - A32NX_HYD_{loop_name}_RESERVOIR_LEVEL
     - Gallon
-    - Current fluid level in the {loop_name} hydraulic circuit reservoir
+    - Current gaugeable fluid level in the {loop_name} hydraulic circuit reservoir
+    - {loop_name}
+        - GREEN
+        - BLUE
+        - YELLOW
+
+- A32NX_HYD_{loop_name}_RESERVOIR_LEVEL_IS_LOW
+    - Boolean
+    - Low level switch of {loop_name} hydraulic circuit reservoir indicates low state
     - {loop_name}
         - GREEN
         - BLUE
@@ -794,6 +802,13 @@
 - A32NX_HYD_{loop_name}_EPUMP_RPM
     - Rpm
     - Current {loop_name} electric pump speed
+    - {loop_name}
+        - BLUE
+        - YELLOW
+
+- A32NX_HYD_{loop_name}_EPUMP_CAVITATION
+    - Percent over 100
+    - Current {loop_name} electric pump cavitation efficiency. 0 running dry to 1 full efficiency
     - {loop_name}
         - BLUE
         - YELLOW
@@ -856,6 +871,10 @@
 - A32NX_HYD_PTU_MOTOR_FLOW
     - Gallon per second
     - Power Transfer Unit instantaneous flow in motor side
+
+- A32NX_HYD_PTU_SHAFT_RPM
+    - Revolutions per minute
+    - Power Transfer Unit shaft rpm
 
 - A32NX_OVHD_HYD_RAT_MAN_ON_IS_PRESSED
     - Bool
