@@ -1,6 +1,7 @@
 //  Copyright (c) 2022 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
+import { NXDataStore } from '@shared/persistence';
 import { FreetextMessage, AtsuManager } from './AtsuManager';
 import { AtsuMessageDirection, AtsuMessageNetwork, AtsuMessage, AtsuMessageComStatus, AtsuMessageType } from './messages/AtsuMessage';
 import { AtisMessage } from './messages/AtisMessage';
@@ -28,8 +29,6 @@ export class AocSystem {
 
     private messageQueue : AtsuMessage[] = [];
 
-    private listener = RegisterViewListener('JS_LISTENER_SIMVARS');
-
     constructor(parent: AtsuManager, connector: HoppieConnector) {
         this.connector = connector;
 
@@ -54,7 +53,7 @@ export class AocSystem {
                         message.Station = msg.from.flight;
                         message.Lines = wordWrap(msg.message.replace(/;/i, ' '), 25);
 
-                        parent.receiveMessage(message);
+                        parent.registerMessage(message);
                         msgCounter += 1;
                     }
 
@@ -70,117 +69,101 @@ export class AocSystem {
         }, NXApi.updateRate);
     }
 
-    public static isRelevantMessage(message: AtsuMessage) {
+    public static isRelevantMessage(message: AtsuMessage): boolean {
         return message.Type < AtsuMessageType.AOC;
     }
 
-    public static isDcduMessage(message: AtsuMessage) {
-        return message.Type === AtsuMessageType.PDC;
-    }
-
-    public registerMessage(message: AtsuMessage) {
-        this.messageQueue.unshift(message);
-    }
-
-    private async sendFbwTelexMessage(index: number) {
-        const content = this.messageQueue[index].Lines.join(';');
-        return NXApi.sendTelexMessage(this.messageQueue[index].Station, content).then(() => {
-            this.messageQueue[index].ComStatus = AtsuMessageComStatus.Sent;
-            return Promise.resolve();
+    private async sendFbwTelexMessage(message: FreetextMessage): Promise<string> {
+        const content = message.Lines.join(';');
+        return NXApi.sendTelexMessage(message.Station, content).then(() => {
+            message.ComStatus = AtsuMessageComStatus.Sent;
+            return '';
         }).catch(() => {
-            this.messageQueue[index].ComStatus = AtsuMessageComStatus.Failed;
-            return Promise.reject(Error('COM UNAVAILABLE'));
+            message.ComStatus = AtsuMessageComStatus.Failed;
+            return 'COM UNAVAILABLE';
         });
     }
 
-    private async sendHoppieTelexMessage(index: number) {
-        this.connector.sendTelexMessage(this.messageQueue[index]).then(() => {
-            this.messageQueue[index].ComStatus = AtsuMessageComStatus.Sent;
-            if (this.messageQueue[index].Type === AtsuMessageType.PDC) {
-                this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', this.messageQueue[index]);
+    private async sendHoppieTelexMessage(message: AtsuMessage): Promise<string> {
+        return this.connector.sendTelexMessage(message).then((retval) => {
+            if (retval === '') {
+                message.ComStatus = AtsuMessageComStatus.Sent;
+            } else {
+                message.ComStatus = AtsuMessageComStatus.Failed;
             }
-            return Promise.resolve();
-        }).catch((err) => {
-            this.messageQueue[index].ComStatus = AtsuMessageComStatus.Failed;
-            return Promise.reject(Error(err.message));
+            return retval;
         });
     }
 
-    private async sendTelexMessage(index: number) {
-        if (this.messageQueue[index].Network === AtsuMessageNetwork.Hoppie) {
+    private async sendTelexMessage(message: AtsuMessage): Promise<string> {
+        if (message.Network === AtsuMessageNetwork.Hoppie) {
             if (SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') === 1) {
-                return this.sendHoppieTelexMessage(index);
+                return this.sendHoppieTelexMessage(message);
             }
-        } else if (NXApi.hasTelexConnection() === true && NXDataStore.get('CONFIG_ONLINE_FEATURES_STATUS', 'DISABLED') === 'ENABLED') {
-            return this.sendFbwTelexMessage(index);
+        } else if (message.Network === AtsuMessageNetwork.FBW) {
+            if (NXApi.hasTelexConnection() === true && NXDataStore.get('CONFIG_ONLINE_FEATURES_STATUS', 'DISABLED') === 'ENABLED') {
+                return this.sendFbwTelexMessage(message as FreetextMessage);
+            }
         }
-        this.messageQueue[index].ComStatus = AtsuMessageComStatus.Failed;
-        return Promise.reject(Error('COM UNAVAILABLE'));
+
+        message.ComStatus = AtsuMessageComStatus.Failed;
+        return 'COM UNAVAILABLE';
     }
 
-    private async sendPdcMessage(index: number) {
-        this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', this.messageQueue[index]);
-        if (SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') === 1) {
-            return this.sendHoppieTelexMessage(index);
+    public async sendMessage(message: AtsuMessage): Promise<string> {
+        if (AocSystem.isRelevantMessage(message)) {
+            message.ComStatus = AtsuMessageComStatus.Sending;
+            return this.sendTelexMessage(message);
         }
-        this.messageQueue[index].ComStatus = AtsuMessageComStatus.Failed;
-        return Promise.reject(Error('COM UNAVAILABLE'));
-    }
 
-    public async sendMessage(uid: number) {
-        const index = this.messageQueue.findIndex((element) => element.UniqueMessageID === uid);
-        if (index !== -1) {
-            this.messageQueue[index].ComStatus = AtsuMessageComStatus.Sending;
-            if (this.messageQueue[index].Type === AtsuMessageType.Freetext) {
-                return this.sendTelexMessage(index);
-            }
-            if (this.messageQueue[index].Type === AtsuMessageType.PDC) {
-                return this.sendPdcMessage(index);
-            }
-        }
-        return Promise.reject(Error('INVALID MSG'));
+        return 'INVALID MSG';
     }
 
     public removeMessage(uid: number): boolean {
         const index = this.messageQueue.findIndex((element) => element.UniqueMessageID === uid);
         if (index !== -1) {
             this.messageQueue.splice(index, 1);
-            this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG_REMOVE', uid);
         }
         return index !== -1;
     }
 
-    private static async receiveMetar(icao: string, message: WeatherMessage) {
+    private static async receiveMetar(icao: string, message: WeatherMessage): Promise<boolean> {
         const storedMetarSrc = NXDataStore.get('CONFIG_METAR_SRC', 'MSFS');
 
-        await NXApi.getMetar(icao, WeatherMap[storedMetarSrc])
+        return NXApi.getMetar(icao, WeatherMap[storedMetarSrc])
             .then((data) => {
                 const newLines = wordWrap(data.metar, 25);
                 message.Reports.push({ airport: icao, report: newLines });
-            }).catch(() => Promise.reject(Error('COM UNAVAILABLE')));
+                return true;
+            }).catch(() => false);
     }
 
-    private static async receiveTaf(icao: string, message: WeatherMessage) {
+    private static async receiveTaf(icao: string, message: WeatherMessage): Promise<boolean> {
         const storedTafSrc = NXDataStore.get('CONFIG_TAF_SRC', 'NOAA');
 
-        await NXApi.getTaf(icao, WeatherMap[storedTafSrc])
+        return NXApi.getTaf(icao, WeatherMap[storedTafSrc])
             .then((data) => {
                 const newLines = wordWrap(data.taf, 25);
                 message.Reports.push({ airport: icao, report: newLines });
-            }).catch(() => Promise.reject(Error('COM UNAVAILABLE')));
+                return true;
+            }).catch(() => false);
     }
 
-    private static async receiveWeatherData(requestMetar: boolean, icaos: string[], index: number, message: WeatherMessage) {
+    private static async receiveWeatherData(requestMetar: boolean, icaos: string[], index: number, message: WeatherMessage): Promise<boolean> {
+        let retval = true;
+
         if (index < icaos.length) {
             if (requestMetar === true) {
-                await AocSystem.receiveMetar(icaos[index], message).then(() => AocSystem.receiveWeatherData(requestMetar, icaos, index + 1, message));
+                retval = await AocSystem.receiveMetar(icaos[index], message).then(() => AocSystem.receiveWeatherData(requestMetar, icaos, index + 1, message));
             } else {
-                await AocSystem.receiveTaf(icaos[index], message).then(() => AocSystem.receiveWeatherData(requestMetar, icaos, index + 1, message));
+                retval = await AocSystem.receiveTaf(icaos[index], message).then(() => AocSystem.receiveWeatherData(requestMetar, icaos, index + 1, message));
             }
         }
+
+        return retval;
     }
 
-    public async receiveWeather(requestMetar: boolean, icaos: string[]) {
+    public async receiveWeather(requestMetar: boolean, icaos: string[]): Promise<WeatherMessage> {
         let message = undefined;
         if (requestMetar === true) {
             message = new MetarMessage();
@@ -188,26 +171,31 @@ export class AocSystem {
             message = new TafMessage();
         }
 
-        return AocSystem.receiveWeatherData(requestMetar, icaos, 0, message).then(() => message);
+        const error = await AocSystem.receiveWeatherData(requestMetar, icaos, 0, message);
+
+        if (!error) {
+            message = undefined;
+        }
+
+        return message;
     }
 
-    public async receiveAtis(icao: string) {
+    public async receiveAtis(icao: string): Promise<WeatherMessage> {
         const storedAtisSrc = NXDataStore.get('CONFIG_ATIS_SRC', 'FAA');
+        const message = new AtisMessage();
 
-        return NXApi.getAtis(icao, WeatherMap[storedAtisSrc])
+        await NXApi.getAtis(icao, WeatherMap[storedAtisSrc])
             .then((data) => {
-                const message = new AtisMessage();
                 const newLines = wordWrap(data.combined, 25);
                 message.Reports.push({ airport: icao, report: newLines });
-                return message;
             }).catch(() => {
-                const message = new AtisMessage();
                 message.Reports.push({ airport: icao, report: ['D-ATIS NOT AVAILABLE'] });
-                return message;
             });
+
+        return message;
     }
 
-    public messageRead(uid: number) {
+    public messageRead(uid: number): boolean {
         const index = this.messageQueue.findIndex((element) => element.UniqueMessageID === uid);
         if (index !== -1 && this.messageQueue[index].Direction === AtsuMessageDirection.Input) {
             if (this.messageQueue[index].Confirmed === false) {
@@ -221,28 +209,30 @@ export class AocSystem {
         return index !== -1;
     }
 
-    public messages() {
+    public messages(): AtsuMessage[] {
         return this.messageQueue;
     }
 
-    public outputMessages() {
+    public outputMessages(): AtsuMessage[] {
         return this.messageQueue.filter((entry) => entry.Direction === AtsuMessageDirection.Output);
     }
 
-    public inputMessages() {
+    public inputMessages(): AtsuMessage[] {
         return this.messageQueue.filter((entry) => entry.Direction === AtsuMessageDirection.Input);
     }
 
-    public uidRegistered(uid: number) {
+    public uidRegistered(uid: number): boolean {
         return this.messageQueue.findIndex((element) => uid === element.UniqueMessageID) !== -1;
     }
 
-    public receiveMessage(message: AtsuMessage) {
+    public insertMessage(message: AtsuMessage): void {
         this.messageQueue.unshift(message);
 
+        if (message.Direction === AtsuMessageDirection.Input) {
         // increase the company message counter
-        const cMsgCnt = SimVar.GetSimVarValue('L:A32NX_COMPANY_MSG_COUNT', 'Number');
-        SimVar.SetSimVarValue('L:A32NX_COMPANY_MSG_COUNT', 'Number', cMsgCnt + 1);
+            const cMsgCnt = SimVar.GetSimVarValue('L:A32NX_COMPANY_MSG_COUNT', 'Number');
+            SimVar.SetSimVarValue('L:A32NX_COMPANY_MSG_COUNT', 'Number', cMsgCnt + 1);
+        }
     }
 }
 

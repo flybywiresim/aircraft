@@ -82,10 +82,11 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             AOCMenu: 47,
             AOCRequestWeather: 48,
             AOCRequestAtis: 49,
-            ClimbWind: 50,
-            CruiseWind: 51,
-            DescentWind: 52,
-            FixInfoPage: 53,
+            AOCDepartRequest: 50,
+            ClimbWind: 51,
+            CruiseWind: 52,
+            DescentWind: 53,
+            FixInfoPage: 54,
         };
     }
 

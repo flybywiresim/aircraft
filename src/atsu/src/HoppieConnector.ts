@@ -21,9 +21,9 @@ export class HoppieConnector {
 
                 // receive the data from the server
                 // expected format: ok {CALLSIGN telex, {Hello world!}} {CALLSIGN telex, {Hello world!}}
-                fetch(url).then((response) => response.text().then((data) => {
+                fetch(url, { headers: { 'Content-Type': 'text/html; charset=UTF-16' } }).then((response) => response.text().then((data) => {
                     // something went wrong
-                    if (data.startsWith('error')) {
+                    if (!data.startsWith('ok')) {
                         return;
                     }
 
@@ -51,7 +51,7 @@ export class HoppieConnector {
                             freetext.Direction = AtsuMessageDirection.Input;
                             freetext.ComStatus = AtsuMessageComStatus.Received;
                             freetext.Lines = wordWrap(content.replace(/\n/i, ' '), 25);
-                            parent.receiveMessage(freetext);
+                            parent.registerMessage(freetext);
                             break;
                         case 'cpdlc':
                             const cpdlc = new CpdlcMessage();
@@ -67,7 +67,7 @@ export class HoppieConnector {
                             }
                             cpdlc.Response = stringToCpdlc(elements[3]);
                             cpdlc.Lines = wordWrap(elements[4], 25);
-                            parent.receiveMessage(cpdlc);
+                            parent.registerMessage(cpdlc);
                             break;
                         default:
                             break;
@@ -78,7 +78,7 @@ export class HoppieConnector {
         }, 20000);
     }
 
-    private createBaseUrl(type: string, to: string) {
+    private createBaseUrl(type: string, to: string): string {
         // validate the configuration
         const flightNo = SimVar.GetSimVarValue('ATC FLIGHT NUMBER', 'string');
         const system = NXDataStore.get('CONFIG_HOPPIE_SYSTEM', 'NONE');
@@ -91,53 +91,55 @@ export class HoppieConnector {
         return `${HoppieConnector.corsProxyUrl + HoppieConnector.hoppieUrl}?logon=${logon}&type=${type}&from=${flightNo}&to=${to}`;
     }
 
-    public async isStationAvailable(station: string) {
+    public async isStationAvailable(station: string): Promise<string> {
         const flightNo = SimVar.GetSimVarValue('ATC FLIGHT NUMBER', 'string');
         let url = this.createBaseUrl('ping', 'ALL-CALLSIGNS');
         url += `&packet=${station}`;
 
-        return fetch(url).then((response) => {
-            if (response.ok === true) {
-                return response.text().then((content) => {
-                    if (content.startsWith('ok') !== true) {
-                        return Promise.reject(Error('COM UNAVAILABLE'));
-                    }
-                    if (station === flightNo || content !== `ok {${station}}`) {
-                        return Promise.reject(Error('NO ACTIVE ATC'));
-                    }
-                    return Promise.resolve('');
-                });
+        const text = await fetch(url).then((response) => {
+            if (response.ok) {
+                return response.text();
             }
-            return Promise.reject(Error('COM UNAVAILABLE'));
-        }).catch(() => Promise.reject(Error('COM UNAVAILABLE')));
+            return 'error';
+        });
+        if (text.startsWith('ok') !== true) {
+            return 'COM UNAVAILABLE';
+        }
+        if (station === flightNo || text !== `ok {${station}}`) {
+            return 'NO ACTIVE ATC';
+        }
+
+        return '';
     }
 
-    public async sendTelexMessage(message: AtsuMessage) {
-        const flightNo = SimVar.GetSimVarValue('ATC FLIGHT NUMBER', 'string');
+    private async sendMessage(message: AtsuMessage, type: string) {
         const data = [
             `logon=${NXDataStore.get('CONFIG_HOPPIE_USERID', '')}`,
-            `from=${flightNo}`,
+            `from=${SimVar.GetSimVarValue('ATC FLIGHT NUMBER', 'string')}`,
             `to=${message.Station}`,
-            'type=TELEX',
-            `packet=${encodeURIComponent(message.serialize(AtsuMessageSerializationFormat.Printer))}`,
+            `type=${type}`,
+            `packet=${encodeURIComponent(message.serialize(AtsuMessageSerializationFormat.Network))}`,
         ];
-        const postData = data.join('&');
+        const fetchData = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-16' },
+            body: data.join('&'),
+        };
 
-        return fetch(HoppieConnector.corsProxyUrl + HoppieConnector.hoppieUrl,
-            {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: postData,
-            }).then((response) => {
-            if (response.ok === true) {
-                return response.text().then((content) => {
-                    if (content === 'ok') {
-                        return Promise.resolve('');
-                    }
-                    return Promise.reject(Error('COM UNAVAILABLE'));
-                });
+        return fetch(HoppieConnector.corsProxyUrl + HoppieConnector.hoppieUrl, fetchData).then((response) => {
+            if (response.ok !== true) {
+                return 'COM UNAVAILABLE';
             }
-            return Promise.reject(Error('COM UNAVAILABLE'));
-        }).catch(() => Promise.reject(Error('COM UNAVAILABLE')));
+            return response.text().then((text) => {
+                if (text !== 'ok') {
+                    return 'COM UNAVAILABLE';
+                }
+                return '';
+            });
+        }).catch(() => 'COM UNAVAILABLE');
+    }
+
+    public async sendTelexMessage(message: AtsuMessage): Promise<string> {
+        return this.sendMessage(message, 'telex');
     }
 }

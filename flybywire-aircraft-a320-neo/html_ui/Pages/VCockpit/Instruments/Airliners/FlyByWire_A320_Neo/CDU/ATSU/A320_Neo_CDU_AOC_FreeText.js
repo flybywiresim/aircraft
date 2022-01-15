@@ -133,18 +133,16 @@ class CDUAocFreeText {
             }
 
             // send the message
-            const retval = mcdu.atsuManager.registerMessage(message);
-            if (retval.msg.length === 0) {
-                mcdu.atsuManager.sendMessage(retval.uid).then(() => {
+            mcdu.atsuManager.sendMessage(message).then((message) => {
+                if (message === '') {
                     store["sendStatus"] = "SENT";
-                    updateView();
-                }).catch((err) => {
+                } else {
+                    store["sendStatus"] = "FAILED";
                     mcdu.scratchpad.setText(err.message);
                     scratchpadCallback();
-                    store["sendStatus"] = "FAILED";
-                    updateView();
-                });
-            }
+                }
+                updateView();
+            });
         };
 
         mcdu.leftInputDelay[5] = () => {

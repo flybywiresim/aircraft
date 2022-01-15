@@ -32,49 +32,17 @@ export class AtsuManager {
         SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_DELETE', 'number', -1);
         SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_SEND', 'number', -1);
         SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_PRINT', 'number', -1);
-
-        setInterval(async () => {
-            if (SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_DELETE', 'number') !== -1) {
-                this.removeMessage(SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_DELETE', 'number'));
-                SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_DELETE', 'number', -1);
-            }
-            if (SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_SEND', 'number') !== -1) {
-                this.sendMessage(SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_SEND', 'number')).catch(() => {});
-                SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_SEND', 'number', -1);
-            }
-            if (SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_PRINT', 'number') !== -1) {
-                const message = this.findMessage(SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_PRINT', 'number'));
-                if (message !== undefined) {
-                    this.printMessage(message);
-                }
-                SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_PRINT', 'number', -1);
-            }
-        }, 500);
     }
 
-    public registerMessage(message: AtsuMessage) {
-        if (AocSystem.isDcduMessage(message) === true && SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_MAX_REACHED', 'boolean') === 1) {
-            return { msg: 'DCDU FILE FULL', uid: -1 };
-        }
-
-        message.UniqueMessageID = ++this.messageCounter;
-        message.Timestamp = new AtsuTimestamp();
-
+    public async sendMessage(message: AtsuMessage): Promise<string> {
         if (AocSystem.isRelevantMessage(message)) {
-            this.aocSystem.registerMessage(message);
-        } else {
-            return { msg: 'INVALID MSG', uid: -1 };
+            const retval = await this.aocSystem.sendMessage(message);
+            if (retval === '') {
+                this.registerMessage(message);
+            }
+            return retval;
         }
-
-        this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', message);
-        return { msg: '', uid: message.UniqueMessageID };
-    }
-
-    public async sendMessage(uid: number) {
-        if (this.aocSystem.uidRegistered(uid)) {
-            return this.aocSystem.sendMessage(uid);
-        }
-        return Promise.reject(Error('UNKNOWN MSG'));
+        return 'UNKNOWN MSG';
     }
 
     public removeMessage(uid: number) {
@@ -83,12 +51,12 @@ export class AtsuManager {
         }
     }
 
-    public receiveMessage(message: AtsuMessage) {
+    public registerMessage(message: AtsuMessage) {
         message.UniqueMessageID = ++this.messageCounter;
         message.Timestamp = new AtsuTimestamp();
 
         if (AocSystem.isRelevantMessage(message)) {
-            this.aocSystem.receiveMessage(message);
+            this.aocSystem.insertMessage(message);
         }
     }
 
@@ -96,18 +64,18 @@ export class AtsuManager {
         this.aocSystem.messageRead(uid);
     }
 
-    public aoc() {
+    public aoc(): AocSystem {
         return this.aocSystem;
     }
 
-    public async isRemoteStationAvailable(callsign: string) {
+    public async isRemoteStationAvailable(callsign: string): Promise<string> {
         if (SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') !== 1) {
-            return Promise.reject(Error('HOPPIE DISABLED'));
+            return 'HOPPIE DISABLED';
         }
         return this.connector.isStationAvailable(callsign);
     }
 
-    public findMessage(uid: number) {
+    public findMessage(uid: number): AtsuMessage {
         const message = this.aocSystem.messages().find((element) => element.UniqueMessageID === uid);
         if (message !== undefined) {
             return message;
@@ -115,7 +83,7 @@ export class AtsuManager {
         return undefined;
     }
 
-    public printMessage(message: AtsuMessage) {
+    public printMessage(message: AtsuMessage): void {
         const text = message.serialize(AtsuMessageSerializationFormat.Printer);
         this.mcdu.printPage(text.split('\n'));
     }

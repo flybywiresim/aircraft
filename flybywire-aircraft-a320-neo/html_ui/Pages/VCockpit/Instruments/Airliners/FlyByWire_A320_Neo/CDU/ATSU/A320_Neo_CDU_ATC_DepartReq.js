@@ -117,13 +117,16 @@ class CDUAtcDepartReq {
             }
 
             // publish the message
-            const retval = mcdu.atsuManager.registerMessage(mcdu.pdcMessage);
-            if (retval.msg.length !== 0) {
-                mcdu.scratchpad.setText(retval.msg);
-                scratchpadCallback();
-                return;
-            }
-            mcdu.pdcMessage = undefined;
+            mcdu.atsuManager.sendMessage(mcdu.pdcMessage).then((message) => {
+                if (message === '') {
+                    mcdu.pdcMessage = undefined;
+                } else {
+                    mcdu.scratchpad.setText(message);
+                    scratchpadCallback();
+                }
+
+                CDUAtcDepartReq.ShowPage1(mcdu, store);
+            });
 
             CDUAtcDepartReq.ShowPage1(mcdu);
         };

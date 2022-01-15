@@ -1,6 +1,7 @@
 class CDUAocDepartReq {
-    static ShowPage1(mcdu) {
+    static ShowPage1(mcdu, store = { "sendStatus": "" }) {
         mcdu.clearDisplay();
+        mcdu.page.Current = mcdu.page.AOCDepartRequest;
 
         if (mcdu.pdcMessage === undefined) {
             mcdu.pdcMessage = new Atsu.PdcMessage();
@@ -23,7 +24,7 @@ class CDUAocDepartReq {
             },
             (value) => {
                 mcdu.pdcMessage.Atis = value;
-                CDUAocDepartReq.ShowPage1(mcdu);
+                CDUAocDepartReq.ShowPage1(mcdu, store);
             }
         );
         const gate = new CDU_SingleValueField(mcdu,
@@ -37,7 +38,7 @@ class CDUAocDepartReq {
             },
             (value) => {
                 mcdu.pdcMessage.Gate = value;
-                CDUAocDepartReq.ShowPage1(mcdu);
+                CDUAocDepartReq.ShowPage1(mcdu, store);
             }
         );
         const freetext = new CDU_SingleValueField(mcdu,
@@ -51,7 +52,7 @@ class CDUAocDepartReq {
             },
             (value) => {
                 mcdu.pdcMessage.Freetext0 = value;
-                CDUAocDepartReq.ShowPage1(mcdu);
+                CDUAocDepartReq.ShowPage1(mcdu, store);
             }
         );
 
@@ -70,9 +71,9 @@ class CDUAocDepartReq {
         }
 
         // check if all required information are available to prepare the PDC message
-        let reqDisplButton = "REQ DISPL\xa0[color]cyan";
+        let reqDisplButton = "SEND\xa0[color]cyan";
         if (mcdu.pdcMessage.Callsign !== "" && mcdu.pdcMessage.Origin !== "" && mcdu.pdcMessage.Destination !== "" && mcdu.pdcMessage.Atis !== "" && mcdu.pdcMessage.Station !== "") {
-            reqDisplButton = "REQ DISPL*[color]cyan";
+            reqDisplButton = "SEND*[color]cyan";
         }
 
         mcdu.setTemplate([
@@ -87,7 +88,7 @@ class CDUAocDepartReq {
             [freetext],
             ["", "MORE\xa0"],
             ["", "FREE TEXT>[color]white"],
-            ["\xa0AOC MENU", "AOC DEPART\xa0[color]cyan"],
+            ["\xa0AOC MENU", store["sendStatus"]],
             ["<RETURN", reqDisplButton]
         ]);
 
@@ -97,23 +98,26 @@ class CDUAocDepartReq {
         mcdu.onRightInput[2] = (value, scratchpadCallback) => {
             if (value.length !== 4 || /^[A-Z()]*$/.test(value) === false) {
                 mcdu.addNewMessage(NXSystemMessages.formatError);
+                CDUAocDepartReq.ShowPage1(mcdu, store);
             } else if (SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC") === "1123") {
                 mcdu.scratchpad.setText("ENTER ATC FLT NBR");
                 scratchpadCallback();
+                CDUAocDepartReq.ShowPage1(mcdu, store);
             } else {
-                mcdu.pdcMessage.Station = value;
-
-                mcdu.atsuManager.isRemoteStationAvailable(value).then(
-                    (_resolve) => { },
-                    (reject) => {
-                        mcdu.scratchpad.setText(reject.message);
+                mcdu.atsuManager.isRemoteStationAvailable(value).then((message) => {
+                    if (message !== '') {
+                        mcdu.scratchpad.setText(message);
                         mcdu.pdcMessage.Station = "";
-                        CDUAocDepartReq.ShowPage1(mcdu);
                         scratchpadCallback();
+                    } else {
+                        mcdu.pdcMessage.Station = value;
                     }
-                );
+
+                    if (mcdu.page.Current === mcdu.page.AOCDepartRequest) {
+                        CDUAocDepartReq.ShowPage1(mcdu, store);
+                    }
+                });
             }
-            CDUAocDepartReq.ShowPage1(mcdu);
         };
         mcdu.rightInputDelay[4] = () => {
             return mcdu.getDelaySwitchPage();
@@ -144,16 +148,29 @@ class CDUAocDepartReq {
                 return;
             }
 
-            // publish the message
-            const retval = mcdu.atsuManager.registerMessage(mcdu.pdcMessage);
-            if (0 !== retval.msg.length) {
-                mcdu.scratchpad.setText(retval.msg);
-                scratchpadCallback();
-                return;
-            }
-            mcdu.pdcMessage = undefined;
+            store["sendStatus"] = "SENDING";
+            CDUAocDepartReq.ShowPage1(mcdu, store);
 
-            CDUAocDepartReq.ShowPage1(mcdu);
+            // publish the message
+            mcdu.atsuManager.sendMessage(mcdu.pdcMessage).then((message) => {
+                if (message === '') {
+                    mcdu.pdcMessage = undefined;
+                    store["sendStatus"] = "SENT";
+                    CDUAocDepartReq.ShowPage1(mcdu, store);
+
+                    setTimeout(() => {
+                        store["sendStatus"] = "";
+                        if (mcdu.page.Current === mcdu.page.AOCDepartRequest) {
+                            CDUAocDepartReq.ShowPage1(mcdu, store);
+                        }
+                    }, 5000);
+                } else {
+                    mcdu.scratchpad.setText(message);
+                    scratchpadCallback();
+                    store["sendStatus"] = "FAILED";
+                    CDUAocDepartReq.ShowPage1(mcdu, store);
+                }
+            });
         };
     }
 

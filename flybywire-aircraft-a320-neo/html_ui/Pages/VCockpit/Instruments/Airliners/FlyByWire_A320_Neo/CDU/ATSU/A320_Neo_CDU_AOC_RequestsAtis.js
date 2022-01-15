@@ -129,7 +129,7 @@ class CDUAocRequestsAtis {
                 updateView();
 
                 setTimeout(() => {
-                    mcdu.atsuManager.receiveMessage(message);
+                    mcdu.atsuManager.registerMessage(message);
 
                     // print the message
                     if (store.formatID === 0) {
