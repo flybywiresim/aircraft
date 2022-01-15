@@ -116,6 +116,7 @@
 1. [HYD] Reservoirs connected to pneumatics and first failures - @Crocket63
 1. [ATSU] Don't include airport as a waypoint in route uplink - @tracernz (Mike)
 1. [HYD] Increased reservoirs air pressure to avoid low air fault on pumps - @Crocket63
+1. [HYD] Sound update - @Crocket63
 
 ## 0.7.0
 
