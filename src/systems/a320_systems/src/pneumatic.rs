@@ -157,7 +157,7 @@ impl A320Pneumatic {
                 HydraulicColor::Green,
                 VariableVolumeContainer::new(
                     Volume::new::<gallon>(2.5),
-                    Pressure::new::<psi>(43.5),
+                    Pressure::new::<psi>(50.),
                     ThermodynamicTemperature::new::<degree_celsius>(15.),
                 ),
                 Pressure::new::<psi>(70.),
@@ -167,7 +167,7 @@ impl A320Pneumatic {
                 HydraulicColor::Blue,
                 VariableVolumeContainer::new(
                     Volume::new::<gallon>(1.1),
-                    Pressure::new::<psi>(42.1),
+                    Pressure::new::<psi>(50.),
                     ThermodynamicTemperature::new::<degree_celsius>(15.),
                 ),
                 Pressure::new::<psi>(70.),
@@ -177,7 +177,7 @@ impl A320Pneumatic {
                 HydraulicColor::Yellow,
                 VariableVolumeContainer::new(
                     Volume::new::<gallon>(1.7),
-                    Pressure::new::<psi>(45.4),
+                    Pressure::new::<psi>(50.),
                     ThermodynamicTemperature::new::<degree_celsius>(15.),
                 ),
                 Pressure::new::<psi>(70.),
