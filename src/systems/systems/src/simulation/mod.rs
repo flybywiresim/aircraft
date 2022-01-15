@@ -9,6 +9,7 @@ use crate::{
     shared::arinc429::{from_arinc429, to_arinc429, Arinc429Word, SignStatus},
     shared::{to_bool, ConsumePower, ElectricalBuses, MachNumber, PowerConsumptionReport},
 };
+use uom::si::angular_velocity::revolution_per_minute;
 use uom::si::{
     acceleration::foot_per_second_squared, angle::degree, electric_current::ampere,
     electric_potential::volt, f64::*, frequency::hertz, length::foot, mass::pound, pressure::psi,
@@ -676,6 +677,7 @@ read_write_as!(isize);
 read_write_as!(f32);
 
 read_write_uom!(Velocity, knot);
+read_write_uom!(AngularVelocity, revolution_per_minute);
 read_write_uom!(Length, foot);
 read_write_uom!(Acceleration, foot_per_second_squared);
 read_write_uom!(ThermodynamicTemperature, degree_celsius);
