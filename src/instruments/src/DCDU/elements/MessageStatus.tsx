@@ -3,14 +3,14 @@ import { AtsuMessageComStatus, AtsuMessageDirection, AtsuMessageResponseStatus, 
 
 type MessageStatusProps = {
     timestamp: AtsuTimestamp | undefined,
-    direction: AtsuMessageDirection,
-    status: AtsuMessageResponseStatus,
+    direction: AtsuMessageDirection | undefined,
+    status: AtsuMessageResponseStatus | undefined,
     comStatus: AtsuMessageComStatus,
     station: string,
     confirmed: boolean
 }
 
-const translateStatus = (status: AtsuMessageResponseStatus, comStatus: AtsuMessageComStatus) => {
+const translateStatus = (status: AtsuMessageResponseStatus | undefined, comStatus: AtsuMessageComStatus) => {
     switch (status) {
     case AtsuMessageResponseStatus.Open:
         if (comStatus !== AtsuMessageComStatus.Open && comStatus !== AtsuMessageComStatus.Failed) {

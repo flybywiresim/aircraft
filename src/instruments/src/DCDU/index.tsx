@@ -72,9 +72,9 @@ const DCDU: React.FC = () => {
 
             // define the next visible message
             if (index + 1 < sortedMessages.length) {
-                setMessageUid(sortedMessages[index + 1].UniqueMessageID);
+                setMessageUid(sortedMessages[index + 1].UniqueMessageID !== undefined ? sortedMessages[index + 1].UniqueMessageID : -1);
             } else if (index !== 0) {
-                setMessageUid(sortedMessages[index - 1].UniqueMessageID);
+                setMessageUid(sortedMessages[index - 1].UniqueMessageID !== undefined ? sortedMessages[index - 1].UniqueMessageID : -1);
             } else {
                 setMessageUid(-1);
             }
@@ -107,7 +107,7 @@ const DCDU: React.FC = () => {
             index -= 1;
         }
 
-        setMessageUid(sortedMessages[index].UniqueMessageID);
+        setMessageUid(sortedMessages[index].UniqueMessageID !== undefined ? sortedMessages[index].UniqueMessageID : -1);
     });
     useInteractionEvents(['A32NX_DCDU_BTN_MPL_MS0PLUS', 'A32NX_DCDU_BTN_MPR_MS0PLUS'], () => {
         if (messages.size === 0) {
@@ -129,7 +129,7 @@ const DCDU: React.FC = () => {
             index += 1;
         }
 
-        setMessageUid(sortedMessages[index].UniqueMessageID);
+        setMessageUid(sortedMessages[index].UniqueMessageID !== undefined ? sortedMessages[index].UniqueMessageID : -1);
     });
     useInteractionEvents(['A32NX_DCDU_BTN_MPL_PRINT', 'A32NX_DCDU_BTN_MPR_PRINT'], () => {
         if (messages.size === 0) {
@@ -154,7 +154,7 @@ const DCDU: React.FC = () => {
             atsuMessage.deserialize(serialized);
         }
 
-        if (atsuMessage !== undefined) {
+        if (atsuMessage !== undefined && atsuMessage.UniqueMessageID !== undefined) {
             const oldMessage = messages.get(atsuMessage.UniqueMessageID);
             if (oldMessage === undefined) {
                 atsuMessage.DcduTimestamp = new Date().getTime();
