@@ -1,7 +1,7 @@
 //  Copyright (c) 2021 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import { AtsuMessageType, AtsuMessageDirection, AtsuMessageResponseStatus, AtsuMessageSerializationFormat, AtsuMessage } from './AtsuMessage';
+import { AtsuMessageNetwork, AtsuMessageType, AtsuMessageDirection, AtsuMessageResponseStatus, AtsuMessageSerializationFormat, AtsuMessage } from './AtsuMessage';
 
 /**
  * Defines the general PDC message format
@@ -34,6 +34,7 @@ export class PdcMessage extends AtsuMessage {
         this.Type = AtsuMessageType.PDC;
         this.Direction = AtsuMessageDirection.Output;
         this.Status = AtsuMessageResponseStatus.Open;
+        this.Network = AtsuMessageNetwork.Hoppie;
     }
 
     public serialize(_format: AtsuMessageSerializationFormat) {
