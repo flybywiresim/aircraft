@@ -16,13 +16,17 @@ export class FreetextMessage extends AtsuMessage {
         this.Status = AtsuMessageResponseStatus.Open;
     }
 
-    public serialize(_format: AtsuMessageSerializationFormat) {
+    public serialize(format: AtsuMessageSerializationFormat) {
         let message = '';
 
-        this.Lines.forEach((line) => {
-            message += `${line}\n`;
-        });
-        message.slice(0, -1);
+        if (format === AtsuMessageSerializationFormat.MCDU) {
+            this.Lines.forEach((line) => {
+                message += `{green}${line}{end}\n`;
+            });
+            message += '{white}------------------------{end}\n';
+        } else {
+            this.Lines.forEach((line) => message += `${line}\n`);
+        }
 
         return message;
     }
