@@ -2,7 +2,7 @@
 //  SPDX-License-Identifier: GPL-3.0
 
 import { AtsuMessageNetwork, AtsuMessageType, AtsuMessageDirection, AtsuMessageResponseStatus, AtsuMessageSerializationFormat, AtsuMessage } from './AtsuMessage';
-import { cpdlcToString } from './Common';
+import { cpdlcToString } from '../Common';
 
 export enum CpdlcMessageResponseType {
     NotRequired,
