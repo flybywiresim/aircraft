@@ -5,6 +5,7 @@ import { AtcSystem } from './AtcSystem';
 import { AocSystem } from './AocSystem';
 import { AtsuMessage, AtsuMessageSerializationFormat } from './messages/AtsuMessage';
 import { AtsuTimestamp } from './messages/AtsuTimestamp';
+import { CpdlcMessage } from './messages/CpdlcMessage';
 import { WeatherMessage } from './messages/WeatherMessage';
 import { AtisMessage } from './messages/AtisMessage';
 import { MetarMessage } from './messages/MetarMessage';
@@ -103,4 +104,4 @@ export class AtsuManager {
     }
 }
 
-export { AtsuMessage, AtsuTimestamp, AocSystem, FreetextMessage, WeatherMessage, MetarMessage, TafMessage, AtisMessage, PdcMessage };
+export { AtsuMessage, AtsuTimestamp, AocSystem, FreetextMessage, WeatherMessage, MetarMessage, TafMessage, AtisMessage, PdcMessage, CpdlcMessage };
