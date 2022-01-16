@@ -2345,14 +2345,21 @@ class FMCMainDisplay extends BaseAirliners {
             CDUPerformancePage.UpdateThrRedAccFromOrigin(this);
             return true;
         }
-        if (s.length == 0 || s.length > 11) {
+
+        const [match, checkThrRedAlt, slash1, , slash2, checkAccAlt] = s.match(/^([0-9]{4,5})?(\/?)?((\/)([0-9]{4,5}))?$/) || [];
+        if (!match || (slash1 && slash2) || (!checkThrRedAlt && !checkAccAlt)) {
             this.addNewMessage(NXSystemMessages.formatError);
             return false;
         }
-        if (s.length > 6 && !/^\d{4,5}\/\d{4,5}$/.test(s)) {
-            this.addNewMessage(NXSystemMessages.formatError);
-            return false;
-        }
+
+        // if (s.length == 0 || s.length > 11) {
+        //     this.addNewMessage(NXSystemMessages.formatError);
+        //     return false;
+        // }
+        // if (s.length > 6 && !/^\d{4,5}\/\d{4,5}$/.test(s)) {
+        //     this.addNewMessage(NXSystemMessages.formatError);
+        //     return false;
+        // }
 
         let [thrRedAlt, accAlt] = s.split("/");
 
@@ -2364,25 +2371,25 @@ class FMCMainDisplay extends BaseAirliners {
             accAlt = 0;
         }
 
-        if (isNaN(thrRedAlt) || isNaN(accAlt)) {
-            this.addNewMessage(NXSystemMessages.formatError);
-            return false;
-        }
+        // if (isNaN(thrRedAlt) || isNaN(accAlt)) {
+        //     this.addNewMessage(NXSystemMessages.formatError);
+        //     return false;
+        // }
 
         if (thrRedAlt > 45000 || accAlt > 45000) {
             this.addNewMessage(NXSystemMessages.entryOutOfRange);
             return false;
         }
 
-        if (thrRedAlt > 0 && !/^\d{4,5}$/.test(thrRedAlt)) {
-            this.addNewMessage(NXSystemMessages.formatError);
-            return false;
-        }
+        // if (thrRedAlt > 0 && !/^\d{4,5}$/.test(thrRedAlt)) {
+        //     this.addNewMessage(NXSystemMessages.formatError);
+        //     return false;
+        // }
 
-        if (accAlt > 0 && !/^\d{4,5}$/.test(accAlt)) {
-            this.addNewMessage(NXSystemMessages.formatError);
-            return false;
-        }
+        // if (accAlt > 0 && !/^\d{4,5}$/.test(accAlt)) {
+        //     this.addNewMessage(NXSystemMessages.formatError);
+        //     return false;
+        // }
 
         let currentThrRedAlt = this.thrustReductionAltitude;
         let currentAccAlt = this.accelerationAltitude;

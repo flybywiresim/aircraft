@@ -1077,7 +1077,7 @@ class CDUPerformancePage {
         mcdu.engineOutAccelerationAltitudeIsPilotEntered = false;
         SimVar.SetSimVarValue("L:A32NX_ENG_OUT_ACC_ALT", "feet", alt);
     }
-    static async UpdateThrRedAccFromDestination(mcdu) {
+    static UpdateThrRedAccFromDestination(mcdu) {
         const destination = mcdu.flightPlanManager.getDestination();
         const elevation = destination ? destination.altitudeinFP : SimVar.GetSimVarValue("GROUND ALTITUDE", "feet");
 
