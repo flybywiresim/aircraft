@@ -2352,15 +2352,6 @@ class FMCMainDisplay extends BaseAirliners {
             return false;
         }
 
-        // if (s.length == 0 || s.length > 11) {
-        //     this.addNewMessage(NXSystemMessages.formatError);
-        //     return false;
-        // }
-        // if (s.length > 6 && !/^\d{4,5}\/\d{4,5}$/.test(s)) {
-        //     this.addNewMessage(NXSystemMessages.formatError);
-        //     return false;
-        // }
-
         let [thrRedAlt, accAlt] = s.split("/");
 
         if (thrRedAlt === undefined || thrRedAlt == "") {
@@ -2371,25 +2362,10 @@ class FMCMainDisplay extends BaseAirliners {
             accAlt = 0;
         }
 
-        // if (isNaN(thrRedAlt) || isNaN(accAlt)) {
-        //     this.addNewMessage(NXSystemMessages.formatError);
-        //     return false;
-        // }
-
         if (thrRedAlt > 45000 || accAlt > 45000) {
             this.addNewMessage(NXSystemMessages.entryOutOfRange);
             return false;
         }
-
-        // if (thrRedAlt > 0 && !/^\d{4,5}$/.test(thrRedAlt)) {
-        //     this.addNewMessage(NXSystemMessages.formatError);
-        //     return false;
-        // }
-
-        // if (accAlt > 0 && !/^\d{4,5}$/.test(accAlt)) {
-        //     this.addNewMessage(NXSystemMessages.formatError);
-        //     return false;
-        // }
 
         let currentThrRedAlt = this.thrustReductionAltitude;
         let currentAccAlt = this.accelerationAltitude;
