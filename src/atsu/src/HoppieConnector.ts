@@ -76,9 +76,9 @@ export class HoppieConnector {
 
                             // split up the data
                             const elements = content.split('/');
-                            cpdlc.OutputTransmissionId = parseInt(elements[1]);
+                            cpdlc.CurrentTransmissionId = parseInt(elements[1]);
                             if (elements[2] !== '') {
-                                cpdlc.InputTransmissionId = parseInt(elements[2]);
+                                cpdlc.PreviousTransmissionId = parseInt(elements[2]);
                             }
                             cpdlc.ExpectedResponses = stringToCpdlc(elements[3]);
                             cpdlc.Lines = wordWrap(elements[4], 25);

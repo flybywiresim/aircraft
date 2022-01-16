@@ -31,9 +31,9 @@ export class CpdlcMessage extends AtsuMessage {
 
     public Response: CpdlcMessageResponse | undefined = undefined;
 
-    public InputTransmissionId = -1;
+    public PreviousTransmissionId = -1;
 
-    public OutputTransmissionId = -1;
+    public CurrentTransmissionId = -1;
 
     public Lines: string[] = [];
 
@@ -49,8 +49,8 @@ export class CpdlcMessage extends AtsuMessage {
 
         this.ExpectedResponses = jsonData.ExpectedResponses;
         this.Response = jsonData.Response;
-        this.InputTransmissionId = jsonData.InputTransmissionId;
-        this.OutputTransmissionId = jsonData.OutputTransmissionId;
+        this.PreviousTransmissionId = jsonData.PreviousTransmissionId;
+        this.CurrentTransmissionId = jsonData.CurrentTransmissionId;
         this.Lines = jsonData.Lines;
     }
 
@@ -58,7 +58,7 @@ export class CpdlcMessage extends AtsuMessage {
         let message = '';
 
         if (format === AtsuMessageSerializationFormat.Network) {
-            message = `/data2/${this.OutputTransmissionId}/${this.InputTransmissionId !== -1 ? this.InputTransmissionId : ''}/${cpdlcToString(this.ExpectedResponses)}`;
+            message = `/data2/${this.CurrentTransmissionId}/${this.PreviousTransmissionId !== -1 ? this.PreviousTransmissionId : ''}/${cpdlcToString(this.ExpectedResponses)}`;
             message += `/${this.Lines.join(' ')}`;
         } else {
             message = this.Lines.join(' ');
