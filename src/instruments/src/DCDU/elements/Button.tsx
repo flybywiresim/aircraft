@@ -2,7 +2,7 @@ import React, { memo } from 'react';
 import { useInteractionEvents } from '@instruments/common/hooks.js';
 
 type ButtonProps = {
-    messageId: number | undefined,
+    messageId: number,
     index: string,
     content: string,
     clicked: (btn: string) => void

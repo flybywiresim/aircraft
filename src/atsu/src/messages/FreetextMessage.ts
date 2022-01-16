@@ -1,7 +1,7 @@
 //  Copyright (c) 2021 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import { AtsuMessageType, AtsuMessageDirection, AtsuMessageResponseStatus, AtsuMessageSerializationFormat, AtsuMessage } from './AtsuMessage';
+import { AtsuMessageType, AtsuMessageDirection, AtsuMessageSerializationFormat, AtsuMessage } from './AtsuMessage';
 
 /**
  * Defines the general freetext message format
@@ -13,7 +13,6 @@ export class FreetextMessage extends AtsuMessage {
         super();
         this.Type = AtsuMessageType.Freetext;
         this.Direction = AtsuMessageDirection.Output;
-        this.Status = AtsuMessageResponseStatus.Open;
     }
 
     public serialize(format: AtsuMessageSerializationFormat) {
@@ -32,4 +31,4 @@ export class FreetextMessage extends AtsuMessage {
     }
 }
 
-export { AtsuMessageType, AtsuMessageDirection, AtsuMessageResponseStatus, AtsuMessageSerializationFormat, AtsuMessage };
+export { AtsuMessageType, AtsuMessageDirection, AtsuMessageSerializationFormat, AtsuMessage };

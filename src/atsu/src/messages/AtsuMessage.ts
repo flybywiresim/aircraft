@@ -20,18 +20,8 @@ export enum AtsuMessageType {
     TAF = 3,
     ATIS = 4,
     AOC = 5,
-    CDPDLC = 6,
+    CPDLC = 6,
     ATC = 7
-}
-
-export enum AtsuMessageResponseStatus {
-    Open,
-    Wilco,
-    Roger,
-    Negative,
-    Unable,
-    Acknowledge,
-    Refuse
 }
 
 export enum AtsuMessageComStatus {
@@ -55,11 +45,9 @@ export enum AtsuMessageSerializationFormat {
 export class AtsuMessage {
     public Network = AtsuMessageNetwork.Hoppie;
 
-    public UniqueMessageID : number | undefined = undefined;
+    public UniqueMessageID : number = -1;
 
     public Timestamp : AtsuTimestamp | undefined = undefined;
-
-    public DcduTimestamp : number | undefined = undefined;
 
     public Station = '';
 
@@ -68,8 +56,6 @@ export class AtsuMessage {
     public Type : AtsuMessageType | undefined = undefined;
 
     public Direction : AtsuMessageDirection | undefined = undefined;
-
-    public Status : AtsuMessageResponseStatus | undefined = undefined;
 
     public Confirmed = false;
 
@@ -87,7 +73,6 @@ export class AtsuMessage {
         this.ComStatus = jsonData.ComStatus;
         this.Type = jsonData.Type;
         this.Direction = jsonData.Direction;
-        this.Status = jsonData.Status;
         this.Confirmed = jsonData.Confirmed;
     }
 }

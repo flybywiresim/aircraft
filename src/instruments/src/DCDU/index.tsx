@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import { useCoherentEvent, useInteractionEvents } from '@instruments/common/hooks';
-import { AtsuMessage, AtsuMessageComStatus, AtsuMessageType } from '@atsu/messages/AtsuMessage';
-import { PdcMessage } from '@atsu/messages/PdcMessage';
+import { AtsuMessageComStatus, AtsuMessageType } from '@atsu/messages/AtsuMessage';
+import { CpdlcMessage } from '@atsu/messages/CpdlcMessage';
 import { WilcoUnableButtons } from './elements/WilcoUnableButtons';
 import { render } from '../Common';
 import { SelfTest } from './pages/SelfTest';
@@ -28,16 +28,16 @@ function powerAvailable() {
     return getSimVar('L:A32NX_ELEC_DC_1_BUS_IS_POWERED', 'Bool') || getSimVar('L:A32NX_ELEC_DC_2_BUS_IS_POWERED', 'Bool');
 }
 
-const sortedMessageArray = (messages: Map<number, AtsuMessage>) => {
+const sortedMessageArray = (messages: Map<number, [CpdlcMessage, number]>): [CpdlcMessage, number][] => {
     const arrMessages = Array.from(messages.values());
-    arrMessages.sort((a, b) => a.DcduTimestamp - b.DcduTimestamp);
+    arrMessages.sort((a, b) => a[1] - b[1]);
     return arrMessages;
 };
 
 const DCDU: React.FC = () => {
     const [isColdAndDark] = useSimVar('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool', 200);
     const [state, setState] = useState(isColdAndDark ? DcduState.Off : DcduState.Active);
-    const [messages, setMessages] = useState(new Map<number, AtsuMessage>());
+    const [messages, setMessages] = useState(new Map<number, [CpdlcMessage, number]>());
     const [statusMessage, setStatusMessage] = useState({ sender: '', message: '', remainingMilliseconds: 0 });
     const [messageUid, setMessageUid] = useState(-1);
     const maxMessageCount = 5;
@@ -65,16 +65,16 @@ const DCDU: React.FC = () => {
     // functions to handle the internal queue
     const closeMessage = (uid: number) => {
         const sortedMessages = sortedMessageArray(messages);
-        const index = sortedMessages.findIndex((element) => element.UniqueMessageID === uid);
+        const index = sortedMessages.findIndex((element) => element[0].UniqueMessageID === uid);
 
         if (index !== -1) {
             resetStatus('');
 
             // define the next visible message
             if (index + 1 < sortedMessages.length) {
-                setMessageUid(sortedMessages[index + 1].UniqueMessageID !== undefined ? sortedMessages[index + 1].UniqueMessageID : -1);
+                setMessageUid(sortedMessages[index + 1][0].UniqueMessageID);
             } else if (index !== 0) {
-                setMessageUid(sortedMessages[index - 1].UniqueMessageID !== undefined ? sortedMessages[index - 1].UniqueMessageID : -1);
+                setMessageUid(sortedMessages[index - 1][0].UniqueMessageID);
             } else {
                 setMessageUid(-1);
             }
@@ -95,7 +95,7 @@ const DCDU: React.FC = () => {
         const sortedMessages = sortedMessageArray(messages);
         let index = 0;
         if (messageUid !== -1) {
-            index = sortedMessages.findIndex((element) => messageUid === element.UniqueMessageID);
+            index = sortedMessages.findIndex((element) => messageUid === element[0].UniqueMessageID);
         }
 
         if (index === 0) {
@@ -107,7 +107,7 @@ const DCDU: React.FC = () => {
             index -= 1;
         }
 
-        setMessageUid(sortedMessages[index].UniqueMessageID !== undefined ? sortedMessages[index].UniqueMessageID : -1);
+        setMessageUid(sortedMessages[index][0].UniqueMessageID);
     });
     useInteractionEvents(['A32NX_DCDU_BTN_MPL_MS0PLUS', 'A32NX_DCDU_BTN_MPR_MS0PLUS'], () => {
         if (messages.size === 0) {
@@ -117,7 +117,7 @@ const DCDU: React.FC = () => {
         const sortedMessages = sortedMessageArray(messages);
         let index = 0;
         if (messageUid !== -1) {
-            index = sortedMessages.findIndex((element) => messageUid === element.UniqueMessageID);
+            index = sortedMessages.findIndex((element) => messageUid === element[0].UniqueMessageID);
         }
 
         if (index + 1 >= sortedMessages.length) {
@@ -129,52 +129,56 @@ const DCDU: React.FC = () => {
             index += 1;
         }
 
-        setMessageUid(sortedMessages[index].UniqueMessageID !== undefined ? sortedMessages[index].UniqueMessageID : -1);
+        setMessageUid(sortedMessages[index][0].UniqueMessageID);
     });
     useInteractionEvents(['A32NX_DCDU_BTN_MPL_PRINT', 'A32NX_DCDU_BTN_MPR_PRINT'], () => {
         if (messages.size === 0) {
             return;
         }
 
-        if (SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_PRINT', 'number') !== -1) {
+        if (SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_PRINT_UID', 'number') !== -1) {
             setStatus('Mainpage', 'PRINTER BUSY');
             return;
         }
 
         if (messageUid !== -1) {
-            SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_PRINT', 'number', messageUid);
+            SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_PRINT_UID', 'number', messageUid);
         }
     });
 
     // resynchronization with AtsuManager
     useCoherentEvent('A32NX_DCDU_MSG', (serialized: any) => {
-        let atsuMessage : AtsuMessage | undefined = undefined;
-        if (serialized.Type === AtsuMessageType.PDC) {
-            atsuMessage = new PdcMessage();
-            atsuMessage.deserialize(serialized);
+        let cpdlcMessage : CpdlcMessage | undefined = undefined;
+        if (serialized.Type === AtsuMessageType.CPDLC) {
+            cpdlcMessage = new CpdlcMessage();
+            cpdlcMessage.deserialize(serialized);
         }
 
-        if (atsuMessage !== undefined && atsuMessage.UniqueMessageID !== undefined) {
-            const oldMessage = messages.get(atsuMessage.UniqueMessageID);
-            if (oldMessage === undefined) {
-                atsuMessage.DcduTimestamp = new Date().getTime();
-            } else if (oldMessage.ComStatus !== atsuMessage.ComStatus) {
-                if (atsuMessage.ComStatus === AtsuMessageComStatus.Failed) {
-                    setStatus('Mainpage', 'COM FAILED');
-                } else if (atsuMessage.ComStatus === AtsuMessageComStatus.Sent) {
-                    setStatus('Mainpage', 'SENT');
+        if (cpdlcMessage !== undefined && cpdlcMessage.UniqueMessageID !== undefined) {
+            const oldMessage = messages.get(cpdlcMessage.UniqueMessageID);
+            let dcduTimestamp = new Date().getTime();
+
+            if (oldMessage !== undefined) {
+                dcduTimestamp = oldMessage[1];
+
+                if (oldMessage[0].ComStatus !== cpdlcMessage.ComStatus) {
+                    if (cpdlcMessage.ComStatus === AtsuMessageComStatus.Failed) {
+                        setStatus('Mainpage', 'COM FAILED');
+                    } else if (cpdlcMessage.ComStatus === AtsuMessageComStatus.Sent) {
+                        setStatus('Mainpage', 'SENT');
+                    }
                 }
             }
 
-            setMessages(messages.set(atsuMessage.UniqueMessageID, atsuMessage));
+            setMessages(messages.set(cpdlcMessage.UniqueMessageID, [cpdlcMessage, dcduTimestamp]));
             SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_MAX_REACHED', 'boolean', messages.size >= maxMessageCount ? 1 : 0);
 
             if (messageUid === -1) {
-                setMessageUid(atsuMessage.UniqueMessageID);
+                setMessageUid(cpdlcMessage.UniqueMessageID);
             }
         }
     });
-    useCoherentEvent('A32NX_DCDU_MSG_REMOVE', (uid: number) => {
+    useCoherentEvent('A32NX_DCDU_MSG_DELETE_UID', (uid: number) => {
         closeMessage(uid);
     });
 
@@ -199,14 +203,14 @@ const DCDU: React.FC = () => {
 
     // prepare the data
     let messageIndex = -1;
-    let message : AtsuMessage | undefined = undefined;
+    let message : CpdlcMessage | undefined = undefined;
     if (state === DcduState.Active && messages.size !== 0) {
         const arrMessages = sortedMessageArray(messages);
 
         if (messageUid !== -1) {
-            messageIndex = arrMessages.findIndex((element) => messageUid === element.UniqueMessageID);
+            messageIndex = arrMessages.findIndex((element) => messageUid === element[0].UniqueMessageID);
             if (messageIndex !== -1) {
-                message = arrMessages[messageIndex];
+                message = arrMessages[messageIndex][0];
             }
         }
     }
@@ -248,7 +252,7 @@ const DCDU: React.FC = () => {
                             <MessageStatus
                                 timestamp={message.Timestamp}
                                 direction={message.Direction}
-                                status={message.Status}
+                                response={message.Response}
                                 comStatus={message.ComStatus}
                                 station={message.Station}
                                 confirmed={message.Confirmed}

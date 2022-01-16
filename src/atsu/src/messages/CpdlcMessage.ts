@@ -1,7 +1,7 @@
 //  Copyright (c) 2021 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import { AtsuMessageNetwork, AtsuMessageType, AtsuMessageDirection, AtsuMessageResponseStatus, AtsuMessageSerializationFormat, AtsuMessage } from './AtsuMessage';
+import { AtsuMessageNetwork, AtsuMessageType, AtsuMessageDirection, AtsuMessageSerializationFormat, AtsuMessage } from './AtsuMessage';
 import { cpdlcToString } from '../Common';
 
 export enum CpdlcMessageResponseType {
@@ -13,11 +13,23 @@ export enum CpdlcMessageResponseType {
     Yes
 }
 
+export enum CpdlcMessageResponse {
+    Standby,
+    Wilco,
+    Roger,
+    Negative,
+    Unable,
+    Acknowledge,
+    Refuse
+}
+
 /**
  * Defines the general freetext message format
  */
 export class CpdlcMessage extends AtsuMessage {
-    public Response: CpdlcMessageResponseType = undefined;
+    public ExpectedResponses: CpdlcMessageResponseType = undefined;
+
+    public Response: CpdlcMessageResponse | undefined = undefined;
 
     public InputTransmissionId = -1;
 
@@ -27,19 +39,18 @@ export class CpdlcMessage extends AtsuMessage {
 
     constructor() {
         super();
-        this.Type = AtsuMessageType.CDPDLC;
+        this.Type = AtsuMessageType.CPDLC;
         this.Network = AtsuMessageNetwork.Hoppie;
         this.Direction = AtsuMessageDirection.Output;
-        this.Status = AtsuMessageResponseStatus.Open;
     }
 
     public deserialize(jsonData: any): void {
         super.deserialize(jsonData);
 
-        this.Type = jsonData.Type;
-        this.Network = jsonData.Network;
-        this.Direction = jsonData.Direction;
-        this.Status = jsonData.Status;
+        this.ExpectedResponses = jsonData.ExpectedResponses;
+        this.Response = jsonData.Response;
+        this.InputTransmissionId = jsonData.InputTransmissionId;
+        this.OutputTransmissionId = jsonData.OutputTransmissionId;
         this.Lines = jsonData.Lines;
     }
 
@@ -47,7 +58,7 @@ export class CpdlcMessage extends AtsuMessage {
         let message = '';
 
         if (format === AtsuMessageSerializationFormat.Network) {
-            message = `/data2/${this.OutputTransmissionId}/${this.InputTransmissionId !== -1 ? this.InputTransmissionId : ''}/${cpdlcToString(this.Response)}`;
+            message = `/data2/${this.OutputTransmissionId}/${this.InputTransmissionId !== -1 ? this.InputTransmissionId : ''}/${cpdlcToString(this.ExpectedResponses)}`;
             message += `/${this.Lines.join(' ')}`;
         } else {
             message = this.Lines.join(' ');
@@ -57,4 +68,4 @@ export class CpdlcMessage extends AtsuMessage {
     }
 }
 
-export { AtsuMessageType, AtsuMessageDirection, AtsuMessageResponseStatus, AtsuMessageSerializationFormat, AtsuMessage };
+export { AtsuMessageType, AtsuMessageDirection, AtsuMessageSerializationFormat, AtsuMessage };

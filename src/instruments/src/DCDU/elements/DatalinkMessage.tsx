@@ -1,9 +1,10 @@
 import React, { useState, memo } from 'react';
-import { AtsuMessage, AtsuMessageComStatus, AtsuMessageDirection, AtsuMessageSerializationFormat } from '@atsu/messages/AtsuMessage';
+import { AtsuMessageComStatus, AtsuMessageDirection, AtsuMessageSerializationFormat } from '@atsu/messages/AtsuMessage';
+import { CpdlcMessage } from '@atsu/messages/CpdlcMessage';
 import { useInteractionEvents } from '@instruments/common/hooks.js';
 
 type DatalinkMessageProps = {
-    message: AtsuMessage,
+    message: CpdlcMessage,
     isStatusAvailable: (sender: string) => boolean,
     setStatus: (sender: string, message: string) => void,
     resetStatus: (sender: string) => void

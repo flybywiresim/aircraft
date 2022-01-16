@@ -1,40 +1,40 @@
 import React, { memo, useEffect, useRef, useState } from 'react';
-import { AtsuMessageComStatus, AtsuMessageDirection, AtsuMessageResponseStatus, AtsuTimestamp } from '@atsu/messages/AtsuMessage';
+import { AtsuMessageComStatus, AtsuMessageDirection, AtsuTimestamp } from '@atsu/messages/AtsuMessage';
+import { CpdlcMessageResponse } from '@atsu/messages/CpdlcMessage';
 
 type MessageStatusProps = {
     timestamp: AtsuTimestamp | undefined,
     direction: AtsuMessageDirection | undefined,
-    status: AtsuMessageResponseStatus | undefined,
+    response: CpdlcMessageResponse | undefined,
     comStatus: AtsuMessageComStatus,
     station: string,
     confirmed: boolean
 }
 
-const translateStatus = (status: AtsuMessageResponseStatus | undefined, comStatus: AtsuMessageComStatus) => {
+const translateStatus = (status: CpdlcMessageResponse | undefined) => {
     switch (status) {
-    case AtsuMessageResponseStatus.Open:
-        if (comStatus !== AtsuMessageComStatus.Open && comStatus !== AtsuMessageComStatus.Failed) {
-            return '';
-        }
-        return 'OPEN';
-    case AtsuMessageResponseStatus.Wilco:
+    case CpdlcMessageResponse.Standby:
+        return 'STBY';
+    case CpdlcMessageResponse.Wilco:
         return 'WILCO';
-    case AtsuMessageResponseStatus.Roger:
+    case CpdlcMessageResponse.Roger:
         return 'ROGER';
-    case AtsuMessageResponseStatus.Negative:
+    case CpdlcMessageResponse.Negative:
         return 'NEGATV';
-    case AtsuMessageResponseStatus.Unable:
+    case CpdlcMessageResponse.Unable:
         return 'UNABLE';
-    case AtsuMessageResponseStatus.Acknowledge:
+    case CpdlcMessageResponse.Acknowledge:
         return 'ACK';
-    case AtsuMessageResponseStatus.Refuse:
+    case CpdlcMessageResponse.Refuse:
         return 'REFUSE';
+    case undefined:
+        return '';
     default:
         return 'UKN';
     }
 };
 
-export const MessageStatus: React.FC<MessageStatusProps> = memo(({ timestamp, direction, status, comStatus, station, confirmed }) => {
+export const MessageStatus: React.FC<MessageStatusProps> = memo(({ timestamp, direction, response, comStatus, station, confirmed }) => {
     const [textBBox, setTextBBox] = useState<DOMRect>();
     const textRef = useRef<SVGTSpanElement>(null);
 
@@ -45,13 +45,13 @@ export const MessageStatus: React.FC<MessageStatusProps> = memo(({ timestamp, di
     }
 
     let statusClass = 'status-message ';
-    if (status === AtsuMessageResponseStatus.Open) {
+    if (response === undefined || comStatus === AtsuMessageComStatus.Failed) {
         statusClass += 'status-open';
     } else {
         statusClass += 'status-other';
     }
 
-    const needsBackground = status !== AtsuMessageResponseStatus.Open;
+    const needsBackground = response !== undefined;
     const backgroundColor = confirmed === true ? 'rgb(0,255,0)' : 'rgb(0,255,255)';
 
     // calculate the position of the background rectangle
@@ -82,11 +82,11 @@ export const MessageStatus: React.FC<MessageStatusProps> = memo(({ timestamp, di
                             x={background.x}
                             y={background.y}
                         />
-                        <text className={statusClass} x="467" y="35"><tspan ref={textRef}>{translateStatus(status, comStatus)}</tspan></text>
+                        <text className={statusClass} x="467" y="35"><tspan ref={textRef}>{translateStatus(response)}</tspan></text>
                     </>
                 )}
                 {needsBackground === false && (
-                    <text className={statusClass} x="471" y="35">{translateStatus(status, comStatus)}</text>
+                    <text className={statusClass} x="471" y="35">{translateStatus(response)}</text>
                 )}
             </>
         </g>
