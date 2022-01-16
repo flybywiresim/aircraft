@@ -4,14 +4,14 @@ import { CpdlcMessage, CpdlcMessageResponse } from '@atsu/messages/CpdlcMessage'
 import { useUpdate } from '@instruments/common/hooks.js';
 import { Button } from './Button';
 
-type WilcoUnableButtonsProps = {
+type AckRefuseButtonsProps = {
     message: CpdlcMessage,
     setStatus: (sender: string, message: string) => void,
     isStatusAvailable: (sender: string) => boolean,
     closeMessage: (message: number) => void
 }
 
-export const WilcoUnableButtons: React.FC<WilcoUnableButtonsProps> = memo(({ message, setStatus, isStatusAvailable, closeMessage }) => {
+export const AckRefuseButtons: React.FC<AckRefuseButtonsProps> = memo(({ message, setStatus, isStatusAvailable, closeMessage }) => {
     useUpdate(() => {
         if (message.ComStatus === AtsuMessageComStatus.Sending) {
             if (isStatusAvailable('Buttons') === true) {
@@ -27,17 +27,14 @@ export const WilcoUnableButtons: React.FC<WilcoUnableButtonsProps> = memo(({ mes
 
         if (message.Response === undefined && message.ResponseType === undefined) {
             if (index === 'L1') {
-                message.ResponseType = CpdlcMessageResponse.Unable;
-            } else if (index === 'R1') {
-                message.ResponseType = CpdlcMessageResponse.Standby;
+                message.ResponseType = CpdlcMessageResponse.Refuse;
             } else if (index === 'R2') {
-                message.ResponseType = CpdlcMessageResponse.Wilco;
+                message.ResponseType = CpdlcMessageResponse.Acknowledge;
             }
         } else if (message.Response === undefined && message.ResponseType !== undefined) {
             if (index === 'L1') {
                 message.ResponseType = undefined;
-            } else {
-                SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_ANSWER', 'number', message.ResponseType as number);
+            } else if (index === 'R2') {
                 SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_SEND_UID', 'number', message.UniqueMessageID);
             }
         } else if (message.Response !== undefined && index === 'R2') {
@@ -45,44 +42,20 @@ export const WilcoUnableButtons: React.FC<WilcoUnableButtonsProps> = memo(({ mes
         }
     };
 
-    const showAnswers = message.Response === undefined && message.ResponseType === undefined;
-    const showStandby = showAnswers === true && message.ResponseType !== CpdlcMessageResponse.Standby;
     return (
         <>
-            {showAnswers === true && showStandby === true && (
+            {message.Response === undefined && message.ResponseType === undefined && (
                 <>
                     <Button
                         messageId={message.UniqueMessageID}
                         index="L1"
-                        content="*UNABLE"
-                        clicked={clicked}
-                    />
-                    <Button
-                        messageId={message.UniqueMessageID}
-                        index="R1"
-                        content="STBY*"
+                        content="*REFUSE"
                         clicked={clicked}
                     />
                     <Button
                         messageId={message.UniqueMessageID}
                         index="R2"
-                        content="WILCO*"
-                        clicked={clicked}
-                    />
-                </>
-            )}
-            {showAnswers === true && showStandby === false && (
-                <>
-                    <Button
-                        messageId={message.UniqueMessageID}
-                        index="L1"
-                        content="*UNABLE"
-                        clicked={clicked}
-                    />
-                    <Button
-                        messageId={message.UniqueMessageID}
-                        index="R2"
-                        content="WILCO*"
+                        content="ACK*"
                         clicked={clicked}
                     />
                 </>

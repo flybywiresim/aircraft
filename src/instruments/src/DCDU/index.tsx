@@ -252,7 +252,7 @@ const DCDU: React.FC = () => {
                             <MessageStatus
                                 timestamp={message.Timestamp}
                                 direction={message.Direction}
-                                response={message.Response}
+                                response={message.ResponseType}
                                 comStatus={message.ComStatus}
                                 station={message.Station}
                                 confirmed={message.Confirmed}

@@ -4,7 +4,7 @@
 import { AtsuMessageNetwork, AtsuMessageType, AtsuMessageDirection, AtsuMessageSerializationFormat, AtsuMessage } from './AtsuMessage';
 import { cpdlcToString } from '../Common';
 
-export enum CpdlcMessageResponseType {
+export enum CpdlcMessageRequestedResponseType {
     NotRequired,
     WilcoUnable,
     AffirmNegative,
@@ -14,9 +14,12 @@ export enum CpdlcMessageResponseType {
 }
 
 export enum CpdlcMessageResponse {
+    None,
+    Other,
     Standby,
     Wilco,
     Roger,
+    Affirm,
     Negative,
     Unable,
     Acknowledge,
@@ -27,9 +30,12 @@ export enum CpdlcMessageResponse {
  * Defines the general freetext message format
  */
 export class CpdlcMessage extends AtsuMessage {
-    public ExpectedResponses: CpdlcMessageResponseType = undefined;
+    public RequestedResponses: CpdlcMessageRequestedResponseType | undefined = undefined;
 
-    public Response: CpdlcMessageResponse | undefined = undefined;
+    // describes the response type of the Response entry
+    public ResponseType: CpdlcMessageResponse | undefined = undefined;
+
+    public Response: CpdlcMessage | undefined = undefined;
 
     public PreviousTransmissionId = -1;
 
@@ -47,8 +53,12 @@ export class CpdlcMessage extends AtsuMessage {
     public deserialize(jsonData: any): void {
         super.deserialize(jsonData);
 
-        this.ExpectedResponses = jsonData.ExpectedResponses;
-        this.Response = jsonData.Response;
+        this.RequestedResponses = jsonData.ExpectedResponses;
+        this.ResponseType = jsonData.ResponseType;
+        if (jsonData.Response !== undefined) {
+            this.Response = new CpdlcMessage();
+            this.Response.deserialize(jsonData.Response);
+        }
         this.PreviousTransmissionId = jsonData.PreviousTransmissionId;
         this.CurrentTransmissionId = jsonData.CurrentTransmissionId;
         this.Lines = jsonData.Lines;
@@ -58,7 +68,7 @@ export class CpdlcMessage extends AtsuMessage {
         let message = '';
 
         if (format === AtsuMessageSerializationFormat.Network) {
-            message = `/data2/${this.CurrentTransmissionId}/${this.PreviousTransmissionId !== -1 ? this.PreviousTransmissionId : ''}/${cpdlcToString(this.ExpectedResponses)}`;
+            message = `/data2/${this.CurrentTransmissionId}/${this.PreviousTransmissionId !== -1 ? this.PreviousTransmissionId : ''}/${cpdlcToString(this.RequestedResponses)}`;
             message += `/${this.Lines.join(' ')}`;
         } else {
             message = this.Lines.join(' ');

@@ -1,11 +1,12 @@
+import { AtsuMessageComStatus, AtsuMessage, AtsuMessageType, AtsuMessageDirection } from './messages/AtsuMessage';
+import { CpdlcMessageResponse, CpdlcMessageRequestedResponseType, CpdlcMessage } from './messages/CpdlcMessage';
 import { HoppieConnector } from './HoppieConnector';
 import { AtsuManager } from './AtsuManager';
-import { AtsuMessage, AtsuMessageType, AtsuMessageDirection } from './messages/AtsuMessage';
 
 export class AtcSystem {
     private connector : HoppieConnector = undefined;
 
-    private messageQueue : AtsuMessage[] = [];
+    private messageQueue : CpdlcMessage[] = [];
 
     constructor(parent: AtsuManager, connector: HoppieConnector) {
         this.connector = connector;
@@ -41,13 +42,14 @@ export class AtcSystem {
     public removeMessage(uid: number): boolean {
         const index = this.messageQueue.findIndex((element) => element.UniqueMessageID === uid);
         if (index !== -1) {
+            this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG_DELETE_UID', uid);
             this.messageQueue.splice(index, 1);
         }
         return index !== -1;
     }
 
     public insertMessage(message: AtsuMessage): void {
-        this.messageQueue.unshift(message);
+        this.messageQueue.unshift(message as CpdlcMessage);
     }
 
     public messageRead(uid: number): boolean {
