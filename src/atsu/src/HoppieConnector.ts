@@ -80,7 +80,7 @@ export class HoppieConnector {
                             if (elements[2] !== '') {
                                 cpdlc.PreviousTransmissionId = parseInt(elements[2]);
                             }
-                            cpdlc.ExpectedResponses = stringToCpdlc(elements[3]);
+                            cpdlc.RequestedResponses = stringToCpdlc(elements[3]);
                             cpdlc.Lines = wordWrap(elements[4], 25);
                             parent.registerMessage(cpdlc);
                             break;
