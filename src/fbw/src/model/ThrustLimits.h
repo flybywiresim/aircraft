@@ -100,8 +100,8 @@ class ThrustLimitsModelClass
     real_T GAAC8000_tableData_c[4];
     real_T GAAC8000_bp01Data_p[2];
     real_T GAAC8000_bp02Data_e[2];
-    real_T MaximumClimb_tableData[338];
-    real_T MaximumClimb_bp01Data[26];
+    real_T MaximumClimb_tableData[390];
+    real_T MaximumClimb_bp01Data[30];
     real_T MaximumClimb_bp02Data[13];
     real_T uDLookupTable_tableData[4];
     real_T uDLookupTable_bp01Data[2];
@@ -118,8 +118,8 @@ class ThrustLimitsModelClass
     real_T AntiIceWing_bp01Data[2];
     real_T AirConditioning_tableData[2];
     real_T AirConditioning_bp01Data[2];
-    real_T OATCornerPoint_tableData[338];
-    real_T OATCornerPoint_bp01Data[26];
+    real_T OATCornerPoint_tableData[390];
+    real_T OATCornerPoint_bp01Data[30];
     real_T OATCornerPoint_bp02Data[13];
     real_T AntiIceEngine_tableData_o[4];
     real_T AntiIceEngine_bp01Data_i[2];
@@ -130,11 +130,11 @@ class ThrustLimitsModelClass
     real_T AirConditioning_tableData_g[4];
     real_T AirConditioning_bp01Data_e[2];
     real_T AirConditioning_bp02Data[2];
-    real_T MaximumContinuous_tableData[338];
-    real_T MaximumContinuous_bp01Data[26];
+    real_T MaximumContinuous_tableData[390];
+    real_T MaximumContinuous_bp01Data[30];
     real_T MaximumContinuous_bp02Data[13];
-    real_T OATCornerPoint_tableData_f[338];
-    real_T OATCornerPoint_bp01Data_k[26];
+    real_T OATCornerPoint_tableData_f[390];
+    real_T OATCornerPoint_bp01Data_k[30];
     real_T OATCornerPoint_bp02Data_b[13];
     real_T AntiIceEngine_tableData_f[4];
     real_T AntiIceEngine_bp01Data_b[2];

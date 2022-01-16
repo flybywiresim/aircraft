@@ -61,7 +61,7 @@ void ThrustLimitsModelClass::step()
     ThrustLimits_P.Left_bp02Data, ThrustLimits_P.Left_tableData, ThrustLimits_P.Left_maxIndex, 2U) + rtb_Y_b;
   rtb_Switch5 = look2_binlcpw(ThrustLimits_U.in.TAT_degC, ThrustLimits_U.in.H_ft, ThrustLimits_P.OATCornerPoint_bp01Data,
     ThrustLimits_P.OATCornerPoint_bp02Data, ThrustLimits_P.OATCornerPoint_tableData,
-    ThrustLimits_P.OATCornerPoint_maxIndex, 26U);
+    ThrustLimits_P.OATCornerPoint_maxIndex, 30U);
   ThrustLimits_RateLimiterwithThreshold((look2_binlxpw(static_cast<real_T>(ThrustLimits_U.in.is_anti_ice_engine_1_active
     || ThrustLimits_U.in.is_anti_ice_engine_2_active), rtb_Switch5, ThrustLimits_P.AntiIceEngine_bp01Data_i,
     ThrustLimits_P.AntiIceEngine_bp02Data, ThrustLimits_P.AntiIceEngine_tableData_o,
@@ -80,7 +80,7 @@ void ThrustLimitsModelClass::step()
   } else {
     rtb_Switch5 = look2_binlxpw(ThrustLimits_U.in.TAT_degC, ThrustLimits_U.in.H_ft, ThrustLimits_P.MaximumClimb_bp01Data,
       ThrustLimits_P.MaximumClimb_bp02Data, ThrustLimits_P.MaximumClimb_tableData, ThrustLimits_P.MaximumClimb_maxIndex,
-      26U) + rtb_Y_b;
+      30U) + rtb_Y_b;
   }
 
   if (!ThrustLimits_DWork.prevThrustLimitType_not_empty) {
@@ -123,7 +123,7 @@ void ThrustLimitsModelClass::step()
   ThrustLimits_DWork.prevFlexTemperature = ThrustLimits_U.in.flex_temperature_degC;
   rtb_Y_gg = look2_binlcpw(ThrustLimits_U.in.TAT_degC, ThrustLimits_U.in.H_ft, ThrustLimits_P.OATCornerPoint_bp01Data_k,
     ThrustLimits_P.OATCornerPoint_bp02Data_b, ThrustLimits_P.OATCornerPoint_tableData_f,
-    ThrustLimits_P.OATCornerPoint_maxIndex_l, 26U);
+    ThrustLimits_P.OATCornerPoint_maxIndex_l, 30U);
   ThrustLimits_RateLimiterwithThreshold((look2_binlxpw(static_cast<real_T>(ThrustLimits_U.in.is_anti_ice_engine_1_active
     || ThrustLimits_U.in.is_anti_ice_engine_2_active), rtb_Y_gg, ThrustLimits_P.AntiIceEngine_bp01Data_b,
     ThrustLimits_P.AntiIceEngine_bp02Data_k, ThrustLimits_P.AntiIceEngine_tableData_f,
@@ -140,7 +140,7 @@ void ThrustLimitsModelClass::step()
     &ThrustLimits_DWork.sf_RateLimiterwithThreshold_m);
   rtb_Y_b = look2_binlxpw(ThrustLimits_U.in.TAT_degC, ThrustLimits_U.in.H_ft, ThrustLimits_P.MaximumContinuous_bp01Data,
     ThrustLimits_P.MaximumContinuous_bp02Data, ThrustLimits_P.MaximumContinuous_tableData,
-    ThrustLimits_P.MaximumContinuous_maxIndex, 26U) + rtb_GoAround;
+    ThrustLimits_P.MaximumContinuous_maxIndex, 30U) + rtb_GoAround;
   if (ThrustLimits_U.in.H_ft > ThrustLimits_P.Saturation_UpperSat) {
     rtb_Y_id = ThrustLimits_P.Saturation_UpperSat;
   } else if (ThrustLimits_U.in.H_ft < ThrustLimits_P.Saturation_LowerSat) {
