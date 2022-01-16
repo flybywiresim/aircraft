@@ -14,14 +14,29 @@ export class HoppieConnector {
 
     private static hoppieUrl = 'http://www.hoppie.nl/acars/system/connect.html';
 
+    private static createPostData(type: string, to: string, packet: string) {
+        const formData = [
+            `logon=${NXDataStore.get('CONFIG_HOPPIE_USERID', '')}`,
+            `from=${SimVar.GetSimVarValue('ATC FLIGHT NUMBER', 'string')}`,
+            `to=${to}`,
+            `type=${type}`,
+            `packet=${encodeURIComponent(packet)}`,
+        ];
+        return {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-16' },
+            body: formData.join('&'),
+        };
+    }
+
     constructor(parent: AtsuManager) {
         setInterval(() => {
             if (SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') === 1) {
-                const url = this.createBaseUrl('poll', 'ALL-CALLSIGNS');
+                const data = HoppieConnector.createPostData('poll', SimVar.GetSimVarValue('ATC FLIGHT NUMBER', 'string'), '');
 
                 // receive the data from the server
                 // expected format: ok {CALLSIGN telex, {Hello world!}} {CALLSIGN telex, {Hello world!}}
-                fetch(url).then((response) => response.text().then((data) => {
+                fetch(HoppieConnector.corsProxyUrl + HoppieConnector.hoppieUrl, data).then((response) => response.text().then((data) => {
                     // something went wrong
                     if (!data.startsWith('ok')) {
                         return;
@@ -78,25 +93,11 @@ export class HoppieConnector {
         }, 20000);
     }
 
-    private createBaseUrl(type: string, to: string): string {
-        // validate the configuration
-        const flightNo = SimVar.GetSimVarValue('ATC FLIGHT NUMBER', 'string');
-        const system = NXDataStore.get('CONFIG_HOPPIE_SYSTEM', 'NONE');
-        const logon = NXDataStore.get('CONFIG_HOPPIE_USERID', '');
-
-        if (system === 'NONE' || logon === '' || flightNo === '' || flightNo === '1123' || SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') !== 1) {
-            return '';
-        }
-
-        return `${HoppieConnector.corsProxyUrl + HoppieConnector.hoppieUrl}?logon=${logon}&type=${type}&from=${flightNo}&to=${to}`;
-    }
-
     public async isStationAvailable(station: string): Promise<string> {
         const flightNo = SimVar.GetSimVarValue('ATC FLIGHT NUMBER', 'string');
-        let url = this.createBaseUrl('ping', 'ALL-CALLSIGNS');
-        url += `&packet=${station}`;
+        const data = HoppieConnector.createPostData('ping', 'ALL-CALLSIGNS', station);
 
-        const text = await fetch(url).then((response) => {
+        const text = await fetch(HoppieConnector.corsProxyUrl + HoppieConnector.hoppieUrl, data).then((response) => {
             if (response.ok) {
                 return response.text();
             }
@@ -113,20 +114,9 @@ export class HoppieConnector {
     }
 
     private async sendMessage(message: AtsuMessage, type: string) {
-        const data = [
-            `logon=${NXDataStore.get('CONFIG_HOPPIE_USERID', '')}`,
-            `from=${SimVar.GetSimVarValue('ATC FLIGHT NUMBER', 'string')}`,
-            `to=${message.Station}`,
-            `type=${type}`,
-            `packet=${encodeURIComponent(message.serialize(AtsuMessageSerializationFormat.Network))}`,
-        ];
-        const fetchData = {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-16' },
-            body: data.join('&'),
-        };
+        const data = HoppieConnector.createPostData(type, message.Station, message.serialize(AtsuMessageSerializationFormat.Network));
 
-        return fetch(HoppieConnector.corsProxyUrl + HoppieConnector.hoppieUrl, fetchData).then((response) => {
+        return fetch(HoppieConnector.corsProxyUrl + HoppieConnector.hoppieUrl, data).then((response) => {
             if (response.ok !== true) {
                 return 'COM UNAVAILABLE';
             }
@@ -141,5 +131,9 @@ export class HoppieConnector {
 
     public async sendTelexMessage(message: AtsuMessage): Promise<string> {
         return this.sendMessage(message, 'telex');
+    }
+
+    public async sendCpdlcMessage(message: CpdlcMessage): Promise<string> {
+        return this.sendMessage(message, 'cpdlc');
     }
 }
