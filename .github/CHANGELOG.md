@@ -116,7 +116,7 @@
 1. [HYD] Reservoirs connected to pneumatics and first failures - @Crocket63
 1. [ATSU] Don't include airport as a waypoint in route uplink - @tracernz (Mike)
 1. [HYD] Increased reservoirs air pressure to avoid low air fault on pumps - @Crocket63
-1. [MCDU] Fix Take off page THR RED ACC and ENG OUT ACC caluculations - @John-UK  (John-UK)
+1. [MCDU] Fix Take off page THR RED ACC and ENG OUT ACC caluculations - @John-UK (John-UK)
 
 ## 0.7.0
 
