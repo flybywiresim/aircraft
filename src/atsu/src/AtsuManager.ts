@@ -1,6 +1,7 @@
 //  Copyright (c) 2022 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
+import { AtcSystem } from './AtcSystem';
 import { AocSystem } from './AocSystem';
 import { AtsuMessage, AtsuMessageSerializationFormat } from './messages/AtsuMessage';
 import { AtsuTimestamp } from './messages/AtsuTimestamp';
@@ -22,16 +23,14 @@ export class AtsuManager {
 
     private aocSystem = new AocSystem(this, this.connector);
 
+    private atcSystem = new AtcSystem(this, this.connector);
+
     private listener = RegisterViewListener('JS_LISTENER_SIMVARS');
 
     private mcdu = undefined;
 
     constructor(mcdu) {
         this.mcdu = mcdu;
-
-        SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_DELETE', 'number', -1);
-        SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_SEND', 'number', -1);
-        SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_PRINT', 'number', -1);
     }
 
     public async sendMessage(message: AtsuMessage): Promise<string> {
@@ -46,8 +45,10 @@ export class AtsuManager {
     }
 
     public removeMessage(uid: number) {
-        if (this.aocSystem.removeMessage(uid) === true) {
-            this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG_REMOVE', uid);
+        if (this.atcSystem.removeMessage(uid) === true) {
+            this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG_DELETE_UID', uid);
+        } else {
+            this.aocSystem.removeMessage(uid);
         }
     }
 
@@ -57,15 +58,22 @@ export class AtsuManager {
 
         if (AocSystem.isRelevantMessage(message)) {
             this.aocSystem.insertMessage(message);
+        } else if (AtcSystem.isRelevantMessage(message)) {
+            this.atcSystem.insertMessage(message);
         }
     }
 
     public messageRead(uid: number) {
         this.aocSystem.messageRead(uid);
+        this.atcSystem.messageRead(uid);
     }
 
     public aoc(): AocSystem {
         return this.aocSystem;
+    }
+
+    public atc(): AtcSystem {
+        return this.atcSystem;
     }
 
     public async isRemoteStationAvailable(callsign: string): Promise<string> {
@@ -76,10 +84,16 @@ export class AtsuManager {
     }
 
     public findMessage(uid: number): AtsuMessage {
-        const message = this.aocSystem.messages().find((element) => element.UniqueMessageID === uid);
+        let message = this.aocSystem.messages().find((element) => element.UniqueMessageID === uid);
         if (message !== undefined) {
             return message;
         }
+
+        message = this.atcSystem.messages().find((element) => element.UniqueMessageID === uid);
+        if (message !== undefined) {
+            return message;
+        }
+
         return undefined;
     }
 
