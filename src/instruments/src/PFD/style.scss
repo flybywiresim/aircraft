@@ -40,6 +40,11 @@
   stroke-width: 0.11px;
 }
 
+.SmallStroke {
+  stroke-width: 0.10mm;
+  stroke-linecap: round;
+}
+
 .NormalStroke {
   stroke-width: 0.16mm;
   stroke-linecap: round;
@@ -83,6 +88,13 @@
   stroke-linejoin: round;
 }
 
+.TextOutline {
+  paint-order: stroke fill markers;
+
+  stroke-width: 0.05mm;
+  stroke: $display-background !important;
+}
+
 .FontLargest {
   font-size: 7px;
 }
@@ -92,7 +104,7 @@
 }
 
 .FontMedium {
-  font-size: 5.5px;
+  font-size: 6px;
 }
 
 .FontSmall {
