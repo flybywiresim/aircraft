@@ -1,4 +1,4 @@
-import { CpdlcMessageResponseType } from './messages/CpdlcMessage';
+import { CpdlcMessageRequestedResponseType } from './messages/CpdlcMessage';
 
 function wordWrap(text: string, maxLength: number) {
     const result = [];
@@ -21,18 +21,20 @@ function wordWrap(text: string, maxLength: number) {
     return result;
 }
 
-function cpdlcToString(type: CpdlcMessageResponseType) {
+function cpdlcToString(type: CpdlcMessageRequestedResponseType) {
     switch (type) {
-    case CpdlcMessageResponseType.AffirmNegative:
+    case CpdlcMessageRequestedResponseType.AffirmNegative:
         return 'AN';
-    case CpdlcMessageResponseType.No:
+    case CpdlcMessageRequestedResponseType.No:
         return 'N';
-    case CpdlcMessageResponseType.Roger:
+    case CpdlcMessageRequestedResponseType.Roger:
         return 'R';
-    case CpdlcMessageResponseType.WilcoUnable:
+    case CpdlcMessageRequestedResponseType.WilcoUnable:
         return 'WU';
-    case CpdlcMessageResponseType.Yes:
+    case CpdlcMessageRequestedResponseType.Yes:
         return 'Y';
+    case CpdlcMessageRequestedResponseType.NotRequired:
+        return 'NE';
     default:
         return '';
     }
@@ -41,17 +43,17 @@ function cpdlcToString(type: CpdlcMessageResponseType) {
 function stringToCpdlc(str: string) {
     switch (str) {
     case 'AN':
-        return CpdlcMessageResponseType.AffirmNegative;
+        return CpdlcMessageRequestedResponseType.AffirmNegative;
     case 'N':
-        return CpdlcMessageResponseType.No;
+        return CpdlcMessageRequestedResponseType.No;
     case 'R':
-        return CpdlcMessageResponseType.Roger;
+        return CpdlcMessageRequestedResponseType.Roger;
     case 'WU':
-        return CpdlcMessageResponseType.WilcoUnable;
+        return CpdlcMessageRequestedResponseType.WilcoUnable;
     case 'Y':
-        return CpdlcMessageResponseType.Yes;
+        return CpdlcMessageRequestedResponseType.Yes;
     default:
-        return CpdlcMessageResponseType.NotRequired;
+        return CpdlcMessageRequestedResponseType.NotRequired;
     }
 }
 
