@@ -1,9 +1,11 @@
-import React, { FC, useEffect, useRef, useState } from 'react';
+import React, { FC } from 'react';
 
 import { Route, Switch } from 'react-router';
 import { Link } from 'react-router-dom';
 
 import { ArrowLeft, ChevronRight } from 'react-bootstrap-icons';
+import { ScrollableContainer } from '../Components/ScrollableContainer';
+import { TabRoutes } from '../Utils/routing';
 import { AircraftOptionsPinProgramsPage } from './Pages/AircraftOptionsPinProgramsPage';
 import { SimOptionsPage } from './Pages/SimOptionsPage';
 import { AtsuAocPage } from './Pages/AtsuAocPage';
@@ -56,11 +58,7 @@ export const Settings = () => {
                     <h1 className="mb-4 font-bold">Settings</h1>
                     <SelectionTabs tabs={tabs} />
                 </Route>
-                {tabs.map((tab) => (
-                    <Route path={`/settings/${tab.name.toLowerCase().replace(/\s/g, '-')}`}>
-                        {tab.component}
-                    </Route>
-                ))}
+                <TabRoutes basePath="/settings" tabs={tabs} />
             </Switch>
         </div>
     );
@@ -70,68 +68,27 @@ type SettingsPageProps = {
     name: string,
 }
 
-export const SettingsPage: FC<SettingsPageProps> = ({ name, children }) => {
-    const [contentOverflows, setContentOverflows] = useState(false);
-    const contentRef = useRef<HTMLDivElement>(null);
-    const containerRef = useRef<HTMLDivElement>(null);
-    const position = useRef({ top: 0, y: 0 });
-
-    useEffect(() => {
-        if (contentRef.current) {
-            if (contentRef.current.clientHeight > 53 * parseFloat(getComputedStyle(document.documentElement).fontSize)) {
-                setContentOverflows(true);
-            }
-        }
-    }, []);
-
-    const handleMouseDown = (event: React.MouseEvent) => {
-        position.current.top = containerRef.current ? containerRef.current.scrollTop : 0;
-        position.current.y = event.clientY;
-
-        document.addEventListener('mousemove', mouseMoveHandler);
-        document.addEventListener('mouseup', mouseUpHandler);
-    };
-
-    const mouseMoveHandler = (event: MouseEvent) => {
-        const dy = event.clientY - position.current.y;
-        if (containerRef.current) {
-            containerRef.current.scrollTop = position.current.top - dy;
-        }
-    };
-
-    const mouseUpHandler = () => {
-        document.removeEventListener('mousemove', mouseMoveHandler);
-        document.removeEventListener('mouseup', mouseUpHandler);
-    };
-
-    return (
-        <div>
-            <Link to="/settings" className="inline-block mb-4">
-                <div className="flex flex-row items-center space-x-3 transition duration-100 hover:text-theme-highlight">
-                    <ArrowLeft size={30} />
-                    <h1 className="font-bold text-current">
-                        Settings
-                        {' - '}
-                        {name}
-                    </h1>
-                </div>
-            </Link>
-            <div className="py-2 px-6 w-full rounded-lg border-2 shadow-md h-efb border-theme-accent">
-                {/* TODO: replace with JIT value */}
-                <div
-                    className={`w-full ${contentOverflows && 'overflow-y-scroll'} scrollbar`}
-                    style={{ height: '53rem' }}
-                    ref={containerRef}
-                    onMouseDown={handleMouseDown}
-                >
-                    <div className={`divide-y-2 divide-theme-accent ${contentOverflows && 'mr-6'}`} ref={contentRef}>
-                        {children}
-                    </div>
-                </div>
+export const SettingsPage: FC<SettingsPageProps> = ({ name, children }) => (
+    <div>
+        <Link to="/settings" className="inline-block mb-4">
+            <div className="flex flex-row items-center space-x-3 transition duration-100 hover:text-theme-highlight">
+                <ArrowLeft size={30} />
+                <h1 className="font-bold text-current">
+                    Settings
+                    {' - '}
+                    {name}
+                </h1>
             </div>
+        </Link>
+        <div className="py-2 px-6 w-full rounded-lg border-2 shadow-md h-efb border-theme-accent">
+            <ScrollableContainer height={53}>
+                <div className="divide-y-2 divide-theme-accent">
+                    {children}
+                </div>
+            </ScrollableContainer>
         </div>
-    );
-};
+    </div>
+);
 
 type SettingItemProps = {
     name: string,
