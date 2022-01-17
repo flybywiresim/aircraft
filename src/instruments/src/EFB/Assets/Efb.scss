@@ -94,7 +94,7 @@
 
 /* ---- Dispatch Components ---- */
 
-.loadsheet-container {
+.image-theme {
   /* fbw flypad theme for simbrief maps */
   & img {
     width: 70.5%;
@@ -114,22 +114,3 @@
     cursor: -webkit-grabbing;
   }
 }
-
-/* ---- Notifications ---- */
-
-.drop {
-    animation: drop 5s ease-out;
-
-    @keyframes drop {
-      from {
-        top: 0;
-      }
-      to {
-        top: -500px
-      }
-      8%,
-      92% {
-        top: 2em;
-      }
-    }
-  }
