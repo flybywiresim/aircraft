@@ -85,7 +85,7 @@ export const LoadSheetWidget = () => {
                     <ScrollableContainer height={51} resizeDependencies={[loadsheet, fontSize]}>
                         <div
                             ref={ref}
-                            className="loadsheet-container"
+                            className="image-theme"
                             style={loadSheetStyle}
                             dangerouslySetInnerHTML={{ __html: loadsheet }}
                         />
