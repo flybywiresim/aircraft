@@ -113,7 +113,7 @@ export class HoppieConnector {
         return '';
     }
 
-    private async sendMessage(message: AtsuMessage, type: string) {
+    private async sendMessage(message: AtsuMessage, type: string): Promise<string> {
         const data = HoppieConnector.createPostData(type, message.Station, message.serialize(AtsuMessageSerializationFormat.Network));
 
         return fetch(HoppieConnector.corsProxyUrl + HoppieConnector.hoppieUrl, data).then((response) => {
