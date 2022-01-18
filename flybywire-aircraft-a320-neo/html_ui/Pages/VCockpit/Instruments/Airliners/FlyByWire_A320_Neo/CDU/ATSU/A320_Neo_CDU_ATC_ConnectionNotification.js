@@ -1,30 +1,74 @@
 class CDUAtcConnectionNotification {
-    static ShowPage(mcdu, store = {"atcCenter": ""}) {
+    static ShowPage(mcdu, store = {"atcCenter": "", "logonAllowed": false, "loginState": 0, "notifTime": ""}) {
         mcdu.clearDisplay();
-        const canNotify = "";
+        mcdu.page.Current = mcdu.page.ATCNotification;
+
         let flightNo = "______[color]green";
         let fromTo = "____|____[color]amber";
-        if (store["atcCenter"] == "") {
-            store["atcCenter"] = "____[color]amber";
+        let atcStation = "____[color]amber";
+        let atcStationAvail = false;
+        let flightNoAvail = false;
+        let fromToAvail = false;
+        let centerTitleLeft = "\xa0ACT CENTER[color]white";
+        let centerTitleRight = "";
+        let notificationStatus = "";
+
+        if (store["loginState"] === 1) {
+            centerTitleLeft = "\xa0ATC CENTER-NOTIFYING[color]white";
+        } else if (store["loginState"] === 2) {
+            centerTitleLeft = "\xa0ATC-CENTER-[color]white";
+            centerTitleRight = "NOTIF FAILED[color]red";
         }
-        if (SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC")) {
+        if (store["atcCenter"] !== "" && store["loginState"] === 0) {
+            atcStation = `${store["atcCenter"]}[color]cyan`;
+            atcStationAvail = true;
+        }
+        if (mcdu.flightPlanManager.getOrigin() !== null && SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC") !== "1123") {
             flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC") + "[color]green";
+            flightNoAvail = true;
         }
         if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident) {
             fromTo = mcdu.flightPlanManager.getOrigin().ident + "/" + mcdu.flightPlanManager.getDestination().ident + "[color]cyan";
+            fromToAvail = true;
+        }
+
+        let notifyButton;
+        if (atcStationAvail && flightNoAvail && fromToAvail && store["loginState"] === 0) {
+            notifyButton = "NOTIFY*[color]cyan";
+            store["logonAllowed"] = true;
+        } else {
+            notifyButton = "NOTIFY\xa0[color]cyan";
+            store["logonAllowed"] = false;
+        }
+        if (!flightNoAvail || !fromToAvail) {
+            notificationStatus = "NOTIFICATION UNAVAILABLE";
+        }
+
+        let linesColor;
+        if (atcStationAvail && flightNoAvail && fromToAvail) {
+            linesColor = "[color]cyan";
+        } else {
+            linesColor = "[color]white";
+        }
+
+        let notificationMessage = "";
+        if (store["loginState"] === 1) {
+            notificationMessage = `${store["atcCenter"]} NOTIFIED ${store["notifTime"]}[color]green`;
+        } else if (mcdu.atsuManager.atc().currentStation() !== '') {
+            notificationMessage = `${mcdu.atsuManager.atc().currentStation()}[color]green`;
         }
 
         mcdu.setTemplate([
             ["NOTIFICATION"],
             ["\xa0ATC FLT NBR", "FROM/TO\xa0"],
             [flightNo, fromTo],
-            ["\xa0ATC CENTER"],
-            [store["atcCenter"], "NOTIFY\xa0[color]inop", "---------"],
+            [centerTitleLeft, centerTitleRight],
+            [atcStation, notifyButton, `---------${linesColor}`],
             [""],
             [""],
             [""],
-            [""],
-            [""],
+            [notificationMessage],
+            [notificationStatus],
             [""],
             ["\xa0ATC MENU", "CONNECTION\xa0"],
             ["<RETURN", "STATUS>"]
@@ -33,10 +77,36 @@ class CDUAtcConnectionNotification {
         mcdu.leftInputDelay[1] = () => {
             return mcdu.getDelaySwitchPage();
         };
-        mcdu.onLeftInput[1] = (value) => {
-            if (value != "") {
-                store["atcCenter"] = value + "[color]green";
+        mcdu.onLeftInput[1] = (value, scratchpadCallback) => {
+            if (store["loginState"] === 1) {
+                mcdu.scratchpad.setText("SYSTEM BUSY-TRY LATER");
+                scratchpadCallback();
+                CDUAtcConnectionNotification.ShowPage(mcdu, store);
+                return;
             }
+
+            store["loginState"] = 0;
+            if (value.length !== 4 || /^[A-Z()]*$/.test(value) === false) {
+                mcdu.addNewMessage(NXSystemMessages.formatError);
+            } else if (SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC") === "1123") {
+                mcdu.scratchpad.setText("ENTER ATC FLT NBR");
+                scratchpadCallback();
+            } else {
+                store["atcCenter"] = "";
+
+                mcdu.atsuManager.isRemoteStationAvailable(value).then((message) => {
+                    if (message !== '') {
+                        mcdu.scratchpad.setText(message);
+                        store["atcCenter"] = "";
+                        scratchpadCallback();
+                    } else {
+                        store["atcCenter"] = value;
+                    }
+
+                    CDUAtcConnectionNotification.ShowPage(mcdu, store);
+                });
+            }
+
             CDUAtcConnectionNotification.ShowPage(mcdu, store);
         };
 
@@ -45,6 +115,60 @@ class CDUAtcConnectionNotification {
         };
         mcdu.onLeftInput[5] = () => {
             CDUAtcMenu.ShowPage1(mcdu);
+        };
+
+        mcdu.rightInputDelay[1] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+        mcdu.onRightInput[1] = async (_value, scratchpadCallback) => {
+            if (store["logonAllowed"] === true) {
+                store["loginState"] = 1;
+
+                const zulu = SimVar.GetGlobalVarValue('ZULU TIME', 'seconds');
+                const seconds = Math.floor(zulu);
+                const hours = Math.floor(seconds / 3600);
+                const minutes = Math.floor((seconds - hours * 3600) / 60);
+                const zeroPad = (num, places) => String(num).padStart(places, 0);
+
+                store["notifTime"] = `${zeroPad(hours, 2)}${zeroPad(minutes, 2)}Z`;
+
+                mcdu.atsuManager.atc().logon(store["atcCenter"]).then((message) => {
+                    if (message === '') {
+                        // check if the login was successful
+                        const interval = setInterval(() => {
+                            // page changed
+                            if (mcdu.page.Current !== mcdu.page.ATCNotification) {
+                                clearInterval(interval);
+                                return;
+                            }
+
+                            // logon somehow done
+                            if (!mcdu.atsuManager.atc().logonInProgress()) {
+                                if (mcdu.atsuManager.atc().currentStation() === store["atcCenter"]) {
+                                    store["loginState"] = 0;
+                                } else {
+                                    store["loginState"] = 2;
+                                }
+
+                                store["atcCenter"] = "";
+                                clearInterval(interval);
+                            }
+
+                            CDUAtcConnectionNotification.ShowPage(mcdu, store);
+                        }, 1000);
+                    } else {
+                        mcdu.scratchpad.setText("COM UNAVAILABLE");
+                        scratchpadCallback();
+                    }
+
+                    CDUAtcConnectionNotification.ShowPage(mcdu, store);
+                });
+            } else {
+                mcdu.scratchpad.setText("ENTER MANDATORY FIELDS");
+                scratchpadCallback();
+            }
+
+            CDUAtcConnectionNotification.ShowPage(mcdu, store);
         };
 
         mcdu.rightInputDelay[5] = () => {
