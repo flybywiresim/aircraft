@@ -3,7 +3,7 @@
 
 import { AtcSystem } from './AtcSystem';
 import { AocSystem } from './AocSystem';
-import { AtsuMessage, AtsuMessageSerializationFormat } from './messages/AtsuMessage';
+import { AtsuMessage, AtsuMessageSerializationFormat, AtsuMessageComStatus } from './messages/AtsuMessage';
 import { AtsuTimestamp } from './messages/AtsuTimestamp';
 import { CpdlcMessage } from './messages/CpdlcMessage';
 import { WeatherMessage } from './messages/WeatherMessage';
@@ -32,17 +32,25 @@ export class AtsuManager {
 
     constructor(mcdu) {
         this.mcdu = mcdu;
+        SimVar.SetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number', 1);
     }
 
     public async sendMessage(message: AtsuMessage): Promise<string> {
+        let retval = 'UNKNOWN MSG';
+
         if (AocSystem.isRelevantMessage(message)) {
-            const retval = await this.aocSystem.sendMessage(message);
+            retval = await this.aocSystem.sendMessage(message);
             if (retval === '') {
                 this.registerMessage(message);
             }
-            return retval;
+        } else if (AtcSystem.isRelevantMessage(message)) {
+            retval = await this.atcSystem.sendMessage(message);
+            if (retval === '') {
+                this.registerMessage(message);
+            }
         }
-        return 'UNKNOWN MSG';
+
+        return retval;
     }
 
     public removeMessage(uid: number) {
@@ -60,6 +68,11 @@ export class AtsuManager {
         if (AocSystem.isRelevantMessage(message)) {
             this.aocSystem.insertMessage(message);
         } else if (AtcSystem.isRelevantMessage(message)) {
+            if (message.ComStatus !== AtsuMessageComStatus.Sending && message.ComStatus !== AtsuMessageComStatus.Sent) {
+                if (SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_MAX_REACHED', 'boolean') === 1) {
+                    this.mcdu.addNewMessage(NXSystemMessages.dcduFileFull);
+                }
+            }
             this.atcSystem.insertMessage(message);
         }
     }
