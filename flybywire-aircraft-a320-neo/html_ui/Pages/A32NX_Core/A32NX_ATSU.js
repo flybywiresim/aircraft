@@ -87,6 +87,8 @@ const getSimBriefOfp = (mcdu, updateView, callback = () => {}) => {
 
             callback();
 
+            updateView();
+
             return mcdu.simbrief;
         })
         .catch(_err => {

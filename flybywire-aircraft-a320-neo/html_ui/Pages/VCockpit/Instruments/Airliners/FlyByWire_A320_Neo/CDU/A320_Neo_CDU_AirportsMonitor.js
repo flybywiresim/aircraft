@@ -204,9 +204,14 @@ class CDUAirportsMonitor {
 
         // page refresh
         if (!this.frozen || !this.icao1) {
-            mcdu.refreshPageCallback = () => {
-                this.ShowPage(mcdu);
-            };
+            // mcdu.refreshPageCallback = () => {
+            //     this.ShowPage(mcdu);
+            // };
+            mcdu.page.SelfPtr = setTimeout(() => {
+                if (mcdu.page.Current === mcdu.page.AirportsMonitor) {
+                    CDUAirportsMonitor.ShowPage(mcdu);
+                }
+            }, mcdu.PageTimeout.Default);
             SimVar.SetSimVarValue("L:FMC_UPDATE_CURRENT_PAGE", "number", 1);
         }
 

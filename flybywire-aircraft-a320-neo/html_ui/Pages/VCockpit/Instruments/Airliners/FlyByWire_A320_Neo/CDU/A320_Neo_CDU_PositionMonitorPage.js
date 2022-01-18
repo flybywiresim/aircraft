@@ -2,9 +2,9 @@ class CDUPositionMonitorPage {
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.PositionMonitorPage;
-        mcdu.refreshPageCallback = () => {
-            CDUPositionMonitorPage.ShowPage(mcdu);
-        };
+        // mcdu.refreshPageCallback = () => {
+        //     CDUPositionMonitorPage.ShowPage(mcdu);
+        // };
         SimVar.SetSimVarValue("L:FMC_UPDATE_CURRENT_PAGE", "number", 1);
         let currPos = new LatLong(SimVar.GetSimVarValue("GPS POSITION LAT", "degree latitude"),
             SimVar.GetSimVarValue("GPS POSITION LON", "degree longitude")).toShortDegreeString();
@@ -34,6 +34,11 @@ class CDUPositionMonitorPage {
             ["", "SEL\xa0"],
             ["{FREEZE[color]cyan", "NAVAIDS>"]
         ]);
+        mcdu.page.SelfPtr = setTimeout(() => {
+            if (mcdu.page.Current === mcdu.page.PositionMonitorPage) {
+                CDUPositionMonitorPage.ShowPage(mcdu);
+            }
+        }, mcdu.PageTimeout.Default);
 
         mcdu.rightInputDelay[5] = () => {
             return mcdu.getDelaySwitchPage();

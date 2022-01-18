@@ -24,7 +24,9 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.initB = false;
         this.PageTimeout = {
             Prog: 2000,
-            Dyn: 1500
+            Dyn: 1500,
+            Default: 2000,
+            Fast: 500
         };
         this.fmgcMesssagesListener = RegisterViewListener('JS_LISTENER_SIMVARS', null, true);
         this.setupFmgcTriggers();
@@ -263,10 +265,11 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             if (!this.socket || this.socket.readyState !== 1) {
                 this.connectWebsocket(NXDataStore.get("CONFIG_EXTERNAL_MCDU_PORT", "8380"));
             }
-        }, 5000);
-        setInterval(() => {
-            this.sendUpdate();
-        }, 500);
+        }, 1000);
+
+        // setInterval(() => {
+        //     this.sendUpdate();
+        // }, 500);
     }
 
     requestUpdate() {
