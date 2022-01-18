@@ -40,6 +40,7 @@ const DCDU: React.FC = () => {
     const [messages, setMessages] = useState(new Map<number, [CpdlcMessage, number]>());
     const [statusMessage, setStatusMessage] = useState({ sender: '', message: '', remainingMilliseconds: 0 });
     const [messageUid, setMessageUid] = useState(-1);
+    const [atcMessage, setAtcMessage] = useState('');
     const maxMessageCount = 5;
 
     // functions to handle the status area
@@ -180,6 +181,9 @@ const DCDU: React.FC = () => {
     });
     useCoherentEvent('A32NX_DCDU_MSG_DELETE_UID', (uid: number) => {
         closeMessage(uid);
+    });
+    useCoherentEvent('A32NX_DCDU_ATC_LOGON_MSG', (message: string) => {
+        setAtcMessage(message);
     });
 
     useUpdate((_deltaTime) => {
