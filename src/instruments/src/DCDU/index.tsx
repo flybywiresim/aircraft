@@ -10,6 +10,7 @@ import { WaitingForData } from './pages/WaitingForData';
 import { DcduLines } from './elements/DcduLines';
 import { DatalinkMessage } from './elements/DatalinkMessage';
 import { MessageStatus } from './elements/MessageStatus';
+import { AtcStatus } from './elements/AtcStatus';
 import { getSimVar, useUpdate } from '../util.js';
 
 import './style.scss';
@@ -251,6 +252,12 @@ const DCDU: React.FC = () => {
             <>
                 <div className="BacklightBleed" />
                 <svg className="dcdu">
+                    {(message === undefined && atcMessage !== '' && (
+                        <>
+                            <AtcStatus message={atcMessage} />
+                        </>
+                    )
+                    )}
                     {(message !== undefined && (
                         <>
                             <MessageStatus
