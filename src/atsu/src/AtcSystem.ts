@@ -14,8 +14,6 @@ export class AtcSystem {
 
     private nextStation = '';
 
-    private stationMessage = '';
-
     private cpdlcMessageId: number = Math.floor(Math.random() * 100);
 
     private messageQueue: CpdlcMessage[] = [];
@@ -194,21 +192,21 @@ export class AtcSystem {
         if (request.RequestedResponses === CpdlcMessageRequestedResponseType.NotRequired && response === undefined) {
             // received the station message for the DCDU
             if (request.Lines[0].includes('CURRENT ATC')) {
-                this.stationMessage = request.Lines.join(' ');
+                this.listener.triggerToAllSubscribers('A32NX_DCDU_ATC_LOGON_MSG', request.Lines.join('\n'));
                 return true;
             }
 
             // received a logoff message
             if (request.Lines[0].includes('LOGOFF')) {
+                this.listener.triggerToAllSubscribers('A32NX_DCDU_ATC_LOGON_MSG', '');
                 this.station = '';
-                this.stationMessage = '';
                 return true;
             }
 
             // received a service terminated message
             if (request.Lines[0].includes('TERMINATED')) {
+                this.listener.triggerToAllSubscribers('A32NX_DCDU_ATC_LOGON_MSG', '');
                 this.station = '';
-                this.stationMessage = '';
                 return true;
             }
         }
@@ -218,7 +216,7 @@ export class AtcSystem {
             if (request.Lines[0].startsWith('REQUEST')) {
                 // logon accepted by ATC
                 if (response.Lines[0].includes('LOGON ACCEPTED')) {
-                    this.stationMessage = `CURRENT ATC UNIT @${this.nextStation}@`;
+                    this.listener.triggerToAllSubscribers('A32NX_DCDU_ATC_LOGON_MSG', `CURRENT ATC UNIT @${this.nextStation}@`);
                     this.station = this.nextStation;
                     this.nextStation = '';
                     return true;
