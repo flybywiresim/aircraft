@@ -76,12 +76,12 @@ export class HoppieConnector {
 
                             // split up the data
                             const elements = content.split('/');
-                            cpdlc.CurrentTransmissionId = parseInt(elements[1]);
+                            cpdlc.CurrentTransmissionId = parseInt(elements[2]);
                             if (elements[2] !== '') {
-                                cpdlc.PreviousTransmissionId = parseInt(elements[2]);
+                                cpdlc.PreviousTransmissionId = parseInt(elements[3]);
                             }
-                            cpdlc.RequestedResponses = stringToCpdlc(elements[3]);
-                            cpdlc.Lines = wordWrap(elements[4], 25);
+                            cpdlc.RequestedResponses = stringToCpdlc(elements[4]);
+                            cpdlc.Lines = wordWrap(elements[5], 25);
                             parent.registerMessage(cpdlc);
                             break;
                         default:
