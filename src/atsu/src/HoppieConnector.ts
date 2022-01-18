@@ -81,7 +81,14 @@ export class HoppieConnector {
                                 cpdlc.PreviousTransmissionId = parseInt(elements[3]);
                             }
                             cpdlc.RequestedResponses = stringToCpdlc(elements[4]);
-                            cpdlc.Lines = wordWrap(elements[5], 25);
+
+                            // create the lines and interpret '_' as an encoded newline
+                            let lines = [];
+                            elements[5].split('_').forEach((entry) => {
+                                lines = lines.concat(wordWrap(entry, 25));
+                            });
+                            cpdlc.Lines = lines;
+
                             parent.registerMessage(cpdlc);
                             break;
                         default:
