@@ -1,6 +1,7 @@
 class CDUAtcMenu {
     static ShowPage1(mcdu) {
         mcdu.clearDisplay();
+        mcdu.page.Current = mcdu.page.ATCMenu;
         mcdu.setTemplate([
             ["ATC MENU", "1", "2"],
             [""],
@@ -69,6 +70,7 @@ class CDUAtcMenu {
 
     static ShowPage2(mcdu) {
         mcdu.clearDisplay();
+        mcdu.page.Current = mcdu.page.ATCMenu;
         mcdu.setTemplate([
             ["ATC MENU", "2", "2"],
             ["----------ATS 623----------"],
