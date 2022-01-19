@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React from 'react';
 import { AtsuMessageComStatus } from '@atsu/messages/AtsuMessage';
 import { CpdlcMessage, CpdlcMessageResponse } from '@atsu/messages/CpdlcMessage';
 import { useUpdate } from '@instruments/common/hooks.js';
@@ -6,12 +6,14 @@ import { Button } from './Button';
 
 type WilcoUnableButtonsProps = {
     message: CpdlcMessage,
+    modifiable: boolean,
+    setMessageStatus(message: number, response: CpdlcMessageResponse | undefined),
     setStatus: (sender: string, message: string) => void,
     isStatusAvailable: (sender: string) => boolean,
     closeMessage: (message: number) => void
 }
 
-export const WilcoUnableButtons: React.FC<WilcoUnableButtonsProps> = memo(({ message, setStatus, isStatusAvailable, closeMessage }) => {
+export const WilcoUnableButtons: React.FC<WilcoUnableButtonsProps> = ({ message, modifiable, setMessageStatus, setStatus, isStatusAvailable, closeMessage }) => {
     useUpdate(() => {
         if (message.ComStatus === AtsuMessageComStatus.Sending) {
             if (isStatusAvailable('Buttons') === true) {
@@ -25,17 +27,17 @@ export const WilcoUnableButtons: React.FC<WilcoUnableButtonsProps> = memo(({ mes
             return;
         }
 
-        if (message.Response === undefined && message.ResponseType === undefined) {
+        if (message.Response === undefined && message.ResponseType === undefined && modifiable) {
             if (index === 'L1') {
-                message.ResponseType = CpdlcMessageResponse.Unable;
+                setMessageStatus(message.UniqueMessageID, CpdlcMessageResponse.Unable);
             } else if (index === 'R1') {
-                message.ResponseType = CpdlcMessageResponse.Standby;
+                setMessageStatus(message.UniqueMessageID, CpdlcMessageResponse.Standby);
             } else if (index === 'R2') {
-                message.ResponseType = CpdlcMessageResponse.Wilco;
+                setMessageStatus(message.UniqueMessageID, CpdlcMessageResponse.Wilco);
             }
-        } else if (message.Response === undefined && message.ResponseType !== undefined) {
+        } else if (message.Response === undefined && message.ResponseType !== undefined && modifiable) {
             if (index === 'L1') {
-                message.ResponseType = undefined;
+                setMessageStatus(message.UniqueMessageID, undefined);
             } else {
                 SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_ANSWER', 'number', message.ResponseType as number);
                 SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_SEND_UID', 'number', message.UniqueMessageID);
@@ -54,19 +56,19 @@ export const WilcoUnableButtons: React.FC<WilcoUnableButtonsProps> = memo(({ mes
                     <Button
                         messageId={message.UniqueMessageID}
                         index="L1"
-                        content="*UNABLE"
+                        content={`${modifiable ? '*' : ''}UNABLE`}
                         clicked={clicked}
                     />
                     <Button
                         messageId={message.UniqueMessageID}
                         index="R1"
-                        content="STBY*"
+                        content={`STBY${modifiable ? '*' : ''}`}
                         clicked={clicked}
                     />
                     <Button
                         messageId={message.UniqueMessageID}
                         index="R2"
-                        content="WILCO*"
+                        content={`WILCO${modifiable ? '*' : ''}`}
                         clicked={clicked}
                     />
                 </>
@@ -76,13 +78,13 @@ export const WilcoUnableButtons: React.FC<WilcoUnableButtonsProps> = memo(({ mes
                     <Button
                         messageId={message.UniqueMessageID}
                         index="L1"
-                        content="*UNABLE"
+                        content={`${modifiable ? '*' : ''}UNABLE`}
                         clicked={clicked}
                     />
                     <Button
                         messageId={message.UniqueMessageID}
                         index="R2"
-                        content="WILCO*"
+                        content={`WILCO${modifiable ? '*' : ''}`}
                         clicked={clicked}
                     />
                 </>
@@ -92,13 +94,13 @@ export const WilcoUnableButtons: React.FC<WilcoUnableButtonsProps> = memo(({ mes
                     <Button
                         messageId={message.UniqueMessageID}
                         index="L1"
-                        content="*CANCEL"
+                        content={`${modifiable ? '*' : ''}CANCEL`}
                         clicked={clicked}
                     />
                     <Button
                         messageId={message.UniqueMessageID}
                         index="R2"
-                        content="SEND*"
+                        content={`SEND${modifiable ? '*' : ''}`}
                         clicked={clicked}
                     />
                 </>
@@ -113,4 +115,4 @@ export const WilcoUnableButtons: React.FC<WilcoUnableButtonsProps> = memo(({ mes
             )}
         </>
     );
-});
+};

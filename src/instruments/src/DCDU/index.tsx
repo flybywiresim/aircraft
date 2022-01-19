@@ -67,6 +67,20 @@ const DCDU: React.FC = () => {
         setStatusMessage(state);
     };
 
+    const setMessageStatus = (uid: number, response: CpdlcMessageResponse | undefined) => {
+        console.log('set message status');
+        const updateMap = messages;
+
+        const entry = updateMap.get(uid);
+        if (entry !== undefined) {
+            entry[0].ResponseType = response;
+            updateMap.set(uid, entry);
+        }
+
+        console.log(`setMessageStatus: ${response}`);
+        setMessages(updateMap);
+    };
+
     // functions to handle the internal queue
     const closeMessage = (uid: number) => {
         const sortedMessages = sortedMessageArray(messages);
@@ -223,9 +237,17 @@ const DCDU: React.FC = () => {
         }
     }
 
+    let modifiable = false;
     let answerRequired = false;
     if (message !== undefined) {
         answerRequired = message.RequestedResponses !== CpdlcMessageRequestedResponseType.NotRequired && message.RequestedResponses !== CpdlcMessageRequestedResponseType.No;
+
+        // check if the message is modifiable
+        if (message.Direction === AtsuMessageDirection.Input) {
+            modifiable = message.Response === undefined || (message.Response.ComStatus === AtsuMessageComStatus.Open || message.Response.ComStatus === AtsuMessageComStatus.Failed);
+        } else {
+            modifiable = message.ComStatus === AtsuMessageComStatus.Open || message.ComStatus === AtsuMessageComStatus.Failed;
+        }
     }
 
     switch (state) {
@@ -287,6 +309,8 @@ const DCDU: React.FC = () => {
                     {(message !== undefined && answerRequired && message.RequestedResponses === CpdlcMessageRequestedResponseType.WilcoUnable && (
                         <WilcoUnableButtons
                             message={message}
+                            modifiable={modifiable}
+                            setMessageStatus={setMessageStatus}
                             setStatus={setStatus}
                             isStatusAvailable={isStatusAvailable}
                             closeMessage={closeMessage}
@@ -295,6 +319,8 @@ const DCDU: React.FC = () => {
                     {(message !== undefined && answerRequired && message.RequestedResponses === CpdlcMessageRequestedResponseType.AffirmNegative && (
                         <AffirmNegativeButtons
                             message={message}
+                            modifiable={modifiable}
+                            setMessageStatus={setMessageStatus}
                             setStatus={setStatus}
                             isStatusAvailable={isStatusAvailable}
                             closeMessage={closeMessage}
@@ -303,6 +329,8 @@ const DCDU: React.FC = () => {
                     {(message !== undefined && answerRequired && message.RequestedResponses === CpdlcMessageRequestedResponseType.Roger && (
                         <RogerButtons
                             message={message}
+                            modifiable={modifiable}
+                            setMessageStatus={setMessageStatus}
                             setStatus={setStatus}
                             isStatusAvailable={isStatusAvailable}
                             closeMessage={closeMessage}

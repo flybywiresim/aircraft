@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React from 'react';
 import { AtsuMessageComStatus } from '@atsu/messages/AtsuMessage';
 import { CpdlcMessage, CpdlcMessageResponse } from '@atsu/messages/CpdlcMessage';
 import { useUpdate } from '@instruments/common/hooks.js';
@@ -6,12 +6,14 @@ import { Button } from './Button';
 
 type AffirmNegativeButtonsProps = {
     message: CpdlcMessage,
+    modifiable: boolean,
+    setMessageStatus(message: number, response: CpdlcMessageResponse | undefined),
     setStatus: (sender: string, message: string) => void,
     isStatusAvailable: (sender: string) => boolean,
     closeMessage: (message: number) => void
 }
 
-export const AffirmNegativeButtons: React.FC<AffirmNegativeButtonsProps> = memo(({ message, setStatus, isStatusAvailable, closeMessage }) => {
+export const AffirmNegativeButtons: React.FC<AffirmNegativeButtonsProps> = ({ message, modifiable, setMessageStatus, setStatus, isStatusAvailable, closeMessage }) => {
     useUpdate(() => {
         if (message.ComStatus === AtsuMessageComStatus.Sending) {
             if (isStatusAvailable('Buttons') === true) {
@@ -25,15 +27,15 @@ export const AffirmNegativeButtons: React.FC<AffirmNegativeButtonsProps> = memo(
             return;
         }
 
-        if (message.Response === undefined && message.ResponseType === undefined) {
+        if (message.Response === undefined && message.ResponseType === undefined && modifiable) {
             if (index === 'L1') {
-                message.ResponseType = CpdlcMessageResponse.Negative;
+                setMessageStatus(message.UniqueMessageID, CpdlcMessageResponse.Negative);
             } else if (index === 'R2') {
-                message.ResponseType = CpdlcMessageResponse.Affirm;
+                setMessageStatus(message.UniqueMessageID, CpdlcMessageResponse.Affirm);
             }
-        } else if (message.Response === undefined && message.ResponseType !== undefined) {
+        } else if (message.Response === undefined && message.ResponseType !== undefined && modifiable) {
             if (index === 'L1') {
-                message.Response = undefined;
+                setMessageStatus(message.UniqueMessageID, undefined);
             } else if (index === 'R2') {
                 SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_SEND_UID', 'number', message.UniqueMessageID);
             }
@@ -49,13 +51,13 @@ export const AffirmNegativeButtons: React.FC<AffirmNegativeButtonsProps> = memo(
                     <Button
                         messageId={message.UniqueMessageID}
                         index="L1"
-                        content="*NEGATIVE"
+                        content={`${modifiable ? '*' : ''}NEGATIVE`}
                         clicked={clicked}
                     />
                     <Button
                         messageId={message.UniqueMessageID}
                         index="R2"
-                        content="AFFIRM*"
+                        content={`AFFIRM${modifiable ? '*' : ''}`}
                         clicked={clicked}
                     />
                 </>
@@ -65,13 +67,13 @@ export const AffirmNegativeButtons: React.FC<AffirmNegativeButtonsProps> = memo(
                     <Button
                         messageId={message.UniqueMessageID}
                         index="L1"
-                        content="*CANCEL"
+                        content={`${modifiable ? '*' : ''}CANCEL`}
                         clicked={clicked}
                     />
                     <Button
                         messageId={message.UniqueMessageID}
                         index="R2"
-                        content="SEND*"
+                        content={`SEND${modifiable ? '*' : ''}`}
                         clicked={clicked}
                     />
                 </>
@@ -86,4 +88,4 @@ export const AffirmNegativeButtons: React.FC<AffirmNegativeButtonsProps> = memo(
             )}
         </>
     );
-});
+};
