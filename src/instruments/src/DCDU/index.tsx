@@ -225,7 +225,7 @@ const DCDU: React.FC = () => {
 
     let answerRequired = false;
     if (message !== undefined) {
-        answerRequired = message.RequestedResponses === CpdlcMessageRequestedResponseType.NotRequired || message.RequestedResponses === CpdlcMessageRequestedResponseType.No;
+        answerRequired = message.RequestedResponses !== CpdlcMessageRequestedResponseType.NotRequired && message.RequestedResponses !== CpdlcMessageRequestedResponseType.No;
     }
 
     switch (state) {
