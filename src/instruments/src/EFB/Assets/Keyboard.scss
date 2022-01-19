@@ -8,8 +8,8 @@
   overflow: hidden;
 }
 .hg-theme-default {
-@apply bg-theme-body;
-    border-radius: 5px;
+  @apply bg-theme-body;
+  border-radius: 5px;
   box-sizing: border-box;
   overflow: hidden;
   padding: 5px;
@@ -89,8 +89,8 @@
   max-width: 45px;
 }
 .hg-theme-default .hg-button.hg-selectedButton {
-//   background: rgba(5, 25, 70, 0.53);
-//   color: #00ff2a;
+  //   background: rgba(5, 25, 70, 0.53);
+  //   color: #00ff2a;
 }
 .hg-theme-default .hg-button.hg-standardBtn[data-skbtn=".com"] {
   max-width: 90px;
@@ -99,8 +99,8 @@
   max-width: 90px;
 }
 .hg-candidate-box {
-@apply bg-theme-unselected;
-    border-bottom: 2px solid;
+  @apply bg-theme-unselected;
+  border-bottom: 2px solid;
   @apply border-theme-unselected;
   border-radius: 5px;
   display: inline-flex;
