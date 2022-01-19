@@ -101,6 +101,10 @@ export class HoppieConnector {
     }
 
     public async isStationAvailable(station: string): Promise<string> {
+        if (SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') !== 1) {
+            return 'HOPPIE DISABLED';
+        }
+
         const flightNo = SimVar.GetSimVarValue('ATC FLIGHT NUMBER', 'string');
         const data = HoppieConnector.createPostData('ping', 'ALL-CALLSIGNS', station);
 
