@@ -111,6 +111,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
                     Variable::aircraft("APU GENERATOR SWITCH", "Bool", 0),
                     Variable::aspect("OVHD_ELEC_APU_GEN_PB_IS_ON"),
                 );
+
                 builder.copy(
                     Variable::aircraft("BLEED AIR ENGINE", "Bool", 1),
                     Variable::aspect("OVHD_PNEU_ENG_1_BLEED_PB_IS_AUTO"),
@@ -119,6 +120,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
                     Variable::aircraft("BLEED AIR ENGINE", "Bool", 2),
                     Variable::aspect("OVHD_PNEU_ENG_2_BLEED_PB_IS_AUTO"),
                 );
+
                 builder.copy(
                     Variable::aircraft("EXTERNAL POWER AVAILABLE", "Bool", 1),
                     Variable::aspect("OVHD_ELEC_EXT_PWR_PB_IS_AVAILABLE"),
@@ -132,7 +134,6 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
                     Variable::aircraft("GENERAL ENG MASTER ALTERNATOR", "Bool", 1),
                     Variable::aspect("OVHD_ELEC_ENG_GEN_1_PB_IS_ON"),
                 );
-
                 builder.copy(
                     Variable::aircraft("GENERAL ENG MASTER ALTERNATOR", "Bool", 2),
                     Variable::aspect("OVHD_ELEC_ENG_GEN_2_PB_IS_ON"),
