@@ -24,7 +24,7 @@ import { MetarParserType } from '@instruments/common/metarTypes';
 import { Units } from '@shared/units';
 import { LandingCalculator, LandingFlapsConfig, LandingRunwayConditions } from '../Calculators/LandingCalculator';
 import RunwayVisualizationWidget, { LabelType } from './RunwayVisualizationWidget';
-import SimpleInput from '../../Components/Form/SimpleInput/SimpleInput';
+import { SimpleInput } from '../../Components/Form/SimpleInput/SimpleInput';
 import SelectInput from '../../Components/Form/SelectInput/SelectInput';
 import OutputDisplay from "../../Components/Form/OutputDisplay/OutputDisplay";
 import { useAppDispatch, useAppSelector } from '../../Store/store';
