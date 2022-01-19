@@ -74,7 +74,6 @@ export const SimOptionsPage = () => {
                         <SelectGroup>
                             {adirsAlignTimeButtons.map((button) => (
                                 <SelectItem
-                                    enabled
                                     onSelect={() => {
                                         setAdirsAlignTime(button.setting);
                                         setAdirsAlignTimeSimVar(button.simVarValue);
@@ -91,7 +90,6 @@ export const SimOptionsPage = () => {
                         <SelectGroup>
                             {dmcSelfTestTimeButtons.map((button) => (
                                 <SelectItem
-                                    enabled
                                     onSelect={() => setDmcSelfTestTime(button.setting)}
                                     selected={dmcSelfTestTime === button.setting}
                                 >
@@ -105,7 +103,6 @@ export const SimOptionsPage = () => {
                         <SelectGroup>
                             {defaultBaroButtons.map((button) => (
                                 <SelectItem
-                                    enabled
                                     onSelect={() => setDefaultBaro(button.setting)}
                                     selected={defaultBaro === button.setting}
                                 >
@@ -143,7 +140,6 @@ export const SimOptionsPage = () => {
                         <SelectGroup>
                             {fpSyncButtons.map((button) => (
                                 <SelectItem
-                                    enabled
                                     onSelect={() => setFpSync(button.setting)}
                                     selected={fpSync === button.setting}
                                 >
@@ -157,7 +153,6 @@ export const SimOptionsPage = () => {
                         <SelectGroup>
                             {boardingRateButtons.map((button) => (
                                 <SelectItem
-                                    enabled
                                     onSelect={() => setBoardingRate(button.setting)}
                                     selected={boardingRate === button.setting}
                                 >
@@ -171,7 +166,6 @@ export const SimOptionsPage = () => {
                         <SelectGroup>
                             {steeringSeparationButtons.map((button) => (
                                 <SelectItem
-                                    enabled
                                     onSelect={() => setRealisticTiller(button.setting)}
                                     selected={realisticTiller === button.setting}
                                 >

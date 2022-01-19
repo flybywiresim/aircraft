@@ -48,7 +48,6 @@ export const FlyPadPage = () => {
                 <SelectGroup>
                     {themeButtons.map((button) => (
                         <SelectItem
-                            enabled
                             onSelect={() => setTheme(button.setting)}
                             selected={theme === button.setting}
                         >
@@ -66,7 +65,6 @@ export const FlyPadPage = () => {
                 <SelectGroup>
                     {timeDisplayButtons.map((button) => (
                         <SelectItem
-                            enabled
                             onSelect={() => setTimeDisplayed(button.setting)}
                             selected={timeDisplayed === button.setting}
                         >
@@ -80,7 +78,6 @@ export const FlyPadPage = () => {
                 <SelectGroup>
                     {timeFormatButtons.map((button) => (
                         <SelectItem
-                            enabled
                             onSelect={() => setTimeFormat(button.setting)}
                             selected={timeFormat === button.setting}
                         >
