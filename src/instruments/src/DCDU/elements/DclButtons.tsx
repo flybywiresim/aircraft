@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React from 'react';
 import { AtsuMessageComStatus } from '@atsu/messages/AtsuMessage';
 import { CpdlcMessage } from '@atsu/messages/CpdlcMessage';
 import { useUpdate } from '@instruments/common/hooks.js';
@@ -11,7 +11,7 @@ type DclButtonsProps = {
     closeMessage: (message: number) => void
 }
 
-export const DclButtons: React.FC<DclButtonsProps> = memo(({ message, setStatus, isStatusAvailable, closeMessage }) => {
+export const DclButtons: React.FC<DclButtonsProps> = ({ message, setStatus, isStatusAvailable, closeMessage }) => {
     useUpdate(() => {
         if (message.ComStatus === AtsuMessageComStatus.Sending) {
             if (isStatusAvailable('Buttons') === true) {
@@ -64,4 +64,4 @@ export const DclButtons: React.FC<DclButtonsProps> = memo(({ message, setStatus,
             )}
         </>
     );
-});
+};

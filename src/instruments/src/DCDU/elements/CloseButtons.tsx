@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React from 'react';
 import { CpdlcMessage } from '@atsu/messages/CpdlcMessage';
 import { Button } from './Button';
 
@@ -7,7 +7,7 @@ type CloseButtonsProps = {
     closeMessage: (message: number) => void
 }
 
-export const CloseButtons: React.FC<CloseButtonsProps> = memo(({ message, closeMessage }) => {
+export const CloseButtons: React.FC<CloseButtonsProps> = ({ message, closeMessage }) => {
     const clicked = (index: string) : void => {
         if (message.UniqueMessageID === undefined) {
             return;
@@ -28,4 +28,4 @@ export const CloseButtons: React.FC<CloseButtonsProps> = memo(({ message, closeM
             />
         </>
     );
-});
+};

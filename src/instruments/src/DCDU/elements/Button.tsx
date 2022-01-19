@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React from 'react';
 import { useInteractionEvents } from '@instruments/common/hooks.js';
 
 type ButtonProps = {
@@ -8,7 +8,7 @@ type ButtonProps = {
     clicked: (btn: string) => void
 }
 
-export const Button: React.FC<ButtonProps> = memo(({ index, content, clicked }) => {
+export const Button: React.FC<ButtonProps> = ({ index, content, clicked }) => {
     if (content.length !== 0) {
         useInteractionEvents([`A32NX_DCDU_BTN_MPL_${index}`, `A32NX_DCDU_BTN_MPR_${index}`], () => {
             clicked(index);
@@ -44,4 +44,4 @@ export const Button: React.FC<ButtonProps> = memo(({ index, content, clicked }) 
             )}
         </>
     );
-});
+};
