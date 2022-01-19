@@ -5,7 +5,6 @@ import { NXApi } from '@shared/nxapi';
 import { NXDataStore } from '@shared/persistence';
 import { AtsuMessageComStatus, AtsuMessageNetwork, AtsuMessageDirection } from '../messages/AtsuMessage';
 import { AtisMessage, FreetextMessage, WeatherMessage, AtsuManager } from '../AtsuManager';
-import { wordWrap } from '../Common';
 
 const WeatherMap = {
     FAA: 'faa',
@@ -40,7 +39,7 @@ export class NXApiConnector {
                         message.Network = AtsuMessageNetwork.FBW;
                         message.Direction = AtsuMessageDirection.Input;
                         message.Station = msg.from.flight;
-                        message.Lines = wordWrap(msg.message.replace(/;/i, ' '), 25);
+                        message.Message = msg.message.replace(/;/i, ' ');
 
                         parent.registerMessage(message);
                         msgCounter += 1;
@@ -59,7 +58,7 @@ export class NXApiConnector {
     }
 
     public async sendTelexMessage(message: FreetextMessage): Promise<string> {
-        const content = message.Lines.join(';');
+        const content = message.Message.replace('\n', ';');
         return NXApi.sendTelexMessage(message.Station, content).then(() => {
             message.ComStatus = AtsuMessageComStatus.Sent;
             return '';
@@ -74,7 +73,7 @@ export class NXApiConnector {
 
         return NXApi.getMetar(icao, WeatherMap[storedMetarSrc])
             .then((data) => {
-                const newLines = wordWrap(data.metar, 25);
+                const newLines = data.metar;
                 message.Reports.push({ airport: icao, report: newLines });
                 return true;
             }).catch(() => false);
@@ -85,7 +84,7 @@ export class NXApiConnector {
 
         return NXApi.getTaf(icao, WeatherMap[storedTafSrc])
             .then((data) => {
-                const newLines = wordWrap(data.taf, 25);
+                const newLines = data.taf;
                 message.Reports.push({ airport: icao, report: newLines });
                 return true;
             }).catch(() => false);
@@ -96,10 +95,10 @@ export class NXApiConnector {
 
         await NXApi.getAtis(icao, WeatherMap[storedAtisSrc])
             .then((data) => {
-                const newLines = wordWrap(data.combined, 25);
+                const newLines = data.combined;
                 message.Reports.push({ airport: icao, report: newLines });
             }).catch(() => {
-                message.Reports.push({ airport: icao, report: ['D-ATIS NOT AVAILABLE'] });
+                message.Reports.push({ airport: icao, report: 'D-ATIS NOT AVAILABLE' });
             });
 
         return true;

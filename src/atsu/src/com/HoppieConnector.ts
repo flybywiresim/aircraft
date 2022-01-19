@@ -4,7 +4,7 @@
 import { NXDataStore } from '@shared/persistence';
 import { AtsuMessage, AtsuMessageNetwork, AtsuMessageDirection, AtsuMessageComStatus, AtsuMessageSerializationFormat } from '../messages/AtsuMessage';
 import { FreetextMessage, CpdlcMessage, AtsuManager } from '../AtsuManager';
-import { wordWrap, stringToCpdlc } from '../Common';
+import { stringToCpdlc } from '../Common';
 
 /**
  * Defines the connector to the hoppies network
@@ -65,7 +65,7 @@ export class HoppieConnector {
                             freetext.Station = sender;
                             freetext.Direction = AtsuMessageDirection.Input;
                             freetext.ComStatus = AtsuMessageComStatus.Received;
-                            freetext.Lines = wordWrap(content.replace(/\n/i, ' '), 25);
+                            freetext.Message = content.replace(/\n/i, ' ');
                             parent.registerMessage(freetext);
                             break;
                         case 'cpdlc':
@@ -81,13 +81,7 @@ export class HoppieConnector {
                                 cpdlc.PreviousTransmissionId = parseInt(elements[3]);
                             }
                             cpdlc.RequestedResponses = stringToCpdlc(elements[4]);
-
-                            // create the lines and interpret '_' as an encoded newline
-                            let lines = [];
-                            elements[5].split('_').forEach((entry) => {
-                                lines = lines.concat(wordWrap(entry, 25));
-                            });
-                            cpdlc.Lines = lines;
+                            cpdlc.Message = elements[5];
 
                             parent.registerMessage(cpdlc);
                             break;

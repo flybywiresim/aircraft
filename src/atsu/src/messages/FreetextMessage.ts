@@ -2,13 +2,12 @@
 //  SPDX-License-Identifier: GPL-3.0
 
 import { AtsuMessageType, AtsuMessageDirection, AtsuMessageSerializationFormat, AtsuMessage } from './AtsuMessage';
+import { wordWrap } from '../Common';
 
 /**
  * Defines the general freetext message format
  */
 export class FreetextMessage extends AtsuMessage {
-    public Lines: string[] = [];
-
     constructor() {
         super();
         this.Type = AtsuMessageType.Freetext;
@@ -19,12 +18,12 @@ export class FreetextMessage extends AtsuMessage {
         let message = '';
 
         if (format === AtsuMessageSerializationFormat.MCDU) {
-            this.Lines.forEach((line) => {
+            wordWrap(this.Message, 25).forEach((line) => {
                 message += `{green}${line}{end}\n`;
             });
             message += '{white}------------------------{end}\n';
         } else {
-            this.Lines.forEach((line) => message += `${line}\n`);
+            message = this.Message;
         }
 
         return message;

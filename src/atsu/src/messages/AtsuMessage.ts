@@ -59,6 +59,8 @@ export class AtsuMessage {
 
     public Confirmed = false;
 
+    public Message = '';
+
     public serialize(_format: AtsuMessageSerializationFormat) : string {
         throw new Error('No valid implementation');
     }
@@ -74,6 +76,7 @@ export class AtsuMessage {
         this.Type = jsonData.Type;
         this.Direction = jsonData.Direction;
         this.Confirmed = jsonData.Confirmed;
+        this.Message = jsonData.Message;
     }
 }
 

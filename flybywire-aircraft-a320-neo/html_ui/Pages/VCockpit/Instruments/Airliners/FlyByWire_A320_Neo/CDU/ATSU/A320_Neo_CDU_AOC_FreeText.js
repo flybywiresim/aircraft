@@ -120,17 +120,18 @@ class CDUAocFreeText {
             }
             message.Station = store["msg_to"];
             if (store["msg_line1"] !== "") {
-                message.Lines.push(store["msg_line1"]);
+                message.Message += store["msg_line1"] + '\n';
             }
             if (store["msg_line2"] !== "") {
-                message.Lines.push(store["msg_line2"]);
+                message.Message += store["msg_line2"] + '\n';
             }
             if (store["msg_line3"] !== "") {
-                message.Lines.push(store["msg_line3"]);
+                message.Message += store["msg_line3"] + '\n';
             }
             if (store["msg_line4"] !== "") {
-                message.Lines.push(store["msg_line4"]);
+                message.Message += store["msg_line4"] + '\n';
             }
+            message.Message = message.Message.substring(0, message.Message.length - 1);
 
             // send the message
             mcdu.atsuManager.sendMessage(message).then((message) => {

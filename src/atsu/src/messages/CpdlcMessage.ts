@@ -2,7 +2,7 @@
 //  SPDX-License-Identifier: GPL-3.0
 
 import { AtsuMessageNetwork, AtsuMessageType, AtsuMessageDirection, AtsuMessageSerializationFormat, AtsuMessage } from './AtsuMessage';
-import { cpdlcToString } from '../Common';
+import { cpdlcToString, wordWrap } from '../Common';
 
 export enum CpdlcMessageRequestedResponseType {
     NotRequired,
@@ -41,8 +41,6 @@ export class CpdlcMessage extends AtsuMessage {
 
     public CurrentTransmissionId = -1;
 
-    public Lines: string[] = [];
-
     constructor() {
         super();
         this.Type = AtsuMessageType.CPDLC;
@@ -53,7 +51,7 @@ export class CpdlcMessage extends AtsuMessage {
     public deserialize(jsonData: any): void {
         super.deserialize(jsonData);
 
-        this.RequestedResponses = jsonData.ExpectedResponses;
+        this.RequestedResponses = jsonData.RequestedResponses;
         this.ResponseType = jsonData.ResponseType;
         if (jsonData.Response !== undefined) {
             this.Response = new CpdlcMessage();
@@ -61,7 +59,6 @@ export class CpdlcMessage extends AtsuMessage {
         }
         this.PreviousTransmissionId = jsonData.PreviousTransmissionId;
         this.CurrentTransmissionId = jsonData.CurrentTransmissionId;
-        this.Lines = jsonData.Lines;
     }
 
     public serialize(format: AtsuMessageSerializationFormat) {
@@ -69,11 +66,16 @@ export class CpdlcMessage extends AtsuMessage {
 
         if (format === AtsuMessageSerializationFormat.Network) {
             message = `/data2/${this.CurrentTransmissionId}/${this.PreviousTransmissionId !== -1 ? this.PreviousTransmissionId : ''}/${cpdlcToString(this.RequestedResponses)}`;
-            message += `/${this.Lines.join(' ')}`;
+            message += `/${this.Message}`;
         } else if (format === AtsuMessageSerializationFormat.DCDU || format === AtsuMessageSerializationFormat.MCDU) {
-            message = this.Lines.join('\n');
+            // create the lines and interpret '_' as an encoded newline
+            let lines = [];
+            this.Message.split('_').forEach((entry) => {
+                lines = lines.concat(wordWrap(entry, format === AtsuMessageSerializationFormat.DCDU ? 30 : 25));
+            });
+            message = lines.join('\n');
         } else {
-            message = this.Lines.join(' ');
+            message = this.Message;
         }
 
         return message;

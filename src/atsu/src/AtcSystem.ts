@@ -1,4 +1,4 @@
-import { AtsuMessageComStatus, AtsuMessage, AtsuMessageType, AtsuMessageDirection } from './messages/AtsuMessage';
+import { AtsuMessageComStatus, AtsuMessage, AtsuMessageType, AtsuMessageDirection, AtsuMessageSerializationFormat } from './messages/AtsuMessage';
 import { CpdlcMessageResponse, CpdlcMessageRequestedResponseType, CpdlcMessage } from './messages/CpdlcMessage';
 import { HoppieConnector } from './com/HoppieConnector';
 import { AtsuManager } from './AtsuManager';
@@ -68,7 +68,7 @@ export class AtcSystem {
         message.Direction = AtsuMessageDirection.Output;
         message.CurrentTransmissionId = this.cpdlcMessageId++;
         message.RequestedResponses = CpdlcMessageRequestedResponseType.Yes;
-        message.Lines = ['REQUEST LOGON'];
+        message.Message = 'REQUEST LOGON';
 
         return this.parent.sendMessage(message).then((message) => {
             if (message === '') {
@@ -88,7 +88,7 @@ export class AtcSystem {
         message.Direction = AtsuMessageDirection.Output;
         message.CurrentTransmissionId = this.cpdlcMessageId++;
         message.RequestedResponses = CpdlcMessageRequestedResponseType.No;
-        message.Lines = ['LOGOFF'];
+        message.Message = 'LOGOFF';
 
         return this.parent.sendMessage(message).then((message) => {
             if (message === '') {
@@ -110,28 +110,28 @@ export class AtcSystem {
         // create the answer text
         switch (request.ResponseType) {
         case CpdlcMessageResponse.Acknowledge:
-            response.Lines = ['ACKNOWLEDGE'];
+            response.Message = 'ACKNOWLEDGE';
             break;
         case CpdlcMessageResponse.Affirm:
-            response.Lines = ['AFFIRM'];
+            response.Message = 'AFFIRM';
             break;
         case CpdlcMessageResponse.Negative:
-            response.Lines = ['NEGATIVE'];
+            response.Message = 'NEGATIVE';
             break;
         case CpdlcMessageResponse.Refuse:
-            response.Lines = ['REFUSE'];
+            response.Message = 'REFUSE';
             break;
         case CpdlcMessageResponse.Roger:
-            response.Lines = ['ROGER'];
+            response.Message = 'ROGER';
             break;
         case CpdlcMessageResponse.Standby:
-            response.Lines = ['STANDBY'];
+            response.Message = 'STANDBY';
             break;
         case CpdlcMessageResponse.Unable:
-            response.Lines = ['UNABLE'];
+            response.Message = 'UNABLE';
             break;
         case CpdlcMessageResponse.Wilco:
-            response.Lines = ['WILCO'];
+            response.Message = 'WILCO';
             break;
         default:
             return undefined;
@@ -190,20 +190,20 @@ export class AtcSystem {
 
         if (request.RequestedResponses === CpdlcMessageRequestedResponseType.NotRequired && response === undefined) {
             // received the station message for the DCDU
-            if (request.Lines[0].includes('CURRENT ATC')) {
-                this.listener.triggerToAllSubscribers('A32NX_DCDU_ATC_LOGON_MSG', request.Lines.join('\n'));
+            if (request.Message.includes('CURRENT ATC')) {
+                this.listener.triggerToAllSubscribers('A32NX_DCDU_ATC_LOGON_MSG', request.serialize(AtsuMessageSerializationFormat.DCDU));
                 return true;
             }
 
             // received a logoff message
-            if (request.Lines[0].includes('LOGOFF')) {
+            if (request.Message.includes('LOGOFF')) {
                 this.listener.triggerToAllSubscribers('A32NX_DCDU_ATC_LOGON_MSG', '');
                 this.station = '';
                 return true;
             }
 
             // received a service terminated message
-            if (request.Lines[0].includes('TERMINATED')) {
+            if (request.Message.includes('TERMINATED')) {
                 this.listener.triggerToAllSubscribers('A32NX_DCDU_ATC_LOGON_MSG', '');
                 this.station = '';
                 return true;
@@ -212,9 +212,9 @@ export class AtcSystem {
 
         // expecting a LOGON or denied message
         if (this.nextStation !== '' && request !== undefined && response !== undefined) {
-            if (request.Lines[0].startsWith('REQUEST')) {
+            if (request.Message.startsWith('REQUEST')) {
                 // logon accepted by ATC
-                if (response.Lines[0].includes('LOGON ACCEPTED')) {
+                if (response.Message.includes('LOGON ACCEPTED')) {
                     this.listener.triggerToAllSubscribers('A32NX_DCDU_ATC_LOGON_MSG', `CURRENT ATC UNIT @${this.nextStation}@`);
                     this.station = this.nextStation;
                     this.nextStation = '';
@@ -222,7 +222,7 @@ export class AtcSystem {
                 }
 
                 // logon rejected
-                if (!response.Lines[0].includes('STANDBY')) {
+                if (!response.Message.includes('STANDBY')) {
                     this.nextStation = '';
                     return true;
                 }

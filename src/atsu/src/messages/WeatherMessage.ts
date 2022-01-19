@@ -2,6 +2,7 @@
 //  SPDX-License-Identifier: GPL-3.0
 
 import { AtsuMessageType, AtsuMessageDirection, AtsuMessageSerializationFormat, AtsuMessage } from './AtsuMessage';
+import { wordWrap } from '../Common';
 
 /**
  * Defines the general weather message format
@@ -35,7 +36,7 @@ export class WeatherMessage extends AtsuMessage {
                 message += `{cyan}${type} ${report.airport}{end}\n`;
 
                 // eslint-disable-next-line no-loop-func
-                report.report.forEach((line) => {
+                wordWrap(report.report, 25).forEach((line) => {
                     if (line.startsWith('D-ATIS')) {
                         message += `{amber}${line}{end}\n`;
                     } else {
@@ -50,7 +51,7 @@ export class WeatherMessage extends AtsuMessage {
                 message += `${type} ${report.airport}\n`;
 
                 // eslint-disable-next-line no-loop-func
-                report.report.forEach((line) => message += `${line}\n`);
+                message += `${report.report}\n`;
 
                 message += '------------------------\n';
             });
