@@ -33,13 +33,13 @@ export const SelectItem: React.FC<SelectItemProps> = (props) => (
 );
 
 export const SelectGroup: React.FC = (props) => (
-    <div className="flex flex-row justify-between border border-theme-accent divide-x divide-theme-accent rounded-md overflow-hidden">
+    <div className="flex overflow-hidden flex-row justify-between rounded-md border divide-x border-theme-accent divide-theme-accent">
         {props.children}
     </div>
 );
 
 export const VerticalSelectGroup: React.FC = (props) => (
-    <div className="flex flex-col justify-between | overflow-hidden rounded-md border divide-y divide-theme-accent border-theme-accent">
+    <div className="flex overflow-hidden flex-col justify-between rounded-md border divide-y divide-theme-accent border-theme-accent">
         {props.children}
     </div>
 );
