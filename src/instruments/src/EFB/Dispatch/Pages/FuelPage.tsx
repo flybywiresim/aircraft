@@ -4,7 +4,7 @@ import { PlayFill, StopCircleFill } from 'react-bootstrap-icons';
 import { Slider } from '../../Components/Form/Slider';
 import { SelectGroup, SelectItem } from '../../Components/Form/Select';
 import { ProgressBar } from '../../Components/Progress/Progress';
-import SimpleInput from '../../Components/Form/SimpleInput/SimpleInput';
+import { SimpleInput } from '../../Components/Form/SimpleInput/SimpleInput';
 import fuselage from '../../Assets/320neo_outline_fuel.svg';
 import { useSimVar } from '../../../Common/simVars';
 import { usePersistentProperty } from '../../../Common/persistence';

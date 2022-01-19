@@ -23,7 +23,7 @@ interface SimpleInputProps {
     disabled?: boolean;
 }
 
-const SimpleInput = (props: PropsWithChildren<SimpleInputProps>) => {
+export const SimpleInput = (props: PropsWithChildren<SimpleInputProps>) => {
     const [displayValue, setDisplayValue] = useState<string>(props.value?.toString() ?? '');
     const [focused, setFocused] = useState(false);
 
@@ -138,10 +138,16 @@ const SimpleInput = (props: PropsWithChildren<SimpleInputProps>) => {
         };
     }, [focused]);
 
-    function onChangeAll(newInput) {
+    const onChangeAll = (newInput) => {
         setDisplayValue(newInput.default);
         onChange(newInput.default);
-    }
+    };
+
+    const blurInputField = () => {
+        if (inputRef.current) {
+            inputRef.current.blur();
+        }
+    };
 
     const Input = (
         <input
@@ -154,6 +160,7 @@ const SimpleInput = (props: PropsWithChildren<SimpleInputProps>) => {
             onBlur={onFocusOut}
             maxLength={props.maxLength}
             disabled={props.disabled}
+            ref={inputRef}
         />
     );
 
@@ -176,10 +183,13 @@ const SimpleInput = (props: PropsWithChildren<SimpleInputProps>) => {
                     </>
                 )}
             {OSKOpen && (
-                <KeyboardWrapper keyboardRef={keyboard} onChangeAll={(v) => onChangeAll(v)} setOpen={setOSKOpen} inputRef={inputRef} />
+                <KeyboardWrapper
+                    keyboardRef={keyboard}
+                    onChangeAll={(v) => onChangeAll(v)}
+                    blurInput={blurInputField}
+                    setOpen={setOSKOpen}
+                />
             )}
         </>
     );
 };
-
-export default SimpleInput;

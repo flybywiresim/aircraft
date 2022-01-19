@@ -7,7 +7,7 @@ import { HttpError } from '@flybywiresim/api-client';
 import { toast } from 'react-toastify';
 import { Toggle } from '../../Components/Form/Toggle';
 import { SelectGroup, SelectItem } from '../../Components/Form/Select';
-import SimpleInput from '../../Components/Form/SimpleInput/SimpleInput';
+import { SimpleInput } from '../../Components/Form/SimpleInput/SimpleInput';
 import { ButtonType, SettingItem, SettingsPage } from '../Settings';
 
 export const AtsuAocPage = () => {

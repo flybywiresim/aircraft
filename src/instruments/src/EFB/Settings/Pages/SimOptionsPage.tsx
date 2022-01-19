@@ -7,9 +7,9 @@ import { ButtonType, SettingItem, SettingsPage } from '../Settings';
 
 import Button from '../../Components/Button/Button';
 import { SelectGroup, SelectItem } from '../../Components/Form/Select';
-import SimpleInput from '../../Components/Form/SimpleInput/SimpleInput';
+import { SimpleInput } from '../../Components/Form/SimpleInput/SimpleInput';
 
-import ThrottleConfig from '../ThrottleConfig/ThrottleConfig';
+import { ThrottleConfig } from '../ThrottleConfig/ThrottleConfig';
 
 type SimVarButton = {
     simVarValue: number,

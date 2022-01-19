@@ -13,7 +13,7 @@ import NavigraphClient, {
 import ChartFoxClient, { ChartFoxAirportCharts, ChartFoxChart } from '../ChartsApi/ChartFox';
 import navigraphLogo from '../Assets/navigraph-logo.svg';
 import { usePersistentProperty } from '../../Common/persistence';
-import SimpleInput from '../Components/Form/SimpleInput/SimpleInput';
+import { SimpleInput } from '../Components/Form/SimpleInput/SimpleInput';
 
 type Chart = NavigraphChart | ChartFoxChart;
 

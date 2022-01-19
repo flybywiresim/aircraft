@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { usePersistentNumberProperty } from '@instruments/common/persistence';
-import SimpleInput from '../../Components/Form/SimpleInput/SimpleInput';
+import { SimpleInput } from '../../Components/Form/SimpleInput/SimpleInput';
 import { Toggle } from '../../Components/Form/Toggle';
 import { Slider } from '../../Components/Form/Slider';
 import { SettingItem, SettingsPage } from '../Settings';

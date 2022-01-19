@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 
 import Button, { BUTTON_TYPE } from '../../Components/Button/Button';
-import SimpleInput from '../../Components/Form/SimpleInput/SimpleInput';
+import { SimpleInput } from '../../Components/Form/SimpleInput/SimpleInput';
 import { ProgressBar } from '../../Components/Progress/Progress';
 
 interface Props {
@@ -126,7 +126,7 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
                         </div>
                     )}
 
-                <h2 style={{ visibility: showWarning ? 'visible' : 'hidden' }} className="mt-4  w-48 h-12 text-xl text-red-600">
+                <h2 style={{ visibility: showWarning ? 'visible' : 'hidden' }} className="mt-4 w-48 h-12 text-xl text-red-600">
                     Please enter a
                     valid deadzone (&gt; 0.05)
                 </h2>

@@ -13,7 +13,7 @@ interface BaseThrottleConfigProps {
     disabled?: boolean;
 }
 
-const BaseThrottleConfig: FC<BaseThrottleConfigProps> = ({
+export const BaseThrottleConfig: FC<BaseThrottleConfigProps> = ({
     throttleNumber,
     throttleCount,
     mappingsAxisOne,
@@ -25,7 +25,7 @@ const BaseThrottleConfig: FC<BaseThrottleConfigProps> = ({
     const [throttlePosition] = useSimVar(`L:A32NX_THROTTLE_MAPPING_INPUT:${throttleNumber}`, 'number', 30);
     const [expertMode, setExpertMode] = useState(false);
 
-    const CurrentDetent = () => (
+    const currentDetent = (
         <DetentConfig
             key={activeIndex}
             index={activeIndex}
@@ -64,12 +64,10 @@ const BaseThrottleConfig: FC<BaseThrottleConfigProps> = ({
 
                 <div className="flex flex-row">
                     <div className="flex flex-col justify-between items-center">
-                        <CurrentDetent />
+                        {currentDetent}
                     </div>
                 </div>
             </div>
         </div>
     );
 };
-
-export default BaseThrottleConfig;
