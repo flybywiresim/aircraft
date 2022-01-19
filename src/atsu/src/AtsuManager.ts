@@ -9,6 +9,7 @@ import { CpdlcMessage } from './messages/CpdlcMessage';
 import { WeatherMessage } from './messages/WeatherMessage';
 import { AtisMessage } from './messages/AtisMessage';
 import { MetarMessage } from './messages/MetarMessage';
+import { NXApiConnector } from './NXApiConnector';
 import { TafMessage } from './messages/TafMessage';
 import { FreetextMessage } from './messages/FreetextMessage';
 import { HoppieConnector } from './HoppieConnector';
@@ -18,13 +19,15 @@ import { PdcMessage } from './messages/PdcMessage';
  * Defines the ATSU manager
  */
 export class AtsuManager {
-    private connector = new HoppieConnector(this);
+    private hoppieNetwork = new HoppieConnector(this);
+
+    private nxapiNetwork = new NXApiConnector(this);
 
     private messageCounter = 0;
 
-    private aocSystem = new AocSystem(this, this.connector);
+    private aocSystem = new AocSystem(this, this.hoppieNetwork, this.nxapiNetwork);
 
-    private atcSystem = new AtcSystem(this, this.connector);
+    private atcSystem = new AtcSystem(this, this.hoppieNetwork);
 
     private listener = RegisterViewListener('JS_LISTENER_SIMVARS');
 
@@ -91,10 +94,7 @@ export class AtsuManager {
     }
 
     public async isRemoteStationAvailable(callsign: string): Promise<string> {
-        if (SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') !== 1) {
-            return 'HOPPIE DISABLED';
-        }
-        return this.connector.isStationAvailable(callsign);
+        return this.hoppieNetwork.isStationAvailable(callsign);
     }
 
     public findMessage(uid: number): AtsuMessage {
