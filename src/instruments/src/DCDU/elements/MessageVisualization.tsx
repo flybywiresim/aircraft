@@ -114,10 +114,8 @@ export const MessageVisualization: React.FC<MessageVisualizationProps> = memo(({
     }
 
     // get the single lines
-    console.log(message);
     let lines = message.split(/\r?\n/);
     lines = lines.filter((e) => e);
-    console.log(lines);
 
     // get the number of pages
     const messagePageCount = Math.ceil(lines.length / maxLines);
@@ -128,7 +126,7 @@ export const MessageVisualization: React.FC<MessageVisualizationProps> = memo(({
 
     // get the indices
     const startIndex = pageIndex * maxLines;
-    const endIndex = Math.min(startIndex + maxLines, lines.length - startIndex);
+    const endIndex = Math.min(startIndex + maxLines, lines.length);
 
     // get visible lines
     lines = lines.slice(startIndex, endIndex);
