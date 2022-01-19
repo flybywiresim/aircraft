@@ -145,16 +145,14 @@ export class AtcSystem {
         if (message !== undefined) {
             message.ResponseType = response;
             message.ComStatus = AtsuMessageComStatus.Sending;
+            message.Response = this.createCpdlcResponse(message);
             this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', message);
 
             setTimeout(() => {
-                const answer = this.createCpdlcResponse(message);
-
-                if (answer !== undefined) {
-                    this.connector.sendCpdlcMessage(answer).then((text) => {
+                if (message.Response !== undefined) {
+                    this.connector.sendCpdlcMessage(message.Response).then((text) => {
                         if (text === '') {
                             message.ComStatus = AtsuMessageComStatus.Sent;
-                            message.Response = answer;
                         } else {
                             message.ComStatus = AtsuMessageComStatus.Failed;
                         }
