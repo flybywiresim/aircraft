@@ -2,8 +2,11 @@ import React, { useState } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import { useCoherentEvent, useInteractionEvents } from '@instruments/common/hooks';
 import { AtsuMessageComStatus, AtsuMessageType } from '@atsu/messages/AtsuMessage';
-import { CpdlcMessage } from '@atsu/messages/CpdlcMessage';
+import { CpdlcMessage, CpdlcMessageRequestedResponseType } from '@atsu/messages/CpdlcMessage';
+import { AffirmNegativeButtons } from './elements/AffirmNegativeButtons';
 import { WilcoUnableButtons } from './elements/WilcoUnableButtons';
+import { RogerButtons } from './elements/RogerButtons';
+import { CloseButtons } from './elements/CloseButtons';
 import { render } from '../Common';
 import { SelfTest } from './pages/SelfTest';
 import { WaitingForData } from './pages/WaitingForData';
@@ -220,6 +223,11 @@ const DCDU: React.FC = () => {
         }
     }
 
+    let answerRequired = false;
+    if (message !== undefined) {
+        answerRequired = message.RequestedResponses === CpdlcMessageRequestedResponseType.NotRequired || message.RequestedResponses === CpdlcMessageRequestedResponseType.No;
+    }
+
     switch (state) {
     case DcduState.Off:
         return <></>;
@@ -276,11 +284,33 @@ const DCDU: React.FC = () => {
                             />
                         </>
                     ))}
-                    {(message !== undefined && message.Type === AtsuMessageType.PDC && (
+                    {(message !== undefined && answerRequired && message.RequestedResponses === CpdlcMessageRequestedResponseType.WilcoUnable && (
                         <WilcoUnableButtons
                             message={message}
                             setStatus={setStatus}
                             isStatusAvailable={isStatusAvailable}
+                            closeMessage={closeMessage}
+                        />
+                    ))}
+                    {(message !== undefined && answerRequired && message.RequestedResponses === CpdlcMessageRequestedResponseType.AffirmNegative && (
+                        <AffirmNegativeButtons
+                            message={message}
+                            setStatus={setStatus}
+                            isStatusAvailable={isStatusAvailable}
+                            closeMessage={closeMessage}
+                        />
+                    ))}
+                    {(message !== undefined && answerRequired && message.RequestedResponses === CpdlcMessageRequestedResponseType.Roger && (
+                        <RogerButtons
+                            message={message}
+                            setStatus={setStatus}
+                            isStatusAvailable={isStatusAvailable}
+                            closeMessage={closeMessage}
+                        />
+                    ))}
+                    {(message !== undefined && !answerRequired && (
+                        <CloseButtons
+                            message={message}
                             closeMessage={closeMessage}
                         />
                     ))}
