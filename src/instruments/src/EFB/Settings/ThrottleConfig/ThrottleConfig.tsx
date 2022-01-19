@@ -90,38 +90,36 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
     };
 
     const navigationBar = (
-        <div className="flex flex-row h-80">
-            <VerticalSelectGroup>
-                <SelectItem enabled onSelect={() => switchDetent(5)} selected={selectedIndex === 5}>TO/GA</SelectItem>
-                <SelectItem enabled onSelect={() => switchDetent(4)} selected={selectedIndex === 4}>FLX</SelectItem>
-                <SelectItem enabled onSelect={() => switchDetent(3)} selected={selectedIndex === 3}>CLB</SelectItem>
-                <SelectItem enabled onSelect={() => switchDetent(2)} selected={selectedIndex === 2}>Idle</SelectItem>
-                <SelectItem
-                    enabled
-                    classNames={`${reverserOnAxis1 ? '' : 'opacity-30'}`}
-                    onSelect={() => {
-                        if (reverserOnAxis1) {
-                            switchDetent(1);
-                        }
-                    }}
-                    selected={selectedIndex === 1}
-                >
-                    Reverse Idle
-                </SelectItem>
-                <SelectItem
-                    enabled
-                    classNames={`${reverserOnAxis1 ? '' : 'opacity-30'}`}
-                    onSelect={() => {
-                        if (reverserOnAxis1) {
-                            switchDetent(0);
-                        }
-                    }}
-                    selected={selectedIndex === 0}
-                >
-                    Reverse Full
-                </SelectItem>
-            </VerticalSelectGroup>
-        </div>
+        <VerticalSelectGroup>
+            <SelectItem onSelect={() => switchDetent(5)} selected={selectedIndex === 5}>TO/GA</SelectItem>
+            <SelectItem onSelect={() => switchDetent(4)} selected={selectedIndex === 4}>FLX</SelectItem>
+            <SelectItem onSelect={() => switchDetent(3)} selected={selectedIndex === 3}>CLB</SelectItem>
+            <SelectItem onSelect={() => switchDetent(2)} selected={selectedIndex === 2}>Idle</SelectItem>
+            <SelectItem
+                disabled={!reverserOnAxis1}
+                className={`${reverserOnAxis1 ? '' : 'opacity-30'}`}
+                onSelect={() => {
+                    if (reverserOnAxis1) {
+                        switchDetent(1);
+                    }
+                }}
+                selected={selectedIndex === 1}
+            >
+                Reverse Idle
+            </SelectItem>
+            <SelectItem
+                disabled={!reverserOnAxis1}
+                className={`${reverserOnAxis1 ? '' : 'opacity-30'}`}
+                onSelect={() => {
+                    if (reverserOnAxis1) {
+                        switchDetent(0);
+                    }
+                }}
+                selected={selectedIndex === 0}
+            >
+                Reverse Full
+            </SelectItem>
+        </VerticalSelectGroup>
     );
 
     if (isShown) {
