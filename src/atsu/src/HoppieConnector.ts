@@ -136,11 +136,17 @@ export class HoppieConnector {
         }).catch(() => 'COM UNAVAILABLE');
     }
 
-    public async sendTelexMessage(message: AtsuMessage): Promise<string> {
-        return this.sendMessage(message, 'telex');
+    public async sendTelexMessage(message: FreetextMessage): Promise<string> {
+        if (SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') === 1) {
+            return this.sendMessage(message, 'telex');
+        }
+        return 'COM UNAVAILABLE';
     }
 
     public async sendCpdlcMessage(message: CpdlcMessage): Promise<string> {
-        return this.sendMessage(message, 'cpdlc');
+        if (SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') === 1) {
+            return this.sendMessage(message, 'cpdlc');
+        }
+        return 'COM UNAVAILABLE';
     }
 }
