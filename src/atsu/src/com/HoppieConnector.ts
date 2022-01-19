@@ -2,9 +2,9 @@
 //  SPDX-License-Identifier: GPL-3.0
 
 import { NXDataStore } from '@shared/persistence';
-import { AtsuMessage, AtsuMessageNetwork, AtsuMessageDirection, AtsuMessageComStatus, AtsuMessageSerializationFormat } from './messages/AtsuMessage';
-import { FreetextMessage, CpdlcMessage, AtsuManager } from './AtsuManager';
-import { wordWrap, stringToCpdlc } from './Common';
+import { AtsuMessage, AtsuMessageNetwork, AtsuMessageDirection, AtsuMessageComStatus, AtsuMessageSerializationFormat } from '../messages/AtsuMessage';
+import { FreetextMessage, CpdlcMessage, AtsuManager } from '../AtsuManager';
+import { wordWrap, stringToCpdlc } from '../Common';
 
 /**
  * Defines the connector to the hoppies network

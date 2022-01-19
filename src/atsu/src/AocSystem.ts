@@ -8,8 +8,8 @@ import { MetarMessage } from './messages/MetarMessage';
 import { TafMessage } from './messages/TafMessage';
 import { WeatherMessage } from './messages/WeatherMessage';
 import { AtsuTimestamp } from './messages/AtsuTimestamp';
-import { HoppieConnector } from './HoppieConnector';
-import { NXApiConnector } from './NXApiConnector';
+import { HoppieConnector } from './com/HoppieConnector';
+import { NXApiConnector } from './com/NXApiConnector';
 
 /**
  * Defines the AOC manager

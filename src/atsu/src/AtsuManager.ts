@@ -9,10 +9,10 @@ import { CpdlcMessage } from './messages/CpdlcMessage';
 import { WeatherMessage } from './messages/WeatherMessage';
 import { AtisMessage } from './messages/AtisMessage';
 import { MetarMessage } from './messages/MetarMessage';
-import { NXApiConnector } from './NXApiConnector';
+import { NXApiConnector } from './com/NXApiConnector';
 import { TafMessage } from './messages/TafMessage';
 import { FreetextMessage } from './messages/FreetextMessage';
-import { HoppieConnector } from './HoppieConnector';
+import { HoppieConnector } from './com/HoppieConnector';
 import { PdcMessage } from './messages/PdcMessage';
 
 /**

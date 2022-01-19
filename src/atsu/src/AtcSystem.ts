@@ -1,6 +1,6 @@
 import { AtsuMessageComStatus, AtsuMessage, AtsuMessageType, AtsuMessageDirection } from './messages/AtsuMessage';
 import { CpdlcMessageResponse, CpdlcMessageRequestedResponseType, CpdlcMessage } from './messages/CpdlcMessage';
-import { HoppieConnector } from './HoppieConnector';
+import { HoppieConnector } from './com/HoppieConnector';
 import { AtsuManager } from './AtsuManager';
 
 export class AtcSystem {
