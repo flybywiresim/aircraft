@@ -47,15 +47,15 @@ export class AtsuMessage {
 
     public UniqueMessageID : number = -1;
 
-    public Timestamp : AtsuTimestamp | undefined = undefined;
+    public Timestamp: AtsuTimestamp | undefined = undefined;
 
     public Station = '';
 
-    public ComStatus : AtsuMessageComStatus = AtsuMessageComStatus.Open;
+    public ComStatus: AtsuMessageComStatus = AtsuMessageComStatus.Open;
 
-    public Type : AtsuMessageType | undefined = undefined;
+    public Type: AtsuMessageType | undefined = undefined;
 
-    public Direction : AtsuMessageDirection | undefined = undefined;
+    public Direction: AtsuMessageDirection | undefined = undefined;
 
     public Confirmed = false;
 
