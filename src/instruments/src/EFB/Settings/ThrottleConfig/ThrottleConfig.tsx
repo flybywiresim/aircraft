@@ -5,15 +5,15 @@ import { useSimVar } from '../../../Common/simVars';
 import Button, { BUTTON_TYPE } from '../../Components/Button/Button';
 import { SelectItem, VerticalSelectGroup } from '../../Components/Form/Select';
 
-import BaseThrottleConfig from './BaseThrottleConfig';
+import { BaseThrottleConfig } from './BaseThrottleConfig';
 import { ThrottleSimvar } from './ThrottleSimVar';
 
-interface Props {
+interface ThrottleConfigProps {
     isShown: boolean,
-    onClose: any
+    onClose: () => void,
 }
 
-const ThrottleConfig: React.FC<Props> = (props: Props) => {
+export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
     const [isDualAxis, setDualAxis] = usePersistentProperty('THROTTLE_DUAL_AXIS', '1');
 
     const [selectedIndex, setSelectedIndex] = useState(0);
@@ -89,7 +89,7 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
         }
     };
 
-    const NavigationBar = () => (
+    const navigationBar = (
         <div className="flex flex-row h-80">
             <VerticalSelectGroup>
                 <SelectItem enabled onSelect={() => switchDetent(5)} selected={selectedIndex === 5}>TO/GA</SelectItem>
@@ -124,7 +124,7 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
         </div>
     );
 
-    if (props.isShown) {
+    if (isShown) {
         return (
             <div className="flex flex-col text-center">
                 <div className="py-6 rounded-xl">
@@ -157,7 +157,7 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
                                 activeIndex={selectedIndex}
                             />
                             <div className="mt-auto mr-8 mb-auto ml-8">
-                                <NavigationBar />
+                                {navigationBar}
                             </div>
                             <BaseThrottleConfig
                                 mappingsAxisOne={mappingsAxisTwo}
@@ -182,7 +182,7 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
                         activeIndex={selectedIndex}
                     />
                     <div className="mt-auto mb-auto ml-8">
-                        <NavigationBar />
+                        {navigationBar}
                     </div>
                 </div>
             )}
@@ -194,7 +194,7 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
                         <Button
                             text="Back"
                             type={BUTTON_TYPE.BLUE}
-                            onClick={() => props.onClose()}
+                            onClick={() => onClose()}
                             className="hover:bg-blue-600 hover:border-blue-600"
                         />
                     </div>
@@ -240,5 +240,3 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
     }
     return <></>;
 };
-
-export default ThrottleConfig;
