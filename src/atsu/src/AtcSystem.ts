@@ -80,7 +80,7 @@ export class AtcSystem {
 
     public async logoff(): Promise<string> {
         if (this.station === '') {
-            return;
+            return 'NO ACTIVE ATC';
         }
 
         const message = new CpdlcMessage();
@@ -272,7 +272,7 @@ export class AtcSystem {
     public async sendMessage(message: AtsuMessage): Promise<string> {
         if (message.Station === '') {
             if (this.station === '') {
-                return;
+                return 'NO ACTIVE ATC';
             }
             message.Station = this.station;
         }
