@@ -34,7 +34,7 @@ export const PFD: React.FC = () => {
     const [clampedAirspeed, setClampedAirspeed] = useState(0);
     const [filteredAirspeedAcc, setfilteredAirspeedAcc] = useState(0);
 
-    const [airspeedAccFilter] = useState(() => new LagFilter(1.2));
+    const [airspeedAccFilter] = useState(() => new LagFilter(1.6));
     const [airspeedAccRateLimiter] = useState(() => new RateLimiter(1.2, -1.2));
 
     const [isAttExcessive, setIsAttExcessive] = useState(false);
@@ -61,8 +61,8 @@ export const PFD: React.FC = () => {
         setPreviousAirspeed(clamped);
         setClampedAirspeed(clamped);
 
-        const rateLimitedAirspeedAcc = airspeedAccRateLimiter.step(airspeedAcc, deltaTime / 1000);
-        setfilteredAirspeedAcc(airspeedAccFilter.step(rateLimitedAirspeedAcc, deltaTime / 1000));
+        const filteredAirspeedAcc = airspeedAccFilter.step(airspeedAcc, deltaTime / 1000);
+        setfilteredAirspeedAcc(airspeedAccRateLimiter.step(filteredAirspeedAcc, deltaTime / 1000));
 
         if (isOnGround) {
             setShowSpeedBars(false);
