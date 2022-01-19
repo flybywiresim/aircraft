@@ -70,6 +70,8 @@ export class CpdlcMessage extends AtsuMessage {
         if (format === AtsuMessageSerializationFormat.Network) {
             message = `/data2/${this.CurrentTransmissionId}/${this.PreviousTransmissionId !== -1 ? this.PreviousTransmissionId : ''}/${cpdlcToString(this.RequestedResponses)}`;
             message += `/${this.Lines.join(' ')}`;
+        } else if (format === AtsuMessageSerializationFormat.DCDU || format === AtsuMessageSerializationFormat.MCDU) {
+            message = this.Lines.join('\n');
         } else {
             message = this.Lines.join(' ');
         }
