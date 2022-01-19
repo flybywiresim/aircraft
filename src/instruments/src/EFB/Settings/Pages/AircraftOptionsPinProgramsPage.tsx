@@ -112,7 +112,6 @@ export const AircraftOptionsPinProgramsPage = () => {
                 <SelectGroup>
                     {weightUnitButtons.map((button) => (
                         <SelectItem
-                            enabled
                             onSelect={() => setUsingMetric(button.setting)}
                             selected={usingMetric === button.setting}
                         >
@@ -126,7 +125,6 @@ export const AircraftOptionsPinProgramsPage = () => {
                 <SelectGroup>
                     {paxSignsButtons.map((button) => (
                         <SelectItem
-                            enabled
                             onSelect={() => setPaxSigns(button.setting)}
                             selected={paxSigns === button.setting}
                         >
@@ -140,7 +138,6 @@ export const AircraftOptionsPinProgramsPage = () => {
                 <SelectGroup>
                     {isisBaroButtons.map((button) => (
                         <SelectItem
-                            enabled
                             onSelect={() => setIsisBaro(button.setting)}
                             selected={isisBaro === button.setting}
                         >
@@ -154,7 +151,6 @@ export const AircraftOptionsPinProgramsPage = () => {
                 <SelectGroup>
                     {isisMetricAltitudeButtons.map((button) => (
                         <SelectItem
-                            enabled
                             onSelect={() => setIsisMetricAltitude(button.setting)}
                             selected={isisMetricAltitude === button.setting}
                         >
@@ -168,7 +164,6 @@ export const AircraftOptionsPinProgramsPage = () => {
                 <SelectGroup>
                     {vhfSpacingButtons.map((button) => (
                         <SelectItem
-                            enabled
                             onSelect={() => setVhfSpacing(button.setting)}
                             selected={vhfSpacing === button.setting}
                         >
