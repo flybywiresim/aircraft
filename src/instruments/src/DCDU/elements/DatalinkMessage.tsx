@@ -1,4 +1,4 @@
-import React, { memo, useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { AtsuMessageComStatus, AtsuMessageDirection, AtsuMessageSerializationFormat } from '@atsu/messages/AtsuMessage';
 import { CpdlcMessage } from '@atsu/messages/CpdlcMessage';
 import { MessageVisualization } from './MessageVisualization';
@@ -10,7 +10,7 @@ type DatalinkMessageProps = {
     resetStatus: (sender: string) => void
 }
 
-export const DatalinkMessage: React.FC<DatalinkMessageProps> = memo(({ message, isStatusAvailable, setStatus, resetStatus }) => {
+export const DatalinkMessage: React.FC<DatalinkMessageProps> = ({ message, isStatusAvailable, setStatus, resetStatus }) => {
     const [textBBox, setTextBBox] = useState<DOMRect>();
     const textRef = useRef<SVGTextElement>(null);
 
@@ -40,11 +40,20 @@ export const DatalinkMessage: React.FC<DatalinkMessageProps> = memo(({ message, 
         contentHeight = textBBox?.height + 15;
     }
 
+    // check if highlight is needed
+    let ignoreHighlight = false;
+    if (message.Direction === AtsuMessageDirection.Output) {
+        ignoreHighlight = true;
+    } else if (message.Response !== undefined && (message.Response.ComStatus === AtsuMessageComStatus.Sending || message.Response.ComStatus === AtsuMessageComStatus.Sent)) {
+        ignoreHighlight = true;
+    }
+
     return (
         <g>
             <rect className={backgroundClass} height={contentHeight} x="21" y="59" />
             <MessageVisualization
                 message={message.serialize(AtsuMessageSerializationFormat.DCDU)}
+                ignoreHighlight={ignoreHighlight}
                 cssClass={messageClass}
                 yStart={90}
                 deltaY={30}
@@ -55,4 +64,4 @@ export const DatalinkMessage: React.FC<DatalinkMessageProps> = memo(({ message, 
             />
         </g>
     );
-});
+};

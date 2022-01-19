@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import { useCoherentEvent, useInteractionEvents } from '@instruments/common/hooks';
-import { AtsuMessageComStatus, AtsuMessageType } from '@atsu/messages/AtsuMessage';
-import { CpdlcMessage, CpdlcMessageRequestedResponseType } from '@atsu/messages/CpdlcMessage';
+import { AtsuMessageComStatus, AtsuMessageDirection, AtsuMessageType } from '@atsu/messages/AtsuMessage';
+import { CpdlcMessage, CpdlcMessageRequestedResponseType, CpdlcMessageResponse } from '@atsu/messages/CpdlcMessage';
 import { AffirmNegativeButtons } from './elements/AffirmNegativeButtons';
 import { WilcoUnableButtons } from './elements/WilcoUnableButtons';
 import { RogerButtons } from './elements/RogerButtons';
@@ -291,12 +291,7 @@ const DCDU: React.FC = () => {
                     {(message !== undefined && (
                         <>
                             <MessageStatus
-                                timestamp={message.Timestamp}
-                                direction={message.Direction}
-                                response={message.ResponseType}
-                                comStatus={message.ComStatus}
-                                station={message.Station}
-                                confirmed={message.Confirmed}
+                                message={message}
                             />
                             <DatalinkMessage
                                 message={message}

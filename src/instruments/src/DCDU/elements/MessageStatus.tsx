@@ -1,18 +1,15 @@
-import React, { memo, useEffect, useRef, useState } from 'react';
-import { AtsuMessageComStatus, AtsuMessageDirection, AtsuTimestamp } from '@atsu/messages/AtsuMessage';
-import { CpdlcMessageResponse } from '@atsu/messages/CpdlcMessage';
+import React, { useEffect, useRef, useState } from 'react';
+import { AtsuMessageComStatus, AtsuMessageDirection } from '@atsu/messages/AtsuMessage';
+import { CpdlcMessage, CpdlcMessageRequestedResponseType, CpdlcMessageResponse } from '@atsu/messages/CpdlcMessage';
 
 type MessageStatusProps = {
-    timestamp: AtsuTimestamp | undefined,
-    direction: AtsuMessageDirection | undefined,
-    response: CpdlcMessageResponse | undefined,
-    comStatus: AtsuMessageComStatus,
-    station: string,
-    confirmed: boolean
+    message: CpdlcMessage
 }
 
-const translateStatus = (status: CpdlcMessageResponse | undefined) => {
-    switch (status) {
+const translateStatus = (message: CpdlcMessage) => {
+    const answerExpected = message.RequestedResponses !== CpdlcMessageRequestedResponseType.NotRequired && message.RequestedResponses !== CpdlcMessageRequestedResponseType.No;
+
+    switch (message.ResponseType) {
     case CpdlcMessageResponse.Standby:
         return 'STBY';
     case CpdlcMessageResponse.Wilco:
@@ -28,67 +25,81 @@ const translateStatus = (status: CpdlcMessageResponse | undefined) => {
     case CpdlcMessageResponse.Refuse:
         return 'REFUSE';
     case undefined:
+        if (message.Direction === AtsuMessageDirection.Input && answerExpected) {
+            return 'OPEN';
+        }
+        if (message.ComStatus === AtsuMessageComStatus.Sent) {
+            return 'SENT';
+        }
         return '';
     default:
         return 'UKN';
     }
 };
 
-export const MessageStatus: React.FC<MessageStatusProps> = memo(({ timestamp, direction, response, comStatus, station, confirmed }) => {
-    const [textBBox, setTextBBox] = useState<DOMRect>();
-    const textRef = useRef<SVGTSpanElement>(null);
+export const MessageStatus: React.FC<MessageStatusProps> = ({ message }) => {
+    const [dimension, setDimension] = useState([0, 0]);
+    const textRef = useRef<SVGTextElement>(null);
 
-    useEffect(() => setTextBBox(textRef.current?.getBBox()), []);
+    useEffect(() => {
+        const text = translateStatus(message);
 
-    if (timestamp === undefined) {
-        return <></>;
-    }
+        if (text.length !== 0 && textRef.current?.getBBox() !== undefined) {
+            const width = Math.floor(textRef.current?.getBBox().width / translateStatus(message).length);
+            const height = Math.floor(textRef.current?.getBBox().height);
+            setDimension([width, height]);
+        }
+    }, []);
 
     let statusClass = 'status-message ';
-    if (response === undefined || comStatus === AtsuMessageComStatus.Failed) {
+    if (message.ResponseType === undefined) {
         statusClass += 'status-open';
     } else {
         statusClass += 'status-other';
     }
 
-    const needsBackground = response !== undefined;
-    const backgroundColor = confirmed === true ? 'rgb(0,255,0)' : 'rgb(0,255,255)';
+    let backgroundColor = 'rgba(0,0,0,0)';
+    if (message.Direction === AtsuMessageDirection.Input && message.ResponseType !== undefined) {
+        if (message.Response === undefined || message.Response.ComStatus === AtsuMessageComStatus.Open || message.Response.ComStatus === AtsuMessageComStatus.Failed) {
+            backgroundColor = 'rgb(0,255,255)';
+        } else {
+            backgroundColor = 'rgb(0,255,0)';
+        }
+    }
 
     // calculate the position of the background rectangle
+    const text = translateStatus(message);
     const background = { x: 0, y: 0, width: 0, height: 0 };
-    if (needsBackground === true && textBBox?.width !== undefined && textBBox?.height !== undefined) {
-        background.width = textBBox?.width + 4;
-        background.height = textBBox?.height + 2;
+    if (dimension[0] !== 0 && dimension[1] !== 0) {
+        const width = dimension[0] * text.length;
 
-        background.x = 467 - textBBox?.width;
-        background.y = 37 - textBBox?.height;
+        background.width = width + 6;
+        background.height = dimension[1] + 2;
+
+        background.x = 467 - width;
+        background.y = 39 - dimension[1];
     }
 
     return (
         <g>
             <text className="station" x="21" y="35">
-                {timestamp.dcduTimestamp()}
+                {message.Timestamp?.dcduTimestamp()}
                 {' '}
-                {direction === AtsuMessageDirection.Output ? ' TO ' : ' FROM '}
-                {station}
+                {message.Direction === AtsuMessageDirection.Output ? ' TO ' : ' FROM '}
+                {message.Station}
             </text>
             <>
-                {needsBackground === true && (
-                    <>
-                        <rect
-                            width={background.width}
-                            height={background.height}
-                            fill={backgroundColor}
-                            x={background.x}
-                            y={background.y}
-                        />
-                        <text className={statusClass} x="467" y="35"><tspan ref={textRef}>{translateStatus(response)}</tspan></text>
-                    </>
-                )}
-                {needsBackground === false && (
-                    <text className={statusClass} x="471" y="35">{translateStatus(response)}</text>
-                )}
+                <rect
+                    width={background.width}
+                    height={background.height}
+                    fill={backgroundColor}
+                    x={background.x}
+                    y={background.y}
+                />
+                <text className={statusClass} x="467" y="35" ref={textRef}>
+                    <tspan>{text}</tspan>
+                </text>
             </>
         </g>
     );
-});
+};

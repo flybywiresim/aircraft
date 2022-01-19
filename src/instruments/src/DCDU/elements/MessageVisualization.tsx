@@ -1,8 +1,9 @@
-import React, { useState, memo, RefObject } from 'react';
+import React, { useState, RefObject } from 'react';
 import { useInteractionEvents } from '@instruments/common/hooks.js';
 
 type MessageVisualizationProps = {
     message: string,
+    ignoreHighlight: boolean,
     cssClass: string,
     yStart: number,
     deltaY: number,
@@ -12,7 +13,7 @@ type MessageVisualizationProps = {
     setRef: RefObject<SVGTextElement> | undefined
 }
 
-function visualizeLines(lines: string[], index: number, colorIndex: number, yStart: number, deltaY: number, highlightActive: boolean, deltaYActive: boolean) {
+function visualizeLines(lines: string[], index: number, colorIndex: number, yStart: number, deltaY: number, highlightActive: boolean, deltaYActive: boolean, ignoreHighlight: boolean) {
     if (lines.length <= index) {
         return <></>;
     }
@@ -20,7 +21,7 @@ function visualizeLines(lines: string[], index: number, colorIndex: number, ySta
     let elements = lines[index].split('@');
     elements = elements.filter((e) => e);
     if (elements.length <= colorIndex) {
-        return visualizeLines(lines, index + 1, 0, yStart, deltaY, highlightActive, true);
+        return visualizeLines(lines, index + 1, 0, yStart, deltaY, highlightActive, true, ignoreHighlight);
     }
 
     // first line
@@ -28,7 +29,7 @@ function visualizeLines(lines: string[], index: number, colorIndex: number, ySta
         return (
             <>
                 <tspan x="28" y={yStart}>{elements[0]}</tspan>
-                {visualizeLines(lines, index, colorIndex + 1, yStart, deltaY, highlightActive, false)}
+                {visualizeLines(lines, index, colorIndex + 1, yStart, deltaY, highlightActive, false, ignoreHighlight)}
             </>
         );
     }
@@ -40,11 +41,11 @@ function visualizeLines(lines: string[], index: number, colorIndex: number, ySta
 
     // started with a new line
     if (deltaYActive) {
-        if (!highlightActive) {
+        if (!highlightActive || ignoreHighlight) {
             return (
                 <>
                     <tspan x="28" dy={deltaY}>{elements[colorIndex]}</tspan>
-                    {visualizeLines(lines, index, colorIndex + 1, yStart, deltaY, highlightActive, false)}
+                    {visualizeLines(lines, index, colorIndex + 1, yStart, deltaY, highlightActive, false, ignoreHighlight)}
                 </>
             );
         }
@@ -52,17 +53,17 @@ function visualizeLines(lines: string[], index: number, colorIndex: number, ySta
         return (
             <>
                 <tspan x="28" dy={deltaY} className="message-highlight">{elements[colorIndex]}</tspan>
-                {visualizeLines(lines, index, colorIndex + 1, yStart, deltaY, highlightActive, false)}
+                {visualizeLines(lines, index, colorIndex + 1, yStart, deltaY, highlightActive, false, ignoreHighlight)}
             </>
         );
     }
 
     // handling splits inside the line
-    if (!highlightActive) {
+    if (!highlightActive || ignoreHighlight) {
         return (
             <>
                 <tspan>{elements[colorIndex]}</tspan>
-                {visualizeLines(lines, index, colorIndex + 1, yStart, deltaY, highlightActive, false)}
+                {visualizeLines(lines, index, colorIndex + 1, yStart, deltaY, highlightActive, false, ignoreHighlight)}
             </>
         );
     }
@@ -70,12 +71,12 @@ function visualizeLines(lines: string[], index: number, colorIndex: number, ySta
     return (
         <>
             <tspan className="message-highlight">{elements[colorIndex]}</tspan>
-            {visualizeLines(lines, index, colorIndex + 1, yStart, deltaY, highlightActive, false)}
+            {visualizeLines(lines, index, colorIndex + 1, yStart, deltaY, highlightActive, false, ignoreHighlight)}
         </>
     );
 }
 
-export const MessageVisualization: React.FC<MessageVisualizationProps> = memo(({ message, cssClass, yStart, deltaY, isStatusAvailable, setStatus, resetStatus, setRef }) => {
+export const MessageVisualization: React.FC<MessageVisualizationProps> = ({ message, ignoreHighlight, cssClass, yStart, deltaY, isStatusAvailable, setStatus, resetStatus, setRef }) => {
     const [pageIndex, setPageIndex] = useState(0);
     const [pageCount, setPageCount] = useState(0);
     const maxLines = 5;
@@ -140,12 +141,12 @@ export const MessageVisualization: React.FC<MessageVisualizationProps> = memo(({
         <>
             {setRef !== undefined && (
                 <text className={cssClass} ref={setRef}>
-                    {visualizeLines(lines, 0, 0, yStart, deltaY, false, false)}
+                    {visualizeLines(lines, 0, 0, yStart, deltaY, false, false, ignoreHighlight)}
                 </text>
             )}
             {setRef === undefined && (
                 <text className={cssClass}>
-                    {visualizeLines(lines, 0, 0, yStart, deltaY, false, false)}
+                    {visualizeLines(lines, 0, 0, yStart, deltaY, false, false, ignoreHighlight)}
                 </text>
             )}
             {pageCount > 1 && (
@@ -162,4 +163,4 @@ export const MessageVisualization: React.FC<MessageVisualizationProps> = memo(({
             )}
         </>
     );
-});
+};

@@ -9,6 +9,7 @@ export const AtcStatus: React.FC<AtcStatusProps> = memo(({ message }) => (
     <>
         <MessageVisualization
             message={message}
+            ignoreHighlight={false}
             cssClass="atc-info"
             yStart={100}
             deltaY={30}
