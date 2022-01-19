@@ -50,7 +50,7 @@ path.dcdu-line {
 }
 
 .status-other {
-  fill: black;
+  fill: rgb(0, 0, 0);
 }
 
 .status-atsu {
@@ -70,11 +70,11 @@ path.dcdu-line {
 }
 
 .message-sent {
-  fill: green;
+  fill: rgb(0, 255, 0);
 }
 
 .atc-info {
-  fill: green;
+  fill: rgb(0, 255, 0);
   font-size: 22px;
   font-family: Roboto;
   font-weight: bold;
@@ -85,10 +85,17 @@ path.dcdu-line {
 }
 
 .message-content {
-  fill: rgb(0,0,0);
   font-size: 22px;
   font-family: Roboto;
   font-weight: bold;
+}
+
+.message-content-out {
+  fill: rgb(0,0,0);
+}
+
+.message-content-in {
+  fill: rgb(0,255,0);
 }
 
 .startup-text {

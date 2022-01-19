@@ -26,19 +26,26 @@ export const DatalinkMessage: React.FC<DatalinkMessageProps> = memo(({ message, 
         }
     }
 
+    // define the text color
+    let messageClass = 'message-content';
+    if (message.Direction === AtsuMessageDirection.Output) {
+        messageClass += ' message-content-out';
+    } else {
+        messageClass += ' message-content-in';
+    }
+
     // calculate the position of the background rectangle
     let contentHeight = 2;
     if (textBBox?.width !== undefined && textBBox?.height !== undefined) {
         contentHeight = textBBox?.height + 15;
     }
-    console.log(message.Lines);
 
     return (
         <g>
             <rect className={backgroundClass} height={contentHeight} x="21" y="59" />
             <MessageVisualization
                 message={message.serialize(AtsuMessageSerializationFormat.DCDU)}
-                cssClass="message-content"
+                cssClass={messageClass}
                 yStart={90}
                 deltaY={30}
                 isStatusAvailable={isStatusAvailable}
