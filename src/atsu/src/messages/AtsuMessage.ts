@@ -69,8 +69,10 @@ export class AtsuMessage {
     public deserialize(jsonData) {
         this.Network = jsonData.Network;
         this.UniqueMessageID = jsonData.UniqueMessageID;
-        this.Timestamp = new AtsuTimestamp();
-        this.Timestamp.deserialize(jsonData.Timestamp);
+        if (jsonData.Timestamp !== undefined) {
+            this.Timestamp = new AtsuTimestamp();
+            this.Timestamp.deserialize(jsonData.Timestamp);
+        }
         this.Station = jsonData.Station;
         this.ComStatus = jsonData.ComStatus;
         this.Type = jsonData.Type;
