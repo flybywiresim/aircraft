@@ -1,29 +1,29 @@
 import { usePersistentNumberProperty } from '@instruments/common/persistence';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, PropsWithChildren } from 'react';
 import { KeyboardWrapper } from '../../KeyboardWrapper';
 
-type SimpleInputProps = {
-    label?: string,
-    placeholder?: string,
+interface SimpleInputProps {
+    label?: string;
+    placeholder?: string;
     labelPosition?: 'col' | 'row';
-    value?: any,
-    onChange?: (value: string) => void,
-    onFocus?: (value: string) => void,
+    value?: any;
+    onChange?: (value: string) => void;
+    onFocus?: (value: string) => void;
     onBlur?: (value: string) => void
-    min?: number,
-    max?: number,
-    number?: boolean,
-    noLeftMargin?: boolean,
-    padding?: number,
-    decimalPrecision?: number,
-    reverse?: boolean, // Flip label/input order,
-    className?: string,
-    maxLength?: number,
-    noLabel?: boolean,
-    disabled?: boolean,
-};
+    min?: number;
+    max?: number;
+    number?: boolean;
+    noLeftMargin?: boolean;
+    padding?: number;
+    decimalPrecision?: number;
+    reverse?: boolean; // Flip label/input order;
+    className?: string;
+    maxLength?: number;
+    noLabel?: boolean;
+    disabled?: boolean;
+}
 
-const SimpleInput = (props: SimpleInputProps) => {
+const SimpleInput = (props: PropsWithChildren<SimpleInputProps>) => {
     const [displayValue, setDisplayValue] = useState<string>(props.value?.toString() ?? '');
     const [focused, setFocused] = useState(false);
 
@@ -38,7 +38,7 @@ const SimpleInput = (props: SimpleInputProps) => {
         if (keyboard.current) {
             keyboard.current.setInput(displayValue);
         }
-    }, [keyboard.current]);
+    }, [keyboard.current, OSKOpen]);
 
     useEffect(() => {
         if (props.value === undefined || props.value === '') {
@@ -51,15 +51,18 @@ const SimpleInput = (props: SimpleInputProps) => {
         setDisplayValue(getConstrainedValue(props.value));
     }, [props.value]);
 
-    const onChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
+    const onChange = (value: string): void => {
         if (!props.disabled) {
-            let originalValue = event.currentTarget.value;
+            let originalValue = value;
 
             if (props.number) {
                 originalValue = originalValue.replace(/[^\d.-]/g, ''); // Replace all non-numeric characters
             }
 
             props.onChange?.(originalValue);
+            if (keyboard.current) {
+                keyboard.current.setInput(originalValue);
+            }
             setDisplayValue(originalValue);
         }
     };
@@ -137,6 +140,7 @@ const SimpleInput = (props: SimpleInputProps) => {
 
     function onChangeAll(newInput) {
         setDisplayValue(newInput.default);
+        onChange(newInput.default);
     }
 
     const Input = (
@@ -145,7 +149,7 @@ const SimpleInput = (props: SimpleInputProps) => {
             border-2 border-theme-accent focus-within:outline-none focus-within:border-theme-highlight ${props.className}`}
             value={displayValue}
             placeholder={props.placeholder ?? ''}
-            onChange={onChange}
+            onChange={(e) => onChange(e.target.value)}
             onFocus={onFocus}
             onBlur={onFocusOut}
             maxLength={props.maxLength}
@@ -171,15 +175,9 @@ const SimpleInput = (props: SimpleInputProps) => {
                         </div>
                     </>
                 )}
-            {OSKOpen
-                && (
-                    <div
-                        className="fixed inset-x-0 bottom-0 z-50"
-                        onMouseDown={(e) => e.preventDefault()}
-                    >
-                        <KeyboardWrapper keyboardRef={keyboard} onChangeAll={(v) => onChangeAll(v)} setOpen={setOSKOpen} inputRef={inputRef} />
-                    </div>
-                )}
+            {OSKOpen && (
+                <KeyboardWrapper keyboardRef={keyboard} onChangeAll={(v) => onChangeAll(v)} setOpen={setOSKOpen} inputRef={inputRef} />
+            )}
         </>
     );
 };

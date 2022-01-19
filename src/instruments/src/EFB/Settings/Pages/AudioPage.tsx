@@ -1,6 +1,7 @@
 import React from 'react';
 
 import { usePersistentNumberProperty } from '@instruments/common/persistence';
+import SimpleInput from '../../Components/Form/SimpleInput/SimpleInput';
 import { Toggle } from '../../Components/Form/Toggle';
 import { Slider } from '../../Components/Form/Slider';
 import { SettingItem, SettingsPage } from '../Settings';
@@ -18,23 +19,44 @@ export const AudioPage = () => {
             </SettingItem>
 
             <SettingItem name="Exterior Master Volume">
-                <div className="flex flex-row items-center">
-                    <span className="pr-3 text-base">{exteriorVolume}</span>
+                <div className="flex flex-row gap-x-4 items-center">
                     <Slider className="w-96" value={exteriorVolume + 50} onInput={(value) => setExteriorVolume(value - 50)} />
+                    <SimpleInput
+                        min={1}
+                        max={100}
+                        value={exteriorVolume + 50}
+                        className="w-20 text-center"
+                        onChange={(value) => setExteriorVolume(Number.parseInt(value) - 50)}
+                        number
+                    />
                 </div>
             </SettingItem>
 
             <SettingItem name="Engine Interior Volume">
-                <div className="flex flex-row items-center">
-                    <span className="pr-3 text-base">{engineVolume}</span>
+                <div className="flex flex-row gap-x-4 items-center">
                     <Slider className="w-96" value={engineVolume + 50} onInput={(value) => setEngineVolume(value - 50)} />
+                    <SimpleInput
+                        min={1}
+                        max={100}
+                        value={engineVolume + 50}
+                        className="w-20 text-center"
+                        onChange={(value) => setEngineVolume(Number.parseInt(value) - 50)}
+                        number
+                    />
                 </div>
             </SettingItem>
 
             <SettingItem name="Wind Interior Volume">
-                <div className="flex flex-row items-center">
-                    <span className="pr-3 text-base">{windVolume}</span>
+                <div className="flex flex-row gap-x-4 items-center">
                     <Slider className="w-96" value={windVolume + 50} onInput={(value) => setWindVolume(value - 50)} />
+                    <SimpleInput
+                        min={1}
+                        max={100}
+                        value={windVolume + 50}
+                        className="w-20 text-center"
+                        onChange={(value) => setWindVolume(Number.parseInt(value) - 50)}
+                        number
+                    />
                 </div>
             </SettingItem>
         </SettingsPage>

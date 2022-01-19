@@ -64,7 +64,7 @@ export const AtsuAocPage = () => {
 
     const handleUsernameInput = (value: string) => {
         getSimbriefUserId(value).then((response) => {
-            toast.success(`Your SimBrief PilotID has been validated and updated to ${response}.`);
+            toast.success(`Your SimBrief PilotID has been validated and updated to ${response}`);
 
             setSimbriefUserId(response);
             setSimbriefDisplay(response);
