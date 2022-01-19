@@ -94,7 +94,6 @@ export class AtcSystem {
             if (message === '') {
                 this.station = '';
                 this.nextStation = '';
-                this.stationMessage = '';
             }
             return message;
         });
