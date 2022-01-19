@@ -12,6 +12,10 @@ export const AtcStatus: React.FC<AtcStatusProps> = memo(({ message }) => (
             cssClass="atc-info"
             yStart={100}
             deltaY={30}
+            isStatusAvailable={undefined}
+            setStatus={undefined}
+            resetStatus={undefined}
+            setRef={undefined}
         />
     </>
 ));

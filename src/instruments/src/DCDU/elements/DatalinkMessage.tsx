@@ -1,7 +1,7 @@
-import React, { useState, memo } from 'react';
+import React, { memo, useRef, useState, useEffect } from 'react';
 import { AtsuMessageComStatus, AtsuMessageDirection, AtsuMessageSerializationFormat } from '@atsu/messages/AtsuMessage';
 import { CpdlcMessage } from '@atsu/messages/CpdlcMessage';
-import { useInteractionEvents } from '@instruments/common/hooks.js';
+import { MessageVisualization } from './MessageVisualization';
 
 type DatalinkMessageProps = {
     message: CpdlcMessage,
@@ -11,60 +11,10 @@ type DatalinkMessageProps = {
 }
 
 export const DatalinkMessage: React.FC<DatalinkMessageProps> = memo(({ message, isStatusAvailable, setStatus, resetStatus }) => {
-    const [pageIndex, setPageIndex] = useState(0);
-    const [pageCount, setPageCount] = useState(0);
-    const maxLines = 5;
+    const [textBBox, setTextBBox] = useState<DOMRect>();
+    const textRef = useRef<SVGTextElement>(null);
 
-    useInteractionEvents(['A32NX_DCDU_BTN_MPL_POEMINUS', 'A32NX_DCDU_BTN_MPR_POEMINUS'], () => {
-        if (pageCount === 0) {
-            return;
-        }
-
-        if (pageIndex > 0) {
-            resetStatus('DatalinkMessage');
-            setPageIndex(pageIndex - 1);
-        } else if (isStatusAvailable('DatalinkMessage') === true) {
-            setStatus('DatalinkMessage', 'NO MORE PGE');
-        }
-    });
-    useInteractionEvents(['A32NX_DCDU_BTN_MPL_POEPLUS', 'A32NX_DCDU_BTN_MPR_POEPLUS'], () => {
-        if (pageCount === 0) {
-            return;
-        }
-
-        if (pageCount > pageIndex + 1) {
-            resetStatus('DatalinkMessage');
-            setPageIndex(pageIndex + 1);
-        } else if (isStatusAvailable('DatalinkMessage') === true) {
-            setStatus('DatalinkMessage', 'NO MORE PGE');
-        }
-    });
-
-    // get the number of pages
-    let lines = message.serialize(AtsuMessageSerializationFormat.DCDU).split(/\r?\n/);
-    lines = lines.filter((e) => e);
-    const messagePageCount = Math.ceil(lines.length / maxLines);
-    if (messagePageCount !== pageCount) {
-        setPageCount(messagePageCount);
-        setPageIndex(0);
-    }
-
-    // no text defined
-    if (pageCount === 0) {
-        return <></>;
-    }
-
-    // get the indices
-    const startIndex = pageIndex * maxLines;
-    const endIndex = Math.min(startIndex + maxLines, lines.length - startIndex);
-
-    // get the start line and the other lines
-    const startLine = lines[startIndex];
-    lines = lines.slice(startIndex + 1, endIndex);
-
-    // calculate the height used by the required lines
-    // one line has 32px and the minimum height is 2px
-    const contentHeight = 32 * (lines.length + 1) + 2;
+    useEffect(() => setTextBBox(textRef.current?.getBBox()), []);
 
     // define the correct background color
     let backgroundClass = 'message-background';
@@ -76,25 +26,26 @@ export const DatalinkMessage: React.FC<DatalinkMessageProps> = memo(({ message, 
         }
     }
 
+    // calculate the position of the background rectangle
+    let contentHeight = 2;
+    if (textBBox?.width !== undefined && textBBox?.height !== undefined) {
+        contentHeight = textBBox?.height + 15;
+    }
+    console.log(message.Lines);
+
     return (
         <g>
             <rect className={backgroundClass} height={contentHeight} x="21" y="59" />
-            <text className="message-content">
-                <tspan x="28" y="90">{startLine}</tspan>
-                {lines.map((line) => (<tspan x="28" dy="30">{line}</tspan>))}
-            </text>
-            {pageCount > 1 && (
-                <>
-                    <text className="status-atsu" x="65%" y="310">PG</text>
-                    <text className="status-atsu" x="65%" y="340">
-                        {pageIndex + 1}
-                        {' '}
-                        /
-                        {' '}
-                        {pageCount}
-                    </text>
-                </>
-            )}
+            <MessageVisualization
+                message={message.serialize(AtsuMessageSerializationFormat.DCDU)}
+                cssClass="message-content"
+                yStart={90}
+                deltaY={30}
+                isStatusAvailable={isStatusAvailable}
+                setStatus={setStatus}
+                resetStatus={resetStatus}
+                setRef={textRef}
+            />
         </g>
     );
 });
