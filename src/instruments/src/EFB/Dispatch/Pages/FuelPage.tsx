@@ -406,9 +406,9 @@ export const FuelPage = () => {
                 <div className="flex overflow-x-hidden absolute right-6 bottom-0 flex-row justify-between items-center py-3 px-6 space-x-14 rounded-2xl border shadow-lg border-theme-accent">
                     <h2 className="font-medium">Refuel Time</h2>
                     <SelectGroup>
-                        <SelectItem enabled selected={isAirplaneCnD() ? refuelRate === '2' : !isAirplaneCnD()} onSelect={() => setRefuelRate('2')}>Instant</SelectItem>
-                        <SelectItem enabled={isAirplaneCnD()} selected={refuelRate === '1'} onSelect={() => setRefuelRate('1')}>Fast</SelectItem>
-                        <SelectItem enabled={isAirplaneCnD()} selected={refuelRate === '0'} onSelect={() => setRefuelRate('0')}>Real</SelectItem>
+                        <SelectItem selected={isAirplaneCnD() ? refuelRate === '2' : !isAirplaneCnD()} onSelect={() => setRefuelRate('2')}>Instant</SelectItem>
+                        <SelectItem disabled={!isAirplaneCnD()} selected={refuelRate === '1'} onSelect={() => setRefuelRate('1')}>Fast</SelectItem>
+                        <SelectItem disabled={!isAirplaneCnD()} selected={refuelRate === '0'} onSelect={() => setRefuelRate('0')}>Real</SelectItem>
                     </SelectGroup>
                 </div>
             </div>
