@@ -1702,7 +1702,7 @@ impl A320HydraulicBrakeSteerComputerUnit {
                 .get_identifier("RIGHT_BRAKE_PEDAL_INPUT".to_owned()),
 
             ground_speed_id: context.get_identifier("GPS GROUND SPEED".to_owned()),
-            rudder_pedal_input_id: context.get_identifier("RUDDER_PEDAL_POSITION".to_owned()),
+            rudder_pedal_input_id: context.get_identifier("RUDDER_PEDAL_POSITION_RATIO".to_owned()),
             tiller_handle_input_id: context.get_identifier("TILLER_HANDLE_POSITION".to_owned()),
             tiller_pedal_disconnect_id: context
                 .get_identifier("TILLER_PEDAL_DISCONNECT".to_owned()),
@@ -1963,9 +1963,9 @@ impl SimulationElement for A320HydraulicBrakeSteerComputerUnit {
         self.is_gear_lever_down = reader.read(&self.gear_handle_position_id);
         self.anti_skid_activated = reader.read(&self.antiskid_brakes_active_id);
         self.left_brake_pilot_input =
-            Ratio::new::<ratio>(reader.read(&self.left_brake_pedal_input_id));
+            Ratio::new::<percent>(reader.read(&self.left_brake_pedal_input_id));
         self.right_brake_pilot_input =
-            Ratio::new::<ratio>(reader.read(&self.right_brake_pedal_input_id));
+            Ratio::new::<percent>(reader.read(&self.right_brake_pedal_input_id));
 
         self.tiller_handle_position =
             Ratio::new::<ratio>(reader.read(&self.tiller_handle_input_id));
@@ -3567,17 +3567,13 @@ mod tests {
                     .air_press_nominal()
             }
 
-            fn set_left_brake(self, position_percent: Ratio) -> Self {
-                self.set_brake("LEFT_BRAKE_PEDAL_INPUT", position_percent)
+            fn set_left_brake(mut self, position: Ratio) -> Self {
+                self.write_by_name("LEFT_BRAKE_PEDAL_INPUT", position);
+                self
             }
 
-            fn set_right_brake(self, position_percent: Ratio) -> Self {
-                self.set_brake("RIGHT_BRAKE_PEDAL_INPUT", position_percent)
-            }
-
-            fn set_brake(mut self, name: &str, position_percent: Ratio) -> Self {
-                let scaled_value = position_percent.get::<ratio>();
-                self.write_by_name(name, scaled_value.min(1.).max(0.));
+            fn set_right_brake(mut self, position: Ratio) -> Self {
+                self.write_by_name("RIGHT_BRAKE_PEDAL_INPUT", position);
                 self
             }
 
