@@ -20,7 +20,7 @@ const GraduationElement = (speed: number, offset: number) => {
     return (
         <g transform={`translate(0 ${offset})`}>
             <path className="NormalStroke White" d="m19.031 80.818h-2.8206" />
-            <text className="FontMedium MiddleAlign White" x="7.7348943" y="82.936722">{text}</text>
+            <text className="FontMedium MiddleAlign White" x="8.0348943" y="82.936722">{text}</text>
         </g>
     );
 };
@@ -45,14 +45,14 @@ const GreenDotBugElement = (offset: number) => (
 const FlapRetractBugElement = (offset: number) => (
     <g id="FlapsSlatsBug" transform={`translate(0 ${offset})`}>
         <path className="NormalStroke Green" d="m19.031 80.82h3.8279" />
-        <text className="FontLarge MiddleAlign Green" x="27.236509" y="83.327988">F</text>
+        <text className="FontLarge MiddleAlign Green" x="27.536509" y="83.327988">F</text>
     </g>
 );
 
 const SlatRetractBugElement = (offset: number) => (
     <g id="FlapsSlatsBug" transform={`translate(0 ${offset})`}>
         <path className="NormalStroke Green" d="m19.031 80.82h3.8279" />
-        <text className="FontLarge MiddleAlign Green" x="27.236509" y="83.327988">S</text>
+        <text className="FontLarge MiddleAlign Green" x="27.536509" y="83.327988">S</text>
     </g>
 );
 
@@ -226,11 +226,11 @@ const SpeedTarget = ({ airspeed, targetSpeed, isManaged }) => {
     const text = Math.round(targetSpeed).toString().padStart(3, '0');
     if (airspeed - targetSpeed > DisplayRange) {
         return (
-            <text id="SelectedSpeedLowerText" className={`FontSmallest EndAlign ${color}`} x="23.994415" y="128.3132">{text}</text>
+            <text id="SelectedSpeedLowerText" className={`FontSmallest EndAlign ${color}`} x="24.078989" y="128.27917">{text}</text>
         );
     } if (airspeed - targetSpeed < -DisplayRange) {
         return (
-            <text id="SelectedSpeedLowerText" className={`FontSmallest EndAlign ${color}`} x="23.994289" y="36.750431">{text}</text>
+            <text id="SelectedSpeedLowerText" className={`FontSmallest EndAlign ${color}`} x="24.113895" y="36.670692">{text}</text>
         );
     }
     const offset = (airspeed - targetSpeed) * DistanceSpacing / ValueSpacing;
@@ -276,14 +276,14 @@ export const MachNumber = ({ mach }: MachNumberProps) => {
     }
 
     return (
-        <text id="CurrentMachText" className="FontLargest StartAlign Green" x="5.4257932" y="136.88908">{`.${machPermille}`}</text>
+        <text id="CurrentMachText" className="FontLargest StartAlign Green" x="5.566751" y="137.03004">{`.${machPermille}`}</text>
     );
 };
 
 const V1Offtape = ({ airspeed, v1 }) => {
     if (v1 - airspeed > DisplayRange) {
         return (
-            <text id="V1SpeedText" className="FontTiny Cyan" x="21.144159" y="43.103134">{Math.round(v1)}</text>
+            <text id="V1SpeedText" className="FontTiny Cyan" x="21.271021" y="43.23">{Math.round(v1)}</text>
         );
     }
     return null;
