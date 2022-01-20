@@ -57,19 +57,25 @@ export const WilcoUnableButtons: React.FC<WilcoUnableButtonsProps> = ({ message,
                         messageId={message.UniqueMessageID}
                         index="L1"
                         content={`${modifiable ? '*' : ''}UNABLE`}
-                        clicked={clicked}
+                        clickShowTime={1000}
+                        clickEventDelay={1000}
+                        clickedCallback={clicked}
                     />
                     <Button
                         messageId={message.UniqueMessageID}
                         index="R1"
                         content={`STBY${modifiable ? '*' : ''}`}
-                        clicked={clicked}
+                        clickShowTime={1000}
+                        clickEventDelay={1000}
+                        clickedCallback={clicked}
                     />
                     <Button
                         messageId={message.UniqueMessageID}
                         index="R2"
                         content={`WILCO${modifiable ? '*' : ''}`}
-                        clicked={clicked}
+                        clickShowTime={1000}
+                        clickEventDelay={1000}
+                        clickedCallback={clicked}
                     />
                 </>
             )}
@@ -79,13 +85,17 @@ export const WilcoUnableButtons: React.FC<WilcoUnableButtonsProps> = ({ message,
                         messageId={message.UniqueMessageID}
                         index="L1"
                         content={`${modifiable ? '*' : ''}UNABLE`}
-                        clicked={clicked}
+                        clickShowTime={1000}
+                        clickEventDelay={1000}
+                        clickedCallback={clicked}
                     />
                     <Button
                         messageId={message.UniqueMessageID}
                         index="R2"
                         content={`WILCO${modifiable ? '*' : ''}`}
-                        clicked={clicked}
+                        clickShowTime={1000}
+                        clickEventDelay={1000}
+                        clickedCallback={clicked}
                     />
                 </>
             )}
@@ -95,13 +105,17 @@ export const WilcoUnableButtons: React.FC<WilcoUnableButtonsProps> = ({ message,
                         messageId={message.UniqueMessageID}
                         index="L1"
                         content={`${modifiable ? '*' : ''}CANCEL`}
-                        clicked={clicked}
+                        clickShowTime={1000}
+                        clickEventDelay={1000}
+                        clickedCallback={clicked}
                     />
                     <Button
                         messageId={message.UniqueMessageID}
                         index="R2"
                         content={`SEND${modifiable ? '*' : ''}`}
-                        clicked={clicked}
+                        clickShowTime={-1}
+                        clickEventDelay={-1}
+                        clickedCallback={clicked}
                     />
                 </>
             )}
@@ -110,7 +124,9 @@ export const WilcoUnableButtons: React.FC<WilcoUnableButtonsProps> = ({ message,
                     messageId={message.UniqueMessageID}
                     index="R2"
                     content="CLOSE*"
-                    clicked={clicked}
+                    clickShowTime={1000}
+                    clickEventDelay={1000}
+                    clickedCallback={clicked}
                 />
             )}
         </>

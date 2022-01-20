@@ -118,7 +118,14 @@ path.dcdu-line {
   font-family: arial;
   font-weight: bold;
   font-family: Roboto;
+}
+
+.button-color {
   fill: rgb(0,255,255);
+}
+
+.button-color-clicked {
+  fill: rgb(0, 0, 0);
 }
 
 .button-left {

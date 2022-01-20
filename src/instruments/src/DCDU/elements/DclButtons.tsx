@@ -44,13 +44,17 @@ export const DclButtons: React.FC<DclButtonsProps> = ({ message, setStatus, isSt
                         messageId={message.UniqueMessageID}
                         index="L1"
                         content="*CANCEL"
-                        clicked={clicked}
+                        clickShowTime={1000}
+                        clickEventDelay={1000}
+                        clickedCallback={clicked}
                     />
                     <Button
                         messageId={message.UniqueMessageID}
                         index="R2"
                         content="SEND*"
-                        clicked={clicked}
+                        clickShowTime={-1}
+                        clickEventDelay={-1}
+                        clickedCallback={clicked}
                     />
                 </>
             )}
@@ -59,7 +63,9 @@ export const DclButtons: React.FC<DclButtonsProps> = ({ message, setStatus, isSt
                     messageId={message.UniqueMessageID}
                     index="R2"
                     content="CLOSE*"
-                    clicked={clicked}
+                    clickShowTime={1000}
+                    clickEventDelay={1000}
+                    clickedCallback={clicked}
                 />
             )}
         </>
