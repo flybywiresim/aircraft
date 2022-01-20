@@ -22,6 +22,8 @@ const translateStatus = (message: CpdlcMessage) => {
         return 'UNABLE';
     case CpdlcMessageResponse.Acknowledge:
         return 'ACK';
+    case CpdlcMessageResponse.Affirm:
+        return 'AFFIRM';
     case CpdlcMessageResponse.Refuse:
         return 'REFUSE';
     case undefined:
