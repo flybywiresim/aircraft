@@ -62,7 +62,7 @@ export const AffirmNegativeButtons: React.FC<AffirmNegativeButtonsProps> = ({ me
                     <Button
                         messageId={message.UniqueMessageID}
                         index="L1"
-                        content="*NEGATIVE"
+                        content="*NEGATV"
                         active
                         clickShowTime={1000}
                         clickEventDelay={1000}
