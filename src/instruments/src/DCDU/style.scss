@@ -80,6 +80,11 @@ path.dcdu-line {
   font-weight: bold;
 }
 
+.message-tspan {
+  display: block;
+  white-space: pre;
+}
+
 .message-highlight {
   fill: rgb(0, 255, 255);
 }

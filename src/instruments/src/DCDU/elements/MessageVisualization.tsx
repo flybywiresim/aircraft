@@ -1,5 +1,15 @@
-import React, { useState, RefObject } from 'react';
+import React, { useState, RefObject, memo } from 'react';
 import { useInteractionEvents } from '@instruments/common/hooks.js';
+
+interface ColorizedWord {
+    word: string;
+    highlight: boolean;
+}
+
+interface ColorizedLine {
+    length: number;
+    words: ColorizedWord[];
+}
 
 type MessageVisualizationProps = {
     message: string,
@@ -13,70 +23,144 @@ type MessageVisualizationProps = {
     setRef: RefObject<SVGTextElement> | undefined
 }
 
-function visualizeLines(lines: string[], index: number, colorIndex: number, yStart: number, deltaY: number, highlightActive: boolean, deltaYActive: boolean, ignoreHighlight: boolean) {
-    if (lines.length <= index) {
+function visualizeLine(line: ColorizedWord[], startIdx: number, startY: number, deltaY: number, useDeltaY: boolean, ignoreHighlight: boolean) {
+    if (startIdx >= line.length) {
         return <></>;
     }
 
-    let elements = lines[index].split('@');
-    elements = elements.filter((e) => e);
-    if (elements.length <= colorIndex) {
-        return visualizeLines(lines, index + 1, 0, yStart, deltaY, highlightActive, true, ignoreHighlight);
+    const highlight = line[startIdx].highlight && !ignoreHighlight;
+    let className = 'message-tspan';
+    if (highlight) {
+        className = ' message-highlight';
+    }
+    let nextIdx = line.length;
+    let message = '';
+
+    for (let i = startIdx; i < line.length; ++i) {
+        message += `${line[i].word}\xa0`;
+        if (i + 1 < line.length && line[i].highlight !== line[i + 1].highlight) {
+            nextIdx = i + 1;
+            break;
+        }
     }
 
-    // first line
-    if (index === 0 && colorIndex === 0) {
-        return (
-            <>
-                <tspan x="28" y={yStart}>{elements[0]}</tspan>
-                {visualizeLines(lines, index, colorIndex + 1, yStart, deltaY, highlightActive, false, ignoreHighlight)}
-            </>
-        );
-    }
-
-    // have a new color change
-    if (colorIndex !== 0) {
-        highlightActive = !highlightActive;
-    }
-
-    // started with a new line
-    if (deltaYActive) {
-        if (!highlightActive || ignoreHighlight) {
+    if (startIdx === 0) {
+        if (useDeltaY) {
             return (
                 <>
-                    <tspan x="28" dy={deltaY}>{elements[colorIndex]}</tspan>
-                    {visualizeLines(lines, index, colorIndex + 1, yStart, deltaY, highlightActive, false, ignoreHighlight)}
+                    <tspan x="28" dy={deltaY} className={className}>{message}</tspan>
+                    {visualizeLine(line, nextIdx, startY, deltaY, useDeltaY, ignoreHighlight)}
                 </>
             );
         }
-
         return (
             <>
-                <tspan x="28" dy={deltaY} className="message-highlight">{elements[colorIndex]}</tspan>
-                {visualizeLines(lines, index, colorIndex + 1, yStart, deltaY, highlightActive, false, ignoreHighlight)}
+                <tspan x="28" y={startY} className={className}>{message}</tspan>
+                {visualizeLine(line, nextIdx, startY, deltaY, useDeltaY, ignoreHighlight)}
             </>
         );
     }
 
-    // handling splits inside the line
-    if (!highlightActive || ignoreHighlight) {
-        return (
-            <>
-                <tspan>{elements[colorIndex]}</tspan>
-                {visualizeLines(lines, index, colorIndex + 1, yStart, deltaY, highlightActive, false, ignoreHighlight)}
-            </>
-        );
-    }
-
+    // no new line
     return (
         <>
-            <tspan className="message-highlight">{elements[colorIndex]}</tspan>
-            {visualizeLines(lines, index, colorIndex + 1, yStart, deltaY, highlightActive, false, ignoreHighlight)}
+            <tspan className={className}>{message}</tspan>
+            {visualizeLine(line, nextIdx, startY, deltaY, useDeltaY, ignoreHighlight)}
         </>
     );
 }
 
-export const MessageVisualization: React.FC<MessageVisualizationProps> = ({ message, ignoreHighlight, cssClass, yStart, deltaY, isStatusAvailable, setStatus, resetStatus, setRef }) => {
+function visualizeLines(lines: ColorizedLine[], yStart: number, deltaY: number, ignoreHighlight: boolean) {
+    if (lines.length === 0) {
+        return <></>;
+    }
+
+    const firstLine = lines[0];
+    lines.shift();
+
+    return (
+        <>
+            {visualizeLine(firstLine.words, 0, yStart, deltaY, false, ignoreHighlight)}
+            {lines.map((line) => visualizeLine(line.words, 0, yStart, deltaY, true, ignoreHighlight))}
+        </>
+    );
+}
+
+function colorizeWords(message: string): ColorizedWord[] {
+    const words: ColorizedWord[] = [];
+    message = message.replace(/\n/gi, ' ');
+
+    let highlightColor = false;
+    message.split(' ').forEach((word) => {
+        /* check if the color needs to be changed */
+        const highlightMarkers: number[] = [];
+        for (let i = 0; i < word.length; ++i) {
+            if (word[i] === '@') highlightMarkers.push(i);
+        }
+
+        // replace the color marker
+        word = word.replace(/@/gi, '');
+
+        // we need to change the highlight state
+        if (highlightMarkers.length === 1 && highlightMarkers[0] === 0) {
+            highlightColor = !highlightColor;
+        } else if (highlightMarkers.length !== 0) {
+            highlightColor = !highlightColor;
+        }
+
+        words.push({ word, highlight: highlightColor });
+
+        // only one word needs to be highlighted
+        if (highlightMarkers.length === 1 && highlightMarkers[0] !== 0) {
+            highlightColor = !highlightColor;
+        } else if (highlightMarkers.length !== 0) {
+            highlightColor = !highlightColor;
+        }
+    });
+
+    return words;
+}
+
+function insertWord(lines: ColorizedLine[], word: ColorizedWord) {
+    // create a new line, but ignore if the word is too long
+    if ((lines[lines.length - 1].length + word.word.length + 1) >= 35 && lines[lines.length - 1].length !== 0) {
+        lines.push({ length: 0, words: [] });
+    }
+
+    // add a space character
+    if (lines[lines.length - 1].length !== 0) {
+        lines[lines.length - 1].length += 1;
+    }
+
+    // add the word
+    lines[lines.length - 1].length += word.word.length;
+    lines[lines.length - 1].words.push(word);
+}
+
+function createVisualizationLines(message: string): ColorizedLine[] {
+    const lines: ColorizedLine[] = [{ length: 0, words: [] }];
+    const words = colorizeWords(message);
+
+    words.forEach((word) => {
+        let newline = false;
+
+        // iterate over forced newlines, if needed
+        word.word.split('_').forEach((entry) => {
+            // add a new line
+            if (newline) {
+                lines.push({ length: 0, words: [] });
+            }
+
+            // insert the word
+            insertWord(lines, { word: entry, highlight: word.highlight });
+            newline = true;
+        });
+    });
+
+    return lines;
+}
+
+export const MessageVisualization: React.FC<MessageVisualizationProps> = memo(({ message, ignoreHighlight, cssClass, yStart, deltaY, isStatusAvailable, setStatus, resetStatus, setRef }) => {
     const [pageIndex, setPageIndex] = useState(0);
     const [pageCount, setPageCount] = useState(0);
     const maxLines = 5;
@@ -99,7 +183,7 @@ export const MessageVisualization: React.FC<MessageVisualizationProps> = ({ mess
         if (pageCount === 0) {
             return;
         }
-
+        console.log('PAGE');
         if (pageCount > pageIndex + 1) {
             if (resetStatus !== undefined) {
                 resetStatus('DatalinkMessage');
@@ -114,9 +198,7 @@ export const MessageVisualization: React.FC<MessageVisualizationProps> = ({ mess
         return <></>;
     }
 
-    // get the single lines
-    let lines = message.split(/\r?\n/);
-    lines = lines.filter((e) => e);
+    let lines = createVisualizationLines(message);
 
     // get the number of pages
     const messagePageCount = Math.ceil(lines.length / maxLines);
@@ -141,12 +223,12 @@ export const MessageVisualization: React.FC<MessageVisualizationProps> = ({ mess
         <>
             {setRef !== undefined && (
                 <text className={cssClass} ref={setRef}>
-                    {visualizeLines(lines, 0, 0, yStart, deltaY, false, false, ignoreHighlight)}
+                    {visualizeLines(lines, yStart, deltaY, ignoreHighlight)}
                 </text>
             )}
             {setRef === undefined && (
                 <text className={cssClass}>
-                    {visualizeLines(lines, 0, 0, yStart, deltaY, false, false, ignoreHighlight)}
+                    {visualizeLines(lines, yStart, deltaY, ignoreHighlight)}
                 </text>
             )}
             {pageCount > 1 && (
@@ -163,4 +245,4 @@ export const MessageVisualization: React.FC<MessageVisualizationProps> = ({ mess
             )}
         </>
     );
-};
+});
