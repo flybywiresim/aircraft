@@ -26,10 +26,22 @@ export const DatalinkMessage: React.FC<DatalinkMessageProps> = ({ message, isSta
         }
     }
 
+    // check if highlight is needed
+    let ignoreHighlight = false;
+    if (message.Direction === AtsuMessageDirection.Output) {
+        ignoreHighlight = true;
+    } else if (message.Response !== undefined && message.Response.ComStatus === AtsuMessageComStatus.Sending) {
+        ignoreHighlight = true;
+    } else if (message.Response !== undefined && message.Response.ComStatus === AtsuMessageComStatus.Sent && message.Response.Message !== 'STANDBY') {
+        ignoreHighlight = true;
+    }
+
     // define the text color
     let messageClass = 'message-content';
     if (message.Direction === AtsuMessageDirection.Output) {
         messageClass += ' message-content-out';
+    } else if (ignoreHighlight) {
+        messageClass += ' message-sent';
     } else {
         messageClass += ' message-content-in';
     }
@@ -38,14 +50,6 @@ export const DatalinkMessage: React.FC<DatalinkMessageProps> = ({ message, isSta
     let contentHeight = 2;
     if (textBBox?.width !== undefined && textBBox?.height !== undefined) {
         contentHeight = textBBox?.height + 15;
-    }
-
-    // check if highlight is needed
-    let ignoreHighlight = false;
-    if (message.Direction === AtsuMessageDirection.Output) {
-        ignoreHighlight = true;
-    } else if (message.Response !== undefined && (message.Response.ComStatus === AtsuMessageComStatus.Sending || message.Response.ComStatus === AtsuMessageComStatus.Sent)) {
-        ignoreHighlight = true;
     }
 
     return (
