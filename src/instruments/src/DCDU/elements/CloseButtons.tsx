@@ -24,6 +24,7 @@ export const CloseButtons: React.FC<CloseButtonsProps> = ({ message, closeMessag
                 messageId={message.UniqueMessageID}
                 index="R2"
                 content="CLOSE*"
+                active
                 clickShowTime={1000}
                 clickEventDelay={1000}
                 clickedCallback={clicked}

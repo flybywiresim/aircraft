@@ -22,36 +22,49 @@ export const AffirmNegativeButtons: React.FC<AffirmNegativeButtonsProps> = ({ me
         }
     });
 
+    // define the rules for the visualization of the buttons
+    let showAnswers = false;
+    let showSend = false;
+    const closeClickabel = message.Response !== undefined && message.Response.ComStatus === AtsuMessageComStatus.Sent;
+
+    if (message.Response === undefined && message.ResponseType === undefined) {
+        // the standard case for new messages
+        showAnswers = true;
+    } else {
+        showSend = true;
+    }
+
     const clicked = (index: string) : void => {
         if (message.UniqueMessageID === undefined) {
             return;
         }
 
-        if (message.Response === undefined && message.ResponseType === undefined && modifiable) {
+        if (showAnswers) {
             if (index === 'L1') {
                 setMessageStatus(message.UniqueMessageID, CpdlcMessageResponse.Negative);
             } else if (index === 'R2') {
                 setMessageStatus(message.UniqueMessageID, CpdlcMessageResponse.Affirm);
             }
-        } else if (message.Response === undefined && message.ResponseType !== undefined && modifiable) {
+        } else if (showSend) {
             if (index === 'L1') {
                 setMessageStatus(message.UniqueMessageID, undefined);
             } else if (index === 'R2') {
                 SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_SEND_UID', 'number', message.UniqueMessageID);
             }
-        } else if (message.Response !== undefined && index === 'R2') {
+        } else if (closeClickabel && index === 'R2') {
             closeMessage(message.UniqueMessageID);
         }
     };
 
     return (
         <>
-            {message.Response === undefined && message.ResponseType === undefined && (
+            {showAnswers && (
                 <>
                     <Button
                         messageId={message.UniqueMessageID}
                         index="L1"
-                        content={`${modifiable ? '*' : ''}NEGATIVE`}
+                        content="*NEGATIVE"
+                        active
                         clickShowTime={1000}
                         clickEventDelay={1000}
                         clickedCallback={clicked}
@@ -59,7 +72,8 @@ export const AffirmNegativeButtons: React.FC<AffirmNegativeButtonsProps> = ({ me
                     <Button
                         messageId={message.UniqueMessageID}
                         index="R2"
-                        content={`AFFIRM${modifiable ? '*' : ''}`}
+                        content="AFFIRM*"
+                        active
                         clickShowTime={1000}
                         clickEventDelay={1000}
                         clickedCallback={clicked}
@@ -71,7 +85,8 @@ export const AffirmNegativeButtons: React.FC<AffirmNegativeButtonsProps> = ({ me
                     <Button
                         messageId={message.UniqueMessageID}
                         index="L1"
-                        content={`${modifiable ? '*' : ''}CANCEL`}
+                        content="*CANCEL"
+                        active
                         clickShowTime={1000}
                         clickEventDelay={1000}
                         clickedCallback={clicked}
@@ -79,7 +94,8 @@ export const AffirmNegativeButtons: React.FC<AffirmNegativeButtonsProps> = ({ me
                     <Button
                         messageId={message.UniqueMessageID}
                         index="R2"
-                        content={`SEND${modifiable ? '*' : ''}`}
+                        content="SEND*"
+                        active
                         clickShowTime={-1}
                         clickEventDelay={-1}
                         clickedCallback={clicked}
@@ -90,7 +106,8 @@ export const AffirmNegativeButtons: React.FC<AffirmNegativeButtonsProps> = ({ me
                 <Button
                     messageId={message.UniqueMessageID}
                     index="R2"
-                    content="CLOSE*"
+                    content={`CLOSE${closeClickabel ? '*' : ''}`}
+                    active={closeClickabel}
                     clickShowTime={1000}
                     clickEventDelay={1000}
                     clickedCallback={clicked}

@@ -15,19 +15,40 @@ type WilcoUnableButtonsProps = {
 
 export const WilcoUnableButtons: React.FC<WilcoUnableButtonsProps> = ({ message, modifiable, setMessageStatus, setStatus, isStatusAvailable, closeMessage }) => {
     useUpdate(() => {
-        if (message.ComStatus === AtsuMessageComStatus.Sending) {
+        if (message.Response !== undefined && message.Response.ComStatus === AtsuMessageComStatus.Sending) {
             if (isStatusAvailable('Buttons') === true) {
                 setStatus('Buttons', 'SENDING');
             }
         }
     });
 
+    // define the rules for the visualization of the buttons
+    let showAnswers = false;
+    let showStandby = false;
+    let showSend = false;
+    const closeClickabel = message.Response !== undefined && message.Response.Message !== 'STANDBY' && message.Response.ComStatus === AtsuMessageComStatus.Sent;
+
+    if (message.Response === undefined && message.ResponseType === undefined) {
+        // the standard case for new messages
+        showAnswers = true;
+        showStandby = true;
+    } else if (message.Response === undefined || message.Response.Message === 'STANDBY' || message.ResponseType === CpdlcMessageResponse.Standby) {
+        // STBY was sent or is selected
+        if (message.Response !== undefined && message.Response.ComStatus === AtsuMessageComStatus.Sent && message.ResponseType === CpdlcMessageResponse.Standby) {
+            // STBY was sent and no other message is selected
+            showAnswers = true;
+        } else {
+            // STBY is not sent
+            showSend = true;
+        }
+    }
+
     const clicked = (index: string) : void => {
         if (message.UniqueMessageID === undefined) {
             return;
         }
 
-        if (message.Response === undefined && message.ResponseType === undefined && modifiable) {
+        if (showAnswers) {
             if (index === 'L1') {
                 setMessageStatus(message.UniqueMessageID, CpdlcMessageResponse.Unable);
             } else if (index === 'R1') {
@@ -35,56 +56,60 @@ export const WilcoUnableButtons: React.FC<WilcoUnableButtonsProps> = ({ message,
             } else if (index === 'R2') {
                 setMessageStatus(message.UniqueMessageID, CpdlcMessageResponse.Wilco);
             }
-        } else if (message.Response === undefined && message.ResponseType !== undefined && modifiable) {
+        } else if (showSend) {
             if (index === 'L1') {
                 setMessageStatus(message.UniqueMessageID, undefined);
             } else {
                 SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_ANSWER', 'number', message.ResponseType as number);
                 SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_SEND_UID', 'number', message.UniqueMessageID);
             }
-        } else if (message.Response !== undefined && index === 'R2') {
+        } else if (closeClickabel && index === 'R2') {
             closeMessage(message.UniqueMessageID);
         }
     };
 
-    const showAnswers = message.Response === undefined && message.ResponseType === undefined;
-    const showStandby = showAnswers === true && message.ResponseType !== CpdlcMessageResponse.Standby;
     return (
         <>
-            {showAnswers === true && showStandby === true && (
+            {showAnswers && (
                 <>
                     <Button
                         messageId={message.UniqueMessageID}
                         index="L1"
-                        content={`${modifiable ? '*' : ''}UNABLE`}
+                        content="*UNABLE"
+                        active
                         clickShowTime={1000}
                         clickEventDelay={1000}
                         clickedCallback={clicked}
                     />
-                    <Button
-                        messageId={message.UniqueMessageID}
-                        index="R1"
-                        content={`STBY${modifiable ? '*' : ''}`}
-                        clickShowTime={1000}
-                        clickEventDelay={1000}
-                        clickedCallback={clicked}
-                    />
+                    {showStandby && (
+                        <Button
+                            messageId={message.UniqueMessageID}
+                            index="R1"
+                            content="STBY*"
+                            active
+                            clickShowTime={1000}
+                            clickEventDelay={1000}
+                            clickedCallback={clicked}
+                        />
+                    )}
                     <Button
                         messageId={message.UniqueMessageID}
                         index="R2"
-                        content={`WILCO${modifiable ? '*' : ''}`}
+                        content="WILCO*"
+                        active
                         clickShowTime={1000}
                         clickEventDelay={1000}
                         clickedCallback={clicked}
                     />
                 </>
             )}
-            {showAnswers === true && showStandby === false && (
+            {showSend && (
                 <>
                     <Button
                         messageId={message.UniqueMessageID}
                         index="L1"
-                        content={`${modifiable ? '*' : ''}UNABLE`}
+                        content="*CANCEL"
+                        active
                         clickShowTime={1000}
                         clickEventDelay={1000}
                         clickedCallback={clicked}
@@ -92,38 +117,20 @@ export const WilcoUnableButtons: React.FC<WilcoUnableButtonsProps> = ({ message,
                     <Button
                         messageId={message.UniqueMessageID}
                         index="R2"
-                        content={`WILCO${modifiable ? '*' : ''}`}
-                        clickShowTime={1000}
-                        clickEventDelay={1000}
-                        clickedCallback={clicked}
-                    />
-                </>
-            )}
-            {message.Response === undefined && message.ResponseType !== undefined && (
-                <>
-                    <Button
-                        messageId={message.UniqueMessageID}
-                        index="L1"
-                        content={`${modifiable ? '*' : ''}CANCEL`}
-                        clickShowTime={1000}
-                        clickEventDelay={1000}
-                        clickedCallback={clicked}
-                    />
-                    <Button
-                        messageId={message.UniqueMessageID}
-                        index="R2"
-                        content={`SEND${modifiable ? '*' : ''}`}
+                        content="SEND*"
+                        active
                         clickShowTime={-1}
                         clickEventDelay={-1}
                         clickedCallback={clicked}
                     />
                 </>
             )}
-            {message.Response !== undefined && (
+            {!showAnswers && !showSend && (
                 <Button
                     messageId={message.UniqueMessageID}
                     index="R2"
-                    content="CLOSE*"
+                    content={`CLOSE${closeClickabel ? '*' : ''}`}
+                    active={closeClickabel}
                     clickShowTime={1000}
                     clickEventDelay={1000}
                     clickedCallback={clicked}
