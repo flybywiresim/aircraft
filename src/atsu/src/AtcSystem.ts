@@ -190,7 +190,7 @@ export class AtcSystem {
         if (request.RequestedResponses === CpdlcMessageRequestedResponseType.NotRequired && response === undefined) {
             // received the station message for the DCDU
             if (request.Message.includes('CURRENT ATC')) {
-                this.listener.triggerToAllSubscribers('A32NX_DCDU_ATC_LOGON_MSG', request.serialize(AtsuMessageSerializationFormat.DCDU));
+                this.listener.triggerToAllSubscribers('A32NX_DCDU_ATC_LOGON_MSG', request.Message);
                 return true;
             }
 

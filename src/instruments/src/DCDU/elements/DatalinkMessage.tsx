@@ -56,7 +56,7 @@ export const DatalinkMessage: React.FC<DatalinkMessageProps> = ({ message, isSta
         <g>
             <rect className={backgroundClass} height={contentHeight} x="21" y="59" />
             <MessageVisualization
-                message={message.serialize(AtsuMessageSerializationFormat.DCDU)}
+                message={message.Message}
                 ignoreHighlight={ignoreHighlight}
                 cssClass={messageClass}
                 yStart={90}
