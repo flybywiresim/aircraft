@@ -876,6 +876,10 @@
     - Revolutions per minute
     - Power Transfer Unit shaft rpm
 
+- A32NX_HYD_PTU_CONTINUOUS_MODE
+    - Bool
+    - Power Transfer Unit is rotating continuously
+
 - A32NX_OVHD_HYD_RAT_MAN_ON_IS_PRESSED
     - Bool
     - Deploys the RAT manually
