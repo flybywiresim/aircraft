@@ -3900,7 +3900,7 @@ mod tests {
             // Yellow epump ON / Waiting 25s
             test_bed = test_bed
                 .set_yellow_e_pump(false)
-                .run_waiting_for(Duration::from_secs(55));
+                .run_waiting_for(Duration::from_secs(25));
 
             assert!(test_bed.is_ptu_enabled());
 

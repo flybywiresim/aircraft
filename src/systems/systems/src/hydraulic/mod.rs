@@ -389,8 +389,11 @@ impl PowerTransferUnit {
             .get::<revolution_per_minute>()
             < Self::THRESHOLD_DELTA_TO_DECLARE_CONTINUOUS_RPM;
 
-        self.is_in_continuous_mode
-            .update(context, under_continuous_threshold && self.is_rotating());
+        self.is_in_continuous_mode.update(
+            context,
+            (self.is_in_continuous_mode.output() || under_continuous_threshold)
+                && self.is_rotating(),
+        );
 
         println!(
             "RPM {:.1}  VARIATION {:.1} CONTINUOUS {}",
