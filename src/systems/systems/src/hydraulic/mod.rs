@@ -395,12 +395,12 @@ impl PowerTransferUnit {
                 && self.is_rotating(),
         );
 
-        println!(
-            "RPM {:.1}  VARIATION {:.1} CONTINUOUS {}",
-            self.shaft_speed.get::<revolution_per_minute>(),
-            self.shaft_speed_variation.get::<revolution_per_minute>(),
-            self.is_in_continuous_mode.output(),
-        );
+        // println!(
+        //     "RPM {:.1}  VARIATION {:.1} CONTINUOUS {}",
+        //     self.shaft_speed.get::<revolution_per_minute>(),
+        //     self.shaft_speed_variation.get::<revolution_per_minute>(),
+        //     self.is_in_continuous_mode.output(),
+        // );
     }
 
     fn calc_generated_torque(pressure: Pressure, displacement: Volume) -> Torque {
