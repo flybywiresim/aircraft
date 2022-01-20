@@ -6,14 +6,13 @@ import { Button } from './Button';
 
 type WilcoUnableButtonsProps = {
     message: CpdlcMessage,
-    modifiable: boolean,
     setMessageStatus(message: number, response: CpdlcMessageResponse | undefined),
     setStatus: (sender: string, message: string) => void,
     isStatusAvailable: (sender: string) => boolean,
     closeMessage: (message: number) => void
 }
 
-export const WilcoUnableButtons: React.FC<WilcoUnableButtonsProps> = ({ message, modifiable, setMessageStatus, setStatus, isStatusAvailable, closeMessage }) => {
+export const WilcoUnableButtons: React.FC<WilcoUnableButtonsProps> = ({ message, setMessageStatus, setStatus, isStatusAvailable, closeMessage }) => {
     useUpdate(() => {
         if (message.Response !== undefined && message.Response.ComStatus === AtsuMessageComStatus.Sending) {
             if (isStatusAvailable('Buttons') === true) {

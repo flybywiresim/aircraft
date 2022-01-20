@@ -253,17 +253,9 @@ const DCDU: React.FC = () => {
         }
     }
 
-    let modifiable = false;
     let answerRequired = false;
     if (message !== undefined) {
         answerRequired = message.RequestedResponses !== CpdlcMessageRequestedResponseType.NotRequired && message.RequestedResponses !== CpdlcMessageRequestedResponseType.No;
-
-        // check if the message is modifiable
-        if (message.Direction === AtsuMessageDirection.Input) {
-            modifiable = message.Response === undefined || (message.Response.ComStatus === AtsuMessageComStatus.Open || message.Response.ComStatus === AtsuMessageComStatus.Failed);
-        } else {
-            modifiable = message.ComStatus === AtsuMessageComStatus.Open || message.ComStatus === AtsuMessageComStatus.Failed;
-        }
     }
 
     switch (state) {
@@ -320,7 +312,6 @@ const DCDU: React.FC = () => {
                     {(message !== undefined && answerRequired && message.RequestedResponses === CpdlcMessageRequestedResponseType.WilcoUnable && (
                         <WilcoUnableButtons
                             message={message}
-                            modifiable={modifiable}
                             setMessageStatus={setMessageStatus}
                             setStatus={setStatus}
                             isStatusAvailable={isStatusAvailable}
@@ -330,7 +321,6 @@ const DCDU: React.FC = () => {
                     {(message !== undefined && answerRequired && message.RequestedResponses === CpdlcMessageRequestedResponseType.AffirmNegative && (
                         <AffirmNegativeButtons
                             message={message}
-                            modifiable={modifiable}
                             setMessageStatus={setMessageStatus}
                             setStatus={setStatus}
                             isStatusAvailable={isStatusAvailable}
@@ -340,7 +330,6 @@ const DCDU: React.FC = () => {
                     {(message !== undefined && answerRequired && message.RequestedResponses === CpdlcMessageRequestedResponseType.Roger && (
                         <RogerButtons
                             message={message}
-                            modifiable={modifiable}
                             setMessageStatus={setMessageStatus}
                             setStatus={setStatus}
                             isStatusAvailable={isStatusAvailable}
