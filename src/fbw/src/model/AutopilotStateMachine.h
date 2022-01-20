@@ -69,10 +69,12 @@ class AutopilotStateMachineModelClass
     real_T eventTime_n4;
     real_T eventTime_i;
     real_T eventTime_p;
+    real_T eventTime_l;
     real_T eventTime_k;
+    real_T eventTime_c;
     real_T eventTime_b;
-    real_T newFcuAltitudeSelected;
-    real_T newFcuAltitudeSelected_f;
+    real_T canArm;
+    real_T canArm_b;
     boolean_T DelayInput1_DSTATE_a;
     boolean_T DelayInput1_DSTATE_p;
     boolean_T DelayInput1_DSTATE_bo;
@@ -129,7 +131,7 @@ class AutopilotStateMachineModelClass
     boolean_T timeDeltaSpeed10_not_empty;
     boolean_T timeConditionSoftAlt_not_empty;
     boolean_T stateSoftAlt;
-    boolean_T newFcuAltitudeSelected_c;
+    boolean_T newFcuAltitudeSelected;
     boolean_T sTCAS;
     boolean_T latch;
     boolean_T sSRS;
@@ -139,7 +141,9 @@ class AutopilotStateMachineModelClass
     boolean_T eventTime_not_empty_j;
     boolean_T eventTime_not_empty_m;
     boolean_T sThrottleCondition;
+    boolean_T eventTime_not_empty_d;
     boolean_T eventTime_not_empty_i;
+    boolean_T eventTime_not_empty_b;
     boolean_T eventTime_not_empty_kh;
     boolean_T sTCAS_g;
     boolean_T wasFlightPlanAvailable;
@@ -151,7 +155,7 @@ class AutopilotStateMachineModelClass
     boolean_T sDES;
     boolean_T sCLB;
     boolean_T was_TCAS_active;
-    boolean_T was_ALT_CPT_VS_pull;
+    boolean_T newFcuAltitudeSelected_h;
     rtDW_LagFilter_AutopilotStateMachine_T sf_LagFilter_h;
     rtDW_WashoutFilter_AutopilotStateMachine_T sf_WashoutFilter_k;
     rtDW_WashoutFilter_AutopilotStateMachine_T sf_WashoutFilter;

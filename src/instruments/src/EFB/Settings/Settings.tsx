@@ -549,14 +549,14 @@ const ATSUAOCPage = () => {
     ];
 
     const metarSourceButtons: ButtonType[] = [
-        { name: 'MeteoBlue', setting: 'MSFS' },
+        { name: 'Microsoft', setting: 'MSFS' },
         { name: 'PilotEdge', setting: 'PILOTEDGE' },
         { name: 'IVAO', setting: 'IVAO' },
         { name: 'VATSIM', setting: 'VATSIM' },
     ];
 
     const tafSourceButtons: ButtonType[] = [
-        { name: 'IVAO', setting: 'IVAO' },
+        { name: 'FAA', setting: 'FAA' },
         { name: 'NOAA', setting: 'NOAA' },
     ];
 
