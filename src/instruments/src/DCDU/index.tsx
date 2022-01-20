@@ -178,10 +178,28 @@ const DCDU: React.FC = () => {
             if (oldMessage !== undefined) {
                 dcduTimestamp = oldMessage[1];
 
-                if (oldMessage[0].ComStatus !== cpdlcMessage.ComStatus) {
-                    if (cpdlcMessage.ComStatus === AtsuMessageComStatus.Failed) {
+                // check if we have to show the status of an output message
+                if (oldMessage[0].Direction === AtsuMessageDirection.Output) {
+                    if (oldMessage[0].ComStatus !== cpdlcMessage.ComStatus) {
+                        if (cpdlcMessage.ComStatus === AtsuMessageComStatus.Failed) {
+                            setStatus('Mainpage', 'COM FAILED');
+                        } else if (cpdlcMessage.ComStatus === AtsuMessageComStatus.Sent) {
+                            setStatus('Mainpage', 'SENT');
+                        }
+                    }
+                } else if (cpdlcMessage.Response !== undefined) {
+                    // received an update for a response
+                    if (oldMessage[0].Response !== undefined) {
+                        if (oldMessage[0].Response.ComStatus !== cpdlcMessage.Response.ComStatus) {
+                            if (cpdlcMessage.Response.ComStatus === AtsuMessageComStatus.Failed) {
+                                setStatus('Mainpage', 'COM FAILED');
+                            } else if (cpdlcMessage.Response.ComStatus === AtsuMessageComStatus.Sent) {
+                                setStatus('Mainpage', 'SENT');
+                            }
+                        }
+                    } else if (cpdlcMessage.Response.ComStatus === AtsuMessageComStatus.Failed) {
                         setStatus('Mainpage', 'COM FAILED');
-                    } else if (cpdlcMessage.ComStatus === AtsuMessageComStatus.Sent) {
+                    } else if (cpdlcMessage.Response.ComStatus === AtsuMessageComStatus.Sent) {
                         setStatus('Mainpage', 'SENT');
                     }
                 }
