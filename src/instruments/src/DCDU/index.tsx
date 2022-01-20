@@ -68,7 +68,6 @@ const DCDU: React.FC = () => {
     };
 
     const setMessageStatus = (uid: number, response: CpdlcMessageResponse | undefined) => {
-        console.log('set message status');
         const updateMap = messages;
 
         const entry = updateMap.get(uid);
@@ -77,7 +76,6 @@ const DCDU: React.FC = () => {
             updateMap.set(uid, entry);
         }
 
-        console.log(`setMessageStatus: ${response}`);
         setMessages(updateMap);
     };
 
