@@ -111,8 +111,21 @@
 1. [ATHR] Improvement of ATHR laws - @IbrahimK42(IbrahimK42), @aguther (Andreas Guther)
 1. [MISC] Fixed flap configuration in final.flt and runway.flt files -  @donstim (donbikes#4084)
 1. [EFB] Added Reset to Defaults button to EFB throttle calibration page - @frankkopp (Cdr_Maverick#6475)
+1. [HYD] Added more accurate simulation model of PTU - @Gurgel100 (Pascal)
 1. [BLEED] Fix potential NaN calculations for fast flows - @Crocket63
-1. [Hyd] Reservoirs connected to pneumatics and first failures - @Crocket63
+1. [HYD] Reservoirs connected to pneumatics and first failures - @Crocket63
+1. [ATSU] Don't include airport as a waypoint in route uplink - @tracernz (Mike)
+1. [HYD] Increased reservoirs air pressure to avoid low air fault on pumps - @Crocket63
+1. [EFB] Fix FAA TAF option - @tracernz (Mike)
+1. [AP] Improved SPD/MACH law to be more robust in edge cases - @IbrahimK42 (IbrahimK42)
+1. [FBW] Improved normal law (flight path stability when speed changed, pitch rates) - @aguther (Andreas Guther)
+1. [AP] Improved ALT engage conditions (now +/- 40 ft and 0.8 s) - @aguther (Andreas Guther)
+1. [AP] Inhibit ALT* for 3 s after changing FCU altitude - @aguther (Andreas Guther)
+1. [AP] Separated and improved Nz used by different autopilot laws - @aguther (Andreas Guther)
+1. [AP] Improved HDG/TRK law on small changes - @aguther (Andreas Guther)
+1. [AP] Do not disengage SRS on RTO, engage it only in FLX detent when FLX is configured - @aguther (Andreas Guther)
+1. [ATHR] Improved thrust limits, FLX limits now CLB when entered into FMGC - @aguther (Andreas Guther)
+1. [AP] Improved LOC ALGIN and ROLL OUT during Autoland - @aguther (Andreas Guther)
 
 ## 0.7.0
 
