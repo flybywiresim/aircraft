@@ -286,7 +286,7 @@ impl PowerTransferUnit {
         self.update_active_state();
         self.update_shaft_physics(context, loop_left_section, loop_right_section);
         self.update_shaft_speed_variation(context);
-        self.update_continuous_mode(context);
+        self.update_continuous_state(context);
         self.update_flows();
     }
 
@@ -382,7 +382,7 @@ impl PowerTransferUnit {
         }
     }
 
-    fn update_continuous_mode(&mut self, context: &UpdateContext) {
+    fn update_continuous_state(&mut self, context: &UpdateContext) {
         let under_continuous_threshold = self
             .shaft_speed_variation
             .abs()
