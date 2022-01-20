@@ -105,7 +105,8 @@ export class AtcSystem {
         response.Direction = AtsuMessageDirection.Output;
         response.PreviousTransmissionId = request.CurrentTransmissionId;
         response.CurrentTransmissionId = this.cpdlcMessageId++;
-        response.RequestedResponses = CpdlcMessageRequestedResponseType.NotRequired;
+        response.RequestedResponses = CpdlcMessageRequestedResponseType.No;
+        response.Station = request.Station;
 
         // create the answer text
         switch (request.ResponseType) {
@@ -144,17 +145,17 @@ export class AtcSystem {
         const message = this.messageQueue.find((element) => element.UniqueMessageID === uid);
         if (message !== undefined) {
             message.ResponseType = response;
-            message.ComStatus = AtsuMessageComStatus.Sending;
             message.Response = this.createCpdlcResponse(message);
+            message.Response.ComStatus = AtsuMessageComStatus.Sending;
             this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', message);
 
             setTimeout(() => {
                 if (message.Response !== undefined) {
                     this.connector.sendCpdlcMessage(message.Response).then((text) => {
                         if (text === '') {
-                            message.ComStatus = AtsuMessageComStatus.Sent;
+                            message.Response.ComStatus = AtsuMessageComStatus.Sent;
                         } else {
-                            message.ComStatus = AtsuMessageComStatus.Failed;
+                            message.Response.ComStatus = AtsuMessageComStatus.Failed;
                         }
                         this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', message);
                     });
