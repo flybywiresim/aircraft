@@ -17,7 +17,7 @@ class CDUAocMessagesReceived {
         msgTimeHeaders.length = 6;
         for (let i = 5; i > 0; i--) {
             let header = "";
-            if (messages[offset - i]) {
+            if (messages.length > (offset - i) && messages[offset - i]) {
                 header += `${messages[offset - i].Timestamp.mcduTimestamp()} FROM ${messages[offset - i].Station}[color]green`;
             }
             msgTimeHeaders[i] = header;
