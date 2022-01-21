@@ -41,7 +41,12 @@ export class AtcSystem {
                 }
                 SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_PRINT_UID', 'number', -1);
             }
-        }, 500);
+
+            if (SimVar.GetSimVarValue('L:A32NX_DCDU_ATC_MSG_ACK', 'number') === 1) {
+                SimVar.SetSimVarValue('L:A32NX_DCDU_ATC_MSG_WAITING', 'boolean', 0);
+                SimVar.SetSimVarValue('L:A32NX_DCDU_ATC_MSG_ACK', 'number', 0);
+            }
+        }, 100);
     }
 
     public currentStation(): string {
@@ -255,7 +260,7 @@ export class AtcSystem {
         if (!analyzed) {
             if (cpdlcMessage.Direction === AtsuMessageDirection.Input) {
                 SimVar.SetSimVarValue('L:A32NX_DCDU_ATC_MSG_WAITING', 'boolean', 1);
-                // TODO play the sound
+                Coherent.call('PLAY_INSTRUMENT_SOUND', 'cpdlc_ring');
             }
 
             if (SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_MAX_REACHED', 'boolean') === 0) {

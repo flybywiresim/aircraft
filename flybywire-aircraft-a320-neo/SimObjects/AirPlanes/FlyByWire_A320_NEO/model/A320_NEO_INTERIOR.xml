@@ -3712,6 +3712,14 @@
                 <ANIMTIP_2>Set TCAS traffic to ABV</ANIMTIP_2>
                 <ANIMTIP_3>Set TCAS traffic to BLW</ANIMTIP_3>
             </UseTemplate>
+            <UseTemplate Name="FBW_Airbus_ATC_MSG_Button">
+                <NODE_ID>PUSH_AUTOPILOT_LL</NODE_ID>
+                <SEQ1_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
+            </UseTemplate>
+            <UseTemplate Name="FBW_Airbus_ATC_MSG_Button">
+                <NODE_ID>PUSH_AUTOPILOT_RR</NODE_ID>
+                <SEQ1_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
+            </UseTemplate>
         </Component>
 
         <Component ID="Airbus_BRK">
@@ -4008,20 +4016,20 @@
             <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
                 <NODE_ID>SWITCH_LEFT</NODE_ID>
             </UseTemplate>
-            <UseTemplate Name="FBW_Airbus_ATC_MSG_Button">
+            <!--<UseTemplate Name="FBW_Airbus_ATC_MSG_Button">
                 <NODE_ID>PUSH_AUTOPILOT_LL</NODE_ID>
                 <SEQ1_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
-            </UseTemplate>
+            </UseTemplate>-->
             <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
                 <NODE_ID>PUSH_AUTOPILOT_SIDESTICK_L</NODE_ID>
             </UseTemplate>
             <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
                 <NODE_ID>PUSH_AUTOPILOT_SIDESTICK_R</NODE_ID>
             </UseTemplate>
-            <UseTemplate Name="FBW_Airbus_ATC_MSG_Button">
+            <!--<UseTemplate Name="FBW_Airbus_ATC_MSG_Button">
                 <NODE_ID>PUSH_AUTOPILOT_RR</NODE_ID>
                 <SEQ1_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
-            </UseTemplate>
+            </UseTemplate>-->
             <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
                 <NODE_ID>SWITCH_RIGHT</NODE_ID>
             </UseTemplate>
