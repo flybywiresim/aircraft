@@ -5,11 +5,11 @@ class CDUAtcMenu {
         mcdu.setTemplate([
             ["ATC MENU", "1", "2"],
             [""],
-            ["<REQUEST[color]inop"],
-            ["", ""],
+            ["<LAT REQ[color]inop", "VERT REQ>[color]inop"],
             [""],
+            ["<WHEN CAN WE[color]inop", "OTHER REQ>[color]inop"],
             [""],
-            [""],
+            ["", "TEXT>[color]inop"],
             [""],
             ["<MSG RECORD", "REPORTS>[color]inop"],
             [""],
@@ -73,7 +73,7 @@ class CDUAtcMenu {
         mcdu.page.Current = mcdu.page.ATCMenu;
         mcdu.setTemplate([
             ["ATC MENU", "2", "2"],
-            ["----------ATS 623----------"],
+            ["--------ATS623 PAGE--------"],
             ["<DEPART REQ", "ATIS>"],
             ["", ""],
             ["<OCEANIC REQ[color]inop", ""],
