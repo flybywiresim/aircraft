@@ -28,6 +28,12 @@ class CDUAocRequestsAtis {
             enrouteText = "ENROUTE[color]cyan";
         }
 
+        let sendMessage = "SEND*[color]cyan";
+        const icao = store["arpt1"] !== "" ? store["arpt1"] : store["arrIcao"];
+        if (icao.length !== 4 || /^[A-Z()]*$/.test(icao) === false) {
+            sendMessage = "SEND\xa0[color]cyan";
+        }
+
         let arrText;
         if (store.arpt1 !== "") {
             arrText = store.arpt1;
@@ -51,7 +57,7 @@ class CDUAocRequestsAtis {
                     [""],
                     ["{TERMINATE AUTO UPDATE[color]inop"],
                     ["RETURN TO", `${store["sendStatus"]}`],
-                    ["<AOC MENU", "SEND*[color]cyan"]
+                    ["<AOC MENU", sendMessage]
                 ]);
             }
         };

@@ -9,6 +9,11 @@ class CDUAocRequestsWeather {
             'TAF'
         ];
 
+        let sendMessage = "SEND\xa0[color]cyan";
+        if (mcdu.aocAirportList.icaos.length !== 0) {
+            sendMessage = "SEND*[color]cyan";
+        }
+
         const updateView = () => {
             if (mcdu.page.Current === mcdu.page.AOCRequestWeather) {
                 mcdu.setTemplate([
@@ -24,7 +29,7 @@ class CDUAocRequestsWeather {
                     [""],
                     [""],
                     ["RETURN TO", `${sendStatus}`],
-                    ["<AOC MENU", "SEND*[color]cyan"]
+                    ["<AOC MENU", sendMessage]
                 ]);
             }
         };
