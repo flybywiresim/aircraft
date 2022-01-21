@@ -193,6 +193,7 @@ export class AtcSystem {
     }
 
     public cleanupMessages(): void {
+        this.messageQueue.forEach((message) => this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG_DELETE_UID', message.UniqueMessageID));
         this.messageQueue = [];
     }
 
