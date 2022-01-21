@@ -45,6 +45,7 @@ export const RogerButtons: React.FC<RogerButtonsProps> = ({ message, setMessageS
             if (index === 'L1') {
                 setMessageStatus(message.UniqueMessageID, undefined);
             } else if (index === 'R2') {
+                SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_ANSWER', 'number', message.ResponseType as number);
                 SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_SEND_UID', 'number', message.UniqueMessageID);
             }
         } else if (closeClickabel && index === 'R2') {
