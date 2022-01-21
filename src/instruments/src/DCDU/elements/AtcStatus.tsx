@@ -5,18 +5,27 @@ type AtcStatusProps = {
     message: string
 }
 
-export const AtcStatus: React.FC<AtcStatusProps> = memo(({ message }) => (
-    <>
-        <MessageVisualization
-            message={message}
-            ignoreHighlight={false}
-            cssClass="atc-info"
-            yStart={100}
-            deltaY={30}
-            isStatusAvailable={undefined}
-            setStatus={undefined}
-            resetStatus={undefined}
-            setRef={undefined}
-        />
-    </>
-));
+export const AtcStatus: React.FC<AtcStatusProps> = memo(({ message }) => {
+    let cssClass = 'atc-info ';
+    if (message.includes('CURRENT')) {
+        cssClass += 'atc-info-active';
+    } else {
+        cssClass += 'atc-info-standby';
+    }
+
+    return (
+        <>
+            <MessageVisualization
+                message={message}
+                ignoreHighlight={false}
+                cssClass={cssClass}
+                yStart={100}
+                deltaY={30}
+                isStatusAvailable={undefined}
+                setStatus={undefined}
+                resetStatus={undefined}
+                setRef={undefined}
+            />
+        </>
+    );
+});
