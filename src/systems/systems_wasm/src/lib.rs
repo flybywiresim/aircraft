@@ -4,8 +4,8 @@ pub mod aspects;
 mod electrical;
 mod failures;
 
-use crate::aspects::MsfsAspectBuilder;
-use electrical::{MsfsAuxiliaryPowerUnit, MsfsElectricalBuses};
+use crate::aspects::{ExecuteOn, MsfsAspectBuilder};
+use crate::electrical::{electrical_buses, MsfsAuxiliaryPowerUnit};
 use failures::Failures;
 use fxhash::FxHashMap;
 use msfs::{
@@ -15,6 +15,7 @@ use msfs::{
 };
 use std::fmt::{Display, Formatter};
 use std::{error::Error, time::Duration};
+use systems::shared::ElectricalBusType;
 use systems::simulation::InitContext;
 use systems::{
     failures::FailureType,
@@ -77,7 +78,6 @@ pub trait Aspect {
 pub struct MsfsSimulationBuilder<'a, 'b> {
     variable_registry: Option<MsfsVariableRegistry>,
     key_prefix: String,
-    electrical_buses: Option<MsfsElectricalBuses>,
     sim_connect: &'a mut SimConnect<'b>,
     apu: Option<MsfsAuxiliaryPowerUnit>,
     failures: Option<Failures>,
@@ -85,13 +85,10 @@ pub struct MsfsSimulationBuilder<'a, 'b> {
 }
 
 impl<'a, 'b> MsfsSimulationBuilder<'a, 'b> {
-    const MSFS_INFINITELY_POWERED_BUS_IDENTIFIER: usize = 1;
-
     pub fn new(key_prefix: &str, sim_connect: &'a mut SimConnect<'b>) -> Self {
         Self {
             variable_registry: Some(MsfsVariableRegistry::new(key_prefix.into())),
             key_prefix: key_prefix.into(),
-            electrical_buses: Some(Default::default()),
             sim_connect,
             apu: None,
             failures: None,
@@ -103,7 +100,7 @@ impl<'a, 'b> MsfsSimulationBuilder<'a, 'b> {
         mut self,
         aircraft_ctor_fn: U,
     ) -> Result<(Simulation<T>, MsfsHandler), Box<dyn Error>> {
-        let mut aspects: Vec<Box<dyn Aspect>> = vec![Box::new(self.electrical_buses.unwrap())];
+        let mut aspects: Vec<Box<dyn Aspect>> = vec![];
         if self.apu.is_some() {
             aspects.push(Box::new(self.apu.unwrap()));
         }
@@ -138,21 +135,11 @@ impl<'a, 'b> MsfsSimulationBuilder<'a, 'b> {
     ///
     /// This function assumes that `bus.1` is a bus which is infinitely powered, and thus can act
     /// as a power source for the other buses which will all be connected to it.
-    pub fn with_electrical_buses(mut self, buses_to_add: Vec<(&'static str, usize)>) -> Self {
-        if let Some(registry) = &mut self.variable_registry {
-            if let Some(buses) = &mut self.electrical_buses {
-                for bus in buses_to_add {
-                    buses.add(
-                        registry,
-                        bus.0,
-                        Self::MSFS_INFINITELY_POWERED_BUS_IDENTIFIER,
-                        bus.1,
-                    )
-                }
-            }
-        }
-
-        self
+    pub fn with_electrical_buses<const N: usize>(
+        self,
+        buses: [(ElectricalBusType, usize); N],
+    ) -> Result<Self, Box<dyn Error>> {
+        self.with_aspect(electrical_buses(buses))
     }
 
     pub fn with_auxiliary_power_unit(
