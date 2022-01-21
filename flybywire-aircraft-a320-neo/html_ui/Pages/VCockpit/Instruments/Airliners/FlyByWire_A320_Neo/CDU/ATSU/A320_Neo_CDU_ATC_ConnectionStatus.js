@@ -1,24 +1,34 @@
 class CDUAtcConnectionStatus {
-    static ShowPage(mcdu, store = {"atcCenter": "", "nextAtc": ""}) {
+    static ShowPage(mcdu, store = { "disconnectAvail": false }) {
         mcdu.clearDisplay();
-        let flightNo = "______[color]green";
 
-        if (SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC")) {
-            flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC") + "[color]green";
+        let currentStation = "____[color]amber";
+        let atcDisconnect = "DISCONNECT\xa0[color]cyan";
+        if (mcdu.atsuManager.atc().currentStation() !== '') {
+            currentStation = `${mcdu.atsuManager.atc().currentStation()}[color]green`;
+            atcDisconnect = "DISCONNECT*[color]cyan";
+            store["disconnectAvail"] = true;
+        } else {
+            store["disconnectAvail"] = false;
+        }
+
+        let nextStation = "----";
+        if (mcdu.atsuManager.atc().nextStation() !== '') {
+            nextStation = `${mcdu.atsuManager.atc().nextStation()}[color]green`;
         }
 
         mcdu.setTemplate([
             ["CONNECTION STATUS"],
             ["ACTIVE ATC"],
-            ["____[color]amber"],
-            ["NEXT ATC"],
-            ["----"],
-            ["", "MAX UPLINK DELAY\xa0"],
-            ["", "NONE[color]inop\xa0"],
-            ["--------ADS: ARMED---------"],
+            [currentStation],
+            ["NEXT ATC", "ALL ATC[color]cyan"],
+            [nextStation, atcDisconnect],
+            [""],
+            [""],
+            ["-------ADS-C: ARMED-------"],
             ["\xa0SET OFF[color]inop"],
             [""],
-            ["", "ADS DETAIL>[color]inop"],
+            ["", "ADS-C DETAIL>[color]inop"],
             ["\xa0ATC MENU", ""],
             ["<RETURN", "NOTIFICATION>"]
         ]);
@@ -30,6 +40,18 @@ class CDUAtcConnectionStatus {
             CDUAtcMenu.ShowPage1(mcdu);
         };
 
+        mcdu.rightInputDelay[1] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+        mcdu.onRightInput[1] = (_value, scratchpadCallback) => {
+            if (!store["disconnectAvail"]) {
+                mcdu.scratchpad.setText("NO ACTIVE ATC");
+                scratchpadCallback();
+            } else {
+                mcdu.atsuManager.atc().logoff();
+            }
+            CDUAtcConnectionStatus.ShowPage(mcdu, store);
+        };
         mcdu.rightInputDelay[5] = () => {
             return mcdu.getDelaySwitchPage();
         };
