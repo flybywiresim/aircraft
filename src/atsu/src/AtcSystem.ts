@@ -257,6 +257,11 @@ export class AtcSystem {
         const cpdlcMessage = message as CpdlcMessage;
         let analyzed = false;
 
+        // received an invalid message from an unknown station
+        if (cpdlcMessage.Station !== this.currentAtc && cpdlcMessage.Station !== this.nextAtc) {
+            return;
+        }
+
         // search corresponding request, if previous ID is set
         if (cpdlcMessage.PreviousTransmissionId !== -1) {
             this.messageQueue.forEach((element) => {
