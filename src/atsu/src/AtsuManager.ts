@@ -1,6 +1,7 @@
 //  Copyright (c) 2022 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
+import { Datalink } from '@atsu/com/Datalink';
 import { AtcSystem } from './AtcSystem';
 import { AocSystem } from './AocSystem';
 import { AtsuMessage, AtsuMessageSerializationFormat, AtsuMessageComStatus } from './messages/AtsuMessage';
@@ -9,25 +10,21 @@ import { CpdlcMessage } from './messages/CpdlcMessage';
 import { WeatherMessage } from './messages/WeatherMessage';
 import { AtisMessage } from './messages/AtisMessage';
 import { MetarMessage } from './messages/MetarMessage';
-import { NXApiConnector } from './com/NXApiConnector';
 import { TafMessage } from './messages/TafMessage';
 import { FreetextMessage } from './messages/FreetextMessage';
-import { HoppieConnector } from './com/HoppieConnector';
 import { PdcMessage } from './messages/PdcMessage';
 
 /**
  * Defines the ATSU manager
  */
 export class AtsuManager {
-    private hoppieNetwork = new HoppieConnector(this);
-
-    private nxapiNetwork = new NXApiConnector(this);
+    private datalink = new Datalink(this);
 
     private messageCounter = 0;
 
-    private aocSystem = new AocSystem(this, this.hoppieNetwork, this.nxapiNetwork);
+    private aocSystem = new AocSystem(this.datalink);
 
-    private atcSystem = new AtcSystem(this, this.hoppieNetwork);
+    private atcSystem = new AtcSystem(this, this.datalink);
 
     private listener = RegisterViewListener('JS_LISTENER_SIMVARS');
 
@@ -94,7 +91,7 @@ export class AtsuManager {
     }
 
     public async isRemoteStationAvailable(callsign: string): Promise<string> {
-        return this.hoppieNetwork.isStationAvailable(callsign);
+        return this.datalink.isStationAvailable(callsign);
     }
 
     public findMessage(uid: number): AtsuMessage {

@@ -1,12 +1,10 @@
-import { AtsuMessageComStatus, AtsuMessage, AtsuMessageType, AtsuMessageDirection, AtsuMessageSerializationFormat } from './messages/AtsuMessage';
+import { AtsuMessageComStatus, AtsuMessage, AtsuMessageType, AtsuMessageDirection } from './messages/AtsuMessage';
 import { CpdlcMessageResponse, CpdlcMessageRequestedResponseType, CpdlcMessage } from './messages/CpdlcMessage';
-import { HoppieConnector } from './com/HoppieConnector';
+import { Datalink } from './com/Datalink';
 import { AtsuManager } from './AtsuManager';
 
 export class AtcSystem {
-    private parent: AtsuManager | undefined = undefined;
-
-    private connector : HoppieConnector = undefined;
+    private datalink: Datalink | undefined = undefined;
 
     private listener = RegisterViewListener('JS_LISTENER_SIMVARS');
 
@@ -18,9 +16,8 @@ export class AtcSystem {
 
     private messageQueue: CpdlcMessage[] = [];
 
-    constructor(parent: AtsuManager, connector: HoppieConnector) {
-        this.parent = parent;
-        this.connector = connector;
+    constructor(parent: AtsuManager, datalink: Datalink) {
+        this.datalink = datalink;
 
         setInterval(async () => {
             SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_DELETE_UID', 'number', -1);
@@ -70,11 +67,13 @@ export class AtcSystem {
         message.RequestedResponses = CpdlcMessageRequestedResponseType.Yes;
         message.Message = 'REQUEST LOGON';
 
-        return this.parent.sendMessage(message).then((message) => {
-            if (message === '') {
+        return this.datalink.sendMessage(message).then((error) => {
+            if (error === '') {
+                this.listener.triggerToAllSubscribers('A32NX_DCDU_ATC_LOGON_MSG', `NEXT ATC: ${station}`);
+                this.insertMessage(message);
                 this.nextStation = station;
             }
-            return message;
+            return error;
         });
     }
 
@@ -90,12 +89,14 @@ export class AtcSystem {
         message.RequestedResponses = CpdlcMessageRequestedResponseType.No;
         message.Message = 'LOGOFF';
 
-        return this.parent.sendMessage(message).then((message) => {
-            if (message === '') {
-                this.station = '';
+        return this.datalink.sendMessage(message).then((error) => {
+            if (error === '') {
+                this.listener.triggerToAllSubscribers('A32NX_DCDU_ATC_LOGON_MSG', '');
+                this.insertMessage(message);
                 this.nextStation = '';
+                this.station = '';
             }
-            return message;
+            return error;
         });
     }
 
@@ -149,18 +150,16 @@ export class AtcSystem {
             message.Response.ComStatus = AtsuMessageComStatus.Sending;
             this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', message);
 
-            setTimeout(() => {
-                if (message.Response !== undefined) {
-                    this.connector.sendCpdlcMessage(message.Response).then((text) => {
-                        if (text === '') {
-                            message.Response.ComStatus = AtsuMessageComStatus.Sent;
-                        } else {
-                            message.Response.ComStatus = AtsuMessageComStatus.Failed;
-                        }
-                        this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', message);
-                    });
-                }
-            }, 50000 + Math.floor(Math.random() * 10000));
+            if (message.Response !== undefined) {
+                this.datalink.sendMessage(message.Response).then((text) => {
+                    if (text === '') {
+                        message.Response.ComStatus = AtsuMessageComStatus.Sent;
+                    } else {
+                        message.Response.ComStatus = AtsuMessageComStatus.Failed;
+                    }
+                    this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', message);
+                });
+            }
         }
     }
 
@@ -276,7 +275,7 @@ export class AtcSystem {
         }
 
         message.ComStatus = AtsuMessageComStatus.Sending;
-        return this.connector.sendCpdlcMessage(message as CpdlcMessage).then((retval) => {
+        return this.datalink.sendMessage(message).then((retval) => {
             if (retval === '') {
                 message.ComStatus = AtsuMessageComStatus.Sent;
             } else {
