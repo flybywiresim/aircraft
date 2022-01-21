@@ -44,8 +44,8 @@ class CDUAtcMessagesRecord {
         for (let i = 0; i < 5; ++i) {
             let headerLeft = "", headerRight = "", contentStart = "";
 
-            if (messages[offset + i]) {
-                headerLeft = `${messages[offset + i].Timestamp.mcduTimestamp()} ${messages[offset + i].Direction === Atsu.AtsuMessageDirection.Input ? 'FROM' : 'TO'} `;
+            if (messages.length > (offset + i) && messages[offset + i]) {
+                headerLeft = `${messages[offset + i].Timestamp.dcduTimestamp()} ${messages[offset + i].Direction === Atsu.AtsuMessageDirection.Input ? 'FROM' : 'TO'} `;
                 headerLeft += messages[offset + i].Station;
                 headerRight = CDUAtcMessagesRecord.TranslateCpdlcResponse(messages[offset + i].ResponseType);
 
@@ -66,20 +66,20 @@ class CDUAtcMessagesRecord {
             msgStart[i] = `${contentStart.length !== 0 ? "<" : ""}${contentStart}`;
         }
 
-        let up = false, down = false;
+        let left = false, right = false;
         if (messages.length > offset + 4) {
-            mcdu.onUp = () => {
-                CDUAtcMessagesRecord.ShowPage(mcdu, messages, offset + 1, false);
+            mcdu.onNextPage = () => {
+                CDUAtcMessagesRecord.ShowPage(mcdu, messages, offset + 4, false);
             };
-            up = true;
+            right = true;
         }
         if (offset > 0) {
-            mcdu.onDown = () => {
-                CDUAocMessagesReceived.ShowPage(mcdu, messages, offset - 1, false);
+            mcdu.onPrevPage = () => {
+                CDUAtcMessagesRecord.ShowPage(mcdu, messages, offset - 4, false);
             };
-            down = true;
+            left = true;
         }
-        mcdu.setArrows(up, down, false, false);
+        mcdu.setArrows(false, false, left, right);
 
         mcdu.setTemplate([
             ["MSG RECORD"],
