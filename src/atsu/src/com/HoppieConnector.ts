@@ -106,7 +106,7 @@ export class HoppieConnector {
             if (response.ok) {
                 return response.text();
             }
-            return 'error';
+            return 'COM UNAVAILABLE';
         });
         if (text.startsWith('ok') !== true) {
             return 'COM UNAVAILABLE';
