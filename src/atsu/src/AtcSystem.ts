@@ -220,7 +220,7 @@ export class AtcSystem {
                 }
 
                 // logon rejected
-                if (!response.Message.includes('STANDBY')) {
+                if (!response.Message.includes('UNABLE')) {
                     this.nextStation = '';
                     return true;
                 }
