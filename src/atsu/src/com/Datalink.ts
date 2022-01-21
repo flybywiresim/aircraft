@@ -14,11 +14,18 @@ import { HoppieConnector } from './HoppieConnector';
 import { NXApiConnector } from './NXApiConnector';
 
 export class Datalink {
-    private hoppieNetwork: HoppieConnector;
-
-    private nxNetwork: NXApiConnector;
-
     private overallDelay = 0;
+
+    private waitedTimeHoppie = 0;
+
+    private waitedTimeNXApi = 0;
+
+    private enqueueReceivedMessages(parent: AtsuManager, messages: AtsuMessage[]): void {
+        messages.forEach((message) => {
+            this.estimateTransmissionTime();
+            setTimeout(() => parent.registerMessage(message), this.overallDelay);
+        });
+    }
 
     constructor(parent: AtsuManager) {
         // copy the datalink transmission time data
@@ -34,17 +41,28 @@ export class Datalink {
             break;
         }
 
-        this.hoppieNetwork = new HoppieConnector(parent);
-        this.nxNetwork = new NXApiConnector(parent);
-
-        // update the internal timer
         setInterval(() => {
-            if (this.overallDelay <= 1000) {
+            // update the internal timer
+            if (this.overallDelay <= 200) {
                 this.overallDelay = 0;
             } else {
-                this.overallDelay -= 1000;
+                this.overallDelay -= 200;
             }
-        }, 1000);
+
+            if (HoppieConnector.pollInterval() <= this.waitedTimeHoppie) {
+                HoppieConnector.poll().then((messages) => this.enqueueReceivedMessages(parent, messages));
+                this.waitedTimeHoppie = 0;
+            } else {
+                this.waitedTimeHoppie += 200;
+            }
+
+            if (NXApiConnector.pollInterval() <= this.waitedTimeNXApi) {
+                NXApiConnector.poll().then((messages) => this.enqueueReceivedMessages(parent, messages));
+                this.waitedTimeNXApi = 0;
+            } else {
+                this.waitedTimeNXApi += 200;
+            }
+        }, 200);
     }
 
     private estimateTransmissionTime(): void {
@@ -76,9 +94,9 @@ export class Datalink {
 
         if (index < icaos.length) {
             if (requestMetar === true) {
-                retval = await this.nxNetwork.receiveMetar(icaos[index], message).then(() => this.receiveWeatherData(requestMetar, icaos, index + 1, message));
+                retval = await NXApiConnector.receiveMetar(icaos[index], message).then(() => this.receiveWeatherData(requestMetar, icaos, index + 1, message));
             } else {
-                retval = await this.nxNetwork.receiveTaf(icaos[index], message).then(() => this.receiveWeatherData(requestMetar, icaos, index + 1, message));
+                retval = await NXApiConnector.receiveTaf(icaos[index], message).then(() => this.receiveWeatherData(requestMetar, icaos, index + 1, message));
             }
         }
 
@@ -108,7 +126,7 @@ export class Datalink {
     }
 
     public async isStationAvailable(callsign: string): Promise<string> {
-        return this.hoppieNetwork.isStationAvailable(callsign);
+        return HoppieConnector.isStationAvailable(callsign);
     }
 
     public async receiveAtis(icao: string): Promise<WeatherMessage> {
@@ -117,7 +135,7 @@ export class Datalink {
         return new Promise((resolve, _reject) => {
             setTimeout(() => {
                 const message = new AtisMessage();
-                this.nxNetwork.receiveAtis(icao, message).then(() => resolve(message));
+                NXApiConnector.receiveAtis(icao, message).then(() => resolve(message));
             }, this.overallDelay);
         });
     }
@@ -128,14 +146,13 @@ export class Datalink {
         return new Promise((resolve, _reject) => {
             setTimeout(() => {
                 if (message.Type < AtsuMessageType.AOC) {
-                    let network: HoppieConnector | NXApiConnector = this.hoppieNetwork;
                     if (message.Network === AtsuMessageNetwork.FBW) {
-                        network = this.nxNetwork;
+                        NXApiConnector.sendTelexMessage(message as FreetextMessage).then((error) => resolve(error));
+                    } else {
+                        HoppieConnector.sendTelexMessage(message as FreetextMessage).then((error) => resolve(error));
                     }
-
-                    network.sendTelexMessage(message as FreetextMessage).then((error) => resolve(error));
                 } else if (message.Type < AtsuMessageType.ATC) {
-                    this.hoppieNetwork.sendCpdlcMessage(message as CpdlcMessage).then((error) => resolve(error));
+                    HoppieConnector.sendCpdlcMessage(message as CpdlcMessage).then((error) => resolve(error));
                 } else {
                     resolve('INVALID MSG');
                 }

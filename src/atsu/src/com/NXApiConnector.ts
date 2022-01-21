@@ -3,8 +3,8 @@
 
 import { NXApi } from '@shared/nxapi';
 import { NXDataStore } from '@shared/persistence';
-import { AtsuMessageComStatus, AtsuMessageNetwork, AtsuMessageDirection } from '../messages/AtsuMessage';
-import { AtisMessage, FreetextMessage, WeatherMessage, AtsuManager } from '../AtsuManager';
+import { AtsuMessage, AtsuMessageComStatus, AtsuMessageNetwork, AtsuMessageDirection } from '../messages/AtsuMessage';
+import { AtisMessage, FreetextMessage, WeatherMessage } from '../AtsuManager';
 
 const WeatherMap = {
     FAA: 'faa',
@@ -19,45 +19,7 @@ const WeatherMap = {
  * Defines the NXApi connector for the AOC system
  */
 export class NXApiConnector {
-    constructor(parent: AtsuManager) {
-        setInterval(() => {
-            // Update connection
-            NXApi.updateTelex()
-                .catch((err) => {
-                    if (err !== NXApi.disconnectedError && err !== NXApi.disabledError) {
-                        console.log('TELEX PING FAILED');
-                    }
-                });
-
-            // Fetch new messages
-            NXApi.getTelexMessages()
-                .then((data) => {
-                    let msgCounter = 0;
-
-                    for (const msg of data) {
-                        const message = new FreetextMessage();
-                        message.Network = AtsuMessageNetwork.FBW;
-                        message.Direction = AtsuMessageDirection.Input;
-                        message.Station = msg.from.flight;
-                        message.Message = msg.message.replace(/;/i, ' ');
-
-                        parent.registerMessage(message);
-                        msgCounter += 1;
-                    }
-
-                    const msgCount = SimVar.GetSimVarValue('L:A32NX_COMPANY_MSG_COUNT', 'Number');
-                    SimVar.SetSimVarValue('L:A32NX_COMPANY_MSG_COUNT', 'Number', msgCount + msgCounter).then();
-                })
-                .catch((err) => {
-                    if (err.status === 404 || err === NXApi.disabledError || err === NXApi.disconnectedError) {
-                        return;
-                    }
-                    console.log('TELEX MSG FETCH FAILED');
-                });
-        }, NXApi.updateRate);
-    }
-
-    public async sendTelexMessage(message: FreetextMessage): Promise<string> {
+    public static async sendTelexMessage(message: FreetextMessage): Promise<string> {
         const content = message.Message.replace('\n', ';');
         return NXApi.sendTelexMessage(message.Station, content).then(() => {
             message.ComStatus = AtsuMessageComStatus.Sent;
@@ -68,7 +30,7 @@ export class NXApiConnector {
         });
     }
 
-    public async receiveMetar(icao: string, message: WeatherMessage): Promise<boolean> {
+    public static async receiveMetar(icao: string, message: WeatherMessage): Promise<boolean> {
         const storedMetarSrc = NXDataStore.get('CONFIG_METAR_SRC', 'MSFS');
 
         return NXApi.getMetar(icao, WeatherMap[storedMetarSrc])
@@ -79,7 +41,7 @@ export class NXApiConnector {
             }).catch(() => false);
     }
 
-    public async receiveTaf(icao: string, message: WeatherMessage): Promise<boolean> {
+    public static async receiveTaf(icao: string, message: WeatherMessage): Promise<boolean> {
         const storedTafSrc = NXDataStore.get('CONFIG_TAF_SRC', 'NOAA');
 
         return NXApi.getTaf(icao, WeatherMap[storedTafSrc])
@@ -90,7 +52,7 @@ export class NXApiConnector {
             }).catch(() => false);
     }
 
-    public async receiveAtis(icao: string, message: AtisMessage): Promise<boolean> {
+    public static async receiveAtis(icao: string, message: AtisMessage): Promise<boolean> {
         const storedAtisSrc = NXDataStore.get('CONFIG_ATIS_SRC', 'FAA');
 
         await NXApi.getAtis(icao, WeatherMap[storedAtisSrc])
@@ -102,5 +64,44 @@ export class NXApiConnector {
             });
 
         return true;
+    }
+
+    public static async poll(): Promise<AtsuMessage[]> {
+        const retval: AtsuMessage[] = [];
+
+        // Update connection
+        NXApi.updateTelex()
+            .catch((err) => {
+                if (err !== NXApi.disconnectedError && err !== NXApi.disabledError) {
+                    console.log('TELEX PING FAILED');
+                }
+            });
+
+        // Fetch new messages
+        NXApi.getTelexMessages()
+            .then((data) => {
+                for (const msg of data) {
+                    const message = new FreetextMessage();
+                    message.Network = AtsuMessageNetwork.FBW;
+                    message.Direction = AtsuMessageDirection.Input;
+                    message.Station = msg.from.flight;
+                    message.Message = msg.message.replace(/;/i, ' ');
+
+                    retval.push(message);
+                }
+            })
+            .catch((err) => {
+                if (err.status === 404 || err === NXApi.disabledError || err === NXApi.disconnectedError) {
+                    return retval;
+                }
+                console.log('TELEX MSG FETCH FAILED');
+                return retval;
+            });
+
+        return retval;
+    }
+
+    public static pollInterval(): number {
+        return NXApi.updateRate;
     }
 }
