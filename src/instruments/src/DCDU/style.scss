@@ -74,10 +74,17 @@ path.dcdu-line {
 }
 
 .atc-info {
-  fill: rgb(0, 255, 0);
   font-size: 22px;
   font-family: Roboto;
   font-weight: bold;
+}
+
+.atc-info-standby {
+  fill: rgb(255,255,255);
+}
+
+.atc-info-active {
+  fill: rgb(0, 255, 0);
 }
 
 .message-tspan {
