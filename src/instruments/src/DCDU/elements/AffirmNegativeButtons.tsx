@@ -29,7 +29,7 @@ export const AffirmNegativeButtons: React.FC<AffirmNegativeButtonsProps> = ({ me
     if (message.Response === undefined && message.ResponseType === undefined) {
         // the standard case for new messages
         showAnswers = true;
-    } else {
+    } else if (message.Response === undefined) {
         showSend = true;
     }
 

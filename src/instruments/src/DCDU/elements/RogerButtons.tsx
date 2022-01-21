@@ -28,7 +28,7 @@ export const RogerButtons: React.FC<RogerButtonsProps> = ({ message, setMessageS
 
     if (message.Response === undefined && message.ResponseType === undefined) {
         showAnswers = true;
-    } else {
+    } else if (message.Response === undefined) {
         showSend = true;
     }
 
