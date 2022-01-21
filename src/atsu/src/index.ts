@@ -1,8 +1,9 @@
 import { AtsuManager, FreetextMessage, PdcMessage } from './AtsuManager';
-import { AtsuMessageSerializationFormat, AtsuMessageNetwork, AtsuMessageType } from './messages/AtsuMessage';
+import { AtsuMessageDirection, AtsuMessageSerializationFormat, AtsuMessageNetwork, AtsuMessageType } from './messages/AtsuMessage';
 import { CpdlcMessage, CpdlcMessageResponse } from './messages/CpdlcMessage';
 
 export {
+    AtsuMessageDirection,
     AtsuMessageNetwork,
     AtsuMessageSerializationFormat,
     AtsuMessageType,
