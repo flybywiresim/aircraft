@@ -14,8 +14,6 @@ export class AtcSystem {
 
     private nextAtc = '';
 
-    private cpdlcMessageId: number = Math.floor(Math.random() * 100);
-
     private messageQueue: CpdlcMessage[] = [];
 
     constructor(parent: AtsuManager, datalink: Datalink) {
@@ -75,18 +73,15 @@ export class AtcSystem {
         const message = new CpdlcMessage();
         message.Station = station;
         message.Direction = AtsuMessageDirection.Output;
-        message.CurrentTransmissionId = this.cpdlcMessageId++;
         message.RequestedResponses = CpdlcMessageRequestedResponseType.Yes;
+        message.ComStatus = AtsuMessageComStatus.Sending;
         message.Message = 'REQUEST LOGON';
 
-        return this.datalink.sendMessage(message).then((error) => {
-            if (error === '') {
-                this.listener.triggerToAllSubscribers('A32NX_DCDU_ATC_LOGON_MSG', `NEXT ATC: ${station}`);
-                this.parent.registerMessage(message);
-                this.nextAtc = station;
-            }
-            return error;
-        });
+        this.nextAtc = station;
+        this.parent.registerMessage(message);
+        this.listener.triggerToAllSubscribers('A32NX_DCDU_ATC_LOGON_MSG', `NEXT ATC: ${station}`);
+
+        return this.datalink.sendMessage(message);
     }
 
     public async logoff(): Promise<string> {
@@ -97,27 +92,23 @@ export class AtcSystem {
         const message = new CpdlcMessage();
         message.Station = this.currentAtc;
         message.Direction = AtsuMessageDirection.Output;
-        message.CurrentTransmissionId = this.cpdlcMessageId++;
         message.RequestedResponses = CpdlcMessageRequestedResponseType.No;
+        message.ComStatus = AtsuMessageComStatus.Sending;
         message.Message = 'LOGOFF';
 
-        return this.datalink.sendMessage(message).then((error) => {
-            if (error === '') {
-                this.listener.triggerToAllSubscribers('A32NX_DCDU_ATC_LOGON_MSG', '');
-                this.parent.registerMessage(message);
-                this.nextAtc = '';
-                this.currentAtc = '';
-            }
-            return error;
-        });
+        this.nextAtc = '';
+        this.parent.registerMessage(message);
+        this.currentAtc = '';
+        this.listener.triggerToAllSubscribers('A32NX_DCDU_ATC_LOGON_MSG', '');
+
+        return this.datalink.sendMessage(message);
     }
 
     private createCpdlcResponse(request: CpdlcMessage) {
         // create the meta information of the response
         const response = new CpdlcMessage();
         response.Direction = AtsuMessageDirection.Output;
-        response.PreviousTransmissionId = request.CurrentTransmissionId;
-        response.CurrentTransmissionId = this.cpdlcMessageId++;
+        response.PreviousTransmissionId = request.UniqueMessageID;
         response.RequestedResponses = CpdlcMessageRequestedResponseType.No;
         response.Station = request.Station;
 
@@ -263,15 +254,17 @@ export class AtcSystem {
         let analyzed = false;
 
         // received an invalid message from an unknown station
-        if (cpdlcMessage.Station !== this.currentAtc && cpdlcMessage.Station !== this.nextAtc) {
-            return;
+        if (cpdlcMessage.Direction === AtsuMessageDirection.Input) {
+            if (cpdlcMessage.Station !== this.currentAtc && cpdlcMessage.Station !== this.nextAtc) {
+                return;
+            }
         }
 
         // search corresponding request, if previous ID is set
         if (cpdlcMessage.PreviousTransmissionId !== -1) {
             this.messageQueue.forEach((element) => {
                 while (element !== undefined) {
-                    if (element.CurrentTransmissionId === cpdlcMessage.PreviousTransmissionId) {
+                    if (element.UniqueMessageID === cpdlcMessage.PreviousTransmissionId) {
                         element.Response = cpdlcMessage;
                         analyzed = this.analyzeMessage(element, cpdlcMessage);
                         break;
@@ -290,7 +283,8 @@ export class AtcSystem {
                 Coherent.call('PLAY_INSTRUMENT_SOUND', 'cpdlc_ring');
             }
 
-            if (cpdlcMessage.ComStatus === AtsuMessageComStatus.Open && SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_MAX_REACHED', 'boolean') === 0) {
+            const dcduRelevant = cpdlcMessage.ComStatus === AtsuMessageComStatus.Open || cpdlcMessage.ComStatus === AtsuMessageComStatus.Received;
+            if (dcduRelevant && SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_MAX_REACHED', 'boolean') === 0) {
                 this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', message as CpdlcMessage);
             }
         }
