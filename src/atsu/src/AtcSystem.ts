@@ -235,7 +235,7 @@ export class AtcSystem {
             if (request.Message.startsWith('REQUEST')) {
                 // logon accepted by ATC
                 if (response.Message.includes('LOGON ACCEPTED')) {
-                    this.listener.triggerToAllSubscribers('A32NX_DCDU_ATC_LOGON_MSG', `CURRENT ATC UNIT @${this.nextStation}@`);
+                    this.listener.triggerToAllSubscribers('A32NX_DCDU_ATC_LOGON_MSG', `CURRENT ATC UNIT @${this.nextAtc}@`);
                     this.currentAtc = this.nextAtc;
                     this.nextAtc = '';
                     return true;
