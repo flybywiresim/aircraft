@@ -1,9 +1,11 @@
-import { AtsuTimestamp, AtsuMessageComStatus, AtsuMessage, AtsuMessageType, AtsuMessageDirection } from './messages/AtsuMessage';
+import { AtsuMessageComStatus, AtsuMessage, AtsuMessageType, AtsuMessageDirection } from './messages/AtsuMessage';
 import { CpdlcMessageResponse, CpdlcMessageRequestedResponseType, CpdlcMessage } from './messages/CpdlcMessage';
 import { Datalink } from './com/Datalink';
 import { AtsuManager } from './AtsuManager';
 
 export class AtcSystem {
+    private parent: AtsuManager | undefined = undefined;
+
     private datalink: Datalink | undefined = undefined;
 
     private listener = RegisterViewListener('JS_LISTENER_SIMVARS');
@@ -17,6 +19,7 @@ export class AtcSystem {
     private messageQueue: CpdlcMessage[] = [];
 
     constructor(parent: AtsuManager, datalink: Datalink) {
+        this.parent = parent;
         this.datalink = datalink;
 
         setInterval(async () => {
@@ -70,7 +73,6 @@ export class AtcSystem {
         }
 
         const message = new CpdlcMessage();
-        message.Timestamp = new AtsuTimestamp();
         message.Station = station;
         message.Direction = AtsuMessageDirection.Output;
         message.CurrentTransmissionId = this.cpdlcMessageId++;
@@ -80,7 +82,7 @@ export class AtcSystem {
         return this.datalink.sendMessage(message).then((error) => {
             if (error === '') {
                 this.listener.triggerToAllSubscribers('A32NX_DCDU_ATC_LOGON_MSG', `NEXT ATC: ${station}`);
-                this.insertMessage(message);
+                this.parent.registerMessage(message);
                 this.nextAtc = station;
             }
             return error;
@@ -93,7 +95,6 @@ export class AtcSystem {
         }
 
         const message = new CpdlcMessage();
-        message.Timestamp = new AtsuTimestamp();
         message.Station = this.currentAtc;
         message.Direction = AtsuMessageDirection.Output;
         message.CurrentTransmissionId = this.cpdlcMessageId++;
@@ -103,7 +104,7 @@ export class AtcSystem {
         return this.datalink.sendMessage(message).then((error) => {
             if (error === '') {
                 this.listener.triggerToAllSubscribers('A32NX_DCDU_ATC_LOGON_MSG', '');
-                this.insertMessage(message);
+                this.parent.registerMessage(message);
                 this.nextAtc = '';
                 this.currentAtc = '';
             }
@@ -114,7 +115,6 @@ export class AtcSystem {
     private createCpdlcResponse(request: CpdlcMessage) {
         // create the meta information of the response
         const response = new CpdlcMessage();
-        response.Timestamp = new AtsuTimestamp();
         response.Direction = AtsuMessageDirection.Output;
         response.PreviousTransmissionId = request.CurrentTransmissionId;
         response.CurrentTransmissionId = this.cpdlcMessageId++;
@@ -289,7 +289,7 @@ export class AtcSystem {
                 Coherent.call('PLAY_INSTRUMENT_SOUND', 'cpdlc_ring');
             }
 
-            if (SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_MAX_REACHED', 'boolean') === 0) {
+            if (cpdlcMessage.ComStatus === AtsuMessageComStatus.Open && SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_MAX_REACHED', 'boolean') === 0) {
                 this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', message as CpdlcMessage);
             }
         }
