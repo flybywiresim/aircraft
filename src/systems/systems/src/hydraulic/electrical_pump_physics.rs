@@ -194,7 +194,7 @@ impl ElectricalPumpPhysics {
 impl SimulationElement for ElectricalPumpPhysics {
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.active_id, self.is_active);
-        writer.write(&self.rpm_id, self.speed().get::<revolution_per_minute>());
+        writer.write(&self.rpm_id, self.speed());
     }
 
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {

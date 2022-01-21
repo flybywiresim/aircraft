@@ -901,6 +901,10 @@
     - Psi
     - Current pressure in brake accumulator on yellow alternate brake circuit
 
+- A32NX_HYD_EMERGENCY_GEN_RPM
+    - Rpm
+    - Hydraulic emergency generator current rpm
+
 - A32NX_FWD_DOOR_CARGO_POSITION
     - Percent
     - Real position of the forward cargo door

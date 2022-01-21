@@ -16,6 +16,7 @@
 1. [SOUND] Added PTU sounds in correct conditions - @hotshotp (Boris)
 1. [ADIRS] Use heading as track at low ground speeds - @beheh (Benedict Etzel)
 1. [PFD] Fix mach number flickering between mach 0.45 and 0.5 - @beheh (Benedict Etzel)
+1. [HYD] Hydraulic emergency generator physical based model - @crocket6 (crocket)
 1. [AP] Improved flight director guidance
 1. [FBW] Improved turn coodination in manual flight - @aguther (Andreas Guther)
 1. [FBW] Roll normal law is no longer using elasticity table - @IbrahimK42 (IbrahimK42)

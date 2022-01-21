@@ -56,8 +56,17 @@ pub trait ApuStart {
     fn start_is_on(&self) -> bool;
 }
 
-pub trait RamAirTurbineHydraulicCircuitPressurised {
-    fn is_rat_hydraulic_circuit_pressurised(&self) -> bool;
+pub trait HydraulicGeneratorControlUnit {
+    fn max_allowed_power(&self) -> Power;
+    fn motor_speed(&self) -> AngularVelocity;
+}
+
+pub trait ControlValveCommand {
+    fn valve_position_command(&self) -> Ratio;
+}
+
+pub trait EmergencyGeneratorPower {
+    fn generated_power(&self) -> Power;
 }
 
 pub trait LandingGearRealPosition {
@@ -83,7 +92,7 @@ pub trait LgciuGearExtension {
     fn all_up_and_locked(&self) -> bool;
 }
 
-pub trait LgciuInterface: LgciuWeightOnWheels + LgciuGearExtension {}
+pub trait LgciuSensors: LgciuWeightOnWheels + LgciuGearExtension {}
 pub trait EngineCorrectedN1 {
     fn corrected_n1(&self) -> Ratio;
 }
