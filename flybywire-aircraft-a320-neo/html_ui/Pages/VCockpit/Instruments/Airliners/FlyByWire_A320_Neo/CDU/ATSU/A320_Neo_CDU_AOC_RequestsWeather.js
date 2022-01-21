@@ -59,18 +59,16 @@ class CDUAocRequestsWeather {
             sendStatus = "SENDING";
             updateView();
 
+            setTimeout(() => {
+                sendStatus = "SENT";
+                updateView();
+            }, 1000);
+
             mcdu.atsuManager.aoc().receiveWeather(reqID === 0, icaos).then((message) => {
                 if (message !== undefined) {
-                    sendStatus = "SENT";
+                    mcdu.atsuManager.registerMessage(message);
+                    sendStatus = "";
                     updateView();
-
-                    setTimeout(() => {
-                        mcdu.atsuManager.registerMessage(message);
-                    }, Math.floor(Math.random() * 10000) + 10000);
-                    labelTimeout = setTimeout(() => {
-                        sendStatus = "";
-                        updateView();
-                    }, 3000);
                 } else {
                     sendStatus = "FAILED";
                     updateView();

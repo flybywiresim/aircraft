@@ -130,19 +130,21 @@ class CDUAocRequestsAtis {
             store["sendStatus"] = "SENDING";
             updateView();
 
-            mcdu.atsuManager.aoc().receiveAtis(icao).then((message) => {
+            setTimeout(() => {
                 store["sendStatus"] = "SENT";
                 updateView();
+            }, 1000);
 
-                setTimeout(() => {
-                    mcdu.atsuManager.registerMessage(message);
+            mcdu.atsuManager.aoc().receiveAtis(icao).then((message) => {
+                mcdu.atsuManager.registerMessage(message);
+                store["sendStatus"] = "";
+                updateView();
 
-                    // print the message
-                    if (store.formatID === 0) {
-                        mcdu.atsuManager.messageRead(message.UniqueMessageID);
-                        mcdu.atsuManager.printMessage(message);
-                    }
-                }, Math.floor(Math.random() * 10000) + 10000);
+                // print the message
+                if (store.formatID === 0) {
+                    mcdu.atsuManager.messageRead(message.UniqueMessageID);
+                    mcdu.atsuManager.printMessage(message);
+                }
             });
         };
 
