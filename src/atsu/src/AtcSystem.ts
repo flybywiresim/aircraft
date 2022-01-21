@@ -252,8 +252,15 @@ export class AtcSystem {
             analyzed = this.analyzeMessage(cpdlcMessage, undefined);
         }
 
-        if (!analyzed && SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_MAX_REACHED', 'boolean') === 0) {
-            this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', message as CpdlcMessage);
+        if (!analyzed) {
+            if (cpdlcMessage.Direction === AtsuMessageDirection.Input) {
+                SimVar.SetSimVarValue('L:A32NX_DCDU_ATC_MSG_WAITING', 'boolean', 1);
+                // TODO play the sound
+            }
+
+            if (SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_MAX_REACHED', 'boolean') === 0) {
+                this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', message as CpdlcMessage);
+            }
         }
     }
 
