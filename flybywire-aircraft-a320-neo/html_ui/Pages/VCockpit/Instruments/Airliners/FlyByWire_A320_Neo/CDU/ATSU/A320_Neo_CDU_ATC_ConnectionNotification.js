@@ -4,7 +4,6 @@ class CDUAtcConnectionNotification {
         mcdu.page.Current = mcdu.page.ATCNotification;
 
         let flightNo = "______[color]green";
-        let fromTo = "____|____[color]amber";
         let atcStation = "____[color]amber";
         let atcStationAvail = false;
         let flightNoAvail = false;
@@ -28,7 +27,6 @@ class CDUAtcConnectionNotification {
             flightNoAvail = true;
         }
         if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident) {
-            fromTo = mcdu.flightPlanManager.getOrigin().ident + "/" + mcdu.flightPlanManager.getDestination().ident + "[color]cyan";
             fromToAvail = true;
         }
 
@@ -60,8 +58,8 @@ class CDUAtcConnectionNotification {
 
         mcdu.setTemplate([
             ["NOTIFICATION"],
-            ["\xa0ATC FLT NBR", "FROM/TO\xa0"],
-            [flightNo, fromTo],
+            ["\xa0ATC FLT NBR"],
+            [flightNo],
             [centerTitleLeft, centerTitleRight],
             [atcStation, notifyButton, `---------${linesColor}`],
             [""],
