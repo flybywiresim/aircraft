@@ -192,6 +192,10 @@ export class AtcSystem {
         return index !== -1;
     }
 
+    public cleanupMessages(): void {
+        this.messageQueue = [];
+    }
+
     private analyzeMessage(request: CpdlcMessage, response: CpdlcMessage): boolean {
         // inserted a sent message for a new thread
         if (request.Direction === AtsuMessageDirection.Output && response === undefined) {
