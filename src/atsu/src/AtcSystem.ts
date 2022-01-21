@@ -8,9 +8,9 @@ export class AtcSystem {
 
     private listener = RegisterViewListener('JS_LISTENER_SIMVARS');
 
-    private station = '';
+    private currentAtc = '';
 
-    private nextStation = '';
+    private nextAtc = '';
 
     private cpdlcMessageId: number = Math.floor(Math.random() * 100);
 
@@ -50,15 +50,15 @@ export class AtcSystem {
     }
 
     public currentStation(): string {
-        return this.station;
+        return this.currentAtc;
     }
 
     public logonInProgress(): boolean {
-        return this.nextStation !== '';
+        return this.nextAtc !== '';
     }
 
     public async logon(station: string): Promise<string> {
-        if (this.station !== '') {
+        if (this.currentAtc !== '') {
             const retval = await this.logoff();
             if (retval !== '') {
                 return retval;
@@ -76,19 +76,19 @@ export class AtcSystem {
             if (error === '') {
                 this.listener.triggerToAllSubscribers('A32NX_DCDU_ATC_LOGON_MSG', `NEXT ATC: ${station}`);
                 this.insertMessage(message);
-                this.nextStation = station;
+                this.nextAtc = station;
             }
             return error;
         });
     }
 
     public async logoff(): Promise<string> {
-        if (this.station === '') {
+        if (this.currentAtc === '') {
             return 'NO ACTIVE ATC';
         }
 
         const message = new CpdlcMessage();
-        message.Station = this.station;
+        message.Station = this.currentAtc;
         message.Direction = AtsuMessageDirection.Output;
         message.CurrentTransmissionId = this.cpdlcMessageId++;
         message.RequestedResponses = CpdlcMessageRequestedResponseType.No;
@@ -98,8 +98,8 @@ export class AtcSystem {
             if (error === '') {
                 this.listener.triggerToAllSubscribers('A32NX_DCDU_ATC_LOGON_MSG', '');
                 this.insertMessage(message);
-                this.nextStation = '';
-                this.station = '';
+                this.nextAtc = '';
+                this.currentAtc = '';
             }
             return error;
         });
@@ -201,32 +201,32 @@ export class AtcSystem {
             // received a logoff message
             if (request.Message.includes('LOGOFF')) {
                 this.listener.triggerToAllSubscribers('A32NX_DCDU_ATC_LOGON_MSG', '');
-                this.station = '';
+                this.currentAtc = '';
                 return true;
             }
 
             // received a service terminated message
             if (request.Message.includes('TERMINATED')) {
                 this.listener.triggerToAllSubscribers('A32NX_DCDU_ATC_LOGON_MSG', '');
-                this.station = '';
+                this.currentAtc = '';
                 return true;
             }
         }
 
         // expecting a LOGON or denied message
-        if (this.nextStation !== '' && request !== undefined && response !== undefined) {
+        if (this.nextAtc !== '' && request !== undefined && response !== undefined) {
             if (request.Message.startsWith('REQUEST')) {
                 // logon accepted by ATC
                 if (response.Message.includes('LOGON ACCEPTED')) {
                     this.listener.triggerToAllSubscribers('A32NX_DCDU_ATC_LOGON_MSG', `CURRENT ATC UNIT @${this.nextStation}@`);
-                    this.station = this.nextStation;
-                    this.nextStation = '';
+                    this.currentAtc = this.nextAtc;
+                    this.nextAtc = '';
                     return true;
                 }
 
                 // logon rejected
                 if (!response.Message.includes('UNABLE')) {
-                    this.nextStation = '';
+                    this.nextAtc = '';
                     return true;
                 }
             }
@@ -280,10 +280,10 @@ export class AtcSystem {
 
     public async sendMessage(message: AtsuMessage): Promise<string> {
         if (message.Station === '') {
-            if (this.station === '') {
+            if (this.currentAtc === '') {
                 return 'NO ACTIVE ATC';
             }
-            message.Station = this.station;
+            message.Station = this.currentAtc;
         }
 
         message.ComStatus = AtsuMessageComStatus.Sending;
