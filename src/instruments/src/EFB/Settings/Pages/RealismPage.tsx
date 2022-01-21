@@ -23,6 +23,8 @@ export const RealismPage = () => {
     const [realisticTiller, setRealisticTiller] = usePersistentNumberProperty('REALISTIC_TILLER_ENABLED', 0);
     const [homeCockpit, setHomeCockpit] = usePersistentProperty('HOME_COCKPIT_ENABLED', '0');
     const [autoFillChecklists, setAutoFillChecklists] = usePersistentNumberProperty('EFB_AUTOFILL_CHECKLISTS', 0);
+    const [autoDeleteDiscontinuity, setAutoDeleteDiscpntinuity] = usePersistentNumberProperty('AUTO_DELETE_DISCONTINUITY', 1);
+    const [autoSidStar, setAutoSidStar] = usePersistentNumberProperty('AUTO_SID_STAR', 1);
 
     const adirsAlignTimeButtons: (ButtonType & SimVarButton)[] = [
         { name: t('Settings.Instant'), setting: 'INSTANT', simVarValue: 1 },
@@ -121,6 +123,14 @@ export const RealismPage = () => {
                 )}
             </SettingGroup>
 
+            <SettingItem name={t('Settings.Realism.SidStarMode')}>
+                <Toggle value={autoSidStar === 1} onToggle={(value) => setAutoSidStar(value ? 1 : 0)} />
+            </SettingItem>
+            {autoSidStar && (
+                <SettingItem name={t('Settings.Realism.DeleteDiscpntinuityMode')}>
+                    <Toggle value={autoDeleteDiscontinuity === 1} onToggle={(value) => setAutoDeleteDiscpntinuity(value ? 1 : 0)} />
+                </SettingItem>
+            )}
         </SettingsPage>
     );
 };

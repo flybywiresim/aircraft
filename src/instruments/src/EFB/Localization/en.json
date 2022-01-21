@@ -453,7 +453,9 @@
       "McduFocusTimeout": "MCDU Focus Timeout (seconds)",
       "McduKeyboardInput": "MCDU Keyboard Input",
       "SeparateTillerFromRudderInputs": "Separate Tiller from Rudder Inputs",
-      "Title": "Realism"
+      "Title": "Realism",
+      "DeleteDiscpntinuityMode": "Auto delete discontinuity",
+      "SidStarMode": "Auto load SID/STAR from SimBrief"
     },
     "SimOptions": {
       "Active": "Active",
