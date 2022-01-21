@@ -53,6 +53,10 @@ export class AtcSystem {
         return this.currentAtc;
     }
 
+    public nextStation(): string {
+        return this.nextAtc;
+    }
+
     public logonInProgress(): boolean {
         return this.nextAtc !== '';
     }
