@@ -26,6 +26,7 @@ The following aircraft configuration is currently simulated or targeted:
  FWC Std.    H2F9C
  TAWS        Honeywell EGPWS
  ACAS        Honeywell TPA-100B
+ ATC         Honeywell TRA-100B
  MMR         Honeywell iMMR
  WXR         Honeywell RDR-4000
  ```
