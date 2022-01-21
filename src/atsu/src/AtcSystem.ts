@@ -215,6 +215,16 @@ export class AtcSystem {
                 this.currentAtc = '';
                 return true;
             }
+
+            // process the handover message
+            if (request.Message.includes('HANDOVER')) {
+                const entries = request.Message.split(' ');
+                if (entries.length >= 2) {
+                    const station = entries[1].replace(/@/gi, '');
+                    this.logon(station);
+                    return true;
+                }
+            }
         }
 
         // expecting a LOGON or denied message
