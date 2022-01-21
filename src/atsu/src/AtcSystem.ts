@@ -1,4 +1,4 @@
-import { AtsuMessageComStatus, AtsuMessage, AtsuMessageType, AtsuMessageDirection } from './messages/AtsuMessage';
+import { AtsuTimestamp, AtsuMessageComStatus, AtsuMessage, AtsuMessageType, AtsuMessageDirection } from './messages/AtsuMessage';
 import { CpdlcMessageResponse, CpdlcMessageRequestedResponseType, CpdlcMessage } from './messages/CpdlcMessage';
 import { Datalink } from './com/Datalink';
 import { AtsuManager } from './AtsuManager';
@@ -70,6 +70,7 @@ export class AtcSystem {
         }
 
         const message = new CpdlcMessage();
+        message.Timestamp = new AtsuTimestamp();
         message.Station = station;
         message.Direction = AtsuMessageDirection.Output;
         message.CurrentTransmissionId = this.cpdlcMessageId++;
@@ -92,6 +93,7 @@ export class AtcSystem {
         }
 
         const message = new CpdlcMessage();
+        message.Timestamp = new AtsuTimestamp();
         message.Station = this.currentAtc;
         message.Direction = AtsuMessageDirection.Output;
         message.CurrentTransmissionId = this.cpdlcMessageId++;
@@ -112,6 +114,7 @@ export class AtcSystem {
     private createCpdlcResponse(request: CpdlcMessage) {
         // create the meta information of the response
         const response = new CpdlcMessage();
+        response.Timestamp = new AtsuTimestamp();
         response.Direction = AtsuMessageDirection.Output;
         response.PreviousTransmissionId = request.CurrentTransmissionId;
         response.CurrentTransmissionId = this.cpdlcMessageId++;
