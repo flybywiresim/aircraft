@@ -107,6 +107,10 @@ export class Datalink {
         });
     }
 
+    public async isStationAvailable(callsign: string): Promise<string> {
+        return this.hoppieNetwork.isStationAvailable(callsign);
+    }
+
     public async receiveAtis(icao: string): Promise<WeatherMessage> {
         this.estimateTransmissionTime();
 
