@@ -127,6 +127,7 @@
 1. [AP] Do not disengage SRS on RTO, engage it only in FLX detent when FLX is configured - @aguther (Andreas Guther)
 1. [ATHR] Improved thrust limits, FLX limits now CLB when entered into FMGC - @aguther (Andreas Guther)
 1. [AP] Improved LOC ALGIN and ROLL OUT during Autoland - @aguther (Andreas Guther)
+1. [FBW] Fix: do not compensate ground spoilers in C* law - @aguther (Andreas Guther)
 
 ## 0.7.0
 
