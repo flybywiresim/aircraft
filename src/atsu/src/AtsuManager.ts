@@ -1,6 +1,7 @@
 //  Copyright (c) 2022 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
+import { Datalink } from './com/Datalink';
 import { AtsuStatusCodes } from './AtsuStatusCodes';
 import { AtcSystem } from './AtcSystem';
 import { AocSystem } from './AocSystem';
