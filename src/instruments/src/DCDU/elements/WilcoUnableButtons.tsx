@@ -59,8 +59,15 @@ export const WilcoUnableButtons: React.FC<WilcoUnableButtonsProps> = ({ message,
             if (index === 'L1') {
                 setMessageStatus(message.UniqueMessageID, undefined);
             } else {
-                SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_ANSWER', 'number', message.ResponseType as number);
-                SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_SEND_UID', 'number', message.UniqueMessageID);
+                let systemBusy = SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_ANSWER', 'number') !== -1;
+                systemBusy = systemBusy || SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_SEND_UID', 'number') !== -1;
+
+                if (!systemBusy) {
+                    SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_ANSWER', 'number', message.ResponseType as number);
+                    SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_SEND_UID', 'number', message.UniqueMessageID);
+                } else {
+                    setStatus('Buttons', 'SYSTEM BUSY');
+                }
             }
         } else if (closeClickabel && index === 'R2') {
             closeMessage(message.UniqueMessageID);
