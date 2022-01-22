@@ -274,6 +274,9 @@ export class AtcSystem {
             this.messageQueue.forEach((element) => {
                 while (element !== undefined) {
                     if (element.CurrentTransmissionId === cpdlcMessage.PreviousTransmissionId) {
+                        if (element.ResponseType === undefined) {
+                            element.ResponseType = CpdlcMessageResponse.Other;
+                        }
                         element.Response = cpdlcMessage;
                         analyzed = this.analyzeMessage(element, cpdlcMessage);
                         break;
