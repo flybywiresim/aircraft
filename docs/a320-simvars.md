@@ -813,18 +813,13 @@
     - Bool
     - NW STRG DISC memo indication should show on ecam if true
 
-- A32NX_TILLER_PEDAL_DISCONNECT
-    - Bool
-    - True when tiller disconnect button is pressed
-        Tiller button to be binded on "TOGGLE WATER RUDDER"
-
 - A32NX_NOSE_WHEEL_POSITION
     - Percent over 100
     - Position of nose steering wheel animation [0;1] 0 left, 0.5 middle
 
 - A32NX_TILLER_HANDLE_POSITION
     - Percent over 100
-    - Position of tiller steering handle animation [0;1] 0 left, 0.5 middle
+    - Position of tiller steering handle animation [-1;1] -1 left, 0 middle, 1 right
 
 - A32NX_AUTOPILOT_NOSEWHEEL_DEMAND
     - Percent over 100
@@ -897,6 +892,10 @@
 - A32NX_HYD_BRAKE_ALTN_ACC_PRESS
     - Psi
     - Current pressure in brake accumulator on yellow alternate brake circuit
+
+- A32NX_HYD_EMERGENCY_GEN_RPM
+    - Rpm
+    - Hydraulic emergency generator current rpm
 
 - A32NX_FWD_DOOR_CARGO_POSITION
     - Percent
