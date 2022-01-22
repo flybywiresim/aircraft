@@ -2,23 +2,23 @@ class CDUAtcMessagesRecord {
     static TranslateCpdlcResponse(response) {
         switch (response) {
             case Atsu.CpdlcMessageResponse.Standby:
-                return 'STBY';
+                return "STBY";
             case Atsu.CpdlcMessageResponse.Wilco:
-                return 'WILC';
+                return "WILC";
             case Atsu.CpdlcMessageResponse.Roger:
-                return 'ROGR';
+                return "ROGR";
             case Atsu.CpdlcMessageResponse.Negative:
-                return 'NEG';
+                return "NEG";
             case Atsu.CpdlcMessageResponse.Unable:
-                return 'UNBL';
+                return "UNBL";
             case Atsu.CpdlcMessageResponse.Acknowledge:
-                return 'ACK';
+                return "ACK";
             case Atsu.CpdlcMessageResponse.Affirm:
-                return 'AFRM';
+                return "AFRM";
             case Atsu.CpdlcMessageResponse.Refuse:
-                return 'REF';
+                return "REF";
             default:
-                return '';
+                return "";
         }
     }
 
