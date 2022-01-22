@@ -67,13 +67,47 @@ export class CpdlcMessage extends AtsuMessage {
         if (format === AtsuMessageSerializationFormat.Network) {
             message = `/data2/${this.CurrentTransmissionId}/${this.PreviousTransmissionId !== -1 ? this.PreviousTransmissionId : ''}/${cpdlcToString(this.RequestedResponses)}`;
             message += `/${this.Message}`;
-        } else if (format === AtsuMessageSerializationFormat.DCDU || format === AtsuMessageSerializationFormat.MCDU) {
+        } else if (format === AtsuMessageSerializationFormat.DCDU) {
             // create the lines and interpret '_' as an encoded newline
             let lines = [];
             this.Message.split('_').forEach((entry) => {
-                lines = lines.concat(wordWrap(entry, format === AtsuMessageSerializationFormat.DCDU ? 30 : 25));
+                lines = lines.concat(wordWrap(entry, 30));
             });
             message = lines.join('\n');
+        } else if (format === AtsuMessageSerializationFormat.MCDU) {
+            if (this.Direction === AtsuMessageDirection.Input) {
+                message += `{cyan}${this.Timestamp.dcduTimestamp()} FROM ${this.Station}{end}\n`;
+            } else {
+                message += `{cyan}${this.Timestamp.dcduTimestamp()} TO ${this.Station}{end}\n`;
+            }
+
+            this.Message.split('_').forEach((entry) => {
+                const newLines = wordWrap(entry, 25);
+                newLines.forEach((line) => {
+                    line = line.replace(/@/gi, '');
+                    message += `{green}${line}{end}\n`;
+                });
+            });
+
+            message += '{white}------------------------{end}\n';
+
+            if (this.ResponseType === CpdlcMessageResponse.Other && this.Response !== undefined) {
+                message += this.Response.serialize(format);
+            }
+        } else if (format === AtsuMessageSerializationFormat.Printer) {
+            this.Message.split('_').forEach((entry) => {
+                const newLines = wordWrap(entry, 25);
+                newLines.forEach((line) => {
+                    line = line.replace(/@/gi, '');
+                    message += `${line}\n`;
+                });
+            });
+
+            message += '------------------------\n';
+
+            if (this.ResponseType === CpdlcMessageResponse.Other && this.Response !== undefined) {
+                message += this.Response.serialize(format);
+            }
         } else {
             message = this.Message;
         }
