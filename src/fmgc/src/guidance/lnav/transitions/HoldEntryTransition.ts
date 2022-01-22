@@ -1,5 +1,7 @@
-//  Copyright (c) 2021 FlyByWire Simulations
-//  SPDX-License-Identifier: GPL-3.0
+// Copyright (c) 2021-2022 FlyByWire Simulations
+// Copyright (c) 2021-2022 Synaptic Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
 
 import { Transition } from '@fmgc/guidance/lnav/Transition';
 import { DFLeg } from '@fmgc/guidance/lnav/legs/DF';
@@ -14,6 +16,7 @@ import { Geometry } from '@fmgc/guidance/Geometry';
 import { Guidable } from '@fmgc/guidance/Guidable';
 import { CFLeg } from '@fmgc/guidance/lnav/legs/CF';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
+import { AFLeg } from '@fmgc/guidance/lnav/legs/AF';
 import { PathVector, PathVectorType } from '../PathVector';
 import { arcDistanceToGo, arcGuidance, courseToFixDistanceToGo, courseToFixGuidance, maxBank } from '../CommonGeometry';
 
@@ -60,7 +63,7 @@ export class HoldEntryTransition extends Transition {
     private frozen = false;
 
     constructor(
-        public previousLeg: /* AFLeg | */ CFLeg | DFLeg | RFLeg | TFLeg,
+        public previousLeg: AFLeg | CFLeg | DFLeg | RFLeg | TFLeg,
         public nextLeg: HALeg | HFLeg | HMLeg,
         _predictWithCurrentSpeed: boolean = true, // TODO we don't need this?
     ) {

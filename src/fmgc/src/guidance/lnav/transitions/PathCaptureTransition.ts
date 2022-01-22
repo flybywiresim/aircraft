@@ -1,3 +1,8 @@
+// Copyright (c) 2021-2022 FlyByWire Simulations
+// Copyright (c) 2021-2022 Synaptic Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { MathUtils } from '@shared/MathUtils';
 import { CALeg } from '@fmgc/guidance/lnav/legs/CA';
 import { CILeg } from '@fmgc/guidance/lnav/legs/CI';
@@ -16,13 +21,14 @@ import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { TurnDirection } from '@fmgc/types/fstypes/FSEnums';
 import { arcLength, maxBank } from '@fmgc/guidance/lnav/CommonGeometry';
 import { ControlLaw } from '@shared/autopilot';
+import { AFLeg } from '@fmgc/guidance/lnav/legs/AF';
 import { Leg } from '../legs/Leg';
 import { CFLeg } from '../legs/CF';
 import { CRLeg } from '../legs/CR';
 
 export type PrevLeg = CALeg | /* CDLeg | */ CRLeg | /* FALeg | */ HALeg | HFLeg | HMLeg;
 export type ReversionLeg = CFLeg | CILeg | DFLeg | TFLeg;
-export type NextLeg = /* AFLeg | */ CFLeg | /* FALeg | */ TFLeg;
+export type NextLeg = AFLeg | CFLeg | /* FALeg | */ TFLeg;
 
 const cos = (input: Degrees) => Math.cos(input * (Math.PI / 180));
 const tan = (input: Degrees) => Math.tan(input * MathUtils.DEGREES_TO_RADIANS);

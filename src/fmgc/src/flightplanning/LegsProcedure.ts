@@ -124,6 +124,9 @@ export class LegsProcedure {
           } else {
               try {
                   switch (currentLeg.type) {
+                  case LegType.AF:
+                      mappedLeg = this.mapArcToFix(currentLeg, this._previousFix);
+                      break;
                   case LegType.CD:
                       mappedLeg = this.mapHeadingUntilDistanceFromOrigin(currentLeg, this._previousFix);
                       break;
@@ -415,6 +418,20 @@ export class LegsProcedure {
 
       const coordinates = Avionics.Utils.bearingDistanceToCoordinates(leg.theta, leg.rho / 1852, origin.lat, origin.lon);
       return this.buildWaypoint(`${originIdent}${Math.trunc(leg.rho / 1852)}`, coordinates);
+  }
+
+  public mapArcToFix(leg: RawProcedureLeg, prevLeg: WayPoint): WayPoint {
+      const toFix = this._facilities.get(leg.fixIcao);
+      const navaid = this._facilities.get(leg.originIcao);
+
+      const waypoint = RawDataMapper.toWaypoint(toFix, this._instrument);
+
+      waypoint.additionalData.navaid = { lat: navaid.lat, long: navaid.lon };
+      waypoint.additionalData.rho = leg.rho / 1852;
+      waypoint.additionalData.theta = leg.theta;
+      waypoint.additionalData.vectorsCourse = leg.course;
+
+      return waypoint;
   }
 
   public mapRadiusToFix(leg: RawProcedureLeg): WayPoint {

@@ -1,3 +1,8 @@
+// Copyright (c) 2021-2022 FlyByWire Simulations
+// Copyright (c) 2021-2022 Synaptic Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { MathUtils } from '@shared/MathUtils';
 import { CALeg } from '@fmgc/guidance/lnav/legs/CA';
 import { DFLeg } from '@fmgc/guidance/lnav/legs/DF';
@@ -14,12 +19,13 @@ import { PathVector, PathVectorType } from '@fmgc/guidance/lnav/PathVector';
 import { Guidable } from '@fmgc/guidance/Guidable';
 import { TurnDirection } from '@fmgc/types/fstypes/FSEnums';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
+import { AFLeg } from '@fmgc/guidance/lnav/legs/AF';
 import { arcDistanceToGo, maxBank } from '../CommonGeometry';
 import { CFLeg } from '../legs/CF';
 import { CRLeg } from '../legs/CR';
 import { CILeg } from '../legs/CI';
 
-type PrevLeg = /* AFLeg | */ CALeg | /* CDLeg | */ CFLeg | CRLeg | DFLeg | /* | FALeg | FMLeg | */ HALeg | HFLeg | HMLeg | RFLeg | TFLeg | /* VALeg | VDLeg | */ VMLeg;
+type PrevLeg = AFLeg | CALeg | /* CDLeg | */ CFLeg | CRLeg | DFLeg | /* | FALeg | FMLeg | */ HALeg | HFLeg | HMLeg | RFLeg | TFLeg | /* VALeg | VDLeg | */ VMLeg;
 type NextLeg = CALeg | /* CDLeg | */ CILeg | CRLeg | /* VALeg | VDLeg | VILeg | */ VMLeg;
 
 const tan = (input: Degrees) => Math.tan(input * (Math.PI / 180));

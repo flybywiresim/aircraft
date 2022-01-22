@@ -1,7 +1,14 @@
+// Copyright (c) 2021-2022 FlyByWire Simulations
+// Copyright (c) 2021-2022 Synaptic Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { computeDestinationPoint as geolibDestPoint, getDistance as geolibDistance, getGreatCircleBearing as geolibBearing } from 'geolib';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { MathUtils } from '@shared/MathUtils';
 import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
+import { smallCircleGreatCircleIntersection } from 'msfs-geo';
+import { AFLeg } from '@fmgc/guidance/lnav/legs/AF';
 
 const sin = (input: Degrees) => Math.sin(input * (Math.PI / 180));
 
@@ -59,6 +66,19 @@ export class Geo {
     }
 
     static legIntercept(from: Coordinates, bearing: DegreesTrue, leg: Leg): Coordinates {
+        if (leg instanceof AFLeg) {
+            const intersections = smallCircleGreatCircleIntersection(
+                leg.centre,
+                leg.radius,
+                from,
+                bearing,
+            );
+
+            const d1 = Avionics.Utils.computeGreatCircleDistance(from, intersections[0]);
+            const d2 = Avionics.Utils.computeGreatCircleDistance(from, intersections[1]);
+
+            return d1 > d2 ? intersections[1] : intersections[0];
+        }
         const intersections1 = A32NX_Util.bothGreatCircleIntersections(
             from,
             Avionics.Utils.clampAngle(bearing),

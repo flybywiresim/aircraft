@@ -1,3 +1,8 @@
+// Copyright (c) 2021-2022 FlyByWire Simulations
+// Copyright (c) 2021-2022 Synaptic Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { AltitudeConstraint, SpeedConstraint } from '@fmgc/guidance/lnav/legs/index';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { Guidable } from '@fmgc/guidance/Guidable';
@@ -8,9 +13,9 @@ import { Geo } from '@fmgc/utils/Geo';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
 import { IFLeg } from '@fmgc/guidance/lnav/legs/IF';
-import { XFLeg } from '@fmgc/guidance/lnav/legs/XF';
 import { TurnDirection } from '@fmgc/types/fstypes/FSEnums';
 import { FixedRadiusTransition } from '@fmgc/guidance/lnav/transitions/FixedRadiusTransition';
+import { DmeArcTransition } from '@fmgc/guidance/lnav/transitions/DmeArcTransition';
 import { PathVector, PathVectorType } from '../PathVector';
 
 export class CILeg extends Leg {
@@ -58,6 +63,10 @@ export class CILeg extends Leg {
 
     getPathEndPoint(): Coordinates | undefined {
         if (this.outboundGuidable instanceof FixedRadiusTransition && !this.outboundGuidable.isReverted && this.outboundGuidable.isComputed) {
+            return this.outboundGuidable.getPathStartPoint();
+        }
+
+        if (this.outboundGuidable instanceof DmeArcTransition && this.outboundGuidable.isComputed) {
             return this.outboundGuidable.getPathStartPoint();
         }
 

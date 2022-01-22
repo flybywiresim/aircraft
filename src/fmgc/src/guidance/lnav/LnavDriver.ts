@@ -1,3 +1,8 @@
+// Copyright (c) 2021-2022 FlyByWire Simulations
+// Copyright (c) 2021-2022 Synaptic Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { ControlLaw, LateralMode, VerticalMode } from '@shared/autopilot';
 import { MathUtils } from '@shared/MathUtils';
 import { Geometry } from '@fmgc/guidance/Geometry';
@@ -223,7 +228,7 @@ export class LnavDriver implements GuidanceComponent {
 
                     break;
                 case ControlLaw.HEADING:
-                    const { heading } = params;
+                    const { heading, phiCommand: forcedPhiHeading } = params;
 
                     if (!this.lastAvail) {
                         SimVar.SetSimVarValue('L:A32NX_FG_AVAIL', 'Bool', true);
@@ -264,7 +269,12 @@ export class LnavDriver implements GuidanceComponent {
                             this.lastTAE = deltaHeading;
                         }
 
-                        if (this.lastPhi !== 0) {
+                        if (forcedPhiHeading !== undefined) {
+                            if (forcedPhiHeading !== this.lastPhi) {
+                                SimVar.SetSimVarValue('L:A32NX_FG_PHI_COMMAND', 'degree', forcedPhiHeading);
+                                this.lastPhi = forcedPhiHeading;
+                            }
+                        } else if (this.lastPhi !== 0) {
                             SimVar.SetSimVarValue('L:A32NX_FG_PHI_COMMAND', 'degree', 0);
                             this.lastPhi = 0;
                         }
@@ -272,7 +282,7 @@ export class LnavDriver implements GuidanceComponent {
 
                     break;
                 case ControlLaw.TRACK:
-                    const { course } = params;
+                    const { course, phiCommand: forcedPhiCourse } = params;
 
                     if (!this.lastAvail) {
                         SimVar.SetSimVarValue('L:A32NX_FG_AVAIL', 'Bool', true);
@@ -309,7 +319,12 @@ export class LnavDriver implements GuidanceComponent {
                             this.lastTAE = deltaCourse;
                         }
 
-                        if (this.lastPhi !== 0) {
+                        if (forcedPhiCourse !== undefined) {
+                            if (forcedPhiCourse !== this.lastPhi) {
+                                SimVar.SetSimVarValue('L:A32NX_FG_PHI_COMMAND', 'degree', forcedPhiCourse);
+                                this.lastPhi = forcedPhiCourse;
+                            }
+                        } else if (this.lastPhi !== 0) {
                             SimVar.SetSimVarValue('L:A32NX_FG_PHI_COMMAND', 'degree', 0);
                             this.lastPhi = 0;
                         }

@@ -1,3 +1,8 @@
+// Copyright (c) 2021-2022 FlyByWire Simulations
+// Copyright (c) 2021-2022 Synaptic Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { Transition } from '@fmgc/guidance/lnav/Transition';
 import { FixedRadiusTransition } from '@fmgc/guidance/lnav/transitions/FixedRadiusTransition';
 import { TFLeg } from '@fmgc/guidance/lnav/legs/TF';
@@ -244,7 +249,7 @@ export class Geometry {
                 + `PHI ${(guidanceParams as LateralPathGuidance).phiCommand?.toFixed(5) ?? '(NO DATA)'}\n`
                 + '---\n'
                 + `CURR GUIDABLE ${activeGuidable?.repr ?? '---'}\n`
-                + `CURR GUIDABLE DTG ${dtg.toFixed(3)}\n`
+                + `CURR GUIDABLE DTG ${dtg?.toFixed(3) ?? '---'}\n`
                 + ((activeGuidable instanceof DirectToFixTransition) ? `DFX STATE ${DirectToFixTransitionGuidanceState[(activeGuidable as DirectToFixTransition).state]}\n` : '')
                 + '---\n'
                 + `RAD GUIDABLE ${nextGuidable?.repr ?? '---'}\n`

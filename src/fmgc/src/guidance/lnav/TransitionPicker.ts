@@ -1,3 +1,8 @@
+// Copyright (c) 2021-2022 FlyByWire Simulations
+// Copyright (c) 2021-2022 Synaptic Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
 import { CALeg } from '@fmgc/guidance/lnav/legs/CA';
 import { DFLeg } from '@fmgc/guidance/lnav/legs/DF';
@@ -14,9 +19,14 @@ import { HoldEntryTransition } from '@fmgc/guidance/lnav/transitions/HoldEntryTr
 import { CFLeg } from '@fmgc/guidance/lnav/legs/CF';
 import { CRLeg } from '@fmgc/guidance/lnav/legs/CR';
 import { CILeg } from '@fmgc/guidance/lnav/legs/CI';
+import { AFLeg } from '@fmgc/guidance/lnav/legs/AF';
+import { DmeArcTransition } from '@fmgc/guidance/lnav/transitions/DmeArcTransition';
 
 export class TransitionPicker {
     static forLegs(from: Leg, to: Leg): Transition | null {
+        if (from instanceof AFLeg) {
+            return TransitionPicker.fromAF(from, to);
+        }
         if (from instanceof CALeg) {
             return TransitionPicker.fromCA(from, to);
         }
@@ -82,7 +92,41 @@ export class TransitionPicker {
         return null;
     }
 
+    private static fromAF(from: AFLeg, to: Leg): Transition | null {
+        if (to instanceof CALeg) {
+            return new CourseCaptureTransition(from, to);
+        }
+        if (to instanceof CFLeg) {
+            // FIXME fixed radius / revert to path capture
+            return new DmeArcTransition(from, to);
+        }
+        if (to instanceof CILeg) {
+            return new CourseCaptureTransition(from, to);
+        }
+        if (to instanceof CRLeg) {
+            return new CourseCaptureTransition(from, to);
+        }
+        if (to instanceof HALeg || to instanceof HFLeg || to instanceof HMLeg) {
+            return new HoldEntryTransition(from, to);
+        }
+        if (to instanceof TFLeg) {
+            return new DmeArcTransition(from, to);
+        }
+        if (to instanceof VMLeg) {
+            return new CourseCaptureTransition(from, to);
+        }
+
+        if (DEBUG) {
+            console.error(`Illegal sequence AFLEg -> ${to.constructor.name}`);
+        }
+
+        return null;
+    }
+
     private static fromCF(from: CFLeg, to: Leg): Transition | null {
+        if (to instanceof AFLeg) {
+            return new DmeArcTransition(from, to);
+        }
         if (to instanceof CALeg) {
             return new CourseCaptureTransition(from, to);
         }
@@ -117,6 +161,9 @@ export class TransitionPicker {
     }
 
     private static fromCI(from: CILeg, to: Leg): Transition | null {
+        if (to instanceof AFLeg) {
+            return new DmeArcTransition(from, to);
+        }
         if (to instanceof CFLeg) {
             return new FixedRadiusTransition(from, to);
         }
@@ -129,6 +176,9 @@ export class TransitionPicker {
     }
 
     private static fromDF(from: DFLeg, to: Leg): Transition | null {
+        if (to instanceof AFLeg) {
+            return new DmeArcTransition(from, to);
+        }
         if (to instanceof CALeg) {
             return new CourseCaptureTransition(from, to);
         }
@@ -162,6 +212,9 @@ export class TransitionPicker {
     }
 
     private static fromHX(from: HALeg | HFLeg |HMLeg, to: Leg): Transition | null {
+        if (to instanceof AFLeg) {
+            return new PathCaptureTransition(from, to);
+        }
         if (to instanceof CALeg) {
             return new CourseCaptureTransition(from, to);
         }
@@ -210,6 +263,9 @@ export class TransitionPicker {
     }
 
     private static fromTF(from: TFLeg, to: Leg): Transition | null {
+        if (to instanceof AFLeg) {
+            return new DmeArcTransition(from, to);
+        }
         if (to instanceof CALeg) {
             return new CourseCaptureTransition(from, to);
         }

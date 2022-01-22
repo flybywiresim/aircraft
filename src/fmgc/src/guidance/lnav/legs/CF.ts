@@ -1,3 +1,8 @@
+// Copyright (c) 2021-2022 FlyByWire Simulations
+// Copyright (c) 2021-2022 Synaptic Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { AltitudeConstraint, SpeedConstraint } from '@fmgc/guidance/lnav/legs/index';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { Guidable } from '@fmgc/guidance/Guidable';
@@ -9,6 +14,9 @@ import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { Transition } from '@fmgc/guidance/lnav/Transition';
 import { Geo } from '@fmgc/utils/Geo';
 import { FixedRadiusTransition } from '@fmgc/guidance/lnav/transitions/FixedRadiusTransition';
+import { bearingTo } from 'msfs-geo';
+import { MathUtils } from '@shared/MathUtils';
+import { DmeArcTransition } from '@fmgc/guidance/lnav/transitions/DmeArcTransition';
 import { PathVector, PathVectorType } from '../PathVector';
 
 export class CFLeg extends XFLeg {
@@ -27,6 +35,10 @@ export class CFLeg extends XFLeg {
     getPathStartPoint(): Coordinates | undefined {
         if (this.inboundGuidable instanceof Transition && this.inboundGuidable.isComputed) {
             return this.inboundGuidable.getPathEndPoint();
+        }
+
+        if (this.outboundGuidable instanceof DmeArcTransition && this.outboundGuidable.isComputed) {
+            return this.outboundGuidable.getPathStartPoint();
         }
 
         // Estimate where we should start the leg
@@ -74,11 +86,23 @@ export class CFLeg extends XFLeg {
         this.inboundGuidable = previousGuidable;
         this.outboundGuidable = nextGuidable;
 
-        this.computedPath = [{
-            type: PathVectorType.Line,
-            startPoint: this.getPathStartPoint(),
-            endPoint: this.getPathEndPoint(),
-        }];
+        const startPoint = this.getPathStartPoint();
+        const bearingFixStartPoint = bearingTo(this.fix.infos.coordinates, startPoint);
+
+        // Is start point after the fix ?
+        if (Math.abs(MathUtils.diffAngle(bearingFixStartPoint, this.outboundCourse)) < 3) {
+            this.computedPath = [{
+                type: PathVectorType.Line,
+                startPoint: this.getPathEndPoint(),
+                endPoint: this.getPathEndPoint(),
+            }];
+        } else {
+            this.computedPath = [{
+                type: PathVectorType.Line,
+                startPoint: this.getPathStartPoint(),
+                endPoint: this.getPathEndPoint(),
+            }];
+        }
 
         this.isComputed = true;
 

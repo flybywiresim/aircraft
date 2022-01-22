@@ -1,3 +1,8 @@
+// Copyright (c) 2021-2022 FlyByWire Simulations
+// Copyright (c) 2021-2022 Synaptic Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { HALeg, HFLeg, HMLeg } from '@fmgc/guidance/lnav/legs/HX';
 import { RFLeg } from '@fmgc/guidance/lnav/legs/RF';
 import { TFLeg } from '@fmgc/guidance/lnav/legs/TF';
@@ -15,6 +20,7 @@ import { CFLeg } from '@fmgc/guidance/lnav/legs/CF';
 import { CRLeg } from '@fmgc/guidance/lnav/legs/CR';
 import { CILeg } from '@fmgc/guidance/lnav/legs/CI';
 import { XFLeg } from '@fmgc/guidance/lnav/legs/XF';
+import { AFLeg } from '@fmgc/guidance/lnav/legs/AF';
 import { FlightPlanManager, FlightPlans } from '../flightplanning/FlightPlanManager';
 import { Geometry } from './Geometry';
 
@@ -68,6 +74,10 @@ export class GuidanceManager {
         }
 
         if (to.additionalData) {
+            if (to.additionalData.legType === LegType.AF) {
+                return new AFLeg(to, to.additionalData.navaid, to.additionalData.rho, to.additionalData.theta, to.additionalData.vectorsCourse, segment);
+            }
+
             if (to.additionalData.legType === LegType.CF) {
                 return new CFLeg(to, to.additionalData.course, segment);
             }
