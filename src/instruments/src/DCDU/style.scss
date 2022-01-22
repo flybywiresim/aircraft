@@ -1,16 +1,30 @@
 @font-face {
-  font-family: "DCDU";
-  src: url("/FBW-Display-DCDU-H12.ttf") format("truetype");
+  font-family: "dcdu-small";
+  src: url("/Fonts/FBW-Display-DCDU-H12.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "atsu-status";
+  src: url("/Fonts/RobotoMono-Medium.ttf") format("truetype");
+  font-weight: bold;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "dcdu-normal";
+  src: url("/Fonts/RobotoMono-Medium.ttf") format("truetype");
   font-weight: normal;
   font-style: normal;
 }
 
 .dcdu {
   position: absolute;
-  left: 10px !important;
-  top: 10px !important;
-  width: 492px;
-  height: 364px;
+  left: 80px !important;
+  top: 80px !important;
+  width: 3936px;
+  height: 2912px;
 
   background: radial-gradient(
     ellipse at center,
@@ -21,21 +35,19 @@
 
 path.dcdu-line {
   stroke: white;
-  stroke-width: 2;
+  stroke-width: 16;
 }
 
 .station {
   fill: rgb(0,255,0);
-  font-size: 20px;
-  font-family: arial;
-  font-weight: bold;
+  font-size: 134px;
+  font-family: dcdu-small;
 }
 
 .status-message {
   text-anchor: end;
-  font-size: 24px;
-  font-family: DCDU;
-  font-weight: bold;
+  font-size: 192px;
+  font-family: dcdu-normal;
 }
 
 .status-open {
@@ -49,13 +61,12 @@ path.dcdu-line {
 .status-atsu {
   text-anchor: middle;
   fill: rgb(255,255,255);
-  font-size: 20px;
-  font-family: DCDU;
-  font-weight: bold;
+  font-size: 140px;
+  font-family: atsu-status;
 }
 
 .message-background {
-  width: 450px;
+  width: 3600px;
 }
 
 .message-out {
@@ -67,8 +78,8 @@ path.dcdu-line {
 }
 
 .atc-info {
-  font-size: 24px;
-  font-family: DCDU;
+  font-size: 192px;
+  font-family: dcdu-normal;
   font-weight: bold;
 }
 
@@ -90,9 +101,8 @@ path.dcdu-line {
 }
 
 .message-content {
-  font-size: 24px;
-  font-family: DCDU;
-  font-weight: bold;
+  font-size: 192px;
+  font-family: dcdu-normal;
 }
 
 .message-content-out {
@@ -105,24 +115,22 @@ path.dcdu-line {
 
 .startup-text {
   position: absolute;
-  left: 10px !important;
-  top: 10px !important;
-  width: 492px;
-  height: 364px;
+  left: 80px !important;
+  top: 80px !important;
+  width: 3936px;
+  height: 2912px;
 
   text {
     fill: green;
-    font-size: 35px;
+    font-size: 240px;
     text-anchor: middle;
-    font-family: DCDU;
+    font-family: dcdu-normal;
   }
 }
 
 .button {
-  font-size: 20px;
-  font-family: arial;
-  font-weight: bold;
-  font-family: DCDU;
+  font-size: 134px;
+  font-family: dcdu-small;
 }
 
 .button-color {

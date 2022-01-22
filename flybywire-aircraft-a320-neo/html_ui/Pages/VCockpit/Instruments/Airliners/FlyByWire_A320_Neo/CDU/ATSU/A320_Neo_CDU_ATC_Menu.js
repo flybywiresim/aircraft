@@ -74,7 +74,7 @@ class CDUAtcMenu {
         mcdu.setTemplate([
             ["ATC MENU", "2", "2"],
             ["--------ATS623 PAGE--------"],
-            ["<DEPART REQ", "ATIS>"],
+            ["<DEPART REQ[color]inop", "ATIS>"],
             ["", ""],
             ["<OCEANIC REQ[color]inop", ""],
             [""],
@@ -91,7 +91,7 @@ class CDUAtcMenu {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[0] = () => {
-            CDUAtcDepartReq.ShowPage1(mcdu);
+            //CDUAtcDepartReq.ShowPage1(mcdu);
         };
 
         mcdu.leftInputDelay[5] = () => {

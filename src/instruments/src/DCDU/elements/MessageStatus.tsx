@@ -75,16 +75,16 @@ export const MessageStatus: React.FC<MessageStatusProps> = ({ message }) => {
     if (dimension[0] !== 0 && dimension[1] !== 0) {
         const width = dimension[0] * text.length;
 
-        background.width = width + 6;
-        background.height = dimension[1] + 2;
+        background.width = width + 48;
+        background.height = dimension[1] + 16;
 
-        background.x = 466 - width;
-        background.y = 39 - dimension[1];
+        background.x = 3696 - width;
+        background.y = 282 - dimension[1];
     }
 
     return (
         <g>
-            <text className="station" x="21" y="35">
+            <text className="station" x="168" y="280">
                 {message.Timestamp?.dcduTimestamp()}
                 {' '}
                 {message.Direction === AtsuMessageDirection.Output ? ' TO ' : ' FROM '}
@@ -98,7 +98,7 @@ export const MessageStatus: React.FC<MessageStatusProps> = ({ message }) => {
                     x={background.x}
                     y={background.y}
                 />
-                <text className={statusClass} x="467" y="35" ref={textRef}>
+                <text className={statusClass} x="3736" y="280" ref={textRef}>
                     <tspan>{text}</tspan>
                 </text>
             </>

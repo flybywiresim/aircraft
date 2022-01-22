@@ -346,7 +346,7 @@ const DCDU: React.FC = () => {
                     {statusMessage.message.length !== 0 && (
                         <>
                             <g>
-                                <text className="status-atsu" x="50%" y="270">{statusMessage.message}</text>
+                                <text className="status-atsu" x="50%" y="2160">{statusMessage.message}</text>
                             </g>
                         </>
                     )}
@@ -356,8 +356,8 @@ const DCDU: React.FC = () => {
                         && (
                             <>
                                 <g>
-                                    <text className="status-atsu" x="35%" y="310">MSG</text>
-                                    <text className="status-atsu" x="35%" y="340">
+                                    <text className="status-atsu" x="35%" y="2480">MSG</text>
+                                    <text className="status-atsu" x="35%" y="2720">
                                         {messageIndex + 1}
                                         {' '}
                                         /

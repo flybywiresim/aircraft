@@ -48,14 +48,14 @@ function visualizeLine(line: ColorizedWord[], startIdx: number, startY: number, 
         if (useDeltaY) {
             return (
                 <>
-                    <tspan x="28" dy={deltaY} className={className}>{message}</tspan>
+                    <tspan x="224" dy={deltaY} className={className}>{message}</tspan>
                     {visualizeLine(line, nextIdx, startY, deltaY, useDeltaY, ignoreHighlight)}
                 </>
             );
         }
         return (
             <>
-                <tspan x="28" y={startY} className={className}>{message}</tspan>
+                <tspan x="224" y={startY} className={className}>{message}</tspan>
                 {visualizeLine(line, nextIdx, startY, deltaY, useDeltaY, ignoreHighlight)}
             </>
         );
@@ -123,7 +123,7 @@ function colorizeWords(message: string): ColorizedWord[] {
 
 function insertWord(lines: ColorizedLine[], word: ColorizedWord) {
     // create a new line, but ignore if the word is too long
-    if ((lines[lines.length - 1].length + word.word.length + 1) >= 32 && lines[lines.length - 1].length !== 0) {
+    if ((lines[lines.length - 1].length + word.word.length + 1) >= 27 && lines[lines.length - 1].length !== 0) {
         lines.push({ length: 0, words: [] });
     }
 
@@ -233,8 +233,8 @@ export const MessageVisualization: React.FC<MessageVisualizationProps> = memo(({
             )}
             {pageCount > 1 && (
                 <>
-                    <text className="status-atsu" x="65%" y="310">PG</text>
-                    <text className="status-atsu" x="65%" y="340">
+                    <text className="status-atsu" x="65%" y="2480">PG</text>
+                    <text className="status-atsu" x="65%" y="2720">
                         {pageIndex + 1}
                         {' '}
                         /

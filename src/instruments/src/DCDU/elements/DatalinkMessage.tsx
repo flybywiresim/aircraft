@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { AtsuMessageComStatus, AtsuMessageDirection, AtsuMessageSerializationFormat } from '@atsu/messages/AtsuMessage';
+import { AtsuMessageComStatus, AtsuMessageDirection } from '@atsu/messages/AtsuMessage';
 import { CpdlcMessage } from '@atsu/messages/CpdlcMessage';
 import { MessageVisualization } from './MessageVisualization';
 
@@ -47,20 +47,20 @@ export const DatalinkMessage: React.FC<DatalinkMessageProps> = ({ message, isSta
     }
 
     // calculate the position of the background rectangle
-    let contentHeight = 2;
+    let contentHeight = 16;
     if (textBBox?.width !== undefined && textBBox?.height !== undefined) {
-        contentHeight = textBBox?.height + 15;
+        contentHeight = textBBox?.height + 120;
     }
 
     return (
         <g>
-            <rect className={backgroundClass} height={contentHeight} x="21" y="59" />
+            <rect className={backgroundClass} height={contentHeight} x="168" y="472" />
             <MessageVisualization
                 message={message.Message}
                 ignoreHighlight={ignoreHighlight}
                 cssClass={messageClass}
-                yStart={90}
-                deltaY={30}
+                yStart={720}
+                deltaY={240}
                 isStatusAvailable={isStatusAvailable}
                 setStatus={setStatus}
                 resetStatus={resetStatus}
