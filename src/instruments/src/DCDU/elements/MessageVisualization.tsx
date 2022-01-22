@@ -123,7 +123,7 @@ function colorizeWords(message: string): ColorizedWord[] {
 
 function insertWord(lines: ColorizedLine[], word: ColorizedWord) {
     // create a new line, but ignore if the word is too long
-    if ((lines[lines.length - 1].length + word.word.length + 1) >= 35 && lines[lines.length - 1].length !== 0) {
+    if ((lines[lines.length - 1].length + word.word.length + 1) >= 32 && lines[lines.length - 1].length !== 0) {
         lines.push({ length: 0, words: [] });
     }
 
