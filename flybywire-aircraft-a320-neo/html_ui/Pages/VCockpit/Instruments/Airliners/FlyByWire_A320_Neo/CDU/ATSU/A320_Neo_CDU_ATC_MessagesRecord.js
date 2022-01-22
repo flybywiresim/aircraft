@@ -97,6 +97,23 @@ class CDUAtcMessagesRecord {
             ["<RETURN", "PRINT*[color]inop"]
         ]);
 
+        for (let i = 0; i < 5; i++) {
+            mcdu.leftInputDelay[i] = () => {
+                return mcdu.getDelaySwitchPage();
+            };
+
+            mcdu.onLeftInput[i] = (value) => {
+                if (messages[offset + i]) {
+                    if (value === FMCMainDisplay.clrValue) {
+                        mcdu.atsuManager.removeMessage(messages[offset + i].UniqueMessageID);
+                        CDUAtcMessagesRecord.ShowPage(mcdu, null, offset, false);
+                    } else {
+                        CDUAtcMessage.ShowPage(mcdu, messages, offset + i);
+                    }
+                }
+            };
+        }
+
         mcdu.leftInputDelay[4] = () => {
             return mcdu.getDelaySwitchPage();
         };
