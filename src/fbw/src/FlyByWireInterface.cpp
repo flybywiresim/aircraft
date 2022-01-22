@@ -1260,6 +1260,7 @@ bool FlyByWireInterface::updateFlyByWire(double sampleTime) {
     flyByWireInput.in.data.V_ias_kn = simData.V_ias_kn;
     flyByWireInput.in.data.V_tas_kn = simData.V_tas_kn;
     flyByWireInput.in.data.V_mach = simData.V_mach;
+    flyByWireInput.in.data.VLS_kn = idFmgcV_LS->get();
     flyByWireInput.in.data.H_ft = simData.H_ft;
     flyByWireInput.in.data.H_ind_ft = simData.H_ind_ft;
     flyByWireInput.in.data.H_radio_ft = simData.H_radio_ft;
