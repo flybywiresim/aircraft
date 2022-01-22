@@ -45,15 +45,15 @@ class CDUAtcMessagesRecord {
             let headerLeft = "", headerRight = "", contentStart = "";
 
             if (messages.length > (offset + i) && messages[offset + i]) {
-                headerLeft = `${messages[offset + i].Timestamp.dcduTimestamp()} ${messages[offset + i].Direction === Atsu.AtsuMessageDirection.Input ? 'FROM' : 'TO'} `;
+                headerLeft = `${messages[offset + i].Timestamp.dcduTimestamp()} ${messages[offset + i].Direction === Atsu.AtsuMessageDirection.Input ? "FROM" : "TO"} `;
                 headerLeft += messages[offset + i].Station;
                 headerRight = CDUAtcMessagesRecord.TranslateCpdlcResponse(messages[offset + i].ResponseType);
 
-                const serialized = messages[offset + i].serialize(Atsu.AtsuMessageSerializationFormat.Printer);
+                const serialized = messages[offset + i].serialize(Atsu.AtsuMessageSerializationFormat.Printer).split("\n")[0];
                 if (serialized.length <= 24) {
                     contentStart = serialized;
                 } else {
-                    serialized.split(' ').forEach((word) => {
+                    serialized.split(" ").forEach((word) => {
                         if (contentStart.length + word.length + 1 < 24) {
                             contentStart += `${word}\xa0`;
                         }
