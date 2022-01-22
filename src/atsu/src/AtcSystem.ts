@@ -100,12 +100,16 @@ export class AtcSystem {
         message.ComStatus = AtsuMessageComStatus.Sending;
         message.Message = 'LOGOFF';
 
-        this.nextAtc = '';
         this.parent.registerMessage(message);
-        this.currentAtc = '';
         this.listener.triggerToAllSubscribers('A32NX_DCDU_ATC_LOGON_MSG', '');
 
-        return this.datalink.sendMessage(message);
+        const retval = await this.datalink.sendMessage(message).then((error) => {
+            this.currentAtc = '';
+            this.nextAtc = '';
+            return error;
+        });
+
+        return retval;
     }
 
     private createCpdlcResponse(request: CpdlcMessage) {
