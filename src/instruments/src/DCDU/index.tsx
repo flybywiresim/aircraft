@@ -206,7 +206,6 @@ const DCDU: React.FC = () => {
             }
 
             setMessages(messages.set(cpdlcMessage.UniqueMessageID, [cpdlcMessage, dcduTimestamp]));
-            SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_MAX_REACHED', 'boolean', messages.size >= maxMessageCount ? 1 : 0);
 
             if (messageUid === -1) {
                 setMessageUid(cpdlcMessage.UniqueMessageID);
@@ -237,6 +236,8 @@ const DCDU: React.FC = () => {
                 resetStatus('');
             }
         }
+
+        SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_MAX_REACHED', 'boolean', messages.size >= maxMessageCount ? 1 : 0);
     });
 
     // prepare the data
