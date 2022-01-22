@@ -90,12 +90,11 @@ class CDUAtcDepartReq {
         mcdu.rightInputDelay[4] = () => {
             return mcdu.getDelaySwitchPage();
         };
-        mcdu.onRightInput[4] = (_value, scratchpadCallback) => {
+        mcdu.onRightInput[4] = () => {
             if (0 !== mcdu.pdcMessage.Freetext0.length) {
                 CDUAtcDepartReq.ShowPage2(mcdu);
             } else {
-                mcdu.scratchpad.setText("ENTER MANDATORY FIELDS");
-                scratchpadCallback();
+                mcdu.addNewMessage(NXSystemMessages.mandatoryFields);
             }
         };
 
@@ -109,10 +108,9 @@ class CDUAtcDepartReq {
         mcdu.rightInputDelay[5] = () => {
             return mcdu.getDelaySwitchPage();
         };
-        mcdu.onRightInput[5] = (value, scratchpadCallback) => {
+        mcdu.onRightInput[5] = () => {
             if ("" === mcdu.pdcMessage.Callsign || "" === mcdu.pdcMessage.Origin || "" === mcdu.pdcMessage.Destination || 1 !== mcdu.pdcMessage.Atis.length) {
-                mcdu.scratchpad.setText("ENTER MANDATORY FIELDS");
-                scratchpadCallback();
+                mcdu.addNewMessage(NXSystemMessages.mandatoryFields);
                 return;
             }
 
