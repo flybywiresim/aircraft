@@ -136,6 +136,17 @@ class CDUAocFreeText {
             mcdu.atsuManager.sendMessage(message).then((code) => {
                 if (code === Atsu.AtsuStatusCodes.Ok) {
                     store["sendStatus"] = "SENT";
+                    store["msg_line1"] = "";
+                    store["msg_line2"] = "";
+                    store["msg_line3"] = "";
+                    store["msg_line4"] = "";
+
+                    setTimeout(() => {
+                        store["sendStatus"] = "";
+                        if (mcdu.page.Current === mcdu.page.AOCDepartRequest) {
+                            CDUAocDepartReq.ShowPage1(mcdu, store);
+                        }
+                    }, 5000);
                 } else {
                     store["sendStatus"] = "FAILED";
                     mcdu.atsuStatusCodeToMessage(code);
