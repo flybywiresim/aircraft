@@ -14,6 +14,8 @@ export class AtcSystem {
 
     private nextAtc = '';
 
+    private cpdlcMessageId = 0;
+
     private messageQueue: CpdlcMessage[] = [];
 
     constructor(parent: AtsuManager, datalink: Datalink) {
@@ -72,6 +74,7 @@ export class AtcSystem {
 
         const message = new CpdlcMessage();
         message.Station = station;
+        message.CurrentTransmissionId = ++this.cpdlcMessageId;
         message.Direction = AtsuMessageDirection.Output;
         message.RequestedResponses = CpdlcMessageRequestedResponseType.Yes;
         message.ComStatus = AtsuMessageComStatus.Sending;
@@ -91,6 +94,7 @@ export class AtcSystem {
 
         const message = new CpdlcMessage();
         message.Station = this.currentAtc;
+        message.CurrentTransmissionId = ++this.cpdlcMessageId;
         message.Direction = AtsuMessageDirection.Output;
         message.RequestedResponses = CpdlcMessageRequestedResponseType.No;
         message.ComStatus = AtsuMessageComStatus.Sending;
@@ -108,7 +112,8 @@ export class AtcSystem {
         // create the meta information of the response
         const response = new CpdlcMessage();
         response.Direction = AtsuMessageDirection.Output;
-        response.PreviousTransmissionId = request.UniqueMessageID;
+        response.CurrentTransmissionId = ++this.cpdlcMessageId;
+        response.PreviousTransmissionId = request.CurrentTransmissionId;
         response.RequestedResponses = CpdlcMessageRequestedResponseType.No;
         response.Station = request.Station;
 
@@ -264,7 +269,7 @@ export class AtcSystem {
         if (cpdlcMessage.PreviousTransmissionId !== -1) {
             this.messageQueue.forEach((element) => {
                 while (element !== undefined) {
-                    if (element.UniqueMessageID === cpdlcMessage.PreviousTransmissionId) {
+                    if (element.CurrentTransmissionId === cpdlcMessage.PreviousTransmissionId) {
                         element.Response = cpdlcMessage;
                         analyzed = this.analyzeMessage(element, cpdlcMessage);
                         break;

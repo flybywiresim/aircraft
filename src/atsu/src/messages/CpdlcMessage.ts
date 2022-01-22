@@ -37,6 +37,8 @@ export class CpdlcMessage extends AtsuMessage {
 
     public Response: CpdlcMessage | undefined = undefined;
 
+    public CurrentTransmissionId = -1;
+
     public PreviousTransmissionId = -1;
 
     constructor() {
@@ -55,6 +57,7 @@ export class CpdlcMessage extends AtsuMessage {
             this.Response = new CpdlcMessage();
             this.Response.deserialize(jsonData.Response);
         }
+        this.CurrentTransmissionId = jsonData.CurrentTransmissionId;
         this.PreviousTransmissionId = jsonData.PreviousTransmissionId;
     }
 
@@ -62,7 +65,7 @@ export class CpdlcMessage extends AtsuMessage {
         let message = '';
 
         if (format === AtsuMessageSerializationFormat.Network) {
-            message = `/data2/${this.UniqueMessageID}/${this.PreviousTransmissionId !== -1 ? this.PreviousTransmissionId : ''}/${cpdlcToString(this.RequestedResponses)}`;
+            message = `/data2/${this.CurrentTransmissionId}/${this.PreviousTransmissionId !== -1 ? this.PreviousTransmissionId : ''}/${cpdlcToString(this.RequestedResponses)}`;
             message += `/${this.Message}`;
         } else if (format === AtsuMessageSerializationFormat.DCDU || format === AtsuMessageSerializationFormat.MCDU) {
             // create the lines and interpret '_' as an encoded newline
