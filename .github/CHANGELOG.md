@@ -129,10 +129,19 @@
 1. [AP] Improved LOC ALGIN and ROLL OUT during Autoland - @aguther (Andreas Guther)
 1. [FBW] Fix: do not compensate ground spoilers in C* law - @aguther (Andreas Guther)
 1. [EFB] Added Hoppie configuration to ATSU/ATC page - @svengcz (Sven Czarnian)
+1. [EFB] Added Datalink simulation rate - @svengcz (Sven Czarnian)
 1. [ATSU] Added an ATSU manager to handle AOC and ATC messages and information - @svengcz (Sven Czarnian)
 1. [MCDU] Moved ATSU related code into the ATSU manager - @svengcz (Sven Czarnian)
 1. [MCDU] Refactored AOC pages to use new ATSU backend - @svengcz (Sven Czarnian)
-1. [DCDU] Implemented DCL visualization, DCL message handling and activated buttons of DCDUs - @svengcz (Sven Czarnian)
+1. [MCDU] Refactored ATC pages to compliant to MSN7560 - @svengcz (Sven Czarnian)
+1. [MCDU] Implemented ATC Notification, Communication Status and MSG RECORD - @svengcz (Sven Czarnian)
+1. [MCDU] Added PDC functionality - @svengcz (Sven Czarnian)
+1. [DCDU] Activated all buttons - @svengcz (Sven Czarnian)
+1. [DCDU] Defined different answer buttons for Hoppie (Wilco-Unable, Roger, Affirm-Negative, Close) - @svengcz (Sven Czarnian)
+1. [DCDU] Implemented message visualization - @svengcz (Sven Czarnian)
+1. [ATSU] Implemented Datalink to synchronize requests and responses - @svengcz (Sven Czarnian)
+1. [MISC] Handling "ATC MSG" button - @svengcz (Sven Czarnian)
+1. [DCDU] Increase DCDU size and use new DCDU font - @svengcz (Sven Czarnian)
 
 ## 0.7.0
 
