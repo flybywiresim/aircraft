@@ -16,6 +16,7 @@
 1. [SOUND] Added PTU sounds in correct conditions - @hotshotp (Boris)
 1. [ADIRS] Use heading as track at low ground speeds - @beheh (Benedict Etzel)
 1. [PFD] Fix mach number flickering between mach 0.45 and 0.5 - @beheh (Benedict Etzel)
+1. [HYD] Hydraulic emergency generator physical based model - @crocket6 (crocket)
 1. [AP] Improved flight director guidance
 1. [FBW] Improved turn coodination in manual flight - @aguther (Andreas Guther)
 1. [FBW] Roll normal law is no longer using elasticity table - @IbrahimK42 (IbrahimK42)
@@ -126,6 +127,7 @@
 1. [AP] Do not disengage SRS on RTO, engage it only in FLX detent when FLX is configured - @aguther (Andreas Guther)
 1. [ATHR] Improved thrust limits, FLX limits now CLB when entered into FMGC - @aguther (Andreas Guther)
 1. [AP] Improved LOC ALGIN and ROLL OUT during Autoland - @aguther (Andreas Guther)
+1. [FBW] Fix: do not compensate ground spoilers in C* law - @aguther (Andreas Guther)
 1. [EFB] Added Hoppie configuration to ATSU/ATC page - @svengcz (Sven Czarnian)
 1. [ATSU] Added an ATSU manager to handle AOC and ATC messages and information - @svengcz (Sven Czarnian)
 1. [MCDU] Moved ATSU related code into the ATSU manager - @svengcz (Sven Czarnian)

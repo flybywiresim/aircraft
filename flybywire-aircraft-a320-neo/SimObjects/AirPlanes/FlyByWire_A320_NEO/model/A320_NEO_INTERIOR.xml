@@ -461,7 +461,8 @@
                 <UseTemplate Name="ASOBO_GT_Anim_Code">
                     <NODE_ID>HANDLE_LEFT_YOKE</NODE_ID>
                     <ANIM_NAME>HANDLE_LEFT_YOKE</ANIM_NAME>
-                    <ANIM_CODE>(L:A32NX_TILLER_HANDLE_POSITION)</ANIM_CODE>
+                    <!-- Convert a range of -1...1 to 0...1. -->
+                    <ANIM_CODE>(L:A32NX_TILLER_HANDLE_POSITION) 1 + 2 /</ANIM_CODE>
                     <ANIM_LENGTH>1</ANIM_LENGTH>
                 </UseTemplate>
             </Component>
