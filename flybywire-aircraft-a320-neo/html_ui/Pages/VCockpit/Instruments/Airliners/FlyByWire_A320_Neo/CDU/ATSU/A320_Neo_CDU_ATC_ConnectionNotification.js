@@ -91,7 +91,7 @@ class CDUAtcConnectionNotification {
 
                 mcdu.atsuManager.isRemoteStationAvailable(value).then((code) => {
                     if (code !== Atsu.AtsuStatusCodes.Ok) {
-                        mcdu.atsuStatusCodeToMessage(code);
+                        mcdu.addNewAtsuMessage(code);
                         store["atcCenter"] = "";
                     } else {
                         store["atcCenter"] = value;
@@ -151,7 +151,7 @@ class CDUAtcConnectionNotification {
                             CDUAtcConnectionNotification.ShowPage(mcdu, store);
                         }, 1000);
                     } else {
-                        mcdu.atsuStatusCodeToMessage(code);
+                        mcdu.addNewAtsuMessage(code);
                     }
 
                     CDUAtcConnectionNotification.ShowPage(mcdu, store);

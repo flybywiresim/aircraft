@@ -147,7 +147,7 @@ class CDUAocRequestsAtis {
                         mcdu.atsuManager.printMessage(retval[1]);
                     }
                 } else {
-                    mcdu.atsuStatusCodeToMessage(retval[0]);
+                    mcdu.addNewAtsuMessage(retval[0]);
                 }
             });
         };

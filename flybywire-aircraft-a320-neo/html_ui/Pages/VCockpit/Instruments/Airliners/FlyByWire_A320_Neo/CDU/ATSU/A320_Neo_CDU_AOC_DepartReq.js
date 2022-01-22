@@ -105,7 +105,7 @@ class CDUAocDepartReq {
             } else {
                 mcdu.atsuManager.isRemoteStationAvailable(value).then((code) => {
                     if (code !== Atsu.AtsuStatusCodes.Ok) {
-                        mcdu.atsuStatusCodeToMessage(code);
+                        mcdu.addNewAtsuMessage(code);
                         mcdu.pdcMessage.Station = "";
                     } else {
                         mcdu.pdcMessage.Station = value;
@@ -161,7 +161,7 @@ class CDUAocDepartReq {
                         }
                     }, 5000);
                 } else {
-                    mcdu.atsuStatusCodeToMessage(code);
+                    mcdu.addNewAtsuMessage(code);
                     store["sendStatus"] = "FAILED";
                     CDUAocDepartReq.ShowPage1(mcdu, store);
                 }

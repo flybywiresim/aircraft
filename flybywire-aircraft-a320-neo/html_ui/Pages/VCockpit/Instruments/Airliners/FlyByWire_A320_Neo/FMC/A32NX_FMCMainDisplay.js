@@ -4123,37 +4123,8 @@ class FMCMainDisplay extends BaseAirliners {
         return false;
     }
 
-    updatedAtsuStatusCode(code) {
-        this.atsuStatusCodeToMessage(code);
-    }
-
     /* END OF MCDU GET/SET METHODS */
     /* UNSORTED CODE BELOW */
-
-    atsuStatusCodeToMessage(code) {
-        switch (code) {
-            case Atsu.AtsuStatusCodes.NoHoppieConnection:
-                this.addNewMessage(NXFictionalMessages.noHoppieConnection);
-                break;
-            case Atsu.AtsuStatusCodes.ComFailed:
-                this.addNewMessage(NXSystemMessages.comUnavailable);
-                break;
-            case Atsu.AtsuStatusCodes.NoAtc:
-                this.addNewMessage(NXFictionalMessages.noAtc);
-                break;
-            case Atsu.AtsuStatusCodes.DcduFull:
-                this.addNewMessage(NXSystemMessages.dcduFileFull);
-                break;
-            case Atsu.AtsuStatusCodes.UnknownMessage:
-                this.addNewMessage(NXFictionalMessages.unknownAtsuMessage);
-                break;
-            case Atsu.AtsuStatusCodes.ProxyError:
-                this.addNewMessage(NXFictionalMessages.reverseProxy);
-                break;
-            default:
-                break;
-        }
-    }
 
     //TODO: can this be util?
     static secondsToUTC(seconds) {

@@ -49,7 +49,7 @@ class CDUAtcConnectionStatus {
             } else {
                 mcdu.atsuManager.atc().logoff().then((code) => {
                     if (code !== Atsu.AtsuStatusCodes.Ok) {
-                        mcdu.atsuStatusCodeToMessage(code);
+                        mcdu.addNewAtsuMessage(code);
                     } else {
                         store["disconnectAvail"] = false;
                         CDUAtcConnectionStatus.ShowPage(mcdu, store);

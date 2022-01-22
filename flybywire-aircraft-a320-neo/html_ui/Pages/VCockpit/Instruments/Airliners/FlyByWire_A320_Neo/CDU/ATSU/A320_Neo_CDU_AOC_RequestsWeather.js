@@ -70,7 +70,7 @@ class CDUAocRequestsWeather {
                     sendStatus = "";
                     updateView();
                 } else {
-                    mcdu.atsuStatusCodeToMessage(retval[0]);
+                    mcdu.addNewAtsuMessage(retval[0]);
                     sendStatus = "FAILED";
                     updateView();
                 }

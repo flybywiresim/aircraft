@@ -71,8 +71,7 @@ export class AtsuManager {
         } else if (AtcSystem.isRelevantMessage(message)) {
             if (message.ComStatus !== AtsuMessageComStatus.Sending && message.ComStatus !== AtsuMessageComStatus.Sent) {
                 if (SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_MAX_REACHED', 'boolean') === 1) {
-                    this.mcdu.updateAtsuStatusCode(AtsuStatusCodes.DcduFull);
-                    // this.mcdu.addNewMessage(NXSystemMessages.dcduFileFull);
+                    this.mcdu.addNewAtsuMessage(AtsuStatusCodes.DcduFull);
                 }
             }
             this.atcSystem.insertMessage(message);

@@ -119,7 +119,7 @@ class CDUAtcDepartReq {
                 if (code === Atsu.AtsuStatusCodes.Ok) {
                     mcdu.pdcMessage = undefined;
                 } else {
-                    mcdu.atsuStatusCodeToMessage(code);
+                    mcdu.addNewAtsuMessage(code);
                 }
 
                 CDUAtcDepartReq.ShowPage1(mcdu, store);

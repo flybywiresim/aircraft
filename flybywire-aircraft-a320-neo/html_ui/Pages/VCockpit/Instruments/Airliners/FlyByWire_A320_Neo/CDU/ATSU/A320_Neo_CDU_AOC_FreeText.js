@@ -149,7 +149,7 @@ class CDUAocFreeText {
                     }, 5000);
                 } else {
                     store["sendStatus"] = "FAILED";
-                    mcdu.atsuStatusCodeToMessage(code);
+                    mcdu.addNewAtsuMessage(code);
                 }
                 updateView();
             });

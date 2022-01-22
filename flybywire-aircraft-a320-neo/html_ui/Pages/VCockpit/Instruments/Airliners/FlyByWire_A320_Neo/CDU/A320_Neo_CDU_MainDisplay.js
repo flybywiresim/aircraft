@@ -950,6 +950,35 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
 
     /**
+     * General ATSU message handler which converts ATSU status codes to new MCDU messages
+     * @param code ATSU status code
+     */
+    addNewAtsuMessage(code) {
+        switch (code) {
+            case Atsu.AtsuStatusCodes.NoHoppieConnection:
+                this.addNewMessage(NXFictionalMessages.noHoppieConnection);
+                break;
+            case Atsu.AtsuStatusCodes.ComFailed:
+                this.addNewMessage(NXSystemMessages.comUnavailable);
+                break;
+            case Atsu.AtsuStatusCodes.NoAtc:
+                this.addNewMessage(NXFictionalMessages.noAtc);
+                break;
+            case Atsu.AtsuStatusCodes.DcduFull:
+                this.addNewMessage(NXSystemMessages.dcduFileFull);
+                break;
+            case Atsu.AtsuStatusCodes.UnknownMessage:
+                this.addNewMessage(NXFictionalMessages.unknownAtsuMessage);
+                break;
+            case Atsu.AtsuStatusCodes.ProxyError:
+                this.addNewMessage(NXFictionalMessages.reverseProxy);
+                break;
+            default:
+                break;
+        }
+    }
+
+    /**
      * Add Type II Message
      * @param message {string} Message to be displayed
      * @param isAmber {boolean} Is color amber
