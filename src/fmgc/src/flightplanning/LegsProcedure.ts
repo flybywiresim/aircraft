@@ -250,13 +250,13 @@ export class LegsProcedure {
    * @returns The mapped leg.
    */
   public mapBearingAndDistanceFromOrigin(leg: RawProcedureLeg): WayPoint {
-      const origin = this._facilities.get(leg.originIcao);
+      const origin = this._facilities.get(leg.type === LegType.FD ? leg.originIcao : leg.fixIcao);
       const originIdent = origin.icao.substring(7, 12).trim();
 
       const _course = leg.course + GeoMath.getMagvar(origin.lat, origin.lon);
       const coordinates = Avionics.Utils.bearingDistanceToCoordinates(leg.course, leg.distance / 1852, origin.lat, origin.lon);
 
-      return this.buildWaypoint(`${originIdent}${Math.trunc(leg.distance / 1852)}`, coordinates);
+      return this.buildWaypoint(`${originIdent.substring(0, 3)}/${Math.trunc(leg.distance / 1852).toString().padStart(2, '0')}`, coordinates);
   }
 
   /**
