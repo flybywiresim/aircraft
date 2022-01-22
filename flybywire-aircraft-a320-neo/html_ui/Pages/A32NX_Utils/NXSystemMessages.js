@@ -39,6 +39,7 @@ const NXSystemMessages = {
     destEfobBelowMin:       new McduMessage("DEST EFOB BELOW MIN", true, true),
     enterDestData:          new McduMessage("ENTER DEST DATA", true, true),
     entryOutOfRange:        new McduMessage("ENTRY OUT OF RANGE", false, false),
+    mandatoryFields:        new McduMessage("ENTER MANDATORY FIELDS", false, false),
     formatError:            new McduMessage("FORMAT ERROR", false, false),
     fplnElementRetained:    new McduMessage("F-PLN ELEMENT RETAINED", false, false),
     initializeWeightOrCg:   new McduMessage("INITIALIZE WEIGHT/CG", true, true),
@@ -52,13 +53,16 @@ const NXSystemMessages = {
     uplinkInsertInProg:     new McduMessage("UPLINK INSERT IN PROG", false, true),
     vToDisagree:            new McduMessage("V1/VR/V2 DISAGREE", true, true),
     waitForSystemResponse:  new McduMessage("WAIT FOR SYSTEM RESPONSE", false, false),
-    dcduFileFull:           new McduMessage("DCDU FILE FULL", false, false)
+    comUnavailable:         new McduMessage("COM UNAVAILABLE", false, false),
+    dcduFileFull:           new McduMessage("DCDU FILE FULL", false, false),
+    systemBusy:             new McduMessage("SYSTEM BUSY-TRY LATER", false, false)
 };
 
 const NXFictionalMessages = {
     noSimBriefUser:         new McduMessage("NO SIMBRIEF USER", false, false),
     noAirportSpecified:     new McduMessage("NO AIRPORT SPECIFIED", false, false),
     fltNbrInUse:            new McduMessage("FLT NBR IN USE", false, false),
+    fltNbrMissing:          new McduMessage("ENTER ATC FLT NBR", false, false),
     notYetImplemented:      new McduMessage("NOT YET IMPLEMENTED", false, false),
     recipientNotFound:      new McduMessage("RECIPIENT NOT FOUND", false, false),
     authErr:                new McduMessage("AUTH ERR", false, false),
@@ -75,5 +79,9 @@ const NXFictionalMessages = {
     noRefWpt:               new McduMessage("NO REF WAYPOINT", false, false),
     noWptInfos:             new McduMessage("NO WAYPOINT INFOS", false, false),
     emptyMessage:           new McduMessage(""),
-    reloadPlaneApply:       new McduMessage("RELOAD A/C TO APPLY", true, true)
+    reloadPlaneApply:       new McduMessage("RELOAD A/C TO APPLY", true, true),
+    noAtc:                  new McduMessage("NO ACTIVE ATC", false, false),
+    noHoppieConnection:     new McduMessage("NO HOPPIE CONNECTION", false, false),
+    unknownAtsuMessage:     new McduMessage("UNKNOWN ATSU MESSAGE", false, false),
+    reverseProxy:           new McduMessage("REVERSE PROXY ERROR", false, false)
 };
