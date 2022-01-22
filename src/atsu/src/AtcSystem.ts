@@ -22,6 +22,8 @@ export class AtcSystem {
 
     private messageQueue: CpdlcMessage[] = [];
 
+    private dcduBufferedMessages: number[] = [];
+
     constructor(parent: AtsuManager, datalink: Datalink) {
         this.parent = parent;
         this.datalink = datalink;
@@ -52,6 +54,21 @@ export class AtcSystem {
             if (SimVar.GetSimVarValue('L:A32NX_DCDU_ATC_MSG_ACK', 'number') === 1) {
                 SimVar.SetSimVarValue('L:A32NX_DCDU_ATC_MSG_WAITING', 'boolean', 0);
                 SimVar.SetSimVarValue('L:A32NX_DCDU_ATC_MSG_ACK', 'number', 0);
+            }
+
+            // check if the buffer of the DCDU is available
+            if (SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_MAX_REACHED', 'boolean') === 0) {
+                while (this.dcduBufferedMessages.length !== 0) {
+                    if (SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_MAX_REACHED', 'boolean') !== 0) {
+                        break;
+                    }
+
+                    const uid = this.dcduBufferedMessages.shift();
+                    const message = this.messageQueue.find((element) => element.UniqueMessageID === uid);
+                    if (message !== undefined) {
+                        this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', message);
+                    }
+                }
             }
         }, 100);
     }
@@ -302,6 +319,8 @@ export class AtcSystem {
             const dcduRelevant = cpdlcMessage.ComStatus === AtsuMessageComStatus.Open || cpdlcMessage.ComStatus === AtsuMessageComStatus.Received;
             if (dcduRelevant && SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_MAX_REACHED', 'boolean') === 0) {
                 this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', message as CpdlcMessage);
+            } else if (dcduRelevant) {
+                this.dcduBufferedMessages.push(message.UniqueMessageID);
             }
         }
     }
