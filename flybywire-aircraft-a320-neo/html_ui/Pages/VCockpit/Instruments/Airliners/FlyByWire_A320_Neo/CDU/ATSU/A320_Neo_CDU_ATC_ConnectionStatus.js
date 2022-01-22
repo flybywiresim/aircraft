@@ -43,12 +43,18 @@ class CDUAtcConnectionStatus {
         mcdu.rightInputDelay[1] = () => {
             return mcdu.getDelaySwitchPage();
         };
-        mcdu.onRightInput[1] = (_value, scratchpadCallback) => {
+        mcdu.onRightInput[1] = () => {
             if (!store["disconnectAvail"]) {
-                mcdu.scratchpad.setText("NO ACTIVE ATC");
-                scratchpadCallback();
+                mcdu.addNewMessage(NXFictionalMessages.noAtc);
             } else {
-                mcdu.atsuManager.atc().logoff();
+                mcdu.atsuManager.atc().logoff().then((code) => {
+                    if (code !== Atsu.AtsuStatusCodes.Ok) {
+                        mcdu.atsuStatusCodeToMessage(code);
+                    } else {
+                        store["disconnectAvail"] = false;
+                        CDUAtcConnectionStatus.ShowPage(mcdu, store);
+                    }
+                });
             }
             CDUAtcConnectionStatus.ShowPage(mcdu, store);
         };
