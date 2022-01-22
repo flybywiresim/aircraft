@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-import { AltitudeDescriptor, FixTypeFlags } from '../types/fstypes/FSEnums';
+import { AltitudeDescriptor, FixTypeFlags, LegType } from '../types/fstypes/FSEnums';
 import { FixNamingScheme } from './FixNamingScheme';
 import { GeoMath } from './GeoMath';
 import { RawDataMapper } from './RawDataMapper';
