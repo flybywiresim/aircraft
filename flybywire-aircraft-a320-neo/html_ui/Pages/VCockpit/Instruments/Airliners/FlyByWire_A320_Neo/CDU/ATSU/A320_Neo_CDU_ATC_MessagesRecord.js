@@ -93,8 +93,8 @@ class CDUAtcMessagesRecord {
             [msgStart[3]],
             [eraseRecordTitle],
             [eraseRecordButton],
-            ["ATC MENU", "MSG RECORD[color]cyan"],
-            ["<RETURN", "PRINT*[color]cyan"]
+            ["ATC MENU", "MSG RECORD[color]inop"],
+            ["<RETURN", "PRINT*[color]inop"]
         ]);
 
         mcdu.leftInputDelay[4] = () => {
