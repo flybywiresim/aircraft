@@ -90,7 +90,7 @@ class CDUAocFreeText {
         mcdu.rightInputDelay[5] = () => {
             return mcdu.getDelaySwitchPage();
         };
-        mcdu.onRightInput[5] = async (_value, scratchpadCallback) => {
+        mcdu.onRightInput[5] = async () => {
             // do not send two times
             if (store["sendStatus"] === "SENDING" || store["sendStatus"] === "SENT") {
                 return;
@@ -103,8 +103,7 @@ class CDUAocFreeText {
             const sendValid = oneLineFilled === true && store["msg_to"] !== "";
 
             if (sendValid === false) {
-                mcdu.scratchpad.setText("ENTER MANDATORY FIELDS");
-                scratchpadCallback();
+                mcdu.addNewMessage(NXSystemMessages.mandatoryFields);
                 return;
             }
 
@@ -134,13 +133,12 @@ class CDUAocFreeText {
             message.Message = message.Message.substring(0, message.Message.length - 1);
 
             // send the message
-            mcdu.atsuManager.sendMessage(message).then((message) => {
-                if (message === '') {
+            mcdu.atsuManager.sendMessage(message).then((code) => {
+                if (code === Atsu.AtsuStatusCodes.Ok) {
                     store["sendStatus"] = "SENT";
                 } else {
                     store["sendStatus"] = "FAILED";
-                    mcdu.scratchpad.setText(err.message);
-                    scratchpadCallback();
+                    mcdu.atsuStatusCodeToMessage(code);
                 }
                 updateView();
             });

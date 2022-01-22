@@ -117,12 +117,11 @@ class CDUAtcDepartReq {
             }
 
             // publish the message
-            mcdu.atsuManager.sendMessage(mcdu.pdcMessage).then((message) => {
-                if (message === '') {
+            mcdu.atsuManager.sendMessage(mcdu.pdcMessage).then((code) => {
+                if (code === Atsu.AtsuStatusCodes.Ok) {
                     mcdu.pdcMessage = undefined;
                 } else {
-                    mcdu.scratchpad.setText(message);
-                    scratchpadCallback();
+                    mcdu.atsuStatusCodeToMessage(code);
                 }
 
                 CDUAtcDepartReq.ShowPage1(mcdu, store);

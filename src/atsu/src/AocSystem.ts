@@ -1,6 +1,7 @@
 //  Copyright (c) 2022 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
+import { AtsuStatusCodes } from './AtsuStatusCodes';
 import { AtsuMessageDirection, AtsuMessage, AtsuMessageType } from './messages/AtsuMessage';
 import { WeatherMessage } from './messages/WeatherMessage';
 import { AtsuTimestamp } from './messages/AtsuTimestamp';
@@ -22,11 +23,11 @@ export class AocSystem {
         return message.Type < AtsuMessageType.AOC;
     }
 
-    public async sendMessage(message: AtsuMessage): Promise<string> {
+    public async sendMessage(message: AtsuMessage): Promise<AtsuStatusCodes> {
         if (AocSystem.isRelevantMessage(message)) {
             return this.datalink.sendMessage(message);
         }
-        return 'INVALID MSG';
+        return AtsuStatusCodes.UnknownMessage;
     }
 
     public removeMessage(uid: number): boolean {
@@ -37,11 +38,11 @@ export class AocSystem {
         return index !== -1;
     }
 
-    public async receiveWeather(requestMetar: boolean, icaos: string[]): Promise<WeatherMessage> {
+    public async receiveWeather(requestMetar: boolean, icaos: string[]): Promise<[AtsuStatusCodes, WeatherMessage | undefined]> {
         return this.datalink.receiveWeather(requestMetar, icaos);
     }
 
-    public async receiveAtis(icao: string): Promise<WeatherMessage> {
+    public async receiveAtis(icao: string): Promise<[AtsuStatusCodes, WeatherMessage | undefined]> {
         return this.datalink.receiveAtis(icao);
     }
 

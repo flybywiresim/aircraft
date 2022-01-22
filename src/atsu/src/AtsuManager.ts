@@ -1,7 +1,7 @@
 //  Copyright (c) 2022 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import { Datalink } from '@atsu/com/Datalink';
+import { AtsuStatusCodes } from './AtsuStatusCodes';
 import { AtcSystem } from './AtcSystem';
 import { AocSystem } from './AocSystem';
 import { AtsuMessage, AtsuMessageSerializationFormat, AtsuMessageComStatus } from './messages/AtsuMessage';
@@ -35,17 +35,17 @@ export class AtsuManager {
         SimVar.SetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number', 1);
     }
 
-    public async sendMessage(message: AtsuMessage): Promise<string> {
-        let retval = 'UNKNOWN MSG';
+    public async sendMessage(message: AtsuMessage): Promise<AtsuStatusCodes> {
+        let retval = AtsuStatusCodes.UnknownMessage;
 
         if (AocSystem.isRelevantMessage(message)) {
             retval = await this.aocSystem.sendMessage(message);
-            if (retval === '') {
+            if (retval === AtsuStatusCodes.Ok) {
                 this.registerMessage(message);
             }
         } else if (AtcSystem.isRelevantMessage(message)) {
             retval = await this.atcSystem.sendMessage(message);
-            if (retval === '') {
+            if (retval === AtsuStatusCodes.Ok) {
                 this.registerMessage(message);
             }
         }
@@ -53,7 +53,7 @@ export class AtsuManager {
         return retval;
     }
 
-    public removeMessage(uid: number) {
+    public removeMessage(uid: number): void {
         if (this.atcSystem.removeMessage(uid) === true) {
             this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG_DELETE_UID', uid);
         } else {
@@ -61,7 +61,7 @@ export class AtsuManager {
         }
     }
 
-    public registerMessage(message: AtsuMessage) {
+    public registerMessage(message: AtsuMessage): void {
         message.UniqueMessageID = ++this.messageCounter;
         message.Timestamp = new AtsuTimestamp();
 
@@ -70,14 +70,15 @@ export class AtsuManager {
         } else if (AtcSystem.isRelevantMessage(message)) {
             if (message.ComStatus !== AtsuMessageComStatus.Sending && message.ComStatus !== AtsuMessageComStatus.Sent) {
                 if (SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_MAX_REACHED', 'boolean') === 1) {
-                    this.mcdu.addNewMessage(NXSystemMessages.dcduFileFull);
+                    this.mcdu.updateAtsuStatusCode(AtsuStatusCodes.DcduFull);
+                    // this.mcdu.addNewMessage(NXSystemMessages.dcduFileFull);
                 }
             }
             this.atcSystem.insertMessage(message);
         }
     }
 
-    public messageRead(uid: number) {
+    public messageRead(uid: number): void {
         this.aocSystem.messageRead(uid);
         this.atcSystem.messageRead(uid);
     }
@@ -90,7 +91,7 @@ export class AtsuManager {
         return this.atcSystem;
     }
 
-    public async isRemoteStationAvailable(callsign: string): Promise<string> {
+    public async isRemoteStationAvailable(callsign: string): Promise<AtsuStatusCodes> {
         return this.datalink.isStationAvailable(callsign);
     }
 

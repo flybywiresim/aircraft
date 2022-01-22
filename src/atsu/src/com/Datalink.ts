@@ -2,6 +2,7 @@
 //  SPDX-License-Identifier: GPL-3.0
 
 import { NXDataStore } from '@shared/persistence';
+import { AtsuStatusCodes } from '../AtsuStatusCodes';
 import { AtsuManager } from '../AtsuManager';
 import { CpdlcMessage } from '../messages/CpdlcMessage';
 import { FreetextMessage } from '../messages/FreetextMessage';
@@ -89,8 +90,8 @@ export class Datalink {
         this.overallDelay += timeout;
     }
 
-    private async receiveWeatherData(requestMetar: boolean, icaos: string[], index: number, message: WeatherMessage): Promise<boolean> {
-        let retval = true;
+    private async receiveWeatherData(requestMetar: boolean, icaos: string[], index: number, message: WeatherMessage): Promise<AtsuStatusCodes> {
+        let retval = AtsuStatusCodes.Ok;
 
         if (index < icaos.length) {
             if (requestMetar === true) {
@@ -103,7 +104,7 @@ export class Datalink {
         return retval;
     }
 
-    public async receiveWeather(requestMetar: boolean, icaos: string[]): Promise<WeatherMessage> {
+    public async receiveWeather(requestMetar: boolean, icaos: string[]): Promise<[AtsuStatusCodes, WeatherMessage | undefined]> {
         this.estimateTransmissionTime();
 
         return new Promise((resolve, _reject) => {
@@ -115,46 +116,46 @@ export class Datalink {
                     message = new TafMessage();
                 }
 
-                this.receiveWeatherData(requestMetar, icaos, 0, message).then((error) => {
-                    if (!error) {
-                        message = undefined;
+                this.receiveWeatherData(requestMetar, icaos, 0, message).then((code) => {
+                    if (code !== AtsuStatusCodes.Ok) {
+                        resolve([AtsuStatusCodes.ComFailed, undefined]);
                     }
-                    resolve(message);
+                    resolve([AtsuStatusCodes.Ok, message]);
                 });
             }, this.overallDelay);
         });
     }
 
-    public async isStationAvailable(callsign: string): Promise<string> {
+    public async isStationAvailable(callsign: string): Promise<AtsuStatusCodes> {
         return HoppieConnector.isStationAvailable(callsign);
     }
 
-    public async receiveAtis(icao: string): Promise<WeatherMessage> {
+    public async receiveAtis(icao: string): Promise<[AtsuStatusCodes, WeatherMessage | undefined]> {
         this.estimateTransmissionTime();
 
         return new Promise((resolve, _reject) => {
             setTimeout(() => {
                 const message = new AtisMessage();
-                NXApiConnector.receiveAtis(icao, message).then(() => resolve(message));
+                NXApiConnector.receiveAtis(icao, message).then(() => resolve([AtsuStatusCodes.Ok, message]));
             }, this.overallDelay);
         });
     }
 
-    public async sendMessage(message: AtsuMessage): Promise<string> {
+    public async sendMessage(message: AtsuMessage): Promise<AtsuStatusCodes> {
         this.estimateTransmissionTime();
 
         return new Promise((resolve, _reject) => {
             setTimeout(() => {
                 if (message.Type < AtsuMessageType.AOC) {
                     if (message.Network === AtsuMessageNetwork.FBW) {
-                        NXApiConnector.sendTelexMessage(message as FreetextMessage).then((error) => resolve(error));
+                        NXApiConnector.sendTelexMessage(message as FreetextMessage).then((code) => resolve(code));
                     } else {
-                        HoppieConnector.sendTelexMessage(message as FreetextMessage).then((error) => resolve(error));
+                        HoppieConnector.sendTelexMessage(message as FreetextMessage).then((code) => resolve(code));
                     }
                 } else if (message.Type < AtsuMessageType.ATC) {
-                    HoppieConnector.sendCpdlcMessage(message as CpdlcMessage).then((error) => resolve(error));
+                    HoppieConnector.sendCpdlcMessage(message as CpdlcMessage).then((code) => resolve(code));
                 } else {
-                    resolve('INVALID MSG');
+                    resolve(AtsuStatusCodes.UnknownMessage);
                 }
             }, this.overallDelay);
         });

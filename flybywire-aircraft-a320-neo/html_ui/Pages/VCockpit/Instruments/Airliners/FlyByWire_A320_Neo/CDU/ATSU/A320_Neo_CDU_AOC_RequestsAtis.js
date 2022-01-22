@@ -135,15 +135,19 @@ class CDUAocRequestsAtis {
                 updateView();
             }, 1000);
 
-            mcdu.atsuManager.aoc().receiveAtis(icao).then((message) => {
-                mcdu.atsuManager.registerMessage(message);
-                store["sendStatus"] = "";
-                updateView();
+            mcdu.atsuManager.aoc().receiveAtis(icao).then((retval) => {
+                if (retval[0] === Atsu.AtsuStatusCodes.Ok) {
+                    mcdu.atsuManager.registerMessage(retval[1]);
+                    store["sendStatus"] = "";
+                    updateView();
 
-                // print the message
-                if (store.formatID === 0) {
-                    mcdu.atsuManager.messageRead(message.UniqueMessageID);
-                    mcdu.atsuManager.printMessage(message);
+                    // print the message
+                    if (store.formatID === 0) {
+                        mcdu.atsuManager.messageRead(retval[1].UniqueMessageID);
+                        mcdu.atsuManager.printMessage(retval[1]);
+                    }
+                } else {
+                    mcdu.atsuStatusCodeToMessage(retval[0]);
                 }
             });
         };

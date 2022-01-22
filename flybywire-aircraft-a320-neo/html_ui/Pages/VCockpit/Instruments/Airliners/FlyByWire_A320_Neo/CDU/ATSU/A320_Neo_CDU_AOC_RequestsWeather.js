@@ -64,12 +64,13 @@ class CDUAocRequestsWeather {
                 updateView();
             }, 1000);
 
-            mcdu.atsuManager.aoc().receiveWeather(reqID === 0, icaos).then((message) => {
-                if (message !== undefined) {
-                    mcdu.atsuManager.registerMessage(message);
+            mcdu.atsuManager.aoc().receiveWeather(reqID === 0, icaos).then((retval) => {
+                if (retval[0] === Atsu.AtsuStatusCodes.Ok) {
+                    mcdu.atsuManager.registerMessage(retval[1]);
                     sendStatus = "";
                     updateView();
                 } else {
+                    mcdu.atsuStatusCodeToMessage(retval[0]);
                     sendStatus = "FAILED";
                     updateView();
                 }

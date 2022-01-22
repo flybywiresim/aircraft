@@ -2,6 +2,7 @@
 //  SPDX-License-Identifier: GPL-3.0
 
 import { NXDataStore } from '@shared/persistence';
+import { AtsuStatusCodes } from '../AtsuStatusCodes';
 import { AtsuMessage, AtsuMessageNetwork, AtsuMessageDirection, AtsuMessageComStatus, AtsuMessageSerializationFormat } from '../messages/AtsuMessage';
 import { FreetextMessage, CpdlcMessage } from '../AtsuManager';
 import { stringToCpdlc } from '../Common';
@@ -29,9 +30,9 @@ export class HoppieConnector {
         };
     }
 
-    public static async isStationAvailable(station: string): Promise<string> {
+    public static async isStationAvailable(station: string): Promise<AtsuStatusCodes> {
         if (SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') !== 1) {
-            return 'HOPPIE DISABLED';
+            return AtsuStatusCodes.NoHoppieConnection;
         }
 
         const flightNo = SimVar.GetSimVarValue('ATC FLIGHT NUMBER', 'string');
@@ -41,46 +42,50 @@ export class HoppieConnector {
             if (response.ok) {
                 return response.text();
             }
-            return 'COM UNAVAILABLE';
-        });
+            return 'error';
+        }).catch(() => 'error');
+
+        if (text === 'error') {
+            return AtsuStatusCodes.ProxyError;
+        }
         if (text.startsWith('ok') !== true) {
-            return 'COM UNAVAILABLE';
+            return AtsuStatusCodes.ComFailed;
         }
         if (station === flightNo || text !== `ok {${station}}`) {
-            return 'NO ACTIVE ATC';
+            return AtsuStatusCodes.NoAtc;
         }
 
-        return '';
+        return AtsuStatusCodes.Ok;
     }
 
-    private static async sendMessage(message: AtsuMessage, type: string): Promise<string> {
+    private static async sendMessage(message: AtsuMessage, type: string): Promise<AtsuStatusCodes> {
         const data = HoppieConnector.createPostData(type, message.Station, message.serialize(AtsuMessageSerializationFormat.Network));
 
         return fetch(HoppieConnector.corsProxyUrl + HoppieConnector.hoppieUrl, data).then((response) => {
             if (response.ok !== true) {
-                return 'COM UNAVAILABLE';
+                return AtsuStatusCodes.ComFailed;
             }
             return response.text().then((text) => {
                 if (text !== 'ok') {
-                    return 'COM UNAVAILABLE';
+                    return AtsuStatusCodes.ComFailed;
                 }
-                return '';
+                return AtsuStatusCodes.Ok;
             });
-        }).catch(() => 'COM UNAVAILABLE');
+        }).catch(() => AtsuStatusCodes.ComFailed);
     }
 
-    public static async sendTelexMessage(message: FreetextMessage): Promise<string> {
+    public static async sendTelexMessage(message: FreetextMessage): Promise<AtsuStatusCodes> {
         if (SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') === 1) {
             return HoppieConnector.sendMessage(message, 'telex');
         }
-        return 'COM UNAVAILABLE';
+        return AtsuStatusCodes.NoHoppieConnection;
     }
 
-    public static async sendCpdlcMessage(message: CpdlcMessage): Promise<string> {
+    public static async sendCpdlcMessage(message: CpdlcMessage): Promise<AtsuStatusCodes> {
         if (SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') === 1) {
             return HoppieConnector.sendMessage(message, 'cpdlc');
         }
-        return 'COM UNAVAILABLE';
+        return AtsuStatusCodes.NoHoppieConnection;
     }
 
     public static async poll(): Promise<AtsuMessage[]> {
@@ -91,7 +96,9 @@ export class HoppieConnector {
 
             // receive the data from the server
             // expected format: ok {CALLSIGN telex, {Hello world!}} {CALLSIGN telex, {Hello world!}}
-            const data = await fetch(HoppieConnector.corsProxyUrl + HoppieConnector.hoppieUrl, postData).then((response) => response.text());
+            const data = await fetch(HoppieConnector.corsProxyUrl + HoppieConnector.hoppieUrl, postData)
+                .then((response) => response.text())
+                .catch(() => 'error');
 
             // something went wrong
             if (!data.startsWith('ok')) {

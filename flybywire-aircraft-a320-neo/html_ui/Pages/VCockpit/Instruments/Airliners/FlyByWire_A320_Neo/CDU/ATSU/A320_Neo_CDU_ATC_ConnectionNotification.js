@@ -75,11 +75,9 @@ class CDUAtcConnectionNotification {
         mcdu.leftInputDelay[1] = () => {
             return mcdu.getDelaySwitchPage();
         };
-        mcdu.onLeftInput[1] = (value, scratchpadCallback) => {
+        mcdu.onLeftInput[1] = (value) => {
             if (store["loginState"] === 1) {
-                mcdu.scratchpad.setText("SYSTEM BUSY-TRY LATER");
-                scratchpadCallback();
-                CDUAtcConnectionNotification.ShowPage(mcdu, store);
+                mcdu.addNewMessage(NXSystemMessages.systemBusy);
                 return;
             }
 
@@ -87,16 +85,14 @@ class CDUAtcConnectionNotification {
             if (value.length !== 4 || /^[A-Z()]*$/.test(value) === false) {
                 mcdu.addNewMessage(NXSystemMessages.formatError);
             } else if (SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC") === "1123") {
-                mcdu.scratchpad.setText("ENTER ATC FLT NBR");
-                scratchpadCallback();
+                mcdu.addNewMessage(NXFictionalMessages.fltNbrMissing);
             } else {
                 store["atcCenter"] = "";
 
-                mcdu.atsuManager.isRemoteStationAvailable(value).then((message) => {
-                    if (message !== '') {
-                        mcdu.scratchpad.setText(message);
+                mcdu.atsuManager.isRemoteStationAvailable(value).then((code) => {
+                    if (code !== Atsu.AtsuStatusCodes.Ok) {
+                        mcdu.atsuStatusCodeToMessage(code);
                         store["atcCenter"] = "";
-                        scratchpadCallback();
                     } else {
                         store["atcCenter"] = value;
                     }
@@ -118,7 +114,7 @@ class CDUAtcConnectionNotification {
         mcdu.rightInputDelay[1] = () => {
             return mcdu.getDelaySwitchPage();
         };
-        mcdu.onRightInput[1] = async (_value, scratchpadCallback) => {
+        mcdu.onRightInput[1] = async () => {
             if (store["logonAllowed"] === true) {
                 store["loginState"] = 1;
 
@@ -130,8 +126,8 @@ class CDUAtcConnectionNotification {
 
                 store["notifTime"] = `${zeroPad(hours, 2)}${zeroPad(minutes, 2)}Z`;
 
-                mcdu.atsuManager.atc().logon(store["atcCenter"]).then((message) => {
-                    if (message === '') {
+                mcdu.atsuManager.atc().logon(store["atcCenter"]).then((code) => {
+                    if (code === Atsu.AtsuStatusCodes.Ok) {
                         // check if the login was successful
                         const interval = setInterval(() => {
                             // page changed
@@ -155,15 +151,13 @@ class CDUAtcConnectionNotification {
                             CDUAtcConnectionNotification.ShowPage(mcdu, store);
                         }, 1000);
                     } else {
-                        mcdu.scratchpad.setText("COM UNAVAILABLE");
-                        scratchpadCallback();
+                        mcdu.atsuStatusCodeToMessage(code);
                     }
 
                     CDUAtcConnectionNotification.ShowPage(mcdu, store);
                 });
             } else {
-                mcdu.scratchpad.setText("ENTER MANDATORY FIELDS");
-                scratchpadCallback();
+                mcdu.addNewMessage(NXSystemMessages.mandatoryFields);
             }
 
             CDUAtcConnectionNotification.ShowPage(mcdu, store);

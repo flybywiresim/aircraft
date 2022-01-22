@@ -95,20 +95,18 @@ class CDUAocDepartReq {
         mcdu.rightInputDelay[2] = () => {
             return mcdu.getDelaySwitchPage();
         };
-        mcdu.onRightInput[2] = (value, scratchpadCallback) => {
+        mcdu.onRightInput[2] = (value) => {
             if (value.length !== 4 || /^[A-Z()]*$/.test(value) === false) {
                 mcdu.addNewMessage(NXSystemMessages.formatError);
                 CDUAocDepartReq.ShowPage1(mcdu, store);
             } else if (SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC") === "1123") {
-                mcdu.scratchpad.setText("ENTER ATC FLT NBR");
-                scratchpadCallback();
+                mcdu.addNewMessage(NXFictionalMessages.fltNbrMissing);
                 CDUAocDepartReq.ShowPage1(mcdu, store);
             } else {
-                mcdu.atsuManager.isRemoteStationAvailable(value).then((message) => {
-                    if (message !== '') {
-                        mcdu.scratchpad.setText(message);
+                mcdu.atsuManager.isRemoteStationAvailable(value).then((code) => {
+                    if (code !== Atsu.AtsuStatusCodes.Ok) {
+                        mcdu.atsuStatusCodeToMessage(code);
                         mcdu.pdcMessage.Station = "";
-                        scratchpadCallback();
                     } else {
                         mcdu.pdcMessage.Station = value;
                     }
@@ -122,12 +120,11 @@ class CDUAocDepartReq {
         mcdu.rightInputDelay[4] = () => {
             return mcdu.getDelaySwitchPage();
         };
-        mcdu.onRightInput[4] = (_value, scratchpadCallback) => {
+        mcdu.onRightInput[4] = () => {
             if (0 !== mcdu.pdcMessage.Freetext0.length) {
                 CDUAocDepartReq.ShowPage2(mcdu);
             } else {
-                mcdu.scratchpad.setText("ENTER MANDATORY FIELDS");
-                scratchpadCallback();
+                mcdu.addNewMessage(NXSystemMessages.mandatoryFields);;
             }
         };
 
@@ -141,10 +138,9 @@ class CDUAocDepartReq {
         mcdu.rightInputDelay[5] = () => {
             return mcdu.getDelaySwitchPage();
         };
-        mcdu.onRightInput[5] = (value, scratchpadCallback) => {
+        mcdu.onRightInput[5] = () => {
             if (mcdu.pdcMessage.Callsign === "" || mcdu.pdcMessage.Origin === "" || mcdu.pdcMessage.Destination === "" || mcdu.pdcMessage.Atis === "" || mcdu.pdcMessage.Station === "") {
-                mcdu.scratchpad.setText("ENTER MANDATORY FIELDS");
-                scratchpadCallback();
+                mcdu.addNewMessage(NXSystemMessages.mandatoryFields);
                 return;
             }
 
@@ -152,8 +148,8 @@ class CDUAocDepartReq {
             CDUAocDepartReq.ShowPage1(mcdu, store);
 
             // publish the message
-            mcdu.atsuManager.sendMessage(mcdu.pdcMessage).then((message) => {
-                if (message === '') {
+            mcdu.atsuManager.sendMessage(mcdu.pdcMessage).then((code) => {
+                if (code === Atsu.AtsuStatusCodes.Ok) {
                     mcdu.pdcMessage = undefined;
                     store["sendStatus"] = "SENT";
                     CDUAocDepartReq.ShowPage1(mcdu, store);
@@ -165,8 +161,7 @@ class CDUAocDepartReq {
                         }
                     }, 5000);
                 } else {
-                    mcdu.scratchpad.setText(message);
-                    scratchpadCallback();
+                    mcdu.atsuStatusCodeToMessage(code);
                     store["sendStatus"] = "FAILED";
                     CDUAocDepartReq.ShowPage1(mcdu, store);
                 }

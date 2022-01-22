@@ -3,6 +3,7 @@
 
 import { NXApi } from '@shared/nxapi';
 import { NXDataStore } from '@shared/persistence';
+import { AtsuStatusCodes } from '../AtsuStatusCodes';
 import { AtsuMessage, AtsuMessageComStatus, AtsuMessageNetwork, AtsuMessageDirection } from '../messages/AtsuMessage';
 import { AtisMessage, FreetextMessage, WeatherMessage } from '../AtsuManager';
 
@@ -19,40 +20,40 @@ const WeatherMap = {
  * Defines the NXApi connector for the AOC system
  */
 export class NXApiConnector {
-    public static async sendTelexMessage(message: FreetextMessage): Promise<string> {
+    public static async sendTelexMessage(message: FreetextMessage): Promise<AtsuStatusCodes> {
         const content = message.Message.replace('\n', ';');
         return NXApi.sendTelexMessage(message.Station, content).then(() => {
             message.ComStatus = AtsuMessageComStatus.Sent;
-            return '';
+            return AtsuStatusCodes.Ok;
         }).catch(() => {
             message.ComStatus = AtsuMessageComStatus.Failed;
-            return 'COM UNAVAILABLE';
+            return AtsuStatusCodes.ComFailed;
         });
     }
 
-    public static async receiveMetar(icao: string, message: WeatherMessage): Promise<boolean> {
+    public static async receiveMetar(icao: string, message: WeatherMessage): Promise<AtsuStatusCodes> {
         const storedMetarSrc = NXDataStore.get('CONFIG_METAR_SRC', 'MSFS');
 
         return NXApi.getMetar(icao, WeatherMap[storedMetarSrc])
             .then((data) => {
                 const newLines = data.metar;
                 message.Reports.push({ airport: icao, report: newLines });
-                return true;
-            }).catch(() => false);
+                return AtsuStatusCodes.Ok;
+            }).catch(() => AtsuStatusCodes.ComFailed);
     }
 
-    public static async receiveTaf(icao: string, message: WeatherMessage): Promise<boolean> {
+    public static async receiveTaf(icao: string, message: WeatherMessage): Promise<AtsuStatusCodes> {
         const storedTafSrc = NXDataStore.get('CONFIG_TAF_SRC', 'NOAA');
 
         return NXApi.getTaf(icao, WeatherMap[storedTafSrc])
             .then((data) => {
                 const newLines = data.taf;
                 message.Reports.push({ airport: icao, report: newLines });
-                return true;
-            }).catch(() => false);
+                return AtsuStatusCodes.Ok;
+            }).catch(() => AtsuStatusCodes.ComFailed);
     }
 
-    public static async receiveAtis(icao: string, message: AtisMessage): Promise<boolean> {
+    public static async receiveAtis(icao: string, message: AtisMessage): Promise<AtsuStatusCodes> {
         const storedAtisSrc = NXDataStore.get('CONFIG_ATIS_SRC', 'FAA');
 
         await NXApi.getAtis(icao, WeatherMap[storedAtisSrc])
@@ -63,7 +64,7 @@ export class NXApiConnector {
                 message.Reports.push({ airport: icao, report: 'D-ATIS NOT AVAILABLE' });
             });
 
-        return true;
+        return AtsuStatusCodes.Ok;
     }
 
     public static async poll(): Promise<AtsuMessage[]> {

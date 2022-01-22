@@ -1,3 +1,4 @@
+import { AtsuStatusCodes } from './AtsuStatusCodes';
 import { AtsuMessageComStatus, AtsuMessage, AtsuMessageType, AtsuMessageDirection } from './messages/AtsuMessage';
 import { CpdlcMessageResponse, CpdlcMessageRequestedResponseType, CpdlcMessage } from './messages/CpdlcMessage';
 import { Datalink } from './com/Datalink';
@@ -64,10 +65,10 @@ export class AtcSystem {
         return this.nextAtc !== '';
     }
 
-    public async logon(station: string): Promise<string> {
+    public async logon(station: string): Promise<AtsuStatusCodes> {
         if (this.currentAtc !== '') {
             const retval = await this.logoff();
-            if (retval !== '') {
+            if (retval !== AtsuStatusCodes.Ok) {
                 return retval;
             }
         }
@@ -87,9 +88,9 @@ export class AtcSystem {
         return this.datalink.sendMessage(message);
     }
 
-    public async logoff(): Promise<string> {
+    public async logoff(): Promise<AtsuStatusCodes> {
         if (this.currentAtc === '') {
-            return 'NO ACTIVE ATC';
+            return AtsuStatusCodes.NoAtc;
         }
 
         const message = new CpdlcMessage();
@@ -154,7 +155,7 @@ export class AtcSystem {
         return response;
     }
 
-    private sendResponse(uid: number, response: CpdlcMessageResponse) {
+    private sendResponse(uid: number, response: CpdlcMessageResponse): void {
         const message = this.messageQueue.find((element) => element.UniqueMessageID === uid);
         if (message !== undefined) {
             message.ResponseType = response;
@@ -163,8 +164,8 @@ export class AtcSystem {
             this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', message);
 
             if (message.Response !== undefined) {
-                this.datalink.sendMessage(message.Response).then((text) => {
-                    if (text === '') {
+                this.datalink.sendMessage(message.Response).then((code) => {
+                    if (code === AtsuStatusCodes.Ok) {
                         message.Response.ComStatus = AtsuMessageComStatus.Sent;
                     } else {
                         message.Response.ComStatus = AtsuMessageComStatus.Failed;
@@ -311,17 +312,17 @@ export class AtcSystem {
         return index !== -1;
     }
 
-    public async sendMessage(message: AtsuMessage): Promise<string> {
+    public async sendMessage(message: AtsuMessage): Promise<AtsuStatusCodes> {
         if (message.Station === '') {
             if (this.currentAtc === '') {
-                return 'NO ACTIVE ATC';
+                return AtsuStatusCodes.NoAtc;
             }
             message.Station = this.currentAtc;
         }
 
         message.ComStatus = AtsuMessageComStatus.Sending;
         return this.datalink.sendMessage(message).then((retval) => {
-            if (retval === '') {
+            if (retval === AtsuStatusCodes.Ok) {
                 message.ComStatus = AtsuMessageComStatus.Sent;
             } else {
                 message.ComStatus = AtsuMessageComStatus.Failed;
