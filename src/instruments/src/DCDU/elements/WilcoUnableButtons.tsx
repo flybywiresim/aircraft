@@ -76,8 +76,6 @@ export const WilcoUnableButtons: React.FC<WilcoUnableButtonsProps> = ({ message,
                         index="L1"
                         content="*UNABLE"
                         active
-                        clickShowTime={1000}
-                        clickEventDelay={1000}
                         clickedCallback={clicked}
                     />
                     {showStandby && (
@@ -86,8 +84,6 @@ export const WilcoUnableButtons: React.FC<WilcoUnableButtonsProps> = ({ message,
                             index="R1"
                             content="STBY*"
                             active
-                            clickShowTime={1000}
-                            clickEventDelay={1000}
                             clickedCallback={clicked}
                         />
                     )}
@@ -96,8 +92,6 @@ export const WilcoUnableButtons: React.FC<WilcoUnableButtonsProps> = ({ message,
                         index="R2"
                         content="WILCO*"
                         active
-                        clickShowTime={1000}
-                        clickEventDelay={1000}
                         clickedCallback={clicked}
                     />
                 </>
@@ -109,8 +103,6 @@ export const WilcoUnableButtons: React.FC<WilcoUnableButtonsProps> = ({ message,
                         index="L1"
                         content="*CANCEL"
                         active
-                        clickShowTime={1000}
-                        clickEventDelay={1000}
                         clickedCallback={clicked}
                     />
                     <Button
@@ -118,8 +110,6 @@ export const WilcoUnableButtons: React.FC<WilcoUnableButtonsProps> = ({ message,
                         index="R2"
                         content="SEND*"
                         active
-                        clickShowTime={-1}
-                        clickEventDelay={-1}
                         clickedCallback={clicked}
                     />
                 </>
@@ -130,8 +120,6 @@ export const WilcoUnableButtons: React.FC<WilcoUnableButtonsProps> = ({ message,
                     index="R2"
                     content={`CLOSE${closeClickabel ? '*' : ''}`}
                     active={closeClickabel}
-                    clickShowTime={1000}
-                    clickEventDelay={1000}
                     clickedCallback={clicked}
                 />
             )}

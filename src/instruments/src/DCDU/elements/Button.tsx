@@ -6,29 +6,20 @@ type ButtonProps = {
     index: string,
     content: string,
     active: boolean,
-    clickShowTime: number,
-    clickEventDelay: number;
     clickedCallback: (btn: string) => void
 }
 
-export const Button: React.FC<ButtonProps> = ({ index, content, active, clickShowTime, clickEventDelay, clickedCallback }) => {
+export const Button: React.FC<ButtonProps> = ({ index, content, active, clickedCallback }) => {
     const [clicked, setClicked] = useState(false);
 
     if (content.length !== 0) {
         useInteractionEvents([`A32NX_DCDU_BTN_MPL_${index}`, `A32NX_DCDU_BTN_MPR_${index}`], () => {
             if (active) {
-                if (clickShowTime > 0) {
-                    setClicked(true);
-                    setTimeout(() => setClicked(false), clickShowTime);
-                } else if (clickShowTime === -1) {
-                    setClicked(true);
-                }
-
-                if (clickEventDelay > 0) {
-                    setTimeout(() => clickedCallback(index), clickEventDelay);
-                } else {
+                setClicked(true);
+                setTimeout(() => {
+                    setClicked(false);
                     clickedCallback(index);
-                }
+                }, 1000);
             }
         });
     }

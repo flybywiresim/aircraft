@@ -65,8 +65,6 @@ export const AffirmNegativeButtons: React.FC<AffirmNegativeButtonsProps> = ({ me
                         index="L1"
                         content="*NEGATV"
                         active
-                        clickShowTime={1000}
-                        clickEventDelay={1000}
                         clickedCallback={clicked}
                     />
                     <Button
@@ -74,8 +72,6 @@ export const AffirmNegativeButtons: React.FC<AffirmNegativeButtonsProps> = ({ me
                         index="R2"
                         content="AFFIRM*"
                         active
-                        clickShowTime={1000}
-                        clickEventDelay={1000}
                         clickedCallback={clicked}
                     />
                 </>
@@ -87,8 +83,6 @@ export const AffirmNegativeButtons: React.FC<AffirmNegativeButtonsProps> = ({ me
                         index="L1"
                         content="*CANCEL"
                         active
-                        clickShowTime={1000}
-                        clickEventDelay={1000}
                         clickedCallback={clicked}
                     />
                     <Button
@@ -96,8 +90,6 @@ export const AffirmNegativeButtons: React.FC<AffirmNegativeButtonsProps> = ({ me
                         index="R2"
                         content="SEND*"
                         active
-                        clickShowTime={-1}
-                        clickEventDelay={-1}
                         clickedCallback={clicked}
                     />
                 </>
@@ -108,8 +100,6 @@ export const AffirmNegativeButtons: React.FC<AffirmNegativeButtonsProps> = ({ me
                     index="R2"
                     content={`CLOSE${closeClickabel ? '*' : ''}`}
                     active={closeClickabel}
-                    clickShowTime={1000}
-                    clickEventDelay={1000}
                     clickedCallback={clicked}
                 />
             )}
