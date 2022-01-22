@@ -62,8 +62,6 @@ export const RogerButtons: React.FC<RogerButtonsProps> = ({ message, setMessageS
                         index="R2"
                         content="ROGER*"
                         active
-                        clickShowTime={1000}
-                        clickEventDelay={1000}
                         clickedCallback={clicked}
                     />
                 </>
@@ -75,8 +73,6 @@ export const RogerButtons: React.FC<RogerButtonsProps> = ({ message, setMessageS
                         index="L1"
                         content="*CANCEL"
                         active
-                        clickShowTime={1000}
-                        clickEventDelay={1000}
                         clickedCallback={clicked}
                     />
                     <Button
@@ -84,8 +80,6 @@ export const RogerButtons: React.FC<RogerButtonsProps> = ({ message, setMessageS
                         index="R2"
                         content="SEND*"
                         active
-                        clickShowTime={-1}
-                        clickEventDelay={-1}
                         clickedCallback={clicked}
                     />
                 </>
@@ -96,8 +90,6 @@ export const RogerButtons: React.FC<RogerButtonsProps> = ({ message, setMessageS
                     index="R2"
                     content={`CLOSE${closeClickabel ? '*' : ''}`}
                     active={closeClickabel}
-                    clickShowTime={1000}
-                    clickEventDelay={1000}
                     clickedCallback={clicked}
                 />
             )}
