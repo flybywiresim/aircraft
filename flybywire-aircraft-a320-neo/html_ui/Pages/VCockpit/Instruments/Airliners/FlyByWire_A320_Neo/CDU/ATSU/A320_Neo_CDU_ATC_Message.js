@@ -1,25 +1,43 @@
 class CDUAtcMessage {
-    static TranslateCpdlcResponse(response) {
-        switch (response) {
+    static TranslateCpdlcResponse(message) {
+        let retval;
+
+        switch (message.ResponseType) {
             case Atsu.CpdlcMessageResponse.Standby:
-                return "STBY";
+                retval = "STBY";
+                break;
             case Atsu.CpdlcMessageResponse.Wilco:
-                return "WILC";
+                retval = "WILC";
+                break;
             case Atsu.CpdlcMessageResponse.Roger:
-                return "ROGR";
+                retval = "ROGR";
+                break;
             case Atsu.CpdlcMessageResponse.Negative:
-                return "NEG";
+                retval = "NEG";
+                break;
             case Atsu.CpdlcMessageResponse.Unable:
-                return "UNBL";
+                retval = "UNBL";
+                break;
             case Atsu.CpdlcMessageResponse.Acknowledge:
-                return "ACK";
+                retval = "ACK";
+                break;
             case Atsu.CpdlcMessageResponse.Affirm:
-                return "AFRM";
+                retval = "AFRM";
+                break;
             case Atsu.CpdlcMessageResponse.Refuse:
-                return "REF";
+                retval = "REF";
+                break;
             default:
                 return "";
         }
+
+        let color = '{cyan}';
+        if (message.ComStatus === Atsu.AtsuMessageComStatus.Failed) {
+            color = '{red}';
+        }
+        retval = `${color}{small}${retval}{end}{end}`;
+
+        return retval;
     }
 
     static ShowPage(mcdu, messages, messageIndex, offset = 0) {
@@ -55,7 +73,7 @@ class CDUAtcMessage {
         mcdu.setTemplate([
             ["ATC MSG DISPLAY"],
             ["", `${messageIndex + 1}/${messages.length}${msgArrows}`],
-            [`{small}${lines[offset] ? lines[offset] : ""}{end}`, `${offset === 0 ? CDUAtcMessage.TranslateCpdlcResponse(message.ResponseType) : ""}`],
+            [`{small}${lines[offset] ? lines[offset] : ""}{end}`, `${offset === 0 ? CDUAtcMessage.TranslateCpdlcResponse(message) : ""}`],
             [`${lines[offset + 1] ? lines[offset + 1] : ""}`],
             [`{small}${lines[offset + 2] ? lines[offset + 2] : ""}{end}`],
             [`${lines[offset + 3] ? lines[offset + 3] : ""}`],
