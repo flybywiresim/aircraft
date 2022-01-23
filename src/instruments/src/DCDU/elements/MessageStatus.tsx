@@ -79,7 +79,7 @@ export const MessageStatus: React.FC<MessageStatusProps> = ({ message }) => {
         background.height = dimension[1] + 16;
 
         background.x = 3696 - width;
-        background.y = 282 - dimension[1];
+        background.y = 298 - dimension[1];
     }
 
     return (
