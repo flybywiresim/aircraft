@@ -223,8 +223,7 @@ export class NXApi {
         }
         const headers = { 'Content-Type': 'application/json' };
 
-        // return fetch(`${NXApi.url}/cpdlc`, { method: 'POST', body: JSON.stringify(body), headers })
-        return fetch('http://localhost:3000/cpdlc', { method: 'POST', body: JSON.stringify(body), headers })
+        return fetch(`${NXApi.url}/cpdlc`, { method: 'POST', body: JSON.stringify(body), headers })
             .then((response) => {
                 if (!response.ok) {
                     throw (response);
