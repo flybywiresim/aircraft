@@ -234,8 +234,8 @@ export class NXApi {
                 if (!response.ok) {
                     throw (response);
                 }
-                return response.json();
-            });
+                return response.json().then((data) => data.response);
+            }).catch(() => 'error');
     }
 
     static hasTelexConnection() {
