@@ -9,12 +9,12 @@ use crate::{
     shared::arinc429::{from_arinc429, to_arinc429, Arinc429Word, SignStatus},
     shared::{to_bool, ConsumePower, ElectricalBuses, MachNumber, PowerConsumptionReport},
 };
-use uom::si::angular_velocity::revolution_per_minute;
+
 use uom::si::{
-    acceleration::foot_per_second_squared, angle::degree, electric_current::ampere,
-    electric_potential::volt, f64::*, frequency::hertz, length::foot, mass::pound, pressure::psi,
-    ratio::percent, thermodynamic_temperature::degree_celsius, velocity::knot, volume::gallon,
-    volume_rate::gallon_per_second,
+    acceleration::foot_per_second_squared, angle::degree, angular_velocity::revolution_per_minute,
+    electric_current::ampere, electric_potential::volt, f64::*, frequency::hertz, length::foot,
+    mass::pound, pressure::psi, ratio::percent, thermodynamic_temperature::degree_celsius,
+    velocity::knot, volume::gallon, volume_rate::gallon_per_second,
 };
 pub use update_context::*;
 
@@ -668,7 +668,6 @@ read_write_as!(isize);
 read_write_as!(f32);
 
 read_write_uom!(Velocity, knot);
-read_write_uom!(AngularVelocity, revolution_per_minute);
 read_write_uom!(Length, foot);
 read_write_uom!(Acceleration, foot_per_second_squared);
 read_write_uom!(ThermodynamicTemperature, degree_celsius);
@@ -681,6 +680,7 @@ read_write_uom!(Volume, gallon);
 read_write_uom!(VolumeRate, gallon_per_second);
 read_write_uom!(Mass, pound);
 read_write_uom!(Angle, degree);
+read_write_uom!(AngularVelocity, revolution_per_minute);
 
 read_write_into!(MachNumber);
 
