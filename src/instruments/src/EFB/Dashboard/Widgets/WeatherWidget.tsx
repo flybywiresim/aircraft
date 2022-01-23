@@ -130,7 +130,7 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
                             <div className="ml-6">
                                 <button
                                     type="button"
-                                    className="mr-1 w-24 text- bg-gray-600 p-2 flex items-center justify-center rounded-lg focus:outline-none text-lg"
+                                    className="mr-1 w-24 bg-gray-600 p-2 flex items-center justify-center rounded-lg focus:outline-none text-lg"
                                     onClick={() => setShowMetar(showMetar === 'ENABLED' ? 'DISABLED' : 'ENABLED')}
                                 >
                                     {showMetar === 'ENABLED' ? 'TEXT' : 'ICONS'}
