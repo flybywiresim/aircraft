@@ -1,17 +1,17 @@
 function translateAtsuMessageType(type) {
     switch (type) {
-    case Atsu.AtsuMessageType.Freetext:
-        return "FREETEXT";
-    case Atsu.AtsuMessageType.PDC:
-        return "PDC";
-    case Atsu.AtsuMessageType.METAR:
-        return "METAR";
-    case Atsu.AtsuMessageType.TAF:
-        return "TAF";
-    case Atsu.AtsuMessageType.ATIS:
-        return "ATIS";
-    default:
-        return "UNKNOWN";
+        case Atsu.AtsuMessageType.Freetext:
+            return "FREETEXT";
+        case Atsu.AtsuMessageType.PDC:
+            return "PDC";
+        case Atsu.AtsuMessageType.METAR:
+            return "METAR";
+        case Atsu.AtsuMessageType.TAF:
+            return "TAF";
+        case Atsu.AtsuMessageType.ATIS:
+            return "ATIS";
+        default:
+            return "UNKNOWN";
     }
 }
 

@@ -124,7 +124,7 @@ class CDUAocDepartReq {
             if (0 !== mcdu.pdcMessage.Freetext0.length) {
                 CDUAocDepartReq.ShowPage2(mcdu);
             } else {
-                mcdu.addNewMessage(NXSystemMessages.mandatoryFields);;
+                mcdu.addNewMessage(NXSystemMessages.mandatoryFields);
             }
         };
 

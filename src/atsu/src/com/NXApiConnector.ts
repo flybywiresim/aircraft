@@ -72,11 +72,7 @@ export class NXApiConnector {
 
         // Update connection
         NXApi.updateTelex()
-            .catch((err) => {
-                if (err !== NXApi.disconnectedError && err !== NXApi.disabledError) {
-                    console.log('TELEX PING FAILED');
-                }
-            });
+            .catch(() => {});
 
         // Fetch new messages
         NXApi.getTelexMessages()
@@ -95,7 +91,6 @@ export class NXApiConnector {
                 if (err.status === 404 || err === NXApi.disabledError || err === NXApi.disconnectedError) {
                     return retval;
                 }
-                console.log('TELEX MSG FETCH FAILED');
                 return [AtsuStatusCodes.ComFailed, retval];
             });
 

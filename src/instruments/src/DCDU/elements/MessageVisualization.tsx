@@ -183,7 +183,7 @@ export const MessageVisualization: React.FC<MessageVisualizationProps> = memo(({
         if (pageCount === 0) {
             return;
         }
-        console.log('PAGE');
+
         if (pageCount > pageIndex + 1) {
             if (resetStatus !== undefined) {
                 resetStatus('DatalinkMessage');
