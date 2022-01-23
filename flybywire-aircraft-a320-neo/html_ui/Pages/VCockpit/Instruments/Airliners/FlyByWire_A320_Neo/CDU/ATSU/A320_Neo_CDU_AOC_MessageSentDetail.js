@@ -67,6 +67,10 @@ class CDUAocMessageSentDetail {
             CDUAocMessagesSent.ShowPage(mcdu);
         };
 
+        mcdu.rightInputDelay[5] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+
         mcdu.onRightInput[5] = () => {
             mcdu.atsuManager.printMessage(message);
         };
