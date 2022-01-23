@@ -67,7 +67,7 @@ export class NXApiConnector {
         return AtsuStatusCodes.Ok;
     }
 
-    public static async poll(): Promise<AtsuMessage[]> {
+    public static async poll(): Promise<[AtsuStatusCodes, AtsuMessage[]]> {
         const retval: AtsuMessage[] = [];
 
         // Update connection
@@ -96,10 +96,10 @@ export class NXApiConnector {
                     return retval;
                 }
                 console.log('TELEX MSG FETCH FAILED');
-                return retval;
+                return [AtsuStatusCodes.ComFailed, retval];
             });
 
-        return retval;
+        return [AtsuStatusCodes.Ok, retval];
     }
 
     public static pollInterval(): number {

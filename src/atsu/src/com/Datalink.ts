@@ -21,6 +21,8 @@ export class Datalink {
 
     private waitedTimeNXApi = 0;
 
+    private firstPollHoppie = true;
+
     private enqueueReceivedMessages(parent: AtsuManager, messages: AtsuMessage[]): void {
         messages.forEach((message) => {
             this.estimateTransmissionTime();
@@ -51,14 +53,26 @@ export class Datalink {
             }
 
             if (HoppieConnector.pollInterval() <= this.waitedTimeHoppie) {
-                HoppieConnector.poll().then((messages) => this.enqueueReceivedMessages(parent, messages));
+                HoppieConnector.poll().then((retval) => {
+                    if (retval[0] === AtsuStatusCodes.Ok) {
+                        // delete all data in the first call (Hoppie stores old data)
+                        if (!this.firstPollHoppie) {
+                            this.enqueueReceivedMessages(parent, retval[1]);
+                        }
+                        this.firstPollHoppie = false;
+                    }
+                });
                 this.waitedTimeHoppie = 0;
             } else {
                 this.waitedTimeHoppie += 200;
             }
 
             if (NXApiConnector.pollInterval() <= this.waitedTimeNXApi) {
-                NXApiConnector.poll().then((messages) => this.enqueueReceivedMessages(parent, messages));
+                NXApiConnector.poll().then((retval) => {
+                    if (retval[0] === AtsuStatusCodes.Ok) {
+                        this.enqueueReceivedMessages(parent, retval[1]);
+                    }
+                });
                 this.waitedTimeNXApi = 0;
             } else {
                 this.waitedTimeNXApi += 200;

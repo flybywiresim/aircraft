@@ -73,23 +73,23 @@ export class HoppieConnector {
         return AtsuStatusCodes.NoHoppieConnection;
     }
 
-    public static async poll(): Promise<AtsuMessage[]> {
+    public static async poll(): Promise<[AtsuStatusCodes, AtsuMessage[]]> {
         const retval: AtsuMessage[] = [];
 
         if (SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') !== 1) {
-            return retval;
+            return [AtsuStatusCodes.NoHoppieConnection, retval];
         }
 
         const flightNo = SimVar.GetSimVarValue('ATC FLIGHT NUMBER', 'string');
         if (flightNo.length === 0 || flightNo === '1123') {
-            return retval;
+            return [AtsuStatusCodes.ComFailed, retval];
         }
 
         const text = await NXApi.sendHoppieRequest(NXDataStore.get('CONFIG_HOPPIE_USERID', ''), flightNo, flightNo, 'poll', '');
 
         // something went wrong
         if (!text.startsWith('ok')) {
-            return retval;
+            return [AtsuStatusCodes.ComFailed, retval];
         }
 
         // split up the received data into multiple messages
@@ -140,7 +140,7 @@ export class HoppieConnector {
             }
         });
 
-        return retval;
+        return [AtsuStatusCodes.Ok, retval];
     }
 
     public static pollInterval(): number {
