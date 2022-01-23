@@ -105,7 +105,7 @@ class CDUAtcMenu {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onRightInput[0] = () => {
-            CDUAocRequestsAtis.ShowPage(mcdu);
+            CDUAtcAtisMenu.ShowPage(mcdu);
         };
 
         mcdu.onPrevPage = () => {
