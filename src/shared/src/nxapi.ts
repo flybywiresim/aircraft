@@ -203,6 +203,41 @@ export class NXApi {
             });
     }
 
+    static sendHoppieRequest(logon, from, to, type, packet) {
+        // Hoppie disabled
+        if (SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') !== 1) {
+            return Promise.reject(NXApi.disabledError);
+        }
+
+        let body = undefined;
+        if (packet !== '') {
+            body = {
+                logon,
+                from,
+                to,
+                type,
+                packet,
+            };
+        } else {
+            body = {
+                logon,
+                from,
+                to,
+                type,
+            };
+        }
+        const headers = { 'Content-Type': 'application/json' };
+
+        // return fetch(`${NXApi.url}/cpdlc`, { method: 'POST', body: JSON.stringify(body), headers })
+        return fetch('http://localhost:3000/cpdlc', { method: 'POST', body: JSON.stringify(body), headers })
+            .then((response) => {
+                if (!response.ok) {
+                    throw (response);
+                }
+                return response.json();
+            });
+    }
+
     static hasTelexConnection() {
         return !!NXApi.accessToken && !!NXApi.activeFlight;
     }
