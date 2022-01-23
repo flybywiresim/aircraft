@@ -204,11 +204,6 @@ export class NXApi {
     }
 
     static sendHoppieRequest(logon, from, to, type, packet) {
-        // Hoppie disabled
-        if (SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') !== 1) {
-            return Promise.reject(NXApi.disabledError);
-        }
-
         let body = undefined;
         if (packet !== '') {
             body = {
