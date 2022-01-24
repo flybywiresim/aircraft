@@ -24,6 +24,7 @@ use uom::si::{
 };
 
 pub mod brake_circuit;
+pub mod electrical_generator;
 pub mod electrical_pump_physics;
 pub mod linear_actuator;
 pub mod nose_steering;
@@ -1438,6 +1439,8 @@ pub struct Pump {
     cavitation_efficiency: Ratio,
 }
 impl Pump {
+    const SECONDS_PER_MINUTES: f64 = 60.;
+    const FLOW_CONSTANT_RPM_CUBIC_INCH_TO_GPM: f64 = 231.;
     const AIR_PRESSURE_BREAKPTS_PSI: [f64; 9] = [0., 5., 10., 15., 20., 30., 50., 70., 100.];
     const AIR_PRESSURE_CARAC_RATIO: [f64; 9] = [0.0, 0.1, 0.6, 0.8, 0.9, 1., 1., 1., 1.];
 
@@ -1512,7 +1515,9 @@ impl Pump {
     fn calculate_displacement_from_required_flow(&self, required_flow: VolumeRate) -> Volume {
         if self.speed.get::<revolution_per_minute>() > 0. {
             let displacement = Volume::new::<cubic_inch>(
-                required_flow.get::<gallon_per_second>() * 231.0 * 60.0
+                required_flow.get::<gallon_per_second>()
+                    * Self::FLOW_CONSTANT_RPM_CUBIC_INCH_TO_GPM
+                    * Self::SECONDS_PER_MINUTES
                     / self.speed.get::<revolution_per_minute>(),
             );
             self.current_max_displacement
@@ -1527,8 +1532,8 @@ impl Pump {
         if speed.get::<revolution_per_minute>() > 0. {
             VolumeRate::new::<gallon_per_second>(
                 speed.get::<revolution_per_minute>() * displacement.get::<cubic_inch>()
-                    / 231.00
-                    / 60.0,
+                    / Self::FLOW_CONSTANT_RPM_CUBIC_INCH_TO_GPM
+                    / Self::SECONDS_PER_MINUTES,
             )
         } else {
             VolumeRate::new::<gallon_per_second>(0.)
@@ -1540,7 +1545,7 @@ impl Pump {
             VolumeRate::new::<gallon_per_minute>(
                 self.speed.get::<revolution_per_minute>()
                     * self.current_displacement.get::<cubic_inch>()
-                    / 231.0,
+                    / Self::FLOW_CONSTANT_RPM_CUBIC_INCH_TO_GPM,
             )
         } else {
             VolumeRate::new::<gallon_per_second>(0.)
@@ -1765,9 +1770,12 @@ struct WindTurbine {
 }
 impl WindTurbine {
     // Low speed special calculation threshold. Under that value we compute resistant torque depending on pump angle and displacement.
-    const LOW_SPEED_PHYSICS_ACTIVATION: f64 = 50.;
+    const LOW_SPEED_PHYSICS_ACTIVATION: f64 = 15.;
     const STOWED_ANGLE: f64 = std::f64::consts::PI / 2.;
-    const PROPELLER_INERTIA: f64 = 2.;
+    const PROPELLER_INERTIA: f64 = 0.2;
+    const FRICTION_COEFFICIENT: f64 = 0.0002;
+    const AIR_LIFT_COEFFICIENT: f64 = 0.018;
+
     const RPM_GOVERNOR_BREAKPTS: [f64; 9] = [
         0.0, 1000., 3000.0, 4000.0, 4800.0, 5800.0, 6250.0, 9000.0, 15000.0,
     ];
@@ -1797,23 +1805,28 @@ impl WindTurbine {
 
         // Simple model. stow pos sin simulates the angle of the blades vs wind while deploying
         let air_speed_torque = cur_alpha.to_radians().sin()
-            * (indicated_speed.get::<knot>() * indicated_speed.get::<knot>() / 100.)
+            * (indicated_speed.get::<knot>()
+                * indicated_speed.get::<knot>()
+                * Self::AIR_LIFT_COEFFICIENT)
             * 0.5
             * (std::f64::consts::PI / 2. * stow_pos).sin();
+
         self.torque_sum += air_speed_torque;
     }
 
-    fn update_friction_torque(&mut self, displacement_ratio: f64) {
+    fn update_friction_torque(&mut self, displacement: Volume, pressure: Pressure) {
         let mut pump_torque = 0.;
-        if self.speed().get::<revolution_per_minute>() < Self::LOW_SPEED_PHYSICS_ACTIVATION {
-            pump_torque += (self.position * 4.).cos() * displacement_ratio.max(0.35) * 35.;
-            pump_torque += -self.speed.get::<radian_per_second>() * 15.;
+        if self.speed.get::<revolution_per_minute>() < Self::LOW_SPEED_PHYSICS_ACTIVATION {
+            pump_torque += (self.position * 4.).cos() * displacement.get::<gallon>().max(0.35) * 2.;
+            pump_torque -= self.speed.get::<radian_per_second>() * 0.25;
         } else {
-            pump_torque +=
-                displacement_ratio.max(0.35) * 1. * -self.speed.get::<radian_per_second>();
+            pump_torque -=
+                pressure.get::<psi>() * displacement.get::<gallon>() / (2. * std::f64::consts::PI);
+            pump_torque -= 20.
+                + (self.speed.get::<radian_per_second>() * self.speed.get::<radian_per_second>())
+                    * Self::FRICTION_COEFFICIENT;
         }
-        pump_torque -= self.speed.get::<radian_per_second>() * 0.05;
-        // Static air drag of the propeller
+
         self.torque_sum += pump_torque;
     }
 
@@ -1832,19 +1845,20 @@ impl WindTurbine {
         delta_time: &Duration,
         indicated_speed: Velocity,
         stow_pos: f64,
-        displacement_ratio: f64,
+        displacement: Volume,
+        pressure: Pressure,
     ) {
         if stow_pos > 0.1 {
             // Do not update anything on the propeller if still stowed
             self.update_generated_torque(indicated_speed, stow_pos);
-            self.update_friction_torque(displacement_ratio);
+            self.update_friction_torque(displacement, pressure);
             self.update_physics(delta_time);
         }
     }
 }
 impl SimulationElement for WindTurbine {
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write(&self.rpm_id, self.speed().get::<revolution_per_minute>());
+        writer.write(&self.rpm_id, self.speed());
     }
 }
 
@@ -1877,25 +1891,17 @@ pub struct RamAirTurbine {
     pump_controller: AlwaysPressurisePumpController,
     wind_turbine: WindTurbine,
     position: f64,
-    max_displacement: f64,
 }
 impl RamAirTurbine {
     const DISPLACEMENT_BREAKPTS: [f64; 9] = [
-        0.0, 500.0, 1000.0, 1500.0, 2100.0, 2300.0, 2600.0, 3050.0, 3500.0,
+        0.0, 500.0, 1000.0, 1500.0, 2100.0, 2300.0, 2600.0, 2700.0, 3500.0,
     ];
-    const DISPLACEMENT_MAP: [f64; 9] = [1.15, 1.15, 1.15, 1.15, 1.15, 0.5, 0.0, 0.0, 0.0];
+    const DISPLACEMENT_MAP: [f64; 9] = [0.5, 0.8, 1.15, 1.15, 1.15, 0.8, 0.3, 0.0, 0.0];
 
     // Speed to go from 0 to 1 stow position per sec. 1 means full deploying in 1s
     const STOWING_SPEED: f64 = 1.;
 
     pub fn new(context: &mut InitContext) -> Self {
-        let mut max_disp = 0.;
-        for v in Self::DISPLACEMENT_MAP.iter() {
-            if v > &max_disp {
-                max_disp = *v;
-            }
-        }
-
         Self {
             stow_position_id: context.get_identifier("HYD_RAT_STOW_POSITION".to_owned()),
 
@@ -1904,7 +1910,6 @@ impl RamAirTurbine {
             pump_controller: AlwaysPressurisePumpController::new(),
             wind_turbine: WindTurbine::new(context),
             position: 0.,
-            max_displacement: max_disp,
         }
     }
 
@@ -1927,14 +1932,18 @@ impl RamAirTurbine {
         );
     }
 
-    pub fn update_physics(&mut self, delta_time: &Duration, indicated_airspeed: Velocity) {
-        // Calculate the ratio of current displacement vs max displacement as an image of the load of the pump
-        let displacement_ratio = self.delta_vol_max().get::<gallon>() / self.max_displacement;
+    pub fn update_physics(
+        &mut self,
+        delta_time: &Duration,
+        indicated_airspeed: Velocity,
+        pressure: Pressure,
+    ) {
         self.wind_turbine.update(
             delta_time,
             indicated_airspeed,
             self.position,
-            displacement_ratio,
+            self.delta_vol_max(),
+            pressure,
         );
     }
 
