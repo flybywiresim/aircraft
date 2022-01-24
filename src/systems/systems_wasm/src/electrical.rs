@@ -1,7 +1,7 @@
 use fxhash::FxHashMap;
 use std::error::Error;
 
-use crate::SimulatorAspect;
+use crate::Aspect;
 use msfs::legacy::execute_calculator_code;
 use msfs::legacy::AircraftVariable;
 use systems::shared::to_bool;
@@ -24,7 +24,7 @@ impl MsfsElectricalBuses {
             .insert(identifier, ElectricalBusConnection::new(from, to));
     }
 }
-impl SimulatorAspect for MsfsElectricalBuses {
+impl Aspect for MsfsElectricalBuses {
     fn write(&mut self, identifier: &VariableIdentifier, value: f64) -> bool {
         match self.connections.get_mut(identifier) {
             Some(connection) => connection.update(value),
@@ -100,7 +100,7 @@ impl MsfsAuxiliaryPowerUnit {
         execute_calculator_code::<()>("1 (>K:APU_OFF_SWITCH, Number)");
     }
 }
-impl SimulatorAspect for MsfsAuxiliaryPowerUnit {
+impl Aspect for MsfsAuxiliaryPowerUnit {
     fn write(&mut self, identifier: &VariableIdentifier, value: f64) -> bool {
         if identifier == &self.is_available_id {
             let is_available = to_bool(value);

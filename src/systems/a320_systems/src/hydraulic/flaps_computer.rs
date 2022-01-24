@@ -380,13 +380,13 @@ mod tests {
 
                 flap_gear: SlatFlapGear::new(
                     context,
-                    AngularVelocity::new::<degree_per_second>(2.),
+                    AngularVelocity::new::<degree_per_second>(4.),
                     Angle::new::<degree>(40.),
                     "FLAPS",
                 ),
                 slat_gear: SlatFlapGear::new(
                     context,
-                    AngularVelocity::new::<degree_per_second>(1.5),
+                    AngularVelocity::new::<degree_per_second>(3.),
                     Angle::new::<degree>(27.),
                     "SLATS",
                 ),
@@ -1136,7 +1136,7 @@ mod tests {
             .set_green_hyd_pressure()
             .set_indicated_airspeed(0.)
             .set_flaps_handle_position(3)
-            .run_one_tick();
+            .run_waiting_for(Duration::from_secs(20));
 
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf3);
 
@@ -1206,6 +1206,7 @@ mod tests {
         let angle_delta = 0.01;
         let mut test_bed = test_bed_with()
             .set_green_hyd_pressure()
+            .set_blue_hyd_pressure()
             .set_indicated_airspeed(220.)
             .set_flaps_handle_position(0)
             .run_one_tick();
@@ -1216,6 +1217,7 @@ mod tests {
 
         let mut previous_angle: f64 = test_bed.get_slats_angle();
         test_bed = test_bed.run_one_tick();
+
         for _ in 0..300 {
             if (test_bed.get_slats_angle() - test_bed.get_slats_demanded_angle()).abs()
                 <= angle_delta
@@ -1232,6 +1234,7 @@ mod tests {
             previous_angle = test_bed.get_slats_angle();
             test_bed = test_bed.run_one_tick();
         }
+
         assert!(
             (test_bed.get_slats_angle() - test_bed.get_slats_demanded_angle()).abs() <= angle_delta
         );
@@ -1361,11 +1364,6 @@ mod tests {
 
         test_bed = test_bed.run_one_tick();
         for _ in 0..300 {
-            println!(
-                "Only yellow: Flaps{}, Slats{}",
-                test_bed.get_flaps_angle(),
-                test_bed.get_slats_angle(),
-            );
             test_bed = test_bed.run_one_tick();
         }
         assert!(test_bed.get_flaps_angle() > starting_flap_angle);
@@ -1387,11 +1385,6 @@ mod tests {
 
         test_bed = test_bed.run_one_tick();
         for _ in 0..300 {
-            println!(
-                "Only blue: Flaps{}, Slats{}",
-                test_bed.get_flaps_angle(),
-                test_bed.get_slats_angle(),
-            );
             test_bed = test_bed.run_one_tick();
         }
         assert_about_eq!(test_bed.get_flaps_angle(), starting_flap_angle);

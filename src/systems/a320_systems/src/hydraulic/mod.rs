@@ -4,7 +4,7 @@ use std::time::Duration;
 use uom::si::{
     acceleration::meter_per_second_squared,
     angle::degree,
-    angular_velocity::radian_per_second,
+    angular_velocity::{radian_per_second, revolution_per_minute},
     electric_current::ampere,
     f64::*,
     length::meter,
@@ -23,6 +23,7 @@ use systems::{
             AutobrakeDecelerationGovernor, AutobrakeMode, AutobrakePanel, BrakeCircuit,
             BrakeCircuitController,
         },
+        electrical_generator::{GeneratorControlUnit, HydraulicGeneratorMotor},
         flap_slat::FlapSlatAssembly,
         linear_actuator::{
             Actuator, BoundedLinearLength, HydraulicAssemblyController,
@@ -35,9 +36,8 @@ use systems::{
         },
         update_iterator::{FixedStepLoop, MaxFixedStepLoop},
         ElectricPump, EngineDrivenPump, HydraulicCircuit, HydraulicCircuitController,
-        PowerTransferUnit, PowerTransferUnitController, PressureSwitch, PressureSwitchState,
-        PressureSwitchType, PumpController, RamAirTurbine, RamAirTurbineController, Reservoir,
-        SectionPressure,
+        PowerTransferUnit, PowerTransferUnitController, PressureSwitch, PressureSwitchType,
+        PumpController, RamAirTurbine, RamAirTurbineController, Reservoir, SectionPressure,
     },
     overhead::{
         AutoOffFaultPushButton, AutoOnFaultPushButton, MomentaryOnPushButton, MomentaryPushButton,
@@ -45,14 +45,17 @@ use systems::{
     shared::{
         interpolation, DelayedFalseLogicGate, DelayedPulseTrueLogicGate, DelayedTrueLogicGate,
         ElectricalBusType, ElectricalBuses, EmergencyElectricalRatPushButton,
-        EmergencyElectricalState, EngineFirePushButtons, HydraulicColor, LgciuInterface,
-        RamAirTurbineHydraulicCircuitPressurised, ReservoirAirPressure,
+        EmergencyElectricalState, EmergencyGeneratorPower, EngineFirePushButtons, HydraulicColor,
+        HydraulicGeneratorControlUnit, LgciuSensors, ReservoirAirPressure,
     },
     simulation::{
         InitContext, Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
         SimulatorWriter, UpdateContext, VariableIdentifier, Write,
     },
 };
+
+#[cfg(test)]
+use systems::hydraulic::PressureSwitchState;
 
 mod flaps_computer;
 use flaps_computer::SlatFlapComplex;
@@ -291,6 +294,9 @@ pub(super) struct A320Hydraulic {
     slat_system: FlapSlatAssembly,
     slats_flaps_complex: SlatFlapComplex,
 
+    gcu: GeneratorControlUnit<9>,
+    emergency_gen: HydraulicGeneratorMotor,
+
     forward_cargo_door: CargoDoor,
     forward_cargo_door_controller: A320DoorController,
     aft_cargo_door: CargoDoor,
@@ -471,6 +477,15 @@ impl A320Hydraulic {
             ),
             slats_flaps_complex: SlatFlapComplex::new(context),
 
+            gcu: GeneratorControlUnit::new(
+                AngularVelocity::new::<revolution_per_minute>(12000.),
+                [
+                    0., 1000., 6000., 9999., 10000., 12000., 14000., 14001., 30000.,
+                ],
+                [0., 0., 0., 0., 1000., 6000., 1000., 0., 0.],
+            ),
+
+            emergency_gen: HydraulicGeneratorMotor::new(context, Volume::new::<cubic_inch>(0.19)),
             forward_cargo_door: A320CargoDoorFactory::new_a320_cargo_door(
                 context,
                 Self::FORWARD_CARGO_DOOR_ID,
@@ -496,17 +511,22 @@ impl A320Hydraulic {
         overhead_panel: &A320HydraulicOverheadPanel,
         autobrake_panel: &AutobrakePanel,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
-        lgciu1: &impl LgciuInterface,
-        lgciu2: &impl LgciuInterface,
+        lgciu1: &impl LgciuSensors,
+        lgciu2: &impl LgciuSensors,
         rat_and_emer_gen_man_on: &impl EmergencyElectricalRatPushButton,
-        emergency_elec_state: &impl EmergencyElectricalState,
+        emergency_elec: &(impl EmergencyElectricalState + EmergencyGeneratorPower),
         reservoir_pneumatics: &impl ReservoirAirPressure,
     ) {
         self.core_hydraulic_updater.update(context);
         self.physics_updater.update(context);
 
         for cur_time_step in self.physics_updater {
-            self.update_fast_physics(&context.with_delta(cur_time_step));
+            self.update_fast_physics(
+                &context.with_delta(cur_time_step),
+                rat_and_emer_gen_man_on,
+                emergency_elec,
+                lgciu1,
+            );
         }
 
         self.update_with_sim_rate(
@@ -514,7 +534,7 @@ impl A320Hydraulic {
             overhead_panel,
             autobrake_panel,
             rat_and_emer_gen_man_on,
-            emergency_elec_state,
+            emergency_elec,
             lgciu1,
             lgciu2,
             engine1,
@@ -599,6 +619,7 @@ impl A320Hydraulic {
         self.pushback_tug.is_nose_wheel_steering_pin_inserted()
     }
 
+    #[cfg(test)]
     fn is_blue_pressurised(&self) -> bool {
         self.blue_circuit.system_section_pressure_switch() == PressureSwitchState::Pressurised
     }
@@ -614,7 +635,13 @@ impl A320Hydraulic {
     }
 
     // Updates at the same rate as the sim or at a fixed maximum time step if sim rate is too slow
-    fn update_fast_physics(&mut self, context: &UpdateContext) {
+    fn update_fast_physics(
+        &mut self,
+        context: &UpdateContext,
+        rat_and_emer_gen_man_on: &impl EmergencyElectricalRatPushButton,
+        emergency_elec: &(impl EmergencyElectricalState + EmergencyGeneratorPower),
+        lgciu1: &impl LgciuSensors,
+    ) {
         self.forward_cargo_door.update(
             context,
             &self.forward_cargo_door_controller,
@@ -627,8 +654,27 @@ impl A320Hydraulic {
             self.yellow_circuit.system_pressure(),
         );
 
-        self.ram_air_turbine
-            .update_physics(&context.delta(), context.indicated_airspeed());
+        self.ram_air_turbine.update_physics(
+            &context.delta(),
+            context.indicated_airspeed(),
+            self.blue_circuit.system_pressure(),
+        );
+
+        self.gcu.update(
+            context,
+            &self.emergency_gen,
+            self.blue_circuit.system_pressure(),
+            emergency_elec,
+            rat_and_emer_gen_man_on,
+            lgciu1,
+        );
+
+        self.emergency_gen.update(
+            context,
+            self.blue_circuit.system_pressure(),
+            &self.gcu,
+            emergency_elec,
+        );
     }
 
     fn update_with_sim_rate(
@@ -638,8 +684,8 @@ impl A320Hydraulic {
         autobrake_panel: &AutobrakePanel,
         rat_and_emer_gen_man_on: &impl EmergencyElectricalRatPushButton,
         emergency_elec_state: &impl EmergencyElectricalState,
-        lgciu1: &impl LgciuInterface,
-        lgciu2: &impl LgciuInterface,
+        lgciu1: &impl LgciuSensors,
+        lgciu2: &impl LgciuSensors,
         engine1: &impl Engine,
         engine2: &impl Engine,
     ) {
@@ -753,6 +799,8 @@ impl A320Hydraulic {
     fn update_blue_actuators_volume(&mut self) {
         self.blue_circuit
             .update_actuator_volumes(self.slat_system.left_motor());
+        self.blue_circuit
+            .update_actuator_volumes(&mut self.emergency_gen);
     }
 
     // All the core hydraulics updates that needs to be done at the slowest fixed step rate
@@ -763,8 +811,8 @@ impl A320Hydraulic {
         engine2: &impl Engine,
         overhead_panel: &A320HydraulicOverheadPanel,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
-        lgciu1: &impl LgciuInterface,
-        lgciu2: &impl LgciuInterface,
+        lgciu1: &impl LgciuSensors,
+        lgciu2: &impl LgciuSensors,
         reservoir_pneumatics: &impl ReservoirAirPressure,
     ) {
         // First update what is currently consumed and given back by each actuator
@@ -964,11 +1012,6 @@ impl A320Hydraulic {
         absolute_delta_pressure > Pressure::new::<psi>(2700.) && is_ptu_rotating
     }
 }
-impl RamAirTurbineHydraulicCircuitPressurised for A320Hydraulic {
-    fn is_rat_hydraulic_circuit_pressurised(&self) -> bool {
-        self.is_blue_pressurised()
-    }
-}
 impl SimulationElement for A320Hydraulic {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.engine_driven_pump_1.accept(visitor);
@@ -1007,6 +1050,7 @@ impl SimulationElement for A320Hydraulic {
         self.braking_circuit_altn.accept(visitor);
         self.braking_force.accept(visitor);
 
+        self.emergency_gen.accept(visitor);
         self.nose_steering.accept(visitor);
         self.slats_flaps_complex.accept(visitor);
         self.flap_system.accept(visitor);
@@ -1025,6 +1069,15 @@ impl SimulationElement for A320Hydraulic {
             &self.ptu_high_pitch_sound_id,
             self.is_ptu_running_high_pitch_sound(),
         );
+    }
+}
+impl HydraulicGeneratorControlUnit for A320Hydraulic {
+    fn max_allowed_power(&self) -> Power {
+        self.gcu.max_allowed_power()
+    }
+
+    fn motor_speed(&self) -> AngularVelocity {
+        self.gcu.motor_speed()
     }
 }
 
@@ -1095,7 +1148,7 @@ impl A320EngineDrivenPumpController {
         &mut self,
         engine: &impl Engine,
         section: &impl SectionPressure,
-        lgciu: &impl LgciuInterface,
+        lgciu: &impl LgciuSensors,
     ) {
         self.is_pressure_low =
             self.should_pressurise() && !section.is_pressure_switch_pressurised();
@@ -1130,7 +1183,7 @@ impl A320EngineDrivenPumpController {
         engine_fire_push_buttons: &T,
         engine: &impl Engine,
         section: &impl SectionPressure,
-        lgciu: &impl LgciuInterface,
+        lgciu: &impl LgciuSensors,
         reservoir: &Reservoir,
     ) {
         let mut should_pressurise_if_powered = false;
@@ -1221,8 +1274,8 @@ impl A320BlueElectricPumpController {
         section: &impl SectionPressure,
         engine1: &impl Engine,
         engine2: &impl Engine,
-        lgciu1: &impl LgciuInterface,
-        lgciu2: &impl LgciuInterface,
+        lgciu1: &impl LgciuSensors,
+        lgciu2: &impl LgciuSensors,
         reservoir: &Reservoir,
     ) {
         let mut should_pressurise_if_powered = false;
@@ -1255,8 +1308,8 @@ impl A320BlueElectricPumpController {
         section: &impl SectionPressure,
         engine1: &impl Engine,
         engine2: &impl Engine,
-        lgciu1: &impl LgciuInterface,
-        lgciu2: &impl LgciuInterface,
+        lgciu1: &impl LgciuSensors,
+        lgciu2: &impl LgciuSensors,
     ) {
         let is_both_engine_low_oil_pressure =
             engine1.oil_pressure_is_low() && engine2.oil_pressure_is_low();
@@ -1503,7 +1556,7 @@ impl A320PowerTransferUnitController {
         forward_cargo_door_controller: &A320DoorController,
         aft_cargo_door_controller: &A320DoorController,
         pushback_tug: &PushbackTug,
-        lgciu2: &impl LgciuInterface,
+        lgciu2: &impl LgciuSensors,
         reservoir_left_side: &Reservoir,
         reservoir_right_side: &Reservoir,
     ) {
@@ -1772,7 +1825,7 @@ impl A320HydraulicBrakeSteerComputerUnit {
                 .get_identifier("RIGHT_BRAKE_PEDAL_INPUT".to_owned()),
 
             ground_speed_id: context.get_identifier("GPS GROUND SPEED".to_owned()),
-            rudder_pedal_input_id: context.get_identifier("RUDDER_PEDAL_POSITION".to_owned()),
+            rudder_pedal_input_id: context.get_identifier("RUDDER_PEDAL_POSITION_RATIO".to_owned()),
             tiller_handle_input_id: context.get_identifier("TILLER_HANDLE_POSITION".to_owned()),
             tiller_pedal_disconnect_id: context
                 .get_identifier("TILLER_PEDAL_DISCONNECT".to_owned()),
@@ -1876,8 +1929,8 @@ impl A320HydraulicBrakeSteerComputerUnit {
         context: &UpdateContext,
         green_circuit: &HydraulicCircuit,
         alternate_circuit: &BrakeCircuit,
-        lgciu1: &impl LgciuInterface,
-        lgciu2: &impl LgciuInterface,
+        lgciu1: &impl LgciuSensors,
+        lgciu2: &impl LgciuSensors,
         autobrake_panel: &AutobrakePanel,
         engine1: &impl Engine,
         engine2: &impl Engine,
@@ -1962,7 +2015,7 @@ impl A320HydraulicBrakeSteerComputerUnit {
 
     fn update_steering_demands(
         &mut self,
-        lgciu1: &impl LgciuInterface,
+        lgciu1: &impl LgciuSensors,
         engine1: &impl Engine,
         engine2: &impl Engine,
     ) {
@@ -2033,9 +2086,9 @@ impl SimulationElement for A320HydraulicBrakeSteerComputerUnit {
         self.is_gear_lever_down = reader.read(&self.gear_handle_position_id);
         self.anti_skid_activated = reader.read(&self.antiskid_brakes_active_id);
         self.left_brake_pilot_input =
-            Ratio::new::<ratio>(reader.read(&self.left_brake_pedal_input_id));
+            Ratio::new::<percent>(reader.read(&self.left_brake_pedal_input_id));
         self.right_brake_pilot_input =
-            Ratio::new::<ratio>(reader.read(&self.right_brake_pedal_input_id));
+            Ratio::new::<percent>(reader.read(&self.right_brake_pedal_input_id));
 
         self.tiller_handle_position =
             Ratio::new::<ratio>(reader.read(&self.tiller_handle_input_id));
@@ -2613,8 +2666,8 @@ impl A320AutobrakeController {
         allow_arming: bool,
         pedal_input_left: Ratio,
         pedal_input_right: Ratio,
-        lgciu1: &impl LgciuInterface,
-        lgciu2: &impl LgciuInterface,
+        lgciu1: &impl LgciuSensors,
+        lgciu2: &impl LgciuSensors,
     ) {
         let in_flight_lgciu1 =
             !lgciu1.right_gear_compressed(false) && !lgciu1.left_gear_compressed(false);
@@ -2638,8 +2691,8 @@ impl A320AutobrakeController {
         allow_arming: bool,
         pedal_input_left: Ratio,
         pedal_input_right: Ratio,
-        lgciu1: &impl LgciuInterface,
-        lgciu2: &impl LgciuInterface,
+        lgciu1: &impl LgciuSensors,
+        lgciu2: &impl LgciuSensors,
     ) {
         self.update_input_conditions(
             context,
@@ -2778,17 +2831,21 @@ mod tests {
 
     mod a320_hydraulics {
         use super::*;
-        use systems::electrical::test::TestElectricitySource;
-        use systems::electrical::ElectricalBus;
-        use systems::electrical::Electricity;
-        use systems::electrical::ElectricitySource;
-        use systems::electrical::ExternalPowerSource;
-        use systems::engine::{leap_engine::LeapEngine, EngineFireOverheadPanel};
-        use systems::landing_gear::{LandingGear, LandingGearControlInterfaceUnit};
-        use systems::shared::EmergencyElectricalState;
-        use systems::shared::PotentialOrigin;
-        use systems::simulation::test::{ReadByName, TestBed, WriteByName};
-        use systems::simulation::{test::SimulationTestBed, Aircraft, InitContext};
+        use systems::{
+            electrical::{
+                test::TestElectricitySource, ElectricalBus, Electricity, ElectricitySource,
+                ExternalPowerSource,
+            },
+            engine::{leap_engine::LeapEngine, EngineFireOverheadPanel},
+            hydraulic::electrical_generator::TestGenerator,
+            landing_gear::{LandingGear, LandingGearControlInterfaceUnit},
+            shared::{EmergencyElectricalState, HydraulicGeneratorControlUnit, PotentialOrigin},
+            simulation::{
+                test::{ReadByName, SimulationTestBed, TestBed, WriteByName},
+                Aircraft, InitContext,
+            },
+        };
+
         use uom::si::{
             angle::degree,
             electric_potential::volt,
@@ -2859,22 +2916,34 @@ mod tests {
         struct A320TestElectrical {
             airspeed: Velocity,
             all_ac_lost: bool,
+            emergency_generator: TestGenerator,
         }
         impl A320TestElectrical {
             pub fn new() -> Self {
                 A320TestElectrical {
                     airspeed: Velocity::new::<knot>(100.),
                     all_ac_lost: false,
+                    emergency_generator: TestGenerator::default(),
                 }
             }
 
-            fn update(&mut self, context: &UpdateContext) {
+            fn update(
+                &mut self,
+                gcu: &impl HydraulicGeneratorControlUnit,
+                context: &UpdateContext,
+            ) {
                 self.airspeed = context.indicated_airspeed();
+                self.emergency_generator.update(gcu);
             }
         }
         impl EmergencyElectricalState for A320TestElectrical {
             fn is_in_emergency_elec(&self) -> bool {
                 self.all_ac_lost && self.airspeed >= Velocity::new::<knot>(100.)
+            }
+        }
+        impl EmergencyGeneratorPower for A320TestElectrical {
+            fn generated_power(&self) -> Power {
+                self.emergency_generator.generated_power()
             }
         }
         impl SimulationElement for A320TestElectrical {
@@ -2984,6 +3053,10 @@ mod tests {
 
             fn is_rat_commanded_to_deploy(&self) -> bool {
                 self.hydraulics.ram_air_turbine_controller.should_deploy()
+            }
+
+            fn is_emergency_gen_at_nominal_speed(&self) -> bool {
+                self.hydraulics.gcu.is_at_nominal_speed()
             }
 
             fn is_green_edp_commanded_on(&self) -> bool {
@@ -3140,7 +3213,7 @@ mod tests {
             }
 
             fn update_after_power_distribution(&mut self, context: &UpdateContext) {
-                self.electrical.update(context);
+                self.electrical.update(&self.hydraulics.gcu, context);
 
                 self.lgciu1.update(
                     &self.landing_gear,
@@ -3365,6 +3438,10 @@ mod tests {
 
             fn rat_deploy_commanded(&self) -> bool {
                 self.query(|a| a.is_rat_commanded_to_deploy())
+            }
+
+            fn is_emergency_gen_at_nominal_speed(&self) -> bool {
+                self.query(|a| a.is_emergency_gen_at_nominal_speed())
             }
 
             fn is_fire_valve_eng1_closed(&mut self) -> bool {
@@ -3666,17 +3743,13 @@ mod tests {
                     .air_press_nominal()
             }
 
-            fn set_left_brake(self, position_percent: Ratio) -> Self {
-                self.set_brake("LEFT_BRAKE_PEDAL_INPUT", position_percent)
+            fn set_left_brake(mut self, position: Ratio) -> Self {
+                self.write_by_name("LEFT_BRAKE_PEDAL_INPUT", position);
+                self
             }
 
-            fn set_right_brake(self, position_percent: Ratio) -> Self {
-                self.set_brake("RIGHT_BRAKE_PEDAL_INPUT", position_percent)
-            }
-
-            fn set_brake(mut self, name: &str, position_percent: Ratio) -> Self {
-                let scaled_value = position_percent.get::<ratio>();
-                self.write_by_name(name, scaled_value.min(1.).max(0.));
+            fn set_right_brake(mut self, position: Ratio) -> Self {
+                self.write_by_name("RIGHT_BRAKE_PEDAL_INPUT", position);
                 self
             }
 
@@ -6438,6 +6511,32 @@ mod tests {
 
             assert!(!test_bed.is_slats_moving());
             assert!(!test_bed.is_flaps_moving());
+        }
+
+        #[test]
+        fn emergency_gen_is_started_on_both_ac_lost_in_flight() {
+            let mut test_bed = test_bed_with()
+                .set_cold_dark_inputs()
+                .in_flight()
+                .start_eng1(Ratio::new::<percent>(80.))
+                .start_eng2(Ratio::new::<percent>(80.))
+                .run_waiting_for(Duration::from_secs(10));
+
+            assert!(!test_bed.is_emergency_gen_at_nominal_speed());
+
+            test_bed = test_bed
+                .ac_bus_1_lost()
+                .run_waiting_for(Duration::from_secs(2));
+
+            assert!(!test_bed.is_emergency_gen_at_nominal_speed());
+
+            // Now all AC off should deploy RAT in flight
+            test_bed = test_bed
+                .ac_bus_1_lost()
+                .ac_bus_2_lost()
+                .run_waiting_for(Duration::from_secs(8));
+
+            assert!(test_bed.is_emergency_gen_at_nominal_speed());
         }
 
         #[test]

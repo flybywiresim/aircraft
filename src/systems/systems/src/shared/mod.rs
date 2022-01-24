@@ -56,8 +56,17 @@ pub trait ApuStart {
     fn start_is_on(&self) -> bool;
 }
 
-pub trait RamAirTurbineHydraulicCircuitPressurised {
-    fn is_rat_hydraulic_circuit_pressurised(&self) -> bool;
+pub trait HydraulicGeneratorControlUnit {
+    fn max_allowed_power(&self) -> Power;
+    fn motor_speed(&self) -> AngularVelocity;
+}
+
+pub trait ControlValveCommand {
+    fn valve_position_command(&self) -> Ratio;
+}
+
+pub trait EmergencyGeneratorPower {
+    fn generated_power(&self) -> Power;
 }
 
 pub trait FeedbackPositionPickoffUnit {
@@ -87,7 +96,7 @@ pub trait LgciuGearExtension {
     fn all_up_and_locked(&self) -> bool;
 }
 
-pub trait LgciuInterface: LgciuWeightOnWheels + LgciuGearExtension {}
+pub trait LgciuSensors: LgciuWeightOnWheels + LgciuGearExtension {}
 pub trait EngineCorrectedN1 {
     fn corrected_n1(&self) -> Ratio;
 }
@@ -409,6 +418,15 @@ pub fn interpolation(xs: &[f64], ys: &[f64], intermediate_x: f64) -> f64 {
 
         ys[idx - 1]
             + (intermediate_x - xs[idx - 1]) / (xs[idx] - xs[idx - 1]) * (ys[idx] - ys[idx - 1])
+    }
+}
+
+/// Converts a given `bool` value into an `f64` representing that boolean value in the simulator.
+pub fn from_bool(value: bool) -> f64 {
+    if value {
+        1.0
+    } else {
+        0.0
     }
 }
 
