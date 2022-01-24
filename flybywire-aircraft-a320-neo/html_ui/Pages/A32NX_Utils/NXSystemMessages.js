@@ -58,7 +58,8 @@ const NXSystemMessages = {
     dcduFileFull:           new McduMessage("DCDU FILE FULL", false, false),
     systemBusy:             new McduMessage("SYSTEM BUSY-TRY LATER", false, false),
     newAtisReceived:        new McduMessage("NEW ATIS: READ AGAIN", false, false),
-    noAtisReceived:         new McduMessage("NO ATIS REPORT RECEIVED", false, false)
+    noAtisReceived:         new McduMessage("NO ATIS REPORT RECEIVED", false, false),
+    noPreviousAtis:         new McduMessage("NO PREVIOUS ATIS STORED", false, false)
 };
 
 const NXFictionalMessages = {
