@@ -177,6 +177,7 @@ class FMCMainDisplay extends BaseAirliners {
         // ATSU data
         this.atsuManager = undefined;
         this.pdcMessage = undefined;
+        this.dclMessage = undefined;
     }
 
     Init() {
@@ -493,6 +494,7 @@ class FMCMainDisplay extends BaseAirliners {
         // ATSU data
         this.atsuManager = new Atsu.AtsuManager(this);
         this.pdcMessage = undefined;
+        this.dclMessage = undefined;
 
         // Reset SimVars
         SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", NaN);
