@@ -1,7 +1,8 @@
 import React, { useContext, useEffect, useState, useRef } from 'react';
 import QRCode from 'qrcode.react';
 import { IconArrowsMaximize, IconArrowsMinimize, IconLock, IconMoon, IconSun, IconPlus, IconMinus } from '@tabler/icons';
-import useInterval from '../../Common/useInterval';
+import useInterval from '@instruments/common/useInterval';
+import { usePersistentProperty } from '@instruments/common/persistence';
 import NavigraphClient, {
     AirportInfo,
     emptyNavigraphCharts,
@@ -12,8 +13,7 @@ import NavigraphClient, {
 } from '../ChartsApi/Navigraph';
 import ChartFoxClient, { ChartFoxAirportCharts, ChartFoxChart } from '../ChartsApi/ChartFox';
 import navigraphLogo from '../Assets/navigraph-logo.svg';
-import { usePersistentProperty } from '../../Common/persistence';
-import { SimpleInput } from '../Components/Form/SimpleInput/SimpleInput';
+import { SimpleInput } from '../UtilComponents/Form/SimpleInput/SimpleInput';
 
 type Chart = NavigraphChart | ChartFoxChart;
 
@@ -72,7 +72,7 @@ const Loading = () => {
             <p className="text-xl ">Loading...</p>
             <button
                 type="button"
-                className="flex justify-center items-center p-2 mt-6 w-64 rounded-lg focus:outline-none bg-teal-light"
+                className="flex justify-center items-center p-2 mt-6 w-64 bg-teal-light rounded-lg focus:outline-none"
                 onClick={handleResetRefreshToken}
             >
                 Reset Navigraph Authentication
@@ -93,7 +93,7 @@ const AuthUi = () => {
     }, (navigraph.auth.interval * 1000));
 
     return (
-        <div className="flex overflow-x-hidden justify-center items-center p-6 w-full rounded-lg shadow-lg h-efb bg-theme-secondary">
+        <div className="flex overflow-x-hidden justify-center items-center p-6 w-full h-efb bg-theme-secondary rounded-lg shadow-lg">
             <div className="flex flex-col">
                 <p className="flex justify-center items-center mb-6 text-2xl">
                     <IconLock className="mr-2" size={24} stroke={1.5} strokeLinejoin="miter" />
@@ -115,7 +115,7 @@ const AuthUi = () => {
                                 <span className="text-teal-regular">{navigraph.auth.link}</span>
                                 ' into your browser and enter the code below
                             </p>
-                            <h1 className="py-2 px-4 mt-4 mr-auto ml-auto text-center rounded-md bg-navy-medium">{navigraph.auth.code}</h1>
+                            <h1 className="py-2 px-4 mt-4 mr-auto ml-auto text-center bg-navy-medium rounded-md">{navigraph.auth.code}</h1>
                         </>
                     )
                     : <Loading />}
@@ -178,7 +178,7 @@ const NavigraphChartComponent = (props: NavigraphChartComponentProps) => {
             onMouseDown={handleMouseDown}
         >
             <div className="flex fixed top-40 right-12 z-40 flex-col justify-end">
-                <div className="p-2 mb-2 bg-opacity-50 rounded-lg bg-navy-lighter">
+                <div className="p-2 mb-2 bg-navy-lighter bg-opacity-50 rounded-lg">
                     <div onClick={() => props.setIsFullscreen(!props.isFullscreen)}>
                         {!props.isFullscreen
                             ? <IconArrowsMaximize size={30} />
@@ -186,7 +186,7 @@ const NavigraphChartComponent = (props: NavigraphChartComponentProps) => {
                     </div>
                 </div>
 
-                <div className="p-2 bg-opacity-50 rounded-lg bg-navy-lighter">
+                <div className="p-2 bg-navy-lighter bg-opacity-50 rounded-lg">
                     <div onClick={() => props.setEnableDarkCharts(!props.enableDarkCharts)}>
                         {!props.enableDarkCharts
                             ? <IconMoon size={30} />
@@ -199,14 +199,14 @@ const NavigraphChartComponent = (props: NavigraphChartComponentProps) => {
                 <button
                     type="button"
                     onClick={handleZoomIn}
-                    className="p-2 mb-2 bg-opacity-50 rounded-lg bg-navy-regular"
+                    className="p-2 mb-2 bg-navy-regular bg-opacity-50 rounded-lg"
                 >
                     <IconPlus size={30} />
                 </button>
                 <button
                     type="button"
                     onClick={handleZoomOut}
-                    className="p-2 bg-opacity-50 rounded-lg bg-navy-regular"
+                    className="p-2 bg-navy-regular bg-opacity-50 rounded-lg"
                 >
                     <IconMinus size={30} />
                 </button>
@@ -277,7 +277,7 @@ const NavigraphChartSelector = (props: NavigraphChartSelectorProps) => {
                 ? (
                     <>
                         {organizedCharts.map((item) => (
-                            <div className="flex flex-col pb-2 mr-4 text-lg rounded-2xl divide-gray-700 divide-y-2-2 bg-navy-lighter" key={item.name}>
+                            <div className="flex flex-col pb-2 mr-4 text-lg bg-navy-lighter rounded-2xl divide-gray-700 divide-y-2-2" key={item.name}>
                                 <span className="p-1 text-center bg-gray-700 rounded-t-lg">{item.name}</span>
                                 {item.charts.map((chart) => (
                                     <div
@@ -306,13 +306,13 @@ const NavigraphChartSelector = (props: NavigraphChartSelectorProps) => {
                     <>
                         {props.selectedTab.charts.map((chart) => (
                             <div
-                                className="flex flex-row mr-4 text-lg rounded-lg bg-navy-medium"
+                                className="flex flex-row mr-4 text-lg bg-navy-medium rounded-lg"
                                 onClick={() => props.onChartClick((chart as NavigraphChart).fileDay, (chart as NavigraphChart).fileNight, (chart as NavigraphChart).id)}
                                 key={(chart as NavigraphChart).id}
                             >
                                 {(chart as NavigraphChart).id === props.selectedChartId
-                                    ? <span className="w-2 rounded-l-lg bg-teal-light-contrast"> </span>
-                                    : <span className="w-2 rounded-l-lg bg-navy-medium"> </span>}
+                                    ? <span className="w-2 bg-teal-light-contrast rounded-l-lg"> </span>
+                                    : <span className="w-2 bg-navy-medium rounded-l-lg"> </span>}
                                 <div className="flex flex-col m-2">
                                     <span className="">{(chart as NavigraphChart).procedureIdentifier}</span>
                                     <span
@@ -442,7 +442,7 @@ const ChartsUi = (props: ChartsUiProps) => {
     };
 
     return (
-        <div className="flex overflow-x-hidden flex-row mr-4 w-full rounded-2xl shadow-lg h-efb bg-navy-medium">
+        <div className="flex overflow-x-hidden flex-row mr-4 w-full h-efb bg-navy-medium rounded-2xl shadow-lg">
             {!isFullscreen
                 ? (
                     <>
@@ -455,13 +455,13 @@ const ChartsUi = (props: ChartsUiProps) => {
                                 className="w-full"
                                 onChange={(event) => handleIcaoChange(event)}
                             />
-                            <div className="flex items-center px-6 mt-6 w-full h-9 rounded-lg bg-teal-light-contrast">
+                            <div className="flex items-center px-6 mt-6 w-full h-9 bg-teal-light-contrast rounded-lg">
                                 {props.icao.length !== 4
                                     ? <span className="text-xl">No Airport Selected</span>
                                     : <span className="text-xl">{airportInfo.name.slice(0, 20)}</span>}
                             </div>
                             <div className="flex flex-col mt-6">
-                                <div className="flex flex-row justify-around text-base rounded-lg bg-navy-lighter">
+                                <div className="flex flex-row justify-around text-base bg-navy-lighter rounded-lg">
                                     {organizedCharts.map((organizedChart) => (organizedChart.name === selectedTab.name
                                         ? (
                                             <span
@@ -484,7 +484,7 @@ const ChartsUi = (props: ChartsUiProps) => {
                                         )))}
                                 </div>
                                 <div
-                                    className="overflow-x-hidden overflow-y-scroll mt-5 space-y-4 rounded-lg h-124 grabbable scrollbar"
+                                    className="overflow-x-hidden overflow-y-scroll mt-5 space-y-4 h-124 rounded-lg grabbable scrollbar"
                                     ref={ref}
                                     onMouseDown={handleMouseDown}
                                 >
@@ -556,7 +556,7 @@ const NavigraphNav = (props: ChartsUiProps) => (
                         </>
                     )
                     : (
-                        <div className="flex overflow-x-hidden justify-center items-center mr-4 w-full rounded-lg shadow-lg h-efb bg-theme-secondary">
+                        <div className="flex overflow-x-hidden justify-center items-center mr-4 w-full h-efb bg-theme-secondary rounded-lg shadow-lg">
                             <p className="pt-6 mb-6 text-3xl ">Insufficient .env file</p>
                         </div>
                     )}

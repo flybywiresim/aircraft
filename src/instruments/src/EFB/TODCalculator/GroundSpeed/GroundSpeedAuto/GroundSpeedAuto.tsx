@@ -1,9 +1,9 @@
 import React, { useEffect } from 'react';
+import { useSimVar } from '@instruments/common/simVars';
 import { useAppDispatch, useAppSelector } from '../../../Store/store';
 import { removeTodGroundSpeed, setTodGroundSpeed, setTodGroundSpeedMode } from '../../../Store/features/todCalculator';
-import Button, { BUTTON_TYPE } from '../../../Components/Button/Button';
+import Button, { BUTTON_TYPE } from '../../../UtilComponents/Button/Button';
 import { TOD_INPUT_MODE } from '../../../Enum/TODInputMode';
-import { useSimVar } from '../../../../Common/simVars';
 
 import './GroundSpeedAuto.scss';
 

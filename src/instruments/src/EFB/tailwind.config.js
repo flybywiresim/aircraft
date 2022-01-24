@@ -1,17 +1,40 @@
 'use strict';
 
-const reactComponentsClasses = require('../../../../node_modules/@flybywiresim/react-components/build/usedCSSClasses.json');
+const reactComponentsClasses = require('@flybywiresim/react-components/build/usedCSSClasses.json');
+
+const watchFolders = [
+    'ATC',
+    'ChartsApi',
+    'Dashboard',
+    'Dispatch',
+    'Enum',
+    'Failures',
+    'Ground',
+    'Navigation',
+    'Performance',
+    'Service',
+    'Settings',
+    'SimbriefApi',
+    'StatusBar',
+    'Store',
+    'TODCalculator',
+    'ToolBar',
+    'UtilComponents',
+    'Utils',
+];
 
 module.exports = {
     purge: {
+        enabled: false,
         content: [
-            './**/*.{jsx,tsx}',
+        // './Efb.tsx',
+        // './index.tsx',
+        // './failures-orchestrator-provider.tsx',
+        // './node_modules/@flybywiresim/react-components/build/usedCSSClasses.json',
+        // ...watchFolders.map((folder) => `./EFB/${folder}/**/*.tsx`),
         ],
-        safelist: [
-            ...reactComponentsClasses,
-        ],
+        safelist: [...reactComponentsClasses],
     },
-    darkMode: false, // or 'media' or 'class'
     theme: {
         extend: {
             width: () => ({
@@ -63,7 +86,6 @@ module.exports = {
         },
         boxShadow: { lg: '0px 0px 4px 2px rgba(0, 0, 0, 0.5)' },
     },
-    variants: { extend: {} },
     // eslint-disable-next-line global-require
     plugins: [require('@flybywiresim/tailwind-config')],
 };

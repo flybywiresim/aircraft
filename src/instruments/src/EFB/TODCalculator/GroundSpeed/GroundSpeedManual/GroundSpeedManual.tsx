@@ -5,9 +5,9 @@ import { useAppDispatch, useAppSelector } from '../../../Store/store';
 import { setTodGroundSpeed, removeTodGroundSpeed, setTodGroundSpeedMode, addTodGroundSpeed } from '../../../Store/features/todCalculator';
 import { TOD_INPUT_MODE } from '../../../Enum/TODInputMode';
 
-import Input from '../../../Components/Form/Input/Input';
-import Button, { BUTTON_TYPE } from '../../../Components/Button/Button';
-import Divider from '../../../Components/Divider/Divider';
+import Input from '../../../UtilComponents/Form/Input/Input';
+import Button, { BUTTON_TYPE } from '../../../UtilComponents/Button/Button';
+import Divider from '../../../UtilComponents/Divider/Divider';
 
 import './GroundSpeedManual.scss';
 
@@ -19,7 +19,7 @@ const GroundSpeedManual = () => {
         <div>
             <div className="mb-4 ground-speed-container">
                 {groundSpeed.map(({ from, groundSpeed }, index) => (
-                    <div className="flex mb-4 w-full rounded-lg bg-blue-darker">
+                    <div className="flex mb-4 w-full bg-blue-darker rounded-lg">
                         <Input
                             label={`Min. Alt ${index + 1}`}
                             type="number"
@@ -69,10 +69,10 @@ const GroundSpeedManual = () => {
 
             <div className="flex flex-row justify-center">
                 <Button
-                text="SYNC"
-                type={BUTTON_TYPE.BLUE_OUTLINE}
-                onClick={() => dispatch(setTodGroundSpeedMode(TOD_INPUT_MODE.AUTO))}
-            />
+                    text="SYNC"
+                    type={BUTTON_TYPE.BLUE_OUTLINE}
+                    onClick={() => dispatch(setTodGroundSpeedMode(TOD_INPUT_MODE.AUTO))}
+                />
             </div>
         </div>
     );

@@ -2,8 +2,8 @@ import React, { FC } from 'react';
 import { IconPlane } from '@tabler/icons';
 import { Box, LightningFill, PeopleFill, Rulers, Speedometer2 } from 'react-bootstrap-icons';
 import { usePersistentProperty } from '@instruments/common/persistence';
+import { useSimVar } from '@instruments/common/simVars';
 import fuselage from '../../Assets/320neo-outline-nose.svg';
-import { useSimVar } from '../../../Common/simVars';
 
 interface InformationEntryProps {
     title: string;
@@ -48,7 +48,7 @@ export const OverviewPage = () => {
     };
 
     return (
-        <div className="overflow-hidden p-6 mt-4 mr-3 w-1/2 rounded-lg border-2 shadow-md border-theme-accent h-efb">
+        <div className="overflow-hidden p-6 mt-4 mr-3 w-1/2 h-efb rounded-lg border-2 border-theme-accent shadow-md">
             <h1 className="font-bold">Airbus A320neo</h1>
             <p>{airline}</p>
 

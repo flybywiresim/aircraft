@@ -1,11 +1,11 @@
 import React, { useEffect } from 'react';
 import { round } from 'lodash';
-import Input from '../../Components/Form/Input/Input';
-import Card from '../../Components/Card/Card';
-import Divider from '../../Components/Divider/Divider';
+import { useSimVar } from '@instruments/common/simVars';
+import Input from '../../UtilComponents/Form/Input/Input';
+import Card from '../../UtilComponents/Card/Card';
+import Divider from '../../UtilComponents/Divider/Divider';
 import { TOD_CALCULATION_TYPE } from '../../Enum/TODCalculationType';
-import Button, { BUTTON_TYPE } from '../../Components/Button/Button';
-import { useSimVar } from '../../../Common/simVars';
+import Button, { BUTTON_TYPE } from '../../UtilComponents/Button/Button';
 import { TOD_INPUT_MODE } from '../../Enum/TODInputMode';
 import { useAppDispatch, useAppSelector } from '../../Store/store';
 import { setTodCurrentAltitudeSync, setTodData } from '../../Store/features/todCalculator';

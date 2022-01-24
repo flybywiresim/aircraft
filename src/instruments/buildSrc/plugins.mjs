@@ -43,9 +43,7 @@ function postCss(_, instrumentFolder) {
             tailwindcss(tailwindConfigPath),
         ];
     } else {
-        plugins = [
-            tailwindcss(undefined),
-        ];
+        plugins = [];
     }
 
     return postcss({

@@ -9,9 +9,10 @@ interface KeyboardWrapperProps {
   keyboardRef: any;
   setOpen: (value: boolean) => void;
   blurInput: () => void;
+  onKeyDown?: (buttonName: string) => void;
 }
 
-export const KeyboardWrapper = ({ onChangeAll, keyboardRef, setOpen, blurInput }: KeyboardWrapperProps) => {
+export const KeyboardWrapper = ({ onChangeAll, keyboardRef, setOpen, blurInput, onKeyDown }: KeyboardWrapperProps) => {
     // TODO: Write to this property using a dropdown in settings later on
     const [currentLayoutIdentifier] = usePersistentProperty('EFB_KEYBOARD_LAYOUT_IDENT', 'english');
     const [currentLayout] = useState(() => new SimpleKeyboardLayouts().get(currentLayoutIdentifier));
@@ -25,6 +26,7 @@ export const KeyboardWrapper = ({ onChangeAll, keyboardRef, setOpen, blurInput }
             blurInput();
             setOpen(false);
         }
+        onKeyDown?.(button);
     };
 
     return (

@@ -1,9 +1,9 @@
 import React from 'react';
 import { useHistory } from 'react-router-dom';
 
-import { Navbar } from '../Components/Navbar';
-import TODCalculator from '../TODCalculator/TODCalculator';
-import LandingWidget from './Widgets/LandingWidget';
+import { Navbar } from '../UtilComponents/Navbar';
+import { TODCalculator } from '../TODCalculator/TODCalculator';
+import { LandingWidget } from './Widgets/LandingWidget';
 import { TabRoutes, PageLink, pathify, PageRedirect } from '../Utils/routing';
 
 const tabs: PageLink[] = [
@@ -26,7 +26,7 @@ export const Performance = () => {
                     }}
                 />
             </div>
-            <div className="mt-6">
+            <div className="mt-4">
                 <PageRedirect basePath="/performance" tabs={tabs} />
                 <TabRoutes basePath="/performance" tabs={tabs} />
             </div>
