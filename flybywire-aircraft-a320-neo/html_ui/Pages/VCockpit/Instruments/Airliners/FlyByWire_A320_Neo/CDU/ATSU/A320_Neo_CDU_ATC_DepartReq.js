@@ -83,11 +83,11 @@ class CDUAtcDepartReq {
 
         mcdu.setTemplate([
             ["DEPART REQ"],
-            ["ATC FLT NBR", "A/C TYPE"],
+            ["\xa0ATC FLT NBR", "A/C TYPE\xa0"],
             [flightNo, "A20N[color]cyan"],
-            ["FROM/TO"],
+            ["\xa0FROM/TO"],
             [fromTo],
-            ["GATE", "ATIS"],
+            ["\xa0GATE", "ATIS\xa0"],
             [gate, atis],
             ["---------FREE TEXT---------"],
             [freetext],
