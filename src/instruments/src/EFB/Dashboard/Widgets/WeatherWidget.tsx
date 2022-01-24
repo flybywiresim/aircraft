@@ -5,8 +5,8 @@ import React, { useEffect, useState } from 'react';
 import { Metar } from '@flybywiresim/api-client';
 import { IconCloud, IconDroplet, IconGauge, IconPoint, IconTemperature, IconWind } from '@tabler/icons';
 import { parseMetar } from '../../Utils/parseMetar';
-import { MetarParserType } from '../../../Common/metarTypes';
-import { usePersistentNumberProperty, usePersistentProperty } from '../../../Common/persistence';
+import { MetarParserType } from '@instruments/common/metarTypes';
+import { usePersistentNumberProperty, usePersistentProperty } from '@instruments/common/persistence';
 import SimpleInput from '../../Components/Form/SimpleInput/SimpleInput';
 import { ColoredMetar } from './ColorMetar';
 
