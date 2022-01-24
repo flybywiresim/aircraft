@@ -3,6 +3,8 @@ import { useSimVar } from '@instruments/common/simVars';
 import { useCoherentEvent, useInteractionEvents } from '@instruments/common/hooks';
 import { AtsuMessageComStatus, AtsuMessageDirection, AtsuMessageType } from '@atsu/messages/AtsuMessage';
 import { CpdlcMessage, CpdlcMessageRequestedResponseType, CpdlcMessageResponse } from '@atsu/messages/CpdlcMessage';
+import { DclMessage } from '@atsu/messages/DclMessage';
+import { OclMessage } from '@atsu/messages/OclMessage';
 import { OutputButtons } from './elements/OutputButtons';
 import { AffirmNegativeButtons } from './elements/AffirmNegativeButtons';
 import { WilcoUnableButtons } from './elements/WilcoUnableButtons';
@@ -177,10 +179,15 @@ const DCDU: React.FC = () => {
         let cpdlcMessage : CpdlcMessage | undefined = undefined;
         if (serialized.Type === AtsuMessageType.CPDLC) {
             cpdlcMessage = new CpdlcMessage();
-            cpdlcMessage.deserialize(serialized);
+        } else if (serialized.Type === AtsuMessageType.DCL) {
+            cpdlcMessage = new DclMessage();
+        } else if (serialized.Type === AtsuMessageType.OCL) {
+            cpdlcMessage = new OclMessage();
         }
 
-        if (cpdlcMessage !== undefined && cpdlcMessage.UniqueMessageID !== undefined) {
+        if (cpdlcMessage !== undefined && serialized.UniqueMessageID !== undefined) {
+            cpdlcMessage.deserialize(serialized);
+
             const oldMessage = messages.get(cpdlcMessage.UniqueMessageID);
             let dcduTimestamp = new Date().getTime();
             let readMessage = false;

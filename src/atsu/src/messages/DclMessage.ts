@@ -32,13 +32,14 @@ export class DclMessage extends CpdlcMessage {
 
     constructor() {
         super();
+        this.Type = AtsuMessageType.DCL;
         this.Direction = AtsuMessageDirection.Output;
     }
 
     public serialize(format: AtsuMessageSerializationFormat) {
         let dclMessage = `DEPART REQUEST\n${this.Callsign}\n`;
-        dclMessage += `FROM: ${this.Origin}${this.Gate.length !== 0 ? ` GATE: ${this.Gate}` : ''}\n`;
-        dclMessage += `TO: ${this.Destination} ATIS: ${this.Atis}`;
+        dclMessage += `FROM:${this.Origin}${this.Gate.length !== 0 ? ` GATE:${this.Gate}` : ''}\n`;
+        dclMessage += `TO:${this.Destination} ATIS:${this.Atis}\n`;
         dclMessage += 'A/C TYPE:A20N';
 
         // add the additional text, but remove empty lines

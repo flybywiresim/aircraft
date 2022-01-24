@@ -36,6 +36,7 @@ export class OclMessage extends CpdlcMessage {
 
     constructor() {
         super();
+        this.Type = AtsuMessageType.OCL;
         this.Direction = AtsuMessageDirection.Output;
     }
 
