@@ -33,7 +33,6 @@ export class AtsuManager {
 
     constructor(mcdu) {
         this.mcdu = mcdu;
-        SimVar.SetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number', 1);
     }
 
     public async sendMessage(message: AtsuMessage): Promise<AtsuStatusCodes> {
