@@ -26,7 +26,7 @@ import { Leg } from '../legs/Leg';
 import { CFLeg } from '../legs/CF';
 import { CRLeg } from '../legs/CR';
 
-export type PrevLeg = CALeg | /* CDLeg | */ CRLeg | /* FALeg | */ HALeg | HFLeg | HMLeg;
+export type PrevLeg = AFLeg | CALeg | /* CDLeg | */ CRLeg | /* FALeg | */ HALeg | HFLeg | HMLeg;
 export type ReversionLeg = CFLeg | CILeg | DFLeg | TFLeg;
 export type NextLeg = AFLeg | CFLeg | /* FALeg | */ TFLeg;
 

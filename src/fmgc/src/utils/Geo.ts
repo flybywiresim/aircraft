@@ -79,6 +79,11 @@ export class Geo {
 
             return d1 > d2 ? intersections[1] : intersections[0];
         }
+
+        if (leg.getPathEndPoint() === undefined || leg.outboundCourse === undefined) {
+            throw new Error('[FMS/LNAV] Cannot compute leg intercept if leg end point or outbound course are undefined');
+        }
+
         const intersections1 = A32NX_Util.bothGreatCircleIntersections(
             from,
             Avionics.Utils.clampAngle(bearing),

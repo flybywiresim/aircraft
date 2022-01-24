@@ -20,6 +20,8 @@ import {
     SpeedConstraint,
 } from '@fmgc/guidance/lnav/legs/index';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
+import { distanceTo } from 'msfs-geo';
+import { PathCaptureTransition } from '@fmgc/guidance/lnav/transitions/PathCaptureTransition';
 import { PathVector, PathVectorType } from '../PathVector';
 
 export class AFLeg extends XFLeg {
@@ -30,7 +32,7 @@ export class AFLeg extends XFLeg {
         private navaid: Coordinates,
         private rho: NauticalMiles,
         private theta: NauticalMiles,
-        private boundaryRadial: NauticalMiles,
+        public boundaryRadial: NauticalMiles,
         segment: SegmentType,
     ) {
         super(fix);
@@ -38,7 +40,7 @@ export class AFLeg extends XFLeg {
         this.segment = segment;
 
         this.centre = navaid;
-        this.radius = this.rho;
+        this.radius = distanceTo(navaid, this.fix.infos.coordinates);
         this.terminationRadial = this.theta;
         this.bearing = Avionics.Utils.clampAngle(Geo.getGreatCircleBearing(this.centre, this.fix.infos.coordinates) + 90 * this.turnDirectionSign);
         this.startPoint = Geo.computeDestinationPoint(this.centre, this.radius, this.boundaryRadial);
@@ -99,10 +101,14 @@ export class AFLeg extends XFLeg {
         this.sweepAngle = MathUtils.diffAngle(Geo.getGreatCircleBearing(this.centre, this.getPathStartPoint()), Geo.getGreatCircleBearing(this.centre, this.getPathEndPoint()));
         this.clockwise = this.sweepAngle > 0;
 
+        // We do not consider the path capture end point in this class' getPathEndPoint since that causes a race condition with the path capture
+        // finding its intercept point onto this leg
+        const startPoint = this.previousGuidable instanceof PathCaptureTransition ? this.previousGuidable.getPathEndPoint() : this.getPathStartPoint();
+
         this.predictedPath.length = 0;
         this.predictedPath.push({
             type: PathVectorType.Arc,
-            startPoint: this.getPathStartPoint(),
+            startPoint,
             centrePoint: this.centre,
             endPoint: this.getPathEndPoint(),
             sweepAngle: this.sweepAngle,

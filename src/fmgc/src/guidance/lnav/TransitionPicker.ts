@@ -98,7 +98,7 @@ export class TransitionPicker {
         }
         if (to instanceof CFLeg) {
             // FIXME fixed radius / revert to path capture
-            return new DmeArcTransition(from, to);
+            return new PathCaptureTransition(from, to);
         }
         if (to instanceof CILeg) {
             return new CourseCaptureTransition(from, to);

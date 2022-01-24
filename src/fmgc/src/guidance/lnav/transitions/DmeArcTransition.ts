@@ -14,11 +14,12 @@ import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { MathUtils } from '@shared/MathUtils';
 import { Geo } from '@fmgc/utils/Geo';
 import { Guidable } from '@fmgc/guidance/Guidable';
-import { closestSmallCircleIntersection } from 'msfs-geo';
+import { closestSmallCircleIntersection, placeBearingDistance } from 'msfs-geo';
 import { PathVector, pathVectorLength, PathVectorType } from '@fmgc/guidance/lnav/PathVector';
 import { GuidanceParameters } from '@fmgc/guidance/ControlLaws';
 import { CALeg } from '@fmgc/guidance/lnav/legs/CA';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
+import { XFLeg } from '@fmgc/guidance/lnav/legs/XF';
 
 export type DmeArcTransitionPreviousLeg = AFLeg /* | CDLeg */ | CFLeg | CILeg | DFLeg | TFLeg; /* | VILeg | VDLeg */
 export type DmeArcTransitionNextLeg = AFLeg | CALeg | CFLeg /* | FALeg | FMLeg */ | TFLeg;
@@ -112,29 +113,53 @@ export class DmeArcTransition extends Transition {
             const reference = Geo.computeDestinationPoint(this.previousLeg.getPathEndPoint(), this.radius, this.previousLeg.outboundCourse + 90 * turnDirection);
             const dme = this.nextLeg.centre;
 
-            const turnCentre = closestSmallCircleIntersection(
-                dme,
-                this.nextLeg.radius + this.radius * turnDirection * -this.nextLeg.turnDirectionSign,
-                reference,
-                this.previousLeg.outboundCourse,
-            );
+            let turnCentre;
+            if (this.previousLeg instanceof XFLeg && !(this.previousLeg instanceof AFLeg)) {
+                this.ftp = placeBearingDistance(
+                    dme,
+                    this.nextLeg.boundaryRadial,
+                    this.nextLeg.radius,
+                );
+
+                const turnCentreSideSign = turnDirection > 0 ? 1 : -1;
+                turnCentre = placeBearingDistance(
+                    this.ftp,
+                    Avionics.Utils.clampAngle(this.nextLeg.boundaryRadial + turnCentreSideSign * 180),
+                    this.radius,
+                );
+
+                const itpSideSign = turnDirection > 0 ? -1 : 1;
+                this.itp = placeBearingDistance(
+                    turnCentre,
+                    Avionics.Utils.clampAngle(this.previousLeg.outboundCourse - itpSideSign * 90),
+                    this.radius,
+                );
+            } else {
+                turnCentre = closestSmallCircleIntersection(
+                    dme,
+                    this.nextLeg.radius + this.radius * turnDirection * -this.nextLeg.turnDirectionSign,
+                    reference,
+                    this.previousLeg.outboundCourse,
+                );
+
+                this.itp = Geo.computeDestinationPoint(
+                    turnCentre,
+                    this.radius,
+                    this.previousLeg.outboundCourse - 90 * turnDirection,
+                );
+
+                this.ftp = Geo.computeDestinationPoint(
+                    turnCentre,
+                    this.radius,
+                    turnDirection * -this.nextLeg.turnDirectionSign === 1 ? Geo.getGreatCircleBearing(turnCentre, dme) : Geo.getGreatCircleBearing(dme, turnCentre),
+                );
+            }
 
             if (!turnCentre) {
                 throw new Error('AFLeg did not intersect with previous leg offset reference');
             }
 
             this.centre = turnCentre;
-
-            this.itp = Geo.computeDestinationPoint(
-                turnCentre,
-                this.radius,
-                this.previousLeg.outboundCourse - 90 * turnDirection,
-            );
-            this.ftp = Geo.computeDestinationPoint(
-                turnCentre,
-                this.radius,
-                turnDirection * -this.nextLeg.turnDirectionSign === 1 ? Geo.getGreatCircleBearing(turnCentre, dme) : Geo.getGreatCircleBearing(dme, turnCentre),
-            );
 
             this.sweepAngle = MathUtils.diffAngle(Geo.getGreatCircleBearing(turnCentre, this.itp), Geo.getGreatCircleBearing(turnCentre, this.ftp));
             this.clockwise = this.sweepAngle > 0;
@@ -151,6 +176,11 @@ export class DmeArcTransition extends Transition {
             this.isComputed = true;
 
             if (LnavConfig.DEBUG_PREDICTED_PATH) {
+                this.predictedPath.push({
+                    type: PathVectorType.DebugPoint,
+                    startPoint: reference,
+                    annotation: 'DME TRANS REF',
+                });
                 this.addDebugPoints();
             }
         }
