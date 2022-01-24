@@ -82,7 +82,7 @@ class CDUAtcDepartReq {
         }
 
         mcdu.setTemplate([
-            ["DEPART REQUEST"],
+            ["DEPART REQ"],
             ["ATC FLT NBR", "A/C TYPE"],
             [flightNo, "A20N[color]cyan"],
             ["FROM/TO"],
