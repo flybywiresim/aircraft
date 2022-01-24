@@ -7,36 +7,36 @@ interface SelectItemProps {
     className?: string
 }
 
-const activeButtonRow = ({ disabled, selected }: Partial<SelectItemProps>) => {
-    if (disabled) {
+const activeButtonRow = (props) => {
+    if (props.disabled) {
         return ('flex items-center px-6 py-2 text-theme-unselected bg-opacity-0 hover:bg-opacity-100 transition duration-300 cursor-not-allowed');
     }
-    if (selected) {
-        return ('flex items-center px-6 py-2 bg-theme-highlight bg-opacity-100 text-theme-body');
+    if (props.selected) {
+        return ('flex items-center px-6 py-2 bg-theme-highlight bg-opacity-100');
     }
-    if (!selected) {
+    if (!props.selected) {
         return ('flex items-center px-6 py-2 bg-opacity-0 hover:bg-opacity-100 transition duration-300');
     }
     return undefined;
 };
 
-export const SelectItem: React.FC<SelectItemProps> = ({ children, className, disabled, onSelect, selected }) => (
+export const SelectItem: React.FC<SelectItemProps> = (props) => (
     <span
-        onClick={onSelect || (() => {})}
-        className={`cursor-pointer ${activeButtonRow({ disabled, selected })} ${className}`}
+        onClick={props.onSelect || (() => {})}
+        className={`cursor-pointer ${props.className} ${activeButtonRow(props)}`}
     >
-        {children}
+        {props.children}
     </span>
 );
 
-export const SelectGroup: React.FC<{className?: string}> = ({ children, className }) => (
-    <div className={`flex overflow-hidden flex-row justify-between rounded-md border divide-x border-theme-accent divide-theme-accent ${className}`}>
-        {children}
+export const SelectGroup: React.FC = (props) => (
+    <div className="flex overflow-hidden flex-row justify-between rounded-md border divide-x border-theme-accent divide-theme-accent">
+        {props.children}
     </div>
 );
 
-export const VerticalSelectGroup: React.FC<{className?: string}> = ({ children, className }) => (
-    <div className={`flex overflow-hidden flex-col rounded-md border divide-y divide-theme-accent border-theme-accent ${className}`}>
-        {children}
+export const VerticalSelectGroup: React.FC = (props) => (
+    <div className="flex overflow-hidden flex-col rounded-md border divide-y divide-theme-accent border-theme-accent">
+        {props.children}
     </div>
 );

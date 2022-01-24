@@ -4,7 +4,7 @@ import { Metar } from '@flybywiresim/api-client';
 import { IconCloud, IconDroplet, IconGauge, IconPoint, IconTemperature, IconWind } from '@tabler/icons';
 import { MetarParserType, Wind } from '@instruments/common/metarTypes';
 import { usePersistentProperty } from '@instruments/common/persistence';
-import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
+import SimpleInput from '../../Components/Form/SimpleInput/SimpleInput';
 
 const MetarParserTypeWindState: Wind = {
     degrees: 0,
@@ -143,13 +143,13 @@ export const WeatherWidget = (props: WeatherWidgetProps) => {
                 ? <p>Loading ...</p>
                 : (
                     <>
-                        <div className="inline-flex items-center mb-8 w-80">
+                        <div className="mb-8 inline-flex items-center w-80">
                             <div className="ml-6">
                                 <IconCloud size={35} stroke={1.5} strokeLinejoin="miter" />
                             </div>
                             <SimpleInput
                                 noLabel
-                                className="ml-4 w-24 text-2xl font-medium text-center uppercase"
+                                className="text-center w-24 ml-4 text-2xl font-medium uppercase"
                                 placeholder={props.icao}
                                 value={props.icao === '----' ? '' : props.icao}
                                 onChange={(value) => handleIcao(value)}
@@ -158,7 +158,7 @@ export const WeatherWidget = (props: WeatherWidgetProps) => {
                             <div className="ml-6">
                                 <button
                                     type="button"
-                                    className="flex justify-center items-center p-2 mr-1 w-24 text-lg bg-gray-600 rounded-lg focus:outline-none"
+                                    className="mr-1 w-24 bg-gray-600 p-2 flex items-center justify-center rounded-lg focus:outline-none text-lg"
                                     onClick={() => setShowMetar(showMetar === 'ENABLED' ? 'DISABLED' : 'ENABLED')}
                                 >
                                     {showMetar === 'ENABLED' ? 'TEXT' : 'ICONS'}
@@ -169,7 +169,7 @@ export const WeatherWidget = (props: WeatherWidgetProps) => {
                             ? (
                                 <>
                                     <div className="grid grid-cols-2 h-40">
-                                        <div className="text-lg text-center justify-left">
+                                        <div className="justify-left text-center text-lg">
                                             <div className="flex justify-center">
                                                 <IconGauge className="mb-2" size={35} stroke={1.5} strokeLinejoin="miter" />
                                             </div>
@@ -183,7 +183,7 @@ export const WeatherWidget = (props: WeatherWidgetProps) => {
                                                 </>
                                             )}
                                         </div>
-                                        <div className="text-lg text-center justify-left">
+                                        <div className="justify-left text-center text-lg">
                                             <div className="flex justify-center">
                                                 <IconWind className="mb-2" size={35} stroke={1.5} strokeLinejoin="miter" />
                                             </div>
@@ -207,7 +207,7 @@ export const WeatherWidget = (props: WeatherWidgetProps) => {
                                                     </>
                                                 ) : 'N/A'}
                                         </div>
-                                        <div className="mt-6 text-lg text-center">
+                                        <div className="text-center text-lg mt-6">
                                             <div className="flex justify-center">
                                                 <IconTemperature className="mb-2" size={35} stroke={1.5} strokeLinejoin="miter" />
                                             </div>
@@ -228,7 +228,7 @@ export const WeatherWidget = (props: WeatherWidgetProps) => {
                                                     </>
                                                 ) : 'N/A'}
                                         </div>
-                                        <div className="overflow-y-scroll mt-6 text-lg text-center">
+                                        <div className="overflow-y-scroll text-center text-lg mt-6">
                                             <div className="flex justify-center">
                                                 <IconDroplet className="mb-2" size={35} stroke={1.5} strokeLinejoin="miter" />
                                             </div>
@@ -254,7 +254,7 @@ export const WeatherWidget = (props: WeatherWidgetProps) => {
                             )
                             : (
                                 <>
-                                    <div className="mr-4 ml-8 h-40 text-xl font-medium text-left scrollbar">
+                                    <div className="scrollbar text-left ml-8 mr-4 h-40 text-xl font-medium">
                                         {metar.raw_text
                                             ? (
                                                 <>
