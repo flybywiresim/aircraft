@@ -5,7 +5,7 @@ import { useSimVar } from '@instruments/common/simVars';
 import { useInteractionEvent } from '@instruments/common/hooks';
 import { Battery, BatteryCharging } from 'react-bootstrap-icons';
 import { ToastContainer, toast } from 'react-toastify';
-import { usePersistentNumberProperty, usePersistentProperty } from '../Common/persistence';
+import { usePersistentNumberProperty, usePersistentProperty } from '@instruments/common/persistence';
 import NavigraphClient, { NavigraphContext } from './ChartsApi/Navigraph';
 import 'react-toastify/dist/ReactToastify.css';
 import './toast.css';
@@ -26,7 +26,7 @@ import { clearEfbState, useAppDispatch, useAppSelector } from './Store/store';
 
 import { fetchSimbriefDataAction, initialState as simbriefInitialState } from './Store/features/simBrief';
 
-import { FbwLogo } from './Assets/FbwLogo';
+import { FbwLogo } from './UtilComponents/FbwLogo';
 
 const BATTERY_DURATION_CHARGE_MIN = 180;
 const BATTERY_DURATION_DISCHARGE_MIN = 240;
@@ -74,7 +74,8 @@ interface BatteryStatus {
 export const usePower = () => React.useContext(PowerContext);
 
 const Efb = () => {
-    const [powerState, setPowerState] = useState<PowerStates>(PowerStates.SHUTOFF);
+    // TODO: CHANGE ME
+    const [powerState, setPowerState] = useState<PowerStates>(PowerStates.LOADED);
 
     const [currentLocalTime] = useSimVar('E:LOCAL TIME', 'seconds', 3000);
     const [absoluteTime] = useSimVar('E:ABSOLUTE TIME', 'seconds', 3000);

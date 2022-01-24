@@ -5,10 +5,10 @@ import { usePersistentProperty } from '@instruments/common/persistence';
 import { toast } from 'react-toastify';
 import { useSimVarValue } from '@instruments/common/simVars';
 
+import { initialState, fetchSimbriefDataAction } from '../../Store/features/simBrief';
 import { useAppSelector, useAppDispatch } from '../../Store/store';
 
-import { fetchSimbriefDataAction } from '../../Store/features/simBrief';
-import { ScrollableContainer } from '../../Components/ScrollableContainer';
+import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
 
 interface InformationEntryProps {
     title: string;
@@ -21,6 +21,68 @@ const InformationEntry = ({ title, info }: InformationEntryProps) => (
         <p className="text-2xl font-light">{info}</p>
     </div>
 );
+
+const simbriefValuePlaceholders = {
+    airline: '---',
+    flightNum: '----',
+    departingAirport: '----',
+    departingIata: '---',
+    departingName: '---',
+    departingPosLat: 0,
+    departingPosLong: 0,
+    arrivingAirport: '----',
+    arrivingIata: '---',
+    arrivingName: '---',
+    arrivingPosLat: 0,
+    arrivingPosLong: 0,
+    aircraftReg: '-----',
+    flightDistance: '---NM',
+    route: '---- --- ---- --- ---- ----',
+    flightETAInSeconds: 'N/A',
+    cruiseAltitude: 0,
+    weights: {
+        cargo: 0,
+        estLandingWeight: 0,
+        estTakeOffWeight: 0,
+        estZeroFuelWeight: 0,
+        maxLandingWeight: 0,
+        maxTakeOffWeight: 0,
+        maxZeroFuelWeight: 0,
+        passengerCount: 0,
+        passengerWeight: 0,
+        payload: 0,
+    },
+    fuels: {
+        avgFuelFlow: 0,
+        contingency: 0,
+        enrouteBurn: 0,
+        etops: 0,
+        extra: 0,
+        maxTanks: 0,
+        minTakeOff: 0,
+        planLanding: 0,
+        planRamp: 0,
+        planTakeOff: 0,
+        reserve: 0,
+        taxi: 0,
+    },
+    weather: {
+        avgWindDir: '---',
+        avgWindSpeed: '---',
+    },
+    units: 'kgs',
+    altIcao: '----',
+    altIata: '---',
+    altBurn: 0,
+    tripTime: 0,
+    contFuelTime: 0,
+    resFuelTime: 0,
+    taxiOutTime: 0,
+    schedIn: '--:--',
+    schedOut: '--:--',
+    loadsheet: 'N/A',
+    costInd: '--',
+};
 
 export const FlightWidget = () => {
     const [simbriefUserId] = usePersistentProperty('CONFIG_SIMBRIEF_USERID');
@@ -45,7 +107,7 @@ export const FlightWidget = () => {
         flightNum,
         altIcao,
         costInd,
-    } = useAppSelector((state) => state.simbrief.data);
+    } = useAppSelector((state) => (state.simbrief === initialState ? simbriefValuePlaceholders : state.simbrief.data));
     const dispatch = useAppDispatch();
 
     const [totalDistance, setTotalDistance] = useState(0);
@@ -102,7 +164,7 @@ export const FlightWidget = () => {
     const flightPlanProgress = totalDistance ? ((totalDistance - remainingDistance) / totalDistance) * 100 : 0;
 
     return (
-        <div className="overflow-hidden p-6 mr-3 w-2/5 h-full rounded-lg border-2 shadow-md border-theme-accent">
+        <div className="overflow-hidden p-6 mr-3 w-2/5 h-full rounded-lg border-2 border-theme-accent shadow-md">
             <div className="flex flex-col justify-between h-full">
                 <div className="space-y-8">
                     <div className="flex flex-row justify-between">
@@ -129,7 +191,7 @@ export const FlightWidget = () => {
                                 <div className="relative w-full bg-theme-highlight" style={{ width: `${flightPlanProgress}%` }}>
                                     {!!totalDistance && (
                                         <IconPlane
-                                            className="absolute right-0 transform translate-x-1/2 -translate-y-1/2 fill-current text-theme-highlight"
+                                            className="absolute right-0 text-theme-highlight transform translate-x-1/2 -translate-y-1/2 fill-current"
                                             size={50}
                                             strokeLinejoin="miter"
                                         />
@@ -178,7 +240,7 @@ export const FlightWidget = () => {
                             toast.error(e.message);
                         });
                     }}
-                    className="flex justify-center items-center p-2 space-x-4 w-full rounded-lg border-2 shadow-lg focus:outline-none bg-theme-highlight border-theme-secondary"
+                    className="flex justify-center items-center p-2 space-x-4 w-full bg-theme-highlight rounded-lg border-2 border-theme-secondary shadow-lg focus:outline-none"
                 >
                     <FileEarmarkArrowDown size={26} />
                     <p>Import Flightplan from SimBrief</p>
