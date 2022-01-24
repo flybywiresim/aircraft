@@ -31,7 +31,7 @@ export class AtisMessage extends WeatherMessage {
             report.report.split(' ').forEach((word) => {
                 // expect 'INFORMATION H' or 'INFORMATION HOTEL'
                 if (foundInfo === false) {
-                    if (word === 'INFORMATION') {
+                    if (word === 'INFORMATION' || word === 'INFO') {
                         foundInfo = true;
                     }
                 } else {
