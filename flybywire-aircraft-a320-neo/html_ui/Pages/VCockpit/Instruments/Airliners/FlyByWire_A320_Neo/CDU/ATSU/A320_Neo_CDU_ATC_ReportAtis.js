@@ -90,7 +90,7 @@ class CDUAtcReportAtis {
             mcdu.setArrows(up, down, false, false);
         }
 
-        const pageCount = Math.floor(lines.length / 8 + 0.5);
+        const pageCount = Math.round(lines.length / 8 + 0.5);
         const currentPage = Math.floor(offset / 8) + 1;
 
         let prevAtis = "\xa0PREV ATIS";
