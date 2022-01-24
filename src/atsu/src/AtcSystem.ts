@@ -118,7 +118,7 @@ export class AtcSystem {
 
         // handle send calls of messages
         if (SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_SEND_UID', 'number') !== -1) {
-            const message = this.parent.findMessage(SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_PRINT_UID', 'number'));
+            const message = this.parent.findMessage(SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_SEND_UID', 'number'));
             if (message !== undefined) {
                 if (message.Direction === AtsuMessageDirection.Output) {
                     this.sendMessage(message).then((code) => {
