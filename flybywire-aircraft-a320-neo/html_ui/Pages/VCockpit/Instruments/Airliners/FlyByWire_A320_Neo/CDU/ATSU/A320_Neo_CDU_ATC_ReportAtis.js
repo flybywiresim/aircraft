@@ -64,10 +64,7 @@ class CDUAtcReportAtis {
 
         const message = messages[messageIndex];
         let serialized = message.serialize(Atsu.AtsuMessageSerializationFormat.MCDU);
-        serialized = serialized.replace(/{green}/gi, "");
-        serialized = serialized.replace(/{amber}/gi, "");
-        serialized = serialized.replace(/{white}/gi, "");
-        serialized = serialized.replace(/{end}/gi, "");
+        serialized = serialized.replace(/{green}|{amber}|{white}|{end}/gi, "");
         const lines = serialized.split("\n");
         lines.shift();
         lines.pop();
