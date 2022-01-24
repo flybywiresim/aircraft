@@ -42,6 +42,25 @@ const getCoRoute = async (mcdu, coRoute, updateView) => {
         });
 };
 
+const getRouteList = async (mcdu) => {
+    const origin = mcdu.flightPlanManager.getOrigin().ident;
+    const dest = mcdu.flightPlanManager.getDestination().ident;
+    return NXLocalApi.getRouteList(origin, dest)
+        .then(response => {
+            response.json().then(data => {
+                data.forEach((route) => {
+                    mcdu.coRoute.routes.push({
+                        originIcao: route.origin.icao_code,
+                        destinationIcao: route.origin.icao_code,
+                        alternateIcao: route.alternate ? route.alternate : undefined,
+                        route: route.general.route,
+                        navlog: route.navlog.fix
+                    });
+                });
+            });
+        });
+};
+
 /**
  * Inserts the located company route's origin, destination and if provided alternate.
  * @param {FMCMainDisplay} mcdu

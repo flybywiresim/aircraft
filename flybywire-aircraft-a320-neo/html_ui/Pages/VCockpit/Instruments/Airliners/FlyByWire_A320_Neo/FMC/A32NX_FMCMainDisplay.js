@@ -301,7 +301,8 @@ class FMCMainDisplay extends BaseAirliners {
         this.maxCruiseFL = 390;
         this.routeIndex = 0;
         this.coRoute = {
-            routeNumber: undefined
+            routeNumber: undefined,
+            routes: []
         };
         this.tmpOrigin = "";
         this.perfTOTemp = NaN;
@@ -1443,13 +1444,15 @@ class FMCMainDisplay extends BaseAirliners {
                                 this.tempFpPendingAutoTune = true;
                                 this.flightPlanManager.setOrigin(airportFrom.icao, () => {
                                     this.tmpOrigin = airportFrom.ident;
-                                    this.flightPlanManager.setDestination(airportTo.icao, () => {
+                                    this.flightPlanManager.setDestination(airportTo.icao, async () => {
                                         this.flightPlanManager.getWaypoint(0).endsInDiscontinuity = true;
                                         this.flightPlanManager.getWaypoint(0).discontinuityCanBeCleared = true;
                                         this.aocAirportList.init(this.tmpOrigin, airportTo.ident);
                                         this.tmpOrigin = airportTo.ident;
                                         SimVar.SetSimVarValue("L:FLIGHTPLAN_USE_DECEL_WAYPOINT", "number", 1);
-                                        callback(true);
+                                        await getRouteList(this).then(() => {
+                                            callback(true);
+                                        });
                                     }).catch(console.error);
                                 }).catch(console.error);
                             }).catch(console.error);

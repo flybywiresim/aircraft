@@ -1,14 +1,17 @@
 class NXLocalApi {
-    static getCoRoute(route) {
+    static async getCoRoute(route) {
         if (route) {
-            return fetch(`${NXLocalApi.url}/coroute?rteNum=${route}`)
-                .then((response) => {
-                    return response;
-                });
+            const response = await fetch(`${NXLocalApi.url}/coroute?rteNum=${route}`);
+            return response;
         } else {
             throw ("No Company Route provided");
         }
 
+    }
+
+    static async getRouteList(origin, dest) {
+        const response = await fetch(`${NXLocalApi.url}/coroute/list?origin=${origin}&destination=${dest}`);
+        return response;
     }
 }
 NXLocalApi.url = "http://localhost:3838";
