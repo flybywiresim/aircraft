@@ -463,6 +463,10 @@ export class AtcSystem {
         const cpdlcMessage = message as CpdlcMessage;
         let analyzed = false;
 
+        if (cpdlcMessage.Direction === AtsuMessageDirection.Output && cpdlcMessage.CurrentTransmissionId === -1) {
+            cpdlcMessage.CurrentTransmissionId = ++this.cpdlcMessageId;
+        }
+
         // search corresponding request, if previous ID is set
         if (cpdlcMessage.PreviousTransmissionId !== -1) {
             this.messageQueue.forEach((element) => {
