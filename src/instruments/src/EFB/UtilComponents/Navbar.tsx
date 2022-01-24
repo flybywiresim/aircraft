@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 
-export type NavbarProps = {
-    tabs: string[],
-    onSelected: (index: number) => void,
-    className?: string,
-};
+interface NavbarProps {
+    tabs: string[];
+    onSelected: (index: number) => void;
+    className?: string;
+}
 
 const c = {
     active: 'flex items-center px-6 py-2 bg-theme-accent bg-opacity-100',

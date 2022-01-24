@@ -15,11 +15,10 @@ import {
 } from 'react-bootstrap-icons';
 
 import useInterval from '@instruments/common/useInterval';
+import { useSimVar, useSplitSimVar } from '@instruments/common/simVars';
 import fuselage from '../Assets/320neo-outline-upright.svg';
 
-import { useSimVar, useSplitSimVar } from '../../Common/simVars';
-
-import Button, { BUTTON_TYPE } from '../Components/Button/Button';
+import Button, { BUTTON_TYPE } from '../UtilComponents/Button/Button';
 
 import { useAppDispatch, useAppSelector } from '../Store/store';
 import {

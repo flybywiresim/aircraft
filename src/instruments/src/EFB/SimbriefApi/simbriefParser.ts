@@ -1,6 +1,6 @@
 import { ISimbriefData } from './simbriefInterface';
 
-const simbriefApiUrl: URL = new URL('https://www.simbrief.com/api/xml.fetcher.php');
+const simbriefApiUrl = new URL('https://www.simbrief.com/api/xml.fetcher.php');
 const simbriefApiParams = simbriefApiUrl.searchParams;
 
 const getRequestData: RequestInit = {
@@ -8,7 +8,7 @@ const getRequestData: RequestInit = {
     method: 'GET',
 };
 
-export function getSimbriefData(simbriefUserId: string): Promise<ISimbriefData> {
+export const getSimbriefData = (simbriefUserId: string): Promise<ISimbriefData> => {
     simbriefApiParams.append('userid', simbriefUserId);
     simbriefApiParams.append('json', '1');
     simbriefApiUrl.search = simbriefApiParams.toString();
@@ -20,9 +20,9 @@ export function getSimbriefData(simbriefUserId: string): Promise<ISimbriefData> 
             }
             return res.json().then((json) => simbriefDataParser(json));
         });
-}
+};
 
-function simbriefDataParser(simbriefJson: any): ISimbriefData {
+const simbriefDataParser = (simbriefJson: any): ISimbriefData => {
     const { general } = simbriefJson;
     const { origin } = simbriefJson;
     const { aircraft } = simbriefJson;
@@ -119,4 +119,4 @@ function simbriefDataParser(simbriefJson: any): ISimbriefData {
         },
         text: text.plan_html.replace(/^<div [^>]+>/, '').replace(/<\/div>$/, ''),
     };
-}
+};

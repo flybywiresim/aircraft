@@ -22,6 +22,10 @@
   cursor: pointer;
 }
 
+.slider::-webkit-slider-runnable-track {
+    background: rgba(0, 0, 0, 0);
+}
+
 .slider::-webkit-slider-thumb {
   @include slider-handle;
   -webkit-appearance: none;

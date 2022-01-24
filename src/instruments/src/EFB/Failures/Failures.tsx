@@ -1,26 +1,10 @@
 import React from 'react';
-import { ScrollableContainer } from '../Components/ScrollableContainer';
+import { ScrollableContainer } from '../UtilComponents/ScrollableContainer';
 import { useFailuresOrchestrator } from '../failures-orchestrator-provider';
 import { FailureButton } from './FailureButton';
 
 export const Failures = () => {
     const orchestrator = useFailuresOrchestrator();
-
-    const buttons: JSX.Element[] = [];
-    orchestrator.allFailures.forEach((failure) => {
-        buttons.push(<FailureButton
-            name={failure.name}
-            isActive={orchestrator.activeFailures.has(failure.identifier)}
-            isChanging={orchestrator.changingFailures.has(failure.identifier)}
-            onClick={() => {
-                if (!orchestrator.activeFailures.has(failure.identifier)) {
-                    orchestrator.activate(failure.identifier);
-                } else {
-                    orchestrator.deactivate(failure.identifier);
-                }
-            }}
-        />);
-    });
 
     return (
         <div className="w-full">
@@ -31,7 +15,20 @@ export const Failures = () => {
             <div className="p-4 mt-4 rounded-lg border-2 border-theme-accent">
                 <ScrollableContainer height={52}>
                     <div className="grid grid-cols-4 grid-rows-4 grid-flow-row gap-4">
-                        {buttons}
+                        {orchestrator.allFailures.map((failure) => (
+                            <FailureButton
+                                name={failure.name}
+                                isActive={orchestrator.activeFailures.has(failure.identifier)}
+                                isChanging={orchestrator.changingFailures.has(failure.identifier)}
+                                onClick={() => {
+                                    if (!orchestrator.activeFailures.has(failure.identifier)) {
+                                        orchestrator.activate(failure.identifier);
+                                    } else {
+                                        orchestrator.deactivate(failure.identifier);
+                                    }
+                                }}
+                            />
+                        ))}
                     </div>
                 </ScrollableContainer>
             </div>

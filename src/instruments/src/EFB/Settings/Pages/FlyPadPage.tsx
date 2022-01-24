@@ -3,10 +3,10 @@ import React from 'react';
 import { usePersistentNumberProperty, usePersistentProperty } from '@instruments/common/persistence';
 import { useSimVar } from '@instruments/common/simVars';
 
-import { Toggle } from '../../Components/Form/Toggle';
-import { Slider } from '../../Components/Form/Slider';
+import { Toggle } from '../../UtilComponents/Form/Toggle';
+import { Slider } from '../../UtilComponents/Form/Slider';
 import { ButtonType, SettingItem, SettingsPage } from '../Settings';
-import { SelectGroup, SelectItem } from '../../Components/Form/Select';
+import { SelectGroup, SelectItem } from '../../UtilComponents/Form/Select';
 
 export const FlyPadPage = () => {
     const [brightnessSetting, setBrightnessSetting] = usePersistentNumberProperty('EFB_BRIGHTNESS', 0);

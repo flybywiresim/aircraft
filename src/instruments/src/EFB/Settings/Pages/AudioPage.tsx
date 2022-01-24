@@ -1,9 +1,9 @@
 import React from 'react';
 
 import { usePersistentNumberProperty } from '@instruments/common/persistence';
-import { SimpleInput } from '../../Components/Form/SimpleInput/SimpleInput';
-import { Toggle } from '../../Components/Form/Toggle';
-import { Slider } from '../../Components/Form/Slider';
+import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
+import { Toggle } from '../../UtilComponents/Form/Toggle';
+import { Slider } from '../../UtilComponents/Form/Slider';
 import { SettingItem, SettingsPage } from '../Settings';
 
 export const AudioPage = () => {

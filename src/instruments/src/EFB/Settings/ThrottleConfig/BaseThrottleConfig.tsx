@@ -1,6 +1,6 @@
 import React, { FC, useState } from 'react';
 import { PencilSquare } from 'react-bootstrap-icons';
-import { useSimVar } from '../../../Common/simVars';
+import { useSimVar } from '@instruments/common/simVars';
 import DetentConfig from './DetentConfig';
 import { ThrottleSimvar } from './ThrottleSimVar';
 

@@ -7,7 +7,7 @@ import Efb from './Efb';
 
 import './Assets/Efb.scss';
 import './Assets/Theme.css';
-import { render } from '../Common/index';
+import { render } from '@instruments/common/index';
 import { readSettingsFromPersistentStorage } from './Settings/sync';
 import { store } from './Store/store';
 

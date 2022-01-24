@@ -48,7 +48,7 @@ const ToolBarButton: FC<ToolBarButtonProps> = ({ to, children }) => {
         <Link
             to={to}
             className={`${history.location.pathname.includes(to) ? 'bg-theme-accent text-theme-text' : 'text-theme-unselected'}`
-            + ' flex w-min items-center justify-center hover:text-theme-text bg-transparent hover:bg-theme-accent transition duration-100 py-3.5 px-3.5 rounded-md mt-4'}
+            + ' flex w-min items-center justify-center hover:text-theme-text hover:bg-theme-accent transition duration-100 py-3.5 px-3.5 rounded-md mt-4'}
         >
             {children}
         </Link>

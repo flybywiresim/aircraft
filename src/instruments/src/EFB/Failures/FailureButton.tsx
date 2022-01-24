@@ -1,6 +1,6 @@
 import React, { FC, MouseEventHandler } from 'react';
 
-import Button, { BUTTON_TYPE } from '../Components/Button/Button';
+import Button, { BUTTON_TYPE } from '../UtilComponents/Button/Button';
 
 export interface FailureButtonProps {
     name: string,
@@ -10,7 +10,7 @@ export interface FailureButtonProps {
 }
 
 export const FailureButton: FC<FailureButtonProps> = ({ name, isActive, isChanging, onClick }) => {
-    let type: BUTTON_TYPE | undefined;
+    let type: BUTTON_TYPE;
     if (isChanging) {
         type = BUTTON_TYPE.NONE;
     } else {

@@ -1,7 +1,7 @@
 import React from 'react';
 import { round, isNil, toNumber, last } from 'lodash';
 import TODCalculator from '../../Service/TODCalculator';
-import Card from '../../Components/Card/Card';
+import Card from '../../UtilComponents/Card/Card';
 import { TOD_CALCULATION_TYPE } from '../../Enum/TODCalculationType';
 import { useAppSelector } from '../../Store/store';
 

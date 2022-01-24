@@ -16,20 +16,49 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import React from 'react';
-import { Metar } from '@flybywiresim/api-client';
+import React, { FC, useState } from 'react';
 import metarParser from 'aewx-metar-parser';
+import { Calculator, CloudArrowDown, Trash } from 'react-bootstrap-icons';
+import { toast } from 'react-toastify';
+import { usePersistentProperty } from '@instruments/common/persistence';
+import { useSimVar } from '@instruments/common/simVars';
+import { MetarParserType } from '@instruments/common/metarTypes';
 import LandingCalculator, { LandingFlapsConfig, LandingRunwayConditions } from '../Calculators/LandingCalculator';
 import RunwayVisualizationWidget, { LabelType } from './RunwayVisualizationWidget';
-import { SimpleInput } from '../../Components/Form/SimpleInput/SimpleInput';
-import SelectInput from '../../Components/Form/SelectInput/SelectInput';
-import OutputDisplay from '../../Components/Form/OutputDisplay/OutputDisplay';
-import { useSimVar } from '../../../Common/simVars';
-import { MetarParserType } from '../../../Common/metarTypes';
+import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
+import SelectInput from '../../UtilComponents/Form/SelectInput/SelectInput';
 import { useAppDispatch, useAppSelector } from '../../Store/store';
 import { clearLandingValues, initialState, setLandingValues } from '../../Store/features/performance';
 
-const poundsToKgs = 0.453592;
+interface OutputDisplayProps {
+    label: string;
+    value: string | number;
+    error?: boolean;
+    reverse?: boolean;
+}
+
+const OutputDisplay = (props: OutputDisplayProps) => (
+    <div className={`flex flex-col justify-center items-center py-2 w-full ${props.error ? 'bg-red-800' : ''}`}>
+        <p className="flex-shrink-0 font-bold">{props.label}</p>
+        <p>
+            {props.value}
+        </p>
+    </div>
+);
+
+interface LabelProps {
+    className?: string;
+    text: string;
+}
+
+const Label: FC<LabelProps> = ({ text, className, children }) => (
+    <div className="flex flex-row justify-between items-center">
+        <p className={`text-theme-text mr-4 ${className}`}>{text}</p>
+        {children}
+    </div>
+);
+
+const POUNDS_TO_KGS = 0.453592;
 
 export const LandingWidget = () => {
     const dispatch = useAppDispatch();
@@ -37,6 +66,9 @@ export const LandingWidget = () => {
     const calculator: LandingCalculator = new LandingCalculator();
 
     const [totalWeight] = useSimVar('TOTAL WEIGHT', 'Pounds', 1000);
+    const [autoFillSource, setAutoFillSource] = useState<'METAR' | 'OFP'>('METAR');
+
+    const usingMetric = usePersistentProperty('CONFIG_USING_METRIC_UNIT', '1')[0] === '1';
 
     const {
         icao,
@@ -61,6 +93,8 @@ export const LandingWidget = () => {
         runwayNumber,
         displayedRunwayLength,
     } = useAppSelector((state) => state.performance.landing);
+
+    const { arrivingAirport } = useAppSelector((state) => state.simbrief.data);
 
     const handleCalculateLanding = (): void => {
         if (!areInputsValid()) return;
@@ -106,23 +140,34 @@ export const LandingWidget = () => {
         }));
     };
 
-    const handleSyncValues = async (): Promise<void> => {
-        if (!isValidIcao()) return;
-        const metarResult = await Metar.get(icao);
-        const parsedMetar: MetarParserType = metarParser(metarResult.metar);
+    const handleSyncValues = async (icao: string): Promise<void> => {
+        if (!isValidIcao(icao)) return;
 
-        const weightKgs = Math.round(totalWeight * poundsToKgs);
+        fetch(`https://api.flybywiresim.com/metar/${icao}`)
+            .then((res) => {
+                if (res.ok) {
+                    return res.json();
+                }
+                return res.json().then((json) => {
+                    throw new Error(json.message);
+                });
+            }).then((json) => {
+                const parsedMetar: MetarParserType = metarParser(json.metar);
 
-        dispatch(setLandingValues({
-            weight: weightKgs,
-            windDirection: parsedMetar.wind.degrees,
-            windMagnitude: parsedMetar.wind.speed_kts,
-            temperature: parsedMetar.temperature.celsius,
-            pressure: parsedMetar.barometer.mb,
-        }));
+                const weightKgs = Math.round(totalWeight * POUNDS_TO_KGS);
+
+                dispatch(setLandingValues({
+                    weight: weightKgs,
+                    windDirection: parsedMetar.wind.degrees,
+                    windMagnitude: parsedMetar.wind.speed_kts,
+                    temperature: parsedMetar.temperature.celsius,
+                    pressure: parsedMetar.barometer.mb,
+                }));
+            })
+            .catch((err) => toast.error(err.message));
     };
 
-    const isValidIcao = (): boolean => icao.length === 4;
+    const isValidIcao = (icao: string): boolean => icao.length === 4;
 
     const handleICAOChange = (icao: string): void => {
         dispatch(setLandingValues(
@@ -155,6 +200,8 @@ export const LandingWidget = () => {
 
         if (Number.isNaN(weight)) {
             weight = undefined;
+        } else if (weightUnit === 'kg') {
+            weight /= 2.20462;
         }
 
         dispatch(setLandingValues({ weight }));
@@ -195,6 +242,8 @@ export const LandingWidget = () => {
 
         if (Number.isNaN(temperature)) {
             temperature = undefined;
+        } else if (temperatureUnit === 'F') {
+            temperature = (temperature - 32) * 5 / 9;
         }
 
         dispatch(setLandingValues({ temperature }));
@@ -241,6 +290,8 @@ export const LandingWidget = () => {
 
         if (Number.isNaN(runwayLength)) {
             runwayLength = undefined;
+        } else if (distanceUnit === 'ft') {
+            runwayLength /= 3.28084;
         }
 
         dispatch(setLandingValues({ runwayLength }));
@@ -257,6 +308,8 @@ export const LandingWidget = () => {
 
         if (Number.isNaN(pressure)) {
             pressure = undefined;
+        } else if (pressureUnit === 'inHg') {
+            pressure *= 33.864;
         }
 
         dispatch(setLandingValues({ pressure }));
@@ -277,233 +330,377 @@ export const LandingWidget = () => {
             && pressure !== undefined
             && runwayLength !== undefined;
 
-    const calculateButtonClass = `mx-2 w-2/4  bg-green-500 p-2 flex items-center justify-center rounded-lg focus:outline-none text-lg ${areInputsValid() ? '' : 'opacity-50'}`;
+    const handleAutoFill = () => {
+        if (autoFillSource === 'METAR') {
+            handleSyncValues(icao);
+        } else {
+            handleSyncValues(arrivingAirport);
+            dispatch(setLandingValues({ icao: arrivingAirport }));
+        }
+    };
+
+    const isAutoFillIcaoValid = () => {
+        if (autoFillSource === 'METAR') {
+            return isValidIcao(icao);
+        }
+        return isValidIcao(arrivingAirport);
+    };
+
+    const [temperatureUnit, setTemperatureUnit] = useState<'C' | 'F'>(usingMetric ? 'C' : 'F');
+    const [pressureUnit, setPressureUnit] = useState<'hPa' | 'inHg'>(usingMetric ? 'hPa' : 'inHg');
+    const [distanceUnit, setDistanceUnit] = useState<'ft' | 'm'>(usingMetric ? 'ft' : 'm');
+    const [weightUnit, setWeightUnit] = useState<'kg' | 'lb'>(usingMetric ? 'kg' : 'lb');
+
+    const handleTemperatureUnitChange = (newValue: 'C'| 'F'): void => {
+        setTemperatureUnit(newValue);
+    };
+
+    const getTemperatureDisplayValue = () => {
+        if (temperature !== undefined) {
+            if (temperatureUnit === 'F') {
+                return (temperature * 9 / 5) + 32;
+            }
+            return temperature;
+        }
+        return undefined;
+    };
+
+    const handlePressureUnitChange = (newValue: 'hPa'| 'inHg'): void => {
+        setPressureUnit(newValue);
+    };
+
+    const getPressureDisplayValue = () => {
+        if (pressure !== undefined) {
+            if (pressureUnit === 'inHg') {
+                return pressure / 33.864;
+            }
+            return pressure;
+        }
+        return undefined;
+    };
+
+    const handleDistanceUnitChange = (newValue: 'ft' | 'm') => {
+        setDistanceUnit(newValue);
+    };
+
+    const getDistanceDisplayValue = () => {
+        if (runwayLength !== undefined) {
+            if (distanceUnit === 'ft') {
+                return runwayLength * 3.28084;
+            }
+            return runwayLength;
+        }
+        return undefined;
+    };
+
+    const handleWeightUnitChange = (newValue: 'kg' | 'lb'): void => {
+        setWeightUnit(newValue);
+    };
+
+    const getWeightDisplayValue = () => {
+        if (weight !== undefined) {
+            if (weightUnit === 'lb') {
+                return weight * 2.20462;
+            }
+            return weight;
+        }
+        return undefined;
+    };
 
     return (
-        <div className="flex flex-grow">
-            <div className="overflow-hidden p-6 mr-3 w-9/12 text-white rounded-2xl bg-navy-lighter h-efb-nav">
-                <div className="w-full">
-                    <div className="mb-4 text-center">
-                        <div className="flex flex-1 justify-center mx-2">
-                            <SimpleInput className="uppercase" label="Airport ICAO" value={icao} onChange={handleICAOChange} maxLength={4} />
-
-                        </div>
-                        <div className="flex">
-                            <div className="flex-1 m-2.5 column-left">
-                                <SimpleInput
-                                    className="my-1.5 w-56"
-                                    label="Wind Direction"
-                                    value={windDirection}
-                                    placeholder="°"
-                                    min={0}
-                                    max={360}
-                                    padding={3}
-                                    decimalPrecision={0}
-                                    onChange={handleWindDirectionChange}
-                                    number
-                                />
-                                <SimpleInput
-                                    className="my-1.5 w-56"
-                                    label="Wind Magnitude"
-                                    value={windMagnitude}
-                                    placeholder="kts"
-                                    min={0}
-                                    decimalPrecision={1}
-                                    onChange={handleWindMagnitudeChange}
-                                    number
-                                />
-                                <SimpleInput
-                                    className="my-1.5 w-56"
-                                    label="Temperature"
-                                    value={temperature}
-                                    placeholder="°C"
-                                    min={-50}
-                                    max={55}
-                                    decimalPrecision={1}
-                                    onChange={handleTemperatureChange}
-                                    number
-                                />
-                                <SimpleInput
-                                    className="my-1.5 w-56"
-                                    label="QNH"
-                                    value={pressure}
-                                    placeholder="hPa"
-                                    min={800}
-                                    max={1200}
-                                    decimalPrecision={2}
-                                    onChange={handlePressureChange}
-                                    number
-                                />
-                                <SimpleInput
-                                    className="my-1.5 w-56"
-                                    label="Rwy Altitude"
-                                    value={altitude}
-                                    placeholder="ft ASL"
-                                    min={-2000}
-                                    max={20000}
-                                    decimalPrecision={0}
-                                    onChange={handleAltitudeChange}
-                                    number
-                                />
-                                <SimpleInput
-                                    className="my-1.5 w-56"
-                                    label="Rwy Heading"
-                                    value={runwayHeading}
-                                    placeholder="°"
-                                    min={0}
-                                    max={360}
-                                    padding={3}
-                                    decimalPrecision={0}
-                                    onChange={handleRunwayHeadingChange}
-                                    number
-                                />
-                                <SelectInput
-                                    className="my-1.5 w-56"
-                                    label="Rwy Condition"
-                                    defaultValue={initialState.landing.runwayCondition}
-                                    value={runwayCondition}
-                                    onChange={handleRunwayConditionChange}
-                                    dropdownOnTop
-                                    options={[
-                                        { value: 0, displayValue: 'Dry (6)' },
-                                        { value: 1, displayValue: 'Good (5)' },
-                                        { value: 2, displayValue: 'Good-Medium (4)' },
-                                        { value: 3, displayValue: 'Medium (3)' },
-                                        { value: 4, displayValue: 'Medium-Poor (2)' },
-                                        { value: 5, displayValue: 'Poor (1)' },
-                                    ]}
-                                />
-                            </div>
-                            <div className="flex-1 m-2.5 column-right">
-                                <SimpleInput
-                                    className="my-1.5 w-56"
-                                    label="Rwy Slope"
-                                    value={slope}
-                                    placeholder="%"
-                                    min={-2}
-                                    max={2}
-                                    decimalPrecision={1}
-                                    onChange={handleRunwaySlopeChange}
-                                    number
-                                    reverse
-                                />
-                                <SimpleInput
-                                    className="my-1.5 w-56"
-                                    label="Rwy LDA"
-                                    value={runwayLength}
-                                    placeholder="m"
-                                    min={0}
-                                    max={6000}
-                                    decimalPrecision={0}
-                                    onChange={handleRunwayLengthChange}
-                                    number
-                                    reverse
-                                />
-                                <SimpleInput
-                                    className="my-1.5 w-56"
-                                    label="Approach Speed"
-                                    value={approachSpeed}
-                                    placeholder="kts"
-                                    min={90}
-                                    max={350}
-                                    decimalPrecision={0}
-                                    onChange={handleApproachSpeedChange}
-                                    number
-                                    reverse
-                                />
-                                <SimpleInput
-                                    className="my-1.5 w-56"
-                                    label="Weight"
-                                    value={weight}
-                                    placeholder="kg"
-                                    min={41000}
-                                    max={100000}
-                                    decimalPrecision={0}
-                                    onChange={handleWeightChange}
-                                    number
-                                    reverse
-                                />
-                                <SelectInput
-                                    className="my-1.5 w-56"
-                                    label="Flaps"
-                                    defaultValue={initialState.landing.flaps}
-                                    value={flaps}
-                                    onChange={handleFlapsChange}
-                                    reverse
-                                    options={[
-                                        { value: 1, displayValue: 'FULL' },
-                                        { value: 0, displayValue: 'CONF 3' },
-                                    ]}
-                                />
-                                <SelectInput
-                                    className="my-1.5 w-56"
-                                    label="Overweight Proc"
-                                    defaultValue={initialState.landing.overweightProcedure}
-                                    value={overweightProcedure}
-                                    onChange={handleOverweightProcedureChange}
-                                    reverse
-                                    options={[
-                                        { value: false, displayValue: 'No' },
-                                        { value: true, displayValue: 'Yes' },
-                                    ]}
-                                />
-                                <SelectInput
-                                    className="my-1.5 w-56"
-                                    label="Reverse Thrust"
-                                    defaultValue={initialState.landing.reverseThrust}
-                                    value={reverseThrust}
-                                    onChange={handleReverseThrustChange}
-                                    reverse
-                                    options={[
-                                        { value: false, displayValue: 'No' },
-                                        { value: true, displayValue: 'Yes' },
-                                    ]}
-                                />
+        <div className="flex flex-row justify-between h-efb">
+            <div className="w-full">
+                <div className="flex flex-col justify-between w-full h-full">
+                    <div className="mb-4">
+                        <div className="mt-4 mb-8">
+                            <p>Airport ICAO</p>
+                            <div className="flex flex-row justify-between mt-4">
+                                <SimpleInput className="w-64 uppercase" noLabel value={icao} placeholder="ICAO" onChange={handleICAOChange} maxLength={4} />
+                                <div className="flex flex-row">
+                                    <button
+                                        onClick={handleAutoFill}
+                                        className={`rounded-md rounded-r-none flex flex-row justify-center items-center px-8 py-2 gap-x-4 text-white bg-indigo-800 outline-none ${!isAutoFillIcaoValid() && 'opacity-50'}`}
+                                        type="button"
+                                        disabled={!isAutoFillIcaoValid()}
+                                    >
+                                        <CloudArrowDown size={26} />
+                                        Fill from
+                                    </button>
+                                    <SelectInput
+                                        value={autoFillSource}
+                                        className="w-36 rounded-l-none"
+                                        options={[
+                                            { value: 'METAR', displayValue: 'METAR' },
+                                            { value: 'OFP', displayValue: 'OFP' },
+                                        ]}
+                                        onChange={(value: 'METAR' | 'OFP') => setAutoFillSource(value)}
+                                    />
+                                </div>
                             </div>
                         </div>
-                        <div className="flex">
+                        <div className="flex flex-row justify-between">
+                            <div className="flex flex-col gap-y-4">
+                                <Label text="Wind Direction">
+                                    <SimpleInput
+                                        className="w-64"
+                                        noLabel
+                                        value={windDirection}
+                                        placeholder="&deg;"
+                                        min={0}
+                                        max={360}
+                                        padding={3}
+                                        decimalPrecision={0}
+                                        onChange={handleWindDirectionChange}
+                                        number
+                                    />
+                                </Label>
+                                <Label text="Wind Magnitude">
+                                    <SimpleInput
+                                        noLabel
+                                        className="w-64"
+                                        value={windMagnitude}
+                                        placeholder="kts"
+                                        min={0}
+                                        decimalPrecision={1}
+                                        onChange={handleWindMagnitudeChange}
+                                        number
+                                    />
+                                </Label>
+                                <Label text="Temperature">
+                                    <div className="flex flex-row w-64">
+                                        <SimpleInput
+                                            noLabel
+                                            className="w-full rounded-r-none"
+                                            value={getTemperatureDisplayValue()}
+                                            placeholder={`°${temperatureUnit}`}
+                                            min={temperatureUnit === 'C' ? -55 : -67}
+                                            max={temperatureUnit === 'C' ? 55 : 131}
+                                            decimalPrecision={1}
+                                            onChange={handleTemperatureChange}
+                                            number
+                                        />
+                                        <SelectInput
+                                            value={temperatureUnit}
+                                            className="w-20 rounded-l-none"
+                                            options={[
+                                                { value: 'C', displayValue: 'C' },
+                                                { value: 'F', displayValue: 'F' },
+                                            ]}
+                                            onChange={handleTemperatureUnitChange}
+                                        />
+                                    </div>
+                                </Label>
+                                <Label text="QNH">
+                                    <div className="flex flex-row w-64">
+                                        <SimpleInput
+                                            noLabel
+                                            className="w-full rounded-r-none"
+                                            value={getPressureDisplayValue()}
+                                            placeholder={pressureUnit}
+                                            min={pressureUnit === 'hPa' ? 800 : 23.624}
+                                            max={pressureUnit === 'hPa' ? 1200 : 35.43598}
+                                            decimalPrecision={2}
+                                            onChange={handlePressureChange}
+                                            number
+                                        />
+                                        <SelectInput
+                                            value={pressureUnit}
+                                            className="w-28 rounded-l-none"
+                                            options={[
+                                                { value: 'inHg', displayValue: 'inHg' },
+                                                { value: 'hPa', displayValue: 'hPa' },
+                                            ]}
+                                            onChange={handlePressureUnitChange}
+                                        />
+                                    </div>
+                                </Label>
+                                <Label text="Runway Altitude">
+                                    <SimpleInput
+                                        noLabel
+                                        className="w-64"
+                                        value={altitude}
+                                        placeholder="ft ASL"
+                                        min={-2000}
+                                        max={20000}
+                                        decimalPrecision={0}
+                                        onChange={handleAltitudeChange}
+                                        number
+                                    />
+                                </Label>
+                                <Label text="Runway Heading">
+                                    <SimpleInput
+                                        noLabel
+                                        className="w-64"
+                                        value={runwayHeading}
+                                        placeholder="&deg;"
+                                        min={0}
+                                        max={360}
+                                        padding={3}
+                                        decimalPrecision={0}
+                                        onChange={handleRunwayHeadingChange}
+                                        number
+                                    />
+                                </Label>
+                                <Label text="Runway Condition">
+                                    <SelectInput
+                                        className="w-64"
+                                        defaultValue={initialState.landing.runwayCondition}
+                                        value={runwayCondition}
+                                        onChange={handleRunwayConditionChange}
+                                        dropdownOnTop
+                                        options={[
+                                            { value: 0, displayValue: 'Dry (6)' },
+                                            { value: 1, displayValue: 'Good (5)' },
+                                            { value: 2, displayValue: 'Good-Medium (4)' },
+                                            { value: 3, displayValue: 'Medium (3)' },
+                                            { value: 4, displayValue: 'Medium-Poor (2)' },
+                                            { value: 5, displayValue: 'Poor (1)' },
+                                        ]}
+                                    />
+                                </Label>
+                            </div>
+                            <div className="flex flex-col gap-y-4">
+                                <Label text="Runway Slope">
+                                    <SimpleInput
+                                        className="w-64"
+                                        value={slope}
+                                        placeholder="%"
+                                        min={-2}
+                                        max={2}
+                                        decimalPrecision={1}
+                                        onChange={handleRunwaySlopeChange}
+                                        number
+                                        reverse
+                                        noLabel
+                                    />
+                                </Label>
+                                <Label text="Runway LDA">
+                                    <div className="flex flex-row w-64">
+                                        <SimpleInput
+                                            noLabel
+                                            className="w-full rounded-r-none"
+                                            value={getDistanceDisplayValue()}
+                                            placeholder={distanceUnit}
+                                            min={0}
+                                            max={distanceUnit === 'm' ? 6000 : 19685.04}
+                                            decimalPrecision={0}
+                                            onChange={handleRunwayLengthChange}
+                                            number
+                                        />
+                                        <SelectInput
+                                            value={distanceUnit}
+                                            className="w-20 rounded-l-none"
+                                            options={[
+                                                { value: 'ft', displayValue: 'ft' },
+                                                { value: 'm', displayValue: 'm' },
+                                            ]}
+                                            onChange={handleDistanceUnitChange}
+                                        />
+                                    </div>
+                                </Label>
+                                <Label text="Approach Speed">
+                                    <SimpleInput
+                                        className="w-64"
+                                        value={approachSpeed}
+                                        placeholder="kts"
+                                        min={90}
+                                        max={350}
+                                        decimalPrecision={0}
+                                        onChange={handleApproachSpeedChange}
+                                        number
+                                        noLabel
+                                    />
+                                </Label>
+                                <Label text="Weight">
+                                    <div className="flex flex-row w-64">
+                                        <SimpleInput
+                                            className="w-full rounded-r-none"
+                                            value={getWeightDisplayValue()}
+                                            placeholder={weightUnit}
+                                            min={weightUnit === 'kg' ? 41000 : 90389}
+                                            max={weightUnit === 'kg' ? 100000 : 220462}
+                                            decimalPrecision={0}
+                                            onChange={handleWeightChange}
+                                            number
+                                            noLabel
+                                        />
+                                        <SelectInput
+                                            value={weightUnit}
+                                            className="w-20 rounded-l-none"
+                                            options={[
+                                                { value: 'kg', displayValue: 'kg' },
+                                                { value: 'lb', displayValue: 'lb' },
+                                            ]}
+                                            onChange={handleWeightUnitChange}
+                                        />
+                                    </div>
+                                </Label>
+                                <Label text="Flaps Configuration">
+                                    <SelectInput
+                                        className="w-64"
+                                        defaultValue={initialState.landing.flaps}
+                                        value={flaps}
+                                        onChange={handleFlapsChange}
+                                        options={[
+                                            { value: 1, displayValue: 'FULL' },
+                                            { value: 0, displayValue: 'CONF 3' },
+                                        ]}
+                                    />
+                                </Label>
+                                <Label text="Overweight Procedure">
+                                    <SelectInput
+                                        className="w-64"
+                                        defaultValue={initialState.landing.overweightProcedure}
+                                        value={overweightProcedure}
+                                        onChange={handleOverweightProcedureChange}
+                                        options={[
+                                            { value: false, displayValue: 'No' },
+                                            { value: true, displayValue: 'Yes' },
+                                        ]}
+                                    />
+                                </Label>
+                                <Label text="Reverse Thrust">
+                                    <SelectInput
+                                        className="w-64"
+                                        defaultValue={initialState.landing.reverseThrust}
+                                        value={reverseThrust}
+                                        onChange={handleReverseThrustChange}
+                                        options={[
+                                            { value: false, displayValue: 'No' },
+                                            { value: true, displayValue: 'Yes' },
+                                        ]}
+                                    />
+                                </Label>
+                            </div>
+                        </div>
+                        <div className="flex flex-row mt-14 space-x-4">
                             <button
                                 onClick={handleCalculateLanding}
-                                className={calculateButtonClass}
+                                className={`rounded-md flex flex-row justify-center items-center py-2 gap-x-4 w-1/2 text-white bg-blue-500 outline-none ${!areInputsValid() && 'opacity-50'}`}
                                 type="button"
                                 disabled={!areInputsValid()}
                             >
+                                <Calculator size={26} />
                                 Calculate
                             </button>
                             <button
-                                onClick={handleSyncValues}
-                                className={`mx-2 w-1/4  bg-teal-light p-2 flex items-center justify-center rounded-lg
-                                focus:outline-none text-lg ${isValidIcao() ? '' : 'opacity-50'}`}
-                                type="button"
-                                disabled={!isValidIcao()}
-                            >
-                                Get METAR
-                            </button>
-                            <button
                                 onClick={handleClearInputs}
-                                className="flex justify-center items-center p-2 mx-2 w-1/4 text-lg font-medium bg-blue-500 rounded-lg focus:outline-none"
+                                className="flex flex-row gap-x-4 justify-center items-center py-2 w-1/2 text-white bg-red-500 rounded-md outline-none"
                                 type="button"
                             >
+                                <Trash size={26} />
                                 Clear
                             </button>
                         </div>
                     </div>
-                    <div className="pt-3 border-t border-white">
-                        <div className="flex flex-col items-center m-3">
-                            <div className="flex items-end">
-                                <OutputDisplay label="MAX MANUAL" value={`${maxAutobrakeLandingDist}m`} error={maxAutobrakeLandingDist > displayedRunwayLength} />
-                                <OutputDisplay label="MEDIUM" value={`${mediumAutobrakeLandingDist}m`} error={mediumAutobrakeLandingDist > displayedRunwayLength} />
-                                <OutputDisplay label="LOW" value={`${lowAutobrakeLandingDist}m`} error={lowAutobrakeLandingDist > displayedRunwayLength} />
-                            </div>
-                        </div>
+                    <div className="flex overflow-hidden flex-row w-full rounded-xl border-2 divide-x-2 border-theme-accent divide-theme-accent">
+                        <OutputDisplay label="Maximum Manual" value={`${maxAutobrakeLandingDist}m`} error={maxAutobrakeLandingDist > displayedRunwayLength} />
+                        <OutputDisplay label="Medium" value={`${mediumAutobrakeLandingDist}m`} error={mediumAutobrakeLandingDist > displayedRunwayLength} />
+                        <OutputDisplay label="Low" value={`${lowAutobrakeLandingDist}m`} error={lowAutobrakeLandingDist > displayedRunwayLength} />
                     </div>
                 </div>
             </div>
-            <div className="overflow-hidden p-6 ml-3 w-3/12 text-white rounded-2xl bg-navy-lighter h-efb-nav">
-                <RunwayVisualizationWidget mainLength={displayedRunwayLength} labels={runwayVisualizationLabels} runwayNumber={runwayNumber} />
-            </div>
+            <RunwayVisualizationWidget mainLength={displayedRunwayLength} labels={runwayVisualizationLabels} runwayNumber={runwayNumber} />
         </div>
     );
 };
-
-export default LandingWidget;

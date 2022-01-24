@@ -3,7 +3,7 @@ import React from 'react';
 import { useHistory } from 'react-router-dom';
 import { OverviewPage } from './Pages/OverviewPage';
 import { LoadSheetWidget } from './Pages/LoadsheetPage';
-import { Navbar } from '../Components/Navbar';
+import { Navbar } from '../UtilComponents/Navbar';
 import { FuelPage } from './Pages/FuelPage';
 import { TabRoutes, PageLink, pathify, PageRedirect } from '../Utils/routing';
 
@@ -18,7 +18,7 @@ export const Dispatch = () => {
     return (
         <div className="w-full">
             <div className="relative">
-                <h1 className="font-bold">Dispatch</h1>
+                <h1 className="font-bold text-[#ff0ff]">Dispatch</h1>
                 <Navbar
                     className="absolute top-0 right-0"
                     tabs={tabs.map((tab) => tab.name)}

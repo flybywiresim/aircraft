@@ -1,9 +1,9 @@
 import React from 'react';
 
-type LogoProps = {
+interface LogoProps {
     width: number;
     height: number;
-    className?:string;
+    className?: string;
 }
 
 export const FbwLogo = ({ width, height, className }: LogoProps) => (
