@@ -5,9 +5,9 @@ import { usePersistentProperty } from '@instruments/common/persistence';
 import { PopUp } from '@shared/popup';
 import { HttpError } from '@flybywiresim/api-client';
 import { toast } from 'react-toastify';
-import { Toggle } from '../../Components/Form/Toggle';
-import { SelectGroup, SelectItem } from '../../Components/Form/Select';
-import { SimpleInput } from '../../Components/Form/SimpleInput/SimpleInput';
+import { Toggle } from '../../UtilComponents/Form/Toggle';
+import { SelectGroup, SelectItem } from '../../UtilComponents/Form/Select';
+import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { ButtonType, SettingItem, SettingsPage } from '../Settings';
 
 export const AtsuAocPage = () => {

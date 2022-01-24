@@ -2,7 +2,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import { usePersistentProperty } from '@instruments/common/persistence';
 import { FileEarmarkArrowDown, ZoomIn, ZoomOut } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
-import { ScrollableContainer } from '../../Components/ScrollableContainer';
+import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
 import { fetchSimbriefDataAction } from '../../Store/features/simBrief';
 import { useAppDispatch, useAppSelector } from '../../Store/store';
 
@@ -63,10 +63,10 @@ export const LoadSheetWidget = () => {
     };
 
     return (
-        <div className="overflow-hidden relative p-6 mt-4 w-full rounded-lg border-2 shadow-md h-efb border-theme-accent">
-            {loadsheet !== 'N/A' ? (
+        <div className="overflow-hidden relative p-6 mt-4 w-full h-efb rounded-lg border-2 border-theme-accent shadow-md">
+            {loadsheet ? (
                 <>
-                    <div className="absolute top-6 right-16 rounded-md bg-theme-accent">
+                    <div className="absolute top-6 right-16 bg-theme-accent rounded-md">
                         <button
                             type="button"
                             onClick={handleFontDecrease}
@@ -103,7 +103,7 @@ export const LoadSheetWidget = () => {
                                 toast.error(e.message);
                             });
                         }}
-                        className="flex justify-center items-center py-2 px-16 space-x-4 rounded-lg border-2 shadow-lg focus:outline-none bg-theme-highlight border-theme-secondary"
+                        className="flex justify-center items-center py-2 px-16 space-x-4 bg-theme-highlight rounded-lg border-2 border-theme-secondary shadow-lg focus:outline-none"
                     >
                         <FileEarmarkArrowDown size={26} />
                         <p>Import Flightplan from SimBrief</p>
