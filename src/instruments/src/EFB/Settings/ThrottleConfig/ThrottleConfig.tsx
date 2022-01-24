@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Toggle } from '../../Components/Form/Toggle';
-import { usePersistentProperty } from '../../../Common/persistence';
-import { useSimVar } from '../../../Common/simVars';
-import Button, { BUTTON_TYPE } from '../../Components/Button/Button';
-import { SelectItem, VerticalSelectGroup } from '../../Components/Form/Select';
+import { usePersistentProperty } from '@instruments/common/persistence';
+import { useSimVar } from '@instruments/common/simVars';
+import { Toggle } from '../../UtilComponents/Form/Toggle';
+import Button, { BUTTON_TYPE } from '../../UtilComponents/Button/Button';
+import { SelectItem, VerticalSelectGroup } from '../../UtilComponents/Form/Select';
 
 import { BaseThrottleConfig } from './BaseThrottleConfig';
 import { ThrottleSimvar } from './ThrottleSimVar';

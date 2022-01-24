@@ -4,9 +4,9 @@
 import React, { useEffect, useState } from 'react';
 import { Metar } from '@flybywiresim/api-client';
 import { IconCloud, IconDroplet, IconGauge, IconPoint, IconTemperature, IconWind } from '@tabler/icons';
-import { parseMetar } from '../../Utils/parseMetar';
 import { MetarParserType } from '@instruments/common/metarTypes';
 import { usePersistentNumberProperty, usePersistentProperty } from '@instruments/common/persistence';
+import { parseMetar } from '../../Utils/parseMetar';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { ColoredMetar } from './ColorMetar';
 
@@ -163,7 +163,7 @@ export const WeatherWidget = (props: WeatherWidgetProps) => {
                             </div>
                             <SimpleInput
                                 noLabel
-                                className="text-center w-32 ml-4 text-2xl font-medium uppercase"
+                                className="ml-4 w-32 text-2xl font-medium text-center uppercase"
                                 placeholder={props.icao}
                                 value={props.icao === '----' ? '' : props.icao}
                                 onChange={(value) => handleIcao(value)}
@@ -268,7 +268,7 @@ export const WeatherWidget = (props: WeatherWidgetProps) => {
                             )
                             : (
                                 <>
-                                    <div className="mr-4 ml-8 h-40 text-xl text-left scrollbar font-mono">
+                                    <div className="mr-4 ml-8 h-40 text-xl font-medium text-left scrollbar">
                                         {metar.raw_text
                                             ? (
                                                 <>
