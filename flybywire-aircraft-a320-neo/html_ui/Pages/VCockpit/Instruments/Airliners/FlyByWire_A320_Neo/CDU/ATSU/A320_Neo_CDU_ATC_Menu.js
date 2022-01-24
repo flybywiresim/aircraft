@@ -76,7 +76,7 @@ class CDUAtcMenu {
             ["--------ATS623 PAGE--------"],
             ["<DEPART REQ", "ATIS>"],
             ["", ""],
-            ["<OCEANIC REQ[color]inop", ""],
+            ["<OCEANIC REQ", ""],
             [""],
             [""],
             [""],
@@ -92,6 +92,13 @@ class CDUAtcMenu {
         };
         mcdu.onLeftInput[0] = () => {
             CDUAtcDepartReq.ShowPage1(mcdu);
+        };
+
+        mcdu.leftInputDelay[1] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+        mcdu.onLeftInput[1] = () => {
+            CDUAtcOceanicReq.ShowPage1(mcdu);
         };
 
         mcdu.leftInputDelay[5] = () => {
