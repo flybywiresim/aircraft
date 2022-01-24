@@ -2,7 +2,7 @@ use crate::simulation::{InitContext, VariableIdentifier};
 use crate::{
     shared::{
         ElectricalBusType, ElectricalBuses, LandingGearRealPosition, LgciuGearExtension,
-        LgciuInterface, LgciuWeightOnWheels,
+        LgciuSensors, LgciuWeightOnWheels,
     },
     simulation::{Read, SimulationElement, SimulatorReader},
 };
@@ -240,7 +240,7 @@ impl LgciuGearExtension for LandingGearControlInterfaceUnit {
     }
 }
 
-impl LgciuInterface for LandingGearControlInterfaceUnit {}
+impl LgciuSensors for LandingGearControlInterfaceUnit {}
 
 #[cfg(test)]
 mod tests {
