@@ -1,7 +1,7 @@
 import { usePersistentProperty } from '@instruments/common/persistence';
 import React, { useState } from 'react';
-import { SelectGroup, SelectItem } from '../../Components/Form/Select';
-import { SimpleInput } from '../../Components/Form/SimpleInput/SimpleInput';
+import { SelectGroup, SelectItem } from '../../UtilComponents/Form/Select';
+import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { ButtonType, SettingItem, SettingsPage } from '../Settings';
 
 export const AircraftOptionsPinProgramsPage = () => {

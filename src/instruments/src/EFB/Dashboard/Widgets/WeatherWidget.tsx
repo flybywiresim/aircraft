@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import metarParser from 'aewx-metar-parser';
 import { Metar } from '@flybywiresim/api-client';
 import { IconCloud, IconDroplet, IconGauge, IconPoint, IconTemperature, IconWind } from '@tabler/icons';
-import { MetarParserType, Wind } from '../../../Common/metarTypes';
-import { usePersistentProperty } from '../../../Common/persistence';
+import { MetarParserType, Wind } from '@instruments/common/metarTypes';
+import { usePersistentProperty } from '@instruments/common/persistence';
 import SimpleInput from '../../Components/Form/SimpleInput/SimpleInput';
 
 const MetarParserTypeWindState: Wind = {

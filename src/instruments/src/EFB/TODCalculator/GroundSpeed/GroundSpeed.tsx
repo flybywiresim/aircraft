@@ -1,5 +1,5 @@
 import React from 'react';
-import Card from '../../Components/Card/Card';
+import Card from '../../UtilComponents/Card/Card';
 import { TOD_INPUT_MODE } from '../../Enum/TODInputMode';
 import { useAppSelector } from '../../Store/store';
 import GroundSpeedAuto from './GroundSpeedAuto/GroundSpeedAuto';
