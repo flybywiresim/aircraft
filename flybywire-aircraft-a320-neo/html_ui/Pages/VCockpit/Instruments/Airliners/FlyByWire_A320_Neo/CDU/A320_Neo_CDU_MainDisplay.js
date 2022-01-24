@@ -1505,6 +1505,10 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
      * Sends an update to the websocket server (if connected) with the current state of the MCDU
      */
     sendUpdate() {
+        // only calculate update when socket is established.
+        if (!this.socket || !this.socket.readyState) {
+            return;
+        }
         let left = {
             lines: [
                 ['', '', ''],
