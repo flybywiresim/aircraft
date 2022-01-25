@@ -202,6 +202,7 @@ impl A320CargoDoorFactory {
             15000.,
             500.,
             1000000.,
+            Duration::from_millis(100),
             [1., 1., 1., 1., 1., 1.],
             [0., 0.2, 0.21, 0.79, 0.8, 1.],
             Self::FLOW_CONTROL_PROPORTIONAL_GAIN,
