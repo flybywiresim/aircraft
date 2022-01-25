@@ -178,7 +178,9 @@ class CDUInitPage {
                 });
             } else if (mcdu.flightPlanManager.getPersistentOrigin() && mcdu.flightPlanManager.getPersistentOrigin().ident) {
                 if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident) {
-                    CDUAvailableFlightPlanPage.ShowPage(mcdu);
+                    getRouteList(mcdu).then(() => {
+                        CDUAvailableFlightPlanPage.ShowPage(mcdu);
+                    });
                 }
             }
         };

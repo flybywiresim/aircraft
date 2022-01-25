@@ -54,10 +54,14 @@ const getRouteList = async (mcdu) => {
                         destinationIcao: route.origin.icao_code,
                         alternateIcao: route.alternate ? route.alternate : undefined,
                         route: route.general.route,
-                        navlog: route.navlog.fix
+                        navlog: route.navlog.fix,
+                        routeName: route.name
                     });
                 });
             });
+        })
+        .catch(_err => {
+            console.error(_err);
         });
 };
 
