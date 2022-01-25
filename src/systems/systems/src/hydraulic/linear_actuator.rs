@@ -1793,6 +1793,30 @@ mod tests {
         assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.1));
     }
 
+    #[test]
+    fn aileron_position_control_is_stable() {
+        let mut test_bed = SimulationTestBed::new(|_| {
+            let rigid_body = aileron_body();
+            let actuator = aileron_actuator(&rigid_body);
+            TestDualActuatorAircraft::new(actuator, actuator, rigid_body)
+        });
+
+        test_bed
+            .command(|a| a.set_pressures(Pressure::new::<psi>(3000.), Pressure::new::<psi>(3000.)));
+        test_bed.command(|a| a.command_active_damping_mode(0));
+        test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(0.8), 1));
+        test_bed.run_with_delta(Duration::from_secs_f64(0.3));
+
+        assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.75));
+        assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.85));
+
+        test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(0.2), 1));
+        test_bed.run_with_delta(Duration::from_secs_f64(0.3));
+
+        assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.15));
+        assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.25));
+    }
+
     fn cargo_door_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
         const DEFAULT_I_GAIN: f64 = 5.;
         const DEFAULT_P_GAIN: f64 = 0.05;
@@ -1974,8 +1998,8 @@ mod tests {
     }
 
     fn aileron_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
-        const DEFAULT_I_GAIN: f64 = 5.;
-        const DEFAULT_P_GAIN: f64 = 0.05;
+        const DEFAULT_I_GAIN: f64 = 0.2;
+        const DEFAULT_P_GAIN: f64 = 0.3;
         const DEFAULT_FORCE_GAIN: f64 = 200000.;
 
         LinearActuator::new(
@@ -1983,10 +2007,10 @@ mod tests {
             1,
             Length::new::<meter>(0.04),
             Length::new::<meter>(0.),
-            VolumeRate::new::<gallon_per_second>(0.015),
+            VolumeRate::new::<gallon_per_second>(0.2),
             80000.,
             1500.,
-            500.,
+            7000.,
             300000.,
             Duration::from_millis(800),
             [1., 1., 1., 1., 1., 1.],
