@@ -235,10 +235,10 @@ impl A320CargoDoorFactory {
 
     /// Builds a cargo door assembly consisting of the door physical rigid body and the hydraulic actuator connected
     /// to it
-    fn a320_cargo_door_assembly() -> HydraulicLinearActuatorAssembly {
+    fn a320_cargo_door_assembly() -> HydraulicLinearActuatorAssembly<1> {
         let cargo_door_body = A320CargoDoorFactory::a320_cargo_door_body(true);
         let cargo_door_actuator = A320CargoDoorFactory::a320_cargo_door_actuator(&cargo_door_body);
-        HydraulicLinearActuatorAssembly::new(cargo_door_actuator, cargo_door_body)
+        HydraulicLinearActuatorAssembly::new([cargo_door_actuator], cargo_door_body)
     }
 
     fn new_a320_cargo_door(context: &mut InitContext, id: &str) -> CargoDoor {
@@ -2264,7 +2264,7 @@ impl A320DoorController {
     }
 }
 impl HydraulicAssemblyController for A320DoorController {
-    fn requested_mode(&self) -> LinearActuatorMode {
+    fn requested_mode(&self, _: usize) -> LinearActuatorMode {
         if self.should_close_valves {
             LinearActuatorMode::ClosedValves
         } else {
@@ -2291,7 +2291,7 @@ impl SimulationElement for A320DoorController {
 }
 
 struct CargoDoor {
-    hydraulic_assembly: HydraulicLinearActuatorAssembly,
+    hydraulic_assembly: HydraulicLinearActuatorAssembly<1>,
 
     position_id: VariableIdentifier,
     locked_id: VariableIdentifier,
@@ -2303,7 +2303,7 @@ impl CargoDoor {
     fn new(
         context: &mut InitContext,
         id: &str,
-        hydraulic_assembly: HydraulicLinearActuatorAssembly,
+        hydraulic_assembly: HydraulicLinearActuatorAssembly<1>,
     ) -> Self {
         Self {
             hydraulic_assembly,
@@ -2325,7 +2325,7 @@ impl CargoDoor {
     }
 
     fn actuator(&mut self) -> &mut impl Actuator {
-        self.hydraulic_assembly.actuator()
+        self.hydraulic_assembly.actuator(0)
     }
 
     fn update(
@@ -2335,7 +2335,7 @@ impl CargoDoor {
         current_pressure: Pressure,
     ) {
         self.hydraulic_assembly
-            .update(context, cargo_door_controller, current_pressure);
+            .update(context, cargo_door_controller, [current_pressure]);
         self.is_locked = self.hydraulic_assembly.is_locked();
         self.position = self.hydraulic_assembly.position_normalized();
     }
