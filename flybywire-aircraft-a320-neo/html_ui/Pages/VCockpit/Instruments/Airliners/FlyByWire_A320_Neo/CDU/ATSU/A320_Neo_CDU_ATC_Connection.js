@@ -2,18 +2,18 @@ class CDUAtcConnection {
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
         mcdu.setTemplate([
-            ["CONNECTION"],
+            ["\xa0CONNECTION"],
             [""],
             ["<NOTIFICATION"],
             [""],
             [""],
-            ["CONNECTION"],
+            ["\xa0CONNECTION"],
             ["<STATUS"],
             [""],
             [""],
-            ["", "MAX UPLINK\xa0[color]inop"],
-            ["", "DELAY>[color]inop"],
-            ["ATC MENU"],
+            ["", "MAX UPLINK\xa0"],
+            ["", "DELAY>"],
+            ["\xa0ATC MENU"],
             ["<RETURN"]
         ]);
 
