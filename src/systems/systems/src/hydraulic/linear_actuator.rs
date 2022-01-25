@@ -104,6 +104,7 @@ impl CoreHydraulicForce {
         init_position: Ratio,
         active_hydraulic_damping_constant: f64,
         slow_hydraulic_damping_constant: f64,
+        slow_hydraulic_damping_filtering_constant: Duration,
         fluid_compression_spring_constant: f64,
         fluid_compression_damping_constant: f64,
         max_flow: VolumeRate,
@@ -136,7 +137,7 @@ impl CoreHydraulicForce {
             rod_side_area,
             last_control_force: Force::new::<newton>(0.),
             force_raw: Force::new::<newton>(0.),
-            force_filtered: LowPassFilter::<Force>::new(Duration::from_millis(100)),
+            force_filtered: LowPassFilter::<Force>::new(slow_hydraulic_damping_filtering_constant),
 
             max_force,
 
@@ -464,6 +465,7 @@ impl LinearActuator {
         fluid_compression_damping_constant: f64,
         active_hydraulic_damping_constant: f64,
         slow_hydraulic_damping_constant: f64,
+        slow_hydraulic_damping_filtering_constant: Duration,
         flow_open_loop_modifier_map: [f64; 6],
         flow_open_loop_position_breakpoints: [f64; 6],
         flow_control_proportional_gain: f64,
@@ -540,6 +542,7 @@ impl LinearActuator {
                 init_position_normalized,
                 active_hydraulic_damping_constant,
                 slow_hydraulic_damping_constant,
+                slow_hydraulic_damping_filtering_constant,
                 fluid_compression_spring_constant,
                 fluid_compression_damping_constant,
                 actual_max_flow,
@@ -1769,14 +1772,11 @@ mod tests {
         test_bed.command(|a| a.command_closed_circuit_damping_mode(1));
         test_bed.run_with_delta(Duration::from_secs_f64(1.));
 
-        assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.1));
-
-        test_bed.run_with_delta(Duration::from_secs_f64(9.));
         assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.1));
     }
 
     #[test]
-    fn aileron_drops_slowly_with_no_pressure() {
+    fn aileron_drops_from_middle_pos_in_more_6s_in_closed_circuit_damping() {
         let mut test_bed = SimulationTestBed::new(|_| {
             let rigid_body = aileron_body();
             let actuator = aileron_actuator(&rigid_body);
@@ -1785,8 +1785,11 @@ mod tests {
 
         test_bed.command(|a| a.command_closed_circuit_damping_mode(0));
         test_bed.command(|a| a.command_closed_circuit_damping_mode(1));
-        test_bed.run_with_delta(Duration::from_secs_f64(10.));
+        test_bed.run_with_delta(Duration::from_secs_f64(6.));
 
+        assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.1));
+
+        test_bed.run_with_delta(Duration::from_secs_f64(10.));
         assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.1));
     }
 
@@ -1805,6 +1808,7 @@ mod tests {
             15000.,
             50000.,
             1200000.,
+            Duration::from_millis(100),
             [1., 1., 1., 1., 1., 1.],
             [0., 0.2, 0.21, 0.79, 0.8, 1.],
             DEFAULT_P_GAIN,
@@ -1850,6 +1854,7 @@ mod tests {
             5000.,
             2000.,
             28000.,
+            Duration::from_millis(100),
             [0.5, 1., 1., 1., 1., 0.5],
             [0., 0.2, 0.21, 0.79, 0.8, 1.],
             DEFAULT_P_GAIN,
@@ -1869,6 +1874,7 @@ mod tests {
             0.,
             0.,
             0.,
+            Duration::from_millis(100),
             [0.5, 1., 1., 1., 1., 0.5],
             [0., 0.2, 0.21, 0.79, 0.8, 1.],
             0.,
@@ -1936,6 +1942,7 @@ mod tests {
             15000.,
             50000.,
             1200000.,
+            Duration::from_millis(100),
             [1., 1., 1., 1., 1., 1.],
             [0., 0.2, 0.21, 0.79, 0.8, 1.],
             DEFAULT_P_GAIN,
@@ -1980,7 +1987,8 @@ mod tests {
             80000.,
             1500.,
             500.,
-            100000.,
+            300000.,
+            Duration::from_millis(800),
             [1., 1., 1., 1., 1., 1.],
             [0., 0.2, 0.21, 0.79, 0.8, 1.],
             DEFAULT_P_GAIN,
