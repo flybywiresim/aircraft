@@ -37,6 +37,7 @@ pub trait Actuator {
 pub trait BoundedLinearLength {
     fn min_absolute_length_to_anchor(&self) -> Length;
     fn max_absolute_length_to_anchor(&self) -> Length;
+    fn absolute_length_to_anchor(&self) -> Length;
 }
 
 #[derive(PartialEq, Clone, Copy)]
@@ -499,12 +500,17 @@ impl LinearActuator {
 
         let total_rod_side_area = rod_side_area_single_actuator * number_of_actuators as f64;
         let total_rod_side_volume = rod_side_volume_single_actuator * number_of_actuators as f64;
+
+        let init_position = bounded_linear_length.absolute_length_to_anchor();
+        let init_position_normalized =
+            (init_position - bounded_linear_length.min_absolute_length_to_anchor()) / total_travel;
+
         Self {
             number_of_actuators,
 
-            position_normalized: Ratio::new::<ratio>(0.),
-            position: bounded_linear_length.min_absolute_length_to_anchor(),
-            last_position: bounded_linear_length.min_absolute_length_to_anchor(),
+            position_normalized: init_position_normalized,
+            position: init_position,
+            last_position: init_position,
 
             speed: Velocity::new::<meter_per_second>(0.),
 
@@ -531,7 +537,7 @@ impl LinearActuator {
             requested_position: Ratio::new::<ratio>(0.),
 
             core_hydraulics: CoreHydraulicForce::new(
-                Ratio::new::<ratio>(0.),
+                init_position_normalized,
                 active_hydraulic_damping_constant,
                 slow_hydraulic_damping_constant,
                 fluid_compression_spring_constant,
@@ -1029,6 +1035,10 @@ impl BoundedLinearLength for LinearActuatedRigidBodyOnHingeAxis {
         let length_at_min_angle = self.absolute_length_to_anchor_at_angle(self.min_angle);
         let length_at_max_angle = self.absolute_length_to_anchor_at_angle(self.max_angle);
         length_at_min_angle.max(length_at_max_angle)
+    }
+
+    fn absolute_length_to_anchor(&self) -> Length {
+        self.linear_extension_to_anchor()
     }
 }
 
@@ -1759,6 +1769,9 @@ mod tests {
         test_bed.command(|a| a.command_closed_circuit_damping_mode(1));
         test_bed.run_with_delta(Duration::from_secs_f64(1.));
 
+        assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.1));
+
+        test_bed.run_with_delta(Duration::from_secs_f64(9.));
         assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.1));
     }
 
@@ -1767,12 +1780,12 @@ mod tests {
         let mut test_bed = SimulationTestBed::new(|_| {
             let rigid_body = aileron_body();
             let actuator = aileron_actuator(&rigid_body);
-            TestAircraft::new(actuator, rigid_body)
+            TestDualActuatorAircraft::new(actuator, actuator, rigid_body)
         });
 
-        test_bed.command(|a| a.command_closed_circuit_damping_mode());
-        //   test_bed.command(|a| a.command_closed_circuit_damping_mode(1));
-        test_bed.run_with_delta(Duration::from_secs_f64(1.));
+        test_bed.command(|a| a.command_closed_circuit_damping_mode(0));
+        test_bed.command(|a| a.command_closed_circuit_damping_mode(1));
+        test_bed.run_with_delta(Duration::from_secs_f64(10.));
 
         assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.1));
     }
@@ -1966,8 +1979,8 @@ mod tests {
             VolumeRate::new::<gallon_per_second>(0.015),
             80000.,
             1500.,
-            5.,
-            5000.,
+            500.,
+            100000.,
             [1., 1., 1., 1., 1., 1.],
             [0., 0.2, 0.21, 0.79, 0.8, 1.],
             DEFAULT_P_GAIN,
@@ -1992,7 +2005,7 @@ mod tests {
             Angle::new::<degree>(-25.),
             Angle::new::<degree>(50.),
             Angle::new::<degree>(0.),
-            30.,
+            10.,
             false,
             Vector3::new(1., 0., 0.),
         )
