@@ -37,5 +37,12 @@ class CDUAtcConnection {
         mcdu.onLeftInput[5] = () => {
             CDUAtcMenu.ShowPage1(mcdu);
         };
+
+        mcdu.rightInputDelay[4] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+        mcdu.onRightInput[4] = () => {
+            CDUAtcMaxUplinkDelay.ShowPage(mcdu);
+        };
     }
 }
