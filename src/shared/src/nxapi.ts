@@ -223,7 +223,7 @@ export class NXApi {
         }
         const headers = { 'Content-Type': 'application/json' };
 
-        return fetch(`${NXApi.url}/hoppie`, { method: 'POST', body: JSON.stringify(body), headers })
+        return fetch(`${NXApi.url}/api/v1/hoppie`, { method: 'POST', body: JSON.stringify(body), headers })
             .then((response) => {
                 if (!response.ok) {
                     throw (response);
