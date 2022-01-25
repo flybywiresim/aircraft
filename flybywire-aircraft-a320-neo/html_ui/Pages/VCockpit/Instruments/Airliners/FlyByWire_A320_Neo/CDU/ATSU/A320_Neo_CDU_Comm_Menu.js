@@ -10,9 +10,9 @@ class CDUCommMenu {
             [""],
             [""],
             [""],
-            [""],
-            [""],
             ["", "MAINTENANCE>[color]inop"],
+            [""],
+            [""],
             ["\xa0ATC MENU", "AUTO PRINT\xa0[color]inop"],
             ["<RETURN", "SET ON\xa0[color]inop"]
         ]);
