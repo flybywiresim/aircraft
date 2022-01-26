@@ -59,15 +59,15 @@ export class HoppieConnector {
         return AtsuStatusCodes.Ok;
     }
 
-    public static async sendTelexMessage(message: FreetextMessage): Promise<AtsuStatusCodes> {
-        if (SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') === 1) {
+    public static async sendTelexMessage(message: FreetextMessage, force: boolean): Promise<AtsuStatusCodes> {
+        if (force || SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') === 1) {
             return HoppieConnector.sendMessage(message, 'telex');
         }
         return AtsuStatusCodes.NoHoppieConnection;
     }
 
-    public static async sendCpdlcMessage(message: CpdlcMessage): Promise<AtsuStatusCodes> {
-        if (SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') === 1) {
+    public static async sendCpdlcMessage(message: CpdlcMessage, force: boolean): Promise<AtsuStatusCodes> {
+        if (force || SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') === 1) {
             return HoppieConnector.sendMessage(message, 'cpdlc');
         }
         return AtsuStatusCodes.NoHoppieConnection;

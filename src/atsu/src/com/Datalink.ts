@@ -155,7 +155,7 @@ export class Datalink {
         });
     }
 
-    public async sendMessage(message: AtsuMessage): Promise<AtsuStatusCodes> {
+    public async sendMessage(message: AtsuMessage, force: boolean): Promise<AtsuStatusCodes> {
         this.estimateTransmissionTime();
 
         return new Promise((resolve, _reject) => {
@@ -164,10 +164,10 @@ export class Datalink {
                     if (message.Network === AtsuMessageNetwork.FBW) {
                         NXApiConnector.sendTelexMessage(message as FreetextMessage).then((code) => resolve(code));
                     } else {
-                        HoppieConnector.sendTelexMessage(message as FreetextMessage).then((code) => resolve(code));
+                        HoppieConnector.sendTelexMessage(message as FreetextMessage, force).then((code) => resolve(code));
                     }
                 } else if (message.Type < AtsuMessageType.ATC) {
-                    HoppieConnector.sendCpdlcMessage(message as CpdlcMessage).then((code) => resolve(code));
+                    HoppieConnector.sendCpdlcMessage(message as CpdlcMessage, force).then((code) => resolve(code));
                 } else {
                     resolve(AtsuStatusCodes.UnknownMessage);
                 }

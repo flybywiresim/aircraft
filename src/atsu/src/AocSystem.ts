@@ -25,7 +25,7 @@ export class AocSystem {
 
     public async sendMessage(message: AtsuMessage): Promise<AtsuStatusCodes> {
         if (AocSystem.isRelevantMessage(message)) {
-            return this.datalink.sendMessage(message);
+            return this.datalink.sendMessage(message, false);
         }
         return AtsuStatusCodes.UnknownMessage;
     }

@@ -29,6 +29,13 @@ export class AtcSystem {
         this.datalink = datalink;
 
         setInterval(async () => {
+            if (SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') !== 1) {
+                if (this.currentAtc !== '') {
+                    await this.logoff();
+                }
+                return;
+            }
+
             SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_DELETE_UID', 'number', -1);
             SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_ANSWER', 'number', -1);
             SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_SEND_UID', 'number', -1);
@@ -105,7 +112,7 @@ export class AtcSystem {
         this.parent.registerMessage(message);
         this.listener.triggerToAllSubscribers('A32NX_DCDU_ATC_LOGON_MSG', `NEXT ATC: ${station}`);
 
-        return this.datalink.sendMessage(message);
+        return this.datalink.sendMessage(message, false);
     }
 
     public async logoff(): Promise<AtsuStatusCodes> {
@@ -124,7 +131,7 @@ export class AtcSystem {
         this.parent.registerMessage(message);
         this.listener.triggerToAllSubscribers('A32NX_DCDU_ATC_LOGON_MSG', '');
 
-        const retval = await this.datalink.sendMessage(message).then((error) => {
+        const retval = await this.datalink.sendMessage(message, true).then((error) => {
             this.currentAtc = '';
             this.nextAtc = '';
             return error;
@@ -184,7 +191,7 @@ export class AtcSystem {
             this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', message);
 
             if (message.Response !== undefined) {
-                this.datalink.sendMessage(message.Response).then((code) => {
+                this.datalink.sendMessage(message.Response, false).then((code) => {
                     if (code === AtsuStatusCodes.Ok) {
                         message.Response.ComStatus = AtsuMessageComStatus.Sent;
                     } else {
@@ -336,7 +343,7 @@ export class AtcSystem {
         }
 
         message.ComStatus = AtsuMessageComStatus.Sending;
-        return this.datalink.sendMessage(message).then((retval) => {
+        return this.datalink.sendMessage(message, false).then((retval) => {
             if (retval === AtsuStatusCodes.Ok) {
                 message.ComStatus = AtsuMessageComStatus.Sent;
             } else {
