@@ -43,5 +43,20 @@ class CDUAtsuDatalinkStatus {
         mcdu.onLeftInput[5] = () => {
             CDUAtsuMenu.ShowPage(mcdu);
         };
+
+        mcdu.rightInputDelay[5] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+
+        mcdu.onRightInput[5] = () => {
+            const lines = [
+                "DATALINK STATUS",
+                "VHF3 : DLK AVAIL",
+                `\xa0\xa0\xa0\xa0\xa0\xa0\xa0${vhf3Mode}`,
+                "SATCOM : NOT INSTALLED",
+                "HF : NOT INSTALLED",
+            ];
+            mcdu.printPage(lines);
+        };
     }
 }
