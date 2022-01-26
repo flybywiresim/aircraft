@@ -37,7 +37,7 @@ class CDUAtsuMenu {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onRightInput[4] = () => {
-            CDUDatalinkStatus.ShowPage(mcdu);
+            CDUAtsuDatalinkStatus.ShowPage(mcdu);
         };
 
         mcdu.rightInputDelay[5] = () => {

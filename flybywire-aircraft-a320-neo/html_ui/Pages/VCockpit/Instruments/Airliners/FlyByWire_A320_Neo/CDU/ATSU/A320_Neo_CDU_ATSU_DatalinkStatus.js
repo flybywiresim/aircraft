@@ -1,4 +1,4 @@
-class CDUDatalinkStatus {
+class CDUAtsuDatalinkStatus {
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
         mcdu.setTemplate([
