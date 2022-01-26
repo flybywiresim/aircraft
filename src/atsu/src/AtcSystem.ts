@@ -282,7 +282,7 @@ export class AtcSystem {
                 const entries = request.Message.split(' ');
                 if (entries.length >= 2) {
                     const station = entries[1].replace(/@/gi, '');
-                    this.logon(station);
+                    this.handoff(station);
                     return true;
                 }
             }
@@ -300,7 +300,7 @@ export class AtcSystem {
                 }
 
                 // logon rejected
-                if (!response.Message.includes('UNABLE')) {
+                    this.currentAtc = '';
                     this.nextAtc = '';
                     return true;
                 }
