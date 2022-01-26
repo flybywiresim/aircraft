@@ -143,14 +143,15 @@ path.dcdu-line {
 
 .button {
   font-size: 134px;
-  font-family: dcdu-small;
 }
 
 .button-color {
+  font-size: 134px;
   fill: rgb(0,255,255);
 }
 
 .button-color-clicked {
+  font-family: dcdu-normal;
   fill: rgb(0, 0, 0);
 }
 
