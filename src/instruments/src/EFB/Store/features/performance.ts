@@ -53,7 +53,7 @@ export const initialState: TPerformanceState = {
         lowAutobrakeLandingDist: 0,
         runwayVisualizationLabels: [],
         runwayNumber: 0,
-        displayedRunwayLength: 0,
+        displayedRunwaLength: 0,
     },
 };
 
