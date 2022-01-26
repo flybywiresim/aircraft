@@ -115,7 +115,7 @@ export class AtcSystem {
         return this.datalink.sendMessage(message, false);
     }
 
-    public async logoff(): Promise<AtsuStatusCodes> {
+    private async logoffWithoutReset(): Promise<AtsuStatusCodes> {
         if (this.currentAtc === '') {
             return AtsuStatusCodes.NoAtc;
         }
@@ -131,13 +131,38 @@ export class AtcSystem {
         this.parent.registerMessage(message);
         this.listener.triggerToAllSubscribers('A32NX_DCDU_ATC_LOGON_MSG', '');
 
-        const retval = await this.datalink.sendMessage(message, true).then((error) => {
+        return this.datalink.sendMessage(message, true).then((error) => error);
+    }
+
+    public async handoff(station: string) {
+        if (this.currentAtc !== '') {
+            const retval = await this.logoffWithoutReset();
+            if (retval !== AtsuStatusCodes.Ok) {
+                return retval;
+            }
+        }
+
+        const message = new CpdlcMessage();
+        message.Station = station;
+        message.CurrentTransmissionId = ++this.cpdlcMessageId;
+        message.Direction = AtsuMessageDirection.Output;
+        message.RequestedResponses = CpdlcMessageRequestedResponseType.Yes;
+        message.ComStatus = AtsuMessageComStatus.Sending;
+        message.Message = 'REQUEST LOGON';
+
+        this.nextAtc = station;
+        this.parent.registerMessage(message);
+        this.listener.triggerToAllSubscribers('A32NX_DCDU_ATC_LOGON_MSG', `NEXT ATC: ${station}`);
+
+        return this.datalink.sendMessage(message, false);
+    }
+
+    public async logoff(): Promise<AtsuStatusCodes> {
+        return this.logoffWithoutReset().then((error) => {
             this.currentAtc = '';
             this.nextAtc = '';
             return error;
         });
-
-        return retval;
     }
 
     private createCpdlcResponse(request: CpdlcMessage) {
