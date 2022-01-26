@@ -1,12 +1,12 @@
 :root,
 :root.theme-blue{
-    --color-highlight: #3B82F6;
-    --color-body: #0B0D11;
-    --color-secondary: #14181F;
+    --color-highlight: #00E0FE;
+    --color-body: #0E131B;
+    --color-secondary: #171E2C;
     --color-text: #FFFFFF;
     --color-unselected: #C9C9C9;
     --color-accent: #1E232D;
-    --color-statusbar: #000000;
+    --color-statusbar: #141e29;
 }
 
 :root.theme-dark {
@@ -22,9 +22,9 @@
 :root.theme-light {
     --color-highlight: #3B82F6;
     --color-body: #E4E4E4;
-    --color-secondary: #14181F;
+    --color-secondary: #bebebe;
     --color-text: #000000;
     --color-unselected: #C9C9C9;
-    --color-accent: #F2F3F5;
+    --color-accent: #d0d0d0;
     --color-statusbar: #FFFFFF;
 }

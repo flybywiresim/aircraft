@@ -75,6 +75,10 @@ module.exports = {
                 'theme-secondary': 'var(--color-secondary)',
                 'theme-statusbar': 'var(--color-statusbar)',
                 'theme-accent': 'var(--color-accent)',
+                'cyan': {
+                    DEFAULT: '#00E0FE',
+                    medium: '#00C4F5',
+                },
             },
             maxWidth: { '1/2': '50%' },
         },
@@ -84,7 +88,6 @@ module.exports = {
             title: ['Manrope'],
             rmp: ['AirbusRMP'],
         },
-        boxShadow: { lg: '0px 0px 4px 2px rgba(0, 0, 0, 0.5)' },
     },
     // eslint-disable-next-line global-require
     plugins: [require('@flybywiresim/tailwind-config')],

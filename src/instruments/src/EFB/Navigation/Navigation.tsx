@@ -93,7 +93,7 @@ const AuthUi = () => {
     }, (navigraph.auth.interval * 1000));
 
     return (
-        <div className="flex overflow-x-hidden justify-center items-center p-6 w-full h-efb bg-theme-secondary rounded-lg shadow-lg">
+        <div className="flex overflow-x-hidden justify-center items-center p-6 w-full h-efb bg-theme-secondary rounded-lg">
             <div className="flex flex-col">
                 <p className="flex justify-center items-center mb-6 text-2xl">
                     <IconLock className="mr-2" size={24} stroke={1.5} strokeLinejoin="miter" />
