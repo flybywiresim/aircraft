@@ -16,7 +16,7 @@ const BATTERY_ICON_SIZE = 28;
 export const BatteryStatus = ({ batteryLevel, isCharging }: BatteryStatusProps) => (
     <div className="flex items-center space-x-4">
         <text
-            className={`w-12 text-right ${batteryLevel < BATTERY_LEVEL_WARNING ? 'text-red-500' : 'text-white'}`}
+            className={`w-12 text-right ${batteryLevel < BATTERY_LEVEL_WARNING ? 'text-red-500' : 'text-theme-text'}`}
         >
             {Math.round(batteryLevel)}
             %
