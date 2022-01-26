@@ -1,6 +1,11 @@
 
 :root {
     --toastify-toast-width: 600px;
+
+    --toastify-color-info: var(--color-highlight);
+    --toastify-color-error: var(--color-highlight);
+    --toastify-color-success: var(--color-highlight);
+    --toastify-color-warning: var(--color-highlight);
 }
 
 .Toastify__toast {
