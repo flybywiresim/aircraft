@@ -98,7 +98,7 @@ export const MessageStatus: React.FC<MessageStatusProps> = ({ message }) => {
                     x={background.x}
                     y={background.y}
                 />
-                <text className={statusClass} x="3736" y="280" ref={textRef}>
+                <text className={statusClass} x="3716" y="290" ref={textRef}>
                     <tspan>{text}</tspan>
                 </text>
             </>
