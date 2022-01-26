@@ -1774,6 +1774,7 @@ mod tests {
             TestDualActuatorAircraft::new(actuator, actuator, rigid_body)
         });
 
+        test_bed.command(|a| a.command_unlock());
         test_bed.command(|a| a.command_closed_circuit_damping_mode(0));
         test_bed.command(|a| a.command_closed_circuit_damping_mode(1));
         test_bed.run_with_delta(Duration::from_secs_f64(1.));
@@ -1789,6 +1790,7 @@ mod tests {
             TestDualActuatorAircraft::new(actuator, actuator, rigid_body)
         });
 
+        test_bed.command(|a| a.command_unlock());
         test_bed.command(|a| a.command_closed_circuit_damping_mode(0));
         test_bed.command(|a| a.command_closed_circuit_damping_mode(1));
         test_bed.run_with_delta(Duration::from_secs_f64(6.));
@@ -1807,6 +1809,7 @@ mod tests {
             TestDualActuatorAircraft::new(actuator, actuator, rigid_body)
         });
 
+        test_bed.command(|a| a.command_unlock());
         test_bed
             .command(|a| a.set_pressures(Pressure::new::<psi>(3000.), Pressure::new::<psi>(3000.)));
         test_bed.command(|a| a.command_active_damping_mode(0));
@@ -1821,6 +1824,30 @@ mod tests {
 
         assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.15));
         assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.25));
+    }
+
+    #[test]
+    fn aileron_position_control_from_down_to_up_less_0_5s() {
+        let mut test_bed = SimulationTestBed::new(|_| {
+            let rigid_body = aileron_body();
+            let actuator = aileron_actuator(&rigid_body);
+            TestDualActuatorAircraft::new(actuator, actuator, rigid_body)
+        });
+
+        test_bed.command(|a| a.command_unlock());
+        test_bed
+            .command(|a| a.set_pressures(Pressure::new::<psi>(3000.), Pressure::new::<psi>(3000.)));
+
+        // Let aileron fall fully down first
+        test_bed.command(|a| a.command_active_damping_mode(0));
+        test_bed.command(|a| a.command_active_damping_mode(1));
+        test_bed.run_with_delta(Duration::from_secs_f64(2.));
+        assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.01));
+
+        test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(1.), 1));
+        test_bed.run_with_delta(Duration::from_secs_f64(0.5));
+
+        assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.9));
     }
 
     fn cargo_door_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
