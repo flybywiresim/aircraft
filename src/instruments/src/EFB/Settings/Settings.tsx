@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 
 import { ArrowLeft, ChevronRight } from 'react-bootstrap-icons';
 import { ScrollableContainer } from '../UtilComponents/ScrollableContainer';
-import { TabRoutes } from '../Utils/routing';
+import { pathify, TabRoutes } from '../Utils/routing';
 import { AircraftOptionsPinProgramsPage } from './Pages/AircraftOptionsPinProgramsPage';
 import { SimOptionsPage } from './Pages/SimOptionsPage';
 import { AtsuAocPage } from './Pages/AtsuAocPage';
@@ -26,13 +26,13 @@ type SelectionTabsProps = {
     tabs: PageLink[],
 }
 
-export const SelectionTabs = ({ tabs }: SelectionTabsProps) => (
+export const SelectionTabs = ({ tabs }: SelectionTadbsProps) => (
     <div className="space-y-6">
         {
             tabs.map((tab) => (
                 <Link
-                    to={`settings/${tab.name.toLowerCase().replace(/\s/g, '-')}`}
-                    className="flex justify-between items-center p-6 bg-theme-secondary rounded-md hover:shadow-lg transition duration-100"
+                    to={`settings/${pathify(tab.name)}`}
+                    className="flex justify-between items-center p-6 bg-theme-secondary rounded-md border-2 border-transparent hover:border-theme-highlight transition duration-100"
                 >
                     <p className="text-2xl">{tab.name}</p>
                     <ChevronRight size={30} />
@@ -80,7 +80,7 @@ export const SettingsPage: FC<SettingsPageProps> = ({ name, children }) => (
                 </h1>
             </div>
         </Link>
-        <div className="py-2 px-6 w-full h-efb rounded-lg border-2 border-theme-accent shadow-md">
+        <div className="py-2 px-6 w-full h-efb rounded-lg border-2 border-theme-accent">
             <ScrollableContainer height={53}>
                 <div className="divide-y-2 divide-theme-accent">
                     {children}
