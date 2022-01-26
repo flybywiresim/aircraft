@@ -1199,7 +1199,7 @@ mod tests {
                 .update(context, &self.single_controller, [self.pressure]);
 
             println!(
-                "Body abs angle {:.2} Body Npos {:.3}, Actuator Npos {:.3}, Actuator force {:.1}",
+                "Body angle {:.2} Body Npos {:.3}, Act Npos {:.3}, Act force {:.1}",
                 self.single_actuator_assembly
                     .rigid_body
                     .angular_position
@@ -1316,7 +1316,7 @@ mod tests {
             );
 
             println!(
-                "Body abs angle {:.2} Body Npos {:.3}, Actuators Npos {:.3} {:.3}, Actuators force {:.1} {:.1}, Flows gps {:.3} {:.3}",
+                "Body angle {:.2} Body Npos {:.3}, Act Npos {:.3} {:.3}, Act force {:.1} {:.1}, Flow gps {:.3} {:.3}",
                 self.dual_actuator_assembly
                     .rigid_body
                     .angular_position
@@ -1847,7 +1847,7 @@ mod tests {
         test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(1.), 1));
         test_bed.run_with_delta(Duration::from_secs_f64(0.5));
 
-        assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.9));
+        assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.98));
     }
 
     fn cargo_door_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
