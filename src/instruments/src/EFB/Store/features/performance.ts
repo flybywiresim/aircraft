@@ -22,7 +22,7 @@ type TPerformanceLanding = {
     maxAutobrakeLandingDist: number,
     mediumAutobrakeLandingDist: number,
     lowAutobrakeLandingDist: number,
-    runwayVisualizationLabels: Array<DistanceLabel>,
+    runwayVisualizationLabels: DistanceLabel[],
     runwayNumber: number,
     displayedRunwayLength: number,
 }
