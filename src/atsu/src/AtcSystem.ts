@@ -300,6 +300,7 @@ export class AtcSystem {
                 }
 
                 // logon rejected
+                if (response.Message.includes('UNABLE')) {
                     this.currentAtc = '';
                     this.nextAtc = '';
                     return true;
