@@ -2875,7 +2875,7 @@ impl AileronController {
 
     /// Receives a [-1;1] position request, convert it to [0;1] actuator position
     fn set_requested_position(&mut self, requested_position: Ratio) {
-        self.requested_position = (requested_position + 1.) / 2.;
+        self.requested_position = (requested_position + Ratio::new::<ratio>(1.)) / 2.;
     }
 }
 impl HydraulicAssemblyController for AileronController {
@@ -2971,34 +2971,43 @@ impl ElacComputer {
 impl SimulationElement for ElacComputer {
     fn read(&mut self, reader: &mut SimulatorReader) {
         self.left_position_requested =
-            Ratio::new::<ratio>(reader.read(&self.requested_position_left_id));
+            -1. * Ratio::new::<ratio>(reader.read(&self.requested_position_left_id));
         self.right_position_requested =
             Ratio::new::<ratio>(reader.read(&self.requested_position_right_id));
 
-        let left: f64 = reader.read(&self.requested_position_left_id);
+        let left: f64 = -1. * reader.read(&self.requested_position_left_id);
         let right: f64 = reader.read(&self.requested_position_right_id);
 
         println!("ELAC READ L{:.1} R{:.1}", left, right);
     }
 }
 
+enum AileronSide {
+    Left,
+    Right,
+}
+
 struct AileronAssembly {
     hydraulic_assembly: HydraulicLinearActuatorAssembly<2>,
 
     position_id: VariableIdentifier,
+    id: AileronSide,
 
     position: Ratio,
 }
 impl AileronAssembly {
     fn new(
         context: &mut InitContext,
-        id: &str,
+        id: AileronSide,
         hydraulic_assembly: HydraulicLinearActuatorAssembly<2>,
     ) -> Self {
         Self {
             hydraulic_assembly,
-            position_id: context.get_identifier(format!("HYD_AILERON_{}_DEFLECTION", id)),
-
+            position_id: match id {
+                Left => context.get_identifier("HYD_AILERON_LEFT_DEFLECTION".to_owned()),
+                Right => context.get_identifier("HYD_AILERON_RIGHT_DEFLECTION".to_owned()),
+            },
+            id,
             position: Ratio::new::<ratio>(0.),
         }
     }
@@ -3027,12 +3036,16 @@ impl AileronAssembly {
             aileron_controller,
             [current_pressure_blue, current_pressure_green],
         );
-        self.position = self.hydraulic_assembly.position_normalized() * 2. - 1.;
+        self.position =
+            self.hydraulic_assembly.position_normalized() * 2. - Ratio::new::<ratio>(1.);
     }
 }
 impl SimulationElement for AileronAssembly {
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write(&self.position_id, self.position());
+        match self.id {
+            Left => writer.write(&self.position_id, -1. * self.position().get::<ratio>()),
+            Right => writer.write(&self.position_id, self.position().get::<ratio>()),
+        }
     }
 }
 

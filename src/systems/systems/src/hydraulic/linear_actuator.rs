@@ -1316,7 +1316,7 @@ mod tests {
             );
 
             println!(
-                "Body abs angle {:.2} Body Npos {:.3}, Actuators Npos {:.3} {:.3}, Actuators force {:.1} {:.1}",
+                "Body abs angle {:.2} Body Npos {:.3}, Actuators Npos {:.3} {:.3}, Actuators force {:.1} {:.1}, Flows gps {:.3} {:.3}",
                 self.dual_actuator_assembly
                     .rigid_body
                     .angular_position
@@ -1328,7 +1328,7 @@ mod tests {
                 self.dual_actuator_assembly.linear_actuators[0]
                     .position_normalized
                     .get::<ratio>(),
-                    self.dual_actuator_assembly.linear_actuators[1]
+                self.dual_actuator_assembly.linear_actuators[1]
                     .position_normalized
                     .get::<ratio>(),
                 self.dual_actuator_assembly.linear_actuators[0]
@@ -1337,6 +1337,12 @@ mod tests {
                     self.dual_actuator_assembly.linear_actuators[1]
                     .force()
                     .get::<newton>(),
+                    self.dual_actuator_assembly.linear_actuators[0]
+                    .signed_flow
+                    .get::<gallon_per_second>(),
+                    self.dual_actuator_assembly.linear_actuators[1]
+                    .signed_flow
+                    .get::<gallon_per_second>(),
             );
         }
     }
