@@ -24,6 +24,8 @@ export const DatalinkMessage: React.FC<DatalinkMessageProps> = ({ message, isSta
         } else {
             backgroundClass += ' message-out';
         }
+    } else {
+        backgroundClass += ' message-background-off';
     }
 
     // check if highlight is needed
