@@ -91,15 +91,15 @@ path.dcdu-line {
 
 .atc-info {
   font-size: 192px;
-  font-family: dcdu-normal;
-  font-weight: bold;
 }
 
 .atc-info-standby {
+  font-family: dcdu-normal;
   fill: rgb(255,255,255);
 }
 
 .atc-info-active {
+  font-family: dcdu-highlight;
   fill: rgb(0, 255, 0);
 }
 
