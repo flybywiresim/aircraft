@@ -63,10 +63,10 @@ export const LoadSheetWidget = () => {
     };
 
     return (
-        <div className="overflow-hidden relative p-6 mt-4 w-full h-efb rounded-lg border-2 border-theme-accent shadow-md">
+        <div className="overflow-hidden relative p-6 mt-4 w-full rounded-lg border-2 shadow-md h-efb border-theme-accent">
             {loadsheet ? (
                 <>
-                    <div className="absolute top-6 right-16 bg-theme-accent rounded-md">
+                    <div className="absolute top-6 right-16 rounded-md bg-theme-accent">
                         <button
                             type="button"
                             onClick={handleFontDecrease}
@@ -82,7 +82,7 @@ export const LoadSheetWidget = () => {
                             <ZoomIn size={30} />
                         </button>
                     </div>
-                    <ScrollableContainer height={51} resizeDependencies={[loadsheet, fontSize]}>
+                    <ScrollableContainer height={51}>
                         <div
                             ref={ref}
                             className="image-theme"
@@ -103,7 +103,7 @@ export const LoadSheetWidget = () => {
                                 toast.error(e.message);
                             });
                         }}
-                        className="flex justify-center items-center py-2 px-16 space-x-4 bg-theme-highlight rounded-lg border-2 border-theme-secondary shadow-lg focus:outline-none"
+                        className="flex justify-center items-center py-2 px-16 space-x-4 rounded-lg border-2 shadow-lg focus:outline-none bg-theme-highlight border-theme-secondary"
                     >
                         <FileEarmarkArrowDown size={26} />
                         <p>Import Flightplan from SimBrief</p>
