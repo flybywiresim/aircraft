@@ -250,8 +250,8 @@ impl A320CargoDoorFactory {
 
 struct A320AileronFactory {}
 impl A320AileronFactory {
-    const FLOW_CONTROL_PROPORTIONAL_GAIN: f64 = 0.2;
-    const FLOW_CONTROL_INTEGRAL_GAIN: f64 = 0.3;
+    const FLOW_CONTROL_PROPORTIONAL_GAIN: f64 = 0.45;
+    const FLOW_CONTROL_INTEGRAL_GAIN: f64 = 2.5;
     const FLOW_CONTROL_FORCE_GAIN: f64 = 200000.;
 
     fn a320_aileron_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
@@ -260,12 +260,12 @@ impl A320AileronFactory {
             1,
             Length::new::<meter>(0.04),
             Length::new::<meter>(0.),
-            VolumeRate::new::<gallon_per_second>(0.2),
+            VolumeRate::new::<gallon_per_second>(0.05),
             80000.,
             1500.,
             7000.,
-            300000.,
-            Duration::from_millis(800),
+            250000.,
+            Duration::from_millis(1500),
             [1., 1., 1., 1., 1., 1.],
             [0., 0.2, 0.21, 0.79, 0.8, 1.],
             Self::FLOW_CONTROL_PROPORTIONAL_GAIN,
@@ -305,7 +305,7 @@ impl A320AileronFactory {
         HydraulicLinearActuatorAssembly::new([aileron_actuator, aileron_actuator], aileron_body)
     }
 
-    fn new_aileron(context: &mut InitContext, id: &str) -> AileronAssembly {
+    fn new_aileron(context: &mut InitContext, id: AileronSide) -> AileronAssembly {
         let assembly = A320AileronFactory::a320_aileron_assembly();
         AileronAssembly::new(context, id, assembly)
     }
@@ -527,8 +527,8 @@ impl A320Hydraulic {
             slats_flaps_complex: SlatFlapComplex::new(context),
 
             elac_computer: ElacComputer::new(context),
-            left_aileron: A320AileronFactory::new_aileron(context, "LEFT"),
-            right_aileron: A320AileronFactory::new_aileron(context, "RIGHT"),
+            left_aileron: A320AileronFactory::new_aileron(context, AileronSide::Left),
+            right_aileron: A320AileronFactory::new_aileron(context, AileronSide::Right),
         }
     }
 
@@ -705,6 +705,11 @@ impl A320Hydraulic {
             emergency_elec,
         );
 
+        self.elac_computer.update(
+            self.blue_circuit.system_pressure(),
+            self.green_circuit.system_pressure(),
+        );
+
         self.left_aileron.update(
             context,
             self.elac_computer.left_controller(),
@@ -805,6 +810,11 @@ impl A320Hydraulic {
     fn update_green_actuators_volume(&mut self) {
         self.green_circuit
             .update_actuator_volumes(&mut self.braking_circuit_norm);
+
+        // self.green_circuit
+        //     .update_actuator_volumes(self.left_aileron.actuator_green());
+        // self.green_circuit
+        //     .update_actuator_volumes(self.right_aileron.actuator_green());
     }
 
     fn update_yellow_actuators_volume(&mut self) {
@@ -824,6 +834,11 @@ impl A320Hydraulic {
     fn update_blue_actuators_volume(&mut self) {
         self.blue_circuit
             .update_actuator_volumes(&mut self.emergency_gen);
+
+        // self.blue_circuit
+        //     .update_actuator_volumes(self.left_aileron.actuator_blue());
+        // self.blue_circuit
+        //     .update_actuator_volumes(self.right_aileron.actuator_blue());
     }
 
     // All the core hydraulics updates that needs to be done at the slowest fixed step rate
@@ -979,11 +994,6 @@ impl A320Hydraulic {
             context,
             self.yellow_circuit.system_section(),
             self.brake_steer_computer.alternate_controller(),
-        );
-
-        self.elac_computer.update(
-            self.blue_circuit.system_pressure(),
-            self.green_circuit.system_pressure(),
         );
     }
 
@@ -2876,6 +2886,10 @@ impl AileronController {
     /// Receives a [-1;1] position request, convert it to [0;1] actuator position
     fn set_requested_position(&mut self, requested_position: Ratio) {
         self.requested_position = (requested_position + Ratio::new::<ratio>(1.)) / 2.;
+        self.requested_position = self
+            .requested_position
+            .min(Ratio::new::<ratio>(1.))
+            .max(Ratio::new::<ratio>(0.));
     }
 }
 impl HydraulicAssemblyController for AileronController {
@@ -2953,11 +2967,11 @@ impl ElacComputer {
             );
         }
 
-        println!(
-            "ELACupdt Ldmnd {:.1}  Rdmnd {:.1}",
-            self.left_position_requested.get::<ratio>(),
-            self.right_position_requested.get::<ratio>()
-        );
+        // println!(
+        //     "ELACupdt Ldmnd {:.1}  Rdmnd {:.1}",
+        //     self.left_position_requested.get::<ratio>(),
+        //     self.right_position_requested.get::<ratio>()
+        // );
     }
 
     fn left_controller(&self) -> &impl HydraulicAssemblyController {
@@ -2975,13 +2989,14 @@ impl SimulationElement for ElacComputer {
         self.right_position_requested =
             Ratio::new::<ratio>(reader.read(&self.requested_position_right_id));
 
-        let left: f64 = -1. * reader.read(&self.requested_position_left_id);
+        let left: f64 = reader.read(&self.requested_position_left_id);
         let right: f64 = reader.read(&self.requested_position_right_id);
 
-        println!("ELAC READ L{:.1} R{:.1}", left, right);
+        println!("ELAC READ L{:.1} R{:.1}", -1. * left, right);
     }
 }
 
+#[derive(PartialEq, Clone, Copy)]
 enum AileronSide {
     Left,
     Right,
@@ -3004,8 +3019,12 @@ impl AileronAssembly {
         Self {
             hydraulic_assembly,
             position_id: match id {
-                Left => context.get_identifier("HYD_AILERON_LEFT_DEFLECTION".to_owned()),
-                Right => context.get_identifier("HYD_AILERON_RIGHT_DEFLECTION".to_owned()),
+                AileronSide::Left => {
+                    context.get_identifier("HYD_AILERON_LEFT_DEFLECTION".to_owned())
+                }
+                AileronSide::Right => {
+                    context.get_identifier("HYD_AILERON_RIGHT_DEFLECTION".to_owned())
+                }
             },
             id,
             position: Ratio::new::<ratio>(0.),
@@ -3043,8 +3062,10 @@ impl AileronAssembly {
 impl SimulationElement for AileronAssembly {
     fn write(&self, writer: &mut SimulatorWriter) {
         match self.id {
-            Left => writer.write(&self.position_id, -1. * self.position().get::<ratio>()),
-            Right => writer.write(&self.position_id, self.position().get::<ratio>()),
+            AileronSide::Left => {
+                writer.write(&self.position_id, -1. * self.position().get::<ratio>())
+            }
+            AileronSide::Right => writer.write(&self.position_id, self.position().get::<ratio>()),
         }
     }
 }
