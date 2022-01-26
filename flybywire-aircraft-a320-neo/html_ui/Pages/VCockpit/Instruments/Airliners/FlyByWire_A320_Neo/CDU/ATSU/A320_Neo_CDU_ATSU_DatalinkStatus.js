@@ -4,6 +4,17 @@ class CDUAtsuDatalinkStatus {
         mcdu.page.Current = mcdu.page.ATSUDatalinkStatus;
         mcdu.activeSystem = 'ATSU';
 
+        function updateView() {
+            if (mcdu.page.Current === mcdu.page.ATSUDatalinkStatus) {
+                CDUAtsuDatalinkStatus.ShowPage(mcdu);
+            }
+        }
+
+        mcdu.refreshPageCallback = () => {
+            updateView();
+        };
+        SimVar.SetSimVarValue("L:FMC_UPDATE_CURRENT_PAGE", "number", 1);
+
         let vhf3Mode = "AOC ONLY";
         if (SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') === 1) {
             vhf3Mode = "ATC/AOC";
