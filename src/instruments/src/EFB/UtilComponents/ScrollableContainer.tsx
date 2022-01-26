@@ -1,8 +1,7 @@
-import React, { DependencyList, FC, useEffect, useRef, useState } from 'react';
+import React, { FC, useEffect, useRef, useState } from 'react';
 
 interface ScrollableContainerProps {
     height: number;
-    resizeDependencies?: DependencyList;
 }
 
 /**
@@ -10,7 +9,7 @@ interface ScrollableContainerProps {
  * @param height - height of the container, in rem, that if exceeded will cause the container to become scrollable
  * @param resizeDependencies - optional dependency list to trigger a re-calculation of the height of the content
  */
-export const ScrollableContainer: FC<ScrollableContainerProps> = ({ children, height, resizeDependencies = [] }) => {
+export const ScrollableContainer: FC<ScrollableContainerProps> = ({ children, height }) => {
     const [contentOverflows, setContentOverflows] = useState(false);
     const contentRef = useRef<HTMLDivElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -22,7 +21,7 @@ export const ScrollableContainer: FC<ScrollableContainerProps> = ({ children, he
                 setContentOverflows(true);
             }
         }
-    }, resizeDependencies);
+    }, [children]);
 
     const handleMouseDown = (event: React.MouseEvent) => {
         position.current.top = containerRef.current ? containerRef.current.scrollTop : 0;
