@@ -22,9 +22,9 @@ import { parseMetar } from '../../Utils/parseMetar';
 import React, { FC, useState } from 'react';
 import { Calculator, CloudArrowDown, Trash } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
-import { usePersistentProperty } from '@instruments/common/persistence';
 import { useSimVar } from '@instruments/common/simVars';
 import { MetarParserType } from '@instruments/common/metarTypes';
+import { Units } from '@shared/units';
 import LandingCalculator, { LandingFlapsConfig, LandingRunwayConditions } from '../Calculators/LandingCalculator';
 import RunwayVisualizationWidget, { LabelType } from './RunwayVisualizationWidget';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
@@ -60,8 +60,6 @@ const Label: FC<LabelProps> = ({ text, className, children }) => (
     </div>
 );
 
-const POUNDS_TO_KGS = 0.453592;
-
 export const LandingWidget = () => {
     const dispatch = useAppDispatch();
 
@@ -70,7 +68,7 @@ export const LandingWidget = () => {
     const [totalWeight] = useSimVar('TOTAL WEIGHT', 'Pounds', 1000);
     const [autoFillSource, setAutoFillSource] = useState<'METAR' | 'OFP'>('METAR');
 
-    const usingMetric = usePersistentProperty('CONFIG_USING_METRIC_UNIT', '1')[0] === '1';
+    const { usingMetric } = Units;
 
     const {
         icao,
@@ -92,8 +90,8 @@ export const LandingWidget = () => {
         mediumAutobrakeLandingDist,
         lowAutobrakeLandingDist,
         runwayVisualizationLabels,
-        runwayNumber,
         displayedRunwayLength,
+
     } = useAppSelector((state) => state.performance.landing);
 
     const { arrivingAirport } = useAppSelector((state) => state.simbrief.data);
@@ -137,7 +135,6 @@ export const LandingWidget = () => {
                     type: LabelType.Main,
                 },
             ],
-            runwayNumber: Math.round((runwayHeading ?? 0) / 10),
             displayedRunwayLength: runwayLength ?? 0,
         }));
     };
@@ -156,7 +153,7 @@ export const LandingWidget = () => {
             }).then((json) => {
                 const parsedMetar: MetarParserType = parseMetar(json.metar);
 
-                const weightKgs = Math.round(totalWeight * POUNDS_TO_KGS);
+                const weightKgs = Math.round(Units.poundToKilogram(totalWeight));
 
                 dispatch(setLandingValues({
                     weight: weightKgs,
@@ -245,7 +242,7 @@ export const LandingWidget = () => {
         if (Number.isNaN(temperature)) {
             temperature = undefined;
         } else if (temperatureUnit === 'F') {
-            temperature = (temperature - 32) * 5 / 9;
+            temperature = Units.fahrenheitToCelsius(temperature);
         }
 
         dispatch(setLandingValues({ temperature }));
@@ -293,7 +290,7 @@ export const LandingWidget = () => {
         if (Number.isNaN(runwayLength)) {
             runwayLength = undefined;
         } else if (distanceUnit === 'ft') {
-            runwayLength /= 3.28084;
+            runwayLength = Units.footToMetre(runwayLength);
         }
 
         dispatch(setLandingValues({ runwayLength }));
@@ -311,7 +308,7 @@ export const LandingWidget = () => {
         if (Number.isNaN(pressure)) {
             pressure = undefined;
         } else if (pressureUnit === 'inHg') {
-            pressure *= 33.864;
+            pressure = Units.inchOfMercuryToHectopascal(pressure);
         }
 
         dispatch(setLandingValues({ pressure }));
@@ -353,58 +350,12 @@ export const LandingWidget = () => {
     const [distanceUnit, setDistanceUnit] = useState<'ft' | 'm'>(usingMetric ? 'ft' : 'm');
     const [weightUnit, setWeightUnit] = useState<'kg' | 'lb'>(usingMetric ? 'kg' : 'lb');
 
-    const handleTemperatureUnitChange = (newValue: 'C'| 'F'): void => {
-        setTemperatureUnit(newValue);
-    };
-
-    const getTemperatureDisplayValue = () => {
-        if (temperature !== undefined) {
-            if (temperatureUnit === 'F') {
-                return (temperature * 9 / 5) + 32;
+    const getVariableUnitDisplayValue = <T, >(value: number | undefined, unit: T, imperialUnit: T, metricToImperial: (value: number) => number) => {
+        if (value !== undefined) {
+            if (unit === imperialUnit) {
+                return metricToImperial(value);
             }
-            return temperature;
-        }
-        return undefined;
-    };
-
-    const handlePressureUnitChange = (newValue: 'hPa'| 'inHg'): void => {
-        setPressureUnit(newValue);
-    };
-
-    const getPressureDisplayValue = () => {
-        if (pressure !== undefined) {
-            if (pressureUnit === 'inHg') {
-                return pressure / 33.864;
-            }
-            return pressure;
-        }
-        return undefined;
-    };
-
-    const handleDistanceUnitChange = (newValue: 'ft' | 'm') => {
-        setDistanceUnit(newValue);
-    };
-
-    const getDistanceDisplayValue = () => {
-        if (runwayLength !== undefined) {
-            if (distanceUnit === 'ft') {
-                return runwayLength * 3.28084;
-            }
-            return runwayLength;
-        }
-        return undefined;
-    };
-
-    const handleWeightUnitChange = (newValue: 'kg' | 'lb'): void => {
-        setWeightUnit(newValue);
-    };
-
-    const getWeightDisplayValue = () => {
-        if (weight !== undefined) {
-            if (weightUnit === 'lb') {
-                return weight * 2.20462;
-            }
-            return weight;
+            return value;
         }
         return undefined;
     };
@@ -473,7 +424,7 @@ export const LandingWidget = () => {
                                         <SimpleInput
                                             noLabel
                                             className="w-full rounded-r-none"
-                                            value={getTemperatureDisplayValue()}
+                                            value={getVariableUnitDisplayValue<'C' | 'F'>(temperature, temperatureUnit, 'F', Units.celsiusToFahrenheit)}
                                             placeholder={`°${temperatureUnit}`}
                                             min={temperatureUnit === 'C' ? -55 : -67}
                                             max={temperatureUnit === 'C' ? 55 : 131}
@@ -488,7 +439,7 @@ export const LandingWidget = () => {
                                                 { value: 'C', displayValue: 'C' },
                                                 { value: 'F', displayValue: 'F' },
                                             ]}
-                                            onChange={handleTemperatureUnitChange}
+                                            onChange={(newValue: 'C'| 'F') => setTemperatureUnit(newValue)}
                                         />
                                     </div>
                                 </Label>
@@ -497,7 +448,7 @@ export const LandingWidget = () => {
                                         <SimpleInput
                                             noLabel
                                             className="w-full rounded-r-none"
-                                            value={getPressureDisplayValue()}
+                                            value={getVariableUnitDisplayValue<'hPa' | 'inHg'>(pressure, pressureUnit, 'inHg', Units.hectopascalToInchOfMercury)}
                                             placeholder={pressureUnit}
                                             min={pressureUnit === 'hPa' ? 800 : 23.624}
                                             max={pressureUnit === 'hPa' ? 1200 : 35.43598}
@@ -512,7 +463,7 @@ export const LandingWidget = () => {
                                                 { value: 'inHg', displayValue: 'inHg' },
                                                 { value: 'hPa', displayValue: 'hPa' },
                                             ]}
-                                            onChange={handlePressureUnitChange}
+                                            onChange={(newValue: 'hPa'| 'inHg') => setPressureUnit(newValue)}
                                         />
                                     </div>
                                 </Label>
@@ -549,7 +500,6 @@ export const LandingWidget = () => {
                                         defaultValue={initialState.landing.runwayCondition}
                                         value={runwayCondition}
                                         onChange={handleRunwayConditionChange}
-                                        dropdownOnTop
                                         options={[
                                             { value: 0, displayValue: 'Dry (6)' },
                                             { value: 1, displayValue: 'Good (5)' },
@@ -581,7 +531,7 @@ export const LandingWidget = () => {
                                         <SimpleInput
                                             noLabel
                                             className="w-full rounded-r-none"
-                                            value={getDistanceDisplayValue()}
+                                            value={getVariableUnitDisplayValue<'ft' | 'm'>(runwayLength, distanceUnit, 'ft', Units.metreToFoot)}
                                             placeholder={distanceUnit}
                                             min={0}
                                             max={distanceUnit === 'm' ? 6000 : 19685.04}
@@ -596,7 +546,7 @@ export const LandingWidget = () => {
                                                 { value: 'ft', displayValue: 'ft' },
                                                 { value: 'm', displayValue: 'm' },
                                             ]}
-                                            onChange={handleDistanceUnitChange}
+                                            onChange={(newValue: 'ft' | 'm') => setDistanceUnit(newValue)}
                                         />
                                     </div>
                                 </Label>
@@ -617,7 +567,7 @@ export const LandingWidget = () => {
                                     <div className="flex flex-row w-64">
                                         <SimpleInput
                                             className="w-full rounded-r-none"
-                                            value={getWeightDisplayValue()}
+                                            value={getVariableUnitDisplayValue<'kg' | 'lb'>(weight, weightUnit, 'lb', Units.kilogramToPound)}
                                             placeholder={weightUnit}
                                             min={weightUnit === 'kg' ? 41000 : 90389}
                                             max={weightUnit === 'kg' ? 100000 : 220462}
@@ -633,7 +583,7 @@ export const LandingWidget = () => {
                                                 { value: 'kg', displayValue: 'kg' },
                                                 { value: 'lb', displayValue: 'lb' },
                                             ]}
-                                            onChange={handleWeightUnitChange}
+                                            onChange={(newValue: 'kg' | 'lb') => setWeightUnit(newValue)}
                                         />
                                     </div>
                                 </Label>
@@ -675,10 +625,10 @@ export const LandingWidget = () => {
                                 </Label>
                             </div>
                         </div>
-                        <div className="flex flex-row mt-14 space-x-4">
+                        <div className="flex flex-row mt-14 space-x-8">
                             <button
                                 onClick={handleCalculateLanding}
-                                className={`rounded-md flex flex-row justify-center items-center py-2 gap-x-4 w-1/2 text-white bg-blue-500 outline-none ${!areInputsValid() && 'opacity-50'}`}
+                                className={`rounded-md flex flex-row justify-center items-center py-2 gap-x-4 w-1/2 text-white bg-theme-highlight outline-none ${!areInputsValid() && 'opacity-50'}`}
                                 type="button"
                                 disabled={!areInputsValid()}
                             >
@@ -696,13 +646,39 @@ export const LandingWidget = () => {
                         </div>
                     </div>
                     <div className="flex overflow-hidden flex-row w-full rounded-xl border-2 divide-x-2 border-theme-accent divide-theme-accent">
-                        <OutputDisplay label="Maximum Manual" value={`${maxAutobrakeLandingDist}m`} error={maxAutobrakeLandingDist > displayedRunwayLength} />
-                        <OutputDisplay label="Medium" value={`${mediumAutobrakeLandingDist}m`} error={mediumAutobrakeLandingDist > displayedRunwayLength} />
-                        <OutputDisplay label="Low" value={`${lowAutobrakeLandingDist}m`} error={lowAutobrakeLandingDist > displayedRunwayLength} />
+                        <OutputDisplay
+                            label="Maximum Manual"
+                            value={distanceUnit === 'ft'
+                                ? `${Math.round(Units.metreToFoot(maxAutobrakeLandingDist))}ft`
+                                : `${maxAutobrakeLandingDist}m`}
+                            error={maxAutobrakeLandingDist > (displayedRunwayLength ?? 0)}
+                        />
+                        <OutputDisplay
+                            label="Medium"
+                            value={distanceUnit === 'ft'
+                                ? `${Math.round(Units.metreToFoot(mediumAutobrakeLandingDist))}ft`
+                                : `${mediumAutobrakeLandingDist}m`}
+                            error={mediumAutobrakeLandingDist > (displayedRunwayLength ?? 0)}
+                        />
+                        <OutputDisplay
+                            label="Low"
+                            value={distanceUnit === 'ft'
+                                ? `${Math.round(Units.metreToFoot(lowAutobrakeLandingDist))}ft`
+                                : `${lowAutobrakeLandingDist}m`}
+                            error={lowAutobrakeLandingDist > (displayedRunwayLength ?? 0)}
+                        />
                     </div>
                 </div>
             </div>
-            <RunwayVisualizationWidget mainLength={displayedRunwayLength} labels={runwayVisualizationLabels} runwayNumber={runwayNumber} />
+            <div className="my-auto mx-10 w-2 h-5/6 rounded-full bg-theme-accent" />
+            <div className="mt-4">
+                <RunwayVisualizationWidget
+                    mainLength={displayedRunwayLength}
+                    labels={runwayVisualizationLabels}
+                    runwayHeading={runwayHeading}
+                    distanceUnit={distanceUnit}
+                />
+            </div>
         </div>
     );
 };

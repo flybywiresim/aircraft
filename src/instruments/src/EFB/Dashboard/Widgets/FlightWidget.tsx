@@ -164,7 +164,7 @@ export const FlightWidget = () => {
     const flightPlanProgress = totalDistance ? ((totalDistance - remainingDistance) / totalDistance) * 100 : 0;
 
     return (
-        <div className="overflow-hidden p-6 mr-3 w-2/5 h-full rounded-lg border-2 border-theme-accent shadow-md">
+        <div className="overflow-hidden p-6 mr-3 w-2/5 h-full rounded-lg border-2 shadow-md border-theme-accent">
             <div className="flex flex-col justify-between h-full">
                 <div className="space-y-8">
                     <div className="flex flex-row justify-between">
@@ -191,7 +191,7 @@ export const FlightWidget = () => {
                                 <div className="relative w-full bg-theme-highlight" style={{ width: `${flightPlanProgress}%` }}>
                                     {!!totalDistance && (
                                         <IconPlane
-                                            className="absolute right-0 text-theme-highlight transform translate-x-1/2 -translate-y-1/2 fill-current"
+                                            className="absolute right-0 transform translate-x-1/2 -translate-y-1/2 fill-current text-theme-highlight"
                                             size={50}
                                             strokeLinejoin="miter"
                                         />
@@ -226,7 +226,7 @@ export const FlightWidget = () => {
                     </div>
                     <div>
                         <h5 className="text-2xl font-bold">Route</h5>
-                        <ScrollableContainer height={15} resizeDependencies={[route]}>
+                        <ScrollableContainer height={15}>
                             <p className="font-mono text-justify">{route}</p>
                         </ScrollableContainer>
                     </div>
@@ -240,7 +240,7 @@ export const FlightWidget = () => {
                             toast.error(e.message);
                         });
                     }}
-                    className="flex justify-center items-center p-2 space-x-4 w-full bg-theme-highlight rounded-lg border-2 border-theme-secondary shadow-lg focus:outline-none"
+                    className="flex justify-center items-center p-2 space-x-4 w-full rounded-lg border-2 shadow-lg focus:outline-none bg-theme-highlight border-theme-secondary"
                 >
                     <FileEarmarkArrowDown size={26} />
                     <p>Import Flightplan from SimBrief</p>
