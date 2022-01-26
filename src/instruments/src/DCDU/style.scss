@@ -19,6 +19,13 @@
   font-style: normal;
 }
 
+@font-face {
+  font-family: "dcdu-highlight";
+  src: url("/Fonts/FBW-Display-DCDU-H16.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
 .dcdu {
   position: absolute;
   left: 80px !important;
@@ -47,14 +54,15 @@ path.dcdu-line {
 .status-message {
   text-anchor: end;
   font-size: 192px;
-  font-family: dcdu-normal;
 }
 
 .status-open {
+  font-family: dcdu-highlight;
   fill: rgb(0,255,255);
 }
 
 .status-other {
+  font-family: dcdu-normal;
   fill: rgb(0, 0, 0);
 }
 
