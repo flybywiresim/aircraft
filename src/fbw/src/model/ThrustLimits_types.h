@@ -8,6 +8,7 @@
 struct thrust_limits_in
 {
   real_T dt;
+  real_T simulation_time_s;
   real_T H_ft;
   real_T V_mach;
   real_T TAT_degC;
@@ -22,6 +23,7 @@ struct thrust_limits_in
   real_T flex_temperature_degC;
   boolean_T use_external_CLB_limit;
   real_T thrust_limit_CLB_percent;
+  real_T thrust_limit_type;
 };
 
 #endif

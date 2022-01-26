@@ -2,19 +2,19 @@ use std::time::Duration;
 
 mod update_context;
 use crate::electrical::{ElectricalElementIdentifier, ElectricalElementIdentifierProvider};
-use crate::shared::ElectricalBusType;
+use crate::shared::{from_bool, ElectricalBusType};
 use crate::{
     electrical::Electricity,
     failures::FailureType,
     shared::arinc429::{from_arinc429, to_arinc429, Arinc429Word, SignStatus},
     shared::{to_bool, ConsumePower, ElectricalBuses, MachNumber, PowerConsumptionReport},
 };
-use uom::si::angular_velocity::revolution_per_minute;
+
 use uom::si::{
-    acceleration::foot_per_second_squared, angle::degree, electric_current::ampere,
-    electric_potential::volt, f64::*, frequency::hertz, length::foot, mass::pound, pressure::psi,
-    ratio::percent, thermodynamic_temperature::degree_celsius, velocity::knot, volume::gallon,
-    volume_rate::gallon_per_second,
+    acceleration::foot_per_second_squared, angle::degree, angular_velocity::revolution_per_minute,
+    electric_current::ampere, electric_potential::volt, f64::*, frequency::hertz, length::foot,
+    mass::pound, pressure::psi, ratio::percent, thermodynamic_temperature::degree_celsius,
+    velocity::knot, volume::gallon, volume_rate::gallon_per_second,
 };
 pub use update_context::*;
 
@@ -39,9 +39,9 @@ pub trait VariableRegistry {
 pub struct VariableIdentifier(u8, usize);
 
 impl VariableIdentifier {
-    pub fn new(identifier_type: u8) -> Self {
+    pub fn new<T: Into<u8>>(variable_type: T) -> Self {
         Self {
-            0: identifier_type,
+            0: variable_type.into(),
             1: 0,
         }
     }
@@ -501,15 +501,6 @@ impl<'a> Writer for SimulatorWriter<'a> {
     }
 }
 
-/// Converts a given `bool` value into an `f64` representing that boolean value in the simulator.
-fn from_bool(value: bool) -> f64 {
-    if value {
-        1.0
-    } else {
-        0.0
-    }
-}
-
 pub trait Read<T: Copy> {
     /// Reads a value from the simulator.
     /// # Examples
@@ -677,7 +668,6 @@ read_write_as!(isize);
 read_write_as!(f32);
 
 read_write_uom!(Velocity, knot);
-read_write_uom!(AngularVelocity, revolution_per_minute);
 read_write_uom!(Length, foot);
 read_write_uom!(Acceleration, foot_per_second_squared);
 read_write_uom!(ThermodynamicTemperature, degree_celsius);
@@ -690,6 +680,7 @@ read_write_uom!(Volume, gallon);
 read_write_uom!(VolumeRate, gallon_per_second);
 read_write_uom!(Mass, pound);
 read_write_uom!(Angle, degree);
+read_write_uom!(AngularVelocity, revolution_per_minute);
 
 read_write_into!(MachNumber);
 
