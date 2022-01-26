@@ -1,6 +1,18 @@
 class CDUAtcConnectionStatus {
     static ShowPage(mcdu, store = { "disconnectAvail": false }) {
         mcdu.clearDisplay();
+        mcdu.page.Current = mcdu.page.ATCConnectionStatus;
+
+        function updateView() {
+            if (mcdu.page.Current === mcdu.page.ATCConnectionStatus) {
+                CDUAtcConnectionStatus.ShowPage(mcdu);
+            }
+        }
+
+        mcdu.refreshPageCallback = () => {
+            updateView();
+        };
+        SimVar.SetSimVarValue("L:FMC_UPDATE_CURRENT_PAGE", "number", 1);
 
         let currentStation = "____[color]amber";
         let atcDisconnect = "DISCONNECT\xa0[color]cyan";
