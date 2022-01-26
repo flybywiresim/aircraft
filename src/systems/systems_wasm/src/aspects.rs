@@ -188,6 +188,22 @@ impl<'a, 'b> MsfsAspectBuilder<'a, 'b> {
         ));
     }
 
+    /// Execute the given function whenever the observed variable's value changes.
+    pub fn on_change(
+        &mut self,
+        execute_on: ExecuteOn,
+        observed: Variable,
+        func: Box<dyn Fn(f64, f64) -> ()>,
+    ) {
+        let observed = self.variables.register(&observed);
+        let starting_value = self.variables.read(&observed);
+
+        self.actions.push((
+            OnChange::new(observed, starting_value, func).into(),
+            execute_on,
+        ));
+    }
+
     fn precondition_not_aircraft_variable(variable: &Variable) {
         if matches!(variable, Variable::Aircraft(..)) {
             eprintln!("Writing to variable '{}' is unsupported.", variable);
@@ -284,6 +300,7 @@ enum VariableAction {
     Reduce,
     ToObject,
     ToEvent,
+    OnChange,
 }
 
 #[enum_dispatch(VariableAction)]
@@ -846,6 +863,46 @@ impl ExecutableVariableAction for ToEvent {
             )?;
             self.last_written_value = Some(value);
         }
+
+        Ok(())
+    }
+}
+
+struct OnChange {
+    observed_variable: VariableIdentifier,
+    previous_value: Option<f64>,
+    func: Box<dyn Fn(f64, f64) -> ()>,
+}
+
+impl OnChange {
+    fn new(
+        observed_variable: VariableIdentifier,
+        starting_value: Option<f64>,
+        func: Box<dyn Fn(f64, f64) -> ()>,
+    ) -> Self {
+        Self {
+            observed_variable,
+            previous_value: starting_value,
+            func,
+        }
+    }
+}
+
+impl ExecutableVariableAction for OnChange {
+    fn execute(
+        &mut self,
+        _: &mut SimConnect,
+        variables: &mut MsfsVariableRegistry,
+    ) -> Result<(), Box<dyn Error>> {
+        let current = variables.read(&self.observed_variable);
+
+        if let (Some(previous), Some(current)) = (self.previous_value, current) {
+            if previous != current {
+                (self.func)(previous, current);
+            }
+        }
+
+        self.previous_value = current;
 
         Ok(())
     }
