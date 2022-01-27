@@ -45,7 +45,7 @@ export enum AtsuMessageSerializationFormat {
 export class AtsuMessage {
     public Network = AtsuMessageNetwork.Hoppie;
 
-    public UniqueMessageID : number = -1;
+    public UniqueMessageID: number = -1;
 
     public Timestamp: AtsuTimestamp | undefined = undefined;
 
