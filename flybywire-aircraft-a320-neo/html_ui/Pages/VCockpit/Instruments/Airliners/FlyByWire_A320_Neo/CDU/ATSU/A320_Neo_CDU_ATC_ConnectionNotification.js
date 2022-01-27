@@ -97,7 +97,7 @@ class CDUAtcConnectionNotification {
                         store["atcCenter"] = value;
                     }
 
-                    if (mcdu.page.Current !== mcdu.page.ATCNotification) {
+                    if (mcdu.page.Current === mcdu.page.ATCNotification) {
                         CDUAtcConnectionNotification.ShowPage(mcdu, store);
                     }
                 });
