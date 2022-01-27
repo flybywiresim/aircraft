@@ -8,6 +8,9 @@ use self::{
     galley::{MainGalley, SecondaryGalley},
 };
 pub(super) use direct_current::APU_START_MOTOR_BUS_TYPE;
+
+use uom::si::f64::*;
+
 #[cfg(test)]
 use systems::electrical::Battery;
 
@@ -25,8 +28,8 @@ use systems::{
     },
     shared::{
         ApuMaster, ApuStart, AuxiliaryPowerUnitElectrical, EmergencyElectricalRatPushButton,
-        EmergencyElectricalState, EngineCorrectedN2, EngineFirePushButtons,
-        LandingGearRealPosition, RamAirTurbineHydraulicCircuitPressurised,
+        EmergencyElectricalState, EmergencyGeneratorPower, EngineCorrectedN2,
+        EngineFirePushButtons, HydraulicGeneratorControlUnit, LandingGearRealPosition,
     },
     simulation::{
         InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
@@ -68,7 +71,7 @@ impl A320Electrical {
         apu_overhead: &(impl ApuMaster + ApuStart),
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         engines: [&impl EngineCorrectedN2; 2],
-        hydraulic: &impl RamAirTurbineHydraulicCircuitPressurised,
+        gcu: &impl HydraulicGeneratorControlUnit,
         landing_gear: &impl LandingGearRealPosition,
     ) {
         self.alternating_current.update_main_power_sources(
@@ -85,11 +88,7 @@ impl A320Electrical {
         self.emergency_elec
             .update(context, electricity, &self.alternating_current);
 
-        if (self.emergency_elec.is_active()) || emergency_overhead.rat_and_emer_gen_man_on() {
-            self.emergency_gen.start();
-        }
-
-        self.emergency_gen.update(context, hydraulic);
+        self.emergency_gen.update(gcu);
 
         self.alternating_current.update(
             context,
@@ -142,11 +141,6 @@ impl A320Electrical {
     fn debug_assert_invariants(&self) {
         self.alternating_current.debug_assert_invariants();
         self.direct_current.debug_assert_invariants();
-    }
-
-    #[cfg(test)]
-    fn attempt_emergency_gen_start(&mut self) {
-        self.emergency_gen.start();
     }
 
     #[cfg(test)]
@@ -208,6 +202,11 @@ impl SimulationElement for A320Electrical {
 impl EmergencyElectricalState for A320Electrical {
     fn is_in_emergency_elec(&self) -> bool {
         self.in_emergency_elec()
+    }
+}
+impl EmergencyGeneratorPower for A320Electrical {
+    fn generated_power(&self) -> Power {
+        self.emergency_gen.generated_power()
     }
 }
 
@@ -432,8 +431,11 @@ mod a320_electrical_circuit_tests {
             Aircraft,
         },
     };
-    use uom::si::f64::*;
-    use uom::si::{electric_potential::volt, length::foot, ratio::percent, velocity::knot};
+
+    use uom::si::{
+        angular_velocity::revolution_per_minute, electric_potential::volt, length::foot,
+        power::watt, ratio::percent, velocity::knot,
+    };
 
     #[test]
     fn everything_off_batteries_empty() {
@@ -2191,18 +2193,51 @@ mod a320_electrical_circuit_tests {
     }
 
     struct TestHydraulicSystem {
-        is_rat_hydraulic_loop_pressurised: bool,
+        time_since_start: Duration,
+        starting_or_started: bool,
+        emergency_motor_speed: AngularVelocity,
     }
     impl TestHydraulicSystem {
-        fn new(is_rat_hydraulic_loop_pressurised: bool) -> Self {
+        fn new() -> Self {
             Self {
-                is_rat_hydraulic_loop_pressurised,
+                time_since_start: Duration::from_secs(0),
+                starting_or_started: false,
+                emergency_motor_speed: AngularVelocity::new::<revolution_per_minute>(0.),
+            }
+        }
+
+        fn update(
+            &mut self,
+            is_rat_hydraulic_loop_pressurised: bool,
+            is_emergency_elec: bool,
+            rat_man_on_pressed: bool,
+            context: &UpdateContext,
+        ) {
+            if (is_emergency_elec || rat_man_on_pressed) && is_rat_hydraulic_loop_pressurised {
+                self.starting_or_started = true;
+            }
+
+            if self.starting_or_started {
+                self.time_since_start += context.delta();
+            }
+
+            if self.time_since_start > Duration::from_secs(8) && is_rat_hydraulic_loop_pressurised {
+                self.emergency_motor_speed = AngularVelocity::new::<revolution_per_minute>(12000.);
+            } else {
+                self.emergency_motor_speed = AngularVelocity::new::<revolution_per_minute>(0.);
             }
         }
     }
-    impl RamAirTurbineHydraulicCircuitPressurised for TestHydraulicSystem {
-        fn is_rat_hydraulic_circuit_pressurised(&self) -> bool {
-            self.is_rat_hydraulic_loop_pressurised
+    impl HydraulicGeneratorControlUnit for TestHydraulicSystem {
+        fn max_allowed_power(&self) -> Power {
+            if self.emergency_motor_speed.get::<revolution_per_minute>() > 10000. {
+                Power::new::<watt>(5000.)
+            } else {
+                Power::new::<watt>(0.)
+            }
+        }
+        fn motor_speed(&self) -> AngularVelocity {
+            self.emergency_motor_speed
         }
     }
 
@@ -2231,6 +2266,8 @@ mod a320_electrical_circuit_tests {
         apu: TestApu,
         apu_overhead: TestApuOverhead,
         engine_fire_push_buttons: TestEngineFirePushButtons,
+        hydraulics: TestHydraulicSystem,
+        force_run_emergency_gen: bool,
     }
     impl A320ElectricalTestAircraft {
         fn new(context: &mut InitContext) -> Self {
@@ -2243,6 +2280,8 @@ mod a320_electrical_circuit_tests {
                 apu: TestApu::new(context),
                 apu_overhead: TestApuOverhead::new(),
                 engine_fire_push_buttons: TestEngineFirePushButtons::new(),
+                hydraulics: TestHydraulicSystem::new(),
+                force_run_emergency_gen: false,
             }
         }
 
@@ -2283,7 +2322,7 @@ mod a320_electrical_circuit_tests {
         }
 
         fn running_emergency_generator(&mut self) {
-            self.elec.attempt_emergency_gen_start();
+            self.force_run_emergency_gen = true;
         }
 
         fn static_inverter_input<'a>(&self, electricity: &'a Electricity) -> Ref<'a, Potential> {
@@ -2320,6 +2359,13 @@ mod a320_electrical_circuit_tests {
             context: &UpdateContext,
             electricity: &mut Electricity,
         ) {
+            self.hydraulics.update(
+                context.indicated_airspeed() > Velocity::new::<knot>(100.),
+                self.elec.in_emergency_elec(),
+                self.force_run_emergency_gen || self.emergency_overhead.is_pressed(),
+                context,
+            );
+
             self.elec.update(
                 context,
                 electricity,
@@ -2330,9 +2376,7 @@ mod a320_electrical_circuit_tests {
                 &self.apu_overhead,
                 &self.engine_fire_push_buttons,
                 [&self.engines[0], &self.engines[1]],
-                &TestHydraulicSystem::new(
-                    context.indicated_airspeed() > Velocity::new::<knot>(100.),
-                ),
+                &self.hydraulics,
                 &TestLandingGear::new(),
             );
             self.overhead

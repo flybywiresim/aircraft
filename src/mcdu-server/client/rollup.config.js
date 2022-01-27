@@ -28,7 +28,6 @@ export default {
                     src: [
                         path.join(__dirname, '../../../flybywire-aircraft-a320-neo/html_ui/Fonts/HoneywellMCDU.ttf'),
                         path.join(__dirname, '../../../flybywire-aircraft-a320-neo/html_ui/Fonts/HoneywellMCDUSmall.ttf'),
-                        path.join(__dirname, '../../../flybywire-aircraft-a320-neo/html_ui/Fonts/ECAMFontRegular.ttf'),
                     ],
                     dest: path.join(__dirname, './build/'),
                 },
