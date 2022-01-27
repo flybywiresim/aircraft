@@ -18,14 +18,15 @@ interface TankReadoutProps {
     tankValue: number;
     convertedFuelValue: number;
     className?: string;
+    inlinedTitle?: boolean;
 }
 
-const TankReadoutWidget = ({ title, current, target, capacity, currentUnit, tankValue, convertedFuelValue, className }: TankReadoutProps) => {
+const TankReadoutWidget = ({ title, current, target, capacity, currentUnit, tankValue, convertedFuelValue, className, inlinedTitle }: TankReadoutProps) => {
     const getFuelBarPercent = (curr: number, max: number) => (Math.max(curr, 0) / max) * 100;
 
     return (
-        <div className={`overflow-hidden w-min p-4 space-y-3 ${className}`}>
-            <div className="flex flex-row justify-between items-center">
+        <div className={`overflow-hidden w-min p-4 space-y-3 bg-theme-body ${className}`} style={{ width: '366px' }}>
+            <div className={inlinedTitle ? 'flex flex-row items-center justify-between' : undefined}>
                 <h2>{title}</h2>
                 <p>{`${convertedFuelValue}/${round(tankValue)} ${currentUnit}`}</p>
             </div>
@@ -262,6 +263,7 @@ export const FuelPage = () => {
                         tankValue={totalFuel()}
                         convertedFuelValue={totalCurrent()}
                         className="overflow-hidden rounded-2xl border-2 border-theme-accent"
+                        inlinedTitle
                     />
                     <TankReadoutWidget
                         title="Center Tank"
@@ -271,11 +273,12 @@ export const FuelPage = () => {
                         currentUnit={currentUnit()}
                         tankValue={centerTank()}
                         convertedFuelValue={convertFuelValueCenter(centerCurrent)}
-                        className="overflow-hidden rounded-2xl border-2 border-theme-accent "
+                        className="overflow-hidden rounded-2xl border-2 border-theme-accent"
+                        inlinedTitle
                     />
                 </div>
-                <div className="flex absolute inset-x-0 top-52 flex-row justify-between items-center">
-                    <div className="overflow-hidden w-min rounded-2xl border-2 border-theme-accent divide-y divide-theme-accent">
+                <div className="flex absolute inset-x-0 top-40 flex-row justify-between">
+                    <div className="overflow-hidden w-min rounded-2xl border-2 divide-y border-theme-accent divide-theme-accent">
                         <TankReadoutWidget
                             title="Left Inner Tank"
                             current={LInnCurrent}
@@ -295,7 +298,7 @@ export const FuelPage = () => {
                             convertedFuelValue={convertFuelValueCenter(LOutCurrent)}
                         />
                     </div>
-                    <div className="overflow-hidden w-min rounded-2xl border-2 border-theme-accent divide-y divide-theme-accent">
+                    <div className="overflow-hidden w-min rounded-2xl border-2 divide-y border-theme-accent divide-theme-accent">
                         <TankReadoutWidget
                             title="Right Inner Tank"
                             current={RInnCurrent}
@@ -320,7 +323,7 @@ export const FuelPage = () => {
             <div className="flex flex-col justify-end items-center">
                 {/* FIXME TODO: Replace with Tailwind JIT values later */}
                 <div className="absolute inset-x-0 bottom-0" style={{ transform: 'translate(0px, -150px)' }}>
-                    <OverWingOutline className="absolute bottom-0 left-0 z-30" />
+                    <OverWingOutline className="absolute bottom-0 left-0 z-20" />
 
                     <div
                         className="absolute z-20"
@@ -344,22 +347,22 @@ export const FuelPage = () => {
                     />
                     {/* tl overlay */}
                     <div
-                        className="absolute bottom-overlay-t-y left-overlay-tl z-10 bg-theme-body -rotate-26.5"
+                        className="absolute z-10 bottom-overlay-t-y left-overlay-tl bg-theme-body -rotate-26.5"
                         style={{ transform: 'rotate(-26.5deg)', width: '490px', height: '140px', bottom: '240px', left: '82px' }}
                     />
                     {/* tr overlay */}
                     <div
-                        className="absolute right-overlay-tr bottom-overlay-t-y z-10 bg-theme-body rotate-26.5"
+                        className="absolute z-10 right-overlay-tr bottom-overlay-t-y bg-theme-body rotate-26.5"
                         style={{ transform: 'rotate(26.5deg)', width: '490px', height: '140px', bottom: '240px', right: '82px' }}
                     />
                     {/* bl overlay */}
                     <div
-                        className="absolute bottom-overlay-b-y left-overlay-bl z-10 bg-theme-body -rotate-18.5"
+                        className="absolute z-10 bottom-overlay-b-y left-overlay-bl bg-theme-body -rotate-18.5"
                         style={{ transform: 'rotate(-18.5deg)', width: '484px', height: '101px', bottom: '78px', left: '144px' }}
                     />
                     {/* br overlay */}
                     <div
-                        className="absolute right-overlay-br bottom-overlay-b-y z-10 bg-theme-body rotate-18.5"
+                        className="absolute z-10 right-overlay-br bottom-overlay-b-y bg-theme-body rotate-18.5"
                         style={{ transform: 'rotate(18.5deg)', width: '484px', height: '101px', bottom: '78px', right: '144px' }}
                     />
                 </div>
