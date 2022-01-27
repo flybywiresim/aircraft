@@ -29,6 +29,13 @@ class PostIT extends BaseInstrument {
         this.splitIndex = 0;
 
         if (this.textElem) {
+
+            NXDataStore.getAndSubscribe('POSTIT_ENABLED', (key, value) => {
+                console.log("reloading postit!");
+                super.reboot();
+                this.fetchSimbriefData();
+            }, '0');
+
             this.initMainLoop();
         }
 
@@ -166,15 +173,6 @@ class PostIT extends BaseInstrument {
 
     onFlightStart() {
         this.fetchSimbriefData();
-    }
-
-    onEvent(_event) {
-        console.log("GOT EVENT:", _event);
-        if (_event === "A32NX_POSTIT_RESET") {
-            console.log("TRYING RELOAD POSTIT");
-            console.log(_event);
-            this.fetchSimbriefData();
-        }
     }
 
     initMainLoop() {
