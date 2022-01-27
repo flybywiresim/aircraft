@@ -16,4 +16,3 @@ export class AtisMessage extends WeatherMessage {
     }
 }
 
-export { WeatherMessage };
