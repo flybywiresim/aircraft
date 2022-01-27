@@ -3,12 +3,12 @@ import { TypedAction } from '../store';
 
 type ActiveButton = { id: string, state: string, callBack, value };
 
-type ButtonSelectionState = {
+interface ButtonSelectionState {
     activeButtons:ActiveButton[];
     disabledButtons: string[];
     tugRequestOnly: boolean;
     pushBackWaitTimerHandle: number;
-};
+}
 
 const initialState: ButtonSelectionState = {
     activeButtons: [],
@@ -28,7 +28,6 @@ export const buttonsSlice = createSlice({
             if (action.payload !== -1) {
                 state.activeButtons.splice(action.payload, 1);
             }
-            console.log(state.activeButtons);
         },
         updateButton: (state, action: TypedAction<ActiveButton>) => {
             const button = state.activeButtons.findIndex((b) => action.payload.id === b.id);

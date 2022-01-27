@@ -16,6 +16,7 @@ export const FlyPadPage = () => {
     const [autoOSK, setAutoOSK] = usePersistentNumberProperty('EFB_AUTO_OSK', 0);
     const [timeDisplayed, setTimeDisplayed] = usePersistentProperty('EFB_TIME_DISPLAYED', 'utc');
     const [timeFormat, setTimeFormat] = usePersistentProperty('EFB_TIME_FORMAT', '24');
+    const [showStatusBarFlightProgress, setShowStatusBarFlightProgress] = usePersistentNumberProperty('EFB_SHOW_STATUSBAR_FLIGHTPROGRESS', 1);
 
     const themeButtons: ButtonType[] = [
         { name: 'Blue', setting: 'blue' },
@@ -85,6 +86,10 @@ export const FlyPadPage = () => {
                         </SelectItem>
                     ))}
                 </SelectGroup>
+            </SettingItem>
+
+            <SettingItem name="Show Status Bar Flight Progress">
+                <Toggle value={!!showStatusBarFlightProgress} onToggle={(value) => setShowStatusBarFlightProgress(value ? 1 : 0)} />
             </SettingItem>
         </SettingsPage>
     );
