@@ -4,6 +4,8 @@
 export enum AtsuStatusCodes {
     Ok,
     NoHoppieConnection,
+    NoTelexConnection,
+    TelexDisabled,
     ComFailed,
     NoAtc,
     DcduFull,

@@ -973,6 +973,9 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             case Atsu.AtsuStatusCodes.ProxyError:
                 this.addNewMessage(NXFictionalMessages.reverseProxy);
                 break;
+            case Atsu.AtsuStatusCodes.NoTelexConnection:
+                this.addNewMessage(NXFictionalMessages.telexNotEnabled);
+                break;
             default:
                 break;
         }
