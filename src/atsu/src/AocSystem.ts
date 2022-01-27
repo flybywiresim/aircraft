@@ -86,5 +86,3 @@ export class AocSystem {
         }
     }
 }
-
-export { AtsuMessage, AtsuTimestamp };

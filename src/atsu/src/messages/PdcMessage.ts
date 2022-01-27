@@ -77,5 +77,3 @@ export class PdcMessage extends AtsuMessage {
         this.Freetext5 = jsonData.Freetext5;
     }
 }
-
-export { AtsuMessageType, AtsuMessageDirection, AtsuMessageSerializationFormat, AtsuMessage };

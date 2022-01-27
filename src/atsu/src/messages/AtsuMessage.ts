@@ -81,5 +81,3 @@ export class AtsuMessage {
         this.Message = jsonData.Message;
     }
 }
-
-export { AtsuTimestamp };

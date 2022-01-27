@@ -60,5 +60,3 @@ export class WeatherMessage extends AtsuMessage {
         return message;
     }
 }
-
-export { AtsuMessageType, AtsuMessageDirection, AtsuMessageSerializationFormat, AtsuMessage };

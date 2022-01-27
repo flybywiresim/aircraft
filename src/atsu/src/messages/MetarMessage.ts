@@ -15,5 +15,3 @@ export class MetarMessage extends WeatherMessage {
         this.Station = NXDataStore.get('CONFIG_METAR_SRC', 'MSFS');
     }
 }
-
-export { WeatherMessage };

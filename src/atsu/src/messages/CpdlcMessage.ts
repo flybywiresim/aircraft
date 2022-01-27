@@ -115,5 +115,3 @@ export class CpdlcMessage extends AtsuMessage {
         return message;
     }
 }
-
-export { AtsuMessageType, AtsuMessageDirection, AtsuMessageSerializationFormat, AtsuMessage };

@@ -56,5 +56,3 @@ function stringToCpdlc(str: string) {
         return CpdlcMessageRequestedResponseType.NotRequired;
     }
 }
-
-export { wordWrap, cpdlcToString, stringToCpdlc };

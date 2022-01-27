@@ -29,5 +29,3 @@ export class FreetextMessage extends AtsuMessage {
         return message;
     }
 }
-
-export { AtsuMessageType, AtsuMessageDirection, AtsuMessageSerializationFormat, AtsuMessage };

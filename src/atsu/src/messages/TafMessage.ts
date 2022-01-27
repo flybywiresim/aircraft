@@ -15,5 +15,3 @@ export class TafMessage extends WeatherMessage {
         this.Station = NXDataStore.get('CONFIG_TAF_SRC', 'MSFS');
     }
 }
-
-export { WeatherMessage };
