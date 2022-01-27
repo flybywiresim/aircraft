@@ -142,6 +142,7 @@
 1. [ATSU] Implemented Datalink to synchronize requests and responses - @svengcz (Sven Czarnian)
 1. [MISC] Handling "ATC MSG" button - @svengcz (Sven Czarnian)
 1. [DCDU] Increase DCDU size and use new DCDU font - @svengcz (Sven Czarnian)
+1. [AP] Fix: adjustment of vertical speed limitation in SPD/MACH law - @IbrahimK42 (IbrahimK42)
 
 ## 0.7.0
 
