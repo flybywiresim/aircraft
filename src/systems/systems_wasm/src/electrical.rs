@@ -1,63 +1,34 @@
-use fxhash::FxHashMap;
 use std::error::Error;
 
-use crate::Aspect;
+use crate::{Aspect, ExecuteOn, MsfsAspectBuilder, Variable};
 use msfs::legacy::execute_calculator_code;
 use msfs::legacy::AircraftVariable;
-use systems::shared::to_bool;
+use systems::shared::{to_bool, ElectricalBusType};
 use systems::simulation::{VariableIdentifier, VariableRegistry};
 
-#[derive(Default)]
-pub(super) struct MsfsElectricalBuses {
-    connections: FxHashMap<VariableIdentifier, ElectricalBusConnection>,
-}
-impl MsfsElectricalBuses {
-    pub(super) fn add(
-        &mut self,
-        registry: &mut impl VariableRegistry,
-        name: &str,
-        from: usize,
-        to: usize,
-    ) {
-        let identifier = registry.get(format!("ELEC_{}_BUS_IS_POWERED", name));
-        self.connections
-            .insert(identifier, ElectricalBusConnection::new(from, to));
-    }
-}
-impl Aspect for MsfsElectricalBuses {
-    fn write(&mut self, identifier: &VariableIdentifier, value: f64) -> bool {
-        match self.connections.get_mut(identifier) {
-            Some(connection) => connection.update(value),
-            None => {}
-        }
-
-        // The powered state of a bus isn't just updated here, but should also be set as a named
-        // variable, therefore we always return false here.
-        false
-    }
-}
-
-struct ElectricalBusConnection {
-    connected: bool,
-    toggle_code: String,
-}
-impl ElectricalBusConnection {
-    fn new(from: usize, to: usize) -> Self {
-        Self {
-            connected: true,
-            toggle_code: format!(
+pub(super) fn electrical_buses<const N: usize>(
+    buses: [(ElectricalBusType, usize); N],
+) -> impl FnOnce(&mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>> {
+    move |builder: &mut MsfsAspectBuilder| {
+        for bus in buses {
+            const INFINITELY_POWERED_BUS_IDENTIFIER: usize = 1;
+            let toggle_code = format!(
                 "{} {} (>K:2:ELECTRICAL_BUS_TO_BUS_CONNECTION_TOGGLE)",
-                from, to
-            ),
+                INFINITELY_POWERED_BUS_IDENTIFIER, bus.1
+            );
+            let variable = Variable::Named(format!("ELEC_{}_BUS_IS_POWERED", bus.0));
+            // MSFS' starting state has all buses connected.
+            builder.init_variable(variable.clone(), 1.);
+            builder.on_change(
+                ExecuteOn::PostTick,
+                variable,
+                Box::new(move |_, _| {
+                    execute_calculator_code::<()>(&toggle_code);
+                }),
+            );
         }
-    }
 
-    fn update(&mut self, value: f64) {
-        let should_be_connected = (value - 1.).abs() < f64::EPSILON;
-        if should_be_connected != self.connected {
-            execute_calculator_code::<()>(&self.toggle_code);
-            self.connected = !self.connected;
-        }
+        Ok(())
     }
 }
 
