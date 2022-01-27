@@ -69,7 +69,7 @@ export const RogerButtons: React.FC<RogerButtonsProps> = ({ message, setMessageS
                         index="R2"
                         content="ROGER*"
                         active
-                        clickedCallback={clicked}
+                        onClick={clicked}
                     />
                 </>
             )}
@@ -80,14 +80,14 @@ export const RogerButtons: React.FC<RogerButtonsProps> = ({ message, setMessageS
                         index="L1"
                         content="*CANCEL"
                         active
-                        clickedCallback={clicked}
+                        onClick={clicked}
                     />
                     <Button
                         messageId={message.UniqueMessageID}
                         index="R2"
                         content="SEND*"
                         active
-                        clickedCallback={clicked}
+                        onClick={clicked}
                     />
                 </>
             )}
@@ -97,7 +97,7 @@ export const RogerButtons: React.FC<RogerButtonsProps> = ({ message, setMessageS
                     index="R2"
                     content={`CLOSE${closeClickabel ? '*' : ''}`}
                     active={closeClickabel}
-                    clickedCallback={clicked}
+                    onClick={clicked}
                 />
             )}
         </>

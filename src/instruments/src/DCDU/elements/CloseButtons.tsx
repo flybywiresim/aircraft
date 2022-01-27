@@ -25,7 +25,7 @@ export const CloseButtons: React.FC<CloseButtonsProps> = ({ message, closeMessag
                 index="R2"
                 content="CLOSE*"
                 active
-                clickedCallback={clicked}
+                onClick={clicked}
             />
         </>
     );

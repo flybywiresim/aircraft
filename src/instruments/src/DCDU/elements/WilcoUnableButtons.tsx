@@ -83,7 +83,7 @@ export const WilcoUnableButtons: React.FC<WilcoUnableButtonsProps> = ({ message,
                         index="L1"
                         content="*UNABLE"
                         active
-                        clickedCallback={clicked}
+                        onClick={clicked}
                     />
                     {showStandby && (
                         <Button
@@ -91,7 +91,7 @@ export const WilcoUnableButtons: React.FC<WilcoUnableButtonsProps> = ({ message,
                             index="R1"
                             content="STBY*"
                             active
-                            clickedCallback={clicked}
+                            onClick={clicked}
                         />
                     )}
                     <Button
@@ -99,7 +99,7 @@ export const WilcoUnableButtons: React.FC<WilcoUnableButtonsProps> = ({ message,
                         index="R2"
                         content="WILCO*"
                         active
-                        clickedCallback={clicked}
+                        onClick={clicked}
                     />
                 </>
             )}
@@ -110,14 +110,14 @@ export const WilcoUnableButtons: React.FC<WilcoUnableButtonsProps> = ({ message,
                         index="L1"
                         content="*CANCEL"
                         active
-                        clickedCallback={clicked}
+                        onClick={clicked}
                     />
                     <Button
                         messageId={message.UniqueMessageID}
                         index="R2"
                         content="SEND*"
                         active
-                        clickedCallback={clicked}
+                        onClick={clicked}
                     />
                 </>
             )}
@@ -127,7 +127,7 @@ export const WilcoUnableButtons: React.FC<WilcoUnableButtonsProps> = ({ message,
                     index="R2"
                     content={`CLOSE${closeClickabel ? '*' : ''}`}
                     active={closeClickabel}
-                    clickedCallback={clicked}
+                    onClick={clicked}
                 />
             )}
         </>

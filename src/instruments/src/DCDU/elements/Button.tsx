@@ -6,10 +6,10 @@ type ButtonProps = {
     index: string,
     content: string,
     active: boolean,
-    clickedCallback: (btn: string) => void
+    onClick: (btn: string) => void
 }
 
-export const Button: React.FC<ButtonProps> = ({ index, content, active, clickedCallback }) => {
+export const Button: React.FC<ButtonProps> = ({ index, content, active, onClick }) => {
     const [clicked, setClicked] = useState(false);
 
     if (content.length !== 0) {
@@ -18,7 +18,7 @@ export const Button: React.FC<ButtonProps> = ({ index, content, active, clickedC
                 setClicked(true);
                 setTimeout(() => {
                     setClicked(false);
-                    clickedCallback(index);
+                    onClick(index);
                 }, 1000);
             }
         });
