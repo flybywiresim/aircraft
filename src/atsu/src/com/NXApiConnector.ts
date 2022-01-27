@@ -22,6 +22,82 @@ const WeatherMap = {
  * Defines the NXApi connector for the AOC system
  */
 export class NXApiConnector {
+    private static connected: boolean = false;
+
+    private static updateCounter: number = 0;
+
+    private static createAircraftStatus(): AircraftStatus | undefined {
+        const flightNo = SimVar.GetSimVarValue('ATC FLIGHT NUMBER', 'string');
+        if (flightNo === '' || flightNo === '1123') {
+            return undefined;
+        }
+
+        const lat = SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude');
+        const long = SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude');
+        const alt = SimVar.GetSimVarValue('PLANE ALTITUDE', 'feet');
+        const heading = SimVar.GetSimVarValue('PLANE HEADING DEGREES TRUE', 'degree');
+        const acType = SimVar.GetSimVarValue('TITLE', 'string');
+        const origin = NXDataStore.get('PLAN_ORIGIN', '');
+        const destination = NXDataStore.get('PLAN_DESTINATION', '');
+        const freetext = NXDataStore.get('CONFIG_ONLINE_FEATURES_STATUS', 'DISABLED') === 'ENABLED';
+
+        return {
+            location: {
+                long,
+                lat,
+            },
+            trueAltitude: alt,
+            heading,
+            origin,
+            destination,
+            freetextEnabled: freetext,
+            flight: flightNo,
+            aircraftType: acType,
+        };
+    }
+
+    public static async connect(): Promise<AtsuStatusCodes> {
+        if (NXDataStore.get('CONFIG_ONLINE_FEATURES_STATUS', 'DISABLED') !== 'ENABLED') {
+            return AtsuStatusCodes.TelexDisabled;
+        }
+
+        // deactivate old connection
+        await NXApiConnector.disconnect();
+
+        const status = NXApiConnector.createAircraftStatus();
+        if (status !== undefined) {
+            return Telex.connect(status).then((res) => {
+                if (res.accessToken !== '') {
+                    NXApiConnector.connected = true;
+                    NXApiConnector.updateCounter = 0;
+                    return AtsuStatusCodes.Ok;
+                }
+                return AtsuStatusCodes.NoTelexConnection;
+            });
+        }
+
+        return AtsuStatusCodes.Ok;
+    }
+
+    public static async disconnect(): Promise<AtsuStatusCodes> {
+        if (NXDataStore.get('CONFIG_ONLINE_FEATURES_STATUS', 'DISABLED') !== 'ENABLED') {
+            return AtsuStatusCodes.TelexDisabled;
+        }
+
+        if (NXApiConnector.connected) {
+            return Telex.disconnect().then(() => {
+                NXApiConnector.connected = false;
+                return AtsuStatusCodes.Ok;
+            });
+        }
+
+        return AtsuStatusCodes.NoTelexConnection;
+    }
+
+    public static isConnected(): boolean {
+        return NXApiConnector.connected;
+    }
+
     public static async sendTelexMessage(message: FreetextMessage): Promise<AtsuStatusCodes> {
         if (NXApiConnector.connected) {
             const content = message.Message.replace('\n', ';');
@@ -103,6 +179,9 @@ export class NXApiConnector {
     }
 
     public static pollInterval(): number {
-        return NXApi.updateRate;
+        return 15000;
     }
 }
+
+NXDataStore.set('PLAN_ORIGIN', '');
+NXDataStore.set('PLAN_DESTINATION', '');
