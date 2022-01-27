@@ -3,6 +3,7 @@ use crate::{
     pneumatic::PneumaticValveSignal,
     simulation::UpdateContext,
 };
+
 use num_derive::FromPrimitive;
 use std::{cell::Ref, fmt::Display, time::Duration};
 use uom::si::{
@@ -18,6 +19,12 @@ pub mod pid;
 mod random;
 pub use random::*;
 pub mod arinc429;
+
+pub trait ReservoirAirPressure {
+    fn green_reservoir_pressure(&self) -> Pressure;
+    fn blue_reservoir_pressure(&self) -> Pressure;
+    fn yellow_reservoir_pressure(&self) -> Pressure;
+}
 
 pub trait AuxiliaryPowerUnitElectrical:
     ControllerSignal<ContactorSignal> + ApuAvailable + ElectricalElement + ElectricitySource
@@ -49,8 +56,17 @@ pub trait ApuStart {
     fn start_is_on(&self) -> bool;
 }
 
-pub trait RamAirTurbineHydraulicCircuitPressurised {
-    fn is_rat_hydraulic_circuit_pressurised(&self) -> bool;
+pub trait HydraulicGeneratorControlUnit {
+    fn max_allowed_power(&self) -> Power;
+    fn motor_speed(&self) -> AngularVelocity;
+}
+
+pub trait ControlValveCommand {
+    fn valve_position_command(&self) -> Ratio;
+}
+
+pub trait EmergencyGeneratorPower {
+    fn generated_power(&self) -> Power;
 }
 
 pub trait LandingGearRealPosition {
@@ -76,7 +92,7 @@ pub trait LgciuGearExtension {
     fn all_up_and_locked(&self) -> bool;
 }
 
-pub trait LgciuInterface: LgciuWeightOnWheels + LgciuGearExtension {}
+pub trait LgciuSensors: LgciuWeightOnWheels + LgciuGearExtension {}
 pub trait EngineCorrectedN1 {
     fn corrected_n1(&self) -> Ratio;
 }
@@ -87,6 +103,22 @@ pub trait EngineCorrectedN2 {
 
 pub trait EngineUncorrectedN2 {
     fn uncorrected_n2(&self) -> Ratio;
+}
+
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum HydraulicColor {
+    Green,
+    Blue,
+    Yellow,
+}
+impl Display for HydraulicColor {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Green => write!(f, "GREEN"),
+            Self::Blue => write!(f, "BLUE"),
+            Self::Yellow => write!(f, "YELLOW"),
+        }
+    }
 }
 
 /// The common types of electrical buses within Airbus aircraft.
@@ -382,6 +414,15 @@ pub fn interpolation(xs: &[f64], ys: &[f64], intermediate_x: f64) -> f64 {
 
         ys[idx - 1]
             + (intermediate_x - xs[idx - 1]) / (xs[idx] - xs[idx - 1]) * (ys[idx] - ys[idx - 1])
+    }
+}
+
+/// Converts a given `bool` value into an `f64` representing that boolean value in the simulator.
+pub fn from_bool(value: bool) -> f64 {
+    if value {
+        1.0
+    } else {
+        0.0
     }
 }
 
