@@ -44,6 +44,7 @@ const simbriefDataParser = (simbriefJson: any): ISimbriefData => {
         files: { loadsheet: files.pdf.link ? files.directory + files.pdf.link : undefined },
         origin: {
             iata: origin.iata_code,
+            runway: origin.plan_rwy,
             icao: origin.icao_code,
             name: origin.name,
             posLat: origin.pos_lat,
@@ -51,6 +52,7 @@ const simbriefDataParser = (simbriefJson: any): ISimbriefData => {
         },
         destination: {
             iata: destination.iata_code,
+            runway: destination.plan_rwy,
             icao: destination.icao_code,
             name: destination.name,
             posLat: destination.pos_lat,
