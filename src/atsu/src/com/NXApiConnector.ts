@@ -5,7 +5,9 @@ import { NXApi } from '@shared/nxapi';
 import { NXDataStore } from '@shared/persistence';
 import { AtsuStatusCodes } from '../AtsuStatusCodes';
 import { AtsuMessage, AtsuMessageComStatus, AtsuMessageNetwork, AtsuMessageDirection } from '../messages/AtsuMessage';
-import { AtisMessage, FreetextMessage, WeatherMessage } from '../AtsuManager';
+import { FreetextMessage } from '../messages/FreetextMessage';
+import { WeatherMessage } from '../messages/WeatherMessage';
+import { AtisMessage } from '../messages/AtisMessage';
 
 const WeatherMap = {
     FAA: 'faa',

@@ -7,13 +7,6 @@ import { AtcSystem } from './AtcSystem';
 import { AocSystem } from './AocSystem';
 import { AtsuMessage, AtsuMessageSerializationFormat, AtsuMessageComStatus } from './messages/AtsuMessage';
 import { AtsuTimestamp } from './messages/AtsuTimestamp';
-import { CpdlcMessage } from './messages/CpdlcMessage';
-import { WeatherMessage } from './messages/WeatherMessage';
-import { AtisMessage } from './messages/AtisMessage';
-import { MetarMessage } from './messages/MetarMessage';
-import { TafMessage } from './messages/TafMessage';
-import { FreetextMessage } from './messages/FreetextMessage';
-import { PdcMessage } from './messages/PdcMessage';
 
 /**
  * Defines the ATSU manager

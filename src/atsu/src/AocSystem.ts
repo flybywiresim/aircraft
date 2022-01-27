@@ -4,7 +4,6 @@
 import { AtsuStatusCodes } from './AtsuStatusCodes';
 import { AtsuMessageDirection, AtsuMessage, AtsuMessageType } from './messages/AtsuMessage';
 import { WeatherMessage } from './messages/WeatherMessage';
-import { AtsuTimestamp } from './messages/AtsuTimestamp';
 import { Datalink } from './com/Datalink';
 
 /**

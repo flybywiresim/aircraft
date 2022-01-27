@@ -5,7 +5,8 @@ import { NXDataStore } from '@shared/persistence';
 import { NXApi } from '@shared/nxapi';
 import { AtsuStatusCodes } from '../AtsuStatusCodes';
 import { AtsuMessage, AtsuMessageNetwork, AtsuMessageDirection, AtsuMessageComStatus, AtsuMessageSerializationFormat } from '../messages/AtsuMessage';
-import { FreetextMessage, CpdlcMessage } from '../AtsuManager';
+import { CpdlcMessage } from '../messages/CpdlcMessage';
+import { FreetextMessage } from '../messages/FreetextMessage';
 import { stringToCpdlc } from '../Common';
 
 /**

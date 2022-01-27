@@ -1,6 +1,6 @@
 import { CpdlcMessageRequestedResponseType } from './messages/CpdlcMessage';
 
-function wordWrap(text: string, maxLength: number) {
+export function wordWrap(text: string, maxLength: number) {
     const result = [];
     let line = [];
     let length = 0;
@@ -21,7 +21,7 @@ function wordWrap(text: string, maxLength: number) {
     return result;
 }
 
-function cpdlcToString(type: CpdlcMessageRequestedResponseType) {
+export function cpdlcToString(type: CpdlcMessageRequestedResponseType) {
     switch (type) {
     case CpdlcMessageRequestedResponseType.AffirmNegative:
         return 'AN';
@@ -40,7 +40,7 @@ function cpdlcToString(type: CpdlcMessageRequestedResponseType) {
     }
 }
 
-function stringToCpdlc(str: string) {
+export function stringToCpdlc(str: string) {
     switch (str) {
     case 'AN':
         return CpdlcMessageRequestedResponseType.AffirmNegative;
