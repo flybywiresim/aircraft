@@ -90,7 +90,7 @@
     "classnames": "^2.2.6",
     "immer": "^9.0.3",
     "lodash": "^4.17.20",
-    "network": "^0.6.0",
+    "network": "^0.6.1",
     "pdf-to-printer": "^5.1.1",
     "pdfkit": "^0.13.0",
     "pkg": "^5.1.0",
