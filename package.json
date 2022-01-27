@@ -94,6 +94,7 @@
     "classnames": "^2.2.6",
     "immer": "^9.0.3",
     "lodash": "^4.17.20",
+    "msfs-geo": "^0.1.0-alpha3",
     "network": "^0.6.1",
     "pdf-to-printer": "^5.1.1",
     "pdfkit": "^0.13.0",
