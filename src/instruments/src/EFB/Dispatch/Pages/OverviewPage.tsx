@@ -1,8 +1,8 @@
 import React, { FC } from 'react';
 import { IconPlane } from '@tabler/icons';
 import { Box, LightningFill, PeopleFill, Rulers, Speedometer2 } from 'react-bootstrap-icons';
-import { usePersistentProperty } from '@instruments/common/persistence';
 import { useSimVar } from '@instruments/common/simVars';
+import { Units } from '@shared/units';
 import { NoseOutline } from '../../Assets/NoseOutline';
 
 interface InformationEntryProps {
@@ -14,14 +14,14 @@ const InformationEntry: FC<InformationEntryProps> = ({ children, title, info }) 
     <div>
         <div className="flex flex-row items-center space-x-4 text-theme-highlight">
             {children}
-            <p>{title}</p>
+            <p className="whitespace-nowrap">{title}</p>
         </div>
         <p className="font-bold">{info}</p>
     </div>
 );
 
 export const OverviewPage = () => {
-    const usingMetric = usePersistentProperty('CONFIG_USING_METRIC_UNIT')[0] === '1';
+    const { usingMetric } = Units;
 
     let [airline] = useSimVar('ATC AIRLINE', 'String', 1_000);
 
