@@ -379,6 +379,10 @@ impl CoreHydraulicForce {
         self.force_raw
     }
 
+    fn mode(&self) -> LinearActuatorMode {
+        self.current_mode
+    }
+
     fn force_active_damping(&self, speed: Velocity) -> Force {
         Force::new::<newton>(
             -speed.get::<meter_per_second>() * self.active_hydraulic_damping_constant,
@@ -693,25 +697,33 @@ impl LinearActuator {
     }
 
     fn update_fluid_displacements(&mut self, context: &UpdateContext) {
-        let mut volume_to_actuator = Volume::new::<cubic_meter>(0.);
-        let mut volume_to_reservoir = Volume::new::<cubic_meter>(0.);
+        // TODO We disable flow consumption and return for damping modes
+        // This needs a clean rework as depending on volume extension ratio and displacement direction this
+        // might not be physically possible to ignore return flow in damping modes and could cause reservoir quantity discrepencies
+        match self.core_hydraulics.mode() {
+            LinearActuatorMode::PositionControl | LinearActuatorMode::ClosedValves => {
+                let mut volume_to_actuator = Volume::new::<cubic_meter>(0.);
+                let mut volume_to_reservoir = Volume::new::<cubic_meter>(0.);
 
-        if self.delta_displacement > Length::new::<meter>(0.) {
-            volume_to_actuator = self.delta_displacement * self.bore_side_area;
-            volume_to_reservoir = volume_to_actuator / self.volume_extension_ratio;
-        } else if self.delta_displacement < Length::new::<meter>(0.) {
-            volume_to_actuator = -self.delta_displacement * self.rod_side_area;
-            volume_to_reservoir = volume_to_actuator * self.volume_extension_ratio;
+                if self.delta_displacement > Length::new::<meter>(0.) {
+                    volume_to_actuator = self.delta_displacement * self.bore_side_area;
+                    volume_to_reservoir = volume_to_actuator / self.volume_extension_ratio;
+                } else if self.delta_displacement < Length::new::<meter>(0.) {
+                    volume_to_actuator = -self.delta_displacement * self.rod_side_area;
+                    volume_to_reservoir = volume_to_actuator * self.volume_extension_ratio;
+                }
+
+                self.signed_flow = if self.delta_displacement >= Length::new::<meter>(0.) {
+                    volume_to_actuator
+                } else {
+                    -volume_to_actuator
+                } / context.delta_as_time();
+
+                self.total_volume_to_actuator += volume_to_actuator;
+                self.total_volume_to_reservoir += volume_to_reservoir;
+            }
+            _ => {}
         }
-
-        self.signed_flow = if self.delta_displacement >= Length::new::<meter>(0.) {
-            volume_to_actuator
-        } else {
-            -volume_to_actuator
-        } / context.delta_as_time();
-
-        self.total_volume_to_actuator += volume_to_actuator;
-        self.total_volume_to_reservoir += volume_to_reservoir;
     }
 
     fn set_position_target(&mut self, target_position: Ratio) {
