@@ -302,6 +302,7 @@ export class AtcSystem {
 
                 // logon rejected
                 if (response.Message.includes('UNABLE')) {
+                    this.listener.triggerToAllSubscribers('A32NX_DCDU_ATC_LOGON_MSG', '');
                     this.currentAtc = '';
                     this.nextAtc = '';
                     return true;
