@@ -1934,13 +1934,10 @@ class FMCMainDisplay extends BaseAirliners {
         this.flightNumber = flightNo;
 
         SimVar.SetSimVarValue("ATC FLIGHT NUMBER", "string", flightNo, "FMC").then(() => {
-            NXApi.connectTelex(flightNo)
-                .then(() => {
-                    callback(true);
-                })
-                .catch((err) => {
-                    if (err !== NXApi.disabledError) {
-                        this.addNewMessage(NXFictionalMessages.fltNbrInUse);
+            Atsu.AocSystem.connectTelex()
+                .then((code) => {
+                    if (code !== Atsu.AtsuStatusCodes.TelexDisabled) {
+                        this.addNewAtsuMessage(code);
                         return callback(false);
                     }
 

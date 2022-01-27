@@ -194,10 +194,10 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.onRightFunction = (f) => this.onLsk(this.onRightInput[f], this.rightInputDelay[f]);
 
         const flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string");
-        NXApi.connectTelex(flightNo)
-            .catch((err) => {
-                if (err !== NXApi.disabledError) {
-                    this.addNewMessage(NXFictionalMessages.fltNbrInUse);
+        Atsu.AocSystem.connectTelex()
+            .then((code) => {
+                if (code !== Atsu.AtsuStatusCodes.TelexDisabled) {
+                    this.addNewAtsuMessage(code);
                 }
             });
 
