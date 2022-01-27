@@ -144,6 +144,6 @@ export class HoppieConnector {
     }
 
     public static pollInterval(): number {
-        return 1000;
+        return 5000;
     }
 }
