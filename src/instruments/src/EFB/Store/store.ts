@@ -7,6 +7,7 @@ import todCalculatorReducer from './features/todCalculator';
 import buttonsReducer from './features/buttons';
 import simbriefReducer from './features/simBrief';
 import performanceReducer from './features/performance';
+import flightProgressReducer from './features/flightProgress';
 
 export type TypedAction<T> = { type: string, payload: T };
 export type RootState = ReturnType<typeof combinedReducer>;
@@ -19,6 +20,7 @@ const combinedReducer = combineReducers({
     buttons: buttonsReducer,
     simbrief: simbriefReducer,
     performance: performanceReducer,
+    flightProgress: flightProgressReducer,
 });
 
 const rootReducer: Reducer = (state: RootState, action: AnyAction) => {

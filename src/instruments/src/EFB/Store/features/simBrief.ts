@@ -4,43 +4,43 @@ import { IFuel, IWeights } from '../../SimbriefApi/simbriefInterface';
 
 import { TypedAction } from '../store';
 
-export type SimbriefData = {
-    departingAirport: string,
-    departingIata: string,
-    departingName: string,
-    departingPosLat: number,
-    departingPosLong: number,
-    arrivingAirport: string,
-    arrivingIata: string,
-    arrivingName: string,
-    arrivingPosLat: number,
-    arrivingPosLong: number,
-    flightDistance: string,
-    flightETAInSeconds: string,
-    cruiseAltitude: number,
-    weights: IWeights,
-    fuels: IFuel,
+export interface SimbriefData {
+    departingAirport: string;
+    departingIata: string;
+    departingName: string;
+    departingPosLat: number;
+    departingPosLong: number;
+    arrivingAirport: string;
+    arrivingIata: string;
+    arrivingName: string;
+    arrivingPosLat: number;
+    arrivingPosLong: number;
+    flightDistance: string;
+    flightETAInSeconds: string;
+    cruiseAltitude: number;
+    weights: IWeights;
+    fuels: IFuel;
     weather: {
-        avgWindDir: string,
-        avgWindSpeed: string,
+        avgWindDir: string;
+        avgWindSpeed: string;
     }
-    units: string,
-    altIcao: string,
-    altIata: string,
-    altBurn: number,
-    tripTime: number,
-    contFuelTime: number,
-    resFuelTime: number,
-    taxiOutTime: number,
-    schedOut: string,
-    schedIn: string,
-    airline: string,
-    flightNum: string,
-    aircraftReg: string,
-    route: string,
-    loadsheet: string,
-    costInd: string
-};
+    units: string;
+    altIcao: string;
+    altIata: string;
+    altBurn: number;
+    tripTime: number;
+    contFuelTime: number;
+    resFuelTime: number;
+    taxiOutTime: number;
+    schedOut: string;
+    schedIn: string;
+    airline: string;
+    flightNum: string;
+    aircraftReg: string;
+    route: string;
+    loadsheet: string;
+    costInd: string;
+}
 
 export const initialState: {data: SimbriefData} = {
     data: {

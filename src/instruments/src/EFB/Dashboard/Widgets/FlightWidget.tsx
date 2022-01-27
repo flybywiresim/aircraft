@@ -9,6 +9,7 @@ import { initialState, fetchSimbriefDataAction } from '../../Store/features/simB
 import { useAppSelector, useAppDispatch } from '../../Store/store';
 
 import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
+import flightProgress from '../../Store/features/flightProgress';
 
 interface InformationEntryProps {
     title: string;
@@ -95,23 +96,18 @@ export const FlightWidget = () => {
         arrivingAirport,
         arrivingIata,
         arrivingName,
-        arrivingPosLat,
-        arrivingPosLong,
         departingAirport,
         departingIata,
         departingName,
-        departingPosLat,
-        departingPosLong,
         airline,
         route,
         flightNum,
         altIcao,
         costInd,
     } = useAppSelector((state) => (state.simbrief === initialState ? simbriefValuePlaceholders : state.simbrief.data));
-    const dispatch = useAppDispatch();
+    const { flightPlanProgress } = useAppSelector((state) => state.flightProgress);
 
-    const [totalDistance, setTotalDistance] = useState(0);
-    const [remainingDistance, setRemainingDistance] = useState(0);
+    const dispatch = useAppDispatch();
 
     let schedInParsed = '----';
     let schedOutParsed = '----';
@@ -144,27 +140,8 @@ export const FlightWidget = () => {
         estimatedZfw = `${eZfw}`;
     }
 
-    const lat = useSimVarValue('PLANE LATITUDE', 'degree latitude', 2000);
-    const long = useSimVarValue('PLANE LONGITUDE', 'degree longitude', 2000);
-
-    useEffect(() => {
-        setRemainingDistance(Avionics.Utils.computeGreatCircleDistance(
-            { lat, long },
-            { lat: arrivingPosLat, long: arrivingPosLong },
-        ));
-    }, [lat, long, arrivingPosLat, arrivingPosLong]);
-
-    useEffect(() => {
-        setTotalDistance(Avionics.Utils.computeGreatCircleDistance(
-            { lat: departingPosLat, long: departingPosLong },
-            { lat: arrivingPosLat, long: arrivingPosLong },
-        ));
-    }, [departingPosLat, departingPosLong, arrivingPosLat, arrivingPosLong]);
-
-    const flightPlanProgress = totalDistance ? ((totalDistance - remainingDistance) / totalDistance) * 100 : 0;
-
     return (
-        <div className="overflow-hidden p-6 mr-3 w-2/5 h-full rounded-lg border-2 border-theme-accent shadow-md">
+        <div className="overflow-hidden p-6 mr-3 w-2/5 h-full rounded-lg border-2 shadow-md border-theme-accent">
             <div className="flex flex-col justify-between h-full">
                 <div className="space-y-8">
                     <div className="flex flex-row justify-between">
@@ -189,9 +166,9 @@ export const FlightWidget = () => {
                             </div>
                             <div className="flex flex-row h-1">
                                 <div className="relative w-full bg-theme-highlight" style={{ width: `${flightPlanProgress}%` }}>
-                                    {!!totalDistance && (
+                                    {!!flightPlanProgress && (
                                         <IconPlane
-                                            className="absolute right-0 text-theme-highlight transform translate-x-1/2 -translate-y-1/2 fill-current"
+                                            className="absolute right-0 transform translate-x-1/2 -translate-y-1/2 fill-current text-theme-highlight"
                                             size={50}
                                             strokeLinejoin="miter"
                                         />
@@ -240,7 +217,7 @@ export const FlightWidget = () => {
                             toast.error(e.message);
                         });
                     }}
-                    className="flex justify-center items-center p-2 space-x-4 w-full bg-theme-highlight rounded-lg border-2 border-theme-secondary shadow-lg focus:outline-none"
+                    className="flex justify-center items-center p-2 space-x-4 w-full rounded-lg border-2 shadow-lg focus:outline-none bg-theme-highlight border-theme-secondary"
                 >
                     <FileEarmarkArrowDown size={26} />
                     <p>Import Flightplan from SimBrief</p>

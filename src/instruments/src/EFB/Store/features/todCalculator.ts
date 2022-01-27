@@ -5,18 +5,18 @@ import { TOD_INPUT_MODE } from '../../Enum/TODInputMode';
 import { groundSpeed } from '../../Service/TODCalculator';
 import { TypedAction } from '../store';
 
-type TodCalculatorState = {
-    groundSpeed: groundSpeed[],
-    groundSpeedMode: TOD_INPUT_MODE,
-    currentAltitudeMode: TOD_INPUT_MODE,
-    calculationInputMode: TOD_INPUT_MODE,
-    currentAltitude?: number,
-    targetAltitude?: number,
+interface TodCalculatorState {
+    groundSpeed: groundSpeed[];
+    groundSpeedMode: TOD_INPUT_MODE;
+    currentAltitudeMode: TOD_INPUT_MODE;
+    calculationInputMode: TOD_INPUT_MODE;
+    currentAltitude?: number;
+    targetAltitude?: number;
     calculation: {
-        input?: number,
-        type?: TOD_CALCULATION_TYPE
+        input?: number;
+        type?: TOD_CALCULATION_TYPE;
     }
-};
+}
 
 const initialState: TodCalculatorState = {
     groundSpeed: [{ from: 0, groundSpeed: 0 }, { from: 10000, groundSpeed: 0 }],

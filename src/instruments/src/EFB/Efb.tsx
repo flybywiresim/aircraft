@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 
 import { Redirect, Route, Switch } from 'react-router-dom';
-import { useSimVar } from '@instruments/common/simVars';
+import { useSimVar, useSimVarValue } from '@instruments/common/simVars';
 import { useInteractionEvent } from '@instruments/common/hooks';
 import { Battery, BatteryCharging } from 'react-bootstrap-icons';
 import { ToastContainer, toast } from 'react-toastify';
 import { usePersistentNumberProperty, usePersistentProperty } from '@instruments/common/persistence';
+import { distanceTo } from 'msfs-geo';
 import NavigraphClient, { NavigraphContext } from './ChartsApi/Navigraph';
 import 'react-toastify/dist/ReactToastify.css';
 import './toast.css';
@@ -27,6 +28,7 @@ import { clearEfbState, useAppDispatch, useAppSelector } from './Store/store';
 import { fetchSimbriefDataAction, initialState as simbriefInitialState } from './Store/features/simBrief';
 
 import { FbwLogo } from './UtilComponents/FbwLogo';
+import { setFlightPlanProgress } from './Store/features/flightProgress';
 
 const BATTERY_DURATION_CHARGE_MIN = 180;
 const BATTERY_DURATION_DISCHARGE_MIN = 240;
@@ -92,6 +94,31 @@ const Efb = () => {
 
     const [dc2BusIsPowered] = useSimVar('L:A32NX_ELEC_DC_2_BUS_IS_POWERED', 'bool');
     const [batteryLevel, setBatteryLevel] = useState<BatteryStatus>({ level: 100, lastChangeTimestamp: absoluteTime, isCharging: dc2BusIsPowered });
+
+    const lat = useSimVarValue('PLANE LATITUDE', 'degree latitude', 2000);
+    const long = useSimVarValue('PLANE LONGITUDE', 'degree longitude', 2000);
+
+    const { arrivingPosLat, arrivingPosLong, departingPosLat, departingPosLong } = useAppSelector((state) => state.simbrief.data);
+
+    useEffect(() => {
+        const remainingDistance = distanceTo(
+            { lat, long },
+            { lat: arrivingPosLat, long: arrivingPosLong },
+        );
+
+        const totalDistance = distanceTo(
+            { lat: departingPosLat, long: departingPosLong },
+            { lat: arrivingPosLat, long: arrivingPosLong },
+        );
+
+        const flightPlanProgress = totalDistance ? Math.max(((totalDistance - remainingDistance) / totalDistance) * 100, 0) : 0;
+
+        console.log('remainingDistance', remainingDistance);
+        console.log('totalDistance', totalDistance);
+        console.log('flightPlanProgress', flightPlanProgress);
+
+        dispatch(setFlightPlanProgress(flightPlanProgress));
+    }, [lat, long, arrivingPosLat, arrivingPosLong, departingPosLat, departingPosLong]);
 
     useEffect(() => {
         setBatteryLevel((oldLevel:BatteryStatus) => {
@@ -173,7 +200,6 @@ const Efb = () => {
         return Math.min(Math.max((-solarAltitude * (180 / Math.PI)) / solarZenith * 100, 0), 100);
     };
 
-    // handle setting brightness if user is using autobrightness
     useEffect(() => {
         if (usingAutobrightness) {
             const localTime = currentLocalTime / 3600;

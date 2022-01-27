@@ -3,32 +3,32 @@ import { LandingFlapsConfig, LandingRunwayConditions } from '../../Performance/C
 import { DistanceLabel } from '../../Performance/Widgets/RunwayVisualizationWidget';
 import { TypedAction } from '../store';
 
-type TPerformanceLanding = {
-    icao: string,
-    windDirection?: number,
-    windMagnitude?: number,
-    weight?: number,
-    runwayHeading?: number,
-    approachSpeed?: number,
-    flaps: LandingFlapsConfig,
-    runwayCondition: LandingRunwayConditions,
-    reverseThrust: boolean,
-    altitude?: number,
-    slope?: number,
-    temperature?: number,
-    overweightProcedure: boolean,
-    pressure?: number,
-    runwayLength?: number,
-    maxAutobrakeLandingDist: number,
-    mediumAutobrakeLandingDist: number,
-    lowAutobrakeLandingDist: number,
-    runwayVisualizationLabels: DistanceLabel[],
-    runwayNumber: number,
-    displayedRunwayLength: number,
+interface TPerformanceLanding {
+    icao: string;
+    windDirection?: number;
+    windMagnitude?: number;
+    weight?: number;
+    runwayHeading?: number;
+    approachSpeed?: number;
+    flaps: LandingFlapsConfig;
+    runwayCondition: LandingRunwayConditions;
+    reverseThrust: boolean;
+    altitude?: number;
+    slope?: number;
+    temperature?: number;
+    overweightProcedure: boolean;
+    pressure?: number;
+    runwayLength?: number;
+    maxAutobrakeLandingDist: number;
+    mediumAutobrakeLandingDist: number;
+    lowAutobrakeLandingDist: number;
+    runwayVisualizationLabels: DistanceLabel[];
+    runwayNumber: number;
+    displayedRunwayLength: number;
 }
 
-type TPerformanceState = {
-    landing: TPerformanceLanding,
+interface TPerformanceState {
+    landing: TPerformanceLanding;
 }
 
 export const initialState: TPerformanceState = {
@@ -53,7 +53,7 @@ export const initialState: TPerformanceState = {
         lowAutobrakeLandingDist: 0,
         runwayVisualizationLabels: [],
         runwayNumber: 0,
-        displayedRunwaLength: 0,
+        displayedRunwayLength: 0,
     },
 };
 
