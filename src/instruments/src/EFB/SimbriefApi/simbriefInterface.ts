@@ -21,6 +21,7 @@ export interface ISimbriefData {
 
 interface IAirportInfo {
     icao: string,
+    runway: string,
     iata: string,
     name: string,
     posLat: number,

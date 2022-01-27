@@ -27,11 +27,13 @@ const simbriefValuePlaceholders = {
     airline: '---',
     flightNum: '----',
     departingAirport: '----',
+    departingRunway: '---',
     departingIata: '---',
     departingName: '---',
     departingPosLat: 0,
     departingPosLong: 0,
     arrivingAirport: '----',
+    arrivingRunway: '---',
     arrivingIata: '---',
     arrivingName: '---',
     arrivingPosLat: 0,
@@ -87,6 +89,9 @@ const simbriefValuePlaceholders = {
 
 export const FlightWidget = () => {
     const [simbriefUserId] = usePersistentProperty('CONFIG_SIMBRIEF_USERID');
+    const { data } = useAppSelector((state) => state.simbrief);
+    const isInitialData = data === initialState.data;
+
     const {
         schedIn,
         schedOut,
@@ -104,7 +109,9 @@ export const FlightWidget = () => {
         flightNum,
         altIcao,
         costInd,
-    } = useAppSelector((state) => (state.simbrief === initialState ? simbriefValuePlaceholders : state.simbrief.data));
+        arrivingRunway,
+        departingRunway,
+    } = isInitialData ? simbriefValuePlaceholders : data;
     const { flightPlanProgress } = useAppSelector((state) => state.flightProgress);
 
     const dispatch = useAppDispatch();
@@ -204,7 +211,25 @@ export const FlightWidget = () => {
                     <div>
                         <h5 className="text-2xl font-bold">Route</h5>
                         <ScrollableContainer height={15}>
-                            <p className="font-mono text-justify">{route}</p>
+                            <p className="font-mono">
+                                {!isInitialData && (
+                                    <span className="text-theme-highlight">
+                                        {departingAirport}
+                                        /
+                                        {departingRunway}
+                                    </span>
+                                )}
+                                {' '}
+                                {route}
+                                {' '}
+                                {!isInitialData && (
+                                    <span className="text-theme-highlight">
+                                        {arrivingAirport}
+                                        /
+                                        {arrivingRunway}
+                                    </span>
+                                )}
+                            </p>
                         </ScrollableContainer>
                     </div>
                 </div>

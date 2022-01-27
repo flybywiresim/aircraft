@@ -6,11 +6,13 @@ import { TypedAction } from '../store';
 
 export interface SimbriefData {
     departingAirport: string;
+    departingRunway: string;
     departingIata: string;
     departingName: string;
     departingPosLat: number;
     departingPosLong: number;
     arrivingAirport: string;
+    arrivingRunway: string;
     arrivingIata: string;
     arrivingName: string;
     arrivingPosLat: number;
@@ -47,11 +49,13 @@ export const initialState: {data: SimbriefData} = {
         airline: '',
         flightNum: '',
         departingAirport: '',
+        departingRunway: '',
         departingIata: '',
         departingName: '',
         departingPosLat: 0,
         departingPosLong: 0,
         arrivingAirport: '',
+        arrivingRunway: '',
         arrivingIata: '',
         arrivingName: '',
         arrivingPosLat: 0,
@@ -124,11 +128,13 @@ export async function fetchSimbriefDataAction(simbriefUserId: string): Promise<T
             airline: returnedSimbriefData.airline,
             flightNum: returnedSimbriefData.flightNumber,
             departingAirport: returnedSimbriefData.origin.icao,
+            departingRunway: returnedSimbriefData.origin.runway,
             departingIata: returnedSimbriefData.origin.iata,
             departingName: returnedSimbriefData.origin.name,
             departingPosLat: returnedSimbriefData.origin.posLat,
             departingPosLong: returnedSimbriefData.origin.posLong,
             arrivingAirport: returnedSimbriefData.destination.icao,
+            arrivingRunway: returnedSimbriefData.destination.runway,
             arrivingIata: returnedSimbriefData.destination.iata,
             arrivingName: returnedSimbriefData.destination.name,
             arrivingPosLat: returnedSimbriefData.destination.posLat,
