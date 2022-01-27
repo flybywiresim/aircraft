@@ -1924,7 +1924,7 @@ mod tests {
     }
 
     #[test]
-    fn aileron_drops_from_middle_pos_in_more_6s_in_closed_circuit_damping() {
+    fn aileron_drops_from_middle_pos_in_more_20s_in_closed_circuit_damping() {
         let mut test_bed = SimulationTestBed::new(|context| {
             let rigid_body = aileron_body();
             let actuator = aileron_actuator(context, &rigid_body);
@@ -1934,11 +1934,11 @@ mod tests {
         test_bed.command(|a| a.command_unlock());
         test_bed.command(|a| a.command_closed_circuit_damping_mode(0));
         test_bed.command(|a| a.command_closed_circuit_damping_mode(1));
-        test_bed.run_with_delta(Duration::from_secs_f64(6.));
+        test_bed.run_with_delta(Duration::from_secs_f64(20.));
 
         assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.1));
 
-        test_bed.run_with_delta(Duration::from_secs_f64(10.));
+        test_bed.run_with_delta(Duration::from_secs_f64(20.));
         assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.1));
     }
 
@@ -2226,7 +2226,7 @@ mod tests {
             80000.,
             1500.,
             5000.,
-            1500000.,
+            800000.,
             Duration::from_millis(300),
             [1., 1., 1., 1., 1., 1.],
             [0., 0.2, 0.21, 0.79, 0.8, 1.],
