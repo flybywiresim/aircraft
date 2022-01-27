@@ -135,7 +135,7 @@ class CDUAocRequestsAtis {
                 updateView();
             }, 1000);
 
-            mcdu.atsuManager.aoc().receiveAtis(icao).then((retval) => {
+            mcdu.atsuManager.aoc.receiveAtis(icao).then((retval) => {
                 if (retval[0] === Atsu.AtsuStatusCodes.Ok) {
                     mcdu.atsuManager.registerMessage(retval[1]);
                     store["sendStatus"] = "";

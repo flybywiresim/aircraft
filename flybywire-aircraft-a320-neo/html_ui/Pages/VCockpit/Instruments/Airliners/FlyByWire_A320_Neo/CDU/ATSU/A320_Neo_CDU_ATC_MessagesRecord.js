@@ -24,7 +24,7 @@ class CDUAtcMessagesRecord {
 
     static ShowPage(mcdu, messages = null, offset = 0, confirmErase = false) {
         if (!messages) {
-            messages = mcdu.atsuManager.atc().messages();
+            messages = mcdu.atsuManager.atc.messages();
         }
         mcdu.clearDisplay();
 
@@ -121,7 +121,7 @@ class CDUAtcMessagesRecord {
             if (!confirmErase) {
                 CDUAtcMessagesRecord.ShowPage(mcdu, messages, offset, true);
             } else {
-                mcdu.atsuManager.atc().cleanupMessages();
+                mcdu.atsuManager.atc.cleanupMessages();
                 CDUAtcMessagesRecord.ShowPage(mcdu, null, 0, false);
             }
         };

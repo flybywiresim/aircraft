@@ -4,8 +4,8 @@ class CDUAtcConnectionStatus {
 
         let currentStation = "____[color]amber";
         let atcDisconnect = "DISCONNECT\xa0[color]cyan";
-        if (mcdu.atsuManager.atc().currentStation() !== '') {
-            currentStation = `${mcdu.atsuManager.atc().currentStation()}[color]green`;
+        if (mcdu.atsuManager.atc.currentStation() !== '') {
+            currentStation = `${mcdu.atsuManager.atc.currentStation()}[color]green`;
             atcDisconnect = "DISCONNECT*[color]cyan";
             store["disconnectAvail"] = true;
         } else {
@@ -13,8 +13,8 @@ class CDUAtcConnectionStatus {
         }
 
         let nextStation = "----";
-        if (mcdu.atsuManager.atc().nextStation() !== '') {
-            nextStation = `${mcdu.atsuManager.atc().nextStation()}[color]green`;
+        if (mcdu.atsuManager.atc.nextStation() !== '') {
+            nextStation = `${mcdu.atsuManager.atc.nextStation()}[color]green`;
         }
 
         mcdu.setTemplate([
@@ -47,7 +47,7 @@ class CDUAtcConnectionStatus {
             if (!store["disconnectAvail"]) {
                 mcdu.addNewMessage(NXFictionalMessages.noAtc);
             } else {
-                mcdu.atsuManager.atc().logoff().then((code) => {
+                mcdu.atsuManager.atc.logoff().then((code) => {
                     if (code !== Atsu.AtsuStatusCodes.Ok) {
                         mcdu.addNewAtsuMessage(code);
                     } else {

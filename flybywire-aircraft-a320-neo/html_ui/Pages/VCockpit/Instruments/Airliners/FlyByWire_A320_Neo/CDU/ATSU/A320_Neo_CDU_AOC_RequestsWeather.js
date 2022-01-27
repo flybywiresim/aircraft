@@ -64,7 +64,7 @@ class CDUAocRequestsWeather {
                 updateView();
             }, 1000);
 
-            mcdu.atsuManager.aoc().receiveWeather(reqID === 0, icaos).then((retval) => {
+            mcdu.atsuManager.aoc.receiveWeather(reqID === 0, icaos).then((retval) => {
                 if (retval[0] === Atsu.AtsuStatusCodes.Ok) {
                     mcdu.atsuManager.registerMessage(retval[1]);
                     sendStatus = "";

@@ -52,8 +52,8 @@ class CDUAtcConnectionNotification {
         let notificationMessage = "";
         if (store["loginState"] === 1) {
             notificationMessage = `${store["atcCenter"]} NOTIFIED ${store["notifTime"]}[color]green`;
-        } else if (mcdu.atsuManager.atc().currentStation() !== '') {
-            notificationMessage = `${mcdu.atsuManager.atc().currentStation()}[color]green`;
+        } else if (mcdu.atsuManager.atc.currentStation() !== '') {
+            notificationMessage = `${mcdu.atsuManager.atc.currentStation()}[color]green`;
         }
 
         mcdu.setTemplate([
@@ -128,7 +128,7 @@ class CDUAtcConnectionNotification {
 
                 store["notifTime"] = `${zeroPad(hours, 2)}${zeroPad(minutes, 2)}Z`;
 
-                mcdu.atsuManager.atc().logon(store["atcCenter"]).then((code) => {
+                mcdu.atsuManager.atc.logon(store["atcCenter"]).then((code) => {
                     if (code === Atsu.AtsuStatusCodes.Ok) {
                         // check if the login was successful
                         const interval = setInterval(() => {
@@ -139,8 +139,8 @@ class CDUAtcConnectionNotification {
                             }
 
                             // logon somehow done
-                            if (!mcdu.atsuManager.atc().logonInProgress()) {
-                                if (mcdu.atsuManager.atc().currentStation() === store["atcCenter"]) {
+                            if (!mcdu.atsuManager.atc.logonInProgress()) {
+                                if (mcdu.atsuManager.atc.currentStation() === store["atcCenter"]) {
                                     store["loginState"] = 0;
                                 } else {
                                     store["loginState"] = 2;

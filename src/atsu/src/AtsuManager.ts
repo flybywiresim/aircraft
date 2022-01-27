@@ -16,9 +16,9 @@ export class AtsuManager {
 
     private messageCounter = 0;
 
-    private aocSystem = new AocSystem(this.datalink);
+    public aoc = new AocSystem(this.datalink);
 
-    private atcSystem = new AtcSystem(this, this.datalink);
+    public atc = new AtcSystem(this, this.datalink);
 
     private listener = RegisterViewListener('JS_LISTENER_SIMVARS');
 
@@ -32,12 +32,12 @@ export class AtsuManager {
         let retval = AtsuStatusCodes.UnknownMessage;
 
         if (AocSystem.isRelevantMessage(message)) {
-            retval = await this.aocSystem.sendMessage(message);
+            retval = await this.aoc.sendMessage(message);
             if (retval === AtsuStatusCodes.Ok) {
                 this.registerMessage(message);
             }
         } else if (AtcSystem.isRelevantMessage(message)) {
-            retval = await this.atcSystem.sendMessage(message);
+            retval = await this.atc.sendMessage(message);
             if (retval === AtsuStatusCodes.Ok) {
                 this.registerMessage(message);
             }
@@ -47,10 +47,10 @@ export class AtsuManager {
     }
 
     public removeMessage(uid: number): void {
-        if (this.atcSystem.removeMessage(uid) === true) {
+        if (this.atc.removeMessage(uid) === true) {
             this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG_DELETE_UID', uid);
         } else {
-            this.aocSystem.removeMessage(uid);
+            this.aoc.removeMessage(uid);
         }
     }
 
@@ -59,28 +59,20 @@ export class AtsuManager {
         message.Timestamp = new AtsuTimestamp();
 
         if (AocSystem.isRelevantMessage(message)) {
-            this.aocSystem.insertMessage(message);
+            this.aoc.insertMessage(message);
         } else if (AtcSystem.isRelevantMessage(message)) {
             if (message.ComStatus !== AtsuMessageComStatus.Sending && message.ComStatus !== AtsuMessageComStatus.Sent) {
                 if (SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_MAX_REACHED', 'boolean') === 1) {
                     this.mcdu.addNewAtsuMessage(AtsuStatusCodes.DcduFull);
                 }
             }
-            this.atcSystem.insertMessage(message);
+            this.atc.insertMessage(message);
         }
     }
 
     public messageRead(uid: number): void {
-        this.aocSystem.messageRead(uid);
-        this.atcSystem.messageRead(uid);
-    }
-
-    public aoc(): AocSystem {
-        return this.aocSystem;
-    }
-
-    public atc(): AtcSystem {
-        return this.atcSystem;
+        this.aoc.messageRead(uid);
+        this.atc.messageRead(uid);
     }
 
     public async isRemoteStationAvailable(callsign: string): Promise<AtsuStatusCodes> {
@@ -88,12 +80,12 @@ export class AtsuManager {
     }
 
     public findMessage(uid: number): AtsuMessage {
-        let message = this.aocSystem.messages().find((element) => element.UniqueMessageID === uid);
+        let message = this.aoc.messages().find((element) => element.UniqueMessageID === uid);
         if (message !== undefined) {
             return message;
         }
 
-        message = this.atcSystem.messages().find((element) => element.UniqueMessageID === uid);
+        message = this.atc.messages().find((element) => element.UniqueMessageID === uid);
         if (message !== undefined) {
             return message;
         }

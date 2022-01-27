@@ -1,7 +1,7 @@
 class CDUAocMessagesSent {
     static ShowPage(mcdu, messages = null, offset = 5) {
         if (!messages) {
-            messages = mcdu.atsuManager.aoc().outputMessages();
+            messages = mcdu.atsuManager.aoc.outputMessages();
         }
         mcdu.clearDisplay();
 
