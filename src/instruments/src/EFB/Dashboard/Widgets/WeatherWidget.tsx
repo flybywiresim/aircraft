@@ -72,11 +72,16 @@ type WeatherWidgetProps = { name: string, editIcao: string, icao: string};
 
 export const WeatherWidget = (props: WeatherWidgetProps) => {
     const [metar, setMetar] = useState<MetarParserType>(MetarParserTypeProp);
+    const [showMetar, setShowMetar] = usePersistentProperty(`CONFIG_SHOW_METAR_${props.name}`, 'DISABLED');
+    const [baroType] = usePersistentProperty('CONFIG_INIT_BARO_UNIT', 'HPA');
+    let [metarSource] = usePersistentProperty('CONFIG_METAR_SRC', 'MSFS');
+    let [icaoManual] = useState('');
 
-    const getBaroTypeForAirport = (icao: string) => (['K', 'C', 'M', 'P', 'RJ', 'RO', 'TI', 'TJ'].some((r) => icao.startsWith(r)) ? 'IN HG' : 'HPA');
+    const getBaroTypeForAirport = (icao: string) => (['K', 'C', 'M', 'P', 'RJ', 'RO', 'TI', 'TJ'].some((r) => icao.toUpperCase().startsWith(r)) ? 'IN HG' : 'HPA');
 
     const BaroValue = () => {
-        if (baroType === 'IN HG') {
+        const displayedBaroType = baroType === 'AUTO' ? getBaroTypeForAirport(metar.icao) : baroType;
+        if (displayedBaroType === 'IN HG') {
             return (
                 <>
                     {metar.barometer.hg.toFixed(2)}
@@ -85,7 +90,6 @@ export const WeatherWidget = (props: WeatherWidgetProps) => {
                 </>
             );
         }
-
         return (
             <>
                 {metar.barometer.mb.toFixed(0)}
@@ -95,10 +99,6 @@ export const WeatherWidget = (props: WeatherWidgetProps) => {
         );
     };
 
-    let [baroType] = usePersistentProperty('CONFIG_INIT_BARO_UNIT', 'HPA');
-    const [showMetar, setShowMetar] = usePersistentProperty(`CONFIG_SHOW_METAR_${props.name}`, 'DISABLED');
-    let [metarSource] = usePersistentProperty('CONFIG_METAR_SRC', 'MSFS');
-
     if (metarSource === 'MSFS') {
         metarSource = 'MS';
     }
@@ -106,9 +106,10 @@ export const WeatherWidget = (props: WeatherWidgetProps) => {
     const source = metarSource;
 
     const handleIcao = (icao: string) => {
-        if (icao.length === 4) {
-            getMetar(icao, source);
-        } else if (icao.length === 0) {
+        icaoManual = icao;
+        if (icaoManual.length === 4) {
+            getMetar(icaoManual, source);
+        } else if (icaoManual.length === 0) {
             getMetar(props.icao, source);
         }
     };
@@ -129,10 +130,6 @@ export const WeatherWidget = (props: WeatherWidgetProps) => {
             });
     }
 
-    if (baroType === 'AUTO') {
-        baroType = getBaroTypeForAirport(props.icao);
-    }
-
     useEffect(() => {
         getMetar(props.icao, source);
     }, [props.icao, source]);
@@ -151,7 +148,7 @@ export const WeatherWidget = (props: WeatherWidgetProps) => {
                                 noLabel
                                 className="ml-4 w-24 text-2xl font-medium text-center uppercase"
                                 placeholder={props.icao}
-                                value={props.icao === '----' ? '' : props.icao}
+                                value={icaoManual === '' ? props.icao : icaoManual}
                                 onChange={(value) => handleIcao(value)}
                                 maxLength={4}
                             />
