@@ -190,9 +190,11 @@ impl A320CargoDoorFactory {
     const FLOW_CONTROL_FORCE_GAIN: f64 = 200000.;
 
     fn a320_cargo_door_actuator(
+        context: &mut InitContext,
         bounded_linear_length: &impl BoundedLinearLength,
     ) -> LinearActuator {
         LinearActuator::new(
+            context,
             bounded_linear_length,
             2,
             Length::new::<meter>(0.04422),
@@ -236,36 +238,41 @@ impl A320CargoDoorFactory {
 
     /// Builds a cargo door assembly consisting of the door physical rigid body and the hydraulic actuator connected
     /// to it
-    fn a320_cargo_door_assembly() -> HydraulicLinearActuatorAssembly<1> {
+    fn a320_cargo_door_assembly(context: &mut InitContext) -> HydraulicLinearActuatorAssembly<1> {
         let cargo_door_body = A320CargoDoorFactory::a320_cargo_door_body(true);
-        let cargo_door_actuator = A320CargoDoorFactory::a320_cargo_door_actuator(&cargo_door_body);
+        let cargo_door_actuator =
+            A320CargoDoorFactory::a320_cargo_door_actuator(context, &cargo_door_body);
         HydraulicLinearActuatorAssembly::new([cargo_door_actuator], cargo_door_body)
     }
 
     fn new_a320_cargo_door(context: &mut InitContext, id: &str) -> CargoDoor {
-        let assembly = A320CargoDoorFactory::a320_cargo_door_assembly();
+        let assembly = A320CargoDoorFactory::a320_cargo_door_assembly(context);
         CargoDoor::new(context, id, assembly)
     }
 }
 
 struct A320AileronFactory {}
 impl A320AileronFactory {
-    const FLOW_CONTROL_PROPORTIONAL_GAIN: f64 = 0.45;
-    const FLOW_CONTROL_INTEGRAL_GAIN: f64 = 2.5;
+    const FLOW_CONTROL_PROPORTIONAL_GAIN: f64 = 0.4;
+    const FLOW_CONTROL_INTEGRAL_GAIN: f64 = 1.;
     const FLOW_CONTROL_FORCE_GAIN: f64 = 200000.;
 
-    fn a320_aileron_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
+    fn a320_aileron_actuator(
+        context: &mut InitContext,
+        bounded_linear_length: &impl BoundedLinearLength,
+    ) -> LinearActuator {
         LinearActuator::new(
+            context,
             bounded_linear_length,
             1,
             Length::new::<meter>(0.04),
             Length::new::<meter>(0.),
-            VolumeRate::new::<gallon_per_second>(0.05),
+            VolumeRate::new::<gallon_per_second>(0.02),
             80000.,
             1500.,
-            7000.,
+            5000.,
             250000.,
-            Duration::from_millis(1500),
+            Duration::from_millis(300),
             [1., 1., 1., 1., 1., 1.],
             [0., 0.2, 0.21, 0.79, 0.8, 1.],
             Self::FLOW_CONTROL_PROPORTIONAL_GAIN,
@@ -291,7 +298,7 @@ impl A320AileronFactory {
             Angle::new::<degree>(-25.),
             Angle::new::<degree>(50.),
             Angle::new::<degree>(0.),
-            10.,
+            1.,
             false,
             Vector3::new(1., 0., 0.),
         )
@@ -299,14 +306,14 @@ impl A320AileronFactory {
 
     /// Builds an aileron assembly consisting of the aileron physical rigid body and two hydraulic actuators connected
     /// to it
-    fn a320_aileron_assembly() -> HydraulicLinearActuatorAssembly<2> {
+    fn a320_aileron_assembly(context: &mut InitContext) -> HydraulicLinearActuatorAssembly<2> {
         let aileron_body = A320AileronFactory::a320_aileron_body();
-        let aileron_actuator = A320AileronFactory::a320_aileron_actuator(&aileron_body);
+        let aileron_actuator = A320AileronFactory::a320_aileron_actuator(context, &aileron_body);
         HydraulicLinearActuatorAssembly::new([aileron_actuator, aileron_actuator], aileron_body)
     }
 
     fn new_aileron(context: &mut InitContext, id: AileronSide) -> AileronAssembly {
-        let assembly = A320AileronFactory::a320_aileron_assembly();
+        let assembly = A320AileronFactory::a320_aileron_assembly(context);
         AileronAssembly::new(context, id, assembly)
     }
 }
@@ -724,11 +731,11 @@ impl A320Hydraulic {
             self.green_circuit.system_pressure(),
         );
 
-        println!(
-            "HYD AILERON POS: L{:.1} R{:.1}",
-            self.left_aileron.position().get::<ratio>(),
-            self.right_aileron.position().get::<ratio>(),
-        );
+        // println!(
+        //     "HYD AILERON POS: L{:.1} R{:.1}",
+        //     self.left_aileron.position().get::<ratio>(),
+        //     self.right_aileron.position().get::<ratio>(),
+        // );
     }
 
     fn update_with_sim_rate(
@@ -811,10 +818,10 @@ impl A320Hydraulic {
         self.green_circuit
             .update_actuator_volumes(&mut self.braking_circuit_norm);
 
-        // self.green_circuit
-        //     .update_actuator_volumes(self.left_aileron.actuator_green());
-        // self.green_circuit
-        //     .update_actuator_volumes(self.right_aileron.actuator_green());
+        self.green_circuit
+            .update_actuator_volumes(self.left_aileron.actuator_green());
+        self.green_circuit
+            .update_actuator_volumes(self.right_aileron.actuator_green());
     }
 
     fn update_yellow_actuators_volume(&mut self) {
@@ -835,10 +842,10 @@ impl A320Hydraulic {
         self.blue_circuit
             .update_actuator_volumes(&mut self.emergency_gen);
 
-        // self.blue_circuit
-        //     .update_actuator_volumes(self.left_aileron.actuator_blue());
-        // self.blue_circuit
-        //     .update_actuator_volumes(self.right_aileron.actuator_blue());
+        self.blue_circuit
+            .update_actuator_volumes(self.left_aileron.actuator_blue());
+        self.blue_circuit
+            .update_actuator_volumes(self.right_aileron.actuator_blue());
     }
 
     // All the core hydraulics updates that needs to be done at the slowest fixed step rate
@@ -2992,7 +2999,7 @@ impl SimulationElement for ElacComputer {
         let left: f64 = reader.read(&self.requested_position_left_id);
         let right: f64 = reader.read(&self.requested_position_right_id);
 
-        println!("ELAC READ L{:.1} R{:.1}", -1. * left, right);
+        // println!("ELAC READ L{:.1} R{:.1}", -1. * left, right);
     }
 }
 
@@ -3060,6 +3067,11 @@ impl AileronAssembly {
     }
 }
 impl SimulationElement for AileronAssembly {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.hydraulic_assembly.accept(visitor);
+        visitor.visit(self);
+    }
+
     fn write(&self, writer: &mut SimulatorWriter) {
         match self.id {
             AileronSide::Left => {

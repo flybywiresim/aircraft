@@ -19,7 +19,10 @@ use uom::si::{
 
 use crate::{
     shared::{interpolation, low_pass_filter::LowPassFilter, pid::PidController},
-    simulation::UpdateContext,
+    simulation::{
+        InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
+        UpdateContext, VariableIdentifier,
+    },
 };
 
 use std::time::Duration;
@@ -67,6 +70,11 @@ pub enum LinearActuatorMode {
 /// free moving mode, usable for gravity extension, or for aileron droop.
 #[derive(PartialEq, Clone, Copy)]
 struct CoreHydraulicForce {
+    kp_id: VariableIdentifier,
+    ki_id: VariableIdentifier,
+    oloop_gain_id: VariableIdentifier,
+    max_flow_id: VariableIdentifier,
+
     current_mode: LinearActuatorMode,
     closed_valves_reference_position: Ratio,
 
@@ -93,6 +101,11 @@ struct CoreHydraulicForce {
     max_force: Force,
 
     pid_controller: PidController,
+
+    kp_read: f64,
+    ki_read: f64,
+    oloop_gain_read: f64,
+    maxflow_read: f64,
 }
 impl CoreHydraulicForce {
     const OPEN_LOOP_GAIN: f64 = 1.;
@@ -100,7 +113,10 @@ impl CoreHydraulicForce {
     const MIN_PRESSURE_TO_EXIT_POSITION_CONTROL_PSI: f64 = 500.;
     const MIN_PRESSURE_TO_ALLOW_POSITION_CONTROL_PSI: f64 = 700.;
 
+    const MIN_SPEED_FOR_DAMPING_RESET_M_PER_S: f64 = 0.00001;
+
     fn new(
+        context: &mut InitContext,
         init_position: Ratio,
         active_hydraulic_damping_constant: f64,
         slow_hydraulic_damping_constant: f64,
@@ -119,6 +135,11 @@ impl CoreHydraulicForce {
     ) -> Self {
         let max_force = Pressure::new::<psi>(3000.) * bore_side_area;
         Self {
+            kp_id: context.get_identifier("TEST_KP".to_owned()),
+            ki_id: context.get_identifier("TEST_KI".to_owned()),
+            oloop_gain_id: context.get_identifier("TEST_OLOOP".to_owned()),
+            max_flow_id: context.get_identifier("TEST_FLOW".to_owned()),
+
             current_mode: LinearActuatorMode::ClosedValves,
             closed_valves_reference_position: init_position,
 
@@ -150,6 +171,11 @@ impl CoreHydraulicForce {
                 0.,
                 flow_control_force_gain,
             ),
+
+            kp_read: 0.4,
+            ki_read: 1.,
+            oloop_gain_read: 1.,
+            maxflow_read: 0.02,
         }
     }
 
@@ -300,14 +326,39 @@ impl CoreHydraulicForce {
                 self.force_raw = self.force_closed_valves(position_normalized, speed);
             }
             LinearActuatorMode::ActiveDamping => {
-                self.force_filtered
-                    .update(context.delta(), self.force_active_damping(speed));
+                if speed.get::<meter_per_second>().abs() > Self::MIN_SPEED_FOR_DAMPING_RESET_M_PER_S
+                {
+                    self.force_filtered
+                        .update(context.delta(), self.force_active_damping(speed));
+                } else {
+                    self.force_filtered.reset(Force::default());
+                }
                 self.force_raw = self.force_filtered.output();
+
+                println!(
+                    "LAST FORCE ACT DAMPING {:.0} Raw {:.4} Speed{}",
+                    self.force_raw.get::<newton>(),
+                    self.force_active_damping(speed).get::<newton>(),
+                    speed.get::<meter_per_second>()
+                );
             }
             LinearActuatorMode::ClosedCircuitDamping => {
-                self.force_filtered
-                    .update(context.delta(), self.force_closed_circuit_damping(speed));
+                if speed.get::<meter_per_second>().abs() > Self::MIN_SPEED_FOR_DAMPING_RESET_M_PER_S
+                {
+                    self.force_filtered
+                        .update(context.delta(), self.force_closed_circuit_damping(speed));
+                } else {
+                    self.force_filtered.reset(Force::default());
+                }
+
                 self.force_raw = self.force_filtered.output();
+
+                println!(
+                    "LAST FORCE SLOW DAMPING {:.0} Raw {:.4} Speed{}",
+                    self.force_raw.get::<newton>(),
+                    self.force_closed_circuit_damping(speed).get::<newton>(),
+                    speed.get::<meter_per_second>()
+                );
             }
             LinearActuatorMode::PositionControl => {
                 self.force_raw = self.force_position_control(
@@ -320,6 +371,8 @@ impl CoreHydraulicForce {
                 );
             }
         }
+
+        self.force_raw = self.force_raw.min(self.max_force).max(-self.max_force);
     }
 
     fn force(&self) -> Force {
@@ -355,7 +408,7 @@ impl CoreHydraulicForce {
         let position_error = required_position - position_normalized;
 
         let open_loop_flow_target = VolumeRate::new::<cubic_meter_per_second>(
-            position_error.get::<ratio>().powi(3) * Self::OPEN_LOOP_GAIN,
+            position_error.get::<ratio>().powi(3) * self.oloop_gain_read,
         );
 
         let open_loop_modifier_from_position = interpolation(
@@ -364,7 +417,9 @@ impl CoreHydraulicForce {
             position_normalized.get::<ratio>(),
         );
 
-        (open_loop_flow_target.min(self.max_flow).max(self.min_flow))
+        (open_loop_flow_target
+            .min(VolumeRate::new::<gallon_per_second>(self.maxflow_read))
+            .max(VolumeRate::new::<gallon_per_second>(-self.maxflow_read)))
             * open_loop_modifier_from_position
     }
 
@@ -398,6 +453,8 @@ impl CoreHydraulicForce {
     ) -> Force {
         let open_loop_flow_target = self.open_loop_flow(required_position, position_normalized);
 
+        self.pid_controller.set_kp_ki(self.kp_read, self.ki_read);
+
         self.pid_controller
             .change_setpoint(open_loop_flow_target.get::<gallon_per_second>());
 
@@ -408,7 +465,38 @@ impl CoreHydraulicForce {
             Some(context.delta()),
         ));
 
+        println!(
+            "LAST FORCE CONTROL {:.0} kp {:.3} ki {:.3} Oloop {:.3}",
+            self.last_control_force.get::<newton>(),
+            self.kp_read,
+            self.ki_read,
+            open_loop_flow_target.get::<gallon_per_second>()
+        );
+
         self.last_control_force
+    }
+}
+impl SimulationElement for CoreHydraulicForce {
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        let kp_read: f64 = reader.read(&self.kp_id);
+        let ki_read: f64 = reader.read(&self.ki_id);
+        let oloop_gain_read: f64 = reader.read(&self.oloop_gain_id);
+        let maxflow_read: f64 = reader.read(&self.max_flow_id);
+
+        if kp_read != 0. {
+            self.kp_read = reader.read(&self.kp_id);
+        }
+
+        if ki_read != 0. {
+            self.ki_read = reader.read(&self.ki_id);
+        }
+
+        if oloop_gain_read != 0. {
+            self.oloop_gain_read = reader.read(&self.oloop_gain_id);
+        }
+        if maxflow_read != 0. {
+            self.maxflow_read = reader.read(&self.max_flow_id);
+        }
     }
 }
 
@@ -456,6 +544,7 @@ pub struct LinearActuator {
 }
 impl LinearActuator {
     pub fn new(
+        context: &mut InitContext,
         bounded_linear_length: &impl BoundedLinearLength,
         number_of_actuators: u8,
         bore_side_diameter: Length,
@@ -539,6 +628,7 @@ impl LinearActuator {
             requested_position: Ratio::new::<ratio>(0.),
 
             core_hydraulics: CoreHydraulicForce::new(
+                context,
                 init_position_normalized,
                 active_hydraulic_damping_constant,
                 slow_hydraulic_damping_constant,
@@ -651,6 +741,13 @@ impl Actuator for LinearActuator {
         self.total_volume_to_actuator = Volume::new::<gallon>(0.);
     }
 }
+impl SimulationElement for LinearActuator {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.core_hydraulics.accept(visitor);
+
+        visitor.visit(self);
+    }
+}
 
 pub trait HydraulicAssemblyController {
     fn requested_mode(&self, index: usize) -> LinearActuatorMode;
@@ -727,6 +824,21 @@ impl<const N: usize> HydraulicLinearActuatorAssembly<N> {
 
     pub fn actuator_position_normalized(&self, index: usize) -> Ratio {
         self.linear_actuators[index].position_normalized()
+    }
+}
+impl SimulationElement for HydraulicLinearActuatorAssembly<1> {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.linear_actuators[0].accept(visitor);
+
+        visitor.visit(self);
+    }
+}
+impl SimulationElement for HydraulicLinearActuatorAssembly<2> {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.linear_actuators[0].accept(visitor);
+        self.linear_actuators[1].accept(visitor);
+
+        visitor.visit(self);
     }
 }
 
@@ -2052,8 +2164,8 @@ mod tests {
     }
 
     fn aileron_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
-        const DEFAULT_I_GAIN: f64 = 2.5;
-        const DEFAULT_P_GAIN: f64 = 0.45;
+        const DEFAULT_I_GAIN: f64 = 1.;
+        const DEFAULT_P_GAIN: f64 = 0.4;
         const DEFAULT_FORCE_GAIN: f64 = 200000.;
 
         LinearActuator::new(
@@ -2061,7 +2173,7 @@ mod tests {
             1,
             Length::new::<meter>(0.04),
             Length::new::<meter>(0.),
-            VolumeRate::new::<gallon_per_second>(0.05),
+            VolumeRate::new::<gallon_per_second>(0.02),
             80000.,
             1500.,
             7000.,
