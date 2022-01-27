@@ -1,6 +1,7 @@
 //  Copyright (c) 2022 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
+import { NXApiConnector } from '@atsu/com/NXApiConnector';
 import { AtsuStatusCodes } from './AtsuStatusCodes';
 import { AtsuMessageDirection, AtsuMessage, AtsuMessageType } from './messages/AtsuMessage';
 import { WeatherMessage } from './messages/WeatherMessage';
@@ -16,6 +17,14 @@ export class AocSystem {
 
     constructor(datalink: Datalink) {
         this.datalink = datalink;
+    }
+
+    public static async connectTelex(): Promise<AtsuStatusCodes> {
+        return NXApiConnector.connect();
+    }
+
+    public static async disconnectTelex(): Promise<AtsuStatusCodes> {
+        return NXApiConnector.disconnect();
     }
 
     public static isRelevantMessage(message: AtsuMessage): boolean {
