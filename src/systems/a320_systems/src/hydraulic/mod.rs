@@ -271,7 +271,7 @@ impl A320AileronFactory {
             80000.,
             1500.,
             5000.,
-            250000.,
+            800000.,
             Duration::from_millis(300),
             [1., 1., 1., 1., 1., 1.],
             [0., 0.2, 0.21, 0.79, 0.8, 1.],
@@ -326,6 +326,7 @@ pub(super) struct A320Hydraulic {
 
     core_hydraulic_updater: FixedStepLoop,
     physics_updater: MaxFixedStepLoop,
+    ludicrous_updater: MaxFixedStepLoop,
 
     brake_steer_computer: A320HydraulicBrakeSteerComputerUnit,
 
@@ -422,6 +423,7 @@ impl A320Hydraulic {
 
             core_hydraulic_updater: FixedStepLoop::new(Self::HYDRAULIC_SIM_TIME_STEP),
             physics_updater: MaxFixedStepLoop::new(Self::HYDRAULIC_SIM_MAX_TIME_STEP_MILLISECONDS),
+            ludicrous_updater: MaxFixedStepLoop::new(Duration::from_millis(10)),
 
             brake_steer_computer: A320HydraulicBrakeSteerComputerUnit::new(context),
 
@@ -555,6 +557,7 @@ impl A320Hydraulic {
     ) {
         self.core_hydraulic_updater.update(context);
         self.physics_updater.update(context);
+        self.ludicrous_updater.update(context);
 
         for cur_time_step in self.physics_updater {
             self.update_fast_physics(
@@ -576,6 +579,10 @@ impl A320Hydraulic {
             engine1,
             engine2,
         );
+
+        for cur_time_step in self.ludicrous_updater {
+            self.update_ludicrous_physics(&context.with_delta(cur_time_step));
+        }
 
         for cur_time_step in self.core_hydraulic_updater {
             self.update_core_hydraulics(
@@ -670,6 +677,28 @@ impl A320Hydraulic {
         self.yellow_circuit.system_section_pressure_switch() == PressureSwitchState::Pressurised
     }
 
+    fn update_ludicrous_physics(&mut self, context: &UpdateContext) {
+        self.left_aileron.update(
+            context,
+            self.elac_computer.left_controller(),
+            self.blue_circuit.system_pressure(),
+            self.green_circuit.system_pressure(),
+        );
+
+        self.right_aileron.update(
+            context,
+            self.elac_computer.right_controller(),
+            self.blue_circuit.system_pressure(),
+            self.green_circuit.system_pressure(),
+        );
+
+        // println!(
+        //     "HYD AILERON POS: L{:.1} R{:.1}",
+        //     self.left_aileron.position().get::<ratio>(),
+        //     self.right_aileron.position().get::<ratio>(),
+        // );
+    }
+
     // Updates at the same rate as the sim or at a fixed maximum time step if sim rate is too slow
     fn update_fast_physics(
         &mut self,
@@ -711,31 +740,6 @@ impl A320Hydraulic {
             &self.gcu,
             emergency_elec,
         );
-
-        self.elac_computer.update(
-            self.blue_circuit.system_pressure(),
-            self.green_circuit.system_pressure(),
-        );
-
-        self.left_aileron.update(
-            context,
-            self.elac_computer.left_controller(),
-            self.blue_circuit.system_pressure(),
-            self.green_circuit.system_pressure(),
-        );
-
-        self.right_aileron.update(
-            context,
-            self.elac_computer.right_controller(),
-            self.blue_circuit.system_pressure(),
-            self.green_circuit.system_pressure(),
-        );
-
-        // println!(
-        //     "HYD AILERON POS: L{:.1} R{:.1}",
-        //     self.left_aileron.position().get::<ratio>(),
-        //     self.right_aileron.position().get::<ratio>(),
-        // );
     }
 
     fn update_with_sim_rate(
@@ -804,6 +808,11 @@ impl A320Hydraulic {
             self.green_circuit.system_pressure(),
             self.blue_circuit.system_pressure(),
             self.yellow_circuit.system_pressure(),
+        );
+
+        self.elac_computer.update(
+            self.blue_circuit.system_pressure(),
+            self.green_circuit.system_pressure(),
         );
     }
 

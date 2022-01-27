@@ -902,10 +902,13 @@ pub struct LinearActuatedRigidBodyOnHingeAxis {
     is_locked: bool,
 
     axis_direction: Vector3<f64>,
+
+    plane_acceleration_filtered: LowPassFilter<Vector3<f64>>,
 }
 impl LinearActuatedRigidBodyOnHingeAxis {
     // Rebound energy when hiting min or max position. 0.3 means the body rebounds at 30% of the speed it hit the min/max position
     const DEFAULT_MAX_MIN_POSITION_REBOUND_FACTOR: f64 = 0.3;
+    const PLANE_ACCELERATION_FILTERING_TIME_CONSTANT: Duration = Duration::from_millis(100);
 
     pub fn new(
         mass: Mass,
@@ -953,6 +956,9 @@ impl LinearActuatedRigidBodyOnHingeAxis {
             is_lock_requested: locked,
             is_locked: locked,
             axis_direction,
+            plane_acceleration_filtered: LowPassFilter::<Vector3<f64>>::new(
+                Self::PLANE_ACCELERATION_FILTERING_TIME_CONSTANT,
+            ),
         };
         // Make sure the new object has coherent structure by updating internal roations and positions once
         new_body.initialize_actuator_force_direction();
@@ -1039,8 +1045,14 @@ impl LinearActuatedRigidBodyOnHingeAxis {
     // Computes local acceleration including world gravity and plane acceleration
     // Note that this does not compute acceleration due to angular velocity of the plane
     fn local_acceleration_and_gravity(&self, context: &UpdateContext) -> Torque {
-        let plane_acceleration_plane_reference = context.acceleration().to_ms2_vector();
+        let plane_acceleration_plane_reference = self.plane_acceleration_filtered.output();
 
+        println!(
+            "ACCEL X{:.3} Y{:.3} Z{:.3}",
+            plane_acceleration_plane_reference[0],
+            plane_acceleration_plane_reference[1],
+            plane_acceleration_plane_reference[2]
+        );
         let pitch_rotation = context.attitude().pitch_rotation_transform();
 
         let bank_rotation = context.attitude().bank_rotation_transform();
@@ -1076,6 +1088,9 @@ impl LinearActuatedRigidBodyOnHingeAxis {
     }
 
     pub fn update(&mut self, context: &UpdateContext) {
+        self.plane_acceleration_filtered
+            .update(context.delta(), context.acceleration().to_ms2_vector());
+
         if !self.is_locked {
             self.sum_of_torques +=
                 self.natural_damping() + self.local_acceleration_and_gravity(context);
