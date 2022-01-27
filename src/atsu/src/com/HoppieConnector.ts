@@ -2,7 +2,7 @@
 //  SPDX-License-Identifier: GPL-3.0
 
 import { NXDataStore } from '@shared/persistence';
-import { NXApi } from '@shared/nxapi';
+import { Hoppie } from '@flybywiresim/api-client';
 import { AtsuStatusCodes } from '../AtsuStatusCodes';
 import { AtsuMessage, AtsuMessageNetwork, AtsuMessageDirection, AtsuMessageComStatus, AtsuMessageSerializationFormat } from '../messages/AtsuMessage';
 import { CpdlcMessage } from '../messages/CpdlcMessage';
@@ -27,7 +27,14 @@ export class HoppieConnector {
             return AtsuStatusCodes.NoAtc;
         }
 
-        const text = await NXApi.sendHoppieRequest(NXDataStore.get('CONFIG_HOPPIE_USERID', ''), flightNo, 'ALL-CALLSIGNS', 'ping', station);
+        const body = {
+            logon: NXDataStore.get('CONFIG_HOPPIE_USERID', ''),
+            from: flightNo,
+            to: 'ALL-CALLSIGNS',
+            type: 'ping',
+            packet: station,
+        };
+        const text = await Hoppie.sendRequest(body).then((resp) => resp.response);
 
         if (text.includes('error')) {
             return AtsuStatusCodes.ProxyError;
@@ -52,7 +59,14 @@ export class HoppieConnector {
             return AtsuStatusCodes.ComFailed;
         }
 
-        const text = await NXApi.sendHoppieRequest(NXDataStore.get('CONFIG_HOPPIE_USERID', ''), flightNo, message.Station, type, message.serialize(AtsuMessageSerializationFormat.Network));
+        const body = {
+            logon: NXDataStore.get('CONFIG_HOPPIE_USERID', ''),
+            from: flightNo,
+            to: message.Station,
+            type,
+            packet: message.serialize(AtsuMessageSerializationFormat.Network),
+        };
+        const text = await Hoppie.sendRequest(body).then((resp) => resp.response);
 
         if (text !== 'ok') {
             return AtsuStatusCodes.ComFailed;
@@ -86,7 +100,13 @@ export class HoppieConnector {
             return [AtsuStatusCodes.ComFailed, retval];
         }
 
-        const text = await NXApi.sendHoppieRequest(NXDataStore.get('CONFIG_HOPPIE_USERID', ''), flightNo, flightNo, 'poll', '');
+        const body = {
+            logon: NXDataStore.get('CONFIG_HOPPIE_USERID', ''),
+            from: flightNo,
+            to: flightNo,
+            type: 'poll',
+        };
+        const text = await Hoppie.sendRequest(body).then((resp) => resp.response);
 
         // something went wrong
         if (!text.startsWith('ok')) {
