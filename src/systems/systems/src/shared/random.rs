@@ -20,6 +20,16 @@ mod wasm {
         // SAFETY: `RAND` was initialized above.
         unsafe { (*RAND.as_mut_ptr()).gen() }
     }
+
+    pub fn random_from_range(from: f64, to: f64) -> f64 {
+        // SAFETY: WASM is single-threaded, and we're not passing references to `RAND` around.
+        RAND_INIT.call_once(|| unsafe {
+            RAND = MaybeUninit::new(SmallRng::from_entropy());
+        });
+
+        // SAFETY: `RAND` was initialized above.
+        unsafe { (*RAND.as_mut_ptr()).gen_range(from..to) }
+    }
 }
 
 #[cfg(not(any(target_arch = "wasm32", doc)))]
@@ -31,5 +41,9 @@ mod not_wasm {
 
     pub fn random_number() -> u8 {
         rand::thread_rng().gen()
+    }
+
+    pub fn random_from_range(from: f64, to: f64) -> f64 {
+        rand::thread_rng().gen_range(from..to)
     }
 }

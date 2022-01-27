@@ -336,12 +336,12 @@ impl CoreHydraulicForce {
                 }
                 self.force_raw = self.force_filtered.output();
 
-                println!(
-                    "LAST FORCE ACT DAMPING {:.0} Raw {:.4} Speed{}",
-                    self.force_raw.get::<newton>(),
-                    self.force_active_damping(speed).get::<newton>(),
-                    speed.get::<meter_per_second>()
-                );
+                // println!(
+                //     "LAST FORCE ACT DAMPING {:.0} Raw {:.4} Speed{}",
+                //     self.force_raw.get::<newton>(),
+                //     self.force_active_damping(speed).get::<newton>(),
+                //     speed.get::<meter_per_second>()
+                // );
             }
             LinearActuatorMode::ClosedCircuitDamping => {
                 if speed.get::<meter_per_second>().abs() > Self::MIN_SPEED_FOR_DAMPING_RESET_M_PER_S
@@ -355,12 +355,12 @@ impl CoreHydraulicForce {
 
                 self.force_raw = self.force_filtered.output();
 
-                println!(
-                    "LAST FORCE SLOW DAMPING {:.0} Raw {:.4} Speed{}",
-                    self.force_raw.get::<newton>(),
-                    self.force_closed_circuit_damping(speed).get::<newton>(),
-                    speed.get::<meter_per_second>()
-                );
+                // println!(
+                //     "LAST FORCE SLOW DAMPING {:.0} Raw {:.4} Speed{}",
+                //     self.force_raw.get::<newton>(),
+                //     self.force_closed_circuit_damping(speed).get::<newton>(),
+                //     speed.get::<meter_per_second>()
+                // );
             }
             LinearActuatorMode::PositionControl => {
                 self.force_raw = self.force_position_control(
@@ -471,13 +471,13 @@ impl CoreHydraulicForce {
             Some(context.delta()),
         ));
 
-        println!(
-            "LAST FORCE CONTROL {:.0} kp {:.3} ki {:.3} Oloop {:.3}",
-            self.last_control_force.get::<newton>(),
-            self.kp_read,
-            self.ki_read,
-            open_loop_flow_target.get::<gallon_per_second>()
-        );
+        // println!(
+        //     "LAST FORCE CONTROL {:.0} kp {:.3} ki {:.3} Oloop {:.3}",
+        //     self.last_control_force.get::<newton>(),
+        //     self.kp_read,
+        //     self.ki_read,
+        //     open_loop_flow_target.get::<gallon_per_second>()
+        // );
 
         self.last_control_force
     }
@@ -1047,12 +1047,12 @@ impl LinearActuatedRigidBodyOnHingeAxis {
     fn local_acceleration_and_gravity(&self, context: &UpdateContext) -> Torque {
         let plane_acceleration_plane_reference = self.plane_acceleration_filtered.output();
 
-        println!(
-            "ACCEL X{:.3} Y{:.3} Z{:.3}",
-            plane_acceleration_plane_reference[0],
-            plane_acceleration_plane_reference[1],
-            plane_acceleration_plane_reference[2]
-        );
+        // println!(
+        //     "ACCEL X{:.3} Y{:.3} Z{:.3}",
+        //     plane_acceleration_plane_reference[0],
+        //     plane_acceleration_plane_reference[1],
+        //     plane_acceleration_plane_reference[2]
+        // );
         let pitch_rotation = context.attitude().pitch_rotation_transform();
 
         let bank_rotation = context.attitude().bank_rotation_transform();
@@ -1924,6 +1924,40 @@ mod tests {
     }
 
     #[test]
+    fn aileron_initialized_down_stays_down_with_broken_actuator() {
+        let mut test_bed = SimulationTestBed::new(|context| {
+            let rigid_body = aileron_body_init_down();
+            let actuator = disconnected_actuator(context, &rigid_body);
+            TestDualActuatorAircraft::new(actuator, actuator, rigid_body)
+        });
+
+        test_bed.command(|a| a.command_unlock());
+        test_bed.command(|a| a.command_closed_circuit_damping_mode(0));
+        test_bed.command(|a| a.command_closed_circuit_damping_mode(1));
+        test_bed.run_with_delta(Duration::from_secs_f64(1.));
+
+        assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.1));
+    }
+
+    #[test]
+    fn aileron_initialized_down_moves_up_when_commanded() {
+        let mut test_bed = SimulationTestBed::new(|context| {
+            let rigid_body = aileron_body_init_down();
+            let actuator = aileron_actuator(context, &rigid_body);
+            TestDualActuatorAircraft::new(actuator, actuator, rigid_body)
+        });
+
+        test_bed.command(|a| a.command_unlock());
+        test_bed
+            .command(|a| a.set_pressures(Pressure::new::<psi>(3000.), Pressure::new::<psi>(3000.)));
+        test_bed.command(|a| a.command_active_damping_mode(0));
+        test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(1.), 1));
+        test_bed.run_with_delta(Duration::from_secs_f64(2.));
+
+        assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.95));
+    }
+
+    #[test]
     fn aileron_drops_from_middle_pos_in_more_20s_in_closed_circuit_damping() {
         let mut test_bed = SimulationTestBed::new(|context| {
             let rigid_body = aileron_body();
@@ -2252,6 +2286,28 @@ mod tests {
             Angle::new::<degree>(-25.),
             Angle::new::<degree>(50.),
             Angle::new::<degree>(0.),
+            1.,
+            false,
+            Vector3::new(1., 0., 0.),
+        )
+    }
+
+    fn aileron_body_init_down() -> LinearActuatedRigidBodyOnHingeAxis {
+        let size = Vector3::new(3.325, 0.16, 0.58);
+        let cg_offset = Vector3::new(0., 0., -0.5 * size[2]);
+
+        let control_arm = Vector3::new(0., -0.0525, 0.);
+        let anchor = Vector3::new(0., -0.0525, 0.33);
+
+        LinearActuatedRigidBodyOnHingeAxis::new(
+            Mass::new::<kilogram>(24.65),
+            size,
+            cg_offset,
+            control_arm,
+            anchor,
+            Angle::new::<degree>(-25.),
+            Angle::new::<degree>(50.),
+            Angle::new::<degree>(-25.),
             1.,
             false,
             Vector3::new(1., 0., 0.),

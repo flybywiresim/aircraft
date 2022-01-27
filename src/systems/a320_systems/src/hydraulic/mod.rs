@@ -42,8 +42,8 @@ use systems::{
         AutoOffFaultPushButton, AutoOnFaultPushButton, MomentaryOnPushButton, MomentaryPushButton,
     },
     shared::{
-        interpolation, DelayedFalseLogicGate, DelayedPulseTrueLogicGate, DelayedTrueLogicGate,
-        ElectricalBusType, ElectricalBuses, EmergencyElectricalRatPushButton,
+        interpolation, random_from_range, DelayedFalseLogicGate, DelayedPulseTrueLogicGate,
+        DelayedTrueLogicGate, ElectricalBusType, ElectricalBuses, EmergencyElectricalRatPushButton,
         EmergencyElectricalState, EmergencyGeneratorPower, EngineFirePushButtons, HydraulicColor,
         HydraulicGeneratorControlUnit, LgciuSensors, ReservoirAirPressure,
     },
@@ -257,10 +257,20 @@ impl A320AileronFactory {
     const FLOW_CONTROL_INTEGRAL_GAIN: f64 = 1.;
     const FLOW_CONTROL_FORCE_GAIN: f64 = 200000.;
 
+    const MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING: f64 = 800000.;
+
     fn a320_aileron_actuator(
         context: &mut InitContext,
         bounded_linear_length: &impl BoundedLinearLength,
     ) -> LinearActuator {
+
+        let randomized_damping = random_from_range(
+            Self::MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING / 5.,
+            Self::MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING,
+        );
+
+        println!("DAMPING CONST RAND: {:.1}",randomized_damping);
+
         LinearActuator::new(
             context,
             bounded_linear_length,
@@ -271,7 +281,7 @@ impl A320AileronFactory {
             80000.,
             1500.,
             5000.,
-            800000.,
+            randomized_damping,
             Duration::from_millis(300),
             [1., 1., 1., 1., 1., 1.],
             [0., 0.2, 0.21, 0.79, 0.8, 1.],
@@ -297,7 +307,7 @@ impl A320AileronFactory {
             anchor,
             Angle::new::<degree>(-25.),
             Angle::new::<degree>(50.),
-            Angle::new::<degree>(0.),
+            Angle::new::<degree>(-25.),
             1.,
             false,
             Vector3::new(1., 0., 0.),
@@ -308,8 +318,16 @@ impl A320AileronFactory {
     /// to it
     fn a320_aileron_assembly(context: &mut InitContext) -> HydraulicLinearActuatorAssembly<2> {
         let aileron_body = A320AileronFactory::a320_aileron_body();
-        let aileron_actuator = A320AileronFactory::a320_aileron_actuator(context, &aileron_body);
-        HydraulicLinearActuatorAssembly::new([aileron_actuator, aileron_actuator], aileron_body)
+
+        let aileron_actuator_outboard =
+            A320AileronFactory::a320_aileron_actuator(context, &aileron_body);
+        let aileron_actuator_inbord =
+            A320AileronFactory::a320_aileron_actuator(context, &aileron_body);
+
+            HydraulicLinearActuatorAssembly::new(
+            [aileron_actuator_outboard, aileron_actuator_inbord],
+            aileron_body,
+        )
     }
 
     fn new_aileron(context: &mut InitContext, id: AileronSide) -> AileronAssembly {
@@ -3004,11 +3022,6 @@ impl SimulationElement for ElacComputer {
             -1. * Ratio::new::<ratio>(reader.read(&self.requested_position_left_id));
         self.right_position_requested =
             Ratio::new::<ratio>(reader.read(&self.requested_position_right_id));
-
-        let left: f64 = reader.read(&self.requested_position_left_id);
-        let right: f64 = reader.read(&self.requested_position_right_id);
-
-        // println!("ELAC READ L{:.1} R{:.1}", -1. * left, right);
     }
 }
 
