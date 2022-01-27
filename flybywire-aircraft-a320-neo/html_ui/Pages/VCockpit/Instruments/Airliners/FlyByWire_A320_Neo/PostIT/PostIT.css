@@ -34,6 +34,7 @@
 }
 
 #text {
+  /* 1, smaller than mesh to avoid whack anti-aliasing */
   padding: 3.5rem;
   background-image: url("/Images/PostIT/postit-bg.png");
   background-color: rgb(255,255,151);
@@ -44,8 +45,11 @@
   background-size: cover;
   font-size: 100px;
   color: #000;
-  width: 1024px;
-  height: 1024px;
+  width: 1022px; /* 1 */
+  height: 1022px;  /* 1 */
+  top:1px;  /* 1 */
+  left:1px;  /* 1 */
+  position: relative; /* 1 */
   overflow-wrap: break-word;
 }
 
