@@ -30,7 +30,6 @@ const { typescriptPaths } = require('rollup-plugin-typescript-paths');
 const commonjs = require('@rollup/plugin-commonjs');
 const nodeResolve = require('@rollup/plugin-node-resolve').default;
 const replace = require('@rollup/plugin-replace');
-const copy = require('rollup-plugin-copy');
 
 const extensions = ['.js', '.ts'];
 
@@ -42,7 +41,6 @@ process.chdir(src);
 module.exports = {
     input: join(__dirname, 'src/index.ts'),
     plugins: [
-        copy({ }),
         nodeResolve({ extensions }),
         commonjs(),
         babel({
