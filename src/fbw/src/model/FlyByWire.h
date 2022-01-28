@@ -171,7 +171,8 @@ class FlyByWireModelClass
 
   struct Parameters_FlyByWire_T {
     fbw_output fbw_output_MATLABStruct;
-    real_T ScheduledGain_BreakpointsForDimension1[4];
+    real_T ScheduledGain_BreakpointsForDimension1[7];
+    real_T ScheduledGain_BreakpointsForDimension1_m[4];
     real_T ScheduledGain_BreakpointsForDimension1_p[4];
     real_T ScheduledGain_BreakpointsForDimension1_d[4];
     real_T ScheduledGain_BreakpointsForDimension1_n[4];
@@ -288,14 +289,15 @@ class FlyByWireModelClass
     real_T DiscreteTimeIntegratorVariableTs_LowerLimit_b;
     real_T DiscreteTimeIntegratorVariableTs_LowerLimit_c;
     real_T DiscreteTimeIntegratorVariableTs1_LowerLimit;
-    real_T ScheduledGain_Table[4];
+    real_T ScheduledGain_Table[7];
+    real_T ScheduledGain_Table_e[4];
     real_T ScheduledGain_Table_l[4];
     real_T ScheduledGain_Table_b[4];
     real_T ScheduledGain_Table_g[4];
     real_T ScheduledGain_Table_ga[4];
     real_T ScheduledGain_Table_p[5];
     real_T ScheduledGain_Table_i[5];
-    real_T ScheduledGain_Table_e[7];
+    real_T ScheduledGain_Table_eg[7];
     real_T ScheduledGain1_Table[7];
     real_T ScheduledGain_Table_c[4];
     real_T ScheduledGain_Table_d[9];
@@ -358,7 +360,6 @@ class FlyByWireModelClass
     real_T RateLimiterVariableTs1_up_p;
     boolean_T CompareToConstant_const_h;
     real_T Constant_Value;
-    real_T Gain4_Gain;
     real_T qk_dot_gain1_Gain;
     real_T qk_gain_HSP_Gain;
     real_T v_dot_gain_HSP_Gain;
@@ -472,7 +473,7 @@ class FlyByWireModelClass
     real_T Gain1_Gain_i;
     real_T Gain1_Gain_a;
     real_T Gain5_Gain;
-    real_T Gain4_Gain_g;
+    real_T Gain4_Gain;
     real_T Gain6_Gain_f;
     real_T Constant_Value_h;
     real_T Switch_Threshold_he;
