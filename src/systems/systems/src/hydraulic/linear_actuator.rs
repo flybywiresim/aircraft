@@ -172,10 +172,10 @@ impl CoreHydraulicForce {
                 flow_control_force_gain,
             ),
 
-            kp_read: 1.5,
-            ki_read: 3.,
-            oloop_gain_read: 1.,
-            maxflow_read: 0.04,
+            kp_read: flow_control_proportional_gain,
+            ki_read: flow_control_integral_gain,
+            oloop_gain_read: Self::OPEN_LOOP_GAIN,
+            maxflow_read: max_flow.get::<gallon_per_second>(),
         }
     }
 
