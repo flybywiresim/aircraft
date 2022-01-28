@@ -3021,7 +3021,9 @@
                             <HOLD_SIMVAR>L:FIRE_TEST_APU</HOLD_SIMVAR>
                         </UseTemplate>
                         <!-- FIRE APU AGENT -->
-                        <UseTemplate Name="FBW_Airbus_FIRE_AGENT">
+                        <UseTemplate Name="FBW_Anim_Interactions">
+                            <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                            <ANIM_TEMPLATE>FBW_Airbus_FIRE_AGENT</ANIM_TEMPLATE>
                             <NODE_ID>PUSH_OVHD_FIRE_AGENT</NODE_ID>
                             <PART_ID>PUSH_OVHD_FIRE_AGENT</PART_ID>
                             <AGENT_ID>1</AGENT_ID>
