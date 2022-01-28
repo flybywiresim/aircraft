@@ -201,7 +201,9 @@
                 </UseTemplate>
             </Component>
             <Component ID="#KNOB_XPNDR_MODE_NODE_ID#" Node="#KNOB_XPNDR_MODE_NODE_ID#">
-                <UseTemplate Name="ASOBO_GT_Switch_3States">
+                <UseTemplate Name="FBW_Anim_Interactions">
+                    <ANIM_TYPE>KNOB</ANIM_TYPE>
+                    <ANIM_TEMPLATE>ASOBO_GT_Switch_3States</ANIM_TEMPLATE>
                     <PART_ID>#KNOB_XPNDR_MODE_NODE_ID#</PART_ID>
                     <SWITCH_DIRECTION>Horizontal</SWITCH_DIRECTION>
                     <LEFTARROW>TurnLeft</LEFTARROW>
