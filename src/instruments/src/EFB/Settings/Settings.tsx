@@ -2,7 +2,6 @@ import React, { useContext, useState, useEffect } from 'react';
 import { Slider, Toggle } from '@flybywiresim/react-components';
 import { useSimVar } from '@instruments/common/simVars';
 import { IconArrowLeft, IconArrowRight } from '@tabler/icons';
-import { HttpError } from '@flybywiresim/api-client';
 import { PopUp } from '@shared/popup';
 import { SelectGroup, SelectItem } from '../Components/Form/Select';
 import { usePersistentNumberProperty, usePersistentProperty } from '../../Common/persistence';
@@ -533,7 +532,7 @@ const ATSUAOCPage = () => {
             .then((response) => {
                 // 400 status means request was invalid, probably invalid username so preserve to display error properly
                 if (!response.ok && response.status !== 400) {
-                    throw new HttpError(response.status);
+                    throw new Error(response.status.toString());
                 }
 
                 return response.json();
