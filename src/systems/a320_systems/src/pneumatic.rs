@@ -154,6 +154,7 @@ impl A320Pneumatic {
             apu_compression_chamber: CompressionChamber::new(Volume::new::<cubic_meter>(5.)),
             apu_bleed_air_valve: DefaultValve::new_closed(),
             green_hydraulic_reservoir_with_valve: PressurisedReservoirWithExhaustValve::new(
+                context,
                 HydraulicColor::Green,
                 VariableVolumeContainer::new(
                     Volume::new::<gallon>(2.5),
@@ -164,6 +165,7 @@ impl A320Pneumatic {
                 6e-2,
             ),
             blue_hydraulic_reservoir_with_valve: PressurisedReservoirWithExhaustValve::new(
+                context,
                 HydraulicColor::Blue,
                 VariableVolumeContainer::new(
                     Volume::new::<gallon>(1.1),
@@ -174,6 +176,7 @@ impl A320Pneumatic {
                 6e-2,
             ),
             yellow_hydraulic_reservoir_with_valve: PressurisedReservoirWithExhaustValve::new(
+                context,
                 HydraulicColor::Yellow,
                 VariableVolumeContainer::new(
                     Volume::new::<gallon>(1.7),
@@ -1893,8 +1896,14 @@ mod tests {
         let mut apu_bleed_valve_open_amounts = Vec::new();
         let mut fan_air_valve_open_amounts = Vec::new();
 
-        for i in 1..5000 {
+        for i in 1..6000 {
             time_points.push(i as f64 * 16.);
+
+            if i == 2000 {
+                test_bed = test_bed.stop_eng2().stop_eng2();
+            } else if i == 4000 {
+                test_bed = test_bed.start_eng2().start_eng2();
+            }
 
             high_pressures.push(test_bed.hp_pressure(1).get::<psi>());
             intermediate_pressures.push(test_bed.ip_pressure(1).get::<psi>());
@@ -2214,6 +2223,27 @@ mod tests {
         assert!(!test_bed.es_valve_is_open(2));
 
         assert!(!test_bed.cross_bleed_valve_is_open());
+    }
+
+    #[test]
+    fn engine_shutdown() {
+        let altitude = Length::new::<foot>(0.);
+        let ambient_pressure = InternationalStandardAtmosphere::pressure_at_altitude(altitude);
+
+        let mut test_bed = test_bed_with()
+            .idle_eng1()
+            .idle_eng2()
+            .in_isa_atmosphere(altitude)
+            .mach_number(MachNumber(0.))
+            .and_stabilize();
+
+        assert!(test_bed.precooler_outlet_pressure(1) - ambient_pressure > pressure_tolerance());
+        assert!(test_bed.precooler_outlet_pressure(2) - ambient_pressure > pressure_tolerance());
+
+        test_bed = test_bed.set_bleed_air_running();
+
+        assert!(!test_bed.precooler_outlet_pressure(1).get::<psi>().is_nan());
+        assert!(!test_bed.precooler_outlet_pressure(2).get::<psi>().is_nan());
     }
 
     #[test]
