@@ -4288,13 +4288,6 @@
                 <NODE_ID>PUSH_ATC_FAIL_SEQ2</NODE_ID>
                 <EMISSIVE_CODE>(L:A32NX_OVHD_INTLT_ANN) 0 == (L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) and</EMISSIVE_CODE>
             </UseTemplate>
-            <!-- ATC ALT RPTG -->
-            <UseTemplate Name="FBW_Anim_Interactions">
-                <ANIM_TYPE>KNOB</ANIM_TYPE>
-                <ANIM_TEMPLATE>FBW_Airbus_ATC_Panel_ALT</ANIM_TEMPLATE>
-                <Node_ID>Knob_ATC_ALT</Node_ID>
-                <PART_ID>Knob_ATC_ALT</PART_ID>
-            </UseTemplate>
             <!-- TCAS MODE -->
             <UseTemplate Name="FBW_Anim_Interactions">
                 <ANIM_TYPE>KNOB</ANIM_TYPE>

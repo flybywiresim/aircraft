@@ -581,6 +581,24 @@
         ]
       },
       {
+        "node": "KNOB_ATC_ALT",
+        "outputSamplers": [
+          [
+            [-0.106376, 0.339822, -0.038718, 0.933652],
+            [-0.106376, -0.339822, 0.038718, 0.933652]
+          ]
+        ]
+      },
+      {
+        "node": "KNOB_ATC_1",
+        "outputSamplers": [
+          [
+            [-0.106376, 0.339822, -0.038718, 0.933652],
+            [-0.106376, -0.339822, 0.038718, 0.933652]
+          ]
+        ]
+      },
+      {
         "accessors": [
           "x0_PUSH_ECAM_ENG_SEQ2_vertices#0_TEXCOORD_0",
           "x0_PUSH_ECAM_ENG_SEQ2_vertices#0_TEXCOORD_1"
