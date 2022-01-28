@@ -702,23 +702,17 @@ impl A320Hydraulic {
     fn update_ludicrous_physics(&mut self, context: &UpdateContext) {
         self.left_aileron.update(
             context,
-            self.elac_computer.left_controller(),
+            self.elac_computer.left_controllers(),
             self.blue_circuit.system_pressure(),
             self.green_circuit.system_pressure(),
         );
 
         self.right_aileron.update(
             context,
-            self.elac_computer.right_controller(),
+            self.elac_computer.right_controllers(),
             self.blue_circuit.system_pressure(),
             self.green_circuit.system_pressure(),
         );
-
-        // println!(
-        //     "HYD AILERON POS: L{:.1} R{:.1}",
-        //     self.left_aileron.position().get::<ratio>(),
-        //     self.right_aileron.position().get::<ratio>(),
-        // );
     }
 
     // Updates at the same rate as the sim or at a fixed maximum time step if sim rate is too slow
@@ -2413,7 +2407,7 @@ impl A320DoorController {
     }
 }
 impl HydraulicAssemblyController for A320DoorController {
-    fn requested_mode(&self, _: usize) -> LinearActuatorMode {
+    fn requested_mode(&self) -> LinearActuatorMode {
         if self.should_close_valves {
             LinearActuatorMode::ClosedValves
         } else {
@@ -2484,7 +2478,7 @@ impl CargoDoor {
         current_pressure: Pressure,
     ) {
         self.hydraulic_assembly
-            .update(context, cargo_door_controller, [current_pressure]);
+            .update(context, [cargo_door_controller], [current_pressure]);
         self.is_locked = self.hydraulic_assembly.is_locked();
         self.position = self.hydraulic_assembly.position_normalized();
     }
@@ -2904,21 +2898,20 @@ impl SimulationElement for A320HydraulicOverheadPanel {
 }
 
 struct AileronController {
-    mode: [LinearActuatorMode; 2],
+    mode: LinearActuatorMode,
     requested_position: Ratio,
 }
 impl AileronController {
     fn new() -> Self {
         Self {
-            mode: [LinearActuatorMode::ClosedCircuitDamping; 2],
+            mode: LinearActuatorMode::ClosedCircuitDamping,
 
             requested_position: Ratio::new::<ratio>(0.),
         }
     }
 
-    fn set_mode(&mut self, mode_blue: LinearActuatorMode, mode_green: LinearActuatorMode) {
-        self.mode[0] = mode_blue;
-        self.mode[1] = mode_green;
+    fn set_mode(&mut self, mode: LinearActuatorMode) {
+        self.mode = mode;
     }
 
     /// Receives a [-1;1] position request, convert it to [0;1] actuator position
@@ -2931,8 +2924,8 @@ impl AileronController {
     }
 }
 impl HydraulicAssemblyController for AileronController {
-    fn requested_mode(&self, index: usize) -> LinearActuatorMode {
-        self.mode[index]
+    fn requested_mode(&self) -> LinearActuatorMode {
+        self.mode
     }
     fn requested_position(&self) -> Ratio {
         self.requested_position
@@ -2952,8 +2945,8 @@ struct ElacComputer {
     left_position_requested: Ratio,
     right_position_requested: Ratio,
 
-    left_controller: AileronController,
-    right_controller: AileronController,
+    left_controllers: [AileronController; 2],
+    right_controllers: [AileronController; 2],
 }
 impl ElacComputer {
     fn new(context: &mut InitContext) -> Self {
@@ -2965,59 +2958,60 @@ impl ElacComputer {
             left_position_requested: Ratio::default(),
             right_position_requested: Ratio::default(),
 
-            left_controller: AileronController::new(),
-            right_controller: AileronController::new(),
+            left_controllers: [AileronController::new(), AileronController::new()],
+            right_controllers: [AileronController::new(), AileronController::new()],
         }
+    }
+
+    fn update_requested_position(&mut self) {
+        self.left_controllers[0].set_requested_position(self.left_position_requested);
+        self.left_controllers[1].set_requested_position(self.left_position_requested);
+        self.right_controllers[0].set_requested_position(self.right_position_requested);
+        self.right_controllers[1].set_requested_position(self.right_position_requested);
+    }
+
+    fn set_blue_circuit_position_control(&mut self) {
+        self.left_controllers[0].set_mode(LinearActuatorMode::PositionControl);
+        self.left_controllers[1].set_mode(LinearActuatorMode::ActiveDamping);
+
+        self.right_controllers[0].set_mode(LinearActuatorMode::PositionControl);
+        self.right_controllers[1].set_mode(LinearActuatorMode::ActiveDamping);
+    }
+
+    fn set_green_circuit_position_control(&mut self) {
+        self.left_controllers[0].set_mode(LinearActuatorMode::ActiveDamping);
+        self.left_controllers[1].set_mode(LinearActuatorMode::PositionControl);
+
+        self.right_controllers[0].set_mode(LinearActuatorMode::ActiveDamping);
+        self.right_controllers[1].set_mode(LinearActuatorMode::PositionControl);
+    }
+
+    fn set_no_position_control(&mut self) {
+        self.left_controllers[0].set_mode(LinearActuatorMode::ClosedCircuitDamping);
+        self.left_controllers[1].set_mode(LinearActuatorMode::ClosedCircuitDamping);
+
+        self.right_controllers[0].set_mode(LinearActuatorMode::ClosedCircuitDamping);
+        self.right_controllers[1].set_mode(LinearActuatorMode::ClosedCircuitDamping);
     }
 
     fn update(&mut self, blue_pressure: Pressure, green_pressure: Pressure) {
-        self.left_controller
-            .set_requested_position(self.left_position_requested);
-        self.right_controller
-            .set_requested_position(self.right_position_requested);
+        self.update_requested_position();
 
         if blue_pressure.get::<psi>() > 1500. {
-            self.left_controller.set_mode(
-                LinearActuatorMode::PositionControl,
-                LinearActuatorMode::ActiveDamping,
-            );
-            self.right_controller.set_mode(
-                LinearActuatorMode::PositionControl,
-                LinearActuatorMode::ActiveDamping,
-            );
+            self.set_blue_circuit_position_control();
         } else if green_pressure.get::<psi>() > 1500. {
-            self.left_controller.set_mode(
-                LinearActuatorMode::ActiveDamping,
-                LinearActuatorMode::PositionControl,
-            );
-            self.right_controller.set_mode(
-                LinearActuatorMode::ActiveDamping,
-                LinearActuatorMode::PositionControl,
-            );
+            self.set_green_circuit_position_control();
         } else {
-            self.left_controller.set_mode(
-                LinearActuatorMode::ClosedCircuitDamping,
-                LinearActuatorMode::ClosedCircuitDamping,
-            );
-            self.right_controller.set_mode(
-                LinearActuatorMode::ClosedCircuitDamping,
-                LinearActuatorMode::ClosedCircuitDamping,
-            );
+            self.set_no_position_control();
         }
-
-        // println!(
-        //     "ELACupdt Ldmnd {:.1}  Rdmnd {:.1}",
-        //     self.left_position_requested.get::<ratio>(),
-        //     self.right_position_requested.get::<ratio>()
-        // );
     }
 
-    fn left_controller(&self) -> &impl HydraulicAssemblyController {
-        &self.left_controller
+    fn left_controllers(&self) -> [&impl HydraulicAssemblyController; 2] {
+        [&self.left_controllers[0], &self.left_controllers[1]]
     }
 
-    fn right_controller(&self) -> &impl HydraulicAssemblyController {
-        &self.right_controller
+    fn right_controllers(&self) -> [&impl HydraulicAssemblyController; 2] {
+        [&self.right_controllers[0], &self.right_controllers[1]]
     }
 }
 impl SimulationElement for ElacComputer {
@@ -3079,13 +3073,13 @@ impl AileronAssembly {
     fn update(
         &mut self,
         context: &UpdateContext,
-        aileron_controller: &impl HydraulicAssemblyController,
+        aileron_controllers: [&impl HydraulicAssemblyController; 2],
         current_pressure_blue: Pressure,
         current_pressure_green: Pressure,
     ) {
         self.hydraulic_assembly.update(
             context,
-            aileron_controller,
+            aileron_controllers,
             [current_pressure_blue, current_pressure_green],
         );
         self.position =

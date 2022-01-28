@@ -764,7 +764,7 @@ impl SimulationElement for LinearActuator {
 }
 
 pub trait HydraulicAssemblyController {
-    fn requested_mode(&self, index: usize) -> LinearActuatorMode;
+    fn requested_mode(&self) -> LinearActuatorMode;
     fn requested_position(&self) -> Ratio;
     fn should_lock(&self) -> bool;
     fn requested_lock_position(&self) -> Ratio;
@@ -792,21 +792,23 @@ impl<const N: usize> HydraulicLinearActuatorAssembly<N> {
     pub fn update(
         &mut self,
         context: &UpdateContext,
-        assembly_controller: &impl HydraulicAssemblyController,
+        assembly_controller: [&impl HydraulicAssemblyController; N],
         current_pressure: [Pressure; N],
     ) {
-        for actuator in &mut self.linear_actuators {
-            actuator.set_position_target(assembly_controller.requested_position());
+        for (index, actuator) in self.linear_actuators.iter_mut().enumerate() {
+            actuator.set_position_target(assembly_controller[index].requested_position());
         }
 
-        self.update_lock_mechanism(assembly_controller);
+        // Only one lock mechanism on the connected rigid body so we only look at first controller demand
+        // We could decide it's a OR or AND over all actuators if not satisfying this way
+        self.update_lock_mechanism(assembly_controller[0]);
 
         if !self.rigid_body.is_locked() {
             for (index, actuator) in self.linear_actuators.iter_mut().enumerate() {
                 actuator.update_before_rigid_body(
                     context,
                     &mut self.rigid_body,
-                    assembly_controller.requested_mode(index),
+                    assembly_controller[index].requested_mode(),
                     current_pressure[index],
                 );
             }
@@ -1198,16 +1200,16 @@ mod tests {
     use std::time::Duration;
     use uom::si::{angle::degree, mass::kilogram, pressure::psi};
 
-    struct TestHydraulicAssemblyController<const N: usize> {
-        mode: [LinearActuatorMode; N],
+    struct TestHydraulicAssemblyController {
+        mode: LinearActuatorMode,
         requested_position: Ratio,
         lock_request: bool,
         lock_position: Ratio,
     }
-    impl<const N: usize> TestHydraulicAssemblyController<N> {
+    impl TestHydraulicAssemblyController {
         fn new() -> Self {
             Self {
-                mode: [LinearActuatorMode::ClosedValves; N],
+                mode: LinearActuatorMode::ClosedValves,
 
                 requested_position: Ratio::new::<ratio>(0.),
                 lock_request: true,
@@ -1215,8 +1217,8 @@ mod tests {
             }
         }
 
-        fn set_mode(&mut self, mode: LinearActuatorMode, index: usize) {
-            self.mode[index] = mode;
+        fn set_mode(&mut self, mode: LinearActuatorMode) {
+            self.mode = mode;
         }
 
         fn set_lock(&mut self, lock_position: Ratio) {
@@ -1232,26 +1234,9 @@ mod tests {
             self.requested_position = requested_position;
         }
     }
-    impl HydraulicAssemblyController for TestHydraulicAssemblyController<1> {
-        fn requested_mode(&self, _: usize) -> LinearActuatorMode {
-            self.mode[0]
-        }
-
-        fn requested_position(&self) -> Ratio {
-            self.requested_position
-        }
-
-        fn should_lock(&self) -> bool {
-            self.lock_request
-        }
-
-        fn requested_lock_position(&self) -> Ratio {
-            self.lock_position
-        }
-    }
-    impl HydraulicAssemblyController for TestHydraulicAssemblyController<2> {
-        fn requested_mode(&self, index: usize) -> LinearActuatorMode {
-            self.mode[index]
+    impl HydraulicAssemblyController for TestHydraulicAssemblyController {
+        fn requested_mode(&self) -> LinearActuatorMode {
+            self.mode
         }
 
         fn requested_position(&self) -> Ratio {
@@ -1272,7 +1257,7 @@ mod tests {
 
         single_actuator_assembly: HydraulicLinearActuatorAssembly<1>,
 
-        single_controller: TestHydraulicAssemblyController<1>,
+        single_controller: TestHydraulicAssemblyController,
 
         pressure: Pressure,
     }
@@ -1295,22 +1280,22 @@ mod tests {
 
         fn command_active_damping_mode(&mut self) {
             self.single_controller
-                .set_mode(LinearActuatorMode::ActiveDamping, 0);
+                .set_mode(LinearActuatorMode::ActiveDamping);
         }
 
         fn command_closed_circuit_damping_mode(&mut self) {
             self.single_controller
-                .set_mode(LinearActuatorMode::ClosedCircuitDamping, 0);
+                .set_mode(LinearActuatorMode::ClosedCircuitDamping);
         }
 
         fn command_closed_valve_mode(&mut self) {
             self.single_controller
-                .set_mode(LinearActuatorMode::ClosedValves, 0);
+                .set_mode(LinearActuatorMode::ClosedValves);
         }
 
         fn command_position_control(&mut self, position: Ratio) {
             self.single_controller
-                .set_mode(LinearActuatorMode::PositionControl, 0);
+                .set_mode(LinearActuatorMode::PositionControl);
             self.single_controller.set_position_target(position);
         }
 
@@ -1336,8 +1321,11 @@ mod tests {
         }
 
         fn update_actuator_physics(&mut self, context: &UpdateContext) {
-            self.single_actuator_assembly
-                .update(context, &self.single_controller, [self.pressure]);
+            self.single_actuator_assembly.update(
+                context,
+                [&self.single_controller],
+                [self.pressure],
+            );
 
             println!(
                 "Body angle {:.2} Body Npos {:.3}, Act Npos {:.3}, Act force {:.1}",
@@ -1374,7 +1362,7 @@ mod tests {
 
         dual_actuator_assembly: HydraulicLinearActuatorAssembly<2>,
 
-        dual_controller: TestHydraulicAssemblyController<2>,
+        controllers: [TestHydraulicAssemblyController; 2],
 
         pressure_actuator1: Pressure,
 
@@ -1394,7 +1382,10 @@ mod tests {
                     body,
                 ),
 
-                dual_controller: TestHydraulicAssemblyController::new(),
+                controllers: [
+                    TestHydraulicAssemblyController::new(),
+                    TestHydraulicAssemblyController::new(),
+                ],
 
                 pressure_actuator1: Pressure::new::<psi>(0.),
 
@@ -1408,32 +1399,30 @@ mod tests {
         }
 
         fn command_active_damping_mode(&mut self, index: usize) {
-            self.dual_controller
-                .set_mode(LinearActuatorMode::ActiveDamping, index);
+            self.controllers[index].set_mode(LinearActuatorMode::ActiveDamping);
         }
 
         fn command_closed_circuit_damping_mode(&mut self, index: usize) {
-            self.dual_controller
-                .set_mode(LinearActuatorMode::ClosedCircuitDamping, index);
+            self.controllers[index].set_mode(LinearActuatorMode::ClosedCircuitDamping);
         }
 
         fn command_closed_valve_mode(&mut self, index: usize) {
-            self.dual_controller
-                .set_mode(LinearActuatorMode::ClosedValves, index);
+            self.controllers[index].set_mode(LinearActuatorMode::ClosedValves);
         }
 
         fn command_position_control(&mut self, position: Ratio, index: usize) {
-            self.dual_controller
-                .set_mode(LinearActuatorMode::PositionControl, index);
-            self.dual_controller.set_position_target(position);
+            self.controllers[index].set_mode(LinearActuatorMode::PositionControl);
+            self.controllers[index].set_position_target(position);
         }
 
         fn command_lock(&mut self, lock_position: Ratio) {
-            self.dual_controller.set_lock(lock_position);
+            self.controllers[0].set_lock(lock_position);
+            self.controllers[1].set_lock(lock_position);
         }
 
         fn command_unlock(&mut self) {
-            self.dual_controller.set_unlock();
+            self.controllers[0].set_unlock();
+            self.controllers[1].set_unlock();
         }
 
         fn body_position(&self) -> Ratio {
@@ -1452,7 +1441,7 @@ mod tests {
         fn update_actuator_physics(&mut self, context: &UpdateContext) {
             self.dual_actuator_assembly.update(
                 context,
-                &self.dual_controller,
+                [&self.controllers[0], &self.controllers[1]],
                 [self.pressure_actuator1, self.pressure_actuator2],
             );
 
