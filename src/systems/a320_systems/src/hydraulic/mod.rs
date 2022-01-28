@@ -268,8 +268,6 @@ impl A320AileronFactory {
             Self::MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING,
         );
 
-        println!("DAMPING CONST RAND: {:.1}", randomized_damping);
-
         LinearActuator::new(
             context,
             bounded_linear_length,
@@ -2947,8 +2945,18 @@ struct ElacComputer {
 
     left_controllers: [AileronController; 2],
     right_controllers: [AileronController; 2],
+
+    is_powered: bool,
 }
 impl ElacComputer {
+    //TODO hot busses are in reality sub busses 703pp and 704pp
+    const ALL_POWER_BUSES: [ElectricalBusType; 4] = [
+        ElectricalBusType::DirectCurrentEssential,
+        ElectricalBusType::DirectCurrent(2),
+        ElectricalBusType::DirectCurrentHot(1),
+        ElectricalBusType::DirectCurrentHot(2),
+    ];
+
     fn new(context: &mut InitContext) -> Self {
         Self {
             requested_position_left_id: context
@@ -2960,6 +2968,8 @@ impl ElacComputer {
 
             left_controllers: [AileronController::new(), AileronController::new()],
             right_controllers: [AileronController::new(), AileronController::new()],
+
+            is_powered: false,
         }
     }
 
@@ -2986,6 +2996,15 @@ impl ElacComputer {
         self.right_controllers[1].set_mode(LinearActuatorMode::PositionControl);
     }
 
+    /// Sets nominal A320 behaviour : left aileron controled on blue servo, right one using green servo
+    fn set_mixed_green_blue_circuit_position_control(&mut self) {
+        self.left_controllers[0].set_mode(LinearActuatorMode::PositionControl);
+        self.left_controllers[1].set_mode(LinearActuatorMode::ActiveDamping);
+
+        self.right_controllers[0].set_mode(LinearActuatorMode::ActiveDamping);
+        self.right_controllers[1].set_mode(LinearActuatorMode::PositionControl);
+    }
+
     fn set_no_position_control(&mut self) {
         self.left_controllers[0].set_mode(LinearActuatorMode::ClosedCircuitDamping);
         self.left_controllers[1].set_mode(LinearActuatorMode::ClosedCircuitDamping);
@@ -2997,10 +3016,19 @@ impl ElacComputer {
     fn update(&mut self, blue_pressure: Pressure, green_pressure: Pressure) {
         self.update_requested_position();
 
-        if blue_pressure.get::<psi>() > 1500. {
-            self.set_blue_circuit_position_control();
-        } else if green_pressure.get::<psi>() > 1500. {
-            self.set_green_circuit_position_control();
+        let blue_circuit_available = blue_pressure.get::<psi>() > 1500.;
+        let green_circuit_available = green_pressure.get::<psi>() > 1500.;
+
+        if self.is_powered {
+            if blue_circuit_available && green_circuit_available {
+                self.set_mixed_green_blue_circuit_position_control();
+            } else if blue_circuit_available {
+                self.set_blue_circuit_position_control();
+            } else if green_circuit_available {
+                self.set_green_circuit_position_control();
+            } else {
+                self.set_no_position_control();
+            }
         } else {
             self.set_no_position_control();
         }
@@ -3020,6 +3048,10 @@ impl SimulationElement for ElacComputer {
             -1. * Ratio::new::<ratio>(reader.read(&self.requested_position_left_id));
         self.right_position_requested =
             Ratio::new::<ratio>(reader.read(&self.requested_position_right_id));
+    }
+
+    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
+        self.is_powered = buses.any_is_powered(&Self::ALL_POWER_BUSES);
     }
 }
 
