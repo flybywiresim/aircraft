@@ -4549,6 +4549,7 @@
                 <ANIM_NAME>PUSH_DOORPANEL_OPEN</ANIM_NAME>
                 <SEQ1_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
                 <SEQ2_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
+                <DUMMY_BUTTON/>
             </UseTemplate>
         </Component>
 
