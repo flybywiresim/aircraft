@@ -1,11 +1,60 @@
 use crate::{
-    f64_to_sim_connect_32k_pos, sim_connect_32k_pos_to_f64, Aspect, MsfsVariableRegistry, Variable,
+    f64_to_sim_connect_32k_pos, sim_connect_32k_pos_to_f64, MsfsVariableRegistry, Variable,
 };
 use enum_dispatch::enum_dispatch;
 use msfs::sim_connect::{SimConnect, SimConnectRecv, SIMCONNECT_OBJECT_ID_USER};
 use std::error::Error;
 use std::time::{Duration, Instant};
 use systems::simulation::VariableIdentifier;
+
+/// A concern that should be handled by the bridging layer. Examples are
+/// the handling of events which move flaps up and down, triggering of brakes, etc.
+pub(super) trait Aspect {
+    /// Attempts to read data with the given identifier.
+    /// Returns `Some` when reading was successful, `None` otherwise.
+    fn read(&mut self, _identifier: &VariableIdentifier) -> Option<f64> {
+        None
+    }
+
+    /// Attempts to write the value with the given identifier.
+    /// Returns true when the writing was successful and deemed sufficient,
+    /// false otherwise.
+    ///
+    /// Note that there may be cases where multiple types write the same data.
+    /// For such situations, after a successful write the function can return false.
+    fn write(&mut self, _identifier: &VariableIdentifier, _value: f64) -> bool {
+        false
+    }
+
+    /// Attempts to handle the given message, returning true
+    /// when the message was handled and false otherwise.
+    fn handle_message(
+        &mut self,
+        _message: &SimConnectRecv,
+        _variables: &mut MsfsVariableRegistry,
+    ) -> bool {
+        false
+    }
+
+    /// Executes before a simulation tick runs.
+    fn pre_tick(
+        &mut self,
+        _variables: &mut MsfsVariableRegistry,
+        _sim_connect: &mut SimConnect,
+        _delta: Duration,
+    ) -> Result<(), Box<dyn Error>> {
+        Ok(())
+    }
+
+    /// Executes after a simulation tick ran.
+    fn post_tick(
+        &mut self,
+        _variables: &mut MsfsVariableRegistry,
+        _sim_connect: &mut SimConnect,
+    ) -> Result<(), Box<dyn Error>> {
+        Ok(())
+    }
+}
 
 /// Type used to configure and build an [Aspect].
 ///
@@ -188,18 +237,23 @@ impl<'a, 'b> MsfsAspectBuilder<'a, 'b> {
         ));
     }
 
-    /// Execute the given function whenever the observed variable's value changes.
+    /// Execute the given function whenever any of the observed variable values changes.
     pub fn on_change(
         &mut self,
         execute_on: ExecuteOn,
-        observed: Variable,
-        func: Box<dyn Fn(f64, f64) -> ()>,
+        observed: Vec<Variable>,
+        func: Box<dyn Fn(&[f64], &[f64])>,
     ) {
-        let observed = self.variables.register(&observed);
-        let starting_value = self.variables.read(&observed);
+        let observed = self.variables.register_many(&observed);
+        let starting_values = self
+            .variables
+            .read_many(&observed)
+            .iter_mut()
+            .map(|v| v.unwrap_or(0.))
+            .collect();
 
         self.actions.push((
-            OnChange::new(observed, starting_value, func).into(),
+            OnChange::new(observed, starting_values, func).into(),
             execute_on,
         ));
     }
@@ -869,20 +923,20 @@ impl ExecutableVariableAction for ToEvent {
 }
 
 struct OnChange {
-    observed_variable: VariableIdentifier,
-    previous_value: Option<f64>,
-    func: Box<dyn Fn(f64, f64) -> ()>,
+    observed_variables: Vec<VariableIdentifier>,
+    previous_values: Vec<f64>,
+    func: Box<dyn Fn(&[f64], &[f64])>,
 }
 
 impl OnChange {
     fn new(
-        observed_variable: VariableIdentifier,
-        starting_value: Option<f64>,
-        func: Box<dyn Fn(f64, f64) -> ()>,
+        observed_variables: Vec<VariableIdentifier>,
+        starting_values: Vec<f64>,
+        func: Box<dyn Fn(&[f64], &[f64])>,
     ) -> Self {
         Self {
-            observed_variable,
-            previous_value: starting_value,
+            observed_variables,
+            previous_values: starting_values,
             func,
         }
     }
@@ -894,15 +948,23 @@ impl ExecutableVariableAction for OnChange {
         _: &mut SimConnect,
         variables: &mut MsfsVariableRegistry,
     ) -> Result<(), Box<dyn Error>> {
-        let current = variables.read(&self.observed_variable);
+        let current_values: Vec<f64> = variables
+            .read_many(&self.observed_variables)
+            .iter_mut()
+            .map(|v| v.unwrap_or(0.))
+            .collect();
 
-        if let (Some(previous), Some(current)) = (self.previous_value, current) {
-            if previous != current {
-                (self.func)(previous, current);
-            }
+        let has_changed = self
+            .previous_values
+            .iter()
+            .zip(&current_values)
+            .any(|(previous, current)| previous != current);
+
+        if has_changed {
+            (self.func)(&self.previous_values, &current_values);
         }
 
-        self.previous_value = current;
+        self.previous_values = current_values;
 
         Ok(())
     }

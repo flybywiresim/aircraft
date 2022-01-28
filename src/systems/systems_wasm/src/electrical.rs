@@ -1,10 +1,8 @@
 use std::error::Error;
 
-use crate::{Aspect, ExecuteOn, MsfsAspectBuilder, Variable};
+use crate::{ExecuteOn, MsfsAspectBuilder, Variable};
 use msfs::legacy::execute_calculator_code;
-use msfs::legacy::AircraftVariable;
 use systems::shared::{to_bool, ElectricalBusType};
-use systems::simulation::{VariableIdentifier, VariableRegistry};
 
 pub(super) fn electrical_buses<const N: usize>(
     buses: [(ElectricalBusType, usize); N],
@@ -21,7 +19,7 @@ pub(super) fn electrical_buses<const N: usize>(
             builder.init_variable(variable.clone(), 1.);
             builder.on_change(
                 ExecuteOn::PostTick,
-                variable,
+                vec![variable],
                 Box::new(move |_, _| {
                     execute_calculator_code::<()>(&toggle_code);
                 }),
@@ -35,60 +33,49 @@ pub(super) fn electrical_buses<const N: usize>(
 /// The default MSFS APU is still used during engine start.
 /// At this moment, the engines cannot be started without it.
 /// Once pneumatics and the engine model are completed, this
-/// type can probably be removed.
-pub(super) struct MsfsAuxiliaryPowerUnit {
-    is_available_id: VariableIdentifier,
-    msfs_apu_is_on: AircraftVariable,
+/// function can probably be removed.
+pub(super) fn auxiliary_power_unit(
+    is_available_variable: Variable,
     fuel_valve_number: u8,
-}
-impl MsfsAuxiliaryPowerUnit {
-    pub fn new(
-        registry: &mut impl VariableRegistry,
-        is_available_variable_name: String,
-        fuel_valve_number: u8,
-    ) -> Result<Self, Box<dyn Error>> {
-        Ok(Self {
-            is_available_id: registry.get(is_available_variable_name),
-            msfs_apu_is_on: AircraftVariable::from("APU SWITCH", "Bool", 0)?,
-            fuel_valve_number,
-        })
-    }
+) -> impl FnOnce(&mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>> {
+    move |builder: &mut MsfsAspectBuilder| {
+        builder.on_change(
+            ExecuteOn::PostTick,
+            vec![
+                is_available_variable,
+                Variable::aircraft("APU SWITCH", "Bool", 0),
+            ],
+            Box::new(move |_, values| {
+                let is_available = to_bool(values[0]);
+                let msfs_apu_is_on = to_bool(values[1]);
 
-    fn toggle_fuel_valve(&self) {
-        execute_calculator_code::<()>(&format!(
-            "{} (>K:FUELSYSTEM_VALVE_TOGGLE)",
-            self.fuel_valve_number
-        ));
-    }
+                if is_available && !msfs_apu_is_on {
+                    toggle_fuel_valve(fuel_valve_number);
+                    start_apu();
+                } else if !is_available && msfs_apu_is_on {
+                    toggle_fuel_valve(fuel_valve_number);
+                    stop_apu();
+                }
+            }),
+        );
 
-    fn start_apu(&self) {
-        // In the systems.cfg, the `apu_pct_rpm_per_second` setting
-        // is set to 1000, meaning the MSFS APU starts in 1 millisecond.
-        execute_calculator_code::<()>("1 (>K:APU_STARTER, Number)");
-    }
-
-    fn stop_apu(&self) {
-        execute_calculator_code::<()>("1 (>K:APU_OFF_SWITCH, Number)");
+        Ok(())
     }
 }
-impl Aspect for MsfsAuxiliaryPowerUnit {
-    fn write(&mut self, identifier: &VariableIdentifier, value: f64) -> bool {
-        if identifier == &self.is_available_id {
-            let is_available = to_bool(value);
-            let msfs_apu_is_on = to_bool(self.msfs_apu_is_on.get());
 
-            if is_available && !msfs_apu_is_on {
-                self.toggle_fuel_valve();
-                self.start_apu();
-            } else if !is_available && msfs_apu_is_on {
-                self.toggle_fuel_valve();
-                self.stop_apu();
-            }
-        }
+fn toggle_fuel_valve(fuel_valve_number: u8) {
+    execute_calculator_code::<()>(&format!(
+        "{} (>K:FUELSYSTEM_VALVE_TOGGLE)",
+        fuel_valve_number
+    ));
+}
 
-        // We only take a peek at the value, but don't write it.
-        // Therefore, return false to indicate it should still be
-        // written elsewhere.
-        false
-    }
+fn start_apu() {
+    // In the systems.cfg, the `apu_pct_rpm_per_second` setting
+    // is set to 1000, meaning the MSFS APU starts in 1 millisecond.
+    execute_calculator_code::<()>("1 (>K:APU_STARTER, Number)");
+}
+
+fn stop_apu() {
+    execute_calculator_code::<()>("1 (>K:APU_OFF_SWITCH, Number)");
 }

@@ -4,8 +4,8 @@ pub mod aspects;
 mod electrical;
 mod failures;
 
-use crate::aspects::{ExecuteOn, MsfsAspectBuilder};
-use crate::electrical::{electrical_buses, MsfsAuxiliaryPowerUnit};
+use crate::aspects::{Aspect, ExecuteOn, MsfsAspectBuilder};
+use crate::electrical::{auxiliary_power_unit, electrical_buses};
 use failures::Failures;
 use fxhash::FxHashMap;
 use msfs::{
@@ -24,64 +24,14 @@ use systems::{
     },
 };
 
-/// A concern that should be handled by the bridging layer. Examples are
-/// the handling of events which move flaps up and down, triggering of brakes, etc.
-pub trait Aspect {
-    /// Attempts to read data with the given identifier.
-    /// Returns `Some` when reading was successful, `None` otherwise.
-    fn read(&mut self, _identifier: &VariableIdentifier) -> Option<f64> {
-        None
-    }
-
-    /// Attempts to write the value with the given identifier.
-    /// Returns true when the writing was successful and deemed sufficient,
-    /// false otherwise.
-    ///
-    /// Note that there may be cases where multiple types write the same data.
-    /// For such situations, after a successful write the function can return false.
-    fn write(&mut self, _identifier: &VariableIdentifier, _value: f64) -> bool {
-        false
-    }
-
-    /// Attempts to handle the given message, returning true
-    /// when the message was handled and false otherwise.
-    fn handle_message(
-        &mut self,
-        _message: &SimConnectRecv,
-        _variables: &mut MsfsVariableRegistry,
-    ) -> bool {
-        false
-    }
-
-    /// Executes before a simulation tick runs.
-    fn pre_tick(
-        &mut self,
-        _variables: &mut MsfsVariableRegistry,
-        _sim_connect: &mut SimConnect,
-        _delta: Duration,
-    ) -> Result<(), Box<dyn Error>> {
-        Ok(())
-    }
-
-    /// Executes after a simulation tick ran.
-    fn post_tick(
-        &mut self,
-        _variables: &mut MsfsVariableRegistry,
-        _sim_connect: &mut SimConnect,
-    ) -> Result<(), Box<dyn Error>> {
-        Ok(())
-    }
-}
-
 /// Type used to configure and build a simulation and a handler which acts as a bridging layer
 /// between the simulation and Microsoft Flight Simulator.
 pub struct MsfsSimulationBuilder<'a, 'b> {
     variable_registry: Option<MsfsVariableRegistry>,
     key_prefix: String,
     sim_connect: &'a mut SimConnect<'b>,
-    apu: Option<MsfsAuxiliaryPowerUnit>,
     failures: Option<Failures>,
-    additional_aspects: Vec<Box<dyn Aspect>>,
+    aspects: Vec<Box<dyn Aspect>>,
 }
 
 impl<'a, 'b> MsfsSimulationBuilder<'a, 'b> {
@@ -90,29 +40,21 @@ impl<'a, 'b> MsfsSimulationBuilder<'a, 'b> {
             variable_registry: Some(MsfsVariableRegistry::new(key_prefix.into())),
             key_prefix: key_prefix.into(),
             sim_connect,
-            apu: None,
             failures: None,
-            additional_aspects: vec![],
+            aspects: vec![],
         }
     }
 
     pub fn build<T: Aircraft, U: FnOnce(&mut InitContext) -> T>(
-        mut self,
+        self,
         aircraft_ctor_fn: U,
     ) -> Result<(Simulation<T>, MsfsHandler), Box<dyn Error>> {
-        let mut aspects: Vec<Box<dyn Aspect>> = vec![];
-        if self.apu.is_some() {
-            aspects.push(Box::new(self.apu.unwrap()));
-        }
-
-        aspects.append(&mut self.additional_aspects);
-
         let mut registry = self.variable_registry.unwrap();
         let simulation = Simulation::new(aircraft_ctor_fn, &mut registry);
 
         Ok((
             simulation,
-            MsfsHandler::new(registry, aspects, self.failures, self.sim_connect)?,
+            MsfsHandler::new(registry, self.aspects, self.failures, self.sim_connect)?,
         ))
     }
 
@@ -125,7 +67,7 @@ impl<'a, 'b> MsfsSimulationBuilder<'a, 'b> {
         let variable_registry = &mut self.variable_registry.as_mut().unwrap();
         let mut builder = MsfsAspectBuilder::new(&mut self.sim_connect, variable_registry);
         (builder_func)(&mut builder)?;
-        self.additional_aspects.push(Box::new(builder.build()));
+        self.aspects.push(Box::new(builder.build()));
 
         Ok(self)
     }
@@ -143,19 +85,14 @@ impl<'a, 'b> MsfsSimulationBuilder<'a, 'b> {
     }
 
     pub fn with_auxiliary_power_unit(
-        mut self,
-        is_available_variable_name: &str,
+        self,
+        is_available_variable: Variable,
         fuel_valve_number: u8,
     ) -> Result<Self, Box<dyn Error>> {
-        if let Some(registry) = &mut self.variable_registry {
-            self.apu = Some(MsfsAuxiliaryPowerUnit::new(
-                registry,
-                is_available_variable_name.into(),
-                fuel_valve_number,
-            )?);
-        }
-
-        Ok(self)
+        self.with_aspect(auxiliary_power_unit(
+            is_available_variable,
+            fuel_valve_number,
+        ))
     }
 
     pub fn with_failures(mut self, failures: Vec<(u64, FailureType)>) -> Self {
