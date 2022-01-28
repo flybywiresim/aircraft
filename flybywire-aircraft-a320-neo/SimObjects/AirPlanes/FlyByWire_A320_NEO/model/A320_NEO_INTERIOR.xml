@@ -486,12 +486,16 @@
                 <ANIM_NAME_YOKE_Y>yoke_lever_stick_fore2_aft</ANIM_NAME_YOKE_Y>
             </UseTemplate>
 
-            <UseTemplate Name="FBW_Airbus_Sidestick_Priority">
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>BUTTON_HELD</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_Airbus_Sidestick_Priority</ANIM_TEMPLATE>
                 <NODE_ID>PUSH_YOKE_LEFT</NODE_ID>
                 <ANIM_NAME>PUSH_YOKE_LEFT</ANIM_NAME>
                 <ID>1</ID>
             </UseTemplate>
-            <UseTemplate Name="FBW_Airbus_Sidestick_Priority">
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>BUTTON_HELD</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_Airbus_Sidestick_Priority</ANIM_TEMPLATE>
                 <NODE_ID>PUSH_YOKE_RIGHT</NODE_ID>
                 <ANIM_NAME>PUSH_YOKE_RIGHT</ANIM_NAME>
                 <ID>2</ID>
