@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import metarParser from 'aewx-metar-parser';
 import { Metar } from '@flybywiresim/api-client';
 import { IconCloud, IconDroplet, IconGauge, IconPoint, IconTemperature, IconWind } from '@tabler/icons';
 import { MetarParserType, Wind } from '@instruments/common/metarTypes';
 import { usePersistentProperty } from '@instruments/common/persistence';
+import metarParser from 'aewx-metar-parser';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 
 const MetarParserTypeWindState: Wind = {
@@ -95,6 +95,21 @@ export const WeatherWidget = (props: WeatherWidgetProps) => {
                 {metar.barometer.mb.toFixed(0)}
                 {' '}
                 mb
+            </>
+        );
+    };
+
+    const MetarText = () => {
+        // eslint-disable-next-line no-debugger
+        debugger;
+        let metarString = '';
+        for (const part of metar.raw_parts) {
+            metarString = metarString.concat(part).concat(' ');
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        }
+        return (
+            <>
+                {metarString}
             </>
         );
     };
@@ -255,7 +270,7 @@ export const WeatherWidget = (props: WeatherWidgetProps) => {
                                         {metar.raw_text
                                             ? (
                                                 <>
-                                                    {metar.raw_text}
+                                                    <MetarText />
                                                 </>
                                             ) : (
                                                 <>
