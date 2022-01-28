@@ -5,6 +5,7 @@ import { MetarParserType, Wind } from '@instruments/common/metarTypes';
 import { usePersistentProperty } from '@instruments/common/persistence';
 import metarParser from 'aewx-metar-parser';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
+import { getColoredMetar } from './ColorMetar';
 
 const MetarParserTypeWindState: Wind = {
     degrees: 0,
@@ -74,10 +75,12 @@ export const WeatherWidget = (props: WeatherWidgetProps) => {
     const [metar, setMetar] = useState<MetarParserType>(MetarParserTypeProp);
     const [showMetar, setShowMetar] = usePersistentProperty(`CONFIG_SHOW_METAR_${props.name}`, 'DISABLED');
     const [baroType] = usePersistentProperty('CONFIG_INIT_BARO_UNIT', 'HPA');
+    const [coloredMetar, setColoredMetar] = useState('');
     let [metarSource] = usePersistentProperty('CONFIG_METAR_SRC', 'MSFS');
     let [icaoManual] = useState('');
 
-    const getBaroTypeForAirport = (icao: string) => (['K', 'C', 'M', 'P', 'RJ', 'RO', 'TI', 'TJ'].some((r) => icao.toUpperCase().startsWith(r)) ? 'IN HG' : 'HPA');
+    const getBaroTypeForAirport = (icao: string) => (['K', 'C', 'M', 'P', 'RJ', 'RO', 'TI', 'TJ']
+        .some((r) => icao.toUpperCase().startsWith(r)) ? 'IN HG' : 'HPA');
 
     const BaroValue = () => {
         const displayedBaroType = baroType === 'AUTO' ? getBaroTypeForAirport(metar.icao) : baroType;
@@ -99,20 +102,11 @@ export const WeatherWidget = (props: WeatherWidgetProps) => {
         );
     };
 
-    const MetarText = () => {
-        // eslint-disable-next-line no-debugger
-        debugger;
-        let metarString = '';
-        for (const part of metar.raw_parts) {
-            metarString = metarString.concat(part).concat(' ');
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        }
-        return (
-            <>
-                {metarString}
-            </>
-        );
-    };
+    const MetarText = () => (
+        <>
+            <span dangerouslySetInnerHTML={{ __html: coloredMetar }} />
+        </>
+    );
 
     if (metarSource === 'MSFS') {
         metarSource = 'MS';
@@ -136,8 +130,11 @@ export const WeatherWidget = (props: WeatherWidgetProps) => {
             });
         }
         return Metar.get(icao, source)
+            // .then(() => {
+            // const metarParse = metarParser('LOWS 281520Z 27014G30KT 230V320 3500 -VCSH FEW002 BKN010 SCT020TCU 00/M01 Q1032 TEMPO 4500');
             .then((result) => {
                 const metarParse = metarParser(result.metar);
+                setColoredMetar(getColoredMetar(metarParse));
                 setMetar(metarParse);
             })
             .catch(() => {
