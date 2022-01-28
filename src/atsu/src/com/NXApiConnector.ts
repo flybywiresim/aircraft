@@ -73,7 +73,7 @@ export class NXApiConnector {
                     return AtsuStatusCodes.Ok;
                 }
                 return AtsuStatusCodes.NoTelexConnection;
-            });
+            }).catch(() => AtsuStatusCodes.ProxyError);
         }
 
         return AtsuStatusCodes.Ok;
@@ -88,7 +88,7 @@ export class NXApiConnector {
             return Telex.disconnect().then(() => {
                 NXApiConnector.connected = false;
                 return AtsuStatusCodes.Ok;
-            });
+            }).catch(() => AtsuStatusCodes.ProxyError);
         }
 
         return AtsuStatusCodes.NoTelexConnection;
@@ -155,7 +155,10 @@ export class NXApiConnector {
             if (NXApiConnector.updateCounter++ % 4 === 0) {
                 const status = NXApiConnector.createAircraftStatus();
                 if (status !== undefined) {
-                    await Telex.update(status);
+                    const code = await Telex.update(status).then(() => AtsuStatusCodes.Ok).catch(() => AtsuStatusCodes.ProxyError);
+                    if (code !== AtsuStatusCodes.Ok) {
+                        return [AtsuStatusCodes.ComFailed, retval];
+                    }
                 }
             }
 

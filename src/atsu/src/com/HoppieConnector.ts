@@ -66,11 +66,16 @@ export class HoppieConnector {
             type,
             packet: message.serialize(AtsuMessageSerializationFormat.Network),
         };
-        const text = await Hoppie.sendRequest(body).then((resp) => resp.response);
+        const text = await Hoppie.sendRequest(body).then((resp) => resp.response).catch(() => 'proxy');
+
+        if (text === 'proxy') {
+            return AtsuStatusCodes.ProxyError;
+        }
 
         if (text !== 'ok') {
             return AtsuStatusCodes.ComFailed;
         }
+
         return AtsuStatusCodes.Ok;
     }
 
@@ -106,7 +111,12 @@ export class HoppieConnector {
             to: flightNo,
             type: 'poll',
         };
-        const text = await Hoppie.sendRequest(body).then((resp) => resp.response);
+        const text = await Hoppie.sendRequest(body).then((resp) => resp.response).catch(() => 'proxy');
+
+        // proxy error during request
+        if (text === 'proxy') {
+            return [AtsuStatusCodes.ProxyError, retval];
+        }
 
         // something went wrong
         if (!text.startsWith('ok')) {
