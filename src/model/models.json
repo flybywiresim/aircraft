@@ -599,6 +599,15 @@
         ]
       },
       {
+        "node": "SWITCH_EFIS_FO_CONSOLE",
+        "outputSamplers": [
+          [
+            [-0.74896, 0.0, 0.0, 0.66262],
+            [-0.39875, 0.0, 0.0, 0.91706]
+          ]
+        ]
+      },
+      {
         "accessors": [
           "x0_PUSH_ECAM_ENG_SEQ2_vertices#0_TEXCOORD_0",
           "x0_PUSH_ECAM_ENG_SEQ2_vertices#0_TEXCOORD_1"
