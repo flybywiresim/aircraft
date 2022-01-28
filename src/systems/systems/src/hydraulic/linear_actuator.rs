@@ -2102,7 +2102,7 @@ mod tests {
     ) -> LinearActuator {
         const DEFAULT_I_GAIN: f64 = 5.;
         const DEFAULT_P_GAIN: f64 = 0.05;
-        const DEFAULT_FORCE_GAIN: f64 = 400000.;
+        const DEFAULT_FORCE_GAIN: f64 = 200000.;
 
         LinearActuator::new(
             context,
