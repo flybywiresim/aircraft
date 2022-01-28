@@ -92,31 +92,36 @@ fs.writeFileSync(path.join(A32NX, 'manifest.json'), JSON.stringify({
 // Stable will not show the label (encoded in the src/model build.js)
 // Development will show a yellow label
 // All other branches show a red label
-//
-// This assumes that Stable uses the DDS already in the aircraft folder, while
-// the other cases will overwrite this file.
 
 const SRC_FOLDER = path.resolve(__dirname, '..', 'src');
 const TARGET_DSS = '/SimObjects/AirPlanes/FlyByWire_A320_NEO/TEXTURE/A320NEO_COCKPIT_DECALSTEXT_ALBD.TIF.dds';
+const STABLE_DDS = '/Textures/decals 4k/A320NEO_COCKPIT_DECALSTEXT_ALBD.TIF-yellow.dds';
+const DEV_DDS = '/Textures/decals 4k/A320NEO_COCKPIT_DECALSTEXT_ALBD.TIF-yellow.dds';
+const EXP_DDS = '/Textures/decals 4k/A320NEO_COCKPIT_DECALSTEXT_ALBD.TIF-red.dds';
 
-if (GIT_BRANCH === 'master') {
-    const YELLOW_DDS = '/Textures/decals 4k/A320NEO_COCKPIT_DECALSTEXT_ALBD.TIF-yellow.dds';
+if (edition === 'stable') {
     // destination will be created or overwritten by default.
-    fs.copyFile(path.join(SRC_FOLDER, YELLOW_DDS), path.join(A32NX, TARGET_DSS),
+    fs.copyFile(path.join(SRC_FOLDER, STABLE_DDS), path.join(A32NX, TARGET_DSS),
         (err) => {
             if (err) {
                 throw err;
             }
-            console.log('copying ' + YELLOW_DDS + ` to ` + TARGET_DSS + "failed: " + err);
+            console.log('copying ' + STABLE_DDS + ` to ` + TARGET_DSS + "failed: " + err);
         });
-} else if (edition !== 'stable') {
-    const RED_DDS = '/Textures/decals 4k/A320NEO_COCKPIT_DECALSTEXT_ALBD.TIF-red.dds';
-    // destination will be created or overwritten by default.
-    fs.copyFile(path.join(SRC_FOLDER, RED_DDS), path.join(A32NX, TARGET_DSS),
+} else if (GIT_BRANCH === 'master') {
+    fs.copyFile(path.join(SRC_FOLDER, DEV_DDS), path.join(A32NX, TARGET_DSS),
         (err) => {
             if (err) {
                 throw err;
             }
-            console.log('copying ' + RED_DDS + ` to ` + TARGET_DSS + "failed: " + err);
+            console.log('copying ' + DEV_DDS + ` to ` + TARGET_DSS + "failed: " + err);
+        });
+} else {
+    fs.copyFile(path.join(SRC_FOLDER, EXP_DDS), path.join(A32NX, TARGET_DSS),
+        (err) => {
+            if (err) {
+                throw err;
+            }
+            console.log('copying ' + EXP_DDS + ` to ` + TARGET_DSS + "failed: " + err);
         });
 }
