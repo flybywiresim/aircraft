@@ -905,30 +905,43 @@ class EngineControl {
                           double ambientPressure,
                           double mach,
                           double simN1highest,
-                          int packs,
-                          int nai,
-                          int wai) {
+                          double packs,
+                          double nai,
+                          double wai) {
     double idle = simVars->getEngineIdleN1();
-    double to;
-    double ga;
-    double toga;
-    double clb;
-    double mct;
+    double flexTemp = simVars->getFlexTemp();
+    double to = 0;
+    double ga = 0;
+    double toga = 0;
+    double clb = 0;
+    double mct = 0;
+    double flex_to = 0;
+    double flex_ga = 0;
+    double flex = 0;
 
     // Write all N1 Limits
-    to = limitN1(0, min(16600.0, pressAltitude), ambientTemp, ambientPressure, packs, nai, wai);
-    ga = limitN1(1, min(16600.0, pressAltitude), ambientTemp, ambientPressure, packs, nai, wai);
-    clb = limitN1(2, pressAltitude, ambientTemp, ambientPressure, packs, nai, wai);
-    mct = limitN1(3, pressAltitude, ambientTemp, ambientPressure, packs, nai, wai);
+    to = limitN1(0, min(16600.0, pressAltitude), ambientTemp, ambientPressure, 0, packs, nai, wai);
+    ga = limitN1(1, min(16600.0, pressAltitude), ambientTemp, ambientPressure, 0, packs, nai, wai);
+    if (flexTemp > 0) {
+      flex_to = limitN1(0, min(16600.0, pressAltitude), ambientTemp, ambientPressure, flexTemp, packs, nai, wai);
+      flex_ga = limitN1(1, min(16600.0, pressAltitude), ambientTemp, ambientPressure, flexTemp, packs, nai, wai);
+    }
+    clb = limitN1(2, pressAltitude, ambientTemp, ambientPressure, 0, packs, nai, wai);
+    mct = limitN1(3, pressAltitude, ambientTemp, ambientPressure, 0, packs, nai, wai);
 
     // transition between TO and GA limit
     if (mach > TOGA_STATIC_TRANSITION_HIGH) {
       toga = ga;
+      flex = flex_ga;
     } else if (mach < TOGA_STATIC_TRANSITION_LOW) {
       toga = to;
+      flex = flex_to;
     } else {
       toga = to + ((mach - TOGA_STATIC_TRANSITION_LOW) * ((ga - to) / (TOGA_STATIC_TRANSITION_HIGH - TOGA_STATIC_TRANSITION_LOW)));
       toga = max(to, min(ga, toga));
+      flex = flex_to +
+             ((mach - TOGA_STATIC_TRANSITION_LOW) * ((flex_ga - flex_to) / (TOGA_STATIC_TRANSITION_HIGH - TOGA_STATIC_TRANSITION_LOW)));
+      flex = max(flex_to, min(flex_ga, flex));
     }
 
     // ensure TOGA is never smaller than MCT
@@ -936,10 +949,11 @@ class EngineControl {
     // depending on environment MCT might be larger than TOGA before 16600,
     // so to ensure small transition we use the max of both
     toga = max(mct, toga);
-
+    //std::cout << "FADEC: toga= " << toga << " clb= " << clb << " mct= " << mct << " flex= " << flex << std::endl;
     // write limits
     simVars->setThrustLimitIdle(idle);
     simVars->setThrustLimitToga(toga);
+    simVars->setThrustLimitFlex(flex);
     simVars->setThrustLimitClimb(clb);
     simVars->setThrustLimitMct(mct);
   }

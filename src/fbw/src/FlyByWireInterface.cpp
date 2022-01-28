@@ -167,7 +167,7 @@ void FlyByWireInterface::loadConfiguration() {
   // load values - autothrust
   autothrustThrustLimitReverse = INITypeConversion::getDouble(iniStructure, "AUTOTHRUST", "THRUST_LIMIT_REVERSE", -45.0);
   autothrustThrustLimitUseExternal = INITypeConversion::getBoolean(iniStructure, "AUTOTHRUST", "USE_EXTERNAL_LIMIT", true);
-  autothrustThrustLimitUseExternalFlex = INITypeConversion::getBoolean(iniStructure, "AUTOTHRUST", "USE_EXTERNAL_LIMIT_FLEX", false);
+  autothrustThrustLimitUseExternalFlex = INITypeConversion::getBoolean(iniStructure, "AUTOTHRUST", "USE_EXTERNAL_LIMIT_FLEX", true);
 
   // initialize local variable for reverse
   idAutothrustThrustLimitREV->set(autothrustThrustLimitReverse);
