@@ -172,10 +172,10 @@ impl CoreHydraulicForce {
                 flow_control_force_gain,
             ),
 
-            kp_read: 0.4,
-            ki_read: 1.,
+            kp_read: 1.5,
+            ki_read: 3.,
             oloop_gain_read: 1.,
-            maxflow_read: 0.02,
+            maxflow_read: 0.04,
         }
     }
 
@@ -1387,7 +1387,7 @@ mod tests {
             body: LinearActuatedRigidBodyOnHingeAxis,
         ) -> Self {
             Self {
-                loop_updater: MaxFixedStepLoop::new(Duration::from_millis(20)),
+                loop_updater: MaxFixedStepLoop::new(Duration::from_millis(10)),
 
                 dual_actuator_assembly: HydraulicLinearActuatorAssembly::new(
                     [actuator1, actuator2],
@@ -1987,7 +1987,7 @@ mod tests {
         test_bed.command(|a| a.command_unlock());
         test_bed.command(|a| a.command_closed_circuit_damping_mode(0));
         test_bed.command(|a| a.command_closed_circuit_damping_mode(1));
-        test_bed.run_with_delta(Duration::from_secs_f64(10.));
+        test_bed.run_with_delta(Duration::from_secs_f64(30.));
 
         assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.1));
 
@@ -2010,16 +2010,27 @@ mod tests {
             .command(|a| a.set_pressures(Pressure::new::<psi>(3000.), Pressure::new::<psi>(3000.)));
         test_bed.command(|a| a.command_active_damping_mode(0));
         test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(0.8), 1));
+
+        // Step demand in 0.3s to position 0.8
         test_bed.run_with_delta(Duration::from_secs_f64(0.3));
 
-        assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.75));
-        assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.85));
+        //Now check position is stable for 20s
+        for _ in 0..20 {
+            test_bed.run_with_delta(Duration::from_secs_f64(1.));
+            assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.75));
+            assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.85));
+        }
 
+        // Step demand in 0.3s to position 0.2
         test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(0.2), 1));
         test_bed.run_with_delta(Duration::from_secs_f64(0.3));
 
-        assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.15));
-        assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.25));
+        //Now check position is stable for 20s
+        for _ in 0..20 {
+            test_bed.run_with_delta(Duration::from_secs_f64(1.));
+            assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.15));
+            assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.25));
+        }
     }
 
     #[test]
@@ -2246,8 +2257,8 @@ mod tests {
         context: &mut InitContext,
         bounded_linear_length: &impl BoundedLinearLength,
     ) -> LinearActuator {
-        const DEFAULT_I_GAIN: f64 = 1.;
-        const DEFAULT_P_GAIN: f64 = 0.4;
+        const DEFAULT_I_GAIN: f64 = 3.;
+        const DEFAULT_P_GAIN: f64 = 1.5;
         const DEFAULT_FORCE_GAIN: f64 = 200000.;
 
         LinearActuator::new(
@@ -2256,7 +2267,7 @@ mod tests {
             1,
             Length::new::<meter>(0.04),
             Length::new::<meter>(0.),
-            VolumeRate::new::<gallon_per_second>(0.02),
+            VolumeRate::new::<gallon_per_second>(0.04),
             80000.,
             1500.,
             5000.,

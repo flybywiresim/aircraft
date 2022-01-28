@@ -253,8 +253,8 @@ impl A320CargoDoorFactory {
 
 struct A320AileronFactory {}
 impl A320AileronFactory {
-    const FLOW_CONTROL_PROPORTIONAL_GAIN: f64 = 0.4;
-    const FLOW_CONTROL_INTEGRAL_GAIN: f64 = 1.;
+    const FLOW_CONTROL_PROPORTIONAL_GAIN: f64 = 1.5;
+    const FLOW_CONTROL_INTEGRAL_GAIN: f64 = 3.;
     const FLOW_CONTROL_FORCE_GAIN: f64 = 200000.;
 
     const MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING: f64 = 800000.;
@@ -263,13 +263,12 @@ impl A320AileronFactory {
         context: &mut InitContext,
         bounded_linear_length: &impl BoundedLinearLength,
     ) -> LinearActuator {
-
         let randomized_damping = random_from_range(
-            Self::MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING / 5.,
+            Self::MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING / 10.,
             Self::MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING,
         );
 
-        println!("DAMPING CONST RAND: {:.1}",randomized_damping);
+        println!("DAMPING CONST RAND: {:.1}", randomized_damping);
 
         LinearActuator::new(
             context,
@@ -324,7 +323,7 @@ impl A320AileronFactory {
         let aileron_actuator_inbord =
             A320AileronFactory::a320_aileron_actuator(context, &aileron_body);
 
-            HydraulicLinearActuatorAssembly::new(
+        HydraulicLinearActuatorAssembly::new(
             [aileron_actuator_outboard, aileron_actuator_inbord],
             aileron_body,
         )
@@ -425,6 +424,9 @@ impl A320Hydraulic {
     const HYDRAULIC_SIM_TIME_STEP: Duration = Duration::from_millis(33);
     // Refresh rate of max fixed step loop for fast physics
     const HYDRAULIC_SIM_MAX_TIME_STEP_MILLISECONDS: Duration = Duration::from_millis(33);
+    // Refresh rate of max fixed step loop for fastest flight controls physics
+    const HYDRAULIC_SIM_FLIGHT_CONTROL_MAX_TIME_STEP_MILLISECONDS: Duration =
+        Duration::from_millis(10);
 
     pub(super) fn new(context: &mut InitContext) -> A320Hydraulic {
         A320Hydraulic {
@@ -441,7 +443,9 @@ impl A320Hydraulic {
 
             core_hydraulic_updater: FixedStepLoop::new(Self::HYDRAULIC_SIM_TIME_STEP),
             physics_updater: MaxFixedStepLoop::new(Self::HYDRAULIC_SIM_MAX_TIME_STEP_MILLISECONDS),
-            ludicrous_updater: MaxFixedStepLoop::new(Duration::from_millis(10)),
+            ludicrous_updater: MaxFixedStepLoop::new(
+                Self::HYDRAULIC_SIM_FLIGHT_CONTROL_MAX_TIME_STEP_MILLISECONDS,
+            ),
 
             brake_steer_computer: A320HydraulicBrakeSteerComputerUnit::new(context),
 
