@@ -90,7 +90,7 @@ export function MetarParser(metarString: string): MetarParserType {
         if (mode < 3 && metarPart.match(/^(\d+)(?:\/(\d+))?(SM)?$/)) {
             mode = 3; // no wind reported
         }
-        if (mode < 5 && metarPart.match(/^(FEW|SCT|BKN|OVC)(\d+)?/)) {
+        if (mode < 5 && metarPart.match(/^(FEW|SCT|BKN|OVC|VV)(\d+)?/)) {
             mode = 5; // no visibility / conditions reported
         }
         if (mode < 6 && metarPart.match(/^M?\d+\/M?\d+$/)) {
@@ -146,14 +146,14 @@ export function MetarParser(metarString: string): MetarParserType {
             // Visibility
             match = metarPart.match(/^(\d+)(?:\/(\d+))?(SM)?$/);
             if (match) {
-                match[1] = (match[2])
+                const speed: number = (match[2])
                     ? Number(match[1]) / Number(match[2])
                     : Number(match[1]);
                 metarObject.visibility = {
-                    miles: (match[3] && match[3] === 'SM') ? match[1] : convert.metersToMiles(match[1]),
-                    miles_float: (match[3] && match[3] === 'SM') ? match[1] : convert.metersToMiles(match[1]),
-                    meters: (match[3] && match[3] === 'SM') ? convert.milesToMeters(match[1]) : match[1],
-                    meters_float: (match[3] && match[3] === 'SM') ? convert.milesToMeters(match[1]) : match[1],
+                    miles: (match[3] && match[3] === 'SM') ? speed.toString() : convert.metersToMiles(speed).toString(),
+                    miles_float: (match[3] && match[3] === 'SM') ? speed : convert.metersToMiles(speed),
+                    meters: (match[3] && match[3] === 'SM') ? convert.milesToMeters(speed).toString() : speed.toString(),
+                    meters_float: (match[3] && match[3] === 'SM') ? convert.milesToMeters(speed) : speed,
                 };
                 if (metarObject.visibility.meters_float < 1000.0) {
                     metarObject.color_codes[index] = ColorCode.Warning;
@@ -215,7 +215,7 @@ export function MetarParser(metarString: string): MetarParserType {
             if (metarObject.clouds.length === 1 && metarObject.clouds[0].code === '') {
                 metarObject.clouds.pop();
             }
-            match = metarPart.match(/^(FEW|SCT|BKN|OVC)(\d+)/);
+            match = metarPart.match(/^(FEW|SCT|BKN|OVC|VV)(\d+)/);
             if (match) {
                 match[2] = Number(match[2]) * 100;
                 const cloud = {
@@ -223,8 +223,8 @@ export function MetarParser(metarString: string): MetarParserType {
                     base_feet_agl: match[2],
                     base_meters_agl: convert.feetToMeters(match[2]),
                 };
-
                 metarObject.clouds.push(cloud);
+
                 if (match[2] <= 300) {
                     metarObject.color_codes[index] = ColorCode.Warning;
                 } else if (match[3] || match[2] < 800) {
