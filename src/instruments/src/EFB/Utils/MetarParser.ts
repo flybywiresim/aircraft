@@ -1,4 +1,4 @@
-import { ColorCode, MetarParserType } from '@instruments/common/metarTypes';
+import { ColorCode, MetarParserType } from '../../Common/metarTypes';
 
 /**
  * Convert METAR string into structured object.
