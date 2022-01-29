@@ -2541,27 +2541,35 @@
                     <!-- FLT CTL -->
                     <Component ID="Flight_Controls_Right">
                         <!-- FLT CTL ELAC 2 -->
-                        <UseTemplate Name="FBW_AIRBUS_Push_ELAC_Template">
-                            <ID>2</ID>
+                        <UseTemplate Name="FBW_Anim_Interactions">
+                            <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                            <ANIM_TEMPLATE>FBW_AIRBUS_Push_ELAC_Template</ANIM_TEMPLATE>
                             <SEQ_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ_POWERED>
+                            <ID>2</ID>
                         </UseTemplate>
 
                         <!-- FLT CTL SEC 2 -->
-                        <UseTemplate Name="FBW_AIRBUS_Push_SEC_Template">
-                            <ID>2</ID>
+                        <UseTemplate Name="FBW_Anim_Interactions">
+                            <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                            <ANIM_TEMPLATE>FBW_AIRBUS_Push_SEC_Template</ANIM_TEMPLATE>
                             <SEQ_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ_POWERED>
+                            <ID>2</ID>
                         </UseTemplate>
 
                         <!-- FLT CTL SEC 3 -->
-                        <UseTemplate Name="FBW_AIRBUS_Push_SEC_Template">
-                            <ID>3</ID>
+                        <UseTemplate Name="FBW_Anim_Interactions">
+                            <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                            <ANIM_TEMPLATE>FBW_AIRBUS_Push_SEC_Template</ANIM_TEMPLATE>
                             <SEQ_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ_POWERED>
+                            <ID>3</ID>
                         </UseTemplate>
 
                         <!-- FLT CTL FAC 2 -->
-                        <UseTemplate Name="FBW_AIRBUS_Push_FAC_Template">
-                            <ID>2</ID>
+                        <UseTemplate Name="FBW_Anim_Interactions">
+                            <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                            <ANIM_TEMPLATE>FBW_AIRBUS_Push_FAC_Template</ANIM_TEMPLATE>
                             <SEQ_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ_POWERED>
+                            <ID>2</ID>
                         </UseTemplate>
                     </Component>
 
