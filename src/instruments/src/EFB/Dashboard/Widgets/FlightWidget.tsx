@@ -148,7 +148,7 @@ export const FlightWidget = () => {
     }
 
     return (
-        <div className="overflow-hidden p-6 mr-3 w-2/5 h-full rounded-lg border-2 shadow-md border-theme-accent">
+        <div className="overflow-hidden p-6 mr-3 w-2/5 h-full rounded-lg border-2 border-theme-accent">
             <div className="flex flex-col justify-between h-full">
                 <div className="space-y-8">
                     <div className="flex flex-row justify-between">
@@ -181,7 +181,7 @@ export const FlightWidget = () => {
                                         />
                                     )}
                                 </div>
-                                <div className="w-full bg-white border-dashed" style={{ width: `${100 - flightPlanProgress}%` }} />
+                                <div className="w-full border-dashed bg-theme-text" style={{ width: `${100 - flightPlanProgress}%` }} />
                             </div>
                             <div>
                                 <div className={`w-1 ml-auto h-4 ${flightPlanProgress > 99 ? 'bg-theme-highlight' : 'bg-theme-text'}`} />
