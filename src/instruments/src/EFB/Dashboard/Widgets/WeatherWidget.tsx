@@ -3,14 +3,15 @@ import { Metar } from '@flybywiresim/api-client';
 import { IconCloud, IconDroplet, IconGauge, IconPoint, IconTemperature, IconWind } from '@tabler/icons';
 import { MetarParserType, Wind } from '@instruments/common/metarTypes';
 import { usePersistentProperty } from '@instruments/common/persistence';
-import metarParser from 'aewx-metar-parser';
+import { MetarParser, getColoredMetar } from '../../Utils/MetarParser';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
-import { getColoredMetar } from './ColorMetar';
 import { useAppDispatch } from '../../Store/store';
 import { setDepartureIcao, setDestinationIcao } from '../../Store/features/dashboard';
 
 const MetarParserTypeWindState: Wind = {
     degrees: 0,
+    degrees_from: 0,
+    degrees_to: 0,
     speed_kts: 0,
     speed_mps: 0,
     gust_kts: 0,
@@ -57,6 +58,7 @@ const barometer = {
 const MetarParserTypeProp: MetarParserType = {
     raw_text: '',
     raw_parts: [''],
+    color_codes: [],
     icao: '',
     observed: new Date(0),
     wind: MetarParserTypeWindState,
@@ -132,7 +134,7 @@ export const WeatherWidget:FC<WeatherWidgetProps> = ({ name, simbriefIcao, userI
         }
         return Metar.get(icao, source)
             .then((result) => {
-                const metarParse = metarParser(result.metar);
+                const metarParse = MetarParser(result.metar);
                 setColoredMetar(getColoredMetar(metarParse));
                 setMetar(metarParse);
             })

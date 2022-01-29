@@ -17,12 +17,12 @@
  */
 
 import React, { FC, useState } from 'react';
-import metarParser from 'aewx-metar-parser';
 import { Calculator, CloudArrowDown, Trash } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
 import { useSimVar } from '@instruments/common/simVars';
 import { MetarParserType } from '@instruments/common/metarTypes';
 import { Units } from '@shared/units';
+import { MetarParser } from '../../Utils/MetarParser';
 import { LandingCalculator, LandingFlapsConfig, LandingRunwayConditions } from '../Calculators/LandingCalculator';
 import RunwayVisualizationWidget, { LabelType } from './RunwayVisualizationWidget';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
@@ -151,7 +151,7 @@ export const LandingWidget = () => {
                     throw new Error(json.message);
                 });
             }).then((json) => {
-                const parsedMetar: MetarParserType = metarParser(json.metar);
+                const parsedMetar: MetarParserType = MetarParser(json.metar);
 
                 const weightKgs = Math.round(Units.poundToKilogram(totalWeight));
 
@@ -663,7 +663,7 @@ export const LandingWidget = () => {
                             </button>
                         </div>
                     </div>
-                    <div className="flex overflow-hidden flex-row w-full rounded-xl border-2 divide-x-2 border-theme-accent divide-theme-accent">
+                    <div className="flex overflow-hidden flex-row w-full rounded-xl border-2 border-theme-accent divide-x-2 divide-theme-accent">
                         <OutputDisplay
                             label="Maximum Manual"
                             value={distanceUnit === 'ft'
@@ -688,7 +688,7 @@ export const LandingWidget = () => {
                     </div>
                 </div>
             </div>
-            <div className="my-auto mx-10 w-2 h-5/6 rounded-full bg-theme-accent" />
+            <div className="my-auto mx-10 w-2 h-5/6 bg-theme-accent rounded-full" />
             <div className="mt-4">
                 <RunwayVisualizationWidget
                     mainLength={displayedRunwayLength}
