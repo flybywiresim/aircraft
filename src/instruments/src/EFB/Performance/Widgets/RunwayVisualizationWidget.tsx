@@ -124,7 +124,7 @@ const RunwayVisualizationWidget = ({ asda = 0, labels = [], mainLength = 0, runw
     );
 
     const runwayNumber = (
-        <div className="mx-auto w-min text-4xl font-bold">
+        <div className="mx-auto w-min text-4xl font-bold text-white">
             {runwayHeading !== undefined ? Math.round((runwayHeading ?? 0) / 10).toString().padStart(2, '0') : '??'}
         </div>
     );
