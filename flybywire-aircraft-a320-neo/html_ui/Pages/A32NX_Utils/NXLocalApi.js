@@ -1,7 +1,7 @@
 class NXLocalApi {
     static async getCoRoute(route) {
         if (route) {
-            const response = await fetch(`${NXLocalApi.url}/coroute?rteNum=${route}`);
+            const response = await fetch(`${NXLocalApi.url}/coroute/v1?rteNum=${route}`);
             return response;
         } else {
             throw ("No Company Route provided");
@@ -10,7 +10,7 @@ class NXLocalApi {
     }
 
     static async getRouteList(origin, dest) {
-        const response = await fetch(`${NXLocalApi.url}/coroute/list?origin=${origin}&destination=${dest}`);
+        const response = await fetch(`${NXLocalApi.url}/coroute/v1/list?origin=${origin}&destination=${dest}`);
         return response;
     }
 }

@@ -55,4 +55,6 @@ node_modules
 src/instruments/buildSrc/custom/*
 /flybywire-aircraft-a320-neo/MCDU SERVER/
 /flybywire-aircraft-a320-neo/server/
+/flyByWire-aircraft-a320-neo/resources
+/flyByWire-aircraft-a320-neo/*.exe
 /src/mcdu-server/client/build

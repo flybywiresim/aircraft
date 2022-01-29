@@ -24,6 +24,7 @@ export default new TaskOfTasks('a32nx', [
             new ExecTask('client', ['npm run build:mcdu-client'], ['src/mcdu-server/client', 'src/mcdu-server/client/build']),
             new ExecTask('server', ['npm run build:mcdu-server'], ['src/mcdu-server', 'flybywire-aircraft-a320-neo/MCDU SERVER/server.exe']),
         ]),
+        new ExecTask('local-server','bash scripts/server-build.sh', ['local-api','flybywire-aircraft-a320-neo/local-server.exe' ] )
     ], true),
 
     new TaskOfTasks('dist', [
