@@ -109,6 +109,14 @@ class ScratchpadDataLink {
         return this._text;
     };
 
+    getDisplayText() {
+        return this._displayUnit._scratchpadElement.textContent;
+    }
+
+    getColor() {
+        return this._displayUnit._scratchpadElement.className;
+    }
+
     _display(value, color = "white") {
         this._displayUnit.write(value, color);
         this._updateStatus(value);
