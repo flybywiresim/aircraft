@@ -22,11 +22,11 @@ interface PageLink {
     component: JSX.Element,
 }
 
-type SelectionTabsProps = {
-    tabs: PageLink[],
+interface SelectionTabsProps {
+    tabs: PageLink[];
 }
 
-export const SelectionTabs = ({ tabs }: SelectionTadbsProps) => (
+export const SelectionTabs = ({ tabs }: SelectionTabsProps) => (
     <div className="space-y-6">
         {
             tabs.map((tab) => (
