@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { FC, useEffect, useState } from 'react';
 import { Metar } from '@flybywiresim/api-client';
 import { IconCloud, IconDroplet, IconGauge, IconPoint, IconTemperature, IconWind } from '@tabler/icons';
 import { MetarParserType, Wind } from '@instruments/common/metarTypes';
@@ -6,6 +6,8 @@ import { usePersistentProperty } from '@instruments/common/persistence';
 import metarParser from 'aewx-metar-parser';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { getColoredMetar } from './ColorMetar';
+import { useAppDispatch } from '../../Store/store';
+import { setDepartureIcao, setDestinationIcao } from '../../Store/features/dashboard';
 
 const MetarParserTypeWindState: Wind = {
     degrees: 0,
@@ -69,18 +71,19 @@ const MetarParserTypeProp: MetarParserType = {
     flight_category: '',
 };
 
-type WeatherWidgetProps = { name: string, editIcao: string, icao: string};
+interface WeatherWidgetProps { name: 'origin'|'destination'; simbriefIcao: string; userIcao: string}
 
-export const WeatherWidget = (props: WeatherWidgetProps) => {
+export const WeatherWidget:FC<WeatherWidgetProps> = ({ name, simbriefIcao, userIcao }) => {
     const [metar, setMetar] = useState<MetarParserType>(MetarParserTypeProp);
-    const [showMetar, setShowMetar] = usePersistentProperty(`CONFIG_SHOW_METAR_${props.name}`, 'DISABLED');
+    const [showMetar, setShowMetar] = usePersistentProperty(`CONFIG_SHOW_METAR_${name}`, 'DISABLED');
     const [baroType] = usePersistentProperty('CONFIG_INIT_BARO_UNIT', 'HPA');
     const [coloredMetar, setColoredMetar] = useState('');
-    let [metarSource] = usePersistentProperty('CONFIG_METAR_SRC', 'MSFS');
-    let [icaoManual] = useState('');
-
+    const [metarSource] = usePersistentProperty('CONFIG_METAR_SRC', 'MSFS');
     const getBaroTypeForAirport = (icao: string) => (['K', 'C', 'M', 'P', 'RJ', 'RO', 'TI', 'TJ']
         .some((r) => icao.toUpperCase().startsWith(r)) ? 'IN HG' : 'HPA');
+    const dispatch = useAppDispatch();
+    const [simbriefIcaoAtLoading, setSimbriefIcaoAtLoading] = useState(simbriefIcao);
+    const source = metarSource === 'MSFS' ? 'MS' : metarSource;
 
     const BaroValue = () => {
         const displayedBaroType = baroType === 'AUTO' ? getBaroTypeForAirport(metar.icao) : baroType;
@@ -108,18 +111,16 @@ export const WeatherWidget = (props: WeatherWidgetProps) => {
         </>
     );
 
-    if (metarSource === 'MSFS') {
-        metarSource = 'MS';
-    }
-
-    const source = metarSource;
-
     const handleIcao = (icao: string) => {
-        icaoManual = icao;
-        if (icaoManual.length === 4) {
-            getMetar(icaoManual, source);
-        } else if (icaoManual.length === 0) {
-            getMetar(props.icao, source);
+        if (name === 'origin') {
+            dispatch(setDepartureIcao(icao));
+        } else {
+            dispatch(setDestinationIcao(icao));
+        }
+        if (icao.length === 4) {
+            getMetar(icao, source);
+        } else if (icao.length === 0) {
+            getMetar(simbriefIcao, source);
         }
     };
 
@@ -130,8 +131,6 @@ export const WeatherWidget = (props: WeatherWidgetProps) => {
             });
         }
         return Metar.get(icao, source)
-            // .then(() => {
-            // const metarParse = metarParser('LOWS 281520Z 27014G30KT 230V320 3500 -VCSH FEW002 BKN010 SCT020TCU 00/M01 Q1032 TEMPO 4500');
             .then((result) => {
                 const metarParse = metarParser(result.metar);
                 setColoredMetar(getColoredMetar(metarParse));
@@ -143,8 +142,18 @@ export const WeatherWidget = (props: WeatherWidgetProps) => {
     }
 
     useEffect(() => {
-        getMetar(props.icao, source);
-    }, [props.icao, source]);
+        // if we have new simbrief data that is different from the simbrief data at
+        // loading of the widget we overwrite the user input once. After that
+        // user input has priority.
+        if (simbriefIcao !== simbriefIcaoAtLoading) {
+            dispatch(setDepartureIcao(''));
+            dispatch(setDestinationIcao(''));
+            getMetar(simbriefIcao, source);
+            setSimbriefIcaoAtLoading(simbriefIcao);
+        } else {
+            getMetar(userIcao || simbriefIcao, source);
+        }
+    }, [simbriefIcao, userIcao, source]);
 
     return (
         <div>
@@ -159,8 +168,8 @@ export const WeatherWidget = (props: WeatherWidgetProps) => {
                             <SimpleInput
                                 noLabel
                                 className="ml-4 w-24 text-2xl font-medium text-center uppercase"
-                                placeholder={props.icao}
-                                value={icaoManual === '' ? props.icao : icaoManual}
+                                placeholder={simbriefIcao}
+                                value={userIcao || simbriefIcao}
                                 onChange={(value) => handleIcao(value)}
                                 maxLength={4}
                             />

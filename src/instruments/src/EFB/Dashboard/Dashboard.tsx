@@ -2,21 +2,25 @@ import React from 'react';
 import { FlightWidget } from './Widgets/FlightWidget';
 import { RemindersWidget } from './Widgets/RemindersWidget';
 
-export const Dashboard = () => (
+export const Dashboard = () => {
+    const { departingAirport, arrivingAirport } = useAppSelector((state) => state.simbrief.data);
+    const { departureIcao, destinationIcao } = useAppSelector((state) => state.dashboard);
+
+    return (
     <div className="w-full">
         <h1 className="font-bold">Dashboard</h1>
 
         <div className="flex mt-4 w-full h-efb">
             <FlightWidget />
                 <div className="flex flex-col w-3/5">
-                    <div className="p-6 mb-3 ml-3 h-2/5 rounded-lg border-2 shadow-md border-theme-accent">
+                    <div className="p-6 mb-3 ml-3 h-2/5 rounded-lg border-2 border-theme-accent shadow-md">
                         <div className="flex items-center h-full">
                             <div className="w-1/2">
-                                <WeatherWidget name="origin" editIcao="yes" icao={departingAirport} />
+                                <WeatherWidget name="origin" simbriefIcao={departingAirport} userIcao={departureIcao} />
                             </div>
                             <div className="h-60 rounded-full border border-gray-500" />
                             <div className="w-1/2">
-                                <WeatherWidget name="destination" editIcao="yes" icao={arrivingAirport} />
+                                <WeatherWidget name="destination" simbriefIcao={arrivingAirport} userIcao={destinationIcao} />
                             </div>
                         </div>
                     </div>
