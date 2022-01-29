@@ -1,3 +1,5 @@
+$button-spacing: 7px;
+
 .simple-keyboard {
   @apply text-theme-text;
 }
@@ -37,13 +39,13 @@
   display: flex;
 }
 .hg-theme-default .hg-row:not(:last-child) {
-  margin-bottom: 5px;
+  margin-bottom: $button-spacing;
 }
 .hg-theme-default .hg-row .hg-button:not(:last-child) {
-  margin-right: 5px;
+  margin-right: $button-spacing;
 }
 .hg-theme-default .hg-row .hg-button-container {
-  margin-right: 5px;
+  margin-right: $button-spacing;
 }
 .hg-theme-default .hg-row > div:last-child {
   margin-right: 0;
@@ -51,14 +53,19 @@
 .hg-theme-default .hg-row .hg-button-container {
   display: flex;
 }
+.hg-row {
+    height: 80px;
+}
+.hg-row:first-child {
+    height: 70px;
+}
 .hg-theme-default .hg-button {
   @apply bg-theme-accent;
   align-items: center;
-  border-radius: 5px;
+  border-radius: 7px;
   box-sizing: border-box;
   cursor: pointer;
   display: flex;
-  height: 80px;
   justify-content: center;
   padding: 5px;
 }
