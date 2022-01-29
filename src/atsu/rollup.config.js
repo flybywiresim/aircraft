@@ -29,6 +29,8 @@ const babel = require('@rollup/plugin-babel').default;
 const { typescriptPaths } = require('rollup-plugin-typescript-paths');
 const commonjs = require('@rollup/plugin-commonjs');
 const nodeResolve = require('@rollup/plugin-node-resolve').default;
+const json = require('@rollup/plugin-json');
+
 const replace = require('@rollup/plugin-replace');
 
 const extensions = ['.js', '.ts'];
@@ -41,8 +43,9 @@ process.chdir(src);
 module.exports = {
     input: join(__dirname, 'src/index.ts'),
     plugins: [
-        nodeResolve({ extensions }),
+        nodeResolve({ extensions, browser: true }),
         commonjs(),
+        json(),
         babel({
             presets: ['@babel/preset-typescript', ['@babel/preset-env', { targets: { browsers: ['safari 11'] } }]],
             plugins: [
