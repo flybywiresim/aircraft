@@ -12,7 +12,7 @@ export const FlyPadPage = () => {
     const [brightnessSetting, setBrightnessSetting] = usePersistentNumberProperty('EFB_BRIGHTNESS', 0);
     const [brightness] = useSimVar('L:A32NX_EFB_BRIGHTNESS', 'number', 500);
     const [usingAutobrightness, setUsingAutobrightness] = usePersistentNumberProperty('EFB_USING_AUTOBRIGHTNESS', 0);
-    const [theme, setTheme] = usePersistentProperty('EFB_THEME', 'dark');
+    const [theme, setTheme] = usePersistentProperty('EFB_UI_THEME', 'blue');
     const [autoOSK, setAutoOSK] = usePersistentNumberProperty('EFB_AUTO_OSK', 0);
     const [timeDisplayed, setTimeDisplayed] = usePersistentProperty('EFB_TIME_DISPLAYED', 'utc');
     const [timeFormat, setTimeFormat] = usePersistentProperty('EFB_TIME_FORMAT', '24');
@@ -49,7 +49,10 @@ export const FlyPadPage = () => {
                 <SelectGroup>
                     {themeButtons.map((button) => (
                         <SelectItem
-                            onSelect={() => setTheme(button.setting)}
+                            onSelect={() => {
+                                setTheme(button.setting);
+                                document.documentElement.className = document.documentElement.className.replace(/theme-.*/, `theme-${button.setting}`);
+                            }}
                             selected={theme === button.setting}
                         >
                             {button.name}
