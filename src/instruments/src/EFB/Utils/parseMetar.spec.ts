@@ -1,23 +1,23 @@
 import { ColorCode } from '../../Common/metarTypes';
-import { MetarParser } from './MetarParser';
+import { parseMetar } from './parseMetar';
 
 describe('MetarParser when provided with', () => {
     test('an empty value, throws an error', () => {
         // empty metar string
         expect(() => {
-            MetarParser('');
+            parseMetar('');
         }).toThrow(new Error('Not enough METAR information found'));
     });
 
     test('an incomplete value, throws an error', () => {
         // empty metar string
         expect(() => {
-            MetarParser('EDDM 291250Z');
+            parseMetar('EDDM 291250Z');
         }).toThrow(new Error('Not enough METAR information found'));
     });
 
     test('a normal value returns an object representation of that value', () => {
-        const metarObject = MetarParser('EDDM 291350Z 26017KT 9999 DZ BKN027 09/00 Q1025 NOSIG');
+        const metarObject = parseMetar('EDDM 291350Z 26017KT 9999 DZ BKN027 09/00 Q1025 NOSIG');
         expect(metarObject.icao).toBe('EDDM');
         expect(metarObject.observed.getUTCDate()).toBe(29);
         expect(metarObject.observed.getUTCHours()).toBe(13);
@@ -48,7 +48,7 @@ describe('MetarParser when provided with', () => {
 
     test('a complex value returns an object representation of that value', () => {
         // eslint-disable-next-line max-len
-        const metarObject = MetarParser('KJFK 291451Z 34027G34KT 300V020 1/4SM R04R/1600V2800FT +SN BLSN FZFG VV007 M09/M11 A2967 RMK AO2 PK WND 34035/1420 SLP046 SNINCR 1/8 P0000 60002 T10941111 51001');
+        const metarObject = parseMetar('KJFK 291451Z 34027G34KT 300V020 1/4SM R04R/1600V2800FT +SN BLSN FZFG VV007 M09/M11 A2967 RMK AO2 PK WND 34035/1420 SLP046 SNINCR 1/8 P0000 60002 T10941111 51001');
         expect(metarObject.icao).toBe('KJFK');
         expect(metarObject.observed.getUTCDate()).toBe(29);
         expect(metarObject.observed.getUTCHours()).toBe(14);

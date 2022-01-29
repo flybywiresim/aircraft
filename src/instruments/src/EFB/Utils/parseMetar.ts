@@ -16,7 +16,7 @@ import { ColorCode, MetarParserType } from '../../Common/metarTypes';
  * @copyright Original library: Copyright (c) 2019 Frank Boës, Extensions: (c) 2022 FlyByWire Simulations
  * @licence   Original library: MIT License, Extensions: https://github.com/flybywiresim/a32nx/blob/master/LICENSE
  */
-export function MetarParser(metarString: string): MetarParserType {
+export function parseMetar(metarString: string): MetarParserType {
     const metarArray = metarString
         .trim()
         .replace(/^METAR\S*?\s/, '')

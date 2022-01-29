@@ -3,7 +3,7 @@ import { Metar } from '@flybywiresim/api-client';
 import { IconCloud, IconDroplet, IconGauge, IconPoint, IconTemperature, IconWind } from '@tabler/icons';
 import { MetarParserType, Wind } from '@instruments/common/metarTypes';
 import { usePersistentProperty } from '@instruments/common/persistence';
-import { MetarParser, getColoredMetar } from '../../Utils/MetarParser';
+import { parseMetar, getColoredMetar } from '../../Utils/parseMetar';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { useAppDispatch } from '../../Store/store';
 import { setDepartureIcao, setDestinationIcao } from '../../Store/features/dashboard';
@@ -134,7 +134,7 @@ export const WeatherWidget:FC<WeatherWidgetProps> = ({ name, simbriefIcao, userI
         }
         return Metar.get(icao, source)
             .then((result) => {
-                const metarParse = MetarParser(result.metar);
+                const metarParse = parseMetar(result.metar);
                 setColoredMetar(getColoredMetar(metarParse));
                 setMetar(metarParse);
             })
