@@ -127,8 +127,8 @@ export function MetarParser(metarString: string): MetarParserType {
                 }
                 metarObject.wind = {
                     degrees: (match[1] === 'VRB') ? 180 : Number(match[1]),
-                    degrees_from: 0,
-                    degrees_to: (match[1] === 'VRB') ? 359 : 0,
+                    degrees_from: (match[1] === 'VRB') ? 0 : Number(match[1]),
+                    degrees_to: (match[1] === 'VRB') ? 359 : Number(match[1]),
                     speed_kts: (match[4] === 'MPS') ? convert.mpsToKts(match[2]) : match[2],
                     speed_mps: (match[4] === 'MPS') ? match[2] : convert.ktsToMps(match[2]),
                     gust_kts: (match[4] === 'MPS') ? convert.mpsToKts(match[3]) : match[3],
@@ -180,6 +180,10 @@ export function MetarParser(metarString: string): MetarParserType {
             break;
         case 4:
             // Conditions
+            // remove the empty initialed entry
+            if (metarObject.conditions.length === 1 && metarObject.conditions[0].code === '') {
+                metarObject.conditions.pop();
+            }
             match = metarPart.match(/^(\+|-|VC|RE)?([A-Z][A-Z])([A-Z][A-Z])?([A-Z][A-Z])?$/);
             if (match) {
                 // may occur multiple times
@@ -207,6 +211,10 @@ export function MetarParser(metarString: string): MetarParserType {
             break;
         case 5:
             // Clouds
+            // remove the empty initialed entry
+            if (metarObject.clouds.length === 1 && metarObject.clouds[0].code === '') {
+                metarObject.clouds.pop();
+            }
             match = metarPart.match(/^(FEW|SCT|BKN|OVC)(\d+)/);
             if (match) {
                 match[2] = Number(match[2]) * 100;
@@ -215,6 +223,7 @@ export function MetarParser(metarString: string): MetarParserType {
                     base_feet_agl: match[2],
                     base_meters_agl: convert.feetToMeters(match[2]),
                 };
+
                 metarObject.clouds.push(cloud);
                 if (match[2] <= 300) {
                     metarObject.color_codes[index] = ColorCode.Warning;
