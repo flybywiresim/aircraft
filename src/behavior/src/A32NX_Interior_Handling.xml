@@ -401,7 +401,9 @@
             </Case>
             <Case Check="AIRBUS_TYPE">
                 <Component ID="#NODE_ID#" Node="#NODE_ID#">
-                    <UseTemplate Name = "ASOBO_GT_Switch_3States">
+                    <UseTemplate Name="FBW_Anim_Interactions">
+                        <ANIM_TYPE>KNOB</ANIM_TYPE>
+                        <ANIM_TEMPLATE>ASOBO_GT_Switch_3States</ANIM_TEMPLATE>
                         <SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
                         <SWITCH_POSITION_VAR>XMLVAR_RudderTrim</SWITCH_POSITION_VAR>
                         <MOMENTARY_REPEAT_FREQUENCY>40</MOMENTARY_REPEAT_FREQUENCY>
@@ -417,7 +419,9 @@
                 <Condition Check="NO_RESET_PUSH">
                     <False>
                         <Component ID="#RESET_PUSH_NODE_ID#" Node="#RESET_PUSH_NODE_ID#">
-                            <UseTemplate Name = "ASOBO_GT_Push_Button_Held">
+                            <UseTemplate Name="FBW_Anim_Interactions">
+                                <ANIM_TYPE>BUTTON_HELD</ANIM_TYPE>
+                                <ANIM_TEMPLATE>ASOBO_GT_Push_Button_Held</ANIM_TEMPLATE>
                                 <ANIM_NAME>#RESET_PUSH_ANIM_NAME#</ANIM_NAME>
                                 <LEFT_SINGLE_CODE>(&gt;K:RUDDER_TRIM_RESET)</LEFT_SINGLE_CODE>
                                 <WWISE_EVENT_1>roundbutton</WWISE_EVENT_1>

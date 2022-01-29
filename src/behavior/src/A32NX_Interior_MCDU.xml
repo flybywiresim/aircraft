@@ -328,7 +328,9 @@
         </DefaultTemplateParameters>
 
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
-            <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>BUTTON</ANIM_TYPE>
+                <ANIM_TEMPLATE>ASOBO_GT_Push_Button_Airliner</ANIM_TEMPLATE>
                 <NO_SEQ2/>
                 <ANIM_NAME>#NODE_ID#</ANIM_NAME>
                 <WWISE_EVENT_1>mcdubuttons</WWISE_EVENT_1>
@@ -353,7 +355,9 @@
         </DefaultTemplateParameters>
 
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
-            <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>BUTTON_HELD</ANIM_TYPE>
+                <ANIM_TEMPLATE>ASOBO_GT_Push_Button_Airliner</ANIM_TEMPLATE>
                 <NO_SEQ2/>
                 <ANIM_NAME>#NODE_ID#</ANIM_NAME>
                 <WWISE_EVENT_1>mcdubuttons</WWISE_EVENT_1>
@@ -401,7 +405,9 @@
         </Update>
 
         <Component ID="#NODE_ID_BRT_DIM#" Node="#NODE_ID_BRT_DIM#">
-            <UseTemplate Name="ASOBO_GT_Switch_3States">
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>BUTTON_2WAY</ANIM_TYPE>
+                <ANIM_TEMPLATE>ASOBO_GT_Switch_3States</ANIM_TEMPLATE>
                 <UPARROW/>
                 <DOWNARROW/>
                 <LEFTARROW/>
