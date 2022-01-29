@@ -25,14 +25,21 @@ const Slats: React.FC<SlatsProps> = ({ x, y }) => {
 
     return (
         <>
+            <path d={`M ${x},${y} l -16,0 l -3,12 l 26,0 Z`} className="DarkGreyBox" />
+            <text className="Large Center Green" x={x + 0} y={y + 60}>{flapText[handleIndex]}</text>
+            <text className="Large Center Green" x={x} y={y + 60}>{flapsMoving ? 'MOVING' : ''}</text>
+            <text className="Medium Center" x={x - 100} y={y + 15}>S</text>
+            <text className="Medium Center" x={x + 110} y={y + 15}>F</text>
             <g id="Slats">
-                <path d={`M${x},${y} l+16,0 l+8,14 l-29,0 l+5,-14`} className="DarkGreyBox" />
-                <text className="Large Center Green" x={x + 10} y={y + 60}>{flapText[handleIndex]}</text>
-                <text className="Large Center Green" x={x} y={y + 60}>{flapsMoving ? 'MOVING' : ''}</text>
-                <text className="Medium Center" x={x - 100} y={y + 10}>S</text>
-                <text className="Medium Center" x={x + 100} y={y + 10}>F</text>
-                <SlatsIndicator x={x} y={y} css="GreenLine" />
-                <FlapsIndicator x={x + 20} y={y} css="GreenLine" />
+                <SlatsIndicator x={x - 16} y={y} css="Slats" />
+                <SlatsIndicator x={x + 152} y={y + 87} css="SlatsSmallWhite" />
+                <SlatsIndicator x={x + 130} y={y + 75} css="SlatsSmallWhite" />
+                <SlatsIndicator x={x - 55} y={y + 125} css="SlatsSmallWhite" />
+                <SlatsIndicator x={x - 110} y={y + 135} css="SlatsSmallWhite" />
+
+            </g>
+            <g id="Flaps">
+                {/* <FlapsIndicator x={x + 20} y={y} css="GreenLine" /> */}
             </g>
         </>
     );
@@ -44,13 +51,14 @@ type IndicatorProps = {
     x: number,
     y: number,
     css: string,
+    visible?: boolean
 };
 
-const SlatsIndicator: React.FC<IndicatorProps> = ({ x, y, css }) => {
-    const d = `M${x},${y} l-22,6 l-5,14 l22,-7 l5,-14`;
+const SlatsIndicator: React.FC<IndicatorProps> = ({ x, y, css, visible = true }) => {
+    const d = `M ${x},${y} l -19,6 l -4,12 l 19,-6 Z`;
 
     return (
-        <path className={css} d={d} />
+        <path className={visible ? css : 'Hide'} d={d} />
     );
 };
 
@@ -62,30 +70,37 @@ const FlapsIndicator: React.FC<IndicatorProps> = ({ x, y, css }) => {
     );
 };
 
-// this.slatArrowPathD = "m20,-12 l-27,8 l-6,18 l27,-8 l6,-18";
-// this.slatDotPositions = [
-//     new Vec2(160, 37),
-//     new Vec2(110, 52),
-//     new Vec2(68, 65),
-//     new Vec2(26, 78)
-// ];
-// this.flapArrowPathD = "m-20,-12 l31,6 l0,19, l-21,-5 l-10,-20";
-// this.flapDotPositions = [
-//     new Vec2(220, 37),
-//     new Vec2(280, 50),
-//     new Vec2(327, 61),
-//     new Vec2(375, 72),
-//     new Vec2(423, 83)
-// ];
-// this.sTextPos = new Vec2(66, 32);
-// this.fTextPos = new Vec2(330, 32);
-// this.currentStateTextPos = new Vec2(190, 87);
-// this.mainShapeCorners = [
-//     new Vec2(180, 25),
-//     new Vec2(200, 25),
-//     new Vec2(210, 45),
-//     new Vec2(174, 43)
-// ];
+const SlatsPosition: React.FC<IndicatorProps> = ({ x, y, css, visible = true }) => {
+    const d = `M${x},${y} l0,5 l-5,5, l0,-5 l+5,-5`;
 
-// this.targetSlatsDots.push(A320_Neo_UpperECAM.createSlatParallelogram("targetDot", this.slatDotPositions[1].x, this.slatDotPositions[1].y + 20).getAttribute("points"));
-// this.targetSlatsArrowsStrings.push(this.generateArrowPathD(this.slatArrowPathD, null, this.slatDotPositions[0], this.slatDotPositions[1], 0));
+    return (
+        <path className={visible ? css : 'Hide'} d={d} />
+    );
+};
+
+/*
+
+  .cls-2 {
+    stroke: red;
+  }
+
+  .cls-3 {
+    stroke: #f05a24; orange
+  }
+
+  .cls-4 {
+    stroke: #009145; green
+  }
+</style>
+</defs>
+<polygon class="cls-2" points="197 1 171 1 165 19 206 20 197 1"/>   / Main body thing
+<polygon class="cls-3" points="129 33 136 13 105 23 98 43 129 33"/>   Slats
+<polygon class="cls-4" points="197 1 209 24 235 28 235 8 197 1"/>
+<polygon class="cls-3" points="12 65 15 58 3 62 1 69 12 65"/>
+<polygon class="cls-3" points="60 49 62 42 51 46 48 53 60 49"/>
+<polygon class="cls-3" points="106 33 109 26 97 30 95 37 106 33"/>
+<polygon class="cls-4" points="283 22 287 30 295 31 295 25 283 22"/>  Flaps
+<polygon class="cls-4" points="341 35 344 42 353 44 353 37 341 35"/>
+<polygon class="cls-4" points="399 47 402 54 411 56 411 49 399 47"/>
+<polygon class="cls-4" points="458 59 462 66 470 68 470 61 458 59"/>
+*/

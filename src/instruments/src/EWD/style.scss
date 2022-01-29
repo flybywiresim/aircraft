@@ -114,6 +114,13 @@ animation: pulsingS 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
         fill: none;
     }
 
+    .WhiteLine {
+        stroke: $display-white !important;
+        stroke-width: 2;
+        fill: none;
+    }
+
+
     .BackgroundLine {
         stroke: $display-background !important;
         stroke-width: 2;
@@ -174,7 +181,6 @@ animation: pulsingS 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 
     #FobLabel {
         font-size: 28px;
-        stroke: $display-white;
         fill: $display-white;
     }
 
@@ -192,6 +198,21 @@ animation: pulsingS 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
     #FobUnit {
         fill: $display-cyan;
         font-size: 20px;
+    }
+
+    .SlatsSmallWhite {
+        stroke: $display-white;
+        stroke-width: 4px;
+        transform: scale(0.3);
+        transform-origin: center;
+        stroke-linejoin: bevel;
+    }
+
+    .Slats {
+        stroke: $display-green !important;
+        stroke-width: 2;
+        fill: none;
+        stroke-linejoin: bevel !important;
     }
 
 }
