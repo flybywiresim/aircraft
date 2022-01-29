@@ -15,8 +15,7 @@
     </Template>
     <Template Name="FBW_Airbus_ATC_Panel_ATC">
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
-            <UseTemplate Name="FBW_Anim_Interactions">
-                <ANIM_TEMPLATE>ASOBO_GT_Switch_2States</ANIM_TEMPLATE>
+            <UseTemplate Name="ASOBO_GT_Switch_2States">
                 <PART_ID>knob_atc_1</PART_ID>
                 <WWISE_EVENT>smallknob</WWISE_EVENT>
                 <ANIM_NAME>#NODE_ID#</ANIM_NAME>
