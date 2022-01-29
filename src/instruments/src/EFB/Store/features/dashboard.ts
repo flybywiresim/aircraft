@@ -1,25 +1,30 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { TypedAction } from '../store';
 
+/**
+ * DashboardState holds any preservable states on the Dashboard Widgets and its
+ * children widgets (mainly WeatherWidget).
+ * This makes sure that switching EFB pages retains user selections or input.
+ */
 interface DashboardState {
-    departureIcao: string;
-    destinationIcao: string;
+    userDepartureIcao: string;
+    userDestinationIcao: string;
 }
 
-const initialState: DashboardState = { departureIcao: '', destinationIcao: '' };
+const initialState: DashboardState = { userDepartureIcao: '', userDestinationIcao: '' };
 
 export const dashboardSlice = createSlice({
     name: 'dashboard',
     initialState,
     reducers: {
-        setDepartureIcao: (state, action: TypedAction<string>) => {
-            state.departureIcao = action.payload;
+        setUserDepartureIcao: (state, action: TypedAction<string>) => {
+            state.userDepartureIcao = action.payload;
         },
-        setDestinationIcao: (state, action: TypedAction<string>) => {
-            state.destinationIcao = action.payload;
+        setUserDestinationIcao: (state, action: TypedAction<string>) => {
+            state.userDestinationIcao = action.payload;
         },
     },
 });
 
-export const { setDepartureIcao, setDestinationIcao } = dashboardSlice.actions;
+export const { setUserDepartureIcao, setUserDestinationIcao } = dashboardSlice.actions;
 export default dashboardSlice.reducer;

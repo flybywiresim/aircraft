@@ -6,7 +6,7 @@ import { usePersistentProperty } from '@instruments/common/persistence';
 import { parseMetar, getColoredMetar } from '../../Utils/parseMetar';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { useAppDispatch } from '../../Store/store';
-import { setDepartureIcao, setDestinationIcao } from '../../Store/features/dashboard';
+import { setUserDepartureIcao, setUserDestinationIcao } from '../../Store/features/dashboard';
 
 const MetarParserTypeWindState: Wind = {
     degrees: 0,
@@ -115,9 +115,9 @@ export const WeatherWidget:FC<WeatherWidgetProps> = ({ name, simbriefIcao, userI
 
     const handleIcao = (icao: string) => {
         if (name === 'origin') {
-            dispatch(setDepartureIcao(icao));
+            dispatch(setUserDepartureIcao(icao));
         } else {
-            dispatch(setDestinationIcao(icao));
+            dispatch(setUserDestinationIcao(icao));
         }
         if (icao.length === 4) {
             getMetar(icao, source);
@@ -148,8 +148,8 @@ export const WeatherWidget:FC<WeatherWidgetProps> = ({ name, simbriefIcao, userI
         // loading of the widget we overwrite the user input once. After that
         // user input has priority.
         if (simbriefIcao !== simbriefIcaoAtLoading) {
-            dispatch(setDepartureIcao(''));
-            dispatch(setDestinationIcao(''));
+            dispatch(setUserDepartureIcao(''));
+            dispatch(setUserDestinationIcao(''));
             getMetar(simbriefIcao, source);
             setSimbriefIcaoAtLoading(simbriefIcao);
         } else {

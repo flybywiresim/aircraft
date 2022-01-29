@@ -358,6 +358,8 @@ export const LandingWidget = () => {
         return undefined;
     };
 
+    /* eslint-disable max-len */
+
     return (
         <div className="flex flex-row justify-between h-efb">
             <div className="w-full">
