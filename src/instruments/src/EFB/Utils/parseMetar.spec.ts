@@ -41,9 +41,17 @@ describe('MetarParser when provided with', () => {
         expect(metarObject.barometer.mb).toBe(1025);
         expect(metarObject.barometer.hg).toBe(30.2682377);
         expect(metarObject.barometer.kpa).toBe(102.5);
-        expect(metarObject.color_codes).toEqual(expect.arrayContaining(
-            [ColorCode.Highlight, 0, 0, 0, 0, 0, 0, ColorCode.Info],
-        ));
+        expect(metarObject.color_codes).toEqual(
+            [ColorCode.Highlight, // EDDM
+                ColorCode.None, // 291350Z
+                ColorCode.None, // 26017KT
+                ColorCode.None, // 9999
+                ColorCode.None, // DZ
+                ColorCode.None, // BKN027
+                ColorCode.None, // 09/00
+                ColorCode.None, // Q1025
+                ColorCode.Info], // NOSIG
+        );
     });
 
     test('a complex value returns an object representation of that value', () => {
