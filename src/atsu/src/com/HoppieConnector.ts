@@ -42,7 +42,7 @@ export class HoppieConnector {
         if (text.startsWith('ok') !== true) {
             return AtsuStatusCodes.ComFailed;
         }
-        if (station === flightNo || text !== `ok {${station}}`) {
+        if (text !== `ok {${station}}`) {
             return AtsuStatusCodes.NoAtc;
         }
 
