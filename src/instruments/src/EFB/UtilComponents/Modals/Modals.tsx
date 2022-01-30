@@ -1,8 +1,8 @@
-import React, { createContext, FC, useContext, useRef } from 'react';
+import React, { createContext, FC, useContext, useState } from 'react';
 
 interface ModalContextInterface{
     showModal: (modal: JSX.Element) => void;
-    modal: JSX.Element | null;
+    modal?: JSX.Element;
     popModal: () => void;
 }
 
@@ -11,18 +11,20 @@ const ModalContext = createContext<ModalContextInterface>(undefined as any);
 export const useModals = () => useContext(ModalContext);
 
 export const ModalProvider: FC = ({ children }) => {
-    const modalRef = useRef<JSX.Element | null>(null);
+    const [modal, setModal] = useState<JSX.Element | undefined>(undefined);
 
     const popModal = () => {
-        modalRef.current = null;
+        setModal(undefined);
     };
 
     const showModal = (modal: JSX.Element) => {
-        modalRef.current = modal;
+        console.log('showModal', modal);
+
+        setModal(modal);
     };
 
     return (
-        <ModalContext.Provider value={{ modal: modalRef.current, showModal, popModal }}>
+        <ModalContext.Provider value={{ modal, showModal, popModal }}>
             {children}
         </ModalContext.Provider>
     );
@@ -121,7 +123,7 @@ export const ModalContainer = () => {
     const { modal } = useModals();
 
     return (
-        <div className={`fixed inset-0 z-50 bg-opacity-70 transition duration-100 ${modal ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+        <div className={`fixed inset-0 z-50 bg-opacity-70 transition duration-200 ${modal ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
             <div className="absolute inset-0 opacity-75 bg-theme-body" />
             <div className="flex absolute inset-0 flex-col justify-center items-center">
                 {modal}
