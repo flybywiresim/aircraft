@@ -1,79 +1,77 @@
-import { useSimVar } from '@instruments/common/simVars';
 import React from 'react';
+import { useArinc429Var } from '@instruments/common/arinc429';
+import { Arinc429Word } from '@shared/arinc429';
 import { ComponentPositionProps } from './ComponentPositionProps';
 import { ComponentSidePositionProps } from './ComponentSidePositionProps';
-import { useHydraulics } from './HydraulicsProvider';
-import { HydraulicSystem } from './HydraulicSystem';
 import { SvgGroup } from './SvgGroup';
+
 import './Spoilers.scss';
 
 export const Spoilers = ({ x, y }: ComponentPositionProps) => {
-    const [aileronLeftDeflectionState] = useSimVar('L:A32NX_HYD_AILERON_LEFT_DEFLECTION', 'number', 50);
-    const [aileronRightDeflectionState] = useSimVar('L:A32NX_HYD_AILERON_RIGHT_DEFLECTION', 'number', 50);
+    const fcdc1DiscreteWord3 = useArinc429Var('L:A32NX_FCDC_1_DISCRETE_WORD_3');
+    const fcdc2DiscreteWord3 = useArinc429Var('L:A32NX_FCDC_2_DISCRETE_WORD_3');
+    const fcdc1DiscreteWord4 = useArinc429Var('L:A32NX_FCDC_1_DISCRETE_WORD_4');
+    const fcdc2DiscreteWord4 = useArinc429Var('L:A32NX_FCDC_2_DISCRETE_WORD_4');
 
-    const [leftSpoilerState] = useSimVar('L:A32NX_HYD_SPOILERS_LEFT_DEFLECTION', 'number', 50);
-    const [rightSpoilerState] = useSimVar('L:A32NX_HYD_SPOILERS_RIGHT_DEFLECTION', 'number', 50);
-    const [speedBrakeHandlePosition] = useSimVar('SPOILERS HANDLE POSITION', 'percent over 100', 100);
-
-    const [spoilersArmed] = useSimVar('L:A32NX_SPOILERS_ARMED', 'boolean', 500);
-
-    const leftSpoilerUp = leftSpoilerState > 0.1;
-    const leftAileronUp = aileronLeftDeflectionState < -0.5;
-    const rightSpoilerUp = rightSpoilerState > 0.1;
-    const rightAileronUp = aileronRightDeflectionState > 0.5;
-
-    const speedBrakeUp = speedBrakeHandlePosition > 0.1;
+    const fcdcWord3ToUse = !fcdc1DiscreteWord3.isFailureWarning() ? fcdc1DiscreteWord3 : fcdc2DiscreteWord3;
+    const fcdcWord4ToUse = !fcdc1DiscreteWord4.isFailureWarning() ? fcdc1DiscreteWord4 : fcdc2DiscreteWord4;
 
     return (
         <SvgGroup x={x} y={y}>
-            <Spoiler x={0} y={20} side="left" number={5} actuatedBy="G" upWhenActuated={(spoilersArmed && leftSpoilerUp) || leftAileronUp} />
-            <Spoiler x={38} y={15} side="left" number={4} actuatedBy="Y" upWhenActuated={leftSpoilerUp || speedBrakeUp} />
-            <Spoiler x={76} y={10} side="left" number={3} actuatedBy="B" upWhenActuated={leftSpoilerUp || speedBrakeUp} />
-            <Spoiler x={114} y={5} side="left" number={2} actuatedBy="Y" upWhenActuated={leftSpoilerUp || speedBrakeUp} />
-            <Spoiler x={152} y={0} side="left" number={1} actuatedBy="G" upWhenActuated={spoilersArmed && leftSpoilerUp} />
+            <Spoiler x={0} y={20} side="left" number={5} fcdcWord3={fcdcWord3ToUse} fcdcWord4={fcdcWord4ToUse} />
+            <Spoiler x={38} y={15} side="left" number={4} fcdcWord3={fcdcWord3ToUse} fcdcWord4={fcdcWord4ToUse} />
+            <Spoiler x={76} y={10} side="left" number={3} fcdcWord3={fcdcWord3ToUse} fcdcWord4={fcdcWord4ToUse} />
+            <Spoiler x={114} y={5} side="left" number={2} fcdcWord3={fcdcWord3ToUse} fcdcWord4={fcdcWord4ToUse} />
+            <Spoiler x={152} y={0} side="left" number={1} fcdcWord3={fcdcWord3ToUse} fcdcWord4={fcdcWord4ToUse} />
 
-            <Spoiler x={242} y={0} side="right" number={1} actuatedBy="G" upWhenActuated={spoilersArmed && rightSpoilerUp} />
-            <Spoiler x={280} y={5} side="right" number={2} actuatedBy="Y" upWhenActuated={rightSpoilerUp || speedBrakeUp} />
-            <Spoiler x={318} y={10} side="right" number={3} actuatedBy="B" upWhenActuated={rightSpoilerUp || speedBrakeUp} />
-            <Spoiler x={356} y={15} side="right" number={4} actuatedBy="Y" upWhenActuated={rightSpoilerUp || speedBrakeUp} />
-            <Spoiler x={394} y={20} side="right" number={5} actuatedBy="G" upWhenActuated={(spoilersArmed && rightSpoilerUp) || rightAileronUp} />
+            <Spoiler x={226} y={0} side="right" number={1} fcdcWord3={fcdcWord3ToUse} fcdcWord4={fcdcWord4ToUse} />
+            <Spoiler x={264} y={5} side="right" number={2} fcdcWord3={fcdcWord3ToUse} fcdcWord4={fcdcWord4ToUse} />
+            <Spoiler x={302} y={10} side="right" number={3} fcdcWord3={fcdcWord3ToUse} fcdcWord4={fcdcWord4ToUse} />
+            <Spoiler x={340} y={15} side="right" number={4} fcdcWord3={fcdcWord3ToUse} fcdcWord4={fcdcWord4ToUse} />
+            <Spoiler x={378} y={20} side="right" number={5} fcdcWord3={fcdcWord3ToUse} fcdcWord4={fcdcWord4ToUse} />
         </SvgGroup>
     );
 };
 
 interface SpoilerProps extends ComponentPositionProps, ComponentSidePositionProps {
     number: number,
-    actuatedBy: HydraulicSystem,
-    upWhenActuated: boolean,
+    fcdcWord3: Arinc429Word,
+    fcdcWord4: Arinc429Word
 }
-const Spoiler = ({ x, y, number, side, actuatedBy, upWhenActuated }: SpoilerProps) => {
-    const hydraulics = useHydraulics();
+const Spoiler = ({ x, y, number, side, fcdcWord3, fcdcWord4 }: SpoilerProps) => {
+    const availAndValidBit = 20 + number;
+    const isAvail = fcdcWord3.getBitValueOr(availAndValidBit, false);
+    const isPosValid = fcdcWord4.getBitValueOr(availAndValidBit, false);
+
+    const spoilerOutIndex = 10 + number * 2 + side === 'left' ? 0 : 1;
+    const isSpoilerOut = fcdcWord4.getBitValueOr(spoilerOutIndex, false);
 
     return (
         <SvgGroup x={x} y={y}>
             <path
-                className={`Spoilers ${hydraulics[actuatedBy].available ? 'GreenShapeThick' : 'WarningShapeThick'}`}
-                d={`M 0 0 l ${side === 'right' ? '-' : ''}15 0`}
+                className={`Spoilers ${isAvail ? 'GreenShapeThick' : 'WarningShapeThick'}`}
+                visibility={isPosValid ? 'visible' : 'hidden'}
+                d="M 0 0 l 15 0"
             />
             <path
-                visibility={upWhenActuated ? 'visible' : 'hidden'}
-                className={`Spoilers ${hydraulics[actuatedBy].available ? 'GreenShape' : 'WarningShape'}`}
-                d={`M ${side === 'left' ? 8 : -8} -22 l -6 0 l 6 -12 l 6 12 l -6 0`}
+                visibility={isSpoilerOut && isPosValid ? 'visible' : 'hidden'}
+                className={`Spoilers ${isAvail ? 'GreenShape' : 'WarningShape'}`}
+                d="M 8 -22 l -6 0 l 6 -12 l 6 12 l -6 0"
             />
             <path
-                visibility={upWhenActuated && hydraulics[actuatedBy].available ? 'visible' : 'hidden'}
+                visibility={isSpoilerOut && isAvail && isPosValid ? 'visible' : 'hidden'}
                 className="Spoilers GreenShape"
-                d={`M ${side === 'left' ? 8 : -8} 0 l 0 -22`}
+                d="M 8 0 l 0 -22"
             />
             <text
-                x={side === 'left' ? 8 : -8}
-                y={-11}
-                visibility={hydraulics[actuatedBy].available ? 'hidden' : 'visible'}
+                x={9}
+                y={isPosValid ? -11 : -18}
+                visibility={isAvail && isPosValid ? 'hidden' : 'visible'}
                 className="Spoilers Warning Standard"
                 textAnchor="middle"
                 alignmentBaseline="central"
             >
-                {number}
+                {isPosValid ? number : 'X'}
             </text>
         </SvgGroup>
     );
