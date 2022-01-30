@@ -32,7 +32,7 @@ export class Datalink {
 
     constructor(parent: AtsuManager) {
         // copy the datalink transmission time data
-        switch (NXDataStore.get('CONFIG_DATALINK_TRANSMISSION_TIME', 'REAL')) {
+        switch (NXDataStore.get('CONFIG_DATALINK_TRANSMISSION_TIME', 'FAST')) {
         case 'REAL':
             SimVar.SetSimVarValue('L:A32NX_CONFIG_DATALINK_TIME', 'number', 0);
             break;
