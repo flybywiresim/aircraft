@@ -6,6 +6,7 @@ export enum ColorCode {
     Highlight,
     Caution,
     Warning,
+    TrendMarker,
     Info
 }
 
