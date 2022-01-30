@@ -158,7 +158,7 @@ class CDUAvailableFlightPlanPage {
                 mcdu.coRoute["navlog"] = selectedRoute.navlog;
                 mcdu.addNewMessage(NXSystemMessages.uplinkInsertInProg);
                 setTimeout(async () => {
-                    insertCoRoute(mcdu);
+                    await insertCoRoute(mcdu);
                     mcdu.addNewMessage(NXFictionalMessages.crteActFplnUplink);
                     CDUInitPage.ShowPage1(mcdu);
                 }, mcdu.getDelayRouteChange());

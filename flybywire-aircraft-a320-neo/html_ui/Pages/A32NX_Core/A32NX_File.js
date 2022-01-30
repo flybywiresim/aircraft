@@ -69,7 +69,7 @@ const getRouteList = async (mcdu) => {
  * Inserts the located company route's origin, destination and if provided alternate.
  * @param {FMCMainDisplay} mcdu
  */
-const insertCoRoute = (mcdu) => {
+const insertCoRoute = async (mcdu) => {
     const {
         originIcao,
         destinationIcao,

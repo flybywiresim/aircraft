@@ -1947,7 +1947,7 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     updateCoRoute(coRoute, callback = EmptyCallback.Boolean) {
-        if (coRoute.length > 2) {
+        if (coRoute.length > 2 && (coRoute !== FMCMainDisplay.clrValue)) {
             if (coRoute.length < 10) {
                 if (coRoute === "NONE") {
                     this.coRoute = { routeNumber: undefined};
