@@ -13,6 +13,33 @@ import { stringToCpdlc } from '../Common';
  * Defines the connector to the hoppies network
  */
 export class HoppieConnector {
+    public static async isCallsignInUse(station: string): Promise<AtsuStatusCodes> {
+        if (SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') !== 1) {
+            return AtsuStatusCodes.NoHoppieConnection;
+        }
+
+        const body = {
+            logon: NXDataStore.get('CONFIG_HOPPIE_USERID', ''),
+            from: 'CSCHECK',
+            to: 'ALL-CALLSIGNS',
+            type: 'ping',
+            packet: station,
+        };
+        const text = await Hoppie.sendRequest(body).then((resp) => resp.response);
+
+        if (text.includes('error')) {
+            return AtsuStatusCodes.ProxyError;
+        }
+        if (text.startsWith('ok') !== true) {
+            return AtsuStatusCodes.ComFailed;
+        }
+        if (text === `ok {${station}}`) {
+            return AtsuStatusCodes.CallsignInUse;
+        }
+
+        return AtsuStatusCodes.Ok;
+    }
+
     public static async isStationAvailable(station: string): Promise<AtsuStatusCodes> {
         if (SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') !== 1) {
             return AtsuStatusCodes.NoHoppieConnection;
