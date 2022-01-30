@@ -1,4 +1,4 @@
-import { Cloud, ColorCode, MetarParserType, Visibility, Wind } from '../../Common/metarTypes';
+import { ColorCode, MetarParserType, Visibility, Wind } from '../../Common/metarTypes';
 
 /**
  * Convert METAR string into structured object.
@@ -109,6 +109,9 @@ export function parseMetar(metarString: string): MetarParserType {
         if (mode < Mode.TEMP && metarPart.match(/^M?\d+\/M?\d+$/)) {
             mode = Mode.TEMP; // end of clouds
         }
+        if (mode < Mode.RMK && metarPart.match(/^RMK$/)) {
+            mode = Mode.RMK; // end of clouds
+        }
         switch (mode) {
         case Mode.ICAO:
             // ICAO Code
@@ -203,7 +206,7 @@ export function parseMetar(metarString: string): MetarParserType {
                         meters_float: convert.milesToMeters(10),
                     };
                 }
-                mode = Mode.CLOUD; // no clouds & conditions reported
+                mode = Mode.CLOUD; // no visibility & conditions reported
             } else if (metarObject.wind) {
                 // Variable wind direction
                 match = metarPart.match(/^(\d+)V(\d+)$/);
@@ -216,39 +219,46 @@ export function parseMetar(metarString: string): MetarParserType {
             break;
         case Mode.COND:
             // Conditions
-            match = metarPart.match(/^(\+|-|VC|RE)?([A-Z][A-Z])([A-Z][A-Z])?([A-Z][A-Z])?$/);
+            // https://weather.cod.edu/notes/metar.html#wx
+            // https://en.wikipedia.org/wiki/METAR#METAR_weather_codes
+            // Caution: the syntax of metar and especially this part is not very well defined.
+            // Neither order nor actual grammar seems to be standardized in detail.
+            match = metarPart.match(/^(\+|-|VC|RE)?(MI|PR|BC|DR|BL|SH|TS|FZ|WS)?(DZ|RA|SN|SG|IC|PL|GR|GS|UP)?(BR|FG|FU|VA|DU|SA|HZ|PY)?(PO|SQ|FC|SS|DS)?$/);
             if (match) {
                 // only write to the object for the main section
-                if (!trendMode) {
-                    // may occur multiple times
-                    match.filter((m, index) => (index !== 0 && m))
-                        .forEach((m) => {
-                            metarObject.conditions.push({ code: m });
-                        });
-                }
+                if (!trendMode) metarObject.conditions.push({ code: match[0] });
 
                 // coloring
-                // TODO: think of a more correct and efficient way
-                if (
-                    match[1] === '+'
-                        || match[2] === 'FZ' || match[2] === 'TS' || match[2] === 'ST' || match[2] === 'SQ' || match[2] === 'SS' || match[2] === 'DS'
-                        || match[3] === 'FZ' || match[3] === 'TS' || match[3] === 'ST' || match[3] === 'SQ' || match[3] === 'SS' || match[3] === 'DS'
-                        || match[4] === 'FZ' || match[4] === 'TS' || match[4] === 'ST' || match[4] === 'SQ' || match[4] === 'SS' || match[4] === 'DS'
-                ) {
-                    metarObject.color_codes[index] = ColorCode.Warning;
-                } else if (
-                    match[2] === 'RA' || match[2] === 'SN' || match[2] === 'FG' || match[2] === 'VA'
-                        || match[3] === 'RA' || match[3] === 'SN' || match[3] === 'FG' || match[3] === 'VA'
-                        || match[4] === 'RA' || match[4] === 'SN' || match[4] === 'FG' || match[4] === 'VA'
-                        || (match[2] === 'VC' && match[3] === 'SH')
+                const intensity = match[1]; // or proximity
+                const descriptor = match[2];
+                const precipitation = match[3];
+                const obscuration = match[4];
+                const other = match[5];
+
+                const condCaution: string[] = ['RA', 'SN', 'FG', 'VA'];
+                const condWarning: string[] = ['FZ', 'TS', 'SQ', 'DS', 'SS'];
+
+                // cautions
+                if ((intensity === 'VC' && descriptor === 'SH')
+                    || condCaution.includes(precipitation)
+                    || condCaution.includes(obscuration)
                 ) {
                     metarObject.color_codes[index] = ColorCode.Caution;
+                }
+                // warnings
+                if (intensity === '+'
+                    || condWarning.includes(descriptor)
+                    || condWarning.includes(precipitation)
+                    || condWarning.includes(obscuration)
+                    || condWarning.includes(other)
+                ) {
+                    metarObject.color_codes[index] = ColorCode.Warning;
                 }
             }
             break;
         case Mode.CLOUD:
             // Clouds
-            match = metarPart.match(/^(FEW|SCT|BKN|OVC|VV)(\d+)/);
+            match = metarPart.match(/^(FEW|SCT|BKN|OVC|VV)(\d+)(CB|TCU)?/);
             if (match) {
                 match[2] = Number(match[2]) * 100;
                 const cloud = {
@@ -260,9 +270,10 @@ export function parseMetar(metarString: string): MetarParserType {
                 // only write to the object for the main section
                 if (!trendMode) metarObject.clouds.push(cloud);
 
+                // coloring
                 if (match[2] <= 300) {
                     metarObject.color_codes[index] = ColorCode.Warning;
-                } else if (match[3] || match[2] < 800) {
+                } else if (match[3] || match[2] < 800) { // CB or TCU suffix
                     metarObject.color_codes[index] = ColorCode.Caution;
                 }
             }

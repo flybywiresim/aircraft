@@ -70,18 +70,12 @@ describe('Test parseMetar when provided with', () => {
         expect(metarObject.visibility.miles_float).toBe(0.25);
         expect(metarObject.visibility.meters).toBe('500');
         expect(metarObject.visibility.meters_float).toBe(402.336);
-        expect(metarObject.conditions).toHaveLength(6);
-        expect(metarObject.conditions[0].code).toBe('+');
+        expect(metarObject.conditions).toHaveLength(3);
+        expect(metarObject.conditions[0].code).toBe('+SN');
         // @ts-ignore
-        expect(metarObject.conditions[1].code).toBe('SN');
+        expect(metarObject.conditions[1].code).toBe('BLSN');
         // @ts-ignore
-        expect(metarObject.conditions[2].code).toBe('BL');
-        // @ts-ignore
-        expect(metarObject.conditions[3].code).toBe('SN');
-        // @ts-ignore
-        expect(metarObject.conditions[4].code).toBe('FZ');
-        // @ts-ignore
-        expect(metarObject.conditions[5].code).toBe('FG');
+        expect(metarObject.conditions[2].code).toBe('FZFG');
         expect(metarObject.clouds).toHaveLength(1);
         expect(metarObject.clouds[0].code).toBe('VV');
         expect(metarObject.clouds[0].base_feet_agl).toBe(700);
@@ -92,7 +86,8 @@ describe('Test parseMetar when provided with', () => {
         expect(metarObject.barometer.kpa).toBe(100.4741349708642);
         expect(metarObject.color_codes).toHaveLength(metarObject.raw_parts.length);
         expect(metarObject.color_codes).toEqual(
-            [ColorCode.Highlight, // KJFK
+            [
+                ColorCode.Highlight, // KJFK
                 ColorCode.None, // 291451Z
                 ColorCode.Warning, // 34027G34KT
                 ColorCode.None, // 300V020
@@ -177,11 +172,8 @@ describe('Test parseMetar when provided with', () => {
         expect(metarObject.visibility.miles_float).toBe(0.25);
         expect(metarObject.visibility.meters).toBe('500');
         expect(metarObject.visibility.meters_float).toBe(402.336);
-        expect(metarObject.conditions).toHaveLength(2);
-        // @ts-ignore
-        expect(metarObject.conditions[0].code).toBe('FZ');
-        // @ts-ignore
-        expect(metarObject.conditions[1].code).toBe('FG');
+        expect(metarObject.conditions).toHaveLength(1);
+        expect(metarObject.conditions[0].code).toBe('FZFG');
         expect(metarObject.clouds).toHaveLength(1);
         expect(metarObject.clouds[0].code).toBe('OVC');
         expect(metarObject.clouds[0].base_feet_agl).toBe(200);
