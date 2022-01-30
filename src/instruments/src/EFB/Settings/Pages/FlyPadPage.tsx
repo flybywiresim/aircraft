@@ -38,7 +38,12 @@ export const FlyPadPage = () => {
 
     const handleThemeSelect = (theme: string) => {
         setTheme(theme);
-        document.documentElement.className = document.documentElement.className.replace(/theme-.*/, `theme-${theme}`);
+        document.documentElement.classList.forEach((className) => {
+            if (className.includes('theme-')) {
+                document.documentElement.classList.remove(className);
+            }
+        });
+        document.documentElement.classList.add(`theme-${theme}`);
     };
 
     return (
