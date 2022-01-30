@@ -200,8 +200,14 @@ animation: pulsingS 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
         font-size: 20px;
     }
 
-    .SlatsSmallWhite {
+    .SlatsSmallWhite, .FlapsSmallWhite {
         stroke: $display-white;
+        stroke-width: 2px;
+        stroke-linejoin: bevel;
+    }
+
+    .SlatsSmallCyan, .FlapsSmallCyan {
+        stroke: $display-cyan;
         stroke-width: 2px;
         stroke-linejoin: bevel;
     }

@@ -281,7 +281,7 @@ export const GaugeMarkerComponent: FC<GaugeMarkerComponentType> = memo(({
     return (
         <>
             <line x1={start.x} y1={start.y} x2={end.x} y2={end.y} strokeWidth={bold ? 2 : undefined} className={className} />
-            <text x={pos.x} y={pos.y} className={className} alignmentBaseline="central" textAnchor="middle">{textValue}</text>
+            <text x={pos.x} y={pos.y} className="GaugeText" alignmentBaseline="central" textAnchor="middle">{textValue}</text>
         </>
     );
 });

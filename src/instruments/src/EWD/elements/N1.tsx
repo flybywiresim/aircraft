@@ -144,7 +144,7 @@ const N1: React.FC<N1Props> = ({ x, y, engine, active }) => {
                                 multiplierInner={0.9}
                             />
                             <rect x={x - 19} y={y + 19} width={96} height={30} className="DarkGreyBox" />
-                            {/* N1 max limit  */}
+                            {/* N1 max limit */}
                             <GaugeMarkerComponent
                                 value={Math.abs(N1ThrustLimit / 10)}
                                 x={x}
