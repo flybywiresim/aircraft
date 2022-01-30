@@ -7,6 +7,7 @@ import { Battery, BatteryCharging } from 'react-bootstrap-icons';
 import { ToastContainer, toast } from 'react-toastify';
 import { usePersistentNumberProperty, usePersistentProperty } from '@instruments/common/persistence';
 import { distanceTo } from 'msfs-geo';
+import { ModalContainer, ModalProvider } from './UtilComponents/Modals/Modals';
 import NavigraphClient, { NavigraphContext } from './ChartsApi/Navigraph';
 import 'react-toastify/dist/ReactToastify.css';
 import './toast.css';
@@ -103,7 +104,7 @@ const Efb = () => {
     const [theme] = usePersistentProperty('EFB_UI_THEME', 'blue');
 
     useEffect(() => {
-        document.documentElement.className += `theme-${theme}`;
+        document.documentElement.classList.add(`theme-${theme}`);
     }, []);
 
     useEffect(() => {
@@ -119,15 +120,11 @@ const Efb = () => {
 
         const flightPlanProgress = totalDistance ? Math.max(((totalDistance - remainingDistance) / totalDistance) * 100, 0) : 0;
 
-        console.log('remainingDistance', remainingDistance);
-        console.log('totalDistance', totalDistance);
-        console.log('flightPlanProgress', flightPlanProgress);
-
         dispatch(setFlightPlanProgress(flightPlanProgress));
     }, [lat, long, arrivingPosLat, arrivingPosLong, departingPosLat, departingPosLong]);
 
     useEffect(() => {
-        setBatteryLevel((oldLevel:BatteryStatus) => {
+        setBatteryLevel((oldLevel) => {
             const deltaTs = absoluteTime - oldLevel.lastChangeTimestamp;
             const batteryDurationSec = oldLevel.isCharging ? BATTERY_DURATION_CHARGE_MIN * 60 : -BATTERY_DURATION_DISCHARGE_MIN * 60;
 
@@ -225,37 +222,40 @@ const Efb = () => {
     case PowerStates.LOADED:
         return (
             <NavigraphContext.Provider value={navigraph}>
-                <PowerContext.Provider value={{ powerState, setPowerState }}>
-                    <div className="bg-theme-body">
-                        <ToastContainer
-                            position="top-center"
-                            draggableDirection="y"
-                            limit={2}
-                        />
-                        <StatusBar
-                            batteryLevel={batteryLevel.level}
-                            isCharging={dc2BusIsPowered === 1}
-                        />
-                        <div className="flex flex-row">
-                            <ToolBar />
-                            <div className="pt-14 pr-6 w-screen h-screen text-gray-700">
-                                <Switch>
-                                    <Route exact path="/">
-                                        <Redirect to="/dashboard" />
-                                    </Route>
-                                    <Route path="/dashboard" component={Dashboard} />
-                                    <Route path="/dispatch" component={Dispatch} />
-                                    <Route path="/ground" component={Ground} />
-                                    <Route path="/performance" component={Performance} />
-                                    <Route path="/navigation" component={Navigation} />
-                                    <Route path="/atc" component={ATC} />
-                                    <Route path="/failures" component={Failures} />
-                                    <Route path="/settings" component={Settings} />
-                                </Switch>
+                <ModalProvider>
+                    <ModalContainer />
+                    <PowerContext.Provider value={{ powerState, setPowerState }}>
+                        <div className="bg-theme-body">
+                            <ToastContainer
+                                position="top-center"
+                                draggableDirection="y"
+                                limit={2}
+                            />
+                            <StatusBar
+                                batteryLevel={batteryLevel.level}
+                                isCharging={dc2BusIsPowered === 1}
+                            />
+                            <div className="flex flex-row">
+                                <ToolBar />
+                                <div className="pt-14 pr-6 w-screen h-screen text-gray-700">
+                                    <Switch>
+                                        <Route exact path="/">
+                                            <Redirect to="/dashboard" />
+                                        </Route>
+                                        <Route path="/dashboard" component={Dashboard} />
+                                        <Route path="/dispatch" component={Dispatch} />
+                                        <Route path="/ground" component={Ground} />
+                                        <Route path="/performance" component={Performance} />
+                                        <Route path="/navigation" component={Navigation} />
+                                        <Route path="/atc" component={ATC} />
+                                        <Route path="/failures" component={Failures} />
+                                        <Route path="/settings" component={Settings} />
+                                    </Switch>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </PowerContext.Provider>
+                    </PowerContext.Provider>
+                </ModalProvider>
             </NavigraphContext.Provider>
         );
     default:
