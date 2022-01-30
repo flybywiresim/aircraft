@@ -1,9 +1,9 @@
 import React from 'react';
 
 import { usePersistentNumberProperty } from '@instruments/common/persistence';
+import Slider from 'rc-slider';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { Toggle } from '../../UtilComponents/Form/Toggle';
-import { Slider } from '../../UtilComponents/Form/Slider';
 import { SettingItem, SettingsPage } from '../Settings';
 
 export const AudioPage = () => {
@@ -20,7 +20,11 @@ export const AudioPage = () => {
 
             <SettingItem name="Exterior Master Volume">
                 <div className="flex flex-row gap-x-4 items-center">
-                    <Slider className="w-96" value={exteriorVolume + 50} onInput={(value) => setExteriorVolume(value - 50)} />
+                    <Slider
+                        style={{ width: '24rem' }}
+                        value={exteriorVolume + 50}
+                        onChange={(value) => setExteriorVolume(value - 50)}
+                    />
                     <SimpleInput
                         min={1}
                         max={100}
@@ -34,7 +38,11 @@ export const AudioPage = () => {
 
             <SettingItem name="Engine Interior Volume">
                 <div className="flex flex-row gap-x-4 items-center">
-                    <Slider className="w-96" value={engineVolume + 50} onInput={(value) => setEngineVolume(value - 50)} />
+                    <Slider
+                        style={{ width: '24rem' }}
+                        value={engineVolume + 50}
+                        onChange={(value) => setEngineVolume(value - 50)}
+                    />
                     <SimpleInput
                         min={1}
                         max={100}
@@ -48,7 +56,11 @@ export const AudioPage = () => {
 
             <SettingItem name="Wind Interior Volume">
                 <div className="flex flex-row gap-x-4 items-center">
-                    <Slider className="w-96" value={windVolume + 50} onInput={(value) => setWindVolume(value - 50)} />
+                    <Slider
+                        style={{ width: '24rem' }}
+                        value={windVolume + 50}
+                        onChange={(value) => setWindVolume(value - 50)}
+                    />
                     <SimpleInput
                         min={1}
                         max={100}

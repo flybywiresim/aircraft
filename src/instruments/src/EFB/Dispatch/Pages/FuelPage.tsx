@@ -3,7 +3,7 @@ import { round } from 'lodash';
 import { PlayFill, StopCircleFill } from 'react-bootstrap-icons';
 import { useSimVar } from '@instruments/common/simVars';
 import { usePersistentProperty } from '@instruments/common/persistence';
-import { Slider } from '../../UtilComponents/Form/Slider';
+import Slider from 'rc-slider';
 import { SelectGroup, SelectItem } from '../../UtilComponents/Form/Select';
 import { ProgressBar } from '../../UtilComponents/Progress/Progress';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
@@ -376,7 +376,11 @@ export const FuelPage = () => {
                             <p>{`Estimated ${calculateEta()} minutes`}</p>
                         </div>
                         <div style={{ width: '470px' }} className="flex flex-row items-center space-x-6">
-                            <Slider className="w-96" value={sliderValue} onInput={(value) => updateSlider(value)} />
+                            <Slider
+                                style={{ width: '24rem' }}
+                                value={sliderValue}
+                                onChange={updateSlider}
+                            />
                             <div className="relative">
                                 <SimpleInput
                                     className="w-32"

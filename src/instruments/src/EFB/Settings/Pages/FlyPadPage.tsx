@@ -3,8 +3,8 @@ import React from 'react';
 import { usePersistentNumberProperty, usePersistentProperty } from '@instruments/common/persistence';
 import { useSimVar } from '@instruments/common/simVars';
 
+import Slider from 'rc-slider';
 import { Toggle } from '../../UtilComponents/Form/Toggle';
-import { Slider } from '../../UtilComponents/Form/Slider';
 import { ButtonType, SettingItem, SettingsPage } from '../Settings';
 import { SelectGroup, SelectItem } from '../../UtilComponents/Form/Select';
 
@@ -35,10 +35,19 @@ export const FlyPadPage = () => {
         { name: '24 Hour', setting: '24' },
     ];
 
+    const handleThemeSelect = (theme: string) => {
+        setTheme(theme);
+        document.documentElement.className = document.documentElement.className.replace(/theme-.*/, `theme-${theme}`);
+    };
+
     return (
         <SettingsPage name="flyPad">
             <SettingItem name="Brightness" disabled={!!usingAutobrightness}>
-                <Slider className="w-96" value={usingAutobrightness ? brightness : brightnessSetting} onInput={(value) => setBrightnessSetting(value)} />
+                <Slider
+                    style={{ width: '16rem' }}
+                    value={usingAutobrightness ? brightness : brightnessSetting}
+                    onChange={(value) => setBrightnessSetting(value)}
+                />
             </SettingItem>
 
             <SettingItem name="Auto Brightness">
@@ -49,10 +58,7 @@ export const FlyPadPage = () => {
                 <SelectGroup>
                     {themeButtons.map((button) => (
                         <SelectItem
-                            onSelect={() => {
-                                setTheme(button.setting);
-                                document.documentElement.className = document.documentElement.className.replace(/theme-.*/, `theme-${button.setting}`);
-                            }}
+                            onSelect={() => handleThemeSelect(button.setting)}
                             selected={theme === button.setting}
                         >
                             {button.name}
