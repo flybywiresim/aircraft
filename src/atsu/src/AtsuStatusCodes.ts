@@ -3,6 +3,8 @@
 
 export enum AtsuStatusCodes {
     Ok,
+    CallsignInUse,
+    OwnCallsign,
     NoHoppieConnection,
     NoTelexConnection,
     TelexDisabled,

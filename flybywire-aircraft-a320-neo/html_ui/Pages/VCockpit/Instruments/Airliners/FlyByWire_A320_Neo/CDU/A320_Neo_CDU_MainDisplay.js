@@ -955,6 +955,9 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
      */
     addNewAtsuMessage(code) {
         switch (code) {
+            case Atsu.AtsuStatusCodes.CallsignInUse:
+                this.addNewMessage(NXFictionalMessages.fltNbrInUse);
+                break;
             case Atsu.AtsuStatusCodes.NoHoppieConnection:
                 this.addNewMessage(NXFictionalMessages.noHoppieConnection);
                 break;
@@ -975,6 +978,9 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 break;
             case Atsu.AtsuStatusCodes.NoTelexConnection:
                 this.addNewMessage(NXFictionalMessages.telexNotEnabled);
+                break;
+            case Atsu.AtsuStatusCodes.OwnCallsign:
+                this.addNewMessage(NXFictionalMessages.noAtc);
                 break;
             default:
                 break;
