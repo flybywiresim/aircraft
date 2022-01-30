@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 
 import { Redirect, Route, Switch } from 'react-router-dom';
-import { useSimVar, useSimVarValue } from '@instruments/common/simVars';
+import { useSimVar } from '@instruments/common/simVars';
 import { useInteractionEvent } from '@instruments/common/hooks';
 import { Battery, BatteryCharging } from 'react-bootstrap-icons';
 import { ToastContainer, toast } from 'react-toastify';
@@ -36,19 +36,18 @@ const BATTERY_DURATION_DISCHARGE_MIN = 240;
 
 const navigraph = new NavigraphClient();
 
-const ScreenLoading = () => (
+const LoadingScreen = () => (
     <div className="flex justify-center items-center w-screen h-screen bg-theme-statusbar">
         <FbwLogo width={128} height={120} className="text-theme-text" />
     </div>
 );
 
-const ScreenEmpty = ({ isCharging }: { isCharging: boolean }) => (
+const EmptyScreen = ({ isCharging }: { isCharging: boolean }) => (
     <div className="flex justify-center items-center w-screen h-screen bg-theme-statusbar">
-        {!isCharging && (
-            <Battery size={128} className="text-red-500" />
-        )}
-        {isCharging && (
+        {isCharging ? (
             <BatteryCharging size={128} className="text-red-500" />
+        ) : (
+            <Battery size={128} className="text-red-500" />
         )}
     </div>
 );
@@ -96,8 +95,8 @@ const Efb = () => {
     const [dc2BusIsPowered] = useSimVar('L:A32NX_ELEC_DC_2_BUS_IS_POWERED', 'bool');
     const [batteryLevel, setBatteryLevel] = useState<BatteryStatus>({ level: 100, lastChangeTimestamp: absoluteTime, isCharging: dc2BusIsPowered });
 
-    const lat = useSimVarValue('PLANE LATITUDE', 'degree latitude', 4000);
-    const long = useSimVarValue('PLANE LONGITUDE', 'degree longitude', 4000);
+    const [lat] = useSimVar('PLANE LATITUDE', 'degree latitude', 4000);
+    const [long] = useSimVar('PLANE LONGITUDE', 'degree longitude', 4000);
 
     const { arrivingPosLat, arrivingPosLong, departingPosLat, departingPosLong } = useAppSelector((state) => state.simbrief.data);
 
@@ -127,7 +126,7 @@ const Efb = () => {
 
     useEffect(() => {
         setBatteryLevel((oldLevel) => {
-            const deltaTs = absoluteTime - oldLevel.lastChangeTimestamp;
+            const deltaTs = Math.max(absoluteTime - oldLevel.lastChangeTimestamp, 0);
             const batteryDurationSec = oldLevel.isCharging ? BATTERY_DURATION_CHARGE_MIN * 60 : -BATTERY_DURATION_DISCHARGE_MIN * 60;
 
             let level = oldLevel.level + 100 * deltaTs / batteryDurationSec;
@@ -227,9 +226,9 @@ const Efb = () => {
     case PowerStates.SHUTOFF:
         return <div className="w-screen h-screen" onClick={() => offToLoaded()} />;
     case PowerStates.LOADING:
-        return <ScreenLoading />;
+        return <LoadingScreen />;
     case PowerStates.EMPTY:
-        return <ScreenEmpty isCharging={dc2BusIsPowered === 1} />;
+        return <EmptyScreen isCharging={dc2BusIsPowered === 1} />;
     case PowerStates.LOADED:
         return (
             <NavigraphContext.Provider value={navigraph}>
@@ -247,7 +246,7 @@ const Efb = () => {
                         />
                         <div className="flex flex-row">
                             <ToolBar />
-                            <div className="pt-14 pr-6 w-screen h-screen text-gray-700">
+                            <div className="pt-14 pr-6 w-screen h-screen">
                                 <Switch>
                                     <Route exact path="/">
                                         <Redirect to="/dashboard" />
