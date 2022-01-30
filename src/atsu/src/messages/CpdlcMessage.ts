@@ -95,6 +95,8 @@ export class CpdlcMessage extends AtsuMessage {
                 message += this.Response.serialize(format);
             }
         } else if (format === AtsuMessageSerializationFormat.Printer) {
+            message += `${this.Timestamp.dcduTimestamp()} ${this.Direction === AtsuMessageDirection.Input ? 'FROM' : 'TO'} ${this.Station}}\n`;
+
             this.Message.split('_').forEach((entry) => {
                 const newLines = wordWrap(entry, 25);
                 newLines.forEach((line) => {
