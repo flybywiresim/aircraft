@@ -169,7 +169,7 @@ export const WeatherWidget:FC<WeatherWidgetProps> = ({ name, simbriefIcao, userI
                             </div>
                             <SimpleInput
                                 noLabel
-                                className="ml-4 w-24 text-2xl font-medium text-center uppercase"
+                                className="ml-4 w-32 text-2xl font-medium text-center uppercase"
                                 placeholder={simbriefIcao}
                                 value={userIcao || simbriefIcao}
                                 onChange={(value) => handleIcao(value)}
@@ -181,7 +181,7 @@ export const WeatherWidget:FC<WeatherWidgetProps> = ({ name, simbriefIcao, userI
                                     className="flex justify-center items-center p-2 mr-1 w-24 text-lg bg-gray-600 rounded-lg focus:outline-none"
                                     onClick={() => setShowMetar(showMetar === 'ENABLED' ? 'DISABLED' : 'ENABLED')}
                                 >
-                                    {showMetar === 'ENABLED' ? 'TEXT' : 'ICONS'}
+                                    {showMetar === 'ENABLED' ? 'Metar' : 'Summary'}
                                 </button>
                             </div>
                         </div>
