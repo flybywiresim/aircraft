@@ -49,11 +49,16 @@ class CDUAtcMessagesRecord {
                 headerLeft += messages[offset + i].Station;
                 headerRight = CDUAtcMessagesRecord.TranslateCpdlcResponse(messages[offset + i].ResponseType);
 
-                const serialized = messages[offset + i].serialize(Atsu.AtsuMessageSerializationFormat.Printer).split("\n")[0];
-                if (serialized.length <= 24) {
-                    contentStart = serialized;
+                // ignore the headline with the station and the timestamp
+                const lines = messages[offset + i].serialize(Atsu.AtsuMessageSerializationFormat.Printer).split("\n");
+                let firstLine = "CPDLC";
+                if (lines.length >= 2) {
+                    firstLine = messages[offset + i].serialize(Atsu.AtsuMessageSerializationFormat.Printer).split("\n")[1];
+                }
+                if (firstLine.length <= 24) {
+                    contentStart = firstLine;
                 } else {
-                    serialized.split(" ").forEach((word) => {
+                    firstLine.split(" ").forEach((word) => {
                         if (contentStart.length + word.length + 1 < 24) {
                             contentStart += `${word}\xa0`;
                         }
