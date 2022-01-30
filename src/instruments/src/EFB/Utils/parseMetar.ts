@@ -79,6 +79,7 @@ export function parseMetar(metarString: string): MetarParserType {
     };
 
     // remove the empty initialed entries
+    // this should not be necessary - how to initialize an empty nested array of a specific type?
     metarObject.conditions.pop();
     metarObject.clouds.pop();
 

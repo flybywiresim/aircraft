@@ -215,20 +215,3 @@ describe('Test parseMetar when provided with', () => {
         );
     });
 });
-
-// K1U7
-// 301420Z
-// AUTO
-// 00000KT
-// 1/4SM
-// FZFG
-// OVC002
-// M23/M24
-// A3024
-// TREND
-// 18040KT
-// 1/4SM
-// FZFG
-// OVC004
-// M23/M24
-// A3024
