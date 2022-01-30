@@ -343,7 +343,7 @@ export function getColoredMetar(metar: MetarParserType): string {
             coloredMetar += `<span class='text-yellow-500'>${metar.raw_parts[index]}</span> `;
             break;
         case ColorCode.Warning:
-            coloredMetar += `<span class='text-red-900'>${metar.raw_parts[index]}</span> `;
+            coloredMetar += `<span class='text-red-600'>${metar.raw_parts[index]}</span> `;
             break;
         case ColorCode.None:
         default:
