@@ -25,6 +25,8 @@ export class AtcSystem {
 
     private dcduBufferedMessages: number[] = [];
 
+    private newMessageReceived: boolean = false;
+
     private unreadMessagesLastCycle: number = 0;
 
     private lastRingTime: number = 0;
@@ -109,7 +111,7 @@ export class AtcSystem {
                     callRing = true;
                 }
             }
-            callRing = callRing && (SimVar.GetSimVarValue('L:A32NX_DCDU_ATC_MSG_WAITING', 'boolean') === 1);
+            callRing = callRing && ((SimVar.GetSimVarValue('L:A32NX_DCDU_ATC_MSG_WAITING', 'boolean') === 1) || this.newMessageReceived);
 
             if (callRing) {
                 SimVar.SetSimVarValue('L:A32NX_DCDU_ATC_MSG_WAITING', 'boolean', 1);
@@ -124,6 +126,7 @@ export class AtcSystem {
         }
 
         this.unreadMessagesLastCycle = unreadMessages;
+        this.newMessageReceived = false;
     }
 
     public static async connect(): Promise<AtsuStatusCodes> {
@@ -395,7 +398,7 @@ export class AtcSystem {
 
         if (!analyzed) {
             if (cpdlcMessage.Direction === AtsuMessageDirection.Input) {
-                SimVar.SetSimVarValue('L:A32NX_DCDU_ATC_MSG_WAITING', 'boolean', 1);
+                this.newMessageReceived = true;
             }
 
             const dcduRelevant = cpdlcMessage.ComStatus === AtsuMessageComStatus.Open || cpdlcMessage.ComStatus === AtsuMessageComStatus.Received;
