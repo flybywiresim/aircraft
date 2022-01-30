@@ -1,4 +1,4 @@
-import React, { FC, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Metar } from '@flybywiresim/api-client';
 import { IconCloud, IconDroplet, IconGauge, IconPoint, IconTemperature, IconWind } from '@tabler/icons';
 import { MetarParserType, Wind } from '@instruments/common/metarTypes';
@@ -108,9 +108,7 @@ export const WeatherWidget:FC<WeatherWidgetProps> = ({ name, simbriefIcao, userI
     };
 
     const MetarText = () => (
-        <>
-            <span dangerouslySetInnerHTML={{ __html: coloredMetar }} />
-        </>
+        <span className="font-mono" dangerouslySetInnerHTML={{ __html: coloredMetar }} />
     );
 
     const handleIcao = (icao: string) => {
