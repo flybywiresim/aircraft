@@ -40,19 +40,6 @@ const translateStatus = (message: CpdlcMessage) => {
 };
 
 export const MessageStatus: React.FC<MessageStatusProps> = ({ message }) => {
-    const [dimension, setDimension] = useState([0, 0]);
-    const textRef = useRef<SVGTextElement>(null);
-
-    useEffect(() => {
-        const text = translateStatus(message);
-
-        if (text.length !== 0 && textRef.current?.getBBox() !== undefined) {
-            const width = Math.floor(textRef.current?.getBBox().width / translateStatus(message).length);
-            const height = Math.floor(textRef.current?.getBBox().height);
-            setDimension([width, height]);
-        }
-    }, []);
-
     let statusClass = 'status-message ';
     if (message.ResponseType === undefined) {
         statusClass += 'status-open';
@@ -72,14 +59,13 @@ export const MessageStatus: React.FC<MessageStatusProps> = ({ message }) => {
     // calculate the position of the background rectangle
     const text = translateStatus(message);
     const background = { x: 0, y: 0, width: 0, height: 0 };
-    if (dimension[0] !== 0 && dimension[1] !== 0) {
-        const width = dimension[0] * text.length;
-
-        background.width = width + 48;
-        background.height = dimension[1] + 16;
-
-        background.x = 3700 - width;
-        background.y = 312 - dimension[1];
+    if (text.length !== 0) {
+        // one character has a width of 116px and a spacing of 24px per side
+        background.width = text.length * 116 + 48;
+        // one character has a height of 171 and a spacing of 8 per side
+        background.height = 187;
+        background.x = 3700 - background.width;
+        background.y = 307 - background.height;
     }
 
     return (
@@ -98,7 +84,7 @@ export const MessageStatus: React.FC<MessageStatusProps> = ({ message }) => {
                     x={background.x}
                     y={background.y}
                 />
-                <text className={statusClass} x="3716" y="290" ref={textRef}>
+                <text className={statusClass} x="3716" y="290">
                     <tspan>{text}</tspan>
                 </text>
             </>
