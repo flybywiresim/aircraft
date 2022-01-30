@@ -25,8 +25,6 @@ export class AtcSystem {
 
     private dcduBufferedMessages: number[] = [];
 
-    private newMessageReceived: boolean = false;
-
     private unreadMessagesLastCycle: number = 0;
 
     private lastRingTime: number = 0;
@@ -108,10 +106,9 @@ export class AtcSystem {
 
                 if (delta >= 10) {
                     this.lastRingTime = currentTime;
-                    callRing = true;
+                    callRing = SimVar.GetSimVarValue('L:A32NX_DCDU_ATC_MSG_WAITING', 'boolean') === 1;
                 }
             }
-            callRing = callRing && ((SimVar.GetSimVarValue('L:A32NX_DCDU_ATC_MSG_WAITING', 'boolean') === 1) || this.newMessageReceived);
 
             if (callRing) {
                 SimVar.SetSimVarValue('L:A32NX_DCDU_ATC_MSG_WAITING', 'boolean', 1);
@@ -126,7 +123,6 @@ export class AtcSystem {
         }
 
         this.unreadMessagesLastCycle = unreadMessages;
-        this.newMessageReceived = false;
     }
 
     public static async connect(): Promise<AtsuStatusCodes> {
@@ -397,10 +393,6 @@ export class AtcSystem {
         }
 
         if (!analyzed) {
-            if (cpdlcMessage.Direction === AtsuMessageDirection.Input) {
-                this.newMessageReceived = true;
-            }
-
             const dcduRelevant = cpdlcMessage.ComStatus === AtsuMessageComStatus.Open || cpdlcMessage.ComStatus === AtsuMessageComStatus.Received;
             if (dcduRelevant && SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_MAX_REACHED', 'boolean') === 0) {
                 this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', message as CpdlcMessage);
