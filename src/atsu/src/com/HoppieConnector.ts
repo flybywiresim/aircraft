@@ -24,7 +24,7 @@ export class HoppieConnector {
         }
 
         if (station === flightNo) {
-            return AtsuStatusCodes.NoAtc;
+            return AtsuStatusCodes.OwnCallsign;
         }
 
         const body = {
