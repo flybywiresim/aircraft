@@ -758,7 +758,7 @@ const ATSUAOCPage = () => {
                 </div>
             </div>
             <div className="py-4 flex flex-row justify-between items-center">
-                <span className="text-lg text-gray-300">Use Hoppie system</span>
+                <span className="text-lg text-gray-300">Connect to Hoppie system</span>
                 <Toggle value={hoppieEnabled === 'ENABLED'} onToggle={(toggleValue) => handleHoppieToggle(toggleValue)} />
             </div>
         </div>
