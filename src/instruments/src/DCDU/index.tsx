@@ -32,7 +32,7 @@ function powerAvailable() {
     return getSimVar('L:A32NX_ELEC_DC_1_BUS_IS_POWERED', 'Bool') || getSimVar('L:A32NX_ELEC_DC_2_BUS_IS_POWERED', 'Bool');
 }
 
-const sortedMessageArray = (messages: Map<number, [CpdlcMessage, number]>): [CpdlcMessage, number][] => {
+const sortedMessageArray = (messages: Map<number, [CpdlcMessage, number, boolean]>): [CpdlcMessage, number, boolean][] => {
     const arrMessages = Array.from(messages.values());
     arrMessages.sort((a, b) => a[1] - b[1]);
     return arrMessages;
@@ -41,7 +41,7 @@ const sortedMessageArray = (messages: Map<number, [CpdlcMessage, number]>): [Cpd
 const DCDU: React.FC = () => {
     const [isColdAndDark] = useSimVar('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool', 200);
     const [state, setState] = useState(isColdAndDark ? DcduState.Off : DcduState.Active);
-    const [messages, setMessages] = useState(new Map<number, [CpdlcMessage, number]>());
+    const [messages, setMessages] = useState(new Map<number, [CpdlcMessage, number, boolean]>());
     const [statusMessage, setStatusMessage] = useState({ sender: '', message: '', remainingMilliseconds: 0 });
     const [messageUid, setMessageUid] = useState(-1);
     const [atcMessage, setAtcMessage] = useState('');
@@ -73,6 +73,7 @@ const DCDU: React.FC = () => {
         const entry = updateMap.get(uid);
         if (entry !== undefined) {
             entry[0].ResponseType = response;
+            entry[2] = true;
             updateMap.set(uid, entry);
         }
 
@@ -174,9 +175,11 @@ const DCDU: React.FC = () => {
         if (cpdlcMessage !== undefined && cpdlcMessage.UniqueMessageID !== undefined) {
             const oldMessage = messages.get(cpdlcMessage.UniqueMessageID);
             let dcduTimestamp = new Date().getTime();
+            let readMessage = false;
 
             if (oldMessage !== undefined) {
                 dcduTimestamp = oldMessage[1];
+                readMessage = oldMessage[2];
 
                 // check if we have to show the status of an output message
                 if (oldMessage[0].Direction === AtsuMessageDirection.Output) {
@@ -203,9 +206,11 @@ const DCDU: React.FC = () => {
                         setStatus('Mainpage', 'SENT');
                     }
                 }
+            } else {
+                readMessage = cpdlcMessage.Response !== undefined || cpdlcMessage.ResponseType !== undefined;
             }
 
-            setMessages(messages.set(cpdlcMessage.UniqueMessageID, [cpdlcMessage, dcduTimestamp]));
+            setMessages(messages.set(cpdlcMessage.UniqueMessageID, [cpdlcMessage, dcduTimestamp, readMessage]));
 
             if (messageUid === -1) {
                 setMessageUid(cpdlcMessage.UniqueMessageID);
@@ -237,6 +242,16 @@ const DCDU: React.FC = () => {
             }
         }
 
+        // check the number of unread messages
+        let unreadMessages = 0;
+        messages.forEach((message) => {
+            if (message[0].Direction === AtsuMessageDirection.Input && !message[2]) {
+                unreadMessages += 1;
+            }
+        })
+        SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_UNREAD_MSGS', 'number', unreadMessages);
+
+        // update if the DCDU is full
         SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_MAX_REACHED', 'boolean', messages.size >= maxMessageCount ? 1 : 0);
     });
 

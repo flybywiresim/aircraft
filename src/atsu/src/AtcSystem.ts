@@ -25,6 +25,10 @@ export class AtcSystem {
 
     private dcduBufferedMessages: number[] = [];
 
+    private unreadMessagesLastCycle: number = 0;
+
+    private lastRingTime: number = 0;
+
     constructor(parent: AtsuManager, datalink: Datalink) {
         this.parent = parent;
         this.datalink = datalink;
@@ -44,6 +48,7 @@ export class AtcSystem {
             }
 
             this.handleDcduMessageSync();
+            this.handlePilotNotifications();
         }, 100);
     }
 
@@ -84,6 +89,41 @@ export class AtcSystem {
                 }
             }
         }
+    }
+
+    private handlePilotNotifications() {
+        const unreadMessages = SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_UNREAD_MSGS', 'number');
+
+        if (unreadMessages !== 0) {
+            const currentTime = new Date().getTime();
+            let callRing = false;
+
+            if (this.unreadMessagesLastCycle < unreadMessages) {
+                this.lastRingTime = 0;
+                callRing = true;
+            } else {
+                const delta = Math.round(Math.abs((currentTime - this.lastRingTime) / 1000));
+
+                if (delta >= 10) {
+                    this.lastRingTime = currentTime;
+                    callRing = true;
+                }
+            }
+            callRing = callRing && (SimVar.GetSimVarValue('L:A32NX_DCDU_ATC_MSG_WAITING', 'boolean') === 1);
+
+            if (callRing) {
+                SimVar.SetSimVarValue('L:A32NX_DCDU_ATC_MSG_WAITING', 'boolean', 1);
+                Coherent.call('PLAY_INSTRUMENT_SOUND', 'cpdlc_ring');
+                this.lastRingTime = currentTime;
+
+                // ensure that the timeout is longer than the sound
+                setTimeout(() => SimVar.SetSimVarValue('W:cpdlc_ring', 'boolean', 0), 2000);
+            }
+        } else {
+            SimVar.SetSimVarValue('L:A32NX_DCDU_ATC_MSG_WAITING', 'boolean', 0);
+        }
+
+        this.unreadMessagesLastCycle = unreadMessages;
     }
 
     public static async connect(): Promise<AtsuStatusCodes> {
@@ -356,9 +396,6 @@ export class AtcSystem {
         if (!analyzed) {
             if (cpdlcMessage.Direction === AtsuMessageDirection.Input) {
                 SimVar.SetSimVarValue('L:A32NX_DCDU_ATC_MSG_WAITING', 'boolean', 1);
-                Coherent.call('PLAY_INSTRUMENT_SOUND', 'cpdlc_ring');
-                // ensure that the timeout is longer than the sound
-                setTimeout(() => SimVar.SetSimVarValue('W:cpdlc_ring', 'boolean', 0), 2000);
             }
 
             const dcduRelevant = cpdlcMessage.ComStatus === AtsuMessageComStatus.Open || cpdlcMessage.ComStatus === AtsuMessageComStatus.Received;
