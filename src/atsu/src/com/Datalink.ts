@@ -94,7 +94,7 @@ export class Datalink {
             break;
         // instant transmission
         default:
-            timeout = 1;
+            timeout = 2;
             break;
         }
 
