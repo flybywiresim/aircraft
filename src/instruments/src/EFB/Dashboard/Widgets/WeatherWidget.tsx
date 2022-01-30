@@ -104,9 +104,7 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
     };
 
     const MetarText = () => (
-        <>
-            <span dangerouslySetInnerHTML={{ __html: coloredMetar }} />
-        </>
+        <span className="font-mono" dangerouslySetInnerHTML={{ __html: coloredMetar }} />
     );
 
     const handleIcao = (icao: string) => {
@@ -255,7 +253,7 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
                             )
                             : (
                                 <>
-                                    <div className="scrollbar text-left ml-8 mr-4 h-40 text-xl font-medium">
+                                    <div className="scrollbar text-left ml-8 mr-4 h-40 text-xl">
                                         {metar.raw_text
                                             ? (
                                                 <>
