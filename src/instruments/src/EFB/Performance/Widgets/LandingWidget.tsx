@@ -18,7 +18,7 @@
 
 import React, { useContext } from 'react';
 import { Metar } from '@flybywiresim/api-client';
-import metarParser from 'aewx-metar-parser';
+import { parseMetar } from '../../Utils/parseMetar';
 import LandingCalculator, { LandingFlapsConfig, LandingRunwayConditions } from '../Calculators/LandingCalculator';
 import RunwayVisualizationWidget, { LabelType } from './RunwayVisualizationWidget';
 import SimpleInput from '../../Components/Form/SimpleInput/SimpleInput';
@@ -111,7 +111,7 @@ export const LandingWidget = () => {
     const handleSyncValues = async (): Promise<void> => {
         if (!isValidIcao()) return;
         const metarResult = await Metar.get(icao);
-        const parsedMetar: MetarParserType = metarParser(metarResult.metar);
+        const parsedMetar: MetarParserType = parseMetar(metarResult.metar);
 
         const weightKgs = Math.round(totalWeight * poundsToKgs);
 

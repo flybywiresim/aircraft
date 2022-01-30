@@ -84,7 +84,6 @@
     "@flybywiresim/react-components": "^0.3.1",
     "@flybywiresim/tailwind-config": "^0.5.0",
     "@tabler/icons": "^1.41.2",
-    "aewx-metar-parser": "~0.10.1",
     "byte-data": "^19.0.1",
     "classnames": "^2.2.6",
     "immer": "^9.0.3",

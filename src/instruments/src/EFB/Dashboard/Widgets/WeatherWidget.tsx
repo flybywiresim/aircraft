@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import metarParser from 'aewx-metar-parser';
 import { Metar } from '@flybywiresim/api-client';
 import { IconCloud, IconDroplet, IconGauge, IconPoint, IconTemperature, IconWind } from '@tabler/icons';
+import { parseMetar, getColoredMetar } from '../../Utils/parseMetar';
 import { MetarParserType, Wind } from '../../../Common/metarTypes';
 import { usePersistentProperty } from '../../../Common/persistence';
 import SimpleInput from '../../Components/Form/SimpleInput/SimpleInput';
 
 const MetarParserTypeWindState: Wind = {
     degrees: 0,
+    degrees_from: 0,
+    degrees_to: 0,
     speed_kts: 0,
     speed_mps: 0,
     gust_kts: 0,
@@ -53,7 +55,8 @@ const barometer = {
 
 const MetarParserTypeProp: MetarParserType = {
     raw_text: '',
-    raw_parts: [''],
+    raw_parts: [],
+    color_codes: [],
     icao: '',
     observed: new Date(0),
     wind: MetarParserTypeWindState,
@@ -73,13 +76,38 @@ type WeatherWidgetProps = { name: string, editIcao: string, icao: string};
 const WeatherWidget = (props: WeatherWidgetProps) => {
     const [metar, setMetar] = useState<MetarParserType>(MetarParserTypeProp);
     const [showMetar, setShowMetar] = usePersistentProperty(`CONFIG_SHOW_METAR_${props.name}`, 'DISABLED');
-    let [metarSource] = usePersistentProperty('CONFIG_METAR_SRC', 'MSFS');
+    const [coloredMetar, setColoredMetar] = useState('');
+    const [baroType] = usePersistentProperty('CONFIG_INIT_BARO_UNIT', 'HPA');
+    const getBaroTypeForAirport = (icao: string) => (['K', 'C', 'M', 'P', 'RJ', 'RO', 'TI', 'TJ']
+        .some((r) => icao.toUpperCase().startsWith(r)) ? 'IN HG' : 'HPA');
+    const [metarSource] = usePersistentProperty('CONFIG_METAR_SRC', 'MSFS');
+    const source = metarSource === 'MSFS' ? 'MS' : metarSource;
 
-    if (metarSource === 'MSFS') {
-        metarSource = 'MS';
-    }
+    const BaroValue = () => {
+        const displayedBaroType = baroType === 'AUTO' ? getBaroTypeForAirport(metar.icao) : baroType;
+        if (displayedBaroType === 'IN HG') {
+            return (
+                <>
+                    {metar.barometer.hg.toFixed(2)}
+                    {' '}
+                    inHg
+                </>
+            );
+        }
+        return (
+            <>
+                {metar.barometer.mb.toFixed(0)}
+                {' '}
+                mb
+            </>
+        );
+    };
 
-    const source = metarSource;
+    const MetarText = () => (
+        <>
+            <span dangerouslySetInnerHTML={{ __html: coloredMetar }} />
+        </>
+    );
 
     const handleIcao = (icao: string) => {
         if (icao.length === 4) {
@@ -97,7 +125,8 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
         }
         return Metar.get(icao, source)
             .then((result) => {
-                const metarParse = metarParser(result.metar);
+                const metarParse = parseMetar(result.metar);
+                setColoredMetar(getColoredMetar(metarParse));
                 setMetar(metarParse);
             })
             .catch(() => {
@@ -147,9 +176,7 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
                                             </div>
                                             {metar.raw_text ? (
                                                 <>
-                                                    {metar.barometer.mb.toFixed(0)}
-                                                    {' '}
-                                                    mb
+                                                    {metar.barometer ? <BaroValue /> : 'N/A'}
                                                 </>
                                             ) : (
                                                 <>
@@ -232,7 +259,7 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
                                         {metar.raw_text
                                             ? (
                                                 <>
-                                                    {metar.raw_text}
+                                                    <MetarText />
                                                 </>
                                             ) : (
                                                 <>
