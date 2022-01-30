@@ -294,7 +294,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
         setInterval(() => {
             if (!this.socket || this.socket.readyState !== 1) {
-                this.connectWebsocket(NXDataStore.get("CONFIG_EXTERNAL_MCDU_PORT", "8080"));
+                this.connectWebsocket(NXDataStore.get("CONFIG_EXTERNAL_MCDU_PORT", "8380"));
             }
         }, 5000);
         setInterval(() => {
@@ -1430,10 +1430,10 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
         const formattedValues = lines.map((l) => {
             return l.replace(/\[color]cyan/g, "<br/>")
-                .replace(/{end}/, "<br/>")
+                .replace(/{white}[-]{3,}{end}/g, "<br/>")
+                .replace(/{end}/g, "<br/>")
                 .replace(/(\[color][a-z]*)/g, "")
-                .replace(/{[a-z]*}/g, "")
-                .replace(/-{3,}/g, "<br/><br/>");
+                .replace(/{[a-z]*}/g, "");
         });
 
         const websocketLines = formattedValues.map((l) => {
@@ -1460,7 +1460,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     /* WEBSOCKET */
 
     /**
-     * Attempts to connect to a websocket server on 127.0.0.1:8080
+     * Attempts to connect to a local websocket server
      */
     connectWebsocket(port) {
         if (this.socket) {
@@ -1482,7 +1482,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.socket.addEventListener('message', (event) => {
             const message = event.data;
             if (message.startsWith("event:")) {
-                this.onEvent(`1_BTN_${message.substring(6)}`);
+                SimVar.SetSimVarValue(`H:A320_Neo_CDU_1_BTN_${message.substring(6)}`, "number", 0);
+                SimVar.SetSimVarValue(`L:A32NX_MCDU_PUSH_ANIM_1_${message.substring(6)}`, "Number", 1);
             }
             if (message === "requestUpdate") {
                 this.sendUpdate();
@@ -1504,6 +1505,10 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
      * Sends an update to the websocket server (if connected) with the current state of the MCDU
      */
     sendUpdate() {
+        // only calculate update when socket is established.
+        if (!this.socket || !this.socket.readyState) {
+            return;
+        }
         let left = {
             lines: [
                 ['', '', ''],
@@ -1542,7 +1547,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     this._labels[5],
                     this._lines[5],
                 ],
-                scratchpad: this.scratchpad._displayUnit._scratchpadElement.textContent,
+                scratchpad: `{${this.scratchpad.getColor()}}${this.scratchpad.getDisplayText()}{end}`,
                 title: this._title,
                 titleLeft: `{small}${this._titleLeft}{end}`,
                 page: this._pageCount > 0 ? `{small}${this._pageCurrent}/${this._pageCount}{end}` : '',

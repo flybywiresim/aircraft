@@ -10,6 +10,7 @@ use brakes::brakes;
 use flaps::flaps;
 use nose_wheel_steering::nose_wheel_steering;
 use std::error::Error;
+use systems::shared::ElectricalBusType;
 use systems::{failures::FailureType, shared::HydraulicColor};
 use systems_wasm::aspects::ExecuteOn;
 use systems_wasm::{MsfsSimulationBuilder, Variable};
@@ -20,22 +21,22 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
 
     let (mut simulation, mut handler) =
         MsfsSimulationBuilder::new("A32NX_", sim_connect.as_mut().get_mut())
-            .with_electrical_buses(vec![
-                ("AC_1", 2),
-                ("AC_2", 3),
-                ("AC_ESS", 4),
-                ("AC_ESS_SHED", 5),
-                ("AC_STAT_INV", 6),
-                ("AC_GND_FLT_SVC", 14),
-                ("DC_1", 7),
-                ("DC_2", 8),
-                ("DC_ESS", 9),
-                ("DC_ESS_SHED", 10),
-                ("DC_BAT", 11),
-                ("DC_HOT_1", 12),
-                ("DC_HOT_2", 13),
-                ("DC_GND_FLT_SVC", 15),
-            ])
+            .with_electrical_buses([
+                (ElectricalBusType::AlternatingCurrent(1), 2),
+                (ElectricalBusType::AlternatingCurrent(2), 3),
+                (ElectricalBusType::AlternatingCurrentEssential, 4),
+                (ElectricalBusType::AlternatingCurrentEssentialShed, 5),
+                (ElectricalBusType::AlternatingCurrentStaticInverter, 6),
+                (ElectricalBusType::AlternatingCurrentGndFltService, 14),
+                (ElectricalBusType::DirectCurrent(1), 7),
+                (ElectricalBusType::DirectCurrent(2), 8),
+                (ElectricalBusType::DirectCurrentEssential, 9),
+                (ElectricalBusType::DirectCurrentEssentialShed, 10),
+                (ElectricalBusType::DirectCurrentBattery, 11),
+                (ElectricalBusType::DirectCurrentHot(1), 12),
+                (ElectricalBusType::DirectCurrentHot(2), 13),
+                (ElectricalBusType::DirectCurrentGndFltService, 15),
+            ])?
             .with_auxiliary_power_unit("OVHD_APU_START_PB_IS_AVAILABLE", 8)?
             .with_failures(vec![
                 (24_000, FailureType::TransformerRectifier(1)),

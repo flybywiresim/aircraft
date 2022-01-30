@@ -2059,6 +2059,7 @@
         <Sound WwiseEvent="cavcharge" WwiseData="true" NodeName="PEDALS_LEFT" Continuous="false" />
         <Sound WwiseEvent="3click" WwiseData="true" NodeName="PEDALS_LEFT" Continuous="false" />
         <Sound WwiseData="true" WwiseEvent="fwdgalley" NodeName="WIPER_BASE_L" />
+        <Sound WwiseData="true" WwiseEvent="cpdlc_ring" NodeName="WIPER_BASE_L" />
 
         <!-- New RA callouts ====================================================================================-->
         <Sound WwiseData="true" WwiseEvent="new_5" NodeName="WIPER_BASE_L" />
