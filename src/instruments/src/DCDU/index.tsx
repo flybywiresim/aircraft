@@ -248,7 +248,7 @@ const DCDU: React.FC = () => {
             if (message[0].Direction === AtsuMessageDirection.Input && !message[2]) {
                 unreadMessages += 1;
             }
-        })
+        });
         SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_UNREAD_MSGS', 'number', unreadMessages);
 
         // update if the DCDU is full
