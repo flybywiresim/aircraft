@@ -36,7 +36,7 @@ export class PdcMessage extends AtsuMessage {
         this.Network = AtsuMessageNetwork.Hoppie;
     }
 
-    public serialize(_format: AtsuMessageSerializationFormat) {
+    public serialize(format: AtsuMessageSerializationFormat) {
         // create the generic PDC message
         let pdcMessage = 'REQUEST PREDEP CLEARANCE\n';
         pdcMessage += `${this.Callsign} A20N TO ${this.Destination}\n`;
@@ -54,6 +54,10 @@ export class PdcMessage extends AtsuMessage {
         freetext = freetext.replace(/^\s*\n/gm, '');
         if (freetext.length !== 0) {
             pdcMessage += `\n${freetext}`;
+        }
+
+        if (format === AtsuMessageSerializationFormat.Network) {
+            pdcMessage = pdcMessage.replace(/\n/, ' ');
         }
 
         return pdcMessage;
