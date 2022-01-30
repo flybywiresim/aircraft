@@ -73,7 +73,7 @@ export class NXApiConnector {
                     return AtsuStatusCodes.Ok;
                 }
                 return AtsuStatusCodes.NoTelexConnection;
-            }).catch(() => AtsuStatusCodes.ProxyError);
+            }).catch(() => AtsuStatusCodes.CallsignInUse);
         }
 
         return AtsuStatusCodes.Ok;
