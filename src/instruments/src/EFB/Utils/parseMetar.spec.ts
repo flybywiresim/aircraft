@@ -215,3 +215,51 @@ describe('Test parseMetar when provided with', () => {
         );
     });
 });
+
+test('KSFO 301456Z 17004KT 10SM FEW008 SCT011 SCT200 07/06 A3021 RMK AO2 SLP230 T00720056 50002', () => {
+    const metarObject = parseMetar('KSFO 301456Z 17004KT 10SM FEW008 SCT011 SCT200 07/06 A3021 RMK AO2 SLP230 T00720056 50002');
+    expect(metarObject.icao).toBe('KSFO');
+    expect(metarObject.observed.getUTCDate()).toBe(30);
+    expect(metarObject.observed.getUTCHours()).toBe(14);
+    expect(metarObject.observed.getUTCMinutes()).toBe(56);
+    expect(metarObject.wind.speed_kts).toBe(4);
+    expect(metarObject.wind.gust_kts).toBe(4);
+    expect(metarObject.wind.degrees).toBe(170);
+    expect(metarObject.wind.degrees_from).toBe(170);
+    expect(metarObject.wind.degrees_to).toBe(170);
+    expect(metarObject.visibility.meters_float).toBe(16093.44);
+    expect(metarObject.visibility.meters).toBe('16000');
+    expect(metarObject.visibility.miles_float).toBe(10.0);
+    expect(metarObject.visibility.miles).toBe('10');
+    expect(metarObject.conditions).toHaveLength(0);
+    expect(metarObject.clouds).toHaveLength(3);
+    expect(metarObject.clouds[0].code).toBe('FEW');
+    expect(metarObject.clouds[0].base_feet_agl).toBe(800);
+    // @ts-ignore
+    expect(metarObject.clouds[1].code).toBe('SCT');
+    // @ts-ignore
+    expect(metarObject.clouds[2].code).toBe('SCT');
+    expect(metarObject.ceiling.code).toBe('SCT');
+    expect(metarObject.ceiling.feet_agl).toBe(20000);
+    expect(metarObject.temperature.celsius).toBe(7);
+    expect(metarObject.dewpoint.celsius).toBe(6);
+    expect(metarObject.barometer.mb).toBe(1023.0278454566253);
+    expect(metarObject.barometer.hg).toBe(30.21);
+    expect(metarObject.color_codes).toEqual(
+        [
+            ColorCode.Highlight, // KSFO
+            ColorCode.None, // 301456Z
+            ColorCode.None, // 17004KT
+            ColorCode.None, // 10SM
+            ColorCode.None, // FEW008
+            ColorCode.None, // SCT011
+            ColorCode.None, // SCT200
+            ColorCode.Caution, // 07/06
+            ColorCode.None, // A3021
+            ColorCode.Info, // RMK
+            ColorCode.Info, // AO2
+            ColorCode.Info, // SLP230
+            ColorCode.Info, // T00720056
+            ColorCode.Info], // 50002
+    );
+});
