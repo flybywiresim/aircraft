@@ -6,6 +6,7 @@ export enum ColorCode {
     Highlight,
     Caution,
     Warning,
+    TrendMarker,
     Info
 }
 
@@ -17,8 +18,8 @@ export type MetarParserType = {
     observed: Date,
     wind: Wind,
     visibility: Visibility,
-    conditions: [ConditionCode],
-    clouds: [Cloud],
+    conditions: ConditionCode[],
+    clouds: Cloud[],
     ceiling: Ceiling,
     temperature: Temperature,
     dewpoint: Dewpoint,
