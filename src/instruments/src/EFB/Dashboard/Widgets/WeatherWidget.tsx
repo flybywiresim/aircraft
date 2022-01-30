@@ -150,7 +150,7 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
                             </div>
                             <SimpleInput
                                 noLabel
-                                className="text-center w-24 ml-4 text-2xl font-medium uppercase"
+                                className="text-center w-32 ml-4 text-2xl font-medium uppercase"
                                 placeholder={props.icao}
                                 value={props.icao === '----' ? '' : props.icao}
                                 onChange={(value) => handleIcao(value)}
