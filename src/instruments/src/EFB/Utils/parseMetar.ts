@@ -1,4 +1,4 @@
-import { Cloud, ColorCode, ConditionCode, MetarParserType, Visibility, Wind } from '../../Common/metarTypes';
+import { Cloud, ColorCode, MetarParserType, Visibility, Wind } from '../../Common/metarTypes';
 
 /**
  * Convert METAR string into structured object.
@@ -28,9 +28,6 @@ export function parseMetar(metarString: string): MetarParserType {
         throw new Error('Not enough METAR information found');
     }
 
-    const condArray: [ConditionCode] = [] as unknown as [ConditionCode];
-    const cloudsArray: [Cloud] = [] as unknown as [Cloud];
-
     const metarObject: MetarParserType = {
         raw_text: metarString,
         raw_parts: metarArray,
@@ -53,8 +50,8 @@ export function parseMetar(metarString: string): MetarParserType {
             meters: '',
             meters_float: 0.0,
         },
-        conditions: condArray,
-        clouds: cloudsArray,
+        conditions: [],
+        clouds: [],
         ceiling: {
             code: '',
             feet_agl: 0,
