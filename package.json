@@ -110,6 +110,7 @@
     "pkg": "^5.1.0",
     "geolib": "^3.3.3",
     "qrcode.react": "^1.0.1",
+    "rc-slider": "^9.7.5",
     "react": "^17.0.0",
     "react-bootstrap-icons": "^1.7.2",
     "react-dom": "^17.0.0",
