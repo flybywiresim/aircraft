@@ -3,13 +3,11 @@ import { IconPlane } from '@tabler/icons';
 import { CloudArrowDown } from 'react-bootstrap-icons';
 import { usePersistentProperty } from '@instruments/common/persistence';
 import { toast } from 'react-toastify';
-import { useSimVarValue } from '@instruments/common/simVars';
 
 import { initialState, fetchSimbriefDataAction } from '../../Store/features/simBrief';
 import { useAppSelector, useAppDispatch } from '../../Store/store';
 
 import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
-import flightProgress from '../../Store/features/flightProgress';
 
 interface InformationEntryProps {
     title: string;
