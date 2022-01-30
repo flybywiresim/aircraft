@@ -1,7 +1,7 @@
 import { ColorCode } from '../../Common/metarTypes';
 import { parseMetar } from './parseMetar';
 
-describe('MetarParser when provided with', () => {
+describe('Test parseMetar when provided with', () => {
     test('an empty value, throws an error', () => {
         // empty metar string
         expect(() => {
