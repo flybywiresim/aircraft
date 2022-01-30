@@ -352,7 +352,8 @@ export class AtcSystem {
             if (cpdlcMessage.Direction === AtsuMessageDirection.Input) {
                 SimVar.SetSimVarValue('L:A32NX_DCDU_ATC_MSG_WAITING', 'boolean', 1);
                 Coherent.call('PLAY_INSTRUMENT_SOUND', 'cpdlc_ring');
-                setTimeout(() => SimVar.SetSimVarValue('W:cpdlc_ring', 'boolean', 0), 500);
+                // ensure that the timeout is longer than the sound
+                setTimeout(() => SimVar.SetSimVarValue('W:cpdlc_ring', 'boolean', 0), 2000);
             }
 
             const dcduRelevant = cpdlcMessage.ComStatus === AtsuMessageComStatus.Open || cpdlcMessage.ComStatus === AtsuMessageComStatus.Received;
