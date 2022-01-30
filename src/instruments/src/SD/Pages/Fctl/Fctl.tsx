@@ -21,36 +21,43 @@ interface HydraulicSystemPairProps {
     rightHydraulicSystem: HydraulicSystem,
 }
 
-export const FctlPage = () => (
-    <EcamPage name="ecam-fctl">
-        <PageTitle x={6} y={18} text="F/CTL" />
+export const FctlPage = () => {
+    const fcdc1DiscreteWord1 = useArinc429Var('L:A32NX_FCDC_1_DISCRETE_WORD_1');
+    const fcdc2DiscreteWord1 = useArinc429Var('L:A32NX_FCDC_2_DISCRETE_WORD_1');
 
-        <HydraulicsProvider>
-            <Wings x={98} y={14} />
+    const fcdcDiscreteWord1ToUse = !fcdc1DiscreteWord1.isFailureWarning() ? fcdc1DiscreteWord1 : fcdc2DiscreteWord1;
 
-            <Aileron x={72} y={153} side="left" leftHydraulicSystem="B" rightHydraulicSystem="G" />
-            <Aileron x={528} y={153} side="right" leftHydraulicSystem="G" rightHydraulicSystem="B" />
+    return (
+        <EcamPage name="ecam-fctl">
+            <PageTitle x={6} y={18} text="F/CTL" />
 
-            <Note x={195} y={178}>ELAC</Note>
-            <Elac x={170} y={190} number={1} />
-            <Elac x={194} y={206} number={2} />
+            <HydraulicsProvider>
+                <Wings x={98} y={14} />
 
-            <Note x={350} y={178}>SEC</Note>
-            <Sec x={324} y={190} number={1} />
-            <Sec x={348} y={206} number={2} />
-            <Sec x={372} y={222} number={3} />
+                <Aileron x={72} y={153} side="left" leftHydraulicSystem="B" rightHydraulicSystem="G" />
+                <Aileron x={528} y={153} side="right" leftHydraulicSystem="G" rightHydraulicSystem="B" />
 
-            <Elevator x={168} y={328} side="left" leftHydraulicSystem="B" rightHydraulicSystem="G" />
-            <Elevator x={432} y={328} side="right" leftHydraulicSystem="Y" rightHydraulicSystem="B" />
+                <Note x={195} y={178}>ELAC</Note>
+                <Elac x={170} y={190} num={1} fcdcDiscreteWord1={fcdcDiscreteWord1ToUse} />
+                <Elac x={194} y={206} num={2} fcdcDiscreteWord1={fcdcDiscreteWord1ToUse} />
 
-            <PitchTrim x={280} y={283} />
+                <Note x={350} y={178}>SEC</Note>
+                <Sec x={324} y={190} num={1} fcdcDiscreteWord1={fcdcDiscreteWord1ToUse} />
+                <Sec x={348} y={206} num={2} fcdcDiscreteWord1={fcdcDiscreteWord1ToUse} />
+                <Sec x={372} y={222} num={3} fcdcDiscreteWord1={fcdcDiscreteWord1ToUse} />
 
-            <Stabilizer x={268} y={357} />
+                <Elevator x={168} y={328} side="left" leftHydraulicSystem="B" rightHydraulicSystem="G" />
+                <Elevator x={432} y={328} side="right" leftHydraulicSystem="Y" rightHydraulicSystem="B" />
 
-            <Rudder x={250} y={356} />
-        </HydraulicsProvider>
-    </EcamPage>
-);
+                <PitchTrim x={280} y={283} />
+
+                <Stabilizer x={268} y={357} />
+
+                <Rudder x={250} y={356} />
+            </HydraulicsProvider>
+        </EcamPage>
+    );
+};
 
 const Wings = ({ x = 0, y = 0 }: ComponentPositionProps) => (
     <SvgGroup x={x} y={y}>
@@ -192,34 +199,39 @@ const Aileron = ({ x, y, side, leftHydraulicSystem, rightHydraulicSystem }: Comp
 };
 
 interface ElacSecProps extends ComponentPositionProps {
-    number: number,
+    num: number,
+    fcdcDiscreteWord1: Arinc429Word,
 }
 
-const Elac = ({ x, y, number }: ElacSecProps) => (
-    <ElacSecShape x={x} y={y} number={number} type="ELAC" />
-);
-
-const Sec = ({ x, y, number }: ElacSecProps) => (
-    <ElacSecShape x={x} y={y} number={number} type="SEC" />
-);
-
-interface ElacSecShapeProps extends ElacSecProps {
-    type: 'ELAC' | 'SEC',
-}
-
-const ElacSecShape = ({ x, y, number, type }: ElacSecShapeProps) => {
-    const [on] = useSimVar(`L:A32NX_FBW_${type}_SWITCH:${number}`, 'boolean', 1000);
-    const [failed] = useSimVar(`L:A32NX_FBW_${type}_FAILED:${number}`, 'boolean', 1000);
-
-    return (
-        <SvgGroup x={x} y={y}>
-            <path className={on && !failed ? 'MainShape' : 'MainShapeWarning'} d="M0 0 l72,0 l0,-26 l-8,0" />
-            <text x={61} y={-12} className={`Standard ${on && !failed ? 'Value' : 'Warning'}`} textAnchor="middle" alignmentBaseline="central">
-                {number}
-            </text>
-        </SvgGroup>
-    );
+const Elac = ({ x, y, num, fcdcDiscreteWord1 }: ElacSecProps) => {
+    const infoAvailable = !fcdcDiscreteWord1.isFailureWarning();
+    const computerActive = fcdcDiscreteWord1.getBitValueOr(22 + num, false);
+    return <ElacSecShape x={x} y={y} num={num} infoAvailable={infoAvailable} computerActive={computerActive} />;
 };
+
+const Sec = ({ x, y, num, fcdcDiscreteWord1 }: ElacSecProps) => {
+    const infoAvailable = !fcdcDiscreteWord1.isFailureWarning();
+    const computerActive = fcdcDiscreteWord1.getBitValueOr(num === 3 ? 29 : 24 + num, false);
+
+    return <ElacSecShape x={x} y={y} num={num} infoAvailable={infoAvailable} computerActive={computerActive} />;
+};
+
+interface ElacSecShapeProps {
+    x: number,
+    y: number,
+    num: number,
+    infoAvailable: boolean,
+    computerActive: boolean,
+}
+
+const ElacSecShape = ({ x, y, num, infoAvailable, computerActive }: ElacSecShapeProps) => (
+    <SvgGroup x={x} y={y}>
+        <path className={computerActive || !infoAvailable ? 'MainShape' : 'MainShapeWarning'} d="M0 0 l72,0 l0,-26 l-8,0" />
+        <text x={61} y={-12} className={`Standard ${computerActive && infoAvailable ? 'Value' : 'Warning'}`} textAnchor="middle" alignmentBaseline="central">
+            {infoAvailable ? num : 'X'}
+        </text>
+    </SvgGroup>
+);
 
 const AileronAxis = ({ x, y, side }: ComponentPositionProps & ComponentSidePositionProps) => {
     const d1 = `M0 0 l${
