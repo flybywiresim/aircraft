@@ -119,7 +119,6 @@ describe('Test parseMetar when provided with', () => {
         );
     });
 
-    // EKCH 301350Z AUTO 32020G36KT 290V350 9999 NCD 07/M03 Q1011 TEMPO 31025G40KT
     test('EKCH 301350Z AUTO 32020G36KT 290V350 9999 NCD 07/M03 Q1011 TEMPO 31025G40KT 2500', () => {
         // eslint-disable-next-line max-len
         const metarObject = parseMetar('EKCH 301350Z AUTO 32020G36KT 290V350 9999 NCD 07/M03 Q1011 TEMPO 31025G40KT 2500');
@@ -161,4 +160,75 @@ describe('Test parseMetar when provided with', () => {
             ],
         );
     });
+
+    test('K1U7 301420Z AUTO 00000KT 1/4SM FZFG OVC002 M23/M24 A3024 TEMPO 18040KT 1/4SM FZFG OVC004 M23/M24 A3024', () => {
+        // eslint-disable-next-line max-len
+        const metarObject = parseMetar('K1U7 301420Z AUTO 00000KT 1/4SM FZFG OVC002 M23/M24 A3024 TEMPO 18040KT 1/4SM FZFG OVC004 M23/M24 A3024');
+        expect(metarObject.icao).toBe('K1U7');
+        expect(metarObject.observed.getUTCDate()).toBe(30);
+        expect(metarObject.observed.getUTCHours()).toBe(14);
+        expect(metarObject.observed.getUTCMinutes()).toBe(20);
+        expect(metarObject.wind.speed_kts).toBe(0);
+        expect(metarObject.wind.gust_kts).toBe(0);
+        expect(metarObject.wind.degrees).toBe(0);
+        expect(metarObject.wind.degrees_from).toBe(0);
+        expect(metarObject.wind.degrees_to).toBe(0);
+        expect(metarObject.visibility.miles).toBe('0.5');
+        expect(metarObject.visibility.miles_float).toBe(0.25);
+        expect(metarObject.visibility.meters).toBe('500');
+        expect(metarObject.visibility.meters_float).toBe(402.336);
+        expect(metarObject.conditions).toHaveLength(2);
+        // @ts-ignore
+        expect(metarObject.conditions[0].code).toBe('FZ');
+        // @ts-ignore
+        expect(metarObject.conditions[1].code).toBe('FG');
+        expect(metarObject.clouds).toHaveLength(1);
+        expect(metarObject.clouds[0].code).toBe('OVC');
+        expect(metarObject.clouds[0].base_feet_agl).toBe(200);
+        expect(metarObject.ceiling.code).toBe('OVC');
+        expect(metarObject.ceiling.feet_agl).toBe(200);
+        expect(metarObject.temperature.celsius).toBe(-23);
+        expect(metarObject.dewpoint.celsius).toBe(-24);
+        expect(metarObject.barometer.mb).toBe(1024.0437618870687);
+        expect(metarObject.barometer.hg).toBe(30.24);
+        expect(metarObject.barometer.kpa).toBe(102.40437618870688);
+        expect(metarObject.color_codes).toHaveLength(metarObject.raw_parts.length);
+        expect(metarObject.color_codes).toEqual(
+            [
+                ColorCode.Highlight, // K1U7
+                ColorCode.None, // 301420Z
+                ColorCode.None, // AUTO
+                ColorCode.None, // 00000KT
+                ColorCode.Warning, // 1/4SM
+                ColorCode.Warning, // FZFG
+                ColorCode.Warning, // OVC002
+                ColorCode.Warning, // M23/M24
+                ColorCode.None, // A3024
+                ColorCode.TrendMarker, // TREND
+                ColorCode.Warning, // 18040KT
+                ColorCode.Warning, // 1/4SM
+                ColorCode.Warning, // FZFG
+                ColorCode.Caution, // OVC004
+                ColorCode.Warning, // M23/M24
+                ColorCode.None, // A3024
+            ],
+        );
+    });
 });
+
+// K1U7
+// 301420Z
+// AUTO
+// 00000KT
+// 1/4SM
+// FZFG
+// OVC002
+// M23/M24
+// A3024
+// TREND
+// 18040KT
+// 1/4SM
+// FZFG
+// OVC004
+// M23/M24
+// A3024
