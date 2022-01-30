@@ -16,7 +16,7 @@ describe('Test parseMetar when provided with', () => {
         }).toThrow(new Error('Not enough METAR information found'));
     });
 
-    test('a normal value returns an object representation of that value', () => {
+    test('EDDM 291350Z 26017KT 9999 DZ BKN027 09/00 Q1025 NOSIG', () => {
         const metarObject = parseMetar('EDDM 291350Z 26017KT 9999 DZ BKN027 09/00 Q1025 NOSIG');
         expect(metarObject.icao).toBe('EDDM');
         expect(metarObject.observed.getUTCDate()).toBe(29);
@@ -50,11 +50,11 @@ describe('Test parseMetar when provided with', () => {
                 ColorCode.None, // BKN027
                 ColorCode.None, // 09/00
                 ColorCode.None, // Q1025
-                ColorCode.Info], // NOSIG
+                ColorCode.None], // NOSIG
         );
     });
 
-    test('a complex value returns an object representation of that value', () => {
+    test('KJFK 291451Z 34027G34KT 300V020 1/4SM R04R/1600V2800FT +SN BLSN FZFG VV007 M09/M11 A2967 RMK AO2 PK WND 34035/1420 SLP046 SNINCR 1/8 P0000 60002 T10941111 51001', () => {
         // eslint-disable-next-line max-len
         const metarObject = parseMetar('KJFK 291451Z 34027G34KT 300V020 1/4SM R04R/1600V2800FT +SN BLSN FZFG VV007 M09/M11 A2967 RMK AO2 PK WND 34035/1420 SLP046 SNINCR 1/8 P0000 60002 T10941111 51001');
         expect(metarObject.icao).toBe('KJFK');
@@ -116,6 +116,49 @@ describe('Test parseMetar when provided with', () => {
                 ColorCode.Info, // 60002
                 ColorCode.Info, // T10941111
                 ColorCode.Info], // 51001
+        );
+    });
+
+    // EKCH 301350Z AUTO 32020G36KT 290V350 9999 NCD 07/M03 Q1011 TEMPO 31025G40KT
+    test('EKCH 301350Z AUTO 32020G36KT 290V350 9999 NCD 07/M03 Q1011 TEMPO 31025G40KT 2500', () => {
+        // eslint-disable-next-line max-len
+        const metarObject = parseMetar('EKCH 301350Z AUTO 32020G36KT 290V350 9999 NCD 07/M03 Q1011 TEMPO 31025G40KT 2500');
+        expect(metarObject.icao).toBe('EKCH');
+        expect(metarObject.observed.getUTCDate()).toBe(30);
+        expect(metarObject.observed.getUTCHours()).toBe(13);
+        expect(metarObject.observed.getUTCMinutes()).toBe(50);
+        expect(metarObject.wind.speed_kts).toBe(20);
+        expect(metarObject.wind.gust_kts).toBe(36);
+        expect(metarObject.wind.degrees).toBe(320);
+        expect(metarObject.wind.degrees_from).toBe(290);
+        expect(metarObject.wind.degrees_to).toBe(350);
+        expect(metarObject.visibility.meters_float).toBe(9999);
+        expect(metarObject.visibility.meters).toBe('10000');
+        expect(metarObject.visibility.miles_float).toBe(6.213090551181102);
+        expect(metarObject.visibility.miles).toBe('6');
+        expect(metarObject.conditions).toHaveLength(0);
+        expect(metarObject.clouds).toHaveLength(0);
+        expect(metarObject.temperature.celsius).toBe(7);
+        expect(metarObject.dewpoint.celsius).toBe(-3);
+        expect(metarObject.barometer.mb).toBe(1011);
+        expect(metarObject.barometer.hg).toBe(29.854817868);
+        expect(metarObject.barometer.kpa).toBe(101.1);
+        expect(metarObject.color_codes).toHaveLength(metarObject.raw_parts.length);
+        expect(metarObject.color_codes).toEqual(
+            [
+                ColorCode.Highlight, // EKCH
+                ColorCode.None, // 301350Z
+                ColorCode.None, // AUTO
+                ColorCode.Warning, // 32020G36KT
+                ColorCode.None, // 290V350
+                ColorCode.None, // 9999
+                ColorCode.None, // NCD
+                ColorCode.Caution, // 07/M03
+                ColorCode.None, // Q1011
+                ColorCode.TrendMarker, // TEMPO
+                ColorCode.Warning, // 31025G40KT
+                ColorCode.Caution, // 2500
+            ],
         );
     });
 });
