@@ -74,16 +74,16 @@ export const PromptModal: FC<PromptModalProps> = ({
 
             <div className="flex flex-row mt-8 space-x-4">
                 <div
-                    className="py-2 px-8 w-full text-center rounded-md bg-theme-highlight text-theme-body"
-                    onClick={handleConfirm}
-                >
-                    {confirmText ?? 'Confirm'}
-                </div>
-                <div
                     className="py-2 px-8 w-full text-center rounded-md bg-theme-accent text-theme-text"
                     onClick={handleCancel}
                 >
                     {cancelText ?? 'Cancel'}
+                </div>
+                <div
+                    className="py-2 px-8 w-full text-center rounded-md bg-theme-highlight text-theme-body"
+                    onClick={handleConfirm}
+                >
+                    {confirmText ?? 'Confirm'}
                 </div>
             </div>
         </div>
