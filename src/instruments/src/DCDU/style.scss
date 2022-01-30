@@ -115,6 +115,9 @@ path.dcdu-line {
 
 .message-content {
   font-size: 192px;
+}
+
+.message-content-other {
   font-family: dcdu-normal;
 }
 
@@ -124,6 +127,11 @@ path.dcdu-line {
 
 .message-content-in {
   fill: rgb(255,255,255);
+}
+
+.message-content-sent {
+  font-family: dcdu-highlight;
+  fill: rgb(0, 255, 0);
 }
 
 .startup-text {

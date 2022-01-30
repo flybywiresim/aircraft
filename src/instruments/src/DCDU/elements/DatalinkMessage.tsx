@@ -41,11 +41,11 @@ export const DatalinkMessage: React.FC<DatalinkMessageProps> = ({ message, isSta
     // define the text color
     let messageClass = 'message-content';
     if (message.Direction === AtsuMessageDirection.Output) {
-        messageClass += ' message-content-out';
+        messageClass += ' message-content-other message-content-out';
     } else if (ignoreHighlight) {
-        messageClass += ' message-sent';
+        messageClass += ' message-content-sent';
     } else {
-        messageClass += ' message-content-in';
+        messageClass += ' message-content-other message-content-in';
     }
 
     // calculate the position of the background rectangle
