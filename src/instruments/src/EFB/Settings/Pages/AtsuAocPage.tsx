@@ -100,9 +100,9 @@ export const AtsuAocPage = () => {
             modals.showModal(
                 <PromptModal
                     title="TELEX Warning"
-                    bodyText="Telex enables free text and live map. If enabled, aircraft position data is published for the duration of the flight. Messages are public and not moderated. USE THIS FEATURE AT YOUR OWN RISK. To learn more about telex and the features it enables, please go to https://docs.flybywiresim.com/telex."
+                    bodyText="TELEX enables free text and live map. If enabled, aircraft position data is published for the duration of the flight. Messages are public and not moderated. USE THIS FEATURE AT YOUR OWN RISK. To learn more about TELEX and the features it enables, please go to https://docs.flybywiresim.com/telex."
                     onConfirm={() => setTelexEnabled('ENABLED')}
-                    confirmText="Enable Telex"
+                    confirmText="Enable TELEX"
                 />,
             );
         } else {
