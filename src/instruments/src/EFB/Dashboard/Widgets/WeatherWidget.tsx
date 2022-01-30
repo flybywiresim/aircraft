@@ -108,7 +108,8 @@ export const WeatherWidget:FC<WeatherWidgetProps> = ({ name, simbriefIcao, userI
     };
 
     const MetarText = () => (
-        <span className="font-mono" dangerouslySetInnerHTML={{ __html: coloredMetar }} />
+        // eslint-disable-next-line react/no-danger
+        <span dangerouslySetInnerHTML={{ __html: coloredMetar }} />
     );
 
     const handleIcao = (icao: string) => {
@@ -272,7 +273,7 @@ export const WeatherWidget:FC<WeatherWidgetProps> = ({ name, simbriefIcao, userI
                             )
                             : (
                                 <>
-                                    <div className="mr-4 ml-8 h-40 text-xl font-medium text-left scrollbar">
+                                    <div className="font-mono scrollbar text-left ml-8 mr-4 h-40 text-xl">
                                         {metar.raw_text
                                             ? (
                                                 <>
