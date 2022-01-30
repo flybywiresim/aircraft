@@ -1931,12 +1931,14 @@ class FMCMainDisplay extends BaseAirliners {
             return callback(false);
         }
 
+        const oldFlightNumber = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string");
         this.flightNumber = flightNo;
 
         SimVar.SetSimVarValue("ATC FLIGHT NUMBER", "string", flightNo, "FMC").then(() => {
-            Atsu.AocSystem.connectTelex()
+            Atsu.AtsuManager.connectToNetworks()
                 .then((code) => {
-                    if (code !== Atsu.AtsuStatusCodes.TelexDisabled) {
+                    if (code !== Atsu.AtsuStatusCodes.Ok) {
+                        SimVar.SetSimVarValue("ATC FLIGHT NUMBER", "string", oldFlightNumber, "FMC");
                         this.addNewAtsuMessage(code);
                         return callback(false);
                     }

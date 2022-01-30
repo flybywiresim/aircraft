@@ -19,11 +19,11 @@ export class AocSystem {
         this.datalink = datalink;
     }
 
-    public static async connectTelex(): Promise<AtsuStatusCodes> {
+    public static async connect(): Promise<AtsuStatusCodes> {
         return NXApiConnector.connect();
     }
 
-    public static async disconnectTelex(): Promise<AtsuStatusCodes> {
+    public static async disconnect(): Promise<AtsuStatusCodes> {
         return NXApiConnector.disconnect();
     }
 

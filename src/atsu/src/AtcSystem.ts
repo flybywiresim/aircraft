@@ -6,6 +6,7 @@ import { AtsuMessageComStatus, AtsuMessage, AtsuMessageType, AtsuMessageDirectio
 import { CpdlcMessageResponse, CpdlcMessageRequestedResponseType, CpdlcMessage } from './messages/CpdlcMessage';
 import { Datalink } from './com/Datalink';
 import { AtsuManager } from './AtsuManager';
+import { HoppieConnector } from '@atsu/com/HoppieConnector';
 
 export class AtcSystem {
     private parent: AtsuManager | undefined = undefined;
@@ -79,6 +80,15 @@ export class AtcSystem {
                 }
             }
         }, 100);
+    }
+
+    public static async connect(): Promise<AtsuStatusCodes> {
+        const flightNo = SimVar.GetSimVarValue('ATC FLIGHT NUMBER', 'string');
+        return HoppieConnector.isCallsignInUse(flightNo);
+    }
+
+    public static async disconnect(): Promise<AtsuStatusCodes> {
+        return AtsuStatusCodes.Ok;
     }
 
     public currentStation(): string {

@@ -28,6 +28,45 @@ export class AtsuManager {
         this.mcdu = mcdu;
     }
 
+    public static async connectToNetworks(): Promise<AtsuStatusCodes> {
+        const flightNo = SimVar.GetSimVarValue('ATC FLIGHT NUMBER', 'string');
+        if (flightNo.length === 0 || flightNo === '1123') {
+            return AtsuStatusCodes.Ok;
+        }
+
+        let retvalAoc = await AocSystem.connect();
+        if (retvalAoc === AtsuStatusCodes.Ok || retvalAoc === AtsuStatusCodes.NoTelexConnection) {
+            retvalAoc = AtsuStatusCodes.Ok;
+        }
+
+        let retvalAtc = await AtcSystem.connect();
+        if (retvalAtc === AtsuStatusCodes.Ok || retvalAtc === AtsuStatusCodes.NoHoppieConnection) {
+            retvalAtc = AtsuStatusCodes.Ok;
+        }
+
+        if (retvalAoc !== AtsuStatusCodes.Ok) {
+            return retvalAoc;
+        }
+        return retvalAtc;
+    }
+
+    public static async disconnectFromNetworks(): Promise<AtsuStatusCodes> {
+        let retvalAoc = await AocSystem.disconnect();
+        if (retvalAoc === AtsuStatusCodes.Ok || retvalAoc === AtsuStatusCodes.NoTelexConnection) {
+            retvalAoc = AtsuStatusCodes.Ok;
+        }
+
+        let retvalAtc = await AtcSystem.disconnect();
+        if (retvalAtc === AtsuStatusCodes.Ok || retvalAtc === AtsuStatusCodes.NoHoppieConnection) {
+            retvalAtc = AtsuStatusCodes.Ok;
+        }
+
+        if (retvalAoc !== AtsuStatusCodes.Ok) {
+            return retvalAoc;
+        }
+        return retvalAtc;
+    }
+
     public async sendMessage(message: AtsuMessage): Promise<AtsuStatusCodes> {
         let retval = AtsuStatusCodes.UnknownMessage;
 
