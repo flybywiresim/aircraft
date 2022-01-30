@@ -170,6 +170,7 @@ export class AtcSystem {
 
     public async logoff(): Promise<AtsuStatusCodes> {
         return this.logoffWithoutReset().then((error) => {
+            this.listener.triggerToAllSubscribers('A32NX_DCDU_ATC_LOGON_MSG', '');
             this.currentAtc = '';
             this.nextAtc = '';
             return error;
