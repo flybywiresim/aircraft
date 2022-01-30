@@ -128,6 +128,7 @@ class AutopilotLawsModelClass
     rtDW_WashoutFilter_AutopilotLaws_T sf_WashoutFilter_h;
     rtDW_LeadLagFilter_AutopilotLaws_T sf_LeadLagFilter_kp;
     rtDW_LeadLagFilter_AutopilotLaws_T sf_LeadLagFilter_e;
+    rtDW_WashoutFilter_AutopilotLaws_T sf_WashoutFilter_k;
     rtDW_WashoutFilter_AutopilotLaws_T sf_WashoutFilter_g;
     rtDW_LeadLagFilter_AutopilotLaws_T sf_LeadLagFilter_k;
     rtDW_LagFilter_AutopilotLaws_T sf_LagFilter_cs;
@@ -214,6 +215,7 @@ class AutopilotLawsModelClass
     real_T LowPassFilter_C1_d1;
     real_T LagFilter_C1_b;
     real_T LagFilter_C1_g;
+    real_T WashoutFilter1_C1_h;
     real_T LagFilter_C1_i;
     real_T HighPassFilter_C2;
     real_T LowPassFilter_C2;
@@ -396,6 +398,9 @@ class AutopilotLawsModelClass
     real_T Saturation1_UpperSat_a;
     real_T Saturation1_LowerSat_i;
     real_T Constant1_Value_h;
+    real_T Saturation_UpperSat_i;
+    real_T Saturation_LowerSat_o;
+    real_T Gain_Gain_j;
     real_T Gain3_Gain_l;
     real_T Constant_Value_p0;
     real_T Gain6_Gain_n;
@@ -474,7 +479,7 @@ class AutopilotLawsModelClass
     real_T Constant3_Value_hr;
     real_T Gain1_Gain_nr;
     real_T Saturation_UpperSat_o;
-    real_T Saturation_LowerSat_o;
+    real_T Saturation_LowerSat_o5;
     real_T Gain2_Gain_gs;
     real_T Saturation1_UpperSat_g;
     real_T Saturation1_LowerSat_k;
@@ -573,7 +578,7 @@ class AutopilotLawsModelClass
     real_T Gain1_Gain_kd;
     real_T fpmtoms_Gain_c;
     real_T kntoms_Gain_l;
-    real_T Saturation_UpperSat_i;
+    real_T Saturation_UpperSat_io;
     real_T Saturation_LowerSat_h;
     real_T Gain_Gain_bs;
     real_T Gain1_Gain_o4;
@@ -664,7 +669,7 @@ class AutopilotLawsModelClass
     real_T ktstomps_Gain_c;
     real_T ug_Gain_aa;
     real_T Gain1_Gain_gf;
-    real_T Gain_Gain_j;
+    real_T Gain_Gain_jm;
     real_T Constant4_Value_f;
     real_T Constant3_Value_h1;
     real_T Gain1_Gain_ov;

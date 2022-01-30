@@ -246,6 +246,8 @@ AutopilotLawsModelClass::Parameters_AutopilotLaws_T AutopilotLawsModelClass::Aut
 
   2.0,
 
+  6.0,
+
   2.0,
 
   0.0,
@@ -366,7 +368,7 @@ AutopilotLawsModelClass::Parameters_AutopilotLaws_T AutopilotLawsModelClass::Aut
 
   1.0,
 
-  1.0,
+  1.1,
 
   1.0,
 
@@ -616,6 +618,12 @@ AutopilotLawsModelClass::Parameters_AutopilotLaws_T AutopilotLawsModelClass::Aut
 
   0.0,
 
+  2.0,
+
+  -2.0,
+
+  0.5,
+
   -5.0,
 
   -4.0,
@@ -646,7 +654,7 @@ AutopilotLawsModelClass::Parameters_AutopilotLaws_T AutopilotLawsModelClass::Aut
 
   -50.0,
 
-  5.0,
+  4.0,
 
   0.0,
 
