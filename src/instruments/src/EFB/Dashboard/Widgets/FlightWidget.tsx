@@ -109,6 +109,7 @@ export const FlightWidget = () => {
         costInd,
         arrivingRunway,
         departingRunway,
+        aircraftReg,
     } = isInitialData ? simbriefValuePlaceholders : data;
     const { flightPlanProgress } = useAppSelector((state) => state.flightProgress);
 
@@ -156,7 +157,7 @@ export const FlightWidget = () => {
                             <p className="w-52 text-sm">{departingName}</p>
                         </div>
                         <div>
-                            <p className="text-right">A320-251N</p>
+                            <p className="text-right">{aircraftReg}</p>
                             <h1 className="text-4xl font-bold text-right">{arrivingAirport}</h1>
                             <p className="w-52 text-sm text-right">{arrivingName}</p>
                         </div>
