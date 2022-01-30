@@ -1,12 +1,12 @@
 //  Copyright (c) 2022 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
+import { HoppieConnector } from './com/HoppieConnector';
 import { AtsuStatusCodes } from './AtsuStatusCodes';
 import { AtsuMessageComStatus, AtsuMessage, AtsuMessageType, AtsuMessageDirection } from './messages/AtsuMessage';
 import { CpdlcMessageResponse, CpdlcMessageRequestedResponseType, CpdlcMessage } from './messages/CpdlcMessage';
 import { Datalink } from './com/Datalink';
 import { AtsuManager } from './AtsuManager';
-import { HoppieConnector } from '@atsu/com/HoppieConnector';
 
 export class AtcSystem {
     private parent: AtsuManager | undefined = undefined;
