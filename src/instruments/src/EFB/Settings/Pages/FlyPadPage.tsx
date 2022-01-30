@@ -7,6 +7,7 @@ import Slider from 'rc-slider';
 import { Toggle } from '../../UtilComponents/Form/Toggle';
 import { ButtonType, SettingItem, SettingsPage } from '../Settings';
 import { SelectGroup, SelectItem } from '../../UtilComponents/Form/Select';
+import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 
 export const FlyPadPage = () => {
     const [brightnessSetting, setBrightnessSetting] = usePersistentNumberProperty('EFB_BRIGHTNESS', 0);
@@ -43,11 +44,22 @@ export const FlyPadPage = () => {
     return (
         <SettingsPage name="flyPad">
             <SettingItem name="Brightness" disabled={!!usingAutobrightness}>
-                <Slider
-                    style={{ width: '16rem' }}
-                    value={usingAutobrightness ? brightness : brightnessSetting}
-                    onChange={(value) => setBrightnessSetting(value)}
-                />
+                <div className="flex flex-row gap-x-4 items-center">
+                    <Slider
+                        style={{ width: '24rem' }}
+                        value={usingAutobrightness ? brightness : brightnessSetting}
+                        onChange={setBrightnessSetting}
+                    />
+                    <SimpleInput
+                        min={1}
+                        max={100}
+                        value={usingAutobrightness ? brightness : brightnessSetting}
+                        className="w-20 text-center"
+                        onChange={(value) => setBrightnessSetting(parseInt(value))}
+                        decimalPrecision={0}
+                        number
+                    />
+                </div>
             </SettingItem>
 
             <SettingItem name="Auto Brightness">
