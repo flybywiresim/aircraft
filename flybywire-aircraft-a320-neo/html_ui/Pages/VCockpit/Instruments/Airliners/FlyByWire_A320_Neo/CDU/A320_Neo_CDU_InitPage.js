@@ -4,6 +4,7 @@ class CDUInitPage {
         mcdu.page.Current = mcdu.page.InitPageA;
         mcdu.pageRedrawCallback = () => CDUInitPage.ShowPage1(mcdu);
         mcdu.activeSystem = 'FMGC';
+        mcdu.coRoute.routes = [];
 
         let fromTo = "____|____[color]amber";
         let coRoute = mcdu.coRoute.routeNumber === undefined ? "__________[color]amber" : `${mcdu.coRoute.routeNumber}[color]cyan`;

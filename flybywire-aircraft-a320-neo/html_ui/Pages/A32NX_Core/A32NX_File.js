@@ -36,7 +36,7 @@ const getCoRoute = async (mcdu, coRoute, updateView) => {
         })
         .catch(_err => {
             console.error(_err);
-            mcdu.addNewMessage(NXFictionalMessages.noResponse);
+            mcdu.addNewMessage(NXSystemMessages.fmDataLinkUnavail);
             updateView();
             return false;
         });

@@ -51,10 +51,12 @@ const NXSystemMessages = {
     selectDesiredSystem:    new McduMessage("SELECT DESIRED SYSTEM", false, false),
     uplinkInsertInProg:     new McduMessage("UPLINK INSERT IN PROG", false, true),
     vToDisagree:            new McduMessage("V1/VR/V2 DISAGREE", true, true),
-    waitForSystemResponse:  new McduMessage("WAIT FOR SYSTEM RESPONSE", false, false)
+    waitForSystemResponse:  new McduMessage("WAIT FOR SYSTEM RESPONSE", false, false),
+    fmDataLinkUnavail:      new McduMessage("FM DATALINK UNAVAIL", false, false)
 };
 
 const NXFictionalMessages = {
+    crteActFplnUplink:      new McduMessage("CRTE ACT F-PLAN UPLINK", false, true),
     noSimBriefUser:         new McduMessage("NO SIMBRIEF USER", false, false),
     noAirportSpecified:     new McduMessage("NO AIRPORT SPECIFIED", false, false),
     fltNbrInUse:            new McduMessage("FLT NBR IN USE", false, false),
