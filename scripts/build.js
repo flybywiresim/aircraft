@@ -62,12 +62,12 @@ fs.writeFileSync(path.join(A32NX, 'layout.json'), JSON.stringify({
 
 const edition = require('../package.json').edition;
 
-let titlePostfix = '';
-if (edition == 'stable') {
+let titlePostfix;
+if (edition === 'stable') {
     titlePostfix = 'Stable';
-} else if (GIT_BRANCH == 'master') {
+} else if (GIT_BRANCH === 'master') {
     titlePostfix = 'Development';
-} else if (GIT_BRANCH == 'experimental') {
+} else if (GIT_BRANCH === 'experimental') {
     titlePostfix = 'Experimental';
 } else if (isPullRequest) {
     titlePostfix = `PR #${GIT_BRANCH}`;
