@@ -202,15 +202,13 @@ animation: pulsingS 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 
     .SlatsSmallWhite {
         stroke: $display-white;
-        stroke-width: 4px;
-        transform: scale(0.3);
-        transform-origin: center;
+        stroke-width: 2px;
         stroke-linejoin: bevel;
     }
 
-    .Slats {
+    .Slats, .Flaps {
         stroke: $display-green !important;
-        stroke-width: 2;
+        stroke-width: 2px;
         fill: none;
         stroke-linejoin: bevel !important;
     }
