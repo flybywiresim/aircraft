@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { IconPlane } from '@tabler/icons';
-import { FileEarmarkArrowDown } from 'react-bootstrap-icons';
+import { CloudArrowDown } from 'react-bootstrap-icons';
 import { usePersistentProperty } from '@instruments/common/persistence';
 import { toast } from 'react-toastify';
 import { useSimVarValue } from '@instruments/common/simVars';
@@ -244,7 +244,7 @@ export const FlightWidget = () => {
                     }}
                     className="flex justify-center items-center p-2 space-x-4 w-full rounded-lg border-2 shadow-lg focus:outline-none bg-theme-highlight border-theme-secondary"
                 >
-                    <FileEarmarkArrowDown size={26} />
+                    <CloudArrowDown size={26} />
                     <p>Import Flightplan from SimBrief</p>
                 </button>
             </div>
