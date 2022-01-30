@@ -45,12 +45,12 @@ export const ScrollableContainer: FC<ScrollableContainerProps> = ({ children, he
 
     return (
         <div
-            className={`w-full ${contentOverflows && 'overflow-y-scroll'} scrollbar`}
+            className={`w-full ${contentOverflows && 'overflow-y-scroll'} h-full scrollbar`}
             style={{ height: `${height}rem` }}
             ref={containerRef}
             onMouseDown={handleMouseDown}
         >
-            <div className={`${contentOverflows && 'mr-6'}`} ref={contentRef}>
+            <div className={`${contentOverflows && 'mr-6'} h-full`} ref={contentRef}>
                 {children}
             </div>
         </div>
