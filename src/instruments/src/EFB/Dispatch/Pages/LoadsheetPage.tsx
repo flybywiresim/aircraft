@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { usePersistentProperty } from '@instruments/common/persistence';
-import { FileEarmarkArrowDown, ZoomIn, ZoomOut } from 'react-bootstrap-icons';
+import { CloudArrowDown, ZoomIn, ZoomOut } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
 import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
 import { fetchSimbriefDataAction } from '../../Store/features/simBrief';
@@ -105,7 +105,7 @@ export const LoadSheetWidget = () => {
                         }}
                         className="flex justify-center items-center py-2 px-16 space-x-4 rounded-lg border-2 shadow-lg focus:outline-none bg-theme-highlight border-theme-secondary"
                     >
-                        <FileEarmarkArrowDown size={26} />
+                        <CloudArrowDown size={26} />
                         <p>Import Flightplan from SimBrief</p>
                     </button>
                 </div>
