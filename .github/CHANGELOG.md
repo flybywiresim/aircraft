@@ -131,6 +131,7 @@
 1. [FBW] Fix: do not compensate ground spoilers in C* law - @aguther (Andreas Guther)
 1. [AP] Fix: adjustment of vertical speed limitation in SPD/MACH law - @IbrahimK42 (IbrahimK42)
 1. [MISC] Animation speed/behaviors for button, switches and knobs - @bouveng (Johan Bouveng)
+1. [AP] Added Autoland capability for special terrain profiles, i.e. KSEA 16R - @aguther (Andreas Guther)
 
 ## 0.7.0
 
