@@ -58,7 +58,7 @@ export const AboutPage = () => {
                     <p>Licensed under the GNU General Public License Version 3</p>
                 </div>
 
-                <div className="mt-8">
+                <div className="mt-16">
                     <h1 className="font-bold">Build Info</h1>
                     <div className="mt-4">
                         <BuildInfoEntry title="Built" value={buildInfo?.built} />
