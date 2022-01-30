@@ -1,4 +1,4 @@
-import { ColorCode, MetarParserType, Visibility, Wind } from '../../Common/metarTypes';
+import { Cloud, ColorCode, ConditionCode, MetarParserType, Visibility, Wind } from '../../Common/metarTypes';
 
 /**
  * Convert METAR string into structured object.
@@ -28,6 +28,9 @@ export function parseMetar(metarString: string): MetarParserType {
         throw new Error('Not enough METAR information found');
     }
 
+    const condArray: [ConditionCode] = [] as unknown as [ConditionCode];
+    const cloudsArray: [Cloud] = [] as unknown as [Cloud];
+
     const metarObject: MetarParserType = {
         raw_text: metarString,
         raw_parts: metarArray,
@@ -50,12 +53,8 @@ export function parseMetar(metarString: string): MetarParserType {
             meters: '',
             meters_float: 0.0,
         },
-        conditions: [{ code: '' }],
-        clouds: [{
-            code: '',
-            base_feet_agl: 0,
-            base_meters_agl: 0,
-        }],
+        conditions: condArray,
+        clouds: cloudsArray,
         ceiling: {
             code: '',
             feet_agl: 0,
@@ -77,11 +76,6 @@ export function parseMetar(metarString: string): MetarParserType {
         },
         flight_category: '',
     };
-
-    // remove the empty initialed entries
-    // this should not be necessary - how to initialize an empty nested array of a specific type?
-    metarObject.conditions.pop();
-    metarObject.clouds.pop();
 
     const calcHumidity = (temp, dew) => Math.exp((17.625 * dew) / (243.04 + dew))
         / Math.exp((17.625 * temp) / (243.04 + temp));
