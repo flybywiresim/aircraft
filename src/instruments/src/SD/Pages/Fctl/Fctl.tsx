@@ -24,8 +24,14 @@ interface HydraulicSystemPairProps {
 export const FctlPage = () => {
     const fcdc1DiscreteWord1 = useArinc429Var('L:A32NX_FCDC_1_DISCRETE_WORD_1');
     const fcdc2DiscreteWord1 = useArinc429Var('L:A32NX_FCDC_2_DISCRETE_WORD_1');
+    const fcdc1DiscreteWord2 = useArinc429Var('L:A32NX_FCDC_1_DISCRETE_WORD_2');
+    const fcdc2DiscreteWord2 = useArinc429Var('L:A32NX_FCDC_2_DISCRETE_WORD_2');
+    const fcdc1DiscreteWord3 = useArinc429Var('L:A32NX_FCDC_1_DISCRETE_WORD_3');
+    const fcdc2DiscreteWord3 = useArinc429Var('L:A32NX_FCDC_2_DISCRETE_WORD_3');
 
     const fcdcDiscreteWord1ToUse = !fcdc1DiscreteWord1.isFailureWarning() ? fcdc1DiscreteWord1 : fcdc2DiscreteWord1;
+    const fcdcDiscreteWord2ToUse = !fcdc1DiscreteWord2.isFailureWarning() ? fcdc1DiscreteWord2 : fcdc2DiscreteWord2;
+    const fcdcDiscreteWord3ToUse = !fcdc1DiscreteWord3.isFailureWarning() ? fcdc1DiscreteWord3 : fcdc2DiscreteWord3;
 
     return (
         <EcamPage name="ecam-fctl">
@@ -49,7 +55,7 @@ export const FctlPage = () => {
                 <Elevator x={168} y={328} side="left" leftHydraulicSystem="B" rightHydraulicSystem="G" />
                 <Elevator x={432} y={328} side="right" leftHydraulicSystem="Y" rightHydraulicSystem="B" />
 
-                <PitchTrim x={280} y={283} />
+                <PitchTrim x={280} y={283} fcdcDiscreteWord2={fcdcDiscreteWord2ToUse} />
 
                 <Stabilizer x={268} y={357} />
 
@@ -79,17 +85,31 @@ const Wings = ({ x = 0, y = 0 }: ComponentPositionProps) => (
     </SvgGroup>
 );
 
-const PitchTrim = ({ x, y }: ComponentPositionProps) => {
-    const [rawPitchTrim] = useSimVar('ELEVATOR TRIM INDICATOR', 'Position 16k', 50);
+interface PitchTrimProps extends ComponentPositionProps {
+    fcdcDiscreteWord2: Arinc429Word,
+}
+const PitchTrim = ({ x, y, fcdcDiscreteWord2 }: PitchTrimProps) => {
+    const fcdc1ThsPosition = useArinc429Var('L:A32NX_FCDC_1_THS_POSITION');
+    const fcdc2ThsPosition = useArinc429Var('L:A32NX_FCDC_2_THS_POSITION');
+    const thsPositionToUse = !fcdc1ThsPosition.isFailureWarning() ? fcdc1ThsPosition : fcdc2ThsPosition;
 
-    const adjustedPitchTrim = rawPitchTrim / 1213.6296;
-    const [pitchIntegral, pitchFractional] = Math.abs(adjustedPitchTrim).toFixed(1).split('.');
+    let pitchIntegral: string;
+    let pitchFractional: string;
+    if (thsPositionToUse.isNormalOperation()) {
+        [pitchIntegral, pitchFractional] = Math.abs(thsPositionToUse.value).toFixed(1).split('.');
+    } else {
+        pitchIntegral = 'XX';
+        pitchFractional = 'X';
+    }
 
     const hydraulics = useHydraulics();
-    const hydraulicAvailableClass = hydraulics.G.available || hydraulics.Y.available ? 'Value' : 'Warning';
+    const hydraulicAvailableClass = (hydraulics.G.available || hydraulics.Y.available) && thsPositionToUse.isNormalOperation() ? 'Value' : 'Warning';
+
+    const thsJam = fcdcDiscreteWord2.getBitValueOr(27, false);
 
     return (
         <SvgGroup x={x} y={y}>
+            {/* Should be amber if there is a THS jam */}
             <Note x={0} y={13}>PITCH TRIM</Note>
             <text x={1} y={35} className={`${hydraulicAvailableClass} Standard`} textAnchor="end" alignmentBaseline="central">{pitchIntegral}</text>
             <text x={5} y={35} className={`${hydraulicAvailableClass} Standard`} textAnchor="middle" alignmentBaseline="central">.</text>
@@ -98,12 +118,12 @@ const PitchTrim = ({ x, y }: ComponentPositionProps) => {
             <text
                 x={48}
                 y={37}
-                visibility={Math.abs(adjustedPitchTrim) > 0.05 ? 'visible' : 'hidden'}
+                visibility={Math.abs(thsPositionToUse.valueOr(0)) > 0.05 ? 'visible' : 'hidden'}
                 className={`${hydraulicAvailableClass} Small`}
                 textAnchor="middle"
                 alignmentBaseline="central"
             >
-                {Math.sign(adjustedPitchTrim) === -1 ? 'DN' : 'UP'}
+                {Math.sign(thsPositionToUse.valueOr(0)) === -1 ? 'DN' : 'UP'}
             </text>
 
             <HydraulicIndicator x={80} y={0} type="G" />
