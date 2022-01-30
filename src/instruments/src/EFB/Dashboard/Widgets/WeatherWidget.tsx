@@ -1,75 +1,56 @@
-import React, { useEffect, useState } from 'react';
+import React, { FC, useEffect, useState } from 'react';
 import { Metar } from '@flybywiresim/api-client';
 import { IconCloud, IconDroplet, IconGauge, IconPoint, IconTemperature, IconWind } from '@tabler/icons';
-import { MetarParserType, Wind } from '@instruments/common/metarTypes';
+import { MetarParserType } from '@instruments/common/metarTypes';
 import { usePersistentProperty } from '@instruments/common/persistence';
 import { parseMetar, getColoredMetar } from '../../Utils/parseMetar';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { useAppDispatch } from '../../Store/store';
 import { setUserDepartureIcao, setUserDestinationIcao } from '../../Store/features/dashboard';
 
-const MetarParserTypeWindState: Wind = {
-    degrees: 0,
-    degrees_from: 0,
-    degrees_to: 0,
-    speed_kts: 0,
-    speed_mps: 0,
-    gust_kts: 0,
-    gust_mps: 0,
-};
-
-const VisibilityType = {
-    miles: '',
-    miles_float: 0.0,
-    meters: '',
-    meters_float: 0.0,
-};
-
-const conditionCode = { code: '' };
-
-const cloud = {
-    code: '',
-    base_feet_agl: 0,
-    base_meters_agl: 0,
-};
-
-const ceiling = {
-    code: '',
-    feet_agl: 0,
-    meters_agl: 0,
-};
-
-const temperature = {
-    celsius: 0,
-    fahrenheit: 0,
-};
-
-const dewpoint = {
-    celsius: 0,
-    fahrenheit: 0,
-};
-
-const barometer = {
-    hg: 0,
-    kpa: 0,
-    mb: 0,
-};
-
 const MetarParserTypeProp: MetarParserType = {
     raw_text: '',
-    raw_parts: [''],
+    raw_parts: [],
     color_codes: [],
+
     icao: '',
     observed: new Date(0),
-    wind: MetarParserTypeWindState,
-    visibility: VisibilityType,
+    wind: {
+        degrees: 0,
+        degrees_from: 0,
+        degrees_to: 0,
+        speed_kts: 0,
+        speed_mps: 0,
+        gust_kts: 0,
+        gust_mps: 0,
+    },
+    visibility: {
+        miles: '',
+        miles_float: 0.0,
+        meters: '',
+        meters_float: 0.0,
+    },
     conditions: [],
     clouds: [],
-    ceiling,
-    temperature,
-    dewpoint,
+    ceiling: {
+        code: '',
+        feet_agl: 0,
+        meters_agl: 0,
+    },
+    temperature: {
+        celsius: 0,
+        fahrenheit: 0,
+    },
+    dewpoint: {
+        celsius: 0,
+        fahrenheit: 0,
+    },
     humidity_percent: 0,
-    barometer,
+    barometer: {
+        hg: 0,
+        kpa: 0,
+        mb: 0,
+    },
     flight_category: '',
 };
 
@@ -273,7 +254,7 @@ export const WeatherWidget:FC<WeatherWidgetProps> = ({ name, simbriefIcao, userI
                             )
                             : (
                                 <>
-                                    <div className="font-mono scrollbar text-left ml-8 mr-4 h-40 text-xl">
+                                    <div className="mr-4 ml-8 h-40 font-mono text-xl text-left scrollbar">
                                         {metar.raw_text
                                             ? (
                                                 <>
