@@ -7,7 +7,7 @@ import { Battery, BatteryCharging } from 'react-bootstrap-icons';
 import { ToastContainer, toast } from 'react-toastify';
 import { usePersistentNumberProperty, usePersistentProperty } from '@instruments/common/persistence';
 import { distanceTo } from 'msfs-geo';
-import { ModalContainer, ModalProvider } from './UtilComponents/Modals/Modals';
+import { AlertModal, ModalContainer, useModals } from './UtilComponents/Modals/Modals';
 import NavigraphClient, { NavigraphContext } from './ChartsApi/Navigraph';
 import 'react-toastify/dist/ReactToastify.css';
 import './toast.css';
@@ -96,12 +96,14 @@ const Efb = () => {
     const [dc2BusIsPowered] = useSimVar('L:A32NX_ELEC_DC_2_BUS_IS_POWERED', 'bool');
     const [batteryLevel, setBatteryLevel] = useState<BatteryStatus>({ level: 100, lastChangeTimestamp: absoluteTime, isCharging: dc2BusIsPowered });
 
-    const lat = useSimVarValue('PLANE LATITUDE', 'degree latitude', 2000);
-    const long = useSimVarValue('PLANE LONGITUDE', 'degree longitude', 2000);
+    const lat = useSimVarValue('PLANE LATITUDE', 'degree latitude', 4000);
+    const long = useSimVarValue('PLANE LONGITUDE', 'degree longitude', 4000);
 
     const { arrivingPosLat, arrivingPosLong, departingPosLat, departingPosLong } = useAppSelector((state) => state.simbrief.data);
 
     const [theme] = usePersistentProperty('EFB_UI_THEME', 'blue');
+
+    const modals = useModals();
 
     useEffect(() => {
         document.documentElement.classList.add(`theme-${theme}`);
@@ -133,6 +135,15 @@ const Efb = () => {
             if (level < 0) level = 0;
             const lastChangeTimestamp = absoluteTime;
             const isCharging = oldLevel.isCharging;
+
+            if (oldLevel.level > 20 && level <= 20) {
+                modals.showModal(
+                    <AlertModal
+                        title="Battery Low"
+                        bodyText="The battery is low. Please charge the battery."
+                    />,
+                );
+            }
 
             return { level, lastChangeTimestamp, isCharging };
         });
@@ -222,40 +233,38 @@ const Efb = () => {
     case PowerStates.LOADED:
         return (
             <NavigraphContext.Provider value={navigraph}>
-                <ModalProvider>
-                    <ModalContainer />
-                    <PowerContext.Provider value={{ powerState, setPowerState }}>
-                        <div className="bg-theme-body">
-                            <ToastContainer
-                                position="top-center"
-                                draggableDirection="y"
-                                limit={2}
-                            />
-                            <StatusBar
-                                batteryLevel={batteryLevel.level}
-                                isCharging={dc2BusIsPowered === 1}
-                            />
-                            <div className="flex flex-row">
-                                <ToolBar />
-                                <div className="pt-14 pr-6 w-screen h-screen text-gray-700">
-                                    <Switch>
-                                        <Route exact path="/">
-                                            <Redirect to="/dashboard" />
-                                        </Route>
-                                        <Route path="/dashboard" component={Dashboard} />
-                                        <Route path="/dispatch" component={Dispatch} />
-                                        <Route path="/ground" component={Ground} />
-                                        <Route path="/performance" component={Performance} />
-                                        <Route path="/navigation" component={Navigation} />
-                                        <Route path="/atc" component={ATC} />
-                                        <Route path="/failures" component={Failures} />
-                                        <Route path="/settings" component={Settings} />
-                                    </Switch>
-                                </div>
+                <ModalContainer />
+                <PowerContext.Provider value={{ powerState, setPowerState }}>
+                    <div className="bg-theme-body">
+                        <ToastContainer
+                            position="top-center"
+                            draggableDirection="y"
+                            limit={2}
+                        />
+                        <StatusBar
+                            batteryLevel={batteryLevel.level}
+                            isCharging={dc2BusIsPowered === 1}
+                        />
+                        <div className="flex flex-row">
+                            <ToolBar />
+                            <div className="pt-14 pr-6 w-screen h-screen text-gray-700">
+                                <Switch>
+                                    <Route exact path="/">
+                                        <Redirect to="/dashboard" />
+                                    </Route>
+                                    <Route path="/dashboard" component={Dashboard} />
+                                    <Route path="/dispatch" component={Dispatch} />
+                                    <Route path="/ground" component={Ground} />
+                                    <Route path="/performance" component={Performance} />
+                                    <Route path="/navigation" component={Navigation} />
+                                    <Route path="/atc" component={ATC} />
+                                    <Route path="/failures" component={Failures} />
+                                    <Route path="/settings" component={Settings} />
+                                </Switch>
                             </div>
                         </div>
-                    </PowerContext.Provider>
-                </ModalProvider>
+                    </div>
+                </PowerContext.Provider>
             </NavigraphContext.Provider>
         );
     default:
