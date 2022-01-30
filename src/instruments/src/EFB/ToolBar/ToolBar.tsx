@@ -1,5 +1,5 @@
 import React, { FC } from 'react';
-import { HouseDoor, Clipboard, Truck, Compass, BroadcastPin, ExclamationDiamond, Gear, Calculator } from 'react-bootstrap-icons';
+import { Clipboard, Truck, Compass, BroadcastPin, ExclamationDiamond, Gear, Calculator } from 'react-bootstrap-icons';
 import { Link, useHistory } from 'react-router-dom';
 import { FbwLogo } from '../UtilComponents/FbwLogo';
 
@@ -7,8 +7,7 @@ export const ToolBar = () => (
     <nav className="flex overflow-hidden flex-col flex-shrink-0 justify-between w-32">
         <div className="flex flex-col items-center mt-11">
             <ToolBarButton to="/dashboard">
-                {/* <HouseDoor size={35} /> */}
-                <FbwLogo width={40} height={40} className="" />
+                <FbwLogo width={40} height={40} />
             </ToolBarButton>
             <ToolBarButton to="/dispatch">
                 <Clipboard size={35} />
@@ -31,7 +30,7 @@ export const ToolBar = () => (
         </div>
 
         <div className="flex flex-col items-center mb-6">
-            <div className="w-14 h-1.5 bg-theme-accent rounded-full" />
+            <div className="w-14 h-1.5 rounded-full bg-theme-accent" />
             <ToolBarButton to="/settings">
                 <Gear color="currentColor" size={35} />
             </ToolBarButton>
