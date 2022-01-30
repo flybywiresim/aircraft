@@ -351,7 +351,7 @@ type PackComponentType = {
 
 const PackComponent: FC<PackComponentType> = ({ id, x, y }) => {
     const [engN2] = useSimVar(`L:A32NX_ENGINE_N2:${id}`, 'number', 500);
-    const [packOff] = useSimVar(`L:A32NX_AIRCOND_PACK${id}_TOGGLE`, 'bool', 500);
+    const [packOff] = useSimVar(`L:A32NX_COND_PACK_FLOW_VALVE_${id}_IS_OPEN`, 'bool', 500);
     const triangleColour = !packOff && engN2 >= 60 ? 'Amber' : 'Green';
     const packWordColour = !packOff && engN2 >= 60 ? 'Amber' : 'White';
 
