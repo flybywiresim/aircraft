@@ -18,8 +18,6 @@ export const ModalProvider: FC = ({ children }) => {
     };
 
     const showModal = (modal: JSX.Element) => {
-        console.log('showModal', modal);
-
         setModal(modal);
     };
 
