@@ -1,4 +1,4 @@
-import { ColorCode, MetarParserType } from '../../Common/metarTypes';
+import { ColorCode, MetarParserType, Wind } from '../../Common/metarTypes';
 
 /**
  * Convert METAR string into structured object.
@@ -83,27 +83,42 @@ export function parseMetar(metarString: string): MetarParserType {
 
     const round = (value, toNext = 500) => Math.round(value / toNext) * toNext;
 
-    let mode = 0;
+    enum Mode {
+        ICAO,
+        DATE,
+        WIND,
+        VISIBILITY,
+        COND,
+        CLOUD,
+        TEMP,
+        PRESS,
+        TREND,
+        RMK,
+        MISC,
+    }
+
+    let mode = Mode.ICAO;
+    let trendMode = false;
     let index = 0;
     metarArray.forEach((metarPart) => {
         let match;
-        if (mode < 3 && metarPart.match(/^(\d+)(?:\/(\d+))?(SM)?$/)) {
-            mode = 3; // no wind reported
+        if (mode < Mode.VISIBILITY && metarPart.match(/^(\d+)(?:\/(\d+))?(SM)?$/)) {
+            mode = Mode.VISIBILITY; // no wind reported
         }
-        if (mode < 5 && metarPart.match(/^(FEW|SCT|BKN|OVC|VV)(\d+)?/)) {
-            mode = 5; // no visibility / conditions reported
+        if (mode < Mode.CLOUD && metarPart.match(/^(FEW|SCT|BKN|OVC|VV)(\d+)?/)) {
+            mode = Mode.CLOUD; // no visibility / conditions reported
         }
-        if (mode < 6 && metarPart.match(/^M?\d+\/M?\d+$/)) {
-            mode = 6; // end of clouds
+        if (mode < Mode.TEMP && metarPart.match(/^M?\d+\/M?\d+$/)) {
+            mode = Mode.TEMP; // end of clouds
         }
         switch (mode) {
-        case 0:
+        case Mode.ICAO:
             // ICAO Code
             metarObject.icao = metarPart;
             metarObject.color_codes[index] = ColorCode.Highlight;
-            mode = 1;
+            mode = Mode.DATE;
             break;
-        case 1:
+        case Mode.DATE:
             // Observed Date
             match = metarPart.match(/^(\d\d)(\d\d)(\d\d)Z$/);
             if (match) {
@@ -111,10 +126,10 @@ export function parseMetar(metarString: string): MetarParserType {
                 metarObject.observed.setUTCDate(Number(match[1]));
                 metarObject.observed.setUTCHours(Number(match[2]));
                 metarObject.observed.setUTCMinutes(Number(match[3]));
-                mode = 2;
+                mode = Mode.WIND;
             }
             break;
-        case 2:
+        case Mode.WIND:
             // Wind
             match = metarPart.match(/^(\d\d\d|VRB)P?(\d+)(?:G(\d+))?(KT|MPS|KPH)/);
             if (match) {
@@ -142,7 +157,7 @@ export function parseMetar(metarString: string): MetarParserType {
                 mode = 3;
             }
             break;
-        case 3:
+        case Mode.VISIBILITY:
             // Visibility
             match = metarPart.match(/^(\d+)(?:\/(\d+))?(SM)?$/);
             if (match) {
@@ -160,7 +175,7 @@ export function parseMetar(metarString: string): MetarParserType {
                 } else if (metarObject.visibility.meters_float < 5000.0) {
                     metarObject.color_codes[index] = ColorCode.Caution;
                 }
-                mode = 4;
+                mode = Mode.COND;
             } else if (metarPart === 'CAVOK' || metarPart === 'CLR') {
                 metarObject.visibility = {
                     miles: '10',
@@ -168,7 +183,7 @@ export function parseMetar(metarString: string): MetarParserType {
                     meters: convert.milesToMeters(10).toString(),
                     meters_float: convert.milesToMeters(10),
                 };
-                mode = 5; // no clouds & conditions reported
+                mode = Mode.CLOUD; // no clouds & conditions reported
             } else if (metarObject.wind) {
                 // Variable wind direction
                 match = metarPart.match(/^(\d+)V(\d+)$/);
@@ -178,7 +193,7 @@ export function parseMetar(metarString: string): MetarParserType {
                 }
             }
             break;
-        case 4:
+        case Mode.COND:
             // Conditions
             // remove the empty initialed entry
             if (metarObject.conditions.length === 1 && metarObject.conditions[0].code === '') {
@@ -209,7 +224,7 @@ export function parseMetar(metarString: string): MetarParserType {
                 }
             }
             break;
-        case 5:
+        case Mode.CLOUD:
             // Clouds
             // remove the empty initialed entry
             if (metarObject.clouds.length === 1 && metarObject.clouds[0].code === '') {
@@ -232,7 +247,7 @@ export function parseMetar(metarString: string): MetarParserType {
                 }
             }
             break;
-        case 6:
+        case Mode.TEMP:
             // Temperature
             match = metarPart.match(/^(M?\d+)\/(M?\d+)$/);
             if (match) {
@@ -252,10 +267,10 @@ export function parseMetar(metarString: string): MetarParserType {
                 } else if (metarObject.temperature.celsius < 8) {
                     metarObject.color_codes[index] = ColorCode.Caution;
                 }
-                mode = 7;
+                mode = Mode.PRESS;
             }
             break;
-        case 7:
+        case Mode.PRESS:
             // Pressure
             match = metarPart.match(/^(Q|A)(\d+)/);
             if (match) {
@@ -266,7 +281,29 @@ export function parseMetar(metarString: string): MetarParserType {
                     kpa: (match[1] === 'Q') ? match[2] : convert.inhgToKpa(match[2]),
                     mb: (match[1] === 'Q') ? match[2] * 10 : convert.inhgToKpa(match[2] * 10),
                 };
-                mode = 8;
+                mode = Mode.TREND;
+            }
+            break;
+        case Mode.TREND:
+            // TREND
+            match = metarPart.match(/^(RMK|NOISG|BECMG|TEMPO)(.*)/);
+            if (match) {
+                switch (match[1]) {
+                case 'TEMPO':
+                    metarObject.color_codes[index] = ColorCode.Warning;
+                    trendMode = true;
+                    mode = Mode.WIND;
+                    break;
+                case 'BECMG':
+                    metarObject.color_codes[index] = ColorCode.Caution;
+                    break;
+                case 'RMK':
+                    metarObject.color_codes[index] = ColorCode.Info;
+                    mode = Mode.RMK;
+                    break;
+                default:
+                    break;
+                }
             }
             break;
         default:
@@ -334,7 +371,7 @@ export function getColoredMetar(metar: MetarParserType): string {
     metar.raw_parts.forEach((metarPart, index) => {
         switch (metar.color_codes[index]) {
         case ColorCode.Highlight:
-            coloredMetar += `<span class='text-theme-highlight'>${metar.raw_parts[index]}</span> `;
+            coloredMetar += `<span class='text-teal-regular'>${metar.raw_parts[index]}</span> `;
             break;
         case ColorCode.Info:
             coloredMetar += `<span class='text-gray-500'>${metar.raw_parts[index]}</span> `;
