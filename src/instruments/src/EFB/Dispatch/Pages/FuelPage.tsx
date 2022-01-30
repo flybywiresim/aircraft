@@ -1,9 +1,12 @@
 import React from 'react';
 import { round } from 'lodash';
-import { PlayFill, StopCircleFill } from 'react-bootstrap-icons';
+import { CloudArrowDown, PlayFill, StopCircleFill } from 'react-bootstrap-icons';
 import { useSimVar } from '@instruments/common/simVars';
 import { usePersistentProperty } from '@instruments/common/persistence';
 import Slider from 'rc-slider';
+import { Units } from '@shared/units';
+import { initialState } from '../../Store/features/simBrief';
+import { useAppSelector } from '../../Store/store';
 import { SelectGroup, SelectItem } from '../../UtilComponents/Form/Select';
 import { ProgressBar } from '../../UtilComponents/Progress/Progress';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
@@ -50,21 +53,11 @@ export const FuelPage = () => {
     const CENTER_TANK_GALLONS = 2179;
     const wingTotalRefuelTimeSeconds = 1020;
     const CenterTotalRefuelTimeSeconds = 180;
-    const [usingMetric] = usePersistentProperty('CONFIG_USING_METRIC_UNIT', '1');
+    const usingMetric = Units.usingMetric;
 
-    const currentUnit = () => {
-        if (usingMetric === '1') {
-            return 'KG';
-        }
-        return 'LB';
-    };
+    const currentUnit = () => (usingMetric ? 'KG' : 'LB');
 
-    const convertUnit = () => {
-        if (usingMetric === '1') {
-            return 1;
-        }
-        return 2.204617615;
-    };
+    const convertUnit = () => (usingMetric ? 1 : 2.204617615);
 
     const [galToKg] = useSimVar('FUEL WEIGHT PER GALLON', 'kilograms', 1_000);
     const outerCell = () => OUTER_CELL_GALLONS * galToKg * convertUnit();
@@ -94,6 +87,10 @@ export const FuelPage = () => {
     const [LOutCurrent] = useSimVar('FUEL TANK LEFT AUX QUANTITY', 'Gallons', 1_000);
     const [RInnCurrent] = useSimVar('FUEL TANK RIGHT MAIN QUANTITY', 'Gallons', 1_000);
     const [ROutCurrent] = useSimVar('FUEL TANK RIGHT AUX QUANTITY', 'Gallons', 1_000);
+
+    const { units } = useAppSelector((state) => state.simbrief.data);
+    const { planRamp } = useAppSelector((state) => state.simbrief.data.fuels);
+    const isInitialData = useAppSelector((state) => state.simbrief === initialState);
 
     const isAirplaneCnD = () => {
         if (simGroundSpeed > 0.1 || eng1Running || eng2Running || !isOnGround || (!busDC2 && !busDCHot1)) {
@@ -197,7 +194,7 @@ export const FuelPage = () => {
         setCenterTarget(fuel);
     };
 
-    const updateDesiredFuel = (value:string) => {
+    const updateDesiredFuel = (value: string) => {
         let fuel = 0;
         let originalFuel = 0;
         if (value.length > 0) {
@@ -248,6 +245,24 @@ export const FuelPage = () => {
         if (airplaneCanRefuel()) {
             setRefuelStartedByUser(!refuelStartedByUser);
         }
+    };
+
+    const handleFuelAutoFill = () => {
+        let fuelToLoad = -1;
+
+        if (usingMetric) {
+            if (units === 'kgs') {
+                fuelToLoad = planRamp;
+            } else {
+                fuelToLoad = Units.poundToKilogram(planRamp);
+            }
+        } else if (units === 'kgs') {
+            fuelToLoad = Units.kilogramToPound(planRamp);
+        } else {
+            fuelToLoad = planRamp;
+        }
+
+        updateDesiredFuel(fuelToLoad.toString());
     };
 
     return (
@@ -381,19 +396,27 @@ export const FuelPage = () => {
                                 value={sliderValue}
                                 onChange={updateSlider}
                             />
-                            <div className="relative">
-                                <SimpleInput
-                                    className="w-32"
-                                    noLeftMargin
-                                    noLabel
-                                    placeholder={round(totalFuel()).toString()}
-                                    number
-                                    min={0}
-                                    max={round(totalFuel())}
-                                    value={inputValue}
-                                    onChange={(x) => updateDesiredFuel(x)}
-                                />
-                                <div className="absolute top-2 right-4 text-lg text-gray-400">{currentUnit()}</div>
+                            <div className="flex flex-row">
+                                <div className="relative">
+                                    <SimpleInput
+                                        className="w-32 rounded-r-none"
+                                        noLeftMargin
+                                        noLabel
+                                        placeholder={round(totalFuel()).toString()}
+                                        number
+                                        min={0}
+                                        max={round(totalFuel())}
+                                        value={inputValue}
+                                        onChange={(x) => updateDesiredFuel(x)}
+                                    />
+                                    <div className="absolute top-2 right-4 text-lg text-gray-400">{currentUnit()}</div>
+                                </div>
+                                <div
+                                    className={`${isInitialData ? 'opacity-80' : 'opacity-100'} flex justify-center items-center px-2 rounded-md rounded-l-none bg-theme-highlight`}
+                                    onClick={isInitialData ? undefined : handleFuelAutoFill}
+                                >
+                                    <CloudArrowDown size={26} />
+                                </div>
                             </div>
                         </div>
                     </div>
