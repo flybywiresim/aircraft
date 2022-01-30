@@ -40,8 +40,8 @@ export const FctlPage = () => {
             <HydraulicsProvider>
                 <Wings x={98} y={14} />
 
-                <Aileron x={72} y={153} side="left" leftHydraulicSystem="B" rightHydraulicSystem="G" />
-                <Aileron x={528} y={153} side="right" leftHydraulicSystem="G" rightHydraulicSystem="B" />
+                <Aileron x={72} y={153} side="left" leftHydraulicSystem="B" rightHydraulicSystem="G" fcdcDiscreteWord3={fcdcDiscreteWord3ToUse} />
+                <Aileron x={528} y={153} side="right" leftHydraulicSystem="G" rightHydraulicSystem="B" fcdcDiscreteWord3={fcdcDiscreteWord3ToUse} />
 
                 <Note x={195} y={178}>ELAC</Note>
                 <Elac x={170} y={190} num={1} fcdcDiscreteWord1={fcdcDiscreteWord1ToUse} />
@@ -193,27 +193,57 @@ const Stabilizer = ({ x, y }: ComponentPositionProps) => (
     </SvgGroup>
 );
 
-const Aileron = ({ x, y, side, leftHydraulicSystem, rightHydraulicSystem }: ComponentPositionProps & ComponentSidePositionProps & HydraulicSystemPairProps) => {
-    const textPositionX = side === 'left' ? -40 : 40;
-
-    const [aileronDeflection] = useSimVar(`L:A32NX_HYD_AILERON_${side.toUpperCase()}_DEFLECTION`, 'number', 50);
-    const aileronDeflectPctNormalized = aileronDeflection * 54;
-    const cursorPath = `M${side === 'left' ? 1 : -1} ${side === 'left' ? 51 + aileronDeflectPctNormalized
-        : 51 - aileronDeflectPctNormalized} l${side === 'right' ? '-' : ''}15 -7 l0 14Z`;
+interface AileronProps {
+    fcdcDiscreteWord3: Arinc429Word,
+}
+const Aileron = ({
+    x,
+    y,
+    side,
+    leftHydraulicSystem,
+    rightHydraulicSystem,
+    fcdcDiscreteWord3,
+}: ComponentPositionProps & ComponentSidePositionProps & HydraulicSystemPairProps & AileronProps) => {
+    const titleTextPositionX = side === 'left' ? -40 : 40;
 
     const hydraulics = useHydraulics();
 
+    const fcdc1AileronDeflection = useArinc429Var(`L:A32NX_FCDC_1_AILERON_${side.charAt(0)}_POS`);
+    const fcdc2AileronDeflection = useArinc429Var(`L:A32NX_FCDC_2_AILERON_${side.charAt(0)}_POS`);
+    const aileronDeflection = !fcdc1AileronDeflection.isFailureWarning() ? fcdc1AileronDeflection : fcdc2AileronDeflection;
+
+    const aileronDeflectPctNormalized = aileronDeflection.valueOr(0) * 54;
+    const cursorPath = `M${side === 'left' ? 1 : -1} ${side === 'left' ? 51
+        : 51} l${side === 'right' ? '-' : ''}15 -7 l0 14Z`;
+    const cursorClassName = hydraulics[leftHydraulicSystem].available || hydraulics[rightHydraulicSystem].available ? 'GreenShape' : 'WarningShape';
+    const aileronPositionValid = aileronDeflection.isNormalOperation();
+
+    const servcontrol1Fault = fcdcDiscreteWord3.getBitValueOr(side === 'left' ? 11 : 13, false);
+    const servcontrol2Fault = fcdcDiscreteWord3.getBitValueOr(side === 'left' ? 12 : 14, false);
+
     return (
         <SvgGroup x={x} y={y}>
-            <Note x={textPositionX} y={0}>{side === 'left' ? 'L' : 'R'}</Note>
-            <Note x={textPositionX} y={22}>AIL</Note>
-
-            <path className={hydraulics[leftHydraulicSystem].available || hydraulics[rightHydraulicSystem].available ? 'GreenShape' : 'WarningShape'} d={cursorPath} />
+            <Note x={titleTextPositionX} y={0}>{side === 'left' ? 'L' : 'R'}</Note>
+            <Note x={titleTextPositionX} y={22}>AIL</Note>
+            <SvgGroup x={0} y={aileronDeflectPctNormalized}>
+                <path className={cursorClassName} visibility={aileronPositionValid ? 'visible' : 'hidden'} d={cursorPath} />
+            </SvgGroup>
+            <text
+                x={side === 'left' ? 20 : -20}
+                y={56}
+                visibility={!aileronPositionValid ? 'visible' : 'hidden'}
+                className="ValueWarning Standard"
+                textAnchor="middle"
+            >
+                XX
+            </text>
 
             <AileronAxis side={side} x={0} y={11} />
 
             <HydraulicIndicator x={side === 'left' ? 22 : -62} y={93} type={leftHydraulicSystem} />
+            <ServoControlIndicator x={side === 'left' ? 22 : -62} y={93} servoFailed={servcontrol1Fault} />
             <HydraulicIndicator x={side === 'left' ? 44 : -40} y={93} type={rightHydraulicSystem} />
+            <ServoControlIndicator x={side === 'left' ? 44 : -40} y={93} servoFailed={servcontrol2Fault} />
         </SvgGroup>
     );
 };
@@ -313,6 +343,15 @@ const ElevatorAxis = ({ x, y, side }: ComponentPositionProps & ComponentSidePosi
         </SvgGroup>
     );
 };
+
+interface ServoControlIndicatorProps extends ComponentPositionProps {
+    servoFailed: boolean,
+}
+const ServoControlIndicator = ({ x, y, servoFailed }: ServoControlIndicatorProps) => (
+    <SvgGroup x={x} y={y}>
+        <path visibility={servoFailed ? 'visible' : 'hidden'} className="WarningShape" d="m 0 27 l 17 0 l 0 -30 l -17 0" />
+    </SvgGroup>
+);
 
 const Note: React.FunctionComponent<ComponentPositionProps> = ({ x, y, children }) => (
     <text x={x} y={y} className="Note" textAnchor="middle" alignmentBaseline="central">{children}</text>
