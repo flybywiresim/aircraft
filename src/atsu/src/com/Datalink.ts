@@ -25,8 +25,11 @@ export class Datalink {
 
     private enqueueReceivedMessages(parent: AtsuManager, messages: AtsuMessage[]): void {
         messages.forEach((message) => {
-            this.estimateTransmissionTime();
-            setTimeout(() => parent.registerMessage(message), this.overallDelay);
+            // ignore empty messages (happens sometimes in CPDLC with buggy ATC software)
+            if (message.Message.length !== 0) {
+                this.estimateTransmissionTime();
+                setTimeout(() => parent.registerMessage(message), this.overallDelay);
+            }
         });
     }
 
