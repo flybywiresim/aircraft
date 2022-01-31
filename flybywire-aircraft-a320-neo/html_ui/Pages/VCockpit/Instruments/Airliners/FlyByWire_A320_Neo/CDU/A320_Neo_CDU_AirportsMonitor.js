@@ -136,7 +136,7 @@ class CDUAirportsMonitor {
                 this.user_ap_line = [
                     `${this.user_ap.infos.ident}[color]green`,
                     `${this.eta5}[color]green`,
-                    `${this.brng5.toString().padStart(3, "0")}°_${this.dist5.toString().padStart(5, "\xa0")}[color]green`
+                    `${this.brng5.toString().padStart(3, "0")}° ${this.dist5.toString().padStart(5, "\xa0")}[color]green`
                 ];
             }
         }
