@@ -652,9 +652,8 @@ void AutothrustModelClass::step()
     rtb_Switch_d = Autothrust_U.in.data.V_gnd_kn;
   }
 
-  Autothrust_WashoutFilter(Autothrust_P._Gain * (1.0 / rtb_Saturation * (Autothrust_P.GStoGS_CAS_Gain *
-    (Autothrust_P.ktstomps_Gain * rtb_Switch_d))), Autothrust_P.WashoutFilter_C1, Autothrust_U.in.time.dt,
-    &rtb_Saturation, &Autothrust_DWork.sf_WashoutFilter);
+  Autothrust_WashoutFilter(Autothrust_P._Gain * (1.0 / rtb_Saturation * (Autothrust_P.ktstomps_Gain * rtb_Switch_d)),
+    Autothrust_P.WashoutFilter_C1, Autothrust_U.in.time.dt, &rtb_Saturation, &Autothrust_DWork.sf_WashoutFilter);
   u0 = Autothrust_P.kntoms_Gain * Autothrust_U.in.data.V_gnd_kn;
   if (u0 > Autothrust_P.Saturation_UpperSat_d) {
     u0 = Autothrust_P.Saturation_UpperSat_d;

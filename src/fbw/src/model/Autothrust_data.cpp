@@ -325,8 +325,6 @@ AutothrustModelClass::Parameters_Autothrust_T AutothrustModelClass::Autothrust_P
 
   0.5144,
 
-  0.90350790290525129,
-
   2.0,
 
   480.0,
