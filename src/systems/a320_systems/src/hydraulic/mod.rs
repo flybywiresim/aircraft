@@ -2973,46 +2973,65 @@ impl ElacComputer {
     }
 
     fn update_requested_position(&mut self) {
-        self.left_controllers[0].set_requested_position(self.left_position_requested);
-        self.left_controllers[1].set_requested_position(self.left_position_requested);
+        self.left_controllers[AileronActuatorCircuit::Blue as usize]
+            .set_requested_position(self.left_position_requested);
+        self.left_controllers[AileronActuatorCircuit::Green as usize]
+            .set_requested_position(self.left_position_requested);
 
-        self.right_controllers[0].set_requested_position(self.right_position_requested);
-        self.right_controllers[1].set_requested_position(self.right_position_requested);
+        self.right_controllers[AileronActuatorCircuit::Blue as usize]
+            .set_requested_position(self.right_position_requested);
+        self.right_controllers[AileronActuatorCircuit::Green as usize]
+            .set_requested_position(self.right_position_requested);
     }
 
     fn set_blue_circuit_position_control(&mut self) {
-        // Blue is outboard actuator, so 0 index takes position control mode
-        self.left_controllers[0].set_mode(LinearActuatorMode::PositionControl);
-        self.left_controllers[1].set_mode(LinearActuatorMode::ActiveDamping);
+        self.left_controllers[AileronActuatorCircuit::Blue as usize]
+            .set_mode(LinearActuatorMode::PositionControl);
+        self.left_controllers[AileronActuatorCircuit::Green as usize]
+            .set_mode(LinearActuatorMode::ActiveDamping);
 
-        self.right_controllers[0].set_mode(LinearActuatorMode::PositionControl);
-        self.right_controllers[1].set_mode(LinearActuatorMode::ActiveDamping);
+        self.right_controllers[AileronActuatorCircuit::Blue as usize]
+            .set_mode(LinearActuatorMode::PositionControl);
+        self.right_controllers[AileronActuatorCircuit::Green as usize]
+            .set_mode(LinearActuatorMode::ActiveDamping);
     }
 
     fn set_green_circuit_position_control(&mut self) {
         // Green is inboard actuator, so 1 index takes position control mode
-        self.left_controllers[0].set_mode(LinearActuatorMode::ActiveDamping);
-        self.left_controllers[1].set_mode(LinearActuatorMode::PositionControl);
+        self.left_controllers[AileronActuatorCircuit::Blue as usize]
+            .set_mode(LinearActuatorMode::ActiveDamping);
+        self.left_controllers[AileronActuatorCircuit::Green as usize]
+            .set_mode(LinearActuatorMode::PositionControl);
 
-        self.right_controllers[0].set_mode(LinearActuatorMode::ActiveDamping);
-        self.right_controllers[1].set_mode(LinearActuatorMode::PositionControl);
+        self.right_controllers[AileronActuatorCircuit::Blue as usize]
+            .set_mode(LinearActuatorMode::ActiveDamping);
+        self.right_controllers[AileronActuatorCircuit::Green as usize]
+            .set_mode(LinearActuatorMode::PositionControl);
     }
 
     /// Sets nominal A320 behaviour : left aileron controled on blue servo, right one using green servo
     fn set_mixed_green_blue_circuit_position_control(&mut self) {
-        self.left_controllers[0].set_mode(LinearActuatorMode::PositionControl);
-        self.left_controllers[1].set_mode(LinearActuatorMode::ActiveDamping);
+        self.left_controllers[AileronActuatorCircuit::Blue as usize]
+            .set_mode(LinearActuatorMode::PositionControl);
+        self.left_controllers[AileronActuatorCircuit::Green as usize]
+            .set_mode(LinearActuatorMode::ActiveDamping);
 
-        self.right_controllers[0].set_mode(LinearActuatorMode::ActiveDamping);
-        self.right_controllers[1].set_mode(LinearActuatorMode::PositionControl);
+        self.right_controllers[AileronActuatorCircuit::Blue as usize]
+            .set_mode(LinearActuatorMode::ActiveDamping);
+        self.right_controllers[AileronActuatorCircuit::Green as usize]
+            .set_mode(LinearActuatorMode::PositionControl);
     }
 
     fn set_no_position_control(&mut self) {
-        self.left_controllers[0].set_mode(LinearActuatorMode::ClosedCircuitDamping);
-        self.left_controllers[1].set_mode(LinearActuatorMode::ClosedCircuitDamping);
+        self.left_controllers[AileronActuatorCircuit::Blue as usize]
+            .set_mode(LinearActuatorMode::ClosedCircuitDamping);
+        self.left_controllers[AileronActuatorCircuit::Green as usize]
+            .set_mode(LinearActuatorMode::ClosedCircuitDamping);
 
-        self.right_controllers[0].set_mode(LinearActuatorMode::ClosedCircuitDamping);
-        self.right_controllers[1].set_mode(LinearActuatorMode::ClosedCircuitDamping);
+        self.right_controllers[AileronActuatorCircuit::Blue as usize]
+            .set_mode(LinearActuatorMode::ClosedCircuitDamping);
+        self.right_controllers[AileronActuatorCircuit::Green as usize]
+            .set_mode(LinearActuatorMode::ClosedCircuitDamping);
     }
 
     fn update(&mut self, blue_pressure: Pressure, green_pressure: Pressure) {
@@ -3037,11 +3056,17 @@ impl ElacComputer {
     }
 
     fn left_controllers(&self) -> [&impl HydraulicAssemblyController; 2] {
-        [&self.left_controllers[0], &self.left_controllers[1]]
+        [
+            &self.left_controllers[AileronActuatorCircuit::Blue as usize],
+            &self.left_controllers[AileronActuatorCircuit::Green as usize],
+        ]
     }
 
     fn right_controllers(&self) -> [&impl HydraulicAssemblyController; 2] {
-        [&self.right_controllers[0], &self.right_controllers[1]]
+        [
+            &self.right_controllers[AileronActuatorCircuit::Blue as usize],
+            &self.right_controllers[AileronActuatorCircuit::Green as usize],
+        ]
     }
 }
 impl SimulationElement for ElacComputer {
