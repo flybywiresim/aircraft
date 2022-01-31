@@ -100,8 +100,6 @@ impl CoreHydraulicForce {
     const MIN_PRESSURE_TO_EXIT_POSITION_CONTROL_PSI: f64 = 500.;
     const MIN_PRESSURE_TO_ALLOW_POSITION_CONTROL_PSI: f64 = 700.;
 
-    const MIN_SPEED_FOR_DAMPING_RESET_M_PER_S: f64 = 0.00001;
-
     fn new(
         init_position: Ratio,
         active_hydraulic_damping_constant: f64,
@@ -302,23 +300,14 @@ impl CoreHydraulicForce {
                 self.force_raw = self.force_closed_valves(position_normalized, speed);
             }
             LinearActuatorMode::ActiveDamping => {
-                if speed.get::<meter_per_second>().abs() > Self::MIN_SPEED_FOR_DAMPING_RESET_M_PER_S
-                {
-                    self.force_filtered
-                        .update(context.delta(), self.force_active_damping(speed));
-                } else {
-                    self.force_filtered.reset(Force::default());
-                }
+                self.force_filtered
+                    .update(context.delta(), self.force_active_damping(speed));
+
                 self.force_raw = self.force_filtered.output();
             }
             LinearActuatorMode::ClosedCircuitDamping => {
-                if speed.get::<meter_per_second>().abs() > Self::MIN_SPEED_FOR_DAMPING_RESET_M_PER_S
-                {
-                    self.force_filtered
-                        .update(context.delta(), self.force_closed_circuit_damping(speed));
-                } else {
-                    self.force_filtered.reset(Force::default());
-                }
+                self.force_filtered
+                    .update(context.delta(), self.force_closed_circuit_damping(speed));
 
                 self.force_raw = self.force_filtered.output();
             }
@@ -951,12 +940,6 @@ impl LinearActuatedRigidBodyOnHingeAxis {
     fn local_acceleration_and_gravity(&self, context: &UpdateContext) -> Torque {
         let plane_acceleration_plane_reference = self.plane_acceleration_filtered.output();
 
-        // println!(
-        //     "ACCEL X{:.3} Y{:.3} Z{:.3}",
-        //     plane_acceleration_plane_reference[0],
-        //     plane_acceleration_plane_reference[1],
-        //     plane_acceleration_plane_reference[2]
-        // );
         let pitch_rotation = context.attitude().pitch_rotation_transform();
 
         let bank_rotation = context.attitude().bank_rotation_transform();
