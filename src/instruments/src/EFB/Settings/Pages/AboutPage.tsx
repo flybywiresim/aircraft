@@ -48,7 +48,7 @@ export const AboutPage = () => {
 
     return (
         <SettingsPage name="About">
-            <div className="flex absolute inset-y-0 flex-col justify-center px-16">
+            <div className="flex absolute inset-y-0 flex-col justify-center px-16 pointer-events-none">
                 <div className="flex flex-row items-center">
 
                     <div className="flex flex-col">
