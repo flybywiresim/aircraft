@@ -64,8 +64,8 @@ export const MessageStatus: React.FC<MessageStatusProps> = ({ message }) => {
         background.width = text.length * 116 + 48;
         // one character has a height of 171 and a spacing of 8 per side
         background.height = 187;
-        background.x = 3700 - background.width;
-        background.y = 307 - background.height;
+        background.x = 3740 - background.width;
+        background.y = 310 - background.height;
     }
 
     return (
