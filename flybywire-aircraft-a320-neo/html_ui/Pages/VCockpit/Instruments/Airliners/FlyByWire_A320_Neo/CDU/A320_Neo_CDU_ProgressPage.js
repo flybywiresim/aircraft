@@ -122,7 +122,7 @@ class CDUProgressPage {
             if (mcdu.page.Current === mcdu.page.ProgressPage) {
                 CDUProgressPage.ShowPage(mcdu);
             }
-        }, mcdu.PageTimeout.Prog);
+        }, mcdu.PageTimeout.Default);
 
     }
 

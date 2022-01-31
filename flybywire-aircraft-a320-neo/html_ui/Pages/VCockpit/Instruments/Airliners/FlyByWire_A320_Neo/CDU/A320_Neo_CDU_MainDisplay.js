@@ -23,10 +23,11 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.updateRequest = false;
         this.initB = false;
         this.PageTimeout = {
-            Prog: 2000,
+            Fast: 500,
+            Medium: 1000,
             Dyn: 1500,
             Default: 2000,
-            Fast: 500
+            Slow: 3000,
         };
         this.fmgcMesssagesListener = RegisterViewListener('JS_LISTENER_SIMVARS', null, true);
         this.setupFmgcTriggers();
