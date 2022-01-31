@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Metar } from '@flybywiresim/api-client';
 import { IconCloud, IconDroplet, IconGauge, IconPoint, IconTemperature, IconWind } from '@tabler/icons';
-import { parseMetar, getColoredMetar } from '../../Utils/parseMetar';
-import { ColorCode, MetarParserType, Wind } from '../../../Common/metarTypes';
+import { parseMetar } from '../../Utils/parseMetar';
+import { MetarParserType } from '../../../Common/metarTypes';
 import { usePersistentProperty } from '../../../Common/persistence';
 import SimpleInput from '../../Components/Form/SimpleInput/SimpleInput';
+import ColoredMetar from './ColorMetar';
 
 const MetarParserTypeProp: MetarParserType = {
     raw_text: '',
@@ -56,7 +57,6 @@ type WeatherWidgetProps = { name: string, editIcao: string, icao: string};
 const WeatherWidget = (props: WeatherWidgetProps) => {
     const [metar, setMetar] = useState<MetarParserType>(MetarParserTypeProp);
     const [showMetar, setShowMetar] = usePersistentProperty(`CONFIG_SHOW_METAR_${props.name}`, 'DISABLED');
-    const [coloredMetar, setColoredMetar] = useState('');
     const [baroType] = usePersistentProperty('CONFIG_INIT_BARO_UNIT', 'HPA');
     const getBaroTypeForAirport = (icao: string) => (['K', 'C', 'M', 'P', 'RJ', 'RO', 'TI', 'TJ']
         .some((r) => icao.toUpperCase().startsWith(r)) ? 'IN HG' : 'HPA');
@@ -83,11 +83,6 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
         );
     };
 
-    const MetarText = () => (
-        // eslint-disable-next-line react/no-danger
-        <span dangerouslySetInnerHTML={{ __html: coloredMetar }} />
-    );
-
     const handleIcao = (icao: string) => {
         if (icao.length === 4) {
             getMetar(icao, source);
@@ -105,7 +100,6 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
         return Metar.get(icao, source)
             .then((result) => {
                 const metarParse = parseMetar(result.metar);
-                setColoredMetar(getColoredMetar(metarParse));
                 setMetar(metarParse);
             })
             .catch(() => {
@@ -238,7 +232,7 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
                                         {metar.raw_text
                                             ? (
                                                 <>
-                                                    <MetarText />
+                                                    <ColoredMetar rawParts={metar.raw_parts} colorCodes={metar.color_codes} />
                                                 </>
                                             ) : (
                                                 <>
