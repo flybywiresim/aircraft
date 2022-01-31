@@ -2931,6 +2931,9 @@ impl HydraulicAssemblyController for AileronController {
     }
 }
 
+/// Implements a placeholder elac computer logic commanding correct hydraulic modes depending
+/// on pressure state.
+/// TODO: Receive each actuator mode and commands directly from a FBW Elac implementation
 struct ElacComputer {
     requested_position_left_id: VariableIdentifier,
     requested_position_right_id: VariableIdentifier,
