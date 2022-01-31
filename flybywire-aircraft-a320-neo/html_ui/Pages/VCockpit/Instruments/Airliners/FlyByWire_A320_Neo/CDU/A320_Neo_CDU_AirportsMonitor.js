@@ -14,11 +14,31 @@ class CDUAirportsMonitor {
             this.total_delta_t = 0;
         }
 
+        // show an empty page while loading the airports
+        if (!this.icao1) {
+            mcdu.clearDisplay();
+            mcdu.setTemplate([
+                ["CLOSEST AIRPORTS"],
+                ["LOADING..."],
+                [""],
+                [""],
+                [""],
+                [""],
+                [""],
+                [""],
+                [""],
+                [""],
+                [""],
+                [""],
+            ]);
+        }
+
         // we want the closest 4 APs with unlimited distance
         const max_num_ap = 4;
         const max_dist_miles = 100000;
 
         if (this.total_delta_t >= update_ival_ms || !this.icao1) {
+
             const ap_line_batch = new SimVar.SimVarBatch("C:fs9gps:NearestAirportItemsNumber", "C:fs9gps:NearestAirportCurrentLine");
             ap_line_batch.add("C:fs9gps:NearestAirportSelectedLatitude", "degree latitude");
             ap_line_batch.add("C:fs9gps:NearestAirportSelectedLongitude", "degree longitude");
@@ -206,12 +226,9 @@ class CDUAirportsMonitor {
         if (!this.frozen || !this.icao1) {
             // regular update due to showing dynamic data on this page
             mcdu.page.SelfPtr = setTimeout(() => {
-                if (mcdu.page.Current === mcdu.page.AirportsMonitor) {
-                    CDUAirportsMonitor.ShowPage(mcdu,false);
-                }
+                CDUAirportsMonitor.ShowPage(mcdu,false);
             }, mcdu.PageTimeout.Default);
         }
-        SimVar.SetSimVarValue("L:FMC_UPDATE_CURRENT_PAGE", "number", 1);
 
         // user-selected 5th airport (only possible to set on page 1)
         if (!this.page2) {
