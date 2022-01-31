@@ -34,9 +34,13 @@ class CDUAocOfpData {
             }
         }
 
-        mcdu.refreshPageCallback = () => {
-            updateView();
-        };
+        // regular update while boarding/de-boarding is running
+        mcdu.page.SelfPtr = setTimeout(() => {
+            if (boardingStartedByUser) {
+                updateView();
+            }
+        }, mcdu.PageTimeout.Fast);
+
         SimVar.SetSimVarValue("L:FMC_UPDATE_CURRENT_PAGE", "number", 1);
 
         const boardingStartedByUser = SimVar.GetSimVarValue("L:A32NX_BOARDING_STARTED_BY_USR", "Bool");

@@ -30,10 +30,11 @@ class CDUAocInit {
             }
         }
 
-        // required because of time displayed on this page
-        // mcdu.refreshPageCallback = () => {
-        //     CDUAocInit.ShowPage(mcdu);
-        // };
+        // regular update due to showing time on this page
+        mcdu.page.SelfPtr = setTimeout(() => {
+            updateView();
+        }, mcdu.PageTimeout.Default);
+
         SimVar.SetSimVarValue("L:FMC_UPDATE_CURRENT_PAGE", "number", 1);
 
         if (mcdu.simbrief.sendStatus !== "READY" && mcdu.simbrief.sendStatus !== "DONE") {
@@ -72,11 +73,6 @@ class CDUAocInit {
             ["", "ADVISORY\xa0"],
             ["<AOC MENU"]
         ]);
-        mcdu.page.SelfPtr = setTimeout(() => {
-            if (mcdu.page.Current === mcdu.page.AOCInit) {
-                CDUAocInit.ShowPage(mcdu);
-            }
-        }, mcdu.PageTimeout.Default);
 
         mcdu.rightInputDelay[2] = () => {
             return mcdu.getDelaySwitchPage();
@@ -111,10 +107,6 @@ class CDUAocInit {
 
         const currentFob = formatWeight(NXUnits.kgToUser(mcdu.getFOB()));
 
-        // required because of time displayed on this page
-        mcdu.refreshPageCallback = () => {
-            CDUAocInit.ShowPage2(mcdu);
-        };
         SimVar.SetSimVarValue("L:FMC_UPDATE_CURRENT_PAGE", "number", 1);
 
         /**
@@ -189,6 +181,11 @@ class CDUAocInit {
             ];
             mcdu.setTemplate(display);
         }
+
+        // regular update due to showing time on this page
+        mcdu.page.SelfPtr = setTimeout(() => {
+            updateView();
+        }, mcdu.PageTimeout.Default);
 
         mcdu.leftInputDelay[5] = () => {
             return mcdu.getDelaySwitchPage();

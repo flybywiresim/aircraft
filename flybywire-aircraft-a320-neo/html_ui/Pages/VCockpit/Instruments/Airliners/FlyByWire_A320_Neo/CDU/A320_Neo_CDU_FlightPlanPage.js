@@ -43,12 +43,14 @@ class CDUFlightPlanPage {
         CDUFlightPlanPage._timer = 0;
         const fpm = mcdu.flightPlanManager;
         const renderedWaypointIndex = fpm.getActiveWaypointIndex();
+
         mcdu.pageUpdate = () => {
             CDUFlightPlanPage._timer++;
             if (CDUFlightPlanPage._timer >= 100 || fpm.getActiveWaypointIndex() !== renderedWaypointIndex) {
                 CDUFlightPlanPage.ShowPage(mcdu, offset);
             }
         };
+
         const flightPhase = SimVar.GetSimVarValue("L:A32NX_FWC_FLIGHT_PHASE", "Enum");
         const isFlying = flightPhase >= 5 && flightPhase <= 7;
 

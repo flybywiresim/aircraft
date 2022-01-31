@@ -1,5 +1,6 @@
 class CDUAirportsMonitor {
     static ShowPage(mcdu, reset = false) {
+        mcdu.page.Current = mcdu.page.AirportsMonitor;
 
         // one delta t unit is about 1.5 ms it seems
         const update_ival_ms = 1000;
@@ -144,7 +145,6 @@ class CDUAirportsMonitor {
         // display data on MCDU
         if (this.icao1) {
             mcdu.clearDisplay();
-            mcdu.page.Current = mcdu.page.AirportsMonitor;
             if (this.page2) {
                 mcdu.setTemplate([
                     ["CLOSEST AIRPORTS"],
@@ -204,16 +204,14 @@ class CDUAirportsMonitor {
 
         // page refresh
         if (!this.frozen || !this.icao1) {
-            // mcdu.refreshPageCallback = () => {
-            //     this.ShowPage(mcdu);
-            // };
+            // regular update due to showing dynamic data on this page
             mcdu.page.SelfPtr = setTimeout(() => {
                 if (mcdu.page.Current === mcdu.page.AirportsMonitor) {
-                    CDUAirportsMonitor.ShowPage(mcdu);
+                    CDUAirportsMonitor.ShowPage(mcdu,false);
                 }
             }, mcdu.PageTimeout.Default);
-            SimVar.SetSimVarValue("L:FMC_UPDATE_CURRENT_PAGE", "number", 1);
         }
+        SimVar.SetSimVarValue("L:FMC_UPDATE_CURRENT_PAGE", "number", 1);
 
         // user-selected 5th airport (only possible to set on page 1)
         if (!this.page2) {
@@ -227,7 +225,7 @@ class CDUAirportsMonitor {
                     }
                 } else if (value !== '' && value !== FMCMainDisplay.clrValue) {
                     // GetAirportByIdent returns a Waypoint in the callback,
-                    // which interally uses FacilityLoader (and further down calls Coherence)
+                    // which internally uses FacilityLoader (and further down calls Coherence)
                     mcdu.dataManager.GetAirportByIdent(value).then((ap_data) => {
                         if (ap_data) {
                             this.user_ap = ap_data;
@@ -267,5 +265,6 @@ class CDUAirportsMonitor {
                 this.ShowPage(mcdu);
             };
         }
+
     }
 }
