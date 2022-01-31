@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import { useInteractionEvent } from '@instruments/common/hooks';
-import { useInterval } from '@flybywiresim/react-components';
+import useInterval from '@instruments/common/useInterval';
 
 type AutoBrightnessProps = {
     bugsActive: boolean
