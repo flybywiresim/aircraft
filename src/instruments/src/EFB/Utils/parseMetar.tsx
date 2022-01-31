@@ -311,7 +311,7 @@ export function parseMetar(metarString: string): MetarParserType {
             break;
         case Mode.PRESS:
             // Pressure
-            match = metarPart.match(/^(Q|A)(\d+)/);
+            match = metarPart.match(/^([QA])(\d+)/);
             if (match && !trendMode) {
                 match[2] = Number(match[2]);
                 match[2] /= (match[1] === 'Q') ? 10 : 100;
