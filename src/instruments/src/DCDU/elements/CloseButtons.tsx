@@ -23,7 +23,7 @@ export const CloseButtons: React.FC<CloseButtonsProps> = ({ message, closeMessag
             <Button
                 messageId={message.UniqueMessageID}
                 index="R2"
-                content="CLOSE*"
+                content="CLOSE"
                 active
                 onClick={clicked}
             />
