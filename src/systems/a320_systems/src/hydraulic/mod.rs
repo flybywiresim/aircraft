@@ -332,7 +332,7 @@ pub(super) struct A320Hydraulic {
 
     core_hydraulic_updater: FixedStepLoop,
     physics_updater: MaxFixedStepLoop,
-    ludicrous_updater: MaxFixedStepLoop,
+    flight_controls_updater: MaxFixedStepLoop,
 
     brake_steer_computer: A320HydraulicBrakeSteerComputerUnit,
 
@@ -413,8 +413,9 @@ impl A320Hydraulic {
     const HYDRAULIC_SIM_TIME_STEP: Duration = Duration::from_millis(33);
     // Refresh rate of max fixed step loop for fast physics
     const HYDRAULIC_SIM_MAX_TIME_STEP_MILLISECONDS: Duration = Duration::from_millis(33);
-    // Refresh rate of max fixed step loop for fastest flight controls physics
-    const HYDRAULIC_SIM_FLIGHT_CONTROL_MAX_TIME_STEP_MILLISECONDS: Duration =
+    // Refresh rate of max fixed step loop for fastest flight controls physics needing super stability
+    // and fast reacting time
+    const HYDRAULIC_SIM_FLIGHT_CONTROLS_MAX_TIME_STEP_MILLISECONDS: Duration =
         Duration::from_millis(10);
 
     pub(super) fn new(context: &mut InitContext) -> A320Hydraulic {
@@ -432,8 +433,8 @@ impl A320Hydraulic {
 
             core_hydraulic_updater: FixedStepLoop::new(Self::HYDRAULIC_SIM_TIME_STEP),
             physics_updater: MaxFixedStepLoop::new(Self::HYDRAULIC_SIM_MAX_TIME_STEP_MILLISECONDS),
-            ludicrous_updater: MaxFixedStepLoop::new(
-                Self::HYDRAULIC_SIM_FLIGHT_CONTROL_MAX_TIME_STEP_MILLISECONDS,
+            flight_controls_updater: MaxFixedStepLoop::new(
+                Self::HYDRAULIC_SIM_FLIGHT_CONTROLS_MAX_TIME_STEP_MILLISECONDS,
             ),
 
             brake_steer_computer: A320HydraulicBrakeSteerComputerUnit::new(context),
@@ -568,7 +569,7 @@ impl A320Hydraulic {
     ) {
         self.core_hydraulic_updater.update(context);
         self.physics_updater.update(context);
-        self.ludicrous_updater.update(context);
+        self.flight_controls_updater.update(context);
 
         for cur_time_step in self.physics_updater {
             self.update_fast_physics(
@@ -591,8 +592,8 @@ impl A320Hydraulic {
             engine2,
         );
 
-        for cur_time_step in self.ludicrous_updater {
-            self.update_ludicrous_physics(&context.with_delta(cur_time_step));
+        for cur_time_step in self.flight_controls_updater {
+            self.update_flight_controls_physics(&context.with_delta(cur_time_step));
         }
 
         for cur_time_step in self.core_hydraulic_updater {
@@ -688,7 +689,7 @@ impl A320Hydraulic {
         self.yellow_circuit.system_section_pressure_switch() == PressureSwitchState::Pressurised
     }
 
-    fn update_ludicrous_physics(&mut self, context: &UpdateContext) {
+    fn update_flight_controls_physics(&mut self, context: &UpdateContext) {
         self.left_aileron.update(
             context,
             self.elac_computer.left_controllers(),
