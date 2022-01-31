@@ -2914,7 +2914,7 @@ impl AileronController {
 
     /// Receives a [-1;1] position request, convert it to [0;1] actuator position
     fn set_requested_position(&mut self, requested_position: Ratio) {
-        self.requested_position = (requested_position + Ratio::new::<ratio>(1.)) / 2.;
+        self.requested_position = requested_position;
         self.requested_position = self
             .requested_position
             .min(Ratio::new::<ratio>(1.))
@@ -2960,12 +2960,13 @@ impl ElacComputer {
     fn new(context: &mut InitContext) -> Self {
         Self {
             requested_position_left_id: context
-                .get_identifier("3D_AILERON_LEFT_DEFLECTION".to_owned()),
+                .get_identifier("HYD_AILERON_LEFT_DEMAND".to_owned()),
             requested_position_right_id: context
-                .get_identifier("3D_AILERON_RIGHT_DEFLECTION".to_owned()),
+                .get_identifier("HYD_AILERON_RIGHT_DEMAND".to_owned()),
             left_position_requested: Ratio::default(),
             right_position_requested: Ratio::default(),
 
+            // Controllers are in outboard->inboard order, so for aileron [Blue circuit, Green circuit]
             left_controllers: [AileronController::new(), AileronController::new()],
             right_controllers: [AileronController::new(), AileronController::new()],
 
@@ -2976,6 +2977,7 @@ impl ElacComputer {
     fn update_requested_position(&mut self) {
         self.left_controllers[0].set_requested_position(self.left_position_requested);
         self.left_controllers[1].set_requested_position(self.left_position_requested);
+
         self.right_controllers[0].set_requested_position(self.right_position_requested);
         self.right_controllers[1].set_requested_position(self.right_position_requested);
     }
@@ -3045,7 +3047,7 @@ impl ElacComputer {
 impl SimulationElement for ElacComputer {
     fn read(&mut self, reader: &mut SimulatorReader) {
         self.left_position_requested =
-            -1. * Ratio::new::<ratio>(reader.read(&self.requested_position_left_id));
+            Ratio::new::<ratio>(reader.read(&self.requested_position_left_id));
         self.right_position_requested =
             Ratio::new::<ratio>(reader.read(&self.requested_position_right_id));
     }
@@ -3078,20 +3080,12 @@ impl AileronAssembly {
         Self {
             hydraulic_assembly,
             position_id: match id {
-                AileronSide::Left => {
-                    context.get_identifier("HYD_AILERON_LEFT_DEFLECTION".to_owned())
-                }
-                AileronSide::Right => {
-                    context.get_identifier("HYD_AILERON_RIGHT_DEFLECTION".to_owned())
-                }
+                AileronSide::Left => context.get_identifier("HYD_AIL_LEFT_DEFLECTION".to_owned()),
+                AileronSide::Right => context.get_identifier("HYD_AIL_RIGHT_DEFLECTION".to_owned()),
             },
             id,
             position: Ratio::new::<ratio>(0.),
         }
-    }
-
-    fn position(&self) -> Ratio {
-        self.position
     }
 
     fn actuator_blue(&mut self) -> &mut impl Actuator {
@@ -3114,8 +3108,8 @@ impl AileronAssembly {
             aileron_controllers,
             [current_pressure_blue, current_pressure_green],
         );
-        self.position =
-            self.hydraulic_assembly.position_normalized() * 2. - Ratio::new::<ratio>(1.);
+
+        self.position = self.hydraulic_assembly.position_normalized();
     }
 }
 impl SimulationElement for AileronAssembly {
@@ -3125,12 +3119,7 @@ impl SimulationElement for AileronAssembly {
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
-        match self.id {
-            AileronSide::Left => {
-                writer.write(&self.position_id, -1. * self.position().get::<ratio>())
-            }
-            AileronSide::Right => writer.write(&self.position_id, self.position().get::<ratio>()),
-        }
+        writer.write(&self.position_id, self.position.get::<ratio>());
     }
 }
 
