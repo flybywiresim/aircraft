@@ -24,6 +24,7 @@ pub(super) fn ailerons(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Er
     );
 
     // Aileron positions returned by hydraulic system are converted to MSFS format
+    // It means we just invert left side direction and do [0;1] -> [-1;1]
     builder.map(
         ExecuteOn::PostTick,
         Variable::aspect("HYD_AIL_LEFT_DEFLECTION"),
