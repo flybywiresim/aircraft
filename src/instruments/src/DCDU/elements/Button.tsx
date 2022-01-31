@@ -13,18 +13,21 @@ type ButtonProps = {
 export const Button: React.FC<ButtonProps> = ({ index, content, active, onClick }) => {
     const [clicked, setClicked] = useState(false);
 
-    if (content.length !== 0) {
-        useInteractionEvents([`A32NX_DCDU_BTN_MPL_${index}`, `A32NX_DCDU_BTN_MPR_${index}`], () => {
-            if (active) {
-                setClicked(true);
-                setTimeout(() => {
-                    setClicked(false);
-                    onClick(index);
-                }, 1000);
-            }
-        });
+    if (content.length === 0) {
+        return <></>;
     }
 
+    useInteractionEvents([`A32NX_DCDU_BTN_MPL_${index}`, `A32NX_DCDU_BTN_MPR_${index}`], () => {
+        if (active) {
+            setClicked(true);
+            setTimeout(() => {
+                setClicked(false);
+                onClick(index);
+            }, 1000);
+        }
+    });
+
+    let leftButton = false;
     const textDefinition = { x: 0, y: 0, style: 'button ' };
     const backgroundDefinition = { x: 0, y: 0, style: 'button ' };
     switch (index) {
@@ -37,6 +40,7 @@ export const Button: React.FC<ButtonProps> = ({ index, content, active, onClick 
         textDefinition.y += 2240;
         textDefinition.style += 'button-left ';
         backgroundDefinition.style += 'button-left ';
+        leftButton = true;
         break;
     case 'R2':
         textDefinition.y = 480;
@@ -59,6 +63,17 @@ export const Button: React.FC<ButtonProps> = ({ index, content, active, onClick 
         backgroundDefinition.style = 'button-color-clicked';
     }
 
+    let text: string;
+    if (active) {
+        if (leftButton) {
+            text = `*${content}`;
+        } else {
+            text = `${content}*`;
+        }
+    } else {
+        text = content;
+    }
+
     return (
         <>
             {clicked && content.length !== 0 && (
@@ -73,7 +88,7 @@ export const Button: React.FC<ButtonProps> = ({ index, content, active, onClick 
             )}
             {content.length !== 0 && (
                 <text className={textDefinition.style} x={textDefinition.x} y={textDefinition.y}>
-                    {content}
+                    {text}
                 </text>
             )}
         </>
