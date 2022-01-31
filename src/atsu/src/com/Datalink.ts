@@ -89,7 +89,7 @@ export class Datalink {
         switch (SimVar.GetSimVarValue('L:A32NX_CONFIG_DATALINK_TIME', 'number')) {
         // realistic transmission
         case 0:
-            timeout = 60;
+            timeout = 30;
             break;
         // fast transmission
         case 2:
