@@ -2,56 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { Metar } from '@flybywiresim/api-client';
 import { IconCloud, IconDroplet, IconGauge, IconPoint, IconTemperature, IconWind } from '@tabler/icons';
 import { parseMetar, getColoredMetar } from '../../Utils/parseMetar';
-import { MetarParserType, Wind } from '../../../Common/metarTypes';
+import { ColorCode, MetarParserType, Wind } from '../../../Common/metarTypes';
 import { usePersistentProperty } from '../../../Common/persistence';
 import SimpleInput from '../../Components/Form/SimpleInput/SimpleInput';
-
-const MetarParserTypeWindState: Wind = {
-    degrees: 0,
-    degrees_from: 0,
-    degrees_to: 0,
-    speed_kts: 0,
-    speed_mps: 0,
-    gust_kts: 0,
-    gust_mps: 0,
-};
-
-const VisibilityType = {
-    miles: '',
-    miles_float: 0.0,
-    meters: '',
-    meters_float: 0.0,
-};
-
-const conditionCode = { code: '' };
-
-const cloud = {
-    code: '',
-    base_feet_agl: 0,
-    base_meters_agl: 0,
-};
-
-const ceiling = {
-    code: '',
-    feet_agl: 0,
-    meters_agl: 0,
-};
-
-const temperature = {
-    celsius: 0,
-    fahrenheit: 0,
-};
-
-const dewpoint = {
-    celsius: 0,
-    fahrenheit: 0,
-};
-
-const barometer = {
-    hg: 0,
-    kpa: 0,
-    mb: 0,
-};
 
 const MetarParserTypeProp: MetarParserType = {
     raw_text: '',
@@ -59,15 +12,42 @@ const MetarParserTypeProp: MetarParserType = {
     color_codes: [],
     icao: '',
     observed: new Date(0),
-    wind: MetarParserTypeWindState,
-    visibility: VisibilityType,
-    conditions: [conditionCode],
-    clouds: [cloud],
-    ceiling,
-    temperature,
-    dewpoint,
+    wind: {
+        degrees: 0,
+        degrees_from: 0,
+        degrees_to: 0,
+        speed_kts: 0,
+        speed_mps: 0,
+        gust_kts: 0,
+        gust_mps: 0,
+    },
+    visibility: {
+        miles: '',
+        miles_float: 0.0,
+        meters: '',
+        meters_float: 0.0,
+    },
+    conditions: [],
+    clouds: [],
+    ceiling: {
+        code: '',
+        feet_agl: 0,
+        meters_agl: 0,
+    },
+    temperature: {
+        celsius: 0,
+        fahrenheit: 0,
+    },
+    dewpoint: {
+        celsius: 0,
+        fahrenheit: 0,
+    },
     humidity_percent: 0,
-    barometer,
+    barometer: {
+        hg: 0,
+        kpa: 0,
+        mb: 0,
+    },
     flight_category: '',
 };
 
