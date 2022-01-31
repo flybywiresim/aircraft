@@ -130,6 +130,7 @@
 1. [FBW] Fix: do not compensate ground spoilers in C* law - @aguther (Andreas Guther)
 1. [AP] Fix: adjustment of vertical speed limitation in SPD/MACH law - @IbrahimK42 (IbrahimK42)
 1. [HYD] Ailerons hydraulic control (only visual and hydraulics) - @Crocket63
+1. [MISC] Animation speed/behaviors for button, switches and knobs - @bouveng (Johan Bouveng)
 
 ## 0.7.0
 
