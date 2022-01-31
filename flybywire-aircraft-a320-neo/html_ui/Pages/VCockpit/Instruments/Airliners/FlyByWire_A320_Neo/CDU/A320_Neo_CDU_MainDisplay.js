@@ -287,15 +287,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         if (this.pageUpdate) {
             this.pageUpdate();
         }
-        if (SimVar.GetSimVarValue("L:FMC_UPDATE_CURRENT_PAGE", "number") === 1) {
-            SimVar.SetSimVarValue("L:FMC_UPDATE_CURRENT_PAGE", "number", 0).then();
-            if (this.refreshPageCallback) {
-                this.refreshPageCallback();
-            }
-        }
-
         this.checkAocTimes();
-
         this.updateMCDU();
     }
 

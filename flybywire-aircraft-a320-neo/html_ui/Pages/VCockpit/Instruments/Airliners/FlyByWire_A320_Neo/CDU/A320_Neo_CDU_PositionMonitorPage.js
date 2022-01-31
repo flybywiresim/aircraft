@@ -3,8 +3,6 @@ class CDUPositionMonitorPage {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.PositionMonitorPage;
 
-        SimVar.SetSimVarValue("L:FMC_UPDATE_CURRENT_PAGE", "number", 1);
-
         let currPos = new LatLong(SimVar.GetSimVarValue("GPS POSITION LAT", "degree latitude"),
             SimVar.GetSimVarValue("GPS POSITION LON", "degree longitude")).toShortDegreeString();
         if (currPos.includes("N")) {

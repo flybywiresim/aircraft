@@ -56,7 +56,5 @@ class CDUGPSMonitor {
             }
         }, mcdu.PageTimeout.Fast);
 
-        SimVar.SetSimVarValue("L:FMC_UPDATE_CURRENT_PAGE", "number", 1);
-
     }
 }

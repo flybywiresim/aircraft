@@ -35,8 +35,6 @@ class CDUAocInit {
             updateView();
         }, mcdu.PageTimeout.Default);
 
-        SimVar.SetSimVarValue("L:FMC_UPDATE_CURRENT_PAGE", "number", 1);
-
         if (mcdu.simbrief.sendStatus !== "READY" && mcdu.simbrief.sendStatus !== "DONE") {
             requestButton = "INIT DATA REQ [color]cyan";
         }
@@ -106,8 +104,6 @@ class CDUAocInit {
         mcdu.activeSystem = 'ATSU';
 
         const currentFob = formatWeight(NXUnits.kgToUser(mcdu.getFOB()));
-
-        SimVar.SetSimVarValue("L:FMC_UPDATE_CURRENT_PAGE", "number", 1);
 
         /**
             GMT: is the current zulu time

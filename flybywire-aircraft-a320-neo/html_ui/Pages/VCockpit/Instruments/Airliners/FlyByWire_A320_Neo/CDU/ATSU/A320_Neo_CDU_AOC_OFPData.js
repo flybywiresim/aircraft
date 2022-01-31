@@ -41,8 +41,6 @@ class CDUAocOfpData {
             }
         }, mcdu.PageTimeout.Fast);
 
-        SimVar.SetSimVarValue("L:FMC_UPDATE_CURRENT_PAGE", "number", 1);
-
         const boardingStartedByUser = SimVar.GetSimVarValue("L:A32NX_BOARDING_STARTED_BY_USR", "Bool");
 
         let zfwcg = "__._[color]amber";

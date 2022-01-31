@@ -73,7 +73,5 @@ class CDUIRSStatus {
                 CDUIRSStatus.ShowPage(mcdu, index, wind_dir);
             }
         }, mcdu.PageTimeout.Default);
-
-        SimVar.SetSimVarValue("L:FMC_UPDATE_CURRENT_PAGE", "number", 1);
     }
 }
