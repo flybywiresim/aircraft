@@ -834,9 +834,9 @@ impl A320Hydraulic {
             .update_actuator_volumes(&mut self.braking_circuit_norm);
 
         self.green_circuit
-            .update_actuator_volumes(self.left_aileron.actuator_green());
+            .update_actuator_volumes(self.left_aileron.actuator(AileronActuatorCircuit::Green));
         self.green_circuit
-            .update_actuator_volumes(self.right_aileron.actuator_green());
+            .update_actuator_volumes(self.right_aileron.actuator(AileronActuatorCircuit::Green));
     }
 
     fn update_yellow_actuators_volume(&mut self) {
@@ -858,9 +858,9 @@ impl A320Hydraulic {
             .update_actuator_volumes(&mut self.emergency_gen);
 
         self.blue_circuit
-            .update_actuator_volumes(self.left_aileron.actuator_blue());
+            .update_actuator_volumes(self.left_aileron.actuator(AileronActuatorCircuit::Blue));
         self.blue_circuit
-            .update_actuator_volumes(self.right_aileron.actuator_blue());
+            .update_actuator_volumes(self.right_aileron.actuator(AileronActuatorCircuit::Blue));
     }
 
     // All the core hydraulics updates that needs to be done at the slowest fixed step rate
@@ -3060,6 +3060,12 @@ enum AileronSide {
     Right,
 }
 
+#[derive(PartialEq, Clone, Copy)]
+enum AileronActuatorCircuit {
+    Blue = 0,
+    Green = 1,
+}
+
 struct AileronAssembly {
     hydraulic_assembly: HydraulicLinearActuatorAssembly<2>,
 
@@ -3083,12 +3089,8 @@ impl AileronAssembly {
         }
     }
 
-    fn actuator_blue(&mut self) -> &mut impl Actuator {
-        self.hydraulic_assembly.actuator(0)
-    }
-
-    fn actuator_green(&mut self) -> &mut impl Actuator {
-        self.hydraulic_assembly.actuator(1)
+    fn actuator(&mut self, circuit_color: AileronActuatorCircuit) -> &mut impl Actuator {
+        self.hydraulic_assembly.actuator(circuit_color as usize)
     }
 
     fn update(
