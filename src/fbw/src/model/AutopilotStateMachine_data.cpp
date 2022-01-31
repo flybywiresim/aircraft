@@ -102,7 +102,6 @@ AutopilotStateMachineModelClass::Parameters_AutopilotStateMachine_T AutopilotSta
       false,
       false,
       false,
-      0.0,
       false,
       false
     },
@@ -146,7 +145,8 @@ AutopilotStateMachineModelClass::Parameters_AutopilotStateMachine_T AutopilotSta
       false,
       0.0,
       0.0,
-      0.0
+      0.0,
+      false
     },
 
     {
@@ -345,16 +345,6 @@ AutopilotStateMachineModelClass::Parameters_AutopilotStateMachine_T AutopilotSta
   },
 
   1.0,
-
-  15.0,
-
-  4.0,
-
-  0.0,
-
-  1.0,
-
-  15.0,
 
   0.0,
 
@@ -566,8 +556,6 @@ AutopilotStateMachineModelClass::Parameters_AutopilotStateMachine_T AutopilotSta
   0.5,
 
   0.0,
-
-  60.0,
 
   0.5,
 

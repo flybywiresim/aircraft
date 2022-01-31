@@ -110,6 +110,15 @@ class FlyByWireInterface {
 
   InterpolatingLookupTable throttleLookupTable;
 
+  bool developmentLocalVariablesEnabled = false;
+  std::unique_ptr<LocalVariable> idDevelopmentAutoland_condition_Flare;
+  std::unique_ptr<LocalVariable> idDevelopmentAutoland_H_dot_radio_fpm;
+  std::unique_ptr<LocalVariable> idDevelopmentAutoland_H_dot_c_fpm;
+  std::unique_ptr<LocalVariable> idDevelopmentAutoland_delta_Theta_H_dot_deg;
+  std::unique_ptr<LocalVariable> idDevelopmentAutoland_delta_Theta_bz_deg;
+  std::unique_ptr<LocalVariable> idDevelopmentAutoland_delta_Theta_bx_deg;
+  std::unique_ptr<LocalVariable> idDevelopmentAutoland_delta_Theta_beta_c_deg;
+
   std::unique_ptr<LocalVariable> idLoggingFlightControlsEnabled;
   std::unique_ptr<LocalVariable> idLoggingThrottlesEnabled;
 
