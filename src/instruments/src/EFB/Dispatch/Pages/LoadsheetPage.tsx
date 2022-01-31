@@ -66,18 +66,18 @@ export const LoadSheetWidget = () => {
         <div className="overflow-hidden relative p-6 mt-4 w-full rounded-lg border-2 shadow-md h-efb border-theme-accent">
             {loadsheet ? (
                 <>
-                    <div className="absolute top-6 right-16 rounded-md bg-theme-accent">
+                    <div className="overflow-hidden absolute top-6 right-16 rounded-md bg-theme-secondary">
                         <button
                             type="button"
                             onClick={handleFontDecrease}
-                            className="p-2 bg-opacity-50 hover:bg-opacity-100"
+                            className="py-2 px-3 bg-opacity-50 hover:bg-opacity-100 transition duration-100 hover:bg-theme-highlight"
                         >
                             <ZoomOut size={30} />
                         </button>
                         <button
                             type="button"
                             onClick={handleFontIncrease}
-                            className="p-2 bg-opacity-50 hover:bg-opacity-100"
+                            className="py-2 px-3 bg-opacity-50 hover:bg-opacity-100 transition duration-100 hover:bg-theme-highlight"
                         >
                             <ZoomIn size={30} />
                         </button>
