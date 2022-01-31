@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useInteractionEvents } from '@instruments/common/hooks.js';
+import { Checkerboard } from './Checkerboard';
 
 type ButtonProps = {
     messageId: number,
@@ -61,7 +62,14 @@ export const Button: React.FC<ButtonProps> = ({ index, content, active, onClick 
     return (
         <>
             {clicked && content.length !== 0 && (
-                <rect className={backgroundDefinition.style} x={backgroundDefinition.x} y={backgroundDefinition.y} width={1032} height={240} />
+                <Checkerboard
+                    x={backgroundDefinition.x}
+                    y={backgroundDefinition.y}
+                    width={1032}
+                    height={240}
+                    cellSize={10}
+                    fill="rgb(0,255,255)"
+                />
             )}
             {content.length !== 0 && (
                 <text className={textDefinition.style} x={textDefinition.x} y={textDefinition.y}>
