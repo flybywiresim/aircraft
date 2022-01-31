@@ -174,13 +174,13 @@ export const FlightWidget = () => {
                                 <div className="relative w-full bg-theme-highlight" style={{ width: `${flightPlanProgress}%` }}>
                                     {!!flightPlanProgress && (
                                         <IconPlane
-                                            className="absolute right-0 transform translate-x-1/2 -translate-y-1/2 fill-current text-theme-highlight"
+                                            className="absolute right-0 text-theme-highlight transform translate-x-1/2 -translate-y-1/2 fill-current"
                                             size={50}
                                             strokeLinejoin="miter"
                                         />
                                     )}
                                 </div>
-                                <div className="w-full border-dashed bg-theme-text" style={{ width: `${100 - flightPlanProgress}%` }} />
+                                <div className="w-full bg-theme-text border-dashed" style={{ width: `${100 - flightPlanProgress}%` }} />
                             </div>
                             <div>
                                 <div className={`w-1 ml-auto h-4 ${flightPlanProgress > 99 ? 'bg-theme-highlight' : 'bg-theme-text'}`} />
@@ -241,10 +241,10 @@ export const FlightWidget = () => {
                             toast.error(e.message);
                         });
                     }}
-                    className="flex justify-center items-center p-2 space-x-4 w-full rounded-lg border-2 shadow-lg focus:outline-none bg-theme-highlight border-theme-secondary"
+                    className="flex justify-center items-center p-2 space-x-4 w-full text-navy bg-theme-highlight rounded-lg border-2 border-theme-secondary shadow-lg focus:outline-none"
                 >
                     <CloudArrowDown size={26} />
-                    <p>Import Flightplan from SimBrief</p>
+                    <p className="text-navy">Import OFP from simBrief</p>
                 </button>
             </div>
         </div>
