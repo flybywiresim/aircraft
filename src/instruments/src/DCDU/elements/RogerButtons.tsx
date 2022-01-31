@@ -18,7 +18,7 @@ export const RogerButtons: React.FC<RogerButtonsProps> = ({ message, selectedRes
 
     useUpdate(() => {
         if (buttonsBlocked) {
-            if (isStatusAvailable('Buttons') === true) {
+            if (isStatusAvailable('Buttons')) {
                 setStatus('Buttons', 'SENDING');
             }
         }
