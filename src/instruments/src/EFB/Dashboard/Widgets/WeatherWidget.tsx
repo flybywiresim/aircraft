@@ -61,12 +61,13 @@ export const WeatherWidget:FC<WeatherWidgetProps> = ({ name, simbriefIcao, userI
     const [metar, setMetar] = useState<MetarParserType>(MetarParserTypeProp);
     const [showMetar, setShowMetar] = usePersistentProperty(`CONFIG_SHOW_METAR_${name}`, 'DISABLED');
     const [baroType] = usePersistentProperty('CONFIG_INIT_BARO_UNIT', 'HPA');
-    const [metarSource] = usePersistentProperty('CONFIG_METAR_SRC', 'MSFS');
-    const getBaroTypeForAirport = (icao: string) => (['K', 'C', 'M', 'P', 'RJ', 'RO', 'TI', 'TJ']
-        .some((r) => icao.toUpperCase().startsWith(r)) ? 'IN HG' : 'HPA');
     const dispatch = useAppDispatch();
     const [simbriefIcaoAtLoading, setSimbriefIcaoAtLoading] = useState(simbriefIcao);
+    const [metarSource] = usePersistentProperty('CONFIG_METAR_SRC', 'MSFS');
     const source = metarSource === 'MSFS' ? 'MS' : metarSource;
+
+    const getBaroTypeForAirport = (icao: string) => (['K', 'C', 'M', 'P', 'RJ', 'RO', 'TI', 'TJ']
+        .some((r) => icao.toUpperCase().startsWith(r)) ? 'IN HG' : 'HPA');
 
     const BaroValue = () => {
         const displayedBaroType = baroType === 'AUTO' ? getBaroTypeForAirport(metar.icao) : baroType;
@@ -252,7 +253,7 @@ export const WeatherWidget:FC<WeatherWidgetProps> = ({ name, simbriefIcao, userI
                                         {metar.raw_text
                                             ? (
                                                 <>
-                                                    <ColoredMetar rawParts={metar.raw_parts} colorCodes={metar.color_codes} />
+                                                    <ColoredMetar metar={metar} />
                                                 </>
                                             ) : (
                                                 <>
