@@ -1,17 +1,12 @@
 import React from 'react';
 import { ColorCode } from '@instruments/common/metarTypes';
 
-type ColoredMetarProps = {
-    rawParts: string[],
-    colorCodes: ColorCode[],
-}
-
 /**
  * Returns HTML with coloring for METAR parts marked with coloring hints.
  * ColorCode: src/instruments/src/Common/metarTypes.ts
  * @param props
  */
-const ColoredMetar = (props: ColoredMetarProps) => {
+const ColoredMetar = (props: { rawParts: string[], colorCodes: ColorCode[] }) => {
     const partsList = props.rawParts.map((metarPart, index) => {
         switch (props.colorCodes[index]) {
         case ColorCode.Highlight:

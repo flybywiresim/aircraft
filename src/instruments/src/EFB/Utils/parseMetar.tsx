@@ -1,4 +1,3 @@
-import React from 'react';
 import { ColorCode, MetarParserType, Visibility, Wind } from '../../Common/metarTypes';
 
 /**
