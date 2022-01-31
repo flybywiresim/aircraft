@@ -47,6 +47,7 @@ export const MessageStatus: React.FC<MessageStatusProps> = ({ message }) => {
         statusClass += 'status-other';
     }
 
+    let backgroundRequired = false;
     let backgroundColor = 'rgba(0,0,0,0)';
     if (message.Direction === AtsuMessageDirection.Input && message.ResponseType !== undefined) {
         if (message.Response === undefined || message.Response.ComStatus === AtsuMessageComStatus.Open || message.Response.ComStatus === AtsuMessageComStatus.Failed) {
@@ -54,6 +55,7 @@ export const MessageStatus: React.FC<MessageStatusProps> = ({ message }) => {
         } else {
             backgroundColor = 'rgb(0,255,0)';
         }
+        backgroundRequired = true;
     }
 
     // calculate the position of the background rectangle
