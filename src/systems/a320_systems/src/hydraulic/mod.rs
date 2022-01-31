@@ -3067,7 +3067,6 @@ struct AileronAssembly {
     hydraulic_assembly: HydraulicLinearActuatorAssembly<2>,
 
     position_id: VariableIdentifier,
-    id: AileronSide,
 
     position: Ratio,
 }
@@ -3083,7 +3082,6 @@ impl AileronAssembly {
                 AileronSide::Left => context.get_identifier("HYD_AIL_LEFT_DEFLECTION".to_owned()),
                 AileronSide::Right => context.get_identifier("HYD_AIL_RIGHT_DEFLECTION".to_owned()),
             },
-            id,
             position: Ratio::new::<ratio>(0.),
         }
     }
@@ -3726,6 +3724,14 @@ mod tests {
                 self.read_by_name("A32NX_HYD_RAT_RPM")
             }
 
+            fn get_left_aileron_position(&mut self) -> Ratio {
+                Ratio::new::<ratio>(self.read_by_name("HYD_AIL_LEFT_DEFLECTION"))
+            }
+
+            fn get_right_aileron_position(&mut self) -> Ratio {
+                Ratio::new::<ratio>(self.read_by_name("HYD_AIL_RIGHT_DEFLECTION"))
+            }
+
             fn rat_deploy_commanded(&self) -> bool {
                 self.query(|a| a.is_rat_commanded_to_deploy())
             }
@@ -4010,6 +4016,7 @@ mod tests {
                     .set_gear_down()
                     .set_pushback_state(false)
                     .air_press_nominal()
+                    .set_ailerons_neutral()
             }
 
             fn set_left_brake(mut self, position: Ratio) -> Self {
@@ -4050,6 +4057,24 @@ mod tests {
 
             fn set_retract_spoilers(mut self) -> Self {
                 self.write_by_name("SPOILERS_GROUND_SPOILERS_ACTIVE", false);
+                self
+            }
+
+            fn set_ailerons_neutral(mut self) -> Self {
+                self.write_by_name("HYD_AILERON_LEFT_DEMAND", 0.5);
+                self.write_by_name("HYD_AILERON_RIGHT_DEMAND", 0.5);
+                self
+            }
+
+            fn set_ailerons_left_turn(mut self) -> Self {
+                self.write_by_name("HYD_AILERON_LEFT_DEMAND", 1.);
+                self.write_by_name("HYD_AILERON_RIGHT_DEMAND", 0.);
+                self
+            }
+
+            fn set_ailerons_right_turn(mut self) -> Self {
+                self.write_by_name("HYD_AILERON_LEFT_DEMAND", 0.);
+                self.write_by_name("HYD_AILERON_RIGHT_DEMAND", 1.);
                 self
             }
 
@@ -7064,6 +7089,119 @@ mod tests {
                 .run_waiting_for(Duration::from_secs_f64(10.));
 
             assert!(test_bed.yellow_epump_has_fault());
+        }
+
+        #[test]
+        fn ailerons_are_dropped_down_in_cold_and_dark() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_one_tick();
+
+            assert!(test_bed.get_left_aileron_position().get::<ratio>() < 0.1);
+            assert!(test_bed.get_right_aileron_position().get::<ratio>() < 0.1);
+        }
+
+        #[test]
+        fn ailerons_do_not_respond_in_cold_and_dark() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_one_tick();
+
+            test_bed = test_bed
+                .set_ailerons_left_turn()
+                .run_waiting_for(Duration::from_secs_f64(2.));
+
+            assert!(test_bed.get_left_aileron_position().get::<ratio>() < 0.1);
+            assert!(test_bed.get_right_aileron_position().get::<ratio>() < 0.1);
+
+            test_bed = test_bed
+                .set_ailerons_right_turn()
+                .run_waiting_for(Duration::from_secs_f64(2.));
+
+            assert!(test_bed.get_left_aileron_position().get::<ratio>() < 0.1);
+            assert!(test_bed.get_right_aileron_position().get::<ratio>() < 0.1);
+        }
+
+        #[test]
+        fn ailerons_do_not_respond_if_only_yellow_pressure() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .set_ptu_state(false)
+                .set_yellow_e_pump(false)
+                .run_one_tick();
+
+            test_bed = test_bed
+                .set_ailerons_left_turn()
+                .run_waiting_for(Duration::from_secs_f64(5.));
+
+            assert!(test_bed.is_yellow_pressurised());
+            assert!(!test_bed.is_green_pressurised());
+            assert!(test_bed.get_left_aileron_position().get::<ratio>() < 0.1);
+            assert!(test_bed.get_right_aileron_position().get::<ratio>() < 0.1);
+        }
+
+        #[test]
+        fn ailerons_respond_if_green_pressure() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .set_ptu_state(true)
+                .set_yellow_e_pump(false)
+                .run_one_tick();
+
+            test_bed = test_bed
+                .set_ailerons_left_turn()
+                .run_waiting_for(Duration::from_secs_f64(5.));
+
+            assert!(test_bed.is_yellow_pressurised());
+            assert!(test_bed.is_green_pressurised());
+            assert!(test_bed.get_left_aileron_position().get::<ratio>() > 0.9);
+            assert!(test_bed.get_right_aileron_position().get::<ratio>() < 0.1);
+
+            test_bed = test_bed
+                .set_ailerons_right_turn()
+                .run_waiting_for(Duration::from_secs_f64(5.));
+
+            assert!(test_bed.is_yellow_pressurised());
+            assert!(test_bed.is_green_pressurised());
+            assert!(test_bed.get_left_aileron_position().get::<ratio>() < 0.1);
+            assert!(test_bed.get_right_aileron_position().get::<ratio>() > 0.9);
+        }
+
+        #[test]
+        fn ailerons_droop_down_after_pressure_is_off() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .set_ptu_state(true)
+                .set_yellow_e_pump(false)
+                .run_one_tick();
+
+            test_bed = test_bed
+                .run_waiting_for(Duration::from_secs_f64(5.));
+
+            assert!(test_bed.is_yellow_pressurised());
+            assert!(test_bed.is_green_pressurised());
+            assert!(test_bed.get_left_aileron_position().get::<ratio>() > 0.4);
+            assert!(test_bed.get_right_aileron_position().get::<ratio>() > 0.4);
+
+            test_bed = test_bed
+            .set_ptu_state(false)
+            .set_yellow_e_pump(true)
+                .run_waiting_for(Duration::from_secs_f64(60.));
+
+            assert!(!test_bed.is_yellow_pressurised());
+            assert!(!test_bed.is_green_pressurised());
+            assert!(test_bed.get_left_aileron_position().get::<ratio>() < 0.1);
+            assert!(test_bed.get_right_aileron_position().get::<ratio>() < 0.1);
         }
     }
 }
