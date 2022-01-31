@@ -12,13 +12,13 @@ pub(super) fn ailerons(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Er
     // Systems use [0;1], 1 is UP
     builder.map(
         ExecuteOn::PreTick,
-        Variable::named("3D_AILERON_LEFT_DEFLECTION"),
+        Variable::named("AILERON_LEFT_DEFLECTION_DEMAND"),
         |value| (-value + 1.) / 2.,
         Variable::aspect("HYD_AILERON_LEFT_DEMAND"),
     );
     builder.map(
         ExecuteOn::PreTick,
-        Variable::named("3D_AILERON_RIGHT_DEFLECTION"),
+        Variable::named("AILERON_RIGHT_DEFLECTION_DEMAND"),
         |value| (value + 1.) / 2.,
         Variable::aspect("HYD_AILERON_RIGHT_DEMAND"),
     );
