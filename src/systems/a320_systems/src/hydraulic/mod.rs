@@ -2904,7 +2904,7 @@ impl AileronController {
         self.mode = mode;
     }
 
-    /// Receives a [-1;1] position request, convert it to [0;1] actuator position
+    /// Receives a [0;1] position request, 0 is down 1 is up
     fn set_requested_position(&mut self, requested_position: Ratio) {
         self.requested_position = requested_position;
         self.requested_position = self
@@ -2917,12 +2917,15 @@ impl HydraulicAssemblyController for AileronController {
     fn requested_mode(&self) -> LinearActuatorMode {
         self.mode
     }
+
     fn requested_position(&self) -> Ratio {
         self.requested_position
     }
+
     fn should_lock(&self) -> bool {
         false
     }
+
     fn requested_lock_position(&self) -> Ratio {
         Ratio::default()
     }
@@ -2975,6 +2978,7 @@ impl ElacComputer {
     }
 
     fn set_blue_circuit_position_control(&mut self) {
+        // Blue is outboard actuator, so 0 index takes position control mode
         self.left_controllers[0].set_mode(LinearActuatorMode::PositionControl);
         self.left_controllers[1].set_mode(LinearActuatorMode::ActiveDamping);
 
@@ -2983,6 +2987,7 @@ impl ElacComputer {
     }
 
     fn set_green_circuit_position_control(&mut self) {
+        // Green is inboard actuator, so 1 index takes position control mode
         self.left_controllers[0].set_mode(LinearActuatorMode::ActiveDamping);
         self.left_controllers[1].set_mode(LinearActuatorMode::PositionControl);
 

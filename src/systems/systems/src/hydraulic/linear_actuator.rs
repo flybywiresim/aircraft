@@ -702,6 +702,7 @@ impl<const N: usize> HydraulicLinearActuatorAssembly<N> {
     }
 
     pub fn actuator(&mut self, index: usize) -> &mut impl Actuator {
+        assert!(index < N);
         &mut self.linear_actuators[index]
     }
 
