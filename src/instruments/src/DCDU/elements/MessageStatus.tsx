@@ -1,6 +1,7 @@
 import React from 'react';
 import { AtsuMessageComStatus, AtsuMessageDirection } from '@atsu/messages/AtsuMessage';
 import { CpdlcMessage, CpdlcMessageRequestedResponseType, CpdlcMessageResponse } from '@atsu/messages/CpdlcMessage';
+import { Checkerboard } from './Checkerboard';
 
 type MessageStatusProps = {
     message: CpdlcMessage
@@ -79,13 +80,19 @@ export const MessageStatus: React.FC<MessageStatusProps> = ({ message }) => {
                 {message.Station}
             </text>
             <>
-                <rect
-                    width={background.width}
-                    height={background.height}
-                    fill={backgroundColor}
-                    x={background.x}
-                    y={background.y}
-                />
+                (
+                {backgroundRequired
+                && (
+                    <Checkerboard
+                        x={background.x}
+                        y={background.y}
+                        width={background.width}
+                        height={background.height}
+                        cellSize={10}
+                        fill={backgroundColor}
+                    />
+                )}
+                )
                 <text className={statusClass} x="3716" y="290">
                     <tspan>{text}</tspan>
                 </text>
