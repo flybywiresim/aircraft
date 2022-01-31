@@ -2,6 +2,7 @@ import React, { FC, useEffect, useRef, useState } from 'react';
 
 interface ScrollableContainerProps {
     height: number;
+    className?: string;
 }
 
 /**
@@ -9,7 +10,7 @@ interface ScrollableContainerProps {
  * @param height - height of the container, in rem, that if exceeded will cause the container to become scrollable
  * @param resizeDependencies - optional dependency list to trigger a re-calculation of the height of the content
  */
-export const ScrollableContainer: FC<ScrollableContainerProps> = ({ children, height }) => {
+export const ScrollableContainer: FC<ScrollableContainerProps> = ({ children, className, height }) => {
     const [contentOverflows, setContentOverflows] = useState(false);
     const contentRef = useRef<HTMLDivElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -45,12 +46,12 @@ export const ScrollableContainer: FC<ScrollableContainerProps> = ({ children, he
 
     return (
         <div
-            className={`w-full ${contentOverflows && 'overflow-y-scroll'} h-full scrollbar`}
+            className={`w-full ${contentOverflows && 'overflow-y-scroll'} scrollbar ${className}`}
             style={{ height: `${height}rem` }}
             ref={containerRef}
             onMouseDown={handleMouseDown}
         >
-            <div className={`${contentOverflows && 'mr-6'} h-full`} ref={contentRef}>
+            <div className={`${contentOverflows && 'mr-6'}`} ref={contentRef}>
                 {children}
             </div>
         </div>
