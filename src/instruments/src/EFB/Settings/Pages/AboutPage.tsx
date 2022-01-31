@@ -13,16 +13,25 @@ interface BuildInfo {
 interface BuildInfoEntryProps {
     title: string;
     value?: string;
+    underline?: number;
 }
 
 const SPACE_BETWEEN = 14;
 
-const BuildInfoEntry = ({ title, value }: BuildInfoEntryProps) => (
-    <div className="flex flex-row mt-2 font-mono">
-        <p>{title + '\u00A0'.repeat(SPACE_BETWEEN - title.length)}</p>
-        <p className="ml-4">{value}</p>
-    </div>
-);
+const BuildInfoEntry = ({ title, value, underline = 0 }: BuildInfoEntryProps) => {
+    const first = value?.substring(0, underline);
+    const last = value?.substring(underline);
+
+    return (
+        <div className="flex flex-row mt-2 font-mono">
+            <p>{title + '\u00A0'.repeat(SPACE_BETWEEN - title.length)}</p>
+            <p className="ml-4">
+                <span className="underline text-theme-highlight">{first}</span>
+                {last}
+            </p>
+        </div>
+    );
+};
 
 export const AboutPage = () => {
     const [buildInfo, setBuildInfo] = useState<BuildInfo | undefined>(undefined);
@@ -39,7 +48,7 @@ export const AboutPage = () => {
 
     return (
         <SettingsPage name="About">
-            <div className="flex flex-col justify-center px-16 h-full">
+            <div className="flex absolute inset-y-0 flex-col justify-center px-16">
                 <div className="flex flex-row items-center">
 
                     <div className="flex flex-col">
@@ -63,7 +72,7 @@ export const AboutPage = () => {
                     <div className="mt-4">
                         <BuildInfoEntry title="Built" value={buildInfo?.built} />
                         <BuildInfoEntry title="Ref" value={buildInfo?.ref} />
-                        <BuildInfoEntry title="SHA" value={buildInfo?.sha} />
+                        <BuildInfoEntry title="SHA" value={buildInfo?.sha} underline={8} />
                         <BuildInfoEntry title="Event Name" value={buildInfo?.eventName} />
                     </div>
                 </div>
