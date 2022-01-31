@@ -1,3 +1,4 @@
+import React from 'react';
 import { ColorCode, MetarParserType, Visibility, Wind } from '../../Common/metarTypes';
 
 /**
@@ -397,39 +398,6 @@ export function parseMetar(metarString: string): MetarParserType {
     }
 
     return metarObject;
-}
-
-/**
- * Returns a preformatted HTML string with coloring for METAR parts marked with
- * coloring hints.
- * ColorCode: src/instruments/src/Common/metarTypes.ts
- * @param metar
- */
-export function getColoredMetar(metar: MetarParserType): string {
-    let coloredMetar: string = '';
-    metar.raw_parts.forEach((metarPart, index) => {
-        switch (metar.color_codes[index]) {
-        case ColorCode.Highlight:
-            coloredMetar += `<span class='text-teal-regular'>${metar.raw_parts[index]}</span> `;
-            break;
-        case ColorCode.Info:
-            coloredMetar += `<span class='text-gray-500'>${metar.raw_parts[index]}</span> `;
-            break;
-        case ColorCode.Caution:
-            coloredMetar += `<span class='text-yellow-500'>${metar.raw_parts[index]}</span> `;
-            break;
-        case ColorCode.Warning:
-            coloredMetar += `<span class='text-red-600'>${metar.raw_parts[index]}</span> `;
-            break;
-        case ColorCode.TrendMarker:
-            coloredMetar += `<span class='underline font-bold text-gray-500'>${metar.raw_parts[index]}</span> `;
-            break;
-        case ColorCode.None:
-        default:
-            coloredMetar += `${metar.raw_parts[index]} `;
-        }
-    });
-    return coloredMetar;
 }
 
 const convert = {

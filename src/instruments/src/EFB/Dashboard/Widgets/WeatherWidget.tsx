@@ -3,7 +3,8 @@ import { Metar } from '@flybywiresim/api-client';
 import { IconCloud, IconDroplet, IconGauge, IconPoint, IconTemperature, IconWind } from '@tabler/icons';
 import { MetarParserType } from '@instruments/common/metarTypes';
 import { usePersistentProperty } from '@instruments/common/persistence';
-import { parseMetar, getColoredMetar } from '../../Utils/parseMetar';
+import { parseMetar } from '../../Utils/parseMetar';
+import ColoredMetar from './ColorMetar';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { useAppDispatch } from '../../Store/store';
 import { setUserDepartureIcao, setUserDestinationIcao } from '../../Store/features/dashboard';
@@ -60,7 +61,6 @@ export const WeatherWidget:FC<WeatherWidgetProps> = ({ name, simbriefIcao, userI
     const [metar, setMetar] = useState<MetarParserType>(MetarParserTypeProp);
     const [showMetar, setShowMetar] = usePersistentProperty(`CONFIG_SHOW_METAR_${name}`, 'DISABLED');
     const [baroType] = usePersistentProperty('CONFIG_INIT_BARO_UNIT', 'HPA');
-    const [coloredMetar, setColoredMetar] = useState('');
     const [metarSource] = usePersistentProperty('CONFIG_METAR_SRC', 'MSFS');
     const getBaroTypeForAirport = (icao: string) => (['K', 'C', 'M', 'P', 'RJ', 'RO', 'TI', 'TJ']
         .some((r) => icao.toUpperCase().startsWith(r)) ? 'IN HG' : 'HPA');
@@ -88,11 +88,6 @@ export const WeatherWidget:FC<WeatherWidgetProps> = ({ name, simbriefIcao, userI
         );
     };
 
-    const MetarText = () => (
-        // eslint-disable-next-line react/no-danger
-        <span dangerouslySetInnerHTML={{ __html: coloredMetar }} />
-    );
-
     const handleIcao = (icao: string) => {
         if (name === 'origin') {
             dispatch(setUserDepartureIcao(icao));
@@ -115,7 +110,6 @@ export const WeatherWidget:FC<WeatherWidgetProps> = ({ name, simbriefIcao, userI
         return Metar.get(icao, source)
             .then((result) => {
                 const metarParse = parseMetar(result.metar);
-                setColoredMetar(getColoredMetar(metarParse));
                 setMetar(metarParse);
             })
             .catch(() => {
@@ -258,7 +252,7 @@ export const WeatherWidget:FC<WeatherWidgetProps> = ({ name, simbriefIcao, userI
                                         {metar.raw_text
                                             ? (
                                                 <>
-                                                    <MetarText />
+                                                    <ColoredMetar rawParts={metar.raw_parts} colorCodes={metar.color_codes} />
                                                 </>
                                             ) : (
                                                 <>
