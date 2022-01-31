@@ -6,15 +6,18 @@ import { Button } from './Button';
 
 type WilcoUnableButtonsProps = {
     message: CpdlcMessage,
+    selectedResponse: CpdlcMessageResponse | undefined,
     setMessageStatus(message: number, response: CpdlcMessageResponse | undefined),
     setStatus: (sender: string, message: string) => void,
     isStatusAvailable: (sender: string) => boolean,
     closeMessage: (message: number) => void
 }
 
-export const WilcoUnableButtons: React.FC<WilcoUnableButtonsProps> = ({ message, setMessageStatus, setStatus, isStatusAvailable, closeMessage }) => {
+export const WilcoUnableButtons: React.FC<WilcoUnableButtonsProps> = ({ message, selectedResponse, setMessageStatus, setStatus, isStatusAvailable, closeMessage }) => {
+    const buttonsBlocked = message.Response !== undefined && message.Response.ComStatus === AtsuMessageComStatus.Sending;
+
     useUpdate(() => {
-        if (message.Response !== undefined && message.Response.ComStatus === AtsuMessageComStatus.Sending) {
+        if (buttonsBlocked) {
             if (isStatusAvailable('Buttons') === true) {
                 setStatus('Buttons', 'SENDING');
             }
@@ -25,25 +28,21 @@ export const WilcoUnableButtons: React.FC<WilcoUnableButtonsProps> = ({ message,
     let showAnswers = false;
     let showStandby = false;
     let showSend = false;
-    const closeClickabel = message.Response !== undefined && message.Response.Message !== 'STANDBY' && message.Response.ComStatus === AtsuMessageComStatus.Sent;
 
-    if (message.Response === undefined && message.ResponseType === undefined) {
-        // the standard case for new messages
-        showAnswers = true;
-        showStandby = true;
-    } else if (message.Response === undefined || message.Response.Message === 'STANDBY' || message.ResponseType === CpdlcMessageResponse.Standby) {
-        // STBY was sent or is selected
-        if (message.Response !== undefined && message.Response.ComStatus === AtsuMessageComStatus.Sent && message.ResponseType === CpdlcMessageResponse.Standby) {
-            // STBY was sent and no other message is selected
+    // new message or a message update
+    if (selectedResponse === undefined) {
+        if (message.ResponseType === undefined) {
+            showStandby = true;
             showAnswers = true;
-        } else {
-            // STBY is not sent
-            showSend = true;
+        } else if (message.ResponseType === CpdlcMessageResponse.Standby) {
+            showAnswers = true;
         }
+    } else if (selectedResponse !== undefined) {
+        showSend = true;
     }
 
     const clicked = (index: string) : void => {
-        if (message.UniqueMessageID === undefined) {
+        if (message.UniqueMessageID === undefined || buttonsBlocked) {
             return;
         }
 
@@ -63,13 +62,13 @@ export const WilcoUnableButtons: React.FC<WilcoUnableButtonsProps> = ({ message,
                 systemBusy = systemBusy || SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_SEND_UID', 'number') !== -1;
 
                 if (!systemBusy) {
-                    SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_ANSWER', 'number', message.ResponseType as number);
+                    SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_ANSWER', 'number', selectedResponse as number);
                     SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_SEND_UID', 'number', message.UniqueMessageID);
                 } else {
                     setStatus('Buttons', 'SYSTEM BUSY');
                 }
             }
-        } else if (closeClickabel && index === 'R2') {
+        } else if (index === 'R2') {
             closeMessage(message.UniqueMessageID);
         }
     };
@@ -81,24 +80,24 @@ export const WilcoUnableButtons: React.FC<WilcoUnableButtonsProps> = ({ message,
                     <Button
                         messageId={message.UniqueMessageID}
                         index="L1"
-                        content="*UNABLE"
-                        active
+                        content="UNABLE"
+                        active={!buttonsBlocked}
                         onClick={clicked}
                     />
                     {showStandby && (
                         <Button
                             messageId={message.UniqueMessageID}
                             index="R1"
-                            content="STBY*"
-                            active
+                            content="STBY"
+                            active={!buttonsBlocked}
                             onClick={clicked}
                         />
                     )}
                     <Button
                         messageId={message.UniqueMessageID}
                         index="R2"
-                        content="WILCO*"
-                        active
+                        content="WILCO"
+                        active={!buttonsBlocked}
                         onClick={clicked}
                     />
                 </>
@@ -108,15 +107,15 @@ export const WilcoUnableButtons: React.FC<WilcoUnableButtonsProps> = ({ message,
                     <Button
                         messageId={message.UniqueMessageID}
                         index="L1"
-                        content="*CANCEL"
-                        active
+                        content="CANCEL"
+                        active={!buttonsBlocked}
                         onClick={clicked}
                     />
                     <Button
                         messageId={message.UniqueMessageID}
                         index="R2"
-                        content="SEND*"
-                        active
+                        content="SEND"
+                        active={!buttonsBlocked}
                         onClick={clicked}
                     />
                 </>
@@ -125,8 +124,8 @@ export const WilcoUnableButtons: React.FC<WilcoUnableButtonsProps> = ({ message,
                 <Button
                     messageId={message.UniqueMessageID}
                     index="R2"
-                    content={`CLOSE${closeClickabel ? '*' : ''}`}
-                    active={closeClickabel}
+                    content="CLOSE"
+                    active={!buttonsBlocked}
                     onClick={clicked}
                 />
             )}

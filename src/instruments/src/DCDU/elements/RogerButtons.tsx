@@ -6,15 +6,18 @@ import { Button } from './Button';
 
 type RogerButtonsProps = {
     message: CpdlcMessage,
+    selectedResponse: CpdlcMessageResponse | undefined,
     setMessageStatus(message: number, response: CpdlcMessageResponse | undefined),
     setStatus: (sender: string, message: string) => void,
     isStatusAvailable: (sender: string) => boolean,
     closeMessage: (message: number) => void
 }
 
-export const RogerButtons: React.FC<RogerButtonsProps> = ({ message, setMessageStatus, setStatus, isStatusAvailable, closeMessage }) => {
+export const RogerButtons: React.FC<RogerButtonsProps> = ({ message, selectedResponse, setMessageStatus, setStatus, isStatusAvailable, closeMessage }) => {
+    const buttonsBlocked = message.Response !== undefined && message.ComStatus === AtsuMessageComStatus.Sending;
+
     useUpdate(() => {
-        if (message.ComStatus === AtsuMessageComStatus.Sending) {
+        if (buttonsBlocked) {
             if (isStatusAvailable('Buttons') === true) {
                 setStatus('Buttons', 'SENDING');
             }
@@ -24,16 +27,15 @@ export const RogerButtons: React.FC<RogerButtonsProps> = ({ message, setMessageS
     // define the rules for the visualization of the buttons
     let showAnswers = false;
     let showSend = false;
-    const closeClickabel = message.Response !== undefined && message.Response.ComStatus === AtsuMessageComStatus.Sent;
 
-    if (message.Response === undefined && message.ResponseType === undefined) {
+    if (selectedResponse === undefined && message.Response === undefined) {
         showAnswers = true;
     } else if (message.Response === undefined) {
         showSend = true;
     }
 
     const clicked = (index: string) : void => {
-        if (message.UniqueMessageID === undefined) {
+        if (message.UniqueMessageID === undefined || buttonsBlocked) {
             return;
         }
 
@@ -49,13 +51,13 @@ export const RogerButtons: React.FC<RogerButtonsProps> = ({ message, setMessageS
                 systemBusy = systemBusy || SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_SEND_UID', 'number') !== -1;
 
                 if (!systemBusy) {
-                    SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_ANSWER', 'number', message.ResponseType as number);
+                    SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_ANSWER', 'number', selectedResponse as number);
                     SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_SEND_UID', 'number', message.UniqueMessageID);
                 } else {
                     setStatus('Buttons', 'SYSTEM BUSY');
                 }
             }
-        } else if (closeClickabel && index === 'R2') {
+        } else if (index === 'R2') {
             closeMessage(message.UniqueMessageID);
         }
     };
@@ -67,8 +69,8 @@ export const RogerButtons: React.FC<RogerButtonsProps> = ({ message, setMessageS
                     <Button
                         messageId={message.UniqueMessageID}
                         index="R2"
-                        content="ROGER*"
-                        active
+                        content="ROGER"
+                        active={!buttonsBlocked}
                         onClick={clicked}
                     />
                 </>
@@ -78,15 +80,15 @@ export const RogerButtons: React.FC<RogerButtonsProps> = ({ message, setMessageS
                     <Button
                         messageId={message.UniqueMessageID}
                         index="L1"
-                        content="*CANCEL"
-                        active
+                        content="CANCEL"
+                        active={!buttonsBlocked}
                         onClick={clicked}
                     />
                     <Button
                         messageId={message.UniqueMessageID}
                         index="R2"
-                        content="SEND*"
-                        active
+                        content="SEND"
+                        active={!buttonsBlocked}
                         onClick={clicked}
                     />
                 </>
@@ -95,8 +97,8 @@ export const RogerButtons: React.FC<RogerButtonsProps> = ({ message, setMessageS
                 <Button
                     messageId={message.UniqueMessageID}
                     index="R2"
-                    content={`CLOSE${closeClickabel ? '*' : ''}`}
-                    active={closeClickabel}
+                    content="CLOSE"
+                    active={!buttonsBlocked}
                     onClick={clicked}
                 />
             )}

@@ -4,13 +4,14 @@ import { CpdlcMessage, CpdlcMessageRequestedResponseType, CpdlcMessageResponse }
 import { Checkerboard } from './Checkerboard';
 
 type MessageStatusProps = {
-    message: CpdlcMessage
+    message: CpdlcMessage,
+    selectedResponse : CpdlcMessageResponse | undefined
 }
 
-const translateStatus = (message: CpdlcMessage) => {
+const translateStatus = (response: CpdlcMessageResponse | undefined, message: CpdlcMessage) => {
     const answerExpected = message.RequestedResponses !== CpdlcMessageRequestedResponseType.NotRequired && message.RequestedResponses !== CpdlcMessageRequestedResponseType.No;
 
-    switch (message.ResponseType) {
+    switch (response) {
     case CpdlcMessageResponse.Standby:
         return 'STBY';
     case CpdlcMessageResponse.Wilco:
@@ -40,27 +41,32 @@ const translateStatus = (message: CpdlcMessage) => {
     }
 };
 
-export const MessageStatus: React.FC<MessageStatusProps> = ({ message }) => {
+export const MessageStatus: React.FC<MessageStatusProps> = ({ message, selectedResponse }) => {
     let statusClass = 'status-message ';
-    if (message.ResponseType === undefined) {
+    if (message.ResponseType === undefined && selectedResponse === undefined) {
         statusClass += 'status-open';
     } else {
         statusClass += 'status-other';
     }
 
-    let backgroundRequired = false;
-    let backgroundColor = 'rgba(0,0,0,0)';
-    if (message.Direction === AtsuMessageDirection.Input && message.ResponseType !== undefined) {
-        if (message.Response === undefined || message.Response.ComStatus === AtsuMessageComStatus.Open || message.Response.ComStatus === AtsuMessageComStatus.Failed) {
-            backgroundColor = 'rgb(0,255,255)';
-        } else {
-            backgroundColor = 'rgb(0,255,0)';
-        }
-        backgroundRequired = true;
+    // calculate the position of the background rectangle
+    let text = '';
+    if (selectedResponse !== undefined) {
+        text = translateStatus(selectedResponse, message);
+    } else {
+        text = translateStatus(message.ResponseType, message);
     }
 
-    // calculate the position of the background rectangle
-    const text = translateStatus(message);
+    const backgroundRequired = text !== 'OPEN' && text !== 'SENT';
+    let backgroundColor = 'rgba(0,0,0,0)';
+    if (message.Direction === AtsuMessageDirection.Input) {
+        if (selectedResponse === undefined || selectedResponse === message.ResponseType) {
+            backgroundColor = 'rgb(0,255,0)';
+        } else {
+            backgroundColor = 'rgb(0,255,255)';
+        }
+    }
+
     const background = { x: 0, y: 0, width: 0, height: 0 };
     if (text.length !== 0) {
         // one character has a width of 116px and a spacing of 24px per side

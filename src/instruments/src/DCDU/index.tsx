@@ -32,7 +32,7 @@ function powerAvailable() {
     return getSimVar('L:A32NX_ELEC_DC_1_BUS_IS_POWERED', 'Bool') || getSimVar('L:A32NX_ELEC_DC_2_BUS_IS_POWERED', 'Bool');
 }
 
-const sortedMessageArray = (messages: Map<number, [CpdlcMessage, number, boolean]>): [CpdlcMessage, number, boolean][] => {
+const sortedMessageArray = (messages: Map<number, [CpdlcMessage, number, boolean, CpdlcMessageResponse | undefined]>): [CpdlcMessage, number, boolean, CpdlcMessageResponse | undefined][] => {
     const arrMessages = Array.from(messages.values());
     arrMessages.sort((a, b) => a[1] - b[1]);
     return arrMessages;
@@ -41,7 +41,7 @@ const sortedMessageArray = (messages: Map<number, [CpdlcMessage, number, boolean
 const DCDU: React.FC = () => {
     const [isColdAndDark] = useSimVar('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool', 200);
     const [state, setState] = useState(isColdAndDark ? DcduState.Off : DcduState.Active);
-    const [messages, setMessages] = useState(new Map<number, [CpdlcMessage, number, boolean]>());
+    const [messages, setMessages] = useState(new Map<number, [CpdlcMessage, number, boolean, CpdlcMessageResponse | undefined]>());
     const [statusMessage, setStatusMessage] = useState({ sender: '', message: '', remainingMilliseconds: 0 });
     const [messageUid, setMessageUid] = useState(-1);
     const [atcMessage, setAtcMessage] = useState('');
@@ -72,7 +72,7 @@ const DCDU: React.FC = () => {
 
         const entry = updateMap.get(uid);
         if (entry !== undefined) {
-            entry[0].ResponseType = response;
+            entry[3] = response;
             entry[2] = true;
             updateMap.set(uid, entry);
         }
@@ -210,7 +210,7 @@ const DCDU: React.FC = () => {
                 readMessage = cpdlcMessage.Response !== undefined || cpdlcMessage.ResponseType !== undefined;
             }
 
-            setMessages(messages.set(cpdlcMessage.UniqueMessageID, [cpdlcMessage, dcduTimestamp, readMessage]));
+            setMessages(messages.set(cpdlcMessage.UniqueMessageID, [cpdlcMessage, dcduTimestamp, readMessage, undefined]));
 
             if (messageUid === -1) {
                 setMessageUid(cpdlcMessage.UniqueMessageID);
@@ -257,7 +257,8 @@ const DCDU: React.FC = () => {
 
     // prepare the data
     let messageIndex = -1;
-    let message : CpdlcMessage | undefined = undefined;
+    let message: CpdlcMessage | undefined = undefined;
+    let response: CpdlcMessageResponse | undefined = undefined;
     if (state === DcduState.Active && messages.size !== 0) {
         const arrMessages = sortedMessageArray(messages);
 
@@ -265,6 +266,7 @@ const DCDU: React.FC = () => {
             messageIndex = arrMessages.findIndex((element) => messageUid === element[0].UniqueMessageID);
             if (messageIndex !== -1) {
                 message = arrMessages[messageIndex][0];
+                response = arrMessages[messageIndex][3];
             }
         }
     }
@@ -316,6 +318,7 @@ const DCDU: React.FC = () => {
                         <>
                             <MessageStatus
                                 message={message}
+                                selectedResponse={response}
                             />
                             <DatalinkMessage
                                 message={message}
@@ -328,6 +331,7 @@ const DCDU: React.FC = () => {
                     {(message !== undefined && answerRequired && message.RequestedResponses === CpdlcMessageRequestedResponseType.WilcoUnable && (
                         <WilcoUnableButtons
                             message={message}
+                            selectedResponse={response}
                             setMessageStatus={setMessageStatus}
                             setStatus={setStatus}
                             isStatusAvailable={isStatusAvailable}
@@ -337,6 +341,7 @@ const DCDU: React.FC = () => {
                     {(message !== undefined && answerRequired && message.RequestedResponses === CpdlcMessageRequestedResponseType.AffirmNegative && (
                         <AffirmNegativeButtons
                             message={message}
+                            selectedResponse={response}
                             setMessageStatus={setMessageStatus}
                             setStatus={setStatus}
                             isStatusAvailable={isStatusAvailable}
@@ -346,6 +351,7 @@ const DCDU: React.FC = () => {
                     {(message !== undefined && answerRequired && message.RequestedResponses === CpdlcMessageRequestedResponseType.Roger && (
                         <RogerButtons
                             message={message}
+                            selectedResponse={response}
                             setMessageStatus={setMessageStatus}
                             setStatus={setStatus}
                             isStatusAvailable={isStatusAvailable}
