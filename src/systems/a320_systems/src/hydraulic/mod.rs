@@ -190,11 +190,9 @@ impl A320CargoDoorFactory {
     const FLOW_CONTROL_FORCE_GAIN: f64 = 200000.;
 
     fn a320_cargo_door_actuator(
-        context: &mut InitContext,
         bounded_linear_length: &impl BoundedLinearLength,
     ) -> LinearActuator {
         LinearActuator::new(
-            context,
             bounded_linear_length,
             2,
             Length::new::<meter>(0.04422),
@@ -238,15 +236,14 @@ impl A320CargoDoorFactory {
 
     /// Builds a cargo door assembly consisting of the door physical rigid body and the hydraulic actuator connected
     /// to it
-    fn a320_cargo_door_assembly(context: &mut InitContext) -> HydraulicLinearActuatorAssembly<1> {
+    fn a320_cargo_door_assembly() -> HydraulicLinearActuatorAssembly<1> {
         let cargo_door_body = A320CargoDoorFactory::a320_cargo_door_body(true);
-        let cargo_door_actuator =
-            A320CargoDoorFactory::a320_cargo_door_actuator(context, &cargo_door_body);
+        let cargo_door_actuator = A320CargoDoorFactory::a320_cargo_door_actuator(&cargo_door_body);
         HydraulicLinearActuatorAssembly::new([cargo_door_actuator], cargo_door_body)
     }
 
     fn new_a320_cargo_door(context: &mut InitContext, id: &str) -> CargoDoor {
-        let assembly = A320CargoDoorFactory::a320_cargo_door_assembly(context);
+        let assembly = A320CargoDoorFactory::a320_cargo_door_assembly();
         CargoDoor::new(context, id, assembly)
     }
 }
@@ -259,17 +256,13 @@ impl A320AileronFactory {
 
     const MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING: f64 = 800000.;
 
-    fn a320_aileron_actuator(
-        context: &mut InitContext,
-        bounded_linear_length: &impl BoundedLinearLength,
-    ) -> LinearActuator {
+    fn a320_aileron_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
         let randomized_damping = random_from_range(
             Self::MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING / 10.,
             Self::MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING,
         );
 
         LinearActuator::new(
-            context,
             bounded_linear_length,
             1,
             Length::new::<meter>(0.04),
@@ -313,13 +306,11 @@ impl A320AileronFactory {
 
     /// Builds an aileron assembly consisting of the aileron physical rigid body and two hydraulic actuators connected
     /// to it
-    fn a320_aileron_assembly(context: &mut InitContext) -> HydraulicLinearActuatorAssembly<2> {
+    fn a320_aileron_assembly() -> HydraulicLinearActuatorAssembly<2> {
         let aileron_body = A320AileronFactory::a320_aileron_body();
 
-        let aileron_actuator_outboard =
-            A320AileronFactory::a320_aileron_actuator(context, &aileron_body);
-        let aileron_actuator_inbord =
-            A320AileronFactory::a320_aileron_actuator(context, &aileron_body);
+        let aileron_actuator_outboard = A320AileronFactory::a320_aileron_actuator(&aileron_body);
+        let aileron_actuator_inbord = A320AileronFactory::a320_aileron_actuator(&aileron_body);
 
         HydraulicLinearActuatorAssembly::new(
             [aileron_actuator_outboard, aileron_actuator_inbord],
@@ -328,7 +319,7 @@ impl A320AileronFactory {
     }
 
     fn new_aileron(context: &mut InitContext, id: AileronSide) -> AileronAssembly {
-        let assembly = A320AileronFactory::a320_aileron_assembly(context);
+        let assembly = A320AileronFactory::a320_aileron_assembly();
         AileronAssembly::new(context, id, assembly)
     }
 }
@@ -3111,11 +3102,6 @@ impl AileronAssembly {
     }
 }
 impl SimulationElement for AileronAssembly {
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        self.hydraulic_assembly.accept(visitor);
-        visitor.visit(self);
-    }
-
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.position_id, self.position.get::<ratio>());
     }
@@ -7185,8 +7171,7 @@ mod tests {
                 .set_yellow_e_pump(false)
                 .run_one_tick();
 
-            test_bed = test_bed
-                .run_waiting_for(Duration::from_secs_f64(5.));
+            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(5.));
 
             assert!(test_bed.is_yellow_pressurised());
             assert!(test_bed.is_green_pressurised());
@@ -7194,8 +7179,8 @@ mod tests {
             assert!(test_bed.get_right_aileron_position().get::<ratio>() > 0.4);
 
             test_bed = test_bed
-            .set_ptu_state(false)
-            .set_yellow_e_pump(true)
+                .set_ptu_state(false)
+                .set_yellow_e_pump(true)
                 .run_waiting_for(Duration::from_secs_f64(60.));
 
             assert!(!test_bed.is_yellow_pressurised());

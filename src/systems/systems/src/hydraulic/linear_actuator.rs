@@ -19,10 +19,7 @@ use uom::si::{
 
 use crate::{
     shared::{interpolation, low_pass_filter::LowPassFilter, pid::PidController},
-    simulation::{
-        InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
-        UpdateContext, VariableIdentifier,
-    },
+    simulation::UpdateContext,
 };
 
 use std::time::Duration;
@@ -70,11 +67,6 @@ pub enum LinearActuatorMode {
 /// free moving mode, usable for gravity extension, or for aileron droop.
 #[derive(PartialEq, Clone, Copy)]
 struct CoreHydraulicForce {
-    kp_id: VariableIdentifier,
-    ki_id: VariableIdentifier,
-    oloop_gain_id: VariableIdentifier,
-    max_flow_id: VariableIdentifier,
-
     current_mode: LinearActuatorMode,
     closed_valves_reference_position: Ratio,
 
@@ -101,11 +93,6 @@ struct CoreHydraulicForce {
     max_force: Force,
 
     pid_controller: PidController,
-
-    kp_read: f64,
-    ki_read: f64,
-    oloop_gain_read: f64,
-    maxflow_read: f64,
 }
 impl CoreHydraulicForce {
     const OPEN_LOOP_GAIN: f64 = 1.;
@@ -116,7 +103,6 @@ impl CoreHydraulicForce {
     const MIN_SPEED_FOR_DAMPING_RESET_M_PER_S: f64 = 0.00001;
 
     fn new(
-        context: &mut InitContext,
         init_position: Ratio,
         active_hydraulic_damping_constant: f64,
         slow_hydraulic_damping_constant: f64,
@@ -135,11 +121,6 @@ impl CoreHydraulicForce {
     ) -> Self {
         let max_force = Pressure::new::<psi>(3000.) * bore_side_area;
         Self {
-            kp_id: context.get_identifier("TEST_KP".to_owned()),
-            ki_id: context.get_identifier("TEST_KI".to_owned()),
-            oloop_gain_id: context.get_identifier("TEST_OLOOP".to_owned()),
-            max_flow_id: context.get_identifier("TEST_FLOW".to_owned()),
-
             current_mode: LinearActuatorMode::ClosedValves,
             closed_valves_reference_position: init_position,
 
@@ -171,11 +152,6 @@ impl CoreHydraulicForce {
                 0.,
                 flow_control_force_gain,
             ),
-
-            kp_read: flow_control_proportional_gain,
-            ki_read: flow_control_integral_gain,
-            oloop_gain_read: Self::OPEN_LOOP_GAIN,
-            maxflow_read: max_flow.get::<gallon_per_second>(),
         }
     }
 
@@ -332,16 +308,8 @@ impl CoreHydraulicForce {
                         .update(context.delta(), self.force_active_damping(speed));
                 } else {
                     self.force_filtered.reset(Force::default());
-                    // self.speed_filtered.reset(Velocity::default())
                 }
                 self.force_raw = self.force_filtered.output();
-
-                // println!(
-                //     "LAST FORCE ACT DAMPING {:.0} Raw {:.4} Speed{}",
-                //     self.force_raw.get::<newton>(),
-                //     self.force_active_damping(speed).get::<newton>(),
-                //     speed.get::<meter_per_second>()
-                // );
             }
             LinearActuatorMode::ClosedCircuitDamping => {
                 if speed.get::<meter_per_second>().abs() > Self::MIN_SPEED_FOR_DAMPING_RESET_M_PER_S
@@ -350,17 +318,9 @@ impl CoreHydraulicForce {
                         .update(context.delta(), self.force_closed_circuit_damping(speed));
                 } else {
                     self.force_filtered.reset(Force::default());
-                    // self.speed_filtered.reset(Velocity::default())
                 }
 
                 self.force_raw = self.force_filtered.output();
-
-                // println!(
-                //     "LAST FORCE SLOW DAMPING {:.0} Raw {:.4} Speed{}",
-                //     self.force_raw.get::<newton>(),
-                //     self.force_closed_circuit_damping(speed).get::<newton>(),
-                //     speed.get::<meter_per_second>()
-                // );
             }
             LinearActuatorMode::PositionControl => {
                 self.force_raw = self.force_position_control(
@@ -414,7 +374,7 @@ impl CoreHydraulicForce {
         let position_error = required_position - position_normalized;
 
         let open_loop_flow_target = VolumeRate::new::<cubic_meter_per_second>(
-            position_error.get::<ratio>().powi(3) * self.oloop_gain_read,
+            position_error.get::<ratio>().powi(3) * Self::OPEN_LOOP_GAIN,
         );
 
         let open_loop_modifier_from_position = interpolation(
@@ -423,9 +383,7 @@ impl CoreHydraulicForce {
             position_normalized.get::<ratio>(),
         );
 
-        (open_loop_flow_target
-            .min(VolumeRate::new::<gallon_per_second>(self.maxflow_read))
-            .max(VolumeRate::new::<gallon_per_second>(-self.maxflow_read)))
+        (open_loop_flow_target.min(self.max_flow).max(self.min_flow))
             * open_loop_modifier_from_position
     }
 
@@ -459,8 +417,6 @@ impl CoreHydraulicForce {
     ) -> Force {
         let open_loop_flow_target = self.open_loop_flow(required_position, position_normalized);
 
-        self.pid_controller.set_kp_ki(self.kp_read, self.ki_read);
-
         self.pid_controller
             .change_setpoint(open_loop_flow_target.get::<gallon_per_second>());
 
@@ -471,38 +427,7 @@ impl CoreHydraulicForce {
             Some(context.delta()),
         ));
 
-        // println!(
-        //     "LAST FORCE CONTROL {:.0} kp {:.3} ki {:.3} Oloop {:.3}",
-        //     self.last_control_force.get::<newton>(),
-        //     self.kp_read,
-        //     self.ki_read,
-        //     open_loop_flow_target.get::<gallon_per_second>()
-        // );
-
         self.last_control_force
-    }
-}
-impl SimulationElement for CoreHydraulicForce {
-    fn read(&mut self, reader: &mut SimulatorReader) {
-        let kp_read: f64 = reader.read(&self.kp_id);
-        let ki_read: f64 = reader.read(&self.ki_id);
-        let oloop_gain_read: f64 = reader.read(&self.oloop_gain_id);
-        let maxflow_read: f64 = reader.read(&self.max_flow_id);
-
-        if kp_read != 0. {
-            self.kp_read = reader.read(&self.kp_id);
-        }
-
-        if ki_read != 0. {
-            self.ki_read = reader.read(&self.ki_id);
-        }
-
-        if oloop_gain_read != 0. {
-            self.oloop_gain_read = reader.read(&self.oloop_gain_id);
-        }
-        if maxflow_read != 0. {
-            self.maxflow_read = reader.read(&self.max_flow_id);
-        }
     }
 }
 
@@ -550,7 +475,6 @@ pub struct LinearActuator {
 }
 impl LinearActuator {
     pub fn new(
-        context: &mut InitContext,
         bounded_linear_length: &impl BoundedLinearLength,
         number_of_actuators: u8,
         bore_side_diameter: Length,
@@ -634,7 +558,6 @@ impl LinearActuator {
             requested_position: Ratio::new::<ratio>(0.),
 
             core_hydraulics: CoreHydraulicForce::new(
-                context,
                 init_position_normalized,
                 active_hydraulic_damping_constant,
                 slow_hydraulic_damping_constant,
@@ -755,13 +678,6 @@ impl Actuator for LinearActuator {
         self.total_volume_to_actuator = Volume::new::<gallon>(0.);
     }
 }
-impl SimulationElement for LinearActuator {
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        self.core_hydraulics.accept(visitor);
-
-        visitor.visit(self);
-    }
-}
 
 pub trait HydraulicAssemblyController {
     fn requested_mode(&self) -> LinearActuatorMode;
@@ -840,21 +756,6 @@ impl<const N: usize> HydraulicLinearActuatorAssembly<N> {
 
     pub fn actuator_position_normalized(&self, index: usize) -> Ratio {
         self.linear_actuators[index].position_normalized()
-    }
-}
-impl SimulationElement for HydraulicLinearActuatorAssembly<1> {
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        self.linear_actuators[0].accept(visitor);
-
-        visitor.visit(self);
-    }
-}
-impl SimulationElement for HydraulicLinearActuatorAssembly<2> {
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        self.linear_actuators[0].accept(visitor);
-        self.linear_actuators[1].accept(visitor);
-
-        visitor.visit(self);
     }
 }
 
@@ -1406,18 +1307,9 @@ mod tests {
             self.controllers[index].set_mode(LinearActuatorMode::ClosedCircuitDamping);
         }
 
-        fn command_closed_valve_mode(&mut self, index: usize) {
-            self.controllers[index].set_mode(LinearActuatorMode::ClosedValves);
-        }
-
         fn command_position_control(&mut self, position: Ratio, index: usize) {
             self.controllers[index].set_mode(LinearActuatorMode::PositionControl);
             self.controllers[index].set_position_target(position);
-        }
-
-        fn command_lock(&mut self, lock_position: Ratio) {
-            self.controllers[0].set_lock(lock_position);
-            self.controllers[1].set_lock(lock_position);
         }
 
         fn command_unlock(&mut self) {
@@ -1427,15 +1319,6 @@ mod tests {
 
         fn body_position(&self) -> Ratio {
             self.dual_actuator_assembly.position_normalized()
-        }
-
-        fn actuator_position(&self, index: usize) -> Ratio {
-            self.dual_actuator_assembly
-                .actuator_position_normalized(index)
-        }
-
-        fn is_locked(&self) -> bool {
-            self.dual_actuator_assembly.is_locked()
         }
 
         fn update_actuator_physics(&mut self, context: &UpdateContext) {
@@ -1489,9 +1372,9 @@ mod tests {
 
     #[test]
     fn linear_actuator_not_moving_on_locked_rigid_body() {
-        let mut test_bed = SimulationTestBed::new(|context| {
+        let mut test_bed = SimulationTestBed::new(|_| {
             let rigid_body = cargo_door_body(true);
-            let actuator = cargo_door_actuator(context, &rigid_body);
+            let actuator = cargo_door_actuator(&rigid_body);
             TestAircraft::new(actuator, rigid_body)
         });
 
@@ -1504,9 +1387,9 @@ mod tests {
 
     #[test]
     fn linear_actuator_moving_on_unlocked_rigid_body() {
-        let mut test_bed = SimulationTestBed::new(|context| {
+        let mut test_bed = SimulationTestBed::new(|_| {
             let rigid_body = cargo_door_body(true);
-            let actuator = cargo_door_actuator(context, &rigid_body);
+            let actuator = cargo_door_actuator(&rigid_body);
             TestAircraft::new(actuator, rigid_body)
         });
 
@@ -1524,9 +1407,9 @@ mod tests {
 
     #[test]
     fn linear_actuator_can_move_rigid_body_up() {
-        let mut test_bed = SimulationTestBed::new(|context| {
+        let mut test_bed = SimulationTestBed::new(|_| {
             let rigid_body = cargo_door_body(true);
-            let actuator = cargo_door_actuator(context, &rigid_body);
+            let actuator = cargo_door_actuator(&rigid_body);
             TestAircraft::new(actuator, rigid_body)
         });
 
@@ -1548,9 +1431,9 @@ mod tests {
 
     #[test]
     fn linear_actuator_resists_body_drop_when_valves_closed() {
-        let mut test_bed = SimulationTestBed::new(|context| {
+        let mut test_bed = SimulationTestBed::new(|_| {
             let rigid_body = cargo_door_body(true);
-            let actuator = cargo_door_actuator(context, &rigid_body);
+            let actuator = cargo_door_actuator(&rigid_body);
             TestAircraft::new(actuator, rigid_body)
         });
 
@@ -1572,9 +1455,9 @@ mod tests {
 
     #[test]
     fn linear_actuator_dampens_body_drop_when_active_damping_mode() {
-        let mut test_bed = SimulationTestBed::new(|context| {
+        let mut test_bed = SimulationTestBed::new(|_| {
             let rigid_body = cargo_door_body(true);
-            let actuator = cargo_door_actuator(context, &rigid_body);
+            let actuator = cargo_door_actuator(&rigid_body);
             TestAircraft::new(actuator, rigid_body)
         });
 
@@ -1597,9 +1480,9 @@ mod tests {
 
     #[test]
     fn linear_actuator_dampens_super_slow_body_drop_when_slow_damping_mode() {
-        let mut test_bed = SimulationTestBed::new(|context| {
+        let mut test_bed = SimulationTestBed::new(|_| {
             let rigid_body = cargo_door_body(true);
-            let actuator = cargo_door_actuator(context, &rigid_body);
+            let actuator = cargo_door_actuator(&rigid_body);
             TestAircraft::new(actuator, rigid_body)
         });
 
@@ -1622,9 +1505,9 @@ mod tests {
 
     #[test]
     fn linear_actuator_without_hyd_pressure_cant_move_body_up() {
-        let mut test_bed = SimulationTestBed::new(|context| {
+        let mut test_bed = SimulationTestBed::new(|_| {
             let rigid_body = cargo_door_body(true);
-            let actuator = cargo_door_actuator(context, &rigid_body);
+            let actuator = cargo_door_actuator(&rigid_body);
             TestAircraft::new(actuator, rigid_body)
         });
 
@@ -1640,9 +1523,9 @@ mod tests {
 
     #[test]
     fn linear_actuator_losing_hyd_pressure_half_way_cant_move_body_up() {
-        let mut test_bed = SimulationTestBed::new(|context| {
+        let mut test_bed = SimulationTestBed::new(|_| {
             let rigid_body = cargo_door_body(true);
-            let actuator = cargo_door_actuator(context, &rigid_body);
+            let actuator = cargo_door_actuator(&rigid_body);
             TestAircraft::new(actuator, rigid_body)
         });
 
@@ -1667,9 +1550,9 @@ mod tests {
 
     #[test]
     fn body_gravity_movement_if_unlocked() {
-        let mut test_bed = SimulationTestBed::new(|context| {
+        let mut test_bed = SimulationTestBed::new(|_| {
             let rigid_body = cargo_door_body(false);
-            let actuator = cargo_door_actuator(context, &rigid_body);
+            let actuator = cargo_door_actuator(&rigid_body);
             TestAircraft::new(actuator, rigid_body)
         });
 
@@ -1687,9 +1570,9 @@ mod tests {
 
     #[test]
     fn start_moving_once_unlocked() {
-        let mut test_bed = SimulationTestBed::new(|context| {
+        let mut test_bed = SimulationTestBed::new(|_| {
             let rigid_body = cargo_door_body(true);
-            let actuator = cargo_door_actuator(context, &rigid_body);
+            let actuator = cargo_door_actuator(&rigid_body);
             TestAircraft::new(actuator, rigid_body)
         });
 
@@ -1710,9 +1593,9 @@ mod tests {
 
     #[test]
     fn locks_at_required_position() {
-        let mut test_bed = SimulationTestBed::new(|context| {
+        let mut test_bed = SimulationTestBed::new(|_| {
             let rigid_body = cargo_door_body(true);
-            let actuator = cargo_door_actuator(context, &rigid_body);
+            let actuator = cargo_door_actuator(&rigid_body);
             TestAircraft::new(actuator, rigid_body)
         });
 
@@ -1740,9 +1623,9 @@ mod tests {
 
     #[test]
     fn linear_actuator_can_control_position() {
-        let mut test_bed = SimulationTestBed::new(|context| {
+        let mut test_bed = SimulationTestBed::new(|_| {
             let rigid_body = cargo_door_body(true);
-            let actuator = cargo_door_actuator(context, &rigid_body);
+            let actuator = cargo_door_actuator(&rigid_body);
             TestAircraft::new(actuator, rigid_body)
         });
 
@@ -1765,9 +1648,9 @@ mod tests {
 
     #[test]
     fn right_main_gear_door_drops_when_unlocked() {
-        let mut test_bed = SimulationTestBed::new(|context| {
+        let mut test_bed = SimulationTestBed::new(|_| {
             let rigid_body = main_gear_door_right_body(true);
-            let actuator = main_gear_door_actuator(context, &rigid_body);
+            let actuator = main_gear_door_actuator(&rigid_body);
             TestAircraft::new(actuator, rigid_body)
         });
 
@@ -1780,9 +1663,9 @@ mod tests {
 
     #[test]
     fn right_main_gear_door_drops_freefall_when_unlocked_with_broken_actuator() {
-        let mut test_bed = SimulationTestBed::new(|context| {
+        let mut test_bed = SimulationTestBed::new(|_| {
             let rigid_body = main_gear_door_right_body(true);
-            let actuator = disconnected_actuator(context, &rigid_body);
+            let actuator = disconnected_actuator(&rigid_body);
             TestAircraft::new(actuator, rigid_body)
         });
 
@@ -1795,9 +1678,9 @@ mod tests {
 
     #[test]
     fn left_main_gear_door_drops_when_unlocked() {
-        let mut test_bed = SimulationTestBed::new(|context| {
+        let mut test_bed = SimulationTestBed::new(|_| {
             let rigid_body = main_gear_door_left_body(true);
-            let actuator = main_gear_door_actuator(context, &rigid_body);
+            let actuator = main_gear_door_actuator(&rigid_body);
             TestAircraft::new(actuator, rigid_body)
         });
 
@@ -1810,9 +1693,9 @@ mod tests {
 
     #[test]
     fn right_main_gear_door_cant_open_fully_if_banking_right() {
-        let mut test_bed = SimulationTestBed::new(|context| {
+        let mut test_bed = SimulationTestBed::new(|_| {
             let rigid_body = main_gear_door_right_body(true);
-            let actuator = main_gear_door_actuator(context, &rigid_body);
+            let actuator = main_gear_door_actuator(&rigid_body);
             TestAircraft::new(actuator, rigid_body)
         });
 
@@ -1828,9 +1711,9 @@ mod tests {
 
     #[test]
     fn left_main_gear_door_can_open_fully_if_banking_right() {
-        let mut test_bed = SimulationTestBed::new(|context| {
+        let mut test_bed = SimulationTestBed::new(|_| {
             let rigid_body = main_gear_door_left_body(true);
-            let actuator = main_gear_door_actuator(context, &rigid_body);
+            let actuator = main_gear_door_actuator(&rigid_body);
             TestAircraft::new(actuator, rigid_body)
         });
 
@@ -1844,9 +1727,9 @@ mod tests {
 
     #[test]
     fn left_main_gear_door_opens_with_pressure() {
-        let mut test_bed = SimulationTestBed::new(|context| {
+        let mut test_bed = SimulationTestBed::new(|_| {
             let rigid_body = main_gear_door_left_body(true);
-            let actuator = main_gear_door_actuator(context, &rigid_body);
+            let actuator = main_gear_door_actuator(&rigid_body);
             TestAircraft::new(actuator, rigid_body)
         });
 
@@ -1860,9 +1743,9 @@ mod tests {
 
     #[test]
     fn right_main_gear_door_closes_after_opening_with_pressure() {
-        let mut test_bed = SimulationTestBed::new(|context| {
+        let mut test_bed = SimulationTestBed::new(|_| {
             let rigid_body = main_gear_door_right_body(true);
-            let actuator = main_gear_door_actuator(context, &rigid_body);
+            let actuator = main_gear_door_actuator(&rigid_body);
             TestAircraft::new(actuator, rigid_body)
         });
 
@@ -1882,9 +1765,9 @@ mod tests {
 
     #[test]
     fn right_main_gear_retracts_with_pressure() {
-        let mut test_bed = SimulationTestBed::new(|context| {
+        let mut test_bed = SimulationTestBed::new(|_| {
             let rigid_body = main_gear_right_body(true);
-            let actuator = main_gear_actuator(context, &rigid_body);
+            let actuator = main_gear_actuator(&rigid_body);
             TestAircraft::new(actuator, rigid_body)
         });
 
@@ -1898,9 +1781,9 @@ mod tests {
 
     #[test]
     fn aileron_drops_freefall_with_broken_actuator() {
-        let mut test_bed = SimulationTestBed::new(|context| {
+        let mut test_bed = SimulationTestBed::new(|_| {
             let rigid_body = aileron_body();
-            let actuator = disconnected_actuator(context, &rigid_body);
+            let actuator = disconnected_actuator(&rigid_body);
             TestDualActuatorAircraft::new(actuator, actuator, rigid_body)
         });
 
@@ -1914,9 +1797,9 @@ mod tests {
 
     #[test]
     fn aileron_initialized_down_stays_down_with_broken_actuator() {
-        let mut test_bed = SimulationTestBed::new(|context| {
+        let mut test_bed = SimulationTestBed::new(|_| {
             let rigid_body = aileron_body_init_down();
-            let actuator = disconnected_actuator(context, &rigid_body);
+            let actuator = disconnected_actuator(&rigid_body);
             TestDualActuatorAircraft::new(actuator, actuator, rigid_body)
         });
 
@@ -1930,9 +1813,9 @@ mod tests {
 
     #[test]
     fn aileron_initialized_down_moves_up_when_commanded() {
-        let mut test_bed = SimulationTestBed::new(|context| {
+        let mut test_bed = SimulationTestBed::new(|_| {
             let rigid_body = aileron_body_init_down();
-            let actuator = aileron_actuator(context, &rigid_body);
+            let actuator = aileron_actuator(&rigid_body);
             TestDualActuatorAircraft::new(actuator, actuator, rigid_body)
         });
 
@@ -1948,9 +1831,9 @@ mod tests {
 
     #[test]
     fn aileron_drops_from_middle_pos_in_more_20s_in_closed_circuit_damping() {
-        let mut test_bed = SimulationTestBed::new(|context| {
+        let mut test_bed = SimulationTestBed::new(|_| {
             let rigid_body = aileron_body();
-            let actuator = aileron_actuator(context, &rigid_body);
+            let actuator = aileron_actuator(&rigid_body);
             TestDualActuatorAircraft::new(actuator, actuator, rigid_body)
         });
 
@@ -1967,9 +1850,9 @@ mod tests {
 
     #[test]
     fn aileron_drops_from_middle_pos_and_damping_is_stable() {
-        let mut test_bed = SimulationTestBed::new(|context| {
+        let mut test_bed = SimulationTestBed::new(|_| {
             let rigid_body = aileron_body();
-            let actuator = aileron_actuator(context, &rigid_body);
+            let actuator = aileron_actuator(&rigid_body);
             TestDualActuatorAircraft::new(actuator, actuator, rigid_body)
         });
 
@@ -1988,9 +1871,9 @@ mod tests {
 
     #[test]
     fn aileron_position_control_is_stable() {
-        let mut test_bed = SimulationTestBed::new(|context| {
+        let mut test_bed = SimulationTestBed::new(|_| {
             let rigid_body = aileron_body();
-            let actuator = aileron_actuator(context, &rigid_body);
+            let actuator = aileron_actuator(&rigid_body);
             TestDualActuatorAircraft::new(actuator, actuator, rigid_body)
         });
 
@@ -2024,9 +1907,9 @@ mod tests {
 
     #[test]
     fn aileron_position_control_from_down_to_up_less_0_5s() {
-        let mut test_bed = SimulationTestBed::new(|context| {
+        let mut test_bed = SimulationTestBed::new(|_| {
             let rigid_body = aileron_body();
-            let actuator = aileron_actuator(context, &rigid_body);
+            let actuator = aileron_actuator(&rigid_body);
             TestDualActuatorAircraft::new(actuator, actuator, rigid_body)
         });
 
@@ -2046,16 +1929,12 @@ mod tests {
         assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.95));
     }
 
-    fn cargo_door_actuator(
-        context: &mut InitContext,
-        bounded_linear_length: &impl BoundedLinearLength,
-    ) -> LinearActuator {
+    fn cargo_door_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
         const DEFAULT_I_GAIN: f64 = 5.;
         const DEFAULT_P_GAIN: f64 = 0.05;
         const DEFAULT_FORCE_GAIN: f64 = 200000.;
 
         LinearActuator::new(
-            context,
             bounded_linear_length,
             2,
             Length::new::<meter>(0.04422),
@@ -2096,16 +1975,12 @@ mod tests {
         )
     }
 
-    fn main_gear_door_actuator(
-        context: &mut InitContext,
-        bounded_linear_length: &impl BoundedLinearLength,
-    ) -> LinearActuator {
+    fn main_gear_door_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
         const DEFAULT_I_GAIN: f64 = 5.;
         const DEFAULT_P_GAIN: f64 = 0.05;
         const DEFAULT_FORCE_GAIN: f64 = 200000.;
 
         LinearActuator::new(
-            context,
             bounded_linear_length,
             1,
             Length::new::<meter>(0.055),
@@ -2124,12 +1999,8 @@ mod tests {
         )
     }
 
-    fn disconnected_actuator(
-        context: &mut InitContext,
-        bounded_linear_length: &impl BoundedLinearLength,
-    ) -> LinearActuator {
+    fn disconnected_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
         LinearActuator::new(
-            context,
             bounded_linear_length,
             1,
             Length::new::<meter>(0.055),
@@ -2192,16 +2063,12 @@ mod tests {
         )
     }
 
-    fn main_gear_actuator(
-        context: &mut InitContext,
-        bounded_linear_length: &impl BoundedLinearLength,
-    ) -> LinearActuator {
+    fn main_gear_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
         const DEFAULT_I_GAIN: f64 = 5.;
         const DEFAULT_P_GAIN: f64 = 0.05;
         const DEFAULT_FORCE_GAIN: f64 = 200000.;
 
         LinearActuator::new(
-            context,
             bounded_linear_length,
             1,
             Length::new::<meter>(0.145),
@@ -2242,16 +2109,12 @@ mod tests {
         )
     }
 
-    fn aileron_actuator(
-        context: &mut InitContext,
-        bounded_linear_length: &impl BoundedLinearLength,
-    ) -> LinearActuator {
+    fn aileron_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
         const DEFAULT_I_GAIN: f64 = 3.;
         const DEFAULT_P_GAIN: f64 = 1.5;
         const DEFAULT_FORCE_GAIN: f64 = 200000.;
 
         LinearActuator::new(
-            context,
             bounded_linear_length,
             1,
             Length::new::<meter>(0.04),
