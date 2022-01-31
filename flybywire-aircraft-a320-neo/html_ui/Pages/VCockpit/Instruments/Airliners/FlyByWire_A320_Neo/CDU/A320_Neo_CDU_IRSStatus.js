@@ -67,6 +67,7 @@ class CDUIRSStatus {
             }
         };
 
+        // regular update due to showing dynamic data on this page
         mcdu.page.SelfPtr = setTimeout(() => {
             if (mcdu.page.Current === mcdu.page.IRSStatus) {
                 CDUIRSStatus.ShowPage(mcdu, index, wind_dir);
