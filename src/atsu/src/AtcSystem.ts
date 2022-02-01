@@ -35,6 +35,8 @@ export class AtcSystem {
 
     private lastRingTime: number = 0;
 
+    private printAtisReport = false;
+
     private atisMessages: Map<string, [number, AtisMessage[]]> = new Map();
 
     constructor(parent: AtsuManager, datalink: Datalink) {
@@ -493,6 +495,14 @@ export class AtcSystem {
 
             return retval[0];
         });
+    }
+
+    public togglePrintAtisReports() {
+        this.printAtisReport = !this.printAtisReport;
+    }
+
+    public printAtisReportsPrint(): boolean {
+        return this.printAtisReport;
     }
 
     public async receiveAtis(icao: string): Promise<AtsuStatusCodes> {
