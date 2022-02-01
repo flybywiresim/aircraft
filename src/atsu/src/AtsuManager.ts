@@ -134,6 +134,10 @@ export class AtsuManager {
         this.atc.messageRead(uid);
     }
 
+    public publishAtsuStatusCode(code: AtsuStatusCodes): void {
+        this.mcdu.addNewAtsuMessage(code);
+    }
+
     public async isRemoteStationAvailable(callsign: string): Promise<AtsuStatusCodes> {
         return this.datalink.isStationAvailable(callsign);
     }
