@@ -51,6 +51,15 @@ export class AtcSystem {
 
             this.handleDcduMessageSync();
             this.handlePilotNotifications();
+
+            // check if we have to timeout the logon request
+            if (this.logonInProgress()) {
+                const currentTime = SimVar.GetGlobalVarValue('ZULU TIME', 'seconds');
+                const delta = currentTime - this.notificationTime;
+                if (delta >= 300) {
+                    this.resetLogon();
+                }
+            }
         }, 100);
     }
 
