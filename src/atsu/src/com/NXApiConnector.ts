@@ -28,7 +28,7 @@ export class NXApiConnector {
 
     private static createAircraftStatus(): AircraftStatus | undefined {
         const flightNo = SimVar.GetSimVarValue('ATC FLIGHT NUMBER', 'string');
-        if (flightNo === '' || flightNo === '1123') {
+        if (flightNo === '') {
             return undefined;
         }
 

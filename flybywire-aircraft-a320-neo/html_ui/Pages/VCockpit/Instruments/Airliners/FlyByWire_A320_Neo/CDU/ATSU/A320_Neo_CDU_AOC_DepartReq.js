@@ -56,8 +56,7 @@ class CDUAocDepartReq {
             }
         );
 
-        // "1123" is the default ATC flight number
-        if (SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC") !== "1123" && mcdu.flightPlanManager.getOrigin() !== null) {
+        if (SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC").length !== 0 && mcdu.flightPlanManager.getOrigin() !== null) {
             mcdu.pdcMessage.Callsign = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC");
             flightNo = mcdu.pdcMessage.Callsign + "[color]green";
         }
@@ -99,7 +98,7 @@ class CDUAocDepartReq {
             if (value.length !== 4 || /^[A-Z()]*$/.test(value) === false) {
                 mcdu.addNewMessage(NXSystemMessages.formatError);
                 CDUAocDepartReq.ShowPage1(mcdu, store);
-            } else if (SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC") === "1123") {
+            } else if (SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC").length === 0) {
                 mcdu.addNewMessage(NXFictionalMessages.fltNbrMissing);
                 CDUAocDepartReq.ShowPage1(mcdu, store);
             } else {

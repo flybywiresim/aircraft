@@ -46,7 +46,7 @@ export class HoppieConnector {
         }
 
         const flightNo = SimVar.GetSimVarValue('ATC FLIGHT NUMBER', 'string');
-        if (flightNo.length === 0 || flightNo === '1123') {
+        if (flightNo.length === 0) {
             return AtsuStatusCodes.ComFailed;
         }
 
@@ -82,7 +82,7 @@ export class HoppieConnector {
         }
 
         const flightNo = SimVar.GetSimVarValue('ATC FLIGHT NUMBER', 'string');
-        if (flightNo.length === 0 || flightNo === '1123') {
+        if (flightNo.length === 0) {
             return AtsuStatusCodes.ComFailed;
         }
 
@@ -128,7 +128,7 @@ export class HoppieConnector {
         }
 
         const flightNo = SimVar.GetSimVarValue('ATC FLIGHT NUMBER', 'string');
-        if (flightNo.length === 0 || flightNo === '1123') {
+        if (flightNo.length === 0) {
             return [AtsuStatusCodes.ComFailed, retval];
         }
 
