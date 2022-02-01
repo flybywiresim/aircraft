@@ -14,7 +14,7 @@ type RogerButtonsProps = {
 }
 
 export const RogerButtons: React.FC<RogerButtonsProps> = ({ message, selectedResponse, setMessageStatus, setStatus, isStatusAvailable, closeMessage }) => {
-    const buttonsBlocked = message.Response !== undefined && message.ComStatus === AtsuMessageComStatus.Sending;
+    const buttonsBlocked = message.Response !== undefined && message.Response.ComStatus === AtsuMessageComStatus.Sending;
 
     useUpdate(() => {
         if (buttonsBlocked) {

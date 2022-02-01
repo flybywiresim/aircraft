@@ -14,7 +14,7 @@ type AffirmNegativeButtonsProps = {
 }
 
 export const AffirmNegativeButtons: React.FC<AffirmNegativeButtonsProps> = ({ message, selectedResponse, setMessageStatus, setStatus, isStatusAvailable, closeMessage }) => {
-    const buttonsBlocked = message.Response !== undefined && message.ComStatus === AtsuMessageComStatus.Sending;
+    const buttonsBlocked = message.Response !== undefined && message.Response.ComStatus === AtsuMessageComStatus.Sending;
 
     useUpdate(() => {
         if (buttonsBlocked) {
