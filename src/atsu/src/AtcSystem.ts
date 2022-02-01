@@ -334,6 +334,28 @@ export class AtcSystem {
         }
     }
 
+    public async sendMessage(message: AtsuMessage): Promise<AtsuStatusCodes> {
+        if (message.Station === '') {
+            if (this.currentAtc === '') {
+                return AtsuStatusCodes.NoAtc;
+            }
+            message.Station = this.currentAtc;
+        }
+
+        message.ComStatus = AtsuMessageComStatus.Sending;
+        this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', message);
+
+        return this.datalink.sendMessage(message, false).then((code) => {
+            if (code === AtsuStatusCodes.Ok) {
+                message.ComStatus = AtsuMessageComStatus.Sent;
+            } else {
+                message.ComStatus = AtsuMessageComStatus.Failed;
+            }
+            this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', message);
+            return code;
+        });
+    }
+
     public messages(): AtsuMessage[] {
         return this.messageQueue;
     }
@@ -469,25 +491,6 @@ export class AtcSystem {
         }
 
         return index !== -1;
-    }
-
-    public async sendMessage(message: AtsuMessage): Promise<AtsuStatusCodes> {
-        if (message.Station === '') {
-            if (this.currentAtc === '') {
-                return AtsuStatusCodes.NoAtc;
-            }
-            message.Station = this.currentAtc;
-        }
-
-        message.ComStatus = AtsuMessageComStatus.Sending;
-        return this.datalink.sendMessage(message, false).then((retval) => {
-            if (retval === AtsuStatusCodes.Ok) {
-                message.ComStatus = AtsuMessageComStatus.Sent;
-            } else {
-                message.ComStatus = AtsuMessageComStatus.Failed;
-            }
-            return retval;
-        });
     }
 
     private async updateAtis(icao: string, overwrite: boolean): Promise<AtsuStatusCodes> {
