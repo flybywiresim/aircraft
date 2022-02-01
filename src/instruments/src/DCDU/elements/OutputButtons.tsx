@@ -12,8 +12,10 @@ type OutputButtonsProps = {
 }
 
 export const OutputButtons: React.FC<OutputButtonsProps> = ({ message, setStatus, isStatusAvailable, closeMessage }) => {
+    const buttonsBlocked = message.ComStatus === AtsuMessageComStatus.Sending;
+
     useUpdate(() => {
-        if (message.ComStatus === AtsuMessageComStatus.Sending) {
+        if (buttonsBlocked) {
             if (isStatusAvailable('Buttons') === true) {
                 setStatus('Buttons', 'SENDING');
             }
@@ -22,9 +24,8 @@ export const OutputButtons: React.FC<OutputButtonsProps> = ({ message, setStatus
 
     // define the rules for the visualization of the buttons
     let showAnswers = false;
-    const closeClickabel = message.ComStatus === AtsuMessageComStatus.Sent;
 
-    if (message.ComStatus !== AtsuMessageComStatus.Open && message.ComStatus !== AtsuMessageComStatus.Failed) {
+    if (message.ComStatus === AtsuMessageComStatus.Open || message.ComStatus === AtsuMessageComStatus.Failed) {
         showAnswers = true;
     }
 
@@ -43,7 +44,7 @@ export const OutputButtons: React.FC<OutputButtonsProps> = ({ message, setStatus
                     setStatus('Buttons', 'SYSTEM BUSY');
                 }
             }
-        } else if (closeClickabel && index === 'R2') {
+        } else if (index === 'R2') {
             closeMessage(message.UniqueMessageID);
         }
     };
@@ -56,15 +57,15 @@ export const OutputButtons: React.FC<OutputButtonsProps> = ({ message, setStatus
                         messageId={message.UniqueMessageID}
                         index="L1"
                         content="*CANCEL"
-                        active
-                        clickedCallback={clicked}
+                        active={!buttonsBlocked}
+                        onClick={clicked}
                     />
                     <Button
                         messageId={message.UniqueMessageID}
                         index="R2"
                         content="SEND*"
-                        active
-                        clickedCallback={clicked}
+                        active={!buttonsBlocked}
+                        onClick={clicked}
                     />
                 </>
             )}
@@ -72,9 +73,9 @@ export const OutputButtons: React.FC<OutputButtonsProps> = ({ message, setStatus
                 <Button
                     messageId={message.UniqueMessageID}
                     index="R2"
-                    content={`CLOSE${closeClickabel ? '*' : ''}`}
-                    active={closeClickabel}
-                    clickedCallback={clicked}
+                    content="CLOSE"
+                    active={!buttonsBlocked}
+                    onClick={clicked}
                 />
             )}
         </>
