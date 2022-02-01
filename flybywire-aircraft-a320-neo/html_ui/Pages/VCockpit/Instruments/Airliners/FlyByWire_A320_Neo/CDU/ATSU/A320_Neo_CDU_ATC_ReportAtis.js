@@ -90,8 +90,16 @@ class CDUAtcReportAtis {
             mcdu.setArrows(up, down, false, false);
         }
 
+        const pageCount = Math.floor(lines.length / 8 + 0.5);
+        const currentPage = Math.floor(offset / 8) + 1;
+
+        let prevAtis = "\xa0PREV ATIS";
+        if (messages.length > messageIndex + 1) {
+            prevAtis = "<PREV ATIS";
+        }
+
         mcdu.setTemplate([
-            [`${title} ATIS`],
+            [`${title} ATIS`, `${pageCount !== 1 ? currentPage : ""}`, `${pageCount !== 1 ? pageCount : ""}`],
             [`[b-text]${title.replace("/", " ")}[color]white`, `[b-text]${CDUAtcReportAtis.ConvertAtisInformation(messages[messageIndex].Information)} ${messages[messageIndex].Timestamp.dcduTimestamp()}`],
             [`[s-text]${lines[offset] ? lines[offset] : ""}`],
             [`[b-text]${lines[offset + 1] ? lines[offset + 1] : ""}`],
@@ -101,7 +109,7 @@ class CDUAtcReportAtis {
             [`[b-text]${lines[offset + 5] ? lines[offset + 5] : ""}`],
             [`[s-text]${lines[offset + 6] ? lines[offset + 6] : ""}`],
             [`[b-text]${lines[offset + 7] ? lines[offset + 7] : ""}`],
-            ["\xa0PREV ATIS"],
+            [prevAtis],
             ["\xa0ATIS MENU"],
             ["<RETURN", "PRINT*[color]cyan"]
         ]);
