@@ -508,4 +508,11 @@ export class AtcSystem {
     public async receiveAtis(icao: string): Promise<AtsuStatusCodes> {
         return this.updateAtis(icao, true);
     }
+
+    public atisReports(icao: string): AtisMessage[] {
+        if (this.atisMessages.has(icao)) {
+            return this.atisMessages.get(icao)[1];
+        }
+        return [];
+    }
 }
