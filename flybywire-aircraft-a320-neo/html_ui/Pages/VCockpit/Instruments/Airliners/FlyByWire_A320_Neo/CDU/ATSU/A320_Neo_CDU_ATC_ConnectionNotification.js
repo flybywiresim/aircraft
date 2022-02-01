@@ -1,5 +1,5 @@
 class CDUAtcConnectionNotification {
-    static ShowPage(mcdu, store = {"atcCenter": "", "logonAllowed": false, "loginState": 0, "notifTime": ""}) {
+    static ShowPage(mcdu, store = {"atcCenter": "", "logonAllowed": false, "loginState": 0}) {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.ATCNotification;
 
@@ -50,8 +50,18 @@ class CDUAtcConnectionNotification {
         }
 
         let notificationMessage = "";
-        if (store["loginState"] === 1) {
-            notificationMessage = `${store["atcCenter"]} NOTIFIED ${store["notifTime"]}[color]green`;
+        if (mcdu.atsuManager.atc.logonInProgress()) {
+            const seconds = Math.floor(mcdu.atsuManager.atc.nextStationNotificationTime());
+            const hours = Math.floor(seconds / 3600);
+            const minutes = Math.floor((seconds - hours * 3600) / 60);
+            const zeroPad = (num, places) => String(num).padStart(places, 0);
+
+            // check if the page is loaded again
+            if (store["atcCenter"] !== mcdu.atsuManager.atc.nextStation()) {
+                store["atcCenter"] = mcdu.atsuManager.atc.nextStation();
+            }
+
+            notificationMessage = `${store["atcCenter"]} NOTIFIED ${`${zeroPad(hours, 2)}${zeroPad(minutes, 2)}Z`}[color]green`;
         } else if (mcdu.atsuManager.atc.currentStation() !== '') {
             notificationMessage = `${mcdu.atsuManager.atc.currentStation()}[color]green`;
         }
@@ -120,25 +130,10 @@ class CDUAtcConnectionNotification {
             if (store["logonAllowed"] === true) {
                 store["loginState"] = 1;
 
-                const zulu = SimVar.GetGlobalVarValue('ZULU TIME', 'seconds');
-                const seconds = Math.floor(zulu);
-                const hours = Math.floor(seconds / 3600);
-                const minutes = Math.floor((seconds - hours * 3600) / 60);
-                const zeroPad = (num, places) => String(num).padStart(places, 0);
-
-                store["notifTime"] = `${zeroPad(hours, 2)}${zeroPad(minutes, 2)}Z`;
-
                 mcdu.atsuManager.atc.logon(store["atcCenter"]).then((code) => {
                     if (code === Atsu.AtsuStatusCodes.Ok) {
                         // check if the login was successful
                         const interval = setInterval(() => {
-                            // page changed
-                            if (mcdu.page.Current !== mcdu.page.ATCNotification) {
-                                clearInterval(interval);
-                                return;
-                            }
-
-                            // logon somehow done
                             if (!mcdu.atsuManager.atc.logonInProgress()) {
                                 if (mcdu.atsuManager.atc.currentStation() === store["atcCenter"]) {
                                     store["loginState"] = 0;
@@ -150,8 +145,10 @@ class CDUAtcConnectionNotification {
                                 clearInterval(interval);
                             }
 
-                            CDUAtcConnectionNotification.ShowPage(mcdu, store);
-                        }, 1000);
+                            if (mcdu.page.Current === mcdu.page.ATCNotification) {
+                                CDUAtcConnectionNotification.ShowPage(mcdu, store);
+                            }
+                        }, 5000);
                     } else {
                         mcdu.addNewAtsuMessage(code);
                     }
