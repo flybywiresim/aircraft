@@ -378,6 +378,7 @@ export class AtcSystem {
         // search corresponding request, if previous ID is set
         if (cpdlcMessage.PreviousTransmissionId !== -1) {
             this.messageQueue.forEach((element) => {
+                // ensure that the sending and receiving stations are the same to avoid CPDLC ID overlaps
                 if (element.Station === cpdlcMessage.Station) {
                     while (element !== undefined) {
                         if (element.CurrentTransmissionId === cpdlcMessage.PreviousTransmissionId) {
