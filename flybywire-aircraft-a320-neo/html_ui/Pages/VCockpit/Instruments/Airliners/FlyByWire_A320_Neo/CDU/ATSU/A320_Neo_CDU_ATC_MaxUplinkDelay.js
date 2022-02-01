@@ -3,8 +3,8 @@ class CDUAtcMaxUplinkDelay {
         mcdu.clearDisplay();
 
         let activeAtc = "----";
-        if (mcdu.atsuManager.atc().currentStation() !== "") {
-            activeAtc = mcdu.atsuManager.atc().currentStation();
+        if (mcdu.atsuManager.atc.currentStation() !== "") {
+            activeAtc = mcdu.atsuManager.atc.currentStation();
         }
 
         mcdu.setTemplate([
