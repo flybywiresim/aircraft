@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { AtsuMessageComStatus, AtsuMessageDirection } from '@atsu/messages/AtsuMessage';
+import { AtsuMessageComStatus, AtsuMessageDirection, AtsuMessageSerializationFormat } from '@atsu/messages/AtsuMessage';
 import { CpdlcMessage } from '@atsu/messages/CpdlcMessage';
 import { MessageVisualization } from './MessageVisualization';
 
@@ -58,7 +58,8 @@ export const DatalinkMessage: React.FC<DatalinkMessageProps> = ({ message, isSta
         <g>
             <rect className={backgroundClass} height={contentHeight} x="168" y="472" />
             <MessageVisualization
-                message={message.Message}
+                message={message.Message !== '' ? message.Message : message.serialize(AtsuMessageSerializationFormat.DCDU)}
+                keepNewlines={message.Direction === AtsuMessageDirection.Output}
                 ignoreHighlight={ignoreHighlight}
                 cssClass={messageClass}
                 yStart={720}

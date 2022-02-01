@@ -13,6 +13,7 @@ interface ColorizedLine {
 
 type MessageVisualizationProps = {
     message: string,
+    keepNewlines: boolean,
     ignoreHighlight: boolean,
     cssClass: string,
     yStart: number,
@@ -86,12 +87,14 @@ function visualizeLines(lines: ColorizedLine[], yStart: number, deltaY: number, 
     );
 }
 
-function colorizeWords(message: string): ColorizedWord[] {
+function colorizeWords(message: string, keepNewlines: boolean): ColorizedWord[] {
     const words: ColorizedWord[] = [];
-    message = message.replace(/\n/gi, ' ');
+    if (!keepNewlines) {
+        message = message.replace(/\n/gi, ' ');
+    }
 
     let highlightColor = false;
-    message.split(' ').forEach((word) => {
+    message.split(/\s+/).forEach((word) => {
         /* check if the color needs to be changed */
         const highlightMarkers: number[] = [];
         for (let i = 0; i < word.length; ++i) {
@@ -121,10 +124,12 @@ function colorizeWords(message: string): ColorizedWord[] {
     return words;
 }
 
-function insertWord(lines: ColorizedLine[], word: ColorizedWord) {
+function insertWord(lines: ColorizedLine[], word: ColorizedWord, keepNewlines: boolean): void {
     // create a new line, but ignore if the word is too long
-    if ((lines[lines.length - 1].length + word.word.length + 1) >= 27 && lines[lines.length - 1].length !== 0) {
-        lines.push({ length: 0, words: [] });
+    if (!keepNewlines) {
+        if ((lines[lines.length - 1].length + word.word.length + 1) >= 27 && lines[lines.length - 1].length !== 0) {
+            lines.push({ length: 0, words: [] });
+        }
     }
 
     // add a space character
@@ -137,30 +142,54 @@ function insertWord(lines: ColorizedLine[], word: ColorizedWord) {
     lines[lines.length - 1].words.push(word);
 }
 
-function createVisualizationLines(message: string): ColorizedLine[] {
-    const lines: ColorizedLine[] = [{ length: 0, words: [] }];
-    const words = colorizeWords(message);
+function createVisualizationLines(message: string, keepNewlines: boolean): ColorizedLine[] {
+    const lines: ColorizedLine[] = [];
 
-    words.forEach((word) => {
-        let newline = false;
+    if (!keepNewlines) {
+        const words = colorizeWords(message, keepNewlines);
+        lines.push({ length: 0, words: [] });
 
-        // iterate over forced newlines, if needed
-        word.word.split('_').forEach((entry) => {
-            // add a new line
-            if (newline) {
-                lines.push({ length: 0, words: [] });
+        words.forEach((word) => {
+            let newline = false;
+
+            // iterate over forced newlines, if needed
+            word.word.split(/_/).forEach((entry) => {
+                // add a new line
+                if (newline) {
+                    lines.push({ length: 0, words: [] });
+                }
+
+                // insert the word
+                insertWord(lines, { word: entry, highlight: word.highlight }, keepNewlines);
+                newline = !keepNewlines;
+            });
+        });
+    } else {
+        const inputLines = message.split(/\n/);
+        let lastLineHighlight = false;
+
+        inputLines.forEach((line) => {
+            const words = colorizeWords(line, keepNewlines);
+
+            if (words.length !== 0) {
+                // invert the highlights due to the old highlighted text of the last line
+                if (lastLineHighlight) {
+                    words.forEach((word) => word.highlight = !word.highlight);
+                }
+                lastLineHighlight = words[words.length - 1].highlight;
             }
 
-            // insert the word
-            insertWord(lines, { word: entry, highlight: word.highlight });
-            newline = true;
+            lines.push({ length: 0, words });
         });
-    });
+    }
 
     return lines;
 }
 
-export const MessageVisualization: React.FC<MessageVisualizationProps> = memo(({ message, ignoreHighlight, cssClass, yStart, deltaY, isStatusAvailable, setStatus, resetStatus, setRef }) => {
+export const MessageVisualization: React.FC<MessageVisualizationProps> = memo(({
+    message, keepNewlines, ignoreHighlight, cssClass, yStart, deltaY,
+    isStatusAvailable, setStatus, resetStatus, setRef,
+}) => {
     const [pageIndex, setPageIndex] = useState(0);
     const [pageCount, setPageCount] = useState(0);
     const maxLines = 5;
@@ -198,7 +227,7 @@ export const MessageVisualization: React.FC<MessageVisualizationProps> = memo(({
         return <></>;
     }
 
-    let lines = createVisualizationLines(message);
+    let lines = createVisualizationLines(message, keepNewlines);
 
     // get the number of pages
     const messagePageCount = Math.ceil(lines.length / maxLines);
