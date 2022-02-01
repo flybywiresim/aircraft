@@ -201,7 +201,6 @@ export class AtcSystem {
         message.Message = 'LOGOFF';
 
         this.parent.registerMessage(message);
-        this.listener.triggerToAllSubscribers('A32NX_DCDU_ATC_LOGON_MSG', '');
 
         return this.datalink.sendMessage(message, true).then((error) => error);
     }
