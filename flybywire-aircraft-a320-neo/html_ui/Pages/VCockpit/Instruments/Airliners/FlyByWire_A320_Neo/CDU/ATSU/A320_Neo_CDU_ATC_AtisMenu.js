@@ -18,6 +18,7 @@ class CDUAtcAtisMenu {
 
     static ShowPage(mcdu, airports = ["", "", ""]) {
         mcdu.clearDisplay();
+        mcdu.page.Current = mcdu.page.ATCAtis;
 
         let depAtis = ["\xa0[  ]/[ ][color]cyan", "", "SEND\xa0"];
         let arrAtis = ["\xa0[  ]/[ ][color]cyan", "", "SEND\xa0"];
@@ -111,7 +112,10 @@ class CDUAtcAtisMenu {
                     if (code !== Atsu.AtsuStatusCodes.Ok) {
                         mcdu.addNewAtsuMessage(code);
                     }
-                    CDUAtcAtisMenu.ShowPage(mcdu, airports);
+
+                    if (mcdu.page.Current === mcdu.page.ATCAtis) {
+                        CDUAtcAtisMenu.ShowPage(mcdu, airports);
+                    }
                 });
             }
         };
@@ -125,7 +129,10 @@ class CDUAtcAtisMenu {
                     if (code !== Atsu.AtsuStatusCodes.Ok) {
                         mcdu.addNewAtsuMessage(code);
                     }
-                    CDUAtcAtisMenu.ShowPage(mcdu, airports);
+
+                    if (mcdu.page.Current === mcdu.page.ATCAtis) {
+                        CDUAtcAtisMenu.ShowPage(mcdu, airports);
+                    }
                 });
             }
         };
@@ -139,7 +146,10 @@ class CDUAtcAtisMenu {
                     if (code !== Atsu.AtsuStatusCodes.Ok) {
                         mcdu.addNewAtsuMessage(code);
                     }
-                    CDUAtcAtisMenu.ShowPage(mcdu, airports);
+
+                    if (mcdu.page.Current === mcdu.page.ATCAtis) {
+                        CDUAtcAtisMenu.ShowPage(mcdu, airports);
+                    }
                 });
             }
         };

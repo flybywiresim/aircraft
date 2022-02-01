@@ -1,6 +1,7 @@
 class CDUAtcDepartReq {
     static ShowPage1(mcdu) {
         mcdu.clearDisplay();
+        mcdu.page.Current = mcdu.page.ATCDepartReq;
 
         if (mcdu.dclMessage === undefined) {
             mcdu.dclMessage = new Atsu.DclMessage();
