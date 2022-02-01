@@ -978,6 +978,12 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             case Atsu.AtsuStatusCodes.SystemBusy:
                 this.addNewMessage(NXSystemMessages.systemBusy);
                 break;
+            case Atsu.AtsuStatusCodes.NewAtisReceived:
+                this.addNewMessage(NXSystemMessages.newAtisReceived);
+                break;
+            case Atsu.AtsuStatusCodes.NoAtisReceived:
+                this.addNewMessage(NXSystemMessages.noAtisReceived);
+                break;
             default:
                 break;
         }
