@@ -5,9 +5,9 @@ class CDUAtsuMenu {
         const display = [
             ["ATSU DATALINK"],
             [""],
-            ["<ATC MENU"],
+            ["<ATC MENU", "AOC MENU>"],
             [""],
-            ["", "AOC MENU>"],
+            [""],
             [""],
             [""],
             [""],
@@ -26,10 +26,10 @@ class CDUAtsuMenu {
             CDUAtcMenu.ShowPage1(mcdu);
         };
 
-        mcdu.rightInputDelay[1] = () => {
+        mcdu.rightInputDelay[0] = () => {
             return mcdu.getDelaySwitchPage();
         };
-        mcdu.onRightInput[1] = () => {
+        mcdu.onRightInput[0] = () => {
             CDUAocMenu.ShowPage(mcdu);
         };
 
