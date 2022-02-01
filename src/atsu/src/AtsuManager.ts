@@ -30,7 +30,7 @@ export class AtsuManager {
 
     public static async connectToNetworks(): Promise<AtsuStatusCodes> {
         const flightNo = SimVar.GetSimVarValue('ATC FLIGHT NUMBER', 'string');
-        if (flightNo.length === 0 || flightNo === '1123') {
+        if (flightNo.length === 0) {
             return AtsuStatusCodes.Ok;
         }
 
