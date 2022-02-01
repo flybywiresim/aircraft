@@ -169,6 +169,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.climbTransitionGroundAltitude = undefined;
         this.altDestination = undefined;
         this.flightNumber = undefined;
+        SimVar.SetSimVarValue("ATC FLIGHT NUMBER", "string", "", "FMC");
         this.cruiseTemperature = undefined;
         this.taxiFuelWeight = undefined;
         this.blockFuel = undefined;
@@ -499,6 +500,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.climbTransitionGroundAltitude = null;
         this.altDestination = undefined;
         this.flightNumber = undefined;
+        SimVar.SetSimVarValue("ATC FLIGHT NUMBER", "string", "", "FMC");
         this.cruiseTemperature = undefined;
         this.taxiFuelWeight = 0.2;
         this.blockFuel = undefined;
