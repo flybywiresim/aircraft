@@ -19,6 +19,8 @@ export class AtcSystem {
 
     private nextAtc = '';
 
+    private notificationTime = 0;
+
     private cpdlcMessageId = 0;
 
     private messageQueue: CpdlcMessage[] = [];
@@ -142,6 +144,10 @@ export class AtcSystem {
         return this.nextAtc;
     }
 
+    public nextStationNotificationTime(): number {
+        return this.notificationTime;
+    }
+
     public logonInProgress(): boolean {
         return this.nextAtc !== '';
     }
@@ -169,6 +175,7 @@ export class AtcSystem {
         this.nextAtc = station;
         this.parent.registerMessage(message);
         this.listener.triggerToAllSubscribers('A32NX_DCDU_ATC_LOGON_MSG', `NEXT ATC: ${station}`);
+        this.notificationTime = SimVar.GetGlobalVarValue('ZULU TIME', 'seconds');
 
         return this.datalink.sendMessage(message, false);
     }
