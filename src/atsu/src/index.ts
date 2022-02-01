@@ -12,6 +12,7 @@ import { AtisMessage, AtisType } from './messages/AtisMessage';
 import { AocSystem } from './AocSystem';
 import { AtcSystem } from './AtcSystem';
 import { DclMessage } from './messages/DclMessage';
+import { OclMessage } from './messages/OclMessage';
 
 export {
     AtsuStatusCodes,
@@ -35,4 +36,5 @@ export {
     AocSystem,
     AtcSystem,
     DclMessage,
+    OclMessage,
 };
