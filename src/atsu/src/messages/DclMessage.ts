@@ -1,7 +1,7 @@
 //  Copyright (c) 2021 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import { CpdlcMessage } from '@atsu/AtsuManager';
+import { CpdlcMessage } from './CpdlcMessage';
 import { AtsuMessageType, AtsuMessageDirection, AtsuMessageSerializationFormat, AtsuMessage } from './AtsuMessage';
 
 /**
