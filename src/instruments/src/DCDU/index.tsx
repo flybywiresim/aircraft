@@ -3,6 +3,7 @@ import { useSimVar } from '@instruments/common/simVars';
 import { useCoherentEvent, useInteractionEvents } from '@instruments/common/hooks';
 import { AtsuMessageComStatus, AtsuMessageDirection, AtsuMessageType } from '@atsu/messages/AtsuMessage';
 import { CpdlcMessage, CpdlcMessageRequestedResponseType, CpdlcMessageResponse } from '@atsu/messages/CpdlcMessage';
+import { OutputButtons } from './elements/OutputButtons';
 import { AffirmNegativeButtons } from './elements/AffirmNegativeButtons';
 import { WilcoUnableButtons } from './elements/WilcoUnableButtons';
 import { RogerButtons } from './elements/RogerButtons';
@@ -279,7 +280,7 @@ const DCDU: React.FC = () => {
     }
 
     let answerRequired = false;
-    if (message !== undefined) {
+    if (message !== undefined && message.Direction === AtsuMessageDirection.Input) {
         answerRequired = message.RequestedResponses !== CpdlcMessageRequestedResponseType.NotRequired && message.RequestedResponses !== CpdlcMessageRequestedResponseType.No;
     }
 
@@ -365,7 +366,15 @@ const DCDU: React.FC = () => {
                             closeMessage={closeMessage}
                         />
                     ))}
-                    {(message !== undefined && !answerRequired && (
+                    {(message !== undefined && !answerRequired && message.Direction === AtsuMessageDirection.Output && (
+                        <OutputButtons
+                            message={message}
+                            setStatus={setStatus}
+                            isStatusAvailable={isStatusAvailable}
+                            closeMessage={closeMessage}
+                        />
+                    ))}
+                    {(message !== undefined && !answerRequired && message.Direction === AtsuMessageDirection.Input && (
                         <CloseButtons
                             message={message}
                             closeMessage={closeMessage}
