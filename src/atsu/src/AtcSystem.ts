@@ -3,6 +3,8 @@
 
 import { HoppieConnector } from './com/HoppieConnector';
 import { AtsuStatusCodes } from './AtsuStatusCodes';
+import { AtisMessage } from './messages/AtisMessage';
+import { AtsuTimestamp } from './messages/AtsuTimestamp';
 import { AtsuMessageComStatus, AtsuMessage, AtsuMessageType, AtsuMessageDirection } from './messages/AtsuMessage';
 import { CpdlcMessageResponse, CpdlcMessageRequestedResponseType, CpdlcMessage } from './messages/CpdlcMessage';
 import { Datalink } from './com/Datalink';
@@ -32,6 +34,8 @@ export class AtcSystem {
     private unreadMessagesLastCycle: number = 0;
 
     private lastRingTime: number = 0;
+
+    private atisMessages: Map<string, [number, AtisMessage[]]> = new Map();
 
     constructor(parent: AtsuManager, datalink: Datalink) {
         this.parent = parent;
@@ -448,5 +452,50 @@ export class AtcSystem {
             }
             return retval;
         });
+    }
+
+    private async updateAtis(icao: string, overwrite: boolean): Promise<AtsuStatusCodes> {
+        return this.datalink.receiveAtis(icao).then((retval) => {
+            if (retval[0] === AtsuStatusCodes.Ok) {
+                let code = AtsuStatusCodes.Ok;
+                const atis = retval[1] as AtisMessage;
+                atis.Timestamp = new AtsuTimestamp();
+                atis.parseInformation();
+                let printable = false;
+
+                if (atis.Information === '') {
+                    return AtsuStatusCodes.NoAtisReceived;
+                }
+
+                if (this.atisMessages.get(icao) !== undefined) {
+                    if (this.atisMessages.get(icao)[1][0].Information !== atis.Information) {
+                        this.atisMessages.get(icao)[1].unshift(atis);
+                        code = AtsuStatusCodes.NewAtisReceived;
+                        printable = true;
+                    } else if (overwrite) {
+                        this.atisMessages.get(icao)[1][0] = atis;
+                        code = AtsuStatusCodes.NewAtisReceived;
+                    }
+                } else {
+                    this.atisMessages.set(icao, [atis.Timestamp.Seconds, [atis]]);
+                    code = AtsuStatusCodes.NewAtisReceived;
+                    printable = true;
+                }
+
+                this.atisMessages.get(icao)[0] = atis.Timestamp.Seconds;
+
+                if (this.printAtisReport && printable) {
+                    this.parent.printMessage(atis);
+                }
+
+                return code;
+            }
+
+            return retval[0];
+        });
+    }
+
+    public async receiveAtis(icao: string): Promise<AtsuStatusCodes> {
+        return this.updateAtis(icao, true);
     }
 }
