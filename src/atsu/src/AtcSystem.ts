@@ -416,6 +416,7 @@ export class AtcSystem {
             if (dcduRelevant && SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_MAX_REACHED', 'boolean') === 0) {
                 this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', message as CpdlcMessage);
             } else if (dcduRelevant) {
+                this.parent.publishAtsuStatusCode(AtsuStatusCodes.DcduFull);
                 this.dcduBufferedMessages.push(message.UniqueMessageID);
             }
         }
