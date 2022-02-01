@@ -56,14 +56,14 @@ export const OutputButtons: React.FC<OutputButtonsProps> = ({ message, setStatus
                     <Button
                         messageId={message.UniqueMessageID}
                         index="L1"
-                        content="*CANCEL"
+                        content="CANCEL"
                         active={!buttonsBlocked}
                         onClick={clicked}
                     />
                     <Button
                         messageId={message.UniqueMessageID}
                         index="R2"
-                        content="SEND*"
+                        content="SEND"
                         active={!buttonsBlocked}
                         onClick={clicked}
                     />
