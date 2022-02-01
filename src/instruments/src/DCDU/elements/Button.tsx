@@ -53,6 +53,8 @@ export const Button: React.FC<ButtonProps> = ({ index, content, active, onClick 
         backgroundDefinition.style += 'button-right ';
         break;
     }
+    const backgroundWidth = 1032;
+    const backgroundHeight = 240;
 
     backgroundDefinition.y = textDefinition.y - 176;
     if (clicked) {
@@ -63,6 +65,20 @@ export const Button: React.FC<ButtonProps> = ({ index, content, active, onClick 
         backgroundDefinition.style = 'button-color-clicked';
     }
 
+    // one character has a width of 86px -> calculate the ratio between the text and the background
+    const textWidth = (content.length - 1) * 86;
+    const textFillRatio = 1.0 - textWidth / backgroundWidth;
+    const activeBtnOffset = active ? 86 : 0;
+    const offset = Math.round(backgroundWidth * textFillRatio * 0.5);
+    if (leftButton) {
+        // move the left X (text aligned left in CSS) coordinate to the half text fill ratio to be aligned to the center
+        textDefinition.x = offset - activeBtnOffset;
+    } else {
+        // move the right X (text aligned right in CSS) coordinate to the half text fill ratio to be aligned to the center
+        textDefinition.x = backgroundDefinition.x + backgroundWidth - offset + activeBtnOffset;
+    }
+
+    // create the final text
     let text: string;
     if (active) {
         if (leftButton) {
@@ -80,8 +96,8 @@ export const Button: React.FC<ButtonProps> = ({ index, content, active, onClick 
                 <Checkerboard
                     x={backgroundDefinition.x}
                     y={backgroundDefinition.y}
-                    width={1032}
-                    height={240}
+                    width={backgroundWidth}
+                    height={backgroundHeight}
                     cellSize={10}
                     fill="rgb(0,255,255)"
                 />
