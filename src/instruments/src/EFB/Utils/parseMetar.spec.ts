@@ -17,9 +17,9 @@ describe('Test parseMetar when provided with', () => {
     });
 
     test('EDDM 291350Z 26017KT 9999 DZ BKN027 09/00 Q1025 NOSIG', () => {
-        const metarObject = parseMetar('EDDM 291350Z 26017KT 9999 DZ BKN027 09/00 Q1025 NOSIG');
+        const metarObject = parseMetar('EDDM 281350Z 26017KT 9999 DZ BKN027 09/00 Q1025 NOSIG');
         expect(metarObject.icao).toBe('EDDM');
-        expect(metarObject.observed.getUTCDate()).toBe(29);
+        expect(metarObject.observed.getUTCDate()).toBe(28);
         expect(metarObject.observed.getUTCHours()).toBe(13);
         expect(metarObject.observed.getUTCMinutes()).toBe(50);
         expect(metarObject.wind.speed_kts).toBe(17);
@@ -56,9 +56,9 @@ describe('Test parseMetar when provided with', () => {
 
     test('KJFK 291451Z 34027G34KT 300V020 1/4SM R04R/1600V2800FT +SN BLSN FZFG VV007 M09/M11 A2967 RMK AO2 PK WND 34035/1420 SLP046 SNINCR 1/8 P0000 60002 T10941111 51001', () => {
         // eslint-disable-next-line max-len
-        const metarObject = parseMetar('KJFK 291451Z 34027G34KT 300V020 1/4SM R04R/1600V2800FT +SN BLSN FZFG VV007 M09/M11 A2967 RMK AO2 PK WND 34035/1420 SLP046 SNINCR 1/8 P0000 60002 T10941111 51001');
+        const metarObject = parseMetar('KJFK 281451Z 34027G34KT 300V020 1/4SM R04R/1600V2800FT +SN BLSN FZFG VV007 M09/M11 A2967 RMK AO2 PK WND 34035/1420 SLP046 SNINCR 1/8 P0000 60002 T10941111 51001');
         expect(metarObject.icao).toBe('KJFK');
-        expect(metarObject.observed.getUTCDate()).toBe(29);
+        expect(metarObject.observed.getUTCDate()).toBe(28);
         expect(metarObject.observed.getUTCHours()).toBe(14);
         expect(metarObject.observed.getUTCMinutes()).toBe(51);
         expect(metarObject.wind.speed_kts).toBe(27);
@@ -116,9 +116,9 @@ describe('Test parseMetar when provided with', () => {
 
     test('EKCH 301350Z AUTO 32020G36KT 290V350 9999 NCD 07/M03 Q1011 TEMPO 31025G40KT 2500', () => {
         // eslint-disable-next-line max-len
-        const metarObject = parseMetar('EKCH 301350Z AUTO 32020G36KT 290V350 9999 NCD 07/M03 Q1011 TEMPO 31025G40KT 2500');
+        const metarObject = parseMetar('EKCH 251350Z AUTO 32020G36KT 290V350 9999 NCD 07/M03 Q1011 TEMPO 31025G40KT 2500');
         expect(metarObject.icao).toBe('EKCH');
-        expect(metarObject.observed.getUTCDate()).toBe(30);
+        expect(metarObject.observed.getUTCDate()).toBe(25);
         expect(metarObject.observed.getUTCHours()).toBe(13);
         expect(metarObject.observed.getUTCMinutes()).toBe(50);
         expect(metarObject.wind.speed_kts).toBe(20);
@@ -158,9 +158,9 @@ describe('Test parseMetar when provided with', () => {
 
     test('K1U7 301420Z AUTO 00000KT 1/4SM FZFG OVC002 M23/M24 A3024 TEMPO 18040KT 1/4SM FZFG OVC004 M23/M24 A3024', () => {
         // eslint-disable-next-line max-len
-        const metarObject = parseMetar('K1U7 301420Z AUTO 00000KT 1/4SM FZFG OVC002 M23/M24 A3024 TEMPO 18040KT 1/4SM FZFG OVC004 M23/M24 A3024');
+        const metarObject = parseMetar('K1U7 011420Z AUTO 00000KT 1/4SM FZFG OVC002 M23/M24 A3024 TEMPO 18040KT 1/4SM FZFG OVC004 M23/M24 A3024');
         expect(metarObject.icao).toBe('K1U7');
-        expect(metarObject.observed.getUTCDate()).toBe(30);
+        expect(metarObject.observed.getUTCDate()).toBe(1);
         expect(metarObject.observed.getUTCHours()).toBe(14);
         expect(metarObject.observed.getUTCMinutes()).toBe(20);
         expect(metarObject.wind.speed_kts).toBe(0);
@@ -209,9 +209,9 @@ describe('Test parseMetar when provided with', () => {
 });
 
 test('KSFO 301456Z 17004KT 10SM FEW008 SCT011 SCT200 07/06 A3021 RMK AO2 SLP230 T00720056 50002', () => {
-    const metarObject = parseMetar('KSFO 301456Z 17004KT 10SM FEW008 SCT011 SCT200 07/06 A3021 RMK AO2 SLP230 T00720056 50002');
+    const metarObject = parseMetar('KSFO 021456Z 17004KT 10SM FEW008 SCT011 SCT200 07/06 A3021 RMK AO2 SLP230 T00720056 50002');
     expect(metarObject.icao).toBe('KSFO');
-    expect(metarObject.observed.getUTCDate()).toBe(30);
+    expect(metarObject.observed.getUTCDate()).toBe(2);
     expect(metarObject.observed.getUTCHours()).toBe(14);
     expect(metarObject.observed.getUTCMinutes()).toBe(56);
     expect(metarObject.wind.speed_kts).toBe(4);
