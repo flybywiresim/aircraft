@@ -13,7 +13,6 @@ const MetarParserTypeProp: MetarParserType = {
     raw_text: '',
     raw_parts: [],
     color_codes: [],
-
     icao: '',
     observed: new Date(0),
     wind: {

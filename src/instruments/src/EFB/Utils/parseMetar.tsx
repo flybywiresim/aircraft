@@ -1,4 +1,3 @@
-import React from 'react';
 import { ColorCode, MetarParserType, Visibility, Wind } from '../../Common/metarTypes';
 
 /**
@@ -33,7 +32,6 @@ export function parseMetar(metarString: string): MetarParserType {
         raw_text: metarString,
         raw_parts: metarArray,
         color_codes: Array(metarArray.length).fill(ColorCode.None),
-
         icao: '',
         observed: new Date(0),
         wind: {
