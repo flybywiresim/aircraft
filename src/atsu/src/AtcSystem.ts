@@ -152,6 +152,13 @@ export class AtcSystem {
         return this.nextAtc !== '';
     }
 
+    public resetLogon(): void {
+        this.currentAtc = '';
+        this.nextAtc = '';
+        this.notificationTime = 0;
+        this.listener.triggerToAllSubscribers('A32NX_DCDU_ATC_LOGON_MSG', '');
+    }
+
     public async logon(station: string): Promise<AtsuStatusCodes> {
         if (this.nextAtc !== '' && station !== this.nextAtc) {
             return AtsuStatusCodes.SystemBusy;
