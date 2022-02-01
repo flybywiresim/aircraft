@@ -1933,18 +1933,17 @@ class FMCMainDisplay extends BaseAirliners {
             return callback(false);
         }
 
-        const oldFlightNumber = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string");
-        this.flightNumber = flightNo;
-
         SimVar.SetSimVarValue("ATC FLIGHT NUMBER", "string", flightNo, "FMC").then(() => {
             Atsu.AtsuManager.connectToNetworks()
                 .then((code) => {
                     if (code !== Atsu.AtsuStatusCodes.Ok) {
-                        SimVar.SetSimVarValue("ATC FLIGHT NUMBER", "string", oldFlightNumber, "FMC");
+                        SimVar.SetSimVarValue("ATC FLIGHT NUMBER", "string", "", "FMC");
                         this.addNewAtsuMessage(code);
+                        this.flightNo = "";
                         return callback(false);
                     }
 
+                    this.flightNumber = flightNo;
                     return callback(true);
                 });
         });
