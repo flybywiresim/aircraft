@@ -21,7 +21,7 @@ class CDUAtcConnectionStatus {
             ["CONNECTION STATUS"],
             ["ACTIVE ATC"],
             [currentStation],
-            ["NEXT ATC", "ALL ATC[color]cyan"],
+            ["NEXT ATC", "ALL ATC\xa0[color]cyan"],
             [nextStation, atcDisconnect],
             [""],
             [""],
