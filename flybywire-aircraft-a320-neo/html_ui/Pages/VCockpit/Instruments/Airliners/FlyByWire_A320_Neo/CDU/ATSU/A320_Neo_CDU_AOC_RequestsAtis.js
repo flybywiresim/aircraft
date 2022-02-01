@@ -74,9 +74,9 @@ class CDUAocRequestsAtis {
                     [""],
                     [departureText],
                     [""],
-                    ["{ARRIVAL/AUTO UPDATE[color]inop"],
                     [""],
-                    ["{TERMINATE AUTO UPDATE[color]inop"],
+                    [""],
+                    [""],
                     ["RETURN TO", `${store.sendStatus}`],
                     ["<AOC MENU", sendMessage]
                 ]);
