@@ -378,16 +378,18 @@ export class AtcSystem {
         // search corresponding request, if previous ID is set
         if (cpdlcMessage.PreviousTransmissionId !== -1) {
             this.messageQueue.forEach((element) => {
-                while (element !== undefined) {
-                    if (element.CurrentTransmissionId === cpdlcMessage.PreviousTransmissionId) {
-                        if (element.ResponseType === undefined) {
-                            element.ResponseType = CpdlcMessageResponse.Other;
+                if (element.Station === cpdlcMessage.Station) {
+                    while (element !== undefined) {
+                        if (element.CurrentTransmissionId === cpdlcMessage.PreviousTransmissionId) {
+                            if (element.ResponseType === undefined) {
+                                element.ResponseType = CpdlcMessageResponse.Other;
+                            }
+                            element.Response = cpdlcMessage;
+                            analyzed = this.analyzeMessage(element, cpdlcMessage);
+                            break;
                         }
-                        element.Response = cpdlcMessage;
-                        analyzed = this.analyzeMessage(element, cpdlcMessage);
-                        break;
+                        element = element.Response;
                     }
-                    element = element.Response;
                 }
             });
         } else {
