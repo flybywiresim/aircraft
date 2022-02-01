@@ -243,6 +243,10 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
         CDUMenuPage.ShowPage(this);
 
+        this.onAirport = () => {
+            this.addNewMessage(NXFictionalMessages.notYetImplemented);
+        };
+
         // If the consent is not set, show telex page
         const onlineFeaturesStatus = NXDataStore.get("CONFIG_ONLINE_FEATURES_STATUS", "UNKNOWN");
 
@@ -277,8 +281,10 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         super.onUpdate(_deltaTime);
 
         if (this.minPageUpdateThrottler.canUpdate(_deltaTime) !== -1 && this.updateRequest) {
+            console.log("Main: onUpdate: " + _deltaTime);
             this.updateRequest = false;
             if (this.pageRedrawCallback) {
+                console.log("Main: pageRedrawCallback: " + pageRedrawCallback.toString());
                 this.pageRedrawCallback();
             }
         }
