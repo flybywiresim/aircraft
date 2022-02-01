@@ -1,6 +1,6 @@
 class CDUAtcAtisMenu {
     static CreateLineData(mcdu, icao, type) {
-        const reports = mcdu.atsuManager.atc().atisReports(icao);
+        const reports = mcdu.atsuManager.atc.atisReports(icao);
 
         let prefix = "\xa0";
         let middle = "";
@@ -38,7 +38,7 @@ class CDUAtcAtisMenu {
 
         let printTitle = "PRINT:MANUAL\xa0";
         let printButton = "SET AUTO*";
-        if (mcdu.atsuManager.atc().printAtisReportsPrint()) {
+        if (mcdu.atsuManager.atc.printAtisReportsPrint()) {
             printTitle = "PRINT:AUTO\xa0";
             printButton = "SET MANUAL*";
         }
@@ -64,7 +64,7 @@ class CDUAtcAtisMenu {
         };
         mcdu.onLeftInput[0] = () => {
             if (airports[0] !== "") {
-                const reports = mcdu.atsuManager.atc().atisReports(airports[0]);
+                const reports = mcdu.atsuManager.atc.atisReports(airports[0]);
                 if (reports.length !== 0) {
                     CDUAtcReportAtis.ShowPage(mcdu, `${airports[0]}/DEP`, reports, 0);
                 }
@@ -76,7 +76,7 @@ class CDUAtcAtisMenu {
         };
         mcdu.onLeftInput[1] = () => {
             if (airports[1] !== "") {
-                const reports = mcdu.atsuManager.atc().atisReports(airports[1]);
+                const reports = mcdu.atsuManager.atc.atisReports(airports[1]);
                 if (reports.length !== 0) {
                     CDUAtcReportAtis.ShowPage(mcdu, `${airports[1]}/ARR`, reports, 0);
                 }
@@ -88,7 +88,7 @@ class CDUAtcAtisMenu {
         };
         mcdu.onLeftInput[2] = () => {
             if (airports[2] !== "") {
-                const reports = mcdu.atsuManager.atc().atisReports(airports[2]);
+                const reports = mcdu.atsuManager.atc.atisReports(airports[2]);
                 if (reports.length !== 0) {
                     CDUAtcReportAtis.ShowPage(mcdu, `${airports[2]}/ARR`, reports, 0);
                 }
@@ -107,7 +107,7 @@ class CDUAtcAtisMenu {
         };
         mcdu.onRightInput[0] = () => {
             if (airports[0] !== "") {
-                mcdu.atsuManager.atc().receiveAtis(airports[0]).then((code) => {
+                mcdu.atsuManager.atc.receiveAtis(airports[0]).then((code) => {
                     if (code !== Atsu.AtsuStatusCodes.Ok) {
                         mcdu.addNewAtsuMessage(code);
                     }
@@ -121,7 +121,7 @@ class CDUAtcAtisMenu {
         };
         mcdu.onRightInput[1] = () => {
             if (airports[1] !== "") {
-                mcdu.atsuManager.atc().receiveAtis(airports[1]).then((code) => {
+                mcdu.atsuManager.atc.receiveAtis(airports[1]).then((code) => {
                     if (code !== Atsu.AtsuStatusCodes.Ok) {
                         mcdu.addNewAtsuMessage(code);
                     }
@@ -135,7 +135,7 @@ class CDUAtcAtisMenu {
         };
         mcdu.onRightInput[2] = () => {
             if (airports[2] !== "") {
-                mcdu.atsuManager.atc().receiveAtis(airports[2]).then((code) => {
+                mcdu.atsuManager.atc.receiveAtis(airports[2]).then((code) => {
                     if (code !== Atsu.AtsuStatusCodes.Ok) {
                         mcdu.addNewAtsuMessage(code);
                     }
@@ -155,7 +155,7 @@ class CDUAtcAtisMenu {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onRightInput[5] = () => {
-            mcdu.atsuManager.atc().togglePrintAtisReports();
+            mcdu.atsuManager.atc.togglePrintAtisReports();
             CDUAtcAtisMenu.ShowPage(mcdu, airports);
         };
     }
