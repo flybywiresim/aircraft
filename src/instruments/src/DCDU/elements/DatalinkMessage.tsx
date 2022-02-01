@@ -2,6 +2,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import { AtsuMessageComStatus, AtsuMessageDirection, AtsuMessageSerializationFormat } from '@atsu/messages/AtsuMessage';
 import { CpdlcMessage } from '@atsu/messages/CpdlcMessage';
 import { MessageVisualization } from './MessageVisualization';
+import { Checkerboard } from './Checkerboard';
 
 type DatalinkMessageProps = {
     message: CpdlcMessage,
@@ -17,15 +18,15 @@ export const DatalinkMessage: React.FC<DatalinkMessageProps> = ({ message, isSta
     useEffect(() => setTextBBox(textRef.current?.getBBox()), []);
 
     // define the correct background color
-    let backgroundClass = 'message-background';
+    let backgroundNeeded = false;
+    let backgroundColor = '';
     if (message.Direction === AtsuMessageDirection.Output) {
         if (message.ComStatus === AtsuMessageComStatus.Sent || message.ComStatus === AtsuMessageComStatus.Sending) {
-            backgroundClass += ' message-sent';
+            backgroundColor = 'rgb(0,255,0)';
         } else {
-            backgroundClass += ' message-out';
+            backgroundColor = 'rgb(0,255,255)';
         }
-    } else {
-        backgroundClass += ' message-background-off';
+        backgroundNeeded = true;
     }
 
     // check if highlight is needed
@@ -56,7 +57,17 @@ export const DatalinkMessage: React.FC<DatalinkMessageProps> = ({ message, isSta
 
     return (
         <g>
-            <rect className={backgroundClass} height={contentHeight} x="168" y="472" />
+            {backgroundNeeded
+            && (
+                <Checkerboard
+                    x={130}
+                    y={472}
+                    width={3600}
+                    height={contentHeight}
+                    cellSize={10}
+                    fill={backgroundColor}
+                />
+            )}
             <MessageVisualization
                 message={message.Message !== '' ? message.Message : message.serialize(AtsuMessageSerializationFormat.DCDU)}
                 keepNewlines={message.Direction === AtsuMessageDirection.Output}
