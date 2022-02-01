@@ -129,15 +129,8 @@ class CDUAtcDepartReq {
             }
 
             // publish the message
-            mcdu.atsuManager.registerMessage(mcdu.dclMessage).then((code) => {
-                if (code === Atsu.AtsuStatusCodes.Ok) {
-                    mcdu.dclMessage = undefined;
-                } else {
-                    mcdu.addNewAtsuMessage(code);
-                }
-
-                CDUAtcDepartReq.ShowPage1(mcdu, store);
-            });
+            mcdu.atsuManager.registerMessage(mcdu.dclMessage);
+            mcdu.dclMessage = undefined;
 
             CDUAtcDepartReq.ShowPage1(mcdu);
         };
