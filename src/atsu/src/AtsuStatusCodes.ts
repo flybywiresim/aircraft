@@ -12,5 +12,6 @@ export enum AtsuStatusCodes {
     NoAtc,
     DcduFull,
     UnknownMessage,
-    ProxyError
+    ProxyError,
+    SystemBusy
 }
