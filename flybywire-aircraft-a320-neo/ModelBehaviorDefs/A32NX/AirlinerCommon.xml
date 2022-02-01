@@ -335,7 +335,9 @@
         <OverrideTemplateParameters>
         </OverrideTemplateParameters>
 
-        <UseTemplate Name="FBW_AIRLINER_Audio_Volume_Knob_Template">
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+            <ANIM_TEMPLATE>FBW_AIRLINER_Audio_Volume_Knob_Template</ANIM_TEMPLATE>
             <NODE_ID>#NODE_ID_RECEIVER_VHF_L#</NODE_ID>
             <NODE_ID_LIGHT>#NODE_ID_LIGHT_RECEIVER_VHF_L#</NODE_ID_LIGHT>
             <ANIM_NAME_KNOB>#ANIM_NAME_KNOB_RECEIVER_VHF_L#</ANIM_NAME_KNOB>
@@ -354,7 +356,9 @@
             <TOOLTIP_HAND>TT:COCKPIT.TOOLTIPS.TRANSMITTER_VHF_L_AUDIO_TOGGLE</TOOLTIP_HAND>
             <TOOLTIP_PB>TT:COCKPIT.TOOLTIPS.TRANSMITTER_SELECT_VHF_L</TOOLTIP_PB>
         </UseTemplate>
-        <UseTemplate Name="FBW_AIRLINER_Audio_Volume_Knob_Template">
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+            <ANIM_TEMPLATE>FBW_AIRLINER_Audio_Volume_Knob_Template</ANIM_TEMPLATE>
             <NODE_ID>#NODE_ID_RECEIVER_VHF_C#</NODE_ID>
             <NODE_ID_LIGHT>#NODE_ID_LIGHT_RECEIVER_VHF_C#</NODE_ID_LIGHT>
             <ANIM_NAME_KNOB>#ANIM_NAME_KNOB_RECEIVER_VHF_C#</ANIM_NAME_KNOB>
@@ -373,7 +377,9 @@
             <TOOLTIP_HAND>TT:COCKPIT.TOOLTIPS.TRANSMITTER_VHF_C_AUDIO_TOGGLE</TOOLTIP_HAND>
             <TOOLTIP_PB>TT:COCKPIT.TOOLTIPS.TRANSMITTER_SELECT_VHF_C</TOOLTIP_PB>
         </UseTemplate>
-        <UseTemplate Name="FBW_AIRLINER_Audio_Volume_Knob_Template">
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+            <ANIM_TEMPLATE>FBW_AIRLINER_Audio_Volume_Knob_Template</ANIM_TEMPLATE>
             <NODE_ID>#NODE_ID_RECEIVER_VHF_R#</NODE_ID>
             <NODE_ID_LIGHT>#NODE_ID_LIGHT_RECEIVER_VHF_R#</NODE_ID_LIGHT>
             <ANIM_NAME_KNOB>#ANIM_NAME_KNOB_RECEIVER_VHF_R#</ANIM_NAME_KNOB>
@@ -387,7 +393,6 @@
             <Radio_ID>3</Radio_ID>
             <Button_ID>3</Button_ID>
             <TRANSMIT_ID>2</TRANSMIT_ID>
-
             <TOOLTIP_LEFT>TT:COCKPIT.TOOLTIPS.TRANSMITTER_VHF_R_VOLUME_DEC</TOOLTIP_LEFT>
             <TOOLTIP_RIGHT>TT:COCKPIT.TOOLTIPS.TRANSMITTER_VHF_R_VOLUME_INC</TOOLTIP_RIGHT>
             <TOOLTIP_HAND>TT:COCKPIT.TOOLTIPS.TRANSMITTER_VHF_R_AUDIO_TOGGLE</TOOLTIP_HAND>

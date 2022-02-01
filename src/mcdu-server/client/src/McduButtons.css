@@ -12,8 +12,7 @@
 .button {
     flex-grow: 1;
     cursor: pointer;
-    border: 2px solid transparent;
-    transition: 0.25s;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .dummy {

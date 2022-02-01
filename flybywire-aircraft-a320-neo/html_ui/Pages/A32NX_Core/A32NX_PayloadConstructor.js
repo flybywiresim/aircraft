@@ -50,7 +50,7 @@ class A32NX_PayloadConstructor {
         this.cargoStations = {
             fwdBag: {
                 name: 'FWD BAGGAGE/CONTAINER',
-                weight: 2540,
+                weight: 3402,
                 load: 0,
                 stationIndex: 4 + 1,
                 position: 18.28,
@@ -59,7 +59,7 @@ class A32NX_PayloadConstructor {
             },
             aftCont: {
                 name: 'AFT CONTAINER',
-                weight: 1815,
+                weight: 2426,
                 load: 0,
                 stationIndex: 5 + 1,
                 position: -15.96,
@@ -68,7 +68,7 @@ class A32NX_PayloadConstructor {
             },
             aftBag: {
                 name: 'AFT BAGGAGE',
-                weight: 1585,
+                weight: 2110,
                 load: 0,
                 stationIndex: 6 + 1,
                 position: -27.10,
@@ -77,7 +77,7 @@ class A32NX_PayloadConstructor {
             },
             aftBulk: {
                 name: 'AFT BULK/LOOSE',
-                weight: 1245,
+                weight: 1497,
                 load: 0,
                 stationIndex: 7 + 1,
                 position: -37.35,
