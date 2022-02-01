@@ -47,11 +47,12 @@ class CDUAtcConnectionStatus {
             if (!store["disconnectAvail"]) {
                 mcdu.addNewMessage(NXFictionalMessages.noAtc);
             } else {
+                store["disconnectAvail"] = false;
                 mcdu.atsuManager.atc.logoff().then((code) => {
                     if (code !== Atsu.AtsuStatusCodes.Ok) {
+                        store["disconnectAvail"] = true;
                         mcdu.addNewAtsuMessage(code);
                     } else {
-                        store["disconnectAvail"] = false;
                         CDUAtcConnectionStatus.ShowPage(mcdu, store);
                     }
                 });
