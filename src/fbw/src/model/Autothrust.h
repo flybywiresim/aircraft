@@ -203,6 +203,7 @@ class AutothrustModelClass
     real_T Saturation_UpperSat_f;
     real_T Saturation_LowerSat_ev;
     real_T ktstomps_Gain;
+    real_T GStoGS_CAS_Gain;
     real_T _Gain;
     real_T Saturation1_UpperSat_c;
     real_T Saturation1_LowerSat_g;
