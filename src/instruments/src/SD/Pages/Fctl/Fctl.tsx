@@ -89,8 +89,8 @@ interface PitchTrimProps extends ComponentPositionProps {
     fcdcDiscreteWord2: Arinc429Word,
 }
 const PitchTrim = ({ x, y, fcdcDiscreteWord2 }: PitchTrimProps) => {
-    const fcdc1ThsPosition = useArinc429Var('L:A32NX_FCDC_1_THS_POSITION');
-    const fcdc2ThsPosition = useArinc429Var('L:A32NX_FCDC_2_THS_POSITION');
+    const fcdc1ThsPosition = useArinc429Var('L:A32NX_FCDC_1_ELEVATOR_TRIM_POS');
+    const fcdc2ThsPosition = useArinc429Var('L:A32NX_FCDC_2_ELEVATOR_TRIM_POS');
     const thsPositionToUse = !fcdc1ThsPosition.isFailureWarning() ? fcdc1ThsPosition : fcdc2ThsPosition;
 
     let pitchIntegral: string;
@@ -208,8 +208,8 @@ const Aileron = ({
 
     const hydraulics = useHydraulics();
 
-    const fcdc1AileronDeflection = useArinc429Var(`L:A32NX_FCDC_1_AILERON_${side.charAt(0).toUpperCase()}_POS`);
-    const fcdc2AileronDeflection = useArinc429Var(`L:A32NX_FCDC_2_AILERON_${side.charAt(0).toUpperCase()}_POS`);
+    const fcdc1AileronDeflection = useArinc429Var(`L:A32NX_FCDC_1_AILERON_${side.toUpperCase()}_POS`);
+    const fcdc2AileronDeflection = useArinc429Var(`L:A32NX_FCDC_2_AILERON_${side.toUpperCase()}_POS`);
     const aileronDeflection = !fcdc1AileronDeflection.isFailureWarning() ? fcdc1AileronDeflection : fcdc2AileronDeflection;
 
     const aileronDeflectPctNormalized = aileronDeflection.valueOr(0) * 54;
@@ -255,15 +255,15 @@ interface ElacSecProps extends ComponentPositionProps {
 
 const Elac = ({ x, y, num, fcdcDiscreteWord1 }: ElacSecProps) => {
     const infoAvailable = !fcdcDiscreteWord1.isFailureWarning();
-    const computerActive = fcdcDiscreteWord1.getBitValueOr(22 + num, false);
-    return <ElacSecShape x={x} y={y} num={num} infoAvailable={infoAvailable} computerActive={computerActive} />;
+    const computerFailed = fcdcDiscreteWord1.getBitValueOr(22 + num, false);
+    return <ElacSecShape x={x} y={y} num={num} infoAvailable={infoAvailable} computerFailed={computerFailed} />;
 };
 
 const Sec = ({ x, y, num, fcdcDiscreteWord1 }: ElacSecProps) => {
     const infoAvailable = !fcdcDiscreteWord1.isFailureWarning();
-    const computerActive = fcdcDiscreteWord1.getBitValueOr(num === 3 ? 29 : 24 + num, false);
+    const computerFailed = fcdcDiscreteWord1.getBitValueOr(num === 3 ? 29 : 24 + num, false);
 
-    return <ElacSecShape x={x} y={y} num={num} infoAvailable={infoAvailable} computerActive={computerActive} />;
+    return <ElacSecShape x={x} y={y} num={num} infoAvailable={infoAvailable} computerFailed={computerFailed} />;
 };
 
 interface ElacSecShapeProps {
@@ -271,13 +271,13 @@ interface ElacSecShapeProps {
     y: number,
     num: number,
     infoAvailable: boolean,
-    computerActive: boolean,
+    computerFailed: boolean,
 }
 
-const ElacSecShape = ({ x, y, num, infoAvailable, computerActive }: ElacSecShapeProps) => (
+const ElacSecShape = ({ x, y, num, infoAvailable, computerFailed }: ElacSecShapeProps) => (
     <SvgGroup x={x} y={y}>
-        <path className={computerActive || !infoAvailable ? 'MainShape' : 'MainShapeWarning'} d="M0 0 l72,0 l0,-26 l-8,0" />
-        <text x={61} y={-12} className={`Standard ${computerActive && infoAvailable ? 'Value' : 'Warning'}`} textAnchor="middle" alignmentBaseline="central">
+        <path className={!computerFailed || !infoAvailable ? 'MainShape' : 'MainShapeWarning'} d="M0 0 l72,0 l0,-26 l-8,0" />
+        <text x={61} y={-12} className={`Standard ${!computerFailed && infoAvailable ? 'Value' : 'Warning'}`} textAnchor="middle" alignmentBaseline="central">
             {infoAvailable ? num : 'X'}
         </text>
     </SvgGroup>
@@ -313,8 +313,8 @@ const Elevator = ({
     const textLetter = side === 'left' ? 'L' : 'R';
 
     const hydraulics = useHydraulics();
-    const fcdc1ElevatorDeflection = useArinc429Var(`L:A32NX_FCDC_1_ELEVATOR_${side.charAt(0).toUpperCase()}_POS`);
-    const fcdc2ElevatorDeflection = useArinc429Var(`L:A32NX_FCDC_2_ELEVATOR_${side.charAt(0).toUpperCase()}_POS`);
+    const fcdc1ElevatorDeflection = useArinc429Var(`L:A32NX_FCDC_1_ELEVATOR_${side.toUpperCase()}_POS`);
+    const fcdc2ElevatorDeflection = useArinc429Var(`L:A32NX_FCDC_2_ELEVATOR_${side.toUpperCase()}_POS`);
     const elevatorDeflection = !fcdc1ElevatorDeflection.isFailureWarning() ? fcdc1ElevatorDeflection : fcdc2ElevatorDeflection;
     const elevatorPositionValid = elevatorDeflection.isNormalOperation();
 
