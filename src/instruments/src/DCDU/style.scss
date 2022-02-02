@@ -1,27 +1,41 @@
 @font-face {
-  font-family: "dcdu-small";
+  font-family: "dcdu-small-black-white";
   src: url("/Fonts/FBW-Display-DCDU-H12.ttf") format("truetype");
   font-weight: normal;
   font-style: normal;
 }
 
 @font-face {
-  font-family: "atsu-status";
-  src: url("/Fonts/RobotoMono-Medium.ttf") format("truetype");
+  font-family: "dcdu-small-green";
+  src: url("/Fonts/FBW-Display-DCDU-H12.ttf") format("truetype");
   font-weight: normal;
   font-style: normal;
 }
 
 @font-face {
-  font-family: "dcdu-normal";
-  src: url("/Fonts/RobotoMono-Medium.ttf") format("truetype");
+  font-family: "dcdu-small-cyan";
+  src: url("/Fonts/FBW-Display-DCDU-H12.ttf") format("truetype");
   font-weight: normal;
   font-style: normal;
 }
 
 @font-face {
-  font-family: "dcdu-highlight";
-  src: url("/Fonts/FBW-Display-DCDU-H16.ttf") format("truetype");
+  font-family: "dcdu-normal-black-white";
+  src: url("/Fonts/FBW-Display-DCDU-H16-W.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "dcdu-normal-green";
+  src: url("/Fonts/FBW-Display-DCDU-H16-G.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "dcdu-normal-cyan";
+  src: url("/Fonts/FBW-Display-DCDU-H16-G.ttf") format("truetype");
   font-weight: normal;
   font-style: normal;
 }
@@ -48,7 +62,7 @@ path.dcdu-line {
 .station {
   fill: rgb(0,255,0);
   font-size: 134px;
-  font-family: dcdu-small;
+  font-family: dcdu-small-green;
 }
 
 .status-message {
@@ -57,20 +71,20 @@ path.dcdu-line {
 }
 
 .status-open {
-  font-family: dcdu-highlight;
+  font-family: dcdu-normal-cyan;
   fill: rgb(0,255,255);
 }
 
 .status-other {
-  font-family: dcdu-normal;
+  font-family: dcdu-normal-black-white;
   fill: rgb(0, 0, 0);
 }
 
 .status-atsu {
   text-anchor: middle;
   fill: rgb(255,255,255);
-  font-size: 140px;
-  font-family: atsu-status;
+  font-size: 134px;
+  font-family: dcdu-small-black-white;
 }
 
 .message-background {
@@ -94,13 +108,13 @@ path.dcdu-line {
 }
 
 .atc-info-standby {
-  font-family: dcdu-normal;
+  font-family: dcdu-normal-black-white;
   fill: rgb(255,255,255);
 }
 
 .atc-info-active {
-  font-family: dcdu-highlight;
-  fill: rgb(0, 255, 0);
+  font-family: dcdu-normal-green;
+  fill: rgb(0,255,0);
 }
 
 .message-tspan {
@@ -109,8 +123,8 @@ path.dcdu-line {
 }
 
 .message-highlight {
-  font-family: dcdu-highlight;
-  fill: rgb(0, 255, 255);
+  font-family: dcdu-normal-cyan;
+  fill: rgb(0,255,255);
 }
 
 .message-content {
@@ -118,7 +132,7 @@ path.dcdu-line {
 }
 
 .message-content-other {
-  font-family: dcdu-normal;
+  font-family: dcdu-normal-black-white;
 }
 
 .message-content-out {
@@ -130,8 +144,8 @@ path.dcdu-line {
 }
 
 .message-content-sent {
-  font-family: dcdu-highlight;
-  fill: rgb(0, 255, 0);
+  font-family: dcdu-normal-green;
+  fill: rgb(0,255,0);
 }
 
 .startup-text {
@@ -145,7 +159,7 @@ path.dcdu-line {
     fill: rgb(0,255,0);
     font-size: 240px;
     text-anchor: middle;
-    font-family: dcdu-highlight;
+    font-family: dcdu-normal-green;
   }
 }
 
@@ -154,12 +168,12 @@ path.dcdu-line {
 }
 
 .button-color {
-  font-family: dcdu-small;
+  font-family: dcdu-small-cyan;
   fill: rgb(0,255,255);
 }
 
 .button-color-clicked {
-  font-family: dcdu-normal;
+  font-family: dcdu-small-black-white;
   fill: rgb(0, 0, 0);
 }
 
