@@ -31,7 +31,7 @@ export const SimOptionsPage = () => {
     ];
 
     return (
-        <div>
+        <>
             {!showThrottleSettings
             && (
                 <SettingsPage name="Sim Options">
@@ -84,6 +84,6 @@ export const SimOptionsPage = () => {
                 </SettingsPage>
             )}
             <ThrottleConfig isShown={showThrottleSettings} onClose={() => setShowThrottleSettings(false)} />
-        </div>
+        </>
     );
 };

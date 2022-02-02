@@ -45,7 +45,7 @@ export const RealismPage = () => {
     ];
 
     return (
-        <div>
+        <>
             <SettingsPage name="Realism">
                 <SettingItem name="ADIRS Align Time">
                     <SelectGroup>
@@ -123,6 +123,6 @@ export const RealismPage = () => {
                 </SettingItem>
 
             </SettingsPage>
-        </div>
+        </>
     );
 };
