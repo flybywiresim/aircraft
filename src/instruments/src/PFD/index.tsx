@@ -45,6 +45,10 @@ export const PFD: React.FC = () => {
     const [barTimer, setBarTimer] = useState(10);
     const [showSpeedBars, setShowSpeedBars] = useState(true);
 
+    const fcdc1DiscreteWord1 = useArinc429Var('L:A32NX_FCDC_1_DISCRETE_WORD_1');
+    const fcdc2DiscreteWord1 = useArinc429Var('L:A32NX_FCDC_2_DISCRETE_WORD_1');
+    const fcdcDiscreteWord1ToUse = !fcdc1DiscreteWord1.isFailureWarning() ? fcdc1DiscreteWord1 : fcdc2DiscreteWord1;
+
     const inertialReferenceSource = getSupplier(displayIndex, getSimVar('L:A32NX_ATT_HDG_SWITCHING_KNOB', 'Enum'));
     const airDataReferenceSource = getSupplier(displayIndex, getSimVar('L:A32NX_AIR_DATA_SWITCHING_KNOB', 'Enum'));
     const computedAirspeed = useArinc429Var(`L:A32NX_ADIRS_ADR_${airDataReferenceSource}_COMPUTED_AIRSPEED`);
@@ -204,6 +208,7 @@ export const PFD: React.FC = () => {
                     belowTransitionAltitude={belowTransitionAltitude}
                     decisionHeight={decisionHeight}
                     isAttExcessive={isAttExcessive}
+                    fcdcWord1={fcdcDiscreteWord1ToUse}
                 />
                 <AttitudeIndicatorFixedCenter
                     pitch={pitch}
@@ -231,6 +236,7 @@ export const PFD: React.FC = () => {
                     VMax={VMax}
                     showBars={showSpeedBars}
                     onGround={isOnGround}
+                    fcdcWord1={fcdcDiscreteWord1ToUse}
                 />
                 <path
                     id="Mask2"
@@ -239,7 +245,7 @@ export const PFD: React.FC = () => {
                     d="m32.138 145.34h73.536v10.382h-73.536zm0-44.092c7.4164 13.363 21.492 21.652 36.768 21.652 15.277 0 29.352-8.2886 36.768-21.652v-40.859c-7.4164-13.363-21.492-21.652-36.768-21.652-15.277 0-29.352 8.2886-36.768 21.652zm-32.046 57.498h158.66v-158.75h-158.66zm115.14-35.191v-85.473h20.344v85.473zm-113.33 0v-85.473h27.548v85.473z"
                 />
                 <LandingSystem LSButtonPressed={lsButtonPressed} pitch={pitch} roll={roll} />
-                <AttitudeIndicatorFixedUpper pitch={pitch} roll={roll} />
+                <AttitudeIndicatorFixedUpper pitch={pitch} roll={roll} fcdcWord1={fcdcDiscreteWord1ToUse} />
                 <VerticalSpeedIndicator verticalSpeed={verticalSpeed} radioAltitude={chosenRadioAltitude} filteredRadioAltitude={filteredRadioAltitude} />
                 <HeadingOfftape ILSCourse={ILSCourse} groundTrack={groundTrack} heading={heading} selectedHeading={selectedHeading} />
                 <AltitudeIndicatorOfftape
@@ -253,7 +259,7 @@ export const PFD: React.FC = () => {
                 />
                 <AirspeedIndicatorOfftape airspeed={computedAirspeed} targetSpeed={targetSpeed} speedIsManaged={!isSelected} onGround={isOnGround} />
                 <MachNumber mach={mach} onGround={isOnGround} />
-                <FMA isAttExcessive={isAttExcessive} />
+                <FMA isAttExcessive={isAttExcessive} fcdcWord1={fcdcDiscreteWord1ToUse} />
             </svg>
         </DisplayUnit>
     );

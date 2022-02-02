@@ -28,6 +28,7 @@ interface HorizonProps {
     pitch: Arinc429Word;
     roll: Arinc429Word;
     heading: Arinc429Word;
+    fcdcWord1: Arinc429Word;
     isOnGround: boolean;
     radioAltitude: Arinc429Word,
     filteredRadioAltitude: number;
@@ -42,6 +43,7 @@ export const Horizon = ({
     pitch,
     roll,
     heading,
+    fcdcWord1,
     isOnGround,
     radioAltitude,
     filteredRadioAltitude,
@@ -61,6 +63,8 @@ export const Horizon = ({
     if (!Number.isNaN(selectedHeading) && !FDActive) {
         bugs.push([HeadingBug, selectedHeading]);
     }
+
+    const normalLawActive = (fcdcWord1.getBitValue(12) || fcdcWord1.getBitValue(13)) && !fcdcWord1.isFailureWarning();
 
     return (
         <g id="RollGroup" transform={`rotate(${roll.value} 68.814 80.730)`}>
@@ -97,19 +101,19 @@ export const Horizon = ({
                     <path d="m47.906-19.177h42h0" />
                 </g>
 
-                <g id="PitchProtUpper" className="NormalStroke Green">
+                <g id="PitchProtUpper" visibility={normalLawActive ? 'visible' : 'hidden'} className="NormalStroke Green">
                     <path d="m51.506 31.523h4m-4-1.4h4" />
                     <path d="m86.306 31.523h-4m4-1.4h-4" />
                 </g>
-                <g id="PitchProtLostUpper" style={{ display: 'none' }} className="NormalStroke Amber">
+                <g id="PitchProtLostUpper" visibility={!normalLawActive ? 'visible' : 'hidden'} className="NormalStroke Amber">
                     <path d="m52.699 30.116 1.4142 1.4142m-1.4142 0 1.4142-1.4142" />
                     <path d="m85.114 31.53-1.4142-1.4142m1.4142 0-1.4142 1.4142" />
                 </g>
-                <g id="PitchProtLower" className="NormalStroke Green">
+                <g id="PitchProtLower" visibility={normalLawActive ? 'visible' : 'hidden'} className="NormalStroke Green">
                     <path d="m59.946 104.52h4m-4-1.4h4" />
                     <path d="m77.867 104.52h-4m4-1.4h-4" />
                 </g>
-                <g id="PitchProtLostLower" style={{ display: 'none' }} className="NormalStroke Amber">
+                <g id="PitchProtLostLower" visibility={!normalLawActive ? 'visible' : 'hidden'} className="NormalStroke Amber">
                     <path d="m61.199 103.12 1.4142 1.4142m-1.4142 0 1.4142-1.4142" />
                     <path d="m76.614 104.53-1.4142-1.4142m1.4142 0-1.4142 1.4142" />
                 </g>

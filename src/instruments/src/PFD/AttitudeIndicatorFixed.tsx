@@ -10,20 +10,23 @@ const ValueSpacing = 10;
 interface AttitudeIndicatorFixedUpperProps {
     pitch: Arinc429Word;
     roll: Arinc429Word;
+    fcdcWord1: Arinc429Word;
 }
 
-export const AttitudeIndicatorFixedUpper = ({ pitch, roll }: AttitudeIndicatorFixedUpperProps) => {
+export const AttitudeIndicatorFixedUpper = ({ pitch, roll, fcdcWord1 }: AttitudeIndicatorFixedUpperProps) => {
     if (!pitch.isNormalOperation() || !roll.isNormalOperation()) {
         return null;
     }
 
+    const normalLawActive = (fcdcWord1.getBitValue(12) || fcdcWord1.getBitValue(13)) && !fcdcWord1.isFailureWarning();
+
     return (
         <g id="AttitudeUpperInfoGroup">
-            <g id="RollProtGroup" className="SmallStroke Green">
+            <g id="RollProtGroup" visibility={normalLawActive ? 'visible' : 'hidden'} className="SmallStroke Green">
                 <path id="RollProtRight" d="m105.64 62.887 1.5716-0.8008m-1.5716-0.78293 1.5716-0.8008" />
                 <path id="RollProtLeft" d="m32.064 61.303-1.5716-0.8008m1.5716 2.3845-1.5716-0.8008" />
             </g>
-            <g id="RollProtLost" style={{ display: 'none' }} className="NormalStroke Amber">
+            <g id="RollProtLost" visibility={!normalLawActive ? 'visible' : 'hidden'} className="NormalStroke Amber">
                 <path id="RollProtLostRight" d="m107.77 60.696-1.7808 1.7818m1.7808 0-1.7808-1.7818" />
                 <path id="RollProtLostLeft" d="m30.043 62.478 1.7808-1.7818m-1.7808 0 1.7808 1.7818" />
             </g>

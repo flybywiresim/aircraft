@@ -71,7 +71,12 @@ const VProtBug = (offset: number) => (
     <g id="SpeedProtSymbol" transform={`translate(0 ${offset})`}>
         <path className="NormalOutline" d="m13.994 81.289h3.022m-3.022-1.0079h3.022" />
         <path className="NormalStroke Green" d="m13.994 81.289h3.022m-3.022-1.0079h3.022" />
-        <path style={{ display: 'none' }} className="NormalStroke Amber" d="m14.615 79.915 1.7808 1.7818m-1.7808 0 1.7808-1.7818" />
+    </g>
+);
+
+const VProtAltLawBug = (offset: number) => (
+    <g id="SpeedProtSymbol" transform={`translate(0 ${offset})`}>
+        <path className="NormalStroke Amber" d="m14.615 79.915 1.7808 1.7818m-1.7808 0 1.7808-1.7818" />
     </g>
 );
 
@@ -80,13 +85,14 @@ interface AirspeedIndicatorProps {
     airspeedAcc: number;
     FWCFlightPhase: number;
     altitude: Arinc429Word;
+    fcdcWord1: Arinc429Word;
     VLs: number;
     VMax: number;
     showBars: boolean;
     onGround: boolean;
 }
 
-export const AirspeedIndicator = ({ airspeed, airspeedAcc, FWCFlightPhase, altitude, VLs, VMax, showBars, onGround }: AirspeedIndicatorProps) => {
+export const AirspeedIndicator = ({ airspeed, airspeedAcc, FWCFlightPhase, altitude, fcdcWord1, VLs, VMax, showBars, onGround }: AirspeedIndicatorProps) => {
     let airspeedValue: number;
     if (airspeed.isFailureWarning() || (airspeed.isNoComputedData() && !onGround)) {
         airspeedValue = NaN;
@@ -106,6 +112,8 @@ export const AirspeedIndicator = ({ airspeed, airspeedAcc, FWCFlightPhase, altit
         );
     }
 
+    const normalLawActive = (fcdcWord1.getBitValue(12) || fcdcWord1.getBitValue(13)) && !fcdcWord1.isFailureWarning();
+
     const ValphaProtection = getSimVar('L:A32NX_SPEEDS_ALPHA_PROTECTION', 'number');
     const ValphaMax = getSimVar('L:A32NX_SPEEDS_ALPHA_MAX', 'number');
 
@@ -117,8 +125,10 @@ export const AirspeedIndicator = ({ airspeed, airspeedAcc, FWCFlightPhase, altit
     bugs.push(...BarberpoleIndicator(airspeedValue, VMax, true, DisplayRange, VMaxBar, 5.040));
 
     const showVProt = VMax > 240;
-    if (showVProt) {
+    if (showVProt && normalLawActive) {
         bugs.push([VProtBug, VMax + 6]);
+    } else if (showVProt && !normalLawActive) {
+        bugs.push([VProtAltLawBug, VMax + 6]);
     }
 
     const clampedSpeed = Math.max(Math.min(airspeedValue, 660), 30);

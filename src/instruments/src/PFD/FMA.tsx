@@ -1,14 +1,15 @@
 import { ArmedLateralMode, ArmedVerticalMode, isArmed, LateralMode, VerticalMode } from '@shared/autopilot.js';
+import { Arinc429Word } from '@shared/arinc429.js';
 import React, { Component } from 'react';
 import { createDeltaTimeCalculator, getSimVar, renderTarget } from '../util.js';
 
-export const FMA = ({ isAttExcessive }) => {
+export const FMA = ({ isAttExcessive, fcdcWord1 }) => {
     const activeLateralMode = getSimVar('L:A32NX_FMA_LATERAL_MODE', 'number');
     const activeVerticalMode = getSimVar('L:A32NX_FMA_VERTICAL_MODE', 'enum');
     const sharedModeActive = activeLateralMode === LateralMode.LAND || activeLateralMode === LateralMode.FLARE || activeLateralMode === LateralMode.ROLL_OUT
         || (activeLateralMode === LateralMode.NAV && activeVerticalMode === VerticalMode.FINAL);
     const engineMessage = getSimVar('L:A32NX_AUTOTHRUST_MODE_MESSAGE', 'enum');
-    const BC3Message = getBC3Message(isAttExcessive)[0] !== null;
+    const BC3Message = getBC3Message(isAttExcessive, fcdcWord1)[0] !== null;
     const AB3Message = (getSimVar('L:A32NX_MachPreselVal', 'mach') !== -1
         || getSimVar('L:A32NX_SpeedPreselVal', 'knots') !== -1) && !BC3Message && engineMessage === 0;
 
@@ -85,7 +86,7 @@ const Row3 = ({ isAttExcessive, ABrkMode, ABrkActive, AB3Message }) => (
                 <D3Cell />
             </>
         )}
-        <BC3Cell isAttExcessive={isAttExcessive} />
+        <BC3Cell isAttExcessive={isAttExcessive} fcdcWord1={fcdcWord1} />
         <E3Cell />
     </g>
 );
@@ -554,7 +555,7 @@ const BC1Cell = () => {
     );
 };
 
-const getBC3Message = (isAttExcessive: boolean) => {
+const getBC3Message = (isAttExcessive: boolean, fcdcWord1: Arinc429Word) => {
     const armedVerticalBitmask = getSimVar('L:A32NX_FMA_VERTICAL_ARMED', 'number');
     const TCASArmed = isArmed(armedVerticalBitmask, ArmedVerticalMode.TCAS);
 
@@ -566,10 +567,14 @@ const getBC3Message = (isAttExcessive: boolean) => {
     let text: string;
     let className: string;
     // All currently unused message are set to false
-    if (false) {
+    if (!fcdcWord1.getBitValue(11)
+        && !fcdcWord1.getBitValue(12)
+        && !fcdcWord1.getBitValue(13)
+        && !fcdcWord1.getBitValue(15)
+        && !fcdcWord1.isFailureWarning()) {
         text = 'MAN PITCH TRIM ONLY';
         className = 'Red Blink9Seconds';
-    } else if (false) {
+    } else if (fcdcWord1.getBitValue(15) && !fcdcWord1.isFailureWarning()) {
         text = 'USE MAN PITCH TRIM';
         className = 'PulseAmber9Seconds Amber';
     } else if (false) {
@@ -621,8 +626,12 @@ const getBC3Message = (isAttExcessive: boolean) => {
     return [text, className];
 };
 
-const BC3Cell = ({ isAttExcessive }) => {
-    const [text, className] = getBC3Message(isAttExcessive);
+interface BC3CellProps {
+    isAttExcessive: boolean,
+    fcdcWord1: Arinc429Word
+}
+const BC3Cell = ({ isAttExcessive, fcdcWord1 }: BC3CellProps) => {
+    const [text, className] = getBC3Message(isAttExcessive, fcdcWord1);
 
     if (text !== null) {
         return (
