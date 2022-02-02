@@ -209,6 +209,21 @@ export class AtcSystem {
         return this.datalink.sendMessage(message, false);
     }
 
+    private async handover(station: string): Promise<AtsuStatusCodes> {
+        if (this.nextAtc !== '' && station !== this.nextAtc) {
+            return AtsuStatusCodes.SystemBusy;
+        }
+
+        if (this.currentAtc !== '') {
+            const retval = await this.logoffWithoutReset();
+            if (retval !== AtsuStatusCodes.Ok) {
+                return retval;
+            }
+        }
+
+        return this.logon(station);
+    }
+
     private async logoffWithoutReset(): Promise<AtsuStatusCodes> {
         if (this.currentAtc === '') {
             return AtsuStatusCodes.NoAtc;
@@ -353,7 +368,7 @@ export class AtcSystem {
                 const entries = request.Message.split(' ');
                 if (entries.length >= 2) {
                     const station = entries[1].replace(/@/gi, '');
-                    this.logon(station);
+                    this.handover(station);
                     return true;
                 }
             }
