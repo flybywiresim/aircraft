@@ -1049,6 +1049,14 @@
     - Degrees
     - The actual angle of the right slats
 
+- A32NX_IS_FLAPS_MOVING
+    - Boolean
+    - The flap surface is moving
+
+- A32NX_IS_SLAPS_MOVING
+    - Boolean
+    - The slat surface is moving
+
 - A32NX_FLAPS_CONF_INDEX
     - Number
     - Indicates the desired flap configuration index according to the table
