@@ -102,7 +102,9 @@ export default class NavigraphClient {
 
             const token = NXDataStore.get('NAVIGRAPH_REFRESH_TOKEN');
 
-            if (token) {
+            if (!token) {
+                this.authenticate();
+            } else {
                 this.refreshToken = token;
                 this.getToken();
             }
@@ -157,10 +159,9 @@ export default class NavigraphClient {
 
                     this.refreshToken = refreshToken;
                     NXDataStore.set('NAVIGRAPH_REFRESH_TOKEN', refreshToken);
+                    this.assignUserName();
 
                     this.accessToken = json.access_token;
-
-                    this.assignUserName();
                 } else {
                     const respText = await tokenResp.text();
 
@@ -168,34 +169,23 @@ export default class NavigraphClient {
 
                     const { error } = parsedText;
 
-                    switch (error) {
-                    case 'authorization_pending': {
-                        console.log('Token Authorization Pending');
-                        break;
-                    }
-                    case 'slow_down': {
+                    if (error === 'slow_down') {
                         this.auth.interval += 5;
-                        break;
-                    }
-                    case 'access_denied': {
+                    } else if (error === 'authorization_pending') {
+                        console.log('Token Authorization Pending');
+                    } else if (error === 'access_denied') {
                         this.auth.disabled = true;
-                        throw new Error('Access Denied');
-                    }
-                    default: {
+                    } else if (error === 'expired_token') {
                         this.authenticate();
                     }
-                    }
                 }
-            } catch (e) {
+            } catch (_) {
                 console.log('Token Authentication Failed. #NV102');
-                if (e.message === 'Access Denied') {
-                    throw e;
-                }
             }
         }
     }
 
-    public async getToken(): Promise<void> {
+    public getToken() {
         if (NavigraphClient.hasSufficientEnv) {
             const newTokenBody = {
                 grant_type: 'urn:ietf:params:oauth:grant-type:device_code',
@@ -223,13 +213,7 @@ export default class NavigraphClient {
 
     public async chartCall(icao: string, item: string): Promise<string> {
         if (icao.length === 4) {
-            const callResp = await fetch(`https://charts.api.navigraph.com/2/airports/${icao}/signedurls/${item}`,
-                {
-                    headers: {
-                        Authorization:
-                         `Bearer ${this.accessToken}`,
-                    },
-                });
+            const callResp = await fetch(`https://charts.api.navigraph.com/2/airports/${icao}/signedurls/${item}`, { headers: { Authorization: `Bearer ${this.accessToken}` } });
 
             if (callResp.ok) {
                 return callResp.text();
