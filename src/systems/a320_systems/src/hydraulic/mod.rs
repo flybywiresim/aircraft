@@ -2975,9 +2975,7 @@ impl AileronController {
 
     /// Receives a [0;1] position request, 0 is down 1 is up
     fn set_requested_position(&mut self, requested_position: Ratio) {
-        self.requested_position = requested_position;
-        self.requested_position = self
-            .requested_position
+        self.requested_position = requested_position
             .min(Ratio::new::<ratio>(1.))
             .max(Ratio::new::<ratio>(0.));
     }
