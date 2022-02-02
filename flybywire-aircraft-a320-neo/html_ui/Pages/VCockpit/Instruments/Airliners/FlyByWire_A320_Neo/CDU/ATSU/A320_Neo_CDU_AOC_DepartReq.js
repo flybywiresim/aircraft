@@ -7,8 +7,8 @@ class CDUAocDepartReq {
             mcdu.pdcMessage = new Atsu.PdcMessage();
         }
 
-        let flightNo = "______[color]amber";
-        let fromTo = "____|____[color]amber";
+        let flightNo = "-------[color]white";
+        let fromTo = "----|----[color]white";
         let station = "____[color]amber";
         const atis = new CDU_SingleValueField(mcdu,
             "string",

@@ -14,7 +14,7 @@ class CDUAtcConnectionStatus {
         };
         SimVar.SetSimVarValue("L:FMC_UPDATE_CURRENT_PAGE", "number", 1);
 
-        let currentStation = "____[color]amber";
+        let currentStation = "----[color]white";
         let atcDisconnect = "DISCONNECT\xa0[color]cyan";
         if (mcdu.atsuManager.atc.currentStation() !== '') {
             currentStation = `${mcdu.atsuManager.atc.currentStation()}[color]green`;
