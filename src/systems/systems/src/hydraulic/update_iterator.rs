@@ -275,7 +275,11 @@ mod max_step_tests {
         for cur_time_step in &mut max_step {
             time_simulated += cur_time_step;
             actual_loop_num += 1;
-            println!("Loop done {} time step {}",actual_loop_num,cur_time_step.as_secs_f64());
+            println!(
+                "Loop done {} time step {}",
+                actual_loop_num,
+                cur_time_step.as_secs_f64()
+            );
         }
 
         //0.320 seconds with max of 0.100 we expect 4 steps
