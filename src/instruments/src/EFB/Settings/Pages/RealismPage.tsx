@@ -1,4 +1,4 @@
-import React, { } from 'react';
+import React from 'react';
 import { usePersistentProperty } from '@instruments/common/persistence';
 import { useSimVar } from '@instruments/common/simVars';
 
