@@ -2931,6 +2931,29 @@ impl HydraulicAssemblyController for AileronController {
     }
 }
 
+enum AileronHydConfiguration {
+    GB,
+    G,
+    B,
+    NoHyd,
+}
+impl AileronHydConfiguration {
+    fn from_hyd_state(
+        green_circuit_available: bool,
+        blue_circuit_available: bool,
+    ) -> AileronHydConfiguration {
+        if green_circuit_available && blue_circuit_available {
+            AileronHydConfiguration::GB
+        } else if green_circuit_available {
+            AileronHydConfiguration::G
+        } else if blue_circuit_available {
+            AileronHydConfiguration::B
+        } else {
+            AileronHydConfiguration::NoHyd
+        }
+    }
+}
+
 /// Implements a placeholder elac computer logic commanding correct hydraulic modes depending
 /// on pressure state.
 /// TODO: Receive each actuator mode and commands directly from a FBW Elac implementation
@@ -2961,6 +2984,7 @@ impl ElacComputer {
                 .get_identifier("HYD_AILERON_LEFT_DEMAND".to_owned()),
             requested_position_right_id: context
                 .get_identifier("HYD_AILERON_RIGHT_DEMAND".to_owned()),
+
             left_position_requested: Ratio::default(),
             right_position_requested: Ratio::default(),
 
@@ -2972,87 +2996,102 @@ impl ElacComputer {
         }
     }
 
-    fn update_requested_position(&mut self) {
-        self.left_controllers[AileronActuatorCircuit::Blue as usize]
-            .set_requested_position(self.left_position_requested);
-        self.left_controllers[AileronActuatorCircuit::Green as usize]
-            .set_requested_position(self.left_position_requested);
+    fn update_aileron_requested_position(&mut self) {
+        for controller in &mut self.left_controllers {
+            controller.set_requested_position(self.left_position_requested);
+        }
 
-        self.right_controllers[AileronActuatorCircuit::Blue as usize]
-            .set_requested_position(self.right_position_requested);
-        self.right_controllers[AileronActuatorCircuit::Green as usize]
-            .set_requested_position(self.right_position_requested);
+        for controller in &mut self.right_controllers {
+            controller.set_requested_position(self.right_position_requested);
+        }
     }
 
-    fn set_blue_circuit_position_control(&mut self) {
-        self.left_controllers[AileronActuatorCircuit::Blue as usize]
-            .set_mode(LinearActuatorMode::PositionControl);
-        self.left_controllers[AileronActuatorCircuit::Green as usize]
-            .set_mode(LinearActuatorMode::ActiveDamping);
+    fn set_aileron_no_position_control(&mut self) {
+        for controller in &mut self.left_controllers {
+            controller.set_mode(LinearActuatorMode::ClosedCircuitDamping);
+        }
 
-        self.right_controllers[AileronActuatorCircuit::Blue as usize]
-            .set_mode(LinearActuatorMode::PositionControl);
-        self.right_controllers[AileronActuatorCircuit::Green as usize]
-            .set_mode(LinearActuatorMode::ActiveDamping);
+        for controller in &mut self.right_controllers {
+            controller.set_mode(LinearActuatorMode::ClosedCircuitDamping);
+        }
     }
 
-    fn set_green_circuit_position_control(&mut self) {
-        // Green is inboard actuator, so 1 index takes position control mode
-        self.left_controllers[AileronActuatorCircuit::Blue as usize]
-            .set_mode(LinearActuatorMode::ActiveDamping);
-        self.left_controllers[AileronActuatorCircuit::Green as usize]
-            .set_mode(LinearActuatorMode::PositionControl);
+    fn set_left_aileron_position_control(
+        &mut self,
+        hydraulic_configuration: AileronHydConfiguration,
+    ) {
+        match hydraulic_configuration {
+            AileronHydConfiguration::GB | AileronHydConfiguration::B => {
+                self.left_controllers[AileronActuatorCircuit::Blue as usize]
+                    .set_mode(LinearActuatorMode::PositionControl);
+                self.left_controllers[AileronActuatorCircuit::Green as usize]
+                    .set_mode(LinearActuatorMode::ActiveDamping);
+            }
 
-        self.right_controllers[AileronActuatorCircuit::Blue as usize]
-            .set_mode(LinearActuatorMode::ActiveDamping);
-        self.right_controllers[AileronActuatorCircuit::Green as usize]
-            .set_mode(LinearActuatorMode::PositionControl);
+            AileronHydConfiguration::G => {
+                self.left_controllers[AileronActuatorCircuit::Blue as usize]
+                    .set_mode(LinearActuatorMode::ActiveDamping);
+                self.left_controllers[AileronActuatorCircuit::Green as usize]
+                    .set_mode(LinearActuatorMode::PositionControl);
+            }
+            _ => {
+                self.left_controllers[AileronActuatorCircuit::Blue as usize]
+                    .set_mode(LinearActuatorMode::ClosedCircuitDamping);
+                self.left_controllers[AileronActuatorCircuit::Green as usize]
+                    .set_mode(LinearActuatorMode::ClosedCircuitDamping);
+            }
+        }
     }
 
-    /// Sets nominal A320 behaviour : left aileron controled on blue servo, right one using green servo
-    fn set_mixed_green_blue_circuit_position_control(&mut self) {
-        self.left_controllers[AileronActuatorCircuit::Blue as usize]
-            .set_mode(LinearActuatorMode::PositionControl);
-        self.left_controllers[AileronActuatorCircuit::Green as usize]
-            .set_mode(LinearActuatorMode::ActiveDamping);
+    fn set_right_aileron_position_control(
+        &mut self,
+        hydraulic_configuration: AileronHydConfiguration,
+    ) {
+        match hydraulic_configuration {
+            AileronHydConfiguration::GB | AileronHydConfiguration::G => {
+                self.right_controllers[AileronActuatorCircuit::Blue as usize]
+                    .set_mode(LinearActuatorMode::ActiveDamping);
+                self.right_controllers[AileronActuatorCircuit::Green as usize]
+                    .set_mode(LinearActuatorMode::PositionControl);
+            }
 
-        self.right_controllers[AileronActuatorCircuit::Blue as usize]
-            .set_mode(LinearActuatorMode::ActiveDamping);
-        self.right_controllers[AileronActuatorCircuit::Green as usize]
-            .set_mode(LinearActuatorMode::PositionControl);
+            AileronHydConfiguration::B => {
+                self.right_controllers[AileronActuatorCircuit::Blue as usize]
+                    .set_mode(LinearActuatorMode::PositionControl);
+                self.right_controllers[AileronActuatorCircuit::Green as usize]
+                    .set_mode(LinearActuatorMode::ActiveDamping);
+            }
+            _ => {
+                self.right_controllers[AileronActuatorCircuit::Blue as usize]
+                    .set_mode(LinearActuatorMode::ClosedCircuitDamping);
+                self.right_controllers[AileronActuatorCircuit::Green as usize]
+                    .set_mode(LinearActuatorMode::ClosedCircuitDamping);
+            }
+        }
     }
 
-    fn set_no_position_control(&mut self) {
-        self.left_controllers[AileronActuatorCircuit::Blue as usize]
-            .set_mode(LinearActuatorMode::ClosedCircuitDamping);
-        self.left_controllers[AileronActuatorCircuit::Green as usize]
-            .set_mode(LinearActuatorMode::ClosedCircuitDamping);
-
-        self.right_controllers[AileronActuatorCircuit::Blue as usize]
-            .set_mode(LinearActuatorMode::ClosedCircuitDamping);
-        self.right_controllers[AileronActuatorCircuit::Green as usize]
-            .set_mode(LinearActuatorMode::ClosedCircuitDamping);
+    fn update_aileron(&mut self, green_circuit_available: bool, blue_circuit_available: bool) {
+        if self.is_powered {
+            self.set_right_aileron_position_control(AileronHydConfiguration::from_hyd_state(
+                green_circuit_available,
+                blue_circuit_available,
+            ));
+            self.set_left_aileron_position_control(AileronHydConfiguration::from_hyd_state(
+                green_circuit_available,
+                blue_circuit_available,
+            ));
+        } else {
+            self.set_aileron_no_position_control();
+        }
     }
 
     fn update(&mut self, blue_pressure: Pressure, green_pressure: Pressure) {
-        self.update_requested_position();
+        self.update_aileron_requested_position();
 
         let blue_circuit_available = blue_pressure.get::<psi>() > 1500.;
         let green_circuit_available = green_pressure.get::<psi>() > 1500.;
 
-        if self.is_powered {
-            if blue_circuit_available && green_circuit_available {
-                self.set_mixed_green_blue_circuit_position_control();
-            } else if blue_circuit_available {
-                self.set_blue_circuit_position_control();
-            } else if green_circuit_available {
-                self.set_green_circuit_position_control();
-            } else {
-                self.set_no_position_control();
-            }
-        } else {
-            self.set_no_position_control();
-        }
+        self.update_aileron(green_circuit_available, blue_circuit_available);
     }
 
     fn left_controllers(&self) -> [&impl HydraulicAssemblyController; 2] {
