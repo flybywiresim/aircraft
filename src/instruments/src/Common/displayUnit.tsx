@@ -26,6 +26,7 @@ export const DisplayUnit: React.FC<DisplayUnitProps> = (props) => {
 
     const [potentiometer] = useSimVar(`LIGHT POTENTIOMETER:${props.potentiometerIndex}`, 'percent over 100', 200);
     const [electricityState] = useSimVar(props.electricitySimvar, 'bool', 200);
+    const [homeCockpit] = useSimVar('L:A32NX_HOME_COCKPIT_ENABLED', 'bool', 200);
 
     useUpdate((deltaTime) => {
         if (timer !== null) {
@@ -88,6 +89,15 @@ export const DisplayUnit: React.FC<DisplayUnitProps> = (props) => {
             <></>
         );
     }
+
+    if (homeCockpit) {
+        return (
+            <>
+                <div style={{ display: state === DisplayUnitState.On ? 'block' : 'none' }}>{props.children}</div>
+            </>
+        );
+    }
+
     return (
         <>
             <div className="BacklightBleed" />
