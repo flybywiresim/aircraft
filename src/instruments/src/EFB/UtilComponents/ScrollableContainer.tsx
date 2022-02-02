@@ -8,7 +8,6 @@ interface ScrollableContainerProps {
 /**
  * A container that can be scrolled vertically.
  * @param height - height of the container, in rem, that if exceeded will cause the container to become scrollable
- * @param resizeDependencies - optional dependency list to trigger a re-calculation of the height of the content
  */
 export const ScrollableContainer: FC<ScrollableContainerProps> = ({ children, className, height }) => {
     const [contentOverflows, setContentOverflows] = useState(false);
@@ -20,6 +19,8 @@ export const ScrollableContainer: FC<ScrollableContainerProps> = ({ children, cl
         if (contentRef.current) {
             if (contentRef.current.clientHeight > height * parseFloat(getComputedStyle(document.documentElement).fontSize)) {
                 setContentOverflows(true);
+            } else {
+                setContentOverflows(false);
             }
         }
     }, [children]);
@@ -46,7 +47,7 @@ export const ScrollableContainer: FC<ScrollableContainerProps> = ({ children, cl
 
     return (
         <div
-            className={`w-full ${contentOverflows && 'overflow-y-scroll'} scrollbar ${className}`}
+            className={`w-full overflow-y-auto scrollbar ${className}`}
             style={{ height: `${height}rem` }}
             ref={containerRef}
             onMouseDown={handleMouseDown}
