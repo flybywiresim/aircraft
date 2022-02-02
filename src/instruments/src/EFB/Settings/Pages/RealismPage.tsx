@@ -46,7 +46,7 @@ export const RealismPage = () => {
 
     return (
         <div>
-            <SettingsPage name="Sim Options">
+            <SettingsPage name="Realism">
                 <SettingItem name="ADIRS Align Time">
                     <SelectGroup>
                         {adirsAlignTimeButtons.map((button) => (
