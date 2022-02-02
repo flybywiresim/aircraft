@@ -71,38 +71,32 @@ impl Iterator for FixedStepLoop {
 /// Provides maximum fixed time interval looping.
 ///
 /// ## Example scenario
-/// With a max fixed time interval of 10 ms and a frame delta of 35 ms, this type will provide three
-/// iterations of 10 ms, and one iteration of 5ms to complete the 35ms total delta.
+/// With a max fixed time interval of 10 ms and a frame delta of 35 ms, this type will provide four
+/// iterations of 8.75ms, thus completing the 35ms total delta.
 #[derive(Copy, Clone)]
 pub struct MaxFixedStepLoop {
     max_time_step: Duration,
-    num_of_max_step_loop: u32,
-    remaining_frame_duration: Option<Duration>,
+    num_of_loops: u32,
+    frame_duration: Option<Duration>,
 }
 impl MaxFixedStepLoop {
     pub fn new(max_time_step: Duration) -> Self {
         Self {
             max_time_step,
-            num_of_max_step_loop: 0,
-            remaining_frame_duration: None,
+            num_of_loops: 0,
+            frame_duration: None,
         }
     }
 
     pub fn update(&mut self, context: &UpdateContext) {
-        let max_fixed_seconds = self.max_time_step.as_secs_f64();
+        if context.delta() > Duration::from_secs(0) {
+            self.num_of_loops =
+                (context.delta_as_secs_f64() / self.max_time_step.as_secs_f64()).ceil() as u32;
 
-        let number_of_steps = context.delta_as_secs_f64() / max_fixed_seconds;
-
-        self.num_of_max_step_loop = number_of_steps.floor() as u32;
-
-        let remaining_time_step_update = Duration::from_secs_f64(
-            (number_of_steps - (self.num_of_max_step_loop as f64)) * max_fixed_seconds,
-        );
-
-        if remaining_time_step_update > Duration::from_secs(0) {
-            self.remaining_frame_duration = Some(remaining_time_step_update);
+            self.frame_duration = Some(context.delta() / self.num_of_loops);
         } else {
-            self.remaining_frame_duration = None;
+            self.num_of_loops = 0;
+            self.frame_duration = None;
         }
     }
 }
@@ -110,11 +104,11 @@ impl Iterator for MaxFixedStepLoop {
     type Item = Duration;
 
     fn next(&mut self) -> Option<Self::Item> {
-        match self.num_of_max_step_loop {
-            0 => self.remaining_frame_duration.take(),
+        match self.num_of_loops {
+            0 => None,
             _ => {
-                self.num_of_max_step_loop -= 1;
-                Some(self.max_time_step)
+                self.num_of_loops -= 1;
+                self.frame_duration
             }
         }
     }
@@ -281,9 +275,10 @@ mod max_step_tests {
         for cur_time_step in &mut max_step {
             time_simulated += cur_time_step;
             actual_loop_num += 1;
+            println!("Loop done {} time step {}",actual_loop_num,cur_time_step.as_secs_f64());
         }
 
-        //0.320 seconds with max of 0.100 we expect 3 max step duration plus 1 final step so 4
+        //0.320 seconds with max of 0.100 we expect 4 steps
         assert!(actual_loop_num == 4);
         assert!(
             time_simulated <= test_duration + Duration::from_millis(5)
