@@ -60,29 +60,29 @@ export const Traffic: FC<TcasProps> = ({ mapParams, mode }) => {
                 latLong.long = tf.lon;
                 let [x, y] = mapParams.coordinatesToXYy(latLong);
 
+                const bitfield = tf.bitfield;
+                const vertSpeed = Math.round(bitfield / 10) * 10;
+                const intrusionLevel = Math.abs(bitfield % 10);
+
                 // TODO FIXME: Full time option installed: For all ranges except in ZOOM ranges, NDRange > 9NM
                 if (!MathUtils.pointInPolygon(x, y, tcasMask)) {
-                    if (tf.intrusionLevel < TaRaIntrusion.TA) {
+                    if (intrusionLevel < TaRaIntrusion.TA) {
                         return;
                     }
                     const ret: [number, number] | null = MathUtils.intersectWithPolygon(x, y, 0, 0, tcasMask);
                     if (ret) [x, y] = ret;
                 }
-                tf.posX = x;
-                tf.posY = y;
 
                 const traffic: NdTraffic | undefined = displayTraffic.find((p) => p && p.ID === tf.ID);
                 if (traffic) {
                     traffic.alive = true;
-                    traffic.alt = tf.alt;
-                    traffic.heading = tf.heading;
-                    traffic.intrusionLevel = tf.intrusionLevel;
+                    traffic.intrusionLevel = intrusionLevel;
                     traffic.lat = tf.lat;
                     traffic.lon = tf.lon;
                     traffic.relativeAlt = tf.relativeAlt;
-                    traffic.vertSpeed = tf.vertSpeed;
-                    traffic.posX = tf.posX;
-                    traffic.posY = tf.posY;
+                    traffic.vertSpeed = vertSpeed;
+                    traffic.posX = x;
+                    traffic.posY = y;
                     if (debug !== '0') {
                         traffic.hidden = tf.hidden;
                         traffic.seen = tf.seen;

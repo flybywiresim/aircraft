@@ -67,17 +67,14 @@ export interface NdSymbol {
 export interface NdTraffic {
     alive?: boolean;
     ID: string;
-    name: string;
     lat: number;
     lon: number;
-    alt: number;
     relativeAlt: number;
-    vertSpeed: number;
-    heading: number;
-    hrzDistance: number;
-    intrusionLevel: number;
-    posX: number;
-    posY: number;
+    bitfield: number;
+    vertSpeed?: number;
+    intrusionLevel?: number;
+    posX?: number;
+    posY?: number;
     // debug
     seen?: number;
     hidden?: boolean;

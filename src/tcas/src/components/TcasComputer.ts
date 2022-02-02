@@ -19,39 +19,22 @@ import { TcasSoundManager } from './TcasSoundManager';
 
 export class NDTcasTraffic {
     ID: string;
-    // TODO: If this is ever implemented << GET_AIR_TRAFFIC
-    // name: string;
 
     lat: number;
 
     lon: number;
 
-    alt: number;
-
     relativeAlt: number;
 
-    vertSpeed: number;
-
-    heading: number;
-
-    hrzDistance: number;
-
-    intrusionLevel: TaRaIntrusion;
-
-    posX?: number;
-
-    posY?: number;
+    bitfield: number;
 
     constructor(traffic: TcasTraffic) {
         this.ID = traffic.ID;
         this.lat = traffic.lat;
         this.lon = traffic.lon;
-        this.alt = traffic.alt;
         this.relativeAlt = Math.round((traffic.relativeAlt) / 100);
-        this.vertSpeed = traffic.vertSpeed;
-        this.heading = traffic.heading;
-        this.intrusionLevel = traffic.intrusionLevel;
-        this.hrzDistance = traffic.hrzDistance;
+        this.bitfield = (traffic.intrusionLevel + (Math.round(Math.abs(traffic.vertSpeed)) * 10))
+                        * Math.sign(traffic.vertSpeed);
     }
 }
 
