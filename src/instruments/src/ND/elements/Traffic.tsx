@@ -61,7 +61,7 @@ export const Traffic: FC<TcasProps> = ({ mapParams, mode }) => {
                 let [x, y] = mapParams.coordinatesToXYy(latLong);
 
                 const bitfield = tf.bitfield;
-                const vertSpeed = Math.round(bitfield / 10) * 10;
+                const vertSpeed = Math.round(bitfield / 10);
                 const intrusionLevel = Math.abs(bitfield % 10);
 
                 // TODO FIXME: Full time option installed: For all ranges except in ZOOM ranges, NDRange > 9NM
@@ -76,7 +76,7 @@ export const Traffic: FC<TcasProps> = ({ mapParams, mode }) => {
                 const traffic: NdTraffic | undefined = displayTraffic.find((p) => p && p.ID === tf.ID);
                 if (traffic) {
                     traffic.alive = true;
-                    traffic.intrusionLevel = intrusionLevel;
+                    traffic.intrusionLevel = intrusionLevel as TaRaIntrusion;
                     traffic.lat = tf.lat;
                     traffic.lon = tf.lon;
                     traffic.relativeAlt = tf.relativeAlt;
