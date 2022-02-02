@@ -230,6 +230,15 @@ void FlyByWireInterface::setupLocalVariables() {
   idLoggingFlightControlsEnabled = make_unique<LocalVariable>("A32NX_LOGGING_FLIGHT_CONTROLS_ENABLED");
   idLoggingThrottlesEnabled = make_unique<LocalVariable>("A32NX_LOGGING_THROTTLES_ENABLED");
 
+  // register L variables for Autoland
+  idDevelopmentAutoland_condition_Flare = make_unique<LocalVariable>("A32NX_DEV_FLARE_CONDITION");
+  idDevelopmentAutoland_H_dot_radio_fpm = make_unique<LocalVariable>("A32NX_DEV_FLARE_H_DOT_RADIO");
+  idDevelopmentAutoland_H_dot_c_fpm = make_unique<LocalVariable>("A32NX_DEV_FLARE_H_DOT_C");
+  idDevelopmentAutoland_delta_Theta_H_dot_deg = make_unique<LocalVariable>("A32NX_DEV_FLARE_DELTA_THETA_H_DOT");
+  idDevelopmentAutoland_delta_Theta_bz_deg = make_unique<LocalVariable>("A32NX_DEV_FLARE_DELTA_THETA_BZ");
+  idDevelopmentAutoland_delta_Theta_bx_deg = make_unique<LocalVariable>("A32NX_DEV_FLARE_DELTA_THETA_BX");
+  idDevelopmentAutoland_delta_Theta_beta_c_deg = make_unique<LocalVariable>("A32NX_DEV_FLARE_DELTA_THETA_BETA_C");
+
   // register L variable for simulation rate limits
   idMinimumSimulationRate = make_unique<LocalVariable>("A32NX_SIMULATION_RATE_LIMIT_MINIMUM");
   idMaximumSimulationRate = make_unique<LocalVariable>("A32NX_SIMULATION_RATE_LIMIT_MAXIMUM");
@@ -521,7 +530,8 @@ bool FlyByWireInterface::readDataAndLocalVariables(double sampleTime) {
                                                          static_cast<unsigned long long>(getTcasModeAvailable()),
                                                          getTcasAdvisoryState(),
                                                          idTcasTargetGreenMin->get(),
-                                                         idTcasTargetGreenMax->get()};
+                                                         idTcasTargetGreenMax->get(),
+                                                         autopilotLawsOutput.flare_law.condition_Flare};
     simConnectInterface.setClientDataLocalVariables(clientDataLocalVariables);
   }
 
@@ -843,6 +853,7 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
     autopilotStateMachineInput.in.input.TCAS_advisory_state = getTcasAdvisoryState();
     autopilotStateMachineInput.in.input.TCAS_advisory_target_min_fpm = idTcasTargetGreenMin->get();
     autopilotStateMachineInput.in.input.TCAS_advisory_target_max_fpm = idTcasTargetGreenMax->get();
+    autopilotStateMachineInput.in.input.condition_Flare = autopilotLawsOutput.flare_law.condition_Flare;
 
     // step the model -------------------------------------------------------------------------------------------------
     autopilotStateMachine.setExternalInputs(&autopilotStateMachineInput);
@@ -1215,12 +1226,22 @@ bool FlyByWireInterface::updateAutopilotLaws(double sampleTime) {
     autopilotLawsOutput.autopilot.Beta_c_deg = clientDataLaws.autopilotBeta;
     autopilotLawsOutput.Phi_loc_c = clientDataLaws.locPhiCommand;
     autopilotLawsOutput.Nosewheel_c = clientDataLaws.nosewheelCommand;
+    autopilotLawsOutput.flare_law.condition_Flare = clientDataLaws.conditionFlare;
   }
 
   // update flight director -------------------------------------------------------------------------------------------
   idFlightDirectorPitch->set(-autopilotLawsOutput.flight_director.Theta_c_deg);
   idFlightDirectorBank->set(-autopilotLawsOutput.flight_director.Phi_c_deg);
   idFlightDirectorYaw->set(autopilotLawsOutput.flight_director.Beta_c_deg);
+
+  // update development variables -------------------------------------------------------------------------------------
+  idDevelopmentAutoland_condition_Flare->set(autopilotLawsOutput.flare_law.condition_Flare);
+  idDevelopmentAutoland_H_dot_radio_fpm->set(autopilotLawsOutput.flare_law.H_dot_radio_fpm);
+  idDevelopmentAutoland_H_dot_c_fpm->set(autopilotLawsOutput.flare_law.H_dot_c_fpm);
+  idDevelopmentAutoland_delta_Theta_H_dot_deg->set(autopilotLawsOutput.flare_law.delta_Theta_H_dot_deg);
+  idDevelopmentAutoland_delta_Theta_bx_deg->set(autopilotLawsOutput.flare_law.delta_Theta_bx_deg);
+  idDevelopmentAutoland_delta_Theta_bz_deg->set(autopilotLawsOutput.flare_law.delta_Theta_bz_deg);
+  idDevelopmentAutoland_delta_Theta_beta_c_deg->set(autopilotLawsOutput.flare_law.delta_Theta_beta_c_deg);
 
   // return result ----------------------------------------------------------------------------------------------------
   return true;
