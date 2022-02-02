@@ -97,6 +97,10 @@ bool FlyByWireInterface::update(double sampleTime) {
   // get throttle data and process it
   result &= updateAutothrust(calculatedSampleTime);
 
+  for (int i = 0; i < 2; i++) {
+    result &= updateFcdc(calculatedSampleTime, i);
+  }
+
   // update additional recording data
   result &= updateAdditionalData(calculatedSampleTime);
 
@@ -439,6 +443,40 @@ void FlyByWireInterface::setupLocalVariables() {
   idRadioReceiverLocalizerDistance = make_unique<LocalVariable>("A32NX_RADIO_RECEIVER_LOC_DISTANCE");
   idRadioReceiverGlideSlopeValid = make_unique<LocalVariable>("A32NX_RADIO_RECEIVER_GS_IS_VALID");
   idRadioReceiverGlideSlopeDeviation = make_unique<LocalVariable>("A32NX_RADIO_RECEIVER_GS_DEVIATION");
+
+  for (int i = 0; i < 2; i++) {
+    string idString = std::to_string(i + 1);
+
+    idFcdcDiscreteWord1[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_DISCRETE_WORD_1");
+    idFcdcDiscreteWord2[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_DISCRETE_WORD_2");
+    idFcdcDiscreteWord3[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_DISCRETE_WORD_3");
+    idFcdcDiscreteWord4[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_DISCRETE_WORD_4");
+    idFcdcDiscreteWord5[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_DISCRETE_WORD_5");
+    idFcdcCaptRollCommand[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_CAPT_ROLL_COMMAND");
+    idFcdcFoRollCommand[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_FO_ROLL_COMMAND");
+    idFcdcCaptPitchCommand[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_CAPT_PITCH_COMMAND");
+    idFcdcFoPitchCommand[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_FO_PITCH_COMMAND");
+    idFcdcAileronLeftPos[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_AILERON_LEFT_POS");
+    idFcdcElevatorLeftPos[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_ELEVATOR_LEFT_POS");
+    idFcdcAileronRightPos[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_AILERON_RIGHT_POS");
+    idFcdcElevatorRightPos[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_ELEVATOR_RIGHT_POS");
+    idFcdcElevatorTrimPos[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_ELEVATOR_TRIM_POS");
+    idFcdcSpoilerLeft1Pos[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_SPOILER_LEFT_1_POS");
+    idFcdcSpoilerLeft2Pos[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_SPOILER_LEFT_2_POS");
+    idFcdcSpoilerLeft3Pos[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_SPOILER_LEFT_3_POS");
+    idFcdcSpoilerLeft4Pos[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_SPOILER_LEFT_4_POS");
+    idFcdcSpoilerLeft5Pos[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_SPOILER_LEFT_5_POS");
+    idFcdcSpoilerRight1Pos[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_SPOILER_RIGHT_1_POS");
+    idFcdcSpoilerRight2Pos[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_SPOILER_RIGHT_2_POS");
+    idFcdcSpoilerRight3Pos[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_SPOILER_RIGHT_3_POS");
+    idFcdcSpoilerRight4Pos[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_SPOILER_RIGHT_4_POS");
+    idFcdcSpoilerRight5Pos[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_SPOILER_RIGHT_5_POS");
+
+    idFcdcFault[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_FAULT");
+
+    idElecDcBus2Powered = make_unique<LocalVariable>("A32NX_ELEC_DC_2_BUS_IS_POWERED");
+    idElecDcEssShedBusPowered = make_unique<LocalVariable>("A32NX_ELEC_DC_ESS_BUS_IS_POWERED");
+  }
 }
 
 bool FlyByWireInterface::readDataAndLocalVariables(double sampleTime) {
@@ -731,6 +769,68 @@ bool FlyByWireInterface::updateEngineData(double sampleTime) {
   engineData.engineEngine2State = engineEngine2State->get();
   engineData.engineEngine1Timer = engineEngine1Timer->get();
   engineData.engineEngine2Timer = engineEngine2Timer->get();
+
+  return true;
+}
+
+bool FlyByWireInterface::updateFcdc(double sampleTime, int fcdcIndex) {
+  const int oppFcdcIndex = fcdcIndex == 0 ? 1 : 0;
+
+  FcdcDiscreteInputs inputs = {};
+  inputs.elac1Off = false;
+  inputs.elac1Valid = false;
+  inputs.elac2Valid = false;
+  inputs.sec1Off = false;
+  inputs.sec1Valid = false;
+  inputs.sec2Valid = false;
+  inputs.eng1NotOnGroundAndNotLowOilPress = false;
+  inputs.eng2NotOnGroundAndNotLowOilPress = false;
+  inputs.noseGearPressed = flyByWireOutput.sim.data_computed.on_ground;
+  inputs.oppFcdcFailed = !fcdcsDiscreteOutputs[oppFcdcIndex].fcdcValid;
+  inputs.sec3Off = false;
+  inputs.sec3Valid = false;
+  inputs.elac2Off = false;
+  inputs.sec2Valid = false;
+
+  fcdcs[fcdcIndex].discreteInputs = inputs;
+
+  fcdcs[fcdcIndex].busInputs.elac1 = {};
+  fcdcs[fcdcIndex].busInputs.sec1 = {};
+  fcdcs[fcdcIndex].busInputs.fcdcOpp = {};
+  fcdcs[fcdcIndex].busInputs.elac2 = {};
+  fcdcs[fcdcIndex].busInputs.sec2 = {};
+  fcdcs[fcdcIndex].busInputs.sec3 = {};
+
+  fcdcs[fcdcIndex].update(sampleTime, idFcdcFault[fcdcIndex]->get(),
+                          fcdcIndex == 0 ? idElecDcEssShedBusPowered->get() : idElecDcBus2Powered->get());
+
+  fcdcsDiscreteOutputs[fcdcIndex] = fcdcs[fcdcIndex].getDiscreteOutputs();
+  fcdcsBusOutputs[fcdcIndex] = fcdcs[fcdcIndex].getBusOutputs();
+
+  idFcdcDiscreteWord1[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].efcsStatus1.toSimVar());
+  idFcdcDiscreteWord2[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].efcsStatus2.toSimVar());
+  idFcdcDiscreteWord3[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].efcsStatus3.toSimVar());
+  idFcdcDiscreteWord4[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].efcsStatus4.toSimVar());
+  idFcdcDiscreteWord5[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].efcsStatus5.toSimVar());
+  idFcdcCaptRollCommand[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].captRollCommand.toSimVar());
+  idFcdcFoRollCommand[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].foRollCommand.toSimVar());
+  idFcdcCaptPitchCommand[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].captPitchCommand.toSimVar());
+  idFcdcFoPitchCommand[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].foPitchCommand.toSimVar());
+  idFcdcAileronLeftPos[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].aileronLeftPos.toSimVar());
+  idFcdcElevatorLeftPos[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].elevatorLeftPos.toSimVar());
+  idFcdcAileronRightPos[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].aileronRightPos.toSimVar());
+  idFcdcElevatorRightPos[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].elevatorRightPos.toSimVar());
+  idFcdcElevatorTrimPos[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].horizStabTrimPos.toSimVar());
+  idFcdcSpoilerLeft1Pos[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].spoilerLeft1Pos.toSimVar());
+  idFcdcSpoilerLeft2Pos[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].spoilerLeft2Pos.toSimVar());
+  idFcdcSpoilerLeft3Pos[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].spoilerLeft3Pos.toSimVar());
+  idFcdcSpoilerLeft4Pos[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].spoilerLeft4Pos.toSimVar());
+  idFcdcSpoilerLeft5Pos[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].spoilerLeft5Pos.toSimVar());
+  idFcdcSpoilerRight1Pos[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].spoilerRight1Pos.toSimVar());
+  idFcdcSpoilerRight2Pos[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].spoilerRight2Pos.toSimVar());
+  idFcdcSpoilerRight3Pos[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].spoilerRight3Pos.toSimVar());
+  idFcdcSpoilerRight4Pos[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].spoilerRight4Pos.toSimVar());
+  idFcdcSpoilerRight5Pos[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].spoilerRight5Pos.toSimVar());
 
   return true;
 }

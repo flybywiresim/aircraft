@@ -20,6 +20,7 @@
 #include "SimConnectInterface.h"
 #include "SpoilersHandler.h"
 #include "ThrottleAxisMapping.h"
+#include "fcdc/Fcdc.h"
 
 class FlyByWireInterface {
  public:
@@ -96,6 +97,10 @@ class FlyByWireInterface {
   AutothrustModelClass autoThrust;
   AutothrustModelClass::ExternalInputs_Autothrust_T autoThrustInput = {};
   athr_output autoThrustOutput;
+
+  Fcdc fcdcs[2] = {Fcdc(true), Fcdc(false)};
+  FcdcDiscreteOutputs fcdcsDiscreteOutputs[2] = {};
+  FcdcBus fcdcsBusOutputs[2] = {};
 
   InterpolatingLookupTable throttleLookupTable;
 
@@ -320,6 +325,36 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idRadioReceiverGlideSlopeValid;
   std::unique_ptr<LocalVariable> idRadioReceiverGlideSlopeDeviation;
 
+  std::unique_ptr<LocalVariable> idFcdcDiscreteWord1[2];
+  std::unique_ptr<LocalVariable> idFcdcDiscreteWord2[2];
+  std::unique_ptr<LocalVariable> idFcdcDiscreteWord3[2];
+  std::unique_ptr<LocalVariable> idFcdcDiscreteWord4[2];
+  std::unique_ptr<LocalVariable> idFcdcDiscreteWord5[2];
+  std::unique_ptr<LocalVariable> idFcdcCaptRollCommand[2];
+  std::unique_ptr<LocalVariable> idFcdcFoRollCommand[2];
+  std::unique_ptr<LocalVariable> idFcdcCaptPitchCommand[2];
+  std::unique_ptr<LocalVariable> idFcdcFoPitchCommand[2];
+  std::unique_ptr<LocalVariable> idFcdcAileronLeftPos[2];
+  std::unique_ptr<LocalVariable> idFcdcElevatorLeftPos[2];
+  std::unique_ptr<LocalVariable> idFcdcAileronRightPos[2];
+  std::unique_ptr<LocalVariable> idFcdcElevatorRightPos[2];
+  std::unique_ptr<LocalVariable> idFcdcElevatorTrimPos[2];
+  std::unique_ptr<LocalVariable> idFcdcSpoilerLeft1Pos[2];
+  std::unique_ptr<LocalVariable> idFcdcSpoilerLeft2Pos[2];
+  std::unique_ptr<LocalVariable> idFcdcSpoilerLeft3Pos[2];
+  std::unique_ptr<LocalVariable> idFcdcSpoilerLeft4Pos[2];
+  std::unique_ptr<LocalVariable> idFcdcSpoilerLeft5Pos[2];
+  std::unique_ptr<LocalVariable> idFcdcSpoilerRight1Pos[2];
+  std::unique_ptr<LocalVariable> idFcdcSpoilerRight2Pos[2];
+  std::unique_ptr<LocalVariable> idFcdcSpoilerRight3Pos[2];
+  std::unique_ptr<LocalVariable> idFcdcSpoilerRight4Pos[2];
+  std::unique_ptr<LocalVariable> idFcdcSpoilerRight5Pos[2];
+
+  std::unique_ptr<LocalVariable> idFcdcFault[2];
+
+  std::unique_ptr<LocalVariable> idElecDcBus2Powered;
+  std::unique_ptr<LocalVariable> idElecDcEssShedBusPowered;
+
   void loadConfiguration();
   void setupLocalVariables();
 
@@ -337,6 +372,8 @@ class FlyByWireInterface {
   bool updateAutopilotLaws(double sampleTime);
   bool updateFlyByWire(double sampleTime);
   bool updateAutothrust(double sampleTime);
+
+  bool updateFcdc(double sampleTime, int fcdcIndex);
 
   bool updateSpoilers(double sampleTime);
 

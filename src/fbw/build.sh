@@ -74,6 +74,15 @@ clang++ \
   -I "${DIR}/src/inih" \
   -I "${DIR}/src/interface" \
   "${DIR}/src/interface/SimConnectInterface.cpp" \
+  -I "${DIR}/src/busStructures" \
+  -I "${DIR}/src/elac" \
+  "${DIR}/src/elac/elac.cpp" \
+  -I "${DIR}/src/fcdc" \
+  "${DIR}/src/fcdc/fcdc.cpp" \
+  -I "${DIR}/src/utils" \
+  "${DIR}/src/utils/ConfirmNode.cpp" \
+  "${DIR}/src/utils/SRFlipFLop.cpp" \
+  "${DIR}/src/utils/PulseNode.cpp" \
   -I "${DIR}/src/model" \
   "${DIR}/src/model/AutopilotLaws_data.cpp" \
   "${DIR}/src/model/AutopilotLaws.cpp" \
@@ -98,6 +107,7 @@ clang++ \
   "${DIR}/src/ElevatorTrimHandler.cpp" \
   "${DIR}/src/FlyByWireInterface.cpp" \
   "${DIR}/src/FlightDataRecorder.cpp" \
+  "${DIR}/src/Arinc429.cpp" \
   "${DIR}/src/LocalVariable.cpp" \
   "${DIR}/src/InterpolatingLookupTable.cpp" \
   "${DIR}/src/RudderTrimHandler.cpp" \
