@@ -24,6 +24,7 @@ use systems::{
             BrakeCircuitController,
         },
         electrical_generator::{GeneratorControlUnit, HydraulicGeneratorMotor},
+        flap_slat::FlapSlatAssembly,
         linear_actuator::{
             Actuator, BoundedLinearLength, HydraulicAssemblyController,
             HydraulicLinearActuatorAssembly, LinearActuatedRigidBodyOnHingeAxis, LinearActuator,
@@ -288,16 +289,34 @@ pub(super) struct A320Hydraulic {
     braking_circuit_norm: BrakeCircuit,
     braking_circuit_altn: BrakeCircuit,
     braking_force: A320BrakingForce,
+
+    flap_system: FlapSlatAssembly,
+    slat_system: FlapSlatAssembly,
+    slats_flaps_complex: SlatFlapComplex,
+
     gcu: GeneratorControlUnit<9>,
     emergency_gen: HydraulicGeneratorMotor,
+
     forward_cargo_door: CargoDoor,
     forward_cargo_door_controller: A320DoorController,
     aft_cargo_door: CargoDoor,
     aft_cargo_door_controller: A320DoorController,
-
-    slats_flaps_complex: SlatFlapComplex,
 }
 impl A320Hydraulic {
+    const FLAP_FFPU_TO_SURFACE_ANGLE_BREAKPTS: [f64; 12] = [
+        0., 65., 115., 120.53, 136., 145.5, 152., 165., 168.3, 179., 231.2, 251.97,
+    ];
+    const FLAP_FFPU_TO_SURFACE_ANGLE_DEGREES: [f64; 12] = [
+        0., 10.318, 18.2561, 19.134, 21.59, 23.098, 24.13, 26.196, 26.72, 28.42, 36.703, 40.,
+    ];
+
+    const SLAT_FFPU_TO_SURFACE_ANGLE_BREAKPTS: [f64; 12] = [
+        0., 12.5985, 25.197, 37.7955, 50.394, 62.9925, 75.591, 88.1895, 100.788, 113.3865,
+        157.48125, 170.07975,
+    ];
+    const SLAT_FFPU_TO_SURFACE_ANGLE_DEGREES: [f64; 12] =
+        [0., 2., 4., 6., 8., 10., 12., 14., 16., 18., 25., 27.];
+
     const FORWARD_CARGO_DOOR_ID: &'static str = "FWD";
     const AFT_CARGO_DOOR_ID: &'static str = "AFT";
 
@@ -432,6 +451,32 @@ impl A320Hydraulic {
 
             braking_force: A320BrakingForce::new(context),
 
+            flap_system: FlapSlatAssembly::new(
+                context,
+                "FLAPS",
+                Volume::new::<cubic_inch>(0.32),
+                AngularVelocity::new::<radian_per_second>(0.13),
+                Angle::new::<degree>(251.97),
+                Ratio::new::<ratio>(140.),
+                Ratio::new::<ratio>(16.632),
+                Ratio::new::<ratio>(314.98),
+                Self::FLAP_FFPU_TO_SURFACE_ANGLE_BREAKPTS,
+                Self::FLAP_FFPU_TO_SURFACE_ANGLE_DEGREES,
+            ),
+            slat_system: FlapSlatAssembly::new(
+                context,
+                "SLATS",
+                Volume::new::<cubic_inch>(0.32),
+                AngularVelocity::new::<radian_per_second>(0.09),
+                Angle::new::<degree>(170.07975),
+                Ratio::new::<ratio>(140.),
+                Ratio::new::<ratio>(16.632),
+                Ratio::new::<ratio>(314.98),
+                Self::SLAT_FFPU_TO_SURFACE_ANGLE_BREAKPTS,
+                Self::SLAT_FFPU_TO_SURFACE_ANGLE_DEGREES,
+            ),
+            slats_flaps_complex: SlatFlapComplex::new(context),
+
             gcu: GeneratorControlUnit::new(
                 AngularVelocity::new::<revolution_per_minute>(12000.),
                 [
@@ -455,8 +500,6 @@ impl A320Hydraulic {
                 Self::AFT_CARGO_DOOR_ID,
             ),
             aft_cargo_door_controller: A320DoorController::new(context, Self::AFT_CARGO_DOOR_ID),
-
-            slats_flaps_complex: SlatFlapComplex::new(context),
         }
     }
 
@@ -683,6 +726,25 @@ impl A320Hydraulic {
             &self.braking_circuit_altn,
         );
 
+        self.slats_flaps_complex
+            .update(context, &self.flap_system, &self.slat_system);
+
+        self.flap_system.update(
+            context,
+            self.slats_flaps_complex.flap_demand(),
+            self.slats_flaps_complex.flap_demand(),
+            self.green_circuit.system_pressure(),
+            self.yellow_circuit.system_pressure(),
+        );
+
+        self.slat_system.update(
+            context,
+            self.slats_flaps_complex.slat_demand(),
+            self.slats_flaps_complex.slat_demand(),
+            self.blue_circuit.system_pressure(),
+            self.green_circuit.system_pressure(),
+        );
+
         self.forward_cargo_door_controller.update(
             context,
             &self.forward_cargo_door,
@@ -695,12 +757,8 @@ impl A320Hydraulic {
             self.yellow_circuit.system_pressure(),
         );
 
-        self.slats_flaps_complex.update(
-            context,
-            self.green_circuit.system_pressure(),
-            self.blue_circuit.system_pressure(),
-            self.yellow_circuit.system_pressure(),
-        );
+        self.slats_flaps_complex
+            .update(context, &self.flap_system, &self.slat_system);
     }
 
     // For each hydraulic loop retrieves volumes from and to each actuator and pass it to the loops
@@ -713,11 +771,20 @@ impl A320Hydraulic {
     fn update_green_actuators_volume(&mut self) {
         self.green_circuit
             .update_actuator_volumes(&mut self.braking_circuit_norm);
+
+        self.green_circuit
+            .update_actuator_volumes(self.flap_system.left_motor());
+
+        self.green_circuit
+            .update_actuator_volumes(self.slat_system.right_motor());
     }
 
     fn update_yellow_actuators_volume(&mut self) {
         self.yellow_circuit
             .update_actuator_volumes(&mut self.braking_circuit_altn);
+
+        self.yellow_circuit
+            .update_actuator_volumes(self.flap_system.right_motor());
 
         self.yellow_circuit
             .update_actuator_volumes(self.forward_cargo_door.actuator());
@@ -730,6 +797,8 @@ impl A320Hydraulic {
     }
 
     fn update_blue_actuators_volume(&mut self) {
+        self.blue_circuit
+            .update_actuator_volumes(self.slat_system.left_motor());
         self.blue_circuit
             .update_actuator_volumes(&mut self.emergency_gen);
     }
@@ -984,6 +1053,8 @@ impl SimulationElement for A320Hydraulic {
         self.emergency_gen.accept(visitor);
         self.nose_steering.accept(visitor);
         self.slats_flaps_complex.accept(visitor);
+        self.flap_system.accept(visitor);
+        self.slat_system.accept(visitor);
 
         visitor.visit(self);
     }
@@ -3233,6 +3304,14 @@ mod tests {
                 self.query(|a| a.is_yellow_pressurised())
             }
 
+            fn is_flaps_moving(&mut self) -> bool {
+                self.read_by_name("IS_FLAPS_MOVING")
+            }
+
+            fn is_slats_moving(&mut self) -> bool {
+                self.read_by_name("IS_SLATS_MOVING")
+            }
+
             fn nose_steering_position(&self) -> Angle {
                 self.query(|a| a.nose_steering_position())
             }
@@ -3585,6 +3664,27 @@ mod tests {
             fn set_ptu_state(mut self, is_auto: bool) -> Self {
                 self.write_by_name("OVHD_HYD_PTU_PB_IS_AUTO", is_auto);
                 self
+            }
+
+            fn set_flaps_handle_position(mut self, pos: u8) -> Self {
+                self.write_by_name("FLAPS_HANDLE_INDEX", pos as f64);
+                self
+            }
+
+            fn get_flaps_left_position_percent(&mut self) -> f64 {
+                self.read_by_name("LEFT_FLAPS_POSITION_PERCENT")
+            }
+
+            fn get_flaps_right_position_percent(&mut self) -> f64 {
+                self.read_by_name("RIGHT_FLAPS_POSITION_PERCENT")
+            }
+
+            fn get_slats_left_position_percent(&mut self) -> f64 {
+                self.read_by_name("LEFT_SLATS_POSITION_PERCENT")
+            }
+
+            fn get_slats_right_position_percent(&mut self) -> f64 {
+                self.read_by_name("RIGHT_SLATS_POSITION_PERCENT")
             }
 
             fn ac_bus_1_lost(mut self) -> Self {
@@ -6246,6 +6346,171 @@ mod tests {
 
             // Yellow epump has stopped
             assert!(!test_bed.is_yellow_pressurised());
+        }
+
+        #[test]
+        fn flaps_and_slats_declare_moving() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_one_tick();
+
+            test_bed = test_bed
+                .set_yellow_e_pump(false)
+                .set_ptu_state(false)
+                .set_flaps_handle_position(4)
+                .run_waiting_for(Duration::from_secs(5));
+
+            // Only yellow press so only flaps can move
+            assert!(test_bed.is_flaps_moving());
+            assert!(!test_bed.is_slats_moving());
+
+            // Now slats can move through ptu
+            test_bed = test_bed
+                .set_ptu_state(true)
+                .run_waiting_for(Duration::from_secs(5));
+
+            assert!(test_bed.is_flaps_moving());
+            assert!(test_bed.is_slats_moving());
+        }
+
+        #[test]
+        fn yellow_epump_can_deploy_flaps_and_slats() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_one_tick();
+
+            test_bed = test_bed
+                .set_yellow_e_pump(false)
+                .run_waiting_for(Duration::from_secs(10));
+
+            // Yellow epump working
+            assert!(test_bed.is_yellow_pressurised());
+
+            test_bed = test_bed
+                .set_flaps_handle_position(4)
+                .run_waiting_for(Duration::from_secs(80));
+
+            assert!(test_bed.get_flaps_left_position_percent() > 99.);
+            assert!(test_bed.get_flaps_right_position_percent() > 99.);
+            assert!(test_bed.get_slats_left_position_percent() > 99.);
+            assert!(test_bed.get_slats_right_position_percent() > 99.);
+        }
+
+        #[test]
+        fn yellow_epump_no_ptu_can_deploy_flaps_less_33s() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .set_ptu_state(false)
+                .run_one_tick();
+
+            test_bed = test_bed
+                .set_yellow_e_pump(false)
+                .run_waiting_for(Duration::from_secs(20));
+
+            assert!(test_bed.is_yellow_pressurised());
+
+            test_bed = test_bed
+                .set_flaps_handle_position(4)
+                .run_waiting_for(Duration::from_secs(32));
+
+            assert!(test_bed.get_flaps_left_position_percent() > 99.);
+            assert!(test_bed.get_flaps_right_position_percent() > 99.);
+            assert!(test_bed.get_slats_left_position_percent() < 1.);
+            assert!(test_bed.get_slats_right_position_percent() < 1.);
+        }
+
+        #[test]
+        fn blue_epump_can_deploy_slats_in_less_35_s_and_no_flaps() {
+            let mut test_bed = test_bed_with()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .set_blue_e_pump_ovrd_pressed(true)
+                .run_waiting_for(Duration::from_secs(5));
+
+            // Blue epump is on
+            assert!(test_bed.is_blue_pressurised());
+
+            test_bed = test_bed
+                .set_flaps_handle_position(4)
+                .run_waiting_for(Duration::from_secs(35));
+
+            assert!(test_bed.get_flaps_left_position_percent() <= 1.);
+            assert!(test_bed.get_flaps_right_position_percent() <= 1.);
+            assert!(test_bed.get_slats_left_position_percent() > 99.);
+            assert!(test_bed.get_slats_right_position_percent() > 99.);
+        }
+
+        #[test]
+        fn blue_epump_cannot_deploy_slats_in_less_28_s_and_no_flaps() {
+            let mut test_bed = test_bed_with()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .set_blue_e_pump_ovrd_pressed(true)
+                .run_waiting_for(Duration::from_secs(5));
+
+            // Blue epump is on
+            assert!(test_bed.is_blue_pressurised());
+
+            test_bed = test_bed
+                .set_flaps_handle_position(4)
+                .run_waiting_for(Duration::from_secs(28));
+
+            assert!(test_bed.get_flaps_left_position_percent() <= 1.);
+            assert!(test_bed.get_flaps_right_position_percent() <= 1.);
+            assert!(test_bed.get_slats_left_position_percent() < 99.);
+            assert!(test_bed.get_slats_right_position_percent() < 99.);
+        }
+
+        #[test]
+        fn yellow_plus_blue_epumps_can_deploy_flaps_and_slats() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_one_tick();
+
+            test_bed = test_bed
+                .set_yellow_e_pump(false)
+                .set_blue_e_pump_ovrd_pressed(true)
+                .run_waiting_for(Duration::from_secs(15));
+
+            assert!(test_bed.is_yellow_pressurised());
+            assert!(test_bed.is_blue_pressurised());
+
+            test_bed = test_bed
+                .set_flaps_handle_position(4)
+                .run_waiting_for(Duration::from_secs(45));
+
+            assert!(test_bed.get_flaps_left_position_percent() > 99.);
+            assert!(test_bed.get_flaps_right_position_percent() > 99.);
+            assert!(test_bed.get_slats_left_position_percent() > 99.);
+            assert!(test_bed.get_slats_right_position_percent() > 99.);
+        }
+
+        #[test]
+        fn no_pressure_no_flap_slats() {
+            let mut test_bed = test_bed_with()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_waiting_for(Duration::from_secs(5));
+
+            test_bed = test_bed
+                .set_flaps_handle_position(4)
+                .run_waiting_for(Duration::from_secs(10));
+
+            assert!(test_bed.get_flaps_left_position_percent() <= 1.);
+            assert!(test_bed.get_flaps_right_position_percent() <= 1.);
+            assert!(test_bed.get_slats_left_position_percent() <= 1.);
+            assert!(test_bed.get_slats_right_position_percent() <= 1.);
+
+            assert!(!test_bed.is_slats_moving());
+            assert!(!test_bed.is_flaps_moving());
         }
 
         #[test]

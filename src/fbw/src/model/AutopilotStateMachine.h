@@ -9,20 +9,6 @@
 class AutopilotStateMachineModelClass
 {
  public:
-  struct rtDW_LagFilter_AutopilotStateMachine_T {
-    real_T pY;
-    real_T pU;
-    boolean_T pY_not_empty;
-    boolean_T pU_not_empty;
-  };
-
-  struct rtDW_WashoutFilter_AutopilotStateMachine_T {
-    real_T pY;
-    real_T pU;
-    boolean_T pY_not_empty;
-    boolean_T pU_not_empty;
-  };
-
   struct BlockIO_AutopilotStateMachine_T {
     ap_sm_output BusAssignment_g;
     ap_vertical_output out;
@@ -37,7 +23,6 @@ class AutopilotStateMachineModelClass
     real_T Delay_DSTATE_d[100];
     real_T Delay_DSTATE_c[100];
     real_T DelayInput1_DSTATE_b;
-    real_T Delay_DSTATE_l;
     real_T Delay_DSTATE_d2[100];
     real_T Delay_DSTATE_g;
     real_T Delay_DSTATE_e;
@@ -60,6 +45,8 @@ class AutopilotStateMachineModelClass
     real_T eventTime_n;
     real_T eventTime_m;
     real_T eventTime_mz;
+    real_T pY;
+    real_T pU;
     real_T lastTargetSpeed;
     real_T timeDeltaSpeed4;
     real_T timeDeltaSpeed10;
@@ -126,6 +113,8 @@ class AutopilotStateMachineModelClass
     boolean_T eventTime_not_empty_p;
     boolean_T eventTime_not_empty_a;
     boolean_T eventTime_not_empty_l;
+    boolean_T pY_not_empty;
+    boolean_T pU_not_empty;
     boolean_T lastTargetSpeed_not_empty;
     boolean_T timeDeltaSpeed4_not_empty;
     boolean_T timeDeltaSpeed10_not_empty;
@@ -156,11 +145,6 @@ class AutopilotStateMachineModelClass
     boolean_T sCLB;
     boolean_T was_TCAS_active;
     boolean_T newFcuAltitudeSelected_h;
-    rtDW_LagFilter_AutopilotStateMachine_T sf_LagFilter_h;
-    rtDW_WashoutFilter_AutopilotStateMachine_T sf_WashoutFilter_k;
-    rtDW_WashoutFilter_AutopilotStateMachine_T sf_WashoutFilter;
-    rtDW_LagFilter_AutopilotStateMachine_T sf_LagFilter_d;
-    rtDW_LagFilter_AutopilotStateMachine_T sf_LagFilter;
   };
 
   struct ExternalInputs_AutopilotStateMachine_T {
@@ -174,12 +158,6 @@ class AutopilotStateMachineModelClass
   struct Parameters_AutopilotStateMachine_T {
     ap_sm_output ap_sm_output_MATLABStruct;
     real_T LagFilter_C1;
-    real_T WashoutFilter_C1;
-    real_T LagFilter_C1_n;
-    real_T LagFilter3_C1;
-    real_T WashoutFilter1_C1;
-    real_T DiscreteDerivativeVariableTs2_Gain;
-    real_T DiscreteDerivativeVariableTs2_InitialCondition;
     real_T RateLimiterDynamicVariableTs_InitialCondition;
     real_T RateLimiterDynamicVariableTs_InitialCondition_d;
     real_T RateLimiterDynamicVariableTs_InitialCondition_db;
@@ -246,9 +224,6 @@ class AutopilotStateMachineModelClass
     real_T Delay_InitialCondition_i;
     real_T Constant_Value_jq;
     real_T Delay_InitialCondition_m;
-    real_T Saturation_UpperSat_k;
-    real_T Saturation_LowerSat_b;
-    real_T Gain2_Gain_d;
     real_T Constant_Value_m;
     real_T Delay_InitialCondition_i4;
     real_T Raising_Value;
@@ -292,10 +267,6 @@ class AutopilotStateMachineModelClass
   BlockIO_AutopilotStateMachine_T AutopilotStateMachine_B;
   D_Work_AutopilotStateMachine_T AutopilotStateMachine_DWork;
   static Parameters_AutopilotStateMachine_T AutopilotStateMachine_P;
-  static void AutopilotStateMachine_LagFilter(real_T rtu_U, real_T rtu_C1, real_T rtu_dt, real_T *rty_Y,
-    rtDW_LagFilter_AutopilotStateMachine_T *localDW);
-  static void AutopilotStateMachine_WashoutFilter(real_T rtu_U, real_T rtu_C1, real_T rtu_dt, real_T *rty_Y,
-    rtDW_WashoutFilter_AutopilotStateMachine_T *localDW);
   static void AutopilotStateMachine_BitShift(real_T rtu_u, real_T *rty_y);
   static void AutopilotStateMachine_BitShift1(real_T rtu_u, real_T *rty_y);
   boolean_T AutopilotStateMachine_X_TO_OFF(const ap_sm_output *BusAssignment);
