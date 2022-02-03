@@ -107,6 +107,9 @@ class A32NX_Boarding {
         const currentLoad = Object.values(this.cargoStations).map((station) => SimVar.GetSimVarValue(`L:${station.simVar}`, "Number")).reduce((acc, cur) => acc + cur);
         const loadTarget = Object.values(this.cargoStations).map((station) => SimVar.GetSimVarValue(`L:${station.simVar}_DESIRED`, "Number")).reduce((acc, cur) => acc + cur);
 
+        await SimVar.SetSimVarValue(`L:A32NX_PAX_CURRENT`, "Number", currentPax);
+        await SimVar.SetSimVarValue(`L:A32NX_PAX_TARGET`, "Number", paxTarget);
+
         let isAllPaxStationFilled = true;
         for (const _station of Object.values(this.paxStations)) {
             const stationCurrentPax = SimVar.GetSimVarValue(`L:${_station.simVar}`, "Number");
