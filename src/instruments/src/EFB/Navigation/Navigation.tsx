@@ -533,7 +533,7 @@ const ChartsUi = ({ chartFox, charts, enableNavigraph, icao, setCharts, setIcao 
     const [enableDarkCharts, setEnableDarkCharts] = useState(true); // Navigraph Only
     const [airportInfo, setAirportInfo] = useState<AirportInfo>({ name: '' }); // Navigraph Only
 
-    const loading = !airportInfo.name.length;
+    const [icaoAndNameDisagree, setIcaoAndNameDisagree] = useState(false);
 
     const [isFullscreen, setIsFullscreen] = useState(false);
 
@@ -552,10 +552,17 @@ const ChartsUi = ({ chartFox, charts, enableNavigraph, icao, setCharts, setIcao 
 
     const [selectedTabIndex, setSelectedTabIndex] = useState(0);
 
-    useEffect(() => {
+    const assignAirportInfo = async () => {
         if (enableNavigraph) {
-            navigraph.getAirportInfo(icao).then((r) => setAirportInfo(r));
+            setIcaoAndNameDisagree(true);
+            const airportInfo = await navigraph.getAirportInfo(icao);
+            setAirportInfo(airportInfo);
+            setIcaoAndNameDisagree(false);
         }
+    };
+
+    useEffect(() => {
+        assignAirportInfo();
     }, [icao]);
 
     useEffect(() => {
@@ -618,6 +625,8 @@ const ChartsUi = ({ chartFox, charts, enableNavigraph, icao, setCharts, setIcao 
 
     const AIRPORT_CHARACTER_LIMIT = 30;
 
+    const loading = (!airportInfo.name.length || icaoAndNameDisagree) && icao.length === 4;
+
     const getAirportDisplayName = () => {
         if (icao.length !== 4) {
             return 'No Airport Selected';
@@ -655,19 +664,19 @@ const ChartsUi = ({ chartFox, charts, enableNavigraph, icao, setCharts, setIcao 
                                             selected={icao === departingAirport}
                                             onSelect={() => handleIcaoChange(departingAirport)}
                                         >
-                                            From
+                                            FROM
                                         </SelectItem>
                                         <SelectItem
                                             selected={icao === arrivingAirport}
                                             onSelect={() => handleIcaoChange(arrivingAirport)}
                                         >
-                                            To
+                                            TO
                                         </SelectItem>
                                         <SelectItem
                                             selected={icao === altIcao}
                                             onSelect={() => handleIcaoChange(altIcao)}
                                         >
-                                            Alt
+                                            ALTN
                                         </SelectItem>
                                     </SelectGroup>
                                 )}
@@ -697,7 +706,7 @@ const ChartsUi = ({ chartFox, charts, enableNavigraph, icao, setCharts, setIcao 
                                                     selectedTab={organizedCharts[selectedTabIndex]}
                                                     selectedChartId={selectedChartId}
                                                     onChartClick={onChartClick}
-                                                    loading={!airportInfo.name.length && icao.length === 4}
+                                                    loading={loading}
                                                 />
                                             )
                                             : (
