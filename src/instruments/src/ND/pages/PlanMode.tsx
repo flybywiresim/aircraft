@@ -3,7 +3,6 @@ import { useSimVar } from '@instruments/common/simVars';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { EfisSide, NdSymbol } from '@shared/NavigationDisplay';
 import { CrossTrack } from '../elements/CrossTrack';
-import { ToWaypointIndicator } from '../elements/ToWaypointIndicator';
 import { FlightPlan } from '../elements/FlightPlan';
 import { MapParameters } from '../utils/MapParameters';
 
@@ -48,8 +47,6 @@ export const PlanMode: FC<PlanModeProps> = ({ side, symbols, adirsAlign, rangeSe
             {adirsAlign && !mapHidden && mapParams.valid && (
                 <Plane location={ppos} heading={trueHeading} mapParams={mapParams} />
             )}
-
-            <ToWaypointIndicator side={side} />
 
             <CrossTrack x={44} y={690} isPlanMode />
         </>

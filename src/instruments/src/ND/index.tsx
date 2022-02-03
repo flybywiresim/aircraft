@@ -12,11 +12,12 @@ import { WindIndicator } from './elements/WindIndicator';
 import { SpeedIndicator } from './elements/SpeedIndicator';
 import { RadioNavInfo } from './elements/RadioNavInfo';
 import { Chrono } from './elements/Chrono';
+import { ToWaypointIndicator } from './elements/ToWaypointIndicator';
 import { NavigationDisplayMessages } from './elements/messages/NavigationDisplayMessages';
 import { FMMessages } from './elements/messages/FMMessages';
 import { TcasWxrMessages } from './elements/messages/TcasWxrMessages';
 import { PlanMode } from './pages/PlanMode';
-import { RoseMode } from './pages/RoseMode';
+import { RoseMode, IlsInfo, VorInfo } from './pages/RoseMode';
 
 import './styles.scss';
 import { LnavStatus } from './elements/LnavStatus';
@@ -56,6 +57,8 @@ const NavigationDisplay: React.FC = () => {
     const firstModeUpdate = useRef(true);
     const firstRangeUpdate = useRef(true);
 
+    const [toWptIdent, setToWptIdent] = useState<string | null>(null);
+
     useEffect(() => {
         if (firstModeUpdate.current) {
             firstModeUpdate.current = false;
@@ -90,6 +93,11 @@ const NavigationDisplay: React.FC = () => {
         return () => clearTimeout(timeout);
     }, [rangeIndex]);
 
+    useCoherentEvent(`A32NX_EFIS_${side}_TO_WPT_IDENT`, (toWptIdent: string) => {
+        // EIS2 can only display 9 characters for the ident
+        setToWptIdent(toWptIdent.substring(0, 8));
+    });
+
     const [symbols, setSymbols] = useState<NdSymbol[]>([]);
 
     useCoherentEvent(`A32NX_EFIS_${side}_SYMBOLS`, (symbols) => {
@@ -108,6 +116,14 @@ const NavigationDisplay: React.FC = () => {
 
                     {true && (
                         <LnavStatus />
+                    )}
+
+                    {adirsAlign && (
+                        <>
+                            { [Mode.PLAN, Mode.ARC, Mode.ROSE_NAV].includes(modeIndex) && <ToWaypointIndicator side={side} ident={toWptIdent} /> }
+                            { modeIndex === Mode.ROSE_VOR && <VorInfo side={side} /> }
+                            { modeIndex === Mode.ROSE_ILS && <IlsInfo /> }
+                        </>
                     )}
 
                     {modeIndex === Mode.PLAN && (

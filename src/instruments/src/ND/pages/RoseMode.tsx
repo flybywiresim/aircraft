@@ -6,7 +6,6 @@ import { MathUtils } from '@shared/MathUtils';
 import { TuningMode } from '@fmgc/radionav';
 import { Mode, EfisSide, NdSymbol } from '@shared/NavigationDisplay';
 import { ArmedLateralMode, isArmed, LateralMode } from '@shared/autopilot';
-import { ToWaypointIndicator } from '../elements/ToWaypointIndicator';
 import { FlightPlan, FlightPlanType } from '../elements/FlightPlan';
 import { MapParameters } from '../utils/MapParameters';
 import { RadioNeedle } from '../elements/RadioNeedles';
@@ -96,10 +95,6 @@ export const RoseMode: FC<RoseModeProps> = ({ symbols, adirsAlign, rangeSetting,
                 { mode === Mode.ROSE_VOR && <VorCaptureOverlay heading={magHeading} side={side} /> }
 
                 { mode === Mode.ROSE_ILS && <IlsCaptureOverlay heading={magHeading} _side={side} /> }
-
-                { mode === Mode.ROSE_NAV && <ToWaypointIndicator side={side} /> }
-                { mode === Mode.ROSE_VOR && <VorInfo side={side} /> }
-                { mode === Mode.ROSE_ILS && <IlsInfo /> }
 
                 <ApproachMessage info={flightPlanManager.getAirportApproach()} flightPhase={fmgcFlightPhase} />
                 <TrackBug heading={heading} track={track} />
@@ -773,7 +768,7 @@ const formatTuningMode = (tuningMode: TuningMode): string => {
     }
 };
 
-const VorInfo: FC<{side: EfisSide}> = memo(({ side }) => {
+export const VorInfo: FC<{side: EfisSide}> = memo(({ side }) => {
     const index = side === 'R' ? 2 : 1;
 
     const [vorIdent] = useSimVar(`NAV IDENT:${index}`, 'string');
@@ -815,7 +810,7 @@ const VorInfo: FC<{side: EfisSide}> = memo(({ side }) => {
     );
 });
 
-const IlsInfo: FC = memo(() => {
+export const IlsInfo: FC = memo(() => {
     const [ilsIdent] = useSimVar('NAV IDENT:3', 'string');
     const [ilsFrequency] = useSimVar('NAV ACTIVE FREQUENCY:3', 'megahertz');
     const [ilsCourse] = useSimVar('NAV LOCALIZER:3', 'degrees');
