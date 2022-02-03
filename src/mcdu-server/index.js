@@ -72,25 +72,25 @@ for (const arg of args) {
     }
     if (arg.startsWith('--http-port=')) {
         httpPort = parseInt(arg.split('=')[1], 10);
-        if (!httpPort || httpPort < 0 || httpPort > 65353) {
+        if (Number.isNaN(httpPort) || httpPort < 0 || httpPort > 65353) {
             console.error(`Invalid http port: ${arg.split('=')[1]}`);
-            process.exit(1);
+            pressAnyKey(1);
         }
         continue;
     }
     if (arg.startsWith('--websocket-port=')) {
         websocketPort = parseInt(arg.split('=')[1], 10);
-        if (!websocketPort || websocketPort < 0 || websocketPort > 65353) {
+        if (Number.isNaN(websocketPort) || websocketPort < 0 || websocketPort > 65353) {
             console.error(`Invalid websocket port: ${arg.split('=')[1]}`);
-            process.exit(1);
+            pressAnyKey(1);
         }
         continue;
     }
     if (arg.startsWith('--font-size=')) {
         fontSize = parseInt(arg.split('=')[1], 10);
-        if (!fontSize || fontSize < 1) {
+        if (Number.isNaN(fontSize) || fontSize < 1) {
             console.error(`Invalid font size: ${arg.split('=')[1]}`);
-            process.exit(1);
+            pressAnyKey(1);
         }
         continue;
     }
@@ -98,17 +98,19 @@ for (const arg of args) {
         paperSize = arg.split('=')[1].toUpperCase();
         if (!validPaperSize(paperSize)) {
             console.error(`Invalid paper size: ${arg.split('=')[1]}`);
-            process.exit(1);
+            pressAnyKey(1);
         }
         continue;
     }
     if (arg.startsWith('--margin=')) {
         margin = parseInt(arg.split('=')[1], 10);
-        if (!margin || margin < 1) {
+        if (Number.isNaN(margin)) {
             console.error(`Invalid margin: ${arg.split('=')[1]}`);
-            process.exit(1);
+            pressAnyKey(1);
         }
         continue;
+    } else {
+        margin = paperSize === 'A4' ? 30 : 10;
     }
     if (arg === '--debug') {
         debug = true;
@@ -120,10 +122,7 @@ for (const arg of args) {
     }
     console.error(`Unknown argument: ${arg}`);
     printUsage();
-    process.exit(1);
-}
-if (!margin) {
-    margin = paperSize === 'A4' ? 30 : 10;
+    pressAnyKey(1);
 }
 
 if (printerName != null) {
