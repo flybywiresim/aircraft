@@ -5,7 +5,7 @@ import { useSimVar } from '@instruments/common/simVars';
 import { usePersistentProperty } from '@instruments/common/persistence';
 import Slider from 'rc-slider';
 import { Units } from '@shared/units';
-import { initialState } from '../../Store/features/simBrief';
+import { simbriefDataIsInitialState } from '../../Store/features/simBrief';
 import { useAppSelector } from '../../Store/store';
 import { SelectGroup, SelectItem } from '../../UtilComponents/Form/Select';
 import { ProgressBar } from '../../UtilComponents/Progress/Progress';
@@ -90,7 +90,7 @@ export const FuelPage = () => {
 
     const { units } = useAppSelector((state) => state.simbrief.data);
     const { planRamp } = useAppSelector((state) => state.simbrief.data.fuels);
-    const isInitialData = useAppSelector((state) => state.simbrief === initialState);
+    const isInitialData = simbriefDataIsInitialState();
 
     const isAirplaneCnD = () => {
         if (simGroundSpeed > 0.1 || eng1Running || eng2Running || !isOnGround || (!busDC2 && !busDCHot1)) {
