@@ -125,6 +125,11 @@ for (const arg of args) {
     pressAnyKey(1);
 }
 
+if (httpPort === websocketPort) {
+    console.error(`Error: HTTP port (${httpPort}) and Websocket port (${websocketPort}) cannot be identical`);
+    pressAnyKey(1);
+}
+
 if (printerName != null) {
     print.getPrinters().then((printers) => {
         selectedPrinter = printers.find((printer) => printer.name === printerName);
