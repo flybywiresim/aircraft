@@ -24,9 +24,6 @@ void Fcdc::update(double deltaTime, bool faultActive, bool isPowered) {
   updateSelfTest(deltaTime);
   monitorSelf(faultActive);
 
-  std::cout << "FCDC" << isUnit1 << "Self test: " << selfTestTimer << std::endl;
-  std::cout << "FCDC" << isUnit1 << "power supply outage: " << powerSupplyOutageTime << std::endl;
-
   if (monitoringHealthy) {
     updateSidestickPriorityLightLogic();
   }

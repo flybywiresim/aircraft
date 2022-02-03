@@ -473,10 +473,10 @@ void FlyByWireInterface::setupLocalVariables() {
     idFcdcSpoilerRight5Pos[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_SPOILER_RIGHT_5_POS");
 
     idFcdcFault[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_FAULT");
-
-    idElecDcBus2Powered = make_unique<LocalVariable>("A32NX_ELEC_DC_2_BUS_IS_POWERED");
-    idElecDcEssShedBusPowered = make_unique<LocalVariable>("A32NX_ELEC_DC_ESS_BUS_IS_POWERED");
   }
+
+  idElecDcBus2Powered = make_unique<LocalVariable>("A32NX_ELEC_DC_2_BUS_IS_POWERED");
+  idElecDcEssShedBusPowered = make_unique<LocalVariable>("A32NX_ELEC_DC_ESS_SHED_BUS_IS_POWERED");
 }
 
 bool FlyByWireInterface::readDataAndLocalVariables(double sampleTime) {
