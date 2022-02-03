@@ -399,7 +399,7 @@ export const FuelPage = () => {
                             <div className="flex flex-row">
                                 <div className="relative">
                                     <SimpleInput
-                                        className="w-32 rounded-r-none"
+                                        className={`w-32 ${!isInitialData && 'rounded-r-none'}`}
                                         noLeftMargin
                                         noLabel
                                         placeholder={round(totalFuel()).toString()}
@@ -411,12 +411,14 @@ export const FuelPage = () => {
                                     />
                                     <div className="absolute top-2 right-4 text-lg text-gray-400">{currentUnit()}</div>
                                 </div>
-                                <div
-                                    className={`${isInitialData ? 'opacity-80' : 'opacity-100'} flex justify-center items-center px-2 rounded-md rounded-l-none bg-theme-highlight`}
-                                    onClick={isInitialData ? undefined : handleFuelAutoFill}
-                                >
-                                    <CloudArrowDown size={26} />
-                                </div>
+                                {!isInitialData && (
+                                    <div
+                                        className="flex justify-center items-center px-2 rounded-md rounded-l-none bg-theme-highlight"
+                                        onClick={isInitialData ? undefined : handleFuelAutoFill}
+                                    >
+                                        <CloudArrowDown size={26} />
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>
