@@ -5,7 +5,7 @@ import { useSimVar } from '@instruments/common/simVars';
 import { usePersistentProperty } from '@instruments/common/persistence';
 import Slider from 'rc-slider';
 import { Units } from '@shared/units';
-import { simbriefDataIsInitialState } from '../../Store/features/simBrief';
+import { simbriefDataIsInitialState } from '../../Store/features/simbrief';
 import { useAppSelector } from '../../Store/store';
 import { SelectGroup, SelectItem } from '../../UtilComponents/Form/Select';
 import { ProgressBar } from '../../UtilComponents/Progress/Progress';

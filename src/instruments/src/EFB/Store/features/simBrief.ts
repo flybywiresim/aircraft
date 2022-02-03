@@ -110,7 +110,7 @@ export const initialState: {data: SimbriefData} = {
     },
 };
 
-export const simBriefSlice = createSlice({
+export const simbriefSlice = createSlice({
     name: 'simBrief',
     initialState,
     reducers: {
@@ -196,11 +196,10 @@ export async function fetchSimbriefDataAction(simbriefUserId: string): Promise<T
 }
 
 /**
- *
  * @returns Whether or not the simbrief data has been altered from its original state
  */
 export const simbriefDataIsInitialState = (): boolean => (store.getState() as RootState).simbrief === initialState;
 
-export const { setSimbriefData } = simBriefSlice.actions;
+export const { setSimbriefData } = simbriefSlice.actions;
 
-export default simBriefSlice.reducer;
+export default simbriefSlice.reducer;
