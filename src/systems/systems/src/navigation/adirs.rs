@@ -562,7 +562,9 @@ impl AirDataReference {
     const TOTAL_AIR_TEMPERATURE: &'static str = "TOTAL_AIR_TEMPERATURE";
     const INTERNATIONAL_STANDARD_ATMOSPHERE_DELTA: &'static str =
         "INTERNATIONAL_STANDARD_ATMOSPHERE_DELTA";
-    const MINIMUM_COMPUTED_AIRSPEED_FOR_TRUE_AIRSPEED_DETERMINATION_KNOTS: f64 = 60.;
+    const MINIMUM_TAS: f64 = 60.;
+    const MINIMUM_CAS: f64 = 30.;
+    const MINIMUM_MACH: f64 = 0.1;
 
     fn new(context: &mut InitContext, number: usize) -> Self {
         Self {
@@ -620,56 +622,85 @@ impl AirDataReference {
     }
 
     fn update_values(&mut self, context: &UpdateContext, simulator_data: AdirsSimulatorData) {
-        let should_set_values = self.is_on && self.is_initialised();
-        let ssm = if should_set_values {
-            SignStatus::NormalOperation
-        } else {
-            SignStatus::NoComputedData
-        };
+        let is_valid = self.is_on && self.is_initialised();
 
         // For now some of the data will be read from the context. Later the context will no longer
         // contain this information (and instead all usages will be replaced by requests to the ADIRUs).
-        self.altitude.set_value(context.indicated_altitude(), ssm);
-        self.barometric_vertical_speed
-            .set_value(simulator_data.vertical_speed.get::<foot_per_minute>(), ssm);
 
-        let computed_airspeed = context.indicated_airspeed();
-        self.computed_airspeed.set_value(computed_airspeed, ssm);
+        // If the ADR is off or not initialized, output all labels as FW with value 0.
+        if !is_valid {
+            let ssm = SignStatus::FailureWarning;
 
-        // If CAS is below 60 kts, label 210 indicates 0 kt with SSM = NCD.
-        let has_true_airspeed = ssm == SignStatus::NormalOperation
-            && computed_airspeed
-                >= Velocity::new::<knot>(
-                    Self::MINIMUM_COMPUTED_AIRSPEED_FOR_TRUE_AIRSPEED_DETERMINATION_KNOTS,
-                );
-        self.true_airspeed.set_value(
-            if has_true_airspeed {
-                simulator_data.true_airspeed
+            self.altitude.set_value(Length::new::<foot>(0.0), ssm);
+            self.barometric_vertical_speed.set_value(0.0, ssm);
+            self.computed_airspeed
+                .set_value(Velocity::new::<knot>(0.0), ssm);
+            self.true_airspeed.set_value(Velocity::new::<knot>(0.), ssm);
+            self.mach.set_value(MachNumber::from(0.0), ssm);
+
+            self.total_air_temperature
+                .set_value(ThermodynamicTemperature::new::<degree_celsius>(0.0), ssm);
+
+            self.static_air_temperature
+                .set_value(ThermodynamicTemperature::new::<degree_celsius>(0.0), ssm);
+
+            self.international_standard_atmosphere_delta
+                .set_value(ThermodynamicTemperature::new::<degree_celsius>(0.0), ssm);
+        } else {
+            // If it is on and initialized, output normal values.
+
+            self.altitude
+                .set_value(context.indicated_altitude(), SignStatus::NormalOperation);
+            self.barometric_vertical_speed.set_value(
+                simulator_data.vertical_speed.get::<foot_per_minute>(),
+                SignStatus::NormalOperation,
+            );
+
+            // If CAS is below 30kn, output as 0 with SSM = NCD
+            let computed_airspeed = context.indicated_airspeed();
+            if computed_airspeed < Velocity::new::<knot>(Self::MINIMUM_CAS) {
+                self.computed_airspeed
+                    .set_value(Velocity::new::<knot>(0.0), SignStatus::NoComputedData);
             } else {
-                Velocity::new::<knot>(0.)
-            },
-            if should_set_values && has_true_airspeed {
-                SignStatus::NormalOperation
+                self.computed_airspeed
+                    .set_value(computed_airspeed, SignStatus::NormalOperation);
+            }
+
+            // If mach is below 0.1, output as 0 with SSM = NCD
+            let mach = simulator_data.mach;
+            if mach < MachNumber::from(Self::MINIMUM_MACH) {
+                self.mach
+                    .set_value(MachNumber::from(0.0), SignStatus::NoComputedData);
             } else {
-                SignStatus::NoComputedData
-            },
-        );
+                self.mach.set_value(mach, SignStatus::NormalOperation);
+            }
 
-        self.mach.set_value(simulator_data.mach, ssm);
+            // If TAS is below 60 kts, output as 0 kt with SSM = NCD.
+            let true_airspeed = simulator_data.true_airspeed;
+            if true_airspeed < Velocity::new::<knot>(Self::MINIMUM_TAS) {
+                self.true_airspeed
+                    .set_value(Velocity::new::<knot>(0.0), SignStatus::NoComputedData);
+            } else {
+                self.true_airspeed
+                    .set_value(true_airspeed, SignStatus::NormalOperation);
+            }
 
-        self.total_air_temperature
-            .set_value(simulator_data.total_air_temperature, ssm);
+            self.total_air_temperature.set_value(
+                simulator_data.total_air_temperature,
+                SignStatus::NormalOperation,
+            );
 
-        self.static_air_temperature
-            .set_value(context.ambient_temperature(), ssm);
+            self.static_air_temperature
+                .set_value(context.ambient_temperature(), SignStatus::NormalOperation);
 
-        self.international_standard_atmosphere_delta.set_value(
-            self.international_standard_atmosphere_delta(
-                context.indicated_altitude(),
-                context.ambient_temperature(),
-            ),
-            ssm,
-        );
+            self.international_standard_atmosphere_delta.set_value(
+                self.international_standard_atmosphere_delta(
+                    context.indicated_altitude(),
+                    context.ambient_temperature(),
+                ),
+                SignStatus::NormalOperation,
+            );
+        }
     }
 
     fn is_initialised(&self) -> bool {
@@ -1408,40 +1439,41 @@ mod tests {
             self.read_by_name(AirDataInertialReferenceSystem::USES_GPS_AS_PRIMARY_KEY)
         }
 
-        fn assert_adr_data_available(&mut self, available: bool, adiru_number: usize) {
-            assert_eq!(self.altitude(adiru_number).is_normal_operation(), available);
+        fn assert_adr_data_valid(&mut self, valid: bool, adiru_number: usize) {
+            assert_eq!(!self.altitude(adiru_number).is_failure_warning(), valid);
             assert_eq!(
-                self.computed_airspeed(adiru_number).is_normal_operation(),
-                available
+                !self.computed_airspeed(adiru_number).is_failure_warning(),
+                valid
             );
-            assert_eq!(self.mach(adiru_number).is_normal_operation(), available);
+            assert_eq!(!self.mach(adiru_number).is_failure_warning(), valid);
             assert_eq!(
-                self.barometric_vertical_speed(adiru_number)
-                    .is_normal_operation(),
-                available
+                !self
+                    .barometric_vertical_speed(adiru_number)
+                    .is_failure_warning(),
+                valid
             );
             assert_eq!(
-                self.true_airspeed(adiru_number).is_normal_operation(),
-                available
+                !self.true_airspeed(adiru_number).is_failure_warning(),
+                valid
             );
-
-            if adiru_number == 1 || adiru_number == 3 {
-                assert_eq!(
-                    self.static_air_temperature(adiru_number)
-                        .is_normal_operation(),
-                    available
-                );
-                assert_eq!(
-                    self.total_air_temperature(adiru_number)
-                        .is_normal_operation(),
-                    available
-                );
-                assert_eq!(
-                    self.international_standard_atmosphere_delta(adiru_number)
-                        .is_normal_operation(),
-                    available
-                );
-            }
+            assert_eq!(
+                !self
+                    .static_air_temperature(adiru_number)
+                    .is_failure_warning(),
+                valid
+            );
+            assert_eq!(
+                !self
+                    .total_air_temperature(adiru_number)
+                    .is_failure_warning(),
+                valid
+            );
+            assert_eq!(
+                !self
+                    .international_standard_atmosphere_delta(adiru_number)
+                    .is_failure_warning(),
+                valid
+            );
         }
 
         fn assert_ir_heading_data_available(&mut self, available: bool, adiru_number: usize) {
@@ -1812,7 +1844,7 @@ mod tests {
         #[case(1)]
         #[case(2)]
         #[case(3)]
-        fn data_is_available_18_seconds_after_alignment_began(#[case] adiru_number: usize) {
+        fn data_is_valid_18_seconds_after_alignment_began(#[case] adiru_number: usize) {
             let mut test_bed = test_bed_with()
                 .ir_mode_selector_set_to(adiru_number, InertialReferenceMode::Navigation);
             test_bed.run_without_delta();
@@ -1820,37 +1852,37 @@ mod tests {
             test_bed.run_with_delta(
                 AirDataReference::INITIALISATION_DURATION - Duration::from_millis(1),
             );
-            test_bed.assert_adr_data_available(false, adiru_number);
+            test_bed.assert_adr_data_valid(false, adiru_number);
 
             test_bed.run_with_delta(Duration::from_millis(1));
-            test_bed.assert_adr_data_available(true, adiru_number);
+            test_bed.assert_adr_data_valid(true, adiru_number);
         }
 
         #[rstest]
         #[case(1)]
         #[case(2)]
         #[case(3)]
-        fn data_is_no_longer_available_when_adiru_mode_selector_off(#[case] adiru_number: usize) {
+        fn data_is_no_longer_valid_when_adiru_mode_selector_off(#[case] adiru_number: usize) {
             let mut test_bed = all_adirus_aligned_test_bed();
             test_bed.run();
-            test_bed.assert_adr_data_available(true, adiru_number);
+            test_bed.assert_adr_data_valid(true, adiru_number);
 
             test_bed = test_bed
                 .then_continue_with()
                 .ir_mode_selector_set_to(adiru_number, InertialReferenceMode::Off);
             test_bed.run();
-            test_bed.assert_adr_data_available(false, adiru_number);
+            test_bed.assert_adr_data_valid(false, adiru_number);
         }
 
         #[rstest]
         #[case(1)]
         #[case(2)]
         #[case(3)]
-        fn when_adr_push_button_off_data_is_not_available(#[case] adiru_number: usize) {
+        fn when_adr_push_button_off_data_is_not_valid(#[case] adiru_number: usize) {
             let mut test_bed = all_adirus_aligned_test_bed_with().adr_push_button_off(adiru_number);
             test_bed.run();
 
-            test_bed.assert_adr_data_available(false, adiru_number);
+            test_bed.assert_adr_data_valid(false, adiru_number);
         }
 
         #[rstest]
@@ -1925,12 +1957,10 @@ mod tests {
         #[case(1)]
         #[case(2)]
         #[case(3)]
-        fn true_airspeed_is_supplied_by_adr_when_computed_airspeed_greater_than_or_equal_to_60_knots(
+        fn true_airspeed_is_supplied_by_adr_when_greater_than_or_equal_to_60_knots(
             #[case] adiru_number: usize,
         ) {
-            let velocity = Velocity::new::<knot>(
-                AirDataReference::MINIMUM_COMPUTED_AIRSPEED_FOR_TRUE_AIRSPEED_DETERMINATION_KNOTS,
-            );
+            let velocity = Velocity::new::<knot>(AirDataReference::MINIMUM_TAS);
             let mut test_bed = all_adirus_aligned_test_bed_with().true_airspeed_of(velocity);
             test_bed.set_indicated_airspeed(velocity);
             test_bed.run();
@@ -1945,13 +1975,8 @@ mod tests {
         #[case(1)]
         #[case(2)]
         #[case(3)]
-        fn true_airspeed_is_zero_when_computed_airspeed_less_than_60_knots(
-            #[case] adiru_number: usize,
-        ) {
-            let velocity = Velocity::new::<knot>(
-                AirDataReference::MINIMUM_COMPUTED_AIRSPEED_FOR_TRUE_AIRSPEED_DETERMINATION_KNOTS
-                    - 0.01,
-            );
+        fn true_airspeed_is_zero_when_less_than_60_knots(#[case] adiru_number: usize) {
+            let velocity = Velocity::new::<knot>(AirDataReference::MINIMUM_TAS - 0.01);
             let mut test_bed = all_adirus_aligned_test_bed_with().true_airspeed_of(velocity);
             test_bed.set_indicated_airspeed(velocity);
             test_bed.run();
