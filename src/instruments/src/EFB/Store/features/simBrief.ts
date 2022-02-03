@@ -2,7 +2,7 @@ import { createSlice } from '@reduxjs/toolkit';
 import { getSimbriefData } from '../../SimbriefApi';
 import { IFuel, IWeights } from '../../SimbriefApi/simbriefInterface';
 
-import { TypedAction } from '../store';
+import { TypedAction, store, RootState } from '../store';
 
 export interface SimbriefData {
     departingAirport: string;
@@ -194,6 +194,12 @@ export async function fetchSimbriefDataAction(simbriefUserId: string): Promise<T
         payload: {} as SimbriefData,
     };
 }
+
+/**
+ *
+ * @returns Whether or not the simbrief data has been altered from its original state
+ */
+export const simbriefDataIsInitialState = (): boolean => (store.getState() as RootState).simbrief === initialState;
 
 export const { setSimbriefData } = simBriefSlice.actions;
 
