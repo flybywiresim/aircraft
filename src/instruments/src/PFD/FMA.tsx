@@ -561,6 +561,8 @@ const getBC3Message = (isAttExcessive: boolean, fcdcWord1: Arinc429Word) => {
 
     const trkFpaDeselectedTCAS = getSimVar('L:A32NX_AUTOPILOT_TCAS_MESSAGE_TRK_FPA_DESELECTION', 'bool');
     const tcasRaInhibited = getSimVar('L:A32NX_AUTOPILOT_TCAS_MESSAGE_RA_INHIBITED', 'bool');
+    const fwcFlightPhase = getSimVar('L:A32NX_FWC_FLIGHT_PHASE', 'number');
+    const flightPhaseForWarnging = fwcFlightPhase >= 2 && fwcFlightPhase <= 9 && fwcFlightPhase !== 4 && fwcFlightPhase !== 5;
 
     const setHoldSpeed = getSimVar('L:A32NX_PFD_MSG_SET_HOLD_SPEED', 'bool');
 
@@ -571,10 +573,11 @@ const getBC3Message = (isAttExcessive: boolean, fcdcWord1: Arinc429Word) => {
         && !fcdcWord1.getBitValue(12)
         && !fcdcWord1.getBitValue(13)
         && !fcdcWord1.getBitValue(15)
-        && !fcdcWord1.isFailureWarning()) {
+        && !fcdcWord1.isFailureWarning()
+        && flightPhaseForWarnging) {
         text = 'MAN PITCH TRIM ONLY';
         className = 'Red Blink9Seconds';
-    } else if (fcdcWord1.getBitValue(15) && !fcdcWord1.isFailureWarning()) {
+    } else if (fcdcWord1.getBitValue(15) && !fcdcWord1.isFailureWarning() && flightPhaseForWarnging) {
         text = 'USE MAN PITCH TRIM';
         className = 'PulseAmber9Seconds Amber';
     } else if (false) {
