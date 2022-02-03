@@ -379,14 +379,9 @@ function showError(message, error) {
  * @param {number} exitCode
  */
 function pressAnyKey(exitCode) {
-    if (args.length > 0 && !debug) {
-        process.exit(exitCode);
-    }
-    console.log('\nPress any key to continue...');
-    process.stdin.setRawMode(true);
-    process.stdin.once('data', () => {
-        process.exit(exitCode);
-    });
+    // eslint-disable-next-line global-require
+    require('child_process').spawnSync('pause', { shell: true, stdio: [0, 1, 2] });
+    process.exit(exitCode);
 }
 
 /**
