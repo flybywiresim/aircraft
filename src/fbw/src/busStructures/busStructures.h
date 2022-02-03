@@ -36,7 +36,7 @@ struct FcdcBus {
   // Label 302
   Arinc429NumericWord foRollCommand;
   // Label 304
-  Arinc429NumericWord rudderPosition;
+  Arinc429NumericWord rudderPedalPosition;
   // Label 305
   Arinc429NumericWord captPitchCommand;
   // Label 306
@@ -73,8 +73,115 @@ struct FcdcBus {
   Arinc429NumericWord spoilerRight5Pos;
 };
 
-// These EFCS interconnect buses are only an educated guess
-struct ElacOutBus {};
+// These EFCS interconnect buses are only educated guesses.
+// Here is a bit table for the discrete Words:
+
+// +=======+=====================================+=======+
+// | Label |        Parameter Definition         | Bits  |
+// +=======+=====================================+=======+
+// |     1 | Discrete Word 1                     |       |
+// +-------+-------------------------------------+-------+
+// |       | Left Aileron Fault                  | 11    |
+// +-------+-------------------------------------+-------+
+// |       | Right Aileron Fault                 | 12    |
+// +-------+-------------------------------------+-------+
+// |       | Left Elevator Fault                 | 13    |
+// +-------+-------------------------------------+-------+
+// |       | Right Elevator Fault                | 14    |
+// +-------+-------------------------------------+-------+
+// |       | Left Aileron Avail                  | 15    |
+// +-------+-------------------------------------+-------+
+// |       | Right Aileron Avail                 | 16    |
+// +-------+-------------------------------------+-------+
+// |       | Left Elevator Avail                 | 17    |
+// +-------+-------------------------------------+-------+
+// |       | Right Elevator Avail                | 18    |
+// +-------+-------------------------------------+-------+
+// |       | Computer Engaged in Pitch           | 19    |
+// +-------+-------------------------------------+-------+
+// |       | Computer Engaged in Roll            | 20    |
+// +-------+-------------------------------------+-------+
+// |       | Computer Pitch Fault                | 21    |
+// +-------+-------------------------------------+-------+
+// |       | Computer Roll Fault                 | 22    |
+// +-------+-------------------------------------+-------+
+// |       | Pitch law Status                    | 23-24 |
+// +-------+-------------------------------------+-------+
+// |       |    1 0 - Normal law                 |       |
+// +-------+-------------------------------------+-------+
+// |       |    0 1 - Alternate law              |       |
+// +-------+-------------------------------------+-------+
+// |       |    1 1 - Direct law                 |       |
+// +-------+-------------------------------------+-------+
+// |       | Lateral law Status                  | 25-26 |
+// +-------+-------------------------------------+-------+
+// |       |    1 0 - Normal law                 |       |
+// +-------+-------------------------------------+-------+
+// |       |    0 1 - Direct Law                 |       |
+// +-------+-------------------------------------+-------+
+// |       |                                     |       |
+// +-------+-------------------------------------+-------+
+// |     2 | Discrete Word 2                     |       |
+// +-------+-------------------------------------+-------+
+// |       | Pitch law Capability                | 11-12 |
+// +-------+-------------------------------------+-------+
+// |       |    1 0 - Normal law                 |       |
+// +-------+-------------------------------------+-------+
+// |       |    0 1 - Alternate law              |       |
+// +-------+-------------------------------------+-------+
+// |       |    1 1 - Direct law                 |       |
+// +-------+-------------------------------------+-------+
+// |       | Lateral law Capability              | 13-14 |
+// +-------+-------------------------------------+-------+
+// |       |    1 0 - Normal law                 |       |
+// +-------+-------------------------------------+-------+
+// |       |    0 1 - Direct Law                 |       |
+// +-------+-------------------------------------+-------+
+// |       | Left Sidestick Fault                | 15    |
+// +-------+-------------------------------------+-------+
+// |       | Right Sidestick Fault               | 16    |
+// +-------+-------------------------------------+-------+
+// |       | Left sidestick disabled (priority)  | 17    |
+// +-------+-------------------------------------+-------+
+// |       | Right sidestick disabled (priority) | 18    |
+// +-------+-------------------------------------+-------+
+// |       | Left sidestick priority locked      | 27    |
+// +-------+-------------------------------------+-------+
+// |       | Right sidestick priority locked     | 19    |
+// +-------+-------------------------------------+-------+
+// |       | Aileron Droop active                | 20    |
+// +-------+-------------------------------------+-------+
+
+struct ElacOutBus {
+  // Surface positions
+  Arinc429NumericWord leftAileronPosition;
+
+  Arinc429NumericWord rightAileronPosition;
+
+  Arinc429NumericWord leftElevatorPosition;
+
+  Arinc429NumericWord rightElevatorPosition;
+
+  Arinc429NumericWord thsPosition;
+  // Sidestick/Rudder pedal posititons;
+  Arinc429NumericWord leftSidestickPitchCommand;
+
+  Arinc429NumericWord rightSidestickPitchCommand;
+
+  Arinc429NumericWord leftSidestickRollCommand;
+
+  Arinc429NumericWord rightSidestickRollCommand;
+
+  Arinc429NumericWord rudderPedalPosition;
+  // Aileron command for SEC roll spoiler, and cross-ELAC roll command execution
+  Arinc429NumericWord aileronCommand;
+  // Yaw Damper command for the FACs
+  Arinc429NumericWord yawDamperCommand;
+  // Discrete status words
+  Arinc429DiscreteWord discreteStatusWord1;
+
+  Arinc429DiscreteWord discreteStatusWord2;
+};
 
 struct SecOutBus {};
 
