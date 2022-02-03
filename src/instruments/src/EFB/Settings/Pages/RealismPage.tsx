@@ -45,84 +45,82 @@ export const RealismPage = () => {
     ];
 
     return (
-        <>
-            <SettingsPage name="Realism">
-                <SettingItem name="ADIRS Align Time">
-                    <SelectGroup>
-                        {adirsAlignTimeButtons.map((button) => (
-                            <SelectItem
-                                onSelect={() => {
-                                    setAdirsAlignTime(button.setting);
-                                    setAdirsAlignTimeSimVar(button.simVarValue);
-                                }}
-                                selected={adirsAlignTime === button.setting}
-                            >
-                                {button.name}
-                            </SelectItem>
-                        ))}
-                    </SelectGroup>
-                </SettingItem>
+        <SettingsPage name="Realism">
+            <SettingItem name="ADIRS Align Time">
+                <SelectGroup>
+                    {adirsAlignTimeButtons.map((button) => (
+                        <SelectItem
+                            onSelect={() => {
+                                setAdirsAlignTime(button.setting);
+                                setAdirsAlignTimeSimVar(button.simVarValue);
+                            }}
+                            selected={adirsAlignTime === button.setting}
+                        >
+                            {button.name}
+                        </SelectItem>
+                    ))}
+                </SelectGroup>
+            </SettingItem>
 
-                <SettingItem name="DMC Self Test Time">
-                    <SelectGroup>
-                        {dmcSelfTestTimeButtons.map((button) => (
-                            <SelectItem
-                                onSelect={() => setDmcSelfTestTime(button.setting)}
-                                selected={dmcSelfTestTime === button.setting}
-                            >
-                                {button.name}
-                            </SelectItem>
-                        ))}
-                    </SelectGroup>
-                </SettingItem>
+            <SettingItem name="DMC Self Test Time">
+                <SelectGroup>
+                    {dmcSelfTestTimeButtons.map((button) => (
+                        <SelectItem
+                            onSelect={() => setDmcSelfTestTime(button.setting)}
+                            selected={dmcSelfTestTime === button.setting}
+                        >
+                            {button.name}
+                        </SelectItem>
+                    ))}
+                </SelectGroup>
+            </SettingItem>
 
-                <SettingItem name="Boarding Time">
-                    <SelectGroup>
-                        {boardingRateButtons.map((button) => (
-                            <SelectItem
-                                onSelect={() => setBoardingRate(button.setting)}
-                                selected={boardingRate === button.setting}
-                            >
-                                {button.name}
-                            </SelectItem>
-                        ))}
-                    </SelectGroup>
-                </SettingItem>
+            <SettingItem name="Boarding Time">
+                <SelectGroup>
+                    {boardingRateButtons.map((button) => (
+                        <SelectItem
+                            onSelect={() => setBoardingRate(button.setting)}
+                            selected={boardingRate === button.setting}
+                        >
+                            {button.name}
+                        </SelectItem>
+                    ))}
+                </SelectGroup>
+            </SettingItem>
 
-                <SettingItem name="MCDU Keyboard Input" unrealistic>
-                    <Toggle value={mcduInput === 'ENABLED'} onToggle={(value) => setMcduInput(value ? 'ENABLED' : 'DISABLED')} />
-                </SettingItem>
+            <SettingItem name="MCDU Keyboard Input" unrealistic>
+                <Toggle value={mcduInput === 'ENABLED'} onToggle={(value) => setMcduInput(value ? 'ENABLED' : 'DISABLED')} />
+            </SettingItem>
 
-                <SettingItem name="MCDU Focus Timeout (seconds)">
-                    <SimpleInput
-                        className="text-center w-30"
-                        value={mcduTimeout}
-                        noLabel
-                        min={5}
-                        max={120}
-                        disabled={(mcduInput !== 'ENABLED')}
-                        onChange={(event) => {
-                            if (!Number.isNaN(event) && parseInt(event) >= 5 && parseInt(event) <= 120) {
-                                setMcduTimeout(event.trim());
-                            }
-                        }}
-                    />
-                </SettingItem>
+            <SettingItem name="MCDU Focus Timeout (seconds)">
+                <SimpleInput
+                    className="text-center w-30"
+                    value={mcduTimeout}
+                    noLabel
+                    min={5}
+                    max={120}
+                    disabled={(mcduInput !== 'ENABLED')}
+                    onChange={(event) => {
+                        if (!Number.isNaN(event) && parseInt(event) >= 5 && parseInt(event) <= 120) {
+                            setMcduTimeout(event.trim());
+                        }
+                    }}
+                />
+            </SettingItem>
 
-                <SettingItem name="Separate Tiller from Rudder Inputs">
-                    <SelectGroup>
-                        {steeringSeparationButtons.map((button) => (
-                            <SelectItem
-                                onSelect={() => setRealisticTiller(button.setting)}
-                                selected={realisticTiller === button.setting}
-                            >
-                                {button.name}
-                            </SelectItem>
-                        ))}
-                    </SelectGroup>
-                </SettingItem>
+            <SettingItem name="Separate Tiller from Rudder Inputs">
+                <SelectGroup>
+                    {steeringSeparationButtons.map((button) => (
+                        <SelectItem
+                            onSelect={() => setRealisticTiller(button.setting)}
+                            selected={realisticTiller === button.setting}
+                        >
+                            {button.name}
+                        </SelectItem>
+                    ))}
+                </SelectGroup>
+            </SettingItem>
 
-            </SettingsPage>
-        </>
+        </SettingsPage>
     );
 };
