@@ -111,6 +111,7 @@ class FlyByWireInterface {
   InterpolatingLookupTable throttleLookupTable;
 
   bool developmentLocalVariablesEnabled = false;
+  bool useCalculatedLocalizerAndGlideSlope = false;
   std::unique_ptr<LocalVariable> idDevelopmentAutoland_condition_Flare;
   std::unique_ptr<LocalVariable> idDevelopmentAutoland_H_dot_radio_fpm;
   std::unique_ptr<LocalVariable> idDevelopmentAutoland_H_dot_c_fpm;
