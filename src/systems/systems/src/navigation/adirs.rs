@@ -1964,6 +1964,7 @@ mod tests {
 
         #[rstest]
         #[case(1)]
+        #[case(2)]
         #[case(3)]
         fn static_air_temperature_is_supplied_by_adr(#[case] adiru_number: usize) {
             let sat = ThermodynamicTemperature::new::<degree_celsius>(15.);
@@ -1981,21 +1982,8 @@ mod tests {
         }
 
         #[rstest]
-        #[case(2)]
-        fn static_air_temperature_is_not_supplied_by_adr(#[case] adiru_number: usize) {
-            let sat = ThermodynamicTemperature::new::<degree_celsius>(15.);
-            let mut test_bed = all_adirus_aligned_test_bed();
-            test_bed.set_ambient_temperature(sat);
-            test_bed.run();
-
-            assert_eq!(
-                test_bed.static_air_temperature(adiru_number).value(),
-                ThermodynamicTemperature::new::<degree_celsius>(0.)
-            );
-        }
-
-        #[rstest]
         #[case(1)]
+        #[case(2)]
         #[case(3)]
         fn total_air_temperature_is_supplied_by_adr(#[case] adiru_number: usize) {
             let tat = ThermodynamicTemperature::new::<degree_celsius>(15.);
@@ -2012,20 +2000,8 @@ mod tests {
         }
 
         #[rstest]
-        #[case(2)]
-        fn total_air_temperature_is_not_supplied_by_adr(#[case] adiru_number: usize) {
-            let tat = ThermodynamicTemperature::new::<degree_celsius>(15.);
-            let mut test_bed = all_adirus_aligned_test_bed_with().total_air_temperature_of(tat);
-            test_bed.run();
-
-            assert_eq!(
-                test_bed.total_air_temperature(adiru_number).value(),
-                ThermodynamicTemperature::new::<degree_celsius>(0.)
-            );
-        }
-
-        #[rstest]
         #[case(1)]
+        #[case(2)]
         #[case(3)]
         fn international_standard_atmosphere_delta_is_supplied_by_adr(#[case] adiru_number: usize) {
             let sea_level_temperature = 15.;
@@ -2043,28 +2019,6 @@ mod tests {
                     .normal_value()
                     .unwrap(),
                 ThermodynamicTemperature::new::<degree_celsius>(deviation)
-            );
-        }
-
-        #[rstest]
-        #[case(2)]
-        fn international_standard_atmosphere_delta_is_not_supplied_by_adr(
-            #[case] adiru_number: usize,
-        ) {
-            let sea_level_temperature = 15.;
-            let deviation = 5.;
-            let mut test_bed = all_adirus_aligned_test_bed_with();
-            test_bed.set_indicated_altitude(Length::new::<foot>(0.));
-            test_bed.set_ambient_temperature(ThermodynamicTemperature::new::<degree_celsius>(
-                sea_level_temperature + deviation,
-            ));
-            test_bed.run();
-
-            assert_eq!(
-                test_bed
-                    .international_standard_atmosphere_delta(adiru_number)
-                    .value(),
-                ThermodynamicTemperature::new::<degree_celsius>(0.)
             );
         }
     }
