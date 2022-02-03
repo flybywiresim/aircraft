@@ -2,13 +2,9 @@
 
 #include "FcdcIO.h"
 
-const double minimumPowerOutageTimeForFailure = 0.01;
-
 class Fcdc {
  public:
   Fcdc(bool isUnit1);
-
-  void startup();
 
   void update(double deltaTime, bool faultActive, bool isPowered);
 
@@ -21,6 +17,8 @@ class Fcdc {
   FcdcBusInputs busInputs;
 
  private:
+  void startup();
+
   void monitorPowerSupply(double deltaTime, bool isPowered);
 
   void monitorSelf(bool faultActive);
@@ -40,4 +38,6 @@ class Fcdc {
   double selfTestTimer;
 
   bool selfTestComplete;
+
+  const double minimumPowerOutageTimeForFailure = 0.01;
 };

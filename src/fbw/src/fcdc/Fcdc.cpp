@@ -89,6 +89,7 @@ FcdcBus Fcdc::getBusOutputs() {
     output.elevatorLeftPos.setSsm(Arinc429SignStatus::FailureWarning);
     output.aileronRightPos.setSsm(Arinc429SignStatus::FailureWarning);
     output.elevatorRightPos.setSsm(Arinc429SignStatus::FailureWarning);
+    output.horizStabTrimPos.setSsm(Arinc429SignStatus::NoComputedData);
     output.spoilerLeft1Pos.setSsm(Arinc429SignStatus::FailureWarning);
     output.spoilerLeft2Pos.setSsm(Arinc429SignStatus::FailureWarning);
     output.spoilerLeft3Pos.setSsm(Arinc429SignStatus::FailureWarning);
@@ -200,25 +201,26 @@ FcdcBus Fcdc::getBusOutputs() {
     output.efcsStatus5.setBit(28, false);
     output.efcsStatus5.setBit(29, false);
 
-    output.captRollCommand.setSsm(Arinc429SignStatus::NoComputedData);
-    output.foRollCommand.setSsm(Arinc429SignStatus::NoComputedData);
-    output.rudderPosition.setSsm(Arinc429SignStatus::NoComputedData);
-    output.captPitchCommand.setSsm(Arinc429SignStatus::NoComputedData);
-    output.foPitchCommand.setSsm(Arinc429SignStatus::NoComputedData);
-    output.aileronLeftPos.setSsm(Arinc429SignStatus::NoComputedData);
-    output.elevatorLeftPos.setSsm(Arinc429SignStatus::NoComputedData);
-    output.aileronRightPos.setSsm(Arinc429SignStatus::NoComputedData);
-    output.elevatorRightPos.setSsm(Arinc429SignStatus::NoComputedData);
-    output.spoilerLeft1Pos.setSsm(Arinc429SignStatus::NoComputedData);
-    output.spoilerLeft2Pos.setSsm(Arinc429SignStatus::NoComputedData);
-    output.spoilerLeft3Pos.setSsm(Arinc429SignStatus::NoComputedData);
-    output.spoilerLeft4Pos.setSsm(Arinc429SignStatus::NoComputedData);
-    output.spoilerLeft5Pos.setSsm(Arinc429SignStatus::NoComputedData);
-    output.spoilerRight1Pos.setSsm(Arinc429SignStatus::NoComputedData);
-    output.spoilerRight2Pos.setSsm(Arinc429SignStatus::NoComputedData);
-    output.spoilerRight3Pos.setSsm(Arinc429SignStatus::NoComputedData);
-    output.spoilerRight4Pos.setSsm(Arinc429SignStatus::NoComputedData);
-    output.spoilerRight5Pos.setSsm(Arinc429SignStatus::NoComputedData);
+    output.captRollCommand.setFromData(0, Arinc429SignStatus::NoComputedData);
+    output.foRollCommand.setFromData(0, Arinc429SignStatus::NoComputedData);
+    output.rudderPosition.setFromData(0, Arinc429SignStatus::NoComputedData);
+    output.captPitchCommand.setFromData(0, Arinc429SignStatus::NoComputedData);
+    output.foPitchCommand.setFromData(0, Arinc429SignStatus::NoComputedData);
+    output.aileronLeftPos.setFromData(0, Arinc429SignStatus::NoComputedData);
+    output.elevatorLeftPos.setFromData(0, Arinc429SignStatus::NoComputedData);
+    output.aileronRightPos.setFromData(0, Arinc429SignStatus::NoComputedData);
+    output.elevatorRightPos.setFromData(0, Arinc429SignStatus::NoComputedData);
+    output.horizStabTrimPos.setFromData(0, Arinc429SignStatus::NoComputedData);
+    output.spoilerLeft1Pos.setFromData(0, Arinc429SignStatus::NoComputedData);
+    output.spoilerLeft2Pos.setFromData(0, Arinc429SignStatus::NoComputedData);
+    output.spoilerLeft3Pos.setFromData(0, Arinc429SignStatus::NoComputedData);
+    output.spoilerLeft4Pos.setFromData(0, Arinc429SignStatus::NoComputedData);
+    output.spoilerLeft5Pos.setFromData(0, Arinc429SignStatus::NoComputedData);
+    output.spoilerRight1Pos.setFromData(0, Arinc429SignStatus::NoComputedData);
+    output.spoilerRight2Pos.setFromData(0, Arinc429SignStatus::NoComputedData);
+    output.spoilerRight3Pos.setFromData(0, Arinc429SignStatus::NoComputedData);
+    output.spoilerRight4Pos.setFromData(0, Arinc429SignStatus::NoComputedData);
+    output.spoilerRight5Pos.setFromData(0, Arinc429SignStatus::NoComputedData);
   }
 
   return output;
