@@ -14,7 +14,7 @@ class CDUAtcConnectionStatus {
         };
         SimVar.SetSimVarValue("L:FMC_UPDATE_CURRENT_PAGE", "number", 1);
 
-        let currentStation = "----[color]white";
+        let currentStation = "-----------[color]white";
         let atcDisconnect = "DISCONNECT\xa0[color]cyan";
         if (mcdu.atsuManager.atc.currentStation() !== '') {
             currentStation = `${mcdu.atsuManager.atc.currentStation()}[color]green`;
@@ -24,16 +24,16 @@ class CDUAtcConnectionStatus {
             store["disconnectAvail"] = false;
         }
 
-        let nextStation = "----";
+        let nextStation = "-----------";
         if (mcdu.atsuManager.atc.nextStation() !== '') {
             nextStation = `${mcdu.atsuManager.atc.nextStation()}[color]green`;
         }
 
         mcdu.setTemplate([
             ["CONNECTION STATUS"],
-            ["ACTIVE ATC"],
+            ["\xa0ACTIVE ATC"],
             [currentStation],
-            ["NEXT ATC", "ALL ATC\xa0[color]cyan"],
+            ["\xa0NEXT ATC", "ALL ATC\xa0[color]cyan"],
             [nextStation, atcDisconnect],
             [""],
             [""],
