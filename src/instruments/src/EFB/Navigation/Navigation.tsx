@@ -141,7 +141,7 @@ const AuthUi = () => {
                     className="flex items-center px-4 mt-4 h-16 text-4xl font-bold tracking-wider rounded-md border-2 border-theme-highlight bg-theme-secondary"
                     style={{ minWidth: '200px' }}
                 >
-                    {navigraph.auth.code}
+                    {navigraph.auth.code || 'LOADING'}
                 </h1>
                 <div className="mt-16">
                     {hasQr
@@ -208,6 +208,12 @@ const NavigraphChartComponent = ({
     }, [boundingBox, chartLink, aircraftLatitude.toFixed(2), aircraftLongitude.toFixed(2), aircraftTrueHeading]);
 
     useEffect(() => {
+        if (chartRef.current) {
+            chartRef.current.style.height = '875px';
+        }
+    }, [chartLink]);
+
+    useEffect(() => {
         if (planeInFocus) {
             setChartRotationDeg(360 - aircraftIconPosition.r);
             // TODO: implement the chart translation
@@ -243,17 +249,17 @@ const NavigraphChartComponent = ({
     };
 
     const handleZoomIn = () => {
-        const currWidth = chartRef.current!.clientWidth;
-        if (currWidth >= 2500) return;
+        const currentHeight = chartRef.current!.clientHeight;
+        if (currentHeight >= 2500) return;
 
-        chartRef.current!.style.width = `${currWidth + 100}px`;
+        chartRef.current!.style.height = `${currentHeight + 100}px`;
     };
 
     const handleZoomOut = () => {
-        const currWidth = chartRef.current!.clientWidth;
-        if (currWidth <= 100) return;
+        const currentHeight = chartRef.current!.clientHeight;
+        if (currentHeight <= 775) return;
 
-        chartRef.current!.style.width = `${currWidth - 100}px`;
+        chartRef.current!.style.height = `${currentHeight - 100}px`;
     };
 
     // The functions that handle rotation get the closest 45 degree angle increment to the current angle
@@ -283,62 +289,64 @@ const NavigraphChartComponent = ({
             style={{ width: `${isFullscreen ? '1278px' : '804px'}` }}
             onMouseDown={handleMouseDown}
         >
-            <div className="flex overflow-hidden fixed top-32 right-12 z-40 flex-row rounded-md cursor-pointer">
-                <button
-                    type="button"
-                    onClick={handleRotateLeft}
-                    className={`p-2 transition duration-100 cursor-pointer bg-theme-secondary hover:bg-theme-highlight ${planeInFocus && 'text-theme-unselected pointer-events-none'}`}
-                >
-                    <ArrowCounterclockwise size={40} />
-                </button>
-                {boundingBox && (
+            <div className="flex overflow-hidden fixed top-32 right-12 bottom-12 z-40 flex-col justify-between rounded-md cursor-pointer">
+                <div className="flex overflow-hidden flex-col rounded-md">
                     <button
                         type="button"
-                        onClick={() => setPlaneInFocus((old) => !old)}
-                        className={`p-2 transition duration-100 cursor-pointer bg-theme-secondary hover:bg-theme-highlight ${planeInFocus && 'text-theme-highlight  hover:text-theme-text'}`}
+                        onClick={handleRotateLeft}
+                        className={`p-2 transition duration-100 cursor-pointer bg-theme-secondary hover:bg-theme-highlight ${planeInFocus && 'text-theme-unselected pointer-events-none'}`}
                     >
-                        <Bullseye size={40} />
+                        <ArrowCounterclockwise size={40} />
                     </button>
-                )}
-                <button
-                    type="button"
-                    onClick={handleRotateRight}
-                    className={`p-2 transition duration-100 cursor-pointer bg-theme-secondary hover:bg-theme-highlight ${planeInFocus && 'text-theme-unselected pointer-events-none'}`}
-                >
-                    <ArrowClockwise className="fill-current" size={40} />
-                </button>
-            </div>
-
-            <div className="flex overflow-hidden fixed top-52 right-12 z-40 flex-row justify-end rounded-md">
-                <button
-                    type="button"
-                    onClick={handleZoomOut}
-                    className="p-2 transition duration-100 cursor-pointer bg-theme-secondary hover:bg-theme-highlight"
-                >
-                    <Dash size={40} />
-                </button>
-                <button
-                    type="button"
-                    onClick={handleZoomIn}
-                    className="p-2 transition duration-100 cursor-pointer bg-theme-secondary hover:bg-theme-highlight"
-                >
-                    <Plus size={40} />
-                </button>
-            </div>
-
-            <div
-                className="fixed right-12 bottom-12 z-40 p-2 rounded-md transition duration-100 cursor-pointer bg-theme-secondary hover:bg-theme-highlight"
-                onClick={() => setIsFullscreen((old) => !old)}
-            >
-                {!isFullscreen
-                    ? <ArrowsFullscreen size={40} />
-                    : <FullscreenExit size={40} />}
-            </div>
-            <div
-                className="fixed right-12 bottom-32 z-40 p-2 rounded-md transition duration-100 cursor-pointer bg-theme-secondary hover:bg-theme-highlight"
-                onClick={() => setEnableDarkCharts((old) => !old)}
-            >
-                {!enableDarkCharts ? <MoonFill size={40} /> : <SunFill size={40} />}
+                    {boundingBox && (
+                        <button
+                            type="button"
+                            onClick={() => setPlaneInFocus((old) => !old)}
+                            className={`p-2 transition duration-100 cursor-pointer bg-theme-secondary hover:bg-theme-highlight ${planeInFocus && 'text-theme-highlight  hover:text-theme-text'}`}
+                        >
+                            <Bullseye size={40} />
+                        </button>
+                    )}
+                    <button
+                        type="button"
+                        onClick={handleRotateRight}
+                        className={`p-2 transition duration-100 cursor-pointer bg-theme-secondary hover:bg-theme-highlight ${planeInFocus && 'text-theme-unselected pointer-events-none'}`}
+                    >
+                        <ArrowClockwise className="fill-current" size={40} />
+                    </button>
+                </div>
+                <div className="flex overflow-hidden flex-col rounded-md">
+                    <button
+                        type="button"
+                        onClick={handleZoomIn}
+                        className="p-2 transition duration-100 cursor-pointer bg-theme-secondary hover:bg-theme-highlight"
+                    >
+                        <Plus size={40} />
+                    </button>
+                    <button
+                        type="button"
+                        onClick={handleZoomOut}
+                        className="p-2 transition duration-100 cursor-pointer bg-theme-secondary hover:bg-theme-highlight"
+                    >
+                        <Dash size={40} />
+                    </button>
+                </div>
+                <div className="flex overflow-hidden flex-col rounded-md">
+                    <div
+                        className="p-2 rounded-md transition duration-100 cursor-pointer bg-theme-secondary hover:bg-theme-highlight"
+                        onClick={() => setIsFullscreen((old) => !old)}
+                    >
+                        {!isFullscreen
+                            ? <ArrowsFullscreen size={40} />
+                            : <FullscreenExit size={40} />}
+                    </div>
+                    <div
+                        className="p-2 mt-3 rounded-md transition duration-100 cursor-pointer bg-theme-secondary hover:bg-theme-highlight"
+                        onClick={() => setEnableDarkCharts((old) => !old)}
+                    >
+                        {!enableDarkCharts ? <MoonFill size={40} /> : <SunFill size={40} />}
+                    </div>
+                </div>
             </div>
 
             <div
