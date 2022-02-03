@@ -33,7 +33,6 @@ export const PFD: React.FC = () => {
     });
 
     const [previousAirspeed, setPreviousAirspeed] = useState(0);
-    const [clampedAirspeed, setClampedAirspeed] = useState(0);
     const [filteredAirspeedAcc, setfilteredAirspeedAcc] = useState(0);
 
     const [airspeedAccFilter] = useState(() => new LagFilter(1.6));
@@ -76,10 +75,17 @@ export const PFD: React.FC = () => {
     useUpdate((deltaTime) => {
         failuresConsumer.update();
 
-        const clamped = computedAirspeed.isNormalOperation() ? Math.max(computedAirspeed.value, 30) : NaN;
+        let clamped: number;
+        if (computedAirspeed.isFailureWarning()) {
+            clamped = NaN;
+        } else if (computedAirspeed.isNoComputedData()) {
+            clamped = 30;
+        } else {
+            clamped = computedAirspeed.value;
+        }
+
         const airspeedAcc = (clamped - previousAirspeed) / deltaTime * 1000;
         setPreviousAirspeed(clamped);
-        setClampedAirspeed(clamped);
 
         const filteredAirspeedAcc = airspeedAccFilter.step(airspeedAcc, deltaTime / 1000);
         setfilteredAirspeedAcc(airspeedAccRateLimiter.step(filteredAirspeedAcc, deltaTime / 1000));
@@ -218,13 +224,14 @@ export const PFD: React.FC = () => {
                 <HeadingTape heading={heading} />
                 <AltitudeIndicator altitude={altitude} FWCFlightPhase={fwcFlightPhase} />
                 <AirspeedIndicator
-                    airspeed={clampedAirspeed}
+                    airspeed={computedAirspeed}
                     airspeedAcc={filteredAirspeedAcc}
                     FWCFlightPhase={fwcFlightPhase}
                     altitude={altitude}
                     VLs={vls}
                     VMax={VMax}
                     showBars={showSpeedBars}
+                    onGround={isOnGround}
                 />
                 <path
                     id="Mask2"
@@ -245,8 +252,8 @@ export const PFD: React.FC = () => {
                     altIsManaged={isManaged}
                     mode={pressureMode}
                 />
-                <AirspeedIndicatorOfftape airspeed={clampedAirspeed} targetSpeed={targetSpeed} speedIsManaged={!isSelected} />
-                <MachNumber mach={mach} />
+                <AirspeedIndicatorOfftape airspeed={computedAirspeed} targetSpeed={targetSpeed} speedIsManaged={!isSelected} onGround={isOnGround} />
+                <MachNumber mach={mach} onGround={isOnGround} />
                 <FMA isAttExcessive={isAttExcessive} />
             </svg>
         </DisplayUnit>
