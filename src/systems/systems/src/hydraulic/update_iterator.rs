@@ -68,18 +68,18 @@ impl Iterator for FixedStepLoop {
     }
 }
 
-/// Provides maximum fixed time interval looping.
+/// Provides maximum time interval looping.
 ///
 /// ## Example scenario
-/// With a max fixed time interval of 10 ms and a frame delta of 35 ms, this type will provide four
+/// With a max time step of 10 ms and a frame delta of 35 ms, this type will provide four
 /// iterations of 8.75ms, thus completing the 35ms total delta.
 #[derive(Copy, Clone)]
-pub struct MaxFixedStepLoop {
+pub struct MaxStepLoop {
     max_time_step: Duration,
     num_of_loops: u32,
     frame_duration: Option<Duration>,
 }
-impl MaxFixedStepLoop {
+impl MaxStepLoop {
     pub fn new(max_time_step: Duration) -> Self {
         Self {
             max_time_step,
@@ -100,7 +100,7 @@ impl MaxFixedStepLoop {
         }
     }
 }
-impl Iterator for MaxFixedStepLoop {
+impl Iterator for MaxStepLoop {
     type Item = Duration;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -226,7 +226,7 @@ mod max_step_tests {
 
     #[test]
     fn no_step_after_init() {
-        let mut max_step = MaxFixedStepLoop::new(Duration::from_millis(100));
+        let mut max_step = MaxStepLoop::new(Duration::from_millis(100));
 
         assert!(max_step.next() == None);
     }
@@ -237,7 +237,7 @@ mod max_step_tests {
         let mut registry: TestVariableRegistry = Default::default();
         let mut init_context = InitContext::new(&mut electricity, &mut registry);
 
-        let mut max_step = MaxFixedStepLoop::new(Duration::from_millis(100));
+        let mut max_step = MaxStepLoop::new(Duration::from_millis(100));
 
         max_step.update(&context(&mut init_context, Duration::from_secs(0)));
 
@@ -250,7 +250,7 @@ mod max_step_tests {
         let mut registry: TestVariableRegistry = Default::default();
         let mut init_context = InitContext::new(&mut electricity, &mut registry);
 
-        let mut max_step = MaxFixedStepLoop::new(Duration::from_millis(100));
+        let mut max_step = MaxStepLoop::new(Duration::from_millis(100));
 
         max_step.update(&context(&mut init_context, Duration::from_millis(100)));
 
@@ -265,7 +265,7 @@ mod max_step_tests {
         let mut init_context = InitContext::new(&mut electricity, &mut registry);
 
         let timestep = Duration::from_millis(100);
-        let mut max_step = MaxFixedStepLoop::new(timestep);
+        let mut max_step = MaxStepLoop::new(timestep);
 
         let test_duration = Duration::from_secs_f64(0.320);
 
@@ -297,7 +297,7 @@ mod max_step_tests {
             let max_step_rand = Duration::from_millis(rng.gen_range(1..100));
             let total_duration_rand = Duration::from_secs_f64(rng.gen_range(0.001..10.));
 
-            let mut max_step_updater = MaxFixedStepLoop::new(max_step_rand);
+            let mut max_step_updater = MaxStepLoop::new(max_step_rand);
 
             let expected_num_of_loops =
                 (total_duration_rand.as_secs_f64() / max_step_rand.as_secs_f64()).ceil() as u32;
