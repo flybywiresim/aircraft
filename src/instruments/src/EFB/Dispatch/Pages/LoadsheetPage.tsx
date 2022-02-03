@@ -3,7 +3,7 @@ import { usePersistentProperty } from '@instruments/common/persistence';
 import { CloudArrowDown, ZoomIn, ZoomOut } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
 import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
-import { fetchSimbriefDataAction } from '../../Store/features/simBrief';
+import { fetchSimbriefDataAction } from '../../Store/features/simbrief';
 import { useAppDispatch, useAppSelector } from '../../Store/store';
 
 export const LoadSheetWidget = () => {

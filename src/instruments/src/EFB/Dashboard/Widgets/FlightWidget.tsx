@@ -4,7 +4,7 @@ import { CloudArrowDown } from 'react-bootstrap-icons';
 import { usePersistentProperty } from '@instruments/common/persistence';
 import { toast } from 'react-toastify';
 
-import { fetchSimbriefDataAction, simbriefDataIsInitialState } from '../../Store/features/simBrief';
+import { fetchSimbriefDataAction, simbriefDataIsInitialState } from '../../Store/features/simbrief';
 import { useAppSelector, useAppDispatch } from '../../Store/store';
 
 import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
