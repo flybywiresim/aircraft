@@ -322,9 +322,9 @@ impl AirDataInertialReferenceSystem {
                 .get_identifier(Self::USES_GPS_AS_PRIMARY_KEY.to_owned()),
 
             adirus: [
-                AirDataInertialReferenceUnit::new(context, 1, true),
-                AirDataInertialReferenceUnit::new(context, 2, false),
-                AirDataInertialReferenceUnit::new(context, 3, true),
+                AirDataInertialReferenceUnit::new(context, 1),
+                AirDataInertialReferenceUnit::new(context, 2),
+                AirDataInertialReferenceUnit::new(context, 3),
             ],
             configured_align_time: AlignTime::Realistic,
             simulator_data: AdirsSimulatorData::new(context),
@@ -401,10 +401,10 @@ struct AirDataInertialReferenceUnit {
     ir: InertialReference,
 }
 impl AirDataInertialReferenceUnit {
-    fn new(context: &mut InitContext, number: usize, outputs_temperatures: bool) -> Self {
+    fn new(context: &mut InitContext, number: usize) -> Self {
         Self {
             state_id: context.get_identifier(Self::state_id(number)),
-            adr: AirDataReference::new(context, number, outputs_temperatures),
+            adr: AirDataReference::new(context, number),
             ir: InertialReference::new(context, number),
         }
     }
@@ -539,7 +539,6 @@ trait TrueAirspeedSource {
 struct AirDataReference {
     number: usize,
     is_on: bool,
-    outputs_temperatures: bool,
 
     altitude: AdirsData<Length>,
     computed_airspeed: AdirsData<Velocity>,
@@ -565,11 +564,10 @@ impl AirDataReference {
         "INTERNATIONAL_STANDARD_ATMOSPHERE_DELTA";
     const MINIMUM_COMPUTED_AIRSPEED_FOR_TRUE_AIRSPEED_DETERMINATION_KNOTS: f64 = 60.;
 
-    fn new(context: &mut InitContext, number: usize, outputs_temperatures: bool) -> Self {
+    fn new(context: &mut InitContext, number: usize) -> Self {
         Self {
             number,
             is_on: true,
-            outputs_temperatures,
 
             altitude: AdirsData::new_adr(context, number, Self::ALTITUDE),
             computed_airspeed: AdirsData::new_adr(context, number, Self::COMPUTED_AIRSPEED),
@@ -659,21 +657,19 @@ impl AirDataReference {
 
         self.mach.set_value(simulator_data.mach, ssm);
 
-        if self.outputs_temperatures {
-            self.total_air_temperature
-                .set_value(simulator_data.total_air_temperature, ssm);
+        self.total_air_temperature
+            .set_value(simulator_data.total_air_temperature, ssm);
 
-            self.static_air_temperature
-                .set_value(context.ambient_temperature(), ssm);
+        self.static_air_temperature
+            .set_value(context.ambient_temperature(), ssm);
 
-            self.international_standard_atmosphere_delta.set_value(
-                self.international_standard_atmosphere_delta(
-                    context.indicated_altitude(),
-                    context.ambient_temperature(),
-                ),
-                ssm,
-            );
-        }
+        self.international_standard_atmosphere_delta.set_value(
+            self.international_standard_atmosphere_delta(
+                context.indicated_altitude(),
+                context.ambient_temperature(),
+            ),
+            ssm,
+        );
     }
 
     fn is_initialised(&self) -> bool {
@@ -703,13 +699,10 @@ impl SimulationElement for AirDataReference {
         self.mach.write_to(writer);
         self.barometric_vertical_speed.write_to(writer);
         self.true_airspeed.write_to(writer);
-
-        if self.outputs_temperatures {
-            self.static_air_temperature.write_to(writer);
-            self.total_air_temperature.write_to(writer);
-            self.international_standard_atmosphere_delta
-                .write_to(writer);
-        }
+        self.static_air_temperature.write_to(writer);
+        self.total_air_temperature.write_to(writer);
+        self.international_standard_atmosphere_delta
+            .write_to(writer);
     }
 }
 
