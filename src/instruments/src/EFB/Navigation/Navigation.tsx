@@ -28,6 +28,8 @@ import NavigraphClient, {
 } from '../ChartsApi/Navigraph';
 import ChartFoxClient, { ChartFoxAirportCharts, ChartFoxChart } from '../ChartsApi/ChartFox';
 import { SimpleInput } from '../UtilComponents/Form/SimpleInput/SimpleInput';
+import { simbriefDataIsInitialState } from '../Store/features/simBrief';
+import { useAppSelector } from '../Store/store';
 
 type Chart = NavigraphChart | ChartFoxChart;
 
@@ -628,20 +630,48 @@ const ChartsUi = ({ chartFox, charts, enableNavigraph, icao, setCharts, setIcao 
         return `${airportInfo.name.slice(0, AIRPORT_CHARACTER_LIMIT)}${airportInfo.name.length > AIRPORT_CHARACTER_LIMIT ? '...' : ''}`;
     };
 
+    const isInitialState = simbriefDataIsInitialState();
+
+    const { altIcao, departingAirport, arrivingAirport } = useAppSelector((state) => state.simbrief.data);
+
     return (
         <div className="flex overflow-x-hidden flex-row w-full rounded-lg h-efb">
             {!isFullscreen
                 ? (
                     <>
                         <div className="flex-shrink-0" style={{ width: '450px' }}>
-                            <SimpleInput
-                                placeholder="ICAO"
-                                value={icao}
-                                noLabel
-                                maxLength={4}
-                                className="w-full uppercase"
-                                onChange={handleIcaoChange}
-                            />
+                            <div className="flex flex-row justify-center items-center">
+                                <SimpleInput
+                                    placeholder="ICAO"
+                                    value={icao}
+                                    noLabel
+                                    maxLength={4}
+                                    className={`w-full flex-shrink uppercase ${!isInitialState && 'rounded-r-none'}`}
+                                    onChange={handleIcaoChange}
+                                />
+                                {!isInitialState && (
+                                    <SelectGroup className="flex-shrink-0 rounded-l-none">
+                                        <SelectItem
+                                            selected={icao === departingAirport}
+                                            onSelect={() => handleIcaoChange(departingAirport)}
+                                        >
+                                            From
+                                        </SelectItem>
+                                        <SelectItem
+                                            selected={icao === arrivingAirport}
+                                            onSelect={() => handleIcaoChange(arrivingAirport)}
+                                        >
+                                            To
+                                        </SelectItem>
+                                        <SelectItem
+                                            selected={icao === altIcao}
+                                            onSelect={() => handleIcaoChange(altIcao)}
+                                        >
+                                            Alt
+                                        </SelectItem>
+                                    </SelectGroup>
+                                )}
+                            </div>
                             <div className="flex items-center px-4 mt-2 w-full h-11 rounded-md bg-theme-accent">
                                 {getAirportDisplayName()}
                             </div>
