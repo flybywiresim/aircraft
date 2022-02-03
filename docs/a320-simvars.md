@@ -1243,6 +1243,14 @@
         - 14_21
         - 22_29
 
+- A32NX_PAX_CURRENT
+    - Number
+    - Indicates the total number of pax onboard
+
+- A32NX_PAX_TARGET
+    - Number
+    - Indicates the target number of pax to be boarded/de-boarded
+
 - PAYLOAD STATION WEIGHT:{stationIndex}
     - Number (Kilograms)
     - Indicates the weight of the selected payload station
