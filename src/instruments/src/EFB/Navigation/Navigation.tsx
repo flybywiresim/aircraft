@@ -16,6 +16,7 @@ import {
     SunFill,
 } from 'react-bootstrap-icons';
 import { useSimVar } from '@instruments/common/simVars';
+import { toast } from 'react-toastify';
 import { ScrollableContainer } from '../UtilComponents/ScrollableContainer';
 import { SelectGroup, SelectItem } from '../UtilComponents/Form/Select';
 import NavigraphClient, {
@@ -28,8 +29,21 @@ import NavigraphClient, {
 } from '../ChartsApi/Navigraph';
 import ChartFoxClient, { ChartFoxAirportCharts, ChartFoxChart } from '../ChartsApi/ChartFox';
 import { SimpleInput } from '../UtilComponents/Form/SimpleInput/SimpleInput';
-import { simbriefDataIsInitialState } from '../Store/features/simBrief';
-import { useAppSelector } from '../Store/store';
+import { simbriefDataIsInitialState } from '../Store/features/simbrief';
+import { useAppSelector, useAppDispatch } from '../Store/store';
+import {
+    setIsFullScreen,
+    setPlaneInFocus,
+    setChartId,
+    setChartLinks,
+    setChartRotation,
+    setTabIndex,
+    setUsingDarkTheme,
+    setChartDimensions,
+    setIcao,
+    setChartName,
+    setBoundingBox,
+} from '../Store/features/navigationTab';
 
 type Chart = NavigraphChart | ChartFoxChart;
 
@@ -38,24 +52,12 @@ type Charts = NavigraphAirportCharts | ChartFoxAirportCharts;
 interface ChartsUiProps {
     enableNavigraph: boolean;
     chartFox: ChartFoxClient;
-    icao: string;
     charts: Charts;
-    setIcao: (string) => void;
     setCharts: (Charts) => void;
-}
-
-interface NavigraphChartComponentProps {
-    chartLink: ChartDisplay;
-    isFullscreen: boolean;
-    enableDarkCharts: boolean;
-    setIsFullscreen: (boolean) => void;
-    setEnableDarkCharts: (boolean) => void;
-    boundingBox?: NavigraphBoundingBox;
 }
 
 interface NavigraphChartSelectorProps {
     selectedTab: OrganizedChartType;
-    selectedChartId: string;
     onChartClick: CallableFunction;
     loading?: boolean;
 }
@@ -69,11 +71,6 @@ type OrganizedChartType = {
 type RunwayOrganizedChartType = {
     name: string,
     charts: Chart[],
-}
-
-type ChartDisplay = {
-    light: string,
-    dark: string
 }
 
 const Loading = () => {
@@ -119,9 +116,13 @@ const AuthUi = () => {
 
     const hasQr = !!navigraph.auth.qrLink;
 
-    useInterval(() => {
+    useInterval(async () => {
         if (!navigraph.hasToken) {
-            navigraph.getToken();
+            try {
+                await navigraph.getToken();
+            } catch (e) {
+                toast.error(`Navigraph Authentication Error: ${e.message}`, { autoClose: 10_000 });
+            }
         }
     }, (navigraph.auth.interval * 1000));
 
@@ -162,14 +163,18 @@ const AuthUi = () => {
     );
 };
 
-const NavigraphChartComponent = ({
-    chartLink,
-    enableDarkCharts,
-    isFullscreen,
-    setEnableDarkCharts,
-    setIsFullscreen,
-    boundingBox,
-}: NavigraphChartComponentProps) => {
+const NavigraphChartComponent = () => {
+    const dispatch = useAppDispatch();
+    const {
+        chartDimensions,
+        chartLinks,
+        chartRotation,
+        isFullScreen,
+        usingDarkTheme,
+        planeInFocus,
+        boundingBox,
+    } = useAppSelector((state) => state.navigationTab);
+
     const { userName } = useNavigraph();
     const position = useRef({ top: 0, y: 0, left: 0, x: 0 });
     const ref = useRef<HTMLDivElement>(null);
@@ -181,10 +186,6 @@ const NavigraphChartComponent = ({
     const [aircraftLatitude] = useSimVar('PLANE LATITUDE', 'degree latitude', 1000);
     const [aircraftLongitude] = useSimVar('PLANE LONGITUDE', 'degree longitude', 1000);
     const [aircraftTrueHeading] = useSimVar('PLANE HEADING DEGREES TRUE', 'degrees', 1000);
-
-    const [chartRotationDeg, setChartRotationDeg] = useState(0);
-
-    const [planeInFocus, setPlaneInFocus] = useState(false);
 
     useEffect(() => {
         let visible = false;
@@ -207,17 +208,29 @@ const NavigraphChartComponent = ({
         }
 
         setAircraftIconVisible(visible);
-    }, [boundingBox, chartLink, aircraftLatitude.toFixed(2), aircraftLongitude.toFixed(2), aircraftTrueHeading]);
+    }, [boundingBox, chartLinks, aircraftLatitude.toFixed(2), aircraftLongitude.toFixed(2), aircraftTrueHeading]);
 
     useEffect(() => {
+        const { width, height } = chartDimensions;
+
         if (chartRef.current) {
-            chartRef.current.style.height = '875px';
+            if (width) {
+                chartRef.current.style.width = `${width}px`;
+            }
+
+            if (height) {
+                chartRef.current.style.height = `${height}px`;
+            }
+
+            if (!width && !height) {
+                dispatch(setChartDimensions({ height: 875 }));
+            }
         }
-    }, [chartLink]);
+    }, [chartRef, chartDimensions]);
 
     useEffect(() => {
         if (planeInFocus) {
-            setChartRotationDeg(360 - aircraftIconPosition.r);
+            dispatch(setChartRotation(360 - aircraftIconPosition.r));
             // TODO: implement the chart translation
             // if (ref.current) {
             //     ref.current.scrollTop = aircraftIconPosition.y + ((ref.current.clientHeight - aircraftIconPosition.y) / 2);
@@ -254,30 +267,31 @@ const NavigraphChartComponent = ({
         const currentHeight = chartRef.current!.clientHeight;
         if (currentHeight >= 2500) return;
 
-        chartRef.current!.style.height = `${currentHeight + 100}px`;
+        // TODO: maybe use width here eventually?
+        dispatch(setChartDimensions({ height: currentHeight + 100 }));
     };
 
     const handleZoomOut = () => {
         const currentHeight = chartRef.current!.clientHeight;
         if (currentHeight <= 775) return;
 
-        chartRef.current!.style.height = `${currentHeight - 100}px`;
+        dispatch(setChartDimensions({ height: currentHeight - 100 }));
     };
 
     // The functions that handle rotation get the closest 45 degree angle increment to the current angle
     const handleRotateRight = () => {
-        setChartRotationDeg((old) => old + (45 - old % 45));
+        dispatch(setChartRotation(chartRotation + (45 - chartRotation % 45)));
     };
 
     const handleRotateLeft = () => {
-        setChartRotationDeg((old) => old - (45 + old % 45));
+        dispatch(setChartRotation(chartRotation - (45 + chartRotation % 45)));
     };
 
-    if (!chartLink.light) {
+    if (!chartLinks.light) {
         return (
             <div
-                className={`flex items-center justify-center bg-theme-accent rounded-lg ${!isFullscreen && 'rounded-l-none ml-6'}`}
-                style={{ width: `${isFullscreen ? '1278px' : '804px'}` }}
+                className={`flex items-center justify-center bg-theme-accent rounded-lg ${!isFullScreen && 'rounded-l-none ml-6'}`}
+                style={{ width: `${isFullScreen ? '1278px' : '804px'}` }}
             >
                 There is no chart to display.
             </div>
@@ -286,9 +300,9 @@ const NavigraphChartComponent = ({
 
     return (
         <div
-            className={`relative flex flex-row overflow-x-hidden overflow-y-scroll mx-auto grabbable no-scrollbar bg-theme-accent rounded-lg ${!isFullscreen && 'rounded-l-none ml-6'}`}
+            className={`relative flex flex-row overflow-x-hidden overflow-y-scroll mx-auto grabbable no-scrollbar bg-theme-accent rounded-lg ${!isFullScreen && 'rounded-l-none ml-6'}`}
             ref={ref}
-            style={{ width: `${isFullscreen ? '1278px' : '804px'}` }}
+            style={{ width: `${isFullScreen ? '1278px' : '804px'}` }}
             onMouseDown={handleMouseDown}
         >
             <div className="flex overflow-hidden fixed top-32 right-12 bottom-12 z-40 flex-col justify-between rounded-md cursor-pointer">
@@ -303,7 +317,7 @@ const NavigraphChartComponent = ({
                     {boundingBox && (
                         <button
                             type="button"
-                            onClick={() => setPlaneInFocus((old) => !old)}
+                            onClick={() => dispatch(setPlaneInFocus(!planeInFocus))}
                             className={`p-2 transition duration-100 cursor-pointer bg-theme-secondary hover:bg-theme-highlight ${planeInFocus && 'text-theme-highlight  hover:text-theme-text'}`}
                         >
                             <Bullseye size={40} />
@@ -336,26 +350,26 @@ const NavigraphChartComponent = ({
                 <div className="flex overflow-hidden flex-col rounded-md">
                     <div
                         className="p-2 rounded-md transition duration-100 cursor-pointer bg-theme-secondary hover:bg-theme-highlight"
-                        onClick={() => setIsFullscreen((old) => !old)}
+                        onClick={() => dispatch(setIsFullScreen(!isFullScreen))}
                     >
-                        {!isFullscreen
+                        {!isFullScreen
                             ? <ArrowsFullscreen size={40} />
                             : <FullscreenExit size={40} />}
                     </div>
                     <div
                         className="p-2 mt-3 rounded-md transition duration-100 cursor-pointer bg-theme-secondary hover:bg-theme-highlight"
-                        onClick={() => setEnableDarkCharts((old) => !old)}
+                        onClick={() => dispatch(setUsingDarkTheme(!usingDarkTheme))}
                     >
-                        {!enableDarkCharts ? <MoonFill size={40} /> : <SunFill size={40} />}
+                        {!usingDarkTheme ? <MoonFill size={40} /> : <SunFill size={40} />}
                     </div>
                 </div>
             </div>
 
             <div
                 className="relative m-auto transition duration-100"
-                style={{ transform: `rotate(${chartRotationDeg}deg)` }}
+                style={{ transform: `rotate(${chartRotation}deg)` }}
             >
-                {chartLink && (
+                {chartLinks && (
                     <p
                         className="absolute top-0 left-0 font-bold whitespace-nowrap transition duration-100 transform -translate-y-full text-theme-highlight"
                     >
@@ -386,7 +400,7 @@ const NavigraphChartComponent = ({
                     className="max-w-none transition duration-100 select-none"
                     ref={chartRef}
                     draggable={false}
-                    src={enableDarkCharts ? chartLink.dark : chartLink.light}
+                    src={usingDarkTheme ? chartLinks.dark : chartLinks.light}
                     alt="chart"
                 />
             </div>
@@ -394,10 +408,14 @@ const NavigraphChartComponent = ({
     );
 };
 
-const NavigraphChartSelector = ({ onChartClick, selectedChartId, selectedTab, loading }: NavigraphChartSelectorProps) => {
+const NavigraphChartSelector = ({ onChartClick, selectedTab, loading }: NavigraphChartSelectorProps) => {
     const NO_RUNWAY_NAME = 'NONE';
     const [runwaySet, setRunwaySet] = useState<Set<string>>(new Set());
     const [organizedCharts, setOrganizedCharts] = useState<RunwayOrganizedChartType[]>([]);
+
+    const dispatch = useAppDispatch();
+
+    const { chartId } = useAppSelector((state) => state.navigationTab);
 
     useEffect(() => {
         if (selectedTab.bundleRunways) {
@@ -457,6 +475,19 @@ const NavigraphChartSelector = ({ onChartClick, selectedChartId, selectedTab, lo
         );
     }
 
+    const handleChartClick = (chart: Chart) => {
+        onChartClick(
+            (chart as NavigraphChart).fileDay,
+            (chart as NavigraphChart).fileNight,
+            (chart as NavigraphChart).id,
+            (chart as NavigraphChart).boundingBox,
+        );
+
+        if ((chart as NavigraphChart).id !== chartId) {
+            dispatch(setChartDimensions({ height: 875 }));
+        }
+    };
+
     return (
         <>
             {selectedTab.bundleRunways
@@ -468,15 +499,10 @@ const NavigraphChartSelector = ({ onChartClick, selectedChartId, selectedTab, lo
                                 {item.charts.map((chart) => (
                                     <div
                                         className="group flex flex-row bg-theme-accent"
-                                        onClick={() => onChartClick(
-                                            (chart as NavigraphChart).fileDay,
-                                            (chart as NavigraphChart).fileNight,
-                                            (chart as NavigraphChart).id,
-                                            (chart as NavigraphChart).boundingBox,
-                                        )}
+                                        onClick={() => handleChartClick(chart)}
                                         key={(chart as NavigraphChart).id}
                                     >
-                                        <span className={`w-2 transition duration-100 group-hover:bg-theme-highlight ${(chart as NavigraphChart).id === selectedChartId
+                                        <span className={`w-2 transition duration-100 group-hover:bg-theme-highlight ${(chart as NavigraphChart).id === chartId
                                             ? 'bg-theme-highlight'
                                             : 'bg-theme-secondary'}`}
                                         />
@@ -507,7 +533,7 @@ const NavigraphChartSelector = ({ onChartClick, selectedChartId, selectedTab, lo
                                 )}
                                 key={(chart as NavigraphChart).id}
                             >
-                                <span className={`w-2 transition duration-100 group-hover:bg-theme-highlight ${(chart as NavigraphChart).id === selectedChartId
+                                <span className={`w-2 transition duration-100 group-hover:bg-theme-highlight ${(chart as NavigraphChart).id === chartId
                                     ? 'bg-theme-highlight'
                                     : 'bg-theme-secondary'}`}
                                 />
@@ -527,15 +553,14 @@ const NavigraphChartSelector = ({ onChartClick, selectedChartId, selectedTab, lo
     );
 };
 
-const ChartsUi = ({ chartFox, charts, enableNavigraph, icao, setCharts, setIcao }: ChartsUiProps) => {
+const ChartsUi = ({ chartFox, charts, enableNavigraph, setCharts }: ChartsUiProps) => {
+    const dispatch = useAppDispatch();
+
     const navigraph = useNavigraph();
 
-    const [enableDarkCharts, setEnableDarkCharts] = useState(true); // Navigraph Only
     const [airportInfo, setAirportInfo] = useState<AirportInfo>({ name: '' }); // Navigraph Only
 
     const [icaoAndNameDisagree, setIcaoAndNameDisagree] = useState(false);
-
-    const [isFullscreen, setIsFullscreen] = useState(false);
 
     const [organizedCharts, setOrganizedCharts] = useState<OrganizedChartType[]>([
         { name: 'STAR', charts: charts.arrival },
@@ -545,12 +570,7 @@ const ChartsUi = ({ chartFox, charts, enableNavigraph, icao, setCharts, setIcao 
         { name: 'REF', charts: charts.reference },
     ]);
 
-    const [selectedChartName, setSelectedChartName] = useState<ChartDisplay>({ light: '', dark: '' });
-    const [selectedChartId, setSelectedChartId] = useState('');
-    const [chartLink, setChartLink] = useState<ChartDisplay>({ light: '', dark: '' });
-    const [selectedChartBoundingBox, setSelectedChartBoundingBox] = useState<NavigraphBoundingBox | undefined>();
-
-    const [selectedTabIndex, setSelectedTabIndex] = useState(0);
+    const { tabIndex, icao, chartId, chartName, boundingBox, isFullScreen } = useAppSelector((state) => state.navigationTab);
 
     const assignAirportInfo = async () => {
         if (enableNavigraph) {
@@ -587,15 +607,16 @@ const ChartsUi = ({ chartFox, charts, enableNavigraph, icao, setCharts, setIcao 
     useEffect(() => {
         if (enableNavigraph) {
             const chartsGet = async () => {
-                const light = await navigraph.chartCall(icao, selectedChartName.light);
-                const dark = await navigraph.chartCall(icao, selectedChartName.dark);
+                const light = await navigraph.chartCall(icao, chartName.light);
 
-                setChartLink({ light, dark });
+                const dark = await navigraph.chartCall(icao, chartName.dark);
+
+                dispatch(setChartLinks({ light, dark }));
             };
 
             chartsGet();
         }
-    }, [selectedChartName]);
+    }, [chartName]);
 
     const handleIcaoChange = (value: string) => {
         if (value.length !== 4) return;
@@ -612,16 +633,22 @@ const ChartsUi = ({ chartFox, charts, enableNavigraph, icao, setCharts, setIcao 
             chartFox.getChartList(newValue).then((r) => setCharts(r));
         }
 
-        setIcao(newValue);
+        dispatch(setIcao(newValue));
     };
 
     const onChartClick = (chartNameDay: string, chartNameNight: string, chartId: string, boundingBox?: NavigraphBoundingBox) => {
-        setSelectedChartId(chartId);
+        dispatch(setChartId(chartId));
 
-        setSelectedChartName({ light: chartNameDay, dark: chartNameNight });
+        dispatch(setChartName({ light: chartNameDay, dark: chartNameNight }));
 
-        setSelectedChartBoundingBox(boundingBox);
+        if (boundingBox) {
+            dispatch(setBoundingBox(boundingBox));
+        }
     };
+
+    useEffect(() => {
+        handleIcaoChange(icao);
+    }, []);
 
     const AIRPORT_CHARACTER_LIMIT = 30;
 
@@ -645,109 +672,89 @@ const ChartsUi = ({ chartFox, charts, enableNavigraph, icao, setCharts, setIcao 
 
     return (
         <div className="flex overflow-x-hidden flex-row w-full rounded-lg h-efb">
-            {!isFullscreen
-                ? (
-                    <>
-                        <div className="flex-shrink-0" style={{ width: '450px' }}>
-                            <div className="flex flex-row justify-center items-center">
-                                <SimpleInput
-                                    placeholder="ICAO"
-                                    value={icao}
-                                    noLabel
-                                    maxLength={4}
-                                    className={`w-full flex-shrink uppercase ${!isInitialState && 'rounded-r-none'}`}
-                                    onChange={handleIcaoChange}
-                                />
-                                {!isInitialState && (
-                                    <SelectGroup className="flex-shrink-0 rounded-l-none">
-                                        <SelectItem
-                                            selected={icao === departingAirport}
-                                            onSelect={() => handleIcaoChange(departingAirport)}
-                                        >
-                                            FROM
-                                        </SelectItem>
-                                        <SelectItem
-                                            selected={icao === arrivingAirport}
-                                            onSelect={() => handleIcaoChange(arrivingAirport)}
-                                        >
-                                            TO
-                                        </SelectItem>
-                                        <SelectItem
-                                            selected={icao === altIcao}
-                                            onSelect={() => handleIcaoChange(altIcao)}
-                                        >
-                                            ALTN
-                                        </SelectItem>
-                                    </SelectGroup>
-                                )}
-                            </div>
-                            <div className="flex items-center px-4 mt-2 w-full h-11 rounded-md bg-theme-accent">
-                                {getAirportDisplayName()}
-                            </div>
-                            <div className="mt-6">
-                                <SelectGroup>
-                                    {organizedCharts.map((organizedChart, index) => (
-                                        <SelectItem
-                                            selected={index === selectedTabIndex}
-                                            onSelect={() => setSelectedTabIndex(index)}
-                                            key={organizedChart.name}
-                                        >
-                                            {organizedChart.name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectGroup>
-                                <ScrollableContainer className="mt-5" height={42.25}>
-                                    <div
-                                        className="space-y-4"
+            <>
+                {!isFullScreen && (
+                    <div className="flex-shrink-0" style={{ width: '450px' }}>
+                        <div className="flex flex-row justify-center items-center">
+                            <SimpleInput
+                                placeholder="ICAO"
+                                value={icao}
+                                noLabel
+                                maxLength={4}
+                                className={`w-full flex-shrink uppercase ${!isInitialState && 'rounded-r-none'}`}
+                                onChange={handleIcaoChange}
+                            />
+                            {!isInitialState && (
+                                <SelectGroup className="flex-shrink-0 rounded-l-none">
+                                    <SelectItem
+                                        selected={icao === departingAirport}
+                                        onSelect={() => handleIcaoChange(departingAirport)}
                                     >
-                                        {enableNavigraph
-                                            ? (
-                                                <NavigraphChartSelector
-                                                    selectedTab={organizedCharts[selectedTabIndex]}
-                                                    selectedChartId={selectedChartId}
-                                                    onChartClick={onChartClick}
-                                                    loading={loading}
-                                                />
-                                            )
-                                            : (
-                                                <>
-                                                    {organizedCharts[selectedTabIndex].charts.map((chart) => (
-                                                        <div className="mt-4" key={(chart as ChartFoxChart).name}>
-                                                            <span>{(chart as ChartFoxChart).name}</span>
-                                                        </div>
-                                                    ))}
-                                                </>
-                                            )}
-                                    </div>
-                                </ScrollableContainer>
-                            </div>
-
+                                        FROM
+                                    </SelectItem>
+                                    <SelectItem
+                                        selected={icao === arrivingAirport}
+                                        onSelect={() => handleIcaoChange(arrivingAirport)}
+                                    >
+                                        TO
+                                    </SelectItem>
+                                    <SelectItem
+                                        selected={icao === altIcao}
+                                        onSelect={() => handleIcaoChange(altIcao)}
+                                    >
+                                        ALTN
+                                    </SelectItem>
+                                </SelectGroup>
+                            )}
                         </div>
-                        <NavigraphChartComponent
-                            chartLink={chartLink}
-                            isFullscreen={isFullscreen}
-                            enableDarkCharts={enableDarkCharts}
-                            setIsFullscreen={setIsFullscreen}
-                            setEnableDarkCharts={setEnableDarkCharts}
-                            boundingBox={selectedChartBoundingBox}
-                        />
-                    </>
-                )
-                : (
-                    <NavigraphChartComponent
-                        chartLink={chartLink}
-                        isFullscreen={isFullscreen}
-                        enableDarkCharts={enableDarkCharts}
-                        setIsFullscreen={setIsFullscreen}
-                        setEnableDarkCharts={setEnableDarkCharts}
-                        boundingBox={selectedChartBoundingBox}
-                    />
+                        <div className="flex items-center px-4 mt-2 w-full h-11 rounded-md bg-theme-accent">
+                            {getAirportDisplayName()}
+                        </div>
+                        <div className="mt-6">
+                            <SelectGroup>
+                                {organizedCharts.map((organizedChart, index) => (
+                                    <SelectItem
+                                        selected={index === tabIndex}
+                                        onSelect={() => dispatch(setTabIndex(index))}
+                                        key={organizedChart.name}
+                                    >
+                                        {organizedChart.name}
+                                    </SelectItem>
+                                ))}
+                            </SelectGroup>
+                            <ScrollableContainer className="mt-5" height={42.25}>
+                                <div
+                                    className="space-y-4"
+                                >
+                                    {enableNavigraph
+                                        ? (
+                                            <NavigraphChartSelector
+                                                selectedTab={organizedCharts[tabIndex]}
+                                                onChartClick={onChartClick}
+                                                loading={loading}
+                                            />
+                                        )
+                                        : (
+                                            <>
+                                                {organizedCharts[tabIndex].charts.map((chart) => (
+                                                    <div className="mt-4" key={(chart as ChartFoxChart).name}>
+                                                        <span>{(chart as ChartFoxChart).name}</span>
+                                                    </div>
+                                                ))}
+                                            </>
+                                        )}
+                                </div>
+                            </ScrollableContainer>
+                        </div>
+                    </div>
                 )}
+                <NavigraphChartComponent />
+            </>
         </div>
     );
 };
 
-const NavigraphNav = ({ chartFox, charts, icao, setCharts, setIcao }: ChartsUiProps) => {
+const NavigraphNav = ({ chartFox, charts, setCharts }: ChartsUiProps) => {
     const navigraph = useNavigraph();
 
     return (
@@ -760,9 +767,7 @@ const NavigraphNav = ({ chartFox, charts, icao, setCharts, setIcao }: ChartsUiPr
                                 <ChartsUi
                                     enableNavigraph
                                     chartFox={chartFox}
-                                    icao={icao}
                                     charts={charts}
-                                    setIcao={setIcao}
                                     setCharts={setCharts}
                                 />
                             )
@@ -771,20 +776,18 @@ const NavigraphNav = ({ chartFox, charts, icao, setCharts, setIcao }: ChartsUiPr
                 )
                 : (
                     <div className="flex overflow-x-hidden justify-center items-center mr-4 w-full rounded-lg shadow-lg h-efb bg-theme-secondary">
-                        <p className="pt-6 mb-6 text-3xl ">Insufficient .env file</p>
+                        <p className="pt-6 mb-6 text-3xl">Insufficient .env file</p>
                     </div>
                 )}
         </>
     );
 };
 
-const ChartFoxNav = ({ chartFox, charts, icao, setCharts, setIcao }: ChartsUiProps) => (
+const ChartFoxNav = ({ chartFox, charts, setCharts }: ChartsUiProps) => (
     <ChartsUi
         enableNavigraph={false}
         chartFox={chartFox}
-        icao={icao}
         charts={charts}
-        setIcao={setIcao}
         setCharts={setCharts}
     />
 );
@@ -794,7 +797,6 @@ export const Navigation = () => {
 
     const [enableNavigraph] = useState(true);
     const [chartFox] = useState(new ChartFoxClient());
-    const [icao, setIcao] = useState('');
     const [charts, setCharts] = useState<Charts>({
         arrival: [],
         approach: [],
@@ -803,9 +805,13 @@ export const Navigation = () => {
         reference: [],
     });
 
-    useInterval(() => {
+    useInterval(async () => {
         if (enableNavigraph) {
-            navigraph.getToken();
+            try {
+                await navigraph.getToken();
+            } catch (e) {
+                toast.error(`Navigraph Authentication Error: ${e.message}`, { autoClose: 10_000 });
+            }
         }
     }, (navigraph.tokenRefreshInterval * 1000));
 
@@ -817,9 +823,7 @@ export const Navigation = () => {
                     <NavigraphNav
                         enableNavigraph={enableNavigraph}
                         chartFox={chartFox}
-                        icao={icao}
                         charts={charts}
-                        setIcao={setIcao}
                         setCharts={setCharts}
                     />
                 )
@@ -827,9 +831,7 @@ export const Navigation = () => {
                     <ChartFoxNav
                         enableNavigraph={enableNavigraph}
                         chartFox={chartFox}
-                        icao={icao}
                         charts={charts}
-                        setIcao={setIcao}
                         setCharts={setCharts}
                     />
                 )}

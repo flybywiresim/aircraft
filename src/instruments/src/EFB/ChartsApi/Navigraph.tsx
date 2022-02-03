@@ -169,23 +169,34 @@ export default class NavigraphClient {
 
                     const { error } = parsedText;
 
-                    if (error === 'slow_down') {
-                        this.auth.interval += 5;
-                    } else if (error === 'authorization_pending') {
+                    switch (error) {
+                    case 'authorization_pending': {
                         console.log('Token Authorization Pending');
-                    } else if (error === 'access_denied') {
+                        break;
+                    }
+                    case 'slow_down': {
+                        this.auth.interval += 5;
+                        break;
+                    }
+                    case 'access_denied': {
                         this.auth.disabled = true;
-                    } else if (error === 'expired_token') {
+                        throw new Error('Access Denied');
+                    }
+                    default: {
                         this.authenticate();
                     }
+                    }
                 }
-            } catch (_) {
+            } catch (e) {
                 console.log('Token Authentication Failed. #NV102');
+                if (e.message === 'Access Denied') {
+                    throw e;
+                }
             }
         }
     }
 
-    public getToken() {
+    public async getToken(): Promise<void> {
         if (NavigraphClient.hasSufficientEnv) {
             const newTokenBody = {
                 grant_type: 'urn:ietf:params:oauth:grant-type:device_code',
@@ -213,7 +224,13 @@ export default class NavigraphClient {
 
     public async chartCall(icao: string, item: string): Promise<string> {
         if (icao.length === 4) {
-            const callResp = await fetch(`https://charts.api.navigraph.com/2/airports/${icao}/signedurls/${item}`, { headers: { Authorization: `Bearer ${this.accessToken}` } });
+            const callResp = await fetch(`https://charts.api.navigraph.com/2/airports/${icao}/signedurls/${item}`,
+                {
+                    headers: {
+                        Authorization:
+                         `Bearer ${this.accessToken}`,
+                    },
+                });
 
             if (callResp.ok) {
                 return callResp.text();

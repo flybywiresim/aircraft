@@ -6,7 +6,7 @@ import { usePower, PowerStates } from '../Efb';
 
 import { BatteryStatus } from './BatteryStatus';
 import { useAppSelector } from '../Store/store';
-import { initialState } from '../Store/features/simBrief';
+import { initialState } from '../Store/features/simbrief';
 
 type StatusBarProps = {
     batteryLevel: number;
