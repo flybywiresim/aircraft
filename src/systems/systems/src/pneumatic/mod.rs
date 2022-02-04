@@ -336,7 +336,8 @@ impl Precooler {
         );
 
         let temperature_change =
-            self.coefficient * temperature_gradient * context.delta_as_secs_f64();
+            temperature_gradient * (1. - (-self.coefficient * context.delta_as_secs_f64()).exp());
+
         supply.update_temperature(-temperature_change);
         container_one.update_temperature(temperature_change);
 
