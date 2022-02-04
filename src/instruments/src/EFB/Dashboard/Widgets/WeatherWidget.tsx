@@ -5,7 +5,7 @@ import { parseMetar } from '../../Utils/parseMetar';
 import { MetarParserType } from '../../../Common/metarTypes';
 import { usePersistentProperty } from '../../../Common/persistence';
 import SimpleInput from '../../Components/Form/SimpleInput/SimpleInput';
-import ColoredMetar from './ColorMetar';
+import { ColoredMetar } from './ColorMetar';
 
 const MetarParserTypeProp: MetarParserType = {
     raw_text: '',
