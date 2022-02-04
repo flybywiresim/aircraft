@@ -364,84 +364,120 @@
             <SEQ2_POWERED>1</SEQ2_POWERED>
         </DefaultTemplateParameters>
 
-        <UseTemplate Name="FBW_ECAM_PAGE_BUTTON_Template">
+        <!-- ECAM ENG -->
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+            <ANIM_TEMPLATE>FBW_ECAM_PAGE_BUTTON_Template</ANIM_TEMPLATE>
             <BASE_NAME>ENG</BASE_NAME>
             <PART_ID>ECAM_ENG</PART_ID>
             <GROUP_INDEX>0</GROUP_INDEX>
             <TOOLTIPID>TT:COCKPIT.TOOLTIPS.PUSH_ECAM_ENG</TOOLTIPID>
         </UseTemplate>
 
-        <UseTemplate Name="FBW_ECAM_PAGE_BUTTON_Template">
+        <!-- ECAM BLEED -->
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+            <ANIM_TEMPLATE>FBW_ECAM_PAGE_BUTTON_Template</ANIM_TEMPLATE>
             <BASE_NAME>BLEED</BASE_NAME>
             <PART_ID>ECAM_BLEED</PART_ID>
             <GROUP_INDEX>1</GROUP_INDEX> <!--Change to positive to activate-->
             <TOOLTIPID>TT:COCKPIT.TOOLTIPS.PUSH_ECAM_BLEED</TOOLTIPID>
         </UseTemplate>
 
-        <UseTemplate Name="FBW_ECAM_PAGE_BUTTON_Template">
+        <!-- ECAM PRESS -->
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+            <ANIM_TEMPLATE>FBW_ECAM_PAGE_BUTTON_Template</ANIM_TEMPLATE>
             <BASE_NAME>PRESS</BASE_NAME>
             <PART_ID>ECAM_PRESS</PART_ID>
             <GROUP_INDEX>2</GROUP_INDEX> <!--Change to positive to activate-->
             <TOOLTIPID>TT:COCKPIT.TOOLTIPS.PUSH_ECAM_PRESS</TOOLTIPID>
         </UseTemplate>
 
-        <UseTemplate Name="FBW_ECAM_PAGE_BUTTON_Template">
+        <!-- ECAM ELEC -->
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+            <ANIM_TEMPLATE>FBW_ECAM_PAGE_BUTTON_Template</ANIM_TEMPLATE>
             <BASE_NAME>ELEC</BASE_NAME>
             <PART_ID>ECAM_ELEC</PART_ID>
             <GROUP_INDEX>3</GROUP_INDEX> <!--Change to positive to activate-->
             <TOOLTIPID>TT:COCKPIT.TOOLTIPS.PUSH_ECAM_ELEC</TOOLTIPID>
         </UseTemplate>
 
-        <UseTemplate Name="FBW_ECAM_PAGE_BUTTON_Template">
+        <!-- ECAM HYD -->
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+            <ANIM_TEMPLATE>FBW_ECAM_PAGE_BUTTON_Template</ANIM_TEMPLATE>
             <BASE_NAME>HYD</BASE_NAME>
             <PART_ID>ECAM_HYD</PART_ID>
             <GROUP_INDEX>4</GROUP_INDEX> <!--Change to positive to activate-->
             <TOOLTIPID>TT:COCKPIT.TOOLTIPS.PUSH_ECAM_HYD</TOOLTIPID>
         </UseTemplate>
 
-        <UseTemplate Name="FBW_ECAM_PAGE_BUTTON_Template">
+        <!-- ECAM FUEL -->
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+            <ANIM_TEMPLATE>FBW_ECAM_PAGE_BUTTON_Template</ANIM_TEMPLATE>
             <BASE_NAME>FUEL</BASE_NAME>
             <PART_ID>ECAM_FUEL</PART_ID>
             <GROUP_INDEX>5</GROUP_INDEX>
             <TOOLTIPID>TT:COCKPIT.TOOLTIPS.PUSH_ECAM_FUEL</TOOLTIPID>
         </UseTemplate>
 
-        <UseTemplate Name="FBW_ECAM_PAGE_BUTTON_Template">
+        <!-- ECAM APU -->
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+            <ANIM_TEMPLATE>FBW_ECAM_PAGE_BUTTON_Template</ANIM_TEMPLATE>
             <BASE_NAME>APU</BASE_NAME>
             <PART_ID>ECAM_APU</PART_ID>
             <GROUP_INDEX>6</GROUP_INDEX> <!--Change to positive to activate-->
             <TOOLTIPID>TT:COCKPIT.TOOLTIPS.PUSH_ECAM_APU</TOOLTIPID>
         </UseTemplate>
 
-        <UseTemplate Name="FBW_ECAM_PAGE_BUTTON_Template">
+        <!-- ECAM COND -->
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+            <ANIM_TEMPLATE>FBW_ECAM_PAGE_BUTTON_Template</ANIM_TEMPLATE>
             <BASE_NAME>COND</BASE_NAME>
             <PART_ID>ECAM_COND</PART_ID>
             <GROUP_INDEX>7</GROUP_INDEX> <!--Change to positive to activate-->
             <TOOLTIPID>TT:COCKPIT.TOOLTIPS.PUSH_ECAM_COND</TOOLTIPID>
         </UseTemplate>
 
-        <UseTemplate Name="FBW_ECAM_PAGE_BUTTON_Template">
+        <!-- ECAM DOOR -->
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+            <ANIM_TEMPLATE>FBW_ECAM_PAGE_BUTTON_Template</ANIM_TEMPLATE>
             <BASE_NAME>DOOR</BASE_NAME>
             <PART_ID>ECAM_DOOR</PART_ID>
             <GROUP_INDEX>8</GROUP_INDEX> <!--Change to positive to activate-->
             <TOOLTIPID>TT:COCKPIT.TOOLTIPS.PUSH_ECAM_DOOR</TOOLTIPID>
         </UseTemplate>
 
-        <UseTemplate Name="FBW_ECAM_PAGE_BUTTON_Template">
+        <!-- ECAM WHEEL -->
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+            <ANIM_TEMPLATE>FBW_ECAM_PAGE_BUTTON_Template</ANIM_TEMPLATE>
             <BASE_NAME>WHEEL</BASE_NAME>
             <PART_ID>ECAM_WHEEL</PART_ID>
             <GROUP_INDEX>9</GROUP_INDEX> <!--Change to positive to activate-->
             <TOOLTIPID>TT:COCKPIT.TOOLTIPS.PUSH_ECAM_WHEEL</TOOLTIPID>
         </UseTemplate>
 
-        <UseTemplate Name="FBW_ECAM_PAGE_BUTTON_Template">
+        <!-- ECAM F CTL -->
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+            <ANIM_TEMPLATE>FBW_ECAM_PAGE_BUTTON_Template</ANIM_TEMPLATE>
             <BASE_NAME>FTCL</BASE_NAME>
             <PART_ID>ECAM_FCTL</PART_ID>
             <GROUP_INDEX>10</GROUP_INDEX> <!--Change to positive to activate-->
             <TOOLTIPID>TT:COCKPIT.TOOLTIPS.PUSH_ECAM_FCTL</TOOLTIPID>
         </UseTemplate>
 
-        <UseTemplate Name="A32NX_ECAM_ALL_BUTTON_Template">
+        <!-- ECAM ALL -->
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <ANIM_TYPE>BUTTON_HELD</ANIM_TYPE>
+            <ANIM_TEMPLATE>A32NX_ECAM_ALL_BUTTON_Template</ANIM_TEMPLATE>
             <BASE_NAME>ALL</BASE_NAME>
             <PART_ID>ECAM_ALL</PART_ID>
             <SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
@@ -449,43 +485,64 @@
             <TOOLTIPID>Cycle through ECAM pages</TOOLTIPID>
         </UseTemplate>
 
-        <UseTemplate Name="FBW_ECAM_PAGE_BUTTON_Template">
+        <!-- ECAM STS -->
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+            <ANIM_TEMPLATE>FBW_ECAM_PAGE_BUTTON_Template</ANIM_TEMPLATE>
             <BASE_NAME>STS</BASE_NAME>
             <Part_ID>STS</Part_ID>
             <GROUP_INDEX>11</GROUP_INDEX> <!--Change to positive to activate-->
             <TOOLTIPID>Display STS informations on ECAM</TOOLTIPID>
         </UseTemplate>
 
-        <UseTemplate Name="FBW_ECAM_BUTTON_Template">
+        <!-- ECAM T.O CONFIG -->
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+            <ANIM_TEMPLATE>FBW_ECAM_BUTTON_Template</ANIM_TEMPLATE>
             <BASE_NAME>TOCONFIG</BASE_NAME>
             <PART_ID>ECAM_TOCFG</PART_ID>
             <TOOLTIPID>Test T.O CONFIG</TOOLTIPID>
         </UseTemplate>
 
-        <UseTemplate Name="FBW_ECAM_EMERCANC_BUTTON_Template">
+        <!-- ECAM EMER CANC -->
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+            <ANIM_TEMPLATE>FBW_ECAM_EMERCANC_BUTTON_Template</ANIM_TEMPLATE>
             <BASE_NAME>EMERCANC</BASE_NAME>
             <PART_ID>ECAM_EMERCANC</PART_ID>
             <TOOLTIPID>Emergency cancel (Inop.)</TOOLTIPID>
         </UseTemplate>
 
-        <UseTemplate Name="FBW_Covered_Push_Toggle">
+        <!-- ECAM EMER CANC -->
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <ANIM_TYPE>BUTTON_PROTECTED</ANIM_TYPE>
+            <ANIM_TEMPLATE>FBW_Covered_Push_Toggle</ANIM_TEMPLATE>
             <LOCK_NODE_ID>LOCK_ECAM_EMERCANC</LOCK_NODE_ID>
             <TOOLTIPID>Emergency cancel (Inop.)</TOOLTIPID>
         </UseTemplate>
 
-        <UseTemplate Name="A32NX_ECAM_CLR_BUTTON_Template">
+        <!-- ECAM CLR -->
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+            <ANIM_TEMPLATE>A32NX_ECAM_CLR_BUTTON_Template</ANIM_TEMPLATE>
             <BASE_NAME>CLR</BASE_NAME>
             <PART_ID>ECAM_CLR</PART_ID>
             <TOOLTIPID>Clear ECAM messages</TOOLTIPID>
         </UseTemplate>
 
-        <UseTemplate Name="A32NX_ECAM_CLR_BUTTON_Template">
+        <!-- ECAM CLR -->
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+            <ANIM_TEMPLATE>A32NX_ECAM_CLR_BUTTON_Template</ANIM_TEMPLATE>
             <BASE_NAME>CLR2</BASE_NAME>
             <PART_ID>ECAM_CLR2</PART_ID>
             <TOOLTIPID>Clear ECAM messages</TOOLTIPID>
         </UseTemplate>
 
-        <UseTemplate Name="FBW_ECAM_BUTTON_Template">
+        <!-- ECAM RCL -->
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+            <ANIM_TEMPLATE>FBW_ECAM_BUTTON_Template</ANIM_TEMPLATE>
             <BASE_NAME>RCL</BASE_NAME>
             <PART_ID>ECAM_RCL</PART_ID>
             <TOOLTIPID>Recall ECAM messages</TOOLTIPID>
@@ -620,35 +677,16 @@
     </Template>
 
 
-    <Template Name="FBW_AIRBUS_WeatherRadar_Template">
+    <Template Name="FBW_AIRBUS_WeatherRadar_Mode_Template">
         <DefaultTemplateParameters>
-            <NODE_ID_MODE_KNOB>AIRBUS_Knob_WeatherRader_Mode</NODE_ID_MODE_KNOB>
-            <ANIM_NAME_MODE_KNOB>AIRBUS_Knob_WeatherRader_Mode</ANIM_NAME_MODE_KNOB>
-            <NODE_ID_ONOFF_SWITCH>AIRBUS_Switch_WeatherRader_OnOff</NODE_ID_ONOFF_SWITCH>
-            <ANIM_NAME_ONOFF_SWITCH>AIRBUS_Switch_WeatherRader_OnOff</ANIM_NAME_ONOFF_SWITCH>
+            <NODE_ID>AIRBUS_Knob_WeatherRader_Mode</NODE_ID>
+            <ANIM_NAME>AIRBUS_Knob_WeatherRader_Mode</ANIM_NAME>
             <WWISE_EVENT>smallknob</WWISE_EVENT>
         </DefaultTemplateParameters>
 
-        <Component ID="#NODE_ID_ONOFF_SWITCH#" Node="#NODE_ID_ONOFF_SWITCH#">
+        <Component ID="#NODE_ID#" Node="#NODE_ID#">
             <UseTemplate Name="ASOBO_GT_Switch_XStates">
-                <ANIM_NAME>#ANIM_NAME_ONOFF_SWITCH#</ANIM_NAME>
-                <NUM_STATES>3</NUM_STATES>
-                <WWISE_EVENT>lswitch</WWISE_EVENT>
-                <SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
-                <SWITCH_POSITION_VAR>XMLVAR_A320_WeatherRadar_Sys</SWITCH_POSITION_VAR>
-                <SWITCH_DIRECTION>Horizontal</SWITCH_DIRECTION>
-                <ANIMREF_ID>0</ANIMREF_ID>
-                <ANIMTIP_0_ON_PERCENT>0</ANIMTIP_0_ON_PERCENT>
-                <ANIMTIP_1_ON_PERCENT>.5</ANIMTIP_1_ON_PERCENT>
-                <ANIMTIP_2_ON_PERCENT>1</ANIMTIP_2_ON_PERCENT>
-                <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.RADAR_SYS_SET_1</ANIMTIP_0>
-                <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.RADAR_SYS_SET_OFF</ANIMTIP_1>
-                <ANIMTIP_2>TT:COCKPIT.TOOLTIPS.RADAR_SYS_SET_2</ANIMTIP_2>
-            </UseTemplate>
-        </Component>
-        <Component ID="#NODE_ID_MODE_KNOB#" Node="#NODE_ID_MODE_KNOB#">
-            <UseTemplate Name="ASOBO_GT_Switch_XStates">
-                <ANIM_NAME>#ANIM_NAME_MODE_KNOB#</ANIM_NAME>
+                <ANIM_NAME>#ANIM_NAME#</ANIM_NAME>
                 <NUM_STATES>4</NUM_STATES>
                 <SWITCH_DIRECTION>Horizontal</SWITCH_DIRECTION>
                 <ARROW_TYPE>Curved</ARROW_TYPE>
@@ -665,6 +703,32 @@
                 <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.RADAR_MODE_SET_WX_PLUS_T</ANIMTIP_1>
                 <ANIMTIP_2>TT:COCKPIT.TOOLTIPS.RADAR_MODE_SET_TURB</ANIMTIP_2>
                 <ANIMTIP_3>TT:COCKPIT.TOOLTIPS.RADAR_MODE_SET_MAP</ANIMTIP_3>
+            </UseTemplate>
+        </Component>
+    </Template>
+
+    <Template Name="FBW_AIRBUS_WeatherRadar_Sys_Template">
+        <DefaultTemplateParameters>
+            <NODE_ID>AIRBUS_Switch_WeatherRader_OnOff</NODE_ID>
+            <ANIM_NAME>AIRBUS_Switch_WeatherRader_OnOff</ANIM_NAME>
+            <WWISE_EVENT>smallknob</WWISE_EVENT>
+        </DefaultTemplateParameters>
+
+        <Component ID="#NODE_ID#" Node="#NODE_ID#">
+            <UseTemplate Name="ASOBO_GT_Switch_XStates">
+                <ANIM_NAME>#ANIM_NAME#</ANIM_NAME>
+                <NUM_STATES>3</NUM_STATES>
+                <WWISE_EVENT>lswitch</WWISE_EVENT>
+                <SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
+                <SWITCH_POSITION_VAR>XMLVAR_A320_WeatherRadar_Sys</SWITCH_POSITION_VAR>
+                <SWITCH_DIRECTION>Horizontal</SWITCH_DIRECTION>
+                <ANIMREF_ID>0</ANIMREF_ID>
+                <ANIMTIP_0_ON_PERCENT>0</ANIMTIP_0_ON_PERCENT>
+                <ANIMTIP_1_ON_PERCENT>.5</ANIMTIP_1_ON_PERCENT>
+                <ANIMTIP_2_ON_PERCENT>1</ANIMTIP_2_ON_PERCENT>
+                <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.RADAR_SYS_SET_1</ANIMTIP_0>
+                <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.RADAR_SYS_SET_OFF</ANIMTIP_1>
+                <ANIMTIP_2>TT:COCKPIT.TOOLTIPS.RADAR_SYS_SET_2</ANIMTIP_2>
             </UseTemplate>
         </Component>
     </Template>
