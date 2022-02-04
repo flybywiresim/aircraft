@@ -154,14 +154,17 @@ void FlyByWireInterface::loadConfiguration() {
   idMaximumSimulationRate->set(INITypeConversion::getDouble(iniStructure, "AUTOPILOT", "MAXIMUM_SIMULATION_RATE", 4));
   limitSimulationRateByPerformance = INITypeConversion::getBoolean(iniStructure, "AUTOPILOT", "LIMIT_SIMULATION_RATE_BY_PERFORMANCE", true);
   simulationRateReductionEnabled = INITypeConversion::getBoolean(iniStructure, "AUTOPILOT", "SIMULATION_RATE_REDUCTION_ENABLED", true);
+  useCalculatedLocalizerAndGlideSlope =
+      INITypeConversion::getBoolean(iniStructure, "AUTOPILOT", "CALCULATED_LOCALIZER_AND_GLIDESLOPE_ENABLED", false);
 
   // print configuration into console
-  cout << "WASM: AUTOPILOT : CUSTOM_FLIGHT_GUIDANCE_ENABLED       = " << customFlightGuidanceEnabled << endl;
-  cout << "WASM: AUTOPILOT : GPS_COURSE_TO_STEER_ENABLED          = " << gpsCourseToSteerEnabled << endl;
-  cout << "WASM: AUTOPILOT : MINIMUM_SIMULATION_RATE              = " << idMinimumSimulationRate->get() << endl;
-  cout << "WASM: AUTOPILOT : MAXIMUM_SIMULATION_RATE              = " << idMaximumSimulationRate->get() << endl;
-  cout << "WASM: AUTOPILOT : LIMIT_SIMULATION_RATE_BY_PERFORMANCE = " << limitSimulationRateByPerformance << endl;
-  cout << "WASM: AUTOPILOT : SIMULATION_RATE_REDUCTION_ENABLED    = " << simulationRateReductionEnabled << endl;
+  cout << "WASM: AUTOPILOT : CUSTOM_FLIGHT_GUIDANCE_ENABLED              = " << customFlightGuidanceEnabled << endl;
+  cout << "WASM: AUTOPILOT : GPS_COURSE_TO_STEER_ENABLED                 = " << gpsCourseToSteerEnabled << endl;
+  cout << "WASM: AUTOPILOT : MINIMUM_SIMULATION_RATE                     = " << idMinimumSimulationRate->get() << endl;
+  cout << "WASM: AUTOPILOT : MAXIMUM_SIMULATION_RATE                     = " << idMaximumSimulationRate->get() << endl;
+  cout << "WASM: AUTOPILOT : LIMIT_SIMULATION_RATE_BY_PERFORMANCE        = " << limitSimulationRateByPerformance << endl;
+  cout << "WASM: AUTOPILOT : SIMULATION_RATE_REDUCTION_ENABLED           = " << simulationRateReductionEnabled << endl;
+  cout << "WASM: AUTOPILOT : CALCULATED_LOCALIZER_AND_GLIDESLOPE_ENABLED = " << useCalculatedLocalizerAndGlideSlope << endl;
 
   // --------------------------------------------------------------------------
   // load values - autothrust
@@ -229,6 +232,15 @@ void FlyByWireInterface::setupLocalVariables() {
   // regsiter L variable for logging
   idLoggingFlightControlsEnabled = make_unique<LocalVariable>("A32NX_LOGGING_FLIGHT_CONTROLS_ENABLED");
   idLoggingThrottlesEnabled = make_unique<LocalVariable>("A32NX_LOGGING_THROTTLES_ENABLED");
+
+  // register L variables for Autoland
+  idDevelopmentAutoland_condition_Flare = make_unique<LocalVariable>("A32NX_DEV_FLARE_CONDITION");
+  idDevelopmentAutoland_H_dot_radio_fpm = make_unique<LocalVariable>("A32NX_DEV_FLARE_H_DOT_RADIO");
+  idDevelopmentAutoland_H_dot_c_fpm = make_unique<LocalVariable>("A32NX_DEV_FLARE_H_DOT_C");
+  idDevelopmentAutoland_delta_Theta_H_dot_deg = make_unique<LocalVariable>("A32NX_DEV_FLARE_DELTA_THETA_H_DOT");
+  idDevelopmentAutoland_delta_Theta_bz_deg = make_unique<LocalVariable>("A32NX_DEV_FLARE_DELTA_THETA_BZ");
+  idDevelopmentAutoland_delta_Theta_bx_deg = make_unique<LocalVariable>("A32NX_DEV_FLARE_DELTA_THETA_BX");
+  idDevelopmentAutoland_delta_Theta_beta_c_deg = make_unique<LocalVariable>("A32NX_DEV_FLARE_DELTA_THETA_BETA_C");
 
   // register L variable for simulation rate limits
   idMinimumSimulationRate = make_unique<LocalVariable>("A32NX_SIMULATION_RATE_LIMIT_MINIMUM");
@@ -521,7 +533,8 @@ bool FlyByWireInterface::readDataAndLocalVariables(double sampleTime) {
                                                          static_cast<unsigned long long>(getTcasModeAvailable()),
                                                          getTcasAdvisoryState(),
                                                          idTcasTargetGreenMin->get(),
-                                                         idTcasTargetGreenMax->get()};
+                                                         idTcasTargetGreenMax->get(),
+                                                         autopilotLawsOutput.flare_law.condition_Flare};
     simConnectInterface.setClientDataLocalVariables(clientDataLocalVariables);
   }
 
@@ -760,7 +773,7 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
     autopilotStateMachineInput.in.data.nav_valid = (simData.nav_valid != 0);
     autopilotStateMachineInput.in.data.nav_loc_deg = simData.nav_loc_deg;
     autopilotStateMachineInput.in.data.nav_gs_deg = simData.nav_gs_deg;
-    autopilotStateMachineInput.in.data.nav_dme_valid = (simData.nav_dme_valid != 0);
+    autopilotStateMachineInput.in.data.nav_dme_valid = useCalculatedLocalizerAndGlideSlope ? 0 : (simData.nav_dme_valid != 0);
     autopilotStateMachineInput.in.data.nav_dme_nmi = simData.nav_dme_nmi;
     autopilotStateMachineInput.in.data.nav_loc_valid = (simData.nav_loc_valid != 0);
     autopilotStateMachineInput.in.data.nav_loc_magvar_deg = simData.nav_loc_magvar_deg;
@@ -843,6 +856,7 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
     autopilotStateMachineInput.in.input.TCAS_advisory_state = getTcasAdvisoryState();
     autopilotStateMachineInput.in.input.TCAS_advisory_target_min_fpm = idTcasTargetGreenMin->get();
     autopilotStateMachineInput.in.input.TCAS_advisory_target_max_fpm = idTcasTargetGreenMax->get();
+    autopilotStateMachineInput.in.input.condition_Flare = autopilotLawsOutput.flare_law.condition_Flare;
 
     // step the model -------------------------------------------------------------------------------------------------
     autopilotStateMachine.setExternalInputs(&autopilotStateMachineInput);
@@ -1113,16 +1127,25 @@ bool FlyByWireInterface::updateAutopilotLaws(double sampleTime) {
     autopilotLawsInput.in.data.nav_valid = (simData.nav_valid != 0);
     autopilotLawsInput.in.data.nav_loc_deg = simData.nav_loc_deg;
     autopilotLawsInput.in.data.nav_gs_deg = simData.nav_gs_deg;
-    autopilotLawsInput.in.data.nav_dme_valid = (simData.nav_dme_valid != 0);
-    autopilotLawsInput.in.data.nav_dme_nmi = simData.nav_dme_nmi;
-    autopilotLawsInput.in.data.nav_loc_valid = (simData.nav_loc_valid != 0);
+    if (useCalculatedLocalizerAndGlideSlope) {
+      autopilotLawsInput.in.data.nav_dme_valid = 0;  // this forces the usage of the calculated dme
+      autopilotLawsInput.in.data.nav_dme_nmi = autopilotStateMachine.getExternalOutputs().out.data.nav_dme_nmi;
+      autopilotLawsInput.in.data.nav_loc_valid = autopilotStateMachine.getExternalOutputs().out.data.nav_e_loc_valid;
+      autopilotLawsInput.in.data.nav_loc_error_deg = autopilotStateMachine.getExternalOutputs().out.data.nav_e_loc_error_deg;
+      autopilotLawsInput.in.data.nav_gs_valid = autopilotStateMachine.getExternalOutputs().out.data.nav_e_gs_valid;
+      autopilotLawsInput.in.data.nav_gs_error_deg = autopilotStateMachine.getExternalOutputs().out.data.nav_e_gs_error_deg;
+    } else {
+      autopilotLawsInput.in.data.nav_dme_valid = (simData.nav_dme_valid != 0);
+      autopilotLawsInput.in.data.nav_dme_nmi = simData.nav_dme_nmi;
+      autopilotLawsInput.in.data.nav_loc_valid = (simData.nav_loc_valid != 0);
+      autopilotLawsInput.in.data.nav_loc_error_deg = simData.nav_loc_error_deg;
+      autopilotLawsInput.in.data.nav_gs_valid = (simData.nav_gs_valid != 0);
+      autopilotLawsInput.in.data.nav_gs_error_deg = simData.nav_gs_error_deg;
+    }
     autopilotLawsInput.in.data.nav_loc_magvar_deg = simData.nav_loc_magvar_deg;
-    autopilotLawsInput.in.data.nav_loc_error_deg = simData.nav_loc_error_deg;
     autopilotLawsInput.in.data.nav_loc_position.lat = simData.nav_loc_pos.Latitude;
     autopilotLawsInput.in.data.nav_loc_position.lon = simData.nav_loc_pos.Longitude;
     autopilotLawsInput.in.data.nav_loc_position.alt = simData.nav_loc_pos.Altitude;
-    autopilotLawsInput.in.data.nav_gs_valid = (simData.nav_gs_valid != 0);
-    autopilotLawsInput.in.data.nav_gs_error_deg = simData.nav_gs_error_deg;
     autopilotLawsInput.in.data.nav_gs_position.lat = simData.nav_gs_pos.Latitude;
     autopilotLawsInput.in.data.nav_gs_position.lon = simData.nav_gs_pos.Longitude;
     autopilotLawsInput.in.data.nav_gs_position.alt = simData.nav_gs_pos.Altitude;
@@ -1215,12 +1238,22 @@ bool FlyByWireInterface::updateAutopilotLaws(double sampleTime) {
     autopilotLawsOutput.autopilot.Beta_c_deg = clientDataLaws.autopilotBeta;
     autopilotLawsOutput.Phi_loc_c = clientDataLaws.locPhiCommand;
     autopilotLawsOutput.Nosewheel_c = clientDataLaws.nosewheelCommand;
+    autopilotLawsOutput.flare_law.condition_Flare = clientDataLaws.conditionFlare;
   }
 
   // update flight director -------------------------------------------------------------------------------------------
   idFlightDirectorPitch->set(-autopilotLawsOutput.flight_director.Theta_c_deg);
   idFlightDirectorBank->set(-autopilotLawsOutput.flight_director.Phi_c_deg);
   idFlightDirectorYaw->set(autopilotLawsOutput.flight_director.Beta_c_deg);
+
+  // update development variables -------------------------------------------------------------------------------------
+  idDevelopmentAutoland_condition_Flare->set(autopilotLawsOutput.flare_law.condition_Flare);
+  idDevelopmentAutoland_H_dot_radio_fpm->set(autopilotLawsOutput.flare_law.H_dot_radio_fpm);
+  idDevelopmentAutoland_H_dot_c_fpm->set(autopilotLawsOutput.flare_law.H_dot_c_fpm);
+  idDevelopmentAutoland_delta_Theta_H_dot_deg->set(autopilotLawsOutput.flare_law.delta_Theta_H_dot_deg);
+  idDevelopmentAutoland_delta_Theta_bx_deg->set(autopilotLawsOutput.flare_law.delta_Theta_bx_deg);
+  idDevelopmentAutoland_delta_Theta_bz_deg->set(autopilotLawsOutput.flare_law.delta_Theta_bz_deg);
+  idDevelopmentAutoland_delta_Theta_beta_c_deg->set(autopilotLawsOutput.flare_law.delta_Theta_beta_c_deg);
 
   // return result ----------------------------------------------------------------------------------------------------
   return true;

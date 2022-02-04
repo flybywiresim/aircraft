@@ -37,7 +37,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
                 (ElectricalBusType::DirectCurrentHot(2), 13),
                 (ElectricalBusType::DirectCurrentGndFltService, 15),
             ])?
-            .with_auxiliary_power_unit("OVHD_APU_START_PB_IS_AVAILABLE", 8)?
+            .with_auxiliary_power_unit(Variable::named("OVHD_APU_START_PB_IS_AVAILABLE"), 8)?
             .with_failures(vec![
                 (24_000, FailureType::TransformerRectifier(1)),
                 (24_001, FailureType::TransformerRectifier(2)),

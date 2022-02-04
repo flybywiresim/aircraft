@@ -69,6 +69,10 @@ pub trait EmergencyGeneratorPower {
     fn generated_power(&self) -> Power;
 }
 
+pub trait FeedbackPositionPickoffUnit {
+    fn angle(&self) -> Angle;
+}
+
 pub trait LandingGearRealPosition {
     fn is_up_and_locked(&self) -> bool;
     fn is_down_and_locked(&self) -> bool;
