@@ -763,4 +763,60 @@
         </UseTemplate>
     </Template>
 
+
+    <!--
+    Wrapper utility template for animation interaction speeds allowing
+    for control of all button, switches and korry's from one place.
+
+    Main parameters:
+            - ANIM_TYPE             <no default>        Type of interaction (KNOB, SWITCH, BUTTON, BUTTON_HELD, BUTTON_2WAY,
+                                                        BUTTON_PROTECTED, KORRY_BUTTON, KORRY_HELD, KORRY_PROTECTED)
+            - ANIM_TEMPLATE         <no default>        The template to call with these animation parameters
+    -->
+    <Template Name="FBW_Anim_Interactions">
+        <Parameters Type="Default">
+            <Switch Param="ANIM_TYPE">
+                <Case Value="KNOB">
+                    <ANIM_LAG>1000</ANIM_LAG>
+                </Case>
+                <Case Value="SWITCH">
+                    <ANIM_LAG>1000</ANIM_LAG>
+                </Case>
+                <Case Value="BUTTON">
+                    <ANIM_DURATION>0.25</ANIM_DURATION>
+                    <ANIM_LAG>3000</ANIM_LAG>
+                </Case>
+                <Case Value="BUTTON_HELD">
+                    <ANIM_LENGTH>20</ANIM_LENGTH>
+                    <ANIM_DURATION>0.05</ANIM_DURATION>
+                    <ANIM_LAG>1000</ANIM_LAG>
+                </Case>
+                <Case Value="BUTTON_2WAY">
+                    <ANIM_LAG>2500</ANIM_LAG>
+                </Case>
+                <Case Value="BUTTON_PROTECTED">
+                    <ANIM_LENGTH>100</ANIM_LENGTH>
+                    <ANIM_DURATION>0.2</ANIM_DURATION>
+                    <ANIM_LAG>1000</ANIM_LAG>
+                </Case>
+                <Case Value="KORRY_BUTTON">
+                    <ANIM_DURATION>0.2</ANIM_DURATION>
+                    <ANIM_LAG>2000</ANIM_LAG>
+                    <ANIM_LENGTH>100</ANIM_LENGTH>
+                </Case>
+                <Case Value="KORRY_HELD">
+                    <ANIM_LENGTH>20</ANIM_LENGTH>
+                    <ANIM_DURATION>0.05</ANIM_DURATION>
+                    <ANIM_LAG>1000</ANIM_LAG>
+                </Case>
+                <Case Value="KORRY_PROTECTED">
+                    <ANIM_LENGTH>100</ANIM_LENGTH>
+                    <ANIM_DURATION>0.2</ANIM_DURATION>
+                    <ANIM_LAG>1000</ANIM_LAG>
+                </Case>
+            </Switch>
+        </Parameters>
+        <UseTemplate Name="#ANIM_TEMPLATE#"></UseTemplate>
+    </Template>
+
 </ModelBehaviors>
