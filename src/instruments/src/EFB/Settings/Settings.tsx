@@ -518,7 +518,6 @@ const ATSUAOCPage = () => {
 
     const [hoppieUserId, setHoppieUserId] = usePersistentProperty('CONFIG_HOPPIE_USERID');
     const [hoppieError, setHoppieError] = useState(false);
-    const [hoppieEnabled, setHoppieEnabled] = useState(SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') === 1 ? 'ENABLED' : 'DISABLED');
 
     function getSimbriefUserData(value: string): Promise<any> {
         const SIMBRIEF_URL = 'https://www.simbrief.com/api/xml.fetcher.php?json=1';
@@ -657,28 +656,6 @@ const ATSUAOCPage = () => {
         }
     }
 
-    function handleHoppieToggle(toggleValue: boolean) {
-        if (toggleValue) {
-            if (hoppieUserId === '') {
-                new PopUp().showPopUp(
-                    'HOPPIE WARNING',
-                    'Hoppie system requires a user ID which can be requested. Please go to http://www.hoppie.nl/acars/ for further information',
-                    'small',
-                    () => {
-                        SimVar.SetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number', 0); setHoppieEnabled('DISABLED');
-                    },
-                    () => {},
-                );
-            } else {
-                SimVar.SetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number', 1);
-                setHoppieEnabled('ENABLED');
-            }
-        } else {
-            SimVar.SetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number', 0);
-            setHoppieEnabled('DISABLED');
-        }
-    }
-
     return (
         <div className="bg-navy-lighter rounded-xl px-6 divide-y divide-gray-700 flex flex-col">
             <div className="py-4 flex flex-row justify-between items-center">
@@ -762,10 +739,6 @@ const ATSUAOCPage = () => {
                         onChange={(value) => setHoppieUserId(value)}
                     />
                 </div>
-            </div>
-            <div className="py-4 flex flex-row justify-between items-center">
-                <span className="text-lg text-gray-300">Connect to Hoppie system</span>
-                <Toggle value={hoppieEnabled === 'ENABLED'} onToggle={(toggleValue) => handleHoppieToggle(toggleValue)} />
             </div>
         </div>
     );
