@@ -197,15 +197,20 @@
             </UseTemplate>
             <CameraTitle>PA</CameraTitle>
 
-            <!-- Console/Floor Lights -->
-            <UseTemplate Name="FBW_LIGHTING_Switch_Console_Template">
+            <!-- CPT CONSOLE/FLOOR LT -->
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>SWITCH</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_LIGHTING_Switch_Console_Template</ANIM_TEMPLATE>
                 <POTENTIOMETER>8</POTENTIOMETER>
                 <NODE_ID>SWITCH_EFIS_CS_CONSOLE</NODE_ID>
                 <PART_ID>SWITCH_EFIS_CS_CONSOLE</PART_ID>
                 <ANIM_NAME>SWITCH_EFIS_CS_CONSOLE</ANIM_NAME>
             </UseTemplate>
 
-            <UseTemplate Name="FBW_LIGHTING_Switch_Console_Template">
+            <!-- F/O CONSOLE/FLOOR LT -->
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>SWITCH</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_LIGHTING_Switch_Console_Template</ANIM_TEMPLATE>
                 <POTENTIOMETER>9</POTENTIOMETER>
                 <NODE_ID>SWITCH_EFIS_FO_CONSOLE</NODE_ID>
                 <PART_ID>SWITCH_EFIS_FO_CONSOLE</PART_ID>
@@ -235,10 +240,15 @@
                 <TOOLTIPID>TT:COCKPIT.TOOLTIPS.ENG2_THROTTLE_CONTROL</TOOLTIPID>
             </UseTemplate>
 
-            <UseTemplate Name="FBW_AutoThrottle_Instinctive_Disconnect_Template">
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>BUTTON</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_AutoThrottle_Instinctive_Disconnect_Template</ANIM_TEMPLATE>
                 <NODE_ID>PUSH_THROTTLE_1</NODE_ID>
             </UseTemplate>
-            <UseTemplate Name="FBW_AutoThrottle_Instinctive_Disconnect_Template">
+
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>BUTTON</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_AutoThrottle_Instinctive_Disconnect_Template</ANIM_TEMPLATE>
                 <NODE_ID>PUSH_THROTTLE_2</NODE_ID>
             </UseTemplate>
 
@@ -281,7 +291,11 @@
 
         <Component ID="Pedestal_Aft">
             <Component ID="Engines">
-                <UseTemplate Name="FBW_ENGINE_Switch_Master_Template">
+
+                <!-- ENG MASTER 1 -->
+                <UseTemplate Name="FBW_Anim_Interactions">
+                    <ANIM_TYPE>SWITCH</ANIM_TYPE>
+                    <ANIM_TEMPLATE>FBW_ENGINE_Switch_Master_Template</ANIM_TEMPLATE>
                     <AIRBUS_TYPE/>
                     <ANIM_NAME>SWITCH_ENGINES_ENG1</ANIM_NAME>
                     <NODE_ID>SWITCH_ENGINES_ENG1</NODE_ID>
@@ -292,7 +306,10 @@
                     <POTENTIOMETER>9999</POTENTIOMETER>
                 </UseTemplate>
 
-                <UseTemplate Name="FBW_ENGINE_Switch_Master_Template">
+                <!-- ENG MASTER 2 -->
+                <UseTemplate Name="FBW_Anim_Interactions">
+                    <ANIM_TYPE>SWITCH</ANIM_TYPE>
+                    <ANIM_TEMPLATE>FBW_ENGINE_Switch_Master_Template</ANIM_TEMPLATE>
                     <AIRBUS_TYPE/>
                     <ANIM_NAME>SWITCH_ENGINES_ENG2</ANIM_NAME>
                     <NODE_ID>SWITCH_ENGINES_ENG2</NODE_ID>
@@ -302,13 +319,17 @@
                     <POTENTIOMETER>9999</POTENTIOMETER>
                 </UseTemplate>
 
+                <UseTemplate Name="FBW_AIRBUS_Update_PTU_Template"></UseTemplate>
 
                 <!-- Mixture Lever does not exist in A320 but can be set to 0 by Auto Shutdown. Ensure it is always >0.9 -->
                 <Update Frequency="1">
                 (A:GENERAL ENG MIXTURE LEVER POSITION:1, Percent over 100) 0.9 &lt; if{ (&gt;K:MIXTURE1_RICH) }
                 (A:GENERAL ENG MIXTURE LEVER POSITION:2, Percent over 100) 0.9 &lt; if{ (&gt;K:MIXTURE2_RICH) }
                 </Update>
-                <UseTemplate Name="A32NX_ENGINE_MODE_SELECTOR_TEMPLATE">
+
+                <UseTemplate Name="FBW_Anim_Interactions">
+                    <ANIM_TYPE>KNOB</ANIM_TYPE>
+                    <ANIM_TEMPLATE>A32NX_ENGINE_MODE_SELECTOR_TEMPLATE</ANIM_TEMPLATE>
                     <AIRBUS_TYPE/>
                     <ANIM_NAME>KNOB_ENGINES_MODE</ANIM_NAME>
                     <NODE_ID>KNOB_ENGINES_MODE</NODE_ID>
@@ -324,6 +345,7 @@
             </Component>
 
             <Component ID="HANDLING">
+                <!-- RUD TRIM -->
                 <UseTemplate Name="FBW_HANDLING_Knob_RudderTrim_Template">
                     <AIRBUS_TYPE/>
                     <ANIM_NAME>KNOB_RUDDERTRIM</ANIM_NAME>
@@ -351,10 +373,11 @@
                     <ANIMTIP_2>TT:COCKPIT.TOOLTIPS.FLAPS_LEVER_P2</ANIMTIP_2>
                     <ANIMTIP_3>TT:COCKPIT.TOOLTIPS.FLAPS_LEVER_LDG</ANIMTIP_3>
                     <ANIMTIP_4>TT:COCKPIT.TOOLTIPS.FLAPS_LEVER_FULL</ANIMTIP_4>
-
                 </UseTemplate>
 
-                <UseTemplate Name="FBW_LANDING_GEAR_Switch_ParkingBrake_Template">
+                <UseTemplate Name="FBW_Anim_Interactions">
+                    <ANIM_TYPE>KNOB</ANIM_TYPE>
+                    <ANIM_TEMPLATE>FBW_LANDING_GEAR_Switch_ParkingBrake_Template</ANIM_TEMPLATE>
                     <ANIM_NAME>lever_parking_brake</ANIM_NAME>
                     <NODE_ID>LEVER_PARKINGBRAKE</NODE_ID>
                 </UseTemplate>
@@ -375,15 +398,25 @@
             </Component>
 
             <Component ID="WeatherRadar">
-                <UseTemplate Name="FBW_AIRBUS_WeatherRadar_Template">
-                    <NODE_ID_MODE_KNOB>KNOB_RADAR_MODE</NODE_ID_MODE_KNOB>
+
+                <UseTemplate Name="FBW_Anim_Interactions">
+                    <ANIM_TYPE>KNOB</ANIM_TYPE>
+                    <ANIM_TEMPLATE>FBW_AIRBUS_WeatherRadar_Mode_Template</ANIM_TEMPLATE>
+                    <NODE_ID>KNOB_RADAR_MODE</NODE_ID>
                     <PART_ID>KNOB_RADAR_MODE</PART_ID>
-                    <ANIM_NAME_MODE_KNOB>KNOB_RADAR_MODE</ANIM_NAME_MODE_KNOB>
-                    <NODE_ID_ONOFF_SWITCH>SWITCH_RADAR_SYS</NODE_ID_ONOFF_SWITCH>
-                    <ANIM_NAME_ONOFF_SWITCH>SWITCH_RADAR_SYS</ANIM_NAME_ONOFF_SWITCH>
+                    <ANIM_NAME>KNOB_RADAR_MODE</ANIM_NAME>
                 </UseTemplate>
 
-                <UseTemplate Name="A32NX_GT_Switch_Dummy">
+                <UseTemplate Name="FBW_Anim_Interactions">
+                    <ANIM_TYPE>SWITCH</ANIM_TYPE>
+                    <ANIM_TEMPLATE>FBW_AIRBUS_WeatherRadar_Sys_Template</ANIM_TEMPLATE>
+                    <NODE_ID>SWITCH_RADAR_SYS</NODE_ID>
+                    <ANIM_NAME>SWITCH_RADAR_SYS</ANIM_NAME>
+                </UseTemplate>
+
+                <UseTemplate Name="FBW_Anim_Interactions">
+                    <ANIM_TYPE>SWITCH</ANIM_TYPE>
+                    <ANIM_TEMPLATE>A32NX_GT_Switch_Dummy</ANIM_TEMPLATE>
                     <NODE_ID>SWITCH_RADAR_PWS</NODE_ID>
                     <Part_ID>PWS_Switch</Part_ID>
                     <ANIM_NAME>SWITCH_RADAR_PWS</ANIM_NAME>
@@ -396,7 +429,10 @@
                     <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
                     <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
                 </UseTemplate>
-                <UseTemplate Name="A32NX_GT_Switch_Dummy">
+
+                <UseTemplate Name="FBW_Anim_Interactions">
+                    <ANIM_TYPE>SWITCH</ANIM_TYPE>
+                    <ANIM_TEMPLATE>A32NX_GT_Switch_Dummy</ANIM_TEMPLATE>
                     <NODE_ID>SWITCH_RADAR_MULTISCAN</NODE_ID>
                     <ANIM_NAME>SWITCH_RADAR_MULTISCAN</ANIM_NAME>
                     <TOGGLE_SIMVAR>L:A32NX_RADAR_MULTISCAN_AUTO</TOGGLE_SIMVAR>
@@ -407,7 +443,10 @@
                     <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
                     <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
                 </UseTemplate>
-                <UseTemplate Name="A32NX_GT_Switch_Dummy">
+
+                <UseTemplate Name="FBW_Anim_Interactions">
+                    <ANIM_TYPE>SWITCH</ANIM_TYPE>
+                    <ANIM_TEMPLATE>A32NX_GT_Switch_Dummy</ANIM_TEMPLATE>
                     <NODE_ID>SWITCH_RADAR_GCS</NODE_ID>
                     <TOGGLE_SIMVAR>L:A32NX_RADAR_GCS_AUTO</TOGGLE_SIMVAR>
                     <ANIM_NAME>SWITCH_RADAR_GCS</ANIM_NAME>
@@ -418,6 +457,7 @@
                     <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
                     <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
                 </UseTemplate>
+
             </Component>
             <CameraTitle>PedestalAft</CameraTitle>
         </Component>
@@ -446,12 +486,16 @@
                 <ANIM_NAME_YOKE_Y>yoke_lever_stick_fore2_aft</ANIM_NAME_YOKE_Y>
             </UseTemplate>
 
-            <UseTemplate Name="FBW_Airbus_Sidestick_Priority">
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>BUTTON_HELD</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_Airbus_Sidestick_Priority</ANIM_TEMPLATE>
                 <NODE_ID>PUSH_YOKE_LEFT</NODE_ID>
                 <ANIM_NAME>PUSH_YOKE_LEFT</ANIM_NAME>
                 <ID>1</ID>
             </UseTemplate>
-            <UseTemplate Name="FBW_Airbus_Sidestick_Priority">
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>BUTTON_HELD</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_Airbus_Sidestick_Priority</ANIM_TEMPLATE>
                 <NODE_ID>PUSH_YOKE_RIGHT</NODE_ID>
                 <ANIM_NAME>PUSH_YOKE_RIGHT</ANIM_NAME>
                 <ID>2</ID>
@@ -485,24 +529,28 @@
                 <EMISSIVE_CODE>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
             </UseTemplate>
 
-            <UseTemplate Name="FBW_AIRBUS_Push_Transfer_Template">
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>BUTTON_HELD</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_AIRBUS_Push_Transfer_Template</ANIM_TEMPLATE>
                 <NODE_ID>PUSH_EFIS_CS_PFD</NODE_ID>
                 <ANIM_NAME>PUSH_EFIS_CS_PFD</ANIM_NAME>
                 <ID>1</ID>
             </UseTemplate>
-            <UseTemplate Name="FBW_AIRBUS_Push_Transfer_Template">
+
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>BUTTON_HELD</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_AIRBUS_Push_Transfer_Template</ANIM_TEMPLATE>
                 <NODE_ID>PUSH_EFIS_FO_PFD</NODE_ID>
                 <ANIM_NAME>PUSH_EFIS_FO_PFD</ANIM_NAME>
                 <ID>2</ID>
             </UseTemplate>
-
 
             <Component ID="Screens_Left">
                 <DefaultTemplateParameters>
                     <PLANE_NAME>A32NX</PLANE_NAME>
                 </DefaultTemplateParameters>
 
-                <!-- CPT PFD SCREEN -->
+                <!-- CPT PFD BRIGHTNESS -->
                 <UseTemplate Name="FBW_Stepless_Potentiometer">
                     <NODE_ID>KNOB_EFIS_CS_PFD</NODE_ID>
                     <PART_ID>PFD_Brightness</PART_ID>
@@ -511,6 +559,7 @@
                     <POTENTIOMETER>88</POTENTIOMETER>
                 </UseTemplate>
 
+                <!-- CPT PFD SCREEN -->
                 <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
                     <NODE_ID>SCREEN_PFD_L</NODE_ID>
                     <POTENTIOMETER>88</POTENTIOMETER>
@@ -520,13 +569,19 @@
                     <EMISSIVE_CODE>1</EMISSIVE_CODE>
                 </UseTemplate>
 
-                <UseTemplate Name="FBW_Airbus_Push_EFIS_GPWS">
+                <!-- CPT EFIS GPWS G/S -->
+                <UseTemplate Name="FBW_Anim_Interactions">
+                    <ANIM_TYPE>KORRY_HELD</ANIM_TYPE>
+                    <ANIM_TEMPLATE>FBW_Airbus_Push_EFIS_GPWS</ANIM_TEMPLATE>
                     <NODE_ID>PUSH_EFIS_CS_GPWS</NODE_ID>
                     <ANIM_NAME>PUSH_EFIS_CS_GPWS</ANIM_NAME>
                     <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                 </UseTemplate>
 
-                <UseTemplate Name="FBW_AIRBUS_Push_TERRONND_Template">
+                <!-- CPT TERR ON ND -->
+                <UseTemplate Name="FBW_Anim_Interactions">
+                    <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                    <ANIM_TEMPLATE>FBW_AIRBUS_Push_TERRONND_Template</ANIM_TEMPLATE>
                     <NODE_ID>PUSH_TERRONND</NODE_ID>
                     <ANIM_NAME>PUSH_TERRONND</ANIM_NAME>
                     <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
@@ -537,7 +592,10 @@
                     <ID>1</ID>
                 </UseTemplate>
 
-                <UseTemplate Name="FBW_AIRBUS_Push_TERRONND_Template">
+                <!-- F/O TERR ON ND -->
+                <UseTemplate Name="FBW_Anim_Interactions">
+                    <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                    <ANIM_TEMPLATE>FBW_AIRBUS_Push_TERRONND_Template</ANIM_TEMPLATE>
                     <NODE_ID>PUSH_AUTOBKR_TERRONND</NODE_ID>
                     <ANIM_NAME>PUSH_AUTOBKR_TERRONND</ANIM_NAME>
                     <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
@@ -594,7 +652,7 @@
                     <NODE_ID>PRINT_TORN</NODE_ID>
                 </UseTemplate>
 
-                <!-- CPT ND SCREEN -->
+                <!-- CPT ND BRIGHTNESS -->
                 <UseTemplate Name="FBW_Stepless_Potentiometer">
                     <NODE_ID>KNOB_EFIS_CS_ND_SMALL</NODE_ID>
                     <PART_ID>ND_Brightness</PART_ID>
@@ -603,7 +661,7 @@
                     <POTENTIOMETER>89</POTENTIOMETER>
                 </UseTemplate>
 
-                <!-- CPT WX SCREEN -->
+                <!-- CPT ND WX BRIGHTNESS -->
                 <UseTemplate Name="FBW_Stepless_Potentiometer">
                     <NODE_ID>KNOB_EFIS_CS_ND</NODE_ID>
                     <PART_ID>ND_WX_Brightness_CS</PART_ID>
@@ -612,6 +670,7 @@
                     <POTENTIOMETER>94</POTENTIOMETER>
                 </UseTemplate>
 
+                <!-- CPT ND SCREEN -->
                 <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
                     <NODE_ID>SCREEN_MFD_L</NODE_ID>
                     <POTENTIOMETER>89</POTENTIOMETER>
@@ -642,7 +701,7 @@
                     <PLANE_NAME>A32NX</PLANE_NAME>
                 </DefaultTemplateParameters>
 
-                <!-- F/O PFD SCREEN -->
+                <!-- F/O PFD BRIGHTNESS -->
                 <UseTemplate Name="FBW_Stepless_Potentiometer">
                     <NODE_ID>KNOB_EFIS_FO_PFD</NODE_ID>
                     <PART_ID>PFD_Brightness_FO</PART_ID>
@@ -651,12 +710,16 @@
                     <POTENTIOMETER>90</POTENTIOMETER>
                 </UseTemplate>
 
-                <UseTemplate Name="FBW_Airbus_Push_EFIS_GPWS">
+                <!-- F/O EFIS GPWS G/S -->
+                <UseTemplate Name="FBW_Anim_Interactions">
+                    <ANIM_TYPE>KORRY_HELD</ANIM_TYPE>
+                    <ANIM_TEMPLATE>FBW_Airbus_Push_EFIS_GPWS</ANIM_TEMPLATE>
                     <NODE_ID>PUSH_EFIS_FO_GPWS</NODE_ID>
                     <ANIM_NAME>PUSH_EFIS_FO_GPWS</ANIM_NAME>
                     <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                 </UseTemplate>
 
+                <!-- F/O PDF SCREEN -->
                 <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
                     <NODE_ID>SCREEN_PFD_R</NODE_ID>
                     <POTENTIOMETER>90</POTENTIOMETER>
@@ -665,7 +728,7 @@
                     <EMISSIVE_CODE>1</EMISSIVE_CODE>
                 </UseTemplate>
 
-                <!-- F/O ND SCREEN -->
+                <!-- F/O ND BRIGHTNESS -->
                 <UseTemplate Name="FBW_Stepless_Potentiometer">
                     <NODE_ID>KNOB_EFIS_FO_ND_SMALL</NODE_ID>
                     <PART_ID>ND_Brightness_FO</PART_ID>
@@ -674,6 +737,7 @@
                     <POTENTIOMETER>91</POTENTIOMETER>
                 </UseTemplate>
 
+                <!-- F/O ND SCREEN -->
                 <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
                     <NODE_ID>SCREEN_MFD_R</NODE_ID>
                     <POTENTIOMETER>91</POTENTIOMETER>
@@ -682,7 +746,7 @@
                     <EMISSIVE_CODE>1</EMISSIVE_CODE>
                 </UseTemplate>
 
-                <!-- F/O WX SCREEN -->
+                <!-- F/O ND WX BRIGHTNESS -->
                 <UseTemplate Name="FBW_Stepless_Potentiometer">
                     <NODE_ID>KNOB_EFIS_FO_ND</NODE_ID>
                     <PART_ID>ND_WX_Brightness_FO</PART_ID>
@@ -710,7 +774,11 @@
         </Component>
 
         <Component ID="Front_Middle">
-            <UseTemplate Name="FBW_Push_Toggle">
+
+            <!-- BRK FAN -->
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_Push_Toggle</ANIM_TEMPLATE>
                 <NODE_ID>PUSH_BKRFAN_IMPORTED</NODE_ID>
                 <PART_ID>BRKFAN</PART_ID>
                 <TOGGLE_SIMVAR>L:A32NX_BRAKE_FAN_BTN_PRESSED</TOGGLE_SIMVAR>
@@ -748,7 +816,9 @@
             <UseTemplate Name="ASOBO_LANDING_GEAR_Warning_Template">
                 <ANIM_NAME>DECAL_LANDING_INDICATOR</ANIM_NAME>
             </UseTemplate>
-            <UseTemplate Name="FBW_Push_Toggle">
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_Push_Toggle</ANIM_TEMPLATE>
                 <NODE_ID>PUSH_AUTOBKR_LO</NODE_ID>
                 <LEFT_SINGLE_CODE>1 (&gt;L:A32NX_OVHD_AUTOBRK_LOW_ON_IS_PRESSED)</LEFT_SINGLE_CODE>
                 <LEFT_LEAVE_CODE>0 (&gt;L:A32NX_OVHD_AUTOBRK_LOW_ON_IS_PRESSED)</LEFT_LEAVE_CODE>
@@ -763,7 +833,9 @@
                 <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                 <TOOLTIPID>Auto brake LOW</TOOLTIPID>
             </UseTemplate>
-            <UseTemplate Name="FBW_Push_Toggle">
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_Push_Toggle</ANIM_TEMPLATE>
                 <NODE_ID>PUSH_AUTOBKR_MED</NODE_ID>
                 <LEFT_SINGLE_CODE>1 (&gt;L:A32NX_OVHD_AUTOBRK_MED_ON_IS_PRESSED)</LEFT_SINGLE_CODE>
                 <LEFT_LEAVE_CODE>0 (&gt;L:A32NX_OVHD_AUTOBRK_MED_ON_IS_PRESSED)</LEFT_LEAVE_CODE>
@@ -778,7 +850,9 @@
                 <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                 <TOOLTIPID>Auto brake MEDIUM</TOOLTIPID>
             </UseTemplate>
-            <UseTemplate Name="FBW_Push_Toggle">
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_Push_Toggle</ANIM_TEMPLATE>
                 <NODE_ID>PUSH_AUTOBKR_MAX</NODE_ID>
                 <LEFT_SINGLE_CODE>1 (&gt;L:A32NX_OVHD_AUTOBRK_MAX_ON_IS_PRESSED)</LEFT_SINGLE_CODE>
                 <LEFT_LEAVE_CODE>0 (&gt;L:A32NX_OVHD_AUTOBRK_MAX_ON_IS_PRESSED)</LEFT_LEAVE_CODE>
@@ -793,7 +867,9 @@
                 <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                 <TOOLTIPID>Auto brake MAX</TOOLTIPID>
             </UseTemplate>
-            <UseTemplate Name="FBW_HANDLING_Switch_AntiSkid_Template">
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>SWITCH</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_HANDLING_Switch_AntiSkid_Template</ANIM_TEMPLATE>
                 <NODE_ID>SWITCH_AUTOBKR_ASKID</NODE_ID>
                 <PART_ID>Antiskid_Switch</PART_ID>
                 <ANIM_NAME>SWITCH_AUTOBKR_ASKID</ANIM_NAME>
@@ -822,31 +898,41 @@
                         <ANIM_NAME>AUTOPILOT_Knob_Baro</ANIM_NAME>
                         <NODE_ID>AUTOPILOT_Knob_Baro</NODE_ID>
                     </UseTemplate>
-                    <UseTemplate Name="A32NX_ISIS_Push_Template">
+                    <UseTemplate Name="FBW_Anim_Interactions">
+                        <ANIM_TYPE>BUTTON</ANIM_TYPE>
+                        <ANIM_TEMPLATE>A32NX_ISIS_Push_Template</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_BARO_BUGS</NODE_ID>
                         <TOOLTIPID>Toggle ISI Bugs</TOOLTIPID>
                         <BTN_ID>BUGS</BTN_ID>
                         <ONLY_SEQ1/>
                     </UseTemplate>
-                    <UseTemplate Name="A32NX_ISIS_Push_Template">
+                    <UseTemplate Name="FBW_Anim_Interactions">
+                        <ANIM_TYPE>BUTTON</ANIM_TYPE>
+                        <ANIM_TEMPLATE>A32NX_ISIS_Push_Template</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_BARO_LS</NODE_ID>
                         <TOOLTIPID>Toggle LS scales</TOOLTIPID>
                         <BTN_ID>LS</BTN_ID>
                         <ONLY_SEQ1/>
                     </UseTemplate>
-                    <UseTemplate Name="A32NX_ISIS_Push_Held_Template">
+                    <UseTemplate Name="FBW_Anim_Interactions">
+                        <ANIM_TYPE>BUTTON</ANIM_TYPE>
+                        <ANIM_TEMPLATE>A32NX_ISIS_Push_Held_Template</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_BARO_PLUS</NODE_ID>
                         <TOOLTIPID>Increase ISI brightness</TOOLTIPID>
                         <BTN_ID>PLUS</BTN_ID>
                         <ONLY_SEQ1/>
                     </UseTemplate>
-                    <UseTemplate Name="A32NX_ISIS_Push_Held_Template">
+                    <UseTemplate Name="FBW_Anim_Interactions">
+                        <ANIM_TYPE>BUTTON</ANIM_TYPE>
+                        <ANIM_TEMPLATE>A32NX_ISIS_Push_Held_Template</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_BARO_MINUS</NODE_ID>
                         <TOOLTIPID>Decrease ISI brightness</TOOLTIPID>
                         <BTN_ID>MINUS</BTN_ID>
                         <ONLY_SEQ1/>
                     </UseTemplate>
-                    <UseTemplate Name="A32NX_ISIS_Push_Held_Template">
+                    <UseTemplate Name="FBW_Anim_Interactions">
+                        <ANIM_TYPE>BUTTON</ANIM_TYPE>
+                        <ANIM_TEMPLATE>A32NX_ISIS_Push_Held_Template</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_BARO_RST</NODE_ID>
                         <TOOLTIPID>Reset ISI Attitude</TOOLTIPID>
                         <BTN_ID>RST</BTN_ID>
@@ -906,117 +992,157 @@
             <!-- DCDU / CPDLC screens -->
             <Component ID="DCDU_Screens">
 
-                <!-- Captain side -->
+                <!-- CPT DCDU -->
                 <Component ID="Left_DCDU">
                     <DefaultTemplateParameters>
                         <PLANE_NAME>A32NX</PLANE_NAME>
                     </DefaultTemplateParameters>
 
-                    <!-- Brightness -->
-                    <UseTemplate Name="FBW_Airbus_DCDU_Brightness_Switch">
+                    <!-- DCDU BRT/DIM -->
+                    <UseTemplate Name="FBW_Anim_Interactions">
+                        <ANIM_TYPE>BUTTON_2WAY</ANIM_TYPE>
+                        <ANIM_TEMPLATE>FBW_Airbus_DCDU_Brightness_Switch</ANIM_TEMPLATE>
                         <DCDU_SIDE>L</DCDU_SIDE>
                         <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
                     </UseTemplate>
 
-                    <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
+                    <UseTemplate Name="FBW_Anim_Interactions">
+                        <ANIM_TYPE>BUTTON</ANIM_TYPE>
+                        <ANIM_TEMPLATE>FBW_Airbus_DCDU_Generic_Inop_Switch</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_MPL_MS0MINUS</NODE_ID>
                         <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
                     </UseTemplate>
 
-                    <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
+                    <UseTemplate Name="FBW_Anim_Interactions">
+                        <ANIM_TYPE>BUTTON</ANIM_TYPE>
+                        <ANIM_TEMPLATE>FBW_Airbus_DCDU_Generic_Inop_Switch</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_MPL_MS0PLUS</NODE_ID>
                         <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
                     </UseTemplate>
 
-                    <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
+                    <UseTemplate Name="FBW_Anim_Interactions">
+                        <ANIM_TYPE>BUTTON</ANIM_TYPE>
+                        <ANIM_TEMPLATE>FBW_Airbus_DCDU_Generic_Inop_Switch</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_MPL_L1</NODE_ID>
                         <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
                     </UseTemplate>
 
-                    <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
+                    <UseTemplate Name="FBW_Anim_Interactions">
+                        <ANIM_TYPE>BUTTON</ANIM_TYPE>
+                        <ANIM_TEMPLATE>FBW_Airbus_DCDU_Generic_Inop_Switch</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_MPL_L2</NODE_ID>
                         <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
                     </UseTemplate>
 
-                    <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
+                    <UseTemplate Name="FBW_Anim_Interactions">
+                        <ANIM_TYPE>BUTTON</ANIM_TYPE>
+                        <ANIM_TEMPLATE>FBW_Airbus_DCDU_Generic_Inop_Switch</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_MPL_PRINT</NODE_ID>
                         <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
                     </UseTemplate>
 
-                    <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
+                    <UseTemplate Name="FBW_Anim_Interactions">
+                        <ANIM_TYPE>BUTTON</ANIM_TYPE>
+                        <ANIM_TEMPLATE>FBW_Airbus_DCDU_Generic_Inop_Switch</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_MPL_POEMINUS</NODE_ID>
                         <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
                     </UseTemplate>
 
-                    <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
+                    <UseTemplate Name="FBW_Anim_Interactions">
+                        <ANIM_TYPE>BUTTON</ANIM_TYPE>
+                        <ANIM_TEMPLATE>FBW_Airbus_DCDU_Generic_Inop_Switch</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_MPL_POEPLUS</NODE_ID>
                         <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
                     </UseTemplate>
 
-                    <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
+                    <UseTemplate Name="FBW_Anim_Interactions">
+                        <ANIM_TYPE>BUTTON</ANIM_TYPE>
+                        <ANIM_TEMPLATE>FBW_Airbus_DCDU_Generic_Inop_Switch</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_MPL_R1</NODE_ID>
                         <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
                     </UseTemplate>
 
-                    <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
+                    <UseTemplate Name="FBW_Anim_Interactions">
+                        <ANIM_TYPE>BUTTON</ANIM_TYPE>
+                        <ANIM_TEMPLATE>FBW_Airbus_DCDU_Generic_Inop_Switch</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_MPL_R2</NODE_ID>
                         <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
                     </UseTemplate>
                 </Component>
 
-                <!-- F/O side -->
+                <!-- F/O DCDU -->
                 <Component ID="Right_DCDU">
                     <DefaultTemplateParameters>
                         <PLANE_NAME>A32NX</PLANE_NAME>
                     </DefaultTemplateParameters>
 
-                    <!-- Brightness -->
-                    <UseTemplate Name="FBW_Airbus_DCDU_Brightness_Switch">
+                    <!-- DCDU BRT/DIM -->
+                    <UseTemplate Name="FBW_Anim_Interactions">
+                        <ANIM_TYPE>BUTTON_2WAY</ANIM_TYPE>
+                        <ANIM_TEMPLATE>FBW_Airbus_DCDU_Brightness_Switch</ANIM_TEMPLATE>
                         <DCDU_SIDE>R</DCDU_SIDE>
                         <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
                     </UseTemplate>
 
-                    <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
+                    <UseTemplate Name="FBW_Anim_Interactions">
+                        <ANIM_TYPE>BUTTON</ANIM_TYPE>
+                        <ANIM_TEMPLATE>FBW_Airbus_DCDU_Generic_Inop_Switch</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_MPR_MS0MINUS</NODE_ID>
                         <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
                     </UseTemplate>
 
-                    <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
+                    <UseTemplate Name="FBW_Anim_Interactions">
+                        <ANIM_TYPE>BUTTON</ANIM_TYPE>
+                        <ANIM_TEMPLATE>FBW_Airbus_DCDU_Generic_Inop_Switch</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_MPR_MS0PLUS</NODE_ID>
                         <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
                     </UseTemplate>
 
-                    <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
+                    <UseTemplate Name="FBW_Anim_Interactions">
+                        <ANIM_TYPE>BUTTON</ANIM_TYPE>
+                        <ANIM_TEMPLATE>FBW_Airbus_DCDU_Generic_Inop_Switch</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_MPR_L1</NODE_ID>
                         <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
                     </UseTemplate>
 
-                    <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
+                    <UseTemplate Name="FBW_Anim_Interactions">
+                        <ANIM_TYPE>BUTTON</ANIM_TYPE>
+                        <ANIM_TEMPLATE>FBW_Airbus_DCDU_Generic_Inop_Switch</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_MPR_L2</NODE_ID>
                         <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
                     </UseTemplate>
 
-                    <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
+                    <UseTemplate Name="FBW_Anim_Interactions">
+                        <ANIM_TYPE>BUTTON</ANIM_TYPE>
+                        <ANIM_TEMPLATE>FBW_Airbus_DCDU_Generic_Inop_Switch</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_MPR_PRINT</NODE_ID>
                         <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
                     </UseTemplate>
 
-                    <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
+                    <UseTemplate Name="FBW_Anim_Interactions">
+                        <ANIM_TYPE>BUTTON</ANIM_TYPE>
+                        <ANIM_TEMPLATE>FBW_Airbus_DCDU_Generic_Inop_Switch</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_MPR_POEMINUS</NODE_ID>
                         <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
                     </UseTemplate>
 
-                    <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
+                    <UseTemplate Name="FBW_Anim_Interactions">
+                        <ANIM_TYPE>BUTTON</ANIM_TYPE>
+                        <ANIM_TEMPLATE>FBW_Airbus_DCDU_Generic_Inop_Switch</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_MPR_POEPLUS</NODE_ID>
                         <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
                     </UseTemplate>
 
-                    <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
+                    <UseTemplate Name="FBW_Anim_Interactions">
+                        <ANIM_TYPE>BUTTON</ANIM_TYPE>
+                        <ANIM_TEMPLATE>FBW_Airbus_DCDU_Generic_Inop_Switch</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_MPR_R1</NODE_ID>
                         <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
                     </UseTemplate>
 
-                    <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
+                    <UseTemplate Name="FBW_Anim_Interactions">
+                        <ANIM_TYPE>BUTTON</ANIM_TYPE>
+                        <ANIM_TEMPLATE>FBW_Airbus_DCDU_Generic_Inop_Switch</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_MPR_R2</NODE_ID>
                         <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
                     </UseTemplate>
@@ -1033,7 +1159,10 @@
                     <TYPE>AIRBUS</TYPE>
                 </DefaultTemplateParameters>
 
-                <UseTemplate Name="FBW_Airbus_Battery_Master_Switch">
+                <!-- ELEC BAT1 -->
+                <UseTemplate Name="FBW_Anim_Interactions">
+                    <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                    <ANIM_TEMPLATE>FBW_Airbus_Battery_Master_Switch</ANIM_TEMPLATE>
                     <NODE_ID>PUSH_OVHD_ELEC_BAT1</NODE_ID>
                     <PART_ID>BATTERY_MASTER_SWITCH_1</PART_ID>
                     <ID>1</ID>
@@ -1042,7 +1171,10 @@
                     <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                 </UseTemplate>
 
-                <UseTemplate Name="FBW_Airbus_Battery_Master_Switch">
+                <!-- ELEC BAT2 -->
+                <UseTemplate Name="FBW_Anim_Interactions">
+                    <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                    <ANIM_TEMPLATE>FBW_Airbus_Battery_Master_Switch</ANIM_TEMPLATE>
                     <NODE_ID>PUSH_OVHD_ELEC_BAT2</NODE_ID>
                     <PART_ID>BATTERY_MASTER_SWITCH_2</PART_ID>
                     <ID>2</ID>
@@ -1051,7 +1183,10 @@
                     <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                 </UseTemplate>
 
-                <UseTemplate Name="FBW_Airbus_Engine_Generator_Switch">
+                <!-- ELEC GEN1-->
+                <UseTemplate Name="FBW_Anim_Interactions">
+                    <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                    <ANIM_TEMPLATE>FBW_Airbus_Engine_Generator_Switch</ANIM_TEMPLATE>
                     <NODE_ID>PUSH_OVHD_ELEC_GEN1</NODE_ID>
                     <ID>1</ID>
                     <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_STAT_INV_BUS_IS_POWERED, Bool) or</SEQ_POWERED>
@@ -1060,7 +1195,10 @@
                     <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                 </UseTemplate>
 
-                <UseTemplate Name="FBW_Airbus_Engine_Generator_Switch">
+                <!-- ELEC GEN2 -->
+                <UseTemplate Name="FBW_Anim_Interactions">
+                    <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                    <ANIM_TEMPLATE>FBW_Airbus_Engine_Generator_Switch</ANIM_TEMPLATE>
                     <NODE_ID>PUSH_OVHD_ELEC_GEN2</NODE_ID>
                     <ID>2</ID>
                     <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_STAT_INV_BUS_IS_POWERED, Bool) or</SEQ_POWERED>
@@ -1069,7 +1207,10 @@
                     <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                 </UseTemplate>
 
-                <UseTemplate Name="FBW_Airbus_APU_Generator_Switch">
+                <!-- ELEC APU GEN -->
+                <UseTemplate Name="FBW_Anim_Interactions">
+                    <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                    <ANIM_TEMPLATE>FBW_Airbus_APU_Generator_Switch</ANIM_TEMPLATE>
                     <NODE_ID>PUSH_OVHD_ELEC_APUGEN</NODE_ID>
                     <ID>1</ID>
                     <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_STAT_INV_BUS_IS_POWERED, Bool) or</SEQ_POWERED>
@@ -1078,8 +1219,10 @@
                     <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                 </UseTemplate>
 
-                <!-- EXT PWR -->
-                <UseTemplate Name="FBW_Airbus_External_Power_Switch">
+                <!-- ELEC EXT PWR -->
+                <UseTemplate Name="FBW_Anim_Interactions">
+                    <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                    <ANIM_TEMPLATE>FBW_Airbus_External_Power_Switch</ANIM_TEMPLATE>
                     <NODE_ID>PUSH_OVHD_ELEC_EXTPWR</NODE_ID>
                     <PART_ID>ELECTRICAL_Switch_ExternalPower</PART_ID>
                     <ID>1</ID>
@@ -1089,7 +1232,10 @@
                     <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                 </UseTemplate>
 
-                <UseTemplate Name="FBW_Airbus_Engine_Bleed_Switch">
+                <!-- AIR COND ENG1 BLEED -->
+                <UseTemplate Name="FBW_Anim_Interactions">
+                    <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                    <ANIM_TEMPLATE>FBW_Airbus_Engine_Bleed_Switch</ANIM_TEMPLATE>
                     <NODE_ID>PUSH_OVHD_AIRCOND_ENG1BLEED</NODE_ID>
                     <ID>1</ID>
                     <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
@@ -1098,7 +1244,10 @@
                     <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                 </UseTemplate>
 
-                <UseTemplate Name="FBW_Airbus_Engine_Bleed_Switch">
+                <!-- AIR COND ENG2 BLEED -->
+                <UseTemplate Name="FBW_Anim_Interactions">
+                    <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                    <ANIM_TEMPLATE>FBW_Airbus_Engine_Bleed_Switch</ANIM_TEMPLATE>
                     <NODE_ID>PUSH_OVHD_AIRCOND_ENG2BLEED</NODE_ID>
                     <ID>2</ID>
                     <SEQ_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ_POWERED>
@@ -1107,7 +1256,10 @@
                     <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                 </UseTemplate>
 
-                <UseTemplate Name="FBW_Airbus_APU_Bleed_Switch">
+                <!-- AIR COND APU BLEED -->
+                <UseTemplate Name="FBW_Anim_Interactions">
+                    <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                    <ANIM_TEMPLATE>FBW_Airbus_APU_Bleed_Switch</ANIM_TEMPLATE>
                     <NODE_ID>PUSH_OVHD_AIRCOND_APUBLEED</NODE_ID>
                     <PART_ID>ELECTRICAL_Switch_APU_Bleed</PART_ID>
                     <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ_POWERED>
@@ -1117,7 +1269,9 @@
                 </UseTemplate>
 
                 <!-- ELEC COMMERCIAL -->
-                <UseTemplate Name="FBW_Push_Toggle">
+                <UseTemplate Name="FBW_Anim_Interactions">
+                    <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                    <ANIM_TEMPLATE>FBW_Push_Toggle</ANIM_TEMPLATE>
                     <NODE_ID>PUSH_OVHD_ELEC_COMMERCIAL</NODE_ID>
                     <TOGGLE_SIMVAR>L:A32NX_OVHD_ELEC_COMMERCIAL_PB_IS_ON</TOGGLE_SIMVAR>
                     <SEQ_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ_POWERED>
@@ -1130,7 +1284,9 @@
                 </UseTemplate>
 
                 <!-- ELEC GALY & CAB AUTO -->
-                <UseTemplate Name="FBW_Push_Toggle">
+                <UseTemplate Name="FBW_Anim_Interactions">
+                    <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                    <ANIM_TEMPLATE>FBW_Push_Toggle</ANIM_TEMPLATE>
                     <NODE_ID>PUSH_OVHD_ELEC_GALYCAB</NODE_ID>
                     <TOGGLE_SIMVAR>L:A32NX_OVHD_ELEC_GALY_AND_CAB_PB_IS_AUTO</TOGGLE_SIMVAR>
                     <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ_POWERED>
@@ -1142,8 +1298,10 @@
                     <TOOLTIPID>%((L:A32NX_OVHD_ELEC_GALY_AND_CAB_PB_IS_AUTO, Bool))%{if}Turn OFF galy &amp; cab%{else}Turn ON galy &amp; cab%{end}</TOOLTIPID>
                 </UseTemplate>
 
-                <!-- IDG 1 -->
-                <UseTemplate Name="FBW_Covered_Push_Toggle">
+                <!-- ELEC IDG 1 -->
+                <UseTemplate Name="FBW_Anim_Interactions">
+                    <ANIM_TYPE>KORRY_PROTECTED</ANIM_TYPE>
+                    <ANIM_TEMPLATE>FBW_Covered_Push_Toggle</ANIM_TEMPLATE>
                     <NODE_ID>PUSH_OVHD_ELEC_IDG1</NODE_ID>
                     <LOCK_NODE_ID>LOCK_OVHD_ELEC_IDG1</LOCK_NODE_ID>
                     <LEFT_SINGLE_CODE>1 (&gt;L:A32NX_OVHD_ELEC_IDG_1_PB_IS_RELEASED)</LEFT_SINGLE_CODE>
@@ -1155,8 +1313,10 @@
                     <MOMENTARY/>
                 </UseTemplate>
 
-                <!-- IDG 2 -->
-                <UseTemplate Name="FBW_Covered_Push_Toggle">
+                <!-- ELEC IDG 2 -->
+                <UseTemplate Name="FBW_Anim_Interactions">
+                    <ANIM_TYPE>KORRY_PROTECTED</ANIM_TYPE>
+                    <ANIM_TEMPLATE>FBW_Covered_Push_Toggle</ANIM_TEMPLATE>
                     <NODE_ID>PUSH_OVHD_ELEC_IDG2</NODE_ID>
                     <LOCK_NODE_ID>LOCK_OVHD_ELEC_IDG2</LOCK_NODE_ID>
                     <LEFT_SINGLE_CODE>1 (&gt;L:A32NX_OVHD_ELEC_IDG_2_PB_IS_RELEASED)</LEFT_SINGLE_CODE>
@@ -1168,8 +1328,10 @@
                     <MOMENTARY/>
                 </UseTemplate>
 
-                <!-- BUS TIE AUTO -->
-                <UseTemplate Name="FBW_Push_Toggle">
+                <!-- ELEC BUS TIE AUTO -->
+                <UseTemplate Name="FBW_Anim_Interactions">
+                    <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                    <ANIM_TEMPLATE>FBW_Push_Toggle</ANIM_TEMPLATE>
                     <NODE_ID>PUSH_OVHD_ELEC_BUSTIE</NODE_ID>
                     <TOGGLE_SIMVAR>L:A32NX_OVHD_ELEC_BUS_TIE_PB_IS_AUTO</TOGGLE_SIMVAR>
                     <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_STAT_INV_BUS_IS_POWERED, Bool) or</SEQ_POWERED>
@@ -1180,8 +1342,10 @@
                     <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                 </UseTemplate>
 
-                <!-- AC ESS FEED -->
-                <UseTemplate Name="FBW_Push_Toggle">
+                <!-- ELEC AC ESS FEED -->
+                <UseTemplate Name="FBW_Anim_Interactions">
+                    <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                    <ANIM_TEMPLATE>FBW_Push_Toggle</ANIM_TEMPLATE>
                     <NODE_ID>PUSH_OVHD_ELEC_ACESSFEED</NODE_ID>
                     <TOGGLE_SIMVAR>L:A32NX_OVHD_ELEC_AC_ESS_FEED_PB_IS_NORMAL</TOGGLE_SIMVAR>
                     <SEQ_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ_POWERED>
@@ -1193,7 +1357,9 @@
                 </UseTemplate>
 
                 <!-- APU MASTER SW -->
-                <UseTemplate Name="FBW_Push_Toggle">
+                <UseTemplate Name="FBW_Anim_Interactions">
+                    <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                    <ANIM_TEMPLATE>FBW_Push_Toggle</ANIM_TEMPLATE>
                     <NODE_ID>PUSH_OVHD_APU_MASTERSW</NODE_ID>
                     <PART_ID>ELECTRICAL_Switch_APU_Master</PART_ID>
                     <TOGGLE_SIMVAR>L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON</TOGGLE_SIMVAR>
@@ -1208,7 +1374,9 @@
                 </UseTemplate>
 
                 <!-- APU START -->
-                <UseTemplate Name="FBW_Airbus_APU_Starter_Switch">
+                <UseTemplate Name="FBW_Anim_Interactions">
+                    <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                    <ANIM_TEMPLATE>FBW_Airbus_APU_Starter_Switch</ANIM_TEMPLATE>
                     <NODE_ID>PUSH_OVHD_APU_START</NODE_ID>
                     <PART_ID>ELECTRICAL_Switch_APU_Starter</PART_ID>
                     <EXTRA_CONDITION>(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON, Bool)</EXTRA_CONDITION>
@@ -1220,7 +1388,11 @@
             </Component>
 
             <Component ID="Overhead_Cond">
-                <UseTemplate Name="A32NX_AIRBUS_PACK_SELECTOR_TEMPLATE">
+
+                <!-- AIR COND X BLEED -->
+                <UseTemplate Name="FBW_Anim_Interactions">
+                    <ANIM_TYPE>KNOB</ANIM_TYPE>
+                    <ANIM_TEMPLATE>A32NX_AIRBUS_PACK_SELECTOR_TEMPLATE</ANIM_TEMPLATE>
                     <Node_ID>KNOB_OVHD_AIRCOND_XBLEED</Node_ID>
                     <PART_ID>KNOB_OVHD_AIRCOND_XBLEED</PART_ID>
                     <ANIM_NAME>KNOB_OVHD_AIRCOND_XBLEED</ANIM_NAME>
@@ -1230,7 +1402,10 @@
                     <ANIMTIP_2>Set cross bleed to OPEN</ANIMTIP_2>
                 </UseTemplate>
 
-                <UseTemplate Name="A32NX_AIRBUS_PACK_SELECTOR_TEMPLATE">
+                <!-- AIR COND PACK FLOW -->
+                <UseTemplate Name="FBW_Anim_Interactions">
+                    <ANIM_TYPE>KNOB</ANIM_TYPE>
+                    <ANIM_TEMPLATE>A32NX_AIRBUS_PACK_SELECTOR_TEMPLATE</ANIM_TEMPLATE>
                     <Node_ID>KNOB_OVHD_AIRCOND_PACKFLOW</Node_ID>
                     <PART_ID>KNOB_OVHD_AIRCOND_PACKFLOW</PART_ID>
                     <ANIM_NAME>KNOB_OVHD_AIRCOND_PACKFLOW</ANIM_NAME>
@@ -1242,8 +1417,11 @@
             </Component>
 
             <Component ID="Overhead_Lights">
-                <!-- Lights -->
-                <UseTemplate Name="ASOBO_LIGHTING_Switch_Light_Strobe_Template">
+
+                <!-- EXT LT STROBE -->
+                <UseTemplate Name="FBW_Anim_Interactions">
+                    <ANIM_TYPE>SWITCH</ANIM_TYPE>
+                    <ANIM_TEMPLATE>ASOBO_LIGHTING_Switch_Light_Strobe_Template</ANIM_TEMPLATE>
                     <NODE_ID>SWITCH_OVHD_EXTLT_STROBE</NODE_ID>
                     <PART_ID>EXTLT_STROBE</PART_ID>
                     <ANIM_NAME>SWITCH_OVHD_EXTLT_STROBE</ANIM_NAME>
@@ -1278,7 +1456,11 @@
                       (&gt;K:CABIN_SEATBELTS_ALERT_SWITCH_TOGGLE)
                     }
                 </Update>
-                <UseTemplate Name="FBW_GT_Switch">
+
+                <!-- INT LT STROBE -->
+                <UseTemplate Name="FBW_Anim_Interactions">
+                    <ANIM_TYPE>SWITCH</ANIM_TYPE>
+                    <ANIM_TEMPLATE>FBW_GT_Switch</ANIM_TEMPLATE>
                     <NODE_ID>SWITCH_OVHD_INTLT_SEATBELT</NODE_ID>
                     <PART_ID>Seatbelt_Switch</PART_ID>
                     <ANIM_NAME>SWITCH_OVHD_INTLT_SEATBELT</ANIM_NAME>
@@ -1293,7 +1475,10 @@
                     <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
                 </UseTemplate>
 
-                <UseTemplate Name="A32NX_GT_Switch_Dummy">
+                <!-- INT LT NO SMOKING -->
+                <UseTemplate Name="FBW_Anim_Interactions">
+                    <ANIM_TYPE>SWITCH</ANIM_TYPE>
+                    <ANIM_TEMPLATE>A32NX_GT_Switch_Dummy</ANIM_TEMPLATE>
                     <NODE_ID>SWITCH_OVHD_INTLT_NOSMOKING</NODE_ID>
                     <PART_ID>Smoking_Switch</PART_ID>
                     <ANIM_NAME>SWITCH_OVHD_INTLT_NOSMOKING</ANIM_NAME>
@@ -1311,7 +1496,10 @@
                     <WWISE_EVENT>lswitch</WWISE_EVENT>
                 </UseTemplate>
 
-                <UseTemplate Name="A32NX_GT_Switch_Dummy">
+                <!-- INT LT EMER EXIT LT -->
+                <UseTemplate Name="FBW_Anim_Interactions">
+                    <ANIM_TYPE>SWITCH</ANIM_TYPE>
+                    <ANIM_TEMPLATE>A32NX_GT_Switch_Dummy</ANIM_TEMPLATE>
                     <NODE_ID>SWITCH_OVHD_INTLT_EMEREXIT</NODE_ID>
                     <PART_ID>Emergency_Exit_Switch</PART_ID>
                     <ANIM_NAME>SWITCH_OVHD_INTLT_EMEREXIT</ANIM_NAME>
@@ -1327,6 +1515,7 @@
                     <WWISE_EVENT>lswitch</WWISE_EVENT>
                 </UseTemplate>
 
+                <!-- INT LT SIGNS  -->
                 <UseTemplate Name="FBW_AIRLINER_SIGNS_LIGHT_Template">
                     <NODE_ID>PUSH_OVHD_SIGNS</NODE_ID>
                     <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
@@ -1335,7 +1524,10 @@
                     <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_STAT_INV_BUS_IS_POWERED, Bool) or</SEQ_POWERED>
                 </UseTemplate>
 
-                <UseTemplate Name="A32NX_GT_Switch_Dummy">
+                <!-- INT LT ANN LT -->
+                <UseTemplate Name="FBW_Anim_Interactions">
+                    <ANIM_TYPE>SWITCH</ANIM_TYPE>
+                    <ANIM_TEMPLATE>A32NX_GT_Switch_Dummy</ANIM_TEMPLATE>
                     <NODE_ID>SWITCH_OVHD_INTLT_ANNLT</NODE_ID>
                     <PART_ID>SWITCH_OVHD_INTLT_ANNLT</PART_ID>
                     <ANIM_NAME>SWITCH_OVHD_INTLT_ANNLT</ANIM_NAME>
@@ -1356,7 +1548,10 @@
                     <CODE_POS_2></CODE_POS_2>
                 </UseTemplate>
 
-                <UseTemplate Name="ASOBO_GT_Switch_Dummy">
+                <!-- INT LT ICE IND & STBY COMPASS -->
+                <UseTemplate Name="FBW_Anim_Interactions">
+                    <ANIM_TYPE>SWITCH</ANIM_TYPE>
+                    <ANIM_TEMPLATE>ASOBO_GT_Switch_Dummy</ANIM_TEMPLATE>
                     <NODE_ID>SWITCH_OVHD_INTLT_STBYCOMPAS</NODE_ID>
                     <ANIM_NAME>SWITCH_OVHD_INTLT_STBYCOMPAS</ANIM_NAME>
                     <LIGHT_TYPE>STBYCOMPAS</LIGHT_TYPE>
@@ -1370,21 +1565,24 @@
                     <SWITCH_POSITION_VAR>A32NX_STBY_COMPASS_LIGHT_TOGGLE</SWITCH_POSITION_VAR>
                 </UseTemplate>
 
-                <!-- BEACON -->
-                <UseTemplate Name="FBW_Airbus_LIGHTING_Switch_Light_Beacon_Template">
+                <!-- EXT LT BEACON -->
+                <UseTemplate Name="FBW_Anim_Interactions">
+                    <ANIM_TYPE>SWITCH</ANIM_TYPE>
+                    <ANIM_TEMPLATE>FBW_Airbus_LIGHTING_Switch_Light_Beacon_Template</ANIM_TEMPLATE>
                     <NODE_ID>SWITCH_OVHD_EXTLT_BEACON</NODE_ID>
                     <PART_ID>Beacon_Light_Switch</PART_ID>
                     <ANIM_NAME>SWITCH_OVHD_EXTLT_BEACON</ANIM_NAME>
                     <!-- TODO Remove when fixed in Asobo base files -->
                     <TT_DESCRIPTION_ID>COCKPIT.TOOLTIPSV2.LIGHTING_SWITCH_LIGHT_BEACON_ACTION_SET</TT_DESCRIPTION_ID>
                     <SIMVAR_INDEX>0</SIMVAR_INDEX>
-
                     <WWISE_EVENT_1>lswitch</WWISE_EVENT_1>
                     <WWISE_EVENT_2>lswitch</WWISE_EVENT_2>
                 </UseTemplate>
 
-                <!-- RWY TURN OFF -->
-                <UseTemplate Name="ASOBO_LIGHTING_Switch_Light_Taxi_Template">
+                <!-- EXT LT RWY TURN OFF -->
+                <UseTemplate Name="FBW_Anim_Interactions">
+                    <ANIM_TYPE>SWITCH</ANIM_TYPE>
+                    <ANIM_TEMPLATE>ASOBO_LIGHTING_Switch_Light_Taxi_Template</ANIM_TEMPLATE>
                     <NODE_ID>SWITCH_OVHD_EXTLT_RWY</NODE_ID>
                     <PART_ID>EXTLT_RWY</PART_ID>
                     <ANIM_NAME>SWITCH_OVHD_EXTLT_RWY</ANIM_NAME>
@@ -1396,13 +1594,14 @@
                     <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.RWY_TURNOFF_LIGHTS_OFF</ANIMTIP_0>
                     <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.RWY_TURNOFF_LIGHTS_ON</ANIMTIP_1>
                     <TYPE>OnOff_TwoSimvars</TYPE>
-
                     <WWISE_EVENT_1>lswitch</WWISE_EVENT_1>
                     <WWISE_EVENT_2>lswitch</WWISE_EVENT_2>
                 </UseTemplate>
 
-                <!-- LDG LT LEFT -->
-                <UseTemplate Name="FBW_Airbus_LIGHTING_Switch_Light_Landing_Template">
+                <!-- EXT LT LAND L -->
+                <UseTemplate Name="FBW_Anim_Interactions">
+                    <ANIM_TYPE>SWITCH</ANIM_TYPE>
+                    <ANIM_TEMPLATE>FBW_Airbus_LIGHTING_Switch_Light_Landing_Template</ANIM_TEMPLATE>
                     <NODE_ID>SWITCH_OVHD_EXTLT_LANDL</NODE_ID>
                     <ANIM_NAME>SWITCH_OVHD_EXTLT_LANDL</ANIM_NAME>
                     <Part_ID>LANDING_Light_L</Part_ID>
@@ -1414,7 +1613,7 @@
                     <TYPE>Retractable</TYPE>
                 </UseTemplate>
 
-                <!-- LDG LT LEFT DELAY -->
+                <!-- EXT LT LAND L DELAY -->
                 <!-- DELAY_TIME is different than RIGHT to add a small "groove"
                      to their activiation, if both are triggered at the same time -->
                 <UseTemplate Name="FBW_LDGLT_Delay">
@@ -1424,8 +1623,10 @@
                     <DELAY_BUS>2</DELAY_BUS>
                 </UseTemplate>
 
-                <!-- LDG LT RIGHT -->
-                <UseTemplate Name="FBW_Airbus_LIGHTING_Switch_Light_Landing_Template">
+                <!-- EXT LT LAND R -->
+                <UseTemplate Name="FBW_Anim_Interactions">
+                    <ANIM_TYPE>SWITCH</ANIM_TYPE>
+                    <ANIM_TEMPLATE>FBW_Airbus_LIGHTING_Switch_Light_Landing_Template</ANIM_TEMPLATE>
                     <NODE_ID>SWITCH_OVHD_EXTLT_LANDR</NODE_ID>
                     <ANIM_NAME>SWITCH_OVHD_EXTLT_LANDR</ANIM_NAME>
                     <Part_ID>LANDING_Light_R</Part_ID>
@@ -1437,7 +1638,7 @@
                     <TYPE>Retractable</TYPE>
                 </UseTemplate>
 
-                <!-- LDG LT RIGHT DELAY -->
+                <!-- EXT LT LAND R DELAY -->
                 <!-- DELAY_TIME is different than LEFT to add a small "groove"
                      to their activiation, if both are triggered at the same time -->
                 <UseTemplate Name="FBW_LDGLT_Delay">
@@ -1447,19 +1648,23 @@
                     <DELAY_BUS>3</DELAY_BUS>
                 </UseTemplate>
 
-                <!-- WING -->
-                <UseTemplate Name="FBW_Airbus_LIGHTING_Switch_Light_Wing_Template">
+                <!-- EXT LT WING -->
+                <UseTemplate Name="FBW_Anim_Interactions">
+                    <ANIM_TYPE>SWITCH</ANIM_TYPE>
+                    <ANIM_TEMPLATE>FBW_Airbus_LIGHTING_Switch_Light_Wing_Template</ANIM_TEMPLATE>
                     <NODE_ID>SWITCH_OVHD_EXTLT_WING</NODE_ID>
                     <PART_ID>EXTLT_WING</PART_ID>
                     <ANIM_NAME>SWITCH_OVHD_EXTLT_WING</ANIM_NAME>
                     <SIMVAR_INDEX>0</SIMVAR_INDEX>
-
                     <WWISE_EVENT>lswitch</WWISE_EVENT>
                     <WWISE_EVENT_1>lswitch</WWISE_EVENT_1>
                     <WWISE_EVENT_2>lswitch</WWISE_EVENT_2>
                 </UseTemplate>
 
-                <UseTemplate Name="ASOBO_LIGHTING_Switch_Light_Navigation_Template">
+                <!-- EXT LT NAV & LOGO -->
+                <UseTemplate Name="FBW_Anim_Interactions">
+                    <ANIM_TYPE>SWITCH</ANIM_TYPE>
+                    <ANIM_TEMPLATE>ASOBO_LIGHTING_Switch_Light_Navigation_Template</ANIM_TEMPLATE>
                     <NODE_ID>SWITCH_OVHD_EXTLT_NAVLOGO</NODE_ID>
                     <PART_ID>SWITCH_OVHD_EXTLT_NAVLOGO</PART_ID>
                     <ANIM_NAME>SWITCH_OVHD_EXTLT_NAVLOGO</ANIM_NAME>
@@ -1467,7 +1672,6 @@
                     <SIMVAR_INDEX_2>0</SIMVAR_INDEX_2>
                     <LIGHT_TYPE_2>LOGO</LIGHT_TYPE_2>
                     <TYPE>OnOff_TwoSimvars</TYPE>
-
                     <WWISE_EVENT_1>lswitch</WWISE_EVENT_1>
                     <WWISE_EVENT_2>lswitch</WWISE_EVENT_2>
                 </UseTemplate>
@@ -1482,8 +1686,10 @@
                     (A:CIRCUIT CONNECTION ON:30, Bool) l0 != if{ 30 3 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE) }
                 </Update>
 
-                <!-- NOSE TAXI/TO LT-->
-                <UseTemplate Name="ASOBO_LIGHTING_Switch_Light_Landing_Template">
+                <!-- EXT LT NOSE TAXI/TO -->
+                <UseTemplate Name="FBW_Anim_Interactions">
+                    <ANIM_TYPE>SWITCH</ANIM_TYPE>
+                    <ANIM_TEMPLATE>ASOBO_LIGHTING_Switch_Light_Landing_Template</ANIM_TEMPLATE>
                     <NODE_ID>SWITCH_OVHD_EXTLT_NOSE</NODE_ID>
                     <PART_ID>LIGHTING_Switch_Light_Double</PART_ID>
                     <ANIM_NAME>SWITCH_OVHD_EXTLT_NOSE</ANIM_NAME>
@@ -1497,7 +1703,6 @@
                     <TYPE>TwoSimvars</TYPE>
                     <!-- Allow TAXI LT to be used with TO LT -->
                     <SET_SIMVAR_2>(L:LIGHTING_LANDING_1, Number) 0 == if{ ! } 1 r (&gt;K:2:TAXI_LIGHTS_SET)</SET_SIMVAR_2>
-
                     <WWISE_EVENT>lswitch</WWISE_EVENT>
                 </UseTemplate>
 
@@ -1505,18 +1710,18 @@
                 <UseTemplate Name="ASOBO_GT_Update">
                     <FREQUENCY>5</FREQUENCY>
                     <UPDATE_CODE>
-                    (A:GEAR HANDLE POSITION, Bool) (A:GEAR POSITION, percent) 99.9 &gt; and (&gt;O:_ShouldBeConnectedToPowerGrid)
-                    (O:_ShouldBeConnectedToPowerGrid) sp0
-                    2 (&gt;A:BUS LOOKUP INDEX, Number)
-                    (A:CIRCUIT CONNECTION ON:17, Bool) l0 != if{ 17 2 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE) }
-                    (A:CIRCUIT CONNECTION ON:21, Bool) l0 != if{ 21 2 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE) }
-                    3 (&gt;A:BUS LOOKUP INDEX, Number)
-                    (A:CIRCUIT CONNECTION ON:20, Bool) l0 != if{ 20 3 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE) }
-                    (A:CIRCUIT CONNECTION ON:22, Bool) l0 != if{ 22 3 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE) }
+                        (A:GEAR HANDLE POSITION, Bool) (A:GEAR POSITION, percent) 99.9 &gt; and (&gt;O:_ShouldBeConnectedToPowerGrid)
+                        (O:_ShouldBeConnectedToPowerGrid) sp0
+                        2 (&gt;A:BUS LOOKUP INDEX, Number)
+                        (A:CIRCUIT CONNECTION ON:17, Bool) l0 != if{ 17 2 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE) }
+                        (A:CIRCUIT CONNECTION ON:21, Bool) l0 != if{ 21 2 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE) }
+                        3 (&gt;A:BUS LOOKUP INDEX, Number)
+                        (A:CIRCUIT CONNECTION ON:20, Bool) l0 != if{ 20 3 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE) }
+                        (A:CIRCUIT CONNECTION ON:22, Bool) l0 != if{ 22 3 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE) }
                     </UPDATE_CODE>
                 </UseTemplate>
 
-                <!-- OVHD INTEG LT -->
+                <!-- INT LT OVHD INTEG LT -->
                 <UseTemplate Name="FBW_Stepless_Potentiometer">
                     <NODE_ID>KNOB_OVHD_INTLT_BRT</NODE_ID>
                     <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHT_OVHD_PANEL_SUBPANEL_DECREASE</ANIMTIP_0>
@@ -1531,8 +1736,11 @@
                     <EMISSIVE_CODE>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
                 </UseTemplate>
 
+                <!-- INT LT DOME -->
                 <Component ID="SWITCH_OVHD_INTLT_DOME" Node="SWITCH_OVHD_INTLT_DOME">
-                    <UseTemplate Name="ASOBO_GT_Switch_3States">
+                    <UseTemplate Name="FBW_Anim_Interactions">
+                        <ANIM_TYPE>SWITCH</ANIM_TYPE>
+                        <ANIM_TEMPLATE>ASOBO_GT_Switch_3States</ANIM_TEMPLATE>
                         <NODE_ID>SWITCH_OVHD_INTLT_DOME</NODE_ID>
                         <PART_ID>SWITCH_OVHD_INTLT_DOME</PART_ID>
                         <ANIM_NAME>SWITCH_OVHD_INTLT_DOME</ANIM_NAME>
@@ -1563,7 +1771,7 @@
                     <POTENTIOMETER>99</POTENTIOMETER>
                 </UseTemplate>
 
-                <!-- Captain dome light -->
+                <!-- CPT DOME LT -->
                 <UseTemplate Name="ASOBO_LIGHTING_Cabin_Emissive_Template">
                     <NODE_ID>LIGHTS_Overhead_L</NODE_ID>
                     <POTENTIOMETER>7</POTENTIOMETER>
@@ -1572,7 +1780,7 @@
                     <EMISSIVE_CODE>(L:A32NX_ELEC_DC_GND_FLT_SVC_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
                 </UseTemplate>
 
-                <!-- F/O dome light -->
+                <!-- F/O DOME LT -->
                 <UseTemplate Name="ASOBO_LIGHTING_Cabin_Emissive_Template">
                     <NODE_ID>LIGHTS_Overhead_R</NODE_ID>
                     <POTENTIOMETER>7</POTENTIOMETER>
@@ -1587,7 +1795,11 @@
                 <DefaultTemplateParameters>
                     <TYPE>AIRBUS</TYPE>
                 </DefaultTemplateParameters>
-                <UseTemplate Name="FBW_Airbus_Fuel_Crossfeed">
+
+                <!-- FUEL X FEED -->
+                <UseTemplate Name="FBW_Anim_Interactions">
+                    <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                    <ANIM_TEMPLATE>FBW_Airbus_Fuel_Crossfeed</ANIM_TEMPLATE>
                     <NODE_ID>PUSH_OVHD_FUEL_XFEED</NODE_ID>
                     <ID>3</ID>
                     <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ_POWERED>
@@ -1597,7 +1809,11 @@
                     <OFF_TOOLTIP>COCKPIT.TOOLTIPS.FUEL_XFEED_TURN_ON</OFF_TOOLTIP>
                     <ON_TOOLTIP>COCKPIT.TOOLTIPS.FUEL_XFEED_TURN_OFF</ON_TOOLTIP>
                 </UseTemplate>
-                <UseTemplate Name="FBW_Airbus_Fuel_Pump">
+
+                <!-- FUEL L TK PUMPS 1 -->
+                <UseTemplate Name="FBW_Anim_Interactions">
+                    <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                    <ANIM_TEMPLATE>FBW_Airbus_Fuel_Pump</ANIM_TEMPLATE>
                     <NODE_ID>PUSH_OVHD_FUEL_LTKPUMPS1</NODE_ID>
                     <PART_ID>OVHD_FUEL_LTKPUMPS1</PART_ID>
                     <ID>2</ID>
@@ -1608,7 +1824,11 @@
                     <OFF_TOOLTIP>COCKPIT.TOOLTIPS.ENG_1_L_TK_PUMP1_OFF</OFF_TOOLTIP>
                     <ON_TOOLTIP>COCKPIT.TOOLTIPS.ENG_1_L_TK_PUMP1_ON</ON_TOOLTIP>
                 </UseTemplate>
-                <UseTemplate Name="FBW_Airbus_Fuel_Pump">
+
+                <!-- FUEL L TK PUMPS 2 -->
+                    <UseTemplate Name="FBW_Anim_Interactions">
+                    <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                    <ANIM_TEMPLATE>FBW_Airbus_Fuel_Pump</ANIM_TEMPLATE>
                     <NODE_ID>PUSH_OVHD_FUEL_LTKPUMPS2</NODE_ID>
                     <PART_ID>OVHD_FUEL_LTKPUMPS2</PART_ID>
                     <ID>5</ID>
@@ -1619,7 +1839,11 @@
                     <OFF_TOOLTIP>COCKPIT.TOOLTIPS.ENG_1_L_TK_PUMP2_OFF</OFF_TOOLTIP>
                     <ON_TOOLTIP>COCKPIT.TOOLTIPS.ENG_1_L_TK_PUMP2_ON</ON_TOOLTIP>
                 </UseTemplate>
-                <UseTemplate Name="FBW_Airbus_Fuel_Pump">
+
+                <!-- FUEL PUMP 1 -->
+                <UseTemplate Name="FBW_Anim_Interactions">
+                    <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                    <ANIM_TEMPLATE>FBW_Airbus_Fuel_Pump</ANIM_TEMPLATE>
                     <NODE_ID>PUSH_OVHD_FUEL_PUMP1</NODE_ID>
                     <PART_ID>OVHD_FUEL_PUMP1</PART_ID>
                     <ID>1</ID>
@@ -1630,7 +1854,11 @@
                     <OFF_TOOLTIP>COCKPIT.TOOLTIPS.CTR_TK_PUMP_1_OFF</OFF_TOOLTIP>
                     <ON_TOOLTIP>COCKPIT.TOOLTIPS.CTR_TK_PUMP_1_ON</ON_TOOLTIP>
                 </UseTemplate>
-                <UseTemplate Name="FBW_Airbus_Fuel_Pump">
+
+                <!-- FUEL PUMP 2 -->
+                <UseTemplate Name="FBW_Anim_Interactions">
+                    <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                    <ANIM_TEMPLATE>FBW_Airbus_Fuel_Pump</ANIM_TEMPLATE>
                     <NODE_ID>PUSH_OVHD_FUEL_PUMP2</NODE_ID>
                     <PART_ID>OVHD_FUEL_PUMP2</PART_ID>
                     <ID>4</ID>
@@ -1641,7 +1869,11 @@
                     <OFF_TOOLTIP>COCKPIT.TOOLTIPS.CTR_TK_PUMP_2_OFF</OFF_TOOLTIP>
                     <ON_TOOLTIP>COCKPIT.TOOLTIPS.CTR_TK_PUMP_2_ON</ON_TOOLTIP>
                 </UseTemplate>
-                <UseTemplate Name="FBW_Airbus_Fuel_Pump">
+
+                <!-- FUEL R TK PUMPS 1 -->
+                <UseTemplate Name="FBW_Anim_Interactions">
+                    <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                    <ANIM_TEMPLATE>FBW_Airbus_Fuel_Pump</ANIM_TEMPLATE>
                     <NODE_ID>PUSH_OVHD_FUEL_RTKPUMPS1</NODE_ID>
                     <PART_ID>OVHD_FUEL_RTKPUMPS1</PART_ID>
                     <ID>3</ID>
@@ -1652,7 +1884,11 @@
                     <OFF_TOOLTIP>COCKPIT.TOOLTIPS.ENG_2_R_TK_PUMP1_OFF</OFF_TOOLTIP>
                     <ON_TOOLTIP>COCKPIT.TOOLTIPS.ENG_2_R_TK_PUMP1_ON</ON_TOOLTIP>
                 </UseTemplate>
-                <UseTemplate Name="FBW_Airbus_Fuel_Pump">
+
+                <!-- FUEL R TK PUMPS 2 -->
+                <UseTemplate Name="FBW_Anim_Interactions">
+                    <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                    <ANIM_TEMPLATE>FBW_Airbus_Fuel_Pump</ANIM_TEMPLATE>
                     <NODE_ID>PUSH_OVHD_FUEL_RTKPUMPS2</NODE_ID>
                     <PART_ID>OVHD_FUEL_RTKPUMPS2</PART_ID>
                     <OFF_TOOLTIP>COCKPIT.TOOLTIPS.ENG_2_R_TK_PUMP2_OFF</OFF_TOOLTIP>
@@ -1663,7 +1899,11 @@
                     <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
                     <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                 </UseTemplate>
-                <UseTemplate Name="FBW_Push_Toggle">
+
+                <!-- FUEL MODE SEL -->
+                <UseTemplate Name="FBW_Anim_Interactions">
+                    <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                    <ANIM_TEMPLATE>FBW_Push_Toggle</ANIM_TEMPLATE>
                     <NODE_ID>PUSH_OVHD_FUEL_MODESEL</NODE_ID>
                     <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                     <SEQ1_CODE>
@@ -1680,20 +1920,26 @@
 
             <!-- FLT CTL -->
             <Component ID="Flight_Controls_Left">
-                <!-- ELAC 1 -->
-                <UseTemplate Name="FBW_AIRBUS_Push_ELAC_Template">
+                <!-- FLT CTL ELAC 1 -->
+                <UseTemplate Name="FBW_Anim_Interactions">
+                    <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                    <ANIM_TEMPLATE>FBW_AIRBUS_Push_ELAC_Template</ANIM_TEMPLATE>
                     <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_STAT_INV_BUS_IS_POWERED, Bool) or</SEQ_POWERED>
                     <ID>1</ID>
                 </UseTemplate>
 
-                <!-- SEC 1 -->
-                <UseTemplate Name="FBW_AIRBUS_Push_SEC_Template">
+                <!-- FLT CTL SEC 1 -->
+                <UseTemplate Name="FBW_Anim_Interactions">
+                    <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                    <ANIM_TEMPLATE>FBW_AIRBUS_Push_SEC_Template</ANIM_TEMPLATE>
                     <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_STAT_INV_BUS_IS_POWERED, Bool) or</SEQ_POWERED>
                     <ID>1</ID>
                 </UseTemplate>
 
-                <!-- FAC 1 -->
-                <UseTemplate Name="FBW_AIRBUS_Push_FAC_Template">
+                <!-- FLT CTL FAC 1 -->
+                <UseTemplate Name="FBW_Anim_Interactions">
+                    <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                    <ANIM_TEMPLATE>FBW_AIRBUS_Push_FAC_Template</ANIM_TEMPLATE>
                     <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_STAT_INV_BUS_IS_POWERED, Bool) or</SEQ_POWERED>
                     <ID>1</ID>
                 </UseTemplate>
@@ -1701,13 +1947,19 @@
 
             <Component ID="Overhead_Dummies">
                 <Component ID="Left_Column">
-                    <!-- ELT-->
-                    <UseTemplate Name="FBW_Push_Held">
+                    <!-- ELT TEST/RESET -->
+                    <UseTemplate Name="FBW_Anim_Interactions">
+                        <ANIM_TYPE>BUTTON_HELD</ANIM_TYPE>
+                        <ANIM_TEMPLATE>FBW_Push_Held</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_OVHD_ELT_TEST</NODE_ID>
                         <HOLD_SIMVAR>L:A32NX_ELT_TEST_RESET</HOLD_SIMVAR>
                         <TOOLTIPID>Test/Reset ELT (Inop.)</TOOLTIPID>
                     </UseTemplate>
-                    <UseTemplate Name="FBW_Push_Held">
+
+                    <!-- ELT ON -->
+                    <UseTemplate Name="FBW_Anim_Interactions">
+                        <ANIM_TYPE>BUTTON_HELD</ANIM_TYPE>
+                        <ANIM_TEMPLATE>FBW_Push_Held</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_OVHD_ELT_ON</NODE_ID>
                         <LEFT_SINGLE_CODE>1 (&gt;L:A32NX_ELT_ON)</LEFT_SINGLE_CODE>
                         <TOOLTIPID>Turn ON ELT (Inop.)</TOOLTIPID>
@@ -1722,8 +1974,10 @@
                         <NO_SEQ2 />
                     </UseTemplate>
 
-                    <!-- COCKPIT DOOR VIDEO -->
-                    <UseTemplate Name="FBW_Push_Toggle">
+                    <!-- OVHD COCKPIT DOOR VIDEO -->
+                    <UseTemplate Name="FBW_Anim_Interactions">
+                        <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                        <ANIM_TEMPLATE>FBW_Push_Toggle</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_OVHD_COCKPITDOORVIDEO</NODE_ID>
                         <TOGGLE_SIMVAR>L:A32NX_OVHD_COCKPITDOORVIDEO_TOGGLE</TOGGLE_SIMVAR>
                         <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
@@ -1735,7 +1989,10 @@
                         <TOOLTIPID>%((L:A32NX_OVHD_COCKPITDOORVIDEO_TOGGLE, Bool))%{if}Turn OFF door video%{else}Turn ON door video%{end}</TOOLTIPID>
                     </UseTemplate>
 
-                    <UseTemplate Name="FBW_Push_Toggle">
+                    <!-- PEDESTAL COCKPIT DOOR VIDEO-->
+                    <UseTemplate Name="FBW_Anim_Interactions">
+                        <ANIM_TYPE>BUTTON</ANIM_TYPE>
+                        <ANIM_TEMPLATE>FBW_Push_Toggle</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_DOORPANEL_VIDEO</NODE_ID>
                         <LEFT_SINGLE_CODE>(L:PUSH_DOORPANEL_VIDEO) ! (>L:PUSH_DOORPANEL_VIDEO)</LEFT_SINGLE_CODE>
                         <MOMENTARY/>
@@ -1745,22 +2002,29 @@
                     </UseTemplate>
 
                     <Component ID="ADIRS">
-                        <UseTemplate Name="FBW_Airbus_ADIRS_IR_Button">
+                        <!-- ADIRS IR 1 -->
+                        <UseTemplate Name="FBW_Anim_Interactions">
+                            <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                            <ANIM_TEMPLATE>FBW_Airbus_ADIRS_IR_Button</ANIM_TEMPLATE>
                             <ID>1</ID>
                             <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                         </UseTemplate>
-
-                        <UseTemplate Name="FBW_Airbus_ADIRS_IR_Button">
+                        <!-- ADIRS IR 2 -->
+                        <UseTemplate Name="FBW_Anim_Interactions">
+                            <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                            <ANIM_TEMPLATE>FBW_Airbus_ADIRS_IR_Button</ANIM_TEMPLATE>
                             <ID>2</ID>
                             <SEQ_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                         </UseTemplate>
-
-                        <UseTemplate Name="FBW_Airbus_ADIRS_IR_Button">
+                        <!-- ADIRS IR 3 -->
+                        <UseTemplate Name="FBW_Anim_Interactions">
+                            <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                            <ANIM_TEMPLATE>FBW_Airbus_ADIRS_IR_Button</ANIM_TEMPLATE>
                             <ID>3</ID>
                             <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                         </UseTemplate>
 
-                        <!-- ADIRS ON BAT indication -->
+                        <!-- ADIRS ANNOUNCIATOR -->
                         <UseTemplate Name="FBW_Push_Toggle">
                             <NODE_ID>PUSH_OVHD_ADIRS</NODE_ID>
                             <!--
@@ -1773,34 +2037,51 @@
                             <DUMMY_BUTTON/>
                         </UseTemplate>
 
-                        <UseTemplate Name="FBW_Airbus_ADIRS_Knob">
+                        <!-- ADIRS KNOB L -->
+                        <UseTemplate Name="FBW_Anim_Interactions">
+                            <ANIM_TYPE>KNOB</ANIM_TYPE>
+                            <ANIM_TEMPLATE>FBW_Airbus_ADIRS_Knob</ANIM_TEMPLATE>
                             <ID>1</ID>
                         </UseTemplate>
-
-                        <UseTemplate Name="FBW_Airbus_ADIRS_Knob">
+                        <!-- ADIRS KNOB M -->
+                        <UseTemplate Name="FBW_Anim_Interactions">
+                            <ANIM_TYPE>KNOB</ANIM_TYPE>
+                            <ANIM_TEMPLATE>FBW_Airbus_ADIRS_Knob</ANIM_TEMPLATE>
                             <ID>2</ID>
                         </UseTemplate>
-
-                        <UseTemplate Name="FBW_Airbus_ADIRS_Knob">
+                        <!-- ADIRS KNOB R -->
+                        <UseTemplate Name="FBW_Anim_Interactions">
+                            <ANIM_TYPE>KNOB</ANIM_TYPE>
+                            <ANIM_TEMPLATE>FBW_Airbus_ADIRS_Knob</ANIM_TEMPLATE>
                             <ID>3</ID>
                         </UseTemplate>
-
-                        <UseTemplate Name="FBW_Airbus_ADIRS_ADR_Button">
+                        <!-- ADIRS ADIR 1 -->
+                        <UseTemplate Name="FBW_Anim_Interactions">
+                            <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                            <ANIM_TEMPLATE>FBW_Airbus_ADIRS_ADR_Button</ANIM_TEMPLATE>
                             <ID>1</ID>
                             <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                         </UseTemplate>
-                        <UseTemplate Name="FBW_Airbus_ADIRS_ADR_Button">
+                        <!-- ADIRS ADIR 2 -->
+                        <UseTemplate Name="FBW_Anim_Interactions">
+                            <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                            <ANIM_TEMPLATE>FBW_Airbus_ADIRS_ADR_Button</ANIM_TEMPLATE>
                             <ID>2</ID>
                             <SEQ_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                         </UseTemplate>
-                        <UseTemplate Name="FBW_Airbus_ADIRS_ADR_Button">
+                        <!-- ADIRS ADIR 3 -->
+                        <UseTemplate Name="FBW_Anim_Interactions">
+                            <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                            <ANIM_TEMPLATE>FBW_Airbus_ADIRS_ADR_Button</ANIM_TEMPLATE>
                             <ID>3</ID>
                             <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                         </UseTemplate>
 
                     <Component ID="EVAC">
-                        <!-- COMMAND -->
-                        <UseTemplate Name="FBW_Covered_Push_Toggle">
+                        <!-- EVAC COMMAND -->
+                        <UseTemplate Name="FBW_Anim_Interactions">
+                            <ANIM_TYPE>KORRY_PROTECTED</ANIM_TYPE>
+                            <ANIM_TEMPLATE>FBW_Covered_Push_Toggle</ANIM_TEMPLATE>
                             <NODE_ID>PUSH_OVHD_EVAC_COMMAND</NODE_ID>
                             <LOCK_NODE_ID>LOCK_OVHD_EVAC_COMMAND</LOCK_NODE_ID>
 
@@ -1813,8 +2094,10 @@
                             <TOOLTIPID>%((L:A32NX_EVAC_COMMAND_TOGGLE, Bool))%{if}Turn ON evacuation horn%{else}Turn OFF evacuation horn%{end}</TOOLTIPID>
                         </UseTemplate>
 
-                        <!-- HORN SHUT OFF -->
-                        <UseTemplate Name="FBW_Push_Toggle">
+                        <!-- EVAC HORN SHUT OFF -->
+                        <UseTemplate Name="FBW_Anim_Interactions">
+                            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+                            <ANIM_TEMPLATE>FBW_Push_Toggle</ANIM_TEMPLATE>
                             <NODE_ID>PUSH_OVHD_EVAC_HORN</NODE_ID>
                             <LEFT_SINGLE_CODE>1 (&gt;L:PUSH_OVHD_EVAC_HORN)</LEFT_SINGLE_CODE>
                             <MOMENTARY/>
@@ -1823,8 +2106,10 @@
                             <ROUND />
                         </UseTemplate>
 
-                        <!-- CAPT & PURS / CAPT -->
-                        <UseTemplate Name="ASOBO_GT_Switch_Dummy">
+                        <!-- EVAC CAPT & PURS -->
+                        <UseTemplate Name="FBW_Anim_Interactions">
+                            <ANIM_TYPE>SWITCH</ANIM_TYPE>
+                            <ANIM_TEMPLATE>ASOBO_GT_Switch_Dummy</ANIM_TEMPLATE>
                             <NODE_ID>SWITCH_OVHD_EVAC_CAPT</NODE_ID>
                             <PART_ID>SWITCH_OVHD_EVAC_CAPT</PART_ID>
                             <ANIM_NAME>SWITCH_OVHD_EVAC_CAPT</ANIM_NAME>
@@ -1837,8 +2122,10 @@
 
 
                     <Component ID="EMER_ELEC_PWR">
-                        <!-- EMER GEN TEST -->
-                        <UseTemplate Name="FBW_Covered_Push_Toggle">
+                        <!-- EMER ELEC PWR EMER GEN TEST -->
+                        <UseTemplate Name="FBW_Anim_Interactions">
+                            <ANIM_TYPE>KORRY_PROTECTED</ANIM_TYPE>
+                            <ANIM_TEMPLATE>FBW_Covered_Push_Toggle</ANIM_TEMPLATE>
                             <NODE_ID>PUSH_OVHD_EMERELECPWR_EMERTEST</NODE_ID>
                             <LOCK_NODE_ID>LOCK_OVHD_EMERELECPWR_EMERTEST</LOCK_NODE_ID>
                             <LEFT_SINGLE_CODE>1 (&gt;L:A32NX_EMERELECPWR_GEN_TEST)</LEFT_SINGLE_CODE>
@@ -1848,8 +2135,10 @@
                             <NO_SEQ2 />
                         </UseTemplate>
 
-                        <!-- GEN 1 LINE -->
-                        <UseTemplate Name="FBW_Push_Toggle">
+                        <!-- EMER ELEC PWR GEN 1 LINE -->
+                        <UseTemplate Name="FBW_Anim_Interactions">
+                            <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                            <ANIM_TEMPLATE>FBW_Push_Toggle</ANIM_TEMPLATE>
                             <NODE_ID>PUSH_OVHD_EMERELECPWR_GEN1</NODE_ID>
                             <TOGGLE_SIMVAR>L:A32NX_OVHD_EMER_ELEC_GEN_1_LINE_PB_IS_ON</TOGGLE_SIMVAR>
                             <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ_POWERED>
@@ -1861,7 +2150,7 @@
                             <TOOLTIPID>%((L:A32NX_OVHD_EMER_ELEC_GEN_1_LINE_PB_IS_ON, Bool))%{if}Turn OFF gen 1 line%{else}Turn ON gen 1 line%{end}</TOOLTIPID>
                         </UseTemplate>
 
-                        <!-- RAT & EMER GEN -->
+                        <!-- EMER ELEC PWR RAT & EMER GEN -->
                         <UseTemplate Name="FBW_Push_Toggle">
                             <NODE_ID>PUSH_OVHD_EMERELECPWR_RAT</NODE_ID>
                             <SEQ_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</SEQ_POWERED>
@@ -1873,8 +2162,10 @@
                             <DUMMY_BUTTON/>
                         </UseTemplate>
 
-                        <!-- MAN ON -->
-                        <UseTemplate Name="FBW_Covered_Push_Toggle">
+                        <!-- EMER ELEC PWR MAN ON -->
+                        <UseTemplate Name="FBW_Anim_Interactions">
+                            <ANIM_TYPE>KORRY_PROTECTED</ANIM_TYPE>
+                            <ANIM_TEMPLATE>FBW_Covered_Push_Toggle</ANIM_TEMPLATE>
                             <NODE_ID>PUSH_OVHD_EMERELECPWR_MANON</NODE_ID>
                             <LOCK_NODE_ID>LOCK_OVHD_EMERELECPWR_MANON</LOCK_NODE_ID>
                             <LEFT_SINGLE_CODE>1 (&gt;L:A32NX_OVHD_EMER_ELEC_RAT_AND_EMER_GEN_IS_PRESSED)</LEFT_SINGLE_CODE>
@@ -1888,8 +2179,10 @@
                 </Component>
 
                 <Component ID="Center_Column">
-                    <!-- ENG 1 PUMP -->
-                    <UseTemplate Name="FBW_Push_Toggle">
+                    <!-- HYD ENG 1 PUMP -->
+                    <UseTemplate Name="FBW_Anim_Interactions">
+                        <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                        <ANIM_TEMPLATE>FBW_Push_Toggle</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_OVHD_HYD_ENG1PUMP</NODE_ID>
                         <TOGGLE_SIMVAR>L:A32NX_OVHD_HYD_ENG_1_PUMP_PB_IS_AUTO</TOGGLE_SIMVAR>
                         <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
@@ -1901,8 +2194,10 @@
                         <TOOLTIPID>%((L:A32NX_OVHD_HYD_ENG_1_PUMP_PB_IS_AUTO, Bool))%{if}Turn OFF eng 1 hyd pump%{else}Turn ON eng 1 hyd pump%{end}</TOOLTIPID>
                     </UseTemplate>
 
-                    <!-- ENG 2 PUMP -->
-                    <UseTemplate Name="FBW_Push_Toggle">
+                    <!-- HYD ENG 2 PUMP -->
+                    <UseTemplate Name="FBW_Anim_Interactions">
+                        <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                        <ANIM_TEMPLATE>FBW_Push_Toggle</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_OVHD_HYD_ENG2PUMP</NODE_ID>
                         <TOGGLE_SIMVAR>L:A32NX_OVHD_HYD_ENG_2_PUMP_PB_IS_AUTO</TOGGLE_SIMVAR>
                         <SEQ_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ_POWERED>
@@ -1914,7 +2209,10 @@
                         <TOOLTIPID>%((L:A32NX_OVHD_HYD_ENG_2_PUMP_PB_IS_AUTO, Bool))%{if}Turn OFF eng 2 hyd pump%{else}Turn ON eng 2 hyd pump%{end}</TOOLTIPID>
                     </UseTemplate>
 
-                    <UseTemplate Name="FBW_Covered_Push_Toggle">
+                    <!-- HYD RAT MAN ON -->
+                    <UseTemplate Name="FBW_Anim_Interactions">
+                        <ANIM_TYPE>KORRY_PROTECTED</ANIM_TYPE>
+                        <ANIM_TEMPLATE>FBW_Covered_Push_Toggle</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_OVHD_HYD_RATMANON</NODE_ID>
                         <LOCK_NODE_ID>LOCK_OVHD_HYD_RATMANON</LOCK_NODE_ID>
                         <LEFT_SINGLE_CODE>1 (&gt;L:A32NX_OVHD_HYD_RAT_MAN_ON_IS_PRESSED)</LEFT_SINGLE_CODE>
@@ -1925,8 +2223,10 @@
                         <NO_SEQ2 />
                     </UseTemplate>
 
-                    <!-- BLUE ELEC PUMP -->
-                    <UseTemplate Name="FBW_Covered_Push_Toggle">
+                    <!-- HYD BLUE ELEC PUMP -->
+                    <UseTemplate Name="FBW_Anim_Interactions">
+                        <ANIM_TYPE>KORRY_PROTECTED</ANIM_TYPE>
+                        <ANIM_TEMPLATE>FBW_Covered_Push_Toggle</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_OVHD_HYD_ELECPUMP</NODE_ID>
                         <LOCK_NODE_ID>LOCK_OVHD_HYD_ELECPUMP</LOCK_NODE_ID>
                         <TOGGLE_SIMVAR>L:A32NX_OVHD_HYD_EPUMPB_PB_IS_AUTO</TOGGLE_SIMVAR>
@@ -1939,8 +2239,10 @@
                         <TOOLTIPID>%((L:A32NX_OVHD_HYD_EPUMPB_PB_IS_AUTO, Bool))%{if}Turn OFF elec hyd pump%{else}Turn ON elec hyd pump%{end}</TOOLTIPID>
                     </UseTemplate>
 
-                    <!-- PTU -->
-                    <UseTemplate Name="FBW_Push_Toggle">
+                    <!-- HYD PTU -->
+                    <UseTemplate Name="FBW_Anim_Interactions">
+                        <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                        <ANIM_TEMPLATE>FBW_Push_Toggle</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_OVHD_HYD_PTU</NODE_ID>
                         <TOGGLE_SIMVAR>L:A32NX_OVHD_HYD_PTU_PB_IS_AUTO</TOGGLE_SIMVAR>
                         <SEQ_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ_POWERED>
@@ -1952,8 +2254,10 @@
                         <TOOLTIPID>%((L:A32NX_OVHD_HYD_PTU_PB_IS_AUTO, Bool))%{if}Turn OFF PTU%{else}Turn ON PTU%{end}</TOOLTIPID>
                     </UseTemplate>
 
-                    <!-- YELLOW ELEC PUMP -->
-                    <UseTemplate Name="FBW_Push_Toggle">
+                    <!-- HYD ELEC PUMP -->
+                    <UseTemplate Name="FBW_Anim_Interactions">
+                        <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                        <ANIM_TEMPLATE>FBW_Push_Toggle</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_OVHD_HYD_ELECPUMPY</NODE_ID>
                         <TOGGLE_SIMVAR>L:A32NX_OVHD_HYD_EPUMPY_PB_IS_AUTO</TOGGLE_SIMVAR>
                         <SEQ_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ_POWERED>
@@ -1966,8 +2270,10 @@
                         <TOOLTIPID>%((L:A32NX_OVHD_HYD_EPUMPY_PB_IS_AUTO, Bool))%{if}Turn ON yellow elec hyd pump%{else}Turn OFF yellow elec hyd pump%{end}</TOOLTIPID>
                     </UseTemplate>
 
-                    <!-- PACK 1 -->
-                    <UseTemplate Name="FBW_Push_Toggle">
+                    <!-- AIR COND PACK 1 -->
+                    <UseTemplate Name="FBW_Anim_Interactions">
+                        <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                        <ANIM_TEMPLATE>FBW_Push_Toggle</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_OVHD_AIRCOND_PACK1</NODE_ID>
                         <PART_ID>AIRCOND_PACK1</PART_ID>
                         <TOGGLE_SIMVAR>L:A32NX_AIRCOND_PACK1_TOGGLE</TOGGLE_SIMVAR>
@@ -1980,8 +2286,10 @@
                         <TOOLTIPID>%((L:A32NX_AIRCOND_PACK1_TOGGLE, Bool))%{if}Turn OFF pack 1%{else}Turn ON pack 1%{end}</TOOLTIPID>
                     </UseTemplate>
 
-                    <!-- PACK 2 -->
-                    <UseTemplate Name="FBW_Push_Toggle">
+                    <!-- AIR COND PACK 2 -->
+                    <UseTemplate Name="FBW_Anim_Interactions">
+                        <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                        <ANIM_TEMPLATE>FBW_Push_Toggle</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_OVHD_AIRCOND_PACK2</NODE_ID>
                         <PART_ID>AIRCOND_PACK2</PART_ID>
                         <TOGGLE_SIMVAR>L:A32NX_AIRCOND_PACK2_TOGGLE</TOGGLE_SIMVAR>
@@ -1994,8 +2302,10 @@
                         <TOOLTIPID>%((L:A32NX_AIRCOND_PACK2_TOGGLE, Bool))%{if}Turn OFF pack 2%{else}Turn ON pack 2%{end}</TOOLTIPID>
                     </UseTemplate>
 
-                    <!-- HOT AIR -->
-                    <UseTemplate Name="FBW_Push_Toggle">
+                    <!-- AIR COND HOT AIR -->
+                    <UseTemplate Name="FBW_Anim_Interactions">
+                        <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                        <ANIM_TEMPLATE>FBW_Push_Toggle</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_OVHD_AIRCOND_HOTAIR</NODE_ID>
                         <TOGGLE_SIMVAR>L:A32NX_AIRCOND_HOTAIR_TOGGLE</TOGGLE_SIMVAR>
                         <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_STAT_INV_BUS_IS_POWERED, Bool) or</SEQ_POWERED>
@@ -2007,8 +2317,10 @@
                         <TOOLTIPID>%((L:A32NX_AIRCOND_HOTAIR_TOGGLE, Bool))%{if}Turn OFF hot air%{else}Turn ON hot air%{end}</TOOLTIPID>
                     </UseTemplate>
 
-                    <!-- RAM AIR -->
-                    <UseTemplate Name="FBW_Covered_Push_Toggle">
+                    <!-- AIR COND RAM AIR -->
+                    <UseTemplate Name="FBW_Anim_Interactions">
+                        <ANIM_TYPE>KORRY_PROTECTED</ANIM_TYPE>
+                        <ANIM_TEMPLATE>FBW_Covered_Push_Toggle</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_OVHD_AIRCOND_RAMAIR</NODE_ID>
                         <LOCK_NODE_ID>LOCK_OVHD_AIRCOND_RAMAIR</LOCK_NODE_ID>
                         <TOGGLE_SIMVAR>L:A32NX_AIRCOND_RAMAIR_TOGGLE</TOGGLE_SIMVAR>
@@ -2023,18 +2335,21 @@
                         <NO_SEQ1 />
                     </UseTemplate>
 
+                    <!-- AIR COND COCKPIT -->
                     <UseTemplate Name="FBW_AIRLINER_Aircond_Knob_Template">
                         <ID>1</ID>
                         <ANIM_CODE>50</ANIM_CODE>
                         <ANIM_NAME>KNOB_OVHD_AIRCOND_COCKPIT</ANIM_NAME>
                         <NODE_ID>KNOB_OVHD_AIRCOND_COCKPIT</NODE_ID>
                     </UseTemplate>
+                    <!-- AIR COND FWD CABIN -->
                     <UseTemplate Name="FBW_AIRLINER_Aircond_Knob_Template">
                         <ID>2</ID>
                         <ANIM_CODE>50</ANIM_CODE>
                         <ANIM_NAME>KNOB_OVHD_AIRCOND_FWDCABIN</ANIM_NAME>
                         <NODE_ID>KNOB_OVHD_AIRCOND_FWDCABIN</NODE_ID>
                     </UseTemplate>
+                    <!-- AIR COND AFT CABIN -->
                     <UseTemplate Name="FBW_AIRLINER_Aircond_Knob_Template">
                         <ID>3</ID>
                         <ANIM_CODE>50</ANIM_CODE>
@@ -2042,7 +2357,10 @@
                         <NODE_ID>KNOB_OVHD_AIRCOND_AFTCABIN</NODE_ID>
                     </UseTemplate>
 
-                    <UseTemplate Name="ASOBO_GT_Switch_Dummy">
+                    <!-- AUDIO SWITCHING -->
+                    <UseTemplate Name="FBW_Anim_Interactions">
+                        <ANIM_TYPE>KNOB</ANIM_TYPE>
+                        <ANIM_TEMPLATE>ASOBO_GT_Switch_Dummy</ANIM_TEMPLATE>
                         <Node_ID>KNOB_OVHD_AUDIOSWITCH</Node_ID>
                         <PART_ID>KNOB_OVHD_AUDIOSWITCH</PART_ID>
                         <ANIM_NAME>KNOB_OVHD_AUDIOSWITCH</ANIM_NAME>
@@ -2056,17 +2374,23 @@
                 </Component>
 
                 <Component ID="Right_Column">
-                    <UseTemplate Name="FBW_Push_Held">
+                    <!-- CVR HEAD SET -->
+                    <UseTemplate Name="FBW_Anim_Interactions">
+                        <ANIM_TYPE>BUTTON_HELD</ANIM_TYPE>
+                        <ANIM_TEMPLATE>FBW_Push_Held</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_CWRHEADSET</NODE_ID>
                         <HOLD_SIMVAR>L:A32NX_CREW_HEAD_SET</HOLD_SIMVAR>
                         <TOOLTIPID>CVR headset (Inop.)</TOOLTIPID>
                     </UseTemplate>
-                    <UseTemplate Name="FBW_Push_Toggle">
+                    <!-- OXYGEN TMR RESET -->
+                    <UseTemplate Name="FBW_Anim_Interactions">
+                        <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                        <ANIM_TEMPLATE>FBW_Push_Toggle</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_OXYGEN_TWRRESET</NODE_ID>
                         <LEFT_SINGLE_CODE>
-                        (L:A32NX_OXYGEN_TMR_RESET, Bool) ! (&gt;L:A32NX_OXYGEN_TMR_RESET, Bool)
-                        (L:A32NX_OXYGEN_MASKS_DEPLOYED, Bool) ! (&gt;L:A32NX_OXYGEN_MASKS_DEPLOYED, Bool)
-                         0 (&gt;L:A32NX_OXYGEN_PASSENGER_LIGHT_ON)
+                            (L:A32NX_OXYGEN_TMR_RESET, Bool) ! (&gt;L:A32NX_OXYGEN_TMR_RESET, Bool)
+                            (L:A32NX_OXYGEN_MASKS_DEPLOYED, Bool) ! (&gt;L:A32NX_OXYGEN_MASKS_DEPLOYED, Bool)
+                            0 (&gt;L:A32NX_OXYGEN_PASSENGER_LIGHT_ON)
                         </LEFT_SINGLE_CODE>
                         <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                         <SEQ1_CODE>(L:A32NX_OXYGEN_TMR_RESET_FAULT, Bool)</SEQ1_CODE>
@@ -2076,7 +2400,10 @@
                         <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                         <TOOLTIPID>Reset oxygen timer</TOOLTIPID>
                     </UseTemplate>
-                    <UseTemplate Name="FBW_Push_Toggle">
+                    <!-- SVGE INT OVRD -->
+                    <UseTemplate Name="FBW_Anim_Interactions">
+                        <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                        <ANIM_TEMPLATE>FBW_Push_Toggle</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_OVHD_SVGEINT</NODE_ID>
                         <TOGGLE_SIMVAR>L:A32NX_SVGEINT_OVRD_ON</TOGGLE_SIMVAR>
                         <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
@@ -2087,7 +2414,10 @@
                         <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                         <TOOLTIPID>%((L:A32NX_SVGEINT_OVRD_ON, Bool))%{if}Turn OFF SVGE INT OVRD (Inop.)%{else}Turn ON SVGE INT OVRD (Inop.)%{end}</TOOLTIPID>
                     </UseTemplate>
-                    <UseTemplate Name="FBW_Push_Toggle">
+                    <!-- AVIONICS COMP LT -->
+                    <UseTemplate Name="FBW_Anim_Interactions">
+                        <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                        <ANIM_TEMPLATE>FBW_Push_Toggle</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_OVHD_AVIONICS_COMPLT</NODE_ID>
                         <TOGGLE_SIMVAR>L:A32NX_AVIONICS_COMPLT_ON</TOGGLE_SIMVAR>
                         <SEQ_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ_POWERED>
@@ -2098,7 +2428,10 @@
                         <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                         <TOOLTIPID>%((L:A32NX_AVIONICS_COMPLT_ON, Bool))%{if}Set avionics comp lt to AUTO (Inop.)%{else}Turn ON avionics comp lt (Inop.)%{end}</TOOLTIPID>
                     </UseTemplate>
-                    <UseTemplate Name="FBW_Push_Toggle">
+                    <!-- CARGO VENT ISOL VALVE -->
+                    <UseTemplate Name="FBW_Anim_Interactions">
+                        <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                        <ANIM_TEMPLATE>FBW_Push_Toggle</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_OVHD_CARGOVENT_AFTISOL</NODE_ID>
                         <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                         <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
@@ -2106,18 +2439,23 @@
                         <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                         <DUMMY_BUTTON/>
                     </UseTemplate>
+                    <!-- CARGO SMOKE FWD L -->
                     <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
                         <NODE_ID>PUSH_OVHD_CARGOSMOKE_FWD1</NODE_ID>
                         <ONLY_SEQ1/>
                     </UseTemplate>
+                    <!-- CARGO SMOKE FWD R -->
                     <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
                         <NODE_ID>PUSH_OVHD_CARGOSMOKE_FWD2</NODE_ID>
                         <ONLY_SEQ1/>
                     </UseTemplate>
 
-                    <!-- Data Loading Selector-->
+                    <!-- DATA LOADING SELECTOR -->
                     <Component ID="Data_Loading_Selector">
-                        <UseTemplate Name="FBW_Push_Toggle">
+                        <!-- DATA LOADING SELECTOR SEL CTL -->
+                        <UseTemplate Name="FBW_Anim_Interactions">
+                            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+                            <ANIM_TEMPLATE>FBW_Push_Toggle</ANIM_TEMPLATE>
                             <NODE_ID>PUSH_OVHD_DLS_SELCTL</NODE_ID>
                             <LEFT_SINGLE_CODE></LEFT_SINGLE_CODE>
                             <TOOLTIPID>Select/Control (Inop.)</TOOLTIPID>
@@ -2125,7 +2463,10 @@
                             <NO_SEQ1 />
                             <NO_SEQ2 />
                         </UseTemplate>
-                        <UseTemplate Name="FBW_Push_Toggle">
+                        <!-- DATA LOADING SELECTOR PREV -->
+                        <UseTemplate Name="FBW_Anim_Interactions">
+                            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+                            <ANIM_TEMPLATE>FBW_Push_Toggle</ANIM_TEMPLATE>
                             <NODE_ID>PUSH_OVHD_DLS_PREV</NODE_ID>
                             <LEFT_SINGLE_CODE></LEFT_SINGLE_CODE>
                             <TOOLTIPID>Previous (Inop.)</TOOLTIPID>
@@ -2133,7 +2474,10 @@
                             <NO_SEQ1 />
                             <NO_SEQ2 />
                         </UseTemplate>
-                        <UseTemplate Name="FBW_Push_Toggle">
+                        <!-- DATA LOADING SELECTOR NEXT -->
+                        <UseTemplate Name="FBW_Anim_Interactions">
+                            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+                            <ANIM_TEMPLATE>FBW_Push_Toggle</ANIM_TEMPLATE>
                             <NODE_ID>PUSH_OVHD_DLS_NEXT</NODE_ID>
                             <LEFT_SINGLE_CODE></LEFT_SINGLE_CODE>
                             <TOOLTIPID>Next (Inop.)</TOOLTIPID>
@@ -2141,7 +2485,10 @@
                             <NO_SEQ1 />
                             <NO_SEQ2 />
                         </UseTemplate>
-                        <UseTemplate Name="A32NX_GT_Switch_Dummy">
+                        <!-- DATA LOADING SELECTOR ON/OFF -->
+                        <UseTemplate Name="FBW_Anim_Interactions">
+                            <ANIM_TYPE>SWITCH</ANIM_TYPE>
+                            <ANIM_TEMPLATE>A32NX_GT_Switch_Dummy</ANIM_TEMPLATE>
                             <NODE_ID>SWITCH_OVHD_DLS</NODE_ID>
                             <TOGGLE_SIMVAR>L:A32NX_DLS_ON</TOGGLE_SIMVAR>
                             <ANIM_NAME>SWITCH_OVHD_DLS</ANIM_NAME>
@@ -2156,25 +2503,25 @@
 
                     <!-- FLT CTL -->
                     <Component ID="Flight_Controls_Right">
-                        <!-- ELAC 2 -->
+                        <!-- FLT CTL ELAC 2 -->
                         <UseTemplate Name="FBW_AIRBUS_Push_ELAC_Template">
                             <ID>2</ID>
                             <SEQ_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                         </UseTemplate>
 
-                        <!-- SEC 2 -->
+                        <!-- FLT CTL SEC 2 -->
                         <UseTemplate Name="FBW_AIRBUS_Push_SEC_Template">
                             <ID>2</ID>
                             <SEQ_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                         </UseTemplate>
 
-                        <!-- SEC 3 -->
+                        <!-- FLT CTL SEC 3 -->
                         <UseTemplate Name="FBW_AIRBUS_Push_SEC_Template">
                             <ID>3</ID>
                             <SEQ_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                         </UseTemplate>
 
-                        <!-- FAC 2 -->
+                        <!-- FLT CTL FAC 2 -->
                         <UseTemplate Name="FBW_AIRBUS_Push_FAC_Template">
                             <ID>2</ID>
                             <SEQ_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ_POWERED>
@@ -2183,8 +2530,10 @@
 
                     <!-- VENTILATION -->
                     <Component ID="Ventilation">
-                        <!-- BLOWER -->
-                        <UseTemplate Name="FBW_Push_Toggle">
+                        <!-- VENTILATION BLOWER -->
+                        <UseTemplate Name="FBW_Anim_Interactions">
+                            <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                            <ANIM_TEMPLATE>FBW_Push_Toggle</ANIM_TEMPLATE>
                             <NODE_ID>PUSH_OVHD_VENTILATION_BLOWER</NODE_ID>
                             <TOGGLE_SIMVAR>L:A32NX_VENTILATION_BLOWER_TOGGLE</TOGGLE_SIMVAR>
                             <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_STAT_INV_BUS_IS_POWERED, Bool) or</SEQ_POWERED>
@@ -2196,8 +2545,10 @@
                             <TOOLTIPID>%((L:A32NX_VENTILATION_BLOWER_TOGGLE, Bool))%{if}Turn OFF blower fan%{else}Turn blower fan to AUTO%{end}</TOOLTIPID>
                         </UseTemplate>
 
-                        <!-- EXTRACT -->
-                        <UseTemplate Name="FBW_Push_Toggle">
+                        <!-- VENTILATION EXTRACT -->
+                        <UseTemplate Name="FBW_Anim_Interactions">
+                            <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                            <ANIM_TEMPLATE>FBW_Push_Toggle</ANIM_TEMPLATE>
                             <NODE_ID>PUSH_OVHD_VENTILATION_EXTRACT</NODE_ID>
                             <TOGGLE_SIMVAR>L:A32NX_VENTILATION_EXTRACT_TOGGLE</TOGGLE_SIMVAR>
                             <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_STAT_INV_BUS_IS_POWERED, Bool) or</SEQ_POWERED>
@@ -2209,8 +2560,10 @@
                             <TOOLTIPID>%((L:A32NX_VENTILATION_EXTRACT_TOGGLE, Bool))%{if}Turn OFF extraction fan%{else}Turn extraction fan to AUTO%{end}</TOOLTIPID>
                         </UseTemplate>
 
-                        <!-- CAB FANS -->
-                        <UseTemplate Name="FBW_Push_Toggle">
+                        <!-- VENTILATION CAB FANS -->
+                        <UseTemplate Name="FBW_Anim_Interactions">
+                            <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                            <ANIM_TEMPLATE>FBW_Push_Toggle</ANIM_TEMPLATE>
                             <NODE_ID>PUSH_OVHD_VENTILATION_CABFANS</NODE_ID>
                             <TOGGLE_SIMVAR>L:A32NX_VENTILATION_CABFANS_TOGGLE</TOGGLE_SIMVAR>
                             <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
@@ -2225,8 +2578,10 @@
 
                     <!-- ENG MAN START -->
                     <Component ID="Eng_Man_Start">
-                        <!-- 1 -->
-                        <UseTemplate Name="FBW_Covered_Push_Toggle">
+                        <!-- ENG MAN START 1 -->
+                        <UseTemplate Name="FBW_Anim_Interactions">
+                            <ANIM_TYPE>KORRY_PROTECTED</ANIM_TYPE>
+                            <ANIM_TEMPLATE>FBW_Covered_Push_Toggle</ANIM_TEMPLATE>
                             <NODE_ID>PUSH_OVHD_ENGMANSTART_1</NODE_ID>
                             <LOCK_NODE_ID>LOCK_OVHD_ENGMANSTART_1</LOCK_NODE_ID>
                             <TOGGLE_SIMVAR>L:A32NX_ENGMANSTART1_TOGGLE</TOGGLE_SIMVAR>
@@ -2239,8 +2594,10 @@
                             <TOOLTIPID>%((L:A32NX_ENGMANSTART1_TOGGLE, Bool))%{if}Turn OFF engine 1 manual start%{else}Turn ON engine 1 manual start%{end}</TOOLTIPID>
                         </UseTemplate>
 
-                        <!-- 2 -->
-                        <UseTemplate Name="FBW_Covered_Push_Toggle">
+                        <!-- ENG MAN START 2 -->
+                        <UseTemplate Name="FBW_Anim_Interactions">
+                            <ANIM_TYPE>KORRY_PROTECTED</ANIM_TYPE>
+                            <ANIM_TEMPLATE>FBW_Covered_Push_Toggle</ANIM_TEMPLATE>
                             <NODE_ID>PUSH_OVHD_ENGMANSTART_2</NODE_ID>
                             <LOCK_NODE_ID>LOCK_OVHD_ENGMANSTART_2</LOCK_NODE_ID>
                             <TOGGLE_SIMVAR>L:A32NX_ENGMANSTART2_TOGGLE</TOGGLE_SIMVAR>
@@ -2291,116 +2648,142 @@
                             <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                         </OverrideTemplateParameters>
 
+                        <!-- OVHD RADIO VOR1 -->
                         <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
                             <NODE_ID>PUSH_OVHD_RADIO_VOR1_EMIS</NODE_ID>
                             <AUDIO_KNOB_POWERED>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</AUDIO_KNOB_POWERED>
                         </UseTemplate>
+                        <!-- OVHD RADIO VOR2 -->
                         <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
                             <NODE_ID>PUSH_OVHD_RADIO_VOR2_EMIS</NODE_ID>
                             <AUDIO_KNOB_POWERED>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</AUDIO_KNOB_POWERED>
                         </UseTemplate>
+                        <!-- OVHD RADIO MKR -->
                         <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
                             <NODE_ID>PUSH_OVHD_RADIO_MKR_EMIS</NODE_ID>
                             <AUDIO_KNOB_POWERED>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</AUDIO_KNOB_POWERED>
                         </UseTemplate>
+                        <!-- OVHD RADIO ILS -->
                         <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
                             <NODE_ID>PUSH_OVHD_RADIO_ILS_EMIS</NODE_ID>
                             <AUDIO_KNOB_POWERED>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</AUDIO_KNOB_POWERED>
                         </UseTemplate>
+                        <!-- OVHD RADIO MLS -->
                         <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
                             <NODE_ID>PUSH_OVHD_RADIO_MLS_EMIS</NODE_ID>
                             <AUDIO_KNOB_POWERED>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</AUDIO_KNOB_POWERED>
                         </UseTemplate>
+                        <!-- OVHD RADIO ADF1 -->
                         <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
                             <NODE_ID>PUSH_OVHD_RADIO_ADF1_EMIS</NODE_ID>
                             <AUDIO_KNOB_POWERED>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</AUDIO_KNOB_POWERED>
                         </UseTemplate>
+                        <!-- OVHD RADIO ADF2 -->
                         <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
                             <NODE_ID>PUSH_OVHD_RADIO_ADF2_EMIS</NODE_ID>
                             <AUDIO_KNOB_POWERED>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</AUDIO_KNOB_POWERED>
                         </UseTemplate>
+                        <!-- OVHD RADIO INT -->
                         <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
                             <NODE_ID>PUSH_OVHD_RADIO_INT_EMIS</NODE_ID>
                             <AUDIO_KNOB_POWERED>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</AUDIO_KNOB_POWERED>
                         </UseTemplate>
+                        <!-- OVHD RADIO INT -->
                         <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
                             <NODE_ID>SWITCH_OVHD_RADIO_INT</NODE_ID>
                             <NO_SEQ1 />
                             <NO_SEQ2 />
                         </UseTemplate>
+                        <!-- OVHD RADIO VOICE -->
                         <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
                             <NODE_ID>PUSH_OVHD_RADIO_VOICE</NODE_ID>
                             <SEQ1_POWERED>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
                             <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
                         </UseTemplate>
+                        <!-- OVHD RADIO RESET -->
                         <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
                             <NODE_ID>PUSH_OVHD_RADIO_RESET</NODE_ID>
                             <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
                             <NO_SEQ1 />
                         </UseTemplate>
+                        <!-- OVHD RADIO PA -->
                         <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
                             <NODE_ID>PUSH_OVHD_RADIO_PA1_EMIS</NODE_ID>
                             <AUDIO_KNOB_POWERED>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</AUDIO_KNOB_POWERED>
                         </UseTemplate>
+                        <!-- OVHD RADIO PA -->
                         <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
                             <NODE_ID>PUSH_OVHD_RADIO_PA</NODE_ID>
                             <SEQ1_POWERED>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
                             <NO_SEQ2 />
                         </UseTemplate>
+                        <!-- OVHD RADIO VHF1 -->
                         <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
                             <NODE_ID>PUSH_OVHD_RADIO_VHF1_EMIS</NODE_ID>
                             <AUDIO_KNOB_POWERED>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</AUDIO_KNOB_POWERED>
                         </UseTemplate>
+                        <!-- OVHD RADIO VHF2 -->
                         <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
                             <NODE_ID>PUSH_OVHD_RADIO_VHF2_EMIS</NODE_ID>
                             <AUDIO_KNOB_POWERED>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</AUDIO_KNOB_POWERED>
                         </UseTemplate>
+                        <!-- OVHD RADIO VHF3 -->
                         <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
                             <NODE_ID>PUSH_OVHD_RADIO_VHF3_EMIS</NODE_ID>
                             <AUDIO_KNOB_POWERED>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</AUDIO_KNOB_POWERED>
                         </UseTemplate>
+                        <!-- OVHD RADIO HF1 -->
                         <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
                             <NODE_ID>PUSH_OVHD_RADIO_HF1_EMIS</NODE_ID>
                             <AUDIO_KNOB_POWERED>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</AUDIO_KNOB_POWERED>
                         </UseTemplate>
+                        <!-- OVHD RADIO HF2 -->
                         <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
                             <NODE_ID>PUSH_OVHD_RADIO_HF2_EMIS</NODE_ID>
                             <AUDIO_KNOB_POWERED>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</AUDIO_KNOB_POWERED>
                         </UseTemplate>
+                        <!-- OVHD RADIO CAB -->
                         <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
                             <NODE_ID>PUSH_OVHD_RADIO_CAB_EMIS</NODE_ID>
                             <AUDIO_KNOB_POWERED>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</AUDIO_KNOB_POWERED>
                         </UseTemplate>
+                        <!-- OVHD RADIO ATT -->
                         <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
                             <NODE_ID>PUSH_OVHD_RADIO_ATT</NODE_ID>
                             <SEQ1_POWERED>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
                             <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
                         </UseTemplate>
+                        <!-- OVHD RADIO MECH -->
                         <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
                             <NODE_ID>PUSH_OVHD_RADIO_MECH</NODE_ID>
                             <SEQ1_POWERED>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
                             <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
                         </UseTemplate>
+                        <!-- OVHD RADIO CALL -->
                         <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
                             <NODE_ID>PUSH_OVHD_RADIO_CALL5</NODE_ID>
                             <SEQ1_POWERED>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
                             <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
                         </UseTemplate>
+                        <!-- OVHD RADIO CALL -->
                         <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
                             <NODE_ID>PUSH_OVHD_RADIO_CALL4</NODE_ID>
                             <SEQ1_POWERED>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
                             <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
                         </UseTemplate>
+                        <!-- OVHD RADIO CALL -->
                         <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
                             <NODE_ID>PUSH_OVHD_RADIO_CALL3</NODE_ID>
                             <SEQ1_POWERED>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
                             <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
                         </UseTemplate>
+                        <!-- OVHD RADIO CALL -->
                         <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
                             <NODE_ID>PUSH_OVHD_RADIO_CALL2</NODE_ID>
                             <SEQ1_POWERED>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
                             <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
                         </UseTemplate>
+                        <!-- OVHD RADIO CALL -->
                         <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
                             <NODE_ID>PUSH_OVHD_RADIO_CALL1</NODE_ID>
                             <SEQ1_POWERED>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
@@ -2409,16 +2792,13 @@
                     </Component>
                 </Component>
 
-                <Component ID="Back_Panel">
-                    <!--                    <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">-->
-                    <!--                        <NODE_ID>PUSH_OVHD_HYD_BLUEPUMP</NODE_ID>-->
-                    <!--                        <BLOCK_SEQ1>1</BLOCK_SEQ1>-->
-                    <!--                    </UseTemplate>-->
-                </Component>
             </Component>
 
                 <Component ID="OverHead_AntiIce">
-                    <UseTemplate Name="FBW_Airbus_AntiIce_Engine">
+                    <!-- ANTI ICE ENG 1-->
+                    <UseTemplate Name="FBW_Anim_Interactions">
+                        <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                        <ANIM_TEMPLATE>FBW_Airbus_AntiIce_Engine</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_OVHD_ANTIICE_ENG1</NODE_ID>
                         <PART_ID>ANTIICE_ENG1</PART_ID>
                         <ID>1</ID>
@@ -2427,7 +2807,10 @@
                         <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
                         <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                     </UseTemplate>
-                    <UseTemplate Name="FBW_Airbus_AntiIce_Engine">
+                    <!-- ANTI ICE ENG 2 -->
+                    <UseTemplate Name="FBW_Anim_Interactions">
+                        <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                        <ANIM_TEMPLATE>FBW_Airbus_AntiIce_Engine</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_OVHD_ANTIICE_ENG2</NODE_ID>
                         <PART_ID>ANTIICE_ENG2</PART_ID>
                         <ID>2</ID>
@@ -2436,7 +2819,10 @@
                         <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
                         <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                     </UseTemplate>
-                    <UseTemplate Name="FBW_Airbus_AntiIce_Wing">
+                    <!-- ANTI ICE WING -->
+                    <UseTemplate Name="FBW_Anim_Interactions">
+                        <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                        <ANIM_TEMPLATE>FBW_Airbus_AntiIce_Wing</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_OVHD_ANTIICE_WING</NODE_ID>
                         <PART_ID>ANTIICE_WING</PART_ID>
                         <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ_POWERED>
@@ -2444,7 +2830,10 @@
                         <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
                         <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                     </UseTemplate>
-                    <UseTemplate Name="FBW_Airbus_Probes_Window_Heat">
+                    <!-- ANTI ICE PROBE/WINDOW HEAT -->
+                    <UseTemplate Name="FBW_Anim_Interactions">
+                        <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                        <ANIM_TEMPLATE>FBW_Airbus_Probes_Window_Heat</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_OVHD_PROBESWINDOW</NODE_ID>
                         <SEQ_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                         <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
@@ -2455,19 +2844,30 @@
                 </Component>
 
                 <Component ID="Overhead_Handling">
-                    <UseTemplate Name="FBW_Push_Held">
+                    <!-- RAIN RPLNT LEFT -->
+                    <UseTemplate Name="FBW_Anim_Interactions">
+                        <ANIM_TYPE>BUTTON_HELD</ANIM_TYPE>
+                        <ANIM_TEMPLATE>FBW_Push_Held</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_OVHD_RAINRPLNTL</NODE_ID>
                         <!-- Model has buttons exchanged -->
                         <HOLD_SIMVAR>L:A32NX_RAIN_REPELLENT_RIGHT_ON</HOLD_SIMVAR>
                         <TOOLTIPID>Dispense rain repellent (Inop.)</TOOLTIPID>
                     </UseTemplate>
-                    <UseTemplate Name="FBW_Push_Held">
+
+                     <!-- RAIN RPLNT RIGHT -->
+                    <UseTemplate Name="FBW_Anim_Interactions">
+                        <ANIM_TYPE>BUTTON_HELD</ANIM_TYPE>
+                        <ANIM_TEMPLATE>FBW_Push_Held</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_OVHD_RAINRPNLTR</NODE_ID>
                         <!-- Model has buttons exchanged -->
                         <HOLD_SIMVAR>L:A32NX_RAIN_REPELLENT_LEFT_ON</HOLD_SIMVAR>
                         <TOOLTIPID>Dispense rain repellent (Inop.)</TOOLTIPID>
                     </UseTemplate>
-                    <UseTemplate Name="FBW_Airbus_Wiper_Knob">
+
+                    <!-- WIPER LEFT -->
+                    <UseTemplate Name="FBW_Anim_Interactions">
+                        <ANIM_TYPE>KNOB</ANIM_TYPE>
+                        <ANIM_TEMPLATE>FBW_Airbus_Wiper_Knob</ANIM_TEMPLATE>
                         <NODE_ID>HANDLING_Switch_Wiper_left</NODE_ID>
                         <ANIM_NAME>HANDLING_Switch_Wiper_left</ANIM_NAME>
                         <CIRCUIT_ID_WIPERS>77</CIRCUIT_ID_WIPERS>
@@ -2476,7 +2876,11 @@
                         <ANIMTIP_1>Set left wiper to SLOW</ANIMTIP_1>
                         <ANIMTIP_2>Set left wiper to FAST</ANIMTIP_2>
                     </UseTemplate>
-                    <UseTemplate Name="FBW_Airbus_Wiper_Knob">
+
+                    <!-- WIPER RIGHT -->
+                    <UseTemplate Name="FBW_Anim_Interactions">
+                        <ANIM_TYPE>KNOB</ANIM_TYPE>
+                        <ANIM_TEMPLATE>FBW_Airbus_Wiper_Knob</ANIM_TEMPLATE>
                         <NODE_ID>HANDLING_Switch_Wiper_right</NODE_ID>
                         <ANIM_NAME>HANDLING_Switch_Wiper_right</ANIM_NAME>
                         <CIRCUIT_ID_WIPERS>80</CIRCUIT_ID_WIPERS>
@@ -2494,11 +2898,17 @@
                             <ID>1</ID>
                         </DefaultTemplateParameters>
 
-                        <UseTemplate Name="FBW_Airbus_FIRE_TEST_BUTTON">
+                        <!-- FIRE ENG1 TEST -->
+                        <UseTemplate Name="FBW_Anim_Interactions">
+                            <ANIM_TYPE>BUTTON_HELD</ANIM_TYPE>
+                            <ANIM_TEMPLATE>FBW_Airbus_FIRE_TEST_BUTTON</ANIM_TEMPLATE>
                             <NODE_ID>PUSH_FIRE_ENG1_TEST</NODE_ID>
                             <PART_ID>Fire_test_eng1</PART_ID>
                         </UseTemplate>
-                        <UseTemplate Name="FBW_Airbus_FIRE_AGENT">
+                        <!-- FIRE ENG1 AGENT 1 -->
+                        <UseTemplate Name="FBW_Anim_Interactions">
+                            <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                            <ANIM_TEMPLATE>FBW_Airbus_FIRE_AGENT</ANIM_TEMPLATE>
                             <NODE_ID>PUSH_OVHD_FIRE_ENG1_AGENT1</NODE_ID>
                             <PART_ID>FIRE_ENG1_AGENT1</PART_ID>
                             <AGENT_ID>1</AGENT_ID>
@@ -2507,7 +2917,10 @@
                             <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
                             <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                         </UseTemplate>
-                        <UseTemplate Name="FBW_Airbus_FIRE_AGENT">
+                        <!-- FIRE ENG1 AGENT 2 -->
+                        <UseTemplate Name="FBW_Anim_Interactions">
+                            <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                            <ANIM_TEMPLATE>FBW_Airbus_FIRE_AGENT</ANIM_TEMPLATE>
                             <NODE_ID>PUSH_OVHD_FIRE_ENG1_AGENT2</NODE_ID>
                             <PART_ID>FIRE_ENG1_AGENT2</PART_ID>
                             <AGENT_ID>2</AGENT_ID>
@@ -2516,6 +2929,7 @@
                             <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
                             <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                         </UseTemplate>
+                        <!-- FIRE ENG1 FIRE PUSH -->
                         <UseTemplate Name="FBW_Airbus_Engine_Lights">
                             <NODE_ID>PUSH_ENGINES_1</NODE_ID>
                             <SEQ1_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
@@ -2542,13 +2956,18 @@
                             <TYPE>ENG</TYPE>
                             <ID>2</ID>
                         </DefaultTemplateParameters>
-
-                        <UseTemplate Name="FBW_Airbus_FIRE_TEST_BUTTON">
+                        <!-- FIRE ENG 2 TEST -->
+                        <UseTemplate Name="FBW_Anim_Interactions">
+                            <ANIM_TYPE>BUTTON_HELD</ANIM_TYPE>
+                            <ANIM_TEMPLATE>FBW_Airbus_FIRE_TEST_BUTTON</ANIM_TEMPLATE>
                             <NODE_ID>PUSH_FIRE_ENG2_TEST</NODE_ID>
                             <PART_ID>Fire_test_eng2</PART_ID>
                             <HOLD_SIMVAR>L:A32NX_FIRE_TEST_ENG2</HOLD_SIMVAR>
                         </UseTemplate>
-                        <UseTemplate Name="FBW_Airbus_FIRE_AGENT">
+                        <!-- FIRE ENG 2 AGENT 1-->
+                        <UseTemplate Name="FBW_Anim_Interactions">
+                            <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                            <ANIM_TEMPLATE>FBW_Airbus_FIRE_AGENT</ANIM_TEMPLATE>
                             <NODE_ID>PUSH_OVHD_FIRE_ENG2_AGENT1</NODE_ID>
                             <PART_ID>FIRE_ENG2_AGENT1</PART_ID>
                             <AGENT_ID>1</AGENT_ID>
@@ -2557,7 +2976,10 @@
                             <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
                             <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                         </UseTemplate>
-                        <UseTemplate Name="FBW_Airbus_FIRE_AGENT">
+                        <!-- FIRE ENG 2 AGENT 2 -->
+                        <UseTemplate Name="FBW_Anim_Interactions">
+                            <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                            <ANIM_TEMPLATE>FBW_Airbus_FIRE_AGENT</ANIM_TEMPLATE>
                             <NODE_ID>PUSH_OVHD_FIRE_ENG2_AGENT2</NODE_ID>
                             <PART_ID>FIRE_ENG2_AGENT2</PART_ID>
                             <AGENT_ID>2</AGENT_ID>
@@ -2566,6 +2988,7 @@
                             <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
                             <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                         </UseTemplate>
+                        <!-- FIRE ENG 2 FIRE PUSH -->
                         <UseTemplate Name="FBW_Airbus_Engine_Lights">
                             <NODE_ID>PUSH_ENGINES_2</NODE_ID>
                             <SEQ1_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
@@ -2593,12 +3016,18 @@
                             <ID></ID>
                         </DefaultTemplateParameters>
 
-                        <UseTemplate Name="FBW_Airbus_FIRE_TEST_BUTTON">
+                        <!-- FIRE APU TEST -->
+                        <UseTemplate Name="FBW_Anim_Interactions">
+                            <ANIM_TYPE>BUTTON_HELD</ANIM_TYPE>
+                            <ANIM_TEMPLATE>FBW_Airbus_FIRE_TEST_BUTTON</ANIM_TEMPLATE>
                             <NODE_ID>PUSH_FIRE_APU_TEST</NODE_ID>
                             <PART_ID>APU_FIRE_TEST_BUTTON</PART_ID>
                             <HOLD_SIMVAR>L:FIRE_TEST_APU</HOLD_SIMVAR>
                         </UseTemplate>
-                        <UseTemplate Name="FBW_Airbus_FIRE_AGENT">
+                        <!-- FIRE APU AGENT -->
+                        <UseTemplate Name="FBW_Anim_Interactions">
+                            <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                            <ANIM_TEMPLATE>FBW_Airbus_FIRE_AGENT</ANIM_TEMPLATE>
                             <NODE_ID>PUSH_OVHD_FIRE_AGENT</NODE_ID>
                             <PART_ID>PUSH_OVHD_FIRE_AGENT</PART_ID>
                             <AGENT_ID>1</AGENT_ID>
@@ -2607,6 +3036,7 @@
                             <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
                             <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                         </UseTemplate>
+                        <!-- FIRE APU FIRE PUSH -->
                         <UseTemplate Name="FBW_Airbus_FIRE_BUTTON">
                             <NODE_ID>PUSH_OVHD_FIRE_APU</NODE_ID>
                             <PART_ID>PUSH_OVHD_FIRE_APU</PART_ID>
@@ -2628,45 +3058,62 @@
                             <TYPE>CARGO</TYPE>
                             <ID></ID>
                         </DefaultTemplateParameters>
-                        <UseTemplate Name="FBW_Airbus_CARGOSMOKE_TEST_BUTTON">
+                        <!-- CARGO SMOKE TEST -->
+                        <UseTemplate Name="FBW_Anim_Interactions">
+                            <ANIM_TYPE>BUTTON_HELD</ANIM_TYPE>
+                            <ANIM_TEMPLATE>FBW_Airbus_CARGOSMOKE_TEST_BUTTON</ANIM_TEMPLATE>
                             <NODE_ID>PUSH_OVHD_CARGOSMOKE_TEST</NODE_ID>
                         </UseTemplate>
+                        <!-- CARGO SMOKE AFT -->
                         <UseTemplate Name="FBW_Airbus_FIRE_TEST_LIGHTS">
                             <NODE_ID>PUSH_OVHD_CARGOSMOKE_FWD2</NODE_ID>
                             <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                             <NO_SEQ2 />
                         </UseTemplate>
+                        <!-- CARGO SMOKE FWD -->
                         <UseTemplate Name="FBW_Airbus_FIRE_TEST_LIGHTS">
                             <NODE_ID>PUSH_OVHD_CARGOSMOKE_FWD1</NODE_ID>
                             <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                             <NO_SEQ2 />
                         </UseTemplate>
-                        <UseTemplate Name="ASOBO_GT_Switch_Dummy">
+                        <!-- CARGO SMOKE FWD DISCH -->
+                        <UseTemplate Name="FBW_Anim_Interactions">
+                            <ANIM_TYPE>KORRY_PROTECTED</ANIM_TYPE>
+                            <ANIM_TEMPLATE>ASOBO_GT_Switch_Dummy</ANIM_TEMPLATE>
                             <NODE_ID>LOCK_OVHD_CARGOSMOKE_1</NODE_ID>
                             <ANIM_NAME>LOCK_OVHD_CARGOSMOKE_1</ANIM_NAME>
                             <SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
                             <SWITCH_POSITION_VAR>A32NX_CARGOSMOKE_DISCH1LOCK_TOGGLE</SWITCH_POSITION_VAR>
                         </UseTemplate>
-                        <UseTemplate Name="ASOBO_GT_Switch_Dummy">
+                        <!-- CARGO SMOKE FWD DISCH -->
+                        <UseTemplate Name="FBW_Anim_Interactions">
+                            <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                            <ANIM_TEMPLATE>FBW_Covered_Push_Toggle</ANIM_TEMPLATE>
+                            <NODE_ID>PUSH_OVHD_CARGOSMOKE_1</NODE_ID>
+                            <LOCK_NODE_ID>LOCK_OVHD_CARGOSMOKE_1</LOCK_NODE_ID>
+                            <LEFT_SINGLE_CODE>1 (&gt;L:A32NX_CARGOSMOKE_FWD_DISCHARGED)</LEFT_SINGLE_CODE>
+                            <TOOLTIPID>%((L:A32NX_CARGOSMOKE_FWD_DISCHARGED, Bool))%{if}Fire-extinguisher discharged (Inop.)%{else}Discharge fire-extinguisher (Inop.)%{end}</TOOLTIPID>
+                            <MOMENTARY/>
+                            <NO_SEQ1 />
+                            <NO_SEQ2 />
+                        </UseTemplate>
+                        <!-- CARGO SMOKE AFT DISCH -->
+                        <UseTemplate Name="FBW_Anim_Interactions">
+                            <ANIM_TYPE>KORRY_PROTECTED</ANIM_TYPE>
+                            <ANIM_TEMPLATE>ASOBO_GT_Switch_Dummy</ANIM_TEMPLATE>
                             <NODE_ID>LOCK_OVHD_CARGOSMOKE_2</NODE_ID>
                             <ANIM_NAME>LOCK_OVHD_CARGOSMOKE_2</ANIM_NAME>
                             <SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
                             <SWITCH_POSITION_VAR>A32NX_CARGOSMOKE_DISCH2LOCK_TOGGLE</SWITCH_POSITION_VAR>
                         </UseTemplate>
-                        <UseTemplate Name="FBW_Covered_Push_Toggle">
+                        <!-- CARGO SMOKE AFT DISCH -->
+                        <UseTemplate Name="FBW_Anim_Interactions">
+                            <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                            <ANIM_TEMPLATE>FBW_Covered_Push_Toggle</ANIM_TEMPLATE>
                             <NODE_ID>PUSH_OVHD_CARGOSMOKE_2</NODE_ID>
                             <LOCK_NODE_ID>LOCK_OVHD_CARGOSMOKE_2</LOCK_NODE_ID>
                             <LEFT_SINGLE_CODE>1 (&gt;L:A32NX_CARGOSMOKE_AFT_DISCHARGED)</LEFT_SINGLE_CODE>
                             <TOOLTIPID>%((L:A32NX_CARGOSMOKE_AFT_DISCHARGED, Bool))%{if}Fire-extinguisher discharged (Inop.)%{else}Discharge fire-extinguisher (Inop.)%{end}</TOOLTIPID>
-                            <MOMENTARY/>
-                            <NO_SEQ1 />
-                            <NO_SEQ2 />
-                        </UseTemplate>
-                        <UseTemplate Name="FBW_Covered_Push_Toggle">
-                            <NODE_ID>PUSH_OVHD_CARGOSMOKE_1</NODE_ID>
-                            <LOCK_NODE_ID>LOCK_OVHD_CARGOSMOKE_1</LOCK_NODE_ID>
-                            <LEFT_SINGLE_CODE>1 (&gt;L:A32NX_CARGOSMOKE_FWD_DISCHARGED)</LEFT_SINGLE_CODE>
-                            <TOOLTIPID>%((L:A32NX_CARGOSMOKE_FWD_DISCHARGED, Bool))%{if}Fire-extinguisher discharged (Inop.)%{else}Discharge fire-extinguisher (Inop.)%{end}</TOOLTIPID>
                             <MOMENTARY/>
                             <NO_SEQ1 />
                             <NO_SEQ2 />
@@ -2678,7 +3125,10 @@
                     <Component ID="Left_Column">
 
                         <Component ID="GPWS">
-                            <UseTemplate Name="FBW_Push_Toggle">
+                            <!-- GPWS TERR -->
+                            <UseTemplate Name="FBW_Anim_Interactions">
+                                <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                                <ANIM_TEMPLATE>FBW_Push_Toggle</ANIM_TEMPLATE>
                                 <NODE_ID>PUSH_OVHD_GPWS_TERR</NODE_ID>
                                 <TOGGLE_SIMVAR>L:A32NX_GPWS_TERR_OFF</TOGGLE_SIMVAR>
                                 <DOWN_CODE>(L:A32NX_GPWS_TERR_OFF, Bool) !</DOWN_CODE>
@@ -2688,8 +3138,10 @@
                                 <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                                 <TOOLTIPID>%((L:A32NX_GPWS_TERR_OFF, Bool))%{if}(Inop.) Turn ON GPWS TERR%{else}(Inop.) Turn OFF GPWS TERR%{end}</TOOLTIPID>
                             </UseTemplate>
-
-                            <UseTemplate Name="FBW_Push_Toggle">
+                            <!-- GPWS SYS -->
+                            <UseTemplate Name="FBW_Anim_Interactions">
+                                <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                                <ANIM_TEMPLATE>FBW_Push_Toggle</ANIM_TEMPLATE>
                                 <NODE_ID>PUSH_OVHD_GPWS_SYS</NODE_ID>
                                 <TOGGLE_SIMVAR>L:A32NX_GPWS_SYS_OFF</TOGGLE_SIMVAR>
                                 <DOWN_CODE>(L:A32NX_GPWS_SYS_OFF, Bool) !</DOWN_CODE>
@@ -2699,8 +3151,10 @@
                                 <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                                 <TOOLTIPID>%((L:A32NX_GPWS_SYS_OFF, Bool))%{if}Turn ON GPWS SYS%{else}Turn OFF GPWS SYS%{end}</TOOLTIPID>
                             </UseTemplate>
-
-                            <UseTemplate Name="FBW_Push_Toggle">
+                            <!-- GPWS G/S MODE -->
+                            <UseTemplate Name="FBW_Anim_Interactions">
+                                <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                                <ANIM_TEMPLATE>FBW_Push_Toggle</ANIM_TEMPLATE>
                                 <NODE_ID>PUSH_OVHD_GPWS_GSMODE</NODE_ID>
                                 <TOGGLE_SIMVAR>L:A32NX_GPWS_GS_OFF</TOGGLE_SIMVAR>
                                 <DOWN_CODE>(L:A32NX_GPWS_GS_OFF, Bool) !</DOWN_CODE>
@@ -2711,8 +3165,10 @@
                                 <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                                 <TOOLTIPID>%((L:A32NX_GPWS_GS_OFF, Bool))%{if}Turn ON GPWS G/S mode%{else}Turn OFF GPWS G/S mode%{end}</TOOLTIPID>
                             </UseTemplate>
-
-                            <UseTemplate Name="FBW_Push_Toggle">
+                            <!-- GPWS FLAP MODE -->
+                            <UseTemplate Name="FBW_Anim_Interactions">
+                                <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                                <ANIM_TEMPLATE>FBW_Push_Toggle</ANIM_TEMPLATE>
                                 <NODE_ID>PUSH_OVHD_GPWS_FLAP</NODE_ID>
                                 <PART_ID>GPWS_Flap</PART_ID>
                                 <TOGGLE_SIMVAR>L:A32NX_GPWS_FLAP_OFF</TOGGLE_SIMVAR>
@@ -2724,9 +3180,10 @@
                                 <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                                 <TOOLTIPID>%((L:A32NX_GPWS_FLAP_OFF, Bool))%{if}Turn ON GPWS flap mode%{else}Turn OFF GPWS flap mode%{end}</TOOLTIPID>
                             </UseTemplate>
-
-                            <!-- LDG FLAP 3 -->
-                            <UseTemplate Name="FBW_Push_Toggle">
+                            <!-- GPWS LDG FLAP 3 -->
+                            <UseTemplate Name="FBW_Anim_Interactions">
+                                <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                                <ANIM_TEMPLATE>FBW_Push_Toggle</ANIM_TEMPLATE>
                                 <NODE_ID>PUSH_OVHD_GPWS_LDG</NODE_ID>
                                 <PART_ID>GPWS_Flap3</PART_ID>
                                 <TOGGLE_SIMVAR>L:A32NX_GPWS_FLAPS3</TOGGLE_SIMVAR>
@@ -2741,7 +3198,10 @@
                         </Component>
 
                         <Component ID="RCDR">
-                            <UseTemplate Name="FBW_CVR_Ground_Control_Pushbutton">
+                            <!-- RCDR GND CTL -->
+                            <UseTemplate Name="FBW_Anim_Interactions">
+                                <ANIM_TYPE>KORRY_HELD</ANIM_TYPE>
+                                <ANIM_TEMPLATE>FBW_CVR_Ground_Control_Pushbutton</ANIM_TEMPLATE>
                                 <NODE_ID>PUSH_OVHD_RCDR_GNDCTL</NODE_ID>
                                 <PART_ID>PUSH_OVHD_RCDR_GNDCTL</PART_ID>
                                 <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
@@ -2752,11 +3212,17 @@
                                 <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                                 <TOOLTIPID>%((L:A32NX_RCDR_GROUND_CONTROL_ON, Bool))%{if}Set Ground Control to AUTO%{else}Turn ON Ground Control%{end}</TOOLTIPID>
                             </UseTemplate>
-                            <UseTemplate Name="FBW_Push_Held">
+                            <!-- RCDR CVR ERASE -->
+                            <UseTemplate Name="FBW_Anim_Interactions">
+                                <ANIM_TYPE>BUTTON_HELD</ANIM_TYPE>
+                                <ANIM_TEMPLATE>FBW_Push_Held</ANIM_TEMPLATE>
                                 <NODE_ID>PUSH_OVHD_RCDR_ERASE</NODE_ID>
                                 <TOOLTIPID>Erase CVR</TOOLTIPID>
                             </UseTemplate>
-                            <UseTemplate Name="FBW_Push_Held">
+                            <!-- RCDR CVR TEST -->
+                            <UseTemplate Name="FBW_Anim_Interactions">
+                                <ANIM_TYPE>BUTTON_HELD</ANIM_TYPE>
+                                <ANIM_TEMPLATE>FBW_Push_Held</ANIM_TEMPLATE>
                                 <NODE_ID>PUSH_OVHD_RCDR_TEST</NODE_ID>
                                 <PART_ID>PUSH_OVHD_RCDR_TEST</PART_ID>
                                 <HOLD_SIMVAR>L:A32NX_RCDR_TEST</HOLD_SIMVAR>
@@ -2765,7 +3231,10 @@
                         </Component>
 
                         <Component ID="OXYGEN">
-                            <UseTemplate Name="FBW_Covered_Push_Toggle">
+                            <!-- OXYGEN MASK MAN ON -->
+                            <UseTemplate Name="FBW_Anim_Interactions">
+                                <ANIM_TYPE>KORRY_PROTECTED</ANIM_TYPE>
+                                <ANIM_TEMPLATE>FBW_Covered_Push_Toggle</ANIM_TEMPLATE>
                                 <NODE_ID>PUSH_OVHD_OXYGEN_RATMANON</NODE_ID>
                                 <LOCK_NODE_ID>LOCK_OVHD_OXYGEN_RATMANON</LOCK_NODE_ID>
                                 <LEFT_SINGLE_CODE>
@@ -2778,6 +3247,7 @@
                                 <NO_SEQ2 />
                             </UseTemplate>
 
+                            <!-- OXYGEN PASSENGER -->
                             <UseTemplate Name="FBW_Push_Toggle">
                                 <NODE_ID>PUSH_OVHD_OXYGEN_PASSENGER</NODE_ID>
                                 <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ_POWERED>
@@ -2789,7 +3259,10 @@
                                 <DUMMY_BUTTON/>
                             </UseTemplate>
 
-                            <UseTemplate Name="FBW_Push_Toggle">
+                            <!-- OXYGEN CREW SUPPLY -->
+                            <UseTemplate Name="FBW_Anim_Interactions">
+                                <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                                <ANIM_TEMPLATE>FBW_Push_Toggle</ANIM_TEMPLATE>
                                 <NODE_ID>PUSH_OVHD_OXYGEN_CREW</NODE_ID>
                                 <PART_ID>Crew_Supply</PART_ID>
                                 <TOGGLE_SIMVAR>L:PUSH_OVHD_OXYGEN_CREW</TOGGLE_SIMVAR>
@@ -2804,24 +3277,39 @@
                         </Component>
 
                         <Component ID="CALLS">
-                            <UseTemplate Name="FBW_Push_Held">
+                            <!-- CALLS MECH -->
+                            <UseTemplate Name="FBW_Anim_Interactions">
+                                <ANIM_TYPE>BUTTON_HELD</ANIM_TYPE>
+                                <ANIM_TEMPLATE>FBW_Push_Held</ANIM_TEMPLATE>
                                 <NODE_ID>PUSH_OVHD_CALLS_MECH</NODE_ID>
                                 <HOLD_SIMVAR>L:PUSH_OVHD_CALLS_MECH</HOLD_SIMVAR>
                             </UseTemplate>
-                            <UseTemplate Name="FBW_Push_Held">
+                            <!-- CALLS ALL -->
+                            <UseTemplate Name="FBW_Anim_Interactions">
+                                <ANIM_TYPE>BUTTON_HELD</ANIM_TYPE>
+                                <ANIM_TEMPLATE>FBW_Push_Held</ANIM_TEMPLATE>
                                 <NODE_ID>PUSH_OVHD_CALLS_ALL</NODE_ID>
                                 <PART_ID>PUSH_OVHD_CALLS_ALL</PART_ID>
                                 <HOLD_SIMVAR>L:PUSH_OVHD_CALLS_ALL</HOLD_SIMVAR>
                             </UseTemplate>
-                            <UseTemplate Name="FBW_Push_Held">
+                            <!-- CALLS FWD -->
+                            <UseTemplate Name="FBW_Anim_Interactions">
+                                <ANIM_TYPE>BUTTON_HELD</ANIM_TYPE>
+                                <ANIM_TEMPLATE>FBW_Push_Held</ANIM_TEMPLATE>
                                 <NODE_ID>PUSH_OVHD_CALLS_FWD</NODE_ID>
                                 <HOLD_SIMVAR>L:PUSH_OVHD_CALLS_FWD</HOLD_SIMVAR>
                             </UseTemplate>
-                            <UseTemplate Name="FBW_Push_Held">
+                            <!-- CALLS AFT -->
+                            <UseTemplate Name="FBW_Anim_Interactions">
+                                <ANIM_TYPE>BUTTON_HELD</ANIM_TYPE>
+                                <ANIM_TEMPLATE>FBW_Push_Held</ANIM_TEMPLATE>
                                 <NODE_ID>PUSH_OVHD_CALLS_AFT</NODE_ID>
                                 <HOLD_SIMVAR>L:PUSH_OVHD_CALLS_AFT</HOLD_SIMVAR>
                             </UseTemplate>
-                            <UseTemplate Name="FBW_Covered_Push_Toggle">
+                            <!-- CALLS EMER -->
+                            <UseTemplate Name="FBW_Anim_Interactions">
+                                <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                                <ANIM_TEMPLATE>FBW_Covered_Push_Toggle</ANIM_TEMPLATE>
                                 <NODE_ID>PUSH_OVHD_CALLS_EMER</NODE_ID>
                                 <LOCK_NODE_ID>LOCK_OVHD_CALLS_EMER</LOCK_NODE_ID>
                                 <TOGGLE_SIMVAR>L:A32NX_CALLS_EMER_ON</TOGGLE_SIMVAR>
@@ -2837,12 +3325,18 @@
                 </Component>
 
                 <Component ID="Right_Pedestal_Misc">
-                    <UseTemplate Name="FBW_Push_Held">
+                    <!-- AIDS PRINT -->
+                    <UseTemplate Name="FBW_Anim_Interactions">
+                        <ANIM_TYPE>BUTTON_HELD</ANIM_TYPE>
+                        <ANIM_TEMPLATE>FBW_Push_Held</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_PANELCS_AIDS</NODE_ID>
                         <HOLD_SIMVAR>L:A32NX_AIDS_PRINT_ON</HOLD_SIMVAR>
                         <TOOLTIP>Print data</TOOLTIP>
                     </UseTemplate>
-                    <UseTemplate Name="FBW_Push_Held">
+                    <!-- DFDR EVENT -->
+                    <UseTemplate Name="FBW_Anim_Interactions">
+                        <ANIM_TYPE>BUTTON_HELD</ANIM_TYPE>
+                        <ANIM_TEMPLATE>FBW_Push_Held</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_PANELCS_DFDR</NODE_ID>
                         <HOLD_SIMVAR>L:A32NX_DFDR_EVENT_ON</HOLD_SIMVAR>
                         <TOOLTIP>Print data (Inop.)</TOOLTIP>
@@ -2850,30 +3344,26 @@
                 </Component>
 
                 <Component ID="Overhead_Reading_Lights">
-                    <!-- Left knob: READING LT -->
+                    <!-- OVHD READING LT L -->
                     <UseTemplate Name="FBW_Stepless_Potentiometer">
                         <NODE_ID>KNOB_OVHD_READINGLTL</NODE_ID>
                         <POTENTIOMETER>96</POTENTIOMETER>
                         <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTS_READING_DECREASE</ANIMTIP_0>
                         <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTS_READING_INCREASE</ANIMTIP_1>
                     </UseTemplate>
-
-                    <!-- Left light -->
                     <UseTemplate Name="ASOBO_LIGHTING_Potentiometer_Emissive_Template">
                         <NODE_ID>LIGHT_OVHD_READINGLLT</NODE_ID>
                         <POTENTIOMETER>96</POTENTIOMETER>
                         <EMISSIVE_CODE>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
                     </UseTemplate>
 
-                    <!-- Right knob: READING LT -->
+                    <!-- OVHD READING LT R -->
                     <UseTemplate Name="FBW_Stepless_Potentiometer">
                         <NODE_ID>KNOB_OVHD_READINGLTR</NODE_ID>
                         <POTENTIOMETER>97</POTENTIOMETER>
                         <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTS_READING_DECREASE</ANIMTIP_0>
                         <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTS_READING_INCREASE</ANIMTIP_1>
                     </UseTemplate>
-
-                    <!-- Right light -->
                     <UseTemplate Name="ASOBO_LIGHTING_Potentiometer_Emissive_Template">
                         <NODE_ID>LIGHT_OVHD_READINGLTR</NODE_ID>
                         <POTENTIOMETER>97</POTENTIOMETER>
@@ -2882,8 +3372,10 @@
                 </Component>
 
                 <Component ID="Overhead_Back_Panel">
-                    <!-- "BLUE PUMP OVRD" -->
-                    <UseTemplate Name="FBW_Covered_Push_Toggle">
+                    <!-- "HYD BLUE PUMP OVRD" -->
+                    <UseTemplate Name="FBW_Anim_Interactions">
+                        <ANIM_TYPE>KORRY_PROTECTED</ANIM_TYPE>
+                        <ANIM_TEMPLATE>FBW_Covered_Push_Toggle</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_OVHD_HYD_BLUEPUMP</NODE_ID>
                         <LOCK_NODE_ID>LOCK_OVHD_HYD_BLUEPUMPOVRD</LOCK_NODE_ID>
                         <LEFT_SINGLE_CODE>1 (&gt;L:A32NX_OVHD_HYD_EPUMPY_OVRD_IS_PRESSED)</LEFT_SINGLE_CODE>
@@ -2895,11 +3387,10 @@
                         <NO_SEQ1 />
                     </UseTemplate>
 
-                    <!-- "HYD LEAK MEASUREMENT VALVES" -->
-
-                    <!-- G -->
-
-                    <UseTemplate Name="FBW_Covered_Push_Toggle">
+                    <!-- "HYD LEAK MEASUREMENT VALVES G" -->
+                    <UseTemplate Name="FBW_Anim_Interactions">
+                        <ANIM_TYPE>KORRY_PROTECTED</ANIM_TYPE>
+                        <ANIM_TEMPLATE>FBW_Covered_Push_Toggle</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_OVHD_HYD_G</NODE_ID>
                         <LOCK_NODE_ID>LOCK_OVHD_HYD_G</LOCK_NODE_ID>
                         <TOGGLE_SIMVAR>L:A32NX_OVHD_HYD_LEAK_MEASUREMENT_G</TOGGLE_SIMVAR>
@@ -2911,9 +3402,10 @@
                         <INVERTED/>
                     </UseTemplate>
 
-                    <!-- B -->
-
-                    <UseTemplate Name="FBW_Covered_Push_Toggle">
+                    <!-- "HYD LEAK MEASUREMENT VALVES B" -->
+                    <UseTemplate Name="FBW_Anim_Interactions">
+                        <ANIM_TYPE>KORRY_PROTECTED</ANIM_TYPE>
+                        <ANIM_TEMPLATE>FBW_Covered_Push_Toggle</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_OVHD_HYD_B</NODE_ID>
                         <LOCK_NODE_ID>LOCK_OVHD_HYD_B</LOCK_NODE_ID>
                         <TOGGLE_SIMVAR>L:A32NX_OVHD_HYD_LEAK_MEASUREMENT_B</TOGGLE_SIMVAR>
@@ -2925,9 +3417,10 @@
                         <INVERTED/>
                     </UseTemplate>
 
-                    <!-- Y -->
-
-                    <UseTemplate Name="FBW_Covered_Push_Toggle">
+                    <!-- "HYD LEAK MEASUREMENT VALVES Y" -->
+                    <UseTemplate Name="FBW_Anim_Interactions">
+                        <ANIM_TYPE>KORRY_PROTECTED</ANIM_TYPE>
+                        <ANIM_TEMPLATE>FBW_Covered_Push_Toggle</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_OVHD_HYD_Y</NODE_ID>
                         <LOCK_NODE_ID>LOCK_OVHD_HYD_Y</LOCK_NODE_ID>
                         <TOGGLE_SIMVAR>L:A32NX_OVHD_HYD_LEAK_MEASUREMENT_Y</TOGGLE_SIMVAR>
@@ -2939,11 +3432,10 @@
                         <INVERTED/>
                     </UseTemplate>
 
-                    <!-- ENG FADEC GND PWR -->
-
-                    <!-- 1 -->
-
-                    <UseTemplate Name="FBW_Covered_Push_Toggle">
+                    <!-- ENG FADEC GND PWR 1 -->
+                    <UseTemplate Name="FBW_Anim_Interactions">
+                        <ANIM_TYPE>KORRY_PROTECTED</ANIM_TYPE>
+                        <ANIM_TEMPLATE>FBW_Covered_Push_Toggle</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_OVHD_ENG_FADEC1</NODE_ID>
                         <LOCK_NODE_ID>LOCK_OVHD_ENG_FADEC1</LOCK_NODE_ID>
                         <TOGGLE_SIMVAR>L:A32NX_OVHD_FADEC_1</TOGGLE_SIMVAR>
@@ -2954,9 +3446,10 @@
                         <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                     </UseTemplate>
 
-                    <!-- 2 -->
-
-                    <UseTemplate Name="FBW_Covered_Push_Toggle">
+                    <!-- ENG FADEC GND PWR 2 -->
+                    <UseTemplate Name="FBW_Anim_Interactions">
+                        <ANIM_TYPE>KORRY_PROTECTED</ANIM_TYPE>
+                        <ANIM_TEMPLATE>FBW_Covered_Push_Toggle</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_OVHD_ENG_FADEC2</NODE_ID>
                         <LOCK_NODE_ID>LOCK_OVHD_ENG_FADEC2</LOCK_NODE_ID>
                         <TOGGLE_SIMVAR>L:A32NX_OVHD_FADEC_2</TOGGLE_SIMVAR>
@@ -2968,8 +3461,9 @@
                     </UseTemplate>
 
                     <!-- APU AUTO EXTING TEST-->
-
-                    <UseTemplate Name="FBW_Push_Toggle">
+                    <UseTemplate Name="FBW_Anim_Interactions">
+                        <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                        <ANIM_TEMPLATE>FBW_Push_Toggle</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_OVHD_APU_AUTOEXITING_TEST</NODE_ID>
                         <TOGGLE_SIMVAR>L:A32NX_APU_AUTOEXITING_TEST_ON</TOGGLE_SIMVAR>
                         <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
@@ -2982,16 +3476,18 @@
                     </UseTemplate>
 
                     <!-- APU AUTO EXITING RESET-->
-
-                    <UseTemplate Name="FBW_Push_Held">
+                    <UseTemplate Name="FBW_Anim_Interactions">
+                        <ANIM_TYPE>BUTTON_HELD</ANIM_TYPE>
+                        <ANIM_TEMPLATE>FBW_Push_Held</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_OVHD_APU_AUTOEXITING_RESET</NODE_ID>
                         <HOLD_SIMVAR>L:A32NX_APU_AUTOEXITING_RESET</HOLD_SIMVAR>
                         <TOOLTIPID>Reset APU autoexiting (Inop.)</TOOLTIPID>
                     </UseTemplate>
                 </Component>
 
-                <!-- LDG ELEV AUTO -->
+                <!-- CABIN PRESS -->
                 <Component ID="Overhead_CabinPress">
+                    <!-- CABIN PRESS LDG EVEL AUTO -->
                     <Component ID="KNOB_OVHD_CABINPRESS_LDGELEV" Node="KNOB_OVHD_CABINPRESS_LDGELEV">
                         <UseTemplate Name="FBW_Continuous_Knob_Limited_From_Simvar">
                             <NODE_ID>KNOB_OVHD_CABINPRESS_LDGELEV</NODE_ID>
@@ -3004,14 +3500,19 @@
                         </UseTemplate>
                     </Component>
 
-                    <UseTemplate Name="FBW_3State_Springloaded_Switch">
+                    <!-- CABIN PRESS MAN C/S CTL -->
+                    <UseTemplate Name="FBW_Anim_Interactions">
+                        <ANIM_TYPE>SWITCH</ANIM_TYPE>
+                        <ANIM_TEMPLATE>FBW_3State_Springloaded_Switch</ANIM_TEMPLATE>
                         <NODE_ID>SWITCH_OVHD_CABINPRESS_MANVSCTL</NODE_ID>
                         <ANIM_SIMVAR>L:A32NX_OVHD_PRESS_MAN_VS_CTL_SWITCH</ANIM_SIMVAR>
                         <INVERT_ANIM>1</INVERT_ANIM>
                     </UseTemplate>
 
-                    <!-- MODE SEL -->
-                    <UseTemplate Name="FBW_Push_Toggle">
+                    <!-- CABIN PRESS MODE SEL -->
+                    <UseTemplate Name="FBW_Anim_Interactions">
+                        <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                        <ANIM_TEMPLATE>FBW_Push_Toggle</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_OVHD_CABINPRESS_MODESEL</NODE_ID>
                         <TOGGLE_SIMVAR>L:A32NX_OVHD_PRESS_MODE_SEL_PB_IS_AUTO</TOGGLE_SIMVAR>
                         <DOWN_CODE>(L:A32NX_OVHD_PRESS_MODE_SEL_PB_IS_AUTO, Bool) !</DOWN_CODE>
@@ -3023,7 +3524,10 @@
                         <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                     </UseTemplate>
 
-                    <UseTemplate Name="FBW_Covered_Push_Toggle">
+                    <!-- CABIN PRESS DITCHING -->
+                    <UseTemplate Name="FBW_Anim_Interactions">
+                        <ANIM_TYPE>KORRY_PROTECTED</ANIM_TYPE>
+                        <ANIM_TEMPLATE>FBW_Covered_Push_Toggle</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_OVHD_CABINPRESS_DITCHING</NODE_ID>
                         <LOCK_NODE_ID>LOCK_OVHD_CABINPRESS_DITCHING</LOCK_NODE_ID>
                         <TOGGLE_SIMVAR>L:A32NX_OVHD_PRESS_DITCHING_PB_IS_ON</TOGGLE_SIMVAR>
@@ -3048,18 +3552,28 @@
                 <PLANE_NAME>A32NX</PLANE_NAME>
             </DefaultTemplateParameters>
 
-            <UseTemplate Name="FBW_Airbus_Autoland_Warning">
+            <!-- AUTO LAND L -->
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>KORRY_HELD</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_Airbus_Autoland_Warning</ANIM_TEMPLATE>
                 <SIDE>L</SIDE>
                 <BUS_TOP>AC_ESS_SHED</BUS_TOP>
                 <BUS_BOTTOM>AC_2</BUS_BOTTOM>
             </UseTemplate>
-            <UseTemplate Name="FBW_Airbus_Autoland_Warning">
+
+            <!-- AUTO LAND R -->
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>KORRY_HELD</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_Airbus_Autoland_Warning</ANIM_TEMPLATE>
                 <SIDE>R</SIDE>
                 <BUS_TOP>AC_2</BUS_TOP>
                 <BUS_BOTTOM>AC_ESS_SHED</BUS_BOTTOM>
             </UseTemplate>
 
-            <UseTemplate Name="FBW_AUTOPILOT_Push_SpeedToggle_Template">
+            <!-- FCU SPD MACH -->
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>BUTTON</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_AUTOPILOT_Push_SpeedToggle_Template</ANIM_TEMPLATE>
                 <NODE_ID>PUSH_AUTOPILOT_SPDMACH_L</NODE_ID>
                 <ANIM_NAME>PUSH_AUTOPILOT_SPDMACH_L</ANIM_NAME>
                 <NO_INDICATOR>True</NO_INDICATOR>
@@ -3067,6 +3581,7 @@
                 <TYPE>AIRBUS</TYPE>
             </UseTemplate>
 
+            <!-- FCU SPD MACH KNOB -->
             <UseTemplate Name="FBW_AUTOPILOT_Knob_SpeedMach_Template">
                 <NODE_ID>KNOB_AUTOPILOT_L2</NODE_ID>
                 <PART_ID>Speed_knob</PART_ID>
@@ -3075,6 +3590,7 @@
                 <TYPE>AIRBUS</TYPE>
             </UseTemplate>
 
+            <!-- FCU HDG KNOB -->
             <UseTemplate Name="FBW_Airbus_Autopilot_Knob_Heading_Template">
                 <NODE_ID>KNOB_AUTOPILOT_L3</NODE_ID>
                 <ANIM_NAME_KNOB>KNOB_AUTOPILOT_L3</ANIM_NAME_KNOB>
@@ -3085,12 +3601,18 @@
                 <ANIMTIP_3_ON_CURSOR>DownArrow</ANIMTIP_3_ON_CURSOR>
             </UseTemplate>
 
-            <UseTemplate Name="FBW_AIRBUS_Push_Heading_Track_Template">
+            <!-- FCU HDG TRK V/S FPA -->
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>BUTTON</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_AIRBUS_Push_Heading_Track_Template</ANIM_TEMPLATE>
                 <NODE_ID>PUSH_AUTOPILOT_HDGTRK</NODE_ID>
                 <ANIM_NAME>PUSH_AUTOPILOT_HDGTRK</ANIM_NAME>
             </UseTemplate>
 
-            <UseTemplate Name="FBW_Airbus_Autopilot_Master">
+            <!-- FCU AP 1 -->
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>BUTTON</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_Airbus_Autopilot_Master</ANIM_TEMPLATE>
                 <NODE_ID>PUSH_AUTOPILOT_AP1</NODE_ID>
                 <PART_ID>PUSH_AUTOPILOT_AP1</PART_ID>
                 <ANIM_NAME>PUSH_AUTOPILOT_AP1</ANIM_NAME>
@@ -3105,7 +3627,10 @@
                 <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
             </UseTemplate>
 
-            <UseTemplate Name="FBW_Airbus_Autopilot_Master">
+            <!-- FCU AP 2 -->
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>BUTTON</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_Airbus_Autopilot_Master</ANIM_TEMPLATE>
                 <NODE_ID>PUSH_AUTOPILOT_AP2</NODE_ID>
                 <PART_ID>PUSH_AUTOPILOT_AP2</PART_ID>
                 <ANIM_NAME>PUSH_AUTOPILOT_AP2</ANIM_NAME>
@@ -3120,7 +3645,10 @@
                 <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
             </UseTemplate>
 
-            <UseTemplate Name="FBW_Airbus_Autopilot_Push_Autothrust">
+            <!-- FCU A/THR -->
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>BUTTON</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_Airbus_Autopilot_Push_Autothrust</ANIM_TEMPLATE>
                 <NODE_ID>PUSH_AUTOPILOT_ATHR</NODE_ID>
                 <PART_ID>PUSH_AUTOPILOT_ATHR</PART_ID>
                 <ANIM_NAME>PUSH_AUTOPILOT_ATHR</ANIM_NAME>
@@ -3132,7 +3660,10 @@
                 <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
             </UseTemplate>
 
-            <UseTemplate Name="FBW_Airbus_Autopilot_Push_Localiser">
+            <!-- FCU LOC -->
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>BUTTON</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_Airbus_Autopilot_Push_Localiser</ANIM_TEMPLATE>
                 <NODE_ID>PUSH_AUTOPILOT_LOC</NODE_ID>
                 <ANIM_NAME>PUSH_AUTOPILOT_LOC</ANIM_NAME>
                 <POTENTIOMETER>84</POTENTIOMETER>
@@ -3142,7 +3673,10 @@
                 <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
             </UseTemplate>
 
-            <UseTemplate Name="FBW_Airbus_Autopilot_Push_Approach">
+            <!-- FCU APPR -->
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>BUTTON</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_Airbus_Autopilot_Push_Approach</ANIM_TEMPLATE>
                 <NODE_ID>PUSH_AUTOPILOT_APPR</NODE_ID>
                 <PART_ID>PUSH_AUTOPILOT_APPR</PART_ID>
                 <ANIM_NAME>PUSH_AUTOPILOT_APPR</ANIM_NAME>
@@ -3153,7 +3687,10 @@
                 <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
             </UseTemplate>
 
-            <UseTemplate Name="FBW_AIRBUS_Push_Expedite_Template">
+            <!-- FCU EXPED -->
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>BUTTON</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_AIRBUS_Push_Expedite_Template</ANIM_TEMPLATE>
                 <NODE_ID>PUSH_AUTOPILOT_EXPED</NODE_ID>
                 <ANIM_NAME>PUSH_AUTOPILOT_EXPED</ANIM_NAME>
                 <ACTIVE_NODE_ID>PUSH_AUTOPILOT_EXPED_SEQ1</ACTIVE_NODE_ID>
@@ -3163,16 +3700,21 @@
                 <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
             </UseTemplate>
 
-            <UseTemplate Name="FBW_AIRBUS_Push_Metric_Alt_Template">
+            <!-- FCU METRIC ALT -->
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>BUTTON</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_AIRBUS_Push_Metric_Alt_Template</ANIM_TEMPLATE>
                 <NODE_ID>PUSH_AUTOPILOT_METRICALT</NODE_ID>
                 <ANIM_NAME>PUSH_AUTOPILOT_METRICALT</ANIM_NAME>
             </UseTemplate>
 
+            <!-- FCU ALT INCREMENT-->
             <UseTemplate Name="FBW_AUTOPILOT_Switch_Altitude_Increment_Template">
                 <NODE_ID>KNOB_AUTOPILOT_SELECTOR_ALT</NODE_ID>
                 <ANIM_NAME>KNOB_AUTOPILOT_SELECTOR_ALT</ANIM_NAME>
             </UseTemplate>
 
+            <!-- FCU ALTITUDE KNOB -->
             <UseTemplate Name="FBW_Airbus_FCU_Altitude_Knob">
                 <NODE_ID>KNOB_AUTOPILOT_KNOB_ALT</NODE_ID>
                 <PART_ID>KNOB_AUTOPILOT_KNOB_ALT</PART_ID>
@@ -3189,6 +3731,7 @@
                 <ANIMTIP_3_ON_CURSOR>DownArrow</ANIMTIP_3_ON_CURSOR>
             </UseTemplate>
 
+            <!-- FCU VS UP DN -->
             <UseTemplate Name="FBW_Airbus_Autopilot_Knob_VerticalSpeed_Template">
                 <NODE_ID>KNOB_AUTOPILOT_UPDN</NODE_ID>
                 <PART_ID>KNOB_AUTOPILOT_UPDN</PART_ID>
@@ -3199,25 +3742,37 @@
                 <ANIMTIP_2_ON_CURSOR>UpArrow</ANIMTIP_2_ON_CURSOR>
             </UseTemplate>
 
-            <UseTemplate Name="FBW_AIRBUS_NAV_AID_SWITCH_Template">
+            <!-- FCU ADF/VOR 1 L -->
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>SWITCH</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_AIRBUS_NAV_AID_SWITCH_Template</ANIM_TEMPLATE>
                 <BASE_NAME>SWITCH_AUTOPILOT_ADF1_L</BASE_NAME>
                 <SIDE>L</SIDE>
                 <INDEX>1</INDEX>
             </UseTemplate>
 
-            <UseTemplate Name="FBW_AIRBUS_NAV_AID_SWITCH_Template">
+            <!-- FCU ADF/VOR 2 L -->
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>SWITCH</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_AIRBUS_NAV_AID_SWITCH_Template</ANIM_TEMPLATE>
                 <BASE_NAME>SWITCH_AUTOPILOT_ADF2_L</BASE_NAME>
                 <SIDE>L</SIDE>
                 <INDEX>2</INDEX>
             </UseTemplate>
 
-            <UseTemplate Name="FBW_AIRBUS_NAV_AID_SWITCH_Template">
+            <!-- FCU ADF/VOR 1 R -->
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>SWITCH</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_AIRBUS_NAV_AID_SWITCH_Template</ANIM_TEMPLATE>
                 <BASE_NAME>SWITCH_AUTOPILOT_ADF1_R</BASE_NAME>
                 <SIDE>R</SIDE>
                 <INDEX>1</INDEX>
             </UseTemplate>
 
-            <UseTemplate Name="FBW_AIRBUS_NAV_AID_SWITCH_Template">
+            <!-- FCU ADF/VOR 2 R -->
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>SWITCH</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_AIRBUS_NAV_AID_SWITCH_Template</ANIM_TEMPLATE>
                 <BASE_NAME>SWITCH_AUTOPILOT_ADF2_R</BASE_NAME>
                 <SIDE>R</SIDE>
                 <INDEX>2</INDEX>
@@ -3230,11 +3785,13 @@
                 <SIDE>L</SIDE>
             </DefaultTemplateParameters>
 
+            <!-- FCU BARO SELECT L-->
             <UseTemplate Name="FBW_AIRLINER_Switch_Baro_Selector_Template">
                 <NODE_ID>KNOB_AUTOPILOT_SELECTOR_L1</NODE_ID>
                 <ANIM_NAME>KNOB_AUTOPILOT_SELECTOR_L1</ANIM_NAME>
             </UseTemplate>
 
+            <!-- FCU BARO KNOB L -->
             <UseTemplate Name="FBW_Airbus_FCU_Baro_Knob">
                 <NODE_ID>KNOB_AUTOPILOT_KNOB1_L</NODE_ID>
                 <ANIM_NAME_KNOB>KNOB_AUTOPILOT_KNOB1_L</ANIM_NAME_KNOB>
@@ -3242,17 +3799,26 @@
                 <AIRLINER_TYPE>A320</AIRLINER_TYPE>
             </UseTemplate>
 
-            <UseTemplate Name="A32NX_AUTOPILOT_Push_FlightDirector_Template">
+            <!-- FCU FD -->
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>BUTTON</ANIM_TYPE>
+                <ANIM_TEMPLATE>A32NX_AUTOPILOT_Push_FlightDirector_Template</ANIM_TEMPLATE>
                 <SIDE>L</SIDE>
                 <ID>1</ID>
             </UseTemplate>
 
-            <UseTemplate Name="FBW_AIRBUS_Push_ILS_Template">
+            <!-- FCU LS -->
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>BUTTON</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_AIRBUS_Push_ILS_Template</ANIM_TEMPLATE>
                 <SIDE>L</SIDE>
                 <ID>1</ID>
             </UseTemplate>
 
-            <UseTemplate Name="FBW_AIRLINER_Knob_ND_Template">
+            <!-- FCU ND ROSE -->
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>KNOB</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_AIRLINER_Knob_ND_Template</ANIM_TEMPLATE>
                 <TYPE>AIRBUS</TYPE>
                 <NODE_ID>KNOB_AUTOPILOT_ROSE_L</NODE_ID>
                 <PART_ID>KNOB_AUTOPILOT_ROSE_L</PART_ID>
@@ -3260,38 +3826,56 @@
                 <KNOB_POSITION_VAR>A32NX_EFIS_L_ND_MODE</KNOB_POSITION_VAR>
             </UseTemplate>
 
-            <UseTemplate Name="FBW_AIRLINER_Knob_ND_Range_Template">
+            <!-- FCU ND RANGE -->
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>KNOB</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_AIRLINER_Knob_ND_Range_Template</ANIM_TEMPLATE>
                 <TYPE>AIRBUS</TYPE>
                 <NODE_ID>KNOB_AUTOPILOT_L1</NODE_ID>
                 <ANIM_NAME>KNOB_AUTOPILOT_L1</ANIM_NAME>
                 <KNOB_POSITION_VAR>A32NX_EFIS_L_ND_RANGE</KNOB_POSITION_VAR>
             </UseTemplate>
 
-            <UseTemplate Name="FBW_AIRBUS_Push_EFIS_Option">
+            <!-- FCU CSTR L -->
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>BUTTON</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_AIRBUS_Push_EFIS_Option</ANIM_TEMPLATE>
                 <SIDE>L</SIDE>
                 <BASE_NAME>CSTR</BASE_NAME>
                 <OPTION_ID>1</OPTION_ID>
             </UseTemplate>
 
-            <UseTemplate Name="FBW_AIRBUS_Push_EFIS_Option">
+            <!-- FCU VOR D L -->
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>BUTTON</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_AIRBUS_Push_EFIS_Option</ANIM_TEMPLATE>
                 <SIDE>L</SIDE>
                 <BASE_NAME>VORD</BASE_NAME>
                 <OPTION_ID>2</OPTION_ID>
             </UseTemplate>
 
-            <UseTemplate Name="FBW_AIRBUS_Push_EFIS_Option">
+            <!-- FCU WPT L -->
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>BUTTON</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_AIRBUS_Push_EFIS_Option</ANIM_TEMPLATE>
                 <SIDE>L</SIDE>
                 <BASE_NAME>WPT</BASE_NAME>
                 <OPTION_ID>3</OPTION_ID>
             </UseTemplate>
 
-            <UseTemplate Name="FBW_AIRBUS_Push_EFIS_Option">
+            <!-- FCU NDB L -->
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>BUTTON</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_AIRBUS_Push_EFIS_Option</ANIM_TEMPLATE>
                 <SIDE>L</SIDE>
                 <BASE_NAME>NDB</BASE_NAME>
                 <OPTION_ID>4</OPTION_ID>
             </UseTemplate>
 
-            <UseTemplate Name="FBW_AIRBUS_Push_EFIS_Option">
+            <!-- FCU ARPT L -->
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>BUTTON</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_AIRBUS_Push_EFIS_Option</ANIM_TEMPLATE>
                 <SIDE>L</SIDE>
                 <BASE_NAME>ARPT</BASE_NAME>
                 <OPTION_ID>5</OPTION_ID>
@@ -3315,17 +3899,26 @@
                 <AIRLINER_TYPE>A320</AIRLINER_TYPE>
             </UseTemplate>
 
-            <UseTemplate Name="A32NX_AUTOPILOT_Push_FlightDirector_Template">
+            <!-- FCU FD R -->
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>BUTTON</ANIM_TYPE>
+                <ANIM_TEMPLATE>A32NX_AUTOPILOT_Push_FlightDirector_Template</ANIM_TEMPLATE>
                 <SIDE>R</SIDE>
                 <ID>2</ID>
             </UseTemplate>
 
-            <UseTemplate Name="FBW_AIRBUS_Push_ILS_Template">
+            <!-- FCU LS R -->
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>BUTTON</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_AIRBUS_Push_ILS_Template</ANIM_TEMPLATE>
                 <SIDE>R</SIDE>
                 <ID>2</ID>
             </UseTemplate>
 
-            <UseTemplate Name="FBW_AIRLINER_Knob_ND_Template">
+            <!-- FCU ND ROSE R -->
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>KNOB</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_AIRLINER_Knob_ND_Template</ANIM_TEMPLATE>
                 <TYPE>AIRBUS</TYPE>
                 <NODE_ID>KNOB_AUTOPILOT_ROSE_R</NODE_ID>
                 <PART_ID>KNOB_AUTOPILOT_ROSE_R</PART_ID>
@@ -3333,38 +3926,56 @@
                 <KNOB_POSITION_VAR>A32NX_EFIS_R_ND_MODE</KNOB_POSITION_VAR>
             </UseTemplate>
 
-            <UseTemplate Name="FBW_AIRLINER_Knob_ND_Range_Template">
+            <!-- FCU ND RANGE R -->
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>KNOB</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_AIRLINER_Knob_ND_Range_Template</ANIM_TEMPLATE>
                 <TYPE>AIRBUS</TYPE>
                 <NODE_ID>KNOB_AUTOPILOT_R1</NODE_ID>
                 <ANIM_NAME>KNOB_AUTOPILOT_R1</ANIM_NAME>
                 <KNOB_POSITION_VAR>A32NX_EFIS_R_ND_RANGE</KNOB_POSITION_VAR>
             </UseTemplate>
 
-            <UseTemplate Name="FBW_AIRBUS_Push_EFIS_Option">
+            <!-- FCU CSTR R -->
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>BUTTON</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_AIRBUS_Push_EFIS_Option</ANIM_TEMPLATE>
                 <SIDE>R</SIDE>
                 <BASE_NAME>CSTR</BASE_NAME>
                 <OPTION_ID>1</OPTION_ID>
             </UseTemplate>
 
-            <UseTemplate Name="FBW_AIRBUS_Push_EFIS_Option">
+            <!-- FCU VORD R -->
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>BUTTON</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_AIRBUS_Push_EFIS_Option</ANIM_TEMPLATE>
                 <SIDE>R</SIDE>
                 <BASE_NAME>VORD</BASE_NAME>
                 <OPTION_ID>2</OPTION_ID>
             </UseTemplate>
 
-            <UseTemplate Name="FBW_AIRBUS_Push_EFIS_Option">
+            <!-- FCU WPT R -->
+                <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>BUTTON</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_AIRBUS_Push_EFIS_Option</ANIM_TEMPLATE>
                 <SIDE>R</SIDE>
                 <BASE_NAME>WPT</BASE_NAME>
                 <OPTION_ID>3</OPTION_ID>
             </UseTemplate>
 
-            <UseTemplate Name="FBW_AIRBUS_Push_EFIS_Option">
+            <!-- FCU NDB R -->
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>BUTTON</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_AIRBUS_Push_EFIS_Option</ANIM_TEMPLATE>
                 <SIDE>R</SIDE>
                 <BASE_NAME>NDB</BASE_NAME>
                 <OPTION_ID>4</OPTION_ID>
             </UseTemplate>
 
-            <UseTemplate Name="FBW_AIRBUS_Push_EFIS_Option">
+            <!-- FCU ARPT R -->
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>BUTTON</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_AIRBUS_Push_EFIS_Option</ANIM_TEMPLATE>
                 <SIDE>R</SIDE>
                 <BASE_NAME>ARPT</BASE_NAME>
                 <OPTION_ID>5</OPTION_ID>
@@ -3677,17 +4288,19 @@
                 <NODE_ID>PUSH_ATC_FAIL_SEQ2</NODE_ID>
                 <EMISSIVE_CODE>(L:A32NX_OVHD_INTLT_ANN) 0 == (L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) and</EMISSIVE_CODE>
             </UseTemplate>
-            <UseTemplate Name="FBW_Airbus_ATC_Panel_ALT">
-                <Node_ID>Knob_ATC_ALT</Node_ID>
-                <PART_ID>Knob_ATC_ALT</PART_ID>
-            </UseTemplate>
-            <UseTemplate Name="FBW_Airbus_ATC_Panel_TARA">
+            <!-- TCAS MODE -->
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>KNOB</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_Airbus_ATC_Panel_TARA</ANIM_TEMPLATE>
                 <Node_ID>KNOB_ATC_TARA</Node_ID>
                 <ANIMTIP_0>Set TCAS to STBY</ANIMTIP_0>
                 <ANIMTIP_1>Set TCAS to TA</ANIMTIP_1>
                 <ANIMTIP_2>Set TCAS to TA/RA</ANIMTIP_2>
             </UseTemplate>
-            <UseTemplate Name="FBW_Airbus_ATC_Panel_Traffic">
+            <!-- TCAS TRAFFIC -->
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>KNOB</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_Airbus_ATC_Panel_Traffic</ANIM_TEMPLATE>
                 <Node_ID>KNOB_ATC_THRT</Node_ID>
                 <ANIMTIP_0>Set TCAS traffic to THRT</ANIMTIP_0>
                 <ANIMTIP_1>Set TCAS traffic to ALL</ANIMTIP_1>
@@ -3696,9 +4309,10 @@
             </UseTemplate>
         </Component>
 
+        <!-- ACCU PRESS BRAKES -->
         <Component ID="Airbus_BRK">
             <Component ID="BRK_PRESS_ARC_L" Node="BRK_PRESS_ARC_L">
-                <UseTemplate Name = "ASOBO_GT_Anim_Code">
+                <UseTemplate Name="ASOBO_GT_Anim_Code">
                     <ANIM_NAME>Press_Arc_L</ANIM_NAME>
                     <PART_ID>Press_Arc_L</PART_ID>
                     <ANIM_LENGTH>3</ANIM_LENGTH>
@@ -3713,7 +4327,7 @@
                 </UseTemplate>
             </Component>
             <Component ID="BRK_PRESS_ARC_R" Node="BRK_PRESS_ARC_L">
-                <UseTemplate Name = "ASOBO_GT_Anim_Code">
+                <UseTemplate Name="ASOBO_GT_Anim_Code">
                     <ANIM_NAME>Press_Arc_R</ANIM_NAME>
                     <PART_ID>Press_Arc_R</PART_ID>
                     <ANIM_LENGTH>3</ANIM_LENGTH>
@@ -3767,22 +4381,34 @@
 
         <Component ID="Airbus_Pedestal_Radios">
             <Component ID="Switching_Panel">
-                <UseTemplate Name="A32NX_AIRBUS_DATA_SWITCHING_TEMPLATE">
+                <!-- SWITCHING ATT HDG -->
+                <UseTemplate Name="FBW_Anim_Interactions">
+                    <ANIM_TYPE>KNOB</ANIM_TYPE>
+                    <ANIM_TEMPLATE>A32NX_AIRBUS_DATA_SWITCHING_TEMPLATE</ANIM_TEMPLATE>
                     <ID>1</ID>
                     <TYPE>ATT_HDG</TYPE>
                     <TIP_TEXT>ATT HDG</TIP_TEXT>
                 </UseTemplate>
-                <UseTemplate Name="A32NX_AIRBUS_DATA_SWITCHING_TEMPLATE">
+                <!-- SWITCHING AIR DATA -->
+                <UseTemplate Name="FBW_Anim_Interactions">
+                    <ANIM_TYPE>KNOB</ANIM_TYPE>
+                    <ANIM_TEMPLATE>A32NX_AIRBUS_DATA_SWITCHING_TEMPLATE</ANIM_TEMPLATE>
                     <ID>2</ID>
                     <TYPE>AIR_DATA</TYPE>
                     <TIP_TEXT>AIR DATA</TIP_TEXT>
                 </UseTemplate>
-                <UseTemplate Name="A32NX_AIRBUS_DATA_SWITCHING_TEMPLATE">
+                <!-- SWITCHING EIS DMC -->
+                <UseTemplate Name="FBW_Anim_Interactions">
+                    <ANIM_TYPE>KNOB</ANIM_TYPE>
+                    <ANIM_TEMPLATE>A32NX_AIRBUS_DATA_SWITCHING_TEMPLATE</ANIM_TEMPLATE>
                     <ID>3</ID>
                     <TYPE>EIS_DMC</TYPE>
                     <TIP_TEXT>EIS DMC</TIP_TEXT>
                 </UseTemplate>
-                <UseTemplate Name="A32NX_AIRBUS_DATA_SWITCHING_TEMPLATE">
+                <!-- SWITCHING ECAM/ND XFR -->
+                <UseTemplate Name="FBW_Anim_Interactions">
+                    <ANIM_TYPE>KNOB</ANIM_TYPE>
+                    <ANIM_TEMPLATE>A32NX_AIRBUS_DATA_SWITCHING_TEMPLATE</ANIM_TEMPLATE>
                     <ID>4</ID>
                     <TYPE>ECAM_ND_XFR</TYPE>
                     <TIP_TEXT>ECAM/ND XFR</TIP_TEXT>
@@ -3903,7 +4529,10 @@
         </Component>
 
         <Component ID="DOOR_PANEL">
-            <UseTemplate Name="A32NX_SWITCH_DOORPANEL_LOCK">
+            <!-- COCKPIT DOOR -->
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>SWITCH</ANIM_TYPE>
+                <ANIM_TEMPLATE>A32NX_SWITCH_DOORPANEL_LOCK</ANIM_TEMPLATE>
                 <NODE_ID>SWITCH_DOORPANEL_LOCK</NODE_ID>
                 <ANIM_NAME>SWITCH_DOORPANEL_LOCK</ANIM_NAME>
                 <INVERT_ANIM>1</INVERT_ANIM>
@@ -3913,22 +4542,33 @@
                 <ANIM_NAME>PUSH_DOORPANEL_OPEN</ANIM_NAME>
                 <SEQ1_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
                 <SEQ2_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
+                <DUMMY_BUTTON/>
             </UseTemplate>
         </Component>
 
         <Component ID="Chronometer">
-            <UseTemplate Name="FBW_AIRBUS_Chronometer_Button">
+            <!-- FCU CHRONO L -->
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>BUTTON</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_AIRBUS_Chronometer_Button</ANIM_TEMPLATE>
                 <NODE_ID>PUSH_AUTOPILOT_CHRONO_L</NODE_ID>
                 <ANIM_NAME>PUSH_AUTOPILOT_CHRONO_L</ANIM_NAME>
                 <SIDE>L</SIDE>
             </UseTemplate>
-            <UseTemplate Name="FBW_AIRBUS_Chronometer_Button">
+
+            <!-- FCU CHRONO R-->
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>BUTTON</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_AIRBUS_Chronometer_Button</ANIM_TEMPLATE>
                 <NODE_ID>PUSH_AUTOPILOT_CHRONO_R</NODE_ID>
                 <ANIM_NAME>PUSH_AUTOPILOT_CHRONO_R</ANIM_NAME>
                 <SIDE>R</SIDE>
             </UseTemplate>
 
-            <UseTemplate Name="FBW_Chrono_Push_Toggle">
+            <!-- CHRONO RST -->
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>BUTTON</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_Chrono_Push_Toggle</ANIM_TEMPLATE>
                 <NODE_ID>PUSH_CHRONO_RST</NODE_ID>
                 <WWISE_EVENT_1>RSTon</WWISE_EVENT_1>
                 <WWISE_EVENT_2>RSToff</WWISE_EVENT_2>
@@ -3939,7 +4579,10 @@
                 <NO_SEQ2 />
             </UseTemplate>
 
-            <UseTemplate Name="FBW_Chrono_Push_Toggle">
+            <!-- CHRONO CHR -->
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>BUTTON</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_Chrono_Push_Toggle</ANIM_TEMPLATE>
                 <NODE_ID>PUSH_CHRONO_CHR</NODE_ID>
                 <WWISE_EVENT_1>CHRon</WWISE_EVENT_1>
                 <WWISE_EVENT_2>CHRoff</WWISE_EVENT_2>
@@ -3950,7 +4593,10 @@
                 <NO_SEQ2 />
             </UseTemplate>
 
-            <UseTemplate Name="FBW_Push_Held">
+            <!-- CHRONO DATE -->
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>BUTTON_HELD</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_Push_Held</ANIM_TEMPLATE>
                 <NODE_ID>PUSH_CHRONO_SET</NODE_ID>
                 <WWISE_EVENT_1>SETon</WWISE_EVENT_1>
                 <WWISE_EVENT_2>SEToff</WWISE_EVENT_2>
@@ -3990,7 +4636,10 @@
             <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
                 <NODE_ID>SWITCH_LEFT</NODE_ID>
             </UseTemplate>
-            <UseTemplate Name="FBW_Airbus_ATC_MSG_Button">
+            <!-- ATC MSG CPT -->
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>KORRY_HELD</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_Airbus_ATC_MSG_Button</ANIM_TEMPLATE>
                 <NODE_ID>PUSH_AUTOPILOT_LL</NODE_ID>
                 <SEQ1_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
             </UseTemplate>
@@ -4000,7 +4649,10 @@
             <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
                 <NODE_ID>PUSH_AUTOPILOT_SIDESTICK_R</NODE_ID>
             </UseTemplate>
-            <UseTemplate Name="FBW_Airbus_ATC_MSG_Button">
+            <!-- ATC MSG F/O -->
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>KORRY_HELD</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_Airbus_ATC_MSG_Button</ANIM_TEMPLATE>
                 <NODE_ID>PUSH_AUTOPILOT_RR</NODE_ID>
                 <SEQ1_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
             </UseTemplate>

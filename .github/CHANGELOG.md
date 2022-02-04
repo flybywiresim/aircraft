@@ -111,6 +111,7 @@
 1. [MCDU] Added support for connecting MCDU to external devices - @tyler58546 (tyler58546)
 1. [ATHR] Improvement of ATHR laws - @IbrahimK42(IbrahimK42), @aguther (Andreas Guther)
 1. [MISC] Fixed flap configuration in final.flt and runway.flt files -  @donstim (donbikes#4084)
+1. [MISC] Added Home Cockpit mode to remove backlight bleed and reflections in displays - @ssewell (Shane Sewell)
 1. [EFB] Added Reset to Defaults button to EFB throttle calibration page - @frankkopp (Cdr_Maverick#6475)
 1. [HYD] Added more accurate simulation model of PTU - @Gurgel100 (Pascal)
 1. [BLEED] Fix potential NaN calculations for fast flows - @Crocket63
@@ -127,9 +128,12 @@
 1. [AP] Do not disengage SRS on RTO, engage it only in FLX detent when FLX is configured - @aguther (Andreas Guther)
 1. [ATHR] Improved thrust limits, FLX limits now CLB when entered into FMGC - @aguther (Andreas Guther)
 1. [AP] Improved LOC ALGIN and ROLL OUT during Autoland - @aguther (Andreas Guther)
+1. [HYD] Simple hydraulic model placeholder for flaps and slats - @Crocket63
 1. [FBW] Fix: do not compensate ground spoilers in C* law - @aguther (Andreas Guther)
 1. [AP] Fix: adjustment of vertical speed limitation in SPD/MACH law - @IbrahimK42 (IbrahimK42)
-
+1. [MISC] Animation speed/behaviors for button, switches and knobs - @bouveng (Johan Bouveng)
+1. [AP] Added Autoland capability for special terrain profiles, i.e. KSEA 16R - @aguther (Andreas Guther)
+1. [ATHR] Adjustment of ATHR SPD/MACH gains - @IbrahimK42 (IbrahimK42)
 ## 0.7.0
 
 1. [HYD] First building block, more to come. Hydraulics do not impact the sim YET. - @crocket6 (crocket)
