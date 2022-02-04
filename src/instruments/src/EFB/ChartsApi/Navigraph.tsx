@@ -159,9 +159,10 @@ export default class NavigraphClient {
 
                     this.refreshToken = refreshToken;
                     NXDataStore.set('NAVIGRAPH_REFRESH_TOKEN', refreshToken);
-                    this.assignUserName();
 
                     this.accessToken = json.access_token;
+
+                    this.assignUserName();
                 } else {
                     const respText = await tokenResp.text();
 
