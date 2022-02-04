@@ -21,7 +21,7 @@ export const ATC = () => {
     const [atisSource] = usePersistentProperty('CONFIG_ATIS_SRC', 'FAA');
 
     const loadAtc = useCallback(() => {
-        apiClient.ATC.getAtc((atisSource as string).toLowerCase()).then((res) => {
+        apiClient.ATC.get((atisSource as string).toLowerCase()).then((res) => {
             let allAtc : ATCInfoExtended[] = res as ATCInfoExtended[];
             allAtc = allAtc.filter((a) => a.callsign.indexOf('_OBS') === -1 && parseFloat(a.frequency) <= 136.975);
             for (const a of allAtc) {
