@@ -96,6 +96,7 @@ pub struct UpdateContext {
     plane_pitch_id: VariableIdentifier,
     plane_bank_id: VariableIdentifier,
     mach_number_id: VariableIdentifier,
+    incidence_alpha_id: VariableIdentifier,
 
     delta: Duration,
     indicated_airspeed: Velocity,
@@ -107,6 +108,7 @@ pub struct UpdateContext {
     local_acceleration: LocalAcceleration,
     attitude: Attitude,
     mach_number: MachNumber,
+    alpha: Angle,
 }
 impl UpdateContext {
     pub(crate) const AMBIENT_TEMPERATURE_KEY: &'static str = "AMBIENT TEMPERATURE";
@@ -121,6 +123,7 @@ impl UpdateContext {
     pub(crate) const PLANE_PITCH_KEY: &'static str = "PLANE PITCH DEGREES";
     pub(crate) const PLANE_BANK_KEY: &'static str = "PLANE BANK DEGREES";
     pub(crate) const MACH_NUMBER_KEY: &'static str = "AIRSPEED MACH";
+    pub(crate) const INCIDENCE_ALPHA_KEY: &'static str = "INCIDENCE ALPHA";
 
     #[deprecated(
         note = "Do not create UpdateContext directly. Instead use the SimulationTestBed or your own custom test bed."
@@ -138,6 +141,7 @@ impl UpdateContext {
         pitch: Angle,
         bank: Angle,
         mach_number: MachNumber,
+        alpha: Angle,
     ) -> UpdateContext {
         UpdateContext {
             ambient_temperature_id: context
@@ -153,6 +157,7 @@ impl UpdateContext {
             plane_pitch_id: context.get_identifier(Self::PLANE_PITCH_KEY.to_owned()),
             plane_bank_id: context.get_identifier(Self::PLANE_BANK_KEY.to_owned()),
             mach_number_id: context.get_identifier(Self::MACH_NUMBER_KEY.to_owned()),
+            incidence_alpha_id: context.get_identifier(Self::INCIDENCE_ALPHA_KEY.to_owned()),
 
             delta,
             indicated_airspeed,
@@ -168,6 +173,7 @@ impl UpdateContext {
             ),
             attitude: Attitude::new(pitch, bank),
             mach_number,
+            alpha,
         }
     }
 
@@ -185,6 +191,7 @@ impl UpdateContext {
             plane_pitch_id: context.get_identifier("PLANE PITCH DEGREES".to_owned()),
             plane_bank_id: context.get_identifier("PLANE BANK DEGREES".to_owned()),
             mach_number_id: context.get_identifier("AIRSPEED MACH".to_owned()),
+            incidence_alpha_id: context.get_identifier(Self::INCIDENCE_ALPHA_KEY.to_owned()),
 
             delta: Default::default(),
             indicated_airspeed: Default::default(),
@@ -196,6 +203,7 @@ impl UpdateContext {
             local_acceleration: Default::default(),
             attitude: Default::default(),
             mach_number: Default::default(),
+            alpha: Default::default(),
         }
     }
 
@@ -222,6 +230,7 @@ impl UpdateContext {
         );
 
         self.mach_number = reader.read(&self.mach_number_id);
+        self.alpha = reader.read(&self.incidence_alpha_id);
     }
 
     pub fn is_in_flight(&self) -> bool {
@@ -294,6 +303,10 @@ impl UpdateContext {
 
     pub fn mach_number(&self) -> MachNumber {
         self.mach_number
+    }
+
+    pub fn alpha(&self) -> Angle {
+        self.alpha
     }
 
     pub fn with_delta(&self, delta: Duration) -> Self {
