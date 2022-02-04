@@ -951,7 +951,7 @@ class CDUPerformancePage {
         engOut += "[color]cyan";
 
         mcdu.onRightInput[4] = (value, scratchpadCallback) => {
-            if (mcdu.trySetengineOutAccelerationAltitudeGoaround(value)) {
+            if (mcdu.trySetEngineOutAccelerationAltitudeGoaround(value)) {
                 CDUPerformancePage.ShowGOAROUNDPage(mcdu);
             } else {
                 scratchpadCallback();
@@ -1031,7 +1031,10 @@ class CDUPerformancePage {
             bottomRowCells,
         ]);
     }
-    static async UpdateThrRedAccFromOrigin(mcdu, updateThrRedAlt = true, updateAccAlt = true) {
+    static async UpdateThrRedAccFromOrigin(mcdu) {
+        if (mcdu.thrustReductionAltitudeIsPilotEntered && mcdu.accelerationAltitudeIsPilotEntered) {
+            return;
+        }
         const origin = mcdu.flightPlanManager.getOrigin();
 
         let elevation = SimVar.GetSimVarValue("GROUND ALTITUDE", "feet");
@@ -1039,7 +1042,7 @@ class CDUPerformancePage {
             elevation = await mcdu.facilityLoader.GetAirportFieldElevation(origin.icao);
         }
 
-        if (updateThrRedAlt && !mcdu.thrustReductionAltitudeIsPilotEntered) {
+        if (!mcdu.thrustReductionAltitudeIsPilotEntered) {
             const thrRedOffset = +NXDataStore.get("CONFIG_THR_RED_ALT", "1500");
             const thrRedAltitude = Math.round((elevation + thrRedOffset) / 10) * 10;
 
@@ -1048,7 +1051,7 @@ class CDUPerformancePage {
             SimVar.SetSimVarValue("L:AIRLINER_THR_RED_ALT", "Number", thrRedAltitude);
         }
 
-        if (updateAccAlt && !mcdu.accelerationAltitudeIsPilotEntered) {
+        if (!mcdu.accelerationAltitudeIsPilotEntered) {
             const accOffset = +NXDataStore.get("CONFIG_ACCEL_ALT", "1500");
             const accAlt = Math.round((elevation + accOffset) / 10) * 10;
 
@@ -1057,12 +1060,15 @@ class CDUPerformancePage {
             SimVar.SetSimVarValue("L:AIRLINER_ACC_ALT", "Number", accAlt);
         }
     }
-    static UpdateEngOutAccFromOrigin(mcdu) {
+    static async UpdateEngOutAccFromOrigin(mcdu) {
         if (mcdu.engineOutAccelerationAltitudeIsPilotEntered) {
             return;
         }
         const origin = mcdu.flightPlanManager.getOrigin();
-        const elevation = origin ? origin.altitudeinFP : SimVar.GetSimVarValue("GROUND ALTITUDE", "feet");
+        let elevation = SimVar.GetSimVarValue("GROUND ALTITUDE", "feet");
+        if (origin) {
+            elevation = await mcdu.facilityLoader.GetAirportFieldElevation(origin.icao);
+        }
 
         const offset = +NXDataStore.get("CONFIG_ENG_OUT_ACCEL_ALT", "1500");
         const alt = Math.round((elevation + offset) / 10) * 10;
@@ -1086,6 +1092,7 @@ class CDUPerformancePage {
         SimVar.SetSimVarValue("L:AIRLINER_ACC_ALT_GOAROUND", "Number", alt);
         SimVar.SetSimVarValue("L:AIRLINER_ENG_OUT_ACC_ALT_GOAROUND", "Number", alt);
     }
+
     static getSelectedTitleAndValue(_isPhaseActive, _isSelected, _preSel) {
         if (_isPhaseActive) {
             return _isSelected ? ["SELECTED", "" + Math.round(Simplane.getAutoPilotMachModeActive() ? SimVar.GetGameVarValue('FROM MACH TO KIAS', 'number', Simplane.getAutoPilotMachHoldValue()) : Simplane.getAutoPilotAirspeedHoldValue())] : ["", ""];
