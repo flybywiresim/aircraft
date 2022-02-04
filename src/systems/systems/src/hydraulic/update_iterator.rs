@@ -1,4 +1,4 @@
-use crate::simulation::UpdateContext;
+use crate::simulation::DeltaContext;
 use std::time::Duration;
 
 /// Provides fixed time interval looping.
@@ -26,7 +26,7 @@ impl FixedStepLoop {
         self.time_step
     }
 
-    pub fn update(&mut self, context: &UpdateContext) {
+    pub fn update(&mut self, context: &impl DeltaContext) {
         // Time to catch up in our simulation = new delta + time not updated last iteration
         let time_to_catch = context.delta() + self.lag_time_accumulator;
 
@@ -88,7 +88,7 @@ impl MaxStepLoop {
         }
     }
 
-    pub fn update(&mut self, context: &UpdateContext) {
+    pub fn update(&mut self, context: &impl DeltaContext) {
         if context.delta() > Duration::from_secs(0) {
             self.num_of_loops =
                 (context.delta_as_secs_f64() / self.max_time_step.as_secs_f64()).ceil() as u32;
@@ -117,13 +117,8 @@ impl Iterator for MaxStepLoop {
 #[cfg(test)]
 mod fixed_tests {
     use super::*;
-
+    use crate::simulation::test::TestUpdateContext;
     use std::time::Duration;
-
-    use crate::simulation::test::{SimulationTestBed, TestBed};
-    use crate::simulation::SimulationElement;
-
-    impl SimulationElement for FixedStepLoop {}
 
     #[test]
     fn no_step_after_init() {
@@ -134,81 +129,78 @@ mod fixed_tests {
 
     #[test]
     fn no_step_after_zero_time_update() {
-        let mut test_bed = SimulationTestBed::from(FixedStepLoop::new(Duration::from_millis(100)));
+        let mut fixed_step = FixedStepLoop::new(Duration::from_millis(100));
 
-        test_bed.run_without_delta();
-        assert!(test_bed.command_element(|e| e.next()) == None);
+        fixed_step.update(&TestUpdateContext::default());
+
+        assert_eq!(fixed_step.next(), None);
     }
 
     #[test]
     fn one_step_after_exact_fixed_time_step_update() {
-        let mut test_bed = SimulationTestBed::from(FixedStepLoop::new(Duration::from_millis(100)))
-            .with_update_after_power_distribution(|e, context| e.update(context));
+        let mut fixed_step = FixedStepLoop::new(Duration::from_millis(100));
 
-        test_bed.run_with_delta(Duration::from_millis(100));
-        assert!(test_bed.command_element(|e| e.next()) == Some(Duration::from_millis(100)));
-        assert!(test_bed.command_element(|e| e.next()) == None);
+        fixed_step.update(&TestUpdateContext::default().with_delta(Duration::from_millis(100)));
+
+        assert_eq!(fixed_step.next(), Some(Duration::from_millis(100)));
+        assert_eq!(fixed_step.next(), None);
     }
 
     #[test]
     fn more_than_fixed_step_gives_correct_num_of_loops() {
-        let mut test_bed = SimulationTestBed::from(FixedStepLoop::new(Duration::from_millis(100)))
-            .with_update_after_power_distribution(|e, context| e.update(context));
+        let mut fixed_step = FixedStepLoop::new(Duration::from_millis(100));
 
-        test_bed.run_with_delta(Duration::from_millis(320));
-        assert!(test_bed.command_element(|e| e.next()) == Some(Duration::from_millis(100)));
-        assert!(test_bed.command_element(|e| e.next()) == Some(Duration::from_millis(100)));
-        assert!(test_bed.command_element(|e| e.next()) == Some(Duration::from_millis(100)));
-        assert!(test_bed.command_element(|e| e.next()) == None);
+        fixed_step.update(&TestUpdateContext::default().with_delta(Duration::from_millis(320)));
+
+        assert_eq!(fixed_step.next(), Some(Duration::from_millis(100)));
+        assert_eq!(fixed_step.next(), Some(Duration::from_millis(100)));
+        assert_eq!(fixed_step.next(), Some(Duration::from_millis(100)));
+        assert_eq!(fixed_step.next(), None);
     }
 }
 
 #[cfg(test)]
 mod max_step_tests {
     use super::*;
-
+    use crate::simulation::test::TestUpdateContext;
     use std::time::Duration;
-
-    use crate::simulation::test::{SimulationTestBed, TestBed};
-    use crate::simulation::SimulationElement;
-
-    impl SimulationElement for MaxStepLoop {}
 
     #[test]
     fn no_step_after_init() {
-        let mut test_bed = SimulationTestBed::from(MaxStepLoop::new(Duration::from_millis(100)));
-        assert!(test_bed.command_element(|e| e.next()) == None);
+        let mut max_step = MaxStepLoop::new(Duration::from_millis(100));
+
+        assert_eq!(max_step.next(), None);
     }
 
     #[test]
     fn no_step_after_zero_time_update() {
-        let mut test_bed = SimulationTestBed::from(MaxStepLoop::new(Duration::from_millis(100)))
-            .with_update_after_power_distribution(|e, context| e.update(context));
+        let mut max_step = MaxStepLoop::new(Duration::from_millis(100));
 
-        test_bed.run_without_delta();
-        assert!(test_bed.command_element(|e| e.next()) == None)
+        max_step.update(&TestUpdateContext::default());
+
+        assert_eq!(max_step.next(), None);
     }
 
     #[test]
     fn one_step_after_exact_fixed_time_step_update() {
-        let mut test_bed = SimulationTestBed::from(MaxStepLoop::new(Duration::from_millis(100)))
-            .with_update_after_power_distribution(|e, context| e.update(context));
+        let mut max_step = MaxStepLoop::new(Duration::from_millis(100));
 
-        test_bed.run_with_delta(Duration::from_millis(100));
-        assert!(test_bed.command_element(|e| e.next()) == Some(Duration::from_millis(100)));
-        assert!(test_bed.command_element(|e| e.next()) == None);
+        max_step.update(&TestUpdateContext::default().with_delta(Duration::from_millis(100)));
+
+        assert_eq!(max_step.next(), Some(Duration::from_millis(100)));
+        assert_eq!(max_step.next(), None);
     }
 
     #[test]
     fn more_than_max_step_gives_correct_num_of_loops_of_equal_delta_time() {
-        let mut test_bed = SimulationTestBed::from(MaxStepLoop::new(Duration::from_millis(100)))
-            .with_update_after_power_distribution(|e, context| e.update(context));
+        let mut max_step = MaxStepLoop::new(Duration::from_millis(100));
 
-        test_bed.run_with_delta(Duration::from_millis(320));
-        assert!(test_bed.command_element(|e| e.next()) == Some(Duration::from_millis(80)));
-        assert!(test_bed.command_element(|e| e.next()) == Some(Duration::from_millis(80)));
-        assert!(test_bed.command_element(|e| e.next()) == Some(Duration::from_millis(80)));
-        assert!(test_bed.command_element(|e| e.next()) == Some(Duration::from_millis(80)));
-        assert!(test_bed.command_element(|e| e.next()) == None);
+        max_step.update(&TestUpdateContext::default().with_delta(Duration::from_millis(320)));
+
+        assert_eq!(max_step.next(), Some(Duration::from_millis(80)));
+        assert_eq!(max_step.next(), Some(Duration::from_millis(80)));
+        assert_eq!(max_step.next(), Some(Duration::from_millis(80)));
+        assert_eq!(max_step.next(), Some(Duration::from_millis(80)));
+        assert_eq!(max_step.next(), None);
     }
 }
