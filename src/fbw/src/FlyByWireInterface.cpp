@@ -154,14 +154,17 @@ void FlyByWireInterface::loadConfiguration() {
   idMaximumSimulationRate->set(INITypeConversion::getDouble(iniStructure, "AUTOPILOT", "MAXIMUM_SIMULATION_RATE", 4));
   limitSimulationRateByPerformance = INITypeConversion::getBoolean(iniStructure, "AUTOPILOT", "LIMIT_SIMULATION_RATE_BY_PERFORMANCE", true);
   simulationRateReductionEnabled = INITypeConversion::getBoolean(iniStructure, "AUTOPILOT", "SIMULATION_RATE_REDUCTION_ENABLED", true);
+  useCalculatedLocalizerAndGlideSlope =
+      INITypeConversion::getBoolean(iniStructure, "AUTOPILOT", "CALCULATED_LOCALIZER_AND_GLIDESLOPE_ENABLED", false);
 
   // print configuration into console
-  cout << "WASM: AUTOPILOT : CUSTOM_FLIGHT_GUIDANCE_ENABLED       = " << customFlightGuidanceEnabled << endl;
-  cout << "WASM: AUTOPILOT : GPS_COURSE_TO_STEER_ENABLED          = " << gpsCourseToSteerEnabled << endl;
-  cout << "WASM: AUTOPILOT : MINIMUM_SIMULATION_RATE              = " << idMinimumSimulationRate->get() << endl;
-  cout << "WASM: AUTOPILOT : MAXIMUM_SIMULATION_RATE              = " << idMaximumSimulationRate->get() << endl;
-  cout << "WASM: AUTOPILOT : LIMIT_SIMULATION_RATE_BY_PERFORMANCE = " << limitSimulationRateByPerformance << endl;
-  cout << "WASM: AUTOPILOT : SIMULATION_RATE_REDUCTION_ENABLED    = " << simulationRateReductionEnabled << endl;
+  cout << "WASM: AUTOPILOT : CUSTOM_FLIGHT_GUIDANCE_ENABLED              = " << customFlightGuidanceEnabled << endl;
+  cout << "WASM: AUTOPILOT : GPS_COURSE_TO_STEER_ENABLED                 = " << gpsCourseToSteerEnabled << endl;
+  cout << "WASM: AUTOPILOT : MINIMUM_SIMULATION_RATE                     = " << idMinimumSimulationRate->get() << endl;
+  cout << "WASM: AUTOPILOT : MAXIMUM_SIMULATION_RATE                     = " << idMaximumSimulationRate->get() << endl;
+  cout << "WASM: AUTOPILOT : LIMIT_SIMULATION_RATE_BY_PERFORMANCE        = " << limitSimulationRateByPerformance << endl;
+  cout << "WASM: AUTOPILOT : SIMULATION_RATE_REDUCTION_ENABLED           = " << simulationRateReductionEnabled << endl;
+  cout << "WASM: AUTOPILOT : CALCULATED_LOCALIZER_AND_GLIDESLOPE_ENABLED = " << useCalculatedLocalizerAndGlideSlope << endl;
 
   // --------------------------------------------------------------------------
   // load values - autothrust
@@ -770,7 +773,7 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
     autopilotStateMachineInput.in.data.nav_valid = (simData.nav_valid != 0);
     autopilotStateMachineInput.in.data.nav_loc_deg = simData.nav_loc_deg;
     autopilotStateMachineInput.in.data.nav_gs_deg = simData.nav_gs_deg;
-    autopilotStateMachineInput.in.data.nav_dme_valid = (simData.nav_dme_valid != 0);
+    autopilotStateMachineInput.in.data.nav_dme_valid = useCalculatedLocalizerAndGlideSlope ? 0 : (simData.nav_dme_valid != 0);
     autopilotStateMachineInput.in.data.nav_dme_nmi = simData.nav_dme_nmi;
     autopilotStateMachineInput.in.data.nav_loc_valid = (simData.nav_loc_valid != 0);
     autopilotStateMachineInput.in.data.nav_loc_magvar_deg = simData.nav_loc_magvar_deg;
@@ -1124,16 +1127,25 @@ bool FlyByWireInterface::updateAutopilotLaws(double sampleTime) {
     autopilotLawsInput.in.data.nav_valid = (simData.nav_valid != 0);
     autopilotLawsInput.in.data.nav_loc_deg = simData.nav_loc_deg;
     autopilotLawsInput.in.data.nav_gs_deg = simData.nav_gs_deg;
-    autopilotLawsInput.in.data.nav_dme_valid = (simData.nav_dme_valid != 0);
-    autopilotLawsInput.in.data.nav_dme_nmi = simData.nav_dme_nmi;
-    autopilotLawsInput.in.data.nav_loc_valid = (simData.nav_loc_valid != 0);
+    if (useCalculatedLocalizerAndGlideSlope) {
+      autopilotLawsInput.in.data.nav_dme_valid = 0;  // this forces the usage of the calculated dme
+      autopilotLawsInput.in.data.nav_dme_nmi = autopilotStateMachine.getExternalOutputs().out.data.nav_dme_nmi;
+      autopilotLawsInput.in.data.nav_loc_valid = autopilotStateMachine.getExternalOutputs().out.data.nav_e_loc_valid;
+      autopilotLawsInput.in.data.nav_loc_error_deg = autopilotStateMachine.getExternalOutputs().out.data.nav_e_loc_error_deg;
+      autopilotLawsInput.in.data.nav_gs_valid = autopilotStateMachine.getExternalOutputs().out.data.nav_e_gs_valid;
+      autopilotLawsInput.in.data.nav_gs_error_deg = autopilotStateMachine.getExternalOutputs().out.data.nav_e_gs_error_deg;
+    } else {
+      autopilotLawsInput.in.data.nav_dme_valid = (simData.nav_dme_valid != 0);
+      autopilotLawsInput.in.data.nav_dme_nmi = simData.nav_dme_nmi;
+      autopilotLawsInput.in.data.nav_loc_valid = (simData.nav_loc_valid != 0);
+      autopilotLawsInput.in.data.nav_loc_error_deg = simData.nav_loc_error_deg;
+      autopilotLawsInput.in.data.nav_gs_valid = (simData.nav_gs_valid != 0);
+      autopilotLawsInput.in.data.nav_gs_error_deg = simData.nav_gs_error_deg;
+    }
     autopilotLawsInput.in.data.nav_loc_magvar_deg = simData.nav_loc_magvar_deg;
-    autopilotLawsInput.in.data.nav_loc_error_deg = simData.nav_loc_error_deg;
     autopilotLawsInput.in.data.nav_loc_position.lat = simData.nav_loc_pos.Latitude;
     autopilotLawsInput.in.data.nav_loc_position.lon = simData.nav_loc_pos.Longitude;
     autopilotLawsInput.in.data.nav_loc_position.alt = simData.nav_loc_pos.Altitude;
-    autopilotLawsInput.in.data.nav_gs_valid = (simData.nav_gs_valid != 0);
-    autopilotLawsInput.in.data.nav_gs_error_deg = simData.nav_gs_error_deg;
     autopilotLawsInput.in.data.nav_gs_position.lat = simData.nav_gs_pos.Latitude;
     autopilotLawsInput.in.data.nav_gs_position.lon = simData.nav_gs_pos.Longitude;
     autopilotLawsInput.in.data.nav_gs_position.alt = simData.nav_gs_pos.Altitude;
