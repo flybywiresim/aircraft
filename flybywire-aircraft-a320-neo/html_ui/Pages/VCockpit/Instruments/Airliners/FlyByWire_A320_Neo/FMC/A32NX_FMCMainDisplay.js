@@ -254,9 +254,8 @@ class FMCMainDisplay extends BaseAirliners {
         this.updateFuelVars();
         this.updatePerfSpeeds();
 
-        CDUPerformancePage.UpdateThrRedAccFromOrigin(this, true, true);
+        CDUPerformancePage.UpdateThrRedAccFromOrigin(this);
         CDUPerformancePage.UpdateEngOutAccFromOrigin(this);
-        SimVar.SetSimVarValue("L:AIRLINER_THR_RED_ALT", "Number", this.thrustReductionAltitude);
 
         this.flightPhaseManager.init();
 
@@ -353,10 +352,10 @@ class FMCMainDisplay extends BaseAirliners {
         this.accelerationAltitude = NaN;
         this.accelerationAltitudeGoaround = NaN;
         this.accelerationAltitudeIsPilotEntered = false;
+        this.accelerationAltitudeGoaroundIsPilotEntered = false;
         this.engineOutAccelerationAltitude = NaN;
         this.engineOutAccelerationAltitudeGoaround = NaN;
         this.engineOutAccelerationAltitudeIsPilotEntered = false;
-
         this._windDirections = {
             TAILWIND : "TL",
             HEADWIND : "HD"
@@ -506,9 +505,10 @@ class FMCMainDisplay extends BaseAirliners {
         SimVar.SetSimVarValue("L:AIRLINER_V2_SPEED", "Knots", NaN);
         SimVar.SetSimVarValue("L:AIRLINER_VR_SPEED", "Knots", NaN);
 
-        CDUPerformancePage.UpdateThrRedAccFromOrigin(this, true, true);
+        CDUPerformancePage.UpdateThrRedAccFromOrigin(this);
         CDUPerformancePage.UpdateEngOutAccFromOrigin(this);
         SimVar.SetSimVarValue("L:AIRLINER_THR_RED_ALT", "Number", this.thrustReductionAltitude);
+        SimVar.SetSimVarValue("L:A32NX_ENG_OUT_ACC_ALT", "feet", this.engineOutAccelerationAltitude);
 
         SimVar.SetSimVarValue("L:A32NX_SPEEDS_MANAGED_PFD", "knots", 0);
         SimVar.SetSimVarValue("L:A32NX_SPEEDS_MANAGED_ATHR", "knots", 0);
@@ -2338,82 +2338,112 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     //Needs PR Merge #3082
-    trySetThrustReductionAccelerationAltitude(s) {
+    async trySetThrustReductionAccelerationAltitude(s) {
         if (s === FMCMainDisplay.clrValue) {
             this.thrustReductionAltitudeIsPilotEntered = false;
             this.accelerationAltitudeIsPilotEntered = false;
-            CDUPerformancePage.UpdateThrRedAccFromOrigin(this, true, true);
+            CDUPerformancePage.UpdateThrRedAccFromOrigin(this);
             return true;
         }
 
-        const origin = this.flightPlanManager.getOrigin();
-        const elevation = origin ? origin.altitudeinFP : 0;
-        const minimumAltitude = elevation + 400;
-
-        let newThrRedAlt = null;
-        let newAccAlt = null;
+        const [match, checkThrRedAlt, slash1, , slash2, checkAccAlt] = s.match(/^([0-9]{4,5})?(\/?)?((\/)([0-9]{4,5}))?$/) || [];
+        if (!match || (slash1 && slash2) || (!checkThrRedAlt && !checkAccAlt)) {
+            this.addNewMessage(NXSystemMessages.formatError);
+            return false;
+        }
 
         let [thrRedAlt, accAlt] = s.split("/");
 
-        if (thrRedAlt && thrRedAlt.length > 0) {
-            if (!/^\d{3,5}$/.test(thrRedAlt)) {
-                this.addNewMessage(NXSystemMessages.formatError);
-                return false;
-            }
+        if (thrRedAlt === undefined || thrRedAlt == "") {
+            thrRedAlt = 0;
+        }
 
+        if (accAlt === undefined || accAlt == "") {
+            accAlt = 0;
+        }
+
+        if (thrRedAlt > 45000 || accAlt > 45000) {
+            this.addNewMessage(NXSystemMessages.entryOutOfRange);
+            return false;
+        }
+
+        let currentThrRedAlt = this.thrustReductionAltitude;
+        let currentAccAlt = this.accelerationAltitude;
+        let updateAccAlt = false;
+        let updateThrRedAlt = false;
+
+        const origin = this.flightPlanManager.getOrigin();
+        let elevation = SimVar.GetSimVarValue("GROUND ALTITUDE", "feet");
+        if (origin) {
+            elevation = await this.facilityLoader.GetAirportFieldElevation(origin.icao);
+        }
+
+        const minimumAltitude = elevation + 400;
+
+        if (thrRedAlt > 0) {
             thrRedAlt = parseInt(thrRedAlt);
             thrRedAlt = Math.round(thrRedAlt / 10) * 10;
-            if (thrRedAlt < minimumAltitude || thrRedAlt > 45000) {
-                this.addNewMessage(NXSystemMessages.entryOutOfRange);
-                return false;
-            }
-
-            newThrRedAlt = thrRedAlt;
+            currentThrRedAlt = thrRedAlt;
         }
 
-        if (accAlt && accAlt.length > 0) {
-            if (!/^\d{3,5}$/.test(accAlt)) {
-                this.addNewMessage(NXSystemMessages.formatError);
-                return false;
-            }
-
+        if (accAlt > 0) {
             accAlt = parseInt(accAlt);
             accAlt = Math.round(accAlt / 10) * 10;
-            if (accAlt < minimumAltitude || accAlt > 45000) {
-                this.addNewMessage(NXSystemMessages.entryOutOfRange);
-                return false;
-            }
-
-            newAccAlt = accAlt;
+            currentAccAlt = accAlt;
         }
 
-        if (newThrRedAlt !== null) {
-            this.thrustReductionAltitude = newThrRedAlt;
+        if (thrRedAlt > 0 && (thrRedAlt < minimumAltitude || thrRedAlt > currentAccAlt)) {
+            this.addNewMessage(NXSystemMessages.entryOutOfRange);
+            return false;
+        } else if (thrRedAlt > 0) {
+            updateThrRedAlt = true;
+        }
+
+        if (accAlt > 0 && (accAlt < minimumAltitude || accAlt < currentThrRedAlt)) {
+            this.addNewMessage(NXSystemMessages.entryOutOfRange);
+            return false;
+        } else if (accAlt > 0) {
+            updateAccAlt = true;
+        }
+
+        if (updateThrRedAlt == true) {
+            this.thrustReductionAltitude = thrRedAlt;
             this.thrustReductionAltitudeIsPilotEntered = true;
-            SimVar.SetSimVarValue("L:AIRLINER_THR_RED_ALT", "Number", newThrRedAlt);
+            SimVar.SetSimVarValue("L:AIRLINER_THR_RED_ALT", "Number", thrRedAlt);
+        } else {
+            this.thrustReductionAltitude = currentThrRedAlt;
+            SimVar.SetSimVarValue("L:AIRLINER_THR_RED_ALT", "Number", currentThrRedAlt);
         }
-        if (newAccAlt !== null) {
-            this.accelerationAltitude = newAccAlt;
+
+        if (updateAccAlt == true) {
+            this.accelerationAltitude = accAlt;
             this.accelerationAltitudeIsPilotEntered = true;
-            SimVar.SetSimVarValue("L:AIRLINER_ACC_ALT", "Number", newAccAlt);
+            SimVar.SetSimVarValue("L:AIRLINER_ACC_ALT", "Number", accAlt);
+        } else {
+            this.accelerationAltitude = currentAccAlt;
+            SimVar.SetSimVarValue("L:AIRLINER_ACC_ALT", "Number", currentAccAlt);
         }
         return true;
     }
-
-    trySetEngineOutAcceleration(s) {
+    async trySetEngineOutAcceleration(s) {
         if (s === FMCMainDisplay.clrValue) {
             this.engineOutAccelerationAltitudeIsPilotEntered = false;
             CDUPerformancePage.UpdateEngOutAccFromOrigin(this);
             return true;
         }
 
-        if (!/^\d{3,5}$/.test(s)) {
+        if (!/^\d{4,5}$/.test(s)) {
             this.addNewMessage(NXSystemMessages.formatError);
             return false;
         }
 
         const origin = this.flightPlanManager.getOrigin();
-        const elevation = origin ? origin.altitudeinFP : 0;
+
+        let elevation = SimVar.GetSimVarValue("GROUND ALTITUDE", "feet");
+        if (origin) {
+            elevation = await this.facilityLoader.GetAirportFieldElevation(origin.icao);
+        }
+
         const minimumAltitude = elevation + 400;
 
         let engineOutAccAlt = parseInt(s);
@@ -2430,7 +2460,8 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     //Needs PR Merge #3082
-    trySetThrustReductionAccelerationAltitudeGoaround(s) {
+    // look at this
+    async trySetThrustReductionAccelerationAltitudeGoaround(s) {
         let thrRed = NaN;
         let accAlt = NaN;
         if (s) {
@@ -2453,7 +2484,7 @@ class FMCMainDisplay extends BaseAirliners {
         return false;
     }
 
-    trySetengineOutAccelerationAltitudeGoaround(s) {
+    async trySetEngineOutAccelerationAltitudeGoaround(s) {
         const engOutAcc = parseInt(s);
         if (isFinite(engOutAcc)) {
             this.engineOutAccelerationAltitudeGoaround = engOutAcc;
