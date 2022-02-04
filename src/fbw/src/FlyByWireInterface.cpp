@@ -98,6 +98,10 @@ bool FlyByWireInterface::update(double sampleTime) {
   result &= updateAutothrust(calculatedSampleTime);
 
   for (int i = 0; i < 2; i++) {
+    result &= updateElac(calculatedSampleTime, i);
+  }
+
+  for (int i = 0; i < 2; i++) {
     result &= updateFcdc(calculatedSampleTime, i);
   }
 
@@ -456,6 +460,7 @@ void FlyByWireInterface::setupLocalVariables() {
     idFcdcFoRollCommand[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_FO_ROLL_COMMAND");
     idFcdcCaptPitchCommand[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_CAPT_PITCH_COMMAND");
     idFcdcFoPitchCommand[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_FO_PITCH_COMMAND");
+    idFcdcRudderPedalPos[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "RUDDER_PEDAL_POS");
     idFcdcAileronLeftPos[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_AILERON_LEFT_POS");
     idFcdcElevatorLeftPos[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_ELEVATOR_LEFT_POS");
     idFcdcAileronRightPos[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_AILERON_RIGHT_POS");
@@ -475,8 +480,34 @@ void FlyByWireInterface::setupLocalVariables() {
     idFcdcFault[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_FAULT");
   }
 
+  for (int i = 0; i < 2; i++) {
+    string idString = std::to_string(i + 1);
+
+    idElacPushbuttonStatus[i] = make_unique<LocalVariable>("A32NX_ELAC_" + idString + "_PUSHBUTTON_STATUS");
+    idElacFaultLightOn[i] = make_unique<LocalVariable>("A32NX_ELAC_" + idString + "_FAULT_LIGHT_ON");
+    idElacLeftAileronPosition[i] = make_unique<LocalVariable>("A32NX_ELAC_" + idString + "_AILERON_L_POS");
+    idElacRightAileronPosition[i] = make_unique<LocalVariable>("A32NX_ELAC_" + idString + "_AILERON_R_POS");
+    idElacLeftElevatorPosition[i] = make_unique<LocalVariable>("A32NX_ELAC_" + idString + "_ELEVATOR_L_POS");
+    idElacRightElevatorPosition[i] = make_unique<LocalVariable>("A32NX_ELAC_" + idString + "_ELEVATOR_R_POS");
+    idElacThsPosition[i] = make_unique<LocalVariable>("A32NX_ELAC_" + idString + "_THS_POS");
+    idElacLeftSidestickPitchCommand[i] = make_unique<LocalVariable>("A32NX_ELAC_" + idString + "_SIDESTICK_L_PITCH");
+    idElacRightSidestickPitchCommand[i] = make_unique<LocalVariable>("A32NX_ELAC_" + idString + "_SIDESTICK_R_PITCH");
+    idElacLeftSidestickRollCommand[i] = make_unique<LocalVariable>("A32NX_ELAC_" + idString + "_SIDESTICK_L_ROLL");
+    idElacRightSidestickRollCommand[i] = make_unique<LocalVariable>("A32NX_ELAC_" + idString + "_SIDESTICK_R_ROLL");
+    idElacRudderPedalPosition[i] = make_unique<LocalVariable>("A32NX_ELAC_" + idString + "_RUDDER_PEDAL");
+    idElacAileronCommand[i] = make_unique<LocalVariable>("A32NX_ELAC_" + idString + "_AILERON_COMMAND");
+    idElacYawDamperCommand[i] = make_unique<LocalVariable>("A32NX_ELAC_" + idString + "_YAW_DAMPER_COMMAND");
+    idElacDiscreteStatusWord1[i] = make_unique<LocalVariable>("A32NX_ELAC_" + idString + "_DISCRETE_WORD_1");
+    idElacDiscreteStatusWord2[i] = make_unique<LocalVariable>("A32NX_ELAC_" + idString + "_DISCRETE_WORD_2");
+  }
+
   idElecDcBus2Powered = make_unique<LocalVariable>("A32NX_ELEC_DC_2_BUS_IS_POWERED");
   idElecDcEssShedBusPowered = make_unique<LocalVariable>("A32NX_ELEC_DC_ESS_SHED_BUS_IS_POWERED");
+  idElecDcEssBusPowered = make_unique<LocalVariable>("A32NX_ELEC_DC_ESS_BUS_IS_POWERED");
+
+  idHydYellowSystemPressure = make_unique<LocalVariable>("A32NX_HYD_YELLOW_SYSTEM_1_SECTION_PRESSURE");
+  idHydGreenSystemPressure = make_unique<LocalVariable>("A32NX_HYD_GREEN_SYSTEM_1_SECTION_PRESSURE");
+  idHydBlueSystemPressure = make_unique<LocalVariable>("A32NX_HYD_BLUE_SYSTEM_1_SECTION_PRESSURE");
 }
 
 bool FlyByWireInterface::readDataAndLocalVariables(double sampleTime) {
@@ -773,31 +804,128 @@ bool FlyByWireInterface::updateEngineData(double sampleTime) {
   return true;
 }
 
+bool FlyByWireInterface::updateElac(double sampleTime, int elacIndex) {
+  const int oppElacIndex = elacIndex == 0 ? 1 : 0;
+  SimData simData = simConnectInterface.getSimData();
+
+  ElacDiscreteInputs discreteInputs = {};
+  discreteInputs.groundSpoilersActive1 = false;
+  discreteInputs.groundSpoilersActive2 = false;
+  discreteInputs.oppPitchAxisFailure = !elacsDiscreteOutputs[oppElacIndex].pitchAxisOk;
+  discreteInputs.ap1Disengaged = true;
+  discreteInputs.ap2Disengaged = true;
+  discreteInputs.oppLeftAileronLost = !elacsDiscreteOutputs[oppElacIndex].leftAileronOk;
+  discreteInputs.oppRightAileronLost = !elacsDiscreteOutputs[oppElacIndex].rightAileronOk;
+  discreteInputs.fac1YawControlLost = false;
+  discreteInputs.lgciu1NoseGearPressed = flyByWireOutput.sim.data_computed.on_ground;  // TODO should come from LGCIU
+  discreteInputs.lgciu2NoseGearPressed = flyByWireOutput.sim.data_computed.on_ground;  // TODO should come from LGCIU
+  discreteInputs.fac2YawControlLost = false;
+  discreteInputs.lgciu1RightMainGearPressed = flyByWireOutput.sim.data_computed.on_ground;  // TODO should come from LGCIU
+  discreteInputs.lgciu2RightMainGearPressed = flyByWireOutput.sim.data_computed.on_ground;  // TODO should come from LGCIU
+  discreteInputs.lgciu1LeftMainGearPressed = flyByWireOutput.sim.data_computed.on_ground;   // TODO should come from LGCIU
+  discreteInputs.lgciu2LeftMainGearPressed = flyByWireOutput.sim.data_computed.on_ground;   // TODO should come from LGCIU
+  discreteInputs.thsMotorFault = false;
+  discreteInputs.sfcc1SlatsOut = false;
+  discreteInputs.sfcc2SlatsOut = false;
+  discreteInputs.lAilServoFailed = false;
+  discreteInputs.lElevServoFailed = false;
+  discreteInputs.rAilServoFailed = false;
+  discreteInputs.rElevServoFailed = false;
+  discreteInputs.thsOverrideActive = false;
+  discreteInputs.yellowLowPressure = idHydYellowSystemPressure->get() < 1450;
+  discreteInputs.captPriorityTakeoverPressed = false;
+  discreteInputs.foPriorityTakeoverPressed = false;
+  discreteInputs.blueLowPressure = idHydBlueSystemPressure->get() < 1450;
+  discreteInputs.greenLowPressure = idHydGreenSystemPressure->get() < 1450;
+  discreteInputs.elacEngagedFromSwitch = idElacPushbuttonStatus[elacIndex]->get();
+  discreteInputs.normalPowersupplyLost = false;
+
+  elacs[elacIndex].discreteInputs = discreteInputs;
+
+  ElacAnalogInputs analogInputs = {};
+  analogInputs.capPitchStickPos = 0;
+  analogInputs.foPitchStickPos = 0;
+  analogInputs.capRollStickPos = 0;
+  analogInputs.foRollStickPos = 0;
+  analogInputs.leftElevatorPos = 0;
+  analogInputs.rightElevatorPos = 0;
+  analogInputs.thsPos = 0;
+  analogInputs.leftAileronPos = 0;
+  analogInputs.rightAileronPos = 0;
+  analogInputs.rudderPedalPos = 0;
+  analogInputs.loadFactorAcc1 = 0;
+  analogInputs.loadFactorAcc2 = 0;
+  analogInputs.blueHydPressure = idHydBlueSystemPressure->get();
+  analogInputs.greenHydPressure = idHydGreenSystemPressure->get();
+  analogInputs.yellowHydPressure = idHydYellowSystemPressure->get();
+
+  elacs[elacIndex].analogInputs = analogInputs;
+
+  elacs[elacIndex].busInputs.adirs1 = {};
+  elacs[elacIndex].busInputs.adirs2 = {};
+  elacs[elacIndex].busInputs.adirs3 = {};
+  elacs[elacIndex].busInputs.fmgc1 = {};
+  elacs[elacIndex].busInputs.fmgc2 = {};
+  elacs[elacIndex].busInputs.ra1 = {};
+  elacs[elacIndex].busInputs.ra2 = {};
+  elacs[elacIndex].busInputs.fcdc1 = fcdcsBusOutputs[0];
+  elacs[elacIndex].busInputs.fcdc2 = fcdcsBusOutputs[1];
+  elacs[elacIndex].busInputs.sec1 = {};
+  elacs[elacIndex].busInputs.sec2 = {};
+  elacs[elacIndex].busInputs.elacOpp = elacsBusOutputs[oppElacIndex];
+
+  elacs[elacIndex].update(sampleTime, simData.simulationTime, false,
+                          elacIndex == 0 ? idElecDcEssBusPowered->get() : idElecDcBus2Powered->get());
+
+  elacsDiscreteOutputs[elacIndex] = elacs[elacIndex].getDiscreteOutputs();
+  elacsAnalogOutputs[elacIndex] = elacs[elacIndex].getAnalogOutputs();
+  elacsBusOutputs[elacIndex] = elacs[elacIndex].getBusOutputs();
+
+  idElacFaultLightOn[elacIndex]->set(!elacsDiscreteOutputs[elacIndex].digitalOperationValidated);
+
+  idElacLeftAileronPosition[elacIndex]->set(elacsBusOutputs[elacIndex].leftAileronPosition.toSimVar());
+  idElacRightAileronPosition[elacIndex]->set(elacsBusOutputs[elacIndex].rightAileronPosition.toSimVar());
+  idElacLeftElevatorPosition[elacIndex]->set(elacsBusOutputs[elacIndex].leftElevatorPosition.toSimVar());
+  idElacRightElevatorPosition[elacIndex]->set(elacsBusOutputs[elacIndex].rightElevatorPosition.toSimVar());
+  idElacThsPosition[elacIndex]->set(elacsBusOutputs[elacIndex].thsPosition.toSimVar());
+  idElacLeftSidestickPitchCommand[elacIndex]->set(elacsBusOutputs[elacIndex].leftSidestickPitchCommand.toSimVar());
+  idElacRightSidestickPitchCommand[elacIndex]->set(elacsBusOutputs[elacIndex].rightSidestickPitchCommand.toSimVar());
+  idElacLeftSidestickRollCommand[elacIndex]->set(elacsBusOutputs[elacIndex].leftSidestickRollCommand.toSimVar());
+  idElacRightSidestickRollCommand[elacIndex]->set(elacsBusOutputs[elacIndex].rightSidestickRollCommand.toSimVar());
+  idElacRudderPedalPosition[elacIndex]->set(elacsBusOutputs[elacIndex].rudderPedalPosition.toSimVar());
+  idElacAileronCommand[elacIndex]->set(elacsBusOutputs[elacIndex].aileronCommand.toSimVar());
+  idElacYawDamperCommand[elacIndex]->set(elacsBusOutputs[elacIndex].yawDamperCommand.toSimVar());
+  idElacDiscreteStatusWord1[elacIndex]->set(elacsBusOutputs[elacIndex].discreteStatusWord1.toSimVar());
+  idElacDiscreteStatusWord2[elacIndex]->set(elacsBusOutputs[elacIndex].discreteStatusWord2.toSimVar());
+
+  return true;
+}
+
 bool FlyByWireInterface::updateFcdc(double sampleTime, int fcdcIndex) {
   const int oppFcdcIndex = fcdcIndex == 0 ? 1 : 0;
 
   FcdcDiscreteInputs inputs = {};
-  inputs.elac1Off = false;
-  inputs.elac1Valid = false;
-  inputs.elac2Valid = false;
+  inputs.elac1Off = idElacPushbuttonStatus[0]->get();
+  inputs.elac1Valid = elacsDiscreteOutputs[0].digitalOperationValidated;
+  inputs.elac2Valid = elacsDiscreteOutputs[1].digitalOperationValidated;
   inputs.sec1Off = false;
   inputs.sec1Valid = false;
   inputs.sec2Valid = false;
   inputs.eng1NotOnGroundAndNotLowOilPress = false;
   inputs.eng2NotOnGroundAndNotLowOilPress = false;
-  inputs.noseGearPressed = flyByWireOutput.sim.data_computed.on_ground;
+  inputs.noseGearPressed = flyByWireOutput.sim.data_computed.on_ground;  // TODO should come from LGCIU
   inputs.oppFcdcFailed = !fcdcsDiscreteOutputs[oppFcdcIndex].fcdcValid;
   inputs.sec3Off = false;
   inputs.sec3Valid = false;
-  inputs.elac2Off = false;
+  inputs.elac2Off = idElacPushbuttonStatus[1]->get();
   inputs.sec2Valid = false;
 
   fcdcs[fcdcIndex].discreteInputs = inputs;
 
-  fcdcs[fcdcIndex].busInputs.elac1 = {};
+  fcdcs[fcdcIndex].busInputs.elac1 = elacsBusOutputs[0];
   fcdcs[fcdcIndex].busInputs.sec1 = {};
-  fcdcs[fcdcIndex].busInputs.fcdcOpp = {};
-  fcdcs[fcdcIndex].busInputs.elac2 = {};
+  fcdcs[fcdcIndex].busInputs.fcdcOpp = fcdcsBusOutputs[oppFcdcIndex];
+  fcdcs[fcdcIndex].busInputs.elac2 = elacsBusOutputs[1];
   fcdcs[fcdcIndex].busInputs.sec2 = {};
   fcdcs[fcdcIndex].busInputs.sec3 = {};
 
@@ -816,6 +944,7 @@ bool FlyByWireInterface::updateFcdc(double sampleTime, int fcdcIndex) {
   idFcdcFoRollCommand[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].foRollCommand.toSimVar());
   idFcdcCaptPitchCommand[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].captPitchCommand.toSimVar());
   idFcdcFoPitchCommand[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].foPitchCommand.toSimVar());
+  idFcdcRudderPedalPos[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].rudderPedalPosition.toSimVar());
   idFcdcAileronLeftPos[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].aileronLeftPos.toSimVar());
   idFcdcElevatorLeftPos[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].elevatorLeftPos.toSimVar());
   idFcdcAileronRightPos[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].aileronRightPos.toSimVar());

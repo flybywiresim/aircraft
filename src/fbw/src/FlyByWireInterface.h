@@ -20,6 +20,7 @@
 #include "SimConnectInterface.h"
 #include "SpoilersHandler.h"
 #include "ThrottleAxisMapping.h"
+#include "elac/Elac.h"
 #include "fcdc/Fcdc.h"
 
 class FlyByWireInterface {
@@ -97,6 +98,11 @@ class FlyByWireInterface {
   AutothrustModelClass autoThrust;
   AutothrustModelClass::ExternalInputs_Autothrust_T autoThrustInput = {};
   athr_output autoThrustOutput;
+
+  Elac elacs[2] = {Elac(true), Elac(false)};
+  ElacDiscreteOutputs elacsDiscreteOutputs[2] = {};
+  ElacAnalogOutputs elacsAnalogOutputs[2] = {};
+  ElacOutBus elacsBusOutputs[2] = {};
 
   Fcdc fcdcs[2] = {Fcdc(true), Fcdc(false)};
   FcdcDiscreteOutputs fcdcsDiscreteOutputs[2] = {};
@@ -334,6 +340,7 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idFcdcFoRollCommand[2];
   std::unique_ptr<LocalVariable> idFcdcCaptPitchCommand[2];
   std::unique_ptr<LocalVariable> idFcdcFoPitchCommand[2];
+  std::unique_ptr<LocalVariable> idFcdcRudderPedalPos[2];
   std::unique_ptr<LocalVariable> idFcdcAileronLeftPos[2];
   std::unique_ptr<LocalVariable> idFcdcElevatorLeftPos[2];
   std::unique_ptr<LocalVariable> idFcdcAileronRightPos[2];
@@ -352,8 +359,31 @@ class FlyByWireInterface {
 
   std::unique_ptr<LocalVariable> idFcdcFault[2];
 
+  std::unique_ptr<LocalVariable> idElacPushbuttonStatus[2];
+  std::unique_ptr<LocalVariable> idElacFaultLightOn[2];
+
+  std::unique_ptr<LocalVariable> idElacLeftAileronPosition[2];
+  std::unique_ptr<LocalVariable> idElacRightAileronPosition[2];
+  std::unique_ptr<LocalVariable> idElacLeftElevatorPosition[2];
+  std::unique_ptr<LocalVariable> idElacRightElevatorPosition[2];
+  std::unique_ptr<LocalVariable> idElacThsPosition[2];
+  std::unique_ptr<LocalVariable> idElacLeftSidestickPitchCommand[2];
+  std::unique_ptr<LocalVariable> idElacRightSidestickPitchCommand[2];
+  std::unique_ptr<LocalVariable> idElacLeftSidestickRollCommand[2];
+  std::unique_ptr<LocalVariable> idElacRightSidestickRollCommand[2];
+  std::unique_ptr<LocalVariable> idElacRudderPedalPosition[2];
+  std::unique_ptr<LocalVariable> idElacAileronCommand[2];
+  std::unique_ptr<LocalVariable> idElacYawDamperCommand[2];
+  std::unique_ptr<LocalVariable> idElacDiscreteStatusWord1[2];
+  std::unique_ptr<LocalVariable> idElacDiscreteStatusWord2[2];
+
   std::unique_ptr<LocalVariable> idElecDcBus2Powered;
   std::unique_ptr<LocalVariable> idElecDcEssShedBusPowered;
+  std::unique_ptr<LocalVariable> idElecDcEssBusPowered;
+
+  std::unique_ptr<LocalVariable> idHydYellowSystemPressure;
+  std::unique_ptr<LocalVariable> idHydGreenSystemPressure;
+  std::unique_ptr<LocalVariable> idHydBlueSystemPressure;
 
   void loadConfiguration();
   void setupLocalVariables();
@@ -372,6 +402,8 @@ class FlyByWireInterface {
   bool updateAutopilotLaws(double sampleTime);
   bool updateFlyByWire(double sampleTime);
   bool updateAutothrust(double sampleTime);
+
+  bool updateElac(double sampleTime, int elacIndex);
 
   bool updateFcdc(double sampleTime, int fcdcIndex);
 

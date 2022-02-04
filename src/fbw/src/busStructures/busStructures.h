@@ -2,6 +2,21 @@
 
 #include "../Arinc429.h"
 
+// TODO need to find a better place for this
+enum class LateralLaw {
+  NormalLaw,
+  DirectLaw,
+  None,
+};
+
+enum class PitchLaw {
+  NormalLaw,
+  AlternateLaw1,
+  AlternateLaw2,
+  DirectLaw,
+  None,
+};
+
 struct IlsBus {
   // Label 33
   Arinc429NumericWord ilsFreq;
@@ -105,19 +120,25 @@ struct FcdcBus {
 // +-------+-------------------------------------+-------+
 // |       | Computer Roll Fault                 | 22    |
 // +-------+-------------------------------------+-------+
-// |       | Pitch law Status                    | 23-24 |
+// |       | Active Pitch Law                    | 23-25 |
 // +-------+-------------------------------------+-------+
-// |       |    1 0 - Normal law                 |       |
+// |       |    1 0 0 - Normal law               |       |
 // +-------+-------------------------------------+-------+
-// |       |    0 1 - Alternate law              |       |
+// |       |    0 1 0 - Alternate law 1          |       |
 // +-------+-------------------------------------+-------+
-// |       |    1 1 - Direct law                 |       |
+// |       |    1 1 0 - Alternate law 2          |       |
 // +-------+-------------------------------------+-------+
-// |       | Lateral law Status                  | 25-26 |
+// |       |    0 0 1 - Direct law               |       |
 // +-------+-------------------------------------+-------+
-// |       |    1 0 - Normal law                 |       |
+// |       |    0 0 0 - None                     |       |
 // +-------+-------------------------------------+-------+
-// |       |    0 1 - Direct Law                 |       |
+// |       | Active Lateral Law                  | 26-28 |
+// +-------+-------------------------------------+-------+
+// |       |    1 0 0 - Normal law               |       |
+// +-------+-------------------------------------+-------+
+// |       |    0 1 0 - Direct Law               |       |
+// +-------+-------------------------------------+-------+
+// |       |    0 0 0 - None                     |       |
 // +-------+-------------------------------------+-------+
 // |       |                                     |       |
 // +-------+-------------------------------------+-------+
@@ -131,11 +152,15 @@ struct FcdcBus {
 // +-------+-------------------------------------+-------+
 // |       |    1 1 - Direct law                 |       |
 // +-------+-------------------------------------+-------+
+// |       |    0 0 - None                       |       |
+// +-------+-------------------------------------+-------+
 // |       | Lateral law Capability              | 13-14 |
 // +-------+-------------------------------------+-------+
 // |       |    1 0 - Normal law                 |       |
 // +-------+-------------------------------------+-------+
 // |       |    0 1 - Direct Law                 |       |
+// +-------+-------------------------------------+-------+
+// |       |    0 0 - None                       |       |
 // +-------+-------------------------------------+-------+
 // |       | Left Sidestick Fault                | 15    |
 // +-------+-------------------------------------+-------+
@@ -173,8 +198,10 @@ struct ElacOutBus {
   Arinc429NumericWord rightSidestickRollCommand;
 
   Arinc429NumericWord rudderPedalPosition;
-  // Aileron command for SEC roll spoiler, and cross-ELAC roll command execution
+  // Aileron command for cross-ELAC roll command execution
   Arinc429NumericWord aileronCommand;
+
+  Arinc429NumericWord rollSpoilerCommand;
   // Yaw Damper command for the FACs
   Arinc429NumericWord yawDamperCommand;
   // Discrete status words
@@ -183,7 +210,37 @@ struct ElacOutBus {
   Arinc429DiscreteWord discreteStatusWord2;
 };
 
-struct SecOutBus {};
+struct SecOutBus {
+  // Surface positions
+  Arinc429NumericWord leftSpoiler1Position;
+
+  Arinc429NumericWord rightSpoiler1Position;
+
+  Arinc429NumericWord leftSpoiler2Position;
+
+  Arinc429NumericWord rightSpoiler2Position;
+
+  Arinc429NumericWord leftElevatorPosition;
+
+  Arinc429NumericWord rightElevatorPosition;
+
+  Arinc429NumericWord thsPosition;
+
+  // Sidestick/Rudder pedal posititons;
+  // SEC 1&2 only
+  Arinc429NumericWord leftSidestickPitchCommand;
+  // SEC 1&2 only
+  Arinc429NumericWord rightSidestickPitchCommand;
+
+  Arinc429NumericWord leftSidestickRollCommand;
+
+  Arinc429NumericWord rightSidestickRollCommand;
+
+  // Discrete status words
+  Arinc429DiscreteWord discreteStatusWord1;
+
+  Arinc429DiscreteWord discreteStatusWord2;
+};
 
 struct FmgcABus {
   // Label 140

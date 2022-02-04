@@ -40,8 +40,8 @@ export const FctlPage = () => {
             <HydraulicsProvider>
                 <Wings x={98} y={14} />
 
-                <Aileron x={72} y={153} side="left" leftHydraulicSystem="B" rightHydraulicSystem="G" fcdcDiscreteWord3={fcdcDiscreteWord3ToUse} />
-                <Aileron x={528} y={153} side="right" leftHydraulicSystem="G" rightHydraulicSystem="B" fcdcDiscreteWord3={fcdcDiscreteWord3ToUse} />
+                <Aileron x={72} y={153} side="left" leftHydraulicSystem="B" rightHydraulicSystem="G" fcdcDiscreteWord2={fcdcDiscreteWord2ToUse} fcdcDiscreteWord3={fcdcDiscreteWord3ToUse} />
+                <Aileron x={528} y={153} side="right" leftHydraulicSystem="G" rightHydraulicSystem="B" fcdcDiscreteWord2={fcdcDiscreteWord2ToUse} fcdcDiscreteWord3={fcdcDiscreteWord3ToUse} />
 
                 <Note x={195} y={178}>ELAC</Note>
                 <Elac x={170} y={190} num={1} fcdcDiscreteWord1={fcdcDiscreteWord1ToUse} />
@@ -52,8 +52,8 @@ export const FctlPage = () => {
                 <Sec x={348} y={206} num={2} fcdcDiscreteWord1={fcdcDiscreteWord1ToUse} />
                 <Sec x={372} y={222} num={3} fcdcDiscreteWord1={fcdcDiscreteWord1ToUse} />
 
-                <Elevator x={168} y={328} side="left" leftHydraulicSystem="B" rightHydraulicSystem="G" fcdcDiscreteWord3={fcdcDiscreteWord3ToUse} />
-                <Elevator x={432} y={328} side="right" leftHydraulicSystem="Y" rightHydraulicSystem="B" fcdcDiscreteWord3={fcdcDiscreteWord3ToUse} />
+                <Elevator x={168} y={328} side="left" leftHydraulicSystem="B" rightHydraulicSystem="G" fcdcDiscreteWord2={fcdcDiscreteWord2ToUse} fcdcDiscreteWord3={fcdcDiscreteWord3ToUse} />
+                <Elevator x={432} y={328} side="right" leftHydraulicSystem="Y" rightHydraulicSystem="B" fcdcDiscreteWord2={fcdcDiscreteWord2ToUse} fcdcDiscreteWord3={fcdcDiscreteWord3ToUse} />
 
                 <PitchTrim x={280} y={283} fcdcDiscreteWord2={fcdcDiscreteWord2ToUse} />
 
@@ -194,6 +194,7 @@ const Stabilizer = ({ x, y }: ComponentPositionProps) => (
 );
 
 interface AileronElevatorProps {
+    fcdcDiscreteWord2: Arinc429Word,
     fcdcDiscreteWord3: Arinc429Word,
 }
 const Aileron = ({
@@ -202,11 +203,10 @@ const Aileron = ({
     side,
     leftHydraulicSystem,
     rightHydraulicSystem,
+    fcdcDiscreteWord2,
     fcdcDiscreteWord3,
 }: ComponentPositionProps & ComponentSidePositionProps & HydraulicSystemPairProps & AileronElevatorProps) => {
     const titleTextPositionX = side === 'left' ? -40 : 40;
-
-    const hydraulics = useHydraulics();
 
     const fcdc1AileronDeflection = useArinc429Var(`L:A32NX_FCDC_1_AILERON_${side.toUpperCase()}_POS`);
     const fcdc2AileronDeflection = useArinc429Var(`L:A32NX_FCDC_2_AILERON_${side.toUpperCase()}_POS`);
@@ -215,11 +215,13 @@ const Aileron = ({
     const aileronDeflectPctNormalized = aileronDeflection.valueOr(0) * 54;
     const cursorPath = `M${side === 'left' ? 1 : -1} ${side === 'left' ? 51
         : 51} l${side === 'right' ? '-' : ''}15 -7 l0 14Z`;
-    const cursorClassName = hydraulics[leftHydraulicSystem].available || hydraulics[rightHydraulicSystem].available ? 'GreenShape' : 'WarningShape';
+    const servcontrol1Avail = fcdcDiscreteWord3.getBitValue(side === 'left' ? 11 : 13);
+    const servcontrol2Avail = fcdcDiscreteWord3.getBitValue(side === 'left' ? 12 : 14);
+    const cursorClassName = servcontrol1Avail || servcontrol2Avail ? 'GreenShape' : 'WarningShape';
     const aileronPositionValid = aileronDeflection.isNormalOperation();
 
-    const servcontrol1Fault = fcdcDiscreteWord3.getBitValueOr(side === 'left' ? 11 : 13, false);
-    const servcontrol2Fault = fcdcDiscreteWord3.getBitValueOr(side === 'left' ? 12 : 14, false);
+    const servcontrol1Fault = fcdcDiscreteWord2.getBitValueOr(side === 'left' ? 11 : 13, false);
+    const servcontrol2Fault = fcdcDiscreteWord2.getBitValueOr(side === 'left' ? 12 : 14, false);
 
     return (
         <SvgGroup x={x} y={y}>
@@ -307,12 +309,12 @@ const Elevator = ({
     side,
     leftHydraulicSystem,
     rightHydraulicSystem,
+    fcdcDiscreteWord2,
     fcdcDiscreteWord3,
 }: ComponentPositionProps & ComponentSidePositionProps & HydraulicSystemPairProps & AileronElevatorProps) => {
     const textPositionX = side === 'left' ? -42 : 42;
     const textLetter = side === 'left' ? 'L' : 'R';
 
-    const hydraulics = useHydraulics();
     const fcdc1ElevatorDeflection = useArinc429Var(`L:A32NX_FCDC_1_ELEVATOR_${side.toUpperCase()}_POS`);
     const fcdc2ElevatorDeflection = useArinc429Var(`L:A32NX_FCDC_2_ELEVATOR_${side.toUpperCase()}_POS`);
     const elevatorDeflection = !fcdc1ElevatorDeflection.isFailureWarning() ? fcdc1ElevatorDeflection : fcdc2ElevatorDeflection;
@@ -320,10 +322,12 @@ const Elevator = ({
 
     const elevatorDeflectPctNormalized = elevatorDeflection.value * (elevatorDeflection.value > 0 ? 70 : 52);
     const cursorPath = `M${side === 'left' ? 1 : -1},70 l${side === 'right' ? '-' : ''}15,-7 l0,14Z`;
-    const cursorClassName = hydraulics[leftHydraulicSystem].available || hydraulics[rightHydraulicSystem].available ? 'GreenShape' : 'WarningShape';
+    const servcontrol1Avail = fcdcDiscreteWord3.getBitValue(side === 'left' ? 15 : 17);
+    const servcontrol2Avail = fcdcDiscreteWord3.getBitValue(side === 'left' ? 16 : 18);
+    const cursorClassName = servcontrol1Avail || servcontrol2Avail ? 'GreenShape' : 'WarningShape';
 
-    const servcontrol1Fault = fcdcDiscreteWord3.getBitValueOr(side === 'left' ? 15 : 16, false);
-    const servcontrol2Fault = fcdcDiscreteWord3.getBitValueOr(side === 'left' ? 17 : 18, false);
+    const servcontrol1Fault = fcdcDiscreteWord2.getBitValueOr(side === 'left' ? 15 : 17, false);
+    const servcontrol2Fault = fcdcDiscreteWord2.getBitValueOr(side === 'left' ? 16 : 18, false);
 
     return (
         <SvgGroup x={x} y={y}>
