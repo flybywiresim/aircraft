@@ -570,7 +570,7 @@ const ChartsUi = ({ chartFox, charts, enableNavigraph, setCharts }: ChartsUiProp
         { name: 'REF', charts: charts.reference },
     ]);
 
-    const { tabIndex, icao, chartId, chartName, boundingBox, isFullScreen } = useAppSelector((state) => state.navigationTab);
+    const { tabIndex, icao, chartName, isFullScreen } = useAppSelector((state) => state.navigationTab);
 
     const assignAirportInfo = async () => {
         if (enableNavigraph) {
@@ -641,9 +641,7 @@ const ChartsUi = ({ chartFox, charts, enableNavigraph, setCharts }: ChartsUiProp
 
         dispatch(setChartName({ light: chartNameDay, dark: chartNameNight }));
 
-        if (boundingBox) {
-            dispatch(setBoundingBox(boundingBox));
-        }
+        dispatch(setBoundingBox(boundingBox));
     };
 
     useEffect(() => {
