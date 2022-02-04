@@ -102,9 +102,7 @@ export default class NavigraphClient {
 
             const token = NXDataStore.get('NAVIGRAPH_REFRESH_TOKEN');
 
-            if (!token) {
-                this.authenticate();
-            } else {
+            if (token) {
                 this.refreshToken = token;
                 this.getToken();
             }
