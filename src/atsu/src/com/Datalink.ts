@@ -102,7 +102,7 @@ export class Datalink {
         }
 
         // update the timeout and overall delay
-        timeout += Math.floor(Math.random() * timeout);
+        timeout += Math.floor(Math.random() * timeout * 0.5);
         timeout *= 1000;
         this.overallDelay += timeout;
     }
