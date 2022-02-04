@@ -813,6 +813,12 @@ export const Navigation = () => {
         }
     }, (navigraph.tokenRefreshInterval * 1000));
 
+    useEffect(() => {
+        if (enableNavigraph && !navigraph.hasToken) {
+            navigraph.authenticate();
+        }
+    }, []);
+
     return (
         <div className="w-full h-full">
             <h1 className="mb-4 font-bold">Navigation & Charts</h1>
