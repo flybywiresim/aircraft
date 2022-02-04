@@ -120,8 +120,8 @@ mod fixed_tests {
 
     use std::time::Duration;
 
-    use crate::simulation::test::TestVariableRegistry;
-    use crate::simulation::InitContext;
+    use crate::simulation::test::{SimulationTestBed, TestBed};
+
     use crate::{electrical::Electricity, shared::MachNumber};
     use uom::si::{
         acceleration::foot_per_second_squared, angle::radian, f64::*, length::foot,
@@ -137,29 +137,23 @@ mod fixed_tests {
 
     #[test]
     fn no_step_after_zero_time_update() {
-        let mut electricity = Electricity::new();
-        let mut registry: TestVariableRegistry = Default::default();
-        let mut init_context = InitContext::new(&mut electricity, &mut registry);
-
-        let mut fixed_step = FixedStepLoop::new(Duration::from_millis(100));
-
-        fixed_step.update(&context(&mut init_context, Duration::from_secs(0)));
-
-        assert_eq!(fixed_step.next(), None);
+        let mut test_bed = SimulationTestBed::from(FixedStepLoop::new(Duration::from_millis(100)));
+        test_bed.set_update_after_power_distribution(|e, context| {
+            e.update(context, Duration::from_secs(0))
+        });
+        test_bed.run_without_delta();
+        assert!(test_bed.query_element(|e| e.next()) == None);
     }
 
     #[test]
     fn one_step_after_exact_fixed_time_step_update() {
-        let mut electricity = Electricity::new();
-        let mut registry: TestVariableRegistry = Default::default();
-        let mut init_context = InitContext::new(&mut electricity, &mut registry);
-
-        let mut fixed_step = FixedStepLoop::new(Duration::from_millis(100));
-
-        fixed_step.update(&context(&mut init_context, Duration::from_millis(100)));
-
-        assert!(matches!(fixed_step.next(), Some(_)));
-        assert_eq!(fixed_step.next(), None);
+        let mut test_bed = SimulationTestBed::from(FixedStepLoop::new(Duration::from_millis(100)));
+        test_bed.set_update_after_power_distribution(|e, context| {
+            e.update(context, Duration::from_millis(100))
+        });
+        test_bed.run_without_delta();
+        assert!(matches!(test_bed.query_element(|e| e.next()), Some(_)));
+        assert_eq!(test_bed.query_element(|e| e.next()), None);
     }
 
     #[test]
