@@ -22,6 +22,7 @@
 #include "ThrottleAxisMapping.h"
 #include "elac/Elac.h"
 #include "fcdc/Fcdc.h"
+#include "sec/Sec.h"
 
 class FlyByWireInterface {
  public:
@@ -103,6 +104,11 @@ class FlyByWireInterface {
   ElacDiscreteOutputs elacsDiscreteOutputs[2] = {};
   ElacAnalogOutputs elacsAnalogOutputs[2] = {};
   ElacOutBus elacsBusOutputs[2] = {};
+
+  Sec secs[3] = {Sec(true, false), Sec(false, false), Sec(false, true)};
+  SecDiscreteOutputs secsDiscreteOutputs[3] = {};
+  SecAnalogOutputs secsAnalogOutputs[3] = {};
+  SecOutBus secsBusOutputs[3] = {};
 
   Fcdc fcdcs[2] = {Fcdc(true), Fcdc(false)};
   FcdcDiscreteOutputs fcdcsDiscreteOutputs[2] = {};
@@ -377,6 +383,9 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idElacDiscreteStatusWord1[2];
   std::unique_ptr<LocalVariable> idElacDiscreteStatusWord2[2];
 
+  std::unique_ptr<LocalVariable> idSecPushbuttonStatus[3];
+  std::unique_ptr<LocalVariable> idSecFaultLightOn[3];
+
   std::unique_ptr<LocalVariable> idElecDcBus2Powered;
   std::unique_ptr<LocalVariable> idElecDcEssShedBusPowered;
   std::unique_ptr<LocalVariable> idElecDcEssBusPowered;
@@ -404,6 +413,8 @@ class FlyByWireInterface {
   bool updateAutothrust(double sampleTime);
 
   bool updateElac(double sampleTime, int elacIndex);
+
+  bool updateSec(double sampleTime, int secIndex);
 
   bool updateFcdc(double sampleTime, int fcdcIndex);
 

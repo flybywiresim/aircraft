@@ -101,6 +101,10 @@ bool FlyByWireInterface::update(double sampleTime) {
     result &= updateElac(calculatedSampleTime, i);
   }
 
+  for (int i = 0; i < 3; i++) {
+    result &= updateSec(calculatedSampleTime, i);
+  }
+
   for (int i = 0; i < 2; i++) {
     result &= updateFcdc(calculatedSampleTime, i);
   }
@@ -460,7 +464,7 @@ void FlyByWireInterface::setupLocalVariables() {
     idFcdcFoRollCommand[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_FO_ROLL_COMMAND");
     idFcdcCaptPitchCommand[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_CAPT_PITCH_COMMAND");
     idFcdcFoPitchCommand[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_FO_PITCH_COMMAND");
-    idFcdcRudderPedalPos[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "RUDDER_PEDAL_POS");
+    idFcdcRudderPedalPos[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_RUDDER_PEDAL_POS");
     idFcdcAileronLeftPos[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_AILERON_LEFT_POS");
     idFcdcElevatorLeftPos[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_ELEVATOR_LEFT_POS");
     idFcdcAileronRightPos[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_AILERON_RIGHT_POS");
@@ -499,6 +503,13 @@ void FlyByWireInterface::setupLocalVariables() {
     idElacYawDamperCommand[i] = make_unique<LocalVariable>("A32NX_ELAC_" + idString + "_YAW_DAMPER_COMMAND");
     idElacDiscreteStatusWord1[i] = make_unique<LocalVariable>("A32NX_ELAC_" + idString + "_DISCRETE_WORD_1");
     idElacDiscreteStatusWord2[i] = make_unique<LocalVariable>("A32NX_ELAC_" + idString + "_DISCRETE_WORD_2");
+  }
+
+  for (int i = 0; i < 3; i++) {
+    string idString = std::to_string(i + 1);
+
+    idSecPushbuttonStatus[i] = make_unique<LocalVariable>("A32NX_SEC_" + idString + "_PUSHBUTTON_STATUS");
+    idSecFaultLightOn[i] = make_unique<LocalVariable>("A32NX_SEC_" + idString + "_FAULT_LIGHT_ON");
   }
 
   idElecDcBus2Powered = make_unique<LocalVariable>("A32NX_ELEC_DC_2_BUS_IS_POWERED");
@@ -809,8 +820,8 @@ bool FlyByWireInterface::updateElac(double sampleTime, int elacIndex) {
   SimData simData = simConnectInterface.getSimData();
 
   ElacDiscreteInputs discreteInputs = {};
-  discreteInputs.groundSpoilersActive1 = false;
-  discreteInputs.groundSpoilersActive2 = false;
+  discreteInputs.groundSpoilersActive1 = secsDiscreteOutputs[0].groundSpoilerOut;
+  discreteInputs.groundSpoilersActive2 = elacIndex == 0 ? secsDiscreteOutputs[1].groundSpoilerOut : secsDiscreteOutputs[2].groundSpoilerOut;
   discreteInputs.oppPitchAxisFailure = !elacsDiscreteOutputs[oppElacIndex].pitchAxisOk;
   discreteInputs.ap1Disengaged = true;
   discreteInputs.ap2Disengaged = true;
@@ -870,8 +881,8 @@ bool FlyByWireInterface::updateElac(double sampleTime, int elacIndex) {
   elacs[elacIndex].busInputs.ra2 = {};
   elacs[elacIndex].busInputs.fcdc1 = fcdcsBusOutputs[0];
   elacs[elacIndex].busInputs.fcdc2 = fcdcsBusOutputs[1];
-  elacs[elacIndex].busInputs.sec1 = {};
-  elacs[elacIndex].busInputs.sec2 = {};
+  elacs[elacIndex].busInputs.sec1 = secsBusOutputs[0];
+  elacs[elacIndex].busInputs.sec2 = secsBusOutputs[1];
   elacs[elacIndex].busInputs.elacOpp = elacsBusOutputs[oppElacIndex];
 
   elacs[elacIndex].update(sampleTime, simData.simulationTime, false,
@@ -901,6 +912,103 @@ bool FlyByWireInterface::updateElac(double sampleTime, int elacIndex) {
   return true;
 }
 
+bool FlyByWireInterface::updateSec(double sampleTime, int secIndex) {
+  const int oppSecIndex = secIndex == 0 ? 1 : 0;
+  SimData simData = simConnectInterface.getSimData();
+
+  SecDiscreteInputs discreteInputs = {};
+  discreteInputs.secEngagedFromSwitch = idSecPushbuttonStatus[secIndex]->get();
+  discreteInputs.secInemergencyPwrSply = false;
+  if (secIndex < 3) {
+    discreteInputs.pitchNotAvailElac1 = !elacsDiscreteOutputs[0].pitchAxisOk;
+    discreteInputs.pitchNotAvailElac2 = !elacsDiscreteOutputs[1].pitchAxisOk;
+    discreteInputs.leftElevNotAvailSecOpp = !secsDiscreteOutputs[oppSecIndex].leftElevOk;
+    discreteInputs.rightElevNotAvailSecOpp = !secsDiscreteOutputs[oppSecIndex].rightElevOk;
+    discreteInputs.digitalOutputFailedElac1 = !elacsDiscreteOutputs[0].digitalOperationValidated;
+    discreteInputs.digitalOutputFailedElac2 = !elacsDiscreteOutputs[0].digitalOperationValidated;
+    discreteInputs.thsMotorFault = false;
+    discreteInputs.lElevServoFailed = false;
+    discreteInputs.rElevServoFailed = false;
+    discreteInputs.thsOverrideActive = false;
+  } else {
+    discreteInputs.pitchNotAvailElac1 = false;
+    discreteInputs.pitchNotAvailElac2 = false;
+    discreteInputs.leftElevNotAvailSecOpp = false;
+    discreteInputs.rightElevNotAvailSecOpp = false;
+    discreteInputs.digitalOutputFailedElac1 = false;
+    discreteInputs.digitalOutputFailedElac2 = false;
+    discreteInputs.thsMotorFault = false;
+    discreteInputs.lElevServoFailed = false;
+    discreteInputs.rElevServoFailed = false;
+    discreteInputs.thsOverrideActive = false;
+  }
+
+  discreteInputs.greenLowPressure = idHydGreenSystemPressure->get() < 1450;
+  discreteInputs.blueLowPressure = idHydBlueSystemPressure->get() < 1450;
+  discreteInputs.yellowLowPressure = idHydYellowSystemPressure->get() < 1450;
+  discreteInputs.sfcc1SlatOut = false;
+  discreteInputs.sfcc2SlatOut = false;
+
+  discreteInputs.lSpoiler1ServoFailed = false;
+  discreteInputs.rSpoiler1ServoFailed = false;
+  discreteInputs.lSpoiler2ServoFailed = false;
+  discreteInputs.rSpoiler2ServoFailed = false;
+  discreteInputs.captPriorityTakeoverPressed = false;
+  discreteInputs.foPriorityTakeoverPressed = false;
+
+  secs[secIndex].discreteInputs = discreteInputs;
+
+  SecAnalogInputs analogInputs = {};
+  if (secIndex < 3) {
+    analogInputs.capPitchStickPos = 0;
+    analogInputs.foPitchStickPos = 0;
+    analogInputs.leftElevatorPos = 0;
+    analogInputs.rightElevatorPos = 0;
+    analogInputs.thsPos = 0;
+    analogInputs.loadFactorAcc1 = 0;
+    analogInputs.loadFactorAcc2 = 0;
+  } else {
+    analogInputs.capPitchStickPos = 0;
+    analogInputs.foPitchStickPos = 0;
+    analogInputs.leftElevatorPos = 0;
+    analogInputs.rightElevatorPos = 0;
+    analogInputs.thsPos = 0;
+    analogInputs.loadFactorAcc1 = 0;
+    analogInputs.loadFactorAcc2 = 0;
+  }
+  analogInputs.capRollStickPos = 0;
+  analogInputs.foRollStickPos = 0;
+  analogInputs.spdBrkLeverPos = 0;
+  analogInputs.thrLever1Pos = 0;
+  analogInputs.thrLever2Pos = 0;
+  analogInputs.leftSpoiler1Pos = 0;
+  analogInputs.rightSpoiler1Pos = 0;
+  analogInputs.leftSpoiler2Pos = 0;
+  analogInputs.rightSpoiler2Pos = 0;
+  analogInputs.wheelSpeedLeft = 0;
+  analogInputs.wheelSpeedRight = 0;
+
+  secs[secIndex].analogInputs = analogInputs;
+
+  secs[secIndex].busInputs.adirs1 = {};
+  secs[secIndex].busInputs.adirs2 = {};
+  secs[secIndex].busInputs.fcdc1 = fcdcsBusOutputs[0];
+  secs[secIndex].busInputs.fcdc2 = fcdcsBusOutputs[1];
+  secs[secIndex].busInputs.elac1 = elacsBusOutputs[0];
+  secs[secIndex].busInputs.elac2 = elacsBusOutputs[1];
+
+  secs[secIndex].update(sampleTime, simData.simulationTime, false,
+                        secIndex == 0 ? idElecDcEssBusPowered->get() : idElecDcBus2Powered->get());
+
+  secsDiscreteOutputs[secIndex] = secs[secIndex].getDiscreteOutputs();
+  secsAnalogOutputs[secIndex] = secs[secIndex].getAnalogOutputs();
+  secsBusOutputs[secIndex] = secs[secIndex].getBusOutputs();
+
+  idSecFaultLightOn[secIndex]->set(secsDiscreteOutputs[secIndex].secFailed);
+
+  return true;
+}
+
 bool FlyByWireInterface::updateFcdc(double sampleTime, int fcdcIndex) {
   const int oppFcdcIndex = fcdcIndex == 0 ? 1 : 0;
 
@@ -908,26 +1016,26 @@ bool FlyByWireInterface::updateFcdc(double sampleTime, int fcdcIndex) {
   inputs.elac1Off = idElacPushbuttonStatus[0]->get();
   inputs.elac1Valid = elacsDiscreteOutputs[0].digitalOperationValidated;
   inputs.elac2Valid = elacsDiscreteOutputs[1].digitalOperationValidated;
-  inputs.sec1Off = false;
-  inputs.sec1Valid = false;
-  inputs.sec2Valid = false;
+  inputs.sec1Off = idSecPushbuttonStatus[0]->get();
+  inputs.sec1Valid = !secsDiscreteOutputs[0].secFailed;
+  inputs.sec2Valid = !secsDiscreteOutputs[1].secFailed;
   inputs.eng1NotOnGroundAndNotLowOilPress = false;
   inputs.eng2NotOnGroundAndNotLowOilPress = false;
   inputs.noseGearPressed = flyByWireOutput.sim.data_computed.on_ground;  // TODO should come from LGCIU
   inputs.oppFcdcFailed = !fcdcsDiscreteOutputs[oppFcdcIndex].fcdcValid;
-  inputs.sec3Off = false;
-  inputs.sec3Valid = false;
+  inputs.sec3Off = idSecPushbuttonStatus[3]->get();
+  inputs.sec3Valid = !secsDiscreteOutputs[2].secFailed;
   inputs.elac2Off = idElacPushbuttonStatus[1]->get();
-  inputs.sec2Valid = false;
+  inputs.sec2Off = idSecPushbuttonStatus[1]->get();
 
   fcdcs[fcdcIndex].discreteInputs = inputs;
 
   fcdcs[fcdcIndex].busInputs.elac1 = elacsBusOutputs[0];
-  fcdcs[fcdcIndex].busInputs.sec1 = {};
+  fcdcs[fcdcIndex].busInputs.sec1 = secsBusOutputs[0];
   fcdcs[fcdcIndex].busInputs.fcdcOpp = fcdcsBusOutputs[oppFcdcIndex];
   fcdcs[fcdcIndex].busInputs.elac2 = elacsBusOutputs[1];
-  fcdcs[fcdcIndex].busInputs.sec2 = {};
-  fcdcs[fcdcIndex].busInputs.sec3 = {};
+  fcdcs[fcdcIndex].busInputs.sec2 = secsBusOutputs[1];
+  fcdcs[fcdcIndex].busInputs.sec3 = secsBusOutputs[2];
 
   fcdcs[fcdcIndex].update(sampleTime, idFcdcFault[fcdcIndex]->get(),
                           fcdcIndex == 0 ? idElecDcEssShedBusPowered->get() : idElecDcBus2Powered->get());

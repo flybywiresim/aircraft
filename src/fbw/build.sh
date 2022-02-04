@@ -77,6 +77,8 @@ clang++ \
   -I "${DIR}/src/busStructures" \
   -I "${DIR}/src/elac" \
   "${DIR}/src/elac/elac.cpp" \
+  -I "${DIR}/src/sec" \
+  "${DIR}/src/sec/sec.cpp" \
   -I "${DIR}/src/fcdc" \
   "${DIR}/src/fcdc/fcdc.cpp" \
   -I "${DIR}/src/utils" \
