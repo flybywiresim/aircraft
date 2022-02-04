@@ -14,7 +14,7 @@ export const AttitudeIndicatorFixedUpper = ({ pitch, roll }: AttitudeIndicatorFi
 
     return (
         <g id="AttitudeUpperInfoGroup">
-            <g id="RollProtGroup" className="NormalStroke Green">
+            <g id="RollProtGroup" className="SmallStroke Green">
                 <path id="RollProtRight" d="m105.64 62.887 1.5716-0.8008m-1.5716-0.78293 1.5716-0.8008" />
                 <path id="RollProtLeft" d="m32.064 61.303-1.5716-0.8008m1.5716 2.3845-1.5716-0.8008" />
             </g>
@@ -22,7 +22,7 @@ export const AttitudeIndicatorFixedUpper = ({ pitch, roll }: AttitudeIndicatorFi
                 <path id="RollProtLostRight" d="m107.77 60.696-1.7808 1.7818m1.7808 0-1.7808-1.7818" />
                 <path id="RollProtLostLeft" d="m30.043 62.478 1.7808-1.7818m-1.7808 0 1.7808 1.7818" />
             </g>
-            <g className="NormalStroke White">
+            <g className="SmallStroke White">
                 <path d="m98.645 51.067 2.8492-2.8509" />
                 <path d="m39.168 51.067-2.8492-2.8509" />
                 <path d="m90.858 44.839a42.133 42.158 0 0 0-43.904 0" />

@@ -311,6 +311,7 @@ class A32NX_FlightPhase_Approach {
     init(_fmc) {
         this.nextFmgcFlightPhase = FmgcFlightPhases.DONE;
         _fmc.updateManagedSpeed();
+        SimVar.SetSimVarValue("L:AIRLINER_TO_FLEX_TEMP", "Number", 0);
     }
 
     check(_deltaTime, _fmc) {
@@ -330,6 +331,7 @@ class A32NX_FlightPhase_GoAround {
 
     init(_fmc) {
         _fmc.updateManagedSpeed();
+        SimVar.SetSimVarValue("L:AIRLINER_TO_FLEX_TEMP", "Number", 0);
     }
 
     check(_deltaTime, _fmc) {
@@ -341,6 +343,7 @@ class A32NX_FlightPhase_Done {
     constructor() {
         this.takeoffConfirmation = new NXLogic_ConfirmNode(.2);
         this.nextFmgcFlightPhase = FmgcFlightPhases.TAKEOFF;
+        SimVar.SetSimVarValue("L:AIRLINER_TO_FLEX_TEMP", "Number", 0);
     }
 
     init(_fmc) {

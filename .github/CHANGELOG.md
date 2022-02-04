@@ -16,6 +16,7 @@
 1. [SOUND] Added PTU sounds in correct conditions - @hotshotp (Boris)
 1. [ADIRS] Use heading as track at low ground speeds - @beheh (Benedict Etzel)
 1. [PFD] Fix mach number flickering between mach 0.45 and 0.5 - @beheh (Benedict Etzel)
+1. [HYD] Hydraulic emergency generator physical based model - @crocket6 (crocket)
 1. [AP] Improved flight director guidance
 1. [FBW] Improved turn coodination in manual flight - @aguther (Andreas Guther)
 1. [FBW] Roll normal law is no longer using elasticity table - @IbrahimK42 (IbrahimK42)
@@ -88,6 +89,7 @@
 1. [PFD] Added new messages and modes for TCAS - @lukecologne (lukecologne#1156)
 1. [FDR] Added additional data to the FDR - @aguther (Andreas Guther)
 1. [ATHR] Fixed ATHR being armed in flight when TOGA applied without GA condition - @aguther (Andreas Guther)
+1. [EFB] Fixed landing performance calculator clear button and wind magnitude, made small ui improvements - @ghitier (Guillaume H.)
 1. [ECAM] Fixed gross weight being shown without engines running - @BlueberryKing (BlueberryKing)
 1. [FLIGHT MODEL] Fixes co-pilot not being shown in external view -  @donstim (donbikes#4084)
 1. [BLEED] Replace default bleed system - @BlueberryKing (BlueberryKing)
@@ -108,7 +110,31 @@
 1. [API] DOME light switch did not move when set to "dim" via SimConnect - @pre-martin (Martin)
 1. [AP] Further improved ALT CST* and ALT CST conditions - @aguther (Andreas Guther)
 1. [MCDU] Added support for connecting MCDU to external devices - @tyler58546 (tyler58546)
-
+1. [ATHR] Improvement of ATHR laws - @IbrahimK42(IbrahimK42), @aguther (Andreas Guther)
+1. [MISC] Fixed flap configuration in final.flt and runway.flt files -  @donstim (donbikes#4084)
+1. [MISC] Added Home Cockpit mode to remove backlight bleed and reflections in displays - @ssewell (Shane Sewell)
+1. [EFB] Added Reset to Defaults button to EFB throttle calibration page - @frankkopp (Cdr_Maverick#6475)
+1. [HYD] Added more accurate simulation model of PTU - @Gurgel100 (Pascal)
+1. [BLEED] Fix potential NaN calculations for fast flows - @Crocket63
+1. [HYD] Reservoirs connected to pneumatics and first failures - @Crocket63
+1. [ATSU] Don't include airport as a waypoint in route uplink - @tracernz (Mike)
+1. [HYD] Increased reservoirs air pressure to avoid low air fault on pumps - @Crocket63
+1. [EFB] Fix FAA TAF option - @tracernz (Mike)
+1. [AP] Improved SPD/MACH law to be more robust in edge cases - @IbrahimK42 (IbrahimK42)
+1. [FBW] Improved normal law (flight path stability when speed changed, pitch rates) - @aguther (Andreas Guther)
+1. [AP] Improved ALT engage conditions (now +/- 40 ft and 0.8 s) - @aguther (Andreas Guther)
+1. [AP] Inhibit ALT* for 3 s after changing FCU altitude - @aguther (Andreas Guther)
+1. [AP] Separated and improved Nz used by different autopilot laws - @aguther (Andreas Guther)
+1. [AP] Improved HDG/TRK law on small changes - @aguther (Andreas Guther)
+1. [AP] Do not disengage SRS on RTO, engage it only in FLX detent when FLX is configured - @aguther (Andreas Guther)
+1. [ATHR] Improved thrust limits, FLX limits now CLB when entered into FMGC - @aguther (Andreas Guther)
+1. [AP] Improved LOC ALGIN and ROLL OUT during Autoland - @aguther (Andreas Guther)
+1. [HYD] Simple hydraulic model placeholder for flaps and slats - @Crocket63
+1. [FBW] Fix: do not compensate ground spoilers in C* law - @aguther (Andreas Guther)
+1. [AP] Fix: adjustment of vertical speed limitation in SPD/MACH law - @IbrahimK42 (IbrahimK42)
+1. [MISC] Animation speed/behaviors for button, switches and knobs - @bouveng (Johan Bouveng)
+1. [AP] Added Autoland capability for special terrain profiles, i.e. KSEA 16R - @aguther (Andreas Guther)
+1. [ATHR] Adjustment of ATHR SPD/MACH gains - @IbrahimK42 (IbrahimK42)
 ## 0.7.0
 
 1. [HYD] First building block, more to come. Hydraulics do not impact the sim YET. - @crocket6 (crocket)

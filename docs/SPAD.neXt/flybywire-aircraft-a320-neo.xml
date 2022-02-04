@@ -1,40 +1,35 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Profile xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.fsgs.com/SPAD">
-  <Devices />
-  <Options />
-  <CustomClientEvents>
-    <CustomClientEvent Name="FCU AP1 PUSH" EventID="A32NX.FCU_AP_1_PUSH" SubCategory="A32NX FCU">Push AP1 on FCU</CustomClientEvent>
-    <CustomClientEvent Name="FCU AP2 PUSH" EventID="A32NX.FCU_AP_2_PUSH" SubCategory="A32NX FCU">Push AP2 on FCU</CustomClientEvent>
-    <CustomClientEvent Name="FCU AP DISCONNECT" EventID="A32NX.FCU_AP_DISCONNECT_PUSH" SubCategory="A32NX FCU">Disconnect AP</CustomClientEvent>
-    <CustomClientEvent Name="FCU ATHR PUSH" EventID="A32NX.FCU_ATHR_PUSH" SubCategory="A32NX FCU">Push ATHR on FCU</CustomClientEvent>
-    <CustomClientEvent Name="FCU ATHR DISCONNECT" EventID="A32NX.FCU_ATHR_DISCONNECT_PUSH" SubCategory="A32NX FCU">Disconnect ATHR</CustomClientEvent>
-    <CustomClientEvent Name="FCU SPD INC" EventID="A32NX.FCU_SPD_INC" SubCategory="A32NX FCU">Clockwise dial Speed knob on FCU</CustomClientEvent>
-    <CustomClientEvent Name="FCU SPD DEC" EventID="A32NX.FCU_SPD_DEC" SubCategory="A32NX FCU">Anti-Clockwise dial Speed knob on FCU</CustomClientEvent>
-    <CustomClientEvent Name="FCU SPD SET" EventID="A32NX.FCU_SPD_SET" SubCategory="A32NX FCU">Set Speed/Mach value on FCU</CustomClientEvent>
-    <CustomClientEvent Name="FCU SPD PUSH" EventID="A32NX.FCU_SPD_PUSH" SubCategory="A32NX FCU">Push Speed knob on FCU</CustomClientEvent>
-    <CustomClientEvent Name="FCU SPD PULL" EventID="A32NX.FCU_SPD_PULL" SubCategory="A32NX FCU">Pull Speed knob on FCU</CustomClientEvent>
-    <CustomClientEvent Name="FCU SPD MACH TOGGLE PUSH" EventID="A32NX.FCU_SPD_MACH_TOGGLE_PUSH" SubCategory="A32NX FCU">Push SPD/MACH toggle on FCU</CustomClientEvent>
-    <CustomClientEvent Name="FCU HDG INC" EventID="A32NX.FCU_HDG_INC" SubCategory="A32NX FCU">Clockwise dial Heading knob on FCU</CustomClientEvent>
-    <CustomClientEvent Name="FCU HDG DEC" EventID="A32NX.FCU_HDG_DEC" SubCategory="A32NX FCU">Anti-Clockwise dial Heading knob on FCU</CustomClientEvent>
-    <CustomClientEvent Name="FCU HDG SET" EventID="A32NX.FCU_HDG_SET" SubCategory="A32NX FCU">Set Heading/Track value on FCU</CustomClientEvent>
-    <CustomClientEvent Name="FCU HDG PUSH" EventID="A32NX.FCU_HDG_PUSH" SubCategory="A32NX FCU">Push Heading knob on FCU</CustomClientEvent>
-    <CustomClientEvent Name="FCU HDG PULL" EventID="A32NX.FCU_HDG_PULL" SubCategory="A32NX FCU">Pull Heading knob on FCU</CustomClientEvent>
-    <CustomClientEvent Name="FCU TRK FPA TOGGLE PUSH" EventID="A32NX.FCU_TRK_FPA_TOGGLE_PUSH" SubCategory="A32NX FCU">Push TRK/FPA toggle on FCU</CustomClientEvent>
-    <CustomClientEvent Name="FCU ALT INC" EventID="A32NX.FCU_ALT_INC" SubCategory="A32NX FCU">Clockwise dial Altitude knob on FCU</CustomClientEvent>
-    <CustomClientEvent Name="FCU ALT DEC" EventID="A32NX.FCU_ALT_DEC" SubCategory="A32NX FCU">Anti-Clockwise dial Altitude knob on FCU</CustomClientEvent>
-    <CustomClientEvent Name="FCU ALT SET" EventID="A32NX.FCU_ALT_SET" SubCategory="A32NX FCU">Set Altitude value on FCU</CustomClientEvent>
-    <CustomClientEvent Name="FCU ALT PUSH" EventID="A32NX.FCU_ALT_PUSH" SubCategory="A32NX FCU">Push Altitude knob on FCU</CustomClientEvent>
-    <CustomClientEvent Name="FCU ALT PULL" EventID="A32NX.FCU_ALT_PULL" SubCategory="A32NX FCU">Pull Altitude knob on FCU</CustomClientEvent>
-    <CustomClientEvent Name="FCU ALT INCREMENT TOGGLE" EventID="A32NX.FCU_ALT_INCREMENT_TOGGLE" SubCategory="A32NX FCU">Toggle Altitude increment on FCU</CustomClientEvent>
-    <CustomClientEvent Name="FCU ALT INCREMENT SET" EventID="A32NX.FCU_ALT_INCREMENT_SET" SubCategory="A32NX FCU">Set Altitude increment on FCU</CustomClientEvent>
-    <CustomClientEvent Name="FCU VS INC" EventID="A32NX.FCU_VS_INC" SubCategory="A32NX FCU">Clockwise dial V/S knob on FCU</CustomClientEvent>
-    <CustomClientEvent Name="FCU VS DEC" EventID="A32NX.FCU_VS_DEC" SubCategory="A32NX FCU">Anti-Clockwise dial V/S knob on FCU</CustomClientEvent>
-    <CustomClientEvent Name="FCU VS SET" EventID="A32NX.FCU_VS_SET" SubCategory="A32NX FCU">Set VS/FPA value on FCU</CustomClientEvent>
-    <CustomClientEvent Name="FCU VS PUSH" EventID="A32NX.FCU_VS_PUSH" SubCategory="A32NX FCU">Push V/S knob on FCU</CustomClientEvent>
-    <CustomClientEvent Name="FCU VS PULL" EventID="A32NX.FCU_VS_PULL" SubCategory="A32NX FCU">Pull V/S knob on FCU</CustomClientEvent>
-    <CustomClientEvent Name="FCU LOC PUSH" EventID="A32NX.FCU_LOC_PUSH" SubCategory="A32NX FCU">Push LOC button on FCU</CustomClientEvent>
-    <CustomClientEvent Name="FCU APPR PUSH" EventID="A32NX.FCU_APPR_PUSH" SubCategory="A32NX FCU">Push APPR button on FCU</CustomClientEvent>
-    <CustomClientEvent Name="FCU EXPED PUSH" EventID="A32NX.FCU_EXPED_PUSH" SubCategory="A32NX FCU">Push EXPED button on FCU</CustomClientEvent>
-  </CustomClientEvents>
-  <ProfileInformation ProfileID="2279f29a-4655-4987-ad26-9c866cd2a576" Version="1.0" />
-</Profile>
+<CustomClientEvents xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <CustomClientEvent Name="FCU AP1 PUSH" EventID="A32NX.FCU_AP_1_PUSH" SubCategory="A32NX FCU" IsGlobal="true" >Push AP1 on FCU</CustomClientEvent>
+  <CustomClientEvent Name="FCU AP2 PUSH" EventID="A32NX.FCU_AP_2_PUSH" SubCategory="A32NX FCU" IsGlobal="true" >Push AP2 on FCU</CustomClientEvent>
+  <CustomClientEvent Name="FCU AP DISCONNECT" EventID="A32NX.FCU_AP_DISCONNECT_PUSH" SubCategory="A32NX FCU" IsGlobal="true" >Disconnect AP</CustomClientEvent>
+  <CustomClientEvent Name="FCU ATHR PUSH" EventID="A32NX.FCU_ATHR_PUSH" SubCategory="A32NX FCU" IsGlobal="true" >Push ATHR on FCU</CustomClientEvent>
+  <CustomClientEvent Name="FCU ATHR DISCONNECT" EventID="A32NX.FCU_ATHR_DISCONNECT_PUSH" SubCategory="A32NX FCU" IsGlobal="true" >Disconnect ATHR</CustomClientEvent>
+  <CustomClientEvent Name="FCU SPD INC" EventID="A32NX.FCU_SPD_INC" SubCategory="A32NX FCU" IsGlobal="true" >Clockwise dial Speed knob on FCU</CustomClientEvent>
+  <CustomClientEvent Name="FCU SPD DEC" EventID="A32NX.FCU_SPD_DEC" SubCategory="A32NX FCU" IsGlobal="true" >Anti-Clockwise dial Speed knob on FCU</CustomClientEvent>
+  <CustomClientEvent Name="FCU SPD SET" EventID="A32NX.FCU_SPD_SET" SubCategory="A32NX FCU" IsGlobal="true" >Set Speed/Mach value on FCU</CustomClientEvent>
+  <CustomClientEvent Name="FCU SPD PUSH" EventID="A32NX.FCU_SPD_PUSH" SubCategory="A32NX FCU" IsGlobal="true" >Push Speed knob on FCU</CustomClientEvent>
+  <CustomClientEvent Name="FCU SPD PULL" EventID="A32NX.FCU_SPD_PULL" SubCategory="A32NX FCU" IsGlobal="true" >Pull Speed knob on FCU</CustomClientEvent>
+  <CustomClientEvent Name="FCU SPD MACH TOGGLE PUSH" EventID="A32NX.FCU_SPD_MACH_TOGGLE_PUSH" SubCategory="A32NX FCU" IsGlobal="true" >Push SPD/MACH toggle on FCU</CustomClientEvent>
+  <CustomClientEvent Name="FCU HDG INC" EventID="A32NX.FCU_HDG_INC" SubCategory="A32NX FCU" IsGlobal="true" >Clockwise dial Heading knob on FCU</CustomClientEvent>
+  <CustomClientEvent Name="FCU HDG DEC" EventID="A32NX.FCU_HDG_DEC" SubCategory="A32NX FCU" IsGlobal="true" >Anti-Clockwise dial Heading knob on FCU</CustomClientEvent>
+  <CustomClientEvent Name="FCU HDG SET" EventID="A32NX.FCU_HDG_SET" SubCategory="A32NX FCU" IsGlobal="true" >Set Heading/Track value on FCU</CustomClientEvent>
+  <CustomClientEvent Name="FCU HDG PUSH" EventID="A32NX.FCU_HDG_PUSH" SubCategory="A32NX FCU" IsGlobal="true" >Push Heading knob on FCU</CustomClientEvent>
+  <CustomClientEvent Name="FCU HDG PULL" EventID="A32NX.FCU_HDG_PULL" SubCategory="A32NX FCU" IsGlobal="true" >Pull Heading knob on FCU</CustomClientEvent>
+  <CustomClientEvent Name="FCU TRK FPA TOGGLE PUSH" EventID="A32NX.FCU_TRK_FPA_TOGGLE_PUSH" SubCategory="A32NX FCU" IsGlobal="true" >Push TRK/FPA toggle on FCU</CustomClientEvent>
+  <CustomClientEvent Name="FCU ALT INC" EventID="A32NX.FCU_ALT_INC" SubCategory="A32NX FCU" IsGlobal="true" >Clockwise dial Altitude knob on FCU</CustomClientEvent>
+  <CustomClientEvent Name="FCU ALT DEC" EventID="A32NX.FCU_ALT_DEC" SubCategory="A32NX FCU" IsGlobal="true" >Anti-Clockwise dial Altitude knob on FCU</CustomClientEvent>
+  <CustomClientEvent Name="FCU ALT SET" EventID="A32NX.FCU_ALT_SET" SubCategory="A32NX FCU" IsGlobal="true" >Set Altitude value on FCU</CustomClientEvent>
+  <CustomClientEvent Name="FCU ALT PUSH" EventID="A32NX.FCU_ALT_PUSH" SubCategory="A32NX FCU" IsGlobal="true" >Push Altitude knob on FCU</CustomClientEvent>
+  <CustomClientEvent Name="FCU ALT PULL" EventID="A32NX.FCU_ALT_PULL" SubCategory="A32NX FCU" IsGlobal="true" >Pull Altitude knob on FCU</CustomClientEvent>
+  <CustomClientEvent Name="FCU ALT INCREMENT TOGGLE" EventID="A32NX.FCU_ALT_INCREMENT_TOGGLE" SubCategory="A32NX FCU" IsGlobal="true" >Toggle Altitude increment on FCU</CustomClientEvent>
+  <CustomClientEvent Name="FCU ALT INCREMENT SET" EventID="A32NX.FCU_ALT_INCREMENT_SET" SubCategory="A32NX FCU" IsGlobal="true" >Set Altitude increment on FCU</CustomClientEvent>
+  <CustomClientEvent Name="FCU VS INC" EventID="A32NX.FCU_VS_INC" SubCategory="A32NX FCU" IsGlobal="true" >Clockwise dial V/S knob on FCU</CustomClientEvent>
+  <CustomClientEvent Name="FCU VS DEC" EventID="A32NX.FCU_VS_DEC" SubCategory="A32NX FCU" IsGlobal="true" >Anti-Clockwise dial V/S knob on FCU</CustomClientEvent>
+  <CustomClientEvent Name="FCU VS SET" EventID="A32NX.FCU_VS_SET" SubCategory="A32NX FCU" IsGlobal="true" >Set VS/FPA value on FCU</CustomClientEvent>
+  <CustomClientEvent Name="FCU VS PUSH" EventID="A32NX.FCU_VS_PUSH" SubCategory="A32NX FCU" IsGlobal="true" >Push V/S knob on FCU</CustomClientEvent>
+  <CustomClientEvent Name="FCU VS PULL" EventID="A32NX.FCU_VS_PULL" SubCategory="A32NX FCU" IsGlobal="true" >Pull V/S knob on FCU</CustomClientEvent>
+  <CustomClientEvent Name="FCU LOC PUSH" EventID="A32NX.FCU_LOC_PUSH" SubCategory="A32NX FCU" IsGlobal="true" >Push LOC button on FCU</CustomClientEvent>
+  <CustomClientEvent Name="FCU APPR PUSH" EventID="A32NX.FCU_APPR_PUSH" SubCategory="A32NX FCU" IsGlobal="true" >Push APPR button on FCU</CustomClientEvent>
+  <CustomClientEvent Name="FCU EXPED PUSH" EventID="A32NX.FCU_EXPED_PUSH" SubCategory="A32NX FCU" IsGlobal="true" >Push EXPED button on FCU</CustomClientEvent>
+</CustomClientEvents>

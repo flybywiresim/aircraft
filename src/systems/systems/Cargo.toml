@@ -6,7 +6,7 @@ edition = "2018"
 
 [dependencies]
 uom = "0.30.0"
-rand = "0.8.0"
+rand = { version = "0.8.0", features = ["small_rng"] }
 ntest = "0.7.2"
 num-derive = "0.3.3"
 num-traits = "0.2.14"

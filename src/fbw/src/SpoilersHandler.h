@@ -8,7 +8,7 @@ class SpoilersHandler {
   double getSimPosition() const;
   bool getIsGroundSpoilersActive() const;
 
-  void setInitialPosition(double position);
+  void setInitialPosition(bool isArmed, double position);
   void setSimulationVariables(double simulationTime_new,
                               bool isAutopilotEngaged_new,
                               double groundSpeed_new,

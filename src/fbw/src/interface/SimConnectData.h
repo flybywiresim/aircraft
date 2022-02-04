@@ -123,7 +123,6 @@ struct SimData {
   SIMCONNECT_DATA_LATLONALT nav_gs_pos;
   double brakeLeftPosition;
   double brakeRightPosition;
-  double spoilerHandlePosition;
   double flapsHandleIndex;
   double gearHandlePosition;
 };
@@ -242,6 +241,7 @@ struct ClientDataAutopilotLaws {
   double autopilotBeta;
   double locPhiCommand;
   double nosewheelCommand;
+  unsigned long long conditionFlare;
 };
 
 struct ClientDataAutothrust {
@@ -315,6 +315,7 @@ struct ClientDataLocalVariables {
   double TCAS_advisory_state;
   double TCAS_advisory_target_min_fpm;
   double TCAS_advisory_target_max_fpm;
+  unsigned long long conditionFlare;
 };
 
 struct ClientDataLocalVariablesAutothrust {

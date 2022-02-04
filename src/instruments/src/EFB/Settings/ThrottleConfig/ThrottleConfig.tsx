@@ -17,13 +17,14 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
     const [isDualAxis, setDualAxis] = usePersistentProperty('THROTTLE_DUAL_AXIS', '1');
 
     const [selectedIndex, setSelectedIndex] = useState(0);
-
-    const [initialize, setInitialize] = useState(false);
+    const [validConfig, setValidConfig] = useState(true);
+    const [validationErrors, setValidationErrors] = useState<string>();
 
     const [reverserOnAxis1, setReverserOnAxis1] = useSimVar('L:A32NX_THROTTLE_MAPPING_USE_REVERSE_ON_AXIS:1', 'number', 1000);
     const [, setReverserOnAxis2] = useSimVar('L:A32NX_THROTTLE_MAPPING_USE_REVERSE_ON_AXIS:2', 'number', 1000);
 
     const [, syncToDisk] = useSimVar('K:A32NX.THROTTLE_MAPPING_SAVE_TO_FILE', 'number', 1000);
+    const [, defaultsToThrottle] = useSimVar('K:A32NX.THROTTLE_MAPPING_SET_DEFAULTS', 'number', 100);
     const [, syncToThrottle] = useSimVar('K:A32NX.THROTTLE_MAPPING_LOAD_FROM_FILE', 'number', 100);
     const [, applyLocalVar] = useSimVar('K:A32NX.THROTTLE_MAPPING_LOAD_FROM_LOCAL_VARIABLES', 'number', 1000);
 
@@ -50,21 +51,7 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
         }
     }, [reverserOnAxis1, selectedIndex]);
 
-    const setReversersOnAxis = (reverserOnAxis: number) => {
-        setReverserOnAxis1(reverserOnAxis);
-        setReverserOnAxis2(reverserOnAxis);
-        if (reverserOnAxis === 0 && selectedIndex < 2) {
-            setSelectedIndex(2);
-        }
-    };
-
-    const switchDetent = (index: number) => {
-        if (index >= 0 && index <= 5) {
-            setSelectedIndex(index);
-        }
-    };
-
-    function isConfigValid() {
+    useEffect(() => {
         const errors: string[] = [];
         for (let index = reverserOnAxis1 ? 0 : 2; index < mappingsAxisOne.length; index++) {
             const element = mappingsAxisOne[index];
@@ -84,8 +71,23 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
                 }
             }
         }
-        return errors;
-    }
+        setValidationErrors(errors[0]);
+        setValidConfig(errors.length === 0);
+    }, [mappingsAxisOne, mappingsAxisTwo]);
+
+    const setReversersOnAxis = (reverserOnAxis: number) => {
+        setReverserOnAxis1(reverserOnAxis);
+        setReverserOnAxis2(reverserOnAxis);
+        if (reverserOnAxis === 0 && selectedIndex < 2) {
+            setSelectedIndex(2);
+        }
+    };
+
+    const switchDetent = (index: number) => {
+        if (index >= 0 && index <= 5) {
+            setSelectedIndex(index);
+        }
+    };
 
     const navigationBar = (
         <div className="h-80 flex flex-row">
@@ -156,8 +158,6 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
                                 throttleNumber={1}
                                 throttleCount={parseInt(isDualAxis) === 0 ? 2 : 1}
                                 activeIndex={selectedIndex}
-                                initialize={initialize}
-                                setInitialize={setInitialize}
                             />
                             <div className="mr-8 ml-8 mt-auto mb-auto">
                                 {navigationBar}
@@ -168,8 +168,6 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
                                 throttleNumber={2}
                                 throttleCount={1}
                                 activeIndex={selectedIndex}
-                                initialize={initialize}
-                                setInitialize={setInitialize}
                             />
                             <div className="mr-4" />
                         </div>
@@ -185,8 +183,6 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
                         throttleNumber={1}
                         throttleCount={2}
                         activeIndex={selectedIndex}
-                        initialize={initialize}
-                        setInitialize={setInitialize}
                     />
                     <div className="ml-8 mt-auto mb-auto">
                         {navigationBar}
@@ -194,35 +190,41 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
                 </div>
             )}
                 </div>
-                <div className="text-xl text-red-600">{isConfigValid().length > 0 ? isConfigValid()[0] : ''}</div>
+                <h1 className="text-xl h-4 text-red-600">{validConfig ? ' ' : validationErrors}</h1>
+
                 <div className="bg-navy-lighter flex flex-row-reverse h-16 p-2 w-full mt-40 mb-2 rounded-lg">
 
                     <Button
                         text="Save &amp; Apply"
                         type={BUTTON_TYPE.GREEN}
                         onClick={() => {
-                            if (isConfigValid()) {
+                            if (validConfig) {
                                 syncToDisk(1);
                                 applyLocalVar(1);
                             }
                         }}
-                        disabled={!isConfigValid}
-                        className={`ml-2 mr-4 ${isConfigValid().length === 0 ? 'bg-green-500 border-green-500 hover:bg-green-600 hover:border-green-600' : 'opacity-30'}`}
+                        disabled={!validConfig}
+                        className={`ml-2 mr-4 ${validConfig ? 'bg-green-500 border-green-500 hover:bg-green-600 hover:border-green-600' : 'opacity-30'}`}
                     />
                     <Button
                         text="Apply"
-                        type={BUTTON_TYPE.BLUE}
+                        type={validConfig ? BUTTON_TYPE.BLUE : BUTTON_TYPE.NONE}
                         onClick={() => applyLocalVar(1)}
-                        className={`ml-2 ${isConfigValid().length === 0 ? 'bg-blue-500 border-blue-500 hover:bg-blue-600 hover:border-blue-600' : 'bg-gray-500 opacity-30'}`}
+                        className={`ml-2 ${validConfig ? 'hover:bg-blue-600 hover:border-blue-600' : 'bg-gray-500 border-gray-500 opacity-30'}`}
                     />
                     <Button
                         text="Load From File"
                         type={BUTTON_TYPE.BLUE}
                         onClick={() => {
                             syncToThrottle(1);
-                            setTimeout(() => {
-                                setInitialize(true);
-                            }, 1000);
+                        }}
+                        className="ml-2 hover:bg-blue-600 hover:border-blue-600"
+                    />
+                    <Button
+                        text="Reset to Defaults"
+                        type={BUTTON_TYPE.BLUE}
+                        onClick={() => {
+                            defaultsToThrottle(1);
                         }}
                         className="ml-2 hover:bg-blue-600 hover:border-blue-600"
                     />

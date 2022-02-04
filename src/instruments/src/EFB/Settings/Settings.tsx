@@ -6,7 +6,7 @@ import { HttpError } from '@flybywiresim/api-client';
 import { PopUp } from '@shared/popup';
 import { SelectGroup, SelectItem } from '../Components/Form/Select';
 import { usePersistentNumberProperty, usePersistentProperty } from '../../Common/persistence';
-import Button from '../Components/Button/Button';
+import Button, { BUTTON_TYPE } from '../Components/Button/Button';
 import ThrottleConfig from './ThrottleConfig/ThrottleConfig';
 import SimpleInput from '../Components/Form/SimpleInput/SimpleInput';
 import { Navbar } from '../Components/Navbar';
@@ -25,7 +25,7 @@ const ControlSettings = ({ setShowSettings }) => (
     <div className="bg-navy-lighter divide-y my-4 divide-gray-700 flex flex-col rounded-xl p-6 shadow-lg">
         <div className="flex flex-row justify-between items-center">
             <span className="text-lg text-gray-300">Detents</span>
-            <Button className="bg-teal-light-contrast border-teal-light-contrast" text="Calibrate" onClick={() => setShowSettings(true)} />
+            <Button type={BUTTON_TYPE.NONE} className="bg-teal-light-contrast border-teal-light-contrast" text="Calibrate" onClick={() => setShowSettings(true)} />
         </div>
     </div>
 );
@@ -238,7 +238,7 @@ const SimOptionsPage = () => {
     const [fpSync, setFpSync] = usePersistentProperty('FP_SYNC', 'LOAD');
     const [dynamicRegistration, setDynamicRegistration] = usePersistentProperty('DYNAMIC_REGISTRATION_DECAL', '0');
     const [defaultBaro, setDefaultBaro] = usePersistentProperty('CONFIG_INIT_BARO_UNIT', 'AUTO');
-    const [mcduServerPort, setMcduServerPort] = usePersistentProperty('CONFIG_EXTERNAL_MCDU_PORT', '8080');
+    const [mcduServerPort, setMcduServerPort] = usePersistentProperty('CONFIG_EXTERNAL_MCDU_PORT', '8380');
 
     const fpSyncButtons: ButtonType[] = [
         { name: 'None', setting: 'NONE' },
@@ -347,6 +347,7 @@ const RealismPage = () => {
     const [mcduInput, setMcduInput] = usePersistentProperty('MCDU_KB_INPUT', 'DISABLED');
     const [mcduTimeout, setMcduTimeout] = usePersistentProperty('CONFIG_MCDU_KB_TIMEOUT', '60');
     const [realisticTiller, setRealisticTiller] = usePersistentProperty('REALISTIC_TILLER_ENABLED', '0');
+    const [homeCockpit, setHomeCockpit] = usePersistentProperty('HOME_COCKPIT_ENABLED', '0');
 
     const adirsAlignTimeButtons: (ButtonType & SimVarButton)[] = [
         { name: 'Instant', setting: 'INSTANT', simVarValue: 1 },
@@ -467,6 +468,11 @@ const RealismPage = () => {
                             ))}
                         </SelectGroup>
                     </div>
+
+                    <div className="py-4 flex flex-row justify-between items-center">
+                        <span className="text-lg text-gray-300 mr-1">Home Cockpit Mode</span>
+                        <Toggle value={homeCockpit === '1'} onToggle={(value) => setHomeCockpit(value ? '1' : '0')} />
+                    </div>
                 </div>
             </>
         )}
@@ -549,14 +555,14 @@ const ATSUAOCPage = () => {
     ];
 
     const metarSourceButtons: ButtonType[] = [
-        { name: 'MeteoBlue', setting: 'MSFS' },
+        { name: 'Microsoft', setting: 'MSFS' },
         { name: 'PilotEdge', setting: 'PILOTEDGE' },
         { name: 'IVAO', setting: 'IVAO' },
         { name: 'VATSIM', setting: 'VATSIM' },
     ];
 
     const tafSourceButtons: ButtonType[] = [
-        { name: 'IVAO', setting: 'IVAO' },
+        { name: 'FAA', setting: 'FAA' },
         { name: 'NOAA', setting: 'NOAA' },
     ];
 

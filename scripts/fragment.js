@@ -23,10 +23,7 @@ const execute = async () => {
                 sourceDir: './SimObjects/AirPlanes/FlyByWire_A320_NEO/TEXTURE'
             }, {
                 name: 'Livery',
-                sourceDir: './SimObjects/AirPlanes/FlyByWire_A320_NEO-LIVERY'
-            }, {
-                name: 'Livery',
-                sourceDir: './SimObjects/AirPlanes/FlyByWire_A320_NEO-LIVERY-XMAS'
+                sourceDir: './SimObjects/AirPlanes/_FlyByWire_A320_NEO-LIVERY'
             }, {
                 name: 'Sound',
                 sourceDir: './SimObjects/AirPlanes/FlyByWire_A320_NEO/sound'

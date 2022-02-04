@@ -1,6 +1,7 @@
 {
   "name": "a32nx",
-  "version": "0.8.0-dev",
+  "version": "0.8.0",
+  "edition": "development",
   "scripts": {
     "lint": "eslint --cache **/*.{js,mjs,jsx,ts,tsx}",
     "lint-fix": "npm run lint -- --fix",
@@ -88,7 +89,7 @@
     "classnames": "^2.2.6",
     "immer": "^9.0.3",
     "lodash": "^4.17.20",
-    "network": "^0.6.0",
+    "network": "^0.6.1",
     "pdf-to-printer": "^5.1.1",
     "pdfkit": "^0.13.0",
     "pkg": "^5.1.0",

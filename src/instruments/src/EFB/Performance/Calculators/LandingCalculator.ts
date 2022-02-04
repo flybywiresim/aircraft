@@ -171,7 +171,7 @@ const goodRunwayLandingData: AutobrakeConfigLandingData = {
             altitudeCorrection: 80,
             windCorrection: 230,
             tempCorrection: 70,
-            slopeCorrection: 50,
+            slopeCorrection: 60,
             reverserCorrection: -30,
             overweightProcedureCorrection: 810,
         },
@@ -246,7 +246,7 @@ const goodMediumRunwayLandingData: AutobrakeConfigLandingData = {
         },
         [LandingFlapsConfig.Conf3]: {
             refDistance: 1820,
-            weightCorrectionAbove: 40,
+            weightCorrectionAbove: 50,
             weightCorrectionBelow: -20,
             speedCorrection: 100,
             altitudeCorrection: 70,
@@ -334,7 +334,7 @@ const mediumRunwayLandingData: AutobrakeConfigLandingData = {
             windCorrection: 240,
             tempCorrection: 70,
             slopeCorrection: 120,
-            reverserCorrection: -120,
+            reverserCorrection: -130,
             overweightProcedureCorrection: 880,
         },
     },
@@ -409,7 +409,7 @@ const mediumPoorRunwayLandingData: AutobrakeConfigLandingData = {
         [LandingFlapsConfig.Conf3]: {
             refDistance: 2380,
             weightCorrectionAbove: 80,
-            weightCorrectionBelow: -20,
+            weightCorrectionBelow: -30,
             speedCorrection: 170,
             altitudeCorrection: 140,
             windCorrection: 410,
@@ -435,7 +435,7 @@ const mediumPoorRunwayLandingData: AutobrakeConfigLandingData = {
         [LandingFlapsConfig.Conf3]: {
             refDistance: 2400,
             weightCorrectionAbove: 80,
-            weightCorrectionBelow: -20,
+            weightCorrectionBelow: -30,
             speedCorrection: 170,
             altitudeCorrection: 140,
             windCorrection: 410,
@@ -461,7 +461,7 @@ const mediumPoorRunwayLandingData: AutobrakeConfigLandingData = {
         [LandingFlapsConfig.Conf3]: {
             refDistance: 2430,
             weightCorrectionAbove: 80,
-            weightCorrectionBelow: -20,
+            weightCorrectionBelow: -30,
             speedCorrection: 180,
             altitudeCorrection: 140,
             windCorrection: 400,
@@ -514,7 +514,7 @@ const poorRunwayLandingData: AutobrakeConfigLandingData = {
             overweightProcedureCorrection: 230,
         },
         [LandingFlapsConfig.Conf3]: {
-            refDistance: 2280,
+            refDistance: 3280,
             weightCorrectionAbove: 70,
             weightCorrectionBelow: -30,
             speedCorrection: 150,
@@ -582,7 +582,7 @@ const confFullVls = [116, 116, 116, 120, 125, 130, 135, 139, 143];
  * VLS speed (kts) for conf 3 flaps
  * Index 0 = 40T, Index 8 = 80T, 5T increment
  */
-const conf3Vls = [116, 116, 124, 130, 136, 141, 146, 151, 155];
+const conf3Vls = [116, 118, 124, 130, 136, 141, 146, 151, 155];
 
 /**
  * Converts mass into an index from 0-8 for use with VLS tables
@@ -647,6 +647,7 @@ export default class LandingCalculator {
         approachSpeed: number, windDirection: number, windMagnitude: number, runwayHeading: number, reverseThrust: boolean, altitude: number,
         temperature: number, slope: number, overweightProcedure: boolean, pressure: number): number {
         const pressureAltitude = altitude + this.getPressureAltitude(pressure);
+        const isaTemperature = this.getISATemperature(pressureAltitude);
 
         let targetApproachSpeed: number;
         const vlsTableIndex = getVlsTableIndex(weight / 1000);
@@ -677,7 +678,7 @@ export default class LandingCalculator {
         }
 
         const speedCorrection = (speedDifference / 5) * landingData.speedCorrection;
-        const windCorrection = tailWind * landingData.windCorrection;
+        const windCorrection = (tailWind / 5) * landingData.windCorrection;
         let reverserCorrection;
         if (reverseThrust) {
             reverserCorrection = landingData.reverserCorrection * 2;
@@ -685,12 +686,14 @@ export default class LandingCalculator {
             reverserCorrection = 0;
         }
 
-        const altitudeCorrection = (pressureAltitude / 1000) * landingData.altitudeCorrection;
+        const altitudeCorrection = pressureAltitude > 0
+            ? (pressureAltitude / 1000) * landingData.altitudeCorrection
+            : 0;
         const slopeCorrection = slope < 0
             ? Math.abs(slope) * landingData.slopeCorrection
             : 0;
-        const temperatureCorrection = temperature > 15
-            ? ((temperature - 15) / 10) * landingData.tempCorrection
+        const temperatureCorrection = temperature > isaTemperature
+            ? ((temperature - isaTemperature) / 10) * landingData.tempCorrection
             : 0;
         const overweightProcCorrection = overweightProcedure
             ? landingData.overweightProcedureCorrection
@@ -703,12 +706,21 @@ export default class LandingCalculator {
     }
 
     /**
-     * Converts a given pressure to equivilant pressure altitude
+     * Converts a given pressure to equivalent pressure altitude
      * @param pressure Pressure in mb
      * @returns Pressure altitude in feet
      */
     private getPressureAltitude(pressure: number): number {
-        // See https://en.wikipedia.org/wiki/Pressure_altitude
-        return 145366.45 * (1 - ((pressure / 1013.25) ** 0.190284));
+        // Equation from Boeing Jet Transport Performance Methods document
+        return 145442.15 * (1 - ((pressure / 1013.25) ** 0.190263));
+    }
+
+    /**
+     * Calculates ISA temperature for a given pressure altitude
+     * @param PressureAltitude is pressure altitude in feet
+     * @returns ISA temperature in degrees C
+     */
+    private getISATemperature(pressureAltitude: number): number {
+        return 15 - (0.0019812 * pressureAltitude);
     }
 }

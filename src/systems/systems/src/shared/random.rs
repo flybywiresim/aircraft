@@ -1,24 +1,35 @@
-#[cfg(not(any(target_arch = "wasm32", doc)))]
-use rand::Rng;
-
-#[cfg(not(any(target_arch = "wasm32", doc)))]
-pub fn random_number() -> u8 {
-    let mut rng = rand::thread_rng();
-
-    rng.gen()
-}
+#[cfg(any(target_arch = "wasm32", doc))]
+pub use wasm::*;
 
 #[cfg(any(target_arch = "wasm32", doc))]
-pub fn random_number() -> u8 {
-    let buf = &mut [0, 0, 0, 0];
-    unsafe { wasi_random_get(buf.as_mut_ptr(), buf.len()) };
+mod wasm {
+    use rand::rngs::SmallRng;
+    use rand::{Rng, SeedableRng};
+    use std::mem::MaybeUninit;
+    use std::sync::Once;
 
-    buf[0]
+    static RAND_INIT: Once = Once::new();
+    static mut RAND: MaybeUninit<SmallRng> = MaybeUninit::uninit();
+
+    pub fn random_number() -> u8 {
+        // SAFETY: WASM is single-threaded, and we're not passing references to `RAND` around.
+        RAND_INIT.call_once(|| unsafe {
+            RAND = MaybeUninit::new(SmallRng::from_entropy());
+        });
+
+        // SAFETY: `RAND` was initialized above.
+        unsafe { (*RAND.as_mut_ptr()).gen() }
+    }
 }
 
-#[link(wasm_import_module = "wasi_snapshot_preview1")]
-extern "C" {
-    #[link_name = "random_get"]
-    #[cfg(any(target_arch = "wasm32", doc))]
-    fn wasi_random_get(buf: *mut u8, buf_len: usize) -> u16;
+#[cfg(not(any(target_arch = "wasm32", doc)))]
+pub use not_wasm::*;
+
+#[cfg(not(any(target_arch = "wasm32", doc)))]
+mod not_wasm {
+    use rand::Rng;
+
+    pub fn random_number() -> u8 {
+        rand::thread_rng().gen()
+    }
 }

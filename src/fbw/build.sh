@@ -5,6 +5,12 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 OUTPUT="${DIR}/../../flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/fbw.wasm"
 
+if [ "$1" == "--debug" ]; then
+  CLANG_ARGS="-g"
+else
+  WASMLD_ARGS="--strip-debug"
+fi
+
 set -ex
 
 # create temporary folder for o files
@@ -47,6 +53,7 @@ clang \
 # compile c++ code
 clang++ \
   -c \
+  ${CLANG_ARGS} \
   -Wno-unused-command-line-argument \
   -Wno-ignored-attributes \
   -Wno-macro-redefined \
@@ -110,13 +117,13 @@ wasm-ld \
   -L "${MSFS_SDK}/WASM/wasi-sysroot/lib/wasm32-wasi" \
   -lc "${MSFS_SDK}/WASM/wasi-sysroot/lib/wasm32-wasi/libclang_rt.builtins-wasm32.a" \
   --export __wasm_call_ctors \
-  --strip-debug \
   --export-dynamic \
   --export malloc \
   --export free \
   --export __wasm_call_ctors \
   --export-table \
   --gc-sections \
+  ${WASMLD_ARGS} \
   -O3 --lto-O3 \
   -lc++ -lc++abi \
   ${DIR}/obj/*.o \

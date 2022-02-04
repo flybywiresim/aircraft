@@ -17,7 +17,7 @@ const GraduationElement = (heading: number, offset: number) => {
     if (roundedHeading % 10 === 0) {
         if (roundedHeading % 30 === 0) {
             classText = 'FontMedium';
-            textYPos = 154.64206;
+            textYPos = 154.74206;
         } else {
             classText = 'FontSmallest';
             textYPos = 154.27985;
@@ -34,7 +34,7 @@ const GraduationElement = (heading: number, offset: number) => {
     return (
         <g id="HeadingTick" transform={`translate(${offset} 0)`}>
             <path className="NormalStroke White" d={`m68.913 145.34v${tickLength}`} />
-            <text id="HeadingLabel" className={`White MiddleAlign ${classText}`} x="68.879425" y={textYPos}>{text}</text>
+            <text id="HeadingLabel" className={`White MiddleAlign ${classText}`} x="68.979425" y={textYPos}>{text}</text>
         </g>
     );
 };
@@ -114,11 +114,11 @@ const SelectedHeading = ({ selectedHeading, heading }: SelectedHeadingProps) => 
         );
     } if (headingDelta > 0) {
         return (
-            <text id="SelectedHeadingTextRight" className="FontSmallest MiddleAlign Cyan" x="101.56478" y="144.44759">{text}</text>
+            <text id="SelectedHeadingTextRight" className="FontSmallest MiddleAlign Cyan" x="101.70432" y="144.34792">{text}</text>
         );
     }
     return (
-        <text id="SelectedHeadingTextLeft" className="FontSmallest MiddleAlign Cyan" x="36.20676" y="144.44794">{text}</text>
+        <text id="SelectedHeadingTextLeft" className="FontSmallest MiddleAlign Cyan" x="36.418198" y="144.32108">{text}</text>
     );
 };
 
@@ -154,14 +154,14 @@ const QFUIndicator = ({ ILSCourse, heading }: QFUIndicatorProps) => {
             return (
                 <g id="ILSCourseRight">
                     <path className="BlackFill NormalStroke White" d="m100.57 149.68h12.088v6.5516h-12.088z" />
-                    <text id="ILSCourseTextRight" className="FontMedium MiddleAlign Magenta" x="106.58398" y="155.12291">{text}</text>
+                    <text id="ILSCourseTextRight" className="FontMedium MiddleAlign Magenta" x="106.95047" y="155.22305">{text}</text>
                 </g>
             );
         }
         return (
             <g id="ILSCourseLeft">
                 <path className="BlackFill NormalStroke White" d="m26.094 156.18v-6.5516h12.088v6.5516z" />
-                <text id="ILSCourseTextLeft" className="FontMedium MiddleAlign Magenta" x="32.06773" y="155.12303">{text}</text>
+                <text id="ILSCourseTextLeft" className="FontMedium MiddleAlign Magenta" x="32.406616" y="155.22305">{text}</text>
             </g>
         );
     }

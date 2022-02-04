@@ -109,11 +109,7 @@ PanelLights=False
 AutoFeatherSwitch=False
 FlightDirector=True
 LaunchBarSwitch=False
-LaunchBarState=0
-TailhookHandle=False
-TailhookState=0
-FoldingWingsHandle=False
-FoldingWingsState=0, 0
+SeatBeltsSwitch = True
 
 [LocalVars.0]
 A32NX_RMP_L_TOGGLE_SWITCH=1
@@ -270,6 +266,9 @@ A32NX_ISIS_BUGS_SPD_ACTIVE:2=0
 A32NX_ISIS_BUGS_SPD_ACTIVE:3=0
 A32NX_OVHD_PRESS_MODE_SEL_PB_IS_AUTO = 1
 A32NX_OVHD_PRESS_MAN_VS_CTL_SWITCH = 1
+A32NX_FLAPS_HANDLE_PERCENT = 0.25
+A32NX_FLAPS_HANDLE_INDEX = 1
+A32NX_SPOILERS_ARMED = 1
 
 [Gauges.0]
 KollsmanSetting=29.921342849731445313
@@ -304,8 +303,8 @@ Potentiometer.8=0
 Potentiometer.9=0
 Potentiometer.10=0
 Potentiometer.11=0
-Potentiometer.76=0
-Potentiometer.83=0
+Potentiometer.76=0.5
+Potentiometer.83=0.5
 Potentiometer.84=0.5
 Potentiometer.85=0.5
 Potentiometer.86=0.5
@@ -352,9 +351,6 @@ VSSlotIndex=2
 [Controls.0]
 SpoilersHandle=000.00
 SpoilersArmed=True
-FlapsHandle=020.00
-LeftFlap=014.28
-RightFlap=014.28
 GearsHandle=000.01
 Gear1=100.00
 Gear2=100.00

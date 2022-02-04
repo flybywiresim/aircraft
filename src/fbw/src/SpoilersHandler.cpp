@@ -26,7 +26,7 @@ double SpoilersHandler::getSimPosition() const {
   return simPosition;
 }
 
-void SpoilersHandler::setInitialPosition(double position) {
+void SpoilersHandler::setInitialPosition(bool isArmed, double position) {
   if (isInitialized) {
     return;
   }

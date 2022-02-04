@@ -21,7 +21,7 @@ const GraduationElement = (alt, offset) => {
             {isText
             && <path className="NormalStroke White" d="m115.79 81.889 1.3316-1.0783-1.3316-1.0783" />}
             <path className="NormalStroke White" d="m130.85 80.819h-2.0147" />
-            <text className="FontMedium MiddleAlign White" x="122.98842" y="82.939713">{text}</text>
+            <text className="FontMedium MiddleAlign White" x="123.28826" y="82.64006">{text}</text>
         </g>
     );
 };
@@ -152,17 +152,17 @@ const SelectedAltIndicator = ({ currentAlt, targetAlt, altIsManaged, mode }: Sel
     if (currentAlt.value - targetAlt > DisplayRange) {
         return (
             <g id="SelectedAltLowerGroup">
-                <text id="SelectedAltLowerText" className={`FontMedium EndAlign ${color}`} x="135.41222" y="128.90233" xmlSpace="preserve">{text}</text>
+                <text id="SelectedAltLowerText" className={`FontMedium EndAlign ${color}`} x="135.7511" y="128.70299" xmlSpace="preserve">{text}</text>
                 {isSTD
-                && <text id="SelectedAltLowerFLText" className={`FontSmall MiddleAlign ${color}`} x="120.83108" y="128.97597">FL</text>}
+                && <text id="SelectedAltLowerFLText" className={`FontSmall MiddleAlign ${color}`} x="120.87094" y="128.71681">FL</text>}
             </g>
         );
     } if (currentAlt.value - targetAlt < -DisplayRange) {
         return (
             <g id="SelectedAltUpperGroup">
-                <text id="SelectedAltUpperText" className={`FontMedium EndAlign ${color}`} x="135.41232" y="37.348804" xmlSpace="preserve">{text}</text>
+                <text id="SelectedAltUpperText" className={`FontMedium EndAlign ${color}`} x="136.22987" y="37.250134" xmlSpace="preserve">{text}</text>
                 {isSTD
-                && <text id="SelectedAltUpperFLText" className={`FontSmall MiddleAlign ${color}`} x="120.83106" y="37.337193">FL</text>}
+                && <text id="SelectedAltUpperFLText" className={`FontSmall MiddleAlign ${color}`} x="120.85925" y="37.125755">FL</text>}
             </g>
         );
     }
@@ -172,7 +172,7 @@ const SelectedAltIndicator = ({ currentAlt, targetAlt, altIsManaged, mode }: Sel
         <g id="AltTapeTargetSymbol" transform={`translate(0 ${offset})`}>
             <path className="BlackFill" d={`m117.75 77.784h${boxLength}v6.0476h-${boxLength}z`} />
             <path className={`NormalStroke ${color}`} d="m122.79 83.831v6.5516h-7.0514v-8.5675l2.0147-1.0079m4.8441-3.0238v-6.5516h-6.8588v8.5675l2.0147 1.0079" />
-            <text id="AltTapeTargetText" className={`FontMedium StartAlign ${color}`} x="118.12846" y="82.867332" xmlSpace="preserve">{text}</text>
+            <text id="AltTapeTargetText" className={`FontMedium StartAlign ${color}`} x="118.228" y="83.067062" xmlSpace="preserve">{text}</text>
         </g>
     );
 };
@@ -216,7 +216,7 @@ const AltimeterIndicator = ({ mode, altitude }: AltimeterIndicatorProps) => {
         return (
             <g id="STDAltimeterModeGroup" className={(phase > 3 && transAlt > altitude.value && transAlt !== 0) ? 'BlinkInfinite' : ''}>
                 <path className="NormalStroke Yellow" d="m124.79 131.74h13.096v7.0556h-13.096z" />
-                <text className="FontMedium Cyan AlignLeft" x="125.99706" y="137.20053">STD</text>
+                <text className="FontMedium Cyan AlignLeft" x="125.75785" y="137.36">STD</text>
             </g>
         );
     }
@@ -238,8 +238,8 @@ const AltimeterIndicator = ({ mode, altitude }: AltimeterIndicatorProps) => {
         <g id="AltimeterGroup" className={(phase <= 3 && transAlt < altitude.value && transAlt !== 0) ? 'BlinkInfinite' : ''}>
             {mode === 'QFE'
             && <path className="NormalStroke White" d="m 116.83686,133.0668 h 13.93811 v 5.8933 h -13.93811 z" />}
-            <text id="AltimeterModeText" className="FontMedium White" x="118.29047" y="138.03368">{mode}</text>
-            <text id="AltimeterSettingText" className="FontMedium MiddleAlign Cyan" x="140.86115" y="138.03368">{text}</text>
+            <text id="AltimeterModeText" className="FontMedium White" x="118.23066" y="138.11342">{mode}</text>
+            <text id="AltimeterSettingText" className="FontMedium MiddleAlign Cyan" x="141.25583" y="138.09006">{text}</text>
         </g>
     );
 };
@@ -267,11 +267,11 @@ const MetricAltIndicator = ({ altitude, MDA, targetAlt, altIsManaged }: MetricAl
     return (
         <g id="MetricAltGroup">
             <path className="NormalStroke Yellow" d="m116.56 140.22h29.213v7.0556h-29.213z" />
-            <text className="FontMedium Cyan MiddleAlign" x="141.78165" y="145.69975">M</text>
-            <text id="MetricAltText" className={`FontMedium ${currentMetricAltColor} MiddleAlign`} x="128.23189" y="145.80269">{currentMetricAlt}</text>
+            <text className="FontMedium Cyan MiddleAlign" x="142.03537" y="145.8689">M</text>
+            <text id="MetricAltText" className={`FontMedium ${currentMetricAltColor} MiddleAlign`} x="128.64708" y="145.86191">{currentMetricAlt}</text>
             <g id="MetricAltTargetGroup">
-                <text id="MetricAltTargetText" className={`FontSmallest ${targetAltColor} MiddleAlign`} x="93.670235" y="37.946552">{targetMetric}</text>
-                <text className="FontSmallest Cyan MiddleAlign" x="105.15807" y="37.872921">M</text>
+                <text id="MetricAltTargetText" className={`FontSmallest ${targetAltColor} MiddleAlign`} x="94.088852" y="37.926617">{targetMetric}</text>
+                <text className="FontSmallest Cyan MiddleAlign" x="105.25774" y="37.872921">M</text>
             </g>
         </g>
     );

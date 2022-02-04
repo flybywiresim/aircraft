@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { IconChevronDown } from '@tabler/icons';
 
 type Option = {
@@ -15,21 +15,28 @@ type SelectInputProps = {
     label: string,
     onChange?: (newValue: number | string | boolean) => void,
     defaultValue?: any,
+    value?: any,
     reverse?: boolean, // Flips label/input order
     options: Option[],
     dropdownOnTop?: boolean, // Display dropdown above input instead of below
     className?: string
 };
 
-const SelectInput = (props: SelectInputProps) => {
-    let defaultOption = props.options.find((option) => option.value === (props.defaultValue ?? 0));
+const defaultOptionFallback: Option = { value: 0, displayValue: '' };
 
-    if (defaultOption === undefined) {
-        defaultOption = { value: 0, displayValue: '' };
-    }
+const SelectInput = (props: SelectInputProps) => {
+    const defaultOption = props.options.find((option) => option.value === (props.defaultValue ?? 0)) ?? defaultOptionFallback;
 
     const [value, setValue] = useState<any>(defaultOption.displayValue);
     const [showDropdown, setShowDropdown] = useState(false);
+
+    useEffect(() => {
+        if (props.value === undefined) return;
+
+        const option = props.options.find((option) => option.value === props.value) ?? defaultOption;
+
+        setValue(option.displayValue);
+    }, [props.value]);
 
     const onOptionClicked = (option: Option) => {
         if (props.onChange) {

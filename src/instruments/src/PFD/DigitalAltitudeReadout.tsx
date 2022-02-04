@@ -12,7 +12,7 @@ const TensDigits = (value: number, offset: number, color: string) => {
     }
 
     return (
-        <text transform={`translate(0 ${offset})`} className={`FontSmallest MiddleAlign ${color}`} x="4.3894" y="8.9133">{text}</text>
+        <text transform={`translate(0 ${offset})`} className={`FontSmallest MiddleAlign ${color}`} x="4.5894" y="8.9133">{text}</text>
     );
 };
 
@@ -27,7 +27,7 @@ const HundredsDigit = (value: number, offset: number, color: string) => {
     }
 
     return (
-        <text transform={`translate(0 ${offset})`} className={`FontLargest MiddleAlign ${color}`} x="11.431" y="7.1">{text}</text>
+        <text transform={`translate(0 ${offset})`} className={`FontLargest MiddleAlign ${color}`} x="11.631" y="7.1">{text}</text>
     );
 };
 const ThousandsDigit = (value: number, offset: number, color: string) => {
@@ -38,7 +38,7 @@ const ThousandsDigit = (value: number, offset: number, color: string) => {
         text = '';
     }
     return (
-        <text transform={`translate(0 ${offset})`} className={`FontLargest MiddleAlign ${color}`} x="6.98" y="7.1">{text}</text>
+        <text transform={`translate(0 ${offset})`} className={`FontLargest MiddleAlign ${color}`} x="7.18" y="7.1">{text}</text>
     );
 };
 const TenThousandsDigit = (value: number, offset: number, color: string) => {
@@ -49,7 +49,7 @@ const TenThousandsDigit = (value: number, offset: number, color: string) => {
         text = '';
     }
     return (
-        <text transform={`translate(0 ${offset})`} className={`FontLargest MiddleAlign ${color}`} x="2.298" y="7.1">{text}</text>
+        <text transform={`translate(0 ${offset})`} className={`FontLargest MiddleAlign ${color}`} x="2.498" y="7.1">{text}</text>
     );
 };
 
@@ -121,9 +121,9 @@ export const DigitalAltitudeReadout = ({ altitude, MDA }: DigitalAltitudeReadout
             {isNegative
                 && (
                     <g id="AltNegativeText" className="FontLarge EndAlign">
-                        <text className="White" x="121.46731" y="78.156288">N</text>
-                        <text className="White" x="121.49069" y="83.301224">E</text>
-                        <text className="White" x="121.46731" y="88.446159">G</text>
+                        <text className="White" x="121.51714" y="77.956947">N</text>
+                        <text className="White" x="121.7" y="83.251389">E</text>
+                        <text className="White" x="121.63675" y="88.486031">G</text>
                     </g>
                 )}
         </g>

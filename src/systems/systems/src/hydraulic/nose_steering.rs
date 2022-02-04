@@ -125,7 +125,7 @@ impl SteeringActuator {
         angular_to_linear_ratio: Ratio,
     ) -> Self {
         Self {
-            position_id: context.get_identifier("NOSE_WHEEL_POSITION".to_owned()),
+            position_id: context.get_identifier("NOSE_WHEEL_POSITION_RATIO".to_owned()),
 
             current_speed: LowPassFilter::<AngularVelocity>::new(
                 Self::CURRENT_SPEED_FILTER_TIMECONST,
@@ -402,7 +402,7 @@ mod tests {
 
         test_bed.run();
 
-        assert!(test_bed.contains_variable_with_name("NOSE_WHEEL_POSITION"));
+        assert!(test_bed.contains_variable_with_name("NOSE_WHEEL_POSITION_RATIO"));
     }
 
     #[test]
@@ -419,7 +419,7 @@ mod tests {
             actuator_position_init
         ));
 
-        let normalized_position: f64 = test_bed.read_by_name("NOSE_WHEEL_POSITION");
+        let normalized_position: f64 = test_bed.read_by_name("NOSE_WHEEL_POSITION_RATIO");
         assert!(normalized_position == 0.);
     }
 

@@ -286,8 +286,8 @@ const RadioAltAndDH = ({ radioAlt, decisionHeight, roll }: RadioAltAndDHProps) =
 
         return (
             <g id="DHAndRAGroup" transform={`translate(0 ${-verticalOffset})`}>
-                {radioAlt <= decisionHeight ? <text id="AttDHText" x="73.511879" y="113.19068" className="FontLargest Amber EndAlign Blink9Seconds">DH</text> : null}
-                <text id="RadioAlt" x="68.803764" y="119.88165" className={`${size} ${color} MiddleAlign`}>{text}</text>
+                {radioAlt <= decisionHeight ? <text id="AttDHText" x="73.511879" y="113.19068" className="FontLargest Amber EndAlign Blink9Seconds TextOutline">DH</text> : null}
+                <text id="RadioAlt" x="69.202454" y="119.76205" className={`${size} ${color} MiddleAlign TextOutline`}>{text}</text>
             </g>
         );
     }
