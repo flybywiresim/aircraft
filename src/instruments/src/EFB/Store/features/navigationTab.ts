@@ -85,7 +85,7 @@ export const navigationTabSlice = createSlice({
         setChartName: (state, action: TypedAction<{ light: string, dark: string }>) => {
             state.chartName = action.payload;
         },
-        setBoundingBox: (state, action: TypedAction<NavigraphBoundingBox>) => {
+        setBoundingBox: (state, action: TypedAction<NavigraphBoundingBox | undefined>) => {
             state.boundingBox = action.payload;
         },
     },
