@@ -384,6 +384,8 @@ function showError(message, error) {
  * @param {number} exitCode
  */
 function pressAnyKey(exitCode) {
+    // Hack to really pause and wait for a key press. Other solutions had the server start anyway.
+    // Anyone know a better solution that actually works?
     // eslint-disable-next-line global-require
     require('child_process').spawnSync('pause', { shell: true, stdio: [0, 1, 2] });
     process.exit(exitCode);
