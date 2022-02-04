@@ -4,8 +4,8 @@ use crate::{
     overhead::{OnOffFaultPushButton, ValueKnob},
     pressurization::PressurizationOverheadPanel,
     shared::{
-        Cabin, ControllerSignal, EngineCorrectedN1, EngineFirePushButtons, EngineStartState,
-        GroundSpeed, LgciuWeightOnWheels, PneumaticBleed,
+        Cabin, ControllerSignal, EngineBleedPushbutton, EngineCorrectedN1, EngineFirePushButtons,
+        EngineStartState, GroundSpeed, LgciuWeightOnWheels, PneumaticBleed,
     },
     simulation::{
         InitContext, Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -87,7 +87,7 @@ impl<const ZONES: usize> AirConditioningSystem<ZONES> {
         engines: [&impl EngineCorrectedN1; 2],
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         pneumatic: &(impl PneumaticBleed + EngineStartState),
-        pneumatic_overhead: [bool; 2],
+        pneumatic_overhead: &impl EngineBleedPushbutton,
         pressurization: &impl Cabin,
         pressurization_overhead: &PressurizationOverheadPanel,
         lgciu: [&impl LgciuWeightOnWheels; 2],

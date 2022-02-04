@@ -23,8 +23,8 @@ use systems::{
     },
     shared::{
         pid::PidController, ControllerSignal, ElectricalBusType, ElectricalBuses,
-        EngineCorrectedN1, EngineCorrectedN2, EngineFirePushButtons, EngineStartState,
-        HydraulicColor, PneumaticBleed, PneumaticValve, ReservoirAirPressure,
+        EngineBleedPushbutton, EngineCorrectedN1, EngineCorrectedN2, EngineFirePushButtons,
+        EngineStartState, HydraulicColor, PneumaticBleed, PneumaticValve, ReservoirAirPressure,
     },
     simulation::{
         InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -1014,6 +1014,15 @@ impl A320PneumaticOverheadPanel {
             2 => self.engine_2_bleed.is_auto(),
             _ => panic!("Invalid engine number"),
         }
+    }
+}
+impl EngineBleedPushbutton for A320PneumaticOverheadPanel {
+    fn left_engine_bleed_pushbutton_is_auto(&self) -> bool {
+        self.engine_1_bleed.is_auto()
+    }
+
+    fn right_engine_bleed_pushbutton_is_auto(&self) -> bool {
+        self.engine_2_bleed.is_auto()
     }
 }
 impl SimulationElement for A320PneumaticOverheadPanel {

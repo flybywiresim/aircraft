@@ -2,8 +2,8 @@ use crate::{
     pneumatic::EngineState,
     pressurization::PressurizationOverheadPanel,
     shared::{
-        pid::PidController, Cabin, ControllerSignal, EngineCorrectedN1, EngineFirePushButtons,
-        EngineStartState, GroundSpeed, LgciuWeightOnWheels, PneumaticBleed,
+        pid::PidController, Cabin, ControllerSignal, EngineBleedPushbutton, EngineCorrectedN1,
+        EngineFirePushButtons, EngineStartState, GroundSpeed, LgciuWeightOnWheels, PneumaticBleed,
     },
     simulation::{
         InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -55,7 +55,7 @@ impl<const ZONES: usize> AirConditioningSystemController<ZONES> {
         engines: [&impl EngineCorrectedN1; 2],
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         pneumatic: &(impl PneumaticBleed + EngineStartState),
-        pneumatic_overhead: [bool; 2],
+        pneumatic_overhead: &impl EngineBleedPushbutton,
         pressurization: &impl Cabin,
         pressurization_overhead: &PressurizationOverheadPanel,
         lgciu: [&impl LgciuWeightOnWheels; 2],
@@ -581,7 +581,7 @@ impl<const ZONES: usize> PackFlowController<ZONES> {
         engines: [&impl EngineCorrectedN1; 2],
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         pneumatic: &(impl PneumaticBleed + EngineStartState),
-        pneumatic_overhead: [bool; 2],
+        pneumatic_overhead: &impl EngineBleedPushbutton,
         pressurization: &impl Cabin,
         pressurization_overhead: &PressurizationOverheadPanel,
         pack_flow_valve: &[PackFlowValve; 2],
@@ -685,22 +685,22 @@ impl<const ZONES: usize> PackFlowController<ZONES> {
         &self,
         engines: [&impl EngineCorrectedN1; 2],
         pneumatic: &(impl PneumaticBleed + EngineStartState),
-        pneumatic_overhead: [bool; 2],
+        pneumatic_overhead: &impl EngineBleedPushbutton,
     ) -> [bool; 2] {
         // Pneumatic overhead represents engine bleed pushbutton for left and right engine(s)
         [
             self.fcv_1_open_allowed
                 && (((engines[0].corrected_n1() >= Ratio::new::<percent>(15.)
-                    && pneumatic_overhead[0])
+                    && pneumatic_overhead.left_engine_bleed_pushbutton_is_auto())
                     || (engines[1].corrected_n1() >= Ratio::new::<percent>(15.)
-                        && pneumatic_overhead[1]
+                        && pneumatic_overhead.right_engine_bleed_pushbutton_is_auto()
                         && pneumatic.engine_crossbleed_is_on()))
                     || pneumatic.apu_bleed_is_on()),
             self.fcv_2_open_allowed
                 && (((engines[1].corrected_n1() >= Ratio::new::<percent>(15.)
-                    && pneumatic_overhead[1])
+                    && pneumatic_overhead.right_engine_bleed_pushbutton_is_auto())
                     || (engines[0].corrected_n1() >= Ratio::new::<percent>(15.)
-                        && pneumatic_overhead[0]
+                        && pneumatic_overhead.left_engine_bleed_pushbutton_is_auto()
                         && pneumatic.engine_crossbleed_is_on()))
                     || pneumatic.apu_bleed_is_on()),
         ]
@@ -912,13 +912,15 @@ mod acs_controller_tests {
                 engine_2_bleed: AutoOffFaultPushButton::new_auto(context, "PNEU_ENG_2_BLEED"),
             }
         }
+    }
 
-        fn engine_bleed_pb_is_auto(&self, engine_number: usize) -> bool {
-            match engine_number {
-                1 => self.engine_1_bleed.is_auto(),
-                2 => self.engine_2_bleed.is_auto(),
-                _ => panic!("Invalid engine number"),
-            }
+    impl EngineBleedPushbutton for TestPneumaticOverhead {
+        fn left_engine_bleed_pushbutton_is_auto(&self) -> bool {
+            self.engine_1_bleed.is_auto()
+        }
+
+        fn right_engine_bleed_pushbutton_is_auto(&self) -> bool {
+            self.engine_2_bleed.is_auto()
         }
     }
 
@@ -1156,10 +1158,7 @@ mod acs_controller_tests {
                 [&self.engine_1, &self.engine_2],
                 &self.engine_fire_push_buttons,
                 &self.pneumatic,
-                [
-                    self.pneumatic_overhead.engine_bleed_pb_is_auto(1),
-                    self.pneumatic_overhead.engine_bleed_pb_is_auto(2),
-                ],
+                &self.pneumatic_overhead,
                 &self.pressurization,
                 &self.pressurization_overhead,
                 [&self.lgciu1, &self.lgciu2],

@@ -120,6 +120,11 @@ pub trait EngineStartState {
     fn right_engine_state(&self) -> EngineState;
 }
 
+pub trait EngineBleedPushbutton {
+    fn left_engine_bleed_pushbutton_is_auto(&self) -> bool;
+    fn right_engine_bleed_pushbutton_is_auto(&self) -> bool;
+}
+
 pub trait GroundSpeed {
     fn ground_speed(&self) -> Velocity;
 }

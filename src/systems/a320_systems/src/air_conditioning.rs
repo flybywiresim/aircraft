@@ -1,4 +1,3 @@
-use crate::A320PneumaticOverheadPanel;
 use systems::{
     accept_iterable,
     air_conditioning::{
@@ -6,8 +5,8 @@ use systems::{
     },
     pressurization::PressurizationOverheadPanel,
     shared::{
-        Cabin, EngineCorrectedN1, EngineFirePushButtons, EngineStartState, GroundSpeed,
-        LgciuWeightOnWheels, PneumaticBleed,
+        Cabin, EngineBleedPushbutton, EngineCorrectedN1, EngineFirePushButtons, EngineStartState,
+        GroundSpeed, LgciuWeightOnWheels, PneumaticBleed,
     },
     simulation::{InitContext, SimulationElement, SimulationElementVisitor, UpdateContext},
 };
@@ -36,7 +35,7 @@ impl A320AirConditioning {
         engines: [&impl EngineCorrectedN1; 2],
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         pneumatic: &(impl PneumaticBleed + EngineStartState),
-        pneumatic_overhead: &A320PneumaticOverheadPanel,
+        pneumatic_overhead: &impl EngineBleedPushbutton,
         pressurization: &impl Cabin,
         pressurization_overhead: &PressurizationOverheadPanel,
         lgciu: [&impl LgciuWeightOnWheels; 2],
@@ -47,10 +46,7 @@ impl A320AirConditioning {
             engines,
             engine_fire_push_buttons,
             pneumatic,
-            [
-                pneumatic_overhead.engine_bleed_pb_is_auto(1),
-                pneumatic_overhead.engine_bleed_pb_is_auto(2),
-            ],
+            pneumatic_overhead,
             pressurization,
             pressurization_overhead,
             lgciu,
