@@ -1,11 +1,11 @@
 import React, { FC, useEffect, useState } from 'react';
 import { Metar } from '@flybywiresim/api-client';
 import { IconCloud, IconDroplet, IconGauge, IconPoint, IconTemperature, IconWind } from '@tabler/icons';
-import { MetarParserType } from '@instruments/common/metarTypes';
-import { usePersistentProperty } from '@instruments/common/persistence';
 import { parseMetar } from '../../Utils/parseMetar';
-import ColoredMetar from './ColorMetar';
+import { MetarParserType } from '../../../Common/metarTypes';
+import { usePersistentProperty } from '../../../Common/persistence';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
+import { ColoredMetar } from './ColorMetar';
 import { useAppDispatch } from '../../Store/store';
 import { setUserDepartureIcao, setUserDestinationIcao } from '../../Store/features/dashboard';
 
