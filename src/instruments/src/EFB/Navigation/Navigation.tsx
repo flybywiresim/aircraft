@@ -212,6 +212,7 @@ const NavigraphChartComponent = () => {
 
     useEffect(() => {
         const { width, height } = chartDimensions;
+        console.log(width, height);
 
         if (chartRef.current) {
             if (width) {
@@ -227,6 +228,10 @@ const NavigraphChartComponent = () => {
             }
         }
     }, [chartRef, chartDimensions]);
+
+    useEffect(() => {
+        dispatch(setChartDimensions({ height: 875 }));
+    }, [chartLinks]);
 
     useEffect(() => {
         if (planeInFocus) {
@@ -413,8 +418,6 @@ const NavigraphChartSelector = ({ onChartClick, selectedTab, loading }: Navigrap
     const [runwaySet, setRunwaySet] = useState<Set<string>>(new Set());
     const [organizedCharts, setOrganizedCharts] = useState<RunwayOrganizedChartType[]>([]);
 
-    const dispatch = useAppDispatch();
-
     const { chartId } = useAppSelector((state) => state.navigationTab);
 
     useEffect(() => {
@@ -482,10 +485,6 @@ const NavigraphChartSelector = ({ onChartClick, selectedTab, loading }: Navigrap
             (chart as NavigraphChart).id,
             (chart as NavigraphChart).boundingBox,
         );
-
-        if ((chart as NavigraphChart).id !== chartId) {
-            dispatch(setChartDimensions({ height: 875 }));
-        }
     };
 
     return (
@@ -525,12 +524,7 @@ const NavigraphChartSelector = ({ onChartClick, selectedTab, loading }: Navigrap
                         {selectedTab.charts.map((chart) => (
                             <div
                                 className="group flex overflow-hidden flex-row w-full rounded-md bg-theme-accent"
-                                onClick={() => onChartClick(
-                                    (chart as NavigraphChart).fileDay,
-                                    (chart as NavigraphChart).fileNight,
-                                    (chart as NavigraphChart).id,
-                                    (chart as NavigraphChart).boundingBox,
-                                )}
+                                onClick={() => handleChartClick(chart)}
                                 key={(chart as NavigraphChart).id}
                             >
                                 <span className={`w-2 transition duration-100 group-hover:bg-theme-highlight ${(chart as NavigraphChart).id === chartId
