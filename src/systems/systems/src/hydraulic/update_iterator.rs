@@ -137,6 +137,15 @@ mod fixed_tests {
     }
 
     #[test]
+    fn no_step_after_short_time_update() {
+        let mut fixed_step = FixedStepLoop::new(Duration::from_millis(100));
+
+        fixed_step.update(&TestUpdateContext::default().with_delta(Duration::from_millis(80)));
+
+        assert_eq!(fixed_step.next(), None);
+    }
+
+    #[test]
     fn one_step_after_exact_fixed_time_step_update() {
         let mut fixed_step = FixedStepLoop::new(Duration::from_millis(100));
 
@@ -154,6 +163,21 @@ mod fixed_tests {
 
         assert_eq!(fixed_step.next(), Some(Duration::from_millis(100)));
         assert_eq!(fixed_step.next(), Some(Duration::from_millis(100)));
+        assert_eq!(fixed_step.next(), Some(Duration::from_millis(100)));
+        assert_eq!(fixed_step.next(), None);
+    }
+
+    #[test]
+    fn more_than_fixed_step_carries_over_remaining_time_to_next_update() {
+        let mut fixed_step = FixedStepLoop::new(Duration::from_millis(100));
+
+        fixed_step.update(&TestUpdateContext::default().with_delta(Duration::from_millis(101)));
+
+        assert_eq!(fixed_step.next(), Some(Duration::from_millis(100)));
+        assert_eq!(fixed_step.next(), None);
+
+        fixed_step.update(&TestUpdateContext::default().with_delta(Duration::from_millis(99)));
+
         assert_eq!(fixed_step.next(), Some(Duration::from_millis(100)));
         assert_eq!(fixed_step.next(), None);
     }
