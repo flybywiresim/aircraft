@@ -310,11 +310,11 @@ impl A320AileronFactory {
     fn a320_aileron_assembly() -> HydraulicLinearActuatorAssembly<2> {
         let aileron_body = A320AileronFactory::a320_aileron_body();
 
-        let aileron_actuator_outboard = A320AileronFactory::a320_aileron_actuator(&aileron_body);
-        let aileron_actuator_inbord = A320AileronFactory::a320_aileron_actuator(&aileron_body);
+        let aileron_actuator_outward = A320AileronFactory::a320_aileron_actuator(&aileron_body);
+        let aileron_actuator_inward = A320AileronFactory::a320_aileron_actuator(&aileron_body);
 
         HydraulicLinearActuatorAssembly::new(
-            [aileron_actuator_outboard, aileron_actuator_inbord],
+            [aileron_actuator_outward, aileron_actuator_inward],
             aileron_body,
         )
     }
@@ -3055,7 +3055,7 @@ impl ElacComputer {
             left_position_requested: Ratio::default(),
             right_position_requested: Ratio::default(),
 
-            // Controllers are in outboard->inboard order, so for aileron [Blue circuit, Green circuit]
+            // Controllers are in outward->inward order, so for aileron [Blue circuit, Green circuit]
             left_controllers: [AileronController::new(), AileronController::new()],
             right_controllers: [AileronController::new(), AileronController::new()],
 
@@ -3101,7 +3101,7 @@ impl ElacComputer {
                 self.left_controllers[AileronActuatorCircuit::Green as usize]
                     .set_mode(LinearActuatorMode::PositionControl);
             }
-            _ => {
+            AileronHydConfiguration::NoHyd => {
                 self.left_controllers[AileronActuatorCircuit::Blue as usize]
                     .set_mode(LinearActuatorMode::ClosedCircuitDamping);
                 self.left_controllers[AileronActuatorCircuit::Green as usize]
@@ -3128,7 +3128,7 @@ impl ElacComputer {
                 self.right_controllers[AileronActuatorCircuit::Green as usize]
                     .set_mode(LinearActuatorMode::ActiveDamping);
             }
-            _ => {
+            AileronHydConfiguration::NoHyd => {
                 self.right_controllers[AileronActuatorCircuit::Blue as usize]
                     .set_mode(LinearActuatorMode::ClosedCircuitDamping);
                 self.right_controllers[AileronActuatorCircuit::Green as usize]
