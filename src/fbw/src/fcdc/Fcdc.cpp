@@ -91,6 +91,9 @@ PitchLaw Fcdc::getPitchLawStatusFromBits(bool bit1, bool bit2, bool bit3) {
   }
 }
 
+// Consolidate all the active law data from the different computers, and then compute
+// the overall active system law from the law status of the computers that are engaged in the
+// respective axes.
 void Fcdc::computeActiveSystemLaws() {
   bool elac1EngagedInRoll = busInputs.elac1.discreteStatusWord1.bitFromValueOr(20, false);
   bool elac2EngagedInRoll = busInputs.elac2.discreteStatusWord1.bitFromValueOr(20, false);
@@ -134,7 +137,7 @@ void Fcdc::computeActiveSystemLaws() {
         getPitchLawStatusFromBits(busInputs.sec2.discreteStatusWord1.bitFromValue(19), busInputs.sec2.discreteStatusWord1.bitFromValue(20),
                                   busInputs.sec2.discreteStatusWord1.bitFromValue(21));
   } else {
-    systemLateralLaw = LateralLaw::None;
+    systemPitchLaw = PitchLaw::None;
   }
 }
 
@@ -197,10 +200,14 @@ FcdcBus Fcdc::getBusOutputs() {
   output.efcsStatus2.setBit(12, busInputs.elac2.discreteStatusWord1.bitFromValueOr(11, false));
   output.efcsStatus2.setBit(13, busInputs.elac1.discreteStatusWord1.bitFromValueOr(12, false));
   output.efcsStatus2.setBit(14, busInputs.elac2.discreteStatusWord1.bitFromValueOr(12, false));
-  output.efcsStatus2.setBit(15, busInputs.elac1.discreteStatusWord1.bitFromValueOr(13, false));
-  output.efcsStatus2.setBit(16, busInputs.elac2.discreteStatusWord1.bitFromValueOr(13, false));
-  output.efcsStatus2.setBit(17, busInputs.elac1.discreteStatusWord1.bitFromValueOr(14, false));
-  output.efcsStatus2.setBit(18, busInputs.elac2.discreteStatusWord1.bitFromValueOr(14, false));
+  output.efcsStatus2.setBit(
+      15, busInputs.elac1.discreteStatusWord1.bitFromValueOr(13, false) || busInputs.sec1.discreteStatusWord1.bitFromValueOr(13, false));
+  output.efcsStatus2.setBit(
+      16, busInputs.elac2.discreteStatusWord1.bitFromValueOr(13, false) || busInputs.sec2.discreteStatusWord1.bitFromValueOr(13, false));
+  output.efcsStatus2.setBit(
+      17, busInputs.elac1.discreteStatusWord1.bitFromValueOr(14, false) || busInputs.sec1.discreteStatusWord1.bitFromValueOr(14, false));
+  output.efcsStatus2.setBit(
+      18, busInputs.elac2.discreteStatusWord1.bitFromValueOr(14, false) || busInputs.sec2.discreteStatusWord1.bitFromValueOr(14, false));
   output.efcsStatus2.setBit(19, false);
   output.efcsStatus2.setBit(20, false);
   output.efcsStatus2.setBit(21, false);
@@ -218,10 +225,14 @@ FcdcBus Fcdc::getBusOutputs() {
   output.efcsStatus3.setBit(12, busInputs.elac2.discreteStatusWord1.bitFromValueOr(15, false));
   output.efcsStatus3.setBit(13, busInputs.elac1.discreteStatusWord1.bitFromValueOr(16, false));
   output.efcsStatus3.setBit(14, busInputs.elac2.discreteStatusWord1.bitFromValueOr(16, false));
-  output.efcsStatus3.setBit(15, busInputs.elac1.discreteStatusWord1.bitFromValueOr(17, false));
-  output.efcsStatus3.setBit(16, busInputs.elac2.discreteStatusWord1.bitFromValueOr(17, false));
-  output.efcsStatus3.setBit(17, busInputs.elac1.discreteStatusWord1.bitFromValueOr(18, false));
-  output.efcsStatus3.setBit(18, busInputs.elac2.discreteStatusWord1.bitFromValueOr(18, false));
+  output.efcsStatus3.setBit(
+      15, busInputs.elac1.discreteStatusWord1.bitFromValueOr(17, false) || busInputs.sec1.discreteStatusWord1.bitFromValueOr(17, false));
+  output.efcsStatus3.setBit(
+      16, busInputs.elac2.discreteStatusWord1.bitFromValueOr(17, false) || busInputs.sec2.discreteStatusWord1.bitFromValueOr(17, false));
+  output.efcsStatus3.setBit(
+      17, busInputs.elac1.discreteStatusWord1.bitFromValueOr(18, false) || busInputs.sec1.discreteStatusWord1.bitFromValueOr(18, false));
+  output.efcsStatus3.setBit(
+      18, busInputs.elac2.discreteStatusWord1.bitFromValueOr(18, false) || busInputs.sec2.discreteStatusWord1.bitFromValueOr(18, false));
   output.efcsStatus3.setBit(19, discreteInputs.elac1Off);
   output.efcsStatus3.setBit(20, discreteInputs.elac2Off);
   output.efcsStatus3.setBit(21, busInputs.sec3.discreteStatusWord1.bitFromValueOr(15, false));

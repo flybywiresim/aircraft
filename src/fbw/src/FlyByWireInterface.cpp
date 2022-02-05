@@ -925,7 +925,7 @@ bool FlyByWireInterface::updateSec(double sampleTime, int secIndex) {
     discreteInputs.leftElevNotAvailSecOpp = !secsDiscreteOutputs[oppSecIndex].leftElevOk;
     discreteInputs.rightElevNotAvailSecOpp = !secsDiscreteOutputs[oppSecIndex].rightElevOk;
     discreteInputs.digitalOutputFailedElac1 = !elacsDiscreteOutputs[0].digitalOperationValidated;
-    discreteInputs.digitalOutputFailedElac2 = !elacsDiscreteOutputs[0].digitalOperationValidated;
+    discreteInputs.digitalOutputFailedElac2 = !elacsDiscreteOutputs[1].digitalOperationValidated;
     discreteInputs.thsMotorFault = false;
     discreteInputs.lElevServoFailed = false;
     discreteInputs.rElevServoFailed = false;

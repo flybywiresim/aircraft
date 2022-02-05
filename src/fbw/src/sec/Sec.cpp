@@ -41,6 +41,8 @@ void Sec::update(double deltaTime, double simulationTime, bool faultActive, bool
   if (monitoringHealthy) {
     computeComputerEngagementRoll();
     computeComputerEngagementPitch();
+    computePitchLawCapability();
+    computeActiveLawsAndFunctionStatus();
   }
 }
 
@@ -101,14 +103,16 @@ void Sec::computeComputerEngagementPitch() {
   rightElevatorAvail = !discreteInputs.rElevServoFailed && isUnit1 ? !discreteInputs.blueLowPressure : !discreteInputs.yellowLowPressure;
   thsAvail = !discreteInputs.thsMotorFault && (!discreteInputs.greenLowPressure || !discreteInputs.yellowLowPressure);
 
-  canEngageInPitch = monitoringHealthy && (leftElevatorAvail || rightElevatorAvail || thsAvail);
+  canEngageInPitch = monitoringHealthy && (leftElevatorAvail || rightElevatorAvail || thsAvail) && !isUnit3;
 
   // TODO Peripheral sensor status is not yet included here
-  if (isUnit1) {
+  if (isUnit1 && !isUnit3) {
     hasPriorityInPitch = discreteInputs.pitchNotAvailElac1 && discreteInputs.pitchNotAvailElac2 && discreteInputs.leftElevNotAvailSecOpp &&
                          discreteInputs.rightElevNotAvailSecOpp;
-  } else {
+  } else if (!isUnit1 && !isUnit3) {
     hasPriorityInPitch = discreteInputs.pitchNotAvailElac1 && discreteInputs.pitchNotAvailElac2;
+  } else {
+    hasPriorityInPitch = false;
   }
 
   isEngagedInPitch = canEngageInPitch && hasPriorityInPitch;
