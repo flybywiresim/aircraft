@@ -79,7 +79,7 @@ const LowerDisplay = () => {
                     decorations.push(
                         <path
                             className={`Underline ${color}Line`}
-                            d={`M ${x + (startCol * LETTER_WIDTH)} ${y + (lines.length * LINE_SPACING + 4)} h ${(col - startCol) * LETTER_WIDTH + 1}`}
+                            d={`M ${x + (startCol * LETTER_WIDTH)} ${y + (lines.length * LINE_SPACING + 4)} h ${(col - startCol) * LETTER_WIDTH + 5}`}
                             strokeLinecap="round"
                         />,
                     );
