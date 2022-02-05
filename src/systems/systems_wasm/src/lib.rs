@@ -135,6 +135,8 @@ pub struct MsfsHandler {
     time: Time,
 }
 impl MsfsHandler {
+    const MAX_ALLOWED_DELTA_TIME: Duration = Duration::from_millis(500);
+
     fn new(
         variables: MsfsVariableRegistry,
         aspects: Vec<Box<dyn Aspect>>,
@@ -158,11 +160,20 @@ impl MsfsHandler {
         match event {
             MSFSEvent::PreDraw(_) => {
                 if !self.time.is_pausing() {
-                    let delta_time = self.time.take();
+                    let mut delta_time = self.time.take();
                     self.pre_tick(sim_connect, delta_time)?;
                     if let Some(failures) = &self.failures {
                         Self::read_failures_into_simulation(failures, simulation);
                     }
+
+                    if delta_time > Self::MAX_ALLOWED_DELTA_TIME {
+                        println!(
+                            "SYSTEM WASM CAPPING ABNORMAL DELTA TIME OF {} ms",
+                            delta_time.as_millis()
+                        );
+                        delta_time = Self::MAX_ALLOWED_DELTA_TIME;
+                    }
+
                     simulation.tick(delta_time, self);
                     self.post_tick(sim_connect)?;
                 }
