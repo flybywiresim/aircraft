@@ -2,6 +2,22 @@
 #define RTW_HEADER_AutopilotLaws_types_h_
 #include "rtwtypes.h"
 
+#ifndef DEFINED_TYPEDEF_FOR_ap_raw_laws_flare_
+#define DEFINED_TYPEDEF_FOR_ap_raw_laws_flare_
+
+struct ap_raw_laws_flare
+{
+  boolean_T condition_Flare;
+  real_T H_dot_radio_fpm;
+  real_T H_dot_c_fpm;
+  real_T delta_Theta_H_dot_deg;
+  real_T delta_Theta_bz_deg;
+  real_T delta_Theta_bx_deg;
+  real_T delta_Theta_beta_c_deg;
+};
+
+#endif
+
 #ifndef DEFINED_TYPEDEF_FOR_ap_raw_time_
 #define DEFINED_TYPEDEF_FOR_ap_raw_time_
 
@@ -244,6 +260,7 @@ struct ap_raw_output
   real_T Nosewheel_c;
   ap_raw_output_command flight_director;
   ap_raw_output_command autopilot;
+  ap_raw_laws_flare flare_law;
 };
 
 #endif
