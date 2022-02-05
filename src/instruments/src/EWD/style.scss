@@ -53,6 +53,7 @@ animation: pulsingS 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 
     text, tspan {
         fill: $display-white;
+        stroke: none !important;
 
         &.Standard {
             font-size: 22px;
@@ -109,6 +110,7 @@ animation: pulsingS 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 
         &.Underline {
             text-decoration: underline;
+            text-decoration-color: $display-amber;
         }
     }
 
@@ -118,17 +120,18 @@ animation: pulsingS 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
       fill: none;
     }
 
-    .Red {
-        stroke: $display-red !important;
-    }
+    // .Red {
+    //     stroke: $display-red !important;
+    // }
 
-    .Amber {
-        stroke: $display-amber !important;
-    }
+    // .Amber {
+    //     stroke: $display-amber !important;
+    // }
 
     .AmberLine {
         stroke: $display-amber !important;
         stroke-width: 2;
+        fill: none;
     }
 
     .GreenLine {

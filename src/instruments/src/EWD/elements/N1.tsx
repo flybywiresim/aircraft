@@ -52,7 +52,7 @@ const N1: React.FC<N1Props> = ({ x, y, engine, active }) => {
                         <text className="Large End Green" x={x + 54} y={y + 45}>.</text>
                         <text className="Medium End Green" x={x + 70} y={y + 45}>{N1PercentSplit[1]}</text>
                         <GaugeComponent x={x} y={y} radius={radius} startAngle={startAngle} endAngle={endAngle} visible className="GaugeComponent Gauge">
-                            <GaugeComponent x={x} y={y} radius={radius} startAngle={endAngle - 20} endAngle={endAngle} visible className="GaugeComponent Gauge Red" />
+                            <GaugeComponent x={x} y={y} radius={radius} startAngle={endAngle - 20} endAngle={endAngle} visible className="GaugeComponent Gauge RedLine" />
                             <GaugeMarkerComponent
                                 value={5}
                                 x={x}
@@ -140,7 +140,7 @@ const N1: React.FC<N1Props> = ({ x, y, engine, active }) => {
                                 radius={radius}
                                 startAngle={startAngle}
                                 endAngle={endAngle}
-                                className="GaugeText Gauge Red"
+                                className="GaugeText Gauge RedLine"
                                 multiplierInner={0.9}
                             />
                             <rect x={x - 19} y={y + 19} width={96} height={30} className="DarkGreyBox" />

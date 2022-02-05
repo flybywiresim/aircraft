@@ -1,6 +1,6 @@
 // From Beheh's PR: https://github.com/beheh/a32nx/commit/3bb63c90eb36fe24bee6209582362a73f9223ed5
 
-const LINE_SPACING = 30;
+const LINE_SPACING = 28;
 const LETTER_WIDTH = 16;
 
 const x = 10;
