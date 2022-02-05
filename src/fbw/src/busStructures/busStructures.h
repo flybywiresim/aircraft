@@ -286,7 +286,7 @@ struct SecOutBus {
 
   Arinc429NumericWord thsPosition;
 
-  // Sidestick/Rudder pedal posititons;
+  // Sidestick / Speed brake lever positions
   // SEC 1&2 only
   Arinc429NumericWord leftSidestickPitchCommand;
   // SEC 1&2 only
@@ -295,6 +295,8 @@ struct SecOutBus {
   Arinc429NumericWord leftSidestickRollCommand;
 
   Arinc429NumericWord rightSidestickRollCommand;
+
+  Arinc429NumericWord speedBrakeLeverCommand;
 
   // Discrete status words
   Arinc429DiscreteWord discreteStatusWord1;

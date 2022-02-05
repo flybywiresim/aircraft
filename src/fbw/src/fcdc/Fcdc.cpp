@@ -175,6 +175,17 @@ FcdcBus Fcdc::getBusOutputs() {
     return output;
   }
 
+  bool elac1EngagedInRoll = busInputs.elac1.discreteStatusWord1.bitFromValueOr(20, false);
+  bool elac2EngagedInRoll = busInputs.elac2.discreteStatusWord1.bitFromValueOr(20, false);
+  bool sec1EngagedInRoll = busInputs.sec1.discreteStatusWord1.bitFromValueOr(22, false);
+  bool sec2EngagedInRoll = busInputs.sec2.discreteStatusWord1.bitFromValueOr(22, false);
+  bool sec3EngagedInRoll = busInputs.sec3.discreteStatusWord1.bitFromValueOr(22, false);
+
+  bool elac1EngagedInPitch = busInputs.elac1.discreteStatusWord1.bitFromValueOr(19, false);
+  bool elac2EngagedInPitch = busInputs.elac2.discreteStatusWord1.bitFromValueOr(19, false);
+  bool sec1EngagedInPitch = busInputs.sec1.discreteStatusWord1.bitFromValueOr(23, false);
+  bool sec2EngagedInPitch = busInputs.sec2.discreteStatusWord1.bitFromValueOr(23, false);
+
   output.efcsStatus1.setSsm(Arinc429SignStatus::NormalOperation);
   output.efcsStatus1.setBit(11, systemPitchLaw == PitchLaw::NormalLaw);
   output.efcsStatus1.setBit(12, systemPitchLaw == PitchLaw::AlternateLaw1);
@@ -267,9 +278,9 @@ FcdcBus Fcdc::getBusOutputs() {
   output.efcsStatus4.setBit(29, false);
 
   output.efcsStatus5.setSsm(Arinc429SignStatus::NormalOperation);
-  output.efcsStatus5.setBit(11, false);
-  output.efcsStatus5.setBit(12, false);
-  output.efcsStatus5.setBit(13, false);
+  output.efcsStatus5.setBit(11, !busInputs.sec1.speedBrakeLeverCommand.isNo() && discreteInputs.sec1Valid);
+  output.efcsStatus5.setBit(12, !busInputs.sec2.speedBrakeLeverCommand.isNo() && discreteInputs.sec2Valid);
+  output.efcsStatus5.setBit(13, !busInputs.sec3.speedBrakeLeverCommand.isNo() && discreteInputs.sec3Valid);
   output.efcsStatus5.setBit(14, false);
   output.efcsStatus5.setBit(15, false);
   output.efcsStatus5.setBit(16, false);
@@ -277,26 +288,15 @@ FcdcBus Fcdc::getBusOutputs() {
   output.efcsStatus5.setBit(18, false);
   output.efcsStatus5.setBit(19, false);
   output.efcsStatus5.setBit(20, false);
-  output.efcsStatus5.setBit(21, false);
-  output.efcsStatus5.setBit(22, false);
-  output.efcsStatus5.setBit(23, false);
-  output.efcsStatus5.setBit(24, false);
-  output.efcsStatus5.setBit(25, false);
+  output.efcsStatus5.setBit(21, busInputs.sec3.discreteStatusWord1.bitFromValueOr(11, false));
+  output.efcsStatus5.setBit(22, busInputs.sec3.discreteStatusWord1.bitFromValueOr(12, false));
+  output.efcsStatus5.setBit(23, busInputs.sec1.discreteStatusWord1.bitFromValueOr(11, false));
+  output.efcsStatus5.setBit(24, busInputs.sec1.discreteStatusWord1.bitFromValueOr(12, false));
+  output.efcsStatus5.setBit(25, busInputs.sec2.discreteStatusWord1.bitFromValueOr(11, false));
   output.efcsStatus5.setBit(26, false);
   output.efcsStatus5.setBit(27, false);
   output.efcsStatus5.setBit(28, false);
   output.efcsStatus5.setBit(29, false);
-
-  bool elac1EngagedInRoll = busInputs.elac1.discreteStatusWord1.bitFromValueOr(20, false);
-  bool elac2EngagedInRoll = busInputs.elac2.discreteStatusWord1.bitFromValueOr(20, false);
-  bool sec1EngagedInRoll = busInputs.sec1.discreteStatusWord1.bitFromValueOr(22, false);
-  bool sec2EngagedInRoll = busInputs.sec2.discreteStatusWord1.bitFromValueOr(22, false);
-  bool sec3EngagedInRoll = busInputs.sec3.discreteStatusWord1.bitFromValueOr(22, false);
-
-  bool elac1EngagedInPitch = busInputs.elac1.discreteStatusWord1.bitFromValueOr(19, false);
-  bool elac2EngagedInPitch = busInputs.elac2.discreteStatusWord1.bitFromValueOr(19, false);
-  bool sec1EngagedInPitch = busInputs.sec1.discreteStatusWord1.bitFromValueOr(23, false);
-  bool sec2EngagedInPitch = busInputs.sec2.discreteStatusWord1.bitFromValueOr(23, false);
 
   if (elac1EngagedInRoll) {
     output.rudderPedalPosition.setFromData(busInputs.elac1.rudderPedalPosition.valueOr(0), Arinc429SignStatus::NormalOperation);

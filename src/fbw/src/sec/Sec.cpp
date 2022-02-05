@@ -181,6 +181,7 @@ SecOutBus Sec::getBusOutputs() {
     output.rightSidestickPitchCommand.setSsm(Arinc429SignStatus::FailureWarning);
     output.leftSidestickRollCommand.setSsm(Arinc429SignStatus::FailureWarning);
     output.rightSidestickRollCommand.setSsm(Arinc429SignStatus::FailureWarning);
+    output.speedBrakeLeverCommand.setSsm(Arinc429SignStatus::FailureWarning);
     output.discreteStatusWord1.setSsm(Arinc429SignStatus::FailureWarning);
     output.discreteStatusWord2.setSsm(Arinc429SignStatus::FailureWarning);
 
@@ -224,6 +225,8 @@ SecOutBus Sec::getBusOutputs() {
   } else {
     output.rightSpoiler2Position.setFromData(analogInputs.rightSpoiler2Pos, Arinc429SignStatus::NormalOperation);
   }
+
+  output.speedBrakeLeverCommand.setFromData(0, Arinc429SignStatus::NormalOperation);
 
   output.discreteStatusWord1.setSsm(Arinc429SignStatus::NormalOperation);
   output.discreteStatusWord1.setBit(11, discreteInputs.lSpoiler1ServoFailed || discreteInputs.rSpoiler1ServoFailed);
