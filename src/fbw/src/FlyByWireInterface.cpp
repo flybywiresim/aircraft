@@ -437,8 +437,8 @@ void FlyByWireInterface::setupLocalVariables() {
   idSpoilersHandlePosition = make_unique<LocalVariable>("A32NX_SPOILERS_HANDLE_POSITION");
   idSpoilersGroundSpoilersActive = make_unique<LocalVariable>("A32NX_SPOILERS_GROUND_SPOILERS_ACTIVE");
 
-  idAileronPositionLeft = make_unique<LocalVariable>("A32NX_3D_AILERON_LEFT_DEFLECTION");
-  idAileronPositionRight = make_unique<LocalVariable>("A32NX_3D_AILERON_RIGHT_DEFLECTION");
+  idAileronPositionLeft = make_unique<LocalVariable>("A32NX_AILERON_LEFT_DEFLECTION_DEMAND");
+  idAileronPositionRight = make_unique<LocalVariable>("A32NX_AILERON_RIGHT_DEFLECTION_DEMAND");
 
   idRadioReceiverLocalizerValid = make_unique<LocalVariable>("A32NX_DEV_RADIO_RECEIVER_LOC_IS_VALID");
   idRadioReceiverLocalizerDeviation = make_unique<LocalVariable>("A32NX_DEV_RADIO_RECEIVER_LOC_DEVIATION");

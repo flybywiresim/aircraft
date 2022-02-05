@@ -1,10 +1,14 @@
 #![cfg(any(target_arch = "wasm32", doc))]
+mod ailerons;
+mod elevators;
 mod autobrakes;
 mod brakes;
 mod flaps;
 mod nose_wheel_steering;
 
 use a320_systems::A320;
+use ailerons::ailerons;
+use elevators::elevators;
 use autobrakes::autobrakes;
 use brakes::brakes;
 use flaps::flaps;
@@ -153,6 +157,8 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
             .with_aspect(autobrakes)?
             .with_aspect(nose_wheel_steering)?
             .with_aspect(flaps)?
+            .with_aspect(ailerons)?
+            .with_aspect(elevators)?
             .build(A320::new)?;
 
     while let Some(event) = gauge.next_event().await {

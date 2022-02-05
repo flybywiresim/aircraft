@@ -65,7 +65,7 @@
             </UseTemplate>
         </Component>
         <Component ID="HANDLING">
-            <UseTemplate Name="ASOBO_HANDLING_Elevator_Template">
+            <UseTemplate Name="FBW_HANDLING_Elevator_Template">
                 <ANIM_NAME>elevator_percent_key</ANIM_NAME>
             </UseTemplate>
             <UseTemplate Name="ASOBO_HANDLING_Slats_Template">
