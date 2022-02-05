@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { DisplayUnit } from '@instruments/common/displayUnit';
 import { render } from '../Common';
 import UpperDisplay from './elements/UpperDisplay';
+import LowerDisplay from './elements/LowerDisplay.jsx';
 import './style.scss';
 
 export const EWD: React.FC = () => {
@@ -20,6 +21,7 @@ export const EWD: React.FC = () => {
                 <line className="Separator" x1="4" y1="506" x2="442" y2="506" strokeLinecap="round" />
                 <line className="Separator" x1="512" y1="506" x2="763" y2="506" strokeLinecap="round" />
                 <line className="Separator" x1="480" y1="525" x2="480" y2="724" strokeLinecap="round" />
+                <LowerDisplay x={10} y={520} />
             </svg>
         </DisplayUnit>
     );

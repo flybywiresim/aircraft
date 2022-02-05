@@ -9,6 +9,7 @@ import FF from './FF';
 import N1Limit from './N1Limit';
 import Idle from './Idle';
 import Slats from './Slats';
+import PacksNaiWai from './PacksNAIWAI';
 
 const UpperDisplay: React.FC = () => {
     const [unit] = usePersistentProperty('CONFIG_USING_METRIC_UNIT', '1');
@@ -20,6 +21,7 @@ const UpperDisplay: React.FC = () => {
     return (
         <>
             {/*  */}
+            <PacksNaiWai x={30} y={450} flightPhase={flightPhase} />
             <Idle x={374} y={55} />
 
             <N1Limit x={690} y={30} active={isActive} />
