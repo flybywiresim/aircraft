@@ -270,7 +270,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             if (!this.socket || this.socket.readyState !== 1) {
                 this.connectWebsocket(NXDataStore.get("CONFIG_EXTERNAL_MCDU_PORT", "8380"));
             }
-        }, 1000);
+        }, 5000);
     }
 
     requestUpdate() {
@@ -1402,6 +1402,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         }
 
         this.socket = new WebSocket(`ws://127.0.0.1:${port}`);
+
         this.socket.onopen = () => {
             (new NXNotif).showNotification({title: "MCDU CONNECTED", message: "Successfully connected to MCDU server.", timeout: 5000});
             this.sendToSocket("mcduConnected");
