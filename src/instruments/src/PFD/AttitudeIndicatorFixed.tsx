@@ -18,7 +18,7 @@ export const AttitudeIndicatorFixedUpper = ({ pitch, roll, fcdcWord1 }: Attitude
         return null;
     }
 
-    const normalLawActive = (fcdcWord1.getBitValue(12) || fcdcWord1.getBitValue(13)) && !fcdcWord1.isFailureWarning();
+    const normalLawActive = fcdcWord1.getBitValue(11) && !fcdcWord1.isFailureWarning();
 
     return (
         <g id="AttitudeUpperInfoGroup">

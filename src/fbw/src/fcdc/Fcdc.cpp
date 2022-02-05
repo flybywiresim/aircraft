@@ -25,7 +25,7 @@ void Fcdc::update(double deltaTime, bool faultActive, bool isPowered) {
   monitorSelf(faultActive);
 
   if (monitoringHealthy) {
-    updateSidestickPriorityLightLogic();
+    computeActiveSystemLaws();
   }
 }
 
@@ -67,8 +67,76 @@ void Fcdc::updateSelfTest(double deltaTime) {
   }
 }
 
-// Compute the logic for the Side Stick priority lights
-void Fcdc::updateSidestickPriorityLightLogic() {}
+LateralLaw Fcdc::getLateralLawStatusFromBits(bool bit1, bool bit2, bool bit3) {
+  if (bit1) {
+    return LateralLaw::NormalLaw;
+  } else if (bit2) {
+    return LateralLaw::DirectLaw;
+  } else {
+    return LateralLaw::None;
+  }
+}
+
+PitchLaw Fcdc::getPitchLawStatusFromBits(bool bit1, bool bit2, bool bit3) {
+  if (bit1 && !bit2 && !bit3) {
+    return PitchLaw::NormalLaw;
+  } else if (!bit1 && bit2 && !bit3) {
+    return PitchLaw::AlternateLaw1;
+  } else if (bit1 && bit2 && !bit3) {
+    return PitchLaw::AlternateLaw2;
+  } else if (!bit1 && !bit2 && bit3) {
+    return PitchLaw::DirectLaw;
+  } else {
+    return PitchLaw::None;
+  }
+}
+
+void Fcdc::computeActiveSystemLaws() {
+  bool elac1EngagedInRoll = busInputs.elac1.discreteStatusWord1.bitFromValueOr(20, false);
+  bool elac2EngagedInRoll = busInputs.elac2.discreteStatusWord1.bitFromValueOr(20, false);
+  bool sec1EngagedInRoll = busInputs.sec1.discreteStatusWord1.bitFromValueOr(22, false);
+  bool sec2EngagedInRoll = busInputs.sec2.discreteStatusWord1.bitFromValueOr(22, false);
+  bool sec3EngagedInRoll = busInputs.sec3.discreteStatusWord1.bitFromValueOr(22, false);
+
+  bool elac1EngagedInPitch = busInputs.elac1.discreteStatusWord1.bitFromValueOr(19, false);
+  bool elac2EngagedInPitch = busInputs.elac2.discreteStatusWord1.bitFromValueOr(19, false);
+  bool sec1EngagedInPitch = busInputs.sec1.discreteStatusWord1.bitFromValueOr(23, false);
+  bool sec2EngagedInPitch = busInputs.sec2.discreteStatusWord1.bitFromValueOr(23, false);
+
+  if (elac1EngagedInRoll) {
+    systemLateralLaw = getLateralLawStatusFromBits(busInputs.elac1.discreteStatusWord1.bitFromValue(26),
+                                                   busInputs.elac1.discreteStatusWord1.bitFromValue(27),
+                                                   busInputs.elac1.discreteStatusWord1.bitFromValue(28));
+  } else if (elac2EngagedInRoll) {
+    systemLateralLaw = getLateralLawStatusFromBits(busInputs.elac2.discreteStatusWord1.bitFromValue(26),
+                                                   busInputs.elac2.discreteStatusWord1.bitFromValue(27),
+                                                   busInputs.elac2.discreteStatusWord1.bitFromValue(28));
+  } else if (sec1EngagedInRoll || sec2EngagedInRoll || sec3EngagedInRoll) {
+    systemLateralLaw = LateralLaw::DirectLaw;
+  } else {
+    systemLateralLaw = LateralLaw::None;
+  }
+
+  if (elac1EngagedInPitch) {
+    systemPitchLaw = getPitchLawStatusFromBits(busInputs.elac1.discreteStatusWord1.bitFromValue(23),
+                                               busInputs.elac1.discreteStatusWord1.bitFromValue(24),
+                                               busInputs.elac1.discreteStatusWord1.bitFromValue(25));
+  } else if (elac2EngagedInPitch) {
+    systemPitchLaw = getPitchLawStatusFromBits(busInputs.elac2.discreteStatusWord1.bitFromValue(23),
+                                               busInputs.elac2.discreteStatusWord1.bitFromValue(24),
+                                               busInputs.elac2.discreteStatusWord1.bitFromValue(25));
+  } else if (sec1EngagedInPitch) {
+    systemPitchLaw =
+        getPitchLawStatusFromBits(busInputs.sec1.discreteStatusWord1.bitFromValue(19), busInputs.sec1.discreteStatusWord1.bitFromValue(20),
+                                  busInputs.sec1.discreteStatusWord1.bitFromValue(21));
+  } else if (sec2EngagedInPitch) {
+    systemPitchLaw =
+        getPitchLawStatusFromBits(busInputs.sec2.discreteStatusWord1.bitFromValue(19), busInputs.sec2.discreteStatusWord1.bitFromValue(20),
+                                  busInputs.sec2.discreteStatusWord1.bitFromValue(21));
+  } else {
+    systemLateralLaw = LateralLaw::None;
+  }
+}
 
 // Write the bus output data and return it.
 FcdcBus Fcdc::getBusOutputs() {
@@ -104,25 +172,14 @@ FcdcBus Fcdc::getBusOutputs() {
     return output;
   }
 
-  bool elac1EngagedInRoll = busInputs.elac1.discreteStatusWord1.bitFromValueOr(20, false);
-  bool elac2EngagedInRoll = busInputs.elac2.discreteStatusWord1.bitFromValueOr(20, false);
-  bool sec1EngagedInRoll = false;
-  bool sec2EngagedInRoll = false;
-  bool sec3EngagedInRoll = false;
-
-  bool elac1EngagedInPitch = busInputs.elac1.discreteStatusWord1.bitFromValueOr(19, false);
-  bool elac2EngagedInPitch = busInputs.elac2.discreteStatusWord1.bitFromValueOr(19, false);
-  bool sec1EngagedInPitch = false;
-  bool sec2EngagedInPitch = false;
-
   output.efcsStatus1.setSsm(Arinc429SignStatus::NormalOperation);
-  output.efcsStatus1.setBit(11, false);
-  output.efcsStatus1.setBit(12, false);
-  output.efcsStatus1.setBit(13, false);
-  output.efcsStatus1.setBit(15, false);
-  output.efcsStatus1.setBit(16, false);
-  output.efcsStatus1.setBit(17, false);
-  output.efcsStatus1.setBit(18, false);
+  output.efcsStatus1.setBit(11, systemPitchLaw == PitchLaw::NormalLaw);
+  output.efcsStatus1.setBit(12, systemPitchLaw == PitchLaw::AlternateLaw1);
+  output.efcsStatus1.setBit(13, systemPitchLaw == PitchLaw::AlternateLaw2);
+  output.efcsStatus1.setBit(15, systemPitchLaw == PitchLaw::DirectLaw);
+  output.efcsStatus1.setBit(16, systemLateralLaw == LateralLaw::NormalLaw);
+  output.efcsStatus1.setBit(17, systemLateralLaw == LateralLaw::DirectLaw);
+  output.efcsStatus1.setBit(18, false);  // No idea what this bit is supposed to mean
   output.efcsStatus1.setBit(19, busInputs.elac1.discreteStatusWord1.bitFromValueOr(21, true));
   output.efcsStatus1.setBit(20, busInputs.elac1.discreteStatusWord1.bitFromValueOr(22, true));
   output.efcsStatus1.setBit(21, busInputs.elac2.discreteStatusWord1.bitFromValueOr(21, true));
@@ -218,6 +275,17 @@ FcdcBus Fcdc::getBusOutputs() {
   output.efcsStatus5.setBit(27, false);
   output.efcsStatus5.setBit(28, false);
   output.efcsStatus5.setBit(29, false);
+
+  bool elac1EngagedInRoll = busInputs.elac1.discreteStatusWord1.bitFromValueOr(20, false);
+  bool elac2EngagedInRoll = busInputs.elac2.discreteStatusWord1.bitFromValueOr(20, false);
+  bool sec1EngagedInRoll = busInputs.sec1.discreteStatusWord1.bitFromValueOr(22, false);
+  bool sec2EngagedInRoll = busInputs.sec2.discreteStatusWord1.bitFromValueOr(22, false);
+  bool sec3EngagedInRoll = busInputs.sec3.discreteStatusWord1.bitFromValueOr(22, false);
+
+  bool elac1EngagedInPitch = busInputs.elac1.discreteStatusWord1.bitFromValueOr(19, false);
+  bool elac2EngagedInPitch = busInputs.elac2.discreteStatusWord1.bitFromValueOr(19, false);
+  bool sec1EngagedInPitch = busInputs.sec1.discreteStatusWord1.bitFromValueOr(23, false);
+  bool sec2EngagedInPitch = busInputs.sec2.discreteStatusWord1.bitFromValueOr(23, false);
 
   if (elac1EngagedInRoll) {
     output.rudderPedalPosition.setFromData(busInputs.elac1.rudderPedalPosition.valueOr(0), Arinc429SignStatus::NormalOperation);

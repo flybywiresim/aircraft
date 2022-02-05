@@ -112,7 +112,7 @@ export const AirspeedIndicator = ({ airspeed, airspeedAcc, FWCFlightPhase, altit
         );
     }
 
-    const normalLawActive = (fcdcWord1.getBitValue(12) || fcdcWord1.getBitValue(13)) && !fcdcWord1.isFailureWarning();
+    const normalLawActive = fcdcWord1.getBitValue(11) && !fcdcWord1.isFailureWarning();
 
     const ValphaProtection = getSimVar('L:A32NX_SPEEDS_ALPHA_PROTECTION', 'number');
     const ValphaMax = getSimVar('L:A32NX_SPEEDS_ALPHA_MAX', 'number');

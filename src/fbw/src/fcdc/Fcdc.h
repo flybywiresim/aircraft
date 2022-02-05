@@ -23,9 +23,19 @@ class Fcdc {
 
   void monitorSelf(bool faultActive);
 
-  void updateSidestickPriorityLightLogic();
-
   void updateSelfTest(double deltaTime);
+
+  void computeActiveSystemLaws();
+
+  PitchLaw getPitchLawStatusFromBits(bool bit1, bool bit2, bool bit3);
+
+  LateralLaw getLateralLawStatusFromBits(bool bit1, bool bit2, bool bit3);
+
+  // Data concentration and computation vars
+
+  PitchLaw systemPitchLaw;
+
+  LateralLaw systemLateralLaw;
 
   const bool isUnit1;
 
