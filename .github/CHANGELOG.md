@@ -131,6 +131,7 @@
 1. [HYD] Simple hydraulic model placeholder for flaps and slats - @Crocket63
 1. [FBW] Fix: do not compensate ground spoilers in C* law - @aguther (Andreas Guther)
 1. [AP] Fix: adjustment of vertical speed limitation in SPD/MACH law - @IbrahimK42 (IbrahimK42)
+1. [HYD] Ailerons hydraulic control (only visual and hydraulics) - @Crocket63
 1. [MISC] Animation speed/behaviors for button, switches and knobs - @bouveng (Johan Bouveng)
 1. [AP] Added Autoland capability for special terrain profiles, i.e. KSEA 16R - @aguther (Andreas Guther)
 1. [ATHR] Adjustment of ATHR SPD/MACH gains - @IbrahimK42 (IbrahimK42)
@@ -138,6 +139,8 @@
 1. [TCAS] Implemented traffic advisories, resolution advisories, and collision avoidance logic - @wpine215 (Iceman) @2hwk (2Cas#1022)
 1. [PFD] Implemented TCAS guidance on vertical speed tape - @wpine215 (Iceman)
 1. [SOUNDS] Connected TCAS TA/RA logic to TCAS Wwise events - @wpine215 (Iceman)  @2hwk (2Cas#1022)
+1. [HYD] Aileron hydraulic control (only visual and hydraulics) - @Crocket63
+1. [HYD] Elevator hydraulic control (only visual and hydraulics) - @Crocket63
 
 ## 0.7.0
 

@@ -169,7 +169,7 @@ const Stabilizer = ({ x, y }: ComponentPositionProps) => (
 const Aileron = ({ x, y, side, leftHydraulicSystem, rightHydraulicSystem }: ComponentPositionProps & ComponentSidePositionProps & HydraulicSystemPairProps) => {
     const textPositionX = side === 'left' ? -40 : 40;
 
-    const [aileronDeflection] = useSimVar(`L:A32NX_3D_AILERON_${side.toUpperCase()}_DEFLECTION`, 'number', 50);
+    const [aileronDeflection] = useSimVar(`L:A32NX_HYD_AILERON_${side.toUpperCase()}_DEFLECTION`, 'number', 50);
     const aileronDeflectPctNormalized = aileronDeflection * 54;
     const cursorPath = `M${side === 'left' ? 1 : -1} ${side === 'left' ? 51 + aileronDeflectPctNormalized
         : 51 - aileronDeflectPctNormalized} l${side === 'right' ? '-' : ''}15 -7 l0 14Z`;
@@ -243,7 +243,7 @@ const Elevator = ({ x, y, side, leftHydraulicSystem, rightHydraulicSystem }: Com
     const textPositionX = side === 'left' ? -42 : 42;
     const textLetter = side === 'left' ? 'L' : 'R';
 
-    const [elevatorDeflection] = useSimVar('ELEVATOR DEFLECTION PCT', 'percent over 100', 50);
+    const [elevatorDeflection] = useSimVar(`L:A32NX_HYD_ELEVATOR_${side.toUpperCase()}_DEFLECTION`, 'percent over 100', 50);
     const elevatorDeflectPctNormalized = elevatorDeflection * (elevatorDeflection > 0 ? 70 : 52);
     const cursorPath = `M${side === 'left' ? 1 : -1},${70 - elevatorDeflectPctNormalized} l${side === 'right' ? '-' : ''}15,-7 l0,14Z`;
 
@@ -263,7 +263,7 @@ const Elevator = ({ x, y, side, leftHydraulicSystem, rightHydraulicSystem }: Com
             <ElevatorAxis side={side} x={0} y={5} />
 
             <HydraulicIndicator x={side === 'left' ? -60 : 18} y={79} type={leftHydraulicSystem} />
-            <HydraulicIndicator x={side === 'left' ? -38 : 40} y={79} type={rightHydraulicSystem} />
+            <HydraulicIndicator x={side === 'right' ? -38 : 40} y={79} type={rightHydraulicSystem} />
         </SvgGroup>
     );
 };
