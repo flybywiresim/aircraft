@@ -137,6 +137,8 @@
 1. [ATHR] Fix ATHR Alt Soft Mode - @IbrahimK42 (IbrahimK42)
 1. [HYD] Simplified max step loop updater - @Crocket63
 
+1. [ECAM] Add pack abnormally off warnings - @tracernz (Mike)
+
 ## 0.7.0
 
 1. [HYD] First building block, more to come. Hydraulics do not impact the sim YET. - @crocket6 (crocket)
