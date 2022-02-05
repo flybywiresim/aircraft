@@ -27,6 +27,8 @@ class Fcdc {
 
   void computeActiveSystemLaws();
 
+  void consolidatePositionData();
+
   PitchLaw getPitchLawStatusFromBits(bool bit1, bool bit2, bool bit3);
 
   LateralLaw getLateralLawStatusFromBits(bool bit1, bool bit2, bool bit3);
@@ -37,7 +39,47 @@ class Fcdc {
 
   LateralLaw systemLateralLaw;
 
-  const bool isUnit1;
+  double leftAileronPos;
+
+  bool leftAileronPosValid;
+
+  double rightAileronPos;
+
+  bool rightAileronPosValid;
+
+  double leftElevatorPos;
+
+  bool leftElevatorPosValid;
+
+  double rightElevatorPos;
+
+  bool rightElevatorPosValid;
+
+  double thsPos;
+
+  bool thsPosValid;
+
+  double rollSidestickPosCapt;
+
+  bool rollSidestickPosCaptValid;
+
+  double rollSidestickPosFo;
+
+  bool rollSidestickPosFoValid;
+
+  double pitchSidestickPosCapt;
+
+  bool pitchSidestickPosCaptValid;
+
+  double pitchSidestickPosFo;
+
+  bool pitchSidestickPosFoValid;
+
+  double rudderPedalPos;
+
+  bool rudderPedalPosValid;
+
+  // Computer monitoring and self-test vars
 
   bool monitoringHealthy;
 
@@ -48,6 +90,8 @@ class Fcdc {
   double selfTestTimer;
 
   bool selfTestComplete;
+
+  const bool isUnit1;
 
   const double minimumPowerOutageTimeForFailure = 0.01;
 };

@@ -26,6 +26,7 @@ void Fcdc::update(double deltaTime, bool faultActive, bool isPowered) {
 
   if (monitoringHealthy) {
     computeActiveSystemLaws();
+    consolidatePositionData();
   }
 }
 
@@ -88,6 +89,156 @@ PitchLaw Fcdc::getPitchLawStatusFromBits(bool bit1, bool bit2, bool bit3) {
     return PitchLaw::DirectLaw;
   } else {
     return PitchLaw::None;
+  }
+}
+
+void Fcdc::consolidatePositionData() {
+  bool elac1EngagedInRoll = busInputs.elac1.discreteStatusWord1.bitFromValueOr(20, false);
+  bool elac2EngagedInRoll = busInputs.elac2.discreteStatusWord1.bitFromValueOr(20, false);
+  bool sec1EngagedInRoll = busInputs.sec1.discreteStatusWord1.bitFromValueOr(22, false);
+  bool sec2EngagedInRoll = busInputs.sec2.discreteStatusWord1.bitFromValueOr(22, false);
+  bool sec3EngagedInRoll = busInputs.sec3.discreteStatusWord1.bitFromValueOr(22, false);
+
+  bool elac1EngagedInPitch = busInputs.elac1.discreteStatusWord1.bitFromValueOr(19, false);
+  bool elac2EngagedInPitch = busInputs.elac2.discreteStatusWord1.bitFromValueOr(19, false);
+  bool sec1EngagedInPitch = busInputs.sec1.discreteStatusWord1.bitFromValueOr(23, false);
+  bool sec2EngagedInPitch = busInputs.sec2.discreteStatusWord1.bitFromValueOr(23, false);
+
+  // Compute Aileron Data. Look at each side individually: if the data from the ELAC that is
+  // engaged in roll is valid, use that data. If not, take the data from the other ELAC.
+  // If neither are valid, set the respective aileron position as invalid.
+  leftAileronPosValid = true;
+  if (elac1EngagedInRoll && busInputs.elac1.leftAileronPosition.isNo()) {
+    leftAileronPos = busInputs.elac1.leftAileronPosition.value();
+  } else if (elac2EngagedInRoll && busInputs.elac2.leftAileronPosition.isNo()) {
+    leftAileronPos = busInputs.elac2.leftAileronPosition.value();
+  } else if (busInputs.elac1.leftAileronPosition.isNo()) {
+    leftAileronPos = busInputs.elac1.leftAileronPosition.value();
+  } else if (busInputs.elac2.leftAileronPosition.isNo()) {
+    leftAileronPos = busInputs.elac2.leftAileronPosition.value();
+  } else {
+    leftAileronPos = 0;
+    leftAileronPosValid = false;
+  }
+
+  rightAileronPosValid = true;
+  if (elac1EngagedInRoll && busInputs.elac1.rightAileronPosition.isNo()) {
+    rightAileronPos = busInputs.elac1.rightAileronPosition.value();
+  } else if (elac2EngagedInRoll && busInputs.elac2.rightAileronPosition.isNo()) {
+    rightAileronPos = busInputs.elac2.rightAileronPosition.value();
+  } else if (busInputs.elac1.rightAileronPosition.isNo()) {
+    rightAileronPos = busInputs.elac1.rightAileronPosition.value();
+  } else if (busInputs.elac2.rightAileronPosition.isNo()) {
+    rightAileronPos = busInputs.elac2.rightAileronPosition.value();
+  } else {
+    rightAileronPos = 0;
+    rightAileronPosValid = false;
+  }
+
+  // Compute the sidestick positions in roll. Always take the sidestick data
+  // from the ELAC that is engaged in roll axis. If no ELAC is engaged in roll,
+  // then all the SECs are engaged seperately in the roll axis. In that case, simply
+  // choose the first one that has valid stick positions.
+  // If none are valid, set as invalid.
+  if (elac1EngagedInRoll) {
+    rollSidestickPosCapt = busInputs.elac1.leftSidestickRollCommand.value();
+    rollSidestickPosCaptValid = busInputs.elac1.leftSidestickRollCommand.isNo();
+    rollSidestickPosFo = busInputs.elac1.rightSidestickRollCommand.value();
+    rollSidestickPosFoValid = busInputs.elac1.rightSidestickRollCommand.isNo();
+  } else if (elac2EngagedInRoll) {
+    rollSidestickPosCapt = busInputs.elac2.leftSidestickRollCommand.value();
+    rollSidestickPosCaptValid = busInputs.elac2.leftSidestickRollCommand.isNo();
+    rollSidestickPosFo = busInputs.elac2.rightSidestickRollCommand.value();
+    rollSidestickPosFoValid = busInputs.elac2.rightSidestickRollCommand.isNo();
+  } else if (sec1EngagedInRoll && (busInputs.sec1.leftSidestickRollCommand.isNo() || busInputs.sec1.rightSidestickRollCommand.isNo())) {
+    rollSidestickPosCapt = busInputs.sec1.leftSidestickRollCommand.value();
+    rollSidestickPosCaptValid = busInputs.sec1.leftSidestickRollCommand.isNo();
+    rollSidestickPosFo = busInputs.sec1.rightSidestickRollCommand.value();
+    rollSidestickPosFoValid = busInputs.sec1.rightSidestickRollCommand.isNo();
+  } else if (sec2EngagedInRoll && (busInputs.sec2.leftSidestickRollCommand.isNo() || busInputs.sec2.rightSidestickRollCommand.isNo())) {
+    rollSidestickPosCapt = busInputs.sec2.leftSidestickRollCommand.value();
+    rollSidestickPosCaptValid = busInputs.sec2.leftSidestickRollCommand.isNo();
+    rollSidestickPosFo = busInputs.sec2.rightSidestickRollCommand.value();
+    rollSidestickPosFoValid = busInputs.sec2.rightSidestickRollCommand.isNo();
+  } else if (sec3EngagedInRoll && (busInputs.sec3.leftSidestickRollCommand.isNo() || busInputs.sec3.rightSidestickRollCommand.isNo())) {
+    rollSidestickPosCapt = busInputs.sec3.leftSidestickRollCommand.value();
+    rollSidestickPosCaptValid = busInputs.sec3.leftSidestickRollCommand.isNo();
+    rollSidestickPosFo = busInputs.sec3.rightSidestickRollCommand.value();
+    rollSidestickPosFoValid = busInputs.sec3.rightSidestickRollCommand.isNo();
+  } else {
+    rollSidestickPosCapt = 0;
+    rollSidestickPosCaptValid = false;
+    rollSidestickPosFo = 0;
+    rollSidestickPosFoValid = false;
+  }
+
+  // Compute Elevator/THS data. Look at each surface individually: if the data from the computer that is
+  // engaged in roll is valid, use that data. If not, take the data from the other computers.
+  // If neither are valid, set the respective position as invalid.
+  leftElevatorPosValid = true;
+  if (elac2EngagedInPitch && busInputs.elac2.leftElevatorPosition.isNo()) {
+    leftElevatorPos = busInputs.elac2.leftElevatorPosition.value();
+  } else if (elac1EngagedInPitch && busInputs.elac1.leftElevatorPosition.isNo()) {
+    leftElevatorPos = busInputs.elac1.leftElevatorPosition.value();
+  } else if (sec2EngagedInPitch && busInputs.sec2.leftElevatorPosition.isNo()) {
+    leftElevatorPos = busInputs.sec2.leftElevatorPosition.value();
+  } else if (sec1EngagedInPitch && busInputs.sec1.leftElevatorPosition.isNo()) {
+    leftElevatorPos = busInputs.sec1.leftElevatorPosition.value();
+  } else if (busInputs.elac2.leftElevatorPosition.isNo()) {
+    leftElevatorPos = busInputs.elac2.leftElevatorPosition.value();
+  } else if (busInputs.elac1.leftElevatorPosition.isNo()) {
+    leftElevatorPos = busInputs.elac1.leftElevatorPosition.value();
+  } else if (busInputs.sec2.leftElevatorPosition.isNo()) {
+    leftElevatorPos = busInputs.sec2.leftElevatorPosition.value();
+  } else if (busInputs.sec1.leftElevatorPosition.isNo()) {
+    leftElevatorPos = busInputs.sec1.leftElevatorPosition.value();
+  } else {
+    leftElevatorPos = 0;
+    leftElevatorPosValid = false;
+  }
+
+  rightElevatorPosValid = true;
+  if (elac2EngagedInPitch && busInputs.elac2.rightElevatorPosition.isNo()) {
+    rightElevatorPos = busInputs.elac2.rightElevatorPosition.value();
+  } else if (elac1EngagedInPitch && busInputs.elac1.rightElevatorPosition.isNo()) {
+    rightElevatorPos = busInputs.elac1.rightElevatorPosition.value();
+  } else if (sec2EngagedInPitch && busInputs.sec2.rightElevatorPosition.isNo()) {
+    rightElevatorPos = busInputs.sec2.rightElevatorPosition.value();
+  } else if (sec1EngagedInPitch && busInputs.sec1.rightElevatorPosition.isNo()) {
+    rightElevatorPos = busInputs.sec1.rightElevatorPosition.value();
+  } else if (busInputs.elac2.rightElevatorPosition.isNo()) {
+    rightElevatorPos = busInputs.elac2.rightElevatorPosition.value();
+  } else if (busInputs.elac1.rightElevatorPosition.isNo()) {
+    rightElevatorPos = busInputs.elac1.rightElevatorPosition.value();
+  } else if (busInputs.sec2.rightElevatorPosition.isNo()) {
+    rightElevatorPos = busInputs.sec2.rightElevatorPosition.value();
+  } else if (busInputs.sec1.rightElevatorPosition.isNo()) {
+    rightElevatorPos = busInputs.sec1.rightElevatorPosition.value();
+  } else {
+    rightElevatorPos = 0;
+    rightElevatorPosValid = false;
+  }
+
+  thsPosValid = true;
+  if (elac2EngagedInPitch && busInputs.elac2.thsPosition.isNo()) {
+    thsPos = busInputs.elac2.thsPosition.value();
+  } else if (elac1EngagedInPitch && busInputs.elac1.thsPosition.isNo()) {
+    thsPos = busInputs.elac1.thsPosition.value();
+  } else if (sec2EngagedInPitch && busInputs.sec2.thsPosition.isNo()) {
+    thsPos = busInputs.sec2.thsPosition.value();
+  } else if (sec1EngagedInPitch && busInputs.sec1.thsPosition.isNo()) {
+    thsPos = busInputs.sec1.thsPosition.value();
+  } else if (busInputs.elac2.thsPosition.isNo()) {
+    thsPos = busInputs.elac2.thsPosition.value();
+  } else if (busInputs.elac1.thsPosition.isNo()) {
+    thsPos = busInputs.elac1.thsPosition.value();
+  } else if (busInputs.sec2.thsPosition.isNo()) {
+    thsPos = busInputs.sec2.thsPosition.value();
+  } else if (busInputs.sec1.thsPosition.isNo()) {
+    thsPos = busInputs.sec1.thsPosition.value();
+  } else {
+    thsPos = 0;
+    thsPosValid = false;
   }
 }
 
@@ -174,17 +325,6 @@ FcdcBus Fcdc::getBusOutputs() {
 
     return output;
   }
-
-  bool elac1EngagedInRoll = busInputs.elac1.discreteStatusWord1.bitFromValueOr(20, false);
-  bool elac2EngagedInRoll = busInputs.elac2.discreteStatusWord1.bitFromValueOr(20, false);
-  bool sec1EngagedInRoll = busInputs.sec1.discreteStatusWord1.bitFromValueOr(22, false);
-  bool sec2EngagedInRoll = busInputs.sec2.discreteStatusWord1.bitFromValueOr(22, false);
-  bool sec3EngagedInRoll = busInputs.sec3.discreteStatusWord1.bitFromValueOr(22, false);
-
-  bool elac1EngagedInPitch = busInputs.elac1.discreteStatusWord1.bitFromValueOr(19, false);
-  bool elac2EngagedInPitch = busInputs.elac2.discreteStatusWord1.bitFromValueOr(19, false);
-  bool sec1EngagedInPitch = busInputs.sec1.discreteStatusWord1.bitFromValueOr(23, false);
-  bool sec2EngagedInPitch = busInputs.sec2.discreteStatusWord1.bitFromValueOr(23, false);
 
   output.efcsStatus1.setSsm(Arinc429SignStatus::NormalOperation);
   output.efcsStatus1.setBit(11, systemPitchLaw == PitchLaw::NormalLaw);
@@ -298,50 +438,66 @@ FcdcBus Fcdc::getBusOutputs() {
   output.efcsStatus5.setBit(28, false);
   output.efcsStatus5.setBit(29, false);
 
-  if (elac1EngagedInRoll) {
-    output.rudderPedalPosition.setFromData(busInputs.elac1.rudderPedalPosition.valueOr(0), Arinc429SignStatus::NormalOperation);
-    output.aileronLeftPos.setFromData(busInputs.elac2.leftAileronPosition.valueOr(0), Arinc429SignStatus::NormalOperation);
-    output.aileronRightPos.setFromData(busInputs.elac2.rightAileronPosition.valueOr(0), Arinc429SignStatus::NormalOperation);
-  } else if (elac2EngagedInRoll) {
-    output.rudderPedalPosition.setFromData(busInputs.elac2.rudderPedalPosition.valueOr(0), Arinc429SignStatus::NormalOperation);
-    output.aileronLeftPos.setFromData(busInputs.elac1.leftAileronPosition.valueOr(0), Arinc429SignStatus::NormalOperation);
-    output.aileronRightPos.setFromData(busInputs.elac1.rightAileronPosition.valueOr(0), Arinc429SignStatus::NormalOperation);
+  // Roll Data
+  if (leftAileronPosValid) {
+    output.aileronLeftPos.setFromData(leftAileronPos, Arinc429SignStatus::NormalOperation);
   } else {
-    output.rudderPedalPosition.setFromData(0, Arinc429SignStatus::NoComputedData);
     output.aileronLeftPos.setFromData(0, Arinc429SignStatus::NoComputedData);
+  }
+
+  if (rightAileronPosValid) {
+    output.aileronRightPos.setFromData(rightAileronPos, Arinc429SignStatus::NormalOperation);
+  } else {
     output.aileronRightPos.setFromData(0, Arinc429SignStatus::NoComputedData);
   }
 
-  if (elac2EngagedInPitch) {
-    output.captPitchCommand.setFromData(busInputs.elac2.leftSidestickPitchCommand.valueOr(0), Arinc429SignStatus::NormalOperation);
-    output.foPitchCommand.setFromData(busInputs.elac2.rightSidestickPitchCommand.valueOr(0), Arinc429SignStatus::NormalOperation);
-    output.elevatorLeftPos.setFromData(busInputs.elac2.leftElevatorPosition.valueOr(0), Arinc429SignStatus::NormalOperation);
-    output.elevatorRightPos.setFromData(busInputs.elac2.rightElevatorPosition.valueOr(0), Arinc429SignStatus::NormalOperation);
-    output.horizStabTrimPos.setFromData(busInputs.elac2.thsPosition.valueOr(0), Arinc429SignStatus::NormalOperation);
-  } else if (elac1EngagedInPitch) {
-    output.captPitchCommand.setFromData(busInputs.elac1.leftSidestickPitchCommand.valueOr(0), Arinc429SignStatus::NormalOperation);
-    output.foPitchCommand.setFromData(busInputs.elac1.rightSidestickPitchCommand.valueOr(0), Arinc429SignStatus::NormalOperation);
-    output.elevatorLeftPos.setFromData(busInputs.elac1.leftElevatorPosition.valueOr(0), Arinc429SignStatus::NormalOperation);
-    output.elevatorRightPos.setFromData(busInputs.elac1.rightElevatorPosition.valueOr(0), Arinc429SignStatus::NormalOperation);
-    output.horizStabTrimPos.setFromData(busInputs.elac1.thsPosition.valueOr(0), Arinc429SignStatus::NormalOperation);
-  } else if (sec2EngagedInPitch) {
-    output.captPitchCommand.setFromData(0, Arinc429SignStatus::NormalOperation);
-    output.foPitchCommand.setFromData(0, Arinc429SignStatus::NormalOperation);
-    output.elevatorLeftPos.setFromData(0, Arinc429SignStatus::NormalOperation);
-    output.elevatorRightPos.setFromData(0, Arinc429SignStatus::NormalOperation);
-    output.horizStabTrimPos.setFromData(0, Arinc429SignStatus::NormalOperation);
-  } else if (sec1EngagedInPitch) {
-    output.captPitchCommand.setFromData(0, Arinc429SignStatus::NormalOperation);
-    output.foPitchCommand.setFromData(0, Arinc429SignStatus::NormalOperation);
-    output.elevatorLeftPos.setFromData(0, Arinc429SignStatus::NormalOperation);
-    output.elevatorRightPos.setFromData(0, Arinc429SignStatus::NormalOperation);
-    output.horizStabTrimPos.setFromData(0, Arinc429SignStatus::NormalOperation);
+  if (rollSidestickPosCaptValid) {
+    output.captRollCommand.setFromData(rollSidestickPosCapt, Arinc429SignStatus::NormalOperation);
   } else {
-    output.captPitchCommand.setFromData(0, Arinc429SignStatus::NoComputedData);
-    output.foPitchCommand.setFromData(0, Arinc429SignStatus::NoComputedData);
+    output.captRollCommand.setFromData(0, Arinc429SignStatus::NoComputedData);
+  }
+
+  if (rollSidestickPosFoValid) {
+    output.foRollCommand.setFromData(rollSidestickPosFo, Arinc429SignStatus::NormalOperation);
+  } else {
+    output.foRollCommand.setFromData(0, Arinc429SignStatus::NoComputedData);
+  }
+
+  if (rudderPedalPosValid) {
+    output.rudderPedalPosition.setFromData(rudderPedalPos, Arinc429SignStatus::NormalOperation);
+  } else {
+    output.rudderPedalPosition.setFromData(0, Arinc429SignStatus::NoComputedData);
+  }
+
+  // Pitch Data
+  if (leftElevatorPosValid) {
+    output.elevatorLeftPos.setFromData(leftElevatorPos, Arinc429SignStatus::NormalOperation);
+  } else {
     output.elevatorLeftPos.setFromData(0, Arinc429SignStatus::NoComputedData);
+  }
+
+  if (rightElevatorPosValid) {
+    output.elevatorRightPos.setFromData(rightElevatorPos, Arinc429SignStatus::NormalOperation);
+  } else {
     output.elevatorRightPos.setFromData(0, Arinc429SignStatus::NoComputedData);
+  }
+
+  if (thsPosValid) {
+    output.horizStabTrimPos.setFromData(thsPos, Arinc429SignStatus::NormalOperation);
+  } else {
     output.horizStabTrimPos.setFromData(0, Arinc429SignStatus::NoComputedData);
+  }
+
+  if (pitchSidestickPosCaptValid) {
+    output.captRollCommand.setFromData(rollSidestickPosCapt, Arinc429SignStatus::NormalOperation);
+  } else {
+    output.captRollCommand.setFromData(0, Arinc429SignStatus::NoComputedData);
+  }
+
+  if (pitchSidestickPosFoValid) {
+    output.foPitchCommand.setFromData(pitchSidestickPosFo, Arinc429SignStatus::NormalOperation);
+  } else {
+    output.foPitchCommand.setFromData(0, Arinc429SignStatus::NoComputedData);
   }
 
   output.spoilerLeft1Pos.setFromData(0, Arinc429SignStatus::NoComputedData);
