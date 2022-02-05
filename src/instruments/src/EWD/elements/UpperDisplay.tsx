@@ -20,42 +20,42 @@ const UpperDisplay: React.FC = () => {
 
     return (
         <>
-            {/*  */}
-            <PacksNaiWai x={30} y={450} flightPhase={flightPhase} />
+            {/*   */}
+            <PacksNaiWai x={492} y={27} flightPhase={flightPhase} />
             <Idle x={374} y={55} />
 
-            <N1Limit x={690} y={30} active={isActive} />
+            <N1Limit x={693} y={30} active={isActive} />
 
-            <N1 engine={1} x={233} y={97} active={isActive} />
-            <N1 engine={2} x={527} y={97} active={isActive} />
-            <text className="Large Center" x={384} y={120}>N1</text>
-            <text className="Medium Center Cyan" x={381} y={139}>%</text>
+            <N1 engine={1} x={234} y={98} active={isActive} />
+            <N1 engine={2} x={534} y={98} active={isActive} />
+            <text className="Large Center" x={387} y={124}>N1</text>
+            <text className="Medium Center Cyan" x={384} y={143}>%</text>
 
-            <EGT engine={1} x={233} y={246} active={isActive} />
-            <EGT engine={2} x={527} y={246} active={isActive} />
-            <text className="Large Center" x={381} y={232}>EGT</text>
-            <text className="Medium Center Cyan" x={374} y={251}>&deg;C</text>
+            <EGT engine={1} x={234} y={252} active={isActive} />
+            <EGT engine={2} x={533} y={252} active={isActive} />
+            <text className="Large Center" x={384} y={237}>EGT</text>
+            <text className="Medium Center Cyan" x={379} y={260}>&deg;C</text>
 
-            <N2 engine={1} x={189} y={271} active={isActive} />
-            <N2 engine={2} x={484} y={271} active={isActive} />
-            <text className="Large Center" x={381} y={305}>N2</text>
-            <text className="Medium Center Cyan" x={381} y={325}>%</text>
-            <line className="Separator" x1="307" y1="308" x2="339" y2="299" strokeLinecap="round" />
-            <line className="Separator" x1="420" y1="299" x2="452" y2="308" strokeLinecap="round" />
+            <N2 engine={1} x={192} y={281} active={isActive} />
+            <N2 engine={2} x={493} y={281} active={isActive} />
+            <text className="Large Center" x={385} y={316}>N2</text>
+            <text className="Medium Center Cyan" x={383} y={336}>%</text>
+            <line className="Separator" x1="311" y1="318" x2="343" y2="309" strokeLinecap="round" />
+            <line className="Separator" x1="424" y1="309" x2="456" y2="318" strokeLinecap="round" />
 
-            <FF engine={1} x={269} y={376} unit={unit} active={isActive} />
-            <FF engine={2} x={563} y={376} unit={unit} active={isActive} />
-            <text className="Large Center" x={381} y={366}>FF</text>
-            <text className="Medium Center Cyan" x={380} y={385}>
+            <FF engine={1} x={273} y={388} unit={unit} active={isActive} />
+            <FF engine={2} x={576} y={388} unit={unit} active={isActive} />
+            <text className="Large Center" x={385} y={377}>FF</text>
+            <text className="Medium Center Cyan" x={384} y={399}>
                 {unit === '1' ? 'KG' : 'LBS'}
                 /H
             </text>
-            <line className="Separator" x1="307" y1="366" x2="339" y2="357" strokeLinecap="round" />
-            <line className="Separator" x1="420" y1="357" x2="452" y2="366" strokeLinecap="round" />
+            <line className="Separator" x1="311" y1="377" x2="343" y2="368" strokeLinecap="round" />
+            <line className="Separator" x1="424" y1="368" x2="456" y2="377" strokeLinecap="round" />
 
-            <Slats x={525} y={428} />
+            <Slats x={536} y={453} />
 
-            <FOB unit={unit} x={18} y={479} />
+            <FOB unit={unit} x={12} y={500} />
         </>
     );
 };

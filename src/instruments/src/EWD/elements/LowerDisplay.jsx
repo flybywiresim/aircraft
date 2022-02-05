@@ -1,36 +1,51 @@
 // From Beheh's PR: https://github.com/beheh/a32nx/commit/3bb63c90eb36fe24bee6209582362a73f9223ed5
 
-const LINE_SPACING = 23.5;
-const LETTER_WIDTH = 13.19;
+const LINE_SPACING = 30;
+const LETTER_WIDTH = 16;
 
-const LowerDisplay = ({ x, y }) => {
-    /* const message = [
-        "",
-        "\x1b<4m\x1b4mFWS\x1bm FWC 1+2 FAULT",
-        "\x1b<5m -MONITOR SYS",
-        "\x1b<5m -MONITOR OVERHEAD PANEL",
-    ].join("\r"); */
+const x = 10;
+const y = 565;
 
-    const message = [
-        "\x1b<2m\x1b4mELEC\x1bm \x1b'mEMER CONFIG\x1bm",
-        '\x1b<5m PROC:GRVTY FUEL FEEDING',
-        '\x1b<5m -FAC 1......OFF THEN ON',
-        '',
-        '',
-        '\x1b<5m -BUS TIE............OFF',
-        '\x1b<5m -GEN 1+2... OFF THEN ON',
-    ].join('\r');
+const LowerDisplay = () => {
+    const mesgPool = [
+        [
+            '',
+            '\x1b<4m\x1b4mFWS\x1bm FWC 1+2 FAULT',
+            '\x1b<5m -MONITOR SYS',
+            '\x1b<5m -MONITOR OVERHEAD PANEL',
+        ].join('\r'),
+        [
+            "\x1b<2m\x1b4mELEC\x1bm \x1b'mEMER CONFIG\x1bm",
+            '\x1b<5m PROC:GRVTY FUEL FEEDING',
+            '\x1b<5m -FAC 1......OFF THEN ON',
+            '',
+            '',
+            '\x1b<5m -BUS TIE............OFF',
+            '\x1b<5m -GEN 1+2... OFF THEN ON',
+        ].join('\r'),
+        [
+            '\x1b<4m\x1b4mNAV\x1bm \x1b<4mILS 2 FAULT\x1bm',
+            '\x1b<4m    GPS2 FAULT',
+            '\x1b<4m\x1b4mF/CTL\x1bm \x1b<4mELAC 1 FAULT\x1bm',
+            '\x1b<5m -ELAC 1.....OFF THEN ON',
+            '\x1b<7m   .IF UNSUCCESSFUL :',
+            '\x1b<5m -ELAC 1.....OFF THEN ON',
+            '\x1b<4m\x1b4mC/B\x1bm \x1b<4mTRIPPED REAR PNL J-M\x1bm',
+        ].join('\r'),
+        [
+            '023456789012345678901234567',
+            ' -2',
+            ' -3',
+            ' -4',
+            ' -5',
+            ' -6',
+            ' -7',
+            ' -8',
+        ].join('\r'),
+    ];
 
-    /* const message = [
-        "023456789012345678901234567",
-        " -2",
-        " -3",
-        " -4",
-        " -5",
-        " -6",
-        " -7",
-        " -8",
-    ].join("\r"); */
+    const message = mesgPool[Math.floor(Math.random() * mesgPool.length)];
+    // const message = mesgPool[2];
 
     const lines = [];
     let spans = [];
@@ -53,7 +68,7 @@ const LowerDisplay = ({ x, y }) => {
                 spans.push(
                     <tspan
                         key={buffer}
-                        className={`${color}`}
+                        className={`${color} EWDWarn`}
                     >
                         {buffer}
                     </tspan>,
@@ -63,8 +78,8 @@ const LowerDisplay = ({ x, y }) => {
                 if (underlined) {
                     decorations.push(
                         <path
-                            className={`Underline ${color}`}
-                            d={`M ${startCol * LETTER_WIDTH + 1.5} ${lines.length * LINE_SPACING + 4} h ${(col - startCol) * LETTER_WIDTH - 1}`}
+                            className={`Underline ${color}Line`}
+                            d={`M ${x + (startCol * LETTER_WIDTH)} ${y + (lines.length * LINE_SPACING + 4)} h ${(col - startCol) * LETTER_WIDTH + 1}`}
                             strokeLinecap="round"
                         />,
                     );
@@ -73,9 +88,9 @@ const LowerDisplay = ({ x, y }) => {
                 if (framed) {
                     decorations.push(
                         <path
-                            className={`Underline ${color}`}
-                            d={`M ${startCol * LETTER_WIDTH - 3}
-                            ${lines.length * LINE_SPACING - 17} h ${(col - startCol) * LETTER_WIDTH + 7} v 21 h ${-((col - startCol) * LETTER_WIDTH + 7)} v -21`}
+                            className={`Underline ${color}Line`}
+                            d={`M ${x + (startCol * LETTER_WIDTH)}
+                            ${y + (lines.length * LINE_SPACING) - 22} h ${(col - startCol) * LETTER_WIDTH + 12} v 27 h ${-((col - startCol) * LETTER_WIDTH + 12)} v -27`}
                             strokeLinecap="round"
                         />,
                     );
@@ -152,7 +167,7 @@ const LowerDisplay = ({ x, y }) => {
             }
 
             if (char === '\r') {
-                lines.push(<text y={lines.length * LINE_SPACING}>{spans}</text>);
+                lines.push(<text x={x} y={y + (lines.length * LINE_SPACING)}>{spans}</text>);
 
                 spans = [];
                 col = 0;
@@ -169,7 +184,7 @@ const LowerDisplay = ({ x, y }) => {
         spans.push(
             <tspan
                 key={buffer}
-                className={color}
+                className={`${color} EWDWarn`}
             >
                 {buffer}
             </tspan>,
@@ -177,7 +192,7 @@ const LowerDisplay = ({ x, y }) => {
     }
 
     if (spans.length) {
-        lines.push(<text y={lines.length * LINE_SPACING}>{spans}</text>);
+        lines.push(<text x={x} y={y + (lines.length * LINE_SPACING)}>{spans}</text>);
     }
 
     const memos = [
@@ -192,38 +207,43 @@ const LowerDisplay = ({ x, y }) => {
     return (
         <g id="LowerLeftDisplay">
 
-            <g className="EWDWarningTextLeft">
+            <g>
                 {lines}
                 {decorations}
             </g>
-
+            {/*
             <text
-                x="378"
-                y="414"
+                x={x + 473}
+                y={y - 22}
                 fill="White"
                 textAnchor="middle"
-                style={{ fontSize: '1.30em', letterSpacing: '0.07em' }}
+                className="EWDWarn White"
             >
                 ADV
             </text>
+            */}
+            {/* Border for ADV
             <path
-                className="Underline White"
-                d="M 358 418 h 40 v -20 h -40 v 20"
+                className="WhiteLine"
+                d={`M ${x + 446} ${y - 19} h 55 v -24 h -55 v 24`}
                 strokeLinecap="round"
             />
-
-            <text x="378.5" y="587.5" className="White" textAnchor="middle" style={{ fontSize: '1.25em' }}>
+            */}
+            {/*
+            <text x={x + 473} y={y + 185} className="White EWDWarn" textAnchor="middle">
                 STS
             </text>
+            */}
+            {/* Border for STS
             <path
-                className="Underline White"
-                d="M 361.5 590.5 h 34 v -18 h -34 v 18"
+                className="WhiteLine"
+                d={`M ${x + 446} ${y + 188} h 55 v -24 h -55 v 24`}
                 strokeLinecap="round"
             />
-
+            */}
             {/* Down arrow */}
             <path
-                d="m 376 571 h 5 v 15 h 5 l -7.5,11 l -7.5,-11 h 5 v -15"
+                d={`m ${x + 471} ${y + 164} h 5 v 18 h 5 l -7.5,11 l -7.5,-11 h 5 v -18`}
                 style={{
                     fill: '#00ff00',
                     stroke: 'none',

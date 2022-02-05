@@ -18,10 +18,10 @@ export const EWD: React.FC = () => {
         >
             <svg className="ewd-svg" version="1.1" viewBox="0 0 768 768" xmlns="http://www.w3.org/2000/svg">
                 <UpperDisplay />
-                <line className="Separator" x1="4" y1="506" x2="442" y2="506" strokeLinecap="round" />
-                <line className="Separator" x1="512" y1="506" x2="763" y2="506" strokeLinecap="round" />
-                <line className="Separator" x1="480" y1="525" x2="480" y2="724" strokeLinecap="round" />
-                <LowerDisplay x={10} y={520} />
+                <line className="Separator" x1="4" y1="533" x2="444" y2="533" strokeLinecap="round" />
+                <line className="Separator" x1="522" y1="533" x2="764" y2="533" strokeLinecap="round" />
+                <line className="Separator" x1="484" y1="552" x2="484" y2="724" strokeLinecap="round" />
+                <LowerDisplay />
             </svg>
         </DisplayUnit>
     );

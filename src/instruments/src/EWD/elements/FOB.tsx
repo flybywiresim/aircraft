@@ -16,9 +16,9 @@ const FOB: React.FC<FOBProps> = ({ unit, x, y }) => {
             <text id="FobLabel" x={x} y={y}>FOB</text>
             <text id="FobColon" x={x + 69} y={y}>:</text>
 
-            <text id="FobValue" x={x + 195} y={y}>{fuelForDisplay(fob, unit, 1, 2)}</text>
+            <text id="FobValue" x={x + 198} y={y}>{fuelForDisplay(fob, unit, 1, 2)}</text>
 
-            <text id="FobUnit" x={x + 220} y={y}>{unit === '1' ? 'KG' : 'LBS'}</text>
+            <text id="FobUnit" x={x + 227} y={y}>{unit === '1' ? 'KG' : 'LBS'}</text>
         </>
     );
 };

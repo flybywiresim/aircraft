@@ -66,6 +66,11 @@ animation: pulsingS 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
             font-size: 26px;
         }
 
+        &.EWDWarn {
+            font-size: 24px;
+            letter-spacing: 1.75px;
+        }
+
         &.Huge {
             font-size: 31px;
         }
@@ -134,6 +139,12 @@ animation: pulsingS 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 
     .WhiteLine {
         stroke: $display-white !important;
+        stroke-width: 2;
+        fill: none;
+    }
+
+    .RedLine {
+        stroke: $display-red !important;
         stroke-width: 2;
         fill: none;
     }
