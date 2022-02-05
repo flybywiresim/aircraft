@@ -18,8 +18,8 @@ const Slats: React.FC<SlatsProps> = ({ x, y }) => {
 
     const flapsPowered = greenPress > 1450 || yellowPress > 1450;
     const slatsPowered = greenPress > 1450 || bluePress > 1450;
-    const flapsMoving = flapsAngle !== targetFlapsAngle && flapsPowered;
-    const slatsMoving = slatsAngle !== targetSlatsAngle && slatsPowered;
+    const flapsMoving = (flapsAngle !== targetFlapsAngle) && flapsPowered;
+    const slatsMoving = (slatsAngle !== targetSlatsAngle) && slatsPowered;
 
     const flapText = ['0', '1', '1+F', '2', '3', 'FULL'];
 
@@ -152,7 +152,7 @@ const Slats: React.FC<SlatsProps> = ({ x, y }) => {
             <text
                 className={`Large Center
                 ${flapsMoving || slatsMoving ? 'Cyan' : 'Green'}
-                ${flapsPowered && !flapsMoving && !slatsMoving && handleIndex === 0 ? 'Hide' : 'Show'}`}
+                ${!flapsPowered || (!flapsMoving && !slatsMoving && handleIndex === 0) ? 'Hide' : 'Show'}`}
                 x={x - 5}
                 y={y + 60}
             >
