@@ -1,5 +1,6 @@
-import React, { useState, RefObject, memo } from 'react';
+import React, { useState, memo } from 'react';
 import { useInteractionEvents } from '@instruments/common/hooks.js';
+import { Checkerboard } from './Checkerboard';
 
 interface ColorizedWord {
     word: string;
@@ -13,6 +14,7 @@ interface ColorizedLine {
 
 type MessageVisualizationProps = {
     message: string,
+    backgroundColor: [number, number, number],
     keepNewlines: boolean,
     ignoreHighlight: boolean,
     cssClass: string,
@@ -21,7 +23,6 @@ type MessageVisualizationProps = {
     isStatusAvailable: ((sender: string) => boolean) | undefined,
     setStatus: ((sender: string, message: string) => void) | undefined,
     resetStatus: ((sender: string) => void) | undefined,
-    setRef: RefObject<SVGTextElement> | undefined
 }
 
 function visualizeLine(line: ColorizedWord[], startIdx: number, startY: number, deltaY: number, useDeltaY: boolean, ignoreHighlight: boolean) {
@@ -187,8 +188,8 @@ function createVisualizationLines(message: string, keepNewlines: boolean): Color
 }
 
 export const MessageVisualization: React.FC<MessageVisualizationProps> = memo(({
-    message, keepNewlines, ignoreHighlight, cssClass, yStart, deltaY,
-    isStatusAvailable, setStatus, resetStatus, setRef,
+    message, backgroundColor, keepNewlines, ignoreHighlight, cssClass, yStart, deltaY,
+    isStatusAvailable, setStatus, resetStatus,
 }) => {
     const [pageIndex, setPageIndex] = useState(0);
     const [pageCount, setPageCount] = useState(0);
@@ -236,6 +237,11 @@ export const MessageVisualization: React.FC<MessageVisualizationProps> = memo(({
         setPageIndex(0);
     }
 
+    // no text defined
+    if (pageCount === 0) {
+        return <></>;
+    }
+
     // get the indices
     const startIndex = pageIndex * maxLines;
     const endIndex = Math.min(startIndex + maxLines, lines.length);
@@ -243,23 +249,26 @@ export const MessageVisualization: React.FC<MessageVisualizationProps> = memo(({
     // get visible lines
     lines = lines.slice(startIndex, endIndex);
 
-    // no text defined
-    if (pageCount === 0) {
-        return <></>;
-    }
+    // calculate the position of the background rectangle
+    const contentHeight = 120 + lines.length * 230;
+    const backgroundNeeded = backgroundColor[0] !== 0 || backgroundColor[1] !== 0 || backgroundColor[2] !== 0;
+    const rgb = `rgb(${backgroundColor[0]},${backgroundColor[1]},${backgroundColor[2]})`;
 
     return (
         <>
-            {setRef !== undefined && (
-                <text className={cssClass} ref={setRef}>
-                    {visualizeLines(lines, yStart, deltaY, ignoreHighlight)}
-                </text>
+            {backgroundNeeded && (
+                <Checkerboard
+                    x={130}
+                    y={472}
+                    width={3600}
+                    height={contentHeight}
+                    cellSize={10}
+                    fill={rgb}
+                />
             )}
-            {setRef === undefined && (
-                <text className={cssClass}>
-                    {visualizeLines(lines, yStart, deltaY, ignoreHighlight)}
-                </text>
-            )}
+            <text className={cssClass}>
+                {visualizeLines(lines, yStart, deltaY, ignoreHighlight)}
+            </text>
             {pageCount > 1 && (
                 <>
                     <text className="status-atsu" x="65%" y="2480">PG</text>

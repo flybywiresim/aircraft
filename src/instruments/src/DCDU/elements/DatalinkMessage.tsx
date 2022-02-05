@@ -1,8 +1,7 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React from 'react';
 import { AtsuMessageComStatus, AtsuMessageDirection, AtsuMessageSerializationFormat } from '@atsu/messages/AtsuMessage';
 import { CpdlcMessage } from '@atsu/messages/CpdlcMessage';
 import { MessageVisualization } from './MessageVisualization';
-import { Checkerboard } from './Checkerboard';
 
 type DatalinkMessageProps = {
     message: CpdlcMessage,
@@ -12,21 +11,14 @@ type DatalinkMessageProps = {
 }
 
 export const DatalinkMessage: React.FC<DatalinkMessageProps> = ({ message, isStatusAvailable, setStatus, resetStatus }) => {
-    const [textBBox, setTextBBox] = useState<DOMRect>();
-    const textRef = useRef<SVGTextElement>(null);
-
-    useEffect(() => setTextBBox(textRef.current?.getBBox()), []);
-
     // define the correct background color
-    let backgroundNeeded = false;
-    let backgroundColor = '';
+    let backgroundColor: [number, number, number] = [0, 0, 0];
     if (message.Direction === AtsuMessageDirection.Output) {
         if (message.ComStatus === AtsuMessageComStatus.Sent || message.ComStatus === AtsuMessageComStatus.Sending) {
-            backgroundColor = 'rgb(0,255,0)';
+            backgroundColor = [0, 255, 0];
         } else {
-            backgroundColor = 'rgb(0,255,255)';
+            backgroundColor = [0, 255, 255];
         }
-        backgroundNeeded = true;
     }
 
     // check if highlight is needed
@@ -49,27 +41,11 @@ export const DatalinkMessage: React.FC<DatalinkMessageProps> = ({ message, isSta
         messageClass += ' message-content-other message-content-in';
     }
 
-    // calculate the position of the background rectangle
-    let contentHeight = 16;
-    if (textBBox?.width !== undefined && textBBox?.height !== undefined) {
-        contentHeight = textBBox?.height + 120;
-    }
-
     return (
         <g>
-            {backgroundNeeded
-            && (
-                <Checkerboard
-                    x={130}
-                    y={472}
-                    width={3600}
-                    height={contentHeight}
-                    cellSize={10}
-                    fill={backgroundColor}
-                />
-            )}
             <MessageVisualization
                 message={message.Message !== '' ? message.Message : message.serialize(AtsuMessageSerializationFormat.DCDU)}
+                backgroundColor={backgroundColor}
                 keepNewlines={message.Direction === AtsuMessageDirection.Output}
                 ignoreHighlight={ignoreHighlight}
                 cssClass={messageClass}
@@ -78,7 +54,6 @@ export const DatalinkMessage: React.FC<DatalinkMessageProps> = ({ message, isSta
                 isStatusAvailable={isStatusAvailable}
                 setStatus={setStatus}
                 resetStatus={resetStatus}
-                setRef={textRef}
             />
         </g>
     );
