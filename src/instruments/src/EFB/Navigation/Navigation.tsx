@@ -361,7 +361,7 @@ const ChartComponent = () => {
             {pagesViewable > 1 && (
                 <div className="flex overflow-hidden fixed top-32 right-32 z-40 flex-row items-center rounded-md">
                     <div
-                        className="flex flex-row justify-center items-center h-14 bg-opacity-40 transition duration-100 cursor-pointer bg-theme-secondary hover:bg-theme-highlight"
+                        className={`flex flex-row justify-center items-center h-14 bg-opacity-40 transition duration-100 cursor-pointer hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight ${currentPage === 1 && 'opacity-50 pointer-events-none'}`}
                         onClick={() => setCurrentPage((old) => old - 1)}
                     >
                         <Dash size={40} />
@@ -383,7 +383,7 @@ const ChartComponent = () => {
                         {pagesViewable}
                     </div>
                     <div
-                        className="flex flex-row justify-center items-center h-14 bg-opacity-40 transition duration-100 cursor-pointer bg-theme-secondary hover:bg-theme-highlight"
+                        className={`flex flex-row justify-center items-center h-14 bg-opacity-40 transition duration-100 cursor-pointer hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight ${currentPage === pagesViewable && 'opacity-50 pointer-events-none'}`}
                         onClick={() => setCurrentPage((old) => old + 1)}
                     >
 
@@ -397,7 +397,7 @@ const ChartComponent = () => {
                     <button
                         type="button"
                         onClick={handleRotateLeft}
-                        className={`p-2 transition duration-100 cursor-pointer bg-theme-secondary hover:bg-theme-highlight ${planeInFocus && 'text-theme-unselected pointer-events-none'}`}
+                        className={`p-2 transition hover:text-theme-body duration-100 cursor-pointer bg-theme-secondary hover:bg-theme-highlight ${planeInFocus && 'text-theme-unselected pointer-events-none'}`}
                     >
                         <ArrowCounterclockwise size={40} />
                     </button>
@@ -405,7 +405,7 @@ const ChartComponent = () => {
                         <button
                             type="button"
                             onClick={() => dispatch(setPlaneInFocus(!planeInFocus))}
-                            className={`p-2 transition duration-100 cursor-pointer bg-theme-secondary hover:bg-theme-highlight ${planeInFocus && 'text-theme-highlight  hover:text-theme-text'}`}
+                            className={`p-2 transition hover:text-theme-body duration-100 cursor-pointer bg-theme-secondary hover:bg-theme-highlight ${planeInFocus && 'text-theme-highlight  hover:text-theme-text'}`}
                         >
                             <Bullseye size={40} />
                         </button>
@@ -413,7 +413,7 @@ const ChartComponent = () => {
                     <button
                         type="button"
                         onClick={handleRotateRight}
-                        className={`p-2 transition duration-100 cursor-pointer bg-theme-secondary hover:bg-theme-highlight ${planeInFocus && 'text-theme-unselected pointer-events-none'}`}
+                        className={`p-2 transition hover:text-theme-body duration-100 cursor-pointer bg-theme-secondary hover:bg-theme-highlight ${planeInFocus && 'text-theme-unselected pointer-events-none'}`}
                     >
                         <ArrowClockwise className="fill-current" size={40} />
                     </button>
@@ -422,14 +422,14 @@ const ChartComponent = () => {
                     <button
                         type="button"
                         onClick={expandToHeight}
-                        className="p-2 transition duration-100 cursor-pointer bg-theme-secondary hover:bg-theme-highlight"
+                        className="p-2 transition duration-100 cursor-pointer hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight"
                     >
                         <ArrowsExpand size={40} />
                     </button>
                     <button
                         type="button"
                         onClick={expandToWidth}
-                        className="p-2 transition duration-100 cursor-pointer bg-theme-secondary hover:bg-theme-highlight"
+                        className="p-2 transition duration-100 cursor-pointer hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight"
                     >
                         <ArrowsExpand className="transform rotate-90" size={40} />
                     </button>
@@ -437,21 +437,21 @@ const ChartComponent = () => {
                     <button
                         type="button"
                         onClick={handleZoomIn}
-                        className="p-2 transition duration-100 cursor-pointer bg-theme-secondary hover:bg-theme-highlight"
+                        className="p-2 transition duration-100 cursor-pointer hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight"
                     >
                         <Plus size={40} />
                     </button>
                     <button
                         type="button"
                         onClick={handleZoomOut}
-                        className="p-2 transition duration-100 cursor-pointer bg-theme-secondary hover:bg-theme-highlight"
+                        className="p-2 transition duration-100 cursor-pointer hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight"
                     >
                         <Dash size={40} />
                     </button>
                 </div>
                 <div className="flex overflow-hidden flex-col rounded-md">
                     <div
-                        className="p-2 rounded-md transition duration-100 cursor-pointer bg-theme-secondary hover:bg-theme-highlight"
+                        className="p-2 rounded-md transition duration-100 cursor-pointer hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight"
                         onClick={() => dispatch(setIsFullScreen(!isFullScreen))}
                     >
                         {!isFullScreen
@@ -459,7 +459,7 @@ const ChartComponent = () => {
                             : <FullscreenExit size={40} />}
                     </div>
                     <div
-                        className="p-2 mt-3 rounded-md transition duration-100 cursor-pointer bg-theme-secondary hover:bg-theme-highlight"
+                        className="p-2 mt-3 rounded-md transition duration-100 cursor-pointer hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight"
                         onClick={() => dispatch(setUsingDarkTheme(!usingDarkTheme))}
                     >
                         {!usingDarkTheme ? <MoonFill size={40} /> : <SunFill size={40} />}
