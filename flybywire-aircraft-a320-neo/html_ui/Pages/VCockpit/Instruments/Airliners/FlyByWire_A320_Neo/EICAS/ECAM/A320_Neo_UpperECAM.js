@@ -1935,8 +1935,8 @@ var A320_Neo_UpperECAM;
         updatePacks(deltaTime) {
             // this is a bit of a hack, but near enough until the new FWC, and underlying system implementations
             const crossfeed = SimVar.GetSimVarValue("L:A32NX_PNEU_XBLEED_VALVE_OPEN", "bool");
-            const eng1Bleed = SimVar.GetSimVarValue("L:A32NX_OVHD_PNEU_ENG_1_BLEED_PB_IS_AUTO", "bool") && !SimVar.GetSimVarValue("A32NX_OVHD_PNEU_ENG_1_BLEED_PB_HAS_FAULT", "bool");
-            const eng2Bleed = SimVar.GetSimVarValue("L:A32NX_OVHD_PNEU_ENG_2_BLEED_PB_IS_AUTO", "bool") && !SimVar.GetSimVarValue("A32NX_OVHD_PNEU_ENG_2_BLEED_PB_HAS_FAULT", "bool");
+            const eng1Bleed = SimVar.GetSimVarValue("A:BLEED AIR ENGINE:1", "bool") && !SimVar.GetSimVarValue("L:A32NX_OVHD_PNEU_ENG_1_BLEED_PB_HAS_FAULT", "bool");
+            const eng2Bleed = SimVar.GetSimVarValue("A:BLEED AIR ENGINE:2", "bool") && !SimVar.GetSimVarValue("L:A32NX_OVHD_PNEU_ENG_2_BLEED_PB_HAS_FAULT", "bool");
             this.packOffBleedAvailable1.write(eng1Bleed || crossfeed, deltaTime);
             this.packOffBleedAvailable2.write(eng2Bleed || crossfeed, deltaTime);
 
