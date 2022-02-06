@@ -135,7 +135,7 @@
 1. [AP] Added Autoland capability for special terrain profiles, i.e. KSEA 16R - @aguther (Andreas Guther)
 1. [ATHR] Adjustment of ATHR SPD/MACH gains - @IbrahimK42 (IbrahimK42)
 1. [ATHR] Fix ATHR Alt Soft Mode - @IbrahimK42 (IbrahimK42)
-1. [EFB] Colored Metar in EFB weather widget - @frankkopp (Frank Kopp)
+1. [EFB] Colored raw Metar in EFB weather widget - @frankkopp (Frank Kopp)
 
 ## 0.7.0
 
