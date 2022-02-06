@@ -329,7 +329,7 @@ export class EfisSymbols {
 
                     if (i === activeFp.activeWaypointIndex) {
                         type |= NdSymbolTypeFlags.ActiveLegTermination;
-                    } else if (isCourseReversal && i !== (activeFp.activeWaypointIndex + 1)) {
+                    } else if (isCourseReversal && i > (activeFp.activeWaypointIndex + 1)) {
                         if (wp.turnDirection === TurnDirection.Left) {
                             type |= NdSymbolTypeFlags.CourseReversalLeft;
                         } else {

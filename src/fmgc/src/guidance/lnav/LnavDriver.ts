@@ -178,7 +178,7 @@ export class LnavDriver implements GuidanceComponent {
                 }
 
                 // Send bank limit to FG
-                const bankLimit = maxBank(tas, /* FIXME */ true);
+                const bankLimit = maxBank(tas, /* FIXME */ false);
 
                 SimVar.SetSimVarValue('L:A32NX_FG_PHI_LIMIT', 'Degrees', bankLimit);
 
