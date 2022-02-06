@@ -238,7 +238,7 @@ const SimOptionsPage = () => {
     const [fpSync, setFpSync] = usePersistentProperty('FP_SYNC', 'LOAD');
     const [dynamicRegistration, setDynamicRegistration] = usePersistentProperty('DYNAMIC_REGISTRATION_DECAL', '0');
     const [defaultBaro, setDefaultBaro] = usePersistentProperty('CONFIG_INIT_BARO_UNIT', 'AUTO');
-    const [mcduServerPort, setMcduServerPort] = usePersistentProperty('CONFIG_EXTERNAL_MCDU_PORT', '8080');
+    const [mcduServerPort, setMcduServerPort] = usePersistentProperty('CONFIG_EXTERNAL_MCDU_PORT', '8380');
 
     const fpSyncButtons: ButtonType[] = [
         { name: 'None', setting: 'NONE' },
@@ -347,6 +347,7 @@ const RealismPage = () => {
     const [mcduInput, setMcduInput] = usePersistentProperty('MCDU_KB_INPUT', 'DISABLED');
     const [mcduTimeout, setMcduTimeout] = usePersistentProperty('CONFIG_MCDU_KB_TIMEOUT', '60');
     const [realisticTiller, setRealisticTiller] = usePersistentProperty('REALISTIC_TILLER_ENABLED', '0');
+    const [homeCockpit, setHomeCockpit] = usePersistentProperty('HOME_COCKPIT_ENABLED', '0');
 
     const adirsAlignTimeButtons: (ButtonType & SimVarButton)[] = [
         { name: 'Instant', setting: 'INSTANT', simVarValue: 1 },
@@ -466,6 +467,11 @@ const RealismPage = () => {
                                 </SelectItem>
                             ))}
                         </SelectGroup>
+                    </div>
+
+                    <div className="py-4 flex flex-row justify-between items-center">
+                        <span className="text-lg text-gray-300 mr-1">Home Cockpit Mode</span>
+                        <Toggle value={homeCockpit === '1'} onToggle={(value) => setHomeCockpit(value ? '1' : '0')} />
                     </div>
                 </div>
             </>

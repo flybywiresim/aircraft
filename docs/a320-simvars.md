@@ -786,6 +786,14 @@
         - BLUE
         - YELLOW
 
+- A32NX_HYD_{loop_name}_RESERVOIR_AIR_PRESSURE_IS_LOW
+    - Boolean
+    - Low air pressure switch of {loop_name} hydraulic circuit reservoir indicates low state
+    - {loop_name}
+        - GREEN
+        - BLUE
+        - YELLOW
+
 - A32NX_HYD_{loop_name}_EDPUMP_ACTIVE
     - Bool
     - Engine driven pump of {loop_name} hydraulic circuit is active
@@ -829,18 +837,13 @@
     - Bool
     - NW STRG DISC memo indication should show on ecam if true
 
-- A32NX_TILLER_PEDAL_DISCONNECT
-    - Bool
-    - True when tiller disconnect button is pressed
-        Tiller button to be binded on "TOGGLE WATER RUDDER"
-
 - A32NX_NOSE_WHEEL_POSITION
     - Percent over 100
     - Position of nose steering wheel animation [0;1] 0 left, 0.5 middle
 
 - A32NX_TILLER_HANDLE_POSITION
     - Percent over 100
-    - Position of tiller steering handle animation [0;1] 0 left, 0.5 middle
+    - Position of tiller steering handle animation [-1;1] -1 left, 0 middle, 1 right
 
 - A32NX_AUTOPILOT_NOSEWHEEL_DEMAND
     - Percent over 100
@@ -850,6 +853,13 @@
     - Bool
     - 0 for legacy mode (steering with rudder). 1 for realistic mode with tiller axis
         Tiller axis to be binded on "ENGINE 4 MIXTURE AXIS"
+
+- A32NX_HOME_COCKPIT_ENABLED
+    - Bool
+    - 1 to enable Home Cockpit mode which:
+      - Removes backlight bleed from the PFD, ND, and ECAM displays
+      - Removes reflection from the ISIS
+    - Useful for home cockpits that use the sim's built-in pop-out feature and do not wish to have these effects present on their displays.
 
 - A32NX_HYD_{loop_name}_EPUMP_LOW_PRESS
     - Bool
@@ -913,6 +923,10 @@
 - A32NX_HYD_BRAKE_ALTN_ACC_PRESS
     - Psi
     - Current pressure in brake accumulator on yellow alternate brake circuit
+
+- A32NX_HYD_EMERGENCY_GEN_RPM
+    - Rpm
+    - Hydraulic emergency generator current rpm
 
 - A32NX_FWD_DOOR_CARGO_POSITION
     - Percent
@@ -1050,6 +1064,14 @@
 - A32NX_RIGHT_SLATS_ANGLE
     - Degrees
     - The actual angle of the right slats
+
+- A32NX_IS_FLAPS_MOVING
+    - Boolean
+    - The flap surface is moving
+
+- A32NX_IS_SLAPS_MOVING
+    - Boolean
+    - The slat surface is moving
 
 - A32NX_FLAPS_CONF_INDEX
     - Number

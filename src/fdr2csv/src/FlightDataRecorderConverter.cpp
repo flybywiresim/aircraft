@@ -76,7 +76,6 @@ void FlightDataRecorderConverter::writeHeader(ofstream& out, const string& delim
   out << "ap_sm.data_computed.H_constraint_valid" << delimiter;
   out << "ap_sm.data_computed.Psi_fcu_in_selection" << delimiter;
   out << "ap_sm.data_computed.gs_convergent_towards_beam" << delimiter;
-  out << "ap_sm.data_computed.H_dot_radio_fpm" << delimiter;
   out << "ap_sm.data_computed.V_fcu_in_selection" << delimiter;
   out << "ap_sm.input.FD_active" << delimiter;
   out << "ap_sm.input.AP_1_push" << delimiter;
@@ -262,6 +261,13 @@ void FlightDataRecorderConverter::writeHeader(ofstream& out, const string& delim
   out << "ap_law.autopilot.Theta_c_deg" << delimiter;
   out << "ap_law.autopilot.Phi_c_deg" << delimiter;
   out << "ap_law.autopilot.Beta_c_deg" << delimiter;
+  out << "ap_law.flare_law.condition_Flare" << delimiter;
+  out << "ap_law.flare_law.H_dot_radio_fpm" << delimiter;
+  out << "ap_law.flare_law.H_dot_c_fpm" << delimiter;
+  out << "ap_law.flare_law.delta_Theta_H_dot_deg" << delimiter;
+  out << "ap_law.flare_law.delta_Theta_bx_deg" << delimiter;
+  out << "ap_law.flare_law.delta_Theta_bz_deg" << delimiter;
+  out << "ap_law.flare_law.delta_Theta_beta_c_deg" << delimiter;
   out << "athr.data.nz_g" << delimiter;
   out << "athr.data.Theta_deg" << delimiter;
   out << "athr.data.Phi_deg" << delimiter;
@@ -642,7 +648,6 @@ void FlightDataRecorderConverter::writeStruct(ofstream& out,
   out << static_cast<unsigned int>(ap_sm.data_computed.H_constraint_valid) << delimiter;
   out << static_cast<unsigned int>(ap_sm.data_computed.Psi_fcu_in_selection) << delimiter;
   out << static_cast<unsigned int>(ap_sm.data_computed.gs_convergent_towards_beam) << delimiter;
-  out << ap_sm.data_computed.H_dot_radio_fpm << delimiter;
   out << static_cast<unsigned int>(ap_sm.data_computed.V_fcu_in_selection) << delimiter;
   out << static_cast<unsigned int>(ap_sm.input.FD_active) << delimiter;
   out << static_cast<unsigned int>(ap_sm.input.AP_1_push) << delimiter;
@@ -828,6 +833,13 @@ void FlightDataRecorderConverter::writeStruct(ofstream& out,
   out << ap_law.autopilot.Theta_c_deg << delimiter;
   out << ap_law.autopilot.Phi_c_deg << delimiter;
   out << ap_law.autopilot.Beta_c_deg << delimiter;
+  out << static_cast<unsigned int>(ap_law.flare_law.condition_Flare) << delimiter;
+  out << ap_law.flare_law.H_dot_radio_fpm << delimiter;
+  out << ap_law.flare_law.H_dot_c_fpm << delimiter;
+  out << ap_law.flare_law.delta_Theta_H_dot_deg << delimiter;
+  out << ap_law.flare_law.delta_Theta_bx_deg << delimiter;
+  out << ap_law.flare_law.delta_Theta_bz_deg << delimiter;
+  out << ap_law.flare_law.delta_Theta_beta_c_deg << delimiter;
   out << athr.data.nz_g << delimiter;
   out << athr.data.Theta_deg << delimiter;
   out << athr.data.Phi_deg << delimiter;

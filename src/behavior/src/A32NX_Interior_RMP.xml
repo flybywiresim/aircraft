@@ -8,7 +8,9 @@
     <Template Name="FBW_RMP_CONTROLS_Template">
         <!-- Panel ON/OFF Toggle Switch -->
         <Component ID="RMP_TOGGLE_SWITCH_#SIDE#" Node="SWITCH_RADIO#SIDE#_1">
-            <UseTemplate Name="ASOBO_GT_Switch_Code">
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>SWITCH</ANIM_TYPE>
+                <ANIM_TEMPLATE>ASOBO_GT_Switch_Code</ANIM_TEMPLATE>
                 <ANIM_LENGTH>100</ANIM_LENGTH>
                 <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
                 <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
@@ -63,7 +65,9 @@
 
         <!-- Panel transfer button -->
         <Component ID="RMP_TRANSFER_BUTTON_#SIDE#" Node="PUSH_RADIO#SIDE#_ARROWS">
-            <UseTemplate Name="ASOBO_GT_Push_Button">
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>BUTTON</ANIM_TYPE>
+                <ANIM_TEMPLATE>ASOBO_GT_Push_Button</ANIM_TEMPLATE>
                 <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
                 <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
                 <ANIM_NAME>PUSH_RADIO#SIDE#_ARROWS</ANIM_NAME>
@@ -81,37 +85,49 @@
 
     <Template Name="FBW_RMP_COMMS_MODE_SELECTION_Template">
         <!-- VHF1 mode selection button -->
-        <UseTemplate Name="FBW_RMP_MODE_BUTTON_AND_LED">
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+            <ANIM_TEMPLATE>FBW_RMP_MODE_BUTTON_AND_LED</ANIM_TEMPLATE>
             <MODE_ID>1</MODE_ID>
             <BASE_NAME>VHF1</BASE_NAME>
         </UseTemplate>
 
         <!-- VHF2 mode selection button -->
-        <UseTemplate Name="FBW_RMP_MODE_BUTTON_AND_LED">
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+            <ANIM_TEMPLATE>FBW_RMP_MODE_BUTTON_AND_LED</ANIM_TEMPLATE>
             <MODE_ID>2</MODE_ID>
             <BASE_NAME>VHF2</BASE_NAME>
         </UseTemplate>
 
         <!-- VHF3 mode selection button -->
-        <UseTemplate Name="FBW_RMP_MODE_BUTTON_AND_LED">
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+            <ANIM_TEMPLATE>FBW_RMP_MODE_BUTTON_AND_LED</ANIM_TEMPLATE>
             <MODE_ID>3</MODE_ID>
             <BASE_NAME>VHF3</BASE_NAME>
         </UseTemplate>
 
         <!-- Inop HF1 mode button and led -->
-        <UseTemplate Name="FBW_RMP_MODE_BUTTON_AND_LED">
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+            <ANIM_TEMPLATE>FBW_RMP_MODE_BUTTON_AND_LED</ANIM_TEMPLATE>
             <INOP>1</INOP>
             <BASE_NAME>HF1</BASE_NAME>
         </UseTemplate>
 
         <!-- Inop HF2 mode button and led -->
-        <UseTemplate Name="FBW_RMP_MODE_BUTTON_AND_LED">
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+            <ANIM_TEMPLATE>FBW_RMP_MODE_BUTTON_AND_LED</ANIM_TEMPLATE>
             <INOP>1</INOP>
             <BASE_NAME>HF2</BASE_NAME>
         </UseTemplate>
 
         <!-- Inop AM mode button and led -->
-        <UseTemplate Name="FBW_RMP_MODE_BUTTON_AND_LED">
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+            <ANIM_TEMPLATE>FBW_RMP_MODE_BUTTON_AND_LED</ANIM_TEMPLATE>
             <INOP>1</INOP>
             <BASE_NAME>AM</BASE_NAME>
         </UseTemplate>
@@ -162,37 +178,49 @@
         </Component>
 
         <!-- Inop NAV mode button and led -->
-        <UseTemplate Name="FBW_RMP_MODE_BUTTON_AND_LED">
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+            <ANIM_TEMPLATE>FBW_RMP_MODE_BUTTON_AND_LED</ANIM_TEMPLATE>
             <INOP>1</INOP>
             <BASE_NAME>NAV</BASE_NAME>
         </UseTemplate>
 
         <!-- Inop VOR mode button and led -->
-        <UseTemplate Name="FBW_RMP_MODE_BUTTON_AND_LED">
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+            <ANIM_TEMPLATE>FBW_RMP_MODE_BUTTON_AND_LED</ANIM_TEMPLATE>
             <INOP>1</INOP>
             <BASE_NAME>VOR</BASE_NAME>
         </UseTemplate>
 
         <!-- Inop ILS mode button and led -->
-        <UseTemplate Name="FBW_RMP_MODE_BUTTON_AND_LED">
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+            <ANIM_TEMPLATE>FBW_RMP_MODE_BUTTON_AND_LED</ANIM_TEMPLATE>
             <INOP>1</INOP>
             <BASE_NAME>ILS</BASE_NAME>
         </UseTemplate>
 
         <!-- Inop MLS mode button and led -->
-        <UseTemplate Name="FBW_RMP_MODE_BUTTON_AND_LED">
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+            <ANIM_TEMPLATE>FBW_RMP_MODE_BUTTON_AND_LED</ANIM_TEMPLATE>
             <INOP>1</INOP>
             <BASE_NAME>MLS</BASE_NAME>
         </UseTemplate>
 
         <!-- Inop ADF mode button and led -->
-        <UseTemplate Name="FBW_RMP_MODE_BUTTON_AND_LED">
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+            <ANIM_TEMPLATE>FBW_RMP_MODE_BUTTON_AND_LED</ANIM_TEMPLATE>
             <INOP>1</INOP>
             <BASE_NAME>ADF</BASE_NAME>
         </UseTemplate>
 
         <!-- Inop BFO mode button and led -->
-        <UseTemplate Name="FBW_RMP_MODE_BUTTON_AND_LED">
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+            <ANIM_TEMPLATE>FBW_RMP_MODE_BUTTON_AND_LED</ANIM_TEMPLATE>
             <INOP>1</INOP>
             <BASE_NAME>BFO</BASE_NAME>
         </UseTemplate>
