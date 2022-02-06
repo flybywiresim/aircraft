@@ -131,6 +131,8 @@
 1. [AP] Improved LOC ALGIN and ROLL OUT during Autoland - @aguther (Andreas Guther)
 1. [HYD] Simple hydraulic model placeholder for flaps and slats - @Crocket63
 1. [FBW] Fix: do not compensate ground spoilers in C* law - @aguther (Andreas Guther)
+1. [EFB] Added Hoppie configuration to ATSU/ATC page - @svengcz (Sven Czarnian)
+1. [EFB] Added Datalink simulation rate - @svengcz (Sven Czarnian)
 1. [ATSU] Add PDC/CPDLC communication via Hoppie - @svengcz (Sven Czarnian)
 1. [AP] Fix: adjustment of vertical speed limitation in SPD/MACH law - @IbrahimK42 (IbrahimK42)
 1. [HYD] Ailerons hydraulic control (only visual and hydraulics) - @Crocket63
@@ -165,6 +167,7 @@
 1. [SPEEDS] Fix GS mini not being limited by VFE-5 in CONF FULL -  @donstim (donbikes#4084)
 1. [MCDU] Fix crash when clearing DIR TO waypoint - @tracernz (Mike)
 1. [ATHR] Fix Speed/Mach Idle transition in strong headwind - @IbrahimK42 (IbrahimK42)
+1. [MCDU] Improved Remote MCDU communication by reducing update frequency - @frankkopp (Frank Kopp)
 
 ## 0.7.0
 
