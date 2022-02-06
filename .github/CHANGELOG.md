@@ -138,6 +138,7 @@
 1. [ATHR] Fix ATHR Alt Soft Mode - @IbrahimK42 (IbrahimK42)
 1. [HYD] Simplified max step loop updater - @Crocket63
 1. [MISC] Fix for bleed/hyd system failure in some conditions - @Crocket63
+1. [ND] Center 'TA ONLY' message - @Andrebrito16 (Andre Felipe Brito)
 
 ## 0.7.0
 
