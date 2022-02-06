@@ -136,6 +136,7 @@
 1. [ATHR] Adjustment of ATHR SPD/MACH gains - @IbrahimK42 (IbrahimK42)
 1. [ATHR] Fix ATHR Alt Soft Mode - @IbrahimK42 (IbrahimK42)
 1. [HYD] Simplified max step loop updater - @Crocket63
+1. [MISC] Fix for bleed/hyd system failure in some conditions - @Crocket63
 1. [COND] Add cabin temperature simulation and control - @mjuhe (Miquel Juhe)
 1. [COND] Improve air conditioning pack flow model - @mjuhe (Miquel Juhe)
 
