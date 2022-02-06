@@ -93,27 +93,22 @@ fs.writeFileSync(path.join(A32NX, 'manifest.json'), JSON.stringify({
 // Development will show a yellow label
 // All other branches show a red label
 
-const SRC_FOLDER = path.resolve(__dirname, '..', 'src');
-const TARGET_DSS = '/SimObjects/AirPlanes/FlyByWire_A320_NEO/TEXTURE/A320NEO_COCKPIT_DECALSTEXT_ALBD.TIF.dds';
-const STABLE_DDS = '/Textures/decals 4k/A320NEO_COCKPIT_DECALSTEXT_ALBD.TIF-yellow.dds';
-const DEV_DDS = '/Textures/decals 4k/A320NEO_COCKPIT_DECALSTEXT_ALBD.TIF-yellow.dds';
-const EXP_DDS = '/Textures/decals 4k/A320NEO_COCKPIT_DECALSTEXT_ALBD.TIF-red.dds';
-
-function copyDDSFiles(src_dds, target_dds) {
+function copyDDSFiles(src_dds) {
+    const TARGET_PATH = '/SimObjects/AirPlanes/FlyByWire_A320_NEO/TEXTURE/A320NEO_COCKPIT_DECALSTEXT_ALBD.TIF.dds';
     // destination will be created or overwritten by default.
-    fs.copyFile(path.join(SRC_FOLDER, src_dds), path.join(A32NX, target_dds),
+    fs.copyFile(path.join(path.resolve(__dirname, '..', 'src'), src_dds), path.join(A32NX, TARGET_PATH),
         (err) => {
             if (err) {
                 throw err;
             }
-            console.log('copying ' + src_dds + ` to ` + target_dds + "failed: " + err);
+            console.log('copying ' + src_dds + ` to ` + TARGET_PATH + "failed: " + err);
         });
 }
 
 if (edition === 'stable') {
-    copyDDSFiles(STABLE_DDS, TARGET_DSS);
+    copyDDSFiles('/Textures/decals 4k/A320NEO_COCKPIT_DECALSTEXT_ALBD.TIF-yellow.dds');
 } else if (GIT_BRANCH === 'master') {
-    copyDDSFiles(DEV_DDS, TARGET_DSS);
+    copyDDSFiles('/Textures/decals 4k/A320NEO_COCKPIT_DECALSTEXT_ALBD.TIF-yellow.dds');
 } else {
-    copyDDSFiles(EXP_DDS, TARGET_DSS);
+    copyDDSFiles('/Textures/decals 4k/A320NEO_COCKPIT_DECALSTEXT_ALBD.TIF-red.dds');
 }
