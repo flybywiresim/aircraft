@@ -4,7 +4,7 @@
 import { ColorCode } from '../../Common/metarTypes';
 import { parseMetar } from './parseMetar';
 
-describe('Test that parseMetar', () => {
+describe('parseMetar', () => {
     it('throws an error when provided with an empty value', () => {
         // empty metar string
         expect(() => {
@@ -12,7 +12,7 @@ describe('Test that parseMetar', () => {
         }).toThrow(new Error('Not enough METAR information found'));
     });
 
-    test('it throws an error when provided with an incomplete value', () => {
+    it('throws an error when provided with an incomplete value', () => {
         // empty metar string
         expect(() => {
             parseMetar('EDDM 291250Z');
