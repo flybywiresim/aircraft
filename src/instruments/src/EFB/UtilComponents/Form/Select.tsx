@@ -12,7 +12,7 @@ const activeButtonRow = ({ disabled, selected }: Partial<SelectItemProps>) => {
         return ('flex items-center px-6 py-2 text-theme-unselected bg-opacity-0 hover:bg-opacity-100 transition duration-300 cursor-not-allowed');
     }
     if (selected) {
-        return ('flex items-center px-6 py-2 bg-theme-highlight bg-opacity-100');
+        return ('flex items-center px-6 py-2 bg-theme-highlight bg-opacity-100 text-theme-body');
     }
     if (!selected) {
         return ('flex items-center px-6 py-2 bg-opacity-0 hover:bg-opacity-100 transition duration-300');
