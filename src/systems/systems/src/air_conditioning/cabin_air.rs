@@ -14,7 +14,7 @@ use uom::si::{
     power::{kilowatt, watt},
     pressure::pascal,
     ratio::percent,
-    thermodynamic_temperature::kelvin,
+    thermodynamic_temperature::{degree_celsius, kelvin},
     velocity::meter_per_second,
     volume::cubic_meter,
 };
@@ -127,14 +127,18 @@ struct ZoneAir {
 }
 
 impl ZoneAir {
-    const PASSENGER_HEAT_RELEASE_KILOWATT: f64 = 0.1; // kW - from Thermodynamics: An Engineering Approach (Cengel and Boles)
     const A320_CABIN_DIAMETER_METER: f64 = 4.14; // m
     const FLOW_RATE_THROUGH_OPEN_DOOR_KG_PER_SECOND: f64 = 0.6; // kg/s
     const CONVECTION_COEFFICIENT_CONSTANT_FOR_NATURAL_CONVECTION: f64 = 1.32;
     const FIBER_GLASS_BLANKET_THERMAL_CONDUCTIVITY: f64 = 35.; // m*W/m*C
-    const FIBER_GLASS_BLANKET_THICKNESS_METER: f64 = 0.06; //m
+    const FIBER_GLASS_BLANKET_THICKNESS_METER: f64 = 0.12; // m
     const ALUMINIUM_ALLOY_THERMAL_CONDUCTIVITY: f64 = 177.; // m*W/m*C
-    const ALUMINIUM_ALLOW_THICKNESS_METER: f64 = 0.005; //m
+    const ALUMINIUM_ALLOY_THICKNESS_METER: f64 = 0.005; // m
+    const CONVECTION_COEFFICIENT_FOR_CLOTHED_BODY: f64 = 3.1; // W/m2*C
+    const HUMAN_BODY_RADIATION_COEFFICIENT: f64 = 4.7; // W/m2*c
+    const CLOTHED_AREA_OF_AVERAGE_HUMAN_METER: f64 = 1.8; // m2
+    const HUMAN_LUNG_TIDAL_VOLUME_PER_SECOND_METER: f64 = 0.0001; // m3/s
+    const HUMAN_EXHALE_AIR_TEMPERATURE_CELSIUS: f64 = 35.; // C
 
     fn new() -> Self {
         Self {
@@ -199,7 +203,7 @@ impl ZoneAir {
             * Air::SPECIFIC_HEAT_CAPACITY_PRESSURE
             * self.internal_air.temperature().get::<kelvin>();
         let passenger_heat_energy =
-            Self::PASSENGER_HEAT_RELEASE_KILOWATT * (zone_passengers as f64);
+            self.human_body_heat_calculation().get::<kilowatt>() * (zone_passengers as f64);
         let wall_transfer_heat_energy = self
             .heat_transfer_through_wall_calculation(context, zone_volume)
             .get::<kilowatt>();
@@ -245,7 +249,7 @@ impl ZoneAir {
             / (1. / internal_convection_coefficient
                 + Self::FIBER_GLASS_BLANKET_THICKNESS_METER
                     / Self::FIBER_GLASS_BLANKET_THERMAL_CONDUCTIVITY
-                + Self::ALUMINIUM_ALLOW_THICKNESS_METER
+                + Self::ALUMINIUM_ALLOY_THICKNESS_METER
                     / Self::ALUMINIUM_ALLOY_THERMAL_CONDUCTIVITY
                 + 1. / external_convection_coefficient);
         let zone_surface_area: f64 = 2.
@@ -313,6 +317,28 @@ impl ZoneAir {
 
     fn zone_air_temperature(&self) -> ThermodynamicTemperature {
         self.internal_air.temperature()
+    }
+
+    fn human_body_heat_calculation(&self) -> Power {
+        // Simplified from: https://engineer-educators.com/topic/3-heat-transfer-from-the-human-body/
+        // Aproximation of clothes temperature based on external temperature
+        let clothes_temperature =
+            0.714 * self.internal_air.temperature().get::<degree_celsius>() + 10.;
+        let convection_heat_loss_skin: f64 = Self::CONVECTION_COEFFICIENT_FOR_CLOTHED_BODY
+            * Self::CLOTHED_AREA_OF_AVERAGE_HUMAN_METER
+            * (clothes_temperature - self.internal_air.temperature().get::<degree_celsius>());
+        let radiation_heat_loss_skin: f64 = Self::HUMAN_BODY_RADIATION_COEFFICIENT
+            * Self::CLOTHED_AREA_OF_AVERAGE_HUMAN_METER
+            * (clothes_temperature - self.internal_air.temperature().get::<degree_celsius>()).abs();
+
+        let lung_heat_loss: f64 = Self::HUMAN_LUNG_TIDAL_VOLUME_PER_SECOND_METER
+            * Air::SPECIFIC_HEAT_CAPACITY_PRESSURE
+            * 1000.
+            * (Self::HUMAN_EXHALE_AIR_TEMPERATURE_CELSIUS
+                - self.internal_air.temperature().get::<degree_celsius>());
+
+        let human_heat_loss = convection_heat_loss_skin + radiation_heat_loss_skin + lung_heat_loss;
+        Power::new::<watt>(human_heat_loss)
     }
 }
 
