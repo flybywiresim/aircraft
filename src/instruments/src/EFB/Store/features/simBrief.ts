@@ -198,7 +198,7 @@ export async function fetchSimbriefDataAction(simbriefUserId: string): Promise<T
 /**
  * @returns Whether or not the simbrief data has been altered from its original state
  */
-export const simbriefDataIsInitialState = (): boolean => (store.getState() as RootState).simbrief === initialState;
+export const isSimbriefDataLoaded = (): boolean => (store.getState() as RootState).simbrief === initialState;
 
 export const { setSimbriefData } = simbriefSlice.actions;
 
