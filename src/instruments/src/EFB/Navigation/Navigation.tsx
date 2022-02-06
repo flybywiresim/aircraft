@@ -377,7 +377,7 @@ const ChartComponent = () => {
                         }}
                         className="w-16 h-14 rounded-r-none rounded-l-none border-transparent"
                     />
-                    <div className="flex items-center px-2 h-14 bg-theme-secondary">
+                    <div className="flex flex-shrink-0 items-center px-2 h-14 bg-theme-secondary">
                         of
                         {' '}
                         {pagesViewable}
@@ -534,7 +534,10 @@ const LocalFileChartSelector = ({ selectedTab, loading }: LocalFileChartSelector
 
     if (loading) {
         return (
-            <div className="flex justify-center items-center h-full rounded-md border-2 border-theme-accent">
+            <div
+                className="flex justify-center items-center h-full rounded-md border-2 border-theme-accent"
+                style={{ height: '42.25rem' }}
+            >
                 <CloudArrowDown className="animate-bounce" size={40} />
             </div>
         );
@@ -542,7 +545,10 @@ const LocalFileChartSelector = ({ selectedTab, loading }: LocalFileChartSelector
 
     if (!selectedTab.charts.length) {
         return (
-            <div className="flex justify-center items-center h-full rounded-md border-2 border-theme-accent">
+            <div
+                className="flex justify-center items-center h-full rounded-md border-2 border-theme-accent"
+                style={{ height: '42.25rem' }}
+            >
                 <p>There are no charts to display.</p>
             </div>
         );
@@ -598,7 +604,7 @@ const LocalFileChartSelector = ({ selectedTab, loading }: LocalFileChartSelector
                     onClick={() => handleChartClick(chart)}
                     key={chart.fileName}
                 >
-                    <span className={`w-2 transition duration-100 group-hover:bg-theme-highlight ${chart.fileName === chartId
+                    <span className={`w-2 transition flex-shrink-0 duration-100 group-hover:bg-theme-highlight ${chart.fileName === chartId
                         ? 'bg-theme-highlight'
                         : 'bg-theme-secondary'}`}
                     />
@@ -667,22 +673,6 @@ const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartSelector
         }
     }, [runwaySet]);
 
-    if (loading) {
-        return (
-            <div className="flex justify-center items-center h-full rounded-md border-2 border-theme-accent">
-                <CloudArrowDown className="animate-bounce" size={40} />
-            </div>
-        );
-    }
-
-    if (!selectedTab.charts.length) {
-        return (
-            <div className="flex justify-center items-center h-full rounded-md border-2 border-theme-accent">
-                <p>There are no charts to display.</p>
-            </div>
-        );
-    }
-
     const handleChartClick = (chart: NavigraphChart) => {
         dispatch(setPagesViewable(1));
 
@@ -692,6 +682,28 @@ const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartSelector
 
         dispatch(setBoundingBox(chart.boundingBox));
     };
+
+    if (loading) {
+        return (
+            <div
+                className="flex justify-center items-center h-full rounded-md border-2 border-theme-accent"
+                style={{ height: '42.25rem' }}
+            >
+                <CloudArrowDown className="animate-bounce" size={40} />
+            </div>
+        );
+    }
+
+    if (!selectedTab.charts.length) {
+        return (
+            <div
+                className="flex justify-center items-center h-full rounded-md border-2 border-theme-accent"
+                style={{ height: '42.25rem' }}
+            >
+                <p>There are no charts to display.</p>
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-4">
@@ -707,7 +719,7 @@ const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartSelector
                                         onClick={() => handleChartClick(chart as NavigraphChart)}
                                         key={(chart as NavigraphChart).id}
                                     >
-                                        <span className={`w-2 transition duration-100 group-hover:bg-theme-highlight ${(chart as NavigraphChart).id === chartId
+                                        <span className={`w-2 flex-shrink-0 transition duration-100 group-hover:bg-theme-highlight ${(chart as NavigraphChart).id === chartId
                                             ? 'bg-theme-highlight'
                                             : 'bg-theme-secondary'}`}
                                         />
@@ -902,7 +914,7 @@ const NavigraphChartsUI = () => {
                         </div>
                         <div className="flex flex-row items-center w-full h-11">
                             <ArrowReturnRight size={30} />
-                            <div className="flex items-center px-4 w-full">
+                            <div className="flex items-center px-4 w-full whitespace-nowrap">
                                 {getStatusBarText()}
                             </div>
                         </div>
@@ -1113,7 +1125,7 @@ const LocalFileChartUI = () => {
                         </div>
                         <div className="flex flex-row items-center w-full h-11">
                             <ArrowReturnRight size={30} />
-                            <div className="flex items-center px-4 w-full">
+                            <div className="flex items-center px-4 w-full whitespace-nowrap">
                                 {getStatusBarText()}
                             </div>
                         </div>
