@@ -4,7 +4,7 @@ import { CloudArrowDown } from 'react-bootstrap-icons';
 import { usePersistentProperty } from '@instruments/common/persistence';
 import { toast } from 'react-toastify';
 
-import { fetchSimbriefDataAction, simbriefDataIsInitialState } from '../../Store/features/simbrief';
+import { fetchSimbriefDataAction, isSimbriefDataLoaded } from '../../Store/features/simbrief';
 import { useAppSelector, useAppDispatch } from '../../Store/store';
 
 import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
@@ -88,7 +88,7 @@ const simbriefValuePlaceholders = {
 export const FlightWidget = () => {
     const [simbriefUserId] = usePersistentProperty('CONFIG_SIMBRIEF_USERID');
     const { data } = useAppSelector((state) => state.simbrief);
-    const isInitialData = simbriefDataIsInitialState();
+    const simbriefDataLoaded = isSimbriefDataLoaded();
 
     const {
         schedIn,
@@ -110,7 +110,7 @@ export const FlightWidget = () => {
         arrivingRunway,
         departingRunway,
         aircraftReg,
-    } = isInitialData ? simbriefValuePlaceholders : data;
+    } = simbriefDataLoaded ? simbriefValuePlaceholders : data;
     const { flightPlanProgress } = useAppSelector((state) => state.flightProgress);
 
     const dispatch = useAppDispatch();
@@ -211,7 +211,7 @@ export const FlightWidget = () => {
                         <h5 className="text-2xl font-bold">Route</h5>
                         <ScrollableContainer height={15}>
                             <p className="font-mono">
-                                {!isInitialData && (
+                                {!simbriefDataLoaded && (
                                     <span className="text-theme-highlight">
                                         {departingAirport}
                                         /
@@ -221,7 +221,7 @@ export const FlightWidget = () => {
                                 {' '}
                                 {route}
                                 {' '}
-                                {!isInitialData && (
+                                {!simbriefDataLoaded && (
                                     <span className="text-theme-highlight">
                                         {arrivingAirport}
                                         /

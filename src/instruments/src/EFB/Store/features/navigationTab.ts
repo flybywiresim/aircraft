@@ -17,6 +17,7 @@ interface InitialChartState {
     icao: string;
     chartName: ThemedChart;
     boundingBox?: NavigraphBoundingBox;
+    pagesViewable: number;
 }
 
 type ThemedChart = {
@@ -45,6 +46,7 @@ const initialState: InitialChartState = {
         dark: '',
     },
     boundingBox: undefined,
+    pagesViewable: 1,
 };
 
 export const navigationTabSlice = createSlice({
@@ -88,6 +90,9 @@ export const navigationTabSlice = createSlice({
         setBoundingBox: (state, action: TypedAction<NavigraphBoundingBox | undefined>) => {
             state.boundingBox = action.payload;
         },
+        setPagesViewable: (state, action: TypedAction<number>) => {
+            state.pagesViewable = action.payload;
+        },
     },
 });
 
@@ -103,5 +108,6 @@ export const {
     setIcao,
     setChartName,
     setBoundingBox,
+    setPagesViewable,
 } = navigationTabSlice.actions;
 export default navigationTabSlice.reducer;
