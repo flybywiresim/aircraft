@@ -11,6 +11,12 @@ use crate::{
 };
 use nalgebra::{Rotation3, Vector3};
 
+pub trait DeltaContext {
+    fn delta(&self) -> Duration;
+    fn delta_as_secs_f64(&self) -> f64;
+    fn delta_as_time(&self) -> Time;
+}
+
 #[derive(Clone, Copy, Debug, Default)]
 pub struct Attitude {
     pitch: Angle,
@@ -97,7 +103,7 @@ pub struct UpdateContext {
     plane_bank_id: VariableIdentifier,
     mach_number_id: VariableIdentifier,
 
-    delta: Duration,
+    delta: Delta,
     indicated_airspeed: Velocity,
     indicated_altitude: Length,
     ambient_temperature: ThermodynamicTemperature,
@@ -154,7 +160,7 @@ impl UpdateContext {
             plane_bank_id: context.get_identifier(Self::PLANE_BANK_KEY.to_owned()),
             mach_number_id: context.get_identifier(Self::MACH_NUMBER_KEY.to_owned()),
 
-            delta,
+            delta: delta.into(),
             indicated_airspeed,
             indicated_altitude,
             ambient_temperature,
@@ -200,7 +206,7 @@ impl UpdateContext {
     }
 
     /// Updates a context based on the data that was read from the simulator.
-    pub(super) fn update(&mut self, reader: &mut SimulatorReader, delta_time: Duration) {
+    pub(super) fn update(&mut self, reader: &mut SimulatorReader, delta: Duration) {
         self.ambient_temperature = reader.read(&self.ambient_temperature_id);
         self.indicated_airspeed = reader.read(&self.indicated_airspeed_id);
         self.indicated_altitude = reader.read(&self.indicated_altitude_id);
@@ -209,7 +215,7 @@ impl UpdateContext {
             Pressure::new::<inch_of_mercury>(reader.read(&self.ambient_pressure_id));
         self.vertical_speed =
             Velocity::new::<foot_per_minute>(reader.read(&self.vertical_speed_id));
-        self.delta = delta_time;
+        self.delta = delta.into();
         self.local_acceleration = LocalAcceleration::new(
             reader.read(&self.accel_body_x_id),
             reader.read(&self.accel_body_y_id),
@@ -229,15 +235,15 @@ impl UpdateContext {
     }
 
     pub fn delta(&self) -> Duration {
-        self.delta
+        self.delta.into()
     }
 
     pub fn delta_as_secs_f64(&self) -> f64 {
-        self.delta.as_secs_f64()
+        self.delta.into()
     }
 
     pub fn delta_as_time(&self) -> Time {
-        Time::new::<second>(self.delta.as_secs_f64())
+        self.delta.into()
     }
 
     pub fn indicated_airspeed(&self) -> Velocity {
@@ -298,8 +304,49 @@ impl UpdateContext {
 
     pub fn with_delta(&self, delta: Duration) -> Self {
         let mut copy: UpdateContext = *self;
-        copy.delta = delta;
+        copy.delta = Delta(delta);
 
         copy
+    }
+}
+
+impl DeltaContext for UpdateContext {
+    fn delta(&self) -> Duration {
+        self.delta()
+    }
+
+    fn delta_as_secs_f64(&self) -> f64 {
+        self.delta_as_secs_f64()
+    }
+
+    fn delta_as_time(&self) -> Time {
+        self.delta_as_time()
+    }
+}
+
+#[derive(Copy, Clone, Debug, Default)]
+pub(super) struct Delta(pub(super) Duration);
+
+impl From<Delta> for Duration {
+    fn from(value: Delta) -> Self {
+        value.0
+    }
+}
+
+impl From<Duration> for Delta {
+    fn from(value: Duration) -> Self {
+        Delta(value)
+    }
+}
+
+impl From<Delta> for f64 {
+    fn from(value: Delta) -> Self {
+        value.0.as_secs_f64()
+    }
+}
+
+impl From<Delta> for Time {
+    fn from(value: Delta) -> Self {
+        Time::new::<second>(value.into())
     }
 }

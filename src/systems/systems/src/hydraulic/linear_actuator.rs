@@ -1032,7 +1032,7 @@ mod tests {
 
     use super::*;
 
-    use crate::hydraulic::update_iterator::MaxFixedStepLoop;
+    use crate::hydraulic::update_iterator::MaxStepLoop;
     use crate::simulation::test::{SimulationTestBed, TestBed, WriteByName};
     use crate::simulation::{Aircraft, SimulationElement};
     use std::time::Duration;
@@ -1090,7 +1090,7 @@ mod tests {
     }
 
     struct TestAircraft {
-        loop_updater: MaxFixedStepLoop,
+        loop_updater: MaxStepLoop,
 
         actuator_assembly: HydraulicLinearActuatorAssembly,
 
@@ -1101,7 +1101,7 @@ mod tests {
     impl TestAircraft {
         fn new(actuator: LinearActuator, body: LinearActuatedRigidBodyOnHingeAxis) -> Self {
             Self {
-                loop_updater: MaxFixedStepLoop::new(Duration::from_millis(33)),
+                loop_updater: MaxStepLoop::new(Duration::from_millis(33)),
 
                 actuator_assembly: HydraulicLinearActuatorAssembly::new(actuator, body),
 
