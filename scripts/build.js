@@ -99,29 +99,21 @@ const STABLE_DDS = '/Textures/decals 4k/A320NEO_COCKPIT_DECALSTEXT_ALBD.TIF-yell
 const DEV_DDS = '/Textures/decals 4k/A320NEO_COCKPIT_DECALSTEXT_ALBD.TIF-yellow.dds';
 const EXP_DDS = '/Textures/decals 4k/A320NEO_COCKPIT_DECALSTEXT_ALBD.TIF-red.dds';
 
-if (edition === 'stable') {
+function copyDDSFiles(src_dds, target_dds) {
     // destination will be created or overwritten by default.
-    fs.copyFile(path.join(SRC_FOLDER, STABLE_DDS), path.join(A32NX, TARGET_DSS),
+    fs.copyFile(path.join(SRC_FOLDER, src_dds), path.join(A32NX, target_dds),
         (err) => {
             if (err) {
                 throw err;
             }
-            console.log('copying ' + STABLE_DDS + ` to ` + TARGET_DSS + "failed: " + err);
+            console.log('copying ' + src_dds + ` to ` + target_dds + "failed: " + err);
         });
+}
+
+if (edition === 'stable') {
+    copyDDSFiles(STABLE_DDS, TARGET_DSS);
 } else if (GIT_BRANCH === 'master') {
-    fs.copyFile(path.join(SRC_FOLDER, DEV_DDS), path.join(A32NX, TARGET_DSS),
-        (err) => {
-            if (err) {
-                throw err;
-            }
-            console.log('copying ' + DEV_DDS + ` to ` + TARGET_DSS + "failed: " + err);
-        });
+    copyDDSFiles(DEV_DDS, TARGET_DSS);
 } else {
-    fs.copyFile(path.join(SRC_FOLDER, EXP_DDS), path.join(A32NX, TARGET_DSS),
-        (err) => {
-            if (err) {
-                throw err;
-            }
-            console.log('copying ' + EXP_DDS + ` to ` + TARGET_DSS + "failed: " + err);
-        });
+    copyDDSFiles(EXP_DDS, TARGET_DSS);
 }
