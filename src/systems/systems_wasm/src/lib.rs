@@ -163,6 +163,7 @@ impl MsfsHandler {
                     if let Some(failures) = &self.failures {
                         Self::read_failures_into_simulation(failures, simulation);
                     }
+
                     simulation.tick(delta_time, self);
                     self.post_tick(sim_connect)?;
                 }
@@ -556,10 +557,16 @@ impl Time {
     }
 
     fn take(&mut self) -> Duration {
-        let value = self.next_delta;
+        let delta = Duration::from_secs_f64(self.next_delta);
         self.next_delta = 0.;
 
-        Duration::from_secs_f64(value)
+        const MAX_ALLOWED_DELTA_TIME: Duration = Duration::from_millis(500);
+        if delta > MAX_ALLOWED_DELTA_TIME {
+            println!("SYSTEM WASM CAPPING ABNORMAL DELTA TIME OF {:?}.", delta);
+            MAX_ALLOWED_DELTA_TIME
+        } else {
+            delta
+        }
     }
 }
 

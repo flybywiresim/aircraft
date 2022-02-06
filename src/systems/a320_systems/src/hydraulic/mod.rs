@@ -34,7 +34,7 @@ use systems::{
             Pushback, SteeringActuator, SteeringAngleLimiter, SteeringController,
             SteeringRatioToAngle,
         },
-        update_iterator::{FixedStepLoop, MaxFixedStepLoop},
+        update_iterator::{FixedStepLoop, MaxStepLoop},
         ElectricPump, EngineDrivenPump, HydraulicCircuit, HydraulicCircuitController,
         PowerTransferUnit, PowerTransferUnitController, PressureSwitch, PressureSwitchType,
         PumpController, RamAirTurbine, RamAirTurbineController, Reservoir, SectionPressure,
@@ -255,7 +255,7 @@ pub(super) struct A320Hydraulic {
     nose_steering: SteeringActuator,
 
     core_hydraulic_updater: FixedStepLoop,
-    physics_updater: MaxFixedStepLoop,
+    physics_updater: MaxStepLoop,
 
     brake_steer_computer: A320HydraulicBrakeSteerComputerUnit,
 
@@ -365,7 +365,7 @@ impl A320Hydraulic {
             ),
 
             core_hydraulic_updater: FixedStepLoop::new(Self::HYDRAULIC_SIM_TIME_STEP),
-            physics_updater: MaxFixedStepLoop::new(Self::HYDRAULIC_SIM_MAX_TIME_STEP_MILLISECONDS),
+            physics_updater: MaxStepLoop::new(Self::HYDRAULIC_SIM_MAX_TIME_STEP_MILLISECONDS),
 
             brake_steer_computer: A320HydraulicBrakeSteerComputerUnit::new(context),
 
