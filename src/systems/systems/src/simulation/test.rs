@@ -23,7 +23,8 @@ use super::{
 };
 use crate::landing_gear::LandingGear;
 use crate::shared::arinc429::{from_arinc429, to_arinc429, Arinc429Word, SignStatus};
-use crate::simulation::{InitContext, VariableIdentifier, VariableRegistry};
+use crate::simulation::update_context::Delta;
+use crate::simulation::{DeltaContext, InitContext, VariableIdentifier, VariableRegistry};
 
 pub trait TestBed {
     type Aircraft: Aircraft;
@@ -686,5 +687,31 @@ mod tests {
             test_bed.query_element(|e| e.update_called_before_or_after_receive_power()),
             Some(CallOrder::Before)
         );
+    }
+}
+
+#[derive(Default)]
+pub struct TestUpdateContext {
+    delta: Delta,
+}
+
+impl TestUpdateContext {
+    pub fn with_delta(mut self, delta: Duration) -> Self {
+        self.delta = delta.into();
+        self
+    }
+}
+
+impl DeltaContext for TestUpdateContext {
+    fn delta(&self) -> Duration {
+        self.delta.into()
+    }
+
+    fn delta_as_secs_f64(&self) -> f64 {
+        self.delta.into()
+    }
+
+    fn delta_as_time(&self) -> Time {
+        self.delta.into()
     }
 }
