@@ -180,16 +180,6 @@ impl SlatFlapControlComputer {
         (demanded_angle - feedback_angle).get::<degree>().abs() > Self::EQUAL_ANGLE_DELTA_DEGREE
     }
 
-    fn alpha_lock_bounds_check(airspeed: Velocity, alpha: Angle) -> bool {
-        if airspeed.get::<knot>() < Self::ALPHA_LOCK_ENGAGE_SPEED_KNOTS
-            || alpha.get::<degree>() > Self::ALPHA_LOCK_ENGAGE_ALPHA_DEGREES {
-            true
-        }
-        else {
-            false
-        }
-    }
-
     fn alpha_lock_check(&mut self, context: &UpdateContext, flaps_handle: &FlapsHandle) {
         let airspeed: Velocity = context.indicated_airspeed();
         let alpha: Angle = context.alpha();
@@ -212,7 +202,7 @@ impl SlatFlapControlComputer {
                 self.alpha_lock_engaged_alpha = true;
             }
         }
-        println!("{},{}",self.alpha_lock_engaged_speed,self.alpha_lock_engaged_alpha);
+
         match self.alpha_lock_engaged {
             false =>
                 if (self.alpha_lock_engaged_alpha || self.alpha_lock_engaged_speed)
@@ -224,7 +214,7 @@ impl SlatFlapControlComputer {
 
             true => self.alpha_lock_engaged = self.alpha_lock_engaged_speed || self.alpha_lock_engaged_alpha
         }
-        println!("alpha_lock = {}", self.alpha_lock_engaged);
+
     }
 
     pub fn update(
@@ -290,14 +280,14 @@ impl SimulationElement for SlatFlapControlComputer {
 }
 
 pub struct SlatFlapComplex {
-    sfcc: SlatFlapControlComputer,
+    sfcc: [SlatFlapControlComputer; 2],
     flaps_handle: FlapsHandle,
 }
 
 impl SlatFlapComplex {
     pub fn new(context: &mut InitContext) -> Self {
         Self {
-            sfcc: SlatFlapControlComputer::new(context),
+            sfcc: [SlatFlapControlComputer::new(context),SlatFlapControlComputer::new(context)],
             flaps_handle: FlapsHandle::new(context),
         }
     }
@@ -308,22 +298,25 @@ impl SlatFlapComplex {
         flaps_feedback: &impl FeedbackPositionPickoffUnit,
         slats_feedback: &impl FeedbackPositionPickoffUnit,
     ) {
-        self.sfcc
+        self.sfcc[0]
+            .update(context, &self.flaps_handle, flaps_feedback, slats_feedback);
+        self.sfcc[1]
             .update(context, &self.flaps_handle, flaps_feedback, slats_feedback);
     }
 
-    pub fn flap_demand(&self) -> Option<Angle> {
-        self.sfcc.signal_demanded_angle("FLAPS")
+    pub fn flap_demand(&self, n: usize) -> Option<Angle> {
+        self.sfcc[n].signal_demanded_angle("FLAPS")
     }
 
-    pub fn slat_demand(&self) -> Option<Angle> {
-        self.sfcc.signal_demanded_angle("SLATS")
+    pub fn slat_demand(&self, n: usize) -> Option<Angle> {
+        self.sfcc[n].signal_demanded_angle("SLATS")
     }
 }
 impl SimulationElement for SlatFlapComplex {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.flaps_handle.accept(visitor);
-        self.sfcc.accept(visitor);
+        self.sfcc[0].accept(visitor);
+        self.sfcc[1].accept(visitor);
         visitor.visit(self);
     }
 }
@@ -387,14 +380,14 @@ mod tests {
         fn update(
             &mut self,
             context: &UpdateContext,
-            sfcc: &impl SlatFlapLane,
+            sfcc: &[impl SlatFlapLane; 2],
             hydraulic_pressure_left_side: Pressure,
             hydraulic_pressure_right_side: Pressure,
         ) {
             if hydraulic_pressure_left_side.get::<psi>() > 1500.
                 || hydraulic_pressure_right_side.get::<psi>() > 1500.
             {
-                if let Some(demanded_angle) = sfcc.signal_demanded_angle(&self.surface_type) {
+                if let Some(demanded_angle) = sfcc[0].signal_demanded_angle(&self.surface_type) {
                     let actual_minus_target = demanded_angle - self.current_angle;
                     if actual_minus_target.get::<degree>().abs() > Self::ANGLE_DELTA_DEGREE {
                         self.current_angle += Angle::new::<degree>(
@@ -565,7 +558,7 @@ mod tests {
         fn get_flaps_demanded_angle(&self) -> f64 {
             self.query(|a| {
                 a.slat_flap_complex
-                    .sfcc
+                    .sfcc[0]
                     .flaps_demanded_angle
                     .get::<degree>()
             })
@@ -574,7 +567,7 @@ mod tests {
         fn get_slats_demanded_angle(&self) -> f64 {
             self.query(|a| {
                 a.slat_flap_complex
-                    .sfcc
+                    .sfcc[0]
                     .slats_demanded_angle
                     .get::<degree>()
             })
@@ -583,12 +576,20 @@ mod tests {
         fn is_alpha_lock_engaged(&self) -> bool {
             self.query(|a| {
                 a.slat_flap_complex
-                    .sfcc.alpha_lock_engaged
+                    .sfcc[0].alpha_lock_engaged
+            })
+        }
+
+        fn is_alpha_lock_engaged_speed(&self) -> bool {
+            self.query(|a| {
+                a.slat_flap_complex
+                    .sfcc[0]
+                    .alpha_lock_engaged_speed
             })
         }
 
         fn get_flaps_conf(&self) -> FlapsConf {
-            self.query(|a| a.slat_flap_complex.sfcc.flaps_conf)
+            self.query(|a| a.slat_flap_complex.sfcc[0].flaps_conf)
         }
 
         fn get_flaps_angle(&self) -> f64 {
@@ -629,13 +630,15 @@ mod tests {
         A320FlapsTestBed::new()
     }
 
-    fn test_bed_with() -> A320FlapsTestBed {
-        test_bed()
+    fn test_bed_with(on_ground: bool) -> A320FlapsTestBed {
+        let mut test_bed = test_bed();
+        test_bed.set_on_ground(on_ground);
+        test_bed
     }
 
     #[test]
     fn flaps_simvars() {
-        let test_bed = test_bed_with().run_one_tick();
+        let test_bed = test_bed_with(false).run_one_tick();
 
         assert!(test_bed.contains_variable_with_name("LEFT_FLAPS_ANGLE"));
         assert!(test_bed.contains_variable_with_name("RIGHT_FLAPS_ANGLE"));
@@ -659,7 +662,7 @@ mod tests {
 
     #[test]
     fn flaps_test_alpha_lock() {
-        let mut test_bed = test_bed_with()
+        let mut test_bed = test_bed_with(false)
             .set_green_hyd_pressure()
             .set_indicated_airspeed(50.)
             .set_alpha(0.);
@@ -673,7 +676,7 @@ mod tests {
         assert!(!test_bed.is_alpha_lock_engaged());
 
         //alpha lock test angle logic - airspeed fixed
-        test_bed = test_bed_with()
+        test_bed = test_bed_with(false)
             .set_green_hyd_pressure()
             .set_indicated_airspeed(160.)
             .set_flaps_handle_position(1);
@@ -699,7 +702,7 @@ mod tests {
         assert_eq!(test_bed.get_flaps_conf(),FlapsConf::Conf0);
 
         //alpha lock test speed logic - angle fixed
-        test_bed = test_bed_with()
+        test_bed = test_bed_with(false)
             .set_green_hyd_pressure()
             .set_alpha(0.)
             .set_flaps_handle_position(1);
@@ -724,7 +727,7 @@ mod tests {
         assert_eq!(test_bed.get_flaps_conf(),FlapsConf::Conf0);
 
         //alpha lock test combined
-        test_bed = test_bed_with()
+        test_bed = test_bed_with(false)
             .set_green_hyd_pressure()
             .set_flaps_handle_position(1);
         test_bed.set_on_ground(false);
@@ -749,7 +752,7 @@ mod tests {
     #[test]
     fn flaps_test_regular_handle_increase_transitions_flaps_target_airspeed_below_100() {
         let angle_delta: f64 = 0.1;
-        let mut test_bed = test_bed_with()
+        let mut test_bed = test_bed_with(true)
             .set_green_hyd_pressure()
             .set_indicated_airspeed(50.)
             .run_one_tick();
@@ -779,7 +782,7 @@ mod tests {
     #[test]
     fn flaps_test_regular_handle_increase_transitions_flaps_target_airspeed_above_100() {
         let angle_delta: f64 = 0.1;
-        let mut test_bed = test_bed_with()
+        let mut test_bed = test_bed_with(false)
             .set_green_hyd_pressure()
             .set_indicated_airspeed(150.)
             .run_one_tick();
@@ -806,7 +809,7 @@ mod tests {
     //Tests regular transition 2->1 below and above 210 knots
     #[test]
     fn flaps_test_regular_handle_transition_pos_2_to_1() {
-        let mut test_bed = test_bed_with()
+        let mut test_bed = test_bed_with(false)
             .set_green_hyd_pressure()
             .set_indicated_airspeed(150.)
             .set_flaps_handle_position(2)
@@ -832,7 +835,7 @@ mod tests {
     //Tests transition between Conf1F to Conf1 above 210 knots
     #[test]
     fn flaps_test_regular_handle_transition_pos_1_to_1() {
-        let mut test_bed = test_bed_with()
+        let mut test_bed = test_bed_with(true)
             .set_green_hyd_pressure()
             .set_indicated_airspeed(50.)
             .set_flaps_handle_position(1)
@@ -855,7 +858,7 @@ mod tests {
     #[test]
     fn flaps_test_regular_decrease_handle_transition_flaps_target_airspeed_below_210() {
         let angle_delta: f64 = 0.1;
-        let mut test_bed = test_bed_with()
+        let mut test_bed = test_bed_with(true)
             .set_green_hyd_pressure()
             .set_indicated_airspeed(150.)
             .run_one_tick();
@@ -887,7 +890,7 @@ mod tests {
     #[test]
     fn flaps_test_regular_decrease_handle_transition_flaps_target_airspeed_above_210() {
         let angle_delta: f64 = 0.1;
-        let mut test_bed = test_bed_with()
+        let mut test_bed = test_bed_with(true)
             .set_green_hyd_pressure()
             .set_indicated_airspeed(220.)
             .run_one_tick();
@@ -920,7 +923,7 @@ mod tests {
     // to y = 0,1 should behave like a sequential transition.
     #[test]
     fn flaps_test_irregular_handle_transition_init_pos_0() {
-        let mut test_bed = test_bed_with()
+        let mut test_bed = test_bed_with(true)
             .set_green_hyd_pressure()
             .set_indicated_airspeed(0.)
             .set_flaps_handle_position(0)
@@ -941,25 +944,6 @@ mod tests {
         test_bed = test_bed.set_flaps_handle_position(4).run_one_tick();
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::ConfFull);
 
-        test_bed = test_bed
-            .set_indicated_airspeed(110.)
-            .set_flaps_handle_position(0)
-            .run_one_tick();
-
-        test_bed = test_bed.set_flaps_handle_position(2).run_one_tick();
-        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf2);
-
-        test_bed = test_bed.set_flaps_handle_position(0).run_one_tick();
-        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf0);
-
-        test_bed = test_bed.set_flaps_handle_position(3).run_one_tick();
-        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf3);
-
-        test_bed = test_bed.set_flaps_handle_position(0).run_one_tick();
-        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf0);
-
-        test_bed = test_bed.set_flaps_handle_position(4).run_one_tick();
-        assert_eq!(test_bed.get_flaps_conf(), FlapsConf::ConfFull);
 
         test_bed = test_bed
             .set_indicated_airspeed(220.)
@@ -984,7 +968,7 @@ mod tests {
 
     #[test]
     fn flaps_test_irregular_handle_transition_init_pos_1() {
-        let mut test_bed = test_bed_with()
+        let mut test_bed = test_bed_with(true)
             .set_green_hyd_pressure()
             .set_indicated_airspeed(0.)
             .set_flaps_handle_position(1)
@@ -1001,7 +985,7 @@ mod tests {
         test_bed = test_bed.set_flaps_handle_position(4).run_one_tick();
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::ConfFull);
 
-        test_bed = test_bed_with()
+        test_bed = test_bed_with(true)
             .set_green_hyd_pressure()
             .set_indicated_airspeed(110.)
             .set_flaps_handle_position(1)
@@ -1015,7 +999,7 @@ mod tests {
         test_bed = test_bed.set_flaps_handle_position(1).run_one_tick();
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1F);
 
-        test_bed = test_bed_with()
+        test_bed = test_bed_with(true)
             .set_green_hyd_pressure()
             .set_indicated_airspeed(110.)
             .set_flaps_handle_position(1)
@@ -1028,7 +1012,7 @@ mod tests {
         test_bed = test_bed.set_flaps_handle_position(1).run_one_tick();
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1F);
 
-        test_bed = test_bed_with()
+        test_bed = test_bed_with(true)
             .set_green_hyd_pressure()
             .set_indicated_airspeed(220.)
             .set_flaps_handle_position(1)
@@ -1042,7 +1026,7 @@ mod tests {
         test_bed = test_bed.set_flaps_handle_position(1).run_one_tick();
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf1);
 
-        test_bed = test_bed_with()
+        test_bed = test_bed_with(true)
             .set_green_hyd_pressure()
             .set_indicated_airspeed(220.)
             .set_flaps_handle_position(1)
@@ -1059,7 +1043,7 @@ mod tests {
 
     #[test]
     fn flaps_test_irregular_handle_transition_init_pos_2() {
-        let mut test_bed = test_bed_with()
+        let mut test_bed = test_bed_with(true)
             .set_green_hyd_pressure()
             .set_indicated_airspeed(0.)
             .set_flaps_handle_position(2)
@@ -1073,7 +1057,7 @@ mod tests {
         test_bed = test_bed.set_flaps_handle_position(2).run_one_tick();
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf2);
 
-        test_bed = test_bed_with()
+        test_bed = test_bed_with(true)
             .set_green_hyd_pressure()
             .set_indicated_airspeed(0.)
             .set_flaps_handle_position(2)
@@ -1090,7 +1074,7 @@ mod tests {
 
     #[test]
     fn flaps_test_irregular_handle_transition_init_pos_3() {
-        let mut test_bed = test_bed_with()
+        let mut test_bed = test_bed_with(true)
             .set_green_hyd_pressure()
             .set_indicated_airspeed(150.)
             .set_flaps_handle_position(3)
@@ -1104,7 +1088,7 @@ mod tests {
         test_bed = test_bed.set_flaps_handle_position(3).run_one_tick();
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf3);
 
-        test_bed = test_bed_with()
+        test_bed = test_bed_with(true)
             .set_green_hyd_pressure()
             .set_indicated_airspeed(220.)
             .set_flaps_handle_position(3)
@@ -1118,7 +1102,7 @@ mod tests {
         test_bed = test_bed.set_flaps_handle_position(3).run_one_tick();
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf3);
 
-        test_bed = test_bed_with()
+        test_bed = test_bed_with(true)
             .set_green_hyd_pressure()
             .set_indicated_airspeed(0.)
             .set_flaps_handle_position(3)
@@ -1135,7 +1119,7 @@ mod tests {
 
     #[test]
     fn flaps_test_irregular_handle_transition_init_pos_4() {
-        let mut test_bed = test_bed_with()
+        let mut test_bed = test_bed_with(true)
             .set_green_hyd_pressure()
             .set_indicated_airspeed(150.)
             .set_flaps_handle_position(4)
@@ -1149,7 +1133,7 @@ mod tests {
         test_bed = test_bed.set_flaps_handle_position(4).run_one_tick();
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::ConfFull);
 
-        test_bed = test_bed_with()
+        test_bed = test_bed_with(true)
             .set_green_hyd_pressure()
             .set_indicated_airspeed(220.)
             .set_flaps_handle_position(4)
@@ -1163,7 +1147,7 @@ mod tests {
         test_bed = test_bed.set_flaps_handle_position(4).run_one_tick();
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::ConfFull);
 
-        test_bed = test_bed_with()
+        test_bed = test_bed_with(true)
             .set_green_hyd_pressure()
             .set_indicated_airspeed(0.)
             .set_flaps_handle_position(4)
@@ -1189,7 +1173,7 @@ mod tests {
     #[test]
     fn flaps_test_movement_0_to_1f() {
         let angle_delta = 0.01;
-        let mut test_bed = test_bed_with()
+        let mut test_bed = test_bed_with(true)
             .set_green_hyd_pressure()
             .set_indicated_airspeed(0.)
             .set_flaps_handle_position(0)
@@ -1231,7 +1215,7 @@ mod tests {
     #[test]
     fn flaps_test_movement_1f_to_2() {
         let angle_delta = 0.01;
-        let mut test_bed = test_bed_with()
+        let mut test_bed = test_bed_with(true)
             .set_green_hyd_pressure()
             .set_indicated_airspeed(0.)
             .set_flaps_handle_position(1)
@@ -1267,7 +1251,7 @@ mod tests {
     #[test]
     fn flaps_test_movement_2_to_3() {
         let angle_delta = 0.01;
-        let mut test_bed = test_bed_with()
+        let mut test_bed = test_bed_with(true)
             .set_green_hyd_pressure()
             .set_indicated_airspeed(0.)
             .set_flaps_handle_position(2)
@@ -1303,7 +1287,7 @@ mod tests {
     #[test]
     fn flaps_test_movement_3_to_full() {
         let angle_delta = 0.01;
-        let mut test_bed = test_bed_with()
+        let mut test_bed = test_bed_with(true)
             .set_green_hyd_pressure()
             .set_indicated_airspeed(0.)
             .set_flaps_handle_position(3)
@@ -1339,7 +1323,7 @@ mod tests {
     #[test]
     fn slats_test_movement_0_to_1f() {
         let angle_delta = 0.01;
-        let mut test_bed = test_bed_with()
+        let mut test_bed = test_bed_with(true)
             .set_green_hyd_pressure()
             .set_indicated_airspeed(0.)
             .set_flaps_handle_position(0)
@@ -1375,7 +1359,7 @@ mod tests {
     #[test]
     fn slats_and_flaps_test_movement_0_to_1() {
         let angle_delta = 0.01;
-        let mut test_bed = test_bed_with()
+        let mut test_bed = test_bed_with(true)
             .set_green_hyd_pressure()
             .set_blue_hyd_pressure()
             .set_indicated_airspeed(220.)
@@ -1415,7 +1399,7 @@ mod tests {
     #[test]
     fn slats_test_movement_1f_to_2() {
         let angle_delta = 0.01;
-        let mut test_bed = test_bed_with()
+        let mut test_bed = test_bed_with(true)
             .set_green_hyd_pressure()
             .set_indicated_airspeed(0.)
             .set_flaps_handle_position(1)
@@ -1451,7 +1435,7 @@ mod tests {
     #[test]
     fn slats_test_movement_2_to_3() {
         let angle_delta = 0.01;
-        let mut test_bed = test_bed_with()
+        let mut test_bed = test_bed_with(true)
             .set_green_hyd_pressure()
             .set_indicated_airspeed(0.)
             .set_flaps_handle_position(2)
@@ -1487,7 +1471,7 @@ mod tests {
     #[test]
     fn slats_test_movement_3_to_full() {
         let angle_delta = 0.01;
-        let mut test_bed = test_bed_with()
+        let mut test_bed = test_bed_with(true)
             .set_green_hyd_pressure()
             .set_indicated_airspeed(0.)
             .set_flaps_handle_position(3)
@@ -1522,7 +1506,7 @@ mod tests {
 
     #[test]
     fn only_flaps_move_when_yellow_only() {
-        let mut test_bed = test_bed_with()
+        let mut test_bed = test_bed_with(true)
             .set_yellow_hyd_pressure()
             .set_indicated_airspeed(0.)
             .set_flaps_handle_position(0)
@@ -1543,7 +1527,7 @@ mod tests {
 
     #[test]
     fn only_slats_move_when_blue_only() {
-        let mut test_bed = test_bed_with()
+        let mut test_bed = test_bed_with(true)
             .set_blue_hyd_pressure()
             .set_indicated_airspeed(0.)
             .set_flaps_handle_position(0)

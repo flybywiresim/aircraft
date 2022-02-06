@@ -731,16 +731,16 @@ impl A320Hydraulic {
 
         self.flap_system.update(
             context,
-            self.slats_flaps_complex.flap_demand(),
-            self.slats_flaps_complex.flap_demand(),
+            self.slats_flaps_complex.flap_demand(0),
+            self.slats_flaps_complex.flap_demand(1),
             self.green_circuit.system_pressure(),
             self.yellow_circuit.system_pressure(),
         );
 
         self.slat_system.update(
             context,
-            self.slats_flaps_complex.slat_demand(),
-            self.slats_flaps_complex.slat_demand(),
+            self.slats_flaps_complex.slat_demand(0),
+            self.slats_flaps_complex.slat_demand(1),
             self.blue_circuit.system_pressure(),
             self.green_circuit.system_pressure(),
         );
