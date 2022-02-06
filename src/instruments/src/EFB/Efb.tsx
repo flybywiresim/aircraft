@@ -26,7 +26,7 @@ import { Failures } from './Failures/Failures';
 
 import { clearEfbState, useAppDispatch, useAppSelector } from './Store/store';
 
-import { fetchSimbriefDataAction, initialState as simbriefInitialState } from './Store/features/simbrief';
+import { fetchSimbriefDataAction, isSimbriefDataLoaded } from './Store/features/simbrief';
 
 import { FbwLogo } from './UtilComponents/FbwLogo';
 import { setFlightPlanProgress } from './Store/features/flightProgress';
@@ -171,7 +171,7 @@ const Efb = () => {
         if (powerState === PowerStates.SHUTOFF) {
             dispatch(clearEfbState());
         } else if (powerState === PowerStates.LOADED) {
-            if ((!simbriefData || simbriefData === simbriefInitialState.data) && autoSimbriefImport === 'ENABLED') {
+            if ((!simbriefData || !isSimbriefDataLoaded()) && autoSimbriefImport === 'ENABLED') {
                 fetchSimbriefDataAction(simbriefUserId ?? '').then((action) => {
                     dispatch(action);
                 }).catch((e) => {

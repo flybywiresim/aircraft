@@ -5,6 +5,8 @@ import { usePersistentProperty } from '@instruments/common/persistence';
 import {
     ArrowClockwise,
     ArrowCounterclockwise,
+    ArrowReturnRight,
+    ArrowsExpand,
     ArrowsFullscreen,
     Bullseye,
     CloudArrowDown,
@@ -20,16 +22,14 @@ import { toast } from 'react-toastify';
 import { ScrollableContainer } from '../UtilComponents/ScrollableContainer';
 import { SelectGroup, SelectItem } from '../UtilComponents/Form/Select';
 import NavigraphClient, {
-    AirportInfo,
     emptyNavigraphCharts,
     NavigraphAirportCharts,
     NavigraphChart,
     useNavigraph,
-    NavigraphBoundingBox,
 } from '../ChartsApi/Navigraph';
-import ChartFoxClient, { ChartFoxAirportCharts, ChartFoxChart } from '../ChartsApi/ChartFox';
+import { ChartFoxAirportCharts, ChartFoxChart } from '../ChartsApi/ChartFox';
 import { SimpleInput } from '../UtilComponents/Form/SimpleInput/SimpleInput';
-import { simbriefDataIsInitialState } from '../Store/features/simbrief';
+import { isSimbriefDataLoaded } from '../Store/features/simbrief';
 import { useAppSelector, useAppDispatch } from '../Store/store';
 import {
     setIsFullScreen,
@@ -43,22 +43,28 @@ import {
     setIcao,
     setChartName,
     setBoundingBox,
+    setPagesViewable,
 } from '../Store/features/navigationTab';
 
-type Chart = NavigraphChart | ChartFoxChart;
-
-type Charts = NavigraphAirportCharts | ChartFoxAirportCharts;
-
-interface ChartsUiProps {
-    enableNavigraph: boolean;
-    chartFox: ChartFoxClient;
-    charts: Charts;
-    setCharts: (Charts) => void;
+type LocalFileChart = {
+    fileName: string;
+    type: 'IMAGE' | 'PDF';
+};
+interface LocalFileCharts {
+    images: LocalFileChart[];
+    pdfs: LocalFileChart[];
 }
+
+type Chart = NavigraphChart | ChartFoxChart;
+type Charts = NavigraphAirportCharts | ChartFoxAirportCharts;
 
 interface NavigraphChartSelectorProps {
     selectedTab: OrganizedChartType;
-    onChartClick: CallableFunction;
+    loading?: boolean;
+}
+
+interface LocalFileChartSelectorProps {
+    selectedTab: LocalFileOrganizedCharts;
     loading?: boolean;
 }
 
@@ -66,6 +72,11 @@ type OrganizedChartType = {
     name: string,
     charts: Chart[],
     bundleRunways?: boolean,
+}
+
+type LocalFileOrganizedCharts = {
+    name: string,
+    charts: LocalFileChart[],
 }
 
 type RunwayOrganizedChartType = {
@@ -163,7 +174,7 @@ const AuthUi = () => {
     );
 };
 
-const NavigraphChartComponent = () => {
+const ChartComponent = () => {
     const dispatch = useAppDispatch();
     const {
         chartDimensions,
@@ -173,6 +184,8 @@ const NavigraphChartComponent = () => {
         usingDarkTheme,
         planeInFocus,
         boundingBox,
+        pagesViewable,
+        chartId,
     } = useAppSelector((state) => state.navigationTab);
 
     const { userName } = useNavigraph();
@@ -180,6 +193,8 @@ const NavigraphChartComponent = () => {
     const ref = useRef<HTMLDivElement>(null);
 
     const chartRef = useRef<HTMLImageElement>(null);
+
+    const [currentPage, setCurrentPage] = useState(1);
 
     const [aircraftIconVisible, setAircraftIconVisible] = useState(false);
     const [aircraftIconPosition, setAircraftIconPosition] = useState<{ x: number, y: number, r: number }>({ x: 0, y: 0, r: 0 });
@@ -212,7 +227,6 @@ const NavigraphChartComponent = () => {
 
     useEffect(() => {
         const { width, height } = chartDimensions;
-        console.log(width, height);
 
         if (chartRef.current) {
             if (width) {
@@ -230,7 +244,7 @@ const NavigraphChartComponent = () => {
     }, [chartRef, chartDimensions]);
 
     useEffect(() => {
-        dispatch(setChartDimensions({ height: 875 }));
+        expandToHeight();
     }, [chartLinks]);
 
     useEffect(() => {
@@ -269,18 +283,40 @@ const NavigraphChartComponent = () => {
     };
 
     const handleZoomIn = () => {
-        const currentHeight = chartRef.current!.clientHeight;
+        if (!chartRef.current) return;
+
+        const currentHeight = chartRef.current.clientHeight;
+        const currentWidth = chartRef.current.clientWidth;
         if (currentHeight >= 2500) return;
 
         // TODO: maybe use width here eventually?
-        dispatch(setChartDimensions({ height: currentHeight + 100 }));
+        dispatch(setChartDimensions({ height: currentHeight * 1.1, width: currentWidth * 1.1 }));
     };
 
     const handleZoomOut = () => {
+        if (!chartRef.current) return;
+
         const currentHeight = chartRef.current!.clientHeight;
+        const currenWidth = chartRef.current!.clientWidth;
         if (currentHeight <= 775) return;
 
-        dispatch(setChartDimensions({ height: currentHeight - 100 }));
+        dispatch(setChartDimensions({ height: currentHeight * 0.9, width: currenWidth * 0.9 }));
+    };
+
+    const expandToHeight = () => {
+        if (!ref.current || !chartRef.current) return;
+
+        const scale = ref.current.clientHeight / chartRef.current.height;
+
+        dispatch(setChartDimensions({ width: chartDimensions.width * scale, height: ref.current!.clientHeight }));
+    };
+
+    const expandToWidth = () => {
+        if (!ref.current || !chartRef.current) return;
+
+        const scale = ref.current.clientWidth / chartRef.current.width;
+
+        dispatch(setChartDimensions({ width: ref.current!.clientWidth, height: chartDimensions.height * scale }));
     };
 
     // The functions that handle rotation get the closest 45 degree angle increment to the current angle
@@ -292,7 +328,19 @@ const NavigraphChartComponent = () => {
         dispatch(setChartRotation(chartRotation - (45 + chartRotation % 45)));
     };
 
-    if (!chartLinks.light) {
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [chartId]);
+
+    useEffect(() => {
+        if (pagesViewable > 1) {
+            getPdfUrl(chartId, currentPage).then((url) => {
+                dispatch(setChartName({ light: url, dark: url }));
+            });
+        }
+    }, [currentPage]);
+
+    if (!chartLinks.light || !chartLinks.dark) {
         return (
             <div
                 className={`flex items-center justify-center bg-theme-accent rounded-lg ${!isFullScreen && 'rounded-l-none ml-6'}`}
@@ -310,7 +358,41 @@ const NavigraphChartComponent = () => {
             style={{ width: `${isFullScreen ? '1278px' : '804px'}` }}
             onMouseDown={handleMouseDown}
         >
-            <div className="flex overflow-hidden fixed top-32 right-12 bottom-12 z-40 flex-col justify-between rounded-md cursor-pointer">
+            {pagesViewable > 1 && (
+                <div className="flex overflow-hidden fixed top-32 right-32 z-40 flex-row items-center rounded-md">
+                    <div
+                        className="flex flex-row justify-center items-center h-14 bg-opacity-40 transition duration-100 cursor-pointer bg-theme-secondary hover:bg-theme-highlight"
+                        onClick={() => setCurrentPage((old) => old - 1)}
+                    >
+                        <Dash size={40} />
+                    </div>
+                    <SimpleInput
+                        min={1}
+                        max={pagesViewable}
+                        value={currentPage}
+                        noLabel
+                        number
+                        onBlur={(value) => {
+                            setCurrentPage(Number.parseInt(value));
+                        }}
+                        className="w-16 h-14 rounded-r-none rounded-l-none border-transparent"
+                    />
+                    <div className="flex items-center px-2 h-14 bg-theme-secondary">
+                        of
+                        {' '}
+                        {pagesViewable}
+                    </div>
+                    <div
+                        className="flex flex-row justify-center items-center h-14 bg-opacity-40 transition duration-100 cursor-pointer bg-theme-secondary hover:bg-theme-highlight"
+                        onClick={() => setCurrentPage((old) => old + 1)}
+                    >
+
+                        <Plus size={40} />
+                    </div>
+                </div>
+            )}
+
+            <div className="flex overflow-hidden fixed top-32 right-12 bottom-12 z-30 flex-col justify-between rounded-md cursor-pointer">
                 <div className="flex overflow-hidden flex-col rounded-md">
                     <button
                         type="button"
@@ -337,6 +419,21 @@ const NavigraphChartComponent = () => {
                     </button>
                 </div>
                 <div className="flex overflow-hidden flex-col rounded-md">
+                    <button
+                        type="button"
+                        onClick={expandToHeight}
+                        className="p-2 transition duration-100 cursor-pointer bg-theme-secondary hover:bg-theme-highlight"
+                    >
+                        <ArrowsExpand size={40} />
+                    </button>
+                    <button
+                        type="button"
+                        onClick={expandToWidth}
+                        className="p-2 transition duration-100 cursor-pointer bg-theme-secondary hover:bg-theme-highlight"
+                    >
+                        <ArrowsExpand className="transform rotate-90" size={40} />
+                    </button>
+
                     <button
                         type="button"
                         onClick={handleZoomIn}
@@ -413,10 +510,118 @@ const NavigraphChartComponent = () => {
     );
 };
 
-const NavigraphChartSelector = ({ onChartClick, selectedTab, loading }: NavigraphChartSelectorProps) => {
+const getPdfUrl = async (fileName: string, pageNumber: number): Promise<string> => {
+    try {
+        const resp = await fetch(`http://localhost:3838/utility/v1/pdf?filename=${fileName}&pagenumber=${pageNumber}`);
+
+        if (!resp.ok) {
+            toast.error('Failed to retrieve requested PDF Document.');
+            return Promise.reject();
+        }
+
+        const blob = await resp.blob();
+        return URL.createObjectURL(blob);
+    } catch (_) {
+        toast.error('Failed to retrieve requested PDF Document.');
+        return Promise.reject();
+    }
+};
+
+const LocalFileChartSelector = ({ selectedTab, loading }: LocalFileChartSelectorProps) => {
+    const dispatch = useAppDispatch();
+
+    const { chartId } = useAppSelector((state) => state.navigationTab);
+
+    if (loading) {
+        return (
+            <div className="flex justify-center items-center h-full rounded-md border-2 border-theme-accent">
+                <CloudArrowDown className="animate-bounce" size={40} />
+            </div>
+        );
+    }
+
+    if (!selectedTab.charts.length) {
+        return (
+            <div className="flex justify-center items-center h-full rounded-md border-2 border-theme-accent">
+                <p>There are no charts to display.</p>
+            </div>
+        );
+    }
+
+    const handleChartClick = async (chart: LocalFileChart) => {
+        try {
+            if (chart.type === 'PDF') {
+                const pageNumResp = await fetch(`http://localhost:3838/utility/v1/pdf/numpages?filename=${chart.fileName}`);
+                const numberOfPages = await pageNumResp.json();
+
+                // TODO Implement several pages
+                dispatch(setPagesViewable(numberOfPages));
+            }
+
+            const resp = await fetch(chart.type === 'PDF'
+                ? `http://localhost:3838/utility/v1/pdf?filename=${chart.fileName}&pagenumber=1`
+                : `http://localhost:3838/utility/v1/image?filename=${chart.fileName}`);
+
+            if (!resp.ok) {
+                if (chart.type === 'PDF') {
+                    toast.error('Failed to retrieve requested PDF Document.');
+                } else {
+                    toast.error('Failed to retrieve requested image.');
+                }
+                return;
+            }
+
+            const blob = await resp.blob();
+            const url = URL.createObjectURL(blob);
+
+            dispatch(setChartName({ light: url, dark: url }));
+
+            dispatch(setBoundingBox(undefined));
+        } catch (_) {
+            if (chart.type === 'PDF') {
+                toast.error('Failed to retrieve requested PDF Document.');
+            } else {
+                toast.error('Failed to retrieve requested image.');
+            }
+
+            return;
+        }
+
+        dispatch(setChartId(chart.fileName));
+    };
+
+    return (
+        <div className="space-y-4">
+            {selectedTab.charts.map((chart) => (
+                <div
+                    className="group flex overflow-hidden flex-row w-full rounded-md bg-theme-accent"
+                    onClick={() => handleChartClick(chart)}
+                    key={chart.fileName}
+                >
+                    <span className={`w-2 transition duration-100 group-hover:bg-theme-highlight ${chart.fileName === chartId
+                        ? 'bg-theme-highlight'
+                        : 'bg-theme-secondary'}`}
+                    />
+                    <div className="flex flex-col m-2">
+                        <span className="">{chart.fileName}</span>
+                        <span
+                            className="px-2 mr-auto text-sm text-gray-400 bg-gray-700 rounded-md"
+                        >
+                            {chart.type}
+                        </span>
+                    </div>
+                </div>
+            ))}
+        </div>
+    );
+};
+
+const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartSelectorProps) => {
     const NO_RUNWAY_NAME = 'NONE';
     const [runwaySet, setRunwaySet] = useState<Set<string>>(new Set());
     const [organizedCharts, setOrganizedCharts] = useState<RunwayOrganizedChartType[]>([]);
+
+    const dispatch = useAppDispatch();
 
     const { chartId } = useAppSelector((state) => state.navigationTab);
 
@@ -478,17 +683,18 @@ const NavigraphChartSelector = ({ onChartClick, selectedTab, loading }: Navigrap
         );
     }
 
-    const handleChartClick = (chart: Chart) => {
-        onChartClick(
-            (chart as NavigraphChart).fileDay,
-            (chart as NavigraphChart).fileNight,
-            (chart as NavigraphChart).id,
-            (chart as NavigraphChart).boundingBox,
-        );
+    const handleChartClick = (chart: NavigraphChart) => {
+        dispatch(setPagesViewable(1));
+
+        dispatch(setChartId(chart.id));
+
+        dispatch(setChartName({ light: chart.fileDay, dark: chart.fileNight }));
+
+        dispatch(setBoundingBox(chart.boundingBox));
     };
 
     return (
-        <>
+        <div className="space-y-4">
             {selectedTab.bundleRunways
                 ? (
                     <>
@@ -498,7 +704,7 @@ const NavigraphChartSelector = ({ onChartClick, selectedTab, loading }: Navigrap
                                 {item.charts.map((chart) => (
                                     <div
                                         className="group flex flex-row bg-theme-accent"
-                                        onClick={() => handleChartClick(chart)}
+                                        onClick={() => handleChartClick(chart as NavigraphChart)}
                                         key={(chart as NavigraphChart).id}
                                     >
                                         <span className={`w-2 transition duration-100 group-hover:bg-theme-highlight ${(chart as NavigraphChart).id === chartId
@@ -524,7 +730,7 @@ const NavigraphChartSelector = ({ onChartClick, selectedTab, loading }: Navigrap
                         {selectedTab.charts.map((chart) => (
                             <div
                                 className="group flex overflow-hidden flex-row w-full rounded-md bg-theme-accent"
-                                onClick={() => handleChartClick(chart)}
+                                onClick={() => handleChartClick(chart as NavigraphChart)}
                                 key={(chart as NavigraphChart).id}
                             >
                                 <span className={`w-2 transition duration-100 group-hover:bg-theme-highlight ${(chart as NavigraphChart).id === chartId
@@ -543,18 +749,30 @@ const NavigraphChartSelector = ({ onChartClick, selectedTab, loading }: Navigrap
                         ))}
                     </>
                 )}
-        </>
+        </div>
     );
 };
 
-const ChartsUi = ({ chartFox, charts, enableNavigraph, setCharts }: ChartsUiProps) => {
+const NavigraphChartsUI = () => {
     const dispatch = useAppDispatch();
 
     const navigraph = useNavigraph();
 
-    const [airportInfo, setAirportInfo] = useState<AirportInfo>({ name: '' }); // Navigraph Only
+    const [statusBarInfo, setStatusBarInfo] = useState('');
 
     const [icaoAndNameDisagree, setIcaoAndNameDisagree] = useState(false);
+
+    useEffect(() => {
+        dispatch(setTabIndex(0));
+    }, []);
+
+    const [charts, setCharts] = useState<Charts>({
+        arrival: [],
+        approach: [],
+        airport: [],
+        departure: [],
+        reference: [],
+    });
 
     const [organizedCharts, setOrganizedCharts] = useState<OrganizedChartType[]>([
         { name: 'STAR', charts: charts.arrival },
@@ -563,53 +781,46 @@ const ChartsUi = ({ chartFox, charts, enableNavigraph, setCharts }: ChartsUiProp
         { name: 'SID', charts: charts.departure },
         { name: 'REF', charts: charts.reference },
     ]);
-
     const { tabIndex, icao, chartName, isFullScreen } = useAppSelector((state) => state.navigationTab);
 
     const assignAirportInfo = async () => {
-        if (enableNavigraph) {
-            setIcaoAndNameDisagree(true);
-            const airportInfo = await navigraph.getAirportInfo(icao);
-            setAirportInfo(airportInfo);
-            setIcaoAndNameDisagree(false);
-        }
+        setIcaoAndNameDisagree(true);
+
+        const airportInfo = await navigraph.getAirportInfo(icao);
+        setStatusBarInfo(airportInfo.name);
+
+        setIcaoAndNameDisagree(false);
     };
 
     useEffect(() => {
-        assignAirportInfo();
-    }, [icao]);
-
-    useEffect(() => {
-        if (icao.length <= 3) {
-            setAirportInfo({ name: '' });
+        if (icao.length === 4) {
+            assignAirportInfo();
+        } else {
+            setStatusBarInfo('');
             setCharts(emptyNavigraphCharts);
         }
     }, [icao]);
 
     useEffect(() => {
-        if (enableNavigraph) {
-            setOrganizedCharts([
-                { name: 'STAR', charts: charts.arrival },
-                { name: 'APP', charts: charts.approach, bundleRunways: true },
-                { name: 'TAXI', charts: charts.airport },
-                { name: 'SID', charts: charts.departure },
-                { name: 'REF', charts: charts.reference },
-            ]);
-        }
+        setOrganizedCharts([
+            { name: 'STAR', charts: charts.arrival },
+            { name: 'APP', charts: charts.approach, bundleRunways: true },
+            { name: 'TAXI', charts: charts.airport },
+            { name: 'SID', charts: charts.departure },
+            { name: 'REF', charts: charts.reference },
+        ]);
     }, [charts]);
 
     useEffect(() => {
-        if (enableNavigraph) {
-            const chartsGet = async () => {
-                const light = await navigraph.chartCall(icao, chartName.light);
+        const fetchCharts = async () => {
+            const light = await navigraph.chartCall(icao, chartName.light);
 
-                const dark = await navigraph.chartCall(icao, chartName.dark);
+            const dark = await navigraph.chartCall(icao, chartName.dark);
 
-                dispatch(setChartLinks({ light, dark }));
-            };
+            dispatch(setChartLinks({ light, dark }));
+        };
 
-            chartsGet();
-        }
+        fetchCharts();
     }, [chartName]);
 
     const handleIcaoChange = (value: string) => {
@@ -617,25 +828,13 @@ const ChartsUi = ({ chartFox, charts, enableNavigraph, setCharts }: ChartsUiProp
 
         const newValue = value.toUpperCase();
 
-        if (enableNavigraph) {
-            navigraph.getChartList(newValue).then((r) => {
-                if (r) {
-                    setCharts(r);
-                }
-            });
-        } else {
-            chartFox.getChartList(newValue).then((r) => setCharts(r));
-        }
+        navigraph.getChartList(newValue).then((r) => {
+            if (r) {
+                setCharts(r);
+            }
+        });
 
         dispatch(setIcao(newValue));
-    };
-
-    const onChartClick = (chartNameDay: string, chartNameNight: string, chartId: string, boundingBox?: NavigraphBoundingBox) => {
-        dispatch(setChartId(chartId));
-
-        dispatch(setChartName({ light: chartNameDay, dark: chartNameNight }));
-
-        dispatch(setBoundingBox(boundingBox));
     };
 
     useEffect(() => {
@@ -644,9 +843,11 @@ const ChartsUi = ({ chartFox, charts, enableNavigraph, setCharts }: ChartsUiProp
 
     const AIRPORT_CHARACTER_LIMIT = 30;
 
-    const loading = (!airportInfo.name.length || icaoAndNameDisagree) && icao.length === 4;
+    let loading = false;
 
-    const getAirportDisplayName = () => {
+    loading = (!statusBarInfo.length || icaoAndNameDisagree) && icao.length === 4;
+
+    const getStatusBarText = () => {
         if (icao.length !== 4) {
             return 'No Airport Selected';
         }
@@ -655,10 +856,10 @@ const ChartsUi = ({ chartFox, charts, enableNavigraph, setCharts }: ChartsUiProp
             return 'Please Wait';
         }
 
-        return `${airportInfo.name.slice(0, AIRPORT_CHARACTER_LIMIT)}${airportInfo.name.length > AIRPORT_CHARACTER_LIMIT ? '...' : ''}`;
+        return `${statusBarInfo.slice(0, AIRPORT_CHARACTER_LIMIT)}${statusBarInfo.length > AIRPORT_CHARACTER_LIMIT ? '...' : ''}`;
     };
 
-    const isInitialState = simbriefDataIsInitialState();
+    const simbriefDataLoaded = isSimbriefDataLoaded();
 
     const { altIcao, departingAirport, arrivingAirport } = useAppSelector((state) => state.simbrief.data);
 
@@ -673,10 +874,10 @@ const ChartsUi = ({ chartFox, charts, enableNavigraph, setCharts }: ChartsUiProp
                                 value={icao}
                                 noLabel
                                 maxLength={4}
-                                className={`w-full flex-shrink uppercase ${!isInitialState && 'rounded-r-none'}`}
+                                className={`w-full flex-shrink uppercase ${!simbriefDataLoaded && 'rounded-r-none'}`}
                                 onChange={handleIcaoChange}
                             />
-                            {!isInitialState && (
+                            {(!simbriefDataLoaded) && (
                                 <SelectGroup className="flex-shrink-0 rounded-l-none">
                                     <SelectItem
                                         selected={icao === departingAirport}
@@ -699,8 +900,11 @@ const ChartsUi = ({ chartFox, charts, enableNavigraph, setCharts }: ChartsUiProp
                                 </SelectGroup>
                             )}
                         </div>
-                        <div className="flex items-center px-4 mt-2 w-full h-11 rounded-md bg-theme-accent">
-                            {getAirportDisplayName()}
+                        <div className="flex flex-row items-center w-full h-11">
+                            <ArrowReturnRight size={30} />
+                            <div className="flex items-center px-4 w-full">
+                                {getStatusBarText()}
+                            </div>
                         </div>
                         <div className="mt-6">
                             <SelectGroup>
@@ -709,44 +913,239 @@ const ChartsUi = ({ chartFox, charts, enableNavigraph, setCharts }: ChartsUiProp
                                         selected={index === tabIndex}
                                         onSelect={() => dispatch(setTabIndex(index))}
                                         key={organizedChart.name}
+                                        className="flex justify-center w-full"
                                     >
                                         {organizedChart.name}
                                     </SelectItem>
                                 ))}
                             </SelectGroup>
                             <ScrollableContainer className="mt-5" height={42.25}>
-                                <div
-                                    className="space-y-4"
-                                >
-                                    {enableNavigraph
-                                        ? (
-                                            <NavigraphChartSelector
-                                                selectedTab={organizedCharts[tabIndex]}
-                                                onChartClick={onChartClick}
-                                                loading={loading}
-                                            />
-                                        )
-                                        : (
-                                            <>
-                                                {organizedCharts[tabIndex].charts.map((chart) => (
-                                                    <div className="mt-4" key={(chart as ChartFoxChart).name}>
-                                                        <span>{(chart as ChartFoxChart).name}</span>
-                                                    </div>
-                                                ))}
-                                            </>
-                                        )}
-                                </div>
+                                <NavigraphChartSelector
+                                    selectedTab={organizedCharts[tabIndex]}
+                                    loading={loading}
+                                />
                             </ScrollableContainer>
                         </div>
                     </div>
                 )}
-                <NavigraphChartComponent />
+                <ChartComponent />
             </>
         </div>
     );
 };
 
-const NavigraphNav = ({ chartFox, charts, setCharts }: ChartsUiProps) => {
+const LocalFileChartUI = () => {
+    const dispatch = useAppDispatch();
+
+    const [statusBarInfo, setStatusBarInfo] = useState('');
+
+    const [icaoAndNameDisagree, setIcaoAndNameDisagree] = useState(false);
+
+    const [charts, setCharts] = useState<LocalFileCharts>({
+        images: [],
+        pdfs: [],
+    });
+
+    const [organizedCharts, setOrganizedCharts] = useState<LocalFileOrganizedCharts[]>([
+        { name: 'IMAGE', charts: charts.images },
+        { name: 'PDF', charts: charts.pdfs },
+        { name: 'BOTH', charts: [...charts.images, ...charts.pdfs] },
+    ]);
+    const { tabIndex, icao, chartName, isFullScreen } = useAppSelector((state) => state.navigationTab);
+
+    const updateSearchStatus = async () => {
+        setIcaoAndNameDisagree(true);
+
+        const searchedCharts: string[] = [];
+
+        if (tabIndex === 0 || tabIndex === 2) {
+            searchedCharts.push(...charts.images.map((image) => image.fileName));
+        }
+
+        if (tabIndex === 1 || tabIndex === 2) {
+            searchedCharts.push(...charts.pdfs.map((pdf) => pdf.fileName));
+        }
+
+        const numItemsFound = searchedCharts.filter((chartName) => {
+            if (chartName.toUpperCase().includes(icao)) {
+                return true;
+            }
+            return false;
+        }).length;
+
+        setStatusBarInfo(`${numItemsFound} ${numItemsFound === 1 ? 'Item' : 'Items'} Found`);
+
+        setIcaoAndNameDisagree(false);
+    };
+
+    useEffect(() => {
+        updateSearchStatus();
+    }, [icao, tabIndex]);
+
+    useEffect(() => {
+        setOrganizedCharts([
+            { name: 'IMAGE', charts: charts.images },
+            { name: 'PDF', charts: charts.pdfs },
+            { name: 'BOTH', charts: [...charts.pdfs, ...charts.images] },
+        ]);
+    }, [charts]);
+
+    useEffect(() => {
+        dispatch(setTabIndex(0));
+    }, []);
+
+    useEffect(() => {
+        dispatch(setChartLinks({ light: chartName.light, dark: chartName.dark }));
+    }, [chartName]);
+
+    const getLocalFileChartList = async (searchQuery: string): Promise<LocalFileCharts> => {
+        const pdfs: LocalFileChart[] = [];
+        const images: LocalFileChart[] = [];
+
+        try {
+        // IMAGE or BOTH
+            if (tabIndex === 0 || tabIndex === 2) {
+                const resp = await fetch('http://localhost:3838/utility/v1/image/list');
+
+                const imageNames: string[] = await resp.json();
+
+                imageNames.forEach((imageName) => {
+                    if (imageName.toUpperCase().includes(searchQuery)) {
+                        images.push({
+                            fileName: imageName,
+                            type: 'IMAGE',
+                        });
+                    }
+                });
+            }
+
+            // PDF or BOTH
+            if (tabIndex === 1 || tabIndex === 2) {
+                const resp = await fetch('http://localhost:3838/utility/v1/pdf/list');
+                const pdfNames: string[] = await resp.json();
+
+                pdfNames.forEach((pdfName) => {
+                    if (pdfName.toUpperCase().includes(searchQuery)) {
+                        pdfs.push({
+                            fileName: pdfName,
+                            type: 'PDF',
+                        });
+                    }
+                });
+            }
+        } catch (err) {
+            toast.error('Error encountered while fetching resources.');
+        }
+
+        return {
+            images,
+            pdfs,
+        };
+    };
+
+    const handleIcaoChange = (value: string) => {
+        const newValue = value.toUpperCase();
+
+        dispatch(setIcao(newValue));
+
+        getLocalFileChartList(newValue).then((r) => setCharts(r));
+    };
+
+    useEffect(() => {
+        handleIcaoChange(icao);
+    }, [tabIndex]);
+
+    const AIRPORT_CHARACTER_LIMIT = 30;
+
+    const loading = icaoAndNameDisagree;
+
+    const getStatusBarText = () => {
+        if (!icao.length) {
+            return 'Showing All Items';
+        }
+
+        if (loading) {
+            return 'Please Wait';
+        }
+
+        return `${statusBarInfo.slice(0, AIRPORT_CHARACTER_LIMIT)}${statusBarInfo.length > AIRPORT_CHARACTER_LIMIT ? '...' : ''}`;
+    };
+
+    const simbriefDataLoaded = isSimbriefDataLoaded();
+
+    const { altIcao, departingAirport, arrivingAirport } = useAppSelector((state) => state.simbrief.data);
+
+    return (
+        <div className="flex overflow-x-hidden flex-row w-full rounded-lg h-efb">
+            <>
+                {!isFullScreen && (
+                    <div className="overflow-hidden flex-shrink-0" style={{ width: '450px' }}>
+                        <div className="flex flex-row justify-center items-center">
+                            <SimpleInput
+                                placeholder="File Name"
+                                value={icao}
+                                noLabel
+                                className={`w-full flex-shrink uppercase ${!simbriefDataLoaded && 'rounded-r-none'}`}
+                                onChange={handleIcaoChange}
+                            />
+                            {(!simbriefDataLoaded) && (
+                                <SelectGroup className="flex-shrink-0 rounded-l-none">
+                                    <SelectItem
+                                        selected={icao === departingAirport}
+                                        onSelect={() => handleIcaoChange(departingAirport)}
+                                    >
+                                        FROM
+                                    </SelectItem>
+                                    <SelectItem
+                                        selected={icao === arrivingAirport}
+                                        onSelect={() => handleIcaoChange(arrivingAirport)}
+                                    >
+                                        TO
+                                    </SelectItem>
+                                    <SelectItem
+                                        selected={icao === altIcao}
+                                        onSelect={() => handleIcaoChange(altIcao)}
+                                    >
+                                        ALTN
+                                    </SelectItem>
+                                </SelectGroup>
+                            )}
+                        </div>
+                        <div className="flex flex-row items-center w-full h-11">
+                            <ArrowReturnRight size={30} />
+                            <div className="flex items-center px-4 w-full">
+                                {getStatusBarText()}
+                            </div>
+                        </div>
+                        <div className="mt-6">
+                            <SelectGroup>
+                                {organizedCharts.map((organizedChart, index) => (
+                                    <SelectItem
+                                        selected={index === tabIndex}
+                                        onSelect={() => dispatch(setTabIndex(index))}
+                                        key={organizedChart.name}
+                                        className="flex justify-center w-full"
+                                    >
+                                        {organizedChart.name}
+                                    </SelectItem>
+                                ))}
+                            </SelectGroup>
+                            <ScrollableContainer className="mt-5" height={42.25}>
+                                <LocalFileChartSelector
+                                    selectedTab={organizedCharts[Math.min(tabIndex, 2)]}
+                                    loading={loading}
+                                />
+                            </ScrollableContainer>
+                        </div>
+                    </div>
+                )}
+                <ChartComponent />
+            </>
+        </div>
+    );
+};
+
+const NavigraphNav = () => {
     const navigraph = useNavigraph();
 
     return (
@@ -756,12 +1155,7 @@ const NavigraphNav = ({ chartFox, charts, setCharts }: ChartsUiProps) => {
                     <>
                         {navigraph.hasToken
                             ? (
-                                <ChartsUi
-                                    enableNavigraph
-                                    chartFox={chartFox}
-                                    charts={charts}
-                                    setCharts={setCharts}
-                                />
+                                <NavigraphChartsUI />
                             )
                             : <AuthUi />}
                     </>
@@ -775,30 +1169,16 @@ const NavigraphNav = ({ chartFox, charts, setCharts }: ChartsUiProps) => {
     );
 };
 
-const ChartFoxNav = ({ chartFox, charts, setCharts }: ChartsUiProps) => (
-    <ChartsUi
-        enableNavigraph={false}
-        chartFox={chartFox}
-        charts={charts}
-        setCharts={setCharts}
-    />
-);
-
 export const Navigation = () => {
     const navigraph = useNavigraph();
 
-    const [enableNavigraph] = useState(true);
-    const [chartFox] = useState(new ChartFoxClient());
-    const [charts, setCharts] = useState<Charts>({
-        arrival: [],
-        approach: [],
-        airport: [],
-        departure: [],
-        reference: [],
-    });
+    const dispatch = useAppDispatch();
+
+    const [chartSource, setChartSource] = usePersistentProperty('EFB_CHART_SOURCE', 'NAVIGRAPH');
+    const usingNavigraph = chartSource === 'NAVIGRAPH';
 
     useInterval(async () => {
-        if (enableNavigraph) {
+        if (chartSource === 'NAVIGRAPH') {
             try {
                 await navigraph.getToken();
             } catch (e) {
@@ -808,31 +1188,43 @@ export const Navigation = () => {
     }, (navigraph.tokenRefreshInterval * 1000));
 
     useEffect(() => {
-        if (enableNavigraph && !navigraph.hasToken) {
+        if (chartSource === 'NAVIGRAPH' && !navigraph.hasToken) {
             navigraph.authenticate();
         }
     }, []);
 
     return (
         <div className="w-full h-full">
-            <h1 className="mb-4 font-bold">Navigation & Charts</h1>
-            {enableNavigraph
-                ? (
-                    <NavigraphNav
-                        enableNavigraph={enableNavigraph}
-                        chartFox={chartFox}
-                        charts={charts}
-                        setCharts={setCharts}
-                    />
-                )
-                : (
-                    <ChartFoxNav
-                        enableNavigraph={enableNavigraph}
-                        chartFox={chartFox}
-                        charts={charts}
-                        setCharts={setCharts}
-                    />
-                )}
+            <div className="flex flex-row justify-between items-start w-full">
+                <h1 className="mb-4 font-bold">Navigation & Charts</h1>
+                <SelectGroup>
+                    <SelectItem
+                        selected={chartSource === 'NAVIGRAPH'}
+                        onSelect={() => {
+                            dispatch(setChartLinks({ light: '', dark: '' }));
+                            dispatch(setChartName({ light: '', dark: '' }));
+                            setChartSource('NAVIGRAPH');
+                        }}
+                    >
+                        Navigraph
+                    </SelectItem>
+                    <SelectItem
+                        selected={chartSource === 'LOCAL_FILES'}
+                        onSelect={() => {
+                            dispatch(setChartLinks({ light: '', dark: '' }));
+                            dispatch(setChartName({ light: '', dark: '' }));
+                            setChartSource('LOCAL_FILES');
+                        }}
+                    >
+                        Local Files
+                    </SelectItem>
+                </SelectGroup>
+            </div>
+            {usingNavigraph ? (
+                <NavigraphNav />
+            ) : (
+                <LocalFileChartUI />
+            )}
         </div>
     );
 };
