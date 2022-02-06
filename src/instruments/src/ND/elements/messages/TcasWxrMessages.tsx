@@ -39,7 +39,7 @@ export const TcasWxrMessages: FC<{ modeIndex: Mode }> = ({ modeIndex }) => {
         centerMessage = { text: 'TA ONLY', color: 'White' };
     }
 
-    if ((modeIndex !== Mode.ARC && modeIndex !== Mode.ROSE_NAV && modeIndex !== Mode.ROSE_VOR && modeIndex !== Mode.ROSE_ILS) || (!leftMessage && !rightMessage)) {
+    if ((modeIndex !== Mode.ARC && modeIndex !== Mode.ROSE_NAV && modeIndex !== Mode.ROSE_VOR && modeIndex !== Mode.ROSE_ILS) || (!leftMessage && !rightMessage && !centerMessage)) {
         return null;
     }
 
@@ -59,11 +59,10 @@ export const TcasWxrMessages: FC<{ modeIndex: Mode }> = ({ modeIndex }) => {
             )}
 
             {centerMessage && (
-                <text x={8} y={25} className={`${centerMessage.color}`} textAnchor="center" fontSize={25}>
+                <text x={420 / 2} y={25} className={`${centerMessage.color} MiddleAlign`} textAnchor="middle" fontSize={25}>
                     {centerMessage.text}
                 </text>
             )}
-
             {rightMessage && (
                 <text x={425} y={25} className={`${rightMessage.color}`} textAnchor="end" fontSize={25}>
                     {rightMessage.text}
