@@ -562,6 +562,8 @@ const LocalFileChartSelector = ({ selectedTab, loading }: LocalFileChartSelector
 
                 // TODO Implement several pages
                 dispatch(setPagesViewable(numberOfPages));
+            } else {
+                dispatch(setPagesViewable(1));
             }
 
             const resp = await fetch(chart.type === 'PDF'
