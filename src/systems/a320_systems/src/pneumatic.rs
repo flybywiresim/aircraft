@@ -1,5 +1,5 @@
 use core::panic;
-use std::f64::consts::PI;
+use std::{f64::consts::PI, time::Duration};
 
 use uom::si::{
     f64::*,
@@ -12,6 +12,7 @@ use uom::si::{
 
 use systems::{
     accept_iterable,
+    hydraulic::update_iterator::MaxStepLoop,
     overhead::{AutoOffFaultPushButton, OnOffFaultPushButton},
     pneumatic::{
         valve::*, BleedMonitoringComputerChannelOperationMode,
@@ -104,6 +105,8 @@ valve_signal_implementation!(FanAirValveSignal);
 valve_signal_implementation!(PackFlowValveSignal);
 
 pub struct A320Pneumatic {
+    physics_updater: MaxStepLoop,
+
     cross_bleed_valve_open_id: VariableIdentifier,
     apu_bleed_air_valve_open_id: VariableIdentifier,
 
@@ -128,8 +131,11 @@ pub struct A320Pneumatic {
     packs: [PackComplex; 2],
 }
 impl A320Pneumatic {
+    const PNEUMATIC_SIM_MAX_TIME_STEP: Duration = Duration::from_millis(33);
+
     pub fn new(context: &mut InitContext) -> Self {
         Self {
+            physics_updater: MaxStepLoop::new(Self::PNEUMATIC_SIM_MAX_TIME_STEP),
             cross_bleed_valve_open_id: context.get_identifier("PNEU_XBLEED_VALVE_OPEN".to_owned()),
             apu_bleed_air_valve_open_id: context
                 .get_identifier("APU_BLEED_AIR_VALVE_OPEN".to_owned()),
@@ -191,6 +197,27 @@ impl A320Pneumatic {
     }
 
     pub(crate) fn update(
+        &mut self,
+        context: &UpdateContext,
+        engines: [&(impl EngineCorrectedN1 + EngineCorrectedN2); 2],
+        overhead_panel: &A320PneumaticOverheadPanel,
+        engine_fire_push_buttons: &impl EngineFirePushButtons,
+        apu: &impl ControllerSignal<TargetPressureSignal>,
+    ) {
+        self.physics_updater.update(context);
+
+        for cur_time_step in self.physics_updater {
+            self.update_physics(
+                &context.with_delta(cur_time_step),
+                engines,
+                overhead_panel,
+                engine_fire_push_buttons,
+                apu,
+            );
+        }
+    }
+
+    pub(crate) fn update_physics(
         &mut self,
         context: &UpdateContext,
         engines: [&(impl EngineCorrectedN1 + EngineCorrectedN2); 2],
@@ -2806,6 +2833,24 @@ mod tests {
 
         assert!(test_bed.pack_flow_valve_flow(1) < flow_rate_tolerance());
         assert!(test_bed.pack_flow_valve_flow(2) < flow_rate_tolerance());
+    }
+
+    #[test]
+    fn large_time_step_stability() {
+        let mut test_bed = test_bed_with()
+            .idle_eng1()
+            .idle_eng2()
+            .mach_number(MachNumber(0.))
+            .both_packs_auto()
+            .and_stabilize();
+
+        // Introduce perturbation
+        test_bed = test_bed.toga_eng1().toga_eng2();
+
+        test_bed.run_with_delta(Duration::from_millis(1000));
+
+        assert!(!test_bed.precooler_inlet_pressure(1).is_nan());
+        assert!(!test_bed.precooler_inlet_pressure(2).is_nan());
     }
 
     mod overhead {
