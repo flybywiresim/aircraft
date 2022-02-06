@@ -244,10 +244,6 @@ const ChartComponent = () => {
     }, [chartRef, chartDimensions]);
 
     useEffect(() => {
-        expandToHeight();
-    }, [chartLinks]);
-
-    useEffect(() => {
         if (planeInFocus) {
             dispatch(setChartRotation(360 - aircraftIconPosition.r));
             // TODO: implement the chart translation
@@ -327,6 +323,10 @@ const ChartComponent = () => {
     const handleRotateLeft = () => {
         dispatch(setChartRotation(chartRotation - (45 + chartRotation % 45)));
     };
+
+    useEffect(() => {
+        expandToHeight();
+    }, [chartLinks]);
 
     useEffect(() => {
         setCurrentPage(1);
@@ -776,10 +776,6 @@ const NavigraphChartsUI = () => {
 
     const [icaoAndNameDisagree, setIcaoAndNameDisagree] = useState(false);
 
-    useEffect(() => {
-        dispatch(setTabIndex(0));
-    }, []);
-
     const [charts, setCharts] = useState<Charts>({
         arrival: [],
         approach: [],
@@ -1005,10 +1001,6 @@ const LocalFileChartUI = () => {
     }, [charts]);
 
     useEffect(() => {
-        dispatch(setTabIndex(0));
-    }, []);
-
-    useEffect(() => {
         dispatch(setChartLinks({ light: chartName.light, dark: chartName.dark }));
     }, [chartName]);
 
@@ -1217,6 +1209,7 @@ export const Navigation = () => {
                         onSelect={() => {
                             dispatch(setChartLinks({ light: '', dark: '' }));
                             dispatch(setChartName({ light: '', dark: '' }));
+                            dispatch(setTabIndex(0));
                             setChartSource('NAVIGRAPH');
                         }}
                     >
@@ -1227,6 +1220,7 @@ export const Navigation = () => {
                         onSelect={() => {
                             dispatch(setChartLinks({ light: '', dark: '' }));
                             dispatch(setChartName({ light: '', dark: '' }));
+                            dispatch(setTabIndex(0));
                             setChartSource('LOCAL_FILES');
                         }}
                     >
