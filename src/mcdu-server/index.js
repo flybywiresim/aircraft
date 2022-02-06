@@ -11,7 +11,6 @@ const print = require('pdf-to-printer');
 const os = require('os');
 const PDFDocument = require('pdfkit');
 const childProcess = require('child_process');
-const debugLib = require('debug')('app');
 require('./standalone-patch');
 
 // This tells pkg to include these files in the binary
@@ -63,11 +62,7 @@ let margin;
 const args = [...process.argv];
 args.splice(0, 2);
 
-debugLib('DEBUG Before Cmd Line Parsing');
-
 for (const arg of args) {
-    debugLib('DEBUG Args Loop');
-
     if (arg === '--no-printer') {
         skipPrinter = true;
         continue;
@@ -128,17 +123,13 @@ for (const arg of args) {
     }
     console.error(`Unknown argument: ${arg}`);
     printUsage();
-    debugLib('DEBUG Unknown Argument');
     pressAnyKey(1);
-    debugLib('DEBUG Unknown Argument After PressKey - should not show');
 }
 
 if (httpPort === websocketPort) {
     console.error(`Error: HTTP port (${httpPort}) and Websocket port (${websocketPort}) cannot be identical`);
     pressAnyKey(1);
 }
-
-debugLib('DEBUG After Cmd Line Handling');
 
 if (printerName != null) {
     print.getPrinters().then((printers) => {
@@ -155,7 +146,6 @@ if (printerName != null) {
         pressAnyKey(1);
     });
 } else if (!skipPrinter) {
-    debugLib('DEBUG Printer Handling');
     readline.question('Would you like to enable printing to a real printer? (y/N): ', (response) => {
         if (response.toLowerCase() === 'y') {
             print.getPrinters().then((printers) => {
@@ -182,7 +172,6 @@ if (printerName != null) {
         }
     });
 } else {
-    debugLib('DEBUG No Printer - Start App');
     start();
 }
 
@@ -190,8 +179,6 @@ if (printerName != null) {
  * Starts the HTTP and Websocket servers
  */
 function start() {
-    debugLib('DEBUG start() START');
-
     console.log('Starting server...');
 
     // Simple HTTP server for the web-based client
@@ -355,7 +342,6 @@ function start() {
             });
         });
     });
-    debugLib('DEBUG start() END');
 }
 
 /**
@@ -399,33 +385,10 @@ function showError(message, error) {
  * @param {number} exitCode
  */
 function pressAnyKey(exitCode) {
-    debugLib('DEBUG pressAnyKey() START');
-
-    // Hack to really pause and wait for a key press. Other solutions had the server start anyway.
-    // Anyone know a better solution that actually works?
+    // Hack to really pause and wait for a key press in Node.js. Other solutions
+    // execute code after this line and start the server anyway.
     childProcess.spawnSync('pause', { shell: true, stdio: [0, 1, 2] });
     process.exit(exitCode);
-
-    // readline.question('Press any key to continue...\n', (key) => {
-    //     debugLib(`DEBUG pressAnyKey() PRESSED: ${key}`);
-    //     process.exit(exitCode);
-    //     debugLib(`DEBUG pressAnyKey() After exit() - should not happen at all ${y}`);
-    // });
-
-    // console.log('\nPress any key to continue...\n');
-    // process.stdin.setRawMode(true);
-    // process.stdin.once('data', () => {
-    //     debugLib('DEBUG callback start');
-    //     process.exit(exitCode);
-    //     debugLib('DEBUG callback end');
-    // });
-
-    // console.log('Press any key to continue...\n');
-    // process.stdin.setRawMode(true);
-    // process.stdin.resume();
-    // process.stdin.on('data', process.exit.bind(process, exitCode));
-
-    debugLib('DEBUG pressAnyKey() END - should not show');
 }
 
 /**
