@@ -40,7 +40,7 @@ export const TcasWxrMessages: FC<{ modeIndex: Mode }> = ({ modeIndex }) => {
     const [tcasPosition] = useSimVar('L:A32NX_SWITCH_TCAS_Position', 'enum', 500);
     const [radioAlt] = useSimVar('PLANE ALT ABOVE GROUND MINUS CG', 'feet', 500);
     if (tcasPosition === TcasPosition.Ta || (tcasPosition === TcasPosition.TaRa && radioAlt < 1000)) {
-        leftMessage = { text: 'TA ONLY', color: 'White' };
+        centerMessage = { text: 'TA ONLY', color: 'White' };
     }
 
     if (modeIndex !== Mode.ARC && modeIndex !== Mode.ROSE_NAV && modeIndex !== Mode.ROSE_VOR && modeIndex !== Mode.ROSE_ILS || (!leftMessage && !rightMessage && !centerMessage)) {
