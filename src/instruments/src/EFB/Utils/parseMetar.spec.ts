@@ -1,21 +1,26 @@
+// Copyright (c) 2022 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
 import { ColorCode } from '../../Common/metarTypes';
 import { parseMetar } from './parseMetar';
 
-describe('Test parseMetar when provided with', () => {
-    test('an empty value, throws an error', () => {
+describe('Test that parseMetar', () => {
+    it('throws an error when provided with an empty value', () => {
         // empty metar string
         expect(() => {
             parseMetar('');
         }).toThrow(new Error('Not enough METAR information found'));
     });
 
-    test('an incomplete value, throws an error', () => {
+    it('throws an error when provided with an incomplete value', () => {
         // empty metar string
         expect(() => {
             parseMetar('EDDM 291250Z');
         }).toThrow(new Error('Not enough METAR information found'));
     });
+});
 
+describe('Test real life METARs:', () => {
     test('EDDM 291350Z 26017KT 9999 DZ BKN027 09/00 Q1025 NOSIG', () => {
         const metarObject = parseMetar('EDDM 281350Z 26017KT 9999 DZ BKN027 09/00 Q1025 NOSIG');
         expect(metarObject.icao).toBe('EDDM');
