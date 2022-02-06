@@ -5,9 +5,9 @@ import { ColorCode, MetarParserType } from '@instruments/common/metarTypes';
  * Returns HTML with coloring for METAR parts marked with coloring hints.
  * ColorCode: src/instruments/src/Common/metarTypes.ts
  */
-export const ColoredMetar = (props: { metar: MetarParserType }) => {
-    const partsList = props.metar.raw_parts.map((metarPart, index) => {
-        switch (props.metar.color_codes[index]) {
+export const ColoredMetar = ({ metar }: { metar: MetarParserType }) => {
+    const partsList = metar.raw_parts.map((metarPart, index) => {
+        switch (metar.color_codes[index]) {
         case ColorCode.Highlight:
             return (
                 <span className="text-teal-regular">
