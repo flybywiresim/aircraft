@@ -92,7 +92,7 @@ export const SimpleInput = (props: PropsWithChildren<SimpleInputProps>) => {
         setOSKOpen(false);
 
         if (!props.disabled) {
-            props.onBlur?.(event.target.value);
+            props.onBlur?.(constrainedValue);
         }
     };
 
