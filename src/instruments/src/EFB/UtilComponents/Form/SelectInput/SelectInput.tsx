@@ -71,7 +71,7 @@ const SelectInput = (props: SelectInputProps) => {
                         {props.options.map((option) => (
                             (value !== option.displayValue || props.forceShowAll) && (
                                 <div
-                                    className="py-1.5 px-3 hover:bg-theme-highlight hover:bg-opacity-5 transition duration-300"
+                                    className="py-1.5 px-3 hover:bg-opacity-5 transition duration-300 hover:bg-theme-highlight hover:text-theme-body"
                                     onClick={() => onOptionClicked(option)}
                                 >
                                     {option.displayValue}
