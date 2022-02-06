@@ -165,7 +165,8 @@ impl IntegratedDriveGenerator {
             activated: true,
             number,
 
-            time_above_threshold_in_milliseconds: 0,
+            time_above_threshold_in_milliseconds:
+                INTEGRATED_DRIVE_GENERATOR_STABILIZATION_TIME_IN_MILLISECONDS,
         }
     }
 
