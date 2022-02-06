@@ -9,7 +9,6 @@ import { Guidable } from '@fmgc/guidance/Guidable';
 import { SegmentType } from '@fmgc/flightplanning/FlightPlanSegment';
 import { GuidanceParameters } from '@fmgc/guidance/ControlLaws';
 import { Geo } from '@fmgc/utils/Geo';
-import { FixedRadiusTransition } from '@fmgc/guidance/lnav/transitions/FixedRadiusTransition';
 import { XFLeg } from '@fmgc/guidance/lnav/legs/XF';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { courseToFixDistanceToGo, courseToFixGuidance } from '@fmgc/guidance/lnav/CommonGeometry';
@@ -31,14 +30,6 @@ export class DFLeg extends XFLeg {
 
     getPathStartPoint(): Coordinates | undefined {
         return this.inboundGuidable?.getPathEndPoint() ?? this.estimateStartPoint();
-    }
-
-    getPathEndPoint(): Coordinates | undefined {
-        if (this.outboundGuidable instanceof FixedRadiusTransition && !this.outboundGuidable.isReverted && this.outboundGuidable.isComputed) {
-            return this.outboundGuidable.getTurningPoints()[0];
-        }
-
-        return this.fix.infos.coordinates;
     }
 
     get predictedPath(): PathVector[] {

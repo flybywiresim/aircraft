@@ -573,7 +573,7 @@ class CDUFlightPlanPage {
 
                 const decelReached = isActive || isNext && mcdu.holdDecelReached;
                 let holdSpeed = holdResumeExit.additionalData.holdSpeed ? holdResumeExit.additionalData.holdSpeed.toFixed(0) : '---';
-                if (isActive || isNext) {
+                if ((isActive || isNext) && mcdu.holdSpeedTarget > 0) {
                     holdSpeed = mcdu.holdSpeedTarget.toFixed(0);
                 }
                 const turnDirection = holdResumeExit.turnDirection === 1 ? 'L' : 'R';

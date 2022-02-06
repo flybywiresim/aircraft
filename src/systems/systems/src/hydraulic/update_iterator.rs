@@ -1,4 +1,4 @@
-use crate::simulation::UpdateContext;
+use crate::simulation::DeltaContext;
 use std::time::Duration;
 
 /// Provides fixed time interval looping.
@@ -26,7 +26,7 @@ impl FixedStepLoop {
         self.time_step
     }
 
-    pub fn update(&mut self, context: &UpdateContext) {
+    pub fn update(&mut self, context: &impl DeltaContext) {
         // Time to catch up in our simulation = new delta + time not updated last iteration
         let time_to_catch = context.delta() + self.lag_time_accumulator;
 
@@ -68,53 +68,47 @@ impl Iterator for FixedStepLoop {
     }
 }
 
-/// Provides maximum fixed time interval looping.
+/// Provides maximum time interval looping.
 ///
 /// ## Example scenario
-/// With a max fixed time interval of 10 ms and a frame delta of 35 ms, this type will provide three
-/// iterations of 10 ms, and one iteration of 5ms to complete the 35ms total delta.
+/// With a max time step of 10 ms and a frame delta of 35 ms, this type will provide four
+/// iterations of 8.75ms, thus completing the 35ms total delta.
 #[derive(Copy, Clone)]
-pub struct MaxFixedStepLoop {
+pub struct MaxStepLoop {
     max_time_step: Duration,
-    num_of_max_step_loop: u32,
-    remaining_frame_duration: Option<Duration>,
+    num_of_loops: u32,
+    frame_duration: Option<Duration>,
 }
-impl MaxFixedStepLoop {
+impl MaxStepLoop {
     pub fn new(max_time_step: Duration) -> Self {
         Self {
             max_time_step,
-            num_of_max_step_loop: 0,
-            remaining_frame_duration: None,
+            num_of_loops: 0,
+            frame_duration: None,
         }
     }
 
-    pub fn update(&mut self, context: &UpdateContext) {
-        let max_fixed_seconds = self.max_time_step.as_secs_f64();
+    pub fn update(&mut self, context: &impl DeltaContext) {
+        if context.delta() > Duration::from_secs(0) {
+            self.num_of_loops =
+                (context.delta_as_secs_f64() / self.max_time_step.as_secs_f64()).ceil() as u32;
 
-        let number_of_steps = context.delta_as_secs_f64() / max_fixed_seconds;
-
-        self.num_of_max_step_loop = number_of_steps.floor() as u32;
-
-        let remaining_time_step_update = Duration::from_secs_f64(
-            (number_of_steps - (self.num_of_max_step_loop as f64)) * max_fixed_seconds,
-        );
-
-        if remaining_time_step_update > Duration::from_secs(0) {
-            self.remaining_frame_duration = Some(remaining_time_step_update);
+            self.frame_duration = Some(context.delta() / self.num_of_loops);
         } else {
-            self.remaining_frame_duration = None;
+            self.num_of_loops = 0;
+            self.frame_duration = None;
         }
     }
 }
-impl Iterator for MaxFixedStepLoop {
+impl Iterator for MaxStepLoop {
     type Item = Duration;
 
     fn next(&mut self) -> Option<Self::Item> {
-        match self.num_of_max_step_loop {
-            0 => self.remaining_frame_duration.take(),
+        match self.num_of_loops {
+            0 => None,
             _ => {
-                self.num_of_max_step_loop -= 1;
-                Some(self.max_time_step)
+                self.num_of_loops -= 1;
+                self.frame_duration
             }
         }
     }
@@ -123,16 +117,8 @@ impl Iterator for MaxFixedStepLoop {
 #[cfg(test)]
 mod fixed_tests {
     use super::*;
-
+    use crate::simulation::test::TestUpdateContext;
     use std::time::Duration;
-
-    use crate::simulation::test::TestVariableRegistry;
-    use crate::simulation::InitContext;
-    use crate::{electrical::Electricity, shared::MachNumber};
-    use uom::si::{
-        acceleration::foot_per_second_squared, angle::radian, f64::*, length::foot,
-        thermodynamic_temperature::degree_celsius, velocity::knot,
-    };
 
     #[test]
     fn no_step_after_init() {
@@ -143,168 +129,102 @@ mod fixed_tests {
 
     #[test]
     fn no_step_after_zero_time_update() {
-        let mut electricity = Electricity::new();
-        let mut registry: TestVariableRegistry = Default::default();
-        let mut init_context = InitContext::new(&mut electricity, &mut registry);
-
         let mut fixed_step = FixedStepLoop::new(Duration::from_millis(100));
 
-        fixed_step.update(&context(&mut init_context, Duration::from_secs(0)));
+        fixed_step.update(&TestUpdateContext::default());
+
+        assert_eq!(fixed_step.next(), None);
+    }
+
+    #[test]
+    fn no_step_after_short_time_update() {
+        let mut fixed_step = FixedStepLoop::new(Duration::from_millis(100));
+
+        fixed_step.update(&TestUpdateContext::default().with_delta(Duration::from_millis(80)));
 
         assert_eq!(fixed_step.next(), None);
     }
 
     #[test]
     fn one_step_after_exact_fixed_time_step_update() {
-        let mut electricity = Electricity::new();
-        let mut registry: TestVariableRegistry = Default::default();
-        let mut init_context = InitContext::new(&mut electricity, &mut registry);
-
         let mut fixed_step = FixedStepLoop::new(Duration::from_millis(100));
 
-        fixed_step.update(&context(&mut init_context, Duration::from_millis(100)));
+        fixed_step.update(&TestUpdateContext::default().with_delta(Duration::from_millis(100)));
 
-        assert!(matches!(fixed_step.next(), Some(_)));
+        assert_eq!(fixed_step.next(), Some(Duration::from_millis(100)));
         assert_eq!(fixed_step.next(), None);
     }
 
     #[test]
     fn more_than_fixed_step_gives_correct_num_of_loops() {
-        let mut electricity = Electricity::new();
-        let mut registry: TestVariableRegistry = Default::default();
-        let mut init_context = InitContext::new(&mut electricity, &mut registry);
+        let mut fixed_step = FixedStepLoop::new(Duration::from_millis(100));
 
-        let timestep = Duration::from_millis(100);
-        let mut fixed_step = FixedStepLoop::new(timestep);
+        fixed_step.update(&TestUpdateContext::default().with_delta(Duration::from_millis(320)));
 
-        let test_duration = Duration::from_secs_f64(1.25);
-
-        let expected_num_of_loops =
-            (test_duration.as_secs_f64() / timestep.as_secs_f64()).floor() as u32;
-
-        let expected_remaining_time_at_end_of_loops =
-            test_duration - expected_num_of_loops * timestep;
-
-        fixed_step.update(&context(&mut init_context, test_duration));
-
-        let mut actual_loop_num = 0;
-        for cur_time_step in &mut fixed_step {
-            assert!(cur_time_step == Duration::from_millis(100));
-            actual_loop_num += 1;
-        }
-
-        assert!(expected_remaining_time_at_end_of_loops == fixed_step.lag_time_accumulator);
-        assert!(actual_loop_num == expected_num_of_loops);
+        assert_eq!(fixed_step.next(), Some(Duration::from_millis(100)));
+        assert_eq!(fixed_step.next(), Some(Duration::from_millis(100)));
+        assert_eq!(fixed_step.next(), Some(Duration::from_millis(100)));
+        assert_eq!(fixed_step.next(), None);
     }
 
-    fn context(context: &mut InitContext, delta_time: Duration) -> UpdateContext {
-        UpdateContext::new(
-            context,
-            delta_time,
-            Velocity::new::<knot>(250.),
-            Length::new::<foot>(5000.),
-            ThermodynamicTemperature::new::<degree_celsius>(25.0),
-            true,
-            Acceleration::new::<foot_per_second_squared>(0.),
-            Acceleration::new::<foot_per_second_squared>(0.),
-            Acceleration::new::<foot_per_second_squared>(0.),
-            Angle::new::<radian>(0.),
-            Angle::new::<radian>(0.),
-            MachNumber(0.),
-        )
+    #[test]
+    fn more_than_fixed_step_carries_over_remaining_time_to_next_update() {
+        let mut fixed_step = FixedStepLoop::new(Duration::from_millis(100));
+
+        fixed_step.update(&TestUpdateContext::default().with_delta(Duration::from_millis(101)));
+
+        assert_eq!(fixed_step.next(), Some(Duration::from_millis(100)));
+        assert_eq!(fixed_step.next(), None);
+
+        fixed_step.update(&TestUpdateContext::default().with_delta(Duration::from_millis(99)));
+
+        assert_eq!(fixed_step.next(), Some(Duration::from_millis(100)));
+        assert_eq!(fixed_step.next(), None);
     }
 }
 
 #[cfg(test)]
 mod max_step_tests {
     use super::*;
-
+    use crate::simulation::test::TestUpdateContext;
     use std::time::Duration;
-
-    use crate::simulation::test::TestVariableRegistry;
-    use crate::simulation::InitContext;
-    use crate::{electrical::Electricity, shared::MachNumber};
-    use uom::si::{
-        acceleration::foot_per_second_squared, angle::radian, f64::*, length::foot,
-        thermodynamic_temperature::degree_celsius, velocity::knot,
-    };
 
     #[test]
     fn no_step_after_init() {
-        let mut max_step = MaxFixedStepLoop::new(Duration::from_millis(100));
+        let mut max_step = MaxStepLoop::new(Duration::from_millis(100));
 
-        assert!(max_step.next() == None);
+        assert_eq!(max_step.next(), None);
     }
 
     #[test]
     fn no_step_after_zero_time_update() {
-        let mut electricity = Electricity::new();
-        let mut registry: TestVariableRegistry = Default::default();
-        let mut init_context = InitContext::new(&mut electricity, &mut registry);
+        let mut max_step = MaxStepLoop::new(Duration::from_millis(100));
 
-        let mut max_step = MaxFixedStepLoop::new(Duration::from_millis(100));
-
-        max_step.update(&context(&mut init_context, Duration::from_secs(0)));
+        max_step.update(&TestUpdateContext::default());
 
         assert_eq!(max_step.next(), None);
     }
 
     #[test]
     fn one_step_after_exact_fixed_time_step_update() {
-        let mut electricity = Electricity::new();
-        let mut registry: TestVariableRegistry = Default::default();
-        let mut init_context = InitContext::new(&mut electricity, &mut registry);
+        let mut max_step = MaxStepLoop::new(Duration::from_millis(100));
 
-        let mut max_step = MaxFixedStepLoop::new(Duration::from_millis(100));
+        max_step.update(&TestUpdateContext::default().with_delta(Duration::from_millis(100)));
 
-        max_step.update(&context(&mut init_context, Duration::from_millis(100)));
-
-        assert!(matches!(max_step.next(), Some(_)));
+        assert_eq!(max_step.next(), Some(Duration::from_millis(100)));
         assert_eq!(max_step.next(), None);
     }
 
     #[test]
-    fn more_than_max_step_gives_correct_num_of_loops() {
-        let mut electricity = Electricity::new();
-        let mut registry: TestVariableRegistry = Default::default();
-        let mut init_context = InitContext::new(&mut electricity, &mut registry);
+    fn more_than_max_step_gives_correct_num_of_loops_of_equal_delta_time() {
+        let mut max_step = MaxStepLoop::new(Duration::from_millis(100));
 
-        let timestep = Duration::from_millis(100);
-        let mut max_step = MaxFixedStepLoop::new(timestep);
+        max_step.update(&TestUpdateContext::default().with_delta(Duration::from_millis(320)));
 
-        let test_duration = Duration::from_secs_f64(0.320);
-
-        max_step.update(&context(&mut init_context, test_duration));
-
-        let mut actual_loop_num = 0;
-        let mut time_simulated = Duration::from_secs(0);
-        for cur_time_step in &mut max_step {
-            time_simulated += cur_time_step;
-            actual_loop_num += 1;
-        }
-
-        //0.320 seconds with max of 0.100 we expect 3 max step duration plus 1 final step so 4
-        assert!(actual_loop_num == 4);
-        assert!(
-            time_simulated <= test_duration + Duration::from_millis(5)
-                && time_simulated >= test_duration - Duration::from_millis(5)
-        );
-    }
-
-    fn context(context: &mut InitContext, delta_time: Duration) -> UpdateContext {
-        UpdateContext::new(
-            context,
-            delta_time,
-            Velocity::new::<knot>(250.),
-            Length::new::<foot>(5000.),
-            ThermodynamicTemperature::new::<degree_celsius>(25.0),
-            true,
-            Acceleration::new::<foot_per_second_squared>(0.),
-            Acceleration::new::<foot_per_second_squared>(0.),
-            Acceleration::new::<foot_per_second_squared>(0.),
-            Angle::new::<radian>(0.),
-            Angle::new::<radian>(0.),
-            MachNumber(0.),
-        )
+        assert_eq!(max_step.next(), Some(Duration::from_millis(80)));
+        assert_eq!(max_step.next(), Some(Duration::from_millis(80)));
+        assert_eq!(max_step.next(), Some(Duration::from_millis(80)));
+        assert_eq!(max_step.next(), Some(Duration::from_millis(80)));
+        assert_eq!(max_step.next(), None);
     }
 }
