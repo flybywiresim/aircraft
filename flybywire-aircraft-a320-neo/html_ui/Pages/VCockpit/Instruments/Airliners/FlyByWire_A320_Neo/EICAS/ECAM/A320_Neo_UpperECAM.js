@@ -105,6 +105,10 @@ var A320_Neo_UpperECAM;
             this.iceNotDetTimer1 = new NXLogic_ConfirmNode(60);
             this.iceNotDetTimer2 = new NXLogic_ConfirmNode(130);
             this.predWsMemo = new NXLogic_MemoryNode(true);
+            this.packOffNotFailed1 = new NXLogic_ConfirmNode(60);
+            this.packOffNotFailed2 = new NXLogic_ConfirmNode(60);
+            this.packOffBleedAvailable1 = new NXLogic_ConfirmNode(5, false);
+            this.packOffBleedAvailable2 = new NXLogic_ConfirmNode(5, false);
         }
         get templateID() {
             return "UpperECAMTemplate";
@@ -814,6 +818,29 @@ var A320_Neo_UpperECAM;
                                     },
                                 ]
                             },
+                        ]
+                    },
+                    {
+                        name: "AIR",
+                        messages: [
+                            {
+                                message: "PACK 1 OFF",
+                                level: 2,
+                                flightPhasesInhib: [1, 2, 3, 4, 5, 7, 8, 9, 10],
+                                inopSystems: ["PACK_1"],
+                                isActive: () => this.packOffNotFailed1.read(), // TODO should also be not outflow valve fault
+                                actions: [],
+                                page: "BLEED",
+                            },
+                            {
+                                message: "PACK 2 OFF",
+                                level: 2,
+                                flightPhasesInhib: [1, 2, 3, 4, 5, 7, 8, 9, 10],
+                                inopSystems: ["PACK_2"],
+                                isActive: () => this.packOffNotFailed2.read(), // TODO should also be not outflow valve fault
+                                actions: [],
+                                page: "BLEED",
+                            }
                         ]
                     },
                     {
@@ -1705,6 +1732,7 @@ var A320_Neo_UpperECAM;
 
             this.updateInhibitMessages(_deltaTime);
             this.updateIcing(_deltaTime);
+            this.updatePacks(_deltaTime);
 
             const memosInhibited = this.leftEcamMessagePanel.hasWarnings || this.leftEcamMessagePanel.hasCautions;
             const showTOMemo = SimVar.GetSimVarValue("L:A32NX_FWC_TOMEMO", "Bool") && !memosInhibited;
@@ -1902,6 +1930,23 @@ var A320_Neo_UpperECAM;
             const notDet1 = this.iceNotDetTimer1.write(isAnyAntiIceOn, _deltaTime);
             this.iceNotDetTimer2.write(!isActivelyIcing && notDet1, _deltaTime);
 
+        }
+
+        updatePacks(deltaTime) {
+            // this is a bit of a hack, but near enough until the new FWC, and underlying system implementations
+            const crossfeed = SimVar.GetSimVarValue("L:A32NX_PNEU_XBLEED_VALVE_OPEN", "bool");
+            const eng1Bleed = SimVar.GetSimVarValue("A:BLEED AIR ENGINE:1", "bool") && !SimVar.GetSimVarValue("L:A32NX_OVHD_PNEU_ENG_1_BLEED_PB_HAS_FAULT", "bool");
+            const eng2Bleed = SimVar.GetSimVarValue("A:BLEED AIR ENGINE:2", "bool") && !SimVar.GetSimVarValue("L:A32NX_OVHD_PNEU_ENG_2_BLEED_PB_HAS_FAULT", "bool");
+            this.packOffBleedAvailable1.write(eng1Bleed || crossfeed, deltaTime);
+            this.packOffBleedAvailable2.write(eng2Bleed || crossfeed, deltaTime);
+
+            const pack1Fault = SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK1_FAULT", "bool");
+            const pack2Fault = SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK2_FAULT", "bool");
+            const pack1Off = !SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK1_TOGGLE", "bool");
+            const pack2Off = !SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK2_TOGGLE", "bool");
+
+            this.packOffNotFailed1.write(pack1Off && !pack1Fault && this.packOffBleedAvailable1.read() && this.fwcFlightPhase === 6, deltaTime);
+            this.packOffNotFailed2.write(pack2Off && !pack2Fault && this.packOffBleedAvailable2.read() && this.fwcFlightPhase === 6, deltaTime);
         }
 
         getInfoPanelManager() {
