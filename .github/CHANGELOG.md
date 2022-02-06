@@ -107,6 +107,7 @@
 1. [FDR] Added additional values to help debug in some cases - @aguther (Andreas Guther)
 1. [ATHR] Added switch to use externally defined thrust limits and separated thrust limits into own model - @aguther (Andreas Guther)
 1. [FBW] Improved sideslip controller - @IbrahimK42 (IbrahimK42)
+1. [API] DOME light switch did not move when set to "dim" via SimConnect - @pre-martin (Martin)
 1. [AP] Further improved ALT CST* and ALT CST conditions - @aguther (Andreas Guther)
 1. [MCDU] Added support for connecting MCDU to external devices - @tyler58546 (tyler58546)
 1. [ATHR] Improvement of ATHR laws - @IbrahimK42(IbrahimK42), @aguther (Andreas Guther)
@@ -138,6 +139,7 @@
 1. [HYD] Simplified max step loop updater - @Crocket63
 1. [MISC] Fix for bleed/hyd system failure in some conditions - @Crocket63
 1. [ECAM] Add pack abnormally off warnings - @tracernz (Mike)
+1. [ELEC] Fix emergency elec on init in flight wrongly triggering the RAT - @Crocket63
 
 ## 0.7.0
 
