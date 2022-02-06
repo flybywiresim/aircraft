@@ -802,15 +802,53 @@ mod tests {
             assert!(test_bed.contains_variable_with_name("ELEC_ENG_GEN_1_IDG_IS_CONNECTED"));
         }
 
-        #[test]
-        fn starts_unstable() {
-            let test_bed = SimulationTestBed::from(ElementCtorFn(idg));
 
-            assert!(test_bed.query_element(|e| !e.provides_stable_power_output()));
+        #[test]
+        fn starts_unstable_with_engines_off() {
+            let mut test_bed = SimulationTestBed::from(ElementCtorFn(idg))
+            .with_update_after_power_distribution(|idg, context| {
+                idg.update(
+                    context,
+                    &TestEngine::new(Ratio::new::<percent>(0.)),
+                    &TestOverhead::new(false, false),
+                    &TestFireOverhead::new(false),
+                )
+            });
+            test_bed.run_without_delta();
+
+            assert!(!test_bed.query_element(|e| e.provides_stable_power_output()));
+        }
+
+        #[test]
+        fn starts_stable_with_engines_on() {
+            let mut test_bed = SimulationTestBed::from(ElementCtorFn(idg))
+            .with_update_after_power_distribution(|idg, context| {
+                idg.update(
+                    context,
+                    &TestEngine::new(Ratio::new::<percent>(80.)),
+                    &TestOverhead::new(true, false),
+                    &TestFireOverhead::new(false),
+                )
+            });
+            test_bed.run_without_delta();
+
+            assert!(test_bed.query_element(|e| e.provides_stable_power_output()));
         }
 
         #[test]
         fn becomes_stable_once_engine_above_threshold_for_500_milliseconds() {
+                        // First enforcing engine in off state
+                        let mut test_bed = SimulationTestBed::from(ElementCtorFn(idg))
+                        .with_update_after_power_distribution(|idg, context| {
+                            idg.update(
+                                context,
+                                &TestEngine::new(Ratio::new::<percent>(0.)),
+                                &TestOverhead::new(false, false),
+                                &TestFireOverhead::new(false),
+                            )
+                        });
+                    test_bed.run_without_delta();
+
             let mut test_bed = SimulationTestBed::from(ElementCtorFn(idg))
                 .with_update_after_power_distribution(|idg, context| {
                     idg.update(
@@ -828,15 +866,26 @@ mod tests {
 
         #[test]
         fn does_not_become_stable_before_engine_above_threshold_for_500_milliseconds() {
+            // First enforcing engine in off state
             let mut test_bed = SimulationTestBed::from(ElementCtorFn(idg))
                 .with_update_after_power_distribution(|idg, context| {
                     idg.update(
                         context,
-                        &TestEngine::new(Ratio::new::<percent>(80.)),
-                        &TestOverhead::new(true, false),
+                        &TestEngine::new(Ratio::new::<percent>(0.)),
+                        &TestOverhead::new(false, false),
                         &TestFireOverhead::new(false),
                     )
                 });
+            test_bed.run_without_delta();
+
+            test_bed.set_update_after_power_distribution(|idg, context| {
+                idg.update(
+                    context,
+                    &TestEngine::new(Ratio::new::<percent>(80.)),
+                    &TestOverhead::new(true, false),
+                    &TestFireOverhead::new(false),
+                )
+            });
 
             test_bed.run_with_delta(Duration::from_millis(499));
 
