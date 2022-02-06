@@ -23,11 +23,12 @@ interface TcasWxrMessage {
     color: 'White' | 'Amber';
 }
 
-export const TcasWxrMessages: FC<{ modeIndex: Mode}> = ({ modeIndex }) => {
+export const TcasWxrMessages: FC<{ modeIndex: Mode }> = ({ modeIndex }) => {
     // TODO get data and decide what to display
 
     let leftMessage: TcasWxrMessage | undefined;
     let rightMessage: TcasWxrMessage | undefined;
+    let centerMessage: TcasWxrMessage | undefined;
 
     const [tcasOnly] = useSimVar('L:A32NX_TCAS_TA_ONLY', 'boolean', 200);
     const [tcasFault] = useSimVar('L:A32NX_TCAS_FAULT', 'boolean', 200);
@@ -35,44 +36,36 @@ export const TcasWxrMessages: FC<{ modeIndex: Mode}> = ({ modeIndex }) => {
     if (tcasFault) {
         leftMessage = { text: 'TCAS', color: 'Amber' };
     } else if (tcasOnly) {
-        leftMessage = { text: 'TA ONLY', color: 'White' };
+        centerMessage = { text: 'TA ONLY', color: 'White' };
     }
 
-    if (modeIndex !== Mode.ARC && modeIndex !== Mode.ROSE_NAV && modeIndex !== Mode.ROSE_VOR && modeIndex !== Mode.ROSE_ILS || (!leftMessage && !rightMessage)) {
+    if ((modeIndex !== Mode.ARC && modeIndex !== Mode.ROSE_NAV && modeIndex !== Mode.ROSE_VOR && modeIndex !== Mode.ROSE_ILS) || (!leftMessage && !rightMessage)) {
         return null;
     }
 
-    const y = (modeIndex === Mode.ROSE_VOR || modeIndex === Mode.ROSE_ILS) ? 713 : 684;
+    const y = modeIndex === Mode.ROSE_VOR || modeIndex === Mode.ROSE_ILS ? 713 : 684;
 
     return (
         <Layer x={164} y={y}>
-            { /* we fill/mask the map under both message boxes, per IRL refs */ }
-            { (modeIndex === Mode.ARC || modeIndex === Mode.ROSE_NAV) && (
-                <rect x={0} y={0} width={440} height={59} className="BackgroundFill" stroke="none" />
-            )}
+            {/* we fill/mask the map under both message boxes, per IRL refs */}
+            {(modeIndex === Mode.ARC || modeIndex === Mode.ROSE_NAV) && <rect x={0} y={0} width={440} height={59} className="BackgroundFill" stroke="none" />}
 
             <rect x={0} y={0} width={440} height={30} className="White BackgroundFill" strokeWidth={1.75} />
 
-            { (leftMessage) && (
-                <text
-                    x={8}
-                    y={25}
-                    className={`${leftMessage.color}`}
-                    textAnchor="start"
-                    fontSize={25}
-                >
+            {leftMessage && (
+                <text x={8} y={25} className={`${leftMessage.color}`} textAnchor="start" fontSize={25}>
                     {leftMessage.text}
                 </text>
             )}
 
-            { (rightMessage) && (
-                <text
-                    x={425}
-                    y={25}
-                    className={`${rightMessage.color}`}
-                    textAnchor="end"
-                    fontSize={25}
-                >
+            {centerMessage && (
+                <text x={8} y={25} className={`${centerMessage.color}`} textAnchor="center" fontSize={25}>
+                    {centerMessage.text}
+                </text>
+            )}
+
+            {rightMessage && (
+                <text x={425} y={25} className={`${rightMessage.color}`} textAnchor="end" fontSize={25}>
                     {rightMessage.text}
                 </text>
             )}
