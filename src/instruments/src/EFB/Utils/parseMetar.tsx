@@ -1,3 +1,6 @@
+// Copyright (c) 2022 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
 import { ColorCode, MetarParserType, Visibility, Wind } from '../../Common/metarTypes';
 
 /**
