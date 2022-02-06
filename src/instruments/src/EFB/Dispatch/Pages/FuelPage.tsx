@@ -5,7 +5,7 @@ import { useSimVar } from '@instruments/common/simVars';
 import { usePersistentProperty } from '@instruments/common/persistence';
 import Slider from 'rc-slider';
 import { Units } from '@shared/units';
-import { simbriefDataIsInitialState } from '../../Store/features/simbrief';
+import { isSimbriefDataLoaded } from '../../Store/features/simbrief';
 import { useAppSelector } from '../../Store/store';
 import { SelectGroup, SelectItem } from '../../UtilComponents/Form/Select';
 import { ProgressBar } from '../../UtilComponents/Progress/Progress';
@@ -90,7 +90,7 @@ export const FuelPage = () => {
 
     const { units } = useAppSelector((state) => state.simbrief.data);
     const { planRamp } = useAppSelector((state) => state.simbrief.data.fuels);
-    const isInitialData = simbriefDataIsInitialState();
+    const simbriefDataLoaded = isSimbriefDataLoaded();
 
     const isAirplaneCnD = () => {
         if (simGroundSpeed > 0.1 || eng1Running || eng2Running || !isOnGround || (!busDC2 && !busDCHot1)) {
@@ -399,7 +399,7 @@ export const FuelPage = () => {
                             <div className="flex flex-row">
                                 <div className="relative">
                                     <SimpleInput
-                                        className={`w-32 ${!isInitialData && 'rounded-r-none'}`}
+                                        className={`w-32 ${!simbriefDataLoaded && 'rounded-r-none'}`}
                                         noLeftMargin
                                         noLabel
                                         placeholder={round(totalFuel()).toString()}
@@ -411,10 +411,10 @@ export const FuelPage = () => {
                                     />
                                     <div className="absolute top-2 right-4 text-lg text-gray-400">{currentUnit()}</div>
                                 </div>
-                                {!isInitialData && (
+                                {!simbriefDataLoaded && (
                                     <div
                                         className="flex justify-center items-center px-2 rounded-md rounded-l-none bg-theme-highlight"
-                                        onClick={isInitialData ? undefined : handleFuelAutoFill}
+                                        onClick={simbriefDataLoaded ? undefined : handleFuelAutoFill}
                                     >
                                         <CloudArrowDown size={26} />
                                     </div>
