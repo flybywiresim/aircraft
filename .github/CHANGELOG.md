@@ -107,6 +107,7 @@
 1. [FDR] Added additional values to help debug in some cases - @aguther (Andreas Guther)
 1. [ATHR] Added switch to use externally defined thrust limits and separated thrust limits into own model - @aguther (Andreas Guther)
 1. [FBW] Improved sideslip controller - @IbrahimK42 (IbrahimK42)
+1. [API] DOME light switch did not move when set to "dim" via SimConnect - @pre-martin (Martin)
 1. [AP] Further improved ALT CST* and ALT CST conditions - @aguther (Andreas Guther)
 1. [MCDU] Added support for connecting MCDU to external devices - @tyler58546 (tyler58546)
 1. [ATHR] Improvement of ATHR laws - @IbrahimK42(IbrahimK42), @aguther (Andreas Guther)
@@ -130,6 +131,20 @@
 1. [AP] Improved LOC ALGIN and ROLL OUT during Autoland - @aguther (Andreas Guther)
 1. [HYD] Simple hydraulic model placeholder for flaps and slats - @Crocket63
 1. [FBW] Fix: do not compensate ground spoilers in C* law - @aguther (Andreas Guther)
+1. [EFB] Added Hoppie configuration to ATSU/ATC page - @svengcz (Sven Czarnian)
+1. [EFB] Added Datalink simulation rate - @svengcz (Sven Czarnian)
+1. [ATSU] Added an ATSU manager to handle AOC and ATC messages and information - @svengcz (Sven Czarnian)
+1. [MCDU] Moved ATSU related code into the ATSU manager - @svengcz (Sven Czarnian)
+1. [MCDU] Refactored AOC pages to use new ATSU backend - @svengcz (Sven Czarnian)
+1. [MCDU] Refactored ATC pages to compliant to MSN7560 - @svengcz (Sven Czarnian)
+1. [MCDU] Implemented ATC Notification, Communication Status and MSG RECORD - @svengcz (Sven Czarnian)
+1. [MCDU] Added PDC functionality - @svengcz (Sven Czarnian)
+1. [DCDU] Activated all buttons - @svengcz (Sven Czarnian)
+1. [DCDU] Defined different answer buttons for Hoppie (Wilco-Unable, Roger, Affirm-Negative, Close) - @svengcz (Sven Czarnian)
+1. [DCDU] Implemented message visualization - @svengcz (Sven Czarnian)
+1. [ATSU] Implemented Datalink to synchronize requests and responses - @svengcz (Sven Czarnian)
+1. [MISC] Handling "ATC MSG" button - @svengcz (Sven Czarnian)
+1. [DCDU] Increase DCDU size and use new DCDU font - @svengcz (Sven Czarnian)
 1. [AP] Fix: adjustment of vertical speed limitation in SPD/MACH law - @IbrahimK42 (IbrahimK42)
 1. [HYD] Ailerons hydraulic control (only visual and hydraulics) - @Crocket63
 1. [MISC] Animation speed/behaviors for button, switches and knobs - @bouveng (Johan Bouveng)
@@ -138,6 +153,8 @@
 1. [ATHR] Fix ATHR Alt Soft Mode - @IbrahimK42 (IbrahimK42)
 1. [HYD] Simplified max step loop updater - @Crocket63
 1. [MISC] Fix for bleed/hyd system failure in some conditions - @Crocket63
+1. [ECAM] Add pack abnormally off warnings - @tracernz (Mike)
+1. [ELEC] Fix emergency elec on init in flight wrongly triggering the RAT - @Crocket63
 
 ## 0.7.0
 

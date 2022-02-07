@@ -1008,64 +1008,74 @@
 
                     <UseTemplate Name="FBW_Anim_Interactions">
                         <ANIM_TYPE>BUTTON</ANIM_TYPE>
-                        <ANIM_TEMPLATE>FBW_Airbus_DCDU_Generic_Inop_Switch</ANIM_TEMPLATE>
+                        <ANIM_TEMPLATE>FBW_Airbus_DCDU_Generic_Switch</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_MPL_MS0MINUS</NODE_ID>
+                        <HTML_EVENT_ID>MPL_MS0MINUS</HTML_EVENT_ID>
                         <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
                     </UseTemplate>
 
                     <UseTemplate Name="FBW_Anim_Interactions">
                         <ANIM_TYPE>BUTTON</ANIM_TYPE>
-                        <ANIM_TEMPLATE>FBW_Airbus_DCDU_Generic_Inop_Switch</ANIM_TEMPLATE>
+                        <ANIM_TEMPLATE>FBW_Airbus_DCDU_Generic_Switch</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_MPL_MS0PLUS</NODE_ID>
+                        <HTML_EVENT_ID>MPL_MS0PLUS</HTML_EVENT_ID>
                         <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
                     </UseTemplate>
 
                     <UseTemplate Name="FBW_Anim_Interactions">
                         <ANIM_TYPE>BUTTON</ANIM_TYPE>
-                        <ANIM_TEMPLATE>FBW_Airbus_DCDU_Generic_Inop_Switch</ANIM_TEMPLATE>
+                        <ANIM_TEMPLATE>FBW_Airbus_DCDU_Generic_Switch</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_MPL_L1</NODE_ID>
+                        <HTML_EVENT_ID>MPL_L1</HTML_EVENT_ID>
                         <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
                     </UseTemplate>
 
                     <UseTemplate Name="FBW_Anim_Interactions">
                         <ANIM_TYPE>BUTTON</ANIM_TYPE>
-                        <ANIM_TEMPLATE>FBW_Airbus_DCDU_Generic_Inop_Switch</ANIM_TEMPLATE>
+                        <ANIM_TEMPLATE>FBW_Airbus_DCDU_Generic_Switch</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_MPL_L2</NODE_ID>
+                        <HTML_EVENT_ID>MPL_L2</HTML_EVENT_ID>
                         <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
                     </UseTemplate>
 
                     <UseTemplate Name="FBW_Anim_Interactions">
                         <ANIM_TYPE>BUTTON</ANIM_TYPE>
-                        <ANIM_TEMPLATE>FBW_Airbus_DCDU_Generic_Inop_Switch</ANIM_TEMPLATE>
+                        <ANIM_TEMPLATE>FBW_Airbus_DCDU_Generic_Switch</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_MPL_PRINT</NODE_ID>
+                        <HTML_EVENT_ID>MPL_PRINT</HTML_EVENT_ID>
                         <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
                     </UseTemplate>
 
                     <UseTemplate Name="FBW_Anim_Interactions">
                         <ANIM_TYPE>BUTTON</ANIM_TYPE>
-                        <ANIM_TEMPLATE>FBW_Airbus_DCDU_Generic_Inop_Switch</ANIM_TEMPLATE>
+                        <ANIM_TEMPLATE>FBW_Airbus_DCDU_Generic_Switch</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_MPL_POEMINUS</NODE_ID>
+                        <HTML_EVENT_ID>MPL_POEMINUS</HTML_EVENT_ID>
                         <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
                     </UseTemplate>
 
                     <UseTemplate Name="FBW_Anim_Interactions">
                         <ANIM_TYPE>BUTTON</ANIM_TYPE>
-                        <ANIM_TEMPLATE>FBW_Airbus_DCDU_Generic_Inop_Switch</ANIM_TEMPLATE>
+                        <ANIM_TEMPLATE>FBW_Airbus_DCDU_Generic_Switch</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_MPL_POEPLUS</NODE_ID>
+                        <HTML_EVENT_ID>MPL_POEPLUS</HTML_EVENT_ID>
                         <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
+                        <NO_SEQ2 />
                     </UseTemplate>
 
                     <UseTemplate Name="FBW_Anim_Interactions">
                         <ANIM_TYPE>BUTTON</ANIM_TYPE>
-                        <ANIM_TEMPLATE>FBW_Airbus_DCDU_Generic_Inop_Switch</ANIM_TEMPLATE>
+                        <ANIM_TEMPLATE>FBW_Airbus_DCDU_Generic_Switch</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_MPL_R1</NODE_ID>
+                        <HTML_EVENT_ID>MPL_R1</HTML_EVENT_ID>
                         <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
                     </UseTemplate>
 
                     <UseTemplate Name="FBW_Anim_Interactions">
                         <ANIM_TYPE>BUTTON</ANIM_TYPE>
-                        <ANIM_TEMPLATE>FBW_Airbus_DCDU_Generic_Inop_Switch</ANIM_TEMPLATE>
+                        <ANIM_TEMPLATE>FBW_Airbus_DCDU_Generic_Switch</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_MPL_R2</NODE_ID>
+                        <HTML_EVENT_ID>MPL_R2</HTML_EVENT_ID>
                         <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
                     </UseTemplate>
                 </Component>
@@ -1086,64 +1096,73 @@
 
                     <UseTemplate Name="FBW_Anim_Interactions">
                         <ANIM_TYPE>BUTTON</ANIM_TYPE>
-                        <ANIM_TEMPLATE>FBW_Airbus_DCDU_Generic_Inop_Switch</ANIM_TEMPLATE>
+                        <ANIM_TEMPLATE>FBW_Airbus_DCDU_Generic_Switch</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_MPR_MS0MINUS</NODE_ID>
+                        <HTML_EVENT_ID>MPR_MS0MINUS</HTML_EVENT_ID>
                         <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
                     </UseTemplate>
 
                     <UseTemplate Name="FBW_Anim_Interactions">
                         <ANIM_TYPE>BUTTON</ANIM_TYPE>
-                        <ANIM_TEMPLATE>FBW_Airbus_DCDU_Generic_Inop_Switch</ANIM_TEMPLATE>
+                        <ANIM_TEMPLATE>FBW_Airbus_DCDU_Generic_Switch</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_MPR_MS0PLUS</NODE_ID>
+                        <HTML_EVENT_ID>MPR_MS0PLUS</HTML_EVENT_ID>
                         <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
                     </UseTemplate>
 
                     <UseTemplate Name="FBW_Anim_Interactions">
                         <ANIM_TYPE>BUTTON</ANIM_TYPE>
-                        <ANIM_TEMPLATE>FBW_Airbus_DCDU_Generic_Inop_Switch</ANIM_TEMPLATE>
+                        <ANIM_TEMPLATE>FBW_Airbus_DCDU_Generic_Switch</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_MPR_L1</NODE_ID>
+                        <HTML_EVENT_ID>MPR_L1</HTML_EVENT_ID>
                         <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
                     </UseTemplate>
 
                     <UseTemplate Name="FBW_Anim_Interactions">
                         <ANIM_TYPE>BUTTON</ANIM_TYPE>
-                        <ANIM_TEMPLATE>FBW_Airbus_DCDU_Generic_Inop_Switch</ANIM_TEMPLATE>
+                        <ANIM_TEMPLATE>FBW_Airbus_DCDU_Generic_Switch</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_MPR_L2</NODE_ID>
+                        <HTML_EVENT_ID>MPR_L2</HTML_EVENT_ID>
                         <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
                     </UseTemplate>
 
                     <UseTemplate Name="FBW_Anim_Interactions">
                         <ANIM_TYPE>BUTTON</ANIM_TYPE>
-                        <ANIM_TEMPLATE>FBW_Airbus_DCDU_Generic_Inop_Switch</ANIM_TEMPLATE>
+                        <ANIM_TEMPLATE>FBW_Airbus_DCDU_Generic_Switch</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_MPR_PRINT</NODE_ID>
+                        <HTML_EVENT_ID>MPR_PRINT</HTML_EVENT_ID>
                         <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
                     </UseTemplate>
 
                     <UseTemplate Name="FBW_Anim_Interactions">
                         <ANIM_TYPE>BUTTON</ANIM_TYPE>
-                        <ANIM_TEMPLATE>FBW_Airbus_DCDU_Generic_Inop_Switch</ANIM_TEMPLATE>
+                        <ANIM_TEMPLATE>FBW_Airbus_DCDU_Generic_Switch</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_MPR_POEMINUS</NODE_ID>
+                        <HTML_EVENT_ID>MPR_POEMINUS</HTML_EVENT_ID>
                         <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
                     </UseTemplate>
 
                     <UseTemplate Name="FBW_Anim_Interactions">
                         <ANIM_TYPE>BUTTON</ANIM_TYPE>
-                        <ANIM_TEMPLATE>FBW_Airbus_DCDU_Generic_Inop_Switch</ANIM_TEMPLATE>
+                        <ANIM_TEMPLATE>FBW_Airbus_DCDU_Generic_Switch</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_MPR_POEPLUS</NODE_ID>
+                        <HTML_EVENT_ID>MPR_POEPLUS</HTML_EVENT_ID>
                         <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
                     </UseTemplate>
 
                     <UseTemplate Name="FBW_Anim_Interactions">
                         <ANIM_TYPE>BUTTON</ANIM_TYPE>
-                        <ANIM_TEMPLATE>FBW_Airbus_DCDU_Generic_Inop_Switch</ANIM_TEMPLATE>
+                        <ANIM_TEMPLATE>FBW_Airbus_DCDU_Generic_Switch</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_MPR_R1</NODE_ID>
+                        <HTML_EVENT_ID>MPR_R1</HTML_EVENT_ID>
                         <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
                     </UseTemplate>
 
                     <UseTemplate Name="FBW_Anim_Interactions">
                         <ANIM_TYPE>BUTTON</ANIM_TYPE>
-                        <ANIM_TEMPLATE>FBW_Airbus_DCDU_Generic_Inop_Switch</ANIM_TEMPLATE>
+                        <ANIM_TEMPLATE>FBW_Airbus_DCDU_Generic_Switch</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_MPR_R2</NODE_ID>
+                        <HTML_EVENT_ID>MPR_R2</HTML_EVENT_ID>
                         <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
                     </UseTemplate>
                 </Component>
@@ -1749,10 +1768,10 @@
                         <DIMMER_POS_1_VALUE>50</DIMMER_POS_1_VALUE>
                         <DIMMER_POS_2_VALUE>0</DIMMER_POS_2_VALUE>
                         <CODE_POS_0>1 (&gt;K:2:CABIN_LIGHTS_SET) 100 (&gt;K:LIGHT_POTENTIOMETER_7_SET)</CODE_POS_0>
-                        <CODE_POS_1>0.5 (&gt;K:2:CABIN_LIGHTS_SET) 50 (&gt;K:LIGHT_POTENTIOMETER_7_SET)</CODE_POS_1>
+                        <CODE_POS_1>1 (&gt;K:2:CABIN_LIGHTS_SET) 50 (&gt;K:LIGHT_POTENTIOMETER_7_SET)</CODE_POS_1>
                         <CODE_POS_2>0 (&gt;K:2:CABIN_LIGHTS_SET) 0 (&gt;K:LIGHT_POTENTIOMETER_7_SET)</CODE_POS_2>
                         <STATE0_TEST>(A:LIGHT CABIN:1, Bool) 1 == (A:LIGHT POTENTIOMETER:7, Percent) 100 == and</STATE0_TEST>
-                        <STATE1_TEST>(A:LIGHT CABIN:1, Bool) 0.5  == (A:LIGHT POTENTIOMETER:7, Percent) 50 == and</STATE1_TEST>
+                        <STATE1_TEST>(A:LIGHT CABIN:1, Bool) 1 == (A:LIGHT POTENTIOMETER:7, Percent) 50 == and</STATE1_TEST>
                         <STATE2_TEST>(A:LIGHT CABIN:1, Bool) 0 == (A:LIGHT POTENTIOMETER:7, Percent) 0 == and </STATE2_TEST>
                     </UseTemplate>
                 </Component>
@@ -4307,6 +4326,14 @@
                 <ANIMTIP_2>Set TCAS traffic to ABV</ANIMTIP_2>
                 <ANIMTIP_3>Set TCAS traffic to BLW</ANIMTIP_3>
             </UseTemplate>
+            <UseTemplate Name="FBW_Airbus_ATC_MSG_Button">
+                <NODE_ID>PUSH_AUTOPILOT_LL</NODE_ID>
+                <SEQ1_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
+            </UseTemplate>
+            <UseTemplate Name="FBW_Airbus_ATC_MSG_Button">
+                <NODE_ID>PUSH_AUTOPILOT_RR</NODE_ID>
+                <SEQ1_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
+            </UseTemplate>
         </Component>
 
         <!-- ACCU PRESS BRAKES -->
@@ -4642,7 +4669,7 @@
                 <ANIM_TEMPLATE>FBW_Airbus_ATC_MSG_Button</ANIM_TEMPLATE>
                 <NODE_ID>PUSH_AUTOPILOT_LL</NODE_ID>
                 <SEQ1_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
-            </UseTemplate>
+            </UseTemplate>-->
             <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
                 <NODE_ID>PUSH_AUTOPILOT_SIDESTICK_L</NODE_ID>
             </UseTemplate>
@@ -4655,7 +4682,7 @@
                 <ANIM_TEMPLATE>FBW_Airbus_ATC_MSG_Button</ANIM_TEMPLATE>
                 <NODE_ID>PUSH_AUTOPILOT_RR</NODE_ID>
                 <SEQ1_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
-            </UseTemplate>
+            </UseTemplate>-->
             <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
                 <NODE_ID>SWITCH_RIGHT</NODE_ID>
             </UseTemplate>

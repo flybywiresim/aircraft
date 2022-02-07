@@ -14,8 +14,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.onRightInput = [];
         this.leftInputDelay = [];
         this.rightInputDelay = [];
-        this.messages = [];
-        this.sentMessages = [];
         this.activeSystem = 'FMGC';
         this.messageQueue = [];
         this.inFocus = false;
@@ -81,10 +79,28 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             AOCInit2: 44,
             AOCOfpData: 45,
             AOCOfpData2: 46,
-            ClimbWind: 47,
-            CruiseWind: 48,
-            DescentWind: 49,
-            FixInfoPage: 50,
+            AOCMenu: 47,
+            AOCRequestWeather: 48,
+            AOCRequestAtis: 49,
+            AOCDepartRequest: 50,
+            ATCMenu: 51,
+            ATCRequest: 52,
+            ATCEdit: 53,
+            ATCText: 54,
+            ATCDepartReq: 55,
+            ATCOceanicReq: 56,
+            ATCAtis: 57,
+            ATCMessages: 58,
+            ATCReports: 59,
+            ATCPositionReport: 60,
+            ATCMessageModify: 61,
+            ATCConnection: 62,
+            ATCNotification: 63,
+            ATCConnectionStatus: 64,
+            ClimbWind: 65,
+            CruiseWind: 66,
+            DescentWind: 67,
+            FixInfoPage: 68,
         };
     }
 
@@ -178,10 +194,10 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.onRightFunction = (f) => this.onLsk(this.onRightInput[f], this.rightInputDelay[f]);
 
         const flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string");
-        NXApi.connectTelex(flightNo)
-            .catch((err) => {
-                if (err !== NXApi.disabledError) {
-                    this.addNewMessage(NXFictionalMessages.fltNbrInUse);
+        Atsu.AtsuManager.connectToNetworks()
+            .then((code) => {
+                if (code !== Atsu.AtsuStatusCodes.Ok) {
+                    this.addNewAtsuMessage(code);
                 }
             });
 
@@ -238,53 +254,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 () => NXDataStore.set('CONFIG_ONLINE_FEATURES_STATUS', 'DISABLED'),
             );
         }
-
-        // Start the TELEX Ping. API functions check the connection status themself
-        setInterval(() => {
-            const toDelete = [];
-
-            // Update connection
-            NXApi.updateTelex()
-                .catch((err) => {
-                    if (err !== NXApi.disconnectedError && err !== NXApi.disabledError) {
-                        console.log("TELEX PING FAILED");
-                    }
-                });
-
-            // Fetch new messages
-            NXApi.getTelexMessages()
-                .then((data) => {
-                    for (const msg of data) {
-                        const sender = msg["from"]["flight"];
-
-                        const lines = [];
-                        lines.push("{cyan}FROM " + sender + "{end}");
-                        const incLines = msg["message"].split(";");
-                        incLines.forEach(l => lines.push(`{green}${l}{end}`));
-                        lines.push('{white}------------------------{end}');
-
-                        const newMessage = { "id": Date.now(), "type": "FREE TEXT (" + sender + ")", "time": '00:00', "opened": null, "content": lines, };
-                        let timeValue = SimVar.GetGlobalVarValue("ZULU TIME", "seconds");
-                        if (timeValue) {
-                            const seconds = Number.parseInt(timeValue);
-                            const displayTime = Utils.SecondsToDisplayTime(seconds, true, true, false);
-                            timeValue = displayTime.toString();
-                        }
-                        newMessage["time"] = timeValue.substring(0, 5);
-                        this.messages.unshift(newMessage);
-                        toDelete.push(msg["id"]);
-                    }
-
-                    const msgCount = SimVar.GetSimVarValue("L:A32NX_COMPANY_MSG_COUNT", "Number");
-                    SimVar.SetSimVarValue("L:A32NX_COMPANY_MSG_COUNT", "Number", msgCount + toDelete.length).then();
-                })
-                .catch(err => {
-                    if (err.status === 404 || err === NXApi.disabledError || err === NXApi.disconnectedError) {
-                        return;
-                    }
-                    console.log("TELEX MSG FETCH FAILED");
-                });
-        }, NXApi.updateRate);
 
         SimVar.SetSimVarValue("L:A32NX_GPS_PRIMARY_LOST_MSG", "Bool", 0).then();
 
@@ -981,6 +950,47 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
 
     /**
+     * General ATSU message handler which converts ATSU status codes to new MCDU messages
+     * @param code ATSU status code
+     */
+    addNewAtsuMessage(code) {
+        switch (code) {
+            case Atsu.AtsuStatusCodes.CallsignInUse:
+                this.addNewMessage(NXFictionalMessages.fltNbrInUse);
+                break;
+            case Atsu.AtsuStatusCodes.NoHoppieConnection:
+                this.addNewMessage(NXFictionalMessages.noHoppieConnection);
+                break;
+            case Atsu.AtsuStatusCodes.ComFailed:
+                this.addNewMessage(NXSystemMessages.comUnavailable);
+                break;
+            case Atsu.AtsuStatusCodes.NoAtc:
+                this.addNewMessage(NXFictionalMessages.noAtc);
+                break;
+            case Atsu.AtsuStatusCodes.DcduFull:
+                this.addNewMessage(NXSystemMessages.dcduFileFull);
+                break;
+            case Atsu.AtsuStatusCodes.UnknownMessage:
+                this.addNewMessage(NXFictionalMessages.unknownAtsuMessage);
+                break;
+            case Atsu.AtsuStatusCodes.ProxyError:
+                this.addNewMessage(NXFictionalMessages.reverseProxy);
+                break;
+            case Atsu.AtsuStatusCodes.NoTelexConnection:
+                this.addNewMessage(NXFictionalMessages.telexNotEnabled);
+                break;
+            case Atsu.AtsuStatusCodes.OwnCallsign:
+                this.addNewMessage(NXFictionalMessages.noAtc);
+                break;
+            case Atsu.AtsuStatusCodes.SystemBusy:
+                this.addNewMessage(NXSystemMessages.systemBusy);
+                break;
+            default:
+                break;
+        }
+    }
+
+    /**
      * Add Type II Message
      * @param message {string} Message to be displayed
      * @param isAmber {boolean} Is color amber
@@ -1344,83 +1354,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
     /* END OF MCDU DELAY SIMULATION */
     /* MCDU AOC MESSAGE SYSTEM */
-
-    // INCOMING AOC MESSAGES
-    getMessages() {
-        return this.messages;
-    }
-
-    getMessage(id, type) {
-        const messages = this.messages;
-        const currentMessageIndex = messages.findIndex(m => m["id"].toString() === id.toString());
-        if (type === 'previous') {
-            if (messages[currentMessageIndex - 1]) {
-                return messages[currentMessageIndex - 1];
-            }
-            return null;
-        } else if (type === 'next') {
-            if (messages[currentMessageIndex + 1]) {
-                return messages[currentMessageIndex + 1];
-            }
-            return null;
-        }
-        return messages[currentMessageIndex];
-    }
-
-    getMessageIndex(id) {
-        return this.messages.findIndex(m => m["id"].toString() === id.toString());
-    }
-
-    addMessage(message) {
-        this.messages.unshift(message);
-        const cMsgCnt = SimVar.GetSimVarValue("L:A32NX_COMPANY_MSG_COUNT", "Number");
-        SimVar.SetSimVarValue("L:A32NX_COMPANY_MSG_COUNT", "Number", cMsgCnt + 1);
-        if (this.refreshPageCallback) {
-            this.refreshPageCallback();
-        }
-    }
-
-    deleteMessage(id) {
-        if (!this.messages[id]["opened"]) {
-            const cMsgCnt = SimVar.GetSimVarValue("L:A32NX_COMPANY_MSG_COUNT", "Number");
-            SimVar.SetSimVarValue("L:A32NX_COMPANY_MSG_COUNT", "Number", cMsgCnt <= 1 ? 0 : cMsgCnt - 1);
-        }
-        this.messages.splice(id, 1);
-    }
-
-    // OUTGOING/SENT AOC MESSAGES
-    getSentMessages() {
-        return this.sentMessages;
-    }
-
-    getSentMessage(id, type) {
-        const messages = this.sentMessages;
-        const currentMessageIndex = messages.findIndex(m => m["id"].toString() === id.toString());
-        if (type === 'previous') {
-            if (messages[currentMessageIndex - 1]) {
-                return messages[currentMessageIndex - 1];
-            }
-            return null;
-        } else if (type === 'next') {
-            if (messages[currentMessageIndex + 1]) {
-                return messages[currentMessageIndex + 1];
-            }
-            return null;
-        }
-        return messages[currentMessageIndex];
-    }
-
-    getSentMessageIndex(id) {
-        return this.sentMessages.findIndex(m => m["id"].toString() === id.toString());
-    }
-
-    addSentMessage(message) {
-        this.sentMessages.unshift(message);
-    }
-
-    deleteSentMessage(id) {
-        this.sentMessages.splice(id, 1);
-    }
 
     printPage(lines) {
         if (this.printing) {
