@@ -336,7 +336,8 @@ impl Precooler {
         );
 
         let temperature_change =
-            self.coefficient * temperature_gradient * context.delta_as_secs_f64();
+            temperature_gradient * (1. - (-self.coefficient * context.delta_as_secs_f64()).exp());
+
         supply.update_temperature(-temperature_change);
         container_one.update_temperature(temperature_change);
 
@@ -388,6 +389,8 @@ impl PneumaticContainer for VariableVolumeContainer {
 }
 
 pub struct PressurisedReservoirWithExhaustValve<T: PneumaticContainer> {
+    reservoir_pressure_id: VariableIdentifier,
+
     reservoir: PneumaticContainerWithConnector<T>,
     preloaded_relief_valve: PneumaticExhaust,
 
@@ -397,12 +400,15 @@ impl<T: PneumaticContainer> PressurisedReservoirWithExhaustValve<T> {
     const LEAK_FAILURE_MULTIPLIER: f64 = 500.;
 
     pub fn new(
+        context: &mut InitContext,
         hyd_loop_id: HydraulicColor,
         container: T,
         preload: Pressure,
         valve_speed: f64,
     ) -> Self {
         Self {
+            reservoir_pressure_id: context
+                .get_identifier(format!("HYD_{}_RESERVOIR_AIR_PRESSURE", hyd_loop_id)),
             reservoir: PneumaticContainerWithConnector::<T>::new(container),
             preloaded_relief_valve: PneumaticExhaust::new(
                 valve_speed,
@@ -459,6 +465,10 @@ impl SimulationElement for PressurisedReservoirWithExhaustValve<VariableVolumeCo
         self.leak_failure.accept(visitor);
 
         visitor.visit(self);
+    }
+
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(&self.reservoir_pressure_id, self.reservoir.pressure());
     }
 }
 
@@ -893,8 +903,13 @@ mod tests {
 
     #[test]
     fn pressurised_reservoir_behaves_like_open_valve() {
+        let mut electricity = Electricity::new();
+        let mut registry: TestVariableRegistry = Default::default();
+        let mut init_context = InitContext::new(&mut electricity, &mut registry);
+
         let mut source = quick_container(1., 20., 15.);
         let mut container_with_valve = PressurisedReservoirWithExhaustValve::new(
+            &mut init_context,
             HydraulicColor::Green,
             quick_container(1., 10., 15.),
             Pressure::new::<psi>(0.),
@@ -927,5 +942,27 @@ mod tests {
 
         assert!(container_with_valve.pressure().get::<psi>() > 10.);
         assert!(container_with_valve.temperature().get::<degree_celsius>() > 15.);
+    }
+
+    #[test]
+    fn huge_pressure_difference_between_containers() {
+        let mut source = quick_container(1., 1000., 15.);
+        let mut container_with_valve =
+            PneumaticContainerWithConnector::new(quick_container(1., 1., 15.));
+
+        let context = context(Duration::from_secs(1), Length::new::<foot>(0.));
+
+        for _ in 1..1000 {
+            container_with_valve.update_flow_through_valve(&context, &mut source);
+        }
+
+        assert!(!source.pressure().get::<psi>().is_nan());
+        assert!(!container_with_valve.pressure().get::<psi>().is_nan());
+
+        assert!(!source.temperature().get::<degree_celsius>().is_nan());
+        assert!(!container_with_valve
+            .temperature()
+            .get::<degree_celsius>()
+            .is_nan());
     }
 }
