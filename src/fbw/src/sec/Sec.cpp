@@ -99,8 +99,8 @@ void Sec::computeComputerEngagementRoll() {
 // Also compute if the computer should be engaged in pitch. It should be engaged in pitch,
 // if it can drive in pitch, and it has priority in pitch.
 void Sec::computeComputerEngagementPitch() {
-  leftElevatorAvail = !discreteInputs.lElevServoFailed && isUnit1 ? !discreteInputs.blueLowPressure : !discreteInputs.greenLowPressure;
-  rightElevatorAvail = !discreteInputs.rElevServoFailed && isUnit1 ? !discreteInputs.blueLowPressure : !discreteInputs.yellowLowPressure;
+  leftElevatorAvail = !discreteInputs.lElevServoFailed && (isUnit1 ? !discreteInputs.blueLowPressure : !discreteInputs.greenLowPressure);
+  rightElevatorAvail = !discreteInputs.rElevServoFailed && (isUnit1 ? !discreteInputs.blueLowPressure : !discreteInputs.yellowLowPressure);
   thsAvail = !discreteInputs.thsMotorFault && (!discreteInputs.greenLowPressure || !discreteInputs.yellowLowPressure);
 
   canEngageInPitch = monitoringHealthy && (leftElevatorAvail || rightElevatorAvail || thsAvail) && !isUnit3;

@@ -932,7 +932,7 @@ bool FlyByWireInterface::updateSec(double sampleTime, int secIndex) {
 
   secs[secIndex].discreteInputs.secEngagedFromSwitch = idSecPushbuttonStatus[secIndex]->get();
   secs[secIndex].discreteInputs.secInemergencyPwrSply = false;
-  if (secIndex < 3) {
+  if (secIndex < 2) {
     secs[secIndex].discreteInputs.pitchNotAvailElac1 = !elacsDiscreteOutputs[0].pitchAxisOk;
     secs[secIndex].discreteInputs.pitchNotAvailElac2 = !elacsDiscreteOutputs[1].pitchAxisOk;
     secs[secIndex].discreteInputs.leftElevNotAvailSecOpp = !secsDiscreteOutputs[oppSecIndex].leftElevOk;

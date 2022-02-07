@@ -161,8 +161,8 @@ void Elac::computeActiveLawsAndFunctionStatus() {
 // if it can drive in pitch, and it has priority in pitch.
 void Elac::computeComputerEngagementPitch() {
   bool allServoloopsHealthy = !discreteInputs.rElevServoFailed && !discreteInputs.lElevServoFailed && !discreteInputs.thsMotorFault;
-  leftElevatorAvail = !discreteInputs.lElevServoFailed && isUnit1 ? isBlueHydraulicPowerAvail : isGreenHydraulicPowerAvail;
-  rightElevatorAvail = !discreteInputs.rElevServoFailed && isUnit1 ? isBlueHydraulicPowerAvail : isYellowHydraulicPowerAvail;
+  leftElevatorAvail = !discreteInputs.lElevServoFailed && (isUnit1 ? isBlueHydraulicPowerAvail : isGreenHydraulicPowerAvail);
+  rightElevatorAvail = !discreteInputs.rElevServoFailed && (isUnit1 ? isBlueHydraulicPowerAvail : isYellowHydraulicPowerAvail);
   bool hydraulicsPowered;
   if (isUnit1) {
     hydraulicsPowered = isBlueHydraulicPowerAvail;
@@ -189,8 +189,8 @@ void Elac::computeComputerEngagementPitch() {
 // Also compute if the computer should be engaged in roll. It should be engaged in roll,
 // if it can drive in roll, and it has priority in roll.
 void Elac::computeComputerEngagementRoll() {
-  leftAileronAvail = !discreteInputs.lAilServoFailed && isUnit1 ? isBlueHydraulicPowerAvail : isGreenHydraulicPowerAvail;
-  rightAileronAvail = !discreteInputs.rAilServoFailed && isUnit1 ? isGreenHydraulicPowerAvail : isBlueHydraulicPowerAvail;
+  leftAileronAvail = !discreteInputs.lAilServoFailed && (isUnit1 ? isBlueHydraulicPowerAvail : isGreenHydraulicPowerAvail);
+  rightAileronAvail = !discreteInputs.rAilServoFailed && (isUnit1 ? isGreenHydraulicPowerAvail : isBlueHydraulicPowerAvail);
 
   canEngageInRoll = monitoringHealthy && (leftAileronAvail || rightAileronAvail);
 
