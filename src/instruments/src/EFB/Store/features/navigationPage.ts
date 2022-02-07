@@ -1,25 +1,12 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice } from '@reduxjs/toolkit';
 import { NavigraphBoundingBox } from '../../ChartsApi/Navigraph';
-import { store, RootState } from '../store';
-
-type ThemedChart = {
-    light: string;
-    dark: string;
-}
-
-type PinnedChart = {
-    chartId: string;
-    chartName: ThemedChart;
-    icao: string;
-    title: string;
-    tabIndex: number;
-}
+import { TypedAction } from '../store';
 
 interface InitialChartState {
     chartRotation: number;
     chartDimensions: {
-        width?: number;
-        height?: number;
+        width: number;
+        height: number;
     };
     usingDarkTheme: boolean;
     isFullScreen: boolean;
@@ -32,7 +19,11 @@ interface InitialChartState {
     boundingBox?: NavigraphBoundingBox;
     pagesViewable: number;
     currentPage: number;
-    pinnedCharts: PinnedChart[];
+}
+
+type ThemedChart = {
+    light: string;
+    dark: string;
 }
 
 const initialState: InitialChartState = {
@@ -58,69 +49,57 @@ const initialState: InitialChartState = {
     boundingBox: undefined,
     pagesViewable: 1,
     currentPage: 1,
-    pinnedCharts: [],
 };
 
 export const navigationTabSlice = createSlice({
     name: 'chart',
     initialState,
     reducers: {
-        setChartRotation: (state, action: PayloadAction<number>) => {
+        setChartRotation: (state, action: TypedAction<number>) => {
             state.chartRotation = action.payload;
         },
-        setChartDimensions: (state, action: PayloadAction<Partial<{ width: number, height: number }>>) => ({
+        setChartDimensions: (state, action: TypedAction<Partial<{ width: number, height: number }>>) => ({
             ...state,
             chartDimensions: {
                 ...state.chartDimensions,
                 ...action.payload,
             },
         }),
-        setUsingDarkTheme: (state, action: PayloadAction<boolean>) => {
+        setUsingDarkTheme: (state, action: TypedAction<boolean>) => {
             state.usingDarkTheme = action.payload;
         },
-        setIsFullScreen: (state, action: PayloadAction<boolean>) => {
+        setIsFullScreen: (state, action: TypedAction<boolean>) => {
             state.isFullScreen = action.payload;
         },
-        setTabIndex: (state, action: PayloadAction<number>) => {
+        setTabIndex: (state, action: TypedAction<number>) => {
             state.tabIndex = action.payload;
         },
-        setChartId: (state, action: PayloadAction<string>) => {
+        setChartId: (state, action: TypedAction<string>) => {
             state.chartId = action.payload;
         },
-        setChartLinks: (state, action: PayloadAction<{ light: string, dark: string }>) => {
+        setChartLinks: (state, action: TypedAction<{ light: string, dark: string }>) => {
             state.chartLinks = action.payload;
         },
-        setPlaneInFocus: (state, action: PayloadAction<boolean>) => {
+        setPlaneInFocus: (state, action: TypedAction<boolean>) => {
             state.planeInFocus = action.payload;
         },
-        setIcao: (state, action: PayloadAction<string>) => {
+        setIcao: (state, action: TypedAction<string>) => {
             state.icao = action.payload;
         },
-        setChartName: (state, action: PayloadAction<{ light: string, dark: string }>) => {
+        setChartName: (state, action: TypedAction<{ light: string, dark: string }>) => {
             state.chartName = action.payload;
         },
-        setBoundingBox: (state, action: PayloadAction<NavigraphBoundingBox | undefined>) => {
+        setBoundingBox: (state, action: TypedAction<NavigraphBoundingBox | undefined>) => {
             state.boundingBox = action.payload;
         },
-        setPagesViewable: (state, action: PayloadAction<number>) => {
+        setPagesViewable: (state, action: TypedAction<number>) => {
             state.pagesViewable = action.payload;
         },
-        setCurrentPage: (state, action: PayloadAction<number>) => {
+        setCurrentPage: (state, action: TypedAction<number>) => {
             state.currentPage = action.payload;
-        },
-        addPinnedChart: (state, action: PayloadAction<PinnedChart>) => {
-            state.pinnedCharts.push(action.payload);
-        },
-        removedPinnedChart: (state, action: PayloadAction<PinnedChart>) => {
-            state.pinnedCharts = state.pinnedCharts.filter((pinnedChart) => pinnedChart.chartId !== action.payload.chartId);
         },
     },
 });
-
-/**
- * @returns Whether or not associated chart with the passed chartId is pinned
- */
-export const isChartPinned = (chartId: string): boolean => (store.getState() as RootState).navigationTab.pinnedCharts.some((pinnedChart) => pinnedChart.chartId === chartId);
 
 export const {
     setChartRotation,
@@ -136,7 +115,5 @@ export const {
     setBoundingBox,
     setPagesViewable,
     setCurrentPage,
-    addPinnedChart,
-    removedPinnedChart,
 } = navigationTabSlice.actions;
 export default navigationTabSlice.reducer;
