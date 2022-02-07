@@ -613,7 +613,7 @@ const LocalFileChartSelector = ({ selectedTab, loading }: LocalFileChartSelector
                     <div className="flex flex-col m-2">
                         <span className="">{chart.fileName}</span>
                         <span
-                            className="px-2 mr-auto text-sm text-gray-400 bg-gray-700 rounded-md"
+                            className="px-2 mr-auto text-sm rounded-sm text-theme-text bg-theme-secondary"
                         >
                             {chart.type}
                         </span>
@@ -754,7 +754,7 @@ const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartSelector
                                 <div className="flex flex-col m-2">
                                     <span className="">{(chart as NavigraphChart).procedureIdentifier}</span>
                                     <span
-                                        className="px-2 mr-auto text-sm text-gray-400 bg-gray-700 rounded-md"
+                                        className="px-2 mr-auto text-sm rounded-sm text-theme-text bg-theme-secondary"
                                     >
                                         {(chart as NavigraphChart).indexNumber}
                                     </span>
