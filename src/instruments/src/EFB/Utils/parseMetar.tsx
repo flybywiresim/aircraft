@@ -122,6 +122,10 @@ export function parseMetar(metarString: string): MetarParserType {
         switch (mode) {
         case Mode.ICAO:
             // ICAO Code
+            match = metarPart.match(/^[a-zA-Z0-9]{4}$/);
+            if (!match) {
+                throw new Error(`Invalid ICAO: ${metarString}`);
+            }
             metarObject.icao = metarPart;
             metarObject.color_codes[index] = ColorCode.Highlight;
             mode = Mode.DATE;
@@ -135,6 +139,8 @@ export function parseMetar(metarString: string): MetarParserType {
                 metarObject.observed.setUTCHours(Number(match[2]));
                 metarObject.observed.setUTCMinutes(Number(match[3]));
                 mode = Mode.WIND;
+            } else {
+                throw new Error(`Invalid date: ${metarString}`);
             }
             break;
         case Mode.WIND:
@@ -175,7 +181,7 @@ export function parseMetar(metarString: string): MetarParserType {
             break;
         case Mode.VISIBILITY:
             // Visibility
-            match = metarPart.match(/^(\d+)(?:\/(\d+))?(SM)?$/);
+            match = metarPart.match(/^(\d+)(?:\/(\d+))?(SM)?(NDV)?$/);
             if (match) {
                 const speed: number = (match[2])
                     ? Number(match[1]) / Number(match[2])
@@ -314,20 +320,26 @@ export function parseMetar(metarString: string): MetarParserType {
                     metarObject.color_codes[index] = ColorCode.Caution;
                 }
                 mode = Mode.PRESS;
+            } else {
+                throw new Error(`Invalid or missing pressure: ${metarString} ${trendMode ? '(trend)' : ''}`);
             }
             break;
         case Mode.PRESS:
             // Pressure
-            match = metarPart.match(/^([QA])(\d+)/);
-            if (match && !trendMode) {
+            match = metarPart.match(/^([QA])(\d+)$/);
+            if (match) {
                 match[2] = Number(match[2]);
                 match[2] /= (match[1] === 'Q') ? 10 : 100;
-                metarObject.barometer = {
-                    hg: (match[1] === 'Q') ? convert.kpaToInhg(match[2]) : match[2],
-                    kpa: (match[1] === 'Q') ? match[2] : convert.inhgToKpa(match[2]),
-                    mb: (match[1] === 'Q') ? match[2] * 10 : convert.inhgToKpa(match[2] * 10),
-                };
+                if (!trendMode) { // only update the metar object once
+                    metarObject.barometer = {
+                        hg: (match[1] === 'Q') ? convert.kpaToInhg(match[2]) : match[2],
+                        kpa: (match[1] === 'Q') ? match[2] : convert.inhgToKpa(match[2]),
+                        mb: (match[1] === 'Q') ? match[2] * 10 : convert.inhgToKpa(match[2] * 10),
+                    };
+                }
                 mode = Mode.TREND;
+            } else {
+                throw new Error(`Invalid or missing pressure: ${metarString} ${trendMode ? '(trend)' : ''}`);
             }
             break;
         case Mode.TREND:

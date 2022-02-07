@@ -18,6 +18,57 @@ describe('parseMetar', () => {
             parseMetar('EDDM 291250Z');
         }).toThrow(new Error('Not enough METAR information found'));
     });
+
+    it('throws an error when provided with an incorrect ICAO value', () => {
+        // ICAO contain _
+        expect(() => {
+            parseMetar('E_DM 291350Z 26017KT 9999 DZ BKN027 09/00 Q1025 NOSIG');
+        }).toThrow(/Invalid ICAO/);
+
+        // ICAO too short
+        expect(() => {
+            parseMetar('EDD 291350Z 26017KT 9999 DZ BKN027 09/00 Q1025 NOSIG');
+        }).toThrow(/Invalid ICAO/);
+
+        // No ICAO
+        expect(() => {
+            parseMetar('291350Z 26017KT 9999 DZ BKN027 09/00 Q1025 NOSIG');
+        }).toThrow(/Invalid ICAO/);
+    });
+
+    it('throws an error when provided with an incorrect date value', () => {
+        // date too short
+        expect(() => {
+            parseMetar('EDDM 29350Z 26017KT 9999 DZ BKN027 09/00 Q1025 NOSIG');
+        }).toThrow(/Invalid date/);
+
+        // date with invalid character
+        expect(() => {
+            parseMetar('EDDM 29135xZ 26017KT 9999 DZ BKN027 09/00 Q1025 NOSIG');
+        }).toThrow(/Invalid date/);
+
+        // date without Z
+        expect(() => {
+            parseMetar('EDDM 291350 26017KT 9999 DZ BKN027 09/00 Q1025 NOSIG');
+        }).toThrow(/Invalid date/);
+
+        // date without U instead of Z
+        expect(() => {
+            parseMetar('EDDM 291350U 26017KT 9999 DZ BKN027 09/00 Q1025 NOSIG');
+        }).toThrow(/Invalid date/);
+    });
+
+    it('throws an error when provided with an incorrect pressure value', () => {
+        // pressure too short
+        expect(() => {
+            parseMetar('EDDM 291350Z 26017KT 9999 DZ BKN027 09/00 Qabc NOSIG');
+        }).toThrow(/Invalid or missing pressure/);
+
+        // pressure with decimal point
+        expect(() => {
+            parseMetar('KJFK 291451Z 34027G34KT M09/M11 A29.67');
+        }).toThrow(/Invalid or missing pressure/);
+    });
 });
 
 describe('Test real life METARs:', () => {
@@ -291,6 +342,49 @@ test('SCTE 070400Z VRB02KT CAVOK 13/12 Q1016 NOSIG', () => {
             ColorCode.None, // 13/12
             ColorCode.None, // Q1016
             ColorCode.None, // NOSIG
+        ],
+    );
+});
+
+test('ENSF 071750Z AUTO 20048KT 2200NDV -SHRA BR OVC011/// ///// Q//// W///S5', () => {
+    const metarObject = parseMetar('ENSF 071750Z AUTO 20048KT 2200NDV -SHRA BR OVC011/// ///// Q//// W///S5');
+    expect(metarObject.icao).toBe('ENSF');
+    expect(metarObject.observed.getUTCDate()).toBe(7);
+    expect(metarObject.observed.getUTCHours()).toBe(17);
+    expect(metarObject.observed.getUTCMinutes()).toBe(50);
+    expect(metarObject.wind.speed_kts).toBe(48);
+    expect(metarObject.wind.gust_kts).toBe(48);
+    expect(metarObject.wind.degrees).toBe(200);
+    expect(metarObject.wind.degrees_from).toBe(200);
+    expect(metarObject.wind.degrees_to).toBe(200);
+    expect(metarObject.visibility.meters_float).toBe(2200);
+    expect(metarObject.visibility.meters).toBe('2000');
+    expect(metarObject.visibility.miles_float).toBe(1.3670166229221348);
+    expect(metarObject.visibility.miles).toBe('1.5');
+    expect(metarObject.conditions).toHaveLength(2);
+    expect(metarObject.conditions[0].code).toBe('-SHRA');
+    // @ts-ignore
+    expect(metarObject.conditions[1].code).toBe('BR');
+    expect(metarObject.clouds).toHaveLength(1);
+    expect(metarObject.clouds[0].code).toBe('OVC');
+    expect(metarObject.clouds[0].base_feet_agl).toBe(1100);
+    expect(metarObject.temperature.celsius).toBe(0);
+    expect(metarObject.dewpoint.celsius).toBe(0);
+    expect(metarObject.barometer.mb).toBe(0);
+    expect(metarObject.barometer.hg).toBe(0);
+    expect(metarObject.color_codes).toEqual(
+        [
+            ColorCode.Highlight, // ENSF
+            ColorCode.None, // 071750Z
+            ColorCode.None, // AUTO
+            ColorCode.Warning, // 20048KT
+            ColorCode.Caution, // 2200NDV
+            ColorCode.Caution, // -SHRA
+            ColorCode.None, // BR
+            ColorCode.None, // OVC011///
+            ColorCode.None, // ////
+            ColorCode.None, // Q////
+            ColorCode.None, // W///S5
         ],
     );
 });

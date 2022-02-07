@@ -63,6 +63,7 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
     const [baroType] = usePersistentProperty('CONFIG_INIT_BARO_UNIT', 'HPA');
     const [metarSource] = usePersistentProperty('CONFIG_METAR_SRC', 'MSFS');
     const source = metarSource === 'MSFS' ? 'MS' : metarSource;
+    const [metarError, setErrorMetar] = useState('NO VALID ICAO CHOSEN');
 
     const getBaroTypeForAirport = (icao: string) => (['K', 'C', 'M', 'P', 'RJ', 'RO', 'TI', 'TJ']
         .some((r) => icao.toUpperCase().startsWith(r)) ? 'IN HG' : 'HPA');
@@ -106,7 +107,13 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
                 const metarParse = parseMetar(result.metar);
                 setMetar(metarParse);
             })
-            .catch(() => {
+            .catch((err) => {
+                console.log(`Error while parsing Metar: ${err}`);
+                if (err.toString().match(/^Error$/)) {
+                    setErrorMetar('NO VALID ICAO CHOSEN');
+                } else {
+                    setErrorMetar(`${err.toString().replace(/^Error: /, '')}`);
+                }
                 setMetar(MetarParserTypeProp);
             });
     }
@@ -240,7 +247,7 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
                                                 </>
                                             ) : (
                                                 <>
-                                                    NO VALID ICAO CHOSEN
+                                                    {metarError}
                                                     {' '}
                                                     {' '}
                                                 </>
