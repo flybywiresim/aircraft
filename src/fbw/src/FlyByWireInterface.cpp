@@ -481,6 +481,11 @@ void FlyByWireInterface::setupLocalVariables() {
     idFcdcSpoilerRight4Pos[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_SPOILER_RIGHT_4_POS");
     idFcdcSpoilerRight5Pos[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_SPOILER_RIGHT_5_POS");
 
+    idFcdcPriorityCaptGreen[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_PRIORITY_LIGHT_CAPT_GREEN_ON");
+    idFcdcPriorityCaptRed[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_PRIORITY_LIGHT_CAPT_RED_ON");
+    idFcdcPriorityFoGreen[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_PRIORITY_LIGHT_FO_GREEN_ON");
+    idFcdcPriorityFoRed[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_PRIORITY_LIGHT_FO_RED_ON");
+
     idFcdcFault[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_FAULT");
   }
 
@@ -510,6 +515,20 @@ void FlyByWireInterface::setupLocalVariables() {
 
     idSecPushbuttonStatus[i] = make_unique<LocalVariable>("A32NX_SEC_" + idString + "_PUSHBUTTON_STATUS");
     idSecFaultLightOn[i] = make_unique<LocalVariable>("A32NX_SEC_" + idString + "_FAULT_LIGHT_ON");
+  }
+
+  for (int i = 0; i < 2; i++) {
+    string idString = std::to_string(i + 1);
+    idElevFaultLeft[i] = make_unique<LocalVariable>("A32NX_LEFT_ELEV_SERVO_" + idString + "_FAILED");
+    idElevFaultRight[i] = make_unique<LocalVariable>("A32NX_RIGHT_ELEV_SERVO_" + idString + "_FAILED");
+    idAilFaultLeft[i] = make_unique<LocalVariable>("A32NX_LEFT_AIL_SERVO_" + idString + "_FAILED");
+    idAilFaultRight[i] = make_unique<LocalVariable>("A32NX_RIGHT_AIL_SERVO_" + idString + "_FAILED");
+  }
+
+  for (int i = 0; i < 5; i++) {
+    string idString = std::to_string(i + 1);
+    idSplrFaultLeft[i] = make_unique<LocalVariable>("A32NX_LEFT_SPLR_" + idString + "_SERVO_FAILED");
+    idSplrFaultRight[i] = make_unique<LocalVariable>("A32NX_RIGHT_SPLR_" + idString + "_SERVO_FAILED");
   }
 
   idElecDcBus2Powered = make_unique<LocalVariable>("A32NX_ELEC_DC_2_BUS_IS_POWERED");
@@ -838,10 +857,10 @@ bool FlyByWireInterface::updateElac(double sampleTime, int elacIndex) {
   discreteInputs.thsMotorFault = false;
   discreteInputs.sfcc1SlatsOut = false;
   discreteInputs.sfcc2SlatsOut = false;
-  discreteInputs.lAilServoFailed = false;
-  discreteInputs.lElevServoFailed = false;
-  discreteInputs.rAilServoFailed = false;
-  discreteInputs.rElevServoFailed = false;
+  discreteInputs.lAilServoFailed = idAilFaultLeft[elacIndex]->get();
+  discreteInputs.lElevServoFailed = idElevFaultLeft[elacIndex]->get();
+  discreteInputs.rAilServoFailed = idAilFaultRight[elacIndex]->get();
+  discreteInputs.rElevServoFailed = idElevFaultRight[elacIndex]->get();
   discreteInputs.thsOverrideActive = false;
   discreteInputs.yellowLowPressure = idHydYellowSystemPressure->get() < 1450;
   discreteInputs.captPriorityTakeoverPressed = false;
@@ -927,8 +946,8 @@ bool FlyByWireInterface::updateSec(double sampleTime, int secIndex) {
     discreteInputs.digitalOutputFailedElac1 = !elacsDiscreteOutputs[0].digitalOperationValidated;
     discreteInputs.digitalOutputFailedElac2 = !elacsDiscreteOutputs[1].digitalOperationValidated;
     discreteInputs.thsMotorFault = false;
-    discreteInputs.lElevServoFailed = false;
-    discreteInputs.rElevServoFailed = false;
+    discreteInputs.lElevServoFailed = idElevFaultLeft[secIndex]->get();
+    discreteInputs.rElevServoFailed = idElevFaultRight[secIndex]->get();
     discreteInputs.thsOverrideActive = false;
   } else {
     discreteInputs.pitchNotAvailElac1 = false;
@@ -949,10 +968,18 @@ bool FlyByWireInterface::updateSec(double sampleTime, int secIndex) {
   discreteInputs.sfcc1SlatOut = false;
   discreteInputs.sfcc2SlatOut = false;
 
-  discreteInputs.lSpoiler1ServoFailed = false;
-  discreteInputs.rSpoiler1ServoFailed = false;
-  discreteInputs.lSpoiler2ServoFailed = false;
-  discreteInputs.rSpoiler2ServoFailed = false;
+  int splrIndex = secIndex == 2 ? 0 : (secIndex == 0 ? 2 : 4);
+
+  discreteInputs.lSpoiler1ServoFailed = idSplrFaultLeft[splrIndex]->get();
+  discreteInputs.rSpoiler1ServoFailed = idSplrFaultRight[splrIndex]->get();
+  if (secIndex != 1) {
+    discreteInputs.lSpoiler2ServoFailed = idSplrFaultLeft[splrIndex + 1]->get();
+    discreteInputs.rSpoiler2ServoFailed = idSplrFaultRight[splrIndex + 1]->get();
+  } else {
+    discreteInputs.lSpoiler2ServoFailed = false;
+    discreteInputs.rSpoiler2ServoFailed = false;
+  }
+
   discreteInputs.captPriorityTakeoverPressed = false;
   discreteInputs.foPriorityTakeoverPressed = false;
 
@@ -1068,6 +1095,11 @@ bool FlyByWireInterface::updateFcdc(double sampleTime, int fcdcIndex) {
   idFcdcSpoilerRight3Pos[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].spoilerRight3Pos.toSimVar());
   idFcdcSpoilerRight4Pos[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].spoilerRight4Pos.toSimVar());
   idFcdcSpoilerRight5Pos[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].spoilerRight5Pos.toSimVar());
+
+  idFcdcPriorityCaptGreen[fcdcIndex]->set(fcdcsDiscreteOutputs[fcdcIndex].captGreenPriorityLightOn);
+  idFcdcPriorityCaptRed[fcdcIndex]->set(fcdcsDiscreteOutputs[fcdcIndex].captRedPriorityLightOn);
+  idFcdcPriorityFoGreen[fcdcIndex]->set(fcdcsDiscreteOutputs[fcdcIndex].foGreenPriorityLightOn);
+  idFcdcPriorityFoRed[fcdcIndex]->set(fcdcsDiscreteOutputs[fcdcIndex].foRedPriorityLightOn);
 
   return true;
 }

@@ -363,6 +363,18 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idFcdcSpoilerRight4Pos[2];
   std::unique_ptr<LocalVariable> idFcdcSpoilerRight5Pos[2];
 
+  std::unique_ptr<LocalVariable> idFcdcPriorityCaptGreen[2];
+  std::unique_ptr<LocalVariable> idFcdcPriorityCaptRed[2];
+  std::unique_ptr<LocalVariable> idFcdcPriorityFoGreen[2];
+  std::unique_ptr<LocalVariable> idFcdcPriorityFoRed[2];
+
+  std::unique_ptr<LocalVariable> idElevFaultLeft[2];
+  std::unique_ptr<LocalVariable> idElevFaultRight[2];
+  std::unique_ptr<LocalVariable> idAilFaultLeft[2];
+  std::unique_ptr<LocalVariable> idAilFaultRight[2];
+  std::unique_ptr<LocalVariable> idSplrFaultLeft[5];
+  std::unique_ptr<LocalVariable> idSplrFaultRight[5];
+
   std::unique_ptr<LocalVariable> idFcdcFault[2];
 
   std::unique_ptr<LocalVariable> idElacPushbuttonStatus[2];
