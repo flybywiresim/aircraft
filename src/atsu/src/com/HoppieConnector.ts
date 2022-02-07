@@ -36,9 +36,6 @@ export class HoppieConnector {
         if (text.startsWith('ok') !== true) {
             return AtsuStatusCodes.ComFailed;
         }
-        if (text === `ok {${station}}`) {
-            return AtsuStatusCodes.CallsignInUse;
-        }
 
         return AtsuStatusCodes.Ok;
     }

@@ -78,7 +78,7 @@ export const ATC = () => {
 
     const handleHoppieToggle = async () : Promise<void> => {
         if (hoppieEnabled === 'DISABLED') {
-            if (hoppieUserId === '') {
+            if (hoppieUserId === '' || hoppieUserId === undefined) {
                 new PopUp().showInformation(
                     'ERROR',
                     'Hoppie system requires a user ID which needs to be set in Settings.',
