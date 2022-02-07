@@ -460,7 +460,16 @@ const ChartComponent = () => {
                 <div className="flex overflow-hidden flex-col rounded-md">
                     <div
                         className="p-2 rounded-md transition duration-100 cursor-pointer hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight"
-                        onClick={() => dispatch(setIsFullScreen(!isFullScreen))}
+                        onClick={() => {
+                            if (chartRef.current && ref.current) {
+                                if (chartRef.current.clientWidth === ref.current.clientWidth) {
+                                    const newWidth = isFullScreen ? 804 : 1278;
+                                    const scale = newWidth / chartDimensions.width;
+                                    dispatch(setChartDimensions({ width: newWidth, height: chartDimensions.height * scale }));
+                                }
+                            }
+                            dispatch(setIsFullScreen(!isFullScreen));
+                        }}
                     >
                         {!isFullScreen
                             ? <ArrowsFullscreen size={40} />
