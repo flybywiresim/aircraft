@@ -480,9 +480,9 @@ const ChartComponent = () => {
                             dispatch(setIsFullScreen(!isFullScreen));
                         }}
                     >
-                        {!isFullScreen
-                            ? <ArrowsFullscreen size={40} />
-                            : <FullscreenExit size={40} />}
+                        {isFullScreen
+                            ? <FullscreenExit size={40} />
+                            : <ArrowsFullscreen size={40} />}
                     </div>
                     <div
                         className="p-2 mt-3 rounded-md transition duration-100 cursor-pointer hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight"
