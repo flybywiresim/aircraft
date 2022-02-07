@@ -79,7 +79,7 @@ export const ATC = () => {
     const handleHoppieToggle = async () : Promise<void> => {
         if (hoppieEnabled === 'DISABLED') {
             if (hoppieUserId === '') {
-                new PopUp().showPopUp(
+                new PopUp().showInformation(
                     'ERROR',
                     'Hoppie system requires a user ID which needs to be set in Settings.',
                     'small',
@@ -87,7 +87,6 @@ export const ATC = () => {
                         SimVar.SetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number', 0);
                         setHoppieEnabled('DISABLED');
                     },
-                    () => {},
                 );
             } else {
                 const body = {
@@ -101,7 +100,7 @@ export const ATC = () => {
 
                 // check if the logon code is valid
                 if (retval === 'error {illegal logon code}') {
-                    new PopUp().showPopUp(
+                    new PopUp().showInformation(
                         'ERROR',
                         'Invalid logon code used.',
                         'small',
@@ -109,7 +108,6 @@ export const ATC = () => {
                             SimVar.SetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number', 0);
                             setHoppieEnabled('DISABLED');
                         },
-                        () => {},
                     );
                 } else {
                     const callsign = SimVar.GetSimVarValue('ATC FLIGHT NUMBER', 'string');
@@ -125,7 +123,7 @@ export const ATC = () => {
 
                         // check if the callsign is already in use
                         if (retval === 'error {callsign already in use}') {
-                            new PopUp().showPopUp(
+                            new PopUp().showInformation(
                                 'ERROR',
                                 'Flightnumber is already in use.',
                                 'small',
@@ -133,7 +131,6 @@ export const ATC = () => {
                                     SimVar.SetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number', 0);
                                     setHoppieEnabled('DISABLED');
                                 },
-                                () => {},
                             );
                         } else {
                             SimVar.SetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number', 1);
