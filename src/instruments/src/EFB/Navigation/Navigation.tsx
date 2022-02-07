@@ -44,7 +44,8 @@ import {
     setChartName,
     setBoundingBox,
     setPagesViewable,
-} from '../Store/features/navigationTab';
+    setCurrentPage,
+} from '../Store/features/navigationPage';
 
 type LocalFileChart = {
     fileName: string;
@@ -186,6 +187,7 @@ const ChartComponent = () => {
         boundingBox,
         pagesViewable,
         chartId,
+        currentPage,
     } = useAppSelector((state) => state.navigationTab);
 
     const { userName } = useNavigraph();
@@ -193,8 +195,6 @@ const ChartComponent = () => {
     const ref = useRef<HTMLDivElement>(null);
 
     const chartRef = useRef<HTMLImageElement>(null);
-
-    const [currentPage, setCurrentPage] = useState(1);
 
     const [aircraftIconVisible, setAircraftIconVisible] = useState(false);
     const [aircraftIconPosition, setAircraftIconPosition] = useState<{ x: number, y: number, r: number }>({ x: 0, y: 0, r: 0 });
@@ -370,7 +370,7 @@ const ChartComponent = () => {
                 <div className="flex overflow-hidden fixed top-32 right-32 z-40 flex-row items-center rounded-md">
                     <div
                         className={`flex flex-row justify-center items-center h-14 bg-opacity-40 transition duration-100 cursor-pointer hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight ${currentPage === 1 && 'opacity-50 pointer-events-none'}`}
-                        onClick={() => setCurrentPage((old) => old - 1)}
+                        onClick={() => dispatch(setCurrentPage(currentPage - 1))}
                     >
                         <Dash size={40} />
                     </div>
@@ -381,7 +381,7 @@ const ChartComponent = () => {
                         noLabel
                         number
                         onBlur={(value) => {
-                            setCurrentPage(Number.parseInt(value));
+                            dispatch(setCurrentPage(Number.parseInt(value)));
                         }}
                         className="w-16 h-14 rounded-r-none rounded-l-none border-transparent"
                     />
@@ -392,7 +392,7 @@ const ChartComponent = () => {
                     </div>
                     <div
                         className={`flex flex-row justify-center items-center h-14 bg-opacity-40 transition duration-100 cursor-pointer hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight ${currentPage === pagesViewable && 'opacity-50 pointer-events-none'}`}
-                        onClick={() => setCurrentPage((old) => old + 1)}
+                        onClick={() => dispatch(setCurrentPage(currentPage + 1))}
                     >
 
                         <Plus size={40} />
@@ -611,7 +611,7 @@ const LocalFileChartSelector = ({ selectedTab, loading }: LocalFileChartSelector
 
             return;
         }
-
+        dispatch(setCurrentPage(1));
         dispatch(setChartId(chart.fileName));
     };
 
@@ -694,6 +694,8 @@ const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartSelector
 
     const handleChartClick = (chart: NavigraphChart) => {
         dispatch(setPagesViewable(1));
+
+        dispatch(setCurrentPage(1));
 
         dispatch(setChartId(chart.id));
 

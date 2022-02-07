@@ -8,7 +8,7 @@ import buttonsReducer from './features/buttons';
 import simbriefReducer from './features/simbrief';
 import performanceReducer from './features/performance';
 import flightProgressReducer from './features/flightProgress';
-import navigationTabReducer from './features/navigationTab';
+import navigationTabReducer from './features/navigationPage';
 
 export type TypedAction<T> = { type: string, payload: T };
 export type RootState = ReturnType<typeof combinedReducer>;
