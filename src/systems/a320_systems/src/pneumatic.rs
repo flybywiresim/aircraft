@@ -130,7 +130,7 @@ pub struct A320Pneumatic {
     packs: [PackComplex; 2],
 }
 impl A320Pneumatic {
-    const PNEUMATIC_SIM_MAX_TIME_STEP: Duration = Duration::from_millis(33);
+    const PNEUMATIC_SIM_MAX_TIME_STEP: Duration = Duration::from_millis(100);
 
     pub fn new(context: &mut InitContext) -> Self {
         Self {
