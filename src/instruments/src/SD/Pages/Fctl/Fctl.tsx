@@ -322,12 +322,12 @@ const Elevator = ({
 
     const elevatorDeflectPctNormalized = elevatorDeflection.value * (elevatorDeflection.value > 0 ? 70 : 52);
     const cursorPath = `M${side === 'left' ? 1 : -1},70 l${side === 'right' ? '-' : ''}15,-7 l0,14Z`;
-    const servcontrol1Avail = fcdcDiscreteWord3.getBitValue(side === 'left' ? 15 : 17);
-    const servcontrol2Avail = fcdcDiscreteWord3.getBitValue(side === 'left' ? 16 : 18);
-    const cursorClassName = servcontrol1Avail || servcontrol2Avail ? 'GreenShape' : 'WarningShape';
+    const servcontrolLeftAvail = fcdcDiscreteWord3.getBitValue(side === 'left' ? 15 : 18);
+    const servcontrolRightAvail = fcdcDiscreteWord3.getBitValue(side === 'left' ? 16 : 17);
+    const cursorClassName = servcontrolLeftAvail || servcontrolRightAvail ? 'GreenShape' : 'WarningShape';
 
-    const servcontrol1Fault = fcdcDiscreteWord2.getBitValueOr(side === 'left' ? 15 : 17, false);
-    const servcontrol2Fault = fcdcDiscreteWord2.getBitValueOr(side === 'left' ? 16 : 18, false);
+    const servcontrolLeftFault = fcdcDiscreteWord2.getBitValueOr(side === 'left' ? 15 : 18, false);
+    const servcontrolRightFault = fcdcDiscreteWord2.getBitValueOr(side === 'left' ? 16 : 17, false);
 
     return (
         <SvgGroup x={x} y={y}>
@@ -350,9 +350,9 @@ const Elevator = ({
             <ElevatorAxis side={side} x={0} y={5} />
 
             <HydraulicIndicator x={side === 'left' ? -60 : 18} y={79} type={leftHydraulicSystem} />
-            <ServoControlIndicator x={side === 'left' ? -60 : 18} y={79} servoFailed={servcontrol1Fault} />
+            <ServoControlIndicator x={side === 'left' ? -60 : 18} y={79} servoFailed={servcontrolLeftFault} />
             <HydraulicIndicator x={side === 'left' ? -38 : 40} y={79} type={rightHydraulicSystem} />
-            <ServoControlIndicator x={side === 'left' ? -38 : 40} y={79} servoFailed={servcontrol2Fault} />
+            <ServoControlIndicator x={side === 'left' ? -38 : 40} y={79} servoFailed={servcontrolRightFault} />
         </SvgGroup>
     );
 };
