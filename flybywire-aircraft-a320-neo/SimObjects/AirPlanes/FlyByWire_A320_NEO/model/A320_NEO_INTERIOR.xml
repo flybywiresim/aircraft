@@ -4632,13 +4632,18 @@
                 </UseTemplate>
                 <UseTemplate Name="ASOBO_GT_Update">
                     <FREQUENCY>10</FREQUENCY>
-                    <UPDATE_CODE>
-                        (L:A32NX_CHRONO_ET_SWITCH_POS, number) 2 == if{
-                            (L:A32NX_CHRONO_MOMENTARY) 1 + (&gt;L:A32NX_CHRONO_MOMENTARY)
-                        }
-                            els{ 0 (&gt;L:A32NX_CHRONO_MOMENTARY)
+                    <UPDATE_CODE type="rnp">
+                        alias etSwitchPos = (L:A32NX_CHRONO_ET_SWITCH_POS, number);
+                        alias momentaryTimer = (O:A32NX_CHRONO_MOMENTARY, number);
+
+                        if etSwitchPos == 2 {
+                            momentaryTimer += 1;
+
+                            if momentaryTimer > 10 {
+                                etSwitchPos = 1;
                             }
-                        (L:A32NX_CHRONO_MOMENTARY) 10 &gt; if{ 1 (&gt;L:A32NX_CHRONO_ET_SWITCH_POS, number)
+                        } else if momentaryTimer > 0 {
+                          momentaryTimer = 0;
                         }
                     </UPDATE_CODE>
                 </UseTemplate>
