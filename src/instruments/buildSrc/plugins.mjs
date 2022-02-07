@@ -9,6 +9,7 @@ import replace from '@rollup/plugin-replace';
 import postcss from 'rollup-plugin-postcss';
 import tailwindcss from 'tailwindcss';
 import dotenv from 'dotenv';
+import json from '@rollup/plugin-json';
 import { Directories } from './directories.mjs';
 
 const extensions = ['.ts', '.tsx', '.js', '.jsx', '.mjs'];
@@ -58,7 +59,8 @@ function postCss(_, instrumentFolder) {
 export function baseCompile(instrumentName, instrumentFolder) {
     return [
         image(),
-        nodeResolve({ extensions }),
+        nodeResolve({ extensions, browser: true }),
+        json(),
         commonjs({ include: /node_modules/ }),
         babel(),
         typescriptPaths({
