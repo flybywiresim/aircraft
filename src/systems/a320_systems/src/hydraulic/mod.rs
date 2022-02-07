@@ -34,7 +34,6 @@ use systems::{
             Pushback, SteeringActuator, SteeringAngleLimiter, SteeringController,
             SteeringRatioToAngle,
         },
-        update_iterator::{FixedStepLoop, MaxStepLoop},
         ElectricPump, EngineDrivenPump, HydraulicCircuit, HydraulicCircuitController,
         PowerTransferUnit, PowerTransferUnitController, PressureSwitch, PressureSwitchType,
         PumpController, RamAirTurbine, RamAirTurbineController, Reservoir, SectionPressure,
@@ -43,9 +42,11 @@ use systems::{
         AutoOffFaultPushButton, AutoOnFaultPushButton, MomentaryOnPushButton, MomentaryPushButton,
     },
     shared::{
-        interpolation, DelayedFalseLogicGate, DelayedPulseTrueLogicGate, DelayedTrueLogicGate,
-        ElectricalBusType, ElectricalBuses, EmergencyElectricalRatPushButton,
-        EmergencyElectricalState, EmergencyGeneratorPower, EngineFirePushButtons, HydraulicColor,
+        interpolation,
+        update_iterator::{FixedStepLoop, MaxStepLoop},
+        DelayedFalseLogicGate, DelayedPulseTrueLogicGate, DelayedTrueLogicGate, ElectricalBusType,
+        ElectricalBuses, EmergencyElectricalRatPushButton, EmergencyElectricalState,
+        EmergencyGeneratorPower, EngineFirePushButtons, HydraulicColor,
         HydraulicGeneratorControlUnit, LgciuSensors, ReservoirAirPressure,
     },
     simulation::{

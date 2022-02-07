@@ -1032,7 +1032,7 @@ mod tests {
 
     use super::*;
 
-    use crate::hydraulic::update_iterator::MaxStepLoop;
+    use crate::shared::update_iterator::MaxStepLoop;
     use crate::simulation::test::{SimulationTestBed, TestBed, WriteByName};
     use crate::simulation::{Aircraft, SimulationElement};
     use std::time::Duration;
