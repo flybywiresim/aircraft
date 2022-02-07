@@ -351,10 +351,19 @@ const ChartComponent = () => {
     if (!chartLinks.light || !chartLinks.dark) {
         return (
             <div
-                className={`flex items-center justify-center bg-theme-accent rounded-lg ${!isFullScreen && 'rounded-l-none ml-6'}`}
+                className={`flex relative items-center justify-center bg-theme-accent rounded-lg ${!isFullScreen && 'rounded-l-none ml-6'}`}
                 style={{ width: `${isFullScreen ? '1278px' : '804px'}` }}
             >
-                There is no chart to display.
+                {isFullScreen && (
+                    <div
+                        className="flex absolute top-6 right-6 flex-row items-center p-4 rounded-md transition duration-100 bg-theme-secondary hover:bg-theme-highlight hover:text-theme-body"
+                        onClick={() => dispatch(setIsFullScreen(false))}
+                    >
+                        <FullscreenExit size={40} />
+                        <p className="ml-4 text-current">Exit Fullscreen Mode</p>
+                    </div>
+                )}
+                <p>There is no chart to display.</p>
             </div>
         );
     }
