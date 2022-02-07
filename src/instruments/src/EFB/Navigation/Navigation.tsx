@@ -200,7 +200,7 @@ const ChartComponent = () => {
     const [aircraftIconPosition, setAircraftIconPosition] = useState<{ x: number, y: number, r: number }>({ x: 0, y: 0, r: 0 });
     const [aircraftLatitude] = useSimVar('PLANE LATITUDE', 'degree latitude', 1000);
     const [aircraftLongitude] = useSimVar('PLANE LONGITUDE', 'degree longitude', 1000);
-    const [aircraftTrueHeading] = useSimVar('PLANE HEADING DEGREES TRUE', 'degrees', 1000);
+    const [aircraftTrueHeading] = useSimVar('PLANE HEADING DEGREES TRUE', 'degrees', 100);
 
     useEffect(() => {
         let visible = false;
@@ -325,7 +325,15 @@ const ChartComponent = () => {
     };
 
     useEffect(() => {
-        expandToHeight();
+        const img = new Image();
+        img.onload = function () {
+            if (ref.current) {
+                // @ts-ignore
+                // eslint-disable-next-line react/no-this-in-sfc
+                dispatch(setChartDimensions({ width: this.width * (ref.current.clientHeight / this.height), height: ref.current.clientHeight }));
+            }
+        };
+        img.src = chartLinks.light;
     }, [chartLinks]);
 
     useEffect(() => {
