@@ -18,6 +18,7 @@ interface InitialChartState {
     chartName: ThemedChart;
     boundingBox?: NavigraphBoundingBox;
     pagesViewable: number;
+    currentPage: number;
 }
 
 type ThemedChart = {
@@ -47,6 +48,7 @@ const initialState: InitialChartState = {
     },
     boundingBox: undefined,
     pagesViewable: 1,
+    currentPage: 1,
 };
 
 export const navigationTabSlice = createSlice({
@@ -93,6 +95,9 @@ export const navigationTabSlice = createSlice({
         setPagesViewable: (state, action: TypedAction<number>) => {
             state.pagesViewable = action.payload;
         },
+        setCurrentPage: (state, action: TypedAction<number>) => {
+            state.currentPage = action.payload;
+        },
     },
 });
 
@@ -109,5 +114,6 @@ export const {
     setChartName,
     setBoundingBox,
     setPagesViewable,
+    setCurrentPage,
 } = navigationTabSlice.actions;
 export default navigationTabSlice.reducer;
