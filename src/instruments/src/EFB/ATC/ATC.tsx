@@ -76,7 +76,7 @@ export const ATC = () => {
         return '';
     };
 
-    const handleHoppieToggle = () : void => {
+    const handleHoppieToggle = async () : Promise<void> => {
         if (hoppieEnabled === 'DISABLED') {
             if (hoppieUserId === '') {
                 new PopUp().showPopUp(
@@ -90,8 +90,60 @@ export const ATC = () => {
                     () => {},
                 );
             } else {
-                SimVar.SetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number', 1);
-                setHoppieEnabled('ENABLED');
+                const body = {
+                    logon: hoppieUserId,
+                    from: 'FBWA32NX',
+                    to: 'ALL-CALLSIGNS',
+                    type: 'ping',
+                    packet: '',
+                };
+                let retval = await apiClient.Hoppie.sendRequest(body).then((resp) => resp.response);
+
+                // check if the logon code is valid
+                if (retval === 'error {illegal logon code}') {
+                    new PopUp().showPopUp(
+                        'ERROR',
+                        'Invalid logon code used.',
+                        'small',
+                        () => {
+                            SimVar.SetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number', 0);
+                            setHoppieEnabled('DISABLED');
+                        },
+                        () => {},
+                    );
+                } else {
+                    const callsign = SimVar.GetSimVarValue('ATC FLIGHT NUMBER', 'string');
+                    if (callsign && callsign.length !== 0) {
+                        const body = {
+                            logon: hoppieUserId,
+                            from: callsign,
+                            to: 'ALL-CALLSIGNS',
+                            type: 'ping',
+                            packet: '',
+                        };
+                        retval = await apiClient.Hoppie.sendRequest(body).then((resp) => resp.response);
+
+                        // check if the callsign is already in use
+                        if (retval === 'error {callsign already in use}') {
+                            new PopUp().showPopUp(
+                                'ERROR',
+                                'Flightnumber is already in use.',
+                                'small',
+                                () => {
+                                    SimVar.SetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number', 0);
+                                    setHoppieEnabled('DISABLED');
+                                },
+                                () => {},
+                            );
+                        } else {
+                            SimVar.SetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number', 1);
+                            setHoppieEnabled('ENABLED');
+                        }
+                    } else {
+                        SimVar.SetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number', 1);
+                        setHoppieEnabled('ENABLED');
+                    }
+                }
             }
         } else {
             SimVar.SetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number', 0);
