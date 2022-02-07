@@ -43,7 +43,7 @@ const Spoiler = ({ x, y, number, side, fcdcWord3, fcdcWord4 }: SpoilerProps) => 
     const isAvail = fcdcWord3.getBitValueOr(availAndValidBit, false);
     const isPosValid = fcdcWord4.getBitValueOr(availAndValidBit, false);
 
-    const spoilerOutIndex = 10 + number * 2 + side === 'left' ? 0 : 1;
+    const spoilerOutIndex = 9 + number * 2 + (side === 'left' ? 0 : 1);
     const isSpoilerOut = fcdcWord4.getBitValueOr(spoilerOutIndex, false);
 
     return (
