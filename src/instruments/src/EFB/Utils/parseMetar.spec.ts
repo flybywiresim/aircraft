@@ -260,3 +260,37 @@ test('KSFO 301456Z 17004KT 10SM FEW008 SCT011 SCT200 07/06 A3021 RMK AO2 SLP230 
             ColorCode.Info], // 50002
     );
 });
+
+test('SCTE 070400Z VRB02KT CAVOK 13/12 Q1016 NOSIG', () => {
+    const metarObject = parseMetar('SCTE 070400Z VRB02KT CAVOK 13/12 Q1016 NOSIG');
+    expect(metarObject.icao).toBe('SCTE');
+    expect(metarObject.observed.getUTCDate()).toBe(7);
+    expect(metarObject.observed.getUTCHours()).toBe(4);
+    expect(metarObject.observed.getUTCMinutes()).toBe(0);
+    expect(metarObject.wind.speed_kts).toBe(2);
+    expect(metarObject.wind.gust_kts).toBe(2);
+    expect(metarObject.wind.degrees).toBe(180);
+    expect(metarObject.wind.degrees_from).toBe(0);
+    expect(metarObject.wind.degrees_to).toBe(359);
+    expect(metarObject.visibility.meters_float).toBe(16093.44);
+    expect(metarObject.visibility.meters).toBe('16000');
+    expect(metarObject.visibility.miles_float).toBe(10.0);
+    expect(metarObject.visibility.miles).toBe('10');
+    expect(metarObject.conditions).toHaveLength(0);
+    expect(metarObject.clouds).toHaveLength(0);
+    expect(metarObject.temperature.celsius).toBe(13);
+    expect(metarObject.dewpoint.celsius).toBe(12);
+    expect(metarObject.barometer.mb).toBe(1016);
+    expect(metarObject.barometer.hg).toBe(30.002467808);
+    expect(metarObject.color_codes).toEqual(
+        [
+            ColorCode.Highlight, // SCTE
+            ColorCode.None, // 070400ZZ
+            ColorCode.None, // VRB02KTT
+            ColorCode.None, // CAVOK
+            ColorCode.None, // 13/12
+            ColorCode.None, // Q1016
+            ColorCode.None, // NOSIG
+        ],
+    );
+});

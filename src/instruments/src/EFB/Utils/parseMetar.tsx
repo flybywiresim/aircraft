@@ -103,17 +103,21 @@ export function parseMetar(metarString: string): MetarParserType {
     let trendMode = false;
     metarArray.forEach((metarPart, index) => {
         let match;
-        if (mode < Mode.VISIBILITY && metarPart.match(/^(\d+)(?:\/(\d+))?(SM)?$/)) {
-            mode = Mode.VISIBILITY; // no wind reported
-        }
-        if (mode < Mode.CLOUD && metarPart.match(/^(FEW|SCT|BKN|OVC|VV)(\d+)?/)) {
-            mode = Mode.CLOUD; // no visibility / conditions reported
-        }
-        if (mode < Mode.TEMP && metarPart.match(/^M?\d+\/M?\d+$/)) {
-            mode = Mode.TEMP; // end of clouds
-        }
-        if (mode < Mode.RMK && metarPart.match(/^RMK$/)) {
-            mode = Mode.RMK; // end of clouds
+        // after icao and date do some additional checks as sometimes METARs do
+        // not contain all parts
+        if (mode > Mode.DATE) {
+            if (mode < Mode.VISIBILITY && metarPart.match(/^(\d+)(?:\/(\d+))?(SM)?$/)) {
+                mode = Mode.VISIBILITY; // no wind reported
+            }
+            if (mode < Mode.CLOUD && metarPart.match(/^(FEW|SCT|BKN|OVC|VV)(\d+)?/)) {
+                mode = Mode.CLOUD; // no visibility / conditions reported
+            }
+            if (mode < Mode.TEMP && metarPart.match(/^M?\d+\/M?\d+$/)) {
+                mode = Mode.TEMP; // end of clouds
+            }
+            if (mode < Mode.RMK && metarPart.match(/^RMK$/)) {
+                mode = Mode.RMK; // end of clouds
+            }
         }
         switch (mode) {
         case Mode.ICAO:
