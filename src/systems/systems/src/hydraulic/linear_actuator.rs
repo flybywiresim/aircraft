@@ -1243,7 +1243,7 @@ mod tests {
     impl SimulationElement for TestAircraft {}
 
     struct TestDualActuatorAircraft {
-        loop_updater: MaxFixedStepLoop,
+        loop_updater: MaxStepLoop,
 
         dual_actuator_assembly: HydraulicLinearActuatorAssembly<2>,
 
@@ -1260,7 +1260,7 @@ mod tests {
             body: LinearActuatedRigidBodyOnHingeAxis,
         ) -> Self {
             Self {
-                loop_updater: MaxFixedStepLoop::new(Duration::from_millis(10)),
+                loop_updater: MaxStepLoop::new(Duration::from_millis(10)),
 
                 dual_actuator_assembly: HydraulicLinearActuatorAssembly::new(
                     [actuator1, actuator2],
