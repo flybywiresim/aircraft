@@ -708,11 +708,11 @@ void AutothrustModelClass::step()
    case 1:
     if (Autothrust_U.in.input.is_approach_mode_active) {
       rtb_Saturation = ((Autothrust_P.Gain_Gain_i * rtb_Sum5 + rtb_y_hw) + (Autothrust_P.Gain3_Gain_g * rtb_Saturation +
-        rtb_Gain2)) * look1_binlxpw(static_cast<real_T>(Autothrust_U.in.input.is_alt_soft_mode_active),
-        Autothrust_P.ScheduledGain3_BreakpointsForDimension1, Autothrust_P.ScheduledGain3_Table, 1U) * look1_binlxpw(std::
-        fmin(rtb_BusAssignment_n.data.commanded_engine_N1_1_percent,
-             rtb_BusAssignment_n.data.commanded_engine_N1_1_percent),
-        Autothrust_P.ScheduledGain2_BreakpointsForDimension1, Autothrust_P.ScheduledGain2_Table, 3U);
+        rtb_Gain2)) * look1_binlxpw(std::fmin(rtb_BusAssignment_n.data.commanded_engine_N1_1_percent,
+        rtb_BusAssignment_n.data.commanded_engine_N1_1_percent), Autothrust_P.ScheduledGain2_BreakpointsForDimension1,
+        Autothrust_P.ScheduledGain2_Table, 3U) * look1_binlxpw(static_cast<real_T>
+        (Autothrust_U.in.input.is_alt_soft_mode_active), Autothrust_P.ScheduledGain4_BreakpointsForDimension1,
+        Autothrust_P.ScheduledGain4_Table, 1U);
       if (rtb_Saturation > Autothrust_P.Saturation1_UpperSat) {
         rtb_Saturation = Autothrust_P.Saturation1_UpperSat;
       } else if (rtb_Saturation < Autothrust_P.Saturation1_LowerSat) {
@@ -720,11 +720,11 @@ void AutothrustModelClass::step()
       }
     } else {
       rtb_Saturation = ((Autothrust_P.Gain_Gain_i * rtb_Sum5 + rtb_y_hw) + (Autothrust_P.Gain3_Gain_g * rtb_Saturation +
-        rtb_Gain2)) * look1_binlxpw(static_cast<real_T>(Autothrust_U.in.input.is_alt_soft_mode_active),
-        Autothrust_P.ScheduledGain3_BreakpointsForDimension1, Autothrust_P.ScheduledGain3_Table, 1U) * look1_binlxpw(std::
-        fmin(rtb_BusAssignment_n.data.commanded_engine_N1_1_percent,
-             rtb_BusAssignment_n.data.commanded_engine_N1_1_percent),
-        Autothrust_P.ScheduledGain2_BreakpointsForDimension1, Autothrust_P.ScheduledGain2_Table, 3U);
+        rtb_Gain2)) * look1_binlxpw(std::fmin(rtb_BusAssignment_n.data.commanded_engine_N1_1_percent,
+        rtb_BusAssignment_n.data.commanded_engine_N1_1_percent), Autothrust_P.ScheduledGain2_BreakpointsForDimension1,
+        Autothrust_P.ScheduledGain2_Table, 3U) * look1_binlxpw(static_cast<real_T>
+        (Autothrust_U.in.input.is_alt_soft_mode_active), Autothrust_P.ScheduledGain4_BreakpointsForDimension1,
+        Autothrust_P.ScheduledGain4_Table, 1U);
       if (rtb_Saturation > Autothrust_P.Saturation_UpperSat) {
         rtb_Saturation = Autothrust_P.Saturation_UpperSat;
       } else if (rtb_Saturation < Autothrust_P.Saturation_LowerSat) {
