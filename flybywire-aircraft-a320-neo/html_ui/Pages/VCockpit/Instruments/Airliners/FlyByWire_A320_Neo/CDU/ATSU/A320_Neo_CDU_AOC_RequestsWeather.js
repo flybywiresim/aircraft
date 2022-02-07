@@ -1,6 +1,7 @@
 class CDUAocRequestsWeather {
     static ShowPage(mcdu, reqID = 0, _sendStatus = "") {
         mcdu.clearDisplay();
+        mcdu.page.Current = mcdu.page.AOCRequestWeather;
         let labelTimeout;
         let sendStatus = _sendStatus;
         const reqTypes = [
@@ -8,28 +9,39 @@ class CDUAocRequestsWeather {
             'TAF'
         ];
 
+        let sendMessage = "SEND\xa0[color]cyan";
+        if (mcdu.aocAirportList.icaos.length !== 0) {
+            sendMessage = "SEND*[color]cyan";
+        }
+
         const updateView = () => {
-            mcdu.setTemplate([
-                ["AOC WEATHER REQUEST"],
-                [`WX TYPE`, "AIRPORTS"],
-                [`↓${reqTypes[reqID]}[color]cyan`, mcdu.aocAirportList.rows[0].output],
-                [""],
-                ["", mcdu.aocAirportList.rows[1].output],
-                [""],
-                ["", mcdu.aocAirportList.rows[2].output],
-                [""],
-                ["", mcdu.aocAirportList.rows[3].output],
-                [""],
-                [""],
-                ["RETURN TO", `${sendStatus}`],
-                ["<AOC MENU", "SEND*[color]cyan"]
-            ]);
+            if (mcdu.page.Current === mcdu.page.AOCRequestWeather) {
+                mcdu.setTemplate([
+                    ["AOC WEATHER REQUEST"],
+                    [`WX TYPE`, "AIRPORTS"],
+                    [`↓${reqTypes[reqID]}[color]cyan`, mcdu.aocAirportList.rows[0].output],
+                    [""],
+                    ["", mcdu.aocAirportList.rows[1].output],
+                    [""],
+                    ["", mcdu.aocAirportList.rows[2].output],
+                    [""],
+                    ["", mcdu.aocAirportList.rows[3].output],
+                    [""],
+                    [""],
+                    ["RETURN TO", `${sendStatus}`],
+                    ["<AOC MENU", sendMessage]
+                ]);
+            }
         };
         updateView();
 
         for (let i = 0; i < 4; i++) {
             mcdu.onRightInput[i] = (value) => {
-                mcdu.aocAirportList.set(i, value);
+                if (value.length !== 4 || /^[A-Z()]*$/.test(value) === false) {
+                    mcdu.addNewMessage(NXSystemMessages.formatError);
+                } else {
+                    mcdu.aocAirportList.set(i, value);
+                }
                 CDUAocRequestsWeather.ShowPage(mcdu, reqID, sendStatus);
             };
         }
@@ -44,29 +56,24 @@ class CDUAocRequestsWeather {
                 mcdu.addNewMessage(NXFictionalMessages.noAirportSpecified);
                 return;
             }
-            sendStatus = "QUEUED";
+            sendStatus = "SENDING";
             updateView();
-            const lines = [];
-            const newMessage = { "id": Date.now(), "type": reqTypes[reqID], "time": '00:00', "opened": null, "content": lines, };
 
-            const getInfo = async () => {
-                if (reqID === 0) {
-                    getMETAR(icaos, lines, updateView);
-                } else {
-                    getTAF(icaos, lines, updateView);
-                }
-            };
-
-            getInfo().then(() => {
+            setTimeout(() => {
                 sendStatus = "SENT";
-                setTimeout(() => {
-                    newMessage["time"] = fetchTimeValue();
-                    mcdu.addMessage(newMessage);
-                }, Math.floor(Math.random() * 10000) + 10000);
-                labelTimeout = setTimeout(() => {
+                updateView();
+            }, 1000);
+
+            mcdu.atsuManager.aoc.receiveWeather(reqID === 0, icaos).then((retval) => {
+                if (retval[0] === Atsu.AtsuStatusCodes.Ok) {
+                    mcdu.atsuManager.registerMessage(retval[1]);
                     sendStatus = "";
                     updateView();
-                }, 3000);
+                } else {
+                    mcdu.addNewAtsuMessage(retval[0]);
+                    sendStatus = "FAILED";
+                    updateView();
+                }
             });
         };
 
