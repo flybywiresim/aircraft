@@ -387,11 +387,11 @@ ElacDiscreteOutputs Elac::getDiscreteOutputs() {
     output.rightAileronOk = rightAileronAvail;
     output.ap1Authorised = false;
     output.ap2Authorised = false;
-    output.leftAileronActiveMode = isEngagedInRoll;
-    output.rightAileronActiveMode = isEngagedInRoll;
-    output.leftElevatorActiveMode = isEngagedInPitch;
-    output.rightElevatorActiveMode = isEngagedInPitch;
-    output.thsActive = isEngagedInPitch;
+    output.leftAileronActiveMode = isEngagedInRoll && leftAileronAvail;
+    output.rightAileronActiveMode = isEngagedInRoll && rightAileronAvail;
+    output.leftElevatorActiveMode = isEngagedInPitch && leftElevatorAvail;
+    output.rightElevatorActiveMode = isEngagedInPitch && rightElevatorAvail;
+    output.thsActive = isEngagedInPitch && !discreteInputs.thsMotorFault;
   }
 
   return output;

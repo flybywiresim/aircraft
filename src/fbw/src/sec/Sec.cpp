@@ -277,16 +277,16 @@ SecDiscreteOutputs Sec::getDiscreteOutputs() {
     output.thsActive = false;
   } else {
     output.thrReverseSelected = false;
-    output.leftElevOk = false;
-    output.rightElevOk = false;
+    output.leftElevOk = leftElevatorAvail;
+    output.rightElevOk = rightElevatorAvail;
     output.groundSpoilerOut = false;
-    output.leftSpoiler1ActiveMode = false;
-    output.rightSpoiler1ActiveMode = false;
-    output.leftSpoiler2ActiveMode = false;
-    output.rightSpoiler2ActiveMode = false;
-    output.leftElevatorActiveMode = false;
-    output.rightElevatorActiveMode = false;
-    output.thsActive = false;
+    output.leftSpoiler1ActiveMode = spoilerPair1Avail;
+    output.rightSpoiler1ActiveMode = spoilerPair1Avail;
+    output.leftSpoiler2ActiveMode = spoilerPair2Avail;
+    output.rightSpoiler2ActiveMode = spoilerPair2Avail;
+    output.leftElevatorActiveMode = isEngagedInPitch && leftElevatorAvail;
+    output.rightElevatorActiveMode = isEngagedInPitch && rightElevatorAvail;
+    output.thsActive = isEngagedInPitch && !discreteInputs.thsMotorFault;
   }
 
   return output;
