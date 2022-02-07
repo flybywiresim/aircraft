@@ -107,9 +107,6 @@ class A32NX_Boarding {
         const currentLoad = Object.values(this.cargoStations).map((station) => SimVar.GetSimVarValue(`L:${station.simVar}`, "Number")).reduce((acc, cur) => acc + cur);
         const loadTarget = Object.values(this.cargoStations).map((station) => SimVar.GetSimVarValue(`L:${station.simVar}_DESIRED`, "Number")).reduce((acc, cur) => acc + cur);
 
-        await SimVar.SetSimVarValue(`L:A32NX_PAX_CURRENT`, "Number", currentPax);
-        await SimVar.SetSimVarValue(`L:A32NX_PAX_TARGET`, "Number", paxTarget);
-
         let isAllPaxStationFilled = true;
         for (const _station of Object.values(this.paxStations)) {
             const stationCurrentPax = SimVar.GetSimVarValue(`L:${_station.simVar}`, "Number");
@@ -131,6 +128,26 @@ class A32NX_Boarding {
                 break;
             }
         }
+
+        // Sound Controllers
+        if ((currentPax < paxTarget) && boardingStartedByUser == true) {
+            await SimVar.SetSimVarValue(`L:A32NX_PAX_BOARDING_SOUND`, "Bool", true);
+            this.isBoarding = true;
+        } else {
+            await SimVar.SetSimVarValue(`L:A32NX_PAX_BOARDING_SOUND`, "Bool", false);
+        }
+
+        if ((currentPax > paxTarget) && boardingStartedByUser == true) {
+            await SimVar.SetSimVarValue(`L:A32NX_PAX_DEBOARDING_SOUND`, "Bool", true);
+        } else {
+            await SimVar.SetSimVarValue(`L:A32NX_PAX_DEBOARDING_SOUND`, "Bool", false);
+        }
+
+        if ((currentPax == paxTarget) && this.isBoarding == true) {
+            await SimVar.SetSimVarValue(`L:A32NX_BOARDING_COMPLETE_SOUND`, "Bool", true);
+            this.isBoarding = false;
+            return;
+        } await SimVar.SetSimVarValue(`L:A32NX_BOARDING_COMPLETE_SOUND`, "Bool", false);
 
         if (currentPax === paxTarget && currentLoad === loadTarget && isAllPaxStationFilled && isAllCargoStationFilled) {
             // Finish boarding
@@ -191,16 +208,16 @@ class A32NX_Boarding {
                 const stationCurrentLoad = SimVar.GetSimVarValue(`L:${loadStation.simVar}`, "Number");
                 const stationCurrentLoadTarget = SimVar.GetSimVarValue(`L:${loadStation.simVar}_DESIRED`, "Number");
 
-                if ((stationCurrentLoad < stationCurrentLoadTarget) && (Math.abs((stationCurrentLoadTarget - stationCurrentLoad)) > 40)) {
-                    this.fillCargoStation(loadStation, stationCurrentLoad + 40);
+                if ((stationCurrentLoad < stationCurrentLoadTarget) && (Math.abs((stationCurrentLoadTarget - stationCurrentLoad)) > 60)) {
+                    this.fillCargoStation(loadStation, stationCurrentLoad + 60);
                     break;
-                } else if ((stationCurrentLoad < stationCurrentLoadTarget) && (Math.abs((stationCurrentLoadTarget - stationCurrentLoad)) <= 40)) {
+                } else if ((stationCurrentLoad < stationCurrentLoadTarget) && (Math.abs((stationCurrentLoadTarget - stationCurrentLoad)) <= 60)) {
                     this.fillCargoStation(loadStation, (stationCurrentLoad + (Math.abs(stationCurrentLoadTarget - stationCurrentLoad))));
                     break;
-                } else if ((stationCurrentLoad > stationCurrentLoadTarget) && (Math.abs((stationCurrentLoadTarget - stationCurrentLoad)) > 40)) {
-                    this.fillCargoStation(loadStation, stationCurrentLoad - 40);
+                } else if ((stationCurrentLoad > stationCurrentLoadTarget) && (Math.abs((stationCurrentLoadTarget - stationCurrentLoad)) > 60)) {
+                    this.fillCargoStation(loadStation, stationCurrentLoad - 60);
                     break;
-                } else if ((stationCurrentLoad > stationCurrentLoadTarget) && (Math.abs((stationCurrentLoadTarget - stationCurrentLoad)) <= 40)) {
+                } else if ((stationCurrentLoad > stationCurrentLoadTarget) && (Math.abs((stationCurrentLoadTarget - stationCurrentLoad)) <= 60)) {
                     this.fillCargoStation(loadStation, (stationCurrentLoad - (Math.abs(stationCurrentLoad - stationCurrentLoadTarget))));
                     break;
                 } else {
