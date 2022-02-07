@@ -1,30 +1,17 @@
 import React from 'react';
 import { FlightWidget } from './Widgets/FlightWidget';
-import { WeatherWidget } from './Widgets/WeatherWidget';
-import { useAppSelector } from '../Store/store';
+import { RemindersWidget } from './Widgets/RemindersWidget';
 
-export const Dashboard = () => {
-    const { departingAirport, arrivingAirport } = useAppSelector((state) => state.simbrief.data);
+export const Dashboard = () => (
+    <div className="w-full">
+        <h1 className="font-bold">Dashboard</h1>
 
-    return (
-        <div className="w-full">
-            <h1 className="font-bold">Dashboard</h1>
-            <div className="flex mt-4 w-full h-efb">
-                <FlightWidget />
-                <div className="flex flex-col w-3/5">
-                    <div className="p-6 mb-3 ml-3 h-2/5 rounded-lg bg-theme-accent">
-                        <div className="flex items-center h-full">
-                            <div className="w-1/2">
-                                <WeatherWidget name="origin" editIcao="yes" icao={departingAirport} />
-                            </div>
-                            <div className="h-60 rounded-full border border-gray-500" />
-                            <div className="w-1/2">
-                                <WeatherWidget name="destination" editIcao="yes" icao={arrivingAirport} />
-                            </div>
-                        </div>
-                    </div>
-                </div>
+        <div className="flex mt-4 w-full h-efb">
+            <FlightWidget />
+
+            <div className="overflow-hidden p-6 w-1/2 h-full rounded-lg border-2 border-theme-accent">
+                <RemindersWidget />
             </div>
         </div>
-    );
-};
+    </div>
+);
