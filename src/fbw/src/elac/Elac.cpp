@@ -34,6 +34,8 @@ void Elac::clearMemory() {
   isEngagedInRoll = false;
   canEngageInRoll = false;
   hasPriorityInRoll = false;
+  leftAileronCrossCommandActive = false;
+  rightAileronCrossCommandActive = false;
   leftAileronAvail = false;
   rightAileronAvail = false;
   lateralLawCapability = LateralLaw::None;
@@ -188,6 +190,9 @@ void Elac::computeComputerEngagementPitch() {
 // the assosciated hydraulics are powered, and the peripheral sensors permit engagement.
 // Also compute if the computer should be engaged in roll. It should be engaged in roll,
 // if it can drive in roll, and it has priority in roll.
+// Also, if this computer is ELAC 2, and is not engaged in roll, and the ELAC 1 has lost
+// exactly one aileron, then engage this ELACs aileron servo on that side, and control it
+// via commands from the ELAC 1.
 void Elac::computeComputerEngagementRoll() {
   leftAileronAvail = !discreteInputs.lAilServoFailed && (isUnit1 ? isBlueHydraulicPowerAvail : isGreenHydraulicPowerAvail);
   rightAileronAvail = !discreteInputs.rAilServoFailed && (isUnit1 ? isGreenHydraulicPowerAvail : isBlueHydraulicPowerAvail);
@@ -199,6 +204,14 @@ void Elac::computeComputerEngagementRoll() {
     hasPriorityInRoll = true;
   } else {
     hasPriorityInRoll = discreteInputs.oppLeftAileronLost && discreteInputs.oppRightAileronLost;
+  }
+
+  if (!isUnit1 && !hasPriorityInRoll && busInputs.elacOpp.aileronCommand.isNo()) {
+    leftAileronCrossCommandActive = discreteInputs.oppLeftAileronLost && leftAileronAvail;
+    rightAileronAvail = discreteInputs.oppRightAileronLost && rightAileronAvail;
+  } else {
+    leftAileronCrossCommandActive = false;
+    rightAileronCrossCommandActive = false;
   }
 
   isEngagedInRoll = canEngageInRoll && hasPriorityInRoll;
@@ -387,8 +400,8 @@ ElacDiscreteOutputs Elac::getDiscreteOutputs() {
     output.rightAileronOk = rightAileronAvail;
     output.ap1Authorised = false;
     output.ap2Authorised = false;
-    output.leftAileronActiveMode = isEngagedInRoll && leftAileronAvail;
-    output.rightAileronActiveMode = isEngagedInRoll && rightAileronAvail;
+    output.leftAileronActiveMode = (isEngagedInRoll || leftAileronCrossCommandActive) && leftAileronAvail;
+    output.rightAileronActiveMode = (isEngagedInRoll || rightAileronCrossCommandActive) && rightAileronAvail;
     output.leftElevatorActiveMode = isEngagedInPitch && leftElevatorAvail;
     output.rightElevatorActiveMode = isEngagedInPitch && rightElevatorAvail;
     output.thsActive = isEngagedInPitch && !discreteInputs.thsMotorFault;

@@ -64,6 +64,10 @@ class Elac {
 
   bool hasPriorityInRoll;
 
+  bool leftAileronCrossCommandActive;
+
+  bool rightAileronCrossCommandActive;
+
   bool leftAileronAvail;
 
   bool rightAileronAvail;
