@@ -15,12 +15,14 @@ const UpperDisplay: React.FC = () => {
     const [unit] = usePersistentProperty('CONFIG_USING_METRIC_UNIT', '1');
     const [engSelectorPosition] = useSimVar('L:XMLVAR_ENG_MODE_SEL', 'enum', 1000);
     const [flightPhase] = useSimVar('L:A32NX_FWC_FLIGHT_PHASE', 'enum', 1000);
+    const [autothrustMode] = useSimVar('L:A32NX_AUTOTHRUST_MODE', 'enum', 500);
 
     const isActive = (engSelectorPosition === 2 && flightPhase === 1) || flightPhase > 1;
 
     return (
         <>
             {/*   */}
+            <text className={`Amber Large End ${autothrustMode === 13 ? 'Show' : 'Hide'}`} x={150} y={27}>A.FLOOR</text>
             <PacksNaiWai x={492} y={27} flightPhase={flightPhase} />
             <Idle x={374} y={55} />
 
