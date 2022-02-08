@@ -74,7 +74,11 @@
 }
 
 .scrollbar::-webkit-scrollbar-thumb {
-  @apply rounded-md bg-theme-highlight;
+  @apply rounded-md bg-theme-accent;
+
+  &:hover {
+      @apply bg-theme-highlight;
+  }
 }
 
 .no-scrollbar::-webkit-scrollbar {
