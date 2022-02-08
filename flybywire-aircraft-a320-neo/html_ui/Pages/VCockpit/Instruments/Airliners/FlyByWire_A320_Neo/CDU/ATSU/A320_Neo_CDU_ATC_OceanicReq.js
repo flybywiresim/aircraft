@@ -16,6 +16,9 @@ class CDUAtcOceanicReq {
         if (!mcdu.flightPlanManager.getDestination() || mcdu.flightPlanManager.getDestination().ident === "") {
             return false;
         }
+        if (mcdu.atsuManager.atc.currentStation() === "") {
+            return false;
+        }
         return data.entryPoint && data.entryTime && data.requestedMach && data.requestedFlightlevel;
     }
 
