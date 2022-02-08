@@ -82,7 +82,7 @@
     "webpack-dev-server": "^3.11.1"
   },
   "dependencies": {
-    "msfs-geo": "^0.1.0-alpha3",
+    "msfs-geo": "^0.1.0-alpha4",
     "@flybywiresim/api-client": "^0.16.2",
     "@flybywiresim/react-components": "^0.3.1",
     "@flybywiresim/tailwind-config": "^0.5.0",
