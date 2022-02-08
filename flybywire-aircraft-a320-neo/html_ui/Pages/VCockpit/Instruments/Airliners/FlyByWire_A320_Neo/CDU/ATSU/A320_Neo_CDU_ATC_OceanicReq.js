@@ -160,17 +160,22 @@ class CDUAtcOceanicReq {
                 suffix: "[color]cyan",
                 maxLength: 3,
                 isValid: ((value) => {
-                    let valid = value.length === 3 && value[0] === "." && /^[0-9()]*$/.test(value.substring(1, value.length));
-                    valid |= value.length === 2 && /^[0-9()]*$/.test(value);
-                    return valid;
+                    if (/^M*.[0-9]{1,2}$/.test(value)) {
+                        let number = parseInt(value.split('.')[1]);
+                        if (number < 10) {
+                            number *= 10;
+                        }
+                        return number >= 61 && number <= 92;
+                    }
+                    return false;
                 })
             },
             (value) => {
-                if (value[0] === ".") {
-                    store.requestedMach = value;
-                } else {
-                    store.requestedMach = `.${value}`;
+                let number = parseInt(value.split('.')[1]);
+                if (number < 10) {
+                    number *= 10;
                 }
+                store.requestedMach = `.${number}`;
                 CDUAtcOceanicReq.ShowPage1(mcdu, store);
             });
         const requestedFlightlevel = new CDU_SingleValueField(mcdu,
@@ -181,17 +186,25 @@ class CDUAtcOceanicReq {
                 emptyValue: "_____[color]amber",
                 suffix: "[color]cyan",
                 maxLength: 5,
-                isValid: ((value) => value.length >= 3 && value.length <= 5 && /^[0-9()]*$/.test(value))
+                isValid: ((value) => {
+                    if (/^(FL)*[0-9]{2,3}$/.test(value)) {
+                        let level = 0;
+                        if (value.startsWith("FL")) {
+                            level = parseInt(value.substring(2, value.length));
+                        } else {
+                            level = parseInt(value);
+                        }
+                        return level >= 30 && level <= 410;
+                    }
+                    return false;
+                })
             },
             (value) => {
-                if (value !== store.requestedFlightlevel) {
-                    if (value.length === 0) {
-                        store.requestedFlightlevel = "";
-                    } else if (value.length > 3) {
-                        store.requestedFlightlevel = `FL${Math.floor(parseInt(value) / 100)}`;
-                    } else {
-                        store.requestedFlightlevel = `FL${value}`;
-                    }
+                if (value.startsWith("FL")) {
+                    store.requestedFlightlevel = value;
+                } else {
+                    const zeroPad = (str, places) => str.padStart(places, '0');
+                    store.requestedFlightlevel = `FL${zeroPad(value, 3)}`;
                 }
                 CDUAtcOceanicReq.ShowPage1(mcdu, store);
             });
