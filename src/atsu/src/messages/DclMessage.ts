@@ -18,17 +18,7 @@ export class DclMessage extends CpdlcMessage {
 
     public Gate = '';
 
-    public Freetext0 = '';
-
-    public Freetext1 = '';
-
-    public Freetext2 = '';
-
-    public Freetext3 = '';
-
-    public Freetext4 = '';
-
-    public Freetext5 = '';
+    public Freetext: string[] = [];
 
     constructor() {
         super();
@@ -42,12 +32,7 @@ export class DclMessage extends CpdlcMessage {
         dclMessage += `TO:${this.Destination} ATIS:${this.Atis}\n`;
         dclMessage += 'A/C TYPE:A20N';
 
-        // add the additional text, but remove empty lines
-        // it is guaranteed by the UI of the DEPART REQUEST pages that empty lines exist between two filled lines
-        let freetext = `${this.Freetext0}\n${this.Freetext1}\n`;
-        freetext += `${this.Freetext2}\n${this.Freetext3}\n`;
-        freetext += `${this.Freetext4}\n${this.Freetext5}`;
-        freetext = freetext.replace(/^\s*\n/gm, '');
+        const freetext = this.Freetext.join('\n').replace(/^\s*\n/gm, '');
         if (freetext.length !== 0) {
             dclMessage += `\n${freetext}`;
         }
@@ -69,13 +54,7 @@ export class DclMessage extends CpdlcMessage {
         this.Destination = jsonData.Destination;
         this.Gate = jsonData.Gate;
         this.Atis = jsonData.Atis;
-
-        this.Freetext0 = jsonData.Freetext0;
-        this.Freetext1 = jsonData.Freetext1;
-        this.Freetext2 = jsonData.Freetext2;
-        this.Freetext3 = jsonData.Freetext3;
-        this.Freetext4 = jsonData.Freetext4;
-        this.Freetext5 = jsonData.Freetext5;
+        this.Freetext = jsonData.Freetext;
     }
 }
 
