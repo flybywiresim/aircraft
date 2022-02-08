@@ -2538,7 +2538,7 @@ impl CargoDoor {
         current_pressure: Pressure,
     ) {
         self.hydraulic_assembly
-            .update(context, [cargo_door_controller], [current_pressure]);
+            .update(context, &cargo_door_controller, [current_pressure]);
         self.is_locked = self.hydraulic_assembly.is_locked();
         self.position = self.hydraulic_assembly.position_normalized();
     }
@@ -3162,18 +3162,12 @@ impl ElacComputer {
         self.update_aileron(green_circuit_available, blue_circuit_available);
     }
 
-    fn left_controllers(&self) -> [&impl HydraulicAssemblyController; 2] {
-        [
-            &self.left_controllers[AileronActuatorCircuit::Blue as usize],
-            &self.left_controllers[AileronActuatorCircuit::Green as usize],
-        ]
+    fn left_controllers(&self) -> &[impl HydraulicAssemblyController] {
+        &self.left_controllers[..]
     }
 
-    fn right_controllers(&self) -> [&impl HydraulicAssemblyController; 2] {
-        [
-            &self.right_controllers[AileronActuatorCircuit::Blue as usize],
-            &self.right_controllers[AileronActuatorCircuit::Green as usize],
-        ]
+    fn right_controllers(&self) -> &[impl HydraulicAssemblyController] {
+        &self.right_controllers[..]
     }
 }
 impl SimulationElement for ElacComputer {
@@ -3231,7 +3225,7 @@ impl AileronAssembly {
     fn update(
         &mut self,
         context: &UpdateContext,
-        aileron_controllers: [&impl HydraulicAssemblyController; 2],
+        aileron_controllers: &[impl HydraulicAssemblyController],
         current_pressure_blue: Pressure,
         current_pressure_green: Pressure,
     ) {
