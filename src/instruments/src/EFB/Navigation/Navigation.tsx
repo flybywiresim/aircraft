@@ -526,13 +526,13 @@ const ChartComponent = () => {
 
                 <div ref={chartRef}>
                     <img
-                        className="absolute left-0 transition duration-100 select-none"
+                        className="absolute left-0 w-full transition duration-100 select-none"
                         draggable={false}
                         src={chartLinks.dark}
                         alt="chart"
                     />
                     <img
-                        className={`absolute left-0 transition duration-100 select-none ${usingDarkTheme && 'opacity-0'}`}
+                        className={`absolute left-0 w-full transition duration-100 select-none ${usingDarkTheme && 'opacity-0'}`}
                         draggable={false}
                         src={chartLinks.light}
                         alt="chart"
