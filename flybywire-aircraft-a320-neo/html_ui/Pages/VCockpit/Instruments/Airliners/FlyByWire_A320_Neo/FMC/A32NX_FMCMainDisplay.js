@@ -176,7 +176,6 @@ class FMCMainDisplay extends BaseAirliners {
 
         // ATSU data
         this.atsuManager = undefined;
-        this.pdcMessage = undefined;
         this.dclMessage = undefined;
         this.oclMessage = undefined;
     }
@@ -494,7 +493,6 @@ class FMCMainDisplay extends BaseAirliners {
 
         // ATSU data
         this.atsuManager = new Atsu.AtsuManager(this);
-        this.pdcMessage = undefined;
         this.dclMessage = undefined;
         this.oclMessage = undefined;
 
