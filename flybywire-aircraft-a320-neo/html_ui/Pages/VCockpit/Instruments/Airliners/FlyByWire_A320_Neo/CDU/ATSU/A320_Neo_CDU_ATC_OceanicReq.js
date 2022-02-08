@@ -84,7 +84,7 @@ class CDUAtcOceanicReq {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.ATCOceanicReq;
 
-        let flightNo = "______[color]amber";
+        let flightNo = "-------[color]white";
         let atcStation = "----[color]white";
 
         const entryTime = new CDU_SingleValueField(mcdu,
