@@ -16,7 +16,7 @@ $handle-size: calc(#{$slider-height} * 3);
   -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
 }
 .rc-slider-rail {
-  @apply bg-theme-unselected;
+  @apply bg-theme-accent;
   position: absolute;
   width: 100%;
   height: $slider-height;
