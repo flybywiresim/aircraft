@@ -93,4 +93,34 @@ export class PopUp {
             this._showPopUp(this.params);
         }
     }
+
+    /**
+     * Show information with given or already initiated parameters
+     * @param {string} title Title for popup - will show in menu bar
+     * @param {string} message Popup message
+     * @param {string} style Style/Type of popup. Valid types are small|normal|big|big-help
+     * @param {function} callback Callback function -> OK button is clicked.
+     */
+    showInformation(title: string, message: string, style: 'small'| 'normal'| 'big'| 'big-help', callback: () => void): void {
+        if (title) {
+            this.params.title = title;
+        }
+        if (message) {
+            this.params.contentData = message;
+        }
+        if (style) {
+            this.params.style = style;
+        }
+        if (callback) {
+            const yes = (typeof callback === 'function') ? callback : () => callback;
+            Coherent.on(`A32NX_POP_${this.params.id}_YES`, yes);
+        }
+        this.params.buttons = [new NotificationButton('TT:MENU.OK', `A32NX_POP_${this.params.id}_YES`)];
+
+        if (!this.popupListener) {
+            this.popupListener = RegisterViewListener('JS_LISTENER_POPUP', this._showPopUp.bind(null, this.params));
+        } else {
+            this._showPopUp(this.params);
+        }
+    }
 }

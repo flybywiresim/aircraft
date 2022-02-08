@@ -579,7 +579,7 @@ const ATSUAOCPage = () => {
     function getHoppieResponse(value: string): Promise<any> {
         const body = {
             logon: value,
-            from: 'CSCHECK',
+            from: 'FBWA32NX',
             to: 'ALL-CALLSIGNS',
             type: 'ping',
             packet: '',
@@ -594,7 +594,7 @@ const ATSUAOCPage = () => {
             }
             getHoppieResponse(value)
                 .then((response) => {
-                    if (response !== 'ok') {
+                    if (response === 'error {illegal logon code}') {
                         reject(new Error(`Error: Unknown user ID: ${response}`));
                     }
                     resolve(value);

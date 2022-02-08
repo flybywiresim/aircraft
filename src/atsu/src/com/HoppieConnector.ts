@@ -20,21 +20,21 @@ export class HoppieConnector {
 
         const body = {
             logon: NXDataStore.get('CONFIG_HOPPIE_USERID', ''),
-            from: 'CSCHECK',
+            from: station,
             to: 'ALL-CALLSIGNS',
             type: 'ping',
             packet: station,
         };
         const text = await Hoppie.sendRequest(body).then((resp) => resp.response);
 
+        if (text === 'error {callsign already in use}') {
+            return AtsuStatusCodes.CallsignInUse;
+        }
         if (text.includes('error')) {
             return AtsuStatusCodes.ProxyError;
         }
         if (text.startsWith('ok') !== true) {
             return AtsuStatusCodes.ComFailed;
-        }
-        if (text === `ok {${station}}`) {
-            return AtsuStatusCodes.CallsignInUse;
         }
 
         return AtsuStatusCodes.Ok;
