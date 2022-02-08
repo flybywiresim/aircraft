@@ -42,7 +42,7 @@ use systems::{
         AutoOffFaultPushButton, AutoOnFaultPushButton, MomentaryOnPushButton, MomentaryPushButton,
     },
     shared::{
-        interpolation,random_from_range,
+        interpolation, random_from_range,
         update_iterator::{FixedStepLoop, MaxStepLoop},
         DelayedFalseLogicGate, DelayedPulseTrueLogicGate, DelayedTrueLogicGate, ElectricalBusType,
         ElectricalBuses, EmergencyElectricalRatPushButton, EmergencyElectricalState,
