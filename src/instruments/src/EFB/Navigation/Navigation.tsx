@@ -194,7 +194,7 @@ const ChartComponent = () => {
     const position = useRef({ top: 0, y: 0, left: 0, x: 0 });
     const ref = useRef<HTMLDivElement>(null);
 
-    const chartRef = useRef<HTMLImageElement>(null);
+    const chartRef = useRef<HTMLDivElement>(null);
 
     const [aircraftIconVisible, setAircraftIconVisible] = useState(false);
     const [aircraftIconPosition, setAircraftIconPosition] = useState<{ x: number, y: number, r: number }>({ x: 0, y: 0, r: 0 });
@@ -302,7 +302,7 @@ const ChartComponent = () => {
     const expandToHeight = () => {
         if (!ref.current || !chartRef.current) return;
 
-        const scale = ref.current.clientHeight / chartRef.current.height;
+        const scale = ref.current.clientHeight / chartRef.current.clientHeight;
 
         dispatch(setChartDimensions({ width: chartDimensions.width * scale, height: ref.current!.clientHeight }));
     };
@@ -310,7 +310,7 @@ const ChartComponent = () => {
     const expandToWidth = () => {
         if (!ref.current || !chartRef.current) return;
 
-        const scale = ref.current.clientWidth / chartRef.current.width;
+        const scale = ref.current.clientWidth / chartRef.current.clientWidth;
 
         dispatch(setChartDimensions({ width: ref.current!.clientWidth, height: chartDimensions.height * scale }));
     };
@@ -524,13 +524,20 @@ const ChartComponent = () => {
                     </svg>
                 )}
 
-                <img
-                    className="max-w-none transition duration-100 select-none"
-                    ref={chartRef}
-                    draggable={false}
-                    src={usingDarkTheme ? chartLinks.dark : chartLinks.light}
-                    alt="chart"
-                />
+                <div ref={chartRef}>
+                    <img
+                        className="absolute left-0 transition duration-100 select-none"
+                        draggable={false}
+                        src={chartLinks.dark}
+                        alt="chart"
+                    />
+                    <img
+                        className={`absolute left-0 transition duration-100 select-none ${usingDarkTheme && 'opacity-0'}`}
+                        draggable={false}
+                        src={chartLinks.light}
+                        alt="chart"
+                    />
+                </div>
             </div>
         </div>
     );
