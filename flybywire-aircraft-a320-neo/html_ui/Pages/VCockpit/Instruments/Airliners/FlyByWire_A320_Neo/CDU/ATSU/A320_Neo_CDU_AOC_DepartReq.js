@@ -163,7 +163,6 @@ class CDUAocDepartReq {
                 // publish the message
                 mcdu.atsuManager.sendMessage(CDUAocDepartReq.CreateMessage(mcdu, store)).then((code) => {
                     if (code === Atsu.AtsuStatusCodes.Ok) {
-                        mcdu.pdcMessage = undefined;
                         store.sendStatus = "SENT";
                         CDUAocDepartReq.ShowPage1(mcdu, store);
 
