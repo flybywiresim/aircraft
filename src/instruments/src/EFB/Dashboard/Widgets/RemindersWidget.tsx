@@ -1,7 +1,8 @@
 import React, { FC } from 'react';
 import { IconArrowRight } from '@tabler/icons';
-import { useFailuresOrchestrator } from "../../failures-orchestrator-provider";
-import { A320Failure } from "@flybywiresim/failures";
+import { A320Failure } from '@flybywiresim/failures';
+import { Link } from 'react-router-dom';
+import { useFailuresOrchestrator } from '../../failures-orchestrator-provider';
 
 export const RemindersWidget: FC = () => {
     const { allFailures, activeFailures } = useFailuresOrchestrator();
@@ -10,38 +11,41 @@ export const RemindersWidget: FC = () => {
         <>
             <h2 className="font-bold">Reminders</h2>
 
-            <RemindersSection title="Pinned Charts"/>
-            <RemindersSection title="Maintenance">
-                <div className="flex">
-                    {Array.from(activeFailures).map((failure) => (
-                        <ActiveFailureReminder name={allFailures.find((it) => it.identifier === failure)?.name ?? '<unknown>'} />
-                    ))}
+            <RemindersSection title="Pinned Charts" pageLinkPath="/navigation" />
+            <RemindersSection title="Maintenance" pageLinkPath="/failures">
+                <div className="flex flex-row flex-wrap">
+                    {Array
+                        .from(activeFailures)
+                        // Sorts the failures by name length, greatest to least
+                        .sort((a, b) => (allFailures.find((f) => f.identifier === b)?.name ?? '').length - (allFailures.find((f) => f.identifier === a)?.name ?? '').length)
+                        .map((failure) => (
+                            <ActiveFailureReminder name={allFailures.find((it) => it.identifier === failure)?.name ?? '<unknown>'} />
+                        ))}
                     {activeFailures.size === 0 && (
-                        <span className="text-3xl font-manrope font-bold m-auto">No Active Failures</span>
+                        <h1 className="m-auto my-4 font-bold opacity-60">No Active Failures</h1>
                     )}
                 </div>
-                <div className="flex mt-4">
-                </div>
             </RemindersSection>
-            <RemindersSection title="Checklists"/>
+            <RemindersSection title="Checklists" pageLinkPath="/checklists" />
         </>
     );
 };
 
 interface RemindersSectionProps {
     title: string,
+    pageLinkPath: string,
 }
 
-const RemindersSection: FC<RemindersSectionProps> = ({ title, children }) => (
+const RemindersSection: FC<RemindersSectionProps> = ({ title, children, pageLinkPath }) => (
     <div className="flex flex-col pb-6 border-b-2 border-gray-700">
-        <div className="flex justify-between items-center">
-            <h2 className="mt-5 mb-6 font-medium">{title}</h2>
+        <div className="flex flex-row justify-between items-center mt-5 mb-2">
+            <h2 className="font-medium">{title}</h2>
 
-            <span className="flex items-center h-7 text-theme-highlight border-b-2 border-theme-highlight">
+            <Link to={pageLinkPath} className="flex items-center border-b-2 opacity-80 hover:opacity-100 transition duration-100 text-theme-highlight border-theme-highlight">
                 <span className="font-bold text-theme-highlight font-manrope">Go to Page</span>
 
                 <IconArrowRight className="fill-current" />
-            </span>
+            </Link>
         </div>
 
         {children}
@@ -53,7 +57,7 @@ interface ActiveFailureReminderProps {
 }
 
 const ActiveFailureReminder: FC<ActiveFailureReminderProps> = ({ name }) => (
-    <div className="flex flex-col flex-wrap p-2 mr-4 w-60 bg-theme-highlight rounded-md border-2 border-theme-highlight">
+    <div className="flex flex-col flex-wrap p-2 mt-4 mr-4 rounded-md border-2 bg-theme-highlight border-theme-highlight">
         <h3 className="font-bold text-black">Active Failure</h3>
         <span className="mt-2 text-black font-inter">{name}</span>
         <span className="ml-auto text-black">
