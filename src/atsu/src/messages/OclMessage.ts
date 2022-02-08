@@ -22,17 +22,7 @@ export class OclMessage extends CpdlcMessage {
 
     public RequestedFlightlevel = '';
 
-    public Freetext0 = '';
-
-    public Freetext1 = '';
-
-    public Freetext2 = '';
-
-    public Freetext3 = '';
-
-    public Freetext4 = '';
-
-    public Freetext5 = '';
+    public Freetext: string[] = [];
 
     constructor() {
         super();
@@ -45,12 +35,7 @@ export class OclMessage extends CpdlcMessage {
         oclMessage += `ENTRY POINT:${this.EntryPoint}\nAT:${this.EntryTime}\n`;
         oclMessage += `REQ:${this.RequestedMach} ${this.RequestedFlightlevel}`;
 
-        // add the additional text, but remove empty lines
-        // it is guaranteed by the UI of the DEPART REQUEST pages that empty lines exist between two filled lines
-        let freetext = `${this.Freetext0}\n${this.Freetext1}\n`;
-        freetext += `${this.Freetext2}\n${this.Freetext3}\n`;
-        freetext += `${this.Freetext4}\n${this.Freetext5}`;
-        freetext = freetext.replace(/^\s*\n/gm, '');
+        const freetext = this.Freetext.join('\n').replace(/^\s*\n/gm, '');
         if (freetext.length !== 0) {
             oclMessage += `\n${freetext}`;
         }
@@ -74,13 +59,7 @@ export class OclMessage extends CpdlcMessage {
         this.EntryTime = jsonData.EntryTime;
         this.RequestedMach = jsonData.RequestedMach;
         this.RequestedFlightlevel = jsonData.RequestedFlightlevel;
-
-        this.Freetext0 = jsonData.Freetext0;
-        this.Freetext1 = jsonData.Freetext1;
-        this.Freetext2 = jsonData.Freetext2;
-        this.Freetext3 = jsonData.Freetext3;
-        this.Freetext4 = jsonData.Freetext4;
-        this.Freetext5 = jsonData.Freetext5;
+        this.Freetext = jsonData.Freetext;
     }
 }
 

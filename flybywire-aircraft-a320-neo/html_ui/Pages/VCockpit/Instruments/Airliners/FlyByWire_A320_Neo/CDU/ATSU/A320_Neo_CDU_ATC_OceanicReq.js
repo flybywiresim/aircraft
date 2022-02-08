@@ -1,4 +1,39 @@
 class CDUAtcOceanicReq {
+    static CreateDataBlock() {
+        return {
+            entryPoint: null,
+            entryTime: null,
+            requestedMach: null,
+            requestedFlightlevel: null,
+            freetext: [ '', '', '', '', '', '' ]
+        };
+    }
+
+    static CanSendData(mcdu, data) {
+        if (!SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC") || SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC").length === 0) {
+            return false;
+        }
+        if (!mcdu.flightPlanManager.getDestination() || mcdu.flightPlanManager.getDestination().ident === "") {
+            return false;
+        }
+        return data.entryPoint && data.entryTime && data.requestedMach && data.requestedFlightlevel;
+    }
+
+    static CreateMessage(mcdu, data) {
+        const retval = new Atsu.OclMessage();
+
+        retval.Callsign = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC");
+        retval.OceanicAtc = mcdu.atsuManager.atc.currentStation();
+        retval.Destination = mcdu.flightPlanManager.getDestination().ident;
+        retval.EntryPoint = data.entryPoint;
+        retval.EntryTime = data.entryTime;
+        retval.RequestedMach = data.requestedMach;
+        retval.RequestedFlightlevel = data.requestedFlightlevel;
+        retval.Freetext = data.freetext.filter((n) => n);
+
+        return retval;
+    }
+
     static WaypointOnRoute(mcdu, ident) {
         const totalWaypointsCount = mcdu.flightPlanManager.getWaypointsCount() + mcdu.flightPlanManager.getArrivalWaypointsCount() + mcdu.flightPlanManager.getApproachWaypoints().length;
         const wptsListIndex = mcdu.flightPlanManager.getActiveWaypointIndex();
@@ -42,20 +77,16 @@ class CDUAtcOceanicReq {
         return retval;
     }
 
-    static ShowPage1(mcdu, oclComplete = false) {
+    static ShowPage1(mcdu, store = CDUAtcOceanicReq.CreateDataBlock()) {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.ATCOceanicReq;
-
-        if (mcdu.oclMessage === undefined) {
-            mcdu.oclMessage = new Atsu.OclMessage();
-        }
 
         let flightNo = "______[color]amber";
         let atcStation = "----[color]white";
 
         const entryTime = new CDU_SingleValueField(mcdu,
             "string",
-            mcdu.oclMessage.EntryTime,
+            store.entryTime,
             {
                 clearable: true,
                 emptyValue: "_____[color]amber",
@@ -83,15 +114,15 @@ class CDUAtcOceanicReq {
             },
             (value) => {
                 if (value.length === 4) {
-                    mcdu.oclMessage.EntryTime = `${value}Z`;
+                    store.entryTime = `${value}Z`;
                 } else {
-                    mcdu.oclMessage.EntryTime = value;
+                    store.entryTime = value;
                 }
-                CDUAtcOceanicReq.ShowPage1(mcdu, oclComplete);
+                CDUAtcOceanicReq.ShowPage1(mcdu, store);
             });
         const entryPoint = new CDU_SingleValueField(mcdu,
             "string",
-            mcdu.oclMessage.EntryPoint,
+            store.entryPoint,
             {
                 clearable: true,
                 emptyValue: "_______[color]amber",
@@ -99,27 +130,27 @@ class CDUAtcOceanicReq {
                 maxLength: 7
             },
             (value) => {
-                if (value !== mcdu.oclMessage.EntryPoint) {
+                if (value !== store.entryPoint) {
                     if (value !== "" && CDUAtcOceanicReq.WaypointOnRoute(mcdu, value)) {
-                        mcdu.oclMessage.EntryTime = CDUAtcOceanicReq.CalculateEntryPointETA(mcdu, value);
-                        if (mcdu.oclMessage.EntryTime !== '') {
-                            entryTime.setValue(mcdu.oclMessage.EntryTime);
+                        store.entryTime = CDUAtcOceanicReq.CalculateEntryPointETA(mcdu, value);
+                        if (store.entryTime !== '') {
+                            entryTime.setValue(store.entryTime);
                         } else {
                             entryTime.clearValue();
                         }
                     } else {
-                        mcdu.oclMessage.EntryTime = "";
+                        store.entryTime = "";
                         entryTime.clearValue();
                     }
 
-                    mcdu.oclMessage.EntryPoint = value;
+                    store.entryPoint = value;
                 }
-                CDUAtcOceanicReq.ShowPage1(mcdu, oclComplete);
+                CDUAtcOceanicReq.ShowPage1(mcdu, store);
             }
         );
         const requestedMach = new CDU_SingleValueField(mcdu,
             "string",
-            mcdu.oclMessage.RequestedMach,
+            store.requestedMach,
             {
                 clearable: true,
                 emptyValue: "___[color]amber",
@@ -133,15 +164,15 @@ class CDUAtcOceanicReq {
             },
             (value) => {
                 if (value[0] === ".") {
-                    mcdu.oclMessage.RequestedMach = value;
+                    store.requestedMach = value;
                 } else {
-                    mcdu.oclMessage.RequestedMach = `.${value}`;
+                    store.requestedMach = `.${value}`;
                 }
-                CDUAtcOceanicReq.ShowPage1(mcdu, oclComplete);
+                CDUAtcOceanicReq.ShowPage1(mcdu, store);
             });
         const requestedFlightlevel = new CDU_SingleValueField(mcdu,
             "string",
-            mcdu.oclMessage.RequestedFlightlevel,
+            store.requestedFlightlevel,
             {
                 clearable: true,
                 emptyValue: "_____[color]amber",
@@ -150,49 +181,44 @@ class CDUAtcOceanicReq {
                 isValid: ((value) => value.length >= 3 && value.length <= 5 && /^[0-9()]*$/.test(value))
             },
             (value) => {
-                if (value !== mcdu.oclMessage.RequestedFlightlevel) {
+                if (value !== store.requestedFlightlevel) {
                     if (value.length === 0) {
-                        mcdu.oclMessage.RequestedFlightlevel = "";
+                        store.requestedFlightlevel = "";
                     } else if (value.length > 3) {
-                        mcdu.oclMessage.RequestedFlightlevel = `FL${Math.floor(parseInt(value) / 100)}`;
+                        store.requestedFlightlevel = `FL${Math.floor(parseInt(value) / 100)}`;
                     } else {
-                        mcdu.oclMessage.RequestedFlightlevel = `FL${value}`;
+                        store.requestedFlightlevel = `FL${value}`;
                     }
                 }
-                CDUAtcOceanicReq.ShowPage1(mcdu, oclComplete);
+                CDUAtcOceanicReq.ShowPage1(mcdu, store);
             });
         const freetext = new CDU_SingleValueField(mcdu,
             "string",
-            mcdu.oclMessage.Freetext0,
+            store.freetext[0],
             {
-                clearable: 0 === mcdu.oclMessage.Freetext1.length,
+                clearable: store.freetext[0].length !== 0,
                 emptyValue: "[\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0][color]cyan",
                 suffix: "[color]white",
                 maxLength: 22
             },
             (value) => {
-                mcdu.oclMessage.Freetext0 = value;
-                CDUAtcOceanicReq.ShowPage1(mcdu, oclComplete);
+                store.freetext[0] = value;
+                CDUAtcOceanicReq.ShowPage1(mcdu, store);
             }
         );
 
-        // "1123" is the default ATC flight number
-        if (SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC") !== "1123" && mcdu.flightPlanManager.getOrigin() !== null) {
-            mcdu.oclMessage.Callsign = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC");
-            flightNo = mcdu.oclMessage.Callsign + "[color]green";
+        if (SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC").length !== 0 && mcdu.flightPlanManager.getOrigin() !== null) {
+            flightNo = `${SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC")}[color]green`;
         }
 
-        if (mcdu.atsuManager.atc().currentStation() !== "") {
-            atcStation = `${mcdu.atsuManager.atc().currentStation()}[color]cyan`;
+        if (mcdu.atsuManager.atc.currentStation() !== "") {
+            atcStation = `${mcdu.atsuManager.atc.currentStation()}[color]cyan`;
         }
 
         // check if all required information are available to prepare the PDC message
         let reqDisplButton = "REQ DISPL\xa0[color]cyan";
-        if (mcdu.oclMessage.Callsign !== "" && mcdu.atsuManager.atc().currentStation() !== "" && mcdu.oclMessage.EntryPoint !== "" && mcdu.oclMessage.EntryTime !== "" && mcdu.oclMessage.RequestedMach !== "" && mcdu.oclMessage.RequesteFlightlevel !== "") {
+        if (CDUAtcOceanicReq.CanSendData(mcdu, store)) {
             reqDisplButton = "REQ DISPL*[color]cyan";
-            oclComplete = true;
-        } else {
-            oclComplete = false;
         }
 
         mcdu.setTemplate([
@@ -215,11 +241,7 @@ class CDUAtcOceanicReq {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onRightInput[4] = () => {
-            if (0 !== mcdu.oclMessage.Freetext0.length) {
-                CDUAtcOceanicReq.ShowPage2(mcdu);
-            } else {
-                mcdu.addNewMessage(NXSystemMessages.mandatoryFields);
-            }
+            CDUAtcOceanicReq.ShowPage2(mcdu, store);
         };
 
         mcdu.leftInputDelay[5] = () => {
@@ -233,154 +255,56 @@ class CDUAtcOceanicReq {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onRightInput[5] = () => {
-            if (mcdu.atsuManager.atc().currentStation() === '') {
-                mcdu.addNewMessage(NXFictionalMessages.noAtc);
-                return;
+            if (CDUAtcOceanicReq.CanSendData(mcdu, store)) {
+                mcdu.atsuManager.registerMessage(CDUAtcOceanicReq.CreateMessage(mcdu, store));
+                CDUAtcOceanicReq.ShowPage1(mcdu);
             }
-
-            if (!oclComplete) {
-                mcdu.addNewMessage(NXSystemMessages.mandatoryFields);
-                return;
-            }
-
-            // publish the message
-            mcdu.atsuManager.registerMessage(mcdu.oclMessage);
-            mcdu.oclMessage = undefined;
-
-            CDUAtcOceanicReq.ShowPage1(mcdu, false);
         };
     }
 
-    static ShowPage2(mcdu) {
+    static ShowPage2(mcdu, store) {
         mcdu.clearDisplay();
 
-        const addionalLineTemplate = [
-            ["FREE TEXT"],
-            [""],
-            [""],
-            [""],
-            [""],
-            [""],
-            [""],
-            [""],
-            [""],
-            [""],
-            [""],
-            ["\xa0DEPART REQUEST"],
-            ["<RETURN"]
-        ];
-
-        // find the first empty line
-        let firstEmptyLineIndex = -1;
-        if (0 === mcdu.oclMessage.Freetext5.length) {
-            firstEmptyLineIndex = 4;
-        }
-        if (0 === mcdu.oclMessage.Freetext4.length) {
-            firstEmptyLineIndex = 3;
-        }
-        if (0 === mcdu.oclMessage.Freetext3.length) {
-            firstEmptyLineIndex = 2;
-        }
-        if (0 === mcdu.oclMessage.Freetext2.length) {
-            firstEmptyLineIndex = 1;
-        }
-        if (0 === mcdu.oclMessage.Freetext1.length) {
-            firstEmptyLineIndex = 0;
-        }
-
-        switch (firstEmptyLineIndex) {
-            case -1:
-            case 4:
-                const line4 = new CDU_SingleValueField(mcdu,
-                    "string",
-                    mcdu.oclMessage.Freetext5,
-                    {
-                        clearable: 0 !== mcdu.oclMessage.Freetext5.length,
-                        emptyValue: "[\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0][color]cyan",
-                        suffix: "[color]white",
-                        maxLength: 22
-                    },
-                    (value) => {
-                        mcdu.oclMessage.Freetext5 = value;
-                        CDUAtcOceanicReq.ShowPage2(mcdu);
-                    }
-                );
-                addionalLineTemplate[10] = [line4];
-            case 3:
-                const line3 = new CDU_SingleValueField(mcdu,
-                    "string",
-                    mcdu.oclMessage.Freetext4,
-                    {
-                        clearable: 0 === mcdu.oclMessage.Freetext5.length,
-                        emptyValue: "[\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0][color]cyan",
-                        suffix: "[color]white",
-                        maxLength: 22
-                    },
-                    (value) => {
-                        mcdu.oclMessage.Freetext4 = value;
-                        CDUAtcOceanicReq.ShowPage2(mcdu);
-                    }
-                );
-                addionalLineTemplate[8] = [line3];
-            case 2:
-                const line2 = new CDU_SingleValueField(mcdu,
-                    "string",
-                    mcdu.oclMessage.Freetext3,
-                    {
-                        clearable: 0 === mcdu.oclMessage.Freetext4.length,
-                        emptyValue: "[\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0][color]cyan",
-                        suffix: "[color]white",
-                        maxLength: 22
-                    },
-                    (value) => {
-                        mcdu.oclMessage.Freetext3 = value;
-                        CDUAtcOceanicReq.ShowPage2(mcdu);
-                    }
-                );
-                addionalLineTemplate[6] = [line2];
-            case 1:
-                const line1 = new CDU_SingleValueField(mcdu,
-                    "string",
-                    mcdu.oclMessage.Freetext2,
-                    {
-                        clearable: 0 === mcdu.oclMessage.Freetext3.length,
-                        emptyValue: "[\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0][color]cyan",
-                        suffix: "[color]white",
-                        maxLength: 22
-                    },
-                    (value) => {
-                        mcdu.oclMessage.Freetext2 = value;
-                        CDUAtcOceanicReq.ShowPage2(mcdu);
-                    }
-                );
-                addionalLineTemplate[4] = [line1];
-            default:
-                const line0 = new CDU_SingleValueField(mcdu,
-                    "string",
-                    mcdu.oclMessage.Freetext1,
-                    {
-                        clearable: 0 === mcdu.oclMessage.Freetext2.length,
-                        emptyValue: "[\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0][color]cyan",
-                        suffix: "[color]white",
-                        maxLength: 22
-                    },
-                    (value) => {
-                        mcdu.oclMessage.Freetext1 = value;
-                        CDUAtcOceanicReq.ShowPage2(mcdu);
-                    }
-                );
-                addionalLineTemplate[2] = [line0];
-                break;
+        const freetextLines = [];
+        for (let i = 0; i < 5; ++i) {
+            freetextLines.push(new CDU_SingleValueField(mcdu,
+                "string",
+                store.freetext[i + 1],
+                {
+                    clearable: store.freetext[i + 1].length !== 0,
+                    emptyValue: "[\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0][color]cyan",
+                    suffix: "[color]white",
+                    maxLength: 22
+                },
+                (value) => {
+                    store.freetext[i + 1] = value;
+                    CDUAtcOceanicReq.ShowPage2(mcdu, store);
+                }
+            ));
         }
 
         // define the template
-        mcdu.setTemplate(addionalLineTemplate);
+        mcdu.setTemplate([
+            ["FREE TEXT"],
+            [""],
+            [freetextLines[0]],
+            [""],
+            [freetextLines[1]],
+            [""],
+            [freetextLines[2]],
+            [""],
+            [freetextLines[3]],
+            [""],
+            [freetextLines[4]],
+            ["\xa0OCEANIC REQ"],
+            ["<RETURN"]
+        ]);
 
         mcdu.leftInputDelay[5] = () => {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[5] = () => {
-            CDUAtcOceanicReq.ShowPage1(mcdu);
+            CDUAtcOceanicReq.ShowPage1(mcdu, store);
         };
     }
 }
