@@ -23,13 +23,13 @@ class CDUAtcOceanicReq {
         const retval = new Atsu.OclMessage();
 
         retval.Callsign = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC");
-        retval.OceanicAtc = mcdu.atsuManager.atc.currentStation();
         retval.Destination = mcdu.flightPlanManager.getDestination().ident;
         retval.EntryPoint = data.entryPoint;
         retval.EntryTime = data.entryTime;
         retval.RequestedMach = data.requestedMach;
         retval.RequestedFlightlevel = data.requestedFlightlevel;
         retval.Freetext = data.freetext.filter((n) => n);
+        retval.Station = mcdu.atsuManager.atc.currentStation();
 
         return retval;
     }

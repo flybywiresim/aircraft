@@ -10,8 +10,6 @@ import { AtsuMessageType, AtsuMessageDirection, AtsuMessageSerializationFormat, 
 export class OclMessage extends CpdlcMessage {
     public Callsign = '';
 
-    public OceanicAtc = '';
-
     public Destination = '';
 
     public EntryPoint = '';
@@ -53,7 +51,6 @@ export class OclMessage extends CpdlcMessage {
         super.deserialize(jsonData);
 
         this.Callsign = jsonData.Callsign;
-        this.OceanicAtc = jsonData.OceanicAtc;
         this.Destination = jsonData.Destination;
         this.EntryPoint = jsonData.EntryPoint;
         this.EntryTime = jsonData.EntryTime;
