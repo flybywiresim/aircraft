@@ -129,26 +129,31 @@ class CDUAtcOceanicReq {
             {
                 clearable: true,
                 emptyValue: "_______[color]amber",
-                suffix: "[color]cyan",
-                maxLength: 7
+                suffix: "[color]cyan"
             },
             (value) => {
-                if (value !== store.entryPoint) {
-                    if (value !== "" && CDUAtcOceanicReq.WaypointOnRoute(mcdu, value)) {
-                        store.entryTime = CDUAtcOceanicReq.CalculateEntryPointETA(mcdu, value);
-                        if (store.entryTime !== '') {
-                            entryTime.setValue(store.entryTime);
+                mcdu.waypointType(mcdu, value).then((type) => {
+                    if (type[0] === -1) {
+                        mcdu.addNewMessage(type[1]);
+                    } else if (type[0] === 1) {
+                        mcdu.addNewMessage(NXSystemMessages.formatError);
+                    } else {
+                        store.entryPoint = value;
+                        if (CDUAtcOceanicReq.WaypointOnRoute(mcdu, value)) {
+                            store.entryTime = CDUAtcOceanicReq.CalculateEntryPointETA(mcdu, value);
+                            if (store.entryTime !== "") {
+                                entryTime.setValue(store.entryTime);
+                            } else {
+                                entryTime.clearValue();
+                            }
                         } else {
+                            store.entryTime = "";
                             entryTime.clearValue();
                         }
-                    } else {
-                        store.entryTime = "";
-                        entryTime.clearValue();
                     }
 
-                    store.entryPoint = value;
-                }
-                CDUAtcOceanicReq.ShowPage1(mcdu, store);
+                    CDUAtcOceanicReq.ShowPage1(mcdu, store);
+                });
             }
         );
         const requestedMach = new CDU_SingleValueField(mcdu,
