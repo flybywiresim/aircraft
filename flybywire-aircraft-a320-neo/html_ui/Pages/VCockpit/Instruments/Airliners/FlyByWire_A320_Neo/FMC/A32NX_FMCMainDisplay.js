@@ -169,6 +169,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.climbTransitionGroundAltitude = undefined;
         this.altDestination = undefined;
         this.flightNumber = undefined;
+        SimVar.SetSimVarValue("ATC FLIGHT NUMBER", "string", "", "FMC");
         this.cruiseTemperature = undefined;
         this.taxiFuelWeight = undefined;
         this.blockFuel = undefined;
@@ -176,6 +177,10 @@ class FMCMainDisplay extends BaseAirliners {
         this.zeroFuelWeightMassCenter = undefined;
         this.activeWpIdx = undefined;
         this.efisSymbols = undefined;
+
+        // ATSU data
+        this.atsuManager = undefined;
+        this.pdcMessage = undefined;
     }
 
     Init() {
@@ -494,11 +499,16 @@ class FMCMainDisplay extends BaseAirliners {
         this.climbTransitionGroundAltitude = null;
         this.altDestination = undefined;
         this.flightNumber = undefined;
+        SimVar.SetSimVarValue("ATC FLIGHT NUMBER", "string", "", "FMC");
         this.cruiseTemperature = undefined;
         this.taxiFuelWeight = 0.2;
         this.blockFuel = undefined;
         this.zeroFuelWeight = undefined;
         this.zeroFuelWeightMassCenter = undefined;
+
+        // ATSU data
+        this.atsuManager = new Atsu.AtsuManager(this);
+        this.pdcMessage = undefined;
 
         // Reset SimVars
         SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", NaN);
@@ -1923,19 +1933,17 @@ class FMCMainDisplay extends BaseAirliners {
             return callback(false);
         }
 
-        this.flightNumber = flightNo;
-
         SimVar.SetSimVarValue("ATC FLIGHT NUMBER", "string", flightNo, "FMC").then(() => {
-            NXApi.connectTelex(flightNo)
-                .then(() => {
-                    callback(true);
-                })
-                .catch((err) => {
-                    if (err !== NXApi.disabledError) {
-                        this.addNewMessage(NXFictionalMessages.fltNbrInUse);
+            Atsu.AtsuManager.connectToNetworks()
+                .then((code) => {
+                    if (code !== Atsu.AtsuStatusCodes.Ok) {
+                        SimVar.SetSimVarValue("ATC FLIGHT NUMBER", "string", "", "FMC");
+                        this.addNewAtsuMessage(code);
+                        this.flightNo = "";
                         return callback(false);
                     }
 
+                    this.flightNumber = flightNo;
                     return callback(true);
                 });
         });

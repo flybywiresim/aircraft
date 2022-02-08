@@ -363,7 +363,7 @@ impl EmergencyGeneratorPower for TestGenerator {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::hydraulic::update_iterator::FixedStepLoop;
+    use crate::shared::update_iterator::FixedStepLoop;
     use crate::simulation::test::{SimulationTestBed, TestBed};
     use crate::simulation::{Aircraft, SimulationElement, SimulationElementVisitor};
     use std::time::Duration;

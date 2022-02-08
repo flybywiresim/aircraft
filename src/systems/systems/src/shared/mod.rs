@@ -15,6 +15,7 @@ use uom::si::{
 
 pub mod low_pass_filter;
 pub mod pid;
+pub mod update_iterator;
 
 mod random;
 pub use random::*;
