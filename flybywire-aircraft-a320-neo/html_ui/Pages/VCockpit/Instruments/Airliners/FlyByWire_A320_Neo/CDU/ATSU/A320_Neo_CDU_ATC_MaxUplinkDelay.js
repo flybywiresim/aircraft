@@ -16,7 +16,7 @@ class CDUAtcMaxUplinkDelay {
             [""],
             [""],
             ["\xa0MAX UPLINK DELAY"],
-            ["\xa0NONE[color]cyan"],
+            ["\xa0NONE[color]inop"],
             [""],
             [""],
             ["\xa0ATC MENU"],
