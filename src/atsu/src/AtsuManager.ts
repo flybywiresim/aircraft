@@ -35,7 +35,7 @@ export class AtsuManager {
         }
 
         let retvalAoc = await AocSystem.connect();
-        if (retvalAoc === AtsuStatusCodes.Ok || retvalAoc === AtsuStatusCodes.NoTelexConnection) {
+        if (retvalAoc === AtsuStatusCodes.Ok || retvalAoc === AtsuStatusCodes.TelexDisabled) {
             retvalAoc = AtsuStatusCodes.Ok;
         }
 

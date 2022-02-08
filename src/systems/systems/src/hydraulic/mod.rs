@@ -29,7 +29,6 @@ pub mod electrical_pump_physics;
 pub mod flap_slat;
 pub mod linear_actuator;
 pub mod nose_steering;
-pub mod update_iterator;
 
 pub trait SectionPressure {
     fn pressure(&self) -> Pressure;
