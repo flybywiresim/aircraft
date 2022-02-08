@@ -144,6 +144,7 @@
 1. [ECAM] Add pack abnormally off warnings - @tracernz (Mike)
 1. [ELEC] Fix emergency elec on init in flight wrongly triggering the RAT - @Crocket63
 1. [ATHR] Fix ATHR Speed Undershoot - @IbrahimK42 (IbrahimK42)
+1. [FLIGHTMODEL] Improved pitch stability in turbulence - @aguther (Andreas Guther)
 
 ## 0.7.0
 
