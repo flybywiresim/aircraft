@@ -1935,11 +1935,13 @@ class FMCMainDisplay extends BaseAirliners {
             this.atsuManager.connectToNetworks(flightNo)
                 .then((code) => {
                     if (code !== Atsu.AtsuStatusCodes.Ok) {
+                        SimVar.SetSimVarValue("L:A32NX_MCDU_FLT_NO_SET", "boolean", 0);
                         this.addNewAtsuMessage(code);
                         this.flightNo = "";
                         return callback(false);
                     }
 
+                    SimVar.SetSimVarValue("L:A32NX_MCDU_FLT_NO_SET", "boolean", 1);
                     this.flightNumber = flightNo;
                     return callback(true);
                 });
