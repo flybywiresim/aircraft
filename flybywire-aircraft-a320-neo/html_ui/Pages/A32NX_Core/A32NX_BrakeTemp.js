@@ -52,6 +52,9 @@ class A32NX_BrakeTemp {
     }
     constructor() {
         this.initializedAmbientBrakeTemp = false;
+        this.lastBrakeTemps=[0,0,0,0];
+        const ambientTemperature = Simplane.getAmbientTemperature();
+        this.lastBrakeTemps.fill(ambientTemperature);
     }
 
     init() { }
@@ -74,6 +77,15 @@ class A32NX_BrakeTemp {
                 SimVar.GetSimVarValue("L:A32NX_BRAKE_TEMPERATURE_3", "celsius"),
                 SimVar.GetSimVarValue("L:A32NX_BRAKE_TEMPERATURE_4", "celsius")
             ];
+
+            //Fixes #6670
+            for(let i = 0; i < currentBrakeTemps.length; ++i){
+                const temp=this.lastBrakeTemps[i]-currentBrakeTemps[i];
+                if(temp>50 || temp<-50){
+                    this.initializedAmbientBrakeTemp=false;
+                }
+            }
+
             //temps reported by the thermal probes in the brake assembly
             currentReportedBrakeTemps = [
                 SimVar.GetSimVarValue("L:A32NX_REPORTED_BRAKE_TEMPERATURE_1", "celsius"),
@@ -191,13 +203,14 @@ class A32NX_BrakeTemp {
 
         let brakesHot = 0;
 
-        // Set simvars
+        // Set simvars and record currentBrakeTemps
         for (let i = 0; i < currentBrakeTemps.length; ++i) {
             SimVar.SetSimVarValue(`L:A32NX_BRAKE_TEMPERATURE_${i + 1}`, "celsius", currentBrakeTemps[i]);
             SimVar.SetSimVarValue(`L:A32NX_REPORTED_BRAKE_TEMPERATURE_${i + 1}`, "celsius", currentReportedBrakeTemps[i]);
             if (currentReportedBrakeTemps[i] > 300) {
                 brakesHot = 1;
             }
+            this.lastBrakeTemps[i]=currentBrakeTemps[i];
         }
 
         SimVar.SetSimVarValue("L:A32NX_BRAKES_HOT", "Bool", brakesHot);
