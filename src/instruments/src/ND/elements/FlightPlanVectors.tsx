@@ -25,17 +25,18 @@ export const FlightPlanVectors: FC<FlightPlanVectorsProps> = memo(({ x, y, mapPa
 
     const lineStyle = vectorsGroupLineStyle(group);
 
-    useCoherentEvent(`A32NX_EFIS_VECTORS_${side}_${EfisVectorsGroup[group]}`, useCallback((newVectors: PathVector[], start: number, done: boolean) => {
+    useCoherentEvent(`A32NX_EFIS_VECTORS_${side}_${EfisVectorsGroup[group]}`, useCallback((newVectors: string, start: number, done: boolean) => {
         if (newVectors) {
+            const parsed: PathVector[] = JSON.parse(newVectors);
             setStagingVectors((old) => {
                 const ret = [...old];
 
                 for (let i = start; i < start + newVectors.length; i++) {
-                    ret[i] = newVectors[i - start];
+                    ret[i] = parsed[i - start];
                 }
 
                 if (done) {
-                    const trimAfter = start + newVectors.length;
+                    const trimAfter = start + parsed.length;
 
                     ret.splice(trimAfter);
 
