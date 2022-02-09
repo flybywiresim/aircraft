@@ -52,7 +52,7 @@ class A32NX_BrakeTemp {
     }
     constructor() {
         this.initializedAmbientBrakeTemp = false;
-        this.lastBrakeTemps=[0,0,0,0];
+        this.lastBrakeTemps = [0,0,0,0];
         const ambientTemperature = Simplane.getAmbientTemperature();
         this.lastBrakeTemps.fill(ambientTemperature);
     }
@@ -79,10 +79,10 @@ class A32NX_BrakeTemp {
             ];
 
             //Fixes #6670
-            for(let i = 0; i < currentBrakeTemps.length; ++i){
-                const temp=this.lastBrakeTemps[i]-currentBrakeTemps[i];
-                if(temp>50 || temp<-50){
-                    this.initializedAmbientBrakeTemp=false;
+            for (let i = 0; i < currentBrakeTemps.length; ++i) {
+                const temp = this.lastBrakeTemps[i] - currentBrakeTemps[i];
+                if (temp > 50 || temp < -50) {
+                    this.initializedAmbientBrakeTemp = false;
                 }
             }
 
@@ -210,7 +210,7 @@ class A32NX_BrakeTemp {
             if (currentReportedBrakeTemps[i] > 300) {
                 brakesHot = 1;
             }
-            this.lastBrakeTemps[i]=currentBrakeTemps[i];
+            this.lastBrakeTemps[i] = currentBrakeTemps[i];
         }
 
         SimVar.SetSimVarValue("L:A32NX_BRAKES_HOT", "Bool", brakesHot);
