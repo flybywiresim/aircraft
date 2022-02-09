@@ -22,16 +22,13 @@ const WeatherMap = {
  * Defines the NXApi connector for the AOC system
  */
 export class NXApiConnector {
+    private static flightNumber: string = '';
+
     private static connected: boolean = false;
 
     private static updateCounter: number = 0;
 
     private static createAircraftStatus(): AircraftStatus | undefined {
-        const flightNo = SimVar.GetSimVarValue('ATC FLIGHT NUMBER', 'string');
-        if (flightNo === '') {
-            return undefined;
-        }
-
         const lat = SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude');
         const long = SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude');
         const alt = SimVar.GetSimVarValue('PLANE ALTITUDE', 'feet');
@@ -51,12 +48,12 @@ export class NXApiConnector {
             origin,
             destination,
             freetextEnabled: freetext,
-            flight: flightNo,
+            flight: NXApiConnector.flightNumber,
             aircraftType: acType,
         };
     }
 
-    public static async connect(): Promise<AtsuStatusCodes> {
+    public static async connect(flightNo: string): Promise<AtsuStatusCodes> {
         if (NXDataStore.get('CONFIG_ONLINE_FEATURES_STATUS', 'DISABLED') !== 'ENABLED') {
             return AtsuStatusCodes.TelexDisabled;
         }
@@ -64,6 +61,7 @@ export class NXApiConnector {
         // deactivate old connection
         await NXApiConnector.disconnect();
 
+        NXApiConnector.flightNumber = flightNo;
         const status = NXApiConnector.createAircraftStatus();
         if (status !== undefined) {
             return Telex.connect(status).then((res) => {
@@ -87,6 +85,7 @@ export class NXApiConnector {
         if (NXApiConnector.connected) {
             return Telex.disconnect().then(() => {
                 NXApiConnector.connected = false;
+                NXApiConnector.flightNumber = '';
                 return AtsuStatusCodes.Ok;
             }).catch(() => AtsuStatusCodes.ProxyError);
         }

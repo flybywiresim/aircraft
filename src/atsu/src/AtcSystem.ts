@@ -147,13 +147,15 @@ export class AtcSystem {
         this.unreadMessagesLastCycle = unreadMessages;
     }
 
-    public static async connect(): Promise<AtsuStatusCodes> {
-        const flightNo = SimVar.GetSimVarValue('ATC FLIGHT NUMBER', 'string');
-        return HoppieConnector.isCallsignInUse(flightNo);
+    public async connect(flightNo: string): Promise<AtsuStatusCodes> {
+        if (this.currentAtc !== '') {
+            return this.logoff().then(() => HoppieConnector.connect(flightNo));
+        }
+        return HoppieConnector.connect(flightNo);
     }
 
-    public static async disconnect(): Promise<AtsuStatusCodes> {
-        return AtsuStatusCodes.Ok;
+    public async disconnect(): Promise<AtsuStatusCodes> {
+        return HoppieConnector.disconnect();
     }
 
     public currentStation(): string {
