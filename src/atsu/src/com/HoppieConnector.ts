@@ -16,6 +16,11 @@ export class HoppieConnector {
     private static flightNumber: string = '';
 
     public static async connect(flightNo: string): Promise<AtsuStatusCodes> {
+        if (SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') !== 1) {
+            HoppieConnector.flightNumber = flightNo;
+            return AtsuStatusCodes.NoHoppieConnection;
+        }
+
         return HoppieConnector.isCallsignInUse(flightNo).then((code) => {
             if (code === AtsuStatusCodes.Ok) {
                 HoppieConnector.flightNumber = flightNo;
