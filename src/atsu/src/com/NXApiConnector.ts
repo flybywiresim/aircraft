@@ -7,7 +7,7 @@ import { AtsuStatusCodes } from '../AtsuStatusCodes';
 import { AtsuMessage, AtsuMessageComStatus, AtsuMessageNetwork, AtsuMessageDirection } from '../messages/AtsuMessage';
 import { FreetextMessage } from '../messages/FreetextMessage';
 import { WeatherMessage } from '../messages/WeatherMessage';
-import { AtisMessage } from '../messages/AtisMessage';
+import { AtisMessage, AtisType } from '../messages/AtisMessage';
 
 const WeatherMap = {
     FAA: 'faa',
@@ -134,13 +134,34 @@ export class NXApiConnector {
             }).catch(() => AtsuStatusCodes.ComFailed);
     }
 
-    public static async receiveAtis(icao: string, message: AtisMessage): Promise<AtsuStatusCodes> {
+    public static async receiveAtis(icao: string, type: AtisType, message: AtisMessage): Promise<AtsuStatusCodes> {
         const storedAtisSrc = NXDataStore.get('CONFIG_ATIS_SRC', 'FAA');
 
         await Atis.get(icao, WeatherMap[storedAtisSrc])
             .then((data) => {
-                const newLines = data.combined;
-                message.Reports.push({ airport: icao, report: newLines });
+                let atis = '';
+
+                if (type === AtisType.Arrival) {
+                    if ('arr' in data) {
+                        atis = data.arr;
+                    } else {
+                        atis = data.combined;
+                    }
+                } else if (type === AtisType.Departure) {
+                    if ('dep' in data) {
+                        atis = data.dep;
+                    } else {
+                        atis = data.combined;
+                    }
+                } else {
+                    atis = data.combined;
+                }
+
+                if (!atis || atis === undefined) {
+                    atis = 'D-ATIS NOT AVAILABLE';
+                }
+
+                message.Reports.push({ airport: icao, report: atis });
             }).catch(() => {
                 message.Reports.push({ airport: icao, report: 'D-ATIS NOT AVAILABLE' });
             });
