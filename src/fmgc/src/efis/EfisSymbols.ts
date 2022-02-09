@@ -10,8 +10,8 @@ import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { Geometry } from '@fmgc/guidance/Geometry';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { PathVector, PathVectorType } from '@fmgc/guidance/lnav/PathVector';
-import { Geo } from '@fmgc/utils/Geo';
 import { SegmentType } from '@fmgc/wtsdk';
+import { distanceTo } from 'msfs-geo';
 import { LegType, RunwaySurface, TurnDirection, VorType } from '../types/fstypes/FSEnums';
 import { NearbyFacilities } from './NearbyFacilities';
 
@@ -462,7 +462,7 @@ export class EfisSymbols {
 
         if (vector.type === PathVectorType.Arc) {
             symbol.arcEnd = vector.endPoint;
-            symbol.arcRadius = Geo.getDistance(vector.startPoint, vector.centrePoint);
+            symbol.arcRadius = distanceTo(vector.startPoint, vector.centrePoint);
             symbol.arcSweepAngle = vector.sweepAngle;
         }
 

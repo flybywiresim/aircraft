@@ -3,8 +3,8 @@ import { Layer } from '@instruments/common/utils';
 import { DebugPointColour, PathVector, PathVectorType } from '@fmgc/guidance/lnav/PathVector';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { EfisSide, EfisVectorsGroup } from '@shared/NavigationDisplay';
-import { Geo } from '@fmgc/utils/Geo';
 import { useCoherentEvent } from '@instruments/common/hooks';
+import { distanceTo } from 'msfs-geo';
 import { MapParameters } from '../utils/MapParameters';
 
 export interface FlightPlanVectorsProps {
@@ -76,7 +76,7 @@ export const FlightPlanVectors: FC<FlightPlanVectorsProps> = memo(({ x, y, mapPa
                     const [ix, iy] = mapParams.coordinatesToXYy(vector.startPoint);
                     const [fx, fy] = mapParams.coordinatesToXYy(vector.endPoint);
 
-                    const radius = Geo.getDistance(vector.centrePoint, vector.endPoint) * mapParams.nmToPx;
+                    const radius = distanceTo(vector.centrePoint, vector.endPoint) * mapParams.nmToPx;
 
                     return (
                         <path

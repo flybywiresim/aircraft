@@ -1,4 +1,8 @@
-import { AltitudeConstraint, SpeedConstraint } from '@fmgc/guidance/lnav/legs/index';
+// Copyright (c) 2021-2022 FlyByWire Simulations
+// Copyright (c) 2021-2022 Synaptic Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { Guidable } from '@fmgc/guidance/Guidable';
 import { SegmentType } from '@fmgc/flightplanning/FlightPlanSegment';
@@ -7,10 +11,12 @@ import { XFLeg } from '@fmgc/guidance/lnav/legs/XF';
 import { PathVector } from '@fmgc/guidance/lnav/PathVector';
 import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
 import { Transition } from '@fmgc/guidance/lnav/Transition';
+import { LegMetadata } from '@fmgc/guidance/lnav/legs/index';
 
 export class IFLeg extends XFLeg {
     constructor(
         fix: WayPoint,
+        public readonly metadata: Readonly<LegMetadata>,
         segment: SegmentType,
     ) {
         super(fix);
@@ -40,10 +46,6 @@ export class IFLeg extends XFLeg {
         this.nextGuidable = nextGuidable as Leg;
 
         this.isComputed = true;
-    }
-
-    get altitudeConstraint(): AltitudeConstraint | undefined {
-        return undefined;
     }
 
     get inboundCourse(): Degrees | undefined {
@@ -76,10 +78,6 @@ export class IFLeg extends XFLeg {
 
     isAbeam(_ppos: Coordinates): boolean {
         return false;
-    }
-
-    get speedConstraint(): SpeedConstraint | undefined {
-        return undefined;
     }
 
     get repr(): string {

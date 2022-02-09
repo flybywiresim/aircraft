@@ -3,7 +3,6 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { AltitudeConstraint, SpeedConstraint } from '@fmgc/guidance/lnav/legs/index';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { Guidable } from '@fmgc/guidance/Guidable';
 import { SegmentType } from '@fmgc/flightplanning/FlightPlanSegment';
@@ -13,10 +12,10 @@ import { Geo } from '@fmgc/utils/Geo';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
 import { IFLeg } from '@fmgc/guidance/lnav/legs/IF';
-import { TurnDirection } from '@fmgc/types/fstypes/FSEnums';
 import { FixedRadiusTransition } from '@fmgc/guidance/lnav/transitions/FixedRadiusTransition';
 import { DmeArcTransition } from '@fmgc/guidance/lnav/transitions/DmeArcTransition';
 import { distanceTo } from 'msfs-geo';
+import { LegMetadata } from '@fmgc/guidance/lnav/legs/index';
 import { PathVector, PathVectorType } from '../PathVector';
 
 export class CILeg extends Leg {
@@ -25,13 +24,12 @@ export class CILeg extends Leg {
     constructor(
         public readonly course: DegreesTrue,
         public readonly nextLeg: Leg,
+        public readonly metadata: Readonly<LegMetadata>,
         segment: SegmentType,
-        constrainedTurnDirection = TurnDirection.Unknown,
     ) {
         super();
 
         this.segment = segment;
-        this.constrainedTurnDirection = constrainedTurnDirection;
     }
 
     intercept: Coordinates | undefined = undefined;
@@ -114,20 +112,12 @@ export class CILeg extends Leg {
         }
     }
 
-    get altitudeConstraint(): AltitudeConstraint | undefined {
-        return undefined;
-    }
-
     get inboundCourse(): Degrees {
         return this.course;
     }
 
     get outboundCourse(): Degrees {
         return this.course;
-    }
-
-    get distance(): NauticalMiles {
-        return Geo.getDistance(this.getPathStartPoint(), this.getPathEndPoint());
     }
 
     get distanceToTermination(): NauticalMiles {
@@ -159,10 +149,6 @@ export class CILeg extends Leg {
         const dtg = courseToFixDistanceToGo(ppos, this.course, this.getPathEndPoint());
 
         return dtg >= 0 && dtg <= this.distance;
-    }
-
-    get speedConstraint(): SpeedConstraint | undefined {
-        return undefined;
     }
 
     get repr(): string {

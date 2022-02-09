@@ -4,7 +4,6 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
-import { TurnDirection } from '@fmgc/types/fstypes/FSEnums';
 import { FixedRadiusTransition } from '@fmgc/guidance/lnav/transitions/FixedRadiusTransition';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { Guidable } from '@fmgc/guidance/Guidable';
@@ -17,8 +16,6 @@ export abstract class XFLeg extends Leg {
         public fix: WayPoint,
     ) {
         super();
-
-        this.constrainedTurnDirection = fix.turnDirection;
     }
 
     protected inboundGuidable: Guidable | undefined;
@@ -45,14 +42,8 @@ export abstract class XFLeg extends Leg {
         return this.fix.ident;
     }
 
-    constrainedTurnDirection = TurnDirection.Unknown;
-
-    get forcedTurnDirection(): TurnDirection {
-        return this.fix.turnDirection ?? TurnDirection.Either;
-    }
-
     get overflyTermFix(): boolean {
-        return this.fix.additionalData.overfly ?? false;
+        return this.metadata.isOverfly;
     }
 
     /**

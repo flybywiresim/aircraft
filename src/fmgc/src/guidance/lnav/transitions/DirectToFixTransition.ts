@@ -1,3 +1,8 @@
+// Copyright (c) 2021-2022 FlyByWire Simulations
+// Copyright (c) 2021-2022 Synaptic Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { MathUtils } from '@shared/MathUtils';
 import { CALeg } from '@fmgc/guidance/lnav/legs/CA';
 import { CFLeg } from '@fmgc/guidance/lnav/legs/CF';
@@ -8,13 +13,13 @@ import { VMLeg } from '@fmgc/guidance/lnav/legs/VM';
 import { Transition } from '@fmgc/guidance/lnav/Transition';
 import { GuidanceParameters, LateralPathGuidance } from '@fmgc/guidance/ControlLaws';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
-import { Geo } from '@fmgc/utils/Geo';
 import { Constants } from '@shared/Constants';
 import { Geometry } from '@fmgc/guidance/Geometry';
 import { PathVector, PathVectorType } from '@fmgc/guidance/lnav/PathVector';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { TurnDirection } from '@fmgc/types/fstypes/FSEnums';
 import { Guidable } from '@fmgc/guidance/Guidable';
+import { bearingTo, distanceTo, placeBearingDistance } from 'msfs-geo';
 import { CILeg } from '../legs/CI';
 import {
     arcDistanceToGo,
@@ -119,7 +124,7 @@ export class DirectToFixTransition extends Transition {
 
         this.radius = (gs ** 2 / (Constants.G * tan(maxBank(tas, true))) / 6997.84) * LnavConfig.TURN_RADIUS_FACTOR;
 
-        let trackChange = MathUtils.diffAngle(this.previousLeg.outboundCourse, Geo.getGreatCircleBearing(this.previousLeg.getPathEndPoint(), nextFix), this.nextLeg.constrainedTurnDirection);
+        let trackChange = MathUtils.diffAngle(this.previousLeg.outboundCourse, bearingTo(this.previousLeg.getPathEndPoint(), nextFix), this.nextLeg.metadata.turnDirection);
         if (Math.abs(trackChange) < 3) {
             this.revertedTransition = null;
         }
@@ -131,14 +136,13 @@ export class DirectToFixTransition extends Transition {
         const rollAngleChange = Math.abs(turnDirectionSign * maxBank(tas, true) - currentRollAngle);
         const rollAnticipationDistance = Geometry.getRollAnticipationDistance(gs, 0, rollAngleChange);
 
-        let itp = rollAnticipationDistance < 0.05 ? termFix
-            : Geo.computeDestinationPoint(termFix, rollAnticipationDistance, this.previousLeg.outboundCourse);
-        let turnCentre = Geo.computeDestinationPoint(itp, this.radius, this.previousLeg.outboundCourse + turnDirectionSign * 90);
+        let itp = rollAnticipationDistance >= 0.05 ? placeBearingDistance(termFix, this.previousLeg.outboundCourse, rollAnticipationDistance) : termFix;
+        let turnCentre = placeBearingDistance(itp, this.previousLeg.outboundCourse + turnDirectionSign * 90, this.radius);
 
-        let distanceToFix = Geo.getDistance(turnCentre, nextFix);
+        let distanceToFix = distanceTo(turnCentre, nextFix);
 
         if (distanceToFix < this.radius) {
-            if (Math.abs(MathUtils.diffAngle(this.previousLeg.outboundCourse, Geo.getGreatCircleBearing(termFix, nextFix), this.nextLeg.constrainedTurnDirection)) < 60) {
+            if (Math.abs(MathUtils.diffAngle(this.previousLeg.outboundCourse, bearingTo(termFix, nextFix), this.nextLeg.metadata.turnDirection)) < 60) {
                 this.revertedTransition = null;
 
                 this.hasArc = false;
@@ -157,7 +161,7 @@ export class DirectToFixTransition extends Transition {
                     this.predictedPath.push(...this.getPathDebugPoints());
                 }
 
-                this.straightCourse = Geo.getGreatCircleBearing(this.lineStartPoint, this.lineEndPoint);
+                this.straightCourse = bearingTo(this.lineStartPoint, this.lineEndPoint);
 
                 this.isComputed = true;
 
@@ -165,18 +169,18 @@ export class DirectToFixTransition extends Transition {
             }
 
             // FIXME this is a hack... need to verify real Honeywell behaviour
-            itp = Avionics.Utils.bearingDistanceToCoordinates(this.previousLeg.outboundCourse, this.radius, termFix.lat, termFix.long);
-            turnCentre = Geo.computeDestinationPoint(itp, this.radius, this.previousLeg.outboundCourse + turnDirectionSign * 90);
-            distanceToFix = Geo.getDistance(turnCentre, nextFix);
+            itp = placeBearingDistance(termFix, this.previousLeg.outboundCourse, this.radius);
+            turnCentre = placeBearingDistance(itp, this.previousLeg.outboundCourse + turnDirectionSign * 90, this.radius);
+            distanceToFix = distanceTo(turnCentre, nextFix);
         }
 
-        const bearingTcItp = Geo.getGreatCircleBearing(turnCentre, itp);
-        const bearingTcFix = Geo.getGreatCircleBearing(turnCentre, nextFix);
+        const bearingTcItp = bearingTo(turnCentre, itp);
+        const bearingTcFix = bearingTo(turnCentre, nextFix);
         const angleFtpFix = acos(this.radius / distanceToFix);
 
         trackChange = MathUtils.diffAngle(bearingTcItp, MathUtils.diffAngle(turnDirectionSign * angleFtpFix, bearingTcFix), turnDirection);
 
-        const ftp = Geo.computeDestinationPoint(turnCentre, this.radius, this.previousLeg.outboundCourse + trackChange - 90 * turnDirectionSign);
+        const ftp = placeBearingDistance(turnCentre, this.previousLeg.outboundCourse + trackChange - 90 * turnDirectionSign, this.radius);
 
         this.lineStartPoint = this.previousLeg.getPathEndPoint();
         this.lineEndPoint = itp;
@@ -206,7 +210,7 @@ export class DirectToFixTransition extends Transition {
             this.predictedPath.push(...this.getPathDebugPoints());
         }
 
-        this.straightCourse = Geo.getGreatCircleBearing(this.lineStartPoint, this.lineEndPoint);
+        this.straightCourse = bearingTo(this.lineStartPoint, this.lineEndPoint);
 
         this.isComputed = true;
     }
@@ -257,7 +261,7 @@ export class DirectToFixTransition extends Transition {
         let dtg = 0;
 
         if (this.state === DirectToFixTransitionGuidanceState.Straight) {
-            const straightDist = Geo.getDistance(this.lineStartPoint, this.lineEndPoint);
+            const straightDist = distanceTo(this.lineStartPoint, this.lineEndPoint);
             const straightDtg = courseToFixDistanceToGo(ppos, this.straightCourse, this.lineEndPoint);
 
             dtg += straightDtg;
@@ -281,7 +285,7 @@ export class DirectToFixTransition extends Transition {
     }
 
     get distance(): NauticalMiles {
-        const straightDistance = Geo.getDistance(this.lineStartPoint, this.lineEndPoint);
+        const straightDistance = distanceTo(this.lineStartPoint, this.lineEndPoint);
 
         if (this.hasArc) {
             const circumference = 2 * Math.PI * this.radius;

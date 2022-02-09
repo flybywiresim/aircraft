@@ -121,8 +121,8 @@ export class FixedRadiusTransition extends Transition {
         );
 
         const defaultTurnDirection = this.sweepAngle >= 0 ? TurnDirection.Right : TurnDirection.Left;
-        const forcedTurn = (this.nextLeg.constrainedTurnDirection === TurnDirection.Left || this.nextLeg.constrainedTurnDirection === TurnDirection.Right)
-            && defaultTurnDirection !== this.nextLeg.constrainedTurnDirection;
+        const forcedTurn = (this.nextLeg.metadata.turnDirection === TurnDirection.Left || this.nextLeg.metadata.turnDirection === TurnDirection.Right)
+            && defaultTurnDirection !== this.nextLeg.metadata.turnDirection;
         const tooBigForPrevious = this.previousLeg.distanceToTermination < this.tad + 0.1;
         const tooBigForNext = 'from' in this.nextLeg ? distanceTo(this.nextLeg.from.infos.coordinates, this.nextLeg.to.infos.coordinates) < this.tad + 0.1 : false;
         const notLinedUp = Math.abs(prevLegTermDistanceToNextLeg) >= 0.25; // "reasonable" distance

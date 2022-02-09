@@ -3,17 +3,17 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { AltitudeConstraint, SpeedConstraint } from '@fmgc/guidance/lnav/legs/index';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { Guidable } from '@fmgc/guidance/Guidable';
 import { SegmentType } from '@fmgc/flightplanning/FlightPlanSegment';
 import { GuidanceParameters } from '@fmgc/guidance/ControlLaws';
-import { Geo } from '@fmgc/utils/Geo';
 import { XFLeg } from '@fmgc/guidance/lnav/legs/XF';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { courseToFixDistanceToGo, courseToFixGuidance } from '@fmgc/guidance/lnav/CommonGeometry';
 import { Transition } from '@fmgc/guidance/lnav/Transition';
 import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
+import { bearingTo } from 'msfs-geo';
+import { LegMetadata } from '@fmgc/guidance/lnav/legs/index';
 import { PathVector, PathVectorType } from '../PathVector';
 
 export class DFLeg extends XFLeg {
@@ -21,6 +21,7 @@ export class DFLeg extends XFLeg {
 
     constructor(
         fix: WayPoint,
+        public readonly metadata: Readonly<LegMetadata>,
         segment: SegmentType,
     ) {
         super(fix);
@@ -92,16 +93,12 @@ export class DFLeg extends XFLeg {
         this.isComputed = true;
     }
 
-    get altitudeConstraint(): AltitudeConstraint | undefined {
-        return undefined;
-    }
-
     get inboundCourse(): Degrees {
-        return Geo.getGreatCircleBearing(this.start, this.fix.infos.coordinates);
+        return bearingTo(this.start, this.fix.infos.coordinates);
     }
 
     get outboundCourse(): Degrees {
-        return Geo.getGreatCircleBearing(this.start, this.fix.infos.coordinates);
+        return bearingTo(this.start, this.fix.infos.coordinates);
     }
 
     getDistanceToGo(ppos: Coordinates): NauticalMiles {
@@ -118,10 +115,6 @@ export class DFLeg extends XFLeg {
 
     isAbeam(_ppos: Coordinates): boolean {
         return false;
-    }
-
-    get speedConstraint(): SpeedConstraint | undefined {
-        return undefined;
     }
 
     get repr(): string {
