@@ -9,6 +9,7 @@ import { PathVector, pathVectorLength, pathVectorValid } from '@fmgc/guidance/ln
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { LateralMode } from '@shared/autopilot';
 import { TaskCategory } from '@fmgc/guidance/TaskQueue';
+import stringify from 'safe-stable-stringify';
 
 const TRANSMIT_GROUP_SIZE = 4;
 
@@ -155,7 +156,7 @@ export class EfisVectors {
                 for (let i = 0; i < numGroups; i++) {
                     this.listener.triggerToAllSubscribers(
                         `A32NX_EFIS_VECTORS_${side}_${EfisVectorsGroup[vectorsGroup]}`,
-                        vectors.slice(i * TRANSMIT_GROUP_SIZE, (i + 1) * TRANSMIT_GROUP_SIZE),
+                        stringify(vectors.slice(i * TRANSMIT_GROUP_SIZE, (i + 1) * TRANSMIT_GROUP_SIZE)),
                         i * TRANSMIT_GROUP_SIZE,
                     );
                     if (LnavConfig.DEBUG_PATH_DRAWING) {
@@ -168,7 +169,7 @@ export class EfisVectors {
 
                 this.listener.triggerToAllSubscribers(
                     `A32NX_EFIS_VECTORS_${side}_${EfisVectorsGroup[vectorsGroup]}`,
-                    vectors.slice(lastStartIndex, vectors.length),
+                    stringify(vectors.slice(lastStartIndex, vectors.length)),
                     lastStartIndex,
                     true,
                 );
