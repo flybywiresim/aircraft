@@ -139,7 +139,7 @@ export class NXApiConnector {
 
         await Atis.get(icao, WeatherMap[storedAtisSrc])
             .then((data) => {
-                let atis = '';
+                let atis = undefined;
 
                 if (type === AtisType.Arrival) {
                     if ('arr' in data) {
@@ -153,7 +153,7 @@ export class NXApiConnector {
                     } else {
                         atis = data.combined;
                     }
-                } else {
+                } else if ('combined' in data) {
                     atis = data.combined;
                 }
 
