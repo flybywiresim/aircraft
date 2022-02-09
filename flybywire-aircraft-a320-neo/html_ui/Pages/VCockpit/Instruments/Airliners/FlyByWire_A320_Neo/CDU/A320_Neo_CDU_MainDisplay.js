@@ -194,12 +194,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.onRightFunction = (f) => this.onLsk(this.onRightInput[f], this.rightInputDelay[f]);
 
         const flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string");
-        Atsu.AtsuManager.connectToNetworks()
-            .then((code) => {
-                if (code !== Atsu.AtsuStatusCodes.Ok) {
-                    this.addNewAtsuMessage(code);
-                }
-            });
 
         this.onDir = () => {
             CDUDirectToPage.ShowPage(this);
