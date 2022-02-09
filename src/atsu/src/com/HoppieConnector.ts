@@ -77,10 +77,6 @@ export class HoppieConnector {
     }
 
     private static async sendMessage(message: AtsuMessage, type: string): Promise<AtsuStatusCodes> {
-        if (SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') !== 1) {
-            return AtsuStatusCodes.NoHoppieConnection;
-        }
-
         const flightNo = SimVar.GetSimVarValue('ATC FLIGHT NUMBER', 'string');
         if (flightNo.length === 0) {
             return AtsuStatusCodes.ComFailed;
