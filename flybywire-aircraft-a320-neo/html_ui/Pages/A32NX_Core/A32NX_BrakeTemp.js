@@ -52,7 +52,7 @@ class A32NX_BrakeTemp {
     }
     constructor() {
         this.initializedAmbientBrakeTemp = false;
-        this.lastBrakeTemps = [0,0,0,0];
+        this.lastBrakeTemps = [0, 0, 0, 0];
         const ambientTemperature = Simplane.getAmbientTemperature();
         this.lastBrakeTemps.fill(ambientTemperature);
     }
@@ -78,10 +78,9 @@ class A32NX_BrakeTemp {
                 SimVar.GetSimVarValue("L:A32NX_BRAKE_TEMPERATURE_4", "celsius")
             ];
 
-            //Fixes #6670
             for (let i = 0; i < currentBrakeTemps.length; ++i) {
-                const temp = this.lastBrakeTemps[i] - currentBrakeTemps[i];
-                if (temp > 50 || temp < -50) {
+                const deltaTemp = this.lastBrakeTemps[i] - currentBrakeTemps[i];
+                if (Math.abs(deltaTemp) > 50) {
                     this.initializedAmbientBrakeTemp = false;
                 }
             }
