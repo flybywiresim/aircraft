@@ -14,6 +14,8 @@ import { AtsuTimestamp } from './messages/AtsuTimestamp';
 export class AtsuManager {
     private datalink = new Datalink(this);
 
+    private fltNo: string = '';
+
     private messageCounter = 0;
 
     public aoc = new AocSystem(this.datalink);
@@ -65,6 +67,10 @@ export class AtsuManager {
             return retvalAoc;
         }
         return retvalAtc;
+    }
+
+    public flightNumber(): string {
+        return this.fltNo;
     }
 
     public async sendMessage(message: AtsuMessage): Promise<AtsuStatusCodes> {

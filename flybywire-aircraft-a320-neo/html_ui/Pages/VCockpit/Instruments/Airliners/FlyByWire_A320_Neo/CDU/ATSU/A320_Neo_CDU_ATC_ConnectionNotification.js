@@ -22,8 +22,8 @@ class CDUAtcConnectionNotification {
             atcStation = `${store["atcCenter"]}[color]cyan`;
             atcStationAvail = true;
         }
-        if (mcdu.flightPlanManager.getOrigin() !== null && SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC").length !== 0) {
-            flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC") + "[color]green";
+        if (mcdu.flightPlanManager.getOrigin() !== null && mcdu.atsuManager.flightNumber().length !== 0) {
+            flightNo = mcdu.atsuManager.flightNumber() + "[color]green";
             flightNoAvail = true;
         }
         if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident) {
@@ -94,7 +94,7 @@ class CDUAtcConnectionNotification {
             store["loginState"] = 0;
             if (value.length !== 4 || /^[A-Z()]*$/.test(value) === false) {
                 mcdu.addNewMessage(NXSystemMessages.formatError);
-            } else if (SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC").length === 0) {
+            } else if (mcdu.atsuManager.flightNumber().length === 0) {
                 mcdu.addNewMessage(NXFictionalMessages.fltNbrMissing);
             } else {
                 store["atcCenter"] = "";
