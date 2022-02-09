@@ -30,14 +30,14 @@ class CDUAocRequestsAtis {
 
         let sendMessage = "SEND*[color]cyan";
         const icao = store["arpt1"] !== "" ? store["arpt1"] : store["arrIcao"];
-        if (icao.length !== 4 || /^[A-Z()]*$/.test(icao) === false) {
+        if (!icao || icao === undefined || icao.length !== 4 || /^[A-Z()]*$/.test(icao) === false) {
             sendMessage = "SEND\xa0[color]cyan";
         }
 
         let arrText;
-        if (store.arpt1 !== "") {
+        if (store.arpt1 && store.arpt1 !== undefined && store.arpt1 !== "") {
             arrText = store.arpt1;
-        } else if (store.arrIcao !== "") {
+        } else if (store.arrIcao && store.arrIcao !== undefined && store.arrIcao !== "") {
             arrText = store.arrIcao + "[s-text]";
         } else {
             arrText = "[ ]";
