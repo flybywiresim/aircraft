@@ -4636,7 +4636,6 @@
                 <NODE_ID>KNOB_CHRONO_GPS</NODE_ID>
             </UseTemplate>
 
-            <!-- Should be springloaded in the 3rd position, not sure how to do that. -->
             <Component ID="KNOB_CHRONO_RUN" Node="KNOB_CHRONO_RUN">
                 <UseTemplate Name="ASOBO_GT_Knob_Finite_Code">
                     <NODE_ID>KNOB_CHRONO_RUN</NODE_ID>
@@ -4653,6 +4652,23 @@
                         (L:A32NX_CHRONO_ET_SWITCH_POS, number) 1 - 0 max (&gt;L:A32NX_CHRONO_ET_SWITCH_POS, number)
                         (&gt;H:A32NX_CHRONO_ET_POS_CHANGED)
                     </ANTICLOCKWISE_CODE>
+                    <ANIMTIP_0>%((L:A32NX_CHRONO_ET_SWITCH_POS, number) 0 == )%{if}STOP CHRONO% %{else}RESET CHRONO%</ANIMTIP_0>
+                    <ANIMTIP_0_ON_CURSOR>TurnRight</ANIMTIP_0_ON_CURSOR>
+                    <ANIMTIP_1>%((L:A32NX_CHRONO_ET_SWITCH_POS, number) 2 == )%{if}STOP CHRONO% %{else}RUN CHRONO%</ANIMTIP_1>
+                    <ANIMTIP_1_ON_CURSOR>TurnLeft</ANIMTIP_1_ON_CURSOR>
+                </UseTemplate>
+                <UseTemplate Name="ASOBO_GT_Update">
+                    <FREQUENCY>10</FREQUENCY>
+                    <UPDATE_CODE>
+                        (L:A32NX_CHRONO_ET_SWITCH_POS, number) 2 == if{
+                            (O:A32NX_CHRONO_MOMENTARY) 1 + (&gt;O:A32NX_CHRONO_MOMENTARY)
+                        }
+                            els{ 0 (&gt;O:A32NX_CHRONO_MOMENTARY)
+                            }
+                        (O:A32NX_CHRONO_MOMENTARY) 10 &gt; if{
+                            1 (&gt;L:A32NX_CHRONO_ET_SWITCH_POS, number)
+                        }
+                    </UPDATE_CODE>
                 </UseTemplate>
             </Component>
 
