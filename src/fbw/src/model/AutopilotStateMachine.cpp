@@ -3969,6 +3969,7 @@ void AutopilotStateMachineModelClass::step()
     AutopilotStateMachine_U.in.data.is_engine_operative_2;
   AutopilotStateMachine_B.BusAssignment_g.data.altimeter_setting_changed =
     AutopilotStateMachine_DWork.DelayInput1_DSTATE_o;
+  AutopilotStateMachine_B.BusAssignment_g.data.total_weight_kg = AutopilotStateMachine_U.in.data.total_weight_kg;
   AutopilotStateMachine_B.BusAssignment_g.data_computed.time_since_touchdown = rtb_dme;
   AutopilotStateMachine_B.BusAssignment_g.data_computed.time_since_lift_off = rtb_Saturation1;
   AutopilotStateMachine_B.BusAssignment_g.data_computed.time_since_SRS = AutopilotStateMachine_U.in.time.simulation_time
