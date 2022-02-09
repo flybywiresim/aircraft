@@ -117,8 +117,8 @@ export class NXApiConnector {
 
         return Metar.get(icao, WeatherMap[storedMetarSrc])
             .then((data) => {
-                const newLines = data.metar;
-                message.Reports.push({ airport: icao, report: newLines });
+                const metar = data.metar;
+                message.Reports.push({ airport: icao, report: metar });
                 return AtsuStatusCodes.Ok;
             }).catch(() => AtsuStatusCodes.ComFailed);
     }
@@ -128,8 +128,8 @@ export class NXApiConnector {
 
         return Taf.get(icao, WeatherMap[storedTafSrc])
             .then((data) => {
-                const newLines = data.taf;
-                message.Reports.push({ airport: icao, report: newLines });
+                const taf = data.taf;
+                message.Reports.push({ airport: icao, report: taf });
                 return AtsuStatusCodes.Ok;
             }).catch(() => AtsuStatusCodes.ComFailed);
     }
