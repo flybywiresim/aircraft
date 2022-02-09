@@ -152,8 +152,6 @@ class CDUAtcConnectionNotification {
                     } else {
                         mcdu.addNewAtsuMessage(code);
                     }
-
-                    CDUAtcConnectionNotification.ShowPage(mcdu, store);
                 });
             } else {
                 mcdu.addNewMessage(NXSystemMessages.mandatoryFields);
