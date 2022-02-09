@@ -2537,8 +2537,11 @@ impl CargoDoor {
         cargo_door_controller: &impl HydraulicAssemblyController,
         current_pressure: Pressure,
     ) {
-        self.hydraulic_assembly
-            .update(context, &cargo_door_controller, [current_pressure]);
+        self.hydraulic_assembly.update(
+            context,
+            std::slice::from_ref(cargo_door_controller),
+            [current_pressure],
+        );
         self.is_locked = self.hydraulic_assembly.is_locked();
         self.position = self.hydraulic_assembly.position_normalized();
     }
