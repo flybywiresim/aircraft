@@ -1085,7 +1085,6 @@ mod tests {
     use std::time::Duration;
     use uom::si::{angle::degree, mass::kilogram, pressure::psi};
 
-
     #[derive(PartialEq, Clone, Copy)]
     struct TestHydraulicAssemblyController {
         mode: LinearActuatorMode,
