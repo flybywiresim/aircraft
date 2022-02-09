@@ -86,7 +86,7 @@ class CDUAtcConnectionNotification {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[1] = (value) => {
-            if (store["loginState"] === 1) {
+            if (store["loginState"] === 1 && mcdu.atsuManager.atc.nextStation() !== store["atcCenter"]) {
                 mcdu.addNewMessage(NXSystemMessages.systemBusy);
                 return;
             }
