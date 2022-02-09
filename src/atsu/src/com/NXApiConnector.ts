@@ -153,8 +153,12 @@ export class NXApiConnector {
                     } else {
                         atis = data.combined;
                     }
-                } else if ('combined' in data) {
-                    atis = data.combined;
+                } else if (type === AtisType.Enroute) {
+                    if ('combined' in data) {
+                        atis = data.combined;
+                    } else if ('arr' in data) {
+                        atis = data.arr;
+                    }
                 }
 
                 if (!atis || atis === undefined) {
