@@ -117,10 +117,17 @@ export class NXApiConnector {
 
         return Metar.get(icao, WeatherMap[storedMetarSrc])
             .then((data) => {
-                const metar = data.metar;
+                let metar = data.metar;
+                if (!metar || metar === undefined || metar === '') {
+                    metar = 'NO METAR AVAILABLE';
+                }
+
                 message.Reports.push({ airport: icao, report: metar });
                 return AtsuStatusCodes.Ok;
-            }).catch(() => AtsuStatusCodes.ComFailed);
+            }).catch(() => {
+                message.Reports.push({ airport: icao, report: 'NO METAR AVAILABLE' });
+                return AtsuStatusCodes.Ok;
+            });
     }
 
     public static async receiveTaf(icao: string, message: WeatherMessage): Promise<AtsuStatusCodes> {
@@ -128,10 +135,17 @@ export class NXApiConnector {
 
         return Taf.get(icao, WeatherMap[storedTafSrc])
             .then((data) => {
-                const taf = data.taf;
+                let taf = data.taf;
+                if (!taf || taf === undefined || taf === '') {
+                    taf = 'NO TAF AVAILABLE';
+                }
+
                 message.Reports.push({ airport: icao, report: taf });
                 return AtsuStatusCodes.Ok;
-            }).catch(() => AtsuStatusCodes.ComFailed);
+            }).catch(() => {
+                message.Reports.push({ airport: icao, report: 'NO TAF AVAILABLE' });
+                return AtsuStatusCodes.Ok;
+            });
     }
 
     public static async receiveAtis(icao: string, type: AtisType, message: AtisMessage): Promise<AtsuStatusCodes> {
