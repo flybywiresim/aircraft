@@ -39,6 +39,8 @@ export class WeatherMessage extends AtsuMessage {
                 wordWrap(report.report, 25).forEach((line) => {
                     if (line.startsWith('D-ATIS')) {
                         message += `{amber}${line}{end}\n`;
+                    } else if (line === 'NO METAR AVAILABLE' || line === 'NO TAF AVAILABLE') {
+                        message += `{amber}${line}{end}\n`;
                     } else {
                         message += `{green}${line}{end}\n`;
                     }

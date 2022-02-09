@@ -1,5 +1,5 @@
 class CDUAocRequestsAtis {
-    static ShowPage(mcdu, store = {"reqID": 0, "formatID": 1, "arrIcao": "", "arpt1": "", "sendStatus": ""}) {
+    static ShowPage(mcdu, store = {"reqID": Atsu.AtisType.Arrival, "formatID": 1, "arrIcao": "", "arpt1": "", "sendStatus": ""}) {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.AOCRequestAtis;
         let labelTimeout;
@@ -20,9 +20,9 @@ class CDUAocRequestsAtis {
             store["arrIcao"] = mcdu.flightPlanManager.getDestination().ident;
         }
 
-        if (store.reqID === 0) {
+        if (store.reqID === Atsu.AtisType.Arrival) {
             arrivalText = "ARRIVAL[color]cyan";
-        } else if (store.reqID === 1) {
+        } else if (store.reqID === Atsu.AtisType.Departure) {
             departureText = "DEPARTURE[color]cyan";
         } else {
             enrouteText = "ENROUTE[color]cyan";
@@ -30,14 +30,14 @@ class CDUAocRequestsAtis {
 
         let sendMessage = "SEND*[color]cyan";
         const icao = store["arpt1"] !== "" ? store["arpt1"] : store["arrIcao"];
-        if (icao.length !== 4 || /^[A-Z()]*$/.test(icao) === false) {
+        if (!icao || icao === undefined || icao.length !== 4 || /^[A-Z()]*$/.test(icao) === false) {
             sendMessage = "SEND\xa0[color]cyan";
         }
 
         let arrText;
-        if (store.arpt1 !== "") {
+        if (store.arpt1 && store.arpt1 !== undefined && store.arpt1 !== "") {
             arrText = store.arpt1;
-        } else if (store.arrIcao !== "") {
+        } else if (store.arrIcao && store.arrIcao !== undefined && store.arrIcao !== "") {
             arrText = store.arrIcao + "[s-text]";
         } else {
             arrText = "[ ]";
@@ -78,9 +78,9 @@ class CDUAocRequestsAtis {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[1] = () => {
-            if (store.reqID !== 0) {
+            if (store.reqID !== Atsu.AtisType.Arrival) {
                 store["arpt1"] = store["arrIcao"];
-                store["reqID"] = 0;
+                store["reqID"] = Atsu.AtisType.Arrival;
             }
             CDUAocRequestsAtis.ShowPage(mcdu, store);
         };
@@ -88,9 +88,9 @@ class CDUAocRequestsAtis {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[2] = () => {
-            if (store.reqID !== 1) {
+            if (store.reqID !== Atsu.AtisType.Departure) {
                 store["arpt1"] = store["depIcao"];
-                store["reqID"] = 1;
+                store["reqID"] = Atsu.AtisType.Departure;
             }
             CDUAocRequestsAtis.ShowPage(mcdu, store);
         };
@@ -113,8 +113,8 @@ class CDUAocRequestsAtis {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onRightInput[1] = () => {
-            if (store.reqID !== 2) {
-                store["reqID"] = 2;
+            if (store.reqID !== Atsu.AtisType.Enroute) {
+                store["reqID"] = Atsu.AtisType.Enroute;
             }
             CDUAocRequestsAtis.ShowPage(mcdu, store);
         };
@@ -135,7 +135,7 @@ class CDUAocRequestsAtis {
                 updateView();
             }, 1000);
 
-            mcdu.atsuManager.aoc.receiveAtis(icao).then((retval) => {
+            mcdu.atsuManager.aoc.receiveAtis(icao, store.reqID).then((retval) => {
                 if (retval[0] === Atsu.AtsuStatusCodes.Ok) {
                     mcdu.atsuManager.registerMessage(retval[1]);
                     store["sendStatus"] = "";
