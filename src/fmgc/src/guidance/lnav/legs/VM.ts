@@ -9,7 +9,7 @@ import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
 import { PathVector, PathVectorType } from '@fmgc/guidance/lnav/PathVector';
 import { Guidable } from '@fmgc/guidance/Guidable';
-import { TurnDirection } from '@fmgc/types/fstypes/FSEnums';
+import { LegMetadata } from '@fmgc/guidance/lnav/legs/index';
 
 /**
  * Temporary - better solution is just to have an `InfiniteLine` vector...
@@ -23,12 +23,11 @@ export class VMLeg extends Leg {
     constructor(
         public heading: DegreesMagnetic,
         public course: DegreesTrue,
+        public readonly metadata: Readonly<LegMetadata>,
         segment: SegmentType,
-        constrainedTurnDirection = TurnDirection.Unknown,
     ) {
         super();
         this.segment = segment;
-        this.constrainedTurnDirection = constrainedTurnDirection;
     }
 
     get terminationWaypoint(): WayPoint {
@@ -90,15 +89,6 @@ export class VMLeg extends Leg {
 
     get distanceToTermination(): NauticalMiles {
         return 1;
-    }
-
-    // Manual legs don't have speed constraints
-    get speedConstraint(): undefined {
-        return undefined;
-    }
-
-    get altitudeConstraint(): undefined {
-        return undefined;
     }
 
     // Can't get pseudo-waypoint location without a finite terminator

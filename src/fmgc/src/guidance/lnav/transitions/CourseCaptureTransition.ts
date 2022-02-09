@@ -62,7 +62,7 @@ export class CourseCaptureTransition extends Transition {
     }
 
     get courseVariation(): Degrees {
-        return MathUtils.adjustAngleForTurnDirection(this.deltaTrack, this.nextLeg.constrainedTurnDirection);
+        return MathUtils.adjustAngleForTurnDirection(this.deltaTrack, this.nextLeg.metadata.turnDirection);
     }
 
     public isArc: boolean;

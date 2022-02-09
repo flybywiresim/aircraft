@@ -5,15 +5,17 @@
 
 import { SegmentType } from '@fmgc/flightplanning/FlightPlanSegment';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
-import { AltitudeConstraint, SpeedConstraint } from '@fmgc/guidance/lnav/legs/index';
 import { Guidable } from '@fmgc/guidance/Guidable';
-import { Geo } from '@fmgc/utils/Geo';
+import { distanceTo } from 'msfs-geo';
 import { TurnDirection } from '@fmgc/types/fstypes/FSEnums';
+import { LegMetadata } from '@fmgc/guidance/lnav/legs/index';
 
 export abstract class Leg extends Guidable {
     segment: SegmentType;
 
-    constrainedTurnDirection = TurnDirection.Unknown;
+    abstract readonly metadata: Readonly<LegMetadata>
+
+    constrainedTurnDirection: TurnDirection
 
     abstract get inboundCourse(): Degrees | undefined;
 
@@ -25,10 +27,6 @@ export abstract class Leg extends Guidable {
 
     displayedOnMap: boolean = true
 
-    abstract get speedConstraint(): SpeedConstraint | undefined;
-
-    abstract get altitudeConstraint(): AltitudeConstraint | undefined;
-
     get disableAutomaticSequencing(): boolean {
         return false;
     }
@@ -39,14 +37,10 @@ export abstract class Leg extends Guidable {
     }
 
     get distance(): NauticalMiles {
-        return Geo.getDistance(this.getPathStartPoint(), this.getPathEndPoint());
+        return distanceTo(this.getPathStartPoint(), this.getPathEndPoint());
     }
 
     abstract get distanceToTermination(): NauticalMiles
-
-    get forcedTurnDirection(): TurnDirection {
-        return TurnDirection.Either;
-    }
 
     get overflyTermFix(): boolean {
         return false;

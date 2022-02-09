@@ -21,6 +21,7 @@ import { CRLeg } from '@fmgc/guidance/lnav/legs/CR';
 import { CILeg } from '@fmgc/guidance/lnav/legs/CI';
 import { XFLeg } from '@fmgc/guidance/lnav/legs/XF';
 import { AFLeg } from '@fmgc/guidance/lnav/legs/AF';
+import { legMetadataFromMsfsWaypoint } from '@fmgc/guidance/lnav/legs';
 import { FlightPlanManager, FlightPlans } from '../flightplanning/FlightPlanManager';
 import { Geometry } from './Geometry';
 
@@ -54,20 +55,24 @@ export class GuidanceManager {
         segment: SegmentType,
     ): Leg {
         if (to?.additionalData?.legType === LegType.IF) {
+            const editableData = legMetadataFromMsfsWaypoint(to);
+
             if (prevLeg && prevLeg instanceof XFLeg && !prevLeg.fix.endsInDiscontinuity) {
-                return new TFLeg(prevLeg.fix, to, segment);
+                return new TFLeg(prevLeg.fix, to, editableData, segment);
             }
 
-            return new IFLeg(to, segment);
+            return new IFLeg(to, editableData, segment);
         }
 
         if (!from || !to) {
             return null;
         }
 
+        const metadata = legMetadataFromMsfsWaypoint(to);
+
         if (from.endsInDiscontinuity) {
             if (to?.additionalData.legType === LegType.CF || to?.additionalData.legType === LegType.TF) {
-                return new IFLeg(to, segment);
+                return new IFLeg(to, metadata, segment);
             }
 
             return null;
@@ -75,26 +80,26 @@ export class GuidanceManager {
 
         if (to.additionalData) {
             if (to.additionalData.legType === LegType.AF) {
-                return new AFLeg(to, to.additionalData.navaid, to.additionalData.rho, to.additionalData.theta, to.additionalData.vectorsCourse, segment);
+                return new AFLeg(to, to.additionalData.navaid, to.additionalData.rho, to.additionalData.theta, to.additionalData.vectorsCourse, metadata, segment);
             }
 
             if (to.additionalData.legType === LegType.CF) {
-                return new CFLeg(to, to.additionalData.course, segment);
+                return new CFLeg(to, to.additionalData.course, metadata, segment);
             }
 
             if (to.additionalData.legType === LegType.DF) {
-                return new DFLeg(to, segment);
+                return new DFLeg(to, metadata, segment);
             }
 
             if (to.additionalData.legType === LegType.RF) {
-                return new RFLeg(from, to, to.additionalData.center, segment);
+                return new RFLeg(from, to, to.additionalData.center, metadata, segment);
             }
 
             if (to.additionalData.legType === LegType.CA) {
                 const course = to.additionalData.vectorsCourse;
                 const altitude = to.additionalData.vectorsAltitude;
 
-                return new CALeg(course, altitude, segment, to.turnDirection);
+                return new CALeg(course, altitude, metadata, segment);
             }
 
             if (to.additionalData.legType === LegType.CI || to.additionalData.legType === LegType.VI) {
@@ -104,7 +109,7 @@ export class GuidanceManager {
 
                 const course = to.additionalData.vectorsCourse;
 
-                return new CILeg(course, nextLeg, segment, to.turnDirection);
+                return new CILeg(course, nextLeg, metadata, segment);
             }
 
             if (to.additionalData.legType === LegType.CR) {
@@ -115,27 +120,27 @@ export class GuidanceManager {
 
                 const originObj = { coordinates: { lat: origin.lat, long: origin.lon }, ident: origin.icao.substring(7, 12).trim(), theta };
 
-                return new CRLeg(course, originObj, radial, segment, to.turnDirection);
+                return new CRLeg(course, originObj, radial, metadata, segment);
             }
 
             if (to.additionalData?.legType === LegType.HA) {
-                return new HALeg(to, segment);
+                return new HALeg(to, metadata, segment);
             }
 
             if (to.additionalData?.legType === LegType.HF) {
-                return new HFLeg(to, segment);
+                return new HFLeg(to, metadata, segment);
             }
 
             if (to.additionalData?.legType === LegType.HM) {
-                return new HMLeg(to, segment);
+                return new HMLeg(to, metadata, segment);
             }
         }
 
         if (to.isVectors) {
-            return new VMLeg(to.additionalData.vectorsHeading, to.additionalData.vectorsCourse, segment, to.turnDirection);
+            return new VMLeg(to.additionalData.vectorsHeading, to.additionalData.vectorsCourse, metadata, segment);
         }
 
-        return new TFLeg(from, to, segment);
+        return new TFLeg(from, to, metadata, segment);
     }
 
     getLeg(prevLeg: Leg | null, nextLeg: Leg | null, index: number, flightPlanIndex): Leg | null {

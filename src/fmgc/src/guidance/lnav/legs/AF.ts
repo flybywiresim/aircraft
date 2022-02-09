@@ -11,17 +11,11 @@ import { GuidanceParameters } from '@fmgc/guidance/ControlLaws';
 import { Guidable } from '@fmgc/guidance/Guidable';
 import { DmeArcTransition } from '@fmgc/guidance/lnav/transitions/DmeArcTransition';
 import { MathUtils } from '@shared/MathUtils';
-import { Geo } from '@fmgc/utils/Geo';
 import { TurnDirection } from '@fmgc/types/fstypes/FSEnums';
-import {
-    AltitudeConstraint,
-    getAltitudeConstraintFromWaypoint,
-    getSpeedConstraintFromWaypoint,
-    SpeedConstraint,
-} from '@fmgc/guidance/lnav/legs/index';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
-import { distanceTo } from 'msfs-geo';
+import { bearingTo, distanceTo, placeBearingDistance } from 'msfs-geo';
 import { PathCaptureTransition } from '@fmgc/guidance/lnav/transitions/PathCaptureTransition';
+import { LegMetadata } from '@fmgc/guidance/lnav/legs/index';
 import { PathVector, PathVectorType } from '../PathVector';
 
 export class AFLeg extends XFLeg {
@@ -33,6 +27,7 @@ export class AFLeg extends XFLeg {
         private rho: NauticalMiles,
         private theta: NauticalMiles,
         public boundaryRadial: NauticalMiles,
+        public readonly metadata: Readonly<LegMetadata>,
         segment: SegmentType,
     ) {
         super(fix);
@@ -42,20 +37,12 @@ export class AFLeg extends XFLeg {
         this.centre = navaid;
         this.radius = distanceTo(navaid, this.fix.infos.coordinates);
         this.terminationRadial = this.theta;
-        this.bearing = Avionics.Utils.clampAngle(Geo.getGreatCircleBearing(this.centre, this.fix.infos.coordinates) + 90 * this.turnDirectionSign);
-        this.arcStartPoint = Geo.computeDestinationPoint(this.centre, this.radius, this.boundaryRadial);
-        this.arcEndPoint = Geo.computeDestinationPoint(this.centre, this.radius, this.terminationRadial);
+        this.bearing = Avionics.Utils.clampAngle(bearingTo(this.centre, this.fix.infos.coordinates) + 90 * this.turnDirectionSign);
+        this.arcStartPoint = placeBearingDistance(this.centre, this.boundaryRadial, this.radius);
+        this.arcEndPoint = placeBearingDistance(this.centre, this.terminationRadial, this.radius);
 
         this.inboundCourse = this.boundaryRadial + 90 * this.turnDirectionSign;
         this.outboundCourse = this.terminationRadial + 90 * this.turnDirectionSign;
-    }
-
-    get altitudeConstraint(): AltitudeConstraint | undefined {
-        return getAltitudeConstraintFromWaypoint(this.fix);
-    }
-
-    get speedConstraint(): SpeedConstraint | undefined {
-        return getSpeedConstraintFromWaypoint(this.fix);
     }
 
     private previousGuidable: Guidable | undefined
@@ -98,7 +85,7 @@ export class AFLeg extends XFLeg {
         this.previousGuidable = previousGuidable;
         this.nextGuidable = nextGuidable;
 
-        this.sweepAngle = MathUtils.diffAngle(Geo.getGreatCircleBearing(this.centre, this.getPathStartPoint()), Geo.getGreatCircleBearing(this.centre, this.getPathEndPoint()));
+        this.sweepAngle = MathUtils.diffAngle(bearingTo(this.centre, this.getPathStartPoint()), bearingTo(this.centre, this.getPathEndPoint()));
         this.clockwise = this.sweepAngle > 0;
 
         // We do not consider the path capture end point in this class' getPathEndPoint since that causes a race condition with the path capture

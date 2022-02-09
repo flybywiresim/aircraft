@@ -3,11 +3,11 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { computeDestinationPoint as geolibDestPoint, getDistance as geolibDistance, getGreatCircleBearing as geolibBearing } from 'geolib';
+import { computeDestinationPoint as geolibDestPoint } from 'geolib';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { MathUtils } from '@shared/MathUtils';
 import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
-import { smallCircleGreatCircleIntersection } from 'msfs-geo';
+import { bearingTo, distanceTo, placeBearingDistance, smallCircleGreatCircleIntersection } from 'msfs-geo';
 import { AFLeg } from '@fmgc/guidance/lnav/legs/AF';
 
 const sin = (input: Degrees) => Math.sin(input * (Math.PI / 180));
@@ -15,16 +15,6 @@ const sin = (input: Degrees) => Math.sin(input * (Math.PI / 180));
 const asin = (input: Degrees) => Math.asin(input) * (180 / Math.PI);
 
 export class Geo {
-    static getDistance(a: Coordinates, b: Coordinates): NauticalMiles {
-        // FIXME rm -f geolib ?
-        return geolibDistance({ ...a, lon: a.long }, { ...b, lon: b.long }) / 1852;
-    }
-
-    static getGreatCircleBearing(a: Coordinates, b: Coordinates): Degrees {
-        // FIXME rm -f geolib ?
-        return geolibBearing({ ...a, lon: a.long }, { ...b, lon: b.long });
-    }
-
     static computeDestinationPoint(start: Coordinates, distance: NauticalMiles, bearing: DegreesTrue, radius: Metres = 6371000): Coordinates {
         // FIXME rm -f geolib ?
         const a = geolibDestPoint({ ...start, lon: start.long }, distance * 1852, bearing, radius);
@@ -87,12 +77,12 @@ export class Geo {
         const intersections1 = A32NX_Util.bothGreatCircleIntersections(
             from,
             Avionics.Utils.clampAngle(bearing),
-            leg.getPathEndPoint(),
+            'fix' in leg ? leg.fix.infos.coordinates : leg.getPathEndPoint(),
             Avionics.Utils.clampAngle(leg.outboundCourse - 180),
         );
 
-        const d1 = Avionics.Utils.computeGreatCircleDistance(from, intersections1[0]);
-        const d2 = Avionics.Utils.computeGreatCircleDistance(from, intersections1[1]);
+        const d1 = distanceTo(from, intersections1[0]);
+        const d2 = distanceTo(from, intersections1[1]);
 
         // We might call this on legs that do not have a defined start point yet, as it depends on their inbound transition, which is what is passing
         // them in to this function.
@@ -129,12 +119,12 @@ export class Geo {
     }
 
     static placeBearingPlaceDistanceIntercept(bearingPoint: Coordinates, distancePoint: Coordinates, bearing: DegreesTrue, distance: NauticalMiles): Coordinates {
-        const relativeBearing = Geo.getGreatCircleBearing(bearingPoint, distancePoint);
-        const distanceBetween = Geo.getDistance(bearingPoint, distancePoint);
+        const relativeBearing = bearingTo(bearingPoint, distancePoint);
+        const distanceBetween = distanceTo(bearingPoint, distancePoint);
         const angleA = Math.abs(MathUtils.diffAngle(relativeBearing, bearing));
         const angleC = angleA > 90 ? asin(distanceBetween * (sin(angleA) / distance)) : 180 - asin(distanceBetween * (sin(angleA) / distance));
         const angleB = 180 - angleA - angleC;
-        return Geo.computeDestinationPoint(bearingPoint, Math.abs(sin(angleB) * (distance / sin(angleA))), bearing);
+        return placeBearingDistance(bearingPoint, bearing, Math.abs(sin(angleB) * (distance / sin(angleA))));
     }
 
     static doublePlaceBearingIntercept(pointA: Coordinates, pointB: Coordinates, bearingA: DegreesTrue, bearingB: DegreesTrue): Coordinates {
