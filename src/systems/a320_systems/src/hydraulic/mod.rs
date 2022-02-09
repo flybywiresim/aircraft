@@ -60,6 +60,8 @@ use systems::hydraulic::PressureSwitchState;
 mod flaps_computer;
 use flaps_computer::SlatFlapComplex;
 
+mod sfcc;
+
 struct A320HydraulicReservoirFactory {}
 impl A320HydraulicReservoirFactory {
     fn new_green_reservoir(context: &mut InitContext) -> Reservoir {
