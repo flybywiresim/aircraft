@@ -15,15 +15,14 @@ export enum AtsuMessageDirection {
 
 export enum AtsuMessageType {
     Freetext = 0,
-    PDC = 1,
-    METAR = 2,
-    TAF = 3,
-    ATIS = 4,
-    AOC = 5,
-    CPDLC = 6,
-    DCL = 7,
-    OCL = 8,
-    ATC = 9
+    METAR = 1,
+    TAF = 2,
+    ATIS = 3,
+    AOC = 4,
+    CPDLC = 5,
+    DCL = 6,
+    OCL = 7,
+    ATC = 8
 }
 
 export enum AtsuMessageComStatus {
