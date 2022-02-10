@@ -977,7 +977,7 @@ bool FlyByWireInterface::updateSec(double sampleTime, int secIndex) {
   secs[secIndex].discreteInputs.captPriorityTakeoverPressed = false;
   secs[secIndex].discreteInputs.foPriorityTakeoverPressed = false;
 
-  if (secIndex < 3) {
+  if (secIndex < 2) {
     secs[secIndex].analogInputs.capPitchStickPos = 0;
     secs[secIndex].analogInputs.foPitchStickPos = 0;
     secs[secIndex].analogInputs.leftElevatorPos = 0;
