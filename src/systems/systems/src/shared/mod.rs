@@ -19,6 +19,7 @@ pub mod pid;
 mod random;
 pub use random::*;
 pub mod arinc429;
+use arinc429::Arinc429Word;
 
 pub trait ReservoirAirPressure {
     fn green_reservoir_pressure(&self) -> Pressure;
@@ -99,7 +100,7 @@ pub trait LgciuGearExtension {
 pub trait SfccChannel {
     fn receive_signal(&mut self, feedback: &impl FeedbackPositionPickoffUnit);
     fn send_signal(&self) -> bool;
-    fn generate_configuration(&self, context: &UpdateContext, flaps_handle: &impl HandlePositionMemory, adiru: &AirDataInertialReferenceUnit) -> FlapsConf;
+    fn generate_configuration(&self, context: &UpdateContext, flaps_handle: &impl HandlePositionMemory, adiru: &impl AirDataSource) -> FlapsConf;
 }
 
 #[derive(Debug, Copy, Clone, PartialEq)]
@@ -131,7 +132,13 @@ pub trait HandlePositionMemory {
     fn previous_position(&self) -> u8;
 }
 
+pub trait AirDataSource {
+    fn computed_airspeed(&self) -> Arinc429Word<Velocity>;
+    fn alpha(&self) -> Arinc429Word<Angle>;
+}
+
 pub trait LgciuSensors: LgciuWeightOnWheels + LgciuGearExtension {}
+
 pub trait EngineCorrectedN1 {
     fn corrected_n1(&self) -> Ratio;
 }

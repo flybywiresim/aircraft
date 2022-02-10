@@ -1,10 +1,9 @@
-use systems::shared::{FeedbackPositionPickoffUnit, LgciuWeightOnWheels, SfccChannel, FlapsHandle, FlapsConf, HandlePositionMemory};
+use systems::shared::{FeedbackPositionPickoffUnit, LgciuSensors, AirDataSource, SfccChannel, FlapsConf, HandlePositionMemory};
 use systems::navigation::adirs;
 use systems::simulation::{
     InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
     SimulatorWriter, UpdateContext, VariableIdentifier, Write,
 };
-use systems::navigation::adirs::{AirDataInertialReferenceSystem, AirDataInertialReferenceUnit};
 
 use crate::systems::shared::arinc429::{Arinc429Word, SignStatus};
 
@@ -35,6 +34,11 @@ fn demanded_slats_angle_from_conf(flap_conf: FlapsConf) -> Angle {
     }
 }
 
+struct FlapsHandle {
+    handle_position_id: VariableIdentifier,
+    position: u8,
+    previous_position: u8,
+}
 
 impl FlapsHandle {
     fn new(context: &mut InitContext) -> Self {
@@ -82,7 +86,7 @@ impl FlapsChannel {
         }
     }
 
-    pub fn update(&mut self, context: &UpdateContext, flaps_handle: &impl HandlePositionMemory, feedback: &impl FeedbackPositionPickoffUnit, adiru: &AirDataInertialReferenceUnit) {
+    pub fn update(&mut self, context: &UpdateContext, flaps_handle: &impl HandlePositionMemory, feedback: &impl FeedbackPositionPickoffUnit, adiru: &impl AirDataSource) {
 
         self.receive_signal(feedback);
         self.calculated_conf = self.generate_configuration(context,flaps_handle,adiru);
@@ -107,7 +111,7 @@ impl SfccChannel for FlapsChannel {
         &self,
         context: &UpdateContext,
         flaps_handle: &impl HandlePositionMemory,
-        adiru: &AirDataInertialReferenceUnit,
+        adiru: &impl AirDataSource,
     ) -> FlapsConf {
 
         let computed_airspeed: Velocity =
@@ -145,6 +149,8 @@ impl SfccChannel for FlapsChannel {
     }
 }
 
+impl SimulationElement for FlapsChannel {}
+
 
 struct SlatsChannel {
     feedback_angle: Angle,
@@ -177,7 +183,7 @@ impl SlatsChannel {
         }
     }
 
-    pub fn update(&mut self, context: &UpdateContext, flaps_handle: &impl HandlePositionMemory, feedback: &impl FeedbackPositionPickoffUnit, adiru: &AirDataInertialReferenceUnit, is_on_ground: bool) {
+    pub fn update(&mut self, context: &UpdateContext, flaps_handle: &impl HandlePositionMemory, feedback: &impl FeedbackPositionPickoffUnit, adiru: &impl AirDataSource, is_on_ground: bool) {
 
         self.receive_signal(feedback);
         self.is_on_ground = is_on_ground;
@@ -195,7 +201,7 @@ impl SlatsChannel {
         (self.demanded_angle - self.feedback_angle).get::<degree>().abs() < Self::EQUAL_ANGLE_DELTA_DEGREE
     }
 
-    fn alpha_lock_check(&mut self, context: &UpdateContext, flaps_handle: &impl HandlePositionMemory, adiru: &AirDataInertialReferenceUnit) {
+    fn alpha_lock_check(&mut self, context: &UpdateContext, flaps_handle: &impl HandlePositionMemory, adiru: &impl AirDataSource) {
         let airspeed: Velocity =
             match adiru.computed_airspeed().ssm() {
                 SignStatus::NormalOperation => adiru.computed_airspeed().value(),
@@ -241,7 +247,6 @@ impl SlatsChannel {
 
 impl SfccChannel for SlatsChannel {
 
-
     fn receive_signal(&mut self, feedback: &impl FeedbackPositionPickoffUnit) {
         self.feedback_angle = feedback.angle();
     }
@@ -251,9 +256,9 @@ impl SfccChannel for SlatsChannel {
 
     fn generate_configuration(
         &self,
-        context: &UpdateContext,
+        _context: &UpdateContext,
         flaps_handle: &impl HandlePositionMemory,
-        adiru: &AirDataInertialReferenceUnit,
+        adiru: &impl AirDataSource,
     ) -> FlapsConf {
         match (flaps_handle.previous_position(), flaps_handle.position()) {
             (from, to) if to != 0 => FlapsConf::from(to),
@@ -264,6 +269,8 @@ impl SfccChannel for SlatsChannel {
     }
 }
 
+impl SimulationElement for SlatsChannel {}
+
 
 struct SlatsFlapsControlComputer {
     flaps_channel: FlapsChannel,
@@ -272,7 +279,7 @@ struct SlatsFlapsControlComputer {
 }
 
 impl SlatsFlapsControlComputer {
-    pub fn new() -> Self {
+    pub fn new(context: &mut InitContext) -> Self {
         Self {
             flaps_channel: FlapsChannel::new(),
             slats_channel: SlatsChannel::new(),
@@ -281,7 +288,7 @@ impl SlatsFlapsControlComputer {
     }
 
     pub fn update(&mut self, context: &UpdateContext, flaps_handle: &impl HandlePositionMemory,
-        adirus: [&AirDataInertialReferenceUnit; 2], lgciu: &impl LgciuWeightOnWheelsl,
+        adirus: [&impl AirDataSource; 2], lgciu: &impl LgciuSensors,
         flaps_fppu: &impl FeedbackPositionPickoffUnit, slats_fppu: &impl FeedbackPositionPickoffUnit) {
 
         self.is_on_ground = lgciu.left_and_right_gear_compressed(true);
@@ -290,6 +297,42 @@ impl SlatsFlapsControlComputer {
     }
 }
 
+impl SimulationElement for SlatsFlapsControlComputer {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.flaps_channel.accept(visitor);
+        self.slats_channel.accept(visitor);
+        visitor.visit(self);
+    }
+}
+
+struct SlatsFlapsElectronicComplex {
+    sfcc: [SlatsFlapsControlComputer; 2],
+    flaps_handle: FlapsHandle,
+}
+
+impl SlatsFlapsElectronicComplex {
+    pub fn new(context: &mut InitContext) -> Self {
+        Self {
+            sfcc: [SlatsFlapsControlComputer::new(context), SlatsFlapsControlComputer::new(context)],
+            flaps_handle: FlapsHandle::new(context),
+        }
+    }
+
+    pub fn update(&mut self, context: &UpdateContext, adirus: [&impl AirDataSource; 2], lgcius: [&impl LgciuSensors; 2],
+        flaps_fppu: &impl FeedbackPositionPickoffUnit, slats_fppu: &impl FeedbackPositionPickoffUnit) {
+            self.sfcc[0].update(context, &self.flaps_handle, adirus, lgcius[0], flaps_fppu, slats_fppu);
+            self.sfcc[1].update(context, &self.flaps_handle, adirus, lgcius[1], flaps_fppu, slats_fppu);
+        }
+}
+
+impl SimulationElement for SlatsFlapsElectronicComplex {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.flaps_handle.accept(visitor);
+        self.sfcc[0].accept(visitor);
+        self.sfcc[1].accept(visitor);
+        visitor.visit(self);
+    }
+}
 
 #[cfg(test)]
 mod test {

@@ -4,6 +4,7 @@ use crate::{
     shared::{
         arinc429::{Arinc429Word, SignStatus},
         MachNumber,
+        AirDataSource,
     },
     simulation::{
         Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -467,11 +468,13 @@ impl SimulationElement for AirDataInertialReferenceUnit {
     }
 }
 
+#[derive(Clone,Copy)]
 struct AdirsData<T> {
     id: VariableIdentifier,
     value: T,
     ssm: SignStatus,
 }
+
 impl<T: Copy + Default> AdirsData<T> {
     fn new_adr(context: &mut InitContext, number: usize, name: &str) -> Self {
         Self::new(context, OutputDataType::Adr, number, name)
@@ -703,21 +706,38 @@ impl AirDataReference {
         )
     }
 }
+
+impl<T: Copy> From<AdirsData<T>> for Arinc429Word<T> {
+    fn from(data: AdirsData<T>) -> Self {
+        Arinc429Word::new(data.value, data.ssm)
+    }
+}
+
 impl TrueAirspeedSource for AirDataReference {
     fn true_airspeed(&self) -> Arinc429Word<Velocity> {
-        Arinc429Word::new(self.true_airspeed.value(), self.true_airspeed.ssm())
+        self.true_airspeed.into()
     }
 }
 
 impl ComputedAirspeedSource for AirDataReference {
     fn computed_airspeed(&self) -> Arinc429Word<Velocity> {
-        Arinc429Word::new(self.computed_airspeed.value(), self.computed_airspeed.ssm())
+        self.computed_airspeed.into()
     }
 }
 
 impl AlphaSource for AirDataReference {
     fn alpha(&self) -> Arinc429Word<Angle> {
-        Arinc429Word::new(self.alpha.value(), self.alpha.ssm())
+        self.alpha.into()
+    }
+}
+
+impl AirDataSource for AirDataInertialReferenceUnit {
+    fn computed_airspeed(&self) -> Arinc429Word<Velocity> {
+        self.computed_airspeed()
+    }
+
+    fn alpha(&self) -> Arinc429Word<Angle> {
+        self.alpha()
     }
 }
 
