@@ -1583,6 +1583,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
       ROLL_OUT | 34
       SRS | 40
       SRS_GA | 41
+      TCAS | 50
 
 - A32NX_FMA_VERTICAL_ARMED
     - Bitmask
@@ -1595,6 +1596,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
       DES | 3
       GS | 4
       FINAL | 5
+      TCAS | 6
 
 - A32NX_FMA_EXPEDITE_MODE
     - Boolean

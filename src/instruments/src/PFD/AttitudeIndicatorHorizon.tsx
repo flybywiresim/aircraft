@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Arinc429Word } from '@shared/arinc429';
 import { useUpdate } from '@instruments/common/hooks';
 import { getSmallestAngle } from '@instruments/common/utils';
+import { LateralMode, VerticalMode } from '@shared/autopilot';
 import {
     calculateHorizonOffsetFromPitch,
     calculateVerticalOffsetFromRoll,
@@ -204,8 +205,8 @@ const FlightPathDirector = ({ FDActive }) => {
 
     const lateralAPMode = getSimVar('L:A32NX_FMA_LATERAL_MODE', 'number');
     const verticalAPMode = getSimVar('L:A32NX_FMA_VERTICAL_MODE', 'enum');
-    const showLateralFD = lateralAPMode !== 0 && lateralAPMode !== 34 && lateralAPMode !== 40;
-    const showVerticalFD = verticalAPMode !== 0 && verticalAPMode !== 34;
+    const showLateralFD = lateralAPMode !== LateralMode.NONE && lateralAPMode !== LateralMode.ROLL_OUT && lateralAPMode !== LateralMode.RWY;
+    const showVerticalFD = verticalAPMode !== VerticalMode.NONE && verticalAPMode !== VerticalMode.ROLL_OUT;
 
     if (!showVerticalFD && !showLateralFD) {
         return null;
