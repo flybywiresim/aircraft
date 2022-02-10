@@ -8,7 +8,7 @@ import { CpdlcMessage, CpdlcMessageResponse } from './messages/CpdlcMessage';
 import { WeatherMessage } from './messages/WeatherMessage';
 import { MetarMessage } from './messages/MetarMessage';
 import { TafMessage } from './messages/TafMessage';
-import { AtisMessage } from './messages/AtisMessage';
+import { AtisMessage, AtisType } from './messages/AtisMessage';
 import { AocSystem } from './AocSystem';
 import { AtcSystem } from './AtcSystem';
 
@@ -30,6 +30,7 @@ export {
     MetarMessage,
     TafMessage,
     AtisMessage,
+    AtisType,
     AocSystem,
     AtcSystem,
 };

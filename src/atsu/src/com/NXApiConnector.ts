@@ -7,7 +7,7 @@ import { AtsuStatusCodes } from '../AtsuStatusCodes';
 import { AtsuMessage, AtsuMessageComStatus, AtsuMessageNetwork, AtsuMessageDirection } from '../messages/AtsuMessage';
 import { FreetextMessage } from '../messages/FreetextMessage';
 import { WeatherMessage } from '../messages/WeatherMessage';
-import { AtisMessage } from '../messages/AtisMessage';
+import { AtisMessage, AtisType } from '../messages/AtisMessage';
 
 const WeatherMap = {
     FAA: 'faa',
@@ -117,10 +117,17 @@ export class NXApiConnector {
 
         return Metar.get(icao, WeatherMap[storedMetarSrc])
             .then((data) => {
-                const newLines = data.metar;
-                message.Reports.push({ airport: icao, report: newLines });
+                let metar = data.metar;
+                if (!metar || metar === undefined || metar === '') {
+                    metar = 'NO METAR AVAILABLE';
+                }
+
+                message.Reports.push({ airport: icao, report: metar });
                 return AtsuStatusCodes.Ok;
-            }).catch(() => AtsuStatusCodes.ComFailed);
+            }).catch(() => {
+                message.Reports.push({ airport: icao, report: 'NO METAR AVAILABLE' });
+                return AtsuStatusCodes.Ok;
+            });
     }
 
     public static async receiveTaf(icao: string, message: WeatherMessage): Promise<AtsuStatusCodes> {
@@ -128,19 +135,51 @@ export class NXApiConnector {
 
         return Taf.get(icao, WeatherMap[storedTafSrc])
             .then((data) => {
-                const newLines = data.taf;
-                message.Reports.push({ airport: icao, report: newLines });
+                let taf = data.taf;
+                if (!taf || taf === undefined || taf === '') {
+                    taf = 'NO TAF AVAILABLE';
+                }
+
+                message.Reports.push({ airport: icao, report: taf });
                 return AtsuStatusCodes.Ok;
-            }).catch(() => AtsuStatusCodes.ComFailed);
+            }).catch(() => {
+                message.Reports.push({ airport: icao, report: 'NO TAF AVAILABLE' });
+                return AtsuStatusCodes.Ok;
+            });
     }
 
-    public static async receiveAtis(icao: string, message: AtisMessage): Promise<AtsuStatusCodes> {
+    public static async receiveAtis(icao: string, type: AtisType, message: AtisMessage): Promise<AtsuStatusCodes> {
         const storedAtisSrc = NXDataStore.get('CONFIG_ATIS_SRC', 'FAA');
 
         await Atis.get(icao, WeatherMap[storedAtisSrc])
             .then((data) => {
-                const newLines = data.combined;
-                message.Reports.push({ airport: icao, report: newLines });
+                let atis = undefined;
+
+                if (type === AtisType.Arrival) {
+                    if ('arr' in data) {
+                        atis = data.arr;
+                    } else {
+                        atis = data.combined;
+                    }
+                } else if (type === AtisType.Departure) {
+                    if ('dep' in data) {
+                        atis = data.dep;
+                    } else {
+                        atis = data.combined;
+                    }
+                } else if (type === AtisType.Enroute) {
+                    if ('combined' in data) {
+                        atis = data.combined;
+                    } else if ('arr' in data) {
+                        atis = data.arr;
+                    }
+                }
+
+                if (!atis || atis === undefined) {
+                    atis = 'D-ATIS NOT AVAILABLE';
+                }
+
+                message.Reports.push({ airport: icao, report: atis });
             }).catch(() => {
                 message.Reports.push({ airport: icao, report: 'D-ATIS NOT AVAILABLE' });
             });
