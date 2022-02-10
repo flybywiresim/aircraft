@@ -5,6 +5,7 @@ import { NXApiConnector } from '@atsu/com/NXApiConnector';
 import { AtsuStatusCodes } from './AtsuStatusCodes';
 import { AtsuMessageDirection, AtsuMessage, AtsuMessageType } from './messages/AtsuMessage';
 import { WeatherMessage } from './messages/WeatherMessage';
+import { AtisType } from './messages/AtisMessage';
 import { Datalink } from './com/Datalink';
 
 /**
@@ -50,8 +51,8 @@ export class AocSystem {
         return this.datalink.receiveWeather(requestMetar, icaos);
     }
 
-    public async receiveAtis(icao: string): Promise<[AtsuStatusCodes, WeatherMessage | undefined]> {
-        return this.datalink.receiveAtis(icao);
+    public async receiveAtis(icao: string, type: AtisType): Promise<[AtsuStatusCodes, WeatherMessage | undefined]> {
+        return this.datalink.receiveAtis(icao, type);
     }
 
     public messageRead(uid: number): boolean {
