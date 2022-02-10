@@ -1,6 +1,5 @@
-use systems::shared::{FeedbackPositionPickoffUnit, LgciuWeightOnWheels};
+use systems::shared::{FeedbackPositionPickoffUnit, LgciuWeightOnWheels, SfccChannel, FlapsHandle, FlapsConf, HandlePositionMemory};
 use systems::navigation::adirs;
-use systems::landing_gear::{LandingGearControlInterfaceUnit,};
 use systems::simulation::{
     InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
     SimulatorWriter, UpdateContext, VariableIdentifier, Write,
@@ -12,36 +11,7 @@ use crate::systems::shared::arinc429::{Arinc429Word, SignStatus};
 use std::panic;
 use uom::si::{angle::degree, f64::*, velocity::knot};
 
-#[derive(Debug, Copy, Clone, PartialEq)]
-enum FlapsConf {
-    Conf0,
-    Conf1,
-    Conf1F,
-    Conf2,
-    Conf3,
-    ConfFull,
-}
 
-impl From<u8> for FlapsConf {
-    fn from(value: u8) -> Self {
-        match value {
-            0 => FlapsConf::Conf0,
-            1 => FlapsConf::Conf1,
-            2 => FlapsConf::Conf1F,
-            3 => FlapsConf::Conf2,
-            4 => FlapsConf::Conf3,
-            5 => FlapsConf::ConfFull,
-            i => panic!("Cannot convert from {} to FlapsConf.", i),
-        }
-    }
-}
-
-/// A struct to read the handle position
-struct FlapsHandle {
-    handle_position_id: VariableIdentifier,
-    position: u8,
-    previous_position: u8,
-}
 
 fn demanded_flaps_angle_from_conf(flap_conf: FlapsConf) -> Angle {
     match flap_conf {
@@ -74,7 +44,8 @@ impl FlapsHandle {
             previous_position: 0,
         }
     }
-
+}
+impl HandlePositionMemory for FlapsHandle {
     fn position(&self) -> u8 {
         self.position
     }
@@ -91,12 +62,6 @@ impl SimulationElement for FlapsHandle {
     }
 }
 
-
-trait SfccChannel {
-    fn receive_signal(&mut self, feedback: &impl FeedbackPositionPickoffUnit);
-    fn send_signal(&self) -> bool;
-    fn generate_configuration(&self, context: &UpdateContext, flaps_handle: &FlapsHandle, adiru: &AirDataInertialReferenceUnit) -> FlapsConf;
-}
 
 struct FlapsChannel {
     feedback_angle: Angle,
@@ -117,7 +82,7 @@ impl FlapsChannel {
         }
     }
 
-    pub fn update(&mut self, context: &UpdateContext, flaps_handle: &FlapsHandle, feedback: &impl FeedbackPositionPickoffUnit, adiru: &AirDataInertialReferenceUnit) {
+    pub fn update(&mut self, context: &UpdateContext, flaps_handle: &impl HandlePositionMemory, feedback: &impl FeedbackPositionPickoffUnit, adiru: &AirDataInertialReferenceUnit) {
 
         self.receive_signal(feedback);
         self.calculated_conf = self.generate_configuration(context,flaps_handle,adiru);
@@ -141,7 +106,7 @@ impl SfccChannel for FlapsChannel {
     fn generate_configuration(
         &self,
         context: &UpdateContext,
-        flaps_handle: &FlapsHandle,
+        flaps_handle: &impl HandlePositionMemory,
         adiru: &AirDataInertialReferenceUnit,
     ) -> FlapsConf {
 
@@ -212,7 +177,7 @@ impl SlatsChannel {
         }
     }
 
-    pub fn update(&mut self, context: &UpdateContext, flaps_handle: &FlapsHandle, feedback: &impl FeedbackPositionPickoffUnit, adiru: &AirDataInertialReferenceUnit, is_on_ground: bool) {
+    pub fn update(&mut self, context: &UpdateContext, flaps_handle: &impl HandlePositionMemory, feedback: &impl FeedbackPositionPickoffUnit, adiru: &AirDataInertialReferenceUnit, is_on_ground: bool) {
 
         self.receive_signal(feedback);
         self.is_on_ground = is_on_ground;
@@ -230,7 +195,7 @@ impl SlatsChannel {
         (self.demanded_angle - self.feedback_angle).get::<degree>().abs() < Self::EQUAL_ANGLE_DELTA_DEGREE
     }
 
-    fn alpha_lock_check(&mut self, context: &UpdateContext, flaps_handle: &FlapsHandle, adiru: &AirDataInertialReferenceUnit) {
+    fn alpha_lock_check(&mut self, context: &UpdateContext, flaps_handle: &impl HandlePositionMemory, adiru: &AirDataInertialReferenceUnit) {
         let airspeed: Velocity =
             match adiru.computed_airspeed().ssm() {
                 SignStatus::NormalOperation => adiru.computed_airspeed().value(),
@@ -287,7 +252,7 @@ impl SfccChannel for SlatsChannel {
     fn generate_configuration(
         &self,
         context: &UpdateContext,
-        flaps_handle: &FlapsHandle,
+        flaps_handle: &impl HandlePositionMemory,
         adiru: &AirDataInertialReferenceUnit,
     ) -> FlapsConf {
         match (flaps_handle.previous_position(), flaps_handle.position()) {
@@ -315,8 +280,8 @@ impl SlatsFlapsControlComputer {
         }
     }
 
-    pub fn update(&mut self, context: &UpdateContext, flaps_handle: &FlapsHandle,
-        adirus: [&AirDataInertialReferenceUnit; 2], lgciu: &LandingGearControlInterfaceUnit,
+    pub fn update(&mut self, context: &UpdateContext, flaps_handle: &impl HandlePositionMemory,
+        adirus: [&AirDataInertialReferenceUnit; 2], lgciu: &impl LgciuWeightOnWheelsl,
         flaps_fppu: &impl FeedbackPositionPickoffUnit, slats_fppu: &impl FeedbackPositionPickoffUnit) {
 
         self.is_on_ground = lgciu.left_and_right_gear_compressed(true);

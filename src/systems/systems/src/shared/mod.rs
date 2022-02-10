@@ -96,6 +96,41 @@ pub trait LgciuGearExtension {
     fn all_up_and_locked(&self) -> bool;
 }
 
+pub trait SfccChannel {
+    fn receive_signal(&mut self, feedback: &impl FeedbackPositionPickoffUnit);
+    fn send_signal(&self) -> bool;
+    fn generate_configuration(&self, context: &UpdateContext, flaps_handle: &impl HandlePositionMemory, adiru: &AirDataInertialReferenceUnit) -> FlapsConf;
+}
+
+#[derive(Debug, Copy, Clone, PartialEq)]
+pub enum FlapsConf {
+    Conf0,
+    Conf1,
+    Conf1F,
+    Conf2,
+    Conf3,
+    ConfFull,
+}
+
+impl From<u8> for FlapsConf {
+    fn from(value: u8) -> Self {
+        match value {
+            0 => FlapsConf::Conf0,
+            1 => FlapsConf::Conf1,
+            2 => FlapsConf::Conf1F,
+            3 => FlapsConf::Conf2,
+            4 => FlapsConf::Conf3,
+            5 => FlapsConf::ConfFull,
+            i => panic!("Cannot convert from {} to FlapsConf.", i),
+        }
+    }
+}
+
+pub trait HandlePositionMemory {
+    fn position(&self) -> u8;
+    fn previous_position(&self) -> u8;
+}
+
 pub trait LgciuSensors: LgciuWeightOnWheels + LgciuGearExtension {}
 pub trait EngineCorrectedN1 {
     fn corrected_n1(&self) -> Ratio;
