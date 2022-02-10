@@ -45,6 +45,11 @@ class CDUAtcDepartReq {
                 store.to = mcdu.flightPlanManager.getDestination().ident;
             }
         }
+        if (store.firstCall && store.station === "") {
+            if (mcdu.atsuManager.atc.currentStation() !== "") {
+                store.station = mcdu.atsuManager.atc.currentStation();
+            }
+        }
         store.firstCall = false;
 
         let flightNo = "--------[color]white";
