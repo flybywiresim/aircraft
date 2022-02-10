@@ -41,8 +41,8 @@ class CDUAocMessageSentDetail {
             [`[s-text]${lines[offset + 6] ? lines[offset + 6] : ""}`],
             [`[b-text]${lines[offset + 7] ? lines[offset + 7] : ""}`],
             [`[s-text]${lines[offset + 8] ? lines[offset + 8] : ""}`],
-            ["RETURN TO"],
-            ["<SENT MSGS", "PRINT*[color]cyan"]
+            ["\xa0 SENT MSGS"],
+            ["<RETURN", "PRINT*[color]cyan"]
         ]);
 
         mcdu.onNextPage = () => {
