@@ -69,6 +69,7 @@ void FlightDataRecorderConverter::writeHeader(ofstream& out, const string& delim
   out << "ap_sm.data.throttle_lever_1_pos" << delimiter;
   out << "ap_sm.data.throttle_lever_2_pos" << delimiter;
   out << "ap_sm.data.flaps_handle_index" << delimiter;
+  out << "ap_sm.data.total_weight_kg" << delimiter;
   out << "ap_sm.data_computed.time_since_touchdown" << delimiter;
   out << "ap_sm.data_computed.time_since_lift_off" << delimiter;
   out << "ap_sm.data_computed.time_since_SRS" << delimiter;
@@ -641,6 +642,7 @@ void FlightDataRecorderConverter::writeStruct(ofstream& out,
   out << ap_sm.data.throttle_lever_1_pos << delimiter;
   out << ap_sm.data.throttle_lever_2_pos << delimiter;
   out << ap_sm.data.flaps_handle_index << delimiter;
+  out << ap_sm.data.total_weight_kg << delimiter;
   out << ap_sm.data_computed.time_since_touchdown << delimiter;
   out << ap_sm.data_computed.time_since_lift_off << delimiter;
   out << ap_sm.data_computed.time_since_SRS << delimiter;

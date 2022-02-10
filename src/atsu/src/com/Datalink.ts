@@ -7,7 +7,7 @@ import { AtsuManager } from '../AtsuManager';
 import { CpdlcMessage } from '../messages/CpdlcMessage';
 import { FreetextMessage } from '../messages/FreetextMessage';
 import { AtsuMessage, AtsuMessageNetwork, AtsuMessageType } from '../messages/AtsuMessage';
-import { AtisMessage } from '../messages/AtisMessage';
+import { AtisMessage, AtisType } from '../messages/AtisMessage';
 import { MetarMessage } from '../messages/MetarMessage';
 import { TafMessage } from '../messages/TafMessage';
 import { WeatherMessage } from '../messages/WeatherMessage';
@@ -147,13 +147,13 @@ export class Datalink {
         return HoppieConnector.isStationAvailable(callsign);
     }
 
-    public async receiveAtis(icao: string): Promise<[AtsuStatusCodes, WeatherMessage | undefined]> {
+    public async receiveAtis(icao: string, type: AtisType): Promise<[AtsuStatusCodes, WeatherMessage | undefined]> {
         this.estimateTransmissionTime();
 
         return new Promise((resolve, _reject) => {
             setTimeout(() => {
                 const message = new AtisMessage();
-                NXApiConnector.receiveAtis(icao, message).then(() => resolve([AtsuStatusCodes.Ok, message]));
+                NXApiConnector.receiveAtis(icao, type, message).then(() => resolve([AtsuStatusCodes.Ok, message]));
             }, this.overallDelay);
         });
     }
