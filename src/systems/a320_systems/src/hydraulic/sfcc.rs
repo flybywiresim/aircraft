@@ -1,4 +1,4 @@
-use systems::shared::{FeedbackPositionPickoffUnit, LgciuSensors, AirDataSource, SfccChannel, FlapsConf, HandlePositionMemory};
+use systems::shared::{PositionPickoffUnit, LgciuSensors, AirDataSource, SfccChannel, FlapsConf, HandlePositionMemory};
 use systems::navigation::adirs;
 use systems::simulation::{
     InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -86,9 +86,9 @@ impl FlapsChannel {
         }
     }
 
-    pub fn update(&mut self, context: &UpdateContext, flaps_handle: &impl HandlePositionMemory, feedback: &impl FeedbackPositionPickoffUnit, adiru: &impl AirDataSource) {
+    pub fn update(&mut self, context: &UpdateContext, flaps_handle: &impl HandlePositionMemory, feedback: &impl PositionPickoffUnit, adiru: &impl AirDataSource) {
 
-        self.receive_signal(feedback);
+        self.receive_signal_fppu(feedback);
         self.calculated_conf = self.generate_configuration(context,flaps_handle,adiru);
         self.demanded_angle = demanded_flaps_angle_from_conf(self.calculated_conf);
     }
@@ -100,7 +100,7 @@ impl FlapsChannel {
 
 impl SfccChannel for FlapsChannel {
 
-    fn receive_signal(&mut self, feedback: &impl FeedbackPositionPickoffUnit) {
+    fn receive_signal_fppu(&mut self, feedback: &impl PositionPickoffUnit) {
         self.feedback_angle = feedback.angle();
     }
     fn send_signal(&self) -> bool {
@@ -183,9 +183,9 @@ impl SlatsChannel {
         }
     }
 
-    pub fn update(&mut self, context: &UpdateContext, flaps_handle: &impl HandlePositionMemory, feedback: &impl FeedbackPositionPickoffUnit, adiru: &impl AirDataSource, is_on_ground: bool) {
+    pub fn update(&mut self, context: &UpdateContext, flaps_handle: &impl HandlePositionMemory, feedback: &impl PositionPickoffUnit, adiru: &impl AirDataSource, is_on_ground: bool) {
 
-        self.receive_signal(feedback);
+        self.receive_signal_fppu(feedback);
         self.is_on_ground = is_on_ground;
         self.alpha_lock_check(context, flaps_handle, adiru);
         self.calculated_conf = self.generate_configuration(context,flaps_handle, adiru);
@@ -247,7 +247,7 @@ impl SlatsChannel {
 
 impl SfccChannel for SlatsChannel {
 
-    fn receive_signal(&mut self, feedback: &impl FeedbackPositionPickoffUnit) {
+    fn receive_signal_fppu(&mut self, feedback: &impl PositionPickoffUnit) {
         self.feedback_angle = feedback.angle();
     }
     fn send_signal(&self) -> bool {
@@ -261,7 +261,7 @@ impl SfccChannel for SlatsChannel {
         adiru: &impl AirDataSource,
     ) -> FlapsConf {
         match (flaps_handle.previous_position(), flaps_handle.position()) {
-            (from, to) if to != 0 => FlapsConf::from(to),
+            (_, to) if to != 0 => FlapsConf::from(to),
             (from, 0) if self.alpha_lock_engaged && from > 0 => FlapsConf::Conf1,
             (_, 0) => FlapsConf::Conf0,
             (_, _) => self.calculated_conf,
@@ -289,7 +289,7 @@ impl SlatsFlapsControlComputer {
 
     pub fn update(&mut self, context: &UpdateContext, flaps_handle: &impl HandlePositionMemory,
         adirus: [&impl AirDataSource; 2], lgciu: &impl LgciuSensors,
-        flaps_fppu: &impl FeedbackPositionPickoffUnit, slats_fppu: &impl FeedbackPositionPickoffUnit) {
+        flaps_fppu: &impl PositionPickoffUnit, slats_fppu: &impl PositionPickoffUnit) {
 
         self.is_on_ground = lgciu.left_and_right_gear_compressed(true);
         self.flaps_channel.update(context, flaps_handle, flaps_fppu, adirus[0]);
@@ -319,7 +319,7 @@ impl SlatsFlapsElectronicComplex {
     }
 
     pub fn update(&mut self, context: &UpdateContext, adirus: [&impl AirDataSource; 2], lgcius: [&impl LgciuSensors; 2],
-        flaps_fppu: &impl FeedbackPositionPickoffUnit, slats_fppu: &impl FeedbackPositionPickoffUnit) {
+        flaps_fppu: &impl PositionPickoffUnit, slats_fppu: &impl PositionPickoffUnit) {
             self.sfcc[0].update(context, &self.flaps_handle, adirus, lgcius[0], flaps_fppu, slats_fppu);
             self.sfcc[1].update(context, &self.flaps_handle, adirus, lgcius[1], flaps_fppu, slats_fppu);
         }

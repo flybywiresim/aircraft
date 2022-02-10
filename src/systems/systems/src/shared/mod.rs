@@ -70,7 +70,7 @@ pub trait EmergencyGeneratorPower {
     fn generated_power(&self) -> Power;
 }
 
-pub trait FeedbackPositionPickoffUnit {
+pub trait PositionPickoffUnit {
     fn angle(&self) -> Angle;
 }
 
@@ -98,7 +98,7 @@ pub trait LgciuGearExtension {
 }
 
 pub trait SfccChannel {
-    fn receive_signal(&mut self, feedback: &impl FeedbackPositionPickoffUnit);
+    fn receive_signal_fppu(&mut self, feedback: &impl PositionPickoffUnit);
     fn send_signal(&self) -> bool;
     fn generate_configuration(&self, context: &UpdateContext, flaps_handle: &impl HandlePositionMemory, adiru: &impl AirDataSource) -> FlapsConf;
 }

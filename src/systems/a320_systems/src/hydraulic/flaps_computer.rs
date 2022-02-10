@@ -1,4 +1,4 @@
-use systems::shared::FeedbackPositionPickoffUnit;
+use systems::shared::PositionPickoffUnit;
 
 use systems::simulation::{
     InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -221,8 +221,8 @@ impl SlatFlapControlComputer {
         &mut self,
         context: &UpdateContext,
         flaps_handle: &FlapsHandle,
-        flaps_feedback: &impl FeedbackPositionPickoffUnit,
-        slats_feedback: &impl FeedbackPositionPickoffUnit,
+        flaps_feedback: &impl PositionPickoffUnit,
+        slats_feedback: &impl PositionPickoffUnit,
     ) {
         //Check if alpha lock mode should engage/disengage
 
@@ -295,8 +295,8 @@ impl SlatFlapComplex {
     pub fn update(
         &mut self,
         context: &UpdateContext,
-        flaps_feedback: &impl FeedbackPositionPickoffUnit,
-        slats_feedback: &impl FeedbackPositionPickoffUnit,
+        flaps_feedback: &impl PositionPickoffUnit,
+        slats_feedback: &impl PositionPickoffUnit,
     ) {
         self.sfcc[0]
             .update(context, &self.flaps_handle, flaps_feedback, slats_feedback);
@@ -343,7 +343,7 @@ mod tests {
         right_position_angle_id: VariableIdentifier,
         surface_type: String,
     }
-    impl FeedbackPositionPickoffUnit for SlatFlapGear {
+    impl PositionPickoffUnit for SlatFlapGear {
         fn angle(&self) -> Angle {
             self.current_angle
         }
