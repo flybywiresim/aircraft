@@ -92,7 +92,7 @@ class CDUAtcConnectionNotification {
             }
 
             store["loginState"] = 0;
-            if (value.length !== 4 || /^[A-Z()]*$/.test(value) === false) {
+            if (/^[A-Z0-9]{4}$/.test(value) === false) {
                 mcdu.addNewMessage(NXSystemMessages.formatError);
             } else if (mcdu.atsuManager.flightNumber().length === 0) {
                 mcdu.addNewMessage(NXFictionalMessages.fltNbrMissing);
