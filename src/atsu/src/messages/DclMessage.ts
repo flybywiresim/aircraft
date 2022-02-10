@@ -14,6 +14,8 @@ export class DclMessage extends CpdlcMessage {
 
     public Destination = '';
 
+    public AcType = '';
+
     public Atis = '';
 
     public Gate = '';
@@ -27,19 +29,22 @@ export class DclMessage extends CpdlcMessage {
     }
 
     public serialize(format: AtsuMessageSerializationFormat) {
-        let dclMessage = `DEPART REQUEST\n${this.Callsign}\n`;
-        dclMessage += `FROM:${this.Origin}${this.Gate.length !== 0 ? ` GATE:${this.Gate}` : ''}\n`;
-        dclMessage += `TO:${this.Destination} ATIS:${this.Atis}\n`;
-        dclMessage += 'A/C TYPE:A20N';
-
-        const freetext = this.Freetext.join('\n').replace(/^\s*\n/gm, '');
-        if (freetext.length !== 0) {
-            dclMessage += `\n${freetext}`;
-        }
-
-        // convert to the Hoppie-format
+        let dclMessage = '';
         if (format === AtsuMessageSerializationFormat.Network) {
-            dclMessage = `/data2/${this.CurrentTransmissionId}//NE/${dclMessage}`;
+            dclMessage = 'REQUEST PREDEP CLEARANCE\n';
+            dclMessage += `${this.Callsign} ${this.AcType} TO ${this.Destination}\n`;
+            dclMessage += `AT ${this.Origin}${this.Gate !== '' ? ` STAND ${this.Gate}` : ''}\n`;
+            dclMessage += `ATIS ${this.Atis}`;
+        } else {
+            dclMessage = `DEPART REQUEST\n${this.Callsign}\n`;
+            dclMessage += `FROM:${this.Origin}${this.Gate.length !== 0 ? ` GATE:${this.Gate}` : ''}\n`;
+            dclMessage += `TO:${this.Destination} ATIS:${this.Atis}\n`;
+            dclMessage += `A/C TYPE:${this.AcType}`;
+
+            const freetext = this.Freetext.join('\n').replace(/^\s*\n/gm, '');
+            if (freetext.length !== 0) {
+                dclMessage += `\n${freetext}`;
+            }
         }
 
         return dclMessage;
@@ -52,6 +57,7 @@ export class DclMessage extends CpdlcMessage {
         this.Callsign = jsonData.Callsign;
         this.Origin = jsonData.Origin;
         this.Destination = jsonData.Destination;
+        this.AcType = jsonData.AcType;
         this.Gate = jsonData.Gate;
         this.Atis = jsonData.Atis;
         this.Freetext = jsonData.Freetext;

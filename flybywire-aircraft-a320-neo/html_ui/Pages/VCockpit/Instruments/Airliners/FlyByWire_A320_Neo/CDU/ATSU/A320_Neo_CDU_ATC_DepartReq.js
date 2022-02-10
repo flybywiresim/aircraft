@@ -22,6 +22,7 @@ class CDUAtcDepartReq {
         retval.Callsign = store.callsign;
         retval.Origin = store.from;
         retval.Destination = store.to;
+        retval.AcType = "A20N";
         retval.Atis = store.atis;
         retval.Gate = store.gate;
         retval.Freetext = store.freetext.filter((n) => n);
