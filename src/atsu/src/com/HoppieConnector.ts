@@ -114,7 +114,7 @@ export class HoppieConnector {
         return AtsuStatusCodes.Ok;
     }
 
-    public static async sendTelexMessage(message: FreetextMessage, force: boolean): Promise<AtsuStatusCodes> {
+    public static async sendTelexMessage(message: AtsuMessage, force: boolean): Promise<AtsuStatusCodes> {
         if (force || SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') === 1) {
             return HoppieConnector.sendMessage(message, 'telex');
         }
