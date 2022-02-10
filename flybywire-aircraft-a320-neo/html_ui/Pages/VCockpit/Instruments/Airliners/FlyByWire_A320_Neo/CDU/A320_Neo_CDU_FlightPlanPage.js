@@ -637,7 +637,7 @@ class CDUFlightPlanPage {
 
             if (cHold) {
                 const { color, immExit, resumeHold, holdSpeed, turnDirection } = scrollWindow[rowI];
-                scrollText[(rowI * 2) - 1] = ['', `{amber}${immExit ? 'IMM\xa0\xa0' : ''}${resumeHold ? 'RESUME' : ''}{end}`, 'HOLD\xa0\xa0\xa0\xa0\xa0'];
+                scrollText[(rowI * 2) - 1] = ['', `{amber}${immExit ? 'IMM\xa0\xa0' : ''}${resumeHold ? 'RESUME\xa0' : ''}{end}`, 'HOLD\xa0\xa0\xa0\xa0\xa0'];
                 scrollText[(rowI * 2)] = [`{${color}}HOLD ${turnDirection}{end}`, `{amber}${immExit ? 'EXIT*' : ''}${resumeHold ? 'HOLD*' : ''}{end}`, `{${color}}{small}{white}SPD{end}\xa0${holdSpeed}{end}{end}`];
             } else if (!cMarker && !cPwp) { // Waypoint
                 if (rowI > 0) {
