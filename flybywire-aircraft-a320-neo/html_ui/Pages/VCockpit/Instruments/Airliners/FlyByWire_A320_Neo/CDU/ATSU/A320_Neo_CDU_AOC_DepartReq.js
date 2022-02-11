@@ -56,8 +56,8 @@ class CDUAocDepartReq {
             }
         );
 
-        if (SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC").length !== 0 && mcdu.flightPlanManager.getOrigin() !== null) {
-            mcdu.pdcMessage.Callsign = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC");
+        if (mcdu.atsuManager.flightNumber().length !== 0 && mcdu.flightPlanManager.getOrigin() !== null) {
+            mcdu.pdcMessage.Callsign = mcdu.atsuManager.flightNumber();
             flightNo = mcdu.pdcMessage.Callsign + "[color]green";
         }
         if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident) {
@@ -98,7 +98,7 @@ class CDUAocDepartReq {
             if (value.length !== 4 || /^[A-Z()]*$/.test(value) === false) {
                 mcdu.addNewMessage(NXSystemMessages.formatError);
                 CDUAocDepartReq.ShowPage1(mcdu, store);
-            } else if (SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC").length === 0) {
+            } else if (mcdu.atsuManager.flightNumber().length === 0) {
                 mcdu.addNewMessage(NXFictionalMessages.fltNbrMissing);
                 CDUAocDepartReq.ShowPage1(mcdu, store);
             } else {
