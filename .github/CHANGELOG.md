@@ -146,6 +146,7 @@
 1. [ELEC] Fix emergency elec on init in flight wrongly triggering the RAT - @Crocket63
 1. [ATHR] Fix ATHR Speed Undershoot - @IbrahimK42 (IbrahimK42)
 1. [FLIGHTMODEL] Improved pitch stability in turbulence - @aguther (Andreas Guther)
+1. [ATC] Implement ident button and fix auto mode - @tracernz (Mike)
 
 ## 0.7.0
 
