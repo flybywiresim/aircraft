@@ -36,8 +36,8 @@ class CDUAtcDepartReq {
         mcdu.page.Current = mcdu.page.ATCDepartReq;
 
         if (store.firstCall && store.callsign === "") {
-            if (SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC") && SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC").length !== 0) {
-                store.callsign = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC");
+            if (mcdu.atsuManager.flightNumber().length !== 0) {
+                store.callsign = mcdu.atsuManager.flightNumber();
             }
         }
         if (store.firstCall && store.from === "") {
