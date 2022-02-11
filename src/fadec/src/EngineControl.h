@@ -64,9 +64,6 @@ class EngineControl {
   const double KGS_TO_LBS = 2.20462;
   const double FUEL_THRESHOLD = 661;  // lbs/sec
 
-  const double TOGA_STATIC_TRANSITION_LOW = 0.04;
-  const double TOGA_STATIC_TRANSITION_HIGH = 0.08;
-
   bool isFlexActive = false;
   double prevThrustLimitType = 0;
   double prevFlexTemperature = 0;
@@ -941,28 +938,12 @@ class EngineControl {
     clb = limitN1(2, pressAltitude, ambientTemp, ambientPressure, 0, packs, nai, wai);
     mct = limitN1(3, pressAltitude, ambientTemp, ambientPressure, 0, packs, nai, wai);
 
-    // transition between TO and GA limit
-    if (mach > TOGA_STATIC_TRANSITION_HIGH) {
-      toga = ga;
-      flex = flex_ga;
-    } else if (mach < TOGA_STATIC_TRANSITION_LOW) {
-      toga = to;
-      flex = flex_to;
-    } else {
-      toga = to + ((mach - TOGA_STATIC_TRANSITION_LOW) * ((ga - to) / (TOGA_STATIC_TRANSITION_HIGH - TOGA_STATIC_TRANSITION_LOW)));
-      toga = max(to, min(ga, toga));
-      flex = flex_to +
-             ((mach - TOGA_STATIC_TRANSITION_LOW) * ((flex_ga - flex_to) / (TOGA_STATIC_TRANSITION_HIGH - TOGA_STATIC_TRANSITION_LOW)));
-      flex = max(flex_to, min(flex_ga, flex));
-    }
+    // transition between TO and GA limit -----------------------------------------------------------------------------
+    double machFactorLow = max(0.0, min(1.0, (mach - 0.04) / 0.04));
+    toga = to + (ga - to) * machFactorLow;
+    flex = flex_to + (flex_ga - flex_to) * machFactorLow;
 
-    // ensure TOGA is never smaller than MCT
-    // basically use MCT above ~ 16600 ft
-    // depending on environment MCT might be larger than TOGA before 16600,
-    // so to ensure small transition we use the max of both
-    toga = max(mct, toga);
-
-    // adaption of CLB due to FLX limit if necessary
+    // adaption of CLB due to FLX limit if necessary ------------------------------------------------------------------
 
     if ((prevThrustLimitType != 3 && thrustLimitType == 3) || (prevFlexTemperature == 0 && flexTemp > 0)) {
       isFlexActive = true;
@@ -1003,7 +984,27 @@ class EngineControl {
     prevThrustLimitType = thrustLimitType;
     prevFlexTemperature = flexTemp;
 
-    // write limits
+    // thrust transitions for MCT and TOGA ----------------------------------------------------------------------------
+
+    // get factors
+    double machFactor = max(0.0, min(1.0, ((mach - 0.37) / 0.05)));
+    double altitudeFactorLow = max(0.0, min(1.0, ((altitude - 16600) / 500)));
+    double altitudeFactorHigh = max(0.0, min(1.0, ((altitude - 25000) / 500)));
+
+    // adapt thrust limits
+    if (altitude >= 25000) {
+      mct = max(clb, mct + (clb - mct) * altitudeFactorHigh);
+      toga = mct;
+    } else {
+      if (mct > toga) {
+        mct = toga + (mct - toga) * min(1.0, altitudeFactorLow + machFactor);
+        toga = mct;
+      } else {
+        toga = toga + (mct - toga) * min(1.0, altitudeFactorLow + machFactor);
+      }
+    }
+
+    // write limits ---------------------------------------------------------------------------------------------------
     simVars->setThrustLimitIdle(idle);
     simVars->setThrustLimitToga(toga);
     simVars->setThrustLimitFlex(flex);
