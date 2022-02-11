@@ -72,8 +72,11 @@ void Elac::computePitchLawCapability() {
 // Compute this computer's lateral law capability, i.e.
 // the "highest" lateral law that can be engaged on the lateral axis by this computer
 void Elac::computeLateralLawCapability() {
-  // Placeholder
+  // TODO add missing conditions
   lateralLawCapability = LateralLaw::NormalLaw;
+  if (discreteInputs.fac1YawControlLost && discreteInputs.fac2YawControlLost) {
+    lateralLawCapability = LateralLaw::DirectLaw;
+  }
 }
 
 // Compute the laws that are actually active.

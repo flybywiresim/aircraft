@@ -21,6 +21,7 @@
 #include "SpoilersHandler.h"
 #include "ThrottleAxisMapping.h"
 #include "elac/Elac.h"
+#include "fac/Fac.h"
 #include "fcdc/Fcdc.h"
 #include "sec/Sec.h"
 
@@ -113,6 +114,11 @@ class FlyByWireInterface {
   Fcdc fcdcs[2] = {Fcdc(true), Fcdc(false)};
   FcdcDiscreteOutputs fcdcsDiscreteOutputs[2] = {};
   FcdcBus fcdcsBusOutputs[2] = {};
+
+  Fac facs[2] = {Fac(true), Fac(false)};
+  FacDiscreteOutputs facsDiscreteOutputs[2] = {};
+  FacAnalogOutputs facsAnalogOutputs[2] = {};
+  FacBus facsBusOutputs[2] = {};
 
   InterpolatingLookupTable throttleLookupTable;
 
@@ -398,6 +404,9 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idSecPushbuttonStatus[3];
   std::unique_ptr<LocalVariable> idSecFaultLightOn[3];
 
+  std::unique_ptr<LocalVariable> idFacPushbuttonStatus[2];
+  std::unique_ptr<LocalVariable> idFacFaultLightOn[2];
+
   std::unique_ptr<LocalVariable> idElecDcBus2Powered;
   std::unique_ptr<LocalVariable> idElecDcEssShedBusPowered;
   std::unique_ptr<LocalVariable> idElecDcEssBusPowered;
@@ -429,6 +438,8 @@ class FlyByWireInterface {
   bool updateSec(double sampleTime, int secIndex);
 
   bool updateFcdc(double sampleTime, int fcdcIndex);
+
+  bool updateFac(double sampleTime, int facIndex);
 
   bool updateSpoilers(double sampleTime);
 

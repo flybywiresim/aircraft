@@ -81,6 +81,8 @@ clang++ \
   "${DIR}/src/sec/sec.cpp" \
   -I "${DIR}/src/fcdc" \
   "${DIR}/src/fcdc/fcdc.cpp" \
+  -I "${DIR}/src/fac" \
+  "${DIR}/src/fac/fac.cpp" \
   -I "${DIR}/src/utils" \
   "${DIR}/src/utils/ConfirmNode.cpp" \
   "${DIR}/src/utils/SRFlipFLop.cpp" \
