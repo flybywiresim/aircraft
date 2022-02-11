@@ -22,6 +22,7 @@ path.join(__dirname, 'client/build/HoneywellMCDU.ttf');
 path.join(__dirname, 'client/build/HoneywellMCDUSmall.ttf');
 path.join(__dirname, 'client/build/index.html');
 path.join(__dirname, 'client/build/mcdu-r2-c.png');
+path.join(__dirname, 'client/build/button-click.mp3');
 path.join(__dirname, '../../node_modules/pdf-to-printer/dist/SumatraPDF.exe');
 path.join(__dirname, '../../node_modules/linebreak/src/classes.trie');
 path.join(__dirname, '../../node_modules/pdfkit/js/data/Helvetica.afm');
@@ -197,6 +198,9 @@ function start() {
             break;
         case '.jpg':
             contentType = 'image/jpg';
+            break;
+        case '.mp3':
+            contentType = 'audio/mpeg';
             break;
         default:
             break;
