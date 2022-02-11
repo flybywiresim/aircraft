@@ -70,11 +70,19 @@ class CDUAocOfpData {
                     maxValue: station.seats,
                 },
                 async (value) => {
+                    await setDefaultWeights(0, 0);
                     await SimVar.SetSimVarValue(`L:${station.simVar}_DESIRED`, "Number", value);
                     await setTargetCargo(value, '');
                     updateView();
                 }
             );
+        }
+
+        async function setDefaultWeights(simbriefPaxWeight, simbriefBagWeight) {
+            const paxWeight = (simbriefPaxWeight === 0) ? 84 : simbriefPaxWeight;
+            const bagWeight = (simbriefBagWeight === 0) ? 20 : simbriefBagWeight;
+            await SimVar.SetSimVarValue("L:A32NX_WB_PER_PAX_WEIGHT", "Number", parseInt(paxWeight));
+            await SimVar.SetSimVarValue("L:A32NX_WB_PER_BAG_WEIGHT", "Number", parseInt(bagWeight));
         }
 
         async function setTargetPax(numberOfPax) {
@@ -154,6 +162,7 @@ class CDUAocOfpData {
                 async (value) => {
                     await setTargetPax(value);
                     await setTargetCargo(value, '');
+                    await setDefaultWeights(0, 0);
                     updateView();
                 }
             );
@@ -211,6 +220,7 @@ class CDUAocOfpData {
                 setTargetPax(mcdu.simbrief.paxCount).then(() => {
                     updateView();
                 });
+                setDefaultWeights(mcdu.simbrief.paxWeight, mcdu.simbrief.bagWeight);
                 setTargetCargo(mcdu.simbrief.paxCount, parseInt(mcdu.simbrief.cargo)).then(() => {
                     updateView();
                 });
@@ -243,14 +253,13 @@ const paxStations = payloadConstruct.paxStations;
 const cargoStations = payloadConstruct.cargoStations;
 
 const MAX_SEAT_AVAILABLE = 174;
-const PAX_WEIGHT = 84;
-const BAG_WEIGHT = 20;
+const PAX_WEIGHT = (SimVar.GetSimVarValue("L:A32NX_WB_PER_PAX_WEIGHT", "Number") === 0) ? 84 : (SimVar.GetSimVarValue("L:A32NX_WB_PER_PAX_WEIGHT", "Number"));
+const BAG_WEIGHT = (SimVar.GetSimVarValue("L:A32NX_WB_PER_BAG_WEIGHT", "Number") === 0) ? 20 : (SimVar.GetSimVarValue("L:A32NX_WB_PER_BAG_WEIGHT", "Number"));
 
 /**
      * Calculate %MAC ZWFCG of all stations
      */
 function getZfwcg() {
-    const currentPaxWeight = PAX_WEIGHT;
 
     const leMacZ = -5.386; // Accurate to 3 decimals, replaces debug weight values
     const macSize = 13.454; // Accurate to 3 decimals, replaces debug weight values
@@ -259,8 +268,8 @@ function getZfwcg() {
     const emptyPosition = -8.75; // Value from flight_model.cfg
     const emptyMoment = emptyPosition * emptyWeight;
 
-    const paxTotalMass = Object.values(paxStations).map((station) => (SimVar.GetSimVarValue(`L:${station.simVar}`, "Number") * currentPaxWeight)).reduce((acc, cur) => acc + cur, 0);
-    const paxTotalMoment = Object.values(paxStations).map((station) => (SimVar.GetSimVarValue(`L:${station.simVar}`, "Number") * currentPaxWeight) * station.position).reduce((acc, cur) => acc + cur, 0);
+    const paxTotalMass = Object.values(paxStations).map((station) => (SimVar.GetSimVarValue(`L:${station.simVar}`, "Number") * PAX_WEIGHT)).reduce((acc, cur) => acc + cur, 0);
+    const paxTotalMoment = Object.values(paxStations).map((station) => (SimVar.GetSimVarValue(`L:${station.simVar}`, "Number") * PAX_WEIGHT) * station.position).reduce((acc, cur) => acc + cur, 0);
 
     const cargoTotalMass = Object.values(cargoStations).map((station) => SimVar.GetSimVarValue(`PAYLOAD STATION WEIGHT:${station.stationIndex}`, "Number")).reduce((acc, cur) => acc + cur, 0);
     const cargoTotalMoment = Object.values(cargoStations).map((station) => (SimVar.GetSimVarValue(`PAYLOAD STATION WEIGHT:${station.stationIndex}`, "Number") * station.position)).reduce((acc, cur) => acc + cur, 0);
@@ -282,9 +291,8 @@ function getTotalCargo() {
 }
 
 function getTotalPayload() {
-    const currentPaxWeight = PAX_WEIGHT;
 
-    const paxTotalMass = Object.values(paxStations).map((station) => (SimVar.GetSimVarValue(`L:${station.simVar}`, "Number") * currentPaxWeight)).reduce((acc, cur) => acc + cur, 0);
+    const paxTotalMass = Object.values(paxStations).map((station) => (SimVar.GetSimVarValue(`L:${station.simVar}`, "Number") * PAX_WEIGHT)).reduce((acc, cur) => acc + cur, 0);
     const cargoTotalMass = getTotalCargo();
 
     return paxTotalMass + cargoTotalMass;
