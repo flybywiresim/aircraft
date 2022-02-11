@@ -5,6 +5,12 @@ import { NXDataStore } from '@shared/persistence';
 import { AtsuMessageType } from './AtsuMessage';
 import { WeatherMessage } from './WeatherMessage';
 
+export enum AtisType {
+    Departure,
+    Arrival,
+    Enroute
+}
+
 /**
  * Defines the general ATIS message format
  */

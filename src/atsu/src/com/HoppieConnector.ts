@@ -13,6 +13,28 @@ import { stringToCpdlc } from '../Common';
  * Defines the connector to the hoppies network
  */
 export class HoppieConnector {
+    private static flightNumber: string = '';
+
+    public static async connect(flightNo: string): Promise<AtsuStatusCodes> {
+        if (SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') !== 1) {
+            HoppieConnector.flightNumber = flightNo;
+            return AtsuStatusCodes.NoHoppieConnection;
+        }
+
+        return HoppieConnector.isCallsignInUse(flightNo).then((code) => {
+            if (code === AtsuStatusCodes.Ok) {
+                HoppieConnector.flightNumber = flightNo;
+                return HoppieConnector.poll().then(() => code);
+            }
+            return code;
+        });
+    }
+
+    public static disconnect(): AtsuStatusCodes {
+        HoppieConnector.flightNumber = '';
+        return AtsuStatusCodes.Ok;
+    }
+
     public static async isCallsignInUse(station: string): Promise<AtsuStatusCodes> {
         if (SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') !== 1) {
             return AtsuStatusCodes.NoHoppieConnection;
@@ -45,18 +67,13 @@ export class HoppieConnector {
             return AtsuStatusCodes.NoHoppieConnection;
         }
 
-        const flightNo = SimVar.GetSimVarValue('ATC FLIGHT NUMBER', 'string');
-        if (flightNo.length === 0) {
-            return AtsuStatusCodes.ComFailed;
-        }
-
-        if (station === flightNo) {
+        if (station === HoppieConnector.flightNumber) {
             return AtsuStatusCodes.OwnCallsign;
         }
 
         const body = {
             logon: NXDataStore.get('CONFIG_HOPPIE_USERID', ''),
-            from: flightNo,
+            from: HoppieConnector.flightNumber,
             to: 'ALL-CALLSIGNS',
             type: 'ping',
             packet: station,
@@ -77,18 +94,9 @@ export class HoppieConnector {
     }
 
     private static async sendMessage(message: AtsuMessage, type: string): Promise<AtsuStatusCodes> {
-        if (SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') !== 1) {
-            return AtsuStatusCodes.NoHoppieConnection;
-        }
-
-        const flightNo = SimVar.GetSimVarValue('ATC FLIGHT NUMBER', 'string');
-        if (flightNo.length === 0) {
-            return AtsuStatusCodes.ComFailed;
-        }
-
         const body = {
             logon: NXDataStore.get('CONFIG_HOPPIE_USERID', ''),
-            from: flightNo,
+            from: HoppieConnector.flightNumber,
             to: message.Station,
             type,
             packet: message.serialize(AtsuMessageSerializationFormat.Network),
@@ -127,15 +135,10 @@ export class HoppieConnector {
             return [AtsuStatusCodes.NoHoppieConnection, retval];
         }
 
-        const flightNo = SimVar.GetSimVarValue('ATC FLIGHT NUMBER', 'string');
-        if (flightNo.length === 0) {
-            return [AtsuStatusCodes.ComFailed, retval];
-        }
-
         const body = {
             logon: NXDataStore.get('CONFIG_HOPPIE_USERID', ''),
-            from: flightNo,
-            to: flightNo,
+            from: HoppieConnector.flightNumber,
+            to: HoppieConnector.flightNumber,
             type: 'poll',
         };
         const text = await Hoppie.sendRequest(body).then((resp) => resp.response).catch(() => 'proxy');
