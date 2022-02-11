@@ -22,7 +22,7 @@ class CDUAtcConnectionNotification {
             atcStation = `${store["atcCenter"]}[color]cyan`;
             atcStationAvail = true;
         }
-        if (mcdu.flightPlanManager.getOrigin() !== null && mcdu.atsuManager.flightNumber().length !== 0) {
+        if (mcdu.atsuManager.flightNumber().length !== 0) {
             flightNo = mcdu.atsuManager.flightNumber() + "[color]green";
             flightNoAvail = true;
         }
