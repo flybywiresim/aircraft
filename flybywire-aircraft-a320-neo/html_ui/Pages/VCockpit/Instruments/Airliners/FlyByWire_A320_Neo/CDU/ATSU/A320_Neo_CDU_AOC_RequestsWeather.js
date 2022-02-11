@@ -73,16 +73,25 @@ class CDUAocRequestsWeather {
             mcdu.onRightInput[i] = (value) => {
                 if (value === FMCMainDisplay.clrValue) {
                     data.airports[i] = "";
+                    CDUAocRequestsWeather.ShowPage(mcdu, data);
                 } else {
                     if (!/^[A-Z0-9]{4}$/.test(value)) {
                         mcdu.addNewMessage(NXSystemMessages.formatError);
                     } else {
-                        data.airports[i] = value;
-                        data.managed[i] = false;
+                        mcdu.dataManager.GetAirportByIdent(value).then((airport) => {
+                            if (airport) {
+                                data.airports[i] = value;
+                                data.managed[i] = false;
+
+                                if (mcdu.page.Current === mcdu.page.AOCRequestWeather) {
+                                    CDUAocRequestsWeather.ShowPage(mcdu, data);
+                                }
+                            } else {
+                                mcdu.addNewMessage(NXSystemMessages.notInDatabase);
+                            }
+                        });
                     }
                 }
-
-                CDUAocRequestsWeather.ShowPage(mcdu, data);
             };
         }
 
@@ -108,7 +117,10 @@ class CDUAocRequestsWeather {
                 if (retval[0] === Atsu.AtsuStatusCodes.Ok) {
                     mcdu.atsuManager.registerMessage(retval[1]);
                     data.sendStatus = "";
-                    updateView();
+
+                    if (mcdu.page.Current === mcdu.page.AOCRequestWeather) {
+                        CDUAocRequestsWeather.ShowPage(mcdu, data);
+                    }
                 } else {
                     mcdu.addNewAtsuMessage(retval[0]);
                     data.sendStatus = "FAILED";

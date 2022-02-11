@@ -69,10 +69,20 @@ class CDUAocRequestsAtis {
         mcdu.onLeftInput[0] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
                 store["arpt1"] = "";
+                CDUAocRequestsAtis.ShowPage(mcdu, store);
             } else {
-                store["arpt1"] = value;
+                mcdu.dataManager.GetAirportByIdent(value).then((airport) => {
+                    if (airport) {
+                        store["arpt1"] = value;
+
+                        if (mcdu.page.Current === mcdu.page.AOCRequestAtis) {
+                            CDUAocRequestsAtis.ShowPage(mcdu, store);
+                        }
+                    } else {
+                        mcdu.addNewMessage(NXSystemMessages.notInDatabase);
+                    }
+                });
             }
-            CDUAocRequestsAtis.ShowPage(mcdu, store);
         };
         mcdu.leftInputDelay[1] = () => {
             return mcdu.getDelaySwitchPage();
