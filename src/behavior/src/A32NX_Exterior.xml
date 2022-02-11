@@ -168,5 +168,14 @@
             <ANIM_CODE>(L:A32NX_HYD_AILERON_RIGHT_DEFLECTION, number) 50 * 50 +</ANIM_CODE>
         </UseTemplate>
     </Template>
-
+    <Template Name="FBW_HANDLING_Elevator_Template">
+        <UseTemplate Name="ASOBO_GT_Anim_Code">
+            <ANIM_NAME>l_elevator_percent_key</ANIM_NAME>
+            <ANIM_CODE>(L:A32NX_HYD_ELEVATOR_LEFT_DEFLECTION, number) 50 * 50 +</ANIM_CODE>
+        </UseTemplate>
+         <UseTemplate Name="ASOBO_GT_Anim_Code">
+            <ANIM_NAME>r_elevator_percent_key</ANIM_NAME>
+            <ANIM_CODE>(L:A32NX_HYD_ELEVATOR_RIGHT_DEFLECTION, number) 50 * 50 +</ANIM_CODE>
+        </UseTemplate>
+    </Template>
 </ModelBehaviors>

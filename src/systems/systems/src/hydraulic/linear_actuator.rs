@@ -40,12 +40,25 @@ pub trait BoundedLinearLength {
     fn absolute_length_to_anchor(&self) -> Length;
 }
 
+use std::fmt;
+
 #[derive(PartialEq, Clone, Copy)]
 pub enum LinearActuatorMode {
     ClosedValves,
     PositionControl,
     ActiveDamping,
     ClosedCircuitDamping,
+}
+
+impl fmt::Display for LinearActuatorMode {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            LinearActuatorMode::ActiveDamping => write!(f, "ActiveDamping"),
+            LinearActuatorMode::ClosedValves => write!(f, "ClosedValves"),
+            LinearActuatorMode::ClosedCircuitDamping => write!(f, "ClosedCircuitDamping"),
+            LinearActuatorMode::PositionControl => write!(f, "PositionControl"),
+        }
+    }
 }
 
 /// Represents an abstraction of the low level hydraulic actuator control system that would in real life consist of a lot of
@@ -1774,6 +1787,43 @@ mod tests {
         assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.95));
     }
 
+    #[test]
+    fn elevator_position_control_is_stable_with_all_actuators_in_control() {
+        let mut test_bed = SimulationTestBed::new(|_| {
+            TestAircraft::new(Duration::from_millis(10), elevator_assembly())
+        });
+
+        test_bed.command(|a| a.command_unlock());
+        test_bed.command(|a| {
+            a.set_pressures([Pressure::new::<psi>(3000.), Pressure::new::<psi>(3000.)])
+        });
+
+        test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(0.8), 0));
+        test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(0.8), 1));
+
+        // Step demand in 0.3s to position 0.8
+        test_bed.run_with_delta(Duration::from_secs_f64(0.5));
+
+        //Now check position is stable for 20s
+        for _ in 0..20 {
+            test_bed.run_with_delta(Duration::from_secs_f64(1.));
+            assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.75));
+            assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.85));
+        }
+
+        // Step demand in 0.3s to position 0.2
+        test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(0.2), 0));
+        test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(0.2), 1));
+        test_bed.run_with_delta(Duration::from_secs_f64(0.5));
+
+        // Now check position is stable for 20s
+        for _ in 0..20 {
+            test_bed.run_with_delta(Duration::from_secs_f64(1.));
+            assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.15));
+            assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.25));
+        }
+    }
+
     fn cargo_door_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
         const DEFAULT_I_GAIN: f64 = 5.;
         const DEFAULT_P_GAIN: f64 = 0.05;
@@ -2043,6 +2093,59 @@ mod tests {
             Angle::new::<degree>(50.),
             init_angle,
             1.,
+            false,
+            Vector3::new(1., 0., 0.),
+        )
+    }
+
+    fn elevator_assembly() -> HydraulicLinearActuatorAssembly<2> {
+        let rigid_body = elevator_body();
+        let actuator = elevator_actuator(&rigid_body);
+
+        HydraulicLinearActuatorAssembly::new([actuator, actuator], rigid_body)
+    }
+
+    fn elevator_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
+        const DEFAULT_I_GAIN: f64 = 10.;
+        const DEFAULT_P_GAIN: f64 = 5.;
+        const DEFAULT_FORCE_GAIN: f64 = 200000.;
+
+        LinearActuator::new(
+            bounded_linear_length,
+            1,
+            Length::new::<meter>(0.04),
+            Length::new::<meter>(0.),
+            VolumeRate::new::<gallon_per_second>(0.04),
+            80000.,
+            1500.,
+            5000.,
+            800000.,
+            Duration::from_millis(300),
+            [1., 1., 1., 1., 1., 1.],
+            [0., 0.2, 0.21, 0.79, 0.8, 1.],
+            DEFAULT_P_GAIN,
+            DEFAULT_I_GAIN,
+            DEFAULT_FORCE_GAIN,
+        )
+    }
+
+    fn elevator_body() -> LinearActuatedRigidBodyOnHingeAxis {
+        let size = Vector3::new(6., 0.405, 1.125);
+        let cg_offset = Vector3::new(0., 0., -0.5 * size[2]);
+
+        let control_arm = Vector3::new(0., -0.0525, 0.);
+        let anchor = Vector3::new(0., -0.0525, 0.41);
+
+        LinearActuatedRigidBodyOnHingeAxis::new(
+            Mass::new::<kilogram>(58.6),
+            size,
+            cg_offset,
+            control_arm,
+            anchor,
+            Angle::new::<degree>(-17.),
+            Angle::new::<degree>(47.),
+            Angle::new::<degree>(-17.),
+            100.,
             false,
             Vector3::new(1., 0., 0.),
         )
