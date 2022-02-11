@@ -143,10 +143,10 @@ class CDUAtcConnectionNotification {
 
                                 store["atcCenter"] = "";
                                 clearInterval(interval);
-                            }
 
-                            if (mcdu.page.Current === mcdu.page.ATCNotification) {
-                                CDUAtcConnectionNotification.ShowPage(mcdu, store);
+                                if (mcdu.page.Current === mcdu.page.ATCNotification) {
+                                    CDUAtcConnectionNotification.ShowPage(mcdu, store);
+                                }
                             }
                         }, 5000);
                     } else {
