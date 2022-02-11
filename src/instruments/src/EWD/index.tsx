@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { DisplayUnit } from '@instruments/common/displayUnit';
+import { useSimVar } from '@instruments/common/simVars';
 import { render } from '../Common';
 import UpperDisplay from './elements/UpperDisplay';
 import LowerLeftDisplay from './elements/LowerLeftDisplay';
+import PseudoFWC from './elements/PseudoFWC';
 
 import './style.scss';
 
@@ -11,6 +13,11 @@ export const EWD: React.FC = () => {
         const url = document.getElementsByTagName('a32nx-ewd')[0].getAttribute('url');
         return url ? parseInt(url.substring(url.length - 1), 10) : 0;
     });
+
+    const [spoiler] = useSimVar('L:A32NX_SPOILER_FETTLING', 'bool', 500);
+    useEffect(() => {
+        console.log(`Spoiler is ${spoiler}`);
+    }, [spoiler]);
 
     return (
         <DisplayUnit
@@ -23,6 +30,7 @@ export const EWD: React.FC = () => {
                 <line className="Separator" x1="522" y1="533" x2="764" y2="533" strokeLinecap="round" />
                 <line className="Separator" x1="484" y1="552" x2="484" y2="724" strokeLinecap="round" />
                 <LowerLeftDisplay x={10} y={565} />
+                <PseudoFWC />
             </svg>
         </DisplayUnit>
     );
