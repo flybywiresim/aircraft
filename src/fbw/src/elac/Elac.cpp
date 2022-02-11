@@ -208,7 +208,7 @@ void Elac::computeComputerEngagementRoll() {
 
   if (!isUnit1 && !hasPriorityInRoll && busInputs.elacOpp.aileronCommand.isNo()) {
     leftAileronCrossCommandActive = discreteInputs.oppLeftAileronLost && leftAileronAvail;
-    rightAileronAvail = discreteInputs.oppRightAileronLost && rightAileronAvail;
+    rightAileronCrossCommandActive = discreteInputs.oppRightAileronLost && rightAileronAvail;
   } else {
     leftAileronCrossCommandActive = false;
     rightAileronCrossCommandActive = false;
