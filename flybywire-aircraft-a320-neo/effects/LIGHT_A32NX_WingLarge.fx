@@ -22,7 +22,7 @@ Drag=0.00, 0.00
 X Particle Velocity=0.00, 0.00
 Y Particle Velocity=0.00, 0.00
 Z Particle Velocity=0.00, 0.00
-X Rotation=0.00, 0.00
+X Rotation=20.00, 20.00
 Y Rotation=0.00, 0.00
 Z Rotation=0.00, 0.00
 X Offset=0.0, 0.0
@@ -65,9 +65,9 @@ MinProjSize=0.2
 
 [LightAttributes.0]
 Type=spot
-Size=0.1
-Range=20
-Intensity=50
+Size=0.8
+Range=100
+Intensity=100
 Softness=0.0
 SpotInner=0
 SpotOuter=25
