@@ -73,7 +73,7 @@ class CDUAtcMenu {
         mcdu.page.Current = mcdu.page.ATCMenu;
         mcdu.setTemplate([
             ["ATC MENU", "2", "2"],
-            ["--------ATS623 PAGE--------"],
+            ["------ATS623 PAGE--------"],
             ["<DEPART REQ", "ATIS>"],
             ["", ""],
             ["<OCEANIC REQ", ""],

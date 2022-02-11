@@ -133,7 +133,7 @@ class CDUAtcDepartReq {
             [fromTo, station],
             ["\xa0GATE", "ATIS CODE\xa0"],
             [gate, atis],
-            ["------FREE TEXT---------"],
+            ["-------FREE TEXT--------"],
             [freetext],
             ["", "MORE\xa0"],
             ["", "FREE TEXT>[color]white"],
