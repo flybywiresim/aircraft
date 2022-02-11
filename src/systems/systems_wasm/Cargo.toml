@@ -4,11 +4,6 @@ version = "0.1.0"
 authors = ["FlyByWire Simulations"]
 edition = "2018"
 
-[lib]
-test = false
-doctest = false
-doc = false
-
 [dependencies]
 uom = "0.30.0"
 systems = { path = "../systems" }
