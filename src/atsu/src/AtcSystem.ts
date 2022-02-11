@@ -3,7 +3,7 @@
 
 import { HoppieConnector } from './com/HoppieConnector';
 import { AtsuStatusCodes } from './AtsuStatusCodes';
-import { AtisMessage } from './messages/AtisMessage';
+import { AtisMessage, AtisType } from './messages/AtisMessage';
 import { AtsuTimestamp } from './messages/AtsuTimestamp';
 import { AtsuMessageComStatus, AtsuMessage, AtsuMessageType, AtsuMessageDirection } from './messages/AtsuMessage';
 import { CpdlcMessageResponse, CpdlcMessageRequestedResponseType, CpdlcMessage } from './messages/CpdlcMessage';
@@ -37,7 +37,7 @@ export class AtcSystem {
 
     private printAtisReport = false;
 
-    private atisAutoUpdateIcaos: string[] = [];
+    private atisAutoUpdateIcaos: [string, AtisType][] = [];
 
     private atisMessages: Map<string, [number, AtisMessage[]]> = new Map();
 
@@ -85,21 +85,21 @@ export class AtcSystem {
         setInterval(() => {
             const currentTime = new AtsuTimestamp().Seconds;
             this.atisAutoUpdateIcaos.forEach((icao) => {
-                if (this.atisMessages.has(icao)) {
-                    const delta = currentTime - this.atisMessages.get(icao)[0];
+                if (this.atisMessages.has(icao[0])) {
+                    const delta = currentTime - this.atisMessages.get(icao[0])[0];
                     if (delta >= 10 * 60000) {
-                        this.updateAtis(icao, false).then((code) => {
+                        this.updateAtis(icao[0], icao[1], false).then((code) => {
                             if (code === AtsuStatusCodes.Ok) {
-                                this.atisMessages.get(icao)[0] = currentTime;
+                                this.atisMessages.get(icao[0])[0] = currentTime;
                             } else {
                                 this.parent.publishAtsuStatusCode(code);
                             }
                         });
                     } else {
-                        this.atisMessages.get(icao)[0] = currentTime;
+                        this.atisMessages.get(icao[0])[0] = currentTime;
                     }
                 } else {
-                    this.updateAtis(icao, false).then((code) => {
+                    this.updateAtis(icao[0], icao[1], false).then((code) => {
                         if (code !== AtsuStatusCodes.Ok) {
                             this.parent.publishAtsuStatusCode(code);
                         }
@@ -510,8 +510,8 @@ export class AtcSystem {
         return index !== -1;
     }
 
-    private async updateAtis(icao: string, overwrite: boolean): Promise<AtsuStatusCodes> {
-        return this.datalink.receiveAtis(icao).then((retval) => {
+    private async updateAtis(icao: string, type: AtisType, overwrite: boolean): Promise<AtsuStatusCodes> {
+        return this.datalink.receiveAtis(icao, type).then((retval) => {
             if (retval[0] === AtsuStatusCodes.Ok) {
                 let code = AtsuStatusCodes.Ok;
                 const atis = retval[1] as AtisMessage;
@@ -559,8 +559,8 @@ export class AtcSystem {
         return this.printAtisReport;
     }
 
-    public async receiveAtis(icao: string): Promise<AtsuStatusCodes> {
-        return this.updateAtis(icao, true);
+    public async receiveAtis(icao: string, type: AtisType): Promise<AtsuStatusCodes> {
+        return this.updateAtis(icao, type, true);
     }
 
     public atisReports(icao: string): AtisMessage[] {
@@ -571,17 +571,17 @@ export class AtcSystem {
     }
 
     public atisAutoUpdateActive(icao: string): boolean {
-        return this.atisAutoUpdateIcaos.findIndex((elem) => icao === elem) !== -1;
+        return this.atisAutoUpdateIcaos.findIndex((elem) => icao === elem[0]) !== -1;
     }
 
-    public activateAtisAutoUpdate(icao: string): void {
-        if (this.atisAutoUpdateIcaos.find((elem) => elem === icao) === undefined) {
-            this.atisAutoUpdateIcaos.push(icao);
+    public activateAtisAutoUpdate(icao: string, type: AtisType): void {
+        if (this.atisAutoUpdateIcaos.find((elem) => elem[0] === icao) === undefined) {
+            this.atisAutoUpdateIcaos.push([icao, type]);
         }
     }
 
     public deactivateAtisAutoUpdate(icao: string): void {
-        const idx = this.atisAutoUpdateIcaos.findIndex((elem) => icao === elem);
+        const idx = this.atisAutoUpdateIcaos.findIndex((elem) => icao === elem[0]);
         if (idx >= 0) {
             this.atisAutoUpdateIcaos.splice(idx, 1);
         }

@@ -1,27 +1,121 @@
 class CDUAtcAtisMenu {
-    static CreateLineData(mcdu, icao, type, requested) {
-        const reports = mcdu.atsuManager.atc.atisReports(icao);
+    static CreateDataBlock(mcdu) {
+        const airports = [
+            { icao: "", type: Atsu.AtisType.Departure, requested: false, autoupdate: false },
+            { icao: "", type: Atsu.AtisType.Arrival, requested: false, autoupdate: false },
+            { icao: "", type: Atsu.AtisType.Arrival, requested: false, autoupdate: false },
+            { icao: "", type: Atsu.AtisType.Arrival, requested: false, autoupdate: false }
+        ];
 
-        let prefix = "\xa0";
-        let middle = "";
-        if (reports.length !== 0) {
-            middle = `\xa0\xa0${reports[0].Information} ${reports[0].Timestamp.dcduTimestamp()}`;
-            middle = middle.substring(0, middle.length - 1);
-            prefix = "<";
+        if (mcdu.flightPlanManager.getOrigin() && mcdu.flightPlanManager.getOrigin().ident) {
+            airports[0].icao = mcdu.flightPlanManager.getOrigin().ident;
+            airports[0].autoupdate = mcdu.atsuManager.atc.atisAutoUpdateActive(airports[0].icao);
+        }
+        if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident) {
+            airports[1].icao = mcdu.flightPlanManager.getDestination().ident;
+            airports[1].autoupdate = mcdu.atsuManager.atc.atisAutoUpdateActive(airports[1].icao);
+        }
+        if (mcdu.altDestination && mcdu.altDestination.ident) {
+            airports[2].icao = mcdu.altDestination.ident;
+            airports[2].autoupdate = mcdu.atsuManager.atc.atisAutoUpdateActive(airports[2].icao);
         }
 
-        const left = `${prefix}${icao}/${type}[color]cyan`;
-        let right = "SEND*";
-        if (requested) {
-            right = "SEND\xa0";
-        }
+        return airports;
+    }
 
-        return [left, middle, right];
+    static InterpretLSK(mcdu, value, airports, idx) {
+        if (!value) {
+            const reports = mcdu.atsuManager.atc.atisReports(airports[idx].icao);
+            if (reports.length !== 0) {
+                CDUAtcReportAtis.ShowPage(mcdu, `${airports[idx].icao}/${airports[idx].type === Atsu.AtisType.Departure ? "DEP" : "ARR"}`, reports, 0);
+            }
+        } else if (value === FMCMainDisplay.clrValue) {
+            airports[idx].icao = "";
+            airports[idx].requested = false;
+            airports[idx].autoupdate = false;
+            CDUAtcAtisMenu.ShowPage(mcdu, airports);
+        } else {
+            // validate the generic format and if the airport is described by four characters
+            const entries = value.split("/");
+            if (entries.length !== 2 || !/^[A-Z0-9]{4}$/.test(entries[0])) {
+                mcdu.addNewMessage(NXSystemMessages.formatError);
+                return;
+            }
+
+            // validate the ATIS type
+            let type = null;
+            if (entries[1] === "ARR" || entries[1] === "AR" || entries[1] === "A") {
+                type = Atsu.AtisType.Arrival;
+            } else if (entries[1] === "DEP" || entries[1] === "DDE" || entries[1] === "D") {
+                type = Atsu.AtisType.Departure;
+            }
+            if (type === null) {
+                mcdu.addNewMessage(NXSystemMessages.formatError);
+                return;
+            }
+
+            // check that this is setup is not already set
+            const currentIndex = airports.findIndex((elem) => elem.icao === entries[0] && elem.type === type);
+            if (currentIndex !== -1 && idx !== currentIndex) {
+                mcdu.addNewMessage(NXSystemMessages.arptTypeAlreadyInUse);
+                return;
+            }
+
+            // validate the airport
+            mcdu.dataManager.GetAirportByIdent(entries[0]).then((airport) => {
+                if (airport) {
+                    airports[idx].autoupdate = mcdu.atsuManager.atc.atisAutoUpdateActive(entries[0]);
+                    airports[idx].icao = entries[0];
+                    airports[idx].type = type;
+                    CDUAtcAtisMenu.ShowPage(mcdu, airports);
+                } else {
+                    mcdu.addNewMessage(NXSystemMessages.notInDatabase);
+                }
+            });
+        }
+    }
+
+    static CreateLineData(mcdu, airport) {
+        if (airport.icao !== "") {
+            const reports = mcdu.atsuManager.atc.atisReports(airport.icao);
+
+            let prefix = "\xa0";
+            let middle = "";
+            if (reports.length !== 0) {
+                middle = `\xa0\xa0${reports[0].Information} ${reports[0].Timestamp.dcduTimestamp()}`;
+                middle = middle.substring(0, middle.length - 1);
+                prefix = "{white}<{end}";
+            }
+
+            let suffix = "\xa0";
+            if (!airport.requested) {
+                suffix = "*";
+            }
+
+            let right = "SEND*";
+            let rightTitle = "REQ\xa0";
+            const left = `{cyan}${prefix}${airport.icao}/${airport.type === Atsu.AtisType.Arrival ? "ARR" : "DEP"}{end}`;
+
+            if (airport.autoupdate) {
+                rightTitle = "UPDATE\xa0";
+                if (reports.length !== 0) {
+                    right = "CANCEL*";
+                } else {
+                    right = `SEND${suffix}`;
+                }
+            } else {
+                right = `SEND${suffix}`;
+            }
+
+            return [left, middle, rightTitle, right];
+        } else {
+            return ["\xa0[  ]/[ ][color]cyan", "", "REQ\xa0", "SEND\xa0"];
+        }
     }
 
     static RequestAtis(mcdu, airports, idx) {
-        if (airports[idx].icao !== "" && !airports[idx].req) {
-            airports[idx].req = true;
+        if (airports[idx].icao !== "" && !airports[idx].requested) {
+            airports[idx].requested = true;
 
             mcdu.atsuManager.atc.receiveAtis(airports[idx].icao).then((code) => {
                 if (code !== Atsu.AtsuStatusCodes.Ok) {
@@ -38,26 +132,16 @@ class CDUAtcAtisMenu {
         }
     }
 
-    static ShowPage(mcdu, airports = [{ icao: "", req: false }, { icao: "", req: false }, { icao: "", req: false }]) {
+    static ShowPage(mcdu, airports = CDUAtcAtisMenu.CreateDataBlock(mcdu)) {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.ATCAtis;
 
-        let depAtis = ["\xa0[  ]/[ ][color]cyan", "", "SEND\xa0"];
-        let arrAtis = ["\xa0[  ]/[ ][color]cyan", "", "SEND\xa0"];
-        let altAtis = ["\xa0[  ]/[ ][color]inop", "", "SEND\xa0"];
-
-        if (mcdu.flightPlanManager.getOrigin() && mcdu.flightPlanManager.getOrigin().ident) {
-            depAtis = CDUAtcAtisMenu.CreateLineData(mcdu, mcdu.flightPlanManager.getOrigin().ident, "DEP", airports[0].req);
-            airports[0].icao = mcdu.flightPlanManager.getOrigin().ident;
-        }
-        if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident) {
-            arrAtis = CDUAtcAtisMenu.CreateLineData(mcdu, mcdu.flightPlanManager.getDestination().ident, "ARR", airports[1].req);
-            airports[1].icao = mcdu.flightPlanManager.getDestination().ident;
-        }
-        if (mcdu.altDestination && mcdu.altDestination.ident) {
-            altAtis = CDUAtcAtisMenu.CreateLineData(mcdu, mcdu.altDestination.ident, "ARR", airports[2].req);
-            airports[2].icao = mcdu.altDestination.ident;
-        }
+        const lines = [
+            CDUAtcAtisMenu.CreateLineData(mcdu, airports[0]),
+            CDUAtcAtisMenu.CreateLineData(mcdu, airports[1]),
+            CDUAtcAtisMenu.CreateLineData(mcdu, airports[2]),
+            CDUAtcAtisMenu.CreateLineData(mcdu, airports[3])
+        ];
 
         let printTitle = "PRINT:MANUAL\xa0";
         let printButton = "SET AUTO*";
@@ -68,14 +152,14 @@ class CDUAtcAtisMenu {
 
         mcdu.setTemplate([
             ["ATIS MENU"],
-            ["\xa0ARPT/TYPE[color]white", "REQ\xa0[color]cyan"],
-            [depAtis[0], `${depAtis[2]}[color]cyan`, `{small}${depAtis[1]}{end}[color]white`],
-            ["", "REQ\xa0[color]cyan"],
-            [arrAtis[0], `${arrAtis[2]}[color]cyan`, `{small}${arrAtis[1]}{end}[color]white`],
-            ["", "REQ\xa0[color]cyan"],
-            [altAtis[0], `${altAtis[2]}[color]cyan`, `{small}${altAtis[1]}{end}[color]white`],
-            [""],
-            [""],
+            ["\xa0ARPT/TYPE[color]white", `${lines[0][2]}[color]cyan`],
+            [lines[0][0], `${lines[0][3]}[color]cyan`, `{small}${lines[0][1]}{end}[color]white`],
+            ["", `${lines[1][2]}[color]cyan`],
+            [lines[1][0], `${lines[1][3]}[color]cyan`, `{small}${lines[1][1]}{end}[color]white`],
+            ["", `${lines[2][2]}[color]cyan`],
+            [lines[2][0], `${lines[2][3]}[color]cyan`, `{small}${lines[2][1]}{end}[color]white`],
+            ["", `${lines[3][2]}[color]cyan`],
+            [lines[3][0], `${lines[3][3]}[color]cyan`, `{small}${lines[3][1]}{end}[color]white`],
             ["", "AUTO\xa0"],
             ["", "UPDATE>"],
             ["\xa0ATC MENU", printTitle],
@@ -85,37 +169,29 @@ class CDUAtcAtisMenu {
         mcdu.leftInputDelay[0] = () => {
             return mcdu.getDelaySwitchPage();
         };
-        mcdu.onLeftInput[0] = () => {
-            if (airports[0].icao !== "") {
-                const reports = mcdu.atsuManager.atc.atisReports(airports[0].icao);
-                if (reports.length !== 0) {
-                    CDUAtcReportAtis.ShowPage(mcdu, `${airports[0].icao}/DEP`, reports, 0);
-                }
-            }
+        mcdu.onLeftInput[0] = (value) => {
+            CDUAtcAtisMenu.InterpretLSK(mcdu, value, airports, 0);
         };
 
         mcdu.leftInputDelay[1] = () => {
             return mcdu.getDelaySwitchPage();
         };
-        mcdu.onLeftInput[1] = () => {
-            if (airports.icao[1] !== "") {
-                const reports = mcdu.atsuManager.atc.atisReports(airports[1].icao);
-                if (reports.length !== 0) {
-                    CDUAtcReportAtis.ShowPage(mcdu, `${airports[1].icao}/ARR`, reports, 0);
-                }
-            }
+        mcdu.onLeftInput[1] = (value) => {
+            CDUAtcAtisMenu.InterpretLSK(mcdu, value, airports, 1);
         };
 
         mcdu.leftInputDelay[2] = () => {
             return mcdu.getDelaySwitchPage();
         };
-        mcdu.onLeftInput[2] = () => {
-            if (airports[2].icao !== "") {
-                const reports = mcdu.atsuManager.atc.atisReports(airports[2].icao);
-                if (reports.length !== 0) {
-                    CDUAtcReportAtis.ShowPage(mcdu, `${airports[2].icao}/ARR`, reports, 0);
-                }
-            }
+        mcdu.onLeftInput[2] = (value) => {
+            CDUAtcAtisMenu.InterpretLSK(mcdu, value, airports, 2);
+        };
+
+        mcdu.leftInputDelay[3] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+        mcdu.onLeftInput[3] = (value) => {
+            CDUAtcAtisMenu.InterpretLSK(mcdu, value, airports, 3);
         };
 
         mcdu.leftInputDelay[5] = () => {
