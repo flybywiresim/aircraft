@@ -44,8 +44,8 @@ class CDUAocInit {
         if (mcdu.simbrief.destinationIcao) {
             destinationIcao = `${mcdu.simbrief.destinationIcao}[color]cyan`;
         }
-        if (mcdu.simbrief.icao_airline || mcdu.simbrief.flight_number) {
-            fltNbr = `{small}${mcdu.simbrief.icao_airline}${mcdu.simbrief.flight_number}{end}[color]green`;
+        if (mcdu.simbrief.callsign) {
+            fltNbr = `{small}${mcdu.simbrief.callsign}{end}[color]green`;
         }
         if (mcdu.simbrief.ete) {
             ete = `${FMCMainDisplay.secondsTohhmm(mcdu.simbrief.ete)}[color]cyan`;

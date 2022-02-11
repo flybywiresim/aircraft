@@ -164,6 +164,13 @@ const DCDU: React.FC = () => {
         }
     });
 
+    useCoherentEvent('A32NX_DCDU_RESET', () => {
+        setMessageUid(-1);
+        setMessages(new Map<number, [CpdlcMessage, number, boolean, CpdlcMessageResponse | undefined]>());
+        setAtcMessage('');
+        resetStatus('');
+    });
+
     // resynchronization with AtsuManager
     useCoherentEvent('A32NX_DCDU_MSG', (serialized: any) => {
         let cpdlcMessage : CpdlcMessage | undefined = undefined;
