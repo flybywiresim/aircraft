@@ -70,8 +70,7 @@ const getSimBriefOfp = (mcdu, updateView, callback = () => {}) => {
             mcdu.simbrief["cargo"] = mcdu.simbrief["units"] === 'kgs' ? data.weights.cargo : lbsToKg(data.weights.cargo);
             mcdu.simbrief["costIndex"] = data.general.costindex;
             mcdu.simbrief["navlog"] = data.navlog.fix;
-            mcdu.simbrief["icao_airline"] = typeof data.general.icao_airline === 'string' ? data.general.icao_airline : "";
-            mcdu.simbrief["flight_number"] = data.general.flight_number;
+            mcdu.simbrief["callsign"] = data.atc.callsign;
             mcdu.simbrief["alternateIcao"] = data.alternate.icao_code;
             mcdu.simbrief["alternateTransAlt"] = parseInt(data.alternate.trans_alt, 10);
             mcdu.simbrief["alternateTransLevel"] = parseInt(data.alternate.trans_level, 10);
@@ -113,12 +112,10 @@ const insertUplink = (mcdu) => {
         costIndex,
         alternateIcao,
         avgTropopause,
-        icao_airline,
-        flight_number
+        callsign
     } = mcdu.simbrief;
 
     const fromTo = `${originIcao}/${destinationIcao}`;
-    const fltNbr = `${icao_airline}${flight_number}`;
 
     mcdu.addNewMessage(NXSystemMessages.uplinkInsertInProg);
 
@@ -149,7 +146,7 @@ const insertUplink = (mcdu) => {
             }
         }
     });
-    mcdu.updateFlightNo(fltNbr, (result) => {
+    mcdu.updateFlightNo(callsign, (result) => {
         if (result) {
             if (mcdu.page.Current === mcdu.page.InitPageA) {
                 CDUInitPage.ShowPage1(mcdu);
