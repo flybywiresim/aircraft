@@ -135,6 +135,7 @@
 1. [EFB] Added Datalink simulation rate - @svengcz (Sven Czarnian)
 1. [ATSU] Add PDC/CPDLC communication via Hoppie - @svengcz (Sven Czarnian)
 1. [AP] Fix: adjustment of vertical speed limitation in SPD/MACH law - @IbrahimK42 (IbrahimK42)
+1. [HYD] Ailerons hydraulic control (only visual and hydraulics) - @Crocket63
 1. [MISC] Animation speed/behaviors for button, switches and knobs - @bouveng (Johan Bouveng)
 1. [AP] Added Autoland capability for special terrain profiles, i.e. KSEA 16R - @aguther (Andreas Guther)
 1. [ATHR] Adjustment of ATHR SPD/MACH gains - @IbrahimK42 (IbrahimK42)
@@ -144,6 +145,7 @@
 1. [ECAM] Add pack abnormally off warnings - @tracernz (Mike)
 1. [ELEC] Fix emergency elec on init in flight wrongly triggering the RAT - @Crocket63
 1. [ATHR] Fix ATHR Speed Undershoot - @IbrahimK42 (IbrahimK42)
+1. [FLIGHTMODEL] Improved pitch stability in turbulence - @aguther (Andreas Guther)
 
 ## 0.7.0
 
