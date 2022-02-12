@@ -130,8 +130,8 @@ impl ZoneAir {
     const A320_CABIN_DIAMETER_METER: f64 = 4.14; // m
     const FLOW_RATE_THROUGH_OPEN_DOOR_KG_PER_SECOND: f64 = 0.6; // kg/s
     const CONVECTION_COEFFICIENT_CONSTANT_FOR_NATURAL_CONVECTION: f64 = 1.32;
-    const FIBER_GLASS_BLANKET_THERMAL_CONDUCTIVITY: f64 = 35.; // m*W/m*C
-    const FIBER_GLASS_BLANKET_THICKNESS_METER: f64 = 0.12; // m
+    const FIBER_GLASS_BLANKET_THERMAL_CONDUCTIVITY: f64 = 25.; // m*W/m*C
+    const FIBER_GLASS_BLANKET_THICKNESS_METER: f64 = 0.2; // m
     const ALUMINIUM_ALLOY_THERMAL_CONDUCTIVITY: f64 = 177.; // m*W/m*C
     const ALUMINIUM_ALLOY_THICKNESS_METER: f64 = 0.005; // m
     const CONVECTION_COEFFICIENT_FOR_CLOTHED_BODY: f64 = 3.1; // W/m2*C
@@ -245,7 +245,7 @@ impl ZoneAir {
         let internal_convection_coefficient: f64 =
             self.natural_convection_coefficient_calculation(context);
         let wall_specific_heat_transfer: f64 = (self.internal_air.temperature().get::<kelvin>()
-            - context.ambient_temperature().get::<kelvin>())
+            - self.film_temperature_calculation(context).get::<kelvin>())
             / (1. / internal_convection_coefficient
                 + Self::FIBER_GLASS_BLANKET_THICKNESS_METER
                     / Self::FIBER_GLASS_BLANKET_THERMAL_CONDUCTIVITY
@@ -263,7 +263,7 @@ impl ZoneAir {
     fn natural_convection_coefficient_calculation(&self, context: &UpdateContext) -> f64 {
         // Temperature differential should be based on the wall temperature instead of the inside vs outside. This is a simplification
         let temperature_differential: f64 = self.internal_air.temperature().get::<kelvin>()
-            - context.ambient_temperature().get::<kelvin>(); // Kelvin
+            - self.film_temperature_calculation(context).get::<kelvin>(); // Kelvin
 
         // Convection coefficient for horizontal cylinder in air
         let convection_coefficient: f64 =
@@ -305,7 +305,7 @@ impl ZoneAir {
     fn external_density_calculation(&self, context: &UpdateContext) -> MassDensity {
         // Ideal gas law
         let rho = context.ambient_pressure().get::<pascal>()
-            / (Air::R * context.ambient_temperature().get::<kelvin>());
+            / (Air::R * self.film_temperature_calculation(context).get::<kelvin>());
         MassDensity::new::<kilogram_per_cubic_meter>(rho)
     }
 
@@ -313,6 +313,16 @@ impl ZoneAir {
         let characteristic_length: f64 = zone_volume.get::<cubic_meter>()
             / (std::f64::consts::PI * (Self::A320_CABIN_DIAMETER_METER / 2.).powf(2.));
         Length::new::<meter>(characteristic_length)
+    }
+
+    fn film_temperature_calculation(&self, context: &UpdateContext) -> ThermodynamicTemperature {
+        // Boundary layer film temperature - approximation, this should be done with wall temperature
+        if context.true_airspeed() < Velocity::new::<meter_per_second>(15.) {
+            context.ambient_temperature()
+        } else {
+            ThermodynamicTemperature::new::<kelvin>((self.internal_air.temperature().get::<kelvin>()
+                + context.ambient_temperature().get::<kelvin>()) / 2.)
+        }
     }
 
     fn zone_air_temperature(&self) -> ThermodynamicTemperature {
