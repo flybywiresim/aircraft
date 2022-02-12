@@ -145,11 +145,17 @@ impl MsfsHandler {
         failures: Option<Failures>,
         sim_connect: &mut SimConnect,
     ) -> Result<Self, Box<dyn Error>> {
+        sim_connect.request_data_on_sim_object::<SimulationTime>(
+            SimulationTime::REQUEST_ID,
+            SIMCONNECT_OBJECT_ID_USER,
+            Period::SimFrame,
+        )?;
+
         Ok(Self {
             variables: Some(variables),
             aspects,
             failures,
-            time: Time::new(sim_connect)?,
+            time: Time::new(),
         })
     }
 
@@ -161,7 +167,7 @@ impl MsfsHandler {
     ) -> Result<(), Box<dyn Error>> {
         match event {
             MSFSEvent::PreDraw(_) => {
-                if !self.time.is_pausing() {
+                if !self.time.is_paused() {
                     let delta_time = self.time.take();
                     self.pre_tick(sim_connect, delta_time)?;
                     if let Some(failures) = &self.failures {
@@ -538,17 +544,11 @@ struct Time {
 }
 
 impl Time {
-    fn new(sim_connect: &mut SimConnect) -> Result<Self, Box<dyn Error>> {
-        sim_connect.request_data_on_sim_object::<SimulationTime>(
-            SimulationTime::REQUEST_ID,
-            SIMCONNECT_OBJECT_ID_USER,
-            Period::SimFrame,
-        )?;
-
-        Ok(Self {
+    fn new() -> Self {
+        Self {
             previous_simulation_time_value: 0.,
             next_delta: 0.,
-        })
+        }
     }
 
     fn increment(&mut self, simulation_time: &SimulationTime) {
@@ -556,7 +556,7 @@ impl Time {
         self.previous_simulation_time_value = simulation_time.value;
     }
 
-    fn is_pausing(&self) -> bool {
+    fn is_paused(&self) -> bool {
         self.next_delta == 0.
     }
 
@@ -598,23 +598,91 @@ pub fn f64_to_sim_connect_32k_pos(scaled_axis_value: f64) -> u32 {
 }
 
 #[cfg(test)]
-mod sim_connect_type_casts {
+mod tests {
     use super::*;
-    #[test]
-    fn min_simconnect_value() {
-        // We expect to get first element of YS1
-        assert!(sim_connect_32k_pos_to_f64(u32::MAX - 16384) <= 0.001);
-    }
-    #[test]
-    fn middle_simconnect_value() {
-        // We expect to get first element of YS1
-        let val = sim_connect_32k_pos_to_f64(0);
-        assert!(val <= 0.501 && val >= 0.499);
+
+    mod time {
+        use super::*;
+
+        #[test]
+        fn is_paused_when_the_delta_of_simulation_time_is_zero() {
+            let mut time = Time::new();
+            increment(&mut time, 0.);
+
+            assert!(time.is_paused());
+        }
+
+        #[test]
+        fn is_not_paused_when_the_delta_of_simulation_time_is_greater_than_zero() {
+            let mut time = Time::new();
+            increment(&mut time, 0.1);
+
+            assert!(!time.is_paused());
+        }
+
+        #[test]
+        fn increases_by_the_delta_between_two_simulation_times() {
+            let mut time = Time::new();
+            let delta = 0.1;
+            increment(&mut time, 0.);
+            increment(&mut time, delta);
+
+            assert_eq!(time.take(), Duration::from_secs_f64(delta));
+        }
+
+        #[test]
+        fn increase_is_zero_when_delta_between_two_simulation_times_is_zero() {
+            let mut time = Time::new();
+            increment(&mut time, 0.);
+
+            assert_eq!(time.take(), Duration::from_secs(0))
+        }
+
+        #[test]
+        fn sums_multiple_simulation_times_when_not_taken() {
+            let mut time = Time::new();
+            let delta = 0.1;
+            increment(&mut time, delta);
+            increment(&mut time, delta);
+
+            assert_eq!(time.take(), Duration::from_secs_f64(delta + delta));
+        }
+
+        #[test]
+        fn is_capped_at_a_maximum_delta_of_500ms() {
+            let mut time = Time::new();
+            increment(&mut time, 1.);
+
+            assert_eq!(time.take(), Duration::from_millis(500));
+        }
+
+        fn increment(time: &mut Time, delta: f64) {
+            time.increment(&SimulationTime {
+                value: time.previous_simulation_time_value + delta,
+            });
+        }
     }
 
-    #[test]
-    fn max_simconnect_value() {
-        // We expect to get first element of YS1
-        assert!(sim_connect_32k_pos_to_f64(16384) >= 0.999);
+    mod sim_connect_type_casts {
+        use super::*;
+
+        #[test]
+        fn min_simconnect_value() {
+            // We expect to get first element of YS1
+            assert!(sim_connect_32k_pos_to_f64(u32::MAX - 16384) <= 0.001);
+        }
+
+        #[test]
+        fn middle_simconnect_value() {
+            // We expect to get first element of YS1
+            let val = sim_connect_32k_pos_to_f64(0);
+            assert!(val <= 0.501 && val >= 0.499);
+        }
+
+        #[test]
+        fn max_simconnect_value() {
+            // We expect to get first element of YS1
+            assert!(sim_connect_32k_pos_to_f64(16384) >= 0.999);
+        }
     }
 }
