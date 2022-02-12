@@ -129,9 +129,9 @@ export class FbwAircraftSentryClient {
 
         return new Promise<boolean>((resolve) => {
             popup.showPopUp(
-                'A32NX - DATA COLLECTION',
-                'You can opt-in to enable anonymous crash reporting in order to help us diagnose issues quickly. '
-                + 'This is 100% optional, but will never disclose any personal information if enabled.',
+                'A32NX - ERROR REPORTING',
+                'Are you willing to help us by enabling anonymous error reporting? This is 100% optional and we will never disclose your personal data, '
+                + 'but it will help us diagnose issues quickly.',
                 'normal',
                 () => resolve(true),
                 () => resolve(false),
