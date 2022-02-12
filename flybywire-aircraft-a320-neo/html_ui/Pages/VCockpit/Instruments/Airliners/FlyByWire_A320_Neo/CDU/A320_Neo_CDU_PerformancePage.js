@@ -2,7 +2,7 @@ class CDUPerformancePage {
     static ShowPage(mcdu, _phase = undefined) {
         mcdu.activeSystem = 'FMGC';
 
-        switch (_phase || mcdu.currentFlightPhase) {
+        switch (_phase || mcdu.flightPhaseManager.phase) {
             case FmgcFlightPhases.PREFLIGHT: CDUPerformancePage.ShowTAKEOFFPage(mcdu); break;
             case FmgcFlightPhases.TAKEOFF: CDUPerformancePage.ShowTAKEOFFPage(mcdu); break;
             case FmgcFlightPhases.CLIMB: CDUPerformancePage.ShowCLBPage(mcdu); break;
@@ -16,11 +16,11 @@ class CDUPerformancePage {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.PerformancePageTakeoff;
         CDUPerformancePage._timer = 0;
-        CDUPerformancePage._lastPhase = mcdu.currentFlightPhase;
+        CDUPerformancePage._lastPhase = mcdu.flightPhaseManager.phase;
         mcdu.pageUpdate = () => {
             CDUPerformancePage._timer++;
             if (CDUPerformancePage._timer >= 15) {
-                if (mcdu.currentFlightPhase === CDUPerformancePage._lastPhase) {
+                if (mcdu.flightPhaseManager.phase === CDUPerformancePage._lastPhase) {
                     CDUPerformancePage.ShowTAKEOFFPage(mcdu);
                 } else {
                     CDUPerformancePage.ShowPage(mcdu);
@@ -29,7 +29,7 @@ class CDUPerformancePage {
         };
 
         let titleColor = "white";
-        if (mcdu.currentFlightPhase === FmgcFlightPhases.TAKEOFF) {
+        if (mcdu.flightPhaseManager.phase === FmgcFlightPhases.TAKEOFF) {
             titleColor = "green";
         }
 
@@ -54,7 +54,7 @@ class CDUPerformancePage {
         let v1Check = "{small}\xa0\xa0\xa0{end}";
         let vRCheck = "{small}\xa0\xa0\xa0{end}";
         let v2Check = "{small}\xa0\xa0\xa0{end}";
-        if (mcdu.currentFlightPhase < FmgcFlightPhases.TAKEOFF) {
+        if (mcdu.flightPhaseManager.phase < FmgcFlightPhases.TAKEOFF) {
             v1 = "{amber}___{end}";
             if (mcdu.v1Speed) {
                 if (mcdu._v1Checked) {
@@ -204,7 +204,7 @@ class CDUPerformancePage {
         // thrust reduction / acceleration altitude
         let thrRedAcc = "-----/-----";
         if (hasOrigin) {
-            if (mcdu.currentFlightPhase < FmgcFlightPhases.TAKEOFF) {
+            if (mcdu.flightPhaseManager.phase < FmgcFlightPhases.TAKEOFF) {
                 let thrRed = "[\xa0]";
                 if (isFinite(mcdu.thrustReductionAltitude)) {
                     thrRed = ("" + mcdu.thrustReductionAltitude.toFixed(0)).padStart(5, "\xa0");
@@ -246,7 +246,7 @@ class CDUPerformancePage {
                 }
                 thrRedAcc = `${thrRed}${acc}[color]green`;
             }
-        } else if (mcdu.currentFlightPhase >= FmgcFlightPhases.TAKEOFF) {
+        } else if (mcdu.flightPhaseManager.phase >= FmgcFlightPhases.TAKEOFF) {
             thrRedAcc = "";
         }
 
@@ -287,7 +287,7 @@ class CDUPerformancePage {
         const formattedThs = !isNaN(mcdu.ths)
             ? (mcdu.ths >= 0 && !Object.is(mcdu.ths, -0) ? `UP${Math.abs(mcdu.ths).toFixed(1)}` : `DN${Math.abs(mcdu.ths).toFixed(1)}`)
             : '';
-        if (mcdu.currentFlightPhase < FmgcFlightPhases.TAKEOFF) {
+        if (mcdu.flightPhaseManager.phase < FmgcFlightPhases.TAKEOFF) {
             const flaps = !isNaN(mcdu.flaps) ? mcdu.flaps : "[]";
             const ths = formattedThs ? formattedThs : "[\xa0\xa0\xa0]";
             flapsThs = `${flaps}/${ths}[color]cyan`;
@@ -306,7 +306,7 @@ class CDUPerformancePage {
 
         // flex takeoff temperature
         let flexTakeOffTempCell = "[\xa0\xa0]°[color]cyan";
-        if (mcdu.currentFlightPhase < FmgcFlightPhases.TAKEOFF) {
+        if (mcdu.flightPhaseManager.phase < FmgcFlightPhases.TAKEOFF) {
             if (isFinite(mcdu.perfTOTemp)) {
                 if (mcdu._toFlexChecked) {
                     flexTakeOffTempCell = `${mcdu.perfTOTemp.toFixed(0)}°[color]cyan`;
@@ -341,7 +341,7 @@ class CDUPerformancePage {
         // eng out acceleration altitude
         let engOutAcc = "-----";
         if (hasOrigin) {
-            if (mcdu.currentFlightPhase < FmgcFlightPhases.TAKEOFF) {
+            if (mcdu.flightPhaseManager.phase < FmgcFlightPhases.TAKEOFF) {
                 if (isFinite(mcdu.engineOutAccelerationAltitude)) {
                     engOutAcc = mcdu.engineOutAccelerationAltitude.toFixed(0);
                     if (mcdu.engineOutAccelerationAltitudeIsPilotEntered) {
@@ -366,13 +366,13 @@ class CDUPerformancePage {
                     engOutAcc = `${mcdu.engineOutAccelerationAltitude}[s-text][color]green`;
                 }
             }
-        } else if (mcdu.currentFlightPhase >= FmgcFlightPhases.TAKEOFF) {
+        } else if (mcdu.flightPhaseManager.phase >= FmgcFlightPhases.TAKEOFF) {
             engOutAcc = "";
         }
 
         let next = "NEXT\xa0";
         let nextPhase = "PHASE>";
-        if (!(mcdu._v1Checked && mcdu._vRChecked && mcdu._v2Checked && mcdu._toFlexChecked) && mcdu.currentFlightPhase < FmgcFlightPhases.TAKEOFF) {
+        if (!(mcdu._v1Checked && mcdu._vRChecked && mcdu._v2Checked && mcdu._toFlexChecked) && mcdu.flightPhaseManager.phase < FmgcFlightPhases.TAKEOFF) {
             next = "CONFIRM\xa0";
             nextPhase = "TO DATA*";
             mcdu.onRightInput[5] = (value) => {
@@ -412,18 +412,18 @@ class CDUPerformancePage {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.PerformancePageClb;
         CDUPerformancePage._timer = 0;
-        CDUPerformancePage._lastPhase = mcdu.currentFlightPhase;
+        CDUPerformancePage._lastPhase = mcdu.flightPhaseManager.phase;
         mcdu.pageUpdate = () => {
             CDUPerformancePage._timer++;
             if (CDUPerformancePage._timer >= 100) {
-                if (mcdu.currentFlightPhase === CDUPerformancePage._lastPhase) {
+                if (mcdu.flightPhaseManager.phase === CDUPerformancePage._lastPhase) {
                     CDUPerformancePage.ShowCLBPage(mcdu);
                 } else {
                     CDUPerformancePage.ShowPage(mcdu);
                 }
             }
         };
-        const isPhaseActive = mcdu.currentFlightPhase === FmgcFlightPhases.CLIMB;
+        const isPhaseActive = mcdu.flightPhaseManager.phase === FmgcFlightPhases.CLIMB;
         const titleColor = isPhaseActive ? "green" : "white";
         const isSelected = Simplane.getAutoPilotAirspeedSelected();
         const actModeCell = isSelected ? "SELECTED" : "MANAGED";
@@ -456,7 +456,7 @@ class CDUPerformancePage {
                 scratchpadCallback();
             }
         };
-        const timeLabel = mcdu.getIsFlying() ? "UTC" : "TIME";
+        const timeLabel = mcdu.flightPhaseManager.phase >= FmgcFlightPhases.TAKEOFF ? "UTC" : "TIME";
         const bottomRowLabels = ["\xa0PREV", "NEXT\xa0"];
         const bottomRowCells = ["<PHASE", "PHASE>"];
         mcdu.leftInputDelay[5] = () => {
@@ -467,7 +467,7 @@ class CDUPerformancePage {
                 bottomRowLabels[0] = "\xa0CONFIRM[color]amber";
                 bottomRowCells[0] = "*APPR PHASE[color]amber";
                 mcdu.onLeftInput[5] = async () => {
-                    if (mcdu.tryGoInApproachPhase()) {
+                    if (mcdu.flightPhaseManager.tryGoInApproachPhase()) {
                         CDUPerformancePage.ShowAPPRPage(mcdu);
                     }
                 };
@@ -509,18 +509,18 @@ class CDUPerformancePage {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.PerformancePageCrz;
         CDUPerformancePage._timer = 0;
-        CDUPerformancePage._lastPhase = mcdu.currentFlightPhase;
+        CDUPerformancePage._lastPhase = mcdu.flightPhaseManager.phase;
         mcdu.pageUpdate = () => {
             CDUPerformancePage._timer++;
             if (CDUPerformancePage._timer >= 100) {
-                if (mcdu.currentFlightPhase === CDUPerformancePage._lastPhase) {
+                if (mcdu.flightPhaseManager.phase === CDUPerformancePage._lastPhase) {
                     CDUPerformancePage.ShowCRZPage(mcdu);
                 } else {
                     CDUPerformancePage.ShowPage(mcdu);
                 }
             }
         };
-        const isPhaseActive = mcdu.currentFlightPhase === FmgcFlightPhases.CRUISE;
+        const isPhaseActive = mcdu.flightPhaseManager.phase === FmgcFlightPhases.CRUISE;
         const titleColor = isPhaseActive ? "green" : "white";
         const isSelected = Simplane.getAutoPilotAirspeedSelected();
         const isFlying = false;
@@ -553,7 +553,7 @@ class CDUPerformancePage {
                 bottomRowLabels[0] = "\xa0CONFIRM[color]amber";
                 bottomRowCells[0] = "*APPR PHASE[color]amber";
                 mcdu.onLeftInput[5] = async () => {
-                    if (mcdu.tryGoInApproachPhase()) {
+                    if (mcdu.flightPhaseManager.tryGoInApproachPhase()) {
                         CDUPerformancePage.ShowAPPRPage(mcdu);
                     }
                 };
@@ -602,18 +602,18 @@ class CDUPerformancePage {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.PerformancePageDes;
         CDUPerformancePage._timer = 0;
-        CDUPerformancePage._lastPhase = mcdu.currentFlightPhase;
+        CDUPerformancePage._lastPhase = mcdu.flightPhaseManager.phase;
         mcdu.pageUpdate = () => {
             CDUPerformancePage._timer++;
             if (CDUPerformancePage._timer >= 100) {
-                if (mcdu.currentFlightPhase === CDUPerformancePage._lastPhase) {
+                if (mcdu.flightPhaseManager.phase === CDUPerformancePage._lastPhase) {
                     CDUPerformancePage.ShowDESPage(mcdu);
                 } else {
                     CDUPerformancePage.ShowPage(mcdu);
                 }
             }
         };
-        const isPhaseActive = mcdu.currentFlightPhase === FmgcFlightPhases.DESCENT;
+        const isPhaseActive = mcdu.flightPhaseManager.phase === FmgcFlightPhases.DESCENT;
         const titleColor = isPhaseActive ? "green" : "white";
         const isFlying = false;
         const isSelected = Simplane.getAutoPilotAirspeedSelected();
@@ -639,7 +639,7 @@ class CDUPerformancePage {
                 bottomRowLabels[0] = "\xa0CONFIRM[color]amber";
                 bottomRowCells[0] = "*APPR PHASE[color]amber";
                 mcdu.onLeftInput[5] = async () => {
-                    if (mcdu.tryGoInApproachPhase()) {
+                    if (mcdu.flightPhaseManager.tryGoInApproachPhase()) {
                         CDUPerformancePage.ShowAPPRPage(mcdu);
                     }
                 };
@@ -696,11 +696,11 @@ class CDUPerformancePage {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.PerformancePageAppr;
         CDUPerformancePage._timer = 0;
-        CDUPerformancePage._lastPhase = mcdu.currentFlightPhase;
+        CDUPerformancePage._lastPhase = mcdu.flightPhaseManager.phase;
         mcdu.pageUpdate = () => {
             CDUPerformancePage._timer++;
             if (CDUPerformancePage._timer >= 100) {
-                if (mcdu.currentFlightPhase === CDUPerformancePage._lastPhase) {
+                if (mcdu.flightPhaseManager.phase === CDUPerformancePage._lastPhase) {
                     CDUPerformancePage.ShowAPPRPage(mcdu);
                 }
             }
@@ -842,12 +842,12 @@ class CDUPerformancePage {
         const bottomRowLabels = ["\xa0PREV", "NEXT\xa0"];
         const bottomRowCells = ["<PHASE", "PHASE>"];
         let titleColor = "white";
-        if (mcdu.currentFlightPhase === FmgcFlightPhases.APPROACH) {
+        if (mcdu.flightPhaseManager.phase === FmgcFlightPhases.APPROACH) {
             bottomRowLabels[0] = "";
             bottomRowCells[0] = "";
             titleColor = "green";
         } else {
-            if (mcdu.currentFlightPhase === FmgcFlightPhases.GOAROUND) {
+            if (mcdu.flightPhaseManager.phase === FmgcFlightPhases.GOAROUND) {
                 mcdu.leftInputDelay[5] = () => {
                     return mcdu.getDelaySwitchPage();
                 };
@@ -863,7 +863,7 @@ class CDUPerformancePage {
                 };
             }
         }
-        if (mcdu.currentFlightPhase === FmgcFlightPhases.GOAROUND) {
+        if (mcdu.flightPhaseManager.phase === FmgcFlightPhases.GOAROUND) {
             bottomRowLabels[1] = "";
             bottomRowCells[1] = "";
         } else {
@@ -904,11 +904,11 @@ class CDUPerformancePage {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.PerformancePageGoAround;
         CDUPerformancePage._timer = 0;
-        CDUPerformancePage._lastPhase = mcdu.currentFlightPhase;
+        CDUPerformancePage._lastPhase = mcdu.flightPhaseManager.phase;
         mcdu.pageUpdate = () => {
             CDUPerformancePage._timer++;
             if (CDUPerformancePage._timer >= 100) {
-                if (mcdu.currentFlightPhase === CDUPerformancePage._lastPhase) {
+                if (mcdu.flightPhaseManager.phase === CDUPerformancePage._lastPhase) {
                     CDUPerformancePage.ShowGOAROUNDPage(mcdu);
                 } else {
                     CDUPerformancePage.ShowPage(mcdu);
@@ -917,7 +917,7 @@ class CDUPerformancePage {
         };
 
         let titleColor = "white";
-        if (mcdu.currentFlightPhase === FmgcFlightPhases.GOAROUND) {
+        if (mcdu.flightPhaseManager.phase === FmgcFlightPhases.GOAROUND) {
             titleColor = "green";
         }
         let thrRedAcc = "---";
@@ -975,7 +975,7 @@ class CDUPerformancePage {
 
         const bottomRowLabels = ["", ""];
         const bottomRowCells = ["", ""];
-        if (mcdu.currentFlightPhase === FmgcFlightPhases.GOAROUND) {
+        if (mcdu.flightPhaseManager.phase === FmgcFlightPhases.GOAROUND) {
             if (confirmAppr) {
                 bottomRowLabels[0] = "\xa0CONFIRM[color]amber";
                 bottomRowCells[0] = "*APPR PHASE[color]amber";
@@ -983,7 +983,7 @@ class CDUPerformancePage {
                     return mcdu.getDelaySwitchPage();
                 };
                 mcdu.onLeftInput[5] = async () => {
-                    if (mcdu.tryGoInApproachPhase()) {
+                    if (mcdu.flightPhaseManager.tryGoInApproachPhase()) {
                         CDUPerformancePage.ShowAPPRPage(mcdu);
                     }
                 };
