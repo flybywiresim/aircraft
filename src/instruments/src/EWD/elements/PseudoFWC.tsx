@@ -1,64 +1,7 @@
 import React, { useEffect, useState } from 'react';
-// import { useUpdate } from '@instruments/common/hooks';
 import { useSimVar } from '@instruments/common/simVars';
 import { NXDataStore } from '@shared/persistence';
-
-const EWDMessageBoolean = {
-    '0000050': [
-        {
-            flightPhaseInhib: [],
-            simVarToCheck: ['fuel', 'usrStartRefueling'],
-            simVarToCheckLogic: 'OR',
-            simVarValueIfActive: [100, 1],
-            simVarValueIfActiveNotNormal: [null, null],
-            codesToReturn: ['000005001'],
-        }],
-    '0000055': [
-        {
-            flightPhaseInhib: [],
-            simVarToCheck: ['spoilersArmed'],
-            simVarToCheckLogic: 'OR',
-            simVarValueIfActive: [1],
-            simVarValueIfActiveNotNormal: [null],
-            codesToReturn: ['000005501'],
-        }],
-    '0000080': [
-        {
-            flightPhaseInhib: [],
-            simVarToCheck: ['seatBelt'],
-            simVarToCheckLogic: 'OR',
-            simVarValueIfActive: [1],
-            simVarValueIfActiveNotNormal: [null],
-            codesToReturn: ['000008001'],
-        }],
-    '0000090': [
-        {
-            flightPhaseInhib: [],
-            simVarToCheck: ['noSmoking', 'configPortableDevices'],
-            simVarToCheckLogic: 'AND',
-            simVarValueIfActive: [1, 0],
-            simVarValueIfActiveNotNormal: [null, null],
-            codesToReturn: ['000009001'],
-        }],
-    '0000095': [
-        {
-            flightPhaseInhib: [],
-            simVarToCheck: ['noSmoking', 'configPortableDevices'],
-            simVarToCheckLogic: 'AND',
-            simVarValueIfActive: [1, 1],
-            simVarValueIfActiveNotNormal: [null, null],
-            codesToReturn: ['000009501'],
-        }],
-    '0000100': [
-        {
-            flightPhaseInhib: [],
-            simVarToCheck: ['flightPhase', 'strobeLightsOn'],
-            simVarToCheckLogic: 'AND',
-            simVarValueIfActive: [[1, 6, 7, 8], 2],
-            simVarValueIfActiveNotNormal: [null, null],
-            codesToReturn: ['000010001'],
-        }],
-}; // Change to array of objects as we'll need flightphase inhibited etc.
+import { usePersistentProperty } from '@instruments/common/persistence';
 
 const mapOrder = (array, order) => {
     array.sort((a, b) => {
@@ -67,13 +10,10 @@ const mapOrder = (array, order) => {
         }
         return -1;
     });
-
     return array;
 };
 
 const PseudoFWC: React.FC = () => {
-    // const [fettle, setFettle] = useState(false);
-    // const [timer, setTimer] = useState(10);
     const [memoMessage, setMemoMessage] = useState<string[]>([]);
     const [flightPhase] = useSimVar('L:A32NX_FWC_FLIGHT_PHASE', 'enum', 1000);
     const [fuel] = useSimVar('A:INTERACTIVE POINT OPEN:9', 'percent', 500);
@@ -85,35 +25,112 @@ const PseudoFWC: React.FC = () => {
     const [noSmoking] = useSimVar('L:A32NX_NO_SMOKING_MEMO', 'bool', 500);
     const configPortableDevices = parseInt(NXDataStore.get('CONFIG_USING_PORTABLE_DEVICES', '0'));
     const [strobeLightsOn] = useSimVar('L:LIGHTING_STROBE_0', 'bool', 500);
+    const [leftOuterInnerValve] = useSimVar('FUELSYSTEM VALVE OPEN:4', 'bool', 500);
+    const [rightOuterInnerValve] = useSimVar('FUELSYSTEM VALVE OPEN:5', 'bool', 500);
+    const [unit] = usePersistentProperty('CONFIG_USING_METRIC_UNIT', '1');
+    const [fob] = useSimVar('FUEL TOTAL QUANTITY WEIGHT', 'kg', 1000);
+    const [gpwsFlapMode] = useSimVar('L:A32NX_GPWD_FLAPS_OFF', 'bool', 1000);
+    const [tomemo] = useSimVar('L:A32NX_FWC_TOMEMO', 'bool', 1000);
+    const [ldgmemo] = useSimVar('L:A32NX_FWC_LDGMEMO', 'bool', 1000);
+
+    const EWDMessageBoolean = {
+        '0000050': {
+            flightPhaseInhib: [],
+            simVarIsActive: () => fuel === 100 || usrStartRefueling === 1,
+            numberOfCodesToReturn: 1,
+            whichCodeToReturn: 0,
+            codesToReturn: ['000005001'],
+            memoInhibit: ['config'],
+        },
+        '0000055':
+            {
+                flightPhaseInhib: [],
+                simVarIsActive: () => spoilersArmed === 1,
+                numberOfCodesToReturn: 1,
+                whichCodeToReturn: 0,
+                codesToReturn: ['000005501'],
+                memoInhibit: 0,
+            },
+        '0000080':
+            {
+                flightPhaseInhib: [],
+                simVarIsActive: () => seatBelt === 1,
+                numberOfCodesToReturn: 1,
+                whichCodeToReturn: 0,
+                codesToReturn: ['000008001'],
+            },
+        '0000090':
+            {
+                flightPhaseInhib: [],
+                simVarIsActive: () => noSmoking === 1 && configPortableDevices === 0,
+                numberOfCodesToReturn: 1,
+                whichCodeToReturn: 0,
+                codesToReturn: ['000009001'],
+            },
+        '0000095':
+            {
+                flightPhaseInhib: [],
+                simVarIsActive: () => noSmoking === 1 && configPortableDevices === 1,
+                numberOfCodesToReturn: 1,
+                whichCodeToReturn: 0,
+                codesToReturn: ['000009501'],
+            },
+        '0000100':
+            {
+                flightPhaseInhib: [],
+                simVarIsActive: () => flightPhase >= 6 && flightPhase <= 8 && strobeLightsOn === 2,
+                numberOfCodesToReturn: 1,
+                whichCodeToReturn: 0,
+                codesToReturn: ['000010001'],
+            },
+        '0000105':
+            {
+                flightPhaseInhib: [],
+                simVarIsActive: () => leftOuterInnerValve === 1 || rightOuterInnerValve === 1,
+                numberOfCodesToReturn: 1,
+                whichCodeToReturn: 0,
+                codesToReturn: ['000010501'], // config memo
+            },
+        '0000110':
+            {
+                flightPhaseInhib: [],
+                simVarIsActive: () => fob < 3000,
+                numberOfCodesToReturn: 1,
+                whichCodeToReturn: unit === '1' ? 0 : 1,
+                codesToReturn: ['000011001', '0000011002'], // config memo
+            },
+        '0000305':
+            {
+                flightPhaseInhib: [],
+                simVarIsActive: () => gpwsFlapMode === 1,
+                numberOfCodesToReturn: 1,
+                whichCodeToReturn: 0,
+                codesToReturn: ['000030501'], // Not inhibited
+            },
+    };
 
     useEffect(() => {
+        let tempMemoArray = memoMessage;
         for (const [key, value] of Object.entries(EWDMessageBoolean)) {
-            const simVarConditionals: any[] = [];
-            // eslint-disable-next-line no-eval
-            console.log(`Key is ${key}`);
-            value[0].simVarToCheck.forEach((item, index) => {
-                const currentValue = value[0].simVarValueIfActive[index];
-                if (Array.isArray(currentValue)) {
-                    simVarConditionals.push(currentValue.some((e) => e === eval(item)));
-                } else {
-                    simVarConditionals.push(eval(item) === value[0].simVarValueIfActive[index]);
-                }
-            });
-            const simVarActive = value[0].simVarToCheckLogic === 'AND' ? simVarConditionals.every((e) => e === true) : simVarConditionals.some((e) => e === true);
-            console.log(`Simvaractive is ${simVarActive}`);
-            if (simVarActive) {
-                if (value[0].codesToReturn.length === 1) {
-                    // console.log(`Value is flight inhib is ${value[0].flightPhaseInhib.some((e) => e === flightPhase)}`);
-                    if (!value[0].flightPhaseInhib.some((e) => e === flightPhase)) {
-                        console.log(`setting memo with codes to return ${value[0].codesToReturn[0]}`);
-                        // console.log(`Memo is ${JSON.stringify(memoMessage)}`);
-                        const newCode = [value[0].codesToReturn[0]];
-                        // console.log(`New code is ${newCode}`);
+            if (value.simVarIsActive()) {
+                if (value.numberOfCodesToReturn === 1) {
+                    if (!value.flightPhaseInhib.some((e) => e === flightPhase)) {
+                        const newCode = value.codesToReturn[value.whichCodeToReturn];
                         // Check memoMessage does not already have current code
-                        if (!memoMessage.some((e) => newCode.includes(e))) {
-                            // sort messages out
-                            const mesgOrder = Object.keys(EWDMessageBoolean);
-                            setMemoMessage((memoMessage) => mapOrder(memoMessage.concat(newCode), mesgOrder));
+                        if (!tempMemoArray.some((e) => newCode.includes(e))) {
+                            if (value.codesToReturn.length > 1) {
+                                // setMemoMessage((memoMessage) => mapOrder(memoMessage.filter((e) => !value[0].codesToReturn.includes(e)).concat(newCode), mesgOrder));
+                                const tempArray = tempMemoArray.filter((e) => !value.codesToReturn.includes(e));
+                                tempMemoArray = tempArray;
+                                tempMemoArray.push(newCode);
+                                // console.log('Inside codesToReturn > 1');
+                                // console.log(tempMemoArray);
+                            } else {
+                                // setMemoMessage((memoMessage) => mapOrder(memoMessage.concat(newCode), mesgOrder));
+                                tempMemoArray.push(newCode);
+                                // console.log('Insider else');
+                                // console.log(tempMemoArray);
+                            }
                         }
                     }
                 } else {
@@ -121,13 +138,29 @@ const PseudoFWC: React.FC = () => {
                 }
             } else {
                 // Remove value if present
-                const codesToReturn = value[0].codesToReturn;
-                console.log('Remove the following');
-                console.log(codesToReturn);
-                setMemoMessage((memoMessage) => memoMessage.filter((e) => !codesToReturn.includes(e)));
+                // console.log('Inside delete bit');
+                const codesToReturn = value.codesToReturn;
+                // setMemoMessage((memoMessage) => memoMessage.filter((e) => !codesToReturn.includes(e)));
+                // console.log(tempMemoArray);
+                const tempArray = tempMemoArray.filter((e) => !codesToReturn.includes(e));
+                tempMemoArray = tempArray;
             }
         }
-    }, [flightPhase, fuel, usrStartRefueling, engine1State, engine2State, spoilersArmed, seatBelt, noSmoking, configPortableDevices, strobeLightsOn]);
+        const mesgOrder: string[] = [];
+        for (const [key, value] of Object.entries(EWDMessageBoolean)) {
+            mesgOrder.push(...value.codesToReturn);
+        }
+        // console.log('Actual message order');
+        // console.log(mesgOrder);
+        // console.log('Message order');
+        // console.log(tempMemoArray);
+        const orderedMemoArray = mapOrder(tempMemoArray, mesgOrder);
+        console.log(orderedMemoArray);
+        setMemoMessage(orderedMemoArray);
+    }, [flightPhase,
+        fuel, usrStartRefueling, engine1State, engine2State, spoilersArmed, seatBelt, noSmoking, configPortableDevices, strobeLightsOn, leftOuterInnerValve, rightOuterInnerValve,
+        fob, unit, gpwsFlapMode,
+    ]);
 
     useEffect(() => {
         console.log('Inside memoMessage');
@@ -141,17 +174,6 @@ const PseudoFWC: React.FC = () => {
             });
         }
     }, [memoMessage]);
-
-    // useUpdate((deltaTime) => {
-    //     if (timer !== null) {
-    //         if (timer > 0) {
-    //             setTimer(timer - (deltaTime / 1000));
-    //         } else {
-    //             setFettle(!fettle);
-    //             setTimer(10);
-    //         }
-    //     }
-    // });
 
     return (<></>);
 };
