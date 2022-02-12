@@ -1,5 +1,4 @@
-import { createSlice } from '@reduxjs/toolkit';
-import { TypedAction } from '../store';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 type ActiveButton = { id: string, state: string, callBack, value };
 
@@ -21,36 +20,36 @@ export const buttonsSlice = createSlice({
     name: 'ground',
     initialState,
     reducers: {
-        addActiveButton: (state, action: TypedAction<ActiveButton>) => {
+        addActiveButton: (state, action: PayloadAction<ActiveButton>) => {
             state.activeButtons.push(action.payload);
         },
-        removeActiveButton: (state, action: TypedAction<number>) => {
+        removeActiveButton: (state, action: PayloadAction<number>) => {
             if (action.payload !== -1) {
                 state.activeButtons.splice(action.payload, 1);
             }
         },
-        updateButton: (state, action: TypedAction<ActiveButton>) => {
+        updateButton: (state, action: PayloadAction<ActiveButton>) => {
             const button = state.activeButtons.findIndex((b) => action.payload.id === b.id);
             const updatedButton: ActiveButton = { id: action.payload.id, value: action.payload.value, state: 'ACTIVE', callBack: action.payload.callBack };
             if (button !== -1) {
                 state.activeButtons[button] = updatedButton;
             }
         },
-        setActiveButtons: (state, action: TypedAction<ActiveButton[]>) => {
+        setActiveButtons: (state, action: PayloadAction<ActiveButton[]>) => {
             state.activeButtons = action.payload;
         },
-        addDisabledButton: (state, action: TypedAction<string>) => {
+        addDisabledButton: (state, action: PayloadAction<string>) => {
             state.disabledButtons.push(action.payload);
         },
-        removeDisabledButton: (state, action: TypedAction<number>) => {
+        removeDisabledButton: (state, action: PayloadAction<number>) => {
             if (action.payload !== -1) {
                 state.disabledButtons.splice(action.payload, 1);
             }
         },
-        setTugRequestOnly: (state, action: TypedAction<boolean>) => {
+        setTugRequestOnly: (state, action: PayloadAction<boolean>) => {
             state.tugRequestOnly = action.payload;
         },
-        setPushbackWaitTimerHandle: (state, action: TypedAction<number>) => {
+        setPushbackWaitTimerHandle: (state, action: PayloadAction<number>) => {
             state.pushBackWaitTimerHandle = action.payload;
         },
     },
