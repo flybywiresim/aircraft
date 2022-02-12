@@ -1,6 +1,3 @@
-// Copyright (c) 2022 FlyByWire Simulations
-// SPDX-License-Identifier: GPL-3.0
-
 import React from 'react';
 import { FlightWidget } from './Widgets/FlightWidget';
 import { RemindersWidget } from './Widgets/RemindersWidget';
@@ -19,7 +16,8 @@ export const Dashboard = () => {
                 <FlightWidget />
 
                 <div className="flex flex-col w-3/5">
-                    <div className="p-6 mb-3 ml-3 h-2/5 rounded-lg border-2 border-theme-accent shadow-md">
+
+                    <div className="p-6 mb-3 h-2/5 rounded-lg border-2 border-theme-accent shadow-md">
                         <div className="flex items-center h-full">
                             <div className="w-1/2">
                                 <WeatherWidget name="origin" simbriefIcao={departingAirport} userIcao={userDepartureIcao} />
@@ -31,9 +29,10 @@ export const Dashboard = () => {
                         </div>
                     </div>
 
-                    <div className="overflow-hidden p-6 ml-3 h-3/5 rounded-lg border-2 border-theme-accent">
+                    <div className="overflow-hidden p-6 h-3/5 rounded-lg border-2 border-theme-accent">
                         <RemindersWidget />
                     </div>
+
                 </div>
             </div>
         </div>
