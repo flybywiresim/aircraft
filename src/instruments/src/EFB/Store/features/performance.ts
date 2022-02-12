@@ -1,7 +1,6 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { LandingFlapsConfig, LandingRunwayConditions } from '../../Performance/Calculators/LandingCalculator';
 import { DistanceLabel } from '../../Performance/Widgets/RunwayVisualizationWidget';
-import { TypedAction } from '../store';
 
 interface TPerformanceLanding {
     icao: string;
@@ -61,7 +60,7 @@ const performanceSlice = createSlice({
     name: 'performance',
     initialState,
     reducers: {
-        setLandingValues: (state, action: TypedAction<Partial<TPerformanceLanding>>) => {
+        setLandingValues: (state, action: PayloadAction<Partial<TPerformanceLanding>>) => {
             Object.keys(action.payload).forEach((key) => {
                 state.landing[key] = action.payload[key];
             });
