@@ -25,7 +25,7 @@ import { toast } from 'react-toastify';
 import { useSimVar } from '@instruments/common/simVars';
 import { MetarParserType } from '@instruments/common/metarTypes';
 import { Units } from '@shared/units';
-import LandingCalculator, { LandingFlapsConfig, LandingRunwayConditions } from '../Calculators/LandingCalculator';
+import { LandingCalculator, LandingFlapsConfig, LandingRunwayConditions } from '../Calculators/LandingCalculator';
 import RunwayVisualizationWidget, { LabelType } from './RunwayVisualizationWidget';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 import SelectInput from '../../UtilComponents/Form/SelectInput/SelectInput';
