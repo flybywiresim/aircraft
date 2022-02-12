@@ -437,8 +437,8 @@ void FlyByWireInterface::setupLocalVariables() {
   idSpoilersHandlePosition = make_unique<LocalVariable>("A32NX_SPOILERS_HANDLE_POSITION");
   idSpoilersGroundSpoilersActive = make_unique<LocalVariable>("A32NX_SPOILERS_GROUND_SPOILERS_ACTIVE");
 
-  idAileronPositionLeft = make_unique<LocalVariable>("A32NX_3D_AILERON_LEFT_DEFLECTION");
-  idAileronPositionRight = make_unique<LocalVariable>("A32NX_3D_AILERON_RIGHT_DEFLECTION");
+  idAileronPositionLeft = make_unique<LocalVariable>("A32NX_AILERON_LEFT_DEFLECTION_DEMAND");
+  idAileronPositionRight = make_unique<LocalVariable>("A32NX_AILERON_RIGHT_DEFLECTION_DEMAND");
 
   idRadioReceiverLocalizerValid = make_unique<LocalVariable>("A32NX_DEV_RADIO_RECEIVER_LOC_IS_VALID");
   idRadioReceiverLocalizerDeviation = make_unique<LocalVariable>("A32NX_DEV_RADIO_RECEIVER_LOC_DEVIATION");
@@ -815,6 +815,7 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
     autopilotStateMachineInput.in.data.is_engine_operative_2 = simData.engine_combustion_2;
     autopilotStateMachineInput.in.data.altimeter_setting_left_mbar = simData.kohlsmanSetting_0;
     autopilotStateMachineInput.in.data.altimeter_setting_right_mbar = simData.kohlsmanSetting_1;
+    autopilotStateMachineInput.in.data.total_weight_kg = simData.total_weight_kg;
 
     // input ----------------------------------------------------------------------------------------------------------
     autopilotStateMachineInput.in.input.FD_active = simData.ap_fd_1_active || simData.ap_fd_2_active;
@@ -1177,6 +1178,7 @@ bool FlyByWireInterface::updateAutopilotLaws(double sampleTime) {
     autopilotLawsInput.in.data.is_engine_operative_2 = simData.engine_combustion_2;
     autopilotLawsInput.in.data.altimeter_setting_left_mbar = simData.kohlsmanSetting_0;
     autopilotLawsInput.in.data.altimeter_setting_right_mbar = simData.kohlsmanSetting_1;
+    autopilotLawsInput.in.data.total_weight_kg = simData.total_weight_kg;
 
     // input ----------------------------------------------------------------------------------------------------------
     autopilotLawsInput.in.input = autopilotStateMachineOutput;

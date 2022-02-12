@@ -176,6 +176,10 @@ class FMCMainDisplay extends BaseAirliners {
         this.zeroFuelWeightMassCenter = undefined;
         this.activeWpIdx = undefined;
         this.efisSymbols = undefined;
+
+        // ATSU data
+        this.atsuManager = undefined;
+        this.pdcMessage = undefined;
     }
 
     Init() {
@@ -405,8 +409,7 @@ class FMCMainDisplay extends BaseAirliners {
             sendStatus: "READY",
             costIndex: "",
             navlog: [],
-            icao_airline: "",
-            flight_number: "",
+            callsign: "",
             alternateIcao: "",
             avgTropopause: "",
             ete: "",
@@ -499,6 +502,10 @@ class FMCMainDisplay extends BaseAirliners {
         this.blockFuel = undefined;
         this.zeroFuelWeight = undefined;
         this.zeroFuelWeightMassCenter = undefined;
+
+        // ATSU data
+        this.atsuManager = new Atsu.AtsuManager(this);
+        this.pdcMessage = undefined;
 
         // Reset SimVars
         SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", NaN);
@@ -1923,19 +1930,18 @@ class FMCMainDisplay extends BaseAirliners {
             return callback(false);
         }
 
-        this.flightNumber = flightNo;
-
         SimVar.SetSimVarValue("ATC FLIGHT NUMBER", "string", flightNo, "FMC").then(() => {
-            NXApi.connectTelex(flightNo)
-                .then(() => {
-                    callback(true);
-                })
-                .catch((err) => {
-                    if (err !== NXApi.disabledError) {
-                        this.addNewMessage(NXFictionalMessages.fltNbrInUse);
+            this.atsuManager.connectToNetworks(flightNo)
+                .then((code) => {
+                    if (code !== Atsu.AtsuStatusCodes.Ok) {
+                        SimVar.SetSimVarValue("L:A32NX_MCDU_FLT_NO_SET", "boolean", 0);
+                        this.addNewAtsuMessage(code);
+                        this.flightNo = "";
                         return callback(false);
                     }
 
+                    SimVar.SetSimVarValue("L:A32NX_MCDU_FLT_NO_SET", "boolean", 1);
+                    this.flightNumber = flightNo;
                     return callback(true);
                 });
         });
