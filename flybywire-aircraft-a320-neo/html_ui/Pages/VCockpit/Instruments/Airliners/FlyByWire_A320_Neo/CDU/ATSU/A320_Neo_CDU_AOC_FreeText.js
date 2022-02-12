@@ -1,22 +1,35 @@
 class CDUAocFreeText {
-    static ShowPage(mcdu, store = { "msg_to": "", "msg_line1": "", "msg_line2": "", "msg_line3": "", "msg_line4": "", "sendStatus": ""}) {
+    static ShowPage(mcdu, store = { "msg_to": "", "reqID": 0, "msg_line1": "", "msg_line2": "", "msg_line3": "", "msg_line4": "", "sendStatus": ""}) {
         mcdu.clearDisplay();
+        const networkTypes = [
+            'HOPPIE',
+            'FBW'
+        ];
 
         const updateView = () => {
+            let oneLineFilled = false;
+            if (store["msg_line1"] !== "" || store["msg_line2"] !== "" || store["msg_line3"] !== "" || store["msg_line4"] !== "") {
+                oneLineFilled = true;
+            }
+            let sendValid = oneLineFilled === true && store["msg_to"] !== "";
+            if (store["sendStatus"] === "SENDING" || store["sendStatus"] === "SENT") {
+                sendValid = false;
+            }
+
             mcdu.setTemplate([
                 ["AOC FREE TEXT"],
-                ["TO:"],
-                [`${store["msg_to"] != "" ? store["msg_to"] : "________"}[color]cyan`],
+                ["TO", "NETWORK"],
+                [`${store["msg_to"] !== "" ? store["msg_to"] + "[color]cyan" : "________[color]amber"}`, `↓${networkTypes[store["reqID"]]}[color]cyan`],
                 [""],
-                [`${store["msg_line1"] != "" ? store["msg_line1"] : "["}[color]cyan`, `${store["msg_line1"] != "" ? "" : "]"}[color]cyan`],
+                [`${store["msg_line1"] !== "" ? store["msg_line1"] : "["}[color]cyan`, `${store["msg_line1"] != "" ? "" : "]"}[color]cyan`],
                 [""],
-                [`${store["msg_line2"] != "" ? store["msg_line2"] : "["}[color]cyan`, `${store["msg_line2"] != "" ? "" : "]"}[color]cyan`],
+                [`${store["msg_line2"] !== "" ? store["msg_line2"] : "["}[color]cyan`, `${store["msg_line2"] != "" ? "" : "]"}[color]cyan`],
                 [""],
-                [`${store["msg_line3"] != "" ? store["msg_line3"] : "["}[color]cyan`, `${store["msg_line3"] != "" ? "" : "]"}[color]cyan`],
+                [`${store["msg_line3"] !== "" ? store["msg_line3"] : "["}[color]cyan`, `${store["msg_line3"] != "" ? "" : "]"}[color]cyan`],
                 [""],
-                [`${store["msg_line4"] != "" ? store["msg_line4"] : "["}[color]cyan`, `${store["msg_line4"] != "" ? "" : "]"}[color]cyan`],
+                [`${store["msg_line4"] !== "" ? store["msg_line4"] : "["}[color]cyan`, `${store["msg_line4"] != "" ? "" : "]"}[color]cyan`],
                 ["RETURN TO", `${store["sendStatus"]}`],
-                ["<AOC MENU", "SEND*[color]cyan"]
+                ["<AOC MENU", (sendValid === true ? "SEND*" : "SEND") + "[color]cyan"]
             ]);
         };
         updateView();
@@ -66,73 +79,80 @@ class CDUAocFreeText {
             CDUAocFreeText.ShowPage(mcdu, store);
         };
 
+        mcdu.rightInputDelay[0] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+        mcdu.onRightInput[0] = () => {
+            store["reqID"] = (store["reqID"] + 1) % 2;
+            updateView();
+        };
+
         mcdu.rightInputDelay[5] = () => {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onRightInput[5] = async () => {
-            const storedTelexStatus = NXDataStore.get("CONFIG_ONLINE_FEATURES_STATUS", "DISABLED");
+            // do not send two times
+            if (store["sendStatus"] === "SENDING" || store["sendStatus"] === "SENT") {
+                return;
+            }
 
-            if (NXApi.hasTelexConnection() && storedTelexStatus === "ENABLED") {
-                store["sendStatus"] = "QUEUED";
-                updateView();
-                const recipient = store["msg_to"];
-                const msgLines = [store["msg_line1"], store["msg_line2"], store["msg_line3"], store["msg_line4"]].join(";");
-                let errors = 0;
+            let oneLineFilled = false;
+            if (store["msg_line1"] !== "" || store["msg_line2"] !== "" || store["msg_line3"] !== "" || store["msg_line4"] !== "") {
+                oneLineFilled = true;
+            }
+            const sendValid = oneLineFilled === true && store["msg_to"] !== "";
 
-                const getData = async () => {
-                    if (recipient !== "" && msgLines !== ";;;") {
-                        await NXApi.sendTelexMessage(recipient, msgLines)
-                            .catch(err => {
-                                errors += 1;
-                                switch (err.status) {
-                                    case 404:
-                                        mcdu.addNewMessage(NXFictionalMessages.recipientNotFound);
-                                        break;
-                                    case 401:
-                                    case 403:
-                                        mcdu.addNewMessage(NXFictionalMessages.authErr);
-                                        break;
-                                    case 400:
-                                        mcdu.addNewMessage(NXFictionalMessages.invalidMsg);
-                                        break;
-                                    default:
-                                        mcdu.addNewMessage(NXFictionalMessages.unknownDownlinkErr);
-                                }
-                            });
-                    }
+            if (sendValid === false) {
+                mcdu.addNewMessage(NXSystemMessages.mandatoryFields);
+                return;
+            }
 
-                    if (errors === 0) {
-                        store["sendStatus"] = "SENT";
-                    } else {
-                        store["sendStatus"] = "FAILED";
-                    }
-                    store["msg_to"] = "";
+            store["sendStatus"] = "SENDING";
+            updateView();
+
+            // create the message
+            const message = new Atsu.FreetextMessage();
+            if (store["reqID"] === 0) {
+                message.Network = Atsu.AtsuMessageNetwork.Hoppie;
+            } else {
+                message.Network = Atsu.AtsuMessageNetwork.FBW;
+            }
+            message.Station = store["msg_to"];
+            if (store["msg_line1"] !== "") {
+                message.Message += store["msg_line1"] + '\n';
+            }
+            if (store["msg_line2"] !== "") {
+                message.Message += store["msg_line2"] + '\n';
+            }
+            if (store["msg_line3"] !== "") {
+                message.Message += store["msg_line3"] + '\n';
+            }
+            if (store["msg_line4"] !== "") {
+                message.Message += store["msg_line4"] + '\n';
+            }
+            message.Message = message.Message.substring(0, message.Message.length - 1);
+
+            // send the message
+            mcdu.atsuManager.sendMessage(message).then((code) => {
+                if (code === Atsu.AtsuStatusCodes.Ok) {
+                    store["sendStatus"] = "SENT";
                     store["msg_line1"] = "";
                     store["msg_line2"] = "";
                     store["msg_line3"] = "";
                     store["msg_line4"] = "";
-                    updateView();
-                };
 
-                getData().then(() => {
                     setTimeout(() => {
-                        const fMsgLines = msgLines.split(";");
-                        fMsgLines.forEach((line) => {
-                            line += "[color]green";
-                        });
-                        fMsgLines.unshift("TO " + store["msg_to"] + "[color]cyan");
-                        fMsgLines.push("---------------------------[color]white");
-
-                        const sentMessage = { "id": Date.now(), "type": "FREE TEXT", "time": '00:00', "content": fMsgLines, };
-                        sentMessage["time"] = fetchTimeValue();
-                        mcdu.addSentMessage(sentMessage);
                         store["sendStatus"] = "";
-                        updateView();
-                    }, 1000);
-                });
-            } else {
-                mcdu.addNewMessage(NXFictionalMessages.telexNotEnabled);
-            }
+                        if (mcdu.page.Current === mcdu.page.AOCDepartRequest) {
+                            CDUAocDepartReq.ShowPage1(mcdu, store);
+                        }
+                    }, 5000);
+                } else {
+                    store["sendStatus"] = "FAILED";
+                    mcdu.addNewAtsuMessage(code);
+                }
+                updateView();
+            });
         };
 
         mcdu.leftInputDelay[5] = () => {

@@ -474,7 +474,7 @@ mod tests {
 
     use uom::si::pressure::psi;
 
-    use crate::hydraulic::update_iterator::FixedStepLoop;
+    use crate::shared::update_iterator::FixedStepLoop;
 
     use crate::simulation::{Aircraft, SimulationElement, SimulationElementVisitor, UpdateContext};
 

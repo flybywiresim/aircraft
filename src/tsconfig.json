@@ -6,6 +6,7 @@
     "paths": {
       "@shared/*": ["./shared/src/*"],
       "@instruments/common/*": ["./instruments/src/Common/*"],
+      "@atsu/*": ["./atsu/src/*"],
       "@fmgc/*": ["./fmgc/src/*"],
       "@flybywiresim/failures": ["failures"]
     }

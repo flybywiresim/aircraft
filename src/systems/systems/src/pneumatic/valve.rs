@@ -265,11 +265,10 @@ impl PneumaticContainerConnector {
             / (container_two_pressure_with_power * container_one.volume()
                 + container_one_pressure_with_power * container_two.volume());
 
-        let fluid_to_move = (self.transfer_speed_factor
-            * equalization_volume
-            * (1. - (-Self::TRANSFER_SPEED * context.delta_as_secs_f64()).exp()))
-        .min(container_one.volume())
-        .max(-container_two.volume());
+        let fluid_to_move = (self.transfer_speed_factor * equalization_volume)
+            .min(container_one.volume())
+            .max(-container_two.volume())
+            * (1. - (-Self::TRANSFER_SPEED * context.delta_as_secs_f64()).exp());
 
         self.move_volume(container_one, container_two, fluid_to_move);
 
@@ -358,19 +357,18 @@ impl PneumaticExhaust {
     ) {
         let equalization_volume = if from.pressure() > self.pressure_preload {
             self.calculate_required_volume_for_target_pressure(from, context.ambient_pressure())
+                .max(-from.volume())
         } else {
             self.fluid_volume_filtered.reset(Volume::new::<gallon>(0.));
             Volume::new::<gallon>(0.)
         };
 
-        let fluid_to_move = (equalization_volume
-            * (1. - (-self.exhaust_speed * context.delta_as_secs_f64()).exp()))
-        .max(-from.volume());
-
-        from.change_fluid_amount(
-            self.fluid_volume_filtered
-                .update(context.delta(), fluid_to_move),
+        let fluid_to_move = self.fluid_volume_filtered.update(
+            context.delta(),
+            equalization_volume * (1. - (-self.exhaust_speed * context.delta_as_secs_f64()).exp()),
         );
+
+        from.change_fluid_amount(fluid_to_move);
 
         self.fluid_flow = -fluid_to_move / context.delta_as_time();
     }

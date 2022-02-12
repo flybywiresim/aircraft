@@ -1,74 +1,186 @@
 @font-face {
-  font-family: "Roboto";
-  src: url("/Fonts/RobotoMono-Medium.ttf") format("truetype");
+  font-family: "dcdu-small-black-white";
+  src: url("/Fonts/FBW-Display-DCDU-H12.ttf") format("truetype");
   font-weight: normal;
   font-style: normal;
 }
 
 @font-face {
-  font-family: "Roboto-Light";
-  src: url("/Fonts/RobotoMono-Light.ttf") format("truetype");
+  font-family: "dcdu-small-green";
+  src: url("/Fonts/FBW-Display-DCDU-H12.ttf") format("truetype");
   font-weight: normal;
   font-style: normal;
 }
 
-.dcdu-lines {
+@font-face {
+  font-family: "dcdu-small-cyan";
+  src: url("/Fonts/FBW-Display-DCDU-H12.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "dcdu-normal-black-white";
+  src: url("/Fonts/FBW-Display-DCDU-H16-W.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "dcdu-normal-green";
+  src: url("/Fonts/FBW-Display-DCDU-H16-W.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "dcdu-normal-cyan";
+  src: url("/Fonts/FBW-Display-DCDU-H16-W.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+.dcdu {
   position: absolute;
-  left: 10px !important;
-  top: 10px !important;
-  width: 492px;
-  height: 364px;
+  left: 80px !important;
+  top: 80px !important;
+  width: 3936px;
+  height: 2912px;
 
   background: radial-gradient(
-      ellipse at center,
-      rgba(4, 4, 5, 1) 0%,
-      rgb(4, 4, 5) 100%
+    ellipse at center,
+    rgba(4, 4, 5, 1) 0%,
+    rgb(4, 4, 5) 100%
   );
+}
 
-  visibility: visible !important;
+path.dcdu-line {
+  stroke: white;
+  stroke-width: 16;
+}
 
-  font-family: Roboto;
+.station {
+  fill: rgb(0,255,0);
+  font-size: 134px;
+  font-family: dcdu-small-green;
+}
 
-  path {
-    stroke: white;
-    stroke-width: 3;
+.status-message {
+  text-anchor: end;
+  font-size: 192px;
+}
+
+.status-open {
+  font-family: dcdu-normal-cyan;
+  fill: rgb(0,255,255);
+}
+
+.status-other {
+  font-family: dcdu-normal-black-white;
+  fill: rgb(0, 0, 0);
+}
+
+.status-atsu {
+  text-anchor: middle;
+  fill: rgb(255,255,255);
+  font-size: 134px;
+  font-family: dcdu-small-black-white;
+}
+
+.message-background {
+  width: 3600px;
+}
+
+.message-background-off {
+  fill: rgba(0,0,0,0);
+}
+
+.message-out {
+  fill: rgb(0,255,255);
+}
+
+.message-sent {
+  fill: rgb(0, 255, 0);
+}
+
+.atc-info {
+  font-size: 192px;
+}
+
+.atc-info-standby {
+  font-family: dcdu-normal-black-white;
+  fill: rgb(255,255,255);
+}
+
+.atc-info-active {
+  font-family: dcdu-normal-green;
+  fill: rgb(0,255,0);
+}
+
+.message-tspan {
+  display: block;
+  white-space: pre;
+}
+
+.message-highlight {
+  font-family: dcdu-normal-cyan;
+  fill: rgb(0,255,255);
+}
+
+.message-content {
+  font-size: 192px;
+}
+
+.message-content-other {
+  font-family: dcdu-normal-black-white;
+}
+
+.message-content-out {
+  fill: rgb(0,0,0);
+}
+
+.message-content-in {
+  fill: rgb(255,255,255);
+}
+
+.message-content-sent {
+  font-family: dcdu-normal-green;
+  fill: rgb(0,255,0);
+}
+
+.startup-text {
+  position: absolute;
+  left: 80px !important;
+  top: 80px !important;
+  width: 3936px;
+  height: 2912px;
+
+  text {
+    fill: rgb(0,255,0);
+    font-size: 240px;
+    text-anchor: middle;
+    font-family: dcdu-normal-green;
   }
 }
 
-.text-wrapper {
-  position: absolute;
-  left: 10px !important;
-  top: 10px !important;
-  width: 492px;
-  height: 364px;
-
-  background: radial-gradient(
-      ellipse at center,
-      rgba(4, 4, 5, 1) 0%,
-      rgba(4, 4, 5, 1) 100%
-  );
-
-  text {
-    fill: green;
-    font-size: 35px;
-    text-anchor: middle;
-    font-family: Roboto-Light;
-  }
+.button {
+  font-size: 134px;
 }
 
-.inop-wrapper {
-  position: absolute;
-  left: 10px !important;
-  top: 10px !important;
-  width: 492px;
-  height: 364px;
+.button-color {
+  font-family: dcdu-small-cyan;
+  fill: rgb(0,255,255);
+}
 
-  visibility: hidden;
+.button-color-clicked {
+  font-family: dcdu-small-black-white;
+  fill: rgb(0, 0, 0);
+}
 
-  text {
-    fill: white;
-    font-size: 36px;
-    text-anchor: middle;
-    font-family: Roboto-Light;
-  }
+.button-left {
+  text-anchor: start;
+}
+
+.button-right {
+  text-anchor: end;
 }

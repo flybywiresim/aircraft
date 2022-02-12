@@ -2596,6 +2596,7 @@ void AutopilotStateMachineModelClass::step()
   boolean_T engageCondition;
   boolean_T guard1{ false };
 
+  boolean_T inFlightDisarmCondition;
   boolean_T isGoAroundModeActive;
   boolean_T rtb_AND;
   boolean_T rtb_AND_j;
@@ -2608,7 +2609,6 @@ void AutopilotStateMachineModelClass::step()
   boolean_T rtb_cGA;
   boolean_T rtb_cLAND;
   boolean_T sCLB_tmp;
-  boolean_T sCLB_tmp_0;
   boolean_T speedTargetChanged;
   boolean_T state_e_tmp;
   boolean_T state_e_tmp_0;
@@ -3554,24 +3554,24 @@ void AutopilotStateMachineModelClass::step()
   if ((AutopilotStateMachine_U.in.data.flight_phase == 2.0) || (AutopilotStateMachine_U.in.data.flight_phase == 3.0) ||
       (AutopilotStateMachine_U.in.data.flight_phase == 6.0)) {
     if (AutopilotStateMachine_U.in.input.H_fcu_ft < AutopilotStateMachine_U.in.data.H_ind_ft) {
-      state_i_tmp = true;
+      inFlightDisarmCondition = true;
     } else if (L < 50.0) {
-      state_i_tmp = true;
+      inFlightDisarmCondition = true;
     } else if ((AutopilotStateMachine_U.in.input.H_fcu_ft == AutopilotStateMachine_U.in.input.H_constraint_ft) && (std::
                 abs(AutopilotStateMachine_U.in.data.H_ind_ft - AutopilotStateMachine_U.in.input.H_fcu_ft) < 50.0)) {
-      state_i_tmp = true;
+      inFlightDisarmCondition = true;
     } else if ((AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode != vertical_mode_ALT_CST) &&
                (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode != vertical_mode_ALT_CST_CPT) &&
                (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode != vertical_mode_SRS) &&
                (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode != vertical_mode_SRS_GA)) {
-      state_i_tmp = true;
+      inFlightDisarmCondition = true;
     } else {
-      state_i_tmp = ((AutopilotStateMachine_U.in.data.flight_phase == 4.0) ||
-                     (AutopilotStateMachine_U.in.data.flight_phase == 5.0));
+      inFlightDisarmCondition = ((AutopilotStateMachine_U.in.data.flight_phase == 4.0) ||
+        (AutopilotStateMachine_U.in.data.flight_phase == 5.0));
     }
   } else {
-    state_i_tmp = ((AutopilotStateMachine_U.in.data.flight_phase == 4.0) ||
-                   (AutopilotStateMachine_U.in.data.flight_phase == 5.0));
+    inFlightDisarmCondition = ((AutopilotStateMachine_U.in.data.flight_phase == 4.0) ||
+      (AutopilotStateMachine_U.in.data.flight_phase == 5.0));
   }
 
   sCLB_tmp = ((((AutopilotStateMachine_U.in.data.flight_phase == 0.0) || (AutopilotStateMachine_U.in.data.flight_phase ==
@@ -3589,10 +3589,30 @@ void AutopilotStateMachineModelClass::step()
                 (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode_SRS) ||
                 (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode_SRS_GA))));
   AutopilotStateMachine_DWork.sCLB = (sCLB_tmp || AutopilotStateMachine_DWork.sCLB);
-  sCLB_tmp_0 = ((!AutopilotStateMachine_DWork.DelayInput1_DSTATE_ib) &&
-                (!AutopilotStateMachine_DWork.DelayInput1_DSTATE_bd) &&
-                (!AutopilotStateMachine_DWork.DelayInput1_DSTATE_ah));
-  AutopilotStateMachine_DWork.sCLB = (sCLB_tmp_0 && (!state_i_tmp) && (sCLB_tmp && AutopilotStateMachine_DWork.sCLB));
+  state_i_tmp = ((!AutopilotStateMachine_DWork.DelayInput1_DSTATE_ib) &&
+                 (!AutopilotStateMachine_DWork.DelayInput1_DSTATE_bd) &&
+                 (!AutopilotStateMachine_DWork.DelayInput1_DSTATE_ah));
+  AutopilotStateMachine_DWork.sCLB = (state_i_tmp && (!inFlightDisarmCondition) && (sCLB_tmp &&
+    AutopilotStateMachine_DWork.sCLB));
+  if (rtb_on_ground == 0) {
+    if (AutopilotStateMachine_U.in.input.H_fcu_ft > AutopilotStateMachine_U.in.data.H_ind_ft) {
+      inFlightDisarmCondition = true;
+    } else if (L < 50.0) {
+      inFlightDisarmCondition = true;
+    } else if ((AutopilotStateMachine_U.in.input.H_fcu_ft == AutopilotStateMachine_U.in.input.H_constraint_ft) && (std::
+                abs(AutopilotStateMachine_U.in.data.H_ind_ft - AutopilotStateMachine_U.in.input.H_fcu_ft) < 50.0)) {
+      inFlightDisarmCondition = true;
+    } else {
+      inFlightDisarmCondition = (((AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode != vertical_mode_ALT_CST) &&
+        (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode != vertical_mode_ALT_CST_CPT)) ||
+        ((AutopilotStateMachine_DWork.Delay_DSTATE.output.mode != lateral_mode_NAV) &&
+         (AutopilotStateMachine_DWork.Delay_DSTATE.output.mode != lateral_mode_LOC_CPT) &&
+         (AutopilotStateMachine_DWork.Delay_DSTATE.output.mode != lateral_mode_LOC_TRACK)));
+    }
+  } else {
+    inFlightDisarmCondition = false;
+  }
+
   AutopilotStateMachine_DWork.sDES = (((rtb_on_ground == 0) && (result_tmp < -50.0) &&
     ((AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode_ALT_CST) ||
      (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode_ALT_CST_CPT)) &&
@@ -3600,14 +3620,7 @@ void AutopilotStateMachineModelClass::step()
      (AutopilotStateMachine_DWork.Delay_DSTATE.output.mode == lateral_mode_LOC_CPT) ||
      (AutopilotStateMachine_DWork.Delay_DSTATE.output.mode == lateral_mode_LOC_TRACK))) ||
     AutopilotStateMachine_DWork.sDES);
-  AutopilotStateMachine_DWork.sDES = (sCLB_tmp_0 && ((rtb_on_ground != 0) || ((AutopilotStateMachine_U.in.input.H_fcu_ft
-    <= AutopilotStateMachine_U.in.data.H_ind_ft) && ((L >= 50.0) && ((AutopilotStateMachine_U.in.input.H_fcu_ft !=
-    AutopilotStateMachine_U.in.input.H_constraint_ft) && ((!(AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode !=
-    vertical_mode_ALT_CST)) || (!(AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode != vertical_mode_ALT_CST_CPT))) &&
-    ((!(AutopilotStateMachine_DWork.Delay_DSTATE.output.mode != lateral_mode_NAV)) ||
-     (!(AutopilotStateMachine_DWork.Delay_DSTATE.output.mode != lateral_mode_LOC_CPT)) ||
-     (!(AutopilotStateMachine_DWork.Delay_DSTATE.output.mode != lateral_mode_LOC_TRACK))))))) &&
-    AutopilotStateMachine_DWork.sDES);
+  AutopilotStateMachine_DWork.sDES = (state_i_tmp && (!inFlightDisarmCondition) && AutopilotStateMachine_DWork.sDES);
   AutopilotStateMachine_DWork.sFINAL_DES = (((AutopilotStateMachine_U.in.data.H_radio_ft >= 400.0) && engageCondition &&
     (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode != vertical_mode_FINAL_DES) &&
     (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode != vertical_mode_SRS) &&
@@ -3969,6 +3982,7 @@ void AutopilotStateMachineModelClass::step()
     AutopilotStateMachine_U.in.data.is_engine_operative_2;
   AutopilotStateMachine_B.BusAssignment_g.data.altimeter_setting_changed =
     AutopilotStateMachine_DWork.DelayInput1_DSTATE_o;
+  AutopilotStateMachine_B.BusAssignment_g.data.total_weight_kg = AutopilotStateMachine_U.in.data.total_weight_kg;
   AutopilotStateMachine_B.BusAssignment_g.data_computed.time_since_touchdown = rtb_dme;
   AutopilotStateMachine_B.BusAssignment_g.data_computed.time_since_lift_off = rtb_Saturation1;
   AutopilotStateMachine_B.BusAssignment_g.data_computed.time_since_SRS = AutopilotStateMachine_U.in.time.simulation_time
