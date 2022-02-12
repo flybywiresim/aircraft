@@ -1,6 +1,4 @@
-use crate::{
-    f64_to_sim_connect_32k_pos, sim_connect_32k_pos_to_f64, MsfsVariableRegistry, Variable,
-};
+use crate::{MsfsVariableRegistry, Variable};
 use enum_dispatch::enum_dispatch;
 use msfs::sim_connect::{SimConnect, SimConnectRecv, SIMCONNECT_OBJECT_ID_USER};
 use std::error::Error;
@@ -967,5 +965,53 @@ impl ExecutableVariableAction for OnChange {
         self.previous_values = current_values;
 
         Ok(())
+    }
+}
+
+const MIN_32KPOS_VAL_FROM_SIMCONNECT: f64 = -16384.;
+const MAX_32KPOS_VAL_FROM_SIMCONNECT: f64 = 16384.;
+const RANGE_32KPOS_VAL_FROM_SIMCONNECT: f64 =
+    MAX_32KPOS_VAL_FROM_SIMCONNECT - MIN_32KPOS_VAL_FROM_SIMCONNECT;
+const OFFSET_32KPOS_VAL_FROM_SIMCONNECT: f64 = 16384.;
+// Takes a 32k position type from simconnect, returns a value from scaled from 0 to 1
+fn sim_connect_32k_pos_to_f64(sim_connect_axis_value: u32) -> f64 {
+    let casted_value = (sim_connect_axis_value as i32) as f64;
+    let scaled_value =
+        (casted_value + OFFSET_32KPOS_VAL_FROM_SIMCONNECT) / RANGE_32KPOS_VAL_FROM_SIMCONNECT;
+
+    scaled_value.min(1.).max(0.)
+}
+// Takes a [0:1] f64 and returns a simconnect 32k position type
+fn f64_to_sim_connect_32k_pos(scaled_axis_value: f64) -> u32 {
+    let back_to_position_format = ((scaled_axis_value) * RANGE_32KPOS_VAL_FROM_SIMCONNECT)
+        - OFFSET_32KPOS_VAL_FROM_SIMCONNECT;
+    let to_i32 = back_to_position_format as i32;
+    let to_u32 = to_i32 as u32;
+
+    to_u32
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    mod sim_connect_type_casts {
+        use super::*;
+
+        #[test]
+        fn min_sim_connect_value() {
+            assert!(sim_connect_32k_pos_to_f64(u32::MAX - 16384) <= 0.001);
+        }
+
+        #[test]
+        fn middle_sim_connect_value() {
+            let val = sim_connect_32k_pos_to_f64(0);
+            assert!(val <= 0.501 && val >= 0.499);
+        }
+
+        #[test]
+        fn max_sim_connect_value() {
+            assert!(sim_connect_32k_pos_to_f64(16384) >= 0.999);
+        }
     }
 }
