@@ -71,7 +71,7 @@ export class Units {
     }
 
     static celsiusToFahrenheit(value: Celsius): Fahrenheit {
-        return (value - 32) * 5 / 9;
+        return (value * 9 / 5) + 32;
     }
 
     static userToCelsius(value: Fahrenheit): Celsius {
