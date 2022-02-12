@@ -1889,6 +1889,7 @@ mod tests {
 
     // Just a way for me to plot some graphs
     #[test]
+    #[ignore]
     fn full_graphing_test() {
         let alt = Length::new::<foot>(0.);
 
@@ -2050,6 +2051,7 @@ mod tests {
     }
 
     #[test]
+    #[ignore]
     fn hydraulic_reservoir_pressurization_graphs() {
         let alt = Length::new::<foot>(0.);
 
@@ -2095,6 +2097,7 @@ mod tests {
     }
 
     #[test]
+    #[ignore]
     fn pack_pressurization_graphs() {
         let alt = Length::new::<foot>(0.);
 
