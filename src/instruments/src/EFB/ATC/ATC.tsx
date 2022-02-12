@@ -162,10 +162,10 @@ export const ATC = () => {
                     <h1 className="max-w-4xl text-center">This page is only available when IVAO or VATSIM is selected as the ATIS/ATC source in the settings page</h1>
                     <Link
                         to="/settings/atsu-/-aoc"
-                        className="flex justify-center items-center py-2 px-16 space-x-4 rounded-lg border-2 focus:outline-none bg-theme-highlight border-theme-secondary"
+                        className="flex justify-center items-center py-2 px-16 space-x-4 rounded-lg border-2 focus:outline-none text-navy bg-theme-highlight border-theme-secondary"
                     >
                         <Gear size={26} />
-                        <p>Change ATIS/ATC source</p>
+                        <p className="text-navy">Change ATIS/ATC source</p>
                     </Link>
                 </div>
             )}
