@@ -24,6 +24,7 @@ interface TPerformanceLanding {
     runwayVisualizationLabels: DistanceLabel[];
     runwayNumber: number;
     displayedRunwayLength: number;
+    autoland: boolean;
 }
 
 interface TPerformanceState {
@@ -53,6 +54,7 @@ export const initialState: TPerformanceState = {
         runwayVisualizationLabels: [],
         runwayNumber: 0,
         displayedRunwayLength: 0,
+        autoland: false,
     },
 };
 
