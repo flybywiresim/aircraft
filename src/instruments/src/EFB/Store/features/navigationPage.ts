@@ -1,6 +1,17 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { NavigraphBoundingBox } from '../../ChartsApi/Navigraph';
-import { TypedAction } from '../store';
+
+type ThemedChart = {
+    light: string;
+    dark: string;
+}
+
+type PinnedChart = {
+    chartId: string;
+        chartName: string;
+        icao: string;
+        title: string;
+}
 
 interface InitialChartState {
     chartRotation: number;
@@ -19,11 +30,7 @@ interface InitialChartState {
     boundingBox?: NavigraphBoundingBox;
     pagesViewable: number;
     currentPage: number;
-}
-
-type ThemedChart = {
-    light: string;
-    dark: string;
+    pinnedCharts: PinnedChart[];
 }
 
 const initialState: InitialChartState = {
@@ -49,54 +56,61 @@ const initialState: InitialChartState = {
     boundingBox: undefined,
     pagesViewable: 1,
     currentPage: 1,
+    pinnedCharts: [],
 };
 
 export const navigationTabSlice = createSlice({
     name: 'chart',
     initialState,
     reducers: {
-        setChartRotation: (state, action: TypedAction<number>) => {
+        setChartRotation: (state, action: PayloadAction<number>) => {
             state.chartRotation = action.payload;
         },
-        setChartDimensions: (state, action: TypedAction<Partial<{ width: number, height: number }>>) => ({
+        setChartDimensions: (state, action: PayloadAction<Partial<{ width: number, height: number }>>) => ({
             ...state,
             chartDimensions: {
                 ...state.chartDimensions,
                 ...action.payload,
             },
         }),
-        setUsingDarkTheme: (state, action: TypedAction<boolean>) => {
+        setUsingDarkTheme: (state, action: PayloadAction<boolean>) => {
             state.usingDarkTheme = action.payload;
         },
-        setIsFullScreen: (state, action: TypedAction<boolean>) => {
+        setIsFullScreen: (state, action: PayloadAction<boolean>) => {
             state.isFullScreen = action.payload;
         },
-        setTabIndex: (state, action: TypedAction<number>) => {
+        setTabIndex: (state, action: PayloadAction<number>) => {
             state.tabIndex = action.payload;
         },
-        setChartId: (state, action: TypedAction<string>) => {
+        setChartId: (state, action: PayloadAction<string>) => {
             state.chartId = action.payload;
         },
-        setChartLinks: (state, action: TypedAction<{ light: string, dark: string }>) => {
+        setChartLinks: (state, action: PayloadAction<{ light: string, dark: string }>) => {
             state.chartLinks = action.payload;
         },
-        setPlaneInFocus: (state, action: TypedAction<boolean>) => {
+        setPlaneInFocus: (state, action: PayloadAction<boolean>) => {
             state.planeInFocus = action.payload;
         },
-        setIcao: (state, action: TypedAction<string>) => {
+        setIcao: (state, action: PayloadAction<string>) => {
             state.icao = action.payload;
         },
-        setChartName: (state, action: TypedAction<{ light: string, dark: string }>) => {
+        setChartName: (state, action: PayloadAction<{ light: string, dark: string }>) => {
             state.chartName = action.payload;
         },
-        setBoundingBox: (state, action: TypedAction<NavigraphBoundingBox | undefined>) => {
+        setBoundingBox: (state, action: PayloadAction<NavigraphBoundingBox | undefined>) => {
             state.boundingBox = action.payload;
         },
-        setPagesViewable: (state, action: TypedAction<number>) => {
+        setPagesViewable: (state, action: PayloadAction<number>) => {
             state.pagesViewable = action.payload;
         },
-        setCurrentPage: (state, action: TypedAction<number>) => {
+        setCurrentPage: (state, action: PayloadAction<number>) => {
             state.currentPage = action.payload;
+        },
+        addPinnedChart: (state, action: PayloadAction<PinnedChart>) => {
+            state.pinnedCharts.push(action.payload);
+        },
+        removedPinnedChart: (state, action: PayloadAction<PinnedChart>) => {
+            state.pinnedCharts = state.pinnedCharts.filter((pinnedChart) => pinnedChart.chartId !== action.payload.chartId);
         },
     },
 });

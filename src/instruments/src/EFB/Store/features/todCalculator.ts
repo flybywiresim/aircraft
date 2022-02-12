@@ -1,9 +1,8 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 import { TOD_CALCULATION_TYPE } from '../../Enum/TODCalculationType';
 import { TOD_INPUT_MODE } from '../../Enum/TODInputMode';
 import { groundSpeed } from '../../Service/TODCalculator';
-import { TypedAction } from '../store';
 
 interface TodCalculatorState {
     groundSpeed: groundSpeed[];
@@ -35,20 +34,20 @@ export const todCalculatorSlice = createSlice({
     name: 'todCalculator',
     initialState,
     reducers: {
-        setTodData: (state, action: TypedAction<Partial<TodCalculatorState>>) => ({
+        setTodData: (state, action: PayloadAction<Partial<TodCalculatorState>>) => ({
             ...state,
             ...action.payload,
         }),
-        addTodGroundSpeed: (state, action: TypedAction<groundSpeed>) => {
+        addTodGroundSpeed: (state, action: PayloadAction<groundSpeed>) => {
             state.groundSpeed.push(action.payload);
         },
-        removeTodGroundSpeed: (state, action: TypedAction<number>) => {
+        removeTodGroundSpeed: (state, action: PayloadAction<number>) => {
             state.groundSpeed.splice(action.payload, 1);
         },
-        setTodGroundSpeed: (state, action: TypedAction<{index: number, value: groundSpeed}>) => {
+        setTodGroundSpeed: (state, action: PayloadAction<{index: number, value: groundSpeed}>) => {
             state.groundSpeed[action.payload.index] = action.payload.value;
         },
-        setTodGroundSpeedMode: (state, action: TypedAction<TOD_INPUT_MODE>) => {
+        setTodGroundSpeedMode: (state, action: PayloadAction<TOD_INPUT_MODE>) => {
             if (action.payload === TOD_INPUT_MODE.AUTO) {
                 state.groundSpeed = initialState.groundSpeed;
             }
@@ -58,7 +57,7 @@ export const todCalculatorSlice = createSlice({
                 ...{ groundSpeedMode: action.payload },
             });
         },
-        setTodCurrentAltitudeSync: (state, action: TypedAction<boolean>) => ({
+        setTodCurrentAltitudeSync: (state, action: PayloadAction<boolean>) => ({
             ...state,
             ...{ currentAltitudeMode: action.payload ? TOD_INPUT_MODE.AUTO : TOD_INPUT_MODE.MANUAL },
         }),

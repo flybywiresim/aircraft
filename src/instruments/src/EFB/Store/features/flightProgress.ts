@@ -1,5 +1,4 @@
-import { createSlice } from '@reduxjs/toolkit';
-import { TypedAction } from '../store';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 interface FlightPlanProgressState {
     flightPlanProgress: number;
@@ -11,7 +10,7 @@ export const flightProgressSlice = createSlice({
     name: 'flightPlanProgress',
     initialState,
     reducers: {
-        setFlightPlanProgress: (state, action: TypedAction<number>) => {
+        setFlightPlanProgress: (state, action: PayloadAction<number>) => {
             state.flightPlanProgress = action.payload;
         },
     },
