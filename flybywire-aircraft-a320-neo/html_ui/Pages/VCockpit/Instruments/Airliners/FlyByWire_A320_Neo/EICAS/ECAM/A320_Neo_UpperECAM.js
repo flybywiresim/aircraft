@@ -1942,8 +1942,8 @@ var A320_Neo_UpperECAM;
 
             const pack1Fault = SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK1_FAULT", "bool");
             const pack2Fault = SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK2_FAULT", "bool");
-            const pack1Off = !SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK1_TOGGLE", "bool");
-            const pack2Off = !SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK2_TOGGLE", "bool");
+            const pack1Off = !SimVar.GetSimVarValue("L:A32NX_OVHD_COND_PACK_1_PB_IS_ON", "bool");
+            const pack2Off = !SimVar.GetSimVarValue("L:A32NX_OVHD_COND_PACK_2_PB_IS_ON", "bool");
 
             this.packOffNotFailed1.write(pack1Off && !pack1Fault && this.packOffBleedAvailable1.read() && this.fwcFlightPhase === 6, deltaTime);
             this.packOffNotFailed2.write(pack2Off && !pack2Fault && this.packOffBleedAvailable2.read() && this.fwcFlightPhase === 6, deltaTime);
