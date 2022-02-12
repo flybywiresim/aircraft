@@ -1,8 +1,8 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { getSimbriefData } from '../../SimbriefApi';
 import { IFuel, IWeights } from '../../SimbriefApi/simbriefInterface';
 
-import { TypedAction, store, RootState } from '../store';
+import { store, RootState } from '../store';
 
 export interface SimbriefData {
     departingAirport: string;
@@ -114,13 +114,15 @@ export const simbriefSlice = createSlice({
     name: 'simBrief',
     initialState,
     reducers: {
-        setSimbriefData: (state, action: TypedAction<SimbriefData>) => {
+        setSimbriefData: (state, action: PayloadAction<
+SimbriefData>) => {
             state.data = action.payload;
         },
     },
 });
 
-export async function fetchSimbriefDataAction(simbriefUserId: string): Promise<TypedAction<SimbriefData>> {
+export async function fetchSimbriefDataAction(simbriefUserId: string): Promise<PayloadAction<
+SimbriefData>> {
     const returnedSimbriefData = await getSimbriefData(simbriefUserId);
 
     if (simbriefUserId) {
