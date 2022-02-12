@@ -2,13 +2,14 @@ import React, { useState } from 'react';
 import { MemoryRouter as Router } from 'react-router-dom';
 import { FailuresOrchestratorProvider } from './failures-orchestrator-provider';
 import Efb from './Efb';
-import logo from './Assets/fbw-logo.svg';
-
-import './Assets/Reset.scss';
-import './Assets/Efb.scss';
 import { render } from '../Common/index';
 import { readSettingsFromPersistentStorage } from './Settings/sync';
 import { useInteractionEvent } from '../util';
+
+import './Assets/Reset.scss';
+import './Assets/Efb.scss';
+
+import logo from './Assets/fbw-logo.svg';
 
 const ScreenLoading = () => (
     <div className="loading-screen">
@@ -76,4 +77,4 @@ const EFBLoad = () => {
 
 readSettingsFromPersistentStorage();
 
-render(<FailuresOrchestratorProvider><EFBLoad /></FailuresOrchestratorProvider>);
+render(<FailuresOrchestratorProvider><EFBLoad /></FailuresOrchestratorProvider>, true, true);

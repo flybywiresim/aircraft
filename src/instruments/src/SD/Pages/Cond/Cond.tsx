@@ -1,8 +1,9 @@
-import './Cond.scss';
-import ReactDOM from 'react-dom';
 import React from 'react';
-import { getRenderTarget, setIsEcamPage } from '../../../Common/defaults';
+import { render } from '../../../Common';
+import { setIsEcamPage } from '../../../Common/defaults';
 import { SimVarProvider, useSimVar } from '../../../Common/simVars';
+
+import './Cond.scss';
 
 setIsEcamPage('cond_page');
 
@@ -117,4 +118,4 @@ const CondUnit = ({ title, selectedTemp, cabinTemp, trimTemp, x, offset, hotAir 
     );
 };
 
-ReactDOM.render(<SimVarProvider><CondPage /></SimVarProvider>, getRenderTarget());
+render(<SimVarProvider><CondPage /></SimVarProvider>);

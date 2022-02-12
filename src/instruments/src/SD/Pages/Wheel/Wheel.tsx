@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import ReactDOM from 'react-dom';
+import { render } from '@instruments/common/index';
 import classNames from 'classnames';
 import { SimVarProvider, useSimVar } from '@instruments/common/simVars';
 import { getRenderTarget, setIsEcamPage } from '@instruments/common/defaults';
@@ -338,4 +338,4 @@ const Wheels = ({ x, y, left, right }: WheelsProps) => {
     );
 };
 
-ReactDOM.render(<SimVarProvider><WheelPage /></SimVarProvider>, getRenderTarget());
+render(<SimVarProvider><WheelPage /></SimVarProvider>);

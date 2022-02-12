@@ -27,3 +27,5 @@ jq -n \
     --arg event_name "${GITHUB_EVENT_NAME}" \
     '{ built: $built, ref: $ref, sha: $sha, actor: $actor, event_name: $event_name }' \
     > "${DIR}/../flybywire-aircraft-a320-neo/build_info.json"
+
+cp "${DIR}/../flybywire-aircraft-a320-neo/build_info.json" "${DIR}/../flybywire-aircraft-a320-neo/a32nx_build_info.json"
