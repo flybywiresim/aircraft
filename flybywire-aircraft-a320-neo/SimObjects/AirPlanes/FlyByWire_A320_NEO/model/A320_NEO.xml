@@ -65,7 +65,7 @@
             </UseTemplate>
         </Component>
         <Component ID="HANDLING">
-            <UseTemplate Name="ASOBO_HANDLING_Elevator_Template">
+            <UseTemplate Name="FBW_HANDLING_Elevator_Template">
                 <ANIM_NAME>elevator_percent_key</ANIM_NAME>
             </UseTemplate>
             <UseTemplate Name="ASOBO_HANDLING_Slats_Template">
@@ -80,9 +80,8 @@
                 <ANIM_NAME_LEFT>l_aileron_percent_key</ANIM_NAME_LEFT>
                 <ANIM_NAME_RIGHT>r_aileron_percent_key</ANIM_NAME_RIGHT>
             </UseTemplate>
-            <UseTemplate Name="ASOBO_HANDLING_Rudder_Template">
+            <UseTemplate Name="FBW_HANDLING_Rudder_Template">
                 <ANIM_NAME>rudder_percent_key</ANIM_NAME>
-                <USE_INTEGRATED_TRIM>True</USE_INTEGRATED_TRIM>
             </UseTemplate>
             <UseTemplate Name="ASOBO_HANDLING_Spoilers_Template">
                 <ANIM_NAME_LEFT>l_spoiler_key</ANIM_NAME_LEFT>

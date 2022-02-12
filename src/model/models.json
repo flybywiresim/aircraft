@@ -31999,6 +31999,19 @@
             "indices": [2, 3]
           }
         ]
+      },
+      {
+        "animation": "elevator_percent_key",
+        "newAnimations": [
+          {
+            "name": "l_elevator_percent_key",
+            "indices": [0, 1, 2]
+          },
+          {
+            "name": "r_elevator_percent_key",
+            "indices": [3, 4, 5]
+          }
+        ]
       }
     ]
   }

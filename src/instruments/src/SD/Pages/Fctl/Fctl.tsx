@@ -106,8 +106,8 @@ const PitchTrim = ({ x, y }: ComponentPositionProps) => {
 };
 
 const Rudder = ({ x, y }: ComponentPositionProps) => {
-    const [rudderDeflectionState] = useSimVar('RUDDER DEFLECTION PCT', 'percent over 100', 50);
-    const rudderAngle = -rudderDeflectionState * 25;
+    const [rudderDeflectionState] = useSimVar('L:A32NX_HYD_RUDDER_DEFLECTION', 'Percent', 50);
+    const rudderAngle = -rudderDeflectionState * 25 / 100;
 
     // Rudder limits
     const [indicatedAirspeedState] = useSimVar('AIRSPEED INDICATED', 'knots', 500);
@@ -243,7 +243,7 @@ const Elevator = ({ x, y, side, leftHydraulicSystem, rightHydraulicSystem }: Com
     const textPositionX = side === 'left' ? -42 : 42;
     const textLetter = side === 'left' ? 'L' : 'R';
 
-    const [elevatorDeflection] = useSimVar('ELEVATOR DEFLECTION PCT', 'percent over 100', 50);
+    const [elevatorDeflection] = useSimVar(`L:A32NX_HYD_ELEVATOR_${side.toUpperCase()}_DEFLECTION`, 'percent over 100', 50);
     const elevatorDeflectPctNormalized = elevatorDeflection * (elevatorDeflection > 0 ? 70 : 52);
     const cursorPath = `M${side === 'left' ? 1 : -1},${70 - elevatorDeflectPctNormalized} l${side === 'right' ? '-' : ''}15,-7 l0,14Z`;
 
@@ -263,7 +263,7 @@ const Elevator = ({ x, y, side, leftHydraulicSystem, rightHydraulicSystem }: Com
             <ElevatorAxis side={side} x={0} y={5} />
 
             <HydraulicIndicator x={side === 'left' ? -60 : 18} y={79} type={leftHydraulicSystem} />
-            <HydraulicIndicator x={side === 'left' ? -38 : 40} y={79} type={rightHydraulicSystem} />
+            <HydraulicIndicator x={side === 'right' ? -38 : 40} y={79} type={rightHydraulicSystem} />
         </SvgGroup>
     );
 };
