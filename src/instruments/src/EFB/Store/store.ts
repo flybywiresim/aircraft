@@ -10,7 +10,6 @@ import performanceReducer from './features/performance';
 import flightProgressReducer from './features/flightProgress';
 import navigationTabReducer from './features/navigationPage';
 
-export type TypedAction<T> = { type: string, payload: T };
 export type RootState = ReturnType<typeof combinedReducer>;
 export type AppDispatch = typeof store.dispatch;
 
