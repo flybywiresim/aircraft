@@ -101,7 +101,7 @@ const RunwayVisualizationWidget = ({ asda = 0, labels = [], mainLength = 0, runw
                             {label.label}
                             {' '}
                             { Math.round(distanceUnit === 'ft' ? Units.metreToFoot(label.distance) : label.distance) }
-                            m
+                            {distanceUnit}
                         </p>
                     )}
                 </div>
@@ -110,7 +110,7 @@ const RunwayVisualizationWidget = ({ asda = 0, labels = [], mainLength = 0, runw
         console.log(elements);
 
         return <>{elements}</>;
-    }), [labels]);
+    }), [labels, distanceUnit]);
 
     const runwayBoundMarkers = (
         <div className="flex flex-row space-x-1.5">
