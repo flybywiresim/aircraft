@@ -18,15 +18,17 @@ export const LowerLeftDisplay: React.FC<LowerLeftDisplayProps> = ({ x, y }) => {
     const [line5] = useSimVar('L:A32NX_EWD_LOWER_LEFT_LINE_5', 'number', 500);
     const [line6] = useSimVar('L:A32NX_EWD_LOWER_LEFT_LINE_6', 'number', 500);
     const [line7] = useSimVar('L:A32NX_EWD_LOWER_LEFT_LINE_7', 'number', 500);
-    const message = [
-        EWDMessages[padEWDCode(line1)],
-        EWDMessages[padEWDCode(line2)],
-        EWDMessages[padEWDCode(line3)],
-        EWDMessages[padEWDCode(line4)],
-        EWDMessages[padEWDCode(line5)],
-        EWDMessages[padEWDCode(line6)],
-        EWDMessages[padEWDCode(line7)],
-    ].join('\r');
+    // const message = [
+    //     EWDMessages[padEWDCode(line1)],
+    //     EWDMessages[padEWDCode(line2)],
+    //     EWDMessages[padEWDCode(line3)],
+    //     EWDMessages[padEWDCode(line4)],
+    //     EWDMessages[padEWDCode(line5)],
+    //     EWDMessages[padEWDCode(line6)],
+    //     EWDMessages[padEWDCode(line7)],
+    // ].join('\r');
+
+    const message = mesgPool[4];
 
     return (
         <g id="LowerLeftDisplay">
@@ -111,5 +113,19 @@ export const mesgPool = [
         ' -6',
         ' -7',
         ' -8',
+    ].join('\r'),
+    [
+        '\x1b<3m\x1b4mT.O\x1bm AUTO BRK\x1b<5m.....MAX',
+        '\x1b<3m\x1b4mT.O\x1bm AUTO BRK MAX',
+        '    \x1b<3mSIGNS\x1b<5m.........ON',
+        '    \x1b<3mSIGNS ON',
+        '    \x1b<3mCABIN\x1b<5m......CHECK',
+        '    \x1b<3mCABIN READY',
+        '    \x1b<3mSPLRS\x1b<5m........ARM',
+        '    \x1b<3mSPLRS ARM',
+        '    \x1b<3mFLAPS\x1b<5m........T.O',
+        '    \x1b<3mFLAPS T.O',
+        '    \x1b<3mT.O CONFIG\x1b<5m..TEST',
+        '    \x1b<3mT.O CONFIG NORMAL',
     ].join('\r'),
 ];
