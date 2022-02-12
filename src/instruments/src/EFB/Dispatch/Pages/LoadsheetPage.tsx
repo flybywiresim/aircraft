@@ -92,7 +92,7 @@ export const LoadSheetWidget = () => {
                     </ScrollableContainer>
                 </>
             ) : (
-                <div className="flex flex-col justify-center items-center space-y-8 h-full text-lg">
+                <div className="flex flex-col justify-center items-center space-y-8 h-full">
                     <h1 className="max-w-4xl text-center">You have not yet imported a flightplan from SimBrief</h1>
                     <button
                         type="button"
@@ -105,8 +105,8 @@ export const LoadSheetWidget = () => {
                         }}
                         className="flex justify-center items-center py-2 px-16 space-x-4 rounded-lg border-2 shadow-lg focus:outline-none bg-theme-highlight border-theme-secondary"
                     >
-                        <CloudArrowDown size={26} />
-                        <p>Import Flightplan from SimBrief</p>
+                        <CloudArrowDown className="text-navy" size={26} />
+                        <p className="text-navy">Import Flightplan from SimBrief</p>
                     </button>
                 </div>
             )}
