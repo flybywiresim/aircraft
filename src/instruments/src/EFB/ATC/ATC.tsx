@@ -110,8 +110,10 @@ export const ATC = () => {
                         },
                     );
                 } else {
+                    const mcduFlightNoSet = SimVar.GetSimVarValue('L:A32NX_MCDU_FLT_NO_SET', 'boolean') === 1;
                     const callsign = SimVar.GetSimVarValue('ATC FLIGHT NUMBER', 'string');
-                    if (callsign && callsign.length !== 0) {
+
+                    if (mcduFlightNoSet && callsign && callsign.length !== 0) {
                         const body = {
                             logon: hoppieUserId,
                             from: callsign,

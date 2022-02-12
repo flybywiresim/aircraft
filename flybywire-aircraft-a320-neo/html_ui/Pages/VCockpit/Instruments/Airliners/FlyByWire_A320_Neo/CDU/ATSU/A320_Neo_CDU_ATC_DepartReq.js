@@ -54,8 +54,8 @@ class CDUAtcDepartReq {
             }
         );
 
-        if (SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC").length !== 0 && mcdu.flightPlanManager.getOrigin() !== null) {
-            mcdu.pdcMessage.Callsign = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC");
+        if (mcdu.atsuManager.flightNumber().length !== 0 && mcdu.flightPlanManager.getOrigin() !== null) {
+            mcdu.pdcMessage.Callsign = mcdu.atsuManager.flightNumber();
             flightNo = mcdu.pdcMessage.Callsign + "[color]green";
         }
         if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident) {
