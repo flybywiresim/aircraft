@@ -570,32 +570,40 @@ const runwayConditionLandingData: RunwayConditionLandingData = {
 /**
  * Safety margin multiplier, obtained from QRH In-Flight Performance section
  */
-const safetyMargin = 1.15;
+const SAFETY_MARGIN = 1.15;
 
 /**
  * VLS speed (kts) for full flap configuration
  * Index 0 = 40T, Index 8 = 80T, 5T increment
  */
-const confFullVls = [116, 116, 116, 120, 125, 130, 135, 139, 143];
+const CONF_FULL_VLS = [116, 116, 116, 120, 125, 130, 135, 139, 143];
 
 /**
  * VLS speed (kts) for conf 3 flaps
  * Index 0 = 40T, Index 8 = 80T, 5T increment
  */
-const conf3Vls = [116, 118, 124, 130, 136, 141, 146, 151, 155];
+const CONF3_VLS = [116, 118, 124, 130, 136, 141, 146, 151, 155];
 
 /**
- * Converts mass into an index from 0-8 for use with VLS tables
- * @param mass Mass in tons
+ * Gets the interpolated VLS speed (kts) for the given mass, in tonnes, and the appropriate VLS speed table.
+ * @param mass
+ * @param vlsSpeedTable
  */
-function getVlsTableIndex(mass: number): number {
-    const index = Math.ceil(((mass > 80 ? 80 : mass) - 40) / 5);
-    return index >= 0
-        ? index
-        : 0;
-}
+const getInterpolatedVlsTableValue = (mass: number, vlsSpeedTable: number[]): number => {
+    const index = Math.max(0, Math.ceil((Math.min(80, mass) - 40) / 5));
 
-export default class LandingCalculator {
+    if (index === 0) return vlsSpeedTable[0];
+    if (index === 8) return vlsSpeedTable[8];
+
+    const lower = vlsSpeedTable[index - 1];
+    const upper = vlsSpeedTable[index];
+
+    const oneTonSpeedIncrement = (upper - lower) / 5;
+
+    return lower + oneTonSpeedIncrement * (mass % 5);
+};
+
+export class LandingCalculator {
     /**
      * Calculates the landing distances for each autobrake mode for the given conditions
      * @param weight Aircraft weight in KGs
@@ -629,13 +637,13 @@ export default class LandingCalculator {
         autoland: boolean,
     ): { maxAutobrakeDist: number, mediumAutobrakeDist: number, lowAutobrakeDist: number} {
         return {
-            maxAutobrakeDist: safetyMargin
+            maxAutobrakeDist: SAFETY_MARGIN
                 * this.calculateRequiredLandingDistance(weight, flaps, runwayCondition, AutobrakeMode.Max, approachSpeed,
                     windDirection, windMagnitude, runwayHeading, reverseThrust, altitude, temperature, slope, overweightProcedure, pressure, autoland),
-            mediumAutobrakeDist: safetyMargin
+            mediumAutobrakeDist: SAFETY_MARGIN
                 * this.calculateRequiredLandingDistance(weight, flaps, runwayCondition, AutobrakeMode.Medium, approachSpeed,
                     windDirection, windMagnitude, runwayHeading, reverseThrust, altitude, temperature, slope, overweightProcedure, pressure, autoland),
-            lowAutobrakeDist: safetyMargin
+            lowAutobrakeDist: SAFETY_MARGIN
                 * this.calculateRequiredLandingDistance(weight, flaps, runwayCondition, AutobrakeMode.Low, approachSpeed,
                     windDirection, windMagnitude, runwayHeading, reverseThrust, altitude, temperature, slope, overweightProcedure, pressure, autoland),
         };
@@ -679,11 +687,12 @@ export default class LandingCalculator {
         const isaTemperature = this.getISATemperature(pressureAltitude);
 
         let targetApproachSpeed: number;
-        const vlsTableIndex = getVlsTableIndex(weight / 1000);
+        const tonnage = weight / 1000;
+
         if (flaps === LandingFlapsConfig.Full) {
-            targetApproachSpeed = confFullVls[vlsTableIndex];
+            targetApproachSpeed = getInterpolatedVlsTableValue(tonnage, CONF_FULL_VLS);
         } else {
-            targetApproachSpeed = conf3Vls[vlsTableIndex];
+            targetApproachSpeed = getInterpolatedVlsTableValue(tonnage, CONF3_VLS);
         }
 
         const landingData = runwayConditionLandingData[runwayCondition][autobrakeMode][flaps];
