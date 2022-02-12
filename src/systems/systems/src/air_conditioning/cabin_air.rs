@@ -320,8 +320,11 @@ impl ZoneAir {
         if context.true_airspeed() < Velocity::new::<meter_per_second>(15.) {
             context.ambient_temperature()
         } else {
-            ThermodynamicTemperature::new::<kelvin>((self.internal_air.temperature().get::<kelvin>()
-                + context.ambient_temperature().get::<kelvin>()) / 2.)
+            ThermodynamicTemperature::new::<kelvin>(
+                (self.internal_air.temperature().get::<kelvin>()
+                    + context.ambient_temperature().get::<kelvin>())
+                    / 2.,
+            )
         }
     }
 
