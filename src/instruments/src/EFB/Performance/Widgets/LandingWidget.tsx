@@ -80,6 +80,7 @@ export const LandingWidget = () => {
         flaps,
         runwayCondition,
         reverseThrust,
+        autoland,
         altitude,
         slope,
         temperature,
@@ -112,6 +113,7 @@ export const LandingWidget = () => {
             slope ?? 0,
             overweightProcedure,
             pressure ?? 0,
+            autoland,
         );
 
         dispatch(setLandingValues({
@@ -272,6 +274,12 @@ export const LandingWidget = () => {
         const reverseThrust: boolean = newValue;
 
         dispatch(setLandingValues({ reverseThrust }));
+    };
+
+    const handleAutolandChange = (newValue: boolean): void => {
+        const autoland: boolean = newValue;
+
+        dispatch(setLandingValues({ autoland }));
     };
 
     const handleRunwaySlopeChange = (value: string): void => {
@@ -617,6 +625,18 @@ export const LandingWidget = () => {
                                         defaultValue={initialState.landing.reverseThrust}
                                         value={reverseThrust}
                                         onChange={handleReverseThrustChange}
+                                        options={[
+                                            { value: false, displayValue: 'No' },
+                                            { value: true, displayValue: 'Yes' },
+                                        ]}
+                                    />
+                                </Label>
+                                <Label text="Autoland">
+                                    <SelectInput
+                                        className="w-64"
+                                        defaultValue={initialState.landing.autoland}
+                                        value={reverseThrust}
+                                        onChange={handleAutolandChange}
                                         options={[
                                             { value: false, displayValue: 'No' },
                                             { value: true, displayValue: 'Yes' },

@@ -610,20 +610,34 @@ export default class LandingCalculator {
      * @param temperature OAT of runway
      * @param slope Runway slope in %. Negative is downward slope
      * @param overweightProcedure Overweight procedure is being used if true
+     * @param autoland Indicates if the usage of autoland is active
      */
-    public calculateLandingDistances(weight: number, flaps: LandingFlapsConfig, runwayCondition: LandingRunwayConditions,
-        approachSpeed: number, windDirection: number, windMagnitude: number, runwayHeading: number, reverseThrust: boolean, altitude: number,
-        temperature: number, slope: number, overweightProcedure: boolean, pressure: number): { maxAutobrakeDist: number, mediumAutobrakeDist: number, lowAutobrakeDist: number} {
+    public calculateLandingDistances(
+        weight: number,
+        flaps: LandingFlapsConfig,
+        runwayCondition: LandingRunwayConditions,
+        approachSpeed: number,
+        windDirection: number,
+        windMagnitude: number,
+        runwayHeading: number,
+        reverseThrust: boolean,
+        altitude: number,
+        temperature: number,
+        slope: number,
+        overweightProcedure: boolean,
+        pressure: number,
+        autoland: boolean,
+    ): { maxAutobrakeDist: number, mediumAutobrakeDist: number, lowAutobrakeDist: number} {
         return {
             maxAutobrakeDist: safetyMargin
                 * this.calculateRequiredLandingDistance(weight, flaps, runwayCondition, AutobrakeMode.Max, approachSpeed,
-                    windDirection, windMagnitude, runwayHeading, reverseThrust, altitude, temperature, slope, overweightProcedure, pressure),
+                    windDirection, windMagnitude, runwayHeading, reverseThrust, altitude, temperature, slope, overweightProcedure, pressure, autoland),
             mediumAutobrakeDist: safetyMargin
                 * this.calculateRequiredLandingDistance(weight, flaps, runwayCondition, AutobrakeMode.Medium, approachSpeed,
-                    windDirection, windMagnitude, runwayHeading, reverseThrust, altitude, temperature, slope, overweightProcedure, pressure),
+                    windDirection, windMagnitude, runwayHeading, reverseThrust, altitude, temperature, slope, overweightProcedure, pressure, autoland),
             lowAutobrakeDist: safetyMargin
                 * this.calculateRequiredLandingDistance(weight, flaps, runwayCondition, AutobrakeMode.Low, approachSpeed,
-                    windDirection, windMagnitude, runwayHeading, reverseThrust, altitude, temperature, slope, overweightProcedure, pressure),
+                    windDirection, windMagnitude, runwayHeading, reverseThrust, altitude, temperature, slope, overweightProcedure, pressure, autoland),
         };
     }
 
@@ -642,10 +656,25 @@ export default class LandingCalculator {
      * @param temperature OAT of runway
      * @param slope Runway slope in %. Negative is downward slope
      * @param overweightProcedure Overweight procedure is being used if true
+     * @param autoland Indicates if the usage of autoland is active
      */
-    private calculateRequiredLandingDistance(weight: number, flaps: LandingFlapsConfig, runwayCondition: LandingRunwayConditions, autobrakeMode: AutobrakeMode,
-        approachSpeed: number, windDirection: number, windMagnitude: number, runwayHeading: number, reverseThrust: boolean, altitude: number,
-        temperature: number, slope: number, overweightProcedure: boolean, pressure: number): number {
+    private calculateRequiredLandingDistance(
+        weight: number,
+        flaps: LandingFlapsConfig,
+        runwayCondition: LandingRunwayConditions,
+        autobrakeMode: AutobrakeMode,
+        approachSpeed: number,
+        windDirection: number,
+        windMagnitude: number,
+        runwayHeading: number,
+        reverseThrust: boolean,
+        altitude: number,
+        temperature: number,
+        slope: number,
+        overweightProcedure: boolean,
+        pressure: number,
+        autoland: boolean,
+    ): number {
         const pressureAltitude = altitude + this.getPressureAltitude(pressure);
         const isaTemperature = this.getISATemperature(pressureAltitude);
 
@@ -699,8 +728,16 @@ export default class LandingCalculator {
             ? landingData.overweightProcedureCorrection
             : 0;
 
+        let autolandCorrection;
+
+        if (autoland) {
+            autolandCorrection = flaps === LandingFlapsConfig.Full ? 280 : 250;
+        } else {
+            autolandCorrection = 0;
+        }
+
         const requiredLandingDistance = landingData.refDistance + weightCorrection + speedCorrection + windCorrection + reverserCorrection
-            + altitudeCorrection + slopeCorrection + temperatureCorrection + overweightProcCorrection;
+            + altitudeCorrection + slopeCorrection + temperatureCorrection + overweightProcCorrection + autolandCorrection;
 
         return Math.round(requiredLandingDistance);
     }
