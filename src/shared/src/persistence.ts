@@ -1,3 +1,5 @@
+import call = TemplateElement.call;
+
 declare function GetStoredData(property: string, defaultValue?: string);
 declare function SetStoredData(property: string, newValue: string);
 
@@ -12,7 +14,7 @@ export class NXDataStore {
 
     private static get listener() {
         if (this.mListener === undefined) {
-            this.mListener = RegisterViewListener('JS_LISTENER_SIMVARS');
+            this.mListener = RegisterViewListener('JS_LISTENER_SIMVARS', null, true);
         }
         return this.mListener;
     }
@@ -46,6 +48,8 @@ export class NXDataStore {
     }
 
     static subscribe(key: string, callback: SubscribeCallback): SubscribeCancellation {
+        callback(key, this.get(key));
+
         return Coherent.on('A32NX_NXDATASTORE_UPDATE', (updatedKey: string, value: string) => {
             if (key === '*' || key === updatedKey) {
                 callback(updatedKey, value);
