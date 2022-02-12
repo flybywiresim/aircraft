@@ -52,7 +52,8 @@ export const Traffic: FC<TcasProps> = ({ mapParams, mode }) => {
     const x: number = 361.5;
     const y: number = (mode === Mode.ARC) ? 606.5 : 368;
 
-    useCoherentEvent('A32NX_TCAS_TRAFFIC', (airTraffic: NdTraffic[]) => {
+    useCoherentEvent('A32NX_TCAS_TRAFFIC', (airTrafficString: string) => {
+        const airTraffic: NdTraffic[] = JSON.parse(airTrafficString);
         displayTraffic.forEach((traffic: NdTraffic) => traffic.alive = false);
         if (airTraffic) {
             airTraffic.forEach((tf: NdTraffic) => {
@@ -136,13 +137,13 @@ export const Traffic: FC<TcasProps> = ({ mapParams, mode }) => {
                         {'DMOD: '}
                     </tspan>
                     <tspan fill="#e38c56">
-                        {dmodTa}
+                        {dmodTa.toFixed(3)}
                     </tspan>
                     <tspan fill="#ffffff">
                         {' | '}
                     </tspan>
                     <tspan fill="#ff0000">
-                        {dmodRa}
+                        {dmodRa.toFixed(3)}
                     </tspan>
                     <tspan x={290} dy={15} fill="#ffffff">
                         {'TAU THR: '}
