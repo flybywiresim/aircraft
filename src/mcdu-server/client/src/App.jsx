@@ -7,7 +7,7 @@ import { WebsocketContext } from './WebsocketContext';
 
 function App() {
     const [fullscreen, setFullscreen] = useState(window.location.href.endsWith('fullscreen'));
-    const [sound, setSound] = useState(window.location.href.endsWith('sound'));
+    const [sound] = useState(window.location.href.endsWith('sound'));
     const socketUrl = `ws://${window.location.hostname}:__WEBSOCKET_PORT__`;
 
     const [content, setContent] = useState(
