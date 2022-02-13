@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { FC } from 'react';
 import { IconArrowRight } from '@tabler/icons';
 import { A320Failure } from '@flybywiresim/failures';
 import { Link } from 'react-router-dom';
@@ -8,6 +8,7 @@ import { useNavigraph } from '../../ChartsApi/Navigraph';
 import { useFailuresOrchestrator } from '../../failures-orchestrator-provider';
 import { useAppDispatch, useAppSelector } from '../../Store/store';
 import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
+import { WeatherWidget } from './WeatherWidget';
 
 export const RemindersWidget = () => {
     const { allFailures, activeFailures } = useFailuresOrchestrator();
@@ -16,16 +17,26 @@ export const RemindersWidget = () => {
     const dispatch = useAppDispatch();
     const [, setChartSource] = usePersistentProperty('EFB_CHART_SOURCE');
 
+    const { departingAirport, arrivingAirport } = useAppSelector((state) => state.simbrief.data);
+    const { userDepartureIcao, userDestinationIcao } = useAppSelector((state) => state.dashboard);
+
     return (
         <div className="p-6 w-full rounded-lg border-2 border-theme-accent">
             <ScrollableContainer height={51}>
                 <div className="flex flex-col space-y-4">
+                    <RemindersSection title="Weather" noLink>
+                        <div className="space-y-6">
+                            <WeatherWidget name="origin" simbriefIcao={departingAirport} userIcao={userDepartureIcao} />
+                            <div className="w-full h-1 bg-theme-text" />
+                            <WeatherWidget name="destination" simbriefIcao={arrivingAirport} userIcao={userDestinationIcao} />
+                        </div>
+                    </RemindersSection>
                     {navigraph.hasToken && (
                         <RemindersSection title="Pinned Charts" pageLinkPath="/navigation">
                             {pinnedCharts.map((chart) => (
                                 <Link
                                     to="/navigation"
-                                    className="flex flex-col flex-wrap p-2 mt-4 mr-4 rounded-md border-2 bg-theme-highlight border-theme-highlight"
+                                    className="flex flex-col flex-wrap p-2 mt-4 mr-4 bg-theme-highlight rounded-md border-2 border-theme-highlight"
                                     onClick={() => {
                                         setChartSource('NAVIGRAPH');
                                         dispatch(setChartDimensions({ width: undefined, height: undefined }));
@@ -72,19 +83,22 @@ export const RemindersWidget = () => {
 
 interface RemindersSectionProps {
     title: string,
-    pageLinkPath: string,
+    pageLinkPath?: string,
+    noLink?: boolean
 }
 
-const RemindersSection: FC<RemindersSectionProps> = ({ title, children, pageLinkPath }) => (
+const RemindersSection: FC<RemindersSectionProps> = ({ title, children, pageLinkPath, noLink }) => (
     <div className="flex flex-col pb-6 border-b-2 border-gray-700">
         <div className="flex flex-row justify-between items-center mb-2">
             <h2 className="font-medium">{title}</h2>
 
-            <Link to={pageLinkPath} className="flex items-center border-b-2 opacity-80 hover:opacity-100 transition duration-100 text-theme-highlight border-theme-highlight">
-                <span className="font-bold text-theme-highlight font-manrope">Go to Page</span>
+            {!noLink && (
+                <Link to={pageLinkPath} className="flex items-center text-theme-highlight border-b-2 border-theme-highlight opacity-80 hover:opacity-100 transition duration-100">
+                    <span className="font-bold text-theme-highlight font-manrope">Go to Page</span>
 
-                <IconArrowRight className="fill-current" />
-            </Link>
+                    <IconArrowRight className="fill-current" />
+                </Link>
+            )}
         </div>
 
         {children}
@@ -96,7 +110,7 @@ interface ActiveFailureReminderProps {
 }
 
 const ActiveFailureReminder: FC<ActiveFailureReminderProps> = ({ name }) => (
-    <div className="flex flex-col flex-wrap p-2 mt-4 mr-4 rounded-md border-2 bg-theme-highlight border-theme-highlight">
+    <div className="flex flex-col flex-wrap p-2 mt-4 mr-4 bg-theme-highlight rounded-md border-2 border-theme-highlight">
         <h3 className="font-bold text-black">Active Failure</h3>
         <span className="mt-2 text-black font-inter">{name}</span>
         <span className="ml-auto text-black">
