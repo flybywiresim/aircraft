@@ -18,17 +18,17 @@ export const LowerLeftDisplay: React.FC<LowerLeftDisplayProps> = ({ x, y }) => {
     const [line5] = useSimVar('L:A32NX_EWD_LOWER_LEFT_LINE_5', 'number', 500);
     const [line6] = useSimVar('L:A32NX_EWD_LOWER_LEFT_LINE_6', 'number', 500);
     const [line7] = useSimVar('L:A32NX_EWD_LOWER_LEFT_LINE_7', 'number', 500);
-    // const message = [
-    //     EWDMessages[padEWDCode(line1)],
-    //     EWDMessages[padEWDCode(line2)],
-    //     EWDMessages[padEWDCode(line3)],
-    //     EWDMessages[padEWDCode(line4)],
-    //     EWDMessages[padEWDCode(line5)],
-    //     EWDMessages[padEWDCode(line6)],
-    //     EWDMessages[padEWDCode(line7)],
-    // ].join('\r');
+    const message = [
+        EWDMessages[padEWDCode(line1)],
+        EWDMessages[padEWDCode(line2)],
+        EWDMessages[padEWDCode(line3)],
+        EWDMessages[padEWDCode(line4)],
+        EWDMessages[padEWDCode(line5)],
+        EWDMessages[padEWDCode(line6)],
+        EWDMessages[padEWDCode(line7)],
+    ].join('\r');
 
-    const message = mesgPool[4];
+    // const message = mesgPool[4];
 
     return (
         <g id="LowerLeftDisplay">

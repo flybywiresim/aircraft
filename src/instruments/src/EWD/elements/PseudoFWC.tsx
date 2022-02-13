@@ -13,6 +13,66 @@ const mapOrder = (array, order) => {
     return array;
 };
 
+const adirsMessage1 = (adirs, engineRunning) => {
+    let rowChoice = 0;
+    switch (true) {
+    case (Math.ceil(adirs / 60) >= 7 && !engineRunning):
+        rowChoice = 0;
+        break;
+    case (Math.ceil(adirs / 60) >= 7 && engineRunning):
+        rowChoice = 1;
+        break;
+    case (Math.ceil(adirs / 60) === 6 && !engineRunning):
+        rowChoice = 2;
+        break;
+    case (Math.ceil(adirs / 60) === 6 && engineRunning):
+        rowChoice = 3;
+        break;
+    case (Math.ceil(adirs / 60) === 5 && !engineRunning):
+        rowChoice = 4;
+        break;
+    case (Math.ceil(adirs / 60) === 5 && engineRunning):
+        rowChoice = 5;
+        break;
+    case (Math.ceil(adirs / 60) === 4 && !engineRunning):
+        rowChoice = 6;
+        break;
+    case (Math.ceil(adirs / 60) === 4 && engineRunning):
+        rowChoice = 7;
+        break;
+    default:
+        break;
+    }
+    return rowChoice;
+};
+
+const adirsMessage2 = (adirs, engineRunning) => {
+    let rowChoice = 0;
+    switch (true) {
+    case (Math.ceil(adirs / 60) === 3 && !engineRunning):
+        rowChoice = 0;
+        break;
+    case (Math.ceil(adirs / 60) === 3 && engineRunning):
+        rowChoice = 1;
+        break;
+    case (Math.ceil(adirs / 60) === 2 && !engineRunning):
+        rowChoice = 2;
+        break;
+    case (Math.ceil(adirs / 60) === 2 && engineRunning):
+        rowChoice = 3;
+        break;
+    case (Math.ceil(adirs / 60) === 1 && !engineRunning):
+        rowChoice = 4;
+        break;
+    case (Math.ceil(adirs / 60) === 1 && engineRunning):
+        rowChoice = 5;
+        break;
+    default:
+        break;
+    }
+    return rowChoice;
+};
+
 const PseudoFWC: React.FC = () => {
     const [memoMessage, setMemoMessage] = useState<string[]>([]);
     const [flightPhase] = useSimVar('L:A32NX_FWC_FLIGHT_PHASE', 'enum', 1000);
@@ -28,23 +88,54 @@ const PseudoFWC: React.FC = () => {
     const [leftOuterInnerValve] = useSimVar('FUELSYSTEM VALVE OPEN:4', 'bool', 500);
     const [rightOuterInnerValve] = useSimVar('FUELSYSTEM VALVE OPEN:5', 'bool', 500);
     const [unit] = usePersistentProperty('CONFIG_USING_METRIC_UNIT', '1');
-    const [fob] = useSimVar('FUEL TOTAL QUANTITY WEIGHT', 'kg', 1000);
-    const [gpwsFlapMode] = useSimVar('L:A32NX_GPWS_FLAP_OFF', 'bool', 1000);
-    const [tomemo] = useSimVar('L:A32NX_FWC_TOMEMO', 'bool', 1000);
-    const [ldgmemo] = useSimVar('L:A32NX_FWC_LDGMEMO', 'bool', 1000);
+    const [fob] = useSimVar('FUEL TOTAL QUANTITY WEIGHT', 'kg', 500);
+    const fobRounded = Math.round(fob / 10) * 10;
+    const [gpwsFlapMode] = useSimVar('L:A32NX_GPWS_FLAP_OFF', 'bool', 500);
+    const [tomemo] = useSimVar('L:A32NX_FWC_TOMEMO', 'bool', 500);
+    const [ldgmemo] = useSimVar('L:A32NX_FWC_LDGMEMO', 'bool', 500);
 
-    const [autoBrake] = useSimVar('L:A32NX_AUTOBRAKES_ARMED_MODE', 'enum', 1000);
-    const [cabinReady] = useSimVar('L:A32NX_CABIN_READY', 'bool', 1000);
-    const [flapsHandle] = useSimVar('L:A32NX_FLAPS_HANDLE_INDEX', 'enum', 1000);
-    const [toconfig] = useSimVar('L:A32NX_TO_CONFIG_NORMAL', 'bool', 1000);
+    const [autoBrake] = useSimVar('L:A32NX_AUTOBRAKES_ARMED_MODE', 'enum', 500);
+    const [flapsHandle] = useSimVar('L:A32NX_FLAPS_HANDLE_INDEX', 'enum', 500);
+    const [toconfig] = useSimVar('L:A32NX_TO_CONFIG_NORMAL', 'bool', 500);
+
+    const [adirsRemainingAlignTime] = useSimVar('L:A32NX_ADIRS_REMAINING_IR_ALIGNMENT_TIME', 'seconds', 1000);
+    const [adiru1State] = useSimVar('L:A32NX_ADIRS_ADIRU_1_STATE', 'enum', 500);
+    const [adiru2State] = useSimVar('L:A32NX_ADIRS_ADIRU_2_STATE', 'enum', 500);
+    const [adiru3State] = useSimVar('L:A32NX_ADIRS_ADIRU_3_STATE', 'enum', 500);
+
+    const [callPushAll] = useSimVar('L:PUSH_OVHD_CALLS_ALL', 'bool', 100);
+    const [callPushForward] = useSimVar('L:PUSH_OVHD_CALLS_FWD', 'bool', 100);
+    const [callPushAft] = useSimVar('L:PUSH_OVHD_CALLS_AFT', 'bool', 100);
+    const [cabinReady] = useSimVar('L:A32NX_CABIN_READY', 'bool');
+
+    const [engine1Generator] = useSimVar('L:A32NX_ENG_GEN_1_CURRENT_NORMAL', 'bool', 500);
+    const [engine2Generator] = useSimVar('L:A32NX_ENG_GEN_2_CURRENT_NORMAL', 'bool', 500);
+    const [greenLP] = useSimVar('L:A32NX_HYD_GREEN_EDPUMP_LOW_PRESS', 'bool', 500);
+    const [blueLP] = useSimVar('L:A32NX_HYD_BLUE_EDPUMP_LOW_PRESS', 'bool', 500);
+    const [yellowLP] = useSimVar('L:A32NX_HYD_YELLOW_EDPUMP_LOW_PRESS', 'bool', 500);
+    const [eng1pumpPBisAuto] = useSimVar('L:A32NX_OVHD_HYD_ENG_1_PUMP_IS_AUTO', 'bool', 500);
+    const [eng2pumpPBisAuto] = useSimVar('L:A32NX_OVHD_HYD_ENG_2_PUMP_IS_AUTO', 'bool', 500);
+
+    const [flapsMcdu] = useSimVar('L:A32NX_TO_CONFIG_FLAPS', 'number', 500);
+    const [flapsMcduEntered] = useSimVar('L:A32NX_TO_CONFIG_FLAPS_ENTERED', 'bool', 500);
+    const [speedBrake] = useSimVar('L:A32NX_SPOILERS_HANDLE_POSITION', 'number', 500);
+    const [parkBrake] = useSimVar('L:A32NX_PARK_BRAKE_LEVER_POS', 'bool', 500);
+    const [brakesHot] = useSimVar('L:A32NX_BRAKES_HOT', 'bool', 500);
+    const [v1Speed] = useSimVar('L:AIRLINER_V1_SPEED', 'kots', 500);
+    const [vrSpeed] = useSimVar('L:AIRLINER_VR_SPEED', 'knots', 500);
+    const [v2Speed] = useSimVar('L:AIRLINER_V2_SPEED', 'knots');
+    const [cabin] = useSimVar('INTERACTIVE POINT OPEN:0', 'percent', 1000);
+    const [catering] = useSimVar('INTERACTIVE POINT OPEN:3', 'percent', 1000);
+    const [cargofwdLocked] = useSimVar('L:A32NX_FWD_DOOR_CARGO_LOCKED', 'bool', 1000);
+    const [cargoaftLocked] = useSimVar('L:A32NX_AFT_DOOR_CARGO_LOCKED', 'bool', 1000);
 
     // Check out updateTakeoffConfigWarnings(_test) {
 
     const EWDMessageBoolean = {
         '0000010': {
             flightPhaseInhib: [1, 3, 6, 10],
-            simVarIsActive: () => fuel === 100 || usrStartRefueling === 1,
-            numberOfCodesToReturn: 1,
+            simVarIsActive: () => tomemo,
+            numberOfCodesToReturn: 6,
             whichCodeToReturn: [
                 autoBrake === 3 ? 1 : 0,
                 noSmoking && configPortableDevices ? 3 : 2,
@@ -62,6 +153,26 @@ const PseudoFWC: React.FC = () => {
             numberOfCodesToReturn: 1,
             whichCodeToReturn: [0],
             codesToReturn: ['000005001'],
+            memoInhibit: tomemo || ldgmemo,
+        },
+        '0000030': {
+            flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10],
+            simVarIsActive: () => adirsRemainingAlignTime >= 240 && [adiru1State, adiru2State, adiru3State].every((a) => a === 1),
+            numberOfCodesToReturn: 1,
+            whichCodeToReturn: [
+                adirsMessage1(adirsRemainingAlignTime, (engine1State > 0 || engine2State > 0)),
+            ],
+            codesToReturn: ['000003001', '000003002', '000003003', '000003004', '000003005', '000003006', '000003007', '000003008'],
+            memoInhibit: tomemo || ldgmemo,
+        },
+        '0000031': {
+            flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10],
+            simVarIsActive: () => adirsRemainingAlignTime > 0 && adirsRemainingAlignTime < 240 && [adiru1State, adiru2State, adiru3State].every((a) => a === 1),
+            numberOfCodesToReturn: 1,
+            whichCodeToReturn: [
+                adirsMessage2(adirsRemainingAlignTime, (engine1State > 0 || engine2State > 0)),
+            ],
+            codesToReturn: ['000003101', '000003102', '000003103', '000003104', '000003105', '000003106', '000003107', '000003108'],
             memoInhibit: tomemo || ldgmemo,
         },
         '0000055':
@@ -121,7 +232,7 @@ const PseudoFWC: React.FC = () => {
         '0000110':
             {
                 flightPhaseInhib: [],
-                simVarIsActive: () => fob < 3000,
+                simVarIsActive: () => fobRounded < 3000,
                 numberOfCodesToReturn: 1,
                 whichCodeToReturn: [unit === '1' ? 0 : 1],
                 codesToReturn: ['000011001', '0000011002'], // config memo
@@ -139,31 +250,61 @@ const PseudoFWC: React.FC = () => {
     };
 
     useEffect(() => {
+        console.log('TO Config check');
+        if (tomemo) {
+        //  Note that fuel tank low pressure and gravity feed warnings are not included
+            let systemStatus = false;
+            if (engine1Generator && engine2Generator && !greenLP && !yellowLP && !blueLP && eng1pumpPBisAuto && eng2pumpPBisAuto) {
+                systemStatus = true;
+            }
+            const speeds = !!(v1Speed <= vrSpeed && vrSpeed <= v2Speed);
+            const doors = !!(cabin === 0 && catering === 0 && cargoaftLocked && cargofwdLocked);
+            const flapsAgree = !!(flapsMcduEntered && flapsHandle === flapsMcdu);
+            const sb = speedBrake === 0;
+
+            if (systemStatus && speeds && !brakesHot && doors && flapsAgree && sb) {
+                SimVar.SetSimVarValue('L:A32NX_TO_CONFIG_NORMAL', 'bool', 1);
+            } else {
+                SimVar.SetSimVarValue('L:A32NX_TO_CONFIG_NORMAL', 'bool', 0);
+            }
+        }
+    }, [
+        engine1Generator, engine2Generator, blueLP, greenLP, yellowLP, eng1pumpPBisAuto, eng2pumpPBisAuto,
+        flapsMcdu, flapsMcduEntered, speedBrake, parkBrake, v1Speed, vrSpeed, v2Speed, cabin,
+        catering, cargoaftLocked, cargofwdLocked,
+    ]);
+
+    useEffect(() => {
+        console.log('Bing Bong ');
+        if (callPushAft || callPushAll || callPushForward) {
+            SimVar.SetSimVarValue('L:A32NX_CABIN_READY', 'bool', 1);
+        }
+    }, [callPushAft, callPushAll, callPushForward]);
+
+    useEffect(() => {
         let tempMemoArray = memoMessage;
         for (const [key, value] of Object.entries(EWDMessageBoolean)) {
+            // if (key === '0000010') {
+            //     console.log(value);
+            //     console.log(value.simVarIsActive());
+            // }
+
             if (value.simVarIsActive()) {
-                if (value.numberOfCodesToReturn === 1 && !value.memoInhibit) {
+                if (!value.memoInhibit) {
                     if (!value.flightPhaseInhib.some((e) => e === flightPhase)) {
-                        const newCode = value.codesToReturn[value.whichCodeToReturn[0]];
-                        // Check memoMessage does not already have current code
-                        if (!tempMemoArray.some((e) => newCode.includes(e))) {
-                            if (value.codesToReturn.length > 1) {
-                                // setMemoMessage((memoMessage) => mapOrder(memoMessage.filter((e) => !value[0].codesToReturn.includes(e)).concat(newCode), mesgOrder));
-                                const tempArray = tempMemoArray.filter((e) => !value.codesToReturn.includes(e));
-                                tempMemoArray = tempArray;
-                                tempMemoArray.push(newCode);
-                                // console.log('Inside codesToReturn > 1');
-                                // console.log(tempMemoArray);
-                            } else {
-                                // setMemoMessage((memoMessage) => mapOrder(memoMessage.concat(newCode), mesgOrder));
-                                tempMemoArray.push(newCode);
-                                // console.log('Insider else');
-                                // console.log(tempMemoArray);
-                            }
-                        }
+                        const newCode = value.codesToReturn.filter((item, index) => value.whichCodeToReturn.includes(index));
+                        // console.log('new code');
+                        // console.log(newCode);
+                        // // Check memoMessage does not already have current code
+                        // console.log('Some in existing');
+                        // console.log();
+                        const tempArray = tempMemoArray.filter((e) => !value.codesToReturn.includes(e));
+                        // console.log('Before concat');
+                        // console.log(tempArray);
+                        tempMemoArray = tempArray.concat(newCode);
+                        // console.log('After concat');
+                        // console.log(tempMemoArray);
                     }
-                } else {
-                    // console.log('More than one');
                 }
             } else {
                 // Remove value if present
@@ -188,7 +329,9 @@ const PseudoFWC: React.FC = () => {
         setMemoMessage(orderedMemoArray);
     }, [flightPhase,
         fuel, usrStartRefueling, engine1State, engine2State, spoilersArmed, seatBelt, noSmoking, configPortableDevices, strobeLightsOn, leftOuterInnerValve, rightOuterInnerValve,
-        fob, unit, gpwsFlapMode, autoBrake,
+        fobRounded, unit, gpwsFlapMode, autoBrake, flapsHandle,
+        adirsRemainingAlignTime, adiru1State, adiru2State, adiru3State,
+        cabinReady, toconfig,
     ]);
 
     useEffect(() => {
