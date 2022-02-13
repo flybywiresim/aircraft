@@ -5,7 +5,6 @@ import { NXDataStore } from '@shared/persistence';
 import { AtsuStatusCodes } from '../AtsuStatusCodes';
 import { AtsuManager } from '../AtsuManager';
 import { CpdlcMessage } from '../messages/CpdlcMessage';
-import { FreetextMessage } from '../messages/FreetextMessage';
 import { AtsuMessage, AtsuMessageNetwork, AtsuMessageType } from '../messages/AtsuMessage';
 import { AtisMessage, AtisType } from '../messages/AtisMessage';
 import { MetarMessage } from '../messages/MetarMessage';
