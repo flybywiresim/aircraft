@@ -78,7 +78,6 @@ export const usePower = () => React.useContext(PowerContext);
 const Efb = () => {
     // TODO: CHANGE ME
     const [powerState, setPowerState] = useState<PowerStates>(PowerStates.LOADED);
-
     const [currentLocalTime] = useSimVar('E:LOCAL TIME', 'seconds', 3000);
     const [absoluteTime] = useSimVar('E:ABSOLUTE TIME', 'seconds', 3000);
     const [, setBrightness] = useSimVar('L:A32NX_EFB_BRIGHTNESS', 'number');
