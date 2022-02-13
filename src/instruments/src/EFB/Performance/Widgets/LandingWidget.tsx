@@ -199,8 +199,8 @@ export const LandingWidget = () => {
 
         if (Number.isNaN(weight)) {
             weight = undefined;
-        } else if (weightUnit === 'kg') {
-            weight /= 2.20462;
+        } else if (weightUnit === 'lb') {
+            weight = Units.poundToKilogram(weight);
         }
 
         dispatch(setLandingValues({ weight }));
@@ -378,12 +378,12 @@ export const LandingWidget = () => {
                                 <div className="flex flex-row">
                                     <button
                                         onClick={handleAutoFill}
-                                        className={`rounded-md rounded-r-none flex flex-row justify-center items-center px-8 py-2 gap-x-4 text-white bg-indigo-800 outline-none ${!isAutoFillIcaoValid() && 'opacity-50'}`}
+                                        className={`rounded-md rounded-r-none flex flex-row justify-center items-center px-8 py-2 space-x-4 text-white bg-indigo-800 outline-none ${!isAutoFillIcaoValid() && 'opacity-50'}`}
                                         type="button"
                                         disabled={!isAutoFillIcaoValid()}
                                     >
                                         <CloudArrowDown size={26} />
-                                        Fill from
+                                        <p>Fill from</p>
                                     </button>
                                     <SelectInput
                                         value={autoFillSource}
@@ -398,7 +398,7 @@ export const LandingWidget = () => {
                             </div>
                         </div>
                         <div className="flex flex-row justify-between">
-                            <div className="flex flex-col gap-y-4">
+                            <div className="flex flex-col space-y-4">
                                 <Label text="Wind Direction">
                                     <SimpleInput
                                         className="w-64"
@@ -517,7 +517,7 @@ export const LandingWidget = () => {
                                     />
                                 </Label>
                             </div>
-                            <div className="flex flex-col gap-y-4">
+                            <div className="flex flex-col space-y-4">
                                 <Label text="Runway Slope">
                                     <SimpleInput
                                         className="w-64"
@@ -646,7 +646,7 @@ export const LandingWidget = () => {
                         <div className="flex flex-row mt-14 space-x-8">
                             <button
                                 onClick={handleCalculateLanding}
-                                className={`rounded-md flex flex-row justify-center items-center py-2 gap-x-4 w-1/2 text-white bg-theme-highlight outline-none ${!areInputsValid() && 'opacity-50'}`}
+                                className={`rounded-md flex flex-row justify-center items-center py-2 space-x-4 w-1/2 text-white bg-theme-highlight outline-none ${!areInputsValid() && 'opacity-50'}`}
                                 type="button"
                                 disabled={!areInputsValid()}
                             >
@@ -655,7 +655,7 @@ export const LandingWidget = () => {
                             </button>
                             <button
                                 onClick={handleClearInputs}
-                                className="flex flex-row gap-x-4 justify-center items-center py-2 w-1/2 text-white bg-red-500 rounded-md outline-none"
+                                className="flex flex-row justify-center items-center py-2 space-x-4 w-1/2 text-white bg-red-500 rounded-md outline-none"
                                 type="button"
                             >
                                 <Trash size={26} />
