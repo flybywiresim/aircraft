@@ -543,6 +543,11 @@ export class AtcSystem {
         return [];
     }
 
+    public resetAtisAutoUpdate() {
+        this.atisAutoUpdateIcaos.forEach((elem) => clearInterval(elem[2]));
+        this.atisAutoUpdateIcaos = [];
+    }
+
     public atisAutoUpdateActive(icao: string): boolean {
         return this.atisAutoUpdateIcaos.findIndex((elem) => icao === elem[0]) !== -1;
     }
