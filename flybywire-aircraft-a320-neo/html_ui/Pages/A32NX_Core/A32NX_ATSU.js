@@ -65,8 +65,8 @@ const getSimBriefOfp = (mcdu, updateView, callback = () => {}) => {
             mcdu.simbrief["blockFuel"] = mcdu.simbrief["units"] === 'kgs' ? data.fuel.plan_ramp : lbsToKg(data.fuel.plan_ramp);
             mcdu.simbrief["payload"] = mcdu.simbrief["units"] === 'kgs' ? data.weights.payload : lbsToKg(data.weights.payload);
             mcdu.simbrief["estZfw"] = mcdu.simbrief["units"] === 'kgs' ? data.weights.est_zfw : lbsToKg(data.weights.est_zfw);
-            mcdu.simbrief["paxCount"] = data.weights.pax_count;
-            mcdu.simbrief["bagCount"] = data.weights.bag_count;
+            mcdu.simbrief["paxCount"] = data.weights.pax_count_actual;
+            mcdu.simbrief["bagCount"] = data.weights.bag_count_actual;
             mcdu.simbrief["paxWeight"] = mcdu.simbrief["units"] === 'kgs' ? data.weights.pax_weight : lbsToKg(data.weights.pax_weight);
             mcdu.simbrief["bagWeight"] = mcdu.simbrief["units"] === 'kgs' ? data.weights.bag_weight : lbsToKg(data.weights.bag_weight);
             mcdu.simbrief["freight"] = mcdu.simbrief["units"] === 'kgs' ? data.weights.freight_added : lbsToKg(data.weights.freight_added);
