@@ -81,13 +81,13 @@ export class AtcSystem {
             }
         }, 100);
 
-        // ATIS runs every ten minutes
+        // ATIS runs every five minutes
         setInterval(() => {
             const currentTime = new AtsuTimestamp().Seconds;
             this.atisAutoUpdateIcaos.forEach((icao) => {
                 if (this.atisMessages.has(icao[0])) {
                     const delta = currentTime - this.atisMessages.get(icao[0])[0];
-                    if (delta >= 10 * 60000) {
+                    if (delta >= 10 * 30000) {
                         this.updateAtis(icao[0], icao[1], false).then((code) => {
                             if (code === AtsuStatusCodes.Ok) {
                                 this.atisMessages.get(icao[0])[0] = currentTime;
@@ -106,7 +106,7 @@ export class AtcSystem {
                     });
                 }
             });
-        }, 60000);
+        }, 30000);
     }
 
     private handleDcduMessageSync() {
