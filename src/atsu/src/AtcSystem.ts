@@ -37,7 +37,7 @@ export class AtcSystem {
 
     private printAtisReport = false;
 
-    private atisAutoUpdateIcaos: [string, AtisType][] = [];
+    private atisAutoUpdateIcaos: [string, AtisType, number][] = [];
 
     private atisMessages: Map<string, [number, AtisMessage[]]> = new Map();
 
@@ -80,33 +80,6 @@ export class AtcSystem {
                 }
             }
         }, 100);
-
-        // ATIS runs every five minutes
-        setInterval(() => {
-            const currentTime = new AtsuTimestamp().Seconds;
-            this.atisAutoUpdateIcaos.forEach((icao) => {
-                if (this.atisMessages.has(icao[0])) {
-                    const delta = currentTime - this.atisMessages.get(icao[0])[0];
-                    if (delta >= 10 * 30000) {
-                        this.updateAtis(icao[0], icao[1], false).then((code) => {
-                            if (code === AtsuStatusCodes.Ok) {
-                                this.atisMessages.get(icao[0])[0] = currentTime;
-                            } else {
-                                this.parent.publishAtsuStatusCode(code);
-                            }
-                        });
-                    } else {
-                        this.atisMessages.get(icao[0])[0] = currentTime;
-                    }
-                } else {
-                    this.updateAtis(icao[0], icao[1], false).then((code) => {
-                        if (code !== AtsuStatusCodes.Ok) {
-                            this.parent.publishAtsuStatusCode(code);
-                        }
-                    });
-                }
-            });
-        }, 30000);
     }
 
     private handleDcduMessageSync() {
@@ -574,15 +547,36 @@ export class AtcSystem {
         return this.atisAutoUpdateIcaos.findIndex((elem) => icao === elem[0]) !== -1;
     }
 
+    private automaticAtisUpdater(icao: string, type: AtisType) {
+        console.log(`Update ATIS ${icao}`);
+        if (this.atisMessages.has(icao)) {
+            this.updateAtis(icao, type, false).then((code) => {
+                if (code === AtsuStatusCodes.Ok) {
+                    this.atisMessages.get(icao)[0] = new AtsuTimestamp().Seconds;
+                } else {
+                    this.parent.publishAtsuStatusCode(code);
+                }
+            });
+        } else {
+            this.updateAtis(icao, type, false).then((code) => {
+                if (code !== AtsuStatusCodes.Ok) {
+                    this.parent.publishAtsuStatusCode(code);
+                }
+            });
+        }
+    }
+
     public activateAtisAutoUpdate(icao: string, type: AtisType): void {
         if (this.atisAutoUpdateIcaos.find((elem) => elem[0] === icao) === undefined) {
-            this.atisAutoUpdateIcaos.push([icao, type]);
+            const updater = setInterval(() => this.automaticAtisUpdater(icao, type), 60000);
+            this.atisAutoUpdateIcaos.push([icao, type, updater]);
         }
     }
 
     public deactivateAtisAutoUpdate(icao: string): void {
         const idx = this.atisAutoUpdateIcaos.findIndex((elem) => icao === elem[0]);
         if (idx >= 0) {
+            clearInterval(this.atisAutoUpdateIcaos[idx][2]);
             this.atisAutoUpdateIcaos.splice(idx, 1);
         }
     }
