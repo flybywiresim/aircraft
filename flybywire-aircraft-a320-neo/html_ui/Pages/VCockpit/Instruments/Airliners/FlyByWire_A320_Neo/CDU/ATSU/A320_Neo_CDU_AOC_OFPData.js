@@ -107,29 +107,25 @@ class CDUAocOfpData {
         }
 
         async function setTargetCargo(numberOfPax, simbriefFreight) {
-            const PAX_WEIGHT = SimVar.GetSimVarValue("L:A32NX_WB_PER_PAX_WEIGHT", "Number");
             const BAG_WEIGHT = SimVar.GetSimVarValue("L:A32NX_WB_PER_BAG_WEIGHT", "Number");
             const bagWeight = numberOfPax * BAG_WEIGHT;
             const maxLoadInCargoHold = 9435; // from flight_model.cfg
-            const maxTotalPayload = 21800; // from flight_model.cfg
             let loadableCargoWeight = undefined;
 
             if (simbriefFreight == 0) {
                 loadableCargoWeight = bagWeight;
-            } else if ((simbriefFreight + bagWeight + (numberOfPax * PAX_WEIGHT)) > maxTotalPayload) {
-                loadableCargoWeight = maxTotalPayload - (numberOfPax * PAX_WEIGHT);
+            } else if ((parseInt(simbriefFreight) + bagWeight) > maxLoadInCargoHold) {
+                loadableCargoWeight = maxLoadInCargoHold - bagWeight;
             } else {
-                loadableCargoWeight = simbriefFreight + bagWeight;
+                loadableCargoWeight = parseInt(simbriefFreight) + bagWeight;
             }
             let remainingWeight = loadableCargoWeight;
 
             async function fillCargo(station, percent, loadableCargoWeight) {
-
                 const weight = Math.round(percent * loadableCargoWeight);
                 station.load = weight;
                 remainingWeight -= weight;
                 await SimVar.SetSimVarValue(`L:${station.simVar}_DESIRED`, "Number", parseInt(weight));
-
             }
 
             await fillCargo(cargoStations['fwdBag'], .361 , loadableCargoWeight);
