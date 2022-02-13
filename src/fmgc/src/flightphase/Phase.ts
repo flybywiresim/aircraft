@@ -7,7 +7,7 @@ export abstract class Phase {
 
     abstract shouldActivateNextPhase(time: any): boolean;
 
-    abstract nextPhase: FmgcFlightPhase;
+    nextPhase: FmgcFlightPhase;
 
     protected canInitiateTO(): boolean {
         const v2 = SimVar.GetSimVarValue('L:AIRLINER_V2_SPEED', 'knots');
@@ -44,9 +44,8 @@ export class TakeOffPhase extends Phase {
 
     accelerationAltitudeMslEo: number;
 
-    nextPhase = FmgcFlightPhase.Climb;
-
     init() {
+        this.nextPhase = FmgcFlightPhase.Climb;
         SimVar.SetSimVarValue('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool', false);
         const accAlt = SimVar.GetSimVarValue('L:AIRLINER_ACC_ALT', 'Number');
         const thrRedAlt = SimVar.GetSimVarValue('L:AIRLINER_THR_RED_ALT', 'Number');
@@ -72,7 +71,9 @@ export class TakeOffPhase extends Phase {
 }
 
 export class ClimbPhase extends Phase {
-    nextPhase = FmgcFlightPhase.Cruise;
+    init() {
+        this.nextPhase = FmgcFlightPhase.Cruise;
+    }
 
     shouldActivateNextPhase(_deltaTime) {
         const cruiseFl = SimVar.GetSimVarValue('L:AIRLINER_CRUISE_ALTITUDE', 'number') / 100;
@@ -95,7 +96,9 @@ export class CruisePhase extends Phase {
 }
 
 export class DescentPhase extends Phase {
-    nextPhase = FmgcFlightPhase.Approach;
+    init() {
+        this.nextPhase = FmgcFlightPhase.Approach;
+    }
 
     shouldActivateNextPhase(_deltaTime) {
         const fl = Math.round(Simplane.getAltitude() / 100);
@@ -120,10 +123,9 @@ export class DescentPhase extends Phase {
 export class ApproachPhase extends Phase {
     landingConfirmation = new ConfirmationNode(30);
 
-    nextPhase = FmgcFlightPhase.Done;
-
     init() {
         SimVar.SetSimVarValue('L:AIRLINER_TO_FLEX_TEMP', 'Number', 0);
+        this.nextPhase = FmgcFlightPhase.Done;
     }
 
     shouldActivateNextPhase(_deltaTime) {
