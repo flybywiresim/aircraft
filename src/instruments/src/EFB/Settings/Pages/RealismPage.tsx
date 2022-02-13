@@ -20,6 +20,9 @@ export const RealismPage = () => {
     const [mcduTimeout, setMcduTimeout] = usePersistentProperty('CONFIG_MCDU_KB_TIMEOUT', '60');
     const [boardingRate, setBoardingRate] = usePersistentProperty('CONFIG_BOARDING_RATE', 'REAL');
     const [realisticTiller, setRealisticTiller] = usePersistentProperty('REALISTIC_TILLER_ENABLED', '0');
+    const [homeCockpit, setHomeCockpit] = usePersistentProperty('HOME_COCKPIT_ENABLED', '0');
+    const [datalinkTransmissionTime, setDatalinkTransmissionTime] = usePersistentProperty('CONFIG_DATALINK_TRANSMISSION_TIME', 'FAST');
+    const [, setDatalinkTransmissionTimeSimVar] = useSimVar('L:A32NX_CONFIG_DATALINK_TIME', 'number', 0);
 
     const adirsAlignTimeButtons: (ButtonType & SimVarButton)[] = [
         { name: 'Instant', setting: 'INSTANT', simVarValue: 1 },
@@ -42,6 +45,12 @@ export const RealismPage = () => {
     const steeringSeparationButtons: (ButtonType & SimVarButton)[] = [
         { name: 'Disabled', setting: '0', simVarValue: 0 },
         { name: 'Enabled', setting: '1', simVarValue: 1 },
+    ];
+
+    const datalinkTransmissionTimeButtons: (ButtonType & SimVarButton)[] = [
+        { name: 'Instant', setting: 'INSTANT', simVarValue: 1 },
+        { name: 'Fast', setting: 'FAST', simVarValue: 2 },
+        { name: 'Real', setting: 'REAL', simVarValue: 0 },
     ];
 
     return (
@@ -114,6 +123,26 @@ export const RealismPage = () => {
                         <SelectItem
                             onSelect={() => setRealisticTiller(button.setting)}
                             selected={realisticTiller === button.setting}
+                        >
+                            {button.name}
+                        </SelectItem>
+                    ))}
+                </SelectGroup>
+            </SettingItem>
+
+            <SettingItem name="Cockpit Mode">
+                <Toggle value={homeCockpit === '1'} onToggle={(value) => setHomeCockpit(value ? '1' : '0')} />
+            </SettingItem>
+
+            <SettingItem name="DATALINK Transmission Time">
+                <SelectGroup>
+                    {datalinkTransmissionTimeButtons.map((button) => (
+                        <SelectItem
+                            onSelect={() => {
+                                setDatalinkTransmissionTime(button.setting);
+                                setDatalinkTransmissionTimeSimVar(button.simVarValue);
+                            }}
+                            selected={datalinkTransmissionTime === button.setting}
                         >
                             {button.name}
                         </SelectItem>
