@@ -27,6 +27,7 @@
 const { join } = require('path');
 const babel = require('@rollup/plugin-babel').default;
 const { typescriptPaths } = require('rollup-plugin-typescript-paths');
+const dotenv = require('dotenv');
 const commonjs = require('@rollup/plugin-commonjs');
 const nodeResolve = require('@rollup/plugin-node-resolve').default;
 const json = require('@rollup/plugin-json');
@@ -37,6 +38,8 @@ const extensions = ['.js', '.ts'];
 
 const src = join(__dirname, '..');
 const root = join(__dirname, '..', '..');
+
+dotenv.config();
 
 process.chdir(src);
 

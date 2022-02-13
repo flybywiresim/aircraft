@@ -16,6 +16,8 @@ const extensions = ['.ts', '.tsx', '.js', '.jsx', '.mjs'];
 
 dotenv.config();
 
+console.log(process.env);
+
 function babel() {
     return babelPlugin({
         presets: [

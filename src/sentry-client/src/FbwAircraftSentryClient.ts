@@ -170,7 +170,14 @@ export class FbwAircraftSentryClient {
      * @param config a {@link FbwAircraftSentryClientConfiguration} object
      */
     private static async initializeSentry(config: FbwAircraftSentryClientConfiguration) {
-        const manifest = await (await fetch(`/VFS/${config.buildInfoFilePrefix}_build_info.json`)).json();
+        let release = 'unknown';
+        try {
+            const manifest = await (await fetch(`/VFS/${config.buildInfoFilePrefix}_build_info.json`)).json();
+
+            release = manifest.pretty_release_name;
+        } catch (e) {
+            console.warn(`[SentryClient] Could not load ${config.buildInfoFilePrefix}_build_info.json. Using 'unknown' as release name`);
+        }
 
         const integrations: Integration[] = [new CaptureConsoleIntegration({ levels: ['error'] })];
 
@@ -180,7 +187,7 @@ export class FbwAircraftSentryClient {
 
         Sentry.init({
             dsn: config.dsn,
-            release: manifest.sha,
+            release,
             integrations,
         });
 
