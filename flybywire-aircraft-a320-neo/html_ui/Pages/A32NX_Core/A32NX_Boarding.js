@@ -147,13 +147,10 @@ class A32NX_Boarding {
             await SimVar.SetSimVarValue("L:A32NX_SOUND_BOARDING_COMPLETE", "Bool", true);
             this.isBoarding = false;
             return;
-        } await SimVar.SetSimVarValue("L:A32NX_SOUND_BOARDING_COMPLETE", "Bool", false);
-
-        if (currentPax > 0) {
-            await SimVar.SetSimVarValue("L:A32NX_SOUND_PAX_AMBIENCE", "Bool", true);
-        } else {
-            await SimVar.SetSimVarValue("L:A32NX_SOUND_PAX_AMBIENCE", "Bool", false);
         }
+        await SimVar.SetSimVarValue("L:A32NX_SOUND_BOARDING_COMPLETE", "Bool", false);
+
+        await SimVar.SetSimVarValue("L:A32NX_SOUND_PAX_AMBIENCE", "Bool", currentPax > 0);
 
         if (currentPax === paxTarget && currentLoad === loadTarget && isAllPaxStationFilled && isAllCargoStationFilled) {
             // Finish boarding
