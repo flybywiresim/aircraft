@@ -110,7 +110,7 @@ class CDUAtcDepartReq {
             const atisReports = mcdu.atsuManager.atc.atisReports(store.from);
             if (atisReports.length !== 0 && atisReports[0].Information !== "") {
                 store.atis = atisReports[0].Information;
-                atis.setValue(mcdu.dclMessage.Atis);
+                atis.setValue(store.atis);
             }
         }
 
