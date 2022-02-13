@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import * as apiClient from '@flybywiresim/api-client';
 import useInterval from '@instruments/common/useInterval';
 import { Link } from 'react-router-dom';
@@ -6,6 +6,7 @@ import { Gear } from 'react-bootstrap-icons';
 import { ScrollableContainer } from '../UtilComponents/ScrollableContainer';
 import { useSimVar, useSplitSimVar } from '../../Common/simVars';
 import { usePersistentProperty } from '../../Common/persistence';
+import { AlertModal, useModals } from '../UtilComponents/Modals/Modals';
 
 export declare class ATCInfoExtended extends apiClient.ATCInfo {
     distance: number;
@@ -21,10 +22,16 @@ export const ATC = () => {
     const [currentLatitude] = useSimVar('GPS POSITION LAT', 'Degrees', 5000);
     const [currentLongitude] = useSimVar('GPS POSITION LON', 'Degrees', 5000);
     const [atisSource] = usePersistentProperty('CONFIG_ATIS_SRC', 'FAA');
+    const [hoppieUserId] = usePersistentProperty('CONFIG_HOPPIE_USERID');
+    const [hoppieActive, setHoppieActive] = useSimVar('L:A32NX_HOPPIE_ACTIVE', 'number');
+    const [mcduFlightNoSet] = useSimVar('L:A32NX_MCDU_FLT_NO_SET', 'boolean');
+    const [callsign] = useSimVar('ATC FLIGHT NUMBER', 'string');
+
+    const { showModal } = useModals();
 
     const loadAtc = useCallback(() => {
         if (atisSource.toLowerCase() !== 'vatsim' && atisSource.toLowerCase() !== 'ivao') return;
-        apiClient.ATC.getAtc(atisSource.toString().toLowerCase()).then((res) => {
+        apiClient.ATC.get(atisSource.toString().toLowerCase()).then((res) => {
             if (!res) return;
             let allAtc : ATCInfoExtended[] = res as ATCInfoExtended[];
             allAtc = allAtc.filter((a) => a.callsign.indexOf('_OBS') === -1 && parseFloat(a.frequency) <= 136.975);
@@ -97,19 +104,96 @@ export const ATC = () => {
         loadAtc();
     }, 60_000);
 
+    const handleHoppieToggle = async (): Promise<void> => {
+        if (!hoppieActive) {
+            if (hoppieUserId === '' || hoppieUserId === undefined) {
+                showModal(
+                    <AlertModal
+                        title="Hoppie Error"
+                        bodyText="Hoppie system requires a user ID which needs to be set in Settings."
+                        onAcknowledge={() => {
+                            setHoppieActive(0);
+                        }}
+                    />,
+                );
+            } else {
+                const body = {
+                    logon: hoppieUserId,
+                    from: 'FBWA32NX',
+                    to: 'ALL-CALLSIGNS',
+                    type: 'ping',
+                    packet: '',
+                };
+                let retval = await apiClient.Hoppie.sendRequest(body).then((resp) => resp.response);
+
+                // check if the logon code is valid
+                if (retval === 'error {illegal logon code}') {
+                    showModal(
+                        <AlertModal
+                            title="Hoppie Error"
+                            bodyText="Invalid logon code used."
+                            onAcknowledge={() => {
+                                setHoppieActive(0);
+                            }}
+                        />,
+                    );
+                } else if (mcduFlightNoSet && callsign && callsign.length !== 0) {
+                    const body = {
+                        logon: hoppieUserId,
+                        from: callsign,
+                        to: 'ALL-CALLSIGNS',
+                        type: 'ping',
+                        packet: '',
+                    };
+                    retval = await apiClient.Hoppie.sendRequest(body).then((resp) => resp.response);
+
+                    // check if the callsign is already in use
+                    if (retval === 'error {callsign already in use}') {
+                        showModal(
+                            <AlertModal
+                                title="Hoppie Error"
+                                bodyText="Flightnumber is already in use."
+                                onAcknowledge={() => {
+                                    setHoppieActive(0);
+                                }}
+                            />,
+                        );
+                    } else {
+                        setHoppieActive(1);
+                    }
+                } else {
+                    setHoppieActive(1);
+                }
+            }
+        } else {
+            setHoppieActive(0);
+        }
+    };
+
     return (
         <div>
-            <h1 className="font-bold">
-                Air Traffic Control
-                {(atisSource === 'IVAO' || atisSource === 'VATSIM') && ` - ${atisSource} Controllers currently in range`}
-            </h1>
+            <div className="flex flex-row justify-between items-center mb-2">
+                <h1 className="font-bold">
+                    Air Traffic Control
+                    {(atisSource === 'IVAO' || atisSource === 'VATSIM') && ` (${atisSource})`}
+                </h1>
+
+                <button
+                    type="button"
+                    className="flex justify-center items-center py-2 w-80 bg-theme-accent rounded-md"
+                    onClick={handleHoppieToggle}
+                >
+                    <p>
+                        {hoppieActive ? 'Disconnect Hoppie ACARS' : 'Connect Hoppie ACARS'}
+                    </p>
+                </button>
+            </div>
             { (atisSource === 'IVAO' || atisSource === 'VATSIM') ? (
                 <div className="w-full h-efb">
-                    {/* TODO: REPLACE WITH JIT VALUE */}
                     <ScrollableContainer height={29}>
                         {controllers && controllers.map((controller, index) => (
                             <div className={`${index % 2 === 0 && 'pr-4'} w-full max-w-1/2`}>
-                                <div className="overflow-hidden relative p-6 mt-4 w-full rounded-md bg-theme-secondary">
+                                <div className="overflow-hidden relative p-6 mt-4 w-full bg-theme-secondary rounded-md">
                                     <h2 className="font-bold">
                                         {controller.callsign}
                                     </h2>
@@ -119,7 +203,7 @@ export const ATC = () => {
 
                                     <div className="flex absolute inset-0 flex-row opacity-0 hover:opacity-100 transition duration-100">
                                         <div
-                                            className="flex justify-center items-center w-full bg-opacity-80 bg-theme-highlight"
+                                            className="flex justify-center items-center w-full bg-theme-highlight bg-opacity-80"
                                             onClick={() => setActiveFrequency(toFrequency(controller.frequency))}
                                         >
                                             <h2>Set Active</h2>
@@ -135,17 +219,17 @@ export const ATC = () => {
                             </div>
                         ))}
                     </ScrollableContainer>
-                    <div className="flex flex-row mt-8 h-96 rounded-lg border-2 divide-x-2 border-theme-accent divide-theme-accent">
+                    <div className="flex flex-row mt-4 h-96 rounded-lg border-2 border-theme-accent divide-x-2 divide-theme-accent">
                         <div className="flex flex-col justify-between p-6">
                             <div>
                                 <p>Active</p>
-                                <div className="flex justify-center items-center mt-4 w-72 h-24 text-6xl rounded-lg border-2 font-rmp text-theme-highlight border-theme-accent">
+                                <div className="flex justify-center items-center mt-4 w-72 h-24 font-rmp text-6xl text-theme-highlight rounded-lg border-2 border-theme-accent">
                                     {displayedActiveFrequency && displayedActiveFrequency}
                                 </div>
                             </div>
                             <div>
                                 <p>Standby</p>
-                                <div className="flex justify-center items-center mt-4 w-72 h-24 text-6xl text-yellow-500 rounded-lg border-2 font-rmp border-theme-accent">
+                                <div className="flex justify-center items-center mt-4 w-72 h-24 font-rmp text-6xl text-yellow-500 rounded-lg border-2 border-theme-accent">
                                     {displayedStandbyFrequency && displayedStandbyFrequency}
                                 </div>
                             </div>
@@ -160,11 +244,11 @@ export const ATC = () => {
                     </div>
                 </div>
             ) : (
-                <div className="flex flex-col justify-center items-center mt-4 space-y-8 w-full rounded-lg border-2 shadow-md h-efb border-theme-accent">
+                <div className="flex flex-col justify-center items-center mt-4 space-y-8 w-full h-efb rounded-lg border-2 border-theme-accent shadow-md">
                     <h1 className="max-w-4xl text-center">This page is only available when IVAO or VATSIM is selected as the ATIS/ATC source in the settings page</h1>
                     <Link
                         to="/settings/atsu-/-aoc"
-                        className="flex justify-center items-center py-2 px-16 space-x-4 rounded-lg border-2 focus:outline-none text-navy bg-theme-highlight border-theme-secondary"
+                        className="flex justify-center items-center py-2 px-16 space-x-4 text-navy bg-theme-highlight rounded-lg border-2 border-theme-secondary focus:outline-none"
                     >
                         <Gear size={26} />
                         <p className="text-navy">Change ATIS/ATC source</p>
@@ -175,12 +259,12 @@ export const ATC = () => {
     );
 };
 
-type ControllerInformationProps = {
-    currentAtc: ATCInfoExtended | undefined,
+interface ControllerInformationProps {
+    currentAtc?: ATCInfoExtended;
 }
 
 const ControllerInformation = ({ currentAtc }: ControllerInformationProps) => (
-    <ScrollableContainer height={24}>
+    <ScrollableContainer height={24} className="p-4">
         <h2>{currentAtc?.callsign}</h2>
         {currentAtc?.textAtis.map((line) => (
             <p className="flex flex-wrap mt-4">{line}</p>
