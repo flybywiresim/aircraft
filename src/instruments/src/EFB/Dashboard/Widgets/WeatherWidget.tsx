@@ -1,82 +1,79 @@
-import React, { useEffect, useState } from 'react';
-import metarParser from 'aewx-metar-parser';
+// Copyright (c) 2022 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
+import React, { FC, useEffect, useState } from 'react';
 import { Metar } from '@flybywiresim/api-client';
 import { IconCloud, IconDroplet, IconGauge, IconPoint, IconTemperature, IconWind } from '@tabler/icons';
-import { MetarParserType, Wind } from '@instruments/common/metarTypes';
-import { usePersistentProperty } from '@instruments/common/persistence';
+import { parseMetar } from '../../Utils/parseMetar';
+import { MetarParserType } from '../../../Common/metarTypes';
+import { usePersistentProperty } from '../../../Common/persistence';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
-
-const MetarParserTypeWindState: Wind = {
-    degrees: 0,
-    speed_kts: 0,
-    speed_mps: 0,
-    gust_kts: 0,
-    gust_mps: 0,
-};
-
-const VisibilityType = {
-    miles: '',
-    miles_float: 0.0,
-    meters: '',
-    meters_float: 0.0,
-};
-
-const conditionCode = { code: '' };
-
-const cloud = {
-    code: '',
-    base_feet_agl: 0,
-    base_meters_agl: 0,
-};
-
-const ceiling = {
-    code: '',
-    feet_agl: 0,
-    meters_agl: 0,
-};
-
-const temperature = {
-    celsius: 0,
-    fahrenheit: 0,
-};
-
-const dewpoint = {
-    celsius: 0,
-    fahrenheit: 0,
-};
-
-const barometer = {
-    hg: 0,
-    kpa: 0,
-    mb: 0,
-};
+import { ColoredMetar } from './ColorMetar';
+import { useAppDispatch } from '../../Store/store';
+import { setUserDepartureIcao, setUserDestinationIcao } from '../../Store/features/dashboard';
 
 const MetarParserTypeProp: MetarParserType = {
     raw_text: '',
-    raw_parts: [''],
+    raw_parts: [],
+    color_codes: [],
     icao: '',
     observed: new Date(0),
-    wind: MetarParserTypeWindState,
-    visibility: VisibilityType,
-    conditions: [conditionCode],
-    clouds: [cloud],
-    ceiling,
-    temperature,
-    dewpoint,
+    wind: {
+        degrees: 0,
+        degrees_from: 0,
+        degrees_to: 0,
+        speed_kts: 0,
+        speed_mps: 0,
+        gust_kts: 0,
+        gust_mps: 0,
+    },
+    visibility: {
+        miles: '',
+        miles_float: 0.0,
+        meters: '',
+        meters_float: 0.0,
+    },
+    conditions: [],
+    clouds: [],
+    ceiling: {
+        code: '',
+        feet_agl: 0,
+        meters_agl: 0,
+    },
+    temperature: {
+        celsius: 0,
+        fahrenheit: 0,
+    },
+    dewpoint: {
+        celsius: 0,
+        fahrenheit: 0,
+    },
     humidity_percent: 0,
-    barometer,
+    barometer: {
+        hg: 0,
+        kpa: 0,
+        mb: 0,
+    },
     flight_category: '',
 };
 
-type WeatherWidgetProps = { name: string, editIcao: string, icao: string};
+interface WeatherWidgetProps { name: 'origin'|'destination'; simbriefIcao: string; userIcao: string}
 
-export const WeatherWidget = (props: WeatherWidgetProps) => {
+export const WeatherWidget:FC<WeatherWidgetProps> = ({ name, simbriefIcao, userIcao }) => {
     const [metar, setMetar] = useState<MetarParserType>(MetarParserTypeProp);
+    const [showMetar, setShowMetar] = usePersistentProperty(`CONFIG_SHOW_METAR_${name}`, 'DISABLED');
+    const [baroType] = usePersistentProperty('CONFIG_INIT_BARO_UNIT', 'HPA');
+    const dispatch = useAppDispatch();
+    const [simbriefIcaoAtLoading, setSimbriefIcaoAtLoading] = useState(simbriefIcao);
+    const [metarSource] = usePersistentProperty('CONFIG_METAR_SRC', 'MSFS');
+    const source = metarSource === 'MSFS' ? 'MS' : metarSource;
 
-    const getBaroTypeForAirport = (icao: string) => (['K', 'C', 'M', 'P', 'RJ', 'RO', 'TI', 'TJ'].some((r) => icao.startsWith(r)) ? 'IN HG' : 'HPA');
+    const getBaroTypeForAirport = (icao: string) => (['K', 'C', 'M', 'P', 'RJ', 'RO', 'TI', 'TJ']
+        .some((r) => icao.toUpperCase().startsWith(r)) ? 'IN HG' : 'HPA');
 
     const BaroValue = () => {
-        if (baroType === 'IN HG') {
+        const displayedBaroType = baroType === 'AUTO' ? getBaroTypeForAirport(metar.icao) : baroType;
+        if (displayedBaroType === 'IN HG') {
             return (
                 <>
                     {metar.barometer.hg.toFixed(2)}
@@ -85,7 +82,6 @@ export const WeatherWidget = (props: WeatherWidgetProps) => {
                 </>
             );
         }
-
         return (
             <>
                 {metar.barometer.mb.toFixed(0)}
@@ -95,21 +91,16 @@ export const WeatherWidget = (props: WeatherWidgetProps) => {
         );
     };
 
-    let [baroType] = usePersistentProperty('CONFIG_INIT_BARO_UNIT', 'HPA');
-    const [showMetar, setShowMetar] = usePersistentProperty(`CONFIG_SHOW_METAR_${props.name}`, 'DISABLED');
-    let [metarSource] = usePersistentProperty('CONFIG_METAR_SRC', 'MSFS');
-
-    if (metarSource === 'MSFS') {
-        metarSource = 'MS';
-    }
-
-    const source = metarSource;
-
     const handleIcao = (icao: string) => {
+        if (name === 'origin') {
+            dispatch(setUserDepartureIcao(icao));
+        } else {
+            dispatch(setUserDestinationIcao(icao));
+        }
         if (icao.length === 4) {
             getMetar(icao, source);
         } else if (icao.length === 0) {
-            getMetar(props.icao, source);
+            getMetar(simbriefIcao, source);
         }
     };
 
@@ -121,7 +112,7 @@ export const WeatherWidget = (props: WeatherWidgetProps) => {
         }
         return Metar.get(icao, source)
             .then((result) => {
-                const metarParse = metarParser(result.metar);
+                const metarParse = parseMetar(result.metar);
                 setMetar(metarParse);
             })
             .catch(() => {
@@ -129,13 +120,19 @@ export const WeatherWidget = (props: WeatherWidgetProps) => {
             });
     }
 
-    if (baroType === 'AUTO') {
-        baroType = getBaroTypeForAirport(props.icao);
-    }
-
     useEffect(() => {
-        getMetar(props.icao, source);
-    }, [props.icao, source]);
+        // if we have new simbrief data that is different from the simbrief data at
+        // loading of the widget we overwrite the user input once. After that
+        // user input has priority.
+        if (simbriefIcao !== simbriefIcaoAtLoading) {
+            dispatch(setUserDepartureIcao(''));
+            dispatch(setUserDestinationIcao(''));
+            getMetar(simbriefIcao, source);
+            setSimbriefIcaoAtLoading(simbriefIcao);
+        } else {
+            getMetar(userIcao || simbriefIcao, source);
+        }
+    }, [simbriefIcao, userIcao, source]);
 
     return (
         <div>
@@ -149,9 +146,9 @@ export const WeatherWidget = (props: WeatherWidgetProps) => {
                             </div>
                             <SimpleInput
                                 noLabel
-                                className="ml-4 w-24 text-2xl font-medium text-center uppercase"
-                                placeholder={props.icao}
-                                value={props.icao === '----' ? '' : props.icao}
+                                className="ml-4 w-32 text-2xl font-medium text-center uppercase"
+                                placeholder={simbriefIcao}
+                                value={userIcao || simbriefIcao}
                                 onChange={(value) => handleIcao(value)}
                                 maxLength={4}
                             />
@@ -161,7 +158,7 @@ export const WeatherWidget = (props: WeatherWidgetProps) => {
                                     className="flex justify-center items-center p-2 mr-1 w-24 text-lg bg-gray-600 rounded-lg focus:outline-none"
                                     onClick={() => setShowMetar(showMetar === 'ENABLED' ? 'DISABLED' : 'ENABLED')}
                                 >
-                                    {showMetar === 'ENABLED' ? 'TEXT' : 'ICONS'}
+                                    {showMetar === 'ENABLED' ? 'Metar' : 'Summary'}
                                 </button>
                             </div>
                         </div>
@@ -254,11 +251,11 @@ export const WeatherWidget = (props: WeatherWidgetProps) => {
                             )
                             : (
                                 <>
-                                    <div className="mr-4 ml-8 h-40 text-xl font-medium text-left scrollbar">
+                                    <div className="mr-4 ml-8 h-40 font-mono text-xl text-left scrollbar">
                                         {metar.raw_text
                                             ? (
                                                 <>
-                                                    {metar.raw_text}
+                                                    <ColoredMetar metar={metar} />
                                                 </>
                                             ) : (
                                                 <>

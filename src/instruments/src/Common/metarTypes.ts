@@ -1,14 +1,25 @@
 /* eslint-disable camelcase */
 // Disable eslint camelcase as these are types for external library
+
+export enum ColorCode {
+    None,
+    Highlight,
+    Caution,
+    Warning,
+    TrendMarker,
+    Info
+}
+
 export type MetarParserType = {
     raw_text: string,
-    raw_parts: [string],
+    raw_parts: string[],
+    color_codes: ColorCode[], // contains codes for coloring parts - order must be identical to raw_parts
     icao: string,
     observed: Date,
     wind: Wind,
     visibility: Visibility,
-    conditions: [ConditionCode],
-    clouds: [Cloud],
+    conditions: ConditionCode[],
+    clouds: Cloud[],
     ceiling: Ceiling,
     temperature: Temperature,
     dewpoint: Dewpoint,
@@ -19,6 +30,8 @@ export type MetarParserType = {
 
 export type Wind = {
     degrees: number,
+    degrees_from: number,
+    degrees_to: number,
     speed_kts: number,
     speed_mps: number,
     gust_kts: number,
