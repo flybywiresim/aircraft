@@ -13,6 +13,8 @@ import {
     Dash,
     FullscreenExit,
     MoonFill,
+    Pin,
+    PinFill,
     Plus,
     ShieldLock,
     SunFill,
@@ -45,6 +47,9 @@ import {
     setBoundingBox,
     setPagesViewable,
     setCurrentPage,
+    removedPinnedChart,
+    addPinnedChart,
+    isChartPinned,
 } from '../Store/features/navigationPage';
 
 type LocalFileChart = {
@@ -236,10 +241,6 @@ const ChartComponent = () => {
             if (height) {
                 chartRef.current.style.height = `${height}px`;
             }
-
-            if (!width && !height) {
-                dispatch(setChartDimensions({ height: 875 }));
-            }
         }
     }, [chartRef, chartDimensions]);
 
@@ -304,7 +305,7 @@ const ChartComponent = () => {
 
         const scale = ref.current.clientHeight / chartRef.current.clientHeight;
 
-        dispatch(setChartDimensions({ width: chartDimensions.width * scale, height: ref.current!.clientHeight }));
+        dispatch(setChartDimensions({ width: (chartDimensions.width ?? 0) * scale, height: ref.current!.clientHeight }));
     };
 
     const expandToWidth = () => {
@@ -312,7 +313,7 @@ const ChartComponent = () => {
 
         const scale = ref.current.clientWidth / chartRef.current.clientWidth;
 
-        dispatch(setChartDimensions({ width: ref.current!.clientWidth, height: chartDimensions.height * scale }));
+        dispatch(setChartDimensions({ width: ref.current!.clientWidth, height: (chartDimensions.height ?? 0) * scale }));
     };
 
     // The functions that handle rotation get the closest 45 degree angle increment to the current angle
@@ -325,15 +326,19 @@ const ChartComponent = () => {
     };
 
     useEffect(() => {
-        const img = new Image();
-        img.onload = function () {
-            if (ref.current) {
-                // @ts-ignore
-                // eslint-disable-next-line react/no-this-in-sfc
-                dispatch(setChartDimensions({ width: this.width * (ref.current.clientHeight / this.height), height: ref.current.clientHeight }));
-            }
-        };
-        img.src = chartLinks.light;
+        console.log(chartDimensions);
+
+        if (!chartDimensions.height && !chartDimensions.width) {
+            const img = new Image();
+            img.onload = function () {
+                if (ref.current) {
+                    // @ts-ignore
+                    // eslint-disable-next-line react/no-this-in-sfc
+                    dispatch(setChartDimensions({ width: this.width * (ref.current.clientHeight / this.height), height: ref.current.clientHeight }));
+                }
+            };
+            img.src = chartLinks.light;
+        }
     }, [chartLinks]);
 
     useEffect(() => {
@@ -472,9 +477,12 @@ const ChartComponent = () => {
                         onClick={() => {
                             if (chartRef.current && ref.current) {
                                 if (chartRef.current.clientWidth === ref.current.clientWidth) {
-                                    const newWidth = isFullScreen ? 804 : 1278;
-                                    const scale = newWidth / chartDimensions.width;
-                                    dispatch(setChartDimensions({ width: newWidth, height: chartDimensions.height * scale }));
+                                    const width = isFullScreen ? 804 : 1278;
+
+                                    const scale = width / (chartDimensions.width ?? 0);
+                                    const height = chartDimensions.height ?? 0 * scale;
+
+                                    dispatch(setChartDimensions({ width, height }));
                                 }
                             }
                             dispatch(setIsFullScreen(!isFullScreen));
@@ -615,6 +623,7 @@ const LocalFileChartSelector = ({ selectedTab, loading }: LocalFileChartSelector
             const blob = await resp.blob();
             const url = URL.createObjectURL(blob);
 
+            dispatch(setChartDimensions({ width: undefined, height: undefined }));
             dispatch(setChartName({ light: url, dark: url }));
 
             dispatch(setBoundingBox(undefined));
@@ -644,7 +653,7 @@ const LocalFileChartSelector = ({ selectedTab, loading }: LocalFileChartSelector
                         : 'bg-theme-secondary'}`}
                     />
                     <div className="flex flex-col m-2">
-                        <span className="">{chart.fileName}</span>
+                        <span>{chart.fileName}</span>
                         <span
                             className="px-2 mr-auto text-sm rounded-sm text-theme-text bg-theme-secondary"
                         >
@@ -664,7 +673,7 @@ const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartSelector
 
     const dispatch = useAppDispatch();
 
-    const { chartId } = useAppSelector((state) => state.navigationTab);
+    const { chartId, icao, tabIndex } = useAppSelector((state) => state.navigationTab);
 
     useEffect(() => {
         if (selectedTab.bundleRunways) {
@@ -715,6 +724,7 @@ const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartSelector
 
         dispatch(setChartId(chart.id));
 
+        dispatch(setChartDimensions({ width: undefined, height: undefined }));
         dispatch(setChartName({ light: chart.fileDay, dark: chart.fileNight }));
 
         dispatch(setBoundingBox(chart.boundingBox));
@@ -748,7 +758,7 @@ const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartSelector
                 ? (
                     <>
                         {organizedCharts.map((item) => (
-                            <div className="flex overflow-hidden flex-col w-full text-lg rounded-md divide-y-2 divide-gray-700" key={item.name}>
+                            <div className="flex overflow-hidden flex-col w-full rounded-md divide-y-2 divide-gray-700" key={item.name}>
                                 <span className="p-1 text-center rounded-t-lg bg-theme-secondary">{item.name}</span>
                                 {item.charts.map((chart) => (
                                     <div
@@ -756,15 +766,45 @@ const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartSelector
                                         onClick={() => handleChartClick(chart as NavigraphChart)}
                                         key={(chart as NavigraphChart).id}
                                     >
-                                        <span className={`w-2 flex-shrink-0 transition duration-100 group-hover:bg-theme-highlight ${(chart as NavigraphChart).id === chartId
-                                            ? 'bg-theme-highlight'
-                                            : 'bg-theme-secondary'}`}
-                                        />
-                                        <div className="flex flex-col m-2">
-                                            <span className="">{(chart as NavigraphChart).procedureIdentifier}</span>
-                                            <span
-                                                className="px-2 mt-0.5 mr-auto text-sm text-gray-400 bg-gray-700 rounded-md"
+                                        <div className="flex flex-row items-center">
+                                            <div className={`w-2 h-full transition duration-100 group-hover:bg-theme-highlight ${(chart as NavigraphChart).id === chartId
+                                                ? 'bg-theme-highlight'
+                                                : 'bg-theme-secondary'}`}
+                                            />
+                                            <div
+                                                className="flex items-center px-2 h-full transition duration-100 hover:bg-theme-highlight hover:text-theme-body"
+                                                onClick={(event) => {
+                                                    event.stopPropagation();
+
+                                                    if (isChartPinned((chart as NavigraphChart).id)) {
+                                                        dispatch(removedPinnedChart({
+                                                            chartId: (chart as NavigraphChart).id,
+                                                            chartName: { light: (chart as NavigraphChart).fileDay, dark: (chart as NavigraphChart).fileNight },
+                                                            icao,
+                                                            title: (chart as NavigraphChart).procedureIdentifier,
+                                                            tabIndex,
+                                                        }));
+                                                    } else {
+                                                        dispatch(addPinnedChart({
+                                                            chartId: (chart as NavigraphChart).id,
+                                                            chartName: { light: (chart as NavigraphChart).fileDay, dark: (chart as NavigraphChart).fileNight },
+                                                            icao,
+                                                            title: (chart as NavigraphChart).procedureIdentifier,
+                                                            tabIndex,
+                                                        }));
+                                                    }
+                                                }}
                                             >
+                                                {
+                                                    isChartPinned((chart as NavigraphChart).id)
+                                                        ? <PinFill size={40} />
+                                                        : <Pin size={40} />
+                                                }
+                                            </div>
+                                        </div>
+                                        <div className="flex flex-col m-2">
+                                            <span>{(chart as NavigraphChart).procedureIdentifier}</span>
+                                            <span className="px-2 mt-0.5 mr-auto text-sm rounded-md text-theme-text bg-theme-secondary">
                                                 {(chart as NavigraphChart).indexNumber}
                                             </span>
                                         </div>
@@ -782,12 +822,44 @@ const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartSelector
                                 onClick={() => handleChartClick(chart as NavigraphChart)}
                                 key={(chart as NavigraphChart).id}
                             >
-                                <span className={`w-2 transition duration-100 group-hover:bg-theme-highlight ${(chart as NavigraphChart).id === chartId
-                                    ? 'bg-theme-highlight'
-                                    : 'bg-theme-secondary'}`}
-                                />
+                                <div className="flex flex-row items-center">
+                                    <div className={`w-2 h-full transition duration-100 group-hover:bg-theme-highlight ${(chart as NavigraphChart).id === chartId
+                                        ? 'bg-theme-highlight'
+                                        : 'bg-theme-secondary'}`}
+                                    />
+                                    <div
+                                        className="flex items-center px-2 h-full transition duration-100 hover:bg-theme-highlight hover:text-theme-body"
+                                        onClick={(event) => {
+                                            event.stopPropagation();
+
+                                            if (isChartPinned((chart as NavigraphChart).id)) {
+                                                dispatch(removedPinnedChart({
+                                                    chartId: (chart as NavigraphChart).id,
+                                                    chartName: { light: (chart as NavigraphChart).fileDay, dark: (chart as NavigraphChart).fileNight },
+                                                    icao,
+                                                    title: (chart as NavigraphChart).procedureIdentifier,
+                                                    tabIndex,
+                                                }));
+                                            } else {
+                                                dispatch(addPinnedChart({
+                                                    chartId: (chart as NavigraphChart).id,
+                                                    chartName: { light: (chart as NavigraphChart).fileDay, dark: (chart as NavigraphChart).fileNight },
+                                                    icao,
+                                                    title: (chart as NavigraphChart).procedureIdentifier,
+                                                    tabIndex,
+                                                }));
+                                            }
+                                        }}
+                                    >
+                                        {
+                                            isChartPinned((chart as NavigraphChart).id)
+                                                ? <PinFill size={40} />
+                                                : <Pin size={40} />
+                                        }
+                                    </div>
+                                </div>
                                 <div className="flex flex-col m-2">
-                                    <span className="">{(chart as NavigraphChart).procedureIdentifier}</span>
+                                    <span>{(chart as NavigraphChart).procedureIdentifier}</span>
                                     <span
                                         className="px-2 mr-auto text-sm rounded-sm text-theme-text bg-theme-secondary"
                                     >
@@ -810,6 +882,7 @@ const NavigraphChartsUI = () => {
     const [statusBarInfo, setStatusBarInfo] = useState('');
 
     const [icaoAndNameDisagree, setIcaoAndNameDisagree] = useState(false);
+    const [chartListDisagrees, setChartListDisagrees] = useState(false);
 
     const [charts, setCharts] = useState<Charts>({
         arrival: [],
@@ -868,18 +941,20 @@ const NavigraphChartsUI = () => {
         fetchCharts();
     }, [chartName]);
 
-    const handleIcaoChange = (value: string) => {
+    const handleIcaoChange = async (value: string) => {
         if (value.length !== 4) return;
 
         const newValue = value.toUpperCase();
 
-        navigraph.getChartList(newValue).then((r) => {
-            if (r) {
-                setCharts(r);
-            }
-        });
-
         dispatch(setIcao(newValue));
+
+        setChartListDisagrees(true);
+        const chartList = await navigraph.getChartList(newValue);
+
+        if (chartList) {
+            setCharts(chartList);
+        }
+        setChartListDisagrees(false);
     };
 
     useEffect(() => {
@@ -888,9 +963,7 @@ const NavigraphChartsUI = () => {
 
     const AIRPORT_CHARACTER_LIMIT = 30;
 
-    let loading = false;
-
-    loading = (!statusBarInfo.length || icaoAndNameDisagree) && icao.length === 4;
+    const loading = (!statusBarInfo.length || icaoAndNameDisagree || chartListDisagrees) && icao.length === 4;
 
     const getStatusBarText = () => {
         if (icao.length !== 4) {
