@@ -33,6 +33,8 @@ export class AtcSystem {
 
     private lastRingTime: number = 0;
 
+    public maxUplinkDelay: number = -1;
+
     constructor(parent: AtsuManager, datalink: Datalink) {
         this.parent = parent;
         this.datalink = datalink;
@@ -237,6 +239,7 @@ export class AtcSystem {
         message.ComStatus = AtsuMessageComStatus.Sending;
         message.Message = 'LOGOFF';
 
+        this.maxUplinkDelay = -1;
         this.parent.registerMessage(message);
 
         return this.datalink.sendMessage(message, true).then((error) => error);
