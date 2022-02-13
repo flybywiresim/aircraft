@@ -197,7 +197,8 @@
                         xpdrState = #TRANSPONDER_STATE_STANDBY, number#;
                     } else if xpdrMode == #TRANSPONDER_MODE_AUTO, number# {
                         if leftGearCompressed or rightGearCompressed {
-                            xpdrState = #TRANSPONDER_STATE_GROUND, number#;
+                            // should be TRANSPONDER_STATE_GROUND (mode S), but vPilot treats that as mode C
+                            xpdrState = #TRANSPONDER_STATE_STBY, number#;
                         } else if altReporting {
                             xpdrState = #TRANSPONDER_STATE_ALT, number#;
                         } else {
