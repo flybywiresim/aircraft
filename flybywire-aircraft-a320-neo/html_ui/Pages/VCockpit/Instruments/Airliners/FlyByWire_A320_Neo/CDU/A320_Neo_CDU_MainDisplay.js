@@ -21,7 +21,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.clrStop = false;
         this.allSelected = false;
         this.updateRequest = false;
-        this.aocAirportList = new CDUAocAirportList;
         this.initB = false;
         this.PageTimeout = {
             Prog: 2000,
@@ -136,7 +135,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
     initMcduVariables() {
         this.messageQueue = [];
-        this.aocAirportList.init();
     }
 
     Init() {
