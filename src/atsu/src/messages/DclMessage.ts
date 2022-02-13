@@ -36,7 +36,11 @@ export class DclMessage extends CpdlcMessage {
             dclMessage += `AT ${this.Origin}${this.Gate !== '' ? ` STAND ${this.Gate}` : ''}\n`;
             dclMessage += `ATIS ${this.Atis}`;
         } else {
-            dclMessage = `DEPART REQUEST\n${this.Callsign}\n`;
+            if (format === AtsuMessageSerializationFormat.Printer) {
+                dclMessage = `${this.Timestamp.dcduTimestamp()} TO ${this.Station}\n`;
+            }
+
+            dclMessage += `DEPART REQUEST\n${this.Callsign}\n`;
             dclMessage += `FROM:${this.Origin}${this.Gate.length !== 0 ? ` GATE:${this.Gate}` : ''}\n`;
             dclMessage += `TO:${this.Destination} ATIS:${this.Atis}\n`;
             dclMessage += `A/C TYPE:${this.AcType}`;
