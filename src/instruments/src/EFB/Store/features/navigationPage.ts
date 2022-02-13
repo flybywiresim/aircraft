@@ -1,5 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { NavigraphBoundingBox } from '../../ChartsApi/Navigraph';
+import { store, RootState } from '../store';
 
 type ThemedChart = {
     light: string;
@@ -8,16 +9,17 @@ type ThemedChart = {
 
 type PinnedChart = {
     chartId: string;
-        chartName: string;
-        icao: string;
-        title: string;
+    chartName: ThemedChart;
+    icao: string;
+    title: string;
+    tabIndex: number;
 }
 
 interface InitialChartState {
     chartRotation: number;
     chartDimensions: {
-        width: number;
-        height: number;
+        width?: number;
+        height?: number;
     };
     usingDarkTheme: boolean;
     isFullScreen: boolean;
@@ -115,6 +117,11 @@ export const navigationTabSlice = createSlice({
     },
 });
 
+/**
+ * @returns Whether or not associated chart with the passed chartId is pinned
+ */
+export const isChartPinned = (chartId: string): boolean => (store.getState() as RootState).navigationTab.pinnedCharts.some((pinnedChart) => pinnedChart.chartId === chartId);
+
 export const {
     setChartRotation,
     setChartDimensions,
@@ -129,5 +136,7 @@ export const {
     setBoundingBox,
     setPagesViewable,
     setCurrentPage,
+    addPinnedChart,
+    removedPinnedChart,
 } = navigationTabSlice.actions;
 export default navigationTabSlice.reducer;

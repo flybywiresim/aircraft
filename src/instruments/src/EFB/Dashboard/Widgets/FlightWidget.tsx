@@ -147,7 +147,7 @@ export const FlightWidget = () => {
     }
 
     return (
-        <div className="overflow-hidden p-6 mr-6 w-1/2 h-full rounded-lg border-2 border-theme-accent">
+        <div className="overflow-hidden flex-shrink-0 p-6 w-1/2 h-full rounded-lg border-2 border-theme-accent">
             <div className="flex flex-col justify-between h-full">
                 <div className="space-y-8">
                     <div className="flex flex-row justify-between">
