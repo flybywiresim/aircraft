@@ -75,6 +75,25 @@ class CDUAtcAtisMenu {
         }
     }
 
+    static InterpretRSK(mcdu, airports, idx) {
+        if (airports[idx].icao === "") {
+            return;
+        }
+
+        if (airports[idx].autoupdate) {
+            const reports = mcdu.atsuManager.atc.atisReports(airports[idx].icao);
+            if (reports.length !== 0) {
+                CDUAtcAtisAutoUpdate.ToggleAutoUpdate(mcdu, airports[idx].icao);
+                airports[0].autoupdate = false;
+                CDUAtcAtisMenu.ShowPage(mcdu, airports);
+            } else if (!airports[idx].requested) {
+                CDUAtcAtisMenu.RequestAtis(mcdu, airports, idx);
+            }
+        } else if (!airports[idx].requested) {
+            CDUAtcAtisMenu.RequestAtis(mcdu, airports, idx);
+        }
+    }
+
     static CreateLineData(mcdu, airport) {
         if (airport.icao !== "") {
             const reports = mcdu.atsuManager.atc.atisReports(airport.icao);
@@ -166,33 +185,14 @@ class CDUAtcAtisMenu {
             ["<RETURN", printButton]
         ]);
 
-        mcdu.leftInputDelay[0] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
-        mcdu.onLeftInput[0] = (value) => {
-            CDUAtcAtisMenu.InterpretLSK(mcdu, value, airports, 0);
-        };
-
-        mcdu.leftInputDelay[1] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
-        mcdu.onLeftInput[1] = (value) => {
-            CDUAtcAtisMenu.InterpretLSK(mcdu, value, airports, 1);
-        };
-
-        mcdu.leftInputDelay[2] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
-        mcdu.onLeftInput[2] = (value) => {
-            CDUAtcAtisMenu.InterpretLSK(mcdu, value, airports, 2);
-        };
-
-        mcdu.leftInputDelay[3] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
-        mcdu.onLeftInput[3] = (value) => {
-            CDUAtcAtisMenu.InterpretLSK(mcdu, value, airports, 3);
-        };
+        for (let i = 0; i < 4; ++i) {
+            mcdu.leftInputDelay[i] = () => {
+                return mcdu.getDelaySwitchPage();
+            };
+            mcdu.onLeftInput[i] = (value) => {
+                CDUAtcAtisMenu.InterpretLSK(mcdu, value, airports, i);
+            };
+        }
 
         mcdu.leftInputDelay[5] = () => {
             return mcdu.getDelaySwitchPage();
@@ -201,26 +201,14 @@ class CDUAtcAtisMenu {
             CDUAtcMenu.ShowPage2(mcdu);
         };
 
-        mcdu.rightInputDelay[0] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
-        mcdu.onRightInput[0] = () => {
-            CDUAtcAtisMenu.RequestAtis(mcdu, airports, 0);
-        };
-
-        mcdu.rightInputDelay[1] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
-        mcdu.onRightInput[1] = () => {
-            CDUAtcAtisMenu.RequestAtis(mcdu, airports, 1);
-        };
-
-        mcdu.rightInputDelay[2] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
-        mcdu.onRightInput[2] = () => {
-            CDUAtcAtisMenu.RequestAtis(mcdu, airports, 2);
-        };
+        for (let i = 0; i < 4; ++i) {
+            mcdu.rightInputDelay[i] = () => {
+                return mcdu.getDelaySwitchPage();
+            };
+            mcdu.onRightInput[i] = () => {
+                CDUAtcAtisMenu.InterpretRSK(mcdu, airports, i);
+            };
+        }
 
         mcdu.rightInputDelay[4] = () => {
             return mcdu.getDelaySwitchPage();
