@@ -9,7 +9,9 @@ import simbriefReducer from './features/simbrief';
 import performanceReducer from './features/performance';
 import flightProgressReducer from './features/flightProgress';
 import navigationTabReducer from './features/navigationPage';
+import dashboardReducer from './features/dashboard';
 
+export type TypedAction<T> = { type: string, payload: T };
 export type RootState = ReturnType<typeof combinedReducer>;
 export type AppDispatch = typeof store.dispatch;
 
@@ -22,6 +24,7 @@ const combinedReducer = combineReducers({
     performance: performanceReducer,
     flightProgress: flightProgressReducer,
     navigationTab: navigationTabReducer,
+    dashboard: dashboardReducer,
 });
 
 const rootReducer: Reducer = (state: RootState, action: AnyAction) => {
