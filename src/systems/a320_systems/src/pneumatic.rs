@@ -1,5 +1,5 @@
 use core::panic;
-use std::f64::consts::PI;
+use std::{f64::consts::PI, time::Duration};
 
 use uom::si::{
     f64::*,
@@ -22,9 +22,9 @@ use systems::{
         PressurizeableReservoir, TargetPressureSignal, VariableVolumeContainer,
     },
     shared::{
-        pid::PidController, ControllerSignal, ElectricalBusType, ElectricalBuses,
-        EngineCorrectedN1, EngineCorrectedN2, EngineFirePushButtons, HydraulicColor,
-        PneumaticValve, ReservoirAirPressure,
+        pid::PidController, update_iterator::MaxStepLoop, ControllerSignal, ElectricalBusType,
+        ElectricalBuses, EngineCorrectedN1, EngineCorrectedN2, EngineFirePushButtons,
+        HydraulicColor, PneumaticValve, ReservoirAirPressure,
     },
     simulation::{
         InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -104,6 +104,8 @@ valve_signal_implementation!(FanAirValveSignal);
 valve_signal_implementation!(PackFlowValveSignal);
 
 pub struct A320Pneumatic {
+    physics_updater: MaxStepLoop,
+
     cross_bleed_valve_open_id: VariableIdentifier,
     apu_bleed_air_valve_open_id: VariableIdentifier,
 
@@ -128,8 +130,11 @@ pub struct A320Pneumatic {
     packs: [PackComplex; 2],
 }
 impl A320Pneumatic {
+    const PNEUMATIC_SIM_MAX_TIME_STEP: Duration = Duration::from_millis(100);
+
     pub fn new(context: &mut InitContext) -> Self {
         Self {
+            physics_updater: MaxStepLoop::new(Self::PNEUMATIC_SIM_MAX_TIME_STEP),
             cross_bleed_valve_open_id: context.get_identifier("PNEU_XBLEED_VALVE_OPEN".to_owned()),
             apu_bleed_air_valve_open_id: context
                 .get_identifier("APU_BLEED_AIR_VALVE_OPEN".to_owned()),
@@ -154,6 +159,7 @@ impl A320Pneumatic {
             apu_compression_chamber: CompressionChamber::new(Volume::new::<cubic_meter>(5.)),
             apu_bleed_air_valve: DefaultValve::new_closed(),
             green_hydraulic_reservoir_with_valve: PressurisedReservoirWithExhaustValve::new(
+                context,
                 HydraulicColor::Green,
                 VariableVolumeContainer::new(
                     Volume::new::<gallon>(2.5),
@@ -164,6 +170,7 @@ impl A320Pneumatic {
                 6e-2,
             ),
             blue_hydraulic_reservoir_with_valve: PressurisedReservoirWithExhaustValve::new(
+                context,
                 HydraulicColor::Blue,
                 VariableVolumeContainer::new(
                     Volume::new::<gallon>(1.1),
@@ -174,6 +181,7 @@ impl A320Pneumatic {
                 6e-2,
             ),
             yellow_hydraulic_reservoir_with_valve: PressurisedReservoirWithExhaustValve::new(
+                context,
                 HydraulicColor::Yellow,
                 VariableVolumeContainer::new(
                     Volume::new::<gallon>(1.7),
@@ -188,6 +196,27 @@ impl A320Pneumatic {
     }
 
     pub(crate) fn update(
+        &mut self,
+        context: &UpdateContext,
+        engines: [&(impl EngineCorrectedN1 + EngineCorrectedN2); 2],
+        overhead_panel: &A320PneumaticOverheadPanel,
+        engine_fire_push_buttons: &impl EngineFirePushButtons,
+        apu: &impl ControllerSignal<TargetPressureSignal>,
+    ) {
+        self.physics_updater.update(context);
+
+        for cur_time_step in self.physics_updater {
+            self.update_physics(
+                &context.with_delta(cur_time_step),
+                engines,
+                overhead_panel,
+                engine_fire_push_buttons,
+                apu,
+            );
+        }
+    }
+
+    pub(crate) fn update_physics(
         &mut self,
         context: &UpdateContext,
         engines: [&(impl EngineCorrectedN1 + EngineCorrectedN2); 2],
@@ -1860,6 +1889,7 @@ mod tests {
 
     // Just a way for me to plot some graphs
     #[test]
+    #[ignore]
     fn full_graphing_test() {
         let alt = Length::new::<foot>(0.);
 
@@ -1893,8 +1923,14 @@ mod tests {
         let mut apu_bleed_valve_open_amounts = Vec::new();
         let mut fan_air_valve_open_amounts = Vec::new();
 
-        for i in 1..5000 {
+        for i in 1..6000 {
             time_points.push(i as f64 * 16.);
+
+            if i == 2000 {
+                test_bed = test_bed.stop_eng2().stop_eng2();
+            } else if i == 4000 {
+                test_bed = test_bed.start_eng2().start_eng2();
+            }
 
             high_pressures.push(test_bed.hp_pressure(1).get::<psi>());
             intermediate_pressures.push(test_bed.ip_pressure(1).get::<psi>());
@@ -2015,6 +2051,7 @@ mod tests {
     }
 
     #[test]
+    #[ignore]
     fn hydraulic_reservoir_pressurization_graphs() {
         let alt = Length::new::<foot>(0.);
 
@@ -2060,6 +2097,7 @@ mod tests {
     }
 
     #[test]
+    #[ignore]
     fn pack_pressurization_graphs() {
         let alt = Length::new::<foot>(0.);
 
@@ -2214,6 +2252,27 @@ mod tests {
         assert!(!test_bed.es_valve_is_open(2));
 
         assert!(!test_bed.cross_bleed_valve_is_open());
+    }
+
+    #[test]
+    fn engine_shutdown() {
+        let altitude = Length::new::<foot>(0.);
+        let ambient_pressure = InternationalStandardAtmosphere::pressure_at_altitude(altitude);
+
+        let mut test_bed = test_bed_with()
+            .idle_eng1()
+            .idle_eng2()
+            .in_isa_atmosphere(altitude)
+            .mach_number(MachNumber(0.))
+            .and_stabilize();
+
+        assert!(test_bed.precooler_outlet_pressure(1) - ambient_pressure > pressure_tolerance());
+        assert!(test_bed.precooler_outlet_pressure(2) - ambient_pressure > pressure_tolerance());
+
+        test_bed = test_bed.set_bleed_air_running();
+
+        assert!(!test_bed.precooler_outlet_pressure(1).get::<psi>().is_nan());
+        assert!(!test_bed.precooler_outlet_pressure(2).get::<psi>().is_nan());
     }
 
     #[test]
@@ -2776,6 +2835,24 @@ mod tests {
 
         assert!(test_bed.pack_flow_valve_flow(1) < flow_rate_tolerance());
         assert!(test_bed.pack_flow_valve_flow(2) < flow_rate_tolerance());
+    }
+
+    #[test]
+    fn large_time_step_stability() {
+        let mut test_bed = test_bed_with()
+            .idle_eng1()
+            .idle_eng2()
+            .mach_number(MachNumber(0.))
+            .both_packs_auto()
+            .and_stabilize();
+
+        // Introduce perturbation
+        test_bed = test_bed.toga_eng1().toga_eng2();
+
+        test_bed.run_with_delta(Duration::from_millis(1000));
+
+        assert!(!test_bed.precooler_inlet_pressure(1).is_nan());
+        assert!(!test_bed.precooler_inlet_pressure(2).is_nan());
     }
 
     mod overhead {

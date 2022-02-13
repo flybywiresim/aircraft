@@ -15,6 +15,7 @@ use uom::si::{
 
 pub mod low_pass_filter;
 pub mod pid;
+pub mod update_iterator;
 
 mod random;
 pub use random::*;
@@ -67,6 +68,10 @@ pub trait ControlValveCommand {
 
 pub trait EmergencyGeneratorPower {
     fn generated_power(&self) -> Power;
+}
+
+pub trait FeedbackPositionPickoffUnit {
+    fn angle(&self) -> Angle;
 }
 
 pub trait LandingGearRealPosition {

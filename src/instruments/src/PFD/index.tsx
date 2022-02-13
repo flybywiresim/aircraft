@@ -3,6 +3,7 @@ import { A320Failure, FailuresConsumer } from '@flybywiresim/failures';
 import { useArinc429Var } from '@instruments/common/arinc429';
 import { useInteractionEvent, useUpdate } from '@instruments/common/hooks';
 import { getSupplier, isCaptainSide } from '@instruments/common/utils';
+import { FmgcFlightPhase } from '@shared/flightphase';
 import { Horizon } from './AttitudeIndicatorHorizon';
 import { AttitudeIndicatorFixedUpper, AttitudeIndicatorFixedCenter } from './AttitudeIndicatorFixed';
 import { LandingSystem } from './LandingSystemIndicator';
@@ -124,7 +125,8 @@ export const PFD: React.FC = () => {
     const altArmed = (armedVerticalBitmask >> 1) & 1;
     const clbArmed = (armedVerticalBitmask >> 2) & 1;
     const navArmed = (armedLateralBitmask >> 0) & 1;
-    const isManaged = !!(altArmed || activeVerticalMode === 21 || activeVerticalMode === 20 || (!!cstnAlt && fmgcFlightPhase < 2 && clbArmed && navArmed));
+    const isManaged = !!(altArmed || activeVerticalMode === 21 || activeVerticalMode === 20
+         || (!!cstnAlt && [FmgcFlightPhase.Preflight, FmgcFlightPhase.Takeoff].includes(fmgcFlightPhase) && clbArmed && navArmed));
     const targetAlt = isManaged ? cstnAlt : Simplane.getAutoPilotDisplayedAltitudeLockValue();
 
     let targetSpeed: number | null;

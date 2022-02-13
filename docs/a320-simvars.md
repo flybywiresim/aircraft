@@ -1053,6 +1053,14 @@
     - Degrees
     - The actual angle of the right slats
 
+- A32NX_IS_FLAPS_MOVING
+    - Boolean
+    - The flap surface is moving
+
+- A32NX_IS_SLAPS_MOVING
+    - Boolean
+    - The slat surface is moving
+
 - A32NX_FLAPS_CONF_INDEX
     - Number
     - Indicates the desired flap configuration index according to the table
@@ -1314,18 +1322,36 @@
     - Degrees
     - Target beta (sideslip) in case of asymmetric thrust
 
-- A32NX_3D_AILERON_LEFT_DEFLECTION
+- A32NX_AILERON_LEFT_DEFLECTION_DEMAND
     - Number
-    - Provides the left aileron position
+    - Provides the left aileron position demand to hydraulics
       Value | Meaning
       --- | ---
       -1.0 | full up
        0.0 | neutral
       1.0 | full down
 
-- A32NX_3D_AILERON_RIGHT_DEFLECTION
+- A32NX_AILERON_RIGHT_DEFLECTION_DEMAND
     - Number
-    - Provides the right aileron position
+    - Provides the right aileron position demand to hydraulics
+      Value | Meaning
+      --- | ---
+      -1.0 | full down
+       0.0 | neutral
+      1.0 | full up
+
+- A32NX_HYD_AILERON_LEFT_DEFLECTION
+    - Number
+    - Provides the final left aileron physical position
+      Value | Meaning
+      --- | ---
+      -1.0 | full up
+       0.0 | neutral
+      1.0 | full down
+
+- A32NX_HYD_AILERON_RIGHT_DEFLECTION
+    - Number
+    - Provides the final right aileron physical position
       Value | Meaning
       --- | ---
       -1.0 | full down

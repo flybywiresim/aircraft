@@ -1,12 +1,12 @@
+use systems::shared::FeedbackPositionPickoffUnit;
+
 use systems::simulation::{
     InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
     SimulatorWriter, UpdateContext, VariableIdentifier, Write,
 };
 
 use std::panic;
-use uom::si::{
-    angle::degree, angular_velocity::degree_per_second, f64::*, pressure::psi, velocity::knot,
-};
+use uom::si::{angle::degree, f64::*, velocity::knot};
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 enum FlapsConf {
@@ -219,101 +219,9 @@ impl SimulationElement for SlatFlapControlComputer {
     }
 }
 
-struct SlatFlapGear {
-    current_angle: Angle,
-    speed: AngularVelocity,
-    max_angle: Angle,
-    left_position_percent_id: VariableIdentifier,
-    right_position_percent_id: VariableIdentifier,
-    left_position_angle_id: VariableIdentifier,
-    right_position_angle_id: VariableIdentifier,
-    surface_type: String,
-}
-
-pub trait FeedbackPositionPickoffUnit {
-    fn angle(&self) -> Angle;
-}
-
-impl FeedbackPositionPickoffUnit for SlatFlapGear {
-    fn angle(&self) -> Angle {
-        self.current_angle
-    }
-}
-
-impl SlatFlapGear {
-    const ANGLE_DELTA_DEGREE: f64 = 0.1;
-
-    fn new(
-        context: &mut InitContext,
-        speed: AngularVelocity,
-        max_angle: Angle,
-        surface_type: &str,
-    ) -> Self {
-        Self {
-            current_angle: Angle::new::<degree>(0.),
-            speed,
-            max_angle,
-
-            left_position_percent_id: context
-                .get_identifier(format!("LEFT_{}_POSITION_PERCENT", surface_type)),
-            right_position_percent_id: context
-                .get_identifier(format!("RIGHT_{}_POSITION_PERCENT", surface_type)),
-
-            left_position_angle_id: context.get_identifier(format!("LEFT_{}_ANGLE", surface_type)),
-            right_position_angle_id: context
-                .get_identifier(format!("RIGHT_{}_ANGLE", surface_type)),
-
-            surface_type: surface_type.to_string(),
-        }
-    }
-
-    fn update(
-        &mut self,
-        context: &UpdateContext,
-        sfcc: &impl SlatFlapLane,
-        hydraulic_pressure_left_side: Pressure,
-        hydraulic_pressure_right_side: Pressure,
-    ) {
-        if hydraulic_pressure_left_side.get::<psi>() > 1500.
-            || hydraulic_pressure_right_side.get::<psi>() > 1500.
-        {
-            if let Some(demanded_angle) = sfcc.signal_demanded_angle(&self.surface_type) {
-                let actual_minus_target = demanded_angle - self.current_angle;
-                if actual_minus_target.get::<degree>().abs() > Self::ANGLE_DELTA_DEGREE {
-                    self.current_angle += Angle::new::<degree>(
-                        actual_minus_target.get::<degree>().signum()
-                            * self.speed.get::<degree_per_second>()
-                            * context.delta_as_secs_f64(),
-                    );
-                    self.current_angle = self.current_angle.max(Angle::new::<degree>(0.));
-                } else {
-                    self.current_angle = demanded_angle;
-                }
-            }
-        }
-    }
-}
-
-impl SimulationElement for SlatFlapGear {
-    fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write(
-            &self.left_position_percent_id,
-            self.current_angle / self.max_angle,
-        );
-        writer.write(
-            &self.right_position_percent_id,
-            self.current_angle / self.max_angle,
-        );
-        writer.write(&self.left_position_angle_id, self.current_angle);
-        writer.write(&self.right_position_angle_id, self.current_angle);
-    }
-}
-
 pub struct SlatFlapComplex {
     sfcc: SlatFlapControlComputer,
     flaps_handle: FlapsHandle,
-    flap_gear: SlatFlapGear,
-    slat_gear: SlatFlapGear,
 }
 
 impl SlatFlapComplex {
@@ -321,47 +229,31 @@ impl SlatFlapComplex {
         Self {
             sfcc: SlatFlapControlComputer::new(context),
             flaps_handle: FlapsHandle::new(context),
-            flap_gear: SlatFlapGear::new(
-                context,
-                AngularVelocity::new::<degree_per_second>(2.),
-                Angle::new::<degree>(40.),
-                "FLAPS",
-            ),
-            slat_gear: SlatFlapGear::new(
-                context,
-                AngularVelocity::new::<degree_per_second>(1.5),
-                Angle::new::<degree>(27.),
-                "SLATS",
-            ),
         }
     }
 
     pub fn update(
         &mut self,
         context: &UpdateContext,
-        hyd_green_pressure: Pressure,
-        hyd_blue_pressure: Pressure,
-        hyd_yellow_pressure: Pressure,
+        flaps_feedback: &impl FeedbackPositionPickoffUnit,
+        slats_feedback: &impl FeedbackPositionPickoffUnit,
     ) {
-        self.sfcc.update(
-            context,
-            &self.flaps_handle,
-            &self.flap_gear,
-            &self.slat_gear,
-        );
-        self.flap_gear
-            .update(context, &self.sfcc, hyd_green_pressure, hyd_yellow_pressure);
-        self.slat_gear
-            .update(context, &self.sfcc, hyd_green_pressure, hyd_blue_pressure);
+        self.sfcc
+            .update(context, &self.flaps_handle, flaps_feedback, slats_feedback);
+    }
+
+    pub fn flap_demand(&self) -> Option<Angle> {
+        self.sfcc.signal_demanded_angle("FLAPS")
+    }
+
+    pub fn slat_demand(&self) -> Option<Angle> {
+        self.sfcc.signal_demanded_angle("SLATS")
     }
 }
-
 impl SimulationElement for SlatFlapComplex {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.flaps_handle.accept(visitor);
         self.sfcc.accept(visitor);
-        self.flap_gear.accept(visitor);
-        self.slat_gear.accept(visitor);
         visitor.visit(self);
     }
 }
@@ -376,12 +268,102 @@ mod tests {
         Aircraft,
     };
 
+    use uom::si::{angular_velocity::degree_per_second, pressure::psi};
+
+    struct SlatFlapGear {
+        current_angle: Angle,
+        speed: AngularVelocity,
+        max_angle: Angle,
+        left_position_percent_id: VariableIdentifier,
+        right_position_percent_id: VariableIdentifier,
+        left_position_angle_id: VariableIdentifier,
+        right_position_angle_id: VariableIdentifier,
+        surface_type: String,
+    }
+    impl FeedbackPositionPickoffUnit for SlatFlapGear {
+        fn angle(&self) -> Angle {
+            self.current_angle
+        }
+    }
+
+    impl SlatFlapGear {
+        const ANGLE_DELTA_DEGREE: f64 = 0.1;
+
+        fn new(
+            context: &mut InitContext,
+            speed: AngularVelocity,
+            max_angle: Angle,
+            surface_type: &str,
+        ) -> Self {
+            Self {
+                current_angle: Angle::new::<degree>(0.),
+                speed,
+                max_angle,
+
+                left_position_percent_id: context
+                    .get_identifier(format!("LEFT_{}_POSITION_PERCENT", surface_type)),
+                right_position_percent_id: context
+                    .get_identifier(format!("RIGHT_{}_POSITION_PERCENT", surface_type)),
+
+                left_position_angle_id: context
+                    .get_identifier(format!("LEFT_{}_ANGLE", surface_type)),
+                right_position_angle_id: context
+                    .get_identifier(format!("RIGHT_{}_ANGLE", surface_type)),
+
+                surface_type: surface_type.to_string(),
+            }
+        }
+
+        fn update(
+            &mut self,
+            context: &UpdateContext,
+            sfcc: &impl SlatFlapLane,
+            hydraulic_pressure_left_side: Pressure,
+            hydraulic_pressure_right_side: Pressure,
+        ) {
+            if hydraulic_pressure_left_side.get::<psi>() > 1500.
+                || hydraulic_pressure_right_side.get::<psi>() > 1500.
+            {
+                if let Some(demanded_angle) = sfcc.signal_demanded_angle(&self.surface_type) {
+                    let actual_minus_target = demanded_angle - self.current_angle;
+                    if actual_minus_target.get::<degree>().abs() > Self::ANGLE_DELTA_DEGREE {
+                        self.current_angle += Angle::new::<degree>(
+                            actual_minus_target.get::<degree>().signum()
+                                * self.speed.get::<degree_per_second>()
+                                * context.delta_as_secs_f64(),
+                        );
+                        self.current_angle = self.current_angle.max(Angle::new::<degree>(0.));
+                    } else {
+                        self.current_angle = demanded_angle;
+                    }
+                }
+            }
+        }
+    }
+    impl SimulationElement for SlatFlapGear {
+        fn write(&self, writer: &mut SimulatorWriter) {
+            writer.write(
+                &self.left_position_percent_id,
+                self.current_angle / self.max_angle,
+            );
+            writer.write(
+                &self.right_position_percent_id,
+                self.current_angle / self.max_angle,
+            );
+            writer.write(&self.left_position_angle_id, self.current_angle);
+            writer.write(&self.right_position_angle_id, self.current_angle);
+        }
+    }
+
     struct A320FlapsTestAircraft {
         green_hydraulic_pressure_id: VariableIdentifier,
         blue_hydraulic_pressure_id: VariableIdentifier,
         yellow_hydraulic_pressure_id: VariableIdentifier,
 
+        flap_gear: SlatFlapGear,
+        slat_gear: SlatFlapGear,
         slat_flap_complex: SlatFlapComplex,
+
         green_pressure: Pressure,
         blue_pressure: Pressure,
         yellow_pressure: Pressure,
@@ -395,7 +377,22 @@ mod tests {
                 blue_hydraulic_pressure_id: context.get_identifier("HYD_BLUE_PRESSURE".to_owned()),
                 yellow_hydraulic_pressure_id: context
                     .get_identifier("HYD_YELLOW_PRESSURE".to_owned()),
+
+                flap_gear: SlatFlapGear::new(
+                    context,
+                    AngularVelocity::new::<degree_per_second>(4.),
+                    Angle::new::<degree>(40.),
+                    "FLAPS",
+                ),
+                slat_gear: SlatFlapGear::new(
+                    context,
+                    AngularVelocity::new::<degree_per_second>(3.),
+                    Angle::new::<degree>(27.),
+                    "SLATS",
+                ),
+
                 slat_flap_complex: SlatFlapComplex::new(context),
+
                 green_pressure: Pressure::new::<psi>(0.),
                 blue_pressure: Pressure::new::<psi>(0.),
                 yellow_pressure: Pressure::new::<psi>(0.),
@@ -405,11 +402,19 @@ mod tests {
 
     impl Aircraft for A320FlapsTestAircraft {
         fn update_after_power_distribution(&mut self, context: &UpdateContext) {
-            self.slat_flap_complex.update(
+            self.slat_flap_complex
+                .update(context, &self.flap_gear, &self.slat_gear);
+            self.flap_gear.update(
                 context,
+                &self.slat_flap_complex.sfcc,
                 self.green_pressure,
-                self.blue_pressure,
                 self.yellow_pressure,
+            );
+            self.slat_gear.update(
+                context,
+                &self.slat_flap_complex.sfcc,
+                self.blue_pressure,
+                self.green_pressure,
             );
         }
     }
@@ -417,6 +422,8 @@ mod tests {
     impl SimulationElement for A320FlapsTestAircraft {
         fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
             self.slat_flap_complex.accept(visitor);
+            self.flap_gear.accept(visitor);
+            self.slat_gear.accept(visitor);
             visitor.visit(self);
         }
 
@@ -432,7 +439,7 @@ mod tests {
     }
 
     impl A320FlapsTestBed {
-        const HYD_TIME_STEP_MILLIS: u64 = 100;
+        const HYD_TIME_STEP_MILLIS: u64 = 33;
 
         fn new() -> Self {
             Self {
@@ -503,11 +510,11 @@ mod tests {
         }
 
         fn get_flaps_angle(&self) -> f64 {
-            self.query(|a| a.slat_flap_complex.flap_gear.current_angle.get::<degree>())
+            self.query(|a| a.flap_gear.current_angle.get::<degree>())
         }
 
         fn get_slats_angle(&self) -> f64 {
-            self.query(|a| a.slat_flap_complex.slat_gear.current_angle.get::<degree>())
+            self.query(|a| a.slat_gear.current_angle.get::<degree>())
         }
 
         fn test_flap_conf(
@@ -1129,7 +1136,7 @@ mod tests {
             .set_green_hyd_pressure()
             .set_indicated_airspeed(0.)
             .set_flaps_handle_position(3)
-            .run_one_tick();
+            .run_waiting_for(Duration::from_secs(20));
 
         assert_eq!(test_bed.get_flaps_conf(), FlapsConf::Conf3);
 
@@ -1199,6 +1206,7 @@ mod tests {
         let angle_delta = 0.01;
         let mut test_bed = test_bed_with()
             .set_green_hyd_pressure()
+            .set_blue_hyd_pressure()
             .set_indicated_airspeed(220.)
             .set_flaps_handle_position(0)
             .run_one_tick();
@@ -1209,6 +1217,7 @@ mod tests {
 
         let mut previous_angle: f64 = test_bed.get_slats_angle();
         test_bed = test_bed.run_one_tick();
+
         for _ in 0..300 {
             if (test_bed.get_slats_angle() - test_bed.get_slats_demanded_angle()).abs()
                 <= angle_delta
@@ -1225,6 +1234,7 @@ mod tests {
             previous_angle = test_bed.get_slats_angle();
             test_bed = test_bed.run_one_tick();
         }
+
         assert!(
             (test_bed.get_slats_angle() - test_bed.get_slats_demanded_angle()).abs() <= angle_delta
         );
@@ -1354,11 +1364,6 @@ mod tests {
 
         test_bed = test_bed.run_one_tick();
         for _ in 0..300 {
-            println!(
-                "Only yellow: Flaps{}, Slats{}",
-                test_bed.get_flaps_angle(),
-                test_bed.get_slats_angle(),
-            );
             test_bed = test_bed.run_one_tick();
         }
         assert!(test_bed.get_flaps_angle() > starting_flap_angle);
@@ -1380,11 +1385,6 @@ mod tests {
 
         test_bed = test_bed.run_one_tick();
         for _ in 0..300 {
-            println!(
-                "Only blue: Flaps{}, Slats{}",
-                test_bed.get_flaps_angle(),
-                test_bed.get_slats_angle(),
-            );
             test_bed = test_bed.run_one_tick();
         }
         assert_about_eq!(test_bed.get_flaps_angle(), starting_flap_angle);

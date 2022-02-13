@@ -161,11 +161,11 @@
     <Template Name="FBW_HANDLING_Aileron_Template">
         <UseTemplate Name="ASOBO_GT_Anim_Code">
             <ANIM_NAME>l_aileron_percent_key</ANIM_NAME>
-            <ANIM_CODE>(L:A32NX_3D_AILERON_LEFT_DEFLECTION, number) 50 * 50 +</ANIM_CODE>
+            <ANIM_CODE>(L:A32NX_HYD_AILERON_LEFT_DEFLECTION, number) 50 * 50 +</ANIM_CODE>
         </UseTemplate>
         <UseTemplate Name="ASOBO_GT_Anim_Code">
             <ANIM_NAME>r_aileron_percent_key</ANIM_NAME>
-            <ANIM_CODE>(L:A32NX_3D_AILERON_RIGHT_DEFLECTION, number) 50 * 50 +</ANIM_CODE>
+            <ANIM_CODE>(L:A32NX_HYD_AILERON_RIGHT_DEFLECTION, number) 50 * 50 +</ANIM_CODE>
         </UseTemplate>
     </Template>
 
