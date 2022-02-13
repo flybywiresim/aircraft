@@ -117,12 +117,12 @@ class CDUAtcAtisMenu {
         if (airports[idx].icao !== "" && !airports[idx].requested) {
             airports[idx].requested = true;
 
-            mcdu.atsuManager.atc.receiveAtis(airports[idx].icao).then((code) => {
+            mcdu.atsuManager.atc.receiveAtis(airports[idx].icao, airports[idx].type).then((code) => {
                 if (code !== Atsu.AtsuStatusCodes.Ok) {
                     mcdu.addNewAtsuMessage(code);
                 }
 
-                airports[idx].req = false;
+                airports[idx].requested = false;
                 if (mcdu.page.Current === mcdu.page.ATCAtis) {
                     CDUAtcAtisMenu.ShowPage(mcdu, airports);
                 }
