@@ -185,7 +185,6 @@
                 <UPDATE_TRANSPONDER_STATE type="rnp">
                     alias xpdrMode = (L:A32NX_TRANSPONDER_MODE, number);
                     alias xpdrSelected = (L:A32NX_TRANSPONDER_SYSTEM, number);
-                    // should be LH and RH main gear sensor
                     alias leftGearCompressed = (L:A32NX_LGCIU_1_LEFT_GEAR_COMPRESSED, bool);
                     alias rightGearCompressed = (L:A32NX_LGCIU_2_RIGHT_GEAR_COMPRESSED, bool);
                     alias altReporting = (L:A32NX_TRANSPONDER_ALT_RPTG, bool);
