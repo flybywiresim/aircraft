@@ -346,19 +346,20 @@ FcdcBus Fcdc::getBusOutputs() {
   output.efcsStatus1.setBit(28, discreteInputs.oppFcdcFailed);
   output.efcsStatus1.setBit(29, !discreteInputs.sec3Valid);
 
+  bool leftElev1Fault = (!discreteInputs.elac1Valid && !discreteInputs.sec1Valid) || busInputs.elac1.discreteStatusWord1.bitFromValueOr(13, false) || busInputs.sec1.discreteStatusWord1.bitFromValueOr(13, false);
+  bool leftElev2Fault = (!discreteInputs.elac2Valid && !discreteInputs.sec2Valid) || busInputs.elac2.discreteStatusWord1.bitFromValueOr(13, false) || busInputs.sec2.discreteStatusWord1.bitFromValueOr(13, false);
+  bool rightElev1Fault = (!discreteInputs.elac1Valid && !discreteInputs.sec1Valid) || busInputs.elac1.discreteStatusWord1.bitFromValueOr(14, false) || busInputs.sec1.discreteStatusWord1.bitFromValueOr(14, false);
+  bool rightElev2Fault = (!discreteInputs.elac2Valid && !discreteInputs.sec2Valid) || busInputs.elac2.discreteStatusWord1.bitFromValueOr(14, false) || busInputs.sec2.discreteStatusWord1.bitFromValueOr(14, false);
+
   output.efcsStatus2.setSsm(Arinc429SignStatus::NormalOperation);
-  output.efcsStatus2.setBit(11, busInputs.elac1.discreteStatusWord1.bitFromValueOr(11, false));
-  output.efcsStatus2.setBit(12, busInputs.elac2.discreteStatusWord1.bitFromValueOr(11, false));
-  output.efcsStatus2.setBit(13, busInputs.elac1.discreteStatusWord1.bitFromValueOr(12, false));
-  output.efcsStatus2.setBit(14, busInputs.elac2.discreteStatusWord1.bitFromValueOr(12, false));
-  output.efcsStatus2.setBit(
-      15, busInputs.elac1.discreteStatusWord1.bitFromValueOr(13, false) || busInputs.sec1.discreteStatusWord1.bitFromValueOr(13, false));
-  output.efcsStatus2.setBit(
-      16, busInputs.elac2.discreteStatusWord1.bitFromValueOr(13, false) || busInputs.sec2.discreteStatusWord1.bitFromValueOr(13, false));
-  output.efcsStatus2.setBit(
-      17, busInputs.elac1.discreteStatusWord1.bitFromValueOr(14, false) || busInputs.sec1.discreteStatusWord1.bitFromValueOr(14, false));
-  output.efcsStatus2.setBit(
-      18, busInputs.elac2.discreteStatusWord1.bitFromValueOr(14, false) || busInputs.sec2.discreteStatusWord1.bitFromValueOr(14, false));
+  output.efcsStatus2.setBit(11, busInputs.elac1.discreteStatusWord1.bitFromValueOr(11, true));
+  output.efcsStatus2.setBit(12, busInputs.elac2.discreteStatusWord1.bitFromValueOr(11, true));
+  output.efcsStatus2.setBit(13, busInputs.elac1.discreteStatusWord1.bitFromValueOr(12, true));
+  output.efcsStatus2.setBit(14, busInputs.elac2.discreteStatusWord1.bitFromValueOr(12, true));
+  output.efcsStatus2.setBit(15, leftElev1Fault);
+  output.efcsStatus2.setBit(16, leftElev2Fault);
+  output.efcsStatus2.setBit(17, rightElev1Fault);
+  output.efcsStatus2.setBit(18, rightElev2Fault);
   output.efcsStatus2.setBit(19, false);
   output.efcsStatus2.setBit(20, false);
   output.efcsStatus2.setBit(21, false);
