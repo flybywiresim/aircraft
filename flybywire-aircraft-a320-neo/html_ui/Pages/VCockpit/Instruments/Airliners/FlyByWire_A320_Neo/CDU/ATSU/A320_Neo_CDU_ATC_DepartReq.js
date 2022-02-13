@@ -4,6 +4,7 @@ class CDUAtcDepartReq {
             firstCall: true,
             callsign: "",
             station: "",
+            stationManual: false,
             from: "",
             to: "",
             atis: "",
@@ -116,7 +117,10 @@ class CDUAtcDepartReq {
 
         let station = "____[color]amber";
         if (store.station !== "") {
-            station = `${store.station}[color]cyan`;
+            station = `{cyan}${store.station}{end}`;
+            if (!store.stationManual) {
+                station = `{small}${station}{end}`;
+            }
         }
 
         // check if all required information are available to prepare the PDC message
@@ -191,22 +195,21 @@ class CDUAtcDepartReq {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onRightInput[1] = async (value) => {
-            if (mcdu.atsuManager.atc.currentStation() === "") {
-                if (value === FMCMainDisplay.clrValue) {
-                    store.station = "";
-                } else if (/^[A-Z0-9]{4}$/.test(value)) {
-                    mcdu.atsuManager.isRemoteStationAvailable(value).then((code) => {
-                        if (code !== Atsu.AtsuStatusCodes.Ok) {
-                            mcdu.addNewAtsuMessage(code);
-                        } else {
-                            store.station = value;
-                        }
+            if (value === FMCMainDisplay.clrValue) {
+                store.station = "";
+            } else if (/^[A-Z0-9]{4}$/.test(value)) {
+                mcdu.atsuManager.isRemoteStationAvailable(value).then((code) => {
+                    if (code !== Atsu.AtsuStatusCodes.Ok) {
+                        mcdu.addNewAtsuMessage(code);
+                    } else {
+                        store.station = value;
+                        store.stationManual = true;
+                    }
 
-                        if (mcdu.page.Current === mcdu.page.ATCDepartReq) {
-                            CDUAtcDepartReq.ShowPage1(mcdu, store);
-                        }
-                    });
-                }
+                    if (mcdu.page.Current === mcdu.page.ATCDepartReq) {
+                        CDUAtcDepartReq.ShowPage1(mcdu, store);
+                    }
+                });
             }
         };
 
