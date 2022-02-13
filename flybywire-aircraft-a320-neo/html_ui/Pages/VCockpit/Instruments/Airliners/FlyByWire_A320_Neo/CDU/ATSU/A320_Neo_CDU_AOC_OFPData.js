@@ -115,7 +115,7 @@ class CDUAocOfpData {
             if (simbriefFreight == 0) {
                 loadableCargoWeight = bagWeight;
             } else if ((parseInt(simbriefFreight) + bagWeight) > maxLoadInCargoHold) {
-                loadableCargoWeight = maxLoadInCargoHold - bagWeight;
+                loadableCargoWeight = maxLoadInCargoHold;
             } else {
                 loadableCargoWeight = parseInt(simbriefFreight) + bagWeight;
             }
