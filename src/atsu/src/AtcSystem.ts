@@ -548,7 +548,6 @@ export class AtcSystem {
     }
 
     private automaticAtisUpdater(icao: string, type: AtisType) {
-        console.log(`Update ATIS ${icao}`);
         if (this.atisMessages.has(icao)) {
             this.updateAtis(icao, type, false).then((code) => {
                 if (code === AtsuStatusCodes.Ok) {
