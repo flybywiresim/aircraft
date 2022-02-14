@@ -7,6 +7,7 @@ import { Battery, BatteryCharging } from 'react-bootstrap-icons';
 import { ToastContainer, toast } from 'react-toastify';
 import { usePersistentNumberProperty, usePersistentProperty } from '@instruments/common/persistence';
 import { distanceTo } from 'msfs-geo';
+import { ErrorBoundary } from 'react-error-boundary';
 import { AlertModal, ModalContainer, useModals } from './UtilComponents/Modals/Modals';
 import NavigraphClient, { NavigraphContext } from './ChartsApi/Navigraph';
 import 'react-toastify/dist/ReactToastify.css';
@@ -30,6 +31,7 @@ import { fetchSimbriefDataAction, isSimbriefDataLoaded } from './Store/features/
 
 import { FbwLogo } from './UtilComponents/FbwLogo';
 import { setFlightPlanProgress } from './Store/features/flightProgress';
+import { ErrorComponent } from './index';
 
 const BATTERY_DURATION_CHARGE_MIN = 180;
 const BATTERY_DURATION_DISCHARGE_MIN = 240;
@@ -230,40 +232,42 @@ const Efb = () => {
         return <EmptyScreen isCharging={dc2BusIsPowered === 1} />;
     case PowerStates.LOADED:
         return (
-            <NavigraphContext.Provider value={navigraph}>
-                <ModalContainer />
-                <PowerContext.Provider value={{ powerState, setPowerState }}>
-                    <div className="bg-theme-body">
-                        <ToastContainer
-                            position="top-center"
-                            draggableDirection="y"
-                            limit={2}
-                        />
-                        <StatusBar
-                            batteryLevel={batteryLevel.level}
-                            isCharging={dc2BusIsPowered === 1}
-                        />
-                        <div className="flex flex-row">
-                            <ToolBar />
-                            <div className="pt-14 pr-6 w-screen h-screen">
-                                <Switch>
-                                    <Route exact path="/">
-                                        <Redirect to="/dashboard" />
-                                    </Route>
-                                    <Route path="/dashboard" component={Dashboard} />
-                                    <Route path="/dispatch" component={Dispatch} />
-                                    <Route path="/ground" component={Ground} />
-                                    <Route path="/performance" component={Performance} />
-                                    <Route path="/navigation" component={Navigation} />
-                                    <Route path="/atc" component={ATC} />
-                                    <Route path="/failures" component={Failures} />
-                                    <Route path="/settings" component={Settings} />
-                                </Switch>
+            <ErrorBoundary FallbackComponent={ErrorComponent}>
+                <NavigraphContext.Provider value={navigraph}>
+                    <ModalContainer />
+                    <PowerContext.Provider value={{ powerState, setPowerState }}>
+                        <div className="bg-theme-body">
+                            <ToastContainer
+                                position="top-center"
+                                draggableDirection="y"
+                                limit={2}
+                            />
+                            <StatusBar
+                                batteryLevel={batteryLevel.level}
+                                isCharging={dc2BusIsPowered === 1}
+                            />
+                            <div className="flex flex-row">
+                                <ToolBar />
+                                <div className="pt-14 pr-6 w-screen h-screen">
+                                    <Switch>
+                                        <Route exact path="/">
+                                            <Redirect to="/dashboard" />
+                                        </Route>
+                                        <Route path="/dashboard" component={Dashboard} />
+                                        <Route path="/dispatch" component={Dispatch} />
+                                        <Route path="/ground" component={Ground} />
+                                        <Route path="/performance" component={Performance} />
+                                        <Route path="/navigation" component={Navigation} />
+                                        <Route path="/atc" component={ATC} />
+                                        <Route path="/failures" component={Failures} />
+                                        <Route path="/settings" component={Settings} />
+                                    </Switch>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </PowerContext.Provider>
-            </NavigraphContext.Provider>
+                    </PowerContext.Provider>
+                </NavigraphContext.Provider>
+            </ErrorBoundary>
         );
     default:
         throw new Error('Invalid content state provided');
