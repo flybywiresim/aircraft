@@ -39,7 +39,7 @@ export const ColoredMetar = ({ metar }: { metar: MetarParserType }) => {
         case ColorCode.TrendMarker:
             return (
                 <>
-                    <span className="font-bold text-gray-500 underline">
+                    <span className="font-bold text-gray-500">
                         {metarPart}
                     </span>
                     {' '}
