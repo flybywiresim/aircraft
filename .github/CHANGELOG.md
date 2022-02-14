@@ -147,6 +147,7 @@
 1. [ATHR] Fix ATHR Speed Undershoot - @IbrahimK42 (IbrahimK42)
 1. [FLIGHTMODEL] Improved pitch stability in turbulence - @aguther (Andreas Guther)
 1. [AP] Fix DES not being armed in ALT CST and altitude constraint changing to FCU altitude - @aguther (Andreas Guther)
+1. [FBW] Fix Rudder Trim Signal - @IbrahimK42 (IbrahimK42)
 
 ## 0.7.0
 
