@@ -31,7 +31,7 @@ import { fetchSimbriefDataAction, isSimbriefDataLoaded } from './Store/features/
 
 import { FbwLogo } from './UtilComponents/FbwLogo';
 import { setFlightPlanProgress } from './Store/features/flightProgress';
-import { ErrorComponent } from './index';
+import { ErrorBoundaryMessage } from './index';
 
 const BATTERY_DURATION_CHARGE_MIN = 180;
 const BATTERY_DURATION_DISCHARGE_MIN = 240;
@@ -232,7 +232,7 @@ const Efb = () => {
         return <EmptyScreen isCharging={dc2BusIsPowered === 1} />;
     case PowerStates.LOADED:
         return (
-            <ErrorBoundary FallbackComponent={ErrorComponent}>
+            <ErrorBoundary FallbackComponent={ErrorBoundaryMessage}>
                 <NavigraphContext.Provider value={navigraph}>
                     <ModalContainer />
                     <PowerContext.Provider value={{ powerState, setPowerState }}>
