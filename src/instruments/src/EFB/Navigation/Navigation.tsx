@@ -783,6 +783,7 @@ const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartSelector
                                                             icao,
                                                             title: (chart as NavigraphChart).procedureIdentifier,
                                                             tabIndex,
+                                                            timeAccessed: 0,
                                                         }));
                                                     } else {
                                                         dispatch(addPinnedChart({
@@ -791,6 +792,7 @@ const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartSelector
                                                             icao,
                                                             title: (chart as NavigraphChart).procedureIdentifier,
                                                             tabIndex,
+                                                            timeAccessed: 0,
                                                         }));
                                                     }
                                                 }}
@@ -839,6 +841,7 @@ const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartSelector
                                                     icao,
                                                     title: (chart as NavigraphChart).procedureIdentifier,
                                                     tabIndex,
+                                                    timeAccessed: 0,
                                                 }));
                                             } else {
                                                 dispatch(addPinnedChart({
@@ -847,6 +850,7 @@ const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartSelector
                                                     icao,
                                                     title: (chart as NavigraphChart).procedureIdentifier,
                                                     tabIndex,
+                                                    timeAccessed: 0,
                                                 }));
                                             }
                                         }}

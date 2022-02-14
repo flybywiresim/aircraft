@@ -3,7 +3,16 @@ import { IconArrowRight } from '@tabler/icons';
 import { A320Failure } from '@flybywiresim/failures';
 import { Link } from 'react-router-dom';
 import { usePersistentProperty } from '@instruments/common/persistence';
-import { setChartId, setChartLinks, setChartName, setIcao, setTabIndex, setChartRotation, setChartDimensions } from '../../Store/features/navigationPage';
+import {
+    setChartId,
+    setChartLinks,
+    setChartName,
+    setIcao,
+    setTabIndex,
+    setChartRotation,
+    setChartDimensions,
+    editPinnedChart,
+} from '../../Store/features/navigationPage';
 import { useNavigraph } from '../../ChartsApi/Navigraph';
 import { useFailuresOrchestrator } from '../../failures-orchestrator-provider';
 import { useAppDispatch, useAppSelector } from '../../Store/store';
@@ -34,7 +43,14 @@ export const RemindersWidget = () => {
                     {navigraph.hasToken && (
                         <RemindersSection title="Pinned Charts" pageLinkPath="/navigation">
                             <div className="grid grid-cols-2">
-                                {pinnedCharts.map((chart, index) => (
+                                {/* A spread here is necessary to make Redux not kill itself */}
+                                {[...pinnedCharts].sort((a, b) => b.timeAccessed - a.timeAccessed).map(({
+                                    chartId,
+                                    chartName,
+                                    icao,
+                                    tabIndex,
+                                    title,
+                                }, index) => (
                                     <Link
                                         to="/navigation"
                                         className={`flex flex-col flex-wrap p-2 mt-4 bg-theme-accent rounded-md ${index && index % 2 !== 0 && 'ml-4'}`}
@@ -42,15 +58,19 @@ export const RemindersWidget = () => {
                                             setChartSource('NAVIGRAPH');
                                             dispatch(setChartDimensions({ width: undefined, height: undefined }));
                                             dispatch(setChartLinks({ light: '', dark: '' }));
-                                            dispatch(setChartName(chart.chartName));
-                                            dispatch(setChartId(chart.chartId));
-                                            dispatch(setIcao(chart.icao));
-                                            dispatch(setTabIndex(chart.tabIndex));
+                                            dispatch(setChartName(chartName));
+                                            dispatch(setChartId(chartId));
+                                            dispatch(setIcao(icao));
+                                            dispatch(setTabIndex(tabIndex));
                                             dispatch(setChartRotation(0));
+                                            dispatch(editPinnedChart({
+                                                chartId,
+                                                timeAccessed: new Date().getTime(),
+                                            }));
                                         }}
                                     >
-                                        <h2 className="font-bold">{chart.icao}</h2>
-                                        <span className="mt-2 font-inter">{chart.title}</span>
+                                        <h2 className="font-bold">{icao}</h2>
+                                        <span className="mt-2 font-inter">{title}</span>
                                         <IconArrowRight className="ml-auto text-theme-highlight" />
                                     </Link>
                                 ))}
