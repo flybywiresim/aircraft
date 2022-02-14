@@ -73,7 +73,7 @@ export const StatusBar = ({ batteryLevel, isCharging }: StatusBarProps) => {
     }, []);
 
     return (
-        <div className="flex overflow-hidden fixed justify-between items-center px-6 w-full h-10 text-lg font-medium leading-none text-theme-text bg-theme-statusbar">
+        <div className="flex overflow-hidden fixed z-40 justify-between items-center px-6 w-full h-10 text-lg font-medium leading-none text-theme-text bg-theme-statusbar">
             <p>{`${getDayName(dayOfWeek)} ${getMonthName(monthOfYear)} ${dayOfMonth}`}</p>
             <div className="flex absolute inset-x-0 flex-row justify-center items-center mx-auto space-x-4 w-min">
                 {(timeDisplayed === 'utc' || timeDisplayed === 'both') && (

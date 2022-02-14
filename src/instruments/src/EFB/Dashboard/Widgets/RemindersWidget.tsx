@@ -27,34 +27,34 @@ export const RemindersWidget = () => {
                     <RemindersSection title="Weather" noLink>
                         <div className="space-y-6">
                             <WeatherWidget name="origin" simbriefIcao={departingAirport} userIcao={userDepartureIcao} />
-                            <div className="w-full h-1 bg-theme-text" />
+                            <div className="w-full h-1 bg-theme-accent rounded-full" />
                             <WeatherWidget name="destination" simbriefIcao={arrivingAirport} userIcao={userDestinationIcao} />
                         </div>
                     </RemindersSection>
                     {navigraph.hasToken && (
                         <RemindersSection title="Pinned Charts" pageLinkPath="/navigation">
-                            {pinnedCharts.map((chart) => (
-                                <Link
-                                    to="/navigation"
-                                    className="flex flex-col flex-wrap p-2 mt-4 mr-4 bg-theme-highlight rounded-md border-2 border-theme-highlight"
-                                    onClick={() => {
-                                        setChartSource('NAVIGRAPH');
-                                        dispatch(setChartDimensions({ width: undefined, height: undefined }));
-                                        dispatch(setChartLinks({ light: '', dark: '' }));
-                                        dispatch(setChartName(chart.chartName));
-                                        dispatch(setChartId(chart.chartId));
-                                        dispatch(setIcao(chart.icao));
-                                        dispatch(setTabIndex(chart.tabIndex));
-                                        dispatch(setChartRotation(0));
-                                    }}
-                                >
-                                    <h3 className="font-bold text-black">{chart.icao}</h3>
-                                    <span className="mt-2 text-black font-inter">{chart.title}</span>
-                                    <span className="ml-auto text-black">
-                                        <IconArrowRight />
-                                    </span>
-                                </Link>
-                            ))}
+                            <div className="grid grid-cols-2">
+                                {pinnedCharts.map((chart, index) => (
+                                    <Link
+                                        to="/navigation"
+                                        className={`flex flex-col flex-wrap p-2 mt-4 bg-theme-accent rounded-md ${index && index % 2 !== 0 && 'ml-4'}`}
+                                        onClick={() => {
+                                            setChartSource('NAVIGRAPH');
+                                            dispatch(setChartDimensions({ width: undefined, height: undefined }));
+                                            dispatch(setChartLinks({ light: '', dark: '' }));
+                                            dispatch(setChartName(chart.chartName));
+                                            dispatch(setChartId(chart.chartId));
+                                            dispatch(setIcao(chart.icao));
+                                            dispatch(setTabIndex(chart.tabIndex));
+                                            dispatch(setChartRotation(0));
+                                        }}
+                                    >
+                                        <h2 className="font-bold">{chart.icao}</h2>
+                                        <span className="mt-2 font-inter">{chart.title}</span>
+                                        <IconArrowRight className="ml-auto text-theme-highlight" />
+                                    </Link>
+                                ))}
+                            </div>
                             {!pinnedCharts.length && (
                                 <h1 className="m-auto my-4 font-bold opacity-60">No Pinned Charts</h1>
                             )}
