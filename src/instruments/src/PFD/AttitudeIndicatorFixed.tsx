@@ -1,3 +1,4 @@
+import { useArinc429Var } from '@instruments/common/arinc429.js';
 import { Arinc429Word } from '@shared/arinc429';
 import { LateralMode, VerticalMode } from '@shared/autopilot.js';
 import React from 'react';
@@ -54,9 +55,25 @@ interface AttitudeIndicatorFixedCenterProps {
     isOnGround: boolean;
     FDActive: boolean;
     isAttExcessive: boolean;
+    captSidestickPosX: Arinc429Word;
+    captSidestickPosY: Arinc429Word;
+    foSidestickPosX: Arinc429Word;
+    foSidestickPosY: Arinc429Word;
 }
 
-export const AttitudeIndicatorFixedCenter = ({ pitch, roll, fpa, da, isOnGround, FDActive, isAttExcessive }: AttitudeIndicatorFixedCenterProps) => {
+export const AttitudeIndicatorFixedCenter = ({
+    pitch,
+    roll,
+    fpa,
+    da,
+    isOnGround,
+    FDActive,
+    isAttExcessive,
+    captSidestickPosX,
+    captSidestickPosY,
+    foSidestickPosX,
+    foSidestickPosY,
+}: AttitudeIndicatorFixedCenterProps) => {
     if (!pitch.isNormalOperation() || !roll.isNormalOperation()) {
         return (
             <text id="AttFailText" className="Blink9Seconds FontLargest Red EndAlign" x="75.893127" y="83.136955">ATT</text>
@@ -65,7 +82,13 @@ export const AttitudeIndicatorFixedCenter = ({ pitch, roll, fpa, da, isOnGround,
 
     return (
         <g id="AttitudeSymbolsGroup">
-            <SidestickIndicator isOnGround={isOnGround} />
+            <SidestickIndicator
+                isOnGround={isOnGround}
+                captSidestickPosX={captSidestickPosX}
+                captSidestickPosY={captSidestickPosY}
+                foSidestickPosX={foSidestickPosX}
+                foSidestickPosY={foSidestickPosY}
+            />
             <path className="BlackFill" d="m67.647 82.083v-2.5198h2.5184v2.5198z" />
             {!isAttExcessive && (
                 <>
@@ -258,21 +281,41 @@ const FlightPathDirector = ({ pitch, roll, fpa, da, FDActive }: FPDProps) => {
     );
 };
 
-const SidestickIndicator = ({ isOnGround }) => {
+interface SidestickIndicatorProps {
+    isOnGround: boolean;
+    captSidestickPosX: Arinc429Word;
+    captSidestickPosY: Arinc429Word;
+    foSidestickPosX: Arinc429Word;
+    foSidestickPosY: Arinc429Word;
+}
+const SidestickIndicator = ({ isOnGround, captSidestickPosX, captSidestickPosY, foSidestickPosX, foSidestickPosY }: SidestickIndicatorProps) => {
     const oneEngineRunning = getSimVar('GENERAL ENG COMBUSTION:1', 'bool') || getSimVar('GENERAL ENG COMBUSTION:2', 'bool');
-    if (!isOnGround || !oneEngineRunning) {
+
+    const showIndicator = isOnGround && oneEngineRunning
+                        && !captSidestickPosX.isFailureWarning()
+                        && !captSidestickPosY.isFailureWarning()
+                        && !foSidestickPosX.isFailureWarning()
+                        && !foSidestickPosY.isFailureWarning();
+
+    const foStickDisabledFcdc1 = useArinc429Var('L:A32NX_FCDC_1_DISCRETE_WORD_3').getBitValueOr(15, false);
+    const foStickDisabledFcdc2 = useArinc429Var('L:A32NX_FCDC_2_DISCRETE_WORD_3').getBitValueOr(15, false);
+    const captStickDisabledFcdc1 = useArinc429Var('L:A32NX_FCDC_1_DISCRETE_WORD_3').getBitValueOr(14, false);
+    const captStickDisabledFcdc2 = useArinc429Var('L:A32NX_FCDC_2_DISCRETE_WORD_3').getBitValueOr(14, false);
+    const foStickDisabled = foStickDisabledFcdc1 || foStickDisabledFcdc2;
+    const captStickDisabled = captStickDisabledFcdc1 || captStickDisabledFcdc2;
+
+    const totalSidestickPosX = (foStickDisabled ? 0 : foSidestickPosX.value) + (captStickDisabled ? 0 : captSidestickPosX.value);
+    const totalSidestickPosY = (foStickDisabled ? 0 : foSidestickPosY.value) + (captStickDisabled ? 0 : captSidestickPosY.value);
+
+    if (!showIndicator) {
         return null;
     }
-
-    const SidestickPosX = getSimVar('L:A32NX_SIDESTICK_POSITION_X', 'number') * 29.56;
-    const SidestickPosY = -getSimVar('L:A32NX_SIDESTICK_POSITION_Y', 'number') * 23.02;
-
     return (
         <g id="GroundCursorGroup" className="NormalStroke White">
             <path id="GroundCursorBorders" d="m92.327 103.75h6.0441v-6.0476m-58.93 0v6.0476h6.0441m46.842-45.861h6.0441v6.0476m-58.93 0v-6.0476h6.0441" />
             <path
                 id="GroundCursorCrosshair"
-                transform={`translate(${SidestickPosX} ${SidestickPosY})`}
+                transform={`translate(${totalSidestickPosX} ${totalSidestickPosY})`}
                 d="m73.994 81.579h-4.3316v4.3341m-5.8426-4.3341h4.3316v4.3341m5.8426-5.846h-4.3316v-4.3341m-5.8426 4.3341h4.3316v-4.3341"
             />
         </g>

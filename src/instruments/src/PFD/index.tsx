@@ -5,6 +5,7 @@ import { useInteractionEvent, useUpdate } from '@instruments/common/hooks';
 import { getSupplier, isCaptainSide } from '@instruments/common/utils';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { ArmedLateralMode, ArmedVerticalMode, isArmed, VerticalMode } from '@shared/autopilot';
+import { Arinc429Word } from '@shared/arinc429';
 import { Horizon } from './AttitudeIndicatorHorizon';
 import { AttitudeIndicatorFixedUpper, AttitudeIndicatorFixedCenter } from './AttitudeIndicatorFixed';
 import { LandingSystem } from './LandingSystemIndicator';
@@ -47,7 +48,12 @@ export const PFD: React.FC = () => {
 
     const fcdc1DiscreteWord1 = useArinc429Var('L:A32NX_FCDC_1_DISCRETE_WORD_1');
     const fcdc2DiscreteWord1 = useArinc429Var('L:A32NX_FCDC_2_DISCRETE_WORD_1');
-    const fcdcDiscreteWord1ToUse = !fcdc1DiscreteWord1.isFailureWarning() ? fcdc1DiscreteWord1 : fcdc2DiscreteWord1;
+    const fcdcToUse = getFcdcToUse(fcdc1DiscreteWord1, fcdc2DiscreteWord1, isCaptainSide(displayIndex));
+    const fcdcDiscreteWord1ToUse = fcdcToUse === 1 ? fcdc1DiscreteWord1 : fcdc2DiscreteWord1;
+    const fcdcCaptPitchCommand = useArinc429Var(`L:A32NX_FCDC_${fcdcToUse}_CAPT_PITCH_COMMAND`);
+    const fcdcCaptRollCommand = useArinc429Var(`L:A32NX_FCDC_${fcdcToUse}_CAPT_ROLL_COMMAND`);
+    const fcdcFoPitchCommand = useArinc429Var(`L:A32NX_FCDC_${fcdcToUse}_FO_PITCH_COMMAND`);
+    const fcdcFoRollCommand = useArinc429Var(`L:A32NX_FCDC_${fcdcToUse}_FO_ROLL_COMMAND`);
 
     const inertialReferenceSource = getSupplier(displayIndex, getSimVar('L:A32NX_ATT_HDG_SWITCHING_KNOB', 'Enum'));
     const airDataReferenceSource = getSupplier(displayIndex, getSimVar('L:A32NX_AIR_DATA_SWITCHING_KNOB', 'Enum'));
@@ -218,6 +224,10 @@ export const PFD: React.FC = () => {
                     isOnGround={isOnGround}
                     FDActive={FDActive}
                     isAttExcessive={isAttExcessive}
+                    captSidestickPosX={fcdcCaptRollCommand}
+                    captSidestickPosY={fcdcCaptPitchCommand}
+                    foSidestickPosX={fcdcFoRollCommand}
+                    foSidestickPosY={fcdcFoPitchCommand}
                 />
                 <path
                     id="Mask1"
@@ -263,6 +273,21 @@ export const PFD: React.FC = () => {
             </svg>
         </DisplayUnit>
     );
+};
+
+const getFcdcToUse = (fcdc1DiscreteWord1: Arinc429Word, fcdc2DiscreteWord1: Arinc429Word, isCaptainSide: boolean) => {
+    if (isCaptainSide) {
+        if (
+            (fcdc1DiscreteWord1.isFailureWarning() && !fcdc2DiscreteWord1.isFailureWarning())
+            || (!fcdc1DiscreteWord1.getBitValueOr(24, false) && fcdc2DiscreteWord1.getBitValueOr(24, false))) {
+            return 2;
+        }
+        return 1;
+    }
+    if (!((!fcdc1DiscreteWord1.isFailureWarning() && fcdc2DiscreteWord1.isFailureWarning()) || (fcdc1DiscreteWord1.getBitValueOr(24, false) && !fcdc2DiscreteWord1.getBitValueOr(24, false)))) {
+        return 2;
+    }
+    return 1;
 };
 
 const smoothSpeeds = (deltaTime: number, vlsOrigin: number, vlsDestination: number) => {
