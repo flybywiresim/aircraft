@@ -16,8 +16,8 @@ interface InformationEntryProps {
 
 const InformationEntry = ({ title, info }: InformationEntryProps) => (
     <div className="flex flex-col items-center w-full">
-        <h3 className="font-bold textl-xl">{title}</h3>
-        <p className="text-2xl font-light">{info}</p>
+        <h3 className="font-light">{title}</h3>
+        <h2 className="font-bold">{info}</h2>
     </div>
 );
 
@@ -174,13 +174,13 @@ export const FlightWidget = () => {
                                 <div className="relative w-full bg-theme-highlight" style={{ width: `${flightPlanProgress}%` }}>
                                     {!!flightPlanProgress && (
                                         <IconPlane
-                                            className="absolute right-0 transform translate-x-1/2 -translate-y-1/2 fill-current text-theme-highlight"
+                                            className="absolute right-0 text-theme-highlight transform translate-x-1/2 -translate-y-1/2 fill-current"
                                             size={50}
                                             strokeLinejoin="miter"
                                         />
                                     )}
                                 </div>
-                                <div className="w-full border-dashed bg-theme-text" style={{ width: `${100 - flightPlanProgress}%` }} />
+                                <div className="w-full bg-theme-text border-dashed" style={{ width: `${100 - flightPlanProgress}%` }} />
                             </div>
                             <div>
                                 <div className={`w-1 ml-auto h-4 ${flightPlanProgress > 99 ? 'bg-theme-highlight' : 'bg-theme-text'}`} />
@@ -193,17 +193,17 @@ export const FlightWidget = () => {
                     <div>
                         <div className="flex flex-row mb-4">
                             <InformationEntry title="ALTN" info={altIcao} />
-                            <div className="my-auto w-2 h-8 bg-theme-text" />
+                            <div className="my-auto w-2 h-8 bg-theme-accent" />
                             <InformationEntry title="CO RTE" info={departingIata + arrivingIata} />
-                            <div className="my-auto w-2 h-8 bg-theme-text" />
+                            <div className="my-auto w-2 h-8 bg-theme-accent" />
                             <InformationEntry title="ZFW" info={estimatedZfw} />
                         </div>
-                        <div className="my-auto w-full h-0.5 bg-theme-text" />
+                        <div className="my-auto w-full h-0.5 bg-theme-accent" />
                         <div className="flex flex-row mt-4">
                             <InformationEntry title="CI" info={avgWind} />
-                            <div className="my-auto w-2 h-8 bg-theme-text" />
+                            <div className="my-auto w-2 h-8 bg-theme-accent" />
                             <InformationEntry title="AVG WIND" info={costInd} />
-                            <div className="my-auto w-2 h-8 bg-theme-text" />
+                            <div className="my-auto w-2 h-8 bg-theme-accent" />
                             <InformationEntry title="CRZ" info={crzAlt} />
                         </div>
                     </div>
@@ -241,7 +241,7 @@ export const FlightWidget = () => {
                             toast.error(e.message);
                         });
                     }}
-                    className="flex justify-center items-center p-2 space-x-4 w-full rounded-lg border-2 shadow-lg focus:outline-none text-navy bg-theme-highlight border-theme-secondary"
+                    className="flex justify-center items-center p-2 space-x-4 w-full text-navy bg-theme-highlight rounded-lg border-2 border-theme-secondary shadow-lg focus:outline-none"
                 >
                     <CloudArrowDown size={26} />
                     <p className="text-navy">Import OFP from simBrief</p>
