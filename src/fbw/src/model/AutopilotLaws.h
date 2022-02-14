@@ -176,6 +176,7 @@ class AutopilotLawsModelClass
     real_T ScheduledGain_BreakpointsForDimension1_o[7];
     real_T ScheduledGain2_BreakpointsForDimension1[7];
     real_T ScheduledGain_BreakpointsForDimension1_e[5];
+    real_T ScheduledGain2_BreakpointsForDimension1_h[5];
     real_T ScheduledGain_BreakpointsForDimension1_ec[7];
     real_T ScheduledGain1_BreakpointsForDimension1[7];
     real_T LagFilter_C1;
@@ -307,6 +308,7 @@ class AutopilotLawsModelClass
     real_T ScheduledGain_Table_e[7];
     real_T ScheduledGain2_Table[7];
     real_T ScheduledGain_Table_p[5];
+    real_T ScheduledGain2_Table_f[5];
     real_T ScheduledGain_Table_l[7];
     real_T ScheduledGain1_Table[7];
     real_T DiscreteTimeIntegratorVariableTs_UpperLimit;
@@ -795,7 +797,6 @@ class AutopilotLawsModelClass
     real_T Constant_Value_fov;
     real_T Gain2_Gain_m;
     real_T Gain4_Gain_g;
-    real_T Gain3_Gain_n;
     real_T Gain3_Gain_c;
     real_T Saturation_UpperSat_e0;
     real_T Saturation_LowerSat_ph;
