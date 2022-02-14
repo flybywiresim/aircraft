@@ -71,7 +71,7 @@ export const RemindersWidget = () => {
                                     >
                                         <h2 className="font-bold">{icao}</h2>
                                         <span className="mt-2 font-inter">{title}</span>
-                                        <IconArrowRight className="ml-auto text-theme-highlight" />
+                                        <IconArrowRight className="mt-auto ml-auto text-theme-highlight" />
                                     </Link>
                                 ))}
                             </div>
