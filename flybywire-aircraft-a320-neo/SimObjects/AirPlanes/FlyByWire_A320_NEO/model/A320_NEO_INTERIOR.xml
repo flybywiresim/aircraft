@@ -2295,14 +2295,14 @@
                         <ANIM_TEMPLATE>FBW_Push_Toggle</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_OVHD_AIRCOND_PACK1</NODE_ID>
                         <PART_ID>AIRCOND_PACK1</PART_ID>
-                        <TOGGLE_SIMVAR>L:A32NX_AIRCOND_PACK1_TOGGLE</TOGGLE_SIMVAR>
+                        <TOGGLE_SIMVAR>L:A32NX_OVHD_COND_PACK_1_PB_IS_ON</TOGGLE_SIMVAR>
                         <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                         <SEQ1_CODE>(L:A32NX_AIRCOND_PACK1_FAULT, Bool)</SEQ1_CODE>
-                        <SEQ2_CODE>(L:A32NX_AIRCOND_PACK1_TOGGLE, Bool) !</SEQ2_CODE>
+                        <SEQ2_CODE>(L:A32NX_OVHD_COND_PACK_1_PB_IS_ON, Bool) !</SEQ2_CODE>
                         <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                         <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
                         <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
-                        <TOOLTIPID>%((L:A32NX_AIRCOND_PACK1_TOGGLE, Bool))%{if}Turn OFF pack 1%{else}Turn ON pack 1%{end}</TOOLTIPID>
+                        <TOOLTIPID>%((L:A32NX_OVHD_COND_PACK_1_PB_IS_ON, Bool))%{if}Turn OFF pack 1%{else}Turn ON pack 1%{end}</TOOLTIPID>
                     </UseTemplate>
 
                     <!-- AIR COND PACK 2 -->
@@ -2311,14 +2311,14 @@
                         <ANIM_TEMPLATE>FBW_Push_Toggle</ANIM_TEMPLATE>
                         <NODE_ID>PUSH_OVHD_AIRCOND_PACK2</NODE_ID>
                         <PART_ID>AIRCOND_PACK2</PART_ID>
-                        <TOGGLE_SIMVAR>L:A32NX_AIRCOND_PACK2_TOGGLE</TOGGLE_SIMVAR>
+                        <TOGGLE_SIMVAR>L:A32NX_OVHD_COND_PACK_2_PB_IS_ON</TOGGLE_SIMVAR>
                         <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_STAT_INV_BUS_IS_POWERED, Bool) or</SEQ_POWERED>
                         <SEQ1_CODE>(L:A32NX_AIRCOND_PACK2_FAULT, Bool)</SEQ1_CODE>
-                        <SEQ2_CODE>(L:A32NX_AIRCOND_PACK2_TOGGLE, Bool) !</SEQ2_CODE>
+                        <SEQ2_CODE>(L:A32NX_OVHD_COND_PACK_2_PB_IS_ON, Bool) !</SEQ2_CODE>
                         <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                         <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
                         <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
-                        <TOOLTIPID>%((L:A32NX_AIRCOND_PACK2_TOGGLE, Bool))%{if}Turn OFF pack 2%{else}Turn ON pack 2%{end}</TOOLTIPID>
+                        <TOOLTIPID>%((L:A32NX_OVHD_COND_PACK_2_PB_IS_ON, Bool))%{if}Turn OFF pack 2%{else}Turn ON pack 2%{end}</TOOLTIPID>
                     </UseTemplate>
 
                     <!-- AIR COND HOT AIR -->
@@ -2356,21 +2356,21 @@
 
                     <!-- AIR COND COCKPIT -->
                     <UseTemplate Name="FBW_AIRLINER_Aircond_Knob_Template">
-                        <ID>1</ID>
+                        <ID>CKPT</ID>
                         <ANIM_CODE>50</ANIM_CODE>
                         <ANIM_NAME>KNOB_OVHD_AIRCOND_COCKPIT</ANIM_NAME>
                         <NODE_ID>KNOB_OVHD_AIRCOND_COCKPIT</NODE_ID>
                     </UseTemplate>
                     <!-- AIR COND FWD CABIN -->
                     <UseTemplate Name="FBW_AIRLINER_Aircond_Knob_Template">
-                        <ID>2</ID>
+                        <ID>FWD</ID>
                         <ANIM_CODE>50</ANIM_CODE>
                         <ANIM_NAME>KNOB_OVHD_AIRCOND_FWDCABIN</ANIM_NAME>
                         <NODE_ID>KNOB_OVHD_AIRCOND_FWDCABIN</NODE_ID>
                     </UseTemplate>
                     <!-- AIR COND AFT CABIN -->
                     <UseTemplate Name="FBW_AIRLINER_Aircond_Knob_Template">
-                        <ID>3</ID>
+                        <ID>AFT</ID>
                         <ANIM_CODE>50</ANIM_CODE>
                         <ANIM_NAME>KNOB_OVHD_AIRCOND_AFTCABIN</ANIM_NAME>
                         <NODE_ID>KNOB_OVHD_AIRCOND_AFTCABIN</NODE_ID>
