@@ -111,7 +111,7 @@ const Loading = () => {
     return (
         <div className="flex flex-col justify-center items-center">
             <div
-                className="flex justify-center items-center rounded-md bg-theme-secondary"
+                className="flex justify-center items-center bg-theme-secondary rounded-md"
                 style={{ width: '400px', height: '400px' }}
             >
                 <CloudArrowDown className="animate-bounce" size={40} />
@@ -144,7 +144,7 @@ const AuthUi = () => {
     }, (navigraph.auth.interval * 1000));
 
     return (
-        <div className="flex overflow-x-hidden justify-center items-center p-6 w-full rounded-lg h-efb bg-theme-accent">
+        <div className="flex overflow-x-hidden justify-center items-center p-6 w-full h-efb bg-theme-accent rounded-lg">
             <div className="flex flex-col justify-center items-center">
                 <ShieldLock className="mr-2" size={40} />
                 <h2 className="flex justify-center items-center mt-2">
@@ -158,7 +158,7 @@ const AuthUi = () => {
                     into your browser and enter the code below
                 </p>
                 <h1
-                    className="flex items-center px-4 mt-4 h-16 text-4xl font-bold tracking-wider rounded-md border-2 border-theme-highlight bg-theme-secondary"
+                    className="flex items-center px-4 mt-4 h-16 text-4xl font-bold tracking-wider bg-theme-secondary rounded-md border-2 border-theme-highlight"
                     style={{ minWidth: '200px' }}
                 >
                     {navigraph.auth.code || 'LOADING'}
@@ -361,7 +361,7 @@ const ChartComponent = () => {
             >
                 {isFullScreen && (
                     <div
-                        className="flex absolute top-6 right-6 flex-row items-center p-4 rounded-md transition duration-100 bg-theme-secondary hover:bg-theme-highlight hover:text-theme-body"
+                        className="flex absolute top-6 right-6 flex-row items-center p-4 hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight rounded-md transition duration-100"
                         onClick={() => dispatch(setIsFullScreen(false))}
                     >
                         <FullscreenExit size={40} />
@@ -444,14 +444,14 @@ const ChartComponent = () => {
                     <button
                         type="button"
                         onClick={expandToHeight}
-                        className="p-2 transition duration-100 cursor-pointer hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight"
+                        className="p-2 hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight transition duration-100 cursor-pointer"
                     >
                         <ArrowsExpand size={40} />
                     </button>
                     <button
                         type="button"
                         onClick={expandToWidth}
-                        className="p-2 transition duration-100 cursor-pointer hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight"
+                        className="p-2 hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight transition duration-100 cursor-pointer"
                     >
                         <ArrowsExpand className="transform rotate-90" size={40} />
                     </button>
@@ -459,21 +459,21 @@ const ChartComponent = () => {
                     <button
                         type="button"
                         onClick={handleZoomIn}
-                        className="p-2 transition duration-100 cursor-pointer hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight"
+                        className="p-2 hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight transition duration-100 cursor-pointer"
                     >
                         <Plus size={40} />
                     </button>
                     <button
                         type="button"
                         onClick={handleZoomOut}
-                        className="p-2 transition duration-100 cursor-pointer hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight"
+                        className="p-2 hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight transition duration-100 cursor-pointer"
                     >
                         <Dash size={40} />
                     </button>
                 </div>
                 <div className="flex overflow-hidden flex-col rounded-md">
                     <div
-                        className="p-2 rounded-md transition duration-100 cursor-pointer hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight"
+                        className="p-2 hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight rounded-md transition duration-100 cursor-pointer"
                         onClick={() => {
                             if (chartRef.current && ref.current) {
                                 if (chartRef.current.clientWidth === ref.current.clientWidth) {
@@ -493,7 +493,7 @@ const ChartComponent = () => {
                             : <ArrowsFullscreen size={40} />}
                     </div>
                     <div
-                        className="p-2 mt-3 rounded-md transition duration-100 cursor-pointer hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight"
+                        className="p-2 mt-3 hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight rounded-md transition duration-100 cursor-pointer"
                         onClick={() => dispatch(setUsingDarkTheme(!usingDarkTheme))}
                     >
                         {!usingDarkTheme ? <MoonFill size={40} /> : <SunFill size={40} />}
@@ -507,7 +507,7 @@ const ChartComponent = () => {
             >
                 {chartLinks && (
                     <p
-                        className="absolute top-0 left-0 font-bold whitespace-nowrap transition duration-100 transform -translate-y-full text-theme-highlight"
+                        className="absolute top-0 left-0 font-bold text-theme-highlight whitespace-nowrap transition duration-100 transform -translate-y-full"
                     >
                         This chart is linked to
                         {' '}
@@ -644,7 +644,7 @@ const LocalFileChartSelector = ({ selectedTab, loading }: LocalFileChartSelector
         <div className="space-y-4">
             {selectedTab.charts.map((chart) => (
                 <div
-                    className="group flex overflow-hidden flex-row w-full rounded-md bg-theme-accent"
+                    className="group flex overflow-hidden flex-row w-full bg-theme-accent rounded-md"
                     onClick={() => handleChartClick(chart)}
                     key={chart.fileName}
                 >
@@ -655,7 +655,7 @@ const LocalFileChartSelector = ({ selectedTab, loading }: LocalFileChartSelector
                     <div className="flex flex-col m-2">
                         <span>{chart.fileName}</span>
                         <span
-                            className="px-2 mr-auto text-sm rounded-sm text-theme-text bg-theme-secondary"
+                            className="px-2 mr-auto text-sm text-theme-text bg-theme-secondary rounded-sm"
                         >
                             {chart.type}
                         </span>
@@ -759,7 +759,7 @@ const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartSelector
                     <>
                         {organizedCharts.map((item) => (
                             <div className="flex overflow-hidden flex-col w-full rounded-md divide-y-2 divide-gray-700" key={item.name}>
-                                <span className="p-1 text-center rounded-t-lg bg-theme-secondary">{item.name}</span>
+                                <span className="p-1 text-center bg-theme-secondary rounded-t-lg">{item.name}</span>
                                 {item.charts.map((chart) => (
                                     <div
                                         className="group flex flex-row bg-theme-accent"
@@ -772,7 +772,7 @@ const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartSelector
                                                 : 'bg-theme-secondary'}`}
                                             />
                                             <div
-                                                className="flex items-center px-2 h-full transition duration-100 hover:bg-theme-highlight hover:text-theme-body"
+                                                className="flex items-center px-2 h-full hover:text-theme-body hover:bg-theme-highlight transition duration-100"
                                                 onClick={(event) => {
                                                     event.stopPropagation();
 
@@ -804,7 +804,7 @@ const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartSelector
                                         </div>
                                         <div className="flex flex-col m-2">
                                             <span>{(chart as NavigraphChart).procedureIdentifier}</span>
-                                            <span className="px-2 mt-0.5 mr-auto text-sm rounded-md text-theme-text bg-theme-secondary">
+                                            <span className="px-2 mt-0.5 mr-auto text-sm text-theme-text bg-theme-secondary rounded-md">
                                                 {(chart as NavigraphChart).indexNumber}
                                             </span>
                                         </div>
@@ -818,7 +818,7 @@ const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartSelector
                     <>
                         {selectedTab.charts.map((chart) => (
                             <div
-                                className="group flex overflow-hidden flex-row w-full rounded-md bg-theme-accent"
+                                className="group flex overflow-hidden flex-row w-full bg-theme-accent rounded-md"
                                 onClick={() => handleChartClick(chart as NavigraphChart)}
                                 key={(chart as NavigraphChart).id}
                             >
@@ -828,7 +828,7 @@ const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartSelector
                                         : 'bg-theme-secondary'}`}
                                     />
                                     <div
-                                        className="flex items-center px-2 h-full transition duration-100 hover:bg-theme-highlight hover:text-theme-body"
+                                        className="flex items-center px-2 h-full hover:text-theme-body hover:bg-theme-highlight transition duration-100"
                                         onClick={(event) => {
                                             event.stopPropagation();
 
@@ -861,7 +861,7 @@ const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartSelector
                                 <div className="flex flex-col m-2">
                                     <span>{(chart as NavigraphChart).procedureIdentifier}</span>
                                     <span
-                                        className="px-2 mr-auto text-sm rounded-sm text-theme-text bg-theme-secondary"
+                                        className="px-2 mr-auto text-sm text-theme-text bg-theme-secondary rounded-sm"
                                     >
                                         {(chart as NavigraphChart).indexNumber}
                                     </span>
@@ -961,8 +961,6 @@ const NavigraphChartsUI = () => {
         handleIcaoChange(icao);
     }, []);
 
-    const AIRPORT_CHARACTER_LIMIT = 30;
-
     const loading = (!statusBarInfo.length || icaoAndNameDisagree || chartListDisagrees) && icao.length === 4;
 
     const getStatusBarText = () => {
@@ -974,7 +972,7 @@ const NavigraphChartsUI = () => {
             return 'Please Wait';
         }
 
-        return `${statusBarInfo.slice(0, AIRPORT_CHARACTER_LIMIT)}${statusBarInfo.length > AIRPORT_CHARACTER_LIMIT ? '...' : ''}`;
+        return statusBarInfo;
     };
 
     const simbriefDataLoaded = isSimbriefDataLoaded();
@@ -982,7 +980,7 @@ const NavigraphChartsUI = () => {
     const { altIcao, departingAirport, arrivingAirport } = useAppSelector((state) => state.simbrief.data);
 
     return (
-        <div className="flex overflow-x-hidden flex-row w-full rounded-lg h-efb">
+        <div className="flex overflow-x-hidden flex-row w-full h-efb rounded-lg">
             <>
                 {!isFullScreen && (
                     <div className="flex-shrink-0" style={{ width: '450px' }}>
@@ -1020,7 +1018,7 @@ const NavigraphChartsUI = () => {
                         </div>
                         <div className="flex flex-row items-center w-full h-11">
                             <ArrowReturnRight size={30} />
-                            <div className="flex items-center px-4 w-full whitespace-nowrap">
+                            <div className="block overflow-hidden px-4 w-full whitespace-nowrap" style={{ textOverflow: 'ellipsis' }}>
                                 {getStatusBarText()}
                             </div>
                         </div>
@@ -1169,8 +1167,6 @@ const LocalFileChartUI = () => {
         handleIcaoChange(icao);
     }, [tabIndex]);
 
-    const AIRPORT_CHARACTER_LIMIT = 30;
-
     const loading = icaoAndNameDisagree;
 
     const getStatusBarText = () => {
@@ -1182,7 +1178,7 @@ const LocalFileChartUI = () => {
             return 'Please Wait';
         }
 
-        return `${statusBarInfo.slice(0, AIRPORT_CHARACTER_LIMIT)}${statusBarInfo.length > AIRPORT_CHARACTER_LIMIT ? '...' : ''}`;
+        return statusBarInfo;
     };
 
     const simbriefDataLoaded = isSimbriefDataLoaded();
@@ -1190,7 +1186,7 @@ const LocalFileChartUI = () => {
     const { altIcao, departingAirport, arrivingAirport } = useAppSelector((state) => state.simbrief.data);
 
     return (
-        <div className="flex overflow-x-hidden flex-row w-full rounded-lg h-efb">
+        <div className="flex overflow-x-hidden flex-row w-full h-efb rounded-lg">
             <>
                 {!isFullScreen && (
                     <div className="overflow-hidden flex-shrink-0" style={{ width: '450px' }}>
@@ -1227,7 +1223,7 @@ const LocalFileChartUI = () => {
                         </div>
                         <div className="flex flex-row items-center w-full h-11">
                             <ArrowReturnRight size={30} />
-                            <div className="flex items-center px-4 w-full whitespace-nowrap">
+                            <div className="block overflow-hidden px-4 w-full whitespace-nowrap" style={{ textOverflow: 'ellipsis' }}>
                                 {getStatusBarText()}
                             </div>
                         </div>
@@ -1275,7 +1271,7 @@ const NavigraphNav = () => {
                     </>
                 )
                 : (
-                    <div className="flex overflow-x-hidden justify-center items-center mr-4 w-full rounded-lg shadow-lg h-efb bg-theme-secondary">
+                    <div className="flex overflow-x-hidden justify-center items-center mr-4 w-full h-efb bg-theme-secondary rounded-lg shadow-lg">
                         <p className="pt-6 mb-6 text-3xl">Insufficient .env file</p>
                     </div>
                 )}

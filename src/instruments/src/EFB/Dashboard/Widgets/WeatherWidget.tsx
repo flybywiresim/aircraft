@@ -161,6 +161,7 @@ export const WeatherWidget:FC<WeatherWidgetProps> = ({ name, simbriefIcao, userI
                                     <div className="flex flex-row justify-between items-center mt-4 w-full">
                                         <div className="flex flex-col items-center space-y-1">
                                             <Speedometer2 size={35} />
+                                            <p>Air Pressure</p>
                                             {metar.raw_text ? (
                                                 <>
                                                     {metar.barometer ? <BaroValue /> : 'N/A'}
@@ -173,6 +174,7 @@ export const WeatherWidget:FC<WeatherWidgetProps> = ({ name, simbriefIcao, userI
                                         </div>
                                         <div className="flex flex-col items-center space-y-1">
                                             <Wind size={35} />
+                                            <p>Wind Speed</p>
                                             {metar.raw_text
                                                 ? (
                                                     <>
@@ -189,25 +191,25 @@ export const WeatherWidget:FC<WeatherWidgetProps> = ({ name, simbriefIcao, userI
                                         </div>
                                         <div className="flex flex-col items-center space-y-1">
                                             <ThermometerHalf size={35} />
+                                            <p>Temperature</p>
                                             {metar.raw_text
                                                 ? (
                                                     <>
                                                         {metar.temperature.celsius.toFixed(0)}
                                                         {' '}
-                                                        &deg;
-                                                        C
+                                                        &deg;C
                                                     </>
                                                 ) : 'N/A'}
                                         </div>
                                         <div className="flex flex-col items-center space-y-1">
                                             <Droplet size={35} />
+                                            <p>Dew Point</p>
                                             {metar.raw_text
                                                 ? (
                                                     <>
                                                         {metar.dewpoint.celsius.toFixed(0)}
                                                         {' '}
-                                                        &deg;
-                                                        C
+                                                        &deg;C
                                                     </>
                                                 ) : 'N/A'}
                                         </div>
