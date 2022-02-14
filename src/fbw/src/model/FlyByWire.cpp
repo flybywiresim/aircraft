@@ -1871,7 +1871,7 @@ void FlyByWireModelClass::step()
   FlyByWire_Y.out.roll.law_normal.zeta_tc_yd_deg = rtb_Limiterxi1;
   FlyByWire_Y.out.roll.output.xi_deg = rtb_Y_gk;
   FlyByWire_Y.out.roll.output.zeta_deg = rtb_Limiterxi;
-  FlyByWire_Y.out.roll.output.zeta_trim_deg = FlyByWire_P.fbw_output_MATLABStruct.roll.output.zeta_trim_deg;
+  FlyByWire_Y.out.roll.output.zeta_trim_deg = FlyByWire_DWork.Delay_DSTATE_mp;
   u0 = FlyByWire_P.Gaineta_Gain_d * rtb_Y_jr;
   if (u0 > FlyByWire_P.Limitereta_UpperSat) {
     FlyByWire_Y.out.output.eta_pos = FlyByWire_P.Limitereta_UpperSat;
@@ -1909,7 +1909,7 @@ void FlyByWireModelClass::step()
     FlyByWire_Y.out.output.zeta_pos = u0;
   }
 
-  u0 = FlyByWire_P.Gainxi2_Gain * FlyByWire_P.fbw_output_MATLABStruct.roll.output.zeta_trim_deg;
+  u0 = FlyByWire_P.Gainxi2_Gain * FlyByWire_DWork.Delay_DSTATE_mp;
   if (u0 > FlyByWire_P.Limiterxi2_UpperSat) {
     FlyByWire_Y.out.output.zeta_trim_pos = FlyByWire_P.Limiterxi2_UpperSat;
   } else if (u0 < FlyByWire_P.Limiterxi2_LowerSat) {
