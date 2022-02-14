@@ -8,7 +8,9 @@
       "@instruments/common/*": ["./instruments/src/Common/*"],
       "@atsu/*": ["./atsu/src/*"],
       "@fmgc/*": ["./fmgc/src/*"],
-      "@flybywiresim/failures": ["failures"]
+      "@flybywiresim/failures": ["failures"],
+      "@tcas/*": ["./tcas/src/*"],
+      "@typings/*": ["../typings"]
     }
   }
 }

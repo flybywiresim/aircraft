@@ -263,15 +263,6 @@ class FMCMainDisplay extends BaseAirliners {
 
         this.flightPhaseManager.init();
 
-        /** It takes some time until origin and destination are known, placing this inside callback of the flight plan loader doesn't work */
-        setTimeout(() => {
-            const origin = this.flightPlanManager.getOrigin();
-            const dest = this.flightPlanManager.getDestination();
-            if (origin && origin.ident && dest && dest.ident) {
-                this.aocAirportList.init(origin.ident, dest.ident);
-            }
-        }, 1000);
-
         // Start the check routine for system health and status
         setInterval(() => {
             if (this.currentFlightPhase === FmgcFlightPhases.CRUISE && !this._destDataChecked) {
@@ -1451,7 +1442,6 @@ class FMCMainDisplay extends BaseAirliners {
                                     this.flightPlanManager.setDestination(airportTo.icao, () => {
                                         this.flightPlanManager.getWaypoint(0).endsInDiscontinuity = true;
                                         this.flightPlanManager.getWaypoint(0).discontinuityCanBeCleared = true;
-                                        this.aocAirportList.init(this.tmpOrigin, airportTo.ident);
                                         this.tmpOrigin = airportTo.ident;
                                         SimVar.SetSimVarValue("L:FLIGHTPLAN_USE_DECEL_WAYPOINT", "number", 1);
                                         callback(true);
@@ -1548,7 +1538,6 @@ class FMCMainDisplay extends BaseAirliners {
         const airportAltDest = await this.dataManager.GetAirportByIdent(altDestIdent).catch(console.error);
         if (airportAltDest) {
             this.altDestination = airportAltDest;
-            this.aocAirportList.alternate = altDestIdent;
             this.tryUpdateDistanceToAlt();
             return true;
         }

@@ -92,9 +92,6 @@ bool FlyByWireInterface::update(double sampleTime) {
   result &= updateFlyByWire(calculatedSampleTime);
 
   // get throttle data and process it
-  result &= updateThrustLimits(calculatedSampleTime);
-
-  // get throttle data and process it
   result &= updateAutothrust(calculatedSampleTime);
 
   // update additional recording data
@@ -169,16 +166,12 @@ void FlyByWireInterface::loadConfiguration() {
   // --------------------------------------------------------------------------
   // load values - autothrust
   autothrustThrustLimitReverse = INITypeConversion::getDouble(iniStructure, "AUTOTHRUST", "THRUST_LIMIT_REVERSE", -45.0);
-  autothrustThrustLimitUseExternal = INITypeConversion::getBoolean(iniStructure, "AUTOTHRUST", "USE_EXTERNAL_LIMIT", false);
-  autothrustThrustLimitUseExternalFlex = INITypeConversion::getBoolean(iniStructure, "AUTOTHRUST", "USE_EXTERNAL_LIMIT_FLEX", false);
 
   // initialize local variable for reverse
   idAutothrustThrustLimitREV->set(autothrustThrustLimitReverse);
 
   // print configuration into console
   cout << "WASM: AUTOTHRUST : THRUST_LIMIT_REVERSE    = " << autothrustThrustLimitReverse << endl;
-  cout << "WASM: AUTOTHRUST : USE_EXTERNAL_LIMIT      = " << autothrustThrustLimitUseExternal << endl;
-  cout << "WASM: AUTOTHRUST : USE_EXTERNAL_LIMIT_FLEX = " << autothrustThrustLimitUseExternalFlex << endl;
 
   // --------------------------------------------------------------------------
   // load values - flight controls
@@ -1497,61 +1490,6 @@ bool FlyByWireInterface::updateFlyByWire(double sampleTime) {
   return true;
 }
 
-bool FlyByWireInterface::updateThrustLimits(double sampleTime) {
-  // if only external limits are used we can skip processing
-  if (autothrustThrustLimitUseExternal && autothrustThrustLimitUseExternalFlex) {
-    return true;
-  }
-
-  // get sim data
-  SimData simData = simConnectInterface.getSimData();
-
-  // fill input data
-  thrustLimitsInput.in.dt = sampleTime;
-  thrustLimitsInput.in.simulation_time_s = simData.simulationTime;
-  thrustLimitsInput.in.H_ft = simData.H_ft;
-  thrustLimitsInput.in.V_mach = simData.V_mach;
-  thrustLimitsInput.in.OAT_degC = simData.ambient_temperature_celsius;
-  thrustLimitsInput.in.TAT_degC = simData.total_air_temperature_celsius;
-  thrustLimitsInput.in.ISA_degC = 0;  // this is ignored, ISA is calculated inside the model
-  thrustLimitsInput.in.is_anti_ice_wing_active = simData.wingAntiIce == 1;
-  thrustLimitsInput.in.is_anti_ice_engine_1_active = simData.engineAntiIce_1 == 1;
-  thrustLimitsInput.in.is_anti_ice_engine_2_active = simData.engineAntiIce_2 == 1;
-  thrustLimitsInput.in.is_air_conditioning_1_active = idAirConditioningPack_1->get();
-  thrustLimitsInput.in.is_air_conditioning_2_active = idAirConditioningPack_2->get();
-  thrustLimitsInput.in.thrust_limit_IDLE_percent = engineEngineIdleN1->get();
-  thrustLimitsInput.in.flex_temperature_degC = idFmgcFlexTemperature->get();
-  if (autothrustThrustLimitUseExternal && !autothrustThrustLimitUseExternalFlex) {
-    thrustLimitsInput.in.use_external_CLB_limit = true;
-    thrustLimitsInput.in.thrust_limit_CLB_percent = idAutothrustThrustLimitCLB->get();
-  } else {
-    thrustLimitsInput.in.use_external_CLB_limit = false;
-    thrustLimitsInput.in.thrust_limit_CLB_percent = 0;
-  }
-  thrustLimitsInput.in.thrust_limit_type = autoThrustOutput.thrust_limit_type;
-
-  // set input data
-  thrustLimits.setExternalInputs(&thrustLimitsInput);
-  thrustLimits.step();
-
-  // get results
-  auto output = thrustLimits.getExternalOutputs().out;
-
-  // update local variables
-  if (!autothrustThrustLimitUseExternal) {
-    idAutothrustThrustLimitIDLE->set(output.thrust_limit_IDLE_percent);
-    idAutothrustThrustLimitCLB->set(output.thrust_limit_CLB_percent);
-    idAutothrustThrustLimitMCT->set(output.thrust_limit_MCT_percent);
-    idAutothrustThrustLimitTOGA->set(output.thrust_limit_TOGA_percent);
-  }
-  if (!autothrustThrustLimitUseExternalFlex) {
-    idAutothrustThrustLimitFLX->set(output.thrust_limit_FLEX_percent);
-  }
-
-  // success
-  return true;
-}
-
 bool FlyByWireInterface::updateAutothrust(double sampleTime) {
   // get sim data
   SimData simData = simConnectInterface.getSimData();
@@ -1579,12 +1517,12 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
         simData.ap_V_c_kn,
         idFmgcV_LS->get(),
         idFmgcV_MAX->get(),
-        idAutothrustThrustLimitREV->get(),   // REV
-        idAutothrustThrustLimitIDLE->get(),  // IDLE
-        idAutothrustThrustLimitCLB->get(),   // CLB
-        idAutothrustThrustLimitFLX->get(),   // FLX
-        idAutothrustThrustLimitMCT->get(),   // MCT
-        idAutothrustThrustLimitTOGA->get(),  // TOGA
+        idAutothrustThrustLimitREV->get(),
+        idAutothrustThrustLimitIDLE->get(),
+        idAutothrustThrustLimitCLB->get(),
+        idAutothrustThrustLimitFLX->get(),
+        idAutothrustThrustLimitMCT->get(),
+        idAutothrustThrustLimitTOGA->get(),
         idFmgcFlexTemperature->get(),
         autopilotStateMachineOutput.autothrust_mode,
         simData.is_mach_mode_active,
@@ -1684,19 +1622,6 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
     // set autothrust disabled state (when ATHR disconnect is pressed longer than 15s)
     idAutothrustDisabled->set(autoThrust.getExternalOutputs().out.data_computed.ATHR_disabled);
 
-    // write thrust limits
-    auto autoThrustInput = autoThrust.getExternalOutputs().out.input;
-    auto autoThrustDataComputed = autoThrust.getExternalOutputs().out.data_computed;
-    idAutothrustThrustLimitIDLE->set(autoThrustInput.thrust_limit_IDLE_percent);
-    idAutothrustThrustLimitCLB->set(autoThrustInput.thrust_limit_CLB_percent);
-    idAutothrustThrustLimitMCT->set(autoThrustInput.thrust_limit_MCT_percent);
-    if (autoThrustDataComputed.is_FLX_active) {
-      idAutothrustThrustLimitFLX->set(autoThrustInput.thrust_limit_FLEX_percent);
-    } else {
-      idAutothrustThrustLimitFLX->set(0);
-    }
-    idAutothrustThrustLimitTOGA->set(autoThrustInput.thrust_limit_TOGA_percent);
-
     // write output to sim --------------------------------------------------------------------------------------------
     SimOutputThrottles simOutputThrottles = {autoThrustOutput.sim_throttle_lever_1_pos, autoThrustOutput.sim_throttle_lever_2_pos,
                                              autoThrustOutput.sim_thrust_mode_1, autoThrustOutput.sim_thrust_mode_2};
@@ -1718,13 +1643,6 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
     autoThrustOutput.status = static_cast<athr_status>(clientData.status);
     autoThrustOutput.mode = static_cast<athr_mode>(clientData.mode);
     autoThrustOutput.mode_message = static_cast<athr_mode_message>(clientData.mode_message);
-
-    // TODO: thrust limits are currently not available when model is running externally
-    idAutothrustThrustLimitIDLE->set(0);
-    idAutothrustThrustLimitCLB->set(0);
-    idAutothrustThrustLimitMCT->set(0);
-    idAutothrustThrustLimitFLX->set(0);
-    idAutothrustThrustLimitTOGA->set(0);
   }
 
   // update local variables
