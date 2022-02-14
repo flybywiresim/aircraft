@@ -16,5 +16,5 @@ if (tag) {
         sha = execSync('git show-ref -s HEAD').toString();
     }
 
-    console.log(`${branch}/${sha.substring(0, 8)}`);
+    console.log(`${branch}.${sha.substring(0, 8)}`);
 }
