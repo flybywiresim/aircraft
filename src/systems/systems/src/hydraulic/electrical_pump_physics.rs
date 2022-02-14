@@ -44,7 +44,7 @@ impl ElectricalPumpPhysics {
 
     // Efficiency gives generated mechanical torque ratio vs electrical power used.
     // 0.95 will convert 95% of electrical consumption in mechanical torque
-    const ELECTRICAL_EFFICIENCY: f64 = 0.95;
+    const ELECTRICAL_EFFICIENCY: f64 = 0.97;
 
     const DEFAULT_P_GAIN: f64 = 0.1;
     const DEFAULT_I_GAIN: f64 = 0.4;
