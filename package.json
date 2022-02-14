@@ -110,6 +110,7 @@
     "sass": "~1.30.0",
     "tailwindcss": "^2.2.2",
     "type-to-reducer": "^1.2.0",
-    "ws": "^7.4.5"
+    "ws": "^7.4.5",
+    "safe-stable-stringify": "^2.3.1"
   }
 }
