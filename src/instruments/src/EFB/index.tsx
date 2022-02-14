@@ -27,7 +27,7 @@ const EFBLoad = () => (
 
 readSettingsFromPersistentStorage();
 
-export const ErrorComponent = () => (
+export const ErrorBoundaryMessage = () => (
     <div className="flex justify-center items-center w-full h-screen bg-theme-body">
         <div className="max-w-4xl">
             <Error />
@@ -49,5 +49,5 @@ export const ErrorComponent = () => (
 try {
     render(<FailuresOrchestratorProvider><EFBLoad /></FailuresOrchestratorProvider>);
 } catch (e) {
-    ReactDOM.render(<ErrorComponent />, Defaults.getRenderTarget());
+    ReactDOM.render(<ErrorBoundaryMessage />, Defaults.getRenderTarget());
 }

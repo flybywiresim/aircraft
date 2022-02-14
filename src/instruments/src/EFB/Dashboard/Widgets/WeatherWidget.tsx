@@ -63,7 +63,7 @@ const MetarParserTypeProp: MetarParserType = {
     flight_category: '',
 };
 
-interface WeatherWidgetProps { name: 'origin'|'destination'; simbriefIcao: string; userIcao: string}
+interface WeatherWidgetProps { name: 'origin'|'destination'; simbriefIcao: string; userIcao?: string}
 
 export const WeatherWidget:FC<WeatherWidgetProps> = ({ name, simbriefIcao, userIcao }) => {
     const [baroType] = usePersistentProperty('CONFIG_INIT_BARO_UNIT', 'HPA');
@@ -142,7 +142,7 @@ export const WeatherWidget:FC<WeatherWidgetProps> = ({ name, simbriefIcao, userI
             getMetar(simbriefIcao, source);
             setSimbriefIcaoAtLoading(simbriefIcao);
         } else {
-            getMetar(userIcao || simbriefIcao, source);
+            getMetar(userIcao ?? simbriefIcao, source);
         }
     }, [simbriefIcao, userIcao, source]);
 
@@ -157,7 +157,7 @@ export const WeatherWidget:FC<WeatherWidgetProps> = ({ name, simbriefIcao, userI
                                 noLabel
                                 className="w-32 text-2xl font-medium text-center uppercase"
                                 placeholder={simbriefIcao || 'ICAO'}
-                                value={userIcao || simbriefIcao}
+                                value={userIcao ?? simbriefIcao}
                                 onChange={(value) => handleIcao(value)}
                                 maxLength={4}
                             />
