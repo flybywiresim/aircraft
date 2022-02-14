@@ -346,10 +346,18 @@ FcdcBus Fcdc::getBusOutputs() {
   output.efcsStatus1.setBit(28, discreteInputs.oppFcdcFailed);
   output.efcsStatus1.setBit(29, !discreteInputs.sec3Valid);
 
-  bool leftElev1Fault = (!discreteInputs.elac1Valid && !discreteInputs.sec1Valid) || busInputs.elac1.discreteStatusWord1.bitFromValueOr(13, false) || busInputs.sec1.discreteStatusWord1.bitFromValueOr(13, false);
-  bool leftElev2Fault = (!discreteInputs.elac2Valid && !discreteInputs.sec2Valid) || busInputs.elac2.discreteStatusWord1.bitFromValueOr(13, false) || busInputs.sec2.discreteStatusWord1.bitFromValueOr(13, false);
-  bool rightElev1Fault = (!discreteInputs.elac1Valid && !discreteInputs.sec1Valid) || busInputs.elac1.discreteStatusWord1.bitFromValueOr(14, false) || busInputs.sec1.discreteStatusWord1.bitFromValueOr(14, false);
-  bool rightElev2Fault = (!discreteInputs.elac2Valid && !discreteInputs.sec2Valid) || busInputs.elac2.discreteStatusWord1.bitFromValueOr(14, false) || busInputs.sec2.discreteStatusWord1.bitFromValueOr(14, false);
+  bool leftElev1Fault = (!discreteInputs.elac1Valid && !discreteInputs.sec1Valid) ||
+                        busInputs.elac1.discreteStatusWord1.bitFromValueOr(13, false) ||
+                        busInputs.sec1.discreteStatusWord1.bitFromValueOr(13, false);
+  bool leftElev2Fault = (!discreteInputs.elac2Valid && !discreteInputs.sec2Valid) ||
+                        busInputs.elac2.discreteStatusWord1.bitFromValueOr(13, false) ||
+                        busInputs.sec2.discreteStatusWord1.bitFromValueOr(13, false);
+  bool rightElev1Fault = (!discreteInputs.elac1Valid && !discreteInputs.sec1Valid) ||
+                         busInputs.elac1.discreteStatusWord1.bitFromValueOr(14, false) ||
+                         busInputs.sec1.discreteStatusWord1.bitFromValueOr(14, false);
+  bool rightElev2Fault = (!discreteInputs.elac2Valid && !discreteInputs.sec2Valid) ||
+                         busInputs.elac2.discreteStatusWord1.bitFromValueOr(14, false) ||
+                         busInputs.sec2.discreteStatusWord1.bitFromValueOr(14, false);
 
   output.efcsStatus2.setSsm(Arinc429SignStatus::NormalOperation);
   output.efcsStatus2.setBit(11, busInputs.elac1.discreteStatusWord1.bitFromValueOr(11, true));
@@ -490,9 +498,9 @@ FcdcBus Fcdc::getBusOutputs() {
   }
 
   if (pitchSidestickPosCaptValid) {
-    output.captRollCommand.setFromData(rollSidestickPosCapt, Arinc429SignStatus::NormalOperation);
+    output.captPitchCommand.setFromData(pitchSidestickPosCapt, Arinc429SignStatus::NormalOperation);
   } else {
-    output.captRollCommand.setFromData(0, Arinc429SignStatus::NoComputedData);
+    output.captPitchCommand.setFromData(0, Arinc429SignStatus::NoComputedData);
   }
 
   if (pitchSidestickPosFoValid) {
