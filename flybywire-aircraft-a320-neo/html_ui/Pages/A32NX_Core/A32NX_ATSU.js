@@ -591,9 +591,9 @@ const formatScratchpadSpeed = (value) => {
 };
 
 /**
- * Converts an FCOM valid encoded offset string to a expanded offset string
+ * Converts an FCOM valid encoded offset string to a list of offset entries
  * @param {string} offset Valid encoded offset
- * @returns The decoded offset string
+ * @returns The decoded offset entries
  */
 const decodeOffsetString = (offset) => {
     let nmUnit = true;
@@ -626,9 +626,25 @@ const decodeOffsetString = (offset) => {
         left = offset[offset.length - 1] === 'L';
     }
 
-    let retval = distance.toString();
-    retval += nmUnit ? 'NM ' : 'KM ';
-    retval += left ? 'LEFT' : 'RIGHT';
+    return [ left ? "L" : 'R', distance.toString(), nmUnit ? "NM" : "KM" ];
+};
 
-    return retval;
+/**
+ * Formats a valid scratchpad offset to a normalized offset entry
+ * @param {string} value The scratchpad entry
+ * @returns The normalized offset entry
+ */
+const formatScratchpadOffset = (value) => {
+    const entries = decodeOffsetString(offset);
+    return `${entries[0]}${entries[1]}${entries[2]}`;
+};
+
+/**
+ * Expands a lateral offset encoded string into an expanded version
+ * @param {string} offset The valid offset value
+ * @returns The expanded lateral offset
+ */
+const expandLateralOffset = (offset) => {
+    const entries = decodeOffsetString(offset);
+    return `${entries[1]} ${entries[2]} ${entries[0] === "L" ? "LEFT" : "RIGHT"}`;
 };
