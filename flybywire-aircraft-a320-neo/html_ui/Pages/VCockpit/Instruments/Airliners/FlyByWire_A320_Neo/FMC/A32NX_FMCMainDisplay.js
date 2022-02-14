@@ -169,7 +169,6 @@ class FMCMainDisplay extends BaseAirliners {
         this.climbTransitionGroundAltitude = undefined;
         this.altDestination = undefined;
         this.flightNumber = undefined;
-        SimVar.SetSimVarValue("ATC FLIGHT NUMBER", "string", "", "FMC");
         this.cruiseTemperature = undefined;
         this.taxiFuelWeight = undefined;
         this.blockFuel = undefined;
@@ -263,15 +262,6 @@ class FMCMainDisplay extends BaseAirliners {
         CDUPerformancePage.UpdateEngOutAccFromOrigin(this);
 
         this.flightPhaseManager.init();
-
-        /** It takes some time until origin and destination are known, placing this inside callback of the flight plan loader doesn't work */
-        setTimeout(() => {
-            const origin = this.flightPlanManager.getOrigin();
-            const dest = this.flightPlanManager.getDestination();
-            if (origin && origin.ident && dest && dest.ident) {
-                this.aocAirportList.init(origin.ident, dest.ident);
-            }
-        }, 1000);
 
         // Start the check routine for system health and status
         setInterval(() => {
@@ -498,7 +488,6 @@ class FMCMainDisplay extends BaseAirliners {
         this.climbTransitionGroundAltitude = null;
         this.altDestination = undefined;
         this.flightNumber = undefined;
-        SimVar.SetSimVarValue("ATC FLIGHT NUMBER", "string", "", "FMC");
         this.cruiseTemperature = undefined;
         this.taxiFuelWeight = 0.2;
         this.blockFuel = undefined;
@@ -1453,7 +1442,6 @@ class FMCMainDisplay extends BaseAirliners {
                                     this.flightPlanManager.setDestination(airportTo.icao, () => {
                                         this.flightPlanManager.getWaypoint(0).endsInDiscontinuity = true;
                                         this.flightPlanManager.getWaypoint(0).discontinuityCanBeCleared = true;
-                                        this.aocAirportList.init(this.tmpOrigin, airportTo.ident);
                                         this.tmpOrigin = airportTo.ident;
                                         SimVar.SetSimVarValue("L:FLIGHTPLAN_USE_DECEL_WAYPOINT", "number", 1);
                                         callback(true);
@@ -1550,7 +1538,6 @@ class FMCMainDisplay extends BaseAirliners {
         const airportAltDest = await this.dataManager.GetAirportByIdent(altDestIdent).catch(console.error);
         if (airportAltDest) {
             this.altDestination = airportAltDest;
-            this.aocAirportList.alternate = altDestIdent;
             this.tryUpdateDistanceToAlt();
             return true;
         }
@@ -1933,15 +1920,16 @@ class FMCMainDisplay extends BaseAirliners {
         }
 
         SimVar.SetSimVarValue("ATC FLIGHT NUMBER", "string", flightNo, "FMC").then(() => {
-            Atsu.AtsuManager.connectToNetworks()
+            this.atsuManager.connectToNetworks(flightNo)
                 .then((code) => {
                     if (code !== Atsu.AtsuStatusCodes.Ok) {
-                        SimVar.SetSimVarValue("ATC FLIGHT NUMBER", "string", "", "FMC");
+                        SimVar.SetSimVarValue("L:A32NX_MCDU_FLT_NO_SET", "boolean", 0);
                         this.addNewAtsuMessage(code);
                         this.flightNo = "";
                         return callback(false);
                     }
 
+                    SimVar.SetSimVarValue("L:A32NX_MCDU_FLT_NO_SET", "boolean", 1);
                     this.flightNumber = flightNo;
                     return callback(true);
                 });

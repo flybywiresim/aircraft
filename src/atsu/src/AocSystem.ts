@@ -20,8 +20,8 @@ export class AocSystem {
         this.datalink = datalink;
     }
 
-    public static async connect(): Promise<AtsuStatusCodes> {
-        return NXApiConnector.connect();
+    public static async connect(flightNo: string): Promise<AtsuStatusCodes> {
+        return NXApiConnector.connect(flightNo);
     }
 
     public static async disconnect(): Promise<AtsuStatusCodes> {
