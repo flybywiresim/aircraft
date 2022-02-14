@@ -165,17 +165,18 @@ export function parseMetar(metarString: string): MetarParserType {
                     gust_mps: (match[4] === 'MPS') ? match[3] : convert.ktsToMps(match[3]),
                 };
 
-                // coloring
-                if (tmpWind.gust_kts > 30) {
-                    metarObject.color_codes[index] = ColorCode.Warning;
-                } else if (metarObject.wind.gust_kts > 20) {
-                    metarObject.color_codes[index] = ColorCode.Caution;
-                }
-
                 // only write to the object for the main section
                 if (!trendMode) {
                     metarObject.wind = tmpWind;
                 }
+
+                // coloring
+                if (tmpWind.gust_kts > 30) {
+                    metarObject.color_codes[index] = ColorCode.Warning;
+                } else if (tmpWind.gust_kts > 20) {
+                    metarObject.color_codes[index] = ColorCode.Caution;
+                }
+
                 mode = Mode.VISIBILITY;
             }
             break;
@@ -284,7 +285,7 @@ export function parseMetar(metarString: string): MetarParserType {
                 if (!trendMode) metarObject.clouds.push(cloud);
 
                 // coloring
-                if (match[2] <= 300) {
+                if (cloud.code !== 'VV' && cloud.base_feet_agl <= 300) {
                     metarObject.color_codes[index] = ColorCode.Warning;
                 } else if (match[3] || match[2] < 800) { // CB or TCU suffix
                     metarObject.color_codes[index] = ColorCode.Caution;

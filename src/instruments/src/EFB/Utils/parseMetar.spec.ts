@@ -388,3 +388,83 @@ test('ENSF 071750Z AUTO 20048KT 2200NDV -SHRA BR OVC011/// ///// Q//// W///S5', 
         ],
     );
 });
+
+test('PATC 141647Z AUTO 23017G29KT 1/4SM FZFG VV002 M30/M33 A3045 RMK AO2 SLP328', () => {
+    const metarObject = parseMetar('PATC 141647Z AUTO 23017G29KT 1/4SM FZFG VV002 M30/M33 A3045 RMK AO2 SLP328');
+    expect(metarObject.icao).toBe('PATC');
+    expect(metarObject.wind.speed_kts).toBe(17);
+    expect(metarObject.wind.gust_kts).toBe(29);
+    expect(metarObject.wind.degrees).toBe(230);
+    expect(metarObject.wind.degrees_from).toBe(230);
+    expect(metarObject.wind.degrees_to).toBe(230);
+    expect(metarObject.visibility.meters_float).toBe(402.336);
+    expect(metarObject.visibility.meters).toBe('500');
+    expect(metarObject.visibility.miles_float).toBe(0.25);
+    expect(metarObject.visibility.miles).toBe('0.5');
+    expect(metarObject.conditions).toHaveLength(1);
+    expect(metarObject.conditions[0].code).toBe('FZFG');
+    expect(metarObject.clouds).toHaveLength(1);
+    expect(metarObject.clouds[0].code).toBe('VV');
+    expect(metarObject.clouds[0].base_feet_agl).toBe(200);
+    expect(metarObject.temperature.celsius).toBe(-30);
+    expect(metarObject.dewpoint.celsius).toBe(-33);
+    expect(metarObject.barometer.mb).toBe(1031.1551769001735);
+    expect(metarObject.barometer.hg).toBe(30.45);
+    expect(metarObject.color_codes).toEqual(
+        [
+            ColorCode.Highlight, // PATC
+            ColorCode.None, // 141647Z
+            ColorCode.None, // AUTO
+            ColorCode.Caution, // 23017G29KT
+            ColorCode.Warning, // 1/4SM
+            ColorCode.Warning, // FZFG
+            ColorCode.Caution, // VV002
+            ColorCode.Warning, // M30/M33
+            ColorCode.None, // A3045
+            ColorCode.Info, // RMK
+            ColorCode.Info, // AO2
+            ColorCode.Info, // SLP328
+        ],
+    );
+});
+
+test('ULMM 141800Z 26007G13MPS 8000 -SHSN BLSN BKN021CB M02/M04 Q0984 R31/490332 NOSIG RMK QFE731', () => {
+    const metarObject = parseMetar('ULMM 141800Z 26007G13MPS 8000 -SHSN BLSN BKN021CB M02/M04 Q0984 R31/490332 NOSIG RMK QFE731');
+    expect(metarObject.icao).toBe('ULMM');
+    expect(metarObject.wind.speed_kts).toBe(13.606911499999999);
+    expect(metarObject.wind.gust_kts).toBe(25.2699785);
+    expect(metarObject.wind.degrees).toBe(260);
+    expect(metarObject.wind.degrees_from).toBe(260);
+    expect(metarObject.wind.degrees_to).toBe(260);
+    expect(metarObject.visibility.meters_float).toBe(8000);
+    expect(metarObject.visibility.meters).toBe('8000');
+    expect(metarObject.visibility.miles_float).toBe(4.970969537898672);
+    expect(metarObject.visibility.miles).toBe('5');
+    expect(metarObject.conditions).toHaveLength(2);
+    expect(metarObject.conditions[0].code).toBe('-SHSN');
+    expect(metarObject.conditions[1].code).toBe('BLSN');
+    expect(metarObject.clouds).toHaveLength(1);
+    expect(metarObject.clouds[0].code).toBe('BKN');
+    expect(metarObject.clouds[0].base_feet_agl).toBe(2100);
+    expect(metarObject.temperature.celsius).toBe(-2);
+    expect(metarObject.dewpoint.celsius).toBe(-4);
+    expect(metarObject.barometer.mb).toBe(984);
+    expect(metarObject.barometer.hg).toBe(29.057508192000004);
+    expect(metarObject.color_codes).toEqual(
+        [
+            ColorCode.Highlight, //   ULMM
+            ColorCode.None, //        141800Z
+            ColorCode.Caution, //        26007G13MPS
+            ColorCode.None, //     8000
+            ColorCode.Caution, //     -SHSN
+            ColorCode.Caution, //     BLSN
+            ColorCode.Caution, //     BKN021CB
+            ColorCode.Caution, //     M02/M04
+            ColorCode.None, //        Q0984
+            ColorCode.None, //        R31/490332
+            ColorCode.None, //        NOSIG
+            ColorCode.Info, //        RMK
+            ColorCode.Info, //        QFE731
+        ],
+    );
+});
