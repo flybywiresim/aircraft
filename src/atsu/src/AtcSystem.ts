@@ -7,6 +7,7 @@ import { AtsuMessageComStatus, AtsuMessage, AtsuMessageType, AtsuMessageDirectio
 import { CpdlcMessageResponse, CpdlcMessageRequestedResponseType, CpdlcMessage } from './messages/CpdlcMessage';
 import { Datalink } from './com/Datalink';
 import { AtsuManager } from './AtsuManager';
+import { FansMode, FutureAirNavigationSystem } from './com/FutureAirNavigationSystem';
 
 export class AtcSystem {
     private parent: AtsuManager | undefined = undefined;
@@ -34,6 +35,8 @@ export class AtcSystem {
     private lastRingTime: number = 0;
 
     public maxUplinkDelay: number = -1;
+
+    private currentFansMode: FansMode = FansMode.FansNone;
 
     constructor(parent: AtsuManager, datalink: Datalink) {
         this.parent = parent;
@@ -248,6 +251,7 @@ export class AtcSystem {
     public async logoff(): Promise<AtsuStatusCodes> {
         return this.logoffWithoutReset().then((error) => {
             this.listener.triggerToAllSubscribers('A32NX_DCDU_ATC_LOGON_MSG', '');
+            this.currentFansMode = FansMode.FansNone;
             this.currentAtc = '';
             this.nextAtc = '';
             return error;
@@ -383,6 +387,7 @@ export class AtcSystem {
                 // logon accepted by ATC
                 if (response.Message.includes('LOGON ACCEPTED')) {
                     this.listener.triggerToAllSubscribers('A32NX_DCDU_ATC_LOGON_MSG', `CURRENT ATC UNIT @${this.nextAtc}@`);
+                    this.currentFansMode = FutureAirNavigationSystem.currentFansMode(this.nextAtc);
                     this.currentAtc = this.nextAtc;
                     this.nextAtc = '';
                     return true;
@@ -465,5 +470,9 @@ export class AtcSystem {
             }
             return retval;
         });
+    }
+
+    public fansMode(): FansMode {
+        return this.currentFansMode;
     }
 }
