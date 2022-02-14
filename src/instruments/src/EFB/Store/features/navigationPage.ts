@@ -13,6 +13,7 @@ type PinnedChart = {
     icao: string;
     title: string;
     tabIndex: number;
+    timeAccessed: number;
 }
 
 interface InitialChartState {
@@ -114,6 +115,16 @@ export const navigationTabSlice = createSlice({
         removedPinnedChart: (state, action: PayloadAction<PinnedChart>) => {
             state.pinnedCharts = state.pinnedCharts.filter((pinnedChart) => pinnedChart.chartId !== action.payload.chartId);
         },
+        editPinnedChart: (state, action: PayloadAction<{chartId: string} & Partial<PinnedChart>>) => {
+            const editIndex = state.pinnedCharts.findIndex((chart) => chart.chartId === action.payload.chartId);
+
+            const editedProperties = Object.fromEntries(
+                Object.entries(action.payload)
+                    .filter((([key]) => key !== 'chartId')),
+            );
+
+            state.pinnedCharts[editIndex] = { ...state.pinnedCharts[editIndex], ...editedProperties };
+        },
     },
 });
 
@@ -138,5 +149,6 @@ export const {
     setCurrentPage,
     addPinnedChart,
     removedPinnedChart,
+    editPinnedChart,
 } = navigationTabSlice.actions;
 export default navigationTabSlice.reducer;
