@@ -28,7 +28,7 @@ export abstract class Phase {
 }
 
 export class PreFlightPhase extends Phase {
-    takeoffConfirmation = new ConfirmationNode(0.2);
+    takeoffConfirmation = new ConfirmationNode(0.2 * 1000);
 
     nextPhase = FmgcFlightPhase.Takeoff;
 
@@ -121,7 +121,7 @@ export class DescentPhase extends Phase {
 }
 
 export class ApproachPhase extends Phase {
-    landingConfirmation = new ConfirmationNode(30);
+    landingConfirmation = new ConfirmationNode(30 * 1000);
 
     init() {
         SimVar.SetSimVarValue('L:AIRLINER_TO_FLEX_TEMP', 'Number', 0);
@@ -153,7 +153,7 @@ export class GoAroundPhase extends Phase {
 }
 
 export class DonePhase extends Phase {
-    takeoffConfirmation = new ConfirmationNode(0.2);
+    takeoffConfirmation = new ConfirmationNode(0.2 * 1000);
 
     nextPhase = FmgcFlightPhase.Takeoff;
 
