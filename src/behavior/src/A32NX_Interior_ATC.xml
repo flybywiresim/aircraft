@@ -128,8 +128,11 @@
             <TRANSPONDER_STATE_OFF>0</TRANSPONDER_STATE_OFF>
             <TRANSPONDER_STATE_STANDBY>1</TRANSPONDER_STATE_STANDBY>
             <TRANSPONDER_STATE_TEST>2</TRANSPONDER_STATE_TEST>
+            <!-- mode A only -->
             <TRANSPONDER_STATE_ON>3</TRANSPONDER_STATE_ON>
+            <!-- mode C -->
             <TRANSPONDER_STATE_ALT>4</TRANSPONDER_STATE_ALT>
+            <!-- mode S only -->
             <TRANSPONDER_STATE_GROUND>5</TRANSPONDER_STATE_GROUND>
 
             <!-- L:A32NX_TRANSPONDER_MODE selector switch -->
@@ -196,8 +199,8 @@
                         xpdrState = #TRANSPONDER_STATE_STANDBY, number#;
                     } else if xpdrMode == #TRANSPONDER_MODE_AUTO, number# {
                         if leftGearCompressed or rightGearCompressed {
-                            // should be TRANSPONDER_STATE_GROUND (mode S), but vPilot treats that as mode C
-                            xpdrState = #TRANSPONDER_STATE_STBY, number#;
+                            // vPilot treats this as mode C, but they seem to want that
+                            xpdrState = #TRANSPONDER_STATE_GROUND, number#;
                         } else if altReporting {
                             xpdrState = #TRANSPONDER_STATE_ALT, number#;
                         } else {
