@@ -11,6 +11,7 @@ import { TafMessage } from './messages/TafMessage';
 import { AtisMessage, AtisType } from './messages/AtisMessage';
 import { AocSystem } from './AocSystem';
 import { AtcSystem } from './AtcSystem';
+import { FansMode } from './com/FutureAirNavigationSystem';
 
 export {
     AtsuStatusCodes,
@@ -33,4 +34,5 @@ export {
     AtisType,
     AocSystem,
     AtcSystem,
+    FansMode,
 };
