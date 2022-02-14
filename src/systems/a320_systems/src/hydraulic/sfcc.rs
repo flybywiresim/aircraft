@@ -1,4 +1,4 @@
-use systems::shared::{PositionPickoffUnit, LgciuSensors, AirDataSource, SfccChannel, FlapsConf, HandlePositionMemory};
+use systems::shared::{PositionPickoffUnit, LgciuSensors, AirDataSource, SfccChannel, FlapsConf, HandlePositionMemory, ElectricalBusType, ElectricalBuses};
 use systems::navigation::adirs;
 use systems::simulation::{
     InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -68,9 +68,14 @@ impl SimulationElement for FlapsHandle {
 
 
 struct FlapsChannel {
+    is_powered: bool,
+    powered_by: ElectricalBusType,
+
     feedback_angle: Angle,
     demanded_angle: Angle,
     calculated_conf: FlapsConf,
+
+    sfcc_id: usize,
 }
 
 impl FlapsChannel {
@@ -78,11 +83,16 @@ impl FlapsChannel {
     const CONF1F_TO_CONF1_AIRSPEED_THRESHOLD_KNOTS: f64 = 210.;
     const EQUAL_ANGLE_DELTA_DEGREE: f64 = 0.01;
 
-    pub fn new() -> Self {
+    fn new(context: &mut InitContext, powered_by: ElectricalBusType, sfcc_id: usize) -> Self {
         Self {
+            is_powered: false,
+            powered_by,
+
             feedback_angle: Angle::new::<degree>(0.),
             demanded_angle: Angle::new::<degree>(0.),
             calculated_conf: FlapsConf::Conf0,
+
+            sfcc_id,
         }
     }
 
@@ -100,12 +110,18 @@ impl FlapsChannel {
 
 impl SfccChannel for FlapsChannel {
 
+
     fn receive_signal_fppu(&mut self, feedback: &impl PositionPickoffUnit) {
         self.feedback_angle = feedback.angle();
     }
-    fn send_signal(&self) -> bool {
+
+    fn send_signal_to_motors(&self) -> bool {
         !self.feedback_equals_demanded()
-     }
+    }
+
+    fn send_signal_to_sfcc(&self) -> Angle {
+        self.demanded_angle
+    }
 
     fn generate_configuration(
         &self,
@@ -149,10 +165,19 @@ impl SfccChannel for FlapsChannel {
     }
 }
 
-impl SimulationElement for FlapsChannel {}
+impl SimulationElement for FlapsChannel {
+    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
+        self.is_powered = buses.is_powered(self.powered_by);
+    }
+}
 
 
 struct SlatsChannel {
+
+    is_powered: bool,
+    powered_by: ElectricalBusType,
+
+
     feedback_angle: Angle,
     demanded_angle: Angle,
     calculated_conf: FlapsConf,
@@ -162,6 +187,8 @@ struct SlatsChannel {
     alpha_lock_engaged: bool,
     alpha_lock_engaged_alpha: bool,
     alpha_lock_engaged_speed: bool,
+
+    sfcc_id: usize,
 }
 impl SlatsChannel {
 
@@ -171,8 +198,10 @@ impl SlatsChannel {
     const ALPHA_LOCK_ENGAGE_ALPHA_DEGREES: f64 = 8.6;
     const ALPHA_LOCK_DISENGAGE_ALPHA_DEGREES: f64 = 7.6;
 
-    pub fn new() -> Self {
+    fn new(context: &mut InitContext, powered_by: ElectricalBusType, sfcc_id: usize) -> Self {
         Self {
+            is_powered: false,
+            powered_by,
             feedback_angle: Angle::new::<degree>(0.),
             demanded_angle: Angle::new::<degree>(0.),
             calculated_conf: FlapsConf::Conf0,
@@ -180,6 +209,7 @@ impl SlatsChannel {
             alpha_lock_engaged: false,
             alpha_lock_engaged_alpha: false,
             alpha_lock_engaged_speed: false,
+            sfcc_id
         }
     }
 
@@ -188,7 +218,7 @@ impl SlatsChannel {
         self.receive_signal_fppu(feedback);
         self.is_on_ground = is_on_ground;
         self.alpha_lock_check(context, flaps_handle, adiru);
-        self.calculated_conf = self.generate_configuration(context,flaps_handle, adiru);
+        self.calculated_conf = self.generate_configuration(context, flaps_handle, adiru);
         self.demanded_angle = demanded_slats_angle_from_conf(self.calculated_conf);
 
     }
@@ -247,12 +277,19 @@ impl SlatsChannel {
 
 impl SfccChannel for SlatsChannel {
 
+
     fn receive_signal_fppu(&mut self, feedback: &impl PositionPickoffUnit) {
         self.feedback_angle = feedback.angle();
     }
-    fn send_signal(&self) -> bool {
+
+    fn send_signal_to_motors(&self) -> bool {
         !self.feedback_equals_demanded()
-     }
+    }
+
+    fn send_signal_to_sfcc(&self) -> Angle {
+        self.demanded_angle
+    }
+
 
     fn generate_configuration(
         &self,
@@ -269,21 +306,35 @@ impl SfccChannel for SlatsChannel {
     }
 }
 
-impl SimulationElement for SlatsChannel {}
+impl SimulationElement for SlatsChannel {
+    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
+        self.is_powered = buses.is_powered(self.powered_by);
+    }
+}
 
 
 struct SlatsFlapsControlComputer {
     flaps_channel: FlapsChannel,
     slats_channel: SlatsChannel,
     is_on_ground: bool,
+
+    sfcc_id: usize,
+
+    flaps_demanded_angle_id: VariableIdentifier,
+    slats_demanded_angle_id: VariableIdentifier,
+    alpha_lock_engaged_id: VariableIdentifier,
 }
 
 impl SlatsFlapsControlComputer {
-    pub fn new(context: &mut InitContext) -> Self {
+    pub fn new(context: &mut InitContext, sfcc_id: usize, flaps_channel_bus: ElectricalBusType, slats_channel_bus: ElectricalBusType) -> Self {
         Self {
-            flaps_channel: FlapsChannel::new(),
-            slats_channel: SlatsChannel::new(),
+            flaps_channel: FlapsChannel::new(context, flaps_channel_bus, sfcc_id),
+            slats_channel: SlatsChannel::new(context, slats_channel_bus, sfcc_id),
             is_on_ground: true,
+            sfcc_id,
+            flaps_demanded_angle_id: context.get_identifier(format!("SFCC_{}_FLAPS_DEMANDED_ANGLE", sfcc_id)),
+            slats_demanded_angle_id: context.get_identifier(format!("SFCC_{}_SLATS_DEMANDED_ANGLE", sfcc_id)),
+            alpha_lock_engaged_id: context.get_identifier(format!("SFCC_{}_ALPHA_LOCK_ENGAGED", sfcc_id)),
         }
     }
 
@@ -291,7 +342,7 @@ impl SlatsFlapsControlComputer {
         adirus: [&impl AirDataSource; 2], lgciu: &impl LgciuSensors,
         flaps_fppu: &impl PositionPickoffUnit, slats_fppu: &impl PositionPickoffUnit) {
 
-        self.is_on_ground = lgciu.left_and_right_gear_compressed(true);
+        self.is_on_ground = lgciu.left_and_right_gear_compressed(false);
         self.flaps_channel.update(context, flaps_handle, flaps_fppu, adirus[0]);
         self.slats_channel.update(context, flaps_handle, slats_fppu, adirus[1], self.is_on_ground);
     }
@@ -303,6 +354,12 @@ impl SimulationElement for SlatsFlapsControlComputer {
         self.slats_channel.accept(visitor);
         visitor.visit(self);
     }
+
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(&self.flaps_demanded_angle_id, self.flaps_channel.demanded_angle);
+        writer.write(&self.slats_demanded_angle_id, self.slats_channel.demanded_angle);
+        writer.write(&self.alpha_lock_engaged_id, self.slats_channel.alpha_lock_engaged);
+    }
 }
 
 struct SlatsFlapsElectronicComplex {
@@ -310,10 +367,14 @@ struct SlatsFlapsElectronicComplex {
     flaps_handle: FlapsHandle,
 }
 
+
+//SFCC1 channels supplied by sub bus 401pp
+//SFCC2 flap channel supplied by 204pp and slats channel by 202pp
 impl SlatsFlapsElectronicComplex {
     pub fn new(context: &mut InitContext) -> Self {
         Self {
-            sfcc: [SlatsFlapsControlComputer::new(context), SlatsFlapsControlComputer::new(context)],
+            sfcc: [SlatsFlapsControlComputer::new(context,1, ElectricalBusType::DirectCurrentEssential, ElectricalBusType::DirectCurrentEssential),
+                 SlatsFlapsControlComputer::new(context,2, ElectricalBusType::DirectCurrent(2), ElectricalBusType::DirectCurrent(2))],
             flaps_handle: FlapsHandle::new(context),
         }
     }
@@ -322,7 +383,12 @@ impl SlatsFlapsElectronicComplex {
         flaps_fppu: &impl PositionPickoffUnit, slats_fppu: &impl PositionPickoffUnit) {
             self.sfcc[0].update(context, &self.flaps_handle, adirus, lgcius[0], flaps_fppu, slats_fppu);
             self.sfcc[1].update(context, &self.flaps_handle, adirus, lgcius[1], flaps_fppu, slats_fppu);
-        }
+    }
+
+    fn compare_channels_output(&self) {
+
+    }
+
 }
 
 impl SimulationElement for SlatsFlapsElectronicComplex {

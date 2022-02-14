@@ -107,6 +107,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
             .provides_aircraft_variable("TURB ENG CORRECTED N2", "Percent", 2)?
             .provides_aircraft_variable("UNLIMITED FUEL", "Bool", 0)?
             .provides_aircraft_variable("VELOCITY WORLD Y", "feet per minute", 0)?
+            .provides_aircraft_variable("INCIDENCE ALPHA", "Degrees", 0)?
             .with_aspect(|builder| {
                 builder.copy(
                     Variable::aircraft("APU GENERATOR SWITCH", "Bool", 0),

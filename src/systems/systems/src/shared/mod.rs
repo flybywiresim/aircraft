@@ -99,7 +99,8 @@ pub trait LgciuGearExtension {
 
 pub trait SfccChannel {
     fn receive_signal_fppu(&mut self, feedback: &impl PositionPickoffUnit);
-    fn send_signal(&self) -> bool;
+    fn send_signal_to_sfcc(&self) -> bool;
+    fn send_demand_to_sfcc(&self) -> Angle;
     fn generate_configuration(&self, context: &UpdateContext, flaps_handle: &impl HandlePositionMemory, adiru: &impl AirDataSource) -> FlapsConf;
 }
 
