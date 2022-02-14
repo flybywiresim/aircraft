@@ -8,7 +8,13 @@ if (tag) {
 } else {
     // Alternatively, get branch and short SHA
     const branch = execSync('git rev-parse --abbrev-ref HEAD').toString().trim();
-    const sha = execSync('git show-ref -s HEAD').toString().substring(0, 8);
 
-    console.log(`${branch}/${sha}`);
+    const ghSha = process.env['GITHUB_SHA'];
+
+    let sha = ghSha;
+    if (!sha) {
+        sha = execSync('git show-ref -s HEAD').toString();
+    }
+
+    console.log(`${branch}/${sha.substring(0, 8)}`);
 }

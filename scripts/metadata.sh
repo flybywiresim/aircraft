@@ -17,9 +17,7 @@ fi
 if [ -z "${GITHUB_SHA}" ]; then
     GITHUB_SHA="$(git show-ref -s HEAD)"
 fi
-if [ -z "${GITHUB_RELEASE_PRETTY_NAME}" ]; then
-    GITHUB_RELEASE_PRETTY_NAME="$(node scripts/pretty-release-name.js)"
-fi
+GITHUB_RELEASE_PRETTY_NAME="$(node scripts/pretty-release-name.js)"
 GITHUB_BUILT="$(date -u -Iseconds)"
 
 jq -n \
