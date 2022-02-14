@@ -9,8 +9,13 @@ import { MetarParserType } from '../../../Common/metarTypes';
 import { usePersistentProperty } from '../../../Common/persistence';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { ColoredMetar } from './ColorMetar';
-import { useAppDispatch } from '../../Store/store';
-import { setUserDepartureIcao, setUserDestinationIcao } from '../../Store/features/dashboard';
+import { useAppDispatch, useAppSelector } from '../../Store/store';
+import {
+    setDepartureMetar,
+    setDestinationMetar, setShowDepartureMetar, setShowDestinationMetar,
+    setUserDepartureIcao,
+    setUserDestinationIcao,
+} from '../../Store/features/dashboard';
 import { Toggle } from '../../UtilComponents/Form/Toggle';
 
 const MetarParserTypeProp: MetarParserType = {
@@ -61,8 +66,6 @@ const MetarParserTypeProp: MetarParserType = {
 interface WeatherWidgetProps { name: 'origin'|'destination'; simbriefIcao: string; userIcao: string}
 
 export const WeatherWidget:FC<WeatherWidgetProps> = ({ name, simbriefIcao, userIcao }) => {
-    const [metar, setMetar] = useState<MetarParserType>(MetarParserTypeProp);
-    const [showMetar, setShowMetar] = usePersistentProperty(`CONFIG_SHOW_METAR_${name}`, 'DISABLED');
     const [baroType] = usePersistentProperty('CONFIG_INIT_BARO_UNIT', 'HPA');
     const dispatch = useAppDispatch();
     const [simbriefIcaoAtLoading, setSimbriefIcaoAtLoading] = useState(simbriefIcao);
@@ -71,6 +74,14 @@ export const WeatherWidget:FC<WeatherWidgetProps> = ({ name, simbriefIcao, userI
 
     const getBaroTypeForAirport = (icao: string) => (['K', 'C', 'M', 'P', 'RJ', 'RO', 'TI', 'TJ']
         .some((r) => icao.toUpperCase().startsWith(r)) ? 'IN HG' : 'HPA');
+
+    const metar = useAppSelector((state) => (name === 'origin' ? state.dashboard.departureMetar : state.dashboard.destinationMetar)) ?? MetarParserTypeProp;
+    const setMetar = name === 'origin' ? setDepartureMetar : setDestinationMetar;
+
+    const showMetar = useAppSelector((state) => (name === 'origin'
+        ? state.dashboard.showDepartureMetar
+        : state.dashboard.showDestinationMetar));
+    const setShowMetar = name === 'origin' ? setShowDepartureMetar : setShowDestinationMetar;
 
     const BaroValue = () => {
         const displayedBaroType = baroType === 'AUTO' ? getBaroTypeForAirport(metar.icao) : baroType;
@@ -108,16 +119,16 @@ export const WeatherWidget:FC<WeatherWidgetProps> = ({ name, simbriefIcao, userI
     function getMetar(icao:any, source: any) {
         if (icao.length !== 4 || icao === '----') {
             return new Promise(() => {
-                setMetar(MetarParserTypeProp);
+                dispatch(setMetar(MetarParserTypeProp));
             });
         }
         return Metar.get(icao, source)
             .then((result) => {
                 const metarParse = parseMetar(result.metar);
-                setMetar(metarParse);
+                dispatch(setMetar(metarParse));
             })
             .catch(() => {
-                setMetar(MetarParserTypeProp);
+                dispatch(setMetar(undefined));
             });
     }
 
@@ -152,88 +163,92 @@ export const WeatherWidget:FC<WeatherWidgetProps> = ({ name, simbriefIcao, userI
                             />
                             <div className="flex flex-row space-x-2">
                                 <p>Raw</p>
-                                <Toggle value={showMetar === 'ENABLED'} onToggle={(value) => setShowMetar(value ? 'ENABLED' : 'DISABLED')} />
+                                <Toggle value={showMetar} onToggle={(value) => dispatch(setShowMetar(value))} />
                             </div>
                         </div>
-                        {showMetar === 'DISABLED'
-                            ? (
-                                <>
-                                    <div className="flex flex-row justify-between items-center mt-4 w-full">
-                                        <div className="flex flex-col items-center space-y-1">
-                                            <Speedometer2 size={35} />
-                                            <p>Air Pressure</p>
-                                            {metar.raw_text ? (
-                                                <>
-                                                    {metar.barometer ? <BaroValue /> : 'N/A'}
-                                                </>
-                                            ) : (
-                                                <>
-                                                    N/A
-                                                </>
-                                            )}
+                        <div style={{ minHeight: '100px' }}>
+                            {!showMetar
+                                ? (
+                                    <>
+                                        <div
+                                            className="flex flex-row justify-between items-center mt-4 w-full"
+                                        >
+                                            <div className="flex flex-col items-center space-y-1">
+                                                <Speedometer2 size={35} />
+                                                <p>Air Pressure</p>
+                                                {metar.raw_text ? (
+                                                    <>
+                                                        {metar.barometer ? <BaroValue /> : 'N/A'}
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        N/A
+                                                    </>
+                                                )}
+                                            </div>
+                                            <div className="flex flex-col items-center space-y-1">
+                                                <Wind size={35} />
+                                                <p>Wind Speed</p>
+                                                {metar.raw_text
+                                                    ? (
+                                                        <>
+                                                            {metar.wind.degrees.toFixed(0)}
+                                                            &deg;
+                                                            {' '}
+                                                            /
+                                                            {' '}
+                                                            {metar.wind.speed_kts.toFixed(0)}
+                                                            {' '}
+                                                            kts
+                                                        </>
+                                                    ) : 'N/A'}
+                                            </div>
+                                            <div className="flex flex-col items-center space-y-1">
+                                                <ThermometerHalf size={35} />
+                                                <p>Temperature</p>
+                                                {metar.raw_text
+                                                    ? (
+                                                        <>
+                                                            {metar.temperature.celsius.toFixed(0)}
+                                                            {' '}
+                                                            &deg;C
+                                                        </>
+                                                    ) : 'N/A'}
+                                            </div>
+                                            <div className="flex flex-col items-center space-y-1">
+                                                <Droplet size={35} />
+                                                <p>Dew Point</p>
+                                                {metar.raw_text
+                                                    ? (
+                                                        <>
+                                                            {metar.dewpoint.celsius.toFixed(0)}
+                                                            {' '}
+                                                            &deg;C
+                                                        </>
+                                                    ) : 'N/A'}
+                                            </div>
                                         </div>
-                                        <div className="flex flex-col items-center space-y-1">
-                                            <Wind size={35} />
-                                            <p>Wind Speed</p>
+                                    </>
+                                )
+                                : (
+                                    <>
+                                        <div className="mt-4 font-mono text-xl">
                                             {metar.raw_text
                                                 ? (
                                                     <>
-                                                        {metar.wind.degrees.toFixed(0)}
-                                                        &deg;
-                                                        {' '}
-                                                        /
-                                                        {' '}
-                                                        {metar.wind.speed_kts.toFixed(0)}
-                                                        {' '}
-                                                        kts
+                                                        <ColoredMetar metar={metar} />
                                                     </>
-                                                ) : 'N/A'}
-                                        </div>
-                                        <div className="flex flex-col items-center space-y-1">
-                                            <ThermometerHalf size={35} />
-                                            <p>Temperature</p>
-                                            {metar.raw_text
-                                                ? (
+                                                ) : (
                                                     <>
-                                                        {metar.temperature.celsius.toFixed(0)}
+                                                        NO VALID ICAO CHOSEN
                                                         {' '}
-                                                        &deg;C
-                                                    </>
-                                                ) : 'N/A'}
-                                        </div>
-                                        <div className="flex flex-col items-center space-y-1">
-                                            <Droplet size={35} />
-                                            <p>Dew Point</p>
-                                            {metar.raw_text
-                                                ? (
-                                                    <>
-                                                        {metar.dewpoint.celsius.toFixed(0)}
                                                         {' '}
-                                                        &deg;C
                                                     </>
-                                                ) : 'N/A'}
+                                                )}
                                         </div>
-                                    </div>
-                                </>
-                            )
-                            : (
-                                <>
-                                    <div className="mt-4 font-mono text-xl">
-                                        {metar.raw_text
-                                            ? (
-                                                <>
-                                                    <ColoredMetar metar={metar} />
-                                                </>
-                                            ) : (
-                                                <>
-                                                    NO VALID ICAO CHOSEN
-                                                    {' '}
-                                                    {' '}
-                                                </>
-                                            )}
-                                    </div>
-                                </>
-                            )}
+                                    </>
+                                )}
+                        </div>
                     </>
                 )}
         </div>
