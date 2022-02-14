@@ -1,6 +1,6 @@
 use crate::{
     electrical::{ElectricalElement, ElectricitySource, Potential},
-    pneumatic::PneumaticValveSignal,
+    pneumatic::{EngineState, PneumaticValveSignal},
     simulation::UpdateContext,
 };
 
@@ -108,6 +108,30 @@ pub trait EngineCorrectedN2 {
 
 pub trait EngineUncorrectedN2 {
     fn uncorrected_n2(&self) -> Ratio;
+}
+
+pub trait Cabin {
+    fn altitude(&self) -> Length;
+    fn pressure(&self) -> Pressure;
+}
+
+pub trait PneumaticBleed {
+    fn apu_bleed_is_on(&self) -> bool;
+    fn engine_crossbleed_is_on(&self) -> bool;
+}
+
+pub trait EngineStartState {
+    fn left_engine_state(&self) -> EngineState;
+    fn right_engine_state(&self) -> EngineState;
+}
+
+pub trait EngineBleedPushbutton {
+    fn left_engine_bleed_pushbutton_is_auto(&self) -> bool;
+    fn right_engine_bleed_pushbutton_is_auto(&self) -> bool;
+}
+
+pub trait GroundSpeed {
+    fn ground_speed(&self) -> Velocity;
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]

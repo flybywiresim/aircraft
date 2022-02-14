@@ -7,6 +7,7 @@
 #[macro_use]
 pub mod macros;
 
+pub mod air_conditioning;
 pub mod apu;
 pub mod electrical;
 pub mod engine;
