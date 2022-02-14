@@ -346,10 +346,28 @@ struct FmgcABus {
 };
 
 struct FacBus {
+  // Label 47
+  Arinc429DiscreteWord discreteWord1;
+  // Label 70
+  Arinc429NumericWord gammaA;
   // Label 71
   Arinc429NumericWord gammaT;
+  // Label 74
+  Arinc429NumericWord weight;
+  // Label 76
+  Arinc429NumericWord centerOfGravity;
   // Label 77
   Arinc429NumericWord sideslipTarget;
+  // Label 127
+  Arinc429NumericWord facSlatAngle;
+  // Label 137
+  Arinc429NumericWord facFlapAngle;
+  // Label 146
+  Arinc429DiscreteWord discreteWord2;
+  // Label 167
+  Arinc429NumericWord rudderTravelLimitCommand;
+  // Label 172
+  Arinc429NumericWord deltaRYawDamperVoted;
   // Label 226
   Arinc429NumericWord estimatedSideslip;
   // Label 243
@@ -374,8 +392,14 @@ struct FacBus {
   Arinc429NumericWord vMax;
   // Label 267
   Arinc429NumericWord vFeNext;
+  // Label 273
+  Arinc429DiscreteWord discreteWord3;
   // Label 274
   Arinc429DiscreteWord discreteWord4;
+  // Label 312
+  Arinc429DiscreteWord deltaRRudderTrim;
+  // Label 313
+  Arinc429DiscreteWord rudderTrimPos;
 };
 
 struct FadecBus {
