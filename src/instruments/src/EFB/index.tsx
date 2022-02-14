@@ -27,25 +27,27 @@ const EFBLoad = () => (
 
 readSettingsFromPersistentStorage();
 
+export const ErrorComponent = () => (
+    <div className="flex justify-center items-center w-full h-screen bg-theme-body">
+        <div className="max-w-4xl">
+            <Error />
+            <div className="mt-6 space-y-12">
+                <h1 className="text-4xl font-bold">A critical error has been encountered.</h1>
+
+                <h2 className="text-3xl">You must restart your flight to use this tablet.</h2>
+
+                <h2 className="text-3xl leading-relaxed">
+                    You have opted into anonymous error reporting and this issue has been relayed to us. If you want immediate support, please share the following code to a member of staff in the #support channel on the FlyByWire Discord server:
+                </h2>
+
+                <h1 className="text-4xl font-extrabold tracking-wider text-center">ZX96CHUNGHOLBOR</h1>
+            </div>
+        </div>
+    </div>
+);
+
 try {
     render(<FailuresOrchestratorProvider><EFBLoad /></FailuresOrchestratorProvider>);
 } catch (e) {
-    ReactDOM.render(
-        <div className="flex justify-center items-center w-full h-screen bg-theme-body">
-            <div className="max-w-4xl">
-                <Error />
-                <div className="mt-6 space-y-12">
-                    <h1 className="text-4xl font-bold">A critical error has been encountered.</h1>
-
-                    <h2 className="text-3xl">You must restart your flight to use this tablet.</h2>
-
-                    <h2 className="text-3xl leading-relaxed">
-                        You have opted into anonymous error reporting and this issue has been relayed to us. If you want immediate support, please share the following code to a member of staff in the #support channel on the FlyByWire Discord server:
-                    </h2>
-
-                    <h1 className="text-4xl font-extrabold tracking-wider text-center">ZX96CHUNGHOLBOR</h1>
-                </div>
-            </div>
-        </div>, Defaults.getRenderTarget(),
-    );
+    ReactDOM.render(<ErrorComponent />, Defaults.getRenderTarget());
 }
