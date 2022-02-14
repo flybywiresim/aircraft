@@ -290,3 +290,345 @@ function getWaypointByIdentAndCoords(mcdu, ident, coords, callback) {
         return callback(undefined);
     }).catch(console.error);
 }
+
+/**
+ * Validate a given VHF frequency that it fits to the 8.33 kHz-spacing
+ * @param {string} value Frequency candidate
+ * @returns null or a NXSystemMessages-entry in case of a failure
+ */
+const validateVhfFrequency = (value) => {
+    // valid frequency range: 118.000 - 136.975
+    if (!/^1[1-3][0-9].[0-9]{2}[0|5]$/.test(value)) {
+        return NXSystemMessages.formatError;
+    }
+
+    const elements = value.split(".");
+    const before = parseInt(elements[0]);
+    if (before < 118 || before > 136) {
+        return NXSystemMessages.entryOutOfRange;
+    }
+
+    // valid 8.33 kHz spacings
+    const frequencySpacingOther = [ "00", "05", "10", "15", "25", "30", "35", "40", "50", "55", "60", "65", "75", "80", "85", "90" ];
+    const frequencySpacingEnd = [ "00", "05", "10", "15", "25", "30", "35", "40", "50", "55", "60", "65", "75" ];
+
+    // validate the correct frequency fraction
+    const twoDigitFraction = elements[1].substring(1, elements[1].length);
+    if (before === 136) {
+        if (frequencySpacingEnd.findIndex((entry) => entry === twoDigitFraction) === -1) {
+            return NXSystemMessages.entryOutOfRange;
+        }
+    } else {
+        if (frequencySpacingOther.findIndex((entry) => entry === twoDigitFraction) === -1) {
+            return NXSystemMessages.entryOutOfRange;
+        }
+    }
+
+    return null;
+};
+
+/**
+ * Validates a value that it is compatible with the FCOM format for altitudes and flight levels
+ * @param {string} value The entered scratchpad altitude
+ * @returns null or a NXSystemMessage-entry in case of a failure
+ */
+const validateScratchpadAltitude = (value) => {
+    if (/^((FL)*[0-9]{1,3})$/.test(value)) {
+        let flightlevel = "";
+
+        if (value.startsWith("FL")) {
+            flightlevel = value.substring(2, value.length);
+        } else {
+            flightlevel = value;
+        }
+
+        // contains not only digits
+        if (/(?!^\d+$)^.+$/.test(flightlevel)) {
+            return NXSystemMessages.formatError;
+        }
+        flightlevel = parseInt(flightlevel);
+
+        if (flightlevel >= 30 && flightlevel <= 410) {
+            return null;
+        }
+        return NXSystemMessages.entryOutOfRange;
+    } else if (/^([0-9]{1,3}(FT|M)|[0-9]{1,5}M|[0-9]{4,5})$/.test(value)) {
+        const feet = value[value.length - 1] !== "M";
+
+        let altitude = value.replace("FT", "").replace("M", "");
+
+        // contains not only digits
+        if (/(?!^\d+$)^.+$/.test(altitude)) {
+            return NXSystemMessages.formatError;
+        }
+        altitude = parseInt(altitude);
+
+        if (feet) {
+            if (altitude >= 0 && altitude <= 25000) {
+                return null;
+            }
+            return NXSystemMessages.entryOutOfRange;
+        }
+
+        if (altitude >= 0 && altitude <= 12500) {
+            return null;
+        }
+        return NXSystemMessages.entryOutOfRange;
+    }
+
+    return NXSystemMessages.formatError;
+};
+
+/**
+ * Validates a value that it is compatible with the FCOM format for lateral offsets
+ * @param {string} value The entered scratchpad offset
+ * @returns null or a NXSystemMessage-entry in case of a failure
+ */
+const validateScratchpadOffset = (offset) => {
+    let nmUnit = true;
+    let distance = 0;
+
+    if (/^[LR][0-9]{1,3}(NM|KM)$/.test(offset) || /^[LR][0-9]{1,3}$/.test(offset)) {
+        // format: DNNNKM, DNNNNM, DNNN
+        distance = parseInt(offset.substring(1, 4));
+        nmUnit = !offset.endsWith("KM");
+    } else if (/^[0-9]{1,3}(NM|KM)[LR]$/.test(offset) || /^[0-9]{1,3}[LR]$/.test(offset)) {
+        // format: NNNKMD, NNNNMD, NNND
+        distance = parseInt(offset.substring(0, 3));
+        nmUnit = !(offset.endsWith("KML") || offset.endsWith("KMR"));
+    } else {
+        return NXSystemMessages.formatError;
+    }
+
+    // validate the ranges
+    if (nmUnit) {
+        if (distance >= 1 && distance <= 128) {
+            return null;
+        }
+    } else {
+        if (distance >= 1 && distance <= 256) {
+            return null;
+        }
+    }
+
+    return NXSystemMessages.entryOutOfRange;
+};
+
+/**
+ * Validates a value that it is compatible with the FCOM format for speeds
+ * @param {string} value The entered scratchpad speed
+ * @returns null or a NXSystemMessage-entry in case of a failure
+ */
+const validateScratchpadSpeed = (value) => {
+    if (/^((M*)\.[0-9]{1,2})$/.test(value)) {
+        // MACH number
+
+        let mach = value.split(".")[1];
+        // contains not only digits
+        if (/(?!^\d+$)^.+$/.test(mach)) {
+            return NXSystemMessages.formatError;
+        }
+        mach = parseInt(mach);
+
+        if (mach >= 61 && mach <= 92) {
+            return null;
+        }
+        return NXSystemMessages.entryOutOfRange;
+    } else if (/^([0-9]{1,3}(KT)*)$/.test(value)) {
+        // knots
+
+        let knots = value.replace("KT", "");
+        // contains not only digits
+        if (/(?!^\d+$)^.+$/.test(knots)) {
+            return NXSystemMessages.formatError;
+        }
+        knots = parseInt(knots);
+
+        if (knots >= 70 && knots <= 350) {
+            return null;
+        }
+        return NXSystemMessages.entryOutOfRange;
+    }
+
+    return NXSystemMessages.formatError;
+};
+
+/**
+ * Classifies a possible waypoint type of the scratchpad
+ * Types:
+ *   -  0 = lat-lon coordinate
+ *   -  1 = time
+ *   -  2 = place
+ *   - -1 = unknonw
+ * @param {FMCMainDisplay} mcdu The current MCDU instance
+ * @param {string} waypoint The entered waypoint
+ * @returns A tuple with the type and null or a NXSystemMessage-entry in case of a failure
+ */
+const classifyScratchpadWaypointType = async (mcdu, waypoint) => {
+    if (mcdu.isLatLonFormat(waypoint)) {
+        return [0, null];
+    }
+
+    // time formatted
+    if (/([0-2][0-4][0-5][0-9]Z?)/.test(waypoint) && waypoint.length <= 5) {
+        return [1, null];
+    }
+
+    // place formatted
+    if (/^[A-Z0-9]{2,7}/.test(waypoint)) {
+        return mcdu.dataManager.GetWaypointsByIdent.bind(mcdu.dataManager)(waypoint).then((waypoints) => {
+            if (waypoints.length !== 0) {
+                return [2, null];
+            } else {
+                return [-1, NXSystemMessages.notInDatabase];
+            }
+        });
+    }
+
+    return [-1, NXSystemMessages.formatError];
+};
+
+/**
+ * Validates that two speed entries describe the same (knots or mach)
+ * @param {string} lower Lower speed value
+ * @param {string} higher Higher speed value
+ * @returns True if both are same type else false
+ */
+const sameSpeedType = (lower, higher) => {
+    if (lower[0] === "M" && higher[0] === "M") {
+        return true;
+    }
+    if (lower[0] === "M" || higher[0] === "M") {
+        return false;
+    }
+    return true;
+};
+
+/**
+ * Validats that lower is smaller than higher
+ * @param {string} lower Lower speed value
+ * @param {string} higher Higher speed value
+ * @returns True if lower is smaller than higher, else false
+ */
+const validSpeedRange = (lower, higher) => {
+    if (lower[0] === "M") {
+        return parseInt(lower.substring(2, lower.length)) < parseInt(higher.substring(2, higher.length));
+    }
+    return parseInt(lower) < parseInt(higher);
+};
+
+/**
+ * Validates that a scratchpad entry follows the FCOM definition for speed ranges
+ * @param {string} Given speed range candidate
+ * @returns null or a NXSystemMessage-entry in case of a failure
+ */
+const validateScratchpadSpeedRanges = (value) => {
+    const entries = value.split("/");
+    if (entries.length !== 2) {
+        this.addNewMessage(NXSystemMessages.formatError);
+    } else if (this.validateSpeed(entries[0]) || this.validateSpeed(entries[1])) {
+        let error = this.validateSpeed(entries[0]);
+        if (error) {
+            this.addNewMessage(error);
+        } else {
+            error = this.validateSpeed(entries[1]);
+            this.addNewMessage(error);
+        }
+    } else {
+        const lower = this.formatSpeed(entries[0]);
+        const higher = this.formatSpeed(entries[1]);
+
+        if (!this.sameSpeedType(lower, higher)) {
+            this.addNewMessage(NXSystemMessages.formatError);
+        } else if (!this.compareSpeeds(lower, higher)) {
+            this.addNewMessage(NXSystemMessages.entryOutOfRange);
+        } else {
+            return [lower, higher];
+        }
+    }
+
+    return [];
+};
+
+/**
+ * Formats a scratchpad to a standard altitude string
+ * @param {string} value The entered valid altitude
+ * @returns Formatted string or empty string in case of a failure
+ */
+const formatScratchpadAltitude = (value) => {
+    if (/^((FL)*[0-9]{1,3})$/.test(value)) {
+        if (value.startsWith("FL")) {
+            return value;
+        } else {
+            return `FL${value}`;
+        }
+    } else if (/^([0-9]{1,3}(FT|M)|[0-9]{1,5}M|[0-9]{4,5})$/.test(value)) {
+        const feet = value[value.length - 1] !== "M";
+
+        let altitude = value.replace("FT", "").replace("M", "");
+        if (!feet) {
+            altitude = `${altitude}M`;
+        }
+
+        return altitude;
+    }
+
+    return "";
+};
+
+/**
+ * Formats a scratchpad entry to the standard speed description
+ * @param {string} value Valid speed entry
+ * @returns The formatted speed string
+ */
+const formatScratchpadSpeed = (value) => {
+    if (value[0] === "M") {
+        return value;
+    } else if (value[0] === ".") {
+        return `M${value}`;
+    }
+    return value.replace("KT", "");
+};
+
+/**
+ * Converts an FCOM valid encoded offset string to a expanded offset string
+ * @param {string} offset Valid encoded offset
+ * @returns The decoded offset string
+ */
+const decodeOffsetString = (offset) => {
+    let nmUnit = true;
+    let left = false;
+    let distance;
+
+    if (/^[LR][0-9]{1,3}(NM|KM)$/.test(offset) || /^[LR][0-9]{1,3}$/.test(offset)) {
+        // format: DNNNKM, DNNNNM, DNNN
+
+        // contains not only numbers
+        distance = offset.replace(/NM|KM/, "").replace(/L|R/, "");
+        if (/(?!^\d+$)^.+$/.test(distance)) {
+            return '';
+        }
+
+        distance = parseInt(distance);
+        nmUnit = !offset.endsWith("KM");
+        left = offset[0] === 'L';
+    } else if (/[0-9]{1,3}(NM|KM)[LR]/.test(offset) || /[0-9]{1,3}[LR]/.test(offset)) {
+        // format: NNNKMD, NNNNMD, NNND
+
+        // contains not only numbers
+        distance = offset.replace(/NM|KM/, "").replace(/L|R/, "");
+        if (/(?!^\d+$)^.+$/.test(distance)) {
+            return '';
+        }
+
+        distance = parseInt(distance);
+        nmUnit = !(offset.endsWith("KML") || offset.endsWith("KMR"));
+        left = offset[offset.length - 1] === 'L';
+    }
+
+    let retval = distance.toString();
+    retval += nmUnit ? 'NM ' : 'KM ';
+    retval += left ? 'LEFT' : 'RIGHT';
+
+    return retval;
+};
