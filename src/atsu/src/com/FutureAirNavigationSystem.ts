@@ -56,6 +56,8 @@ export class FutureAirNavigationSystem {
         // Poland (currently no CPDLC)
         // Czech
         'LKAA', 'LKAW', 'LKAN', 'LKAU', 'LKAI',
+        // TESTING STATION (REMOVE BEFORE MERGE)
+        'TESB',
     ];
 
     public static currentFansMode(identifier: string): FansMode {
