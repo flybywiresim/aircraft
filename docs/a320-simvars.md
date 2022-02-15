@@ -2376,15 +2376,6 @@ In the variables below, {number} should be replaced with one item in the set: { 
       TA | 1
       TA/RA | 2
 
-- A32NX_SWITCH_ATC
-  - Enum
-  - Read-Only
-  - Selected active transponder (XPDR1/2)
-      Description | Value
-      --- | ---
-      XPDR1 | 0
-      XPDR2 | 1
-
 - A32NX_SWITCH_TCAS_Traffic_Position
   - Enum
   - Read-Only
