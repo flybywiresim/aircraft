@@ -12,7 +12,7 @@ export class NXDataStore {
 
     private static get listener() {
         if (this.mListener === undefined) {
-            this.mListener = RegisterViewListener('JS_LISTENER_SIMVARS');
+            this.mListener = RegisterViewListener('JS_LISTENER_SIMVARS', null, true);
         }
         return this.mListener;
     }
