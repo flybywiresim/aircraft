@@ -38,6 +38,7 @@ export const beforeTakeoffChecklist: Checklist = {
             item: '',
             result: '',
             condition: undefined,
+            divider: true,
         },
         {
             item: 'TAKEOFF RWY',
