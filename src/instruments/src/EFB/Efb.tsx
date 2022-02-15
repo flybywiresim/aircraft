@@ -30,7 +30,6 @@ import { fetchSimbriefDataAction, isSimbriefDataLoaded } from './Store/features/
 
 import { FbwLogo } from './UtilComponents/FbwLogo';
 import { setFlightPlanProgress } from './Store/features/flightProgress';
-import { ErrorBoundaryMessage } from './index';
 import { Checklists } from './Checklists/Checklists';
 
 const BATTERY_DURATION_CHARGE_MIN = 180;
@@ -183,10 +182,16 @@ const Efb = () => {
     }, [powerState]);
 
     const offToLoaded = () => {
+        const shouldWait = powerState === PowerStates.SHUTOFF;
         setPowerState(PowerStates.LOADING);
-        setTimeout(() => {
+
+        if (shouldWait) {
+            setTimeout(() => {
+                setPowerState(PowerStates.LOADED);
+            }, 2500);
+        } else {
             setPowerState(PowerStates.LOADED);
-        }, 2500);
+        }
     };
 
     useInteractionEvent('A32NX_EFB_POWER', () => {
@@ -225,6 +230,7 @@ const Efb = () => {
 
     switch (powerState) {
     case PowerStates.SHUTOFF:
+    case PowerStates.STANDBY:
         return <div className="w-screen h-screen" onClick={() => offToLoaded()} />;
     case PowerStates.LOADING:
         return <LoadingScreen />;
