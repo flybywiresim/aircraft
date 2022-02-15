@@ -32,94 +32,97 @@ export const RemindersWidget = () => {
     const { checklists } = useAppSelector((state) => state.checklists);
 
     return (
-        <div className="p-6 w-full rounded-lg border-2 border-theme-accent">
-            <ScrollableContainer height={51}>
-                <div className="flex flex-col space-y-4">
-                    <RemindersSection title="Weather" noLink>
-                        <div className="space-y-6">
-                            <WeatherWidget name="origin" simbriefIcao={departingAirport} userIcao={userDepartureIcao} />
-                            <div className="w-full h-1 bg-theme-accent rounded-full" />
-                            <WeatherWidget name="destination" simbriefIcao={arrivingAirport} userIcao={userDestinationIcao} />
-                        </div>
-                    </RemindersSection>
-                    {navigraph.hasToken && (
-                        <RemindersSection title="Pinned Charts" pageLinkPath="/navigation">
+        <div className="w-full">
+            <h1 className="mb-4 font-bold">Important Information</h1>
+            <div className="p-6 w-full h-efb rounded-lg border-2 border-theme-accent">
+                <ScrollableContainer height={51}>
+                    <div className="flex flex-col space-y-4">
+                        <RemindersSection title="Weather" noLink>
+                            <div className="space-y-6">
+                                <WeatherWidget name="origin" simbriefIcao={departingAirport} userIcao={userDepartureIcao} />
+                                <div className="w-full h-1 bg-theme-accent rounded-full" />
+                                <WeatherWidget name="destination" simbriefIcao={arrivingAirport} userIcao={userDestinationIcao} />
+                            </div>
+                        </RemindersSection>
+                        {navigraph.hasToken && (
+                            <RemindersSection title="Pinned Charts" pageLinkPath="/navigation">
+                                <div className="grid grid-cols-2">
+                                    {/* A spread here is necessary to make Redux not kill itself */}
+                                    {[...pinnedCharts].sort((a, b) => b.timeAccessed - a.timeAccessed).map(({
+                                        chartId,
+                                        chartName,
+                                        icao,
+                                        tabIndex,
+                                        title,
+                                    }, index) => (
+                                        <Link
+                                            to="/navigation"
+                                            className={`flex flex-col flex-wrap p-2 mt-4 bg-theme-accent rounded-md ${index && index % 2 !== 0 && 'ml-4'}`}
+                                            onClick={() => {
+                                                setChartSource('NAVIGRAPH');
+                                                dispatch(setChartDimensions({ width: undefined, height: undefined }));
+                                                dispatch(setChartLinks({ light: '', dark: '' }));
+                                                dispatch(setChartName(chartName));
+                                                dispatch(setChartId(chartId));
+                                                dispatch(setIcao(icao));
+                                                dispatch(setTabIndex(tabIndex));
+                                                dispatch(setChartRotation(0));
+                                                dispatch(editPinnedChart({
+                                                    chartId,
+                                                    timeAccessed: new Date().getTime(),
+                                                }));
+                                            }}
+                                        >
+                                            <h2 className="font-bold">{icao}</h2>
+                                            <span className="mt-2 font-inter">{title}</span>
+                                            <IconArrowRight className="mt-auto ml-auto text-theme-highlight" />
+                                        </Link>
+                                    ))}
+                                </div>
+                                {!pinnedCharts.length && (
+                                    <h1 className="m-auto my-4 font-bold opacity-60">No Pinned Charts</h1>
+                                )}
+                            </RemindersSection>
+                        )}
+                        <RemindersSection title="Maintenance" pageLinkPath="/failures">
+                            <div className="flex flex-row flex-wrap">
+                                {Array
+                                    .from(activeFailures)
+                                // Sorts the failures by name length, greatest to least
+                                    .sort((a, b) => (allFailures.find((f) => f.identifier === b)?.name ?? '').length - (allFailures.find((f) => f.identifier === a)?.name ?? '').length)
+                                    .map((failure) => (
+                                        <ActiveFailureReminder name={allFailures.find((it) => it.identifier === failure)?.name ?? '<unknown>'} />
+                                    ))}
+                                {!activeFailures.size && (
+                                    <h1 className="m-auto my-4 font-bold opacity-60">No Active Failures</h1>
+                                )}
+                            </div>
+                        </RemindersSection>
+                        <RemindersSection title="Checklists" pageLinkPath="/checklists">
                             <div className="grid grid-cols-2">
-                                {/* A spread here is necessary to make Redux not kill itself */}
-                                {[...pinnedCharts].sort((a, b) => b.timeAccessed - a.timeAccessed).map(({
-                                    chartId,
-                                    chartName,
-                                    icao,
-                                    tabIndex,
-                                    title,
-                                }, index) => (
+                                {checklists.map((checklist, clIndex) => (
                                     <Link
-                                        to="/navigation"
-                                        className={`flex flex-col flex-wrap p-2 mt-4 bg-theme-accent rounded-md ${index && index % 2 !== 0 && 'ml-4'}`}
+                                        to="/checklists"
+                                        className={`relative overflow-hidden flex flex-col flex-wrap px-2 pt-3 pb-2 mt-4 bg-theme-accent rounded-md ${clIndex && clIndex % 2 !== 0 && 'ml-4'}`}
                                         onClick={() => {
-                                            setChartSource('NAVIGRAPH');
-                                            dispatch(setChartDimensions({ width: undefined, height: undefined }));
-                                            dispatch(setChartLinks({ light: '', dark: '' }));
-                                            dispatch(setChartName(chartName));
-                                            dispatch(setChartId(chartId));
-                                            dispatch(setIcao(icao));
-                                            dispatch(setTabIndex(tabIndex));
-                                            dispatch(setChartRotation(0));
-                                            dispatch(editPinnedChart({
-                                                chartId,
-                                                timeAccessed: new Date().getTime(),
-                                            }));
+                                            dispatch(setSelectedChecklistIndex(clIndex));
                                         }}
                                     >
-                                        <h2 className="font-bold">{icao}</h2>
-                                        <span className="mt-2 font-inter">{title}</span>
-                                        <IconArrowRight className="mt-auto ml-auto text-theme-highlight" />
+                                        <div className="absolute top-0 left-0 flex-row w-full h-2 bg-theme-secondary">
+                                            <div
+                                                className={`h-full ${isChecklistCompleted(clIndex) ? 'bg-colors-lime-400' : 'bg-theme-highlight'}`}
+                                                style={{ width: `${getChecklistCompletion(clIndex) * 100}%` }}
+                                            />
+                                        </div>
+                                        <h2 className="font-bold">{checklist.name}</h2>
+                                        <IconArrowRight className={`mt-auto ml-auto ${isChecklistCompleted(clIndex) ? 'text-colors-lime-400' : 'text-theme-highlight'}`} />
                                     </Link>
                                 ))}
                             </div>
-                            {!pinnedCharts.length && (
-                                <h1 className="m-auto my-4 font-bold opacity-60">No Pinned Charts</h1>
-                            )}
                         </RemindersSection>
-                    )}
-                    <RemindersSection title="Maintenance" pageLinkPath="/failures">
-                        <div className="flex flex-row flex-wrap">
-                            {Array
-                                .from(activeFailures)
-                            // Sorts the failures by name length, greatest to least
-                                .sort((a, b) => (allFailures.find((f) => f.identifier === b)?.name ?? '').length - (allFailures.find((f) => f.identifier === a)?.name ?? '').length)
-                                .map((failure) => (
-                                    <ActiveFailureReminder name={allFailures.find((it) => it.identifier === failure)?.name ?? '<unknown>'} />
-                                ))}
-                            {!activeFailures.size && (
-                                <h1 className="m-auto my-4 font-bold opacity-60">No Active Failures</h1>
-                            )}
-                        </div>
-                    </RemindersSection>
-                    <RemindersSection title="Checklists" pageLinkPath="/checklists">
-                        <div className="grid grid-cols-2">
-                            {checklists.map((checklist, clIndex) => (
-                                <Link
-                                    to="/checklists"
-                                    className={`relative overflow-hidden flex flex-col flex-wrap px-2 pt-3 pb-2 mt-4 bg-theme-accent rounded-md ${clIndex && clIndex % 2 !== 0 && 'ml-4'}`}
-                                    onClick={() => {
-                                        dispatch(setSelectedChecklistIndex(clIndex));
-                                    }}
-                                >
-                                    <div className="absolute top-0 left-0 flex-row w-full h-2 bg-theme-secondary">
-                                        <div
-                                            className={`h-full ${isChecklistCompleted(clIndex) ? 'bg-colors-lime-400' : 'bg-theme-highlight'}`}
-                                            style={{ width: `${getChecklistCompletion(clIndex) * 100}%` }}
-                                        />
-                                    </div>
-                                    <h2 className="font-bold">{checklist.name}</h2>
-                                    <IconArrowRight className={`mt-auto ml-auto ${isChecklistCompleted(clIndex) ? 'text-colors-lime-400' : 'text-theme-highlight'}`} />
-                                </Link>
-                            ))}
-                        </div>
-                    </RemindersSection>
-                </div>
-            </ScrollableContainer>
+                    </div>
+                </ScrollableContainer>
+            </div>
         </div>
     );
 };

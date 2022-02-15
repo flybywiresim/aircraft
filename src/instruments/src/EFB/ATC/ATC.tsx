@@ -191,33 +191,35 @@ export const ATC = () => {
             { (atisSource === 'IVAO' || atisSource === 'VATSIM') ? (
                 <div className="w-full h-efb">
                     <ScrollableContainer height={29}>
-                        {controllers && controllers.map((controller, index) => (
-                            <div className={`${index % 2 === 0 && 'pr-4'} w-full max-w-1/2`}>
-                                <div className="overflow-hidden relative p-6 mt-4 w-full bg-theme-secondary rounded-md">
-                                    <h2 className="font-bold">
-                                        {controller.callsign}
-                                    </h2>
-                                    <h2>
-                                        {controller.frequency}
-                                    </h2>
+                        <div className="grid grid-cols-2">
+                            {controllers && controllers.map((controller, index) => (
+                                <div className={`${index && index % 2 !== 0 && 'ml-4'}`}>
+                                    <div className="overflow-hidden relative p-6 mt-4 w-full bg-theme-secondary rounded-md">
+                                        <h2 className="font-bold">
+                                            {controller.callsign}
+                                        </h2>
+                                        <h2>
+                                            {controller.frequency}
+                                        </h2>
 
-                                    <div className="flex absolute inset-0 flex-row opacity-0 hover:opacity-100 transition duration-100">
-                                        <div
-                                            className="flex justify-center items-center w-full bg-theme-highlight bg-opacity-80"
-                                            onClick={() => setActiveFrequency(toFrequency(controller.frequency))}
-                                        >
-                                            <h2>Set Active</h2>
-                                        </div>
-                                        <div
-                                            className="flex justify-center items-center w-full bg-yellow-500 bg-opacity-80"
-                                            onClick={() => setStandbyFrequency(toFrequency(controller.frequency))}
-                                        >
-                                            <h2>Set Standby</h2>
+                                        <div className="flex absolute inset-0 flex-row opacity-0 hover:opacity-100 transition duration-100">
+                                            <div
+                                                className="flex justify-center items-center w-full bg-theme-highlight bg-opacity-80"
+                                                onClick={() => setActiveFrequency(toFrequency(controller.frequency))}
+                                            >
+                                                <h2>Set Active</h2>
+                                            </div>
+                                            <div
+                                                className="flex justify-center items-center w-full bg-yellow-500 bg-opacity-80"
+                                                onClick={() => setStandbyFrequency(toFrequency(controller.frequency))}
+                                            >
+                                                <h2>Set Standby</h2>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        ))}
+                            ))}
+                        </div>
                     </ScrollableContainer>
                     <div className="flex flex-row mt-4 h-96 rounded-lg border-2 border-theme-accent divide-x-2 divide-theme-accent">
                         <div className="flex flex-col justify-between p-6">

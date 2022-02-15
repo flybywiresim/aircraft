@@ -1,4 +1,5 @@
 import React from 'react';
+import useInterval from '@instruments/common/useInterval';
 import { ChecklistPage } from './ChecklistsPage';
 import { CHECKLISTS } from './Lists';
 import { ScrollableContainer } from '../UtilComponents/ScrollableContainer';
@@ -49,7 +50,7 @@ export const Checklists = () => {
             });
         });
     };
-    setAutomaticItemStates();
+    useInterval(setAutomaticItemStates, 3_000);
 
     const handleClick = (index: number) => {
         dispatch(setSelectedChecklistIndex(index));
@@ -58,11 +59,14 @@ export const Checklists = () => {
     const { selectedChecklistIndex } = useAppSelector((state) => state.checklists);
 
     const getTabClassName = (index: number) => {
-        if (isChecklistCompleted(index)) {
-            return 'bg-theme-body border-colors-lime-400 text-colors-lime-400';
+        if (index === selectedChecklistIndex && isChecklistCompleted(index)) {
+            return 'bg-colors-lime-400 text-theme-body border-colors-lime-400';
         }
         if (index === selectedChecklistIndex) {
             return 'bg-theme-highlight text-theme-body border-theme-highlight';
+        }
+        if (isChecklistCompleted(index)) {
+            return 'bg-theme-body border-colors-lime-400 text-colors-lime-400';
         }
         return 'bg-theme-accent border-theme-accent text-theme-text hover:bg-theme-highlight hover:text-theme-body';
     };
@@ -71,7 +75,7 @@ export const Checklists = () => {
         <>
             <h1 className="mb-4 font-bold">Checklists</h1>
             <div className="flex flex-row space-x-6">
-                <div className="w-96">
+                <div className="flex-shrink-0 w-1/4">
                     <ScrollableContainer height={51}>
                         <div className="space-y-4">
                             {CHECKLISTS.map((cl, index) => (

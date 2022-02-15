@@ -61,7 +61,7 @@ export const checklistsSlice = createSlice({
     name: 'checklists',
     initialState,
     reducers: {
-        setChecklistItems: (state, action: PayloadAction<{checklistIndex: number, itemArr: ChecklistItem[] } >) => {
+        setChecklistItems: (state, action: PayloadAction<{checklistIndex: number, itemArr: ChecklistItem[]}>) => {
             state.checklists[action.payload.checklistIndex].items = action.payload.itemArr;
         },
         setChecklistItemCompletion: (state, action: PayloadAction<{checklistIndex: number, itemIndex: number, completionValue: boolean}>) => {
