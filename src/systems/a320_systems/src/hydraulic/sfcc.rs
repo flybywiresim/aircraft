@@ -119,10 +119,6 @@ impl SfccChannel for FlapsChannel {
         !self.feedback_equals_demanded()
     }
 
-    fn send_signal_to_sfcc(&self) -> Angle {
-        self.demanded_angle
-    }
-
     fn generate_configuration(
         &self,
         context: &UpdateContext,
@@ -286,10 +282,6 @@ impl SfccChannel for SlatsChannel {
         !self.feedback_equals_demanded()
     }
 
-    fn send_signal_to_sfcc(&self) -> Angle {
-        self.demanded_angle
-    }
-
 
     fn generate_configuration(
         &self,
@@ -385,10 +377,6 @@ impl SlatsFlapsElectronicComplex {
             self.sfcc[1].update(context, &self.flaps_handle, adirus, lgcius[1], flaps_fppu, slats_fppu);
     }
 
-    fn compare_channels_output(&self) {
-
-    }
-
 }
 
 impl SimulationElement for SlatsFlapsElectronicComplex {
@@ -401,10 +389,198 @@ impl SimulationElement for SlatsFlapsElectronicComplex {
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
+    use super::*;
+    use ntest::assert_about_eq;
+    use std::time::Duration;
+    use systems::simulation::{
+        test::{ReadByName, SimulationTestBed, TestBed, WriteByName},
+        Aircraft,
+    };
+    use systems::landing_gear::{LandingGearControlInterfaceUnit};
+    use systems::navigation::adirs::{AirDataInertialReferenceSystem};
+    use systems::shared::{LgciuWeightOnWheels,LgciuSensors};
+    use uom::si::{angular_velocity::degree_per_second, pressure::psi};
+
+    struct SfccTestFppu {
+        feedback_angle: Angle,
+    }
+
+    impl SfccTestFppu {
+        fn new() -> Self {
+            Self {
+                feedback_angle: Angle::new::<degree>(0.),
+            }
+        }
+    }
+
+    impl PositionPickoffUnit for SfccTestFppu {
+        fn angle(&self) -> Angle {
+            self.feedback_angle
+        }
+    }
+
+    struct A320SfccTestAircraft {
+        sf_electronic_complex: SlatsFlapsElectronicComplex,
+        lgcius: [LandingGearControlInterfaceUnit; 2],
+        adirs: AirDataInertialReferenceSystem,
+        slats_fppu: SfccTestFppu,
+        flaps_fppu: SfccTestFppu,
+    }
+
+    impl A320SfccTestAircraft {
+        fn new(context: &mut InitContext) -> Self {
+            Self {
+                sf_electronic_complex: SlatsFlapsElectronicComplex::new(context),
+                lgcius: [LandingGearControlInterfaceUnit::new(
+                    ElectricalBusType::DirectCurrentEssential),LandingGearControlInterfaceUnit::new(ElectricalBusType::DirectCurrent(2))],
+                adirs: AirDataInertialReferenceSystem::new(context),
+                slats_fppu: SfccTestFppu::new(),
+                flaps_fppu: SfccTestFppu::new(),
+            }
+        }
+    }
+
+    impl Aircraft for A320SfccTestAircraft {
+        fn update_after_power_distribution(&mut self, context: &UpdateContext) {
+            self.sf_electronic_complex.update(context, [self.adirs.adirus(0), self.adirs.adirus(1)],[&self.lgcius[0], &self.lgcius[1]],
+                        &self.flaps_fppu, &self.slats_fppu);
+        }
+    }
+    impl SimulationElement for A320SfccTestAircraft {
+        fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+            self.sf_electronic_complex.accept(visitor);
+            visitor.visit(self);
+        }
+
+        // fn read(&mut self, reader: &mut SimulatorReader) {
+
+        // }
+    }
+
+    struct A320FlapsTestBed {
+        test_bed: SimulationTestBed<A320SfccTestAircraft>,
+    }
+
+    impl A320FlapsTestBed {
+        const HYD_TIME_STEP_MILLIS: u64 = 33;
+
+        fn new() -> Self {
+            Self {
+                test_bed: SimulationTestBed::new(A320SfccTestAircraft::new),
+            }
+        }
+
+        fn run_one_tick(mut self) -> Self {
+            self.test_bed
+                .run_with_delta(Duration::from_millis(Self::HYD_TIME_STEP_MILLIS));
+            self
+        }
+
+        fn run_waiting_for(mut self, delta: Duration) -> Self {
+            self.test_bed.run_multiple_frames(delta);
+            self
+        }
+
+        fn set_flaps_handle_position(mut self, pos: u8) -> Self {
+            self.write_by_name("FLAPS_HANDLE_INDEX", pos as f64);
+            self
+        }
+
+        fn read_flaps_handle_position(&mut self) -> u8 {
+            self.read_by_name("FLAPS_HANDLE_INDEX")
+        }
+
+        fn set_indicated_airspeed(mut self, indicated_airspeed: f64) -> Self {
+            self.write_by_name("AIRSPEED INDICATED", indicated_airspeed);
+            self
+        }
+
+        fn get_flaps_demanded_angle(&self,sfcc_id: usize) -> f64 {
+            self.query(|a| {
+                a.sf_electronic_complex.sfcc[sfcc_id]
+                .flaps_channel.demanded_angle.get::<degree>()
+                }
+            )
+        }
+        fn get_slats_demanded_angle(&self,sfcc_id: usize) -> f64 {
+            self.query(|a| {
+                a.sf_electronic_complex.sfcc[sfcc_id]
+                .slats_channel.demanded_angle.get::<degree>()
+                }
+            )
+        }
+
+        fn get_flaps_conf(&self, sfcc_id: usize) -> FlapsConf {
+            self.query(|a| {
+                a.sf_electronic_complex.sfcc[sfcc_id]
+                    .flaps_channel.calculated_conf
+            })
+        }
+
+        fn get_slats_conf(&self, sfcc_id: usize) -> FlapsConf {
+            self.query(|a| {
+                a.sf_electronic_complex.sfcc[sfcc_id]
+                    .slats_channel.calculated_conf
+            })
+        }
+
+        fn test_conf(
+            &mut self,
+            handle_pos: u8,
+            flaps_demanded_angle: f64,
+            slats_demanded_angle: f64,
+            slats_conf: FlapsConf,
+            flaps_conf: FlapsConf,
+            angle_delta: f64,
+            sfcc_id: usize,
+        ) {
+            assert_eq!(self.read_flaps_handle_position(), handle_pos);
+            assert!((self.get_flaps_demanded_angle(sfcc_id) - flaps_demanded_angle).abs() < angle_delta);
+            assert!((self.get_slats_demanded_angle(sfcc_id) - slats_demanded_angle).abs() < angle_delta);
+            assert_eq!(self.get_flaps_conf(sfcc_id), flaps_conf);
+            assert_eq!(self.get_slats_conf(sfcc_id), slats_conf);
+        }
+
+        fn lgciu_on_ground(&self) -> bool {
+            self.query(|a| {
+                a.lgcius[0].left_and_right_gear_compressed(false)
+            })
+        }
+    }
+    impl TestBed for A320FlapsTestBed {
+        type Aircraft = A320SfccTestAircraft;
+
+        fn test_bed(&self) -> &SimulationTestBed<A320SfccTestAircraft> {
+            &self.test_bed
+        }
+
+        fn test_bed_mut(&mut self) -> &mut SimulationTestBed<A320SfccTestAircraft> {
+            &mut self.test_bed
+        }
+    }
+
+    fn test_bed() -> A320FlapsTestBed {
+        A320FlapsTestBed::new()
+    }
+
+    fn test_bed_with(on_ground: bool) -> A320FlapsTestBed {
+        let mut test_bed = test_bed();
+        test_bed.set_on_ground(on_ground);
+        test_bed
+    }
 
     #[test]
     fn dummy_test() {
         assert!(1==1)
+    }
+
+    #[test]
+    fn test_lgciu_on_ground() {
+        let mut test_bed = test_bed_with(true);
+
+        assert!(test_bed.lgciu_on_ground());
+        test_bed = test_bed_with(true);
+        assert!(!test_bed.lgciu_on_ground())
     }
 }

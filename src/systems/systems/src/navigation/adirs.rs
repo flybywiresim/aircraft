@@ -365,6 +365,10 @@ impl AirDataInertialReferenceSystem {
     fn ir_has_fault(&self, number: usize) -> bool {
         self.adirus[number - 1].ir_has_fault()
     }
+
+    pub fn adirus(&self, n: usize) -> &AirDataInertialReferenceUnit {
+        &self.adirus[n]
+    }
 }
 impl SimulationElement for AirDataInertialReferenceSystem {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
