@@ -1,7 +1,7 @@
-import ReactDOM from 'react-dom';
 import React, { useEffect, useState } from 'react';
 import { GaugeComponent, GaugeMarkerComponent, splitDecimals } from '@instruments/common/gauges';
-import { getRenderTarget, setIsEcamPage } from '../../../Common/defaults';
+import { render } from '../../../Common';
+import { setIsEcamPage } from '../../../Common/defaults';
 import { SimVarProvider, useSimVar } from '../../../Common/simVars';
 import { usePersistentProperty } from '../../../Common/persistence';
 import { fuelForDisplay } from '../../Common/FuelFunctions';
@@ -213,9 +213,9 @@ export const PressureComponent = () => {
 };
 
 export const CondComponent = () => {
-    const [cockpitCabinTemp] = useSimVar('L:A32NX_CKPT_TEMP', 'celsius', 1000);
-    const [fwdCabinTemp] = useSimVar('L:A32NX_FWD_TEMP', 'celsius', 1000);
-    const [aftCabinTemp] = useSimVar('L:A32NX_AFT_TEMP', 'celsius', 1000);
+    const [cockpitCabinTemp] = useSimVar('L:A32NX_COND_CKPT_TEMP', 'celsius', 1000);
+    const [fwdCabinTemp] = useSimVar('L:A32NX_COND_FWD_TEMP', 'celsius', 1000);
+    const [aftCabinTemp] = useSimVar('L:A32NX_COND_AFT_TEMP', 'celsius', 1000);
 
     return (
         <>
@@ -232,4 +232,4 @@ export const CondComponent = () => {
     );
 };
 
-ReactDOM.render(<SimVarProvider><CrzPage /></SimVarProvider>, getRenderTarget());
+render(<SimVarProvider><CrzPage /></SimVarProvider>);

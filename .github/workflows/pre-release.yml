@@ -21,6 +21,7 @@ jobs:
           echo CLIENT_ID=${{ secrets.NAVIGRAPH_CLIENT_ID }} >> .env
           echo CLIENT_SECRET=${{ secrets.NAVIGRAPH_CLIENT_SECRET }} >> .env
           echo CHARTFOX_SECRET=${{ secrets.CHARTFOX_SECRET }} >> .env
+          echo SENTRY_DSN=${{ secrets.SENTRY_DSN }} >> .env
       - name: Build A32NX
         run: |
           ./scripts/dev-env/run.sh ./scripts/setup.sh

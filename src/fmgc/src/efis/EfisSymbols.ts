@@ -1,5 +1,7 @@
-//  Copyright (c) 2021 FlyByWire Simulations
-//  SPDX-License-Identifier: GPL-3.0
+// Copyright (c) 2021-2022 FlyByWire Simulations
+// Copyright (c) 2021-2022 Synaptic Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
 
 import { FlightPlanManager, WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
 import { EfisOption, Mode, NdSymbol, NdSymbolTypeFlags, RangeSetting, rangeSettings } from '@shared/NavigationDisplay';
@@ -21,7 +23,7 @@ export class EfisSymbols {
 
     private nearby: NearbyFacilities;
 
-    private listener = RegisterViewListener('JS_LISTENER_SIMVARS');
+    private listener = RegisterViewListener('JS_LISTENER_SIMVARS', null, true);
 
     private static sides = ['L', 'R'];
 
