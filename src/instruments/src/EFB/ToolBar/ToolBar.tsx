@@ -1,5 +1,14 @@
 import React, { FC } from 'react';
-import { Clipboard, Truck, Compass, BroadcastPin, ExclamationDiamond, Gear, Calculator } from 'react-bootstrap-icons';
+import {
+    Clipboard,
+    Truck,
+    Compass,
+    BroadcastPin,
+    ExclamationDiamond,
+    Gear,
+    Calculator,
+    JournalCheck,
+} from 'react-bootstrap-icons';
 import { Link, useHistory } from 'react-router-dom';
 import { FbwLogo } from '../UtilComponents/FbwLogo';
 
@@ -27,10 +36,13 @@ export const ToolBar = () => (
             <ToolBarButton to="/failures">
                 <ExclamationDiamond size={35} />
             </ToolBarButton>
+            <ToolBarButton to="/checklists">
+                <JournalCheck size={35} />
+            </ToolBarButton>
         </div>
 
         <div className="flex flex-col items-center mb-6">
-            <div className="w-14 h-1.5 rounded-full bg-theme-accent" />
+            <div className="w-14 h-1.5 bg-theme-accent rounded-full" />
             <ToolBarButton to="/settings">
                 <Gear color="currentColor" size={35} />
             </ToolBarButton>

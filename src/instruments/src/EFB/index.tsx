@@ -4,6 +4,7 @@ import { Provider } from 'react-redux';
 import { render } from '@instruments/common/index';
 import ReactDOM from 'react-dom';
 import * as Defaults from '@instruments/common/defaults';
+import { ErrorBoundary } from 'react-error-boundary';
 import { ModalProvider } from './UtilComponents/Modals/Modals';
 import { FailuresOrchestratorProvider } from './failures-orchestrator-provider';
 import Efb from './Efb';
@@ -47,7 +48,11 @@ export const ErrorBoundaryMessage = () => (
 );
 
 try {
-    render(<FailuresOrchestratorProvider><EFBLoad /></FailuresOrchestratorProvider>);
+    render(
+        <ErrorBoundary FallbackComponent={ErrorBoundaryMessage}>
+            <FailuresOrchestratorProvider><EFBLoad /></FailuresOrchestratorProvider>
+        </ErrorBoundary>,
+    );
 } catch (e) {
     ReactDOM.render(<ErrorBoundaryMessage />, Defaults.getRenderTarget());
 }

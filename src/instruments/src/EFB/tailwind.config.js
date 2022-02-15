@@ -1,6 +1,7 @@
 'use strict';
 
 const reactComponentsClasses = require('@flybywiresim/react-components/build/usedCSSClasses.json');
+const colors = require('tailwindcss/colors');
 
 const watchFolders = [
     'ATC',
@@ -68,6 +69,7 @@ module.exports = {
                 '-26.5': '-26.5deg',
             }),
             colors: {
+                colors,
                 'theme-highlight': 'var(--color-highlight)',
                 'theme-body': 'var(--color-body)',
                 'theme-text': 'var(--color-text)',

@@ -18,6 +18,7 @@ import { useFailuresOrchestrator } from '../../failures-orchestrator-provider';
 import { useAppDispatch, useAppSelector } from '../../Store/store';
 import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
 import { WeatherWidget } from './WeatherWidget';
+import { getChecklistCompletion, isChecklistCompleted, setSelectedChecklistIndex } from '../../Store/features/checklists';
 
 export const RemindersWidget = () => {
     const { allFailures, activeFailures } = useFailuresOrchestrator();
@@ -28,6 +29,7 @@ export const RemindersWidget = () => {
 
     const { departingAirport, arrivingAirport } = useAppSelector((state) => state.simbrief.data);
     const { userDepartureIcao, userDestinationIcao } = useAppSelector((state) => state.dashboard);
+    const { checklists } = useAppSelector((state) => state.checklists);
 
     return (
         <div className="p-6 w-full rounded-lg border-2 border-theme-accent">
@@ -94,7 +96,28 @@ export const RemindersWidget = () => {
                             )}
                         </div>
                     </RemindersSection>
-                    <RemindersSection title="Checklists" pageLinkPath="/checklists" />
+                    <RemindersSection title="Checklists" pageLinkPath="/checklists">
+                        <div className="grid grid-cols-2">
+                            {checklists.map((checklist, clIndex) => (
+                                <Link
+                                    to="/checklists"
+                                    className={`relative overflow-hidden flex flex-col flex-wrap px-2 pt-3 pb-2 mt-4 bg-theme-accent rounded-md ${clIndex && clIndex % 2 !== 0 && 'ml-4'}`}
+                                    onClick={() => {
+                                        dispatch(setSelectedChecklistIndex(clIndex));
+                                    }}
+                                >
+                                    <div className="absolute top-0 left-0 flex-row w-full h-2 bg-theme-secondary">
+                                        <div
+                                            className={`h-full ${isChecklistCompleted(clIndex) ? 'bg-colors-lime-400' : 'bg-theme-highlight'}`}
+                                            style={{ width: `${getChecklistCompletion(clIndex) * 100}%` }}
+                                        />
+                                    </div>
+                                    <h2 className="font-bold">{checklist.name}</h2>
+                                    <IconArrowRight className={`mt-auto ml-auto ${isChecklistCompleted(clIndex) ? 'text-colors-lime-400' : 'text-theme-highlight'}`} />
+                                </Link>
+                            ))}
+                        </div>
+                    </RemindersSection>
                 </div>
             </ScrollableContainer>
         </div>
