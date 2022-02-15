@@ -12,6 +12,8 @@
 1. [Engine and FADEC System](#engine-and-fadec-system)
 1. [Air Conditioning / Pressurisation / Ventilation](#air-conditioning--pressurisation--ventilation)
 1. [Pneumatic](#pneumatic)
+1. [Landing Gear (ATA 32)](#landing-gear-ata-32)
+1. [ATC (ATA 34)](#atc-ata-34)
 
 ## Uncategorized
 
@@ -40,14 +42,6 @@
 - A32NX_BRAKES_HOT
     - boolean
     - whether one of the brakes are hot (>300°C)
-
-- XMLVAR_Auto
-    - Used in the `.flt` files to set a default value for the ATC 3 way switch on the TCAS panel
-    - Maps to the `I:XMLVAR_Auto` variable which is the actual backing var for the switch
-
-- XMLVAR_ALT_MODE_REQUESTED
-    - Used in the `.flt` files to set a default value for the ALT RPTG 2 way switch on the TCAS panel
-    - Maps to the `I:XMLVAR_ALT_MODE_REQUESTED` variable which is the actual backing var for the switch
 
 - A32NX_KNOB_OVHD_AIRCOND_XBLEED_Position
     - Position (0-2)
@@ -2447,3 +2441,39 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - {number}
         - 0
         - 1
+
+## Landing Gear (ATA 32)
+
+- A32NX_LGCIU_{number}_{gear}_GEAR_COMPRESSED
+    - Indicates if the shock absorber is compressed (not fully extended)
+    - Bool
+    - {number}
+        - 1
+        - 2
+    - {gear}
+        - NOSE
+        - LEFT
+        - RIGHT
+
+## ATC (ATA 34)
+
+- A32NX_TRANSPONDER_MODE
+    - The transponder mode selector switch position
+    - Enum
+      Mode | Value
+      --- | ---
+      STBY | 0
+      AUTO | 1
+      ON | 2
+
+- A32NX_TRANSPONDER_SYSTEM
+    - The transponder system selector switch position
+    - Enum
+      System | Value
+      --- | ---
+      Transponder 1 | 0
+      Transponder 2 | 1
+
+- A32NX_TRANSPONDER_ALT_RPTG
+    - The transponder altitude reporting switch position
+    - Bool

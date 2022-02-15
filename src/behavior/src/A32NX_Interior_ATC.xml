@@ -57,9 +57,13 @@
                 <ANIM_TYPE>BUTTON</ANIM_TYPE>
                 <ANIM_TEMPLATE>ASOBO_GT_Push_Button</ANIM_TEMPLATE>
                 <ANIM_NAME>#ANIM_NAME_BUTTON#</ANIM_NAME>
-                <LEFT_SINGLE_CODE>
-                    (&gt;H:#EVENT_NAME#)
-                </LEFT_SINGLE_CODE>
+                <Condition Valid="LEFT_SINGLE_CODE">
+                    <False>
+                        <LEFT_SINGLE_CODE>
+                            (&gt;H:#EVENT_NAME#)
+                        </LEFT_SINGLE_CODE>
+                    </False>
+                </Condition>
             </UseTemplate>
             <Condition Check="NO_SEQ1">
                 <False>
@@ -124,23 +128,37 @@
             <KNOB_XPNDR_MODE_ANIM_NAME>Knob_ATC_STBY</KNOB_XPNDR_MODE_ANIM_NAME>
             <KNOB_XPNDR_THRT_NODE_ID>KNOB_ATC_THRT</KNOB_XPNDR_THRT_NODE_ID>
             <KNOB_XPNDR_THRT_ANIM_NAME>KNOB_ATC_THRT</KNOB_XPNDR_THRT_ANIM_NAME>
-            <KNOB_XPNDR_ON_OFF_NODE_ID>Knob_ATC_ALT</KNOB_XPNDR_ON_OFF_NODE_ID>
-            <KNOB_XPNDR_ON_OFF_ANIM_NAME>Knob_ATC_ALT</KNOB_XPNDR_ON_OFF_ANIM_NAME>
+            <KNOB_XPNDR_ALT_RPTG_NODE_ID>Knob_ATC_ALT</KNOB_XPNDR_ALT_RPTG_NODE_ID>
+            <KNOB_XPNDR_ALT_RPTG_ANIM_NAME>Knob_ATC_ALT</KNOB_XPNDR_ALT_RPTG_ANIM_NAME>
+            <KNOB_XPNDR_SYSTEM_NODE_ID>Knob_ATC_1</KNOB_XPNDR_SYSTEM_NODE_ID>
+            <KNOB_XPNDR_SYSTEM_ANIM_NAME>Knob_ATC_1</KNOB_XPNDR_SYSTEM_ANIM_NAME>
             <EVENT_TARGET>A320_Neo_ATC</EVENT_TARGET>
-            <POS_STBY>0</POS_STBY>
-            <POS_AUTO>1</POS_AUTO>
-            <POS_ON>2</POS_ON>
         </DefaultTemplateParameters>
         <OverrideTemplateParameters>
             <ATC_BUTTON_COUNT>7</ATC_BUTTON_COUNT>
 
-            <CHECK_VAL_STBY>1 == (I:XMLVAR_Auto) ! and</CHECK_VAL_STBY>
-            <CHECK_VAL_AUTO>(I:XMLVAR_Auto) 0 &gt;</CHECK_VAL_AUTO>
-            <CHECK_VAL_ON>4 3 (I:XMLVAR_ALT_MODE_REQUESTED) ? == (I:XMLVAR_Auto) ! and</CHECK_VAL_ON>
-            <ENUM_VAL_STBY>1</ENUM_VAL_STBY>
-            <ENUM_VAL_ON>4 3 (I:XMLVAR_ALT_MODE_REQUESTED) ?</ENUM_VAL_ON>
-            <SET_TRANSPONDER_STATE>(&gt;A:TRANSPONDER STATE:1, Enum)</SET_TRANSPONDER_STATE>
-            <GET_TRANSPONDER_STATE>(A:TRANSPONDER STATE:1, Enum)</GET_TRANSPONDER_STATE>
+            <!-- A:TRANSPONDER STATE:1 sim -->
+            <TRANSPONDER_STATE_OFF>0</TRANSPONDER_STATE_OFF>
+            <TRANSPONDER_STATE_STANDBY>1</TRANSPONDER_STATE_STANDBY>
+            <TRANSPONDER_STATE_TEST>2</TRANSPONDER_STATE_TEST>
+            <!-- mode A only -->
+            <TRANSPONDER_STATE_ON>3</TRANSPONDER_STATE_ON>
+            <!-- mode C -->
+            <TRANSPONDER_STATE_ALT>4</TRANSPONDER_STATE_ALT>
+            <!-- mode S only -->
+            <TRANSPONDER_STATE_GROUND>5</TRANSPONDER_STATE_GROUND>
+
+            <!-- L:A32NX_TRANSPONDER_MODE selector switch -->
+            <TRANSPONDER_MODE_STBY>0</TRANSPONDER_MODE_STBY>
+            <TRANSPONDER_MODE_AUTO>1</TRANSPONDER_MODE_AUTO>
+            <TRANSPONDER_MODE_ON>2</TRANSPONDER_MODE_ON>
+
+            <!-- L:A32NX_TRANSPONDER_SYSTEM selector switch -->
+            <TRANSPONDER_SYSTEM_1>0</TRANSPONDER_SYSTEM_1>
+            <TRANSPONDER_SYSTEM_2>1</TRANSPONDER_SYSTEM_2>
+
+            <TRANSPONDER_BUS_1>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, bool)</TRANSPONDER_BUS_1>
+            <TRANSPONDER_BUS_2>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, bool)</TRANSPONDER_BUS_2>
         </OverrideTemplateParameters>
         <Component ID="AIRLINER_ATC_Shared_Components">
             <UseTemplate Name="ASOBO_GT_Helper_Recursive_ID">
@@ -162,32 +180,58 @@
                 <BUTTON_ID>CLR</BUTTON_ID>
             </UseTemplate>
         </Component>
-        <UseTemplate Name="FBW_Airbus_ATC_NUMBER_BUTTON_Template">
+        <UseTemplate Name="FBW_Airbus_ATC_BUTTON_Template">
             <BUTTON_NAME>#BUTTON_IDENT_NAME#</BUTTON_NAME>
             <BUTTON_ID>IDENT</BUTTON_ID>
             <NO_SEQ1/>
+            <!-- auto resets after 18 seconds -->
+            <LEFT_SINGLE_CODE type="rnp">
+                alias xpdrSelected = (L:A32NX_TRANSPONDER_SYSTEM, number);
+                alias xpdrIdentEvent = (K:XPNDR_IDENT_ON, number);
+
+                if (xpdrSelected == #TRANSPONDER_SYSTEM_1, number# and #TRANSPONDER_BUS_1, bool#) or (xpdrSelected == #TRANSPONDER_SYSTEM_2, number# and #TRANSPONDER_BUS_2, bool#) {
+                    xpdrIdentEvent = 0;
+                }
+            </LEFT_SINGLE_CODE>
+            <LEFT_LEAVE_CODE></LEFT_LEAVE_CODE>
         </UseTemplate>
         <Component ID="AIRLINER_ATC_Knobs">
             <DefaultTemplateParameters>
-                <UPDATE_AUTO_TRANSPONDER_STATE>
-                    (I:XMLVAR_Auto) if{
-                        (A:GENERAL ENG COMBUSTION:1, Bool)
-                        (A:GENERAL ENG COMBUSTION:2, Bool) or if{
-                            #ENUM_VAL_ON# #SET_TRANSPONDER_STATE#
-                        } els{
-                        #ENUM_VAL_STBY# #SET_TRANSPONDER_STATE#
+                <!-- in auto, on ground = mode-s, in air = on/alt rptg-->
+                <UPDATE_TRANSPONDER_STATE type="rnp">
+                    alias xpdrMode = (L:A32NX_TRANSPONDER_MODE, number);
+                    alias xpdrSelected = (L:A32NX_TRANSPONDER_SYSTEM, number);
+                    alias leftGearCompressed = (L:A32NX_LGCIU_1_LEFT_GEAR_COMPRESSED, bool);
+                    alias rightGearCompressed = (L:A32NX_LGCIU_2_RIGHT_GEAR_COMPRESSED, bool);
+                    alias altReporting = (L:A32NX_TRANSPONDER_ALT_RPTG, bool);
+                    alias xpdrState = (A:TRANSPONDER STATE:1, number);
+
+                    if (xpdrSelected == #TRANSPONDER_SYSTEM_1, number# and !#TRANSPONDER_BUS_1, bool#) or (xpdrSelected == #TRANSPONDER_SYSTEM_2, number# and !#TRANSPONDER_BUS_2, bool#) {
+                        xpdrState = #TRANSPONDER_STATE_OFF, number#;
+                    } else if xpdrMode == #TRANSPONDER_MODE_STBY, number# {
+                        xpdrState = #TRANSPONDER_STATE_STANDBY, number#;
+                    } else if xpdrMode == #TRANSPONDER_MODE_AUTO, number# {
+                        if leftGearCompressed or rightGearCompressed {
+                            // vPilot treats this as mode C, but they seem to want that
+                            xpdrState = #TRANSPONDER_STATE_GROUND, number#;
+                        } else if altReporting {
+                            xpdrState = #TRANSPONDER_STATE_ALT, number#;
+                        } else {
+                            xpdrState = #TRANSPONDER_STATE_ON, number#;
+                        }
+                    } else if xpdrMode == #TRANSPONDER_MODE_ON, number# {
+                        if altReporting {
+                            xpdrState = #TRANSPONDER_STATE_ALT, number#;
+                        } else {
+                            xpdrState = #TRANSPONDER_STATE_ON, number#;
                         }
                     }
-                </UPDATE_AUTO_TRANSPONDER_STATE>
+                </UPDATE_TRANSPONDER_STATE>
             </DefaultTemplateParameters>
             <UseTemplate Name="ASOBO_GT_Update">
-                <UPDATE_CODE>#UPDATE_AUTO_TRANSPONDER_STATE#</UPDATE_CODE>
+                <UPDATE_CODE>#UPDATE_TRANSPONDER_STATE#</UPDATE_CODE>
             </UseTemplate>
-            <Component ID="#KNOB_XPNDR_ON_OFF_NODE_ID#" Node="#KNOB_XPNDR_ON_OFF_NODE_ID#">
-                <Update Once="True">
-                        (L:XMLVAR_ALT_MODE_REQUESTED) (&gt;I:XMLVAR_ALT_MODE_REQUESTED)
-                        #UPDATE_AUTO_TRANSPONDER_STATE#
-                </Update>
+            <Component ID="#KNOB_XPNDR_ALT_RPTG_NODE_ID#" Node="#KNOB_XPNDR_ALT_RPTG_NODE_ID#">
                 <UseTemplate Name="FBW_Anim_Interactions">
                     <ANIM_TYPE>KNOB</ANIM_TYPE>
                     <ANIM_TEMPLATE>ASOBO_GT_Switch_2States</ANIM_TEMPLATE>
@@ -197,12 +241,10 @@
                     <LEFTARROW>TurnLeft</LEFTARROW>
                     <RIGHTARROW>TurnRight</RIGHTARROW>
                     <WWISE_EVENT>smallknob</WWISE_EVENT>
-                    <LEFT_SINGLE_CODE>
-                        (I:XMLVAR_ALT_MODE_REQUESTED) ! (&gt;I:XMLVAR_ALT_MODE_REQUESTED)
-                        #UPDATE_AUTO_TRANSPONDER_STATE#
-                    </LEFT_SINGLE_CODE>
-                    <ANIM_CODE>(I:XMLVAR_ALT_MODE_REQUESTED) 100 *</ANIM_CODE>
-                    <ANIM_NAME>#KNOB_XPNDR_ON_OFF_ANIM_NAME#</ANIM_NAME>
+                    <CODE_POS_0>0 (&gt;L:A32NX_TRANSPONDER_ALT_RPTG, number) #UPDATE_TRANSPONDER_STATE#</CODE_POS_0>
+                    <CODE_POS_1>1 (&gt;L:A32NX_TRANSPONDER_ALT_RPTG, number) #UPDATE_TRANSPONDER_STATE#</CODE_POS_1>
+                    <ANIM_CODE>(L:A32NX_TRANSPONDER_ALT_RPTG) 100 *</ANIM_CODE>
+                    <ANIM_NAME>#KNOB_XPNDR_ALT_RPTG_ANIM_NAME#</ANIM_NAME>
                     <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.ATC_ALT_RPTG_TURN_ON</ANIMTIP_0>
                     <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.ATC_ALT_RPTG_TURN_OFF</ANIMTIP_1>
                 </UseTemplate>
@@ -215,20 +257,34 @@
                     <SWITCH_DIRECTION>Horizontal</SWITCH_DIRECTION>
                     <LEFTARROW>TurnLeft</LEFTARROW>
                     <RIGHTARROW>TurnRight</RIGHTARROW>
-                    <CODE_POS_0>0 (&gt;I:XMLVAR_Auto) #ENUM_VAL_STBY# #SET_TRANSPONDER_STATE#</CODE_POS_0>
-                    <CODE_POS_1>
-                        1 (&gt;I:XMLVAR_Auto)
-                        #UPDATE_AUTO_TRANSPONDER_STATE#
-                    </CODE_POS_1>
-                    <CODE_POS_2>0 (&gt;I:XMLVAR_Auto) #ENUM_VAL_ON# #SET_TRANSPONDER_STATE#</CODE_POS_2>
-                    <STATE0_TEST>#GET_TRANSPONDER_STATE# #CHECK_VAL_STBY#</STATE0_TEST>
-                    <STATE1_TEST>#CHECK_VAL_AUTO#</STATE1_TEST>
-                    <STATE2_TEST>#GET_TRANSPONDER_STATE# #CHECK_VAL_ON#</STATE2_TEST>
+                    <CODE_POS_0>#TRANSPONDER_MODE_STBY# (&gt;L:A32NX_TRANSPONDER_MODE, number) #UPDATE_TRANSPONDER_STATE#</CODE_POS_0>
+                    <CODE_POS_1>#TRANSPONDER_MODE_AUTO# (&gt;L:A32NX_TRANSPONDER_MODE, number) #UPDATE_TRANSPONDER_STATE#</CODE_POS_1>
+                    <CODE_POS_2>#TRANSPONDER_MODE_ON# (&gt;L:A32NX_TRANSPONDER_MODE, number) #UPDATE_TRANSPONDER_STATE#</CODE_POS_2>
+                    <STATE0_TEST>#TRANSPONDER_MODE_STBY# (L:A32NX_TRANSPONDER_MODE, number) ==</STATE0_TEST>
+                    <STATE1_TEST>#TRANSPONDER_MODE_AUTO# (L:A32NX_TRANSPONDER_MODE, number) ==</STATE1_TEST>
+                    <STATE2_TEST>#TRANSPONDER_MODE_ON# (L:A32NX_TRANSPONDER_MODE, number) ==</STATE2_TEST>
                     <ANIM_NAME>#KNOB_XPNDR_MODE_ANIM_NAME#</ANIM_NAME>
                     <ANIMCURSOR_MAX>1</ANIMCURSOR_MAX>
                     <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.ATC_SET_TO_STBY</ANIMTIP_0>
                     <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.ATC_SET_TO_AUTO</ANIMTIP_1>
                     <ANIMTIP_2>TT:COCKPIT.TOOLTIPS.ATC_SET_TO_ON</ANIMTIP_2>
+                </UseTemplate>
+            </Component>
+            <Component ID="#KNOB_XPNDR_SYSTEM_NODE_ID#" Node="#KNOB_XPNDR_SYSTEM_NODE_ID#">
+                <UseTemplate Name="FBW_Anim_Interactions">
+                    <ANIM_TYPE>KNOB</ANIM_TYPE>
+                    <ANIM_TEMPLATE>ASOBO_GT_Switch_XStates</ANIM_TEMPLATE>
+                    <NUM_STATES>2</NUM_STATES>
+                    <SWITCH_DIRECTION>Horizontal</SWITCH_DIRECTION>
+                    <LEFTARROW>TurnLeft</LEFTARROW>
+                    <RIGHTARROW>TurnRight</RIGHTARROW>
+                    <WWISE_EVENT>smallknob</WWISE_EVENT>
+                    <CODE_POS_0>#TRANSPONDER_SYSTEM_1# (&gt;L:A32NX_TRANSPONDER_SYSTEM, number) #UPDATE_TRANSPONDER_STATE#</CODE_POS_0>
+                    <CODE_POS_1>#TRANSPONDER_SYSTEM_2# (&gt;L:A32NX_TRANSPONDER_SYSTEM, number) #UPDATE_TRANSPONDER_STATE#</CODE_POS_1>
+                    <ANIM_CODE>(L:A32NX_TRANSPONDER_SYSTEM) 100 *</ANIM_CODE>
+                    <ANIM_NAME>#KNOB_XPNDR_SYSTEM_ANIM_NAME#</ANIM_NAME>
+                    <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.ATC_SYSTEM_1</ANIMTIP_0>
+                    <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.ATC_SYSTEM_2</ANIMTIP_1>
                 </UseTemplate>
             </Component>
         </Component>
