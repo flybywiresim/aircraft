@@ -5,10 +5,10 @@ import { setIsEcamPage } from '@instruments/common/defaults';
 import { useSimVar } from '@instruments/common/simVars';
 import { GaugeComponent, GaugeMarkerComponent } from '@instruments/common/gauges';
 import { PageTitle } from '../../Common/PageTitle';
-
-import './Apu.scss';
 import { EcamPage } from '../../Common/EcamPage';
 import { SvgGroup } from '../../Common/SvgGroup';
+
+import './Apu.scss';
 
 setIsEcamPage('apu_page');
 

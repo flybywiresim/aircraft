@@ -13,7 +13,7 @@ export class AtcSystem {
 
     private datalink: Datalink | undefined = undefined;
 
-    private listener = RegisterViewListener('JS_LISTENER_SIMVARS');
+    private listener = RegisterViewListener('JS_LISTENER_SIMVARS', null, true);
 
     private cdplcResetRequired = false;
 

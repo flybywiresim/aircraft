@@ -22,7 +22,7 @@ export class AtsuManager {
 
     public atc = new AtcSystem(this, this.datalink);
 
-    private listener = RegisterViewListener('JS_LISTENER_SIMVARS');
+    private listener = RegisterViewListener('JS_LISTENER_SIMVARS', null, true);
 
     private mcdu = undefined;
 

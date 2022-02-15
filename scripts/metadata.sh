@@ -17,6 +17,7 @@ fi
 if [ -z "${GITHUB_SHA}" ]; then
     GITHUB_SHA="$(git show-ref -s HEAD)"
 fi
+GITHUB_RELEASE_PRETTY_NAME="$(node scripts/pretty-release-name.js)"
 GITHUB_BUILT="$(date -u -Iseconds)"
 
 jq -n \
@@ -25,5 +26,8 @@ jq -n \
     --arg sha "${GITHUB_SHA}" \
     --arg actor "${GITHUB_ACTOR}" \
     --arg event_name "${GITHUB_EVENT_NAME}" \
-    '{ built: $built, ref: $ref, sha: $sha, actor: $actor, event_name: $event_name }' \
+    --arg pretty_release_name "${GITHUB_RELEASE_PRETTY_NAME}" \
+    '{ built: $built, ref: $ref, sha: $sha, actor: $actor, event_name: $event_name, pretty_release_name: $pretty_release_name }' \
     > "${DIR}/../flybywire-aircraft-a320-neo/build_info.json"
+
+cp "${DIR}/../flybywire-aircraft-a320-neo/build_info.json" "${DIR}/../flybywire-aircraft-a320-neo/a32nx_build_info.json"
