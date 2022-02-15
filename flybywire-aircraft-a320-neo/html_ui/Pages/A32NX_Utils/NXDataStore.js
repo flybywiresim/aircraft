@@ -4,7 +4,7 @@ Include.addScript("/JS/dataStorage.js");
 class NXDataStore {
     /* private */ static get listener() {
         if (NXDataStore._listener === undefined) {
-            NXDataStore._listener = RegisterViewListener('JS_LISTENER_SIMVARS');
+            NXDataStore._listener = RegisterViewListener('JS_LISTENER_SIMVARS', null, true);
         }
         return NXDataStore._listener;
     }
