@@ -480,55 +480,68 @@ struct AirDataBus {
 
 // Same here
 struct InertialReferenceBus {
-  Arinc429NumericWord latitude;
-
-  Arinc429NumericWord longitude;
-
-  Arinc429NumericWord groundspeed;
-
-  Arinc429NumericWord windspeed;
-
-  Arinc429NumericWord windDirection;
-
-  Arinc429NumericWord trackAngleTrue;
-
-  Arinc429NumericWord trackAngleMagnetic;
-
-  Arinc429NumericWord headingMagnetic;
-
-  Arinc429NumericWord headingTrue;
-
-  Arinc429NumericWord driftAngle;
-
-  Arinc429NumericWord flightPathAngle;
-
-  Arinc429NumericWord pitchAngle;
-
-  Arinc429NumericWord rollAngle;
-
-  Arinc429NumericWord bodyPitchRate;
-
-  Arinc429NumericWord bodyRollRate;
-
-  Arinc429NumericWord bodyYawRate;
-
-  Arinc429NumericWord bodyLongAccel;
-
-  Arinc429NumericWord bodyLatAccel;
-
-  Arinc429NumericWord bodyNormalAccel;
-
-  Arinc429NumericWord pitchAttRate;
-
-  Arinc429NumericWord rollAttRate;
-
-  Arinc429NumericWord inertialAlt;
-
-  Arinc429NumericWord verticalAccel;
-
-  Arinc429NumericWord inertialVerticalSpeed;
-
+  // Label 270
   Arinc429DiscreteWord discreteWord1;
+  // Label 310
+  Arinc429NumericWord latitude;
+  // Label 311
+  Arinc429NumericWord longitude;
+  // Label 312
+  Arinc429NumericWord groundspeed;
+  // Label 313
+  Arinc429NumericWord trackAngleTrue;
+  // Label 314
+  Arinc429NumericWord headingTrue;
+  // Label 315
+  Arinc429NumericWord windspeed;
+  // Label 316
+  Arinc429NumericWord windDirectionTrue;
+  // Label 317
+  Arinc429NumericWord trackAngleMagnetic;
+  // Label 320
+  Arinc429NumericWord headingMagnetic;
+  // Label 321
+  Arinc429NumericWord driftAngle;
+  // Label 322
+  Arinc429NumericWord flightPathAngle;
+  // Label 323
+  Arinc429NumericWord flightPathAcceleration;
+  // Label 324
+  Arinc429NumericWord pitchAngle;
+  // Label 325
+  Arinc429NumericWord rollAngle;
+  // Label 326
+  Arinc429NumericWord bodyPitchRate;
+  // Label 327
+  Arinc429NumericWord bodyRollRate;
+  // Label 330
+  Arinc429NumericWord bodyYawRate;
+  // Label 331
+  Arinc429NumericWord bodyLongAccel;
+  // Label 332
+  Arinc429NumericWord bodyLatAccel;
+  // Label 333
+  Arinc429NumericWord bodyNormalAccel;
+  // Label 335
+  Arinc429NumericWord trackAngleRate;
+  // Label 336
+  Arinc429NumericWord pitchAttRate;
+  // Label 337
+  Arinc429NumericWord rollAttRate;
+  // Label 361
+  Arinc429NumericWord inertialAlt;
+  // Label 362
+  Arinc429NumericWord alongTrackHorizAcc;
+  // Label 363
+  Arinc429NumericWord crossTrackHorizAcc;
+  // Label 364
+  Arinc429NumericWord verticalAccel;
+  // Label 365
+  Arinc429NumericWord inertialVerticalSpeed;
+  // Label 366
+  Arinc429NumericWord northSouthVelocity;
+  // Label 367
+  Arinc429NumericWord eastWestVelocity;
 };
 
 struct AdirsBusses {
