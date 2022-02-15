@@ -22,7 +22,7 @@ export const StatusBar = ({ batteryLevel, isCharging }: StatusBarProps) => {
     const [showStatusBarFlightProgress] = usePersistentNumberProperty('EFB_SHOW_STATUSBAR_FLIGHTPROGRESS', 1);
 
     const [timeDisplayed] = usePersistentProperty('EFB_TIME_DISPLAYED', 'utc');
-    const [timeFormat] = usePersistentProperty('EFB_TIME_FORMAT', '12');
+    const [timeFormat] = usePersistentProperty('EFB_TIME_FORMAT', '24');
 
     const power = usePower();
 

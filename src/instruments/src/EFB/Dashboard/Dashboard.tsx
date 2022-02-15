@@ -4,9 +4,9 @@ import { RemindersWidget } from './Widgets/RemindersWidget';
 
 export const Dashboard = () => (
     <div className="w-full">
-        <h1 className="font-bold">Dashboard</h1>
+        <h1 className="mb-4 font-bold">Dashboard</h1>
 
-        <div className="flex mt-4 space-x-6 w-full h-efb">
+        <div className="flex space-x-6 w-full h-efb">
             <FlightWidget />
 
             <RemindersWidget />
