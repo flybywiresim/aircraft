@@ -9,6 +9,7 @@ import { WeatherMessage } from './messages/WeatherMessage';
 import { MetarMessage } from './messages/MetarMessage';
 import { TafMessage } from './messages/TafMessage';
 import { AtisMessage, AtisType } from './messages/AtisMessage';
+import { RequestMessage } from './messages/RequestMessage';
 import { AocSystem } from './AocSystem';
 import { AtcSystem } from './AtcSystem';
 import { FansMode } from './com/FutureAirNavigationSystem';
@@ -35,4 +36,5 @@ export {
     AocSystem,
     AtcSystem,
     FansMode,
+    RequestMessage,
 };
