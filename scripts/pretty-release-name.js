@@ -7,7 +7,7 @@ if (tag) {
     console.log(`stable/${tag}`);
 } else {
     // Alternatively, get branch and short SHA. Remove slashes from branch so that this can be used as a sentry.io release name
-    const branch = (execSync('git rev-parse --abbrev-ref HEAD').toString().trim()).replaceAll('/', '.');
+    const branch = (execSync('git rev-parse --abbrev-ref HEAD').toString().trim()).replaceAll(/[/\\]/g, '.');
 
     const ghSha = process.env['GITHUB_SHA'];
 
