@@ -11,6 +11,11 @@ import ThrottleConfig from './ThrottleConfig/ThrottleConfig';
 import SimpleInput from '../Components/Form/SimpleInput/SimpleInput';
 import { Navbar } from '../Components/Navbar';
 import { SimbriefUserIdContext } from '../Efb';
+import {
+    FbwAircraftSentryClient,
+    SENTRY_CONSENT_KEY,
+    SentryConsentState,
+} from '../../../../sentry-client/src/FbwAircraftSentryClient';
 
 type ButtonType = {
     name: string,
@@ -521,6 +526,7 @@ const ATSUAOCPage = () => {
     const [metarSource, setMetarSource] = usePersistentProperty('CONFIG_METAR_SRC', 'MSFS');
     const [tafSource, setTafSource] = usePersistentProperty('CONFIG_TAF_SRC', 'NOAA');
     const [telexEnabled, setTelexEnabled] = usePersistentProperty('CONFIG_ONLINE_FEATURES_STATUS', 'DISABLED');
+    const [sentryEnabled, setSentryEnabled] = usePersistentProperty(SENTRY_CONSENT_KEY, SentryConsentState.Refused);
 
     const [simbriefError, setSimbriefError] = useState(false);
     const { simbriefUserId, setSimbriefUserId } = useContext(SimbriefUserIdContext);
@@ -662,6 +668,20 @@ const ATSUAOCPage = () => {
         }
     }
 
+    function handleSentryToggle(toggleValue: boolean) {
+        if (toggleValue) {
+            FbwAircraftSentryClient.requestConsent().then((didConsent) => {
+                if (didConsent) {
+                    setSentryEnabled(SentryConsentState.Given);
+                } else {
+                    setSentryEnabled(SentryConsentState.Refused);
+                }
+            });
+        } else {
+            setSentryEnabled(SentryConsentState.Refused);
+        }
+    }
+
     return (
         <div className="bg-navy-lighter rounded-xl px-6 divide-y divide-gray-700 flex flex-col">
             <div className="py-4 flex flex-row justify-between items-center">
@@ -706,10 +726,17 @@ const ATSUAOCPage = () => {
                     ))}
                 </SelectGroup>
             </div>
+
             <div className="py-4 flex flex-row justify-between items-center">
                 <span className="text-lg text-gray-300">TELEX</span>
                 <Toggle value={telexEnabled === 'ENABLED'} onToggle={(toggleValue) => handleTelexToggle(toggleValue)} />
             </div>
+
+            <div className="py-4 flex flex-row justify-between items-center">
+                <span className="text-lg text-gray-300">Error Reporting</span>
+                <Toggle value={sentryEnabled === SentryConsentState.Given} onToggle={(toggleValue) => handleSentryToggle(toggleValue)} />
+            </div>
+
             <div className="py-4 flex flex-row justify-between items-center">
                 <span className="text-lg text-gray-300">
                     SimBrief Username/Pilot ID

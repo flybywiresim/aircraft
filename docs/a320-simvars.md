@@ -12,6 +12,8 @@
 1. [Engine and FADEC System](#engine-and-fadec-system)
 1. [Air Conditioning / Pressurisation / Ventilation](#air-conditioning--pressurisation--ventilation)
 1. [Pneumatic](#pneumatic)
+1. [Landing Gear (ATA 32)](#landing-gear-ata-32)
+1. [ATC (ATA 34)](#atc-ata-34)
 
 ## Uncategorized
 
@@ -41,14 +43,6 @@
     - boolean
     - whether one of the brakes are hot (>300°C)
 
-- XMLVAR_Auto
-    - Used in the `.flt` files to set a default value for the ATC 3 way switch on the TCAS panel
-    - Maps to the `I:XMLVAR_Auto` variable which is the actual backing var for the switch
-
-- XMLVAR_ALT_MODE_REQUESTED
-    - Used in the `.flt` files to set a default value for the ALT RPTG 2 way switch on the TCAS panel
-    - Maps to the `I:XMLVAR_ALT_MODE_REQUESTED` variable which is the actual backing var for the switch
-
 - A32NX_KNOB_OVHD_AIRCOND_XBLEED_Position
     - Position (0-2)
     - 0 is SHUT, 1 is AUTO, 2 is OPEN
@@ -61,17 +55,9 @@
     - Bool
     - True if fault in pack 1
 
-- A32NX_AIRCOND_PACK1_TOGGLE
-    - Bool
-    - True if pack 1 is on
-
 - A32NX_AIRCOND_PACK2_FAULT
     - Bool
     - True if fault in pack 2
-
-- A32NX_AIRCOND_PACK2_TOGGLE
-    - Bool
-    - True if pack 2 is on
 
 - A32NX_AIRCOND_HOTAIR_FAULT
     - Bool
@@ -2132,6 +2118,47 @@ In the variables below, {number} should be replaced with one item in the set: { 
 
 ## Air Conditioning / Pressurisation / Ventilation
 
+- A32NX_COND_{id}_TEMP
+    - Degree Celsius
+    - Temperature as measured in each of the cabin zones and cockpit
+    - {id}
+        - CKPT
+        - FWD
+        - AFT
+
+- A32NX_COND_{id}_DUCT_TEMP
+    - Degree Celsius
+    - Temperature of trim air coming out of the ducts in the cabin and cockpit
+    - {id}
+        - CKPT
+        - FWD
+        - AFT
+
+- A32NX_COND_PACK_FLOW_VALVE_{index}_IS_OPEN
+    - Bool
+    - True if the respective {1 or 2} pack flow valve is open
+
+- A32NX_COND_PACK_FLOW
+    - Percent
+    - Percentage flow coming out of the packs into the cabin (LO: 80%, NORM: 100%, HI: 120%)
+
+- A32NX_OVHD_COND_{id}_SELECTOR_KNOB
+    - Percentage
+    - Percent rotation of the overhead temperature selectors for each of the cabin zones
+    - To transform the value into degree celsius use this formula: this * 0.12 + 18
+    - {id}
+        - CKPT
+        - FWD
+        - AFT
+
+- A32NX_OVHD_COND_PACK_{index}_PB_IS_ON
+    - Bool
+    - True if pack {1 or 2} pushbutton is pressed in the on position (no white light)
+
+- A32NX_OVHD_COND_PACK_{index}_PB_HAS_FAULT
+    - Bool
+    - True if pack {1 or 2} has a fault
+
 - A32NX_PRESS_CABIN_ALTITUDE
     - Feet
     - The equivalent altitude from sea level of the interior of the cabin based on the internal pressure
@@ -2414,3 +2441,39 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - {number}
         - 0
         - 1
+
+## Landing Gear (ATA 32)
+
+- A32NX_LGCIU_{number}_{gear}_GEAR_COMPRESSED
+    - Indicates if the shock absorber is compressed (not fully extended)
+    - Bool
+    - {number}
+        - 1
+        - 2
+    - {gear}
+        - NOSE
+        - LEFT
+        - RIGHT
+
+## ATC (ATA 34)
+
+- A32NX_TRANSPONDER_MODE
+    - The transponder mode selector switch position
+    - Enum
+      Mode | Value
+      --- | ---
+      STBY | 0
+      AUTO | 1
+      ON | 2
+
+- A32NX_TRANSPONDER_SYSTEM
+    - The transponder system selector switch position
+    - Enum
+      System | Value
+      --- | ---
+      Transponder 1 | 0
+      Transponder 2 | 1
+
+- A32NX_TRANSPONDER_ALT_RPTG
+    - The transponder altitude reporting switch position
+    - Bool
