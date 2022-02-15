@@ -292,6 +292,7 @@ function start() {
                         console.log(`\nCan't connect? You may need to open TCP ports ${httpPort} and ${websocketPort} on your firewall.`);
                         console.log('See the documentation for more information:');
                         console.log('\x1b[47m\x1b[30mhttps://docs.flybywiresim.com/fbw-a32nx/feature-guides/web-mcdu/#firewall-configuration\x1b[0m\n');
+                        console.log('Add "/sound" to your browser´s URL to get click sounds.');
 
                         if (selectedPrinter) {
                             console.log(`Printer: ${selectedPrinter.name}`);
