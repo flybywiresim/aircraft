@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Wifi2, Power } from 'react-bootstrap-icons';
 import { useSimVar } from '@instruments/common/simVars';
 import { usePersistentProperty, usePersistentNumberProperty } from '@instruments/common/persistence';
+import { useLongPress } from 'use-long-press';
 import { usePower, PowerStates } from '../Efb';
 
 import { BatteryStatus } from './BatteryStatus';
@@ -59,6 +60,29 @@ export const StatusBar = ({ batteryLevel, isCharging }: StatusBarProps) => {
         const std = new Date(parseInt(schedOut) * 1000);
         schedOutParsed = `${std.getUTCHours().toString().padStart(2, '0')}${std.getUTCMinutes().toString().padStart(2, '0')}Z`;
     }
+    const [shutoffBarPercent, setShutoffBarPercent] = useState(0);
+    const shutoffTimerRef = useRef<NodeJS.Timer | null>(null);
+
+    const bind = useLongPress(() => {}, {
+        threshold: 100_000,
+        onCancel: () => {
+            if (shutoffTimerRef.current) {
+                clearInterval(shutoffTimerRef.current);
+            }
+            power.setPowerState(PowerStates.STANDBY);
+        },
+        onStart: () => {
+            shutoffTimerRef.current = setInterval(() => {
+                setShutoffBarPercent((old) => old + 20);
+            }, 50);
+        },
+    });
+
+    useEffect(() => {
+        if (shutoffBarPercent >= 120) {
+            power.setPowerState(PowerStates.SHUTOFF);
+        }
+    }, [shutoffBarPercent]);
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -74,6 +98,11 @@ export const StatusBar = ({ batteryLevel, isCharging }: StatusBarProps) => {
 
     return (
         <div className="flex overflow-hidden fixed z-40 justify-between items-center px-6 w-full h-10 text-lg font-medium leading-none text-theme-text bg-theme-statusbar">
+            <div
+                className="absolute inset-x-0 bottom-0 h-0.5 bg-theme-highlight"
+                style={{ width: `${shutoffBarPercent}%`, transition: 'width 0.5s ease' }}
+            />
+
             <p>{`${getDayName(dayOfWeek)} ${getMonthName(monthOfYear)} ${dayOfMonth}`}</p>
             <div className="flex absolute inset-x-0 flex-row justify-center items-center mx-auto space-x-4 w-min">
                 {(timeDisplayed === 'utc' || timeDisplayed === 'both') && (
@@ -114,7 +143,7 @@ export const StatusBar = ({ batteryLevel, isCharging }: StatusBarProps) => {
                 <BatteryStatus batteryLevel={batteryLevel} isCharging={isCharging} />
 
                 {/* Show overlay to either power down or restart when this is held down, set to standby mode otherwise */}
-                <Power size={26} onClick={() => power.setPowerState(PowerStates.SHUTOFF)} />
+                <Power size={26} {...bind} />
             </div>
         </div>
     );
