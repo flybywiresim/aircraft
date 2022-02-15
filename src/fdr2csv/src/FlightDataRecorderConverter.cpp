@@ -1152,4 +1152,5 @@ void FlightDataRecorderConverter::writeStruct(
   fmt::print(out, "{}{}", data.throttle_lever_2_pos, delimiter);
   fmt::print(out, "{}{}", data.corrected_engine_N1_1_percent, delimiter);
   fmt::print(out, "{}{}", data.corrected_engine_N1_2_percent, delimiter);
+  fmt::print(out, "\n");
 }
