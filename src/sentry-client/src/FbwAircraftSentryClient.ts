@@ -62,7 +62,7 @@ export class FbwAircraftSentryClient {
             return this.runRootClientFlow(config);
         }
 
-        NXDataStore.subscribe(SENTRY_CONSENT_KEY, (key, value) => {
+        NXDataStore.getAndSubscribe(SENTRY_CONSENT_KEY, (key, value) => {
             if (value === SentryConsentState.Given) {
                 console.log('[SentryClient] Synchronised consent state is Given. Initializing sentry');
                 FbwAircraftSentryClient.attemptInitializeSentry(config);

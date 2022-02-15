@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { render } from '@instruments/common/index';
 import { SimVarProvider, useSimVar } from '@instruments/common/simVars';
-import { getRenderTarget, setIsEcamPage } from '@instruments/common/defaults';
+import { setIsEcamPage } from '@instruments/common/defaults';
 import { ptuArray, levels } from './common';
 import { Triangle } from '../../Common/Shapes';
 

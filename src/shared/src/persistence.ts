@@ -1,5 +1,3 @@
-import call = TemplateElement.call;
-
 declare function GetStoredData(property: string, defaultValue?: string);
 declare function SetStoredData(property: string, newValue: string);
 
@@ -48,8 +46,6 @@ export class NXDataStore {
     }
 
     static subscribe(key: string, callback: SubscribeCallback): SubscribeCancellation {
-        callback(key, this.get(key));
-
         return Coherent.on('A32NX_NXDATASTORE_UPDATE', (updatedKey: string, value: string) => {
             if (key === '*' || key === updatedKey) {
                 callback(updatedKey, value);
