@@ -2364,7 +2364,41 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Indicates whether the fault light is on for the engine bleed push button
     - Bool
 
-## Traffic Collison Avoidance System
+## Landing Gear (ATA 32)
+
+- A32NX_LGCIU_{number}_{gear}_GEAR_COMPRESSED
+    - Indicates if the shock absorber is compressed (not fully extended)
+    - Bool
+    - {number}
+        - 1
+        - 2
+    - {gear}
+        - NOSE
+        - LEFT
+        - RIGHT
+
+## ATC (ATA 34)
+
+- A32NX_TRANSPONDER_MODE
+    - The transponder mode selector switch position
+    - Enum
+      Mode | Value
+      --- | ---
+      STBY | 0
+      AUTO | 1
+      ON | 2
+
+- A32NX_TRANSPONDER_SYSTEM
+    - The transponder system selector switch position
+    - Enum
+      System | Value
+      --- | ---
+      Transponder 1 | 0
+      Transponder 2 | 1
+
+- A32NX_TRANSPONDER_ALT_RPTG
+    - The transponder altitude reporting switch position
+    - Bool
 
 - A32NX_SWITCH_TCAS_Position
   - Enum
@@ -2432,39 +2466,3 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - {number}
         - 0
         - 1
-
-## Landing Gear (ATA 32)
-
-- A32NX_LGCIU_{number}_{gear}_GEAR_COMPRESSED
-    - Indicates if the shock absorber is compressed (not fully extended)
-    - Bool
-    - {number}
-        - 1
-        - 2
-    - {gear}
-        - NOSE
-        - LEFT
-        - RIGHT
-
-## ATC (ATA 34)
-
-- A32NX_TRANSPONDER_MODE
-    - The transponder mode selector switch position
-    - Enum
-      Mode | Value
-      --- | ---
-      STBY | 0
-      AUTO | 1
-      ON | 2
-
-- A32NX_TRANSPONDER_SYSTEM
-    - The transponder system selector switch position
-    - Enum
-      System | Value
-      --- | ---
-      Transponder 1 | 0
-      Transponder 2 | 1
-
-- A32NX_TRANSPONDER_ALT_RPTG
-    - The transponder altitude reporting switch position
-    - Bool
