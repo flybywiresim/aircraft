@@ -1,5 +1,7 @@
 import React from 'react';
 import { render } from '@instruments/common/index';
+import { useArinc429Var } from '@instruments/common/arinc429';
+import { Arinc429Word } from '@shared/arinc429';
 import { setIsEcamPage } from '../../../Common/defaults';
 import { SimVarProvider, useSimVar } from '../../../Common/simVars';
 import { PageTitle } from '../../Common/PageTitle';
