@@ -6,9 +6,9 @@ class CDUAtcMenuFansB {
         mcdu.setTemplate([
             ["ATC MENU", "1", "2"],
             [""],
-            ["<REQUEST[color]inop", "EDIT>[color]inop"],
+            ["<REQUEST[color]white", "EDIT>[color]inop"],
             [""],
-            ["", "TEXT>[color]inop"],
+            ["", "TEXT>[color]white"],
             [""],
             ["", ""],
             [""],
@@ -23,7 +23,7 @@ class CDUAtcMenuFansB {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[0] = () => {
-            //CDUAtcRequest.ShowPage(mcdu);
+            CDUAtcRequest.ShowPage(mcdu);
         };
 
         mcdu.leftInputDelay[3] = () => {
@@ -47,11 +47,11 @@ class CDUAtcMenuFansB {
             CDUAtsuMenu.ShowPage(mcdu);
         };
 
-        mcdu.rightInputDelay[3] = () => {
+        mcdu.rightInputDelay[1] = () => {
             return mcdu.getDelaySwitchPage();
         };
-        mcdu.onRightInput[3] = () => {
-            //CDUAtcReports.ShowPage(mcdu);
+        mcdu.onRightInput[1] = () => {
+            CDUAtcText.ShowPage1(mcdu);
         };
 
         mcdu.rightInputDelay[5] = () => {
