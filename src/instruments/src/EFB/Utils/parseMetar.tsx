@@ -102,21 +102,29 @@ export function parseMetar(metarString: string): MetarParserType {
     let trendMode = false;
     metarArray.forEach((metarPart, index) => {
         let match;
-        if (mode < Mode.VISIBILITY && metarPart.match(/^(\d+)(?:\/(\d+))?(SM)?$/)) {
-            mode = Mode.VISIBILITY; // no wind reported
-        }
-        if (mode < Mode.CLOUD && metarPart.match(/^(FEW|SCT|BKN|OVC|VV)(\d+)?/)) {
-            mode = Mode.CLOUD; // no visibility / conditions reported
-        }
-        if (mode < Mode.TEMP && metarPart.match(/^M?\d+\/M?\d+$/)) {
-            mode = Mode.TEMP; // end of clouds
-        }
-        if (mode < Mode.RMK && metarPart.match(/^RMK$/)) {
-            mode = Mode.RMK; // end of clouds
+        // after icao and date do some additional checks as sometimes METARs do
+        // not contain all parts
+        if (mode > Mode.DATE) {
+            if (mode < Mode.VISIBILITY && metarPart.match(/^(\d+)(?:\/(\d+))?(SM)?$/)) {
+                mode = Mode.VISIBILITY; // no wind reported
+            }
+            if (mode < Mode.CLOUD && metarPart.match(/^(FEW|SCT|BKN|OVC|VV)(\d+)?/)) {
+                mode = Mode.CLOUD; // no visibility / conditions reported
+            }
+            if (mode < Mode.TEMP && metarPart.match(/^M?\d+\/M?\d+$/)) {
+                mode = Mode.TEMP; // end of clouds
+            }
+            if (mode < Mode.RMK && metarPart.match(/^RMK$/)) {
+                mode = Mode.RMK; // end of clouds
+            }
         }
         switch (mode) {
         case Mode.ICAO:
             // ICAO Code
+            match = metarPart.match(/^[a-zA-Z0-9]{4}$/);
+            if (!match) {
+                throw new Error(`Invalid ICAO: ${metarString}`);
+            }
             metarObject.icao = metarPart;
             metarObject.color_codes[index] = ColorCode.Highlight;
             mode = Mode.DATE;
@@ -130,6 +138,8 @@ export function parseMetar(metarString: string): MetarParserType {
                 metarObject.observed.setUTCHours(Number(match[2]));
                 metarObject.observed.setUTCMinutes(Number(match[3]));
                 mode = Mode.WIND;
+            } else {
+                throw new Error(`Invalid date: ${metarString}`);
             }
             break;
         case Mode.WIND:
@@ -154,23 +164,24 @@ export function parseMetar(metarString: string): MetarParserType {
                     gust_mps: (match[4] === 'MPS') ? match[3] : convert.ktsToMps(match[3]),
                 };
 
-                // coloring
-                if (tmpWind.gust_kts > 30) {
-                    metarObject.color_codes[index] = ColorCode.Warning;
-                } else if (metarObject.wind.gust_kts > 20) {
-                    metarObject.color_codes[index] = ColorCode.Caution;
-                }
-
                 // only write to the object for the main section
                 if (!trendMode) {
                     metarObject.wind = tmpWind;
                 }
+
+                // coloring
+                if (tmpWind.gust_kts > 30) {
+                    metarObject.color_codes[index] = ColorCode.Warning;
+                } else if (tmpWind.gust_kts > 20) {
+                    metarObject.color_codes[index] = ColorCode.Caution;
+                }
+
                 mode = Mode.VISIBILITY;
             }
             break;
         case Mode.VISIBILITY:
             // Visibility
-            match = metarPart.match(/^(\d+)(?:\/(\d+))?(SM)?$/);
+            match = metarPart.match(/^(\d+)(?:\/(\d+))?(SM)?(NDV)?$/);
             if (match) {
                 const speed: number = (match[2])
                     ? Number(match[1]) / Number(match[2])
@@ -273,7 +284,7 @@ export function parseMetar(metarString: string): MetarParserType {
                 if (!trendMode) metarObject.clouds.push(cloud);
 
                 // coloring
-                if (match[2] <= 300) {
+                if (cloud.code !== 'VV' && cloud.base_feet_agl <= 300) {
                     metarObject.color_codes[index] = ColorCode.Warning;
                 } else if (match[3] || match[2] < 800) { // CB or TCU suffix
                     metarObject.color_codes[index] = ColorCode.Caution;
@@ -309,20 +320,26 @@ export function parseMetar(metarString: string): MetarParserType {
                     metarObject.color_codes[index] = ColorCode.Caution;
                 }
                 mode = Mode.PRESS;
+            } else {
+                throw new Error(`Invalid or missing pressure: ${metarString} ${trendMode ? '(trend)' : ''}`);
             }
             break;
         case Mode.PRESS:
             // Pressure
-            match = metarPart.match(/^([QA])(\d+)/);
-            if (match && !trendMode) {
+            match = metarPart.match(/^([QA])(\d+)$/);
+            if (match) {
                 match[2] = Number(match[2]);
                 match[2] /= (match[1] === 'Q') ? 10 : 100;
-                metarObject.barometer = {
-                    hg: (match[1] === 'Q') ? convert.kpaToInhg(match[2]) : match[2],
-                    kpa: (match[1] === 'Q') ? match[2] : convert.inhgToKpa(match[2]),
-                    mb: (match[1] === 'Q') ? match[2] * 10 : convert.inhgToKpa(match[2] * 10),
-                };
+                if (!trendMode) { // only update the metar object once
+                    metarObject.barometer = {
+                        hg: (match[1] === 'Q') ? convert.kpaToInhg(match[2]) : match[2],
+                        kpa: (match[1] === 'Q') ? match[2] : convert.inhgToKpa(match[2]),
+                        mb: (match[1] === 'Q') ? match[2] * 10 : convert.inhgToKpa(match[2] * 10),
+                    };
+                }
                 mode = Mode.TREND;
+            } else {
+                throw new Error(`Invalid or missing pressure: ${metarString} ${trendMode ? '(trend)' : ''}`);
             }
             break;
         case Mode.TREND:
