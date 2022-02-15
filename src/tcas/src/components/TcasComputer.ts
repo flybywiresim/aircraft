@@ -262,8 +262,8 @@ export class TcasComputer implements TcasComponent {
         this.tcasPower = !!SimVar.GetSimVarValue('A32NX_ELEC_DC_1_BUS_IS_POWERED', 'boolean');
         this.tcasSwitchPos = SimVar.GetSimVarValue('L:A32NX_SWITCH_TCAS_Position', 'number');
         this.tcasThreat = SimVar.GetSimVarValue('L:A32NX_SWITCH_TCAS_Traffic_Position', 'number');
-        this.xpdrStatus = SimVar.GetSimVarValue('TRANSPONDER STATE:1', 'number'); // TODO: refactor When XPDR2 is implemented
-        this.activeXpdr = SimVar.GetSimVarValue('L:A32NX_SWITCH_ATC', 'number'); // TODO: refactor When XPDR2 is implemented
+        this.xpdrStatus = SimVar.GetSimVarValue('TRANSPONDER STATE:1', 'number');
+        this.activeXpdr = SimVar.GetSimVarValue('L:A32NX_TRANSPONDER_SYSTEM', 'number');
         // workaround for altitude issues due to MSFS bug, needs to be changed to PRESSURE ALTITUDE again when solved
         this.pressureAlt = SimVar.GetSimVarValue('INDICATED ALTITUDE:3', 'feet');
         this.planeAlt = SimVar.GetSimVarValue('PLANE ALTITUDE', 'feet');
