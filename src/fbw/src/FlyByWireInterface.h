@@ -407,6 +407,35 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idFacPushbuttonStatus[2];
   std::unique_ptr<LocalVariable> idFacFaultLightOn[2];
 
+  std::unique_ptr<LocalVariable> idFacDiscreteWord1[2];
+  std::unique_ptr<LocalVariable> idFacGammaA[2];
+  std::unique_ptr<LocalVariable> idFacGammaT[2];
+  std::unique_ptr<LocalVariable> idFacWeight[2];
+  std::unique_ptr<LocalVariable> idFacCenterOfGravity[2];
+  std::unique_ptr<LocalVariable> idFacSideslipTarget[2];
+  std::unique_ptr<LocalVariable> idFacSlatAngle[2];
+  std::unique_ptr<LocalVariable> idFacFlapAngle[2];
+  std::unique_ptr<LocalVariable> idFacDiscreteWord2[2];
+  std::unique_ptr<LocalVariable> idFacRudderTravelLimitCommand[2];
+  std::unique_ptr<LocalVariable> idFacDeltaRYawDamperVoted[2];
+  std::unique_ptr<LocalVariable> idFacEstimatedSideslip[2];
+  std::unique_ptr<LocalVariable> idFacVAlphaLim[2];
+  std::unique_ptr<LocalVariable> idFacVLs[2];
+  std::unique_ptr<LocalVariable> idFacVStall[2];
+  std::unique_ptr<LocalVariable> idFacVAlphaProt[2];
+  std::unique_ptr<LocalVariable> idFacVStallWarn[2];
+  std::unique_ptr<LocalVariable> idFacSpeedTrend[2];
+  std::unique_ptr<LocalVariable> idFacV3[2];
+  std::unique_ptr<LocalVariable> idFacV4[2];
+  std::unique_ptr<LocalVariable> idFacVMan[2];
+  std::unique_ptr<LocalVariable> idFacVMax[2];
+  std::unique_ptr<LocalVariable> idFacVFeNext[2];
+  std::unique_ptr<LocalVariable> idFacDiscreteWord3[2];
+  std::unique_ptr<LocalVariable> idFacDiscreteWord4[2];
+  std::unique_ptr<LocalVariable> idFacDiscreteWord5[2];
+  std::unique_ptr<LocalVariable> idFacDeltaRRudderTrim[2];
+  std::unique_ptr<LocalVariable> idFacRudderTrimPos[2];
+
   std::unique_ptr<LocalVariable> idElecDcBus2Powered;
   std::unique_ptr<LocalVariable> idElecDcEssShedBusPowered;
   std::unique_ptr<LocalVariable> idElecDcEssBusPowered;

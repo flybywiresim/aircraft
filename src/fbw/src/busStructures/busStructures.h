@@ -392,10 +392,12 @@ struct FacBus {
   Arinc429NumericWord vMax;
   // Label 267
   Arinc429NumericWord vFeNext;
-  // Label 273
+  // Label 271
   Arinc429DiscreteWord discreteWord3;
-  // Label 274
+  // Label 273
   Arinc429DiscreteWord discreteWord4;
+  // Label 274
+  Arinc429DiscreteWord discreteWord5;
   // Label 312
   Arinc429DiscreteWord deltaRRudderTrim;
   // Label 313

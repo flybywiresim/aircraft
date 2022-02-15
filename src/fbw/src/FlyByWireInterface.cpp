@@ -526,6 +526,34 @@ void FlyByWireInterface::setupLocalVariables() {
 
     idFacPushbuttonStatus[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_PUSHBUTTON_STATUS");
     idFacFaultLightOn[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_FAULT_LIGHT_ON");
+
+    idFacDiscreteWord1[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_DISCRETE_WORD_1");
+    idFacGammaA[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_GAMMA_A");
+    idFacGammaT[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_GAMMA_T");
+    idFacWeight[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_WEIGHT");
+    idFacCenterOfGravity[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_CENTER_OF_GRAVITY");
+    idFacSideslipTarget[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_SIDESLIP_TARGET");
+    idFacSlatAngle[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_SLATS_ANGLE");
+    idFacFlapAngle[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_FLAPS_ANGLE");
+    idFacDiscreteWord2[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_DISCRETE_WORD_2");
+    idFacRudderTravelLimitCommand[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_RUDDER_TRAVEL_LIMIT_COMMAND");
+    idFacDeltaRYawDamperVoted[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_DELTA_R_YAW_DAMPER");
+    idFacEstimatedSideslip[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_ESTIMATED_SIDESLIP");
+    idFacVAlphaLim[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_V_ALPHA_LIM");
+    idFacVLs[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_V_LS");
+    idFacVStall[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_V_STALL_1G");
+    idFacVAlphaProt[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_V_ALPHA_PROT");
+    idFacVStallWarn[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_V_STALL_WARN");
+    idFacSpeedTrend[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_SPEED_TREND");
+    idFacV3[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_V_3");
+    idFacV4[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_V_4");
+    idFacVMan[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_V_MAN");
+    idFacVMax[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_V_MAX");
+    idFacVFeNext[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_V_FE_NEXT");
+    idFacDiscreteWord3[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_DISCRETE_WORD_3");
+    idFacDiscreteWord4[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_DISCRETE_WORD_4");
+    idFacDeltaRRudderTrim[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_DELTA_R_RUDDER_TRIM");
+    idFacRudderTrimPos[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_RUDDER_TRIM_POS");
   }
 
   for (int i = 0; i < 2; i++) {
@@ -1147,6 +1175,35 @@ bool FlyByWireInterface::updateFac(double sampleTime, int facIndex) {
   facsBusOutputs[facIndex] = facs[facIndex].getBusOutputs();
 
   idFacFaultLightOn[facIndex]->set(!facsDiscreteOutputs[facIndex].facHealthy);
+
+  idFacDiscreteWord1[facIndex]->set(facsBusOutputs[facIndex].discreteWord1.toSimVar());
+  idFacGammaA[facIndex]->set(facsBusOutputs[facIndex].gammaA.toSimVar());
+  idFacGammaT[facIndex]->set(facsBusOutputs[facIndex].gammaT.toSimVar());
+  idFacWeight[facIndex]->set(facsBusOutputs[facIndex].weight.toSimVar());
+  idFacCenterOfGravity[facIndex]->set(facsBusOutputs[facIndex].centerOfGravity.toSimVar());
+  idFacSideslipTarget[facIndex]->set(facsBusOutputs[facIndex].sideslipTarget.toSimVar());
+  idFacSlatAngle[facIndex]->set(facsBusOutputs[facIndex].facSlatAngle.toSimVar());
+  idFacFlapAngle[facIndex]->set(facsBusOutputs[facIndex].facFlapAngle.toSimVar());
+  idFacDiscreteWord2[facIndex]->set(facsBusOutputs[facIndex].discreteWord2.toSimVar());
+  idFacRudderTravelLimitCommand[facIndex]->set(facsBusOutputs[facIndex].rudderTravelLimitCommand.toSimVar());
+  idFacDeltaRYawDamperVoted[facIndex]->set(facsBusOutputs[facIndex].deltaRYawDamperVoted.toSimVar());
+  idFacEstimatedSideslip[facIndex]->set(facsBusOutputs[facIndex].estimatedSideslip.toSimVar());
+  idFacVAlphaLim[facIndex]->set(facsBusOutputs[facIndex].vAlphaLim.toSimVar());
+  idFacVLs[facIndex]->set(facsBusOutputs[facIndex].vLs.toSimVar());
+  idFacVStall[facIndex]->set(facsBusOutputs[facIndex].vStall.toSimVar());
+  idFacVAlphaProt[facIndex]->set(facsBusOutputs[facIndex].vAlphaProt.toSimVar());
+  idFacVStallWarn[facIndex]->set(facsBusOutputs[facIndex].vStallWarn.toSimVar());
+  idFacSpeedTrend[facIndex]->set(facsBusOutputs[facIndex].speedTrend.toSimVar());
+  idFacV3[facIndex]->set(facsBusOutputs[facIndex].v3.toSimVar());
+  idFacV4[facIndex]->set(facsBusOutputs[facIndex].v4.toSimVar());
+  idFacVMan[facIndex]->set(facsBusOutputs[facIndex].vMan.toSimVar());
+  idFacVMax[facIndex]->set(facsBusOutputs[facIndex].vMax.toSimVar());
+  idFacVFeNext[facIndex]->set(facsBusOutputs[facIndex].vFeNext.toSimVar());
+  idFacDiscreteWord3[facIndex]->set(facsBusOutputs[facIndex].discreteWord3.toSimVar());
+  idFacDiscreteWord4[facIndex]->set(facsBusOutputs[facIndex].discreteWord4.toSimVar());
+  idFacDiscreteWord5[facIndex]->set(facsBusOutputs[facIndex].discreteWord5.toSimVar());
+  idFacDeltaRRudderTrim[facIndex]->set(facsBusOutputs[facIndex].deltaRRudderTrim.toSimVar());
+  idFacRudderTrimPos[facIndex]->set(facsBusOutputs[facIndex].rudderTrimPos.toSimVar());
 
   return true;
 }
