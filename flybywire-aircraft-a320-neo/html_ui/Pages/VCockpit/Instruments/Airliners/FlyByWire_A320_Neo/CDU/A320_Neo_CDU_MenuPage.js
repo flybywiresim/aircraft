@@ -130,8 +130,8 @@ class CDUMenuPage {
             }, mcdu.getDelaySwitchPage());
         };
         mcdu.onPerf = () => {
-            if (mcdu.currentFlightPhase === FmgcFlightPhases.DONE) {
-                mcdu.flightPhaseManager.changeFlightPhase(FmgcFlightPhases.PREFLIGHT);
+            if (mcdu.flightPhaseManager.phase === FmgcFlightPhases.DONE) {
+                mcdu.flightPhaseManager.changePhase(FmgcFlightPhases.PREFLIGHT);
             }
             const cur = mcdu.page.Current;
             setTimeout(() => {
@@ -141,8 +141,8 @@ class CDUMenuPage {
             }, mcdu.getDelaySwitchPage());
         };
         mcdu.onInit = () => {
-            if (mcdu.currentFlightPhase === FmgcFlightPhases.DONE) {
-                mcdu.flightPhaseManager.changeFlightPhase(FmgcFlightPhases.PREFLIGHT);
+            if (mcdu.flightPhaseManager.phase === FmgcFlightPhases.DONE) {
+                mcdu.flightPhaseManager.changePhase(FmgcFlightPhases.PREFLIGHT);
             }
             const cur = mcdu.page.Current;
             setTimeout(() => {

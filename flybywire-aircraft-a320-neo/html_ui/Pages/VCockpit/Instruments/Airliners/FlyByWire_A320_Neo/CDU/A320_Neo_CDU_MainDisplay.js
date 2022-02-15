@@ -171,6 +171,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
         const display = new ScratchpadDisplay(this.getChildById("in-out"));
         this.scratchpad = new ScratchpadDataLink(this, display);
+        this.setupFmgcTriggers();
 
         this.setTimeout = (func) => {
             setTimeout(() => {
@@ -317,7 +318,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     checkAocTimes() {
         if (!this.aocTimes.off) {
             const isAirborne = !Simplane.getIsGrounded(); //TODO replace with proper flight mode in future
-            if (this.currentFlightPhase === FmgcFlightPhases.TAKEOFF && isAirborne) {
+            if (this.flightPhaseManager.phase === FmgcFlightPhases.TAKEOFF && isAirborne) {
                 // Wheels off
                 // Off: remains blank until Take off time
                 this.aocTimes.off = Math.floor(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"));
@@ -326,7 +327,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
         if (!this.aocTimes.out) {
             const currentPKGBrakeState = SimVar.GetSimVarValue("L:A32NX_PARK_BRAKE_LEVER_POS", "Bool");
-            if (this.currentFlightPhase === FmgcFlightPhases.PREFLIGHT && !currentPKGBrakeState) {
+            if (this.flightPhaseManager.phase === FmgcFlightPhases.PREFLIGHT && !currentPKGBrakeState) {
                 // Out: is when you set the brakes to off
                 this.aocTimes.out = Math.floor(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"));
             }
@@ -349,7 +350,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             }
         }
 
-        if (this.currentFlightPhase === FmgcFlightPhases.PREFLIGHT) {
+        if (this.flightPhaseManager.phase === FmgcFlightPhases.PREFLIGHT) {
             const cabinDoorPctOpen = SimVar.GetSimVarValue("INTERACTIVE POINT OPEN:0", "percent");
             if (!this.aocTimes.doors && cabinDoorPctOpen < 20) {
                 this.aocTimes.doors = Math.floor(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"));
