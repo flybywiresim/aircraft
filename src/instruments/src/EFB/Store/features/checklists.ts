@@ -3,16 +3,18 @@ import { RootState, store } from '../store';
 
 interface ChecklistItem {
     completed: boolean;
+    divider?: boolean;
 }
 
 interface Checklist {
     name: string;
-    items: ChecklistItem[]
+    items: ChecklistItem[];
+    markedCompleted: boolean;
 }
 
 interface ChecklistState {
-    checklists: Checklist[],
-    selectedChecklistIndex: number,
+    checklists: Checklist[];
+    selectedChecklistIndex: number;
 }
 
 const initialState: ChecklistState = {
@@ -21,38 +23,47 @@ const initialState: ChecklistState = {
         {
             name: 'Before Start',
             items: [],
+            markedCompleted: false,
         },
         {
             name: 'After Start',
             items: [],
+            markedCompleted: false,
         },
         {
             name: 'Before Takeoff',
             items: [],
+            markedCompleted: false,
         },
         {
             name: 'After Takeoff / Climb',
             items: [],
+            markedCompleted: false,
         },
         {
             name: 'Approach',
             items: [],
+            markedCompleted: false,
         },
         {
             name: 'Landing',
             items: [],
+            markedCompleted: false,
         },
         {
             name: 'After Landing',
             items: [],
+            markedCompleted: false,
         },
         {
             name: 'Parking',
             items: [],
+            markedCompleted: false,
         },
         {
             name: 'Securing Aircraft',
             items: [],
+            markedCompleted: false,
         },
     ],
 };
@@ -70,6 +81,9 @@ export const checklistsSlice = createSlice({
         setSelectedChecklistIndex: (state, action: PayloadAction<number>) => {
             state.selectedChecklistIndex = action.payload;
         },
+        setChecklistCompletion: (state, action: PayloadAction<{checklistIndex: number, completion: boolean}>) => {
+            state.checklists[action.payload.checklistIndex].markedCompleted = action.payload.completion;
+        },
     },
 });
 
@@ -78,14 +92,14 @@ export const checklistsSlice = createSlice({
  */
 export const getChecklistCompletion = (checklistIndex: number): number => {
     const checklists = (store.getState() as RootState).checklists.checklists[checklistIndex];
-    const numCompletedItems = checklists.items.filter((item) => item.completed).length;
-    return numCompletedItems / checklists.items.length;
+    const numCompletedItems = checklists.items.filter((item) => item.completed && !item.divider).length;
+    return numCompletedItems / checklists.items.filter((item) => !item.divider).length;
 };
 
 /**
  * @returns If the specified checklist has all of its items completed
  */
-export const isChecklistCompleted = (checklistIndex: number): boolean => getChecklistCompletion(checklistIndex) === 1;
+export const areAllChecklistItemsCompleted = (checklistIndex: number): boolean => getChecklistCompletion(checklistIndex) === 1;
 
-export const { setChecklistItems, setChecklistItemCompletion, setSelectedChecklistIndex } = checklistsSlice.actions;
+export const { setChecklistItems, setChecklistItemCompletion, setSelectedChecklistIndex, setChecklistCompletion } = checklistsSlice.actions;
 export default checklistsSlice.reducer;

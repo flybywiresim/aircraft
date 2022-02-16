@@ -1,4 +1,3 @@
-import { useSimVar } from '@instruments/common/simVars';
 import { Checklist } from '../Checklists';
 
 export const beforeTakeoffChecklist: Checklist = {
@@ -54,11 +53,9 @@ export const beforeTakeoffChecklist: Checklist = {
             item: 'TCAS',
             result: 'TA OR TA/RA',
             condition: () => {
-                const [v1] = useSimVar(
-                    'L:A32NX_SWITCH_TCAS_POSITION',
-                    'Number',
-                );
-                return v1 === 1 || v1 === 2;
+                const tcasPosition = SimVar.GetSimVarValue('L:A32NX_SWITCH_TCAS_POSITION', 'Number');
+
+                return tcasPosition === 1 || tcasPosition === 2;
             },
         },
         {

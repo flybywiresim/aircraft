@@ -1,4 +1,3 @@
-import { useSimVar } from '@instruments/common/simVars';
 import { Checklist } from '../Checklists';
 
 export const parkingChecklist: Checklist = {
@@ -7,29 +6,22 @@ export const parkingChecklist: Checklist = {
         {
             item: 'APU BLEED',
             result: 'ON',
-            condition: () => {
-                const [v1] = useSimVar(
-                    'L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON',
-                    'Number',
-                );
-                return v1 === 1;
-            },
+            condition: () => !!SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON', 'Number'),
         },
         {
-            item: 'EGINES',
+            item: 'ENGINES',
             result: 'OFF',
-            condition: undefined,
+            condition: () => {
+                const engOneN1 = SimVar.GetSimVarValue('ENG N1 RPM:1', 'Percent');
+                const engTwoN1 = SimVar.GetSimVarValue('ENG N1 RPM:2', 'Percent');
+
+                return engOneN1 === 0 && engTwoN1 === 0;
+            },
         },
         {
             item: 'SEAT BELTS',
             result: 'OFF',
-            condition: () => {
-                const [v1] = useSimVar(
-                    'CABIN SEATBELTS ALERT SWITCH',
-                    'Number',
-                );
-                return v1 === 0;
-            },
+            condition: () => !SimVar.GetSimVarValue('CABIN SEATBELTS ALERT SWITCH', 'Number'),
         },
         {
             item: 'EXT LT',
@@ -40,19 +32,20 @@ export const parkingChecklist: Checklist = {
             item: 'FUEL PUMPS',
             result: 'OFF',
             condition: () => {
-                const [v1] = useSimVar('FUELSYSTEM PUMP ACTIVE:1', 'Number');
-                const [v2] = useSimVar('FUELSYSTEM PUMP ACTIVE:2', 'Number');
-                const [v3] = useSimVar('FUELSYSTEM PUMP ACTIVE:3', 'Number');
-                const [v4] = useSimVar('FUELSYSTEM PUMP ACTIVE:4', 'Number');
-                const [v5] = useSimVar('FUELSYSTEM PUMP ACTIVE:5', 'Number');
-                const [v6] = useSimVar('FUELSYSTEM PUMP ACTIVE:6', 'Number');
+                const pumpOneOff = !SimVar.GetSimVarValue('FUELSYSTEM PUMP ACTIVE:1', 'Number');
+                const pumpTwoOff = !SimVar.GetSimVarValue('FUELSYSTEM PUMP ACTIVE:2', 'Number');
+                const pumpThreeOff = !SimVar.GetSimVarValue('FUELSYSTEM PUMP ACTIVE:3', 'Number');
+                const pumpFourOff = !SimVar.GetSimVarValue('FUELSYSTEM PUMP ACTIVE:4', 'Number');
+                const pumpFiveOff = !SimVar.GetSimVarValue('FUELSYSTEM PUMP ACTIVE:5', 'Number');
+                const pumpSixOff = !SimVar.GetSimVarValue('FUELSYSTEM PUMP ACTIVE:6', 'Number');
+
                 return (
-                    v1 === 0
-                    && v2 === 0
-                    && v3 === 0
-                    && v4 === 0
-                    && v5 === 0
-                    && v6 === 0
+                    pumpOneOff
+                    && pumpTwoOff
+                    && pumpThreeOff
+                    && pumpFourOff
+                    && pumpFiveOff
+                    && pumpSixOff
                 );
             },
         },
