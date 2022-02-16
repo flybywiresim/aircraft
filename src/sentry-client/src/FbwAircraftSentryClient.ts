@@ -59,7 +59,20 @@ export class FbwAircraftSentryClient {
         if (config.root) {
             console.log('[SentryClient] Starting as root client');
 
-            return this.runRootClientFlow(config);
+            const instrument = document.querySelector('vcockpit-panel > *');
+
+            if (instrument) {
+                return new Promise<boolean>((resolve) => {
+                    instrument.addEventListener('FlightStart', () => {
+                        // Give ourselves a buffer
+                        setTimeout(() => {
+                            resolve(this.runRootClientFlow(config));
+                        }, 1_000);
+                    });
+                });
+            }
+
+            return Promise.reject(new Error('[SentryClient] Could not find an instrument element to hook onto'));
         }
 
         NXDataStore.getAndSubscribe(SENTRY_CONSENT_KEY, (key, value) => {
