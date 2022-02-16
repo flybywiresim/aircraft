@@ -60,9 +60,13 @@ class CDUAocDepartReq {
             mcdu.pdcMessage.Callsign = mcdu.atsuManager.flightNumber();
             flightNo = mcdu.pdcMessage.Callsign + "[color]green";
         }
-        if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident) {
+        if (mcdu.flightPlanManager.getOrigin() && mcdu.flightPlanManager.getOrigin().ident) {
             mcdu.pdcMessage.Origin = mcdu.flightPlanManager.getOrigin().ident;
+        }
+        if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident) {
             mcdu.pdcMessage.Destination = mcdu.flightPlanManager.getDestination().ident;
+        }
+        if (mcdu.pdcMessage.Origin !== "" && mcdu.pdcMessage.Destination !== "") {
             fromTo = mcdu.pdcMessage.Origin + "/" + mcdu.pdcMessage.Destination + "[color]cyan";
         }
         if (mcdu.pdcMessage.Station !== "") {
