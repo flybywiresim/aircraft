@@ -1973,11 +1973,59 @@
 
         <!-- RAIN ========================================================================================== -->
 
-        <Sound WwiseData="true" WwiseEvent="rain_sound" SimVar="AMBIENT PRECIP RATE" Units="millimeters of water" Index="0">
-            <Range LowerBound="0.1" />
-            <WwiseRTPC SimVar="AMBIENT PRECIP RATE" Units="millimeters of water" Index="0" RTPCName="SIMVAR_AMBIENT_PRECIP_RATE"/>
-            <WwiseRTPC SimVar="AIRSPEED TRUE" Units="KNOTS" Index="0" RTPCName="SIMVAR_AIRSPEED_TRUE"/>
-        </Sound>
+		<Sound WwiseData="true" WwiseEvent="LightRainL" SimVar="AMBIENT PRECIP RATE" Units="millimeters of water" Index="0" NodeName="WIPER_BASE_L" ViewPoint="Inside" Continuous="true">
+			<Range LowerBound="0.01" />
+			<WwiseRTPC SimVar="AMBIENT PRECIP RATE" Units="millimeters of water" Index="0" RTPCName="SIMVAR_AMBIENT_PRECIP_RATE"/>
+			<WwiseRTPC SimVar="AIRSPEED TRUE" Units="KNOTS" Index="0" RTPCName="SIMVAR_AIRSPEED_TRUE"/>
+			<Requires SimVar="AMBIENT PRECIP STATE" Units="mask" Index="0">
+				<Range LowerBound="4" UpperBound="4"/>
+			</Requires>
+		</Sound>
+
+		<Sound WwiseData="true" WwiseEvent="LightRainR" SimVar="AMBIENT PRECIP RATE" Units="millimeters of water" Index="0" NodeName="WIPER_BASE_R" ViewPoint="Inside" Continuous="true">
+			<Range LowerBound="0.01" />
+			<WwiseRTPC SimVar="AMBIENT PRECIP RATE" Units="millimeters of water" Index="0" RTPCName="SIMVAR_AMBIENT_PRECIP_RATE"/>
+			<WwiseRTPC SimVar="AIRSPEED TRUE" Units="KNOTS" Index="0" RTPCName="SIMVAR_AIRSPEED_TRUE"/>
+			<Requires SimVar="AMBIENT PRECIP STATE" Units="mask" Index="0">
+				<Range LowerBound="4" UpperBound="4"/>
+			</Requires>
+		</Sound>
+
+		<Sound WwiseData="true" WwiseEvent="ModerateRainL" SimVar="AMBIENT PRECIP RATE" Units="millimeters of water" Index="0" NodeName="WIPER_BASE_L" ViewPoint="Inside" Continuous="true">
+			<Range LowerBound="2" />
+			<WwiseRTPC SimVar="AMBIENT PRECIP RATE" Units="millimeters of water" Index="0" RTPCName="SIMVAR_AMBIENT_PRECIP_RATE"/>
+			<WwiseRTPC SimVar="AIRSPEED TRUE" Units="KNOTS" Index="0" RTPCName="SIMVAR_AIRSPEED_TRUE"/>
+			<Requires SimVar="AMBIENT PRECIP STATE" Units="mask" Index="0">
+				<Range LowerBound="4" UpperBound="4"/>
+			</Requires>
+		</Sound>
+
+		<Sound WwiseData="true" WwiseEvent="ModerateRainR" SimVar="AMBIENT PRECIP RATE" Units="millimeters of water" Index="0" NodeName="WIPER_BASE_R" ViewPoint="Inside" Continuous="true">
+			<Range LowerBound="2" />
+			<WwiseRTPC SimVar="AMBIENT PRECIP RATE" Units="millimeters of water" Index="0" RTPCName="SIMVAR_AMBIENT_PRECIP_RATE"/>
+			<WwiseRTPC SimVar="AIRSPEED TRUE" Units="KNOTS" Index="0" RTPCName="SIMVAR_AIRSPEED_TRUE"/>
+			<Requires SimVar="AMBIENT PRECIP STATE" Units="mask" Index="0">
+				<Range LowerBound="4" UpperBound="4"/>
+			</Requires>
+		</Sound>
+
+		<Sound WwiseData="true" WwiseEvent="HeavyRainL" SimVar="AMBIENT PRECIP RATE" Units="millimeters of water" Index="0" NodeName="WIPER_BASE_L" ViewPoint="Inside" Continuous="true">
+			<Range LowerBound="15" />
+			<WwiseRTPC SimVar="AMBIENT PRECIP RATE" Units="millimeters of water" Index="0" RTPCName="SIMVAR_AMBIENT_PRECIP_RATE"/>
+			<WwiseRTPC SimVar="AIRSPEED TRUE" Units="KNOTS" Index="0" RTPCName="SIMVAR_AIRSPEED_TRUE"/>
+			<Requires SimVar="AMBIENT PRECIP STATE" Units="mask" Index="0">
+				<Range LowerBound="4" UpperBound="4"/>
+			</Requires>
+		</Sound>
+
+		<Sound WwiseData="true" WwiseEvent="HeavyRainR" SimVar="AMBIENT PRECIP RATE" Units="millimeters of water" Index="0" NodeName="WIPER_BASE_R" ViewPoint="Inside" Continuous="true">
+			<Range LowerBound="15" />
+			<WwiseRTPC SimVar="AMBIENT PRECIP RATE" Units="millimeters of water" Index="0" RTPCName="SIMVAR_AMBIENT_PRECIP_RATE"/>
+			<WwiseRTPC SimVar="AIRSPEED TRUE" Units="KNOTS" Index="0" RTPCName="SIMVAR_AIRSPEED_TRUE"/>
+			<Requires SimVar="AMBIENT PRECIP STATE" Units="mask" Index="0">
+				<Range LowerBound="4" UpperBound="4"/>
+			</Requires>
+		</Sound>
 
         <!-- CRC ==========================================================================================-->
 
