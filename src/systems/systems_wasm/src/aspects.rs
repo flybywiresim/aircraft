@@ -1,6 +1,7 @@
 use crate::{MsfsVariableRegistry, Variable};
 use enum_dispatch::enum_dispatch;
 use msfs::sim_connect::{SimConnect, SimConnectRecv, SIMCONNECT_OBJECT_ID_USER};
+use msfs::sys;
 use std::error::Error;
 use std::time::{Duration, Instant};
 use systems::simulation::VariableIdentifier;
@@ -179,7 +180,7 @@ impl<'a, 'b> MsfsAspectBuilder<'a, 'b> {
         mapping: EventToVariableMapping,
         target: Variable,
         configure_options: fn(EventToVariableOptions) -> EventToVariableOptions,
-    ) -> Result<u32, Box<dyn Error>> {
+    ) -> Result<sys::DWORD, Box<dyn Error>> {
         Self::precondition_not_aircraft_variable(&target);
 
         let target = self.variables.register(&target);
@@ -225,7 +226,7 @@ impl<'a, 'b> MsfsAspectBuilder<'a, 'b> {
         input: Variable,
         mapping: VariableToEventMapping,
         write_on: VariableToEventWriteOn,
-        event_id: u32,
+        event_id: sys::DWORD,
     ) {
         let input = self.variables.register(&input);
 
@@ -693,7 +694,7 @@ pub enum EventToVariableMapping {
     /// When the event occurs, sets the variable to the given value.
     Value(f64),
 
-    /// Maps the event data from a u32 to an f64 without any further processing.
+    /// Maps the event data from a sys::DWORD to an f64 without any further processing.
     EventDataRaw,
 
     /// Maps the event data from a 32k position to an f64.
@@ -701,7 +702,7 @@ pub enum EventToVariableMapping {
 
     /// When the event occurs, calls the function with event data and sets
     /// the variable to the returned value.
-    EventDataToValue(fn(u32) -> f64),
+    EventDataToValue(fn(sys::DWORD) -> f64),
 
     /// When the event occurs, calls the function with the current variable value and
     /// sets the variable to the returned value.
@@ -709,7 +710,7 @@ pub enum EventToVariableMapping {
 
     /// When the event occurs, calls the function with event data and the current
     /// variable value and sets the variable to the returned value.
-    EventDataAndCurrentValueToValue(fn(u32, f64) -> f64),
+    EventDataAndCurrentValueToValue(fn(sys::DWORD, f64) -> f64),
 
     /// Converts the event occurrence to a value which increases and decreases
     /// by the given factors.
@@ -729,7 +730,7 @@ trait HandleMessages {
 }
 
 struct EventToVariable {
-    event_id: u32,
+    event_id: sys::DWORD,
     event_handled_before_tick: bool,
     target: VariableIdentifier,
     mapping: EventToVariableMapping,
@@ -829,7 +830,7 @@ impl HandleMessages for EventToVariable {
 #[derive(Clone, Copy)]
 /// Declares how to map the given variable value to an event value.
 pub enum VariableToEventMapping {
-    /// Maps the variable from an f64 to a u32 without any further processing.
+    /// Maps the variable from an f64 to a sys::DWORD without any further processing.
     EventDataRaw,
 
     /// Maps the variable from an f64 to a 32k position.
@@ -850,7 +851,7 @@ struct ToEvent {
     input: VariableIdentifier,
     mapping: VariableToEventMapping,
     write_on: VariableToEventWriteOn,
-    event_id: u32,
+    event_id: sys::DWORD,
     last_written_value: Option<f64>,
 }
 
@@ -875,7 +876,7 @@ impl ToEvent {
         input: VariableIdentifier,
         mapping: VariableToEventMapping,
         write_on: VariableToEventWriteOn,
-        event_id: u32,
+        event_id: sys::DWORD,
     ) -> Self {
         Self {
             input,
@@ -907,7 +908,7 @@ impl ExecutableVariableAction for ToEvent {
                 SIMCONNECT_OBJECT_ID_USER,
                 self.event_id,
                 match self.mapping {
-                    VariableToEventMapping::EventDataRaw => value as u32,
+                    VariableToEventMapping::EventDataRaw => value as sys::DWORD,
                     VariableToEventMapping::EventData32kPosition => {
                         f64_to_sim_connect_32k_pos(value)
                     }
@@ -974,7 +975,7 @@ const RANGE_32KPOS_VAL_FROM_SIMCONNECT: f64 =
     MAX_32KPOS_VAL_FROM_SIMCONNECT - MIN_32KPOS_VAL_FROM_SIMCONNECT;
 const OFFSET_32KPOS_VAL_FROM_SIMCONNECT: f64 = 16384.;
 // Takes a 32k position type from simconnect, returns a value from scaled from 0 to 1
-fn sim_connect_32k_pos_to_f64(sim_connect_axis_value: u32) -> f64 {
+fn sim_connect_32k_pos_to_f64(sim_connect_axis_value: sys::DWORD) -> f64 {
     let casted_value = (sim_connect_axis_value as i32) as f64;
     let scaled_value =
         (casted_value + OFFSET_32KPOS_VAL_FROM_SIMCONNECT) / RANGE_32KPOS_VAL_FROM_SIMCONNECT;
@@ -982,13 +983,12 @@ fn sim_connect_32k_pos_to_f64(sim_connect_axis_value: u32) -> f64 {
     scaled_value.min(1.).max(0.)
 }
 // Takes a [0:1] f64 and returns a simconnect 32k position type
-fn f64_to_sim_connect_32k_pos(scaled_axis_value: f64) -> u32 {
+fn f64_to_sim_connect_32k_pos(scaled_axis_value: f64) -> sys::DWORD {
     let back_to_position_format = ((scaled_axis_value) * RANGE_32KPOS_VAL_FROM_SIMCONNECT)
         - OFFSET_32KPOS_VAL_FROM_SIMCONNECT;
     let to_i32 = back_to_position_format as i32;
-    let to_u32 = to_i32 as u32;
 
-    to_u32
+    to_i32 as sys::DWORD
 }
 
 #[cfg(test)]

@@ -13,7 +13,7 @@ use crate::aspects::{Aspect, ExecuteOn, MsfsAspectBuilder};
 use crate::electrical::{auxiliary_power_unit, electrical_buses};
 use ::msfs::{
     sim_connect::{data_definition, Period, SimConnect, SimConnectRecv, SIMCONNECT_OBJECT_ID_USER},
-    MSFSEvent,
+    sys, MSFSEvent,
 };
 use failures::Failures;
 use fxhash::FxHashMap;
@@ -535,7 +535,7 @@ struct SimulationTime {
 }
 
 impl SimulationTime {
-    const REQUEST_ID: u32 = 0;
+    const REQUEST_ID: sys::DWORD = 0;
 }
 
 struct Time {
